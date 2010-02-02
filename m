@@ -1,140 +1,96 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756084Ab0BBQda (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 11:33:30 -0500
-Received: from mail-iw0-f171.google.com ([209.85.223.171]:44449 "EHLO
-	mail-iw0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752024Ab0BBQd3 (ORCPT
+	id S1756487Ab0BBQjq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 11:39:46 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:30008 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754425Ab0BBQjo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 11:33:29 -0500
+	Tue, 2 Feb 2010 11:39:44 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type;
-        b=IkxKut+OWBXvta7xVkAA5UAVJFkH36Q0ysJ9YTnmxmWO/Fj2x3s9yyAZrQJx0r0J24
-         OY6e8R4dZl8e7y+1CLn8uwGijuZe5JHhedFINghWfl4LImZ67Ad6ZOkOvwrw3TyY1bcc
-         tLUOokwNvf70RTF5HsAVYej0D0mnXSMbL239s=
-Message-ID: <4B6853D3.9080300@gmail.com>
-Date: Tue, 02 Feb 2010 11:33:23 -0500
-From: William Allen Simpson <william.allen.simpson@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=pGMGDL9QBFxmDUZSXawdqNIefKAfA2S9pgVfylLGU6+IKXkQTa8cy0IgDvDacji+qc
+         oi2+8ItQ7EFxKgQxgsGMjwa5nPeZEHle+Y+p1FH5wsZrGVdOC5Qxi25r4OXMOiqOwcD6
+         rcy5wEpW7c6BCT0jTy1F91ykzaLwvyVjpFUBY=
+Message-ID: <4B685547.9080003@gmail.com>
+Date: Tue, 02 Feb 2010 18:39:35 +0200
+From: Georgi Chorbadzhiyski <georgi.chorbadzhiyski@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100111
 MIME-Version: 1.0
-To: Linux Kernel Developers <linux-kernel@vger.kernel.org>,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>
-CC: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH v3 5/7] TCPCT part 2e: accept SYNACK data
-References: <4B684DE7.3020601@gmail.com>
-In-Reply-To: <4B684DE7.3020601@gmail.com>
-Content-Type: multipart/mixed;
- boundary="------------050400060201060406050200"
+To: linux-kernel@vger.kernel.org
+Subject: WARNING: at arch/x86/kernel/cpu/mtrr/generic.c:467 generic_get_mtrr+0x10c/0x120()
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------050400060201060406050200
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Seen on HP server when starting X.
 
-When accompanied by cookie option, Initiator (client) queues incoming
-SYNACK transaction data.
+------------[ cut here ]------------
+WARNING: at arch/x86/kernel/cpu/mtrr/generic.c:467 generic_get_mtrr+0x10c/0x120()
+Hardware name: ProLiant ML350 G5
+mtrr: your BIOS has set up an incorrect mask, fixing it up.
+Modules linked in: ipv6 agpgart lp ppdev parport_pc parport fuse ipmi_si rtc_cmos ipmi_msghandler bnx2 hpilo rtc_core psmouse processor thermal thermal_sys i5k_amb shpchp rtc_lib serio
+_raw hwmon sg container evdev button
+Pid: 2938, comm: X Not tainted 2.6.32.7 #2
+Call Trace:
+ [<ffffffff8104adbb>] warn_slowpath_common+0x7b/0xc0
+ [<ffffffff8104ae61>] warn_slowpath_fmt+0x41/0x50
+ [<ffffffff8101fef0>] ? mtrr_close+0x0/0xb0
+ [<ffffffff8102106c>] generic_get_mtrr+0x10c/0x120
+ [<ffffffff81020bb5>] mtrr_ioctl+0x625/0x690
+ [<ffffffff810f2557>] ? nameidata_to_filp+0x57/0x70
+ [<ffffffff81101bba>] ? do_filp_open+0x2ca/0xaf0
+ [<ffffffff81147d2f>] proc_reg_unlocked_ioctl+0x6f/0xf0
+ [<ffffffff81103422>] vfs_ioctl+0x22/0xa0
+ [<ffffffff81103c9d>] do_vfs_ioctl+0x3bd/0x5a0
+ [<ffffffff81103f01>] sys_ioctl+0x81/0xa0
+ [<ffffffff8100b85b>] system_call_fastpath+0x16/0x1b
+---[ end trace c30c8f78147cc1e8 ]---
 
-This is a straightforward re-implementation of an earlier (year-old)
-patch that no longer applies cleanly, with permission of the original
-author (Adam Langley).  The patch was previously reviewed:
+root@t2:~# lspci
+00:00.0 Host bridge: Intel Corporation 5000Z Chipset Memory Controller Hub (rev b1)
+00:02.0 PCI bridge: Intel Corporation 5000 Series Chipset PCI Express x8 Port 2-3 (rev b1)
+00:03.0 PCI bridge: Intel Corporation 5000 Series Chipset PCI Express x4 Port 3 (rev b1)
+00:04.0 PCI bridge: Intel Corporation 5000 Series Chipset PCI Express x4 Port 4 (rev b1)
+00:05.0 PCI bridge: Intel Corporation 5000 Series Chipset PCI Express x4 Port 5 (rev b1)
+00:10.0 Host bridge: Intel Corporation 5000 Series Chipset FSB Registers (rev b1)
+00:10.1 Host bridge: Intel Corporation 5000 Series Chipset FSB Registers (rev b1)
+00:10.2 Host bridge: Intel Corporation 5000 Series Chipset FSB Registers (rev b1)
+00:11.0 Host bridge: Intel Corporation 5000 Series Chipset Reserved Registers (rev b1)
+00:13.0 Host bridge: Intel Corporation 5000 Series Chipset Reserved Registers (rev b1)
+00:15.0 Host bridge: Intel Corporation 5000 Series Chipset FBD Registers (rev b1)
+00:16.0 Host bridge: Intel Corporation 5000 Series Chipset FBD Registers (rev b1)
+00:1c.0 PCI bridge: Intel Corporation 631xESB/632xESB/3100 Chipset PCI Express Root Port 1 (rev 09)
+00:1d.0 USB Controller: Intel Corporation 631xESB/632xESB/3100 Chipset UHCI USB Controller #1 (rev 09)
+00:1d.1 USB Controller: Intel Corporation 631xESB/632xESB/3100 Chipset UHCI USB Controller #2 (rev 09)
+00:1d.2 USB Controller: Intel Corporation 631xESB/632xESB/3100 Chipset UHCI USB Controller #3 (rev 09)
+00:1d.3 USB Controller: Intel Corporation 631xESB/632xESB/3100 Chipset UHCI USB Controller #4 (rev 09)
+00:1d.7 USB Controller: Intel Corporation 631xESB/632xESB/3100 Chipset EHCI USB2 Controller (rev 09)
+00:1e.0 PCI bridge: Intel Corporation 82801 PCI Bridge (rev d9)
+00:1f.0 ISA bridge: Intel Corporation 631xESB/632xESB/3100 Chipset LPC Interface Controller (rev 09)
+00:1f.2 IDE interface: Intel Corporation 631xESB/632xESB/3100 Chipset SATA IDE Controller (rev 09)
+01:03.0 VGA compatible controller: ATI Technologies Inc ES1000 (rev 02)
+01:04.0 System peripheral: Compaq Computer Corporation Integrated Lights Out Controller (rev 03)
+01:04.2 System peripheral: Compaq Computer Corporation Integrated Lights Out  Processor (rev 03)
+01:04.4 USB Controller: Hewlett-Packard Company Proliant iLO2 virtual USB controller
+01:04.6 IPMI SMIC interface: Hewlett-Packard Company Proliant iLO2 virtual UART
+02:00.0 PCI bridge: Broadcom EPB PCI-Express to PCI-X Bridge (rev c3)
+03:00.0 Ethernet controller: Broadcom Corporation NetXtreme II BCM5708 Gigabit Ethernet (rev 12)
+04:00.0 PCI bridge: Intel Corporation 6311ESB/6321ESB PCI Express Upstream Port (rev 01)
+04:00.3 PCI bridge: Intel Corporation 6311ESB/6321ESB PCI Express to PCI-X Bridge (rev 01)
+05:00.0 PCI bridge: Intel Corporation 6311ESB/6321ESB PCI Express Downstream Port E1 (rev 01)
+05:01.0 PCI bridge: Intel Corporation 6311ESB/6321ESB PCI Express Downstream Port E2 (rev 01)
+09:00.0 Multimedia video controller: Blackmagic Design Device a120
+0f:00.0 PCI bridge: Broadcom EPB PCI-Express to PCI-X Bridge (rev c3)
+10:00.0 Ethernet controller: Broadcom Corporation NetXtreme II BCM5708 Gigabit Ethernet (rev 12)
+12:00.0 PCI bridge: Broadcom EPB PCI-Express to PCI-X Bridge (rev b4)
+13:04.0 PCI bridge: Broadcom BCM5785 [HT1000] PCI/PCI-X Bridge (rev b2)
+13:08.0 RAID bus controller: Hewlett-Packard Company Smart Array E200i (SAS Controller)
 
-    http://thread.gmane.org/gmane.linux.network/102586
-
-This function will also be used in subsequent patches that implement
-additional features.
-
-Requires:
-   TCPCT part 1g: Responder Cookie => Initiator
-   net: tcp_header_len_th and tcp_option_len_th
-
-Signed-off-by: William.Allen.Simpson@gmail.com
----
-  net/ipv4/tcp_input.c |   26 +++++++++++++++++++++++++-
-  1 files changed, 25 insertions(+), 1 deletions(-)
-
---------------050400060201060406050200
-Content-Type: text/plain; x-mac-type="54455854"; x-mac-creator="0";
- name="TCPCT+2e3+2.6.33-rc6.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="TCPCT+2e3+2.6.33-rc6.patch"
-
-diff --git a/net/ipv4/tcp_input.c b/net/ipv4/tcp_input.c
-index 8e0f6ae..165040e 100644
---- a/net/ipv4/tcp_input.c
-+++ b/net/ipv4/tcp_input.c
-@@ -5395,6 +5395,12 @@ discard:
- 	return 0;
- }
- 
-+/*
-+ * Returns:
-+ *	+1 on reset,
-+ *	0 success and/or SYNACK data,
-+ *	-1 on discard.
-+ */
- static int tcp_rcv_synsent_state_process(struct sock *sk, struct sk_buff *skb,
- 					 struct tcphdr *th)
- {
-@@ -5403,6 +5409,7 @@ static int tcp_rcv_synsent_state_process(struct sock *sk, struct sk_buff *skb,
- 	struct tcp_sock *tp = tcp_sk(sk);
- 	struct tcp_cookie_values *cvp = tp->cookie_values;
- 	int saved_clamp = tp->rx_opt.mss_clamp;
-+	int queued = 0;
- 
- 	tcp_parse_options(skb, &tp->rx_opt, &hash_location, 0);
- 
-@@ -5509,6 +5516,7 @@ static int tcp_rcv_synsent_state_process(struct sock *sk, struct sk_buff *skb,
- 					- TCPOLEN_COOKIE_BASE;
- 			int cookie_pair_size = cookie_size
- 					     + cvp->cookie_desired;
-+			int tcp_header_len = tcp_header_len_th(th);
- 
- 			/* A cookie extension option was sent and returned.
- 			 * Note that each incoming SYNACK replaces the
-@@ -5524,6 +5532,19 @@ static int tcp_rcv_synsent_state_process(struct sock *sk, struct sk_buff *skb,
- 				       hash_location, cookie_size);
- 				cvp->cookie_pair_size = cookie_pair_size;
- 			}
-+
-+			queued = skb->len - tcp_header_len;
-+			if (queued > 0) {
-+				/* Queue incoming transaction data. */
-+				__skb_pull(skb, tcp_header_len);
-+				__skb_queue_tail(&sk->sk_receive_queue, skb);
-+				skb_set_owner_r(skb, sk);
-+				sk->sk_data_ready(sk, 0);
-+				cvp->s_data_in = 1; /* true */
-+				tp->rcv_nxt = TCP_SKB_CB(skb)->end_seq;
-+				tp->rcv_wup = TCP_SKB_CB(skb)->end_seq;
-+				tp->copied_seq = TCP_SKB_CB(skb)->seq + 1;
-+			}
- 		}
- 
- 		smp_mb();
-@@ -5577,11 +5598,14 @@ static int tcp_rcv_synsent_state_process(struct sock *sk, struct sk_buff *skb,
- 						  TCP_DELACK_MAX, TCP_RTO_MAX);
- 
- discard:
--			__kfree_skb(skb);
-+			if (queued <= 0)
-+				__kfree_skb(skb);
- 			return 0;
- 		} else {
- 			tcp_send_ack(sk);
- 		}
-+		if (queued > 0)
-+			return 0;
- 		return -1;
- 	}
- 
 -- 
-1.6.3.3
-
-
---------------050400060201060406050200--
+Georgi Chorbadzhiyski
+http://georgi.unixsol.org/
