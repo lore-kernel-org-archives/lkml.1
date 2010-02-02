@@ -1,19 +1,19 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756954Ab0BBTIc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 14:08:32 -0500
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:46513 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932216Ab0BBTIU (ORCPT
+	id S932327Ab0BBTKd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 14:10:33 -0500
+Received: from g4t0017.houston.hp.com ([15.201.24.20]:16855 "EHLO
+	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932226Ab0BBTJH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 14:08:20 -0500
-Subject: [PATCH v2 07/18] IB/uverbs: whitespace cleanup
+	Tue, 2 Feb 2010 14:09:07 -0500
+Subject: [PATCH v2 16/18] IB/ucm: increase maximum devices supported
 To: rdreier@cisco.com
 From: Alex Chiang <achiang@hp.com>
 Cc: linux-rdma@vger.kernel.org, justin.chen@hp.com,
        linux-kernel@vger.kernel.org
-Date: Tue, 02 Feb 2010 12:08:19 -0700
-Message-ID: <20100202190819.28217.77764.stgit@bob.kio>
+Date: Tue, 02 Feb 2010 12:09:06 -0700
+Message-ID: <20100202190905.28217.97347.stgit@bob.kio>
 In-Reply-To: <20100202185235.28217.64521.stgit@bob.kio>
 References: <20100202185235.28217.64521.stgit@bob.kio>
 User-Agent: StGit/0.15
@@ -24,111 +24,112 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Clean up the errors as shown when 'let c_space_errors=1' is set in vim.
+Some large systems may support more than IB_UCM_MAX_DEVICES
+(currently 32).
+
+This change allows us to support more devices in a backwards-compatible
+manner. the first IB_UCM_MAX_DEVICES keep the same major/minor device
+numbers they've always had.
+
+If there are more than IB_UCM_MAX_DEVICES, then we dynamically request
+a new major device number (new minors start at 0).
 
 Signed-off-by: Alex Chiang <achiang@hp.com>
 ---
 
- drivers/infiniband/core/uverbs_main.c |   68 +++++++++++++++++----------------
- 1 files changed, 34 insertions(+), 34 deletions(-)
+ drivers/infiniband/core/ucm.c |   53 +++++++++++++++++++++++++++++++++++------
+ 1 files changed, 45 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/infiniband/core/uverbs_main.c b/drivers/infiniband/core/uverbs_main.c
-index 38b9085..aff706e 100644
---- a/drivers/infiniband/core/uverbs_main.c
-+++ b/drivers/infiniband/core/uverbs_main.c
-@@ -79,34 +79,34 @@ static DECLARE_BITMAP(dev_map, IB_UVERBS_MAX_DEVICES);
- static ssize_t (*uverbs_cmd_table[])(struct ib_uverbs_file *file,
- 				     const char __user *buf, int in_len,
- 				     int out_len) = {
--	[IB_USER_VERBS_CMD_GET_CONTEXT]   	= ib_uverbs_get_context,
--	[IB_USER_VERBS_CMD_QUERY_DEVICE]  	= ib_uverbs_query_device,
--	[IB_USER_VERBS_CMD_QUERY_PORT]    	= ib_uverbs_query_port,
--	[IB_USER_VERBS_CMD_ALLOC_PD]      	= ib_uverbs_alloc_pd,
--	[IB_USER_VERBS_CMD_DEALLOC_PD]    	= ib_uverbs_dealloc_pd,
--	[IB_USER_VERBS_CMD_REG_MR]        	= ib_uverbs_reg_mr,
--	[IB_USER_VERBS_CMD_DEREG_MR]      	= ib_uverbs_dereg_mr,
-+	[IB_USER_VERBS_CMD_GET_CONTEXT]		= ib_uverbs_get_context,
-+	[IB_USER_VERBS_CMD_QUERY_DEVICE]	= ib_uverbs_query_device,
-+	[IB_USER_VERBS_CMD_QUERY_PORT]		= ib_uverbs_query_port,
-+	[IB_USER_VERBS_CMD_ALLOC_PD]		= ib_uverbs_alloc_pd,
-+	[IB_USER_VERBS_CMD_DEALLOC_PD]		= ib_uverbs_dealloc_pd,
-+	[IB_USER_VERBS_CMD_REG_MR]		= ib_uverbs_reg_mr,
-+	[IB_USER_VERBS_CMD_DEREG_MR]		= ib_uverbs_dereg_mr,
- 	[IB_USER_VERBS_CMD_CREATE_COMP_CHANNEL] = ib_uverbs_create_comp_channel,
--	[IB_USER_VERBS_CMD_CREATE_CQ]     	= ib_uverbs_create_cq,
--	[IB_USER_VERBS_CMD_RESIZE_CQ]     	= ib_uverbs_resize_cq,
--	[IB_USER_VERBS_CMD_POLL_CQ]     	= ib_uverbs_poll_cq,
--	[IB_USER_VERBS_CMD_REQ_NOTIFY_CQ]     	= ib_uverbs_req_notify_cq,
--	[IB_USER_VERBS_CMD_DESTROY_CQ]    	= ib_uverbs_destroy_cq,
--	[IB_USER_VERBS_CMD_CREATE_QP]     	= ib_uverbs_create_qp,
--	[IB_USER_VERBS_CMD_QUERY_QP]     	= ib_uverbs_query_qp,
--	[IB_USER_VERBS_CMD_MODIFY_QP]     	= ib_uverbs_modify_qp,
--	[IB_USER_VERBS_CMD_DESTROY_QP]    	= ib_uverbs_destroy_qp,
--	[IB_USER_VERBS_CMD_POST_SEND]    	= ib_uverbs_post_send,
--	[IB_USER_VERBS_CMD_POST_RECV]    	= ib_uverbs_post_recv,
--	[IB_USER_VERBS_CMD_POST_SRQ_RECV]    	= ib_uverbs_post_srq_recv,
--	[IB_USER_VERBS_CMD_CREATE_AH]    	= ib_uverbs_create_ah,
--	[IB_USER_VERBS_CMD_DESTROY_AH]    	= ib_uverbs_destroy_ah,
--	[IB_USER_VERBS_CMD_ATTACH_MCAST]  	= ib_uverbs_attach_mcast,
--	[IB_USER_VERBS_CMD_DETACH_MCAST]  	= ib_uverbs_detach_mcast,
--	[IB_USER_VERBS_CMD_CREATE_SRQ]    	= ib_uverbs_create_srq,
--	[IB_USER_VERBS_CMD_MODIFY_SRQ]    	= ib_uverbs_modify_srq,
--	[IB_USER_VERBS_CMD_QUERY_SRQ]     	= ib_uverbs_query_srq,
--	[IB_USER_VERBS_CMD_DESTROY_SRQ]   	= ib_uverbs_destroy_srq,
-+	[IB_USER_VERBS_CMD_CREATE_CQ]		= ib_uverbs_create_cq,
-+	[IB_USER_VERBS_CMD_RESIZE_CQ]		= ib_uverbs_resize_cq,
-+	[IB_USER_VERBS_CMD_POLL_CQ]		= ib_uverbs_poll_cq,
-+	[IB_USER_VERBS_CMD_REQ_NOTIFY_CQ]	= ib_uverbs_req_notify_cq,
-+	[IB_USER_VERBS_CMD_DESTROY_CQ]		= ib_uverbs_destroy_cq,
-+	[IB_USER_VERBS_CMD_CREATE_QP]		= ib_uverbs_create_qp,
-+	[IB_USER_VERBS_CMD_QUERY_QP]		= ib_uverbs_query_qp,
-+	[IB_USER_VERBS_CMD_MODIFY_QP]		= ib_uverbs_modify_qp,
-+	[IB_USER_VERBS_CMD_DESTROY_QP]		= ib_uverbs_destroy_qp,
-+	[IB_USER_VERBS_CMD_POST_SEND]		= ib_uverbs_post_send,
-+	[IB_USER_VERBS_CMD_POST_RECV]		= ib_uverbs_post_recv,
-+	[IB_USER_VERBS_CMD_POST_SRQ_RECV]	= ib_uverbs_post_srq_recv,
-+	[IB_USER_VERBS_CMD_CREATE_AH]		= ib_uverbs_create_ah,
-+	[IB_USER_VERBS_CMD_DESTROY_AH]		= ib_uverbs_destroy_ah,
-+	[IB_USER_VERBS_CMD_ATTACH_MCAST]	= ib_uverbs_attach_mcast,
-+	[IB_USER_VERBS_CMD_DETACH_MCAST]	= ib_uverbs_detach_mcast,
-+	[IB_USER_VERBS_CMD_CREATE_SRQ]		= ib_uverbs_create_srq,
-+	[IB_USER_VERBS_CMD_MODIFY_SRQ]		= ib_uverbs_modify_srq,
-+	[IB_USER_VERBS_CMD_QUERY_SRQ]		= ib_uverbs_query_srq,
-+	[IB_USER_VERBS_CMD_DESTROY_SRQ]		= ib_uverbs_destroy_srq,
- };
+diff --git a/drivers/infiniband/core/ucm.c b/drivers/infiniband/core/ucm.c
+index 06c50d8..1203ca4 100644
+--- a/drivers/infiniband/core/ucm.c
++++ b/drivers/infiniband/core/ucm.c
+@@ -1215,7 +1215,10 @@ static void ib_ucm_release_dev(struct device *dev)
  
- static struct vfsmount *uverbs_event_mnt;
-@@ -368,7 +368,7 @@ static int ib_uverbs_event_close(struct inode *inode, struct file *filp)
- 
- static const struct file_operations uverbs_event_fops = {
- 	.owner	 = THIS_MODULE,
--	.read 	 = ib_uverbs_event_read,
-+	.read	 = ib_uverbs_event_read,
- 	.poll    = ib_uverbs_event_poll,
- 	.release = ib_uverbs_event_close,
- 	.fasync  = ib_uverbs_event_fasync
-@@ -678,17 +678,17 @@ static int ib_uverbs_close(struct inode *inode, struct file *filp)
+ 	ucm_dev = container_of(dev, struct ib_ucm_device, dev);
+ 	cdev_del(&ucm_dev->cdev);
+-	clear_bit(ucm_dev->devnum, dev_map);
++	if (ucm_dev->devnum < IB_UCM_MAX_DEVICES)
++		clear_bit(ucm_dev->devnum, dev_map);
++	else
++		clear_bit(ucm_dev->devnum - IB_UCM_MAX_DEVICES, dev_map);
+ 	kfree(ucm_dev);
  }
  
- static const struct file_operations uverbs_fops = {
--	.owner 	 = THIS_MODULE,
--	.write 	 = ib_uverbs_write,
--	.open 	 = ib_uverbs_open,
-+	.owner	 = THIS_MODULE,
-+	.write	 = ib_uverbs_write,
-+	.open	 = ib_uverbs_open,
- 	.release = ib_uverbs_close
- };
+@@ -1237,6 +1240,28 @@ static ssize_t show_ibdev(struct device *dev, struct device_attribute *attr,
+ }
+ static DEVICE_ATTR(ibdev, S_IRUGO, show_ibdev, NULL);
  
- static const struct file_operations uverbs_mmap_fops = {
--	.owner 	 = THIS_MODULE,
--	.write 	 = ib_uverbs_write,
-+	.owner	 = THIS_MODULE,
-+	.write	 = ib_uverbs_write,
- 	.mmap    = ib_uverbs_mmap,
--	.open 	 = ib_uverbs_open,
-+	.open	 = ib_uverbs_open,
- 	.release = ib_uverbs_close
- };
++static dev_t oflo_maj;
++static DECLARE_BITMAP(oflo_map, IB_UCM_MAX_DEVICES);
++static int find_oflo_devnum(void)
++{
++	int ret;
++
++	if (!oflo_maj) {
++		ret = alloc_chrdev_region(&oflo_maj, 0, IB_UCM_MAX_DEVICES,
++					  "infiniband_cm");
++		if (ret) {
++			printk(KERN_ERR "ucm: couldn't register dynamic device number\n");
++			return ret;
++		}
++	}
++
++	ret = find_first_zero_bit(oflo_map, IB_UCM_MAX_DEVICES);
++	if (ret >= IB_UCM_MAX_DEVICES)
++		return -1;
++
++	return ret;
++}
++
+ static void ib_ucm_add_one(struct ib_device *device)
+ {
+ 	int devnum;
+@@ -1254,12 +1279,19 @@ static void ib_ucm_add_one(struct ib_device *device)
+ 	ucm_dev->ib_dev = device;
+ 
+ 	devnum = find_first_zero_bit(dev_map, IB_UCM_MAX_DEVICES);
+-	if (devnum >= IB_UCM_MAX_DEVICES)
+-		goto err;
+-
+-	ucm_dev->devnum = devnum;
+-	base = devnum + IB_UCM_BASE_DEV;
+-	set_bit(devnum, dev_map);
++	if (devnum >= IB_UCM_MAX_DEVICES) {
++		devnum = find_oflo_devnum();
++		if (devnum < 0)
++			goto err;
++
++		ucm_dev->devnum = devnum + IB_UCM_MAX_DEVICES;
++		base = devnum + oflo_maj;
++		set_bit(devnum, oflo_map);
++	} else {
++		ucm_dev->devnum = devnum;
++		base = devnum + IB_UCM_BASE_DEV;
++		set_bit(devnum, dev_map);
++	}
+ 
+ 	cdev_init(&ucm_dev->cdev, &ucm_fops);
+ 	ucm_dev->cdev.owner = THIS_MODULE;
+@@ -1285,7 +1317,10 @@ err_dev:
+ 	device_unregister(&ucm_dev->dev);
+ err_cdev:
+ 	cdev_del(&ucm_dev->cdev);
+-	clear_bit(devnum, dev_map);
++	if (ucm_dev->devnum < IB_UCM_MAX_DEVICES)
++		clear_bit(devnum, dev_map);
++	else
++		clear_bit(devnum, oflo_map);
+ err:
+ 	kfree(ucm_dev);
+ 	return;
+@@ -1344,6 +1379,8 @@ static void __exit ib_ucm_cleanup(void)
+ 	ib_unregister_client(&ucm_client);
+ 	class_remove_file(&cm_class, &class_attr_abi_version);
+ 	unregister_chrdev_region(IB_UCM_BASE_DEV, IB_UCM_MAX_DEVICES);
++	if (oflo_maj)
++		unregister_chrdev_region(oflo_maj, IB_UCM_MAX_DEVICES);
+ 	idr_destroy(&ctx_id_table);
+ }
  
 
