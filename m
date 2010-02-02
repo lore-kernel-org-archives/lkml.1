@@ -1,87 +1,65 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754953Ab0BBGxr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 01:53:47 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:50362 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753773Ab0BBGxo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 01:53:44 -0500
-Date: Mon, 1 Feb 2010 22:53:41 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH][RFC] %pd - for printing dentry name
-Message-ID: <20100202065341.GF6292@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20100201222511.GA12882@ZenIV.linux.org.uk> <alpine.LFD.2.00.1002011431490.3664@localhost.localdomain> <20100201231847.GC12882@ZenIV.linux.org.uk>
+	id S1755017Ab0BBGzc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 01:55:32 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:44220 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754712Ab0BBGzb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 01:55:31 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4B67CC55.40301@s5r6.in-berlin.de>
+Date: Tue, 02 Feb 2010 07:55:17 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.23) Gecko/20100102 SeaMonkey/1.1.18
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100201231847.GC12882@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: "Justin P. Mattock" <justinmattock@gmail.com>
+CC: Dan Carpenter <error27@gmail.com>, linux1394-devel@lists.sourceforge.net,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: ohci1394_dma=early crash since 2.6.32 (was Re: [Bug #14487] PANIC:
+ early exception 08 rip 246:10 error	ffffffff810251b5 cr2 0)
+References: <UgwvXSBS_tM.A.alD.1EiZLB@chimera> <de962C6zBxL.A.H1G.1HiZLB@chimera> <4B6630CA.9010207@gmail.com> <20100201125441.GB2576@bicker> <4B671606.3080405@gmail.com> <4B673233.8000300@s5r6.in-berlin.de> <4B6740B5.5070601@gmail.com> <4B675534.5070107@s5r6.in-berlin.de> <4B676917.2080506@gmail.com> <4B67BC12.4080709@s5r6.in-berlin.de> <4B67C4D2.5050205@gmail.com>
+In-Reply-To: <4B67C4D2.5050205@gmail.com>
+X-Enigmail-Version: 0.96.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 01, 2010 at 11:18:47PM +0000, Al Viro wrote:
-> On Mon, Feb 01, 2010 at 02:37:32PM -0800, Linus Torvalds wrote:
+Justin P. Mattock wrote:
+> As for anything changed in the kernel
+> (2.6.31 - present), tough to say
+> from what I remember I had created a new fresh
+> lfs system using these CFLAGS:
 > 
-> > > * don't use %pd under dentry->d_lock, use dentry->d_name.name instead; in
-> > > that case it *is* safe.  Incidentally, ->d_lock isn't held a lot.
-> > 
-> > I realize we can just call it a rule, and yes, d_lock is held much less 
-> > than something like console_lock etc that we've had ABBA issues with, but 
-> > still..
+> CFLAGS="-mtune=core2 -march=core2 -O2 -pipe -fomit-frame-pointer"
+> CXXFLAGS="${CFLAGS}" MAKEOPTS="{-j3}"
+> (without -m option gcc defaults(I think)to -m32).
 > 
-> > Quite frankly, I'd _much_ rather see something like just always freeing 
-> > the dentry names (when they aren't inlined) using RCU. The VFS layer quite 
-> > possibly would want to do that anyway at some point (eg Nick's VFS 
-> > scalability patches), and then we could make it just a RCU read-lock or 
-> > whatever (interrupt disable, what-not) instead.
-> > 
-> > And I'm much happier with printk doing that kind of thing, and wouldn't 
-> > have issues with that kind of much weaker locking.
+> which booted with ohci1394_dma=early just fine.
 > 
-> Ehh...  RCU will save you from stepping on freed memory, but it still will
-> leave the joy of half-updated string with length out of sync with it, etc.
-> We probably can get away with that, but we'll have to be a lot more careful
-> with the order of updating these suckers in d_move_locked et.al.
+> then decided to build another lfs system with the same CFLAGS except
+> added -m64 (pure64) to the build process.
+> (then this showed up).
 > 
-> I don't know...  Note that if we end up adding something extra to struct
-> dentry, we might as well just add *another* spinlock, taken only under
-> ->d_lock and only in two places in dcache.c that change d_name.  That kind
-> of thing is trivial to enforce (just grep over the tree once in a while)
-> and if it shares the cacheline with d_lock, we shouldn't get any real overhead
-> in d_move()/d_materialise_unique().  I'm not particulary fond of that variant,
-> but it's at least guaranteed to be devoid of subtleties.
-> 
-> If RCU folks can come up with a sane suggestions that would be robust and
-> wouldn't bloat dentry - sure, I'm all for it.  If not...
+> What I can try is do a git revert to 2.6.29/27 to see if this thing
+> fires off(before going any further). if the system boots then do a bisect.
 
-Here is an approximation that might inspire someone to come up with a
-real solution.
+Do I understand correctly that at this moment it is only known that the
+bug could be
+  - *either* a 2.6.31 -> 2.6.32 regression
+  - *or* an x86-64 specific bug that does not occur on x86-32,
+right?
 
-One approach would be to store the name length with the name, so that
-struct qstr loses the "len" field, and so that its "name" field points
-to a struct that has a "len" field followed by an array of const
-unsigned char.  That way, the name and length are closely associated.
-When you pick up a struct qstr's "name" pointer, you are guaranteed to
-get a length that matches the name.
-
-Unfortunately:
-
-o	In theory, this leaves the length of the dentry unchanged, but
-	alignment is a problem on 64-bit systems.  Also, the long names
-	gain an extra four bytes.
-
-o	If you get a pointer to the d_iname small-name field, rename
-	might still change the name out from under you.  This could in
-	theory be fixed by refusing to re-use the d_iname field until
-	an RCU grace period had elapsed (using an external structure
-	instead).  In practice, not sure if this is really a reasonable
-	approach.
-
-Thoughts?
-
-							Thanx, Paul
+I have an Core 2 Duo based PC with x86-32 kernel and userland and an AMD
+based x86-64 PC and could give ohci1394_dma=early a try on both (never
+tested it myself before).  I could furthermore attempt to build and
+install an x86-64 kernel on the Core 2 Duo PC but I am afraid I am far
+too short of spare time for that.
+-- 
+Stefan Richter
+-=====-==-=- --=- ---=-
+http://arcgraph.de/sr/
