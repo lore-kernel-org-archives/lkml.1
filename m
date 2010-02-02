@@ -1,52 +1,57 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756610Ab0BBSNr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 13:13:47 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36103 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756476Ab0BBSNp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 13:13:45 -0500
-Date: Tue, 2 Feb 2010 19:13:38 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Li Zefan <lizf@cn.fujitsu.com>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH][GIT PULL][v2.6.33] tracing: Fix circular dead lock in
- stack trace
-Message-ID: <20100202181338.GA19320@elte.hu>
-References: <1265126358.29013.1273.camel@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1265126358.29013.1273.camel@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1756636Ab0BBSRH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 13:17:07 -0500
+Received: from dallas.jonmasters.org ([72.29.103.172]:49552 "EHLO
+	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754272Ab0BBSRE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 13:17:04 -0500
+Subject: Re: [PATCH] netfilter: per netns nf_conntrack_cachep
+From: Jon Masters <jonathan@jonmasters.org>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Patrick McHardy <kaber@trash.net>, Eric Dumazet <eric.dumazet@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>,
+       netfilter-devel <netfilter-devel@vger.kernel.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+In-Reply-To: <b6fcc0a1002020958u17315624u4d54d06a413be6bb@mail.gmail.com>
+References: <1264813832.2793.446.camel@tonnant>
+	 <1265023437.2848.30.camel@edumazet-laptop>
+	 <1265035970.2848.50.camel@edumazet-laptop>
+	 <b6fcc0a1002010658j4f52a9b8kf10e4bb07a2f1075@mail.gmail.com>
+	 <1265036548.2848.55.camel@edumazet-laptop>
+	 <1265108690.2861.118.camel@tonnant> <1265110504.2861.135.camel@tonnant>
+	 <1265129192.2861.141.camel@tonnant> <4B685756.8010107@trash.net>
+	 <1265130426.2861.158.camel@tonnant>
+	 <b6fcc0a1002020958u17315624u4d54d06a413be6bb@mail.gmail.com>
+Content-Type: text/plain
+Organization: World Organi[sz]ation of Broken Dreams
+Date: Tue, 02 Feb 2010 13:16:38 -0500
+Message-Id: <1265134598.2861.191.camel@tonnant>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
+X-SA-Do-Not-Run: Yes
+X-SA-Exim-Connect-IP: 127.0.0.1
+X-SA-Exim-Mail-From: jonathan@jonmasters.org
+X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2010-02-02 at 19:58 +0200, Alexey Dobriyan wrote:
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+> Yes, moving to init_net-only function is fine.
 
-> 
-> Ingo,
-> 
-> Please pull the latest tip/tracing/urgent tree, which can be found at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> tip/tracing/urgent
-> 
-> 
-> Lai Jiangshan (1):
->       tracing: Fix circular dead lock in stack trace
+So moving the "setup up fake conntrack" bits to init_init_net from
+init_net still results in the panic, which means that the use count
+really is dropping to zero and we really are trying to free it when
+using multiple namespaces. Per ns is probably an easier way to go.
 
-Pulled, thanks Steve!
+Just for kicks, I'll have it error out on attempting to free to see if I
+can get this box to stay up for a while.
 
-	Ingo
+Jon.
+
+
