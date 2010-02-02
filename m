@@ -1,66 +1,41 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932274Ab0BBTME (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 14:12:04 -0500
-Received: from g6t0184.atlanta.hp.com ([15.193.32.61]:12114 "EHLO
-	g6t0184.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932209Ab0BBTIT (ORCPT
+	id S1756972Ab0BBTTM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 14:19:12 -0500
+Received: from eddie.linux-mips.org ([78.24.191.182]:52557 "EHLO
+	eddie.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753637Ab0BBTTH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 14:08:19 -0500
-Subject: [PATCH v2 04/18] IB/uverbs: use stack variable 'base' in
-	ib_uverbs_add_one
-To: rdreier@cisco.com
-From: Alex Chiang <achiang@hp.com>
-Cc: linux-rdma@vger.kernel.org, justin.chen@hp.com,
-       linux-kernel@vger.kernel.org
-Date: Tue, 02 Feb 2010 12:08:04 -0700
-Message-ID: <20100202190804.28217.62413.stgit@bob.kio>
-In-Reply-To: <20100202185235.28217.64521.stgit@bob.kio>
-References: <20100202185235.28217.64521.stgit@bob.kio>
-User-Agent: StGit/0.15
+	Tue, 2 Feb 2010 14:19:07 -0500
+Date: Tue, 2 Feb 2010 20:19:19 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Christoph Hellwig <hch@lst.de>
+Cc: roland@redhat.com, oleg@redhat.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+Subject: Re: [PATCH 9/14] mips: use generic ptrace_resume code
+Message-ID: <20100202191919.GA542@linux-mips.org>
+References: <20100202185755.GA3630@lst.de>
+ <20100202185958.GI3630@lst.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100202185958.GI3630@lst.de>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This change is not useful by itself, but sets us up for a future change
-that allows us to support more than IB_UVERBS_MAX_DEVICES in a system.
+On Tue, Feb 02, 2010 at 07:59:58PM +0100, Christoph Hellwig wrote:
 
-Signed-off-by: Alex Chiang <achiang@hp.com>
----
+> Use the generic ptrace_resume code for PTRACE_SYSCALL, PTRACE_CONT and
+> PTRACE_KILL.  
+> 
+> Also the TIF_SYSCALL_TRACE thread flag is now cleared on PTRACE_KILL
+> which it previously wasn't which is consistent with all architectures
+> using the modern ptrace code.
+> 
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
 
- drivers/infiniband/core/uverbs_main.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+Acked-by: Ralf Baechle <ralf@linux-mips.org>
 
-diff --git a/drivers/infiniband/core/uverbs_main.c b/drivers/infiniband/core/uverbs_main.c
-index acae9ed..8c594cd 100644
---- a/drivers/infiniband/core/uverbs_main.c
-+++ b/drivers/infiniband/core/uverbs_main.c
-@@ -731,6 +731,7 @@ static CLASS_ATTR(abi_version, S_IRUGO, show_abi_version, NULL);
- static void ib_uverbs_add_one(struct ib_device *device)
- {
- 	int devnum;
-+	dev_t base;
- 	struct ib_uverbs_device *uverbs_dev;
- 
- 	if (!device->alloc_ucontext)
-@@ -750,6 +751,7 @@ static void ib_uverbs_add_one(struct ib_device *device)
- 		goto err;
- 	}
- 	uverbs_dev->devnum = devnum;
-+	base = devnum + IB_UVERBS_BASE_DEV;
- 	set_bit(devnum, dev_map);
- 	spin_unlock(&map_lock);
- 
-@@ -760,7 +762,7 @@ static void ib_uverbs_add_one(struct ib_device *device)
- 	uverbs_dev->cdev.owner = THIS_MODULE;
- 	uverbs_dev->cdev.ops = device->mmap ? &uverbs_mmap_fops : &uverbs_fops;
- 	kobject_set_name(&uverbs_dev->cdev.kobj, "uverbs%d", uverbs_dev->devnum);
--	if (cdev_add(&uverbs_dev->cdev, IB_UVERBS_BASE_DEV + devnum, 1))
-+	if (cdev_add(&uverbs_dev->cdev, base, 1))
- 		goto err_cdev;
- 
- 	uverbs_dev->dev = device_create(uverbs_class, device->dma_device,
-
+  Ralf
