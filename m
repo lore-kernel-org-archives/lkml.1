@@ -1,45 +1,40 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755129Ab0BBG6p (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 01:58:45 -0500
-Received: from smtp-out002.kontent.com ([81.88.40.216]:35300 "EHLO
-	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754830Ab0BBG6m (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 01:58:42 -0500
-From: Oliver Neukum <oliver@neukum.org>
-To: Andreas Mohr <andi@lisas.de>
-Subject: Re: USB mass storage and ARM cache coherency
-Date: Tue, 2 Feb 2010 07:58:42 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.33-rc3-0.1-default; KDE/4.3.1; x86_64; ; )
-Cc: Catalin Marinas <catalin.marinas@arm.com>,
-       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Ming Lei <tom.leiming@gmail.com>, linux-usb@vger.kernel.org,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       Sebastian Siewior <bigeasy@linutronix.de>, Greg KH <greg@kroah.com>,
-       Takashi Iwai <tiwai@suse.de>
-References: <20100129185434.GH19501@one-eyed-alien.net> <1265045354.25750.52.camel@pc1117.cambridge.arm.com> <20100201223001.GA17627@rhlx01.hs-esslingen.de>
-In-Reply-To: <20100201223001.GA17627@rhlx01.hs-esslingen.de>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201002020758.42141.oliver@neukum.org>
+	id S1755243Ab0BBG65 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 01:58:57 -0500
+Received: from tango.tkos.co.il ([62.219.50.35]:44353 "EHLO tango.tkos.co.il"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755186Ab0BBG6z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 01:58:55 -0500
+From: Baruch Siach <baruch@tkos.co.il>
+To: linux-kernel@vger.kernel.org
+Cc: trivial@kernel.org, Baruch Siach <baruch@tkos.co.il>
+Subject: [PATCH] devres: typo fix s/dev/devm/
+Date: Tue,  2 Feb 2010 08:54:51 +0200
+Message-Id: <cf1ec3a8fa3eb545752984b03cd21abda3997758.1265093593.git.baruch@tkos.co.il>
+X-Mailer: git-send-email 1.6.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag, 1. Februar 2010 23:30:01 schrieb Andreas Mohr:
-> I took some time to add your patch to ehci-q.c / ohci-q.c
-> (for my *hci-ssb.c ASUS WL-500gP v2), on my now heavily patched-up 2.6.31.9,
-> but UNFORTUNATELY it kept locking up the same way as always when stopping
-> playback despite being damn sure this time that this patch could have
-> the potential to finally fix it ;)
-> (I had to replace memory.h with page.h on my arch though, to fix the build)
+Signed-off-by: Baruch Siach <baruch@tkos.co.il>
+---
+ kernel/irq/devres.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-A moment please. You are using ehci and ohci. Both are using dma.
-Why does this issue arise?
+diff --git a/kernel/irq/devres.c b/kernel/irq/devres.c
+index d06df9c..30d56ba 100644
+--- a/kernel/irq/devres.c
++++ b/kernel/irq/devres.c
+@@ -81,7 +81,7 @@ EXPORT_SYMBOL(devm_request_threaded_irq);
+  *	Except for the extra @dev argument, this function takes the
+  *	same arguments and performs the same function as free_irq().
+  *	This function instead of free_irq() should be used to manually
+- *	free IRQs allocated with dev_request_irq().
++ *	free IRQs allocated with devm_request_irq().
+  */
+ void devm_free_irq(struct device *dev, unsigned int irq, void *dev_id)
+ {
+-- 
+1.6.5
 
-	Regards
-		Oliver
