@@ -1,59 +1,47 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754437Ab0BBGLD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 01:11:03 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:37380 "EHLO smtps.tip.net.au"
+	id S1754626Ab0BBGMW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 01:12:22 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:52830 "EHLO mail.zytor.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752774Ab0BBGLA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 01:11:00 -0500
-Date: Tue, 2 Feb 2010 17:10:54 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Greg KH <greg@kroah.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Catalin Marinas <catalin.marinas@arm.com>
-Subject: linux-next: usb tree build failure
-Message-Id: <20100202171054.aaf86072.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta6 (GTK+ 2.18.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__2_Feb_2010_17_10_54_+1100_2a3TXM5_XCxSikvv"
+	id S1753770Ab0BBGMS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 01:12:18 -0500
+Message-ID: <4B67C0F9.2020202@zytor.com>
+Date: Mon, 01 Feb 2010 22:06:49 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+MIME-Version: 1.0
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: Siarhei Liakh <sliakh.lkml@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, linux-next@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>,
+       James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@muc.de>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, Dave Jones <davej@redhat.com>
+Subject: Re: [PATCH V10] RO/NX protection for loadable kernel modules
+References: <817ecb6f1002011539g3f30416fi60c7c5222cab8f3@mail.gmail.com> <201002021429.38331.rusty@rustcorp.com.au>
+In-Reply-To: <201002021429.38331.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__2_Feb_2010_17_10_54_+1100_2a3TXM5_XCxSikvv
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 02/01/2010 07:59 PM, Rusty Russell wrote:
+> On Tue, 2 Feb 2010 10:09:53 am Siarhei Liakh wrote:
+>> This patch is a logical extension of the protection provided by
+>> CONFIG_DEBUG_RODATA to LKMs. The protection is provided by splitting
+>> module_core and module_init into three logical parts each and setting
+>> appropriate page access permissions for each individual section:
+>>
+>>   1. Code: RO+X
+>>   2. RO data: RO+NX
+>>   3. RW data: RW+NX
+>
+> Thanks, applied!
 
-Hi Greg,
+I also applied this to the -tip tree... do you prefer to carry it or 
+should I leave it as is?
 
-Today's linux-next build (x86_64 allmodconfig) failed like this:
-
-drivers/usb/host/isp1760-hcd.c:22:24: error: asm/memory.h: No such file or =
-directory
-
-Caused by commit 571da0df39107568bb137d928862121ddae6aad1 ("isp1760:
-Flush the D-cache for the pipe-in transfer buffers").
-
-Only arm has an asm/memory.h ... so I guess it was only tested there?
-
-I reverted that patch for today ...
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__2_Feb_2010_17_10_54_+1100_2a3TXM5_XCxSikvv
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAktnwe4ACgkQjjKRsyhoI8w/igCfZNI+/UQcEZ3PlIG9JywLg6uj
-CTYAniBnxGqbAZgFe2vsc3MVaWxftpUe
-=KuLt
------END PGP SIGNATURE-----
-
---Signature=_Tue__2_Feb_2010_17_10_54_+1100_2a3TXM5_XCxSikvv--
+	-hpa
