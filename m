@@ -1,55 +1,173 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755839Ab0BBIBM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 03:01:12 -0500
-Received: from mail.perches.com ([173.55.12.10]:1796 "EHLO mail.perches.com"
+	id S1755848Ab0BBIFV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 03:05:21 -0500
+Received: from hera.kernel.org ([140.211.167.34]:50817 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755098Ab0BBIBI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 03:01:08 -0500
-Subject: Re: [lm-sensors] [PATCH 04/10] drivers/hwmon/vt8231.c: Fix
- continuation  line formats
-From: Joe Perches <joe@perches.com>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: linux-kernel@vger.kernel.org, Roger Lucas <vt8231@hiddenengine.co.uk>,
-       lm-sensors@lm-sensors.org
-In-Reply-To: <20100202085651.360fed29@hyperion.delvare>
-References: <cover.1265095093.git.joe@perches.com>
-	 <4a6cb6ef5a33d29220f021e2f28c7d676fff5e09.1265095094.git.joe@perches.com>
-	 <20100202085651.360fed29@hyperion.delvare>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 02 Feb 2010 00:01:07 -0800
-Message-ID: <1265097667.25140.786.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	id S1755735Ab0BBIFT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 03:05:19 -0500
+Message-ID: <4B67DC58.7060809@kernel.org>
+Date: Tue, 02 Feb 2010 00:03:36 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+MIME-Version: 1.0
+To: Thomas Renninger <trenn@suse.de>
+CC: linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org,
+       akpm@linux-foundation.org, mingo@elte.hu
+Subject: Re: IRQ regression messes up xseries 330 SCI resulting in apic=off
+ - bisected to commit b9c61b70075c87a861262473
+References: <201002011559.07869.trenn@suse.de> <4B677CFC.9080406@kernel.org>
+In-Reply-To: <4B677CFC.9080406@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-02-02 at 08:56 +0100, Jean Delvare wrote:
-> > diff --git a/drivers/hwmon/vt8231.c b/drivers/hwmon/vt8231.c
-> > index d47b4c9..e6078c9 100644
-> > --- a/drivers/hwmon/vt8231.c
-> > +++ b/drivers/hwmon/vt8231.c
-> > @@ -948,8 +948,7 @@ static int __devinit vt8231_pci_probe(struct pci_dev *dev,
-> >  
-> >  	address = val & ~(VT8231_EXTENT - 1);
-> >  	if (address == 0) {
-> > -		dev_err(&dev->dev, "base address not set -\
-> > -				 upgrade BIOS or use force_addr=0xaddr\n");
-> > +		dev_err(&dev->dev, "base address not set - upgrade BIOS or use force_addr=0xaddr\n");
-> >  		return -ENODEV;
-> >  	}
-> >  
+On 02/01/2010 05:16 PM, Yinghai Lu wrote:
+> On 02/01/2010 06:59 AM, Thomas Renninger wrote:
+>> Hi,
+>>
+>> booting a latest kernel on this machine results in:
+>>
+>> PCI: PCI BIOS revision 2.10 entry at 0xfd61c, last bus=1
+>> PCI: Using configuration type 1 for base access bio: create slab <bio-0> at 0
+>> ACPI: SCI (IRQ30) allocation failed
+>> ACPI Exception: AE_NOT_ACQUIRED, Unable to install System Control Interrupt handler (20090903/evevent-161)
+>> ACPI: Unable to start the ACPI Interpreter
+>>
 > 
-> Good catch, and thanks for the fix. But now we have an overlong line,
-> which checkpatch will complain about. So I would prefer if you'd fix
-> the problem by replacing the \ by a pair of ".
+> please check
 
-That depends on what version of checkpatch you're using.
+Subject: [PATCH -v2] x86: fix sci on ioapic 1
 
-There's one with a pr_<level> and dev_<level> exemption
-to the long line check.
+Thomas Renninger <trenn@suse.de> reported on IBM x3330
 
+booting a latest kernel on this machine results in:
 
+PCI: PCI BIOS revision 2.10 entry at 0xfd61c, last bus=1
+PCI: Using configuration type 1 for base access bio: create slab <bio-0> at 0
+ACPI: SCI (IRQ30) allocation failed
+ACPI Exception: AE_NOT_ACQUIRED, Unable to install System Control Interrupt handler (20090903/evevent-161)
+ACPI: Unable to start the ACPI Interpreter
 
+Later all kind of devices fail...
+
+and bisect it down to this commit:
+commit b9c61b70075c87a8612624736faf4a2de5b1ed30
+
+    x86/pci: update pirq_enable_irq() to setup io apic routing
+
+it turns out we need to set irq routing for the sci on ioapic1 early.
+
+-v2: make it work without sparseirq too.
+
+Reported-by: Thomas Renninger <trenn@suse.de>
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+
+---
+ arch/x86/include/asm/io_apic.h |    1 
+ arch/x86/kernel/acpi/boot.c    |    9 ++++++-
+ arch/x86/kernel/apic/io_apic.c |   50 +++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 59 insertions(+), 1 deletion(-)
+
+Index: linux-2.6/arch/x86/include/asm/io_apic.h
+===================================================================
+--- linux-2.6.orig/arch/x86/include/asm/io_apic.h
++++ linux-2.6/arch/x86/include/asm/io_apic.h
+@@ -160,6 +160,7 @@ extern int io_apic_get_redir_entries(int
+ struct io_apic_irq_attr;
+ extern int io_apic_set_pci_routing(struct device *dev, int irq,
+ 		 struct io_apic_irq_attr *irq_attr);
++void setup_IO_APIC_irq_extra(u32 gsi);
+ extern int (*ioapic_renumber_irq)(int ioapic, int irq);
+ extern void ioapic_init_mappings(void);
+ extern void ioapic_insert_resources(void);
+Index: linux-2.6/arch/x86/kernel/acpi/boot.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/acpi/boot.c
++++ linux-2.6/arch/x86/kernel/acpi/boot.c
+@@ -446,6 +446,12 @@ void __init acpi_pic_sci_set_trigger(uns
+ int acpi_gsi_to_irq(u32 gsi, unsigned int *irq)
+ {
+ 	*irq = gsi;
++
++#ifdef CONFIG_X86_IO_APIC
++	if (acpi_irq_model == ACPI_IRQ_MODEL_IOAPIC)
++		setup_IO_APIC_irq_extra(gsi);
++#endif
++
+ 	return 0;
+ }
+ 
+@@ -473,7 +479,8 @@ int acpi_register_gsi(struct device *dev
+ 		plat_gsi = mp_register_gsi(dev, gsi, trigger, polarity);
+ 	}
+ #endif
+-	acpi_gsi_to_irq(plat_gsi, &irq);
++	irq = plat_gsi;
++
+ 	return irq;
+ }
+ 
+Index: linux-2.6/arch/x86/kernel/apic/io_apic.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/apic/io_apic.c
++++ linux-2.6/arch/x86/kernel/apic/io_apic.c
+@@ -1541,6 +1541,56 @@ static void __init setup_IO_APIC_irqs(vo
+ }
+ 
+ /*
++ * for the gsit that is not in first ioapic
++ * but could not use acpi_register_gsi()
++ * like some special sci in IBM x3330
++ */
++void setup_IO_APIC_irq_extra(u32 gsi)
++{
++	int apic_id = 0, pin, idx, irq;
++	int node = cpu_to_node(boot_cpu_id);
++	struct irq_desc *desc;
++	struct irq_cfg *cfg;
++
++        /*
++         * Convert 'gsi' to 'ioapic.pin'.
++         */
++        apic_id = mp_find_ioapic(gsi);
++        if (apic_id < 0)
++                return;
++
++        pin = mp_find_ioapic_pin(apic_id, gsi);
++	idx = find_irq_entry(apic_id, pin, mp_INT);
++	if (idx == -1)
++		return;
++
++	irq = pin_2_irq(idx, apic_id, pin);
++#ifdef CONFIG_SPARSE_IRQ
++	desc = irq_to_desc(irq);
++	if (desc)
++		return;
++#endif
++	desc = irq_to_desc_alloc_node(irq, node);
++	if (!desc) {
++		printk(KERN_INFO "can not get irq_desc for %d\n", irq);
++		return;
++	}
++
++	cfg = desc->chip_data;
++	add_pin_to_irq_node(cfg, node, apic_id, pin);
++
++	if (test_bit(pin, mp_ioapic_routing[apic_id].pin_programmed)) {
++		pr_debug("Pin %d-%d already programmed\n",
++			 mp_ioapics[apic_id].apicid, pin);
++		return;
++	}
++	set_bit(pin, mp_ioapic_routing[apic_id].pin_programmed);
++
++	setup_IO_APIC_irq(apic_id, pin, irq, desc,
++			irq_trigger(idx), irq_polarity(idx));
++}
++
++/*
+  * Set up the timer pin, possibly with the 8259A-master behind.
+  */
+ static void __init setup_timer_IRQ0_pin(unsigned int apic_id, unsigned int pin,
