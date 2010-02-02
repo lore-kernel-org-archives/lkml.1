@@ -1,56 +1,67 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754406Ab0BBEY1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 23:24:27 -0500
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:39555 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752927Ab0BBEYZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 23:24:25 -0500
-Date: Tue, 2 Feb 2010 13:24:02 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Catalin Marinas <catalin.marinas@arm.com>,
-       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Ming Lei <tom.leiming@gmail.com>, linux-usb@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Sebastian Siewior <bigeasy@linutronix.de>, Greg KH <greg@kroah.com>
-Subject: Re: USB mass storage and ARM cache coherency
-Message-ID: <20100202042402.GJ13428@linux-sh.org>
-References: <1265045354.25750.52.camel@pc1117.cambridge.arm.com> <Pine.LNX.4.44L0.1002011512060.1368-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1002011512060.1368-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S1754524Ab0BBE0M (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 23:26:12 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:34426 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754189Ab0BBE0J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Feb 2010 23:26:09 -0500
+Date: Tue, 2 Feb 2010 15:26:05 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Eric Paris <eparis@redhat.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: linux-next: manual merge of the fsnotify tree with the vfs tree
+Message-Id: <20100202152605.656c26b2.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0beta6 (GTK+ 2.18.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 01, 2010 at 03:14:04PM -0500, Alan Stern wrote:
-> On Mon, 1 Feb 2010, Catalin Marinas wrote:
-> 
-> > On Fri, 2010-01-29 at 18:54 +0000, Matthew Dharm wrote:
-> > > HOWEVER, I firmly believe that the cache-management functions belong with
-> > > the driver that actually talks to the low-level hardware, as that's the
-> > > only place where you can be 100% certain of what cache operations are
-> > > needed.  After all, I think someone is working on a USB-over-IP transport,
-> > > and trying to manage cache at the usb-storage level in that scenario is
-> > > just silly.
-> > > 
-> > > So, let's put this in the HCD drivers and be done with it.
-> > 
-> > The patch below is what fixes the I-D cache incoherency issues on ARM. I
-> > don't particularly like the solution but it seems to be the only one
-> > available.
-> > 
-> > IMHO, Linux should have functions similar to the DMA API but for PIO
-> > drivers (e.g. pio_map_single/pio_unmap_single) that non-coherent
-> > architectures can define, otherwise being no-ops. Any thoughts?
-> 
-> You should bring this up on the linux-arm-kernel mailing list and CC:  
-> the ARM maintainer.  They are the ones most directly affected.
-> 
-No, this belongs on linux-arch, as it's something that impacts a lot of
-people besides ARM.
+Hi Eric,
+
+Today's linux-next merge of the fsnotify tree got a conflict in
+kernel/audit_tree.c between commit
+1a527a2c261ad15dd15d5ee7763d3afcd8c084e9 ("new helper: iterate_mounts()")
+from the vfs tree and commits 0bb4b47eebb9d06546c9beae77dc283fbb43ea35
+("audit: reimplement audit_trees using fsnotify rather than inotify")
+and 98d4301cc7c8828ea41432a62a3216212ffda250 ("fsnotify: put inode
+specific fields in an fsnotify_mark in a union") from the fsnotify tree.
+
+I think I fixed it up (see below) and can carry the fix as necessary.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --cc kernel/audit_tree.c
+index 028e856,a9167f9..0000000
+--- a/kernel/audit_tree.c
++++ b/kernel/audit_tree.c
+@@@ -581,12 -594,20 +598,13 @@@ void audit_trim_trees(void
+  		if (!root_mnt)
+  			goto skip_it;
+  
+ -		list_add_tail(&list, &root_mnt->mnt_list);
+  		spin_lock(&hash_lock);
+  		list_for_each_entry(node, &tree->chunks, list) {
+- 			struct inode *inode = find_chunk(node)->watch.inode;
+ -			struct audit_chunk *chunk = find_chunk(node);
++ 			/* this could be NULL if the watch is dieing else where... */
+ -			struct inode *inode = chunk->mark.i.inode;
+ -			struct vfsmount *mnt;
+++			struct inode *inode = find_chunk(node)->mark.i.inode;
+  			node->index |= 1U<<31;
+ -			list_for_each_entry(mnt, &list, mnt_list) {
+ -				if (mnt->mnt_root->d_inode == inode) {
+ -					node->index &= ~(1U<<31);
+ -					break;
+ -				}
+ -			}
+ +			if (iterate_mounts(compare_root, inode, root_mnt))
+ +				node->index &= ~(1U<<31);
+  		}
+  		spin_unlock(&hash_lock);
+  		trim_marked(tree);
