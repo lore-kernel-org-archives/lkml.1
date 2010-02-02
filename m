@@ -1,62 +1,64 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756772Ab0BBRUc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 12:20:32 -0500
-Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:33766 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756679Ab0BBRUa (ORCPT
+	id S1756786Ab0BBRVd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 12:21:33 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38913 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756679Ab0BBRVb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 12:20:30 -0500
-Subject: Re: USB mass storage and ARM cache coherency
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Oliver Neukum <oliver@neukum.org>,
-       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Ming Lei <tom.leiming@gmail.com>, linux-usb@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Sebastian Siewior <bigeasy@linutronix.de>, Greg KH <greg@kroah.com>
-In-Reply-To: <Pine.LNX.4.44L0.1002021208100.1805-100000@iolanthe.rowland.org>
-References: <Pine.LNX.4.44L0.1002021208100.1805-100000@iolanthe.rowland.org>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Tue, 02 Feb 2010 17:20:11 +0000
-Message-Id: <1265131212.12634.112.camel@pc1117.cambridge.arm.com>
+	Tue, 2 Feb 2010 12:21:31 -0500
+Date: Tue, 2 Feb 2010 09:20:41 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Rientjes <rientjes@google.com>
+Cc: Andreas Mohr <andi@lisas.de>, Nick Bowler <nbowler@elliptictech.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Improve usability in case of init binary failure
+Message-Id: <20100202092041.674f3ff0.akpm@linux-foundation.org>
+In-Reply-To: <alpine.DEB.2.00.1002012308480.22003@chino.kir.corp.google.com>
+References: <20091116194015.GA13820@rhlx01.hs-esslingen.de>
+	<20091116203545.GA2028@emergent.ellipticsemi.com>
+	<20091117204015.GB5746@rhlx01.hs-esslingen.de>
+	<20091227150329.GA25711@rhlx01.hs-esslingen.de>
+	<alpine.DEB.2.00.1002012308480.22003@chino.kir.corp.google.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 02 Feb 2010 17:20:13.0104 (UTC) FILETIME=[FAC1E300:01CAA42B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-02-02 at 17:11 +0000, Alan Stern wrote:
-> On Tue, 2 Feb 2010, Oliver Neukum wrote:
-> 
-> > Am Dienstag, 2. Februar 2010 13:39:35 schrieb Catalin Marinas:
-> > > > For storage that is correct. But what about other sources of pages,
-> > > > for example iSCSI?
-> > >
-> > > In the iSCSI case, does the HCD driver write directly to a page cache
-> > > page? Or it just fills in network packets that are copied to page cache
-> > > pages by the iSCSI code (sorry, I'm not familiar with this part of the
-> > > kernel). If the latter, the cache flushing in the HCD driver would not
-> > > help and it needs to be done in the iSCSI code.
-> >
-> > As far as I can tell iSCSI does a private copy. But I don't know how
-> > many methods to transfer code pages over USB exist. I'd say the
-> > conservative solution is to flush for everything but control transfers.
-> 
-> This doesn't make any sense.  Nobody would ever use isochronous
-> transfers to store data into a code page because isochronous is
-> unreliable.  (Audio isn't a counterexample -- audio data may be mapped
-> to userspace, but only to data pages, not code pages.  And the problem
-> here is to maintain consistency between the D and I caches.)
+On Mon, 1 Feb 2010 23:10:51 -0800 (PST) David Rientjes <rientjes@google.com> wrote:
 
-My issues is with both I-D coherency and D-cache aliasing caused by
-pages mapped in both user and kernel space (with different colours). The
-flush_dcache_page() call should target both cases.
+> On Sun, 27 Dec 2009, Andreas Mohr wrote:
+> 
+> > Well, took quite a while longer, partly due to broken Broadcom USB host
+> > (OpenWrt fix to be submitted) and non-working USB-audio on nicer platforms.
+> > 
+> > Took most of the comments into account (thanks!), improved some wording.
+> > 
+> > Patch against current git, compile- and runtime-tested,
+> > checkpatch.pl'd (with a single nice hierarchy warning resulting from mixing
+> > git diff output and manual /dev/null diffing).
+> > 
+> > Thanks!
+> > 
+> 
+> It looks like this patch got mangled when added to mmotm-2010-02-01-16-25 
+> in init-mainc-improve-usability-in-case-of-init-binary-failure.patch since 
+> it added init.txt to the root directory instead of Documentation,
 
--- 
-Catalin
+ah, thanks.
+
+> even though the patch below is correct.
+
+Nope, the patch was wrong:
+
+> > --- a/init/main.c
+> > +++ b/init/main.c
+> ...
+> > --- /dev/null	2009-12-27 16:25:29.521258205 +0100
+> > +++ Documentation/init.txt	2009-12-27 15:47:46.000000000 +0100
+
+Should've been a/Documentation/init.txt
 
