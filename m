@@ -1,80 +1,98 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755833Ab0BBLYc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 06:24:32 -0500
-Received: from sh.osrg.net ([192.16.179.4]:33306 "EHLO sh.osrg.net"
+	id S1755792Ab0BBLd0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 06:33:26 -0500
+Received: from smtp.citrix.com ([66.165.176.89]:8990 "EHLO SMTP.CITRIX.COM"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755666Ab0BBLYa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 06:24:30 -0500
-Date: Tue, 2 Feb 2010 20:23:40 +0900
-To: mitov@issp.bas.bg
-Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       davej@redhat.com
-Subject: Re: [BUG] agpgart-amd64 not initialized in 2.6.33-rc5 if
- iommu=allowed in kernel command line
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <201001250937.53518.mitov@issp.bas.bg>
-References: <201001232314.55425.mitov@issp.bas.bg>
-	<20100125141006O.fujita.tomonori@lab.ntt.co.jp>
-	<201001250937.53518.mitov@issp.bas.bg>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	id S1755666Ab0BBLdZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 06:33:25 -0500
+X-IronPort-AV: E=Sophos;i="4.49,389,1262581200"; 
+   d="scan'208";a="7043267"
+Subject: Re: [Xen-devel] [PATCH 6/6] xen/hybrid: Enable grant table and
+ xenbus
+From: Ian Campbell <Ian.Campbell@citrix.com>
+To: Sheng Yang <sheng@linux.intel.com>
+CC: Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>,
+       Keir Fraser <Keir.Fraser@eu.citrix.com>,
+       xen-devel <xen-devel@lists.xensource.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <1265098747-10117-7-git-send-email-sheng@linux.intel.com>
+References: <1265098747-10117-1-git-send-email-sheng@linux.intel.com>
+	 <1265098747-10117-7-git-send-email-sheng@linux.intel.com>
+Content-Type: text/plain; charset="UTF-8"
+Organization: Citrix Systems, Inc.
+Date: Tue, 2 Feb 2010 11:33:10 +0000
+Message-ID: <1265110390.2965.22456.camel@zakaz.uk.xensource.com>
+MIME-Version: 1.0
+X-Mailer: Evolution 2.28.2 
 Content-Transfer-Encoding: 7bit
-Message-Id: <20100202202328O.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 02 Feb 2010 20:23:41 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Really sorry for taking so long. I had been away from my workplace.
+On Tue, 2010-02-02 at 08:19 +0000, Sheng Yang wrote:
+> Notice one memory region(0xfbfe0000ul - 0xfc000000ul) would be reserved in the
+> bios E820 table. This memory region would be used as grant table.
 
-On Mon, 25 Jan 2010 09:37:53 +0200
-Marin Mitov <mitov@issp.bas.bg> wrote:
+I queried this requirement in a reply to the hypervisor patch.
 
-> > Can you test this patch with set CONFIG_AGP_AMD64 to both y and m
-> > (also loading/unloading the module twice)?
-> 
-> If CONFIG_AGP_AMD64=y it works (I have agp) both with no kernel command 
-> line parameters as well as with iommu=allowed in kernel command line.
+> diff --git a/drivers/block/xen-blkfront.c b/drivers/block/xen-blkfront.c
+> index 05a31e5..d7dfba9 100644
+> --- a/drivers/block/xen-blkfront.c
+> +++ b/drivers/block/xen-blkfront.c
+> @@ -1071,6 +1071,9 @@ static int __init xlblk_init(void)
+>  	if (!xen_domain())
+>  		return -ENODEV;
+>  
+> +	if (xen_hybrid_domain() && !xen_hybrid_evtchn_enabled())
+> +		return -ENODEV;
+> +
 
-Good.
+This seems ugly, at the very least the check should be something like
+xen_evtchn_enabled() but preferable would be to hook up evtchn's by
+demuxing the PCI device IRQ (the exiting PVonHVM drivers mechanism) in
+the case where hybrid evtchn's are not available and encapsulating the
+differences inside the evtchn code, there should be no need to scatter
+these sorts of checks throughout every driver.
 
+If you don't want to demux the PCI device IRQ for the non-hybrid case
+another option might be simply return failure from the evtchn operations
+if hybrid evtchns are not available and to ensure that the drivers
+handle that sort of error gracefully (which they should in any case). At
+least the difference in mode would be encapsulated that way.
 
-> If CONFIG_AGP_AMD64=m  it works (I have agp)  with no kernel command
-> line parameters. If I boot to no graphics (runlevel 3 in slackware), 
-> lsmod output is:
-> 
-> amd64_agp               7463  1
-> agpgart                   27765  1 amd64_agp
-> 
-> amd64_agp is in use (not known by who), cannot be unloaded and I cannot 
-> test load/unload.
-> 
-> If CONFIG_AGP_AMD64=m and  iommu=allowed is in kernel command line
-> I have no agp.
-> dmesg:
-> [drm:mga_do_agp_dma_bootstrap] *ERROR* Unable to acquire AGP: -19
+(same for netfront).
 
-This works with 2.6.32, right?  The following patch works?
+>  	if (register_blkdev(XENVBD_MAJOR, DEV_NAME)) {
+>  		printk(KERN_WARNING "xen_blk: can't get major %d with name %s\n",
+>  		       XENVBD_MAJOR, DEV_NAME);
+> diff --git a/drivers/input/xen-kbdfront.c b/drivers/input/xen-kbdfront.c
+> index c721c0a..74cbb25 100644
+> --- a/drivers/input/xen-kbdfront.c
+> +++ b/drivers/input/xen-kbdfront.c
+> @@ -341,6 +341,10 @@ static int __init xenkbd_init(void)
+>  	if (!xen_domain())
+>  		return -ENODEV;
+>  
+> +	/* Xen Hybrid domain don't need vkbd */
+> +	if (xen_hybrid_domain())
+> +		return -ENODEV;
+> +
 
-Sorry for inconvenience.
+Why disallow it if the platform has specified it (same for fbfront)?
 
-> If I boot to no graphics and try:
-> modprobe amd64_agp
-> FATAL: Error inserting amd64_agp
-> (/lib/modules/2.6.33-rc5/kernel/drivers/char/agp/amd64-agp.ko): No such
-> device
+> diff --git a/include/xen/xen.h b/include/xen/xen.h
+> index aace9cc..632e76f 100644
+> --- a/include/xen/xen.h
+> +++ b/include/xen/xen.h
+> @@ -5,6 +5,7 @@ enum xen_domain_type {
+>  	XEN_NATIVE,		/* running on bare hardware    */
+>  	XEN_PV_DOMAIN,		/* running in a PV domain      */
+>  	XEN_HVM_DOMAIN,		/* running in a Xen hvm domain */
+> +	XEN_HYBRID_DOMAIN,	/* running in a Xen hybrid hvm domain */
+>  };
 
-diff --git a/drivers/char/agp/amd64-agp.c b/drivers/char/agp/amd64-agp.c
-index 34cf04e..8d67923 100644
---- a/drivers/char/agp/amd64-agp.c
-+++ b/drivers/char/agp/amd64-agp.c
-@@ -768,7 +768,7 @@ int __init agp_amd64_init(void)
- static int __init agp_amd64_mod_init(void)
- {
- 	if (gart_iommu_aperture)
--		return agp_bridges_found ? 0 : -ENODEV;
-+		return 0;
- 
- 	return agp_amd64_init();
- }
+I don't think you should need to distinguish HYBRID from HVM mode...
+
+Ian.
+
