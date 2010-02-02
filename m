@@ -1,83 +1,67 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754155Ab0BBEyJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 23:54:09 -0500
-Received: from out01.mta.xmission.com ([166.70.13.231]:37055 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753050Ab0BBEyF (ORCPT
+	id S1750837Ab0BBFAk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 00:00:40 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:53583 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750695Ab0BBFAi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 23:54:05 -0500
-To: Tejun Heo <tj@kernel.org>
-Cc: Torsten Kaiser <just.for.lkml@googlemail.com>,
-       linux-kernel@vger.kernel.org, Robert Hancock <hancockrwd@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: Re: do_IRQ: 0.165 No irq handler for vector (irq -1)
-References: <64bb37e1001310502p3d74bdf5ve56f63d3e8d2fd39@mail.gmail.com>
-	<4B679042.2010008@kernel.org>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Mon, 01 Feb 2010 20:53:55 -0800
-In-Reply-To: <4B679042.2010008@kernel.org> (Tejun Heo's message of "Tue\, 02 Feb 2010 11\:38\:58 +0900")
-Message-ID: <m1r5p4grvg.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Tue, 2 Feb 2010 00:00:38 -0500
+Date: Tue, 2 Feb 2010 05:00:37 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH][RFC] %pd - for printing dentry name
+Message-ID: <20100202050037.GE12882@ZenIV.linux.org.uk>
+References: <20100201222511.GA12882@ZenIV.linux.org.uk>
+ <alpine.LFD.2.00.1002011431490.3664@localhost.localdomain>
+ <20100201231847.GC12882@ZenIV.linux.org.uk>
+ <alpine.LFD.2.00.1002012018400.3664@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); SAEximRunCond expanded to false
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.1002012018400.3664@localhost.localdomain>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo <tj@kernel.org> writes:
+On Mon, Feb 01, 2010 at 08:22:24PM -0800, Linus Torvalds wrote:
 
-> Hello, Torsten.
->
-> On 01/31/2010 10:02 PM, Torsten Kaiser wrote:
->> I'm still trying to get the MSI support for sata_sil24, that was added
->> in 2.6.33-rc1, to work. But even with -rc6 it still shows the same
->> errors.
->> 
->> The current best guess is, that there is something fishy going on in
->> the IRQ system, as the only error messages before the libata timeouts
->> start are:
->> 
->> [   86.463814] do_IRQ: 0.165 No irq handler for vector (irq -1)
->> [   86.463832] do_IRQ: 3.165 No irq handler for vector (irq -1)
->> [   86.463848] do_IRQ: 1.165 No irq handler for vector (irq -1)
->> [   86.463867] do_IRQ: 2.165 No irq handler for vector (irq -1)
->> 
->> (Thats why I added CCs for get_maintainer.pl -f arch/x86/kernel/apic/io_apic.c)
+> > We probably can get away with that, but we'll have to be a lot more careful
+> > with the order of updating these suckers in d_move_locked et.al.
+> 
+> I wouldn't worry about it too much. So what if we get a screwed up name? 
+> If we use "%.*s" to print the name, we know that we won't overstep the old 
+> name even if the NUL termination somehow went away (because we're busy 
+> copying a new, longer, name over it or whatever).
 
-Fascinating I think get_maintainer.pl missed the maintainers.
+Actually, I'm not sure.  We can get hit by a switch to inline name with
+length still being that from a long earlier name.  And inline name is
+in the end of struct dentry, so we could end up stepping off the end
+of page.  Note that existing d_alloc() does put NUL in d_iname for a short
+name, but it won't clean the end of array, so overwrite during memcpy()
+can open up a whole lot of PITA.
 
->> To get these errors I only boot with sata_sil24.msi=1 and then do: dd
->> if=1GB-file-on-ro-mounted-xfs-fs of=/dev/null bs=1k
->> 
->> Writing with enabled MSI also fails with timeouts, but in this case
->> there is no error from do_IRQ.
->
-> It might be that the silicon implements MSI incorrectly and ends up
-> sending out invalid MSI packets under certain circumstances.  The
-> silicon hasn't changed for quite some time now and back when it came
-> out MSI wasn't too popular and I don't think SIMG's proprietary
-> drivers use it, so it's quite possible that the feature simply is
-> broken.  Is there any specific reason why you want to enable MSI
-> support?  It's not like MSI brings any actual benefit when the
-> compatibility hardware is already there.
+And yes, it's theoretical and ought to be hard to hit - the sky isn't falling.
+OTOH, something like rename() vs. close() race as in ocfs2 might make it
+not all that theoretical.
 
-It also seems possible that some of the recent irq handling changes
-missed something.
+We probably can get away with being careful with barriers and order of
+->len vs. ->name updates (and being a bit more careful about cleaning the
+crap in d_alloc()), but it'll take an accurate analysis.  I'd really like
+to hear something from RCU folks, BTW; I still hope that it's one of the
+more or less standard problems and "memory barriers" and "reinventing
+the wheel" in the same sentence is something I'd rather avoid.
 
-Usually the message "No irq handler for vector (irq -1)" means that the irq
-was delivered to a cpu that was not ready for it.  I see that vector 165
-is being delivered on all of the different cpus with vector 165,
-and that you are getting interrupts delivered most of the time.
-
-This smells like the initialization problems I was seeing in another
-thread.  Suresh?
-
-Eric
+FWIW, speaking of fun printf extensions, there might be a completely
+different way to deal with all that crap.  %s modification doing kfree().
+I.e. "get char * from argument list, print it as %s would, then kfree() it".
+With something along the lines of
+	printk("... %<something>...", build_some_string(...));
+as intended use, build_some_string() allocating a string and filling it.
+Might or might not be a good idea, but it's interesting to consider.  And
+yes, of course it's a deadlock if you do that under any kind of a spinlock,
+but that's the damn caller's responsibility - after all, they explicitly
+call a function that does allocation.  The real danger with that is that
+somebody will use it with %s and get a leak from hell...
