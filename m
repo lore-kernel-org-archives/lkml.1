@@ -1,59 +1,59 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752418Ab0BBBgN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 20:36:13 -0500
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:52146 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751039Ab0BBBgL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 20:36:11 -0500
-Date: Tue, 2 Feb 2010 10:36:03 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Christoph Hellwig <hch@lst.de>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, linux@arm.linux.org.uk, starvik@axis.com,
-       jesper.nilsson@axis.com, dhowells@redhat.com,
-       ysato@users.sourceforge.jp, takata@linux-m32r.org, geert@linux-m68k.org,
-       zippel@linux-m68k.org, gerg@uclinux.org, ralf@linux-mips.org,
-       benh@kernel.crashing.org, schwidefsky@de.ibm.com,
-       heiko.carstens@de.ibm.com, davem@davemloft.net, jdike@addtoit.com,
-       tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
-       viro@zeniv.linux.org.uk
-Subject: Re: [PATCH 3/6] generic sys_ipc wrapper
-Message-ID: <20100202013603.GD13428@linux-sh.org>
-References: <20100201185544.GC11045@lst.de>
+	id S1752593Ab0BBBhz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 20:37:55 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:57095 "EHLO mail.zytor.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751011Ab0BBBhy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Feb 2010 20:37:54 -0500
+Message-ID: <4B6781D3.6090904@zytor.com>
+Date: Mon, 01 Feb 2010 17:37:23 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100201185544.GC11045@lst.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, mingo@redhat.com, tglx@linutronix.de,
+       fengguang.wu@intel.com, linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:x86/mm] Generic page_is_ram: use __weak
+References: <tip-e52730071567ec5b6f57e21d6693b112e01e1d0e@git.kernel.org> <20100201172423.6803e898.akpm@linux-foundation.org>
+In-Reply-To: <20100201172423.6803e898.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 01, 2010 at 07:55:44PM +0100, Christoph Hellwig wrote:
-> Add a generic implementation of the ipc demultiplexer syscall.  Except for
-> s390 and sparc64 all implementations of the sys_ipc are nearly identical.
+On 02/01/2010 05:24 PM, Andrew Morton wrote:
+>>
+>> diff --git a/kernel/resource.c b/kernel/resource.c
+>> index b4d637a..e68cd74 100644
+>> --- a/kernel/resource.c
+>> +++ b/kernel/resource.c
+>> @@ -305,7 +305,7 @@ static int __is_ram(unsigned long pfn, unsigned long nr_pages, void *arg)
+>>   * This generic page_is_ram() returns true if specified address is
+>>   * registered as "System RAM" in iomem_resource list.
+>>   */
+>> -int __attribute__((weak)) page_is_ram(unsigned long pfn)
+>> +int __weak page_is_ram(unsigned long pfn)
+>>  {
+>>  	return walk_system_ram_range(pfn, 1, NULL, __is_ram) == 1;
+>>  }
 > 
-> There are slight differences in the types of the parameters, where mips
-> and powerpc as the only 64-bit architectures with sys_ipc use unsigned long
-> for the "third" argument as it gets casted to a pointer later, while it
-> traditionally is an "int" like most other paramters.  frv goes even further
-> and uses unsigned long for all parameters execept for "ptr" which is a pointer
-> type everywhere.  The change from int to unsigned long for "third" and back
-> to "int" for the others on frv should be fine due to the in-register calling
-> conventions for syscalls (we already had a similar issue with the generic
-> sys_ptrace), but I'd prefer to have the arch maintainers looks over this
-> in details.
+> hm, it's strange to do this as two separate commits?
 > 
-> Except for that h8300, m68k and m68knommu lack an impplementation of the
-> semtimedop sub call which this patch adds, and various architectures have
-> different strategies for the SHMAT version 1 case which apparently never
-> gets used - at least on i386 it seems superflous as the compat code on
-> x86-64 and ia64 doesn't even bother to implement it.
-> 
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
-> 
-sh bits look fine, too.
 
-Acked-by: Paul Mundt <lethal@linux-sh.org>
+You had it as a separate fix patch, and I generally don't want to fold
+patches which have different authorship, especially if the original code
+doesn't actually break anything.
+
+> There was another fixlet:
+> 
+> From: Wu Fengguang <fengguang.wu@intel.com>
+> 
+> ioport.h didn't seem like the right place to declare page_is_ram().
+> 
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+
+Yes, I have that one too.
+
+	-hpa
