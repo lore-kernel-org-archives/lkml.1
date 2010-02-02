@@ -1,68 +1,137 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754908Ab0BBRsa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 12:48:30 -0500
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:55498 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751445Ab0BBRs3 (ORCPT
+	id S1755711Ab0BBRuk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 12:50:40 -0500
+Received: from mail-px0-f182.google.com ([209.85.216.182]:58337 "EHLO
+	mail-px0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753637Ab0BBRui (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 12:48:29 -0500
-Date: Tue, 2 Feb 2010 18:48:28 +0100
-From: Andreas Mohr <andi@lisas.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Rientjes <rientjes@google.com>, Andreas Mohr <andi@lisas.de>,
-       Nick Bowler <nbowler@elliptictech.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Improve usability in case of init binary failure
-Message-ID: <20100202174828.GA2017@rhlx01.hs-esslingen.de>
-References: <20091116194015.GA13820@rhlx01.hs-esslingen.de> <20091116203545.GA2028@emergent.ellipticsemi.com> <20091117204015.GB5746@rhlx01.hs-esslingen.de> <20091227150329.GA25711@rhlx01.hs-esslingen.de> <alpine.DEB.2.00.1002012308480.22003@chino.kir.corp.google.com> <20100202092041.674f3ff0.akpm@linux-foundation.org>
+	Tue, 2 Feb 2010 12:50:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=KnvDGRfbjPAK4jBVkVWLrc88nC9gytRUVpxyLXs1uiU/AQ+oTmpfWp7HrG2pV0SVb6
+         5K8X2XJjd8cRa9yp7LC7Zitva6G3+g0eUkOMRFg/56FJc5tUraqJuolp4Fu9XitA9kUN
+         NCB2yucVWYqK9TLcrRa/zUA0deUMAP/ZR3QDM=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100202092041.674f3ff0.akpm@linux-foundation.org>
-X-Priority: none
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Date: Wed, 3 Feb 2010 01:50:37 +0800
+Message-ID: <10d816431002020950w65fb9955t4355a8415e4f3953@mail.gmail.com>
+Subject: [RFC][PATCH] 8250: race condition in SMP
+From: Lin Mac <mkl0301@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 02, 2010 at 09:20:41AM -0800, Andrew Morton wrote:
-> On Mon, 1 Feb 2010 23:10:51 -0800 (PST) David Rientjes <rientjes@google.com> wrote:
-> 
-> > On Sun, 27 Dec 2009, Andreas Mohr wrote:
-> > 
-> > > Well, took quite a while longer, partly due to broken Broadcom USB host
-> > > (OpenWrt fix to be submitted) and non-working USB-audio on nicer platforms.
-> > > 
-> > > Took most of the comments into account (thanks!), improved some wording.
-> > > 
-> > > Patch against current git, compile- and runtime-tested,
-> > > checkpatch.pl'd (with a single nice hierarchy warning resulting from mixing
-> > > git diff output and manual /dev/null diffing).
-> > > 
-> > > Thanks!
-> > > 
-> > 
-> > It looks like this patch got mangled when added to mmotm-2010-02-01-16-25 
-> > in init-mainc-improve-usability-in-case-of-init-binary-failure.patch since 
-> > it added init.txt to the root directory instead of Documentation,
-> 
-> ah, thanks.
-> 
-> > even though the patch below is correct.
-> 
-> Nope, the patch was wrong:
-> 
-> > > --- a/init/main.c
-> > > +++ b/init/main.c
-> > ...
-> > > --- /dev/null	2009-12-27 16:25:29.521258205 +0100
-> > > +++ Documentation/init.txt	2009-12-27 15:47:46.000000000 +0100
-> 
-> Should've been a/Documentation/init.txt
+hi,
 
-Indeed, which is why I had mentioned it in the submission (above),
-but [fatally, as it turned out] did not bother to fix this ""minor"" issue.
+I'm sorry that I have sent this mail in linux-serial, but not reply
+there, so I resent it again here.
 
-Lots of sorries,
+I had had an issue with serial console in SMP mode.
 
-Andreas Mohr
+http://lists.infradead.org/pipermail/linux-arm-kernel/2009-December/006650.html
+
+I'm using ARM11 MPCore with 2 CPU, Linux-2.6.31.1, SMP enabled, L1 enabled,
+L2 disabled
+
+Under SMP environment, I have observed following issues:
+
+   1. Sometimes, console became extremely slow, print 1 character for 1-2
+seconds
+      RVDS say that both CPU are idling. kernel seems find because messages
+response to inserting USB flash is quick and correct.
+
+   2. Sometimes, the Linux console halt and canot accept any input.
+      RVDS say that both CPU are idling. kernel seems find because messages
+response to inserting USB flash is quick and correct.
+
+In both cases kernel message seems fine, but user messages is broken.
+
+http://lists.infradead.org/pipermail/linux-arm-kernel/2010-January/007052.html
+
+Thanks for Russell's advice, after some tracing, I found that my IER
+(Interrupt Enable Register) of the serial port is 0 under case 1!!
+
+Case 2 is actually the same with case 1. Case 1 would come first, if I don't
+keep input things and let it finish its slow printing, it would then become
+case 2.
+
+UART_BUG_THRE are detected and enabled on my platform, causing
+serial8250_backup_timeout to be used.
+
+There are many places that do ( get IER, clear IER, restore IER ), like
+serial8250_console_write called by printk, and serial8250_backup_timeout.
+serial8250_backup_timeout is not protected by spinlock, causing the race
+condition, and result in wrong IER value.
+
+Following patch fix this issue.
+
+    diff --git a/kernels/linux-2.6.31.1-X/drivers/serial/8250.c
+b/kernels/linux-2.6.31.1-X/drivers/serial/8250.c
+    index 288a0e4..55602c3 100644
+    --- a/kernels/linux-2.6.31.1-cavm1/drivers/serial/8250.c
+    +++ b/kernels/linux-2.6.31.1-cavm1/drivers/serial/8250.c
+    @@ -1752,6 +1758,8 @@ static void serial8250_backup_timeout(unsigned
+long data)
+      unsigned int iir, ier = 0, lsr;
+      unsigned long flags;
+
+    +
+    + spin_lock_irqsave(&up->port.lock, flags);
+      /*
+       * Must disable interrupts or else we risk racing with the interrupt
+       * based handler.
+    @@ -1769,10 +1777,8 @@ static void serial8250_backup_timeout(unsigned
+long data)
+       * the "Diva" UART used on the management processor on many HP
+       * ia64 and parisc boxes.
+       */
+    - spin_lock_irqsave(&up->port.lock, flags);
+      lsr = serial_in(up, UART_LSR);
+      up->lsr_saved_flags |= lsr & LSR_SAVE_FLAGS;
+    - spin_unlock_irqrestore(&up->port.lock, flags);
+      if ((iir & UART_IIR_NO_INT) && (up->ier & UART_IER_THRI) &&
+          (!uart_circ_empty(&up->port.info->xmit) || up->port.x_char) &&
+          (lsr & UART_LSR_THRE)) {
+    @@ -1780,12 +1786,14 @@ static void serial8250_backup_timeout(unsigned
+long data)
+       iir |= UART_IIR_THRI;
+      }
+
+    - if (!(iir & UART_IIR_NO_INT))
+    -  serial8250_handle_port(up);
+    -
+      if (is_real_interrupt(up->port.irq))
+       serial_out(up, UART_IER, ier);
+
+    + spin_unlock_irqrestore(&up->port.lock, flags);
+    +
+    + if (!(iir & UART_IIR_NO_INT))
+    +  serial8250_handle_port(up);
+    +
+      /* Standard timer interval plus 0.2s to keep the port running */
+      mod_timer(&up->timer,
+       jiffies + poll_timeout(up->port.timeout) + HZ / 5);
+
+Is there any concern of above patch?
+
+On the other hand, is it normal to have UART_BUG_THRE enabled? My console
+work almost the same as the without this workaround (force
+UART_BUG_THRE disabled, only
+test once though, but it doesn't have issues above). Almost, but the
+first login prompt is not shown, after typing anything, the first
+prompt and the thing typed shown. All the same there after. If it
+shouldn't be, I doubt that somehow the interrupt is serviced, such
+that the detection of
+UART_BUG_THRE failed.
+
+But while I'm tracing, I cannot find where the driver clear the interrupt.
+If the driver didn't clear the interrupt, how does the hardware knows that
+it is serviced?
+
+Any advice appreciated.
+
+Best Regards,
+Mac Lin
