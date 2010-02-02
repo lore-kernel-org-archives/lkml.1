@@ -1,113 +1,99 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754437Ab0BBI2S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 03:28:18 -0500
-Received: from mga06.intel.com ([134.134.136.21]:44768 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750736Ab0BBI2Q (ORCPT
+	id S1755248Ab0BBIaZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 03:30:25 -0500
+Received: from mail-px0-f182.google.com ([209.85.216.182]:50086 "EHLO
+	mail-px0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750736Ab0BBIaX convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 03:28:16 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,389,1262592000"; 
-   d="scan'208";a="592373244"
-From: Sheng Yang <sheng@linux.intel.com>
-Organization: Intel Opensource Technology Center
-To: xen-devel@lists.xensource.com
-Subject: Re: [PATCH 0/6][v2] Hybrid extension for Xen guest
-Date: Tue, 2 Feb 2010 16:26:44 +0800
-User-Agent: KMail/1.12.2 (Linux/2.6.31-17-generic; KDE/4.3.2; x86_64; ; )
-Cc: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       Keir Fraser <keir.fraser@eu.citrix.com>, linux-kernel@vger.kernel.org
-References: <1265098747-10117-1-git-send-email-sheng@linux.intel.com>
-In-Reply-To: <1265098747-10117-1-git-send-email-sheng@linux.intel.com>
+	Tue, 2 Feb 2010 03:30:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=wAW3KqwFT1DJcys7XAD+Ee6HUxKeLqCfR2otFHwLAel5Q8G6CkGiF0X1G9kqrZSK+n
+         1J9bJFAzbYyLntuGBFD1pmhhgoRVegVofX5XAlX65I9gK5qSKnI0SntKr0KqNc2A0xXh
+         V1sB/5SAauE+mJveB61+niEJOAT0ImT2YZqbk=
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201002021626.44958.sheng@linux.intel.com>
+Date: Tue, 2 Feb 2010 00:30:23 -0800
+Message-ID: <364299f41002020030u527224adsb87f33ba4119551c@mail.gmail.com>
+Subject: [IMPORTANT] Clean target regression [was Re: [ANNOUNCE] The Linux 
+	Test Project has been released for JANUARY 2010]
+From: Garrett Cooper <yanegomi@gmail.com>
+To: subrata@linux.vnet.ibm.com
+Cc: ltp-list <ltp-list@lists.sf.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Mike Frysinger <vapier@gentoo.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rishikesh K Rajak <risrajak@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oops... Miss the subject field when git-send-email...
+On Mon, Feb 1, 2010 at 8:01 AM, Garrett Cooper <yanegomi@gmail.com> wrote:
+> On Mon, Feb 1, 2010 at 2:57 AM, Subrata Modak
+> <subrata@linux.vnet.ibm.com> wrote:
+>> Hi,
+>>
+>> The Linux Test Project test suite has been released for the month of
+>> JANUARY 2010. Please see ltp/INSTALL file carefully, as, there has
+>> been multiple changes for building/installing the test suite after the
+>> recent changes in Makefile infrastructure.
+>>
+>> The latest version of the test-suite contains 3000+ tests for the Linux
+>> OS and can be found at:
+>> http://ltp.sourceforge.net/,
+>> Latest happenings in LTP can also be found at:
+>> http://ltp.sourceforge.net/wiki/,
+>> http://ltp.sourceforge.net/wikiArchives.php, and,
+>> IRC: irc.freenode.org #ltp.
+>>
+>> Our web site also contains other information such as:
+>> - A Linux test tools matrix
+>> - Technical papers
+>> - How To's on Linux testing
+>> - Code coverage analysis tool.
+>>
+>> We would encourage the community to post results to
+>> ltp-results@lists.sf.net,
+>> patches, new tests, bugs or comments/questions to ltp-list@lists.sf.net,
+>> http://sourceforge.net/tracker/?func=add&group_id=3382&atid=103382 (for
+>> New Bug(s)),
+>> http://sourceforge.net/tracker/?func=add&group_id=3382&atid=303382 (for
+>> New Patch(s)),
+>> http://sourceforge.net/tracker/?func=add&group_id=3382&atid=353382 (for
+>> New Feature Request(s))
+>>
+>> **Note: Some pending patches will be checked in for next monthś release.
+>
+>    For those who have been holding off on upgrading since the Make
+> infrastructure revision was done back in October, I highly suggest
+> that they evaluate this release as a several issues have been
+> resolved, i.e. selinux-testsuite being fixed to meet the make
+> infrastructure changes (there's just a minor issue that's been
+> reported on RHEL 5.4 with the policy files -- Stephen should be
+> working with Mitani-san to resolve the issue), and a few autoconf
+> related items have been resolved. Furthermore, make 3.80 support has
+> been integrated into the project so folks can once again use make 3.80
+> when building LTP.
+> All the best,
 
--- 
-regards
-Yang, Sheng
+    NOTE -- please comment out the following three lines in the
+top-level Makefile -- not doing so will result in you potentially
+obliterating all of the writable files on your build target, as this
+will effectively perform an rm -Rf / under certain conditions.
 
-On Tuesday 02 February 2010 16:19:01 Sheng Yang wrote:
-> Hi, Jeremy & Keir
-> 
-> Here is the second version of patchset to enable Xen Hybrid extension
->  support in Linux kernel.
-> 
-> The Hybrid Extension is started from real mode like HVM guest, but also
->  with a a range of PV features(e.g. PV halt, PV timer, event channel, as
->  well as PV drivers). So guest with Hybrid extension feature can takes the
->  advantages of both H/W virtualization and Para-Virtualization.
-> 
-> The first two of the patchset imported several header file from Jeremy's
->  tree and Xen tree, respect to Jeremy and Keir's works.
-> 
-> The whole patchset based on Linux upstream.
-> 
-> Current the patchset support x86_64 only.
-> 
-> The major change from v1:
-> 1. SMP support.
-> 2. Modify the entrance point to avoid most of genernic kernel modification.
-> 3. Binding PV timer with event channel mechanism.
-> 
-> You need a line like:
-> 
-> cpuid = [ '0x40000002:edx=0x3' ]
-> 
-> in HVM configuration file to expose hybrid feature to guest, and
-> 
-> CONFIG_XEN
-> 
-> in the guest kernel configuration file to enable the hybrid support.
-> 
-> And the compiled image can be used as native/pv domU/hvm guest/hybrid
->  kernel.
-> 
-> Comments are welcome!
-> 
-> BTW: For the MSI/MSI-X support, pv_ops dom0 can share the solution with
->  hybrid. We would try to figure out a elegant way to deal with it later.
-> 
-> --
-> regards
-> Yang, Sheng
-> 
-> --
->  arch/x86/include/asm/xen/cpuid.h     |   73 +++++++++++++
->  arch/x86/include/asm/xen/hypercall.h |    6 +
->  arch/x86/kernel/setup.c              |    8 ++
->  arch/x86/xen/enlighten.c             |  192
->  ++++++++++++++++++++++++++++++++++ arch/x86/xen/irq.c                   | 
->   54 ++++++++++
->  arch/x86/xen/smp.c                   |  144 +++++++++++++++++++++++++-
->  arch/x86/xen/xen-head.S              |    6 +
->  arch/x86/xen/xen-ops.h               |    4 +
->  drivers/block/xen-blkfront.c         |    3 +
->  drivers/input/xen-kbdfront.c         |    4 +
->  drivers/net/xen-netfront.c           |    3 +
->  drivers/video/xen-fbfront.c          |    4 +
->  drivers/xen/events.c                 |   66 +++++++++++-
->  drivers/xen/grant-table.c            |   67 ++++++++++++-
->  drivers/xen/xenbus/xenbus_probe.c    |   23 ++++-
->  include/xen/events.h                 |    1 +
->  include/xen/hvm.h                    |   28 +++++
->  include/xen/interface/hvm/hvm_op.h   |   79 ++++++++++++++
->  include/xen/interface/hvm/params.h   |  111 ++++++++++++++++++++
->  include/xen/interface/xen.h          |    6 +-
->  include/xen/xen.h                    |   12 ++
->  21 files changed, 883 insertions(+), 11 deletions(-)
-> 
-> 
-> _______________________________________________
-> Xen-devel mailing list
-> Xen-devel@lists.xensource.com
-> http://lists.xensource.com/xen-devel
-> 
+ifeq ($(filter $(BUILD_TREE_STATE),$(BUILD_TREE_SRCDIR_INSTALL)
+$(BUILD_TREE_UNCONFIGURED)),)
+CLEAN_TARGETS        += clean_install_dir
+endif
+
+    I deeply apologize for the inconvenience; I'm working on
+rectifying the issue ASAP and will email again once it's resolved; I
+will add a regression test for this ASAP in the build test scripts
+I've recently authored so this doesn't happen again.
+Thanks,
+-Garrett
