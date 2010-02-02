@@ -1,62 +1,87 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757126Ab0BBXNQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 18:13:16 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:23562 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757106Ab0BBXNP (ORCPT
+	id S932213Ab0BBXRN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 18:17:13 -0500
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:40684 "EHLO
+	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757122Ab0BBXRL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 18:13:15 -0500
-To: Kei Tokunaga <tokunaga.keiich@jp.fujitsu.com>
-Cc: linux-scsi@vger.kernel.org, James Bottomley <James.Bottomley@suse.de>,
-       Ingo Molnar <mingo@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Martin Peterson <martin.petersen@oracle.com>,
-       Christoph Hellwig <hch@infradead.org>, Joe Perches <joe@perches.com>,
-       Tomohiro Kusumi <kusumi.tomohiro@jp.fujitsu.com>,
-       lkml <linux-kernel@vger.kernel.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Subject: Re: [PATCH 2/2 v2] scsi: add scsi trace core function and put trace points
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Organization: Oracle
-References: <4B665EC9.6000608@jp.fujitsu.com>
-	<4B666181.7080200@jp.fujitsu.com>
-Date: Tue, 02 Feb 2010 18:12:00 -0500
-In-Reply-To: <4B666181.7080200@jp.fujitsu.com> (Kei Tokunaga's message of
-	"Mon, 01 Feb 2010 14:07:13 +0900")
-Message-ID: <yq1636fqlkv.fsf@sermon.lab.mkp.net>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
+	Tue, 2 Feb 2010 18:17:11 -0500
+Date: Tue, 2 Feb 2010 16:17:10 -0700
+From: Alex Chiang <achiang@hp.com>
+To: lenb@kernel.org, venkatesh.pallipadi@intel.com
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/12] ACPI: processor driver vs. core
+Message-ID: <20100202231710.GA24718@ldl.fc.hp.com>
+References: <20100125213221.28510.74078.stgit@bob.kio>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-Source-IP: acsmt353.oracle.com [141.146.40.153]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090203.4B68B161.0275:SCFMA4539814,ss=1,fgs=0
+Content-Disposition: inline
+In-Reply-To: <20100125213221.28510.74078.stgit@bob.kio>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Kei" == Kei Tokunaga <tokunaga.keiich@jp.fujitsu.com> writes:
+Hi Venki,
 
-I'm traveling so I won't have time to look at this closely until next
-week.  However, this caught my eye:
+Do you have any opinions on this patchset? If so, I'd like to
+address them.
 
-+static const char *
-+scsi_trace_varlen(struct trace_seq *p, unsigned char *cdb, int len)
-+{
-+	switch (SERVICE_ACTION(cdb)) {
-+	case READ_32:
-+	case WRITE_32:
-+		/* if protection is enabled */
-+		if (((cdb[10] >> 5) & 0x7) == 1)
-+			return scsi_trace_rw32(p, cdb, len);
-+		/* fall through */
-+	default:
-+		return scsi_trace_misc(p, cdb, len);
-+	}
-+}
+Thanks,
+/ac
 
-It is not a requirement that a 32-byte READ/WRITE request must have
-PROTECT set.  So that if statement is bogus.
-
--- 
-Martin K. Petersen	Oracle Linux Engineering
+* Alex Chiang <achiang@hp.com>:
+> This series cleans up some of the mess I made when introducing
+> early _PDC.
+> 
+> The major change is renaming processor_core.c to processor_driver.c,
+> and then renaming processor_pdc.c to processor_core.c.
+> 
+> The idea is that the code in processor_core.c will always be built
+> statically into the kernel (as long as ACPI is configured), while
+> allowing the ACPI processor driver to remain modular (if so desired).
+> 
+> We do this because part of the cleanups involves teaching the
+> early _PDC evaluation code how to determine if a processor is
+> physically present or not -- aka enumeration -- and that sort
+> of code doesn't really belong in a file named processor_pdc.
+> 
+> There are quite a few checkpatch errors in the first rename patch,
+> and I'll look at cleaning those up in a later series.
+> 
+> /ac
+> 
+> ---
+> 
+> Alex Chiang (12):
+>       ACPI: processor: mv processor_core.c processor_driver.c
+>       ACPI: processor: mv processor_pdc.c processor_core.c
+>       ACPI: processor: export acpi_get_cpuid()
+>       ACPI: processor: move acpi_get_cpuid into processor_core.c
+>       ACPI: processor: add internal processor_physically_present()
+>       ACPI: processor: remove early _PDC optin quirks
+>       ACPI: processor: driver doesn't need to evaluate _PDC
+>       ACPI: processor: refactor internal map_lapic_id()
+>       ACPI: processor: refactor internal map_x2apic_id()
+>       ACPI: processor: refactor internal map_lsapic_id()
+>       ACPI: processor: push file static MADT pointer into internal map_madt_entry()
+>       ACPI: processor core: style and sparse cleanups
+> 
+> 
+>  Documentation/kernel-parameters.txt |    4 
+>  arch/ia64/kernel/acpi.c             |    3 
+>  arch/x86/kernel/acpi/boot.c         |    3 
+>  drivers/acpi/Makefile               |    4 
+>  drivers/acpi/processor_core.c       | 1149 +++++------------------------------
+>  drivers/acpi/processor_driver.c     |  976 ++++++++++++++++++++++++++++++
+>  drivers/acpi/processor_pdc.c        |  209 ------
+>  include/acpi/processor.h            |   10 
+>  8 files changed, 1172 insertions(+), 1186 deletions(-)
+>  create mode 100644 drivers/acpi/processor_driver.c
+>  delete mode 100644 drivers/acpi/processor_pdc.c
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
