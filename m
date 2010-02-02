@@ -1,73 +1,95 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756808Ab0BBRXV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 12:23:21 -0500
-Received: from dallas.jonmasters.org ([72.29.103.172]:60643 "EHLO
-	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756679Ab0BBRXU convert rfc822-to-8bit (ORCPT
+	id S1756812Ab0BBR1O (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 12:27:14 -0500
+Received: from mail-fx0-f215.google.com ([209.85.220.215]:52784 "EHLO
+	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756670Ab0BBR1N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 12:23:20 -0500
-Subject: Re: PROBLEM with summary: Re: [PATCH] netfilter: per netns
- nf_conntrack_cachep
-From: Jon Masters <jonathan@jonmasters.org>
-To: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: Patrick McHardy <kaber@trash.net>, Alexey Dobriyan <adobriyan@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>,
-       netfilter-devel <netfilter-devel@vger.kernel.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-In-Reply-To: <1265130990.2953.176.camel@edumazet-laptop>
-References: <1264813832.2793.446.camel@tonnant>
-	 <1264816634.2793.505.camel@tonnant> <1264816777.2793.510.camel@tonnant>
-	 <1264834704.2919.3.camel@edumazet-laptop>
-	 <1265016745.7499.144.camel@tonnant>
-	 <b6fcc0a1002010136k7e78a998p31a9e7464c2e8d44@mail.gmail.com>
-	 <1265019160.2848.14.camel@edumazet-laptop>
-	 <b6fcc0a1002010225u4e74f9f0q633d73038234dc37@mail.gmail.com>
-	 <1265023437.2848.30.camel@edumazet-laptop>
-	 <1265035970.2848.50.camel@edumazet-laptop>
-	 <b6fcc0a1002010658j4f52a9b8kf10e4bb07a2f1075@mail.gmail.com>
-	 <1265036548.2848.55.camel@edumazet-laptop>
-	 <1265108690.2861.118.camel@tonnant>  <1265110504.2861.135.camel@tonnant>
-	 <1265129192.2861.141.camel@tonnant> <1265129903.2861.150.camel@tonnant>
-	 <4B685B14.1040207@trash.net>  <1265130990.2953.176.camel@edumazet-laptop>
-Content-Type: text/plain; charset="UTF-8"
-Organization: World Organi[sz]ation of Broken Dreams
-Date: Tue, 02 Feb 2010 12:23:01 -0500
-Message-Id: <1265131381.2861.164.camel@tonnant>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 8BIT
-X-SA-Do-Not-Run: Yes
-X-SA-Exim-Connect-IP: 127.0.0.1
-X-SA-Exim-Mail-From: jonathan@jonmasters.org
-X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
+	Tue, 2 Feb 2010 12:27:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:date:message-id:subject;
+        b=xkBS+1gDM0Bn6jAv4IucFsx0os03aoBSU+8DUl+ALVb3U2ymFEDwZPvVEI3hFRdlA/
+         D7iQSQyzWcjx7lX126Vq3/S195tqc+OIBRASnkAqL8NMkfk2T0dN6JNR/DjahGpG2WTX
+         rwx/d6ykdUceklvXZ4k5aIRVaa2zPuuF7vFuc=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org
+Date: Tue, 02 Feb 2010 18:27:01 +0100
+Message-Id: <20100202172701.7599.2028.sendpatchset@localhost>
+Subject: [PATCH 0/2] atang update for 02/02/10
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-02-02 at 18:16 +0100, Eric Dumazet wrote:
-> Le mardi 02 février 2010 à 18:04 +0100, Patrick McHardy a écrit :
-> 
-> > Ah nice catch, that seems to be the problem. When the untracked
-> > conntrack is already attached to an skb and thus has refcnt > 1
-> > and we re-initalize the refcnt, it will get freed.
-> > 
-> > The question is whether the ct_net pointer of the untracked conntrack
-> > is actually required. If so, we need one instance per namespace,
-> > otherwise we can just move initialization and cleanup to the init_net
-> > init/cleanup functions. Alexey, do you happen to know this?
-> > 
-> 
-> One untracked per netns seems the way to go, and move it outside of
-> read_mostly area too, we obviously can modify its refcount frequently...
 
-Sure, that will work. Also, rather than just the NF_CT_ASSERT on the use
-count, maybe worth catching the specific case of trying to free the
-untracked ct, but that's only if it's not a horrible fast path.
+On top of atang-v4.2:
+- nobody has IDE VLB controllers nowadays so move support for them
+  to staging/out and schedule for removal in 2.6.36 (unless somebody
+  steps in to work on it)
+- do a small cleanup
 
-Anyway, thanks. If you want to send me a patch, I'll try it.
+The following changes since commit 7119919586b313e5dfe9c146f616550406040b7a:
+  Bartlomiej Zolnierkiewicz (1):
+        ide: remove obsolete /proc/ide/ interface
 
-Jon.
+are available in the git repository at:
 
+  git://git.kernel.org/pub/scm/linux/kernel/git/bart/misc.git atang-v4.3
 
+Bartlomiej Zolnierkiewicz (2):
+      move host drivers for VLB IDE controllers to staging/out
+      ide: remove hwif_chipset_t type
+
+ drivers/ide/Kconfig                            |   72 ------------------------
+ drivers/ide/Makefile                           |    7 --
+ drivers/ide/at91_ide.c                         |    1 -
+ drivers/ide/au1xxx-ide.c                       |    1 -
+ drivers/ide/buddha.c                           |    1 -
+ drivers/ide/cmd640.c                           |    1 -
+ drivers/ide/delkin_cb.c                        |    1 -
+ drivers/ide/falconide.c                        |    1 -
+ drivers/ide/gayle.c                            |    1 -
+ drivers/ide/icside.c                           |    2 -
+ drivers/ide/ide-cs.c                           |    1 -
+ drivers/ide/ide-dma.c                          |    2 +-
+ drivers/ide/ide-generic.c                      |    1 -
+ drivers/ide/ide-h8300.c                        |    1 -
+ drivers/ide/ide-pnp.c                          |    1 -
+ drivers/ide/ide-probe.c                        |    2 -
+ drivers/ide/ide_platform.c                     |    1 -
+ drivers/ide/macide.c                           |    1 -
+ drivers/ide/palm_bk3710.c                      |    1 -
+ drivers/ide/pmac.c                             |    1 -
+ drivers/ide/q40ide.c                           |    1 -
+ drivers/ide/rapide.c                           |    1 -
+ drivers/ide/scc_pata.c                         |    1 -
+ drivers/ide/sgiioc4.c                          |    1 -
+ drivers/ide/tx4938ide.c                        |    1 -
+ drivers/ide/tx4939ide.c                        |    1 -
+ drivers/staging/Kconfig                        |    2 +
+ drivers/staging/Makefile                       |    1 +
+ drivers/staging/ide-vlb/Kconfig                |   69 +++++++++++++++++++++++
+ drivers/staging/ide-vlb/Makefile               |    7 ++
+ drivers/staging/ide-vlb/TODO                   |    5 ++
+ drivers/{ide => staging/ide-vlb}/ali14xx.c     |    1 -
+ drivers/{ide => staging/ide-vlb}/dtc2278.c     |    1 -
+ drivers/{ide => staging/ide-vlb}/ht6560b.c     |   17 +++---
+ drivers/{ide => staging/ide-vlb}/ide-4drives.c |    1 -
+ drivers/{ide => staging/ide-vlb}/qd65xx.c      |    3 +-
+ drivers/{ide => staging/ide-vlb}/qd65xx.h      |    0
+ drivers/{ide => staging/ide-vlb}/umc8672.c     |    1 -
+ include/linux/ide.h                            |   17 ------
+ 39 files changed, 94 insertions(+), 137 deletions(-)
+ create mode 100644 drivers/staging/ide-vlb/Kconfig
+ create mode 100644 drivers/staging/ide-vlb/Makefile
+ create mode 100644 drivers/staging/ide-vlb/TODO
+ rename drivers/{ide => staging/ide-vlb}/ali14xx.c (99%)
+ rename drivers/{ide => staging/ide-vlb}/dtc2278.c (99%)
+ rename drivers/{ide => staging/ide-vlb}/ht6560b.c (99%)
+ rename drivers/{ide => staging/ide-vlb}/ide-4drives.c (98%)
+ rename drivers/{ide => staging/ide-vlb}/qd65xx.c (99%)
+ rename drivers/{ide => staging/ide-vlb}/qd65xx.h (100%)
+ rename drivers/{ide => staging/ide-vlb}/umc8672.c (99%)
