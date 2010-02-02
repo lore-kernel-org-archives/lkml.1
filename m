@@ -1,100 +1,129 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756148Ab0BBORR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 09:17:17 -0500
-Received: from mail-vw0-f46.google.com ([209.85.212.46]:49391 "EHLO
-	mail-vw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755943Ab0BBORQ (ORCPT
+	id S1756167Ab0BBOUL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 09:20:11 -0500
+Received: from casper.infradead.org ([85.118.1.10]:60570 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755792Ab0BBOUI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 09:17:16 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=cGbCzHLxe2VWQXf7XXchrcBLkqe36ip/P0mfPZPnuxPD2AMk8mfrbHQzwJ3x5dROst
-         OBAgRKDYgQplFPBtToXJb8/bfYVHQggmxX9dZkLaO0a0cdJLm7sYEEkIcBF0GLHd3Qr6
-         JlWcofmiGJGDelbl4u8/e1c7S1tXS9B9GnxmE=
-Message-ID: <4B6833DD.1020001@gmail.com>
-Date: Tue, 02 Feb 2010 09:17:01 -0500
-From: Chandra Shekhar Sah <edu4madh@gmail.com>
-User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.5; en-US; rv:1.9.1.7) Gecko/20100111 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: port multiplier problem
-References: <4B5885F7.2020007@gmail.com> <4B679EA9.6030203@kernel.org>
-In-Reply-To: <4B679EA9.6030203@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 2 Feb 2010 09:20:08 -0500
+Subject: [PATCH]  hrtimer, softirq: Fix hrtimer->softirq trampoline
+From: Peter Zijlstra <peterz@infradead.org>
+To: Yury Polyanskiy <ypolyans@princeton.edu>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+       Wei Yongjun <yjwei@cn.fujitsu.com>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>, polyanskiy@gmail.com,
+       Thomas Gleixner <tglx@linutronix.de>,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <20100202085117.7a5c3530@penta.localdomain>
+References: <4B66A670.70503@cn.fujitsu.com>
+	 <20100202074914.GD11081@gondor.apana.org.au>
+	 <20100202085117.7a5c3530@penta.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 02 Feb 2010 15:20:01 +0100
+Message-ID: <1265120401.24455.306.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Tejun,
+On Tue, 2010-02-02 at 08:51 -0500, Yury Polyanskiy wrote:
 
-Thanks a lot for reply.
+> If hrtimer_tasklet interface functions properly, the
+> xfrm_timer_handler should be called in softirq context (and thus is
+> never in parallel with xfrm_input()). The deadlock isn't possible then.
+> 
+> In this case it seems that for some reason xfrm_timer_handler() is
+> called in the hardirq context. The relevant code in hrtimer_tasklet:
+> 
+> static enum hrtimer_restart __hrtimer_tasklet_trampoline(struct hrtimer *timer)
+> {
+> 	struct tasklet_hrtimer *ttimer =
+> 		container_of(timer, struct tasklet_hrtimer, timer);
+> 
+> 	if (hrtimer_is_hres_active(timer)) {
+> 		tasklet_hi_schedule(&ttimer->tasklet);
+> 		return HRTIMER_NORESTART;
+> 	}
+> 	return ttimer->function(timer);
+> }
+> 
+> I am copying Peter on this. Peter, how is it possible that
+> ttimer->function() is called in hardirq?
+> 
+> Could it be that switch from hres_active happened after the call to
+> trampoline and before the if() above?
 
-The disk array was connected to suse 10.3 before accident and was 
-working fine. After accident, I saw problems, so I switched to Fedora 12 
-because it has up-to-date sil24 driver for sata host controller sil3124.
+The original email had more information:
 
-Now, I am using Fedora 12 (kernel 2.6.31.12). The backplane card 
-(NORCO-LIB1220) on the disk array has 12 sata conectors, 5-5-1-1. i.e. 
-there are two port multiplier (sil3726, 5 sata ports in each PMP) and 
-two are without port multiplier, I mentioned it as "direct sata" (may be 
-not appropriate word).
+> {IN-HARDIRQ-W} state was registered at:
+>   [<c04718dc>] __lock_acquire+0xa9c/0x1890
+>   [<c047274f>] lock_acquire+0x7f/0xf0
+>   [<c0762958>] _raw_spin_lock+0x38/0x50
+>   [<c072b5ca>] xfrm_timer_handler+0x3a/0x260
+>   [<c0447d9d>] __hrtimer_tasklet_trampoline+0xd/0x10
+>   [<c04634ce>] hrtimer_run_queues+0x15e/0x2a0
+>   [<c045146d>] run_local_timers+0xd/0x20
+>   [<c04514b4>] update_process_times+0x34/0x70
+>   [<c046ce8a>] tick_periodic+0x2a/0x80
+>   [<c046cefe>] tick_handle_periodic+0x1e/0x90
+>   [<c0768377>] smp_apic_timer_interrupt+0x57/0x8b
+>   [<c076382f>] apic_timer_interrupt+0x2f/0x34
+>   [<c0401d3b>] cpu_idle+0x4b/0x80
+>   [<c074e0d7>] rest_init+0x67/0x70
+>   [<c0956874>] start_kernel+0x30e/0x314
+>   [<c095609e>] i386_start_kernel+0x9e/0xa5
 
-I thought PMP is damaged so I purchased a new NORCO-LIB1220 backplane 
-card but same problem. The disks connected to PMP are not being 
-recognized. However, disk connected to "direct sata" (no disks on PMP) 
-is fine.
+Which indicates we were called from hardirq context, it appears that
+that hrtimer_is_hres_active() case is indeed faulty. Not sure if I made
+a mistake when I wrote that or if we changed hrtimer behaviour
+afterwards, but the hrtimer fallback is still from hardirq context.
 
-I greatly appreciate your help.
-CN
+Which would seem to suggest the following patch:
 
+---
+Subject: hrtimer, softirq: Fix hrtimer->softirq trampoline
 
+hrtimers callbacks are always done from hardirq context, either the
+jiffy tick interrupt or the hrtimer device interrupt.
 
-On 2/1/10 10:40 PM, Tejun Heo wrote:
-> Hello,
->
-> On 01/22/2010 01:51 AM, Chandra Nepali wrote:
->    
->> I have a disk array of 12 disks. The interface card has two sil3726 port
->> multiplier for 10 disks (5 disks in each port multiplier) and 2 direct
->> sata connectors. The host controller is sil3124. It was connected to
->> suse 10.4 and working fine.
->>      
-> Wasn't 10.3 the last of 10 series?  After that it was 11.0.  What's
-> the version of the kernel?
->
->    
->> There was a high voltage accident (high voltage to disk array only, not
->> computer) and because of that we replaced the power supply of this disk
->> array. Now, we are getting some problem, disks are not being
->> recognized,.
->>      
-> Ouch...
->
->    
->> So, I connected it to Fedora 12 (To correct if it is
->> because of some bugs) with driver sil24. Here are few things that I have
->> tested.
->>
->> 1) If I connect only one disk to direct sata connector, it works fine.
->> 2) If I connect two disks to both direct sata connectors, it won't work.
->> 3) If I connect  one disk to one direct sata and one disk directly to
->> host controller, it works.
->>      
-> What do you mean by 'direct sata'?  How is it different from 'directly
-> to host controller'?
->
->    
->> 3) If I connect one or more disk to PM, it won't work.
->> 4) If I connect one disk to direct sata and one to PM, it won't work.
->>      
-> Maybe the PMP is fried?
->
-> Thanks.
->
->    
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ kernel/softirq.c |   13 +++----------
+ 1 files changed, 3 insertions(+), 10 deletions(-)
+
+diff --git a/kernel/softirq.c b/kernel/softirq.c
+index a09502e..c1983b7 100644
+--- a/kernel/softirq.c
++++ b/kernel/softirq.c
+@@ -500,22 +500,15 @@ EXPORT_SYMBOL(tasklet_kill);
+  */
+ 
+ /*
+- * The trampoline is called when the hrtimer expires. If this is
+- * called from the hrtimer interrupt then we schedule the tasklet as
+- * the timer callback function expects to run in softirq context. If
+- * it's called in softirq context anyway (i.e. high resolution timers
+- * disabled) then the hrtimer callback is called right away.
++ * The trampoline is called when the hrtimer expires. 
+  */
+ static enum hrtimer_restart __hrtimer_tasklet_trampoline(struct hrtimer *timer)
+ {
+ 	struct tasklet_hrtimer *ttimer =
+ 		container_of(timer, struct tasklet_hrtimer, timer);
+ 
+-	if (hrtimer_is_hres_active(timer)) {
+-		tasklet_hi_schedule(&ttimer->tasklet);
+-		return HRTIMER_NORESTART;
+-	}
+-	return ttimer->function(timer);
++	tasklet_hi_schedule(&ttimer->tasklet);
++	return HRTIMER_NORESTART;
+ }
+ 
+ /*
+
 
