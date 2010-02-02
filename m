@@ -1,20 +1,19 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932134Ab0BBTIh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 14:08:37 -0500
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:46544 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932228Ab0BBTI0 (ORCPT
+	id S932271Ab0BBTIy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 14:08:54 -0500
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:43182 "EHLO
+	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932251Ab0BBTIq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 14:08:26 -0500
-Subject: [PATCH v2 08/18] IB/umad: convert cdev pointers to embedded structs
-	in struct ib_umad_port
+	Tue, 2 Feb 2010 14:08:46 -0500
+Subject: [PATCH v2 12/18] IB/umad: increase maximum devices supported
 To: rdreier@cisco.com
 From: Alex Chiang <achiang@hp.com>
 Cc: linux-rdma@vger.kernel.org, justin.chen@hp.com,
        linux-kernel@vger.kernel.org
-Date: Tue, 02 Feb 2010 12:08:25 -0700
-Message-ID: <20100202190824.28217.22339.stgit@bob.kio>
+Date: Tue, 02 Feb 2010 12:08:45 -0700
+Message-ID: <20100202190845.28217.29701.stgit@bob.kio>
 In-Reply-To: <20100202185235.28217.64521.stgit@bob.kio>
 References: <20100202185235.28217.64521.stgit@bob.kio>
 User-Agent: StGit/0.15
@@ -25,119 +24,110 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Instead of storing pointers to cdev and sm_cdev, embed the full
-structures instead.
+Some large systems may support more than IB_UMAD_MAX_PORTS
+(currently 64).
 
-This change allows us to use the container_of() macro in ib_umad_open()
-and ib_umad_sm_open() in a future patch.
+This change allows us to support more ports in a backwards-compatible
+manner. The first IB_UMAD_MAX_PORTS keep the same major/minor device
+numbers they've always had.
 
-This change increases the size of struct ib_umad_port to 320 bytes
-from 128.
+If there are more than IB_UMAD_MAX_PORTS, we then dynamically request
+a new major device number (new minors start at 0).
 
 Signed-off-by: Alex Chiang <achiang@hp.com>
 ---
 
- drivers/infiniband/core/user_mad.c |   46 ++++++++++++++++--------------------
- 1 files changed, 20 insertions(+), 26 deletions(-)
+ drivers/infiniband/core/user_mad.c |   50 ++++++++++++++++++++++++++++++++----
+ 1 files changed, 44 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/infiniband/core/user_mad.c b/drivers/infiniband/core/user_mad.c
-index 7de0296..40440ef 100644
+index 5a66bd0..7fc1e51 100644
 --- a/drivers/infiniband/core/user_mad.c
 +++ b/drivers/infiniband/core/user_mad.c
-@@ -87,10 +87,10 @@ enum {
-  */
+@@ -971,6 +971,28 @@ static ssize_t show_abi_version(struct class *class, char *buf)
+ }
+ static CLASS_ATTR(abi_version, S_IRUGO, show_abi_version, NULL);
  
- struct ib_umad_port {
--	struct cdev           *cdev;
-+	struct cdev           cdev;
- 	struct device	      *dev;
- 
--	struct cdev           *sm_cdev;
-+	struct cdev           sm_cdev;
- 	struct device	      *sm_dev;
- 	struct semaphore       sm_sem;
- 
-@@ -1008,17 +1008,14 @@ static int ib_umad_init_port(struct ib_device *device, int port_num,
- 	mutex_init(&port->file_mutex);
- 	INIT_LIST_HEAD(&port->file_list);
- 
--	port->cdev = cdev_alloc();
--	if (!port->cdev)
++static dev_t oflo_maj;
++static DECLARE_BITMAP(oflo_map, IB_UMAD_MAX_PORTS);
++static int find_oflo_devnum(void)
++{
++	int ret;
++
++	if (!oflo_maj) {
++		ret = alloc_chrdev_region(&oflo_maj, 0, IB_UMAD_MAX_PORTS * 2,
++					  "infiniband_mad");
++		if (ret) {
++			printk(KERN_ERR "user_mad: couldn't register dynamic device number\n");
++			return ret;
++		}
++	}
++
++	ret = find_first_zero_bit(oflo_map, IB_UMAD_MAX_PORTS);
++	if (ret >= IB_UMAD_MAX_PORTS)
++		return -1;
++
++	return ret;
++}
++
+ static int ib_umad_init_port(struct ib_device *device, int port_num,
+ 			     struct ib_umad_port *port)
+ {
+@@ -981,11 +1003,19 @@ static int ib_umad_init_port(struct ib_device *device, int port_num,
+ 	devnum = find_first_zero_bit(dev_map, IB_UMAD_MAX_PORTS);
+ 	if (devnum >= IB_UMAD_MAX_PORTS) {
+ 		spin_unlock(&port_lock);
 -		return -1;
--	port->cdev->owner = THIS_MODULE;
--	port->cdev->ops   = &umad_fops;
--	kobject_set_name(&port->cdev->kobj, "umad%d", port->dev_num);
--	if (cdev_add(port->cdev, base_dev + port->dev_num, 1))
-+	cdev_init(&port->cdev, &umad_fops);
-+	port->cdev.owner = THIS_MODULE;
-+	kobject_set_name(&port->cdev.kobj, "umad%d", port->dev_num);
-+	if (cdev_add(&port->cdev, base_dev + port->dev_num, 1))
- 		goto err_cdev;
++		devnum = find_oflo_devnum();
++		if (devnum < 0)
++			return -1;
++
++		spin_lock(&port_lock);
++		port->dev_num = devnum + IB_UMAD_MAX_PORTS;
++		base = devnum + oflo_maj;
++		set_bit(devnum, oflo_map);
++	} else {
++		port->dev_num = devnum;
++		base = devnum + base_dev;
++		set_bit(devnum, dev_map);
+ 	}
+-	port->dev_num = devnum;
+-	base = devnum + base_dev;
+-	set_bit(devnum, dev_map);
+ 	spin_unlock(&port_lock);
  
- 	port->dev = device_create(umad_class, device->dma_device,
--				  port->cdev->dev, port,
-+				  port->cdev.dev, port,
- 				  "umad%d", port->dev_num);
- 	if (IS_ERR(port->dev))
- 		goto err_cdev;
-@@ -1028,17 +1025,14 @@ static int ib_umad_init_port(struct ib_device *device, int port_num,
- 	if (device_create_file(port->dev, &dev_attr_port))
- 		goto err_dev;
- 
--	port->sm_cdev = cdev_alloc();
--	if (!port->sm_cdev)
--		goto err_dev;
--	port->sm_cdev->owner = THIS_MODULE;
--	port->sm_cdev->ops   = &umad_sm_fops;
--	kobject_set_name(&port->sm_cdev->kobj, "issm%d", port->dev_num);
--	if (cdev_add(port->sm_cdev, base_dev + port->dev_num + IB_UMAD_MAX_PORTS, 1))
-+	cdev_init(&port->sm_cdev, &umad_sm_fops);
-+	port->sm_cdev.owner = THIS_MODULE;
-+	kobject_set_name(&port->sm_cdev.kobj, "issm%d", port->dev_num);
-+	if (cdev_add(&port->sm_cdev, base_dev + port->dev_num + IB_UMAD_MAX_PORTS, 1))
- 		goto err_sm_cdev;
- 
- 	port->sm_dev = device_create(umad_class, device->dma_device,
--				     port->sm_cdev->dev, port,
-+				     port->sm_cdev.dev, port,
- 				     "issm%d", port->dev_num);
- 	if (IS_ERR(port->sm_dev))
- 		goto err_sm_cdev;
-@@ -1055,16 +1049,16 @@ static int ib_umad_init_port(struct ib_device *device, int port_num,
- 	return 0;
- 
- err_sm_dev:
--	device_destroy(umad_class, port->sm_cdev->dev);
-+	device_destroy(umad_class, port->sm_cdev.dev);
- 
- err_sm_cdev:
--	cdev_del(port->sm_cdev);
-+	cdev_del(&port->sm_cdev);
- 
- err_dev:
--	device_destroy(umad_class, port->cdev->dev);
-+	device_destroy(umad_class, port->cdev.dev);
+ 	port->ib_dev   = device;
+@@ -1042,7 +1072,10 @@ err_dev:
  
  err_cdev:
--	cdev_del(port->cdev);
-+	cdev_del(&port->cdev);
- 	clear_bit(port->dev_num, dev_map);
+ 	cdev_del(&port->cdev);
+-	clear_bit(devnum, dev_map);
++	if (port->dev_num < IB_UMAD_MAX_PORTS)
++		clear_bit(devnum, dev_map);
++	else
++		clear_bit(devnum, oflo_map);
  
  	return -1;
-@@ -1079,11 +1073,11 @@ static void ib_umad_kill_port(struct ib_umad_port *port)
- 	dev_set_drvdata(port->dev,    NULL);
- 	dev_set_drvdata(port->sm_dev, NULL);
+ }
+@@ -1079,7 +1112,10 @@ static void ib_umad_kill_port(struct ib_umad_port *port)
  
--	device_destroy(umad_class, port->cdev->dev);
--	device_destroy(umad_class, port->sm_cdev->dev);
-+	device_destroy(umad_class, port->cdev.dev);
-+	device_destroy(umad_class, port->sm_cdev.dev);
+ 	mutex_unlock(&port->file_mutex);
  
--	cdev_del(port->cdev);
--	cdev_del(port->sm_cdev);
-+	cdev_del(&port->cdev);
-+	cdev_del(&port->sm_cdev);
+-	clear_bit(port->dev_num, dev_map);
++	if (port->dev_num < IB_UMAD_MAX_PORTS)
++		clear_bit(port->dev_num, dev_map);
++	else
++		clear_bit(port->dev_num - IB_UMAD_MAX_PORTS, oflo_map);
+ }
  
- 	spin_lock(&port_lock);
- 	umad_port[port->dev_num] = NULL;
+ static void ib_umad_add_one(struct ib_device *device)
+@@ -1187,6 +1223,8 @@ static void __exit ib_umad_cleanup(void)
+ 	ib_unregister_client(&umad_client);
+ 	class_destroy(umad_class);
+ 	unregister_chrdev_region(base_dev, IB_UMAD_MAX_PORTS * 2);
++	if (oflo_maj)
++		unregister_chrdev_region(oflo_maj, IB_UMAD_MAX_PORTS * 2);
+ }
+ 
+ module_init(ib_umad_init);
 
