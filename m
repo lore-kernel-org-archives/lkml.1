@@ -1,135 +1,80 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753616Ab0BBEPG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 23:15:06 -0500
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:45375 "EHLO e8.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752777Ab0BBEPC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 23:15:02 -0500
-Date: Tue, 2 Feb 2010 09:44:48 +0530
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-To: Paul Turner <pjt@google.com>
-Cc: Bharata B Rao <bharata.rao@gmail.com>, linux-kernel@vger.kernel.org,
-       Dhaval Giani <dhaval.giani@gmail.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Herbert Poetzl <herbert@13thfloor.at>, Avi Kivity <avi@redhat.com>,
-       Chris Friesen <cfriesen@nortel.com>, Paul Menage <menage@google.com>,
-       Mike Waychison <mikew@google.com>
-Subject: Re: [RFC v5 PATCH 0/8] CFS Hard limits - v5
-Message-ID: <20100202041448.GA17333@in.ibm.com>
-Reply-To: bharata@linux.vnet.ibm.com
-References: <20100105075703.GE27899@in.ibm.com> <loom.20100108T214459-933@post.gmane.org> <344eb09a1001281949p37cd6d1awbc561937fc8f04f5@mail.gmail.com> <ed628a921001282026p2f8d64c7u416e55e48a21ea79@mail.gmail.com> <20100201082150.GB686@in.ibm.com> <ed628a921002010304p40397558lf45f53daca97e879@mail.gmail.com> <ed628a921002011025i432465acl166b845607546a64@mail.gmail.com>
+	id S1753492Ab0BBERI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 23:17:08 -0500
+Received: from out02.mta.xmission.com ([166.70.13.232]:55740 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751054Ab0BBERD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Feb 2010 23:17:03 -0500
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Simon Kagstrom <simon.kagstrom@netinsight.net>, dedekind1@gmail.com,
+       =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>,
+       linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] Provide ways of crashing the kernel through debugfs
+References: <20100126105640.6bf9488c@marrow.netinsight.se>
+	<2375c9f91001260208t31379702tb49cb57d12d5890b@mail.gmail.com>
+	<20100126111853.10890fc6@marrow.netinsight.se>
+	<2375c9f91001261853t1158a66aw86546a61e613338f@mail.gmail.com>
+	<1264689482.1973.132.camel@localhost>
+	<20100129071324.2521705c@marrow.netinsight.se>
+	<20100129023327.021cb23d.akpm@linux-foundation.org>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Mon, 01 Feb 2010 20:16:46 -0800
+In-Reply-To: <20100129023327.021cb23d.akpm@linux-foundation.org> (Andrew Morton's message of "Fri\, 29 Jan 2010 02\:33\:27 -0800")
+Message-ID: <m1eil4i85t.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <ed628a921002011025i432465acl166b845607546a64@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Scanned: No (on in01.mta.xmission.com); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 01, 2010 at 10:25:11AM -0800, Paul Turner wrote:
-> On Mon, Feb 1, 2010 at 3:04 AM, Paul Turner <pjt@google.com> wrote:
-> > On Mon, Feb 1, 2010 at 12:21 AM, Bharata B Rao
-> > <bharata@linux.vnet.ibm.com> wrote:
-> >> On Thu, Jan 28, 2010 at 08:26:08PM -0800, Paul Turner wrote:
-> >>> On Thu, Jan 28, 2010 at 7:49 PM, Bharata B Rao <bharata.rao@gmail.com> wrote:
-> >>> > On Sat, Jan 9, 2010 at 2:15 AM, Paul Turner <pjt@google.com> wrote:
-> >>> >>
-> >>> >> What are your thoughts on using a separate mechanism for the general case.  A
-> >>> >> draft proposal follows:
-> >>> >>
-> >>> >> - Maintain a global run-time pool for each tg.  The runtime specified by the
-> >>> >>  user represents the value that this pool will be refilled to each period.
-> >>> >> - We continue to maintain the local notion of runtime/period in each cfs_rq,
-> >>> >>  continue to accumulate locally here.
-> >>> >>
-> >>> >> Upon locally exceeding the period acquire new credit from the global pool
-> >>> >> (either under lock or more likely using atomic ops).  This can either be in
-> >>> >> fixed steppings (e.g. 10ms, could be tunable) or following some quasi-curve
-> >>> >> variant with historical demand.
-> >>> >>
-> >>> >> One caveat here is that there is some over-commit in the system, the local
-> >>> >> differences of runtime vs period represent additional over the global pool.
-> >>> >> However it should not be possible to consistently exceed limits since the rate
-> >>> >> of refill is gated by the runtime being input into the system via the per-tg
-> >>> >> pool.
-> >>> >>
-> >>> >
-> >>> > We borrow from what is actually available as spare (spare = unused or
-> >>> > remaining). With global pool, I see that would be difficult.
-> >>> > Inability/difficulty in keeping the global pool in sync with the
-> >>> > actual available spare time is the reason for over-commit ?
-> >>> >
-> >>>
-> >>> We maintain two pools, a global pool (new) and a per-cfs_rq pool
-> >>> (similar to existing rt_bw).
-> >>>
-> >>> When consuming time you charge vs your local bandwidth until it is
-> >>> expired, at this point you must either refill from the global pool, or
-> >>> throttle.
-> >>>
-> >>> The "slack" in the system is the sum of unconsumed time in local pools
-> >>> from the *previous* global pool refill.  This is bounded above by the
-> >>> size of time you refill a local pool at each expiry.  We call the size
-> >>> of refill a 'slice'.
-> >>>
-> >>> e.g.
-> >>>
-> >>> Task limit of 50ms, slice=10ms, 4cpus, period of 500ms
-> >>>
-> >>> Task A runs on cpus 0 and 1 for 5ms each, then blocks.
-> >>>
-> >>> When A first executes on each cpu we take slice=10ms from the global
-> >>> pool of 50ms and apply it to the local rq.  Execution then proceeds vs
-> >>> local pool.
-> >>>
-> >>> Current state is: 5 ms in local pools on {0,1}, 30ms remaining in global pool
-> >>>
-> >>> Upon period expiration we issue a global pool refill.  At this point we have:
-> >>> 5 ms in local pools on {0,1}, 50ms remaining in global pool.
-> >>>
-> >>> That 10ms of slack time is over-commit in the system.  However it
-> >>> should be clear that this can only be a local effect since over any
-> >>> period of time the rate of input into the system is limited by global
-> >>> pool refill rate.
-> >>
-> >> With the same setup as above consider 5 such tasks which block after
-> >> consuming 5ms each. So now we have 25ms slack time. In the next bandwidth
-> >> period if 5 cpu hogs start running and they would consume this 25ms and the
-> >> 50ms from this period. So we gave 50% extra to a group in a bandwidth period.
-> >> Just wondering how common such scenarious could be.
-> >>
-> >
-> > Yes within a single given period you may exceed your reservation due
-> > to slack.  However, of note is that across any 2 successive periods
-> > you are guaranteed to be within your reservation, i.e. 2*usage <=
-> > 2*period, as slack available means that you under-consumed your
-> > previous period.
-> >
-> > For those needing a hard guarantee (independent of amelioration
-> > strategies) halving the period provided would then provide this across
-> > their target period with the basic v1 implementation.
-> >
-> 
-> Actually now that I think about it, this observation only holds when
-> the slack is consumed within the second of the two periods.  It should
-> be restated something like:
-> 
-> for any n contiguous periods your maximum usage is n*runtime +
-> nr_cpus*slice, note the slack term is constant and is dominated for
-> any observation window involving several periods
+Andrew Morton <akpm@linux-foundation.org> writes:
 
-Ok. We are talking about 'hard limits' here and looks like there is
-a theoritical possibility of exceeding the limit often. Need to understand
-how good/bad this is in real life.
+> On Fri, 29 Jan 2010 07:13:24 +0100 Simon Kagstrom <simon.kagstrom@netinsight.net> wrote:
+>
+>> On Thu, 28 Jan 2010 16:38:02 +0200
+>> Artem Bityutskiy <dedekind1@gmail.com> wrote:
+>> 
+>> > On Wed, 2010-01-27 at 10:53 +0800, Am__rico Wang wrote:
+>> > > > Well, it provides a few more ways of crashing the kernel. That's
+>> > > > basically the only additional feature you'll get.
+>> > > 
+>> > > Yeah, I can see that, but why do I need to care how I crash the kernel
+>> > > as long as I can crash it in a way.
+>> > 
+>> > But Simon did explain in his first e-mail why he cares. You or others
+>> > might care for similar reasons.
+>> 
+>> Another argument for the patch is that it's simple and well-contained,
+>> it doesn't touch any other code apart from the driver itself.
+>> 
+>> It is also easy to extend with other tests, e.g., provoking kernel
+>> hangs to test watchdogs and so on.
+>> 
+>
+> Yes, it's the sort of thing which lots of people have written
+> throw-away ad-hoc versions of.  It probably makes sense to do it once,
+> do it right to save people from having to rererereinvent that wheel.
+>
+> What do others think?
 
-Regards,
-Bharata.
+I think it makes sense, and in fact we have already merged one attempt
+at doing this generically.  drivers/misc/lkdtm.c
+
+I think Simon's patch adds some additional interesting failure modes.
+write_after_free, corrupt_stack_write, unaligned_load_store.
+
+Simon is there any chance you can change your patch to an enhancement of lkdtm?
+
+lkdtm actually digs into the interesting failure points with a jprobe
+to trigger the harder to reproduce scenarios.  Like stack overflow in
+an interrupt handler.
+
+Eric
