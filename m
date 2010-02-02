@@ -1,45 +1,44 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754830Ab0BBD7t (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 22:59:49 -0500
-Received: from ozlabs.org ([203.10.76.45]:53616 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753947Ab0BBD7p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 22:59:45 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Siarhei Liakh <sliakh.lkml@gmail.com>
-Subject: Re: [PATCH V10] RO/NX protection for loadable kernel modules
-Date: Tue, 2 Feb 2010 14:29:38 +1030
-User-Agent: KMail/1.12.2 (Linux/2.6.31-17-generic; KDE/4.3.2; i686; ; )
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       linux-next@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
-       James Morris <jmorris@namei.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@muc.de>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       Dave Jones <davej@redhat.com>
-References: <817ecb6f1002011539g3f30416fi60c7c5222cab8f3@mail.gmail.com>
-In-Reply-To: <817ecb6f1002011539g3f30416fi60c7c5222cab8f3@mail.gmail.com>
+	id S1753258Ab0BBEGg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 23:06:36 -0500
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:55217 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752532Ab0BBEGe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Feb 2010 23:06:34 -0500
+Date: Tue, 2 Feb 2010 13:06:28 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] sh updates for 2.6.33-rc7
+Message-ID: <20100202040628.GH13428@linux-sh.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201002021429.38331.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2 Feb 2010 10:09:53 am Siarhei Liakh wrote:
-> This patch is a logical extension of the protection provided by
-> CONFIG_DEBUG_RODATA to LKMs. The protection is provided by splitting
-> module_core and module_init into three logical parts each and setting
-> appropriate page access permissions for each individual section:
-> 
->  1. Code: RO+X
->  2. RO data: RO+NX
->  3. RW data: RW+NX
+Please pull from:
 
-Thanks, applied!
+	master.kernel.org:/pub/scm/linux/kernel/git/lethal/sh-2.6.git sh/for-2.6.33
 
-Cheers,
-Rusty.
+Which contains:
+
+Magnus Damm (1):
+      usb: r8a66597-hdc disable interrupts fix
+
+Marek Skuczynski (2):
+      sh: Fix access to released memory in dwarf_unwinder_cleanup()
+      sh: Fix access to released memory in clk_debugfs_register_one()
+
+Markus Pietrek (1):
+      spi: spi_sh_msiof: Fixed data sampling on the correct edge
+
+ arch/sh/kernel/cpu/clock.c      |    4 ++--
+ arch/sh/kernel/dwarf.c          |    8 ++++----
+ drivers/spi/spi_sh_msiof.c      |   15 ++++++---------
+ drivers/usb/host/r8a66597-hcd.c |   17 ++++++++++++++++-
+ 4 files changed, 28 insertions(+), 16 deletions(-)
