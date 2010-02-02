@@ -1,50 +1,140 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756448Ab0BBQck (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 11:32:40 -0500
-Received: from verein.lst.de ([213.95.11.210]:56372 "EHLO verein.lst.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752543Ab0BBQcj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 11:32:39 -0500
-Date: Tue, 2 Feb 2010 17:31:45 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Christoph Hellwig <hch@lst.de>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       tony.luck@intel.com, ralf@linux-mips.org, kyle@mcmartin.ca,
-       benh@kernel.crashing.org, schwidefsky@de.ibm.com,
-       heiko.carstens@de.ibm.com, davem@davemloft.net, tglx@linutronix.de,
-       mingo@redhat.com, hpa@zytor.com, viro@zeniv.linux.org.uk
-Subject: Re: [PATCH 4/6] improve sys_personality for compat architectures
-Message-ID: <20100202163145.GA30659@lst.de>
-References: <20100201185607.GD11045@lst.de> <201002021536.51928.arnd@arndb.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <201002021536.51928.arnd@arndb.de>
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: 0 () 
+	id S1756084Ab0BBQda (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 11:33:30 -0500
+Received: from mail-iw0-f171.google.com ([209.85.223.171]:44449 "EHLO
+	mail-iw0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752024Ab0BBQd3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 11:33:29 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type;
+        b=IkxKut+OWBXvta7xVkAA5UAVJFkH36Q0ysJ9YTnmxmWO/Fj2x3s9yyAZrQJx0r0J24
+         OY6e8R4dZl8e7y+1CLn8uwGijuZe5JHhedFINghWfl4LImZ67Ad6ZOkOvwrw3TyY1bcc
+         tLUOokwNvf70RTF5HsAVYej0D0mnXSMbL239s=
+Message-ID: <4B6853D3.9080300@gmail.com>
+Date: Tue, 02 Feb 2010 11:33:23 -0500
+From: William Allen Simpson <william.allen.simpson@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+MIME-Version: 1.0
+To: Linux Kernel Developers <linux-kernel@vger.kernel.org>,
+       Linux Kernel Network Developers <netdev@vger.kernel.org>
+CC: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH v3 5/7] TCPCT part 2e: accept SYNACK data
+References: <4B684DE7.3020601@gmail.com>
+In-Reply-To: <4B684DE7.3020601@gmail.com>
+Content-Type: multipart/mixed;
+ boundary="------------050400060201060406050200"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 02, 2010 at 03:36:51PM +0100, Arnd Bergmann wrote:
-> > -       return (long)old;
-> > +       return (long)(old == PER_LINUX32 ? PER_LINUX : old);
-> >  }
-> 
-> What does this do for a native 64 bit process setting PER_LINUX32?
-> It looks to me like it could never set it back to the original
-> value, or am I missing something here?
-> 
-> It's what the arch specific code does already, but it seems a bit
-> strange anyway.
+This is a multi-part message in MIME format.
+--------------050400060201060406050200
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Indeed, this prevents a process from going back to 64bit.  And while
-the setarch tool in util-linux also allows going back to 64-bit the
-typical use case seems to be going into 32-bit mode.
+When accompanied by cookie option, Initiator (client) queues incoming
+SYNACK transaction data.
 
-But if the consensus is that we should fix this properly I can
-replace the patch with one introducing a compat_sys_personality
-which only gets used for compat tasks.
+This is a straightforward re-implementation of an earlier (year-old)
+patch that no longer applies cleanly, with permission of the original
+author (Adam Langley).  The patch was previously reviewed:
 
+    http://thread.gmane.org/gmane.linux.network/102586
+
+This function will also be used in subsequent patches that implement
+additional features.
+
+Requires:
+   TCPCT part 1g: Responder Cookie => Initiator
+   net: tcp_header_len_th and tcp_option_len_th
+
+Signed-off-by: William.Allen.Simpson@gmail.com
+---
+  net/ipv4/tcp_input.c |   26 +++++++++++++++++++++++++-
+  1 files changed, 25 insertions(+), 1 deletions(-)
+
+--------------050400060201060406050200
+Content-Type: text/plain; x-mac-type="54455854"; x-mac-creator="0";
+ name="TCPCT+2e3+2.6.33-rc6.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="TCPCT+2e3+2.6.33-rc6.patch"
+
+diff --git a/net/ipv4/tcp_input.c b/net/ipv4/tcp_input.c
+index 8e0f6ae..165040e 100644
+--- a/net/ipv4/tcp_input.c
++++ b/net/ipv4/tcp_input.c
+@@ -5395,6 +5395,12 @@ discard:
+ 	return 0;
+ }
+ 
++/*
++ * Returns:
++ *	+1 on reset,
++ *	0 success and/or SYNACK data,
++ *	-1 on discard.
++ */
+ static int tcp_rcv_synsent_state_process(struct sock *sk, struct sk_buff *skb,
+ 					 struct tcphdr *th)
+ {
+@@ -5403,6 +5409,7 @@ static int tcp_rcv_synsent_state_process(struct sock *sk, struct sk_buff *skb,
+ 	struct tcp_sock *tp = tcp_sk(sk);
+ 	struct tcp_cookie_values *cvp = tp->cookie_values;
+ 	int saved_clamp = tp->rx_opt.mss_clamp;
++	int queued = 0;
+ 
+ 	tcp_parse_options(skb, &tp->rx_opt, &hash_location, 0);
+ 
+@@ -5509,6 +5516,7 @@ static int tcp_rcv_synsent_state_process(struct sock *sk, struct sk_buff *skb,
+ 					- TCPOLEN_COOKIE_BASE;
+ 			int cookie_pair_size = cookie_size
+ 					     + cvp->cookie_desired;
++			int tcp_header_len = tcp_header_len_th(th);
+ 
+ 			/* A cookie extension option was sent and returned.
+ 			 * Note that each incoming SYNACK replaces the
+@@ -5524,6 +5532,19 @@ static int tcp_rcv_synsent_state_process(struct sock *sk, struct sk_buff *skb,
+ 				       hash_location, cookie_size);
+ 				cvp->cookie_pair_size = cookie_pair_size;
+ 			}
++
++			queued = skb->len - tcp_header_len;
++			if (queued > 0) {
++				/* Queue incoming transaction data. */
++				__skb_pull(skb, tcp_header_len);
++				__skb_queue_tail(&sk->sk_receive_queue, skb);
++				skb_set_owner_r(skb, sk);
++				sk->sk_data_ready(sk, 0);
++				cvp->s_data_in = 1; /* true */
++				tp->rcv_nxt = TCP_SKB_CB(skb)->end_seq;
++				tp->rcv_wup = TCP_SKB_CB(skb)->end_seq;
++				tp->copied_seq = TCP_SKB_CB(skb)->seq + 1;
++			}
+ 		}
+ 
+ 		smp_mb();
+@@ -5577,11 +5598,14 @@ static int tcp_rcv_synsent_state_process(struct sock *sk, struct sk_buff *skb,
+ 						  TCP_DELACK_MAX, TCP_RTO_MAX);
+ 
+ discard:
+-			__kfree_skb(skb);
++			if (queued <= 0)
++				__kfree_skb(skb);
+ 			return 0;
+ 		} else {
+ 			tcp_send_ack(sk);
+ 		}
++		if (queued > 0)
++			return 0;
+ 		return -1;
+ 	}
+ 
+-- 
+1.6.3.3
+
+
+--------------050400060201060406050200--
