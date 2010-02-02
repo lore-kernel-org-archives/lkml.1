@@ -1,95 +1,68 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756656Ab0BBQrn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 11:47:43 -0500
-Received: from mailhub.sw.ru ([195.214.232.25]:6893 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751475Ab0BBQrl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 11:47:41 -0500
-From: Dmitry Monakhov <dmonakhov@openvz.org>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-nfs@vger.kernel.org
-Subject: Re: [PATCH] nfs: clear_commit_release incorrectly handle truncated page
-References: <87hbpzhqlp.fsf@openvz.org> <1265123045.3177.21.camel@localhost>
-	<87eil3pszw.fsf@openvz.org> <1265124999.3177.27.camel@localhost>
-	<87mxzrk4wk.fsf@openvz.org> <1265127435.3177.47.camel@localhost>
-Date: Tue, 02 Feb 2010 19:47:31 +0300
-In-Reply-To: <1265127435.3177.47.camel@localhost> (Trond Myklebust's message
-	of "Tue, 02 Feb 2010 11:17:15 -0500")
-Message-ID: <87pr4nzisc.fsf@openvz.org>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
+	id S1756675Ab0BBQsT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 11:48:19 -0500
+Received: from mga06.intel.com ([134.134.136.21]:56335 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756295Ab0BBQsS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 11:48:18 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,391,1262592000"; 
+   d="scan'208";a="592496225"
+From: Sheng Yang <sheng@linux.intel.com>
+Organization: Intel Opensource Technology Center
+To: Ian Campbell <Ian.Campbell@citrix.com>
+Subject: Re: [Xen-devel] [PATCH 6/6] xen/hybrid: Enable grant table and xenbus
+Date: Wed, 3 Feb 2010 00:46:41 +0800
+User-Agent: KMail/1.12.2 (Linux/2.6.31-17-generic; KDE/4.3.2; x86_64; ; )
+Cc: Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>,
+       Keir Fraser <Keir.Fraser@eu.citrix.com>,
+       "xen-devel" <xen-devel@lists.xensource.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <1265098747-10117-1-git-send-email-sheng@linux.intel.com> <201002022124.41019.sheng@linux.intel.com> <1265127844.24394.613.camel@zakaz.uk.xensource.com>
+In-Reply-To: <1265127844.24394.613.camel@zakaz.uk.xensource.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002030046.41799.sheng@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trond Myklebust <trond.myklebust@fys.uio.no> writes:
+On Wednesday 03 February 2010 00:24:04 Ian Campbell wrote:
+> On Tue, 2010-02-02 at 13:24 +0000, Sheng Yang wrote:
+> > I am not sure if I understand you right, but I think the issue is,
+> > there is no PVonHVM drivers in Linux upstream. The drivers are
+> > currently maintained by OSVs, and the one in Xen upstream code only
+> > support 2.6.18. So I didn't take them into consideration at the time.
+> 
+> True, but this is something which should be taken care of by the core
+> Xen-aware code not something which should be pushed down into each
+> driver.
+> 
+> Someone who wants to add PVonHVM functionality shouldn't have to go and
+> remove a bunch of conditionals from each driver (or worse add
+> alternative clauses to each check!).
+> 
+> > I think the "xen_evtchn_enable()" looks much better. Would replace
+> > these ugly lines in the next version.
+> 
+> I think it would be cleaner to encapsulate this in the evtchn code
+> rather than leaking platform knowledge into each driver. IOW the evtchn
+> functions should return failure if event channels are not enabled and
+> the driver should cope with this gracefully.
 
-> On Tue, 2010-02-02 at 18:56 +0300, Dmitry Monakhov wrote: 
->> Trond Myklebust <trond.myklebust@fys.uio.no> writes:
->> 
->> > On Tue, 2010-02-02 at 18:17 +0300, Dmitry Monakhov wrote: 
->> >> Trond Myklebust <trond.myklebust@fys.uio.no> writes:
->> >> 
->> >> > On Tue, 2010-02-02 at 13:36 +0300, Dmitry Monakhov wrote:
->> >> >
->> >> > Something is wrong here. nfs_release_page() returns '0' if the 
->> >> > page has an associated write request (i.e. PagePrivate is set), and so
->> >> > both invalidate_complete_page() and invalidate_complete_page2() will
->> >> > fail.
->> >> >
->> >> > So what is truncating the page?
->> >> truncate_inode_page()
->> >>   truncate_complete_page()
->> >>     if (page_has_private(page))
->> >>        do_invalidatepage()
->> >>          ->nfs_invalidate_page()
->> >
->> > do_invalidate_page() is called before remove_from_page_cache(), so
->> > page->mapping should still be set.
->
-> Hmm.... There is a known problem with a reference leak in
-> nfs_wb_page_cancel() (I've queued up a fix for 2.6.33 in the 'bugfixes'
-> branch of my git tree already). What happens when you apply the
-> following patch?
-The not helps, still get the same oops(log follows).
-Have you tried my testcase?
+Agree. That what I suppose to do. What the drivers should only know is, if 
+event channel is enabled. 
 
- BUG: unable to handle kernel NULL pointer dereference at 00000040
- IP: [<f80d415f>] nfs_clear_request_commit+0x3f/0xb0 [nfs]
- *pde = 00000000 
- Oops: 0000 [#1] SMP DEBUG_PAGEALLOC
- last sysfs file: /sys/devices/platform/thinkpad_acpi/leds/tpacpi::thinkvantage/uevent
- Modules linked in: binfmt_misc quota_v2 quota_tree nfsd exportfs nfs lockd sunrpc iwl3945 thinkpad_acpi psmouse led_class serio_raw iwlcore nvram raid1 raid0 linear e1000e
- 
- Pid: 1035, comm: nfsiod Not tainted 2.6.33-rc6 #60 2623DDU/2623DDU
- EIP: 0060:[<f80d415f>] EFLAGS: 00010296 CPU: 0
- EIP is at nfs_clear_request_commit+0x3f/0xb0 [nfs]
- EAX: 00000000 EBX: c2561d80 ECX: c06d3700 EDX: 00000014
- ESI: f69916c0 EDI: f80dab58 EBP: f6724ef4 ESP: f6724ee8
-  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
- Process nfsiod (pid: 1035, ti=f6724000 task=f69dda90 task.ti=f6724000)
- Stack:
-  c04df67d f69d7440 f69916c0 f6724f34 f80d4258 f6724f44 00001b0e 00000000
- <0> ffff799c 00000400 f505f000 94c0042a f69917e0 f69917e8 00000000 f69916c0
- <0> f69916c4 f69916c0 f80dab58 f6724f3c f8075703 f6724f58 f8075871 f6724f60
- Call Trace:
-  [<c04df67d>] ? schedule+0x3ad/0xa30
-  [<f80d4258>] ? nfs_commit_release+0x88/0x1a0 [nfs]
-  [<f8075703>] ? rpc_release_calldata+0x13/0x20 [sunrpc]
-  [<f8075871>] ? rpc_free_task+0x41/0x70 [sunrpc]
-  [<c01acc4c>] ? probe_workqueue_execution+0x8c/0xd0
-  [<f8075940>] ? rpc_async_release+0x10/0x20 [sunrpc]
-  [<c015834d>] ? worker_thread+0x10d/0x210
-  [<f8075930>] ? rpc_async_release+0x0/0x20 [sunrpc]
-  [<c015bb10>] ? autoremove_wake_function+0x0/0x50
-  [<c0158240>] ? worker_thread+0x0/0x210
-  [<c015b724>] ? kthread+0x74/0x80
-  [<c015b6b0>] ? kthread+0x0/0x80
-  [<c0103546>] ? kernel_thread_helper+0x6/0x10
- Code: f0 0f ba 70 28 01 19 d2 31 c0 85 d2 75 0e 8b 5d f8 8b 75 fc 89 ec 5d c3 8d 74 26 00 89 d8 ba 10 00 00 00 e8 74 0e 10 c8 8b 43 10 <8b> 70 40 9c 5b fa e8 26 67 0d c8 8d 46 30 b9 ff ff ff ff 0f bd 
- EIP: [<f80d415f>] nfs_clear_request_commit+0x3f/0xb0 [nfs] SS:ESP 0068:f6724ee8
- CR2: 0000000000000040
- ---[ end trace 4bf8ee9d233ce744 ]---
+> Or perhaps at the xenbus driver level we should be deciding whether or
+> not we have enough paravirtualisation to be worth probing the drivers at
+> all?
+
+I think current scheme is direct enough for now. We can improve it later.
+
+-- 
+regards
+Yang, Sheng
