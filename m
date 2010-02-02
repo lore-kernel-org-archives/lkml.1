@@ -1,173 +1,74 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755848Ab0BBIFV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 03:05:21 -0500
-Received: from hera.kernel.org ([140.211.167.34]:50817 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755735Ab0BBIFT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 03:05:19 -0500
-Message-ID: <4B67DC58.7060809@kernel.org>
-Date: Tue, 02 Feb 2010 00:03:36 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
-MIME-Version: 1.0
-To: Thomas Renninger <trenn@suse.de>
-CC: linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org,
-       akpm@linux-foundation.org, mingo@elte.hu
-Subject: Re: IRQ regression messes up xseries 330 SCI resulting in apic=off
- - bisected to commit b9c61b70075c87a861262473
-References: <201002011559.07869.trenn@suse.de> <4B677CFC.9080406@kernel.org>
-In-Reply-To: <4B677CFC.9080406@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1753098Ab0BBIRH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 03:17:07 -0500
+Received: from ernst.netinsight.se ([194.16.221.21]:16700 "HELO
+	ernst.netinsight.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751031Ab0BBIRB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 03:17:01 -0500
+Date: Tue, 2 Feb 2010 09:16:57 +0100
+From: Simon Kagstrom <simon.kagstrom@netinsight.net>
+To: ebiederm@xmission.com (Eric W. Biederman)
+Cc: Andrew Morton <akpm@linux-foundation.org>, dedekind1@gmail.com,
+       =?ISO-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
+       linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] Provide ways of crashing the kernel through debugfs
+Message-ID: <20100202091657.124e6b0c@marrow.netinsight.se>
+In-Reply-To: <m1eil4i85t.fsf@fess.ebiederm.org>
+References: <20100126105640.6bf9488c@marrow.netinsight.se>
+	<2375c9f91001260208t31379702tb49cb57d12d5890b@mail.gmail.com>
+	<20100126111853.10890fc6@marrow.netinsight.se>
+	<2375c9f91001261853t1158a66aw86546a61e613338f@mail.gmail.com>
+	<1264689482.1973.132.camel@localhost>
+	<20100129071324.2521705c@marrow.netinsight.se>
+	<20100129023327.021cb23d.akpm@linux-foundation.org>
+	<m1eil4i85t.fsf@fess.ebiederm.org>
+X-Mailer: Claws Mail 3.7.4 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/01/2010 05:16 PM, Yinghai Lu wrote:
-> On 02/01/2010 06:59 AM, Thomas Renninger wrote:
->> Hi,
->>
->> booting a latest kernel on this machine results in:
->>
->> PCI: PCI BIOS revision 2.10 entry at 0xfd61c, last bus=1
->> PCI: Using configuration type 1 for base access bio: create slab <bio-0> at 0
->> ACPI: SCI (IRQ30) allocation failed
->> ACPI Exception: AE_NOT_ACQUIRED, Unable to install System Control Interrupt handler (20090903/evevent-161)
->> ACPI: Unable to start the ACPI Interpreter
->>
+On Mon, 01 Feb 2010 20:16:46 -0800
+ebiederm@xmission.com (Eric W. Biederman) wrote:
+
+> Andrew Morton <akpm@linux-foundation.org> writes:
+
+> > Yes, it's the sort of thing which lots of people have written
+> > throw-away ad-hoc versions of.  It probably makes sense to do it once,
+> > do it right to save people from having to rererereinvent that wheel.
+> >
+> > What do others think?
 > 
-> please check
+> I think it makes sense, and in fact we have already merged one attempt
+> at doing this generically.  drivers/misc/lkdtm.c
 
-Subject: [PATCH -v2] x86: fix sci on ioapic 1
+So this functionality was already there - it would appear that I didn't do my
+research good enough then (I did actually look for this kind of thing).
+If something, I guess it shows that the kernel source is getting big!
 
-Thomas Renninger <trenn@suse.de> reported on IBM x3330
+To add to the irony, I work for a company that works on "DTM", although
+it's not related to this functionality :-)
 
-booting a latest kernel on this machine results in:
+> I think Simon's patch adds some additional interesting failure modes.
+> write_after_free, corrupt_stack_write, unaligned_load_store.
+> 
+> Simon is there any chance you can change your patch to an enhancement of lkdtm?
+> 
+> lkdtm actually digs into the interesting failure points with a jprobe
+> to trigger the harder to reproduce scenarios.  Like stack overflow in
+> an interrupt handler.
 
-PCI: PCI BIOS revision 2.10 entry at 0xfd61c, last bus=1
-PCI: Using configuration type 1 for base access bio: create slab <bio-0> at 0
-ACPI: SCI (IRQ30) allocation failed
-ACPI Exception: AE_NOT_ACQUIRED, Unable to install System Control Interrupt handler (20090903/evevent-161)
-ACPI: Unable to start the ACPI Interpreter
+Yes, this would be a better way of supporting the crash functionality.
+I'll take a look on integrating the extra tests into lkdtm.
 
-Later all kind of devices fail...
+I think it would also be good to provide a debugfs interface to lkdtm
+similar to what provoke-crash has. Right now you have to set it up via
+module parameters, and for some tests (write_after_free) I think that's
+a limitation since it often doesn't crash immediately.
 
-and bisect it down to this commit:
-commit b9c61b70075c87a8612624736faf4a2de5b1ed30
-
-    x86/pci: update pirq_enable_irq() to setup io apic routing
-
-it turns out we need to set irq routing for the sci on ioapic1 early.
-
--v2: make it work without sparseirq too.
-
-Reported-by: Thomas Renninger <trenn@suse.de>
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-
----
- arch/x86/include/asm/io_apic.h |    1 
- arch/x86/kernel/acpi/boot.c    |    9 ++++++-
- arch/x86/kernel/apic/io_apic.c |   50 +++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 59 insertions(+), 1 deletion(-)
-
-Index: linux-2.6/arch/x86/include/asm/io_apic.h
-===================================================================
---- linux-2.6.orig/arch/x86/include/asm/io_apic.h
-+++ linux-2.6/arch/x86/include/asm/io_apic.h
-@@ -160,6 +160,7 @@ extern int io_apic_get_redir_entries(int
- struct io_apic_irq_attr;
- extern int io_apic_set_pci_routing(struct device *dev, int irq,
- 		 struct io_apic_irq_attr *irq_attr);
-+void setup_IO_APIC_irq_extra(u32 gsi);
- extern int (*ioapic_renumber_irq)(int ioapic, int irq);
- extern void ioapic_init_mappings(void);
- extern void ioapic_insert_resources(void);
-Index: linux-2.6/arch/x86/kernel/acpi/boot.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/acpi/boot.c
-+++ linux-2.6/arch/x86/kernel/acpi/boot.c
-@@ -446,6 +446,12 @@ void __init acpi_pic_sci_set_trigger(uns
- int acpi_gsi_to_irq(u32 gsi, unsigned int *irq)
- {
- 	*irq = gsi;
-+
-+#ifdef CONFIG_X86_IO_APIC
-+	if (acpi_irq_model == ACPI_IRQ_MODEL_IOAPIC)
-+		setup_IO_APIC_irq_extra(gsi);
-+#endif
-+
- 	return 0;
- }
- 
-@@ -473,7 +479,8 @@ int acpi_register_gsi(struct device *dev
- 		plat_gsi = mp_register_gsi(dev, gsi, trigger, polarity);
- 	}
- #endif
--	acpi_gsi_to_irq(plat_gsi, &irq);
-+	irq = plat_gsi;
-+
- 	return irq;
- }
- 
-Index: linux-2.6/arch/x86/kernel/apic/io_apic.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/apic/io_apic.c
-+++ linux-2.6/arch/x86/kernel/apic/io_apic.c
-@@ -1541,6 +1541,56 @@ static void __init setup_IO_APIC_irqs(vo
- }
- 
- /*
-+ * for the gsit that is not in first ioapic
-+ * but could not use acpi_register_gsi()
-+ * like some special sci in IBM x3330
-+ */
-+void setup_IO_APIC_irq_extra(u32 gsi)
-+{
-+	int apic_id = 0, pin, idx, irq;
-+	int node = cpu_to_node(boot_cpu_id);
-+	struct irq_desc *desc;
-+	struct irq_cfg *cfg;
-+
-+        /*
-+         * Convert 'gsi' to 'ioapic.pin'.
-+         */
-+        apic_id = mp_find_ioapic(gsi);
-+        if (apic_id < 0)
-+                return;
-+
-+        pin = mp_find_ioapic_pin(apic_id, gsi);
-+	idx = find_irq_entry(apic_id, pin, mp_INT);
-+	if (idx == -1)
-+		return;
-+
-+	irq = pin_2_irq(idx, apic_id, pin);
-+#ifdef CONFIG_SPARSE_IRQ
-+	desc = irq_to_desc(irq);
-+	if (desc)
-+		return;
-+#endif
-+	desc = irq_to_desc_alloc_node(irq, node);
-+	if (!desc) {
-+		printk(KERN_INFO "can not get irq_desc for %d\n", irq);
-+		return;
-+	}
-+
-+	cfg = desc->chip_data;
-+	add_pin_to_irq_node(cfg, node, apic_id, pin);
-+
-+	if (test_bit(pin, mp_ioapic_routing[apic_id].pin_programmed)) {
-+		pr_debug("Pin %d-%d already programmed\n",
-+			 mp_ioapics[apic_id].apicid, pin);
-+		return;
-+	}
-+	set_bit(pin, mp_ioapic_routing[apic_id].pin_programmed);
-+
-+	setup_IO_APIC_irq(apic_id, pin, irq, desc,
-+			irq_trigger(idx), irq_polarity(idx));
-+}
-+
-+/*
-  * Set up the timer pin, possibly with the 8259A-master behind.
-  */
- static void __init setup_timer_IRQ0_pin(unsigned int apic_id, unsigned int pin,
+// Simon
