@@ -1,74 +1,34 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754620Ab0BBDnS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 22:43:18 -0500
-Received: from leo.clearchain.com ([199.73.29.74]:21036 "EHLO
-	mail.clearchain.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753463Ab0BBDnP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 22:43:15 -0500
-Date: Tue, 2 Feb 2010 13:40:40 +1000
-From: Peter Hutterer <peter.hutterer@who-t.net>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] HID: add multi-input quirk for eGalax Touchcontroller
-Message-ID: <20100202034040.GA16880@barra.bne.redhat.com>
+	id S1754730Ab0BBDzN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 22:55:13 -0500
+Received: from ozlabs.org ([203.10.76.45]:38255 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754467Ab0BBDzK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Feb 2010 22:55:10 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: "Edward Z. Yang" <ezyang@ksplice.com>
+Subject: Re: [PATCH] Remove redundant trailing semicolons from macros
+Date: Tue, 2 Feb 2010 14:24:44 +1030
+User-Agent: KMail/1.12.2 (Linux/2.6.31-17-generic; KDE/4.3.2; i686; ; )
+Cc: linux-kernel@vger.kernel.org, trivial@kernel.org
+References: <1265066428-sup-9073@ezyang>
+In-Reply-To: <1265066428-sup-9073@ezyang>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-Greylist: Sender is SPF-compliant, not delayed by milter-greylist-4.0.1 (mail.clearchain.com [127.0.0.1]); Tue, 02 Feb 2010 14:13:12 +1030 (CST)
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002021424.45083.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Peter Hutterer <peter.hutterer@who-t.net>
----
-I've got one of these devices on my desk and it seems that it suffers from
-the ABS_Z/ABS_RX issue that we've seen in other devices before. This patch
-uses the same reasoning as 9db630b48a99adb4156e205b812fba8959644280.
+On Tue, 2 Feb 2010 09:56:59 am Edward Z. Yang wrote:
+> Signed-off-by: Edward Z. Yang <ezyang@ksplice.com>
 
-Nonetheless, I'm not sure about whether that's the right thing to do. With
-this patch applied, it gives me two devices, one mute, the other one
-announces BTN_PEN and BTN_TOUCH + abs axes, though only BTN_TOUCH is ever
-triggered. Loading usbtouchscreen instead of usbhid for this device makes
-the device look more sane BTN_TOUCH + abs axes but the actual data is
-random. So I'm not quite sure what the fix is supposed to be, any hints are
-appreciated if it's not the patch below.
+Assume trivial will take these?
 
-Cheers,
-  Peter
+Acked-by: Rusty Russell <rusty@rustcorp.com.au> 
 
-
- drivers/hid/hid-ids.h           |    3 +++
- drivers/hid/usbhid/hid-quirks.c |    1 +
- 2 files changed, 4 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/hid/hid-ids.h b/drivers/hid/hid-ids.h
-index f5144b8..2e698a2 100644
---- a/drivers/hid/hid-ids.h
-+++ b/drivers/hid/hid-ids.h
-@@ -158,6 +158,9 @@
- 
- #define USB_VENDOR_ID_DRAGONRISE	0x0079
- 
-+#define USB_VENDOR_ID_EGALAX		0x0EEF
-+#define USB_DEVICE_ID_EGALAX_TOUCHCONTROLLER	0x0001
-+
- #define USB_VENDOR_ID_ELO		0x04E7
- #define USB_DEVICE_ID_ELO_TS2700	0x0020
- 
-diff --git a/drivers/hid/usbhid/hid-quirks.c b/drivers/hid/usbhid/hid-quirks.c
-index e987562..dc27d74 100644
---- a/drivers/hid/usbhid/hid-quirks.c
-+++ b/drivers/hid/usbhid/hid-quirks.c
-@@ -32,6 +32,7 @@ static const struct hid_blacklist {
- 	{ USB_VENDOR_ID_AASHIMA, USB_DEVICE_ID_AASHIMA_PREDATOR, HID_QUIRK_BADPAD },
- 	{ USB_VENDOR_ID_ALPS, USB_DEVICE_ID_IBM_GAMEPAD, HID_QUIRK_BADPAD },
- 	{ USB_VENDOR_ID_CHIC, USB_DEVICE_ID_CHIC_GAMEPAD, HID_QUIRK_BADPAD },
-+	{ USB_VENDOR_ID_EGALAX, USB_DEVICE_ID_EGALAX_TOUCHCONTROLLER, HID_QUIRK_MULTI_INPUT },
- 	{ USB_VENDOR_ID_HAPP, USB_DEVICE_ID_UGCI_DRIVING, HID_QUIRK_BADPAD | HID_QUIRK_MULTI_INPUT },
- 	{ USB_VENDOR_ID_HAPP, USB_DEVICE_ID_UGCI_FLYING, HID_QUIRK_BADPAD | HID_QUIRK_MULTI_INPUT },
- 	{ USB_VENDOR_ID_HAPP, USB_DEVICE_ID_UGCI_FIGHTING, HID_QUIRK_BADPAD | HID_QUIRK_MULTI_INPUT },
--- 
-1.6.5.2
+Thanks!
+Rusty.
