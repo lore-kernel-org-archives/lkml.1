@@ -1,23 +1,23 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755926Ab0BBIUw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 03:20:52 -0500
-Received: from mga03.intel.com ([143.182.124.21]:16564 "EHLO mga03.intel.com"
+	id S1755896Ab0BBIV3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 03:21:29 -0500
+Received: from mga09.intel.com ([134.134.136.24]:54290 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755399Ab0BBIUm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 03:20:42 -0500
+	id S1755439Ab0BBIUf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 03:20:35 -0500
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="239406845"
+X-IronPort-AV: E=Sophos;i="4.49,389,1262592000"; 
+   d="scan'208";a="488931799"
 From: Sheng Yang <sheng@linux.intel.com>
 To: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
        Keir Fraser <keir.fraser@eu.citrix.com>
 Cc: xen-devel <xen-devel@lists.xensource.com>, linux-kernel@vger.kernel.org,
-       Sheng Yang <sheng@linux.intel.com>,
-       "Yaozu (Eddie) Dong" <eddie.dong@intel.com>
-Subject: [PATCH 3/6] xen/hybrid: Xen Hybrid Extension initialization
-Date: Tue,  2 Feb 2010 16:19:04 +0800
-Message-Id: <1265098747-10117-4-git-send-email-sheng@linux.intel.com>
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       Sheng Yang <sheng@linux.intel.com>
+Subject: [PATCH 1/6] xen/hybrid: add support for hvm_op
+Date: Tue,  2 Feb 2010 16:19:02 +0800
+Message-Id: <1265098747-10117-2-git-send-email-sheng@linux.intel.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1265098747-10117-1-git-send-email-sheng@linux.intel.com>
 References: <1265098747-10117-1-git-send-email-sheng@linux.intel.com>
@@ -25,283 +25,263 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The Hybrid Extension is started from real mode like HVM guest, but also with a
-component based PV feature selection(e.g. PV halt, PV timer, event channel,
-then PV drivers). So guest with Hybrid extension feature can takes the
-advantages of both H/W virtualization and Para-Virtualization.
+From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-This patch introduced the Hybrid Extension guest initialization.
+Add support for hvm_op hypercall.
 
-Guest would detect Hybrid capability using CPUID 0x40000002.edx, then call
-HVMOP_enable_hybrid hypercall to enable hybrid support in hypervisor.
-
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 Signed-off-by: Sheng Yang <sheng@linux.intel.com>
-Signed-off-by: Yaozu (Eddie) Dong <eddie.dong@intel.com>
 ---
- arch/x86/include/asm/xen/cpuid.h   |    5 ++
- arch/x86/xen/enlighten.c           |  118 ++++++++++++++++++++++++++++++++++++
- arch/x86/xen/irq.c                 |   21 ++++++
- arch/x86/xen/xen-head.S            |    6 ++
- arch/x86/xen/xen-ops.h             |    1 +
- include/xen/interface/hvm/hvm_op.h |    7 ++
- include/xen/xen.h                  |    9 +++
- 7 files changed, 167 insertions(+), 0 deletions(-)
+ arch/x86/include/asm/xen/hypercall.h |    6 ++
+ include/xen/hvm.h                    |   23 +++++++
+ include/xen/interface/hvm/hvm_op.h   |   72 ++++++++++++++++++++++
+ include/xen/interface/hvm/params.h   |  111 ++++++++++++++++++++++++++++++++++
+ 4 files changed, 212 insertions(+), 0 deletions(-)
+ create mode 100644 include/xen/hvm.h
+ create mode 100644 include/xen/interface/hvm/hvm_op.h
+ create mode 100644 include/xen/interface/hvm/params.h
 
-diff --git a/arch/x86/include/asm/xen/cpuid.h b/arch/x86/include/asm/xen/cpuid.h
-index 8787f03..b66fee2 100644
---- a/arch/x86/include/asm/xen/cpuid.h
-+++ b/arch/x86/include/asm/xen/cpuid.h
-@@ -65,4 +65,9 @@
- #define _XEN_CPUID_FEAT1_MMU_PT_UPDATE_PRESERVE_AD 0
- #define XEN_CPUID_FEAT1_MMU_PT_UPDATE_PRESERVE_AD  (1u<<0)
- 
-+#define _XEN_CPUID_FEAT2_HYBRID 0
-+#define XEN_CPUID_FEAT2_HYBRID (1u<<0)
-+#define _XEN_CPUID_FEAT2_HYBRID_EVTCHN 1
-+#define XEN_CPUID_FEAT2_HYBRID_EVTCHN (1u<<1)
-+
- #endif /* __XEN_PUBLIC_ARCH_X86_CPUID_H__ */
-diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
-index 2b26dd5..2f1a3df 100644
---- a/arch/x86/xen/enlighten.c
-+++ b/arch/x86/xen/enlighten.c
-@@ -34,6 +34,8 @@
- #include <xen/interface/version.h>
- #include <xen/interface/physdev.h>
- #include <xen/interface/vcpu.h>
-+#include <xen/interface/memory.h>
-+#include <xen/interface/hvm/hvm_op.h>
- #include <xen/features.h>
- #include <xen/page.h>
- #include <xen/hvc-console.h>
-@@ -43,6 +45,7 @@
- #include <asm/page.h>
- #include <asm/xen/hypercall.h>
- #include <asm/xen/hypervisor.h>
-+#include <asm/xen/cpuid.h>
- #include <asm/fixmap.h>
- #include <asm/processor.h>
- #include <asm/proto.h>
-@@ -1194,3 +1197,118 @@ asmlinkage void __init xen_start_kernel(void)
- 	x86_64_start_reservations((char *)__pa_symbol(&boot_params));
- #endif
+diff --git a/arch/x86/include/asm/xen/hypercall.h b/arch/x86/include/asm/xen/hypercall.h
+index 9c371e4..47c2ebb 100644
+--- a/arch/x86/include/asm/xen/hypercall.h
++++ b/arch/x86/include/asm/xen/hypercall.h
+@@ -417,6 +417,12 @@ HYPERVISOR_nmi_op(unsigned long op, unsigned long arg)
+ 	return _hypercall2(int, nmi_op, op, arg);
  }
-+
-+static void __init xen_hybrid_banner(void)
+ 
++static inline unsigned long __must_check
++HYPERVISOR_hvm_op(int op, void *arg)
 +{
-+	unsigned version = HYPERVISOR_xen_version(XENVER_version, NULL);
-+	struct xen_extraversion extra;
-+	HYPERVISOR_xen_version(XENVER_extraversion, &extra);
-+
-+	printk(KERN_INFO "Booting hybrid kernel on %s\n", pv_info.name);
-+	printk(KERN_INFO "Xen version: %d.%d%s\n",
-+	       version >> 16, version & 0xffff, extra.extraversion);
++	return _hypercall2(unsigned long, hvm_op, op, arg);
 +}
 +
-+static int xen_para_available(void)
+ static inline void
+ MULTI_fpu_taskswitch(struct multicall_entry *mcl, int set)
+ {
+diff --git a/include/xen/hvm.h b/include/xen/hvm.h
+new file mode 100644
+index 0000000..4ea8887
+--- /dev/null
++++ b/include/xen/hvm.h
+@@ -0,0 +1,23 @@
++/* Simple wrappers around HVM functions */
++#ifndef XEN_HVM_H__
++#define XEN_HVM_H__
++
++#include <xen/interface/hvm/params.h>
++
++static inline unsigned long hvm_get_parameter(int idx)
 +{
-+	uint32_t eax, ebx, ecx, edx;
-+	cpuid(XEN_CPUID_LEAF(0), &eax, &ebx, &ecx, &edx);
-+
-+	if (ebx == XEN_CPUID_SIGNATURE_EBX &&
-+	    ecx == XEN_CPUID_SIGNATURE_ECX &&
-+	    edx == XEN_CPUID_SIGNATURE_EDX &&
-+	    ((eax - XEN_CPUID_LEAF(0)) >= 2))
-+		return 1;
-+
-+	return 0;
-+}
-+
-+u32 xen_hybrid_status;
-+EXPORT_SYMBOL_GPL(xen_hybrid_status);
-+
-+static int enable_hybrid(u64 flags)
-+{
-+	struct xen_hvm_hybrid_type a;
-+
-+	a.domid = DOMID_SELF;
-+	a.flags = flags;
-+	return HYPERVISOR_hvm_op(HVMOP_enable_hybrid, &a);
-+}
-+
-+static int init_hybrid_info(void)
-+{
-+	uint32_t ecx, edx, pages, msr;
-+	u64 pfn;
-+	u32 flags = 0;
-+
-+	if (!xen_para_available())
-+		return -EINVAL;
-+
-+	cpuid(XEN_CPUID_LEAF(2), &pages, &msr, &ecx, &edx);
-+
-+	/* Check if hybrid mode is supported */
-+	if (!(edx & XEN_CPUID_FEAT2_HYBRID))
-+		return -ENODEV;
-+
-+	xen_hybrid_status = XEN_HYBRID_ENABLED;
-+
-+	/* We only support 1 page of hypercall for now */
-+	if (pages != 1)
-+		return -ENOMEM;
-+
-+	pfn = __pa(hypercall_page);
-+	wrmsrl(msr, pfn);
-+
-+	xen_setup_features();
-+
-+	if (enable_hybrid(flags))
-+		return -EINVAL;
-+
-+	x86_init.oem.banner = xen_hybrid_banner;
-+	pv_info = xen_info;
-+	pv_info.kernel_rpl = 0;
-+
-+	return 0;
-+}
-+
-+extern struct shared_info shared_info_page;
-+
-+static void __init init_shared_info(void)
-+{
-+	struct xen_add_to_physmap xatp;
-+
-+	xatp.domid = DOMID_SELF;
-+	xatp.idx = 0;
-+	xatp.space = XENMAPSPACE_shared_info;
-+	xatp.gpfn = __pa(&shared_info_page) >> PAGE_SHIFT;
-+	if (HYPERVISOR_memory_op(XENMEM_add_to_physmap, &xatp))
-+		BUG();
-+
-+	HYPERVISOR_shared_info = (struct shared_info *)&shared_info_page;
-+
-+	/* Don't do the full vcpu_info placement stuff until we have a
-+	   possible map and a non-dummy shared_info. */
-+	per_cpu(xen_vcpu, 0) = &HYPERVISOR_shared_info->vcpu_info[0];
-+}
-+
-+void __init xen_hybrid_init(void)
-+{
-+#ifdef CONFIG_X86_32
-+	return;
-+#else
++	struct xen_hvm_param xhv;
 +	int r;
 +
-+	/* Ensure the we won't confused with PV */
-+	if (xen_domain_type == XEN_PV_DOMAIN)
-+		return;
-+
-+	r = init_hybrid_info();
-+	if (r < 0)
-+		return;
-+
-+	init_shared_info();
-+
-+	xen_hybrid_init_irq_ops();
-+#endif
++	xhv.domid = DOMID_SELF;
++	xhv.index = idx;
++	r = HYPERVISOR_hvm_op(HVMOP_get_param, &xhv);
++	if (r < 0) {
++		printk(KERN_ERR "cannot get hvm parameter %d: %d.\n",
++		       idx, r);
++		return 0;
++	}
++	return xhv.value;
 +}
 +
-diff --git a/arch/x86/xen/irq.c b/arch/x86/xen/irq.c
-index 9d30105..da4faf4 100644
---- a/arch/x86/xen/irq.c
-+++ b/arch/x86/xen/irq.c
-@@ -131,3 +131,24 @@ void __init xen_init_irq_ops()
- 	pv_irq_ops = xen_irq_ops;
- 	x86_init.irqs.intr_init = xen_init_IRQ;
- }
-+
-+static void xen_hybrid_safe_halt(void)
-+{
-+	/* Do local_irq_enable() explicitly in hybrid guest */
-+	local_irq_enable();
-+	xen_safe_halt();
-+}
-+
-+static void xen_hybrid_halt(void)
-+{
-+	if (irqs_disabled())
-+		HYPERVISOR_vcpu_op(VCPUOP_down, smp_processor_id(), NULL);
-+	else
-+		xen_hybrid_safe_halt();
-+}
-+
-+void __init xen_hybrid_init_irq_ops(void)
-+{
-+	pv_irq_ops.safe_halt = xen_hybrid_safe_halt;
-+	pv_irq_ops.halt = xen_hybrid_halt;
-+}
-diff --git a/arch/x86/xen/xen-head.S b/arch/x86/xen/xen-head.S
-index 1a5ff24..26041ce 100644
---- a/arch/x86/xen/xen-head.S
-+++ b/arch/x86/xen/xen-head.S
-@@ -33,6 +33,12 @@ ENTRY(hypercall_page)
- 	.skip PAGE_SIZE_asm
- .popsection
- 
-+.pushsection .data
-+	.align PAGE_SIZE_asm
-+ENTRY(shared_info_page)
-+	.skip PAGE_SIZE_asm
-+.popsection
-+
- 	ELFNOTE(Xen, XEN_ELFNOTE_GUEST_OS,       .asciz "linux")
- 	ELFNOTE(Xen, XEN_ELFNOTE_GUEST_VERSION,  .asciz "2.6")
- 	ELFNOTE(Xen, XEN_ELFNOTE_XEN_VERSION,    .asciz "xen-3.0")
-diff --git a/arch/x86/xen/xen-ops.h b/arch/x86/xen/xen-ops.h
-index f9153a3..89e38ba 100644
---- a/arch/x86/xen/xen-ops.h
-+++ b/arch/x86/xen/xen-ops.h
-@@ -41,6 +41,7 @@ void xen_vcpu_restore(void);
- void __init xen_build_dynamic_phys_to_machine(void);
- 
- void xen_init_irq_ops(void);
-+void xen_hybrid_init_irq_ops(void);
- void xen_setup_timer(int cpu);
- void xen_setup_runstate_info(int cpu);
- void xen_teardown_timer(int cpu);
++#endif /* XEN_HVM_H__ */
 diff --git a/include/xen/interface/hvm/hvm_op.h b/include/xen/interface/hvm/hvm_op.h
-index 7c74ba4..fac6e82 100644
---- a/include/xen/interface/hvm/hvm_op.h
+new file mode 100644
+index 0000000..7c74ba4
+--- /dev/null
 +++ b/include/xen/interface/hvm/hvm_op.h
-@@ -69,4 +69,11 @@ DEFINE_GUEST_HANDLE_STRUCT(xen_hvm_set_pci_link_route);
- /* Flushes all VCPU TLBs: @arg must be NULL. */
- #define HVMOP_flush_tlbs          5
- 
-+#define HVMOP_enable_hybrid	  9
-+struct xen_hvm_hybrid_type {
-+	domid_t domid;
-+	uint32_t flags;
-+#define HVM_HYBRID_EVTCHN (1ull<<1)
+@@ -0,0 +1,72 @@
++/*
++ * Permission is hereby granted, free of charge, to any person obtaining a copy
++ * of this software and associated documentation files (the "Software"), to
++ * deal in the Software without restriction, including without limitation the
++ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
++ * sell copies of the Software, and to permit persons to whom the Software is
++ * furnished to do so, subject to the following conditions:
++ *
++ * The above copyright notice and this permission notice shall be included in
++ * all copies or substantial portions of the Software.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
++ * DEALINGS IN THE SOFTWARE.
++ */
++
++#ifndef __XEN_PUBLIC_HVM_HVM_OP_H__
++#define __XEN_PUBLIC_HVM_HVM_OP_H__
++
++/* Get/set subcommands: extra argument == pointer to xen_hvm_param struct. */
++#define HVMOP_set_param           0
++#define HVMOP_get_param           1
++struct xen_hvm_param {
++    domid_t  domid;    /* IN */
++    uint32_t index;    /* IN */
++    uint64_t value;    /* IN/OUT */
 +};
++DEFINE_GUEST_HANDLE_STRUCT(xen_hvm_param);
 +
- #endif /* __XEN_PUBLIC_HVM_HVM_OP_H__ */
-diff --git a/include/xen/xen.h b/include/xen/xen.h
-index a164024..aace9cc 100644
---- a/include/xen/xen.h
-+++ b/include/xen/xen.h
-@@ -9,6 +9,7 @@ enum xen_domain_type {
- 
- #ifdef CONFIG_XEN
- extern enum xen_domain_type xen_domain_type;
-+extern void xen_hybrid_init(void);
- #else
- #define xen_domain_type		XEN_NATIVE
- #endif
-@@ -19,6 +20,14 @@ extern enum xen_domain_type xen_domain_type;
- #define xen_hvm_domain()	(xen_domain() &&			\
- 				 xen_domain_type == XEN_HVM_DOMAIN)
- 
-+#define XEN_HYBRID_ENABLED	    (1u << 0)
-+#define XEN_HYBRID_EVTCHN_ENABLED   (1u << 1)
-+extern u32 xen_hybrid_status;
++/* Set the logical level of one of a domain's PCI INTx wires. */
++#define HVMOP_set_pci_intx_level  2
++struct xen_hvm_set_pci_intx_level {
++    /* Domain to be updated. */
++    domid_t  domid;
++    /* PCI INTx identification in PCI topology (domain:bus:device:intx). */
++    uint8_t  domain, bus, device, intx;
++    /* Assertion level (0 = unasserted, 1 = asserted). */
++    uint8_t  level;
++};
++DEFINE_GUEST_HANDLE_STRUCT(xen_hvm_set_pci_intx_level);
 +
-+#define xen_hybrid_enabled() (xen_hybrid_status & XEN_HYBRID_ENABLED)
-+#define xen_hybrid_evtchn_enabled() \
-+	(xen_hybrid_status & XEN_HYBRID_EVTCHN_ENABLED)
++/* Set the logical level of one of a domain's ISA IRQ wires. */
++#define HVMOP_set_isa_irq_level   3
++struct xen_hvm_set_isa_irq_level {
++    /* Domain to be updated. */
++    domid_t  domid;
++    /* ISA device identification, by ISA IRQ (0-15). */
++    uint8_t  isa_irq;
++    /* Assertion level (0 = unasserted, 1 = asserted). */
++    uint8_t  level;
++};
++DEFINE_GUEST_HANDLE_STRUCT(xen_hvm_set_isa_irq_level);
 +
- #ifdef CONFIG_XEN_DOM0
- #include <xen/interface/xen.h>
- #include <asm/xen/hypervisor.h>
++#define HVMOP_set_pci_link_route  4
++struct xen_hvm_set_pci_link_route {
++    /* Domain to be updated. */
++    domid_t  domid;
++    /* PCI link identifier (0-3). */
++    uint8_t  link;
++    /* ISA IRQ (1-15), or 0 (disable link). */
++    uint8_t  isa_irq;
++};
++DEFINE_GUEST_HANDLE_STRUCT(xen_hvm_set_pci_link_route);
++
++/* Flushes all VCPU TLBs: @arg must be NULL. */
++#define HVMOP_flush_tlbs          5
++
++#endif /* __XEN_PUBLIC_HVM_HVM_OP_H__ */
+diff --git a/include/xen/interface/hvm/params.h b/include/xen/interface/hvm/params.h
+new file mode 100644
+index 0000000..15d828f
+--- /dev/null
++++ b/include/xen/interface/hvm/params.h
+@@ -0,0 +1,111 @@
++/*
++ * Permission is hereby granted, free of charge, to any person obtaining a copy
++ * of this software and associated documentation files (the "Software"), to
++ * deal in the Software without restriction, including without limitation the
++ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
++ * sell copies of the Software, and to permit persons to whom the Software is
++ * furnished to do so, subject to the following conditions:
++ *
++ * The above copyright notice and this permission notice shall be included in
++ * all copies or substantial portions of the Software.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
++ * DEALINGS IN THE SOFTWARE.
++ */
++
++#ifndef __XEN_PUBLIC_HVM_PARAMS_H__
++#define __XEN_PUBLIC_HVM_PARAMS_H__
++
++#include "hvm_op.h"
++
++/*
++ * Parameter space for HVMOP_{set,get}_param.
++ */
++
++/*
++ * How should CPU0 event-channel notifications be delivered?
++ * val[63:56] == 0: val[55:0] is a delivery GSI (Global System Interrupt).
++ * val[63:56] == 1: val[55:0] is a delivery PCI INTx line, as follows:
++ *                  Domain = val[47:32], Bus  = val[31:16],
++ *                  DevFn  = val[15: 8], IntX = val[ 1: 0]
++ * If val == 0 then CPU0 event-channel notifications are not delivered.
++ */
++#define HVM_PARAM_CALLBACK_IRQ 0
++
++/*
++ * These are not used by Xen. They are here for convenience of HVM-guest
++ * xenbus implementations.
++ */
++#define HVM_PARAM_STORE_PFN    1
++#define HVM_PARAM_STORE_EVTCHN 2
++
++#define HVM_PARAM_PAE_ENABLED  4
++
++#define HVM_PARAM_IOREQ_PFN    5
++
++#define HVM_PARAM_BUFIOREQ_PFN 6
++
++#ifdef __ia64__
++
++#define HVM_PARAM_NVRAM_FD     7
++#define HVM_PARAM_VHPT_SIZE    8
++#define HVM_PARAM_BUFPIOREQ_PFN	9
++
++#elif defined(__i386__) || defined(__x86_64__)
++
++/* Expose Viridian interfaces to this HVM guest? */
++#define HVM_PARAM_VIRIDIAN     9
++
++#endif
++
++/*
++ * Set mode for virtual timers (currently x86 only):
++ *  delay_for_missed_ticks (default):
++ *   Do not advance a vcpu's time beyond the correct delivery time for
++ *   interrupts that have been missed due to preemption. Deliver missed
++ *   interrupts when the vcpu is rescheduled and advance the vcpu's virtual
++ *   time stepwise for each one.
++ *  no_delay_for_missed_ticks:
++ *   As above, missed interrupts are delivered, but guest time always tracks
++ *   wallclock (i.e., real) time while doing so.
++ *  no_missed_ticks_pending:
++ *   No missed interrupts are held pending. Instead, to ensure ticks are
++ *   delivered at some non-zero rate, if we detect missed ticks then the
++ *   internal tick alarm is not disabled if the VCPU is preempted during the
++ *   next tick period.
++ *  one_missed_tick_pending:
++ *   Missed interrupts are collapsed together and delivered as one 'late tick'.
++ *   Guest time always tracks wallclock (i.e., real) time.
++ */
++#define HVM_PARAM_TIMER_MODE   10
++#define HVMPTM_delay_for_missed_ticks    0
++#define HVMPTM_no_delay_for_missed_ticks 1
++#define HVMPTM_no_missed_ticks_pending   2
++#define HVMPTM_one_missed_tick_pending   3
++
++/* Boolean: Enable virtual HPET (high-precision event timer)? (x86-only) */
++#define HVM_PARAM_HPET_ENABLED 11
++
++/* Identity-map page directory used by Intel EPT when CR0.PG=0. */
++#define HVM_PARAM_IDENT_PT     12
++
++/* Device Model domain, defaults to 0. */
++#define HVM_PARAM_DM_DOMAIN    13
++
++/* ACPI S state: currently support S0 and S3 on x86. */
++#define HVM_PARAM_ACPI_S_STATE 14
++
++/* TSS used on Intel when CR0.PE=0. */
++#define HVM_PARAM_VM86_TSS     15
++
++/* Boolean: Enable aligning all periodic vpts to reduce interrupts */
++#define HVM_PARAM_VPT_ALIGN    16
++
++#define HVM_NR_PARAMS          17
++
++#endif /* __XEN_PUBLIC_HVM_PARAMS_H__ */
 -- 
 1.5.4.5
 
