@@ -1,128 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754627Ab0BBXTY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 18:19:24 -0500
-Received: from nox.protox.org ([88.191.38.29]:50824 "EHLO nox.protox.org"
+	id S1754756Ab0BBX0f (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 18:26:35 -0500
+Received: from fifo99.com ([67.223.236.141]:40620 "EHLO fifo99.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752493Ab0BBXTV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 18:19:21 -0500
-Date: Wed, 3 Feb 2010 00:15:01 +0100
-From: Jerome Glisse <glisse@freedesktop.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Dave Airlie <airlied@linux.ie>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
-Subject: Re: [crash, PATCH] Revert "drm/radeon/kms: move radeon KMS on/off
- switch out of staging."
-Message-ID: <20100202231501.GC10289@localhost.localdomain>
-References: <alpine.DEB.2.00.1002010215530.15366@skynet.skynet.ie>
- <alpine.DEB.2.00.1002010253120.15366@skynet.skynet.ie>
- <20100202081727.GA6788@elte.hu>
- <20100202115611.GA10289@localhost.localdomain>
- <20100202154221.GA27314@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20100202154221.GA27314@elte.hu>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+	id S1752792Ab0BBX0c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 18:26:32 -0500
+X-Greylist: delayed 451 seconds by postgrey-1.27 at vger.kernel.org; Tue, 02 Feb 2010 18:26:32 EST
+Subject: Re: [RFC PATCH V2] checkpatch.pl: Add warning on non #define 
+ continuation lines
+From: Daniel Walker <dwalker@fifo99.com>
+To: Joe Perches <joe@perches.com>
+Cc: John Kacur <jkacur@redhat.com>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Andy Whitcroft <apw@canonical.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mike Frysinger <vapier.adi@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1265150077.1945.137.camel@Joe-Laptop.home>
+References: <cover.1264967493.git.joe@perches.com>
+	 <aee58f4fc07709fe8a34021899e701824a0a6b53.1264967500.git.joe@perches.com>
+	 <20100201144745.GC26011@rakim.wolfsonmicro.main>
+	 <1265044080.25140.266.camel@Joe-Laptop.home>
+	 <8bd0f97a1002012013t5c4a3951ra559a8965d67a672@mail.gmail.com>
+	 <20100202110824.GF6566@rakim.wolfsonmicro.main>
+	 <1265115344.25140.805.camel@Joe-Laptop.home>
+	 <520f0cf11002020549td6bb27fp9301d3385dc6a0e3@mail.gmail.com>
+	 <1265150077.1945.137.camel@Joe-Laptop.home>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 02 Feb 2010 15:18:46 -0800
+Message-ID: <1265152726.21489.19.camel@c-dwalke-linux.qualcomm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 02, 2010 at 04:42:21PM +0100, Ingo Molnar wrote:
-> 
-> * Jerome Glisse <glisse@freedesktop.org> wrote:
-> 
-> > On Tue, Feb 02, 2010 at 09:17:27AM +0100, Ingo Molnar wrote:
-> > > 
-> > > * Dave Airlie <airlied@linux.ie> wrote:
-> > > 
-> > > > > Hi Linus,
-> > > > > 
-> > > > > Please pull the 'drm-linus' branch from
-> > > > > ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git drm-linus
-> > > > > 
-> > > > 
-> > > > I've also added an oops fix I seem to lose off my radar to this tree.
-> > > > 
-> > > > commit 17aafccab4352b422aa01fa6ebf82daff693a5b3
-> > > > Author: Michel D??nzer <daenzer@vmware.com>
-> > > > Date:   Fri Jan 22 09:20:00 2010 +0100
-> > > > 
-> > > >     drm/radeon/kms: Fix oops after radeon_cs_parser_init() failure.
-> > > 
-> > > FYI, this drm pull into mainline has triggered quick boot crashes in -tip 
-> > > testing (even with the above fix applied), on an Athlon64 whitebox PC with:
-> > > 
-> > >  01:00.0 VGA compatible controller: ATI Technologies Inc RV370 5B60 [Radeon X300 (PCIE)]
-> > >  01:00.1 Display controller: ATI Technologies Inc RV370 [Radeon X300SE]
-> > > 
-> > > the crash is:
-> > > 
-> > > [    7.111003] radeon 0000:01:00.0: Disabling GPU acceleration
-> > > [    7.273547] Failed to wait GUI idle while programming pipes. Bad things might happen.
-> > > [    7.436296] [drm:r100_cp_fini] *ERROR* Wait for CP idle timeout, shutting down CP.
-> > > [    7.598755] Failed to wait GUI idle while programming pipes. Bad things might happen.
-> > > [    7.599306] BUG: unable to handle kernel paging request at f8380000
-> > > [    7.599999] IP: [<c149f0de>] rv370_pcie_gart_set_page+0x2d/0x3c
-> > > [    7.599999] *pde = 36d44067 *pte = 00000000
-> > > [    7.599999] Oops: 0002 [#1] SMP DEBUG_PAGEALLOC
-> > > [    7.599999] last sysfs file:
-> > > 
-> > > i have bisected it back to:
-> > > 
-> > >  | 97b94ccb9aa1b82ed7a9a045d0ae5b32c99b84a0 is the first bad commit
-> > >  | commit 97b94ccb9aa1b82ed7a9a045d0ae5b32c99b84a0
-> > >  | Author: Dave Airlie <airlied@redhat.com>
-> > >  | Date:   Fri Jan 29 15:31:47 2010 +1000
-> > >  |
-> > >  |     drm/radeon/kms: fix incorrect logic in DP vs eDP connector checking.
-> > >  |    
-> > >  |     This makes displayport work again here.
-> > > 
-> > > Unfortunately even with that patch reverted it still crashes. Config and 
-> > > bootlog attached.
-> > > 
-> > > It's the moving of radeom KMS out of staging after -rc6 that causes it, 
-> > > because it brought it into the scope of my testing:
-> > > 
-> > >  f71d018: drm/radeon/kms: move radeon KMS on/off switch out of staging.
-> > > 
-> > > So at least on this box it's clearly not ready for mainline enablement yet. 
-> > > I've attached the revert patch further below.
-> > > 
-> > > 	Ingo
-> > > 
-> > 
-> > Attached is a patch which will fix the oops, still it's strange that CP 
-> > fails to init on your config. [...]
-> 
-> Thanks, that fixes the crash here!
-> 
-> Tested-by: Ingo Molnar <mingo@elte.hu>
-> 
-> > [...] Do you have IOMMU enabled ? I haven't played with iommu stuff thus i 
-> > wonder if we are missing somethings in this area.
-> 
-> No IOMMU here - this is a 5 years old box. (beyond GART that is)
-> 
-> Your patch fixes a bona-fide illegal-access bug in the DRM code, that's more 
-> than enough to crash the box ;-)
-> 
-> Btw., there's a new warning in the DRM code
-> 
->  drivers/gpu/drm/ati_pcigart.c: In function ‘drm_ati_pcigart_init’:
->  drivers/gpu/drm/ati_pcigart.c:115: warning: format ‘%Lx’ expects type ‘long long unsigned int’, but argument 3 has type ‘dma_addr_t’
-> 
-> Please fix that too, the kernel build is noisy enough as-is.
-> 
-> Thanks,
-> 
-> 	Ingo
+On Tue, 2010-02-02 at 14:34 -0800, Joe Perches wrote:
 
-I think i saw a patch for this, it's often a nice thing to let people do their first
-patch on this kind of thing, but i try to fix such thing when i run into it, thought
-i haven't always been a well behaving kid in the % format area.
+> There's probably something more appropriate that Andy Whitcroft
+> could work out that actually apply patches and verifies the
+> code using something like the ctx_statement_block functions but
+> that code is overly mysterious to me.
+> 
+> Does anyone know if Andy Whitcroft is still looking after checkpatch?
 
-Cheers,
-Jerome
+He's often slow to respond ..
+
+Daniel
+
+
