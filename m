@@ -1,77 +1,51 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756332Ab0BBPbO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 10:31:14 -0500
-Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:55224 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756009Ab0BBPbL (ORCPT
+	id S1756348Ab0BBPbU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 10:31:20 -0500
+Received: from qw-out-2122.google.com ([74.125.92.25]:47080 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756326Ab0BBPbO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 10:31:11 -0500
-Subject: [PATCH v3] isp1760: Flush the D-cache for the pipe-in transfer buffers
-To: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-From: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Greg KH <greg@kroah.com>, Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
-       Oliver Neukum <oliver@neukum.org>,
-       Sebastian Siewior <bigeasy@linutronix.de>
-Date: Tue, 02 Feb 2010 15:31:02 +0000
-Message-ID: <20100202152910.22252.3813.stgit@pc1117.cambridge.arm.com>
-User-Agent: StGit/0.15-36-g53e3
+	Tue, 2 Feb 2010 10:31:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:mime-version:message-id:cc
+         :content-type:content-transfer-encoding;
+        b=O0JThB5KQe86jEIAcmcK3/DWNp+23oIohTp9NbyvLM+Srbxdt5IcpiFQRCYuOGib82
+         HvR9saB8r4NEfj0j4hmNXKG2S4rUL3hW/RN3BAQ1a60K6pYDC2B1UbedcBD/A1FdZEIp
+         hsERw/dA/vREfQ3NdPG1j0/VrpPlV0ynpbPlM=
+From: Edward Shishkin <edward.shishkin@gmail.com>
+To: Christoph Hellwig <hch@infradead.org>
+Subject: [patch 1/7] roll back reiser4-fixed-null-pointer-dereference.patch
+Date: Tue, 2 Feb 2010 16:24:45 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.27.41-170.2.117.fc10.i686; KDE/4.3.3; i686; ; )
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Message-Id: <201002021624.45767.edward.shishkin@gmail.com>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: Text/Plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 02 Feb 2010 15:31:02.0657 (UTC) FILETIME=[BA62FF10:01CAA41C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When the HDC driver writes the data to the transfer buffers it pollutes
-the D-cache (unlike DMA drivers where the device writes the data). If
-the corresponding pages get mapped into user space, there are no
-additional cache flushing operations performed and this causes random
-user space faults on architectures with separate I and D caches
-(Harvard) or those with aliasing D-cache.
+Roll back reiser4-fixed-null-pointer-dereference.patch
+(wrong stuff)
 
-Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>
-Cc: Greg KH <greg@kroah.com>
-Cc: Sebastian Siewior <bigeasy@linutronix.de>
-Cc: Oliver Neukum <oliver@neukum.org>
+Signed-off-by: Edward Shishkin <edward.shishkin@gmail.com>
 ---
-
-The changes in the third version of this patch include flushing the
-transfer buffer for all in-pipes except the PIPE_CONTROL ones.
-
-
- drivers/usb/host/isp1760-hcd.c |   10 ++++++++++
- 1 files changed, 10 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/usb/host/isp1760-hcd.c b/drivers/usb/host/isp1760-hcd.c
-index 27b8f7c..9f01293 100644
---- a/drivers/usb/host/isp1760-hcd.c
-+++ b/drivers/usb/host/isp1760-hcd.c
-@@ -17,7 +17,9 @@
- #include <linux/debugfs.h>
- #include <linux/uaccess.h>
- #include <linux/io.h>
-+#include <linux/mm.h>
- #include <asm/unaligned.h>
-+#include <asm/cacheflush.h>
+ fs/reiser4/super_ops.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+Index: linux-2.6.33-rc5-mm1/fs/reiser4/super_ops.c
+===================================================================
+--- linux-2.6.33-rc5-mm1.orig/fs/reiser4/super_ops.c
++++ linux-2.6.33-rc5-mm1/fs/reiser4/super_ops.c
+@@ -395,7 +395,7 @@ static void reiser4_sync_inodes(struct s
+ 	reiser4_context *ctx;
+ 	long to_write;
  
- #include "../core/hcd.h"
- #include "isp1760-hcd.h"
-@@ -904,6 +906,14 @@ __acquires(priv->lock)
- 			status = 0;
- 	}
+-	if (wbc == NULL || wbc->for_kupdate)
++	if (wbc->for_kupdate)
+ 		/* reiser4 has its own means of periodical write-out */
+ 		return;
  
-+	if (usb_pipein(urb->pipe) && usb_pipetype(urb->pipe) != PIPE_CONTROL) {
-+		void *ptr;
-+		for (ptr = urb->transfer_buffer;
-+		     ptr < urb->transfer_buffer + urb->transfer_buffer_length;
-+		     ptr += PAGE_SIZE)
-+			flush_dcache_page(virt_to_page(ptr));
-+	}
-+
- 	/* complete() can reenter this HCD */
- 	usb_hcd_unlink_urb_from_ep(priv_to_hcd(priv), urb);
- 	spin_unlock(&priv->lock);
-
