@@ -1,68 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755653Ab0BBJ72 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 04:59:28 -0500
-Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:58881 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753098Ab0BBJ7W (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 04:59:22 -0500
-Subject: Re: USB mass storage and ARM cache coherency
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Ming Lei <tom.leiming@gmail.com>, linux-usb@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Sebastian Siewior <bigeasy@linutronix.de>, Greg KH <greg@kroah.com>
-In-Reply-To: <20100202042402.GJ13428@linux-sh.org>
-References: <20100202042402.GJ13428@linux-sh.org>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Tue, 02 Feb 2010 09:58:58 +0000
-Message-Id: <1265104738.12634.7.camel@pc1117.cambridge.arm.com>
+	id S1755634Ab0BBKEZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 05:04:25 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:13195 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754865Ab0BBKEY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 05:04:24 -0500
+Subject: [GFS2] Pull request (fixes)
+From: Steven Whitehouse <swhiteho@redhat.com>
+To: torvalds@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
+Content-Type: text/plain; charset="UTF-8"
+Organization: Red Hat UK Ltd
+Date: Tue, 02 Feb 2010 10:07:27 +0000
+Message-ID: <1265105247.2815.5.camel@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 02 Feb 2010 09:58:59.0755 (UTC) FILETIME=[576967B0:01CAA3EE]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-02-02 at 04:24 +0000, Paul Mundt wrote:
-> On Mon, Feb 01, 2010 at 03:14:04PM -0500, Alan Stern wrote:
-> > On Mon, 1 Feb 2010, Catalin Marinas wrote:
-> >
-> > > On Fri, 2010-01-29 at 18:54 +0000, Matthew Dharm wrote:
-> > > > HOWEVER, I firmly believe that the cache-management functions belong with
-> > > > the driver that actually talks to the low-level hardware, as that's the
-> > > > only place where you can be 100% certain of what cache operations are
-> > > > needed.  After all, I think someone is working on a USB-over-IP transport,
-> > > > and trying to manage cache at the usb-storage level in that scenario is
-> > > > just silly.
-> > > >
-> > > > So, let's put this in the HCD drivers and be done with it.
-> > >
-> > > The patch below is what fixes the I-D cache incoherency issues on ARM. I
-> > > don't particularly like the solution but it seems to be the only one
-> > > available.
-> > >
-> > > IMHO, Linux should have functions similar to the DMA API but for PIO
-> > > drivers (e.g. pio_map_single/pio_unmap_single) that non-coherent
-> > > architectures can define, otherwise being no-ops. Any thoughts?
-> >
-> > You should bring this up on the linux-arm-kernel mailing list and CC: 
-> > the ARM maintainer.  They are the ones most directly affected.
-> 
-> No, this belongs on linux-arch, as it's something that impacts a lot of
-> people besides ARM.
+Hi,
 
-I agree. I'll try to come up with a proposal and post it there.
+Please consider pulling the following patches,
 
-BTW, this was already raised on the ARM Linux lists and people there are
-aware of these problems. Their suggestion was to take it to LKML.
+Steve.
 
--- 
-Catalin
+----------------------------------------------------------------------------
+The following changes since commit 066000dd856709b6980123eb39b957fe26993f7b:
+  Ananth N Mavinakayanahalli (1):
+        Revert "x86, apic: Use logical flat on intel with <= 8 logical cpus"
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/steve/gfs2-2.6-fixes.git master
+
+Benjamin Marzinski (1):
+      GFS2: Don't withdraw on partial rindex entries
+
+OGAWA Hirofumi (1):
+      GFS2: Fix refcnt leak on gfs2_follow_link() error path
+
+Steven Whitehouse (2):
+      GFS2: Fix previous patch
+      GFS2: Use GFP_NOFS for alloc structure
+
+ fs/gfs2/ops_inode.c |    3 ++-
+ fs/gfs2/rgrp.c      |    8 ++------
+ 2 files changed, 4 insertions(+), 7 deletions(-)
+
 
