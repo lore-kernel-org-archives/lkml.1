@@ -1,20 +1,20 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932264Ab0BBTIu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 14:08:50 -0500
-Received: from g4t0017.houston.hp.com ([15.201.24.20]:16751 "EHLO
-	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932241Ab0BBTIf (ORCPT
+	id S932274Ab0BBTME (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 14:12:04 -0500
+Received: from g6t0184.atlanta.hp.com ([15.193.32.61]:12114 "EHLO
+	g6t0184.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932209Ab0BBTIT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 14:08:35 -0500
-Subject: [PATCH v2 10/18] IB/umad: use stack variable 'devnum' in
-	ib_umad_init_port
+	Tue, 2 Feb 2010 14:08:19 -0500
+Subject: [PATCH v2 04/18] IB/uverbs: use stack variable 'base' in
+	ib_uverbs_add_one
 To: rdreier@cisco.com
 From: Alex Chiang <achiang@hp.com>
 Cc: linux-rdma@vger.kernel.org, justin.chen@hp.com,
        linux-kernel@vger.kernel.org
-Date: Tue, 02 Feb 2010 12:08:35 -0700
-Message-ID: <20100202190835.28217.25180.stgit@bob.kio>
+Date: Tue, 02 Feb 2010 12:08:04 -0700
+Message-ID: <20100202190804.28217.62413.stgit@bob.kio>
 In-Reply-To: <20100202185235.28217.64521.stgit@bob.kio>
 References: <20100202185235.28217.64521.stgit@bob.kio>
 User-Agent: StGit/0.15
@@ -25,65 +25,42 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This change is not useful by itself, but sets us up for a future
-change that allows us to dynamically allocate device numbers
-in case we have more than IB_UMAD_MAX_PORTS in the system.
+This change is not useful by itself, but sets us up for a future change
+that allows us to support more than IB_UVERBS_MAX_DEVICES in a system.
 
 Signed-off-by: Alex Chiang <achiang@hp.com>
 ---
 
- drivers/infiniband/core/user_mad.c |   15 +++++++++------
- 1 files changed, 9 insertions(+), 6 deletions(-)
+ drivers/infiniband/core/uverbs_main.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/infiniband/core/user_mad.c b/drivers/infiniband/core/user_mad.c
-index 46c8879..df403ec 100644
---- a/drivers/infiniband/core/user_mad.c
-+++ b/drivers/infiniband/core/user_mad.c
-@@ -974,13 +974,16 @@ static CLASS_ATTR(abi_version, S_IRUGO, show_abi_version, NULL);
- static int ib_umad_init_port(struct ib_device *device, int port_num,
- 			     struct ib_umad_port *port)
+diff --git a/drivers/infiniband/core/uverbs_main.c b/drivers/infiniband/core/uverbs_main.c
+index acae9ed..8c594cd 100644
+--- a/drivers/infiniband/core/uverbs_main.c
++++ b/drivers/infiniband/core/uverbs_main.c
+@@ -731,6 +731,7 @@ static CLASS_ATTR(abi_version, S_IRUGO, show_abi_version, NULL);
+ static void ib_uverbs_add_one(struct ib_device *device)
  {
-+	int devnum;
-+
- 	spin_lock(&port_lock);
--	port->dev_num = find_first_zero_bit(dev_map, IB_UMAD_MAX_PORTS);
--	if (port->dev_num >= IB_UMAD_MAX_PORTS) {
-+	devnum = find_first_zero_bit(dev_map, IB_UMAD_MAX_PORTS);
-+	if (devnum >= IB_UMAD_MAX_PORTS) {
- 		spin_unlock(&port_lock);
- 		return -1;
- 	}
--	set_bit(port->dev_num, dev_map);
-+	port->dev_num = devnum;
-+	set_bit(devnum, dev_map);
- 	spin_unlock(&port_lock);
+ 	int devnum;
++	dev_t base;
+ 	struct ib_uverbs_device *uverbs_dev;
  
- 	port->ib_dev   = device;
-@@ -992,7 +995,7 @@ static int ib_umad_init_port(struct ib_device *device, int port_num,
- 	cdev_init(&port->cdev, &umad_fops);
- 	port->cdev.owner = THIS_MODULE;
- 	kobject_set_name(&port->cdev.kobj, "umad%d", port->dev_num);
--	if (cdev_add(&port->cdev, base_dev + port->dev_num, 1))
-+	if (cdev_add(&port->cdev, base_dev + devnum, 1))
+ 	if (!device->alloc_ucontext)
+@@ -750,6 +751,7 @@ static void ib_uverbs_add_one(struct ib_device *device)
+ 		goto err;
+ 	}
+ 	uverbs_dev->devnum = devnum;
++	base = devnum + IB_UVERBS_BASE_DEV;
+ 	set_bit(devnum, dev_map);
+ 	spin_unlock(&map_lock);
+ 
+@@ -760,7 +762,7 @@ static void ib_uverbs_add_one(struct ib_device *device)
+ 	uverbs_dev->cdev.owner = THIS_MODULE;
+ 	uverbs_dev->cdev.ops = device->mmap ? &uverbs_mmap_fops : &uverbs_fops;
+ 	kobject_set_name(&uverbs_dev->cdev.kobj, "uverbs%d", uverbs_dev->devnum);
+-	if (cdev_add(&uverbs_dev->cdev, IB_UVERBS_BASE_DEV + devnum, 1))
++	if (cdev_add(&uverbs_dev->cdev, base, 1))
  		goto err_cdev;
  
- 	port->dev = device_create(umad_class, device->dma_device,
-@@ -1009,7 +1012,7 @@ static int ib_umad_init_port(struct ib_device *device, int port_num,
- 	cdev_init(&port->sm_cdev, &umad_sm_fops);
- 	port->sm_cdev.owner = THIS_MODULE;
- 	kobject_set_name(&port->sm_cdev.kobj, "issm%d", port->dev_num);
--	if (cdev_add(&port->sm_cdev, base_dev + port->dev_num + IB_UMAD_MAX_PORTS, 1))
-+	if (cdev_add(&port->sm_cdev, base_dev + devnum + IB_UMAD_MAX_PORTS, 1))
- 		goto err_sm_cdev;
- 
- 	port->sm_dev = device_create(umad_class, device->dma_device,
-@@ -1036,7 +1039,7 @@ err_dev:
- 
- err_cdev:
- 	cdev_del(&port->cdev);
--	clear_bit(port->dev_num, dev_map);
-+	clear_bit(devnum, dev_map);
- 
- 	return -1;
- }
+ 	uverbs_dev->dev = device_create(uverbs_class, device->dma_device,
 
