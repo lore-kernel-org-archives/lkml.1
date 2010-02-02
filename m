@@ -1,57 +1,62 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756899Ab0BBVxy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 16:53:54 -0500
-Received: from cantor.suse.de ([195.135.220.2]:38486 "EHLO mx1.suse.de"
+	id S1756903Ab0BBVya (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 16:54:30 -0500
+Received: from kroah.org ([198.145.64.141]:58854 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756854Ab0BBVxt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 16:53:49 -0500
-Date: Tue, 2 Feb 2010 22:53:45 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-Cc: Daniel Mack <daniel@caiaq.de>, linux-kernel@vger.kernel.org,
-       =?ISO-8859-15?Q?Andr=E9_Goddard_Rosa?= <andre.goddard@gmail.com>,
-       jfs-discussion@lists.sourceforge.net
-Subject: Re: [PATCH] jfs_dmap.[ch]: trivial typo fix: s/heigth/height/g
-In-Reply-To: <1265142668.22431.6.camel@norville.austin.ibm.com>
-Message-ID: <alpine.LNX.2.00.1002022253180.15395@pobox.suse.cz>
-References: <1264666381-7770-1-git-send-email-daniel@caiaq.de>  <alpine.LNX.2.00.1001290036010.356@pobox.suse.cz> <1265142668.22431.6.camel@norville.austin.ibm.com>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	id S1755435Ab0BBVy2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 16:54:28 -0500
+Date: Tue, 2 Feb 2010 13:18:09 -0800
+From: Greg KH <greg@kroah.com>
+To: Evgeniy Polyakov <zbr@ioremap.net>
+Cc: Jens Axboe <jens.axboe@oracle.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Alexander Beregalov <a.beregalov@gmail.com>
+Subject: Re: [Bug #14894] pohmelfs: NULL pointer dereference
+Message-ID: <20100202211809.GB8755@kroah.com>
+References: <oBElxfTZdhL.A.bx.-vhOLB@chimera>
+ <srmJ8vMxKPH.A.iAC.TwhOLB@chimera>
+ <20091229163512.GA4958@ioremap.net>
+ <200912292237.54182.rjw@sisk.pl>
+ <20091230091433.GU4489@kernel.dk>
+ <20100202205743.GA26703@ioremap.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100202205743.GA26703@ioremap.net>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2 Feb 2010, Dave Kleikamp wrote:
+On Tue, Feb 02, 2010 at 11:57:43PM +0300, Evgeniy Polyakov wrote:
+> Hi.
+> 
+> Sorry, it took really long to catch all the things around, but it is
+> better than never.
+> 
+> History says that commit which introduced per-bdi writeback broke
+> pohmelfs, since it does not have backing store device and did not fill
+> appropriate superblock entry, which lead to crash on umoount.
+> 
+> Jens provided a patch below, which I tested to fix the problem.
+> There is a problem though, when all writes happend before umount,
+> but did net yet written back to storage, get lost. I can not say whether
+> this happens because of per-bdi writeback (it should not I think), but
+> that's what happens.
+> 
+> Albeit being a bug, it will not be fixed :)
+> The reason is simple, new backing storage for POHMELFS (a distributed
+> hash table called elliptics network) is essentially ready and I start
+> working on porting POHMELFS to it, which means all its bugs will be
+> fixed there^W^Werased and written from scratch.
+> 
+> Jens, thanks a lot for you patch, Greg please pull it up.
+> If you did not find it or can not extract from the reply, I will resend.
 
-> > > Signed-off-by: Daniel Mack <daniel@caiaq.de>
-> Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-> 
-> Thanks, Daniel!
-> 
-> > > Cc: Jiri Kosina <trivial@kernel.org>
-> > > Cc: André Goddard Rosa <andre.goddard@gmail.com>
-> > > Cc: jfs-discussion@lists.sourceforge.net
-> > > ---
-> > >  fs/jfs/jfs_dmap.c |   16 ++++++++--------
-> > >  fs/jfs/jfs_dmap.h |    6 +++---
-> > >  2 files changed, 11 insertions(+), 11 deletions(-)
-> 
-> <cut>
-> 
-> > I have now applied this to my tree.
-> > 
-> > Dave, if you want to take it through your tree, or just Ack/Nack it, 
-> > please let me know.
-> 
-> Sorry for the delay.  I've got it in my tree now.
+Please resend it with a signed-off-by line so that I can apply it.
 
-OK, dropped from my tree.
+thanks,
 
-Thanks,
-
--- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+greg k-h
