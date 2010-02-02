@@ -1,63 +1,82 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754302Ab0BBP5L (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 10:57:11 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40745 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751959Ab0BBP5G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 10:57:06 -0500
-Date: Tue, 2 Feb 2010 07:56:36 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Matthew Wilcox <matthew@wil.cx>
-cc: Al Viro <viro@ZenIV.linux.org.uk>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH][RFC] %pd - for printing dentry name
-In-Reply-To: <20100202133230.GF1331@parisc-linux.org>
-Message-ID: <alpine.LFD.2.00.1002020752580.3664@localhost.localdomain>
-References: <20100201222511.GA12882@ZenIV.linux.org.uk> <alpine.LFD.2.00.1002011431490.3664@localhost.localdomain> <20100201231847.GC12882@ZenIV.linux.org.uk> <20100202065341.GF6292@linux.vnet.ibm.com> <20100202070908.GF12882@ZenIV.linux.org.uk>
- <20100202133230.GF1331@parisc-linux.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1756068Ab0BBP5c (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 10:57:32 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:43814 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752024Ab0BBP5a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 10:57:30 -0500
+From: serue@us.ibm.com
+To: devel@driverdev.osuosl.org
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Greg KH <greg@kroah.com>,
+       rsc@swtch.com, Ashwin Ganti <ashwin.ganti@gmail.com>, ericvh@gmail.com,
+       linux-kernel@vger.kernel.org, Ron Minnich <rminnich@gmail.com>
+Subject: [PATCH 1/6] p9auth: set fsuid
+Date: Tue,  2 Feb 2010 09:57:05 -0600
+Message-Id: <1265126230-18731-1-git-send-email-serue@us.ibm.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Serge E. Hallyn <serue@us.ibm.com>
 
+fsuid should always trail euid changes.  So p9auth should
+set fsuid as well when it sets ruid and euid.  Whether the
+suid should also be set is an open question - keeping the
+old uid in suid may be useful, or may just serve to trick
+lazy userspace.
 
-On Tue, 2 Feb 2010, Matthew Wilcox wrote:
-> 
-> How about doing this:
-> 
->  struct qstr {
-> -	const unsigned char *name;
-> +	const unsigned char name[0];
->  }
-> 
->  struct dentry {
-> -	struct qstr d_name;
-> +	struct qstr *d_name;
-> -	unsigned char d_iname[DNAME_INLINE_LEN_MIN];    /* small names */
-> +	union {
-> +		struct qstr d_iname;
-> +		char pad[DNAME_INLINE_LEN_MIN];
-> +	};
->  }
-> 
-> Doesn't increase the size of struct dentry, and puts the hash and len
-> with the name.  Increases long name allocations by 8 bytes each.
+Note that so long as we do not also set suid, the setuid_fixup()
+code will not (when we later switch to setresuid()) fully
+fill/clear capability sets.  So while I had previously thought
+that keeping suid unchanged would be useful, I think it is
+better to change all uids.
 
-Conceptually nice, but in practice that's absolutely horrible.
+Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+Cc: Greg KH <greg@kroah.com>
+cc: rsc@swtch.com
+Cc: Ashwin Ganti <ashwin.ganti@gmail.com>
+Cc: ericvh@gmail.com
+Cc: devel@linuxdriverproject.org
+Cc: linux-kernel@vger.kernel.org
+Cc: Ron Minnich <rminnich@gmail.com>
+---
+ drivers/staging/p9auth/p9auth.c |   14 +++++++++-----
+ 1 files changed, 9 insertions(+), 5 deletions(-)
 
-Why? Because now the dentry lookup logic has to follow an additional 
-pointer just to verify the hash and the length of the name. That's some of 
-the hottest code we have, and the _last_ thing we want is another pointer 
-dereference and cache access in the path that looks up the dentry hash 
-chains.
+diff --git a/drivers/staging/p9auth/p9auth.c b/drivers/staging/p9auth/p9auth.c
+index db79626..70ef45b 100644
+--- a/drivers/staging/p9auth/p9auth.c
++++ b/drivers/staging/p9auth/p9auth.c
+@@ -275,10 +275,14 @@ static ssize_t cap_write(struct file *filp, const char __user *buf,
+ 					goto out;
+ 				}
+ 				/*
+-				 * What all id's need to be changed here? uid,
+-				 * euid, fsid, savedids ??  Currently I am
+-				 * changing the effective user id since most of
+-				 * the authorisation decisions are based on it
++				 * Change all uids.  It might be useful to
++				 * keep suid unchanged, however that will
++				 * mean that changing from uid=0 to uid=!0
++				 * pP is not emptied (only pE is), and when
++				 * changing from  uid=!0 to  uid=0, sets are
++				 * not filled.  They will be correct after
++				 * the next exec, but this is IMO not
++				 * sufficient.  So change all uids.
+ 				 */
+ 				new = prepare_creds();
+ 				if (!new) {
+@@ -286,7 +290,7 @@ static ssize_t cap_write(struct file *filp, const char __user *buf,
+ 					goto out;
+ 				}
+ 				new->uid = (uid_t) target_int;
+-				new->euid = (uid_t) target_int;
++				new->suid = new->fsuid = new->euid = new->uid;
+ 				retval = commit_creds(new);
+ 				if (retval)
+ 					goto out;
+-- 
+1.6.1
 
-Or am I missing something? I didn't look at the code.
-
-		Linus
