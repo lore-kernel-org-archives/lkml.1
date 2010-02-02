@@ -1,41 +1,63 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756972Ab0BBTTM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 14:19:12 -0500
-Received: from eddie.linux-mips.org ([78.24.191.182]:52557 "EHLO
-	eddie.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753637Ab0BBTTH (ORCPT
+	id S932221Ab0BBTTU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 14:19:20 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46510 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756976Ab0BBTTO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 14:19:07 -0500
-Date: Tue, 2 Feb 2010 20:19:19 +0100
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Christoph Hellwig <hch@lst.de>
-Cc: roland@redhat.com, oleg@redhat.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-Subject: Re: [PATCH 9/14] mips: use generic ptrace_resume code
-Message-ID: <20100202191919.GA542@linux-mips.org>
-References: <20100202185755.GA3630@lst.de>
- <20100202185958.GI3630@lst.de>
+	Tue, 2 Feb 2010 14:19:14 -0500
+Date: Tue, 2 Feb 2010 11:14:00 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Olivier Galibert <galibert@pobox.com>
+cc: Wu Fengguang <fengguang.wu@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       linux-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 10/11] readahead: dont do start-of-file readahead after
+ lseek()
+In-Reply-To: <20100202184831.GD75577@dspnet.fr.eu.org>
+Message-ID: <alpine.LFD.2.00.1002021111240.3664@localhost.localdomain>
+References: <20100202152835.683907822@intel.com> <20100202153317.644170708@intel.com> <20100202181321.GB75577@dspnet.fr.eu.org> <alpine.LFD.2.00.1002021037110.3664@localhost.localdomain> <20100202184831.GD75577@dspnet.fr.eu.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100202185958.GI3630@lst.de>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 02, 2010 at 07:59:58PM +0100, Christoph Hellwig wrote:
 
-> Use the generic ptrace_resume code for PTRACE_SYSCALL, PTRACE_CONT and
-> PTRACE_KILL.  
+
+On Tue, 2 Feb 2010, Olivier Galibert wrote:
+>
+> On Tue, Feb 02, 2010 at 10:40:41AM -0800, Linus Torvalds wrote:
+> > IOW, if you start off with a SEEK_END, I think it's reasonable to expect 
+> > it to _not_ read the whole thing.
 > 
-> Also the TIF_SYSCALL_TRACE thread flag is now cleared on PTRACE_KILL
-> which it previously wasn't which is consistent with all architectures
-> using the modern ptrace code.
+> I've seen a lot of:
+>   int fd = open(...);
+>   size = lseek(fd, 0, SEEK_END);
+>   lseek(fd, 0, SEEK_SET);
 > 
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
+>   data = malloc(size);
+>   read(fd, data, size);
+>   close(fd);
+> 
+> Why not fstat?  I don't know.
 
-Acked-by: Ralf Baechle <ralf@linux-mips.org>
+Well, the above will work perfectly with or without the patch, since it 
+does the read of the full size. There is no read-ahead hint necessary for 
+that kind of single read behavior.
 
-  Ralf
+Rememebr: read-ahead is about filling the empty IO spaces _between_ reads, 
+and turning many smaller reads into one bigger one. If you only have a 
+single big read, read-ahead cannot help.
+
+Also, keep in mind that read-ahead is not always a win. It can be a huge 
+loss too. Which is why we have _heuristics_. They fundamentally cannot 
+catch every case, but what they aim for is to do a good job on average.
+
+			Linus
