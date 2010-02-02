@@ -1,112 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755666Ab0BBHxz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 02:53:55 -0500
-Received: from iksaif.net ([88.191.73.63]:50276 "EHLO iksaif.net"
+	id S1756010Ab0BBHym (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 02:54:42 -0500
+Received: from iksaif.net ([88.191.73.63]:50273 "EHLO iksaif.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755929Ab0BBHwM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 02:52:12 -0500
+	id S1755911Ab0BBHwL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 02:52:11 -0500
 From: Corentin Chary <corentincj@iksaif.net>
 To: Len Brown <lenb@kernel.org>
 Cc: linux-acpi@vger.kernel.org, acpi4asus-user@lists.sourceforge.net,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Corentin Chary <corentincj@iksaif.net>
-Subject: [PATCH 05/28] asus-laptop: use tabs to indent macros and remove unused ones
-Date: Tue,  2 Feb 2010 08:38:48 +0100
-Message-Id: <1265096351-15239-6-git-send-email-corentincj@iksaif.net>
+Subject: [PATCH 21/28] asus-laptop: add bluetooth keys found on M9V
+Date: Tue,  2 Feb 2010 08:39:04 +0100
+Message-Id: <1265096351-15239-22-git-send-email-corentincj@iksaif.net>
 X-Mailer: git-send-email 1.6.6.1
-In-Reply-To: <1265096351-15239-5-git-send-email-corentincj@iksaif.net>
+In-Reply-To: <1265096351-15239-21-git-send-email-corentincj@iksaif.net>
 References: <1265096351-15239-1-git-send-email-corentincj@iksaif.net>
  <1265096351-15239-2-git-send-email-corentincj@iksaif.net>
  <1265096351-15239-3-git-send-email-corentincj@iksaif.net>
  <1265096351-15239-4-git-send-email-corentincj@iksaif.net>
  <1265096351-15239-5-git-send-email-corentincj@iksaif.net>
+ <1265096351-15239-6-git-send-email-corentincj@iksaif.net>
+ <1265096351-15239-7-git-send-email-corentincj@iksaif.net>
+ <1265096351-15239-8-git-send-email-corentincj@iksaif.net>
+ <1265096351-15239-9-git-send-email-corentincj@iksaif.net>
+ <1265096351-15239-10-git-send-email-corentincj@iksaif.net>
+ <1265096351-15239-11-git-send-email-corentincj@iksaif.net>
+ <1265096351-15239-12-git-send-email-corentincj@iksaif.net>
+ <1265096351-15239-13-git-send-email-corentincj@iksaif.net>
+ <1265096351-15239-14-git-send-email-corentincj@iksaif.net>
+ <1265096351-15239-15-git-send-email-corentincj@iksaif.net>
+ <1265096351-15239-16-git-send-email-corentincj@iksaif.net>
+ <1265096351-15239-17-git-send-email-corentincj@iksaif.net>
+ <1265096351-15239-18-git-send-email-corentincj@iksaif.net>
+ <1265096351-15239-19-git-send-email-corentincj@iksaif.net>
+ <1265096351-15239-20-git-send-email-corentincj@iksaif.net>
+ <1265096351-15239-21-git-send-email-corentincj@iksaif.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Reported by Andrey F. Ilchuk
+
 Signed-off-by: Corentin Chary <corentincj@iksaif.net>
 ---
- drivers/platform/x86/asus-laptop.c |   51 +++++++++++++++--------------------
- 1 files changed, 22 insertions(+), 29 deletions(-)
+ drivers/platform/x86/asus-laptop.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/platform/x86/asus-laptop.c b/drivers/platform/x86/asus-laptop.c
-index 7058cb5..5889bda 100644
+index 8042568..4f3c467 100644
 --- a/drivers/platform/x86/asus-laptop.c
 +++ b/drivers/platform/x86/asus-laptop.c
-@@ -50,50 +50,43 @@
- #include <asm/uaccess.h>
- #include <linux/input.h>
- 
--#define ASUS_LAPTOP_VERSION "0.42"
-+#define ASUS_LAPTOP_VERSION	"0.42"
- 
--#define ASUS_HOTK_NAME          "Asus Laptop Support"
--#define ASUS_HOTK_CLASS         "hotkey"
--#define ASUS_HOTK_DEVICE_NAME   "Hotkey"
--#define ASUS_HOTK_FILE          KBUILD_MODNAME
--#define ASUS_HOTK_PREFIX        "\\_SB.ATKD."
-+#define ASUS_HOTK_NAME		"Asus Laptop Support"
-+#define ASUS_HOTK_CLASS		"hotkey"
-+#define ASUS_HOTK_DEVICE_NAME	"Hotkey"
-+#define ASUS_HOTK_FILE		KBUILD_MODNAME
-+#define ASUS_HOTK_PREFIX	"\\_SB.ATKD."
- 
- 
- /*
-  * Some events we use, same for all Asus
-  */
--#define ATKD_BR_UP       0x10
--#define ATKD_BR_DOWN     0x20
--#define ATKD_LCD_ON      0x33
--#define ATKD_LCD_OFF     0x34
-+#define ATKD_BR_UP	0x10
-+#define ATKD_BR_DOWN	0x20
-+#define ATKD_LCD_ON	0x33
-+#define ATKD_LCD_OFF	0x34
- 
- /*
-  * Known bits returned by \_SB.ATKD.HWRS
-  */
--#define WL_HWRS     0x80
--#define BT_HWRS     0x100
-+#define WL_HWRS		0x80
-+#define BT_HWRS		0x100
- 
- /*
-  * Flags for hotk status
-  * WL_ON and BT_ON are also used for wireless_status()
-  */
--#define WL_ON       0x01	/* internal Wifi */
--#define BT_ON       0x02	/* internal Bluetooth */
--#define MLED_ON     0x04	/* mail LED */
--#define TLED_ON     0x08	/* touchpad LED */
--#define RLED_ON     0x10	/* Record LED */
--#define PLED_ON     0x20	/* Phone LED */
--#define GLED_ON     0x40	/* Gaming LED */
--#define LCD_ON      0x80	/* LCD backlight */
--#define GPS_ON      0x100	/* GPS */
--#define KEY_ON      0x200	/* Keyboard backlight */
--
--#define ASUS_LOG    ASUS_HOTK_FILE ": "
--#define ASUS_ERR    KERN_ERR    ASUS_LOG
--#define ASUS_WARNING    KERN_WARNING    ASUS_LOG
--#define ASUS_NOTICE KERN_NOTICE ASUS_LOG
--#define ASUS_INFO   KERN_INFO   ASUS_LOG
--#define ASUS_DEBUG  KERN_DEBUG  ASUS_LOG
-+#define WL_ON		0x01	/* internal Wifi */
-+#define BT_ON		0x02	/* internal Bluetooth */
-+#define MLED_ON		0x04	/* mail LED */
-+#define TLED_ON		0x08	/* touchpad LED */
-+#define RLED_ON		0x10	/* Record LED */
-+#define PLED_ON		0x20	/* Phone LED */
-+#define GLED_ON		0x40	/* Gaming LED */
-+#define LCD_ON		0x80	/* LCD backlight */
-+#define GPS_ON		0x100	/* GPS */
-+#define KEY_ON		0x200	/* Keyboard backlight */
- 
- MODULE_AUTHOR("Julien Lerouge, Karol Kozimor, Corentin Chary");
- MODULE_DESCRIPTION(ASUS_HOTK_NAME);
+@@ -272,6 +272,8 @@ static const struct key_entry asus_keymap[] = {
+ 	{KE_KEY, 0x62, { KEY_SWITCHVIDEOMODE } },
+ 	{KE_KEY, 0x63, { KEY_SWITCHVIDEOMODE } },
+ 	{KE_KEY, 0x6B, { KEY_F13 } }, /* Lock Touchpad */
++	{KE_KEY, 0x7E, { KEY_BLUETOOTH } },
++	{KE_KEY, 0x7D, { KEY_BLUETOOTH } },
+ 	{KE_KEY, 0x82, { KEY_CAMERA } },
+ 	{KE_KEY, 0x88, { KEY_WLAN  } },
+ 	{KE_KEY, 0x8A, { KEY_PROG1 } },
 -- 
 1.6.6.1
 
