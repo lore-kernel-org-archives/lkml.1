@@ -1,115 +1,46 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756827Ab0BBVml (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 16:42:41 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45913
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756631Ab0BBVmi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 16:42:38 -0500
-Date: Tue, 02 Feb 2010 13:42:51 -0800 (PST)
-Message-Id: <20100202.134251.15604523.davem@davemloft.net>
-To: ktpedre@sandia.gov
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] seastar - SeaStar Ethernet driver
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20100202205845.GE5246@hawkeye.sandia.gov>
-References: <20100202205845.GE5246@hawkeye.sandia.gov>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	id S1756756Ab0BBVoj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 16:44:39 -0500
+Received: from cantor.suse.de ([195.135.220.2]:38303 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754747Ab0BBVog (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 16:44:36 -0500
+Date: Tue, 2 Feb 2010 22:44:35 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Peter Hutterer <peter.hutterer@who-t.net>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] HID: add multi-input quirk for eGalax Touchcontroller
+In-Reply-To: <20100202034040.GA16880@barra.bne.redhat.com>
+Message-ID: <alpine.LNX.2.00.1002022129380.15395@pobox.suse.cz>
+References: <20100202034040.GA16880@barra.bne.redhat.com>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Kevin Pedretti" <ktpedre@sandia.gov>
-Date: Tue, 2 Feb 2010 13:58:45 -0700
+On Tue, 2 Feb 2010, Peter Hutterer wrote:
 
-> +void seastar_setup_htb_bi(uint32_t idr)
+> Nonetheless, I'm not sure about whether that's the right thing to do. With
+> this patch applied, it gives me two devices, one mute, the other one
+> announces BTN_PEN and BTN_TOUCH + abs axes, though only BTN_TOUCH is ever
+> triggered. Loading usbtouchscreen instead of usbhid for this device makes
+> the device look more sane BTN_TOUCH + abs axes but the actual data is
+> random. So I'm not quite sure what the fix is supposed to be, any hints are
+> appreciated if it's not the patch below.
 
-Please use the in-kernel sized types "u32", "u16", etc.
-instead of "uint32_t" et al.
+The data could also be mis-interpreted because of some bug in the HID 
+descriptor.
 
-> +extern void
-> +seastar_ip_tx_cmd(
-> +	struct ss_priv		*ssp,
-> +	uint16_t		nid,
-> +	uint16_t		length,
-> +	uint64_t		address,
-> +	uint16_t		pending_index
-> +);
-> +
-> +
-> +void
-> +seastar_setup_htb_bi(
-> +	uint32_t		idr
-> +);
-> +
-> +
-> +extern int
-> +seastar_hw_init(
-> +	struct ss_priv		*ssp
-> +);
+Does looking at the HID report descriptor and looking at the actual 
+raw HID reports coming out from the device give any clue? (in recent 
+kernels, you can just use 'hid' directory in debugfs to gather all this 
+information).
 
-Please fix the formatting of these function declarations,
-something like:
+Thanks,
 
-extern void seastar_ip_tx_cmd(struct ss_priv *ssp,
-			      uint16_t nid,
-			      uint16_t length,
-			      uint64_t address,
-			      uint16_t pending_index);
-
-extern void seastar_setup_htb_bi(uint32_t idr);
-
-extern int seastar_hw_init(struct ss_priv *ssp);
-
-And again use "u16" instead of "uint16_t" etc.
-
-There are many bad code formatting cases like this in your
-driver, lease fix them all up.
-
-> +static int ss_open(struct net_device *netdev)
-> +{
-> +	struct ss_priv *ssp = netdev_priv(netdev);
-> +	int i;
-> +
-> +	netif_start_queue(netdev);
-> +
-> +	for (i = 0; i < NUM_SKBS; i++) {
-> +		ssp->skb_table_phys[i] = 0;
-> +		ssp->skb_table_virt[i] = 0;
-> +		refill_skb(netdev, i);
-> +	}
-> +
-> +	return 0;
-> +}
-
-You shouldn't call netif_start_queue() until you are completely
-done initializing the chip.  Packets can start being transmitted
-to the driver the exact moment that function returns.
-
-> +static int eth2ss(struct ss_priv *ssp, struct sk_buff *skb)
- ...
-> +static int ss2eth(struct sk_buff *skb)
-
-This device can only transmit IPv4 packets and can only receive IPv4
-packets?
-
-> +#ifdef CONFIG_PM
-> +static int ss_suspend(struct pci_dev *pdev, pm_message_t state)
-> +{
-> +	return -ENOSYS;
-> +}
-> +
-> +
-> +static int ss_resume(struct pci_dev *pdev)
-> +{
-> +	return -ENOSYS;
-> +}
-> +#endif
-
-If you don't support suspend and resume, simply leave the
-method pointers unassigned, there is no need to provide
-NOP routines like this.
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
