@@ -1,84 +1,67 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756342Ab0BBQMd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 11:12:33 -0500
-Received: from mail-yw0-f198.google.com ([209.85.211.198]:52431 "EHLO
-	mail-yw0-f198.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750835Ab0BBQMb (ORCPT
+	id S1756420Ab0BBQNg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 11:13:36 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:36317 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750835Ab0BBQNf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 11:12:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type;
-        b=RZPRYBmc9ekWofyF2ppWLbz4pBtJagV0Iooh7S8sNW+cKX/d0qcu3pCNgowMEN0JwC
-         qPTz7qezEFa2KQxd3cnrjfBjq7X1XEhsW2KgNPdi2abRpOIkuxs65UOPWi9RXS7I+u53
-         z2Y7wSQDQ67cT9jmdEfoVu9SczIdCwdZ3Iguk=
-Message-ID: <4B684EEB.20504@gmail.com>
-Date: Tue, 02 Feb 2010 11:12:27 -0500
-From: William Allen Simpson <william.allen.simpson@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	Tue, 2 Feb 2010 11:13:35 -0500
+Date: Tue, 2 Feb 2010 09:13:33 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Al Viro <viro@ZenIV.linux.org.uk>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH][RFC] %pd - for printing dentry name
+Message-ID: <20100202161333.GH1331@parisc-linux.org>
+References: <20100201222511.GA12882@ZenIV.linux.org.uk> <alpine.LFD.2.00.1002011431490.3664@localhost.localdomain> <20100201231847.GC12882@ZenIV.linux.org.uk> <20100202065341.GF6292@linux.vnet.ibm.com> <20100202070908.GF12882@ZenIV.linux.org.uk> <20100202133230.GF1331@parisc-linux.org> <alpine.LFD.2.00.1002020752580.3664@localhost.localdomain>
 MIME-Version: 1.0
-To: Linux Kernel Developers <linux-kernel@vger.kernel.org>,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>
-CC: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 1/7] net: tcp_header_len_th and tcp_option_len_th
-References: <4B684DE7.3020601@gmail.com>
-In-Reply-To: <4B684DE7.3020601@gmail.com>
-Content-Type: multipart/mixed;
- boundary="------------030608040105010100080506"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.1002020752580.3664@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------030608040105010100080506
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Tue, Feb 02, 2010 at 07:56:36AM -0800, Linus Torvalds wrote:
+> On Tue, 2 Feb 2010, Matthew Wilcox wrote:
+> > 
+> > How about doing this:
+> > 
+> >  struct qstr {
+> > -	const unsigned char *name;
+> > +	const unsigned char name[0];
+> >  }
+> > 
+> >  struct dentry {
+> > -	struct qstr d_name;
+> > +	struct qstr *d_name;
+> > -	unsigned char d_iname[DNAME_INLINE_LEN_MIN];    /* small names */
+> > +	union {
+> > +		struct qstr d_iname;
+> > +		char pad[DNAME_INLINE_LEN_MIN];
+> > +	};
+> >  }
+> > 
+> > Doesn't increase the size of struct dentry, and puts the hash and len
+> > with the name.  Increases long name allocations by 8 bytes each.
+> 
+> Conceptually nice, but in practice that's absolutely horrible.
+> 
+> Why? Because now the dentry lookup logic has to follow an additional 
+> pointer just to verify the hash and the length of the name. That's some of 
+> the hottest code we have, and the _last_ thing we want is another pointer 
+> dereference and cache access in the path that looks up the dentry hash 
+> chains.
 
-Redefine two TCP header functions to accept TCP header pointer.
-When subtracting, return signed int to allow error checking.
+I'd thought it was in the same cacheline ... but that's not generally
+true since dentries are so large.  And the d_name is at the other end
+of the dentry, so they're guaranteed to be in different cachelines.  Bum.
 
-These functions will be used in subsequent patches that implement
-additional features.
-
-Signed-off-by: William.Allen.Simpson@gmail.com
----
-  include/linux/tcp.h |   12 ++++++++++++
-  1 files changed, 12 insertions(+), 0 deletions(-)
-
---------------030608040105010100080506
-Content-Type: text/plain; x-mac-type="54455854"; x-mac-creator="0";
- name="len_th+2a3+2.6.33-rc6.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="len_th+2a3+2.6.33-rc6.patch"
-
-diff --git a/include/linux/tcp.h b/include/linux/tcp.h
-index 7fee8a4..d0133cf 100644
---- a/include/linux/tcp.h
-+++ b/include/linux/tcp.h
-@@ -223,6 +223,18 @@ static inline unsigned int tcp_optlen(const struct sk_buff *skb)
- 	return (tcp_hdr(skb)->doff - 5) * 4;
- }
- 
-+/* Length of fixed header plus standard options. */
-+static inline unsigned int tcp_header_len_th(const struct tcphdr *th)
-+{
-+	return th->doff * 4;
-+}
-+
-+/* Length of standard options only.  This could be negative. */
-+static inline int tcp_option_len_th(const struct tcphdr *th)
-+{
-+	return (int)(th->doff * 4) - sizeof(*th);
-+}
-+
- /* This defines a selective acknowledgement block. */
- struct tcp_sack_block_wire {
- 	__be32	start_seq;
 -- 
-1.6.3.3
-
-
---------------030608040105010100080506--
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
