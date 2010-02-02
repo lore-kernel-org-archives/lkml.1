@@ -1,53 +1,100 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753607Ab0BBFqO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 00:46:14 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:44019 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750741Ab0BBFqJ (ORCPT
+	id S1753892Ab0BBFzy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 00:55:54 -0500
+Received: from out02.mta.xmission.com ([166.70.13.232]:46973 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751128Ab0BBFzu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 00:46:09 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4B67BC12.4080709@s5r6.in-berlin.de>
-Date: Tue, 02 Feb 2010 06:45:54 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.23) Gecko/20100102 SeaMonkey/1.1.18
+	Tue, 2 Feb 2010 00:55:50 -0500
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH][RFC] %pd - for printing dentry name
+References: <20100201222511.GA12882@ZenIV.linux.org.uk>
+	<alpine.LFD.2.00.1002011431490.3664@localhost.localdomain>
+	<20100201231847.GC12882@ZenIV.linux.org.uk>
+	<20100202010653.GD12882@ZenIV.linux.org.uk>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Mon, 01 Feb 2010 21:55:42 -0800
+In-Reply-To: <20100202010653.GD12882@ZenIV.linux.org.uk> (Al Viro's message of "Tue\, 2 Feb 2010 01\:06\:53 +0000")
+Message-ID: <m1k4uwfag1.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-To: "Justin P. Mattock" <justinmattock@gmail.com>
-CC: Dan Carpenter <error27@gmail.com>, linux1394-devel@lists.sourceforge.net,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: ohci1394_dma=early crash since 2.6.32 (was Re: [Bug #14487] PANIC:
- early exception 08 rip 246:10 error	ffffffff810251b5 cr2 0)
-References: <UgwvXSBS_tM.A.alD.1EiZLB@chimera> <de962C6zBxL.A.H1G.1HiZLB@chimera> <4B6630CA.9010207@gmail.com> <20100201125441.GB2576@bicker> <4B671606.3080405@gmail.com> <4B673233.8000300@s5r6.in-berlin.de> <4B6740B5.5070601@gmail.com> <4B675534.5070107@s5r6.in-berlin.de> <4B676917.2080506@gmail.com>
-In-Reply-To: <4B676917.2080506@gmail.com>
-X-Enigmail-Version: 0.96.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Scanned: No (on in01.mta.xmission.com); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Justin P. Mattock wrote:
-> So(correct me if I'm wrong), I'm generating a 64 bit register
-> and the kernel is looking for a 32 bit register causing the crash.
+Al Viro <viro@ZenIV.linux.org.uk> writes:
 
-No, the class = read_pci_config(); if (class == ...) ... parts of the
-code are entirely innocent as far as I can tell.  This is just the
-FireWire--PCI chip detection.  It is the subsequent driver setup for the
-chip that crashes somewhere.
+> On Mon, Feb 01, 2010 at 11:18:47PM +0000, Al Viro wrote:
+>
+>> Ehh...  RCU will save you from stepping on freed memory, but it still will
+>> leave the joy of half-updated string with length out of sync with it, etc.
+>> We probably can get away with that, but we'll have to be a lot more careful
+>> with the order of updating these suckers in d_move_locked et.al.
+>> 
+>> I don't know...  Note that if we end up adding something extra to struct
+>> dentry, we might as well just add *another* spinlock, taken only under
+>> ->d_lock and only in two places in dcache.c that change d_name.  That kind
+>> of thing is trivial to enforce (just grep over the tree once in a while)
+>> and if it shares the cacheline with d_lock, we shouldn't get any real overhead
+>> in d_move()/d_materialise_unique().  I'm not particulary fond of that variant,
+>> but it's at least guaranteed to be devoid of subtleties.
+>> 
+>> If RCU folks can come up with a sane suggestions that would be robust and
+>> wouldn't bloat dentry - sure, I'm all for it.  If not...
+>
+> As the matter of fact, there's just *one* place that has any business [*]
+> changing ->d_name contents of dentry that might be visible to somebody
+> else.  fs/dcache.c::switch_names().
+>
+> So a very brute-force approach would be to add a new spinlock to dentry and
+> have switch_names() grab it on dentry and target and drop when we are done,
+> dname_string() grab it around the call of string() and pull the guts out
+> through the nose to anyone who as much as mentions that lock outside of
+> fs/dcache.c:switch_names() and lib/vsprintf.c:dname_string().
 
-When you modified that chip detection code earlier, you only prevented
-crashes when your modifications ended up as "ignore all PCI devices,
-also FireWire ones" == "do nothing at all".
+We already have rename_lock, which is only take for write in d_move_locked.
 
-Perhaps the bootup sequence of the x86(-64) platform was changed from
-2.6.31 to .32 thus that some assumptions in init_ohci1394_dma about when
-are what resources available are not true anymore.  According to your
-screenshot in http://lkml.org/lkml/2009/10/27/335 the issue is about
-memory allocation, not about PCI bus access.
--- 
-Stefan Richter
--=====-==-=- --=- ---=-
-http://arcgraph.de/sr/
+I wonder if there is an instruction sequence that could guarantee that the
+string copy is done atomically from the perspective of another cpu,
+d_iname fits nicely on a single cache line so it should be possible.  
+
+That is a stronger guarantee than we need.   All we really need is the
+guarantee that a reader will see the string null terminator.  dentries already
+have rcu safe lifetimes.
+
+Hmm.
+
+We should be able to do:
+        struct qstr *name;
+        int len;
+        char buf[MAX_LEN + 1];
+        long seq;
+
+        do {
+		seq = read_seqbegin(&rename_lock);
+        	rcu_read_lock();
+	        name = rcu_dereference(dentry->d_name.name);
+	        len = dentry->d_name.len;
+                if (read_seqretry(&rename_lock, seq)
+                	continue;
+	        if (len > MAX_LEN)
+	        	len = MAX_LEN;
+		memcpy(buf, name, len);
+	        buf[len] = '\0';
+	        rcu_read_unlock();
+	} while (read_seqretry(&rename_lock, seq));
+
+I don't know if rcu bits are actually necessary as we are using the seqlock for
+all of the heavy lifting.    In particular name and len are guaranteed to be consistent
+with each other because of the seqlock, and the seqlock also guarantees that we will
+not have an inconsistent state.
+
+Eric
