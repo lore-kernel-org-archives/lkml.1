@@ -1,147 +1,87 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754994Ab0BBGst (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 01:48:49 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:58019 "EHLO mx1.redhat.com"
+	id S1754953Ab0BBGxr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 01:53:47 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:50362 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754512Ab0BBGsr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 01:48:47 -0500
-Message-ID: <4B67CA94.7000501@redhat.com>
-Date: Tue, 02 Feb 2010 01:47:48 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
+	id S1753773Ab0BBGxo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 01:53:44 -0500
+Date: Mon, 1 Feb 2010 22:53:41 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH][RFC] %pd - for printing dentry name
+Message-ID: <20100202065341.GF6292@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20100201222511.GA12882@ZenIV.linux.org.uk> <alpine.LFD.2.00.1002011431490.3664@localhost.localdomain> <20100201231847.GC12882@ZenIV.linux.org.uk>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Kyle Moffett <kyle@moffetthome.net>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       Oleg Nesterov <oleg@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>, Tom Tromey <tromey@redhat.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>, linux-next@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: linux-next: add utrace tree
-References: <alpine.LFD.2.00.1001232051510.3574@localhost.localdomain> <m33a1tnbd9.fsf@fleche.redhat.com> <alpine.LFD.2.00.1001251332370.3574@localhost.localdomain> <m3636oh2rt.fsf@fleche.redhat.com> <alpine.LFD.2.00.1001261535510.17519@localhost.localdomain> <1264575134.4283.1983.camel@laptop> <20100127085442.GA28422@elte.hu> <1264643539.5068.62.camel@localhost.localdomain> <20100128085502.GA7713@elte.hu> <20100129045546.GA16920@in.ibm.com> <20100129074241.GG14636@elte.hu>
-In-Reply-To: <20100129074241.GG14636@elte.hu>
-X-Enigmail-Version: 1.0.1
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100201231847.GC12882@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
+On Mon, Feb 01, 2010 at 11:18:47PM +0000, Al Viro wrote:
+> On Mon, Feb 01, 2010 at 02:37:32PM -0800, Linus Torvalds wrote:
 > 
-> * Ananth N Mavinakayanahalli <ananth@in.ibm.com> wrote:
+> > > * don't use %pd under dentry->d_lock, use dentry->d_name.name instead; in
+> > > that case it *is* safe.  Incidentally, ->d_lock isn't held a lot.
+> > 
+> > I realize we can just call it a rule, and yes, d_lock is held much less 
+> > than something like console_lock etc that we've had ABBA issues with, but 
+> > still..
 > 
->> On Thu, Jan 28, 2010 at 09:55:02AM +0100, Ingo Molnar wrote:
->>
->> ...
->>
->>> Lets compare the two cases via a drawing. Your current uprobes submission 
->>> does:
->>>
->>>  [kernel]      do probe thing     single-step trap
->>>                ^            |     ^              |
->>>                |            v     |              v
->>>  [user]     INT3            XOL-ins              next ins-stream
->>>
->>>  ( add the need for serialization to make sure the whole single-step thing 
->>>    does not get out of sync with reality. )
->>>
->>> And emulator approach would do:
->>>
->>>  [kernel]      emul-demux-fastpath, do probe thing
->>>                ^                                 |
->>>                |                                 v
->>>  [user]     INT3                                 next ins-stream
->>>
->>> far simpler conceptually, and faster as well, because it's one kernel entry.
->>
->> Ingo,
->>
->> Yes, conceptually, emulation is simpler. In fact, it may even be the
->> right thing to do from a housekeeping POV if gdb were enabled to use
->> breakpoint assistance in the kernel. However... emulation is not
->> easy. Just quoting Peter Anvin:
->>
->>> On the more general rule of interpretation: I'm really concerned about
->>> having a bunch of partially-capable x86 interpreters all over the
->>> kernel.  x86 is *hard* to emulate, and it will only get harder as the
->>> architecture evolves.
->>>
->>>       -hpa
+> > Quite frankly, I'd _much_ rather see something like just always freeing 
+> > the dentry names (when they aren't inlined) using RCU. The VFS layer quite 
+> > possibly would want to do that anyway at some point (eg Nick's VFS 
+> > scalability patches), and then we could make it just a RCU read-lock or 
+> > whatever (interrupt disable, what-not) instead.
+> > 
+> > And I'm much happier with printk doing that kind of thing, and wouldn't 
+> > have issues with that kind of much weaker locking.
 > 
-> This is obviously true for a full emulator. Except for the fact that:
+> Ehh...  RCU will save you from stepping on freed memory, but it still will
+> leave the joy of half-updated string with length out of sync with it, etc.
+> We probably can get away with that, but we'll have to be a lot more careful
+> with the order of updating these suckers in d_move_locked et.al.
 > 
->> Yes, I know you suggested we start with a small subset.
+> I don't know...  Note that if we end up adding something extra to struct
+> dentry, we might as well just add *another* spinlock, taken only under
+> ->d_lock and only in two places in dcache.c that change d_name.  That kind
+> of thing is trivial to enforce (just grep over the tree once in a while)
+> and if it shares the cacheline with d_lock, we shouldn't get any real overhead
+> in d_move()/d_materialise_unique().  I'm not particulary fond of that variant,
+> but it's at least guaranteed to be devoid of subtleties.
 > 
-> and for the fact that we already have emulators in the kernel.
-> 
-> Plus we _already_ need to decode instructions for safe kprobing and have the 
-> code for that upstream. So it's not like we can avoid decoding the 
-> instructions. (and emulating certain instruction patterns is really just a 
-> natural next step of a good decoder.)
-> 
->> We already have an implementation of instruction emulation in kernel for x86 
->> and powerpc, but its too KVM centric. If there is a generic emulation layer, 
->> we would use it.
-> 
-> So this approach, beyond being simpler, more robust and faster than the 
-> current XOL code, would also trigger (much needed) cleanups in other parts of 
-> the kernel and would share code with other kernel subsystems.
+> If RCU folks can come up with a sane suggestions that would be robust and
+> wouldn't bloat dentry - sure, I'm all for it.  If not...
 
-Hm, ok. Indeed, we have some x86 emulator-like codes in kernel(see,
-arch/x86/mm/pf_in.*). I think it is basically good thing to re-implement
-much-better emulator for all. But I think it'll be a long step, because
-when I had tried to reuse kvm emulator for decoder, I felt that was too
-specialized for kvm, vcpu, guest virtual memory access, and so on.
+Here is an approximation that might inspire someone to come up with a
+real solution.
 
-If we could make an emulator/evaluater/decoder which can provide
-functions for those consumers, I'm not so sure it is fast enough,
-because I don't think XOL code is so slower than emulating... based on my
-experience of kprobe benchmarks, it will need ~500 cycles.
-If the emulator can be faster than that, I agreed.
+One approach would be to store the name length with the name, so that
+struct qstr loses the "len" field, and so that its "name" field points
+to a struct that has a "len" field followed by an array of const
+unsigned char.  That way, the name and length are closely associated.
+When you pick up a struct qstr's "name" pointer, you are guaranteed to
+get a length that matches the name.
 
-(BTW, apart from uprobes need, I think those codes should be refined
-with some well-maintainable instruction maps, like x86-opcode-map.txt :))
+Unfortunately:
 
+o	In theory, this leaves the length of the dentry unchanged, but
+	alignment is a problem on 64-bit systems.  Also, the long names
+	gain an extra four bytes.
 
-> Dont you see the obvious advantages of that?
+o	If you get a pointer to the d_iname small-name field, rename
+	might still change the name out from under you.  This could in
+	theory be fixed by refusing to re-use the d_iname field until
+	an RCU grace period had elapsed (using an external structure
+	instead).  In practice, not sure if this is really a reasonable
+	approach.
 
-Hmm, my another concern is if we have to make emulators for each arch,
-an XOL implementation could be much simpler than total code of that.
+Thoughts?
 
-
-So, summarize my thought, in short term (and only for uprobe), XOL
-is better way to go. It can be reused on other archs, generic, and
-not-so-slow (and we can boost some opcodes). However, it'll not
-transparent from user space(users can see which instruction is probed),
-will reduce user space, and might have security issue(?).
-
-In long term, generic x86 emulator is also another way. If we
-can make it enough generic, we don't need XOL code. However, it is
-hard and takes a time to make it so generic, and can be slower than
-XOL on some complex instructions (and also, how many instructions
-should be supported is enough for that?). Indeed, I must admit that
-implementing an emulator should be exciting for kernel hackers :)
-
-Anyway, if you think we can't avoid generalizing x86 emulators
-(even without uprobes), maybe, it a good way to go.
-
-Thank you,
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+							Thanx, Paul
