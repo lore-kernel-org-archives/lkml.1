@@ -1,20 +1,20 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932219Ab0BBTIU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 14:08:20 -0500
-Received: from g6t0184.atlanta.hp.com ([15.193.32.61]:12075 "EHLO
-	g6t0184.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932173Ab0BBTIL (ORCPT
+	id S932134Ab0BBTIh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 14:08:37 -0500
+Received: from g4t0015.houston.hp.com ([15.201.24.18]:46544 "EHLO
+	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932228Ab0BBTI0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 14:08:11 -0500
-Subject: [PATCH v2 03/18] IB/uverbs: use stack variable 'devnum' in
-	ib_uverbs_add_one
+	Tue, 2 Feb 2010 14:08:26 -0500
+Subject: [PATCH v2 08/18] IB/umad: convert cdev pointers to embedded structs
+	in struct ib_umad_port
 To: rdreier@cisco.com
 From: Alex Chiang <achiang@hp.com>
 Cc: linux-rdma@vger.kernel.org, justin.chen@hp.com,
        linux-kernel@vger.kernel.org
-Date: Tue, 02 Feb 2010 12:07:59 -0700
-Message-ID: <20100202190759.28217.75429.stgit@bob.kio>
+Date: Tue, 02 Feb 2010 12:08:25 -0700
+Message-ID: <20100202190824.28217.22339.stgit@bob.kio>
 In-Reply-To: <20100202185235.28217.64521.stgit@bob.kio>
 References: <20100202185235.28217.64521.stgit@bob.kio>
 User-Agent: StGit/0.15
@@ -25,61 +25,119 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This change is not useful by itself, but it sets us up for a future
-change that allows us to dynamically allocate device numbers in case
-we have more than IB_UVERBS_MAX_DEVICES in the system.
+Instead of storing pointers to cdev and sm_cdev, embed the full
+structures instead.
+
+This change allows us to use the container_of() macro in ib_umad_open()
+and ib_umad_sm_open() in a future patch.
+
+This change increases the size of struct ib_umad_port to 320 bytes
+from 128.
 
 Signed-off-by: Alex Chiang <achiang@hp.com>
 ---
 
- drivers/infiniband/core/uverbs_main.c |   12 +++++++-----
- 1 files changed, 7 insertions(+), 5 deletions(-)
+ drivers/infiniband/core/user_mad.c |   46 ++++++++++++++++--------------------
+ 1 files changed, 20 insertions(+), 26 deletions(-)
 
-diff --git a/drivers/infiniband/core/uverbs_main.c b/drivers/infiniband/core/uverbs_main.c
-index 3f11292..acae9ed 100644
---- a/drivers/infiniband/core/uverbs_main.c
-+++ b/drivers/infiniband/core/uverbs_main.c
-@@ -730,6 +730,7 @@ static CLASS_ATTR(abi_version, S_IRUGO, show_abi_version, NULL);
+diff --git a/drivers/infiniband/core/user_mad.c b/drivers/infiniband/core/user_mad.c
+index 7de0296..40440ef 100644
+--- a/drivers/infiniband/core/user_mad.c
++++ b/drivers/infiniband/core/user_mad.c
+@@ -87,10 +87,10 @@ enum {
+  */
  
- static void ib_uverbs_add_one(struct ib_device *device)
- {
-+	int devnum;
- 	struct ib_uverbs_device *uverbs_dev;
+ struct ib_umad_port {
+-	struct cdev           *cdev;
++	struct cdev           cdev;
+ 	struct device	      *dev;
  
- 	if (!device->alloc_ucontext)
-@@ -743,12 +744,13 @@ static void ib_uverbs_add_one(struct ib_device *device)
- 	init_completion(&uverbs_dev->comp);
+-	struct cdev           *sm_cdev;
++	struct cdev           sm_cdev;
+ 	struct device	      *sm_dev;
+ 	struct semaphore       sm_sem;
  
- 	spin_lock(&map_lock);
--	uverbs_dev->devnum = find_first_zero_bit(dev_map, IB_UVERBS_MAX_DEVICES);
--	if (uverbs_dev->devnum >= IB_UVERBS_MAX_DEVICES) {
-+	devnum = find_first_zero_bit(dev_map, IB_UVERBS_MAX_DEVICES);
-+	if (devnum >= IB_UVERBS_MAX_DEVICES) {
- 		spin_unlock(&map_lock);
- 		goto err;
- 	}
--	set_bit(uverbs_dev->devnum, dev_map);
-+	uverbs_dev->devnum = devnum;
-+	set_bit(devnum, dev_map);
- 	spin_unlock(&map_lock);
+@@ -1008,17 +1008,14 @@ static int ib_umad_init_port(struct ib_device *device, int port_num,
+ 	mutex_init(&port->file_mutex);
+ 	INIT_LIST_HEAD(&port->file_list);
  
- 	uverbs_dev->ib_dev           = device;
-@@ -758,7 +760,7 @@ static void ib_uverbs_add_one(struct ib_device *device)
- 	uverbs_dev->cdev.owner = THIS_MODULE;
- 	uverbs_dev->cdev.ops = device->mmap ? &uverbs_mmap_fops : &uverbs_fops;
- 	kobject_set_name(&uverbs_dev->cdev.kobj, "uverbs%d", uverbs_dev->devnum);
--	if (cdev_add(&uverbs_dev->cdev, IB_UVERBS_BASE_DEV + uverbs_dev->devnum, 1))
-+	if (cdev_add(&uverbs_dev->cdev, IB_UVERBS_BASE_DEV + devnum, 1))
+-	port->cdev = cdev_alloc();
+-	if (!port->cdev)
+-		return -1;
+-	port->cdev->owner = THIS_MODULE;
+-	port->cdev->ops   = &umad_fops;
+-	kobject_set_name(&port->cdev->kobj, "umad%d", port->dev_num);
+-	if (cdev_add(port->cdev, base_dev + port->dev_num, 1))
++	cdev_init(&port->cdev, &umad_fops);
++	port->cdev.owner = THIS_MODULE;
++	kobject_set_name(&port->cdev.kobj, "umad%d", port->dev_num);
++	if (cdev_add(&port->cdev, base_dev + port->dev_num, 1))
  		goto err_cdev;
  
- 	uverbs_dev->dev = device_create(uverbs_class, device->dma_device,
-@@ -781,7 +783,7 @@ err_class:
+ 	port->dev = device_create(umad_class, device->dma_device,
+-				  port->cdev->dev, port,
++				  port->cdev.dev, port,
+ 				  "umad%d", port->dev_num);
+ 	if (IS_ERR(port->dev))
+ 		goto err_cdev;
+@@ -1028,17 +1025,14 @@ static int ib_umad_init_port(struct ib_device *device, int port_num,
+ 	if (device_create_file(port->dev, &dev_attr_port))
+ 		goto err_dev;
+ 
+-	port->sm_cdev = cdev_alloc();
+-	if (!port->sm_cdev)
+-		goto err_dev;
+-	port->sm_cdev->owner = THIS_MODULE;
+-	port->sm_cdev->ops   = &umad_sm_fops;
+-	kobject_set_name(&port->sm_cdev->kobj, "issm%d", port->dev_num);
+-	if (cdev_add(port->sm_cdev, base_dev + port->dev_num + IB_UMAD_MAX_PORTS, 1))
++	cdev_init(&port->sm_cdev, &umad_sm_fops);
++	port->sm_cdev.owner = THIS_MODULE;
++	kobject_set_name(&port->sm_cdev.kobj, "issm%d", port->dev_num);
++	if (cdev_add(&port->sm_cdev, base_dev + port->dev_num + IB_UMAD_MAX_PORTS, 1))
+ 		goto err_sm_cdev;
+ 
+ 	port->sm_dev = device_create(umad_class, device->dma_device,
+-				     port->sm_cdev->dev, port,
++				     port->sm_cdev.dev, port,
+ 				     "issm%d", port->dev_num);
+ 	if (IS_ERR(port->sm_dev))
+ 		goto err_sm_cdev;
+@@ -1055,16 +1049,16 @@ static int ib_umad_init_port(struct ib_device *device, int port_num,
+ 	return 0;
+ 
+ err_sm_dev:
+-	device_destroy(umad_class, port->sm_cdev->dev);
++	device_destroy(umad_class, port->sm_cdev.dev);
+ 
+ err_sm_cdev:
+-	cdev_del(port->sm_cdev);
++	cdev_del(&port->sm_cdev);
+ 
+ err_dev:
+-	device_destroy(umad_class, port->cdev->dev);
++	device_destroy(umad_class, port->cdev.dev);
  
  err_cdev:
- 	cdev_del(&uverbs_dev->cdev);
--	clear_bit(uverbs_dev->devnum, dev_map);
-+	clear_bit(devnum, dev_map);
+-	cdev_del(port->cdev);
++	cdev_del(&port->cdev);
+ 	clear_bit(port->dev_num, dev_map);
  
- err:
- 	kref_put(&uverbs_dev->ref, ib_uverbs_release_dev);
+ 	return -1;
+@@ -1079,11 +1073,11 @@ static void ib_umad_kill_port(struct ib_umad_port *port)
+ 	dev_set_drvdata(port->dev,    NULL);
+ 	dev_set_drvdata(port->sm_dev, NULL);
+ 
+-	device_destroy(umad_class, port->cdev->dev);
+-	device_destroy(umad_class, port->sm_cdev->dev);
++	device_destroy(umad_class, port->cdev.dev);
++	device_destroy(umad_class, port->sm_cdev.dev);
+ 
+-	cdev_del(port->cdev);
+-	cdev_del(port->sm_cdev);
++	cdev_del(&port->cdev);
++	cdev_del(&port->sm_cdev);
+ 
+ 	spin_lock(&port_lock);
+ 	umad_port[port->dev_num] = NULL;
 
