@@ -1,67 +1,82 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754482Ab0BBEck (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 23:32:40 -0500
-Received: from li59-9.members.linode.com ([97.107.129.9]:58619 "EHLO erley.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752532Ab0BBEcj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 23:32:39 -0500
-X-Greylist: delayed 428 seconds by postgrey-1.27 at vger.kernel.org; Mon, 01 Feb 2010 23:32:39 EST
-Message-ID: <4B67A937.70406@erley.org>
-Date: Mon, 01 Feb 2010 23:25:27 -0500
-From: Pat Erley <pat-lkml@erley.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20100112 Thunderbird/3.0
-MIME-Version: 1.0
-To: Maxim Levitsky <maximlevitsky@gmail.com>,
-       "Luis R. Rodriguez" <mcgrof@gmail.com>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Witold Sowa <witold.sowa@gmail.com>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       Till Kamppeter <till.kamppeter@gmail.com>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org, lsb-discuss@lists.linux-foundation.org
-Subject: Re: Linux wireless GSoC 2010 project ideas
-References: <43e72e891001281338u5f05307ble5360c3dac6ab9a2@mail.gmail.com> <4B65F024.3080505@gmail.com> <1264972854.3597.17.camel@johannes.local> <43e72e891002011001l4e914094v33e73209a9da93e8@mail.gmail.com> <1265055284.26421.16.camel@maxim-laptop> <20100201221252.GA30758@emergent.ellipticsemi.com>
-In-Reply-To: <20100201221252.GA30758@emergent.ellipticsemi.com>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1754538Ab0BBEgy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 23:36:54 -0500
+Received: from dallas.jonmasters.org ([72.29.103.172]:53069 "EHLO
+	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753258Ab0BBEgw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Feb 2010 23:36:52 -0500
+Subject: Re: [PATCH] netfilter: per netns nf_conntrack_cachep
+From: Jon Masters <jonathan@jonmasters.org>
+To: Eric Dumazet <eric.dumazet@gmail.com>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, Patrick McHardy <kaber@trash.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>,
+       netfilter-devel <netfilter-devel@vger.kernel.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+In-Reply-To: <1265035970.2848.50.camel@edumazet-laptop>
+References: <1264813832.2793.446.camel@tonnant>
+	 <1264816634.2793.505.camel@tonnant> <1264816777.2793.510.camel@tonnant>
+	 <1264834704.2919.3.camel@edumazet-laptop>
+	 <1265016745.7499.144.camel@tonnant>
+	 <b6fcc0a1002010136k7e78a998p31a9e7464c2e8d44@mail.gmail.com>
+	 <1265019160.2848.14.camel@edumazet-laptop>
+	 <b6fcc0a1002010225u4e74f9f0q633d73038234dc37@mail.gmail.com>
+	 <1265023437.2848.30.camel@edumazet-laptop>
+	 <1265035970.2848.50.camel@edumazet-laptop>
+Content-Type: text/plain
+Organization: World Organi[sz]ation of Broken Dreams
+Date: Mon, 01 Feb 2010 23:36:31 -0500
+Message-Id: <1265085391.2861.106.camel@tonnant>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
 Content-Transfer-Encoding: 7bit
+X-SA-Do-Not-Run: Yes
+X-SA-Exim-Connect-IP: 127.0.0.1
+X-SA-Exim-Mail-From: jonathan@jonmasters.org
+X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/01/10 17:12, Nick Bowler wrote:
-> On 22:14 Mon 01 Feb     , Maxim Levitsky wrote:
->> 2 - Allow a wireless card to associate to several APs at once (if they
->> share the frequency). 
->> Implement this at least for ath5/9k. Madwifi had that feature. Maybe
->> ath9k has. If it has that feature, test it.
+On Mon, 2010-02-01 at 15:52 +0100, Eric Dumazet wrote:
+
+> [PATCH] netfilter: per netns nf_conntrack_cachep
 > 
-> I haven't actually tried this particular case, but this is ostensibly
-> already supported by mac80211: iw allows you to create several wireless
-> interfaces that share a phy, which can then be configured into different
-> modes (I've used station + monitor successfully in the past).
+> nf_conntrack_cachep is currently shared by all netns instances, but
+> because of SLAB_DESTROY_BY_RCU special semantics, this is wrong.
 > 
-With ath9k I have used:
+> If we use a shared slab cache, one object can instantly flight between
+> one hash table (netns ONE) to another one (netns TWO), and concurrent
+> reader (doing a lookup in netns ONE, 'finding' an object of netns TWO)
+> can be fooled without notice, because no RCU grace period has to be
+> observed between object freeing and its reuse.
+> 
+> We dont have this problem with UDP/TCP slab caches because TCP/UDP
+> hashtables are global to the machine (and each object has a pointer to
+> its netns).
+> 
+> If we use per netns conntrack hash tables, we also *must* use per netns
+> conntrack slab caches, to guarantee an object can not escape from one
+> namespace to another one.
+> 
+> Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
 
-AP + MP
-AP + STA
-AP + AP (Open and WPA2)
+You're totally right, I'd missed this (RCU behavior wrt SLAB caches was
+one of these black magic voodoo things until Peter Z. set me straight
+with his explanation that it only applies to the freeing of the cache
+itself, not the objects - that makes sense in the grand scheme of what
+RCU is trying to achieve, and so in theory, yeah we could just verify
+the ct object we get back out of the cache is from the same ns, should
+work just as well as doing per-ns caches, but not as clean IMO). I'm
+still not sure it explains the specific corruption I'm seeing, but I
+just made some coffee and put on some T. Rex to help me think.
 
-using both the debug interface to ath9k's internal multi-vif support 
-(never tested MP with ath9k multi-vif) and mac80211.  I know that 
-if you use the ath9k internal method, you can operate on multiple 
-channels at a sacrifice to throughput.  I have not tested if mac80211
-supports multiple channels.
+Jon.
 
-It's as easy as:
+P.S. What's up with all the "Welcome, Mr. Bond" and "i_see_dead_people"
+and other comments in that code anyway? If you're going to use movie
+references, perhaps standardize on one particular genre :)
 
-AP+MP and AP+STA:
-Start Hostapd
-Create interface with iw
-use second interface.
 
-AP+AP
-Configure hostapd for multiple bss
-start hostapd
-
-Pat Erley
