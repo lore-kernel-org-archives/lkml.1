@@ -1,100 +1,65 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754825Ab0BAX7K (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 18:59:10 -0500
-Received: from mail-gx0-f224.google.com ([209.85.217.224]:65091 "EHLO
-	mail-gx0-f224.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753442Ab0BAX7I (ORCPT
+	id S1753939Ab0BBAEz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 19:04:55 -0500
+Received: from mail-qy0-f200.google.com ([209.85.221.200]:38719 "EHLO
+	mail-qy0-f200.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752218Ab0BBAEy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 18:59:08 -0500
+	Mon, 1 Feb 2010 19:04:54 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=dNf9qmz9qaSCMVyR62GPalfdzFsbV3zur6L+buVRrXR/CR3AtIbxqXmjn8JvWnwhAj
-         g71gj6tCW4ip7d9oncZbDDFY7+MDa40t8ivSNXMv90Sffpedpx+tgtMZL5b8StLb8E5h
-         QpzkIzLf2LRQ6cGMGnN95xXROfAyDBCMmLJW8=
-Message-ID: <4B676B20.8060808@gmail.com>
-Date: Mon, 01 Feb 2010 16:00:32 -0800
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091114 Lightning/1.0pre Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Thomas Meyer <thomas@m3y3r.de>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Eric Anholt <eric@anholt.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] i915: slow acpi_lid_open() causes flickering
-References: <1265048453.2619.8.camel@localhost.localdomain> <20100201143348.cb9fa1e3.akpm@linux-foundation.org>
-In-Reply-To: <20100201143348.cb9fa1e3.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=UHm4EqrmLSC2JyU67cvE+Xts2hPjldxRUI/OvzwQHKOFyodI6VAepp6l9dAY0KRrdD
+         DYlosZUu+SMRmlxjU/D91XrZIHw6IKeVK8iizufveg9YZnuRnZzDv6FomRiZffCzjEUn
+         qTzNIfeLryQjJWv8KE3irn4DwFucnEydnFYJk=
+Subject: Re: [Bug #15198] Radeon KMS regression
+From: Kevin Winchester <kjwinchester@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <d3IDKWHT5gE.A.UoB.P7hZLB@chimera>
+References: <vZZJKzCUn4G.A.CPB.F7hZLB@chimera>
+	 <d3IDKWHT5gE.A.UoB.P7hZLB@chimera>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 01 Feb 2010 20:04:50 -0400
+Message-ID: <1265069090.1515.1.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/01/10 14:33, Andrew Morton wrote:
-> On Mon, 01 Feb 2010 19:20:53 +0100
-> Thomas Meyer<thomas@m3y3r.de>  wrote:
->
->> acpi_lid_open() could take up to 10ms on my computer.
->> Some component is calling the drm GETCONNECTOR ioctl many times in a row.
->> This results in flickering (for example, when starting a video).
->> Fix it by assuming an always connected lid status.
->>
->> This fixes bug http://bugzilla.kernel.org/show_bug.cgi?id=14670
->>
->> ---
->>   drivers/gpu/drm/i915/intel_lvds.c |   15 ++++++++++++++-
->>   1 files changed, 14 insertions(+), 1 deletions(-)
->>
->> diff --git a/drivers/gpu/drm/i915/intel_lvds.c b/drivers/gpu/drm/i915/intel_lvds.c
->> index aa74e59..0f0779c 100644
->> --- a/drivers/gpu/drm/i915/intel_lvds.c
->> +++ b/drivers/gpu/drm/i915/intel_lvds.c
->> @@ -632,6 +632,18 @@ static const struct dmi_system_id bad_lid_status[] = {
->>   	{ }
->>   };
->>
->> +/* Some lid devices take a long time to report the lid status, assume they're connected*/
->> +static const struct dmi_system_id slow_lid_status[] = {
->> +	{
->> +		.ident = "Aspire 1810T",
->> +		.matches = {
->> +			DMI_MATCH(DMI_SYS_VENDOR, "Acer"),
->> +			DMI_MATCH(DMI_PRODUCT_NAME, "Aspire 1810T"),
->> +		},
->> +	},
->> +	{ }
->> +};
->> +
->>   /**
->>    * Detect the LVDS connection.
->>    *
->> @@ -643,7 +655,8 @@ static enum drm_connector_status intel_lvds_detect(struct drm_connector *connect
->>   {
->>   	enum drm_connector_status status = connector_status_connected;
->>
->> -	if (!acpi_lid_open()&&  !dmi_check_system(bad_lid_status))
->> +	if (!dmi_check_system(slow_lid_status)&&  !dmi_check_system(bad_lid_status))
->> +	    if (!acpi_lid_open())
->>   		status = connector_status_disconnected;
->>
->>   	return status;
->
-> The patch is missing your Signed-off-by: line.  I cheekily added it.
-> Please check Documentation/SubmittingPatches, let me know if you
-> disagree with this, thanks.
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+On Mon, 2010-02-01 at 01:22 +0100, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+> 
+> The following bug entry is on the current list of known regressions
+> from 2.6.32.  Please verify if it still should be listed and let me know
+> (either way).
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15198
+> Subject		: Radeon KMS regression
+> Submitter	: Kevin Winchester <kjwinchester@gmail.com>
+> Date		: 2010-01-30 17:18 (2 days old)
+> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=42590a75019a50012f25a962246498dead428433
+> References	: http://marc.info/?l=linux-kernel&m=126487191019612&w=4
+> Handled-By	: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> Patch		: http://patchwork.kernel.org/patch/75023/
+> 
+> 
 
-I'm wondering if just adding your DMI entry to
-bad_lid_status[] is all that is really needed.
-(this way it saves bits in the kernel).
+This is fixed by the patch from FUJITA Tomonori - I just confirmed with
+my latest build of Linus' tree (which has the patch).
 
-Justin P. Mattock
+Thanks,
+
+-- 
+Kevin Winchester
+
+
