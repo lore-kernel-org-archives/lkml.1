@@ -1,94 +1,87 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756695Ab0BBQ6o (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 11:58:44 -0500
-Received: from dallas.jonmasters.org ([72.29.103.172]:43681 "EHLO
-	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756664Ab0BBQ6m (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 11:58:42 -0500
-Subject: PROBLEM with summary: Re: [PATCH] netfilter: per netns
- nf_conntrack_cachep
-From: Jon Masters <jonathan@jonmasters.org>
-To: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, Patrick McHardy <kaber@trash.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>,
-       netfilter-devel <netfilter-devel@vger.kernel.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-In-Reply-To: <1265129192.2861.141.camel@tonnant>
-References: <1264813832.2793.446.camel@tonnant>
-	 <1264816634.2793.505.camel@tonnant> <1264816777.2793.510.camel@tonnant>
-	 <1264834704.2919.3.camel@edumazet-laptop>
-	 <1265016745.7499.144.camel@tonnant>
-	 <b6fcc0a1002010136k7e78a998p31a9e7464c2e8d44@mail.gmail.com>
-	 <1265019160.2848.14.camel@edumazet-laptop>
-	 <b6fcc0a1002010225u4e74f9f0q633d73038234dc37@mail.gmail.com>
-	 <1265023437.2848.30.camel@edumazet-laptop>
-	 <1265035970.2848.50.camel@edumazet-laptop>
-	 <b6fcc0a1002010658j4f52a9b8kf10e4bb07a2f1075@mail.gmail.com>
-	 <1265036548.2848.55.camel@edumazet-laptop>
-	 <1265108690.2861.118.camel@tonnant>  <1265110504.2861.135.camel@tonnant>
-	 <1265129192.2861.141.camel@tonnant>
-Content-Type: text/plain
-Organization: World Organi[sz]ation of Broken Dreams
-Date: Tue, 02 Feb 2010 11:58:23 -0500
-Message-Id: <1265129903.2861.150.camel@tonnant>
+	id S1756712Ab0BBRAL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 12:00:11 -0500
+Received: from mail-out2.uio.no ([129.240.10.58]:39451 "EHLO mail-out2.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756670Ab0BBRAH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 12:00:07 -0500
+Subject: Re: [PATCH] nfs: clear_commit_release incorrectly handle truncated
+ page
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Dmitry Monakhov <dmonakhov@openvz.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-nfs@vger.kernel.org
+In-Reply-To: <87pr4nzisc.fsf@openvz.org>
+References: <87hbpzhqlp.fsf@openvz.org> <1265123045.3177.21.camel@localhost>
+	 <87eil3pszw.fsf@openvz.org> <1265124999.3177.27.camel@localhost>
+	 <87mxzrk4wk.fsf@openvz.org> <1265127435.3177.47.camel@localhost>
+	 <87pr4nzisc.fsf@openvz.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 02 Feb 2010 12:00:03 -0500
+Message-ID: <1265130003.3177.51.camel@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
 Content-Transfer-Encoding: 7bit
-X-SA-Do-Not-Run: Yes
-X-SA-Exim-Connect-IP: 127.0.0.1
-X-SA-Exim-Mail-From: jonathan@jonmasters.org
-X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
+X-UiO-Ratelimit-Test: rcpts/h 3 msgs/h 1 sum rcpts/h 6 sum msgs/h 1 total rcpts 2343 max rcpts/h 27 ratelimit 0
+X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
+X-UiO-Scanned: 53926D51BC1C1B3EF9523A84BEA1AA0602E7D129
+X-UiO-SPAM-Test: remote_host: 68.40.206.115 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 1 total 153 max/h 7 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-02-02 at 11:46 -0500, Jon Masters wrote:
-> On Tue, 2010-02-02 at 06:35 -0500, Jon Masters wrote:
+On Tue, 2010-02-02 at 19:47 +0300, Dmitry Monakhov wrote: 
+> Trond Myklebust <trond.myklebust@fys.uio.no> writes:
+> > Hmm.... There is a known problem with a reference leak in
+> > nfs_wb_page_cancel() (I've queued up a fix for 2.6.33 in the 'bugfixes'
+> > branch of my git tree already). What happens when you apply the
+> > following patch?
+> The not helps, still get the same oops(log follows).
+> Have you tried my testcase?
 > 
-> > I think there's something more fundamental going on here.
-> 
-> What happens is the conntrack code attempts to free
-> nf_conntrack_untracked back into the SL[U]B cache from which it
-> allocates other ct's. There's just one problem...that's a static struct
-> not from the cache. So, this is why we end up with the SLAB being
-> corrupted and the address immediately following the
-> nf_conntrack_untracked being corrupted.
-> 
-> I shoved some debug comments into the destroy code to see if we were
-> trying to free nf_conntrack_untracked, and bingo. I have shoved a panic
-> in there now, will send you a backtrace.
+>  BUG: unable to handle kernel NULL pointer dereference at 00000040
+>  IP: [<f80d415f>] nfs_clear_request_commit+0x3f/0xb0 [nfs]
+>  *pde = 00000000 
+>  Oops: 0000 [#1] SMP DEBUG_PAGEALLOC
+>  last sysfs file: /sys/devices/platform/thinkpad_acpi/leds/tpacpi::thinkvantage/uevent
+>  Modules linked in: binfmt_misc quota_v2 quota_tree nfsd exportfs nfs lockd sunrpc iwl3945 thinkpad_acpi psmouse led_class serio_raw iwlcore nvram raid1 raid0 linear e1000e
+>  
+>  Pid: 1035, comm: nfsiod Not tainted 2.6.33-rc6 #60 2623DDU/2623DDU
+>  EIP: 0060:[<f80d415f>] EFLAGS: 00010296 CPU: 0
+>  EIP is at nfs_clear_request_commit+0x3f/0xb0 [nfs]
+>  EAX: 00000000 EBX: c2561d80 ECX: c06d3700 EDX: 00000014
+>  ESI: f69916c0 EDI: f80dab58 EBP: f6724ef4 ESP: f6724ee8
+>   DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+>  Process nfsiod (pid: 1035, ti=f6724000 task=f69dda90 task.ti=f6724000)
+>  Stack:
+>   c04df67d f69d7440 f69916c0 f6724f34 f80d4258 f6724f44 00001b0e 00000000
+>  <0> ffff799c 00000400 f505f000 94c0042a f69917e0 f69917e8 00000000 f69916c0
+>  <0> f69916c4 f69916c0 f80dab58 f6724f3c f8075703 f6724f58 f8075871 f6724f60
+>  Call Trace:
+>   [<c04df67d>] ? schedule+0x3ad/0xa30
+>   [<f80d4258>] ? nfs_commit_release+0x88/0x1a0 [nfs]
+>   [<f8075703>] ? rpc_release_calldata+0x13/0x20 [sunrpc]
+>   [<f8075871>] ? rpc_free_task+0x41/0x70 [sunrpc]
+>   [<c01acc4c>] ? probe_workqueue_execution+0x8c/0xd0
+>   [<f8075940>] ? rpc_async_release+0x10/0x20 [sunrpc]
+>   [<c015834d>] ? worker_thread+0x10d/0x210
+>   [<f8075930>] ? rpc_async_release+0x0/0x20 [sunrpc]
+>   [<c015bb10>] ? autoremove_wake_function+0x0/0x50
+>   [<c0158240>] ? worker_thread+0x0/0x210
+>   [<c015b724>] ? kthread+0x74/0x80
+>   [<c015b6b0>] ? kthread+0x0/0x80
+>   [<c0103546>] ? kernel_thread_helper+0x6/0x10
+>  Code: f0 0f ba 70 28 01 19 d2 31 c0 85 d2 75 0e 8b 5d f8 8b 75 fc 89 ec 5d c3 8d 74 26 00 89 d8 ba 10 00 00 00 e8 74 0e 10 c8 8b 43 10 <8b> 70 40 9c 5b fa e8 26 67 0d c8 8d 46 30 b9 ff ff ff ff 0f bd 
+>  EIP: [<f80d415f>] nfs_clear_request_commit+0x3f/0xb0 [nfs] SS:ESP 0068:f6724ee8
+>  CR2: 0000000000000040
+>  ---[ end trace 4bf8ee9d233ce744 ]---
 
-So we attach after starting a VM due to icmpv6_error setting the ct in
-some incoming skb to the "untracked" catchall one. Then we panic when I
-force a panic if attempting to free the nf_conntrack_untracked static
-struct with this backtrace:
+Yep. Looking more carefully at your test case, I don't see how
+truncate_inode_page() can be involved at all. You are extending the file
+using lseek(), not truncate(). So something else must be at work here.
 
-#5  0xffffffff81455884 in panic (
-    fmt=0xffffffff81ec51e0 "JCM: nf_conntrack_destroy: trying to destroy
-nf_conntrack_untracked!\n")
-    at kernel/panic.c:73
-#6  0xffffffff813d266c in nf_conntrack_destroy (nfct=<value optimized
-out>) at net/netfilter/core.c:244
-#7  0xffffffff813abd97 in nf_conntrack_put (skb=0xffff880223b8b700) at
-include/linux/skbuff.h:1924
-#8  skb_release_head_state (skb=0xffff880223b8b700) at
-net/core/skbuff.c:402
-#9  0xffffffff813abaf9 in skb_release_all (skb=0xffff880223b8b700) at
-net/core/skbuff.c:420
-#10 __kfree_skb (skb=0xffff880223b8b700) at net/core/skbuff.c:435
-#11 0xffffffff813abbfe in kfree_skb (skb=0xffff880223b8b700) at
-net/core/skbuff.c:456
+I'll see if I can reproduce it.
 
-Could you please add (or recommend for me to test) some logic to catch
-attempts to free the nf_conntrack_untracked and prevent it? Also, maybe
-in the init_net code you could remove the re-initialization of the
-untracked conntrack each time a namespace is created?
-
-Thanks!
-
-Jon.
-
+Trond
 
