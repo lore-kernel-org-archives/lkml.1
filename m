@@ -1,87 +1,86 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756712Ab0BBRAL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 12:00:11 -0500
-Received: from mail-out2.uio.no ([129.240.10.58]:39451 "EHLO mail-out2.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756670Ab0BBRAH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 12:00:07 -0500
-Subject: Re: [PATCH] nfs: clear_commit_release incorrectly handle truncated
- page
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Dmitry Monakhov <dmonakhov@openvz.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-nfs@vger.kernel.org
-In-Reply-To: <87pr4nzisc.fsf@openvz.org>
-References: <87hbpzhqlp.fsf@openvz.org> <1265123045.3177.21.camel@localhost>
-	 <87eil3pszw.fsf@openvz.org> <1265124999.3177.27.camel@localhost>
-	 <87mxzrk4wk.fsf@openvz.org> <1265127435.3177.47.camel@localhost>
-	 <87pr4nzisc.fsf@openvz.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 02 Feb 2010 12:00:03 -0500
-Message-ID: <1265130003.3177.51.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
-Content-Transfer-Encoding: 7bit
-X-UiO-Ratelimit-Test: rcpts/h 3 msgs/h 1 sum rcpts/h 6 sum msgs/h 1 total rcpts 2343 max rcpts/h 27 ratelimit 0
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: 53926D51BC1C1B3EF9523A84BEA1AA0602E7D129
-X-UiO-SPAM-Test: remote_host: 68.40.206.115 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 1 total 153 max/h 7 blacklist 0 greylist 0 ratelimit 0
+	id S1756720Ab0BBRBI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 12:01:08 -0500
+Received: from nerdhammel.gnuher.de ([88.198.0.170]:53144 "EHLO
+	nerdhammel.gnuher.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756704Ab0BBRBE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 12:01:04 -0500
+X-Greylist: delayed 514 seconds by postgrey-1.27 at vger.kernel.org; Tue, 02 Feb 2010 12:01:04 EST
+Date: Tue, 2 Feb 2010 17:52:27 +0100
+From: Sven Geggus <lists@fuchsschwanzdomain.de>
+To: linux-kernel@vger.kernel.org
+Subject: i915 drm/kms crash
+Message-ID: <20100202165227.GA16964@geggus.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+X-MimeOLE: Produced By Exchange Microsoft V6.6.6
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-02-02 at 19:47 +0300, Dmitry Monakhov wrote: 
-> Trond Myklebust <trond.myklebust@fys.uio.no> writes:
-> > Hmm.... There is a known problem with a reference leak in
-> > nfs_wb_page_cancel() (I've queued up a fix for 2.6.33 in the 'bugfixes'
-> > branch of my git tree already). What happens when you apply the
-> > following patch?
-> The not helps, still get the same oops(log follows).
-> Have you tried my testcase?
-> 
->  BUG: unable to handle kernel NULL pointer dereference at 00000040
->  IP: [<f80d415f>] nfs_clear_request_commit+0x3f/0xb0 [nfs]
->  *pde = 00000000 
->  Oops: 0000 [#1] SMP DEBUG_PAGEALLOC
->  last sysfs file: /sys/devices/platform/thinkpad_acpi/leds/tpacpi::thinkvantage/uevent
->  Modules linked in: binfmt_misc quota_v2 quota_tree nfsd exportfs nfs lockd sunrpc iwl3945 thinkpad_acpi psmouse led_class serio_raw iwlcore nvram raid1 raid0 linear e1000e
->  
->  Pid: 1035, comm: nfsiod Not tainted 2.6.33-rc6 #60 2623DDU/2623DDU
->  EIP: 0060:[<f80d415f>] EFLAGS: 00010296 CPU: 0
->  EIP is at nfs_clear_request_commit+0x3f/0xb0 [nfs]
->  EAX: 00000000 EBX: c2561d80 ECX: c06d3700 EDX: 00000014
->  ESI: f69916c0 EDI: f80dab58 EBP: f6724ef4 ESP: f6724ee8
->   DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
->  Process nfsiod (pid: 1035, ti=f6724000 task=f69dda90 task.ti=f6724000)
->  Stack:
->   c04df67d f69d7440 f69916c0 f6724f34 f80d4258 f6724f44 00001b0e 00000000
->  <0> ffff799c 00000400 f505f000 94c0042a f69917e0 f69917e8 00000000 f69916c0
->  <0> f69916c4 f69916c0 f80dab58 f6724f3c f8075703 f6724f58 f8075871 f6724f60
->  Call Trace:
->   [<c04df67d>] ? schedule+0x3ad/0xa30
->   [<f80d4258>] ? nfs_commit_release+0x88/0x1a0 [nfs]
->   [<f8075703>] ? rpc_release_calldata+0x13/0x20 [sunrpc]
->   [<f8075871>] ? rpc_free_task+0x41/0x70 [sunrpc]
->   [<c01acc4c>] ? probe_workqueue_execution+0x8c/0xd0
->   [<f8075940>] ? rpc_async_release+0x10/0x20 [sunrpc]
->   [<c015834d>] ? worker_thread+0x10d/0x210
->   [<f8075930>] ? rpc_async_release+0x0/0x20 [sunrpc]
->   [<c015bb10>] ? autoremove_wake_function+0x0/0x50
->   [<c0158240>] ? worker_thread+0x0/0x210
->   [<c015b724>] ? kthread+0x74/0x80
->   [<c015b6b0>] ? kthread+0x0/0x80
->   [<c0103546>] ? kernel_thread_helper+0x6/0x10
->  Code: f0 0f ba 70 28 01 19 d2 31 c0 85 d2 75 0e 8b 5d f8 8b 75 fc 89 ec 5d c3 8d 74 26 00 89 d8 ba 10 00 00 00 e8 74 0e 10 c8 8b 43 10 <8b> 70 40 9c 5b fa e8 26 67 0d c8 8d 46 30 b9 ff ff ff ff 0f bd 
->  EIP: [<f80d415f>] nfs_clear_request_commit+0x3f/0xb0 [nfs] SS:ESP 0068:f6724ee8
->  CR2: 0000000000000040
->  ---[ end trace 4bf8ee9d233ce744 ]---
+Hello,
 
-Yep. Looking more carefully at your test case, I don't see how
-truncate_inode_page() can be involved at all. You are extending the file
-using lseek(), not truncate(). So something else must be at work here.
+I get the following crash on a Fujitu/Siemens ST6012 Tablet PC (kms enabled):
 
-I'll see if I can reproduce it.
+...
+[    0.442322] [drm] Initialized drm 1.1.0 20060810
+[    0.442478] i915 0000:00:02.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+[    0.442612] i915 0000:00:02.0: setting latency timer to 64
+[    0.464043] i915 0000:00:02.0: irq 26 for MSI/MSI-X
+[    0.464053] [drm] set up 31M of stolen space
+[    0.566509] ------------[ cut here ]------------
+[    0.566642] WARNING: at drivers/gpu/drm/drm_crtc_helper.c:1035 drm_helper_initial_config+0x41/0x5a()
+[    0.566853] Hardware name: STYLISTIC ST6012
+[    0.566978] No connectors reported connected with modes
+[    0.567106] Modules linked in:
+[    0.567273] Pid: 1, comm: swapper Not tainted 2.6.32.7 #3
+[    0.567402] Call Trace:
+[    0.567528]  [<ffffffff8129894b>] ? drm_helper_initial_config+0x41/0x5a
+[    0.567661]  [<ffffffff8129894b>] ? drm_helper_initial_config+0x41/0x5a
+[    0.567795]  [<ffffffff810458dd>] ? warn_slowpath_common+0x77/0xa3
+[    0.567926]  [<ffffffff81045965>] ? warn_slowpath_fmt+0x51/0x59
+[    0.568070]  [<ffffffff812c8848>] ? intel_crt_detect+0x26a/0x311
+[    0.568202]  [<ffffffff81298818>] ? drm_helper_probe_single_connector_modes+0x1df/0x26b
+[    0.568413]  [<ffffffff812988d9>] ? drm_helper_probe_connector_modes+0x35/0x66
+[    0.568622]  [<ffffffff8129894b>] ? drm_helper_initial_config+0x41/0x5a
+[    0.568756]  [<ffffffff812ad9c4>] ? i915_driver_load+0xf26/0xff2
+[    0.568889]  [<ffffffff812a2d92>] ? drm_sysfs_device_add+0x7d/0x9e
+[    0.569025]  [<ffffffff812a1072>] ? drm_get_dev+0x39e/0x488
+[    0.569158]  [<ffffffff8122b652>] ? local_pci_probe+0x12/0x16
+[    0.569289]  [<ffffffff8122c27a>] ? pci_device_probe+0xba/0xe3
+[    0.569422]  [<ffffffff812dfa2f>] ? driver_probe_device+0x8d/0x128
+[    0.569554]  [<ffffffff812dfb19>] ? __driver_attach+0x4f/0x6f
+[    0.569685]  [<ffffffff812dfaca>] ? __driver_attach+0x0/0x6f
+[    0.569816]  [<ffffffff812df2d4>] ? bus_for_each_dev+0x43/0x74
+[    0.569947]  [<ffffffff812dec94>] ? bus_add_driver+0x116/0x25f
+[    0.570079]  [<ffffffff812dfdb3>] ? driver_register+0xa7/0x111
+[    0.570210]  [<ffffffff81738053>] ? i915_init+0x0/0x51
+[    0.570341]  [<ffffffff8122c4b5>] ? __pci_register_driver+0x50/0xb7
+[    0.570472]  [<ffffffff81738053>] ? i915_init+0x0/0x51
+[    0.570603]  [<ffffffff81009051>] ? do_one_initcall+0x50/0x148
+[    0.570735]  [<ffffffff81713629>] ? kernel_init+0x150/0x1a6
+[    0.570866]  [<ffffffff81713140>] ? early_idt_handler+0x0/0x71
+[    0.570998]  [<ffffffff8100cb5a>] ? child_rip+0xa/0x20
+[    0.571128]  [<ffffffff81713140>] ? early_idt_handler+0x0/0x71
+[    0.571259]  [<ffffffff817134d9>] ? kernel_init+0x0/0x1a6
+[    0.571389]  [<ffffffff8100cb50>] ? child_rip+0x0/0x20
+[    0.571522] ---[ end trace 6e64936bd3455b79 ]---
 
-Trond
+This is a vanilla Kernel (2.6.32.7)/ Debian testing system.
 
+Linux (without framebuffer) and X.org used to work fine on Debian stable,
+but I needed to upgrade for a newer Version of Mesa.
+
+Regards
+
+Sven
+
+-- 
+The main thing to note is that when you choose open source you don't
+get a Windows operating system.
+                                  (from http://www.dell.com/ubuntu)
+/me is giggls@ircnet, http://sven.gegg.us/ on the Web
