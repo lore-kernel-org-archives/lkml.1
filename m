@@ -1,19 +1,19 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932233Ab0BBTI1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 14:08:27 -0500
-Received: from g4t0016.houston.hp.com ([15.201.24.19]:42845 "EHLO
+	id S932284Ab0BBTJF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 14:09:05 -0500
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:43237 "EHLO
 	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932174Ab0BBTIK (ORCPT
+	with ESMTP id S932226Ab0BBTI4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 14:08:10 -0500
-Subject: [PATCH v2 05/18] IB/uverbs: increase maximum devices supported
+	Tue, 2 Feb 2010 14:08:56 -0500
+Subject: [PATCH v2 14/18] IB/ucm: use stack variable 'devnum' in ib_ucm_add_one
 To: rdreier@cisco.com
 From: Alex Chiang <achiang@hp.com>
 Cc: linux-rdma@vger.kernel.org, justin.chen@hp.com,
        linux-kernel@vger.kernel.org
-Date: Tue, 02 Feb 2010 12:08:09 -0700
-Message-ID: <20100202190809.28217.50581.stgit@bob.kio>
+Date: Tue, 02 Feb 2010 12:08:55 -0700
+Message-ID: <20100202190855.28217.68785.stgit@bob.kio>
 In-Reply-To: <20100202185235.28217.64521.stgit@bob.kio>
 References: <20100202185235.28217.64521.stgit@bob.kio>
 User-Agent: StGit/0.15
@@ -24,118 +24,57 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some large systems may support more than IB_UVERBS_MAX_DEVICES
-(currently 32).
-
-This change allows us to support more devices in a backwards-compatible
-manner. The first IB_UVERBS_MAX_DEVICES keep the same major/minor
-device numbers that they've always had.
-
-If there are more than IB_UVERBS_MAX_DEVICES, we then dynamically
-request a new major device number (new minors start at 0).
-
-This change increases the maximum number of HCAs to 64 (from 32).
+This change is not useful by itself, but sets us up for a future
+change that allows us to dynamically allocate device numbers in case
+we have more than IB_UCM_MAX_DEVICES in the system.
 
 Signed-off-by: Alex Chiang <achiang@hp.com>
 ---
 
- drivers/infiniband/core/uverbs_main.c |   56 +++++++++++++++++++++++++++++----
- 1 files changed, 50 insertions(+), 6 deletions(-)
+ drivers/infiniband/core/ucm.c |   12 +++++++-----
+ 1 files changed, 7 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/infiniband/core/uverbs_main.c b/drivers/infiniband/core/uverbs_main.c
-index 8c594cd..38b9085 100644
---- a/drivers/infiniband/core/uverbs_main.c
-+++ b/drivers/infiniband/core/uverbs_main.c
-@@ -728,6 +728,34 @@ static ssize_t show_abi_version(struct class *class, char *buf)
- }
- static CLASS_ATTR(abi_version, S_IRUGO, show_abi_version, NULL);
+diff --git a/drivers/infiniband/core/ucm.c b/drivers/infiniband/core/ucm.c
+index f504c9b..7ff3300 100644
+--- a/drivers/infiniband/core/ucm.c
++++ b/drivers/infiniband/core/ucm.c
+@@ -1239,6 +1239,7 @@ static DEVICE_ATTR(ibdev, S_IRUGO, show_ibdev, NULL);
  
-+static dev_t oflo_maj;
-+static DECLARE_BITMAP(oflo_map, IB_UVERBS_MAX_DEVICES);
-+
-+/*
-+ * If we have more than IB_UVERBS_MAX_DEVICES, dynamically overflow by
-+ * requesting a new major number and doubling the number of max devices we
-+ * support. It's stupid, but simple.
-+ */
-+static int find_oflo_devnum(void)
-+{
-+	int ret;
-+
-+	if (!oflo_maj) {
-+		ret = alloc_chrdev_region(&oflo_maj, 0, IB_UVERBS_MAX_DEVICES,
-+					  "infiniband_verbs");
-+		if (ret) {
-+			printk(KERN_ERR "user_verbs: couldn't register dynamic device number\n");
-+			return ret;
-+		}
-+	}
-+
-+	ret = find_first_zero_bit(oflo_map, IB_UVERBS_MAX_DEVICES);
-+	if (ret >= IB_UVERBS_MAX_DEVICES)
-+		return -1;
-+
-+	return ret;
-+}
-+
- static void ib_uverbs_add_one(struct ib_device *device)
+ static void ib_ucm_add_one(struct ib_device *device)
  {
- 	int devnum;
-@@ -748,11 +776,19 @@ static void ib_uverbs_add_one(struct ib_device *device)
- 	devnum = find_first_zero_bit(dev_map, IB_UVERBS_MAX_DEVICES);
- 	if (devnum >= IB_UVERBS_MAX_DEVICES) {
- 		spin_unlock(&map_lock);
--		goto err;
-+		devnum = find_oflo_devnum();
-+		if (devnum < 0)
-+			goto err;
-+
-+		spin_lock(&map_lock);
-+		uverbs_dev->devnum = devnum + IB_UVERBS_MAX_DEVICES;
-+		base = devnum + oflo_maj;
-+		set_bit(devnum, oflo_map);
-+	} else {
-+		uverbs_dev->devnum = devnum;
-+		base = devnum + IB_UVERBS_BASE_DEV;
-+		set_bit(devnum, dev_map);
- 	}
--	uverbs_dev->devnum = devnum;
--	base = devnum + IB_UVERBS_BASE_DEV;
--	set_bit(devnum, dev_map);
- 	spin_unlock(&map_lock);
++	int devnum;
+ 	struct ib_ucm_device *ucm_dev;
  
- 	uverbs_dev->ib_dev           = device;
-@@ -785,7 +821,10 @@ err_class:
+ 	if (!device->alloc_ucontext ||
+@@ -1251,16 +1252,17 @@ static void ib_ucm_add_one(struct ib_device *device)
  
+ 	ucm_dev->ib_dev = device;
+ 
+-	ucm_dev->devnum = find_first_zero_bit(dev_map, IB_UCM_MAX_DEVICES);
+-	if (ucm_dev->devnum >= IB_UCM_MAX_DEVICES)
++	devnum = find_first_zero_bit(dev_map, IB_UCM_MAX_DEVICES);
++	if (devnum >= IB_UCM_MAX_DEVICES)
+ 		goto err;
+ 
+-	set_bit(ucm_dev->devnum, dev_map);
++	ucm_dev->devnum = devnum;
++	set_bit(devnum, dev_map);
+ 
+ 	cdev_init(&ucm_dev->cdev, &ucm_fops);
+ 	ucm_dev->cdev.owner = THIS_MODULE;
+ 	kobject_set_name(&ucm_dev->cdev.kobj, "ucm%d", ucm_dev->devnum);
+-	if (cdev_add(&ucm_dev->cdev, IB_UCM_BASE_DEV + ucm_dev->devnum, 1))
++	if (cdev_add(&ucm_dev->cdev, IB_UCM_BASE_DEV + devnum, 1))
+ 		goto err;
+ 
+ 	ucm_dev->dev.class = &cm_class;
+@@ -1281,7 +1283,7 @@ err_dev:
+ 	device_unregister(&ucm_dev->dev);
  err_cdev:
- 	cdev_del(&uverbs_dev->cdev);
--	clear_bit(devnum, dev_map);
-+	if (uverbs_dev->devnum < IB_UVERBS_MAX_DEVICES)
-+		clear_bit(devnum, dev_map);
-+	else
-+		clear_bit(devnum, oflo_map);
- 
+ 	cdev_del(&ucm_dev->cdev);
+-	clear_bit(ucm_dev->devnum, dev_map);
++	clear_bit(devnum, dev_map);
  err:
- 	kref_put(&uverbs_dev->ref, ib_uverbs_release_dev);
-@@ -805,7 +844,10 @@ static void ib_uverbs_remove_one(struct ib_device *device)
- 	device_destroy(uverbs_class, uverbs_dev->cdev.dev);
- 	cdev_del(&uverbs_dev->cdev);
- 
--	clear_bit(uverbs_dev->devnum, dev_map);
-+	if (uverbs_dev->devnum < IB_UVERBS_MAX_DEVICES)
-+		clear_bit(uverbs_dev->devnum, dev_map);
-+	else
-+		clear_bit(uverbs_dev->devnum - IB_UVERBS_MAX_DEVICES, oflo_map);
- 
- 	kref_put(&uverbs_dev->ref, ib_uverbs_release_dev);
- 	wait_for_completion(&uverbs_dev->comp);
-@@ -895,6 +937,8 @@ static void __exit ib_uverbs_cleanup(void)
- 	unregister_filesystem(&uverbs_event_fs);
- 	class_destroy(uverbs_class);
- 	unregister_chrdev_region(IB_UVERBS_BASE_DEV, IB_UVERBS_MAX_DEVICES);
-+	if (oflo_maj)
-+		unregister_chrdev_region(oflo_maj, IB_UVERBS_MAX_DEVICES);
- 	idr_destroy(&ib_uverbs_pd_idr);
- 	idr_destroy(&ib_uverbs_mr_idr);
- 	idr_destroy(&ib_uverbs_mw_idr);
+ 	kfree(ucm_dev);
+ 	return;
 
