@@ -1,138 +1,172 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756731Ab0BBRBU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 12:01:20 -0500
-Received: from bhuna.collabora.co.uk ([93.93.128.226]:35030 "EHLO
-	bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756705Ab0BBRBR (ORCPT
+	id S1756724Ab0BBRCK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 12:02:10 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:36522 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756704Ab0BBRCI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 12:01:17 -0500
-Date: Tue, 2 Feb 2010 12:01:10 -0500
-From: Andres Salomon <dilinger@collabora.co.uk>
-To: Jens Rottmann <JRottmann@LiPPERTEmbedded.de>
-Cc: Leigh Porter <leigh@leighporter.org>, linux-geode@lists.infradead.org,
-       linux-kernel@vger.kernel.org, Christopher Camden <ccamden@cbnco.com>
-Subject: [PATCH] CS5536: apply pci quirk for BIOS SMBUS bug
-Message-ID: <20100202120110.160359ac@mycelium.queued.net>
-In-Reply-To: <4B605410.3030409@LiPPERTEmbedded.de>
-References: <4B5DC7EF.5060609@leighporter.org>
-	<4B5EE78F.8030705@LiPPERTEmbedded.de>
-	<4B5F01E3.2090006@leighporter.org>
-	<4B603383.1090807@LiPPERTEmbedded.de>
-	<4B604324.6030806@leighporter.org>
-	<4B605410.3030409@LiPPERTEmbedded.de>
-X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 2 Feb 2010 12:02:08 -0500
+Date: Tue, 2 Feb 2010 17:01:57 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH][RFC] %pd - for printing dentry name
+Message-ID: <20100202170157.GH12882@ZenIV.linux.org.uk>
+References: <20100201222511.GA12882@ZenIV.linux.org.uk>
+ <alpine.LFD.2.00.1002011431490.3664@localhost.localdomain>
+ <20100201231847.GC12882@ZenIV.linux.org.uk>
+ <20100202010653.GD12882@ZenIV.linux.org.uk>
+ <m1k4uwfag1.fsf@fess.ebiederm.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1k4uwfag1.fsf@fess.ebiederm.org>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 27 Jan 2010 15:56:16 +0100
-Jens Rottmann <JRottmann@LiPPERTEmbedded.de> wrote:
+On Mon, Feb 01, 2010 at 09:55:42PM -0800, Eric W. Biederman wrote:
 
-> A bit of background: The _real_ base address for the MFGPT hardware
-> is set with the MSR, but this is very Geode-proprietary. So the BIOS
-> contains VSA (Virtual System Architecture) code to implement a
-> _virtual_ PCI device. This means the BIOS simulates a standard PCI
-> device solely in software as a front-end for the MFGPT hardware to
-> make it look like a 'normal' device which can be accessed with normal
-> PCI drivers.
+> We already have rename_lock, which is only take for write in d_move_locked.
 > 
-> Well, this PCI device's configuration should of course always mirror
-> the real state of the hardware, i.e. if someone changes the MSR, the
-> PCI header should reflect that change, and vice versa.
+> I wonder if there is an instruction sequence that could guarantee that the
+> string copy is done atomically from the perspective of another cpu,
+> d_iname fits nicely on a single cache line so it should be possible.  
 > 
-> > [    0.090015] pci 0000:00:14.0: address space collision: [io
-> > 0x6200-0x63ff] already in use
-> ....
-> > [    0.202033] pci 0000:00:14.0: BAR 2: set to [io  0x1000-0x11ff]
-> > (PCI address [0x1000-0x11ff]
-> ....
-> > root@doulos:/home/leigh# ./mfgpt
-> > 6200
+> That is a stronger guarantee than we need.   All we really need is the
+> guarantee that a reader will see the string null terminator.  dentries already
+> have rcu safe lifetimes.
 > 
-> Now it looks like originally both MSR and PCI say the adress is 6200.
-> But Linux detects a conflict on boot and moves it to 1000 by changing
-> the PCI config. At this point the BIOS should copy the new address to
-> the backing MSR i.e. to the real hardware. But this it fails to do.
-> And later the cs5535-mfgpt uses the address from PCI (=1000) to look
-> for the MFGPTs, but they're not there - they're are still at 6200.
+> Hmm.
 > 
-> >>> Copyright (C) 2000-2007 Soekris Engineering."
-> > Yup, I am about to call them. ...
+> We should be able to do:
+>         struct qstr *name;
+>         int len;
+>         char buf[MAX_LEN + 1];
+>         long seq;
 > 
-> Hope they fix it. But this will not be the only BIOS with this bug,
-> that's why we have to revert the cs5535-mfgpt driver to read the MSR
-> directly again.
-> 
-> Best regards,
-> Jens Rottmann
-> 
+>         do {
+> 		seq = read_seqbegin(&rename_lock);
+>         	rcu_read_lock();
+> 	        name = rcu_dereference(dentry->d_name.name);
+> 	        len = dentry->d_name.len;
+>                 if (read_seqretry(&rename_lock, seq)
+>                 	continue;
+> 	        if (len > MAX_LEN)
+> 	        	len = MAX_LEN;
+> 		memcpy(buf, name, len);
+> 	        buf[len] = '\0';
+> 	        rcu_read_unlock();
+> 	} while (read_seqretry(&rename_lock, seq));
 
-I'm going to ask for one last round of testing/comments before I send
-this off to Linus for -rc7 inclusion.
+Actually, WTF do we bother?  seqlock writer grabs embedded spinlock.
+So can we, since *that* is far more narrow than ->d_lock and it's
+static, so it's not like somebody outside of dcache.c can decide
+to grab.
 
+We could just inline string() into dname_string() and take the entire
+thing to fs/dcache.c.  And protect it either with direct locking
+of rename_lock.lock or another seq_writelock; contention is not
+an issue, since if printk guts are your hotpath you are already
+FUBAR.
 
+Something like that (completely untested):
 
-From: Andres Salomon <dilinger@collabora.co.uk>
-
-The new cs5535-* drivers use PCI header config info rather than MSRs to
-determine the memory region to use for things like GPIOs and MFGPTs.  As
-anticipated, we've run into a buggy BIOS:
-
-[    0.081818] pci 0000:00:14.0: reg 10: [io  0x6000-0x7fff]
-[    0.081906] pci 0000:00:14.0: reg 14: [io  0x6100-0x61ff]
-[    0.082015] pci 0000:00:14.0: reg 18: [io  0x6200-0x63ff]
-[    0.082917] pci 0000:00:14.2: reg 20: [io  0xe000-0xe00f]
-[    0.083551] pci 0000:00:15.0: reg 10: [mem 0xa0010000-0xa0010fff]
-[    0.084436] pci 0000:00:15.1: reg 10: [mem 0xa0011000-0xa0011fff]
-[    0.088816] PCI: pci_cache_line_size set to 32 bytes
-[    0.088938] pci 0000:00:14.0: address space collision: [io 0x6100-0x61ff] already in use
-[    0.089052] pci 0000:00:14.0: can't reserve [io  0x6100-0x61ff]
-
-This is a Soekris board, and its BIOS sets the size of the PCI ISA bridge
-device's BAR0 to 8k.  In reality, it should be 8 bytes (BAR0 is used for
-SMBus stuff).  This quirk checks for an incorrect size, and resets it
-accordingly.
-
-Signed-off-by: Andres Salomon <dilinger@collabora.co.uk>
-Tested-by: Leigh Porter <leigh@leighporter.org>
-Tested-by: Jens Rottmann <JRottmann@LiPPERTEmbedded.de>
----
- drivers/pci/quirks.c |   17 +++++++++++++++++
- 1 files changed, 17 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-index c746943..d58b940 100644
---- a/drivers/pci/quirks.c
-+++ b/drivers/pci/quirks.c
-@@ -338,6 +338,23 @@ static void __devinit quirk_s3_64M(struct pci_dev *dev)
- DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_S3,	PCI_DEVICE_ID_S3_868,		quirk_s3_64M);
- DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_S3,	PCI_DEVICE_ID_S3_968,		quirk_s3_64M);
+diff --git a/fs/dcache.c b/fs/dcache.c
+index 953173a..a4d30bc 100644
+--- a/fs/dcache.c
++++ b/fs/dcache.c
+@@ -1703,6 +1703,48 @@ void d_move(struct dentry * dentry, struct dentry * target)
+ 	spin_unlock(&dcache_lock);
+ }
  
 +/*
-+ * Some CS5536 BIOSes (for example, the Soekris NET5501 board w/ comBIOS
-+ * ver. 1.33  20070103) don't set the correct ISA PCI region header info.
-+ * BAR0 should be 8 bytes; instead, it may be set to something like 8k
-+ * (which conflicts w/ BAR1's memory range).
++ * for vsprintf use only.
 + */
-+static void __devinit quirk_cs5536_vsa(struct pci_dev *dev)
++char *dname_string(char *buf, char *end, struct dentry *d,
++		   int precision, int width, int left_align)
 +{
-+	if (pci_resource_len(dev, 0) != 8) {
-+		struct resource *res = &dev->resource[0];
-+		res->end = res->start + 8 - 1;
-+		dev_info(&dev->dev, "CS5536 ISA bridge bug detected "
-+				"(incorrect header); workaround applied.\n");
-+	}
-+}
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_CS5536_ISA, quirk_cs5536_vsa);
++	int len, i;
++	const unsigned char *s;
 +
- static void __devinit quirk_io_region(struct pci_dev *dev, unsigned region,
- 	unsigned size, int nr, const char *name)
- {
--- 
-1.5.6.5
-
-
++	write_seqlock(&rename_lock);
++	if (precision > d->d_name.len)
++		precision = d->d_name.len;
++
++	s = d->d_name.name;
++	if ((unsigned long)s < PAGE_SIZE)
++		s = "(null)";
++
++	len = strnlen(s, precision);
++
++	if (!left_align) {
++		while (len < width--) {
++			if (buf < end)
++				*buf = ' ';
++			++buf;
++		}
++	}
++	for (i = 0; i < len; ++i) {
++		if (buf < end)
++			*buf = *s;
++		++buf; ++s;
++	}
++
++	while (len < width--) {
++		if (buf < end)
++			*buf = ' ';
++		++buf;
++	}
++
++	write_sequnlock(&rename_lock);
++	return buf;
++}
++
+ /**
+  * d_ancestor - search for an ancestor
+  * @p1: ancestor dentry
+diff --git a/include/linux/dcache.h b/include/linux/dcache.h
+index 30b93b2..2dc286a 100644
+--- a/include/linux/dcache.h
++++ b/include/linux/dcache.h
+@@ -379,5 +379,6 @@ extern struct vfsmount *lookup_mnt(struct path *);
+ extern struct dentry *lookup_create(struct nameidata *nd, int is_dir);
+ 
+ extern int sysctl_vfs_cache_pressure;
++extern char *dname_string(char *, char *, struct dentry *, int, int, int);
+ 
+ #endif	/* __LINUX_DCACHE_H */
+diff --git a/lib/vsprintf.c b/lib/vsprintf.c
+index 3b8aeec..ab0e40a 100644
+--- a/lib/vsprintf.c
++++ b/lib/vsprintf.c
+@@ -915,6 +915,8 @@ static char *uuid_string(char *buf, char *end, const u8 *addr,
+  *             [0][1][2][3]-[4][5]-[6][7]-[8][9]-[10][11][12][13][14][15]
+  *           little endian output byte order is:
+  *             [3][2][1][0]-[5][4]-[7][6]-[8][9]-[10][11][12][13][14][15]
++ * - 'd' For dentry name.  NOTE: don't use under dentry->d_lock, there
++ *       you can safely use ->d_name.name instead.
+  *
+  * Note: The difference between 'S' and 'F' is that on ia64 and ppc64
+  * function pointers are really function descriptors, which contain a
+@@ -958,6 +960,9 @@ static char *pointer(const char *fmt, char *buf, char *end, void *ptr,
+ 		break;
+ 	case 'U':
+ 		return uuid_string(buf, end, ptr, spec, fmt);
++	case 'd':
++		return dname_string(buf, end, ptr, spec.precision,
++				    spec.field_width, spec.flags & LEFT);
+ 	}
+ 	spec.flags |= SMALL;
+ 	if (spec.field_width == -1) {
+@@ -1191,6 +1196,7 @@ qualifier:
+  *   http://tools.ietf.org/html/draft-ietf-6man-text-addr-representation-00
+  * %pU[bBlL] print a UUID/GUID in big or little endian using lower or upper
+  *   case.
++ * %pd print dentry name
+  * %n is ignored
+  *
+  * The return value is the number of characters which would
