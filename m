@@ -1,91 +1,77 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756309Ab0BBPab (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 10:30:31 -0500
-Received: from smtprelay04.ispgateway.de ([80.67.31.27]:60829 "EHLO
-	smtprelay04.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756158Ab0BBPaa (ORCPT
+	id S1756332Ab0BBPbO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 10:31:14 -0500
+Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:55224 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756009Ab0BBPbL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 10:30:30 -0500
-Message-ID: <4B684513.8090201@ladisch.de>
-Date: Tue, 02 Feb 2010 16:30:27 +0100
-From: Clemens Ladisch <clemens@ladisch.de>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Tue, 2 Feb 2010 10:31:11 -0500
+Subject: [PATCH v3] isp1760: Flush the D-cache for the pipe-in transfer buffers
+To: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+From: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Greg KH <greg@kroah.com>, Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
+       Oliver Neukum <oliver@neukum.org>,
+       Sebastian Siewior <bigeasy@linutronix.de>
+Date: Tue, 02 Feb 2010 15:31:02 +0000
+Message-ID: <20100202152910.22252.3813.stgit@pc1117.cambridge.arm.com>
+User-Agent: StGit/0.15-36-g53e3
 MIME-Version: 1.0
-To: Frederick V Heitkamp <heitkamp@ameritech.net>,
-       Giuliano Pochini <pochini@shiny.it>, Takashi Iwai <tiwai@suse.de>
-CC: linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org
-Subject: Re: [alsa-devel] Crash 2.6.32.x, Echo 3G, Alsa, SCSI
-References: <73211.74714.qm@web180714.mail.sp1.yahoo.com>
-In-Reply-To: <73211.74714.qm@web180714.mail.sp1.yahoo.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Df-Sender: linux-kernel@cl.domainfactory-kunde.de
+X-OriginalArrivalTime: 02 Feb 2010 15:31:02.0657 (UTC) FILETIME=[BA62FF10:01CAA41C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frederick V Heitkamp wrote:
-> Repeatable Hard Crash.
-> What else do I need to provide?
-> 
-> [ 5484.995249] WriteControlReg: not written, no change
-> [ 5485.069621] divide error: 0000 [#1] pcm_hw_params ok
-> [ 5485.070159] Prepare rate=44100 format=2 channels=2
-> [ 5485.070161] set_audio_format[14] = 5
-> [ 5485.070166] Prepare rate=44100 format=2 channels=2
-> [ 5485.070167] set_audio_format[14] = 5
-> [ 5485.070003] PREEMPT SMP 
-> ...
-> [ 5485.070003] EIP is at pcm_pointer+0x37/0x70 [snd_echo3g]
-> ...
-> [ 5485.965788]  [<c10041c0>] ? do_divide_error+0x0/0x90
-> [ 5485.980619]  [<f87aa037>] ? pcm_pointer+0x37/0x70 [snd_echo3g]
-> [ 5485.998047]  [<c104764e>] ? run_timer_softirq+0x17e/0x2e0
-> [ 5486.014175]  [<f87ac9bf>] ? snd_echo_interrupt+0x11f/0x240 [snd_echo3g]
-> [ 5486.033940]  [<c107a5d5>] ? handle_IRQ_event+0x45/0x190
+When the HDC driver writes the data to the transfer buffers it pollutes
+the D-cache (unlike DMA drivers where the device writes the data). If
+the corresponding pages get mapped into user space, there are no
+additional cache flushing operations performed and this causes random
+user space faults on architectures with separate I and D caches
+(Harvard) or those with aliasing D-cache.
 
-bytes_to_frames() divides by runtime->frame_bits which is not set until
-after the hw_params callback has succeeded, but the corresponding
-chip->substream[] entry is set in that callback, by init_engine().  It
-should probably have been set in the prepare callback.
+Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>
+Cc: Greg KH <greg@kroah.com>
+Cc: Sebastian Siewior <bigeasy@linutronix.de>
+Cc: Oliver Neukum <oliver@neukum.org>
+---
 
-Frederick, please try the patch below.
-
-Takashi, is there any reason why the runtime-> fields are initialized
-after the hw_params callback?  
+The changes in the third version of this patch include flushing the
+transfer buffer for all in-pipes except the PIPE_CONTROL ones.
 
 
-Regards,
-Clemens
+ drivers/usb/host/isp1760-hcd.c |   10 ++++++++++
+ 1 files changed, 10 insertions(+), 0 deletions(-)
 
-
---- a/sound/core/pcm_native.c
-+++ b/sound/core/pcm_native.c
-@@ -403,12 +403,6 @@
- 	if (err < 0)
- 		goto _error;
+diff --git a/drivers/usb/host/isp1760-hcd.c b/drivers/usb/host/isp1760-hcd.c
+index 27b8f7c..9f01293 100644
+--- a/drivers/usb/host/isp1760-hcd.c
++++ b/drivers/usb/host/isp1760-hcd.c
+@@ -17,7 +17,9 @@
+ #include <linux/debugfs.h>
+ #include <linux/uaccess.h>
+ #include <linux/io.h>
++#include <linux/mm.h>
+ #include <asm/unaligned.h>
++#include <asm/cacheflush.h>
  
--	if (substream->ops->hw_params != NULL) {
--		err = substream->ops->hw_params(substream, params);
--		if (err < 0)
--			goto _error;
--	}
--
- 	runtime->access = params_access(params);
- 	runtime->format = params_format(params);
- 	runtime->subformat = params_subformat(params);
-@@ -446,6 +440,13 @@
- 		runtime->boundary *= 2;
+ #include "../core/hcd.h"
+ #include "isp1760-hcd.h"
+@@ -904,6 +906,14 @@ __acquires(priv->lock)
+ 			status = 0;
+ 	}
  
- 	snd_pcm_timer_resolution_change(substream);
-+
-+	if (substream->ops->hw_params != NULL) {
-+		err = substream->ops->hw_params(substream, params);
-+		if (err < 0)
-+			goto _error;
++	if (usb_pipein(urb->pipe) && usb_pipetype(urb->pipe) != PIPE_CONTROL) {
++		void *ptr;
++		for (ptr = urb->transfer_buffer;
++		     ptr < urb->transfer_buffer + urb->transfer_buffer_length;
++		     ptr += PAGE_SIZE)
++			flush_dcache_page(virt_to_page(ptr));
 +	}
 +
- 	runtime->status->state = SNDRV_PCM_STATE_SETUP;
- 
- 	pm_qos_remove_requirement(PM_QOS_CPU_DMA_LATENCY,
+ 	/* complete() can reenter this HCD */
+ 	usb_hcd_unlink_urb_from_ep(priv_to_hcd(priv), urb);
+ 	spin_unlock(&priv->lock);
+
