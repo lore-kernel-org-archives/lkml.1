@@ -1,75 +1,86 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756849Ab0BBSm0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 13:42:26 -0500
-Received: from dallas.jonmasters.org ([72.29.103.172]:56986 "EHLO
-	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756827Ab0BBSmW (ORCPT
+	id S1756835Ab0BBSoO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 13:44:14 -0500
+Received: from mail-fx0-f215.google.com ([209.85.220.215]:54681 "EHLO
+	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756748Ab0BBSoM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 13:42:22 -0500
-Subject: Re: [PATCH] netfilter: per netns nf_conntrack_cachep
-From: Jon Masters <jonathan@jonmasters.org>
-To: Patrick McHardy <kaber@trash.net>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>,
-       Eric Dumazet <eric.dumazet@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>,
-       netfilter-devel <netfilter-devel@vger.kernel.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-In-Reply-To: <1265135982.2861.199.camel@tonnant>
-References: <1264813832.2793.446.camel@tonnant>
-	 <1265023437.2848.30.camel@edumazet-laptop>
-	 <1265035970.2848.50.camel@edumazet-laptop>
-	 <b6fcc0a1002010658j4f52a9b8kf10e4bb07a2f1075@mail.gmail.com>
-	 <1265036548.2848.55.camel@edumazet-laptop>
-	 <1265108690.2861.118.camel@tonnant> <1265110504.2861.135.camel@tonnant>
-	 <1265129192.2861.141.camel@tonnant> <4B685756.8010107@trash.net>
-	 <1265130426.2861.158.camel@tonnant>
-	 <b6fcc0a1002020958u17315624u4d54d06a413be6bb@mail.gmail.com>
-	 <1265134598.2861.191.camel@tonnant>  <4B6870AF.6060109@trash.net>
-	 <1265135982.2861.199.camel@tonnant>
-Content-Type: text/plain
-Organization: World Organi[sz]ation of Broken Dreams
-Date: Tue, 02 Feb 2010 13:42:03 -0500
-Message-Id: <1265136123.2861.200.camel@tonnant>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
-X-SA-Do-Not-Run: Yes
-X-SA-Exim-Connect-IP: 127.0.0.1
-X-SA-Exim-Mail-From: jonathan@jonmasters.org
-X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
+	Tue, 2 Feb 2010 13:44:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=k/NuTJNS5K5zaD2q8xwsnZ/atR3Yts3Kn/lwYkpWdOSX3seoshPsFFyRTgjRfp44o1
+         xd+Ff+buvBHDpxB74CTFW2R39LKDdQ/mXg6V8ZXkdape52X3+5lyggw0nUzIJFEhi3+4
+         vvZiPpvOE3ZUfxCDJalccRFQipGijti0Cj3HM=
+Date: Tue, 2 Feb 2010 21:44:07 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Don Zickus <dzickus@redhat.com>
+Cc: mingo@elte.hu, peterz@infradead.org, aris@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] [RFC][x86] move notify_die from nmi.c to traps.c
+Message-ID: <20100202184407.GE5436@lenovo>
+References: <1264622622-5778-1-git-send-email-dzickus@redhat.com> <1264622622-5778-2-git-send-email-dzickus@redhat.com> <20100128151025.GA5338@lenovo> <20100128154646.GW4472@redhat.com> <20100202175911.GD5436@lenovo> <20100202182746.GF3062@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100202182746.GF3062@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-02-02 at 13:39 -0500, Jon Masters wrote:
-> On Tue, 2010-02-02 at 19:36 +0100, Patrick McHardy wrote:
-> > Jon Masters wrote:
-> > > On Tue, 2010-02-02 at 19:58 +0200, Alexey Dobriyan wrote:
+On Tue, Feb 02, 2010 at 01:27:46PM -0500, Don Zickus wrote:
+> > > > > +	        if (notify_die(DIE_NMI, "nmi", regs, reason, 2, SIGINT)
+> > > > > +	        			                == NOTIFY_STOP)
+> > > > > +	                return;
+> > > > > +
+> > > > >  #ifdef CONFIG_X86_LOCAL_APIC
+> > > > >  		/*
+> > > > >  		 * Ok, so this is none of the documented NMI sources,
+> > > > > --
+> > > > 
+> > > > Hi Don, I suppose this notify_die should be in CONFIG_X86_LOCAL_APIC
+> > > > section?
 > > > 
-> > >> Yes, moving to init_net-only function is fine.
+> > > To maintain old behaviour I suppose, yes.  Personally I don't think
+> > > notify_die has anything to do with CONFIG_X86_LOCAL_APIC so I put it in
+> > > above the #define.
 > > > 
-> > > So moving the "setup up fake conntrack" bits to init_init_net from
-> > > init_net still results in the panic, which means that the use count
-> > > really is dropping to zero and we really are trying to free it when
-> > > using multiple namespaces. Per ns is probably an easier way to go.
 > > 
-> > Agreed, that will also avoid problems in the future with the
-> > ct_net pointer pointing to &init_net. I'll take care of this
-> > tommorrow.
+> > I think it is. It becomes that if some (possible buggy in future) code
+> > notify default_do_nmi via NOTIFY_STOP we may loose unknown_nmi_error
 > 
-> Ok. I'll leave this box running with the hack. I think at the very least
-> that this specific issue needs to get fixed and in the stable tree, then
-> the other bits (per namespace cachep...) are probably a good idea at the
-> same time but that's up to you.
+> How is that different if the code is under the #define?
+> 
 
-FYI, my box has the quick don't free untracked hack *and* per-ns cachep.
-I don't think the latter has anything specific to do with this (though
-it needs fixing also), but worth knowing my test is using both.
+It matters if code is compiled without CONFIG_X86_LOCAL_APIC.
 
-Back to the podcasts tonight instead of this ;)
+> > for non-apic configs. And I reckon that even DIE_NMI_IPI is a bit "weird"
+> > by not being under apic here, but this one should stay there in a
+> > sake of kgdb I guess.
+> 
+> So you are saying the only way to get NMIs on x86 is through the local
+> apic?  That seems odd.
 
-Jon.
+No, I didn't say that. I said that semantic of DIE_NMI_IPI is somehow
+weird for me. There is no IPI if no apic present (at least in official
+way). But in a sake of kgdb which checks for this notification we should
+save it here.
 
+> 
+> I really don't care either way, I was just trying to cleanup the code to
+> make it easier to understand.  Putting it under the #define didn't seem to
+> make sense (though that doesn't mean there is a valid reason).
+> 
 
+Don, please don't get me wrong. At moment I don't see problems with putting
+DIE_NMI in a place you had put it at. But something worrying me, can't explain
+what exactly, perhaps that is how paranoia happens :)
+
+>
+> Cheers,
+> Don
+> 
+	-- Cyrill
