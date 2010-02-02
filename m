@@ -1,118 +1,61 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756400Ab0BBPeR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 10:34:17 -0500
-Received: from mga11.intel.com ([192.55.52.93]:7421 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756269Ab0BBPeO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 10:34:14 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,390,1262592000"; 
-   d="scan'208";a="769394383"
-Message-Id: <20100202153316.793651196@intel.com>
-User-Agent: quilt/0.48-1
-Date: Tue, 02 Feb 2010 23:28:39 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Jens Axboe <jens.axboe@oracle.com>, Nick Piggin <npiggin@suse.de>,
-       Andi Kleen <andi@firstfloor.org>,
-       Steven Whitehouse <swhiteho@redhat.com>,
-       Wu Fengguang <fengguang.wu@intel.com>
-cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: Linux Memory Management List <linux-mm@kvack.org>
-cc: <linux-fsdevel@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 04/11] readahead: replace ra->mmap_miss with ra->ra_flags
-References: <20100202152835.683907822@intel.com>
-Content-Disposition: inline; filename=readahead-flags.patch
+	id S1756378Ab0BBPfT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 10:35:19 -0500
+Received: from mbox1.netikka.net ([213.250.81.202]:37432 "EHLO
+	mbox1.netikka.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756442Ab0BBPfP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 10:35:15 -0500
+Message-ID: <4B68462F.7050203@mandriva.org>
+Date: Tue, 02 Feb 2010 17:35:11 +0200
+From: Thomas Backlund <tmb@mandriva.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100122 Mandriva/3.0.1-2mdv2010.1 (2010.1) Thunderbird/3.0.1
+MIME-Version: 1.0
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+CC: linux-acpi@vger.kernel.org
+Subject: WARNING: at arch/x86/kernel/hpet.c:404 hpet_next_event+0x7d/0x90()
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Introduce a readahead flags field and embed the existing mmap_miss in it
-(to save space).
+This is still happening on 2.6.33-rc6-git1 running x86_64 kernel
 
-It will be possible to lose the flags in race conditions, however the
-impact should be limited.
+HW is a Core i7-860 on an ASUS P7P55D Deluxe m/b
 
-CC: Nick Piggin <npiggin@suse.de>
-CC: Andi Kleen <andi@firstfloor.org>
-CC: Steven Whitehouse <swhiteho@redhat.com>
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
----
- include/linux/fs.h |   30 +++++++++++++++++++++++++++++-
- mm/filemap.c       |    7 ++-----
- 2 files changed, 31 insertions(+), 6 deletions(-)
+I've seen this since atleast 2.6.31 series kernels...
 
---- linux.orig/include/linux/fs.h	2010-01-30 18:09:33.000000000 +0800
-+++ linux/include/linux/fs.h	2010-01-30 18:10:04.000000000 +0800
-@@ -889,10 +889,38 @@ struct file_ra_state {
- 					   there are only # of pages ahead */
- 
- 	unsigned int ra_pages;		/* Maximum readahead window */
--	unsigned int mmap_miss;		/* Cache miss stat for mmap accesses */
-+	unsigned int ra_flags;
- 	loff_t prev_pos;		/* Cache last read() position */
- };
- 
-+/* ra_flags bits */
-+#define	READAHEAD_MMAP_MISS	0x0000ffff /* cache misses for mmap access */
-+
-+/*
-+ * Don't do ra_flags++ directly to avoid possible overflow:
-+ * the ra fields can be accessed concurrently in a racy way.
-+ */
-+static inline unsigned int ra_mmap_miss_inc(struct file_ra_state *ra)
-+{
-+	unsigned int miss = ra->ra_flags & READAHEAD_MMAP_MISS;
-+
-+	if (miss < READAHEAD_MMAP_MISS) {
-+		miss++;
-+		ra->ra_flags = miss | (ra->ra_flags &~ READAHEAD_MMAP_MISS);
-+	}
-+	return miss;
-+}
-+
-+static inline void ra_mmap_miss_dec(struct file_ra_state *ra)
-+{
-+	unsigned int miss = ra->ra_flags & READAHEAD_MMAP_MISS;
-+
-+	if (miss) {
-+		miss--;
-+		ra->ra_flags = miss | (ra->ra_flags &~ READAHEAD_MMAP_MISS);
-+	}
-+}
-+
- /*
-  * Check if @index falls in the readahead windows.
-  */
---- linux.orig/mm/filemap.c	2010-01-30 18:09:33.000000000 +0800
-+++ linux/mm/filemap.c	2010-01-30 18:10:04.000000000 +0800
-@@ -1418,14 +1418,12 @@ static void do_sync_mmap_readahead(struc
- 		return;
- 	}
- 
--	if (ra->mmap_miss < INT_MAX)
--		ra->mmap_miss++;
- 
- 	/*
- 	 * Do we miss much more than hit in this file? If so,
- 	 * stop bothering with read-ahead. It will only hurt.
- 	 */
--	if (ra->mmap_miss > MMAP_LOTSAMISS)
-+	if (ra_mmap_miss_inc(ra) > MMAP_LOTSAMISS)
- 		return;
- 
- 	/*
-@@ -1455,8 +1453,7 @@ static void do_async_mmap_readahead(stru
- 	/* If we don't want any read-ahead, don't bother */
- 	if (VM_RandomReadHint(vma))
- 		return;
--	if (ra->mmap_miss > 0)
--		ra->mmap_miss--;
-+	ra_mmap_miss_dec(ra);
- 	if (PageReadahead(page))
- 		page_cache_async_readahead(mapping, ra, file,
- 					   page, offset, ra->ra_pages);
+I seem to have seen other reports about this, and some errata fix & 
+patch for this, but I cant find it right now...
 
+> [   11.668507] ------------[ cut here ]------------
+> [   11.668514] WARNING: at arch/x86/kernel/hpet.c:404 hpet_next_event+0x7d/0x90()
+> [   11.668516] Hardware name: System Product Name
+> [   11.668517] hpet: compare register read back failed.
+> [   11.668518] Modules linked in: processor(+) iTCO_vendor_support button pata_jmicron dm_snapshot dm_zero dm_mirror dm_region_hash dm_log dm_mod ata_piix ahci libata sd_mod scsi_mod crc_t10dif ext4 jbd2 crc16 uhci_hcd ohci_hcd ehci_hcd usbhid hid usbcore
+> [   11.668530] Pid: 0, comm: swapper Not tainted 2.6.33-tmb-desktop-0.rc6.1.2mdv #1
+> [   11.668532] Call Trace:
+> [   11.668536]  [<ffffffff810400a8>] warn_slowpath_common+0x78/0xb0
+> [   11.668538]  [<ffffffff8104013c>] warn_slowpath_fmt+0x3c/0x40
+> [   11.668541]  [<ffffffff81022b5d>] hpet_next_event+0x7d/0x90
+> [   11.668543]  [<ffffffff81022b8b>] hpet_legacy_next_event+0xb/0x10
+> [   11.668547]  [<ffffffff810642d9>] clockevents_program_event+0x59/0xa0
+> [   11.668549]  [<ffffffff81065740>] tick_dev_program_event+0x40/0xd0
+> [   11.668553]  [<ffffffff810650c6>] tick_broadcast_oneshot_control+0x116/0x120
+> [   11.668556]  [<ffffffff810648f5>] tick_notify+0x315/0x450
+> [   11.668560]  [<ffffffff811d537c>] ? acpi_hw_read+0x51/0x58
+> [   11.668563]  [<ffffffff8105ce57>] notifier_call_chain+0x47/0x90
+> [   11.668566]  [<ffffffff8105cf41>] raw_notifier_call_chain+0x11/0x20
+> [   11.668569]  [<ffffffff810640e2>] clockevents_notify+0x32/0x170
+> [   11.668575]  [<ffffffffa0196f28>] lapic_timer_state_broadcast+0x41/0x43 [processor]
+> [   11.668580]  [<ffffffffa0197436>] acpi_idle_enter_bm+0x15c/0x28a [processor]
+> [   11.668585]  [<ffffffff8125bccb>] cpuidle_idle_call+0x9b/0x100
+> [   11.668589]  [<ffffffff81001933>] cpu_idle+0x63/0xc0
+> [   11.668592]  [<ffffffff8130a47d>] start_secondary+0x18b/0x18f
+> [   11.668595] ---[ end trace 34f793092b044afa ]---
+
+--
+Thomas
 
