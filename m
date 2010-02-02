@@ -1,52 +1,144 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755826Ab0BBHli (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 02:41:38 -0500
-Received: from mail-gx0-f224.google.com ([209.85.217.224]:39289 "EHLO
-	mail-gx0-f224.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755758Ab0BBHlc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 02:41:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=kjQuoI/4Q76r3pRj65JC//4D0SBiLU+sDHJWaZjcYxPtBtlbu5WNbToBqPtx1JmEVu
-         SS2E+M96rkevGnuYpJFCNKRBfIiS5Q9iRB/ITHUIUq4lAp80OLSjxfSl4GP2NcKB82KI
-         2vf1kKyvfYN9jS9cAyRouu6V65ryFfwk7fYiY=
-Message-ID: <4B67D76A.3050906@gmail.com>
-Date: Mon, 01 Feb 2010 23:42:34 -0800
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091114 Lightning/1.0pre Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-CC: Dan Carpenter <error27@gmail.com>, linux1394-devel@lists.sourceforge.net,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
+	id S1755843Ab0BBHrM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 02:47:12 -0500
+Received: from iksaif.net ([88.191.73.63]:48710 "EHLO iksaif.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755443Ab0BBHrI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 02:47:08 -0500
+From: Corentin Chary <corentincj@iksaif.net>
+To: Len Brown <lenb@kernel.org>
+Cc: linux-acpi@vger.kernel.org, acpi4asus-user@lists.sourceforge.net,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: ohci1394_dma=early crash since 2.6.32 (was Re: [Bug #14487] PANIC:
- early exception 08 rip 246:10 error	ffffffff810251b5 cr2 0)
-References: <UgwvXSBS_tM.A.alD.1EiZLB@chimera> <de962C6zBxL.A.H1G.1HiZLB@chimera> <4B6630CA.9010207@gmail.com> <20100201125441.GB2576@bicker> <4B671606.3080405@gmail.com> <4B673233.8000300@s5r6.in-berlin.de> <4B6740B5.5070601@gmail.com> <4B675534.5070107@s5r6.in-berlin.de> <4B676917.2080506@gmail.com> <4B67BC12.4080709@s5r6.in-berlin.de> <4B67C4D2.5050205@gmail.com> <4B67CC55.40301@s5r6.in-berlin.de> <4B67CCEC.2030103@s5r6.in-berlin.de>
-In-Reply-To: <4B67CCEC.2030103@s5r6.in-berlin.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+       Corentin Chary <corentincj@iksaif.net>
+Subject: [PATCH 04/28] asus-laptop: simplify write_acpi_int
+Date: Tue,  2 Feb 2010 08:38:47 +0100
+Message-Id: <1265096351-15239-5-git-send-email-corentincj@iksaif.net>
+X-Mailer: git-send-email 1.6.6.1
+In-Reply-To: <1265096351-15239-4-git-send-email-corentincj@iksaif.net>
+References: <1265096351-15239-1-git-send-email-corentincj@iksaif.net>
+ <1265096351-15239-2-git-send-email-corentincj@iksaif.net>
+ <1265096351-15239-3-git-send-email-corentincj@iksaif.net>
+ <1265096351-15239-4-git-send-email-corentincj@iksaif.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/01/10 22:57, Stefan Richter wrote:
-> Stefan Richter wrote:
->> Do I understand correctly that at this moment it is only known that the
->> bug could be
->>    - *either* a 2.6.31 ->  2.6.32 regression
->>    - *or* an x86-64 specific bug that does not occur on x86-32,
->> right?
->
-> (OK, according to your other post it /is/ a regression, at least on
-> x86-64 and definitely between 2.6.27 (good) and 2.6.32 (bad).)
+We only need a buffer for "INIT". Adds write_acpi_init_ret for it.
 
-I'll go with the bisect in the morning(late over here),
-and then go from there.(just pissed at myself
-for not thinking to do this at the beginning).
+Signed-off-by: Corentin Chary <corentincj@iksaif.net>
+---
+ drivers/platform/x86/asus-laptop.c |   27 ++++++++++++++++-----------
+ 1 files changed, 16 insertions(+), 11 deletions(-)
 
-Justin P. Mattock
+diff --git a/drivers/platform/x86/asus-laptop.c b/drivers/platform/x86/asus-laptop.c
+index 013ab86..7058cb5 100644
+--- a/drivers/platform/x86/asus-laptop.c
++++ b/drivers/platform/x86/asus-laptop.c
+@@ -352,8 +352,8 @@ static struct key_entry asus_keymap[] = {
+  *
+  * returns 0 if write is successful, -1 else.
+  */
+-static int write_acpi_int(acpi_handle handle, const char *method, int val,
+-			  struct acpi_buffer *output)
++static int write_acpi_int_ret(acpi_handle handle, const char *method, int val,
++			      struct acpi_buffer *output)
+ {
+ 	struct acpi_object_list params;	/* list of input parameters (an int) */
+ 	union acpi_object in_obj;	/* the only param we use */
+@@ -374,6 +374,11 @@ static int write_acpi_int(acpi_handle handle, const char *method, int val,
+ 		return -1;
+ }
+ 
++static int write_acpi_int(acpi_handle handle, const char *method, int val)
++{
++	return write_acpi_int_ret(handle, method, val, NULL);
++}
++
+ static int read_wireless_status(int mask)
+ {
+ 	unsigned long long status;
+@@ -437,7 +442,7 @@ static void write_status(acpi_handle handle, int out, int mask)
+ 		break;
+ 	}
+ 
+-	if (write_acpi_int(handle, NULL, out, NULL))
++	if (write_acpi_int(handle, NULL, out))
+ 		pr_warning(" write failed %x\n", mask);
+ }
+ 
+@@ -496,7 +501,7 @@ static int set_kled_lvl(int kblv)
+ 	else
+ 		kblv = 0;
+ 
+-	if (write_acpi_int(kled_set_handle, NULL, kblv, NULL)) {
++	if (write_acpi_int(kled_set_handle, NULL, kblv)) {
+ 		pr_warning("Keyboard LED display write failed\n");
+ 		return -EINVAL;
+ 	}
+@@ -571,7 +576,7 @@ static int read_brightness(struct backlight_device *bd)
+ 
+ static int set_brightness(struct backlight_device *bd, int value)
+ {
+-	if (write_acpi_int(brightness_set_handle, NULL, value, NULL)) {
++	if (write_acpi_int(brightness_set_handle, NULL, value)) {
+ 		pr_warning("Error changing brightness\n");
+ 		return -EIO;
+ 	}
+@@ -710,7 +715,7 @@ static ssize_t store_ledd(struct device *dev, struct device_attribute *attr,
+ 
+ 	rv = parse_arg(buf, count, &value);
+ 	if (rv > 0) {
+-		if (write_acpi_int(ledd_set_handle, NULL, value, NULL))
++		if (write_acpi_int(ledd_set_handle, NULL, value))
+ 			pr_warning("LED display write failed\n");
+ 		else
+ 			hotk->ledd_status = (u32) value;
+@@ -755,7 +760,7 @@ static ssize_t store_bluetooth(struct device *dev,
+ static void set_display(int value)
+ {
+ 	/* no sanity check needed for now */
+-	if (write_acpi_int(display_set_handle, NULL, value, NULL))
++	if (write_acpi_int(display_set_handle, NULL, value))
+ 		pr_warning("Error setting display\n");
+ 	return;
+ }
+@@ -814,7 +819,7 @@ static ssize_t store_disp(struct device *dev, struct device_attribute *attr,
+  */
+ static void set_light_sens_switch(int value)
+ {
+-	if (write_acpi_int(ls_switch_handle, NULL, value, NULL))
++	if (write_acpi_int(ls_switch_handle, NULL, value))
+ 		pr_warning("Error setting light sensor switch\n");
+ 	hotk->light_switch = value;
+ }
+@@ -839,7 +844,7 @@ static ssize_t store_lssw(struct device *dev, struct device_attribute *attr,
+ 
+ static void set_light_sens_level(int value)
+ {
+-	if (write_acpi_int(ls_level_handle, NULL, value, NULL))
++	if (write_acpi_int(ls_level_handle, NULL, value))
+ 		pr_warning("Error setting light sensor level\n");
+ 	hotk->light_level = value;
+ }
+@@ -1104,7 +1109,7 @@ static int asus_hotk_get_info(void)
+ 		pr_warning("Couldn't get the DSDT table header\n");
+ 
+ 	/* We have to write 0 on init this far for all ASUS models */
+-	if (write_acpi_int(hotk->handle, "INIT", 0, &buffer)) {
++	if (write_acpi_int_ret(hotk->handle, "INIT", 0, &buffer)) {
+ 		pr_err("Hotkey initialization failed\n");
+ 		return -ENODEV;
+ 	}
+@@ -1119,7 +1124,7 @@ static int asus_hotk_get_info(void)
+ 		       (uint) bsts_result);
+ 
+ 	/* This too ... */
+-	write_acpi_int(hotk->handle, "CWAP", wapf, NULL);
++	write_acpi_int(hotk->handle, "CWAP", wapf);
+ 
+ 	/*
+ 	 * Try to match the object returned by INIT to the specific model.
+-- 
+1.6.6.1
+
