@@ -1,56 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755044Ab0BBK6I (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 05:58:08 -0500
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:38277 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751792Ab0BBK6C (ORCPT
+	id S1755529Ab0BBLF7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 06:05:59 -0500
+Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:64599 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755185Ab0BBLF4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 05:58:02 -0500
-Date: Tue, 2 Feb 2010 10:58:00 +0000
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Takashi Iwai <tiwai@suse.de>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Samuel Ortiz <sameo@linux.intel.com>
-Subject: Re: linux-next: sound tree build failure
-Message-ID: <20100202105800.GE6566@rakim.wolfsonmicro.main>
-References: <20100202124711.d8cdc220.sfr@canb.auug.org.au>
- <20100202102609.GA6566@rakim.wolfsonmicro.main>
- <20100202213732.586a3566.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100202213732.586a3566.sfr@canb.auug.org.au>
-X-Cookie: Nothing is but what is not.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Tue, 2 Feb 2010 06:05:56 -0500
+Subject: Re: USB mass storage and ARM cache coherency
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       Ming Lei <tom.leiming@gmail.com>, linux-usb@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Sebastian Siewior <bigeasy@linutronix.de>, Greg KH <greg@kroah.com>
+In-Reply-To: <20100202063904.GK13428@linux-sh.org>
+References: <20100202063904.GK13428@linux-sh.org>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Tue, 02 Feb 2010 11:05:39 +0000
+Message-Id: <1265108739.12634.38.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 02 Feb 2010 11:05:40.0235 (UTC) FILETIME=[A7E235B0:01CAA3F7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 02, 2010 at 09:37:32PM +1100, Stephen Rothwell wrote:
+On Tue, 2010-02-02 at 06:39 +0000, Paul Mundt wrote:
+> On Mon, Feb 01, 2010 at 05:29:14PM +0000, Catalin Marinas wrote:
+> > diff --git a/drivers/usb/host/isp1760-hcd.c b/drivers/usb/host/isp1760-hcd.c
+> > index 27b8f7c..4d3eeee 100644
+> > --- a/drivers/usb/host/isp1760-hcd.c
+> > +++ b/drivers/usb/host/isp1760-hcd.c
+> > @@ -18,6 +18,8 @@
+> >  #include <linux/uaccess.h>
+> >  #include <linux/io.h>
+> >  #include <asm/unaligned.h>
+> > +#include <asm/cacheflush.h>
+> > +#include <asm/memory.h>
+> 
+> asm/memory.h isn't a portable header. If you are including it for
+> virt_to_page(), linux/io.h should already bring that in via asm/io.h.
+> If arm doesn't bring in virt_to_page() through its asm/io.h, then fix the
+> headers there please.
 
-> The sound tree is merged before the mfd tree, and the commit that adds
-> those is only in the mfd tree.  So the sound tree, on its own, is
-> broken.  This driver will only build if you merge the mfd tree as well.
+In the ARM case, yes, it brings virt_to_page() but I'm not sure that's
+the case for the other architectures. I think a better header is
+linux/mm.h which already uses this function in virt_to_head_page().
 
-Ah, you're doing builds after each individual merge.  It might help to
-change the form you're using when reporting problems with partially
-constructed -next - at the minute you say "Today's linux-next build
-(x86_64 allmodconfig) failed like this:" which makes it look like you're
-testing the result of the full -next merge.
+-- 
+Catalin
 
-> > > To fix this, the relevant commits from the mfd tree could be put into a
-> > > "never to be rebased" branch (or separate git tree) and then this branch
-> > > merged into both the sound and mfd trees.
-
-> > This is not needed, Kconfig will handle it.
-
-> Kconfig has nothing to do with it, sorry.
-
-No, it does really fix the problem.  As I said the driver should build
-depend on a Kconfig symbol which is introduced in the MFD tree.  This
-means that the driver will not be built at all until MFD has been merged
-since the dependencies required to select the driver will not be
-satisfied unless the commits it depends on are present in the tree.
-
-I'll push a patch for this shortly.
