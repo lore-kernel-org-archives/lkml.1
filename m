@@ -1,276 +1,61 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756731Ab0BBVWb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 16:22:31 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:7442 "EHLO mx1.redhat.com"
+	id S1756575Ab0BBVVy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 16:21:54 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:30362 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756690Ab0BBVWY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 16:22:24 -0500
-Date: Tue, 2 Feb 2010 16:21:51 -0500
+	id S1756494Ab0BBVVw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 16:21:52 -0500
+Date: Tue, 2 Feb 2010 16:21:38 -0500
 From: Jason Baron <jbaron@redhat.com>
 To: linux-kernel@vger.kernel.org, laijs@cn.fujitsu.com, lizf@cn.fujitsu.com,
        rostedt@goodmis.org, fweisbec@gmail.com, mingo@elte.hu, hpa@zytor.com,
        tglx@linutronix.de, mhiramat@redhat.com
-Message-Id: <bec426992cb9ab8f8abe07efb2baa785577a3855.1265142153.git.jbaron@redhat.com>
+Message-Id: <219418520c3fd7c2cef8c5d8ef62b3e716125414.1265142153.git.jbaron@redhat.com>
 In-Reply-To: <cover.1265142153.git.jbaron@redhat.com>
 References: <cover.1265142153.git.jbaron@redhat.com>
-Subject: [PATCH 4/6] tracing: add tracing support for compat syscalls
+Subject: [PATCH 1/6] x86: add NR_syscalls_compat, make ia32 syscall table visible
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add core support to event tracing for compat syscalls. The basic idea is that we
-check if we have a compat task via 'is_compat_task()'. If so, we lookup in the
-new compat_syscalls_metadata table, the corresponding struct syscall_metadata, to
-check syscall arguments and whether or not we are enabled.
+Add 'NR_syscalls_compat' global for x86. Also, make 'ia32_sys_call_table' into a global.
 
 Signed-off-by: Jason Baron <jbaron@redhat.com>
 ---
- include/linux/compat.h        |    8 +++++
- include/trace/syscall.h       |    4 ++
- kernel/trace/trace.h          |    2 +
- kernel/trace/trace_syscalls.c |   63 +++++++++++++++++++++++++++++++++++-----
- 4 files changed, 69 insertions(+), 8 deletions(-)
+ arch/x86/ia32/ia32entry.S     |    3 +++
+ arch/x86/include/asm/compat.h |    2 ++
+ 2 files changed, 5 insertions(+), 0 deletions(-)
 
-diff --git a/include/linux/compat.h b/include/linux/compat.h
-index ef68119..ab2cda2 100644
---- a/include/linux/compat.h
-+++ b/include/linux/compat.h
-@@ -353,5 +353,13 @@ asmlinkage long compat_sys_newfstatat(unsigned int dfd, char __user * filename,
- asmlinkage long compat_sys_openat(unsigned int dfd, const char __user *filename,
- 				  int flags, int mode);
+diff --git a/arch/x86/ia32/ia32entry.S b/arch/x86/ia32/ia32entry.S
+index 53147ad..acc6fbf 100644
+--- a/arch/x86/ia32/ia32entry.S
++++ b/arch/x86/ia32/ia32entry.S
+@@ -503,6 +503,7 @@ END(ia32_ptregs_common)
  
-+#else /* CONFIG_COMPAT */
-+
-+#define NR_syscalls_compat 0
-+static inline int is_compat_task(void)
-+{
-+	return 0;
-+}
-+
- #endif /* CONFIG_COMPAT */
- #endif /* _LINUX_COMPAT_H */
-diff --git a/include/trace/syscall.h b/include/trace/syscall.h
-index 8f5ac38..1cc1d1e 100644
---- a/include/trace/syscall.h
-+++ b/include/trace/syscall.h
-@@ -22,6 +22,7 @@
- struct syscall_metadata {
- 	const char	*name;
- 	int		syscall_nr;
-+	int		compat_syscall_nr;
- 	int		nb_args;
- 	const char	**types;
- 	const char	**args;
-@@ -36,6 +37,9 @@ struct syscall_metadata {
- 
- #ifdef CONFIG_FTRACE_SYSCALLS
- extern unsigned long arch_syscall_addr(int nr);
-+#ifdef CONFIG_COMPAT
-+extern unsigned long arch_compat_syscall_addr(int nr);
-+#endif
- extern int init_syscall_trace(struct ftrace_event_call *call);
- 
- extern int syscall_enter_define_fields(struct ftrace_event_call *call);
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index ce077fb..0ed0d2e 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -94,12 +94,14 @@ extern struct tracer boot_tracer;
- struct syscall_trace_enter {
- 	struct trace_entry	ent;
- 	int			nr;
-+	int			compat;
- 	unsigned long		args[];
- };
- 
- struct syscall_trace_exit {
- 	struct trace_entry	ent;
- 	int			nr;
-+	int			compat;
- 	long			ret;
- };
- 
-diff --git a/kernel/trace/trace_syscalls.c b/kernel/trace/trace_syscalls.c
-index 8411d6c..6f721be 100644
---- a/kernel/trace/trace_syscalls.c
-+++ b/kernel/trace/trace_syscalls.c
-@@ -3,6 +3,7 @@
- #include <linux/kernel.h>
- #include <linux/ftrace.h>
- #include <linux/perf_event.h>
-+#include <linux/compat.h>
- #include <asm/syscall.h>
- 
- #include "trace_output.h"
-@@ -16,6 +17,7 @@ extern unsigned long __start_syscalls_metadata[];
- extern unsigned long __stop_syscalls_metadata[];
- 
- static struct syscall_metadata **syscalls_metadata;
-+static struct syscall_metadata **compat_syscalls_metadata;
- 
- static struct syscall_metadata *find_syscall_meta(unsigned long syscall)
- {
-@@ -41,8 +43,14 @@ static struct syscall_metadata *find_syscall_meta(unsigned long syscall)
- 	return NULL;
+ 	.section .rodata,"a"
+ 	.align 8
++.globl ia32_sys_call_table
+ ia32_sys_call_table:
+ 	.quad sys_restart_syscall
+ 	.quad sys_exit
+@@ -843,3 +844,5 @@ ia32_sys_call_table:
+ 	.quad sys_perf_event_open
+ 	.quad compat_sys_recvmmsg
+ ia32_syscall_end:
++.globl NR_syscalls_compat
++NR_syscalls_compat: .int ((ia32_syscall_end - ia32_sys_call_table)/8)
+diff --git a/arch/x86/include/asm/compat.h b/arch/x86/include/asm/compat.h
+index 9a9c7bd..b5b78e6 100644
+--- a/arch/x86/include/asm/compat.h
++++ b/arch/x86/include/asm/compat.h
+@@ -215,4 +215,6 @@ static inline int is_compat_task(void)
+ 	return current_thread_info()->status & TS_COMPAT;
  }
  
--static struct syscall_metadata *syscall_nr_to_meta(int nr)
-+static struct syscall_metadata *syscall_nr_to_meta(int nr, int compat)
- {
-+	if (compat) {
-+		if (!compat_syscalls_metadata || nr >= NR_syscalls_compat ||
-+									nr < 0)
-+			return NULL;
-+		return compat_syscalls_metadata[nr];
-+	}
- 	if (!syscalls_metadata || nr >= NR_syscalls || nr < 0)
- 		return NULL;
- 
-@@ -60,7 +68,7 @@ print_syscall_enter(struct trace_iterator *iter, int flags)
- 
- 	trace = (typeof(trace))ent;
- 	syscall = trace->nr;
--	entry = syscall_nr_to_meta(syscall);
-+	entry = syscall_nr_to_meta(syscall, trace->compat);
- 
- 	if (!entry)
- 		goto end;
-@@ -113,7 +121,7 @@ print_syscall_exit(struct trace_iterator *iter, int flags)
- 
- 	trace = (typeof(trace))ent;
- 	syscall = trace->nr;
--	entry = syscall_nr_to_meta(syscall);
-+	entry = syscall_nr_to_meta(syscall, trace->compat);
- 
- 	if (!entry) {
- 		trace_seq_printf(s, "\n");
-@@ -248,12 +256,16 @@ void ftrace_syscall_enter(struct pt_regs *regs, long id)
- 	struct ring_buffer *buffer;
- 	int size;
- 	int syscall_nr;
-+	int compat = 0;
- 
- 	syscall_nr = syscall_get_nr(current, regs);
- 	if (syscall_nr < 0)
- 		return;
- 
--	sys_data = syscall_nr_to_meta(syscall_nr);
-+	if (is_compat_task())
-+		compat = 1;
++extern int NR_syscalls_compat;
 +
-+	sys_data = syscall_nr_to_meta(syscall_nr, compat);
- 	if (!sys_data)
- 		return;
- 
-@@ -269,6 +281,7 @@ void ftrace_syscall_enter(struct pt_regs *regs, long id)
- 
- 	entry = ring_buffer_event_data(event);
- 	entry->nr = syscall_nr;
-+	entry->compat = compat;
- 	syscall_get_arguments(current, regs, 0, sys_data->nb_args, entry->args);
- 
- 	if (!filter_current_check_discard(buffer, sys_data->enter_event,
-@@ -283,12 +296,16 @@ void ftrace_syscall_exit(struct pt_regs *regs, long ret)
- 	struct ring_buffer_event *event;
- 	struct ring_buffer *buffer;
- 	int syscall_nr;
-+	int compat = 0;
- 
- 	syscall_nr = syscall_get_nr(current, regs);
- 	if (syscall_nr < 0)
- 		return;
- 
--	sys_data = syscall_nr_to_meta(syscall_nr);
-+	if (is_compat_task())
-+		compat = 1;
-+
-+	sys_data = syscall_nr_to_meta(syscall_nr, compat);
- 	if (!sys_data)
- 		return;
- 
-@@ -302,6 +319,7 @@ void ftrace_syscall_exit(struct pt_regs *regs, long ret)
- 
- 	entry = ring_buffer_event_data(event);
- 	entry->nr = syscall_nr;
-+	entry->compat = compat;
- 	entry->ret = syscall_get_return_value(current, regs);
- 
- 	if (!filter_current_check_discard(buffer, sys_data->exit_event,
-@@ -416,7 +434,26 @@ int __init init_ftrace_syscalls(void)
- 		meta->syscall_nr = i;
- 		syscalls_metadata[i] = meta;
- 	}
--
-+#ifdef CONFIG_COMPAT
-+	if (NR_syscalls_compat) {
-+		compat_syscalls_metadata = kzalloc(sizeof(*syscalls_metadata) *
-+						NR_syscalls_compat, GFP_KERNEL);
-+		if (!compat_syscalls_metadata) {
-+			WARN_ON(1);
-+			kfree(syscalls_metadata);
-+			return -ENOMEM;
-+		}
-+		for (i = 0; i < NR_syscalls_compat; i++) {
-+			addr = arch_compat_syscall_addr(i);
-+			meta = find_syscall_meta(addr);
-+			if (!meta)
-+				continue;
-+
-+			meta->compat_syscall_nr = i;
-+			compat_syscalls_metadata[i] = meta;
-+		}
-+	}
-+#endif
- 	return 0;
- }
- core_initcall(init_ftrace_syscalls);
-@@ -434,9 +471,13 @@ static void prof_syscall_enter(struct pt_regs *regs, long id)
- 	int syscall_nr;
- 	int rctx;
- 	int size;
-+	int compat = 0;
- 
- 	syscall_nr = syscall_get_nr(current, regs);
--	sys_data = syscall_nr_to_meta(syscall_nr);
-+	if (is_compat_task())
-+		compat = 1;
-+
-+	sys_data = syscall_nr_to_meta(syscall_nr, compat);
- 	if (!sys_data)
- 		return;
- 
-@@ -458,6 +499,7 @@ static void prof_syscall_enter(struct pt_regs *regs, long id)
- 		return;
- 
- 	rec->nr = syscall_nr;
-+	rec->compat = compat;
- 	syscall_get_arguments(current, regs, 0, sys_data->nb_args,
- 			       (unsigned long *)&rec->args);
- 	ftrace_perf_buf_submit(rec, size, rctx, 0, 1, flags);
-@@ -506,9 +548,13 @@ static void prof_syscall_exit(struct pt_regs *regs, long ret)
- 	int syscall_nr;
- 	int rctx;
- 	int size;
-+	int compat = 0;
- 
- 	syscall_nr = syscall_get_nr(current, regs);
--	sys_data = syscall_nr_to_meta(syscall_nr);
-+	if (is_compat_task())
-+		compat = 1;
-+
-+	sys_data = syscall_nr_to_meta(syscall_nr, compat);
- 	if (!sys_data)
- 		return;
- 
-@@ -533,6 +579,7 @@ static void prof_syscall_exit(struct pt_regs *regs, long ret)
- 		return;
- 
- 	rec->nr = syscall_nr;
-+	rec->compat = compat;
- 	rec->ret = syscall_get_return_value(current, regs);
- 
- 	ftrace_perf_buf_submit(rec, size, rctx, 0, 1, flags);
+ #endif /* _ASM_X86_COMPAT_H */
 -- 
 1.6.5.1
 
