@@ -1,86 +1,64 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755283Ab0BBHCc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 02:02:32 -0500
-Received: from dallas.jonmasters.org ([72.29.103.172]:51612 "EHLO
-	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755212Ab0BBHC2 (ORCPT
+	id S1755047Ab0BBHIB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 02:08:01 -0500
+Received: from mail-fx0-f215.google.com ([209.85.220.215]:52063 "EHLO
+	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753935Ab0BBHH6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 02:02:28 -0500
-Subject: Re: [PATCH] netfilter: per netns nf_conntrack_cachep
-From: Jon Masters <jonathan@jonmasters.org>
-To: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, Patrick McHardy <kaber@trash.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>,
-       netfilter-devel <netfilter-devel@vger.kernel.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-In-Reply-To: <1265085391.2861.106.camel@tonnant>
-References: <1264813832.2793.446.camel@tonnant>
-	 <1264816634.2793.505.camel@tonnant> <1264816777.2793.510.camel@tonnant>
-	 <1264834704.2919.3.camel@edumazet-laptop>
-	 <1265016745.7499.144.camel@tonnant>
-	 <b6fcc0a1002010136k7e78a998p31a9e7464c2e8d44@mail.gmail.com>
-	 <1265019160.2848.14.camel@edumazet-laptop>
-	 <b6fcc0a1002010225u4e74f9f0q633d73038234dc37@mail.gmail.com>
-	 <1265023437.2848.30.camel@edumazet-laptop>
-	 <1265035970.2848.50.camel@edumazet-laptop>
-	 <1265085391.2861.106.camel@tonnant>
-Content-Type: text/plain
-Organization: World Organi[sz]ation of Broken Dreams
-Date: Tue, 02 Feb 2010 02:02:07 -0500
-Message-Id: <1265094127.2861.112.camel@tonnant>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
-X-SA-Do-Not-Run: Yes
-X-SA-Exim-Connect-IP: 127.0.0.1
-X-SA-Exim-Mail-From: jonathan@jonmasters.org
-X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
+	Tue, 2 Feb 2010 02:07:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent;
+        b=BVcxfwcDt0WdQnhfPxTBBsXa1hVGKjZxAH/SJgGGcmWjXRL03JF6FxIat3pdqMsCsW
+         HXD9ACdSa2fbmgYoSD1qdvBOiIKLkjpgN0jAwYEV8zYicht8IljYYC0hiC3iX8J2krMR
+         mR2jToghWIk2hzyzKWemYDBL6bLIWqg83XHv4=
+Date: Tue, 2 Feb 2010 08:07:51 +0100
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: zhiyi <zhuang@cs.otago.ac.nz>
+Cc: linux-kernel@vger.kernel.org, Zhiyi Huang <hzy@cs.otago.ac.nz>,
+       jkmair@cs.otago.ac.nz
+Subject: Re: nr_cpu_ids incorrect on AMD Quad-Core Opteron 8380
+Message-ID: <20100202070751.GA11623@liondog.tnic>
+Mail-Followup-To: Borislav Petkov <petkovbb@googlemail.com>,
+	zhiyi <zhuang@cs.otago.ac.nz>, linux-kernel@vger.kernel.org,
+	Zhiyi Huang <hzy@cs.otago.ac.nz>, jkmair@cs.otago.ac.nz
+References: <A1D71FDC-3176-4792-83ED-3ACAA3D61CFF@cs.otago.ac.nz>
+ <20100130171804.GA2348@liondog.tnic>
+ <AD1C7BB3-C3E6-47EC-809F-4CE3C049D92C@cs.otago.ac.nz>
+ <9ea470501002010557o45bad81cp5d9ac3d19318bffe@mail.gmail.com>
+ <9ea470501002010704m15dfaedau813b7accfd1d22ff@mail.gmail.com>
+ <4086DEE4-5D26-4EED-8353-2C4F54238CAE@cs.otago.ac.nz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <4086DEE4-5D26-4EED-8353-2C4F54238CAE@cs.otago.ac.nz>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-02-01 at 23:36 -0500, Jon Masters wrote:
-> On Mon, 2010-02-01 at 15:52 +0100, Eric Dumazet wrote:
+On Tue, Feb 02, 2010 at 01:49:06PM +1300, zhiyi wrote:
+> The dmesg relevant to nr_cpu_ids of the quad socket is:
 > 
-> > [PATCH] netfilter: per netns nf_conntrack_cachep
-> > 
-> > nf_conntrack_cachep is currently shared by all netns instances, but
-> > because of SLAB_DESTROY_BY_RCU special semantics, this is wrong.
-> > 
-> > If we use a shared slab cache, one object can instantly flight between
-> > one hash table (netns ONE) to another one (netns TWO), and concurrent
-> > reader (doing a lookup in netns ONE, 'finding' an object of netns TWO)
-> > can be fooled without notice, because no RCU grace period has to be
-> > observed between object freeing and its reuse.
-> > 
-> > We dont have this problem with UDP/TCP slab caches because TCP/UDP
-> > hashtables are global to the machine (and each object has a pointer to
-> > its netns).
-> > 
-> > If we use per netns conntrack hash tables, we also *must* use per netns
-> > conntrack slab caches, to guarantee an object can not escape from one
-> > namespace to another one.
-> > 
-> > Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
+> [    0.000000] NR_CPUS:64 nr_cpumask_bits:64 nr_cpu_ids:32 nr_node_ids:4
 > 
-> You're totally right, I'd missed this (RCU behavior wrt SLAB caches was
-> one of these black magic voodoo things until Peter Z. set me straight
-> with his explanation that it only applies to the freeing of the cache
-> itself, not the objects - that makes sense in the grand scheme of what
-> RCU is trying to achieve, and so in theory, yeah we could just verify
-> the ct object we get back out of the cache is from the same ns, should
-> work just as well as doing per-ns caches, but not as clean IMO). I'm
-> still not sure it explains the specific corruption I'm seeing, but I
-> just made some coffee and put on some T. Rex to help me think.
 
-It happens in the kmem_cache_free in nf_conntrack_free (as I can
-trivially confirm with printk), so you're almost certainly right, but I
-am just shoving in a bunch of debug code equivalent to the logic in SLUB
-kmem cache freeing to see precisely how that pointer corruption occurs,
-mostly for curiosity, and to confirm for sure what happens.
+No, this is not the relevant info. I was actually looking for the MADT ACPI
+table and whether there are disabled entries like so:
 
-Jon.
+[    0.000000] ACPI: LAPIC (acpi-id[0x03] lapic-id[0x02] enabled)
+[    0.000000] ACPI: LAPIC (acpi-id[0x04] lapic-id[0x03] enabled)
+[    0.000000] ACPI: LAPIC (acpi-id[0x05] lapic-id[0x84] disabled)
+[    0.000000] ACPI: LAPIC (acpi-id[0x06] lapic-id[0x85] disabled)
 
+because if there are, nr_cpu_ids will include those when you don't boot
+with "possible_cpus=N".
 
+Anyhow, you can read this for more info: http://www.pubbs.net/kernel/200912/64310/
+
+-- 
+Regards/Gruss,
+    Boris.
