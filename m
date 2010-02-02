@@ -1,41 +1,41 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755004Ab0BBTju (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 14:39:50 -0500
-Received: from mx03.syneticon.net ([78.111.66.105]:56542 "EHLO
-	mx03.syneticon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752852Ab0BBTjs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 14:39:48 -0500
-Message-ID: <4B687F77.5020409@wpkg.org>
-Date: Tue, 02 Feb 2010 20:39:35 +0100
-From: Tomasz Chmielewski <mangoo@wpkg.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100122 Mandriva/3.0.1-2mdv2010.1 (2010.1) Thunderbird/3.0.1
+	id S1755249Ab0BBTmM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 14:42:12 -0500
+Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:40068 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754808Ab0BBTmJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 14:42:09 -0500
+Date: Tue, 2 Feb 2010 20:42:08 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Edward Shishkin <edward.shishkin@gmail.com>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       ReiserFS Development List <reiserfs-devel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       xfs@oss.sgi.com
+Subject: Re: [patch 0/7] per-bdi flushing model improvements. reiser4
+Message-ID: <20100202194208.GD5733@kernel.dk>
+References: <201002020255.46920.edward.shishkin@gmail.com> <20100202081728.GA2384@infradead.org> <4B6843E9.9070600@gmail.com>
 MIME-Version: 1.0
-To: "Justin P. Mattock" <justinmattock@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: core i7: hang at Booting processor 5 APIC 0x3 ip 0x6000
-References: <4B687649.5070204@wpkg.org> <4B687EFF.8000202@gmail.com>
-In-Reply-To: <4B687EFF.8000202@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B6843E9.9070600@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02.02.2010 20:37, Justin P. Mattock wrote:
-> apologize for top posting(didn't want to cut dmesg), can this be
-> reproduced easily?
-> if so are you able to bisect this?
+On Tue, Feb 02 2010, Edward Shishkin wrote:
+> Christoph Hellwig wrote:
+>> I got this introduction twice, but patches 1-3 didn't make it to any of
+>> the lists.
+>>
+>>
+>>   
+> done
 
-I can reproduce it every week or so, with several reboots daily.
-
-Sometimes I can reboot for a few hours in a row, and it boots up 
-correctly each time.
-
-So I doubt it's easily bisectable.
-
+Where?
 
 -- 
-Tomasz Chmielewski
-http://wpkg.org
+Jens Axboe
+
