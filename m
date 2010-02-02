@@ -1,86 +1,138 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756720Ab0BBRBI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 12:01:08 -0500
-Received: from nerdhammel.gnuher.de ([88.198.0.170]:53144 "EHLO
-	nerdhammel.gnuher.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756704Ab0BBRBE (ORCPT
+	id S1756731Ab0BBRBU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 12:01:20 -0500
+Received: from bhuna.collabora.co.uk ([93.93.128.226]:35030 "EHLO
+	bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756705Ab0BBRBR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 12:01:04 -0500
-X-Greylist: delayed 514 seconds by postgrey-1.27 at vger.kernel.org; Tue, 02 Feb 2010 12:01:04 EST
-Date: Tue, 2 Feb 2010 17:52:27 +0100
-From: Sven Geggus <lists@fuchsschwanzdomain.de>
-To: linux-kernel@vger.kernel.org
-Subject: i915 drm/kms crash
-Message-ID: <20100202165227.GA16964@geggus.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-X-MimeOLE: Produced By Exchange Microsoft V6.6.6
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 2 Feb 2010 12:01:17 -0500
+Date: Tue, 2 Feb 2010 12:01:10 -0500
+From: Andres Salomon <dilinger@collabora.co.uk>
+To: Jens Rottmann <JRottmann@LiPPERTEmbedded.de>
+Cc: Leigh Porter <leigh@leighporter.org>, linux-geode@lists.infradead.org,
+       linux-kernel@vger.kernel.org, Christopher Camden <ccamden@cbnco.com>
+Subject: [PATCH] CS5536: apply pci quirk for BIOS SMBUS bug
+Message-ID: <20100202120110.160359ac@mycelium.queued.net>
+In-Reply-To: <4B605410.3030409@LiPPERTEmbedded.de>
+References: <4B5DC7EF.5060609@leighporter.org>
+	<4B5EE78F.8030705@LiPPERTEmbedded.de>
+	<4B5F01E3.2090006@leighporter.org>
+	<4B603383.1090807@LiPPERTEmbedded.de>
+	<4B604324.6030806@leighporter.org>
+	<4B605410.3030409@LiPPERTEmbedded.de>
+X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Wed, 27 Jan 2010 15:56:16 +0100
+Jens Rottmann <JRottmann@LiPPERTEmbedded.de> wrote:
 
-I get the following crash on a Fujitu/Siemens ST6012 Tablet PC (kms enabled):
+> A bit of background: The _real_ base address for the MFGPT hardware
+> is set with the MSR, but this is very Geode-proprietary. So the BIOS
+> contains VSA (Virtual System Architecture) code to implement a
+> _virtual_ PCI device. This means the BIOS simulates a standard PCI
+> device solely in software as a front-end for the MFGPT hardware to
+> make it look like a 'normal' device which can be accessed with normal
+> PCI drivers.
+> 
+> Well, this PCI device's configuration should of course always mirror
+> the real state of the hardware, i.e. if someone changes the MSR, the
+> PCI header should reflect that change, and vice versa.
+> 
+> > [    0.090015] pci 0000:00:14.0: address space collision: [io
+> > 0x6200-0x63ff] already in use
+> ....
+> > [    0.202033] pci 0000:00:14.0: BAR 2: set to [io  0x1000-0x11ff]
+> > (PCI address [0x1000-0x11ff]
+> ....
+> > root@doulos:/home/leigh# ./mfgpt
+> > 6200
+> 
+> Now it looks like originally both MSR and PCI say the adress is 6200.
+> But Linux detects a conflict on boot and moves it to 1000 by changing
+> the PCI config. At this point the BIOS should copy the new address to
+> the backing MSR i.e. to the real hardware. But this it fails to do.
+> And later the cs5535-mfgpt uses the address from PCI (=1000) to look
+> for the MFGPTs, but they're not there - they're are still at 6200.
+> 
+> >>> Copyright (C) 2000-2007 Soekris Engineering."
+> > Yup, I am about to call them. ...
+> 
+> Hope they fix it. But this will not be the only BIOS with this bug,
+> that's why we have to revert the cs5535-mfgpt driver to read the MSR
+> directly again.
+> 
+> Best regards,
+> Jens Rottmann
+> 
 
-...
-[    0.442322] [drm] Initialized drm 1.1.0 20060810
-[    0.442478] i915 0000:00:02.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-[    0.442612] i915 0000:00:02.0: setting latency timer to 64
-[    0.464043] i915 0000:00:02.0: irq 26 for MSI/MSI-X
-[    0.464053] [drm] set up 31M of stolen space
-[    0.566509] ------------[ cut here ]------------
-[    0.566642] WARNING: at drivers/gpu/drm/drm_crtc_helper.c:1035 drm_helper_initial_config+0x41/0x5a()
-[    0.566853] Hardware name: STYLISTIC ST6012
-[    0.566978] No connectors reported connected with modes
-[    0.567106] Modules linked in:
-[    0.567273] Pid: 1, comm: swapper Not tainted 2.6.32.7 #3
-[    0.567402] Call Trace:
-[    0.567528]  [<ffffffff8129894b>] ? drm_helper_initial_config+0x41/0x5a
-[    0.567661]  [<ffffffff8129894b>] ? drm_helper_initial_config+0x41/0x5a
-[    0.567795]  [<ffffffff810458dd>] ? warn_slowpath_common+0x77/0xa3
-[    0.567926]  [<ffffffff81045965>] ? warn_slowpath_fmt+0x51/0x59
-[    0.568070]  [<ffffffff812c8848>] ? intel_crt_detect+0x26a/0x311
-[    0.568202]  [<ffffffff81298818>] ? drm_helper_probe_single_connector_modes+0x1df/0x26b
-[    0.568413]  [<ffffffff812988d9>] ? drm_helper_probe_connector_modes+0x35/0x66
-[    0.568622]  [<ffffffff8129894b>] ? drm_helper_initial_config+0x41/0x5a
-[    0.568756]  [<ffffffff812ad9c4>] ? i915_driver_load+0xf26/0xff2
-[    0.568889]  [<ffffffff812a2d92>] ? drm_sysfs_device_add+0x7d/0x9e
-[    0.569025]  [<ffffffff812a1072>] ? drm_get_dev+0x39e/0x488
-[    0.569158]  [<ffffffff8122b652>] ? local_pci_probe+0x12/0x16
-[    0.569289]  [<ffffffff8122c27a>] ? pci_device_probe+0xba/0xe3
-[    0.569422]  [<ffffffff812dfa2f>] ? driver_probe_device+0x8d/0x128
-[    0.569554]  [<ffffffff812dfb19>] ? __driver_attach+0x4f/0x6f
-[    0.569685]  [<ffffffff812dfaca>] ? __driver_attach+0x0/0x6f
-[    0.569816]  [<ffffffff812df2d4>] ? bus_for_each_dev+0x43/0x74
-[    0.569947]  [<ffffffff812dec94>] ? bus_add_driver+0x116/0x25f
-[    0.570079]  [<ffffffff812dfdb3>] ? driver_register+0xa7/0x111
-[    0.570210]  [<ffffffff81738053>] ? i915_init+0x0/0x51
-[    0.570341]  [<ffffffff8122c4b5>] ? __pci_register_driver+0x50/0xb7
-[    0.570472]  [<ffffffff81738053>] ? i915_init+0x0/0x51
-[    0.570603]  [<ffffffff81009051>] ? do_one_initcall+0x50/0x148
-[    0.570735]  [<ffffffff81713629>] ? kernel_init+0x150/0x1a6
-[    0.570866]  [<ffffffff81713140>] ? early_idt_handler+0x0/0x71
-[    0.570998]  [<ffffffff8100cb5a>] ? child_rip+0xa/0x20
-[    0.571128]  [<ffffffff81713140>] ? early_idt_handler+0x0/0x71
-[    0.571259]  [<ffffffff817134d9>] ? kernel_init+0x0/0x1a6
-[    0.571389]  [<ffffffff8100cb50>] ? child_rip+0x0/0x20
-[    0.571522] ---[ end trace 6e64936bd3455b79 ]---
+I'm going to ask for one last round of testing/comments before I send
+this off to Linus for -rc7 inclusion.
 
-This is a vanilla Kernel (2.6.32.7)/ Debian testing system.
 
-Linux (without framebuffer) and X.org used to work fine on Debian stable,
-but I needed to upgrade for a newer Version of Mesa.
 
-Regards
+From: Andres Salomon <dilinger@collabora.co.uk>
 
-Sven
+The new cs5535-* drivers use PCI header config info rather than MSRs to
+determine the memory region to use for things like GPIOs and MFGPTs.  As
+anticipated, we've run into a buggy BIOS:
 
+[    0.081818] pci 0000:00:14.0: reg 10: [io  0x6000-0x7fff]
+[    0.081906] pci 0000:00:14.0: reg 14: [io  0x6100-0x61ff]
+[    0.082015] pci 0000:00:14.0: reg 18: [io  0x6200-0x63ff]
+[    0.082917] pci 0000:00:14.2: reg 20: [io  0xe000-0xe00f]
+[    0.083551] pci 0000:00:15.0: reg 10: [mem 0xa0010000-0xa0010fff]
+[    0.084436] pci 0000:00:15.1: reg 10: [mem 0xa0011000-0xa0011fff]
+[    0.088816] PCI: pci_cache_line_size set to 32 bytes
+[    0.088938] pci 0000:00:14.0: address space collision: [io 0x6100-0x61ff] already in use
+[    0.089052] pci 0000:00:14.0: can't reserve [io  0x6100-0x61ff]
+
+This is a Soekris board, and its BIOS sets the size of the PCI ISA bridge
+device's BAR0 to 8k.  In reality, it should be 8 bytes (BAR0 is used for
+SMBus stuff).  This quirk checks for an incorrect size, and resets it
+accordingly.
+
+Signed-off-by: Andres Salomon <dilinger@collabora.co.uk>
+Tested-by: Leigh Porter <leigh@leighporter.org>
+Tested-by: Jens Rottmann <JRottmann@LiPPERTEmbedded.de>
+---
+ drivers/pci/quirks.c |   17 +++++++++++++++++
+ 1 files changed, 17 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
+index c746943..d58b940 100644
+--- a/drivers/pci/quirks.c
++++ b/drivers/pci/quirks.c
+@@ -338,6 +338,23 @@ static void __devinit quirk_s3_64M(struct pci_dev *dev)
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_S3,	PCI_DEVICE_ID_S3_868,		quirk_s3_64M);
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_S3,	PCI_DEVICE_ID_S3_968,		quirk_s3_64M);
+ 
++/*
++ * Some CS5536 BIOSes (for example, the Soekris NET5501 board w/ comBIOS
++ * ver. 1.33  20070103) don't set the correct ISA PCI region header info.
++ * BAR0 should be 8 bytes; instead, it may be set to something like 8k
++ * (which conflicts w/ BAR1's memory range).
++ */
++static void __devinit quirk_cs5536_vsa(struct pci_dev *dev)
++{
++	if (pci_resource_len(dev, 0) != 8) {
++		struct resource *res = &dev->resource[0];
++		res->end = res->start + 8 - 1;
++		dev_info(&dev->dev, "CS5536 ISA bridge bug detected "
++				"(incorrect header); workaround applied.\n");
++	}
++}
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_CS5536_ISA, quirk_cs5536_vsa);
++
+ static void __devinit quirk_io_region(struct pci_dev *dev, unsigned region,
+ 	unsigned size, int nr, const char *name)
+ {
 -- 
-The main thing to note is that when you choose open source you don't
-get a Windows operating system.
-                                  (from http://www.dell.com/ubuntu)
-/me is giggls@ircnet, http://sven.gegg.us/ on the Web
+1.5.6.5
+
+
