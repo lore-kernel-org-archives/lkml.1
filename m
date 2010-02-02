@@ -1,19 +1,20 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932207Ab0BBTIR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 14:08:17 -0500
-Received: from g6t0184.atlanta.hp.com ([15.193.32.61]:12082 "EHLO
+	id S932219Ab0BBTIU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 14:08:20 -0500
+Received: from g6t0184.atlanta.hp.com ([15.193.32.61]:12075 "EHLO
 	g6t0184.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932110Ab0BBTIL (ORCPT
+	with ESMTP id S932173Ab0BBTIL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 2 Feb 2010 14:08:11 -0500
-Subject: [PATCH v2 02/18] IB/uverbs: remove dev_table
+Subject: [PATCH v2 03/18] IB/uverbs: use stack variable 'devnum' in
+	ib_uverbs_add_one
 To: rdreier@cisco.com
 From: Alex Chiang <achiang@hp.com>
 Cc: linux-rdma@vger.kernel.org, justin.chen@hp.com,
        linux-kernel@vger.kernel.org
-Date: Tue, 02 Feb 2010 12:07:54 -0700
-Message-ID: <20100202190754.28217.48388.stgit@bob.kio>
+Date: Tue, 02 Feb 2010 12:07:59 -0700
+Message-ID: <20100202190759.28217.75429.stgit@bob.kio>
 In-Reply-To: <20100202185235.28217.64521.stgit@bob.kio>
 References: <20100202185235.28217.64521.stgit@bob.kio>
 User-Agent: StGit/0.15
@@ -24,87 +25,61 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-dev_table's raison d'etre was to associate an inode back to a
-struct ib_uverbs_device.
-
-However, now that we've converted ib_uverbs_device to contain
-an embedded cdev (instead of a *cdev), we can use the container_of()
-macro and cast back to the containing device.
-
-There's no longer any need for dev_table, so get rid of it.
+This change is not useful by itself, but it sets us up for a future
+change that allows us to dynamically allocate device numbers in case
+we have more than IB_UVERBS_MAX_DEVICES in the system.
 
 Signed-off-by: Alex Chiang <achiang@hp.com>
 ---
 
- drivers/infiniband/core/uverbs_main.c |   24 +++++-------------------
- 1 files changed, 5 insertions(+), 19 deletions(-)
+ drivers/infiniband/core/uverbs_main.c |   12 +++++++-----
+ 1 files changed, 7 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/infiniband/core/uverbs_main.c b/drivers/infiniband/core/uverbs_main.c
-index 5da9a73..3f11292 100644
+index 3f11292..acae9ed 100644
 --- a/drivers/infiniband/core/uverbs_main.c
 +++ b/drivers/infiniband/core/uverbs_main.c
-@@ -74,7 +74,6 @@ DEFINE_IDR(ib_uverbs_qp_idr);
- DEFINE_IDR(ib_uverbs_srq_idr);
+@@ -730,6 +730,7 @@ static CLASS_ATTR(abi_version, S_IRUGO, show_abi_version, NULL);
  
- static DEFINE_SPINLOCK(map_lock);
--static struct ib_uverbs_device *dev_table[IB_UVERBS_MAX_DEVICES];
- static DECLARE_BITMAP(dev_map, IB_UVERBS_MAX_DEVICES);
- 
- static ssize_t (*uverbs_cmd_table[])(struct ib_uverbs_file *file,
-@@ -616,14 +615,12 @@ static int ib_uverbs_mmap(struct file *filp, struct vm_area_struct *vma)
- /*
-  * ib_uverbs_open() does not need the BKL:
-  *
-- *  - dev_table[] accesses are protected by map_lock, the
-- *    ib_uverbs_device structures are properly reference counted, and
-+ *  - the ib_uverbs_device structures are properly reference counted and
-  *    everything else is purely local to the file being created, so
-  *    races against other open calls are not a problem;
-  *  - there is no ioctl method to race against;
-- *  - the device is added to dev_table[] as the last part of module
-- *    initialization, the open method will either immediately run
-- *    -ENXIO, or all required initialization will be done.
-+ *  - the open method will either immediately run -ENXIO, or all
-+ *    required initialization will be done.
-  */
- static int ib_uverbs_open(struct inode *inode, struct file *filp)
+ static void ib_uverbs_add_one(struct ib_device *device)
  {
-@@ -631,13 +628,10 @@ static int ib_uverbs_open(struct inode *inode, struct file *filp)
- 	struct ib_uverbs_file *file;
- 	int ret;
++	int devnum;
+ 	struct ib_uverbs_device *uverbs_dev;
  
--	spin_lock(&map_lock);
--	dev = dev_table[iminor(inode) - IB_UVERBS_BASE_MINOR];
-+	dev = container_of(inode->i_cdev, struct ib_uverbs_device, cdev);
- 	if (dev)
- 		kref_get(&dev->ref);
--	spin_unlock(&map_lock);
--
--	if (!dev)
-+	else
- 		return -ENXIO;
+ 	if (!device->alloc_ucontext)
+@@ -743,12 +744,13 @@ static void ib_uverbs_add_one(struct ib_device *device)
+ 	init_completion(&uverbs_dev->comp);
  
- 	if (!try_module_get(dev->ib_dev->owner)) {
-@@ -778,10 +772,6 @@ static void ib_uverbs_add_one(struct ib_device *device)
- 	if (device_create_file(uverbs_dev->dev, &dev_attr_abi_version))
- 		goto err_class;
+ 	spin_lock(&map_lock);
+-	uverbs_dev->devnum = find_first_zero_bit(dev_map, IB_UVERBS_MAX_DEVICES);
+-	if (uverbs_dev->devnum >= IB_UVERBS_MAX_DEVICES) {
++	devnum = find_first_zero_bit(dev_map, IB_UVERBS_MAX_DEVICES);
++	if (devnum >= IB_UVERBS_MAX_DEVICES) {
+ 		spin_unlock(&map_lock);
+ 		goto err;
+ 	}
+-	set_bit(uverbs_dev->devnum, dev_map);
++	uverbs_dev->devnum = devnum;
++	set_bit(devnum, dev_map);
+ 	spin_unlock(&map_lock);
  
--	spin_lock(&map_lock);
--	dev_table[uverbs_dev->devnum] = uverbs_dev;
--	spin_unlock(&map_lock);
--
- 	ib_set_client_data(device, &uverbs_client, uverbs_dev);
+ 	uverbs_dev->ib_dev           = device;
+@@ -758,7 +760,7 @@ static void ib_uverbs_add_one(struct ib_device *device)
+ 	uverbs_dev->cdev.owner = THIS_MODULE;
+ 	uverbs_dev->cdev.ops = device->mmap ? &uverbs_mmap_fops : &uverbs_fops;
+ 	kobject_set_name(&uverbs_dev->cdev.kobj, "uverbs%d", uverbs_dev->devnum);
+-	if (cdev_add(&uverbs_dev->cdev, IB_UVERBS_BASE_DEV + uverbs_dev->devnum, 1))
++	if (cdev_add(&uverbs_dev->cdev, IB_UVERBS_BASE_DEV + devnum, 1))
+ 		goto err_cdev;
  
- 	return;
-@@ -811,10 +801,6 @@ static void ib_uverbs_remove_one(struct ib_device *device)
- 	device_destroy(uverbs_class, uverbs_dev->cdev.dev);
+ 	uverbs_dev->dev = device_create(uverbs_class, device->dma_device,
+@@ -781,7 +783,7 @@ err_class:
+ 
+ err_cdev:
  	cdev_del(&uverbs_dev->cdev);
+-	clear_bit(uverbs_dev->devnum, dev_map);
++	clear_bit(devnum, dev_map);
  
--	spin_lock(&map_lock);
--	dev_table[uverbs_dev->devnum] = NULL;
--	spin_unlock(&map_lock);
--
- 	clear_bit(uverbs_dev->devnum, dev_map);
- 
+ err:
  	kref_put(&uverbs_dev->ref, ib_uverbs_release_dev);
 
