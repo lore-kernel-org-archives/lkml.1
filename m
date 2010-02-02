@@ -1,61 +1,86 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932197Ab0BBWop (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 17:44:45 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:35878 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757113Ab0BBWom (ORCPT
+	id S1757133Ab0BBXAA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 18:00:00 -0500
+Received: from mail-yw0-f198.google.com ([209.85.211.198]:56854 "EHLO
+	mail-yw0-f198.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757028Ab0BBW74 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 17:44:42 -0500
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Cc: Michael Breuer <mbreuer@majjas.com>, Jarek Poplawski <jarkao2@gmail.com>,
-       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
-       flyboy@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Michael Chan <mchan@broadcom.com>, Don Fry <pcnet32@verizon.net>,
-       Francois Romieu <romieu@fr.zoreil.com>,
-       Matt Carlson <mcarlson@broadcom.com>
-Subject: Re: [PATCH] sky2:  receive dma mapping error handling
-From: Andi Kleen <andi@firstfloor.org>
-References: <4B60707F.1000608@majjas.com> <20100127095614.14313677@nehalam>
-	<4B608128.7090607@majjas.com> <4B6089C7.4010803@majjas.com>
-	<4B61ADF1.7060705@majjas.com> <4B61BEA4.1030905@majjas.com>
-	<20100128090835.0d93e53a@nehalam> <4B61DB79.4080703@majjas.com>
-	<20100128223447.GC3109@del.dom.local> <4B621316.8070308@majjas.com>
-	<20100128225621.GD3109@del.dom.local> <4B6216B9.1010802@majjas.com>
-	<20100128153643.0fca3c51@nehalam>
-Date: Tue, 02 Feb 2010 23:44:37 +0100
-In-Reply-To: <20100128153643.0fca3c51@nehalam> (Stephen Hemminger's message of "Thu, 28 Jan 2010 15:36:43 -0800")
-Message-ID: <87aavrdzqi.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+	Tue, 2 Feb 2010 17:59:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=T7iI0MSY3G8s7kRDXkDEHNGFeNz+0YL+fSywrzgqT5HgEp8L0sdVfOGAqo2ejw+8Hy
+         39TXSqDuk/qJ108eIfEWnxifFBjB0KjVjem01jqWQI5HrAYwU0a/iszY+tD4OuT3sNf4
+         MhH6lz7ZBid9VA14AC2tWmIgHGrXKI+TGI/fQ=
+Message-ID: <4B68AE6A.8030304@garzik.org>
+Date: Tue, 02 Feb 2010 17:59:54 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>
+Subject: Re: [PATCH 1/2] move host drivers for VLB IDE controllers to staging/out
+References: <20100202172701.7599.2028.sendpatchset@localhost> <20100202172708.7599.51937.sendpatchset@localhost> <20100202180041.3fe575f8@lxorguk.ukuu.org.uk> <201002022222.29728.bzolnier@gmail.com>
+In-Reply-To: <201002022222.29728.bzolnier@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Hemminger <shemminger@linux-foundation.org> writes:
+On 02/02/2010 04:22 PM, Bartlomiej Zolnierkiewicz wrote:
+> On Tuesday 02 February 2010 07:00:41 pm Alan Cox wrote:
+>> On Tue, 02 Feb 2010 18:27:08 +0100
+>> Bartlomiej Zolnierkiewicz<bzolnier@gmail.com>  wrote:
+>>
+>>> From: Bartlomiej Zolnierkiewicz<bzolnier@gmail.com>
+>>> Subject: [PATCH] move host drivers for VLB IDE controllers to staging/out
+>>>
+>>> - they are for really old hardware that nobody has any longer
+>>> - they all require 'magic' parameters to work
+>>> - many controllers are also supported by pata_legacy driver
+>>>
+>>> so move them to staging/out and schedule for removal in 2.6.36
+>>> unless somebody steps in to work on them.
+>>>
+>>> Signed-off-by: Bartlomiej Zolnierkiewicz<bzolnier@gmail.com>
+>>
+>> Acked-by: Alan Cox<alan@linux.intel.com>
+>>
+>> When I actually tried some of the VLB bits while working on the
+>> pata_legacy stuff it was clear these hadn't been maintained/used for a
+>> very long time indeed. Most of them also are hacks doing stuff like fixed
+>> mode settings.
+>>
+>> However if the point of the old IDE code was as claimed to keep it as a
+>> 'stable' layer throwing chunks of it out doesn't strike me as in keeping
+>> with the stated plan ...
+>
+> I've always been under the impression that the claim was about adding new
+> stuff and not about removing dead code or ongoing efforts to make whole
+> kernel more maintainable.  Either way, Dave would be a much better person
+> to clarify it..
 
-> -	for (i = 0; i < skb_shinfo(skb)->nr_frags; i++)
-> -		re->frag_addr[i] = pci_map_page(pdev,
-> +
-> +map_page_error:
-> +	while (--i >= 0) {
-> +		pci_unmap_page(pdev, re->frag_addr[i],
-> +			       skb_shinfo(skb)->frags[i].size,
-> +			       PCI_DMA_FROMDEVICE);
-> +	}
-> +
-> +	pci_unmap_single(pdev, re->data_addr, pci_unmap_len(re, data_size),
-> +			 PCI_DMA_FROMDEVICE);
+David's statements at the time were
 
-Better add a helper somewhere to do this, doesn't make sense
-to duplicate this in all drivers (lots of drivers have similar
-problems)
+	I'm going to treat IDE as pure legacy, rather than as
+	competition with the PATA drivers which is what people whould
+	be moving over to.
 
-I remember looking at this some time ago but for some reason
-the patches never made it out.
+	And more importantly I refuse to apply any driver patch that
+	isn't actually tested on said hardware.
 
--Andi
+"pure legacy" does not usually imply accepting major changes to drivers, 
+changing APIs, and the like.
 
--- 
-ak@linux.intel.com -- Speaking for myself only.
+But if IDE users are happy with this abrupt change of direction, the 
+resumption of frequent, large IDE changes, then that's their call...   I 
+would rather they just use libata, but who am I to judge?  ;-)
+
+	Jeff
+
+
+
