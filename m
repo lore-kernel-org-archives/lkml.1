@@ -1,152 +1,170 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756757Ab0BBTyT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 14:54:19 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:17664 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756412Ab0BBTyS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 14:54:18 -0500
-Message-ID: <4B688268.6060907@petalogix.com>
-Date: Tue, 02 Feb 2010 20:52:08 +0100
-From: Michal Simek <michal.simek@petalogix.com>
-Reply-To: michal.simek@petalogix.com
-User-Agent: Thunderbird 2.0.0.22 (X11/20090625)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: LKML <linux-kernel@vger.kernel.org>, hpa@zytor.com,
-       John Williams <john.williams@petalogix.com>
-Subject: Re: Split 'flush_old_exec' into two functions - 221af7f87b97431e3ee21ce4b0e77d5411cf1549
-References: <4B66DE64.8010101@petalogix.com> <alpine.LFD.2.00.1002010741560.4206@localhost.localdomain> <4B67FB74.4030409@petalogix.com> <alpine.LFD.2.00.1002020726290.3664@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.1002020726290.3664@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1756846Ab0BBTy0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 14:54:26 -0500
+Received: from mail-out2.uio.no ([129.240.10.58]:49694 "EHLO mail-out2.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756412Ab0BBTyW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 14:54:22 -0500
+Subject: Re: [PATCH] nfs: clear_commit_release incorrectly handle truncated
+ page
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Dmitry Monakhov <dmonakhov@openvz.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-nfs@vger.kernel.org
+In-Reply-To: <87ljfbwonj.fsf@openvz.org>
+References: <87hbpzhqlp.fsf@openvz.org> <1265123045.3177.21.camel@localhost>
+	 <87eil3pszw.fsf@openvz.org> <1265124999.3177.27.camel@localhost>
+	 <87mxzrk4wk.fsf@openvz.org> <1265127435.3177.47.camel@localhost>
+	 <87pr4nzisc.fsf@openvz.org> <1265130003.3177.51.camel@localhost>
+	 <87ljfbwonj.fsf@openvz.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 02 Feb 2010 14:54:16 -0500
+Message-ID: <1265140456.3177.94.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
 Content-Transfer-Encoding: 7bit
+X-UiO-Ratelimit-Test: rcpts/h 3 msgs/h 1 sum rcpts/h 5 sum msgs/h 1 total rcpts 2346 max rcpts/h 27 ratelimit 0
+X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
+X-UiO-Scanned: 7811B7C1FEE5D673C2E9780EFFFC7511EEE143EE
+X-UiO-SPAM-Test: remote_host: 68.40.206.115 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 1 total 154 max/h 7 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
+On Tue, 2010-02-02 at 20:09 +0300, Dmitry Monakhov wrote: 
+> Trond Myklebust <trond.myklebust@fys.uio.no> writes:
 > 
-> On Tue, 2 Feb 2010, Michal Simek wrote:
->> Would it be possible to cc me or send that patches to linux-next? I am doing
->> every day tests and report results on my site. I would be able to catch up
->> bugs earlier.
-> 
-> Normally, that would happen, but this patch got applied early _literally_ 
-> because I wanted it to hit -rc6 rather than wait any longer. So it had 
-> only a day or two of discussion, and probably just a few hours from the 
-> final version.
+> > On Tue, 2010-02-02 at 19:47 +0300, Dmitry Monakhov wrote: 
+> >> Trond Myklebust <trond.myklebust@fys.uio.no> writes:
+> >> > Hmm.... There is a known problem with a reference leak in
+> >> > nfs_wb_page_cancel() (I've queued up a fix for 2.6.33 in the 'bugfixes'
+> >> > branch of my git tree already). What happens when you apply the
+> >> > following patch?
+> >> The not helps, still get the same oops(log follows).
+> >> Have you tried my testcase?
+> >> 
+> >>  BUG: unable to handle kernel NULL pointer dereference at 00000040
+> >>  IP: [<f80d415f>] nfs_clear_request_commit+0x3f/0xb0 [nfs]
+> >>  *pde = 00000000 
+> >>  Oops: 0000 [#1] SMP DEBUG_PAGEALLOC
+> >>  last sysfs file: /sys/devices/platform/thinkpad_acpi/leds/tpacpi::thinkvantage/uevent
+> >>  Modules linked in: binfmt_misc quota_v2 quota_tree nfsd exportfs nfs lockd sunrpc iwl3945 thinkpad_acpi psmouse led_class serio_raw iwlcore nvram raid1 raid0 linear e1000e
+> >>  
+> >>  Pid: 1035, comm: nfsiod Not tainted 2.6.33-rc6 #60 2623DDU/2623DDU
+> >>  EIP: 0060:[<f80d415f>] EFLAGS: 00010296 CPU: 0
+> >>  EIP is at nfs_clear_request_commit+0x3f/0xb0 [nfs]
+> >>  EAX: 00000000 EBX: c2561d80 ECX: c06d3700 EDX: 00000014
+> >>  ESI: f69916c0 EDI: f80dab58 EBP: f6724ef4 ESP: f6724ee8
+> >>   DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+> >>  Process nfsiod (pid: 1035, ti=f6724000 task=f69dda90 task.ti=f6724000)
+> >>  Stack:
+> >>   c04df67d f69d7440 f69916c0 f6724f34 f80d4258 f6724f44 00001b0e 00000000
+> >>  <0> ffff799c 00000400 f505f000 94c0042a f69917e0 f69917e8 00000000 f69916c0
+> >>  <0> f69916c4 f69916c0 f80dab58 f6724f3c f8075703 f6724f58 f8075871 f6724f60
+> >>  Call Trace:
+> >>   [<c04df67d>] ? schedule+0x3ad/0xa30
+> >>   [<f80d4258>] ? nfs_commit_release+0x88/0x1a0 [nfs]
+> >>   [<f8075703>] ? rpc_release_calldata+0x13/0x20 [sunrpc]
+> >>   [<f8075871>] ? rpc_free_task+0x41/0x70 [sunrpc]
+> >>   [<c01acc4c>] ? probe_workqueue_execution+0x8c/0xd0
+> >>   [<f8075940>] ? rpc_async_release+0x10/0x20 [sunrpc]
+> >>   [<c015834d>] ? worker_thread+0x10d/0x210
+> >>   [<f8075930>] ? rpc_async_release+0x0/0x20 [sunrpc]
+> >>   [<c015bb10>] ? autoremove_wake_function+0x0/0x50
+> >>   [<c0158240>] ? worker_thread+0x0/0x210
+> >>   [<c015b724>] ? kthread+0x74/0x80
+> >>   [<c015b6b0>] ? kthread+0x0/0x80
+> >>   [<c0103546>] ? kernel_thread_helper+0x6/0x10
+> >>  Code: f0 0f ba 70 28 01 19 d2 31 c0 85 d2 75 0e 8b 5d f8 8b 75 fc 89 ec 5d c3 8d 74 26 00 89 d8 ba 10 00 00 00 e8 74 0e 10 c8 8b 43 10 <8b> 70 40 9c 5b fa e8 26 67 0d c8 8d 46 30 b9 ff ff ff ff 0f bd 
+> >>  EIP: [<f80d415f>] nfs_clear_request_commit+0x3f/0xb0 [nfs] SS:ESP 0068:f6724ee8
+> >>  CR2: 0000000000000040
+> >>  ---[ end trace 4bf8ee9d233ce744 ]---
+> >
+> > Yep. Looking more carefully at your test case, I don't see how
+> > truncate_inode_page() can be involved at all. You are extending the file
+> > using lseek(), not truncate(). So something else must be at work here.
+> open(,O_TRUNC,)
+>  do_filp_open()
+>   handle_truncate()
+>    do_truncate()
+> Yess this is craziness to run concurrent tasks which do:
+> open(,O_TRUNC,); mmap();
+> But initially i've done this by occasion and this result in OOps :)
+> >
+> > I'll see if I can reproduce it.
+> >
 
-ok. I just wanted to be sure.
+OK. I haven't been able to reproduce your bug yet, but I think I see
+what is happening.
 
-> 
-> That said, I think I may have found the cause.
-> 
-> Peter: look at setup_new_exec(), and realize that it got moved _down_ to 
-> after all the personality setting. So far, so good, that was the 
-> intention, but look at what it does:
-> 
-> 	current->flags &= ~PF_RANDOMIZE;
-> 
-> and look at how fs/binfmt_elf.c does it not just after the personality 
-> setting, but also after
-> 
-> 	if (!(current->personality & ADDR_NO_RANDOMIZE) && randomize_va_space)
-> 		current->flags |= PF_RANDOMIZE;
-> 
-> so it looks like you may have moved it down too much.
-> 
-> I think you did that because you wanted to do that
-> 
-> 	arch_pick_mmap_layout(current->mm);
-> 
-> in setup_new_exec(). Which makes total sense, but it all means that the 
-> whole preparatory patch did way more than my initial one (which put 
-> setup_new_exec() right after flush_old_exec())
-> 
-> In fact, it looks like PF_RANDOMIZE never gets set with the new code, but 
-> I didn't check if it might not happen somewhere else.
-> 
-> But while I doubt that clearing PF_RANDOMIZE will break anything, the 
-> movement also affects other thigns. Lookie here:
-> 
->         if (elf_read_implies_exec(loc->elf_ex, executable_stack))
->                 current->personality |= READ_IMPLIES_EXEC;
-> 
-> also happens before setup_new_exec(), and then setup_new_exec() does
-> 
-> 	current->personality &= ~bprm->per_clear;
-> 
-> where that per_clear mask may be PER_CLEAR_ON_SETID. Which contains 
-> READ_IMPLIES_EXEC.
-> 
-> So we now always clear READ_IMPLIES_EXEC for setuid applications.
-> 
-> Anyway, I'm not sure this is it, but that's two examples of something that 
-> did change unintentionally. 
-> 
-> Michael, mind trying this (UNTESTED!) patch?
+Your 'kill -9' will occasionally hit nfs_wb_page_cancel() and cause it
+to fail. When _that_ happens, then all hell breaks loose, because
+mapping->a_ops->invalidatepage() is not allowed to fail.
 
-Just Michal. :-) No worries about.
+Ugh... I don't think there much of an alternative to making
+nfs_wait_on_request() uninterruptible. On the plus side, that does make
+the behaviour of the NFS writeback code consistent with that of the VFS
+layer (i.e. wait_on_page_writeback()).
 
-  It makes conceptual sense,
-> and moves some more of the flushing of the old process state up to 
-> "flush_old_exec()" rather than doing it late in "setup_new_exec()".
+So here goes...
 
-yes, your patch works. I tested it on QEMU and on real hw and I can't 
-see any visible problem. I will do more test tomorrow.
+Trond
+---------------------------------------------------------------------------------------------- 
+NFS: Fix an Oops when truncating a file
 
-Thanks,
-Michal
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
 
-> 
-> (I suspect we should also move the signal/fd flushing there, but I doubt 
-> it matters)
-> 
-> 		Linus
-> 
-> ---
->  fs/exec.c |   10 +++++-----
->  1 files changed, 5 insertions(+), 5 deletions(-)
-> 
-> diff --git a/fs/exec.c b/fs/exec.c
-> index 675c3f4..0790a10 100644
-> --- a/fs/exec.c
-> +++ b/fs/exec.c
-> @@ -961,6 +961,11 @@ int flush_old_exec(struct linux_binprm * bprm)
->  		goto out;
->  
->  	bprm->mm = NULL;		/* We're using it now */
-> +
-> +	current->flags &= ~PF_RANDOMIZE;
-> +	flush_thread();
-> +	current->personality &= ~bprm->per_clear;
-> +
->  	return 0;
->  
->  out:
-> @@ -997,9 +1002,6 @@ void setup_new_exec(struct linux_binprm * bprm)
->  	tcomm[i] = '\0';
->  	set_task_comm(current, tcomm);
->  
-> -	current->flags &= ~PF_RANDOMIZE;
-> -	flush_thread();
-> -
->  	/* Set the new mm task size. We have to do that late because it may
->  	 * depend on TIF_32BIT which is only updated in flush_thread() on
->  	 * some architectures like powerpc
-> @@ -1015,8 +1017,6 @@ void setup_new_exec(struct linux_binprm * bprm)
->  		set_dumpable(current->mm, suid_dumpable);
->  	}
->  
-> -	current->personality &= ~bprm->per_clear;
-> -
->  	/*
->  	 * Flush performance counters when crossing a
->  	 * security domain:
+The VM/VFS does not allow mapping->a_ops->invalidatepage() to fail.
+Unfortunately, nfs_wb_page_cancel() may fail if a fatal signal occurs.
+Since the NFS code assumes that the page stays mapped for as long as the
+writeback is active, we can end up Oopsing (among other things).
+
+The only safe fix here is to convert nfs_wait_on_request(), so as to make
+it uninterruptible (as is already the case with wait_on_page_writeback()).
 
 
--- 
-Michal Simek, Ing. (M.Eng)
-PetaLogix - Linux Solutions for a Reconfigurable World
-w: www.petalogix.com p: +61-7-30090663,+42-0-721842854 f: +61-7-30090663
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+---
+
+ fs/nfs/pagelist.c |   17 +++++++++--------
+ 1 files changed, 9 insertions(+), 8 deletions(-)
+
+
+diff --git a/fs/nfs/pagelist.c b/fs/nfs/pagelist.c
+index e297593..a12c45b 100644
+--- a/fs/nfs/pagelist.c
++++ b/fs/nfs/pagelist.c
+@@ -176,6 +176,12 @@ void nfs_release_request(struct nfs_page *req)
+ 	kref_put(&req->wb_kref, nfs_free_request);
+ }
+ 
++static int nfs_wait_bit_uninterruptible(void *word)
++{
++	io_schedule();
++	return 0;
++}
++
+ /**
+  * nfs_wait_on_request - Wait for a request to complete.
+  * @req: request to wait upon.
+@@ -186,14 +192,9 @@ void nfs_release_request(struct nfs_page *req)
+ int
+ nfs_wait_on_request(struct nfs_page *req)
+ {
+-	int ret = 0;
+-
+-	if (!test_bit(PG_BUSY, &req->wb_flags))
+-		goto out;
+-	ret = out_of_line_wait_on_bit(&req->wb_flags, PG_BUSY,
+-			nfs_wait_bit_killable, TASK_KILLABLE);
+-out:
+-	return ret;
++	return wait_on_bit(&req->wb_flags, PG_BUSY,
++			nfs_wait_bit_uninterruptible,
++			TASK_UNINTERRUPTIBLE);
+ }
+ 
+ /**
+
+
