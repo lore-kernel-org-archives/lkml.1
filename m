@@ -1,87 +1,67 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757026Ab0BBW1I (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 17:27:08 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:20085 "EHLO mx1.redhat.com"
+	id S1757059Ab0BBWcQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 17:32:16 -0500
+Received: from thunk.org ([69.25.196.29]:43264 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756544Ab0BBW1G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 17:27:06 -0500
-Message-ID: <4B68A68C.6030001@gmail.com>
-Date: Tue, 02 Feb 2010 23:26:20 +0100
-From: Edward Shishkin <edward.shishkin@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090825)
+	id S1757003Ab0BBWcO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 17:32:14 -0500
+Date: Tue, 2 Feb 2010 17:32:12 -0500
+From: tytso@mit.edu
+To: Marco <mpiazza@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Phoronix test
+Message-ID: <20100202223212.GA16384@thunk.org>
+Mail-Followup-To: tytso@mit.edu, Marco <mpiazza@gmail.com>,
+	linux-kernel@vger.kernel.org
+References: <Xns9D138D644D73mpiazzafastwebnetit@213.140.2.16>
+ <20100202130002.68E043A6641@erode.bofh.it>
+ <f124e3b71002020716u5ee3cec7tbe35e07d70367948@mail.gmail.com>
+ <f124e3b71002020720x98f7fedg1ad1aba4a1087494@mail.gmail.com>
 MIME-Version: 1.0
-To: Ronni Holm-Nielsen <theronni@gmail.com>
-CC: Jens Axboe <jens.axboe@oracle.com>, Christoph Hellwig <hch@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       ReiserFS Development List <reiserfs-devel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       xfs@oss.sgi.com, Johannes Buchner <buchner.johannes@gmx.at>,
-       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Subject: Re: [patch 0/7] per-bdi flushing model improvements. reiser4
-References: <201002020255.46920.edward.shishkin@gmail.com>	 <20100202081728.GA2384@infradead.org> <4B6843E9.9070600@gmail.com>	 <20100202194208.GD5733@kernel.dk> <5e2ec5ac1002021345g569c743dtc5ccf77cde6738ae@mail.gmail.com>
-In-Reply-To: <5e2ec5ac1002021345g569c743dtc5ccf77cde6738ae@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <f124e3b71002020720x98f7fedg1ad1aba4a1087494@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello everyone.
+On Tue, Feb 02, 2010 at 04:20:07PM +0100, Marco wrote:
+> 
+> And is really ext4 so unreliable as they say in here?:
+> http://www.phoronix.com/scan.php?page=news_item&px=Nzk0OA
+> 
+> It happens also to me using git master: several times my GPU goes
+> wild (i915) and the only thing to do is press the halt button. And
+> ext4 sometimes looses data, without doing a fsck at restart.  Is
+> there a way to know something went wrong, even if fsck did not say
+> anything?
 
-The patches 1-3 are reverses for the following -mm stuff:
+If you can reliably reproduce data failure after a crash that involves
+a file containing existing data (i.e., not a file that was being
+actively written at the time of the crash), I would certainly like to
+know about it.  
 
-http://userweb.kernel.org/~akpm/mmotm/broken-out/reiser4-fixed-null-pointer-dereference.patch
-http://userweb.kernel.org/~akpm/mmotm/broken-out/reiser4-generic_sync_sb_inodes-doesnt-exist-anymore.patch
-http://userweb.kernel.org/~akpm/mmotm/broken-out/reiser4-vfs-add-super_operationssync_inodes-2.patch
+If the Phoronix people had written to me (as far as I know, they
+haven't bothered to send mail to me or the linux-ext4 list), I would
+have told them that if they lost information that was located in the
+same directory as one that was beeing modified, but those files hadn't
+been written recently (not even in the same ext4 mount session), to
+shutdown the system, and run fsck on the file system, and that
+hopefully the files would appear in lost+found.
 
-This is incorrect attempts to adjust reiser4 to the new per-bdi flushing 
-model.
-The authors are cc-ed,
-any comments, suggestions are welcome.
+Of course, if the crappy proprietary video driver from ATI (or Nvidia)
+scribbled garbage over cached inode tables which were then written
+back to disk, there's not much anyone can do about it, no matter what
+file system they were running.
 
-Thanks,
-Edward.
+My guess is that the reason why they didn't bother sending e-mail to
+the developers first is they wanted lots of web hits since they get
+their revenue from web ads (and that's more important than the lost
+data), but maybe that's just me being cynical....
 
-
-Ronni Holm-Nielsen wrote:
-> To clarify (being a ReiserFS subscriber):
->
-> patch 0, 4-6 sent to Andrew, ReiserFS, linux-fsdevel, linux-kernel, xfs,
-> jens.axboe
-> patch 1-3, 7 sent to Andrew, ReiserFS
->
-> - Ronni
->
-> On Tue, Feb 2, 2010 at 11:42 PM, Jens Axboe <jens.axboe@oracle.com> wrote:
->
->   
->> On Tue, Feb 02 2010, Edward Shishkin wrote:
->>     
->>> Christoph Hellwig wrote:
->>>       
->>>> I got this introduction twice, but patches 1-3 didn't make it to any of
->>>> the lists.
->>>>
->>>>
->>>>
->>>>         
->>> done
->>>       
->> Where?
->>
->> --
->> Jens Axboe
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe reiserfs-devel"
->> in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>
->>     
->
->
->
->   
-
+       	   	 	     	      - Ted
