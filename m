@@ -1,67 +1,184 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932106Ab0BBTF1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 14:05:27 -0500
-Received: from smtp-out.google.com ([216.239.44.51]:39651 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756357Ab0BBTFY convert rfc822-to-8bit (ORCPT
+	id S1756940Ab0BBTHu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 14:07:50 -0500
+Received: from g4t0015.houston.hp.com ([15.201.24.18]:46251 "EHLO
+	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756357Ab0BBTHs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 14:05:24 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=IXcNShD0iYIjYGu0mdSyHaEhTFYtFYf5tmwKKFjFkd7TRM8pWphx34BWLcFK/aMd2
-	TMIQN+dUbjtiX3EI+2WRQ==
+	Tue, 2 Feb 2010 14:07:48 -0500
+Subject: [PATCH v2 00/18] Increase maximum number of Infiniband HCAs per system
+To: rdreier@cisco.com
+From: Alex Chiang <achiang@hp.com>
+Cc: linux-rdma@vger.kernel.org, justin.chen@hp.com,
+       linux-kernel@vger.kernel.org
+Date: Tue, 02 Feb 2010 12:07:43 -0700
+Message-ID: <20100202185235.28217.64521.stgit@bob.kio>
+User-Agent: StGit/0.15
 MIME-Version: 1.0
-In-Reply-To: <4B686B2B.2080406@gmail.com>
-References: <4B5885F7.2020007@gmail.com> <4B679EA9.6030203@kernel.org>
-	 <4B6833DD.1020001@gmail.com> <4B683581.7070708@kernel.org>
-	 <4B683DEF.3000302@gmail.com>
-	 <da824cf31002020844r12cada26x57f96b0aa24b59c6@mail.gmail.com>
-	 <4B686B2B.2080406@gmail.com>
-Date: Tue, 2 Feb 2010 11:04:38 -0800
-Message-ID: <da824cf31002021104v72efcd05ne639091042d5999d@mail.gmail.com>
-Subject: Re: port multiplier problem
-From: Grant Grundler <grundler@google.com>
-To: Chandra Shekhar Sah <edu4madh@gmail.com>
-Cc: Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 2, 2010 at 10:12 AM, Chandra Shekhar Sah <edu4madh@gmail.com> wrote:
-> Hi Grant,
->
-> There are 6 Seagate Barracuda and 6 Hitachi DeskStar.
+This is v2 of a patch series that increases the maximum number of
+IB HCAs supported per system.
 
-I thought 0x1095/0x3726 was a Silicon Image part. Can you confirm this?
+The original mail thread is here:
+	http://lkml.org/lkml/2010/1/29/346
 
-If it is, this sounds like a broken implementation to me. Here is what
-the Silicon Image 3726 Data Sheet says in the introduction:
-    Silicon Image’s SiI3726 is 1-to-5 SATA Port Multiplier designed to
-provide a high performance link between a single SATA host port and 5
-SATA device ports.
+One note, I decided to "copy/paste" since factoring out the overflow
+code in the three drivers seemed like overkill. If so desired, I could
+factor those three separate functions into something provided by the
+core, but that seemed like more trouble than it was worth at the time.
 
-So I don't know where the 6th device is getting connected. Some
-explanation/data sheet from the HW vendor would be helpful at this
-point.
+As before, I still don't have access to a giant system, so what I did
+to test was to stick 4 cards into a small system, and then modify the
+limits with debug patches similar to this:
 
-> Seagate Model: ST3750640AS
-> Firmware: 3.AAK
->
-> Hitachi Model:HDS721075KLA330
-> Firmware: Not sure
+diff --git a/drivers/infiniband/core/ucm.c b/drivers/infiniband/core/ucm.c
+index 7bf0a82..8581e64 100644
+--- a/drivers/infiniband/core/ucm.c
++++ b/drivers/infiniband/core/ucm.c
+@@ -102,7 +102,7 @@ struct ib_ucm_event {
+ enum {
+        IB_UCM_MAJOR = 231,
+        IB_UCM_BASE_MINOR = 224,
+-       IB_UCM_MAX_DEVICES = 32
++       IB_UCM_MAX_DEVICES = 2
+ };
 
-Both of these drives work behind Sil3726. (First hand experience).
 
->
-> I have attached pictures of both labels, in case.
+I tested all 3 drivers this way (uverbs, umad, ucm). I verified that
+we're not leaking device numbers on multiple modprobe/rmmod cycles,
+that there aren't any funny interactions when various combinations of
+the drivers are loaded.
 
-Perfect - thanks for posting those.
+I did not test the rest of the OFED stack. I did write some trivial
+programs to open the devices in /dev and close them again.
 
-thanks,
-grant
+Here's an example of some of the testing:
+
+	dl585g2:~ # modprobe ib_uverbs
+	dl585g2:~ # modprobe ib_umad
+	dl585g2:~ # modprobe ib_ucm
+	dl585g2:~ # ls -l /dev/uverb*
+	crw-rw---- 1 root root 231, 192 Feb  2 05:55 /dev/uverbs0
+	crw-rw---- 1 root root 231, 193 Feb  2 05:55 /dev/uverbs1
+	crw-rw---- 1 root root 249,   0 Feb  2 05:55 /dev/uverbs2
+	crw-rw---- 1 root root 249,   1 Feb  2 05:55 /dev/uverbs3
+	dl585g2:~ # ls -l /dev/umad*
+	crw-rw---- 1 root root 231, 0 Feb  2 05:55 /dev/umad0
+	crw-rw---- 1 root root 231, 1 Feb  2 05:55 /dev/umad1
+	crw-rw---- 1 root root 231, 2 Feb  2 05:55 /dev/umad2
+	crw-rw---- 1 root root 231, 3 Feb  2 05:55 /dev/umad3
+	crw-rw---- 1 root root 248, 0 Feb  2 05:55 /dev/umad4
+	crw-rw---- 1 root root 248, 1 Feb  2 05:55 /dev/umad5
+	crw-rw---- 1 root root 248, 2 Feb  2 05:55 /dev/umad6
+	crw-rw---- 1 root root 248, 3 Feb  2 05:55 /dev/umad7
+	dl585g2:~ # ls -l /dev/issm*
+	crw-rw---- 1 root root 231, 4 Feb  2 05:55 /dev/issm0
+	crw-rw---- 1 root root 231, 5 Feb  2 05:55 /dev/issm1
+	crw-rw---- 1 root root 231, 6 Feb  2 05:55 /dev/issm2
+	crw-rw---- 1 root root 231, 7 Feb  2 05:55 /dev/issm3
+	crw-rw---- 1 root root 248, 4 Feb  2 05:55 /dev/issm4
+	crw-rw---- 1 root root 248, 5 Feb  2 05:55 /dev/issm5
+	crw-rw---- 1 root root 248, 6 Feb  2 05:55 /dev/issm6
+	crw-rw---- 1 root root 248, 7 Feb  2 05:55 /dev/issm7
+	dl585g2:~ # ls -l /dev/ucm*
+	crw-rw---- 1 root root 231, 224 Feb  2 05:55 /dev/ucm0
+	crw-rw---- 1 root root 231, 225 Feb  2 05:55 /dev/ucm1
+	crw-rw---- 1 root root 247,   0 Feb  2 05:55 /dev/ucm2
+	crw-rw---- 1 root root 247,   1 Feb  2 05:55 /dev/ucm3
+
+Note that the major and minor numbers are behaving rather sanely.
+
+	dl585g2:~ # rmmod ib_ucm
+	dl585g2:~ # rmmod ib_uverbs
+	dl585g2:~ # rmmod ib_umad
+
+Reset.
+
+	dl585g2:~ # modprobe ib_ucm
+	dl585g2:~ # ls -l /dev/ucm*
+	crw-rw---- 1 root root 231, 224 Feb  2 05:57 /dev/ucm0
+	crw-rw---- 1 root root 231, 225 Feb  2 05:57 /dev/ucm1
+	crw-rw---- 1 root root 248,   0 Feb  2 05:57 /dev/ucm2
+	crw-rw---- 1 root root 248,   1 Feb  2 05:57 /dev/ucm3
+
+See that /dev/ucm* devices now have a different major number 
+compared to last time(248 vs 247), since we loaded that driver first.
+
+But wait, why is it 248 and not 249? Is there a leak somewhere?
+
+	dl585g2:~ # ls -l /dev/uverb*
+	crw-rw---- 1 root root 231, 192 Feb  2 05:57 /dev/uverbs0
+	crw-rw---- 1 root root 231, 193 Feb  2 05:57 /dev/uverbs1
+	crw-rw---- 1 root root 249,   0 Feb  2 05:57 /dev/uverbs2
+	crw-rw---- 1 root root 249,   1 Feb  2 05:57 /dev/uverbs3
+	dl585g2:~ # rmmod ib_uverbs
+	ERROR: Module ib_uverbs is in use by ib_ucm
+
+Ah, ib_ucm is dependent on ib_uverbs, so when we modprobed ib_ucm,
+in reality ib_uverbs got loaded first. See how it has a higher
+major number.
+
+	dl585g2:~ # rmmod ib_ucm
+	dl585g2:~ # rmmod ib_uverbs
+	dl585g2:~ # modprobe ib_umad
+	dl585g2:~ # ls -l /dev/umad*
+	crw-rw---- 1 root root 231, 0 Feb  2 05:58 /dev/umad0
+	crw-rw---- 1 root root 231, 1 Feb  2 05:58 /dev/umad1
+	crw-rw---- 1 root root 231, 2 Feb  2 05:58 /dev/umad2
+	crw-rw---- 1 root root 231, 3 Feb  2 05:58 /dev/umad3
+	crw-rw---- 1 root root 249, 0 Feb  2 05:58 /dev/umad4
+	crw-rw---- 1 root root 249, 1 Feb  2 05:58 /dev/umad5
+	crw-rw---- 1 root root 249, 2 Feb  2 05:58 /dev/umad6
+	crw-rw---- 1 root root 249, 3 Feb  2 05:58 /dev/umad7
+	dl585g2:~ # ls -l /dev/issm*
+	crw-rw---- 1 root root 231, 4 Feb  2 05:58 /dev/issm0
+	crw-rw---- 1 root root 231, 5 Feb  2 05:58 /dev/issm1
+	crw-rw---- 1 root root 231, 6 Feb  2 05:58 /dev/issm2
+	crw-rw---- 1 root root 231, 7 Feb  2 05:58 /dev/issm3
+	crw-rw---- 1 root root 249, 4 Feb  2 05:58 /dev/issm4
+	crw-rw---- 1 root root 249, 5 Feb  2 05:58 /dev/issm5
+	crw-rw---- 1 root root 249, 6 Feb  2 05:58 /dev/issm6
+	crw-rw---- 1 root root 249, 7 Feb  2 05:58 /dev/issm7
+
+Finally, after one more reset, we see ib_umad loaded first and
+obtaining the major number of 249.
+
+v1 -> v2:
+	- update umad and ucm drivers too
+
+---
+
+Alex Chiang (18):
+      IB/uverbs: convert *cdev to cdev in struct ib_uverbs_device
+      IB/uverbs: remove dev_table
+      IB/uverbs: use stack variable 'devnum' in ib_uverbs_add_one
+      IB/uverbs: use stack variable 'base' in ib_uverbs_add_one
+      IB/uverbs: increase maximum devices supported
+      IB/uverbs: pack struct ib_uverbs_event_file tighter
+      IB/uverbs: whitespace cleanup
+      IB/umad: convert cdev pointers to embedded structs in struct ib_umad_port
+      IB/umad: remove port_table[]
+      IB/umad: use stack variable 'devnum' in ib_umad_init_port
+      IB/umad: use stack variable 'base' in ib_umad_init_port
+      IB/umad: increase maximum devices supported
+      IB/umad: clean whitespace
+      IB/ucm: use stack variable 'devnum' in ib_ucm_add_one
+      IB/ucm: use stack variable 'base' in ib_ucm_add_one
+      IB/ucm: increase maximum devices supported
+      IB/ucm: clean whitespace errors
+      IB/core: pack struct ib_device a little tighter
+
+
+ drivers/infiniband/core/ucm.c         |   63 ++++++++++--
+ drivers/infiniband/core/user_mad.c    |  173 +++++++++++++++++----------------
+ drivers/infiniband/core/uverbs.h      |   11 +-
+ drivers/infiniband/core/uverbs_main.c |  175 +++++++++++++++++++--------------
+ include/rdma/ib_verbs.h               |    4 -
+ 5 files changed, 255 insertions(+), 171 deletions(-)
+
