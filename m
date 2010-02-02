@@ -1,132 +1,194 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756541Ab0BBPgP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 10:36:15 -0500
-Received: from mga11.intel.com ([192.55.52.93]:7421 "EHLO mga11.intel.com"
+	id S1756547Ab0BBPgR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 10:36:17 -0500
+Received: from mga09.intel.com ([134.134.136.24]:14323 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756339Ab0BBPeP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756324Ab0BBPeP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 2 Feb 2010 10:34:15 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.49,390,1262592000"; 
-   d="scan'208";a="536947635"
-Message-Id: <20100202153316.936832492@intel.com>
+   d="scan'208";a="592471011"
+Message-Id: <20100202153316.375570078@intel.com>
 User-Agent: quilt/0.48-1
-Date: Tue, 02 Feb 2010 23:28:40 +0800
+Date: Tue, 02 Feb 2010 23:28:36 +0800
 From: Wu Fengguang <fengguang.wu@intel.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-cc: Jens Axboe <jens.axboe@oracle.com>, Chris Frost <frost@cs.ucla.edu>,
-       Steve VanDeBogart <vandebo@cs.ucla.edu>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Wu Fengguang <fengguang.wu@intel.com>
+cc: Jens Axboe <jens.axboe@oracle.com>, Wu Fengguang <fengguang.wu@intel.com>
 cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
 cc: Linux Memory Management List <linux-mm@kvack.org>
 cc: <linux-fsdevel@vger.kernel.org>
 Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 05/11] readahead: retain inactive lru pages to be accessed soon
+Subject: [PATCH 01/11] readahead: limit readahead size for small devices
 References: <20100202152835.683907822@intel.com>
-Content-Disposition: inline; filename=readahead-retain-pages-find_get_page.patch
+Content-Disposition: inline; filename=readahead-size-for-tiny-device.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Chris Frost <frost@cs.ucla.edu>
+Linus reports a _really_ small & slow (505kB, 15kB/s) USB device,
+on which blkid runs unpleasantly slow. He manages to optimize the blkid
+reads down to 1kB+16kB, but still kernel read-ahead turns it into 48kB.
 
-Ensure that cached pages in the inactive list are not prematurely evicted;
-move such pages to lru head when they are covered by
-- in-kernel heuristic readahead
-- an posix_fadvise(POSIX_FADV_WILLNEED) hint from an application
+     lseek 0,    read 1024   => readahead 4 pages (start of file)
+     lseek 1536, read 16384  => readahead 8 pages (page contiguous)
 
-Before this patch, pages already in core may be evicted before the
-pages covered by the same prefetch scan but that were not yet in core.
-Many small read requests may be forced on the disk because of this
-behavior.
+The readahead heuristics involved here are reasonable ones in general.
+So it's good to fix blkid with fadvise(RANDOM), as Linus already did.
 
-In particular, posix_fadvise(... POSIX_FADV_WILLNEED) on an in-core page
-has no effect on the page's location in the LRU list, even if it is the
-next victim on the inactive list.
+For the kernel part, Linus suggests:
+  So maybe we could be less aggressive about read-ahead when the size of
+  the device is small? Turning a 16kB read into a 64kB one is a big deal,
+  when it's about 15% of the whole device!
 
-This change helps address the performance problems we encountered
-while modifying SQLite and the GIMP to use large file prefetching.
-Overall these prefetching techniques improved the runtime of large
-benchmarks by 10-17x for these applications. More in the publication
-_Reducing Seek Overhead with Application-Directed Prefetching_ in
-USENIX ATC 2009 and at http://libprefetch.cs.ucla.edu/.
+This looks reasonable: smaller device tend to be slower (USB sticks as
+well as micro/mobile/old hard disks).
 
-Signed-off-by: Chris Frost <frost@cs.ucla.edu>
-Signed-off-by: Steve VanDeBogart <vandebo@cs.ucla.edu>
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Given that the non-rotational attribute is not always reported, we can
+take disk size as a max readahead size hint. We use a formula that
+generates the following concrete limits:
+
+        disk size    readahead size
+     (scale by 4)      (scale by 2)
+               2M            	 4k
+               8M                8k
+              32M               16k
+             128M               32k
+             512M               64k
+               2G              128k
+               8G              256k
+              32G              512k
+             128G             1024k
+
+The formula is determined on the following data, collected by script:
+
+	#!/bin/sh
+
+	# please make sure BDEV is not mounted or opened by others
+	BDEV=sdb
+
+	for rasize in 4 16 32 64 128 256 512 1024 2048
+	do
+		echo $rasize > /sys/block/$BDEV/queue/read_ahead_kb 
+		time dd if=/dev/$BDEV of=/dev/null bs=4k count=102400
+	done
+
+The principle is, the formula shall not limit readahead size to such a
+degree that will impact some device's sequential read performance.
+
+The Intel SSD is special in that its throughput increases steadily with
+larger readahead size. However it may take years for Linux to increase
+its default readahead size to 2MB, so we don't take it seriously in the
+formula.
+
+SSD 80G Intel x25-M SSDSA2M080
+
+	rasize	first run time/throughput	second run time/throughput
+	------------------------------------------------------------------
+	  4k	3.40038 s,	123 MB/s	3.42842 s,	122 MB/s
+	  8k	2.7362 s,	153 MB/s	2.74528 s,	153 MB/s
+	 16k	2.59808 s,	161 MB/s	2.58728 s,	162 MB/s
+	 32k	2.50488 s,	167 MB/s	2.49138 s,	168 MB/s
+	 64k	2.12861 s,	197 MB/s	2.13055 s,	197 MB/s
+	128k	1.92905 s,	217 MB/s	1.93176 s,	217 MB/s
+	256k	1.75896 s,	238 MB/s	1.78963 s,	234 MB/s
+	512k	1.67357 s,	251 MB/s	1.69112 s,	248 MB/s
+	  1M	1.62115 s,	259 MB/s	1.63206 s,	257 MB/s
+==>	  2M	1.56204 s,	269 MB/s	1.58854 s,	264 MB/s
+	  4M	1.57949 s,	266 MB/s	1.57426 s,	266 MB/s
+
+Note that ==> points to the readahead size that yields plateau throughput.
+
+SSD 30G SanDisk SATA 5000
+
+	  4k	14.1593 s,	29.6 MB/s	14.1699 s,	29.6 MB/s	14.1782 s,	29.6 MB/s
+	  8k	8.05231 s,	52.1 MB/s	8.04463 s,	52.1 MB/s	8.04758 s,	52.1 MB/s
+	 16k	6.81751 s,	61.5 MB/s	6.81564 s,	61.5 MB/s	6.8146 s,	61.5 MB/s
+	 32k	6.24176 s,	67.2 MB/s	6.2438 s,	67.2 MB/s	6.24645 s,	67.1 MB/s
+	 64k	5.87828 s,	71.4 MB/s	5.87858 s,	71.3 MB/s	5.87481 s,	71.4 MB/s
+	128k	5.71649 s,	73.4 MB/s	5.71804 s,	73.4 MB/s	5.72055 s,	73.3 MB/s
+==>	256k	5.62466 s,	74.6 MB/s	5.62304 s,	74.6 MB/s	5.62114 s,	74.6 MB/s
+	512k	5.61532 s,	74.7 MB/s	5.62098 s,	74.6 MB/s	5.61818 s,	74.7 MB/s
+	  1M	5.50888 s,	76.1 MB/s	5.6204 s,	74.6 MB/s	5.62281 s,	74.6 MB/s
+
+USB stick 32G Teclast CoolFlash idVendor=1307, idProduct=0165
+
+	  4k	53.1635 s,	7.9 MB/s 	53.155 s,	7.9 MB/s 	53.107 s,	7.9 MB/s
+	  8k	23.4061 s,	17.9 MB/s	23.3955 s,	17.9 MB/s	23.4222 s,	17.9 MB/s
+	 16k	17.1077 s,	24.5 MB/s	17.0909 s,	24.5 MB/s	17.0875 s,	24.5 MB/s
+	 32k	14.6029 s,	28.7 MB/s	14.5913 s,	28.7 MB/s	14.5951 s,	28.7 MB/s
+	 64k	14.5483 s,	28.8 MB/s	14.5344 s,	28.9 MB/s	14.5333 s,	28.9 MB/s
+==>	128k	13.7497 s,	30.5 MB/s	13.7364 s,	30.5 MB/s	13.731 s,	30.5 MB/s
+	256k	13.5521 s,	30.9 MB/s	13.5415 s,	31.0 MB/s	13.5554 s,	30.9 MB/s
+	512k	13.5414 s,	31.0 MB/s	13.5631 s,	30.9 MB/s	13.5654 s,	30.9 MB/s
+	  1M	13.574 s,	30.9 MB/s	13.5686 s,	30.9 MB/s	13.5667 s,	30.9 MB/s
+
+USB stick 4G SanDisk  Cruzer idVendor=0781, idProduct=5151
+
+	  4k	65.3449 s,	6.4 MB/s 	65.3759 s,	6.4 MB/s 	65.3405 s,	6.4 MB/s
+	  8k	31.2002 s,	13.4 MB/s	31.1914 s,	13.4 MB/s	31.6836 s,	13.2 MB/s
+	 16k	23.5281 s,	17.8 MB/s	23.4705 s,	17.9 MB/s	23.5859 s,	17.8 MB/s
+	 32k	19.6786 s,	21.3 MB/s	19.719 s,	21.3 MB/s	19.7548 s,	21.2 MB/s
+	 64k	19.6219 s,	21.4 MB/s	19.6125 s,	21.4 MB/s	19.594 s,	21.4 MB/s
+==>	128k	18.021 s,	23.3 MB/s	18.0527 s,	23.2 MB/s	18.0694 s,	23.2 MB/s
+	256k	17.978 s,	23.3 MB/s	17.6483 s,	23.8 MB/s	17.9324 s,	23.4 MB/s
+	512k	17.659 s,	23.8 MB/s	17.9403 s,	23.4 MB/s	17.986 s,	23.3 MB/s
+	  1M	17.9437 s,	23.4 MB/s	18.0634 s,	23.2 MB/s	17.9469 s,	23.4 MB/s
+
+USB stick 2G idVendor=0204, idProduct=6025 SerialNumber: 08082005000113
+
+	  4k	62.6246 s,	6.7 MB/s 	60.5872 s,	6.9 MB/s 	62.2581 s,	6.7 MB/s
+	  8k	35.7505 s,	11.7 MB/s	35.764 s,	11.7 MB/s	35.7396 s,	11.7 MB/s
+	 16k	33.7949 s,	12.4 MB/s	33.8041 s,	12.4 MB/s	33.8015 s,	12.4 MB/s
+-->	 32k	31.3851 s,	13.4 MB/s	31.381 s,	13.4 MB/s	31.3784 s,	13.4 MB/s
+	 64k	31.3478 s,	13.4 MB/s	31.3494 s,	13.4 MB/s	31.3486 s,	13.4 MB/s
+==>	128k	30.7384 s,	13.6 MB/s	30.7337 s,	13.6 MB/s	30.728 s,	13.6 MB/s
+	256k	30.5439 s,	13.7 MB/s	30.544 s,	13.7 MB/s	30.5433 s,	13.7 MB/s
+	512k	30.5408 s,	13.7 MB/s	30.543 s,	13.7 MB/s	30.5447 s,	13.7 MB/s
+	  1M	30.5919 s,	13.7 MB/s	30.5893 s,	13.7 MB/s	30.5939 s,	13.7 MB/s
+
+Anyone has 512/128MB USB stick? Anyway you get satisfiable performance
+with >= 32k readahead size.
+
+Tested-by: Linus Torvalds <torvalds@linux-foundation.org> 
 Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 ---
- mm/readahead.c |   44 ++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 44 insertions(+)
+ block/genhd.c |   18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
 
---- linux.orig/mm/readahead.c	2010-02-01 10:18:57.000000000 +0800
-+++ linux/mm/readahead.c	2010-02-01 10:20:51.000000000 +0800
-@@ -9,7 +9,9 @@
+--- linux.orig/block/genhd.c	2010-01-21 21:17:16.000000000 +0800
++++ linux/block/genhd.c	2010-01-22 17:09:34.000000000 +0800
+@@ -518,6 +518,7 @@ void add_disk(struct gendisk *disk)
+ 	struct backing_dev_info *bdi;
+ 	dev_t devt;
+ 	int retval;
++	unsigned long size;
  
- #include <linux/kernel.h>
- #include <linux/fs.h>
-+#include <linux/memcontrol.h>
- #include <linux/mm.h>
-+#include <linux/mm_inline.h>
- #include <linux/module.h>
- #include <linux/blkdev.h>
- #include <linux/backing-dev.h>
-@@ -133,6 +135,40 @@ out:
- }
- 
- /*
-+ * The file range is expected to be accessed in near future.  Move pages
-+ * (possibly in inactive lru tail) to lru head, so that they are retained
-+ * in memory for some reasonable time.
-+ */
-+static void retain_inactive_pages(struct address_space *mapping,
-+				  pgoff_t index, int len)
-+{
-+	int i;
-+	struct page *page;
-+	struct zone *zone;
-+
-+	for (i = 0; i < len; i++) {
-+		page = find_get_page(mapping, index + i);
-+		if (!page)
-+			continue;
-+
-+		zone = page_zone(page);
-+		spin_lock_irq(&zone->lru_lock);
-+
-+		if (PageLRU(page) &&
-+		    !PageActive(page) &&
-+		    !PageUnevictable(page)) {
-+			int lru = page_lru_base_type(page);
-+
-+			del_page_from_lru_list(zone, page, lru);
-+			add_page_to_lru_list(zone, page, lru);
-+		}
-+
-+		spin_unlock_irq(&zone->lru_lock);
-+		put_page(page);
-+	}
-+}
-+
-+/*
-  * __do_page_cache_readahead() actually reads a chunk of disk.  It allocates all
-  * the pages first, then submits them all for I/O. This avoids the very bad
-  * behaviour which would occur if page allocations are causing VM writeback.
-@@ -184,6 +220,14 @@ __do_page_cache_readahead(struct address
- 	}
- 
- 	/*
-+	 * Normally readahead will auto stop on cached segments, so we won't
-+	 * hit many cached pages. If it does happen, bring the inactive pages
-+	 * adjecent to the newly prefetched ones(if any).
-+	 */
-+	if (ret < nr_to_read)
-+		retain_inactive_pages(mapping, offset, page_idx);
+ 	/* minors == 0 indicates to use ext devt from part0 and should
+ 	 * be accompanied with EXT_DEVT flag.  Make sure all
+@@ -551,6 +552,23 @@ void add_disk(struct gendisk *disk)
+ 	retval = sysfs_create_link(&disk_to_dev(disk)->kobj, &bdi->dev->kobj,
+ 				   "bdi");
+ 	WARN_ON(retval);
 +
 +	/*
- 	 * Now start the IO.  We ignore I/O errors - if the page is not
- 	 * uptodate then the caller will launch readpage again, and
- 	 * will then handle the error.
++	 * limit readahead size for small devices
++	 *        disk size    readahead size
++	 *               2M                4k
++	 *               8M                8k
++	 *              32M               16k
++	 *             128M               32k
++	 *             512M               64k
++	 *               2G              128k
++	 *               8G              256k
++	 *              32G              512k
++	 *             128G             1024k
++	 */
++	size = get_capacity(disk) >> 12;
++	size = 1UL << (ilog2(size) / 2);
++	bdi->ra_pages = min(bdi->ra_pages, size);
+ }
+ 
+ EXPORT_SYMBOL(add_disk);
 
 
