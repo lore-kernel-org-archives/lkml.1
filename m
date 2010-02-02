@@ -1,244 +1,128 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754614Ab0BBXTE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 18:19:04 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:41060 "EHLO mx1.redhat.com"
+	id S1754627Ab0BBXTY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 18:19:24 -0500
+Received: from nox.protox.org ([88.191.38.29]:50824 "EHLO nox.protox.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754004Ab0BBXS7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 18:18:59 -0500
-Date: Tue, 2 Feb 2010 18:17:49 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       linux-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 00/11] [RFC] 512K readahead size with thrashing safe
-	readahead
-Message-ID: <20100202231749.GG3922@redhat.com>
-References: <20100202152835.683907822@intel.com> <20100202223803.GF3922@redhat.com>
+	id S1752493Ab0BBXTV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 18:19:21 -0500
+Date: Wed, 3 Feb 2010 00:15:01 +0100
+From: Jerome Glisse <glisse@freedesktop.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Dave Airlie <airlied@linux.ie>, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
+Subject: Re: [crash, PATCH] Revert "drm/radeon/kms: move radeon KMS on/off
+ switch out of staging."
+Message-ID: <20100202231501.GC10289@localhost.localdomain>
+References: <alpine.DEB.2.00.1002010215530.15366@skynet.skynet.ie>
+ <alpine.DEB.2.00.1002010253120.15366@skynet.skynet.ie>
+ <20100202081727.GA6788@elte.hu>
+ <20100202115611.GA10289@localhost.localdomain>
+ <20100202154221.GA27314@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20100202223803.GF3922@redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20100202154221.GA27314@elte.hu>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 02, 2010 at 05:38:03PM -0500, Vivek Goyal wrote:
-> On Tue, Feb 02, 2010 at 11:28:35PM +0800, Wu Fengguang wrote:
-> > Andrew,
+On Tue, Feb 02, 2010 at 04:42:21PM +0100, Ingo Molnar wrote:
+> 
+> * Jerome Glisse <glisse@freedesktop.org> wrote:
+> 
+> > On Tue, Feb 02, 2010 at 09:17:27AM +0100, Ingo Molnar wrote:
+> > > 
+> > > * Dave Airlie <airlied@linux.ie> wrote:
+> > > 
+> > > > > Hi Linus,
+> > > > > 
+> > > > > Please pull the 'drm-linus' branch from
+> > > > > ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git drm-linus
+> > > > > 
+> > > > 
+> > > > I've also added an oops fix I seem to lose off my radar to this tree.
+> > > > 
+> > > > commit 17aafccab4352b422aa01fa6ebf82daff693a5b3
+> > > > Author: Michel D??nzer <daenzer@vmware.com>
+> > > > Date:   Fri Jan 22 09:20:00 2010 +0100
+> > > > 
+> > > >     drm/radeon/kms: Fix oops after radeon_cs_parser_init() failure.
+> > > 
+> > > FYI, this drm pull into mainline has triggered quick boot crashes in -tip 
+> > > testing (even with the above fix applied), on an Athlon64 whitebox PC with:
+> > > 
+> > >  01:00.0 VGA compatible controller: ATI Technologies Inc RV370 5B60 [Radeon X300 (PCIE)]
+> > >  01:00.1 Display controller: ATI Technologies Inc RV370 [Radeon X300SE]
+> > > 
+> > > the crash is:
+> > > 
+> > > [    7.111003] radeon 0000:01:00.0: Disabling GPU acceleration
+> > > [    7.273547] Failed to wait GUI idle while programming pipes. Bad things might happen.
+> > > [    7.436296] [drm:r100_cp_fini] *ERROR* Wait for CP idle timeout, shutting down CP.
+> > > [    7.598755] Failed to wait GUI idle while programming pipes. Bad things might happen.
+> > > [    7.599306] BUG: unable to handle kernel paging request at f8380000
+> > > [    7.599999] IP: [<c149f0de>] rv370_pcie_gart_set_page+0x2d/0x3c
+> > > [    7.599999] *pde = 36d44067 *pte = 00000000
+> > > [    7.599999] Oops: 0002 [#1] SMP DEBUG_PAGEALLOC
+> > > [    7.599999] last sysfs file:
+> > > 
+> > > i have bisected it back to:
+> > > 
+> > >  | 97b94ccb9aa1b82ed7a9a045d0ae5b32c99b84a0 is the first bad commit
+> > >  | commit 97b94ccb9aa1b82ed7a9a045d0ae5b32c99b84a0
+> > >  | Author: Dave Airlie <airlied@redhat.com>
+> > >  | Date:   Fri Jan 29 15:31:47 2010 +1000
+> > >  |
+> > >  |     drm/radeon/kms: fix incorrect logic in DP vs eDP connector checking.
+> > >  |    
+> > >  |     This makes displayport work again here.
+> > > 
+> > > Unfortunately even with that patch reverted it still crashes. Config and 
+> > > bootlog attached.
+> > > 
+> > > It's the moving of radeom KMS out of staging after -rc6 that causes it, 
+> > > because it brought it into the scope of my testing:
+> > > 
+> > >  f71d018: drm/radeon/kms: move radeon KMS on/off switch out of staging.
+> > > 
+> > > So at least on this box it's clearly not ready for mainline enablement yet. 
+> > > I've attached the revert patch further below.
+> > > 
+> > > 	Ingo
+> > > 
 > > 
-> > This is to lift default readahead size to 512KB, which I believe yields
-> > more I/O throughput without noticeably increasing I/O latency for today's HDD.
-> > 
+> > Attached is a patch which will fix the oops, still it's strange that CP 
+> > fails to init on your config. [...]
 > 
-> Hi Fengguang,
+> Thanks, that fixes the crash here!
 > 
-> I was doing a quick test with the patches. I was using fio to run some
-> sequential reader threads. I have got one access to one Lun from an HP
-> EVA. In my case it looks like with the patches throughput has come down.
+> Tested-by: Ingo Molnar <mingo@elte.hu>
 > 
-> Folllowing are the results.
+> > [...] Do you have IOMMU enabled ? I haven't played with iommu stuff thus i 
+> > wonder if we are missing somethings in this area.
 > 
-> Kernel=2.6.33-rc5 Workload=bsr      iosched=cfq     Filesz=1G   bs=32K
-> AVERAGE
-> -------
-> job       Set NR  ReadBW(KB/s)   MaxClat(us)    WriteBW(KB/s)  MaxClat(us)
-> ---       --- --  ------------   -----------    -------------  -----------
-> bsr       3   1   141768         130965         0              0
-> bsr       3   2   131979         135402         0              0
-> bsr       3   4   132351         420733         0              0
-> bsr       3   8   133152         455434         0              0
-> bsr       3   16  130316         674499         0              0
+> No IOMMU here - this is a 5 years old box. (beyond GART that is)
 > 
-> Kernel=2.6.33-rc5-readahead Workload=bsr      iosched=cfq     Filesz=1G  bs=32K
-> AVERAGE
-> -------
-> job       Set NR  ReadBW(KB/s)   MaxClat(us)    WriteBW(KB/s)  MaxClat(us)
-> ---       --- --  ------------   -----------    -------------  -----------
-> bsr       3   1   84749.3        53213          0              0
-> bsr       3   2   83189.7        157473         0              0
-> bsr       3   4   77583.3        330030         0              0
-> bsr       3   8   88545.7        378201         0              0
-> bsr       3   16  95331.7        482657         0              0
+> Your patch fixes a bona-fide illegal-access bug in the DRM code, that's more 
+> than enough to crash the box ;-)
 > 
-> I run increasing number of sequential readers. File system is ext3 and
-> filesize is 1G. 
+> Btw., there's a new warning in the DRM code
 > 
-> I have run the tests 3 times (3sets) and taken the average of it.
+>  drivers/gpu/drm/ati_pcigart.c: In function ‘drm_ati_pcigart_init’:
+>  drivers/gpu/drm/ati_pcigart.c:115: warning: format ‘%Lx’ expects type ‘long long unsigned int’, but argument 3 has type ‘dma_addr_t’
+> 
+> Please fix that too, the kernel build is noisy enough as-is.
+> 
+> Thanks,
+> 
+> 	Ingo
 
-I ran same test on a different piece of hardware. There are few SATA disks
-(5-6) in striped configuration behind a hardware RAID controller. Here I
-do see improvement in sequenetial reader performance with the patches.
+I think i saw a patch for this, it's often a nice thing to let people do their first
+patch on this kind of thing, but i try to fix such thing when i run into it, thought
+i haven't always been a well behaving kid in the % format area.
 
-Kernel=2.6.33-rc5  Workload=bsr      iosched=cfq     Filesz=1G   bs=32K 
-=========================================================================
-AVERAGE
-------- 
-job       Set NR  ReadBW(KB/s)   MaxClat(us)    WriteBW(KB/s)  MaxClat(us)    
----       --- --  ------------   -----------    -------------  -----------    
-bsr       3   1   147569         14369.7        0              0              
-bsr       3   2   124716         243932         0              0              
-bsr       3   4   123451         327665         0              0              
-bsr       3   8   122486         455102         0              0              
-bsr       3   16  117645         1.03957e+06    0              0              
-
-Kernel=2.6.33-rc5-readahead  Workload=bsr      iosched=cfq     Filesz=1G   bs=32K 
-=========================================================================
-AVERAGE
-------- 
-job       Set NR  ReadBW(KB/s)   MaxClat(us)    WriteBW(KB/s)  MaxClat(us)    
----       --- --  ------------   -----------    -------------  -----------    
-bsr       3   1   160191         22752          0              0
-bsr       3   2   149343         184698         0              0
-bsr       3   4   147183         430875         0              0
-bsr       3   8   144568         484045         0              0
-bsr       3   16  137485         1.06257e+06    0              0
-
-Vivek
-
-> 
-> > For example, for a 100MB/s and 8ms access time HDD:
-> > 
-> > io_size KB      access_time   transfer_time  io_latency  util%    throughput KB/s IOPS
-> > 4               8             0.04           8.04        0.49%    497.57          124.39
-> > 8               8             0.08           8.08        0.97%    990.33          123.79
-> > 16              8             0.16           8.16        1.92%    1961.69         122.61
-> > 32              8             0.31           8.31        3.76%    3849.62         120.30
-> > 64              8             0.62           8.62        7.25%    7420.29         115.94
-> > 128             8             1.25           9.25        13.51%   13837.84        108.11
-> > 256             8             2.50           10.50       23.81%   24380.95        95.24
-> > 512             8             5.00           13.00       38.46%   39384.62        76.92
-> > 1024            8             10.00          18.00       55.56%   56888.89        55.56
-> > 2048            8             20.00          28.00       71.43%   73142.86        35.71
-> > 4096            8             40.00          48.00       83.33%   85333.33        20.83
-> > 
-> > The 128KB => 512KB readahead size boosts IO throughput from ~13MB/s to ~39MB/s, while
-> > merely increases IO latency from 9.25ms to 13.00ms.
-> > 
-> > As for SSD, I find that Intel X25-M SSD desires large readahead size
-> > even for sequential reads (the first patch has benchmark details):
-> > 
-> >         rasize  first run time/throughput       second run time/throughput
-> >         ------------------------------------------------------------------
-> >           4k    3.40038 s,      123 MB/s        3.42842 s,      122 MB/s
-> >           8k    2.7362 s,       153 MB/s        2.74528 s,      153 MB/s
-> >          16k    2.59808 s,      161 MB/s        2.58728 s,      162 MB/s
-> >          32k    2.50488 s,      167 MB/s        2.49138 s,      168 MB/s
-> >          64k    2.12861 s,      197 MB/s        2.13055 s,      197 MB/s
-> >         128k    1.92905 s,      217 MB/s        1.93176 s,      217 MB/s
-> >         256k    1.75896 s,      238 MB/s        1.78963 s,      234 MB/s
-> >         512k    1.67357 s,      251 MB/s        1.69112 s,      248 MB/s
-> >           1M    1.62115 s,      259 MB/s        1.63206 s,      257 MB/s
-> >           2M    1.56204 s,      269 MB/s        1.58854 s,      264 MB/s
-> >           4M    1.57949 s,      266 MB/s        1.57426 s,      266 MB/s
-> > 
-> > As suggested by Linus, decrease default readahead size for small devices at the same time.
-> > 
-> > 	[PATCH 01/11] readahead: limit readahead size for small devices
-> > 	[PATCH 02/11] readahead: bump up the default readahead size
-> > 	[PATCH 03/11] readahead: introduce {MAX|MIN}_READAHEAD_PAGES macros for ease of use
-> > 
-> > The two other impacts of an enlarged readahead size are
-> > 
-> > - memory footprint (caused by readahead miss)
-> > 	Sequential readahead hit ratio is pretty high regardless of max
-> > 	readahead size; the extra memory footprint is mainly caused by
-> > 	enlarged mmap read-around.
-> > 	I measured my desktop:
-> > 	- under Xwindow:
-> > 		128KB readahead cache hit ratio = 143MB/230MB = 62%
-> > 		512KB readahead cache hit ratio = 138MB/248MB = 55%
-> > 	- under console: (seems more stable than the Xwindow data)
-> > 		128KB readahead cache hit ratio = 30MB/56MB   = 53%
-> > 		  1MB readahead cache hit ratio = 30MB/59MB   = 51%
-> > 	So the impact to memory footprint looks acceptable.
-> > 
-> > - readahead thrashing
-> > 	It will now cost 1MB readahead buffer per stream.  Memory tight systems
-> > 	typically do not run multiple streams; but if they do so, it should
-> > 	help I/O performance as long as we can avoid thrashing, which can be
-> > 	achieved with the following patches.
-> > 
-> > 	[PATCH 04/11] readahead: replace ra->mmap_miss with ra->ra_flags
-> > 	[PATCH 05/11] readahead: retain inactive lru pages to be accessed soon
-> > 	[PATCH 06/11] readahead: thrashing safe context readahead
-> > 
-> > This is a major rewrite of the readahead algorithm, so I did careful tests with
-> > the following tracing/stats patches:
-> > 
-> > 	[PATCH 07/11] readahead: record readahead patterns
-> > 	[PATCH 08/11] readahead: add tracing event
-> > 	[PATCH 09/11] readahead: add /debug/readahead/stats
-> > 
-> > I verified the new readahead behavior on various access patterns,
-> > as well as stress tested the thrashing safety, by running 300 streams
-> > with mem=128M.
-> > 
-> > Only 2031/61325=3.3% readahead windows are thrashed (due to workload
-> > variation):
-> > 
-> > # cat /debug/readahead/stats
-> > pattern     readahead    eof_hit  cache_hit         io    sync_io    mmap_io       size async_size    io_size
-> > initial            20          9          4         20         20         12         73         37         35
-> > subsequent          3          3          0          1          0          1          8          8          1
-> > context         61325          1       5479      61325       6788          5         14          2         13
-> > thrash           2031          0       1222       2031       2031          0          9          0          6
-> > around            235         90        142        235        235        235         60          0         19
-> > fadvise             0          0          0          0          0          0          0          0          0
-> > random            223        133          0         91         91          1          1          0          1
-> > all             63837        236       6847      63703       9165          0         14          2         13
-> > 
-> > And the readahead inside a single stream is working as expected:
-> > 
-> > # grep streams-3162 /debug/tracing/trace
-> >          streams-3162  [000]  8602.455953: readahead: readahead-context(dev=0:2, ino=0, req=287352+1, ra=287354+10-2, async=1) = 10
-> >          streams-3162  [000]  8602.907873: readahead: readahead-context(dev=0:2, ino=0, req=287362+1, ra=287364+20-3, async=1) = 20
-> >          streams-3162  [000]  8604.027879: readahead: readahead-context(dev=0:2, ino=0, req=287381+1, ra=287384+14-2, async=1) = 14
-> >          streams-3162  [000]  8604.754722: readahead: readahead-context(dev=0:2, ino=0, req=287396+1, ra=287398+10-2, async=1) = 10
-> >          streams-3162  [000]  8605.191228: readahead: readahead-context(dev=0:2, ino=0, req=287406+1, ra=287408+18-3, async=1) = 18
-> >          streams-3162  [000]  8606.831895: readahead: readahead-context(dev=0:2, ino=0, req=287423+1, ra=287426+12-2, async=1) = 12
-> >          streams-3162  [000]  8606.919614: readahead: readahead-thrash(dev=0:2, ino=0, req=287425+1, ra=287425+8-0, async=0) = 1
-> >          streams-3162  [000]  8607.545016: readahead: readahead-context(dev=0:2, ino=0, req=287436+1, ra=287438+9-2, async=1) = 9
-> >          streams-3162  [000]  8607.960039: readahead: readahead-context(dev=0:2, ino=0, req=287445+1, ra=287447+18-3, async=1) = 18
-> >          streams-3162  [000]  8608.790973: readahead: readahead-context(dev=0:2, ino=0, req=287462+1, ra=287465+21-3, async=1) = 21
-> >          streams-3162  [000]  8609.763138: readahead: readahead-context(dev=0:2, ino=0, req=287483+1, ra=287486+15-2, async=1) = 15
-> >          streams-3162  [000]  8611.467401: readahead: readahead-context(dev=0:2, ino=0, req=287499+1, ra=287501+11-2, async=1) = 11
-> >          streams-3162  [000]  8642.512413: readahead: readahead-context(dev=0:2, ino=0, req=288053+1, ra=288056+10-2, async=1) = 10
-> >          streams-3162  [000]  8643.246618: readahead: readahead-context(dev=0:2, ino=0, req=288064+1, ra=288066+22-3, async=1) = 22
-> >          streams-3162  [000]  8644.278613: readahead: readahead-context(dev=0:2, ino=0, req=288085+1, ra=288088+16-3, async=1) = 16
-> >          streams-3162  [000]  8644.395782: readahead: readahead-context(dev=0:2, ino=0, req=288087+1, ra=288087+21-3, async=0) = 5
-> >          streams-3162  [000]  8645.109918: readahead: readahead-context(dev=0:2, ino=0, req=288101+1, ra=288108+8-1, async=1) = 8
-> >          streams-3162  [000]  8645.285078: readahead: readahead-context(dev=0:2, ino=0, req=288105+1, ra=288116+8-1, async=1) = 8
-> >          streams-3162  [000]  8645.731794: readahead: readahead-context(dev=0:2, ino=0, req=288115+1, ra=288122+14-2, async=1) = 13
-> >          streams-3162  [000]  8646.114250: readahead: readahead-context(dev=0:2, ino=0, req=288123+1, ra=288136+8-1, async=1) = 8
-> >          streams-3162  [000]  8646.626320: readahead: readahead-context(dev=0:2, ino=0, req=288134+1, ra=288144+16-3, async=1) = 16
-> >          streams-3162  [000]  8647.035721: readahead: readahead-context(dev=0:2, ino=0, req=288143+1, ra=288160+10-2, async=1) = 10
-> >          streams-3162  [000]  8647.693082: readahead: readahead-context(dev=0:2, ino=0, req=288157+1, ra=288165+12-2, async=1) = 8
-> >          streams-3162  [000]  8648.221368: readahead: readahead-context(dev=0:2, ino=0, req=288168+1, ra=288177+15-2, async=1) = 15
-> >          streams-3162  [000]  8649.280800: readahead: readahead-context(dev=0:2, ino=0, req=288190+1, ra=288192+23-3, async=1) = 23
-> > 	 [...]
-> > 
-> > btw, Linus suggested to disable start-of-file readahead if lseek() has been called:
-> > 
-> > 	[PATCH 10/11] readahead: dont do start-of-file readahead after lseek()
-> > 
-> > At last, the updated context readahead will do more radix tree scans, so need
-> > to optimize radix_tree_prev_hole():
-> > 
-> > 	[PATCH 11/11] radixtree: speed up next/prev hole search
-> > 
-> > It will on average reduce 8*64 level-0 slot searches to 32 level-0 slot
-> > plus 8 level-1 node searches.
-> > 
-> > Thanks,
-> > Fengguang
-> > 
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
+Cheers,
+Jerome
