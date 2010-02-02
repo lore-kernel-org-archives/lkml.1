@@ -1,55 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754449Ab0BBMLT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 07:11:19 -0500
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:58918 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751907Ab0BBMLS (ORCPT
+	id S1755225Ab0BBMMT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 07:12:19 -0500
+Received: from mail-yw0-f198.google.com ([209.85.211.198]:56447 "EHLO
+	mail-yw0-f198.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752977Ab0BBMMP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 07:11:18 -0500
-Date: Tue, 2 Feb 2010 13:11:16 +0100
-From: Andreas Mohr <andi@lisas.de>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Catalin Marinas <catalin.marinas@arm.com>,
-       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Ming Lei <tom.leiming@gmail.com>, linux-usb@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Sebastian Siewior <bigeasy@linutronix.de>, Greg KH <greg@kroah.com>
-Subject: Re: USB mass storage and ARM cache coherency
-Message-ID: <20100202121116.GA24926@rhlx01.hs-esslingen.de>
-References: <20100129185434.GH19501@one-eyed-alien.net> <201002021248.10994.oliver@neukum.org> <1265112072.12634.53.camel@pc1117.cambridge.arm.com> <201002021307.56991.oliver@neukum.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <201002021307.56991.oliver@neukum.org>
-X-Priority: none
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 2 Feb 2010 07:12:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=MA7M9LO4OAmD42vix86WE0OjkxTqxCKvi/Ns4S4hRHmbEX60V2t4YV529Kw+9DA3wL
+         +/hgmSTPQCTuUXlPunmsX26P2YBQWzDT61jV4KkRwyL/Y3xtPivxwcA2WEHaR6sxi+M5
+         ekxk2GKR8rJA04xN+MjQ4YkTXk7GT/0u9wxRk=
+Subject: [PATCH] drivers/acpi/ec.c fix a small memory leak
+From: Darren Jenkins <darrenrjenkins@gmail.com>
+To: Kernel Janitors <kernel-janitors@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>, linux ACPI <linux-acpi@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       astarikovskiy@suse.de
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 02 Feb 2010 23:12:10 +1100
+Message-ID: <1265112730.4804.8.camel@ICE-BOX>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Plug a very small leak in acpi_ec_ecdt_probe()
 
-On Tue, Feb 02, 2010 at 01:07:56PM +0100, Oliver Neukum wrote:
-> Am Dienstag, 2. Februar 2010 13:01:12 schrieb Catalin Marinas:
-> > On Tue, 2010-02-02 at 11:48 +0000, Oliver Neukum wrote:
-> > > Am Montag, 1. Februar 2010 18:29:14 schrieb Catalin Marinas:
-> > > Is it correct to limit this to BULK pipes?
-> > 
-> > I'm not entirely sure. The flush_dcache_page() should only be called for
-> > pages that may be mapped into user space (page cache pages). We don't
-> > need this for control buffers. It was my impression that what's coming
-> > from the mass storage layer intended for page cache pages has the
-> > PIPE_BULK type (I may be wrong though).
-> 
-> For storage that is correct. But what about other sources of pages,
-> for example iSCSI?
+Coverity CID: 13319
 
-Or... usb-audio? I should have verified that it is using bulk endpoints
-(and thus the patch applies to my case).
-usb-audio probably uses isochronous transfers, thus that would be
-an obvious reason why the patch didn't work for me.
-(with some other reason possibly being BCM4710 issues, of course)
+Signed-off-by: Darren Jenkins <darrenrjenkins@gmail.com> 
 
-Andreas Mohr
+diff --git drivers/acpi/ec.c drivers/acpi/ec.c
+index d6471bb..13061dc 100644
+--- drivers/acpi/ec.c
++++ drivers/acpi/ec.c
+@@ -1009,8 +1009,10 @@ int __init acpi_ec_ecdt_probe(void)
+ 	/* fall through */
+ 	}
+ 
+-	if (EC_FLAGS_SKIP_DSDT_SCAN)
++	if (EC_FLAGS_SKIP_DSDT_SCAN) {
++		kfree(saved_ec);
+ 		return -ENODEV;
++	}
+ 
+ 	/* This workaround is needed only on some broken machines,
+ 	 * which require early EC, but fail to provide ECDT */
+
+
