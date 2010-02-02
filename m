@@ -1,44 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756557Ab0BBVUo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 16:20:44 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:36538 "EHLO ogre.sisk.pl"
+	id S1756595Ab0BBVV6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 16:21:58 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:37960 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756514Ab0BBVUk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 16:20:40 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Evgeniy Polyakov <zbr@ioremap.net>
-Subject: Re: [Bug #14894] pohmelfs: NULL pointer dereference
-Date: Tue, 2 Feb 2010 22:21:09 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.33-rc6-rjw; KDE/4.3.5; x86_64; ; )
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Alexander Beregalov <a.beregalov@gmail.com>, GregKH <greg@kroah.com>
-References: <oBElxfTZdhL.A.bx.-vhOLB@chimera> <20091230091433.GU4489@kernel.dk> <20100202205743.GA26703@ioremap.net>
-In-Reply-To: <20100202205743.GA26703@ioremap.net>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201002022221.09895.rjw@sisk.pl>
+	id S1756572Ab0BBVVy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 16:21:54 -0500
+Date: Tue, 2 Feb 2010 16:21:42 -0500
+From: Jason Baron <jbaron@redhat.com>
+To: linux-kernel@vger.kernel.org, laijs@cn.fujitsu.com, lizf@cn.fujitsu.com,
+       rostedt@goodmis.org, fweisbec@gmail.com, mingo@elte.hu, hpa@zytor.com,
+       tglx@linutronix.de, mhiramat@redhat.com
+Message-Id: <a692e245543afa7e505611e4663e7e3be9c85dbd.1265142153.git.jbaron@redhat.com>
+In-Reply-To: <cover.1265142153.git.jbaron@redhat.com>
+References: <cover.1265142153.git.jbaron@redhat.com>
+Subject: [PATCH 2/6] x86: add arch_compat_syscall_addr()
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 02 February 2010, Evgeniy Polyakov wrote:
-> Hi.
-> 
-> Sorry, it took really long to catch all the things around, but it is
-> better than never.
-> 
-> History says that commit which introduced per-bdi writeback broke
-> pohmelfs, since it does not have backing store device and did not fill
-> appropriate superblock entry, which lead to crash on umoount.
-> 
-> Jens provided a patch below, which I tested to fix the problem.
+Add arch_compat_syscall_addr(int nr) for x86. This is in preparation for adding
+compat syscall support to the event tracer.
 
-Thanks, I've linked the Jens' patch to the bugzilla entry and marked the
-bug as resolved.
+Signed-off-by: Jason Baron <jbaron@redhat.com>
+---
+ arch/x86/kernel/ftrace.c |    9 +++++++++
+ 1 files changed, 9 insertions(+), 0 deletions(-)
 
-Rafael
+diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
+index 3096892..da2568c 100644
+--- a/arch/x86/kernel/ftrace.c
++++ b/arch/x86/kernel/ftrace.c
+@@ -488,9 +488,18 @@ void prepare_ftrace_return(unsigned long *parent, unsigned long self_addr,
+ #ifdef CONFIG_FTRACE_SYSCALLS
+ 
+ extern unsigned long *sys_call_table;
++extern unsigned long *ia32_sys_call_table;
+ 
+ unsigned long __init arch_syscall_addr(int nr)
+ {
+ 	return (unsigned long)(&sys_call_table)[nr];
+ }
++
++#ifdef CONFIG_COMPAT
++unsigned long __init arch_compat_syscall_addr(int nr)
++{
++	return (unsigned long)(&ia32_sys_call_table)[nr];
++}
++#endif
++
+ #endif
+-- 
+1.6.5.1
+
