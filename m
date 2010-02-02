@@ -1,50 +1,37 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756795Ab0BBWCH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 17:02:07 -0500
-Received: from tundra.namei.org ([65.99.196.166]:45892 "EHLO tundra.namei.org"
+	id S1756513Ab0BBWFA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 17:05:00 -0500
+Received: from cs-studio.ru ([195.178.208.66]:35359 "EHLO tservice.net.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752202Ab0BBWCB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 17:02:01 -0500
-Date: Wed, 3 Feb 2010 08:59:57 +1100 (EST)
-From: James Morris <jmorris@namei.org>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-cc: Kees Cook <kees.cook@canonical.com>,
-       Casey Schaufler <casey@schaufler-ca.com>,
-       linux-security-module@vger.kernel.org, Eric Paris <eparis@redhat.com>,
-       David Howells <dhowells@redhat.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Simon Kagstrom <simon.kagstrom@netinsight.net>,
-       David Woodhouse <David.Woodhouse@intel.com>,
-       Robin Getz <rgetz@analog.com>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Paul Moore <paul.moore@hp.com>,
-       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
-       Stephen Smalley <sds@tycho.nsa.gov>,
-       Etienne Basset <etienne.basset@numericable.fr>,
-       "David P. Quigley" <dpquigl@tycho.nsa.gov>,
-       LKLM <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] syslog: distinguish between /proc/kmsg and syscalls
-In-Reply-To: <20100202212510.GG32305@us.ibm.com>
-Message-ID: <alpine.LRH.2.00.1002030859220.14592@tundra.namei.org>
-References: <20100202055354.GV19355@outflux.net> <4B67C2EA.705@schaufler-ca.com> <20100202202054.GW19355@outflux.net> <20100202212510.GG32305@us.ibm.com>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	id S1755029Ab0BBWE5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 17:04:57 -0500
+Date: Wed, 3 Feb 2010 01:04:56 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Greg KH <greg@kroah.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Alexander Beregalov <a.beregalov@gmail.com>
+Subject: Re: [Bug #14894] pohmelfs: NULL pointer dereference
+Message-ID: <20100202220456.GB29421@ioremap.net>
+References: <oBElxfTZdhL.A.bx.-vhOLB@chimera> <srmJ8vMxKPH.A.iAC.TwhOLB@chimera> <20091229163512.GA4958@ioremap.net> <200912292237.54182.rjw@sisk.pl> <20091230091433.GU4489@kernel.dk> <20100202205743.GA26703@ioremap.net> <20100202211809.GB8755@kroah.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100202211809.GB8755@kroah.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2 Feb 2010, Serge E. Hallyn wrote:
+On Tue, Feb 02, 2010 at 01:18:09PM -0800, Greg KH (greg@kroah.com) wrote:
+> > Jens, thanks a lot for you patch, Greg please pull it up.
+> > If you did not find it or can not extract from the reply, I will resend.
+> 
+> Please resend it with a signed-off-by line so that I can apply it.
 
-> Really the special case is that if (from_file) then we take the file
-> as a validated token allowing us to bypass new privilege checks, right?
-> so 'from_file' seems appropriate to me.
-
-Yes, I think 'from_file' is simplest, and then the value can just be 1 or 
-0.
-
+Done, thank you.
 
 -- 
-James Morris
-<jmorris@namei.org>
+	Evgeniy Polyakov
