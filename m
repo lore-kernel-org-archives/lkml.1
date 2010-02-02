@@ -1,54 +1,88 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755839Ab0BBLQB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 06:16:01 -0500
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:49932 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755185Ab0BBLP7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 06:15:59 -0500
-Date: Tue, 2 Feb 2010 20:15:52 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Ming Lei <tom.leiming@gmail.com>, linux-usb@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Sebastian Siewior <bigeasy@linutronix.de>, Greg KH <greg@kroah.com>
-Subject: Re: USB mass storage and ARM cache coherency
-Message-ID: <20100202111552.GA9325@linux-sh.org>
-References: <20100202063904.GK13428@linux-sh.org> <1265108739.12634.38.camel@pc1117.cambridge.arm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1265108739.12634.38.camel@pc1117.cambridge.arm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S1755879Ab0BBLRz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 06:17:55 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:56434 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755185Ab0BBLRw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 06:17:52 -0500
+Date: Tue, 2 Feb 2010 22:17:43 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Takashi Iwai <tiwai@suse.de>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Samuel Ortiz <sameo@linux.intel.com>
+Subject: Re: linux-next: sound tree build failure
+Message-Id: <20100202221743.1dbcad11.sfr@canb.auug.org.au>
+In-Reply-To: <20100202105800.GE6566@rakim.wolfsonmicro.main>
+References: <20100202124711.d8cdc220.sfr@canb.auug.org.au>
+	<20100202102609.GA6566@rakim.wolfsonmicro.main>
+	<20100202213732.586a3566.sfr@canb.auug.org.au>
+	<20100202105800.GE6566@rakim.wolfsonmicro.main>
+X-Mailer: Sylpheed 3.0.0beta6 (GTK+ 2.18.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__2_Feb_2010_22_17_43_+1100_q+Q=mcBMsHWewPGe"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 02, 2010 at 11:05:39AM +0000, Catalin Marinas wrote:
-> On Tue, 2010-02-02 at 06:39 +0000, Paul Mundt wrote:
-> > On Mon, Feb 01, 2010 at 05:29:14PM +0000, Catalin Marinas wrote:
-> > > diff --git a/drivers/usb/host/isp1760-hcd.c b/drivers/usb/host/isp1760-hcd.c
-> > > index 27b8f7c..4d3eeee 100644
-> > > --- a/drivers/usb/host/isp1760-hcd.c
-> > > +++ b/drivers/usb/host/isp1760-hcd.c
-> > > @@ -18,6 +18,8 @@
-> > >  #include <linux/uaccess.h>
-> > >  #include <linux/io.h>
-> > >  #include <asm/unaligned.h>
-> > > +#include <asm/cacheflush.h>
-> > > +#include <asm/memory.h>
-> > 
-> > asm/memory.h isn't a portable header. If you are including it for
-> > virt_to_page(), linux/io.h should already bring that in via asm/io.h.
-> > If arm doesn't bring in virt_to_page() through its asm/io.h, then fix the
-> > headers there please.
-> 
-> In the ARM case, yes, it brings virt_to_page() but I'm not sure that's
-> the case for the other architectures. I think a better header is
-> linux/mm.h which already uses this function in virt_to_head_page().
-> 
-For some reason I was thinking virt_to_phys() instead of virt_to_page()
-when I wrote that, so just ignore me. linux/mm.h is obviously fine.
+--Signature=_Tue__2_Feb_2010_22_17_43_+1100_q+Q=mcBMsHWewPGe
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi Mark,
+
+On Tue, 2 Feb 2010 10:58:00 +0000 Mark Brown <broonie@opensource.wolfsonmic=
+ro.com> wrote:
+>
+> On Tue, Feb 02, 2010 at 09:37:32PM +1100, Stephen Rothwell wrote:
+>=20
+> > The sound tree is merged before the mfd tree, and the commit that adds
+> > those is only in the mfd tree.  So the sound tree, on its own, is
+> > broken.  This driver will only build if you merge the mfd tree as well.
+>=20
+> Ah, you're doing builds after each individual merge.  It might help to
+
+Always have ...
+
+> change the form you're using when reporting problems with partially
+> constructed -next - at the minute you say "Today's linux-next build
+> (x86_64 allmodconfig) failed like this:" which makes it look like you're
+> testing the result of the full -next merge.
+
+I was hoping that the subject of the email would help with that
+impression.
+
+> > Kconfig has nothing to do with it, sorry.
+>=20
+> No, it does really fix the problem.  As I said the driver should build
+> depend on a Kconfig symbol which is introduced in the MFD tree.  This
+> means that the driver will not be built at all until MFD has been merged
+> since the dependencies required to select the driver will not be
+> satisfied unless the commits it depends on are present in the tree.
+
+Yeah, OK, I guess you could do that.
+
+> I'll push a patch for this shortly.
+
+Thanks.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__2_Feb_2010_22_17_43_+1100_q+Q=mcBMsHWewPGe
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAktoCdcACgkQjjKRsyhoI8wkPgCeNoX5Kt/pR/oxnM3YTwkGX9TI
+XTwAoK2AVDDREFNGB9pED7kVyCWtXvLo
+=jvsA
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__2_Feb_2010_22_17_43_+1100_q+Q=mcBMsHWewPGe--
