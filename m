@@ -1,160 +1,89 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756431Ab0BBPeX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 10:34:23 -0500
+	id S1756460Ab0BBPed (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 10:34:33 -0500
 Received: from mga09.intel.com ([134.134.136.24]:14323 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756281Ab0BBPeO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 10:34:14 -0500
+	id S1756412Ab0BBPeT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 10:34:19 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.49,390,1262592000"; 
-   d="scan'208";a="592471008"
-Message-Id: <20100202153317.782857993@intel.com>
+   d="scan'208";a="489018646"
+Message-Id: <20100202153317.644170708@intel.com>
 User-Agent: quilt/0.48-1
-Date: Tue, 02 Feb 2010 23:28:46 +0800
+Date: Tue, 02 Feb 2010 23:28:45 +0800
 From: Wu Fengguang <fengguang.wu@intel.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-cc: Jens Axboe <jens.axboe@oracle.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
+cc: Jens Axboe <jens.axboe@oracle.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        Wu Fengguang <fengguang.wu@intel.com>
 cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
 cc: Linux Memory Management List <linux-mm@kvack.org>
 cc: <linux-fsdevel@vger.kernel.org>
 Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 11/11] radixtree: speed up next/prev hole search
+Subject: [PATCH 10/11] readahead: dont do start-of-file readahead after lseek()
 References: <20100202152835.683907822@intel.com>
-Content-Disposition: inline; filename=radixtree-scan-hole-fast.patch
+Content-Disposition: inline; filename=readahead-lseek.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Replace the hole scan functions with more fast versions:
-	- radix_tree_next_hole(root, index, max_scan)
-	- radix_tree_prev_hole(root, index, max_scan)
+Some applications (eg. blkid, id3tool etc.) seek around the file
+to get information. For example, blkid does
+	     seek to	0
+	     read	1024
+	     seek to	1536
+	     read	16384
 
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>
+The start-of-file readahead heuristic is wrong for them, whose 
+access pattern can be identified by lseek() calls.
+
+So test-and-set a READAHEAD_LSEEK flag on lseek() and don't
+do start-of-file readahead on seeing it. Proposed by Linus.
+
+CC: Linus Torvalds <torvalds@linux-foundation.org> 
 Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 ---
- lib/radix-tree.c |   85 +++++++++++++++++++++++++++++++++++++++------
- 1 file changed, 74 insertions(+), 11 deletions(-)
+ fs/read_write.c    |    3 +++
+ include/linux/fs.h |    1 +
+ mm/readahead.c     |    5 +++++
+ 3 files changed, 9 insertions(+)
 
---- linux.orig/lib/radix-tree.c	2010-01-09 21:45:16.000000000 +0800
-+++ linux/lib/radix-tree.c	2010-01-21 22:04:22.000000000 +0800
-@@ -609,6 +609,24 @@ int radix_tree_tag_get(struct radix_tree
- }
- EXPORT_SYMBOL(radix_tree_tag_get);
- 
-+/*
-+ * Find the bottom radix tree node that contains @index.
-+ * Return NULL if @index is hole, or is the special root node.
-+ */
-+static struct radix_tree_node *
-+radix_tree_lookup_node(struct radix_tree_root *root, unsigned long index)
-+{
-+	void *slot;
-+
-+	slot = radix_tree_lookup_element(root, index, 1);
-+	if (!slot || slot == &root->rnode)
-+		return NULL;
-+
-+	slot -= (index & RADIX_TREE_MAP_MASK) * sizeof(void *);
-+
-+	return container_of(slot, struct radix_tree_node, slots);
-+}
-+
- /**
-  *	radix_tree_next_hole    -    find the next hole (not-present entry)
-  *	@root:		tree root
-@@ -630,18 +648,41 @@ EXPORT_SYMBOL(radix_tree_tag_get);
-  *	under rcu_read_lock.
-  */
- unsigned long radix_tree_next_hole(struct radix_tree_root *root,
--				unsigned long index, unsigned long max_scan)
-+				   unsigned long index, unsigned long max_scan)
- {
--	unsigned long i;
-+	struct radix_tree_node *node;
-+	unsigned long origin = index;
-+	int i;
-+
-+	node = rcu_dereference(root->rnode);
-+	if (node == NULL)
-+		return index;
-+
-+	if (!radix_tree_is_indirect_ptr(node))
-+		return index ? index : 1;
- 
--	for (i = 0; i < max_scan; i++) {
--		if (!radix_tree_lookup(root, index))
-+	while (index - origin < max_scan) {
-+		node = radix_tree_lookup_node(root, index);
-+		if (!node)
- 			break;
--		index++;
--		if (index == 0)
-+
-+		if (node->count == RADIX_TREE_MAP_SIZE) {
-+			index = (index | RADIX_TREE_MAP_MASK) + 1;
-+			goto check_overflow;
+--- linux.orig/mm/readahead.c	2010-02-02 21:52:19.000000000 +0800
++++ linux/mm/readahead.c	2010-02-02 21:52:32.000000000 +0800
+@@ -625,6 +625,11 @@ ondemand_readahead(struct address_space 
+ 	if (!offset) {
+ 		ra_set_pattern(ra, RA_PATTERN_INITIAL);
+ 		ra->start = offset;
++		if ((ra->ra_flags & READAHEAD_LSEEK) && req_size <= max) {
++			ra->size = req_size;
++			ra->async_size = 0;
++			goto readit;
 +		}
-+
-+		for (i = index & RADIX_TREE_MAP_MASK;
-+		     i < RADIX_TREE_MAP_SIZE;
-+		     i++, index++)
-+			if (rcu_dereference(node->slots[i]) == NULL)
-+				goto out;
-+
-+check_overflow:
-+		if (unlikely(index == 0))
- 			break;
+ 		ra->size = get_init_ra_size(req_size, max);
+ 		ra->async_size = ra->size > req_size ?
+ 				 ra->size - req_size : ra->size;
+--- linux.orig/fs/read_write.c	2010-02-02 21:50:51.000000000 +0800
++++ linux/fs/read_write.c	2010-02-02 21:53:04.000000000 +0800
+@@ -71,6 +71,9 @@ generic_file_llseek_unlocked(struct file
+ 		file->f_version = 0;
  	}
  
-+out:
- 	return index;
++	if (!(file->f_ra.ra_flags & READAHEAD_LSEEK))
++		file->f_ra.ra_flags |= READAHEAD_LSEEK;
++
+ 	return offset;
  }
- EXPORT_SYMBOL(radix_tree_next_hole);
-@@ -669,16 +710,38 @@ EXPORT_SYMBOL(radix_tree_next_hole);
- unsigned long radix_tree_prev_hole(struct radix_tree_root *root,
- 				   unsigned long index, unsigned long max_scan)
- {
--	unsigned long i;
-+	struct radix_tree_node *node;
-+	unsigned long origin = index;
-+	int i;
-+
-+	node = rcu_dereference(root->rnode);
-+	if (node == NULL)
-+		return index;
-+
-+	if (!radix_tree_is_indirect_ptr(node))
-+		return index ? index : ULONG_MAX;
+ EXPORT_SYMBOL(generic_file_llseek_unlocked);
+--- linux.orig/include/linux/fs.h	2010-02-02 21:52:19.000000000 +0800
++++ linux/include/linux/fs.h	2010-02-02 21:52:19.000000000 +0800
+@@ -899,6 +899,7 @@ struct file_ra_state {
+ #define	READAHEAD_MMAP_MISS	0x0000ffff /* cache misses for mmap access */
+ #define READAHEAD_THRASHED	0x10000000
+ #define	READAHEAD_MMAP		0x20000000
++#define	READAHEAD_LSEEK		0x40000000 /* be conservative after lseek() */
  
--	for (i = 0; i < max_scan; i++) {
--		if (!radix_tree_lookup(root, index))
-+	while (origin - index < max_scan) {
-+		node = radix_tree_lookup_node(root, index);
-+		if (!node)
- 			break;
--		index--;
--		if (index == LONG_MAX)
-+
-+		if (node->count == RADIX_TREE_MAP_SIZE) {
-+			index = (index - RADIX_TREE_MAP_SIZE) |
-+					 RADIX_TREE_MAP_MASK;
-+			goto check_underflow;
-+		}
-+
-+		for (i = index & RADIX_TREE_MAP_MASK; i >= 0; i--, index--)
-+			if (rcu_dereference(node->slots[i]) == NULL)
-+				goto out;
-+
-+check_underflow:
-+		if (unlikely(index == ULONG_MAX))
- 			break;
- 	}
- 
-+out:
- 	return index;
- }
- EXPORT_SYMBOL(radix_tree_prev_hole);
+ /*
+  * Which policy makes decision to do the current read-ahead IO?
 
 
