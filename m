@@ -1,17 +1,17 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755699Ab0BBHYE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 02:24:04 -0500
+	id S1755499Ab0BBHYU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 02:24:20 -0500
 Received: from mail.perches.com ([173.55.12.10]:1766 "EHLO mail.perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755499Ab0BBHWX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 02:22:23 -0500
+	id S1755345Ab0BBHWW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 02:22:22 -0500
 From: Joe Perches <joe@perches.com>
 To: linux-kernel@vger.kernel.org
-Cc: netdev@vger.kernel.org
-Subject: [PATCH 05/10] drivers/net/davinci_emac.c: Fix continuation line formats
-Date: Mon,  1 Feb 2010 23:22:11 -0800
-Message-Id: <0bcecb6f7b478b564d700dbb7f4344616fcb6bec.1265095094.git.joe@perches.com>
+Cc: Jeff Garzik <jgarzik@pobox.com>, linux-ide@vger.kernel.org
+Subject: [PATCH 02/10] drivers/ata: Fix continuation line formats
+Date: Mon,  1 Feb 2010 23:22:08 -0800
+Message-Id: <12d39ac4f14bfe82a02b4ee246d183b48988fe12.1265095094.git.joe@perches.com>
 X-Mailer: git-send-email 1.6.6.rc0.57.gad7a
 In-Reply-To: <cover.1265095093.git.joe@perches.com>
 References: <cover.1265095093.git.joe@perches.com>
@@ -24,23 +24,24 @@ are not good.
 
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- drivers/net/davinci_emac.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+ drivers/ata/pata_at91.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/davinci_emac.c b/drivers/net/davinci_emac.c
-index 33c4fe2..faffad4 100644
---- a/drivers/net/davinci_emac.c
-+++ b/drivers/net/davinci_emac.c
-@@ -2672,8 +2672,7 @@ static int __devinit davinci_emac_probe(struct platform_device *pdev)
- 	priv->emac_base_phys = res->start + pdata->ctrl_reg_offset;
- 	size = res->end - res->start + 1;
- 	if (!request_mem_region(res->start, size, ndev->name)) {
--		dev_err(emac_dev, "DaVinci EMAC: failed request_mem_region() \
--					 for regs\n");
-+		dev_err(emac_dev, "DaVinci EMAC: failed request_mem_region() for regs\n");
- 		rc = -ENXIO;
- 		goto probe_quit;
- 	}
+diff --git a/drivers/ata/pata_at91.c b/drivers/ata/pata_at91.c
+index 41c94b1..d222c0d 100644
+--- a/drivers/ata/pata_at91.c
++++ b/drivers/ata/pata_at91.c
+@@ -153,8 +153,8 @@ static void pata_at91_set_piomode(struct ata_port *ap, struct ata_device *adev)
+ 	/* Compute ATA timing and set it to SMC */
+ 	ret = ata_timing_compute(adev, adev->pio_mode, &timing, 1000, 0);
+ 	if (ret) {
+-		dev_warn(ap->dev, "Failed to compute ATA timing %d, \
+-				set PIO_0 timing\n", ret);
++		dev_warn(ap->dev, "Failed to compute ATA timing %d, set PIO_0 timing\n",
++			 ret);
+ 		set_smc_timing(ap->dev, info, &initial_timing);
+ 	} else {
+ 		set_smc_timing(ap->dev, info, &timing);
 -- 
 1.6.6.rc0.57.gad7a
 
