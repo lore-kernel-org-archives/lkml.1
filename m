@@ -1,98 +1,63 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755792Ab0BBLd0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 06:33:26 -0500
-Received: from smtp.citrix.com ([66.165.176.89]:8990 "EHLO SMTP.CITRIX.COM"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755666Ab0BBLdZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 06:33:25 -0500
-X-IronPort-AV: E=Sophos;i="4.49,389,1262581200"; 
-   d="scan'208";a="7043267"
-Subject: Re: [Xen-devel] [PATCH 6/6] xen/hybrid: Enable grant table and
- xenbus
-From: Ian Campbell <Ian.Campbell@citrix.com>
-To: Sheng Yang <sheng@linux.intel.com>
-CC: Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>,
-       Keir Fraser <Keir.Fraser@eu.citrix.com>,
-       xen-devel <xen-devel@lists.xensource.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <1265098747-10117-7-git-send-email-sheng@linux.intel.com>
-References: <1265098747-10117-1-git-send-email-sheng@linux.intel.com>
-	 <1265098747-10117-7-git-send-email-sheng@linux.intel.com>
-Content-Type: text/plain; charset="UTF-8"
-Organization: Citrix Systems, Inc.
-Date: Tue, 2 Feb 2010 11:33:10 +0000
-Message-ID: <1265110390.2965.22456.camel@zakaz.uk.xensource.com>
+	id S1755847Ab0BBLe2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 06:34:28 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:47444 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755698Ab0BBLe0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 06:34:26 -0500
+Date: Tue, 2 Feb 2010 11:34:24 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Takashi Iwai <tiwai@suse.de>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Samuel Ortiz <sameo@linux.intel.com>
+Subject: Re: linux-next: sound tree build failure
+Message-ID: <20100202113424.GH6566@rakim.wolfsonmicro.main>
+References: <20100202124711.d8cdc220.sfr@canb.auug.org.au>
+ <20100202102609.GA6566@rakim.wolfsonmicro.main>
+ <20100202213732.586a3566.sfr@canb.auug.org.au>
+ <20100202105800.GE6566@rakim.wolfsonmicro.main>
+ <20100202221743.1dbcad11.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100202221743.1dbcad11.sfr@canb.auug.org.au>
+X-Cookie: Nothing is but what is not.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-02-02 at 08:19 +0000, Sheng Yang wrote:
-> Notice one memory region(0xfbfe0000ul - 0xfc000000ul) would be reserved in the
-> bios E820 table. This memory region would be used as grant table.
+On Tue, Feb 02, 2010 at 10:17:43PM +1100, Stephen Rothwell wrote:
+> On Tue, 2 Feb 2010 10:58:00 +0000 Mark Brown <broonie@opensource.wolfsonmicro.com> wrote:
 
-I queried this requirement in a reply to the hypervisor patch.
+> > change the form you're using when reporting problems with partially
+> > constructed -next - at the minute you say "Today's linux-next build
+> > (x86_64 allmodconfig) failed like this:" which makes it look like you're
+> > testing the result of the full -next merge.
 
-> diff --git a/drivers/block/xen-blkfront.c b/drivers/block/xen-blkfront.c
-> index 05a31e5..d7dfba9 100644
-> --- a/drivers/block/xen-blkfront.c
-> +++ b/drivers/block/xen-blkfront.c
-> @@ -1071,6 +1071,9 @@ static int __init xlblk_init(void)
->  	if (!xen_domain())
->  		return -ENODEV;
->  
-> +	if (xen_hybrid_domain() && !xen_hybrid_evtchn_enabled())
-> +		return -ENODEV;
-> +
+> I was hoping that the subject of the email would help with that
+> impression.
 
-This seems ugly, at the very least the check should be something like
-xen_evtchn_enabled() but preferable would be to hook up evtchn's by
-demuxing the PCI device IRQ (the exiting PVonHVM drivers mechanism) in
-the case where hybrid evtchn's are not available and encapsulating the
-differences inside the evtchn code, there should be no need to scatter
-these sorts of checks throughout every driver.
+The way I've always read that was that you'd found a build failure in
+a given bit of the tree while testing -next - you're clearly doing some
+work to identify and understand where the failure came from (and simply
+looking at the source file leads to the same result normally anyway) so
+the fact that you've identified the subsystem doesn't automatically say
+that this happened with a partially merged -next.  If you looked less
+like a human the subject by itself would be clearer :)
 
-If you don't want to demux the PCI device IRQ for the non-hybrid case
-another option might be simply return failure from the evtchn operations
-if hybrid evtchns are not available and to ensure that the drivers
-handle that sort of error gracefully (which they should in any case). At
-least the difference in mode would be encapsulated that way.
+> > > Kconfig has nothing to do with it, sorry.
 
-(same for netfront).
+> > No, it does really fix the problem.  As I said the driver should build
+> > depend on a Kconfig symbol which is introduced in the MFD tree.  This
+> > means that the driver will not be built at all until MFD has been merged
+> > since the dependencies required to select the driver will not be
+> > satisfied unless the commits it depends on are present in the tree.
 
->  	if (register_blkdev(XENVBD_MAJOR, DEV_NAME)) {
->  		printk(KERN_WARNING "xen_blk: can't get major %d with name %s\n",
->  		       XENVBD_MAJOR, DEV_NAME);
-> diff --git a/drivers/input/xen-kbdfront.c b/drivers/input/xen-kbdfront.c
-> index c721c0a..74cbb25 100644
-> --- a/drivers/input/xen-kbdfront.c
-> +++ b/drivers/input/xen-kbdfront.c
-> @@ -341,6 +341,10 @@ static int __init xenkbd_init(void)
->  	if (!xen_domain())
->  		return -ENODEV;
->  
-> +	/* Xen Hybrid domain don't need vkbd */
-> +	if (xen_hybrid_domain())
-> +		return -ENODEV;
-> +
+> Yeah, OK, I guess you could do that.
 
-Why disallow it if the platform has specified it (same for fbfront)?
-
-> diff --git a/include/xen/xen.h b/include/xen/xen.h
-> index aace9cc..632e76f 100644
-> --- a/include/xen/xen.h
-> +++ b/include/xen/xen.h
-> @@ -5,6 +5,7 @@ enum xen_domain_type {
->  	XEN_NATIVE,		/* running on bare hardware    */
->  	XEN_PV_DOMAIN,		/* running in a PV domain      */
->  	XEN_HVM_DOMAIN,		/* running in a Xen hvm domain */
-> +	XEN_HYBRID_DOMAIN,	/* running in a Xen hybrid hvm domain */
->  };
-
-I don't think you should need to distinguish HYBRID from HVM mode...
-
-Ian.
-
+It's needed anyway, the driver will try to link against the MFD core so
+even with both bits merged a build that didn't select the core would
+fail.
