@@ -1,170 +1,211 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756846Ab0BBTy0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 14:54:26 -0500
-Received: from mail-out2.uio.no ([129.240.10.58]:49694 "EHLO mail-out2.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756412Ab0BBTyW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 14:54:22 -0500
-Subject: Re: [PATCH] nfs: clear_commit_release incorrectly handle truncated
- page
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Dmitry Monakhov <dmonakhov@openvz.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-nfs@vger.kernel.org
-In-Reply-To: <87ljfbwonj.fsf@openvz.org>
-References: <87hbpzhqlp.fsf@openvz.org> <1265123045.3177.21.camel@localhost>
-	 <87eil3pszw.fsf@openvz.org> <1265124999.3177.27.camel@localhost>
-	 <87mxzrk4wk.fsf@openvz.org> <1265127435.3177.47.camel@localhost>
-	 <87pr4nzisc.fsf@openvz.org> <1265130003.3177.51.camel@localhost>
-	 <87ljfbwonj.fsf@openvz.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 02 Feb 2010 14:54:16 -0500
-Message-ID: <1265140456.3177.94.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
-Content-Transfer-Encoding: 7bit
-X-UiO-Ratelimit-Test: rcpts/h 3 msgs/h 1 sum rcpts/h 5 sum msgs/h 1 total rcpts 2346 max rcpts/h 27 ratelimit 0
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: 7811B7C1FEE5D673C2E9780EFFFC7511EEE143EE
-X-UiO-SPAM-Test: remote_host: 68.40.206.115 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 1 total 154 max/h 7 blacklist 0 greylist 0 ratelimit 0
+	id S1756788Ab0BBT45 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 14:56:57 -0500
+Received: from mail-fx0-f215.google.com ([209.85.220.215]:49841 "EHLO
+	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755955Ab0BBT4z convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 14:56:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Rb0CxI9gc/qUZ3svWlWS6bUjKXmy8UimZr9g2kvkqr5KRfARESJXDy6HGPP6C8NFFM
+         teYqDdHTa6gm+Bh8AjrxPmIzXclFjm1aj3Lzfp3KQ0RA7QnjsWSuxQPkqDjv6PiUj6+s
+         fsqtW7Qe0+c90LIUU2CfCXg01c3s3UNhalwXM=
+MIME-Version: 1.0
+In-Reply-To: <1265136022.2793.33.camel@sbs-t61.sc.intel.com>
+References: <64bb37e1001310502p3d74bdf5ve56f63d3e8d2fd39@mail.gmail.com>
+	 <4B679042.2010008@kernel.org> <m1r5p4grvg.fsf@fess.ebiederm.org>
+	 <1265136022.2793.33.camel@sbs-t61.sc.intel.com>
+Date: Tue, 2 Feb 2010 20:56:53 +0100
+Message-ID: <64bb37e1002021156s6e8e3ba7p6192e15bc431eb87@mail.gmail.com>
+Subject: Re: do_IRQ: 0.165 No irq handler for vector (irq -1)
+From: Torsten Kaiser <just.for.lkml@googlemail.com>
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Tejun Heo <tj@kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Robert Hancock <hancockrwd@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Yinghai Lu <yhlu.kernel@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-02-02 at 20:09 +0300, Dmitry Monakhov wrote: 
-> Trond Myklebust <trond.myklebust@fys.uio.no> writes:
-> 
-> > On Tue, 2010-02-02 at 19:47 +0300, Dmitry Monakhov wrote: 
-> >> Trond Myklebust <trond.myklebust@fys.uio.no> writes:
-> >> > Hmm.... There is a known problem with a reference leak in
-> >> > nfs_wb_page_cancel() (I've queued up a fix for 2.6.33 in the 'bugfixes'
-> >> > branch of my git tree already). What happens when you apply the
-> >> > following patch?
-> >> The not helps, still get the same oops(log follows).
-> >> Have you tried my testcase?
-> >> 
-> >>  BUG: unable to handle kernel NULL pointer dereference at 00000040
-> >>  IP: [<f80d415f>] nfs_clear_request_commit+0x3f/0xb0 [nfs]
-> >>  *pde = 00000000 
-> >>  Oops: 0000 [#1] SMP DEBUG_PAGEALLOC
-> >>  last sysfs file: /sys/devices/platform/thinkpad_acpi/leds/tpacpi::thinkvantage/uevent
-> >>  Modules linked in: binfmt_misc quota_v2 quota_tree nfsd exportfs nfs lockd sunrpc iwl3945 thinkpad_acpi psmouse led_class serio_raw iwlcore nvram raid1 raid0 linear e1000e
-> >>  
-> >>  Pid: 1035, comm: nfsiod Not tainted 2.6.33-rc6 #60 2623DDU/2623DDU
-> >>  EIP: 0060:[<f80d415f>] EFLAGS: 00010296 CPU: 0
-> >>  EIP is at nfs_clear_request_commit+0x3f/0xb0 [nfs]
-> >>  EAX: 00000000 EBX: c2561d80 ECX: c06d3700 EDX: 00000014
-> >>  ESI: f69916c0 EDI: f80dab58 EBP: f6724ef4 ESP: f6724ee8
-> >>   DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-> >>  Process nfsiod (pid: 1035, ti=f6724000 task=f69dda90 task.ti=f6724000)
-> >>  Stack:
-> >>   c04df67d f69d7440 f69916c0 f6724f34 f80d4258 f6724f44 00001b0e 00000000
-> >>  <0> ffff799c 00000400 f505f000 94c0042a f69917e0 f69917e8 00000000 f69916c0
-> >>  <0> f69916c4 f69916c0 f80dab58 f6724f3c f8075703 f6724f58 f8075871 f6724f60
-> >>  Call Trace:
-> >>   [<c04df67d>] ? schedule+0x3ad/0xa30
-> >>   [<f80d4258>] ? nfs_commit_release+0x88/0x1a0 [nfs]
-> >>   [<f8075703>] ? rpc_release_calldata+0x13/0x20 [sunrpc]
-> >>   [<f8075871>] ? rpc_free_task+0x41/0x70 [sunrpc]
-> >>   [<c01acc4c>] ? probe_workqueue_execution+0x8c/0xd0
-> >>   [<f8075940>] ? rpc_async_release+0x10/0x20 [sunrpc]
-> >>   [<c015834d>] ? worker_thread+0x10d/0x210
-> >>   [<f8075930>] ? rpc_async_release+0x0/0x20 [sunrpc]
-> >>   [<c015bb10>] ? autoremove_wake_function+0x0/0x50
-> >>   [<c0158240>] ? worker_thread+0x0/0x210
-> >>   [<c015b724>] ? kthread+0x74/0x80
-> >>   [<c015b6b0>] ? kthread+0x0/0x80
-> >>   [<c0103546>] ? kernel_thread_helper+0x6/0x10
-> >>  Code: f0 0f ba 70 28 01 19 d2 31 c0 85 d2 75 0e 8b 5d f8 8b 75 fc 89 ec 5d c3 8d 74 26 00 89 d8 ba 10 00 00 00 e8 74 0e 10 c8 8b 43 10 <8b> 70 40 9c 5b fa e8 26 67 0d c8 8d 46 30 b9 ff ff ff ff 0f bd 
-> >>  EIP: [<f80d415f>] nfs_clear_request_commit+0x3f/0xb0 [nfs] SS:ESP 0068:f6724ee8
-> >>  CR2: 0000000000000040
-> >>  ---[ end trace 4bf8ee9d233ce744 ]---
-> >
-> > Yep. Looking more carefully at your test case, I don't see how
-> > truncate_inode_page() can be involved at all. You are extending the file
-> > using lseek(), not truncate(). So something else must be at work here.
-> open(,O_TRUNC,)
->  do_filp_open()
->   handle_truncate()
->    do_truncate()
-> Yess this is craziness to run concurrent tasks which do:
-> open(,O_TRUNC,); mmap();
-> But initially i've done this by occasion and this result in OOps :)
-> >
-> > I'll see if I can reproduce it.
-> >
+On Tue, Feb 2, 2010 at 7:40 PM, Suresh Siddha <suresh.b.siddha@intel.com> wrote:
+> On Mon, 2010-02-01 at 20:53 -0800, Eric W. Biederman wrote:
+>> > It might be that the silicon implements MSI incorrectly and ends up
+>> > sending out invalid MSI packets under certain circumstances.  The
+>> > silicon hasn't changed for quite some time now and back when it came
+>> > out MSI wasn't too popular and I don't think SIMG's proprietary
+>> > drivers use it, so it's quite possible that the feature simply is
+>> > broken.  Is there any specific reason why you want to enable MSI
+>> > support?  It's not like MSI brings any actual benefit when the
+>> > compatibility hardware is already there.
 
-OK. I haven't been able to reproduce your bug yet, but I think I see
-what is happening.
+ 19:      34618          3          2       4862   IO-APIC-fasteoi
+sata_sil24, bttv0, Bt87x audio
+[    6.038918] IRQ 19/bttv0: IRQF_DISABLED is not guaranteed on shared IRQs
 
-Your 'kill -9' will occasionally hit nfs_wb_page_cancel() and cause it
-to fail. When _that_ happens, then all hell breaks loose, because
-mapping->a_ops->invalidatepage() is not allowed to fail.
+The interrupt that the sata_sil24 is currently using is shared, so I
+thought that switching this to MSI might be a good idea.
+And I wanted to test a new feature. ;-)
 
-Ugh... I don't think there much of an alternative to making
-nfs_wait_on_request() uninterruptible. On the plus side, that does make
-the behaviour of the NFS writeback code consistent with that of the VFS
-layer (i.e. wait_on_page_writeback()).
+>> It also seems possible that some of the recent irq handling changes
+>> missed something.
+>
+> No Eric. This particular report is with 2.6.33-rc kernels and also only
+> when MSI support for sata_sil24 is enabled. Recent irq handling changes
+> are all in -tip tree and getting tested. So this sounds like a different
+> problem specific to this HW's MSI capabilities.
 
-So here goes...
+Just to repeat this so not get this information lost:
+MSI seems to work an this system.
+The drivers radeon (X300), HDA intel (onboard sound from the MCP55
+chipset) and tg3 (two BCM5754) all work without any problems.
 
-Trond
----------------------------------------------------------------------------------------------- 
-NFS: Fix an Oops when truncating a file
+>> Usually the message "No irq handler for vector (irq -1)" means that the irq
+>> was delivered to a cpu that was not ready for it.  I see that vector 165
+>> is being delivered on all of the different cpus with vector 165,
+>> and that you are getting interrupts delivered most of the time.
+>
+> Also I see this in the original report:
+>
+> On Sun, 2010-01-31 at 05:02 -0800, Torsten Kaiser wrote:
+>> What is really strange: The vector 165 is stable. It never changed
+>> even if I deactivate all other drivers in the kernel config (that
+>> changes the MSI IRQ for sata_sil24 from 29 to 28!) or if I switch off
+>> CONFIG_SPARSE_IRQ. In the kernel with the reduced number of drivers
+>> the maximum vector that gets used in __assign_irq_vector is only 137.
+>
+> It looks like the HW under certain conditions is generating interrupts
+> with wrong vector (165), especially when the __assign_irq_vector() never
+> allocated the vector 165 (and hence we never setup the vector to irq
+> mapping for this vector on any cpu). Torsten, can you please apply the
+> appended patch and boot with "apic_phys" boot parameter and see if it
+> makes any difference?
 
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
+I tried the patch and the message from do_IRQ is gone, but reading the
+file still fails with the same errors from libata.
+(Earlier tests with writing a large file to this disk also failed with
+timeouts, but never trigger the do_IRQ error)
 
-The VM/VFS does not allow mapping->a_ops->invalidatepage() to fail.
-Unfortunately, nfs_wb_page_cancel() may fail if a fatal signal occurs.
-Since the NFS code assumes that the page stays mapped for as long as the
-writeback is active, we can end up Oopsing (among other things).
+I added a diff between the dmesg from the testrun with your patch to
+the previous run at the end of the mail.
 
-The only safe fix here is to convert nfs_wait_on_request(), so as to make
-it uninterruptible (as is already the case with wait_on_page_writeback()).
+>> This smells like the initialization problems I was seeing in another
+>> thread.  Suresh?
+>
+> No. Initialization problems in another thread happens in a small window
+> during cpu online (in logical flat mode, we are setting up vector to irq
+> mappings for the AP a little late after we have enabled interrupts).
+> Here the problem is not actually triggered during cpu on-lining.
+
+FWIW: # CONFIG_HOTPLUG_CPU is not set
+
+I don't use suspend/resume on that system, so I never enabled CPU
+hotplug in the .config.
+
+Thanks for looking at this.
+
+Torsten
 
 
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+The changes in dmesg from you patch:
+1,2c1,2
+< x Linux version 2.6.33-rc6 (root@treogen) (gcc version 4.4.2 (Gentoo
+4.4.2 p1.0) ) #1 SMP Sat Jan 30 10:38:39 CET 2010
+< x Command line: root=/dev/sdc1 console=ttyS0,115200 console=tty1
+sata_sil24.msi=1 radeon.modeset=1 raid=noautodetect apic=debug
 ---
-
- fs/nfs/pagelist.c |   17 +++++++++--------
- 1 files changed, 9 insertions(+), 8 deletions(-)
-
-
-diff --git a/fs/nfs/pagelist.c b/fs/nfs/pagelist.c
-index e297593..a12c45b 100644
---- a/fs/nfs/pagelist.c
-+++ b/fs/nfs/pagelist.c
-@@ -176,6 +176,12 @@ void nfs_release_request(struct nfs_page *req)
- 	kref_put(&req->wb_kref, nfs_free_request);
- }
- 
-+static int nfs_wait_bit_uninterruptible(void *word)
-+{
-+	io_schedule();
-+	return 0;
-+}
-+
- /**
-  * nfs_wait_on_request - Wait for a request to complete.
-  * @req: request to wait upon.
-@@ -186,14 +192,9 @@ void nfs_release_request(struct nfs_page *req)
- int
- nfs_wait_on_request(struct nfs_page *req)
- {
--	int ret = 0;
--
--	if (!test_bit(PG_BUSY, &req->wb_flags))
--		goto out;
--	ret = out_of_line_wait_on_bit(&req->wb_flags, PG_BUSY,
--			nfs_wait_bit_killable, TASK_KILLABLE);
--out:
--	return ret;
-+	return wait_on_bit(&req->wb_flags, PG_BUSY,
-+			nfs_wait_bit_uninterruptible,
-+			TASK_UNINTERRUPTIBLE);
- }
- 
- /**
-
-
+> x Linux version 2.6.33-rc6 (root@treogen) (gcc version 4.4.2 (Gentoo 4.4.2 p1.0) ) #2 SMP Tue Feb 2 20:22:21 CET 2010
+> x Command line: root=/dev/sdc1 console=ttyS0,115200 console=tty1 sata_sil24.msi=1 radeon.modeset=1 raid=noautodetect apic=debug apic_phys
+61a62
+> x Setting APIC routing to physical flat.
+130a132
+> x Setting APIC routing to physical flat.
+159c161
+< x Kernel command line: root=/dev/sdc1 console=ttyS0,115200
+console=tty1 sata_sil24.msi=1 radeon.modeset=1 raid=noautodetect
+apic=debug
+---
+> x Kernel command line: root=/dev/sdc1 console=ttyS0,115200 console=tty1 sata_sil24.msi=1 radeon.modeset=1 raid=noautodetect apic=debug apic_phys
+163,164c165,166
+< x Node 0: aperture @ a7f2000000 size 32 MB
+< x Aperture beyond 4GB. Ignoring.
+---
+> x Node 0: aperture @ 20000000 size 32 MB
+> x Aperture pointing to e820 RAM. Ignoring.
+202c204
+< x Setting APIC routing to flat
+---
+> x Setting APIC routing to physical flat
+234,235c236,237
+< x ... lapic delta = 1249998
+< x ... PM-Timer delta = 357954
+---
+> x ... lapic delta = 1249989
+> x ... PM-Timer delta = 357951
+237,241c239,243
+< x ..... delta 1249998
+< x ..... mult: 53687005
+< x ..... calibration result: 1999996
+< x ..... CPU clock speed is 2599.9959 MHz.
+< x ..... host bus clock speed is 199.9996 MHz.
+---
+> x ..... delta 1249989
+> x ..... mult: 53686618
+> x ..... calibration result: 1999982
+> x ..... CPU clock speed is 2599.9751 MHz.
+> x ..... host bus clock speed is 199.9982 MHz.
+248c250
+< x Total of 4 processors activated (20800.14 BogoMIPS).
+---
+> x Total of 4 processors activated (20799.96 BogoMIPS).
+430,431c432,433
+< x ... APIC ICR: 000008fd
+< x ... APIC ICR2: 08000000
+---
+> x ... APIC ICR: 000000fd
+> x ... APIC ICR2: 03000000
+437,438c439,440
+< x ... APIC TMICT: 0001e847
+< x ... APIC TMCCT: 000174b3
+---
+> x ... APIC TMICT: 0001e846
+> x ... APIC TMCCT: 000185ee
+462,476c464,478
+< x  01 00F 0    0    0   0   0    1    1    31
+< x  02 00F 0    0    0   0   0    1    1    30
+< x  03 00F 0    0    0   0   0    1    1    33
+< x  04 00F 0    0    0   0   0    1    1    34
+< x  05 00F 1    0    0   0   0    1    1    35
+< x  06 00F 0    0    0   0   0    1    1    36
+< x  07 00F 0    0    0   0   0    1    1    37
+< x  08 00F 0    0    0   0   0    1    1    38
+< x  09 00F 0    1    0   0   0    1    1    39
+< x  0a 00F 1    0    0   0   0    1    1    3A
+< x  0b 00F 1    0    0   0   0    1    1    3B
+< x  0c 00F 0    0    0   0   0    1    1    3C
+< x  0d 00F 0    0    0   0   0    1    1    3D
+< x  0e 00F 0    0    0   0   0    1    1    3E
+< x  0f 00F 0    0    0   0   0    1    1    3F
+---
+> x  01 000 0    0    0   0   0    0    0    31
+> x  02 000 0    0    0   0   0    0    0    30
+> x  03 000 0    0    0   0   0    0    0    33
+> x  04 000 0    0    0   0   0    0    0    34
+> x  05 000 1    0    0   0   0    0    0    35
+> x  06 000 0    0    0   0   0    0    0    36
+> x  07 000 0    0    0   0   0    0    0    37
+> x  08 000 0    0    0   0   0    0    0    38
+> x  09 000 0    1    0   0   0    0    0    39
+> x  0a 000 1    0    0   0   0    0    0    3A
+> x  0b 000 1    0    0   0   0    0    0    3B
+> x  0c 000 0    0    0   0   0    0    0    3C
+> x  0d 000 0    0    0   0   0    0    0    3D
+> x  0e 000 0    0    0   0   0    0    0    3E
+> x  0f 000 0    0    0   0   0    0    0    3F
