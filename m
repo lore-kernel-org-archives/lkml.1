@@ -1,68 +1,57 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754626Ab0BBIhl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 03:37:41 -0500
-Received: from mail-iw0-f186.google.com ([209.85.223.186]:61681 "EHLO
-	mail-iw0-f186.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753157Ab0BBIhj convert rfc822-to-8bit (ORCPT
+	id S1754907Ab0BBIrL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 03:47:11 -0500
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:38761 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752897Ab0BBIrG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 03:37:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=dA6LBvtvHxc/leKeb8GOaroN7Dm1CXYdlW2LDARsK8TlN7nmoETT/ipeJunTmTgp2i
-         S3W4heX0dg12RkspHqTHo/dYXsw2GrVPj9QbaOxmB1fasrIHI6BFE+nzxfj6nO3hx5lj
-         xIR0EbSI6P2G7pRlcGTxJgWb9j9eUS5qKlIZM=
+	Tue, 2 Feb 2010 03:47:06 -0500
+Date: Tue, 2 Feb 2010 17:46:59 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-sh@vger.kernel.org,
+       linux-kernel@vger.kernel.org, spi-devel-general@lists.sourceforge.net
+Subject: Re: [GIT PULL] sh updates for 2.6.33-rc7
+Message-ID: <20100202084659.GC5716@linux-sh.org>
+References: <20100202040628.GH13428@linux-sh.org> <fa686aa41002020017m5ea0020di6924905a631dc7d6@mail.gmail.com> <20100202082144.GB5716@linux-sh.org> <fa686aa41002020031r38e6bc9eyfce6476d86d47ec2@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <21d7e9971002020035v22318962w6412ccd8d93449da@mail.gmail.com>
-References: <alpine.DEB.2.00.1002010215530.15366@skynet.skynet.ie>
-	 <alpine.DEB.2.00.1002010253120.15366@skynet.skynet.ie>
-	 <20100202081727.GA6788@elte.hu>
-	 <21d7e9971002020035v22318962w6412ccd8d93449da@mail.gmail.com>
-Date: Tue, 2 Feb 2010 18:37:38 +1000
-Message-ID: <21d7e9971002020037r13de7df7t1450cecc1f4a4fea@mail.gmail.com>
-Subject: Re: [crash, PATCH] Revert "drm/radeon/kms: move radeon KMS on/off 
-	switch out of staging."
-From: Dave Airlie <airlied@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Dave Airlie <airlied@linux.ie>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <fa686aa41002020031r38e6bc9eyfce6476d86d47ec2@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 2, 2010 at 6:35 PM, Dave Airlie <airlied@gmail.com> wrote:
-> On Tue, Feb 2, 2010 at 6:17 PM, Ingo Molnar <mingo@elte.hu> wrote:
->>
->> * Dave Airlie <airlied@linux.ie> wrote:
->>
->>> > Hi Linus,
->>> >
->>> > Please pull the 'drm-linus' branch from
->>> > ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git drm-linus
->>> >
->>>
->>> I've also added an oops fix I seem to lose off my radar to this tree.
->>>
->>> commit 17aafccab4352b422aa01fa6ebf82daff693a5b3
->>> Author: Michel D??nzer <daenzer@vmware.com>
->>> Date:   Fri Jan 22 09:20:00 2010 +0100
->>>
->>>     drm/radeon/kms: Fix oops after radeon_cs_parser_init() failure.
->>
->
-> Wierd this suggests something else is wrong on that machine can you get me
-> the whole dmesg? I'm guessing some iommu or swiotlb issue.
->
-> I've asked Jerome to fix the oops, but really anyone with an old
-> .config won't get
-> hit by this, and we've booted this on quite a lot of machines at this point.
->
-
-Ideas keep flooding in here, did you softboot from the old UMS driver? or
-coldboot? does coldbooting help?
-
-Dave.
+On Tue, Feb 02, 2010 at 01:31:18AM -0700, Grant Likely wrote:
+> On Tue, Feb 2, 2010 at 1:21 AM, Paul Mundt <lethal@linux-sh.org> wrote:
+> > On Tue, Feb 02, 2010 at 01:17:49AM -0700, Grant Likely wrote:
+> >> Hold the phone; please coordinate with me before picking up SPI
+> >> patches into your tree. ?I don't mind arch specific spi changes going
+> >> in via a different tree, but I'd like to know about it before I waste
+> >> time farting around with the same patch (like I did with this one
+> >> tonight, and only found out that you also picked it up when I came
+> >> across this pull request by chance).
+> >>
+> > If there's someone actively looking after the SPI stuff then that's fine.
+> 
+> I am now.  There wasn't anyone for a while.
+> 
+> > I didn't bother bouncing this one off of the SPI list since it's a
+> > hardware-specific correctness fix and has no dependency on anything
+> > subsystem related.
+> 
+> Fair enough, but the patch itself came across the SPI list, and so it
+> showed up in the patchwork tracking of spi-devel-general which I'm
+> using to keep on top of everything.  I brief reply to the patch email
+> would have let me know that I didn't have to waste any time with it.
+> 
+Ahh.. this is where the confusion came from. The initial version of the
+patch was only posted to the sh list, Magnus asked for it to be reposted
+to the spi list and I hadn't heard anything about it since then, so I
+assumed the poster just disappeared and I just cleaned it up and applied
+it by hand. Apparently it was reposted but the sh list was dropped, so I
+never saw the updated version. If I had known that it had hit the SPI
+list I would have followed up there, I'll be more careful next time now
+that I know someone is paying attention :-)
