@@ -1,79 +1,68 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932253Ab0BBTIq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 14:08:46 -0500
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:46619 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756916Ab0BBTIl (ORCPT
+	id S932329Ab0BBTKK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 14:10:10 -0500
+Received: from www17.your-server.de ([213.133.104.17]:54886 "EHLO
+	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932327Ab0BBTJ7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 14:08:41 -0500
-Subject: [PATCH v2 11/18] IB/umad: use stack variable 'base' in
-	ib_umad_init_port
-To: rdreier@cisco.com
-From: Alex Chiang <achiang@hp.com>
-Cc: linux-rdma@vger.kernel.org, justin.chen@hp.com,
-       linux-kernel@vger.kernel.org
-Date: Tue, 02 Feb 2010 12:08:40 -0700
-Message-ID: <20100202190840.28217.76826.stgit@bob.kio>
-In-Reply-To: <20100202185235.28217.64521.stgit@bob.kio>
-References: <20100202185235.28217.64521.stgit@bob.kio>
-User-Agent: StGit/0.15
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Tue, 2 Feb 2010 14:09:59 -0500
+Subject: [PATCH] i915: slow acpi_lid_open() causes flickering - V2
+From: Thomas Meyer <thomas@m3y3r.de>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>, Eric Anholt <eric@anholt.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Justin P. Mattock" <justinmattock@gmail.com>,
+       Joe Perches <joe@perches.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 02 Feb 2010 20:09:04 +0100
+Message-ID: <1265137744.2353.3.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
 Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: thomas@m3y3r.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This change is not useful by itself, but sets us up for a future change
-that allows us to support more than IB_UMAD_MAX_PORTS in a system.
+acpi_lid_open() could take up to 10ms on my computer.  Some component is
+calling the drm GETCONNECTOR ioctl many times in a row.  This results in
+flickering (for example, when starting a video).  Fix it by assuming an
+always connected lid status.
 
-Signed-off-by: Alex Chiang <achiang@hp.com>
+Signed-off-by: Thomas Meyer <thomas@m3y3r.de>
 ---
+ drivers/gpu/drm/i915/intel_lvds.c |    9 ++++++++-
+ 1 files changed, 8 insertions(+), 1 deletions(-)
 
- drivers/infiniband/core/user_mad.c |    7 +++++--
- 1 files changed, 5 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/infiniband/core/user_mad.c b/drivers/infiniband/core/user_mad.c
-index df403ec..5a66bd0 100644
---- a/drivers/infiniband/core/user_mad.c
-+++ b/drivers/infiniband/core/user_mad.c
-@@ -975,6 +975,7 @@ static int ib_umad_init_port(struct ib_device *device, int port_num,
- 			     struct ib_umad_port *port)
+diff --git a/drivers/gpu/drm/i915/intel_lvds.c b/drivers/gpu/drm/i915/intel_lvds.c
+index aa74e59..05a31ae 100644
+--- a/drivers/gpu/drm/i915/intel_lvds.c
++++ b/drivers/gpu/drm/i915/intel_lvds.c
+@@ -623,6 +623,13 @@ static const struct dmi_system_id bad_lid_status[] = {
+ 		},
+ 	},
+ 	{
++		.ident = "Aspire 1810T",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Acer"),
++			DMI_MATCH(DMI_PRODUCT_NAME, "Aspire 1810T"),
++		},
++	},
++	{
+ 		.ident = "PC-81005",
+ 		.matches = {
+ 			DMI_MATCH(DMI_SYS_VENDOR, "MALATA"),
+@@ -643,7 +650,7 @@ static enum drm_connector_status intel_lvds_detect(struct drm_connector *connect
  {
- 	int devnum;
-+	dev_t base;
+ 	enum drm_connector_status status = connector_status_connected;
  
- 	spin_lock(&port_lock);
- 	devnum = find_first_zero_bit(dev_map, IB_UMAD_MAX_PORTS);
-@@ -983,6 +984,7 @@ static int ib_umad_init_port(struct ib_device *device, int port_num,
- 		return -1;
- 	}
- 	port->dev_num = devnum;
-+	base = devnum + base_dev;
- 	set_bit(devnum, dev_map);
- 	spin_unlock(&port_lock);
+-	if (!acpi_lid_open() && !dmi_check_system(bad_lid_status))
++	if (!dmi_check_system(bad_lid_status) && !acpi_lid_open())
+ 		status = connector_status_disconnected;
  
-@@ -995,7 +997,7 @@ static int ib_umad_init_port(struct ib_device *device, int port_num,
- 	cdev_init(&port->cdev, &umad_fops);
- 	port->cdev.owner = THIS_MODULE;
- 	kobject_set_name(&port->cdev.kobj, "umad%d", port->dev_num);
--	if (cdev_add(&port->cdev, base_dev + devnum, 1))
-+	if (cdev_add(&port->cdev, base, 1))
- 		goto err_cdev;
- 
- 	port->dev = device_create(umad_class, device->dma_device,
-@@ -1009,10 +1011,11 @@ static int ib_umad_init_port(struct ib_device *device, int port_num,
- 	if (device_create_file(port->dev, &dev_attr_port))
- 		goto err_dev;
- 
-+	base += IB_UMAD_MAX_PORTS;
- 	cdev_init(&port->sm_cdev, &umad_sm_fops);
- 	port->sm_cdev.owner = THIS_MODULE;
- 	kobject_set_name(&port->sm_cdev.kobj, "issm%d", port->dev_num);
--	if (cdev_add(&port->sm_cdev, base_dev + devnum + IB_UMAD_MAX_PORTS, 1))
-+	if (cdev_add(&port->sm_cdev, base, 1))
- 		goto err_sm_cdev;
- 
- 	port->sm_dev = device_create(umad_class, device->dma_device,
+ 	return status;
+-- 
+1.6.6
+
 
