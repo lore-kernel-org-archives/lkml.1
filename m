@@ -1,83 +1,78 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756711Ab0BBSVA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 13:21:00 -0500
-Received: from exprod6ob109.obsmtp.com ([64.18.1.22]:50979 "HELO psmtp.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1756623Ab0BBSU6 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 13:20:58 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	id S1756701Ab0BBS1Z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 13:27:25 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49298 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756506Ab0BBS1X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 13:27:23 -0500
+Date: Tue, 2 Feb 2010 19:26:53 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Paul Mackerras <paulus@samba.org>, Stephane Eranian <eranian@google.com>,
+       "Metzger, Markus T" <markus.t.metzger@intel.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Robert Richter <robert.richter@amd.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Jamie Iles <jamie.iles@picochip.com>, Paul Mundt <lethal@linux-sh.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [RFC][PATCH] perf_events, x86: PEBS support
+Message-ID: <20100202182653.GB19320@elte.hu>
+References: <1265129772.24455.329.camel@laptop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: [PWM PATCH 1/5] API to consolidate PWM devices behind a common user and kernel interface
-Date: Tue, 2 Feb 2010 13:20:55 -0500
-Message-ID: <BD79186B4FD85F4B8E60E381CAEE1909020E99E1@mi8nycmail19.Mi8.com>
-In-Reply-To: <c5873aa7c5d20254a9e54fc1ff179345b77c16b5.1265094517.git.bgat@billgatliff.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PWM PATCH 1/5] API to consolidate PWM devices behind a common user and kernel interface
-Thread-Index: Acqj16fGQIbbe2TTS6qu8c6pDrkjVgAW3/GA
-References: <cover.1265094517.git.bgat@billgatliff.com> <c5873aa7c5d20254a9e54fc1ff179345b77c16b5.1265094517.git.bgat@billgatliff.com>
-From: "H Hartley Sweeten" <hartleys@visionengravers.com>
-To: "Bill Gatliff" <bgat@billgatliff.com>, <linux-embedded@vger.kernel.org>
-Cc: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 02 Feb 2010 18:20:56.0128 (UTC) FILETIME=[762B3C00:01CAA434]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1265129772.24455.329.camel@laptop>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, February 02, 2010 12:15 AM, Bill Gatliff wrote:
-> Signed-off-by: Bill Gatliff <bgat@billgatliff.com>
+
+* Peter Zijlstra <peterz@infradead.org> wrote:
+
+> Totally uncompiled and untested, but it looks to be about mostly there so I 
+> thought I'd post it.
+> 
+> One of the things that is missing is keeping the count value sane while 
+> using PEBS -- another is dealing with auto frequency things, I thought 
+> about single shot PEBS assist for that.
+> 
+> After this we can do something like PERF_SAMPLE_REGS, but for that we need 
+> to think about how to expose pt_regs to userspace or something (or maybe it 
+> already is, I haven't checked).
+> 
+> Also, initially I'll go through all the other hw perf implementations 
+> (powerpc, sparc, arm, sh) and make then refuse to create attr.precise 
+> counters -- precise meaning the reported IP is not influenced by OoO 
+> artefacts.
+> 
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 > ---
->  Documentation/pwm.txt   |  260 +++++++++++++++++++
->  drivers/pwm/pwm.c       |  633 +++++++++++++++++++++++++++++++++++++++++++++++
->  include/linux/pwm.h     |   31 ---
->  include/linux/pwm/pwm.h |  170 +++++++++++++
->  4 files changed, 1063 insertions(+), 31 deletions(-)
->  create mode 100644 Documentation/pwm.txt
->  create mode 100644 drivers/pwm/pwm.c
->  delete mode 100644 include/linux/pwm.h
->  create mode 100644 include/linux/pwm/pwm.h
+>  arch/x86/kernel/cpu/perf_event.c |  354 ++++++++++++++++++++++++++++++++++-----
+>  include/linux/perf_event.h       |    4 
+>  2 files changed, 314 insertions(+), 44 deletions(-)
 
-A couple quick comments, more after a better review.
+Very nice!
 
-[snip]
+> @@ -203,8 +203,9 @@ struct perf_event_attr {
+>  				enable_on_exec :  1, /* next exec enables     */
+>  				task           :  1, /* trace fork/exit       */
+>  				watermark      :  1, /* wakeup_watermark      */
+> +				precise        :  1,
 
-> diff --git a/drivers/pwm/pwm.c b/drivers/pwm/pwm.c
-> new file mode 100644
-> index 0000000..f369384
-> --- /dev/null
-> +++ b/drivers/pwm/pwm.c
+I think we want to default to precise events even if not specifically 
+requested by user-space, in the cases where that's possible on the CPU 
+without additional limitations.
 
-[snip]
+That way people will default to better (and possibly cheaper) PEBS profiling 
+on modern Intel CPUs.
 
-> +int pwm_unregister(struct pwm_device *pwm)
-> +{
-
-[snip]
-
-> +	for (wchan = 0; wchan < pwm->nchan; wchan++) {
-> +		if (pwm->channels[wchan].flags & FLAG_REQUESTED) {
-
-Shouldn't this be:
-
-	& BIT(FLAG_REQUESTED)
-
-[snip]
-
-> diff --git a/include/linux/pwm/pwm.h b/include/linux/pwm/pwm.h
-> new file mode 100644
-> index 0000000..848cd76
-> --- /dev/null
-> +++ b/include/linux/pwm/pwm.h
-> @@ -0,0 +1,170 @@
-> +#ifndef __LINUX_PWM_H
-> +#define __LINUX_PWM_H
-
-Nitpick... Can you move the #ifndef/#define to after the comment?
-
-Regards,
-Hartley
+	Ingo
