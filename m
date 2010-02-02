@@ -1,18 +1,18 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756884Ab0BBS7P (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 13:59:15 -0500
-Received: from verein.lst.de ([213.95.11.210]:37993 "EHLO verein.lst.de"
+	id S1756908Ab0BBS7Z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 13:59:25 -0500
+Received: from verein.lst.de ([213.95.11.210]:37997 "EHLO verein.lst.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756360Ab0BBS7N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 13:59:13 -0500
-Date: Tue, 2 Feb 2010 19:58:37 +0100
+	id S1756870Ab0BBS7U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 13:59:20 -0500
+Date: Tue, 2 Feb 2010 19:58:57 +0100
 From: Christoph Hellwig <hch@lst.de>
 To: roland@redhat.com, oleg@redhat.com, akpm@linux-foundation.org,
-       mattst88@gmail.com, ink@jurassic.park.msu.ru, rth@twiddle.net
+       hskinnemoen@atmel.com
 Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-Subject: [PATCH 2/14] alpha: use generic ptrace_resume code
-Message-ID: <20100202185837.GB3630@lst.de>
+Subject: [PATCH 4/14] avr32: use generic ptrace_resume code
+Message-ID: <20100202185857.GD3630@lst.de>
 References: <20100202185755.GA3630@lst.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -32,50 +32,64 @@ also causes the breakpoint information to be cleared on fork, which
 could be considered a bug fix.
 
 Also the TIF_SYSCALL_TRACE thread flag is now cleared on PTRACE_KILL
-which it previously wasn't, which is consistent with all architectures
+which it previously wasn't which is consistent with all architectures
 using the modern ptrace code.
+
+Currently avr32 doesn't implement any code to disable single stepping
+when one of the non-syscall requests is called which seems wrong,
+but I've left it as-is for now.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 
-Index: linux-2.6/arch/alpha/kernel/ptrace.c
+Index: linux-2.6/arch/avr32/include/asm/ptrace.h
 ===================================================================
---- linux-2.6.orig/arch/alpha/kernel/ptrace.c	2010-02-02 11:05:03.197004058 +0100
-+++ linux-2.6/arch/alpha/kernel/ptrace.c	2010-02-02 11:07:04.091006019 +0100
-@@ -249,6 +249,17 @@ ptrace_cancel_bpt(struct task_struct * c
- 	return (nsaved != 0);
+--- linux-2.6.orig/arch/avr32/include/asm/ptrace.h	2010-02-02 11:14:51.257023230 +0100
++++ linux-2.6/arch/avr32/include/asm/ptrace.h	2010-02-02 11:15:00.220025002 +0100
+@@ -124,6 +124,8 @@ struct pt_regs {
+ 
+ #include <asm/ocd.h>
+ 
++#define arch_has_single_step()		(1)
++
+ #define arch_ptrace_attach(child)       ocd_enable(child)
+ 
+ #define user_mode(regs)                 (((regs)->sr & MODE_MASK) == MODE_USER)
+Index: linux-2.6/arch/avr32/kernel/ptrace.c
+===================================================================
+--- linux-2.6.orig/arch/avr32/kernel/ptrace.c	2010-02-02 11:14:51.269004225 +0100
++++ linux-2.6/arch/avr32/kernel/ptrace.c	2010-02-02 11:15:40.045282945 +0100
+@@ -28,9 +28,9 @@ static struct pt_regs *get_user_regs(str
+ 				  THREAD_SIZE - sizeof(struct pt_regs));
  }
  
-+void user_enable_single_step(struct task_struct *child)
-+{
-+	/* Mark single stepping.  */
-+	task_thread_info(child)->bpt_nsaved = -1;
-+}
-+
+-static void ptrace_single_step(struct task_struct *tsk)
++static void user_enable_single_step(struct task_struct *tsk)
+ {
+-	pr_debug("ptrace_single_step: pid=%u, PC=0x%08lx, SR=0x%08lx\n",
++	pr_debug("user_enable_single_step: pid=%u, PC=0x%08lx, SR=0x%08lx\n",
+ 		 tsk->pid, task_pt_regs(tsk)->pc, task_pt_regs(tsk)->sr);
+ 
+ 	/*
+@@ -49,6 +49,11 @@ static void ptrace_single_step(struct ta
+ 	set_tsk_thread_flag(tsk, TIF_SINGLE_STEP);
+ }
+ 
 +void user_disable_single_step(struct task_struct *child)
 +{
-+	ptrace_cancel_bpt(child);
++	/* XXX(hch): a no-op here seems wrong.. */
 +}
 +
  /*
-  * Called by kernel/ptrace.c when detaching..
+  * Called by kernel/ptrace.c when detaching
   *
-@@ -256,7 +267,7 @@ ptrace_cancel_bpt(struct task_struct * c
-  */
- void ptrace_disable(struct task_struct *child)
- { 
--	ptrace_cancel_bpt(child);
-+	user_disable_single_step(child);
- }
- 
- long arch_ptrace(struct task_struct *child, long request, long addr, long data)
-@@ -289,52 +300,6 @@ long arch_ptrace(struct task_struct *chi
- 		DBG(DBG_MEM, ("poke $%ld<-%#lx\n", addr, data));
- 		ret = put_reg(child, addr, data);
+@@ -156,50 +161,6 @@ long arch_ptrace(struct task_struct *chi
+ 		ret = ptrace_write_user(child, addr, data);
  		break;
--
+ 
+-	/* continue and stop at next (return from) syscall */
 -	case PTRACE_SYSCALL:
--		/* continue and stop at next (return from) syscall */
--	case PTRACE_CONT:    /* restart after signal. */
+-	/* restart after signal */
+-	case PTRACE_CONT:
 -		ret = -EIO;
 -		if (!valid_signal(data))
 -			break;
@@ -84,52 +98,38 @@ Index: linux-2.6/arch/alpha/kernel/ptrace.c
 -		else
 -			clear_tsk_thread_flag(child, TIF_SYSCALL_TRACE);
 -		child->exit_code = data;
--		/* make sure single-step breakpoint is gone. */
--		ptrace_cancel_bpt(child);
+-		/* XXX: Are we sure no breakpoints are active here? */
 -		wake_up_process(child);
 -		ret = 0;
 -		break;
 -
 -	/*
--	 * Make the child exit.  Best I can do is send it a sigkill.
--	 * perhaps it should be put in the status that it wants to
--	 * exit.
+-	 * Make the child exit. Best I can do is send it a
+-	 * SIGKILL. Perhaps it should be put in the status that it
+-	 * wants to exit.
 -	 */
 -	case PTRACE_KILL:
 -		ret = 0;
 -		if (child->exit_state == EXIT_ZOMBIE)
 -			break;
 -		child->exit_code = SIGKILL;
--		/* make sure single-step breakpoint is gone. */
--		ptrace_cancel_bpt(child);
 -		wake_up_process(child);
 -		break;
 -
--	case PTRACE_SINGLESTEP:  /* execute single instruction. */
+-	/*
+-	 * execute single instruction.
+-	 */
+-	case PTRACE_SINGLESTEP:
 -		ret = -EIO;
 -		if (!valid_signal(data))
 -			break;
--		/* Mark single stepping.  */
--		task_thread_info(child)->bpt_nsaved = -1;
 -		clear_tsk_thread_flag(child, TIF_SYSCALL_TRACE);
+-		ptrace_single_step(child);
 -		child->exit_code = data;
 -		wake_up_process(child);
--		/* give it a chance to run. */
 -		ret = 0;
 -		break;
 -
- 	default:
- 		ret = ptrace_request(child, request, addr, data);
+ 	case PTRACE_GETREGS:
+ 		ret = ptrace_getregs(child, (void __user *)data);
  		break;
-Index: linux-2.6/arch/alpha/include/asm/ptrace.h
-===================================================================
---- linux-2.6.orig/arch/alpha/include/asm/ptrace.h	2010-02-02 11:07:29.091023600 +0100
-+++ linux-2.6/arch/alpha/include/asm/ptrace.h	2010-02-02 11:07:38.645007248 +0100
-@@ -68,6 +68,7 @@ struct switch_stack {
- 
- #ifdef __KERNEL__
- 
-+#define arch_has_single_step()		(1)
- #define user_mode(regs) (((regs)->ps & 8) != 0)
- #define instruction_pointer(regs) ((regs)->pc)
- #define profile_pc(regs) instruction_pointer(regs)
