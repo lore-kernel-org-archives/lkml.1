@@ -1,78 +1,72 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755631Ab0BBIa6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 03:30:58 -0500
-Received: from vpn.id2.novell.com ([195.33.99.129]:21879 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752964Ab0BBIa5 convert rfc822-to-8bit (ORCPT
-	<rfc822;groupwise-JBeulich@novell.com;4:1>);
-	Tue, 2 Feb 2010 03:30:57 -0500
-Message-Id: <4B67F0CC020000780002D200@vpn.id2.novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.1 
-Date: Tue, 02 Feb 2010 08:30:52 +0000
-From: "Jan Beulich" <JBeulich@novell.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: <mingo@elte.hu>, "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       <tglx@linutronix.de>, <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/3] x86: enlightenment for ticket spinlocks -
-	 remove  NOPs from unlock path
-References: <4B62A40B020000780002CA99@vpn.id2.novell.com>
- <4B675BBB.20303@zytor.com>
-In-Reply-To: <4B675BBB.20303@zytor.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1755787Ab0BBIbl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 03:31:41 -0500
+Received: from mail-gx0-f224.google.com ([209.85.217.224]:50222 "EHLO
+	mail-gx0-f224.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752964Ab0BBIbj convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 03:31:39 -0500
+MIME-Version: 1.0
+In-Reply-To: <20100202082144.GB5716@linux-sh.org>
+References: <20100202040628.GH13428@linux-sh.org> <fa686aa41002020017m5ea0020di6924905a631dc7d6@mail.gmail.com> 
+	<20100202082144.GB5716@linux-sh.org>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Tue, 2 Feb 2010 01:31:18 -0700
+X-Google-Sender-Auth: 8487af594ef793ca
+Message-ID: <fa686aa41002020031r38e6bc9eyfce6476d86d47ec2@mail.gmail.com>
+Subject: Re: [GIT PULL] sh updates for 2.6.33-rc7
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-sh@vger.kernel.org,
+       linux-kernel@vger.kernel.org, spi-devel-general@lists.sourceforge.net
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> "H. Peter Anvin" <hpa@zytor.com> 01.02.10 23:54 >>>
->> --- 2.6.33-rc5-virt-spinlocks.orig/arch/x86/include/asm/alternative-asm.h
->> +++ 2.6.33-rc5-virt-spinlocks/arch/x86/include/asm/alternative-asm.h
->> @@ -1,3 +1,7 @@
->> +#if 0 /* Hide this from compiler. */
->> +	.if 0 # Hide assembly source stuff when assembling compiler output.
->> +#endif
->> +
->>  #ifdef __ASSEMBLY__
->>  
->>  #include <asm/asm.h>
->> @@ -16,3 +20,58 @@
->>  #endif
->>  
->>  #endif  /*  __ASSEMBLY__  */
->> +
->> +#if 0 /* Hide this from compiler. */
->> +	.else # Code to be used in compiler output:
->> +
->> +	.weak _$.zero
->> +
->> +	.macro unary opc arg1 arg2 arg3
->...
->> +	.endm
->> +
->> +	.endif
->> +#endif
->
->Okay, I have absolutely no idea what this macro either *does* or what
->it's *supposed to do* nor if it matches... you kind of forgot to
->describe that.
+On Tue, Feb 2, 2010 at 1:21 AM, Paul Mundt <lethal@linux-sh.org> wrote:
+> On Tue, Feb 02, 2010 at 01:17:49AM -0700, Grant Likely wrote:
+>> On Mon, Feb 1, 2010 at 9:06 PM, Paul Mundt <lethal@linux-sh.org> wrote:
+>> > Please pull from:
+>> >
+>> > ? ? ? ?master.kernel.org:/pub/scm/linux/kernel/git/lethal/sh-2.6.git sh/for-2.6.33
+>> >
+>> > Which contains:
+>> >
+>> > Magnus Damm (1):
+>> > ? ? ?usb: r8a66597-hdc disable interrupts fix
+>> >
+>> > Marek Skuczynski (2):
+>> > ? ? ?sh: Fix access to released memory in dwarf_unwinder_cleanup()
+>> > ? ? ?sh: Fix access to released memory in clk_debugfs_register_one()
+>> >
+>> > Markus Pietrek (1):
+>> > ? ? ?spi: spi_sh_msiof: Fixed data sampling on the correct edge
+>>
+>> Hold the phone; please coordinate with me before picking up SPI
+>> patches into your tree.  I don't mind arch specific spi changes going
+>> in via a different tree, but I'd like to know about it before I waste
+>> time farting around with the same patch (like I did with this one
+>> tonight, and only found out that you also picked it up when I came
+>> across this pull request by chance).
+>>
+> If there's someone actively looking after the SPI stuff then that's fine.
 
-It does what the patch description says - extend the (memory) operand
-of a unary opcode (inc in the case where it's being used) to maximum
-width (i.e. to include a 32-bit displacement regardless of whether one
-really is needed). It just needs to consider the different cases of what
-operands gcc may output. And it gets more complicated because
-commas in the operand are being treated as macro operand separators.
+I am now.  There wasn't anyone for a while.
 
->The other bit is that this whole handling with .if and
->#if is just too ugly to live.  Create two include files at the very minimum.
+> I didn't bother bouncing this one off of the SPI list since it's a
+> hardware-specific correctness fix and has no dependency on anything
+> subsystem related.
 
-The new one ought to use the same construct then anyway, as inclusion
-of the file visible to gcc is desirable for dependency tracking, while
-wrapping the whole construct in an __asm__() doesn't seem desirable
-to me due to it making the whole thing even less readable.
+Fair enough, but the patch itself came across the SPI list, and so it
+showed up in the patchwork tracking of spi-devel-general which I'm
+using to keep on top of everything.  I brief reply to the patch email
+would have let me know that I didn't have to waste any time with it.
 
-Jan
+Thanks,
+g.
 
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
