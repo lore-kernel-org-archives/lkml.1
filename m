@@ -1,160 +1,152 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756450Ab0BBP61 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 10:58:27 -0500
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:56256 "EHLO e7.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752523Ab0BBP5b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 10:57:31 -0500
-From: serue@us.ibm.com
-To: devel@driverdev.osuosl.org
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Greg KH <greg@kroah.com>,
-       rsc@swtch.com, Ashwin Ganti <ashwin.ganti@gmail.com>, ericvh@gmail.com,
-       linux-kernel@vger.kernel.org, Ron Minnich <rminnich@gmail.com>
-Subject: [PATCH 3/6] p9auth: use setresuid
-Date: Tue,  2 Feb 2010 09:57:07 -0600
-Message-Id: <1265126230-18731-3-git-send-email-serue@us.ibm.com>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1265126230-18731-1-git-send-email-serue@us.ibm.com>
-References: <1265126230-18731-1-git-send-email-serue@us.ibm.com>
+	id S1756505Ab0BBP7Z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 10:59:25 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:43266 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754239Ab0BBP7V (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 10:59:21 -0500
+X-Authority-Analysis: v=1.0 c=1 a=QUWSY34ASuwA:10 a=7U3hwN5JcxgA:10 a=VwQbUJbxAAAA:8 a=omOdbC7AAAAA:8 a=meVymXHHAAAA:8 a=enT3BnPoYh3wq0fAUY0A:9 a=MNmHfNkMvmBk7-5edOAA:7 a=ppRvNAwtUBgLn78LKwrKBAkCxSAA:4 a=jeBq3FmKZ4MA:10
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: [PATCH][GIT PULL][v2.6.33] tracing: Fix circular dead lock in
+ stack trace
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Li Zefan <lizf@cn.fujitsu.com>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Kihon Technologies Inc.
+Date: Tue, 02 Feb 2010 10:59:18 -0500
+Message-ID: <1265126358.29013.1273.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Serge E. Hallyn <serue@us.ibm.com>
 
-Use setresuid to set userids through p9auth capability device, to
-make sure MAC checks and setuid fixup are done.  In particular,
-becoming root or dropping root should tweak capability sets.
+Ingo,
 
-Have the cred_setresuid() helper take a 'int force' argument,
-which means the setuid has been authorized, so no need to
-check CAP_SETUID.  (Analogous for cred_setresgid, which will
-also eventually be used).
+Please pull the latest tip/tracing/urgent tree, which can be found at:
 
-Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
-Cc: Greg KH <greg@kroah.com>
-cc: rsc@swtch.com
-Cc: Ashwin Ganti <ashwin.ganti@gmail.com>
-Cc: ericvh@gmail.com
-Cc: devel@linuxdriverproject.org
-Cc: linux-kernel@vger.kernel.org
-Cc: Ron Minnich <rminnich@gmail.com>
----
- drivers/staging/p9auth/p9auth.c |   12 ++++++++----
- include/linux/cred.h            |    8 ++++++--
- kernel/cred.c                   |   11 ++++++-----
- kernel/sys.c                    |    4 ++--
- 4 files changed, 22 insertions(+), 13 deletions(-)
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+tip/tracing/urgent
 
-diff --git a/drivers/staging/p9auth/p9auth.c b/drivers/staging/p9auth/p9auth.c
-index 70ef45b..8f70daa 100644
---- a/drivers/staging/p9auth/p9auth.c
-+++ b/drivers/staging/p9auth/p9auth.c
-@@ -289,11 +289,15 @@ static ssize_t cap_write(struct file *filp, const char __user *buf,
- 					retval = -ENOMEM;
- 					goto out;
- 				}
--				new->uid = (uid_t) target_int;
--				new->suid = new->fsuid = new->euid = new->uid;
--				retval = commit_creds(new);
--				if (retval)
-+				retval = cred_setresuid(new, target_int,
-+					 target_int, target_int,
-+					 CRED_SETID_FORCE);
-+				if (retval == 0)
-+					commit_creds(new);
-+				else {
-+					abort_creds(new);
- 					goto out;
-+				}
+
+Lai Jiangshan (1):
+      tracing: Fix circular dead lock in stack trace
+
+----
+ kernel/trace/trace_stack.c |   24 ++++++++++++++++++++++++
+ 1 files changed, 24 insertions(+), 0 deletions(-)
+---------------------------
+commit 4f48f8b7fd18c44f8478174f9925cc3c059c6ce4
+Author: Lai Jiangshan <laijs@cn.fujitsu.com>
+Date:   Tue Feb 2 15:32:09 2010 +0800
+
+    tracing: Fix circular dead lock in stack trace
+    
+    When we cat <debugfs>/tracing/stack_trace, we may cause circular lock:
+    sys_read()
+      t_start()
+         arch_spin_lock(&max_stack_lock);
+    
+      t_show()
+         seq_printf(), vsnprintf() .... /* they are all trace-able,
+           when they are traced, max_stack_lock may be required again. */
+    
+    The following script can trigger this circular dead lock very easy:
+    #!/bin/bash
+    
+    echo 1 > /proc/sys/kernel/stack_tracer_enabled
+    
+    mount -t debugfs xxx /mnt > /dev/null 2>&1
+    
+    (
+    # make check_stack() zealous to require max_stack_lock
+    for ((; ;))
+    {
+    	echo 1 > /mnt/tracing/stack_max_size
+    }
+    ) &
+    
+    for ((; ;))
+    {
+    	cat /mnt/tracing/stack_trace > /dev/null
+    }
+    
+    To fix this bug, we increase the percpu trace_active before
+    require the lock.
+    
+    Reported-by: Li Zefan <lizf@cn.fujitsu.com>
+    Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+    LKML-Reference: <4B67D4F9.9080905@cn.fujitsu.com>
+    Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+
+diff --git a/kernel/trace/trace_stack.c b/kernel/trace/trace_stack.c
+index 678a512..f4bc9b2 100644
+--- a/kernel/trace/trace_stack.c
++++ b/kernel/trace/trace_stack.c
+@@ -157,6 +157,7 @@ stack_max_size_write(struct file *filp, const char __user *ubuf,
+ 	unsigned long val, flags;
+ 	char buf[64];
+ 	int ret;
++	int cpu;
  
- 				/*
- 				 * Remove the capability from the list and
-diff --git a/include/linux/cred.h b/include/linux/cred.h
-index e35631e..6337e18 100644
---- a/include/linux/cred.h
-+++ b/include/linux/cred.h
-@@ -399,8 +399,12 @@ do {						\
- 	*(_fsgid) = __cred->fsgid;		\
- } while(0)
+ 	if (count >= sizeof(buf))
+ 		return -EINVAL;
+@@ -171,9 +172,20 @@ stack_max_size_write(struct file *filp, const char __user *ubuf,
+ 		return ret;
  
--int cred_setresuid(struct cred *new, uid_t ruid, uid_t euid, uid_t suid);
--int cred_setresgid(struct cred *new, gid_t rgid, gid_t egid, gid_t sgid);
-+#define CRED_SETID_NOFORCE 0
-+#define CRED_SETID_FORCE 1
-+int cred_setresuid(struct cred *new, uid_t ruid, uid_t euid, uid_t suid,
-+		   int force);
-+int cred_setresgid(struct cred *new, gid_t rgid, gid_t egid, gid_t sgid,
-+		   int force);
- int cred_setfsuid(struct cred *new, uid_t uid, uid_t *old_fsuid);
- int cred_setfsgid(struct cred *new, gid_t gid, gid_t *old_fsgid);
+ 	local_irq_save(flags);
++
++	/*
++	 * In case we trace inside arch_spin_lock() or after (NMI),
++	 * we will cause circular lock, so we also need to increase
++	 * the percpu trace_active here.
++	 */
++	cpu = smp_processor_id();
++	per_cpu(trace_active, cpu)++;
++
+ 	arch_spin_lock(&max_stack_lock);
+ 	*ptr = val;
+ 	arch_spin_unlock(&max_stack_lock);
++
++	per_cpu(trace_active, cpu)--;
+ 	local_irq_restore(flags);
  
-diff --git a/kernel/cred.c b/kernel/cred.c
-index fb73c5b..16c0a04 100644
---- a/kernel/cred.c
-+++ b/kernel/cred.c
-@@ -780,7 +780,8 @@ int set_create_files_as(struct cred *new, struct inode *inode)
- }
- EXPORT_SYMBOL(set_create_files_as);
+ 	return count;
+@@ -206,7 +218,13 @@ t_next(struct seq_file *m, void *v, loff_t *pos)
  
--int cred_setresuid(struct cred *new, uid_t ruid, uid_t euid, uid_t suid)
-+int cred_setresuid(struct cred *new, uid_t ruid, uid_t euid, uid_t suid,
-+		   int force)
+ static void *t_start(struct seq_file *m, loff_t *pos)
  {
- 	int retval;
- 	const struct cred *old;
-@@ -790,7 +791,7 @@ int cred_setresuid(struct cred *new, uid_t ruid, uid_t euid, uid_t suid)
- 		return retval;
- 	old = current_cred();
++	int cpu;
++
+ 	local_irq_disable();
++
++	cpu = smp_processor_id();
++	per_cpu(trace_active, cpu)++;
++
+ 	arch_spin_lock(&max_stack_lock);
  
--	if (!capable(CAP_SETUID)) {
-+	if (!force && !capable(CAP_SETUID)) {
- 		if (ruid != (uid_t) -1 && ruid != old->uid &&
- 		    ruid != old->euid  && ruid != old->suid)
- 			return -EPERM;
-@@ -820,8 +821,8 @@ int cred_setresuid(struct cred *new, uid_t ruid, uid_t euid, uid_t suid)
- }
- EXPORT_SYMBOL_GPL(cred_setresuid);
+ 	if (*pos == 0)
+@@ -217,7 +235,13 @@ static void *t_start(struct seq_file *m, loff_t *pos)
  
--int cred_setresgid(struct cred *new, gid_t rgid, gid_t egid,
--			gid_t sgid)
-+int cred_setresgid(struct cred *new, gid_t rgid, gid_t egid, gid_t sgid,
-+		   int force)
+ static void t_stop(struct seq_file *m, void *p)
  {
- 	const struct cred *old = current_cred();
- 	int retval;
-@@ -830,7 +831,7 @@ int cred_setresgid(struct cred *new, gid_t rgid, gid_t egid,
- 	if (retval)
- 		return retval;
++	int cpu;
++
+ 	arch_spin_unlock(&max_stack_lock);
++
++	cpu = smp_processor_id();
++	per_cpu(trace_active, cpu)--;
++
+ 	local_irq_enable();
+ }
  
--	if (!capable(CAP_SETGID)) {
-+	if (!force && !capable(CAP_SETGID)) {
- 		if (rgid != (gid_t) -1 && rgid != old->gid &&
- 		    rgid != old->egid  && rgid != old->sgid)
- 			return -EPERM;
-diff --git a/kernel/sys.c b/kernel/sys.c
-index 1927edf..f6c2534 100644
---- a/kernel/sys.c
-+++ b/kernel/sys.c
-@@ -720,7 +720,7 @@ SYSCALL_DEFINE3(setresuid, uid_t, ruid, uid_t, euid, uid_t, suid)
- 	if (!new)
- 		return -ENOMEM;
- 
--	retval = cred_setresuid(new, ruid, euid, suid);
-+	retval = cred_setresuid(new, ruid, euid, suid, CRED_SETID_NOFORCE);
- 	if (retval == 0)
- 		return commit_creds(new);
- 
-@@ -752,7 +752,7 @@ SYSCALL_DEFINE3(setresgid, gid_t, rgid, gid_t, egid, gid_t, sgid)
- 	if (!new)
- 		return -ENOMEM;
- 
--	retval = cred_setresgid(new, rgid, egid, sgid);
-+	retval = cred_setresgid(new, rgid, egid, sgid, CRED_SETID_NOFORCE);
- 	if (retval == 0)
- 		return commit_creds(new);
- 
--- 
-1.6.1
+
 
