@@ -1,53 +1,75 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752479Ab0BBMBZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 07:01:25 -0500
-Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:36085 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750910Ab0BBMBX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 07:01:23 -0500
-Subject: Re: USB mass storage and ARM cache coherency
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Ming Lei <tom.leiming@gmail.com>, linux-usb@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Sebastian Siewior <bigeasy@linutronix.de>, Greg KH <greg@kroah.com>
-In-Reply-To: <201002021248.10994.oliver@neukum.org>
-References: <20100129185434.GH19501@one-eyed-alien.net>
-	 <1265045354.25750.52.camel@pc1117.cambridge.arm.com>
-	 <201002021248.10994.oliver@neukum.org>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Tue, 02 Feb 2010 12:01:12 +0000
-Message-Id: <1265112072.12634.53.camel@pc1117.cambridge.arm.com>
+	id S1753398Ab0BBMBd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 07:01:33 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:58013 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751046Ab0BBMBa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 07:01:30 -0500
+Date: Tue, 2 Feb 2010 23:01:23 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Liam Girdwood <lrg@slimlogic.co.uk>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Takashi Iwai <tiwai@suse.de>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Samuel Ortiz <sameo@linux.intel.com>
+Subject: Re: linux-next: sound tree build failure
+Message-Id: <20100202230123.64bee219.sfr@canb.auug.org.au>
+In-Reply-To: <1265111430.4194.144.camel@odin>
+References: <20100202124711.d8cdc220.sfr@canb.auug.org.au>
+	<20100202102609.GA6566@rakim.wolfsonmicro.main>
+	<20100202213732.586a3566.sfr@canb.auug.org.au>
+	<20100202105800.GE6566@rakim.wolfsonmicro.main>
+	<20100202221743.1dbcad11.sfr@canb.auug.org.au>
+	<1265111430.4194.144.camel@odin>
+X-Mailer: Sylpheed 3.0.0beta7 (GTK+ 2.18.6; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 02 Feb 2010 12:01:13.0755 (UTC) FILETIME=[6AD0FEB0:01CAA3FF]
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__2_Feb_2010_23_01_23_+1100_=FdViIj/=Jd8xmUf"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-02-02 at 11:48 +0000, Oliver Neukum wrote:
-> Am Montag, 1. Februar 2010 18:29:14 schrieb Catalin Marinas:
-> > +       if (usb_pipein(urb->pipe) && usb_pipetype(urb->pipe) == PIPE_BULK) {
-> > +               void *ptr;
-> > +               for (ptr = urb->transfer_buffer;
-> > +                    ptr < urb->transfer_buffer + urb->transfer_buffer_length;
-> > +                    ptr += PAGE_SIZE)
-> > +                       flush_dcache_page(virt_to_page(ptr));
-> 
-> Is it correct to limit this to BULK pipes?
+--Signature=_Tue__2_Feb_2010_23_01_23_+1100_=FdViIj/=Jd8xmUf
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I'm not entirely sure. The flush_dcache_page() should only be called for
-pages that may be mapped into user space (page cache pages). We don't
-need this for control buffers. It was my impression that what's coming
-from the mass storage layer intended for page cache pages has the
-PIPE_BULK type (I may be wrong though).
+Hi Liam,
 
--- 
-Catalin
+On Tue, 02 Feb 2010 11:50:30 +0000 Liam Girdwood <lrg@slimlogic.co.uk> wrot=
+e:
+>
+> I wonder if it would be possible to re-order the merge sequence so that
+> similar inter tree dependencies are less likely to cause -next build
 
+Anything is possible with software :-)
+
+> failures in the future.  I guess atm lots of driver trees can depend on
+> MFD (e.g. regulator, sound, rtc, backlight, led, watchdog, etc) so it
+> may be good to move it up the order.
+
+In this case it would just have masked the dependency and we may not have
+found it until the sound tree was merged into Linus' tree and builds
+started failing.  (I now Mark already knew about this one.)  We actually
+have very few build dependencies between trees and in most cases I would
+prefer that they were exposed in linux-next than in Linus' tree (with the
+ensuing bisection problems).
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__2_Feb_2010_23_01_23_+1100_=FdViIj/=Jd8xmUf
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAktoFBMACgkQjjKRsyhoI8yw/wCgogRxJSOKrtCgV0up+g6gWhhg
+TWwAoIkxsU3e+3pu4XqyHwBFLuEbgChi
+=j9Jx
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__2_Feb_2010_23_01_23_+1100_=FdViIj/=Jd8xmUf--
