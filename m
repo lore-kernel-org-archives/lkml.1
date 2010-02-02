@@ -1,70 +1,49 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753616Ab0BBBGz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Feb 2010 20:06:55 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:54502 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752963Ab0BBBGy (ORCPT
+	id S1753768Ab0BBBIy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Feb 2010 20:08:54 -0500
+Received: from rex.securecomputing.com ([203.24.151.4]:46763 "EHLO
+	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752191Ab0BBBIw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Feb 2010 20:06:54 -0500
-Date: Tue, 2 Feb 2010 01:06:53 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH][RFC] %pd - for printing dentry name
-Message-ID: <20100202010653.GD12882@ZenIV.linux.org.uk>
-References: <20100201222511.GA12882@ZenIV.linux.org.uk>
- <alpine.LFD.2.00.1002011431490.3664@localhost.localdomain>
- <20100201231847.GC12882@ZenIV.linux.org.uk>
+	Mon, 1 Feb 2010 20:08:52 -0500
+Message-ID: <4B677ADE.4050608@snapgear.com>
+Date: Tue, 02 Feb 2010 11:07:42 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100201231847.GC12882@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+To: Christoph Hellwig <hch@lst.de>
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org, linux@arm.linux.org.uk, starvik@axis.com,
+       jesper.nilsson@axis.com, ysato@users.sourceforge.jp,
+       tony.luck@intel.com, geert@linux-m68k.org, zippel@linux-m68k.org,
+       gerg@uclinux.org, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
+       jdike@addtoit.com, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
+       viro@zeniv.linux.org.uk
+Subject: Re: [PATCH 2/6] generic sys_old_mmap
+References: <20100201185524.GB11045@lst.de>
+In-Reply-To: <20100201185524.GB11045@lst.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 01, 2010 at 11:18:47PM +0000, Al Viro wrote:
-
-> Ehh...  RCU will save you from stepping on freed memory, but it still will
-> leave the joy of half-updated string with length out of sync with it, etc.
-> We probably can get away with that, but we'll have to be a lot more careful
-> with the order of updating these suckers in d_move_locked et.al.
+Christoph Hellwig wrote:
+> Add a generic implementation of the old mmap syscall, which expects it's
+> argument in a memory block and switch all architectures over to use it.
 > 
-> I don't know...  Note that if we end up adding something extra to struct
-> dentry, we might as well just add *another* spinlock, taken only under
-> ->d_lock and only in two places in dcache.c that change d_name.  That kind
-> of thing is trivial to enforce (just grep over the tree once in a while)
-> and if it shares the cacheline with d_lock, we shouldn't get any real overhead
-> in d_move()/d_materialise_unique().  I'm not particulary fond of that variant,
-> but it's at least guaranteed to be devoid of subtleties.
 > 
-> If RCU folks can come up with a sane suggestions that would be robust and
-> wouldn't bloat dentry - sure, I'm all for it.  If not...
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
 
-As the matter of fact, there's just *one* place that has any business [*]
-changing ->d_name contents of dentry that might be visible to somebody
-else.  fs/dcache.c::switch_names().
+m68knommu and mm/nommu.c changes look ok to me
 
-So a very brute-force approach would be to add a new spinlock to dentry and
-have switch_names() grab it on dentry and target and drop when we are done,
-dname_string() grab it around the call of string() and pull the guts out
-through the nose to anyone who as much as mentions that lock outside of
-fs/dcache.c:switch_names() and lib/vsprintf.c:dname_string().
+Acked-by: Greg Ungerer <gerg@uclinux.org>
 
-Again, I'd love to see something more elegant; this variant won't add any
-contention and if we place the lock next to d_lock we won't get any cacheline
-bouncing either (we'd just taken ->d_lock on both dentries), but it's
-rather ugly way to deal with the problem.  I mean, a spinlock just for the
-needs of debugging printks?  Yuck.
 
-BTW, speaking of ->d_lock, dget_parent() is abused in a bunch of places.
-I'm going through review of ->d_parent and ->d_name uses; will post
-the results when it's done...
-
-[*] there's also !@$#!@#!@# {ncp,smb}_fill_cache() that does change of
-letters' case in ->d_name; no locking whatsoever in there, luckily for
-that crap the callers hold i_mutex on parent, so they get exclusion with
-potential callers of d_move().  Bad Idea All Around(tm), but irrelevant
-for our purposes.
+-- 
+------------------------------------------------------------------------
+Greg Ungerer  --  Principal Engineer        EMAIL:     gerg@snapgear.com
+SnapGear Group, McAfee                      PHONE:       +61 7 3435 2888
+8 Gardner Close                             FAX:         +61 7 3217 5323
+Milton, QLD, 4064, Australia                WEB: http://www.SnapGear.com
