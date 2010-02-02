@@ -1,19 +1,17 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755657Ab0BBHWd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 02:22:33 -0500
-Received: from mail.perches.com ([173.55.12.10]:1773 "EHLO mail.perches.com"
+	id S1755699Ab0BBHYE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 02:24:04 -0500
+Received: from mail.perches.com ([173.55.12.10]:1766 "EHLO mail.perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755530Ab0BBHWX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755499Ab0BBHWX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 2 Feb 2010 02:22:23 -0500
 From: Joe Perches <joe@perches.com>
 To: linux-kernel@vger.kernel.org
-Cc: Andrew Vasquez <andrew.vasquez@qlogic.com>, linux-driver@qlogic.com,
-       "James E.J. Bottomley" <James.Bottomley@suse.de>,
-       linux-scsi@vger.kernel.org
-Subject: [PATCH 06/10] drivers/scsi/qla2xxx/qua_os.c: Fix continuation line formats
-Date: Mon,  1 Feb 2010 23:22:12 -0800
-Message-Id: <0a97686bba6798d01420fdd9536e25324242b3c8.1265095094.git.joe@perches.com>
+Cc: netdev@vger.kernel.org
+Subject: [PATCH 05/10] drivers/net/davinci_emac.c: Fix continuation line formats
+Date: Mon,  1 Feb 2010 23:22:11 -0800
+Message-Id: <0bcecb6f7b478b564d700dbb7f4344616fcb6bec.1265095094.git.joe@perches.com>
 X-Mailer: git-send-email 1.6.6.rc0.57.gad7a
 In-Reply-To: <cover.1265095093.git.joe@perches.com>
 References: <cover.1265095093.git.joe@perches.com>
@@ -26,24 +24,23 @@ are not good.
 
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- drivers/scsi/qla2xxx/qla_os.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/davinci_emac.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/scsi/qla2xxx/qla_os.c b/drivers/scsi/qla2xxx/qla_os.c
-index 8529eb1..134ed38 100644
---- a/drivers/scsi/qla2xxx/qla_os.c
-+++ b/drivers/scsi/qla2xxx/qla_os.c
-@@ -88,8 +88,8 @@ int ql2xmaxqueues = 1;
- module_param(ql2xmaxqueues, int, S_IRUGO|S_IRUSR);
- MODULE_PARM_DESC(ql2xmaxqueues,
- 		"Enables MQ settings "
--		"Default is 1 for single queue. Set it to number \
--			of queues in MQ mode.");
-+		"Default is 1 for single queue. Set it to number "
-+		"of queues in MQ mode.");
- 
- int ql2xmultique_tag;
- module_param(ql2xmultique_tag, int, S_IRUGO|S_IRUSR);
+diff --git a/drivers/net/davinci_emac.c b/drivers/net/davinci_emac.c
+index 33c4fe2..faffad4 100644
+--- a/drivers/net/davinci_emac.c
++++ b/drivers/net/davinci_emac.c
+@@ -2672,8 +2672,7 @@ static int __devinit davinci_emac_probe(struct platform_device *pdev)
+ 	priv->emac_base_phys = res->start + pdata->ctrl_reg_offset;
+ 	size = res->end - res->start + 1;
+ 	if (!request_mem_region(res->start, size, ndev->name)) {
+-		dev_err(emac_dev, "DaVinci EMAC: failed request_mem_region() \
+-					 for regs\n");
++		dev_err(emac_dev, "DaVinci EMAC: failed request_mem_region() for regs\n");
+ 		rc = -ENXIO;
+ 		goto probe_quit;
+ 	}
 -- 
 1.6.6.rc0.57.gad7a
 
