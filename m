@@ -1,66 +1,160 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756507Ab0BBPe6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 10:34:58 -0500
-Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:55577 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756409Ab0BBPey (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 10:34:54 -0500
-Subject: Re: USB mass storage and ARM cache coherency
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Andreas Mohr <andi@lisas.de>
-Cc: Oliver Neukum <oliver@neukum.org>, Clemens Ladisch <clemens@ladisch.de>,
-       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Ming Lei <tom.leiming@gmail.com>, linux-usb@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Sebastian Siewior <bigeasy@linutronix.de>, Greg KH <greg@kroah.com>,
-       Luke -Jr <luke@dashjr.org>
-In-Reply-To: <20100202151006.GA3449@rhlx01.hs-esslingen.de>
-References: <20100129185434.GH19501@one-eyed-alien.net>
-	 <20100202121116.GA24926@rhlx01.hs-esslingen.de>
-	 <4B6839E9.1040407@ladisch.de> <201002021552.19286.oliver@neukum.org>
-	 <20100202151006.GA3449@rhlx01.hs-esslingen.de>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Tue, 02 Feb 2010 15:34:27 +0000
-Message-Id: <1265124867.12634.86.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 02 Feb 2010 15:34:28.0623 (UTC) FILETIME=[3526E9F0:01CAA41D]
+	id S1756431Ab0BBPeX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 10:34:23 -0500
+Received: from mga09.intel.com ([134.134.136.24]:14323 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756281Ab0BBPeO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 10:34:14 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,390,1262592000"; 
+   d="scan'208";a="592471008"
+Message-Id: <20100202153317.782857993@intel.com>
+User-Agent: quilt/0.48-1
+Date: Tue, 02 Feb 2010 23:28:46 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Jens Axboe <jens.axboe@oracle.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Wu Fengguang <fengguang.wu@intel.com>
+cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+cc: Linux Memory Management List <linux-mm@kvack.org>
+cc: <linux-fsdevel@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 11/11] radixtree: speed up next/prev hole search
+References: <20100202152835.683907822@intel.com>
+Content-Disposition: inline; filename=radixtree-scan-hole-fast.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-02-02 at 15:10 +0000, Andreas Mohr wrote:
-> [added another __bzero coherency crash victim, see
-> http://lkml.org/lkml/2008/6/9/14 ]
-> 
-> On Tue, Feb 02, 2010 at 03:52:19PM +0100, Oliver Neukum wrote:
-> > Am Dienstag, 2. Februar 2010 15:42:49 schrieb Clemens Ladisch:
-> > > > Or... usb-audio? I should have verified that it is using bulk endpoints
-> > > > (and thus the patch applies to my case).
-> > > > usb-audio probably uses isochronous transfers, thus that would be
-> > > > an obvious reason why the patch didn't work for me.
-> > >
-> > > snd-usb-audio indeed uses isochronous transfers, but those buffers are
-> > > never mapped into user space.  The intermediate vmalloc()ed buffer is,
-> > > however, and there was a bugfix for this recently.  Do you have these
-> > > patches in your tree?
-> >
-> > Now that I think about it, several video drivers do map it to user space.
-> 
-> OK, then the urb loop needs to also handle isochronous pipes,
-> and IMHO we should have a generic helper for this instead of open-coding
-> it, since it probably needs to be done in a couple affected HCDs
-> (and, most importantly, only on affected architectures - which the helper
-> could handle transparently).
+Replace the hole scan functions with more fast versions:
+	- radix_tree_next_hole(root, index, max_scan)
+	- radix_tree_prev_hole(root, index, max_scan)
 
-I'm planning to send a proposal to linux-arch for a flush_dcache_range()
-function.
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+---
+ lib/radix-tree.c |   85 +++++++++++++++++++++++++++++++++++++++------
+ 1 file changed, 74 insertions(+), 11 deletions(-)
 
--- 
-Catalin
+--- linux.orig/lib/radix-tree.c	2010-01-09 21:45:16.000000000 +0800
++++ linux/lib/radix-tree.c	2010-01-21 22:04:22.000000000 +0800
+@@ -609,6 +609,24 @@ int radix_tree_tag_get(struct radix_tree
+ }
+ EXPORT_SYMBOL(radix_tree_tag_get);
+ 
++/*
++ * Find the bottom radix tree node that contains @index.
++ * Return NULL if @index is hole, or is the special root node.
++ */
++static struct radix_tree_node *
++radix_tree_lookup_node(struct radix_tree_root *root, unsigned long index)
++{
++	void *slot;
++
++	slot = radix_tree_lookup_element(root, index, 1);
++	if (!slot || slot == &root->rnode)
++		return NULL;
++
++	slot -= (index & RADIX_TREE_MAP_MASK) * sizeof(void *);
++
++	return container_of(slot, struct radix_tree_node, slots);
++}
++
+ /**
+  *	radix_tree_next_hole    -    find the next hole (not-present entry)
+  *	@root:		tree root
+@@ -630,18 +648,41 @@ EXPORT_SYMBOL(radix_tree_tag_get);
+  *	under rcu_read_lock.
+  */
+ unsigned long radix_tree_next_hole(struct radix_tree_root *root,
+-				unsigned long index, unsigned long max_scan)
++				   unsigned long index, unsigned long max_scan)
+ {
+-	unsigned long i;
++	struct radix_tree_node *node;
++	unsigned long origin = index;
++	int i;
++
++	node = rcu_dereference(root->rnode);
++	if (node == NULL)
++		return index;
++
++	if (!radix_tree_is_indirect_ptr(node))
++		return index ? index : 1;
+ 
+-	for (i = 0; i < max_scan; i++) {
+-		if (!radix_tree_lookup(root, index))
++	while (index - origin < max_scan) {
++		node = radix_tree_lookup_node(root, index);
++		if (!node)
+ 			break;
+-		index++;
+-		if (index == 0)
++
++		if (node->count == RADIX_TREE_MAP_SIZE) {
++			index = (index | RADIX_TREE_MAP_MASK) + 1;
++			goto check_overflow;
++		}
++
++		for (i = index & RADIX_TREE_MAP_MASK;
++		     i < RADIX_TREE_MAP_SIZE;
++		     i++, index++)
++			if (rcu_dereference(node->slots[i]) == NULL)
++				goto out;
++
++check_overflow:
++		if (unlikely(index == 0))
+ 			break;
+ 	}
+ 
++out:
+ 	return index;
+ }
+ EXPORT_SYMBOL(radix_tree_next_hole);
+@@ -669,16 +710,38 @@ EXPORT_SYMBOL(radix_tree_next_hole);
+ unsigned long radix_tree_prev_hole(struct radix_tree_root *root,
+ 				   unsigned long index, unsigned long max_scan)
+ {
+-	unsigned long i;
++	struct radix_tree_node *node;
++	unsigned long origin = index;
++	int i;
++
++	node = rcu_dereference(root->rnode);
++	if (node == NULL)
++		return index;
++
++	if (!radix_tree_is_indirect_ptr(node))
++		return index ? index : ULONG_MAX;
+ 
+-	for (i = 0; i < max_scan; i++) {
+-		if (!radix_tree_lookup(root, index))
++	while (origin - index < max_scan) {
++		node = radix_tree_lookup_node(root, index);
++		if (!node)
+ 			break;
+-		index--;
+-		if (index == LONG_MAX)
++
++		if (node->count == RADIX_TREE_MAP_SIZE) {
++			index = (index - RADIX_TREE_MAP_SIZE) |
++					 RADIX_TREE_MAP_MASK;
++			goto check_underflow;
++		}
++
++		for (i = index & RADIX_TREE_MAP_MASK; i >= 0; i--, index--)
++			if (rcu_dereference(node->slots[i]) == NULL)
++				goto out;
++
++check_underflow:
++		if (unlikely(index == ULONG_MAX))
+ 			break;
+ 	}
+ 
++out:
+ 	return index;
+ }
+ EXPORT_SYMBOL(radix_tree_prev_hole);
+
 
