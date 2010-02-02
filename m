@@ -1,62 +1,68 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755961Ab0BBLuh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 06:50:37 -0500
-Received: from mail-ew0-f228.google.com ([209.85.219.228]:51443 "EHLO
-	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755614Ab0BBLue (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 06:50:34 -0500
-Subject: Re: linux-next: sound tree build failure
-From: Liam Girdwood <lrg@slimlogic.co.uk>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Takashi Iwai <tiwai@suse.de>, linux-next@vger.kernel.org,
+	id S1753115Ab0BBLz4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 06:55:56 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:60964 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753878Ab0BBLzx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 06:55:53 -0500
+Date: Tue, 2 Feb 2010 22:55:45 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Takashi Iwai <tiwai@suse.de>, linux-next@vger.kernel.org,
        linux-kernel@vger.kernel.org, Samuel Ortiz <sameo@linux.intel.com>
-In-Reply-To: <20100202221743.1dbcad11.sfr@canb.auug.org.au>
+Subject: Re: linux-next: sound tree build failure
+Message-Id: <20100202225545.84a4fa84.sfr@canb.auug.org.au>
+In-Reply-To: <20100202113424.GH6566@rakim.wolfsonmicro.main>
 References: <20100202124711.d8cdc220.sfr@canb.auug.org.au>
-	 <20100202102609.GA6566@rakim.wolfsonmicro.main>
-	 <20100202213732.586a3566.sfr@canb.auug.org.au>
-	 <20100202105800.GE6566@rakim.wolfsonmicro.main>
-	 <20100202221743.1dbcad11.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 02 Feb 2010 11:50:30 +0000
-Message-ID: <1265111430.4194.144.camel@odin>
+	<20100202102609.GA6566@rakim.wolfsonmicro.main>
+	<20100202213732.586a3566.sfr@canb.auug.org.au>
+	<20100202105800.GE6566@rakim.wolfsonmicro.main>
+	<20100202221743.1dbcad11.sfr@canb.auug.org.au>
+	<20100202113424.GH6566@rakim.wolfsonmicro.main>
+X-Mailer: Sylpheed 3.0.0beta7 (GTK+ 2.18.6; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__2_Feb_2010_22_55_45_+1100_1J/Ij.PY5g=A0AJO"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Stephen,
+--Signature=_Tue__2_Feb_2010_22_55_45_+1100_1J/Ij.PY5g=A0AJO
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Tue, 2010-02-02 at 22:17 +1100, Stephen Rothwell wrote:
-> Hi Mark,
-> 
-> On Tue, 2 Feb 2010 10:58:00 +0000 Mark Brown <broonie@opensource.wolfsonmicro.com> wrote:
-> >
-> > On Tue, Feb 02, 2010 at 09:37:32PM +1100, Stephen Rothwell wrote:
-> > 
-> > > The sound tree is merged before the mfd tree, and the commit that adds
-> > > those is only in the mfd tree.  So the sound tree, on its own, is
-> > > broken.  This driver will only build if you merge the mfd tree as well.
-> > 
-> > Ah, you're doing builds after each individual merge.  It might help to
-> 
-> Always have ...
-> 
+Hi Mark,
 
-I wonder if it would be possible to re-order the merge sequence so that
-similar inter tree dependencies are less likely to cause -next build
-failures in the future.  I guess atm lots of driver trees can depend on
-MFD (e.g. regulator, sound, rtc, backlight, led, watchdog, etc) so it
-may be good to move it up the order.
+On Tue, 2 Feb 2010 11:34:24 +0000 Mark Brown <broonie@opensource.wolfsonmic=
+ro.com> wrote:
+>
+> The way I've always read that was that you'd found a build failure in
+> a given bit of the tree while testing -next - you're clearly doing some
+> work to identify and understand where the failure came from (and simply
+> looking at the source file leads to the same result normally anyway) so
+> the fact that you've identified the subsystem doesn't automatically say
+> that this happened with a partially merged -next.  If you looked less
+> like a human the subject by itself would be clearer :)
 
-Liam
+How about "linux-next: build failure after merging xxx tree"?
 
--- 
-Freelance Developer, SlimLogic Ltd
-ASoC and Voltage Regulator Maintainer.
-http://www.slimlogic.co.uk
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
+--Signature=_Tue__2_Feb_2010_22_55_45_+1100_1J/Ij.PY5g=A0AJO
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAktoEsEACgkQjjKRsyhoI8wUOwCdHjK5FPDGtfcKA/cTmpkuknFa
+yB0AnA35C+04nUvztlB49TUlVEHJswJn
+=kmhi
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__2_Feb_2010_22_55_45_+1100_1J/Ij.PY5g=A0AJO--
