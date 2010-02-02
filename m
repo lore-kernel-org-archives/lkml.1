@@ -1,38 +1,68 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756926Ab0BBWGT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 17:06:19 -0500
-Received: from 1wt.eu ([62.212.114.60]:56069 "EHLO 1wt.eu"
+	id S1756944Ab0BBWHZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 17:07:25 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:34944 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752853Ab0BBWGS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 17:06:18 -0500
-Date: Tue, 2 Feb 2010 23:06:31 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Stefan Seyfried <stefan.seyfried@googlemail.com>
-Cc: linux-kernel@vger.kernel.org, Stefan Seyfried <seife@sphairon.com>
-Subject: Re: [PATCH 2.4] FAT: do not continue in fat_get_block if bmap fails
-Message-ID: <20100202220631.GA16098@1wt.eu>
-References: <1265115635-22612-1-git-send-email-stefan.seyfried@googlemail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1265115635-22612-1-git-send-email-stefan.seyfried@googlemail.com>
-User-Agent: Mutt/1.5.11
+	id S1756399Ab0BBWHV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 17:07:21 -0500
+Date: Tue, 2 Feb 2010 23:07:19 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+Cc: linux-kernel@vger.kernel.org, don@syst.com.br, linux-input@vger.kernel.org,
+       linux-usb@vger.kernel.org
+Subject: Re: [PATCH] HID: use multi input quirk for eTurboTouch touchscreen
+In-Reply-To: <1265141347-7541-1-git-send-email-cascardo@holoscopio.com>
+Message-ID: <alpine.LNX.2.00.1002022307020.15395@pobox.suse.cz>
+References: <1265141347-7541-1-git-send-email-cascardo@holoscopio.com>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Stefan,
+On Tue, 2 Feb 2010, Thadeu Lima de Souza Cascardo wrote:
 
-On Tue, Feb 02, 2010 at 02:00:35PM +0100, Stefan Seyfried wrote:
-> From: Stefan Seyfried <seife@sphairon.com>
+> This device generates ABS_Z and ABS_RX events, while it should be
+> generating ABS_X and ABS_Y instead. Using the MULTI_INPUT quirk solves
+> this issue.
 > 
-> There is no use in continuing the write operation after fat_bmap() fails.
-> (This successfully killed a VFAT FS for me).
-> The corresponding code in 2.6 does return here as well, AFAICT.
+> Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+> Signed-off-by: Daniel Oliveira Nascimento <don@syst.com.br>
+> ---
+>  drivers/hid/hid-ids.h           |    3 +++
+>  drivers/hid/usbhid/hid-quirks.c |    1 +
+>  2 files changed, 4 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/hid/hid-ids.h b/drivers/hid/hid-ids.h
+> index adbef5d..e99485f 100644
+> --- a/drivers/hid/hid-ids.h
+> +++ b/drivers/hid/hid-ids.h
+> @@ -164,6 +164,9 @@
+>  #define USB_VENDOR_ID_ESSENTIAL_REALITY	0x0d7f
+>  #define USB_DEVICE_ID_ESSENTIAL_REALITY_P5 0x0100
+>  
+> +#define USB_VENDOR_ID_ETURBOTOUCH	0x22b9
+> +#define USB_DEVICE_ID_ETURBOTOUCH	0x0006
+> +
+>  #define USB_VENDOR_ID_EZKEY 		0x0518
+>  #define USB_DEVICE_ID_BTC_8193		0x0002
+>  
+> diff --git a/drivers/hid/usbhid/hid-quirks.c b/drivers/hid/usbhid/hid-quirks.c
+> index 0d9045a..edc598d 100644
+> --- a/drivers/hid/usbhid/hid-quirks.c
+> +++ b/drivers/hid/usbhid/hid-quirks.c
+> @@ -42,6 +42,7 @@ static const struct hid_blacklist {
+>  
+>  	{ USB_VENDOR_ID_AFATECH, USB_DEVICE_ID_AFATECH_AF9016, HID_QUIRK_FULLSPEED_INTERVAL },
+>  
+> +	{ USB_VENDOR_ID_ETURBOTOUCH, USB_DEVICE_ID_ETURBOTOUCH, HID_QUIRK_MULTI_INPUT },
+>  	{ USB_VENDOR_ID_PANTHERLORD, USB_DEVICE_ID_PANTHERLORD_TWIN_USB_JOYSTICK, HID_QUIRK_MULTI_INPUT | HID_QUIRK_SKIP_OUTPUT_REPORTS },
+>  	{ USB_VENDOR_ID_PLAYDOTCOM, USB_DEVICE_ID_PLAYDOTCOM_EMS_USBII, HID_QUIRK_MULTI_INPUT },
 
-OK then that's fine, I'm merging it.
+Applied to my tree, thank you.
 
-Thanks!
-Willy
-
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
