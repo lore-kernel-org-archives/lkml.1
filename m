@@ -1,60 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754824Ab0BBGoP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 01:44:15 -0500
-Received: from cantor.suse.de ([195.135.220.2]:41866 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753547Ab0BBGoN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 01:44:13 -0500
-Date: Tue, 2 Feb 2010 17:44:09 +1100
-From: Nick Piggin <npiggin@suse.de>
-To: Rik van Riel <riel@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, lwoodman@redhat.com,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, aarcange@redhat.com
-Subject: Re: [PATCH -mm] remove VM_LOCK_RMAP code
-Message-ID: <20100202064409.GC6175@laptop>
-References: <20100128002000.2bf5e365@annuminas.surriel.com>
- <20100129151423.8b71b88e.akpm@linux-foundation.org>
- <20100129193410.7ce915d0@annuminas.surriel.com>
- <20100201061532.GC9085@laptop>
- <4B66F977.5010708@redhat.com>
+	id S1754830Ab0BBGpd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 01:45:33 -0500
+Received: from mail-yx0-f189.google.com ([209.85.210.189]:38493 "EHLO
+	mail-yx0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752774Ab0BBGpb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 01:45:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=Cx0R3qhvg7XNXOpXxom1haz5Ab4Hh376sRQLEVolQiKDov2ePfJGxepQQa0xzYiNu9
+         rCECntv07j9M3BgUCwtSKyodSzOa6FBBbD11U3CnLY2MoWr/X9yMbwBodEI1/2uq+Bgn
+         iRr58RILZC1xiA56KY/lMPz0vkzwfK0UFeOTo=
+Message-ID: <4B67CA62.8050901@gmail.com>
+Date: Mon, 01 Feb 2010 22:46:58 -0800
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091114 Lightning/1.0pre Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B66F977.5010708@redhat.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+CC: Dan Carpenter <error27@gmail.com>, linux1394-devel@lists.sourceforge.net,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: ohci1394_dma=early crash since 2.6.32 (was Re: [Bug #14487] PANIC:
+ early exception 08 rip 246:10 error	ffffffff810251b5 cr2 0)
+References: <UgwvXSBS_tM.A.alD.1EiZLB@chimera> <de962C6zBxL.A.H1G.1HiZLB@chimera> <4B6630CA.9010207@gmail.com> <20100201125441.GB2576@bicker> <4B671606.3080405@gmail.com> <4B673233.8000300@s5r6.in-berlin.de> <4B6740B5.5070601@gmail.com> <4B675534.5070107@s5r6.in-berlin.de> <4B676917.2080506@gmail.com> <4B67BC12.4080709@s5r6.in-berlin.de>
+In-Reply-To: <4B67BC12.4080709@s5r6.in-berlin.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 01, 2010 at 10:55:35AM -0500, Rik van Riel wrote:
-> On 02/01/2010 01:15 AM, Nick Piggin wrote:
-> >On Fri, Jan 29, 2010 at 07:34:10PM -0500, Rik van Riel wrote:
-> >>When a VMA is in an inconsistent state during setup or teardown, the
-> >>worst that can happen is that the rmap code will not be able to find
-> >>the page.
-> >
-> >OK, but you missed the interesting thing, which is to explain why
-> >that worst case is not a problem.
-> >
-> >rmap of course is not just used for reclaim but also invalidations
-> >from mappings, and those guys definitely need to know that all
-> >page table entries have been handled by the time they return.
-> 
-> This is not a problem, because the mapping is in the process
-> of being torn down (PTEs just got invalidated by munmap), or
-> set up (no PTEs have been instantiated yet).
-> 
-> The third case is split_vma, where we can have one VMA in an
-> inconsistent state (rmap cannot find the PTEs), while the
-> other VMA is still in its original state (rmap finds the PTEs
-> through that VMA).
-> 
-> That is what makes this safe.
+o.k. I feel really stupid right now.
+after starring at this for some time I didn't even
+think to do a git revert to test other
+kernel versions(duh!!).
 
-OK, that sounds fine then. Your changelog was just a bit strange
-because you said it would not be able to find the page, which
-didn't really make sense.
+so doing a git revert to v2.6.27 ohci1394_dma
+boots up fine.
+a bit late now to do a bisect, but in the morning
+I'll start this and see what I get from it, then
+go from there.
 
+(man!! let this be a lesson for me);
+
+Justin P. Mattock
