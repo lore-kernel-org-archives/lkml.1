@@ -1,51 +1,71 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755910Ab0BBPRZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 10:17:25 -0500
-Received: from mailhub.sw.ru ([195.214.232.25]:23128 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751739Ab0BBPRX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 10:17:23 -0500
-From: Dmitry Monakhov <dmonakhov@openvz.org>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-nfs@vger.kernel.org
-Subject: Re: [PATCH] nfs: clear_commit_release incorrectly handle truncated page
-References: <87hbpzhqlp.fsf@openvz.org> <1265123045.3177.21.camel@localhost>
-Date: Tue, 02 Feb 2010 18:17:07 +0300
-In-Reply-To: <1265123045.3177.21.camel@localhost> (Trond Myklebust's message
-	of "Tue, 02 Feb 2010 10:04:05 -0500")
-Message-ID: <87eil3pszw.fsf@openvz.org>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
+	id S1756134Ab0BBPT0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 10:19:26 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:59935 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755839Ab0BBPTY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 10:19:24 -0500
+Message-ID: <4B684273.6040500@infradead.org>
+Date: Tue, 02 Feb 2010 13:19:15 -0200
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Janne Grunau <j@jannau.net>
+CC: Julia Lawall <julia@diku.dk>, linux-media@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 3/8] drivers/media/video/hdpvr: introduce missing kfree
+References: <Pine.LNX.4.64.0909111821180.10552@pc-004.diku.dk> <20090916111325.GA14900@aniel.lan>
+In-Reply-To: <20090916111325.GA14900@aniel.lan>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trond Myklebust <trond.myklebust@fys.uio.no> writes:
+Hi Janne,
 
-> On Tue, 2010-02-02 at 13:36 +0300, Dmitry Monakhov wrote: 
->> After page was truncated it lost it's mapping, this result in null
->> pointer dereference on bdi_stat update. In fact we have to decrement
->> bdi_stat even for truncated pages, so let's pass correct mapping in
->> function arguments. Patch against linux-2.6
->> ##TEST_CASE
->> /*
->> Tast case for bug in nfs_clear_request_commit()
->> caused by null pointer dereference in case of truncated page.
->> It takes less than 10 minutes to reproduce the bug.
->
-> Something is wrong here. nfs_release_page() returns '0' if the 
-> page has an associated write request (i.e. PagePrivate is set), and so
-> both invalidate_complete_page() and invalidate_complete_page2() will
-> fail.
->
-> So what is truncating the page?
-truncate_inode_page()
-  truncate_complete_page()
-    if (page_has_private(page))
-       do_invalidatepage()
-         ->nfs_invalidate_page()
->
-> Trond
+Janne Grunau wrote:
+> On Fri, Sep 11, 2009 at 06:21:35PM +0200, Julia Lawall wrote:
+>> Error handling code following a kzalloc should free the allocated data.
+> 
+> Thanks for the report. I'll commit a different patch which adds the buffer
+> to the buffer list as soon it is allocated. The hdpvr_free_buffers() in the
+> error handling code will clean it up then. See below:
+
+Any news about this subject? The current upstream code still misses the change bellow
+
+> 
+> diff --git a/linux/drivers/media/video/hdpvr/hdpvr-video.c b/linux/drivers/media/video/hdpvr/hdpvr-video.c
+> --- a/linux/drivers/media/video/hdpvr/hdpvr-video.c
+> +++ b/linux/drivers/media/video/hdpvr/hdpvr-video.c
+> @@ -134,6 +134,8 @@
+>                         v4l2_err(&dev->v4l2_dev, "cannot allocate buffer\n");
+>                         goto exit;
+>                 }
+> +               list_add_tail(&buf->buff_list, &dev->free_buff_list);
+> +
+>                 buf->dev = dev;
+> 
+>                 urb = usb_alloc_urb(0, GFP_KERNEL);
+> @@ -158,7 +160,6 @@
+>                                   hdpvr_read_bulk_callback, buf);
+> 
+>                 buf->status = BUFSTAT_AVAILABLE;
+> -               list_add_tail(&buf->buff_list, &dev->free_buff_list);
+>         }
+>         return 0;
+>  exit:
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-media" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+
+-- 
+
+Cheers,
+Mauro
