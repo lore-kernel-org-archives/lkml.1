@@ -1,161 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755274Ab0BBHNx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 02:13:53 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:19783 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751920Ab0BBHNt convert rfc822-to-8bit (ORCPT
+	id S1755396Ab0BBHON (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 02:14:13 -0500
+Received: from mail-iw0-f186.google.com ([209.85.223.186]:51405 "EHLO
+	mail-iw0-f186.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754923Ab0BBHOJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 02:13:49 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=NCoBnGuqGMaKQwhNo5uK7jOn95o00kYJ2K2MMw3a/wdr5nl0PHdYp7eeCrINTzhMA
-	6W7jgyqZjd/rquI9alzAw==
-MIME-Version: 1.0
-In-Reply-To: <20100202041448.GA17333@in.ibm.com>
-References: <20100105075703.GE27899@in.ibm.com>
-	 <loom.20100108T214459-933@post.gmane.org>
-	 <344eb09a1001281949p37cd6d1awbc561937fc8f04f5@mail.gmail.com>
-	 <ed628a921001282026p2f8d64c7u416e55e48a21ea79@mail.gmail.com>
-	 <20100201082150.GB686@in.ibm.com>
-	 <ed628a921002010304p40397558lf45f53daca97e879@mail.gmail.com>
-	 <ed628a921002011025i432465acl166b845607546a64@mail.gmail.com>
-	 <20100202041448.GA17333@in.ibm.com>
-Date: Mon, 1 Feb 2010 23:13:42 -0800
-Message-ID: <ed628a921002012313s622efd2eg9fa9243419de4863@mail.gmail.com>
-Subject: Re: [RFC v5 PATCH 0/8] CFS Hard limits - v5
-From: Paul Turner <pjt@google.com>
-To: bharata@linux.vnet.ibm.com
-Cc: Bharata B Rao <bharata.rao@gmail.com>, linux-kernel@vger.kernel.org,
-       Dhaval Giani <dhaval.giani@gmail.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Herbert Poetzl <herbert@13thfloor.at>, Avi Kivity <avi@redhat.com>,
-       Chris Friesen <cfriesen@nortel.com>, Paul Menage <menage@google.com>,
-       Mike Waychison <mikew@google.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+	Tue, 2 Feb 2010 02:14:09 -0500
+From: Bill Gatliff <bgat@billgatliff.com>
+To: linux-embedded@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Bill Gatliff <bgat@billgatliff.com>
+Subject: [PWM PATCH 0/5] Implements a common PWM API
+Date: Tue,  2 Feb 2010 01:14:51 -0600
+Message-Id: <cover.1265094517.git.bgat@billgatliff.com>
+X-Mailer: git-send-email 1.6.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 1, 2010 at 8:14 PM, Bharata B Rao
-<bharata@linux.vnet.ibm.com> wrote:
-> On Mon, Feb 01, 2010 at 10:25:11AM -0800, Paul Turner wrote:
->> On Mon, Feb 1, 2010 at 3:04 AM, Paul Turner <pjt@google.com> wrote:
->> > On Mon, Feb 1, 2010 at 12:21 AM, Bharata B Rao
->> > <bharata@linux.vnet.ibm.com> wrote:
->> >> On Thu, Jan 28, 2010 at 08:26:08PM -0800, Paul Turner wrote:
->> >>> On Thu, Jan 28, 2010 at 7:49 PM, Bharata B Rao <bharata.rao@gmail.com> wrote:
->> >>> > On Sat, Jan 9, 2010 at 2:15 AM, Paul Turner <pjt@google.com> wrote:
->> >>> >>
->> >>> >> What are your thoughts on using a separate mechanism for the general case.  A
->> >>> >> draft proposal follows:
->> >>> >>
->> >>> >> - Maintain a global run-time pool for each tg.  The runtime specified by the
->> >>> >>  user represents the value that this pool will be refilled to each period.
->> >>> >> - We continue to maintain the local notion of runtime/period in each cfs_rq,
->> >>> >>  continue to accumulate locally here.
->> >>> >>
->> >>> >> Upon locally exceeding the period acquire new credit from the global pool
->> >>> >> (either under lock or more likely using atomic ops).  This can either be in
->> >>> >> fixed steppings (e.g. 10ms, could be tunable) or following some quasi-curve
->> >>> >> variant with historical demand.
->> >>> >>
->> >>> >> One caveat here is that there is some over-commit in the system, the local
->> >>> >> differences of runtime vs period represent additional over the global pool.
->> >>> >> However it should not be possible to consistently exceed limits since the rate
->> >>> >> of refill is gated by the runtime being input into the system via the per-tg
->> >>> >> pool.
->> >>> >>
->> >>> >
->> >>> > We borrow from what is actually available as spare (spare = unused or
->> >>> > remaining). With global pool, I see that would be difficult.
->> >>> > Inability/difficulty in keeping the global pool in sync with the
->> >>> > actual available spare time is the reason for over-commit ?
->> >>> >
->> >>>
->> >>> We maintain two pools, a global pool (new) and a per-cfs_rq pool
->> >>> (similar to existing rt_bw).
->> >>>
->> >>> When consuming time you charge vs your local bandwidth until it is
->> >>> expired, at this point you must either refill from the global pool, or
->> >>> throttle.
->> >>>
->> >>> The "slack" in the system is the sum of unconsumed time in local pools
->> >>> from the *previous* global pool refill.  This is bounded above by the
->> >>> size of time you refill a local pool at each expiry.  We call the size
->> >>> of refill a 'slice'.
->> >>>
->> >>> e.g.
->> >>>
->> >>> Task limit of 50ms, slice=10ms, 4cpus, period of 500ms
->> >>>
->> >>> Task A runs on cpus 0 and 1 for 5ms each, then blocks.
->> >>>
->> >>> When A first executes on each cpu we take slice=10ms from the global
->> >>> pool of 50ms and apply it to the local rq.  Execution then proceeds vs
->> >>> local pool.
->> >>>
->> >>> Current state is: 5 ms in local pools on {0,1}, 30ms remaining in global pool
->> >>>
->> >>> Upon period expiration we issue a global pool refill.  At this point we have:
->> >>> 5 ms in local pools on {0,1}, 50ms remaining in global pool.
->> >>>
->> >>> That 10ms of slack time is over-commit in the system.  However it
->> >>> should be clear that this can only be a local effect since over any
->> >>> period of time the rate of input into the system is limited by global
->> >>> pool refill rate.
->> >>
->> >> With the same setup as above consider 5 such tasks which block after
->> >> consuming 5ms each. So now we have 25ms slack time. In the next bandwidth
->> >> period if 5 cpu hogs start running and they would consume this 25ms and the
->> >> 50ms from this period. So we gave 50% extra to a group in a bandwidth period.
->> >> Just wondering how common such scenarious could be.
->> >>
->> >
->> > Yes within a single given period you may exceed your reservation due
->> > to slack.  However, of note is that across any 2 successive periods
->> > you are guaranteed to be within your reservation, i.e. 2*usage <=
->> > 2*period, as slack available means that you under-consumed your
->> > previous period.
->> >
->> > For those needing a hard guarantee (independent of amelioration
->> > strategies) halving the period provided would then provide this across
->> > their target period with the basic v1 implementation.
->> >
->>
->> Actually now that I think about it, this observation only holds when
->> the slack is consumed within the second of the two periods.  It should
->> be restated something like:
->>
->> for any n contiguous periods your maximum usage is n*runtime +
->> nr_cpus*slice, note the slack term is constant and is dominated for
->> any observation window involving several periods
->
-> Ok. We are talking about 'hard limits' here and looks like there is
-> a theoritical possibility of exceeding the limit often. Need to understand
-> how good/bad this is in real life.
->
+This patch series implements a common PWM API.  This series incorporates
+the feedback from the linux-embedded mailing list and elsewhere; the author
+greatly appreciates the efforts of everyone who reviewed the previous version
+of this code.
 
-I'm really glad that we're having this discussion however it feels
-like we are rat-holing a little on the handling of slack?  As an issue
-it seems a non-starter since if necessary it can be scrubbed with the
-same overhead as the original proposal for period refresh (i.e. remove
-slack from each cpu).  There are also trivial faster ways to zero it
-without this O(n) overhead.
+Bill Gatliff (5):
+  API to consolidate PWM devices behind a common user and kernel
+    interface
+  Emulates PWM hardware using a high-resolution timer and a GPIO pin
+  Expunge old Atmel PWMC driver, replacing it with one that conforms to
+    the PWM API
+  PWM-based LED control
+  LED "dimmer" trigger
 
-I feel it would be more productive to focus discussion on other areas
-of design such as load balancer interaction, distribution from global
-to local pools, entity placement and fairness on wakeup, etc.
+ Documentation/pwm.txt       |  260 ++++++++++++++++++
+ drivers/leds/leds-pwm.c     |  224 +++++++++-------
+ drivers/leds/ledtrig-dim.c  |   95 +++++++
+ drivers/misc/Makefile       |    6 +-
+ drivers/misc/atmel_pwm.c    |  409 ----------------------------
+ drivers/pwm/atmel-pwm.c     |  589 ++++++++++++++++++++++++++++++++++++++++
+ drivers/pwm/gpio.c          |  307 +++++++++++++++++++++
+ drivers/pwm/pwm.c           |  633 +++++++++++++++++++++++++++++++++++++++++++
+ include/linux/pwm.h         |   31 --
+ include/linux/pwm/pwm-led.h |   34 +++
+ include/linux/pwm/pwm.h     |  170 ++++++++++++
+ 11 files changed, 2217 insertions(+), 541 deletions(-)
+ create mode 100644 Documentation/pwm.txt
+ create mode 100644 drivers/leds/ledtrig-dim.c
+ delete mode 100644 drivers/misc/atmel_pwm.c
+ create mode 100644 drivers/pwm/atmel-pwm.c
+ create mode 100644 drivers/pwm/gpio.c
+ create mode 100644 drivers/pwm/pwm.c
+ delete mode 100644 include/linux/pwm.h
+ create mode 100644 include/linux/pwm/pwm-led.h
+ create mode 100644 include/linux/pwm/pwm.h
 
-> Regards,
-> Bharata.
->
