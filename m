@@ -1,74 +1,89 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755417Ab0BBKQw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 05:16:52 -0500
-Received: from mail-fx0-f220.google.com ([209.85.220.220]:41488 "EHLO
+	id S1755257Ab0BBKSb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 05:18:31 -0500
+Received: from mail-fx0-f220.google.com ([209.85.220.220]:64415 "EHLO
 	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753292Ab0BBKQu (ORCPT
+	with ESMTP id S1751887Ab0BBKS0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 05:16:50 -0500
-Message-ID: <4B67FB13.9000005@petalogix.com>
-Date: Tue, 02 Feb 2010 11:14:43 +0100
+	Tue, 2 Feb 2010 05:18:26 -0500
+Message-ID: <4B67FB74.4030409@petalogix.com>
+Date: Tue, 02 Feb 2010 11:16:20 +0100
 From: Michal Simek <michal.simek@petalogix.com>
 Reply-To: michal.simek@petalogix.com
 User-Agent: Thunderbird 2.0.0.22 (X11/20090625)
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: LKML <linux-kernel@vger.kernel.org>, hpa@zytor.com,
        John Williams <john.williams@petalogix.com>
 Subject: Re: Split 'flush_old_exec' into two functions - 221af7f87b97431e3ee21ce4b0e77d5411cf1549
-References: <4B66DE64.8010101@petalogix.com> <alpine.LFD.2.00.1002010741560.4206@localhost.localdomain> <4B672C31.9070302@zytor.com>
-In-Reply-To: <4B672C31.9070302@zytor.com>
+References: <4B66DE64.8010101@petalogix.com> <alpine.LFD.2.00.1002010741560.4206@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.1002010741560.4206@localhost.localdomain>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> On 02/01/2010 07:57 AM, Linus Torvalds wrote:
->> That said, Microblaze is not one of the architectures I would have 
->> expected to have problems. It has one of the most straightforward 
->> "flush_thread()" implementations in the whole kernel (it's a no-op ;), and 
->> that's where most of the hacky things were for the architectures that 
->> needed the change. And it has no "arch_pick_mmap_layout()" issues or 
->> anything else that tends to depend on personality bits or whatever.
->>
->> Microblaze is a no-MMU platform, isn't it? Which binary format does it 
->> use? It looks like _some_ binaries work (it seems to happily be running a 
->> shell to actually do those startup scripts) while others have problems. Is 
->> there a difference between "/bin/sh" and the binaries that seem to be 
->> problematic (like /bin/mount and /bin/ifup).
->>
->> Are the failing binaries all setuid ones, for example? Or shared vs 
->> non-shared? Or ELF vs FLAT or whatever?
->>
+Linus Torvalds wrote:
 > 
-> Another thing... it looks like you [Michal] is running a test image
-> under Qemu... could you perhaps point us to that image or another test
-> image which reproduces the problem?
+> On Mon, 1 Feb 2010, Michal Simek wrote:
+>> Hi Peter and Linus,
+>>
+>> commit 221af7f87b97431e3ee21ce4b0e77d5411cf1549 breaks anything on Microblaze.
+> 
+> Gaah. My original version of that patch very much tried to make it a no-op 
+> semantically, but then Peter made some preparatory changes for the next 
+> patch, so it actually changes semantics a bit. I was expecting that to be 
+> benign, but clearly there are issues.
 
-Yes, you are right. I am doing every day testing on qemu.
-I have prepared package which contain all things which you need.
-Please download it from http://www.monstr.eu/20100202-flush.tar.gz
-md5sum cfe59b19e52dff2319a2b1919839d5cd  20100202-flush.tar.gz
+Would it be possible to cc me or send that patches to linux-next? I am 
+doing every day tests and report results on my site. I would be able to 
+catch up bugs earlier.
 
-I added there README where you will find more information. Also there is 
-rootfs.cpio which you can use. Compile kernel with this patch and try. 
-Then you can revert it and retest - you should be able to see that behavior.
+> 
+>> None reported any problem that's why I think that is Microblaze related.
+> 
+> Well, our previous handling of the critical stage of 'execve()' when we 
+> actually switch from the old process to the new was _so_ grotty that many 
+> architectures ended up playing some really subtle games there. The whole 
+> point of the patch is to get rid of the games, but it's entirely possible 
+> that Microblaze (and others) had crazy things going on that broke when we 
+> made the ordering more straightforward.
+> 
+> That said, Microblaze is not one of the architectures I would have 
+> expected to have problems. It has one of the most straightforward 
+> "flush_thread()" implementations in the whole kernel (it's a no-op ;), and 
+> that's where most of the hacky things were for the architectures that 
+> needed the change. And it has no "arch_pick_mmap_layout()" issues or 
+> anything else that tends to depend on personality bits or whatever.
+> 
+> Microblaze is a no-MMU platform, isn't it? 
 
-If you have any problem with it, please let me know.
+Microblaze has support for both platforms MMU and noMMU. Only MMU 
+version is affected. noMMU version is without any problem.
 
+Which binary format does it
+> use? It looks like _some_ binaries work (it seems to happily be running a 
+> shell to actually do those startup scripts) while others have problems. Is 
+> there a difference between "/bin/sh" and the binaries that seem to be 
+> problematic (like /bin/mount and /bin/ifup).
+
+Most of them is busybox ELF with shared libraries. I tried non-shared 
+ELF and the problem is the same.
+
+> 
+> Are the failing binaries all setuid ones, for example? Or shared vs 
+> non-shared? Or ELF vs FLAT or whatever?
+
+no setuid.
+
+Thanks,
 Michal
 
-P.S.: you don't need to care about FPU error in bootlog - fpu is not used.
 
 > 
-> Nothing like having a hands-on testcase...
-> 
-> 	-hpa
-> 
+> 		Linus
 
 
 -- 
