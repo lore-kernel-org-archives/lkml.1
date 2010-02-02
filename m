@@ -1,70 +1,194 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755775Ab0BBLLn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 06:11:43 -0500
-Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:65054 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754609Ab0BBLLm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 06:11:42 -0500
-Subject: [PATCH] isp1760: Flush the D-cache for the pipe-in transfer buffers
-To: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-From: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Greg KH <greg@kroah.com>, Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
-       Sebastian Siewior <bigeasy@linutronix.de>
-Date: Tue, 02 Feb 2010 11:11:35 +0000
-Message-ID: <20100202111135.18636.62688.stgit@pc1117.cambridge.arm.com>
-User-Agent: StGit/0.15-36-g53e3
+	id S1755826Ab0BBLNG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 06:13:06 -0500
+Received: from mailhub.sw.ru ([195.214.232.25]:11783 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751797Ab0BBLNC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 06:13:02 -0500
+X-Greylist: delayed 2214 seconds by postgrey-1.27 at vger.kernel.org; Tue, 02 Feb 2010 06:13:01 EST
+From: Dmitry Monakhov <dmonakhov@openvz.org>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] nfs: clear_commit_release incorrectly handle truncated page
+CC: linux-nfs@vger.kernel.org
+Date: Tue, 02 Feb 2010 13:36:02 +0300
+Message-ID: <87hbpzhqlp.fsf@openvz.org>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 02 Feb 2010 11:11:35.0778 (UTC) FILETIME=[7BCDC420:01CAA3F8]
+Content-Type: multipart/mixed; boundary="=-=-="
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When the HDC driver writes the data to the transfer buffers it pollutes
-the D-cache (unlike DMA drivers where the device writes the data). If
-the corresponding pages get mapped into user space, there are no
-additional cache flushing operations performed and this causes random
-user space faults on architectures with separate I and D caches
-(Harvard) or those with aliasing D-cache.
+--=-=-=
 
-Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>
-Cc: Greg KH <greg@kroah.com>
-Cc: Sebastian Siewior <bigeasy@linutronix.de>
+
+After page was truncated it lost it's mapping, this result in null
+pointer dereference on bdi_stat update. In fact we have to decrement
+bdi_stat even for truncated pages, so let's pass correct mapping in
+function arguments. Patch against linux-2.6
+##TEST_CASE
+/*
+Tast case for bug in nfs_clear_request_commit()
+caused by null pointer dereference in case of truncated page.
+It takes less than 10 minutes to reproduce the bug.
+### start script
+#! /bin/bash -x
+# mount my-host:/my-share /mnt
+mkdir /mnt/T
+cd /mnt/T || exit 1
+while true ;
+      do for ((i=0;i<3;i++)); do
+      	 /tmp/mmap file3 200000000 $i & done;
+	 sleep 2 ;
+	 killall -9 mmap ;
+      done
+done
+*/
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+int main(int argc, char *argv[])
+{
+	char *addr;
+	unsigned int size;
+	off_t off;
+	int i = 0;
+	int fd, result;
+	if (argc != 4) {
+		perror("Wrong args:\n Usage: %s [file] [size] [offset]\n");
+		exit(EXIT_FAILURE);
+	}
+	size = atoi(argv[2]);
+	size &= ~(4096-1);
+	off = atol(argv[3]);
+	off = ((off_t)size)*off;
+	fd = open(argv[1], O_RDWR | O_CREAT | O_TRUNC, (mode_t)0600);
+	if (fd == -1) {
+		perror("Error opening file for writing");
+		exit(EXIT_FAILURE);
+	}
+	result = lseek(fd, off + (off_t)size, SEEK_SET);
+	if (result == -1) {
+		close(fd);
+		perror("Error calling lseek() to 'stretch' the file");
+		exit(EXIT_FAILURE);
+	}
+	write(fd, "a", 1);
+	addr = mmap(0, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, off);
+	if (addr == MAP_FAILED) {
+		close(fd);
+		perror("Error mmapping the file");
+		exit(EXIT_FAILURE);
+	}
+	/* Now write int's to the file as if it were memory (an array of ints).
+	 */
+	while (1) {
+		memset(addr, i++, size);
+	}
+}
+
+
+--=-=-=
+Content-Disposition: inline;
+ filename=0001-nfs-clear_commit_release-incorrectly-handle-truncate.patch
+
+>From bdce13e6947ad738b68bcb9fd507885d14dca9f0 Mon Sep 17 00:00:00 2001
+From: Dmitry Monakhov <dmonakhov@openvz.org>
+Date: Tue, 2 Feb 2010 13:24:58 +0300
+Subject: [PATCH] nfs: clear_commit_release incorrectly handle truncated page
+
+After page was truncated it lost it's mapping, this result in null
+pointer dereference on bdi_stat update. In fact we have to decrement
+bdi_stat even for truncated pages, so let's pass correct mapping in
+function arguments.
+
+Signed-off-by: Dmitry Monakhov <dmonakhov@openvz.org>
 ---
- drivers/usb/host/isp1760-hcd.c |   10 ++++++++++
- 1 files changed, 10 insertions(+), 0 deletions(-)
+ fs/nfs/write.c |   19 ++++++++++---------
+ 1 files changed, 10 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/usb/host/isp1760-hcd.c b/drivers/usb/host/isp1760-hcd.c
-index 27b8f7c..51445ad 100644
---- a/drivers/usb/host/isp1760-hcd.c
-+++ b/drivers/usb/host/isp1760-hcd.c
-@@ -17,7 +17,9 @@
- #include <linux/debugfs.h>
- #include <linux/uaccess.h>
- #include <linux/io.h>
-+#include <linux/mm.h>
- #include <asm/unaligned.h>
-+#include <asm/cacheflush.h>
+diff --git a/fs/nfs/write.c b/fs/nfs/write.c
+index d171696..bfcf92a 100644
+--- a/fs/nfs/write.c
++++ b/fs/nfs/write.c
+@@ -445,13 +445,13 @@ nfs_mark_request_commit(struct nfs_page *req)
+ }
  
- #include "../core/hcd.h"
- #include "isp1760-hcd.h"
-@@ -904,6 +906,14 @@ __acquires(priv->lock)
- 			status = 0;
+ static int
+-nfs_clear_request_commit(struct nfs_page *req)
++nfs_clear_request_commit(struct nfs_page *req, struct address_space *mapping)
+ {
+ 	struct page *page = req->wb_page;
+-
++	/* page->mapping may be NULL if page was truncated */
+ 	if (test_and_clear_bit(PG_CLEAN, &(req)->wb_flags)) {
+ 		dec_zone_page_state(page, NR_UNSTABLE_NFS);
+-		dec_bdi_stat(page->mapping->backing_dev_info, BDI_RECLAIMABLE);
++		dec_bdi_stat(mapping->backing_dev_info, BDI_RECLAIMABLE);
+ 		return 1;
+ 	}
+ 	return 0;
+@@ -483,7 +483,7 @@ nfs_mark_request_commit(struct nfs_page *req)
+ }
+ 
+ static inline int
+-nfs_clear_request_commit(struct nfs_page *req)
++nfs_clear_request_commit(struct nfs_page *req, struct address_space *mapping)
+ {
+ 	return 0;
+ }
+@@ -539,14 +539,15 @@ static int nfs_wait_on_requests_locked(struct inode *inode, pgoff_t idx_start, u
+ 	return res;
+ }
+ 
+-static void nfs_cancel_commit_list(struct list_head *head)
++static void nfs_cancel_commit_list(struct list_head *head,
++				struct address_space *mapping)
+ {
+ 	struct nfs_page *req;
+ 
+ 	while(!list_empty(head)) {
+ 		req = nfs_list_entry(head->next);
+ 		nfs_list_remove_request(req);
+-		nfs_clear_request_commit(req);
++		nfs_clear_request_commit(req, mapping);
+ 		nfs_inode_remove_request(req);
+ 		nfs_unlock_request(req);
+ 	}
+@@ -642,7 +643,7 @@ static struct nfs_page *nfs_try_to_update_request(struct inode *inode,
+ 		spin_lock(&inode->i_lock);
  	}
  
-+	if (usb_pipein(urb->pipe) && usb_pipetype(urb->pipe) == PIPE_BULK) {
-+		void *ptr;
-+		for (ptr = urb->transfer_buffer;
-+		     ptr < urb->transfer_buffer + urb->transfer_buffer_length;
-+		     ptr += PAGE_SIZE)
-+			flush_dcache_page(virt_to_page(ptr));
-+	}
-+
- 	/* complete() can reenter this HCD */
- 	usb_hcd_unlink_urb_from_ep(priv_to_hcd(priv), urb);
- 	spin_unlock(&priv->lock);
+-	if (nfs_clear_request_commit(req))
++	if (nfs_clear_request_commit(req, inode->i_mapping))
+ 		radix_tree_tag_clear(&NFS_I(inode)->nfs_page_tree,
+ 				req->wb_index, NFS_PAGE_TAG_COMMIT);
+ 
+@@ -1352,7 +1353,7 @@ static void nfs_commit_release(void *calldata)
+ 	while (!list_empty(&data->pages)) {
+ 		req = nfs_list_entry(data->pages.next);
+ 		nfs_list_remove_request(req);
+-		nfs_clear_request_commit(req);
++		nfs_clear_request_commit(req, data->inode->i_mapping);
+ 
+ 		dprintk("NFS:       commit (%s/%lld %d@%lld)",
+ 			req->wb_context->path.dentry->d_inode->i_sb->s_id,
+@@ -1449,7 +1450,7 @@ long nfs_sync_mapping_wait(struct address_space *mapping, struct writeback_contr
+ 			break;
+ 		if (how & FLUSH_INVALIDATE) {
+ 			spin_unlock(&inode->i_lock);
+-			nfs_cancel_commit_list(&head);
++			nfs_cancel_commit_list(&head, mapping);
+ 			ret = pages;
+ 			spin_lock(&inode->i_lock);
+ 			continue;
+-- 
+1.6.3.3
 
+
+--=-=-=--
