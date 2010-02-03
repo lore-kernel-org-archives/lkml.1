@@ -1,60 +1,70 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757343Ab0BCPro (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 10:47:44 -0500
-Received: from casper.infradead.org ([85.118.1.10]:59524 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756809Ab0BCPrn (ORCPT
+	id S932450Ab0BCPtS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 10:49:18 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:34286 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757337Ab0BCPtJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 10:47:43 -0500
-Subject: Re: [PATCH 2/5] bitops: compile time optimization for
- hweight_long(CONSTANT)
-From: Peter Zijlstra <peterz@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Wu Fengguang <fengguang.wu@intel.com>, LKML <linux-kernel@vger.kernel.org>,
-       Jamie Lokier <jamie@shareable.org>, Roland Dreier <rdreier@cisco.com>,
-       Al Viro <viro@ZenIV.linux.org.uk>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <20100203074251.e2caa3f3.akpm@linux-foundation.org>
-References: <20100130094515.475881280@intel.com>
-	 <20100130094957.692671259@intel.com>
-	 <20100201124825.cc024f2a.akpm@linux-foundation.org>
-	 <20100203133951.GA24357@localhost>
-	 <20100203070825.e36b3932.akpm@linux-foundation.org>
-	 <1265210157.24455.646.camel@laptop>
-	 <20100203074251.e2caa3f3.akpm@linux-foundation.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 03 Feb 2010 16:47:34 +0100
-Message-ID: <1265212054.24455.680.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 3 Feb 2010 10:49:09 -0500
+X-Authority-Analysis: v=1.0 c=1 a=IQbZ46gXzHUA:10 a=20KFwNOVAAAA:8 a=pGLkceISAAAA:8 a=meVymXHHAAAA:8 a=x6C2UzhSFb6Sx6bTZhwA:9 a=rzzK0JazwLDo2KmUSIUA:7 a=QZaVOT6wBCyAb0KN1K7FaKBWR_sA:4 a=jEp0ucaQiEUA:10 a=MSl-tDqOz04A:10 a=jeBq3FmKZ4MA:10
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Message-Id: <20100203154906.255551521@goodmis.org>
+User-Agent: quilt/0.48-1
+Date: Wed, 03 Feb 2010 10:46:08 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: linux-kbuild@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Anibal Monsalve Salazar <anibal@debian.org>,
+       Michal Marek <mmarek@suse.cz>, Xavier Chantry <shiningxc@gmail.com>
+Subject: [PATCH 3/4] kconfig: Look in both /bin and /sbin for lsmod in streamline_config.pl
+References: <20100203154605.461025238@goodmis.org>
+Content-Disposition: inline; filename=0003-kconfig-Look-in-both-bin-and-sbin-for-lsmod-in-strea.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-02-03 at 07:42 -0800, Andrew Morton wrote:
-> On Wed, 03 Feb 2010 16:15:57 +0100 Peter Zijlstra <peterz@infradead.org> wrote:
-> 
-> > On Wed, 2010-02-03 at 07:08 -0800, Andrew Morton wrote:
-> > > On Wed, 3 Feb 2010 21:39:51 +0800 Wu Fengguang <fengguang.wu@intel.com> wrote:
-> > > 
-> > > > Is there an official lowest GCC version that Linux supports?
-> > > 
-> > > Documentation/Changes says gcc-3.2.
-> > 
-> > Anyway, its not like that macro I used isn't straight forward. Not much
-> > a builtin can do better.
-> > 
-> > The only benefit the builtin has is possibly use machine popcnt
-> > instructions but we already deal with that in the kernel.
-> 
-> We didn't deal with it on every architecture, which is something which
-> the compiler extension takes care of.
-> 
-> In fact I can't find anywhere where we dealt with it on x86.
+From: Steven Rostedt <srostedt@redhat.com>
 
->From what I know the popcnt ins on x86 is relatively new, hpa was going
-to look at supporting it using alternatives.
+Distributions now have lsmod in /bin instead of /sbin. But to handle
+both cases, we look for it in /sbin /bin /usr/bin and /usr/sbin.
+If lsmod is not found in any of those paths, it defaults to use
+just lsmod and hopes that it lies in the path of the user.
+
+Tested-by: Xavier Chantry <shiningxc@gmail.com>
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+---
+ scripts/kconfig/streamline_config.pl |   15 ++++++++++++++-
+ 1 files changed, 14 insertions(+), 1 deletions(-)
+
+diff --git a/scripts/kconfig/streamline_config.pl b/scripts/kconfig/streamline_config.pl
+index 9e66fa8..d7f7db7 100644
+--- a/scripts/kconfig/streamline_config.pl
++++ b/scripts/kconfig/streamline_config.pl
+@@ -264,7 +264,20 @@ foreach my $makefile (@makefiles) {
+ my %modules;
+ 
+ # see what modules are loaded on this system
+-open(LIN,"/sbin/lsmod|") || die "Cant lsmod";
++my $lsmod;
++
++foreach $dir ( ("/sbin", "/bin", "/usr/sbin", "/usr/bin") ) {
++    if ( -x "$dir/lsmod" ) {
++	$lsmod = "$dir/lsmod";
++	last;
++    }
++}
++if (!defined($lsmod)) {
++    # try just the path
++    $lsmod = "lsmod";
++}
++
++open(LIN,"$lsmod|") || die "Can not call lsmod with $lsmod";
+ while (<LIN>) {
+ 	next if (/^Module/);  # Skip the first line.
+ 	if (/^(\S+)/) {
+-- 
+1.6.5
+
 
