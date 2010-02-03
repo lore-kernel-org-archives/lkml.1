@@ -1,48 +1,77 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757211Ab0BCP2j (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 10:28:39 -0500
-Received: from mail-px0-f182.google.com ([209.85.216.182]:55338 "EHLO
-	mail-px0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756746Ab0BCP2i (ORCPT
+	id S1757314Ab0BCP2o (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 10:28:44 -0500
+Received: from hawking.rebel.net.au ([203.20.69.83]:58451 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756746Ab0BCP2m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 10:28:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=M3mBk37I2gK80hAkxBimjes45DF8UfbjBt6O8hUV8FwJs15zNqZleenU0iJjKy1bEw
-         4oIcv/dTBE32k2hkIHOdK+42cYcsx8+pSewu6yzfJZOmMoO1fAkje/Halg/XGSlvRjA5
-         +FdriMbqSiqw+5isjpXxeZXl79Fq6IG9yHokk=
-Date: Wed, 3 Feb 2010 23:31:01 +0800
-From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-To: Lennart Poettering <lennart@poettering.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] exit: PR_SET_ANCHOR for marking processes as reapers
-	for child processes
-Message-ID: <20100203153101.GC4177@hack>
-References: <20100202120457.GA19605@omega>
+	Wed, 3 Feb 2010 10:28:42 -0500
+Message-ID: <4B699625.5040808@davidnewall.com>
+Date: Thu, 04 Feb 2010 01:58:37 +1030
+From: David Newall <davidn@davidnewall.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100202120457.GA19605@omega>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Greg KH <greg@kroah.com>
+CC: Derek Atkins <warlord@mit.edu>, linux-kernel@vger.kernel.org
+Subject: Re: Re-enabling non-GPL driver access to disk partition information
+References: <sjmd40t3slu.fsf@pgpdev.ihtfp.org> <20100129220601.GA19687@kroah.com> <4B63AF4C.9040003@davidnewall.com> <20100203021049.GA17576@kroah.com>
+In-Reply-To: <20100203021049.GA17576@kroah.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 02, 2010 at 01:04:57PM +0100, Lennart Poettering wrote:
+Greg KH wrote:
+> On Sat, Jan 30, 2010 at 02:32:20PM +1030, David Newall wrote:
+>   
+>> Greg KH wrote:
+>>     
+>>> On Fri, Jan 29, 2010 at 09:15:09AM -0500, Derek Atkins wrote:
+>>>   
+>>>       
+>>>> -EXPORT_SYMBOL_GPL(put_device);
+>>>> +EXPORT_SYMBOL(put_device);
+>>>>     
+>>>>         
+>>> No, sorry, [...] I can not, and will not, make this change.
+>>>   
+>>>       
+>> Derek,
+>>
+>> Consider writing a GPL wrapper module.
+>>     
 >
->This patch adds a simple flag for each process that marks it as an
->"anchor" process for all its children and grandchildren. If a child of
->such an anchor dies all its children will not be reparented to init, but
->instead to this anchor, escaping this anchor process is not possible. A
->task with this flag set hence acts is little "sub-init".
->
+> Ah, the old "GPL condom" try.  Sorry, but this has been tried many times
+> in the past, and have been shut down every time.  See the Samba history
+> of this for lots of details as to why this does not work.
 
-This will break the applictions which using 'getppid() == 1' to check
-if its real parent is dead or not...
 
--- 
-Live like a child, think like the god.
- 
+Samba vs The Money merely shows that The Money failed to put up a 
+sufficient defence. Good result for FOSS, but I recommend against you 
+betting your home on it.
+
+Anyway, I was thinking of something a little more substantial that what 
+you perhaps read into my suggestion. There's usually a substantial gap 
+between the pure needs of a driver and the facilities offered by an 
+operating system. In the case in question, for example, the need is to 
+count the number of partitions, and the facility offered is get_device, 
+or something. A tiny GPL module that calls get_device and returns a 
+count sounds eminently defensible.
+
+In addition--and please keep in mind that I'm unfamiliar with the 
+internals of the kernel--it seems to me there's an obvious similarity 
+with USL vs BSD, alleging copyright for verbatim copying of macro 
+constants, amongst other things. A lesson that learned then was that you 
+can't prevent someone from using provided facilities necessary for use 
+of the operating system. I don't know what put_device does, but I know 
+what it sounds like; it sounds like it's something that you have to use, 
+and so one can use it, even in proprietary code. I imagine this idea 
+will irritate those who put in the hard yards, but FOSS has to play by 
+the same rules as the monied end of town. You might want to think about 
+this carefully, because if it's taken all the way through court and the 
+GPL-only claim rejected, there may well be a run-on effect on all of the 
+symbols marked GPL-only. Those who want to thwart proprietary kernel 
+modules may find it prudent to generously give up this symbol rather 
+than risking the lot.
