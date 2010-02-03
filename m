@@ -1,62 +1,51 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932604Ab0BCQ5k (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 11:57:40 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55144 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932559Ab0BCQ5i (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 11:57:38 -0500
-Date: Wed, 3 Feb 2010 08:56:18 -0800
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Michael Breuer <mbreuer@majjas.com>
-Cc: Jarek Poplawski <jarkao2@gmail.com>, David Miller <davem@davemloft.net>,
-       akpm@linux-foundation.org, flyboy@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Michael Chan <mchan@broadcom.com>, Don Fry <pcnet32@verizon.net>,
-       Francois Romieu <romieu@fr.zoreil.com>,
-       Matt Carlson <mcarlson@broadcom.com>
-Subject: Re: [PATCH] sky2:  receive dma mapping error handling
-Message-ID: <20100203085618.6662cc6f@nehalam>
-In-Reply-To: <4B69A897.7030408@majjas.com>
-References: <20100128223447.GC3109@del.dom.local>
-	<4B621316.8070308@majjas.com>
-	<20100128225621.GD3109@del.dom.local>
-	<4B6216B9.1010802@majjas.com>
-	<20100128153643.0fca3c51@nehalam>
-	<4B645EF4.4050701@majjas.com>
-	<20100131003449.GA11935@del.dom.local>
-	<4B650D53.2010607@majjas.com>
-	<4B65D0F9.2020602@majjas.com>
-	<4B65FD12.7090101@majjas.com>
-	<20100131221835.GA3317@del.dom.local>
-	<20100201102018.7b597992@nehalam>
-	<4B68F664.6050007@majjas.com>
-	<4B69A897.7030408@majjas.com>
-Organization: Linux Foundation
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S932607Ab0BCQ7R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 11:59:17 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:23341 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932545Ab0BCQ7Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 11:59:16 -0500
+Message-ID: <4B69AB60.5070609@redhat.com>
+Date: Wed, 03 Feb 2010 10:59:12 -0600
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: "Michael S. Tsirkin" <mst@redhat.com>
+CC: "Theodore Ts'o" <tytso@mit.edu>, Andreas Dilger <adilger@sun.com>,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.33-rc6: ext4 triggers warning about high order allocations
+References: <20100203060854.GA12489@redhat.com>
+In-Reply-To: <20100203060854.GA12489@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 03 Feb 2010 11:47:19 -0500
-Michael Breuer <mbreuer@majjas.com> wrote:
-
-> Tracked this down. The status being returned is 0x3c0080 - good flow 
-> control packets. Nothing is actually being dropped (confirmed by packet 
-> trace on switch compared with packet trace on server).
+Michael S. Tsirkin wrote:
+> Hi!
+> I got this warning at boot with 2.6.33-rc6:
 > 
-> I whipped up a trivial patch to not count these as dropped packets and 
-> will post to netdev.
-> 
-> I'm not really sure what the driver should be doing in this case, but 
-> resubmit seems to work.
+> [   12.374168] ------------[ cut here ]------------
+> [   12.375798] WARNING: at mm/page_alloc.c:1813 __alloc_pages_nodemask+0x180/0x666()
+> [   12.377401] Hardware name: 2241B48
+> [   12.378984] Modules linked in: [last unloaded: scsi_wait_scan]
+> [   12.380593] Pid: 1, comm: init Not tainted 2.6.33-rc6-aa-nopat #50
+> [   12.382194] Call Trace:
+> [   12.383781]  [<ffffffff810b6b3e>] ? __alloc_pages_nodemask+0x180/0x666
+> [   12.385390]  [<ffffffff81041cda>] warn_slowpath_common+0x77/0xa4
+> [   12.386996]  [<ffffffff81041d16>] warn_slowpath_null+0xf/0x11
+> [   12.388577]  [<ffffffff810b6b3e>] __alloc_pages_nodemask+0x180/0x666
+> [   12.390168]  [<ffffffff81036a9b>] ? finish_task_switch+0x4b/0xb1
+> [   12.391758]  [<ffffffff810b7036>] __get_free_pages+0x12/0x4f
+> [   12.393354]  [<ffffffff810de892>] __kmalloc+0x42/0x116
+> [   12.394934]  [<ffffffff812405bf>] match_number+0x35/0x98
+> [   12.396493]  [<ffffffff8124064d>] match_int+0xb/0xd
+> [   12.398045]  [<ffffffff81169c8c>] parse_options+0x5fe/0x733
+> [   12.399594]  [<ffffffff811058c3>] ? __wait_on_buffer+0x1f/0x21
+> [   12.401157]  [<ffffffff8116a2dc>] ext4_fill_super+0x373/0x2070
 
-Looks like a flow control negotiation issue. You probably turned off
-flow control on the Linux side, but the switch is still doing flow
-control.
+Are you mounting with any interesting options?
 
--- 
+-Eric
