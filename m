@@ -1,80 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757114Ab0BCBZh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 20:25:37 -0500
-Received: from na3sys009aog107.obsmtp.com ([74.125.149.197]:58586 "HELO
-	na3sys009aog107.obsmtp.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756146Ab0BCBZg (ORCPT
+	id S932205Ab0BCB06 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 20:26:58 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51098
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753211Ab0BCB05 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 20:25:36 -0500
-From: Michael Poole <mdpoole@troilus.org>
-To: Bastien Nocera <hadess@hadess.net>, Marcel Holtmann <marcel@holtmann.org>
-Cc: Jiri Kosina <jkosina@suse.cz>, "Gunn\, Brian" <bgunn@solekai.com>,
-       Ping <pinglinux@gmail.com>, linux-kernel@vger.kernel.org,
-       BlueZ development <linux-bluetooth@vger.kernel.org>
-Subject: Re: [PATCH 0/3] HID: make raw output callback more flexible
-References: <alpine.LNX.2.00.1001291515560.356@pobox.suse.cz>
-	<1264783166.29532.5302.camel@localhost.localdomain>
-	<87iqakifm8.fsf@troilus.org>
-	<1264860663.29532.7887.camel@localhost.localdomain>
-Date: Tue, 02 Feb 2010 20:25:32 -0500
-In-Reply-To: <1264860663.29532.7887.camel@localhost.localdomain> (Bastien
-	Nocera's message of "Sat, 30 Jan 2010 14:11:03 +0000")
-Message-ID: <87bpg7glf7.fsf@troilus.org>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 2 Feb 2010 20:26:57 -0500
+Date: Tue, 02 Feb 2010 17:27:10 -0800 (PST)
+Message-Id: <20100202.172710.24662176.davem@davemloft.net>
+To: fujita.tomonori@lab.ntt.co.jp
+Cc: jarkao2@gmail.com, alan@lxorguk.ukuu.org.uk,
+       shemminger@linux-foundation.org, mbreuer@majjas.com,
+       akpm@linux-foundation.org, flyboy@gmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       mchan@broadcom.com, pcnet32@verizon.net, romieu@fr.zoreil.com,
+       mcarlson@broadcom.com, James.Bottomley@suse.de
+Subject: Re: [PATCH] sky2: Fix WARNING: at lib/dma-debug.c:902 check_sync
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20100203101817Z.fujita.tomonori@lab.ntt.co.jp>
+References: <20100122141018D.fujita.tomonori@lab.ntt.co.jp>
+	<20100121.223841.145479578.davem@davemloft.net>
+	<20100203101817Z.fujita.tomonori@lab.ntt.co.jp>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bastien Nocera writes:
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Date: Wed, 3 Feb 2010 10:18:39 +0900
 
-> On Fri, 2010-01-29 at 19:46 -0500, Michael Poole wrote:
->> > [1]: Comments on the patch at
->> > http://thread.gmane.org/gmane.linux.bluez.kernel/4279 would be
->> > appreciated
->> 
->> This patch does not work for me.  Before, the first time after each
->> boot
->> that I tried to connect to an Apple Magic Mouse, it failed with -14
->> (EFAULT).  With this patch, it fails with -22 (EINVAL) instead.  The
->> -EFAULT *was* due to hidp_parse()'s copy_from_user().  I have not
->> looked
->> yet to see where the -EINVAL is coming from -- would that help?  (Both
->> with and without your patch, the second attempt to connect works.) 
->
-> I don't get -EFAULT anymore (it was failing to copy the rd_data from
-> user-space), but I do get -EINVALs now. I haven't investigated it
-> though. My guess is that the hid parser fails.
->
-> Could you compare the sizes of the data gathered in user-space?
+> Can we safely assume that the arch implementations already round
+> up/down to the safe boundary internally in this API (they should
+> already)?
 
-The bug mysteriously disappeared when I tried to apply kgdb to the
-problem.  Your patch won't do the trick because the hidp_connadd_req
-structure has also gone out of scope by the time the hid-(whatever)
-probe function is called.  The ioctl has returned to the user, but the
-new hid-(whatever) module is not yet loaded.
+I can only speak for sparc64 and x86 directly and those are fine.
 
-That is, the sequence looks like this:
+Any such improper implementations would fail with many common
+ethernet drivers already.
 
-  - Application triggers hidp_sock_ioctl(socket, HIDPCONNADD, &connadd).
-    - This starts the connection, and returns 0...
-    - ... but also indicates that some other module needs to be loaded.
+> I don't like two DMA docs. I like to make pci_dma_* API obsolete. We
+> have the generic DMA API with generic devices so we are always able to
+> use the API (as you did with sbus_map_*). The majority arch
+> implementations safely call the bus specific DMA functions via the
+> generic DMA API. So there are not many things to do. We can just
+> convert pci_dma_* to dma_* API slowly.
+> 
+> Opinions?
 
-  - User-space loads the appropriate module does init_module()...
-    - which calls the module_init() function...
-    - which calls hid_register_driver()...
-    - which eventually attaches the new driver to the device...
-    - triggering the module's probe() function to call hid_parse()...
-    - hid_parse() fails because its hidp_connadd_req is gone.
-
-Marcel, I think this is a case where the subsystem maintainer should
-make the call on how to fix it.  I can write and locally test a patch,
-but I don't want to assume that (for example) the desired solution is to
-keep a copy of the Report descriptor in the hidp_session.  The USB HID
-core sends a GET_DESCRIPTOR request for the Report descriptor, which
-isn't practical here because that descriptor is only available through
-SDP.
-
-Michael Poole
+I have no problem with this.
