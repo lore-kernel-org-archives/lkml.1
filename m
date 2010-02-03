@@ -1,97 +1,190 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932314Ab0BCJPV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 04:15:21 -0500
-Received: from mail-fx0-f215.google.com ([209.85.220.215]:54153 "EHLO
-	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932211Ab0BCJO5 (ORCPT
+	id S1756669Ab0BCJOr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 04:14:47 -0500
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:57321 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755946Ab0BCJOk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 04:14:57 -0500
+	Wed, 3 Feb 2010 04:14:40 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=SBVYimbXIBZSwWII6yTFKA+yWKM5iYPM65z+vMS1XbCI1+v6YvmvUHlGIA5CRz0XAF
-         SvLso4kObqXED7YuleYuuZ8rKwYdg+FmltW/lMLKOQFzpSWUdNwRms4YnMbiyWpZp9xX
-         uXorLgxYE6I5nrkg2gFjOKmlrtdMTKTbOQXsc=
-Date: Wed, 3 Feb 2010 10:14:49 +0100
-From: Stefan Seyfried <stefan.seyfried@googlemail.com>
-To: Willy Tarreau <w@1wt.eu>
-Cc: linux-kernel@vger.kernel.org, Stefan Seyfried <seife@sphairon.com>
-Subject: Re: [PATCH 2.4] FAT: do not continue in fat_get_block if bmap fails
-Message-ID: <20100203101449.2090aa57@strolchi>
-In-Reply-To: <20100202220631.GA16098@1wt.eu>
-References: <1265115635-22612-1-git-send-email-stefan.seyfried@googlemail.com>
-	<20100202220631.GA16098@1wt.eu>
-X-Mailer: Claws Mail 3.7.4 (GTK+ 2.19.3; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=X3RzLa9rGuzAPXgCalA239nkk/tBRdFTJU9uNxqzwop/GrFIMqnE+dis+3jb6FifFi
+         1CaRglGN8y/w/ISLBXSKIBGY05bZaoBahDhWO+fs4Qi3TQU0IPK0e7xpfrOe1pOPRlA8
+         4JKjdslIox9yuWp68usAP/RfRmANf+OU+chxc=
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Paul Mackerras <paulus@samba.org>,
+       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
+       Li Zefan <lizf@cn.fujitsu.com>, Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: [PATCH 02/11] tracing: Introduce TRACE_EVENT_INJECT
+Date: Wed,  3 Feb 2010 10:14:26 +0100
+Message-Id: <1265188475-23509-3-git-send-regression-fweisbec@gmail.com>
+X-Mailer: git-send-email 1.6.2.3
+In-Reply-To: <1265188475-23509-1-git-send-regression-fweisbec@gmail.com>
+References: <1265188475-23509-1-git-send-regression-fweisbec@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Willy,
+TRACE_EVENT_INJECT macro is the same as TRACE_EVENT but takes one
+more parameter that defines an "inject" callback to be called when
+the event is enabled.
 
-On Tue, 2 Feb 2010 23:06:31 +0100
-Willy Tarreau <w@1wt.eu> wrote:
+This is useful when we need to catch up with events that have
+already occured but that are required for the user.
 
-> Hello Stefan,
-> 
-> On Tue, Feb 02, 2010 at 02:00:35PM +0100, Stefan Seyfried wrote:
-> > From: Stefan Seyfried <seife@sphairon.com>
-> > 
-> > There is no use in continuing the write operation after fat_bmap() fails.
-> > (This successfully killed a VFAT FS for me).
-> > The corresponding code in 2.6 does return here as well, AFAICT.
-> 
-> OK then that's fine, I'm merging it.
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+Cc: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>
+---
+ include/linux/ftrace_event.h |    1 +
+ include/linux/tracepoint.h   |    3 +++
+ include/trace/define_trace.h |    6 ++++++
+ include/trace/ftrace.h       |   31 ++++++++++++++++++++++++++++++-
+ kernel/trace/trace_events.c  |    3 +++
+ 5 files changed, 43 insertions(+), 1 deletions(-)
 
-I'd like to add that I am not a filesystem expert at all, so if
-somebody wants to suggest a better return code, I'm all for that.
-
-And the dosfs code in 2.6 is substantially different, thus the "AFAICT"
-above ;)
-
-Anyway, continuing at that place (when phys == 0) is definitely
-wrong, since writing to block 0 later on will kill the filesystem 100%.
-
-I triggered this with a corrumpted file, which an application wanted to
-modify, dosfsck had this to say about the file system:
-
-strolchi:~ # dosfsck -nv /dev/sdb1
-dosfsck 2.11 (12 Mar 2005)
-dosfsck 2.11, 12 Mar 2005, FAT32, LFN
-Checking we can access the last sector of the filesystem
-Boot sector contents:
-System ID "MSDOS5.0"
-Media byte 0xf8 (hard disk)
-       512 bytes per logical sector
-     16384 bytes per cluster
-         1 reserved sector
-First FAT starts at byte 512 (sector 1)
-         2 FATs, 16 bit entries
-    124928 bytes per FAT (= 244 sectors)
-Root directory starts at byte 250368 (sector 489)
-       512 root directory entries
-Data area starts at byte 266752 (sector 521)
-     62283 data clusters (1020444672 bytes)
-63 sectors/track, 32 heads
-       247 hidden sectors
-   1993577 sectors total
-/test/test.db
-  File size is 188928 bytes, cluster chain length is 163840 bytes.
-  Truncating file to 163840 bytes.
-Checking for unused clusters.
-Reclaimed 2 unused clusters (32768 bytes).
-Leaving file system unchanged.
-/dev/sdb1: 201 files, 51608/62283 clusters
-
-Thanks for merging and taking care of the "old lady" 2.4 ;)
-
-	Stefan
+diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
+index cd95919..026d39b 100644
+--- a/include/linux/ftrace_event.h
++++ b/include/linux/ftrace_event.h
+@@ -126,6 +126,7 @@ struct ftrace_event_call {
+ 	int			(*show_format)(struct ftrace_event_call *,
+ 					       struct trace_seq *);
+ 	int			(*define_fields)(struct ftrace_event_call *);
++	void			(*inject)(void);
+ 	struct list_head	fields;
+ 	int			filter_active;
+ 	struct event_filter	*filter;
+diff --git a/include/linux/tracepoint.h b/include/linux/tracepoint.h
+index f59604e..f114aec 100644
+--- a/include/linux/tracepoint.h
++++ b/include/linux/tracepoint.h
+@@ -291,5 +291,8 @@ static inline void tracepoint_synchronize_unregister(void)
+ #define TRACE_EVENT_FN(name, proto, args, struct,		\
+ 		assign, print, reg, unreg)			\
+ 	DECLARE_TRACE(name, PARAMS(proto), PARAMS(args))
++#define TRACE_EVENT_INJECT(name, proto, args, struct,		\
++		assign, print, inject)				\
++	DECLARE_TRACE(name, PARAMS(proto), PARAMS(args))
+ 
+ #endif /* ifdef TRACE_EVENT (see note above) */
+diff --git a/include/trace/define_trace.h b/include/trace/define_trace.h
+index 5acfb1e..41f7ce3 100644
+--- a/include/trace/define_trace.h
++++ b/include/trace/define_trace.h
+@@ -31,6 +31,11 @@
+ 		assign, print, reg, unreg)			\
+ 	DEFINE_TRACE_FN(name, reg, unreg)
+ 
++#undef TRACE_EVENT_INJECT
++#define TRACE_EVENT_INJECT(name, proto, args, tstruct,		\
++		assign, print, inject)				\
++	DEFINE_TRACE(name)
++
+ #undef DEFINE_EVENT
+ #define DEFINE_EVENT(template, name, proto, args) \
+ 	DEFINE_TRACE(name)
+@@ -71,6 +76,7 @@
+ 
+ #undef TRACE_EVENT
+ #undef TRACE_EVENT_FN
++#undef TRACE_EVENT_INJECT
+ #undef DECLARE_EVENT_CLASS
+ #undef DEFINE_EVENT
+ #undef DEFINE_EVENT_PRINT
+diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
+index f2c09e4..869da37 100644
+--- a/include/trace/ftrace.h
++++ b/include/trace/ftrace.h
+@@ -37,6 +37,26 @@
+ 			     PARAMS(print));		       \
+ 	DEFINE_EVENT(name, name, PARAMS(proto), PARAMS(args));
+ 
++/*
++ * TRACE_EVENT_INJECT creates an event that has an injector callback
++ * to call when the trace event is enabled, usually to trigger
++ * automatically some necessary initial traces.
++ */
++#undef TRACE_EVENT_INJECT
++#define TRACE_EVENT_INJECT(name, proto, args, tstruct,			\
++		assign, print, inject)					\
++		DECLARE_EVENT_CLASS(name,				\
++			     PARAMS(proto),				\
++			     PARAMS(args),		       		\
++			     PARAMS(tstruct),		       		\
++			     PARAMS(assign),		       		\
++			     PARAMS(print));		       		\
++	DEFINE_EVENT_INJECT(name, name, PARAMS(proto), PARAMS(args), inject);
++
++#undef DEFINE_EVENT_INJECT
++#define DEFINE_EVENT_INJECT(template, name, proto, args, inject)	\
++	DEFINE_EVENT(template, name, PARAMS(proto), PARAMS(args));
++
+ 
+ #undef __field
+ #define __field(type, item)		type	item;
+@@ -726,7 +746,11 @@ static struct trace_event ftrace_event_type_##call = {			\
+ #define DECLARE_EVENT_CLASS(call, proto, args, tstruct, assign, print)
+ 
+ #undef DEFINE_EVENT
+-#define DEFINE_EVENT(template, call, proto, args)			\
++#define DEFINE_EVENT(template, call, proto, args)	\
++	DEFINE_EVENT_INJECT(template, call, PARAMS(proto), PARAMS(proto), NULL)
++
++#undef DEFINE_EVENT_INJECT
++#define DEFINE_EVENT_INJECT(template, call, proto, args, injector)	\
+ 									\
+ static struct ftrace_event_call __used					\
+ __attribute__((__aligned__(4)))						\
+@@ -739,6 +763,7 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
+ 	.unregfunc		= ftrace_raw_unreg_event_##call,	\
+ 	.show_format		= ftrace_format_##template,		\
+ 	.define_fields		= ftrace_define_fields_##template,	\
++	.inject			= injector,				\
+ 	_TRACE_PROFILE_INIT(call)					\
+ }
+ 
+@@ -877,6 +902,10 @@ ftrace_profile_templ_##call(struct ftrace_event_call *event_call,	\
+ 			       __count, irq_flags);			\
+ }
+ 
++#undef DEFINE_EVENT_INJECT
++#define DEFINE_EVENT_INJECT(template, call, proto, args, inject)	\
++	DEFINE_EVENT(template, call, PARAMS(proto), PARAMS(args))
++
+ #undef DEFINE_EVENT
+ #define DEFINE_EVENT(template, call, proto, args)		\
+ static void ftrace_profile_##call(proto)			\
+diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
+index 189b09b..5c75cc7 100644
+--- a/kernel/trace/trace_events.c
++++ b/kernel/trace/trace_events.c
+@@ -142,6 +142,9 @@ static int ftrace_event_enable_disable(struct ftrace_event_call *call,
+ 				break;
+ 			}
+ 			call->enabled = 1;
++
++			if (call->inject)
++				call->inject();
+ 		}
+ 		break;
+ 	}
 -- 
-Stefan Seyfried
+1.6.2.3
 
-"Any ideas, John?"
-"Well, surrounding them's out."
