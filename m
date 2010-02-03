@@ -1,60 +1,63 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932613Ab0BCRBf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 12:01:35 -0500
-Received: from e23smtp09.au.ibm.com ([202.81.31.142]:57216 "EHLO
-	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932569Ab0BCRBe (ORCPT
+	id S932625Ab0BCRCA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 12:02:00 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:49090 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932615Ab0BCRB5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 12:01:34 -0500
-Date: Wed, 3 Feb 2010 22:31:27 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Rik van Riel <riel@redhat.com>
-Cc: Lubos Lunak <l.lunak@suse.cz>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Nick Piggin <npiggin@suse.de>, Jiri Kosina <jkosina@suse.cz>
-Subject: Re: Improving OOM killer
-Message-ID: <20100203170127.GH19641@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <201002012302.37380.l.lunak@suse.cz>
- <4B698CEE.5020806@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <4B698CEE.5020806@redhat.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+	Wed, 3 Feb 2010 12:01:57 -0500
+X-Authority-Analysis: v=1.0 c=1 a=7x9RA51NZSMA:10 a=7U3hwN5JcxgA:10 a=20KFwNOVAAAA:8 a=my9483RHBqORIf2iYZ8A:9 a=p-G8_5qcMnUmS-pih6RamKbdEeQA:4 a=jEp0ucaQiEUA:10
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: Re: [PATCH] trace-cmd: teach git to ignore dependency files (*.d)
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: John Kacur <jkacur@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Darren Hart <dvhltc@us.ibm.com>
+In-Reply-To: <alpine.LFD.2.00.1002031749320.6302@localhost.localdomain>
+References: <alpine.LFD.2.00.1002031749320.6302@localhost.localdomain>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Kihon Technologies Inc.
+Date: Wed, 03 Feb 2010 12:01:55 -0500
+Message-ID: <1265216515.24386.7.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Rik van Riel <riel@redhat.com> [2010-02-03 09:49:18]:
-
-> On 02/01/2010 05:02 PM, Lubos Lunak wrote:
+On Wed, 2010-02-03 at 17:51 +0100, John Kacur wrote:
+> >From fc439caf5a0df5ff735d8f783a29709849c4d83b Mon Sep 17 00:00:00 2001
+> From: John Kacur <jkacur@redhat.com>
+> Date: Wed, 3 Feb 2010 16:39:15 +0100
+> Subject: [PATCH] trace-cmd: teach git to ignore dependency files (*.d)
 > 
-> >  In other words, use VmRSS for measuring memory usage instead of VmSize, and
-> >remove child accumulating.
+> Teach git to ignore dependency files (*.d)
+
+Thanks, but this is already in the master branch. But it ignores ".*.d"
+instead.
+
+-- Steve
+
 > 
-> I agree with removing the child accumulating code.  That code can
-> do a lot of harm with databases like postgresql, or cause the
-> system's main service (eg. httpd) to be killed when a broken cgi
-> script used up too much memory.
->
-> IIRC the child accumulating code was introduced to deal with
-> malicious code (fork bombs), but it makes things worse for the
-> (much more common) situation of a system without malicious
-> code simply running out of memory due to being very busy.
->
-
-For fork bombs, we could do a number of children number test and have
-a threshold before we consider a process and its children for
-badness().
-
-> I have no strong opinion on using RSS vs VmSize.
+> Signed-off-by: John Kacur <jkacur@redhat.com>
+> ---
+>  .gitignore |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
 > 
+> diff --git a/.gitignore b/.gitignore
+> index 8e8f5a4..0dcd8cd 100644
+> --- a/.gitignore
+> +++ b/.gitignore
+> @@ -5,6 +5,7 @@ trace-cmd
+>  *.dat
+>  *.patch
+>  *~
+> +*.d
+>  kernelshark
+>  trace-graph
+>  trace-view
 
-David commented and feels strongly about RSS and prefers VmSize.
 
--- 
-	Balbir
