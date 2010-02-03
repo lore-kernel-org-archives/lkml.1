@@ -1,71 +1,113 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932394Ab0BCJRl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 04:17:41 -0500
-Received: from vpn.id2.novell.com ([195.33.99.129]:21720 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932324Ab0BCJRe convert rfc822-to-8bit (ORCPT
-	<rfc822;groupwise-JBeulich@novell.com;8:2>);
-	Wed, 3 Feb 2010 04:17:34 -0500
-Message-Id: <4B694D5C020000780002D6DA@vpn.id2.novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.1 
-Date: Wed, 03 Feb 2010 09:18:04 +0000
-From: "Jan Beulich" <JBeulich@novell.com>
-To: "Justin P. Mattock" <justinmattock@gmail.com>,
-       "Stefan Richter" <stefanr@s5r6.in-berlin.de>
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Dan Carpenter" <error27@gmail.com>,
-       <bernhard.kaindl@gmx.net>, "Thomas Gleixner" <tglx@linutronix.de>,
-       <linux1394-devel@lists.sourceforge.net>, "Rafael Wysocki" <rjw@sisk.pl>,
-       "Kernel Testers List" <kernel-testers@vger.kernel.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       <ebiderman@xmission.com>, <hpa@zytor.com>
-Subject: Re: ohci1394_dma=early crash since 2.6.32 (was Re: [Bug
-	 #14487] PANIC: early exception 08 rip 246:10
-	 error	ffffffff810251b5 cr2 0)
-References: <UgwvXSBS_tM.A.alD.1EiZLB@chimera>
- <de962C6zBxL.A.H1G.1HiZLB@chimera> <4B6630CA.9010207@gmail.com>
- <20100201125441.GB2576@bicker> <4B671606.3080405@gmail.com>
- <4B673233.8000300@s5r6.in-berlin.de> <4B6740B5.5070601@gmail.com>
- <4B675534.5070107@s5r6.in-berlin.de> <4B676917.2080506@gmail.com>
- <4B67BC12.4080709@s5r6.in-berlin.de> <4B67C4D2.5050205@gmail.com>
- <4B67CC55.40301@s5r6.in-berlin.de> <4B67CCEC.2030103@s5r6.in-berlin.de>
- <4B68D4CA.2010803@gmail.com>
-In-Reply-To: <4B68D4CA.2010803@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+	id S1756598Ab0BCJUG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 04:20:06 -0500
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:52538 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755937Ab0BCJT7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 04:19:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=kg1fbFncT2RofbzbBLgyamzB1GNxMq5stWqOvsdHGg0xj8rHZIAyyEjucu3dls+7rC
+         dYBz+nJYBJmldQ/uTShpkiZ38oIAp45g4mCSfnQ8R/gt6mGoef6zNAGuwjDtkL44tQMX
+         OWWm3oM1oR+1CWgBtlKNSt64r1XcLpYZGGmK8=
+Date: Wed, 3 Feb 2010 10:19:58 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Paul Mackerras <paulus@samba.org>,
+       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
+       Li Zefan <lizf@cn.fujitsu.com>, Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH 05/11] perf: New PERF_EVENT_IOC_INJECT ioctl
+Message-ID: <20100203091955.GA18638@nowhere>
+References: <1265188475-23509-1-git-send-regression-fweisbec@gmail.com> <1265188475-23509-6-git-send-regression-fweisbec@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <1265188475-23509-6-git-send-regression-fweisbec@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> "Justin P. Mattock" <justinmattock@gmail.com> 03.02.10 02:43 >>>
->The only thing I can think of at this point
->is maybe the CFLAGS I used to build this system.
->(as for the x86_32 working and x86_64 failing not sure);
->
->I'm curious to see if anybody else is hitting this?
+On Wed, Feb 03, 2010 at 10:14:29AM +0100, Frederic Weisbecker wrote:
+> The PERF_EVENT_IOC_INJECT perf event ioctl can be used to inject
+> events, if the corresponding pmu and event supports it.
+> 
+> On trace events, it will call the inject callback, usually reserved
+> for events that need to catch up with the user.
+> 
+> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> Cc: Peter Zijlstra <peterz@infradead.org>
+> Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+> Cc: Steven Rostedt <rostedt@goodmis.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+> Cc: Li Zefan <lizf@cn.fujitsu.com>
+> Cc: Lai Jiangshan <laijs@cn.fujitsu.com>
+> Cc: Masami Hiramatsu <mhiramat@redhat.com>
+> Cc: Jens Axboe <jens.axboe@oracle.com>
+> ---
+>  include/linux/perf_event.h |    2 ++
+>  kernel/perf_event.c        |   23 +++++++++++++++++++++++
+>  2 files changed, 25 insertions(+), 0 deletions(-)
+> 
+> diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
+> index 556b0f4..d2e83f0 100644
+> --- a/include/linux/perf_event.h
+> +++ b/include/linux/perf_event.h
+> @@ -228,6 +228,7 @@ struct perf_event_attr {
+>  #define PERF_EVENT_IOC_PERIOD		_IOW('$', 4, __u64)
+>  #define PERF_EVENT_IOC_SET_OUTPUT	_IO ('$', 5)
+>  #define PERF_EVENT_IOC_SET_FILTER	_IOW('$', 6, char *)
+> +#define PERF_EVENT_IOC_INJECT		_IO ('$', 7)
+>  
+>  enum perf_event_ioc_flags {
+>  	PERF_IOC_FLAG_GROUP		= 1U << 0,
+> @@ -513,6 +514,7 @@ struct pmu {
+>  	void (*disable)			(struct perf_event *event);
+>  	void (*read)			(struct perf_event *event);
+>  	void (*unthrottle)		(struct perf_event *event);
+> +	void (*inject)			(struct perf_event *event);
+>  };
+>  
+>  /**
+> diff --git a/kernel/perf_event.c b/kernel/perf_event.c
+> index 40f8b07..e4dfd12 100644
+> --- a/kernel/perf_event.c
+> +++ b/kernel/perf_event.c
+> @@ -2151,6 +2151,26 @@ unlock:
+>  	return ret;
+>  }
+>  
+> +static void __perf_event_inject(void *info)
+> +{
+> +	struct perf_event *event = info;
+> +
+> +	event->pmu->inject(event);
+> +}
+> +
+> +static int perf_event_inject(struct perf_event *event)
+> +{
+> +	struct perf_event_context *ctx = event->ctx;
+> +	struct task_struct *task = ctx->task;
+> +
+> +	if (!event->pmu->inject || task)
+> +		return -EINVAL;
+> +
+> +	smp_call_function_single(event->cpu, __perf_event_inject, event, 1);
+> +
 
-I think it is pretty clear how a page fault can happen here (but you're
-observing a double fault, which I cannot explain [nor can I explain
-why the fault apparently didn't get an error code pushed, which is
-why address and error code displayed are mixed up]): I would
-suspect that FIX_OHCI1394_BASE is now in a different (virtual) 2Mb
-range than what is covered by level{1,2}_fixmap_pgt, but this was
-a latent issue even before that patch (just waiting for sufficiently
-many fixmap entries getting inserted before
-__end_of_permanent_fixed_addresses).
 
-The thing is that head_64.S uses hard-coded numbers, but doesn't 
-really make sure (at build time) that the fixmap page tables established
-indeed cover all the entries of importance (and honestly I even can't
-easily tell which of the candidates - FIX_DBGP_BASE,
-FIX_EARLYCON_MEM_BASE, and FIX_OHCI1394_BASE afaict - really
-matter). If either of the first does, the only reasonable solution imo
-is to move FIX_OHCI1394_BASE out of the boot time only range into
-the permanent range (unless the other two can be moved into the
-boot time only range). And obviously the hard coded numbers
-should be eliminated from head_64.S.
 
-Jan
+Ah, I forgot to say. Injection is only supported on cpu
+bound events (non-task bound). Because if it is task-bound,
+we can't ensure we can inject while the event is scheduled,
+not sure how to fix this.
 
