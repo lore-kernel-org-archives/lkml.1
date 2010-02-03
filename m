@@ -1,65 +1,61 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932735Ab0BCR3I (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 12:29:08 -0500
-Received: from mail-pz0-f189.google.com ([209.85.222.189]:53146 "EHLO
-	mail-pz0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932697Ab0BCR3F (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 12:29:05 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=hyEO90jElO58Vn2I2s7zDVRoV/yHI19RIJJKGFWvVeOFvgmau5lThMpFRu5B0sgzwr
-         Bb4jN/6JoA7IWKoz5b1XbQVi81oHCrTC3gwQIZiXznjagRhQBGFQ0wgituNZduGMspG9
-         bRSxM319MvB+OtboyTaS+eiNrtcVdJRNOWSps=
-Date: Wed, 3 Feb 2010 09:28:47 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Jason Childs <oblivian@users.sourceforge.net>
-Cc: Ping Cheng <pingc@wacom.com>, Bastian Blank <waldi@debian.org>,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/7] Input: wacom - Convert remaining ids, part two
-Message-ID: <20100203172846.GA30600@core.coreip.homeip.net>
-References: <20100107182553.GA11236@wavehammer.waldi.eu.org>
- <20100107182953.GA12985@wavehammer.waldi.eu.org>
- <6753EB6004AFF34FAA275742C104F952016A1329@wacom-nt10.wacom.com>
- <20100111222448.GA7959@wavehammer.waldi.eu.org>
- <20100203084725.GB22110@core.coreip.homeip.net>
- <bc07448c1002030634m2c8492a4h9dc1c1ad005bc98f@mail.gmail.com>
+	id S932709Ab0BCReO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 12:34:14 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:34711 "EHLO mail.zytor.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932583Ab0BCReK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 12:34:10 -0500
+Message-ID: <4B69B2BD.60909@zytor.com>
+Date: Wed, 03 Feb 2010 09:30:37 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <bc07448c1002030634m2c8492a4h9dc1c1ad005bc98f@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+CC: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Paul Mackerras <paulus@samba.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] perf tools: using O_LARGEFILE to open perf data file
+  - fix
+References: <4B68F32A.9040203@cn.fujitsu.com> <4B6958B8.3000606@cn.fujitsu.com>
+In-Reply-To: <4B6958B8.3000606@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jason,
+On 02/03/2010 03:06 AM, Xiao Guangrong wrote:
+>  static void get_next_page(int cpu)
+>  {
+> -	off64_t save_seek;
+> -	off64_t ret;
+> +	s64 save_seek;
+> +	s64 ret;
 
-On Wed, Feb 03, 2010 at 09:34:09AM -0500, Jason Childs wrote:
-> Dmitry,
-> 
-> I actually responded on this issue to Ping last night.  My argument is that
-> the usb_driver structure is subject to revision on a per kernel basis and
-> should be in wacom_sys.c.
+Should be off_t (which is 64 bits with _FILE_OFFSET_BITS=64.)
 
-100% agree, and that is why usb_driver continues to stay in wacom_sys.
-Wacom product IDs however are hardly linux-specific, usb_device_id is
-unlikely to be changed significantly (since there are userspace ties)
-and thus make sense to be kept in wacom_wac.c
+>  
+>  	if (!cpu_data[cpu].page)
+>  		return;
+> @@ -298,9 +298,9 @@ static void get_next_page(int cpu)
+>  		update_cpu_data_index(cpu);
+>  
+>  		/* other parts of the code may expect the pointer to not move */
+> -		save_seek = lseek64(input_fd, 0, SEEK_CUR);
+> +		save_seek = lseek(input_fd, 0, SEEK_CUR);
+>  
+> -		ret = lseek64(input_fd, cpu_data[cpu].offset, SEEK_SET);
+> +		ret = lseek(input_fd, cpu_data[cpu].offset, SEEK_SET);
+>  		if (ret < 0)
+>  			die("failed to lseek");
 
->  Also with the new set of bamboo patches the
-> features structures are copied per device instance during the initial probe
-> so we are not breaking static conventions.
+Compare for equality against (off_t)-1 here.
 
-Ah, great. So nothing stops you guys from marking these statics const - I
-can't do it till your changes reach me. Speaking of which, the next
-merge window is getting close so now would be the best time to send your
-pending queue towars me. *wink, wink*
-
-Thanks.
+	-hpa
 
 -- 
-Dmitry
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
