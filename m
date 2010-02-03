@@ -1,75 +1,100 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754461Ab0BCGMN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 01:12:13 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:1026 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751732Ab0BCGMK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 01:12:10 -0500
-Date: Wed, 3 Feb 2010 08:08:55 +0200
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: "Theodore Ts'o" <tytso@mit.edu>, Andreas Dilger <adilger@sun.com>,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: 2.6.33-rc6: ext4 triggers warning about high order allocations
-Message-ID: <20100203060854.GA12489@redhat.com>
+	id S1755290Ab0BCGMo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 01:12:44 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:11625 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751732Ab0BCGMl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 01:12:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-type:content-disposition
+         :content-transfer-encoding:in-reply-to:user-agent;
+        b=xlu1zCKJAzcW63fJrdLS6/6COFRCETPffx3GN0JmOR2TvrK+0MIoT4muoW59IoBqfx
+         Hty2e58i2YvQpFyVshDEHAjM8SQErp/SgM8YV1ORj3955gNCTAbbCorOhOIjWrqN6tUd
+         qTmGzsgrQczrLBvfMqioTBiRcWW/b4NkctGkE=
+Date: Wed, 3 Feb 2010 09:12:26 +0300
+From: Dan Carpenter <error27@gmail.com>
+To: Alexey Starikovskiy <astarikovskiy@suse.de>
+Cc: Darren Jenkins <darrenrjenkins@gmail.com>,
+       Kernel Janitors <kernel-janitors@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>, linux ACPI <linux-acpi@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] drivers/acpi/ec.c fix a small memory leak
+Message-ID: <20100203061225.GB32535@bicker>
+Mail-Followup-To: Dan Carpenter <error27@gmail.com>,
+	Alexey Starikovskiy <astarikovskiy@suse.de>,
+	Darren Jenkins <darrenrjenkins@gmail.com>,
+	Kernel Janitors <kernel-janitors@vger.kernel.org>,
+	Len Brown <lenb@kernel.org>,
+	linux ACPI <linux-acpi@vger.kernel.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <1265112730.4804.8.camel@ICE-BOX> <4B684650.9070807@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4B684650.9070807@suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-I got this warning at boot with 2.6.33-rc6:
+On Tue, Feb 02, 2010 at 06:35:44PM +0300, Alexey Starikovskiy wrote:
+> NAK
+> 
+> saved_ec is allocated if flag EC_FLAGS_VALIDATE_ECDT is true.
+> EC_FLAGS_SKIP_DSDT_SCAN have no sense in such case, thus this new code path
+> is never executed.
+> On the other hand, unconditionally freeing pointer, which is might be NULL, is not
+> right either.
 
-[   12.374168] ------------[ cut here ]------------
-[   12.375798] WARNING: at mm/page_alloc.c:1813 __alloc_pages_nodemask+0x180/0x666()
-[   12.377401] Hardware name: 2241B48
-[   12.378984] Modules linked in: [last unloaded: scsi_wait_scan]
-[   12.380593] Pid: 1, comm: init Not tainted 2.6.33-rc6-aa-nopat #50
-[   12.382194] Call Trace:
-[   12.383781]  [<ffffffff810b6b3e>] ? __alloc_pages_nodemask+0x180/0x666
-[   12.385390]  [<ffffffff81041cda>] warn_slowpath_common+0x77/0xa4
-[   12.386996]  [<ffffffff81041d16>] warn_slowpath_null+0xf/0x11
-[   12.388577]  [<ffffffff810b6b3e>] __alloc_pages_nodemask+0x180/0x666
-[   12.390168]  [<ffffffff81036a9b>] ? finish_task_switch+0x4b/0xb1
-[   12.391758]  [<ffffffff810b7036>] __get_free_pages+0x12/0x4f
-[   12.393354]  [<ffffffff810de892>] __kmalloc+0x42/0x116
-[   12.394934]  [<ffffffff812405bf>] match_number+0x35/0x98
-[   12.396493]  [<ffffffff8124064d>] match_int+0xb/0xd
-[   12.398045]  [<ffffffff81169c8c>] parse_options+0x5fe/0x733
-[   12.399594]  [<ffffffff811058c3>] ? __wait_on_buffer+0x1f/0x21
-[   12.401157]  [<ffffffff8116a2dc>] ext4_fill_super+0x373/0x2070
-[   12.402696]  [<ffffffff8123ede2>] ? snprintf+0x59/0x5b
-[   12.404229]  [<ffffffff815cb293>] ? _raw_spin_unlock_irq+0x24/0x2f
-[   12.405764]  [<ffffffff815cae1a>] ? __down_write+0xb/0xd
-[   12.407293]  [<ffffffff810e68fe>] get_sb_bdev+0x12a/0x175
-[   12.408815]  [<ffffffff81169f69>] ? ext4_fill_super+0x0/0x2070
-[   12.410336]  [<ffffffff81167b7f>] ext4_get_sb+0x13/0x15
-[   12.411843]  [<ffffffff810e64e5>] vfs_kern_mount+0x9d/0x158
-[   12.413355]  [<ffffffff810e65fd>] do_kern_mount+0x47/0xe7
-[   12.414859]  [<ffffffff810fbdf3>] do_mount+0x780/0x7f9
-[   12.416362]  [<ffffffff810b7036>] ? __get_free_pages+0x12/0x4f
-[   12.417855]  [<ffffffff81119838>] compat_sys_mount+0x1ee/0x227
-[   12.419339]  [<ffffffff810e2594>] ? do_sys_open+0xf5/0x104
-[   12.420831]  [<ffffffff8102b112>] ia32_sysret+0x0/0x5
-[   12.422307] ---[ end trace f5edc87c0d05d4ad ]---
-[   12.425039] EXT4-fs (sda8): INFO: recovery required on readonly filesystem
-[   12.426552] EXT4-fs (sda8): write access will be enabled during recovery
-[   14.342227] EXT4-fs (sda8): orphan cleanup on readonly fs
-[   14.343756] EXT4-fs (sda8): ext4_orphan_cleanup: deleting unreferenced inode 54847
-[   14.343818] EXT4-fs (sda8): ext4_orphan_cleanup: deleting unreferenced inode 54846
-[   14.343830] EXT4-fs (sda8): 2 orphan inodes deleted
-[   14.345342] EXT4-fs (sda8): recovery complete
-[   14.761956] EXT4-fs (sda8): mounted filesystem with ordered data mode
+As near as I can tell you are right that the code cannot leak memory.  But Darren 
+is right to think that it's calling kfree() on a NULL pointer is OK.  His patch does 
+not introduce any errors.
 
+The logic here is basically spaghetti.  Every person who looks at it is going to 
+think it's a leak.  Lots of people are going to look at it, because the static
+checkers all think it's a leak too.  Someone could send a cleanup patch that makes it
+readable.
 
-I have not noticed this warning previously on the same kernel, so it's not
-easily reproducible.  The system functions fine after this: __GFP_NOWARN
-missing somewhere?
+regards,
+dan carpenter
 
-Thanks,
-
--- 
-MST
+> So, this patch introduced more problems as it tries to solve...
+> 
+> Regards,
+> Alex.
+> 
+> Darren Jenkins пишет:
+> > Plug a very small leak in acpi_ec_ecdt_probe()
+> > 
+> > Coverity CID: 13319
+> > 
+> > Signed-off-by: Darren Jenkins <darrenrjenkins@gmail.com> 
+> > 
+> > diff --git drivers/acpi/ec.c drivers/acpi/ec.c
+> > index d6471bb..13061dc 100644
+> > --- drivers/acpi/ec.c
+> > +++ drivers/acpi/ec.c
+> > @@ -1009,8 +1009,10 @@ int __init acpi_ec_ecdt_probe(void)
+> >  	/* fall through */
+> >  	}
+> >  
+> > -	if (EC_FLAGS_SKIP_DSDT_SCAN)
+> > +	if (EC_FLAGS_SKIP_DSDT_SCAN) {
+> > +		kfree(saved_ec);
+> >  		return -ENODEV;
+> > +	}
+> >  
+> >  	/* This workaround is needed only on some broken machines,
+> >  	 * which require early EC, but fail to provide ECDT */
+> > 
+> > 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe kernel-janitors" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
