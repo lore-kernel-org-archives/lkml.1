@@ -1,46 +1,78 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932336Ab0BCJ0d (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 04:26:33 -0500
-Received: from mx51.mymxserver.com ([85.199.173.110]:58753 "EHLO
-	mx51.mymxserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756063Ab0BCJ0c (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 04:26:32 -0500
-From: Holger Schurig <holgerschurig@gmail.com>
-To: linux-wireless@vger.kernel.org
-Subject: Re: Linux wireless GSoC 2010 project ideas
-Date: Wed, 3 Feb 2010 10:25:04 +0100
-User-Agent: KMail/1.9.7
-Cc: Pat Erley <pat-lkml@erley.org>, Maxim Levitsky <maximlevitsky@gmail.com>,
-       "Luis R. Rodriguez" <mcgrof@gmail.com>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Witold Sowa <witold.sowa@gmail.com>,
-       Till Kamppeter <till.kamppeter@gmail.com>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org, lsb-discuss@lists.linux-foundation.org
-References: <43e72e891001281338u5f05307ble5360c3dac6ab9a2@mail.gmail.com> <20100201221252.GA30758@emergent.ellipticsemi.com> <4B67A937.70406@erley.org>
-In-Reply-To: <4B67A937.70406@erley.org>
+	id S932307Ab0BCJ2w (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 04:28:52 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:35845 "EHLO mail.zytor.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756250Ab0BCJ2t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 04:28:49 -0500
+Message-ID: <4B69409E.9010301@zytor.com>
+Date: Wed, 03 Feb 2010 01:23:42 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, peterz@infradead.org,
+       xiaoguangrong@cn.fujitsu.com, fweisbec@gmail.com, rostedt@goodmis.org,
+       tglx@linutronix.de, mingo@elte.hu
+CC: linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:perf/core] perf tools: Use O_LARGEFILE to open perf data
+ file
+References: <4B68F32A.9040203@cn.fujitsu.com> <tip-b8f46c5a34fa64fd456295388d18f50ae69d9f37@git.kernel.org>
+In-Reply-To: <tip-b8f46c5a34fa64fd456295388d18f50ae69d9f37@git.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <201002031025.04624.holgerschurig@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> With ath9k I have used:
+On 02/03/2010 12:45 AM, tip-bot for Xiao Guangrong wrote:
 > 
-> AP + MP
-> AP + STA
-> AP + AP (Open and WPA2)
+> perf tools: Use O_LARGEFILE to open perf data file
+> 
+> Open perf data file with O_LARGEFILE flag since its size is
+> easily larger that 2G.
+> 
+> +#define _LARGEFILE64_SOURCE
+> +#define _FILE_OFFSET_BITS 64
+> +
+>  #include "builtin.h"
+>  
+>  #include "perf.h"
+> @@ -451,7 +454,7 @@ static int __cmd_record(int argc, const char **argv)
+>  		append_file = 0;
+>  	}
+>  
+> -	flags = O_CREAT|O_RDWR;
+> +	flags = O_CREAT|O_RDWR|O_LARGEFILE;
+>  	if (append_file)
+>  		file_new = 0;
+>  	else
+> diff --git a/tools/perf/util/header.c b/tools/perf/util/header.c
+> index 2bb2bdb..ed3efd7 100644
+> --- a/tools/perf/util/header.c
+> +++ b/tools/perf/util/header.c
+> @@ -1,3 +1,6 @@
+> +#define _LARGEFILE64_SOURCE
+> +#define _FILE_OFFSET_BITS 64
+> +
+>  #include <sys/types.h>
+>  #include <byteswap.h>
+>  #include <unistd.h>
+> @@ -382,7 +385,7 @@ static int perf_header__adds_write(struct perf_header *self, int fd)
+>  	sec_size = sizeof(*feat_sec) * nr_sections;
+>  
+>  	sec_start = self->data_offset + self->data_size;
+> -	lseek(fd, sec_start + sec_size, SEEK_SET);
+> +	lseek64(fd, sec_start + sec_size, SEEK_SET);
+>  
 
-Would you document this on the wireless WIKI at 
-wireless.kernel.org ?
+Setting _FILE_OFFSET_BITS *and* using O_LARGEFILE, lseek64, etc, is
+redundant...
 
-Maybe as different articles, so that this can be a basis of 
-several "HOWTO" articles.
+	-hpa
 
 -- 
-http://www.holgerschurig.de
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
