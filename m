@@ -1,69 +1,41 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755637Ab0BCIY2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 03:24:28 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:59133 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755006Ab0BCIY0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 03:24:26 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Lennart Poettering <lennart@poettering.net>
-Subject: Re: [PATCH] exit: PR_SET_ANCHOR for marking processes as reapers for child processes
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org
-In-Reply-To: <20100202120457.GA19605@omega>
-References: <20100202120457.GA19605@omega>
-Message-Id: <20100203172006.D3B2.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Wed,  3 Feb 2010 17:24:23 +0900 (JST)
+	id S1755061Ab0BCIgm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 03:36:42 -0500
+Received: from verein.lst.de ([213.95.11.210]:33845 "EHLO verein.lst.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753102Ab0BCIgk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 03:36:40 -0500
+Date: Wed, 3 Feb 2010 09:36:11 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+Cc: Christoph Hellwig <hch@lst.de>, roland@redhat.com, oleg@redhat.com,
+       akpm@linux-foundation.org, hskinnemoen@atmel.com,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+Subject: Re: [PATCH 4/14] avr32: use generic ptrace_resume code
+Message-ID: <20100203083611.GA29025@lst.de>
+References: <20100202185755.GA3630@lst.de> <20100202185857.GD3630@lst.de> <20100203084737.6e01247b@siona>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100203084737.6e01247b@siona>
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: 0 () 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> [ I already sent this patch half a year ago or so, as an RFC. I didn't
-> really get any comments back then, however I am still interested in
-> seeing this patch in the kernel tree. So here I go again: please
-> comment! I have updated the patch to apply to the current upstream git
-> master. ]
-> 
-> Right now, if a process dies all its children are reparented to init.
-> This logic has good uses, i.e. for double forking when daemonizing.
-> However it also allows child processes to "escape" their parents, which
-> is a problem for software like session managers (such as gnome-session)
-> or other process supervisors.
+On Wed, Feb 03, 2010 at 08:47:37AM +0530, Haavard Skinnemoen wrote:
+> Sounds like you found three bugs and fixed two of them. Can you tell me
+> more about the last one, i.e. what should be done to disable
+> single-stepping?
 
-I think you need to explain why this patch improve gnome-session.
+I don't think the flag clearing on PTRACE_KILL matters as the process
+is a zombie and almost gone anyway, it's more an artefact of the
+generic implementation that I wanted to mention.
 
- - What's happen on current gnome-session. and When?
- - After the patch, Which behavior will be changed?
- - Why do you think gnome-session can ignore old kernel?
- - etc..
-
-We don't have any input for judgement and advise.
-
-
-
-> 
-> This patch adds a simple flag for each process that marks it as an
-> "anchor" process for all its children and grandchildren. If a child of
-> such an anchor dies all its children will not be reparented to init, but
-> instead to this anchor, escaping this anchor process is not possible. A
-> task with this flag set hence acts is little "sub-init".
-> 
-> Anchors are fully recursive: if an anchor dies, all its children are
-> reparented to next higher anchor in the process tree.
-> 
-> This is orthogonal to PID namespaces. PID namespaces virtualize the
-> actual IDs in addition to introducing "sub-inits". This patch introduces
-> "sub-inits" inside the same PID namespace.
-> 
-> This patch is compile tested only. It's relatively trivial, and is
-> written in ignorance of the expected locking logic for accessing
-> task_struct->parent. This mail is primarily intended as a request for
-> comments. So please, I'd be happy about any comments!
-
-
+It seems like avr32 implement single stepping by setting the
+TIF_SINGLE_STEP and TIF_BREAKPOINT thread flags.  Simply clearing these
+flags in user_disable_single_step and calling that function from
+ptrace_disable (which currently clears them itself) should take care
+of it. 
