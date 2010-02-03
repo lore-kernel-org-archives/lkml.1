@@ -1,89 +1,41 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756992Ab0BCBUA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 20:20:00 -0500
-Received: from sh.osrg.net ([192.16.179.4]:54300 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756146Ab0BCBT6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 20:19:58 -0500
-Date: Wed, 3 Feb 2010 10:18:39 +0900
-To: davem@davemloft.net
-Cc: fujita.tomonori@lab.ntt.co.jp, jarkao2@gmail.com, alan@lxorguk.ukuu.org.uk,
-       shemminger@linux-foundation.org, mbreuer@majjas.com,
-       akpm@linux-foundation.org, flyboy@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       mchan@broadcom.com, pcnet32@verizon.net, romieu@fr.zoreil.com,
-       mcarlson@broadcom.com, James.Bottomley@suse.de
-Subject: Re: [PATCH] sky2: Fix WARNING: at lib/dma-debug.c:902 check_sync
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20100121.223841.145479578.davem@davemloft.net>
-References: <20100121184158.GA3085@del.dom.local>
-	<20100122141018D.fujita.tomonori@lab.ntt.co.jp>
-	<20100121.223841.145479578.davem@davemloft.net>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20100203101817Z.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 03 Feb 2010 10:18:42 +0900 (JST)
+	id S932113Ab0BCBXL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 20:23:11 -0500
+Received: from web50203.mail.re2.yahoo.com ([206.190.38.44]:29701 "HELO
+	web50203.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753924Ab0BCBXI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 20:23:08 -0500
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Tue, 02 Feb 2010 20:23:07 EST
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type;
+  b=jhNmgmST3y76crV1gq/bgwjrhaKNtwZwe7zyOJHddHkx3mVVRm1HKwAuum7BjSMFTlkZEXeWCjT1W0kcEuJMz285Ajm4Abe/aoi8wq2TJA82ckT743pEDZZbD2W45bV+kinuhBu/isSqD2mATBNsf6xvBYvx8tLpW2eFdXc0Tn0=;
+Message-ID: <244199.71589.qm@web50203.mail.re2.yahoo.com>
+X-YMail-OSG: XI7s26gVM1l33uNzGnVvlkBKLArKPR.hVPzw_ocyCoEhD_.9Zwu63bq2QtkSDJoLCOa07swmX4pv51N0dShFsiqKf4Wztgmeye5bW.MMltUh6bFQJ_Q2TEFJ_2VOrCTe4iKvCt5QRFC6IIVEQevZzOnwKpp.DFfN2J5_5H7PPz.XLHd4yFeS2HDLEJKmAkq2vpZkdKtijvhqozoHNXAs5d9J0XWgkcMMrytrNi7S13RwVJPE76CVcNkW9aZU7cjNUsslR2wJUzcdQCXurSVCwSsGZx9N7igcrcUlBKQsBzIHEYHq.0jKixK4hg--
+X-Mailer: YahooMailClassic/9.1.10 YahooMailWebService/0.8.100.260964
+Date: Tue, 2 Feb 2010 17:16:26 -0800 (PST)
+From: Alex Davis <alex14641@yahoo.com>
+Subject: Re: Phoronix test
+To: tytso@mit.edu, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry for the late reply,
+tytso said:
+>Of course, if the crappy proprietary video driver from ATI (or Nvidia)
+>scribbled garbage over cached inode tables which were then written
+>back to disk, there's not much anyone can do about it, no matter what
+>file system they were running.
 
-On Thu, 21 Jan 2010 22:38:41 -0800 (PST)
-David Miller <davem@davemloft.net> wrote:
+According to the story, Phoronix were using the open source ATI drivers
+for all testing.
 
-> From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> Date: Fri, 22 Jan 2010 14:11:29 +0900
-> 
-> > Even if 'offset' is zero, 'size' still matters, I think. If 'size' is
-> > not a multiple of the cache line size, it's possible that driver
-> > writers who aren't familiar with cache would be surprised (it depends
-> > on the way their drivers use buffers though).
-> > 
-> > The easiest way for 'completely safe sync for any driver writers' is
-> > asking for all the sync parameters must be the same as those passed
-> > into the single mapping API. If writes knows what they do, they can do
-> > a partial sync with sync_range API. That's the author intention, I
-> > guess.
-> 
-> This is not reasonable.
-> 
-> You have to think about how people actually use these
-> interfaces.
-> 
-> They have a large buffer, and if they receive a small request they
-> want to allocate a smaller buffer, copy into that smaller buffer, and
-> give the larger buffer back to the hardware.
-> 
-> It's an optimization, it performs better this way.
-> 
-> If you make it so that the DMA sync has to cover the entire large
-> buffer, the whole point of the optimization is taken away.
 
-I talked with James. He is ok with changing (or fixing) this API to
-enable users to do a partial sync (I'm ok with that too. I just
-guessed that he designed the API in such way intentionally not by
-mistake).
+I code, therefore I am
 
-Can we safely assume that the arch implementations already round
-up/down to the safe boundary internally in this API (they should
-already)?
 
-As you know, the patch to remove the description of
-dma_sync_single/pci_dma_sync_single/dma_sync_sg/pci_dma_sync_pci that
-always require a full sync in DMA-API.txt is already -mm so what we
-need to do are:
-
-- adding 'a partial sync' description to PCI-DMA-mapping.txt.
-- duplicating the similar description to DMA-API.txt.
-
-I don't like two DMA docs. I like to make pci_dma_* API obsolete. We
-have the generic DMA API with generic devices so we are always able to
-use the API (as you did with sbus_map_*). The majority arch
-implementations safely call the bus specific DMA functions via the
-generic DMA API. So there are not many things to do. We can just
-convert pci_dma_* to dma_* API slowly.
-
-Opinions?
+      
