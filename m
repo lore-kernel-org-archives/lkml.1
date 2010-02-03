@@ -1,258 +1,146 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757213Ab0BCEaY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 23:30:24 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:1060 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753725Ab0BCEaU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 23:30:20 -0500
-Date: Tue, 2 Feb 2010 23:30:07 -0500
-From: Amerigo Wang <amwang@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: Eric Dumazet <eric.dumazet@gmail.com>, linux-rdma@vger.kernel.org,
-       netdev@vger.kernel.org, Neil Horman <nhorman@tuxdriver.com>,
-       linux-sctp@vger.kernel.org, Amerigo Wang <amwang@redhat.com>,
-       David Miller <davem@davemloft.net>
-Message-Id: <20100203043332.3817.27932.sendpatchset@localhost.localdomain>
-Subject: [RFC Patch] net: reserve ports for applications using fixed port numbers
+	id S1757205Ab0BCEfp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 23:35:45 -0500
+Received: from mail-yx0-f189.google.com ([209.85.210.189]:58268 "EHLO
+	mail-yx0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753857Ab0BCEfn convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 23:35:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=asR4MqoCLG8spLBc5T+oim4II11loOsYQxopHlAtEQHA9U/OPyesp/coJTVCpT2hRK
+         tiZqb7IYd9jqcPgtpT98h99AKKGS30hIf5I9dLHSOuwIZKQlbPAXI8TWAglWfOjoWO3s
+         yAx60srHn9S9QBWWxs0Ib5dLdZ7ZkRSyeEDYQ=
+MIME-Version: 1.0
+In-Reply-To: <20100202185837.GB3630@lst.de>
+References: <20100202185755.GA3630@lst.de> <20100202185837.GB3630@lst.de>
+Date: Tue, 2 Feb 2010 23:35:42 -0500
+Message-ID: <b4198de61002022035s3111a07ctf6aa94bbf2088c08@mail.gmail.com>
+Subject: Re: [PATCH 2/14] alpha: use generic ptrace_resume code
+From: Matt Turner <mattst88@gmail.com>
+To: Christoph Hellwig <hch@lst.de>
+Cc: roland@redhat.com, oleg@redhat.com, akpm@linux-foundation.org,
+       ink@jurassic.park.msu.ru, rth@twiddle.net, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Feb 2, 2010 at 1:58 PM, Christoph Hellwig <hch@lst.de> wrote:
+> Use the generic ptrace_resume code for PTRACE_SYSCALL, PTRACE_CONT,
+> PTRACE_KILL and PTRACE_SINGLESTEP.  This implies defining
+> arch_has_single_step in <asm/ptrace.h> and implementing the
+> user_enable_single_step and user_disable_single_step functions, which
+> also causes the breakpoint information to be cleared on fork, which
+> could be considered a bug fix.
+>
+> Also the TIF_SYSCALL_TRACE thread flag is now cleared on PTRACE_KILL
+> which it previously wasn't, which is consistent with all architectures
+> using the modern ptrace code.
+>
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
+>
+> Index: linux-2.6/arch/alpha/kernel/ptrace.c
+> ===================================================================
+> --- linux-2.6.orig/arch/alpha/kernel/ptrace.c   2010-02-02 11:05:03.197004058 +0100
+> +++ linux-2.6/arch/alpha/kernel/ptrace.c        2010-02-02 11:07:04.091006019 +0100
+> @@ -249,6 +249,17 @@ ptrace_cancel_bpt(struct task_struct * c
+>        return (nsaved != 0);
+>  }
+>
+> +void user_enable_single_step(struct task_struct *child)
+> +{
+> +       /* Mark single stepping.  */
+> +       task_thread_info(child)->bpt_nsaved = -1;
+> +}
+> +
+> +void user_disable_single_step(struct task_struct *child)
+> +{
+> +       ptrace_cancel_bpt(child);
+> +}
+> +
+>  /*
+>  * Called by kernel/ptrace.c when detaching..
+>  *
+> @@ -256,7 +267,7 @@ ptrace_cancel_bpt(struct task_struct * c
+>  */
+>  void ptrace_disable(struct task_struct *child)
+>  {
+> -       ptrace_cancel_bpt(child);
+> +       user_disable_single_step(child);
+>  }
+>
+>  long arch_ptrace(struct task_struct *child, long request, long addr, long data)
+> @@ -289,52 +300,6 @@ long arch_ptrace(struct task_struct *chi
+>                DBG(DBG_MEM, ("poke $%ld<-%#lx\n", addr, data));
+>                ret = put_reg(child, addr, data);
+>                break;
+> -
+> -       case PTRACE_SYSCALL:
+> -               /* continue and stop at next (return from) syscall */
+> -       case PTRACE_CONT:    /* restart after signal. */
+> -               ret = -EIO;
+> -               if (!valid_signal(data))
+> -                       break;
+> -               if (request == PTRACE_SYSCALL)
+> -                       set_tsk_thread_flag(child, TIF_SYSCALL_TRACE);
+> -               else
+> -                       clear_tsk_thread_flag(child, TIF_SYSCALL_TRACE);
+> -               child->exit_code = data;
+> -               /* make sure single-step breakpoint is gone. */
+> -               ptrace_cancel_bpt(child);
+> -               wake_up_process(child);
+> -               ret = 0;
+> -               break;
+> -
+> -       /*
+> -        * Make the child exit.  Best I can do is send it a sigkill.
+> -        * perhaps it should be put in the status that it wants to
+> -        * exit.
+> -        */
+> -       case PTRACE_KILL:
+> -               ret = 0;
+> -               if (child->exit_state == EXIT_ZOMBIE)
+> -                       break;
+> -               child->exit_code = SIGKILL;
+> -               /* make sure single-step breakpoint is gone. */
+> -               ptrace_cancel_bpt(child);
+> -               wake_up_process(child);
+> -               break;
+> -
+> -       case PTRACE_SINGLESTEP:  /* execute single instruction. */
+> -               ret = -EIO;
+> -               if (!valid_signal(data))
+> -                       break;
+> -               /* Mark single stepping.  */
+> -               task_thread_info(child)->bpt_nsaved = -1;
+> -               clear_tsk_thread_flag(child, TIF_SYSCALL_TRACE);
+> -               child->exit_code = data;
+> -               wake_up_process(child);
+> -               /* give it a chance to run. */
+> -               ret = 0;
+> -               break;
+> -
+>        default:
+>                ret = ptrace_request(child, request, addr, data);
+>                break;
+> Index: linux-2.6/arch/alpha/include/asm/ptrace.h
+> ===================================================================
+> --- linux-2.6.orig/arch/alpha/include/asm/ptrace.h      2010-02-02 11:07:29.091023600 +0100
+> +++ linux-2.6/arch/alpha/include/asm/ptrace.h   2010-02-02 11:07:38.645007248 +0100
+> @@ -68,6 +68,7 @@ struct switch_stack {
+>
+>  #ifdef __KERNEL__
+>
+> +#define arch_has_single_step()         (1)
+>  #define user_mode(regs) (((regs)->ps & 8) != 0)
+>  #define instruction_pointer(regs) ((regs)->pc)
+>  #define profile_pc(regs) instruction_pointer(regs)
+>
 
-This patch introduces /proc/sys/net/ipv4/ip_local_reserved_ports,
-it can be used like ip_local_port_range, but this is used to
-reserve ports for third-party applications which use fixed
-port numbers within ip_local_port_range.
-
-This only affects the applications which call socket functions
-like bind(2) with port number 0, to prevent the kernel getting the ports
-within the specified range for them. For applications which use fixed
-port number, it will have no effects.
-
-Any comments are welcome.
-
-Signed-off-by: WANG Cong <amwang@redhat.com>
-Cc: David Miller <davem@davemloft.net>
-Cc: Neil Horman <nhorman@tuxdriver.com>
-Cc: Eric Dumazet <eric.dumazet@gmail.com>
-
----
-diff --git a/drivers/infiniband/core/cma.c b/drivers/infiniband/core/cma.c
-index cc9b594..8248fc6 100644
---- a/drivers/infiniband/core/cma.c
-+++ b/drivers/infiniband/core/cma.c
-@@ -1979,6 +1979,8 @@ retry:
- 	/* FIXME: add proper port randomization per like inet_csk_get_port */
- 	do {
- 		ret = idr_get_new_above(ps, bind_list, next_port, &port);
-+		if (inet_is_reserved_local_port(port))
-+			ret = -EAGAIN;
- 	} while ((ret == -EAGAIN) && idr_pre_get(ps, GFP_KERNEL));
- 
- 	if (ret)
-@@ -2997,10 +2999,13 @@ static int __init cma_init(void)
- {
- 	int ret, low, high, remaining;
- 
--	get_random_bytes(&next_port, sizeof next_port);
- 	inet_get_local_port_range(&low, &high);
-+again:
-+	get_random_bytes(&next_port, sizeof next_port);
- 	remaining = (high - low) + 1;
- 	next_port = ((unsigned int) next_port % remaining) + low;
-+	if (inet_is_reserved_local_port(next_port))
-+		goto again;
- 
- 	cma_wq = create_singlethread_workqueue("rdma_cm");
- 	if (!cma_wq)
-diff --git a/include/net/ip.h b/include/net/ip.h
-index fb63371..f70acad 100644
---- a/include/net/ip.h
-+++ b/include/net/ip.h
-@@ -181,8 +181,10 @@ extern void snmp_mib_free(void *ptr[2]);
- extern struct local_ports {
- 	seqlock_t	lock;
- 	int		range[2];
--} sysctl_local_ports;
-+} sysctl_local_ports, sysctl_local_reserved_ports;
- extern void inet_get_local_port_range(int *low, int *high);
-+extern void inet_get_local_reserved_ports(int *from, int *to);
-+extern int inet_is_reserved_local_port(int port);
- 
- extern int sysctl_ip_default_ttl;
- extern int sysctl_ip_nonlocal_bind;
-diff --git a/net/ipv4/inet_connection_sock.c b/net/ipv4/inet_connection_sock.c
-index ee16475..ee13e48 100644
---- a/net/ipv4/inet_connection_sock.c
-+++ b/net/ipv4/inet_connection_sock.c
-@@ -37,6 +37,11 @@ struct local_ports sysctl_local_ports __read_mostly = {
- 	.range = { 32768, 61000 },
- };
- 
-+struct local_ports sysctl_local_reserved_ports __read_mostly = {
-+	.lock = SEQLOCK_UNLOCKED,
-+	.range = { 0, 0 },
-+};
-+
- void inet_get_local_port_range(int *low, int *high)
- {
- 	unsigned seq;
-@@ -49,6 +54,28 @@ void inet_get_local_port_range(int *low, int *high)
- }
- EXPORT_SYMBOL(inet_get_local_port_range);
- 
-+void inet_get_local_reserved_ports(int *from, int *to)
-+{
-+	unsigned int seq;
-+	do {
-+		seq = read_seqbegin(&sysctl_local_reserved_ports.lock);
-+
-+		*from = sysctl_local_reserved_ports.range[0];
-+		*to = sysctl_local_reserved_ports.range[1];
-+	} while (read_seqretry(&sysctl_local_reserved_ports.lock, seq));
-+}
-+
-+int inet_is_reserved_local_port(int port)
-+{
-+	int min, max;
-+
-+	inet_get_local_reserved_ports(&min, &max);
-+	if (min && max)
-+		return (port >= min && port <= max);
-+	return 0;
-+}
-+EXPORT_SYMBOL(inet_is_reserved_local_port);
-+
- int inet_csk_bind_conflict(const struct sock *sk,
- 			   const struct inet_bind_bucket *tb)
- {
-@@ -105,6 +132,8 @@ again:
- 		inet_get_local_port_range(&low, &high);
- 		remaining = (high - low) + 1;
- 		smallest_rover = rover = net_random() % remaining + low;
-+		if (inet_is_reserved_local_port(rover))
-+			goto again;
- 
- 		smallest_size = -1;
- 		do {
-diff --git a/net/ipv4/inet_hashtables.c b/net/ipv4/inet_hashtables.c
-index 2b79377..d3e160a 100644
---- a/net/ipv4/inet_hashtables.c
-+++ b/net/ipv4/inet_hashtables.c
-@@ -456,6 +456,8 @@ int __inet_hash_connect(struct inet_timewait_death_row *death_row,
- 		local_bh_disable();
- 		for (i = 1; i <= remaining; i++) {
- 			port = low + (i + offset) % remaining;
-+			if (inet_is_reserved_local_port(port))
-+				continue;
- 			head = &hinfo->bhash[inet_bhashfn(net, port,
- 					hinfo->bhash_size)];
- 			spin_lock(&head->lock);
-diff --git a/net/ipv4/sysctl_net_ipv4.c b/net/ipv4/sysctl_net_ipv4.c
-index 7e3712c..9adf1a5 100644
---- a/net/ipv4/sysctl_net_ipv4.c
-+++ b/net/ipv4/sysctl_net_ipv4.c
-@@ -23,6 +23,7 @@
- 
- static int zero;
- static int tcp_retr1_max = 255;
-+static int ip_local_reserved_ports_min[] = {0, 0 };
- static int ip_local_port_range_min[] = { 1, 1 };
- static int ip_local_port_range_max[] = { 65535, 65535 };
- 
-@@ -63,6 +64,51 @@ static int ipv4_local_port_range(ctl_table *table, int write,
- 	return ret;
- }
- 
-+static void set_reserved_port_range(int range[2])
-+{
-+	write_seqlock(&sysctl_local_reserved_ports.lock);
-+	sysctl_local_reserved_ports.range[0] = range[0];
-+	sysctl_local_reserved_ports.range[1] = range[1];
-+	write_sequnlock(&sysctl_local_reserved_ports.lock);
-+}
-+
-+static int ipv4_local_reserved_ports(ctl_table *table, int write,
-+				     void __user *buffer,
-+				     size_t *lenp, loff_t *ppos)
-+{
-+	int ret;
-+	int range[2];
-+	int reserved_range[2];
-+	ctl_table tmp = {
-+		.data = &reserved_range,
-+		.maxlen = sizeof(reserved_range),
-+		.mode = table->mode,
-+		.extra1 = &ip_local_reserved_ports_min,
-+		.extra2 = &ip_local_port_range_max,
-+	};
-+
-+	inet_get_local_reserved_ports(reserved_range, reserved_range+1);
-+	ret = proc_dointvec_minmax(&tmp, write, buffer, lenp, ppos);
-+
-+	if (write && ret == 0) {
-+		inet_get_local_port_range(range, range + 1);
-+		if (!reserved_range[0] && !reserved_range[1]) {
-+			set_reserved_port_range(reserved_range);
-+		} else {
-+			if (reserved_range[1] < reserved_range[0])
-+				ret = -EINVAL;
-+			else if (reserved_range[0] < range[0])
-+				ret = -EINVAL;
-+			else if (reserved_range[1] > range[1])
-+				ret = -EINVAL;
-+			else
-+				set_reserved_port_range(reserved_range);
-+		}
-+	}
-+
-+	return ret;
-+}
-+
- static int proc_tcp_congestion_control(ctl_table *ctl, int write,
- 				       void __user *buffer, size_t *lenp, loff_t *ppos)
- {
-@@ -298,6 +344,13 @@ static struct ctl_table ipv4_table[] = {
- 		.mode		= 0644,
- 		.proc_handler	= ipv4_local_port_range,
- 	},
-+	{
-+		.procname	= "ip_local_reserved_ports",
-+		.data		= &sysctl_local_reserved_ports.range,
-+		.maxlen		= sizeof(sysctl_local_reserved_ports.range),
-+		.mode		= 0644,
-+		.proc_handler	= ipv4_local_reserved_ports,
-+	},
- #ifdef CONFIG_IP_MULTICAST
- 	{
- 		.procname	= "igmp_max_memberships",
-diff --git a/net/ipv4/udp.c b/net/ipv4/udp.c
-index f0126fd..83045ca 100644
---- a/net/ipv4/udp.c
-+++ b/net/ipv4/udp.c
-@@ -210,8 +210,11 @@ int udp_lib_get_port(struct sock *sk, unsigned short snum,
- 		inet_get_local_port_range(&low, &high);
- 		remaining = (high - low) + 1;
- 
-+again:
- 		rand = net_random();
- 		first = (((u64)rand * remaining) >> 32) + low;
-+		if (inet_is_reserved_local_port(first))
-+			goto again;
- 		/*
- 		 * force rand to be an odd multiple of UDP_HTABLE_SIZE
- 		 */
-diff --git a/net/sctp/socket.c b/net/sctp/socket.c
-index 67fdac9..d685141 100644
---- a/net/sctp/socket.c
-+++ b/net/sctp/socket.c
-@@ -5432,6 +5432,8 @@ static long sctp_get_port_local(struct sock *sk, union sctp_addr *addr)
- 			rover++;
- 			if ((rover < low) || (rover > high))
- 				rover = low;
-+			if (inet_is_reserved_local_port(rover))
-+				continue;
- 			index = sctp_phashfn(rover);
- 			head = &sctp_port_hashtable[index];
- 			sctp_spin_lock(&head->lock);
+Acked-by: Matt Turner <mattst88@gmail.com>
