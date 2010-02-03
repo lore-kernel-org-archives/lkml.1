@@ -1,18 +1,18 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932374Ab0BCJQf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 04:16:35 -0500
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:47625 "EHLO
+	id S932288Ab0BCJPP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 04:15:15 -0500
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:38151 "EHLO
 	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756680Ab0BCJOs (ORCPT
+	with ESMTP id S932218Ab0BCJO5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 04:14:48 -0500
+	Wed, 3 Feb 2010 04:14:57 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=Y6L5UbQ6luiydbGDRsKMPRs9TcSrskbge4GDiPJPI9BEVsQU5Z9xFYSf2HcYJMUVNJ
-         kQRxOJf93Ht8gVrAIyzB4tbiG4E+tfosDO+PKc/PicHOC+5TIaE4x+W3DFxJnc821NEM
-         +/hFCD16IEnGBTVM4azFX4kaao5gPE3b3Svto=
+        b=h8ctLaPmNEY168ePMpxOfXgUB2mrwrNSP3jEQNDwBPGGYG0VwAwxKOuNOOhvL5hL/n
+         Lqwi5uvGJuUuW5J/mF11RZNpiBQkfJ9wyJXUbqSmIFOoxQR7G9BT8pp1YrsPNhxVeUhq
+         rfSeBBTWRDj9q8XipyLO2Kji/HoIEodbl740k=
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>,
@@ -24,9 +24,9 @@ Cc: LKML <linux-kernel@vger.kernel.org>,
        Li Zefan <lizf@cn.fujitsu.com>, Lai Jiangshan <laijs@cn.fujitsu.com>,
        Masami Hiramatsu <mhiramat@redhat.com>,
        Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH 06/11] perf: Handle injection ioctl with trace events
-Date: Wed,  3 Feb 2010 10:14:30 +0100
-Message-Id: <1265188475-23509-7-git-send-regression-fweisbec@gmail.com>
+Subject: [PATCH 11/11] perf lock: Drop the buffers multiplexing dependency
+Date: Wed,  3 Feb 2010 10:14:35 +0100
+Message-Id: <1265188475-23509-12-git-send-regression-fweisbec@gmail.com>
 X-Mailer: git-send-email 1.6.2.3
 In-Reply-To: <1265188475-23509-1-git-send-regression-fweisbec@gmail.com>
 References: <1265188475-23509-1-git-send-regression-fweisbec@gmail.com>
@@ -34,7 +34,50 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Handle injection ioctl request for tracepoints that support it.
+We need to deal with time ordered events to build a correct
+state machine of lock events. This is why we multiplex the lock
+events buffers. But the ordering is done from the kernel, on
+the tracing fast path, leading to high contention between cpus.
+
+Without multiplexing, the events appears in a weak order.
+If we have four events, each split per cpu, perf record will
+read the events buffers in the following order:
+
+[ CPU0 ev0, CPU0 ev1, CPU0 ev3, CPU0 ev4, CPU1 ev0, CPU1 ev0....]
+
+To handle a post processing reordering, we could just read and sort
+the whole in memory, but it just doesn't scale with high amounts
+of events: lock events can fill huge amounts in few times.
+
+Basically we need to sort in memory and find a "grace period"
+point when we know that a given slice of previously sorted events
+can be committed for post-processing, so that we can unload the
+memory usage step by step and keep a scalable sorting list.
+
+There is no strong rules about how to define such "grace period".
+What does this patch is:
+
+We define a FLUSH_PERIOD value that defines a grace period in
+seconds.
+We want to have a slice of events covering 2 * FLUSH_PERIOD in our
+sorted list.
+If FLUSH_PERIOD is big enough, it ensures every events that occured
+in the first half of the timeslice have all been buffered and there
+are none remaining and there won't be further to put inside this
+first timeslice. Then once we reach the 2 * FLUSH_PERIOD
+timeslice, we flush the first half to be gentle with the memory
+(the second half can still get new events in the middle, so wait
+another period to flush it)
+
+FLUSH_PERIOD is defined to 5 seconds. Say the first event started on
+time t0. We can safely assume that at the time we are processing
+events of t0 + 10 seconds, ther won't be anymore events to read
+from perf.data that occured between t0 and t0 + 5 seconds. Hence
+we can safely flush the first half.
+
+To point out funky bugs, we have a guardian that checks a new event
+timestamp is not below the last event's timestamp flushed and that
+displays a warning in this case.
 
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
@@ -47,168 +90,189 @@ Cc: Lai Jiangshan <laijs@cn.fujitsu.com>
 Cc: Masami Hiramatsu <mhiramat@redhat.com>
 Cc: Jens Axboe <jens.axboe@oracle.com>
 ---
- include/linux/ftrace_event.h       |    5 ++-
- include/linux/perf_event.h         |    4 +++
- kernel/perf_event.c                |   14 ++++++++--
- kernel/trace/trace_event_profile.c |   46 ++++++++++++++++++++++-------------
- 4 files changed, 47 insertions(+), 22 deletions(-)
+ tools/perf/builtin-lock.c |  148 ++++++++++++++++++++++++++++++++++++++++++++-
+ 1 files changed, 146 insertions(+), 2 deletions(-)
 
-diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
-index 026d39b..9b45db6 100644
---- a/include/linux/ftrace_event.h
-+++ b/include/linux/ftrace_event.h
-@@ -189,8 +189,9 @@ do {									\
+diff --git a/tools/perf/builtin-lock.c b/tools/perf/builtin-lock.c
+index e1133b7..759cfeb 100644
+--- a/tools/perf/builtin-lock.c
++++ b/tools/perf/builtin-lock.c
+@@ -572,6 +572,150 @@ process_raw_event(void *data, int cpu,
+ 		process_lock_class_init_event(data, event, cpu, timestamp, thread);
+ }
  
- #ifdef CONFIG_PERF_EVENTS
- struct perf_event;
--extern int ftrace_profile_enable(int event_id);
--extern void ftrace_profile_disable(int event_id);
-+extern int ftrace_profile_enable(struct perf_event *event);
-+extern void ftrace_profile_disable(struct perf_event *event);
-+extern void ftrace_perf_inject(struct perf_event *event);
- extern int ftrace_profile_set_filter(struct perf_event *event, int event_id,
- 				     char *filter_str);
- extern void ftrace_profile_free_filter(struct perf_event *event);
-diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
-index d2e83f0..9e58ab9 100644
---- a/include/linux/perf_event.h
-+++ b/include/linux/perf_event.h
-@@ -492,6 +492,10 @@ struct hw_perf_event {
- 			struct arch_hw_breakpoint	info;
- 		};
- #endif
-+#ifdef CONFIG_EVENT_TRACING
-+		/* tracepoint */
-+		struct ftrace_event_call *tp_event;
-+#endif
- 	};
- 	atomic64_t			prev_count;
- 	u64				sample_period;
-diff --git a/kernel/perf_event.c b/kernel/perf_event.c
-index e4dfd12..280ae44 100644
---- a/kernel/perf_event.c
-+++ b/kernel/perf_event.c
-@@ -4350,6 +4350,14 @@ static const struct pmu perf_ops_task_clock = {
- 
- #ifdef CONFIG_EVENT_TRACING
- 
-+static const struct pmu perf_ops_tracepoints = {
-+	.enable		= perf_swevent_enable,
-+	.disable	= perf_swevent_disable,
-+	.read		= perf_swevent_read,
-+	.unthrottle	= perf_swevent_unthrottle,
-+	.inject		= ftrace_perf_inject,
++struct raw_event_queue {
++	u64			timestamp;
++	int			cpu;
++	void			*data;
++	struct thread		*thread;
++	struct list_head	list;
 +};
 +
- void perf_tp_event(int event_id, u64 addr, u64 count, void *record,
- 			  int entry_size)
- {
-@@ -4386,7 +4394,7 @@ static int perf_tp_event_match(struct perf_event *event,
- 
- static void tp_perf_event_destroy(struct perf_event *event)
- {
--	ftrace_profile_disable(event->attr.config);
-+	ftrace_profile_disable(event);
- }
- 
- static const struct pmu *tp_perf_event_init(struct perf_event *event)
-@@ -4400,12 +4408,12 @@ static const struct pmu *tp_perf_event_init(struct perf_event *event)
- 			!capable(CAP_SYS_ADMIN))
- 		return ERR_PTR(-EPERM);
- 
--	if (ftrace_profile_enable(event->attr.config))
-+	if (ftrace_profile_enable(event))
- 		return NULL;
- 
- 	event->destroy = tp_perf_event_destroy;
- 
--	return &perf_ops_generic;
-+	return &perf_ops_tracepoints;
- }
- 
- static int perf_event_set_filter(struct perf_event *event, void __user *arg)
-diff --git a/kernel/trace/trace_event_profile.c b/kernel/trace/trace_event_profile.c
-index f0d6930..9ed684f 100644
---- a/kernel/trace/trace_event_profile.c
-+++ b/kernel/trace/trace_event_profile.c
-@@ -13,6 +13,8 @@
- static char *perf_trace_buf;
- static char *perf_trace_buf_nmi;
- 
-+static DEFINE_MUTEX(perf_trace_mutex);
++static LIST_HEAD(raw_event_head);
 +
- typedef typeof(char [FTRACE_MAX_PROFILE_SIZE]) perf_trace_t ;
- 
- /* Count the events in use (per event id, not per instance) */
-@@ -59,21 +61,27 @@ fail_buf:
- 	return ret;
- }
- 
--int ftrace_profile_enable(int event_id)
-+int ftrace_profile_enable(struct perf_event *event)
- {
--	struct ftrace_event_call *event;
-+	int event_id = event->attr.config;
-+	struct ftrace_event_call *call;
- 	int ret = -EINVAL;
- 
- 	mutex_lock(&event_mutex);
--	list_for_each_entry(event, &ftrace_events, list) {
--		if (event->id == event_id && event->profile_enable &&
--		    try_module_get(event->mod)) {
--			ret = ftrace_profile_enable_event(event);
-+	list_for_each_entry(call, &ftrace_events, list) {
-+		if (call->id == event_id && call->profile_enable &&
-+		    try_module_get(call->mod)) {
-+			mutex_lock(&perf_trace_mutex);
-+			ret = ftrace_profile_enable_event(call);
-+			mutex_unlock(&perf_trace_mutex);
- 			break;
- 		}
- 	}
- 	mutex_unlock(&event_mutex);
- 
-+	if (!ret)
-+		event->hw.tp_event = call;
++#define FLUSH_PERIOD	(5 * NSEC_PER_SEC)
 +
- 	return ret;
- }
- 
-@@ -104,19 +112,23 @@ static void ftrace_profile_disable_event(struct ftrace_event_call *event)
- 	}
- }
- 
--void ftrace_profile_disable(int event_id)
-+void ftrace_profile_disable(struct perf_event *event)
- {
--	struct ftrace_event_call *event;
-+	struct ftrace_event_call *call = event->hw.tp_event;
- 
--	mutex_lock(&event_mutex);
--	list_for_each_entry(event, &ftrace_events, list) {
--		if (event->id == event_id) {
--			ftrace_profile_disable_event(event);
--			module_put(event->mod);
--			break;
--		}
--	}
--	mutex_unlock(&event_mutex);
-+	mutex_lock(&perf_trace_mutex);
-+	ftrace_profile_disable_event(call);
-+	mutex_unlock(&perf_trace_mutex);
++static u64 flush_limit = ULLONG_MAX;
++static u64 last_flush = 0;
++struct raw_event_queue *last_inserted;
 +
-+	module_put(call->mod);
++static void flush_raw_event_queue(u64 limit)
++{
++	struct raw_event_queue *tmp, *iter;
++
++	list_for_each_entry_safe(iter, tmp, &raw_event_head, list) {
++		if (iter->timestamp > limit)
++			return;
++
++		if (iter == last_inserted)
++			last_inserted = NULL;
++
++		process_raw_event(iter->data, iter->cpu, iter->timestamp,
++				  iter->thread);
++
++		last_flush = iter->timestamp;
++		list_del(&iter->list);
++		free(iter->data);
++		free(iter);
++	}
 +}
 +
-+void ftrace_perf_inject(struct perf_event *event)
++static void __queue_raw_event_end(struct raw_event_queue *new)
 +{
-+	struct ftrace_event_call *call = event->hw.tp_event;
++	struct raw_event_queue *iter;
 +
-+	if (call->inject)
-+		call->inject();
- }
++	list_for_each_entry_reverse(iter, &raw_event_head, list) {
++		if (iter->timestamp < new->timestamp) {
++			list_add(&new->list, &iter->list);
++			return;
++		}
++	}
++
++	list_add(&new->list, &raw_event_head);
++}
++
++static void __queue_raw_event_before(struct raw_event_queue *new,
++				     struct raw_event_queue *iter)
++{
++	list_for_each_entry_continue_reverse(iter, &raw_event_head, list) {
++		if (iter->timestamp < new->timestamp) {
++			list_add(&new->list, &iter->list);
++			return;
++		}
++	}
++
++	list_add(&new->list, &raw_event_head);
++}
++
++static void __queue_raw_event_after(struct raw_event_queue *new,
++				     struct raw_event_queue *iter)
++{
++	list_for_each_entry_continue(iter, &raw_event_head, list) {
++		if (iter->timestamp > new->timestamp) {
++			list_add_tail(&new->list, &iter->list);
++			return;
++		}
++	}
++	list_add_tail(&new->list, &raw_event_head);
++}
++
++/* The queue is ordered by time */
++static void __queue_raw_event(struct raw_event_queue *new)
++{
++	if (!last_inserted) {
++		__queue_raw_event_end(new);
++		return;
++	}
++
++	/*
++	 * Most of the time the current event has a timestamp
++	 * very close to the last event inserted, unless we just switched
++	 * to another event buffer. Having a sorting based on a list and
++	 * on the last inserted event that is close to the current one is
++	 * probably more efficient than an rbtree based sorting.
++	 */
++	if (last_inserted->timestamp >= new->timestamp)
++		__queue_raw_event_before(new, last_inserted);
++	else
++		__queue_raw_event_after(new, last_inserted);
++}
++
++static void queue_raw_event(void *data, int raw_size, int cpu,
++			    u64 timestamp, struct thread *thread)
++{
++	struct raw_event_queue *new;
++
++	if (flush_limit == ULLONG_MAX)
++		flush_limit = timestamp + FLUSH_PERIOD;
++
++	if (timestamp < last_flush) {
++		printf("Warning: Timestamp below last timeslice flush\n");
++		return;
++	}
++
++	new = malloc(sizeof(*new));
++	if (!new)
++		die("Not enough memory\n");
++
++	new->timestamp = timestamp;
++	new->cpu = cpu;
++	new->thread = thread;
++
++	new->data = malloc(raw_size);
++	if (!new->data)
++		die("Not enough memory\n");
++
++	memcpy(new->data, data, raw_size);
++
++	__queue_raw_event(new);
++	last_inserted = new;
++
++	/*
++	 * We want to have a slice of events covering 2 * FLUSH_PERIOD
++	 * If FLUSH_PERIOD is big enough, it ensures every events that occured
++	 * in the first half of the timeslice have all been buffered and there
++	 * are none remaining (we need that because of the weakly ordered
++	 * event recording we have). Then once we reach the 2 * FLUSH_PERIOD
++	 * timeslice, we flush the first half to be gentle with the memory
++	 * (the second half can still get new events in the middle, so wait
++	 * another period to flush it)
++	 */
++	if (new->timestamp > flush_limit &&
++		new->timestamp - flush_limit > FLUSH_PERIOD) {
++		flush_limit += FLUSH_PERIOD;
++		flush_raw_event_queue(flush_limit);
++	}
++}
++
+ static int process_sample_event(event_t *event, struct perf_session *session)
+ {
+ 	struct thread *thread;
+@@ -592,7 +736,7 @@ static int process_sample_event(event_t *event, struct perf_session *session)
+ 	if (profile_cpu != -1 && profile_cpu != (int) data.cpu)
+ 		return 0;
  
- __kprobes void *ftrace_perf_buf_prepare(int size, unsigned short type,
+-	process_raw_event(data.raw_data, data.cpu, data.time, thread);
++	queue_raw_event(data.raw_data, data.raw_size, data.cpu, data.time, thread);
+ 
+ 	return 0;
+ }
+@@ -702,6 +846,7 @@ static void __cmd_report(void)
+ 	setup_pager();
+ 	select_key();
+ 	read_events();
++	flush_raw_event_queue(ULLONG_MAX);
+ 	sort_result();
+ 	print_result();
+ }
+@@ -734,7 +879,6 @@ static const char *record_args[] = {
+ 	"record",
+ 	"-a",
+ 	"-R",
+-	"-M",
+ 	"-f",
+ 	"-m", "1024",
+ 	"-c", "1",
 -- 
 1.6.2.3
 
