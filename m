@@ -1,80 +1,335 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756159Ab0BCG2L (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 01:28:11 -0500
-Received: from mga09.intel.com ([134.134.136.24]:16805 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754362Ab0BCG2H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 01:28:07 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,396,1262592000"; 
-   d="scan'208";a="489224466"
-Date: Wed, 3 Feb 2010 14:27:56 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 00/11] [RFC] 512K readahead size with thrashing safe
-	readahead
-Message-ID: <20100203062756.GB22890@localhost>
-References: <20100202152835.683907822@intel.com> <20100202223803.GF3922@redhat.com>
+	id S1756118Ab0BCGaB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 01:30:01 -0500
+Received: from mail-qy0-f201.google.com ([209.85.221.201]:41442 "EHLO
+	mail-qy0-f201.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754179Ab0BCG37 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 01:29:59 -0500
+X-Greylist: delayed 376 seconds by postgrey-1.27 at vger.kernel.org; Wed, 03 Feb 2010 01:29:58 EST
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=Ln2nLj7QaoMPgG3Zb5bfX4Opt1/RCGgjW/XINqc7VAjeGdA2891iJzfsoXBtzvbygk
+         kz0r/Y6sfFgjWT/evnQTNdIrIOm5zGF/C5GE7T/IqLOVaiwVl9vSZwi0Wt7tFixzUuX8
+         bx+NiTrCKiIE93a4tQ1cl2M0+I9AzkvOsYeUo=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100202223803.GF3922@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <0511204199ab83aed2340e70a4639500c0528dab.1265173480.git.amit.kucheria@canonical.com>
+References: <cover.1265173480.git.amit.kucheria@canonical.com> 
+	<cover.1265173246.git.amit.kucheria@verdurent.com> <0511204199ab83aed2340e70a4639500c0528dab.1265173480.git.amit.kucheria@canonical.com>
+From: Eric Miao <eric.y.miao@gmail.com>
+Date: Tue, 2 Feb 2010 22:23:21 -0800
+Message-ID: <f17812d71002022223jdc0ac5cp5b94928fb45695d6@mail.gmail.com>
+Subject: Re: [PATCHv2 01/11] arm: mxc: TrustZone interrupt controller (TZIC) 
+	for i.MX5 family
+To: Amit Kucheria <amit.kucheria@canonical.com>
+Cc: List Linux Kernel <linux-kernel@vger.kernel.org>, linux@arm.linux.org.uk,
+       Dinh.Nguyen@freescale.com, s.hauer@pengutronix.de,
+       grant.likely@secretlab.ca, r.herring@freescale.com,
+       linux-arm-kernel@lists.infradead.org, daniel@caiaq.de,
+       bryan.wu@canonical.com, valentin.longchamp@epfl.ch
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek,
+Hi Amit,
 
-On Wed, Feb 03, 2010 at 06:38:03AM +0800, Vivek Goyal wrote:
-> On Tue, Feb 02, 2010 at 11:28:35PM +0800, Wu Fengguang wrote:
-> > Andrew,
-> > 
-> > This is to lift default readahead size to 512KB, which I believe yields
-> > more I/O throughput without noticeably increasing I/O latency for today's HDD.
-> > 
-> 
-> Hi Fengguang,
-> 
-> I was doing a quick test with the patches. I was using fio to run some
-> sequential reader threads. I have got one access to one Lun from an HP
-> EVA. In my case it looks like with the patches throughput has come down.
+Just some nit-picking review comments, see below:
 
-Thank you for the quick testing!
+On Tue, Feb 2, 2010 at 9:16 PM, Amit Kucheria
+<amit.kucheria@canonical.com> wrote:
+> Freescale i.MX51 processor uses a new interrupt controller. Add
+> driver for TrustZone Interrupt Controller
+>
+> Signed-off-by: Amit Kucheria <amit.kucheria@canonical.com>
+> ---
+>  arch/arm/plat-mxc/Kconfig  |    8 ++
+>  arch/arm/plat-mxc/Makefile |    3 +
+>  arch/arm/plat-mxc/tzic.c   |  182 ++++++++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 193 insertions(+), 0 deletions(-)
+>  create mode 100644 arch/arm/plat-mxc/tzic.c
+>
+> diff --git a/arch/arm/plat-mxc/Kconfig b/arch/arm/plat-mxc/Kconfig
+> index 8b0a1ee..59558c4 100644
+> --- a/arch/arm/plat-mxc/Kconfig
+> +++ b/arch/arm/plat-mxc/Kconfig
+> @@ -62,6 +62,14 @@ config MXC_IRQ_PRIOR
+>          requirements for timing.
+>          Say N here, unless you have a specialized requirement.
+>
+> +config MXC_TZIC
+> +       bool "Enable TrustZone Interrupt Controller"
+> +       depends on ARCH_MX51
 
-This patchset does 3 things:
+This is the first patch of the base port, yet I cannot find any reference to
+this ARCH_MX51, did you miss something?
 
-1) 512K readahead size
-2) new readahead algorithms
-3) new readahead tracing/stats interfaces
+> +       help
+> +         This will be automatically selected for all processors
+> +         containing this interrupt controller.
+> +         Say N here only if you are really sure.
+> +
+>  config MXC_PWM
+>        tristate "Enable PWM driver"
+>        depends on ARCH_MXC
+> diff --git a/arch/arm/plat-mxc/Makefile b/arch/arm/plat-mxc/Makefile
+> index 996cbac..0202ad9 100644
+> --- a/arch/arm/plat-mxc/Makefile
+> +++ b/arch/arm/plat-mxc/Makefile
+> @@ -5,6 +5,9 @@
+>  # Common support
+>  obj-y := irq.o clock.o gpio.o time.o devices.o cpu.o system.o
+>
+> +# MX51 uses the TZIC interrupt controller, older platforms use AVIC (irq.o)
+> +obj-$(CONFIG_MXC_TZIC) += tzic.o
+> +
+>  obj-$(CONFIG_ARCH_MX1) += iomux-mx1-mx2.o dma-mx1-mx2.o
+>  obj-$(CONFIG_ARCH_MX2) += iomux-mx1-mx2.o dma-mx1-mx2.o
+>  obj-$(CONFIG_ARCH_MXC_IOMUX_V3) += iomux-v3.o
+> diff --git a/arch/arm/plat-mxc/tzic.c b/arch/arm/plat-mxc/tzic.c
+> new file mode 100644
+> index 0000000..00cb0ad
+> --- /dev/null
+> +++ b/arch/arm/plat-mxc/tzic.c
+> @@ -0,0 +1,182 @@
+> +/*
+> + * Copyright 2004-2009 Freescale Semiconductor, Inc. All Rights Reserved.
+> + *
+> + * The code contained herein is licensed under the GNU General Public
+> + * License. You may obtain a copy of the GNU General Public License
+> + * Version 2 or later at the following locations:
+> + *
+> + * http://www.opensource.org/licenses/gpl-license.html
+> + * http://www.gnu.org/copyleft/gpl.html
+> + */
+> +
+> +#include <linux/module.h>
+> +#include <linux/moduleparam.h>
+> +#include <linux/init.h>
+> +#include <linux/device.h>
+> +#include <linux/errno.h>
+> +#include <linux/io.h>
+> +
+> +#include <asm/mach/irq.h>
+> +
+> +#include <mach/hardware.h>
+> +
+> +/*
+> + *****************************************
+> + * TZIC Registers                        *
+> + *****************************************
+> + */
+> +
+> +#define TZIC_INTCNTL            0x0000 /* Control register */
+> +#define TZIC_INTTYPE            0x0004 /* Controller Type register */
+> +#define TZIC_IMPID              0x0008 /* Distributor Implementer Identification */
+> +#define TZIC_PRIOMASK           0x000C /* Priority Mask Reg */
+> +#define TZIC_SYNCCTRL           0x0010 /* Synchronizer Control register */
+> +#define TZIC_DSMINT             0x0014 /* DSM interrupt Holdoffregister */
+> +#define TZIC_INTSEC0            0x0080 /* Interrupt Security register 0 */
+> +#define TZIC_ENSET0             0x0100 /* Enable Set Register 0 */
+> +#define TZIC_ENCLEAR0           0x0180 /* Enable Clear Register 0 */
+> +#define TZIC_SRCSET0            0x0200 /* Source Set Register 0 */
+> +#define TZIC_SRCCLAR0           0x0280 /* Source Clear Register 0 */
+> +#define TZIC_PRIORITY0          0x0400 /* Priority Register 0 */
+> +#define TZIC_PND0               0x0D00 /* Pending Register 0 */
+> +#define TZIC_HIPND0             0x0D80 /* High Priority Pending Register */
+> +#define TZIC_WAKEUP0            0x0E00 /* Wakeup Config Register */
+> +#define TZIC_SWINT              0x0F00 /* Software Interrupt Rigger Register */
+> +#define TZIC_ID0                0x0FD0 /* Indentification Register 0 */
+> +
+> +void __iomem *tzic_base;
 
-(1) will impact performance, while (2) _might_ impact performance in
-case of bugs.
+This can just be made to 'static' if it's not used elsewhere, and I'm
+wondering if it's neater to define them as:
 
-Would you kindly retest the patchset with readahead size manually set
-to 128KB?  That would help identify the root cause of the performance
-drop:
+#define TZIC_INTCNTL		(tzic_base + 0x0000)
 
-        DEV=sda
-        echo 128 > /sys/block/$DEV/queue/read_ahead_kb
+so to make the code below short and handy.
 
-The readahead stats provided by the patchset are very useful for
-analyzing the problem:
+> +
+> +/*
+> + * Disable interrupt number "irq" in the TZIC
 
-        mount -t debugfs none /debug
-        
-        # for each benchmark:
-                echo > /debug/readahead/stats  # reset counters
-                # do benchmark
-                cat /debug/readahead/stats     # check counters
+I don't think this follows kernel API doc exactly, you may want to have a
+look into Documentation/kernel-doc-nano-HOWTO.txt.
 
-Thanks,
-Fengguang
+> + *
+> + * @param  irq          interrupt source number
+> + */
+> +static void tzic_mask_irq(unsigned int irq)
+> +{
+> +       int index, off;
+> +
+> +       index = irq >> 5;
+> +       off = irq & 0x1F;
+> +       __raw_writel(1 << off, tzic_base + TZIC_ENCLEAR0 + (index << 2));
 
+I'll normally define TZIC_ENCLEAR0 then as:
+
+#define TZIC_ENCLEAR(i)		(0x0180 + ((i) << 2))
+
+so the above can be written as:
+
+	__raw_writel(1 << off, tzic_base + TZIC_ENCLEAR(index));
+
+or by including tzic_base into TZIC_*, simply as:
+
+	__raw_writel(1 << off, TZIC_ENCLEAR(index));
+
+> +}
+> +
+> +/*
+> + * Enable interrupt number "irq" in the TZIC
+> + *
+> + * @param  irq          interrupt source number
+> + */
+> +static void tzic_unmask_irq(unsigned int irq)
+> +{
+> +       int index, off;
+> +
+> +       index = irq >> 5;
+> +       off = irq & 0x1F;
+> +       __raw_writel(1 << off, tzic_base + TZIC_ENSET0 + (index << 2));
+> +}
+> +
+> +static unsigned int wakeup_intr[4];
+> +
+> +/*
+> + * Set interrupt number "irq" in the TZIC as a wake-up source.
+> + *
+> + * @param  irq          interrupt source number
+> + * @param  enable       enable as wake-up if equal to non-zero
+> + *                     disble as wake-up if equal to zero
+> + *
+> + * @return       This function returns 0 on success.
+> + */
+> +static int tzic_set_wake_irq(unsigned int irq, unsigned int enable)
+> +{
+> +       unsigned int index, off;
+> +
+> +       index = irq >> 5;
+> +       off = irq & 0x1F;
+> +
+> +       if (index > 3)
+> +               return -EINVAL;
+> +
+> +       if (enable)
+> +               wakeup_intr[index] |= (1 << off);
+> +       else
+> +               wakeup_intr[index] &= ~(1 << off);
+> +
+> +       return 0;
+> +}
+> +
+> +static struct irq_chip mxc_tzic_chip = {
+> +       .name = "MXC_TZIC",
+> +       .ack = tzic_mask_irq,
+> +       .mask = tzic_mask_irq,
+> +       .unmask = tzic_unmask_irq,
+> +       .set_wake = tzic_set_wake_irq,
+> +};
+> +
+> +/*
+> + * This function initializes the TZIC hardware and disables all the
+> + * interrupts. It registers the interrupt enable and disable functions
+> + * to the kernel for each interrupt source.
+> + */
+> +void __init tzic_init_irq(void __iomem *irqbase)
+> +{
+> +       int i;
+> +
+> +       tzic_base = irqbase;
+> +       /* put the TZIC into the reset value with
+> +        * all interrupts disabled
+> +        */
+> +       i = __raw_readl(tzic_base + TZIC_INTCNTL);
+
+Mixing the use of 'i' as both a signed counter and register value might
+not be a good idea, provided it's not guaranteed from theory that 'i' as
+an integer could not be sufficient to hold the value returned from
+__raw_readl()
+
+> +
+> +       __raw_writel(0x80010001, tzic_base + TZIC_INTCNTL);
+> +       i = __raw_readl(tzic_base + TZIC_INTCNTL);
+> +       __raw_writel(0x1f, tzic_base + TZIC_PRIOMASK);
+> +       i = __raw_readl(tzic_base + TZIC_PRIOMASK);
+> +       __raw_writel(0x02, tzic_base + TZIC_SYNCCTRL);
+> +       i = __raw_readl(tzic_base + TZIC_SYNCCTRL);
+
+Are these read-back really necessary? We can start without them and add them
+later if they do cause issues.
+
+> +
+> +       for (i = 0; i < 4; i++)
+> +               __raw_writel(0xFFFFFFFF, tzic_base + TZIC_INTSEC0 + i * 4);
+> +
+> +       /* disable all interrupts */
+> +       for (i = 0; i < 4; i++)
+> +               __raw_writel(0xFFFFFFFF, tzic_base + TZIC_ENCLEAR0 + i * 4);
+> +
+> +       /* all IRQ no FIQ Warning :: No selection */
+> +
+> +       for (i = 0; i < MXC_INTERNAL_IRQS; i++) {
+> +               set_irq_chip(i, &mxc_tzic_chip);
+> +               set_irq_handler(i, handle_level_irq);
+> +               set_irq_flags(i, IRQF_VALID);
+> +       }
+> +
+> +       printk(KERN_INFO "TrustZone Interrupt Controller (TZIC) initialized\n");
+
+You may want to use pr_info() for short.
+
+> +}
+> +
+> +/*
+> + * enable wakeup interrupt
+> + *
+> + * @param is_idle              1 if called in idle loop (ENSET register);
+> + *                             0 to be used when called from low power entry
+> + * @return                     0 if successful; non-zero otherwise
+> + *
+> + */
+> +int tzic_enable_wake(int is_idle)
+> +{
+> +       unsigned int i, v;
+> +
+> +       __raw_writel(1, tzic_base + TZIC_DSMINT);
+> +       if (unlikely(__raw_readl(tzic_base + TZIC_DSMINT) == 0))
+> +               return -EAGAIN;
+
+Looks like an unnecessary read-back provided the silicon is sane enough.
+
+> +
+> +       if (likely(is_idle)) {
+> +               for (i = 0; i < 4; i++) {
+> +                       v = __raw_readl(tzic_base + TZIC_ENSET0 + i * 4);
+> +                       __raw_writel(v, tzic_base + TZIC_WAKEUP0 + i * 4);
+> +               }
+> +       } else {
+> +               for (i = 0; i < 4; i++) {
+> +                       v = wakeup_intr[i];
+> +                       __raw_writel(v, tzic_base + TZIC_WAKEUP0 + i * 4);
+> +               }
+> +       }
+
+Or could be simplified to:
+
+	for (i = 0; i < 4; i++) {
+		v = is_idle ? __raw_readl(TZIC_ENSET(i)) : wakeup_intr[i];
+		__raw_writel(v, TZIC_WAKEUP(i));
+	}
+
+but just nit-picking comments, so it's up to you.
+
+> +       return 0;
+> +}
+
+Mmmm.... this being called elsewhere, I'm thinking about making this a
+sys_device and having this called within sysdev_class.suspend() to make
+this file rather self-contained.
