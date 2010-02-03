@@ -1,66 +1,73 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932627Ab0BCRH7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 12:07:59 -0500
-Received: from mta5.srv.hcvlny.cv.net ([167.206.4.200]:55030 "EHLO
-	mta5.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932609Ab0BCRH5 (ORCPT
+	id S932634Ab0BCRIp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 12:08:45 -0500
+Received: from moutng.kundenserver.de ([212.227.17.8]:62034 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932609Ab0BCRIl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 12:07:57 -0500
-Date: Wed, 03 Feb 2010 12:07:40 -0500
-From: Michael Breuer <mbreuer@majjas.com>
-Subject: Re: [PATCH] sky2:  receive dma mapping error handling
-In-reply-to: <20100203085618.6662cc6f@nehalam>
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Cc: Jarek Poplawski <jarkao2@gmail.com>, David Miller <davem@davemloft.net>,
-       akpm@linux-foundation.org, flyboy@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Michael Chan <mchan@broadcom.com>, Don Fry <pcnet32@verizon.net>,
-       Francois Romieu <romieu@fr.zoreil.com>,
-       Matt Carlson <mcarlson@broadcom.com>
-Message-id: <4B69AD5C.5030601@majjas.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7BIT
-References: <20100128223447.GC3109@del.dom.local> <4B621316.8070308@majjas.com>
- <20100128225621.GD3109@del.dom.local> <4B6216B9.1010802@majjas.com>
- <20100128153643.0fca3c51@nehalam> <4B645EF4.4050701@majjas.com>
- <20100131003449.GA11935@del.dom.local> <4B650D53.2010607@majjas.com>
- <4B65D0F9.2020602@majjas.com> <4B65FD12.7090101@majjas.com>
- <20100131221835.GA3317@del.dom.local> <20100201102018.7b597992@nehalam>
- <4B68F664.6050007@majjas.com> <4B69A897.7030408@majjas.com>
- <20100203085618.6662cc6f@nehalam>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7)
- Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+	Wed, 3 Feb 2010 12:08:41 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Christoph Hellwig <hch@lst.de>
+Subject: Re: [PATCH 4/6] improve sys_personality for compat architectures
+Date: Wed, 3 Feb 2010 18:06:27 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31-rc8-00053-g43eb7c4-dirty; KDE/4.3.2; x86_64; ; )
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org, tony.luck@intel.com, ralf@linux-mips.org,
+       kyle@mcmartin.ca, benh@kernel.crashing.org, schwidefsky@de.ibm.com,
+       heiko.carstens@de.ibm.com, davem@davemloft.net, tglx@linutronix.de,
+       mingo@redhat.com, hpa@zytor.com, viro@zeniv.linux.org.uk
+References: <20100201185607.GD11045@lst.de> <201002021536.51928.arnd@arndb.de> <20100202163145.GA30659@lst.de>
+In-Reply-To: <20100202163145.GA30659@lst.de>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002031806.27423.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19/g8XgiVVUPqbJi1qiz71so4A46hHebnW//l0
+ 4KWDztmfbg9nejI4AFUx6uSDoYMU0i3+P7CQM1VN26ty0dL2lB
+ mEIJvvDETOg5cT+ujywcg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/03/2010 11:56 AM, Stephen Hemminger wrote:
-> On Wed, 03 Feb 2010 11:47:19 -0500
-> Michael Breuer<mbreuer@majjas.com>  wrote:
->
->    
->> Tracked this down. The status being returned is 0x3c0080 - good flow
->> control packets. Nothing is actually being dropped (confirmed by packet
->> trace on switch compared with packet trace on server).
->>
->> I whipped up a trivial patch to not count these as dropped packets and
->> will post to netdev.
->>
->> I'm not really sure what the driver should be doing in this case, but
->> resubmit seems to work.
->>      
-> Looks like a flow control negotiation issue. You probably turned off
-> flow control on the Linux side, but the switch is still doing flow
-> control.
->
->    
-According to the driver:
-Feb  3 12:03:02 mail kernel: sky2 eth0: Link is up at 1000 Mbps, full 
-duplex, flow control both
+On Tuesday 02 February 2010 17:31:45 Christoph Hellwig wrote:
+> 
+> On Tue, Feb 02, 2010 at 03:36:51PM +0100, Arnd Bergmann wrote:
+> > > -       return (long)old;
+> > > +       return (long)(old == PER_LINUX32 ? PER_LINUX : old);
+> > >  }
+> > 
+> > What does this do for a native 64 bit process setting PER_LINUX32?
+> > It looks to me like it could never set it back to the original
+> > value, or am I missing something here?
+> > 
+> > It's what the arch specific code does already, but it seems a bit
+> > strange anyway.
+> 
+> Indeed, this prevents a process from going back to 64bit.  And while
+> the setarch tool in util-linux also allows going back to 64-bit the
+> typical use case seems to be going into 32-bit mode.
 
-So if the rx flow control packet status is due to flow control being 
-disabled, then there's a different issue.
+It appears that setarch can only go back into 64 bit mode on x86
+because that does not wire up sys32_personality at all -- it always
+uses the regular sys_personality, which allows going both ways.
 
+Your patch changes the behavior on x86 to also make the change
+to PER_LINUX32 permanent, which seems consistent but possibly not
+what people want. I still wonder if anything other than setarch
+actually calls personality() to set PER_LINUX32 and what the
+real intention of sys32_personality is. From what I can tell here,
+it may be best to kill the special handling of PER_LINUX32 entirely
+and make everyone use the existing sys_personality.
 
+> But if the consensus is that we should fix this properly I can
+> replace the patch with one introducing a compat_sys_personality
+> which only gets used for compat tasks.
+
+Right now, sparc64 and powerpc64 use sys32_personality for both native
+and compat tasks, x86 never uses it and all others use it only for
+compat tasks. That seems more sensible if we keep this function at
+all.
+
+	Arnd
