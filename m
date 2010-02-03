@@ -1,189 +1,289 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757905Ab0BCXhi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 18:37:38 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:46453 "EHLO mx1.redhat.com"
+	id S1757930Ab0BCXiP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 18:38:15 -0500
+Received: from smtp.outflux.net ([198.145.64.163]:42913 "EHLO smtp.outflux.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757724Ab0BCXhg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 18:37:36 -0500
+	id S1757652Ab0BCXiO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 18:38:14 -0500
+Date: Wed, 3 Feb 2010 15:37:13 -0800
+From: Kees Cook <kees.cook@canonical.com>
+To: James Morris <jmorris@namei.org>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       linux-security-module@vger.kernel.org, Eric Paris <eparis@redhat.com>,
+       David Howells <dhowells@redhat.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Simon Kagstrom <simon.kagstrom@netinsight.net>,
+       David Woodhouse <David.Woodhouse@intel.com>,
+       Robin Getz <rgetz@analog.com>, Greg Kroah-Hartman <gregkh@suse.de>,
+       Paul Moore <paul.moore@hp.com>,
+       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+       Stephen Smalley <sds@tycho.nsa.gov>,
+       Etienne Basset <etienne.basset@numericable.fr>,
+       "David P. Quigley" <dpquigl@tycho.nsa.gov>,
+       LKLM <linux-kernel@vger.kernel.org>
+Subject: [PATCH v2 2/2] syslog: use defined constants instead of raw numbers
+Message-ID: <20100203233713.GJ19355@outflux.net>
+References: <20100202055354.GV19355@outflux.net>
+ <4B67C2EA.705@schaufler-ca.com>
+ <20100202202054.GW19355@outflux.net>
+ <20100202212510.GG32305@us.ibm.com>
+ <alpine.LRH.2.00.1002030859220.14592@tundra.namei.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-X-Fcc: ~/Mail/linus
-Cc: Oleg Nesterov <oleg@redhat.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Lu, Hongjiu" <hongjiu.lu@intel.com>,
-       "Lachner, Peter" <peter.lachner@intel.com>
-Subject: Re: [patch] x86: ptrace and core-dump extensions for xstate
-In-Reply-To: Suresh Siddha's message of  Monday, 1 February 2010 18:00:25 -0800 <1265076025.2802.194.camel@sbs-t61.sc.intel.com>
-References: <1265076025.2802.194.camel@sbs-t61.sc.intel.com>
-X-Windows: it could happen to you.
-Message-Id: <20100203230817.E6529AA@magilla.sf.frob.com>
-Date: Wed,  3 Feb 2010 15:08:17 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <alpine.LRH.2.00.1002030859220.14592@tundra.namei.org>
+Organization: Canonical
+X-HELO: www.outflux.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please also CC Oleg on things related to user_regset and/or ptrace,
-as per MAINTAINERS.
+Right now the syslog "type" action are just raw numbers which makes
+the source difficult to follow.  This patch replaces the raw numbers
+with defined constants for some level of sanity.
 
-Please make this two patches.  The first one should add the regset, which
-implicitly adds it to core dumps, and makes fixed the note layout aspect of
-the permanent userland ABI.  The second one should add the new ptrace
-requests, which is a further addition to the userland ABI.
+Signed-off-by: Kees Cook <kees.cook@canonical.com>
+---
+ fs/proc/kmsg.c           |   10 +++++-----
+ include/linux/syslog.h   |   23 +++++++++++++++++++++++
+ kernel/printk.c          |   45 +++++++++++++++++++--------------------------
+ security/commoncap.c     |    5 +++--
+ security/selinux/hooks.c |   21 +++++++++++----------
+ 5 files changed, 61 insertions(+), 43 deletions(-)
 
-> For more information on how to use this API by users like debuggers and core
-> dump, please refer to comments in arch/x86/include/asm/ptrace-abi.h
+diff --git a/fs/proc/kmsg.c b/fs/proc/kmsg.c
+index 6a3d843..cfe90a4 100644
+--- a/fs/proc/kmsg.c
++++ b/fs/proc/kmsg.c
+@@ -21,12 +21,12 @@ extern wait_queue_head_t log_wait;
+ 
+ static int kmsg_open(struct inode * inode, struct file * file)
+ {
+-	return do_syslog(1, NULL, 0, SYSLOG_FROM_FILE);
++	return do_syslog(SYSLOG_ACTION_OPEN, NULL, 0, SYSLOG_FROM_FILE);
+ }
+ 
+ static int kmsg_release(struct inode * inode, struct file * file)
+ {
+-	(void) do_syslog(0, NULL, 0, SYSLOG_FROM_FILE);
++	(void) do_syslog(SYSLOG_ACTION_CLOSE, NULL, 0, SYSLOG_FROM_FILE);
+ 	return 0;
+ }
+ 
+@@ -34,15 +34,15 @@ static ssize_t kmsg_read(struct file *file, char __user *buf,
+ 			 size_t count, loff_t *ppos)
+ {
+ 	if ((file->f_flags & O_NONBLOCK) &&
+-	    !do_syslog(9, NULL, 0, SYSLOG_FROM_FILE))
++	    !do_syslog(SYSLOG_ACTION_SIZE_UNREAD, NULL, 0, SYSLOG_FROM_FILE))
+ 		return -EAGAIN;
+-	return do_syslog(2, buf, count, SYSLOG_FROM_FILE);
++	return do_syslog(SYSLOG_ACTION_READ, buf, count, SYSLOG_FROM_FILE);
+ }
+ 
+ static unsigned int kmsg_poll(struct file *file, poll_table *wait)
+ {
+ 	poll_wait(file, &log_wait, wait);
+-	if (do_syslog(9, NULL, 0, SYSLOG_FROM_FILE))
++	if (do_syslog(SYSLOG_ACTION_SIZE_UNREAD, NULL, 0, SYSLOG_FROM_FILE))
+ 		return POLLIN | POLLRDNORM;
+ 	return 0;
+ }
+diff --git a/include/linux/syslog.h b/include/linux/syslog.h
+index 5f02b18..3891139 100644
+--- a/include/linux/syslog.h
++++ b/include/linux/syslog.h
+@@ -21,6 +21,29 @@
+ #ifndef _LINUX_SYSLOG_H
+ #define _LINUX_SYSLOG_H
+ 
++/* Close the log.  Currently a NOP. */
++#define SYSLOG_ACTION_CLOSE          0
++/* Open the log. Currently a NOP. */
++#define SYSLOG_ACTION_OPEN           1
++/* Read from the log. */
++#define SYSLOG_ACTION_READ           2
++/* Read all messages remaining in the ring buffer. */
++#define SYSLOG_ACTION_READ_ALL       3
++/* Read and clear all messages remaining in the ring buffer */
++#define SYSLOG_ACTION_READ_CLEAR     4
++/* Clear ring buffer. */
++#define SYSLOG_ACTION_CLEAR          5
++/* Disable printk's to console */
++#define SYSLOG_ACTION_CONSOLE_OFF    6
++/* Enable printk's to console */
++#define SYSLOG_ACTION_CONSOLE_ON     7
++/* Set level of messages printed to console */
++#define SYSLOG_ACTION_CONSOLE_LEVEL  8
++/* Return number of unread characters in the log buffer */
++#define SYSLOG_ACTION_SIZE_UNREAD    9
++/* Return size of the log buffer */
++#define SYSLOG_ACTION_SIZE_BUFFER   10
++
+ #define SYSLOG_FROM_CALL 0
+ #define SYSLOG_FROM_FILE 1
+ 
+diff --git a/kernel/printk.c b/kernel/printk.c
+index 1771b34..4067412 100644
+--- a/kernel/printk.c
++++ b/kernel/printk.c
+@@ -259,21 +259,6 @@ static inline void boot_delay_msec(void)
+ }
+ #endif
+ 
+-/*
+- * Commands to do_syslog:
+- *
+- * 	0 -- Close the log.  Currently a NOP.
+- * 	1 -- Open the log. Currently a NOP.
+- * 	2 -- Read from the log.
+- * 	3 -- Read all messages remaining in the ring buffer.
+- * 	4 -- Read and clear all messages remaining in the ring buffer
+- * 	5 -- Clear ring buffer.
+- * 	6 -- Disable printk's to console
+- * 	7 -- Enable printk's to console
+- *	8 -- Set level of messages printed to console
+- *	9 -- Return number of unread characters in the log buffer
+- *     10 -- Return size of the log buffer
+- */
+ int do_syslog(int type, char __user *buf, int len, bool from_file)
+ {
+ 	unsigned i, j, limit, count;
+@@ -286,11 +271,11 @@ int do_syslog(int type, char __user *buf, int len, bool from_file)
+ 		return error;
+ 
+ 	switch (type) {
+-	case 0:		/* Close log */
++	case SYSLOG_ACTION_CLOSE:	/* Close log */
+ 		break;
+-	case 1:		/* Open log */
++	case SYSLOG_ACTION_OPEN:	/* Open log */
+ 		break;
+-	case 2:		/* Read from log */
++	case SYSLOG_ACTION_READ:	/* Read from log */
+ 		error = -EINVAL;
+ 		if (!buf || len < 0)
+ 			goto out;
+@@ -321,10 +306,12 @@ int do_syslog(int type, char __user *buf, int len, bool from_file)
+ 		if (!error)
+ 			error = i;
+ 		break;
+-	case 4:		/* Read/clear last kernel messages */
++	/* Read/clear last kernel messages */
++	case SYSLOG_ACTION_READ_CLEAR:
+ 		do_clear = 1;
+ 		/* FALL THRU */
+-	case 3:		/* Read last kernel messages */
++	/* Read last kernel messages */
++	case SYSLOG_ACTION_READ_ALL:
+ 		error = -EINVAL;
+ 		if (!buf || len < 0)
+ 			goto out;
+@@ -377,21 +364,25 @@ int do_syslog(int type, char __user *buf, int len, bool from_file)
+ 			}
+ 		}
+ 		break;
+-	case 5:		/* Clear ring buffer */
++	/* Clear ring buffer */
++	case SYSLOG_ACTION_CLEAR:
+ 		logged_chars = 0;
+ 		break;
+-	case 6:		/* Disable logging to console */
++	/* Disable logging to console */
++	case SYSLOG_ACTION_CONSOLE_OFF:
+ 		if (saved_console_loglevel == -1)
+ 			saved_console_loglevel = console_loglevel;
+ 		console_loglevel = minimum_console_loglevel;
+ 		break;
+-	case 7:		/* Enable logging to console */
++	/* Enable logging to console */
++	case SYSLOG_ACTION_CONSOLE_ON:
+ 		if (saved_console_loglevel != -1) {
+ 			console_loglevel = saved_console_loglevel;
+ 			saved_console_loglevel = -1;
+ 		}
+ 		break;
+-	case 8:		/* Set level of messages printed to console */
++	/* Set level of messages printed to console */
++	case SYSLOG_ACTION_CONSOLE_LEVEL:
+ 		error = -EINVAL;
+ 		if (len < 1 || len > 8)
+ 			goto out;
+@@ -402,10 +393,12 @@ int do_syslog(int type, char __user *buf, int len, bool from_file)
+ 		saved_console_loglevel = -1;
+ 		error = 0;
+ 		break;
+-	case 9:		/* Number of chars in the log buffer */
++	/* Number of chars in the log buffer */
++	case SYSLOG_ACTION_SIZE_UNREAD:
+ 		error = log_end - log_start;
+ 		break;
+-	case 10:	/* Size of the log buffer */
++	/* Size of the log buffer */
++	case SYSLOG_ACTION_SIZE_BUFFER:
+ 		error = log_buf_len;
+ 		break;
+ 	default:
+diff --git a/security/commoncap.c b/security/commoncap.c
+index 677fad9..cf01b2e 100644
+--- a/security/commoncap.c
++++ b/security/commoncap.c
+@@ -897,9 +897,10 @@ error:
+ int cap_syslog(int type, bool from_file)
+ {
+ 	/* /proc/kmsg can open be opened by CAP_SYS_ADMIN */
+-	if (type != 1 && from_file)
++	if (type != SYSLOG_ACTION_OPEN && from_file)
+ 		return 0;
+-	if ((type != 3 && type != 10) && !capable(CAP_SYS_ADMIN))
++	if ((type != SYSLOG_ACTION_READ_ALL &&
++	     type != SYSLOG_ACTION_SIZE_BUFFER) && !capable(CAP_SYS_ADMIN))
+ 		return -EPERM;
+ 	return 0;
+ }
+diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
+index a4862a0..6b36ce2 100644
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -2059,20 +2059,21 @@ static int selinux_syslog(int type, bool from_file)
+ 		return rc;
+ 
+ 	switch (type) {
+-	case 3:		/* Read last kernel messages */
+-	case 10:	/* Return size of the log buffer */
++	case SYSLOG_ACTION_READ_ALL:	/* Read last kernel messages */
++	case SYSLOG_ACTION_SIZE_BUFFER:	/* Return size of the log buffer */
+ 		rc = task_has_system(current, SYSTEM__SYSLOG_READ);
+ 		break;
+-	case 6:		/* Disable logging to console */
+-	case 7:		/* Enable logging to console */
+-	case 8:		/* Set level of messages printed to console */
++	case SYSLOG_ACTION_CONSOLE_OFF:	/* Disable logging to console */
++	case SYSLOG_ACTION_CONSOLE_ON:	/* Enable logging to console */
++	/* Set level of messages printed to console */
++	case SYSLOG_ACTION_CONSOLE_LEVEL:
+ 		rc = task_has_system(current, SYSTEM__SYSLOG_CONSOLE);
+ 		break;
+-	case 0:		/* Close log */
+-	case 1:		/* Open log */
+-	case 2:		/* Read from log */
+-	case 4:		/* Read/clear last kernel messages */
+-	case 5:		/* Clear ring buffer */
++	case SYSLOG_ACTION_CLOSE:	/* Close log */
++	case SYSLOG_ACTION_OPEN:	/* Open log */
++	case SYSLOG_ACTION_READ:	/* Read from log */
++	case SYSLOG_ACTION_READ_CLEAR:	/* Read/clear last kernel messages */
++	case SYSLOG_ACTION_CLEAR:	/* Clear ring buffer */
+ 	default:
+ 		rc = task_has_system(current, SYSTEM__SYSLOG_MOD);
+ 		break;
+-- 
+1.6.5
 
-There are some obvious typos in that comment.  Please fix those up.
 
-> +int xstateregs_active(struct task_struct *target,
-> +		      const struct user_regset *regset)
-> +{
-> +	return (cpu_has_xsave && tsk_used_math(target)) ? xstate_size : 0;
-> +}
-
-The return value here is "n" not "n * size", so xstate_size is wrong.  You
-can just use regset->n instead.  I'll further note that when !cpu_has_xsave,
-regset->n will be zero.  So all you really need is:
-
-	return tsk_used_math(target) ? regset->n : 0;
-
-i.e., the same as fpregs_active.  So I would just use:
-
-	#define xstateregs_active	fpregs_active
-
-with a comment explaining that they are same and why.
-
-> +	/*
-> +	 * First copy the fxsave bytes 0..463
-> +	 */
-> +	ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
-> +				  &target->thread.xstate->xsave, 0,
-> +				  (sizeof(struct i387_fxsave_struct) -
-> +				   sizeof(xstate_fx_sw_bytes)));
-> +	/*
-> +	 * Copy the 48bytes defined by software
-> +	 */
-> +	ret |= user_regset_copyout(&pos, &count, &kbuf, &ubuf,
-> +				   xstate_fx_sw_bytes,
-> +				   (sizeof(struct i387_fxsave_struct) -
-> +				    sizeof(xstate_fx_sw_bytes)),
-> +				   sizeof(struct i387_fxsave_struct));
-> +	/*
-> +	 * Copy the rest of xstate memory layout
-> +	 */
-> +	ret |= user_regset_copyout(&pos, &count, &kbuf, &ubuf,
-> +				   &target->thread.xstate->xsave.xsave_hdr,
-> +				   sizeof(struct i387_fxsave_struct), -1);
-
-This is wrong for the error cases.  user_regset_copyout returns an error
-code or 0, so "|=" is a strange thing to with its return value.  In fact,
-it only ever returns 0 or -EFAULT, so |= will produce the value you want.
-But | is a pretty strange thing to do with two error codes.
-
-It's problematically wrong for a different reason.  In the error case,
-user_regset_copyout returns without updating pos, count, and ubuf (i.e.
-it returns having done nothing when returning an error, which is a pretty
-normal convention).  So, if the first call fails then the second call will
-have pos < start_pos and hit the BUG_ON.  IOW, be sure to test your new
-ptrace call with an invalid userland pointer (e.g. NULL) passed in.
-
-In short, replace "ret |=" with "if (likely(!ret))\n\tret = ".
-
-
-This is up to you, but personally I would define something akin to:
-
-	struct xstate_info {
-		union {
-			struct i387_fxsave_struct fxsave;
-			struct {
-				u64 i387[58];
-				u64 xstate_fx_sw[XSTATE_FX_SW_WORDS];
-			};
-		};
-		struct xsave_hdr_struct xsave_hdr;
-		u64 xsave_state[0];
-	};
-
-and then use offsetof rather than manual arithmetic in those
-user_regset_copyout calls.  IMHO it would be better to have this in
-ptrace-abi.h along with some macros for what the fx_sw indices are (I guess
-only 0 is defined now, but whatever) rather than relegate that info to
-magic numbers in a comment and userland code doing manual arithmetic.
-But even if you just put it locally in ptrace.c, it makes the ptrace
-code less prone to possible arithmetic typos.
-
-
-> +	case PTRACE_GETXSTATEREGS:	/* Get the child extended state. */
-> +		return copy_regset_to_user(child,
-> +					   task_user_regset_view(current),
-> +					   REGSET_XSTATE,
-> +					   0, xstate_size,
-> +					   datap);
-> +
-> +	case PTRACE_SETXSTATEREGS:	/* Set the child extended state. */
-> +		return copy_regset_from_user(child,
-> +					     task_user_regset_view(current),
-> +					     REGSET_XSTATE,
-> +					     0, xstate_size,
-> +					     datap);
-
-I think this is a poor choice of interface for this.  The other existing
-PTRACE_GET*REGS calls use a fixed-size and fixed-layout block that is a
-known constant in the userland ABI.  Here, userland has no way to know
-xstate_size, so you are accessing a chunk of user memory where userland
-doesn't really know how much you are going to access.
-
-AFAICT from skimming the Intel manuals, there is no specified upper bound
-on how big the xsave size might grow in future processors.  I would think
-that it might be limited to a page, since there is no way to indicate a
-partial copy to restart after a page fault.  So for unpinned access (such
-as in user mode, or the user memory access in the signal frame setup), in
-full-thrashing situations an xsave spanning multiple pages might thrash
-totally and never make progress.  OTOH, the manual does not say that the
-buffer can't span two pages today, just that it has to be 64-byte aligned.
-So perhaps we already have that issue (for signal frame setup or for direct
-user-space uses of xsave/xrstor) and it's just not really an issue that
-matters (thrashing is thrashing--it's already pathological, so who cares if
-it's literal livelock or not).  The upshot being, I don't think there is an
-obvious upper bound that userland can presume statically here.
-
-AFAICT, the only way for userland to guess xstate_size is to use cpuid
-itself.  Even if that is actually reliable, or even if the kernel gave
-userland some other means to know the kernel's xstate_size value, IMHO that
-is a pretty dubious and error-prone way to construct the ABI.  Usually when
-userland supplies a buffer whose size is not a permanent constant of the
-ABI, userland says how big a buffer it's passing in.
-
-The most obvious change would be just s/xstate_size/MIN(addr, xstate_size)/.
-i.e. userland passes in the maximum size it wants in the other argument.
-
-But IMHO this is a fine opportunity not to add another one-off request for
-a particular regset type, and then never add another one again.  Instead,
-we can add a general-purpose request to handle any regset based on what is
-already part of the userland ABI: the NT_* codes and the regset layouts
-they imply on each machine.
-
-e.g.
-	struct iovec iov = { mybuffer, mylength };
-	ret = ptrace(PTRACE_GETREGSET, NT_X86_XSTATE, &iov);
-
-or something along those lines.  We could implement a generic
-PTRACE_GETREGSET and PTRACE_SETREGSET in {,compat_}ptrace_request() on
-CONFIG_HAVE_ARCH_TRACEHOOK machines.  
-
-Then all any arch ever has to do in future is just define a new user_regset
-in its user_regset_view for a new thing.
-
-I'll make Oleg implement it if you don't do it yourself ;-).  We can all
-work out together exactly what the interface should be, I don't have any
-special fixed ideas.
-
-
-Thanks,
-Roland
+-- 
+Kees Cook
+Ubuntu Security Team
