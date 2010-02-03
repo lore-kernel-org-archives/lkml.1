@@ -1,91 +1,74 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932949Ab0BCVlm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 16:41:42 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:22654 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932777Ab0BCVlk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 16:41:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=VuJ+mB9FeEhZzo6Gn/6Roi3reJvAGDIe1ayCNJqvuOgt4e27xuHhEFfvlRUixCl1m0
-         aWxGBECaV+ELzNET/rebf4WoZ/6IAwOMa5NpyupzQI6YOfbBh7feMs0ORv3ZF0SHUH2o
-         j0w6+MDSz6cmm9AxeA2nb1GniNcivq923EP7A=
-Message-ID: <4B69ED8F.10600@gmail.com>
-Date: Wed, 03 Feb 2010 22:41:35 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.7) Gecko/20100111 SUSE/3.0.1-9.1 Thunderbird/3.0.1
+	id S932955Ab0BCVwn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 16:52:43 -0500
+Received: from mail.gmx.net ([213.165.64.20]:46702 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S932657Ab0BCVwm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 16:52:42 -0500
+X-Authenticated: #2283611
+X-Provags-ID: V01U2FsdGVkX19S1B0HcpdSiEZofsVqhNASWbsmKebF9pG2kBc2xw
+	O1BC5c7SZPeMH2
+From: Tobias Lorenz <tobias.lorenz@gmx.net>
+To: Roel Kluin <roel.kluin@gmail.com>
+Subject: Re: [PATCH] radio-si470x-common: -EINVAL overwritten in si470x_vidioc_s_tuner()
+Date: Wed, 3 Feb 2010 22:52:35 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.32-trunk-686; KDE/4.3.4; i686; ; )
+Cc: Mauro Carvalho Chehab <mchehab@infradead.org>, linux-media@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <4B69D2F5.2050100@gmail.com>
+In-Reply-To: <4B69D2F5.2050100@gmail.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: akpm@linux-foundation.org, mm-commits@vger.kernel.org, airlied@linux.ie,
-       dri-devel@lists.sourceforge.net, zhenyuw@linux.intel.com
-Subject: i915 #GP [was: mmotm 2010-02-01-16-25 uploaded]
-References: <201002020050.o120ov8X022741@imap1.linux-foundation.org>
-In-Reply-To: <201002020050.o120ov8X022741@imap1.linux-foundation.org>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-2
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <201002032252.36514.tobias.lorenz@gmx.net>
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.53000000000000003
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/02/2010 01:25 AM, akpm@linux-foundation.org wrote:
-> The mm-of-the-moment snapshot 2010-02-01-16-25 has been uploaded to
+Hello Roel,
 
-Hi, when thunderbird appears on clean X+xterm I get this with the snapshot:
-[drm:i915_gem_do_execbuffer] *ERROR* Invalid object handle 1073741824 at
-index 1
-general protection fault: 0000 [#1] SMP
-last sysfs file: /sys/devices/pci0000:00/0000:00:1e.0/0000:04:00.0/resource
-CPU 0
-Pid: 3412, comm: X Not tainted 2.6.33-rc6-mm1_64+ #941 To be filled by
-O.E.M./To Be Filled By O.E.M.
-RIP: 0010:[<ffffffff812579ef>]  [<ffffffff812579ef>]
-i915_gem_do_execbuffer+0x3ef/0xbf0
-RSP: 0018:ffff8801c2313c68  EFLAGS: 00010202
-RAX: ffff8801c2f6a7c8 RBX: 0000000000000002 RCX: 0000000000000049
-RDX: 6b6b6b6b6b6b6b6b RSI: ffffffff81237e70 RDI: ffff8801c2a28738
-RBP: ffff8801c2313d18 R08: 0000000000000000 R09: 0000000002000000
-R10: 0000000000000000 R11: 0000000000000004 R12: ffff8801c2f6a7b8
-R13: ffff8801c2313d38 R14: 0000000000000000 R15: 00000000fffffff7
-FS:  00007f4910c476f0(0000) GS:ffff880100200000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: 00007f48fb928000 CR3: 00000001c2cd5000 CR4: 00000000000006f0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process X (pid: 3412, threadinfo ffff8801c2312000, task ffff8801c3539c00)
-Stack:
- ffffffff81803580 00000000000000d0 ffff8801c2e043d8 0000000000d7ba90
-<0> 0000000000000060 ffffffff810be556 ffff8801c5f918f8 ffff8801c2f6a7b8
-<0> ffff8801cbc0a048 0000000000000000 ffff8801c2f6a7b8 ffff8801c5f918d8
-Call Trace:
- [<ffffffff810be556>] ? __slab_alloc+0x266/0x2f0
- [<ffffffff81258584>] i915_gem_execbuffer+0x1b4/0x360
- [<ffffffff81253516>] ? i915_gem_sw_finish_ioctl+0x96/0xd0
- [<ffffffff812363ed>] drm_ioctl+0x1bd/0x480
- [<ffffffff8108fe12>] ? unlock_page+0x22/0x30
- [<ffffffff812583d0>] ? i915_gem_execbuffer+0x0/0x360
- [<ffffffff810a9dbb>] ? handle_mm_fault+0x18b/0x3c0
- [<ffffffff810d7468>] vfs_ioctl+0x38/0xd0
- [<ffffffff810d7ca0>] do_vfs_ioctl+0x80/0x340
- [<ffffffff81024841>] ? do_page_fault+0x131/0x2d0
- [<ffffffff810d7faa>] sys_ioctl+0x4a/0x80
- [<ffffffff81002e6b>] system_call_fastpath+0x16/0x1b
-Code: 44 8b 5a 08 45 85 db 74 4f 31 db 4c 8b 65 a0 49 89 d5 66 2e 0f 1f
-84 00 00 00 00 00 48 63 c3 49 8d 04 c4 48 8b 10 48 85 d2 74 25 <48> 8b
-92 80 00 00 00 c7 82 a0 00 00 00 00 00 00 00 48 8b 38 48
-RIP  [<ffffffff812579ef>] i915_gem_do_execbuffer+0x3ef/0xbf0
- RSP <ffff8801c2313c68>
----[ end trace 99140c91bbc9294a ]---
+no, the default value of retval makes no difference to the function.
 
+Retval is set by si470x_disconnect_check and si470x_set_register.
+After each call, retval is checked.
+There is no need to reset it passed.
 
-opposing to 2010-01-15-15-34 which was OK. This is a setup with no KMS
-with 2.9.1 intel X drv.
+The only reason, there is a default value is my static code checker, saying variables should have default values.
+Setting it to -EINVAL seems more reasonable to me than setting it 0.
+In fact the patch would bring up the warning on setting default values again.
 
-thanks,
--- 
-js
+Bye,
+Toby
+
+Am Mittwoch 03 Februar 2010 20:48:05 schrieb Roel Kluin:
+> The -EINVAL was overwritten by the si470x_disconnect_check().
+> 
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> ---
+> Is this needed?
+> 
+> diff --git a/drivers/media/radio/si470x/radio-si470x-common.c b/drivers/media/radio/si470x/radio-si470x-common.c
+> index 4da0f15..65b4a92 100644
+> --- a/drivers/media/radio/si470x/radio-si470x-common.c
+> +++ b/drivers/media/radio/si470x/radio-si470x-common.c
+> @@ -748,12 +748,13 @@ static int si470x_vidioc_s_tuner(struct file *file, void *priv,
+>  		struct v4l2_tuner *tuner)
+>  {
+>  	struct si470x_device *radio = video_drvdata(file);
+> -	int retval = -EINVAL;
+> +	int retval;
+>  
+>  	/* safety checks */
+>  	retval = si470x_disconnect_check(radio);
+>  	if (retval)
+>  		goto done;
+> +	retval = -EINVAL;
+>  
+>  	if (tuner->index != 0)
+>  		goto done;
+> 
