@@ -1,171 +1,100 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932359Ab0BCJpj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 04:45:39 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:34222 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756820Ab0BCJpe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 04:45:34 -0500
-Date: Wed, 3 Feb 2010 10:45:32 +0100
-From: Sascha Hauer <s.hauer@pengutronix.de>
-To: Eric Miao <eric.y.miao@gmail.com>
-Cc: Amit Kucheria <amit.kucheria@canonical.com>,
-       List Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux@arm.linux.org.uk, Dinh.Nguyen@freescale.com,
-       grant.likely@secretlab.ca, r.herring@freescale.com,
-       linux-arm-kernel@lists.infradead.org, daniel@caiaq.de,
-       bryan.wu@canonical.com, valentin.longchamp@epfl.ch
-Subject: Re: [PATCHv2 01/11] arm: mxc: TrustZone interrupt controller
-	(TZIC) for i.MX5 family
-Message-ID: <20100203094532.GM6130@pengutronix.de>
-References: <cover.1265173480.git.amit.kucheria@canonical.com> <cover.1265173246.git.amit.kucheria@verdurent.com> <0511204199ab83aed2340e70a4639500c0528dab.1265173480.git.amit.kucheria@canonical.com> <f17812d71002022223jdc0ac5cp5b94928fb45695d6@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <f17812d71002022223jdc0ac5cp5b94928fb45695d6@mail.gmail.com>
-X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
-X-URL: http://www.pengutronix.de/
-X-IRC: #ptxdist @freenode
-X-Accept-Language: de,en
-X-Accept-Content-Type: text/plain
-X-Impressum: Pengutronix - Industrial Linux Solutions Handelsregister:
-	Amtsgericht Hildesheim, HRA 2686 Peiner Strasse 6-8, 31137
-	Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
-	+49-5121-206917-5555 Inhaber: Dipl.-Ing. Robert Schwebel
-X-Message-Flag: See Message Headers for Impressum
-X-Uptime: 10:41:44 up 113 days, 22:30, 55 users,  load average: 3.00, 2.18,
-	1.72
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: sha@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+	id S932387Ab0BCJri (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 04:47:38 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:57765 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932287Ab0BCJrg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 04:47:36 -0500
+Subject: Re: [PATCH 0/3] HID: make raw output callback more flexible
+From: Bastien Nocera <hadess@hadess.net>
+To: Michael Poole <mdpoole@troilus.org>
+Cc: Marcel Holtmann <marcel@holtmann.org>, Jiri Kosina <jkosina@suse.cz>,
+       "Gunn, Brian" <bgunn@solekai.com>, Ping <pinglinux@gmail.com>,
+       linux-kernel@vger.kernel.org,
+       BlueZ development <linux-bluetooth@vger.kernel.org>
+In-Reply-To: <87bpg7glf7.fsf@troilus.org>
+References: <alpine.LNX.2.00.1001291515560.356@pobox.suse.cz>
+	 <1264783166.29532.5302.camel@localhost.localdomain>
+	 <87iqakifm8.fsf@troilus.org>
+	 <1264860663.29532.7887.camel@localhost.localdomain>
+	 <87bpg7glf7.fsf@troilus.org>
+Content-Type: text/plain; charset="ISO-8859-1"
+Date: Wed, 03 Feb 2010 09:47:20 +0000
+Message-ID: <1265190440.32444.8417.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 02, 2010 at 10:23:21PM -0800, Eric Miao wrote:
-> Hi Amit,
+On Tue, 2010-02-02 at 20:25 -0500, Michael Poole wrote:
+> Bastien Nocera writes:
 > 
-> Just some nit-picking review comments, see below:
-> 
-> On Tue, Feb 2, 2010 at 9:16 PM, Amit Kucheria
-> <amit.kucheria@canonical.com> wrote:
-> > Freescale i.MX51 processor uses a new interrupt controller. Add
-> > driver for TrustZone Interrupt Controller
+> > On Fri, 2010-01-29 at 19:46 -0500, Michael Poole wrote:
+> >> > [1]: Comments on the patch at
+> >> > http://thread.gmane.org/gmane.linux.bluez.kernel/4279 would be
+> >> > appreciated
+> >> 
+> >> This patch does not work for me.  Before, the first time after each
+> >> boot
+> >> that I tried to connect to an Apple Magic Mouse, it failed with -14
+> >> (EFAULT).  With this patch, it fails with -22 (EINVAL) instead.  The
+> >> -EFAULT *was* due to hidp_parse()'s copy_from_user().  I have not
+> >> looked
+> >> yet to see where the -EINVAL is coming from -- would that help?  (Both
+> >> with and without your patch, the second attempt to connect works.) 
 > >
-> > Signed-off-by: Amit Kucheria <amit.kucheria@canonical.com>
-> > ---
-> >  arch/arm/plat-mxc/Kconfig  |    8 ++
-> >  arch/arm/plat-mxc/Makefile |    3 +
-> >  arch/arm/plat-mxc/tzic.c   |  182 ++++++++++++++++++++++++++++++++++++++++++++
-> >  3 files changed, 193 insertions(+), 0 deletions(-)
-> >  create mode 100644 arch/arm/plat-mxc/tzic.c
+> > I don't get -EFAULT anymore (it was failing to copy the rd_data from
+> > user-space), but I do get -EINVALs now. I haven't investigated it
+> > though. My guess is that the hid parser fails.
 > >
-> > diff --git a/arch/arm/plat-mxc/Kconfig b/arch/arm/plat-mxc/Kconfig
-> > index 8b0a1ee..59558c4 100644
-> > --- a/arch/arm/plat-mxc/Kconfig
-> > +++ b/arch/arm/plat-mxc/Kconfig
-> > @@ -62,6 +62,14 @@ config MXC_IRQ_PRIOR
-> >          requirements for timing.
-> >          Say N here, unless you have a specialized requirement.
-> >
-> > +config MXC_TZIC
-> > +       bool "Enable TrustZone Interrupt Controller"
-> > +       depends on ARCH_MX51
+> > Could you compare the sizes of the data gathered in user-space?
 > 
-> This is the first patch of the base port, yet I cannot find any reference to
-> this ARCH_MX51, did you miss something?
+> The bug mysteriously disappeared when I tried to apply kgdb to the
+> problem.  Your patch won't do the trick because the hidp_connadd_req
+> structure has also gone out of scope by the time the hid-(whatever)
+> probe function is called.  The ioctl has returned to the user, but the
+> new hid-(whatever) module is not yet loaded.
+
+Right. I knew that rd_data would already be out of scope, didn't think
+about the hidp_connadd_req structure itself.
+
+I guess we should make a copy of the rd_data/rd_size in hidp_setup_hid()
+instead.
+
+> That is, the sequence looks like this:
 > 
-> > +       help
-> > +         This will be automatically selected for all processors
-> > +         containing this interrupt controller.
-> > +         Say N here only if you are really sure.
-> > +
-> >  config MXC_PWM
-> >        tristate "Enable PWM driver"
-> >        depends on ARCH_MXC
-> > diff --git a/arch/arm/plat-mxc/Makefile b/arch/arm/plat-mxc/Makefile
-> > index 996cbac..0202ad9 100644
-> > --- a/arch/arm/plat-mxc/Makefile
-> > +++ b/arch/arm/plat-mxc/Makefile
-> > @@ -5,6 +5,9 @@
-> >  # Common support
-> >  obj-y := irq.o clock.o gpio.o time.o devices.o cpu.o system.o
-> >
-> > +# MX51 uses the TZIC interrupt controller, older platforms use AVIC (irq.o)
-> > +obj-$(CONFIG_MXC_TZIC) += tzic.o
-> > +
-> >  obj-$(CONFIG_ARCH_MX1) += iomux-mx1-mx2.o dma-mx1-mx2.o
-> >  obj-$(CONFIG_ARCH_MX2) += iomux-mx1-mx2.o dma-mx1-mx2.o
-> >  obj-$(CONFIG_ARCH_MXC_IOMUX_V3) += iomux-v3.o
-> > diff --git a/arch/arm/plat-mxc/tzic.c b/arch/arm/plat-mxc/tzic.c
-> > new file mode 100644
-> > index 0000000..00cb0ad
-> > --- /dev/null
-> > +++ b/arch/arm/plat-mxc/tzic.c
-> > @@ -0,0 +1,182 @@
-> > +/*
-> > + * Copyright 2004-2009 Freescale Semiconductor, Inc. All Rights Reserved.
-> > + *
-> > + * The code contained herein is licensed under the GNU General Public
-> > + * License. You may obtain a copy of the GNU General Public License
-> > + * Version 2 or later at the following locations:
-> > + *
-> > + * http://www.opensource.org/licenses/gpl-license.html
-> > + * http://www.gnu.org/copyleft/gpl.html
-> > + */
-> > +
-> > +#include <linux/module.h>
-> > +#include <linux/moduleparam.h>
-> > +#include <linux/init.h>
-> > +#include <linux/device.h>
-> > +#include <linux/errno.h>
-> > +#include <linux/io.h>
-> > +
-> > +#include <asm/mach/irq.h>
-> > +
-> > +#include <mach/hardware.h>
-> > +
-> > +/*
-> > + *****************************************
-> > + * TZIC Registers                        *
-> > + *****************************************
-> > + */
-> > +
-> > +#define TZIC_INTCNTL            0x0000 /* Control register */
-> > +#define TZIC_INTTYPE            0x0004 /* Controller Type register */
-> > +#define TZIC_IMPID              0x0008 /* Distributor Implementer Identification */
-> > +#define TZIC_PRIOMASK           0x000C /* Priority Mask Reg */
-> > +#define TZIC_SYNCCTRL           0x0010 /* Synchronizer Control register */
-> > +#define TZIC_DSMINT             0x0014 /* DSM interrupt Holdoffregister */
-> > +#define TZIC_INTSEC0            0x0080 /* Interrupt Security register 0 */
-> > +#define TZIC_ENSET0             0x0100 /* Enable Set Register 0 */
-> > +#define TZIC_ENCLEAR0           0x0180 /* Enable Clear Register 0 */
-> > +#define TZIC_SRCSET0            0x0200 /* Source Set Register 0 */
-> > +#define TZIC_SRCCLAR0           0x0280 /* Source Clear Register 0 */
-> > +#define TZIC_PRIORITY0          0x0400 /* Priority Register 0 */
-> > +#define TZIC_PND0               0x0D00 /* Pending Register 0 */
-> > +#define TZIC_HIPND0             0x0D80 /* High Priority Pending Register */
-> > +#define TZIC_WAKEUP0            0x0E00 /* Wakeup Config Register */
-> > +#define TZIC_SWINT              0x0F00 /* Software Interrupt Rigger Register */
-> > +#define TZIC_ID0                0x0FD0 /* Indentification Register 0 */
-> > +
-> > +void __iomem *tzic_base;
+>   - Application triggers hidp_sock_ioctl(socket, HIDPCONNADD, &connadd).
+>     - This starts the connection, and returns 0...
+>     - ... but also indicates that some other module needs to be loaded.
 > 
-> This can just be made to 'static' if it's not used elsewhere, and I'm
-> wondering if it's neater to define them as:
+>   - User-space loads the appropriate module does init_module()...
+>     - which calls the module_init() function...
+>     - which calls hid_register_driver()...
+>     - which eventually attaches the new driver to the device...
+>     - triggering the module's probe() function to call hid_parse()...
+>     - hid_parse() fails because its hidp_connadd_req is gone.
+> 
+> Marcel, I think this is a case where the subsystem maintainer should
+> make the call on how to fix it.  I can write and locally test a patch,
+> but I don't want to assume that (for example) the desired solution is to
+> keep a copy of the Report descriptor in the hidp_session.
 
-It is used in entry-macro.S for the irq controller base. We should add a
-comment to make this clear.
+I would think it would be the cleanest way to do it. Quite a few members
+of the hidp_connadd_req structure are already copied into the session in
+hidp_setup_hid().
 
-Sascha
+>   The USB HID
+> core sends a GET_DESCRIPTOR request for the Report descriptor, which
+> isn't practical here because that descriptor is only available through
+> SDP.
 
+And we only do SDP queries in user-space...
 
--- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+If you're not going to work on it shortly, I can take a look at cooking
+a patch by the end of the week. Otherwise, I'd be happy testing your
+patches.
+
+Cheers
+
