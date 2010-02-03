@@ -1,168 +1,78 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758172Ab0BDJ6L (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 04:58:11 -0500
-Received: from hera.kernel.org ([140.211.167.34]:60189 "EHLO hera.kernel.org"
+	id S1757659Ab0BDKDG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 05:03:06 -0500
+Received: from e7.ny.us.ibm.com ([32.97.182.137]:33879 "EHLO e7.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758160Ab0BDJ6E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 04:58:04 -0500
-Date: Thu, 4 Feb 2010 09:57:28 GMT
-From: tip-bot for Stephane Eranian <eranian@google.com>
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       eranian@google.com, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, fweisbec@gmail.com,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, eranian@google.com,
-       paulus@samba.org, acme@redhat.com, linux-kernel@vger.kernel.org,
-       fweisbec@gmail.com, a.p.zijlstra@chello.nl, efault@gmx.de,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <4b66dc67.0b38560a.1635.ffffae18@mx.google.com>
-References: <4b66dc67.0b38560a.1635.ffffae18@mx.google.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/core] perf_events, x86: Fix bug in hw_perf_enable()
-Message-ID: <tip-447a194b393f32699607fd99617a40abd6a95114@git.kernel.org>
-Git-Commit-ID: 447a194b393f32699607fd99617a40abd6a95114
-X-Mailer: tip-git-log-daemon
+	id S1756318Ab0BDKC7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 05:02:59 -0500
+Date: Wed, 3 Feb 2010 02:52:21 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH][RFC] %pd - for printing dentry name
+Message-ID: <20100203105221.GA6263@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20100201222511.GA12882@ZenIV.linux.org.uk> <alpine.LFD.2.00.1002011431490.3664@localhost.localdomain> <20100201231847.GC12882@ZenIV.linux.org.uk> <20100202065341.GF6292@linux.vnet.ibm.com> <20100202070908.GF12882@ZenIV.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 04 Feb 2010 09:57:29 +0000 (UTC)
+In-Reply-To: <20100202070908.GF12882@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  447a194b393f32699607fd99617a40abd6a95114
-Gitweb:     http://git.kernel.org/tip/447a194b393f32699607fd99617a40abd6a95114
-Author:     Stephane Eranian <eranian@google.com>
-AuthorDate: Mon, 1 Feb 2010 14:50:01 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 4 Feb 2010 09:59:50 +0100
+On Tue, Feb 02, 2010 at 07:09:08AM +0000, Al Viro wrote:
+> On Mon, Feb 01, 2010 at 10:53:41PM -0800, Paul E. McKenney wrote:
+> 
+> > Here is an approximation that might inspire someone to come up with a
+> > real solution.
+> > 
+> > One approach would be to store the name length with the name, so that
+> > struct qstr loses the "len" field, and so that its "name" field points
+> > to a struct that has a "len" field followed by an array of const
+> > unsigned char.  That way, the name and length are closely associated.
+> > When you pick up a struct qstr's "name" pointer, you are guaranteed to
+> > get a length that matches the name.
+> > 
+> > Unfortunately:
+> > 
+> > o	In theory, this leaves the length of the dentry unchanged, but
+> > 	alignment is a problem on 64-bit systems.  Also, the long names
+> > 	gain an extra four bytes.
+> 
+> That one is not a big deal.
 
-perf_events, x86: Fix bug in hw_perf_enable()
+K.
 
-We cannot assume that because hwc->idx == assign[i], we can avoid
-reprogramming the counter in hw_perf_enable().
+> > o	If you get a pointer to the d_iname small-name field, rename
+> > 	might still change the name out from under you.  This could in
+> > 	theory be fixed by refusing to re-use the d_iname field until
+> > 	an RCU grace period had elapsed (using an external structure
+> > 	instead).  In practice, not sure if this is really a reasonable
+> > 	approach.
+> 
+> That, OTOH, is - most of dentries use inline name and external one is
+> really a rarely used fallback.  Making it a common case isn't nice.
 
-The event may have been scheduled out and another event may have been
-programmed into this counter. Thus, we need a more robust way of
-verifying if the counter still contains config/data related to an event.
+It is possible to move it back inline after a grace period, so that the
+external name would be in use for only a few milliseconds after the
+rename, but that of course adds more complexity.
 
-This patch adds a generation number to each counter on each cpu. Using
-this mechanism we can verify reliabilty whether the content of a counter
-corresponds to an event.
+> There's another practical problem - a lot of code uses qstr fields and
+> patch will be painful; I couldn't care less about the out-of-tree code,
+> but it's a flagday change and in-tree patch size is not something to
+> sneeze at - I've been crawling through all that code for the last couple
+> of days and there's a lot of it.
 
-Signed-off-by: Stephane Eranian <eranian@google.com>
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-LKML-Reference: <4b66dc67.0b38560a.1635.ffffae18@mx.google.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/kernel/cpu/perf_event.c |   34 ++++++++++++++++++++++++++++------
- include/linux/perf_event.h       |    2 ++
- 2 files changed, 30 insertions(+), 6 deletions(-)
+Indeed!!!
 
-diff --git a/arch/x86/kernel/cpu/perf_event.c b/arch/x86/kernel/cpu/perf_event.c
-index 96cfc1a..a920f17 100644
---- a/arch/x86/kernel/cpu/perf_event.c
-+++ b/arch/x86/kernel/cpu/perf_event.c
-@@ -90,6 +90,7 @@ struct cpu_hw_events {
- 	int			n_events;
- 	int			n_added;
- 	int			assign[X86_PMC_IDX_MAX]; /* event to counter assignment */
-+	u64			tags[X86_PMC_IDX_MAX];
- 	struct perf_event	*event_list[X86_PMC_IDX_MAX]; /* in enabled order */
- };
- 
-@@ -1142,6 +1143,8 @@ static int __hw_perf_event_init(struct perf_event *event)
- 	hwc->config = ARCH_PERFMON_EVENTSEL_INT;
- 
- 	hwc->idx = -1;
-+	hwc->last_cpu = -1;
-+	hwc->last_tag = ~0ULL;
- 
- 	/*
- 	 * Count user and OS events unless requested not to.
-@@ -1457,11 +1460,14 @@ static int collect_events(struct cpu_hw_events *cpuc, struct perf_event *leader,
- 	return n;
- }
- 
--
- static inline void x86_assign_hw_event(struct perf_event *event,
--				struct hw_perf_event *hwc, int idx)
-+				struct cpu_hw_events *cpuc, int i)
- {
--	hwc->idx = idx;
-+	struct hw_perf_event *hwc = &event->hw;
-+
-+	hwc->idx = cpuc->assign[i];
-+	hwc->last_cpu = smp_processor_id();
-+	hwc->last_tag = ++cpuc->tags[i];
- 
- 	if (hwc->idx == X86_PMC_IDX_FIXED_BTS) {
- 		hwc->config_base = 0;
-@@ -1480,6 +1486,15 @@ static inline void x86_assign_hw_event(struct perf_event *event,
- 	}
- }
- 
-+static inline int match_prev_assignment(struct hw_perf_event *hwc,
-+					struct cpu_hw_events *cpuc,
-+					int i)
-+{
-+	return hwc->idx == cpuc->assign[i] &&
-+		hwc->last_cpu == smp_processor_id() &&
-+		hwc->last_tag == cpuc->tags[i];
-+}
-+
- static void __x86_pmu_disable(struct perf_event *event, struct cpu_hw_events *cpuc);
- 
- void hw_perf_enable(void)
-@@ -1508,7 +1523,14 @@ void hw_perf_enable(void)
- 			event = cpuc->event_list[i];
- 			hwc = &event->hw;
- 
--			if (hwc->idx == -1 || hwc->idx == cpuc->assign[i])
-+			/*
-+			 * we can avoid reprogramming counter if:
-+			 * - assigned same counter as last time
-+			 * - running on same CPU as last time
-+			 * - no other event has used the counter since
-+			 */
-+			if (hwc->idx == -1 ||
-+			    match_prev_assignment(hwc, cpuc, i))
- 				continue;
- 
- 			__x86_pmu_disable(event, cpuc);
-@@ -1522,12 +1544,12 @@ void hw_perf_enable(void)
- 			hwc = &event->hw;
- 
- 			if (hwc->idx == -1) {
--				x86_assign_hw_event(event, hwc, cpuc->assign[i]);
-+				x86_assign_hw_event(event, cpuc, i);
- 				x86_perf_event_set_period(event, hwc, hwc->idx);
- 			}
- 			/*
- 			 * need to mark as active because x86_pmu_disable()
--			 * clear active_mask and eventsp[] yet it preserves
-+			 * clear active_mask and events[] yet it preserves
- 			 * idx
- 			 */
- 			set_bit(hwc->idx, cpuc->active_mask);
-diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
-index 556b0f4..071a7db 100644
---- a/include/linux/perf_event.h
-+++ b/include/linux/perf_event.h
-@@ -478,9 +478,11 @@ struct hw_perf_event {
- 	union {
- 		struct { /* hardware */
- 			u64		config;
-+			u64		last_tag;
- 			unsigned long	config_base;
- 			unsigned long	event_base;
- 			int		idx;
-+			int		last_cpu;
- 		};
- 		struct { /* software */
- 			s64		remaining;
+> Trying to play with seqlock-based solutions sounds more promising; I've
+> missed it completely and I'm half-asleep right now, so I'll try to take
+> a look at that after I get some sleep.
+
+Certainly sounds worth a try.
+
+							Thanx, Paul
