@@ -1,117 +1,84 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757174Ab0BCEHH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 23:07:07 -0500
-Received: from mta2.srv.hcvlny.cv.net ([167.206.4.197]:53063 "EHLO
-	mta2.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753674Ab0BCEHE (ORCPT
+	id S932355Ab0BCEHX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 23:07:23 -0500
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:40231 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753712Ab0BCEHF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 23:07:04 -0500
-Date: Tue, 02 Feb 2010 23:07:00 -0500
-From: Michael Breuer <mbreuer@majjas.com>
-Subject: Re: [PATCH] sky2:  receive dma mapping error handling
-In-reply-to: <20100201102018.7b597992@nehalam>
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Cc: Jarek Poplawski <jarkao2@gmail.com>, David Miller <davem@davemloft.net>,
-       akpm@linux-foundation.org, flyboy@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Michael Chan <mchan@broadcom.com>, Don Fry <pcnet32@verizon.net>,
-       Francois Romieu <romieu@fr.zoreil.com>,
-       Matt Carlson <mcarlson@broadcom.com>
-Message-id: <4B68F664.6050007@majjas.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7BIT
-References: <20100128223447.GC3109@del.dom.local> <4B621316.8070308@majjas.com>
- <20100128225621.GD3109@del.dom.local> <4B6216B9.1010802@majjas.com>
- <20100128153643.0fca3c51@nehalam> <4B645EF4.4050701@majjas.com>
- <20100131003449.GA11935@del.dom.local> <4B650D53.2010607@majjas.com>
- <4B65D0F9.2020602@majjas.com> <4B65FD12.7090101@majjas.com>
- <20100131221835.GA3317@del.dom.local> <20100201102018.7b597992@nehalam>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.7)
- Gecko/20100111 Lightning/1.0b2pre Thunderbird/3.0.1
+	Tue, 2 Feb 2010 23:07:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=tUOVhyL1qsxNCJ2NsFcAW5WcbFEXatvvQEgYFBBxZjgALS9DraZLYxNTjIUk3GV6MI
+         daBYoi6rwD1sMUk4nJNT2Ry+Cw8Kcnz7heWlmSlbFRH3R+DgH7LvWENL/3m3Ww8QOQUd
+         kccLu0tPuejZmZG/m1Hq1bSqgx8iprMDajJks=
+MIME-Version: 1.0
+In-Reply-To: <873a1jdyrg.fsf@basil.nowhere.org>
+References: <817ecb6f1001311522q52bf4eebmb748c486dcd5ad35@mail.gmail.com>
+	 <873a1jdyrg.fsf@basil.nowhere.org>
+Date: Tue, 2 Feb 2010 23:07:02 -0500
+Message-ID: <817ecb6f1002022007t236823b2pbf2a443f07532c72@mail.gmail.com>
+Subject: Re: [PATCH v8] RO/NX protection for loadable kernel modules
+From: Siarhei Liakh <sliakh.lkml@gmail.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       linux-next@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
+       James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@muc.de>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, Dave Jones <davej@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/1/2010 1:20 PM, Stephen Hemminger wrote:
-> This fixes the fact that re->flags is always zero without causing
-> other confusion.
->
-> --- a/drivers/net/sky2.c	2010-02-01 10:07:42.676296236 -0800
-> +++ b/drivers/net/sky2.c	2010-02-01 10:18:12.575044064 -0800
-> @@ -1025,11 +1025,8 @@ static void sky2_prefetch_init(struct sk
->   static inline struct sky2_tx_le *get_tx_le(struct sky2_port *sky2, u16 *slot)
->   {
->   	struct sky2_tx_le *le = sky2->tx_le + *slot;
-> -	struct tx_ring_info *re = sky2->tx_ring + *slot;
->
->   	*slot = RING_NEXT(*slot, sky2->tx_ring_size);
-> -	re->flags = 0;
-> -	re->skb = NULL;
->   	le->ctrl = 0;
->   	return le;
->   }
-> @@ -1622,8 +1619,7 @@ static unsigned tx_le_req(const struct s
->   	return count;
->   }
->
-> -static void sky2_tx_unmap(struct pci_dev *pdev,
-> -			  const struct tx_ring_info *re)
-> +static void sky2_tx_unmap(struct pci_dev *pdev, struct tx_ring_info *re)
->   {
->   	if (re->flags&  TX_MAP_SINGLE)
->   		pci_unmap_single(pdev, pci_unmap_addr(re, mapaddr),
-> @@ -1633,6 +1629,7 @@ static void sky2_tx_unmap(struct pci_dev
->   		pci_unmap_page(pdev, pci_unmap_addr(re, mapaddr),
->   			       pci_unmap_len(re, maplen),
->   			       PCI_DMA_TODEVICE);
-> +	re->flags = 0;
->   }
->
->   /*
-> @@ -1839,6 +1836,7 @@ static void sky2_tx_complete(struct sky2
->   			dev->stats.tx_packets++;
->   			dev->stats.tx_bytes += skb->len;
->
-> +			re->skb = NULL;
->   			dev_kfree_skb_any(skb);
->
->   			sky2->tx_next = RING_NEXT(idx, sky2->tx_ring_size);
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->    
-Just a brief update - this has been up and stable for about 32 hours - 
-I've been periodically generating load on the system. No kernel errors 
-of any sort so far. Actually, in retrospect, I believe the dma issue was 
-triggering other bad things - including an rcu lockup (patched in tip - 
-sched.c).
+On Tue, Feb 2, 2010 at 6:05 PM, Andi Kleen <andi@firstfloor.org> wrote:
 
-Just as an FYI - (and this should probably be in a new thread) I am 
-seeing an large number (>9,000,000) of dropped rx packets, however at 
-this time I see no errors resulting from that (on this or client 
-machines). As the # of dropped packets hasn't incremented at any time I 
-was observing things, I can't say what this is about. Probably nothing, 
-but I'll see if I can track down what is going on. I did see some of 
-this earlier on while troubleshooting the sky2 issues that now seem 
-resolved.  Quick crosschecking of other machines do not show high error 
-or retransmission rates. I'm also not seeing any evidence of other 
-errors (no errors reported by ifconfig, or ethtool, or printk (debug is 
-enabled).
+> My current kernel has 52 modules loaded, most of them very small.
+> Assuming the additional alignment of the data section cost two more
+> pages on average (I think that's a good assumption), that's roughly
+> 424KB of additional memory, plus associated runtime costs in increased
+> TLB usage.
 
-I'm wondering whether these dropped packets are due mostly to hitting 
-GMR_FS_RX_OK in sky2_receive. I'm also guessing that the high numbers of 
-this that I'm seeing is an artifact of being able to pump more traffic 
-through with the above patch. Given the description of the status code 
-in sky2.h (receive ok) I'm wondering whether a) this should be reported 
-as dropped, b) whether resubmit is necessary, c) whether it's possible 
-that eth1 events coinciding with eth0 events are the cause and d) 
-whether or not there's another issue entirely.
+You are right about the additional memory consumption with this option
+enabled. In worst case scenario, a one-page module will get split into
+3 pages. This might be a significant and unwelcome increase in some
+cases (embedded systems come to mind) and that is why this is
+implemented as compile-time option.
+However, on a general run-of-the-mill system the impact is not that
+significant. Case in point: I run Ubuntu 9.04 amd x86_64 with stock
+kernel on a generic AMD box. There are 111 modules loaded for all the
+hardware in the box and all the functions that it provides (regular
+consumer-grade hardware, but definitely not a typical home desktop
+setup). In total, 111 modules consume 15590884 bytes, with no module
+less then 10KB. After eliminating top 3 memory hogs (nvidia@8MB,
+vboxdrv@1.7MB and snd_hda_intel@0.5MB) we left with 5007532 bytes, 108
+modules and nfs leading the list at 300KB. Assuming the worst-case
+scenario of 2 additional pages per module, we get
+(5007532+108*8192)/5007532 = 1.18 - only 18%. In addition, most
+modules already have some unused space left at the end of the last
+page and some padding in the middle for page/cache-aligned data. With
+that in mind, it looks to me that typical overhead will be about 1
+page per module (9% for the case above, although I have no solid
+statistics to back this up).
 
+> What would I get for that if I applied the patch and enabled the option?
 
+With this patch you get strict separation of code, RO-data and RW-data
+in LKMs. This will prevent all attempts (intentional or erroneous) to
+modify code and RO-data, while keeping all data non-executable. While
+not targeted to prevent any specific exploit, this patch does improve
+general kernel security. When combined with the other two patches I
+have submitted (RW+NX for first megabyte and NX for static kernel
+data), this patch set completely eliminates kernel pages with
+executable data and modifiable code.
 
+> Did you find any bugs with this option?
 
-
+Well, so far I did not find any bugs in the last version of the patch,
+but it definitely breaks any module that uses self-modifying code or
+data execution.
+An issue with ftrace have been reported earlier and fixed in V7.
