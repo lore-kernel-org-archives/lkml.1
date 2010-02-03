@@ -1,45 +1,62 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757451Ab0BCQ4Y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 11:56:24 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59667
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757407Ab0BCQ4T (ORCPT
+	id S932604Ab0BCQ5k (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 11:57:40 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55144 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932559Ab0BCQ5i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 11:56:19 -0500
-Date: Wed, 03 Feb 2010 08:56:33 -0800 (PST)
-Message-Id: <20100203.085633.172547702.davem@davemloft.net>
-To: peterz@infradead.org
-Cc: ypolyans@princeton.edu, herbert@gondor.apana.org.au, yjwei@cn.fujitsu.com,
-       netdev@vger.kernel.org, polyanskiy@gmail.com, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] hrtimer, softirq: Fix hrtimer->softirq trampoline
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1265120401.24455.306.camel@laptop>
-References: <20100202074914.GD11081@gondor.apana.org.au>
-	<20100202085117.7a5c3530@penta.localdomain>
-	<1265120401.24455.306.camel@laptop>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+	Wed, 3 Feb 2010 11:57:38 -0500
+Date: Wed, 3 Feb 2010 08:56:18 -0800
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Michael Breuer <mbreuer@majjas.com>
+Cc: Jarek Poplawski <jarkao2@gmail.com>, David Miller <davem@davemloft.net>,
+       akpm@linux-foundation.org, flyboy@gmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Michael Chan <mchan@broadcom.com>, Don Fry <pcnet32@verizon.net>,
+       Francois Romieu <romieu@fr.zoreil.com>,
+       Matt Carlson <mcarlson@broadcom.com>
+Subject: Re: [PATCH] sky2:  receive dma mapping error handling
+Message-ID: <20100203085618.6662cc6f@nehalam>
+In-Reply-To: <4B69A897.7030408@majjas.com>
+References: <20100128223447.GC3109@del.dom.local>
+	<4B621316.8070308@majjas.com>
+	<20100128225621.GD3109@del.dom.local>
+	<4B6216B9.1010802@majjas.com>
+	<20100128153643.0fca3c51@nehalam>
+	<4B645EF4.4050701@majjas.com>
+	<20100131003449.GA11935@del.dom.local>
+	<4B650D53.2010607@majjas.com>
+	<4B65D0F9.2020602@majjas.com>
+	<4B65FD12.7090101@majjas.com>
+	<20100131221835.GA3317@del.dom.local>
+	<20100201102018.7b597992@nehalam>
+	<4B68F664.6050007@majjas.com>
+	<4B69A897.7030408@majjas.com>
+Organization: Linux Foundation
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Peter Zijlstra <peterz@infradead.org>
-Date: Tue, 02 Feb 2010 15:20:01 +0100
+On Wed, 03 Feb 2010 11:47:19 -0500
+Michael Breuer <mbreuer@majjas.com> wrote:
 
-> Subject: hrtimer, softirq: Fix hrtimer->softirq trampoline
+> Tracked this down. The status being returned is 0x3c0080 - good flow 
+> control packets. Nothing is actually being dropped (confirmed by packet 
+> trace on switch compared with packet trace on server).
 > 
-> hrtimers callbacks are always done from hardirq context, either the
-> jiffy tick interrupt or the hrtimer device interrupt.
+> I whipped up a trivial patch to not count these as dropped packets and 
+> will post to netdev.
 > 
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> I'm not really sure what the driver should be doing in this case, but 
+> resubmit seems to work.
 
-Acked-by: David S. Miller <davem@davemloft.net>
+Looks like a flow control negotiation issue. You probably turned off
+flow control on the Linux side, but the switch is still doing flow
+control.
 
-It would be nice to give mention of the bug reporter et al.
-in the final commit message.
-
-Thanks.
+-- 
