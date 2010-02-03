@@ -1,13 +1,14 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757951Ab0BCXjk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 18:39:40 -0500
-Received: from g4t0017.houston.hp.com ([15.201.24.20]:9462 "EHLO
-	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757940Ab0BCXjd (ORCPT
+	id S932877Ab0BCXkA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 18:40:00 -0500
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:7325 "EHLO
+	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932724Ab0BCXj1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 18:39:33 -0500
-Subject: [PATCH v1 7/7] PCI: reference bridge window resources explicitly
+	Wed, 3 Feb 2010 18:39:27 -0500
+Subject: [PATCH v1 6/7] x86/PCI: use host bridge _CRS info by default on 2010
+	and newer machines
 To: Jesse Barnes <jbarnes@virtuousgeek.org>
 From: Bjorn Helgaas <bjorn.helgaas@hp.com>
 Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Tony Luck <tony.luck@intel.com>,
@@ -17,8 +18,8 @@ Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Tony Luck <tony.luck@intel.com>,
        Ingo Molnar <mingo@elte.hu>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Larry Finger <Larry.Finger@lwfinger.net>
-Date: Wed, 03 Feb 2010 16:39:31 -0700
-Message-ID: <20100203233931.10803.39854.stgit@bob.kio>
+Date: Wed, 03 Feb 2010 16:39:26 -0700
+Message-ID: <20100203233926.10803.45782.stgit@bob.kio>
 In-Reply-To: <20100203233617.10803.92102.stgit@bob.kio>
 References: <20100203233617.10803.92102.stgit@bob.kio>
 User-Agent: StGit/0.15
@@ -30,292 +31,217 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-No functional change; just be more explicit about this mapping for
-bridge resources:
+The main benefit of using ACPI host bridge window information is that
+we can do better resource allocation in systems with multiple host bridges.
+Most of these systems are new, so this patch turns on "pci=use_crs"
+only on machines with a BIOS date of 2010 or newer.  In addition, it
+whitelists a few older machines that are known to benefit.
 
-  bridge->res[PCI_BRIDGE_RESOURCES+0]: I/O window (or CB I/O 0 window)
-  bridge->res[PCI_BRIDGE_RESOURCES+1]: mem window (or CB I/O 1 window)
-  bridge->res[PCI_BRIDGE_RESOURCES+2]: pref mem window (or CB mem 0 window)
-  bridge->res[PCI_BRIDGE_RESOURCES+3]: CB mem 1 window
+We previously turned on "pci=use_crs" by default on *all* machines
+(9e9f46c44e48), but had to revert that because of problems such
+as Larry Finger's: http://lkml.org/lkml/2009/6/23/715.
+
+I think the problem Larry saw was caused by overflowing the pci_bus
+resource table.  This patch should not affect Larry's machine directly
+because it is older than 2010, but the table overflow should be fixed
+by the previous patch in this series.
+
+http://bugzilla.kernel.org/show_bug.cgi?id=14183
 
 Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 ---
 
- drivers/pci/probe.c           |    6 ++--
- drivers/pci/quirks.c          |    4 +--
- drivers/pci/setup-bus.c       |   55 +++++++++++++++++++++++------------------
- drivers/pcmcia/yenta_socket.c |   39 +++++++++++++++++------------
- include/linux/pci.h           |   11 +++++++-
- 5 files changed, 69 insertions(+), 46 deletions(-)
+ Documentation/kernel-parameters.txt |    8 +++-
+ arch/ia64/include/asm/acpi.h        |    1 
+ arch/x86/include/asm/pci_x86.h      |    1 
+ arch/x86/pci/acpi.c                 |   76 ++++++++++++++++++++++++++++++++---
+ arch/x86/pci/common.c               |    3 +
+ drivers/acpi/pci_root.c             |    1 
+ include/acpi/acpi_drivers.h         |    1 
+ 7 files changed, 83 insertions(+), 8 deletions(-)
 
 
-diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index b2d2e1e..1d8aa11 100644
---- a/drivers/pci/probe.c
-+++ b/drivers/pci/probe.c
-@@ -289,7 +289,7 @@ static void __devinit pci_read_bridge_io(struct pci_bus *child)
- 	unsigned long base, limit;
- 	struct resource *res;
- 
--	res = &dev->resource[PCI_BRIDGE_RESOURCES + 0];
-+	res = &dev->resource[PCI_BRIDGE_IO_WINDOW];
- 
- 	pci_read_config_byte(dev, PCI_IO_BASE, &io_base_lo);
- 	pci_read_config_byte(dev, PCI_IO_LIMIT, &io_limit_lo);
-@@ -321,7 +321,7 @@ static void __devinit pci_read_bridge_mmio(struct pci_bus *child)
- 	unsigned long base, limit;
- 	struct resource *res;
- 
--	res = &dev->resource[PCI_BRIDGE_RESOURCES + 1];
-+	res = &dev->resource[PCI_BRIDGE_MEM_WINDOW];
- 
- 	pci_read_config_word(dev, PCI_MEMORY_BASE, &mem_base_lo);
- 	pci_read_config_word(dev, PCI_MEMORY_LIMIT, &mem_limit_lo);
-@@ -342,7 +342,7 @@ static void __devinit pci_read_bridge_mmio_pref(struct pci_bus *child)
- 	unsigned long base, limit;
- 	struct resource *res;
- 
--	res = &dev->resource[PCI_BRIDGE_RESOURCES + 2];
-+	res = &dev->resource[PCI_BRIDGE_PREF_MEM_WINDOW];
- 
- 	pci_read_config_word(dev, PCI_PREF_MEMORY_BASE, &mem_base_lo);
- 	pci_read_config_word(dev, PCI_PREF_MEMORY_LIMIT, &mem_limit_lo);
-diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-index 213acf6..d6f76cb 100644
---- a/drivers/pci/quirks.c
-+++ b/drivers/pci/quirks.c
-@@ -1890,7 +1890,7 @@ static void __devinit quirk_p64h2_1k_io(struct pci_dev *dev)
- 	u16 en1k;
- 	u8 io_base_lo, io_limit_lo;
- 	unsigned long base, limit;
--	struct resource *res = dev->resource + PCI_BRIDGE_RESOURCES;
-+	struct resource *res = &dev->resource[PCI_BRIDGE_IO_WINDOW];
- 
- 	pci_read_config_word(dev, 0x40, &en1k);
- 
-@@ -1917,7 +1917,7 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL,	0x1460,		quirk_p64h2_1k_io);
- static void __devinit quirk_p64h2_1k_io_fix_iobl(struct pci_dev *dev)
- {
- 	u16 en1k, iobl_adr, iobl_adr_1k;
--	struct resource *res = dev->resource + PCI_BRIDGE_RESOURCES;
-+	struct resource *res = &dev->resource[PCI_BRIDGE_IO_WINDOW];
- 
- 	pci_read_config_word(dev, 0x40, &en1k);
- 
-diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
-index 1dbff3a..72ff801 100644
---- a/drivers/pci/setup-bus.c
-+++ b/drivers/pci/setup-bus.c
-@@ -257,8 +257,7 @@ static void pci_bridge_check_ranges(struct pci_bus *bus)
- 	struct pci_dev *bridge = bus->self;
- 	struct resource *b_res;
- 
--	b_res = &bridge->resource[PCI_BRIDGE_RESOURCES];
--	b_res[1].flags |= IORESOURCE_MEM;
-+	bridge->resource[PCI_BRIDGE_MEM_WINDOW].flags |= IORESOURCE_MEM;
- 
- 	pci_read_config_word(bridge, PCI_IO_BASE, &io);
- 	if (!io) {
-@@ -267,12 +266,15 @@ static void pci_bridge_check_ranges(struct pci_bus *bus)
-  		pci_write_config_word(bridge, PCI_IO_BASE, 0x0);
-  	}
-  	if (io)
--		b_res[0].flags |= IORESOURCE_IO;
-+		bridge->resource[PCI_BRIDGE_IO_WINDOW].flags |= IORESOURCE_IO;
-+
- 	/*  DECchip 21050 pass 2 errata: the bridge may miss an address
- 	    disconnect boundary by one PCI data phase.
- 	    Workaround: do not use prefetching on this device. */
- 	if (bridge->vendor == PCI_VENDOR_ID_DEC && bridge->device == 0x0001)
- 		return;
-+
-+	b_res = &bridge->resource[PCI_BRIDGE_PREF_MEM_WINDOW];
- 	pci_read_config_dword(bridge, PCI_PREF_MEMORY_BASE, &pmem);
- 	if (!pmem) {
- 		pci_write_config_dword(bridge, PCI_PREF_MEMORY_BASE,
-@@ -281,13 +283,13 @@ static void pci_bridge_check_ranges(struct pci_bus *bus)
- 		pci_write_config_dword(bridge, PCI_PREF_MEMORY_BASE, 0x0);
- 	}
- 	if (pmem) {
--		b_res[2].flags |= IORESOURCE_MEM | IORESOURCE_PREFETCH;
-+		b_res->flags |= IORESOURCE_MEM | IORESOURCE_PREFETCH;
- 		if ((pmem & PCI_PREF_RANGE_TYPE_MASK) == PCI_PREF_RANGE_TYPE_64)
--			b_res[2].flags |= IORESOURCE_MEM_64;
-+			b_res->flags |= IORESOURCE_MEM_64;
- 	}
- 
- 	/* double check if bridge does support 64 bit pref */
--	if (b_res[2].flags & IORESOURCE_MEM_64) {
-+	if (b_res->flags & IORESOURCE_MEM_64) {
- 		u32 mem_base_hi, tmp;
- 		pci_read_config_dword(bridge, PCI_PREF_BASE_UPPER32,
- 					 &mem_base_hi);
-@@ -295,7 +297,7 @@ static void pci_bridge_check_ranges(struct pci_bus *bus)
- 					       0xffffffff);
- 		pci_read_config_dword(bridge, PCI_PREF_BASE_UPPER32, &tmp);
- 		if (!tmp)
--			b_res[2].flags &= ~IORESOURCE_MEM_64;
-+			b_res->flags &= ~IORESOURCE_MEM_64;
- 		pci_write_config_dword(bridge, PCI_PREF_BASE_UPPER32,
- 				       mem_base_hi);
- 	}
-@@ -464,20 +466,22 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask,
- static void pci_bus_size_cardbus(struct pci_bus *bus)
- {
- 	struct pci_dev *bridge = bus->self;
--	struct resource *b_res = &bridge->resource[PCI_BRIDGE_RESOURCES];
-+	struct resource *b_res;
- 	u16 ctrl;
- 
- 	/*
- 	 * Reserve some resources for CardBus.  We reserve
- 	 * a fixed amount of bus space for CardBus bridges.
- 	 */
--	b_res[0].start = 0;
--	b_res[0].end = pci_cardbus_io_size - 1;
--	b_res[0].flags |= IORESOURCE_IO | IORESOURCE_SIZEALIGN;
-+	b_res = &bridge->resource[PCI_CB_BRIDGE_IO_0_WINDOW];
-+	b_res->start = 0;
-+	b_res->end = pci_cardbus_io_size - 1;
-+	b_res->flags |= IORESOURCE_IO | IORESOURCE_SIZEALIGN;
- 
--	b_res[1].start = 0;
--	b_res[1].end = pci_cardbus_io_size - 1;
--	b_res[1].flags |= IORESOURCE_IO | IORESOURCE_SIZEALIGN;
-+	b_res = &bridge->resource[PCI_CB_BRIDGE_IO_1_WINDOW];
-+	b_res->start = 0;
-+	b_res->end = pci_cardbus_io_size - 1;
-+	b_res->flags |= IORESOURCE_IO | IORESOURCE_SIZEALIGN;
- 
- 	/*
- 	 * Check whether prefetchable memory is supported
-@@ -496,17 +500,20 @@ static void pci_bus_size_cardbus(struct pci_bus *bus)
- 	 * twice the size.
- 	 */
- 	if (ctrl & PCI_CB_BRIDGE_CTL_PREFETCH_MEM0) {
--		b_res[2].start = 0;
--		b_res[2].end = pci_cardbus_mem_size - 1;
--		b_res[2].flags |= IORESOURCE_MEM | IORESOURCE_PREFETCH | IORESOURCE_SIZEALIGN;
--
--		b_res[3].start = 0;
--		b_res[3].end = pci_cardbus_mem_size - 1;
--		b_res[3].flags |= IORESOURCE_MEM | IORESOURCE_SIZEALIGN;
-+		b_res = &bridge->resource[PCI_CB_BRIDGE_MEM_0_WINDOW];
-+		b_res->start = 0;
-+		b_res->end = pci_cardbus_mem_size - 1;
-+		b_res->flags |= IORESOURCE_MEM | IORESOURCE_PREFETCH | IORESOURCE_SIZEALIGN;
-+
-+		b_res = &bridge->resource[PCI_CB_BRIDGE_MEM_1_WINDOW];
-+		b_res->start = 0;
-+		b_res->end = pci_cardbus_mem_size - 1;
-+		b_res->flags |= IORESOURCE_MEM | IORESOURCE_SIZEALIGN;
- 	} else {
--		b_res[3].start = 0;
--		b_res[3].end = pci_cardbus_mem_size * 2 - 1;
--		b_res[3].flags |= IORESOURCE_MEM | IORESOURCE_SIZEALIGN;
-+		b_res = &bridge->resource[PCI_CB_BRIDGE_MEM_1_WINDOW];
-+		b_res->start = 0;
-+		b_res->end = pci_cardbus_mem_size * 2 - 1;
-+		b_res->flags |= IORESOURCE_MEM | IORESOURCE_SIZEALIGN;
- 	}
- }
- 
-diff --git a/drivers/pcmcia/yenta_socket.c b/drivers/pcmcia/yenta_socket.c
-index 9c5a80e..dc55592 100644
---- a/drivers/pcmcia/yenta_socket.c
-+++ b/drivers/pcmcia/yenta_socket.c
-@@ -673,7 +673,7 @@ static int yenta_allocate_res(struct yenta_socket *socket, int nr, unsigned type
- 	struct pci_bus_region region;
- 	unsigned mask;
- 
--	res = dev->resource + PCI_BRIDGE_RESOURCES + nr;
-+	res = &dev->resource[nr];
- 	/* Already allocated? */
- 	if (res->parent)
- 		return 0;
-@@ -690,7 +690,7 @@ static int yenta_allocate_res(struct yenta_socket *socket, int nr, unsigned type
- 	region.end = config_readl(socket, addr_end) | ~mask;
- 	if (region.start && region.end > region.start && !override_bios) {
- 		pcibios_bus_to_resource(dev, res, &region);
--		if (pci_claim_resource(dev, PCI_BRIDGE_RESOURCES + nr) == 0)
-+		if (pci_claim_resource(dev, nr) == 0)
- 			return 0;
- 		dev_printk(KERN_INFO, &dev->dev,
- 			   "Preassigned resource %d busy or not available, "
-@@ -731,32 +731,39 @@ static int yenta_allocate_res(struct yenta_socket *socket, int nr, unsigned type
- static void yenta_allocate_resources(struct yenta_socket *socket)
- {
- 	int program = 0;
--	program += yenta_allocate_res(socket, 0, IORESOURCE_IO,
--			   PCI_CB_IO_BASE_0, PCI_CB_IO_LIMIT_0);
--	program += yenta_allocate_res(socket, 1, IORESOURCE_IO,
--			   PCI_CB_IO_BASE_1, PCI_CB_IO_LIMIT_1);
--	program += yenta_allocate_res(socket, 2, IORESOURCE_MEM|IORESOURCE_PREFETCH,
-+	program += yenta_allocate_res(socket, PCI_CB_BRIDGE_IO_0_WINDOW,
-+			   IORESOURCE_IO, PCI_CB_IO_BASE_0, PCI_CB_IO_LIMIT_0);
-+	program += yenta_allocate_res(socket, PCI_CB_BRIDGE_IO_1_WINDOW,
-+			   IORESOURCE_IO, PCI_CB_IO_BASE_1, PCI_CB_IO_LIMIT_1);
-+	program += yenta_allocate_res(socket, PCI_CB_BRIDGE_MEM_0_WINDOW,
-+			   IORESOURCE_MEM|IORESOURCE_PREFETCH,
- 			   PCI_CB_MEMORY_BASE_0, PCI_CB_MEMORY_LIMIT_0);
--	program += yenta_allocate_res(socket, 3, IORESOURCE_MEM,
-+	program += yenta_allocate_res(socket, PCI_CB_BRIDGE_MEM_1_WINDOW,
-+			   IORESOURCE_MEM,
- 			   PCI_CB_MEMORY_BASE_1, PCI_CB_MEMORY_LIMIT_1);
- 	if (program)
- 		pci_setup_cardbus(socket->dev->subordinate);
- }
- 
-+static void yenta_free_resource(struct yenta_socket *socket, int nr)
-+{
-+	struct resource *res;
-+
-+	res = &socket->dev->resource[nr];
-+	if (res->start != 0 && res->end != 0)
-+		release_resource(res);
-+	res->start = res->end = res->flags = 0;
-+}
- 
- /*
-  * Free the bridge mappings for the device..
-  */
- static void yenta_free_resources(struct yenta_socket *socket)
- {
--	int i;
--	for (i = 0; i < 4; i++) {
--		struct resource *res;
--		res = socket->dev->resource + PCI_BRIDGE_RESOURCES + i;
--		if (res->start != 0 && res->end != 0)
--			release_resource(res);
--		res->start = res->end = res->flags = 0;
--	}
-+	yenta_free_resource(socket, PCI_CB_BRIDGE_IO_0_WINDOW);
-+	yenta_free_resource(socket, PCI_CB_BRIDGE_IO_1_WINDOW);
-+	yenta_free_resource(socket, PCI_CB_BRIDGE_MEM_0_WINDOW);
-+	yenta_free_resource(socket, PCI_CB_BRIDGE_MEM_1_WINDOW);
- }
- 
- 
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 36743ee..123e92b 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -101,7 +101,16 @@ enum {
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 01e2a98..ca99c53 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -1939,8 +1939,12 @@ and is between 256 and 4096 characters. It is defined in the file
+ 				IRQ routing is enabled.
+ 		noacpi		[X86] Do not use ACPI for IRQ routing
+ 				or for PCI scanning.
+-		use_crs		[X86] Use _CRS for PCI resource
+-				allocation.
++		use_crs		[X86] Use PCI host bridge window information
++				from ACPI.  On BIOSes from 2010 or later, this
++				is enabled by default.  If you need to use this,
++				please report a bug.
++		nocrs		[X86] Ignore PCI host bridge windows from ACPI.
++			        If you need to use this, please report a bug.
+ 		routeirq	Do IRQ routing for all PCI devices.
+ 				This is normally done in pci_enable_device(),
+ 				so this option is a temporary workaround
+diff --git a/arch/ia64/include/asm/acpi.h b/arch/ia64/include/asm/acpi.h
+index 7ae5889..7f2d7f2 100644
+--- a/arch/ia64/include/asm/acpi.h
++++ b/arch/ia64/include/asm/acpi.h
+@@ -97,6 +97,7 @@ ia64_acpi_release_global_lock (unsigned int *lock)
  #endif
+ #define acpi_processor_cstate_check(x) (x) /* no idle limits on IA64 :) */
+ static inline void disable_acpi(void) { }
++static inline void pci_acpi_crs_quirks(void) { }
  
- 	/* resources assigned to buses behind the bridge */
--#define PCI_BRIDGE_RESOURCE_NUM 4
-+#define PCI_BRIDGE_IO_WINDOW		(PCI_BRIDGE_RESOURCES + 0)
-+#define PCI_BRIDGE_MEM_WINDOW		(PCI_BRIDGE_RESOURCES + 1)
-+#define PCI_BRIDGE_PREF_MEM_WINDOW	(PCI_BRIDGE_RESOURCES + 2)
-+
-+#define PCI_CB_BRIDGE_IO_0_WINDOW	(PCI_BRIDGE_RESOURCES + 0)
-+#define PCI_CB_BRIDGE_IO_1_WINDOW	(PCI_BRIDGE_RESOURCES + 1)
-+#define PCI_CB_BRIDGE_MEM_0_WINDOW	(PCI_BRIDGE_RESOURCES + 2)
-+#define PCI_CB_BRIDGE_MEM_1_WINDOW	(PCI_BRIDGE_RESOURCES + 3)
-+
-+#define PCI_BRIDGE_RESOURCE_NUM 4	/* max of P2P, cardbus */
+ const char *acpi_get_sysname (void);
+ int acpi_request_vector (u32 int_type);
+diff --git a/arch/x86/include/asm/pci_x86.h b/arch/x86/include/asm/pci_x86.h
+index b4bf9a9..05b58cc 100644
+--- a/arch/x86/include/asm/pci_x86.h
++++ b/arch/x86/include/asm/pci_x86.h
+@@ -29,6 +29,7 @@
+ #define PCI_CHECK_ENABLE_AMD_MMCONF	0x20000
+ #define PCI_HAS_IO_ECS		0x40000
+ #define PCI_NOASSIGN_ROMS	0x80000
++#define PCI_ROOT_NO_CRS		0x100000
  
- 	PCI_BRIDGE_RESOURCES,
- 	PCI_BRIDGE_RESOURCE_END = PCI_BRIDGE_RESOURCES +
+ extern unsigned int pci_probe;
+ extern unsigned long pirq_table_addr;
+diff --git a/arch/x86/pci/acpi.c b/arch/x86/pci/acpi.c
+index a2f8cdb..fb044e3 100644
+--- a/arch/x86/pci/acpi.c
++++ b/arch/x86/pci/acpi.c
+@@ -15,6 +15,74 @@ struct pci_root_info {
+ 	int busnum;
+ };
+ 
++static int pci_use_crs;		/* default is off */
++
++static int __init set_use_crs(const struct dmi_system_id *id)
++{
++	pci_use_crs = 1;
++	return 0;
++}
++
++static const struct dmi_system_id pci_use_crs_table[] __initconst = {
++	{
++		.callback = set_use_crs,
++		.ident = "IBM System x3800",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "IBM"),
++			DMI_MATCH(DMI_PRODUCT_NAME, "x3800"),
++		},
++	},
++	{
++		.callback = set_use_crs,
++		.ident = "IBM System x3850",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "IBM"),
++			DMI_MATCH(DMI_PRODUCT_NAME, "x3850"),
++		},
++	},
++	{
++		.callback = set_use_crs,
++		.ident = "IBM System x3950",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "IBM"),
++			DMI_MATCH(DMI_PRODUCT_NAME, "x3950"),
++		},
++	},
++	{
++		.callback = set_use_crs,
++		.ident = "Toshiba Satellite A355",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "TOSHIBA"),
++			DMI_MATCH(DMI_PRODUCT_NAME, "Satellite A355"),
++		},
++	},
++	{}
++};
++
++void __init pci_acpi_crs_quirks(void)
++{
++	int year;
++
++	if (dmi_get_date(DMI_BIOS_DATE, &year, NULL, NULL) && year >= 2010)
++		pci_use_crs = 1;
++
++	dmi_check_system(pci_use_crs_table);
++
++	/*
++	 * If the user specifies "pci=use_crs" or "pci=nocrs" explicitly, that
++	 * takes precedence over anything we figured out above.
++	 */
++	if (pci_probe & PCI_ROOT_NO_CRS)
++		pci_use_crs = 0;
++	else if (pci_probe & PCI_USE__CRS)
++		pci_use_crs = 1;
++
++	printk(KERN_INFO "PCI: %s host bridge windows from ACPI; "
++	       "if necessary, use \"pci=%s\" and report a bug\n",
++	       pci_use_crs ? "Using" : "Ignoring",
++	       pci_use_crs ? "nocrs" : "use_crs");
++}
++
+ static acpi_status
+ resource_to_addr(struct acpi_resource *resource,
+ 			struct acpi_resource_address64 *addr)
+@@ -106,7 +174,7 @@ setup_resource(struct acpi_resource *acpi_res, void *data)
+ 	res->child = NULL;
+ 	align_resource(info->bridge, res);
+ 
+-	if (!(pci_probe & PCI_USE__CRS)) {
++	if (!pci_use_crs) {
+ 		dev_printk(KERN_DEBUG, &info->bridge->dev,
+ 			   "host bridge window %pR (ignored)\n", res);
+ 		return AE_OK;
+@@ -137,12 +205,8 @@ get_current_resources(struct acpi_device *device, int busnum,
+ 	struct pci_root_info info;
+ 	size_t size;
+ 
+-	if (pci_probe & PCI_USE__CRS)
++	if (pci_use_crs)
+ 		pci_bus_remove_resources(bus);
+-	else
+-		dev_info(&device->dev,
+-			 "ignoring host bridge windows from ACPI; "
+-			 "boot with \"pci=use_crs\" to use them\n");
+ 
+ 	info.bridge = device;
+ 	info.bus = bus;
+diff --git a/arch/x86/pci/common.c b/arch/x86/pci/common.c
+index d2552c6..3736176 100644
+--- a/arch/x86/pci/common.c
++++ b/arch/x86/pci/common.c
+@@ -520,6 +520,9 @@ char * __devinit  pcibios_setup(char *str)
+ 	} else if (!strcmp(str, "use_crs")) {
+ 		pci_probe |= PCI_USE__CRS;
+ 		return NULL;
++	} else if (!strcmp(str, "nocrs")) {
++		pci_probe |= PCI_ROOT_NO_CRS;
++		return NULL;
+ 	} else if (!strcmp(str, "earlydump")) {
+ 		pci_early_dump_regs = 1;
+ 		return NULL;
+diff --git a/drivers/acpi/pci_root.c b/drivers/acpi/pci_root.c
+index 3810057..d127443 100644
+--- a/drivers/acpi/pci_root.c
++++ b/drivers/acpi/pci_root.c
+@@ -566,6 +566,7 @@ static int __init acpi_pci_root_init(void)
+ 	if (acpi_pci_disabled)
+ 		return 0;
+ 
++	pci_acpi_crs_quirks();
+ 	if (acpi_bus_register_driver(&acpi_pci_root_driver) < 0)
+ 		return -ENODEV;
+ 
+diff --git a/include/acpi/acpi_drivers.h b/include/acpi/acpi_drivers.h
+index f4906f6..3a4767c 100644
+--- a/include/acpi/acpi_drivers.h
++++ b/include/acpi/acpi_drivers.h
+@@ -104,6 +104,7 @@ int acpi_pci_bind_root(struct acpi_device *device);
+ 
+ struct pci_bus *pci_acpi_scan_root(struct acpi_device *device, int domain,
+ 				   int bus);
++void pci_acpi_crs_quirks(void);
+ 
+ /* --------------------------------------------------------------------------
+                                     Processor
 
