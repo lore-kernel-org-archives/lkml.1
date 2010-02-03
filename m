@@ -1,65 +1,59 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932823Ab0BCSBw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 13:01:52 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:23317 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932761Ab0BCSBv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 13:01:51 -0500
-Date: Wed, 3 Feb 2010 19:58:36 +0200
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Eric Sandeen <sandeen@redhat.com>
-Cc: "Theodore Ts'o" <tytso@mit.edu>, Andreas Dilger <adilger@sun.com>,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.33-rc6: ext4 triggers warning about high order allocations
-Message-ID: <20100203175836.GA16907@redhat.com>
-References: <20100203060854.GA12489@redhat.com> <4B69AB60.5070609@redhat.com>
+	id S1754962Ab0BCSJs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 13:09:48 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:42654 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750791Ab0BCSJq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 13:09:46 -0500
+Date: Wed, 3 Feb 2010 13:09:45 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Corey Wright <undefined@pobox.com>
+cc: Greg KH <gregkh@suse.de>, <stable@kernel.org>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: regression in 2.6.27.45 with usb and suspend-to-disk
+In-Reply-To: <20100203115956.cb479447.undefined@pobox.com>
+Message-ID: <Pine.LNX.4.44L0.1002031306220.1260-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B69AB60.5070609@redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 03, 2010 at 10:59:12AM -0600, Eric Sandeen wrote:
-> Michael S. Tsirkin wrote:
-> > Hi!
-> > I got this warning at boot with 2.6.33-rc6:
-> > 
-> > [   12.374168] ------------[ cut here ]------------
-> > [   12.375798] WARNING: at mm/page_alloc.c:1813 __alloc_pages_nodemask+0x180/0x666()
-> > [   12.377401] Hardware name: 2241B48
-> > [   12.378984] Modules linked in: [last unloaded: scsi_wait_scan]
-> > [   12.380593] Pid: 1, comm: init Not tainted 2.6.33-rc6-aa-nopat #50
-> > [   12.382194] Call Trace:
-> > [   12.383781]  [<ffffffff810b6b3e>] ? __alloc_pages_nodemask+0x180/0x666
-> > [   12.385390]  [<ffffffff81041cda>] warn_slowpath_common+0x77/0xa4
-> > [   12.386996]  [<ffffffff81041d16>] warn_slowpath_null+0xf/0x11
-> > [   12.388577]  [<ffffffff810b6b3e>] __alloc_pages_nodemask+0x180/0x666
-> > [   12.390168]  [<ffffffff81036a9b>] ? finish_task_switch+0x4b/0xb1
-> > [   12.391758]  [<ffffffff810b7036>] __get_free_pages+0x12/0x4f
-> > [   12.393354]  [<ffffffff810de892>] __kmalloc+0x42/0x116
-> > [   12.394934]  [<ffffffff812405bf>] match_number+0x35/0x98
-> > [   12.396493]  [<ffffffff8124064d>] match_int+0xb/0xd
-> > [   12.398045]  [<ffffffff81169c8c>] parse_options+0x5fe/0x733
-> > [   12.399594]  [<ffffffff811058c3>] ? __wait_on_buffer+0x1f/0x21
-> > [   12.401157]  [<ffffffff8116a2dc>] ext4_fill_super+0x373/0x2070
+On Wed, 3 Feb 2010, Corey Wright wrote:
+
+> > Please build a kernel with CONFIG_USB_DEBUG enabled and post a dmesg 
+> > log showing the problem during the second hibernation attempt.
 > 
-> Are you mounting with any interesting options?
-> 
-> -Eric
+> [  675.443474] PM: Syncing filesystems ... done.
+> [  675.576353] Freezing user space processes ... (elapsed 0.00 seconds)
+> done.
+> [  675.606968] Freezing remaining freezable tasks ... (elapsed 0.00
+> seconds) done.
+> [  675.629249] PM: Shrinking memory...  -\|done (3129 pages freed)
+> [  679.547522] PM: Freed 12516 kbytes in 3.90 seconds (3.20 MB/s)
+> [  679.565065] Suspending console(s) (use no_console_suspend to debug)
+> [  679.585425] uhci_hcd 0000:00:10.0: release dev 2 ep81-INT, period 8,
+> phase 4, 118 us
+> [  679.585453] hub 2-0:1.0: hub_suspend
+> [  679.585460] usb usb2: bus suspend
+> [  679.585463] usb usb2: suspend_rh
+> [  679.585534] hub 1-0:1.0: hub_suspend
+> [  679.585538] usb usb1: bus suspend
+> [  679.585542] ehci_hcd 0000:00:10.4: suspend root hub
+> [  679.585547] ehci_hcd 0000:00:10.4: suspend failed because port 8 is
+> resuming
 
-Hmm yes:
+There you have it.  What is the USB device attached to port 8 on bus 1 
+(i.e., /sys/bus/usb/devices/1-8)?
 
-UUID=4670fcf0-09a8-4011-bf25-6e5e97f263c6 /                       ext4
-relatime,errors=remount-ro,auto_da_alloc,commit=300,journal_ioprio=7
+And what happens if you do:
 
-UUID=ca47e5ef-0d7a-4471-ace9-bd19295a5da6 /home                   ext4
-relatime,errors=remount-ro,auto_da_alloc,commit=300        1 2
+	echo disabled >/sys/bus/usb/devices/1-8/power/wakeup
 
-Also I set data=ordered as default in my kernel config.
+before trying to hibernate?
 
--- 
-MST
+Alan Stern
+
