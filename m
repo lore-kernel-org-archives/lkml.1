@@ -1,59 +1,48 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757253Ab0BCMi5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 07:38:57 -0500
-Received: from relay.bearnet.nu ([80.252.223.222]:4959 "EHLO relay.bearnet.nu"
+	id S1757261Ab0BCMsk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 07:48:40 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:55430 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757235Ab0BCMix (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 07:38:53 -0500
-Message-ID: <4B696E54.20501@pelagicore.com>
-Date: Wed, 03 Feb 2010 13:38:44 +0100
-From: =?ISO-8859-1?Q?Richard_R=F6jfors?= <richard.rojfors@pelagicore.com>
-Organization: Pelagicore AB
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100121 Iceowl/1.0b1 Icedove/3.0.1
+	id S1755367Ab0BCMsj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 07:48:39 -0500
+Date: Wed, 3 Feb 2010 13:48:34 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Bastien Nocera <hadess@hadess.net>, Marcel Holtmann <marcel@holtmann.org>
+Cc: Michael Poole <mdpoole@troilus.org>, "Gunn, Brian" <bgunn@solekai.com>,
+       Ping <pinglinux@gmail.com>, linux-kernel@vger.kernel.org,
+       BlueZ development <linux-bluetooth@vger.kernel.org>
+Subject: Re: [PATCH 0/3] HID: make raw output callback more flexible
+In-Reply-To: <alpine.LNX.2.00.1002031202040.15395@pobox.suse.cz>
+Message-ID: <alpine.LNX.2.00.1002031343500.15395@pobox.suse.cz>
+References: <alpine.LNX.2.00.1001291515560.356@pobox.suse.cz>  <1264783166.29532.5302.camel@localhost.localdomain>  <87iqakifm8.fsf@troilus.org>  <1264860663.29532.7887.camel@localhost.localdomain>  <87bpg7glf7.fsf@troilus.org> <1265190440.32444.8417.camel@localhost.localdomain>
+ <alpine.LNX.2.00.1002031202040.15395@pobox.suse.cz>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-To: Samuel Ortiz <samuel.ortiz@intel.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH RESEND] mfd: Add support for the timberdale FPGA.
-References: <4B694463.6050306@pelagicore.com> <20100203104448.GB3460@sortiz.org> <4B6955AE.1090709@pelagicore.com> <20100203123218.GE3460@sortiz.org>
-In-Reply-To: <20100203123218.GE3460@sortiz.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/03/2010 01:32 PM, Samuel Ortiz wrote:
-> On Wed, Feb 03, 2010 at 10:53:34AM +0000, Richard Röjfors wrote:
->> On 02/03/2010 11:45 AM, Samuel Ortiz wrote:
->>> Hi Richard,
->>>
->>> On Wed, Feb 03, 2010 at 09:39:47AM +0000, Richard Röjfors wrote:
->>>> The timberdale FPGA is found on the Intel in-Vehicle Infotainment reference board
->>>> russelville.
->>>>
->>>> The driver is a PCI driver which chunks up the I/O memory and distributes interrupts
->>>> to a number of platform devices for each IP inside the FPGA.
->>>>
->>>> Signed-off-by: Richard Röjfors<richard.rojfors@pelagicore.com>
->>> The patch looks good to me, I have a couple of minor comments though:
->>>
->>> - Please replace most of your printk with dev_dbg/err()
->>
->> Agreed.
->>
->>> - Please fix your checkpatch output:
->>> total: 255 errors, 18 warnings, 822 lines checked
->>
->> Sweet, the mail client changed all tabs to spaces when resending the patch.
-> Actually, your first patch to the linux-media ml also had tabs changed into
-> spaces.
+On Wed, 3 Feb 2010, Jiri Kosina wrote:
 
-I'm getting confused. I checked my sent mail and the one I got from the
-media mailinglist and none of these had spaces in it.
-Is there a problem with your mail client?
+> > > The USB HID core sends a GET_DESCRIPTOR request for the Report 
+> > > descriptor, which isn't practical here because that descriptor is only 
+> > > available through SDP.
+> > 
+> > And we only do SDP queries in user-space...
+> > 
+> > If you're not going to work on it shortly, I can take a look at cooking
+> > a patch by the end of the week. Otherwise, I'd be happy testing your
+> > patches.
 
-I'll send the updated patch off list first to verify.
+I have now rebased the three patches on top of 6bf8268f9a91f1 
+("Bluetooth: Use the control channel for raw HID reports") which has 
+already landed in Linus' tree. I will send them as a followup to this 
+mail.
 
---Richard
+If you have any changes/acks/nacks, please let me know.
 
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
