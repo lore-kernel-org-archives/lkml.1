@@ -1,56 +1,38 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932661Ab0BCRVk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 12:21:40 -0500
-Received: from ironport2-out.teksavvy.com ([206.248.154.181]:63943 "EHLO
-	ironport2-out.pppoe.ca" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932622Ab0BCRVi (ORCPT
+	id S932675Ab0BCRVu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 12:21:50 -0500
+Received: from smtp-out002.kontent.com ([81.88.40.216]:51518 "EHLO
+	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932663Ab0BCRVs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 12:21:38 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AiYBAA8/aUtLd/sX/2dsb2JhbAAIgyvFCZAlgS2CPloE
-X-IronPort-AV: E=Sophos;i="4.49,399,1262581200"; 
-   d="scan'208";a="55249704"
-Message-ID: <4B69B0A0.2040701@teksavvy.com>
-Date: Wed, 03 Feb 2010 12:21:36 -0500
-From: Mark Lord <kernel@teksavvy.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Wed, 3 Feb 2010 12:21:48 -0500
+From: Oliver Neukum <oliver@neukum.org>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [REGRESSION] "USB: use kfifo to buffer usb-generic serial writes" causes gobi_loader to hang
+Date: Wed, 3 Feb 2010 18:21:39 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.33-rc6-0.1-default; KDE/4.3.1; x86_64; ; )
+Cc: dvomlehn@cisco.com, gregkh@suse.de, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <20100117025535.GB7045@srcf.ucam.org> <201001191420.29652.oliver@neukum.org> <20100203164659.GA26807@srcf.ucam.org>
+In-Reply-To: <20100203164659.GA26807@srcf.ucam.org>
 MIME-Version: 1.0
-To: Joe Perches <joe@perches.com>
-CC: linux-kernel@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>,
-       linux-ide@vger.kernel.org
-Subject: Re: [PATCH 02/10] drivers/ata: Fix continuation line formats
-References: <cover.1265095093.git.joe@perches.com> <12d39ac4f14bfe82a02b4ee246d183b48988fe12.1265095094.git.joe@perches.com>
-In-Reply-To: <12d39ac4f14bfe82a02b4ee246d183b48988fe12.1265095094.git.joe@perches.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <201002031821.39532.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joe Perches wrote:
-> String constants that are continued on subsequent lines with \
-> are not good.
+Am Mittwoch, 3. Februar 2010 17:46:59 schrieb Matthew Garrett:
+> > If the FIFO is full we can do nothing. Please try the attached patch.
 > 
-> Signed-off-by: Joe Perches <joe@perches.com>
-> ---
->  drivers/ata/pata_at91.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/ata/pata_at91.c b/drivers/ata/pata_at91.c
-> index 41c94b1..d222c0d 100644
-> --- a/drivers/ata/pata_at91.c
-> +++ b/drivers/ata/pata_at91.c
-> @@ -153,8 +153,8 @@ static void pata_at91_set_piomode(struct ata_port *ap, struct ata_device *adev)
->  	/* Compute ATA timing and set it to SMC */
->  	ret = ata_timing_compute(adev, adev->pio_mode, &timing, 1000, 0);
->  	if (ret) {
-> -		dev_warn(ap->dev, "Failed to compute ATA timing %d, \
-> -				set PIO_0 timing\n", ret);
-> +		dev_warn(ap->dev, "Failed to compute ATA timing %d, set PIO_0 timing\n",
-> +			 ret);
-..
+> Doesn't help, I'm afraid. Does anyone have any idea why the change to 
+> use kfifo would cause this?
 
-NAK.  Just stick the ret); part onto the same line and be done with it.
+The logic seems sound. That is unless the kfifo code is acting up.
+Could you printk the value kfifo_len returns in usb_serial_generic_write_start()?
 
--ml
+	Regards
+		Oliver
