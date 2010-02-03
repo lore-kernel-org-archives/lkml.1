@@ -1,25 +1,26 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757751Ab0BCXGW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 18:06:22 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39514 "EHLO
+	id S1757854Ab0BCXIt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 18:08:49 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57904 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756553Ab0BCXGU (ORCPT
+	by vger.kernel.org with ESMTP id S1756553Ab0BCXIs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 18:06:20 -0500
-Date: Wed, 3 Feb 2010 15:05:45 -0800
+	Wed, 3 Feb 2010 18:08:48 -0500
+Date: Wed, 3 Feb 2010 15:08:03 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Stefani Seibold <stefani@seibold.net>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
-       "Ira W. Snyder" <iws@ovro.caltech.edu>
-Subject: Re: [PATCH] enhanced reimplemention of the kfifo API
-Message-Id: <20100203150545.ebb69cad.akpm@linux-foundation.org>
-In-Reply-To: <1265234991.24040.46.camel@wall-e>
-References: <1264597243.3607.24.camel@wall-e>
-	<20100203120504.6da9b000.akpm@linux-foundation.org>
-	<1265234991.24040.46.camel@wall-e>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Sebastian Ott <sebott@linux.vnet.ibm.com>,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [RFC][PATCH] PM: disable nonboot cpus before suspending devices
+Message-Id: <20100203150803.5a4b37fe.akpm@linux-foundation.org>
+In-Reply-To: <201002032334.37198.rjw@sisk.pl>
+References: <alpine.LFD.2.00.1001221841490.2266@localhost>
+	<201002030244.23989.rjw@sisk.pl>
+	<20100202174853.67eeccdd.akpm@linux-foundation.org>
+	<201002032334.37198.rjw@sisk.pl>
 X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -28,254 +29,42 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 03 Feb 2010 23:09:51 +0100
-Stefani Seibold <stefani@seibold.net> wrote:
+On Wed, 3 Feb 2010 23:34:37 +0100
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-> Am Mittwoch, den 03.02.2010, 12:05 -0800 schrieb Andrew Morton:
-> > On Wed, 27 Jan 2010 14:00:43 +0100
-> > Stefani Seibold <stefani@seibold.net> wrote:
+> On Wednesday 03 February 2010, Andrew Morton wrote:
+> > On Wed, 3 Feb 2010 02:44:23 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 > > 
-> > > This is a complete reimplementation of the new kfifo API, which is now 
-> > > really generic, type save and type definable. 
-> > > 
-> > > 
-> > > ...
-> > >
-> > > diff -u -N -r -p linux-2.6.33-rc5.dummy/include/linux/kfifo.h linux-2.6.33-rc5.new/include/linux/kfifo.h
-> > > --- linux-2.6.33-rc5.dummy/include/linux/kfifo.h	1970-01-01 01:00:00.000000000 +0100
-> > > +++ linux-2.6.33-rc5.new/include/linux/kfifo.h	2010-01-27 13:34:06.324991898 +0100
-> > >
-> > > ...
-> > >
-> > > +/*
-> > > + * DECLARE_KFIFO_PTR - macro to declare a fifo pointer object
-> > > + * @fifo: name of the declared fifo
-> > > + * @type: type of the fifo elements
-> > > + * @size: the number of elements in the fifo, this must be a power of 2.
-> > > + */
-> > 
-> > Throughout this patch the comments are in kerneldoc form, but they
-> > don't use the /** opening token, so the kerneldoc tools will ignore them.
-> > 
-> > Please fix that up and test it.
-> > 
-> > > +#define DECLARE_KFIFO_PTR(fifo, type)	STRUCT_KFIFO_PTR(type) fifo
-> > > +
-> > > +/* helper macro */
-> > > +#define	__is_kfifo_ptr(fifo)	(sizeof(*fifo) == sizeof(struct __kfifo))
-> > 
-> > This is weird.  It's a compile-time constant.  What's it here for?
-> 
-> I need it to distinguish between real in place fifo, where the fifo
-> array is a part of the structure, and the fifo type where the array is
-> outside of the fifo structure.
-
-OK, please add a comment?
-
-> > > +/*
-> > > + * INIT_KFIFO - Initialize a fifo declared by DECLARE_KFIFO
-> > > + * @fifo: name of the declared fifo datatype
-> > > + */
-> > > +#define INIT_KFIFO(fifo)	fifo = __kfifo_initializer(fifo)
-> > 
-> > Some versions of gcc generate quite poor code for
-> > 
-> > 	struct foo f = { ... };
-> > 
-> > It would generate an instance of the struct into the stack and then
-> > would memcpy it over, iirc.  Please take a look, see if that's
-> > happening with this construct (might need to use an old gcc version)
-> > and if so, see if there's a fix?
-> > 
-> 
-> The current version of the kfifo implementation did it in the same way.
-> Why is it now wrong?
-
-It was wrong before, too.
-
-> Which gcc version do you mean?
-
-I don't recall.  The oldest gcc the kernel permits is 3.2, so checking
-any 3.x should be OK.
-
-> > > +/*
-> > > + * kfifo_initialized - Check if kfifo is initialized.
-> > > + * @fifo: fifo to check
-> > > + * Return %true if FIFO is initialized, otherwise %false.
-> > > + * Assumes the fifo was 0 before.
-> > > + *
-> > > + * Note: for in place fifo's this macro returns alway true
-> > > + */
-> > > +#define kfifo_initialized(fifo) ((fifo)->kfifo.data != NULL)
-> > 
-> > kfifo_initialized() is suspicious.  Any code which doesn't know whether
-> > its kfifo was initialised is probably confused, lame and broken. 
-> > Fortunately kfifo_initialized() is not used anywhere.  Please prepare a
-> > separate patch to kill it sometime.
-> > 
-> 
-> This function was introduced as a patch by andi kleen and you have it
-> already applied.
-
-Let's delete it?
-
-> > > +/*
-> > > + * kfifo_esize - returns the size of the element managed by the fifo
-> > > + * @fifo: the fifo to be used.
-> > > + */
-> > > +#define kfifo_esize(fifo)	((fifo)->kfifo.esize)
-> > 
-> > This doesn't seem to be used anywhere either.
-> > 
-> 
-> It is a part of the API. It returns the the size of the handled element,
-> If a driver developer need it, it is there.
-
-Well, if there's no proven need for it now, it will remain dead code
-for an unknown period of time.
-
-Also, there was no need to implement this as a macro (was there?).  If
-not, conversion to a more typesafe C function would be better.
-
-> > > +/*
-> > > + * kfifo_recsize - returns the size of the record length field
-> > > + * @fifo: the fifo to be used.
-> > > + */
-> > > +#define kfifo_recsize(fifo)	(sizeof(*(fifo)->rectype))
-> > 
-> > Neither is this.  What's going on?
-> > 
-> 
-> Dito... This returns the size of the record length field. 0 means this
-> is not a variable record fifo.
-
-ditto.
-
-> > > +/*
-> > > + * kfifo_out_locked - gets some data from the fifo using a spinlock for locking
-> > > + * @fifo: the fifo to be used.
-> > > + * @buf: pointer to the storage buffer
-> > > + * @n: max. number of elements to get
-> > > + * @lock: pointer to the spinlock to use for locking.
-> > > + *
-> > > + * This macro get the data from the fifo and return the numbers of elements
-> > > + * copied.
-> > > + */
-> > > +#define	kfifo_out_locked(fifo, buf, n, lock) \
-> > > +__kfifo_check( \
-> > > +({ \
-> > > +	unsigned long __flags; \
-> > > +	unsigned int __ret; \
-> > > +	spin_lock_irqsave(lock, __flags); \
-> > > +	__ret = kfifo_out(fifo, buf, n); \
-> > > +	spin_unlock_irqrestore(lock, __flags); \
-> > > +	__ret; \
-> > > +}) \
-> > > +)
-> > 
-> > This is poorly named.  Generally "foo_locked" is to be called when the
-> > caller has already taken the lock.  This identifier inverts that
-> > convention.
-> > 
-> 
-> This is the same name as the current kfifo API. Renaming it would break
-> a lot of drivers. But if there is no complain and you insist i will
-> rename it and fix the current users.
-
-argh, we goofed.
-
-yeah, it'd be nice to fix it sometime, please.  Not urgent.
-
-A good way to fix it would be to add a new function with a new name
-then migrate all callers over to that name then when it's done, remove
-the old name.
-
-> > > + * @fifo: the fifo to be used.
-> > > + * @to: where the data must be copied.
-> > > + * @len: the size of the destination buffer.
-> > > + * @copied: pointer to output variable to store the number of copied bytes.
-> > > + *
-> > > + * This macro copies at most @len bytes from the fifo into the
-> > > + * @to buffer and returns -EFAULT/0.
-> > > + *
-> > > + * Note that with only one concurrent reader and one concurrent
-> > > + * writer, you don't need extra locking to use these macro.
-> > > + */
-> > > +#define	kfifo_to_user(fifo, to, len, copied) \
-> > > +__kfifo_check( \
-> > > +({ \
-> > > +	typeof(fifo + 1) __tmp = (fifo); \
-> > > +	void __user *__to = (to); \
-> > > +	unsigned int __len = (len); \
-> > > +	unsigned int *__copied = (copied); \
-> > > +	const size_t __recsize = sizeof(*__tmp->rectype); \
-> > > +	struct __kfifo *__kfifo = &__tmp->kfifo; \
-> > > +	(__recsize) ? \
-> > > +	__kfifo_to_user_r(__kfifo, __to, __len, __copied, __recsize) : \
-> > > +	__kfifo_to_user(__kfifo, __to, __len, __copied); \
-> > > +}) \
-> > > +)
-> > 
-> > Do these have any callers?
-> > 
-> 
-> Currently not, but this is a part of the current kfifo implementation. A
-> lot of developer like this idea and it will be used in the near future.
-
-OK.  Please describe the presently-unused interfaces in the changelog,
-with particular attention to the reason for including them at this
-time.
-
-> > > +static inline unsigned int kfifo_unused(struct __kfifo *fifo)
+> > > +static inline gfp_t clear_gfp_allowed_mask(gfp_t mask)
 > > > +{
-> > > +	return (fifo->mask + 1) - (fifo->in - fifo->out);
+> > > +	gfp_t ret = gfp_allowed_mask;
+> > > +	gfp_allowed_mask &= ~mask;
+> > > +	return ret;
 > > > +}
 > > 
-> > hm, how does this differ from kfifo_avail()?
+> > Fair enuf.
 > > 
+> > Of course, this is all horridly racy/buggy without locking.  Would I be
+> > correct in hoping that all the callers happen when the system is in
+> > everyone-is-frozen mode?
 > 
-> This is similar to kfifo_avail, but due the nature of macro and type
-> conversation i have not longer the original type information available.
-> So i can't call the macros in kfifo.h from the functions defined in
-> kfifo.c.
+> As far as I can tell, gfp_allowed_mask is only touched during init apart from
+> this.
 
-OK, please add a comment there.  (As a general rule: if this reader
-needed more info then other readers will want more info as well).
+Well yes - the new interfaces are the problem - they're racy!
 
-> > > +static unsigned long kfifo_copy_from_user(struct __kfifo *fifo,
-> > > +	const void *src, unsigned int len, unsigned int off,
-> > > +	unsigned int *copied)
-> > > +{
-> > > +	unsigned int size = fifo->mask + 1;
-> > > +	unsigned int esize = fifo->esize;
-> > > +	unsigned int l;
-> > > +	unsigned long ret;
-> > > +
-> > > +	off &= fifo->mask;
-> > > +	if (esize != 1) {
-> > > +		off *= esize;
-> > > +		size *= esize;
-> > > +		len *= esize;
-> > > +	}
-> > > +	l = min(len, size - off);
-> > > +
-> > > +	ret = copy_from_user(fifo->data + off, src, l);
-> > > +	if (unlikely(ret))
-> > > +		ret = roundup_diff(ret + len - l, esize);
-> > > +	else {
-> > > +		ret = copy_from_user(fifo->data, src + l, len - l);
-> > > +		if (unlikely(ret))
-> > > +			ret = roundup_diff(ret, esize);
-> > > +	}
-> > > +	smp_wmb();
-> > > +	if (copied)
-> > 
-> > Can `copied' ever be NULL?  If not, remove this test.
+> > Perhaps we should add some documentation (or even an assertion) to
+> > prevent someone from using these interfaces from within normal code.
 > 
-> It was only a feature. If you don't like i will remove it.
+> I thought about that, but didn't invent anything smart enough.
+> 
+> Well, maybe except for a comment like "this must be called with pm_mutex held",
+> because that's the only case when it would be really safe.
 
-No strong opinion.  But if present callers don't pass NULL then that's
-a sign that future callers won't, too.  We may as well save the
-speed/space overhead until we actually need it.
+Is that the locking rule?  My above guess was incorrect?
 
+Maybe slip a
 
+	BUG_ON(!mutex_is_locked(&pm_mutex));
+
+in there?
