@@ -1,59 +1,80 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754962Ab0BCSJs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 13:09:48 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:42654 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750791Ab0BCSJq (ORCPT
+	id S1755233Ab0BCSOS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 13:14:18 -0500
+Received: from s15228384.onlinehome-server.info ([87.106.30.177]:42072 "EHLO
+	mail.x86-64.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752792Ab0BCSOQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 13:09:46 -0500
-Date: Wed, 3 Feb 2010 13:09:45 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Corey Wright <undefined@pobox.com>
-cc: Greg KH <gregkh@suse.de>, <stable@kernel.org>,
-       <linux-kernel@vger.kernel.org>
-Subject: Re: regression in 2.6.27.45 with usb and suspend-to-disk
-In-Reply-To: <20100203115956.cb479447.undefined@pobox.com>
-Message-ID: <Pine.LNX.4.44L0.1002031306220.1260-100000@iolanthe.rowland.org>
+	Wed, 3 Feb 2010 13:14:16 -0500
+Date: Wed, 3 Feb 2010 19:14:25 +0100
+From: Borislav Petkov <bp@amd64.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>, Jamie Lokier <jamie@shareable.org>,
+       Roland Dreier <rdreier@cisco.com>, Al Viro <viro@ZenIV.linux.org.uk>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH 2/5] bitops: compile time optimization for
+ hweight_long(CONSTANT)
+Message-ID: <20100203181425.GB1367@aftab>
+References: <20100130094515.475881280@intel.com>
+ <20100130094957.692671259@intel.com>
+ <20100201124825.cc024f2a.akpm@linux-foundation.org>
+ <20100203133951.GA24357@localhost>
+ <20100203070825.e36b3932.akpm@linux-foundation.org>
+ <1265210157.24455.646.camel@laptop>
+ <20100203074251.e2caa3f3.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100203074251.e2caa3f3.akpm@linux-foundation.org>
+Organization: Advanced Micro Devices =?iso-8859-1?Q?GmbH?=
+	=?iso-8859-1?Q?=2C_Karl-Hammerschmidt-Str=2E_34=2C_85609_Dornach_bei_M=FC?=
+	=?iso-8859-1?Q?nchen=2C_Gesch=E4ftsf=FChrer=3A_Thomas_M=2E_McCoy=2C_Giuli?=
+	=?iso-8859-1?Q?ano_Meroni=2C_Andrew_Bowd=2C_Sitz=3A_Dornach=2C_Gemeinde_A?=
+	=?iso-8859-1?Q?schheim=2C_Landkreis_M=FCnchen=2C_Registergericht_M=FCnche?=
+	=?iso-8859-1?Q?n=2C?= HRB Nr. 43632
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Feb 2010, Corey Wright wrote:
-
-> > Please build a kernel with CONFIG_USB_DEBUG enabled and post a dmesg 
-> > log showing the problem during the second hibernation attempt.
+On Wed, Feb 03, 2010 at 07:42:51AM -0800, Andrew Morton wrote:
+> We didn't deal with it on every architecture, which is something which
+> the compiler extension takes care of.
 > 
-> [  675.443474] PM: Syncing filesystems ... done.
-> [  675.576353] Freezing user space processes ... (elapsed 0.00 seconds)
-> done.
-> [  675.606968] Freezing remaining freezable tasks ... (elapsed 0.00
-> seconds) done.
-> [  675.629249] PM: Shrinking memory...  -\|done (3129 pages freed)
-> [  679.547522] PM: Freed 12516 kbytes in 3.90 seconds (3.20 MB/s)
-> [  679.565065] Suspending console(s) (use no_console_suspend to debug)
-> [  679.585425] uhci_hcd 0000:00:10.0: release dev 2 ep81-INT, period 8,
-> phase 4, 118 us
-> [  679.585453] hub 2-0:1.0: hub_suspend
-> [  679.585460] usb usb2: bus suspend
-> [  679.585463] usb usb2: suspend_rh
-> [  679.585534] hub 1-0:1.0: hub_suspend
-> [  679.585538] usb usb1: bus suspend
-> [  679.585542] ehci_hcd 0000:00:10.4: suspend root hub
-> [  679.585547] ehci_hcd 0000:00:10.4: suspend failed because port 8 is
-> resuming
+> In fact I can't find anywhere where we dealt with it on x86.
 
-There you have it.  What is the USB device attached to port 8 on bus 1 
-(i.e., /sys/bus/usb/devices/1-8)?
+Yeah, we talked briefly about using hardware popcnt, see thread
+beginning at
 
-And what happens if you do:
+http://linux.derkeiler.com/Mailing-Lists/Kernel/2009-06/msg00245.html
 
-	echo disabled >/sys/bus/usb/devices/1-8/power/wakeup
+for example. I did an ftrace of the cpumask_weight() calls in sched.c to
+see whether there would be a measurable performance gain but it didn't
+seem so at the time. My numbers said something like ca. 170 hweight
+calls per second and since the <lib/hweight.c> implementations roughly
+translate to something like ~20 isns (hweight64 to about ~30), the whole
+thing wasn't worth the trouble considering checking binutils versions
+and slapping opcodes or using gcc intrinsics which involves gcc version
+checking.
 
-before trying to hibernate?
+An alternatives solution which is based on CPUID flag could add the
+popcnt opcode without checking any toolchain versions but how is the
+replaced instruction going to look like? Something like
 
-Alan Stern
+alternative("call hweightXX", "popcnt", X86_FEATURE_POPCNT)
 
+by making sure the arg is in some register first?
+
+Hmm..
+
+-- 
+Regards/Gruss,
+Boris.
+
+--
+Advanced Micro Devices, Inc.
+Operating Systems Research Center
