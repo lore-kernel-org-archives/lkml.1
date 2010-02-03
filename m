@@ -1,145 +1,79 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757233Ab0BCMKp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 07:10:45 -0500
-Received: from stinky.trash.net ([213.144.137.162]:51975 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754519Ab0BCMKj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 07:10:39 -0500
-Message-ID: <4B6967BC.600@trash.net>
-Date: Wed, 03 Feb 2010 13:10:36 +0100
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
+	id S1754221Ab0BCMKg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 07:10:36 -0500
+Received: from cantor.suse.de ([195.135.220.2]:58881 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750798Ab0BCMKd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 07:10:33 -0500
+From: Lubos Lunak <l.lunak@suse.cz>
+To: balbir@linux.vnet.ibm.com
+Subject: Re: Improving OOM killer
+Date: Wed, 3 Feb 2010 13:10:27 +0100
+User-Agent: KMail/1.9.10
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Rientjes <rientjes@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Nick Piggin <npiggin@suse.de>, Jiri Kosina <jkosina@suse.cz>
+References: <201002012302.37380.l.lunak@suse.cz> <20100203085711.GF19641@balbir.in.ibm.com>
+In-Reply-To: <20100203085711.GF19641@balbir.in.ibm.com>
 MIME-Version: 1.0
-To: Jon Masters <jonathan@jonmasters.org>
-CC: Alexey Dobriyan <adobriyan@gmail.com>,
-       Eric Dumazet <eric.dumazet@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>,
-       netfilter-devel <netfilter-devel@vger.kernel.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH] netfilter: per netns nf_conntrack_cachep
-References: <1264813832.2793.446.camel@tonnant>	 <1265023437.2848.30.camel@edumazet-laptop>	 <1265035970.2848.50.camel@edumazet-laptop>	 <b6fcc0a1002010658j4f52a9b8kf10e4bb07a2f1075@mail.gmail.com>	 <1265036548.2848.55.camel@edumazet-laptop>	 <1265108690.2861.118.camel@tonnant> <1265110504.2861.135.camel@tonnant>	 <1265129192.2861.141.camel@tonnant> <4B685756.8010107@trash.net>	 <1265130426.2861.158.camel@tonnant>	 <b6fcc0a1002020958u17315624u4d54d06a413be6bb@mail.gmail.com> <1265134598.2861.191.camel@tonnant> <4B6870AF.6060109@trash.net>
-In-Reply-To: <4B6870AF.6060109@trash.net>
-X-Enigmail-Version: 0.95.0
-Content-Type: multipart/mixed;
- boundary="------------070806000507070702070402"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <201002031310.28271.l.lunak@suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------070806000507070702070402
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+On Wednesday 03 of February 2010, Balbir Singh wrote:
+> * Lubos Lunak <l.lunak@suse.cz> [2010-02-01 23:02:37]:
+> >  In other words, use VmRSS for measuring memory usage instead of VmSize,
+> > and remove child accumulating.
+>
+> I am not sure of the impact of changing to RSS, although I've
+> personally believed that RSS based accounting is where we should go,
+> but we need to consider the following
+>
+> 1. Total VM provides data about potentially swapped pages,
 
-Patrick McHardy wrote:
-> Jon Masters wrote:
->> On Tue, 2010-02-02 at 19:58 +0200, Alexey Dobriyan wrote:
->>
->>> Yes, moving to init_net-only function is fine.
->> So moving the "setup up fake conntrack" bits to init_init_net from
->> init_net still results in the panic, which means that the use count
->> really is dropping to zero and we really are trying to free it when
->> using multiple namespaces. Per ns is probably an easier way to go.
-> 
-> Agreed, that will also avoid problems in the future with the
-> ct_net pointer pointing to &init_net. I'll take care of this
-> tommorrow.
+ Yes, I've already updated my proposal in another mail to switch from VmSize 
+to VmRSS+InSwap. I don't know how to find out the second item in code, but at 
+this point of discussion that's just details.
 
-Unfortunately a per-namespace conntrack is not easily possible without
-larger changes (most of which are already queued in nf-next-2.6.git
-though). So for now I just moved the untrack handling to the init_net
-setup and cleanup functions and we can try to fix the remainder in
-2.6.34.
+> overcommit, 
 
-Jon, could you give this patch a try please?
+ I don't understand how this matters. Overcommit is memory for which address 
+space has been allocated but not actual memory, right? Then that's exactly 
+what I'm claiming is wrong and am trying to reverse. Currently OOM killer 
+takes this into account because it uses VmSize, but IMO it shouldn't - if a 
+process does malloc(400M) but then it uses only a tiny fraction of that, in 
+the case of memory shortage killing that process does not solve anything in 
+practice.
 
---------------070806000507070702070402
-Content-Type: text/plain;
- name="x"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="x"
+> etc.
+> 2. RSS alone is not sufficient, RSS does not account for shared pages,
+> so we ideally need something like PSS.
 
-commit 056ff3e3bd1563969a311697323ff929df94415c
-Author: Patrick McHardy <kaber@trash.net>
-Date:   Wed Feb 3 12:58:06 2010 +0100
+ Just to make sure I understand what you mean with "RSS does not account for 
+shared pages" - you say that if a page is shared by 4 processes, then when 
+calculating badness for them, only 1/4 of the page should be counted for 
+each? Yes, I suppose so, that makes sense. That's more like fine-tunning at 
+this point though, as long as there's no agreement that moving away from 
+VmSize is an improvement.
 
-    netfilter: nf_conntrack: fix memory corruption with multiple namespaces
-    
-    As discovered by Jon Masters <jonathan@jonmasters.org>, the "untracked"
-    conntrack, which is located in the data section, might be accidentally
-    freed when a new namespace is instantiated while the untracked conntrack
-    is attached to a skb because the reference count it re-initialized.
-    
-    The best fix would be to use a seperate untracked conntrack per
-    namespace since it includes a namespace pointer. Unfortunately this is
-    not possible without larger changes since the namespace is not easily
-    available everywhere we need it. For now move the untracked conntrack
-    initialization to the init_net setup function to make sure the reference
-    count is not re-initialized and handle cleanup in the init_net cleanup
-    function to make sure namespaces can exit properly while the untracked
-    conntrack is in use in other namespaces.
-    
-    Signed-off-by: Patrick McHardy <kaber@trash.net>
+> I suspect the correct answer would depend on our answers to 1 and 2
+> and a lot of testing with any changes made.
 
-diff --git a/net/netfilter/nf_conntrack_core.c b/net/netfilter/nf_conntrack_core.c
-index 0e98c32..37e2b88 100644
---- a/net/netfilter/nf_conntrack_core.c
-+++ b/net/netfilter/nf_conntrack_core.c
-@@ -1113,6 +1113,10 @@ static void nf_ct_release_dying_list(struct net *net)
- 
- static void nf_conntrack_cleanup_init_net(void)
- {
-+	/* wait until all references to nf_conntrack_untracked are dropped */
-+	while (atomic_read(&nf_conntrack_untracked.ct_general.use) > 1)
-+		schedule();
-+
- 	nf_conntrack_helper_fini();
- 	nf_conntrack_proto_fini();
- 	kmem_cache_destroy(nf_conntrack_cachep);
-@@ -1127,9 +1131,6 @@ static void nf_conntrack_cleanup_net(struct net *net)
- 		schedule();
- 		goto i_see_dead_people;
- 	}
--	/* wait until all references to nf_conntrack_untracked are dropped */
--	while (atomic_read(&nf_conntrack_untracked.ct_general.use) > 1)
--		schedule();
- 
- 	nf_ct_free_hashtable(net->ct.hash, net->ct.hash_vmalloc,
- 			     nf_conntrack_htable_size);
-@@ -1288,6 +1289,14 @@ static int nf_conntrack_init_init_net(void)
- 	if (ret < 0)
- 		goto err_helper;
- 
-+	/* Set up fake conntrack: to never be deleted, not in any hashes */
-+#ifdef CONFIG_NET_NS
-+	nf_conntrack_untracked.ct_net = &init_net;
-+#endif
-+	atomic_set(&nf_conntrack_untracked.ct_general.use, 1);
-+	/*  - and look it like as a confirmed connection */
-+	set_bit(IPS_CONFIRMED_BIT, &nf_conntrack_untracked.status);
-+
- 	return 0;
- 
- err_helper:
-@@ -1333,15 +1342,6 @@ static int nf_conntrack_init_net(struct net *net)
- 	if (ret < 0)
- 		goto err_ecache;
- 
--	/* Set up fake conntrack:
--	    - to never be deleted, not in any hashes */
--#ifdef CONFIG_NET_NS
--	nf_conntrack_untracked.ct_net = &init_net;
--#endif
--	atomic_set(&nf_conntrack_untracked.ct_general.use, 1);
--	/*  - and look it like as a confirmed connection */
--	set_bit(IPS_CONFIRMED_BIT, &nf_conntrack_untracked.status);
--
- 	return 0;
- 
- err_ecache:
+ Testing - are there actually any tests for it, or do people just test random 
+scenarios when they do changes? Also, I'm curious, what areas is the OOM 
+killer actually generally known to work well in? I somehow get the feeling 
+from the discussion here that people just tweak oom_adj until it works for 
+them.
 
---------------070806000507070702070402--
+-- 
+ Lubos Lunak
+ openSUSE Boosters team, KDE developer
+ l.lunak@suse.cz , l.lunak@kde.org
