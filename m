@@ -1,133 +1,141 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753529Ab0BCFSx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 00:18:53 -0500
-Received: from adelie.canonical.com ([91.189.90.139]:33939 "EHLO
-	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751462Ab0BCFQq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 00:16:46 -0500
-From: Amit Kucheria <amit.kucheria@canonical.com>
-To: List Linux Kernel <linux-kernel@vger.kernel.org>
-Cc: Sascha Hauer <s.hauer@pengutronix.de>,
-       linux-arm-kernel@lists.infradead.org, linux@arm.linux.org.uk,
-       valentin.longchamp@epfl.ch, daniel@caiaq.de, grant.likely@secretlab.ca,
-       Dinh.Nguyen@freescale.com, r.herring@freescale.com,
-       bryan.wu@canonical.com
-Subject: [PATCHv2 02/11] mxc timer: refactor timer code to use timer versions
-Date: Tue,  2 Feb 2010 21:16:24 -0800
-Message-Id: <9fa7a3c70c46a1f776c6520051481cff6525ef02.1265173480.git.amit.kucheria@canonical.com>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <0511204199ab83aed2340e70a4639500c0528dab.1265173480.git.amit.kucheria@canonical.com>
-References: <cover.1265173246.git.amit.kucheria@verdurent.com>
- <0511204199ab83aed2340e70a4639500c0528dab.1265173480.git.amit.kucheria@canonical.com>
-In-Reply-To: <cover.1265173480.git.amit.kucheria@canonical.com>
-References: <cover.1265173480.git.amit.kucheria@canonical.com>
+	id S1753577Ab0BCFTT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 00:19:19 -0500
+Received: from hera.kernel.org ([140.211.167.34]:55596 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751073Ab0BCFTO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 00:19:14 -0500
+Date: Wed, 3 Feb 2010 05:18:38 GMT
+From: tip-bot for Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       rostedt@goodmis.org, lizf@cn.fujitsu.com, tglx@linutronix.de,
+       laijs@cn.fujitsu.com
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       lizf@cn.fujitsu.com, rostedt@goodmis.org, tglx@linutronix.de,
+       laijs@cn.fujitsu.com
+In-Reply-To: <4B67D4F9.9080905@cn.fujitsu.com>
+References: <4B67D4F9.9080905@cn.fujitsu.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:tracing/urgent] tracing: Fix circular dead lock in stack trace
+Message-ID: <tip-4f48f8b7fd18c44f8478174f9925cc3c059c6ce4@git.kernel.org>
+Git-Commit-ID: 4f48f8b7fd18c44f8478174f9925cc3c059c6ce4
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 03 Feb 2010 05:18:39 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sascha Hauer <s.hauer@pengutronix.de>
+Commit-ID:  4f48f8b7fd18c44f8478174f9925cc3c059c6ce4
+Gitweb:     http://git.kernel.org/tip/4f48f8b7fd18c44f8478174f9925cc3c059c6ce4
+Author:     Lai Jiangshan <laijs@cn.fujitsu.com>
+AuthorDate: Tue, 2 Feb 2010 15:32:09 +0800
+Committer:  Steven Rostedt <rostedt@goodmis.org>
+CommitDate: Tue, 2 Feb 2010 10:20:18 -0500
 
-Refactor the timer code into version 1 and version 2.
+tracing: Fix circular dead lock in stack trace
 
-Essentially there are 2 versions of the timer hardware. Version 1 is found on
-MX1/MXL and MX21. Version 2 is found on MX25, MX27, MX31, MX35, MX37, MX51,
-and future parts.
+When we cat <debugfs>/tracing/stack_trace, we may cause circular lock:
+sys_read()
+  t_start()
+     arch_spin_lock(&max_stack_lock);
 
-Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
-Acked-by: Amit Kucheria <amit.kucheria@canonical.com>
-Signed-off-by: Amit Kucheria <amit.kucheria@canonical.com>
+  t_show()
+     seq_printf(), vsnprintf() .... /* they are all trace-able,
+       when they are traced, max_stack_lock may be required again. */
+
+The following script can trigger this circular dead lock very easy:
+#!/bin/bash
+
+echo 1 > /proc/sys/kernel/stack_tracer_enabled
+
+mount -t debugfs xxx /mnt > /dev/null 2>&1
+
+(
+# make check_stack() zealous to require max_stack_lock
+for ((; ;))
+{
+	echo 1 > /mnt/tracing/stack_max_size
+}
+) &
+
+for ((; ;))
+{
+	cat /mnt/tracing/stack_trace > /dev/null
+}
+
+To fix this bug, we increase the percpu trace_active before
+require the lock.
+
+Reported-by: Li Zefan <lizf@cn.fujitsu.com>
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+LKML-Reference: <4B67D4F9.9080905@cn.fujitsu.com>
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- arch/arm/plat-mxc/time.c |   19 +++++++++++--------
- 1 files changed, 11 insertions(+), 8 deletions(-)
+ kernel/trace/trace_stack.c |   24 ++++++++++++++++++++++++
+ 1 files changed, 24 insertions(+), 0 deletions(-)
 
-diff --git a/arch/arm/plat-mxc/time.c b/arch/arm/plat-mxc/time.c
-index 844567e..7d6499e 100644
---- a/arch/arm/plat-mxc/time.c
-+++ b/arch/arm/plat-mxc/time.c
-@@ -57,6 +57,9 @@
- #define MX3_TCN			0x24
- #define MX3_TCMP		0x10
+diff --git a/kernel/trace/trace_stack.c b/kernel/trace/trace_stack.c
+index 678a512..f4bc9b2 100644
+--- a/kernel/trace/trace_stack.c
++++ b/kernel/trace/trace_stack.c
+@@ -157,6 +157,7 @@ stack_max_size_write(struct file *filp, const char __user *ubuf,
+ 	unsigned long val, flags;
+ 	char buf[64];
+ 	int ret;
++	int cpu;
  
-+#define timer_is_v1()	(cpu_is_mx1() || cpu_is_mx27())
-+#define timer_is_v2()	(cpu_is_mx3() || cpu_is_mx25())
+ 	if (count >= sizeof(buf))
+ 		return -EINVAL;
+@@ -171,9 +172,20 @@ stack_max_size_write(struct file *filp, const char __user *ubuf,
+ 		return ret;
+ 
+ 	local_irq_save(flags);
 +
- static struct clock_event_device clockevent_mxc;
- static enum clock_event_mode clockevent_mode = CLOCK_EVT_MODE_UNUSED;
++	/*
++	 * In case we trace inside arch_spin_lock() or after (NMI),
++	 * we will cause circular lock, so we also need to increase
++	 * the percpu trace_active here.
++	 */
++	cpu = smp_processor_id();
++	per_cpu(trace_active, cpu)++;
++
+ 	arch_spin_lock(&max_stack_lock);
+ 	*ptr = val;
+ 	arch_spin_unlock(&max_stack_lock);
++
++	per_cpu(trace_active, cpu)--;
+ 	local_irq_restore(flags);
  
-@@ -66,7 +69,7 @@ static inline void gpt_irq_disable(void)
+ 	return count;
+@@ -206,7 +218,13 @@ t_next(struct seq_file *m, void *v, loff_t *pos)
+ 
+ static void *t_start(struct seq_file *m, loff_t *pos)
  {
- 	unsigned int tmp;
++	int cpu;
++
+ 	local_irq_disable();
++
++	cpu = smp_processor_id();
++	per_cpu(trace_active, cpu)++;
++
+ 	arch_spin_lock(&max_stack_lock);
  
--	if (cpu_is_mx3() || cpu_is_mx25())
-+	if (timer_is_v2())
- 		__raw_writel(0, timer_base + MX3_IR);
- 	else {
- 		tmp = __raw_readl(timer_base + MXC_TCTL);
-@@ -76,7 +79,7 @@ static inline void gpt_irq_disable(void)
+ 	if (*pos == 0)
+@@ -217,7 +235,13 @@ static void *t_start(struct seq_file *m, loff_t *pos)
  
- static inline void gpt_irq_enable(void)
+ static void t_stop(struct seq_file *m, void *p)
  {
--	if (cpu_is_mx3() || cpu_is_mx25())
-+	if (timer_is_v2())
- 		__raw_writel(1<<0, timer_base + MX3_IR);
- 	else {
- 		__raw_writel(__raw_readl(timer_base + MXC_TCTL) | MX1_2_TCTL_IRQEN,
-@@ -90,7 +93,7 @@ static void gpt_irq_acknowledge(void)
- 		__raw_writel(0, timer_base + MX1_2_TSTAT);
- 	if (cpu_is_mx2())
- 		__raw_writel(MX2_TSTAT_CAPT | MX2_TSTAT_COMP, timer_base + MX1_2_TSTAT);
--	if (cpu_is_mx3() || cpu_is_mx25())
-+	if (timer_is_v2())
- 		__raw_writel(MX3_TSTAT_OF1, timer_base + MX3_TSTAT);
++	int cpu;
++
+ 	arch_spin_unlock(&max_stack_lock);
++
++	cpu = smp_processor_id();
++	per_cpu(trace_active, cpu)--;
++
+ 	local_irq_enable();
  }
  
-@@ -117,7 +120,7 @@ static int __init mxc_clocksource_init(struct clk *timer_clk)
- {
- 	unsigned int c = clk_get_rate(timer_clk);
- 
--	if (cpu_is_mx3() || cpu_is_mx25())
-+	if (timer_is_v2())
- 		clocksource_mxc.read = mx3_get_cycles;
- 
- 	clocksource_mxc.mult = clocksource_hz2mult(c,
-@@ -180,7 +183,7 @@ static void mxc_set_mode(enum clock_event_mode mode,
- 
- 	if (mode != clockevent_mode) {
- 		/* Set event time into far-far future */
--		if (cpu_is_mx3() || cpu_is_mx25())
-+		if (timer_is_v2())
- 			__raw_writel(__raw_readl(timer_base + MX3_TCN) - 3,
- 					timer_base + MX3_TCMP);
- 		else
-@@ -233,7 +236,7 @@ static irqreturn_t mxc_timer_interrupt(int irq, void *dev_id)
- 	struct clock_event_device *evt = &clockevent_mxc;
- 	uint32_t tstat;
- 
--	if (cpu_is_mx3() || cpu_is_mx25())
-+	if (timer_is_v2())
- 		tstat = __raw_readl(timer_base + MX3_TSTAT);
- 	else
- 		tstat = __raw_readl(timer_base + MX1_2_TSTAT);
-@@ -264,7 +267,7 @@ static int __init mxc_clockevent_init(struct clk *timer_clk)
- {
- 	unsigned int c = clk_get_rate(timer_clk);
- 
--	if (cpu_is_mx3() || cpu_is_mx25())
-+	if (timer_is_v2())
- 		clockevent_mxc.set_next_event = mx3_set_next_event;
- 
- 	clockevent_mxc.mult = div_sc(c, NSEC_PER_SEC,
-@@ -296,7 +299,7 @@ void __init mxc_timer_init(struct clk *timer_clk, void __iomem *base, int irq)
- 	__raw_writel(0, timer_base + MXC_TCTL);
- 	__raw_writel(0, timer_base + MXC_TPRER); /* see datasheet note */
- 
--	if (cpu_is_mx3() || cpu_is_mx25())
-+	if (timer_is_v2())
- 		tctl_val = MX3_TCTL_CLK_IPG | MX3_TCTL_FRR | MX3_TCTL_WAITEN | MXC_TCTL_TEN;
- 	else
- 		tctl_val = MX1_2_TCTL_FRR | MX1_2_TCTL_CLK_PCLK1 | MXC_TCTL_TEN;
--- 
-1.6.3.3
-
