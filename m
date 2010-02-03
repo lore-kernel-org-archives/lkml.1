@@ -1,86 +1,167 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932311Ab0BCB4L (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 20:56:11 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:39763 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932149Ab0BCB4H (ORCPT
+	id S1757141Ab0BCB7U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 20:59:20 -0500
+Received: from mail.infogears.com ([69.51.90.143]:41734 "EHLO
+	mail.infogears.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752142Ab0BCB7S convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 20:56:07 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Wed, 3 Feb 2010 10:52:36 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: David Rientjes <rientjes@google.com>
-Cc: Lubos Lunak <l.lunak@suse.cz>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, Nick Piggin <npiggin@suse.de>,
-       Jiri Kosina <jkosina@suse.cz>
-Subject: Re: Improving OOM killer
-Message-Id: <20100203105236.b4a60754.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <alpine.DEB.2.00.1002021643240.3393@chino.kir.corp.google.com>
-References: <201002012302.37380.l.lunak@suse.cz>
-	<alpine.DEB.2.00.1002011523280.19457@chino.kir.corp.google.com>
-	<201002022210.06760.l.lunak@suse.cz>
-	<alpine.DEB.2.00.1002021643240.3393@chino.kir.corp.google.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 2 Feb 2010 20:59:18 -0500
+X-Greylist: delayed 2010 seconds by postgrey-1.27 at vger.kernel.org; Tue, 02 Feb 2010 20:59:18 EST
+From: Rusty Conover <rconover@infogears.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 8BIT
+Subject: OOPS BUG at fs/ext4/inode.c:1853
+Date: Tue, 2 Feb 2010 20:25:44 -0500
+Message-Id: <7897FA4C-4600-4872-A003-BBB6B099785D@infogears.com>
+To: linux-kernel@vger.kernel.org
+Mime-Version: 1.0 (Apple Message framework v1077)
+X-Mailer: Apple Mail (2.1077)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2 Feb 2010 17:41:41 -0800 (PST)
-David Rientjes <rientjes@google.com> wrote:
+Hi,
 
-> On Tue, 2 Feb 2010, Lubos Lunak wrote:
-> 
-> > > > init
-> > > >   |- kdeinit
-> > > >   |  |- ksmserver
-> > > >   |  |  |- kwin
-> > > >   |  |- <other>
-> > > >   |- konsole
-> > > >      |- make
-> > > >         |- sh
-> > > >         |  |- meinproc4
-> > > >         |- sh
-> > > >         |  |- meinproc4
-> > > >         |- <etc>
-> > > >
-> > > >  What happens is that OOM killer usually selects either ksmserver (KDE
-> > > > session manager) or kdeinit (KDE master process that spawns most KDE
-> > > > processes). Note that in either case OOM killer does not reach the point
-> > > > of killing the actual offender - it will randomly kill in the tree under
-> > > > kdeinit until it decides to kill ksmserver, which means terminating the
-> > > > desktop session. As konsole is a KUniqueApplication, it forks into
-> > > > background and gets reparented to init, thus getting away from the
-> > > > kdeinit subtree. Since the memory pressure is distributed among several
-> > > > meinproc4 processes, the badness does not get summed up in its make
-> > > > grandparent, as badness() does this only for direct parents.
-> > >
-> > > There's no randomness involved in selecting a task to kill;
-> > 
-> >  That was rather a figure of speech, but even if you want to take it 
-> > literally, then from the user's point of view it is random. Badness of 
-> > kdeinit depends on the number of children it has spawned, badness of 
-> > ksmserver depends for example on the number and size of windows open (as its 
-> > child kwin is a window and compositing manager).
-> > 
-> 
-> As I've mentioned, I believe Kame (now cc'd) is working on replacing the 
-> heuristic that adds the VM size for children into the parent task's 
-> badness score with a forkbomb detector. 
+Here is a kernel oops using the latest fedora 12 kernel.  Machine is a Intel(R) Xeon(R) CPU E5430  @ 2.66GHz, running in 32bit mode, normal SATA disks.  Filesystem was created in fedora 10, and machine upgraded via yum to Fedora 12.  Is reproducible using "stress-1.0.2" from http://weather.ou.edu/~apw/projects/stress/
 
-I stopped that as I mentioned. I'm heavily disappointed with myself and
-would like not to touch oom-killer things for a while.
+Command line to reproduce was:  ./stress --cpu 4 --io 1 --vm 1 --vm-bytes 128M --hdd 1  
 
-I'd like to conentrate on memcg for a while, which I've starved for these 3 months.
+Please cc any reply to me, and all help is appreciated.
 
-Then, you don't need to CC me.
+Cheers,
 
-Bye,
--Kame
+Rusty
+--
+Rusty Conover
+rconover@infogears.com
+InfoGears Inc / GearBuyer.com / FootwearBuyer.com
+http://www.infogears.com
+http://www.gearbuyer.com
+http://www.footwearbuyer.com
+
+------------[ cut here ]------------
+kernel BUG at fs/ext4/inode.c:1853!
+invalid opcode: 0000 [#1] SMP 
+last sysfs file: /sys/devices/system/cpu/cpu3/cache/index2/shared_cpu_map
+Modules linked in: w83793 w83627hf hwmon_vid i5k_amb coretemp ipmi_msghandler i2c_core ipt_LOG xt_multiport nf_conntrack_ftp cpufreq_ondemand acpi_cpufreq ipv6 pp
+_pc i5000_edac edac_core e1000e serio_raw parport raid1 dm_multipath [last unloaded: i2c_i801]
+
+Pid: 27992, comm: stress Not tainted (2.6.31.12-174.2.3.fc12.i686.PAE #1) X7DVL-3
+EIP: 0060:[<c0527a75>] EFLAGS: 00010297 CPU: 3
+EIP is at ext4_da_get_block_prep+0xef/0x246
+EAX: 00000023 EBX: 0003a325 ECX: 00000023 EDX: 00000024
+ESI: 00000000 EDI: d0bf6600 EBP: ed86bc90 ESP: ed86bc58
+DS: 007b ES: 007b FS: 00d8 GS: 00e0 SS: 0068
+Process stress (pid: 27992, ti=ed86a000 task=ea8db300 task.ti=ed86a000)
+Stack:
+df5c9cc0 df5c9cc0 f649b400 ffff0000 ffffffff 00000000 d0bf683c d0bf6600
+<0> 00000000 d0bf6688 00000000 0003a325 00000000 c84f6500 ed86bce0 c04e4b1a
+<0> df5c9cc0 00000001 ed86bcd4 df5c9cc0 d0bf6688 00001000 00000000 00000000
+Call Trace:
+[<c04e4b1a>] ? __block_prepare_write+0x11b/0x26d
+[<c04e4de0>] ? block_write_begin+0x73/0xd8
+[<c0527986>] ? ext4_da_get_block_prep+0x0/0x246
+[<c049bc1f>] ? add_to_page_cache_lru+0x4f/0x58
+[<c05276d1>] ? ext4_da_write_begin+0x1c8/0x252
+[<c0527986>] ? ext4_da_get_block_prep+0x0/0x246
+[<c049c497>] ? generic_file_buffered_write+0xd4/0x263
+[<c049ca64>] ? __generic_file_aio_write_nolock+0x258/0x289
+[<c049cd5e>] ? generic_file_aio_write+0x5f/0xb0
+[<c051f809>] ? ext4_file_write+0xa3/0x11a
+[<c04c8ae1>] ? do_sync_write+0xae/0xe9
+[<c056f065>] ? file_has_perm+0x89/0xa3
+[<c0450db9>] ? autoremove_wake_function+0x0/0x34
+[<c056f355>] ? selinux_file_permission+0x49/0x4d
+[<c056867f>] ? security_file_permission+0x14/0x16
+[<c04c8ca2>] ? rw_verify_area+0x9d/0xc0
+[<c04c8a33>] ? do_sync_write+0x0/0xe9
+[<c04c907c>] ? vfs_write+0x85/0xe4
+[<c04cf7ee>] ? path_put+0x1a/0x1d
+[<c04c9179>] ? sys_write+0x40/0x62
+[<c0408fbb>] ? sysenter_do_call+0x12/0x28
+Code: 00 89 45 e0 8b 45 e0 e8 45 34 25 00 8b 4d e4 8b 45 ec 8b 91 2c 02 00 00 42 e8 75 bd ff ff 8b 7d e4 8b 97 30 02 00 00 39 d0 73 04 <0f> 0b eb fe 29 d0 89 45 d
+
+EIP: [<c0527a75>] ext4_da_get_block_prep+0xef/0x246 SS:ESP 0068:ed86bc58
+---[ end trace 156dd7e7b61aac87 ]---
+
+
+# dumpe2fs -h /dev/md2
+dumpe2fs 1.41.9 (22-Aug-2009)
+Filesystem volume name:   <none>
+Last mounted on:          /
+Filesystem UUID:          ec711783-a186-466e-a175-ac1fb30dddf7
+Filesystem magic number:  0xEF53
+Filesystem revision #:    1 (dynamic)
+Filesystem features:      has_journal ext_attr resize_inode dir_index filetype needs_recovery extent flex_bg sparse_super large_file huge_file uninit_bg dir_nlink extra_isize
+Filesystem flags:         signed_directory_hash 
+Default mount options:    user_xattr acl
+Filesystem state:         clean
+Errors behavior:          Continue
+Filesystem OS type:       Linux
+Inode count:              28835840
+Block count:              115340656
+Reserved block count:     5767032
+Free blocks:              96094336
+Free inodes:              27927481
+First block:              0
+Block size:               4096
+Fragment size:            4096
+Reserved GDT blocks:      996
+Blocks per group:         32768
+Fragments per group:      32768
+Inodes per group:         8192
+Inode blocks per group:   512
+Flex block group size:    16
+Filesystem created:       Mon Jan  5 16:15:36 2009
+Last mount time:          Tue Feb  2 16:17:09 2010
+Last write time:          Tue Feb  2 16:17:08 2010
+Mount count:              29
+Maximum mount count:      -1
+Last checked:             Mon Jan  5 16:15:36 2009
+Check interval:           0 (<none>)
+Lifetime writes:          1158 MB
+Reserved blocks uid:      0 (user root)
+Reserved blocks gid:      0 (group root)
+First inode:              11
+Inode size:		            256
+Required extra isize:     28
+Desired extra isize:      28
+Journal inode:            8
+First orphan inode:       101263
+Default directory hash:   half_md4
+Directory Hash Seed:      dd38dd1a-5e43-4e35-8c96-db5ac377591b
+Journal backup:           inode blocks
+Journal size:             128M
+
+[root@site-18 ~]# mount
+/dev/md2 on / type ext4 (rw)
+proc on /proc type proc (rw)
+sysfs on /sys type sysfs (rw)
+devpts on /dev/pts type devpts (rw,gid=5,mode=620)
+tmpfs on /dev/shm type tmpfs (rw)
+/dev/md1 on /boot type ext3 (rw)
+none on /proc/sys/fs/binfmt_misc type binfmt_misc (rw)
+
+[root@site-18 ~]# cat /proc/mdstat 
+Personalities : [raid1] 
+md1 : active raid1 sda1[0] sdb1[1]
+      10241280 blocks [2/2] [UU]
+      
+md2 : active raid1 sda3[0] sdb3[1]
+      461362624 blocks [2/2] [UU]
+      
+md0 : active raid1 sda2[0] sdb2[1]
+      16779776 blocks [2/2] [UU]
+      
+unused devices: <none>
+
+
+
+
+
+
+
+
+
 
