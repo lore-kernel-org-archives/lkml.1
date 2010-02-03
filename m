@@ -1,146 +1,97 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932246Ab0BCJPA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 04:15:00 -0500
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:47625 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756772Ab0BCJOx (ORCPT
+	id S932314Ab0BCJPV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 04:15:21 -0500
+Received: from mail-fx0-f215.google.com ([209.85.220.215]:54153 "EHLO
+	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932211Ab0BCJO5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 04:14:53 -0500
+	Wed, 3 Feb 2010 04:14:57 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=ddygrAFYm5gnNcdnJLs/pQlSiHlStRJwBt1LvMkRefujtzWl9hb9n7eAxBWCiWgtjn
-         26PXM6bumIUlIKLipZR+oLnZbyfEcjAm2MaCIAk4WilKtcnJ2oCf3iLbLahrdPIh3MM2
-         ZHzE7kAFfB710Uh8DkzfUYRj20+1l6/zqmUq8=
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Paul Mackerras <paulus@samba.org>,
-       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
-       Li Zefan <lizf@cn.fujitsu.com>, Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH 09/11] tracing: Remove the lock name from most lock events
-Date: Wed,  3 Feb 2010 10:14:33 +0100
-Message-Id: <1265188475-23509-10-git-send-regression-fweisbec@gmail.com>
-X-Mailer: git-send-email 1.6.2.3
-In-Reply-To: <1265188475-23509-1-git-send-regression-fweisbec@gmail.com>
-References: <1265188475-23509-1-git-send-regression-fweisbec@gmail.com>
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=SBVYimbXIBZSwWII6yTFKA+yWKM5iYPM65z+vMS1XbCI1+v6YvmvUHlGIA5CRz0XAF
+         SvLso4kObqXED7YuleYuuZ8rKwYdg+FmltW/lMLKOQFzpSWUdNwRms4YnMbiyWpZp9xX
+         uXorLgxYE6I5nrkg2gFjOKmlrtdMTKTbOQXsc=
+Date: Wed, 3 Feb 2010 10:14:49 +0100
+From: Stefan Seyfried <stefan.seyfried@googlemail.com>
+To: Willy Tarreau <w@1wt.eu>
+Cc: linux-kernel@vger.kernel.org, Stefan Seyfried <seife@sphairon.com>
+Subject: Re: [PATCH 2.4] FAT: do not continue in fat_get_block if bmap fails
+Message-ID: <20100203101449.2090aa57@strolchi>
+In-Reply-To: <20100202220631.GA16098@1wt.eu>
+References: <1265115635-22612-1-git-send-email-stefan.seyfried@googlemail.com>
+	<20100202220631.GA16098@1wt.eu>
+X-Mailer: Claws Mail 3.7.4 (GTK+ 2.19.3; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove the lock name copy from every lock events but
-lock_class_init. We don't need it anymore now that we can
-resolve the name from the lock class id.
+Hi Willy,
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-Cc: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>
----
- include/trace/events/lock.h |   23 +++++------------------
- 1 files changed, 5 insertions(+), 18 deletions(-)
+On Tue, 2 Feb 2010 23:06:31 +0100
+Willy Tarreau <w@1wt.eu> wrote:
 
-diff --git a/include/trace/events/lock.h b/include/trace/events/lock.h
-index 3c4a5c1..ced4ceb 100644
---- a/include/trace/events/lock.h
-+++ b/include/trace/events/lock.h
-@@ -50,23 +50,20 @@ TRACE_EVENT(lock_acquire,
- 
- 	TP_STRUCT__entry(
- 		__field(unsigned int, flags)
--		__string(name, lock->name)
- 		__field(void *, lockdep_addr)
- 		__field(void *, class_id)
- 	),
- 
- 	TP_fast_assign(
- 		__entry->flags = (trylock ? 1 : 0) | (read ? 2 : 0);
--		__assign_str(name, lock->name);
- 		__entry->lockdep_addr = lock;
- 		__entry->class_id = (void *)lock->name;
- 	),
- 
--	TP_printk("%p %p %s%s%s", __entry->lockdep_addr,
-+	TP_printk("%p %p %s%s", __entry->lockdep_addr,
- 		  __entry->class_id,
- 		  (__entry->flags & 1) ? "try " : "",
--		  (__entry->flags & 2) ? "read " : "",
--		  __get_str(name))
-+		  (__entry->flags & 2) ? "read " : "")
- );
- 
- TRACE_EVENT(lock_release,
-@@ -76,17 +73,14 @@ TRACE_EVENT(lock_release,
- 	TP_ARGS(lock, nested, ip),
- 
- 	TP_STRUCT__entry(
--		__string(name, lock->name)
- 		__field(void *, lockdep_addr)
- 	),
- 
- 	TP_fast_assign(
--		__assign_str(name, lock->name);
- 		__entry->lockdep_addr = lock;
- 	),
- 
--	TP_printk("%p %s",
--		  __entry->lockdep_addr, __get_str(name))
-+	TP_printk("%p", __entry->lockdep_addr)
- );
- 
- #ifdef CONFIG_LOCK_STAT
-@@ -98,17 +92,14 @@ TRACE_EVENT(lock_contended,
- 	TP_ARGS(lock, ip),
- 
- 	TP_STRUCT__entry(
--		__string(name, lock->name)
- 		__field(void *, lockdep_addr)
- 	),
- 
- 	TP_fast_assign(
--		__assign_str(name, lock->name);
- 		__entry->lockdep_addr = lock;
- 	),
- 
--	TP_printk("%p %s",
--		  __entry->lockdep_addr, __get_str(name))
-+	TP_printk("%p", __entry->lockdep_addr)
- );
- 
- TRACE_EVENT(lock_acquired,
-@@ -117,19 +108,15 @@ TRACE_EVENT(lock_acquired,
- 	TP_ARGS(lock, ip, waittime),
- 
- 	TP_STRUCT__entry(
--		__string(name, lock->name)
- 		__field(s64, wait_nsec)
- 		__field(void *, lockdep_addr)
- 	),
- 
- 	TP_fast_assign(
--		__assign_str(name, lock->name);
- 		__entry->wait_nsec = waittime;
- 		__entry->lockdep_addr = lock;
- 	),
--	TP_printk("%p %s (%llu ns)", __entry->lockdep_addr,
--		  __get_str(name),
--		  __entry->wait_nsec)
-+	TP_printk("%p (%llu ns)", __entry->lockdep_addr, __entry->wait_nsec)
- );
- 
- #endif
+> Hello Stefan,
+> 
+> On Tue, Feb 02, 2010 at 02:00:35PM +0100, Stefan Seyfried wrote:
+> > From: Stefan Seyfried <seife@sphairon.com>
+> > 
+> > There is no use in continuing the write operation after fat_bmap() fails.
+> > (This successfully killed a VFAT FS for me).
+> > The corresponding code in 2.6 does return here as well, AFAICT.
+> 
+> OK then that's fine, I'm merging it.
+
+I'd like to add that I am not a filesystem expert at all, so if
+somebody wants to suggest a better return code, I'm all for that.
+
+And the dosfs code in 2.6 is substantially different, thus the "AFAICT"
+above ;)
+
+Anyway, continuing at that place (when phys == 0) is definitely
+wrong, since writing to block 0 later on will kill the filesystem 100%.
+
+I triggered this with a corrumpted file, which an application wanted to
+modify, dosfsck had this to say about the file system:
+
+strolchi:~ # dosfsck -nv /dev/sdb1
+dosfsck 2.11 (12 Mar 2005)
+dosfsck 2.11, 12 Mar 2005, FAT32, LFN
+Checking we can access the last sector of the filesystem
+Boot sector contents:
+System ID "MSDOS5.0"
+Media byte 0xf8 (hard disk)
+       512 bytes per logical sector
+     16384 bytes per cluster
+         1 reserved sector
+First FAT starts at byte 512 (sector 1)
+         2 FATs, 16 bit entries
+    124928 bytes per FAT (= 244 sectors)
+Root directory starts at byte 250368 (sector 489)
+       512 root directory entries
+Data area starts at byte 266752 (sector 521)
+     62283 data clusters (1020444672 bytes)
+63 sectors/track, 32 heads
+       247 hidden sectors
+   1993577 sectors total
+/test/test.db
+  File size is 188928 bytes, cluster chain length is 163840 bytes.
+  Truncating file to 163840 bytes.
+Checking for unused clusters.
+Reclaimed 2 unused clusters (32768 bytes).
+Leaving file system unchanged.
+/dev/sdb1: 201 files, 51608/62283 clusters
+
+Thanks for merging and taking care of the "old lady" 2.4 ;)
+
+	Stefan
 -- 
-1.6.2.3
+Stefan Seyfried
 
+"Any ideas, John?"
+"Well, surrounding them's out."
