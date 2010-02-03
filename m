@@ -1,162 +1,154 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757511Ab0BCSwh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 13:52:37 -0500
-Received: from casper.infradead.org ([85.118.1.10]:53450 "EHLO
+	id S1757530Ab0BCSw6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 13:52:58 -0500
+Received: from casper.infradead.org ([85.118.1.10]:53465 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757380Ab0BCSwY (ORCPT
+	with ESMTP id S1756565Ab0BCSwf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 13:52:24 -0500
+	Wed, 3 Feb 2010 13:52:35 -0500
 From: Arnaldo Carvalho de Melo <acme@infradead.org>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
-       =?utf-8?q?Fr=C3=A9d=C3=A9ric=20Weisbecker?= <fweisbec@gmail.com>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 7/9] perf tools: Adjust some verbosity levels
-Date: Wed,  3 Feb 2010 16:52:06 -0200
-Message-Id: <1265223128-11786-7-git-send-email-acme@infradead.org>
+Cc: linux-kernel@vger.kernel.org, Kirill Smelkov <kirr@landau.phys.spbu.ru>,
+       Mike Galbraith <efault@gmx.de>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>
+Subject: [PATCH 8/9] perf annotate: fix it for non-prelinked *.so
+Date: Wed,  3 Feb 2010 16:52:07 -0200
+Message-Id: <1265223128-11786-8-git-send-email-acme@infradead.org>
 X-Mailer: git-send-email 1.6.2.5
 In-Reply-To: <1265223128-11786-1-git-send-email-acme@infradead.org>
 References: <1265223128-11786-1-git-send-email-acme@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
 X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by casper.infradead.org
 	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
+From: Kirill Smelkov <kirr@landau.phys.spbu.ru>
 
-Not to pollute too much 'perf annotate' debugging sessions.
+The problem was we were incorrectly calculating objdump addresses for
+sym->start and sym->end, look:
 
-Cc: Frédéric Weisbecker <fweisbec@gmail.com>
+For simple ET_DYN type DSO (*.so) with one function, objdump -dS output
+is something like this:
+
+    000004ac <my_strlen>:
+    int my_strlen(const char *s)
+     4ac:   55                      push   %ebp
+     4ad:   89 e5                   mov    %esp,%ebp
+     4af:   83 ec 10                sub    $0x10,%esp
+    {
+
+i.e. we have relative-to-dso-mapping IPs (=RIP) there.
+
+For ET_EXEC type and probably for prelinked libs as well (sorry can't
+test - I don't use prelink) objdump outputs absolute IPs, e.g.
+
+    08048604 <zz_strlen>:
+    extern "C"
+    int zz_strlen(const char *s)
+     8048604:       55                      push   %ebp
+     8048605:       89 e5                   mov    %esp,%ebp
+     8048607:       83 ec 10                sub    $0x10,%esp
+    {
+
+So, if sym->start is always relative to dso mapping(*), we'll have to
+unmap it for ET_EXEC like cases, and leave as is for ET_DYN cases.
+
+(*) and it is - we've explicitely made it relative. Look for
+    adjust_symbols handling in dso__load_sym()
+
+Previously we were always unmapping sym->start and for ET_DYN dsos
+resulting addresses were wrong, and so objdump output was empty.
+
+The end result was that perf annotate output for symbols from
+non-prelinked *.so had always 0.00% percents only, which is wrong.
+
+To fix it, let's introduce a helper for converting rip to objdump
+address, and also let's document what map_ip() and unmap_ip() do -- I
+had to study sources for several hours to understand it.
+
 Cc: Mike Galbraith <efault@gmx.de>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>
+Signed-off-by: Kirill Smelkov <kirr@landau.phys.spbu.ru>
 Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
 ---
- tools/perf/builtin-annotate.c          |   33 +++++++++++--------------------
- tools/perf/util/include/linux/kernel.h |    1 +
- tools/perf/util/symbol.c               |    9 ++++---
- 3 files changed, 18 insertions(+), 25 deletions(-)
+ tools/perf/builtin-annotate.c |    5 +++--
+ tools/perf/util/map.c         |   12 ++++++++++++
+ tools/perf/util/map.h         |    9 +++++++++
+ 3 files changed, 24 insertions(+), 2 deletions(-)
 
 diff --git a/tools/perf/builtin-annotate.c b/tools/perf/builtin-annotate.c
-index 73c202e..4fc3899 100644
+index 4fc3899..28ea4e0 100644
 --- a/tools/perf/builtin-annotate.c
 +++ b/tools/perf/builtin-annotate.c
-@@ -97,9 +97,7 @@ static void hist_hit(struct hist_entry *he, u64 ip)
- 	sym_size = sym->end - sym->start;
- 	offset = ip - sym->start;
+@@ -189,7 +189,7 @@ static int parse_line(FILE *file, struct hist_entry *he, u64 len)
+ 			line_ip = -1;
+ 	}
  
--	if (verbose)
--		fprintf(stderr, "%s: ip=%Lx\n", __func__,
--			he->map->unmap_ip(he->map, ip));
-+	pr_debug3("%s: ip=%#Lx\n", __func__, he->map->unmap_ip(he->map, ip));
+-	start = he->map->unmap_ip(he->map, sym->start);
++	start = map__rip_2objdump(he->map, sym->start);
  
- 	if (offset >= sym_size)
- 		return;
-@@ -108,12 +106,8 @@ static void hist_hit(struct hist_entry *he, u64 ip)
- 	h->sum++;
- 	h->ip[offset]++;
+ 	if (line_ip != -1) {
+ 		const char *path = NULL;
+@@ -397,7 +397,8 @@ static void annotate_sym(struct hist_entry *he)
+ 		       dso, dso->long_name, sym, sym->name);
  
--	if (verbose >= 3)
--		printf("%p %s: count++ [ip: %p, %08Lx] => %Ld\n",
--			(void *)(unsigned long)he->sym->start,
--			he->sym->name,
--			(void *)(unsigned long)ip, ip - he->sym->start,
--			h->ip[offset]);
-+	pr_debug3("%#Lx %s: count++ [ip: %#Lx, %#Lx] => %Ld\n", he->sym->start,
-+		  he->sym->name, ip, ip - he->sym->start, h->ip[offset]);
+ 	sprintf(command, "objdump --start-address=0x%016Lx --stop-address=0x%016Lx -dS %s|grep -v %s",
+-		map->unmap_ip(map, sym->start), map->unmap_ip(map, sym->end),
++		map__rip_2objdump(map, sym->start),
++		map__rip_2objdump(map, sym->end),
+ 		filename, filename);
+ 
+ 	if (verbose >= 3)
+diff --git a/tools/perf/util/map.c b/tools/perf/util/map.c
+index f6626cc..af5805f 100644
+--- a/tools/perf/util/map.c
++++ b/tools/perf/util/map.c
+@@ -210,3 +210,15 @@ size_t map__fprintf(struct map *self, FILE *fp)
+ 	return fprintf(fp, " %Lx-%Lx %Lx %s\n",
+ 		       self->start, self->end, self->pgoff, self->dso->name);
+ }
++
++/*
++ * objdump wants/reports absolute IPs for ET_EXEC, and RIPs for ET_DYN.
++ * map->dso->adjust_symbols==1 for ET_EXEC-like cases.
++ */
++u64 map__rip_2objdump(struct map *map, u64 rip)
++{
++	u64 addr = map->dso->adjust_symbols ?
++			map->unmap_ip(map, rip) :	/* RIP -> IP */
++			rip;
++	return addr;
++}
+diff --git a/tools/perf/util/map.h b/tools/perf/util/map.h
+index de04839..9cee9c7 100644
+--- a/tools/perf/util/map.h
++++ b/tools/perf/util/map.h
+@@ -26,8 +26,12 @@ struct map {
+ 	u64			end;
+ 	enum map_type		type;
+ 	u64			pgoff;
++
++	/* ip -> dso rip */
+ 	u64			(*map_ip)(struct map *, u64);
++	/* dso rip -> ip */
+ 	u64			(*unmap_ip)(struct map *, u64);
++
+ 	struct dso		*dso;
+ };
+ 
+@@ -56,6 +60,11 @@ static inline u64 identity__map_ip(struct map *map __used, u64 ip)
+ 	return ip;
  }
  
- static int perf_session__add_hist_entry(struct perf_session *self,
-@@ -136,14 +130,14 @@ static int process_sample_event(event_t *event, struct perf_session *session)
- 		    event->ip.pid, event->ip.ip);
++
++/* rip -> addr suitable for passing to `objdump --start-address=` */
++u64 map__rip_2objdump(struct map *map, u64 rip);
++
++
+ struct symbol;
+ struct mmap_event;
  
- 	if (event__preprocess_sample(event, session, &al, symbol_filter) < 0) {
--		fprintf(stderr, "problem processing %d event, skipping it.\n",
--			event->header.type);
-+		pr_warning("problem processing %d event, skipping it.\n",
-+			   event->header.type);
- 		return -1;
- 	}
- 
- 	if (!al.filtered && perf_session__add_hist_entry(session, &al, 1)) {
--		fprintf(stderr, "problem incrementing symbol count, "
--				"skipping event\n");
-+		pr_warning("problem incrementing symbol count, "
-+			   "skipping event\n");
- 		return -1;
- 	}
- 
-@@ -378,11 +372,9 @@ static void annotate_sym(struct hist_entry *he)
- 	if (!filename)
- 		return;
- 
--	if (verbose)
--		fprintf(stderr, "%s: filename=%s, sym=%s, start=%Lx, end=%Lx\n",
--			__func__, filename, sym->name,
--			map->unmap_ip(map, sym->start),
--			map->unmap_ip(map, sym->end));
-+	pr_debug("%s: filename=%s, sym=%s, start=%#Lx, end=%#Lx\n", __func__,
-+		 filename, sym->name, map->unmap_ip(map, sym->start),
-+		 map->unmap_ip(map, sym->end));
- 
- 	if (full_paths)
- 		d_filename = filename;
-@@ -542,9 +534,8 @@ int cmd_annotate(int argc, const char **argv, const char *prefix __used)
- 	setup_pager();
- 
- 	if (field_sep && *field_sep == '.') {
--		fputs("'.' is the only non valid --field-separator argument\n",
--				stderr);
--		exit(129);
-+		pr_err("'.' is the only non valid --field-separator argument\n");
-+		return -1;
- 	}
- 
- 	return __cmd_annotate();
-diff --git a/tools/perf/util/include/linux/kernel.h b/tools/perf/util/include/linux/kernel.h
-index 21c0274..f261165 100644
---- a/tools/perf/util/include/linux/kernel.h
-+++ b/tools/perf/util/include/linux/kernel.h
-@@ -101,5 +101,6 @@ simple_strtoul(const char *nptr, char **endptr, int base)
- 	eprintf(n, pr_fmt(fmt), ##__VA_ARGS__)
- #define pr_debug2(fmt, ...) pr_debugN(2, pr_fmt(fmt), ##__VA_ARGS__)
- #define pr_debug3(fmt, ...) pr_debugN(3, pr_fmt(fmt), ##__VA_ARGS__)
-+#define pr_debug4(fmt, ...) pr_debugN(4, pr_fmt(fmt), ##__VA_ARGS__)
- 
- #endif
-diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
-index bfb0554..a60ba2b 100644
---- a/tools/perf/util/symbol.c
-+++ b/tools/perf/util/symbol.c
-@@ -137,7 +137,7 @@ static struct symbol *symbol__new(u64 start, u64 len, const char *name)
- 	self->start = start;
- 	self->end   = len ? start + len - 1 : start;
- 
--	pr_debug3("%s: %s %#Lx-%#Lx\n", __func__, name, start, self->end);
-+	pr_debug4("%s: %s %#Lx-%#Lx\n", __func__, name, start, self->end);
- 
- 	memcpy(self->name, name, namelen);
- 
-@@ -1024,9 +1024,10 @@ static int dso__load_sym(struct dso *self, struct map *map, const char *name,
- 		}
- 
- 		if (curr_dso->adjust_symbols) {
--			pr_debug2("adjusting symbol: st_value: %Lx sh_addr: "
--				  "%Lx sh_offset: %Lx\n", (u64)sym.st_value,
--				  (u64)shdr.sh_addr, (u64)shdr.sh_offset);
-+			pr_debug4("%s: adjusting symbol: st_value: %#Lx "
-+				  "sh_addr: %#Lx sh_offset: %#Lx\n", __func__,
-+				  (u64)sym.st_value, (u64)shdr.sh_addr,
-+				  (u64)shdr.sh_offset);
- 			sym.st_value -= shdr.sh_addr - shdr.sh_offset;
- 		}
- 		/*
 -- 
 1.6.2.5
 
