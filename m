@@ -1,18 +1,18 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932288Ab0BCJPP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 04:15:15 -0500
+	id S932222Ab0BCJO4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 04:14:56 -0500
 Received: from mail-bw0-f219.google.com ([209.85.218.219]:38151 "EHLO
 	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932218Ab0BCJO5 (ORCPT
+	with ESMTP id S1753102Ab0BCJOv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 04:14:57 -0500
+	Wed, 3 Feb 2010 04:14:51 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=h8ctLaPmNEY168ePMpxOfXgUB2mrwrNSP3jEQNDwBPGGYG0VwAwxKOuNOOhvL5hL/n
-         Lqwi5uvGJuUuW5J/mF11RZNpiBQkfJ9wyJXUbqSmIFOoxQR7G9BT8pp1YrsPNhxVeUhq
-         rfSeBBTWRDj9q8XipyLO2Kji/HoIEodbl740k=
+        b=JsHZRvCcIR/69/Zte1OCjGuyroGjSt9O2QWn8cLlXy9NV3mpbS1MveiWpO3Gp+zNbU
+         l9IVJbxecQz4qChi70OHf4ls+syNgfwCstHclAfVR+oOR/Nra6ZdxhwWRd1oZuOCGwa9
+         C4KLbHbfYunaTfEOmaa7cBPrRgwDojf6PlQUU=
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>,
@@ -24,9 +24,9 @@ Cc: LKML <linux-kernel@vger.kernel.org>,
        Li Zefan <lizf@cn.fujitsu.com>, Lai Jiangshan <laijs@cn.fujitsu.com>,
        Masami Hiramatsu <mhiramat@redhat.com>,
        Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH 11/11] perf lock: Drop the buffers multiplexing dependency
-Date: Wed,  3 Feb 2010 10:14:35 +0100
-Message-Id: <1265188475-23509-12-git-send-regression-fweisbec@gmail.com>
+Subject: [PATCH 08/11] perf/lock: Add support for lock_class_init events
+Date: Wed,  3 Feb 2010 10:14:32 +0100
+Message-Id: <1265188475-23509-9-git-send-regression-fweisbec@gmail.com>
 X-Mailer: git-send-email 1.6.2.3
 In-Reply-To: <1265188475-23509-1-git-send-regression-fweisbec@gmail.com>
 References: <1265188475-23509-1-git-send-regression-fweisbec@gmail.com>
@@ -34,50 +34,9 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We need to deal with time ordered events to build a correct
-state machine of lock events. This is why we multiplex the lock
-events buffers. But the ordering is done from the kernel, on
-the tracing fast path, leading to high contention between cpus.
-
-Without multiplexing, the events appears in a weak order.
-If we have four events, each split per cpu, perf record will
-read the events buffers in the following order:
-
-[ CPU0 ev0, CPU0 ev1, CPU0 ev3, CPU0 ev4, CPU1 ev0, CPU1 ev0....]
-
-To handle a post processing reordering, we could just read and sort
-the whole in memory, but it just doesn't scale with high amounts
-of events: lock events can fill huge amounts in few times.
-
-Basically we need to sort in memory and find a "grace period"
-point when we know that a given slice of previously sorted events
-can be committed for post-processing, so that we can unload the
-memory usage step by step and keep a scalable sorting list.
-
-There is no strong rules about how to define such "grace period".
-What does this patch is:
-
-We define a FLUSH_PERIOD value that defines a grace period in
-seconds.
-We want to have a slice of events covering 2 * FLUSH_PERIOD in our
-sorted list.
-If FLUSH_PERIOD is big enough, it ensures every events that occured
-in the first half of the timeslice have all been buffered and there
-are none remaining and there won't be further to put inside this
-first timeslice. Then once we reach the 2 * FLUSH_PERIOD
-timeslice, we flush the first half to be gentle with the memory
-(the second half can still get new events in the middle, so wait
-another period to flush it)
-
-FLUSH_PERIOD is defined to 5 seconds. Say the first event started on
-time t0. We can safely assume that at the time we are processing
-events of t0 + 10 seconds, ther won't be anymore events to read
-from perf.data that occured between t0 and t0 + 5 seconds. Hence
-we can safely flush the first half.
-
-To point out funky bugs, we have a guardian that checks a new event
-timestamp is not below the last event's timestamp flushed and that
-displays a warning in this case.
+Add support for the new lock_class_init event from perf lock.
+Retrieve the name of the locks from these events and remove
+support of the name from other lock events.
 
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
@@ -90,189 +49,413 @@ Cc: Lai Jiangshan <laijs@cn.fujitsu.com>
 Cc: Masami Hiramatsu <mhiramat@redhat.com>
 Cc: Jens Axboe <jens.axboe@oracle.com>
 ---
- tools/perf/builtin-lock.c |  148 ++++++++++++++++++++++++++++++++++++++++++++-
- 1 files changed, 146 insertions(+), 2 deletions(-)
+ tools/perf/builtin-lock.c |  197 +++++++++++++++++++++++++++++++++++++--------
+ 1 files changed, 163 insertions(+), 34 deletions(-)
 
 diff --git a/tools/perf/builtin-lock.c b/tools/perf/builtin-lock.c
-index e1133b7..759cfeb 100644
+index fb9ab2a..e1133b7 100644
 --- a/tools/perf/builtin-lock.c
 +++ b/tools/perf/builtin-lock.c
-@@ -572,6 +572,150 @@ process_raw_event(void *data, int cpu,
- 		process_lock_class_init_event(data, event, cpu, timestamp, thread);
- }
+@@ -28,24 +28,38 @@
+ #define LOCKHASH_SIZE		(1UL << LOCKHASH_BITS)
  
-+struct raw_event_queue {
-+	u64			timestamp;
-+	int			cpu;
-+	void			*data;
-+	struct thread		*thread;
-+	struct list_head	list;
+ static struct list_head lockhash_table[LOCKHASH_SIZE];
++static struct list_head classhash_table[LOCKHASH_SIZE];
+ 
+ #define __lockhashfn(key)	hash_long((unsigned long)key, LOCKHASH_BITS)
+ #define lockhashentry(key)	(lockhash_table + __lockhashfn((key)))
++#define classhashentry(key)	(classhash_table + __lockhashfn((key)))
+ 
+ #define LOCK_STATE_UNLOCKED	0	       /* initial state */
+ #define LOCK_STATE_LOCKED	1
+ 
++/*
++ * Can be extended for class scope profiling
++ */
++struct class_stat {
++	struct list_head	hash_entry;
++	void			*addr;
++	char			*name;
++	struct list_head	lock_list;
 +};
 +
-+static LIST_HEAD(raw_event_head);
+ struct lock_stat {
+ 	struct list_head	hash_entry;
+ 	struct rb_node		rb;		/* used for sorting */
+ 
++	struct list_head	lock_list;	/* list in the class */
 +
-+#define FLUSH_PERIOD	(5 * NSEC_PER_SEC)
-+
-+static u64 flush_limit = ULLONG_MAX;
-+static u64 last_flush = 0;
-+struct raw_event_queue *last_inserted;
-+
-+static void flush_raw_event_queue(u64 limit)
+ 	/*
+ 	 * FIXME: raw_field_value() returns unsigned long long,
+ 	 * so address of lockdep_map should be dealed as 64bit.
+ 	 * Is there more better solution?
+ 	 */
+ 	void			*addr;		/* address of lockdep_map, used as ID */
+-	char			*name;		/* for strcpy(), we cannot use const */
++	struct class_stat	*class;
+ 
+ 	int			state;
+ 	u64			prev_event_time; /* timestamp of previous event */
+@@ -155,34 +169,89 @@ static struct lock_stat *pop_from_result(void)
+ 	return container_of(node, struct lock_stat, rb);
+ }
+ 
+-static struct lock_stat *lock_stat_findnew(void *addr, const char *name)
++static void class_add_lock(struct class_stat *class, struct lock_stat *lock)
 +{
-+	struct raw_event_queue *tmp, *iter;
-+
-+	list_for_each_entry_safe(iter, tmp, &raw_event_head, list) {
-+		if (iter->timestamp > limit)
-+			return;
-+
-+		if (iter == last_inserted)
-+			last_inserted = NULL;
-+
-+		process_raw_event(iter->data, iter->cpu, iter->timestamp,
-+				  iter->thread);
-+
-+		last_flush = iter->timestamp;
-+		list_del(&iter->list);
-+		free(iter->data);
-+		free(iter);
-+	}
-+}
-+
-+static void __queue_raw_event_end(struct raw_event_queue *new)
-+{
-+	struct raw_event_queue *iter;
-+
-+	list_for_each_entry_reverse(iter, &raw_event_head, list) {
-+		if (iter->timestamp < new->timestamp) {
-+			list_add(&new->list, &iter->list);
-+			return;
-+		}
-+	}
-+
-+	list_add(&new->list, &raw_event_head);
-+}
-+
-+static void __queue_raw_event_before(struct raw_event_queue *new,
-+				     struct raw_event_queue *iter)
-+{
-+	list_for_each_entry_continue_reverse(iter, &raw_event_head, list) {
-+		if (iter->timestamp < new->timestamp) {
-+			list_add(&new->list, &iter->list);
-+			return;
-+		}
-+	}
-+
-+	list_add(&new->list, &raw_event_head);
-+}
-+
-+static void __queue_raw_event_after(struct raw_event_queue *new,
-+				     struct raw_event_queue *iter)
-+{
-+	list_for_each_entry_continue(iter, &raw_event_head, list) {
-+		if (iter->timestamp > new->timestamp) {
-+			list_add_tail(&new->list, &iter->list);
-+			return;
-+		}
-+	}
-+	list_add_tail(&new->list, &raw_event_head);
-+}
-+
-+/* The queue is ordered by time */
-+static void __queue_raw_event(struct raw_event_queue *new)
-+{
-+	if (!last_inserted) {
-+		__queue_raw_event_end(new);
++	if (!class)
 +		return;
-+	}
 +
-+	/*
-+	 * Most of the time the current event has a timestamp
-+	 * very close to the last event inserted, unless we just switched
-+	 * to another event buffer. Having a sorting based on a list and
-+	 * on the last inserted event that is close to the current one is
-+	 * probably more efficient than an rbtree based sorting.
-+	 */
-+	if (last_inserted->timestamp >= new->timestamp)
-+		__queue_raw_event_before(new, last_inserted);
-+	else
-+		__queue_raw_event_after(new, last_inserted);
++	/* NOTE: we may want to handle class changes in the future */
++	list_del(&lock->lock_list);
++	list_add_tail(&lock->lock_list, &class->lock_list);
++	lock->class = class;
 +}
 +
-+static void queue_raw_event(void *data, int raw_size, int cpu,
-+			    u64 timestamp, struct thread *thread)
-+{
-+	struct raw_event_queue *new;
-+
-+	if (flush_limit == ULLONG_MAX)
-+		flush_limit = timestamp + FLUSH_PERIOD;
-+
-+	if (timestamp < last_flush) {
-+		printf("Warning: Timestamp below last timeslice flush\n");
-+		return;
-+	}
-+
-+	new = malloc(sizeof(*new));
-+	if (!new)
-+		die("Not enough memory\n");
-+
-+	new->timestamp = timestamp;
-+	new->cpu = cpu;
-+	new->thread = thread;
-+
-+	new->data = malloc(raw_size);
-+	if (!new->data)
-+		die("Not enough memory\n");
-+
-+	memcpy(new->data, data, raw_size);
-+
-+	__queue_raw_event(new);
-+	last_inserted = new;
-+
-+	/*
-+	 * We want to have a slice of events covering 2 * FLUSH_PERIOD
-+	 * If FLUSH_PERIOD is big enough, it ensures every events that occured
-+	 * in the first half of the timeslice have all been buffered and there
-+	 * are none remaining (we need that because of the weakly ordered
-+	 * event recording we have). Then once we reach the 2 * FLUSH_PERIOD
-+	 * timeslice, we flush the first half to be gentle with the memory
-+	 * (the second half can still get new events in the middle, so wait
-+	 * another period to flush it)
-+	 */
-+	if (new->timestamp > flush_limit &&
-+		new->timestamp - flush_limit > FLUSH_PERIOD) {
-+		flush_limit += FLUSH_PERIOD;
-+		flush_raw_event_queue(flush_limit);
-+	}
-+}
-+
- static int process_sample_event(event_t *event, struct perf_session *session)
++static struct lock_stat *lock_stat_findnew(void *addr, struct class_stat *class)
  {
- 	struct thread *thread;
-@@ -592,7 +736,7 @@ static int process_sample_event(event_t *event, struct perf_session *session)
- 	if (profile_cpu != -1 && profile_cpu != (int) data.cpu)
- 		return 0;
+ 	struct list_head *entry = lockhashentry(addr);
+-	struct lock_stat *ret, *new;
++	struct lock_stat *ret;
++
++	if (class) {
++		list_for_each_entry(ret, &class->lock_list, lock_list) {
++			if (ret->addr == addr)
++				return ret;
++		}
++	}
  
--	process_raw_event(data.raw_data, data.cpu, data.time, thread);
-+	queue_raw_event(data.raw_data, data.raw_size, data.cpu, data.time, thread);
+ 	list_for_each_entry(ret, entry, hash_entry) {
+-		if (ret->addr == addr)
++		if (ret->addr == addr) {
++			class_add_lock(class, ret);
+ 			return ret;
++		}
+ 	}
  
- 	return 0;
+-	new = zalloc(sizeof(struct lock_stat));
+-	if (!new)
++	ret = zalloc(sizeof(struct lock_stat));
++	if (!ret)
+ 		goto alloc_failed;
+ 
+-	new->addr = addr;
+-	new->name = zalloc(sizeof(char) * strlen(name) + 1);
+-	if (!new->name)
+-		goto alloc_failed;
+-	strcpy(new->name, name);
++	ret->addr = addr;
++	INIT_LIST_HEAD(&ret->lock_list);
++	class_add_lock(class, ret);
+ 
+ 	/* LOCK_STATE_UNLOCKED == 0 isn't guaranteed forever */
+-	new->state = LOCK_STATE_UNLOCKED;
+-	new->wait_time_min = ULLONG_MAX;
++	ret->state = LOCK_STATE_UNLOCKED;
++	ret->wait_time_min = ULLONG_MAX;
++
++	list_add_tail(&ret->hash_entry, entry);
++
++	return ret;
+ 
+-	list_add(&new->hash_entry, entry);
+-	return new;
++ alloc_failed:
++	die("memory allocation failed\n");
++}
++
++static struct class_stat *class_stat_findnew(void *addr, const char *name)
++{
++	struct list_head *entry = classhashentry(addr);
++	struct class_stat *ret;
++
++	list_for_each_entry(ret, entry, hash_entry) {
++		if (ret->addr == addr) {
++			if (!ret->name && name) {
++				ret->name = strdup(name);
++				if (!ret->name)
++					goto alloc_failed;
++			}
++			return ret;
++		}
++	}
++
++	ret = zalloc(sizeof(struct class_stat));
++	if (!ret)
++		goto alloc_failed;
++
++	ret->addr = addr;
++	INIT_LIST_HEAD(&ret->lock_list);
++	if (name) {
++		ret->name = strdup(name);
++		if (!ret->name)
++			goto alloc_failed;
++	}
++
++	list_add_tail(&ret->hash_entry, entry);
+ 
+-alloc_failed:
++	return ret;
++
++ alloc_failed:
+ 	die("memory allocation failed\n");
  }
-@@ -702,6 +846,7 @@ static void __cmd_report(void)
- 	setup_pager();
- 	select_key();
- 	read_events();
-+	flush_raw_event_queue(ULLONG_MAX);
- 	sort_result();
- 	print_result();
+ 
+@@ -195,23 +264,29 @@ struct raw_event_sample {
+ 	char			data[0];
+ };
+ 
++/*
++ * For now we keep the below as is with only one field.
++ * These structures may be filled further
++ */
+ struct trace_acquire_event {
+ 	void			*addr;
+-	const char		*name;
++	void			*class_id;
+ };
+ 
+ struct trace_acquired_event {
+ 	void			*addr;
+-	const char		*name;
+ };
+ 
+ struct trace_contended_event {
+ 	void			*addr;
+-	const char		*name;
+ };
+ 
+ struct trace_release_event {
+ 	void			*addr;
++};
++
++struct trace_init_event {
++	void			*class_id;
+ 	const char		*name;
+ };
+ 
+@@ -239,6 +314,12 @@ struct trace_lock_handler {
+ 			      int cpu,
+ 			      u64 timestamp,
+ 			      struct thread *thread);
++
++	void (*init_event)(struct trace_init_event *,
++			      struct event *,
++			      int cpu,
++			      u64 timestamp,
++			      struct thread *thread);
+ };
+ 
+ static void
+@@ -248,11 +329,13 @@ report_lock_acquire_event(struct trace_acquire_event *acquire_event,
+ 			u64 timestamp,
+ 			struct thread *thread __used)
+ {
+-	struct lock_stat *st;
++	struct class_stat *class;
++	struct lock_stat *lock;
+ 
+-	st = lock_stat_findnew(acquire_event->addr, acquire_event->name);
++	class = class_stat_findnew(acquire_event->class_id, NULL);
++	lock = lock_stat_findnew(acquire_event->addr, class);
+ 
+-	switch (st->state) {
++	switch (lock->state) {
+ 	case LOCK_STATE_UNLOCKED:
+ 		break;
+ 	case LOCK_STATE_LOCKED:
+@@ -262,7 +345,7 @@ report_lock_acquire_event(struct trace_acquire_event *acquire_event,
+ 		break;
+ 	}
+ 
+-	st->prev_event_time = timestamp;
++	lock->prev_event_time = timestamp;
  }
-@@ -734,7 +879,6 @@ static const char *record_args[] = {
- 	"record",
- 	"-a",
- 	"-R",
--	"-M",
+ 
+ static void
+@@ -274,7 +357,7 @@ report_lock_acquired_event(struct trace_acquired_event *acquired_event,
+ {
+ 	struct lock_stat *st;
+ 
+-	st = lock_stat_findnew(acquired_event->addr, acquired_event->name);
++	st = lock_stat_findnew(acquired_event->addr, NULL);
+ 
+ 	switch (st->state) {
+ 	case LOCK_STATE_UNLOCKED:
+@@ -300,7 +383,7 @@ report_lock_contended_event(struct trace_contended_event *contended_event,
+ {
+ 	struct lock_stat *st;
+ 
+-	st = lock_stat_findnew(contended_event->addr, contended_event->name);
++	st = lock_stat_findnew(contended_event->addr, NULL);
+ 
+ 	switch (st->state) {
+ 	case LOCK_STATE_UNLOCKED:
+@@ -326,7 +409,7 @@ report_lock_release_event(struct trace_release_event *release_event,
+ 	struct lock_stat *st;
+ 	u64 hold_time;
+ 
+-	st = lock_stat_findnew(release_event->addr, release_event->name);
++	st = lock_stat_findnew(release_event->addr, NULL);
+ 
+ 	switch (st->state) {
+ 	case LOCK_STATE_UNLOCKED:
+@@ -357,6 +440,16 @@ end:
+ 	st->prev_event_time = timestamp;
+ }
+ 
++static void
++report_lock_class_init_event(struct trace_init_event *init_event,
++			struct event *__event __used,
++			int cpu __used,
++			u64 timestamp __used,
++			struct thread *thread __used)
++{
++	class_stat_findnew(init_event->class_id, init_event->name);
++}
++
+ /* lock oriented handlers */
+ /* TODO: handlers for CPU oriented, thread oriented */
+ static struct trace_lock_handler report_lock_ops  = {
+@@ -364,6 +457,7 @@ static struct trace_lock_handler report_lock_ops  = {
+ 	.acquired_event		= report_lock_acquired_event,
+ 	.contended_event	= report_lock_contended_event,
+ 	.release_event		= report_lock_release_event,
++	.init_event		= report_lock_class_init_event,
+ };
+ 
+ static struct trace_lock_handler *trace_handler;
+@@ -380,7 +474,8 @@ process_lock_acquire_event(void *data,
+ 
+ 	tmp = raw_field_value(event, "lockdep_addr", data);
+ 	memcpy(&acquire_event.addr, &tmp, sizeof(void *));
+-	acquire_event.name = (char *)raw_field_ptr(event, "name", data);
++	tmp = raw_field_value(event, "class_id", data);
++	memcpy(&acquire_event.class_id, &tmp, sizeof(void *));
+ 
+ 	if (trace_handler->acquire_event)
+ 		trace_handler->acquire_event(&acquire_event, event, cpu, timestamp, thread);
+@@ -398,7 +493,6 @@ process_lock_acquired_event(void *data,
+ 
+ 	tmp = raw_field_value(event, "lockdep_addr", data);
+ 	memcpy(&acquired_event.addr, &tmp, sizeof(void *));
+-	acquired_event.name = (char *)raw_field_ptr(event, "name", data);
+ 
+ 	if (trace_handler->acquire_event)
+ 		trace_handler->acquired_event(&acquired_event, event, cpu, timestamp, thread);
+@@ -416,7 +510,6 @@ process_lock_contended_event(void *data,
+ 
+ 	tmp = raw_field_value(event, "lockdep_addr", data);
+ 	memcpy(&contended_event.addr, &tmp, sizeof(void *));
+-	contended_event.name = (char *)raw_field_ptr(event, "name", data);
+ 
+ 	if (trace_handler->acquire_event)
+ 		trace_handler->contended_event(&contended_event, event, cpu, timestamp, thread);
+@@ -434,13 +527,30 @@ process_lock_release_event(void *data,
+ 
+ 	tmp = raw_field_value(event, "lockdep_addr", data);
+ 	memcpy(&release_event.addr, &tmp, sizeof(void *));
+-	release_event.name = (char *)raw_field_ptr(event, "name", data);
+ 
+ 	if (trace_handler->acquire_event)
+ 		trace_handler->release_event(&release_event, event, cpu, timestamp, thread);
+ }
+ 
+ static void
++process_lock_class_init_event(void *data,
++			struct event *event __used,
++			int cpu __used,
++			u64 timestamp __used,
++			struct thread *thread __used)
++{
++	struct trace_init_event init_event;
++	u64 tmp;
++
++	tmp = raw_field_value(event, "class_id", data);
++	memcpy(&init_event.class_id, &tmp, sizeof(void *));
++	init_event.name = (char *)raw_field_ptr(event, "class_name", data);
++
++	if (trace_handler->init_event)
++		trace_handler->init_event(&init_event, event, cpu, timestamp, thread);
++}
++
++static void
+ process_raw_event(void *data, int cpu,
+ 		  u64 timestamp, struct thread *thread)
+ {
+@@ -458,6 +568,8 @@ process_raw_event(void *data, int cpu,
+ 		process_lock_contended_event(data, event, cpu, timestamp, thread);
+ 	if (!strcmp(event->name, "lock_release"))
+ 		process_lock_release_event(data, event, cpu, timestamp, thread);
++	if (!strcmp(event->name, "lock_class_init"))
++		process_lock_class_init_event(data, event, cpu, timestamp, thread);
+ }
+ 
+ static int process_sample_event(event_t *event, struct perf_session *session)
+@@ -503,15 +615,23 @@ static void print_result(void)
+ 	printf("\n\n");
+ 
+ 	while ((st = pop_from_result())) {
++		char *name;
+ 		bzero(cut_name, 20);
+ 
+ 		printf("%p ", st->addr);
+ 
+-		if (strlen(st->name) < 16) {
++		if (!st->class)
++			name = (char *)"<unknown>";
++		else if (!st->class->name)
++			name = (char *)"<unknown2>";
++		else
++			name = st->class->name;
++
++		if (strlen(name) < 16) {
+ 			/* output raw name */
+-			printf("%20s ", st->name);
++			printf("%20s ", name);
+ 		} else {
+-			strncpy(cut_name, st->name, 16);
++			strncpy(cut_name, name, 16);
+ 			cut_name[16] = '.';
+ 			cut_name[17] = '.';
+ 			cut_name[18] = '.';
+@@ -533,12 +653,18 @@ static void print_result(void)
+ 
+ static void dump_map(void)
+ {
++	char *name;
+ 	unsigned int i;
+ 	struct lock_stat *st;
+ 
+ 	for (i = 0; i < LOCKHASH_SIZE; i++) {
+ 		list_for_each_entry(st, &lockhash_table[i], hash_entry) {
+-			printf("%p: %s\n", st->addr, st->name);
++			if (!st->class || !st->class->name)
++				name = (char *)"<unknown>";
++			else
++				name = st->class->name;
++
++			printf("%p: %s\n", st->addr, name);
+ 		}
+ 	}
+ }
+@@ -612,6 +738,7 @@ static const char *record_args[] = {
  	"-f",
  	"-m", "1024",
  	"-c", "1",
++	"-e", "lock:lock_class_init:r",
+ 	"-e", "lock:lock_acquire:r",
+ 	"-e", "lock:lock_acquired:r",
+ 	"-e", "lock:lock_contended:r",
+@@ -644,6 +771,8 @@ int cmd_lock(int argc, const char **argv, const char *prefix __used)
+ 	symbol__init();
+ 	for (i = 0; i < LOCKHASH_SIZE; i++)
+ 		INIT_LIST_HEAD(lockhash_table + i);
++	for (i = 0; i < LOCKHASH_SIZE; i++)
++		INIT_LIST_HEAD(classhash_table + i);
+ 
+ 	argc = parse_options(argc, argv, lock_options, lock_usage,
+ 			     PARSE_OPT_STOP_AT_NON_OPTION);
 -- 
 1.6.2.3
 
