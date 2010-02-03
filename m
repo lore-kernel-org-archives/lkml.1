@@ -1,66 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932279Ab0BCJZH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 04:25:07 -0500
-Received: from mx51.mymxserver.com ([85.199.173.110]:35913 "EHLO
-	mx51.mymxserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756617Ab0BCJZB (ORCPT
+	id S932328Ab0BCJZK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 04:25:10 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:46867 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756618Ab0BCJZE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 04:25:01 -0500
-From: Holger Schurig <holgerschurig@gmail.com>
-To: linux-wireless@vger.kernel.org
-Subject: Re: Linux wireless GSoC 2010 project ideas
-Date: Wed, 3 Feb 2010 10:23:24 +0100
-User-Agent: KMail/1.9.7
-Cc: Maxim Levitsky <maximlevitsky@gmail.com>, david@lang.hm,
-       "Luis R. Rodriguez" <mcgrof@gmail.com>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Witold Sowa <witold.sowa@gmail.com>,
-       Till Kamppeter <till.kamppeter@gmail.com>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org, lsb-discuss@lists.linux-foundation.org
-References: <43e72e891001281338u5f05307ble5360c3dac6ab9a2@mail.gmail.com> <alpine.DEB.2.00.1002011216040.7748@asgard.lang.hm> <1265059913.26165.6.camel@maxim-laptop>
-In-Reply-To: <1265059913.26165.6.camel@maxim-laptop>
+	Wed, 3 Feb 2010 04:25:04 -0500
+Date: Wed, 3 Feb 2010 09:24:53 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Amit Kucheria <amit.kucheria@canonical.com>
+Cc: List Linux Kernel <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel@lists.infradead.org, s.hauer@pengutronix.de,
+       valentin.longchamp@epfl.ch, daniel@caiaq.de, grant.likely@secretlab.ca,
+       Dinh.Nguyen@freescale.com, r.herring@freescale.com,
+       bryan.wu@canonical.com
+Subject: Re: [PATCHv2 05/11] mxc: Core support for i.MX5 series of
+	processors from Freescale
+Message-ID: <20100203092453.GA21921@n2100.arm.linux.org.uk>
+References: <cover.1265173480.git.amit.kucheria@canonical.com> <f10f79e7313ecdeeb59ab881795baedf2430c636.1265173480.git.amit.kucheria@canonical.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <201002031023.25086.holgerschurig@gmail.com>
+In-Reply-To: <f10f79e7313ecdeeb59ab881795baedf2430c636.1265173480.git.amit.kucheria@canonical.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Also, like I said, this should be a analysis, and not
-> wardriving/hacking tool.
-> And with GUI.
+On Tue, Feb 02, 2010 at 09:16:27PM -0800, Amit Kucheria wrote:
+> +static int _clk_pll_set_rate(struct clk *clk, unsigned long rate)
+> +{
+> +	u32 reg;
+> +	void __iomem *pllbase;
+> +
+> +	long mfi, pdf, mfn, mfd = 999999;
+> +	s64 temp64;
+> +	unsigned long quad_parent_rate;
+> +	unsigned long pll_hfsm, dp_ctl;
+> +	unsigned long parent_rate;
+> +
+> +	parent_rate = clk_get_rate(clk->parent);
+> +
+> +	pllbase = _get_pll_base(clk);
+> +
+> +	quad_parent_rate = 4 * parent_rate;
+> +	pdf = mfi = -1;
+> +	while (++pdf < 16 && mfi < 5)
+> +		mfi = rate * (pdf+1) / quad_parent_rate;
+> +	if (mfi > 15)
+> +		return -1;
 
-Please define "analysis". What exactly should be analyzed?
-
-Kismet can do:
-* construct list of all beaconing APs and IBSS devices
-* associate SSID to beacons because of assoc/auth req/resp
-* construct a list of all stations around
-* show used protection schema
-* get simple packet statistics
-* get simple signal level figures
-* ...
-
-But "analysis" can obviously be much more.
-
-Some of the analysis should also be done on driver level, e.g. 
-extend the nl80211-site-survey into mac80211 and add noise 
-reporting to some drivers (I have something preliminary for 
-ath5k). But also extend it to give channel occupation 
-statistics.
-
-
-And for a GUI, you could run kismet-server in the background and 
-write a GUI (e.g. in Qt, so that it runs on X11/Mac/Win).
-
-If the required analysis isn't easily put into kismet, you can of 
-course write a new application if you please so :-)  I for 
-example wrote a simple Qt application that has 25% of kismet's 
-capability, but with a GUI. Unfortunately still Qt3.
-
--- 
-http://www.holgerschurig.de
+Why not "return -EPERM" since what you're actually saying here by
+returning -1 is "Permission Denied"?  If you didn't mean "Permission
+Denied", then don't use return -1.
