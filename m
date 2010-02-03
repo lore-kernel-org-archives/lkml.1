@@ -1,133 +1,196 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932273Ab0BCDrQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 22:47:16 -0500
-Received: from buzzloop.caiaq.de ([212.112.241.133]:45784 "EHLO
-	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754362Ab0BCDpt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 22:45:49 -0500
-From: Daniel Mack <daniel@caiaq.de>
-To: linux-kernel@vger.kernel.org
-Cc: Daniel Mack <daniel@caiaq.de>, Jiri Kosina <trivial@kernel.org>,
-       Junio C Hamano <gitster@pobox.com>
-Subject: [PATCH 05/11] tree-wide: Fix spelling of 'argument'
-Date: Wed,  3 Feb 2010 00:48:21 +0800
-Message-Id: <1265129307-18201-5-git-send-email-daniel@caiaq.de>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1265129307-18201-4-git-send-email-daniel@caiaq.de>
-References: <1265129307-18201-1-git-send-email-daniel@caiaq.de>
- <1265129307-18201-2-git-send-email-daniel@caiaq.de>
- <1265129307-18201-3-git-send-email-daniel@caiaq.de>
- <1265129307-18201-4-git-send-email-daniel@caiaq.de>
+	id S1754430Ab0BCDz3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 22:55:29 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:64782 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753668Ab0BCDz0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 22:55:26 -0500
+Message-ID: <4B68F32A.9040203@cn.fujitsu.com>
+Date: Wed, 03 Feb 2010 11:53:14 +0800
+From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Paul Mackerras <paulus@samba.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] perf tools: using O_LARGEFILE to open perf data file
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Daniel Mack <daniel@caiaq.de>
-Cc: Jiri Kosina <trivial@kernel.org>
-Cc: Junio C Hamano <gitster@pobox.com>
----
- Documentation/s390/kvm.txt      |    2 +-
- drivers/scsi/pmcraid.h          |    2 +-
- drivers/usb/serial/cypress_m8.c |    2 +-
- fs/ext4/move_extent.c           |    2 +-
- fs/fuse/inode.c                 |    2 +-
- fs/gfs2/ops_fstype.c            |    2 +-
- scripts/gfp-translate           |    2 +-
- 7 files changed, 7 insertions(+), 7 deletions(-)
+Open perf data file with O_LARGEFILE flag since its size is easy
+larger that 2G.
 
-diff --git a/Documentation/s390/kvm.txt b/Documentation/s390/kvm.txt
-index 6f5ceb0..85f3280 100644
---- a/Documentation/s390/kvm.txt
-+++ b/Documentation/s390/kvm.txt
-@@ -102,7 +102,7 @@ args:		unsigned long
- see also:	include/linux/kvm.h
- This ioctl stores the state of the cpu at the guest real address given as
- argument, unless one of the following values defined in include/linux/kvm.h
--is given as arguement:
-+is given as argument:
- KVM_S390_STORE_STATUS_NOADDR - the CPU stores its status to the save area in
- absolute lowcore as defined by the principles of operation
- KVM_S390_STORE_STATUS_PREFIXED - the CPU stores its status to the save area in
-diff --git a/drivers/scsi/pmcraid.h b/drivers/scsi/pmcraid.h
-index 92f89d5..b8ad07c 100644
---- a/drivers/scsi/pmcraid.h
-+++ b/drivers/scsi/pmcraid.h
-@@ -938,7 +938,7 @@ static struct pmcraid_ioasc_error pmcraid_ioasc_error_table[] = {
+For example:
+
+# rm -rf perf.data
+# ./perf kmem record sleep 300
+
+[ perf record: Woken up 0 times to write data ]
+[ perf record: Captured and wrote 3142.147 MB perf.data (~137282513 samples) ]
+
+# ll -h perf.data 
+-rw------- 1 root root 3.1G .....
+
+Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+---
+ tools/perf/builtin-record.c        |    5 ++++-
+ tools/perf/util/header.c           |   22 +++++++++++++---------
+ tools/perf/util/session.c          |    5 ++++-
+ tools/perf/util/trace-event-read.c |    4 ++--
+ 4 files changed, 23 insertions(+), 13 deletions(-)
+
+diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
+index eea5691..949167e 100644
+--- a/tools/perf/builtin-record.c
++++ b/tools/perf/builtin-record.c
+@@ -5,6 +5,9 @@
+  * (or a CPU, or a PID) into the perf.data output file - for
+  * later analysis via perf report.
+  */
++#define _LARGEFILE64_SOURCE
++#define _FILE_OFFSET_BITS 64
++
+ #include "builtin.h"
  
- /*
-  * pmcraid_ioctl_header - definition of header structure that preceeds all the
-- * buffers given as ioctl arguements.
-+ * buffers given as ioctl arguments.
-  *
-  * .signature           : always ASCII string, "PMCRAID"
-  * .reserved            : not used
-diff --git a/drivers/usb/serial/cypress_m8.c b/drivers/usb/serial/cypress_m8.c
-index a591ebe..52a81a3 100644
---- a/drivers/usb/serial/cypress_m8.c
-+++ b/drivers/usb/serial/cypress_m8.c
-@@ -154,7 +154,7 @@ struct cypress_private {
- 	int isthrottled;		   /* if throttled, discard reads */
- 	wait_queue_head_t delta_msr_wait;  /* used for TIOCMIWAIT */
- 	char prev_status, diff_status;	   /* used for TIOCMIWAIT */
--	/* we pass a pointer to this as the arguement sent to
-+	/* we pass a pointer to this as the argument sent to
- 	   cypress_set_termios old_termios */
- 	struct ktermios tmp_termios; 	   /* stores the old termios settings */
- };
-diff --git a/fs/ext4/move_extent.c b/fs/ext4/move_extent.c
-index 82c415b..12a9ec7 100644
---- a/fs/ext4/move_extent.c
-+++ b/fs/ext4/move_extent.c
-@@ -928,7 +928,7 @@ out2:
- }
+ #include "perf.h"
+@@ -451,7 +454,7 @@ static int __cmd_record(int argc, const char **argv)
+ 		append_file = 0;
+ 	}
  
- /**
-- * mext_check_argumants - Check whether move extent can be done
-+ * mext_check_arguments - Check whether move extent can be done
-  *
-  * @orig_inode:		original inode
-  * @donor_inode:	donor inode
-diff --git a/fs/fuse/inode.c b/fs/fuse/inode.c
-index 1a822ce..ec14d19 100644
---- a/fs/fuse/inode.c
-+++ b/fs/fuse/inode.c
-@@ -850,7 +850,7 @@ static void fuse_send_init(struct fuse_conn *fc, struct fuse_req *req)
- 	req->in.args[0].size = sizeof(*arg);
- 	req->in.args[0].value = arg;
- 	req->out.numargs = 1;
--	/* Variable length arguement used for backward compatibility
-+	/* Variable length argument used for backward compatibility
- 	   with interface version < 7.5.  Rest of init_out is zeroed
- 	   by do_get_request(), so a short reply is not a problem */
- 	req->out.argvar = 1;
-diff --git a/fs/gfs2/ops_fstype.c b/fs/gfs2/ops_fstype.c
-index edfee24..0556f7f 100644
---- a/fs/gfs2/ops_fstype.c
-+++ b/fs/gfs2/ops_fstype.c
-@@ -992,7 +992,7 @@ static const struct lm_lockops nolock_ops = {
- /**
-  * gfs2_lm_mount - mount a locking protocol
-  * @sdp: the filesystem
-- * @args: mount arguements
-+ * @args: mount arguments
-  * @silent: if 1, don't complain if the FS isn't a GFS2 fs
-  *
-  * Returns: errno
-diff --git a/scripts/gfp-translate b/scripts/gfp-translate
-index 073cb6d..d81b968 100644
---- a/scripts/gfp-translate
-+++ b/scripts/gfp-translate
-@@ -19,7 +19,7 @@ usage() {
- 	exit 0
- }
+-	flags = O_CREAT|O_RDWR;
++	flags = O_CREAT|O_RDWR|O_LARGEFILE;
+ 	if (append_file)
+ 		file_new = 0;
+ 	else
+diff --git a/tools/perf/util/header.c b/tools/perf/util/header.c
+index 2bb2bdb..ed3efd7 100644
+--- a/tools/perf/util/header.c
++++ b/tools/perf/util/header.c
+@@ -1,3 +1,6 @@
++#define _LARGEFILE64_SOURCE
++#define _FILE_OFFSET_BITS 64
++
+ #include <sys/types.h>
+ #include <byteswap.h>
+ #include <unistd.h>
+@@ -382,7 +385,7 @@ static int perf_header__adds_write(struct perf_header *self, int fd)
+ 	sec_size = sizeof(*feat_sec) * nr_sections;
  
--# Parse command-line arguements
-+# Parse command-line arguments
- while [ $# -gt 0 ]; do
- 	case $1 in
- 		--source)
+ 	sec_start = self->data_offset + self->data_size;
+-	lseek(fd, sec_start + sec_size, SEEK_SET);
++	lseek64(fd, sec_start + sec_size, SEEK_SET);
+ 
+ 	if (perf_header__has_feat(self, HEADER_TRACE_INFO)) {
+ 		struct perf_file_section *trace_sec;
+@@ -390,9 +393,9 @@ static int perf_header__adds_write(struct perf_header *self, int fd)
+ 		trace_sec = &feat_sec[idx++];
+ 
+ 		/* Write trace info */
+-		trace_sec->offset = lseek(fd, 0, SEEK_CUR);
++		trace_sec->offset = lseek64(fd, 0, SEEK_CUR);
+ 		read_tracing_data(fd, attrs, nr_counters);
+-		trace_sec->size = lseek(fd, 0, SEEK_CUR) - trace_sec->offset;
++		trace_sec->size = lseek64(fd, 0, SEEK_CUR) - trace_sec->offset;
+ 	}
+ 
+ 
+@@ -402,17 +405,18 @@ static int perf_header__adds_write(struct perf_header *self, int fd)
+ 		buildid_sec = &feat_sec[idx++];
+ 
+ 		/* Write build-ids */
+-		buildid_sec->offset = lseek(fd, 0, SEEK_CUR);
++		buildid_sec->offset = lseek64(fd, 0, SEEK_CUR);
+ 		err = dsos__write_buildid_table(fd);
+ 		if (err < 0) {
+ 			pr_debug("failed to write buildid table\n");
+ 			goto out_free;
+ 		}
+-		buildid_sec->size = lseek(fd, 0, SEEK_CUR) - buildid_sec->offset;
++		buildid_sec->size = lseek64(fd, 0, SEEK_CUR) -
++					    buildid_sec->offset;
+ 		dsos__cache_build_ids();
+ 	}
+ 
+-	lseek(fd, sec_start, SEEK_SET);
++	lseek64(fd, sec_start, SEEK_SET);
+ 	err = do_write(fd, feat_sec, sec_size);
+ 	if (err < 0)
+ 		pr_debug("failed to write feature section\n");
+@@ -506,7 +510,7 @@ int perf_header__write(struct perf_header *self, int fd, bool at_exit)
+ 		pr_debug("failed to write perf header\n");
+ 		return err;
+ 	}
+-	lseek(fd, self->data_offset + self->data_size, SEEK_SET);
++	lseek64(fd, self->data_offset + self->data_size, SEEK_SET);
+ 
+ 	self->frozen = 1;
+ 	return 0;
+@@ -560,7 +564,7 @@ int perf_header__process_sections(struct perf_header *self, int fd,
+ 
+ 	sec_size = sizeof(*feat_sec) * nr_sections;
+ 
+-	lseek(fd, self->data_offset + self->data_size, SEEK_SET);
++	lseek64(fd, self->data_offset + self->data_size, SEEK_SET);
+ 
+ 	if (perf_header__getbuffer64(self, fd, feat_sec, sec_size))
+ 		goto out_free;
+@@ -634,7 +638,7 @@ static int perf_file_section__process(struct perf_file_section *self,
+ 				      struct perf_header *ph,
+ 				      int feat, int fd)
+ {
+-	if (lseek(fd, self->offset, SEEK_SET) < 0) {
++	if (lseek64(fd, self->offset, SEEK_SET) < 0) {
+ 		pr_debug("Failed to lseek to %Ld offset for feature %d, "
+ 			 "continuing...\n", self->offset, feat);
+ 		return 0;
+diff --git a/tools/perf/util/session.c b/tools/perf/util/session.c
+index 8e7c189..cf91d09 100644
+--- a/tools/perf/util/session.c
++++ b/tools/perf/util/session.c
+@@ -1,3 +1,6 @@
++#define _LARGEFILE64_SOURCE
++#define _FILE_OFFSET_BITS 64
++
+ #include <linux/kernel.h>
+ 
+ #include <byteswap.h>
+@@ -12,7 +15,7 @@ static int perf_session__open(struct perf_session *self, bool force)
+ {
+ 	struct stat input_stat;
+ 
+-	self->fd = open(self->filename, O_RDONLY);
++	self->fd = open(self->filename, O_RDONLY|O_LARGEFILE);
+ 	if (self->fd < 0) {
+ 		pr_err("failed to open file: %s", self->filename);
+ 		if (!strcmp(self->filename, "perf.data"))
+diff --git a/tools/perf/util/trace-event-read.c b/tools/perf/util/trace-event-read.c
+index 1744422..ca3c26d 100644
+--- a/tools/perf/util/trace-event-read.c
++++ b/tools/perf/util/trace-event-read.c
+@@ -83,7 +83,7 @@ static char *read_string(void)
+ 	char *str = NULL;
+ 	int size = 0;
+ 	int i;
+-	int r;
++	s64 r;
+ 
+ 	for (;;) {
+ 		r = read(input_fd, buf, BUFSIZ);
+@@ -117,7 +117,7 @@ static char *read_string(void)
+ 	i++;
+ 
+ 	/* move the file descriptor to the end of the string */
+-	r = lseek(input_fd, -(r - i), SEEK_CUR);
++	r = lseek64(input_fd, -(r - i), SEEK_CUR);
+ 	if (r < 0)
+ 		die("lseek");
+ 
 -- 
-1.6.3.3
+1.6.1.2
 
