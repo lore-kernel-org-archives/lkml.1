@@ -1,70 +1,97 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757167Ab0BCPYw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 10:24:52 -0500
-Received: from qw-out-2122.google.com ([74.125.92.24]:57813 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756747Ab0BCPYv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 10:24:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :content-type;
-        b=o2LvUHauk+q1bfGr9udRB55lU483poPO9kDrVSvpD5WXHnUHjFY4SsZ/qTYozeaMnL
-         VQN9QFwcsycWlGP0LW8GA+ymEZeMc5MIEdg2293fa86RTQtX/AtEA7fuHDfJZ9tkZZXu
-         gmDqwhtkQwGQQ8OLNaNzIewcnt1ndPmcMT7rU=
+	id S1757224Ab0BCPZr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 10:25:47 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:27726 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756713Ab0BCPZp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 10:25:45 -0500
+Date: Wed, 3 Feb 2010 10:24:59 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 00/11] [RFC] 512K readahead size with thrashing safe
+	readahead
+Message-ID: <20100203152454.GA17059@redhat.com>
+References: <20100202152835.683907822@intel.com> <20100202223803.GF3922@redhat.com> <20100203062756.GB22890@localhost>
 MIME-Version: 1.0
-In-Reply-To: <20100203133840.GD5252@k2>
-References: <cover.1265173246.git.amit.kucheria@verdurent.com> 
-	<0511204199ab83aed2340e70a4639500c0528dab.1265173480.git.amit.kucheria@canonical.com> 
-	<9fa7a3c70c46a1f776c6520051481cff6525ef02.1265173480.git.amit.kucheria@canonical.com> 
-	<cover.1265173480.git.amit.kucheria@canonical.com> <ccc89dd7a6035abf5a78680404a2b30b9e025353.1265173480.git.amit.kucheria@canonical.com> 
-	<ec63e5978fd5ac5d308ede5916e648ba925818eb.1265173480.git.amit.kucheria@canonical.com> 
-	<f17812d71002022243s7b68dab0ycc19238535384d4f@mail.gmail.com> 
-	<20100203094959.GN6130@pengutronix.de> <20100203133840.GD5252@k2>
-From: Eric Miao <eric.y.miao@gmail.com>
-Date: Wed, 3 Feb 2010 07:16:53 -0800
-Message-ID: <f17812d71002030716y7e6eb65ei78d3ef78ecf03ad4@mail.gmail.com>
-Subject: Re: [PATCHv2 04/11] mxc: changes to common plat-mxc code to add 
-	support for i.MX5
-To: Sascha Hauer <s.hauer@pengutronix.de>, Eric Miao <eric.y.miao@gmail.com>,
-       List Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux@arm.linux.org.uk, Dinh.Nguyen@freescale.com,
-       grant.likely@secretlab.ca, r.herring@freescale.com,
-       linux-arm-kernel@lists.infradead.org, daniel@caiaq.de,
-       bryan.wu@canonical.com, valentin.longchamp@epfl.ch
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100203062756.GB22890@localhost>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 3, 2010 at 5:38 AM, Amit Kucheria
-<amit.kucheria@canonical.com> wrote:
-> On 10 Feb 03, Sascha Hauer wrote:
->> On Tue, Feb 02, 2010 at 10:43:33PM -0800, Eric Miao wrote:
->> >
->> > Mmm.... this should be something that we really need to get rid of, it just
->> > makes a single kernel for both TZIC and AVIC together impossible, if that's
->> > so designed by HW, I'm thinking about keeping this into plat-mxc/ is a good
->> > way to go ...
->> >
->> > Sascha, you have any better idea? Provided the other file debug-macro.S in
->> > the same directory already seems to break the support for multiple arches?
->> >
->>
->> I have the following patch which I'm not sure I like better. It can
->> support both irq controller types and does not add overhead if only one
->> of them is compiled in. It might need some refactoring to fit into Amits
->> patch stack.
->
-> Is co-existence of TZIC and AVIC a blocker to merging i.MX5 code? I've
-> already made changes so that i.MX5 doesn't explode if AVIC is compiled in.
->
-> Admittedly the assembly is a bit hard to rid, but we can fix in another set
-> of patches geared towards unification of an i.MX kernel. IMHO, making these
-> changes along with introducing a new SoC will make things a bit hard to
-> follow/merge.
->
+On Wed, Feb 03, 2010 at 02:27:56PM +0800, Wu Fengguang wrote:
+> Vivek,
+> 
+> On Wed, Feb 03, 2010 at 06:38:03AM +0800, Vivek Goyal wrote:
+> > On Tue, Feb 02, 2010 at 11:28:35PM +0800, Wu Fengguang wrote:
+> > > Andrew,
+> > > 
+> > > This is to lift default readahead size to 512KB, which I believe yields
+> > > more I/O throughput without noticeably increasing I/O latency for today's HDD.
+> > > 
+> > 
+> > Hi Fengguang,
+> > 
+> > I was doing a quick test with the patches. I was using fio to run some
+> > sequential reader threads. I have got one access to one Lun from an HP
+> > EVA. In my case it looks like with the patches throughput has come down.
+> 
+> Thank you for the quick testing!
+> 
+> This patchset does 3 things:
+> 
+> 1) 512K readahead size
+> 2) new readahead algorithms
+> 3) new readahead tracing/stats interfaces
+> 
+> (1) will impact performance, while (2) _might_ impact performance in
+> case of bugs.
+> 
+> Would you kindly retest the patchset with readahead size manually set
+> to 128KB?  That would help identify the root cause of the performance
+> drop:
+> 
+>         DEV=sda
+>         echo 128 > /sys/block/$DEV/queue/read_ahead_kb
+> 
 
-I personally don't feel that's a hard requirement, as long as it can be fixed.
+I have got two paths to the HP EVA and got multipath device setup(dm-3). I
+noticed with vanilla kernel read_ahead_kb=128 after boot but with your patches
+applied it is set to 4. So looks like something went wrong with device
+size/capacity detection hence wrong defaults. Manually setting
+read_ahead_kb=512, got me better performance as compare to vanilla kernel.
+
+AVERAGE[bsr]    
+------- 
+job       Set NR  ReadBW(KB/s)   MaxClat(us)    WriteBW(KB/s)  MaxClat(us)    
+---       --- --  ------------   -----------    -------------  -----------    
+bsr       3   1   190302         97937.3        0              0              
+bsr       3   2   185636         223286         0              0              
+bsr       3   4   185986         363658         0              0              
+bsr       3   8   184352         428478         0              0              
+bsr       3   16  185646         594311         0              0              
+
+Thanks
+Vivek
+ 
+> The readahead stats provided by the patchset are very useful for
+> analyzing the problem:
+> 
+>         mount -t debugfs none /debug
+>         
+>         # for each benchmark:
+>                 echo > /debug/readahead/stats  # reset counters
+>                 # do benchmark
+>                 cat /debug/readahead/stats     # check counters
+> 
+> Thanks,
+> Fengguang
