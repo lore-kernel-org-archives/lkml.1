@@ -1,49 +1,60 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757483Ab0BCRM6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 12:12:58 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60144
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757427Ab0BCRM4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 12:12:56 -0500
-Date: Wed, 03 Feb 2010 09:13:09 -0800 (PST)
-Message-Id: <20100203.091309.52886984.davem@davemloft.net>
-To: arnd@arndb.de
-Cc: hch@lst.de, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, tony.luck@intel.com, ralf@linux-mips.org,
-       kyle@mcmartin.ca, benh@kernel.crashing.org, schwidefsky@de.ibm.com,
-       heiko.carstens@de.ibm.com, tglx@linutronix.de, mingo@redhat.com,
-       hpa@zytor.com, viro@zeniv.linux.org.uk
-Subject: Re: [PATCH 4/6] improve sys_personality for compat architectures
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <201002031806.27423.arnd@arndb.de>
-References: <201002021536.51928.arnd@arndb.de>
-	<20100202163145.GA30659@lst.de>
-	<201002031806.27423.arnd@arndb.de>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	id S1757496Ab0BCRNH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 12:13:07 -0500
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:53274 "EHLO e9.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757427Ab0BCRNE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 12:13:04 -0500
+Message-ID: <4B69AE88.7080705@us.ibm.com>
+Date: Wed, 03 Feb 2010 09:12:40 -0800
+From: Darren Hart <dvhltc@us.ibm.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: rostedt@goodmis.org
+CC: John Kacur <jkacur@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] trace-cmd: fix printf compile warnings
+References: <1265043026-24987-1-git-send-email-dvhltc@us.ibm.com> <1265043026-24987-3-git-send-email-dvhltc@us.ibm.com> <520f0cf11002030807t48678b82ye56624840e6f9ce3@mail.gmail.com> <1265214665.24386.3.camel@gandalf.stny.rr.com>
+In-Reply-To: <1265214665.24386.3.camel@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Wed, 3 Feb 2010 18:06:27 +0100
-
->> But if the consensus is that we should fix this properly I can
->> replace the patch with one introducing a compat_sys_personality
->> which only gets used for compat tasks.
+Steven Rostedt wrote:
+> On Wed, 2010-02-03 at 17:07 +0100, John Kacur wrote:
+>> On Mon, Feb 1, 2010 at 5:50 PM, Darren Hart <dvhltc@us.ibm.com> wrote:
+>>> Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
+>>> ---
+>>>  trace-read.c |    2 +-
+>>>  1 files changed, 1 insertions(+), 1 deletions(-)
+>>>
+>>> diff --git a/trace-read.c b/trace-read.c
+>>> index a04c85b..5befaba 100644
+>>> --- a/trace-read.c
+>>> +++ b/trace-read.c
+>>> @@ -216,7 +216,7 @@ static void read_rest(void)
+>>>                r = read(input_fd, buf, BUFSIZ);
+>>>                if (r > 0) {
+>>>                        buf[r] = 0;
+>>> -                       printf(buf);
+>>> +                       printf("%s", buf);
+>>>                }
+>>>        } while (r > 0);
+>>>  }
+>>> --
+>>> 1.6.3.3
+>>>
+>> Oh! Obviously correct, thanks Darren.
 > 
-> Right now, sparc64 and powerpc64 use sys32_personality for both native
-> and compat tasks, x86 never uses it and all others use it only for
-> compat tasks. That seems more sensible if we keep this function at
-> all.
+> Of the three patches, I think this is the only one that is correct ;-)
 
-If it only gets used for compat tasks, you can only switch in
-one direction.  I think it needs to be handled for both compat
-and non-compat tasks, in order to allow for that.
+The other appear to depend on the guint arch specific implementation of 
+the guint64 type, so the only way to fix it with a cast to ull - or to 
+not use g types at all. Bleh.
 
-That's why powerpc64 and sparc64 do things the way they do,
-I am pretty sure.
+-- 
+Darren Hart
+IBM Linux Technology Center
+Real-Time Linux Team
