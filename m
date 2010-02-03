@@ -1,95 +1,101 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756454Ab0BCOyz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 09:54:55 -0500
-Received: from smtp-out.google.com ([216.239.44.51]:6771 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755013Ab0BCOyy (ORCPT
+	id S1755457Ab0BCPBM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 10:01:12 -0500
+Received: from mail-fx0-f215.google.com ([209.85.220.215]:59549 "EHLO
+	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753752Ab0BCPBI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 09:54:54 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:x-system-of-record;
-	b=oD4mYgnewkhMMcUua1KZTUCfvFGVJMV+4lSu0uW0FsyOFLIcnAeCPJOtFCp7oILcF
-	qhTsdvxjnJoaZFtDDgPkg==
-MIME-Version: 1.0
-In-Reply-To: <1265208012.24455.592.camel@laptop>
-References: <1265129772.24455.329.camel@laptop>
-	 <20100202182653.GB19320@elte.hu> <1265135588.24455.350.camel@laptop>
-	 <bd4cb8901002030522s6306fdf4qbf4eb48c0674d980@mail.gmail.com>
-	 <1265205361.24455.533.camel@laptop>
-	 <bd4cb8901002030607y519c191av733231ba2aec2e9c@mail.gmail.com>
-	 <1265206784.24455.568.camel@laptop>
-	 <bd4cb8901002030630naaa83c1j397759750007ae4c@mail.gmail.com>
-	 <1265208012.24455.592.camel@laptop>
-Date: Wed, 3 Feb 2010 15:54:49 +0100
-Message-ID: <bd4cb8901002030654g25026797xff6aa9786f029590@mail.gmail.com>
-Subject: Re: [RFC][PATCH] perf_events, x86: PEBS support
-From: Stephane Eranian <eranian@google.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
-       "Metzger, Markus T" <markus.t.metzger@intel.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Robert Richter <robert.richter@amd.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Jamie Iles <jamie.iles@picochip.com>, Paul Mundt <lethal@linux-sh.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, perfmon2-devel@lists.sf.net
-Content-Type: text/plain; charset=UTF-8
-X-System-Of-Record: true
+	Wed, 3 Feb 2010 10:01:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=k4CnYIrIdsVTseWJGdp9xpR4lxVDYNQlLiNvvRI7APaDbVMmVtAfzJpVq/jpblpB/u
+         UlAWwVf4IZmAif9zAYg3bYVU9ksvFL3s1p+LD2Hy5+0TychtG1Wv1GXynUfacVF2p/NQ
+         nKmSIlXZr7G3ANSIFrp1GyzsnLNARuYWdyIi0=
+Subject: Re: Improving OOM killer
+From: Minchan Kim <minchan.kim@gmail.com>
+To: balbir@linux.vnet.ibm.com
+Cc: Lubos Lunak <l.lunak@suse.cz>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       David Rientjes <rientjes@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Nick Piggin <npiggin@suse.de>, Jiri Kosina <jkosina@suse.cz>
+In-Reply-To: <20100203122526.GG19641@balbir.in.ibm.com>
+References: <201002012302.37380.l.lunak@suse.cz>
+	 <20100203085711.GF19641@balbir.in.ibm.com>
+	 <201002031310.28271.l.lunak@suse.cz>
+	 <20100203122526.GG19641@balbir.in.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 04 Feb 2010 00:00:54 +0900
+Message-ID: <1265209254.1052.24.camel@barrios-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 3, 2010 at 3:40 PM, Peter Zijlstra <peterz@infradead.org> wrote:
-> On Wed, 2010-02-03 at 15:30 +0100, Stephane Eranian wrote:
->> On Wed, Feb 3, 2010 at 3:19 PM, Peter Zijlstra <peterz@infradead.org> wrote:
->> > On Wed, 2010-02-03 at 15:07 +0100, Stephane Eranian wrote:
->> >> >> The only improvement that PEBS provides is that you get an IP and the
->> >> >> machine state at retirement of an instruction that caused the event to
->> >> >> increment. Thus, the IP points to the next dynamic instruction. The instruction
->> >> >> is not the one that cause the P-th occurence of the event, if you set the
->> >> >> period to P. It is at P+N, where N cannot be predicted and varies depending
->> >> >> on the event and executed code. This introduces some bias in the samples..
->> >> >
->> >> > I'm not sure I follow, it records the next event after overflow, doesn't
->> >> > that make it P+1?
->> >> >
->> >> That is not what I wrote. I did not say if records at P+1. I said it records
->> >> at P+N, where N varies from sample to sample and cannot be predicted.
->> >> N is expressed in the unit of the sampling event.
->> >
->> > OK, so I'm confused.
->> >
->> > The manual says it arms the PEBS assist on overflow, and the PEBS thing
->> > will then record the next event. Which to me reads like P+1.
->> >
->> you are assuming arming is instantaneous.
->
-> Yes I was, ok that stinks.
->
-PEBS is still very useful because it guarantees the state you capture
-is at retirement of an instruction which caused the event.
+On Wed, 2010-02-03 at 17:55 +0530, Balbir Singh wrote:
+> * Lubos Lunak <l.lunak@suse.cz> [2010-02-03 13:10:27]:
+> 
+> > On Wednesday 03 of February 2010, Balbir Singh wrote:
+> > > * Lubos Lunak <l.lunak@suse.cz> [2010-02-01 23:02:37]:
+> > > >  In other words, use VmRSS for measuring memory usage instead of VmSize,
+> > > > and remove child accumulating.
+> > >
+> > > I am not sure of the impact of changing to RSS, although I've
+> > > personally believed that RSS based accounting is where we should go,
+> > > but we need to consider the following
+> > >
+> > > 1. Total VM provides data about potentially swapped pages,
+> > 
+> >  Yes, I've already updated my proposal in another mail to switch from VmSize 
+> > to VmRSS+InSwap. I don't know how to find out the second item in code, but at 
+> > this point of discussion that's just details.
+> > 
 
-PEBS also gets way more interesting on Nehalem because of the
-ability to capture where cache misses occur. That's the load latency
-feature. You need to support that.
+We have swap count with mm-count-swap-usage.patch by Kame in mmtom.
 
-I believe you would need to abstract this in a generic fashion so it
-could be used on other architectures, such as AMD with IBS.
+> I am yet to catch up with the rest of the thread. Thanks for heads up.
+> 
+> > > overcommit, 
+> > 
+> >  I don't understand how this matters. Overcommit is memory for which address 
+> > space has been allocated but not actual memory, right? Then that's exactly 
+> > what I'm claiming is wrong and am trying to reverse. Currently OOM killer 
+> > takes this into account because it uses VmSize, but IMO it shouldn't - if a 
+> > process does malloc(400M) but then it uses only a tiny fraction of that, in 
+> > the case of memory shortage killing that process does not solve anything in 
+> > practice.
+> 
+> We have a way of tracking commmitted address space, which is more
+> sensible than just allocating memory and is used for tracking
+> overcommit. I was suggesting that, that might be a better approach.
 
-On Nehalem, it requires the following:
+Yes. It does make sense. At least total_vm doesn't care about
+MAP_NORESERVE case. But unfortunately, it's a per CPU not per Process.
 
-- only works if you sample on MEM_INST_RETIRED:LATENCY_ABOVE_THRESHOLD.
+> 
+> > 
+> > > etc.
+> > > 2. RSS alone is not sufficient, RSS does not account for shared pages,
+> > > so we ideally need something like PSS.
+> > 
+> >  Just to make sure I understand what you mean with "RSS does not account for 
+> > shared pages" - you say that if a page is shared by 4 processes, then when 
+> > calculating badness for them, only 1/4 of the page should be counted for 
+> > each? Yes, I suppose so, that makes sense.
+> 
+> Yes, that is what I am speaking of
 
-- the threshold must be programmed into a dedicated MSR. The extra
-  difficulty is that this MSR is shared between CPU when HT is on.
+I agree. If we want to make RSS with base of badness, it's one of things
+we have to solve.
 
 
-> If only they would reset the counter on overflow instead of on record,
-> that would solve quite a few issues I imagine.
->
-> Then add IP to the actual instruction and you've got yourself a useful
-> tool :-)
->
->
+-- 
+Kind regards,
+Minchan Kim
+
+
