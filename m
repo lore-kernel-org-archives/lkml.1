@@ -1,52 +1,80 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932461Ab0BCKdn (ORCPT <rfc822;w@1wt.eu>);
+	id S932472Ab0BCKdq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 05:33:46 -0500
+Received: from hera.kernel.org ([140.211.167.34]:41627 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757080Ab0BCKdn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 3 Feb 2010 05:33:43 -0500
-Received: from casper.infradead.org ([85.118.1.10]:39354 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757080Ab0BCKdm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 05:33:42 -0500
-Subject: Re: [RFC GIT PULL] perf/trace/lock optimization/scalability
- improvements
-From: Peter Zijlstra <peterz@infradead.org>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Paul Mackerras <paulus@samba.org>,
-       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
-       Li Zefan <lizf@cn.fujitsu.com>, Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Jens Axboe <jens.axboe@oracle.com>
-In-Reply-To: <1265188475-23509-1-git-send-regression-fweisbec@gmail.com>
-References: <1265188475-23509-1-git-send-regression-fweisbec@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 03 Feb 2010 11:33:16 +0100
-Message-ID: <1265193196.24455.390.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+Message-ID: <4B6950B2.9060301@kernel.org>
+Date: Wed, 03 Feb 2010 02:32:18 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+MIME-Version: 1.0
+To: Brandon Philips <bphilips@suse.de>
+CC: Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       YinghaiLu@suse.de, Suresh Siddha <suresh.b.siddha@intel.com>,
+       linux-kernel@vger.kernel.org, x86@kernel.org,
+       stable <stable@kernel.org>
+Subject: Re: x86: fix race in create_irq_nr on irq_desc
+References: <20100203033109.GA17985@jenkins.home.ifup.org>
+In-Reply-To: <20100203033109.GA17985@jenkins.home.ifup.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-02-03 at 10:14 +0100, Frederic Weisbecker wrote:
-> - event injection support
+On 02/02/2010 07:31 PM, Brandon Philips wrote:
+> Race in create_irq_nr():
+> 
+> - Thread 1 loops through and calls irq_to_desc_alloc_node with new=0x66.
+> 
+> - Thread 2 has exited the loop with irq=0x66 and calls dynamic_irq_init(0x66)
+>   setting desc->chip_data = NULL
+> 
+> - Thread 1 then dereferences NULL via desc_new->chip_data->vector
+> 
+> Fix by moving holding vector_lock until after the dynamic_irq_init().
+> 
+> 
+> Index: linux-2.6.32-SLE11-SP1/arch/x86/kernel/apic/io_apic.c
+> ===================================================================
+> --- linux-2.6.32-SLE11-SP1.orig/arch/x86/kernel/apic/io_apic.c
+> +++ linux-2.6.32-SLE11-SP1/arch/x86/kernel/apic/io_apic.c
 
-I like the idea, I'm just not sure about the name and API details.
+can you check if 
 
-I would like to call it something like collection support, and the API
-should have an iterator like interface. 
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=37ef2a3029fde884808ff1b369677abc7dd9a79a
 
-That is, it should not blindly dump all events from a collection at
-once, praying the output buffer is large enough, but either dump a
-specified number and/or stop dumping when the buffer is full. Allowing a
-second invocation to continue where it left off after the buffer content
-has been consumed.
+fix your problem with 2.6.32?
 
-Which brings us to the ioctl() interface, we can do the above using
-ioctl()s, but it seems to me we're starting to get ioctl() heavy and
-should be looking at alternative ways of extending this.
+>From 37ef2a3029fde884808ff1b369677abc7dd9a79a Mon Sep 17 00:00:00 2001
+From: Yinghai Lu <yinghai@kernel.org>
+Date: Sat, 21 Nov 2009 00:23:37 -0800
+Subject: [PATCH] x86: Re-get cfg_new in case reuse/move irq_desc
 
-Anybody any bright ideas?
+When irq_desc is moved, we need to make sure to use the right cfg_new.
+
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+LKML-Reference: <4B07A739.3030104@kernel.org>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/kernel/apic/io_apic.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
+index ff23719..085e60e 100644
+--- a/arch/x86/kernel/apic/io_apic.c
++++ b/arch/x86/kernel/apic/io_apic.c
+@@ -3186,6 +3186,7 @@ unsigned int create_irq_nr(unsigned int irq_want, int node)
+ 			continue;
+ 
+ 		desc_new = move_irq_desc(desc_new, node);
++		cfg_new = desc_new->chip_data;
+ 
+ 		if (__assign_irq_vector(new, cfg_new, apic->target_cpus()) == 0)
+ 			irq = new;
+-- 
+1.6.6.1
 
