@@ -1,91 +1,48 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757280Ab0BCPZ5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 10:25:57 -0500
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:54555 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756816Ab0BCPZx (ORCPT
+	id S1757211Ab0BCP2j (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 10:28:39 -0500
+Received: from mail-px0-f182.google.com ([209.85.216.182]:55338 "EHLO
+	mail-px0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756746Ab0BCP2i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 10:25:53 -0500
+	Wed, 3 Feb 2010 10:28:38 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=kc2tqk8ihBE8B1vhEHNQF+KMMoeKrxyNqJkTCLTQ27kvZR5kwY6RgOdQQINoZXwhTA
-         pek+BnDGBvklT5pE9W0z/5ymdhCj78/yuw70UfZIKff2HPzbyLUOwLFo5+79lRBdP5je
-         3DtkINRz9WCOUbwFsFL7JmO3Z+bf8GOLtsLPw=
-Subject: [PATCH][mmotm-2010-02-01-16-25] Fix wrong accouting of anon and
- file
-From: Minchan Kim <minchan.kim@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>,
-       David Rientjes <rientjes@google.com>, linux-mm <linux-mm@kvack.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 04 Feb 2010 00:25:39 +0900
-Message-ID: <1265210739.1052.36.camel@barrios-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=M3mBk37I2gK80hAkxBimjes45DF8UfbjBt6O8hUV8FwJs15zNqZleenU0iJjKy1bEw
+         4oIcv/dTBE32k2hkIHOdK+42cYcsx8+pSewu6yzfJZOmMoO1fAkje/Halg/XGSlvRjA5
+         +FdriMbqSiqw+5isjpXxeZXl79Fq6IG9yHokk=
+Date: Wed, 3 Feb 2010 23:31:01 +0800
+From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+To: Lennart Poettering <lennart@poettering.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] exit: PR_SET_ANCHOR for marking processes as reapers
+	for child processes
+Message-ID: <20100203153101.GC4177@hack>
+References: <20100202120457.GA19605@omega>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100202120457.GA19605@omega>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Unfortunately, Kame said he doesn't support this series.
-I am not sure we need this patch or revert patch.
+On Tue, Feb 02, 2010 at 01:04:57PM +0100, Lennart Poettering wrote:
+>
+>This patch adds a simple flag for each process that marks it as an
+>"anchor" process for all its children and grandchildren. If a child of
+>such an anchor dies all its children will not be reparented to init, but
+>instead to this anchor, escaping this anchor process is not possible. A
+>task with this flag set hence acts is little "sub-init".
+>
 
-Who need this?
-
-David. Do you want to remain this patch in mmotm for your OOM patch 
-in future?
-
-If anyone doesn't reply my question, Do we have to make revert patch?
-
-== CUT_HERE == 
-
-mm-count-lowmem-rss.patch added lowmem accouting.
-But it changed file and rss accouting by mistake.
-Unfortunately my review also doesn't found it.
-
-This patch fixes it.
-
-Signed-off-by: Minchan Kim <minchan.kim@gmail.com>
----
- mm/memory.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/mm/memory.c b/mm/memory.c
-index 3becdc3..ce8ff9d 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -210,14 +210,14 @@ void sync_mm_rss(struct task_struct *task, struct mm_struct *mm)
- 
- unsigned long get_file_rss(struct mm_struct *mm)
- {
--	return get_mm_counter(mm, MM_ANONPAGES)
--		+ get_mm_counter(mm, MM_ANON_LOWPAGES);
-+	return get_mm_counter(mm, MM_FILEPAGES)
-+		+ get_mm_counter(mm, MM_FILE_LOWPAGES);
- }
- 
- unsigned long get_anon_rss(struct mm_struct *mm)
- {
--	return get_mm_counter(mm, MM_FILEPAGES)
--		+ get_mm_counter(mm, MM_FILE_LOWPAGES);
-+	return get_mm_counter(mm, MM_ANONPAGES)
-+		+ get_mm_counter(mm, MM_ANON_LOWPAGES);
- }
- 
- unsigned long get_low_rss(struct mm_struct *mm)
--- 
-1.6.5
-
-
+This will break the applictions which using 'getppid() == 1' to check
+if its real parent is dead or not...
 
 -- 
-Kind regards,
-Minchan Kim
-
-
+Live like a child, think like the god.
+ 
