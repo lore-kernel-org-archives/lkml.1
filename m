@@ -1,60 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932574Ab0BCQnu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 11:43:50 -0500
-Received: from sh.osrg.net ([192.16.179.4]:33378 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932506Ab0BCQnr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 11:43:47 -0500
-Date: Thu, 04 Feb 2010 01:43:41 +0900 (JST)
-Message-Id: <20100204.014341.15330463.ryusuke@osrg.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org,
-       Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-Subject: [GIT PULL] nilfs2 fix for 2.6.33
-From: Ryusuke Konishi <ryusuke@osrg.net>
-X-Mailer: Mew version 5.2 on Emacs 22.2 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Thu, 04 Feb 2010 01:43:41 +0900 (JST)
+	id S932581Ab0BCQqs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 11:46:48 -0500
+Received: from mail-gx0-f224.google.com ([209.85.217.224]:64525 "EHLO
+	mail-gx0-f224.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932512Ab0BCQqp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 11:46:45 -0500
+MIME-Version: 1.0
+In-Reply-To: <e46b06510f7eb6ca51ea8b96335b2d32ec8bf6f8.1265173480.git.amit.kucheria@canonical.com>
+References: <cover.1265173246.git.amit.kucheria@verdurent.com> 
+	<0511204199ab83aed2340e70a4639500c0528dab.1265173480.git.amit.kucheria@canonical.com> 
+	<9fa7a3c70c46a1f776c6520051481cff6525ef02.1265173480.git.amit.kucheria@canonical.com> 
+	<ccc89dd7a6035abf5a78680404a2b30b9e025353.1265173480.git.amit.kucheria@canonical.com> 
+	<ec63e5978fd5ac5d308ede5916e648ba925818eb.1265173480.git.amit.kucheria@canonical.com> 
+	<f10f79e7313ecdeeb59ab881795baedf2430c636.1265173480.git.amit.kucheria@canonical.com> 
+	<240f12ca87d7666f31263aabc620a9ec197cd8ff.1265173480.git.amit.kucheria@canonical.com> 
+	<cover.1265173480.git.amit.kucheria@canonical.com> <752ae69adb57d4f73fa011ba380cea1b927b9c8b.1265173480.git.amit.kucheria@canonical.com> 
+	<e46b06510f7eb6ca51ea8b96335b2d32ec8bf6f8.1265173480.git.amit.kucheria@canonical.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Wed, 3 Feb 2010 09:46:24 -0700
+X-Google-Sender-Auth: d788f5c8987d6291
+Message-ID: <fa686aa41002030846v5044d585w7f4291f89c4b7ad@mail.gmail.com>
+Subject: Re: [PATCHv2 08/11] fec: fix uninitialized rx buffer usage
+To: Amit Kucheria <amit.kucheria@canonical.com>
+Cc: List Linux Kernel <linux-kernel@vger.kernel.org>,
+       Rob Herring <r.herring@freescale.com>,
+       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
+       linux-arm-kernel@lists.infradead.org, linux@arm.linux.org.uk,
+       s.hauer@pengutronix.de, valentin.longchamp@epfl.ch, daniel@caiaq.de,
+       Dinh.Nguyen@freescale.com, bryan.wu@canonical.com
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Tue, Feb 2, 2010 at 10:16 PM, Amit Kucheria
+<amit.kucheria@canonical.com> wrote:
+> From: Rob Herring <r.herring@freescale.com>
+>
+> The fec driver was enabling receive buffer descriptor without allocating
+> the buffers. Make sure the buffer descriptors are initialized to not
+> start receiving packets.
+>
+> Open also calls fec_restart after the rx buffers are allocated. With the code
+> in fec_restart, it zeroes out the buffer descriptors that have just been
+> setup.
 
-please pull from:
+fec related patches 8 & 9 look okay to me.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/ryusuke/nilfs2.git for-linus
+g.
 
-to receive a small bugfix of nilfs2, which corrects a potential data
-integrity issue on unmount.
-
-Thanks!
-
-Ryusuke Konishi
---
-The following changes since commit abe94c756c08d50566c09a65b9c7fe72f83071c5:
-  Linus Torvalds (1):
-        Linux 2.6.33-rc6
-
-Ryusuke Konishi (1):
-      nilfs2: fix potential leak of dirty data on umount
-
- fs/nilfs2/segment.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/fs/nilfs2/segment.c b/fs/nilfs2/segment.c
-index 17584c5..105b508 100644
---- a/fs/nilfs2/segment.c
-+++ b/fs/nilfs2/segment.c
-@@ -2829,7 +2829,7 @@ static void nilfs_segctor_destroy(struct nilfs_sc_info *sci)
- 		|| sci->sc_seq_request != sci->sc_seq_done);
- 	spin_unlock(&sci->sc_state_lock);
- 
--	if (flag || nilfs_segctor_confirm(sci))
-+	if (flag || !nilfs_segctor_confirm(sci))
- 		nilfs_segctor_write_out(sci);
- 
- 	WARN_ON(!list_empty(&sci->sc_copied_buffers));
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
