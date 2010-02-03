@@ -1,216 +1,215 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755071Ab0BCLIq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 06:08:46 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:56067 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754737Ab0BCLIo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 06:08:44 -0500
-Message-ID: <4B6958B8.3000606@cn.fujitsu.com>
-Date: Wed, 03 Feb 2010 19:06:32 +0800
-From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	id S1755101Ab0BCLKK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 06:10:10 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:51045 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753502Ab0BCLKF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 06:10:05 -0500
+Date: Wed, 3 Feb 2010 12:10:03 +0100
+From: Sascha Hauer <s.hauer@pengutronix.de>
+To: Amit Kucheria <amit.kucheria@canonical.com>
+Cc: List Linux Kernel <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel@lists.infradead.org, linux@arm.linux.org.uk,
+       valentin.longchamp@epfl.ch, daniel@caiaq.de, grant.likely@secretlab.ca,
+       Dinh.Nguyen@freescale.com, r.herring@freescale.com,
+       bryan.wu@canonical.com
+Subject: Re: [PATCHv2 07/11] mxc: Add support for the Babbage board
+Message-ID: <20100203111003.GP6130@pengutronix.de>
+References: <cover.1265173480.git.amit.kucheria@canonical.com> <752ae69adb57d4f73fa011ba380cea1b927b9c8b.1265173480.git.amit.kucheria@canonical.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Paul Mackerras <paulus@samba.org>,
-       Peter Zijlstra <peterz@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] perf tools: using O_LARGEFILE to open perf data file  - fix
-References: <4B68F32A.9040203@cn.fujitsu.com>
-In-Reply-To: <4B68F32A.9040203@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <752ae69adb57d4f73fa011ba380cea1b927b9c8b.1265173480.git.amit.kucheria@canonical.com>
+X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
+X-URL: http://www.pengutronix.de/
+X-IRC: #ptxdist @freenode
+X-Accept-Language: de,en
+X-Accept-Content-Type: text/plain
+X-Impressum: Pengutronix - Industrial Linux Solutions Handelsregister:
+	Amtsgericht Hildesheim, HRA 2686 Peiner Strasse 6-8, 31137
+	Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
+	+49-5121-206917-5555 Inhaber: Dipl.-Ing. Robert Schwebel
+X-Message-Flag: See Message Headers for Impressum
+X-Uptime: 12:05:23 up 113 days, 23:54, 57 users,  load average: 1.30, 1.68,
+	1.86
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: sha@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Setting _FILE_OFFSET_BITS and using O_LARGEFILE, lseek64, etc, is
-redundant. Thanks H. Peter Anvin for point out
+On Tue, Feb 02, 2010 at 09:16:29PM -0800, Amit Kucheria wrote:
+> Babbage is a reference board from Freescale for their i.MX51 SoC.
+> 
+> Boot tested on a Babbage2.5 board
+> 
+> Signed-off-by: Amit Kucheria <amit.kucheria@canonical.com>
+> ---
+>  arch/arm/mach-mx5/Kconfig               |    6 ++
+>  arch/arm/mach-mx5/Makefile              |    2 +
+>  arch/arm/mach-mx5/board-mx51_babbage.c  |   99 +++++++++++++++++++++++++++++++
+>  arch/arm/plat-mxc/include/mach/common.h |    1 +
+>  4 files changed, 108 insertions(+), 0 deletions(-)
+>  create mode 100644 arch/arm/mach-mx5/board-mx51_babbage.c
+> 
+> diff --git a/arch/arm/mach-mx5/Kconfig b/arch/arm/mach-mx5/Kconfig
+> index ccd96fd..80a749c 100644
+> --- a/arch/arm/mach-mx5/Kconfig
+> +++ b/arch/arm/mach-mx5/Kconfig
+> @@ -8,4 +8,10 @@ config ARCH_MX51
+>  
+>  comment "MX5 platforms:"
+>  
+> +config MACH_MX51_BABBAGE
+> +	bool "Support MX51 BABBAGE platforms"
+> +	help
+> +	  Include support for MX51 Babbage platform. This includes specific
+> +	  configurations for the board and its peripherals.
+> +
+>  endif
+> diff --git a/arch/arm/mach-mx5/Makefile b/arch/arm/mach-mx5/Makefile
+> index d74ce4f..e4cf91f 100644
+> --- a/arch/arm/mach-mx5/Makefile
+> +++ b/arch/arm/mach-mx5/Makefile
+> @@ -5,3 +5,5 @@
+>  # Object file lists.
+>  obj-y   := cpu.o mm.o clock.o devices.o
+>  
+> +obj-$(CONFIG_MACH_MX51_BABBAGE) += board-mx51_babbage.o
+> +
+> diff --git a/arch/arm/mach-mx5/board-mx51_babbage.c b/arch/arm/mach-mx5/board-mx51_babbage.c
 
-Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
----
- tools/perf/builtin-record.c        |    3 +--
- tools/perf/util/header.c           |   21 ++++++++++-----------
- tools/perf/util/session.c          |    3 +--
- tools/perf/util/trace-event-read.c |   14 +++++++-------
- 4 files changed, 19 insertions(+), 22 deletions(-)
+Uwe started to rename the board files on other i.MX platforms to
+mach-*.c. Can you do the same please?
 
-diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
-index 949167e..f54672f 100644
---- a/tools/perf/builtin-record.c
-+++ b/tools/perf/builtin-record.c
-@@ -5,7 +5,6 @@
-  * (or a CPU, or a PID) into the perf.data output file - for
-  * later analysis via perf report.
-  */
--#define _LARGEFILE64_SOURCE
- #define _FILE_OFFSET_BITS 64
- 
- #include "builtin.h"
-@@ -454,7 +453,7 @@ static int __cmd_record(int argc, const char **argv)
- 		append_file = 0;
- 	}
- 
--	flags = O_CREAT|O_RDWR|O_LARGEFILE;
-+	flags = O_CREAT|O_RDWR;
- 	if (append_file)
- 		file_new = 0;
- 	else
-diff --git a/tools/perf/util/header.c b/tools/perf/util/header.c
-index ed3efd7..246ba53 100644
---- a/tools/perf/util/header.c
-+++ b/tools/perf/util/header.c
-@@ -1,4 +1,3 @@
--#define _LARGEFILE64_SOURCE
- #define _FILE_OFFSET_BITS 64
- 
- #include <sys/types.h>
-@@ -385,7 +384,7 @@ static int perf_header__adds_write(struct perf_header *self, int fd)
- 	sec_size = sizeof(*feat_sec) * nr_sections;
- 
- 	sec_start = self->data_offset + self->data_size;
--	lseek64(fd, sec_start + sec_size, SEEK_SET);
-+	lseek(fd, sec_start + sec_size, SEEK_SET);
- 
- 	if (perf_header__has_feat(self, HEADER_TRACE_INFO)) {
- 		struct perf_file_section *trace_sec;
-@@ -393,9 +392,9 @@ static int perf_header__adds_write(struct perf_header *self, int fd)
- 		trace_sec = &feat_sec[idx++];
- 
- 		/* Write trace info */
--		trace_sec->offset = lseek64(fd, 0, SEEK_CUR);
-+		trace_sec->offset = lseek(fd, 0, SEEK_CUR);
- 		read_tracing_data(fd, attrs, nr_counters);
--		trace_sec->size = lseek64(fd, 0, SEEK_CUR) - trace_sec->offset;
-+		trace_sec->size = lseek(fd, 0, SEEK_CUR) - trace_sec->offset;
- 	}
- 
- 
-@@ -405,18 +404,18 @@ static int perf_header__adds_write(struct perf_header *self, int fd)
- 		buildid_sec = &feat_sec[idx++];
- 
- 		/* Write build-ids */
--		buildid_sec->offset = lseek64(fd, 0, SEEK_CUR);
-+		buildid_sec->offset = lseek(fd, 0, SEEK_CUR);
- 		err = dsos__write_buildid_table(fd);
- 		if (err < 0) {
- 			pr_debug("failed to write buildid table\n");
- 			goto out_free;
- 		}
--		buildid_sec->size = lseek64(fd, 0, SEEK_CUR) -
--					    buildid_sec->offset;
-+		buildid_sec->size = lseek(fd, 0, SEEK_CUR) -
-+					  buildid_sec->offset;
- 		dsos__cache_build_ids();
- 	}
- 
--	lseek64(fd, sec_start, SEEK_SET);
-+	lseek(fd, sec_start, SEEK_SET);
- 	err = do_write(fd, feat_sec, sec_size);
- 	if (err < 0)
- 		pr_debug("failed to write feature section\n");
-@@ -510,7 +509,7 @@ int perf_header__write(struct perf_header *self, int fd, bool at_exit)
- 		pr_debug("failed to write perf header\n");
- 		return err;
- 	}
--	lseek64(fd, self->data_offset + self->data_size, SEEK_SET);
-+	lseek(fd, self->data_offset + self->data_size, SEEK_SET);
- 
- 	self->frozen = 1;
- 	return 0;
-@@ -564,7 +563,7 @@ int perf_header__process_sections(struct perf_header *self, int fd,
- 
- 	sec_size = sizeof(*feat_sec) * nr_sections;
- 
--	lseek64(fd, self->data_offset + self->data_size, SEEK_SET);
-+	lseek(fd, self->data_offset + self->data_size, SEEK_SET);
- 
- 	if (perf_header__getbuffer64(self, fd, feat_sec, sec_size))
- 		goto out_free;
-@@ -638,7 +637,7 @@ static int perf_file_section__process(struct perf_file_section *self,
- 				      struct perf_header *ph,
- 				      int feat, int fd)
- {
--	if (lseek64(fd, self->offset, SEEK_SET) < 0) {
-+	if (lseek(fd, self->offset, SEEK_SET) < 0) {
- 		pr_debug("Failed to lseek to %Ld offset for feature %d, "
- 			 "continuing...\n", self->offset, feat);
- 		return 0;
-diff --git a/tools/perf/util/session.c b/tools/perf/util/session.c
-index cf91d09..d5ebbc8 100644
---- a/tools/perf/util/session.c
-+++ b/tools/perf/util/session.c
-@@ -1,4 +1,3 @@
--#define _LARGEFILE64_SOURCE
- #define _FILE_OFFSET_BITS 64
- 
- #include <linux/kernel.h>
-@@ -15,7 +14,7 @@ static int perf_session__open(struct perf_session *self, bool force)
- {
- 	struct stat input_stat;
- 
--	self->fd = open(self->filename, O_RDONLY|O_LARGEFILE);
-+	self->fd = open(self->filename, O_RDONLY);
- 	if (self->fd < 0) {
- 		pr_err("failed to open file: %s", self->filename);
- 		if (!strcmp(self->filename, "perf.data"))
-diff --git a/tools/perf/util/trace-event-read.c b/tools/perf/util/trace-event-read.c
-index ca3c26d..96995bd 100644
---- a/tools/perf/util/trace-event-read.c
-+++ b/tools/perf/util/trace-event-read.c
-@@ -18,7 +18,7 @@
-  *
-  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  */
--#define _LARGEFILE64_SOURCE
-+#define _FILE_OFFSET_BITS 64
- 
- #include <dirent.h>
- #include <stdio.h>
-@@ -117,7 +117,7 @@ static char *read_string(void)
- 	i++;
- 
- 	/* move the file descriptor to the end of the string */
--	r = lseek64(input_fd, -(r - i), SEEK_CUR);
-+	r = lseek(input_fd, -(r - i), SEEK_CUR);
- 	if (r < 0)
- 		die("lseek");
- 
-@@ -282,8 +282,8 @@ static void update_cpu_data_index(int cpu)
- 
- static void get_next_page(int cpu)
- {
--	off64_t save_seek;
--	off64_t ret;
-+	s64 save_seek;
-+	s64 ret;
- 
- 	if (!cpu_data[cpu].page)
- 		return;
-@@ -298,9 +298,9 @@ static void get_next_page(int cpu)
- 		update_cpu_data_index(cpu);
- 
- 		/* other parts of the code may expect the pointer to not move */
--		save_seek = lseek64(input_fd, 0, SEEK_CUR);
-+		save_seek = lseek(input_fd, 0, SEEK_CUR);
- 
--		ret = lseek64(input_fd, cpu_data[cpu].offset, SEEK_SET);
-+		ret = lseek(input_fd, cpu_data[cpu].offset, SEEK_SET);
- 		if (ret < 0)
- 			die("failed to lseek");
- 		ret = read(input_fd, cpu_data[cpu].page, page_size);
-@@ -308,7 +308,7 @@ static void get_next_page(int cpu)
- 			die("failed to read page");
- 
- 		/* reset the file pointer back */
--		lseek64(input_fd, save_seek, SEEK_SET);
-+		lseek(input_fd, save_seek, SEEK_SET);
- 
- 		return;
- 	}
+> new file mode 100644
+> index 0000000..6cd0e14
+> --- /dev/null
+> +++ b/arch/arm/mach-mx5/board-mx51_babbage.c
+> @@ -0,0 +1,99 @@
+> +/*
+> + * Copyright 2009 Freescale Semiconductor, Inc. All Rights Reserved.
+> + * Copyright (C) 2009-2010 Amit Kucheria <amit.kucheria@canonical.com>
+> + *
+> + * The code contained herein is licensed under the GNU General Public
+> + * License. You may obtain a copy of the GNU General Public License
+> + * Version 2 or later at the following locations:
+> + *
+> + * http://www.opensource.org/licenses/gpl-license.html
+> + * http://www.gnu.org/copyleft/gpl.html
+> + */
+> +
+> +#include <linux/init.h>
+> +#include <linux/platform_device.h>
+> +
+> +#include <mach/common.h>
+> +#include <mach/hardware.h>
+> +#include <mach/imx-uart.h>
+> +#include <mach/iomux-mx51.h>
+> +
+> +#include <asm/irq.h>
+> +#include <asm/setup.h>
+> +#include <asm/mach-types.h>
+> +#include <asm/mach/arch.h>
+> +#include <asm/mach/time.h>
+> +
+> +#include "crm_regs.h"
+
+Is this needed?
+
+> +#include "devices.h"
+> +
+> +static struct platform_device *devices[] __initdata = {
+> +	&mxc_fec_device,
+> +};
+> +
+> +static struct pad_desc mx51babbage_pads[] = {
+> +	/* UART1 */
+> +	MX51_BABBAGE_PAD_UART1_RXD__UART1_RXD,
+> +	MX51_BABBAGE_PAD_UART1_TXD__UART1_TXD,
+> +	MX51_BABBAGE_PAD_UART1_RTS__UART1_RTS,
+> +	MX51_BABBAGE_PAD_UART1_CTS__UART1_CTS,
+> +
+> +	/* UART2 */
+> +	MX51_BABBAGE_PAD_UART2_RXD__UART2_RXD,
+> +	MX51_BABBAGE_PAD_UART2_TXD__UART2_TXD,
+> +
+> +	/* UART3 */
+> +	MX51_BABBAGE_PAD_EIM_D25__UART3_RXD,
+> +	MX51_BABBAGE_PAD_EIM_D26__UART3_TXD,
+> +	MX51_BABBAGE_PAD_EIM_D27__UART3_RTS,
+> +	MX51_BABBAGE_PAD_EIM_D24__UART3_CTS,
+> +};
+> +
+> +/* Serial ports */
+> +#if defined(CONFIG_SERIAL_IMX) || defined(CONFIG_SERIAL_IMX_MODULE)
+> +static struct imxuart_platform_data uart_pdata = {
+> +	.flags = IMXUART_HAVE_RTSCTS,
+> +};
+> +
+> +static inline void mxc_init_imx_uart(void)
+> +{
+> +	mxc_register_device(&mxc_uart_device0, &uart_pdata);
+> +	mxc_register_device(&mxc_uart_device1, &uart_pdata);
+> +	mxc_register_device(&mxc_uart_device2, &uart_pdata);
+> +}
+> +#else /* !SERIAL_IMX */
+> +static inline void mxc_init_imx_uart(void)
+> +{
+> +}
+> +#endif /* SERIAL_IMX */
+> +
+> +/*
+> + * Board specific initialization.
+> + */
+> +static void __init mxc_board_init(void)
+> +{
+> +	mxc_iomux_v3_setup_multiple_pads(mx51babbage_pads,
+> +					ARRAY_SIZE(mx51babbage_pads));
+> +	mxc_init_imx_uart();
+> +	platform_add_devices(devices, ARRAY_SIZE(devices));
+> +}
+> +
+> +static void __init mx51_babbage_timer_init(void)
+> +{
+> +	mx51_clocks_init(32768, 24000000, 22579200, 24576000);
+> +}
+> +
+> +static struct sys_timer mxc_timer = {
+> +	.init	= mx51_babbage_timer_init,
+> +};
+> +
+> +MACHINE_START(MX51_BABBAGE, "Freescale MX51 Babbage Board")
+> +	/* Maintainer: Amit Kucheria <amit.kucheria@canonical.com> */
+> +	.phys_io = MX51_AIPS1_BASE_ADDR,
+> +	.io_pg_offst = ((MX51_AIPS1_BASE_ADDR_VIRT) >> 18) & 0xfffc,
+> +	.boot_params = PHYS_OFFSET + 0x100,
+> +	.map_io = mx51_map_io,
+> +	.init_irq = mx51_init_irq,
+> +	.init_machine = mxc_board_init,
+> +	.timer = &mxc_timer,
+> +MACHINE_END
+> diff --git a/arch/arm/plat-mxc/include/mach/common.h b/arch/arm/plat-mxc/include/mach/common.h
+> index 0a25576..33d4496 100644
+> --- a/arch/arm/plat-mxc/include/mach/common.h
+> +++ b/arch/arm/plat-mxc/include/mach/common.h
+> @@ -21,6 +21,7 @@ extern void mx27_map_io(void);
+>  extern void mx31_map_io(void);
+>  extern void mx35_map_io(void);
+>  extern void mx51_map_io(void);
+> +extern void mx51_babbage_io_init(void);
+
+Is this function used anywhere? I hope not...
+
+Sascha
+
 -- 
-1.6.1.2
-
-
-
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
