@@ -1,196 +1,112 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754430Ab0BCDz3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 22:55:29 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:64782 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753668Ab0BCDz0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 22:55:26 -0500
-Message-ID: <4B68F32A.9040203@cn.fujitsu.com>
-Date: Wed, 03 Feb 2010 11:53:14 +0800
-From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	id S1755940Ab0BCECM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 23:02:12 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:42188 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751538Ab0BCECH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 23:02:07 -0500
+Date: Tue, 2 Feb 2010 19:31:09 -0800
+From: Brandon Philips <bphilips@suse.de>
+To: Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       YinghaiLu@suse.de, yinghai@kernel.org,
+       Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: linux-kernel@vger.kernel.org, x86@kernel.org
+Subject: x86: fix race in create_irq_nr on irq_desc
+Message-ID: <20100203033109.GA17985@jenkins.home.ifup.org>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Paul Mackerras <paulus@samba.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] perf tools: using O_LARGEFILE to open perf data file
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Open perf data file with O_LARGEFILE flag since its size is easy
-larger that 2G.
+Race in create_irq_nr():
 
-For example:
+- Thread 1 loops through and calls irq_to_desc_alloc_node with new=0x66.
 
-# rm -rf perf.data
-# ./perf kmem record sleep 300
+- Thread 2 has exited the loop with irq=0x66 and calls dynamic_irq_init(0x66)
+  setting desc->chip_data = NULL
 
-[ perf record: Woken up 0 times to write data ]
-[ perf record: Captured and wrote 3142.147 MB perf.data (~137282513 samples) ]
+- Thread 1 then dereferences NULL via desc_new->chip_data->vector
 
-# ll -h perf.data 
--rw------- 1 root root 3.1G .....
+Fix by moving holding vector_lock until after the dynamic_irq_init().
 
-Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+BUG: unable to handle kernel NULL pointer dereference at 0000000000000088
+IP: [<ffffffff8101df32>] create_irq_nr+0x62/0x100
+PGD 23dc24067 PUD 23dc72067 PMD 0
+Oops: 0000 [#1] SMP
+last sysfs file: /sys/devices/pci0000:00/0000:00:1c.0/0000:08:00.0/net/eth2/type
+CPU 12
+Modules linked in: i2c_i801 igb(+) iTCO_wdt ixgbe(+) ioatdma(+) e1000e mptctl mdio usb_storage iTCO_vendor_support dca ses button sg pcspkr enclosure container ac usbhid uhci_hcd ehci_hcd usbcore sd_mod edd fan processor ide_pci_generic ide_core ata_generic ata_piix libata lpfc scsi_transport_fc scsi_tgt mptsas mptscsih mptbase scsi_transport_sas megaraid_sas scsi_mod thermal thermal_sys
+Supported: Yes
+Pid: 1684, comm: modprobe Not tainted 2.6.32.3-0.3-default #1 PRIMERGY RX300 S5
+RIP: 0010:[<ffffffff8101df32>]  [<ffffffff8101df32>] create_irq_nr+0x62/0x100
+RSP: 0018:ffff88013ce0fc18  EFLAGS: 00010086
+RAX: ffff88023e11ee00 RBX: 0000000000000066 RCX: 00000000000000c2
+RDX: 00000000000000c2 RSI: 00000000ffffffff RDI: 0000000000000066
+RBP: 0000000000000000 R08: ffffffff81767a85 R09: 000000000000000a
+R10: 0000000000000000 R11: 0000000000000000 R12: 00000000ffffffff
+R13: 0000000000000206 R14: ffff88013f381000 R15: 0000000000000080
+FS:  00007f16d181e700(0000) GS:ffff880143d00000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+CR2: 0000000000000088 CR3: 000000023d26c000 CR4: 00000000000006e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process modprobe (pid: 1684, threadinfo ffff88013ce0e000, task ffff88013d080340)
+Stack:
+ 0000000000000001 0000000000000000 ffff88023d2d8740 0000000000000064
+<0> 0000000000000007 ffffffff8101f2ce 0000000900000009 ffff88013f381810
+<0> ffffffff3f381000 0000000000000048 0000000000000009 ffff88013f381000
+Call Trace:
+ [<ffffffff8101f2ce>] arch_setup_msi_irqs+0xce/0x190
+ [<ffffffff812574b9>] msix_capability_init+0x189/0x2f0
+ [<ffffffffa032b4a4>] igb_set_interrupt_capability+0xe4/0x1e0 [igb]
+ [<ffffffffa033634e>] igb_probe+0x3de/0xd15 [igb]
+ [<ffffffff8124d212>] local_pci_probe+0x12/0x20
+ [<ffffffff8124d4c0>] __pci_device_probe+0xe0/0xf0
+ [<ffffffff8124e3d3>] pci_device_probe+0x33/0x60
+ [<ffffffff812e72f7>] really_probe+0x77/0x230
+ [<ffffffff812e751a>] driver_probe_device+0x6a/0xc0
+ [<ffffffff812e7603>] __driver_attach+0x93/0xa0
+ [<ffffffff812e6928>] bus_for_each_dev+0x58/0x80
+ [<ffffffff812e6115>] bus_add_driver+0x195/0x2f0
+ [<ffffffff812e7919>] driver_register+0x79/0x170
+ [<ffffffff8124e648>] __pci_register_driver+0x58/0xe0
+ [<ffffffff810001e5>] do_one_initcall+0x35/0x190
+ [<ffffffff8108af34>] sys_init_module+0xe4/0x270
+ [<ffffffff81002f7b>] system_call_fastpath+0x16/0x1b
+ [<00007f16d13b234a>] 0x7f16d13b234a
+Code: 2e 0f 1f 84 00 00 00 00 00 83 c3 01 39 1d e7 e2 9f 00 76 7d 44 89 e6 89 df e8 2b 2a 3d 00 48 85 c0 0f 84 8a 00 00 00 48 8b 68 40 <80> bd 88 00 00 00 00 75 d5 44 89 e6 48 89 c7 e8 6a 5c 09 00 49
+RIP  [<ffffffff8101df32>] create_irq_nr+0x62/0x100
+ RSP <ffff88013ce0fc18>
+CR2: 0000000000000088
+
+Signed-off-by: Brandon Philips <bphilips@suse.de>
+
 ---
- tools/perf/builtin-record.c        |    5 ++++-
- tools/perf/util/header.c           |   22 +++++++++++++---------
- tools/perf/util/session.c          |    5 ++++-
- tools/perf/util/trace-event-read.c |    4 ++--
- 4 files changed, 23 insertions(+), 13 deletions(-)
+ arch/x86/kernel/apic/io_apic.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
-index eea5691..949167e 100644
---- a/tools/perf/builtin-record.c
-+++ b/tools/perf/builtin-record.c
-@@ -5,6 +5,9 @@
-  * (or a CPU, or a PID) into the perf.data output file - for
-  * later analysis via perf report.
-  */
-+#define _LARGEFILE64_SOURCE
-+#define _FILE_OFFSET_BITS 64
+Index: linux-2.6.32-SLE11-SP1/arch/x86/kernel/apic/io_apic.c
+===================================================================
+--- linux-2.6.32-SLE11-SP1.orig/arch/x86/kernel/apic/io_apic.c
++++ linux-2.6.32-SLE11-SP1/arch/x86/kernel/apic/io_apic.c
+@@ -3212,7 +3212,6 @@ unsigned int create_irq_nr(unsigned int
+ 			irq = new;
+ 		break;
+ 	}
+-	spin_unlock_irqrestore(&vector_lock, flags);
+ 
+ 	if (irq > 0) {
+ 		dynamic_irq_init(irq);
+@@ -3220,6 +3219,8 @@ unsigned int create_irq_nr(unsigned int
+ 		if (desc_new)
+ 			desc_new->chip_data = cfg_new;
+ 	}
++	spin_unlock_irqrestore(&vector_lock, flags);
 +
- #include "builtin.h"
+ 	return irq;
+ }
  
- #include "perf.h"
-@@ -451,7 +454,7 @@ static int __cmd_record(int argc, const char **argv)
- 		append_file = 0;
- 	}
- 
--	flags = O_CREAT|O_RDWR;
-+	flags = O_CREAT|O_RDWR|O_LARGEFILE;
- 	if (append_file)
- 		file_new = 0;
- 	else
-diff --git a/tools/perf/util/header.c b/tools/perf/util/header.c
-index 2bb2bdb..ed3efd7 100644
---- a/tools/perf/util/header.c
-+++ b/tools/perf/util/header.c
-@@ -1,3 +1,6 @@
-+#define _LARGEFILE64_SOURCE
-+#define _FILE_OFFSET_BITS 64
-+
- #include <sys/types.h>
- #include <byteswap.h>
- #include <unistd.h>
-@@ -382,7 +385,7 @@ static int perf_header__adds_write(struct perf_header *self, int fd)
- 	sec_size = sizeof(*feat_sec) * nr_sections;
- 
- 	sec_start = self->data_offset + self->data_size;
--	lseek(fd, sec_start + sec_size, SEEK_SET);
-+	lseek64(fd, sec_start + sec_size, SEEK_SET);
- 
- 	if (perf_header__has_feat(self, HEADER_TRACE_INFO)) {
- 		struct perf_file_section *trace_sec;
-@@ -390,9 +393,9 @@ static int perf_header__adds_write(struct perf_header *self, int fd)
- 		trace_sec = &feat_sec[idx++];
- 
- 		/* Write trace info */
--		trace_sec->offset = lseek(fd, 0, SEEK_CUR);
-+		trace_sec->offset = lseek64(fd, 0, SEEK_CUR);
- 		read_tracing_data(fd, attrs, nr_counters);
--		trace_sec->size = lseek(fd, 0, SEEK_CUR) - trace_sec->offset;
-+		trace_sec->size = lseek64(fd, 0, SEEK_CUR) - trace_sec->offset;
- 	}
- 
- 
-@@ -402,17 +405,18 @@ static int perf_header__adds_write(struct perf_header *self, int fd)
- 		buildid_sec = &feat_sec[idx++];
- 
- 		/* Write build-ids */
--		buildid_sec->offset = lseek(fd, 0, SEEK_CUR);
-+		buildid_sec->offset = lseek64(fd, 0, SEEK_CUR);
- 		err = dsos__write_buildid_table(fd);
- 		if (err < 0) {
- 			pr_debug("failed to write buildid table\n");
- 			goto out_free;
- 		}
--		buildid_sec->size = lseek(fd, 0, SEEK_CUR) - buildid_sec->offset;
-+		buildid_sec->size = lseek64(fd, 0, SEEK_CUR) -
-+					    buildid_sec->offset;
- 		dsos__cache_build_ids();
- 	}
- 
--	lseek(fd, sec_start, SEEK_SET);
-+	lseek64(fd, sec_start, SEEK_SET);
- 	err = do_write(fd, feat_sec, sec_size);
- 	if (err < 0)
- 		pr_debug("failed to write feature section\n");
-@@ -506,7 +510,7 @@ int perf_header__write(struct perf_header *self, int fd, bool at_exit)
- 		pr_debug("failed to write perf header\n");
- 		return err;
- 	}
--	lseek(fd, self->data_offset + self->data_size, SEEK_SET);
-+	lseek64(fd, self->data_offset + self->data_size, SEEK_SET);
- 
- 	self->frozen = 1;
- 	return 0;
-@@ -560,7 +564,7 @@ int perf_header__process_sections(struct perf_header *self, int fd,
- 
- 	sec_size = sizeof(*feat_sec) * nr_sections;
- 
--	lseek(fd, self->data_offset + self->data_size, SEEK_SET);
-+	lseek64(fd, self->data_offset + self->data_size, SEEK_SET);
- 
- 	if (perf_header__getbuffer64(self, fd, feat_sec, sec_size))
- 		goto out_free;
-@@ -634,7 +638,7 @@ static int perf_file_section__process(struct perf_file_section *self,
- 				      struct perf_header *ph,
- 				      int feat, int fd)
- {
--	if (lseek(fd, self->offset, SEEK_SET) < 0) {
-+	if (lseek64(fd, self->offset, SEEK_SET) < 0) {
- 		pr_debug("Failed to lseek to %Ld offset for feature %d, "
- 			 "continuing...\n", self->offset, feat);
- 		return 0;
-diff --git a/tools/perf/util/session.c b/tools/perf/util/session.c
-index 8e7c189..cf91d09 100644
---- a/tools/perf/util/session.c
-+++ b/tools/perf/util/session.c
-@@ -1,3 +1,6 @@
-+#define _LARGEFILE64_SOURCE
-+#define _FILE_OFFSET_BITS 64
-+
- #include <linux/kernel.h>
- 
- #include <byteswap.h>
-@@ -12,7 +15,7 @@ static int perf_session__open(struct perf_session *self, bool force)
- {
- 	struct stat input_stat;
- 
--	self->fd = open(self->filename, O_RDONLY);
-+	self->fd = open(self->filename, O_RDONLY|O_LARGEFILE);
- 	if (self->fd < 0) {
- 		pr_err("failed to open file: %s", self->filename);
- 		if (!strcmp(self->filename, "perf.data"))
-diff --git a/tools/perf/util/trace-event-read.c b/tools/perf/util/trace-event-read.c
-index 1744422..ca3c26d 100644
---- a/tools/perf/util/trace-event-read.c
-+++ b/tools/perf/util/trace-event-read.c
-@@ -83,7 +83,7 @@ static char *read_string(void)
- 	char *str = NULL;
- 	int size = 0;
- 	int i;
--	int r;
-+	s64 r;
- 
- 	for (;;) {
- 		r = read(input_fd, buf, BUFSIZ);
-@@ -117,7 +117,7 @@ static char *read_string(void)
- 	i++;
- 
- 	/* move the file descriptor to the end of the string */
--	r = lseek(input_fd, -(r - i), SEEK_CUR);
-+	r = lseek64(input_fd, -(r - i), SEEK_CUR);
- 	if (r < 0)
- 		die("lseek");
- 
--- 
-1.6.1.2
-
