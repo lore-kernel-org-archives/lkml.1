@@ -1,123 +1,67 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757830Ab0BCXBo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 18:01:44 -0500
-Received: from mail-yx0-f189.google.com ([209.85.210.189]:52590 "EHLO
-	mail-yx0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756010Ab0BCXBn (ORCPT
+	id S1757877Ab0BCXDm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 18:03:42 -0500
+Received: from qw-out-2122.google.com ([74.125.92.24]:55012 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756866Ab0BCXDi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 18:01:43 -0500
+	Wed, 3 Feb 2010 18:03:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=fS5x/QCZQB7Gqrx05+wiaIg107i5SW5QkIyWsyjHj7Dl1Lo34tnEmmy7236bT9sUgy
+         TG6xVYbqd+X0OaG/UEUPGbc5S8r1joBg6F++tqZTMSwHCeHcAut0W+KctORJSsX0TDTO
+         2WQKMR1QJvVMUXIzH3jS8zj1cd8r4Pebh02Ow=
+Message-ID: <4B6A0123.3010607@gmail.com>
+Date: Wed, 03 Feb 2010 15:05:07 -0800
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091114 Lightning/1.0pre Thunderbird/3.0b4
 MIME-Version: 1.0
-In-Reply-To: <4B6762CE.1050001@cs.ucr.edu>
-References: <4B6762CE.1050001@cs.ucr.edu>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 3 Feb 2010 16:01:22 -0700
-X-Google-Sender-Auth: 316da51fc20f9946
-Message-ID: <fa686aa41002031501q14e8ab54s6713edc58d0fddc1@mail.gmail.com>
-Subject: Re: PATCH: Add non-Virtex 5 support for LL TEMAC driver
-To: John Tyner <jtyner@cs.ucr.edu>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+To: Jan Beulich <JBeulich@novell.com>
+CC: Stefan Richter <stefanr@s5r6.in-berlin.de>, Ingo Molnar <mingo@elte.hu>,
+       Dan Carpenter <error27@gmail.com>, bernhard.kaindl@gmx.net,
+       Thomas Gleixner <tglx@linutronix.de>,
+       linux1394-devel@lists.sourceforge.net, Rafael Wysocki <rjw@sisk.pl>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       ebiderman@xmission.com, hpa@zytor.com
+Subject: Re: ohci1394_dma=early crash since 2.6.32 (was Re: [Bug	 #14487]
+ PANIC: early exception 08 rip 246:10	 error	ffffffff810251b5 cr2 0)
+References: <UgwvXSBS_tM.A.alD.1EiZLB@chimera> <de962C6zBxL.A.H1G.1HiZLB@chimera> <4B6630CA.9010207@gmail.com> <20100201125441.GB2576@bicker> <4B671606.3080405@gmail.com> <4B673233.8000300@s5r6.in-berlin.de> <4B6740B5.5070601@gmail.com> <4B675534.5070107@s5r6.in-berlin.de> <4B676917.2080506@gmail.com> <4B67BC12.4080709@s5r6.in-berlin.de> <4B67C4D2.5050205@gmail.com> <4B67CC55.40301@s5r6.in-berlin.de> <4B67CCEC.2030103@s5r6.in-berlin.de> <4B68D4CA.2010803@gmail.com> <4B694D5C020000780002D6DA@vpn.id2.novell.com>
+In-Reply-To: <4B694D5C020000780002D6DA@vpn.id2.novell.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 1, 2010 at 4:25 PM, John Tyner <jtyner@cs.ucr.edu> wrote:
-> This patch adds support for using the LL TEMAC Ethernet driver on non-Virtex
-> 5 platforms by adding support for accessing the Soft DMA registers as if
-> they were memory mapped instead of solely through the DCR's (available on
-> the Virtex 5).
->
-> Signed-off-by: John Tyner <jtyner@cs.ucr.edu>
+o.k. while looking into grub2
+I had noticed during compile time
+and reading posts, that -m32 is always
+being called(no matter how much I tweaked the
+Makefile). seeing this made me think well
+if this thing is being built with -m32 maybe that might
+be it i.g. 32bit to 64bit might cause some issues, but
+unfortunately is not the case(building lilo you can achieve a pure64
+bit build).
 
-Hi John, thanks for doing this work.  A couple of comments below.
+So after all of that still no go, but the positive side
+is lilo is able to show more up the line of the boot message
+error:
 
->
-> --- /tmp/tmp.5198.41	2010-02-01 15:04:45.000000000 -0800
-> +++ ./linux-2.6.32.3/drivers/net/ll_temac.h	2010-01-28 15:06:17.000000000 -0800
-> @@ -338,6 +338,7 @@
->  	/* IO registers and IRQs */
->  	void __iomem *regs;
->  	dcr_host_t sdma_dcrs;
-> +	u32 __iomem *sdma_regs;
->  	int tx_irq;
->  	int rx_irq;
->  	int emac_num;
-> --- /tmp/tmp.5198.53	2010-02-01 15:04:45.000000000 -0800
-> +++ ./linux-2.6.32.3/drivers/net/ll_temac_main.c	2010-02-01 15:04:01.000000000 -0800
-> @@ -20,9 +20,6 @@
->   *   or rx, so this should be okay.
->   *
->   * TODO:
-> - * - Fix driver to work on more than just Virtex5.  Right now the driver
-> - *   assumes that the locallink DMA registers are accessed via DCR
-> - *   instructions.
->   * - Factor out locallink DMA code into separate driver
->   * - Fix multicast assignment.
->   * - Fix support for hardware checksumming.
-> @@ -117,12 +114,20 @@
->
->  static u32 temac_dma_in32(struct temac_local *lp, int reg)
->  {
-> -	return dcr_read(lp->sdma_dcrs, reg);
-> +	if (lp->sdma_regs) {
-> +		return __raw_readl(lp->sdma_regs + reg);
-> +	} else {
-> +		return dcr_read(lp->sdma_dcrs, reg);
-> +	}
+[   0.000000] 0100000000 - 0140000000 page 2M
+[   0.000000] kernel direct mapping tables up to 140000000 @ b000-11000
+[   0.000000] init_ohci1394_dma: initializing OHCI-1394 at 05:00.0
+[   0.000000] bootmem alloc of 4096 bytes failed!
+[   0.000000] Kernel panic - not syncing: Out of memory
+[   0.000000] Pid: 0, comm: swapper Not tainted 
+2.6.33-rc6-00072-gab65832 # 39
+[   0.000000] Call Trace:
 
-Rather than taking the ugliness an if/else block on every register
-access, why not create an ops structure and populate it with the
-correct access routines at runtime?
+then the rest shown on the picture on the bug report.
 
->  }
->
->  static void temac_dma_out32(struct temac_local *lp, int reg, u32 value)
->  {
-> -	dcr_write(lp->sdma_dcrs, reg, value);
-> +	if (lp->sdma_regs) {
-> +		__raw_writel(value, lp->sdma_regs + reg);
-> +	} else {
-> +		dcr_write(lp->sdma_dcrs, reg, value);
-> +	}
->  }
->
->  /**
-> @@ -862,13 +867,17 @@
->  		goto nodev;
->  	}
->
-> -	dcrs = dcr_resource_start(np, 0);
-> -	if (dcrs == 0) {
-> -		dev_err(&op->dev, "could not get DMA register address\n");
-> +	lp->sdma_regs = NULL;
-> +
-> +	if ((dcrs = dcr_resource_start(np, 0)) != 0) {
-> +		lp->sdma_dcrs = dcr_map(np, dcrs, dcr_resource_len(np, 0));
-> +		dev_dbg(&op->dev, "DCR base: %x\n", dcrs);
-> +	} else if ((lp->sdma_regs = of_iomap(np, 0))) {
-> +		dev_dbg(&op->dev, "MEM base: %p\n", lp->sdma_regs);
-> +	} else {
-> +		dev_err(&op->dev, "unable to map DMA registers\n");
->  		goto nodev;
->  	}
-> -	lp->sdma_dcrs = dcr_map(np, dcrs, dcr_resource_len(np, 0));
-> -	dev_dbg(&op->dev, "DCR base: %x\n", dcrs);
->
->  	lp->rx_irq = irq_of_parse_and_map(np, 0);
->  	lp->tx_irq = irq_of_parse_and_map(np, 1);
-> @@ -895,7 +904,7 @@
->
->  	lp->phy_node = of_parse_phandle(op->node, "phy-handle", 0);
->  	if (lp->phy_node)
-> -		dev_dbg(lp->dev, "using PHY node %s (%p)\n", np->full_name, np);
-> +		dev_dbg(lp->dev, "using PHY node %s (%p)\n", lp->phy_node->full_name, lp->phy_node);
+Out of memory?
 
-This looks like an unrelated bug fix.  Please put into a separate
-patch and post separately.
-
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Justin P. Mattock
