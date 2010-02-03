@@ -1,56 +1,49 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756528Ab0BCOmf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 09:42:35 -0500
-Received: from cantor.suse.de ([195.135.220.2]:36235 "EHLO mx1.suse.de"
+	id S1756288Ab0BCOtk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 09:49:40 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:14156 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756359Ab0BCOmd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 09:42:33 -0500
-Date: Wed, 3 Feb 2010 15:42:32 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Marcel Holtmann <marcel@holtmann.org>
-Cc: Bastien Nocera <hadess@hadess.net>, Michael Poole <mdpoole@troilus.org>,
-       "Gunn, Brian" <bgunn@solekai.com>, Ping <pinglinux@gmail.com>,
-       linux-kernel@vger.kernel.org,
-       BlueZ development <linux-bluetooth@vger.kernel.org>
-Subject: Re: [PATCH 3/3] HID: Enable Sixaxis controller over Bluetooth
-In-Reply-To: <1265206650.31341.113.camel@localhost.localdomain>
-Message-ID: <alpine.LNX.2.00.1002031542222.15395@pobox.suse.cz>
-References: <alpine.LNX.2.00.1001291515560.356@pobox.suse.cz>  <1264783166.29532.5302.camel@localhost.localdomain>  <87iqakifm8.fsf@troilus.org>  <1264860663.29532.7887.camel@localhost.localdomain>  <87bpg7glf7.fsf@troilus.org>  <1265190440.32444.8417.camel@localhost.localdomain>
-  <alpine.LNX.2.00.1002031202040.15395@pobox.suse.cz>  <alpine.LNX.2.00.1002031343500.15395@pobox.suse.cz>  <alpine.LNX.2.00.1002031349550.15395@pobox.suse.cz> <1265206650.31341.113.camel@localhost.localdomain>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	id S1753572Ab0BCOtj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 09:49:39 -0500
+Message-ID: <4B698CEE.5020806@redhat.com>
+Date: Wed, 03 Feb 2010 09:49:18 -0500
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Lightning/1.0pre Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Lubos Lunak <l.lunak@suse.cz>
+CC: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Rientjes <rientjes@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, Nick Piggin <npiggin@suse.de>,
+       Jiri Kosina <jkosina@suse.cz>
+Subject: Re: Improving OOM killer
+References: <201002012302.37380.l.lunak@suse.cz>
+In-Reply-To: <201002012302.37380.l.lunak@suse.cz>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Feb 2010, Marcel Holtmann wrote:
+On 02/01/2010 05:02 PM, Lubos Lunak wrote:
 
-> Hi Jiri,
-> 
-> > Now that hid_output_raw_report works, port the PS3 Sixaxis
-> > Bluetooth quirk from user-space, into kernel-space.
-> > 
-> > Signed-off-by: Bastien Nocera <hadess@hadess.net>
-> > Signed-off-by: Jiri Kosina <jkosina@suse.cz>
-> 
-> Acked-by: Marcel Holtmann <marcel@holtmann.org>
->  
-> > -	ret = sony_set_operational(hdev);
-> > +	if (hdev->bus == BUS_USB)
-> > +		ret = sony_set_operational(hdev);
-> > +	else if (hdev->bus == BUS_BLUETOOTH)
-> > +		ret = sony_set_operational_bt(hdev);
-> > +	else
-> > +		ret = 0;
-> > +
-> 
-> I would do sony_set_operational_usb() and sony_set_operational_bt() and
-> also turn this into a switch statement for better readability.
+>   In other words, use VmRSS for measuring memory usage instead of VmSize, and
+> remove child accumulating.
 
-Fixed and applied. Thanks,
+I agree with removing the child accumulating code.  That code can
+do a lot of harm with databases like postgresql, or cause the
+system's main service (eg. httpd) to be killed when a broken cgi
+script used up too much memory.
+
+IIRC the child accumulating code was introduced to deal with
+malicious code (fork bombs), but it makes things worse for the
+(much more common) situation of a system without malicious
+code simply running out of memory due to being very busy.
+
+I have no strong opinion on using RSS vs VmSize.
 
 -- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+All rights reversed.
