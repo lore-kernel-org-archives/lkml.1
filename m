@@ -1,39 +1,48 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932714Ab0BCR06 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 12:26:58 -0500
-Received: from are.twiddle.net ([75.149.56.221]:56953 "EHLO are.twiddle.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932688Ab0BCR0z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 12:26:55 -0500
-X-Greylist: delayed 614 seconds by postgrey-1.27 at vger.kernel.org; Wed, 03 Feb 2010 12:26:55 EST
-Message-ID: <4B69AF72.3000208@twiddle.net>
-Date: Wed, 03 Feb 2010 09:16:34 -0800
-From: Richard Henderson <rth@twiddle.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+	id S932722Ab0BCR2l (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 12:28:41 -0500
+Received: from mail-yw0-f198.google.com ([209.85.211.198]:43388 "EHLO
+	mail-yw0-f198.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932688Ab0BCR2j (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 12:28:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:x-url:user-agent;
+        b=HhA5Q6duElOZB8UKccGJfbb6hJJcjQoGEqdmzm6SY/G54HBwwKifcHIXax4tnDV5Tt
+         kanMKGpAM8SO/Ff6+vO5S3MjHjfKIf5eqnf3acKskAErrbBKdLx2DJDa03uik+cNJGPI
+         pEldwi8wotYFHM7Ogi809vsh8ifzD8+YgxJgQ=
+Date: Wed, 3 Feb 2010 15:28:31 -0200
+From: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+To: Mike Galbraith <efault@gmx.de>
+Cc: john smith <whalajam@yahoo.com>, Peter Zijlstra <peterz@infradead.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: perf report for .ko files
+Message-ID: <20100203172831.GC8548@ghostprotocols.net>
+References: <20100126210552.GA12567@ghostprotocols.net>
+ <229562.61603.qm@web55007.mail.re4.yahoo.com>
+ <20100129191558.GA9990@ghostprotocols.net>
+ <1264833954.6097.13.camel@marge.simson.net>
 MIME-Version: 1.0
-To: Roel Kluin <roel.kluin@gmail.com>
-CC: Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Matt Turner <mattst88@gmail.com>, linux-alpha@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] alpha: PTR_ERR overwrites -EINVAL in syscall osf_mount
-References: <4B699B06.2040202@gmail.com>
-In-Reply-To: <4B699B06.2040202@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1264833954.6097.13.camel@marge.simson.net>
+X-Url: http://acmel.wordpress.com
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/03/2010 07:49 AM, Roel Kluin wrote:
-> The initial -EINVAL value is overwritten by `retval = PTR_ERR(name)'.
-> If this isn't an error pointer and typenr is not 1, 6 or 9, then
-> this retval, a pointer cast to a long, is returned.
->
-> Signed-off-by: Roel Kluin<roel.kluin@gmail.com>
+Em Sat, Jan 30, 2010 at 07:45:54AM +0100, Mike Galbraith escreveu:
+> On Fri, 2010-01-29 at 17:15 -0200, Arnaldo Carvalho de Melo wrote:
+> 
+> > I actually never tried doing annotation with a module, will try.
+> 
+> Seems it went south again in both .git and .tip.  32 works.
 
-Acked-by: Richard Henderson <rth@twiddle.net>
+We need to read the ELF header, notice its a relocatable file and not
+apply the unmap_ip functions, doing a patch now.
 
-
-r~
+- Arnaldo
