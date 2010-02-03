@@ -1,101 +1,88 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932719Ab0BCXkL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 18:40:11 -0500
-Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:31115 "EHLO
-	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932848Ab0BCXj7 (ORCPT
+	id S1757964Ab0BCXpS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 18:45:18 -0500
+Received: from mga02.intel.com ([134.134.136.20]:62675 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757779Ab0BCXpP convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 18:39:59 -0500
-Subject: [PATCH v1 0/7] PCI: try enabling "pci=use_crs" again
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Tony Luck <tony.luck@intel.com>,
-       linux-pci@vger.kernel.org, Peter Haight <peterh@sapros.com>,
-       Gary Hade <garyhade@us.ibm.com>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org, Yinghai Lu <yinghai@kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Larry Finger <Larry.Finger@lwfinger.net>
-Date: Wed, 03 Feb 2010 16:38:55 -0700
-Message-ID: <20100203233617.10803.92102.stgit@bob.kio>
-User-Agent: StGit/0.15
+	Wed, 3 Feb 2010 18:45:15 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,401,1262592000"; 
+   d="scan'208";a="489487381"
+From: "Lu, Hongjiu" <hongjiu.lu@intel.com>
+To: Roland McGrath <roland@redhat.com>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+CC: Oleg Nesterov <oleg@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Lachner, Peter" <peter.lachner@intel.com>
+Date: Wed, 3 Feb 2010 15:45:12 -0800
+Subject: RE: [patch] x86: ptrace and core-dump extensions for xstate
+Thread-Topic: [patch] x86: ptrace and core-dump extensions for xstate
+Thread-Index: AcqlKdurKGg2ELO3TsiffO3nRPC3rgAAFHwA
+Message-ID: <8EA2C2C4116BF44AB370468FBF85A7770123AAB0AE@orsmsx504.amr.corp.intel.com>
+References: <1265076025.2802.194.camel@sbs-t61.sc.intel.com>
+ <20100203230817.E6529AA@magilla.sf.frob.com>
+In-Reply-To: <20100203230817.E6529AA@magilla.sf.frob.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Historically, Linux has assumed a single PCI host bridge, with that bridge
-claiming all the address space left after RAM and legacy devices are taken out.
+> 
+> > +	case PTRACE_GETXSTATEREGS:	/* Get the child extended state. */
+> > +		return copy_regset_to_user(child,
+> > +					   task_user_regset_view(current),
+> > +					   REGSET_XSTATE,
+> > +					   0, xstate_size,
+> > +					   datap);
+> > +
+> > +	case PTRACE_SETXSTATEREGS:	/* Set the child extended state. */
+> > +		return copy_regset_from_user(child,
+> > +					     task_user_regset_view(current),
+> > +					     REGSET_XSTATE,
+> > +					     0, xstate_size,
+> > +					     datap);
+> 
+> I think this is a poor choice of interface for this.  The other existing
+> PTRACE_GET*REGS calls use a fixed-size and fixed-layout block that is a
+> known constant in the userland ABI.  Here, userland has no way to know
+> xstate_size, so you are accessing a chunk of user memory where userland
+> doesn't really know how much you are going to access.
+> 
+> AFAICT from skimming the Intel manuals, there is no specified upper bound
+> on how big the xsave size might grow in future processors.  I would think
+> that it might be limited to a page, since there is no way to indicate a
+> partial copy to restart after a page fault.  So for unpinned access (such
+> as in user mode, or the user memory access in the signal frame setup), in
+> full-thrashing situations an xsave spanning multiple pages might thrash
+> totally and never make progress.  OTOH, the manual does not say that the
+> buffer can't span two pages today, just that it has to be 64-byte aligned.
+> So perhaps we already have that issue (for signal frame setup or for direct
+> user-space uses of xsave/xrstor) and it's just not really an issue that
+> matters (thrashing is thrashing--it's already pathological, so who cares if
+> it's literal livelock or not).  The upshot being, I don't think there is an
+> obvious upper bound that userland can presume statically here.
+> 
+> AFAICT, the only way for userland to guess xstate_size is to use cpuid
+> itself.  Even if that is actually reliable, or even if the kernel gave
+> userland some other means to know the kernel's xstate_size value, IMHO that
+> is a pretty dubious and error-prone way to construct the ABI.  Usually when
+> userland supplies a buffer whose size is not a permanent constant of the
+> ABI, userland says how big a buffer it's passing in.
+> 
 
-If the system contains multiple host bridges, we can no longer operate under
-that assumption.  We have to know what parts of the address space are claimed
-by each bridge so that when we assign resources to a PCI device, we take them
-from a range claimed by the upstream host bridge.
-
-We use ACPI to enumerate all the PCI host bridges in the system, and part of
-the host bridge description is the "_CRS" (current resource settings" property,
-which lists the address space used by the bridge.  On x86, we currently ignore
-most of the _CRS information.  This patch series changes this, so we will use
-_CRS to learn about the host bridge windows.
-
-Since most x86 machines with multiple host bridges are relatively new, this
-series only turns this on for machines with BIOS dates of 2010 or newer and for
-a few machines that we know need it.
-
-These apply on 0148b041be4e7, which is the current head of the linux-next
-branch of Jesse's pci-2.6 git tree.  The first patch is just Jeff Garrett's
-patch to remove intel_bus.c, so that is only here for people who want to test
-the rest of the patches.  I expect Jesse will pick up Jeff's patch via Linus'
-tree.
-
-Gary and Peter have some of these problem machines, so I'm hoping they can give
-this a whirl.
-
-Larry, you reported the problem the last time I tried to turn on "pci=use_crs"
-by default.  This series shouldn't affect your machine because it's not in the
-whitelist, but I expect that if you boot the current kernel with "pci=use_crs",
-it should still fail, and if you boot with these patches and "pci=use_crs", it
-*should* work.  I know it's a lot to ask, but it'd be great if you had a chance
-to try that.
-
-Bjorn
-
----
-
-Bjorn Helgaas (7):
-      x86/PCI: remove IOH range fetching
-      PCI: break out primary/secondary/subordinate for readability
-      PCI: split up pci_read_bridge_bases()
-      PCI: read bridge windows before filling in subtractive decode resources
-      PCI: replace bus resource table with a list
-      x86/PCI: use host bridge _CRS info by default on 2010 and newer machines
-      PCI: reference bridge window resources explicitly
+Gdb calls cpuid during startup time to find out the actual xstate_size
+on the target machine. It has to be reliable. There is no need for
+another ptrace option. But we should document it clearly in ABI.
 
 
- Documentation/kernel-parameters.txt |    8 +-
- arch/ia64/include/asm/acpi.h        |    1 
- arch/ia64/pci/pci.c                 |   20 ++--
- arch/x86/include/asm/pci_x86.h      |    1 
- arch/x86/pci/Makefile               |    2 
- arch/x86/pci/acpi.c                 |  105 +++++++++++++++-------
- arch/x86/pci/bus_numa.c             |    9 +-
- arch/x86/pci/common.c               |    3 +
- arch/x86/pci/intel_bus.c            |   94 --------------------
- drivers/acpi/pci_root.c             |    1 
- drivers/pci/bus.c                   |   50 ++++++++++-
- drivers/pci/hotplug/shpchp_sysfs.c  |   15 ++-
- drivers/pci/pci.c                   |    6 +
- drivers/pci/probe.c                 |  102 +++++++++++++++-------
- drivers/pci/quirks.c                |    4 -
- drivers/pci/setup-bus.c             |  166 ++++++++++++++++++-----------------
- drivers/pcmcia/rsrc_nonstatic.c     |    7 +
- drivers/pcmcia/yenta_socket.c       |   46 ++++++----
- include/acpi/acpi_drivers.h         |    1 
- include/linux/pci.h                 |   27 ++++--
- 20 files changed, 367 insertions(+), 301 deletions(-)
- delete mode 100644 arch/x86/pci/intel_bus.c
-
--- 
+H.J.
