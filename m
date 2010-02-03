@@ -1,138 +1,71 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756111Ab0BCJOk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 04:14:40 -0500
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:57321 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753102Ab0BCJOg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 04:14:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=JVDvLQlDwbLYriut+WAZVYoGuIhdQEnE2RgGv3XMxtw1MMHsbI+yKXav+8ZlP+xdTW
-         sFTxBxB/6vUQLC6vaaVKFxZRnVApa1azUsA+zb8uR1HwC6UxbRjSwnVSdouiban+INYB
-         GdiLAGLkvhfSzFX5r6TnidW7rr7E05WYem3j0=
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Paul Mackerras <paulus@samba.org>,
-       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
-       Li Zefan <lizf@cn.fujitsu.com>, Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: [RFC GIT PULL] perf/trace/lock optimization/scalability improvements
-Date: Wed,  3 Feb 2010 10:14:24 +0100
-Message-Id: <1265188475-23509-1-git-send-regression-fweisbec@gmail.com>
-X-Mailer: git-send-email 1.6.2.3
+	id S932394Ab0BCJRl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 04:17:41 -0500
+Received: from vpn.id2.novell.com ([195.33.99.129]:21720 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932324Ab0BCJRe convert rfc822-to-8bit (ORCPT
+	<rfc822;groupwise-JBeulich@novell.com;8:2>);
+	Wed, 3 Feb 2010 04:17:34 -0500
+Message-Id: <4B694D5C020000780002D6DA@vpn.id2.novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.1 
+Date: Wed, 03 Feb 2010 09:18:04 +0000
+From: "Jan Beulich" <JBeulich@novell.com>
+To: "Justin P. Mattock" <justinmattock@gmail.com>,
+       "Stefan Richter" <stefanr@s5r6.in-berlin.de>
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Dan Carpenter" <error27@gmail.com>,
+       <bernhard.kaindl@gmx.net>, "Thomas Gleixner" <tglx@linutronix.de>,
+       <linux1394-devel@lists.sourceforge.net>, "Rafael Wysocki" <rjw@sisk.pl>,
+       "Kernel Testers List" <kernel-testers@vger.kernel.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       <ebiderman@xmission.com>, <hpa@zytor.com>
+Subject: Re: ohci1394_dma=early crash since 2.6.32 (was Re: [Bug
+	 #14487] PANIC: early exception 08 rip 246:10
+	 error	ffffffff810251b5 cr2 0)
+References: <UgwvXSBS_tM.A.alD.1EiZLB@chimera>
+ <de962C6zBxL.A.H1G.1HiZLB@chimera> <4B6630CA.9010207@gmail.com>
+ <20100201125441.GB2576@bicker> <4B671606.3080405@gmail.com>
+ <4B673233.8000300@s5r6.in-berlin.de> <4B6740B5.5070601@gmail.com>
+ <4B675534.5070107@s5r6.in-berlin.de> <4B676917.2080506@gmail.com>
+ <4B67BC12.4080709@s5r6.in-berlin.de> <4B67C4D2.5050205@gmail.com>
+ <4B67CC55.40301@s5r6.in-berlin.de> <4B67CCEC.2030103@s5r6.in-berlin.de>
+ <4B68D4CA.2010803@gmail.com>
+In-Reply-To: <4B68D4CA.2010803@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+>>> "Justin P. Mattock" <justinmattock@gmail.com> 03.02.10 02:43 >>>
+>The only thing I can think of at this point
+>is maybe the CFLAGS I used to build this system.
+>(as for the x86_32 working and x86_64 failing not sure);
+>
+>I'm curious to see if anybody else is hitting this?
 
-There are many things that happen in this patchset, treating
-different problems:
+I think it is pretty clear how a page fault can happen here (but you're
+observing a double fault, which I cannot explain [nor can I explain
+why the fault apparently didn't get an error code pushed, which is
+why address and error code displayed are mixed up]): I would
+suspect that FIX_OHCI1394_BASE is now in a different (virtual) 2Mb
+range than what is covered by level{1,2}_fixmap_pgt, but this was
+a latent issue even before that patch (just waiting for sufficiently
+many fixmap entries getting inserted before
+__end_of_permanent_fixed_addresses).
 
-- remove most of the string copy overhead in fast path
-- open the way for lock class oriented profiling (as
-  opposite to lock instance profiling. Both can be useful
-  in different ways).
-- remove the buffers muliplexing (less contention)
-- event injection support
-- remove violent lock events recursion (only 2 among 3, the remaining
-  one is detailed below).
+The thing is that head_64.S uses hard-coded numbers, but doesn't 
+really make sure (at build time) that the fixmap page tables established
+indeed cover all the entries of importance (and honestly I even can't
+easily tell which of the candidates - FIX_DBGP_BASE,
+FIX_EARLYCON_MEM_BASE, and FIX_OHCI1394_BASE afaict - really
+matter). If either of the first does, the only reasonable solution imo
+is to move FIX_OHCI1394_BASE out of the boot time only range into
+the permanent range (unless the other two can be moved into the
+boot time only range). And obviously the hard coded numbers
+should be eliminated from head_64.S.
 
-Some differences, by running:
-	perf lock record perf sched pipe -l 100000
+Jan
 
-Before the patchset:
-
-	Total time: 91.015 [sec]
-
-	     910.157300 usecs/op
-		   1098 ops/sec
-
-After this patchset applied:
-
-	Total time: 43.706 [sec]
-
-	     437.062080 usecs/op
-		   2288 ops/sec
-
-Although it's actually 50 secs after the very latest patch in this
-series. It is supposed to bring more scalability (and I believe it
-does on a box with more than two cpus, although I can't test).
-But multiplexing the counters had a side effect: perf record has
-only one buffer to eat and not 5 * NR_CPUS, which makes its job
-a bit easier when we multiplex (at the cost of cpus contention of
-course, but on my atom, the scalability gain is not very visible).
-
-And also, after this odd patch:
-
-diff --git a/kernel/perf_event.c b/kernel/perf_event.c
-index 98fd360..254b3d4 100644
---- a/kernel/perf_event.c
-+++ b/kernel/perf_event.c
-@@ -3094,7 +3094,8 @@ static u32 perf_event_tid(struct perf_event *event, struct task_struct *p)
-        if (event->parent)
-                event = event->parent;
- 
--       return task_pid_nr_ns(p, event->ns);
-+       return p->pid;
- }
-
-We get:
-
-	Total time: 26.170 [sec]
-
-	     261.707960 usecs/op
-		   3821 ops/sec
-
-Ie: 2x faster than this patchset, and more than 3x faster than
-tip:/perf/core
-
-This is because task_pid_nr_ns() takes a lock and creates
-lock events recursion. We really need to fix that.
-
-You can pull this patchset from:
-
-git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git
-	perf/core
-
-Thanks.
-
-
----
-
-Frederic Weisbecker (11):
-      tracing: Add lock_class_init event
-      tracing: Introduce TRACE_EVENT_INJECT
-      tracing: Inject lock_class_init events on registration
-      tracing: Add lock class id in lock_acquire event
-      perf: New PERF_EVENT_IOC_INJECT ioctl
-      perf: Handle injection ioctl with trace events
-      perf: Handle injection iotcl for tracepoints from perf record
-      perf/lock: Add support for lock_class_init events
-      tracing: Remove the lock name from most lock events
-      tracing/perf: Fix lock events recursions in the fast path
-      perf lock: Drop the buffers multiplexing dependency
-
-
- include/linux/ftrace_event.h       |    6 +-
- include/linux/lockdep.h            |    4 +
- include/linux/perf_event.h         |    6 +
- include/linux/tracepoint.h         |    3 +
- include/trace/define_trace.h       |    6 +
- include/trace/events/lock.h        |   57 ++++--
- include/trace/ftrace.h             |   31 +++-
- kernel/lockdep.c                   |   16 ++
- kernel/perf_event.c                |   47 ++++-
- kernel/trace/trace_event_profile.c |   46 +++--
- kernel/trace/trace_events.c        |    3 +
- tools/perf/builtin-lock.c          |  345 ++++++++++++++++++++++++++++++++----
- tools/perf/builtin-record.c        |    9 +
- 13 files changed, 497 insertions(+), 82 deletions(-)
