@@ -1,67 +1,281 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757877Ab0BCXDm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 18:03:42 -0500
-Received: from qw-out-2122.google.com ([74.125.92.24]:55012 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756866Ab0BCXDi (ORCPT
+	id S1757751Ab0BCXGW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 18:06:22 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39514 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756553Ab0BCXGU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 18:03:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=fS5x/QCZQB7Gqrx05+wiaIg107i5SW5QkIyWsyjHj7Dl1Lo34tnEmmy7236bT9sUgy
-         TG6xVYbqd+X0OaG/UEUPGbc5S8r1joBg6F++tqZTMSwHCeHcAut0W+KctORJSsX0TDTO
-         2WQKMR1QJvVMUXIzH3jS8zj1cd8r4Pebh02Ow=
-Message-ID: <4B6A0123.3010607@gmail.com>
-Date: Wed, 03 Feb 2010 15:05:07 -0800
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091114 Lightning/1.0pre Thunderbird/3.0b4
-MIME-Version: 1.0
-To: Jan Beulich <JBeulich@novell.com>
-CC: Stefan Richter <stefanr@s5r6.in-berlin.de>, Ingo Molnar <mingo@elte.hu>,
-       Dan Carpenter <error27@gmail.com>, bernhard.kaindl@gmx.net,
-       Thomas Gleixner <tglx@linutronix.de>,
-       linux1394-devel@lists.sourceforge.net, Rafael Wysocki <rjw@sisk.pl>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       ebiderman@xmission.com, hpa@zytor.com
-Subject: Re: ohci1394_dma=early crash since 2.6.32 (was Re: [Bug	 #14487]
- PANIC: early exception 08 rip 246:10	 error	ffffffff810251b5 cr2 0)
-References: <UgwvXSBS_tM.A.alD.1EiZLB@chimera> <de962C6zBxL.A.H1G.1HiZLB@chimera> <4B6630CA.9010207@gmail.com> <20100201125441.GB2576@bicker> <4B671606.3080405@gmail.com> <4B673233.8000300@s5r6.in-berlin.de> <4B6740B5.5070601@gmail.com> <4B675534.5070107@s5r6.in-berlin.de> <4B676917.2080506@gmail.com> <4B67BC12.4080709@s5r6.in-berlin.de> <4B67C4D2.5050205@gmail.com> <4B67CC55.40301@s5r6.in-berlin.de> <4B67CCEC.2030103@s5r6.in-berlin.de> <4B68D4CA.2010803@gmail.com> <4B694D5C020000780002D6DA@vpn.id2.novell.com>
-In-Reply-To: <4B694D5C020000780002D6DA@vpn.id2.novell.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 3 Feb 2010 18:06:20 -0500
+Date: Wed, 3 Feb 2010 15:05:45 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Stefani Seibold <stefani@seibold.net>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>, Greg Kroah-Hartman <gregkh@suse.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
+       "Ira W. Snyder" <iws@ovro.caltech.edu>
+Subject: Re: [PATCH] enhanced reimplemention of the kfifo API
+Message-Id: <20100203150545.ebb69cad.akpm@linux-foundation.org>
+In-Reply-To: <1265234991.24040.46.camel@wall-e>
+References: <1264597243.3607.24.camel@wall-e>
+	<20100203120504.6da9b000.akpm@linux-foundation.org>
+	<1265234991.24040.46.camel@wall-e>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-o.k. while looking into grub2
-I had noticed during compile time
-and reading posts, that -m32 is always
-being called(no matter how much I tweaked the
-Makefile). seeing this made me think well
-if this thing is being built with -m32 maybe that might
-be it i.g. 32bit to 64bit might cause some issues, but
-unfortunately is not the case(building lilo you can achieve a pure64
-bit build).
+On Wed, 03 Feb 2010 23:09:51 +0100
+Stefani Seibold <stefani@seibold.net> wrote:
 
-So after all of that still no go, but the positive side
-is lilo is able to show more up the line of the boot message
-error:
+> Am Mittwoch, den 03.02.2010, 12:05 -0800 schrieb Andrew Morton:
+> > On Wed, 27 Jan 2010 14:00:43 +0100
+> > Stefani Seibold <stefani@seibold.net> wrote:
+> > 
+> > > This is a complete reimplementation of the new kfifo API, which is now 
+> > > really generic, type save and type definable. 
+> > > 
+> > > 
+> > > ...
+> > >
+> > > diff -u -N -r -p linux-2.6.33-rc5.dummy/include/linux/kfifo.h linux-2.6.33-rc5.new/include/linux/kfifo.h
+> > > --- linux-2.6.33-rc5.dummy/include/linux/kfifo.h	1970-01-01 01:00:00.000000000 +0100
+> > > +++ linux-2.6.33-rc5.new/include/linux/kfifo.h	2010-01-27 13:34:06.324991898 +0100
+> > >
+> > > ...
+> > >
+> > > +/*
+> > > + * DECLARE_KFIFO_PTR - macro to declare a fifo pointer object
+> > > + * @fifo: name of the declared fifo
+> > > + * @type: type of the fifo elements
+> > > + * @size: the number of elements in the fifo, this must be a power of 2.
+> > > + */
+> > 
+> > Throughout this patch the comments are in kerneldoc form, but they
+> > don't use the /** opening token, so the kerneldoc tools will ignore them.
+> > 
+> > Please fix that up and test it.
+> > 
+> > > +#define DECLARE_KFIFO_PTR(fifo, type)	STRUCT_KFIFO_PTR(type) fifo
+> > > +
+> > > +/* helper macro */
+> > > +#define	__is_kfifo_ptr(fifo)	(sizeof(*fifo) == sizeof(struct __kfifo))
+> > 
+> > This is weird.  It's a compile-time constant.  What's it here for?
+> 
+> I need it to distinguish between real in place fifo, where the fifo
+> array is a part of the structure, and the fifo type where the array is
+> outside of the fifo structure.
 
-[   0.000000] 0100000000 - 0140000000 page 2M
-[   0.000000] kernel direct mapping tables up to 140000000 @ b000-11000
-[   0.000000] init_ohci1394_dma: initializing OHCI-1394 at 05:00.0
-[   0.000000] bootmem alloc of 4096 bytes failed!
-[   0.000000] Kernel panic - not syncing: Out of memory
-[   0.000000] Pid: 0, comm: swapper Not tainted 
-2.6.33-rc6-00072-gab65832 # 39
-[   0.000000] Call Trace:
+OK, please add a comment?
 
-then the rest shown on the picture on the bug report.
+> > > +/*
+> > > + * INIT_KFIFO - Initialize a fifo declared by DECLARE_KFIFO
+> > > + * @fifo: name of the declared fifo datatype
+> > > + */
+> > > +#define INIT_KFIFO(fifo)	fifo = __kfifo_initializer(fifo)
+> > 
+> > Some versions of gcc generate quite poor code for
+> > 
+> > 	struct foo f = { ... };
+> > 
+> > It would generate an instance of the struct into the stack and then
+> > would memcpy it over, iirc.  Please take a look, see if that's
+> > happening with this construct (might need to use an old gcc version)
+> > and if so, see if there's a fix?
+> > 
+> 
+> The current version of the kfifo implementation did it in the same way.
+> Why is it now wrong?
 
-Out of memory?
+It was wrong before, too.
 
-Justin P. Mattock
+> Which gcc version do you mean?
+
+I don't recall.  The oldest gcc the kernel permits is 3.2, so checking
+any 3.x should be OK.
+
+> > > +/*
+> > > + * kfifo_initialized - Check if kfifo is initialized.
+> > > + * @fifo: fifo to check
+> > > + * Return %true if FIFO is initialized, otherwise %false.
+> > > + * Assumes the fifo was 0 before.
+> > > + *
+> > > + * Note: for in place fifo's this macro returns alway true
+> > > + */
+> > > +#define kfifo_initialized(fifo) ((fifo)->kfifo.data != NULL)
+> > 
+> > kfifo_initialized() is suspicious.  Any code which doesn't know whether
+> > its kfifo was initialised is probably confused, lame and broken. 
+> > Fortunately kfifo_initialized() is not used anywhere.  Please prepare a
+> > separate patch to kill it sometime.
+> > 
+> 
+> This function was introduced as a patch by andi kleen and you have it
+> already applied.
+
+Let's delete it?
+
+> > > +/*
+> > > + * kfifo_esize - returns the size of the element managed by the fifo
+> > > + * @fifo: the fifo to be used.
+> > > + */
+> > > +#define kfifo_esize(fifo)	((fifo)->kfifo.esize)
+> > 
+> > This doesn't seem to be used anywhere either.
+> > 
+> 
+> It is a part of the API. It returns the the size of the handled element,
+> If a driver developer need it, it is there.
+
+Well, if there's no proven need for it now, it will remain dead code
+for an unknown period of time.
+
+Also, there was no need to implement this as a macro (was there?).  If
+not, conversion to a more typesafe C function would be better.
+
+> > > +/*
+> > > + * kfifo_recsize - returns the size of the record length field
+> > > + * @fifo: the fifo to be used.
+> > > + */
+> > > +#define kfifo_recsize(fifo)	(sizeof(*(fifo)->rectype))
+> > 
+> > Neither is this.  What's going on?
+> > 
+> 
+> Dito... This returns the size of the record length field. 0 means this
+> is not a variable record fifo.
+
+ditto.
+
+> > > +/*
+> > > + * kfifo_out_locked - gets some data from the fifo using a spinlock for locking
+> > > + * @fifo: the fifo to be used.
+> > > + * @buf: pointer to the storage buffer
+> > > + * @n: max. number of elements to get
+> > > + * @lock: pointer to the spinlock to use for locking.
+> > > + *
+> > > + * This macro get the data from the fifo and return the numbers of elements
+> > > + * copied.
+> > > + */
+> > > +#define	kfifo_out_locked(fifo, buf, n, lock) \
+> > > +__kfifo_check( \
+> > > +({ \
+> > > +	unsigned long __flags; \
+> > > +	unsigned int __ret; \
+> > > +	spin_lock_irqsave(lock, __flags); \
+> > > +	__ret = kfifo_out(fifo, buf, n); \
+> > > +	spin_unlock_irqrestore(lock, __flags); \
+> > > +	__ret; \
+> > > +}) \
+> > > +)
+> > 
+> > This is poorly named.  Generally "foo_locked" is to be called when the
+> > caller has already taken the lock.  This identifier inverts that
+> > convention.
+> > 
+> 
+> This is the same name as the current kfifo API. Renaming it would break
+> a lot of drivers. But if there is no complain and you insist i will
+> rename it and fix the current users.
+
+argh, we goofed.
+
+yeah, it'd be nice to fix it sometime, please.  Not urgent.
+
+A good way to fix it would be to add a new function with a new name
+then migrate all callers over to that name then when it's done, remove
+the old name.
+
+> > > + * @fifo: the fifo to be used.
+> > > + * @to: where the data must be copied.
+> > > + * @len: the size of the destination buffer.
+> > > + * @copied: pointer to output variable to store the number of copied bytes.
+> > > + *
+> > > + * This macro copies at most @len bytes from the fifo into the
+> > > + * @to buffer and returns -EFAULT/0.
+> > > + *
+> > > + * Note that with only one concurrent reader and one concurrent
+> > > + * writer, you don't need extra locking to use these macro.
+> > > + */
+> > > +#define	kfifo_to_user(fifo, to, len, copied) \
+> > > +__kfifo_check( \
+> > > +({ \
+> > > +	typeof(fifo + 1) __tmp = (fifo); \
+> > > +	void __user *__to = (to); \
+> > > +	unsigned int __len = (len); \
+> > > +	unsigned int *__copied = (copied); \
+> > > +	const size_t __recsize = sizeof(*__tmp->rectype); \
+> > > +	struct __kfifo *__kfifo = &__tmp->kfifo; \
+> > > +	(__recsize) ? \
+> > > +	__kfifo_to_user_r(__kfifo, __to, __len, __copied, __recsize) : \
+> > > +	__kfifo_to_user(__kfifo, __to, __len, __copied); \
+> > > +}) \
+> > > +)
+> > 
+> > Do these have any callers?
+> > 
+> 
+> Currently not, but this is a part of the current kfifo implementation. A
+> lot of developer like this idea and it will be used in the near future.
+
+OK.  Please describe the presently-unused interfaces in the changelog,
+with particular attention to the reason for including them at this
+time.
+
+> > > +static inline unsigned int kfifo_unused(struct __kfifo *fifo)
+> > > +{
+> > > +	return (fifo->mask + 1) - (fifo->in - fifo->out);
+> > > +}
+> > 
+> > hm, how does this differ from kfifo_avail()?
+> > 
+> 
+> This is similar to kfifo_avail, but due the nature of macro and type
+> conversation i have not longer the original type information available.
+> So i can't call the macros in kfifo.h from the functions defined in
+> kfifo.c.
+
+OK, please add a comment there.  (As a general rule: if this reader
+needed more info then other readers will want more info as well).
+
+> > > +static unsigned long kfifo_copy_from_user(struct __kfifo *fifo,
+> > > +	const void *src, unsigned int len, unsigned int off,
+> > > +	unsigned int *copied)
+> > > +{
+> > > +	unsigned int size = fifo->mask + 1;
+> > > +	unsigned int esize = fifo->esize;
+> > > +	unsigned int l;
+> > > +	unsigned long ret;
+> > > +
+> > > +	off &= fifo->mask;
+> > > +	if (esize != 1) {
+> > > +		off *= esize;
+> > > +		size *= esize;
+> > > +		len *= esize;
+> > > +	}
+> > > +	l = min(len, size - off);
+> > > +
+> > > +	ret = copy_from_user(fifo->data + off, src, l);
+> > > +	if (unlikely(ret))
+> > > +		ret = roundup_diff(ret + len - l, esize);
+> > > +	else {
+> > > +		ret = copy_from_user(fifo->data, src + l, len - l);
+> > > +		if (unlikely(ret))
+> > > +			ret = roundup_diff(ret, esize);
+> > > +	}
+> > > +	smp_wmb();
+> > > +	if (copied)
+> > 
+> > Can `copied' ever be NULL?  If not, remove this test.
+> 
+> It was only a feature. If you don't like i will remove it.
+
+No strong opinion.  But if present callers don't pass NULL then that's
+a sign that future callers won't, too.  We may as well save the
+speed/space overhead until we actually need it.
+
+
