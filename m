@@ -1,67 +1,129 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932930Ab0BCVLS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 16:11:18 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:44610 "EHLO mx1.redhat.com"
+	id S1757151Ab0BCVVs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 16:21:48 -0500
+Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:45253 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932908Ab0BCVLR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 16:11:17 -0500
-Date: Wed, 3 Feb 2010 16:11:03 -0500
-From: Rik van Riel <riel@redhat.com>
-To: jdike@addtoit.com
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com,
-       aarcange@redhat.com, mtosatti@redhat.com
-Subject: [PATCH] emulate accessed bit for EPT
-Message-ID: <20100203161103.11e2b572@annuminas.surriel.com>
-Organization: Red Hat, Inc.
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1755681Ab0BCVVp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 16:21:45 -0500
+Date: Wed, 3 Feb 2010 22:21:43 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Paul Mackerras <paulus@samba.org>,
+       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
+       Li Zefan <lizf@cn.fujitsu.com>, Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>
+Subject: Re: [RFC GIT PULL] perf/trace/lock optimization/scalability
+	improvements
+Message-ID: <20100203212143.GW5733@kernel.dk>
+References: <1265188475-23509-1-git-send-regression-fweisbec@gmail.com> <20100203102540.GQ5733@kernel.dk> <20100203205009.GB5068@nowhere>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100203205009.GB5068@nowhere>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently KVM pretends that pages with EPT mappings never got
-accessed.  This has some side effects in the VM, like swapping
-out actively used guest pages and needlessly breaking up actively
-used hugepages.
+On Wed, Feb 03 2010, Frederic Weisbecker wrote:
+> On Wed, Feb 03, 2010 at 11:25:41AM +0100, Jens Axboe wrote:
+> > On Wed, Feb 03 2010, Frederic Weisbecker wrote:
+> > > Hi,
+> > > 
+> > > There are many things that happen in this patchset, treating
+> > > different problems:
+> > > 
+> > > - remove most of the string copy overhead in fast path
+> > > - open the way for lock class oriented profiling (as
+> > >   opposite to lock instance profiling. Both can be useful
+> > >   in different ways).
+> > > - remove the buffers muliplexing (less contention)
+> > > - event injection support
+> > > - remove violent lock events recursion (only 2 among 3, the remaining
+> > >   one is detailed below).
+> > > 
+> > > Some differences, by running:
+> > > 	perf lock record perf sched pipe -l 100000
+> > > 
+> > > Before the patchset:
+> > > 
+> > > 	Total time: 91.015 [sec]
+> > > 
+> > > 	     910.157300 usecs/op
+> > > 		   1098 ops/sec
+> > > 
+> > > After this patchset applied:
+> > > 
+> > > 	Total time: 43.706 [sec]
+> > > 
+> > > 	     437.062080 usecs/op
+> > > 		   2288 ops/sec
+> > 
+> > This does a lot better here, even if it isn't exactly stellar
+> > performance. It generates a LOT of data:
+> > 
+> > root@nehalem:/dev/shm # time perf lock rec -fg ls
+> > perf.data  perf.data.old
+> > [ perf record: Woken up 0 times to write data ]
+> > [ perf record: Captured and wrote 137.224 MB perf.data (~5995421
+> > samples) ]
+> 
+> 
+> 
+> Doh, 137 MB for a single ls :)
 
-We can avoid those very costly side effects by emulating the
-accessed bit for EPT PTEs, which should only be slightly costly
-because pages pass through page_referenced infrequently.
+Yeah, it's pretty crazy. It varies a lot too, I didn't post the other
+run which was ~170MB.
 
-TLB flushing is taken care of by kvm_mmu_notifier_clear_flush_young().
+> That said we don't have yet support for callchains in perf lock,
+> and callchains can fill the buffer quickly, especially on lock
+> events. You can drop the -g option for now.
 
-This seems to help prevent KVM guests from being swapped out when
-they should not on my system.
+OK
 
-Signed-off-by: Rik van Riel <riel@redhat.com>
----
-Jeff, does this patch fix the issue you saw a few months ago, with
-a 256MB KVM guest in a cgroup limited to 128GB memory?
+> > So while this is orders of magnitude better than the previous patchset,
+> > it's still not anywhere near lean. But I expect you know that, just
+> > consider this a 'I tested it and this is what happened' report :-)
+> 
+> 
+> Ok, thanks a lot, the fact you can test on a 64 threads box is critically
+> helpful.
 
- arch/x86/kvm/mmu.c |   10 ++++++++--
- 1 files changed, 8 insertions(+), 2 deletions(-)
+My pleasure, I'd love to have a fast and functional perf lockstat. If my
+testing helps getting there, consider me signed up :-)
 
-diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
-index 89a49fb..6101615 100644
---- a/arch/x86/kvm/mmu.c
-+++ b/arch/x86/kvm/mmu.c
-@@ -856,9 +856,15 @@ static int kvm_age_rmapp(struct kvm *kvm, unsigned long *rmapp,
- 	u64 *spte;
- 	int young = 0;
- 
--	/* always return old for EPT */
-+	/*
-+	 * Emulate the accessed bit for EPT, by checking if this page has
-+	 * an EPT mapping, and clearing it if it does. On the next access,
-+	 * a new EPT mapping will be established.
-+	 * This has some overhead, but not as much as the cost of swapping
-+	 * out actively used pages or breaking up actively used hugepages.
-+	 */
- 	if (!shadow_accessed_mask)
--		return 0;
-+		return kvm_unmap_rmapp(kvm, rmapp, data);
- 
- 	spte = rmap_next(kvm, rmapp, NULL);
- 	while (spte) {
+> I also wonder what happens after this patch applied:
+> 
+> diff --git a/kernel/perf_event.c b/kernel/perf_event.c
+> index 98fd360..254b3d4 100644
+> --- a/kernel/perf_event.c
+> +++ b/kernel/perf_event.c
+> @@ -3094,7 +3094,8 @@ static u32 perf_event_tid(struct perf_event *event, struct task_struct *p)
+>         if (event->parent)
+>                 event = event->parent;
+>  
+> -       return task_pid_nr_ns(p, event->ns);
+> +       return p->pid;
+>  }
+> 
+> In my box it has increased the speed from 2x this patchset.
+
+Cool, I'll give that a spin in the morning, the box is off atm.
+
+> I wonder if the tool becomes usable for you with that.
+> Otherwise, it means we have other things to fix, and
+> the result of:
+> 
+> 	perf record -g -f perf lock record sleep 6
+> 	perf report
+> 
+> would be very nice to have.
+
+I'll package that up for you and put it somewhere.
+
+-- 
+Jens Axboe
+
