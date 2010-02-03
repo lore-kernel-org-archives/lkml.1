@@ -1,63 +1,60 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932366Ab0BCCPu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 21:15:50 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:40921 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932185Ab0BCCPs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 21:15:48 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Wed, 3 Feb 2010 11:12:24 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: David Rientjes <rientjes@google.com>
-Cc: Lubos Lunak <l.lunak@suse.cz>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, Nick Piggin <npiggin@suse.de>,
-       Jiri Kosina <jkosina@suse.cz>
-Subject: Re: Improving OOM killer
-Message-Id: <20100203111224.8fe0e20c.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <alpine.DEB.2.00.1002021809220.15327@chino.kir.corp.google.com>
-References: <201002012302.37380.l.lunak@suse.cz>
-	<alpine.DEB.2.00.1002011523280.19457@chino.kir.corp.google.com>
-	<201002022210.06760.l.lunak@suse.cz>
-	<alpine.DEB.2.00.1002021643240.3393@chino.kir.corp.google.com>
-	<20100203105236.b4a60754.kamezawa.hiroyu@jp.fujitsu.com>
-	<alpine.DEB.2.00.1002021809220.15327@chino.kir.corp.google.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
+	id S1756494Ab0BCCa1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 21:30:27 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:56350 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753134Ab0BCCaX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 21:30:23 -0500
+Date: Wed, 3 Feb 2010 13:30:11 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       David Miller <davem@davemloft.net>, <netdev@vger.kernel.org>,
+       Daniel Mack <daniel@caiaq.de>
+Subject: linux-next: manual merge of the trivial tree with the net tree
+Message-Id: <20100203133011.75aef1d3.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0beta7 (GTK+ 2.18.6; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__3_Feb_2010_13_30_11_+1100_lIVWeu2jSe7VAYf5"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2 Feb 2010 18:12:41 -0800 (PST)
-David Rientjes <rientjes@google.com> wrote:
+--Signature=_Wed__3_Feb_2010_13_30_11_+1100_lIVWeu2jSe7VAYf5
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> On Wed, 3 Feb 2010, KAMEZAWA Hiroyuki wrote:
-> 
-> > I stopped that as I mentioned. I'm heavily disappointed with myself and
-> > would like not to touch oom-killer things for a while.
-> > 
-> > I'd like to conentrate on memcg for a while, which I've starved for these 3 months.
-> > 
-> > Then, you don't need to CC me.
-> > 
-> 
-> I'm disappointed to hear that, it would be helpful to get some consensus 
-> on the points that we can all agree on from different perspectives.  I'll 
-> try to find some time to develop a solution that people will see as a move 
-> in the positive direction.
-> 
-> On a seperate topic, do you have time to repost your sysctl cleanup for 
-> Andrew from http://marc.info/?l=linux-kernel&m=126457416729672 with the
-> #ifndef CONFIG_MMU fix I mentioned?
-> 
-I'll not. Feel free to reuse fragments I posted.
+Hi Jiri,
 
-Thanks,
--Kame
+Today's linux-next merge of the trivial tree got a conflict in
+drivers/net/ppp_generic.c between commit
+fa44a73cc766c7f3bac71a66d564e0049b800325 ("ppp_generic.c severly
+whitespace damanged by 9c705260feea6ae329bc6b6d5f6d2ef0227eda0a") from
+the net tree and commit 09e1aa00f106a476f5b90d94fc0139544bbded75
+("tree-wide: fix 'lenght' typo in comments and code") from the trivial
+tree.
 
+I fixed it up (by using the trivial tree version) and can carry the fix
+as necessary.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__3_Feb_2010_13_30_11_+1100_lIVWeu2jSe7VAYf5
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEUEARECAAYFAkto37MACgkQjjKRsyhoI8yWZwCWJMtR11j7PMNbRc1ldjzdmq/Z
+dQCfcjCwywcKvRPISQARfJCB+YrIetU=
+=HoeT
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__3_Feb_2010_13_30_11_+1100_lIVWeu2jSe7VAYf5--
