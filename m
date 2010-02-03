@@ -1,79 +1,61 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754221Ab0BCMKg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 07:10:36 -0500
-Received: from cantor.suse.de ([195.135.220.2]:58881 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750798Ab0BCMKd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 07:10:33 -0500
-From: Lubos Lunak <l.lunak@suse.cz>
-To: balbir@linux.vnet.ibm.com
-Subject: Re: Improving OOM killer
-Date: Wed, 3 Feb 2010 13:10:27 +0100
-User-Agent: KMail/1.9.10
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Nick Piggin <npiggin@suse.de>, Jiri Kosina <jkosina@suse.cz>
-References: <201002012302.37380.l.lunak@suse.cz> <20100203085711.GF19641@balbir.in.ibm.com>
-In-Reply-To: <20100203085711.GF19641@balbir.in.ibm.com>
+	id S1756952Ab0BCMVd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 07:21:33 -0500
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:39179 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752963Ab0BCMVc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 07:21:32 -0500
+Message-ID: <4B6969C8.20502@monstr.eu>
+Date: Wed, 03 Feb 2010 13:19:20 +0100
+From: Michal Simek <monstr@monstr.eu>
+Reply-To: monstr@monstr.eu
+User-Agent: Thunderbird 2.0.0.22 (X11/20090625)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: [GIT PULL] arch/microblaze fixes for 2.6.33-rc7
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <201002031310.28271.l.lunak@suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 03 of February 2010, Balbir Singh wrote:
-> * Lubos Lunak <l.lunak@suse.cz> [2010-02-01 23:02:37]:
-> >  In other words, use VmRSS for measuring memory usage instead of VmSize,
-> > and remove child accumulating.
->
-> I am not sure of the impact of changing to RSS, although I've
-> personally believed that RSS based accounting is where we should go,
-> but we need to consider the following
->
-> 1. Total VM provides data about potentially swapped pages,
+Hi Linus,
 
- Yes, I've already updated my proposal in another mail to switch from VmSize 
-to VmRSS+InSwap. I don't know how to find out the second item in code, but at 
-this point of discussion that's just details.
+please pull these two patches. One is simple defconfig update and
+the second is bugfix for noMMU version.
 
-> overcommit, 
+Thanks,
+Michal
 
- I don't understand how this matters. Overcommit is memory for which address 
-space has been allocated but not actual memory, right? Then that's exactly 
-what I'm claiming is wrong and am trying to reverse. Currently OOM killer 
-takes this into account because it uses VmSize, but IMO it shouldn't - if a 
-process does malloc(400M) but then it uses only a tiny fraction of that, in 
-the case of memory shortage killing that process does not solve anything in 
-practice.
 
-> etc.
-> 2. RSS alone is not sufficient, RSS does not account for shared pages,
-> so we ideally need something like PSS.
+The following changes since commit c80d292f137275a1ed88e6ed515ecb457051f1a4:
+   Linus Torvalds (1):
+         Merge branch 'for-linus' of 
+git://git.kernel.org/.../jmorris/security-testing-2.6
 
- Just to make sure I understand what you mean with "RSS does not account for 
-shared pages" - you say that if a page is shared by 4 processes, then when 
-calculating badness for them, only 1/4 of the page should be counted for 
-each? Yes, I suppose so, that makes sense. That's more like fine-tunning at 
-this point though, as long as there's no agreement that moving away from 
-VmSize is an improvement.
+are available in the git repository at:
 
-> I suspect the correct answer would depend on our answers to 1 and 2
-> and a lot of testing with any changes made.
+   git://git.monstr.eu/linux-2.6-microblaze.git for-linus
 
- Testing - are there actually any tests for it, or do people just test random 
-scenarios when they do changes? Also, I'm curious, what areas is the OOM 
-killer actually generally known to work well in? I somehow get the feeling 
-from the discussion here that people just tweak oom_adj until it works for 
-them.
+Michal Simek (1):
+       microblaze: Defconfig update
+
+Steven J. Magnani (1):
+       microblaze: fix interrupt state restore
+
+  arch/microblaze/configs/mmu_defconfig   |  112 
+++++++++++++++++++++++++-------
+  arch/microblaze/configs/nommu_defconfig |  101 ++++++++++++++++++++++-----
+  arch/microblaze/kernel/entry-nommu.S    |   10 ++-
+  3 files changed, 175 insertions(+), 48 deletions(-)
+
+
 
 -- 
- Lubos Lunak
- openSUSE Boosters team, KDE developer
- l.lunak@suse.cz , l.lunak@kde.org
+Michal Simek, Ing. (M.Eng)
+w: www.monstr.eu p: +42-0-721842854
+Maintainer of Linux kernel 2.6 Microblaze Linux - http://www.monstr.eu/fdt/
+Microblaze U-BOOT custodian
