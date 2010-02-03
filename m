@@ -1,227 +1,75 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932261Ab0BCBnz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 20:43:55 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:37169 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932219Ab0BCBny (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 20:43:54 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC][PATCH] PM: disable nonboot cpus before suspending devices
-Date: Wed, 3 Feb 2010 02:44:23 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.33-rc6-rjw; KDE/4.3.5; x86_64; ; )
-Cc: Sebastian Ott <sebott@linux.vnet.ibm.com>,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-References: <alpine.LFD.2.00.1001221841490.2266@localhost> <201002011630.04281.rjw@sisk.pl> <20100201075706.69b1d2c0.akpm@linux-foundation.org>
-In-Reply-To: <20100201075706.69b1d2c0.akpm@linux-foundation.org>
+	id S932294Ab0BCBqM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 20:46:12 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:56505 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S932219Ab0BCBqJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 20:46:09 -0500
+Message-ID: <4B68D5BA.5030707@cn.fujitsu.com>
+Date: Wed, 03 Feb 2010 09:47:38 +0800
+From: Wei Yongjun <yjwei@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Yury Polyanskiy <ypolyans@princeton.edu>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>, polyanskiy@gmail.com,
+       Thomas Gleixner <tglx@linutronix.de>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH]  hrtimer, softirq: Fix hrtimer->softirq trampoline
+References: <4B66A670.70503@cn.fujitsu.com>	 <20100202074914.GD11081@gondor.apana.org.au>	 <20100202085117.7a5c3530@penta.localdomain> <1265120401.24455.306.camel@laptop>
+In-Reply-To: <1265120401.24455.306.camel@laptop>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <201002030244.23989.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 01 February 2010, Andrew Morton wrote:
-> On Mon, 1 Feb 2010 16:30:04 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> 
-> > On Monday 01 February 2010, Sebastian Ott wrote:
-> > > Hi Rafael,
-> > > 
-> > > since you didn't like the idea of calling the driver callbacks with just
-> > > one cpu enabled, we gave your patch: "MM / PM: Force GFP_NOIO during
-> > > suspend/hibernation and resume" a try and i can confirm that this
-> > > fixes the issue on s390.
-> > 
-> > Great, thanks for testing!
-> > 
-> > > Will this go in 2.6.33/stable?
-> > 
-> > That depends on Andrew, actually.
-> > 
-> > Andrew, what do you think of the patch at:
-> > http://patchwork.kernel.org/patch/74740/mbox/ ?
-> > 
-> > It helps people and I don't see any major drawbacks of it.
-> > 
-> 
-> Seems sane.  A couple of minor things:
-> 
-> - the names mm_force_noio_allocations() and mm_allow_io_allocations()
->   are a bit sucky.  Asymmetrical.
+Peter Zijlstra wrote:
+> On Tue, 2010-02-02 at 08:51 -0500, Yury Polyanskiy wrote:
+>
+> The original email had more information:
+>
+>   
+>> {IN-HARDIRQ-W} state was registered at:
+>>   [<c04718dc>] __lock_acquire+0xa9c/0x1890
+>>   [<c047274f>] lock_acquire+0x7f/0xf0
+>>   [<c0762958>] _raw_spin_lock+0x38/0x50
+>>   [<c072b5ca>] xfrm_timer_handler+0x3a/0x260
+>>   [<c0447d9d>] __hrtimer_tasklet_trampoline+0xd/0x10
+>>   [<c04634ce>] hrtimer_run_queues+0x15e/0x2a0
+>>   [<c045146d>] run_local_timers+0xd/0x20
+>>   [<c04514b4>] update_process_times+0x34/0x70
+>>   [<c046ce8a>] tick_periodic+0x2a/0x80
+>>   [<c046cefe>] tick_handle_periodic+0x1e/0x90
+>>   [<c0768377>] smp_apic_timer_interrupt+0x57/0x8b
+>>   [<c076382f>] apic_timer_interrupt+0x2f/0x34
+>>   [<c0401d3b>] cpu_idle+0x4b/0x80
+>>   [<c074e0d7>] rest_init+0x67/0x70
+>>   [<c0956874>] start_kernel+0x30e/0x314
+>>   [<c095609e>] i386_start_kernel+0x9e/0xa5
+>>     
+>
+> Which indicates we were called from hardirq context, it appears that
+> that hrtimer_is_hres_active() case is indeed faulty. Not sure if I made
+> a mistake when I wrote that or if we changed hrtimer behaviour
+> afterwards, but the hrtimer fallback is still from hardirq context.
+>
+> Which would seem to suggest the following patch:
+>
+> ---
+> Subject: hrtimer, softirq: Fix hrtimer->softirq trampoline
+>
+> hrtimers callbacks are always done from hardirq context, either the
+> jiffy tick interrupt or the hrtimer device interrupt.
+>
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+>
+>   
 
-Yeah.  The lack of imagination.  Sigh.
+With this patch, the inconsistent lock state INFO is gone. Thanks.
 
-> - the functions don't nest: if someone calls
->   mm_force_noio_allocations() twice in succession then the kernel is
->   all mucked up.  Why not:
-> 
-> gfp_t mm_set_gfp_mask(gfp_t mask)
-> {
-> 	gfp_t ret = gfp_allowed_mask;
-> 
-> 	gfp_allowed_mask = mask;
-> 	return ret;
-> }
-> 
-> which is of course racy :)  Could add a local spinlock if really worried.
+Wei Yongjun
 
-I'm not sure how that helps.  I'd need to read gfp_allowed_mask to obtain the
-new value anyway.
-
-> All your current callers can easily save the old value in a local.
-
-Indeed.
-
-Well, does the appended one look better?
-
-Rafael
-
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: MM / PM: Force GFP_NOIO during suspend/hibernation and resume (rev. 2)
-
-There are quite a few GFP_KERNEL memory allocations made during
-suspend/hibernation and resume that may cause the system to hang,
-because the I/O operations they depend on cannot be completed due to
-the underlying devices being suspended.
-
-Avoid this problem by clearing the __GFP_IO and __GFP_FS bits in
-gfp_allowed_mask before suspend/hibernation and restoring the
-original values of these bits in gfp_allowed_mask durig the
-subsequent resume.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Reported-by: Maxim Levitsky <maximlevitsky@gmail.com>
----
- include/linux/gfp.h      |    8 ++++++++
- kernel/power/hibernate.c |    9 +++++++++
- kernel/power/suspend.c   |    3 +++
- 3 files changed, 20 insertions(+)
-
-Index: linux-2.6/kernel/power/hibernate.c
-===================================================================
---- linux-2.6.orig/kernel/power/hibernate.c
-+++ linux-2.6/kernel/power/hibernate.c
-@@ -323,6 +323,7 @@ static int create_image(int platform_mod
- int hibernation_snapshot(int platform_mode)
- {
- 	int error;
-+	gfp_t saved_mask;
- 
- 	error = platform_begin(platform_mode);
- 	if (error)
-@@ -334,6 +335,7 @@ int hibernation_snapshot(int platform_mo
- 		goto Close;
- 
- 	suspend_console();
-+	saved_mask = clear_gfp_allowed_mask(GFP_IOFS);
- 	error = dpm_suspend_start(PMSG_FREEZE);
- 	if (error)
- 		goto Recover_platform;
-@@ -351,6 +353,7 @@ int hibernation_snapshot(int platform_mo
- 
- 	dpm_resume_end(in_suspend ?
- 		(error ? PMSG_RECOVER : PMSG_THAW) : PMSG_RESTORE);
-+	set_gfp_allowed_mask(saved_mask);
- 	resume_console();
-  Close:
- 	platform_end(platform_mode);
-@@ -445,14 +448,17 @@ static int resume_target_kernel(bool pla
- int hibernation_restore(int platform_mode)
- {
- 	int error;
-+	gfp_t saved_mask;
- 
- 	pm_prepare_console();
- 	suspend_console();
-+	saved_mask = clear_gfp_allowed_mask(GFP_IOFS);
- 	error = dpm_suspend_start(PMSG_QUIESCE);
- 	if (!error) {
- 		error = resume_target_kernel(platform_mode);
- 		dpm_resume_end(PMSG_RECOVER);
- 	}
-+	set_gfp_allowed_mask(saved_mask);
- 	resume_console();
- 	pm_restore_console();
- 	return error;
-@@ -466,6 +472,7 @@ int hibernation_restore(int platform_mod
- int hibernation_platform_enter(void)
- {
- 	int error;
-+	gfp_t saved_mask;
- 
- 	if (!hibernation_ops)
- 		return -ENOSYS;
-@@ -481,6 +488,7 @@ int hibernation_platform_enter(void)
- 
- 	entering_platform_hibernation = true;
- 	suspend_console();
-+	saved_mask = clear_gfp_allowed_mask(GFP_IOFS);
- 	error = dpm_suspend_start(PMSG_HIBERNATE);
- 	if (error) {
- 		if (hibernation_ops->recover)
-@@ -518,6 +526,7 @@ int hibernation_platform_enter(void)
-  Resume_devices:
- 	entering_platform_hibernation = false;
- 	dpm_resume_end(PMSG_RESTORE);
-+	set_gfp_allowed_mask(saved_mask);
- 	resume_console();
- 
-  Close:
-Index: linux-2.6/kernel/power/suspend.c
-===================================================================
---- linux-2.6.orig/kernel/power/suspend.c
-+++ linux-2.6/kernel/power/suspend.c
-@@ -198,6 +198,7 @@ static int suspend_enter(suspend_state_t
- int suspend_devices_and_enter(suspend_state_t state)
- {
- 	int error;
-+	gfp_t saved_mask;
- 
- 	if (!suspend_ops)
- 		return -ENOSYS;
-@@ -208,6 +209,7 @@ int suspend_devices_and_enter(suspend_st
- 			goto Close;
- 	}
- 	suspend_console();
-+	saved_mask = clear_gfp_allowed_mask(GFP_IOFS);
- 	suspend_test_start();
- 	error = dpm_suspend_start(PMSG_SUSPEND);
- 	if (error) {
-@@ -224,6 +226,7 @@ int suspend_devices_and_enter(suspend_st
- 	suspend_test_start();
- 	dpm_resume_end(PMSG_RESUME);
- 	suspend_test_finish("resume devices");
-+	set_gfp_allowed_mask(saved_mask);
- 	resume_console();
-  Close:
- 	if (suspend_ops->end)
-Index: linux-2.6/include/linux/gfp.h
-===================================================================
---- linux-2.6.orig/include/linux/gfp.h
-+++ linux-2.6/include/linux/gfp.h
-@@ -83,6 +83,7 @@ struct vm_area_struct;
- #define GFP_HIGHUSER_MOVABLE	(__GFP_WAIT | __GFP_IO | __GFP_FS | \
- 				 __GFP_HARDWALL | __GFP_HIGHMEM | \
- 				 __GFP_MOVABLE)
-+#define GFP_IOFS	(__GFP_IO | __GFP_FS)
- 
- #ifdef CONFIG_NUMA
- #define GFP_THISNODE	(__GFP_THISNODE | __GFP_NOWARN | __GFP_NORETRY)
-@@ -342,4 +343,11 @@ static inline void set_gfp_allowed_mask(
- 	gfp_allowed_mask = mask;
- }
- 
-+static inline gfp_t clear_gfp_allowed_mask(gfp_t mask)
-+{
-+	gfp_t ret = gfp_allowed_mask;
-+	gfp_allowed_mask &= ~mask;
-+	return ret;
-+}
-+
- #endif /* __LINUX_GFP_H */
