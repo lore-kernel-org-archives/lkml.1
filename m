@@ -1,116 +1,69 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932760Ab0BCTsQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 14:48:16 -0500
-Received: from a-pb-sasl-quonix.pobox.com ([208.72.237.25]:54099 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932289Ab0BCTsF convert rfc822-to-8bit (ORCPT
+	id S1757620Ab0BCTwI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 14:52:08 -0500
+Received: from fg-out-1718.google.com ([72.14.220.159]:8562 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756863Ab0BCTwC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 14:48:05 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws; d=pobox.com; h=date:from:to:cc
-	:subject:message-id:in-reply-to:references:mime-version
-	:content-type:content-transfer-encoding; q=dns; s=sasl; b=kMMxzA
-	x6w3X15+Yk8TPPHBKmXti1JbN8k+HNsM+xiNmyAPSxkzZcCP3aBLVfCStPQ+EdJy
-	u99SQfMMKZsKXPjNRDMu8TXP6XFPPWJ/URU5dLNoiMmdNOIIinhURzOavlm1K2uF
-	XbAaEAAS2fwxfXZEBF0dOEcHF/KNuharPhMDo=
-Date: Wed, 3 Feb 2010 13:47:55 -0600
-From: Corey Wright <undefined@pobox.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Greg KH <gregkh@suse.de>, <stable@kernel.org>,
-       <linux-kernel@vger.kernel.org>
-Subject: Re: regression in 2.6.27.45 with usb and suspend-to-disk
-Message-Id: <20100203134755.a56e2314.undefined@pobox.com>
-In-Reply-To: <Pine.LNX.4.44L0.1002031306220.1260-100000@iolanthe.rowland.org>
-References: <20100203115956.cb479447.undefined@pobox.com>
- <Pine.LNX.4.44L0.1002031306220.1260-100000@iolanthe.rowland.org>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.12; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Pobox-Relay-ID: 0966EC0A-10FD-11DF-8E92-6AF7ED7EF46B-06295150!a-pb-sasl-quonix.pobox.com
+	Wed, 3 Feb 2010 14:52:02 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=O5IwkyV/X6UONhIpxADM6CDnX+ypNm0DLnmWyL1kZLxUVtCgbUCcIr1SllUS4CZ0EC
+         DNr622FZ8n3Yv8w5It2UT7xvhmkp0Kl3v99xKkiy5yEiq7A0xQ4roS/accLi4pB9IGrk
+         ++poAPCVdWrduQy6HKXICMV8srs0pfZpGVg3Q=
+Date: Wed, 3 Feb 2010 21:51:53 +0200
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Jon Masters <jonathan@jonmasters.org>
+Cc: Patrick McHardy <kaber@trash.net>, Eric Dumazet <eric.dumazet@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>,
+       netfilter-devel <netfilter-devel@vger.kernel.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH] netfilter: per netns nf_conntrack_cachep
+Message-ID: <20100203195153.GA5576@x200>
+References: <1265129192.2861.141.camel@tonnant>
+ <4B685756.8010107@trash.net>
+ <1265130426.2861.158.camel@tonnant>
+ <b6fcc0a1002020958u17315624u4d54d06a413be6bb@mail.gmail.com>
+ <1265134598.2861.191.camel@tonnant>
+ <4B6870AF.6060109@trash.net>
+ <4B6967BC.600@trash.net>
+ <1265222289.2861.290.camel@tonnant>
+ <20100203190948.GA5182@x200>
+ <1265226227.2861.302.camel@tonnant>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1265226227.2861.302.camel@tonnant>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Feb 2010 13:09:45 -0500 (EST)
-Alan Stern <stern@rowland.harvard.edu> wrote:
-
-> On Wed, 3 Feb 2010, Corey Wright wrote:
-> 
-> > > Please build a kernel with CONFIG_USB_DEBUG enabled and post a dmesg 
-> > > log showing the problem during the second hibernation attempt.
+On Wed, Feb 03, 2010 at 02:43:47PM -0500, Jon Masters wrote:
+> On Wed, 2010-02-03 at 21:09 +0200, Alexey Dobriyan wrote:
+> > On Wed, Feb 03, 2010 at 01:38:09PM -0500, Jon Masters wrote:
+> > > *). Per namespace hashsize tracking. Existing code corrupts hashtables
+> > > if the global size is changed when there is more than one netns
 > > 
-> > [  675.443474] PM: Syncing filesystems ... done.
-> > [  675.576353] Freezing user space processes ... (elapsed 0.00 seconds)
-> > done.
-> > [  675.606968] Freezing remaining freezable tasks ... (elapsed 0.00
-> > seconds) done.
-> > [  675.629249] PM: Shrinking memory...  -\|done (3129 pages freed)
-> > [  679.547522] PM: Freed 12516 kbytes in 3.90 seconds (3.20 MB/s)
-> > [  679.565065] Suspending console(s) (use no_console_suspend to debug)
-> > [  679.585425] uhci_hcd 0000:00:10.0: release dev 2 ep81-INT, period 8,
-> > phase 4, 118 us
-> > [  679.585453] hub 2-0:1.0: hub_suspend
-> > [  679.585460] usb usb2: bus suspend
-> > [  679.585463] usb usb2: suspend_rh
-> > [  679.585534] hub 1-0:1.0: hub_suspend
-> > [  679.585538] usb usb1: bus suspend
-> > [  679.585542] ehci_hcd 0000:00:10.4: suspend root hub
-> > [  679.585547] ehci_hcd 0000:00:10.4: suspend failed because port 8 is
-> > resuming
+> > I think, no.
+> > Changing hash size will change hashsize for all netns, current and future.
 > 
-> There you have it.  What is the USB device attached to port 8 on bus 1 
-> (i.e., /sys/bus/usb/devices/1-8)?
+> Nope. Look at the logic in nf_conntrack_set_hashsize where you iterate
+> over init_net.ct.hash but don't touch other namespaces. So then you go
+> setting nf_conntrack_htable_size and will deference that in accessing
+> other per-namespace hashtables using the wrong size information.
 
-the device is a usb SD reader w/ SD card in it.
-
-# cat /sys/bus/usb/devices/1-8/product
-USB 2.0  SD MMC READER 
-
-i removed the media reader after the failed suspend (it is only used at
-boot-up to hold the LUKS key material to decrypt the filesystem) but the
-message is the same:
-
-[ 4002.585329] ehci_hcd 0000:00:10.4: suspend root hub
-[ 4002.585334] ehci_hcd 0000:00:10.4: suspend failed because port 8 is
-resuming
-[ 4002.585338] usb usb1: bus suspend fail, err -16
-
-and /sys/bus/usb/devices/1-8 no longer exists (little
-alone /sys/bus/usb/devices/1-8/power/wakeup):
-
-# ls -1 /sys/bus/usb/devices/
-1-0:1.0
-1-7
-1-7:1.0
-2-0:1.0
-2-1
-2-1:1.0
-3-0:1.0
-4-0:1.0
-5-0:1.0
-usb1
-usb2
-usb3
-usb4
-usb5
-
-> And what happens if you do:
+> > > I also think it is necessary to expose net namespace layout
+> > 
+> > Not necessary. Why?
 > 
-> 	echo disabled >/sys/bus/usb/devices/1-8/power/wakeup
-> 
-> before trying to hibernate?
+> How am I as a sysadmin supposed to figure out which net namespaces exist
+> on my system, and as a developer, supposed to debug these situations?
 
-it's the same immediately after a reboot (and before suspending), a
-successful suspend, or a failed suspend:
+We don't expose many relations to userspace, and it's generally fine.
 
-# echo disabled >/sys/bus/usb/devices/1-8/power/wakeup 
-bash: echo: write error: Invalid argument
-
-and as previously said, that sysfs entry does not exist if the media reader
-is removed, though the error appears to continue to refer to that
-port/device.
-
-corey
--- 
-undefined@pobox.com
+As a developer you fire a debugger and look at net_namespace_list.
