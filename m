@@ -1,329 +1,209 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756273Ab0BCGn5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 01:43:57 -0500
-Received: from mail-qy0-f201.google.com ([209.85.221.201]:60467 "EHLO
-	mail-qy0-f201.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755623Ab0BCGny convert rfc822-to-8bit (ORCPT
+	id S1753257Ab0BCGxN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 01:53:13 -0500
+Received: from e23smtp04.au.ibm.com ([202.81.31.146]:43225 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752474Ab0BCGxL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 01:43:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=nWkHbac/1vlAbae2kpBdGMDQ3DVZg4WkO93I4xU+Twh9maKkw0j1cQru4Fd4e00IyO
-         +pH3KClpYdgt7h89q/ixdCWtc8sC81Et+gBy8wrwAD0W1WP57Oi91YCk9SUQcPNI9YxJ
-         Mv0xoCwfEHQUDfB41BTgQrYo5yxL5k7pIc+og=
+	Wed, 3 Feb 2010 01:53:11 -0500
+Date: Wed, 3 Feb 2010 12:23:05 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [PATCH mmotm] memcg: use generic percpu instead of private
+ implementation
+Message-ID: <20100203065305.GD19641@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20100203121624.bab7be2c.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-In-Reply-To: <ec63e5978fd5ac5d308ede5916e648ba925818eb.1265173480.git.amit.kucheria@canonical.com>
-References: <cover.1265173246.git.amit.kucheria@verdurent.com> 
-	<0511204199ab83aed2340e70a4639500c0528dab.1265173480.git.amit.kucheria@canonical.com> 
-	<9fa7a3c70c46a1f776c6520051481cff6525ef02.1265173480.git.amit.kucheria@canonical.com> 
-	<cover.1265173480.git.amit.kucheria@canonical.com> <ccc89dd7a6035abf5a78680404a2b30b9e025353.1265173480.git.amit.kucheria@canonical.com> 
-	<ec63e5978fd5ac5d308ede5916e648ba925818eb.1265173480.git.amit.kucheria@canonical.com>
-From: Eric Miao <eric.y.miao@gmail.com>
-Date: Tue, 2 Feb 2010 22:43:33 -0800
-Message-ID: <f17812d71002022243s7b68dab0ycc19238535384d4f@mail.gmail.com>
-Subject: Re: [PATCHv2 04/11] mxc: changes to common plat-mxc code to add 
-	support for i.MX5
-To: Amit Kucheria <amit.kucheria@canonical.com>
-Cc: List Linux Kernel <linux-kernel@vger.kernel.org>, linux@arm.linux.org.uk,
-       Dinh.Nguyen@freescale.com, s.hauer@pengutronix.de,
-       grant.likely@secretlab.ca, r.herring@freescale.com,
-       linux-arm-kernel@lists.infradead.org, daniel@caiaq.de,
-       bryan.wu@canonical.com, valentin.longchamp@epfl.ch
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20100203121624.bab7be2c.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 2, 2010 at 9:16 PM, Amit Kucheria
-<amit.kucheria@canonical.com> wrote:
-> Changes separted to help in the review process
->
-> Signed-off-by: Amit Kucheria <amit.kucheria@canonical.com>
+* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2010-02-03 12:16:24]:
+
+> This is a repost. I'll post my test program in reply to this.
+> Updated against mmotm-2010-Feb-01.
+> 
+> Thanks,
+> -Kame
+> ==
+> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+> When per-cpu counter for memcg was implemneted, dynamic percpu allocator
+> was not very good. But now, we have good one and useful macros.
+> This patch replaces memcg's private percpu counter implementation with
+> generic dynamic percpu allocator.
+> 
+> The benefits are
+> 	- We can remove private implementation.
+> 	- The counters will be NUMA-aware. (Current one is not...)
+> 	- This patch makes sizeof struct mem_cgroup smaller. Then,
+> 	  struct mem_cgroup may be fit in page size on small config.
+>         - About basic performance aspects, see below.
+> 
+>  [Before]
+>  # size mm/memcontrol.o
+>    text    data     bss     dec     hex filename
+>   24373    2528    4132   31033    7939 mm/memcontrol.o
+> 
+>  [page-fault-throuput test on 8cpu/SMP in root cgroup]
+>  # /root/bin/perf stat -a -e page-faults,cache-misses --repeat 5 ./multi-fault-fork 8
+> 
+>  Performance counter stats for './multi-fault-fork 8' (5 runs):
+> 
+>        45878618  page-faults                ( +-   0.110% )
+>       602635826  cache-misses               ( +-   0.105% )
+> 
+>    61.005373262  seconds time elapsed   ( +-   0.004% )
+> 
+>  Then cache-miss/page fault = 13.14
+> 
+>  [After]
+>  #size mm/memcontrol.o
+>    text    data     bss     dec     hex filename
+>   23913    2528    4132   30573    776d mm/memcontrol.o
+>  # /root/bin/perf stat -a -e page-faults,cache-misses --repeat 5 ./multi-fault-fork 8
+> 
+>  Performance counter stats for './multi-fault-fork 8' (5 runs):
+> 
+>        48179400  page-faults                ( +-   0.271% )
+>       588628407  cache-misses               ( +-   0.136% )
+> 
+>    61.004615021  seconds time elapsed   ( +-   0.004% )
+> 
+>   Then cache-miss/page fault = 12.22
+> 
+>  Text size is reduced.
+>  This performance improvement is not big and will be invisible in real world
+>  applications. But this result shows this patch has some good effect even
+>  on (small) SMP.
+> 
+> Changelog: 2010/02/02
+>  - adjusted to mmotm-Feb01.
+>  - added performance result to the patch description.
+> 
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 > ---
->  arch/arm/plat-mxc/include/mach/common.h      |    4 +++
->  arch/arm/plat-mxc/include/mach/debug-macro.S |    9 +++++++
->  arch/arm/plat-mxc/include/mach/entry-macro.S |   34 +++++++++++++++++++++++++-
->  arch/arm/plat-mxc/include/mach/hardware.h    |    4 +++
->  arch/arm/plat-mxc/include/mach/irqs.h        |    9 ++++++-
->  arch/arm/plat-mxc/include/mach/memory.h      |    3 ++
->  arch/arm/plat-mxc/include/mach/mxc.h         |   13 ++++++++++
->  arch/arm/plat-mxc/include/mach/timex.h       |    2 +
->  arch/arm/plat-mxc/time.c                     |    6 ++--
->  9 files changed, 79 insertions(+), 5 deletions(-)
->
-> diff --git a/arch/arm/plat-mxc/include/mach/common.h b/arch/arm/plat-mxc/include/mach/common.h
-> index 286cb9b..5250a3f 100644
-> --- a/arch/arm/plat-mxc/include/mach/common.h
-> +++ b/arch/arm/plat-mxc/include/mach/common.h
-> @@ -20,8 +20,10 @@ extern void mx25_map_io(void);
->  extern void mx27_map_io(void);
->  extern void mx31_map_io(void);
->  extern void mx35_map_io(void);
-> +extern void mx51_map_io(void);
->  extern void mxc91231_map_io(void);
->  extern void mxc_init_irq(void __iomem *);
-> +extern void tzic_init_irq(void __iomem *);
->  extern void mx1_init_irq(void);
->  extern void mx21_init_irq(void);
->  extern void mx25_init_irq(void);
-> @@ -36,6 +38,8 @@ extern int mx25_clocks_init(unsigned long fref);
->  extern int mx27_clocks_init(unsigned long fref);
->  extern int mx31_clocks_init(unsigned long fref);
->  extern int mx35_clocks_init(void);
-> +extern int mx51_clocks_init(unsigned long ckil, unsigned long osc,
-> +                       unsigned long ckih1, unsigned long ckih2);
->  extern int mxc91231_clocks_init(unsigned long fref);
->  extern int mxc_register_gpios(void);
->  extern int mxc_register_device(struct platform_device *pdev, void *data);
-> diff --git a/arch/arm/plat-mxc/include/mach/debug-macro.S b/arch/arm/plat-mxc/include/mach/debug-macro.S
-> index 15b2b14..9fe7300 100644
-> --- a/arch/arm/plat-mxc/include/mach/debug-macro.S
-> +++ b/arch/arm/plat-mxc/include/mach/debug-macro.S
-> @@ -44,6 +44,15 @@
->  #define UART_VADDR     AIPS1_IO_ADDRESS(UART1_BASE_ADDR)
->  #endif
->
-> +#ifdef CONFIG_ARCH_MX5
-> +#ifdef UART_PADDR
-> +#error "CONFIG_DEBUG_LL is incompatible with multiple archs"
-> +#endif
-> +#include <mach/mx51.h>
-> +#define UART_PADDR     UART1_BASE_ADDR
-> +#define UART_VADDR     AIPS1_IO_ADDRESS(UART1_BASE_ADDR)
-> +#endif
+>  mm/memcontrol.c |  184 +++++++++++++++++++-------------------------------------
+>  1 file changed, 63 insertions(+), 121 deletions(-)
+> 
+> Index: mmotm-2.6.33-Feb01/mm/memcontrol.c
+> ===================================================================
+> --- mmotm-2.6.33-Feb01.orig/mm/memcontrol.c
+> +++ mmotm-2.6.33-Feb01/mm/memcontrol.c
+> @@ -89,54 +89,8 @@ enum mem_cgroup_stat_index {
+> 
+>  struct mem_cgroup_stat_cpu {
+>  	s64 count[MEM_CGROUP_STAT_NSTATS];
+> -} ____cacheline_aligned_in_smp;
+> -
+> -struct mem_cgroup_stat {
+> -	struct mem_cgroup_stat_cpu cpustat[0];
+>  };
+> 
+> -static inline void
+> -__mem_cgroup_stat_set_safe(struct mem_cgroup_stat_cpu *stat,
+> -				enum mem_cgroup_stat_index idx, s64 val)
+> -{
+> -	stat->count[idx] = val;
+> -}
+> -
+> -static inline s64
+> -__mem_cgroup_stat_read_local(struct mem_cgroup_stat_cpu *stat,
+> -				enum mem_cgroup_stat_index idx)
+> -{
+> -	return stat->count[idx];
+> -}
+> -
+> -/*
+> - * For accounting under irq disable, no need for increment preempt count.
+> - */
+> -static inline void __mem_cgroup_stat_add_safe(struct mem_cgroup_stat_cpu *stat,
+> -		enum mem_cgroup_stat_index idx, int val)
+> -{
+> -	stat->count[idx] += val;
+> -}
+> -
+> -static s64 mem_cgroup_read_stat(struct mem_cgroup_stat *stat,
+> -		enum mem_cgroup_stat_index idx)
+> -{
+> -	int cpu;
+> -	s64 ret = 0;
+> -	for_each_possible_cpu(cpu)
+> -		ret += stat->cpustat[cpu].count[idx];
+> -	return ret;
+> -}
+> -
+> -static s64 mem_cgroup_local_usage(struct mem_cgroup_stat *stat)
+> -{
+> -	s64 ret;
+> -
+> -	ret = mem_cgroup_read_stat(stat, MEM_CGROUP_STAT_CACHE);
+> -	ret += mem_cgroup_read_stat(stat, MEM_CGROUP_STAT_RSS);
+> -	return ret;
+> -}
+> -
+>  /*
+>   * per-zone information in memory controller.
+>   */
+> @@ -270,9 +224,9 @@ struct mem_cgroup {
+>  	unsigned long 	move_charge_at_immigrate;
+> 
+>  	/*
+> -	 * statistics. This must be placed at the end of memcg.
+> +	 * percpu counter.
+>  	 */
+> -	struct mem_cgroup_stat stat;
+> +	struct mem_cgroup_stat_cpu *stat;
+>  };
+> 
+>  /* Stuffs for move charges at task migration. */
+> @@ -441,19 +395,14 @@ mem_cgroup_remove_exceeded(struct mem_cg
+>  static bool mem_cgroup_soft_limit_check(struct mem_cgroup *mem)
+>  {
+>  	bool ret = false;
+> -	int cpu;
+>  	s64 val;
+> -	struct mem_cgroup_stat_cpu *cpustat;
+> 
+> -	cpu = get_cpu();
+> -	cpustat = &mem->stat.cpustat[cpu];
+> -	val = __mem_cgroup_stat_read_local(cpustat, MEM_CGROUP_STAT_SOFTLIMIT);
+> +	val = this_cpu_read(mem->stat->count[MEM_CGROUP_STAT_SOFTLIMIT]);
+>  	if (unlikely(val < 0)) {
+> -		__mem_cgroup_stat_set_safe(cpustat, MEM_CGROUP_STAT_SOFTLIMIT,
+> +		this_cpu_write(mem->stat->count[MEM_CGROUP_STAT_SOFTLIMIT],
+>  				SOFTLIMIT_EVENTS_THRESH);
+>  		ret = true;
+>  	}
+> -	put_cpu();
+>  	return ret;
+>  }
+> 
+> @@ -549,17 +498,31 @@ mem_cgroup_largest_soft_limit_node(struc
+>  	return mz;
+>  }
+> 
+> +static s64 mem_cgroup_read_stat(struct mem_cgroup *mem,
+> +		enum mem_cgroup_stat_index idx)
+> +{
+> +	int cpu;
+> +	s64 val = 0;
 > +
->  #ifdef CONFIG_ARCH_MXC91231
->  #ifdef UART_PADDR
->  #error "CONFIG_DEBUG_LL is incompatible with multiple archs"
-> diff --git a/arch/arm/plat-mxc/include/mach/entry-macro.S b/arch/arm/plat-mxc/include/mach/entry-macro.S
-> index 7cf290e..aeb0869 100644
-> --- a/arch/arm/plat-mxc/include/mach/entry-macro.S
-> +++ b/arch/arm/plat-mxc/include/mach/entry-macro.S
-> @@ -1,6 +1,6 @@
->  /*
->  *  Copyright (C) 2007 Lennert Buytenhek <buytenh@wantstofly.org>
-> - *  Copyright 2004-2007 Freescale Semiconductor, Inc. All Rights Reserved.
-> + *  Copyright 2004-2009 Freescale Semiconductor, Inc. All Rights Reserved.
->  */
->
->  /*
-> @@ -18,11 +18,16 @@
->        .endm
->
->        .macro  get_irqnr_preamble, base, tmp
-> +#ifndef CONFIG_MXC_TZIC
->        ldr     \base, =avic_base
->        ldr     \base, [\base]
->  #ifdef CONFIG_MXC_IRQ_PRIOR
->        ldr     r4, [\base, #AVIC_NIMASK]
->  #endif
-> +#elif defined CONFIG_MXC_TZIC
-> +       ldr     \base, =tzic_base
-> +       ldr     \base, [\base]
-> +#endif /* CONFIG_MXC_TZIC */
+> +	for_each_possible_cpu(cpu)
 
-Mmm.... this should be something that we really need to get rid of, it just
-makes a single kernel for both TZIC and AVIC together impossible, if that's
-so designed by HW, I'm thinking about keeping this into plat-mxc/ is a good
-way to go ...
+Is for_each_possible_cpu() what we need? Is this to avoid CPU hotplug
+events? 
 
-Sascha, you have any better idea? Provided the other file debug-macro.S in
-the same directory already seems to break the support for multiple arches?
+Looks good overall, except the question above.
 
->        .endm
->
->        .macro  arch_ret_to_user, tmp1, tmp2
-> @@ -32,6 +37,7 @@
->        @ and returns its number in irqnr
->        @ and returns if an interrupt occured in irqstat
->        .macro  get_irqnr_and_base, irqnr, irqstat, base, tmp
-> +#ifndef CONFIG_MXC_TZIC
->        @ Load offset & priority of the highest priority
->        @ interrupt pending from AVIC_NIVECSR
->        ldr     \irqstat, [\base, #0x40]
-> @@ -45,6 +51,32 @@
->        strne   \tmp, [\base, #AVIC_NIMASK]
->        streq   r4, [\base, #AVIC_NIMASK]
->  #endif
-> +#elif defined CONFIG_MXC_TZIC
-> +       @ Load offset & priority of the highest priority
-> +       @ interrupt pending.
-> +       @ 0xD80 is HIPND0 register
-> +       mov     \irqnr, #0
-> +       mov     \irqstat, #0x0D80
-> +1000:
-> +       ldr     \tmp,   [\irqstat, \base]
-> +       cmp     \tmp, #0
-> +       bne     1001f
-> +       addeq   \irqnr, \irqnr, #32
-> +       addeq   \irqstat, \irqstat, #4
-> +       cmp     \irqnr, #128
-> +       blo     1000b
-> +       b       2001f
-> +1001:  mov     \irqstat, #1
-> +1002:  tst     \tmp, \irqstat
-> +       bne     2002f
-> +       movs    \tmp, \tmp, lsr #1
-> +       addne   \irqnr, \irqnr, #1
-> +       bne     1002b
-> +2001:
-> +       mov  \irqnr, #0
-> +2002:
-> +       movs \irqnr, \irqnr
-> +#endif
->        .endm
->
->        @ irq priority table (not used)
-> diff --git a/arch/arm/plat-mxc/include/mach/hardware.h b/arch/arm/plat-mxc/include/mach/hardware.h
-> index 78db754..55ebe88 100644
-> --- a/arch/arm/plat-mxc/include/mach/hardware.h
-> +++ b/arch/arm/plat-mxc/include/mach/hardware.h
-> @@ -22,6 +22,10 @@
->
->  #include <asm/sizes.h>
->
-> +#ifdef CONFIG_ARCH_MX5
-> +#include <mach/mx51.h>
-> +#endif
-> +
->  #ifdef CONFIG_ARCH_MX3
->  #include <mach/mx3x.h>
->  #include <mach/mx31.h>
-> diff --git a/arch/arm/plat-mxc/include/mach/irqs.h b/arch/arm/plat-mxc/include/mach/irqs.h
-> index ead9d59..24c066e 100644
-> --- a/arch/arm/plat-mxc/include/mach/irqs.h
-> +++ b/arch/arm/plat-mxc/include/mach/irqs.h
-> @@ -12,9 +12,13 @@
->  #define __ASM_ARCH_MXC_IRQS_H__
->
->  /*
-> - * So far all i.MX SoCs have 64 internal interrupts
-> + * SoCs with TZIC interrupt controller have 128 IRQs, those with AVIC have 64
->  */
-> +#ifdef CONFIG_MXC_TZIC
-> +#define MXC_INTERNAL_IRQS      128
-> +#else
->  #define MXC_INTERNAL_IRQS      64
-> +#endif
->
->  #define MXC_GPIO_IRQ_START     MXC_INTERNAL_IRQS
->
-> @@ -26,6 +30,8 @@
->  #define MXC_GPIO_IRQS          (32 * 3)
->  #elif defined CONFIG_ARCH_MX25
->  #define MXC_GPIO_IRQS          (32 * 4)
-> +#elif defined CONFIG_ARCH_MX5
-> +#define MXC_GPIO_IRQS          (32 * 4)
->  #elif defined CONFIG_ARCH_MXC91231
->  #define MXC_GPIO_IRQS          (32 * 4)
->  #endif
-> @@ -46,6 +52,7 @@
->  #else
->  #define MX3_IPU_IRQS 0
->  #endif
-> +/* REVISIT: Add IPU irqs on IMX51 */
->
->  #define NR_IRQS                        (MXC_IPU_IRQ_START + MX3_IPU_IRQS)
->
-> diff --git a/arch/arm/plat-mxc/include/mach/memory.h b/arch/arm/plat-mxc/include/mach/memory.h
-> index d3afafd..e46626e 100644
-> --- a/arch/arm/plat-mxc/include/mach/memory.h
-> +++ b/arch/arm/plat-mxc/include/mach/memory.h
-> @@ -27,6 +27,9 @@
->  #elif defined CONFIG_ARCH_MXC91231
->  #define PHYS_OFFSET            UL(0x90000000)
->  #endif
-> +#ifdef CONFIG_ARCH_MX5
-> +#define PHYS_OFFSET             UL(0x90000000)
-> +#endif
->
->  #if defined(CONFIG_MX1_VIDEO)
->  /*
-> diff --git a/arch/arm/plat-mxc/include/mach/mxc.h b/arch/arm/plat-mxc/include/mach/mxc.h
-> index 5199053..555e5f8 100644
-> --- a/arch/arm/plat-mxc/include/mach/mxc.h
-> +++ b/arch/arm/plat-mxc/include/mach/mxc.h
-> @@ -30,6 +30,7 @@
->  #define MXC_CPU_MX27           27
->  #define MXC_CPU_MX31           31
->  #define MXC_CPU_MX35           35
-> +#define MXC_CPU_MX51           51
->  #define MXC_CPU_MXC91231       91231
->
->  #ifndef __ASSEMBLY__
-> @@ -108,6 +109,18 @@ extern unsigned int __mxc_cpu_type;
->  # define cpu_is_mx35()         (0)
->  #endif
->
-> +#ifdef CONFIG_ARCH_MX5
-> +# ifdef mxc_cpu_type
-> +#  undef mxc_cpu_type
-> +#  define mxc_cpu_type __mxc_cpu_type
-> +# else
-> +#  define mxc_cpu_type MXC_CPU_MX51
-> +# endif
-> +# define cpu_is_mx51()         (mxc_cpu_type == MXC_CPU_MX51)
-> +#else
-> +# define cpu_is_mx51()         (0)
-> +#endif
-> +
->  #ifdef CONFIG_ARCH_MXC91231
->  # ifdef mxc_cpu_type
->  #  undef mxc_cpu_type
-> diff --git a/arch/arm/plat-mxc/include/mach/timex.h b/arch/arm/plat-mxc/include/mach/timex.h
-> index 527a6c2..024416e 100644
-> --- a/arch/arm/plat-mxc/include/mach/timex.h
-> +++ b/arch/arm/plat-mxc/include/mach/timex.h
-> @@ -28,6 +28,8 @@
->  #define CLOCK_TICK_RATE                16625000
->  #elif defined CONFIG_ARCH_MX25
->  #define CLOCK_TICK_RATE                16000000
-> +#elif defined CONFIG_ARCH_MX5
-> +#define CLOCK_TICK_RATE                8000000
->  #elif defined CONFIG_ARCH_MXC91231
->  #define CLOCK_TICK_RATE                13000000
->  #endif
-> diff --git a/arch/arm/plat-mxc/time.c b/arch/arm/plat-mxc/time.c
-> index 7d6499e..2ba8b29 100644
-> --- a/arch/arm/plat-mxc/time.c
-> +++ b/arch/arm/plat-mxc/time.c
-> @@ -32,7 +32,7 @@
->
->  /* defines common for all i.MX */
->  #define MXC_TCTL               0x00
-> -#define MXC_TCTL_TEN           (1 << 0)
-> +#define MXC_TCTL_TEN           (1 << 0) /* Enable module */
->  #define MXC_TPRER              0x04
->
->  /* MX1, MX21, MX27 */
-> @@ -48,7 +48,7 @@
->  #define MX2_TSTAT_COMP         (1 << 0)
->
->  /* MX31, MX35, MX25, MXC91231 */
-> -#define MX3_TCTL_WAITEN                (1 << 3)
-> +#define MX3_TCTL_WAITEN                (1 << 3) /* Wait enable mode */
->  #define MX3_TCTL_CLK_IPG       (1 << 6)
->  #define MX3_TCTL_FRR           (1 << 9)
->  #define MX3_IR                 0x0c
-> @@ -58,7 +58,7 @@
->  #define MX3_TCMP               0x10
->
->  #define timer_is_v1()  (cpu_is_mx1() || cpu_is_mx27())
-> -#define timer_is_v2()  (cpu_is_mx3() || cpu_is_mx25())
-> +#define timer_is_v2()  (cpu_is_mx3() || cpu_is_mx25() || cpu_is_mx51())
->
->  static struct clock_event_device clockevent_mxc;
->  static enum clock_event_mode clockevent_mode = CLOCK_EVT_MODE_UNUSED;
-> --
-> 1.6.3.3
->
->
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
->
+-- 
+	Balbir
