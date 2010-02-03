@@ -1,18 +1,18 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756669Ab0BCJOr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 04:14:47 -0500
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:57321 "EHLO
+	id S932374Ab0BCJQf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 04:16:35 -0500
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:47625 "EHLO
 	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755946Ab0BCJOk (ORCPT
+	with ESMTP id S1756680Ab0BCJOs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 04:14:40 -0500
+	Wed, 3 Feb 2010 04:14:48 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=X3RzLa9rGuzAPXgCalA239nkk/tBRdFTJU9uNxqzwop/GrFIMqnE+dis+3jb6FifFi
-         1CaRglGN8y/w/ISLBXSKIBGY05bZaoBahDhWO+fs4Qi3TQU0IPK0e7xpfrOe1pOPRlA8
-         4JKjdslIox9yuWp68usAP/RfRmANf+OU+chxc=
+        b=Y6L5UbQ6luiydbGDRsKMPRs9TcSrskbge4GDiPJPI9BEVsQU5Z9xFYSf2HcYJMUVNJ
+         kQRxOJf93Ht8gVrAIyzB4tbiG4E+tfosDO+PKc/PicHOC+5TIaE4x+W3DFxJnc821NEM
+         +/hFCD16IEnGBTVM4azFX4kaao5gPE3b3Svto=
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>,
@@ -24,9 +24,9 @@ Cc: LKML <linux-kernel@vger.kernel.org>,
        Li Zefan <lizf@cn.fujitsu.com>, Lai Jiangshan <laijs@cn.fujitsu.com>,
        Masami Hiramatsu <mhiramat@redhat.com>,
        Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH 02/11] tracing: Introduce TRACE_EVENT_INJECT
-Date: Wed,  3 Feb 2010 10:14:26 +0100
-Message-Id: <1265188475-23509-3-git-send-regression-fweisbec@gmail.com>
+Subject: [PATCH 06/11] perf: Handle injection ioctl with trace events
+Date: Wed,  3 Feb 2010 10:14:30 +0100
+Message-Id: <1265188475-23509-7-git-send-regression-fweisbec@gmail.com>
 X-Mailer: git-send-email 1.6.2.3
 In-Reply-To: <1265188475-23509-1-git-send-regression-fweisbec@gmail.com>
 References: <1265188475-23509-1-git-send-regression-fweisbec@gmail.com>
@@ -34,12 +34,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-TRACE_EVENT_INJECT macro is the same as TRACE_EVENT but takes one
-more parameter that defines an "inject" callback to be called when
-the event is enabled.
-
-This is useful when we need to catch up with events that have
-already occured but that are required for the user.
+Handle injection ioctl request for tracepoints that support it.
 
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
@@ -52,139 +47,168 @@ Cc: Lai Jiangshan <laijs@cn.fujitsu.com>
 Cc: Masami Hiramatsu <mhiramat@redhat.com>
 Cc: Jens Axboe <jens.axboe@oracle.com>
 ---
- include/linux/ftrace_event.h |    1 +
- include/linux/tracepoint.h   |    3 +++
- include/trace/define_trace.h |    6 ++++++
- include/trace/ftrace.h       |   31 ++++++++++++++++++++++++++++++-
- kernel/trace/trace_events.c  |    3 +++
- 5 files changed, 43 insertions(+), 1 deletions(-)
+ include/linux/ftrace_event.h       |    5 ++-
+ include/linux/perf_event.h         |    4 +++
+ kernel/perf_event.c                |   14 ++++++++--
+ kernel/trace/trace_event_profile.c |   46 ++++++++++++++++++++++-------------
+ 4 files changed, 47 insertions(+), 22 deletions(-)
 
 diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
-index cd95919..026d39b 100644
+index 026d39b..9b45db6 100644
 --- a/include/linux/ftrace_event.h
 +++ b/include/linux/ftrace_event.h
-@@ -126,6 +126,7 @@ struct ftrace_event_call {
- 	int			(*show_format)(struct ftrace_event_call *,
- 					       struct trace_seq *);
- 	int			(*define_fields)(struct ftrace_event_call *);
-+	void			(*inject)(void);
- 	struct list_head	fields;
- 	int			filter_active;
- 	struct event_filter	*filter;
-diff --git a/include/linux/tracepoint.h b/include/linux/tracepoint.h
-index f59604e..f114aec 100644
---- a/include/linux/tracepoint.h
-+++ b/include/linux/tracepoint.h
-@@ -291,5 +291,8 @@ static inline void tracepoint_synchronize_unregister(void)
- #define TRACE_EVENT_FN(name, proto, args, struct,		\
- 		assign, print, reg, unreg)			\
- 	DECLARE_TRACE(name, PARAMS(proto), PARAMS(args))
-+#define TRACE_EVENT_INJECT(name, proto, args, struct,		\
-+		assign, print, inject)				\
-+	DECLARE_TRACE(name, PARAMS(proto), PARAMS(args))
+@@ -189,8 +189,9 @@ do {									\
  
- #endif /* ifdef TRACE_EVENT (see note above) */
-diff --git a/include/trace/define_trace.h b/include/trace/define_trace.h
-index 5acfb1e..41f7ce3 100644
---- a/include/trace/define_trace.h
-+++ b/include/trace/define_trace.h
-@@ -31,6 +31,11 @@
- 		assign, print, reg, unreg)			\
- 	DEFINE_TRACE_FN(name, reg, unreg)
+ #ifdef CONFIG_PERF_EVENTS
+ struct perf_event;
+-extern int ftrace_profile_enable(int event_id);
+-extern void ftrace_profile_disable(int event_id);
++extern int ftrace_profile_enable(struct perf_event *event);
++extern void ftrace_profile_disable(struct perf_event *event);
++extern void ftrace_perf_inject(struct perf_event *event);
+ extern int ftrace_profile_set_filter(struct perf_event *event, int event_id,
+ 				     char *filter_str);
+ extern void ftrace_profile_free_filter(struct perf_event *event);
+diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
+index d2e83f0..9e58ab9 100644
+--- a/include/linux/perf_event.h
++++ b/include/linux/perf_event.h
+@@ -492,6 +492,10 @@ struct hw_perf_event {
+ 			struct arch_hw_breakpoint	info;
+ 		};
+ #endif
++#ifdef CONFIG_EVENT_TRACING
++		/* tracepoint */
++		struct ftrace_event_call *tp_event;
++#endif
+ 	};
+ 	atomic64_t			prev_count;
+ 	u64				sample_period;
+diff --git a/kernel/perf_event.c b/kernel/perf_event.c
+index e4dfd12..280ae44 100644
+--- a/kernel/perf_event.c
++++ b/kernel/perf_event.c
+@@ -4350,6 +4350,14 @@ static const struct pmu perf_ops_task_clock = {
  
-+#undef TRACE_EVENT_INJECT
-+#define TRACE_EVENT_INJECT(name, proto, args, tstruct,		\
-+		assign, print, inject)				\
-+	DEFINE_TRACE(name)
+ #ifdef CONFIG_EVENT_TRACING
+ 
++static const struct pmu perf_ops_tracepoints = {
++	.enable		= perf_swevent_enable,
++	.disable	= perf_swevent_disable,
++	.read		= perf_swevent_read,
++	.unthrottle	= perf_swevent_unthrottle,
++	.inject		= ftrace_perf_inject,
++};
 +
- #undef DEFINE_EVENT
- #define DEFINE_EVENT(template, name, proto, args) \
- 	DEFINE_TRACE(name)
-@@ -71,6 +76,7 @@
+ void perf_tp_event(int event_id, u64 addr, u64 count, void *record,
+ 			  int entry_size)
+ {
+@@ -4386,7 +4394,7 @@ static int perf_tp_event_match(struct perf_event *event,
  
- #undef TRACE_EVENT
- #undef TRACE_EVENT_FN
-+#undef TRACE_EVENT_INJECT
- #undef DECLARE_EVENT_CLASS
- #undef DEFINE_EVENT
- #undef DEFINE_EVENT_PRINT
-diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
-index f2c09e4..869da37 100644
---- a/include/trace/ftrace.h
-+++ b/include/trace/ftrace.h
-@@ -37,6 +37,26 @@
- 			     PARAMS(print));		       \
- 	DEFINE_EVENT(name, name, PARAMS(proto), PARAMS(args));
- 
-+/*
-+ * TRACE_EVENT_INJECT creates an event that has an injector callback
-+ * to call when the trace event is enabled, usually to trigger
-+ * automatically some necessary initial traces.
-+ */
-+#undef TRACE_EVENT_INJECT
-+#define TRACE_EVENT_INJECT(name, proto, args, tstruct,			\
-+		assign, print, inject)					\
-+		DECLARE_EVENT_CLASS(name,				\
-+			     PARAMS(proto),				\
-+			     PARAMS(args),		       		\
-+			     PARAMS(tstruct),		       		\
-+			     PARAMS(assign),		       		\
-+			     PARAMS(print));		       		\
-+	DEFINE_EVENT_INJECT(name, name, PARAMS(proto), PARAMS(args), inject);
-+
-+#undef DEFINE_EVENT_INJECT
-+#define DEFINE_EVENT_INJECT(template, name, proto, args, inject)	\
-+	DEFINE_EVENT(template, name, PARAMS(proto), PARAMS(args));
-+
- 
- #undef __field
- #define __field(type, item)		type	item;
-@@ -726,7 +746,11 @@ static struct trace_event ftrace_event_type_##call = {			\
- #define DECLARE_EVENT_CLASS(call, proto, args, tstruct, assign, print)
- 
- #undef DEFINE_EVENT
--#define DEFINE_EVENT(template, call, proto, args)			\
-+#define DEFINE_EVENT(template, call, proto, args)	\
-+	DEFINE_EVENT_INJECT(template, call, PARAMS(proto), PARAMS(proto), NULL)
-+
-+#undef DEFINE_EVENT_INJECT
-+#define DEFINE_EVENT_INJECT(template, call, proto, args, injector)	\
- 									\
- static struct ftrace_event_call __used					\
- __attribute__((__aligned__(4)))						\
-@@ -739,6 +763,7 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
- 	.unregfunc		= ftrace_raw_unreg_event_##call,	\
- 	.show_format		= ftrace_format_##template,		\
- 	.define_fields		= ftrace_define_fields_##template,	\
-+	.inject			= injector,				\
- 	_TRACE_PROFILE_INIT(call)					\
+ static void tp_perf_event_destroy(struct perf_event *event)
+ {
+-	ftrace_profile_disable(event->attr.config);
++	ftrace_profile_disable(event);
  }
  
-@@ -877,6 +902,10 @@ ftrace_profile_templ_##call(struct ftrace_event_call *event_call,	\
- 			       __count, irq_flags);			\
+ static const struct pmu *tp_perf_event_init(struct perf_event *event)
+@@ -4400,12 +4408,12 @@ static const struct pmu *tp_perf_event_init(struct perf_event *event)
+ 			!capable(CAP_SYS_ADMIN))
+ 		return ERR_PTR(-EPERM);
+ 
+-	if (ftrace_profile_enable(event->attr.config))
++	if (ftrace_profile_enable(event))
+ 		return NULL;
+ 
+ 	event->destroy = tp_perf_event_destroy;
+ 
+-	return &perf_ops_generic;
++	return &perf_ops_tracepoints;
  }
  
-+#undef DEFINE_EVENT_INJECT
-+#define DEFINE_EVENT_INJECT(template, call, proto, args, inject)	\
-+	DEFINE_EVENT(template, call, PARAMS(proto), PARAMS(args))
+ static int perf_event_set_filter(struct perf_event *event, void __user *arg)
+diff --git a/kernel/trace/trace_event_profile.c b/kernel/trace/trace_event_profile.c
+index f0d6930..9ed684f 100644
+--- a/kernel/trace/trace_event_profile.c
++++ b/kernel/trace/trace_event_profile.c
+@@ -13,6 +13,8 @@
+ static char *perf_trace_buf;
+ static char *perf_trace_buf_nmi;
+ 
++static DEFINE_MUTEX(perf_trace_mutex);
 +
- #undef DEFINE_EVENT
- #define DEFINE_EVENT(template, call, proto, args)		\
- static void ftrace_profile_##call(proto)			\
-diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
-index 189b09b..5c75cc7 100644
---- a/kernel/trace/trace_events.c
-+++ b/kernel/trace/trace_events.c
-@@ -142,6 +142,9 @@ static int ftrace_event_enable_disable(struct ftrace_event_call *call,
- 				break;
- 			}
- 			call->enabled = 1;
-+
-+			if (call->inject)
-+				call->inject();
+ typedef typeof(char [FTRACE_MAX_PROFILE_SIZE]) perf_trace_t ;
+ 
+ /* Count the events in use (per event id, not per instance) */
+@@ -59,21 +61,27 @@ fail_buf:
+ 	return ret;
+ }
+ 
+-int ftrace_profile_enable(int event_id)
++int ftrace_profile_enable(struct perf_event *event)
+ {
+-	struct ftrace_event_call *event;
++	int event_id = event->attr.config;
++	struct ftrace_event_call *call;
+ 	int ret = -EINVAL;
+ 
+ 	mutex_lock(&event_mutex);
+-	list_for_each_entry(event, &ftrace_events, list) {
+-		if (event->id == event_id && event->profile_enable &&
+-		    try_module_get(event->mod)) {
+-			ret = ftrace_profile_enable_event(event);
++	list_for_each_entry(call, &ftrace_events, list) {
++		if (call->id == event_id && call->profile_enable &&
++		    try_module_get(call->mod)) {
++			mutex_lock(&perf_trace_mutex);
++			ret = ftrace_profile_enable_event(call);
++			mutex_unlock(&perf_trace_mutex);
+ 			break;
  		}
- 		break;
  	}
+ 	mutex_unlock(&event_mutex);
+ 
++	if (!ret)
++		event->hw.tp_event = call;
++
+ 	return ret;
+ }
+ 
+@@ -104,19 +112,23 @@ static void ftrace_profile_disable_event(struct ftrace_event_call *event)
+ 	}
+ }
+ 
+-void ftrace_profile_disable(int event_id)
++void ftrace_profile_disable(struct perf_event *event)
+ {
+-	struct ftrace_event_call *event;
++	struct ftrace_event_call *call = event->hw.tp_event;
+ 
+-	mutex_lock(&event_mutex);
+-	list_for_each_entry(event, &ftrace_events, list) {
+-		if (event->id == event_id) {
+-			ftrace_profile_disable_event(event);
+-			module_put(event->mod);
+-			break;
+-		}
+-	}
+-	mutex_unlock(&event_mutex);
++	mutex_lock(&perf_trace_mutex);
++	ftrace_profile_disable_event(call);
++	mutex_unlock(&perf_trace_mutex);
++
++	module_put(call->mod);
++}
++
++void ftrace_perf_inject(struct perf_event *event)
++{
++	struct ftrace_event_call *call = event->hw.tp_event;
++
++	if (call->inject)
++		call->inject();
+ }
+ 
+ __kprobes void *ftrace_perf_buf_prepare(int size, unsigned short type,
 -- 
 1.6.2.3
 
