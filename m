@@ -1,129 +1,60 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757151Ab0BCVVs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 16:21:48 -0500
-Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:45253 "EHLO kernel.dk"
+	id S1757666Ab0BCVWT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 16:22:19 -0500
+Received: from cantor.suse.de ([195.135.220.2]:48946 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755681Ab0BCVVp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 16:21:45 -0500
-Date: Wed, 3 Feb 2010 22:21:43 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Paul Mackerras <paulus@samba.org>,
-       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
-       Li Zefan <lizf@cn.fujitsu.com>, Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>
-Subject: Re: [RFC GIT PULL] perf/trace/lock optimization/scalability
-	improvements
-Message-ID: <20100203212143.GW5733@kernel.dk>
-References: <1265188475-23509-1-git-send-regression-fweisbec@gmail.com> <20100203102540.GQ5733@kernel.dk> <20100203205009.GB5068@nowhere>
+	id S1755681Ab0BCVWS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 16:22:18 -0500
+From: Lubos Lunak <l.lunak@suse.cz>
+To: balbir@linux.vnet.ibm.com
+Subject: Re: Improving OOM killer
+Date: Wed, 3 Feb 2010 22:22:15 +0100
+User-Agent: KMail/1.9.10
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Rientjes <rientjes@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Nick Piggin <npiggin@suse.de>, Jiri Kosina <jkosina@suse.cz>
+References: <201002012302.37380.l.lunak@suse.cz> <201002031310.28271.l.lunak@suse.cz> <20100203122526.GG19641@balbir.in.ibm.com>
+In-Reply-To: <20100203122526.GG19641@balbir.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20100203205009.GB5068@nowhere>
+Message-Id: <201002032222.15238.l.lunak@suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 03 2010, Frederic Weisbecker wrote:
-> On Wed, Feb 03, 2010 at 11:25:41AM +0100, Jens Axboe wrote:
-> > On Wed, Feb 03 2010, Frederic Weisbecker wrote:
-> > > Hi,
-> > > 
-> > > There are many things that happen in this patchset, treating
-> > > different problems:
-> > > 
-> > > - remove most of the string copy overhead in fast path
-> > > - open the way for lock class oriented profiling (as
-> > >   opposite to lock instance profiling. Both can be useful
-> > >   in different ways).
-> > > - remove the buffers muliplexing (less contention)
-> > > - event injection support
-> > > - remove violent lock events recursion (only 2 among 3, the remaining
-> > >   one is detailed below).
-> > > 
-> > > Some differences, by running:
-> > > 	perf lock record perf sched pipe -l 100000
-> > > 
-> > > Before the patchset:
-> > > 
-> > > 	Total time: 91.015 [sec]
-> > > 
-> > > 	     910.157300 usecs/op
-> > > 		   1098 ops/sec
-> > > 
-> > > After this patchset applied:
-> > > 
-> > > 	Total time: 43.706 [sec]
-> > > 
-> > > 	     437.062080 usecs/op
-> > > 		   2288 ops/sec
-> > 
-> > This does a lot better here, even if it isn't exactly stellar
-> > performance. It generates a LOT of data:
-> > 
-> > root@nehalem:/dev/shm # time perf lock rec -fg ls
-> > perf.data  perf.data.old
-> > [ perf record: Woken up 0 times to write data ]
-> > [ perf record: Captured and wrote 137.224 MB perf.data (~5995421
-> > samples) ]
-> 
-> 
-> 
-> Doh, 137 MB for a single ls :)
+On Wednesday 03 of February 2010, Balbir Singh wrote:
+> * Lubos Lunak <l.lunak@suse.cz> [2010-02-03 13:10:27]:
+> > On Wednesday 03 of February 2010, Balbir Singh wrote:
+> > > 2. RSS alone is not sufficient, RSS does not account for shared pages,
+> > > so we ideally need something like PSS.
+> >
+> >  Just to make sure I understand what you mean with "RSS does not account
+> > for shared pages" - you say that if a page is shared by 4 processes, then
+> > when calculating badness for them, only 1/4 of the page should be counted
+> > for each? Yes, I suppose so, that makes sense.
+>
+> Yes, that is what I am speaking of
+>
+> > That's more like fine-tunning at
+> > this point though, as long as there's no agreement that moving away from
+> > VmSize is an improvement.
+>
+> There is no easy way to calculate the Pss today without walking the
+> page tables, but some simplification there will make it a better and a
+> more accurate metric.
 
-Yeah, it's pretty crazy. It varies a lot too, I didn't post the other
-run which was ~170MB.
-
-> That said we don't have yet support for callchains in perf lock,
-> and callchains can fill the buffer quickly, especially on lock
-> events. You can drop the -g option for now.
-
-OK
-
-> > So while this is orders of magnitude better than the previous patchset,
-> > it's still not anywhere near lean. But I expect you know that, just
-> > consider this a 'I tested it and this is what happened' report :-)
-> 
-> 
-> Ok, thanks a lot, the fact you can test on a 64 threads box is critically
-> helpful.
-
-My pleasure, I'd love to have a fast and functional perf lockstat. If my
-testing helps getting there, consider me signed up :-)
-
-> I also wonder what happens after this patch applied:
-> 
-> diff --git a/kernel/perf_event.c b/kernel/perf_event.c
-> index 98fd360..254b3d4 100644
-> --- a/kernel/perf_event.c
-> +++ b/kernel/perf_event.c
-> @@ -3094,7 +3094,8 @@ static u32 perf_event_tid(struct perf_event *event, struct task_struct *p)
->         if (event->parent)
->                 event = event->parent;
->  
-> -       return task_pid_nr_ns(p, event->ns);
-> +       return p->pid;
->  }
-> 
-> In my box it has increased the speed from 2x this patchset.
-
-Cool, I'll give that a spin in the morning, the box is off atm.
-
-> I wonder if the tool becomes usable for you with that.
-> Otherwise, it means we have other things to fix, and
-> the result of:
-> 
-> 	perf record -g -f perf lock record sleep 6
-> 	perf report
-> 
-> would be very nice to have.
-
-I'll package that up for you and put it somewhere.
+ OOM should be a rare situation, so doing a little amount of counting 
+shouldn't be a big deal. Especially if the machine is otherwise busy waiting 
+for the HDD paging stuff out and in again and has plenty of CPU time to 
+waste.
 
 -- 
-Jens Axboe
-
+ Lubos Lunak
+ openSUSE Boosters team, KDE developer
+ l.lunak@suse.cz , l.lunak@kde.org
