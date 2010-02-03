@@ -1,44 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757292Ab0BCNBL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 08:01:11 -0500
-Received: from mtagate4.de.ibm.com ([195.212.17.164]:47333 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757257Ab0BCNBH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 08:01:07 -0500
-Date: Wed, 3 Feb 2010 14:01:04 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Jason Baron <jbaron@redhat.com>
-Cc: linux-kernel@vger.kernel.org, laijs@cn.fujitsu.com, lizf@cn.fujitsu.com,
-       rostedt@goodmis.org, fweisbec@gmail.com, mingo@elte.hu, hpa@zytor.com,
-       tglx@linutronix.de, mhiramat@redhat.com
-Subject: Re: [PATCH 5/6] syscalls: add define syscall prefix macro
-Message-ID: <20100203130104.GB30003@osiris.boeblingen.de.ibm.com>
-References: <cover.1265142153.git.jbaron@redhat.com>
- <ce5ccbcc86e34954948239b17010c5537fb62917.1265142153.git.jbaron@redhat.com>
+	id S1757285Ab0BCNT0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 08:19:26 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59554 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750872Ab0BCNTZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 08:19:25 -0500
+Date: Wed, 3 Feb 2010 14:19:11 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Paul Mackerras <paulus@samba.org>,
+       Peter Zijlstra <peterz@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] perf tools: using O_LARGEFILE to open perf data file  -
+ fix
+Message-ID: <20100203131911.GA25223@elte.hu>
+References: <4B68F32A.9040203@cn.fujitsu.com>
+ <4B6958B8.3000606@cn.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <ce5ccbcc86e34954948239b17010c5537fb62917.1265142153.git.jbaron@redhat.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <4B6958B8.3000606@cn.fujitsu.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 02, 2010 at 04:21:55PM -0500, Jason Baron wrote:
-> Add a new 'SYSCALL_PREFIX_DEFINE#()' style macro to include/linux/syscalls.h.
-> This allows us to create syscalls via:
-> 
-> SYSCALL_PREFIX_DEFINE1(32_, mmap, struct mmap_arg_struct __user *, arg);
-> 
-> The standard 'SYSCALL_DEFINE#()' macro forces 'sys_blah', but for the 32 compat
-> calls we want 'sys32_blah'.
 
-Not really. That's what you want for x86. But the generic name for compat syscalls
-is compat_sys_whatever. The arch specific compat syscalls don't follow a common
-naming scheme (yet).
-Especially if you consider the idea to get automated correct sign extension via
-hpa's planned script for compat syscalls it would be good if you would just name
-that define something like SYSCALL_COMPAT.. or COMPAT_SYSCALL..
-That way it would be easy to add a hook in there.
+* Xiao Guangrong <xiaoguangrong@cn.fujitsu.com> wrote:
+
+> Setting _FILE_OFFSET_BITS and using O_LARGEFILE, lseek64, etc, is
+> redundant. Thanks H. Peter Anvin for point out
+> 
+> Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+> ---
+>  tools/perf/builtin-record.c        |    3 +--
+>  tools/perf/util/header.c           |   21 ++++++++++-----------
+>  tools/perf/util/session.c          |    3 +--
+>  tools/perf/util/trace-event-read.c |   14 +++++++-------
+>  4 files changed, 19 insertions(+), 22 deletions(-)
+
+i already applied the v1 patch - mind sending a delta patch that removes the 
+redundant definitions?
+
+Thanks,
+
+	Ingo
