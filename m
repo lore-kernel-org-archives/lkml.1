@@ -1,141 +1,84 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753577Ab0BCFTT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 00:19:19 -0500
-Received: from hera.kernel.org ([140.211.167.34]:55596 "EHLO hera.kernel.org"
+	id S1752605Ab0BCFUJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 00:20:09 -0500
+Received: from mga09.intel.com ([134.134.136.24]:1709 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751073Ab0BCFTO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 00:19:14 -0500
-Date: Wed, 3 Feb 2010 05:18:38 GMT
-From: tip-bot for Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       rostedt@goodmis.org, lizf@cn.fujitsu.com, tglx@linutronix.de,
-       laijs@cn.fujitsu.com
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       lizf@cn.fujitsu.com, rostedt@goodmis.org, tglx@linutronix.de,
-       laijs@cn.fujitsu.com
-In-Reply-To: <4B67D4F9.9080905@cn.fujitsu.com>
-References: <4B67D4F9.9080905@cn.fujitsu.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:tracing/urgent] tracing: Fix circular dead lock in stack trace
-Message-ID: <tip-4f48f8b7fd18c44f8478174f9925cc3c059c6ce4@git.kernel.org>
-Git-Commit-ID: 4f48f8b7fd18c44f8478174f9925cc3c059c6ce4
-X-Mailer: tip-git-log-daemon
+	id S1750735Ab0BCFUF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 00:20:05 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,396,1262592000"; 
+   d="scan'208";a="592692009"
+From: Sheng Yang <sheng@linux.intel.com>
+Organization: Intel Opensource Technology Center
+To: Ian Campbell <Ian.Campbell@citrix.com>
+Subject: Re: [Xen-devel] [PATCH 6/6] xen/hybrid: Enable grant table and xenbus
+Date: Wed, 3 Feb 2010 13:17:40 +0800
+User-Agent: KMail/1.12.2 (Linux/2.6.31-17-generic; KDE/4.3.2; x86_64; ; )
+Cc: Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>,
+       Keir Fraser <Keir.Fraser@eu.citrix.com>,
+       "xen-devel" <xen-devel@lists.xensource.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <1265098747-10117-1-git-send-email-sheng@linux.intel.com> <201002030046.41799.sheng@linux.intel.com> <1265134143.3247.10.camel@localhost.localdomain>
+In-Reply-To: <1265134143.3247.10.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 03 Feb 2010 05:18:39 +0000 (UTC)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002031317.40185.sheng@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  4f48f8b7fd18c44f8478174f9925cc3c059c6ce4
-Gitweb:     http://git.kernel.org/tip/4f48f8b7fd18c44f8478174f9925cc3c059c6ce4
-Author:     Lai Jiangshan <laijs@cn.fujitsu.com>
-AuthorDate: Tue, 2 Feb 2010 15:32:09 +0800
-Committer:  Steven Rostedt <rostedt@goodmis.org>
-CommitDate: Tue, 2 Feb 2010 10:20:18 -0500
+On Wednesday 03 February 2010 02:09:03 Ian Campbell wrote:
+> On Tue, 2010-02-02 at 16:46 +0000, Sheng Yang wrote:
+> > On Wednesday 03 February 2010 00:24:04 Ian Campbell wrote:
+> > > On Tue, 2010-02-02 at 13:24 +0000, Sheng Yang wrote:
+> > > > I am not sure if I understand you right, but I think the issue is,
+> > > > there is no PVonHVM drivers in Linux upstream. The drivers are
+> > > > currently maintained by OSVs, and the one in Xen upstream code only
+> > > > support 2.6.18. So I didn't take them into consideration at the time.
+> > >
+> > > True, but this is something which should be taken care of by the core
+> > > Xen-aware code not something which should be pushed down into each
+> > > driver.
+> > >
+> > > Someone who wants to add PVonHVM functionality shouldn't have to go and
+> > > remove a bunch of conditionals from each driver (or worse add
+> > > alternative clauses to each check!).
+> > >
+> > > > I think the "xen_evtchn_enable()" looks much better. Would replace
+> > > > these ugly lines in the next version.
+> > >
+> > > I think it would be cleaner to encapsulate this in the evtchn code
+> > > rather than leaking platform knowledge into each driver. IOW the evtchn
+> > > functions should return failure if event channels are not enabled and
+> > > the driver should cope with this gracefully.
+> >
+> > Agree. That what I suppose to do. What the drivers should only know is,
+> > if event channel is enabled.
+> >
+> > > Or perhaps at the xenbus driver level we should be deciding whether or
+> > > not we have enough paravirtualisation to be worth probing the drivers
+> > > at all?
+> >
+> > I think current scheme is direct enough for now. We can improve it later.
+> 
+> Taking a step back I don't think any of these checks are necessary at
+> all -- in order to get as far as actually probing the devices xenbus
+> needs to be up and running, which implies event channels, as well as
+> everything else required for PV drivers to function, are working.
+> 
+> Drivers for PCI devices don't all start with "if (pci_bus_available())",
+> they just register the driver and let the kernel's driver core take care
+> of things. If someone is worried about the overhead of an extra driver
+> being registered, well that is what modular kernels are for.
+> 
+> I think that even the existing "if (xen_domain())" check is unnecessary,
+> at least in the frontend drivers.
 
-tracing: Fix circular dead lock in stack trace
+Um, very reasonable. I would provide another patch for this.
 
-When we cat <debugfs>/tracing/stack_trace, we may cause circular lock:
-sys_read()
-  t_start()
-     arch_spin_lock(&max_stack_lock);
-
-  t_show()
-     seq_printf(), vsnprintf() .... /* they are all trace-able,
-       when they are traced, max_stack_lock may be required again. */
-
-The following script can trigger this circular dead lock very easy:
-#!/bin/bash
-
-echo 1 > /proc/sys/kernel/stack_tracer_enabled
-
-mount -t debugfs xxx /mnt > /dev/null 2>&1
-
-(
-# make check_stack() zealous to require max_stack_lock
-for ((; ;))
-{
-	echo 1 > /mnt/tracing/stack_max_size
-}
-) &
-
-for ((; ;))
-{
-	cat /mnt/tracing/stack_trace > /dev/null
-}
-
-To fix this bug, we increase the percpu trace_active before
-require the lock.
-
-Reported-by: Li Zefan <lizf@cn.fujitsu.com>
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-LKML-Reference: <4B67D4F9.9080905@cn.fujitsu.com>
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
----
- kernel/trace/trace_stack.c |   24 ++++++++++++++++++++++++
- 1 files changed, 24 insertions(+), 0 deletions(-)
-
-diff --git a/kernel/trace/trace_stack.c b/kernel/trace/trace_stack.c
-index 678a512..f4bc9b2 100644
---- a/kernel/trace/trace_stack.c
-+++ b/kernel/trace/trace_stack.c
-@@ -157,6 +157,7 @@ stack_max_size_write(struct file *filp, const char __user *ubuf,
- 	unsigned long val, flags;
- 	char buf[64];
- 	int ret;
-+	int cpu;
- 
- 	if (count >= sizeof(buf))
- 		return -EINVAL;
-@@ -171,9 +172,20 @@ stack_max_size_write(struct file *filp, const char __user *ubuf,
- 		return ret;
- 
- 	local_irq_save(flags);
-+
-+	/*
-+	 * In case we trace inside arch_spin_lock() or after (NMI),
-+	 * we will cause circular lock, so we also need to increase
-+	 * the percpu trace_active here.
-+	 */
-+	cpu = smp_processor_id();
-+	per_cpu(trace_active, cpu)++;
-+
- 	arch_spin_lock(&max_stack_lock);
- 	*ptr = val;
- 	arch_spin_unlock(&max_stack_lock);
-+
-+	per_cpu(trace_active, cpu)--;
- 	local_irq_restore(flags);
- 
- 	return count;
-@@ -206,7 +218,13 @@ t_next(struct seq_file *m, void *v, loff_t *pos)
- 
- static void *t_start(struct seq_file *m, loff_t *pos)
- {
-+	int cpu;
-+
- 	local_irq_disable();
-+
-+	cpu = smp_processor_id();
-+	per_cpu(trace_active, cpu)++;
-+
- 	arch_spin_lock(&max_stack_lock);
- 
- 	if (*pos == 0)
-@@ -217,7 +235,13 @@ static void *t_start(struct seq_file *m, loff_t *pos)
- 
- static void t_stop(struct seq_file *m, void *p)
- {
-+	int cpu;
-+
- 	arch_spin_unlock(&max_stack_lock);
-+
-+	cpu = smp_processor_id();
-+	per_cpu(trace_active, cpu)--;
-+
- 	local_irq_enable();
- }
- 
+-- 
+regards
+Yang, Sheng
