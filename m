@@ -1,65 +1,57 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757389Ab0BCQTL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 11:19:11 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:40029 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756762Ab0BCQTG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 11:19:06 -0500
-X-Authority-Analysis: v=1.0 c=1 a=NqJWMTIrbqwA:10 a=7U3hwN5JcxgA:10 a=pxgYCMoEhMjBDvjSPncA:9 a=qG0wDyDZqgpFlZzohyA17ZP_FiEA:4
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Subject: Re: [PATCH 3/3] kernel-shark: fix unitialized handle compile
- warnings
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: John Kacur <jkacur@redhat.com>
-Cc: Darren Hart <dvhltc@us.ibm.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <1265213851.24386.1.camel@gandalf.stny.rr.com>
-References: <1265043026-24987-1-git-send-email-dvhltc@us.ibm.com>
-	 <1265043026-24987-4-git-send-email-dvhltc@us.ibm.com>
-	 <520f0cf11002030805q35029925u36f544f7d37faedb@mail.gmail.com>
-	 <1265213851.24386.1.camel@gandalf.stny.rr.com>
-Content-Type: text/plain; charset="ISO-8859-15"
-Organization: Kihon Technologies Inc.
-Date: Wed, 03 Feb 2010 11:19:05 -0500
-Message-ID: <1265213945.24386.2.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	id S932493Ab0BCQUU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 11:20:20 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:34683 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756762Ab0BCQUP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 11:20:15 -0500
+Date: Wed, 3 Feb 2010 17:20:14 +0100
+From: Michal Marek <mmarek@suse.cz>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Anibal Monsalve Salazar <anibal@debian.org>
+Subject: [PATCH] kconfig: simplify LSMOD= handling
+Message-ID: <20100203162014.GA10956@sepie.suse.cz>
+References: <20100203154605.461025238@goodmis.org>
+ <20100203154906.499020585@goodmis.org>
+ <20100203160708.GA9035@sepie.suse.cz>
+ <1265213553.24386.0.camel@gandalf.stny.rr.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1265213553.24386.0.camel@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-02-03 at 11:17 -0500, Steven Rostedt wrote:
-> andle)
-> > > -               handle = tracecmd_open(input_file);
-> > > +       handle = tracecmd_open(input_file);
-> > >
-> > > -       info->handle = handle;
-> > > +       if (handle)
-> > > +               info->handle = handle;
-> > >
-> > >        /* --- Main window --- */
-> > >
-> > > --
-> > 
-> > This looks correct, but I'm wondering if it is safe to continue if the
-> > call to tracecmd_open fails?
-> 
-> Actually this patch is wrong. The real code should be:
-> 
-> -	if (handle)
-> +	if (input_file)
+Signed-off-by: Michal Marek <mmarek@suse.cz>
+---
+ scripts/kconfig/Makefile |    9 ++++-----
+ 1 files changed, 4 insertions(+), 5 deletions(-)
 
-Looking at the context, this isn't enough. We should have had:
-
-	if (input_file)
-		info->handle = tracecmd_open(input_file);
-	else
-		info->handle = NULL;
-
--- Steve
-
+diff --git a/scripts/kconfig/Makefile b/scripts/kconfig/Makefile
+index 85b9065..186c466 100644
+--- a/scripts/kconfig/Makefile
++++ b/scripts/kconfig/Makefile
+@@ -32,11 +32,10 @@ silentoldconfig: $(obj)/conf
+ 
+ # if no path is given, then use src directory to find file
+ ifdef LSMOD
+-LSMOD_F = $(shell if [ `basename $(LSMOD)` == $(LSMOD) ]; then \
+-		echo $(objtree)/$(LSMOD);			\
+-	else							\
+-		echo $(LSMOD);					\
+-	fi)
++LSMOD_F := $(LSMOD)
++ifeq ($(findstring /,$(LSMOD)),)
++  LSMOD_F := $(objtree)/$(LSMOD)
++endif
+ endif
+ 
+ localmodconfig: $(obj)/streamline_config.pl $(obj)/conf
+-- 
+1.6.5.3
 
