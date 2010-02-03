@@ -1,51 +1,51 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757742Ab0BCT6N (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 14:58:13 -0500
-Received: from mail-yw0-f198.google.com ([209.85.211.198]:54399 "EHLO
-	mail-yw0-f198.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757692Ab0BCT6J (ORCPT
+	id S1757725Ab0BCUBP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 15:01:15 -0500
+Received: from mail-fx0-f220.google.com ([209.85.220.220]:35935 "EHLO
+	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753806Ab0BCUBN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 14:58:09 -0500
+	Wed, 3 Feb 2010 15:01:13 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=lD74FrNwNfXrlFqNJNLDIgcGTvMVOPeFKe/ABZWKHhR6N1o92IqkD3+jsv7gjHWsMc
-         pFTVjFu3VioBH4cTFDSecKLpzIEoAg/zG81hSvVqBeJ3whxoeI1dXLw6gWOeo4vRa7wB
-         AmacL70vT974HhESDpsGnMxPD+MlZyoJaOBt8=
-Message-ID: <4B69D54F.4040705@garzik.org>
-Date: Wed, 03 Feb 2010 14:58:07 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=SLmYsE8NlrPI7YUA1QgTmTuDUZNkTu8zjkviGiQBgUFJfq+J5JCr0+n8bjLLttGSBj
+         UbLpl/vcVwWZUxeKUmDoIRp+qqsE8OFwYDW2KRzgtEdCE8kJW8wtaw09Rp+x+txjPK2m
+         RAAYSUB83F7khEVbE+wF9dbzoKQVeBsDJtMjw=
+Date: Wed, 3 Feb 2010 22:01:06 +0200
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Jon Masters <jonathan@jonmasters.org>
+Cc: Patrick McHardy <kaber@trash.net>, Eric Dumazet <eric.dumazet@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>,
+       netfilter-devel <netfilter-devel@vger.kernel.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH] netfilter: per netns nf_conntrack_cachep
+Message-ID: <20100203200105.GA5638@x200>
+References: <1265130426.2861.158.camel@tonnant>
+ <b6fcc0a1002020958u17315624u4d54d06a413be6bb@mail.gmail.com>
+ <1265134598.2861.191.camel@tonnant>
+ <4B6870AF.6060109@trash.net>
+ <4B6967BC.600@trash.net>
+ <1265222289.2861.290.camel@tonnant>
+ <20100203190948.GA5182@x200>
+ <1265226227.2861.302.camel@tonnant>
+ <20100203195153.GA5576@x200>
+ <1265226838.2861.307.camel@tonnant>
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Thomas Abraham <thomas.ab@samsung.com>, ben-linux@fluff.org,
-       linux-arm-kernel@lists.infradead.org,
-       Thomas Chou <thomas@wytron.com.tw>,
-       Nios2 development list <nios2-dev@sopc.et.ntust.edu.tw>,
-       Ian Abbott <abbotti@mev.co.uk>
-Subject: Re: [git patches] new hardware support for atang tree
-References: <201002031940.20129.bzolnier@gmail.com>
-In-Reply-To: <201002031940.20129.bzolnier@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1265226838.2861.307.camel@tonnant>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/03/2010 01:40 PM, Bartlomiej Zolnierkiewicz wrote:
->
-> Since I haven't seen any progress on mainstreaming of s3c-ide and
-> pata_altera_cf patches in the recent months I decided to merge them
+On Wed, Feb 03, 2010 at 02:53:58PM -0500, Jon Masters wrote:
+> > As a developer you fire a debugger and look at net_namespace_list.
+> 
+> Yeah, but being able to cat a nice file is always handy.
 
-pata_altera_cf still needs to be updated to v3, taking into account 
-Alan's feedback.  A ping in Nov 2009 resulted in no response.
-
-	Jeff
-
-
-
-
-
+And what do you want to see at it?
