@@ -1,10 +1,10 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932961Ab0BCVHl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 16:07:41 -0500
-Received: from gate.lvk.cs.msu.su ([158.250.17.1]:40333 "EHLO
+	id S932919Ab0BCVHU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 16:07:20 -0500
+Received: from gate.lvk.cs.msu.su ([158.250.17.1]:40335 "EHLO
 	mail.lvk.cs.msu.su" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932852Ab0BCVHO (ORCPT
+	with ESMTP id S932778Ab0BCVHO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 3 Feb 2010 16:07:14 -0500
 X-Spam-ASN: 
@@ -12,19 +12,13 @@ From: Alexander Gordeev <lasaine@lvk.cs.msu.su>
 To: linux-kernel@vger.kernel.org
 Cc: linuxpps@ml.enneenne.com, "Nikita V\. Youshchenko" <yoush@cs.msu.su>,
        stas@lvk.cs.msu.su, Alexander Gordeev <lasaine@lvk.cs.msu.su>,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>,
+       Rodolfo Giometti <giometti@enneenne.com>,
        Rodolfo Giometti <giometti@linux.it>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Rodolfo Giometti <giometti@enneenne.com>,
-       "William S\. Brasher" <billb958@door.net>,
-       Reg Clemens <clemens@dwf.com>, Joonwoo Park <joonwpark81@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Dave Jones <davej@redhat.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-doc@vger.kernel.org
-Subject: [PATCH 3/5] pps: add kernel consumer support
-Date: Wed,  3 Feb 2010 23:56:49 +0300
-Message-Id: <76c9e32fb3f9ed3012de53a3690e11a09bef8e4f.1265228858.git.lasaine@lvk.cs.msu.su>
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: [PATCH 4/5] pps: add parallel port PPS signal generator
+Date: Wed,  3 Feb 2010 23:56:50 +0300
+Message-Id: <4cea1fe6020a188298922fac15e35e3fefed14ad.1265228858.git.lasaine@lvk.cs.msu.su>
 X-Mailer: git-send-email 1.6.5
 In-Reply-To: <cover.1265228858.git.lasaine@lvk.cs.msu.su>
 References: <cover.1265228858.git.lasaine@lvk.cs.msu.su>
@@ -33,232 +27,351 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add an optional feature of PPSAPI, kernel consumer support, which uses
-the added hardpps() function.
+Add PPS signal generator which utilizes STROBE pin of a parallel port to
+send PPS signals. It uses parport abstraction layer and hrtimers to
+precisely control the signal.
 
 Signed-off-by: Alexander Gordeev <lasaine@lvk.cs.msu.su>
 ---
- Documentation/ioctl/ioctl-number.txt |    2 +-
- drivers/pps/kapi.c                   |   28 ++++++++++++++
- drivers/pps/pps.c                    |   67 +++++++++++++++++++++++++++++++++-
- include/linux/pps.h                  |    7 ++++
- include/linux/pps_kernel.h           |    6 +++
- 5 files changed, 108 insertions(+), 2 deletions(-)
+ drivers/pps/Kconfig                      |    2 +
+ drivers/pps/Makefile                     |    1 +
+ drivers/pps/generators/Kconfig           |   17 ++
+ drivers/pps/generators/Makefile          |    9 +
+ drivers/pps/generators/pps_gen_parport.c |  263 ++++++++++++++++++++++++++++++
+ 5 files changed, 292 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/pps/generators/Kconfig
+ create mode 100644 drivers/pps/generators/Makefile
+ create mode 100644 drivers/pps/generators/pps_gen_parport.c
 
-diff --git a/Documentation/ioctl/ioctl-number.txt b/Documentation/ioctl/ioctl-number.txt
-index 9473749..d68718b 100644
---- a/Documentation/ioctl/ioctl-number.txt
-+++ b/Documentation/ioctl/ioctl-number.txt
-@@ -152,7 +152,7 @@ Code	Seq#	Include File		Comments
- 'p'	40-7F	linux/nvram.h
- 'p'	80-9F				user-space parport
- 					<mailto:tim@cyberelk.net>
--'p'	a1-a4	linux/pps.h		LinuxPPS
-+'p'	a1-a5	linux/pps.h		LinuxPPS
- 					<mailto:giometti@linux.it>
- 'q'	00-1F	linux/serio.h
- 'q'	80-FF				Internet PhoneJACK, Internet LineJACK
-diff --git a/drivers/pps/kapi.c b/drivers/pps/kapi.c
-index 8a77102..59ac4f5 100644
---- a/drivers/pps/kapi.c
-+++ b/drivers/pps/kapi.c
-@@ -25,6 +25,7 @@
- #include <linux/init.h>
- #include <linux/sched.h>
- #include <linux/time.h>
-+#include <linux/timex.h>
- #include <linux/spinlock.h>
- #include <linux/idr.h>
- #include <linux/fs.h>
-@@ -37,6 +38,12 @@
- DEFINE_SPINLOCK(pps_idr_lock);
- DEFINE_IDR(pps_idr);
+diff --git a/drivers/pps/Kconfig b/drivers/pps/Kconfig
+index 2bd4f65..f3b14cd 100644
+--- a/drivers/pps/Kconfig
++++ b/drivers/pps/Kconfig
+@@ -31,4 +31,6 @@ config PPS_DEBUG
+ 	  messages to the system log.  Select this if you are having a
+ 	  problem with PPS support and want to see more of what is going on.
  
-+/* state variables to bind kernel consumer */
-+/* PPS API (RFC 2783): current source and mode for ``kernel consumer'' */
-+DEFINE_SPINLOCK(pps_kc_hardpps_lock);
-+void	*pps_kc_hardpps_dev;	/* some unique pointer to device */
-+int	pps_kc_hardpps_mode;	/* mode bits for kernel consumer */
++source drivers/pps/generators/Kconfig
 +
- /*
-  * Local functions
-  */
-@@ -272,6 +279,7 @@ void pps_event(int source, struct pps_event_time *ts, int event, void *data)
- 	struct pps_device *pps;
- 	unsigned long flags;
- 	int captured = 0;
-+	s64 nsec = 0;
+ endmenu
+diff --git a/drivers/pps/Makefile b/drivers/pps/Makefile
+index 19ea582..b299814 100644
+--- a/drivers/pps/Makefile
++++ b/drivers/pps/Makefile
+@@ -4,5 +4,6 @@
  
- 	if ((event & (PPS_CAPTUREASSERT | PPS_CAPTURECLEAR)) == 0) {
- 		printk(KERN_ERR "pps: unknown event (%x) for source %d\n",
-@@ -304,6 +312,11 @@ void pps_event(int source, struct pps_event_time *ts, int event, void *data)
+ pps_core-y			:= pps.o kapi.o sysfs.o
+ obj-$(CONFIG_PPS)		:= pps_core.o
++obj-y				+= generators/
  
- 		/* Save the time stamp */
- 		pps->assert_tu = ts->ts_real;
-+		if (likely(pps->assert_tu_raw.tv_sec != 0)) {
-+			struct timespec d =
-+				timespec_sub(ts->ts_raw, pps->assert_tu_raw);
-+			nsec = timespec_to_ns(&d);
-+		}
- 		pps->assert_tu_raw = ts->ts_raw;
- 		pps->assert_sequence++;
- 		pr_debug("capture assert seq #%u for source %d\n",
-@@ -320,6 +333,11 @@ void pps_event(int source, struct pps_event_time *ts, int event, void *data)
- 
- 		/* Save the time stamp */
- 		pps->clear_tu = ts->ts_real;
-+		if (likely(pps->clear_tu_raw.tv_sec != 0)) {
-+			struct timespec d =
-+				timespec_sub(ts->ts_raw, pps->clear_tu_raw);
-+			nsec = timespec_to_ns(&d);
-+		}
- 		pps->clear_tu_raw = ts->ts_raw;
- 		pps->clear_sequence++;
- 		pr_debug("capture clear seq #%u for source %d\n",
-@@ -327,6 +345,16 @@ void pps_event(int source, struct pps_event_time *ts, int event, void *data)
- 
- 		captured = ~0;
- 	}
-+	spin_lock(&pps_kc_hardpps_lock);
-+	if (pps == pps_kc_hardpps_dev && event & pps_kc_hardpps_mode) {
-+		struct timespec p_ts = {
-+			.tv_sec = ts->ts_real.sec,
-+			.tv_nsec = ts->ts_real.nsec
-+		};
+ ccflags-$(CONFIG_PPS_DEBUG) := -DDEBUG
+diff --git a/drivers/pps/generators/Kconfig b/drivers/pps/generators/Kconfig
+new file mode 100644
+index 0000000..9cc1118
+--- /dev/null
++++ b/drivers/pps/generators/Kconfig
+@@ -0,0 +1,17 @@
++#
++# PPS clients configuration
++#
 +
-+		hardpps(&p_ts, nsec);
-+	}
-+	spin_unlock(&pps_kc_hardpps_lock);
- 
- 	/* Wake up iif captured somthing */
- 	if (captured) {
-diff --git a/drivers/pps/pps.c b/drivers/pps/pps.c
-index ca5183b..22fdcfe 100644
---- a/drivers/pps/pps.c
-+++ b/drivers/pps/pps.c
-@@ -62,6 +62,8 @@ static long pps_cdev_ioctl(struct file *file,
- 	struct pps_device *pps = file->private_data;
- 	struct pps_kparams params;
- 	struct pps_fdata fdata;
-+	struct pps_bind_args bind_args;
-+	unsigned long irq_flags;
- 	unsigned long ticks;
- 	void __user *uarg = (void __user *) arg;
- 	int __user *iuarg = (int __user *) arg;
-@@ -186,9 +188,72 @@ static long pps_cdev_ioctl(struct file *file,
- 
- 		break;
- 
-+	case PPS_KC_BIND:
-+		pr_info("PPS_KC_BIND: source %d\n", pps->id);
++if PPS
 +
-+		/* Check the capabilities */
-+		if (!capable(CAP_SYS_TIME))
-+			return -EPERM;
++comment "PPS generators support"
 +
-+		if (copy_from_user(&bind_args, uarg,
-+					sizeof(struct pps_bind_args)))
-+			return -EFAULT;
++config PPS_GENERATOR_PARPORT
++	tristate "Parallel port PPS signal generator"
++	depends on PARPORT != n && GENERIC_TIME
++	help
++	  If you say yes here you get support for a PPS signal generator which
++	  utilizes STROBE pin of a parallel port to send PPS signals. It uses
++	  parport abstraction layer and hrtimers to precisely control the signal.
 +
-+		/* Check for supported capabilities */
-+		if ((bind_args.edge & ~pps->info.mode) != 0) {
-+			pr_err("PPS_KC_BIND: "
-+					"unsupported capabilities (%x)\n",
-+					bind_args.edge);
-+			return -EINVAL;
-+		}
++endif
+diff --git a/drivers/pps/generators/Makefile b/drivers/pps/generators/Makefile
+new file mode 100644
+index 0000000..303304a
+--- /dev/null
++++ b/drivers/pps/generators/Makefile
+@@ -0,0 +1,9 @@
++#
++# Makefile for PPS generators.
++#
 +
-+		/* Validate parameters roughly */
-+		if (bind_args.tsformat != PPS_TSFMT_TSPEC ||
-+				(bind_args.edge & ~PPS_CAPTUREBOTH) != 0 ||
-+				bind_args.consumer != PPS_KC_HARDPPS) {
-+			pr_err("PPS_KC_BIND: "
-+					"invalid kcbind parameters (%x)\n",
-+					bind_args.edge);
-+			return -EINVAL;
-+		}
++obj-$(CONFIG_PPS_GENERATOR_PARPORT) += pps_gen_parport.o
 +
-+		/* Check if another consumer is already bound */
-+		spin_lock_irqsave(&pps_kc_hardpps_lock, irq_flags);
++ifeq ($(CONFIG_PPS_DEBUG),y)
++EXTRA_CFLAGS += -DDEBUG
++endif
+diff --git a/drivers/pps/generators/pps_gen_parport.c b/drivers/pps/generators/pps_gen_parport.c
+new file mode 100644
+index 0000000..5df7277
+--- /dev/null
++++ b/drivers/pps/generators/pps_gen_parport.c
+@@ -0,0 +1,263 @@
++/*
++ * pps_gen_parport.c -- kernel parallel port PPS signal generator
++ *
++ *
++ * Copyright (C) 2009   Alexander Gordeev <lasaine@lvk.cs.msu.su>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ */
 +
-+		if (bind_args.edge == 0)
-+			if (pps_kc_hardpps_dev == pps) {
-+				pps_kc_hardpps_mode = 0;
-+				pps_kc_hardpps_dev = NULL;
-+				spin_unlock_irqrestore(&pps_kc_hardpps_lock,
-+						irq_flags);
-+				pr_info("unbound kernel consumer\n");
-+			} else {
-+				spin_unlock_irqrestore(&pps_kc_hardpps_lock,
-+						irq_flags);
-+				pr_err("selected kernel consumer"
-+						" is not bound\n");
-+				return -EINVAL;
-+			}
-+		else
-+			if (pps_kc_hardpps_dev == NULL ||
-+					pps_kc_hardpps_dev == pps) {
-+				pps_kc_hardpps_mode = bind_args.edge;
-+				pps_kc_hardpps_dev = pps;
-+				spin_unlock_irqrestore(&pps_kc_hardpps_lock,
-+						irq_flags);
-+				pr_info("bound kernel consumer: dev=%p, "
-+					"edge=0x%x\n", pps, bind_args.edge);
-+			} else {
-+				spin_unlock_irqrestore(&pps_kc_hardpps_lock,
-+						irq_flags);
-+				pr_err("another kernel consumer"
-+						" is already bound\n");
-+				return -EINVAL;
-+			}
-+		break;
 +
- 	default:
- 		return -ENOTTY;
--		break;
- 	}
- 
- 	return 0;
-diff --git a/include/linux/pps.h b/include/linux/pps.h
-index 0194ab0..a9bb1d9 100644
---- a/include/linux/pps.h
-+++ b/include/linux/pps.h
-@@ -114,11 +114,18 @@ struct pps_fdata {
- 	struct pps_ktime timeout;
- };
- 
-+struct pps_bind_args {
-+	int tsformat;	/* format of time stamps */
-+	int edge;	/* selected event type */
-+	int consumer;	/* selected kernel consumer */
++/*
++ * TODO:
++ * 1. module parameters
++ * 2. check that local interrupts are blocked in hrtimer handler
++ * 3. fix issues when realtime clock is adjusted in a leap
++ * 4. test under heavy load
++ */
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/time.h>
++#include <linux/hrtimer.h>
++#include <linux/parport.h>
++
++#define DRVNAME "pps_gen_parport"
++#define DRVDESC "parallel port PPS signal generator"
++
++#define SIGNAL		0
++#define NO_SIGNAL	PARPORT_CONTROL_STROBE
++
++#define SEND_DELAY	30000	/* delay between setting and
++				   dropping the signal (ns) */
++#define SAFETY_INTERVAL	5000	/* set the hrtimer earlier for safety (ns) */
++
++/* internal per port structure */
++struct pps_generator_pp {
++	struct pardevice *pardev;	/* parport device */
++	struct hrtimer timer;
++	long port_write_time;		/* calibrated port write time (ns) */
 +};
 +
- #include <linux/ioctl.h>
- 
- #define PPS_GETPARAMS		_IOR('p', 0xa1, struct pps_kparams *)
- #define PPS_SETPARAMS		_IOW('p', 0xa2, struct pps_kparams *)
- #define PPS_GETCAP		_IOR('p', 0xa3, int *)
- #define PPS_FETCH		_IOWR('p', 0xa4, struct pps_fdata *)
-+#define PPS_KC_BIND		_IOW('p', 0xa5, struct pps_bind_args *)
- 
- #endif /* _PPS_H_ */
-diff --git a/include/linux/pps_kernel.h b/include/linux/pps_kernel.h
-index 0d36a6f..1251138 100644
---- a/include/linux/pps_kernel.h
-+++ b/include/linux/pps_kernel.h
-@@ -85,6 +85,12 @@ extern struct idr pps_idr;
- 
- extern struct device_attribute pps_attrs[];
- 
-+/* state variables to bind kernel consumer */
-+/* PPS API (RFC 2783): current source and mode for ``kernel consumer'' */
-+extern spinlock_t pps_kc_hardpps_lock;
-+extern void *pps_kc_hardpps_dev;	/* some unique pointer to device */
-+extern int pps_kc_hardpps_mode;		/* mode bits for kernel consumer */
++static struct pps_generator_pp device = {
++	.pardev = NULL,
++};
 +
- /*
-  * Exported functions
-  */
++static int attached;
++
++/* calibrated time between a hrtimer event and the reaction */
++static long hrtimer_error = SAFETY_INTERVAL;
++
++/* the kernel hrtimer event */
++static enum hrtimer_restart hrtimer_event(struct hrtimer *timer)
++{
++	struct timespec expire_time, ts1, ts2, ts3, dts;
++	struct pps_generator_pp *dev;
++	struct parport *port;
++	long lim, delta;
++	unsigned long flags;
++
++	/* NB: approx time with blocked interrupts =
++	   SEND_DELAY + 2 * SAFETY_INTERVAL */
++	local_irq_save(flags);
++
++	/* first of all we get the time stamp... */
++	getnstimeofday(&ts1);
++	expire_time = ktime_to_timespec(timer->_expires);
++	dev = container_of(timer, struct pps_generator_pp, timer);
++	lim = NSEC_PER_SEC - SEND_DELAY - dev->port_write_time;
++
++	/* check if we are late */
++	if (expire_time.tv_sec != ts1.tv_sec || ts1.tv_nsec > lim) {
++		local_irq_restore(flags);
++		pr_err(DRVNAME ": we are late this time %ld.%09ld\n",
++				ts1.tv_sec, ts1.tv_nsec);
++		goto done;
++	}
++
++	/* busy loop until the time is right for an assert edge */
++	do {
++		getnstimeofday(&ts2);
++	} while (expire_time.tv_sec == ts2.tv_sec && ts2.tv_nsec < lim);
++
++	/* set the signal */
++	port = dev->pardev->port;
++	port->ops->write_control(port, SIGNAL);
++
++	/* busy loop until the time is right for a clear edge */
++	lim = NSEC_PER_SEC - dev->port_write_time;
++	do {
++		getnstimeofday(&ts2);
++	} while (expire_time.tv_sec == ts2.tv_sec && ts2.tv_nsec < lim);
++
++	/* unset the signal */
++	port->ops->write_control(port, NO_SIGNAL);
++
++	getnstimeofday(&ts3);
++
++	local_irq_restore(flags);
++
++	/* update calibrated port write time */
++	dts = timespec_sub(ts3, ts2);
++	dev->port_write_time =
++		(dev->port_write_time + timespec_to_ns(&dts)) >> 1;
++
++done:
++	/* update calibrated hrtimer error */
++	dts = timespec_sub(ts1, expire_time);
++	delta = timespec_to_ns(&dts);
++	/* If the new error value is bigger then the old, use the new
++	 * value, if not then slowly move towards the new value. This
++	 * way it should be safe in bad conditions and efficient in
++	 * good conditions.
++	 */
++	if (delta >= hrtimer_error)
++		hrtimer_error = delta;
++	else
++		hrtimer_error = (3 * hrtimer_error + delta) >> 2;
++
++	/* update the hrtimer expire time */
++	hrtimer_set_expires(timer,
++			ktime_set(expire_time.tv_sec + 1,
++				NSEC_PER_SEC - SEND_DELAY -
++				dev->port_write_time - 2 * hrtimer_error));
++
++	return HRTIMER_RESTART;
++}
++
++/* calibrate port write time */
++#define PORT_NTESTS_SHIFT	5
++static void calibrate_port(struct pps_generator_pp *dev)
++{
++	struct parport *port = dev->pardev->port;
++	int i;
++	long acc = 0;
++
++	for (i = 0; i < (1 << PORT_NTESTS_SHIFT); i++) {
++		struct timespec a, b;
++		unsigned long irq_flags;
++
++		local_irq_save(irq_flags);
++		getnstimeofday(&a);
++		port->ops->write_control(port, NO_SIGNAL);
++		getnstimeofday(&b);
++		local_irq_restore(irq_flags);
++
++		b = timespec_sub(b, a);
++		acc += timespec_to_ns(&b);
++	}
++
++	dev->port_write_time = acc >> PORT_NTESTS_SHIFT;
++	pr_info(DRVNAME ": port write takes %ldns\n", dev->port_write_time);
++}
++
++static ktime_t next_intr_time(struct pps_generator_pp *dev)
++{
++	struct timespec ts;
++
++	getnstimeofday(&ts);
++
++	return ktime_set(ts.tv_sec +
++			((ts.tv_nsec > 990 * NSEC_PER_MSEC) ? 1 : 0),
++			NSEC_PER_SEC - SEND_DELAY -
++			dev->port_write_time - 2 * SAFETY_INTERVAL);
++}
++
++static void parport_attach(struct parport *port)
++{
++	if (attached) {
++		/* we already have a port */
++		return;
++	}
++
++	device.pardev = parport_register_device(port, DRVNAME,
++			NULL, NULL, NULL, 0, &device);
++	if (!device.pardev) {
++		pr_err(DRVNAME ": couldn't register with %s\n", port->name);
++		return;
++	}
++
++	if (parport_claim_or_block(device.pardev) < 0) {
++		pr_err(DRVNAME ": couldn't claim %s\n", port->name);
++		goto err_unregister_dev;
++	}
++
++	pr_info(DRVNAME ": attached to %s\n", port->name);
++	attached = 1;
++
++	calibrate_port(&device);
++
++	hrtimer_init(&device.timer, CLOCK_REALTIME, HRTIMER_MODE_ABS);
++	device.timer.function = hrtimer_event;
++#ifdef CONFIG_PREEMPT_RT
++	/* hrtimer interrupt will run in the interrupt context with this */
++	device.timer.irqsafe = 1;
++#endif
++
++	hrtimer_start(&device.timer, next_intr_time(&device), HRTIMER_MODE_ABS);
++
++	return;
++
++err_unregister_dev:
++	parport_unregister_device(device.pardev);
++}
++
++static void parport_detach(struct parport *port)
++{
++	if (port->cad != device.pardev)
++		/* not our port */
++		return;
++
++	hrtimer_cancel(&device.timer);
++	parport_release(device.pardev);
++	parport_unregister_device(device.pardev);
++}
++
++static struct parport_driver pps_gen_parport_driver = {
++	.name = DRVNAME,
++	.attach = parport_attach,
++	.detach = parport_detach,
++};
++
++/* module staff */
++
++static int __init pps_gen_parport_init(void)
++{
++	int ret;
++
++	pr_info(DRVNAME ": " DRVDESC "\n");
++
++	ret = parport_register_driver(&pps_gen_parport_driver);
++	if (ret) {
++		pr_err(DRVNAME ": unable to register with parport\n");
++		return ret;
++	}
++
++	return  0;
++}
++
++static void __exit pps_gen_parport_exit(void)
++{
++	parport_unregister_driver(&pps_gen_parport_driver);
++	pr_info(DRVNAME ": hrtimer avg error is %ldns\n", hrtimer_error);
++}
++
++module_init(pps_gen_parport_init);
++module_exit(pps_gen_parport_exit);
++
++MODULE_AUTHOR("Alexander Gordeev <lasaine@lvk.cs.msu.su>");
++MODULE_DESCRIPTION(DRVDESC);
++MODULE_LICENSE("GPL");
 -- 
 1.6.5
 
