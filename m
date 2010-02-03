@@ -1,76 +1,75 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754230Ab0BCGCo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 01:02:44 -0500
-Received: from rcsinet12.oracle.com ([148.87.113.124]:51017 "EHLO
-	rcsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753116Ab0BCGCm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 01:02:42 -0500
-From: Tao Ma <tao.ma@oracle.com>
-To: linux-kernel@vger.kernel.org
-Cc: Tao Ma <tao.ma@oracle.com>, Joel Becker <joel.becker@oracle.com>,
-       ocfs2-devel@oss.oracle.com
-Subject: [PATCH] ocfs2: move OCFS2_SUPER_MAGIC to include/linux/magic.h
-Date: Wed,  3 Feb 2010 14:01:00 +0800
-Message-Id: <1265176860-24630-1-git-send-email-tao.ma@oracle.com>
-X-Mailer: git-send-email 1.6.3.3
-X-Source-IP: acsmt354.oracle.com [141.146.40.154]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090208.4B691180.00F6:SCFMA4539814,ss=1,fgs=0
+	id S1754461Ab0BCGMN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 01:12:13 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:1026 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751732Ab0BCGMK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 01:12:10 -0500
+Date: Wed, 3 Feb 2010 08:08:55 +0200
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: "Theodore Ts'o" <tytso@mit.edu>, Andreas Dilger <adilger@sun.com>,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: 2.6.33-rc6: ext4 triggers warning about high order allocations
+Message-ID: <20100203060854.GA12489@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-move OCFS2_SUPER_MAGIC to include/linux/magic.h
+Hi!
+I got this warning at boot with 2.6.33-rc6:
 
-Signed-off-by: Tao Ma <tao.ma@oracle.com>
-Cc: Joel Becker <joel.becker@oracle.com>
-Cc: ocfs2-devel@oss.oracle.com
----
- fs/ocfs2/ocfs2_fs.h   |    3 ---
- fs/ocfs2/super.c      |    1 +
- include/linux/magic.h |    1 +
- 3 files changed, 2 insertions(+), 3 deletions(-)
+[   12.374168] ------------[ cut here ]------------
+[   12.375798] WARNING: at mm/page_alloc.c:1813 __alloc_pages_nodemask+0x180/0x666()
+[   12.377401] Hardware name: 2241B48
+[   12.378984] Modules linked in: [last unloaded: scsi_wait_scan]
+[   12.380593] Pid: 1, comm: init Not tainted 2.6.33-rc6-aa-nopat #50
+[   12.382194] Call Trace:
+[   12.383781]  [<ffffffff810b6b3e>] ? __alloc_pages_nodemask+0x180/0x666
+[   12.385390]  [<ffffffff81041cda>] warn_slowpath_common+0x77/0xa4
+[   12.386996]  [<ffffffff81041d16>] warn_slowpath_null+0xf/0x11
+[   12.388577]  [<ffffffff810b6b3e>] __alloc_pages_nodemask+0x180/0x666
+[   12.390168]  [<ffffffff81036a9b>] ? finish_task_switch+0x4b/0xb1
+[   12.391758]  [<ffffffff810b7036>] __get_free_pages+0x12/0x4f
+[   12.393354]  [<ffffffff810de892>] __kmalloc+0x42/0x116
+[   12.394934]  [<ffffffff812405bf>] match_number+0x35/0x98
+[   12.396493]  [<ffffffff8124064d>] match_int+0xb/0xd
+[   12.398045]  [<ffffffff81169c8c>] parse_options+0x5fe/0x733
+[   12.399594]  [<ffffffff811058c3>] ? __wait_on_buffer+0x1f/0x21
+[   12.401157]  [<ffffffff8116a2dc>] ext4_fill_super+0x373/0x2070
+[   12.402696]  [<ffffffff8123ede2>] ? snprintf+0x59/0x5b
+[   12.404229]  [<ffffffff815cb293>] ? _raw_spin_unlock_irq+0x24/0x2f
+[   12.405764]  [<ffffffff815cae1a>] ? __down_write+0xb/0xd
+[   12.407293]  [<ffffffff810e68fe>] get_sb_bdev+0x12a/0x175
+[   12.408815]  [<ffffffff81169f69>] ? ext4_fill_super+0x0/0x2070
+[   12.410336]  [<ffffffff81167b7f>] ext4_get_sb+0x13/0x15
+[   12.411843]  [<ffffffff810e64e5>] vfs_kern_mount+0x9d/0x158
+[   12.413355]  [<ffffffff810e65fd>] do_kern_mount+0x47/0xe7
+[   12.414859]  [<ffffffff810fbdf3>] do_mount+0x780/0x7f9
+[   12.416362]  [<ffffffff810b7036>] ? __get_free_pages+0x12/0x4f
+[   12.417855]  [<ffffffff81119838>] compat_sys_mount+0x1ee/0x227
+[   12.419339]  [<ffffffff810e2594>] ? do_sys_open+0xf5/0x104
+[   12.420831]  [<ffffffff8102b112>] ia32_sysret+0x0/0x5
+[   12.422307] ---[ end trace f5edc87c0d05d4ad ]---
+[   12.425039] EXT4-fs (sda8): INFO: recovery required on readonly filesystem
+[   12.426552] EXT4-fs (sda8): write access will be enabled during recovery
+[   14.342227] EXT4-fs (sda8): orphan cleanup on readonly fs
+[   14.343756] EXT4-fs (sda8): ext4_orphan_cleanup: deleting unreferenced inode 54847
+[   14.343818] EXT4-fs (sda8): ext4_orphan_cleanup: deleting unreferenced inode 54846
+[   14.343830] EXT4-fs (sda8): 2 orphan inodes deleted
+[   14.345342] EXT4-fs (sda8): recovery complete
+[   14.761956] EXT4-fs (sda8): mounted filesystem with ordered data mode
 
-diff --git a/fs/ocfs2/ocfs2_fs.h b/fs/ocfs2/ocfs2_fs.h
-index 1a1a679..c3cab28 100644
---- a/fs/ocfs2/ocfs2_fs.h
-+++ b/fs/ocfs2/ocfs2_fs.h
-@@ -56,9 +56,6 @@
- #define OCFS2_MIN_BLOCKSIZE		512
- #define OCFS2_MAX_BLOCKSIZE		OCFS2_MIN_CLUSTERSIZE
- 
--/* Filesystem magic number */
--#define OCFS2_SUPER_MAGIC		0x7461636f
--
- /* Object signatures */
- #define OCFS2_SUPER_BLOCK_SIGNATURE	"OCFSV2"
- #define OCFS2_INODE_SIGNATURE		"INODE01"
-diff --git a/fs/ocfs2/super.c b/fs/ocfs2/super.c
-index 2606991..8d72e12 100644
---- a/fs/ocfs2/super.c
-+++ b/fs/ocfs2/super.c
-@@ -42,6 +42,7 @@
- #include <linux/seq_file.h>
- #include <linux/quotaops.h>
- #include <linux/smp_lock.h>
-+#include <linux/magic.h>
- 
- #define MLOG_MASK_PREFIX ML_SUPER
- #include <cluster/masklog.h>
-diff --git a/include/linux/magic.h b/include/linux/magic.h
-index 76285e0..e27b13c 100644
---- a/include/linux/magic.h
-+++ b/include/linux/magic.h
-@@ -36,6 +36,7 @@
- #define MSDOS_SUPER_MAGIC	0x4d44		/* MD */
- #define NCP_SUPER_MAGIC		0x564c		/* Guess, what 0x564c is :-) */
- #define NFS_SUPER_MAGIC		0x6969
-+#define OCFS2_SUPER_MAGIC	0x7461636f
- #define OPENPROM_SUPER_MAGIC	0x9fa1
- #define PROC_SUPER_MAGIC	0x9fa0
- #define QNX4_SUPER_MAGIC	0x002f		/* qnx4 fs detection */
+
+I have not noticed this warning previously on the same kernel, so it's not
+easily reproducible.  The system functions fine after this: __GFP_NOWARN
+missing somewhere?
+
+Thanks,
+
 -- 
-1.5.5
-
+MST
