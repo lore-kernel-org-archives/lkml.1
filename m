@@ -1,77 +1,73 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757928Ab0BCU02 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 15:26:28 -0500
-Received: from smtp-out.google.com ([216.239.44.51]:50105 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757904Ab0BCU0Z (ORCPT
+	id S1757919Ab0BCU3X (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 15:29:23 -0500
+Received: from mail-vw0-f46.google.com ([209.85.212.46]:43776 "EHLO
+	mail-vw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757860Ab0BCU3V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 15:26:25 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=NHcERsRuLiG84pmRurEtwfv/QU9A/UVNnPjlGWub577mumEbalzjbBIdpffDQyDUZ
-	4U1l3SikOihLViPcLg6BA==
-Date: Wed, 3 Feb 2010 12:26:19 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Frans Pop <elendil@planet.nl>
-cc: Balbir Singh <balbir@linux.vnet.ibm.com>, Rik van Riel <riel@redhat.com>,
-       l.lunak@suse.cz, Andrew Morton <akpm@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Nick Piggin <npiggin@suse.de>, jkosina@suse.cz,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: Improving OOM killer
-In-Reply-To: <201002032112.33908.elendil@planet.nl>
-Message-ID: <alpine.DEB.2.00.1002031220070.750@chino.kir.corp.google.com>
-References: <201002012302.37380.l.lunak@suse.cz> <201002032029.34145.elendil@planet.nl> <alpine.DEB.2.00.1002031141350.27853@chino.kir.corp.google.com> <201002032112.33908.elendil@planet.nl>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Wed, 3 Feb 2010 15:29:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Q24XpnCqilnn56erxp/daQYgTPKugHymCNleDw8ZAgEN8mV2tU/MOZzK3N6aomBAff
+         XpU5dIDzjN4PjBvDF561dE9eqJETFo1vdeDhpSxaDMqw3uLDS0ZlRegDyLQPRJXmXAg0
+         cqbuUvQ5TWXqAh4Egun+PmrNkRVscVOO4qqk4=
+Date: Wed, 3 Feb 2010 21:29:13 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Alexander Beregalov <a.beregalov@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: reiserfs deadlock
+Message-ID: <20100203202909.GA5068@nowhere>
+References: <a4423d671002031103r230f66cai4ab25236504bcf15@mail.gmail.com> <a4423d671002031108x6c2682edl9a147c35ac9c2815@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a4423d671002031108x6c2682edl9a147c35ac9c2815@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Feb 2010, Frans Pop wrote:
-
-> That doesn't take into account:
-> - applications where the oom_adj value is hardcoded to a specific value
->   (for whatever reason)
-> - sysadmin scripts that set oom_adj from the console
+On Wed, Feb 03, 2010 at 10:08:57PM +0300, Alexander Beregalov wrote:
+> On 3 February 2010 22:03, Alexander Beregalov <a.beregalov@gmail.com> wrote:
+> > Hi Frederic
+> >
+> > I do not have previous messages and do not know how to reproduce it.
+> > Kernel was 2.6.33-rc5-00237-g9a3cbe3
+> >
 > 
-
-The fundamentals are the same: negative values mean the task is less 
-likely to be preferred and positive values mean the task is more likely, 
-only the scale is different.  That scale is exported by the kernel via 
-OOM_ADJUST_MIN and OOM_ADJUST_MAX and has been since 2006.  I don't think 
-we need to preserve legacy applications or scripts that use hardcoded 
-values without importing linux/oom.h.
-
-> I would think that oom_adj is a documented part of the userspace ABI and 
-> that the change you propose does not fit the normal backwards 
-> compatibility requirements for exposed tunables.
+> Hm, I have the same after reboot.
 > 
+> Do you need me to do anything before I try to fsck ?
 
-The range is documented (but it should have been documented as being from 
-OOM_ADJUST_MIN to OOM_ADJUST_MAX) but its implementation as a bitshift is 
-not; it simply says that positive values mean the task is more preferred 
-and negative values mean it is less preferred.  Those semantics are 
-preserved.
 
-> I think that at least any user who's currently setting oom_adj to -17 has a 
-> right to expect that to continue to mean "oom killer disabled". And for 
-> any other value they should get a similar impact to the current impact, 
-> and not one that's reduced by a factor 66.
-> 
+Yeah. Rebooting again makes your kernel soft lockup?
 
-If the baseline changes as we all agree it needs to such that oom_adj no 
-longer represents the same thing it did in the first place (it would 
-become a linear bias), I think this breakage is actually beneficial.  
-Users will now be able to tune their oom_adj values based on a fraction of 
-system memory to bias their applications either preferrably or otherwise.
+Usually such softlockup happens because we have a lock
+inversion, in which case you should have a lockdep report
+before the softlockup.
 
-I think we should look at Linux over the next couple of years and decide 
-if we want to be married to the current semantics of oom_adj that are 
-going to change (as it would require being a factor of 66, as you 
-mentioned) when the implementation it was designed for has vanished.
+Otherwise this can also happen when we wait for an event
+that needs the lock to complete but
+that can not happen because we already have the lock.
+
+Task A hold reiserfs lock and wait for event 1
+Task B wants to complete event 1 but it need the reisers lock
+for that => deadlock.
+
+This can usually be found in a softlockup report: lots of
+tasks are blocked on reiserfs_write_lock/mutex_lock
+except one, and this one is important as it is probably
+the waiter: the task that holds the lock and that is waiting
+for another event (that in turn needs the lock to complete).
+
+Having more reports could probably help us:
+
+echo 100 > /proc/sys/kernel/hung_task_warnings
+
+Hopefully you can still reproduce it :-s
+
+Thanks a lot!
+
