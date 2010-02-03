@@ -1,118 +1,44 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756922Ab0BCWgx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 17:36:53 -0500
-Received: from mail.gmx.net ([213.165.64.20]:41609 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1756657Ab0BCWgt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 17:36:49 -0500
-X-Authenticated: #10250065
-X-Provags-ID: V01U2FsdGVkX1/qiMU6qofqnGW47H/EgfwPo48zCVHp2fCnC3Mk3K
-	3lBrtkruuqcG//
-Message-ID: <4B69FA7C.9040309@gmx.de>
-Date: Wed, 03 Feb 2010 23:36:44 +0100
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
+	id S1756955Ab0BCWho (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 17:37:44 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:33890 "EHLO
+	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756539Ab0BCWhk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 17:37:40 -0500
+Date: Wed, 3 Feb 2010 22:37:37 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: dvomlehn@cisco.com, gregkh@suse.de, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [REGRESSION] "USB: use kfifo to buffer usb-generic serial
+	writes" causes gobi_loader to hang
+Message-ID: <20100203223737.GA2578@srcf.ucam.org>
+References: <20100117025535.GB7045@srcf.ucam.org> <201001191420.29652.oliver@neukum.org> <20100203164659.GA26807@srcf.ucam.org> <201002031821.39532.oliver@neukum.org>
 MIME-Version: 1.0
-To: Joe Perches <joe@perches.com>
-CC: linux-kernel@vger.kernel.org, Joseph Chan <JosephChan@via.com.tw>,
-       Scott Fang <ScottFang@viatech.com.cn>, linux-fbdev@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 09/10] drivers/video/via: Fix continuation line formats
-References: <cover.1265095093.git.joe@perches.com> <4affbba1523b0cc13bb02f309e3091a29a6ccf6a.1265095094.git.joe@perches.com>
-In-Reply-To: <4affbba1523b0cc13bb02f309e3091a29a6ccf6a.1265095094.git.joe@perches.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.41999999999999998
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <201002031821.39532.oliver@neukum.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
+X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-Joe Perches schrieb:
-> String constants that are continued on subsequent lines with \
-> are not good.
-
-I agree.
-
-> Signed-off-by: Joe Perches <joe@perches.com>
-
-According to how I understand CodingStyle this is the way those things 
-should be done.
-
-Acked-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-
-Andrew, can you please take care of this patch?
-
-
-Thanks,
-
-Florian Tobias Schandinat
-
-> ---
->  drivers/video/via/dvi.c |    8 ++++----
->  drivers/video/via/lcd.c |   12 ++++++------
->  2 files changed, 10 insertions(+), 10 deletions(-)
+On Wed, Feb 03, 2010 at 06:21:39PM +0100, Oliver Neukum wrote:
+> Am Mittwoch, 3. Februar 2010 17:46:59 schrieb Matthew Garrett:
+> > > If the FIFO is full we can do nothing. Please try the attached patch.
+> > 
+> > Doesn't help, I'm afraid. Does anyone have any idea why the change to 
+> > use kfifo would cause this?
 > 
-> diff --git a/drivers/video/via/dvi.c b/drivers/video/via/dvi.c
-> index 67b3693..b3b7822 100644
-> --- a/drivers/video/via/dvi.c
-> +++ b/drivers/video/via/dvi.c
-> @@ -467,8 +467,8 @@ static int dvi_get_panel_size_from_DDCv1(void)
->  	default:
->  		viaparinfo->tmds_setting_info->dvi_panel_size =
->  			VIA_RES_1024X768;
-> -		DEBUG_MSG(KERN_INFO "Unknown panel size max resolution = %d !\
-> -					 set default panel size.\n", max_h);
-> +		DEBUG_MSG(KERN_INFO "Unknown panel size max resolution = %d ! "
-> +			  "set default panel size.\n", max_h);
->  		break;
->  	}
->  
-> @@ -534,8 +534,8 @@ static int dvi_get_panel_size_from_DDCv2(void)
->  	default:
->  		viaparinfo->tmds_setting_info->dvi_panel_size =
->  			VIA_RES_1024X768;
-> -		DEBUG_MSG(KERN_INFO "Unknown panel size max resolution = %d!\
-> -					set default panel size.\n", HSize);
-> +		DEBUG_MSG(KERN_INFO "Unknown panel size max resolution = %d! "
-> +			  "set default panel size.\n", HSize);
->  		break;
->  	}
->  
-> diff --git a/drivers/video/via/lcd.c b/drivers/video/via/lcd.c
-> index 09353e2..4962297 100644
-> --- a/drivers/video/via/lcd.c
-> +++ b/drivers/video/via/lcd.c
-> @@ -171,13 +171,13 @@ static bool lvds_identify_integratedlvds(void)
->  		if (viaparinfo->chip_info->lvds_chip_info.lvds_chip_name) {
->  			viaparinfo->chip_info->lvds_chip_info2.lvds_chip_name =
->  			    INTEGRATED_LVDS;
-> -			DEBUG_MSG(KERN_INFO "Support two dual channel LVDS!\
-> -				  (Internal LVDS + External LVDS)\n");
-> +			DEBUG_MSG(KERN_INFO "Support two dual channel LVDS! "
-> +				  "(Internal LVDS + External LVDS)\n");
->  		} else {
->  			viaparinfo->chip_info->lvds_chip_info.lvds_chip_name =
->  			    INTEGRATED_LVDS;
-> -			DEBUG_MSG(KERN_INFO "Not found external LVDS,\
-> -				  so can't support two dual channel LVDS!\n");
-> +			DEBUG_MSG(KERN_INFO "Not found external LVDS, "
-> +				  "so can't support two dual channel LVDS!\n");
->  		}
->  	} else if (viafb_display_hardware_layout == HW_LAYOUT_LCD1_LCD2) {
->  		/* Two single channel LCD (Internal LVDS + Internal LVDS): */
-> @@ -185,8 +185,8 @@ static bool lvds_identify_integratedlvds(void)
->  		INTEGRATED_LVDS;
->  		viaparinfo->chip_info->lvds_chip_info2.lvds_chip_name =
->  			INTEGRATED_LVDS;
-> -		DEBUG_MSG(KERN_INFO "Support two single channel LVDS!\
-> -			  (Internal LVDS + Internal LVDS)\n");
-> +		DEBUG_MSG(KERN_INFO "Support two single channel LVDS! "
-> +			  "(Internal LVDS + Internal LVDS)\n");
->  	} else if (viafb_display_hardware_layout != HW_LAYOUT_DVI_ONLY) {
->  		/* If we have found external LVDS, just use it,
->  		   otherwise, we will use internal LVDS as default. */
+> The logic seems sound. That is unless the kfifo code is acting up.
+> Could you printk the value kfifo_len returns in usb_serial_generic_write_start()?
 
+kfifo_len is 4096 when it gets into the fifo_full situation.
+
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
