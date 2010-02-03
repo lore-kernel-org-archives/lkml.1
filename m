@@ -1,53 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755912Ab0BCLQP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 06:16:15 -0500
-Received: from ixro-out-rtc.ixiacom.com ([92.87.192.98]:20015 "EHLO
-	ixro-ex1.ixiacom.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753126Ab0BCLQN (ORCPT
+	id S1757184Ab0BCL2I (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 06:28:08 -0500
+Received: from ernst.netinsight.se ([194.16.221.21]:50216 "HELO
+	ernst.netinsight.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1757099Ab0BCL2D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 06:16:13 -0500
-From: Octavian Purdila <opurdila@ixiacom.com>
-Organization: Ixia
-To: Amerigo Wang <amwang@redhat.com>
-Subject: Re: [RFC Patch] net: reserve ports for applications using fixed port numbers
-Date: Wed, 3 Feb 2010 13:12:48 +0200
-User-Agent: KMail/1.12.2 (Linux/2.6.32-trunk-686; KDE/4.3.2; i686; ; )
-Cc: linux-kernel@vger.kernel.org, Eric Dumazet <eric.dumazet@gmail.com>,
-       linux-rdma@vger.kernel.org, netdev@vger.kernel.org,
-       Neil Horman <nhorman@tuxdriver.com>, linux-sctp@vger.kernel.org,
-       David Miller <davem@davemloft.net>
-References: <20100203043332.3817.27932.sendpatchset@localhost.localdomain>
-In-Reply-To: <20100203043332.3817.27932.sendpatchset@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
+	Wed, 3 Feb 2010 06:28:03 -0500
+Date: Wed, 3 Feb 2010 12:27:55 +0100
+From: Simon Kagstrom <simon.kagstrom@netinsight.net>
+To: linux-kernel@vger.kernel.org, laijs@cn.fujitsu.com
+Cc: oleg@redhat.com, rusty@rustcorp.com.au, tj@kernel.org,
+       akpm@linux-foundation.org, mingo@elte.hu
+Subject: [PATCH] core: workqueue: BUG_ON on workqueue recursion
+Message-ID: <20100203122755.0fd4fb7e@marrow.netinsight.se>
+X-Mailer: Claws Mail 3.7.4 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <201002031312.48531.opurdila@ixiacom.com>
-X-OriginalArrivalTime: 03 Feb 2010 11:16:11.0764 (UTC) FILETIME=[4AB7A340:01CAA4C2]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 03 February 2010 06:30:07 you wrote:
+When the workqueue is flushed from workqueue context (recursively), the
+system enters a strange state where things at random (dependent on the
+global workqueue) start misbehaving. For example, for us the console and
+logins locks up while the web server continues running.
 
-> This patch introduces /proc/sys/net/ipv4/ip_local_reserved_ports,
-> it can be used like ip_local_port_range, but this is used to
-> reserve ports for third-party applications which use fixed
-> port numbers within ip_local_port_range.
-> 
-> This only affects the applications which call socket functions
-> like bind(2) with port number 0, to prevent the kernel getting the ports
-> within the specified range for them. For applications which use fixed
-> port number, it will have no effects.
+Since the system becomes unstable, change this to a BUG_ON instead.
 
-It also affects the case where applications do connect, without previously 
-doing bind, right?
+Signed-off-by: Simon Kagstrom <simon.kagstrom@netinsight.net>
+---
+ kernel/workqueue.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-> 
-> Any comments are welcome.
-
-I think it might be useful to allow setting individual ports as reserved, not 
-only ranges, for example by using a bitmap. 
-
+diff --git a/kernel/workqueue.c b/kernel/workqueue.c
+index dee4865..e617d29 100644
+--- a/kernel/workqueue.c
++++ b/kernel/workqueue.c
+@@ -482,7 +482,7 @@ static int flush_cpu_workqueue(struct cpu_workqueue_struct *cwq)
+ 	int active = 0;
+ 	struct wq_barrier barr;
+ 
+-	WARN_ON(cwq->thread == current);
++	BUG_ON(cwq->thread == current);
+ 
+ 	spin_lock_irq(&cwq->lock);
+ 	if (!list_empty(&cwq->worklist) || cwq->current_work != NULL) {
+-- 
+1.6.0.4
 
