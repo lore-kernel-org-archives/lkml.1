@@ -1,100 +1,233 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754301Ab0BCWHr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 17:07:47 -0500
-Received: from mail-vw0-f46.google.com ([209.85.212.46]:36217 "EHLO
-	mail-vw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751705Ab0BCWHq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 17:07:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=iugyiH2dsjbt//ymNePGw5FLR/FSX0GIcFwDP7YIHWNSwhFZCzSdVDoOX7k8Da7baP
-         /0e/FosvCbqzFQzQAp1111XP+iEGTx4AwhMx39RroDaHUvQuMGIxqpAVjqrxvrU/XcGa
-         AekWlwzi9/U9iMx8OciCSGZqKhGtZNzHyygyc=
-Date: Wed, 3 Feb 2010 23:07:37 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Paul Mackerras <paulus@samba.org>,
-       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
-       Li Zefan <lizf@cn.fujitsu.com>, Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [RFC GIT PULL] perf/trace/lock optimization/scalability
-	improvements
-Message-ID: <20100203220735.GD5068@nowhere>
-References: <1265188475-23509-1-git-send-regression-fweisbec@gmail.com> <1265193196.24455.390.camel@laptop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1265193196.24455.390.camel@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1754453Ab0BCWJA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 17:09:00 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:54155 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751295Ab0BCWI7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 17:08:59 -0500
+Subject: Re: [PATCH 1/5] ntp: add hardpps implementation
+From: john stultz <johnstul@us.ibm.com>
+To: Alexander Gordeev <lasaine@lvk.cs.msu.su>
+Cc: linux-kernel@vger.kernel.org, linuxpps@ml.enneenne.com,
+       "Nikita V. Youshchenko" <yoush@cs.msu.su>, stas@lvk.cs.msu.su,
+       Rodolfo Giometti <giometti@enneenne.com>,
+       Rodolfo Giometti <giometti@linux.it>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, Rik van Riel <riel@redhat.com>
+In-Reply-To: <c90af235d8e68733f04b5365d1be2380ccb23569.1265228858.git.lasaine@lvk.cs.msu.su>
+References: <cover.1265228858.git.lasaine@lvk.cs.msu.su>
+	 <c90af235d8e68733f04b5365d1be2380ccb23569.1265228858.git.lasaine@lvk.cs.msu.su>
+Content-Type: text/plain
+Date: Wed, 03 Feb 2010 14:08:50 -0800
+Message-Id: <1265234930.3255.54.camel@work-vm>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 03, 2010 at 11:33:16AM +0100, Peter Zijlstra wrote:
-> On Wed, 2010-02-03 at 10:14 +0100, Frederic Weisbecker wrote:
-> > - event injection support
+On Wed, 2010-02-03 at 23:56 +0300, Alexander Gordeev wrote:
+> This commit adds hardpps() implementation based upon the original one
+> from the NTPv4 reference kernel code. However, it is highly optimized
+> towards very fast syncronization and maximum stickness to PPS signal.
+> The typical error is less then a microsecond.
+> To make it sync faster I had to throw away exponential phase filter so
+> that the full phase offset is corrected immediately. Then I also had to
+> throw away median phase filter because it gives a bigger error itself
+> if used without exponential filter.
+> Maybe we will find an appropriate filtering scheme in the future but
+> it's not necessary if the signal quality is ok.
 > 
-> I like the idea, I'm just not sure about the name and API details.
->
-> I would like to call it something like collection support, and the API
-> should have an iterator like interface. 
+> Signed-off-by: Alexander Gordeev <lasaine@lvk.cs.msu.su>
+
+Very cool! Bunch of style comments below.
+
+One other thing: From the comments in the code, it looks like this may
+have come straight from the reference implementation. You might want to
+provide some extra documentation or comment providing proper credit, and
+clarifying that the code is in fact GPLv2 compatible. 
+
+Also please review Section 12 of Documentation/SubmittingPatches 
+
+thanks
+-john
+
+
+
+
+[snip]
+> +long pps_tf[3];			/* phase median filter */
+> +s64 pps_freq;			/* scaled frequency offset (ns/s) */
+> +s64 pps_fcount;			/* frequency accumulator */
+> +long pps_jitter;		/* nominal jitter (ns) */
+> +long pps_stabil;		/* nominal stability (scaled ns/s) */
+> +int pps_valid;			/* signal watchdog counter */
+> +int pps_shift;			/* nominal interval duration (s) (shift) */
+> +int pps_shiftmax;		/* max interval duration (s) (shift) */
+> +int pps_intcnt;			/* interval counter */
+> +
+> +/*
+> + * PPS signal quality monitors
+> + */
+> +long pps_calcnt;		/* calibration intervals */
+> +long pps_jitcnt;		/* jitter limit exceeded */
+> +long pps_stbcnt;		/* stability limit exceeded */
+> +long pps_errcnt;		/* calibration errors */
+> +
+
+Shouldn't all of the above values be made static?
+
+[snip]
+
+>  /*
+> @@ -233,8 +277,6 @@ static enum hrtimer_restart ntp_leap_second(struct hrtimer *timer)
+>   */
+>  void second_overflow(void)
+>  {
+> -	s64 delta;
+> -
+>  	/* Bump the maxerror field */
+>  	time_maxerror += MAXFREQ / NSEC_PER_USEC;
+>  	if (time_maxerror > NTP_PHASE_LIMIT) {
+> @@ -248,9 +290,27 @@ void second_overflow(void)
+>  	 */
+>  	tick_length	 = tick_length_base;
 > 
-> That is, it should not blindly dump all events from a collection at
-> once, praying the output buffer is large enough, but either dump a
-> specified number and/or stop dumping when the buffer is full. Allowing a
-> second invocation to continue where it left off after the buffer content
-> has been consumed.
+> -	delta		 = shift_right(time_offset, SHIFT_PLL + time_constant);
+> -	time_offset	-= delta;
+> -	tick_length	+= delta;
+> +#ifdef CONFIG_NTP_PPS
+> +	if (time_status & STA_PPSTIME && time_status & STA_PPSSIGNAL) {
+> +		tick_length	+= time_offset;
+> +		time_offset	 = 0;
+> +	} else
+> +#endif /* CONFIG_NTP_PPS */
+> +	{
+> +		s64 delta;
+> +		delta		 =
+> +			shift_right(time_offset, SHIFT_PLL + time_constant);
+> +		time_offset	-= delta;
+> +		tick_length	+= delta;
+> +	}
 
 
-Yeah I agree. But my worry is there are induced races in this scheme.
-But probably tight enough that we don't care much.
+Ugh. Surely there's a better way to do this then using the ifdefs in
+code? 
 
-Consider dumping the task list content:
+Maybe something like:
 
-A -> B -> C -> D
+#ifdef CONFIG_NTP_PPS
+/* Comment about how pps consumes the whole offset */
+static inline s64 ntp_offset_chunk(s64 offset)
+{
+	if (time_status & STA_PPSTIME && time_status & STA_PPSSIGNAL)
+		return offset
+	else
+		return shift_right(offset, SHIFT_PLL + time_constant);
+}
+#else
+static inline s64 ntp_offset_chunk(s64 offset)
+{
+	return shift_right(offset, SHIFT_PLL + time_constant);
+}
+#endif
 
-You open a "task" event. And ask to inject it one by one,
-you first dump A, and B disappear, then you'll miss it
-but you can still get C and D if they don't disappear.
+Then in second_overflow():
 
-As I said it is tight enough that we don't care. If B disappears
-so early, it means it won't have a determinant role in the profiling
-anyway (at worst few isolated events in the beginning).
+delta		 = ntp_offset_chunk(time_offset);
+time_offset	-= delta;
+tick_length	+= delta;
 
-The fact is the async injection will always have such misses by
-its nature anyway, you can still dump the whole at once, and you will
-miss events that just disappeared before the injection call, so whatever...
+Feel free to use a better name then ntp_offset_chunk(), but this keeps
+the logic from being obfuscated by all the #ifdefs
 
 
-> 
-> Which brings us to the ioctl() interface, we can do the above using
-> ioctl()s, but it seems to me we're starting to get ioctl() heavy and
-> should be looking at alternative ways of extending this.
-> 
-> Anybody any bright ideas?
-> 
+> +#ifdef	CONFIG_NTP_PPS
+> +	if (pps_valid > 0)
+> +		pps_valid--;
+> +	else
+> +		time_status &= ~(STA_PPSSIGNAL | STA_PPSJITTER |
+> +				 STA_PPSWANDER | STA_PPSERROR);
+> +#endif /* CONFIG_NTP_PPS */
+
+Similarly, can some sort of pps_dec_valid() inline function be used
+here?
+
+[snip]
+
+> +#ifdef	CONFIG_NTP_PPS
+> +
+> +/* normalize the timestamp so that nsec is in the
+> +   ( -NSEC_PER_SEC / 2, NSEC_PER_SEC / 2 ] interval */
+> +static inline struct timespec pps_normalize_ts(struct timespec ts)
+> +{
+> +	if (ts.tv_nsec > (NSEC_PER_SEC >> 1)) {
+> +		ts.tv_nsec -= NSEC_PER_SEC;
+> +		ts.tv_sec++;
+> +	}
+> +
+> +	return ts;
+> +}
+
+Hrmm.. So by converting a timespec into a second + [-NSEC_PER_SEC/2,
+NSEC_PER_SEC/2] value, you aren't really using a timespec anymore,
+right? I mean, the timepsec_valid() would fail in many cases, for
+instance.
+
+I realize its pretty close, and you *can* use a timespec this way, but
+to me it seems reasonable to introduce a new structure (pps_normtime?)
+so that its clear you shouldn't exchange timespec values and
+pps_normtime values directly?
+
+This is sort of a nit, and maybe others disagree, so not the most
+critical issue. But it seems like you're abusing the structure a bit.
+
+[snip]
+> +/* decrease frequency calibration interval length */
+> +static inline void pps_dec_freq_interval(void)
+> +{
+> +	if (--pps_intcnt <= -4) {
+> +		pps_intcnt = -4;
+
+Is -4 a magic value?
+
+[snip]
+> +	} else {	/* good sample */
+> +		if (++pps_intcnt >= 4) {
+> +			pps_intcnt = 4;
+
+Again, the magic 4?
+
+[snip]
+> +	pps_stabil += (div_s64(((s64)delta_mod) <<
+> +				(NTP_SCALE_SHIFT - SHIFT_USEC),
+> +				NSEC_PER_USEC) - pps_stabil) >> PPS_FAVG;
+
+Hmm. Two 64bit divides in this path? This code would run each second,
+right? It would probably be good to see if this could be optimized a
+little bit more, but I guess its similar to ntp_update_frequency() which
+is called on adjtimex() calls (every 16 seconds at most with networked
+ntp).
+
+> +void hardpps(const struct timespec *p_ts, s64 nsec)
+> +{
+> +	struct timespec ts_norm, freq_norm;
+> +
+> +	ts_norm = pps_normalize_ts(*p_ts);
+> +	freq_norm = pps_normalize_ts(ns_to_timespec(nsec));
+> +
+[snip]
+> +
+> +	write_seqlock_irq(&xtime_lock);
+
+This is called possibly in irq context, right? So you probably want to
+use write_seqlock_irqsave(), no?
 
 
-Using ioctl, we can basically have such structure:
+thanks
+-john
 
-struct perf_inject_req {
-	int start; (in)
-	int len;   (in)
-	int *read;  (out)
-};
-
-Using an idx will often imply rewalk a whole object list from
-the beginning, which is perfectly fine.
-
-If you prefer an alternate syscall, I can make it. I've been
-told about ioctl drawbacks by the past, I personally think
-ioctl has not only drawbacks: it avoids a proliferation
-of syscalls. But that's how you prefer.
 
