@@ -1,51 +1,60 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932607Ab0BCQ7R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 11:59:17 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:23341 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932545Ab0BCQ7Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 11:59:16 -0500
-Message-ID: <4B69AB60.5070609@redhat.com>
-Date: Wed, 03 Feb 2010 10:59:12 -0600
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S932613Ab0BCRBf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 12:01:35 -0500
+Received: from e23smtp09.au.ibm.com ([202.81.31.142]:57216 "EHLO
+	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932569Ab0BCRBe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 12:01:34 -0500
+Date: Wed, 3 Feb 2010 22:31:27 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Rik van Riel <riel@redhat.com>
+Cc: Lubos Lunak <l.lunak@suse.cz>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       David Rientjes <rientjes@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Nick Piggin <npiggin@suse.de>, Jiri Kosina <jkosina@suse.cz>
+Subject: Re: Improving OOM killer
+Message-ID: <20100203170127.GH19641@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <201002012302.37380.l.lunak@suse.cz>
+ <4B698CEE.5020806@redhat.com>
 MIME-Version: 1.0
-To: "Michael S. Tsirkin" <mst@redhat.com>
-CC: "Theodore Ts'o" <tytso@mit.edu>, Andreas Dilger <adilger@sun.com>,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.33-rc6: ext4 triggers warning about high order allocations
-References: <20100203060854.GA12489@redhat.com>
-In-Reply-To: <20100203060854.GA12489@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <4B698CEE.5020806@redhat.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael S. Tsirkin wrote:
-> Hi!
-> I got this warning at boot with 2.6.33-rc6:
+* Rik van Riel <riel@redhat.com> [2010-02-03 09:49:18]:
+
+> On 02/01/2010 05:02 PM, Lubos Lunak wrote:
 > 
-> [   12.374168] ------------[ cut here ]------------
-> [   12.375798] WARNING: at mm/page_alloc.c:1813 __alloc_pages_nodemask+0x180/0x666()
-> [   12.377401] Hardware name: 2241B48
-> [   12.378984] Modules linked in: [last unloaded: scsi_wait_scan]
-> [   12.380593] Pid: 1, comm: init Not tainted 2.6.33-rc6-aa-nopat #50
-> [   12.382194] Call Trace:
-> [   12.383781]  [<ffffffff810b6b3e>] ? __alloc_pages_nodemask+0x180/0x666
-> [   12.385390]  [<ffffffff81041cda>] warn_slowpath_common+0x77/0xa4
-> [   12.386996]  [<ffffffff81041d16>] warn_slowpath_null+0xf/0x11
-> [   12.388577]  [<ffffffff810b6b3e>] __alloc_pages_nodemask+0x180/0x666
-> [   12.390168]  [<ffffffff81036a9b>] ? finish_task_switch+0x4b/0xb1
-> [   12.391758]  [<ffffffff810b7036>] __get_free_pages+0x12/0x4f
-> [   12.393354]  [<ffffffff810de892>] __kmalloc+0x42/0x116
-> [   12.394934]  [<ffffffff812405bf>] match_number+0x35/0x98
-> [   12.396493]  [<ffffffff8124064d>] match_int+0xb/0xd
-> [   12.398045]  [<ffffffff81169c8c>] parse_options+0x5fe/0x733
-> [   12.399594]  [<ffffffff811058c3>] ? __wait_on_buffer+0x1f/0x21
-> [   12.401157]  [<ffffffff8116a2dc>] ext4_fill_super+0x373/0x2070
+> >  In other words, use VmRSS for measuring memory usage instead of VmSize, and
+> >remove child accumulating.
+> 
+> I agree with removing the child accumulating code.  That code can
+> do a lot of harm with databases like postgresql, or cause the
+> system's main service (eg. httpd) to be killed when a broken cgi
+> script used up too much memory.
+>
+> IIRC the child accumulating code was introduced to deal with
+> malicious code (fork bombs), but it makes things worse for the
+> (much more common) situation of a system without malicious
+> code simply running out of memory due to being very busy.
+>
 
-Are you mounting with any interesting options?
+For fork bombs, we could do a number of children number test and have
+a threshold before we consider a process and its children for
+badness().
 
--Eric
+> I have no strong opinion on using RSS vs VmSize.
+> 
+
+David commented and feels strongly about RSS and prefers VmSize.
+
+-- 
+	Balbir
