@@ -1,65 +1,67 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932520Ab0BCQVI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 11:21:08 -0500
-Received: from mail.issp.bas.bg ([195.96.236.10]:53933 "EHLO mail.issp.bas.bg"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932502Ab0BCQVF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 11:21:05 -0500
-From: Marin Mitov <mitov@issp.bas.bg>
-Organization: Institute of Solid State Physics
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: Re: [BUG] agpgart-amd64 not initialized in 2.6.33-rc5 if iommu=allowed in kernel command line
-Date: Wed, 3 Feb 2010 18:18:47 +0200
-User-Agent: KMail/1.11.4 (Linux/2.6.33-rc6; KDE/4.2.4; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, davej@redhat.com
-References: <20100125141006O.fujita.tomonori@lab.ntt.co.jp> <20100202202328O.fujita.tomonori@lab.ntt.co.jp> <20100203004905T.fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20100203004905T.fujita.tomonori@lab.ntt.co.jp>
+	id S932523Ab0BCQXl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 11:23:41 -0500
+Received: from mail-yx0-f189.google.com ([209.85.210.189]:62291 "EHLO
+	mail-yx0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932413Ab0BCQXk convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 11:23:40 -0500
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <201002031818.47665.mitov@issp.bas.bg>
+In-Reply-To: <9fa7a3c70c46a1f776c6520051481cff6525ef02.1265173480.git.amit.kucheria@canonical.com>
+References: <cover.1265173246.git.amit.kucheria@verdurent.com> 
+	<cover.1265173480.git.amit.kucheria@canonical.com> <0511204199ab83aed2340e70a4639500c0528dab.1265173480.git.amit.kucheria@canonical.com> 
+	<9fa7a3c70c46a1f776c6520051481cff6525ef02.1265173480.git.amit.kucheria@canonical.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Wed, 3 Feb 2010 09:23:18 -0700
+X-Google-Sender-Auth: 9e241b3d1e15eb92
+Message-ID: <fa686aa41002030823r7ebf0ee5l156ffafb57a8d5d2@mail.gmail.com>
+Subject: Re: [PATCHv2 02/11] mxc timer: refactor timer code to use timer 
+	versions
+To: Amit Kucheria <amit.kucheria@canonical.com>
+Cc: List Linux Kernel <linux-kernel@vger.kernel.org>,
+       Sascha Hauer <s.hauer@pengutronix.de>,
+       linux-arm-kernel@lists.infradead.org, linux@arm.linux.org.uk,
+       valentin.longchamp@epfl.ch, daniel@caiaq.de, Dinh.Nguyen@freescale.com,
+       r.herring@freescale.com, bryan.wu@canonical.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 02 February 2010 05:49:20 pm FUJITA Tomonori wrote:
+On Tue, Feb 2, 2010 at 10:16 PM, Amit Kucheria
+<amit.kucheria@canonical.com> wrote:
+> From: Sascha Hauer <s.hauer@pengutronix.de>
+>
+> Refactor the timer code into version 1 and version 2.
+>
+> Essentially there are 2 versions of the timer hardware. Version 1 is found on
+> MX1/MXL and MX21. Version 2 is found on MX25, MX27, MX31, MX35, MX37, MX51,
+> and future parts.
+>
+> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+> Acked-by: Amit Kucheria <amit.kucheria@canonical.com>
+> Signed-off-by: Amit Kucheria <amit.kucheria@canonical.com>
+> ---
+>  arch/arm/plat-mxc/time.c |   19 +++++++++++--------
+>  1 files changed, 11 insertions(+), 8 deletions(-)
+>
+> diff --git a/arch/arm/plat-mxc/time.c b/arch/arm/plat-mxc/time.c
+> index 844567e..7d6499e 100644
+> --- a/arch/arm/plat-mxc/time.c
+> +++ b/arch/arm/plat-mxc/time.c
+> @@ -57,6 +57,9 @@
+>  #define MX3_TCN                        0x24
+>  #define MX3_TCMP               0x10
+>
+> +#define timer_is_v1()  (cpu_is_mx1() || cpu_is_mx27())
+> +#define timer_is_v2()  (cpu_is_mx3() || cpu_is_mx25())
 
-> Duh, sorry, please this instead:
+Just from a defensive programming standpoint, it may be better to
+define timer_is_v2() as (!timer_is_v1()).  I assume future parts are
+more likely to be v2, and doing it that way means one less place in
+the code to modify when new parts appear.
 
-Applies cleanly to 2.6.33-rc6-git3. Works for me.
-Details - see my previous post..
-
-Thanks.
-
-Marin Mitov
-
-> 
-> diff --git a/drivers/char/agp/amd64-agp.c b/drivers/char/agp/amd64-agp.c
-> index 34cf04e..fd50ead 100644
-> --- a/drivers/char/agp/amd64-agp.c
-> +++ b/drivers/char/agp/amd64-agp.c
-> @@ -767,16 +767,19 @@ int __init agp_amd64_init(void)
->  
->  static int __init agp_amd64_mod_init(void)
->  {
-> +#ifndef MODULE
->  	if (gart_iommu_aperture)
->  		return agp_bridges_found ? 0 : -ENODEV;
-> -
-> +#endif
->  	return agp_amd64_init();
->  }
->  
->  static void __exit agp_amd64_cleanup(void)
->  {
-> +#ifndef MODULE
->  	if (gart_iommu_aperture)
->  		return;
-> +#endif
->  	if (aperture_resource)
->  		release_resource(aperture_resource);
->  	pci_unregister_driver(&agp_amd64_pci_driver);
-> 
+Otherwise,
+Acked-by: Grant Likely <grant.likely@secretlab.ca>
