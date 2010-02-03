@@ -1,13 +1,13 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932858Ab0BCUp2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 15:45:28 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:52523 "EHLO
+	id S932864Ab0BCUsU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 15:48:20 -0500
+Received: from e34.co.us.ibm.com ([32.97.110.152]:53268 "EHLO
 	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932827Ab0BCUpY (ORCPT
+	with ESMTP id S932791Ab0BCUsR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 15:45:24 -0500
-Date: Wed, 3 Feb 2010 14:44:58 -0600
+	Wed, 3 Feb 2010 15:48:17 -0500
+Date: Wed, 3 Feb 2010 14:47:51 -0600
 From: "Serge E. Hallyn" <serue@us.ibm.com>
 To: Kees Cook <kees.cook@canonical.com>
 Cc: James Morris <jmorris@namei.org>, Casey Schaufler <casey@schaufler-ca.com>,
@@ -24,321 +24,269 @@ Cc: James Morris <jmorris@namei.org>, Casey Schaufler <casey@schaufler-ca.com>,
        Etienne Basset <etienne.basset@numericable.fr>,
        "David P. Quigley" <dpquigl@tycho.nsa.gov>,
        LKLM <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] syslog: distinguish between /proc/kmsg and syscalls
-Message-ID: <20100203204458.GA8874@us.ibm.com>
+Subject: Re: [PATCH 2/2] syslog: use defined constants instead of raw
+ numbers
+Message-ID: <20100203204751.GB8874@us.ibm.com>
 References: <20100202055354.GV19355@outflux.net>
  <4B67C2EA.705@schaufler-ca.com>
  <20100202202054.GW19355@outflux.net>
  <20100202212510.GG32305@us.ibm.com>
  <alpine.LRH.2.00.1002030859220.14592@tundra.namei.org>
- <20100203191542.GE19355@outflux.net>
+ <20100203192328.GF19355@outflux.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100203191542.GE19355@outflux.net>
+In-Reply-To: <20100203192328.GF19355@outflux.net>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Quoting Kees Cook (kees.cook@canonical.com):
-> This allows the LSM to distinguish between syslog functions originating
-> from /proc/kmsg access and direct syscalls.  By default, the commoncaps
-> will now no longer require CAP_SYS_ADMIN to read an opened /proc/kmsg
-> file descriptor.  For example the kernel syslog reader can now drop
-> privileges after opening /proc/kmsg, instead of staying privileged with
-> CAP_SYS_ADMIN.  MAC systems that implement security_syslog have unchanged
-> behavior.
+> Right now the syslog "type" actions are just raw numbers which makes
+> the source difficult to follow.  This patch replaces the raw numbers
+> with defined constants for some level of sanity.
 > 
 > Signed-off-by: Kees Cook <kees.cook@canonical.com>
 
+yes please!
+
 Acked-by: Serge Hallyn <serue@us.ibm.com>
 
-However, I know James said 'you can just pass in 0 or 1', but
-I think the callers will be much clearer if you
-
-#define SYSLOG_FROM_CALL 0
-#define SYSLOG_FROM_FILE 1
-
-or something shorter if you can think of it
-
 > ---
->  fs/proc/kmsg.c             |   13 ++++++-------
->  include/linux/security.h   |   11 ++++++-----
->  include/linux/syslog.h     |   26 ++++++++++++++++++++++++++
->  kernel/printk.c            |    7 ++++---
->  security/commoncap.c       |    7 ++++++-
->  security/security.c        |    4 ++--
->  security/selinux/hooks.c   |    5 +++--
->  security/smack/smack_lsm.c |    4 ++--
->  8 files changed, 55 insertions(+), 22 deletions(-)
->  create mode 100644 include/linux/syslog.h
+>  fs/proc/kmsg.c           |   11 ++++++-----
+>  include/linux/syslog.h   |   23 +++++++++++++++++++++++
+>  kernel/printk.c          |   45 +++++++++++++++++++--------------------------
+>  security/commoncap.c     |    5 +++--
+>  security/selinux/hooks.c |   21 +++++++++++----------
+>  5 files changed, 62 insertions(+), 43 deletions(-)
 > 
 > diff --git a/fs/proc/kmsg.c b/fs/proc/kmsg.c
-> index 7ca7834..4a08999 100644
+> index 4a08999..1ac9d2b 100644
 > --- a/fs/proc/kmsg.c
 > +++ b/fs/proc/kmsg.c
-> @@ -12,37 +12,36 @@
->  #include <linux/poll.h>
->  #include <linux/proc_fs.h>
->  #include <linux/fs.h>
-> +#include <linux/syslog.h>
+> @@ -21,27 +21,28 @@ extern wait_queue_head_t log_wait;
 > 
->  #include <asm/uaccess.h>
->  #include <asm/io.h>
-> 
->  extern wait_queue_head_t log_wait;
-> 
-> -extern int do_syslog(int type, char __user *bug, int count);
-> -
 >  static int kmsg_open(struct inode * inode, struct file * file)
 >  {
-> -	return do_syslog(1,NULL,0);
-> +	return do_syslog(1, NULL, 0, 1);
+> -	return do_syslog(1, NULL, 0, 1);
+> +	return do_syslog(SYSLOG_ACTION_OPEN, NULL, 0, 1);
 >  }
 > 
 >  static int kmsg_release(struct inode * inode, struct file * file)
 >  {
-> -	(void) do_syslog(0,NULL,0);
-> +	(void) do_syslog(0, NULL, 0, 1);
+> -	(void) do_syslog(0, NULL, 0, 1);
+> +	(void) do_syslog(SYSLOG_ACTION_CLOSE, NULL, 0, 1);
 >  	return 0;
 >  }
 > 
 >  static ssize_t kmsg_read(struct file *file, char __user *buf,
 >  			 size_t count, loff_t *ppos)
 >  {
-> -	if ((file->f_flags & O_NONBLOCK) && !do_syslog(9, NULL, 0))
-> +	if ((file->f_flags & O_NONBLOCK) && !do_syslog(9, NULL, 0, 1))
+> -	if ((file->f_flags & O_NONBLOCK) && !do_syslog(9, NULL, 0, 1))
+> +	if ((file->f_flags & O_NONBLOCK) &&
+> +	    !do_syslog(SYSLOG_ACTION_SIZE_UNREAD, NULL, 0, 1))
 >  		return -EAGAIN;
-> -	return do_syslog(2, buf, count);
-> +	return do_syslog(2, buf, count, 1);
+> -	return do_syslog(2, buf, count, 1);
+> +	return do_syslog(SYSLOG_ACTION_READ, buf, count, 1);
 >  }
 > 
 >  static unsigned int kmsg_poll(struct file *file, poll_table *wait)
 >  {
 >  	poll_wait(file, &log_wait, wait);
-> -	if (do_syslog(9, NULL, 0))
-> +	if (do_syslog(9, NULL, 0, 1))
+> -	if (do_syslog(9, NULL, 0, 1))
+> +	if (do_syslog(SYSLOG_ACTION_SIZE_UNREAD, NULL, 0, 1))
 >  		return POLLIN | POLLRDNORM;
 >  	return 0;
 >  }
-> diff --git a/include/linux/security.h b/include/linux/security.h
-> index 2c627d3..10955c3 100644
-> --- a/include/linux/security.h
-> +++ b/include/linux/security.h
-> @@ -76,7 +76,7 @@ extern int cap_task_prctl(int option, unsigned long arg2, unsigned long arg3,
->  extern int cap_task_setscheduler(struct task_struct *p, int policy, struct sched_param *lp);
->  extern int cap_task_setioprio(struct task_struct *p, int ioprio);
->  extern int cap_task_setnice(struct task_struct *p, int nice);
-> -extern int cap_syslog(int type);
-> +extern int cap_syslog(int type, int from_file);
->  extern int cap_vm_enough_memory(struct mm_struct *mm, long pages);
-> 
->  struct msghdr;
-> @@ -1348,6 +1348,7 @@ static inline void security_free_mnt_opts(struct security_mnt_opts *opts)
->   *	logging to the console.
->   *	See the syslog(2) manual page for an explanation of the @type values.
->   *	@type contains the type of action.
-> + *	@from_file indicates the context of action (if it came from /proc).
->   *	Return 0 if permission is granted.
->   * @settime:
->   *	Check permission to change the system time.
-> @@ -1462,7 +1463,7 @@ struct security_operations {
->  	int (*sysctl) (struct ctl_table *table, int op);
->  	int (*quotactl) (int cmds, int type, int id, struct super_block *sb);
->  	int (*quota_on) (struct dentry *dentry);
-> -	int (*syslog) (int type);
-> +	int (*syslog) (int type, int from_file);
->  	int (*settime) (struct timespec *ts, struct timezone *tz);
->  	int (*vm_enough_memory) (struct mm_struct *mm, long pages);
-> 
-> @@ -1761,7 +1762,7 @@ int security_acct(struct file *file);
->  int security_sysctl(struct ctl_table *table, int op);
->  int security_quotactl(int cmds, int type, int id, struct super_block *sb);
->  int security_quota_on(struct dentry *dentry);
-> -int security_syslog(int type);
-> +int security_syslog(int type, int from_file);
->  int security_settime(struct timespec *ts, struct timezone *tz);
->  int security_vm_enough_memory(long pages);
->  int security_vm_enough_memory_mm(struct mm_struct *mm, long pages);
-> @@ -2007,9 +2008,9 @@ static inline int security_quota_on(struct dentry *dentry)
->  	return 0;
->  }
-> 
-> -static inline int security_syslog(int type)
-> +static inline int security_syslog(int type, int from_file)
->  {
-> -	return cap_syslog(type);
-> +	return cap_syslog(type, from_file);
->  }
-> 
->  static inline int security_settime(struct timespec *ts, struct timezone *tz)
 > diff --git a/include/linux/syslog.h b/include/linux/syslog.h
-> new file mode 100644
-> index 0000000..f8c9d94
-> --- /dev/null
+> index f8c9d94..8c2c422 100644
+> --- a/include/linux/syslog.h
 > +++ b/include/linux/syslog.h
-> @@ -0,0 +1,26 @@
-> +/*  Syslog internals
-> + *
-> + *  Copyright 2010 Canonical, Ltd.
-> + *  Author: Kees Cook <kees.cook@canonical.com>
-> + *
-> + *  This program is free software; you can redistribute it and/or modify
-> + *  it under the terms of the GNU General Public License as published by
-> + *  the Free Software Foundation; either version 2, or (at your option)
-> + *  any later version.
-> + *
-> + *  This program is distributed in the hope that it will be useful,
-> + *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + *  GNU General Public License for more details.
-> + *
-> + *  You should have received a copy of the GNU General Public License
-> + *  along with this program; see the file COPYING.  If not, write to
-> + *  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
-> + */
+> @@ -21,6 +21,29 @@
+>  #ifndef _LINUX_SYSLOG_H
+>  #define _LINUX_SYSLOG_H
+> 
+> +/* Close the log.  Currently a NOP. */
+> +#define SYSLOG_ACTION_CLOSE          0
+> +/* Open the log. Currently a NOP. */
+> +#define SYSLOG_ACTION_OPEN           1
+> +/* Read from the log. */
+> +#define SYSLOG_ACTION_READ           2
+> +/* Read all messages remaining in the ring buffer. */
+> +#define SYSLOG_ACTION_READ_ALL       3
+> +/* Read and clear all messages remaining in the ring buffer */
+> +#define SYSLOG_ACTION_READ_CLEAR     4
+> +/* Clear ring buffer. */
+> +#define SYSLOG_ACTION_CLEAR          5
+> +/* Disable printk's to console */
+> +#define SYSLOG_ACTION_CONSOLE_OFF    6
+> +/* Enable printk's to console */
+> +#define SYSLOG_ACTION_CONSOLE_ON     7
+> +/* Set level of messages printed to console */
+> +#define SYSLOG_ACTION_CONSOLE_LEVEL  8
+> +/* Return number of unread characters in the log buffer */
+> +#define SYSLOG_ACTION_SIZE_UNREAD    9
+> +/* Return size of the log buffer */
+> +#define SYSLOG_ACTION_SIZE_BUFFER   10
 > +
-> +#ifndef _LINUX_SYSLOG_H
-> +#define _LINUX_SYSLOG_H
-> +
-> +int do_syslog(int type, char __user *buf, int count, int from_file);
-> +
-> +#endif /* _LINUX_SYSLOG_H */
+>  int do_syslog(int type, char __user *buf, int count, int from_file);
+> 
+>  #endif /* _LINUX_SYSLOG_H */
 > diff --git a/kernel/printk.c b/kernel/printk.c
-> index 1751c45..4bc1412 100644
+> index 4bc1412..ca1d970 100644
 > --- a/kernel/printk.c
 > +++ b/kernel/printk.c
-> @@ -35,6 +35,7 @@
->  #include <linux/kexec.h>
->  #include <linux/ratelimit.h>
->  #include <linux/kmsg_dump.h>
-> +#include <linux/syslog.h>
+> @@ -259,21 +259,6 @@ static inline void boot_delay_msec(void)
+>  }
+>  #endif
 > 
->  #include <asm/uaccess.h>
-> 
-> @@ -273,14 +274,14 @@ static inline void boot_delay_msec(void)
->   *	9 -- Return number of unread characters in the log buffer
->   *     10 -- Return size of the log buffer
->   */
-> -int do_syslog(int type, char __user *buf, int len)
-> +int do_syslog(int type, char __user *buf, int len, int from_file)
+> -/*
+> - * Commands to do_syslog:
+> - *
+> - * 	0 -- Close the log.  Currently a NOP.
+> - * 	1 -- Open the log. Currently a NOP.
+> - * 	2 -- Read from the log.
+> - * 	3 -- Read all messages remaining in the ring buffer.
+> - * 	4 -- Read and clear all messages remaining in the ring buffer
+> - * 	5 -- Clear ring buffer.
+> - * 	6 -- Disable printk's to console
+> - * 	7 -- Enable printk's to console
+> - *	8 -- Set level of messages printed to console
+> - *	9 -- Return number of unread characters in the log buffer
+> - *     10 -- Return size of the log buffer
+> - */
+>  int do_syslog(int type, char __user *buf, int len, int from_file)
 >  {
 >  	unsigned i, j, limit, count;
->  	int do_clear = 0;
->  	char c;
->  	int error = 0;
-> 
-> -	error = security_syslog(type);
-> +	error = security_syslog(type, from_file);
->  	if (error)
+> @@ -286,11 +271,11 @@ int do_syslog(int type, char __user *buf, int len, int from_file)
 >  		return error;
 > 
-> @@ -417,7 +418,7 @@ out:
-> 
->  SYSCALL_DEFINE3(syslog, int, type, char __user *, buf, int, len)
->  {
-> -	return do_syslog(type, buf, len);
-> +	return do_syslog(type, buf, len, 0);
->  }
-> 
->  /*
+>  	switch (type) {
+> -	case 0:		/* Close log */
+> +	case SYSLOG_ACTION_CLOSE:	/* Close log */
+>  		break;
+> -	case 1:		/* Open log */
+> +	case SYSLOG_ACTION_OPEN:	/* Open log */
+>  		break;
+> -	case 2:		/* Read from log */
+> +	case SYSLOG_ACTION_READ:	/* Read from log */
+>  		error = -EINVAL;
+>  		if (!buf || len < 0)
+>  			goto out;
+> @@ -321,10 +306,12 @@ int do_syslog(int type, char __user *buf, int len, int from_file)
+>  		if (!error)
+>  			error = i;
+>  		break;
+> -	case 4:		/* Read/clear last kernel messages */
+> +	/* Read/clear last kernel messages */
+> +	case SYSLOG_ACTION_READ_CLEAR:
+>  		do_clear = 1;
+>  		/* FALL THRU */
+> -	case 3:		/* Read last kernel messages */
+> +	/* Read last kernel messages */
+> +	case SYSLOG_ACTION_READ_ALL:
+>  		error = -EINVAL;
+>  		if (!buf || len < 0)
+>  			goto out;
+> @@ -377,21 +364,25 @@ int do_syslog(int type, char __user *buf, int len, int from_file)
+>  			}
+>  		}
+>  		break;
+> -	case 5:		/* Clear ring buffer */
+> +	/* Clear ring buffer */
+> +	case SYSLOG_ACTION_CLEAR:
+>  		logged_chars = 0;
+>  		break;
+> -	case 6:		/* Disable logging to console */
+> +	/* Disable logging to console */
+> +	case SYSLOG_ACTION_CONSOLE_OFF:
+>  		if (saved_console_loglevel == -1)
+>  			saved_console_loglevel = console_loglevel;
+>  		console_loglevel = minimum_console_loglevel;
+>  		break;
+> -	case 7:		/* Enable logging to console */
+> +	/* Enable logging to console */
+> +	case SYSLOG_ACTION_CONSOLE_ON:
+>  		if (saved_console_loglevel != -1) {
+>  			console_loglevel = saved_console_loglevel;
+>  			saved_console_loglevel = -1;
+>  		}
+>  		break;
+> -	case 8:		/* Set level of messages printed to console */
+> +	/* Set level of messages printed to console */
+> +	case SYSLOG_ACTION_CONSOLE_LEVEL:
+>  		error = -EINVAL;
+>  		if (len < 1 || len > 8)
+>  			goto out;
+> @@ -402,10 +393,12 @@ int do_syslog(int type, char __user *buf, int len, int from_file)
+>  		saved_console_loglevel = -1;
+>  		error = 0;
+>  		break;
+> -	case 9:		/* Number of chars in the log buffer */
+> +	/* Number of chars in the log buffer */
+> +	case SYSLOG_ACTION_SIZE_UNREAD:
+>  		error = log_end - log_start;
+>  		break;
+> -	case 10:	/* Size of the log buffer */
+> +	/* Size of the log buffer */
+> +	case SYSLOG_ACTION_SIZE_BUFFER:
+>  		error = log_buf_len;
+>  		break;
+>  	default:
 > diff --git a/security/commoncap.c b/security/commoncap.c
-> index f800fdb..aaf123f 100644
+> index aaf123f..0705afe 100644
 > --- a/security/commoncap.c
 > +++ b/security/commoncap.c
-> @@ -27,6 +27,7 @@
->  #include <linux/sched.h>
->  #include <linux/prctl.h>
->  #include <linux/securebits.h>
-> +#include <linux/syslog.h>
-> 
->  /*
->   * If a non-root user executes a setuid-root binary in
-> @@ -888,12 +889,16 @@ error:
->  /**
->   * cap_syslog - Determine whether syslog function is permitted
->   * @type: Function requested
-> + * @from_file: Whether this request came from an open file (i.e. /proc)
->   *
->   * Determine whether the current process is permitted to use a particular
->   * syslog function, returning 0 if permission is granted, -ve if not.
->   */
-> -int cap_syslog(int type)
-> +int cap_syslog(int type, int from_file)
+> @@ -897,9 +897,10 @@ error:
+>  int cap_syslog(int type, int from_file)
 >  {
-> +	/* /proc/kmsg can open be opened by CAP_SYS_ADMIN */
-
-Egads this comment confused me for a minute - can you change
-that to something like 'requires CAP_SYS_ADMIN'?  I then misread
-the '!=' to be == and thought you were inverting your logic.
-
-> +	if (type != 1 && from_file)
-> +		return 0;
->  	if ((type != 3 && type != 10) && !capable(CAP_SYS_ADMIN))
+>  	/* /proc/kmsg can open be opened by CAP_SYS_ADMIN */
+> -	if (type != 1 && from_file)
+> +	if (type != SYSLOG_ACTION_OPEN && from_file)
+>  		return 0;
+> -	if ((type != 3 && type != 10) && !capable(CAP_SYS_ADMIN))
+> +	if ((type != SYSLOG_ACTION_READ_ALL &&
+> +	     type != SYSLOG_ACTION_SIZE_BUFFER) && !capable(CAP_SYS_ADMIN))
 >  		return -EPERM;
 >  	return 0;
-> diff --git a/security/security.c b/security/security.c
-> index 24e060b..568b1bd 100644
-> --- a/security/security.c
-> +++ b/security/security.c
-> @@ -203,9 +203,9 @@ int security_quota_on(struct dentry *dentry)
->  	return security_ops->quota_on(dentry);
 >  }
-> 
-> -int security_syslog(int type)
-> +int security_syslog(int type, int from_file)
->  {
-> -	return security_ops->syslog(type);
-> +	return security_ops->syslog(type, from_file);
->  }
-> 
->  int security_settime(struct timespec *ts, struct timezone *tz)
 > diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-> index 9a2ee84..744785c 100644
+> index 744785c..d242ab7 100644
 > --- a/security/selinux/hooks.c
 > +++ b/security/selinux/hooks.c
-> @@ -76,6 +76,7 @@
->  #include <linux/selinux.h>
->  #include <linux/mutex.h>
->  #include <linux/posix-timers.h>
-> +#include <linux/syslog.h>
-> 
->  #include "avc.h"
->  #include "objsec.h"
-> @@ -2049,11 +2050,11 @@ static int selinux_quota_on(struct dentry *dentry)
->  	return dentry_has_perm(cred, NULL, dentry, FILE__QUOTAON);
->  }
-> 
-> -static int selinux_syslog(int type)
-> +static int selinux_syslog(int type, int from_file)
->  {
->  	int rc;
-> 
-> -	rc = cap_syslog(type);
-> +	rc = cap_syslog(type, from_file);
->  	if (rc)
+> @@ -2059,20 +2059,21 @@ static int selinux_syslog(int type, int from_file)
 >  		return rc;
 > 
-> diff --git a/security/smack/smack_lsm.c b/security/smack/smack_lsm.c
-> index 529c9ca..b271e18 100644
-> --- a/security/smack/smack_lsm.c
-> +++ b/security/smack/smack_lsm.c
-> @@ -157,12 +157,12 @@ static int smack_ptrace_traceme(struct task_struct *ptp)
->   *
->   * Returns 0 on success, error code otherwise.
->   */
-> -static int smack_syslog(int type)
-> +static int smack_syslog(int type, int from_file)
->  {
->  	int rc;
->  	char *sp = current_security();
-> 
-> -	rc = cap_syslog(type);
-> +	rc = cap_syslog(type, from_file);
->  	if (rc != 0)
->  		return rc;
-> 
+>  	switch (type) {
+> -	case 3:		/* Read last kernel messages */
+> -	case 10:	/* Return size of the log buffer */
+> +	case SYSLOG_ACTION_READ_ALL:	/* Read last kernel messages */
+> +	case SYSLOG_ACTION_SIZE_BUFFER:	/* Return size of the log buffer */
+>  		rc = task_has_system(current, SYSTEM__SYSLOG_READ);
+>  		break;
+> -	case 6:		/* Disable logging to console */
+> -	case 7:		/* Enable logging to console */
+> -	case 8:		/* Set level of messages printed to console */
+> +	case SYSLOG_ACTION_CONSOLE_OFF:	/* Disable logging to console */
+> +	case SYSLOG_ACTION_CONSOLE_ON:	/* Enable logging to console */
+> +	/* Set level of messages printed to console */
+> +	case SYSLOG_ACTION_CONSOLE_LEVEL:
+>  		rc = task_has_system(current, SYSTEM__SYSLOG_CONSOLE);
+>  		break;
+> -	case 0:		/* Close log */
+> -	case 1:		/* Open log */
+> -	case 2:		/* Read from log */
+> -	case 4:		/* Read/clear last kernel messages */
+> -	case 5:		/* Clear ring buffer */
+> +	case SYSLOG_ACTION_CLOSE:	/* Close log */
+> +	case SYSLOG_ACTION_OPEN:	/* Open log */
+> +	case SYSLOG_ACTION_READ:	/* Read from log */
+> +	case SYSLOG_ACTION_READ_CLEAR:	/* Read/clear last kernel messages */
+> +	case SYSLOG_ACTION_CLEAR:	/* Clear ring buffer */
+>  	default:
+>  		rc = task_has_system(current, SYSTEM__SYSLOG_MOD);
+>  		break;
 > -- 
 > 1.6.5
 > 
@@ -346,7 +294,3 @@ the '!=' to be == and thought you were inverting your logic.
 > -- 
 > Kees Cook
 > Ubuntu Security Team
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-security-module" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
