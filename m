@@ -1,73 +1,84 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932634Ab0BCRIp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 12:08:45 -0500
-Received: from moutng.kundenserver.de ([212.227.17.8]:62034 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932609Ab0BCRIl (ORCPT
+	id S932646Ab0BCRKd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 12:10:33 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:45109 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932609Ab0BCRKb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 12:08:41 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH 4/6] improve sys_personality for compat architectures
-Date: Wed, 3 Feb 2010 18:06:27 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31-rc8-00053-g43eb7c4-dirty; KDE/4.3.2; x86_64; ; )
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, tony.luck@intel.com, ralf@linux-mips.org,
-       kyle@mcmartin.ca, benh@kernel.crashing.org, schwidefsky@de.ibm.com,
-       heiko.carstens@de.ibm.com, davem@davemloft.net, tglx@linutronix.de,
-       mingo@redhat.com, hpa@zytor.com, viro@zeniv.linux.org.uk
-References: <20100201185607.GD11045@lst.de> <201002021536.51928.arnd@arndb.de> <20100202163145.GA30659@lst.de>
-In-Reply-To: <20100202163145.GA30659@lst.de>
+	Wed, 3 Feb 2010 12:10:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=kh21QvV72wgsOtmlQu+PWwijEGiPLeYXfmHcGnxa/SfJy7Dh/UgE9uPWy2i6uohP/t
+         SW/vgDLOBvPJITWf2del1KMy6hPr0cJPUCP87sQYKrZORVc1wu4ULa8SsqeHPvW2WP2d
+         6zg5TF7S1uIBLyZEQ40IGI4QUk66ZnvTcSYOQ=
+Message-ID: <4B69AE5B.9060708@gmail.com>
+Date: Wed, 03 Feb 2010 09:11:55 -0800
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091114 Lightning/1.0pre Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Jan Beulich <JBeulich@novell.com>
+CC: Stefan Richter <stefanr@s5r6.in-berlin.de>, Ingo Molnar <mingo@elte.hu>,
+       Dan Carpenter <error27@gmail.com>, bernhard.kaindl@gmx.net,
+       Thomas Gleixner <tglx@linutronix.de>,
+       linux1394-devel@lists.sourceforge.net, Rafael Wysocki <rjw@sisk.pl>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       ebiderman@xmission.com, hpa@zytor.com
+Subject: Re: ohci1394_dma=early crash since 2.6.32 (was Re: [Bug	 #14487]
+ PANIC: early exception 08 rip 246:10	 error	ffffffff810251b5 cr2 0)
+References: <UgwvXSBS_tM.A.alD.1EiZLB@chimera> <de962C6zBxL.A.H1G.1HiZLB@chimera> <4B6630CA.9010207@gmail.com> <20100201125441.GB2576@bicker> <4B671606.3080405@gmail.com> <4B673233.8000300@s5r6.in-berlin.de> <4B6740B5.5070601@gmail.com> <4B675534.5070107@s5r6.in-berlin.de> <4B676917.2080506@gmail.com> <4B67BC12.4080709@s5r6.in-berlin.de> <4B67C4D2.5050205@gmail.com> <4B67CC55.40301@s5r6.in-berlin.de> <4B67CCEC.2030103@s5r6.in-berlin.de> <4B68D4CA.2010803@gmail.com> <4B694D5C020000780002D6DA@vpn.id2.novell.com>
+In-Reply-To: <4B694D5C020000780002D6DA@vpn.id2.novell.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <201002031806.27423.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19/g8XgiVVUPqbJi1qiz71so4A46hHebnW//l0
- 4KWDztmfbg9nejI4AFUx6uSDoYMU0i3+P7CQM1VN26ty0dL2lB
- mEIJvvDETOg5cT+ujywcg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 02 February 2010 17:31:45 Christoph Hellwig wrote:
-> 
-> On Tue, Feb 02, 2010 at 03:36:51PM +0100, Arnd Bergmann wrote:
-> > > -       return (long)old;
-> > > +       return (long)(old == PER_LINUX32 ? PER_LINUX : old);
-> > >  }
-> > 
-> > What does this do for a native 64 bit process setting PER_LINUX32?
-> > It looks to me like it could never set it back to the original
-> > value, or am I missing something here?
-> > 
-> > It's what the arch specific code does already, but it seems a bit
-> > strange anyway.
-> 
-> Indeed, this prevents a process from going back to 64bit.  And while
-> the setarch tool in util-linux also allows going back to 64-bit the
-> typical use case seems to be going into 32-bit mode.
+On 02/03/10 01:18, Jan Beulich wrote:
+>>>> "Justin P. Mattock"<justinmattock@gmail.com>  03.02.10 02:43>>>
+>> The only thing I can think of at this point
+>> is maybe the CFLAGS I used to build this system.
+>> (as for the x86_32 working and x86_64 failing not sure);
+>>
+>> I'm curious to see if anybody else is hitting this?
+>
+> I think it is pretty clear how a page fault can happen here (but you're
+> observing a double fault, which I cannot explain [nor can I explain
+> why the fault apparently didn't get an error code pushed, which is
+> why address and error code displayed are mixed up]): I would
+> suspect that FIX_OHCI1394_BASE is now in a different (virtual) 2Mb
+> range than what is covered by level{1,2}_fixmap_pgt, but this was
+> a latent issue even before that patch (just waiting for sufficiently
+> many fixmap entries getting inserted before
+> __end_of_permanent_fixed_addresses).
+>
+> The thing is that head_64.S uses hard-coded numbers, but doesn't
+> really make sure (at build time) that the fixmap page tables established
+> indeed cover all the entries of importance (and honestly I even can't
+> easily tell which of the candidates - FIX_DBGP_BASE,
+> FIX_EARLYCON_MEM_BASE, and FIX_OHCI1394_BASE afaict - really
+> matter). If either of the first does, the only reasonable solution imo
+> is to move FIX_OHCI1394_BASE out of the boot time only range into
+> the permanent range (unless the other two can be moved into the
+> boot time only range). And obviously the hard coded numbers
+> should be eliminated from head_64.S.
+>
+> Jan
+>
+>
 
-It appears that setarch can only go back into 64 bit mode on x86
-because that does not wire up sys32_personality at all -- it always
-uses the regular sys_personality, which allows going both ways.
+Thanks for your info on this. I can try today moving things
+around just to see. Looking more into this(keep in mind I
+have no idea how these page,fix_to_virt calls etc.. work)
+I was thinking with what stefan had mentioned ___alloc_bootmem_node
+(still need to look into what that function does)maybe keeping fixmap.h 
+as is and looking somewhere else might be where the fix might be(but 
+could be wrong).
 
-Your patch changes the behavior on x86 to also make the change
-to PER_LINUX32 permanent, which seems consistent but possibly not
-what people want. I still wonder if anything other than setarch
-actually calls personality() to set PER_LINUX32 and what the
-real intention of sys32_personality is. From what I can tell here,
-it may be best to kill the special handling of PER_LINUX32 entirely
-and make everyone use the existing sys_personality.
+In any case I'll have another go at this today.
 
-> But if the consensus is that we should fix this properly I can
-> replace the patch with one introducing a compat_sys_personality
-> which only gets used for compat tasks.
+Justin P. Mattock
 
-Right now, sparc64 and powerpc64 use sys32_personality for both native
-and compat tasks, x86 never uses it and all others use it only for
-compat tasks. That seems more sensible if we keep this function at
-all.
-
-	Arnd
