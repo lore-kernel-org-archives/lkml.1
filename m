@@ -1,56 +1,118 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756857Ab0BCWeK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 17:34:10 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:41168 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756539Ab0BCWeG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 17:34:06 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC][PATCH] PM: disable nonboot cpus before suspending devices
-Date: Wed, 3 Feb 2010 23:34:37 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.33-rc6-rjw; KDE/4.3.5; x86_64; ; )
-Cc: Sebastian Ott <sebott@linux.vnet.ibm.com>,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-References: <alpine.LFD.2.00.1001221841490.2266@localhost> <201002030244.23989.rjw@sisk.pl> <20100202174853.67eeccdd.akpm@linux-foundation.org>
-In-Reply-To: <20100202174853.67eeccdd.akpm@linux-foundation.org>
+	id S1756922Ab0BCWgx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 17:36:53 -0500
+Received: from mail.gmx.net ([213.165.64.20]:41609 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1756657Ab0BCWgt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 17:36:49 -0500
+X-Authenticated: #10250065
+X-Provags-ID: V01U2FsdGVkX1/qiMU6qofqnGW47H/EgfwPo48zCVHp2fCnC3Mk3K
+	3lBrtkruuqcG//
+Message-ID: <4B69FA7C.9040309@gmx.de>
+Date: Wed, 03 Feb 2010 23:36:44 +0100
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Joe Perches <joe@perches.com>
+CC: linux-kernel@vger.kernel.org, Joseph Chan <JosephChan@via.com.tw>,
+       Scott Fang <ScottFang@viatech.com.cn>, linux-fbdev@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 09/10] drivers/video/via: Fix continuation line formats
+References: <cover.1265095093.git.joe@perches.com> <4affbba1523b0cc13bb02f309e3091a29a6ccf6a.1265095094.git.joe@perches.com>
+In-Reply-To: <4affbba1523b0cc13bb02f309e3091a29a6ccf6a.1265095094.git.joe@perches.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <201002032334.37198.rjw@sisk.pl>
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.41999999999999998
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 03 February 2010, Andrew Morton wrote:
-> On Wed, 3 Feb 2010 02:44:23 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+Hi,
+
+Joe Perches schrieb:
+> String constants that are continued on subsequent lines with \
+> are not good.
+
+I agree.
+
+> Signed-off-by: Joe Perches <joe@perches.com>
+
+According to how I understand CodingStyle this is the way those things 
+should be done.
+
+Acked-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+
+Andrew, can you please take care of this patch?
+
+
+Thanks,
+
+Florian Tobias Schandinat
+
+> ---
+>  drivers/video/via/dvi.c |    8 ++++----
+>  drivers/video/via/lcd.c |   12 ++++++------
+>  2 files changed, 10 insertions(+), 10 deletions(-)
 > 
-> > +static inline gfp_t clear_gfp_allowed_mask(gfp_t mask)
-> > +{
-> > +	gfp_t ret = gfp_allowed_mask;
-> > +	gfp_allowed_mask &= ~mask;
-> > +	return ret;
-> > +}
-> 
-> Fair enuf.
-> 
-> Of course, this is all horridly racy/buggy without locking.  Would I be
-> correct in hoping that all the callers happen when the system is in
-> everyone-is-frozen mode?
+> diff --git a/drivers/video/via/dvi.c b/drivers/video/via/dvi.c
+> index 67b3693..b3b7822 100644
+> --- a/drivers/video/via/dvi.c
+> +++ b/drivers/video/via/dvi.c
+> @@ -467,8 +467,8 @@ static int dvi_get_panel_size_from_DDCv1(void)
+>  	default:
+>  		viaparinfo->tmds_setting_info->dvi_panel_size =
+>  			VIA_RES_1024X768;
+> -		DEBUG_MSG(KERN_INFO "Unknown panel size max resolution = %d !\
+> -					 set default panel size.\n", max_h);
+> +		DEBUG_MSG(KERN_INFO "Unknown panel size max resolution = %d ! "
+> +			  "set default panel size.\n", max_h);
+>  		break;
+>  	}
+>  
+> @@ -534,8 +534,8 @@ static int dvi_get_panel_size_from_DDCv2(void)
+>  	default:
+>  		viaparinfo->tmds_setting_info->dvi_panel_size =
+>  			VIA_RES_1024X768;
+> -		DEBUG_MSG(KERN_INFO "Unknown panel size max resolution = %d!\
+> -					set default panel size.\n", HSize);
+> +		DEBUG_MSG(KERN_INFO "Unknown panel size max resolution = %d! "
+> +			  "set default panel size.\n", HSize);
+>  		break;
+>  	}
+>  
+> diff --git a/drivers/video/via/lcd.c b/drivers/video/via/lcd.c
+> index 09353e2..4962297 100644
+> --- a/drivers/video/via/lcd.c
+> +++ b/drivers/video/via/lcd.c
+> @@ -171,13 +171,13 @@ static bool lvds_identify_integratedlvds(void)
+>  		if (viaparinfo->chip_info->lvds_chip_info.lvds_chip_name) {
+>  			viaparinfo->chip_info->lvds_chip_info2.lvds_chip_name =
+>  			    INTEGRATED_LVDS;
+> -			DEBUG_MSG(KERN_INFO "Support two dual channel LVDS!\
+> -				  (Internal LVDS + External LVDS)\n");
+> +			DEBUG_MSG(KERN_INFO "Support two dual channel LVDS! "
+> +				  "(Internal LVDS + External LVDS)\n");
+>  		} else {
+>  			viaparinfo->chip_info->lvds_chip_info.lvds_chip_name =
+>  			    INTEGRATED_LVDS;
+> -			DEBUG_MSG(KERN_INFO "Not found external LVDS,\
+> -				  so can't support two dual channel LVDS!\n");
+> +			DEBUG_MSG(KERN_INFO "Not found external LVDS, "
+> +				  "so can't support two dual channel LVDS!\n");
+>  		}
+>  	} else if (viafb_display_hardware_layout == HW_LAYOUT_LCD1_LCD2) {
+>  		/* Two single channel LCD (Internal LVDS + Internal LVDS): */
+> @@ -185,8 +185,8 @@ static bool lvds_identify_integratedlvds(void)
+>  		INTEGRATED_LVDS;
+>  		viaparinfo->chip_info->lvds_chip_info2.lvds_chip_name =
+>  			INTEGRATED_LVDS;
+> -		DEBUG_MSG(KERN_INFO "Support two single channel LVDS!\
+> -			  (Internal LVDS + Internal LVDS)\n");
+> +		DEBUG_MSG(KERN_INFO "Support two single channel LVDS! "
+> +			  "(Internal LVDS + Internal LVDS)\n");
+>  	} else if (viafb_display_hardware_layout != HW_LAYOUT_DVI_ONLY) {
+>  		/* If we have found external LVDS, just use it,
+>  		   otherwise, we will use internal LVDS as default. */
 
-As far as I can tell, gfp_allowed_mask is only touched during init apart from
-this.
-
-> Perhaps we should add some documentation (or even an assertion) to
-> prevent someone from using these interfaces from within normal code.
-
-I thought about that, but didn't invent anything smart enough.
-
-Well, maybe except for a comment like "this must be called with pm_mutex held",
-because that's the only case when it would be really safe.
-
-Rafael
