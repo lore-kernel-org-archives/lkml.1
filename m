@@ -1,40 +1,96 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756706Ab0BCPJh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 10:09:37 -0500
-Received: from kroah.org ([198.145.64.141]:58523 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756501Ab0BCPJe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 10:09:34 -0500
-Date: Wed, 3 Feb 2010 07:08:50 -0800
-From: Greg KH <greg@kroah.com>
-To: Uwe Kleine-K?nig <u.kleine-koenig@pengutronix.de>
-Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] platform_driver_register:  warn if probe is in
-	.init.text
-Message-ID: <20100203150850.GA28815@kroah.com>
-References: <20090629075535.GA20155@pengutronix.de> <20090711033459.GC1344@suse.de> <20090711100014.GA9540@pengutronix.de> <20090711170548.GC5205@suse.de> <20090907141941.GA19380@pengutronix.de> <20100122170641.GD13718@pengutronix.de> <20100122173846.GA11057@suse.de> <20100126085928.GD20792@pengutronix.de> <20100128180235.GE19871@kroah.com> <20100203094226.GD11354@pengutronix.de>
+	id S1756727Ab0BCPKV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 10:10:21 -0500
+Received: from qw-out-2122.google.com ([74.125.92.25]:8252 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756501Ab0BCPKS convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 10:10:18 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :content-type:content-transfer-encoding;
+        b=xtKrUrV4U9Dw8Ag0jmJStfqMcufx6Zw0vKyeO8Pwt/aTIVad8sm0hLwZQ9+BZmr2/R
+         ASelovzodRY2gGV6z1RQRO1QgNBxSSZ6PQvaz+lND7+WenfSv7valSm2wC/jGqQQc3+R
+         7l4U07rzV9NCnby1xFACRX3W4KKXbQESEPaYY=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100203094226.GD11354@pengutronix.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20100203132404.GC5252@k2>
+References: <cover.1265173480.git.amit.kucheria@canonical.com> 
+	<cover.1265173246.git.amit.kucheria@verdurent.com> <0511204199ab83aed2340e70a4639500c0528dab.1265173480.git.amit.kucheria@canonical.com> 
+	<f17812d71002022223jdc0ac5cp5b94928fb45695d6@mail.gmail.com> 
+	<20100203132404.GC5252@k2>
+From: Eric Miao <eric.y.miao@gmail.com>
+Date: Wed, 3 Feb 2010 07:09:57 -0800
+Message-ID: <f17812d71002030709i6ecbc374g30e2b1343455b650@mail.gmail.com>
+Subject: Re: [PATCHv2 01/11] arm: mxc: TrustZone interrupt controller (TZIC) 
+	for i.MX5 family
+To: Eric Miao <eric.y.miao@gmail.com>,
+       List Linux Kernel <linux-kernel@vger.kernel.org>,
+       linux@arm.linux.org.uk, Dinh.Nguyen@freescale.com,
+       s.hauer@pengutronix.de, grant.likely@secretlab.ca,
+       r.herring@freescale.com, linux-arm-kernel@lists.infradead.org,
+       daniel@caiaq.de, bryan.wu@canonical.com, valentin.longchamp@epfl.ch
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 03, 2010 at 10:42:26AM +0100, Uwe Kleine-K?nig wrote:
-> Hello,
-> 
-> > > So can you please look into that before they are swapped out of your
-> > > inbox the third(?) time?
-> > 
-> > I think the video ones can be all in one patch, that makes it easier for
-> > me to track and apply.  Same goes for any others you can merge together.
-> So I group by drivers/* and arch/*?
+On Wed, Feb 3, 2010 at 5:24 AM, Amit Kucheria
+<amit.kucheria@canonical.com> wrote:
+> On 10 Feb 02, Eric Miao wrote:
+>> Hi Amit,
+>>
+>> Just some nit-picking review comments, see below:
+>>
+>> On Tue, Feb 2, 2010 at 9:16 PM, Amit Kucheria
+>> <amit.kucheria@canonical.com> wrote:
+>> > Freescale i.MX51 processor uses a new interrupt controller. Add
+>> > driver for TrustZone Interrupt Controller
+>> >
+>> > Signed-off-by: Amit Kucheria <amit.kucheria@canonical.com>
+>> > ---
+>> >  arch/arm/plat-mxc/Kconfig  |    8 ++
+>> >  arch/arm/plat-mxc/Makefile |    3 +
+>> >  arch/arm/plat-mxc/tzic.c   |  182 ++++++++++++++++++++++++++++++++++++++++++++
+>> >  3 files changed, 193 insertions(+), 0 deletions(-)
+>> >  create mode 100644 arch/arm/plat-mxc/tzic.c
+>> >
+>> > diff --git a/arch/arm/plat-mxc/Kconfig b/arch/arm/plat-mxc/Kconfig
+>> > index 8b0a1ee..59558c4 100644
+>> > --- a/arch/arm/plat-mxc/Kconfig
+>> > +++ b/arch/arm/plat-mxc/Kconfig
+>> > @@ -62,6 +62,14 @@ config MXC_IRQ_PRIOR
+>> >          requirements for timing.
+>> >          Say N here, unless you have a specialized requirement.
+>> >
+>> > +config MXC_TZIC
+>> > +       bool "Enable TrustZone Interrupt Controller"
+>> > +       depends on ARCH_MX51
+>>
+>> This is the first patch of the base port, yet I cannot find any reference to
+>> this ARCH_MX51, did you miss something?
+>
+> ARCH_MX51 is only introduced in the later patches that add the core i.MX5
+> code. Since TZIC is not inherently dependent on i.MX5 (it's merely the first
+> processor to use it), I thought of splitting it out as a separate patch.
+>
+> Does this break the sanctity of one self-contained change?
+>
 
-Sure, that would make it easier, right?
+This breaks git-bisect, we may want a buildable kernel every commit if possible.
 
-thanks,
+>> > +       help
+>> > +         This will be automatically selected for all processors
+>> > +         containing this interrupt controller.
+>> > +         Say N here only if you are really sure.
+>> > +
 
-greg k-h
+...
+
+>
+> Thanks for the review.
+>
+
+No problem, dude.
