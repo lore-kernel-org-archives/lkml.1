@@ -1,65 +1,106 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755797Ab0BCSUj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 13:20:39 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:28023 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754491Ab0BCSUh (ORCPT
+	id S1756045Ab0BCSVj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 13:21:39 -0500
+Received: from gv-out-0910.google.com ([216.239.58.189]:62392 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755451Ab0BCSVh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 13:20:37 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=mGiSyvKROi7SY1Nl1yA6PcLWGVXWlGdVyG13JVn2s+PzSKQlw240HRGv0jni8xfGC
-	kV/TtAVUrKd3LL6lFnXvw==
-Date: Wed, 3 Feb 2010 10:20:29 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Minchan Kim <minchan.kim@gmail.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>,
-       linux-mm <linux-mm@kvack.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH][mmotm-2010-02-01-16-25] Fix wrong accouting of anon and
- file
-In-Reply-To: <1265210739.1052.36.camel@barrios-desktop>
-Message-ID: <alpine.DEB.2.00.1002031007150.14088@chino.kir.corp.google.com>
-References: <1265210739.1052.36.camel@barrios-desktop>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Wed, 3 Feb 2010 13:21:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=esgl0YAp0A74qlAJQ56lL8zsplriHbi7JPYafMXzjbG+s66MYejo8wBkvZDdxIe8pa
+         wGWgMxOcrC8d1ionP6EQWw/4elwga3q4mAGqIZcnvlJcxAH68g6tk1APkFna+9Nk+TQw
+         tuLSIi74mehGb3xnISy/A2SbcjzVDFeOhRK7Y=
+Message-ID: <4B69BF05.6020802@gmail.com>
+Date: Wed, 03 Feb 2010 10:23:01 -0800
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091114 Lightning/1.0pre Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+To: Michael Breuer <mbreuer@majjas.com>
+CC: Stephen Hemminger <shemminger@linux-foundation.org>,
+       Jarek Poplawski <jarkao2@gmail.com>, David Miller <davem@davemloft.net>,
+       akpm@linux-foundation.org, flyboy@gmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Michael Chan <mchan@broadcom.com>, Don Fry <pcnet32@verizon.net>,
+       Francois Romieu <romieu@fr.zoreil.com>,
+       Matt Carlson <mcarlson@broadcom.com>
+Subject: Re: [PATCH] sky2:  receive dma mapping error handling
+References: <20100128223447.GC3109@del.dom.local> <4B621316.8070308@majjas.com> <20100128225621.GD3109@del.dom.local> <4B6216B9.1010802@majjas.com> <20100128153643.0fca3c51@nehalam> <4B645EF4.4050701@majjas.com> <20100131003449.GA11935@del.dom.local> <4B650D53.2010607@majjas.com> <4B65D0F9.2020602@majjas.com> <4B65FD12.7090101@majjas.com> <20100131221835.GA3317@del.dom.local> <20100201102018.7b597992@nehalam> <4B68F664.6050007@majjas.com> <4B69A897.7030408@majjas.com> <20100203085618.6662cc6f@nehalam> <4B69AD5C.5030601@majjas.com>
+In-Reply-To: <4B69AD5C.5030601@majjas.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 4 Feb 2010, Minchan Kim wrote:
+On 02/03/10 09:07, Michael Breuer wrote:
+> On 02/03/2010 11:56 AM, Stephen Hemminger wrote:
+>> On Wed, 03 Feb 2010 11:47:19 -0500
+>> Michael Breuer<mbreuer@majjas.com> wrote:
+>>
+>>> Tracked this down. The status being returned is 0x3c0080 - good flow
+>>> control packets. Nothing is actually being dropped (confirmed by packet
+>>> trace on switch compared with packet trace on server).
+>>>
+>>> I whipped up a trivial patch to not count these as dropped packets and
+>>> will post to netdev.
+>>>
+>>> I'm not really sure what the driver should be doing in this case, but
+>>> resubmit seems to work.
+>> Looks like a flow control negotiation issue. You probably turned off
+>> flow control on the Linux side, but the switch is still doing flow
+>> control.
+>>
+> According to the driver:
+> Feb 3 12:03:02 mail kernel: sky2 eth0: Link is up at 1000 Mbps, full
+> duplex, flow control both
+>
+> So if the rx flow control packet status is due to flow control being
+> disabled, then there's a different issue.
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at http://www.tux.org/lkml/
+>
 
-> Unfortunately, Kame said he doesn't support this series.
-> I am not sure we need this patch or revert patch.
-> 
 
-Nobody is currently using it and it adds an overhead just by doing the 
-extra branches, so I'd be inclined to drop mm-count-lowmem-rss.patch from 
--mm and then reintroduce it later if something needs it down the line.
+hmm.. after an hour or so I'm not seeing anything.
+from what I remember I turned the machine on in the
+hotel, then left the system there as I went out for a few hours
+(so maybe I need to wait).
 
-> Who need this?
-> 
-> David. Do you want to remain this patch in mmotm for your OOM patch 
-> in future?
-> 
+Anyways I did keep dmesg of when this occurred, basically
+the log was spammed with these:
 
-We'll need to do something for lowmem ooms so that we aren't needlessly 
-killing taks that don't consume it.  At this point, I think it's better to 
-just fail GFP_DMA allocations where direct reclaim (and, later, memory 
-compaction) has failed unless it is __GFP_NOFAIL, which none of them are.  
-So this would be a change to the page allocator to defer the oom killer 
-and return NULL on GFP_DMA instead of needlessly killing tasks.
+[  863.294057] sky2 eth0: rx error, status 0x580002 length 88
+[  865.646645] sky2 eth0: rx error, status 0x600002 length 96
+[ 1286.420471] sky2 eth0: rx error, status 0x600002 length 96
+[ 1286.499459] sky2 eth0: rx error, status 0x600002 length 96
+[ 1746.903826] sky2 eth0: rx error, status 0x600002 length 96
+[ 1754.263692] sky2 eth0: rx error, status 0x600002 length 96
+[ 1755.309360] sky2 eth0: rx error, status 0x680002 length 104
+[ 2213.256294] sky2 eth0: rx error, status 0x600002 length 96
+[ 2219.653342] sky2 eth0: rx error, status 0x580002 length 88
+[ 2221.673601] sky2 eth0: rx error, status 0x600002 length 96
+[ 2679.654655] sky2 eth0: rx error, status 0x680002 length 104
+[ 2692.315058] sky2 eth0: rx error, status 0x500002 length 80
+[ 2694.349612] sky2 eth0: rx error, status 0x580002 length 88
+[ 2703.676717] sky2 eth0: rx error, status 0x700002 length 112
+[ 2703.826375] sky2 eth0: rx error, status 0x600002 length 96
+[ 3187.504843] sky2 eth0: rx error, status 0x600002 length 96
+[ 3189.560744] sky2 eth0: rx error, status 0x600002 length 96
+[ 3672.475719] sky2 eth0: rx error, status 0x680002 length 104
+[ 3676.696959] sky2 eth0: rx error, status 0x680002 length 104
 
-> If anyone doesn't reply my question, Do we have to make revert patch?
-> 
+but while using the system with this, I didn't notice anything
+out of the ordinary.
+(if this fires off I can try a bisect for you guys, but right now
+since I'm not seeing anything, might be a different story);
 
-We won't need a revert patch, Andrew will be able to simply drop 
-mm-count-lowmem-rss.patch from -mm.
+Justin P. Mattock
