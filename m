@@ -1,78 +1,64 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757215Ab0BCEkB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 23:40:01 -0500
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:52509 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753725Ab0BCEj7 (ORCPT
+	id S1757200Ab0BCEnM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 23:43:12 -0500
+Received: from sr-smtp.usish.com ([210.5.144.203]:45133 "EHLO
+	sr-smtp.usish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753857Ab0BCEnH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 23:39:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=Z6+0N3X/bzbchpa7jIsc8YOI/6n+wx1qcQEmJfeVm05SZS8kf7d2lgESQJAzDdHn/+
-         w/wq7l5uCPvE/NZRjRglVxhNbTA8bH6v9OTbuSFxAhUPtcULHtNyeuDRFlkROVhtpBM9
-         bjFaA95ODrm1qFjEWs8AQZhh8vrTVtTIJLaJM=
-Subject: Re: [RFC Patch] net: reserve ports for applications using fixed
- port numbers
-From: Eric Dumazet <eric.dumazet@gmail.com>
-To: Amerigo Wang <amwang@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-rdma@vger.kernel.org,
-       netdev@vger.kernel.org, Neil Horman <nhorman@tuxdriver.com>,
-       linux-sctp@vger.kernel.org, David Miller <davem@davemloft.net>
-In-Reply-To: <20100203043332.3817.27932.sendpatchset@localhost.localdomain>
-References: <20100203043332.3817.27932.sendpatchset@localhost.localdomain>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 03 Feb 2010 05:39:53 +0100
-Message-ID: <1265171993.3274.3.camel@edumazet-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 8bit
+	Tue, 2 Feb 2010 23:43:07 -0500
+X-Greylist: delayed 871 seconds by postgrey-1.27 at vger.kernel.org; Tue, 02 Feb 2010 23:43:07 EST
+From: "jack wang" <jack_wang@usish.com>
+To: "'Daniel Mack'" <daniel@caiaq.de>, <linux-kernel@vger.kernel.org>
+Cc: "'Jiri Kosina'" <trivial@kernel.org>,
+       "'Junio C Hamano'" <gitster@pobox.com>,
+       "'James Bottomley'" <James.Bottomley@suse.de>
+References: <1265129307-18201-1-git-send-email-daniel@caiaq.de> <1265129307-18201-2-git-send-email-daniel@caiaq.de>
+Subject: RE: [PATCH 02/11] SCSI: pm8001: Fix spelling of 'unknown'
+Date: Wed, 3 Feb 2010 12:28:31 +0800
+Message-ID: <5914D9196FC04C52B6D073F9D4A09CD1@usish.com.cn>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 11
+In-Reply-To: <1265129307-18201-2-git-send-email-daniel@caiaq.de>
+Thread-Index: Acqkg1lWnEuIc8i8RKi0vEjen3QBsgABUWqw
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le mardi 02 février 2010 à 23:30 -0500, Amerigo Wang a écrit :
-> This patch introduces /proc/sys/net/ipv4/ip_local_reserved_ports,
-> it can be used like ip_local_port_range, but this is used to
-> reserve ports for third-party applications which use fixed
-> port numbers within ip_local_port_range.
-> 
-> This only affects the applications which call socket functions
-> like bind(2) with port number 0, to prevent the kernel getting the ports
-> within the specified range for them. For applications which use fixed
-> port number, it will have no effects.
-> 
-> Any comments are welcome.
-> 
-> Signed-off-by: WANG Cong <amwang@redhat.com>
-> Cc: David Miller <davem@davemloft.net>
-> Cc: Neil Horman <nhorman@tuxdriver.com>
-> Cc: Eric Dumazet <eric.dumazet@gmail.com>
 
->  		.procname	= "igmp_max_memberships",
-> diff --git a/net/ipv4/udp.c b/net/ipv4/udp.c
-> index f0126fd..83045ca 100644
-> --- a/net/ipv4/udp.c
-> +++ b/net/ipv4/udp.c
-> @@ -210,8 +210,11 @@ int udp_lib_get_port(struct sock *sk, unsigned short snum,
->  		inet_get_local_port_range(&low, &high);
->  		remaining = (high - low) + 1;
->  
-> +again:
->  		rand = net_random();
->  		first = (((u64)rand * remaining) >> 32) + low;
-> +		if (inet_is_reserved_local_port(first))
-> +			goto again;
->  		/*
->  		 * force rand to be an odd multiple of UDP_HTABLE_SIZE
->  		 */
+Signed-off-by: Daniel Mack <daniel@caiaq.de>
+Cc: Jiri Kosina <trivial@kernel.org>
+Cc: Junio C Hamano <gitster@pobox.com>
+Cc: Jack Wang <jack_wang@usish.com>
+Cc: James Bottomley <James.Bottomley@suse.de>
+---
+ drivers/scsi/pm8001/pm8001_hwi.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Unless I misread the patch, you are checking only the 'first' port that
-udp_lib_get_port() chose.
+diff --git a/drivers/scsi/pm8001/pm8001_hwi.c
+b/drivers/scsi/pm8001/pm8001_hwi.c
+index 9b44c6f..7985ae4 100644
+--- a/drivers/scsi/pm8001/pm8001_hwi.c
++++ b/drivers/scsi/pm8001/pm8001_hwi.c
+@@ -2924,7 +2924,7 @@ hw_event_sas_phy_up(struct pm8001_hba_info *pm8001_ha,
+void *piomb)
+ 		break;
+ 	default:
+ 		PM8001_MSG_DBG(pm8001_ha,
+-			pm8001_printk("unkown device type(%x)\n",
+deviceType));
++			pm8001_printk("unknown device type(%x)\n",
+deviceType));
+ 		break;
+ 	}
+ 	phy->phy_type |= PORT_TYPE_SAS;
+-- 
+1.6.3.3
 
-I would use inet_get_local_reserved_ports(&min_res, &max_res);
-and check every port that we chose in the loop to avoid it if necessary.
-
+[Jack] Sorry for the typo. Thanks Daniel.
+Acked-by: Jack Wang <jack_wang@usish.com>
 
