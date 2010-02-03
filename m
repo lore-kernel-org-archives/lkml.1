@@ -1,64 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756683Ab0BCW0n (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 17:26:43 -0500
-Received: from e38.co.us.ibm.com ([32.97.110.159]:38380 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756606Ab0BCW0m (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 17:26:42 -0500
-Subject: Re: [PATCH 2/5] pps: capture MONOTONIC_RAW timestamps as well
-From: john stultz <johnstul@us.ibm.com>
-To: Alexander Gordeev <lasaine@lvk.cs.msu.su>
-Cc: linux-kernel@vger.kernel.org, linuxpps@ml.enneenne.com,
-       "Nikita V. Youshchenko" <yoush@cs.msu.su>, stas@lvk.cs.msu.su,
-       Rodolfo Giometti <giometti@enneenne.com>,
-       Rodolfo Giometti <giometti@linux.it>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "William S. Brasher" <billb958@door.net>, Reg Clemens <clemens@dwf.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@linux.intel.com>, John Kacur <jkacur@redhat.com>
-In-Reply-To: <67507a9818993cfcf0139668c11569a6f3ff1981.1265228858.git.lasaine@lvk.cs.msu.su>
-References: <cover.1265228858.git.lasaine@lvk.cs.msu.su>
-	 <67507a9818993cfcf0139668c11569a6f3ff1981.1265228858.git.lasaine@lvk.cs.msu.su>
-Content-Type: text/plain
-Date: Wed, 03 Feb 2010 14:26:16 -0800
-Message-Id: <1265235976.3255.67.camel@work-vm>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	id S1756857Ab0BCWeK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 17:34:10 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:41168 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756539Ab0BCWeG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 17:34:06 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC][PATCH] PM: disable nonboot cpus before suspending devices
+Date: Wed, 3 Feb 2010 23:34:37 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.33-rc6-rjw; KDE/4.3.5; x86_64; ; )
+Cc: Sebastian Ott <sebott@linux.vnet.ibm.com>,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+References: <alpine.LFD.2.00.1001221841490.2266@localhost> <201002030244.23989.rjw@sisk.pl> <20100202174853.67eeccdd.akpm@linux-foundation.org>
+In-Reply-To: <20100202174853.67eeccdd.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <201002032334.37198.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-02-03 at 23:56 +0300, Alexander Gordeev wrote:
-> MONOTONIC_RAW clock timestamps are ideally suited for frequency
-> calculation and also fit well into the original NTP hardpps design. Now
-> phase and frequency can be adjusted separately: the former based on
-> REALTIME clock and the latter based on MONOTONIC_RAW clock.
-> A new function getnstime_raw_and_real is added to timekeeping subsystem
-> to capture both timestamps at the same time and atomically.
+On Wednesday 03 February 2010, Andrew Morton wrote:
+> On Wed, 3 Feb 2010 02:44:23 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> 
+> > +static inline gfp_t clear_gfp_allowed_mask(gfp_t mask)
+> > +{
+> > +	gfp_t ret = gfp_allowed_mask;
+> > +	gfp_allowed_mask &= ~mask;
+> > +	return ret;
+> > +}
+> 
+> Fair enuf.
+> 
+> Of course, this is all horridly racy/buggy without locking.  Would I be
+> correct in hoping that all the callers happen when the system is in
+> everyone-is-frozen mode?
 
-Hrmm. So while I understand the need for it, the
-getnstime_raw_and_real() makes me cringe a little. Part of the issue is
-that there are multiple CLOCK_IDs and the current interface allows for
-accesses to only one at a time. There's a similar hack in the hrtimer
-code to get the CLOCK_REALTIME and CLOCK_MONOTONIC values at the same
-time. Next I worry that folks will want a getnstime_mono_and_raw() or a
-getnstime_real_mono_and_raw(), then a getnstime_real_and_realcoarse(),
-etc.. 
+As far as I can tell, gfp_allowed_mask is only touched during init apart from
+this.
 
-I'm almost thinking the way to handle this would be a better
-abstraction, like a get_two_times(CLOCKID, timepsec*, CLOCKID,
-timespec*). But that might need some further discussion. Anyone else
-have thoughts here?
+> Perhaps we should add some documentation (or even an assertion) to
+> prevent someone from using these interfaces from within normal code.
 
-So yea not opposed to this patch, but maybe try to avoid exporting the
-symbol, so modules don't end up using it and we can change it fairly
-easily later.
+I thought about that, but didn't invent anything smart enough.
 
-thanks
--john
+Well, maybe except for a comment like "this must be called with pm_mutex held",
+because that's the only case when it would be really safe.
 
+Rafael
