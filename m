@@ -1,52 +1,90 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932682Ab0BCRWH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 12:22:07 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:37084 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932622Ab0BCRWB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 12:22:01 -0500
-X-Authority-Analysis: v=1.0 c=1 a=KJe5iWfhaysA:10 a=7U3hwN5JcxgA:10 a=_1jtTQaichL4LKB2glQA:9 a=fNPTFbr0wvi3pJWxjwuvrp2JIbIA:4
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Subject: Re: [PATCH 2/3] trace-cmd: fix printf compile warnings
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Darren Hart <dvhltc@us.ibm.com>
-Cc: John Kacur <jkacur@redhat.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <4B69AE88.7080705@us.ibm.com>
-References: <1265043026-24987-1-git-send-email-dvhltc@us.ibm.com>
-	 <1265043026-24987-3-git-send-email-dvhltc@us.ibm.com>
-	 <520f0cf11002030807t48678b82ye56624840e6f9ce3@mail.gmail.com>
-	 <1265214665.24386.3.camel@gandalf.stny.rr.com>
-	 <4B69AE88.7080705@us.ibm.com>
-Content-Type: text/plain; charset="ISO-8859-15"
-Organization: Kihon Technologies Inc.
-Date: Wed, 03 Feb 2010 12:21:56 -0500
-Message-ID: <1265217716.24386.9.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	id S932694Ab0BCRWM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 12:22:12 -0500
+Received: from hera.kernel.org ([140.211.167.34]:57991 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932622Ab0BCRWI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 12:22:08 -0500
+Date: Wed, 3 Feb 2010 17:21:34 GMT
+From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       a.p.zijlstra@chello.nl, ypolyans@princeton.edu, davem@davemloft.net,
+       yjwei@cn.fujitsu.com, tglx@linutronix.de
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, ypolyans@princeton.edu, davem@davemloft.net,
+       yjwei@cn.fujitsu.com, tglx@linutronix.de
+In-Reply-To: <1265120401.24455.306.camel@laptop>
+References: <1265120401.24455.306.camel@laptop>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:timers/urgent] hrtimer, softirq: Fix hrtimer->softirq trampoline
+Message-ID: <tip-b9c3032277f756e73f6c673419dc414155e04e46@git.kernel.org>
+Git-Commit-ID: b9c3032277f756e73f6c673419dc414155e04e46
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 03 Feb 2010 17:21:35 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-02-03 at 09:12 -0800, Darren Hart wrote:
+Commit-ID:  b9c3032277f756e73f6c673419dc414155e04e46
+Gitweb:     http://git.kernel.org/tip/b9c3032277f756e73f6c673419dc414155e04e46
+Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
+AuthorDate: Wed, 3 Feb 2010 18:08:52 +0100
+Committer:  Thomas Gleixner <tglx@linutronix.de>
+CommitDate: Wed, 3 Feb 2010 18:17:40 +0100
 
-> > Of the three patches, I think this is the only one that is correct ;-)
-> 
-> The other appear to depend on the guint arch specific implementation of 
-> the guint64 type, so the only way to fix it with a cast to ull - or to 
-> not use g types at all. Bleh.
+hrtimer, softirq: Fix hrtimer->softirq trampoline
 
-I'm fixing it up by typecasting it to (u64), and defining it.
+hrtimers callbacks are always done from hardirq context, either the
+jiffy tick interrupt or the hrtimer device interrupt.
 
-I probably should never have used guint64 but since that's the "glib"
-thing to do, and when in Rome do as the Romans do, even if the Romans
-are doing crap!
+[ there is currently one exception that can still call a hrtimer
+  callback from softirq, but even in that case this will still
+  work correctly. ]
 
--- Steve
+Reported-by: Wei Yongjun <yjwei@cn.fujitsu.com>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Yury Polyanskiy <ypolyans@princeton.edu>
+Tested-by: Wei Yongjun <yjwei@cn.fujitsu.com>
+Acked-by: David S. Miller <davem@davemloft.net>
+LKML-Reference: <1265120401.24455.306.camel@laptop>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+---
+ kernel/softirq.c |   15 +++++----------
+ 1 files changed, 5 insertions(+), 10 deletions(-)
 
-
-
+diff --git a/kernel/softirq.c b/kernel/softirq.c
+index a09502e..7c1a67e 100644
+--- a/kernel/softirq.c
++++ b/kernel/softirq.c
+@@ -500,22 +500,17 @@ EXPORT_SYMBOL(tasklet_kill);
+  */
+ 
+ /*
+- * The trampoline is called when the hrtimer expires. If this is
+- * called from the hrtimer interrupt then we schedule the tasklet as
+- * the timer callback function expects to run in softirq context. If
+- * it's called in softirq context anyway (i.e. high resolution timers
+- * disabled) then the hrtimer callback is called right away.
++ * The trampoline is called when the hrtimer expires. It schedules a tasklet
++ * to run __tasklet_hrtimer_trampoline() which in turn will call the intended
++ * hrtimer callback, but from softirq context.
+  */
+ static enum hrtimer_restart __hrtimer_tasklet_trampoline(struct hrtimer *timer)
+ {
+ 	struct tasklet_hrtimer *ttimer =
+ 		container_of(timer, struct tasklet_hrtimer, timer);
+ 
+-	if (hrtimer_is_hres_active(timer)) {
+-		tasklet_hi_schedule(&ttimer->tasklet);
+-		return HRTIMER_NORESTART;
+-	}
+-	return ttimer->function(timer);
++	tasklet_hi_schedule(&ttimer->tasklet);
++	return HRTIMER_NORESTART;
+ }
+ 
+ /*
