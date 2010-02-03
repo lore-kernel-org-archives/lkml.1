@@ -1,62 +1,63 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932796Ab0BCRrm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 12:47:42 -0500
-Received: from www84.your-server.de ([213.133.104.84]:57335 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932746Ab0BCRrj (ORCPT
+	id S932798Ab0BCRuP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 12:50:15 -0500
+Received: from tango.0pointer.de ([85.214.72.216]:37077 "EHLO
+	tango.0pointer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932782Ab0BCRuN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 12:47:39 -0500
-Subject: Merge of the enhanced reimplemention of the kfifo API
-From: Stefani Seibold <stefani@seibold.net>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arnd Bergmann <arnd@arndb.de>, Andi Kleen <andi@firstfloor.org>,
-       Amerigo Wang <xiyou.wangcong@gmail.com>, Joe Perches <joe@perches.com>,
-       Roger Quadros <quadros.roger@gmail.com>,
-       "Ira W. Snyder" <iws@ovro.caltech.edu>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Shargorodsky Atal <ext-atal.shargorodsky@nokia.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: text/plain; charset="ISO-8859-15"
-Date: Wed, 03 Feb 2010 18:46:58 +0100
-Message-ID: <1265219218.22285.21.camel@wall-e>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
+	Wed, 3 Feb 2010 12:50:13 -0500
+Date: Wed, 3 Feb 2010 18:49:47 +0100
+From: Lennart Poettering <mzxreary@0pointer.de>
+To: =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] exit: PR_SET_ANCHOR for marking processes as reapers
+ 	for child processes
+Message-ID: <20100203174947.GA13943@tango.0pointer.de>
+References: <20100202120457.GA19605@omega>
+ <20100203153101.GC4177@hack>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20100203153101.GC4177@hack>
+Organization: Red Hat, Inc.
+X-Campaign-1: ()  ASCII Ribbon Campaign
+X-Campaign-2: /  Against HTML Email & vCards - Against Microsoft Attachments
+User-Agent: Leviathan/19.8.0 [zh] (Cray 3; I; Solaris 4.711; Console)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, 03.02.10 23:31, Américo Wang (xiyou.wangcong@gmail.com) wrote:
 
--rc6 is out and i ask for merging the new macro based kfifo
-reimplementation into linux-next and/or 2.6.34. I got a lot of positive
-feedback but currently no ACK.
+> On Tue, Feb 02, 2010 at 01:04:57PM +0100, Lennart Poettering wrote:
+> >
+> >This patch adds a simple flag for each process that marks it as an
+> >"anchor" process for all its children and grandchildren. If a child of
+> >such an anchor dies all its children will not be reparented to init, but
+> >instead to this anchor, escaping this anchor process is not possible. A
+> >task with this flag set hence acts is little "sub-init".
+> 
+> This will break the applictions which using 'getppid() == 1' to check
+> if its real parent is dead or not...
 
-The reimplementation is 100% compatible to the previous one but more
-flexibel and highly optimized. The code is tested and works fine.
+Usage of the PR_SETANCHOR flag is optional for a process. It won't
+break anything unless enabled. So I don't really see a problem here.
 
-I am sorry about the size of the patch, but there is no way to split it
-down into separate patches because it is a complete different approach
-and a full replacement of the kfifo.c and kfifo.h files. 
+Of course, when this flag is used the behaviour is different from what
+traditional Unix says what happens with the children of a process when
+it dies. But uh, that's the whole point and that's why this flag is
+enabled optionally only.
 
-You can access the latest posting at
-http://patchwork.kernel.org/patch/75443/
+Also, on a side note: code that checks if its parent process died most
+likely should rewritten to use PR_DEATHSIG or something like that
+anyway, so that it is notified about the parent dying instead of
+polling for it manually.
 
-If i get an okay, i will fix the current users of the kfifo from using
-byte stream fifo to the desired data type. Maybe with the help of
-Greg ;-)
+Lennart
 
-I hate to write code for the trash bin, so please give it a try.
-
-Greetings,
-Stefani
-
-BTW: Zack Brown wrote a positive statement in the German Linux magazine.
-
-
+-- 
+Lennart Poettering                        Red Hat, Inc.
+lennart [at] poettering [dot] net
+http://0pointer.net/lennart/           GnuPG 0x1A015CC4
