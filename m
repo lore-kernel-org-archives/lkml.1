@@ -1,137 +1,82 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757153Ab0BCS6N (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 13:58:13 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:44140 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756284Ab0BCS6K (ORCPT
+	id S1757485Ab0BCTAJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 14:00:09 -0500
+Received: from mail-ew0-f228.google.com ([209.85.219.228]:39723 "EHLO
+	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756284Ab0BCTAE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 13:58:10 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=isZtIuJDqGJaSrLZcw6fyXz6Q9YhZrr/pGFhbFsfqh1XD8D6oje9CRTDd+t3Tmm+X
-	zq5ICy4HBwVHnOCemXmig==
-Date: Wed, 3 Feb 2010 10:58:01 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-cc: Rik van Riel <riel@redhat.com>, Lubos Lunak <l.lunak@suse.cz>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Nick Piggin <npiggin@suse.de>, Jiri Kosina <jkosina@suse.cz>
-Subject: Re: Improving OOM killer
-In-Reply-To: <20100203170127.GH19641@balbir.in.ibm.com>
-Message-ID: <alpine.DEB.2.00.1002031021190.14088@chino.kir.corp.google.com>
-References: <201002012302.37380.l.lunak@suse.cz> <4B698CEE.5020806@redhat.com> <20100203170127.GH19641@balbir.in.ibm.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Wed, 3 Feb 2010 14:00:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=wDz94Pe6PggApeNYtJaCJpLsrTdmQI74c24N50kWpnUAP/9a4rV6yvz4R3XXnDRpQi
+         KZU9Z4hOeYzOQNX6/EuIEovztpApFS4WXGPlvqulj9iGgBrzQ65t6Ds6V7xarnXHHccu
+         nuCVHyd+wQXGTDj9HbvWhQf4u6WGTuD1G9bxc=
+Message-ID: <4B69C7AA.7000904@tuffmail.co.uk>
+Date: Wed, 03 Feb 2010 18:59:54 +0000
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+CC: linux-input@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH] Input: serio - re-add thaw (and add freeze)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Feb 2010, Balbir Singh wrote:
+633aae2 "Input: i8042 - switch to using dev_pm_ops"
+removed handling for PMSG_THAW, causing obscure breakage.
 
-> > IIRC the child accumulating code was introduced to deal with
-> > malicious code (fork bombs), but it makes things worse for the
-> > (much more common) situation of a system without malicious
-> > code simply running out of memory due to being very busy.
-> >
-> 
-> For fork bombs, we could do a number of children number test and have
-> a threshold before we consider a process and its children for
-> badness().
-> 
+It can break if you press keys during hibernation,
+which causes subsequent keypresses to be lost -
+so you can't cancel s2disk by pressing backspace -
+and then just before system poweroff you get
+"psmouse.c: Failed to deactivate mouse".
 
-Yes, we could look for the number of children with seperate mm's and then 
-penalize those threads that have forked an egregious amount, say, 500 
-tasks.  I think we should check for this threshold within the badness() 
-heuristic to identify such forkbombs and not limit it only to certain 
-applications.  
+So let's add the thaw handler back.
 
-My rewrite for the badness() heuristic is centered on the idea that scores 
-should range from 0 to 1000, 0 meaning "never kill this task" and 1000 
-meaning "kill this task first."  The baseline for a thread, p, may be 
-something like this:
+Also set the freeze handler.  It looks like PMSG_FREEZE
+didn't do anything in the past, but I think that must
+have been an oversight.
 
-	unsigned int badness(struct task_struct *p,
-					unsigned long totalram)
-	{
-		struct task_struct *child;
-		struct mm_struct *mm;
-		int forkcount = 0;
-		long points;
+Signed-off-by: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+---
+ drivers/input/serio/i8042.c |    2 ++
+ drivers/input/serio/serio.c |    2 ++
+ 2 files changed, 4 insertions(+), 0 deletions(-)
 
-		task_lock(p);
-		mm = p->mm;
-		if (!mm) {
-			task_unlock(p);
-			return 0;
-		}
-		points = (get_mm_rss(mm) +
-				get_mm_counter(mm, MM_SWAPENTS)) * 1000 /
-				totalram;
-		task_unlock(p);
+diff --git a/drivers/input/serio/i8042.c b/drivers/input/serio/i8042.c
+index d84a36e..9599766 100644
+--- a/drivers/input/serio/i8042.c
++++ b/drivers/input/serio/i8042.c
+@@ -1164,6 +1164,8 @@ static int i8042_pm_restore(struct device *dev)
+ static const struct dev_pm_ops i8042_pm_ops = {
+ 	.suspend	= i8042_pm_reset,
+ 	.resume		= i8042_pm_restore,
++	.freeze		= i8042_pm_reset,
++	.thaw		= i8042_pm_restore,
+ 	.poweroff	= i8042_pm_reset,
+ 	.restore	= i8042_pm_restore,
+ };
+diff --git a/drivers/input/serio/serio.c b/drivers/input/serio/serio.c
+index e0f3018..2e8f544 100644
+--- a/drivers/input/serio/serio.c
++++ b/drivers/input/serio/serio.c
+@@ -949,6 +949,8 @@ static int serio_resume(struct device *dev)
+ static const struct dev_pm_ops serio_pm_ops = {
+ 	.suspend	= serio_suspend,
+ 	.resume		= serio_resume,
++	.freeze		= serio_suspend,
++	.thaw		= serio_resume,
+ 	.poweroff	= serio_suspend,
+ 	.restore	= serio_resume,
+ };
+-- 
+1.6.3.3
 
-		list_for_each_entry(child, &p->children, sibling)
-			/* No lock, child->mm won't be dereferenced */
-			if (child->mm && child->mm != mm)
-				forkcount++;
 
-		/* Forkbombs get penalized 10% of available RAM */
-		if (forkcount > 500)
-			points += 100;
 
-		...
-
-		/*
-		 * /proc/pid/oom_adj ranges from -1000 to +1000 to either
-		 * completely disable oom killing or always prefer it.
-		 */
-		points += p->signal->oom_adj;
-
-		if (points < 0)
-			return 0;
-		return (points <= 1000) ? points : 1000;
-	}
-
-	static struct task_struct *select_bad_process(...,
-						nodemask_t *nodemask)
-	{
-		struct task_struct *p;
-		unsigned long totalram = 0;
-		int nid;
-
-		for_each_node_mask(nid, nodemask)
-			totalram += NODE_DATA(nid)->node_present_pages;
-
-		for_each_process(p) {
-			unsigned int points;
-
-			...
-
-			if (!nodes_intersects(p->mems_allowed, nodemasks))
-				continue;
-
-			...
-			points = badness(p, totalram);
-			...
-		}
-		...
-	}
-
-In this example, /proc/pid/oom_adj now ranges from -1000 to +1000, with 
-OOM_DISABLE being -1000, to polarize tasks for oom killing or determine 
-when a task is leaking memory because it is using far more memory than it 
-should.  The nodemask passed from the page allocator should be intersected 
-with current->mems_allowed within the oom killer; userspace is then fully 
-aware of what value is an egregious amount of RAM for a task to consume, 
-including information it knows about the task's cpuset or mempolicy.  For 
-example, it would be very simple for a user to set an oom_adj of -500, 
-which means "we discount 50% of the task's allowed memory from being 
-considered in the heuristic" or +500, which means "we always allow all 
-other system/cpuset/mempolicy tasks to use at least 50% more allowed 
-memory than this one."
