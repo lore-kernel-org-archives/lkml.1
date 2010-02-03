@@ -1,57 +1,65 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932493Ab0BCQUU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 11:20:20 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:34683 "EHLO mx2.suse.de"
+	id S932520Ab0BCQVI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 11:21:08 -0500
+Received: from mail.issp.bas.bg ([195.96.236.10]:53933 "EHLO mail.issp.bas.bg"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756762Ab0BCQUP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 11:20:15 -0500
-Date: Wed, 3 Feb 2010 17:20:14 +0100
-From: Michal Marek <mmarek@suse.cz>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Anibal Monsalve Salazar <anibal@debian.org>
-Subject: [PATCH] kconfig: simplify LSMOD= handling
-Message-ID: <20100203162014.GA10956@sepie.suse.cz>
-References: <20100203154605.461025238@goodmis.org>
- <20100203154906.499020585@goodmis.org>
- <20100203160708.GA9035@sepie.suse.cz>
- <1265213553.24386.0.camel@gandalf.stny.rr.com>
+	id S932502Ab0BCQVF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 11:21:05 -0500
+From: Marin Mitov <mitov@issp.bas.bg>
+Organization: Institute of Solid State Physics
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: Re: [BUG] agpgart-amd64 not initialized in 2.6.33-rc5 if iommu=allowed in kernel command line
+Date: Wed, 3 Feb 2010 18:18:47 +0200
+User-Agent: KMail/1.11.4 (Linux/2.6.33-rc6; KDE/4.2.4; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, davej@redhat.com
+References: <20100125141006O.fujita.tomonori@lab.ntt.co.jp> <20100202202328O.fujita.tomonori@lab.ntt.co.jp> <20100203004905T.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20100203004905T.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1265213553.24386.0.camel@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Message-Id: <201002031818.47665.mitov@issp.bas.bg>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Michal Marek <mmarek@suse.cz>
----
- scripts/kconfig/Makefile |    9 ++++-----
- 1 files changed, 4 insertions(+), 5 deletions(-)
+On Tuesday 02 February 2010 05:49:20 pm FUJITA Tomonori wrote:
 
-diff --git a/scripts/kconfig/Makefile b/scripts/kconfig/Makefile
-index 85b9065..186c466 100644
---- a/scripts/kconfig/Makefile
-+++ b/scripts/kconfig/Makefile
-@@ -32,11 +32,10 @@ silentoldconfig: $(obj)/conf
- 
- # if no path is given, then use src directory to find file
- ifdef LSMOD
--LSMOD_F = $(shell if [ `basename $(LSMOD)` == $(LSMOD) ]; then \
--		echo $(objtree)/$(LSMOD);			\
--	else							\
--		echo $(LSMOD);					\
--	fi)
-+LSMOD_F := $(LSMOD)
-+ifeq ($(findstring /,$(LSMOD)),)
-+  LSMOD_F := $(objtree)/$(LSMOD)
-+endif
- endif
- 
- localmodconfig: $(obj)/streamline_config.pl $(obj)/conf
--- 
-1.6.5.3
+> Duh, sorry, please this instead:
 
+Applies cleanly to 2.6.33-rc6-git3. Works for me.
+Details - see my previous post..
+
+Thanks.
+
+Marin Mitov
+
+> 
+> diff --git a/drivers/char/agp/amd64-agp.c b/drivers/char/agp/amd64-agp.c
+> index 34cf04e..fd50ead 100644
+> --- a/drivers/char/agp/amd64-agp.c
+> +++ b/drivers/char/agp/amd64-agp.c
+> @@ -767,16 +767,19 @@ int __init agp_amd64_init(void)
+>  
+>  static int __init agp_amd64_mod_init(void)
+>  {
+> +#ifndef MODULE
+>  	if (gart_iommu_aperture)
+>  		return agp_bridges_found ? 0 : -ENODEV;
+> -
+> +#endif
+>  	return agp_amd64_init();
+>  }
+>  
+>  static void __exit agp_amd64_cleanup(void)
+>  {
+> +#ifndef MODULE
+>  	if (gart_iommu_aperture)
+>  		return;
+> +#endif
+>  	if (aperture_resource)
+>  		release_resource(aperture_resource);
+>  	pci_unregister_driver(&agp_amd64_pci_driver);
+> 
