@@ -1,58 +1,127 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753328Ab0BCH14 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 02:27:56 -0500
-Received: from mail-ew0-f228.google.com ([209.85.219.228]:52696 "EHLO
-	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751412Ab0BCH1y (ORCPT
+	id S1754858Ab0BCHuZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 02:50:25 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:45167 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750998Ab0BCHuX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 02:27:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=KGwuT+RJQx6cGlHAgbFyR/cVGbSLHEq2u04P7TdCUrpiPBpTOt0eJklf7uTSsqvW2a
-         rJEdk7ChJc63l0L6cub1JhJngyo2sbC95fD3jgweOPKWFQODqUxDOL9SzECbUuWdADVV
-         xp7QIPq9RbJ4M40LGyj8IWmDB0nDRElICqS/Y=
-Date: Wed, 3 Feb 2010 08:27:47 +0100
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: Joe Perches <joe@perches.com>
-Cc: Daniel Mack <daniel@caiaq.de>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] scripts/get_maintainer.pl: add ability to read from
- STDIN
-Message-ID: <20100203072747.GB5428@liondog.tnic>
-Mail-Followup-To: Borislav Petkov <petkovbb@googlemail.com>,
-	Joe Perches <joe@perches.com>, Daniel Mack <daniel@caiaq.de>,
-	linux-kernel@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>
-References: <1265135412-18391-1-git-send-email-daniel@caiaq.de>
- <1265175347.18067.5.camel@Joe-Laptop.home>
+	Wed, 3 Feb 2010 02:50:23 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Lubos Lunak <l.lunak@suse.cz>
+Subject: Re: Improving OOM killer
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       David Rientjes <rientjes@google.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, Nick Piggin <npiggin@suse.de>,
+       Jiri Kosina <jkosina@suse.cz>
+In-Reply-To: <201002012302.37380.l.lunak@suse.cz>
+References: <201002012302.37380.l.lunak@suse.cz>
+Message-Id: <20100203164612.D3AC.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <1265175347.18067.5.camel@Joe-Laptop.home>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Wed,  3 Feb 2010 16:50:20 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 02, 2010 at 09:35:47PM -0800, Joe Perches wrote:
-> On Wed, 2010-02-03 at 02:30 +0800, Daniel Mack wrote:
-> > This is useful for finding people for the Cc: list without dumping the
-> > patch to a file before.
+> =====
+> --- linux-2.6.31/mm/oom_kill.c.sav      2010-02-01 22:00:41.614838540 +0100
+> +++ linux-2.6.31/mm/oom_kill.c  2010-02-01 22:01:08.773757932 +0100
+> @@ -69,7 +69,7 @@ unsigned long badness(struct task_struct
+>         /*
+>          * The memory size of the process is the basis for the badness.
+>          */
+> -       points = mm->total_vm;
+> +       points = get_mm_rss(mm);
 > 
-> Hi Daniel.
+>         /*
+>          * After this unlock we can no longer dereference local variable `mm'
+> @@ -83,21 +83,6 @@ unsigned long badness(struct task_struct
+>                 return ULONG_MAX;
 > 
-> I think it's better if the dash isn't required.
-> I like this patch which is based on your idea.
+>         /*
+> -        * Processes which fork a lot of child processes are likely
+> -        * a good choice. We add half the vmsize of the children if they
+> -        * have an own mm. This prevents forking servers to flood the
+> -        * machine with an endless amount of children. In case a single
+> -        * child is eating the vast majority of memory, adding only half
+> -        * to the parents will make the child our kill candidate of choice.
+> -        */
+> -       list_for_each_entry(child, &p->children, sibling) {
+> -               task_lock(child);
+> -               if (child->mm != mm && child->mm)
+> -                       points += child->mm->total_vm/2 + 1;
+> -               task_unlock(child);
+> -       }
+> -
+> -       /*
+>          * CPU time is in tens of seconds and run time is in thousands
+>           * of seconds. There is no particular reason for this other than
+>           * that it turned out to work very well in practice.
+> =====
 > 
-> http://patchwork.kernel.org/patch/69650/
+>  In other words, use VmRSS for measuring memory usage instead of VmSize, and 
+> remove child accumulating.
+> 
+>  I hope the above is good enough reason for the first change. VmSize includes 
+> things like read-only mappings, memory mappings that is actually unused, 
+> mappings backed by a file, mappings from video drivers, and so on. VmRSS is 
+> actual real memory used, which is what mostly matters here. While it may not 
+> be perfect, it is certainly an improvement.
+> 
+>  The second change should be done on the basis that it does more harm than 
+> good. In this specific case, it does not help to identify the source of the 
+> problem, and it incorrectly identifies kdeinit as the problem solely on the 
+> basis that it spawned many other processes. I think it's already quite hinted 
+> that this is a problem by the fact that you had to add a special protection 
+> for init - any session manager, process launcher or even xterm used for 
+> launching apps is yet another init.
+> 
+>  I also have problems finding a case where the child accounting would actually 
+> help. I mean, in practice, I can certainly come up with something in theory, 
+> and this looks to me like a solution to a very synthesized problem. In which 
+> realistic case will one process launch a limited number of children, where 
+> all of them will consume memory, but just killing the children one by one 
+> won't avoid the problem reasonably? This is unlikely to avoid a forkbomb, as 
+> in that case the number of children will be the problem. It is not necessary 
+> for just one children misbehaving and being restarted, nor will it work 
+> there. So what is that supposed to fix, and is it more likely than the case 
+> of a process launching several unrelated children?
+> 
+>  If the children accounting is supposed to handle cases like forked children 
+> of Apache, then I suggest it is adjusted only to count children that have 
+> been forked from the parent but there has been no exec(). I'm afraid I don't 
+> know how to detect that.
+> 
+> 
+>  When running a kernel with these changes applied, I can safely do the 
+> above-described case of running parallel doc generation in KDE. No clearly 
+> innocent process is selected for killing, the first choice is always an 
+> offender.
+> 
+>  Moreover, the remedy is almost instant, there is only a fraction of second of 
+> when the machine is overloaded by the I/O of swapping pages in and out (I do 
+> not use swap, but there is a large amount of memory used by read-only 
+> mappings of binaries, libraries or various other files that is in the 
+> original case rendering the machine unresponsive - I assume this is because 
+> the kernel tries to kill an innocent process, but the offenders immediatelly 
+> consume anything that is freed, requiring even memory used by code that is to 
+> be executed to be swapped in from files again).
+> 
+>  I consider the patches to be definite improvements, so if they are ok, I will 
+> format them as necessary. Now, what is the catch?
 
-Yeah, about that, when are you going to send it upstream? Or do you want
-me to do that?
+Personally, I think your use case represent to typical desktop and Linux
+have to works fine on typical desktop use-case. /proc/pid/oom_adj never fit
+desktop use-case. In past discussion, I'v agreed with much people. but I haven't
+reach to agree with David Rientjes about this topic.
 
--- 
-Regards/Gruss,
-    Boris.
+If you want to merge this patch, you need persuade him. I can't help you. sorry.
+
+
+
+
