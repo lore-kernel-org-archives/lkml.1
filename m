@@ -1,76 +1,95 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755091Ab0BCOhN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 09:37:13 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:59546 "EHLO mx2.suse.de"
+	id S1755612Ab0BCOjN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 09:39:13 -0500
+Received: from cantor.suse.de ([195.135.220.2]:36121 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754620Ab0BCOhK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 09:37:10 -0500
-Date: Wed, 3 Feb 2010 15:37:06 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Marcel Holtmann <marcel@holtmann.org>
-Cc: Bastien Nocera <hadess@hadess.net>, Michael Poole <mdpoole@troilus.org>,
-       "Gunn, Brian" <bgunn@solekai.com>, Ping <pinglinux@gmail.com>,
-       linux-kernel@vger.kernel.org,
-       BlueZ development <linux-bluetooth@vger.kernel.org>
-Subject: Re: [PATCH 1/3] HID: make raw reports possible for both feature and
- output reports
-In-Reply-To: <1265206478.31341.111.camel@localhost.localdomain>
-Message-ID: <alpine.LNX.2.00.1002031536220.15395@pobox.suse.cz>
-References: <alpine.LNX.2.00.1001291515560.356@pobox.suse.cz>  <1264783166.29532.5302.camel@localhost.localdomain>  <87iqakifm8.fsf@troilus.org>  <1264860663.29532.7887.camel@localhost.localdomain>  <87bpg7glf7.fsf@troilus.org>  <1265190440.32444.8417.camel@localhost.localdomain>
-  <alpine.LNX.2.00.1002031202040.15395@pobox.suse.cz>  <alpine.LNX.2.00.1002031343500.15395@pobox.suse.cz>  <alpine.LNX.2.00.1002031348450.15395@pobox.suse.cz> <1265206478.31341.111.camel@localhost.localdomain>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	id S1754484Ab0BCOjI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 09:39:08 -0500
+Date: Wed, 3 Feb 2010 06:22:18 -0800
+From: Greg KH <gregkh@suse.de>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       LKML <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>,
+       Serge Hallyn <serue@us.ibm.com>
+Subject: Re: sysfs_chmod_file() broken in 2.6.33-rc4-git6
+Message-ID: <20100203142218.GA27676@suse.de>
+References: <20100120131602.12aa48f7@hyperion.delvare> <m1ocko6fkx.fsf@fess.ebiederm.org> <20100120160008.7d59688b@hyperion.delvare> <20100122041913.GC4302@suse.de> <20100203091138.1ababf5e@hyperion.delvare>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100203091138.1ababf5e@hyperion.delvare>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Feb 2010, Marcel Holtmann wrote:
-
-> > In commit 2da31939a42 ("Bluetooth: Implement raw output support for HIDP
-> > layer"), support for Bluetooth hid_output_raw_report was added, but it
-> > pushes the data to the intr socket instead of the ctrl one. This has been
-> > fixed by 6bf8268f9a91f1 ("Bluetooth: Use the control channel for raw HID reports")
+On Wed, Feb 03, 2010 at 09:11:38AM +0100, Jean Delvare wrote:
+> On Thu, 21 Jan 2010 20:19:13 -0800, Greg KH wrote:
+> > On Wed, Jan 20, 2010 at 04:00:08PM +0100, Jean Delvare wrote:
+> > > On Wed, 20 Jan 2010 06:01:02 -0800, Eric W. Biederman wrote:
+> > > > Does this fix your issue?
+> > > > 
+> > > > Eric
+> > > > 
+> > > > 
+> > > > diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
+> > > > index 220b758..6a06a1d 100644
+> > > > --- a/fs/sysfs/inode.c
+> > > > +++ b/fs/sysfs/inode.c
+> > > > @@ -81,24 +81,23 @@ int sysfs_sd_setattr(struct sysfs_dirent *sd, struct iattr * iattr)
+> > > >  		if (!sd_attrs)
+> > > >  			return -ENOMEM;
+> > > >  		sd->s_iattr = sd_attrs;
+> > > > -	} else {
+> > > > -		/* attributes were changed at least once in past */
+> > > > -		iattrs = &sd_attrs->ia_iattr;
+> > > > -
+> > > > -		if (ia_valid & ATTR_UID)
+> > > > -			iattrs->ia_uid = iattr->ia_uid;
+> > > > -		if (ia_valid & ATTR_GID)
+> > > > -			iattrs->ia_gid = iattr->ia_gid;
+> > > > -		if (ia_valid & ATTR_ATIME)
+> > > > -			iattrs->ia_atime = iattr->ia_atime;
+> > > > -		if (ia_valid & ATTR_MTIME)
+> > > > -			iattrs->ia_mtime = iattr->ia_mtime;
+> > > > -		if (ia_valid & ATTR_CTIME)
+> > > > -			iattrs->ia_ctime = iattr->ia_ctime;
+> > > > -		if (ia_valid & ATTR_MODE) {
+> > > > -			umode_t mode = iattr->ia_mode;
+> > > > -			iattrs->ia_mode = sd->s_mode = mode;
+> > > > -		}
+> > > > +	}
+> > > > +	/* attributes were changed at least once in past */
+> > > > +	iattrs = &sd_attrs->ia_iattr;
+> > > > +
+> > > > +	if (ia_valid & ATTR_UID)
+> > > > +		iattrs->ia_uid = iattr->ia_uid;
+> > > > +	if (ia_valid & ATTR_GID)
+> > > > +		iattrs->ia_gid = iattr->ia_gid;
+> > > > +	if (ia_valid & ATTR_ATIME)
+> > > > +		iattrs->ia_atime = iattr->ia_atime;
+> > > > +	if (ia_valid & ATTR_MTIME)
+> > > > +		iattrs->ia_mtime = iattr->ia_mtime;
+> > > > +	if (ia_valid & ATTR_CTIME)
+> > > > +		iattrs->ia_ctime = iattr->ia_ctime;
+> > > > +	if (ia_valid & ATTR_MODE) {
+> > > > +		umode_t mode = iattr->ia_mode;
+> > > > +		iattrs->ia_mode = sd->s_mode = mode;
+> > > >  	}
+> > > >  	return 0;
+> > > >  }
+> > > 
+> > > Yes, this fixes my problem. Thanks for the fast fix!
 > > 
-> > Still, it is necessary to distinguish whether the report in question should be
-> > either FEATURE or OUTPUT. For this, we have to extend the generic HID API,
-> > so that hid_output_raw_report() callback provides means to specify this
-> > value so that it can be passed down to lower level hardware drivers (currently
-> > Bluetooth and USB).
-> > 
-> > Based on original patch by Bastien Nocera <hadess@hadess.net>
-> > Signed-off-by: Jiri Kosina <jkosina@suse.cz>
-> > ---
-> >  drivers/hid/hidraw.c          |    2 +-
-> >  drivers/hid/usbhid/hid-core.c |    5 +++--
-> >  include/linux/hid.h           |    2 +-
-> >  net/bluetooth/hidp/core.c     |   13 ++++++++++---
-> >  4 files changed, 15 insertions(+), 7 deletions(-)
+> > Great, Eric, care to resend this so that I can submit it for inclusion?
 > 
-> Acked-by: Marcel Holtmann <marcel@holtmann.org>
->  
-> > -static int hidp_output_raw_report(struct hid_device *hid, unsigned char *data, size_t count)
-> > +static int hidp_output_raw_report(struct hid_device *hid, unsigned char *data, size_t count,
-> > +		unsigned char report_type)
-> >  {
-> > -	if (hidp_send_ctrl_message(hid->driver_data,
-> > -			HIDP_TRANS_SET_REPORT | HIDP_DATA_RTYPE_FEATURE,
-> > +	if (report_type == HID_FEATURE_REPORT)
-> > +		report_type = HIDP_TRANS_SET_REPORT | HIDP_DATA_RTYPE_FEATURE;
-> > +	else if (report_type == HID_OUTPUT_REPORT)
-> > +		report_type = HIDP_TRANS_DATA | HIDP_DATA_RTYPE_OUPUT;
-> > +	else
-> > +		return -EINVAL;
-> 
-> If you wanna be a little bit more readable, then using a switch
-> statement helps instead of else if. Just my 2 cents.
+> Ping Eric, the patch is still not in Linus' tree.
 
-I have converted this to switch, added your Acked-by and queued in my 
-tree.
+Nor mine :)
 
-Thanks Marcel.
+Eric, care to send it to me?
 
--- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+thanks,
+
+greg k-h
