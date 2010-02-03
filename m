@@ -1,58 +1,189 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757923Ab0BCXdx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 18:33:53 -0500
-Received: from acsinet11.oracle.com ([141.146.126.233]:28944 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757881Ab0BCXdu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 18:33:50 -0500
-Date: Wed, 3 Feb 2010 15:31:07 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>, akpm <akpm@linux-foundation.org>,
-       Dan Williams <dcbw@redhat.com>, Andrey Yurovsky <andrey@cozybit.com>,
-       Colin McCabe <colin@cozybit.com>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       linux-wireless@vger.kernel.org
-Subject: [PATCH -next] libertas/if_spi: needs linux/semaphore.h
-Message-Id: <20100203153107.28184ef0.randy.dunlap@oracle.com>
-In-Reply-To: <20100203172625.c9340392.sfr@canb.auug.org.au>
-References: <20100203172625.c9340392.sfr@canb.auug.org.au>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1757905Ab0BCXhi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 18:37:38 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:46453 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757724Ab0BCXhg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 18:37:36 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt354.oracle.com [141.146.40.154]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090208.4B6A07A4.014B:SCFMA4539814,ss=1,fgs=0
+From: Roland McGrath <roland@redhat.com>
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+X-Fcc: ~/Mail/linus
+Cc: Oleg Nesterov <oleg@redhat.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Lu, Hongjiu" <hongjiu.lu@intel.com>,
+       "Lachner, Peter" <peter.lachner@intel.com>
+Subject: Re: [patch] x86: ptrace and core-dump extensions for xstate
+In-Reply-To: Suresh Siddha's message of  Monday, 1 February 2010 18:00:25 -0800 <1265076025.2802.194.camel@sbs-t61.sc.intel.com>
+References: <1265076025.2802.194.camel@sbs-t61.sc.intel.com>
+X-Windows: it could happen to you.
+Message-Id: <20100203230817.E6529AA@magilla.sf.frob.com>
+Date: Wed,  3 Feb 2010 15:08:17 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+Please also CC Oleg on things related to user_regset and/or ptrace,
+as per MAINTAINERS.
 
-libertas/if_spi.c needs to #include linux/semaphore.h to fix build errors:
+Please make this two patches.  The first one should add the regset, which
+implicitly adds it to core dumps, and makes fixed the note layout aspect of
+the permanent userland ABI.  The second one should add the new ptrace
+requests, which is a further addition to the userland ABI.
 
-drivers/net/wireless/libertas/if_spi.c:59: error: field 'spi_ready' has incomplete type
-drivers/net/wireless/libertas/if_spi.c:60: error: field 'spi_thread_terminated' has incomplete type
-drivers/net/wireless/libertas/if_spi.c:785: error: implicit declaration of function 'down_interruptible'
-drivers/net/wireless/libertas/if_spi.c:787: error: implicit declaration of function 'up'
-drivers/net/wireless/libertas/if_spi.c:834: error: implicit declaration of function 'down'
-drivers/net/wireless/libertas/if_spi.c:943: error: implicit declaration of function 'sema_init'
+> For more information on how to use this API by users like debuggers and core
+> dump, please refer to comments in arch/x86/include/asm/ptrace-abi.h
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- drivers/net/wireless/libertas/if_spi.c |    1 +
- 1 file changed, 1 insertion(+)
+There are some obvious typos in that comment.  Please fix those up.
 
---- linux-next-20100203.orig/drivers/net/wireless/libertas/if_spi.c
-+++ linux-next-20100203/drivers/net/wireless/libertas/if_spi.c
-@@ -23,6 +23,7 @@
- #include <linux/kthread.h>
- #include <linux/list.h>
- #include <linux/netdevice.h>
-+#include <linux/semaphore.h>
- #include <linux/spi/libertas_spi.h>
- #include <linux/spi/spi.h>
- 
+> +int xstateregs_active(struct task_struct *target,
+> +		      const struct user_regset *regset)
+> +{
+> +	return (cpu_has_xsave && tsk_used_math(target)) ? xstate_size : 0;
+> +}
+
+The return value here is "n" not "n * size", so xstate_size is wrong.  You
+can just use regset->n instead.  I'll further note that when !cpu_has_xsave,
+regset->n will be zero.  So all you really need is:
+
+	return tsk_used_math(target) ? regset->n : 0;
+
+i.e., the same as fpregs_active.  So I would just use:
+
+	#define xstateregs_active	fpregs_active
+
+with a comment explaining that they are same and why.
+
+> +	/*
+> +	 * First copy the fxsave bytes 0..463
+> +	 */
+> +	ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
+> +				  &target->thread.xstate->xsave, 0,
+> +				  (sizeof(struct i387_fxsave_struct) -
+> +				   sizeof(xstate_fx_sw_bytes)));
+> +	/*
+> +	 * Copy the 48bytes defined by software
+> +	 */
+> +	ret |= user_regset_copyout(&pos, &count, &kbuf, &ubuf,
+> +				   xstate_fx_sw_bytes,
+> +				   (sizeof(struct i387_fxsave_struct) -
+> +				    sizeof(xstate_fx_sw_bytes)),
+> +				   sizeof(struct i387_fxsave_struct));
+> +	/*
+> +	 * Copy the rest of xstate memory layout
+> +	 */
+> +	ret |= user_regset_copyout(&pos, &count, &kbuf, &ubuf,
+> +				   &target->thread.xstate->xsave.xsave_hdr,
+> +				   sizeof(struct i387_fxsave_struct), -1);
+
+This is wrong for the error cases.  user_regset_copyout returns an error
+code or 0, so "|=" is a strange thing to with its return value.  In fact,
+it only ever returns 0 or -EFAULT, so |= will produce the value you want.
+But | is a pretty strange thing to do with two error codes.
+
+It's problematically wrong for a different reason.  In the error case,
+user_regset_copyout returns without updating pos, count, and ubuf (i.e.
+it returns having done nothing when returning an error, which is a pretty
+normal convention).  So, if the first call fails then the second call will
+have pos < start_pos and hit the BUG_ON.  IOW, be sure to test your new
+ptrace call with an invalid userland pointer (e.g. NULL) passed in.
+
+In short, replace "ret |=" with "if (likely(!ret))\n\tret = ".
+
+
+This is up to you, but personally I would define something akin to:
+
+	struct xstate_info {
+		union {
+			struct i387_fxsave_struct fxsave;
+			struct {
+				u64 i387[58];
+				u64 xstate_fx_sw[XSTATE_FX_SW_WORDS];
+			};
+		};
+		struct xsave_hdr_struct xsave_hdr;
+		u64 xsave_state[0];
+	};
+
+and then use offsetof rather than manual arithmetic in those
+user_regset_copyout calls.  IMHO it would be better to have this in
+ptrace-abi.h along with some macros for what the fx_sw indices are (I guess
+only 0 is defined now, but whatever) rather than relegate that info to
+magic numbers in a comment and userland code doing manual arithmetic.
+But even if you just put it locally in ptrace.c, it makes the ptrace
+code less prone to possible arithmetic typos.
+
+
+> +	case PTRACE_GETXSTATEREGS:	/* Get the child extended state. */
+> +		return copy_regset_to_user(child,
+> +					   task_user_regset_view(current),
+> +					   REGSET_XSTATE,
+> +					   0, xstate_size,
+> +					   datap);
+> +
+> +	case PTRACE_SETXSTATEREGS:	/* Set the child extended state. */
+> +		return copy_regset_from_user(child,
+> +					     task_user_regset_view(current),
+> +					     REGSET_XSTATE,
+> +					     0, xstate_size,
+> +					     datap);
+
+I think this is a poor choice of interface for this.  The other existing
+PTRACE_GET*REGS calls use a fixed-size and fixed-layout block that is a
+known constant in the userland ABI.  Here, userland has no way to know
+xstate_size, so you are accessing a chunk of user memory where userland
+doesn't really know how much you are going to access.
+
+AFAICT from skimming the Intel manuals, there is no specified upper bound
+on how big the xsave size might grow in future processors.  I would think
+that it might be limited to a page, since there is no way to indicate a
+partial copy to restart after a page fault.  So for unpinned access (such
+as in user mode, or the user memory access in the signal frame setup), in
+full-thrashing situations an xsave spanning multiple pages might thrash
+totally and never make progress.  OTOH, the manual does not say that the
+buffer can't span two pages today, just that it has to be 64-byte aligned.
+So perhaps we already have that issue (for signal frame setup or for direct
+user-space uses of xsave/xrstor) and it's just not really an issue that
+matters (thrashing is thrashing--it's already pathological, so who cares if
+it's literal livelock or not).  The upshot being, I don't think there is an
+obvious upper bound that userland can presume statically here.
+
+AFAICT, the only way for userland to guess xstate_size is to use cpuid
+itself.  Even if that is actually reliable, or even if the kernel gave
+userland some other means to know the kernel's xstate_size value, IMHO that
+is a pretty dubious and error-prone way to construct the ABI.  Usually when
+userland supplies a buffer whose size is not a permanent constant of the
+ABI, userland says how big a buffer it's passing in.
+
+The most obvious change would be just s/xstate_size/MIN(addr, xstate_size)/.
+i.e. userland passes in the maximum size it wants in the other argument.
+
+But IMHO this is a fine opportunity not to add another one-off request for
+a particular regset type, and then never add another one again.  Instead,
+we can add a general-purpose request to handle any regset based on what is
+already part of the userland ABI: the NT_* codes and the regset layouts
+they imply on each machine.
+
+e.g.
+	struct iovec iov = { mybuffer, mylength };
+	ret = ptrace(PTRACE_GETREGSET, NT_X86_XSTATE, &iov);
+
+or something along those lines.  We could implement a generic
+PTRACE_GETREGSET and PTRACE_SETREGSET in {,compat_}ptrace_request() on
+CONFIG_HAVE_ARCH_TRACEHOOK machines.  
+
+Then all any arch ever has to do in future is just define a new user_regset
+in its user_regset_view for a new thing.
+
+I'll make Oleg implement it if you don't do it yourself ;-).  We can all
+work out together exactly what the interface should be, I don't have any
+special fixed ideas.
+
+
+Thanks,
+Roland
