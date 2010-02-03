@@ -1,75 +1,278 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754009Ab0BCKiG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 05:38:06 -0500
-Received: from mailout4.w1.samsung.com ([210.118.77.14]:24190 "EHLO
-	mailout4.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751838Ab0BCKiD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 05:38:03 -0500
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: TEXT/PLAIN
-Date: Wed, 03 Feb 2010 11:37:17 +0100
-From: Michal Nazarewicz <m.nazarewicz@samsung.com>
-Subject: [PATCH] USB: g_mass_storage: min(...) warning fixed
-In-reply-to: <20100203165726.e258ad58.sfr@canb.auug.org.au>
-To: Greg KH <greg@kroah.com>, Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>,
-       Michal Nazarewicz <m.nazarewicz@samsung.com>,
-       Kyungmin Park <kyungmin.park@samsung.com>
-Message-id: <1265193437-25663-1-git-send-email-m.nazarewicz@samsung.com>
-X-Mailer: git-send-email 1.6.5
-References: <20100203165726.e258ad58.sfr@canb.auug.org.au>
+	id S1754290Ab0BCKjw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 05:39:52 -0500
+Received: from cantor.suse.de ([195.135.220.2]:56230 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751838Ab0BCKjt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 05:39:49 -0500
+Date: Wed, 3 Feb 2010 11:39:47 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Stephen Rothwell <sfr@canb.auug.org.au>,
+       David Miller <davem@davemloft.net>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>, netdev@vger.kernel.org,
+       Daniel Mack <daniel@caiaq.de>
+Subject: Re: linux-next: manual merge of the trivial tree with the net tree
+In-Reply-To: <20100203133011.75aef1d3.sfr@canb.auug.org.au>
+Message-ID: <alpine.LNX.2.00.1002031136560.15395@pobox.suse.cz>
+References: <20100203133011.75aef1d3.sfr@canb.auug.org.au>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michal Nazarewicz <m.nazarewicz@samsung.com>
+On Wed, 3 Feb 2010, Stephen Rothwell wrote:
 
-This patch fixes warning caused by calling min() macro
-with arguments of different types:
-
-  drivers/usb/gadget/f_mass_storage.c:623: warning: \
-  comparison of distinct pointer types lacks a cast
-
-This fixes commit a736e2758c6390b854219e6f6bb4f9a0e3be66df.
-
-Signed-off-by: Michal Nazarewicz <m.nazarewicz@samsung.com>
-Cc: Marek Szyprowski <m.nazarewicz@samsung.com>
-Cc: Kyungmin Park <kyungmin.park@samsung.com>
----
- drivers/usb/gadget/f_mass_storage.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-Hello,
-
-On Wed, 03 Feb 2010 06:57:26 +0100, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-
-> today's linux-next build produced these warnings:
+> Today's linux-next merge of the trivial tree got a conflict in
+> drivers/net/ppp_generic.c between commit
+> fa44a73cc766c7f3bac71a66d564e0049b800325 ("ppp_generic.c severly
+> whitespace damanged by 9c705260feea6ae329bc6b6d5f6d2ef0227eda0a") from
+> the net tree and commit 09e1aa00f106a476f5b90d94fc0139544bbded75
+> ("tree-wide: fix 'lenght' typo in comments and code") from the trivial
+> tree.
 > 
-> drivers/usb/gadget/f_mass_storage.c: In function 'fsg_setup':
-> drivers/usb/gadget/f_mass_storage.c:623: warning: comparison of distinct pointer types lacks a cast
-> 
-> Introduced by commit a736e2758c6390b854219e6f6bb4f9a0e3be66df ("USB:
-> g_mass_storage: superfluous and missing packets fixed").
+> I fixed it up (by using the trivial tree version) and can carry the fix
+> as necessary.
 
-Sorry about that.  Attached is patch fixing that.  I've overlooked the
-fact that w_length is u16 not int.
+Hi,
 
-diff --git a/drivers/usb/gadget/f_mass_storage.c b/drivers/usb/gadget/f_mass_storage.c
-index b5a8902..b5cad39 100644
---- a/drivers/usb/gadget/f_mass_storage.c
-+++ b/drivers/usb/gadget/f_mass_storage.c
-@@ -620,7 +620,7 @@ static int fsg_setup(struct usb_function *f,
- 		*(u8 *) req->buf = fsg->common->nluns - 1;
+I think the best thing is me dropping the net/ and drivers/net hunks of 
+this patch and taking it through Davem's tree ... I have already dropped 
+those hunks from my tree. Dave, the patch is below, please consider 
+applying.
+
+
+
+From: Daniel Mack <daniel@caiaq.de>
+Subject: [PATCH] net: fix 'lenght' typo in comments and code
+
+Some misspelled occurences of 'octet' and some comments were also fixed
+as I was on it.
+
+Signed-off-by: Daniel Mack <daniel@caiaq.de>
+Cc: Jiri Kosina <trivial@kernel.org>
+Cc: Joe Perches <joe@perches.com>
+Cc: Junio C Hamano <gitster@pobox.com>
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+
+diff --git a/drivers/net/ppp_generic.c b/drivers/net/ppp_generic.c
+index 2282e72..16cb124 100644
+--- a/drivers/net/ppp_generic.c
++++ b/drivers/net/ppp_generic.c
+@@ -1436,17 +1436,16 @@ static int ppp_mp_explode(struct ppp *ppp, struct sk_buff *skb)
+ 		}
  
- 		/* Respond with data/status */
--		req->length = min(1, w_length);
-+		req->length = min((u16)1, w_length);
- 		fsg->common->ep0req_name =
- 			ctrl->bRequestType & USB_DIR_IN ? "ep0-in" : "ep0-out";
- 		return ep0_queue(fsg->common);
+ 		/*
+-		 *check	if we are on the last channel or
+-		 *we exceded the lenght	of the data	to
+-		 *fragment
++		 * check if we are on the last channel or we exceeded the length
++		 * of the data to fragment
+ 		 */
+ 		if ((nfree <= 0) || (flen > len))
+ 			flen = len;
+ 		/*
+-		 *it is not worth to tx on slow channels:
+-		 *in that case from the resulting flen according to the
+-		 *above formula will be equal or less than zero.
+-		 *Skip the channel in this case
++		 * it is not worth to tx on slow channels:
++		 * in that case from the resulting flen according to the above
++		 * formula will be equal or less than zero.
++		 * skip the channel in this case.
+ 		 */
+ 		if (flen <=	0) {
+ 			pch->avail = 2;
+@@ -1466,7 +1465,7 @@ static int ppp_mp_explode(struct ppp *ppp, struct sk_buff *skb)
+ 			goto noskb;
+ 		q =	skb_put(frag, flen + hdrlen);
+ 
+-		/* make	the	MP header */
++		/* make	the MP header */
+ 		q[0] = PPP_MP >> 8;
+ 		q[1] = PPP_MP;
+ 		if (ppp->flags & SC_MP_XSHORTSEQ) {
+diff --git a/drivers/net/r6040.c b/drivers/net/r6040.c
+index f03e2e4..a3f9c3f 100644
+--- a/drivers/net/r6040.c
++++ b/drivers/net/r6040.c
+@@ -578,7 +578,7 @@ static int r6040_rx(struct net_device *dev, int limit)
+ 			/* RX dribble */
+ 			if (err & DSC_RX_ERR_DRI)
+ 				dev->stats.rx_frame_errors++;
+-			/* Buffer lenght exceeded */
++			/* Buffer length exceeded */
+ 			if (err & DSC_RX_ERR_BUF)
+ 				dev->stats.rx_length_errors++;
+ 			/* Packet too long */
+diff --git a/drivers/net/sb1000.c b/drivers/net/sb1000.c
+index 9f83a11..dab3ac7 100644
+--- a/drivers/net/sb1000.c
++++ b/drivers/net/sb1000.c
+@@ -65,7 +65,7 @@ static const int sb1000_debug = 1;
+ 
+ static const int SB1000_IO_EXTENT = 8;
+ /* SB1000 Maximum Receive Unit */
+-static const int SB1000_MRU = 1500; /* octects */
++static const int SB1000_MRU = 1500; /* octets */
+ 
+ #define NPIDS 4
+ struct sb1000_private {
+diff --git a/drivers/net/stmmac/common.h b/drivers/net/stmmac/common.h
+index e49e518..81e5def 100644
+--- a/drivers/net/stmmac/common.h
++++ b/drivers/net/stmmac/common.h
+@@ -169,7 +169,7 @@ struct stmmac_extra_stats {
+ 	unsigned long rx_toolong;
+ 	unsigned long rx_collision;
+ 	unsigned long rx_crc;
+-	unsigned long rx_lenght;
++	unsigned long rx_length;
+ 	unsigned long rx_mii;
+ 	unsigned long rx_multicast;
+ 	unsigned long rx_gmac_overflow;
+diff --git a/drivers/net/stmmac/gmac.c b/drivers/net/stmmac/gmac.c
+index 52586ee..620b204 100644
+--- a/drivers/net/stmmac/gmac.c
++++ b/drivers/net/stmmac/gmac.c
+@@ -257,7 +257,7 @@ static int gmac_coe_rdes0(int ipc_err, int type, int payload_err)
+ 
+ 	/* bits 5 7 0 | Frame status
+ 	 * ----------------------------------------------------------
+-	 *      0 0 0 | IEEE 802.3 Type frame (lenght < 1536 octects)
++	 *      0 0 0 | IEEE 802.3 Type frame (length < 1536 octets)
+ 	 *      1 0 0 | IPv4/6 No CSUM errorS.
+ 	 *      1 0 1 | IPv4/6 CSUM PAYLOAD error
+ 	 *      1 1 0 | IPv4/6 CSUM IP HR error
+@@ -358,7 +358,7 @@ static int gmac_get_rx_frame_status(void *data, struct stmmac_extra_stats *x,
+ 	}
+ 	if (unlikely(p->des01.erx.length_error)) {
+ 		DBG(KERN_ERR "GMAC RX: length_error error\n");
+-		x->rx_lenght++;
++		x->rx_length++;
+ 		ret = discard_frame;
+ 	}
+ #ifdef STMMAC_VLAN_TAG_USED
+diff --git a/drivers/net/stmmac/mac100.c b/drivers/net/stmmac/mac100.c
+index 625171b..1f6b608 100644
+--- a/drivers/net/stmmac/mac100.c
++++ b/drivers/net/stmmac/mac100.c
+@@ -262,7 +262,7 @@ static int mac100_get_rx_frame_status(void *data, struct stmmac_extra_stats *x,
+ 		ret = discard_frame;
+ 
+ 	if (unlikely(p->des01.rx.length_error)) {
+-		x->rx_lenght++;
++		x->rx_length++;
+ 		ret = discard_frame;
+ 	}
+ 	if (unlikely(p->des01.rx.mii_error)) {
+diff --git a/drivers/net/stmmac/stmmac_ethtool.c b/drivers/net/stmmac/stmmac_ethtool.c
+index 694ebe6..9edda5d 100644
+--- a/drivers/net/stmmac/stmmac_ethtool.c
++++ b/drivers/net/stmmac/stmmac_ethtool.c
+@@ -61,7 +61,7 @@ static const struct  stmmac_stats stmmac_gstrings_stats[] = {
+ 	STMMAC_STAT(rx_toolong),
+ 	STMMAC_STAT(rx_collision),
+ 	STMMAC_STAT(rx_crc),
+-	STMMAC_STAT(rx_lenght),
++	STMMAC_STAT(rx_length),
+ 	STMMAC_STAT(rx_mii),
+ 	STMMAC_STAT(rx_multicast),
+ 	STMMAC_STAT(rx_gmac_overflow),
+diff --git a/drivers/net/wimax/i2400m/i2400m-usb.h b/drivers/net/wimax/i2400m/i2400m-usb.h
+index 5cc0f27..9c61e5f 100644
+--- a/drivers/net/wimax/i2400m/i2400m-usb.h
++++ b/drivers/net/wimax/i2400m/i2400m-usb.h
+@@ -105,7 +105,7 @@ static inline void edc_init(struct edc *edc)
+  *
+  * @edc: pointer to error density counter.
+  * @max_err: maximum number of errors we can accept over the timeframe
+- * @timeframe: lenght of the timeframe (in jiffies).
++ * @timeframe: length of the timeframe (in jiffies).
+  *
+  * Returns: !0 1 if maximum acceptable errors per timeframe has been
+  *     exceeded. 0 otherwise.
+diff --git a/drivers/net/wireless/p54/p54spi.c b/drivers/net/wireless/p54/p54spi.c
+index afd26bf..c4e4121 100644
+--- a/drivers/net/wireless/p54/p54spi.c
++++ b/drivers/net/wireless/p54/p54spi.c
+@@ -279,7 +279,7 @@ static void p54spi_power_on(struct p54s_priv *priv)
+ 	enable_irq(gpio_to_irq(p54spi_gpio_irq));
+ 
+ 	/*
+-	 * need to wait a while before device can be accessed, the lenght
++	 * need to wait a while before device can be accessed, the length
+ 	 * is just a guess
+ 	 */
+ 	msleep(10);
+diff --git a/drivers/net/wireless/wl12xx/wl1251_cmd.c b/drivers/net/wireless/wl12xx/wl1251_cmd.c
+index 770f260..ff446a0 100644
+--- a/drivers/net/wireless/wl12xx/wl1251_cmd.c
++++ b/drivers/net/wireless/wl12xx/wl1251_cmd.c
+@@ -103,7 +103,7 @@ int wl1251_cmd_test(struct wl1251 *wl, void *buf, size_t buf_len, u8 answer)
+  * @wl: wl struct
+  * @id: acx id
+  * @buf: buffer for the response, including all headers, must work with dma
+- * @len: lenght of buf
++ * @len: length of buf
+  */
+ int wl1251_cmd_interrogate(struct wl1251 *wl, u16 id, void *buf, size_t len)
+ {
+diff --git a/drivers/net/wireless/wl12xx/wl1251_rx.c b/drivers/net/wireless/wl12xx/wl1251_rx.c
+index f84cc89..0a45528 100644
+--- a/drivers/net/wireless/wl12xx/wl1251_rx.c
++++ b/drivers/net/wireless/wl12xx/wl1251_rx.c
+@@ -135,7 +135,7 @@ static void wl1251_rx_body(struct wl1251 *wl,
+ 	rx_buffer = skb_put(skb, length);
+ 	wl1251_mem_read(wl, rx_packet_ring_addr, rx_buffer, length);
+ 
+-	/* The actual lenght doesn't include the target's alignment */
++	/* The actual length doesn't include the target's alignment */
+ 	skb->len = desc->length  - PLCP_HEADER_LENGTH;
+ 
+ 	fc = (u16 *)skb->data;
+diff --git a/drivers/net/wireless/wl12xx/wl1271_cmd.c b/drivers/net/wireless/wl12xx/wl1271_cmd.c
+index c3385b3..1e3d4b0 100644
+--- a/drivers/net/wireless/wl12xx/wl1271_cmd.c
++++ b/drivers/net/wireless/wl12xx/wl1271_cmd.c
+@@ -437,7 +437,7 @@ int wl1271_cmd_test(struct wl1271 *wl, void *buf, size_t buf_len, u8 answer)
+  * @wl: wl struct
+  * @id: acx id
+  * @buf: buffer for the response, including all headers, must work with dma
+- * @len: lenght of buf
++ * @len: length of buf
+  */
+ int wl1271_cmd_interrogate(struct wl1271 *wl, u16 id, void *buf, size_t len)
+ {
+diff --git a/net/dccp/ackvec.h b/net/dccp/ackvec.h
+index 7ea557b..fd278d8 100644
+--- a/net/dccp/ackvec.h
++++ b/net/dccp/ackvec.h
+@@ -73,7 +73,7 @@ struct dccp_ackvec {
+  * @avr_ack_ackno - sequence number being acknowledged
+  * @avr_ack_ptr - pointer into av_buf where this record starts
+  * @avr_ack_nonce - av_ack_nonce at the time this record was sent
+- * @avr_sent_len - lenght of the record in av_buf
++ * @avr_sent_len - length of the record in av_buf
+  */
+ struct dccp_ackvec_record {
+ 	struct list_head avr_node;
+diff --git a/net/ipv6/ip6_output.c b/net/ipv6/ip6_output.c
+index eb6d097..cb4c91d 100644
+--- a/net/ipv6/ip6_output.c
++++ b/net/ipv6/ip6_output.c
+@@ -1206,7 +1206,7 @@ int ip6_append_data(struct sock *sk, int getfrag(void *from, char *to,
+ 	 * Let's try using as much space as possible.
+ 	 * Use MTU if total length of the message fits into the MTU.
+ 	 * Otherwise, we need to reserve fragment header and
+-	 * fragment alignment (= 8-15 octects, in total).
++	 * fragment alignment (= 8-15 octets, in total).
+ 	 *
+ 	 * Note that we may need to "move" the data from the tail of
+ 	 * of the buffer to the new fragment when we split
 -- 
-1.6.5
+1.6.4.2
 
