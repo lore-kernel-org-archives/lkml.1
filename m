@@ -1,63 +1,63 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753321Ab0BCF4G (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 00:56:06 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:39962 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752627Ab0BCF4A (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 00:56:00 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.4.0
-Message-ID: <4B690FCD.2040405@jp.fujitsu.com>
-Date: Wed, 03 Feb 2010 14:55:25 +0900
-From: Kei Tokunaga <tokunaga.keiich@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: "Martin K. Petersen" <martin.petersen@oracle.com>
-CC: linux-scsi@vger.kernel.org, James Bottomley <James.Bottomley@suse.de>,
-       Ingo Molnar <mingo@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Christoph Hellwig <hch@infradead.org>, Joe Perches <joe@perches.com>,
-       Tomohiro Kusumi <kusumi.tomohiro@jp.fujitsu.com>,
-       lkml <linux-kernel@vger.kernel.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
-       Kei Tokunaga <tokunaga.keiich@jp.fujitsu.com>
-Subject: Re: [PATCH 2/2 v2] scsi: add scsi trace core function and put trace
- points
-References: <4B665EC9.6000608@jp.fujitsu.com>	<4B666181.7080200@jp.fujitsu.com> <yq1636fqlkv.fsf@sermon.lab.mkp.net>
-In-Reply-To: <yq1636fqlkv.fsf@sermon.lab.mkp.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S1753674Ab0BCF5d (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 00:57:33 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:60379 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752627Ab0BCF5b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 00:57:31 -0500
+Date: Wed, 3 Feb 2010 16:57:26 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Greg KH <greg@kroah.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Michal Nazarewicz <m.nazarewicz@samsung.com>,
+       Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: linux-next: build warning after merge of usb tree
+Message-Id: <20100203165726.e258ad58.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0beta7 (GTK+ 2.18.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__3_Feb_2010_16_57_26_+1100_6cQjYGcH8d4riTE_"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Martin K. Petersen wrote:
->>>>>> "Kei" == Kei Tokunaga <tokunaga.keiich@jp.fujitsu.com> writes:
-> 
-> I'm traveling so I won't have time to look at this closely until next
-> week.  However, this caught my eye:
-> 
-> +static const char *
-> +scsi_trace_varlen(struct trace_seq *p, unsigned char *cdb, int len)
-> +{
-> +	switch (SERVICE_ACTION(cdb)) {
-> +	case READ_32:
-> +	case WRITE_32:
-> +		/* if protection is enabled */
-> +		if (((cdb[10] >> 5) & 0x7) == 1)
-> +			return scsi_trace_rw32(p, cdb, len);
-> +		/* fall through */
-> +	default:
-> +		return scsi_trace_misc(p, cdb, len);
-> +	}
-> +}
-> 
-> It is not a requirement that a 32-byte READ/WRITE request must have
-> PROTECT set.  So that if statement is bogus.
+--Signature=_Wed__3_Feb_2010_16_57_26_+1100_6cQjYGcH8d4riTE_
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Yes.  I agree that the if statement is not necessary here.  I'll
-fix it.  Thanks for having your time for the review.
+Hi Greg,
 
-Kei
+After merging the usb tree, today's linux-next build (x86_64
+allmodconfig) produced these warnings:
 
+In file included from drivers/usb/gadget/mass_storage.c:64:
+drivers/usb/gadget/f_mass_storage.c: In function 'fsg_setup':
+drivers/usb/gadget/f_mass_storage.c:623: warning: comparison of distinct po=
+inter types lacks a cast
+In file included from drivers/usb/gadget/multi.c:75:
+drivers/usb/gadget/f_mass_storage.c: In function 'fsg_setup':
+drivers/usb/gadget/f_mass_storage.c:623: warning: comparison of distinct po=
+inter types lacks a cast
+
+Introduced by commit a736e2758c6390b854219e6f6bb4f9a0e3be66df ("USB:
+g_mass_storage: superfluous and missing packets fixed").
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__3_Feb_2010_16_57_26_+1100_6cQjYGcH8d4riTE_
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAktpEEYACgkQjjKRsyhoI8wzXQCfckGrlLDLEE3kDEyspMQAZ62v
+5qQAn1w0EiEEZ2YaFoNImqWJrA1xTplK
+=TQeO
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__3_Feb_2010_16_57_26_+1100_6cQjYGcH8d4riTE_--
