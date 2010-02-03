@@ -1,56 +1,89 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756807Ab0BCBRN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Feb 2010 20:17:13 -0500
-Received: from perceval.irobotique.be ([92.243.18.41]:41057 "EHLO
-	perceval.irobotique.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756146Ab0BCBRK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Feb 2010 20:17:10 -0500
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-To: Joe Perches <joe@perches.com>,
-       Douglas Schilling Landgraf <dougsland@gmail.com>
-Subject: Re: [PATCH V3] drivers/media/video/uvc: Use %pUl to print UUIDs
-Date: Wed, 3 Feb 2010 02:18:20 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.32; KDE/4.3.4; x86_64; ; )
-Cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <1255471594.18975.79.camel@Joe-Laptop.home> <4B684361.2020009@infradead.org> <1265133043.1945.13.camel@Joe-Laptop.home>
-In-Reply-To: <1265133043.1945.13.camel@Joe-Laptop.home>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
+	id S1756992Ab0BCBUA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Feb 2010 20:20:00 -0500
+Received: from sh.osrg.net ([192.16.179.4]:54300 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756146Ab0BCBT6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Feb 2010 20:19:58 -0500
+Date: Wed, 3 Feb 2010 10:18:39 +0900
+To: davem@davemloft.net
+Cc: fujita.tomonori@lab.ntt.co.jp, jarkao2@gmail.com, alan@lxorguk.ukuu.org.uk,
+       shemminger@linux-foundation.org, mbreuer@majjas.com,
+       akpm@linux-foundation.org, flyboy@gmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       mchan@broadcom.com, pcnet32@verizon.net, romieu@fr.zoreil.com,
+       mcarlson@broadcom.com, James.Bottomley@suse.de
+Subject: Re: [PATCH] sky2: Fix WARNING: at lib/dma-debug.c:902 check_sync
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20100121.223841.145479578.davem@davemloft.net>
+References: <20100121184158.GA3085@del.dom.local>
+	<20100122141018D.fujita.tomonori@lab.ntt.co.jp>
+	<20100121.223841.145479578.davem@davemloft.net>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <201002030218.20251.laurent.pinchart@ideasonboard.com>
+Message-Id: <20100203101817Z.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 03 Feb 2010 10:18:42 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 02 February 2010 18:50:43 Joe Perches wrote:
-> On Tue, 2010-02-02 at 13:23 -0200, Mauro Carvalho Chehab wrote:
-> > I'm reviewing all patches marked as under review at Patchwork and I
-> > noticed that this one were never applied, nor I found any nack at
-> > linux-media ML.
-> >
-> > What's the status for it?
+Sorry for the late reply,
+
+On Thu, 21 Jan 2010 22:38:41 -0800 (PST)
+David Miller <davem@davemloft.net> wrote:
+
+> From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> Date: Fri, 22 Jan 2010 14:11:29 +0900
 > 
-> Laurent wanted it withdrawn so he could fix some
-> backward compatibility thing he wanted.
+> > Even if 'offset' is zero, 'size' still matters, I think. If 'size' is
+> > not a multiple of the cache line size, it's possible that driver
+> > writers who aren't familiar with cache would be surprised (it depends
+> > on the way their drivers use buffers though).
+> > 
+> > The easiest way for 'completely safe sync for any driver writers' is
+> > asking for all the sync parameters must be the same as those passed
+> > into the single mapping API. If writes knows what they do, they can do
+> > a partial sync with sync_range API. That's the author intention, I
+> > guess.
 > 
-> http://lkml.org/lkml/2009/11/4/216
+> This is not reasonable.
 > 
-> Nothing's happened since as far as I know.
+> You have to think about how people actually use these
+> interfaces.
+> 
+> They have a large buffer, and if they receive a small request they
+> want to allocate a smaller buffer, copy into that smaller buffer, and
+> give the larger buffer back to the hardware.
+> 
+> It's an optimization, it performs better this way.
+> 
+> If you make it so that the DMA sync has to cover the entire large
+> buffer, the whole point of the optimization is taken away.
 
-There's a patch in my git tree, I'll send a pull request tomorrow. I had 
-actually prepared a -hg compat patch as well, but the switch to git changed 
-the workflow.
+I talked with James. He is ok with changing (or fixing) this API to
+enable users to do a partial sync (I'm ok with that too. I just
+guessed that he designed the API in such way intentionally not by
+mistake).
 
-Douglas, will you handle the -hg compat "automatically" ? The code will 
-compile on older kernels without a warning, but it will still require #ifdef's 
-to run correctly on older kernels. Is there a standard way to notify you about 
-that during patches submission ?
+Can we safely assume that the arch implementations already round
+up/down to the safe boundary internally in this API (they should
+already)?
 
--- 
-Regards,
+As you know, the patch to remove the description of
+dma_sync_single/pci_dma_sync_single/dma_sync_sg/pci_dma_sync_pci that
+always require a full sync in DMA-API.txt is already -mm so what we
+need to do are:
 
-Laurent Pinchart
+- adding 'a partial sync' description to PCI-DMA-mapping.txt.
+- duplicating the similar description to DMA-API.txt.
+
+I don't like two DMA docs. I like to make pci_dma_* API obsolete. We
+have the generic DMA API with generic devices so we are always able to
+use the API (as you did with sbus_map_*). The majority arch
+implementations safely call the bus specific DMA functions via the
+generic DMA API. So there are not many things to do. We can just
+convert pci_dma_* to dma_* API slowly.
+
+Opinions?
