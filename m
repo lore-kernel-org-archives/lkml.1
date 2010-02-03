@@ -1,48 +1,58 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932528Ab0BCQHO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 11:07:14 -0500
-Received: from cantor.suse.de ([195.135.220.2]:38923 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932512Ab0BCQHK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 11:07:10 -0500
-Date: Wed, 3 Feb 2010 17:07:09 +0100
-From: Michal Marek <mmarek@suse.cz>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Anibal Monsalve Salazar <anibal@debian.org>
-Subject: Re: [PATCH 4/4] kconfig: Add LSMOD=file to override the lsmod for
- localmodconfig
-Message-ID: <20100203160708.GA9035@sepie.suse.cz>
-References: <20100203154605.461025238@goodmis.org>
- <20100203154906.499020585@goodmis.org>
+	id S932537Ab0BCQH2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 11:07:28 -0500
+Received: from mail-ew0-f228.google.com ([209.85.219.228]:65348 "EHLO
+	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932439Ab0BCQHZ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 11:07:25 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=tRxpMoZmlbRcH2dsZkf4imgJuNF6dcmhYH+mxUccr0i1oT6VvPjiSdnkhcZl4xrKd5
+         6zO0eLGP7ZQSv273t7qK56fFnYislfiGsEbBBQWatlXHTSfEql3AjHDpB3pFgovihRmq
+         rCYAeIaexcK+nZX97mMkjMpt/B3alyGLdeMDw=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100203154906.499020585@goodmis.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <1265043026-24987-3-git-send-email-dvhltc@us.ibm.com>
+References: <1265043026-24987-1-git-send-email-dvhltc@us.ibm.com>
+	 <1265043026-24987-3-git-send-email-dvhltc@us.ibm.com>
+Date: Wed, 3 Feb 2010 17:07:24 +0100
+X-Google-Sender-Auth: 439f460df87613f6
+Message-ID: <520f0cf11002030807t48678b82ye56624840e6f9ce3@mail.gmail.com>
+Subject: Re: [PATCH 2/3] trace-cmd: fix printf compile warnings
+From: John Kacur <jkacur@redhat.com>
+To: Darren Hart <dvhltc@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, rostedt@goodmis.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 03, 2010 at 10:46:09AM -0500, Steven Rostedt wrote:
-> +# if no path is given, then use src directory to find file
-> +ifdef LSMOD
-> +LSMOD_F = $(shell if [ `basename $(LSMOD)` == $(LSMOD) ]; then \
-> +		echo $(objtree)/$(LSMOD);			\
-> +	else							\
-> +		echo $(LSMOD);					\
-> +	fi)
-> +endif
+On Mon, Feb 1, 2010 at 5:50 PM, Darren Hart <dvhltc@us.ibm.com> wrote:
+> Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
+> ---
+>  trace-read.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/trace-read.c b/trace-read.c
+> index a04c85b..5befaba 100644
+> --- a/trace-read.c
+> +++ b/trace-read.c
+> @@ -216,7 +216,7 @@ static void read_rest(void)
+>                r = read(input_fd, buf, BUFSIZ);
+>                if (r > 0) {
+>                        buf[r] = 0;
+> -                       printf(buf);
+> +                       printf("%s", buf);
+>                }
+>        } while (r > 0);
+>  }
+> --
+> 1.6.3.3
+>
 
-You can do this within make like:
-
-ifdef LSMOD
-LSMOD_F := $(LSMOD)
-ifeq ($(findstring /,$(LSMOD)),)
-  LSMOD_F := $(objtree)/$(LSMOD)
-endif
-endif
-
-Michal
+Oh! Obviously correct, thanks Darren.
