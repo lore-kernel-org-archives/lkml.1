@@ -1,72 +1,78 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756739Ab0BDEJb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 23:09:31 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44918 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754009Ab0BDEJ2 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 23:09:28 -0500
-Date: Wed, 3 Feb 2010 20:08:51 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Matt Turner <mattst88@gmail.com>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-kernel@vger.kernel.org, Richard Henderson <rth@twiddle.net>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Subject: Re: [PATCH -mm 3/4] alpha: remove dma_sync_single_range
-Message-Id: <20100203200851.9c42c917.akpm@linux-foundation.org>
-In-Reply-To: <b4198de61002032006t3703baceh9fc9d9f8bd8cc16d@mail.gmail.com>
-References: <1265253206-17744-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-	<1265253206-17744-3-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-	<b4198de61002032006t3703baceh9fc9d9f8bd8cc16d@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	id S1756777Ab0BDEMX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 23:12:23 -0500
+Received: from e23smtp08.au.ibm.com ([202.81.31.141]:37379 "EHLO
+	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754009Ab0BDEMW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 23:12:22 -0500
+Date: Thu, 4 Feb 2010 09:42:12 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Rik van Riel <riel@redhat.com>
+Cc: jdike@addtoit.com, kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+       avi@redhat.com, aarcange@redhat.com, mtosatti@redhat.com
+Subject: Re: [PATCH] emulate accessed bit for EPT
+Message-ID: <20100204041212.GI19641@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20100203161103.11e2b572@annuminas.surriel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20100203161103.11e2b572@annuminas.surriel.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Feb 2010 23:06:37 -0500 Matt Turner <mattst88@gmail.com> wrote:
+* Rik van Riel <riel@redhat.com> [2010-02-03 16:11:03]:
 
-> On Wed, Feb 3, 2010 at 10:13 PM, FUJITA Tomonori
-> <fujita.tomonori@lab.ntt.co.jp> wrote:
-> > dma_sync_single_for_cpu/for_device supports a partial sync so there is
-> > no point to have dma_sync_single_range (also dma_sync_single was
-> > obsoleted long ago, replaced with dma_sync_single_for_cpu/for_device).
-> >
-> > There is no user of dma_sync_single_range() in mainline and only Alpha
-> > architecture supports dma_sync_single_range(). So it's unlikely that
-> > someone out of the tree uses it.
-> >
-> > Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> > Cc: Richard Henderson <rth@twiddle.net>
-> > Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-> > Cc: Matt Turner <mattst88@gmail.com>
-> > ---
-> >  arch/alpha/include/asm/dma-mapping.h |    1 -
-> >  1 files changed, 0 insertions(+), 1 deletions(-)
-> >
-> > diff --git a/arch/alpha/include/asm/dma-mapping.h b/arch/alpha/include/asm/dma-mapping.h
-> > index 04eb568..f514ede 100644
-> > --- a/arch/alpha/include/asm/dma-mapping.h
-> > +++ b/arch/alpha/include/asm/dma-mapping.h
-> > @@ -59,7 +59,6 @@ int dma_set_mask(struct device *dev, u64 mask);
-> >
-> >  #define dma_sync_single_for_cpu(dev, addr, size, dir)    ((void)0)
-> >  #define dma_sync_single_for_device(dev, addr, size, dir)  ((void)0)
-> > -#define dma_sync_single_range(dev, addr, off, size, dir)  ((void)0)
-> >  #define dma_sync_sg_for_cpu(dev, sg, nents, dir)         ((void)0)
-> >  #define dma_sync_sg_for_device(dev, sg, nents, dir)      ((void)0)
-> >  #define dma_cache_sync(dev, va, size, dir)               ((void)0)
-> > --
-> > 1.5.6.5
+> Currently KVM pretends that pages with EPT mappings never got
+> accessed.  This has some side effects in the VM, like swapping
+> out actively used guest pages and needlessly breaking up actively
+> used hugepages.
 > 
-> Acked-by: Matt Turner <mattst88@gmail.com>
+> We can avoid those very costly side effects by emulating the
+> accessed bit for EPT PTEs, which should only be slightly costly
+> because pages pass through page_referenced infrequently.
 > 
-> Should I vacuum this one up, or should it go in the -mm tree? I don't
-> guess there's much point in sending Linus pull requests for single
-> patches.
+> TLB flushing is taken care of by kvm_mmu_notifier_clear_flush_young().
 > 
+> This seems to help prevent KVM guests from being swapped out when
+> they should not on my system.
+> 
+> Signed-off-by: Rik van Riel <riel@redhat.com>
+> ---
+> Jeff, does this patch fix the issue you saw a few months ago, with
+> a 256MB KVM guest in a cgroup limited to 128GB memory?
+> 
+>  arch/x86/kvm/mmu.c |   10 ++++++++--
+>  1 files changed, 8 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
+> index 89a49fb..6101615 100644
+> --- a/arch/x86/kvm/mmu.c
+> +++ b/arch/x86/kvm/mmu.c
+> @@ -856,9 +856,15 @@ static int kvm_age_rmapp(struct kvm *kvm, unsigned long *rmapp,
+>  	u64 *spte;
+>  	int young = 0;
+> 
+> -	/* always return old for EPT */
+> +	/*
+> +	 * Emulate the accessed bit for EPT, by checking if this page has
+> +	 * an EPT mapping, and clearing it if it does. On the next access,
+> +	 * a new EPT mapping will be established.
+> +	 * This has some overhead, but not as much as the cost of swapping
+> +	 * out actively used pages or breaking up actively used hugepages.
+> +	 */
+>  	if (!shadow_accessed_mask)
+> -		return 0;
+> +		return kvm_unmap_rmapp(kvm, rmapp, data);
+>
 
-I'll grab it.
+Quite a clever implementation, one side effect is that one would see a
+larger number of minor faults with EPT enabled and an increase in
+allocation/frees of rmap entries, but that can be easily explained.
+
+-- 
+	Balbir
