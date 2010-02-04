@@ -1,45 +1,26 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755539Ab0BFLvE (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Sat, 6 Feb 2010 06:51:04 -0500
-Received: from correio.fach.br ([189.73.195.70]:43078 "EHLO
-	correio.anhanguera.edu.br" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752900Ab0BFLvB (ORCPT
+	id S1752766Ab0BGJPt (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Sun, 7 Feb 2010 04:15:49 -0500
+Received: from toroondcbmts01-srv.bellnexxia.net ([207.236.237.35]:58002 "EHLO
+	toroondcbmts01-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752146Ab0BGJPo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Feb 2010 06:51:01 -0500
-X-Greylist: delayed 2446 seconds by postgrey-1.27 at vger.kernel.org; Sat, 06 Feb 2010 06:51:00 EST
-Message-ID: <6b6b41cfec99029acc9ae05d09a21011.squirrel@webmail.anhanguera.edu.br>
-Date: Sat, 6 Feb 2010 09:04:25 -0200 (BRST)
-Subject: LOAN OFFER APPLY NOW!
-From: "Mr.Scotty" <scottyloan@info.com>
-Reply-To: scotty.loan11@gmail.com
-User-Agent: SquirrelMail/1.4.17
+	Sun, 7 Feb 2010 04:15:44 -0500
+X-Cloudmark-SP-Filtered: true
+X-Cloudmark-SP-Result: v=1.0 c=1 a=A2GX1pk9_lgA:10 a=bp1uwEtYTGyzmm4kCBRZrw==:17 a=dkp8rbGR2ccQPblKF3IA:9 a=TYvLUATEmx8UMsP9pNU-my5NkQgA:4 a=vMPq6ueBOZUA:10
+Message-ID: <20100204082434.6W2N3.21686.root@toroondcbfep01>
+Date: Thu, 4 Feb 2010 8:24:34 -0500
+From: Mr Bernard Thompson <jackie.chantale@bellnet.ca>
+Reply-To: mrbernard.thompson24@admin.in.th
+Subject: **B & T Lenders** We give out any kind of loans at 2% interest rate
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 X-Priority: 3 (Normal)
-Importance: Normal
-To: undisclosed-recipients:;
+Sensitivity: Normal
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-
-Good Day,
-
-Have you been in search for a loan from a reliable lender on the internet
-or do you need a loan to ease your financial stress? This is the greatest
-opportunity you have been waiting to have.
-
-I am a lender that gives out short and long term loans with a reasonable
-interest to business firms and also individuals that can pay back the loan
-the right time and at the stipulated period. My loan ranges from $5,000usd
-to $500,000usd with an interest of 5%.For more inquires on getting a loan
-from me; feel free to reach me via e-mail,scotty.loan03@gmail.com OR You
-can reach me on www.Facebook.com the name is Scotty white.
-
-Regards,
-Mr. Scotty
-
-
+interested applicants, send your Name and Address via email to E-mail; mr.bernard.thomp01@admin.in.th
