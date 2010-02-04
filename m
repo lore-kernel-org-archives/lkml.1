@@ -1,64 +1,72 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757320Ab0BDICZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 03:02:25 -0500
-Received: from ernst.netinsight.se ([194.16.221.21]:18923 "HELO
-	ernst.netinsight.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754651Ab0BDICY (ORCPT
+	id S1752546Ab0BDIKF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 03:10:05 -0500
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:54823 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751072Ab0BDIJ7 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 03:02:24 -0500
-Date: Thu, 4 Feb 2010 09:02:16 +0100
-From: Simon Kagstrom <simon.kagstrom@netinsight.net>
-To: Tejun Heo <tj@kernel.org>, Oleg Nesterov <oleg@redhat.com>,
-       linux-kernel@vger.kernel.org
-Cc: laijs@cn.fujitsu.com, rusty@rustcorp.com.au, akpm@linux-foundation.org,
-       mingo@elte.hu
-Subject: [PATCH v2] core: workqueue: return on workqueue recursion
-Message-ID: <20100204090216.131fc73f@marrow.netinsight.se>
-In-Reply-To: <4B6A2D29.3010804@kernel.org>
-References: <20100203122755.0fd4fb7e@marrow.netinsight.se>
-	<20100203194350.GA13824@redhat.com>
-	<4B6A2D29.3010804@kernel.org>
-X-Mailer: Claws Mail 3.7.4 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 4 Feb 2010 03:09:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type:content-transfer-encoding;
+        b=PRAZquWx4rjvJ+QcBw1YASZPyVPJEuFraBiS/jl3rN9BnoOBY8Cd9t53DUoxIEXQ0W
+         zkvCvvDM7+hktyk1WWPGkh4+1Ye0NnMROIiBpBlqMItNf3LTPoJcuqnpRpPQfWkSusjX
+         1pi3MxMiIFDxffMCCPcXGOx6Sg/HZhzfHQTpk=
+MIME-Version: 1.0
+In-Reply-To: <5e9821061002040006p258c2738y87a26c769c04bcfd@mail.gmail.com>
+References: <4B6A5A81.2030207@gmail.com>
+	 <20100204144511.b50d3191.kamezawa.hiroyu@jp.fujitsu.com>
+	 <5e9821061002040006p258c2738y87a26c769c04bcfd@mail.gmail.com>
+Date: Thu, 4 Feb 2010 10:09:57 +0200
+Message-ID: <5e9821061002040009t27fc5a81m5075508f3a6634a6@mail.gmail.com>
+Subject: Fwd: Problem with set_memory_rw
+From: Oleg Kutkov <elenbert@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When the workqueue is flushed from workqueue context (recursively), the
-system enters a strange state where things at random (dependent on the
-global workqueue) start misbehaving. For example, for us the console and
-logins locks up while the web server continues running.
+set_memory_rw()'s 1st argument requires virtual address.
+So, you need virtual address of the page you want.
 
-The system becomes unstable since the workqueue barrier locks the
-workqueue. This patch instead returns if the workqueue is flushed
-recursively, which keeps the workqueue alive but warns.
+ - phys_to_virt() ... convert physical address to virtual address.
+ - virt_to_phys() ... convert virtual address to physical.
 
-Signed-off-by: Simon Kagstrom <simon.kagstrom@netinsight.net>
----
-ChangeLog:
-	* Instead of BUG_ON, warn and return on recursive calls as suggested
-	  by Oleg Nesterov and Tejun Hao
+Anyway, RW is vitual address mapping's attribute and not for physical.
 
- kernel/workqueue.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+Thanks,
+-Kame
 
-diff --git a/kernel/workqueue.c b/kernel/workqueue.c
-index dee4865..49f8fa7 100644
---- a/kernel/workqueue.c
-+++ b/kernel/workqueue.c
-@@ -482,7 +482,8 @@ static int flush_cpu_workqueue(struct cpu_workqueue_struct *cwq)
- 	int active = 0;
- 	struct wq_barrier barr;
- 
--	WARN_ON(cwq->thread == current);
-+	if (WARN_ON(cwq->thread == current))
-+		return 1;
- 
- 	spin_lock_irq(&cwq->lock);
- 	if (!list_empty(&cwq->worklist) || cwq->current_work != NULL) {
--- 
-1.6.0.4
 
+
+Thank for answer!
+But this is a very strange, because 0x0509940 - it a virtual memory
+address (i got it from System.map, this is a system call table, on my
+machine). set_memory_rw return zero, anyway. Maybe, system call table
+is much write protected, so i can't change attribute of memory page?
+One more interesting thing:
+
+
+
+struct page *pg;
+pg = virt_to_page(addr);
+unsigned long page_addr;
+page_addr = (unsigned long) page_address(pg);
+
+
+addr - this is my virtual address (provided by System.map)
+But page_addr got another value!
+What wrong?
+Sorry, if my questions is to stupid.
+
+P.S. I know, that overwriting system call table is very bad, i just
+experimenting with my own network drivers and i need to replace some
+network system calls..
+
+
+Best regard,
+Oleg.
