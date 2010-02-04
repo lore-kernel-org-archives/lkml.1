@@ -1,62 +1,134 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933016Ab0BDPlk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 10:41:40 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:17318 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932866Ab0BDPlh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 10:41:37 -0500
-Message-ID: <4B6AEA9A.90704@redhat.com>
-Date: Thu, 04 Feb 2010 10:41:14 -0500
-From: Rik van Riel <riel@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: balbir@linux.vnet.ibm.com
-CC: jdike@addtoit.com, kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
-       avi@redhat.com, aarcange@redhat.com, mtosatti@redhat.com
-Subject: Re: [PATCH] emulate accessed bit for EPT
-References: <20100203161103.11e2b572@annuminas.surriel.com> <20100204041212.GI19641@balbir.in.ibm.com> <4B6ACE5B.9080601@redhat.com> <20100204153013.GK19641@balbir.in.ibm.com>
-In-Reply-To: <20100204153013.GK19641@balbir.in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1758301Ab0BDPmg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 10:42:36 -0500
+Received: from mail-fx0-f220.google.com ([209.85.220.220]:35848 "EHLO
+	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756698Ab0BDPme (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 10:42:34 -0500
+Subject: Re: [PATCH] exit: PR_SET_ANCHOR for marking processes as reapers
+ for child processes
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Lennart Poettering <lennart@poettering.net>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20100202120457.GA19605@omega>
+References: <20100202120457.GA19605@omega>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 04 Feb 2010 16:42:55 +0100
+Message-ID: <1265298175.24100.8.camel@yio.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.29.5 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Balbir Singh wrote:
-> * Rik van Riel <riel@redhat.com> [2010-02-04 08:40:43]:
+On Tue, 2010-02-02 at 13:04 +0100, Lennart Poettering wrote:
+> Right now, if a process dies all its children are reparented to init.
+> This logic has good uses, i.e. for double forking when daemonizing.
+> However it also allows child processes to "escape" their parents,
+> which
+> is a problem for software like session managers (such as
+> gnome-session)
+> or other process supervisors.
 > 
->> On 02/03/2010 11:12 PM, Balbir Singh wrote:
->>> * Rik van Riel<riel@redhat.com>  [2010-02-03 16:11:03]:
->>>
->>>> Currently KVM pretends that pages with EPT mappings never got
->>>> accessed.  This has some side effects in the VM, like swapping
->>>> out actively used guest pages and needlessly breaking up actively
->>>> used hugepages.
->>>>
->>>> We can avoid those very costly side effects by emulating the
->>>> accessed bit for EPT PTEs, which should only be slightly costly
->>>> because pages pass through page_referenced infrequently.
->>> Quite a clever implementation, one side effect is that one would see a
->>> larger number of minor faults with EPT enabled and an increase in
->>> allocation/frees of rmap entries, but that can be easily explained.
->> I suspect it won't be very many. I have been monitoring
->> /proc/meminfo on my system while testing this patch, and
->> it is quite typical that the size of the inactive anon
->> list does not change for minutes at a time.
->>
->> In other words, no pages are moved onto or off of the
->> inactive anon list for several minutes. That corresponds
->> to a very small number of minor faults introduced by my
->> patch.
->>
->> Of course, when the system is swapping, we will have more
->> minor faults.  However, minor faults should be less of a
->> performance issue than major faults :)
->>
+> This patch adds a simple flag for each process that marks it as an
+> "anchor" process for all its children and grandchildren. If a child of
+> such an anchor dies all its children will not be reparented to init,
+> but instead to this anchor, escaping this anchor process is not possible.
+> A task with this flag set hence acts is little "sub-init".
 > 
-> I do agree with you. 
+> Anchors are fully recursive: if an anchor dies, all its children are
+> reparented to next higher anchor in the process tree.
+> 
+> This is orthogonal to PID namespaces. PID namespaces virtualize the
+> actual IDs in addition to introducing "sub-inits". This patch
+> introduces
+> "sub-inits" inside the same PID namespace.
 
-After 20 hours of uptime, it appears that this patch has
-resolved the "KVM guests get swapped while buffer and page
-cache stay in memory" problem my home system was experiencing.
+Sounds good to me. And seems useful for all sorts of session tracking
+and "prettifying ps". :)
+
+It seems to work fine here. With a double-fork, the child gets the
+intermediate-fork pid as the parent, and when this dies, it get
+re-parented to the anchor pid instead of directly to pid 1. Only when
+the anchor pid dies, it will be re-parented to pid 1.
+
+Thanks,
+Kay
+
+$ ./sub-init 1
+[26209] main: anchor=1
+[26209] main: forked 'help' 26210
+[26209] main: wait for 'help' to exit 26210
+[26210] help: has parent 26209
+[26210] help: forked 'child' 26211, sleep
+[26211] child: has parent 26210, sleep
+[26211] child: has parent 26210, sleep
+[26210] help: exit
+[26209] main: 'help' 26210 returned, sleep
+[26211] child: has parent 26209, sleep
+[26211] child: has parent 26209, sleep
+[26209] main: exit
+[26211] child: has parent 1, sleep
+[26211] child: has parent 1, sleep
+[26211] child: has parent 1, sleep
+[26211] child: has parent 1, sleep
+[26211] child: has parent 1, sleep
+[26211] child: has parent 1, sleep
+[26211] child: exit
+
+
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/prctl.h>
+#include <sys/wait.h>
+
+#define PR_SET_ANCHOR 35
+#define PR_GET_ANCHOR 36
+
+int main(int argc, char *argv[])
+{
+	int is_anch;
+	pid_t pid;
+
+	if (argc > 1)
+		prctl(PR_SET_ANCHOR, 1);
+	prctl(PR_GET_ANCHOR, &is_anch);
+	printf("[%i] main: anchor=%i\n", getpid(), is_anch);
+
+	pid = fork();
+	if (pid == 0) {
+		pid_t pid2;
+
+		printf("[%i] help: has parent %i\n", getpid(), getppid());
+		pid2 = fork();
+		if (pid2 == 0) {
+			int i;
+
+			for (i = 0; i < 30; i += 3) {
+				printf("[%i] child: has parent %i, sleep\n", getpid(), getppid());
+				sleep(1);
+			}
+			printf("[%i] child: exit\n", getpid());
+		} else {
+			printf("[%i] help: forked 'child' %i, sleep\n", getpid(), pid2);
+			sleep(2);
+			printf("[%i] help: exit\n", getpid());
+			return 0;
+		}
+	} else {
+		printf("[%i] main: forked 'help' %i\n", getpid(), pid);
+		printf("[%i] main: wait for 'help' to exit %i\n", getpid(), pid);
+		waitpid(pid, NULL, 0);
+		printf("[%i] main: 'help' %i returned, sleep\n", getpid(), pid);
+		sleep(2);
+		printf("[%i] main: exit\n", getpid());
+	}
+
+	return 0;
+}
+
