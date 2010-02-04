@@ -1,21 +1,23 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753858Ab0BDRcf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 12:32:35 -0500
-Received: from kroah.org ([198.145.64.141]:34715 "EHLO coco.kroah.org"
+	id S1758523Ab0BDRVj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 12:21:39 -0500
+Received: from kroah.org ([198.145.64.141]:34608 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933198Ab0BDRVw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 12:21:52 -0500
-X-Mailbox-Line: From linux@linux.site Thu Feb  4 09:15:05 2010
-Message-Id: <20100204171505.353374675@linux.site>
+	id S932968Ab0BDRVe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 12:21:34 -0500
+X-Mailbox-Line: From linux@linux.site Thu Feb  4 09:14:52 2010
+Message-Id: <20100204171452.218912543@linux.site>
 User-Agent: quilt/0.47-14.9
-Date: Thu, 04 Feb 2010 09:12:01 -0800
+Date: Thu, 04 Feb 2010 09:11:41 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       "H. Peter Anvin" <hpa@zytor.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [30/74] Split flush_old_exec into two functions
+       Felix Beck <felix.beck@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [10/74] [S390] zcrypt: Do not remove coprocessor for error 8/72
 In-Reply-To: <20100204171850.GA16539@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -25,245 +27,45 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Linus Torvalds <torvalds@linux-foundation.org>
+From: Felix Beck <felix.beck@de.ibm.com>
 
-commit 221af7f87b97431e3ee21ce4b0e77d5411cf1549 upstream.
+commit 19b123ebacacdce5e75045bfe82122b01c821a5b upstream.
 
-'flush_old_exec()' is the point of no return when doing an execve(), and
-it is pretty badly misnamed.  It doesn't just flush the old executable
-environment, it also starts up the new one.
+In a case where the number of the input data is bigger than the
+modulus of the key, the coprocessor adapters will report an 8/72
+error. This case is not caught yet, thus the adapter will be taken
+offline. To prevent this, we return an -EINVAL instead.
 
-Which is very inconvenient for things like setting up the new
-personality, because we want the new personality to affect the starting
-of the new environment, but at the same time we do _not_ want the new
-personality to take effect if flushing the old one fails.
-
-As a result, the x86-64 '32-bit' personality is actually done using this
-insane "I'm going to change the ABI, but I haven't done it yet" bit
-(TIF_ABI_PENDING), with SET_PERSONALITY() not actually setting the
-personality, but just the "pending" bit, so that "flush_thread()" can do
-the actual personality magic.
-
-This patch in no way changes any of that insanity, but it does split the
-'flush_old_exec()' function up into a preparatory part that can fail
-(still called flush_old_exec()), and a new part that will actually set
-up the new exec environment (setup_new_exec()).  All callers are changed
-to trivially comply with the new world order.
-
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Felix Beck <felix.beck@de.ibm.com>
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/sh/kernel/process_64.c |    2 +-
- arch/x86/ia32/ia32_aout.c   |   10 ++++++----
- fs/binfmt_aout.c            |    1 +
- fs/binfmt_elf.c             |   27 ++-------------------------
- fs/binfmt_elf_fdpic.c       |    3 +++
- fs/binfmt_flat.c            |    1 +
- fs/binfmt_som.c             |    1 +
- fs/exec.c                   |   26 ++++++++++++++++----------
- include/linux/binfmts.h     |    1 +
- include/linux/sched.h       |    2 +-
- 10 files changed, 33 insertions(+), 41 deletions(-)
+ drivers/s390/crypto/zcrypt_pcicc.c  |    2 ++
+ drivers/s390/crypto/zcrypt_pcixcc.c |    2 ++
+ 2 files changed, 4 insertions(+)
 
---- a/arch/sh/kernel/process_64.c
-+++ b/arch/sh/kernel/process_64.c
-@@ -367,7 +367,7 @@ void exit_thread(void)
- void flush_thread(void)
- {
- 
--	/* Called by fs/exec.c (flush_old_exec) to remove traces of a
-+	/* Called by fs/exec.c (setup_new_exec) to remove traces of a
- 	 * previously running executable. */
- #ifdef CONFIG_SH_FPU
- 	if (last_task_used_math == current) {
---- a/arch/x86/ia32/ia32_aout.c
-+++ b/arch/x86/ia32/ia32_aout.c
-@@ -308,15 +308,17 @@ static int load_aout_binary(struct linux
- 	if (retval)
- 		return retval;
- 
--	regs->cs = __USER32_CS;
--	regs->r8 = regs->r9 = regs->r10 = regs->r11 = regs->r12 =
--		regs->r13 = regs->r14 = regs->r15 = 0;
--
- 	/* OK, This is the point of no return */
- 	set_personality(PER_LINUX);
- 	set_thread_flag(TIF_IA32);
- 	clear_thread_flag(TIF_ABI_PENDING);
- 
-+	setup_new_exec(bprm);
-+
-+	regs->cs = __USER32_CS;
-+	regs->r8 = regs->r9 = regs->r10 = regs->r11 = regs->r12 =
-+		regs->r13 = regs->r14 = regs->r15 = 0;
-+
- 	current->mm->end_code = ex.a_text +
- 		(current->mm->start_code = N_TXTADDR(ex));
- 	current->mm->end_data = ex.a_data +
---- a/fs/binfmt_aout.c
-+++ b/fs/binfmt_aout.c
-@@ -263,6 +263,7 @@ static int load_aout_binary(struct linux
- #else
- 	set_personality(PER_LINUX);
- #endif
-+	setup_new_exec(bprm);
- 
- 	current->mm->end_code = ex.a_text +
- 		(current->mm->start_code = N_TXTADDR(ex));
---- a/fs/binfmt_elf.c
-+++ b/fs/binfmt_elf.c
-@@ -662,27 +662,6 @@ static int load_elf_binary(struct linux_
- 			if (elf_interpreter[elf_ppnt->p_filesz - 1] != '\0')
- 				goto out_free_interp;
- 
--			/*
--			 * The early SET_PERSONALITY here is so that the lookup
--			 * for the interpreter happens in the namespace of the 
--			 * to-be-execed image.  SET_PERSONALITY can select an
--			 * alternate root.
--			 *
--			 * However, SET_PERSONALITY is NOT allowed to switch
--			 * this task into the new images's memory mapping
--			 * policy - that is, TASK_SIZE must still evaluate to
--			 * that which is appropriate to the execing application.
--			 * This is because exit_mmap() needs to have TASK_SIZE
--			 * evaluate to the size of the old image.
--			 *
--			 * So if (say) a 64-bit application is execing a 32-bit
--			 * application it is the architecture's responsibility
--			 * to defer changing the value of TASK_SIZE until the
--			 * switch really is going to happen - do this in
--			 * flush_thread().	- akpm
--			 */
--			SET_PERSONALITY(loc->elf_ex);
--
- 			interpreter = open_exec(elf_interpreter);
- 			retval = PTR_ERR(interpreter);
- 			if (IS_ERR(interpreter))
-@@ -730,9 +709,6 @@ static int load_elf_binary(struct linux_
- 		/* Verify the interpreter has a valid arch */
- 		if (!elf_check_arch(&loc->interp_elf_ex))
- 			goto out_free_dentry;
--	} else {
--		/* Executables without an interpreter also need a personality  */
--		SET_PERSONALITY(loc->elf_ex);
+--- a/drivers/s390/crypto/zcrypt_pcicc.c
++++ b/drivers/s390/crypto/zcrypt_pcicc.c
+@@ -373,6 +373,8 @@ static int convert_type86(struct zcrypt_
+ 			zdev->max_mod_size = PCICC_MAX_MOD_SIZE_OLD;
+ 			return -EAGAIN;
+ 		}
++		if (service_rc == 8 && service_rs == 72)
++			return -EINVAL;
+ 		zdev->online = 0;
+ 		return -EAGAIN;	/* repeat the request on a different device. */
  	}
- 
- 	/* Flush all traces of the currently running executable */
-@@ -752,7 +728,8 @@ static int load_elf_binary(struct linux_
- 
- 	if (!(current->personality & ADDR_NO_RANDOMIZE) && randomize_va_space)
- 		current->flags |= PF_RANDOMIZE;
--	arch_pick_mmap_layout(current->mm);
-+
-+	setup_new_exec(bprm);
- 
- 	/* Do this so that we can load the interpreter, if need be.  We will
- 	   change some of these later */
---- a/fs/binfmt_elf_fdpic.c
-+++ b/fs/binfmt_elf_fdpic.c
-@@ -321,6 +321,9 @@ static int load_elf_fdpic_binary(struct 
- 	set_personality(PER_LINUX_FDPIC);
- 	if (elf_read_implies_exec(&exec_params.hdr, executable_stack))
- 		current->personality |= READ_IMPLIES_EXEC;
-+
-+	setup_new_exec(bprm);
-+
- 	set_binfmt(&elf_fdpic_format);
- 
- 	current->mm->start_code = 0;
---- a/fs/binfmt_flat.c
-+++ b/fs/binfmt_flat.c
-@@ -519,6 +519,7 @@ static int load_flat_file(struct linux_b
- 
- 		/* OK, This is the point of no return */
- 		set_personality(PER_LINUX_32BIT);
-+		setup_new_exec(bprm);
+--- a/drivers/s390/crypto/zcrypt_pcixcc.c
++++ b/drivers/s390/crypto/zcrypt_pcixcc.c
+@@ -462,6 +462,8 @@ static int convert_type86_ica(struct zcr
+ 		}
+ 		if (service_rc == 12 && service_rs == 769)
+ 			return -EINVAL;
++		if (service_rc == 8 && service_rs == 72)
++			return -EINVAL;
+ 		zdev->online = 0;
+ 		return -EAGAIN;	/* repeat the request on a different device. */
  	}
- 
- 	/*
---- a/fs/binfmt_som.c
-+++ b/fs/binfmt_som.c
-@@ -227,6 +227,7 @@ load_som_binary(struct linux_binprm * bp
- 	/* OK, This is the point of no return */
- 	current->flags &= ~PF_FORKNOEXEC;
- 	current->personality = PER_HPUX;
-+	setup_new_exec(bprm);
- 
- 	/* Set the task size for HP-UX processes such that
- 	 * the gateway page is outside the address space.
---- a/fs/exec.c
-+++ b/fs/exec.c
-@@ -931,9 +931,7 @@ void set_task_comm(struct task_struct *t
- 
- int flush_old_exec(struct linux_binprm * bprm)
- {
--	char * name;
--	int i, ch, retval;
--	char tcomm[sizeof(current->comm)];
-+	int retval;
- 
- 	/*
- 	 * Make sure we have a private signal table and that
-@@ -953,6 +951,20 @@ int flush_old_exec(struct linux_binprm *
- 		goto out;
- 
- 	bprm->mm = NULL;		/* We're using it now */
-+	return 0;
-+
-+out:
-+	return retval;
-+}
-+EXPORT_SYMBOL(flush_old_exec);
-+
-+void setup_new_exec(struct linux_binprm * bprm)
-+{
-+	int i, ch;
-+	char * name;
-+	char tcomm[sizeof(current->comm)];
-+
-+	arch_pick_mmap_layout(current->mm);
- 
- 	/* This is the point of no return */
- 	current->sas_ss_sp = current->sas_ss_size = 0;
-@@ -1009,14 +1021,8 @@ int flush_old_exec(struct linux_binprm *
- 			
- 	flush_signal_handlers(current, 0);
- 	flush_old_files(current->files);
--
--	return 0;
--
--out:
--	return retval;
- }
--
--EXPORT_SYMBOL(flush_old_exec);
-+EXPORT_SYMBOL(setup_new_exec);
- 
- /*
-  * Prepare credentials and lock ->cred_guard_mutex.
---- a/include/linux/binfmts.h
-+++ b/include/linux/binfmts.h
-@@ -101,6 +101,7 @@ extern int prepare_binprm(struct linux_b
- extern int __must_check remove_arg_zero(struct linux_binprm *);
- extern int search_binary_handler(struct linux_binprm *,struct pt_regs *);
- extern int flush_old_exec(struct linux_binprm * bprm);
-+extern void setup_new_exec(struct linux_binprm * bprm);
- 
- extern int suid_dumpable;
- #define SUID_DUMP_DISABLE	0	/* No setuid dumping */
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1354,7 +1354,7 @@ struct task_struct {
- 	char comm[TASK_COMM_LEN]; /* executable name excluding path
- 				     - access with [gs]et_task_comm (which lock
- 				       it with task_lock())
--				     - initialized normally by flush_old_exec */
-+				     - initialized normally by setup_new_exec */
- /* file system info */
- 	int link_count, total_link_count;
- #ifdef CONFIG_SYSVIPC
 
 
