@@ -1,101 +1,74 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933458Ab0BDU4A (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 15:56:00 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:61120 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932488Ab0BDUz7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 15:55:59 -0500
+	id S933497Ab0BDU4Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 15:56:16 -0500
+Received: from mail-ew0-f228.google.com ([209.85.219.228]:33555 "EHLO
+	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933468Ab0BDU4M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 15:56:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=BrJTQrxTiAJwb5e2KIHeqSLEUCJMEf5BqMvqU26CaJjGt0MqM5saFlpp7iJghaXMWH
+         TKK3XAGSTDDb8Zk6BcJwOXaEv0HLPE63yJX8Yo7E9F1sIT3BLJtsZFPuAuVZJlZuiJ6c
+         BTMx0d97AFeP0mi9WF5Y0CoIGOjEZqpOwL4Ww=
+Date: Thu, 4 Feb 2010 23:56:06 +0300
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arnaud Patard <arnaud.patard@rtp-net.org>,
+       Ben Dooks <ben-linux@fluff.org>, Eric Miao <eric.miao@marvell.com>,
+       Kristoffer Ericson <Kristoffer.Ericson@gmail.com>,
+       Liam Girdwood <liam.girdwood@wolfsonmicro.com>,
+       Paul Sokolovsky <pmiscml@gmail.com>, Richard Purdie <rpurdie@rpsys.net>,
+       Russell King <rmk+kernel@arm.linux.org.uk>
+Subject: Re: [PATCH 1/9] platform-drivers: move probe to .devinit.text in
+ arch/arm
+Message-ID: <20100204205606.GA8659@doriath.ww600.siemens.net>
+References: <20100203150850.GA28815@kroah.com>
+ <1265313417-5568-1-git-send-email-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-X-Fcc: ~/Mail/linus
-Cc: Oleg Nesterov <oleg@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Lu, Hongjiu" <hongjiu.lu@intel.com>,
-       "Lachner, Peter" <peter.lachner@intel.com>
-Subject: Re: [patch] x86: ptrace and core-dump extensions for xstate
-In-Reply-To: Suresh Siddha's message of  Thursday, 4 February 2010 12:28:49 -0800 <1265315329.2768.167.camel@sbs-t61.sc.intel.com>
-References: <1265076025.2802.194.camel@sbs-t61.sc.intel.com>
-	<20100203230817.E6529AA@magilla.sf.frob.com>
-	<1265315329.2768.167.camel@sbs-t61.sc.intel.com>
-Emacs: featuring the world's first municipal garbage collector!
-Message-Id: <20100204205543.E1D11E7@magilla.sf.frob.com>
-Date: Thu,  4 Feb 2010 12:55:43 -0800 (PST)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1265313417-5568-1-git-send-email-u.kleine-koenig@pengutronix.de>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Sure. Let's come to the agreement on the ABI changes and then I can
-> split the patches accordingly.
-
-The main point of splitting the patch is that the two new ABI components
-are quite separate and the former need not wait for the latter.  There is
-no real question about the regset format, so (with fixes) you can send the
-first patch now and we'll all sign off on it.  Only the ptrace addition
-really remains to be hashed out.
-
-> > There are some obvious typos in that comment.  Please fix those up.
+On Thu, Feb 04, 2010 at 08:56:49PM +0100, Uwe Kleine-König wrote:
+> A pointer to a probe callback is passed to the core via
+> platform_driver_register and so the function must not disappear when the
+> .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
+> unbinding and binding a device to the driver via sysfs will result in an
+> oops as does a device being registered late.
 > 
-> Can you please elaborate?
+> An alternative to this patch is using platform_driver_probe instead of
+> platform_driver_register plus removing the pointer to the probe function
+> from the struct platform_driver.
+> 
+> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Arnaud Patard <arnaud.patard@rtp-net.org>
+> Cc: Ben Dooks <ben-linux@fluff.org>
+> Cc: Dmitry Baryshkov <dbaryshkov@gmail.com>
+> Cc: Eric Miao <eric.miao@marvell.com>
+> Cc: Kristoffer Ericson <Kristoffer.Ericson@gmail.com>
+> Cc: Liam Girdwood <liam.girdwood@wolfsonmicro.com>
+> Cc: Paul Sokolovsky <pmiscml@gmail.com>
+> Cc: Richard Purdie <rpurdie@rpsys.net>
+> Cc: Russell King <rmk+kernel@arm.linux.org.uk>
 
-Just proofread it.  I really did mean "obvious typos", i.e. spelling,
-whitespace, punctuation, nothing more.
+sharpsl_pm part:
+Acked-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 
-> This issue is not new and gets handled in the same way as for existing
-> fxsave/fxrstor, as they don't specify page alignment restrictions.
+-- 
+With best wishes
+Dmitry
 
-I didn't suggest it was new.  I was looking for some confirmation that
-there is in fact no permanent (i.e. compile-time) size limit.
-
-> Ok. I would like to enforce that "addr == xstate_size", so that we don't
-> have to complicate the kernel implementation in trying to interpret what
-> state the user knows based on the size passed by the user etc. 
-
-I don't think this is the right way to think about it.  The regset code
-does not need to do anything different at all.  There will in future be
-other callers of the regset hooks, that's what the whole interface is there
-for.  Regardless of whether modification is full or partial, you just
-enforce the various bitmasks on the resultant buffer as you already do, and
-that's all there is to it.  If userland stores partial contents with a
-bogus format, that's its problem.  It's just like the program itself had
-used xrstor in user mode with the same bogus buffer contents.
-
-> User should use cpuid to get the size of the xstate buffer supported by
-> the OS and processor.
-
-They can if they want.  But they can also just use a smaller size that
-corresponds to the bitmasks they set in the buffer they pass in.
-
-> Kernel can check and throw an error with out silently corrupting the user
-> who is not following the requirements.
-
-ptrace is simply giving you a way to edit the buffer passed to xrstor.  You
-can put garbage there via ptrace just like you can put garbage there with a
-direct xrstor instruction in user mode.  This is no different from all
-other ptrace register access, and there is no reason to enforce anything
-special about it.
-
-> We probably have to extend regset infrastructure to track which NT_*
-> types are part of PTRACE_[GET|SET]REGSET and which are not.
-
-I don't understand what you mean.  The point of the generic requests is
-that they apply to any user_regset you want.  user_regset does not need
-anything new.
-
-> Also, I am not sure if pushing the ptrace interpretation of the user
-> pointer into the regset routines is a good idea. 
-
-I don't understand what you mean here at all.  I did not suggest anything
-that affects what the regset routines themselves do in any way at all.
-
-It is an unacceptably bad idea to have any new ptrace interfaces for regset
-access that do anything different than exactly let you get/set all or part
-of a regset exactly as the arch's user_regset provides it.
-
-
-Thanks,
-Roland
