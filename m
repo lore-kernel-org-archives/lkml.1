@@ -1,71 +1,58 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751354Ab0BDFQI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 00:16:08 -0500
-Received: from arroyo.ext.ti.com ([192.94.94.40]:49013 "EHLO arroyo.ext.ti.com"
+	id S1751576Ab0BDFSe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 00:18:34 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:5024 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750743Ab0BDFQG convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 00:16:06 -0500
-From: "Shilimkar, Santosh" <santosh.shilimkar@ti.com>
-To: Abhijeet Dharmapurikar <adharmap@codeaurora.org>,
-       Catalin Marinas <catalin.marinas@arm.com>
-CC: Daniel Walker <dwalker@codeaurora.org>,
-       Russell King <linux@arm.linux.org.uk>, Tony Lindgren <tony@atomide.com>,
-       "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Larry Bassel <lbassel@quicinc.com>,
-       "linux-arm-kernel@lists.infradead.org" 
-	<linux-arm-kernel@lists.infradead.org>
-Date: Thu, 4 Feb 2010 10:45:29 +0530
-Subject: RE: [RFC PATCH] ARM: Change the mandatory barriers implementation
-Thread-Topic: [RFC PATCH] ARM: Change the mandatory barriers implementation
-Thread-Index: AcqlMEA4RYb5hBdcQayfD2BC9g1QewAJ/JXA
-Message-ID: <EAF47CD23C76F840A9E7FCE10091EFAB02C0B421AC@dbde02.ent.ti.com>
-References: <20100203161434.15912.42697.stgit@pc1117.cambridge.arm.com>
- <4B6A131B.1070005@codeaurora.org>
-In-Reply-To: <4B6A131B.1070005@codeaurora.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	id S1750953Ab0BDFSa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 00:18:30 -0500
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: "Lu, Hongjiu" <hongjiu.lu@intel.com>
+X-Fcc: ~/Mail/linus
+Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Oleg Nesterov <oleg@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Lachner, Peter" <peter.lachner@intel.com>
+Subject: RE: [patch] x86: ptrace and core-dump extensions for xstate
+In-Reply-To: Lu, Hongjiu's message of  Wednesday, 3 February 2010 21:01:32 -0800 <8EA2C2C4116BF44AB370468FBF85A7770123AAB3A1@orsmsx504.amr.corp.intel.com>
+References: <1265076025.2802.194.camel@sbs-t61.sc.intel.com>
+	<20100203230817.E6529AA@magilla.sf.frob.com>
+	<8EA2C2C4116BF44AB370468FBF85A7770123AAB0AE@orsmsx504.amr.corp.intel.com>
+	<20100204020224.45379725@magilla.sf.frob.com>
+	<8EA2C2C4116BF44AB370468FBF85A7770123AAB2E8@orsmsx504.amr.corp.intel.com>
+	<20100204021659.AB348C880@magilla.sf.frob.com>
+	<8EA2C2C4116BF44AB370468FBF85A7770123AAB303@orsmsx504.amr.corp.intel.com>
+	<20100204045458.5AA2F7290@magilla.sf.frob.com>
+	<8EA2C2C4116BF44AB370468FBF85A7770123AAB3A1@orsmsx504.amr.corp.intel.com>
+Emacs: where editing text is like playing Paganini on a glass harmonica.
+Message-Id: <20100204051816.E8F68815A@magilla.sf.frob.com>
+Date: Wed,  3 Feb 2010 21:18:16 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> -----Original Message-----
-> From: linux-arm-kernel-bounces@lists.infradead.org [mailto:linux-arm-kernel-
-> bounces@lists.infradead.org] On Behalf Of Abhijeet Dharmapurikar
-> Sent: Thursday, February 04, 2010 5:52 AM
-> To: Catalin Marinas
-> Cc: Daniel Walker; Russell King; Tony Lindgren; linux-arm-msm@vger.kernel.org; linux-
-> kernel@vger.kernel.org; Larry Bassel; linux-arm-kernel@lists.infradead.org
-> Subject: Re: [RFC PATCH] ARM: Change the mandatory barriers implementation
+> > Suresh's patch puts this value in the xsave block, in what Suresh calls
+> > "sw_usable_bytes".  See the asm/ptrace-abi.h comment in the patch you
+> > signed off on.
+> >
+> > How is that not sufficient?  If it is indeed not sufficient to usefully
+> > interpret the xsave block, then how could an xsave block in a core dump
+> > file ever possibly be examined if it might not have been generated on the
+> > same system and kernel where the debugger is doing the examination?  If
+> > the NT_X86_XSTATE note as implemented in Suresh's patch is indeed not
+> > entirely self-contained in this way, then NAK on that new note format.
+> > 
 > 
-> > The mandatory barriers (mb, rmb, wmb) are used even on uniprocessor
-> > systems for things like ordering Normal Non-cacheable memory accesses
-> > with DMA transfer (via Device memory writes). The current implementation
-> > uses dmb() for mb() and friends but this is not sufficient. The DMB only
-> > ensures the ordering of accesses with regards to a single observer
-> > accessing the same memory. If a DMA transfer is started by a write to
-> > Device memory, the data to be transfered may not reach the main memory
-> > (even if mapped as Normal Non-cacheable) before the device receives the
-> > notification to begin the transfer. The only barrier that would help in
-> > this situation is DSB which would completely drain the write buffers.
-> 
-> On ARMv7, DMB guarantees that all accesses prior to DMB are observed by
-> an observer if that observer sees any accesses _after_ the DMB. In this
-> case, since DMA engine observes a write to itself( It is being written
-> to and hence must observe the write) it should also see the writes to
-> the buffers. A dmb() after the writes to buffer and before write to DMA
-> engine should suffice.
-This may be true if the DMA engine is an observer in the cluster. Without
-coherence hardware, DMA won't see the correct data without draining the write
-buffer. So DSB is necessary in DMA case at least.
+> I use it when reading core dump, which doesn't involve a system call.
+> I can analyze it on a totally different machine.
 
-Regards,
-Santosh
+You did not answer any of my questions.
+Perhaps Suresh can be more helpful in explaining the situation.
+
+
+Thanks,
+Roland
