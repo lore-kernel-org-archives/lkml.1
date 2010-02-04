@@ -1,22 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933617Ab0BDRfW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 12:35:22 -0500
-Received: from kroah.org ([198.145.64.141]:34628 "EHLO coco.kroah.org"
+	id S933528Ab0BDReT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 12:34:19 -0500
+Received: from kroah.org ([198.145.64.141]:34664 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758519Ab0BDRVi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 12:21:38 -0500
-X-Mailbox-Line: From linux@linux.site Thu Feb  4 09:14:57 2010
-Message-Id: <20100204171455.992389734@linux.site>
+	id S933099Ab0BDRVo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 12:21:44 -0500
+X-Mailbox-Line: From linux@linux.site Thu Feb  4 09:15:00 2010
+Message-Id: <20100204171500.492987815@linux.site>
 User-Agent: quilt/0.47-14.9
-Date: Thu, 04 Feb 2010 09:11:46 -0800
+Date: Thu, 04 Feb 2010 09:11:52 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Zhao Yakui <yakui.zhao@intel.com>, Len Brown <len.brown@intel.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [15/74] ACPI: Advertise to BIOS in _OSC: _OST on _PPC changes
+       Al Viro <viro@zeniv.linux.org.uk>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [21/74] Fix a leak in affs_fill_super()
 In-Reply-To: <20100204171850.GA16539@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -26,43 +25,27 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Zhao Yakui <yakui.zhao@intel.com>
+From: Al Viro <viro@zeniv.linux.org.uk>
 
-commit 6a4e2b7503d1f630bface040cf0f5a7aac1fabdb upstream.
+commit afc70ed05a07bfe171f7a5b8fdc80bdb073d314f upstream.
 
-If the BIOS pokes the system-wide OSC bits to see if Linux
-supports evaluating _OST after a _PPC change notification,
-answer yes.
-
-Also, fix an oversight where we neglected to set the OSC
-bit advertising processor aggregator device support
-when acpi-pad is compiled as a module.
-
-Signed-off-by: Zhao Yakui <yakui.zhao@intel.com>
-Signed-off-by: Len Brown <len.brown@intel.com>
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/acpi/bus.c |    7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ fs/affs/super.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
---- a/drivers/acpi/bus.c
-+++ b/drivers/acpi/bus.c
-@@ -490,9 +490,14 @@ static void acpi_bus_osc_support(void)
- 
- 	capbuf[OSC_QUERY_TYPE] = OSC_QUERY_ENABLE;
- 	capbuf[OSC_SUPPORT_TYPE] = OSC_SB_PR3_SUPPORT; /* _PR3 is in use */
--#ifdef CONFIG_ACPI_PROCESSOR_AGGREGATOR
-+#if defined(CONFIG_ACPI_PROCESSOR_AGGREGATOR) ||\
-+			defined(CONFIG_ACPI_PROCESSOR_AGGREGATOR_MODULE)
- 	capbuf[OSC_SUPPORT_TYPE] |= OSC_SB_PAD_SUPPORT;
- #endif
-+
-+#if defined(CONFIG_ACPI_PROCESSOR) || defined(CONFIG_ACPI_PROCESSOR_MODULE)
-+	capbuf[OSC_SUPPORT_TYPE] |= OSC_SB_PPC_OST_SUPPORT;
-+#endif
- 	if (ACPI_FAILURE(acpi_get_handle(NULL, "\\_SB", &handle)))
- 		return;
- 	if (ACPI_SUCCESS(acpi_run_osc(handle, &context)))
+--- a/fs/affs/super.c
++++ b/fs/affs/super.c
+@@ -316,6 +316,8 @@ static int affs_fill_super(struct super_
+ 				&blocksize,&sbi->s_prefix,
+ 				sbi->s_volume, &mount_flags)) {
+ 		printk(KERN_ERR "AFFS: Error parsing options\n");
++		kfree(sbi->s_prefix);
++		kfree(sbi);
+ 		return -EINVAL;
+ 	}
+ 	/* N.B. after this point s_prefix must be released */
 
 
