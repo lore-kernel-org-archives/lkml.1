@@ -1,303 +1,96 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757284Ab0BDH5n (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 02:57:43 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:43071 "EHLO smtps.tip.net.au"
+	id S1757279Ab0BDH6k (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 02:58:40 -0500
+Received: from cantor.suse.de ([195.135.220.2]:34907 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756843Ab0BDH5l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 02:57:41 -0500
-Date: Thu, 4 Feb 2010 18:57:36 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for February 4
-Message-Id: <20100204185736.6628ab9a.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta7 (GTK+ 2.18.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__4_Feb_2010_18_57_36_+1100_1TxK7bi5Sc+zyp6T"
+	id S1754725Ab0BDH6i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 02:58:38 -0500
+From: Lubos Lunak <l.lunak@suse.cz>
+To: David Rientjes <rientjes@google.com>
+Subject: Re: Improving OOM killer
+Date: Thu, 4 Feb 2010 08:58:32 +0100
+User-Agent: KMail/1.9.10
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>, Rik van Riel <riel@redhat.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Nick Piggin <npiggin@suse.de>, Jiri Kosina <jkosina@suse.cz>
+References: <201002012302.37380.l.lunak@suse.cz> <201002032355.01260.l.lunak@suse.cz> <alpine.DEB.2.00.1002031600490.27918@chino.kir.corp.google.com>
+In-Reply-To: <alpine.DEB.2.00.1002031600490.27918@chino.kir.corp.google.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <201002040858.33046.l.lunak@suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__4_Feb_2010_18_57_36_+1100_1TxK7bi5Sc+zyp6T
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thursday 04 of February 2010, David Rientjes wrote:
+> On Wed, 3 Feb 2010, Lubos Lunak wrote:
+> >  As far as I'm concerned, this is a huge improvement over the current
+> > code (and, incidentally :), quite close to what I originally wanted). I'd
+> > be willing to test it in few real-world desktop cases if you provide a
+> > patch.
+>
+> There're some things that still need to be worked out,
 
-Hi all,
+ Ok. Just please do not let the perfect stand in the way of the good for way 
+too long.
 
-Changes since 20100203:
+> Do you have any comments about the forkbomb detector or its threshold that
+> I've put in my heuristic?  I think detecting these scenarios is still an
+> important issue that we need to address instead of simply removing it from
+> consideration entirely.
 
-The trivial tree lost its conflict.
+ I think before finding out the answer it should be first figured out what the 
+question is :). Besides the vague "forkbomb" description I still don't know 
+what realistic scenarios this is supposed to handle. IMO trying to cover 
+intentional abuse is a lost fight, so I think the purpose of this code should 
+be just to handle cases when there's a mistake leading to relatively fast 
+spawning of children of a specific parent that'll lead to OOM. The shape of 
+the children subtree doesn't matter, it can be either a parent with many 
+direct children, or children being created recursively, I think any case is 
+possible here. A realistic example would be e.g. by mistake 
+typing 'make -j22' instead of 'make -j2' and overloading the machine by too 
+many g++ instances. That would be actually a non-trivial tree of children, 
+with recursive make and sh processes in it.
 
-----------------------------------------------------------------------------
+ A good way to detect this would be checking in badness() if the process has 
+any children with relatively low CPU and real time values (let's say 
+something less than a minute). If yes, the badness score should also account 
+for all these children, recursively. I'm not sure about the exact formula, 
+just summing up the memory usage like it is done now does not fit your 0-1000 
+score idea, and it's also wrong because it doesn't take sharing of memory 
+into consideration (e.g. a KDE app with several kdelibs-based children could 
+achieve a massive score here because of extensive sharing, even though the 
+actual memory usage increase caused by them could be insignificant). I don't 
+know kernel internals, so I don't know how feasible it would be, but one 
+naive idea would be to simply count how big portion of the total memory all 
+these considered processes occupy.
 
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
-(patches at http://www.kernel.org/pub/linux/kernel/v2.6/next/ ).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
+ This indeed would not handle the case when a tree of processes would slowly 
+leak, for example there being a bug in Apache and all the forked children of 
+the master process leaking memory equally, but none of the single children 
+leaking enough to score more than a single unrelated innocent process. Here I 
+question how realistic such scenario actually would be, and mainly the actual 
+possibility of detecting such case. I do not see how code could distinguish 
+this from the case of using Konsole or XTerm to launch a number of unrelated 
+KDE/X applications each of which would occupy a considerable amount of 
+memory. Here clearly killing the Konsole/XTerm and all the spawned 
+applications with it is incorrect, so with no obvious offender the OOM killer 
+would simply have to pick something. And since you now probably feel the urge 
+to point out oom_adj again, I want to point out again that it's not a very 
+good solution for the desktop and that Konsole/XTerm should not have such 
+protection, unless the user explicitly does it themselves - e.g. Konsole can 
+be set to infinite scrollback, so when accidentally running something that 
+produces a huge amount of output Konsole actually could be the only right 
+process to kill. So I think the case of slowly leaking group of children 
+cannot be reasonably solved in code.
 
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig (32 and
-64 bit), ppc44x_defconfig and allyesconfig (minus
-CONFIG_PROFILE_ALL_BRANCHES - this fails its final link) and i386, sparc
-and sparc64 defconfig. These builds also have
-CONFIG_ENABLE_WARN_DEPRECATED, CONFIG_ENABLE_MUST_CHECK and
-CONFIG_DEBUG_INFO disabled when necessary.
-
-Below is a summary of the state of the merge.
-
-We are up to 156 trees (counting Linus' and 22 trees of patches pending
-for Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging fixes/fixes
-Merging arm-current/master
-Merging m68k-current/for-linus
-Merging powerpc-merge/merge
-Merging sparc-current/master
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sound-current/for-linus
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/for-linus
-Merging quilt/driver-core.current
-Merging quilt/tty.current
-Merging quilt/usb.current
-Merging quilt/staging.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-linus
-Merging audit-current/for-linus
-Merging crypto-current/master
-Merging ide-curent/master
-Merging dwmw2/master
-Merging arm/devel
-CONFLICT (content): Merge conflict in arch/arm/mach-mx25/clock.c
-Merging davinci/davinci-next
-Merging msm/for-next
-Merging omap/for-next
-Merging pxa/for-next
-Merging samsung/next-samsung
-Merging avr32/avr32-arch
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging m68k/for-next
-Merging m68knommu/for-next
-Merging microblaze/next
-Merging mips/mips-for-linux-next
-Merging parisc/next
-Merging powerpc/next
-Merging 4xx/next
-Merging 52xx-and-virtex/next
-Merging galak/next
-Merging s390/features
-Merging sh/master
-Merging sparc/master
-Merging xtensa/master
-Merging ceph/for-next
-Merging cifs/master
-Merging configfs/linux-next
-Merging ecryptfs/next
-Merging ext3/for_next
-Merging ext4/next
-Merging fatfs/master
-Merging fuse/for-next
-Merging gfs2/master
-CONFLICT (content): Merge conflict in fs/gfs2/super.c
-Merging jfs/next
-Merging logfs/master
-Merging nfs/linux-next
-Applying: ceph: update for BDI_RECLAIMABLE change
-Merging nfsd/nfsd-next
-Merging nilfs2/for-next
-Merging ocfs2/linux-next
-Merging squashfs/master
-Merging udf/for_next
-Merging v9fs/for-next
-CONFLICT (add/add): Merge conflict in fs/9p/cache.c
-Merging ubifs/linux-next
-Merging xfs/master
-Merging reiserfs-bkl/reiserfs/kill-bkl
-Merging vfs/for-next
-CONFLICT (content): Merge conflict in fs/gfs2/ops_inode.c
-Applying: logfs: fixup for write_inode API change
-Merging pci/linux-next
-Merging hid/for-next
-Merging quilt/i2c
-Merging bjdooks-i2c/next-i2c
-CONFLICT (content): Merge conflict in drivers/i2c/busses/Kconfig
-CONFLICT (content): Merge conflict in drivers/i2c/busses/Makefile
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging v4l-dvb/master
-Merging kbuild/for-next
-Merging kconfig/for-next
-Merging ide/master
-Merging libata/NEXT
-Merging infiniband/for-next
-Merging acpi/test
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/linux-next
-CONFLICT (content): Merge conflict in arch/x86/kvm/mmu.c
-CONFLICT (content): Merge conflict in arch/x86/kvm/x86.c
-Merging dlm/next
-Merging scsi/master
-Merging async_tx/next
-Merging net/master
-Merging wireless/master
-Merging mtd/master
-Merging crypto/master
-Merging sound/for-next
-Merging cpufreq/next
-Merging quilt/rr
-CONFLICT (content): Merge conflict in drivers/char/hvc_console.c
-CONFLICT (content): Merge conflict in drivers/char/hvc_console.h
-Merging mmc/next
-Merging tmio-mmc/linux-next
-CONFLICT (content): Merge conflict in drivers/mfd/asic3.c
-CONFLICT (content): Merge conflict in drivers/mfd/t7l66xb.c
-CONFLICT (content): Merge conflict in drivers/mfd/tc6387xb.c
-CONFLICT (content): Merge conflict in drivers/mfd/tc6393xb.c
-CONFLICT (add/add): Merge conflict in drivers/mfd/tmio_core.c
-CONFLICT (content): Merge conflict in drivers/mmc/host/tmio_mmc.c
-CONFLICT (content): Merge conflict in drivers/mmc/host/tmio_mmc.h
-CONFLICT (content): Merge conflict in include/linux/mfd/tmio.h
-Merging input/next
-Merging lsm/for-next
-Merging block/for-next
-Merging quilt/device-mapper
-Merging embedded/master
-Merging firmware/master
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Merging mfd/for-next
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-Merging voltage/for-next
-Merging security-testing/next
-Merging lblnet/master
-Merging agp/agp-next
-Merging uwb/for-upstream
-Merging watchdog/master
-Merging bdev/master
-Merging dwmw2-iommu/master
-Merging cputime/cputime
-Merging osd/linux-next
-Merging jc_docs/docs-next
-Merging nommu/master
-Merging trivial/for-next
-Merging audit/for-next
-Merging quilt/aoe
-Merging suspend/linux-next
-Merging bluetooth/master
-Merging fsnotify/for-next
-CONFLICT (content): Merge conflict in fs/notify/inotify/inotify_fsnotify.c
-CONFLICT (content): Merge conflict in fs/notify/inotify/inotify_user.c
-CONFLICT (content): Merge conflict in include/linux/fs.h
-CONFLICT (content): Merge conflict in include/linux/fsnotify.h
-CONFLICT (content): Merge conflict in kernel/audit_tree.c
-Merging irda/for-next
-CONFLICT (content): Merge conflict in drivers/net/irda/irda-usb.c
-Merging hwlat/for-linus
-CONFLICT (content): Merge conflict in MAINTAINERS
-CONFLICT (content): Merge conflict in drivers/misc/Makefile
-Merging drbd/for-jens
-Merging catalin/for-next
-Merging alacrity/linux-next
-CONFLICT (content): Merge conflict in include/linux/Kbuild
-CONFLICT (content): Merge conflict in lib/Kconfig
-Merging i7core_edac/linux_next
-Merging devicetree/next-devicetree
-Merging spi/next-spi
-Merging limits/writable_limits
-CONFLICT (content): Merge conflict in arch/x86/ia32/ia32entry.S
-CONFLICT (content): Merge conflict in arch/x86/include/asm/unistd_32.h
-CONFLICT (content): Merge conflict in arch/x86/include/asm/unistd_64.h
-CONFLICT (content): Merge conflict in arch/x86/kernel/syscall_table_32.S
-Merging omap_dss2/for-next
-CONFLICT (content): Merge conflict in arch/arm/mach-omap2/board-omap3pandor=
-a.c
-Merging als/for-next
-Merging tip/auto-latest
-CONFLICT (delete/modify): kernel/kgdb.c deleted in HEAD and modified in tip=
-/auto-latest. Version tip/auto-latest of kernel/kgdb.c left in tree.
-$ git rm -f kernel/kgdb.c
-Merging edac-amd/for-next
-Merging oprofile/for-next
-Merging percpu/for-next
-CONFLICT (content): Merge conflict in include/linux/ftrace_event.h
-CONFLICT (content): Merge conflict in include/trace/ftrace.h
-CONFLICT (content): Merge conflict in kernel/trace/trace_event_profile.c
-CONFLICT (content): Merge conflict in kernel/trace/trace_kprobe.c
-CONFLICT (content): Merge conflict in kernel/trace/trace_syscalls.c
-CONFLICT (content): Merge conflict in net/ipv6/proc.c
-Applying: slab: update for percpu API change
-Merging workqueues/for-next
-Merging sfi/sfi-test
-Merging asm-generic/next
-Merging hwpoison/hwpoison
-Merging sysctl/master
-Merging quilt/driver-core
-CONFLICT (content): Merge conflict in drivers/base/power/main.c
-CONFLICT (content): Merge conflict in drivers/pcmcia/ds.c
-Merging quilt/tty
-Merging quilt/usb
-Merging quilt/staging
-CONFLICT (delete/modify): drivers/staging/sm7xx/smtc2d.c deleted in quilt/s=
-taging and modified in HEAD. Version HEAD of drivers/staging/sm7xx/smtc2d.c=
- left in tree.
-CONFLICT (delete/modify): drivers/staging/sm7xx/smtc2d.h deleted in quilt/s=
-taging and modified in HEAD. Version HEAD of drivers/staging/sm7xx/smtc2d.h=
- left in tree.
-$ git rm -f drivers/staging/sm7xx/smtc2d.c drivers/staging/sm7xx/smtc2d.h
-Merging scsi-post-merge/master
-
---Signature=_Thu__4_Feb_2010_18_57_36_+1100_1TxK7bi5Sc+zyp6T
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAktqffAACgkQjjKRsyhoI8w6DACeNDcLS1e9mzNfjPjkyiC+Ipmk
-gtcAniSQXbOeEj/KK0pdwgLJkSk5f6BC
-=udDS
------END PGP SIGNATURE-----
-
---Signature=_Thu__4_Feb_2010_18_57_36_+1100_1TxK7bi5Sc+zyp6T--
+-- 
+ Lubos Lunak
+ openSUSE Boosters team, KDE developer
+ l.lunak@suse.cz , l.lunak@kde.org
