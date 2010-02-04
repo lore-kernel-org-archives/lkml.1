@@ -1,239 +1,410 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932623Ab0BDTeM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 14:34:12 -0500
-Received: from landau.phys.spbu.ru ([195.19.235.38]:48484 "EHLO
-	landau.phys.spbu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932505Ab0BDTeJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 14:34:09 -0500
-Date: Thu, 4 Feb 2010 22:34:04 +0300
-From: Kirill Smelkov <kirr@landau.phys.spbu.ru>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Arnaldo Carvalho de Melo <acme@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org,
-       Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: Re: [PATCH 8/9] perf annotate: fix it for non-prelinked *.so
-Message-ID: <20100204193403.GA22781@landau.phys.spbu.ru>
-References: <1265223128-11786-1-git-send-email-acme@infradead.org> <1265223128-11786-8-git-send-email-acme@infradead.org> <1265265106.6364.5.camel@marge.simson.net>
+	id S932651Ab0BDTeu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 14:34:50 -0500
+Received: from inca-roads.misterjones.org ([213.251.177.50]:47954 "EHLO
+	inca-roads.misterjones.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758302Ab0BDTes convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 14:34:48 -0500
+Date: Thu, 4 Feb 2010 19:34:44 +0000
+From: Marc Zyngier <maz@misterjones.org>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: Eric Miao <eric.y.miao@gmail.com>,
+       Haojian Zhuang <haojian.zhuang@gmail.com>,
+       dbrownell@users.sourceforge.net,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH v3] Add interrupt handling capability to pca953x
+Message-ID: <20100204193444.4c9538f8@taxman.wild-wind.fr.eu.org>
+Organization: Metropolis -- Nowhere
+X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1265265106.6364.5.camel@marge.simson.net>
-Organization: St.Petersburg State University
-User-Agent: Mutt/1.5.6i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+X-SA-Exim-Connect-IP: 82.6.99.81
+X-SA-Exim-Rcpt-To: linux-kernel@vger.kernel.org, eric.y.miao@gmail.com, haojian.zhuang@gmail.com, dbrownell@users.sourceforge.net, akpm@linux-foundation.org
+X-SA-Exim-Mail-From: maz@misterjones.org
+X-SA-Exim-Scanned: No (on inca-roads.misterjones.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 04, 2010 at 07:31:46AM +0100, Mike Galbraith wrote:
-> On Wed, 2010-02-03 at 16:52 -0200, Arnaldo Carvalho de Melo wrote:
-> >  		const char *path = NULL;
-> > @@ -397,7 +397,8 @@ static void annotate_sym(struct hist_entry *he)
-> >  		       dso, dso->long_name, sym, sym->name);
-> >  
-> >  	sprintf(command, "objdump --start-address=0x%016Lx --stop-address=0x%016Lx -dS %s|grep -v %s",
-> > -		map->unmap_ip(map, sym->start), map->unmap_ip(map, sym->end),
-> > +		map__rip_2objdump(map, sym->start),
-> > +		map__rip_2objdump(map, sym->end),
-> >  		filename, filename);
-> >  
-> 
-> Monkey see monkey do.
-> 
-> perf tools: fix perf top module symbol annotation.
-> 
-> Signed-off-by: Mike Galbraith <efault@gmx.de>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Cc: Frederic Weisbecker <fweisbec@gmail.com>
-> Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-> LKML-Reference: <new-submission>
-> 
-> ---
->  tools/perf/builtin-top.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> Index: linux-2.6/tools/perf/builtin-top.c
-> ===================================================================
-> --- linux-2.6.orig/tools/perf/builtin-top.c
-> +++ linux-2.6/tools/perf/builtin-top.c
-> @@ -204,8 +204,8 @@ static void parse_source(struct sym_entr
->  	sprintf(command,
->  		"objdump --start-address=0x%016Lx "
->  			 "--stop-address=0x%016Lx -dS %s",
-> -		map->unmap_ip(map, sym->start),
-> -		map->unmap_ip(map, sym->end), path);
-> +		map__rip_2objdump(map, sym->start),
-> +		map__rip_2objdump(map, sym->end), path);
+Guys,
 
-If I recall correctly, that's not enough.
+Here is the latest version of my pca953x irq_chip patch.
+Compared to v2, the only change is that we only allow the irq handling
+capability if the driver is built-in.
 
-The problem is top code is also wrong at mapping objdump addresses to
-absolute ip. That is another part of builtin-top.c which does
-map->unmap_ip(), and I've already suggested a fix back at holidays:
+As always, I'd appreciate any comment on this.
 
-http://marc.info/?l=linux-kernel&m=126295508002536&w=2
+	M.
 
-For the reference, here it is again:
+>From 7219c15f4c2ee300eaf7b232c9f0c743e5735de8 Mon Sep 17 00:00:00 2001
+From: Marc Zyngier <maz@misterjones.org>
+Date: Tue, 22 Dec 2009 17:38:29 +0100
+Subject: [PATCH] Add interrupt handling capability to pca953x.
 
-   ( P.S. and Arnaldo, I'm sorry I still had no luck with spare time.
-          Overloaded me ... )
+Most of the GPIO expanders controlled by the pca953x driver are
+able to report changes on the input pins through an *INT pin.
 
----- 8< ----
+This patch implements the irq_chip functionality (edge detection
+only).
 
-From: Kirill Smelkov <kirr@landau.phys.spbu.ru>
-Date: Fri,  8 Jan 2010 15:23:08 +0300
-Subject: [PATCH 5/6] perf top: fix annotate for userspace
+The driver has been tested on an Arcom Zeus.
 
-First, for programs and prelinked libraries, annotate code was fooled by
-objdump output IPs (src->eip in the code) being wrongly converted to
-absolute IPs. In such case there were no conversion needed, but in
-
-    src->eip = strtoull(src->line, NULL, 16);
-    src->eip = map->unmap_ip(map, src->eip);    // = eip + map->start - map->pgoff
-
-we were reading absolute address from objdump (e.g. 8048604) and then
-almost doubling it, because eip & map->start are approximately close for
-small programs.
-
-Needless to say, that later, in record_precise_ip() there was no
-matching with real runtime IPs.
-
-And second, like with `perf annotate` the problem with non-prelinked
-*.so was that we were doing rip -> objdump address conversion wrong.
-
-Also, because unlike `perf annotate`, `perf top` code does annotation based on
-absolute IPs for performance reasons(*), new helper for mapping objdump
-addresse to IP is introduced.
-
-(*) we get samples info in absolute IPs, and since we do lots of
-    hit-testing on absolute IPs at runtime in record_precise_ip(), it's
-    better to convert objdump addresses to IPs once and do no conversion
-    at runtime.
-
-I also had to fix how objdump output is parsed (with hardcoded 8/16
-characters format, which was inappropriate for ET_DYN dsos with small
-addresses like '4ac')
-
-Also note, that not all objdump output lines has associtated IPs, e.g.
-look at source lines here:
-
-    000004ac <my_strlen>:
-    extern "C"
-    int my_strlen(const char *s)
-     4ac:   55                      push   %ebp
-     4ad:   89 e5                   mov    %esp,%ebp
-     4af:   83 ec 10                sub    $0x10,%esp
-    {
-        int len = 0;
-     4b2:   c7 45 fc 00 00 00 00    movl   $0x0,-0x4(%ebp)
-     4b9:   eb 08                   jmp    4c3 <my_strlen+0x17>
-
-        while (*s) {
-            ++len;
-     4bb:   83 45 fc 01             addl   $0x1,-0x4(%ebp)
-            ++s;
-     4bf:   83 45 08 01             addl   $0x1,0x8(%ebp)
-
-So we mark them with eip=0, and ignore such lines in annotate lookup
-code.
-
-Signed-off-by: Kirill Smelkov <kirr@landau.phys.spbu.ru>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Mike Galbraith <efault@gmx.de>
+Signed-off-by: Marc Zyngier <maz@misterjones.org>
 ---
- tools/perf/builtin-top.c |   24 ++++++++++++++----------
- tools/perf/util/map.c    |    8 ++++++++
- tools/perf/util/map.h    |    3 ++-
- 3 files changed, 24 insertions(+), 11 deletions(-)
+ drivers/gpio/Kconfig        |    7 ++
+ drivers/gpio/pca953x.c      |  245 ++++++++++++++++++++++++++++++++++++++++--
+ include/linux/i2c/pca953x.h |    3 +
+ 3 files changed, 243 insertions(+), 12 deletions(-)
 
-diff --git a/tools/perf/builtin-top.c b/tools/perf/builtin-top.c
-index 4067e4d..6aa9b02 100644
---- a/tools/perf/builtin-top.c
-+++ b/tools/perf/builtin-top.c
-@@ -176,6 +176,7 @@ static void parse_source(struct sym_entry *syme)
- 	FILE *file;
- 	char command[PATH_MAX*2];
- 	const char *path;
-+	char *tmp;
- 	u64 len;
+diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
+index 1f1d88a..0f79dc8 100644
+--- a/drivers/gpio/Kconfig
++++ b/drivers/gpio/Kconfig
+@@ -124,6 +124,13 @@ config GPIO_PCA953X
+ 	  This driver can also be built as a module.  If so, the module
+ 	  will be called pca953x.
  
- 	if (!syme)
-@@ -204,8 +205,8 @@ static void parse_source(struct sym_entry *syme)
- 	sprintf(command,
- 		"objdump --start-address=0x%016Lx "
- 			 "--stop-address=0x%016Lx -dS %s",
--		map->unmap_ip(map, sym->start),
--		map->unmap_ip(map, sym->end), path);
-+		map__rip_2objdump(map, sym->start),
-+		map__rip_2objdump(map, sym->end), path);
- 
- 	file = popen(command, "r");
- 	if (!file)
-@@ -235,14 +236,13 @@ static void parse_source(struct sym_entry *syme)
- 		*source->lines_tail = src;
- 		source->lines_tail = &src->next;
- 
--		if (strlen(src->line)>8 && src->line[8] == ':') {
--			src->eip = strtoull(src->line, NULL, 16);
--			src->eip = map->unmap_ip(map, src->eip);
--		}
--		if (strlen(src->line)>8 && src->line[16] == ':') {
--			src->eip = strtoull(src->line, NULL, 16);
--			src->eip = map->unmap_ip(map, src->eip);
--		}
++config GPIO_PCA953X_IRQ
++	bool "Interrupt controller support for PCA953x"
++	depends on GPIO_PCA953X=y
++	help
++	  Say yes here to enable the pca953x to be used as an interrupt
++	  controller. It requires the driver to be built in the kernel.
 +
-+		src->eip = strtoull(src->line, &tmp, 16);
-+		if (*tmp == ':')
-+			src->eip = map__objdump_2ip(map, src->eip);
-+		else
-+			/* this line has no ip info (e.g. source line) */
-+			src->eip = 0;
- 	}
- 	pclose(file);
- out_assign:
-@@ -277,6 +277,10 @@ static void record_precise_ip(struct sym_entry *syme, int counter, u64 ip)
- 		goto out_unlock;
+ config GPIO_PCF857X
+ 	tristate "PCF857x, PCA{85,96}7x, and MAX732[89] I2C GPIO expanders"
+ 	depends on I2C
+diff --git a/drivers/gpio/pca953x.c b/drivers/gpio/pca953x.c
+index 6a2fb3f..aa8b5dd 100644
+--- a/drivers/gpio/pca953x.c
++++ b/drivers/gpio/pca953x.c
+@@ -14,6 +14,8 @@
+ #include <linux/module.h>
+ #include <linux/init.h>
+ #include <linux/gpio.h>
++#include <linux/interrupt.h>
++#include <linux/irq.h>
+ #include <linux/i2c.h>
+ #include <linux/i2c/pca953x.h>
+ #ifdef CONFIG_OF_GPIO
+@@ -26,23 +28,28 @@
+ #define PCA953X_INVERT         2
+ #define PCA953X_DIRECTION      3
  
- 	for (line = syme->src->lines; line; line = line->next) {
-+		/* skip lines without IP info */
-+		if (line->eip == 0)
-+			continue;
++#define PCA953X_GPIOS	       0x00FF
++#define PCA953X_INT	       0x0100
 +
- 		if (line->eip == ip) {
- 			line->count[counter]++;
- 			break;
-diff --git a/tools/perf/util/map.c b/tools/perf/util/map.c
-index d6da969..37bfcc5 100644
---- a/tools/perf/util/map.c
-+++ b/tools/perf/util/map.c
-@@ -215,3 +215,11 @@ u64 map__rip_2objdump(struct map *map, u64 rip)
- 			rip;
- 	return addr;
+ static const struct i2c_device_id pca953x_id[] = {
+-	{ "pca9534", 8, },
+-	{ "pca9535", 16, },
++	{ "pca9534", 8  | PCA953X_INT, },
++	{ "pca9535", 16 | PCA953X_INT, },
+ 	{ "pca9536", 4, },
+-	{ "pca9537", 4, },
+-	{ "pca9538", 8, },
+-	{ "pca9539", 16, },
+-	{ "pca9554", 8, },
+-	{ "pca9555", 16, },
++	{ "pca9537", 4  | PCA953X_INT, },
++	{ "pca9538", 8  | PCA953X_INT, },
++	{ "pca9539", 16 | PCA953X_INT, },
++	{ "pca9554", 8  | PCA953X_INT, },
++	{ "pca9555", 16 | PCA953X_INT, },
+ 	{ "pca9556", 8, },
+ 	{ "pca9557", 8, },
+ 
+ 	{ "max7310", 8, },
+-	{ "max7315", 8, },
+-	{ "pca6107", 8, },
+-	{ "tca6408", 8, },
+-	{ "tca6416", 16, },
++	{ "max7312", 16 | PCA953X_INT, },
++	{ "max7313", 16 | PCA953X_INT, },
++	{ "max7315", 8  | PCA953X_INT, },
++	{ "pca6107", 8  | PCA953X_INT, },
++	{ "tca6408", 8  | PCA953X_INT, },
++	{ "tca6416", 16 | PCA953X_INT, },
+ 	/* NYET:  { "tca6424", 24, }, */
+ 	{ }
+ };
+@@ -53,6 +60,15 @@ struct pca953x_chip {
+ 	uint16_t reg_output;
+ 	uint16_t reg_direction;
+ 
++#ifdef CONFIG_GPIO_PCA953X_IRQ
++	struct mutex irq_lock;
++	uint16_t irq_mask;
++	uint16_t irq_stat;
++	uint16_t irq_trig_raise;
++	uint16_t irq_trig_fall;
++	int	 irq_base;
++#endif
++
+ 	struct i2c_client *client;
+ 	struct pca953x_platform_data *dyn_pdata;
+ 	struct gpio_chip gpio_chip;
+@@ -202,6 +218,206 @@ static void pca953x_setup_gpio(struct pca953x_chip *chip, int gpios)
+ 	gc->names = chip->names;
  }
-+
-+u64 map__objdump_2ip(struct map *map, u64 addr)
+ 
++#ifdef CONFIG_GPIO_PCA953X_IRQ
++static int pca953x_gpio_to_irq(struct gpio_chip *gc, unsigned off)
 +{
-+	u64 ip = map->dso->adjust_symbols ?
-+			addr :
-+			map->unmap_ip(map, addr);	/* RIP -> IP */
-+	return ip;
++	struct pca953x_chip *chip;
++
++	chip = container_of(gc, struct pca953x_chip, gpio_chip);
++	return chip->irq_base + off;
 +}
-diff --git a/tools/perf/util/map.h b/tools/perf/util/map.h
-index 39fa478..2bcd9d4 100644
---- a/tools/perf/util/map.h
-+++ b/tools/perf/util/map.h
-@@ -49,8 +49,9 @@ static inline u64 identity__map_ip(struct map *map __used, u64 ip)
- }
++
++static void pca953x_irq_mask(unsigned int irq)
++{
++	struct pca953x_chip *chip = get_irq_chip_data(irq);
++
++	chip->irq_mask &= ~(1 << (irq - chip->irq_base));
++}
++
++static void pca953x_irq_unmask(unsigned int irq)
++{
++	struct pca953x_chip *chip = get_irq_chip_data(irq);
++
++	chip->irq_mask |= 1 << (irq - chip->irq_base);
++}
++
++static void pca953x_irq_bus_lock(unsigned int irq)
++{
++	struct pca953x_chip *chip = get_irq_chip_data(irq);
++
++	mutex_lock(&chip->irq_lock);
++}
++
++static void pca953x_irq_bus_sync_unlock(unsigned int irq)
++{
++	struct pca953x_chip *chip = get_irq_chip_data(irq);
++
++	mutex_unlock(&chip->irq_lock);
++}
++
++static int pca953x_irq_set_type(unsigned int irq, unsigned int type)
++{
++	struct pca953x_chip *chip = get_irq_chip_data(irq);
++	uint16_t level = irq - chip->irq_base;
++	uint16_t mask = 1 << level;
++
++	if (!(type & IRQ_TYPE_EDGE_BOTH)) {
++		dev_err(&chip->client->dev, "irq %d: unsupported type %d\n",
++			irq, type);
++		return -EINVAL;
++	}
++
++	if (type & IRQ_TYPE_EDGE_FALLING)
++		chip->irq_trig_fall |= mask;
++	else
++		chip->irq_trig_fall &= ~mask;
++
++	if (type & IRQ_TYPE_EDGE_RISING)
++		chip->irq_trig_raise |= mask;
++	else
++		chip->irq_trig_raise &= ~mask;
++
++	return pca953x_gpio_direction_input(&chip->gpio_chip, level);
++}
++
++static struct irq_chip pca953x_irq_chip = {
++	.name			= "pca953x",
++	.mask			= pca953x_irq_mask,
++	.unmask			= pca953x_irq_unmask,
++	.bus_lock		= pca953x_irq_bus_lock,
++	.bus_sync_unlock	= pca953x_irq_bus_sync_unlock,
++	.set_type		= pca953x_irq_set_type,
++};
++
++static inline uint16_t pca953x_irq_pending(struct pca953x_chip *chip)
++{
++	uint16_t cur_stat;
++	uint16_t old_stat;
++	uint16_t pending;
++	uint16_t trigger;
++	int ret;
++
++	ret = pca953x_read_reg(chip, PCA953X_INPUT, &cur_stat);
++	if (ret)
++		return 0;
++
++	/* Remove output pins from the equation */
++	cur_stat &= chip->reg_direction;
++
++	old_stat = chip->irq_stat;
++	trigger = (cur_stat ^ old_stat) & chip->irq_mask;
++
++	if (!trigger)
++		return 0;
++
++	chip->irq_stat = cur_stat;
++
++	pending = (old_stat & chip->irq_trig_fall) |
++		  (cur_stat & chip->irq_trig_raise);
++	pending &= trigger;
++
++	return pending;
++}
++
++static irqreturn_t pca953x_irq_handler(int irq, void *devid)
++{
++	struct pca953x_chip *chip = devid;
++	uint16_t pending;
++	uint16_t level;
++
++	pending = pca953x_irq_pending(chip);
++
++	if (!pending)
++		return IRQ_HANDLED;
++
++	do {
++		level = __ffs(pending);
++		handle_nested_irq(level + chip->irq_base);
++
++		pending &= ~(1 << level);
++	} while (pending);
++
++	return IRQ_HANDLED;
++}
++
++static int pca953x_irq_setup(struct pca953x_chip *chip,
++			     const struct i2c_device_id *id)
++{
++	struct i2c_client *client = chip->client;
++	struct pca953x_platform_data *pdata = client->dev.platform_data;
++	int ret;
++
++	if (pdata->irq_base && (id->driver_data & PCA953X_INT)) {
++		int lvl;
++
++		ret = pca953x_read_reg(chip, PCA953X_INPUT,
++				       &chip->irq_stat);
++		if (ret)
++			goto out_failed;
++
++		/*
++		 * There is no way to know which GPIO line generated the
++		 * interrupt.  We have to rely on the previous read for
++		 * this purpose.
++		 */
++		chip->irq_stat &= chip->reg_direction;
++		chip->irq_base = pdata->irq_base;
++		mutex_init(&chip->irq_lock);
++
++		for (lvl = 0; lvl < chip->gpio_chip.ngpio; lvl++) {
++			int irq = lvl + chip->irq_base;
++
++			set_irq_chip_data(irq, chip);
++			set_irq_chip_and_handler(irq, &pca953x_irq_chip,
++						 handle_edge_irq);
++			set_irq_nested_thread(irq, 1);
++			set_irq_flags(irq, IRQF_VALID);
++		}
++
++		ret = request_threaded_irq(client->irq,
++					   NULL,
++					   pca953x_irq_handler,
++					   IRQF_TRIGGER_FALLING | IRQF_ONESHOT,
++					   dev_name(&client->dev), chip);
++		if (ret) {
++			dev_err(&client->dev, "failed to request irq %d\n",
++				client->irq);
++			goto out_failed;
++		}
++
++		chip->gpio_chip.to_irq = pca953x_gpio_to_irq;
++	}
++
++	return 0;
++
++out_failed:
++	chip->irq_base = 0;
++	return ret;
++}
++
++static void pca953x_irq_teardown(struct pca953x_chip *chip)
++{
++	if (chip->irq_base)
++		free_irq(chip->client->irq, chip);
++}
++#else /* CONFIG_GPIO_PCA953X_IRQ */
++static int pca953x_irq_setup(struct pca953x_chip *chip,
++			     const struct i2c_device_id *id)
++{
++	struct i2c_client *client = chip->client;
++	struct pca953x_platform_data *pdata = client->dev.platform_data;
++
++	if (pdata->irq_base && (id->driver_data & PCA953X_INT))
++		dev_warn(&client->dev, "interrupt support not compiled in\n");
++
++	return 0;
++}
++
++static inline void pca953x_irq_teardown(struct pca953x_chip *chip)
++{
++}
++#endif
++
+ /*
+  * Handlers for alternative sources of platform_data
+  */
+@@ -286,7 +502,7 @@ static int __devinit pca953x_probe(struct i2c_client *client,
+ 	/* initialize cached registers from their original values.
+ 	 * we can't share this chip with another i2c master.
+ 	 */
+-	pca953x_setup_gpio(chip, id->driver_data);
++	pca953x_setup_gpio(chip, id->driver_data & PCA953X_GPIOS);
  
+ 	ret = pca953x_read_reg(chip, PCA953X_OUTPUT, &chip->reg_output);
+ 	if (ret)
+@@ -301,6 +517,9 @@ static int __devinit pca953x_probe(struct i2c_client *client,
+ 	if (ret)
+ 		goto out_failed;
  
--/* rip -> addr suitable for passing to `objdump --start-address=` */
-+/* rip/ip <-> addr suitable for passing to `objdump --start-address=` */
- u64 map__rip_2objdump(struct map *map, u64 rip);
-+u64 map__objdump_2ip(struct map *map, u64 addr);
++	ret = pca953x_irq_setup(chip, id);
++	if (ret)
++		goto out_failed;
  
+ 	ret = gpiochip_add(&chip->gpio_chip);
+ 	if (ret)
+@@ -317,6 +536,7 @@ static int __devinit pca953x_probe(struct i2c_client *client,
+ 	return 0;
  
- struct symbol;
+ out_failed:
++	pca953x_irq_teardown(chip);
+ 	kfree(chip->dyn_pdata);
+ 	kfree(chip);
+ 	return ret;
+@@ -345,6 +565,7 @@ static int pca953x_remove(struct i2c_client *client)
+ 		return ret;
+ 	}
+ 
++	pca953x_irq_teardown(chip);
+ 	kfree(chip->dyn_pdata);
+ 	kfree(chip);
+ 	return 0;
+diff --git a/include/linux/i2c/pca953x.h b/include/linux/i2c/pca953x.h
+index 81736d6..1a2c141 100644
+--- a/include/linux/i2c/pca953x.h
++++ b/include/linux/i2c/pca953x.h
+@@ -7,6 +7,9 @@ struct pca953x_platform_data {
+ 	/* initial polarity inversion setting */
+ 	uint16_t	invert;
+ 
++	/* interrupt base */
++	int		irq_base;
++
+ 	void		*context;	/* param to setup/teardown */
+ 
+ 	int		(*setup)(struct i2c_client *client,
 -- 
-1.6.6.79.gd514e.dirty
+1.6.6.1
+
+
+-- 
+I'm the slime oozin' out from your TV set...
