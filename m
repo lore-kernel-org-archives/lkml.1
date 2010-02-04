@@ -1,64 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757479Ab0BDEyB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 23:54:01 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:58882 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757393Ab0BDEyA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 23:54:00 -0500
-Date: Thu, 4 Feb 2010 04:53:57 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH][RFC] %pd - for printing dentry name
-Message-ID: <20100204045357.GC30031@ZenIV.linux.org.uk>
-References: <20100201222511.GA12882@ZenIV.linux.org.uk>
- <alpine.LFD.2.00.1002011431490.3664@localhost.localdomain>
- <20100201231847.GC12882@ZenIV.linux.org.uk>
- <20100202010653.GD12882@ZenIV.linux.org.uk>
- <m1k4uwfag1.fsf@fess.ebiederm.org>
- <20100202170157.GH12882@ZenIV.linux.org.uk>
- <m1y6jbo36v.fsf@fess.ebiederm.org>
- <20100203030419.GA30031@ZenIV.linux.org.uk>
+	id S1757461Ab0BDEz0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 23:55:26 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:23639 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757271Ab0BDEzY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 23:55:24 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100203030419.GA30031@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: "Lu, Hongjiu" <hongjiu.lu@intel.com>
+X-Fcc: ~/Mail/linus
+Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Oleg Nesterov <oleg@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Lachner, Peter" <peter.lachner@intel.com>
+Subject: RE: [patch] x86: ptrace and core-dump extensions for xstate
+In-Reply-To: Lu, Hongjiu's message of  Wednesday, 3 February 2010 18:22:53 -0800 <8EA2C2C4116BF44AB370468FBF85A7770123AAB303@orsmsx504.amr.corp.intel.com>
+References: <1265076025.2802.194.camel@sbs-t61.sc.intel.com>
+	<20100203230817.E6529AA@magilla.sf.frob.com>
+	<8EA2C2C4116BF44AB370468FBF85A7770123AAB0AE@orsmsx504.amr.corp.intel.com>
+	<20100204020224.45379725@magilla.sf.frob.com>
+	<8EA2C2C4116BF44AB370468FBF85A7770123AAB2E8@orsmsx504.amr.corp.intel.com>
+	<20100204021659.AB348C880@magilla.sf.frob.com>
+	<8EA2C2C4116BF44AB370468FBF85A7770123AAB303@orsmsx504.amr.corp.intel.com>
+Emacs: resistance is futile; you will be assimilated and byte-compiled.
+Message-Id: <20100204045458.5AA2F7290@magilla.sf.frob.com>
+Date: Wed,  3 Feb 2010 20:54:58 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 03, 2010 at 03:04:19AM +0000, Al Viro wrote:
-> On Tue, Feb 02, 2010 at 11:19:52AM -0800, Eric W. Biederman wrote:
-> 
-> > If we are going to take a lock this seems as sane as any.
-> > 
-> > Do we want to honor oops_in_progress aka bust_spinlocks here?
-> > 
-> > Perhaps just:
-> > if (oops_in_progress)
-> > 	return buf;
-> > 
-> > To guarantee we get the rest of a panic message out of the kernel.
-> 
-> Hmm...   There's another fun issue - we would want local_irq_disable() /
-> local_irq_enable() in d_move_locked and local_irq_save/local_irq_restore()
-> in dname_string(), AFAICT.
-> 
-> OK, here's what I've got from moving in that direction.  Folks, how does
-> that one look to you?  I'm not too happy about explicit manipulations
-> with irq flags in there, so any suggestions would be welcome.
+> To support XSAVE, gdb needs to know XCR0 as well as XSTATE size.
+> We can get those info from kernel via system call or cpuid. I
+> prefer cpuid over system call.
 
-Argh.  No, it's not at all better.  Moreover, even read_seqbegin variant
-is b0rken if we ever do that under ->d_lock.
+Suresh's patch puts this value in the xsave block, in what Suresh calls
+"sw_usable_bytes".  See the asm/ptrace-abi.h comment in the patch you
+signed off on.
 
-CPU1:A: grabs dentry->d_lock
-CPU2:B: calls d_move_locked()
-CPU2:B: grabs rename_lock
-CPU2:B: spins on dentry->d_lock
-CPU1:A: calls printk with %pd dentry
-CPU1:A: spins waiting for rename_lock writer to release it
+How is that not sufficient?  If it is indeed not sufficient to usefully
+interpret the xsave block, then how could an xsave block in a core dump
+file ever possibly be examined if it might not have been generated on the
+same system and kernel where the debugger is doing the examination?  If
+the NT_X86_XSTATE note as implemented in Suresh's patch is indeed not
+entirely self-contained in this way, then NAK on that new note format.
 
-So much for that approach ;-/
+
+Thanks,
+Roland
