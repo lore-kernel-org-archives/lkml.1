@@ -1,410 +1,99 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932651Ab0BDTeu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 14:34:50 -0500
-Received: from inca-roads.misterjones.org ([213.251.177.50]:47954 "EHLO
-	inca-roads.misterjones.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758302Ab0BDTes convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 14:34:48 -0500
-Date: Thu, 4 Feb 2010 19:34:44 +0000
-From: Marc Zyngier <maz@misterjones.org>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: Eric Miao <eric.y.miao@gmail.com>,
-       Haojian Zhuang <haojian.zhuang@gmail.com>,
-       dbrownell@users.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH v3] Add interrupt handling capability to pca953x
-Message-ID: <20100204193444.4c9538f8@taxman.wild-wind.fr.eu.org>
-Organization: Metropolis -- Nowhere
-X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S932708Ab0BDTfB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 14:35:01 -0500
+Received: from mail-iw0-f189.google.com ([209.85.223.189]:44199 "EHLO
+	mail-iw0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932660Ab0BDTe5 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 14:34:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=h5b+zcK801DoX1qBHua30fPx4hZUPkBEjtKu2lO3Qjxr9PdXmwUJ4uM6KIJ50ddukV
+         W7ETwbGDSdmi5aO1t4r03rmnPBOu7IH73m8zmcuZKpZGLSHuYWEbE27J/1iM7ab6yPHb
+         cKXSY6jn1TrXrE3tnrUykuNwtcaUnlzj0EXGA=
+MIME-Version: 1.0
+In-Reply-To: <alpine.LFD.2.00.1002041123400.3707@localhost.localdomain>
+References: <21d7e9971002021234y275fae02k410af92bb16fee73@mail.gmail.com>
+	 <20100204170826.GA16397@elte.hu>
+	 <20100204173602.GA19855@srcf.ucam.org>
+	 <20100204175445.GB27361@elte.hu>
+	 <20100204175928.GA20595@srcf.ucam.org> <20100204181218.GA6175@elte.hu>
+	 <a728f9f91002041030o7c8d38edxe573bc0a1327d79@mail.gmail.com>
+	 <20100204190649.GB6665@elte.hu>
+	 <a728f9f91002041118m6415844fp1740f18fdc1c9757@mail.gmail.com>
+	 <alpine.LFD.2.00.1002041123400.3707@localhost.localdomain>
+Date: Fri, 5 Feb 2010 05:34:53 +1000
+Message-ID: <21d7e9971002041134m7e4d1a8dif65ccee8b7fbc203@mail.gmail.com>
+Subject: Re: hung bootup with "drm/radeon/kms: move radeon KMS on/off switch 
+	out of staging."
+From: Dave Airlie <airlied@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>
+Cc: Alex Deucher <alexdeucher@gmail.com>, Dave Airlie <airlied@linux.ie>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org,
+       dri-devel@lists.sf.net
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
-X-SA-Exim-Connect-IP: 82.6.99.81
-X-SA-Exim-Rcpt-To: linux-kernel@vger.kernel.org, eric.y.miao@gmail.com, haojian.zhuang@gmail.com, dbrownell@users.sourceforge.net, akpm@linux-foundation.org
-X-SA-Exim-Mail-From: maz@misterjones.org
-X-SA-Exim-Scanned: No (on inca-roads.misterjones.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Guys,
+On Fri, Feb 5, 2010 at 5:24 AM, Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
+>
+>
+> On Thu, 4 Feb 2010, Alex Deucher wrote:
+>>
+>> And if it crashes, he'll report a bug and we'll fix it.
+>
+> Ok, you have a bug-report. See earlier in the thread:
+>
+>> btw., i just found another bug activated via this same commit, a boot hang
+>> after DRM init:
+>>
+>> [    9.858352] [drm] Connector 1:
+>> [    9.861417] [drm]   DVI-I
+>> [    9.864031] [drm]   HPD1
+>> [    9.866562] [drm]   DDC: 0x64 0x64 0x64 0x64 0x64 0x64 0x64 0x64
+>> [    9.872579] [drm]   Encoders:
+>> [    9.875540] [drm]     CRT2: INTERNAL_DAC2
+>> [    9.879541] [drm]     DFP1: INTERNAL_TMDS1
+>> [    9.883646] [drm] Connector 2:
+>> [    9.886695] [drm]   S-video
+>> [    9.889483] [drm]   Encoders:
+>> [    9.892463] [drm]     TV1: INTERNAL_DAC2
+>> [    9.896392] i2c i2c-0: master_xfer[0] W, addr=0x50, len=1
+>> [    9.901796] i2c i2c-0: master_xfer[1] R, addr=0x50, len=128
+>> [    9.909246] i2c i2c-0: NAK from device addr 0x50 msg #0
+>> [    9.914564] i2c i2c-1: master_xfer[0] W, addr=0x50, len=1
+>> [    9.919957] i2c i2c-1: master_xfer[1] R, addr=0x50, len=128
+>> [    9.927413] i2c i2c-1: NAK from device addr 0x50 msg #0
+>
+> So can we get it fixed, please?
 
-Here is the latest version of my pca953x irq_chip patch.
-Compared to v2, the only change is that we only allow the irq handling
-capability if the driver is built-in.
+Ingo,
 
-As always, I'd appreciate any comment on this.
+got the full dmesg? and lspci -vvnn
 
-	M.
+the bug reporting needs work, this snippet hasn't the useful info in it.
 
->From 7219c15f4c2ee300eaf7b232c9f0c743e5735de8 Mon Sep 17 00:00:00 2001
-From: Marc Zyngier <maz@misterjones.org>
-Date: Tue, 22 Dec 2009 17:38:29 +0100
-Subject: [PATCH] Add interrupt handling capability to pca953x.
+Dave.
 
-Most of the GPIO expanders controlled by the pca953x driver are
-able to report changes on the input pins through an *INT pin.
-
-This patch implements the irq_chip functionality (edge detection
-only).
-
-The driver has been tested on an Arcom Zeus.
-
-Signed-off-by: Marc Zyngier <maz@misterjones.org>
----
- drivers/gpio/Kconfig        |    7 ++
- drivers/gpio/pca953x.c      |  245 ++++++++++++++++++++++++++++++++++++++++--
- include/linux/i2c/pca953x.h |    3 +
- 3 files changed, 243 insertions(+), 12 deletions(-)
-
-diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
-index 1f1d88a..0f79dc8 100644
---- a/drivers/gpio/Kconfig
-+++ b/drivers/gpio/Kconfig
-@@ -124,6 +124,13 @@ config GPIO_PCA953X
- 	  This driver can also be built as a module.  If so, the module
- 	  will be called pca953x.
- 
-+config GPIO_PCA953X_IRQ
-+	bool "Interrupt controller support for PCA953x"
-+	depends on GPIO_PCA953X=y
-+	help
-+	  Say yes here to enable the pca953x to be used as an interrupt
-+	  controller. It requires the driver to be built in the kernel.
-+
- config GPIO_PCF857X
- 	tristate "PCF857x, PCA{85,96}7x, and MAX732[89] I2C GPIO expanders"
- 	depends on I2C
-diff --git a/drivers/gpio/pca953x.c b/drivers/gpio/pca953x.c
-index 6a2fb3f..aa8b5dd 100644
---- a/drivers/gpio/pca953x.c
-+++ b/drivers/gpio/pca953x.c
-@@ -14,6 +14,8 @@
- #include <linux/module.h>
- #include <linux/init.h>
- #include <linux/gpio.h>
-+#include <linux/interrupt.h>
-+#include <linux/irq.h>
- #include <linux/i2c.h>
- #include <linux/i2c/pca953x.h>
- #ifdef CONFIG_OF_GPIO
-@@ -26,23 +28,28 @@
- #define PCA953X_INVERT         2
- #define PCA953X_DIRECTION      3
- 
-+#define PCA953X_GPIOS	       0x00FF
-+#define PCA953X_INT	       0x0100
-+
- static const struct i2c_device_id pca953x_id[] = {
--	{ "pca9534", 8, },
--	{ "pca9535", 16, },
-+	{ "pca9534", 8  | PCA953X_INT, },
-+	{ "pca9535", 16 | PCA953X_INT, },
- 	{ "pca9536", 4, },
--	{ "pca9537", 4, },
--	{ "pca9538", 8, },
--	{ "pca9539", 16, },
--	{ "pca9554", 8, },
--	{ "pca9555", 16, },
-+	{ "pca9537", 4  | PCA953X_INT, },
-+	{ "pca9538", 8  | PCA953X_INT, },
-+	{ "pca9539", 16 | PCA953X_INT, },
-+	{ "pca9554", 8  | PCA953X_INT, },
-+	{ "pca9555", 16 | PCA953X_INT, },
- 	{ "pca9556", 8, },
- 	{ "pca9557", 8, },
- 
- 	{ "max7310", 8, },
--	{ "max7315", 8, },
--	{ "pca6107", 8, },
--	{ "tca6408", 8, },
--	{ "tca6416", 16, },
-+	{ "max7312", 16 | PCA953X_INT, },
-+	{ "max7313", 16 | PCA953X_INT, },
-+	{ "max7315", 8  | PCA953X_INT, },
-+	{ "pca6107", 8  | PCA953X_INT, },
-+	{ "tca6408", 8  | PCA953X_INT, },
-+	{ "tca6416", 16 | PCA953X_INT, },
- 	/* NYET:  { "tca6424", 24, }, */
- 	{ }
- };
-@@ -53,6 +60,15 @@ struct pca953x_chip {
- 	uint16_t reg_output;
- 	uint16_t reg_direction;
- 
-+#ifdef CONFIG_GPIO_PCA953X_IRQ
-+	struct mutex irq_lock;
-+	uint16_t irq_mask;
-+	uint16_t irq_stat;
-+	uint16_t irq_trig_raise;
-+	uint16_t irq_trig_fall;
-+	int	 irq_base;
-+#endif
-+
- 	struct i2c_client *client;
- 	struct pca953x_platform_data *dyn_pdata;
- 	struct gpio_chip gpio_chip;
-@@ -202,6 +218,206 @@ static void pca953x_setup_gpio(struct pca953x_chip *chip, int gpios)
- 	gc->names = chip->names;
- }
- 
-+#ifdef CONFIG_GPIO_PCA953X_IRQ
-+static int pca953x_gpio_to_irq(struct gpio_chip *gc, unsigned off)
-+{
-+	struct pca953x_chip *chip;
-+
-+	chip = container_of(gc, struct pca953x_chip, gpio_chip);
-+	return chip->irq_base + off;
-+}
-+
-+static void pca953x_irq_mask(unsigned int irq)
-+{
-+	struct pca953x_chip *chip = get_irq_chip_data(irq);
-+
-+	chip->irq_mask &= ~(1 << (irq - chip->irq_base));
-+}
-+
-+static void pca953x_irq_unmask(unsigned int irq)
-+{
-+	struct pca953x_chip *chip = get_irq_chip_data(irq);
-+
-+	chip->irq_mask |= 1 << (irq - chip->irq_base);
-+}
-+
-+static void pca953x_irq_bus_lock(unsigned int irq)
-+{
-+	struct pca953x_chip *chip = get_irq_chip_data(irq);
-+
-+	mutex_lock(&chip->irq_lock);
-+}
-+
-+static void pca953x_irq_bus_sync_unlock(unsigned int irq)
-+{
-+	struct pca953x_chip *chip = get_irq_chip_data(irq);
-+
-+	mutex_unlock(&chip->irq_lock);
-+}
-+
-+static int pca953x_irq_set_type(unsigned int irq, unsigned int type)
-+{
-+	struct pca953x_chip *chip = get_irq_chip_data(irq);
-+	uint16_t level = irq - chip->irq_base;
-+	uint16_t mask = 1 << level;
-+
-+	if (!(type & IRQ_TYPE_EDGE_BOTH)) {
-+		dev_err(&chip->client->dev, "irq %d: unsupported type %d\n",
-+			irq, type);
-+		return -EINVAL;
-+	}
-+
-+	if (type & IRQ_TYPE_EDGE_FALLING)
-+		chip->irq_trig_fall |= mask;
-+	else
-+		chip->irq_trig_fall &= ~mask;
-+
-+	if (type & IRQ_TYPE_EDGE_RISING)
-+		chip->irq_trig_raise |= mask;
-+	else
-+		chip->irq_trig_raise &= ~mask;
-+
-+	return pca953x_gpio_direction_input(&chip->gpio_chip, level);
-+}
-+
-+static struct irq_chip pca953x_irq_chip = {
-+	.name			= "pca953x",
-+	.mask			= pca953x_irq_mask,
-+	.unmask			= pca953x_irq_unmask,
-+	.bus_lock		= pca953x_irq_bus_lock,
-+	.bus_sync_unlock	= pca953x_irq_bus_sync_unlock,
-+	.set_type		= pca953x_irq_set_type,
-+};
-+
-+static inline uint16_t pca953x_irq_pending(struct pca953x_chip *chip)
-+{
-+	uint16_t cur_stat;
-+	uint16_t old_stat;
-+	uint16_t pending;
-+	uint16_t trigger;
-+	int ret;
-+
-+	ret = pca953x_read_reg(chip, PCA953X_INPUT, &cur_stat);
-+	if (ret)
-+		return 0;
-+
-+	/* Remove output pins from the equation */
-+	cur_stat &= chip->reg_direction;
-+
-+	old_stat = chip->irq_stat;
-+	trigger = (cur_stat ^ old_stat) & chip->irq_mask;
-+
-+	if (!trigger)
-+		return 0;
-+
-+	chip->irq_stat = cur_stat;
-+
-+	pending = (old_stat & chip->irq_trig_fall) |
-+		  (cur_stat & chip->irq_trig_raise);
-+	pending &= trigger;
-+
-+	return pending;
-+}
-+
-+static irqreturn_t pca953x_irq_handler(int irq, void *devid)
-+{
-+	struct pca953x_chip *chip = devid;
-+	uint16_t pending;
-+	uint16_t level;
-+
-+	pending = pca953x_irq_pending(chip);
-+
-+	if (!pending)
-+		return IRQ_HANDLED;
-+
-+	do {
-+		level = __ffs(pending);
-+		handle_nested_irq(level + chip->irq_base);
-+
-+		pending &= ~(1 << level);
-+	} while (pending);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static int pca953x_irq_setup(struct pca953x_chip *chip,
-+			     const struct i2c_device_id *id)
-+{
-+	struct i2c_client *client = chip->client;
-+	struct pca953x_platform_data *pdata = client->dev.platform_data;
-+	int ret;
-+
-+	if (pdata->irq_base && (id->driver_data & PCA953X_INT)) {
-+		int lvl;
-+
-+		ret = pca953x_read_reg(chip, PCA953X_INPUT,
-+				       &chip->irq_stat);
-+		if (ret)
-+			goto out_failed;
-+
-+		/*
-+		 * There is no way to know which GPIO line generated the
-+		 * interrupt.  We have to rely on the previous read for
-+		 * this purpose.
-+		 */
-+		chip->irq_stat &= chip->reg_direction;
-+		chip->irq_base = pdata->irq_base;
-+		mutex_init(&chip->irq_lock);
-+
-+		for (lvl = 0; lvl < chip->gpio_chip.ngpio; lvl++) {
-+			int irq = lvl + chip->irq_base;
-+
-+			set_irq_chip_data(irq, chip);
-+			set_irq_chip_and_handler(irq, &pca953x_irq_chip,
-+						 handle_edge_irq);
-+			set_irq_nested_thread(irq, 1);
-+			set_irq_flags(irq, IRQF_VALID);
-+		}
-+
-+		ret = request_threaded_irq(client->irq,
-+					   NULL,
-+					   pca953x_irq_handler,
-+					   IRQF_TRIGGER_FALLING | IRQF_ONESHOT,
-+					   dev_name(&client->dev), chip);
-+		if (ret) {
-+			dev_err(&client->dev, "failed to request irq %d\n",
-+				client->irq);
-+			goto out_failed;
-+		}
-+
-+		chip->gpio_chip.to_irq = pca953x_gpio_to_irq;
-+	}
-+
-+	return 0;
-+
-+out_failed:
-+	chip->irq_base = 0;
-+	return ret;
-+}
-+
-+static void pca953x_irq_teardown(struct pca953x_chip *chip)
-+{
-+	if (chip->irq_base)
-+		free_irq(chip->client->irq, chip);
-+}
-+#else /* CONFIG_GPIO_PCA953X_IRQ */
-+static int pca953x_irq_setup(struct pca953x_chip *chip,
-+			     const struct i2c_device_id *id)
-+{
-+	struct i2c_client *client = chip->client;
-+	struct pca953x_platform_data *pdata = client->dev.platform_data;
-+
-+	if (pdata->irq_base && (id->driver_data & PCA953X_INT))
-+		dev_warn(&client->dev, "interrupt support not compiled in\n");
-+
-+	return 0;
-+}
-+
-+static inline void pca953x_irq_teardown(struct pca953x_chip *chip)
-+{
-+}
-+#endif
-+
- /*
-  * Handlers for alternative sources of platform_data
-  */
-@@ -286,7 +502,7 @@ static int __devinit pca953x_probe(struct i2c_client *client,
- 	/* initialize cached registers from their original values.
- 	 * we can't share this chip with another i2c master.
- 	 */
--	pca953x_setup_gpio(chip, id->driver_data);
-+	pca953x_setup_gpio(chip, id->driver_data & PCA953X_GPIOS);
- 
- 	ret = pca953x_read_reg(chip, PCA953X_OUTPUT, &chip->reg_output);
- 	if (ret)
-@@ -301,6 +517,9 @@ static int __devinit pca953x_probe(struct i2c_client *client,
- 	if (ret)
- 		goto out_failed;
- 
-+	ret = pca953x_irq_setup(chip, id);
-+	if (ret)
-+		goto out_failed;
- 
- 	ret = gpiochip_add(&chip->gpio_chip);
- 	if (ret)
-@@ -317,6 +536,7 @@ static int __devinit pca953x_probe(struct i2c_client *client,
- 	return 0;
- 
- out_failed:
-+	pca953x_irq_teardown(chip);
- 	kfree(chip->dyn_pdata);
- 	kfree(chip);
- 	return ret;
-@@ -345,6 +565,7 @@ static int pca953x_remove(struct i2c_client *client)
- 		return ret;
- 	}
- 
-+	pca953x_irq_teardown(chip);
- 	kfree(chip->dyn_pdata);
- 	kfree(chip);
- 	return 0;
-diff --git a/include/linux/i2c/pca953x.h b/include/linux/i2c/pca953x.h
-index 81736d6..1a2c141 100644
---- a/include/linux/i2c/pca953x.h
-+++ b/include/linux/i2c/pca953x.h
-@@ -7,6 +7,9 @@ struct pca953x_platform_data {
- 	/* initial polarity inversion setting */
- 	uint16_t	invert;
- 
-+	/* interrupt base */
-+	int		irq_base;
-+
- 	void		*context;	/* param to setup/teardown */
- 
- 	int		(*setup)(struct i2c_client *client,
--- 
-1.6.6.1
-
-
--- 
-I'm the slime oozin' out from your TV set...
+>
+>                Linus
+>
+> ------------------------------------------------------------------------------
+> The Planet: dedicated and managed hosting, cloud storage, colocation
+> Stay online with enterprise data centers and the best network in the business
+> Choose flexible plans and management services without long-term contracts
+> Personal 24x7 support from experience hosting pros just a phone call away.
+> http://p.sf.net/sfu/theplanet-com
+> --
+> _______________________________________________
+> Dri-devel mailing list
+> Dri-devel@lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/dri-devel
+>
