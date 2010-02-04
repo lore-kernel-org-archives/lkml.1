@@ -1,24 +1,23 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758340Ab0BDRZr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 12:25:47 -0500
-Received: from kroah.org ([198.145.64.141]:34952 "EHLO coco.kroah.org"
+	id S933408Ab0BDRYw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 12:24:52 -0500
+Received: from kroah.org ([198.145.64.141]:35000 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933369Ab0BDRW3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 12:22:29 -0500
-X-Mailbox-Line: From linux@linux.site Thu Feb  4 09:15:25 2010
-Message-Id: <20100204171525.493312894@linux.site>
+	id S933388Ab0BDRWf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 12:22:35 -0500
+X-Mailbox-Line: From linux@linux.site Thu Feb  4 09:15:29 2010
+Message-Id: <20100204171529.452810643@linux.site>
 User-Agent: quilt/0.47-14.9
-Date: Thu, 04 Feb 2010 09:12:37 -0800
+Date: Thu, 04 Feb 2010 09:12:44 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       =?ISO-8859-15?q?Uwe=20Kleine-K=C3=B6nig?= 
-	<u.kleine-koenig@pengutronix.de>,
-       Sascha Hauer <kernel@pengutronix.de>,
+       Felix Fietkau <nbd@openwrt.org>,
+       "John W. Linville" <linville@tuxdriver.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [66/74] imxfb: correct location of callbacks in suspend and resume
+Subject: [73/74] ath9k: fix beacon slot/buffer leak
 In-Reply-To: <20100204171850.GA16539@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -28,52 +27,39 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Uwe Kleine-König  <u.kleine-koenig@pengutronix.de>
+From: Felix Fietkau <nbd@openwrt.org>
 
-commit 1ec562035ba64e724652cb12b8a770b3906e9bf5 upstream.
+commit 74401773f80b6d42f7a4c6994ca0cca883b03745 upstream.
 
-The probe function passes a pointer to a struct fb_info to
-platform_set_drvdata(), so don't interpret the return value of
-platform_get_drvdata() as a pointer to struct imxfb_info.
+When cleaning up beacon buffers and slots, ath9k currently checks if
+sc->ah->opmode is set to a beacon related mode before cleaning up
+buffers.
+An unfortunate ordering of interface up/down commands can lead to
+sc->ah->opmode being set to monitor mode, while there are AP interfaces
+present on the same wiphy.
+Always cleaning up beacon buffers if present fixes this issue.
 
-The original imxfb_info *fbi backlight_power was NULL but in imxfb_suspend
-it was 4 resulting in an oops as imxfb_suspend calls
-imxfb_disable_controller(fbi) which in turn has
-
-	if (fbi->backlight_power)
-			fbi->backlight_power(0);
-
-Signed-off-by: Uwe Kleine-König  <u.kleine-koenig@pengutronix.de>
-Acked-by: Sascha Hauer <kernel@pengutronix.de>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Felix Fietkau <nbd@openwrt.org>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/video/imxfb.c |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ drivers/net/wireless/ath/ath9k/main.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/video/imxfb.c
-+++ b/drivers/video/imxfb.c
-@@ -593,7 +593,8 @@ static int imxfb_activate_var(struct fb_
-  */
- static int imxfb_suspend(struct platform_device *dev, pm_message_t state)
- {
--	struct imxfb_info *fbi = platform_get_drvdata(dev);
-+	struct fb_info *info = platform_get_drvdata(dev);
-+	struct imxfb_info *fbi = info->par;
+--- a/drivers/net/wireless/ath/ath9k/main.c
++++ b/drivers/net/wireless/ath/ath9k/main.c
+@@ -2285,10 +2285,10 @@ static void ath9k_remove_interface(struc
+ 	    (sc->sc_ah->opmode == NL80211_IFTYPE_MESH_POINT)) {
+ 		ath9k_ps_wakeup(sc);
+ 		ath9k_hw_stoptxdma(sc->sc_ah, sc->beacon.beaconq);
+-		ath_beacon_return(sc, avp);
+ 		ath9k_ps_restore(sc);
+ 	}
  
- 	pr_debug("%s\n", __func__);
++	ath_beacon_return(sc, avp);
+ 	sc->sc_flags &= ~SC_OP_BEACONS;
  
-@@ -603,7 +604,8 @@ static int imxfb_suspend(struct platform
- 
- static int imxfb_resume(struct platform_device *dev)
- {
--	struct imxfb_info *fbi = platform_get_drvdata(dev);
-+	struct fb_info *info = platform_get_drvdata(dev);
-+	struct imxfb_info *fbi = info->par;
- 
- 	pr_debug("%s\n", __func__);
- 
+ 	for (i = 0; i < ARRAY_SIZE(sc->beacon.bslot); i++) {
 
 
