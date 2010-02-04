@@ -1,55 +1,137 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754263Ab0BDROL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 12:14:11 -0500
-Received: from nlpi157.sbcis.sbc.com ([207.115.36.171]:44031 "EHLO
-	nlpi157.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753018Ab0BDROJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 12:14:09 -0500
-Date: Thu, 4 Feb 2010 11:13:15 -0600 (CST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@router.home
-To: Nick Piggin <npiggin@suse.de>
-cc: Dave Chinner <david@fromorbit.com>, tytso@mit.edu,
-       Andi Kleen <andi@firstfloor.org>, Miklos Szeredi <miklos@szeredi.hu>,
-       Alexander Viro <viro@ftp.linux.org.uk>,
-       Christoph Hellwig <hch@infradead.org>,
-       Christoph Lameter <clameter@sgi.com>, Rik van Riel <riel@redhat.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, akpm@linux-foundation.org,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickins <hugh@veritas.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: inodes: Support generic defragmentation
-In-Reply-To: <20100204093350.GE13318@laptop>
-Message-ID: <alpine.DEB.2.00.1002041109500.28165@router.home>
-References: <20100129204931.789743493@quilx.com> <20100129205004.405949705@quilx.com> <20100130192623.GE788@thunk.org> <20100131083409.GF29555@one.firstfloor.org> <20100131135933.GM15853@discord.disaster> <alpine.DEB.2.00.1002030920500.5671@router.home>
- <20100204003410.GD5332@discord.disaster> <20100204030736.GB25885@thunk.org> <20100204033911.GE5332@discord.disaster> <20100204093350.GE13318@laptop>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	id S1754882Ab0BDROP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 12:14:15 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:55200 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753018Ab0BDROM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 12:14:12 -0500
+Message-ID: <4B6B0039.7010206@redhat.com>
+Date: Thu, 04 Feb 2010 15:13:29 -0200
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Pekka Sarnila <sarnila@adit.fi>
+CC: Jiri Slaby <jirislaby@gmail.com>, Jiri Kosina <jkosina@suse.cz>,
+       Antti Palosaari <crope@iki.fi>, mchehab@infradead.org,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       linux-input@vger.kernel.org
+Subject: Re: [PATCH 1/1] media: dvb-usb/af9015, fix disconnection crashes
+References: <1264007972-6261-1-git-send-email-jslaby@suse.cz> <4B5CDB53.6030009@iki.fi> <4B5D6098.7010700@gmail.com> <4B5DDDFB.5020907@iki.fi> <alpine.LRH.2.00.1001261406010.15694@twin.jikos.cz> <4B6AA211.1060707@gmail.com> <4B6ACA4B.2030906@adit.fi> <4B6AD3DB.8090801@redhat.com> <4B6AE241.6090900@adit.fi>
+In-Reply-To: <4B6AE241.6090900@adit.fi>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 4 Feb 2010, Nick Piggin wrote:
+Pekka Sarnila wrote:
 
-> Well what I described is to do the slab pinning from the reclaim path
-> (rather than from slab calling into the subsystem). All slab locking
-> basically "innermost", so you can pretty much poke the slab layer as
-> much as you like from the subsystem.
+> The problem here is that at least afatech ir receiver has the ir code to
+> key code build in, so trough HID you can use only the remote whose ir to
+> key translate table has been loaded to the aftech device. Unless that
+> can be easily controlled by the user HID is no good for this.
 
-Reclaim/defrag is called from the reclaim path (of the VM). We could
-enable a call from the fs reclaim code into the slab. But how would this
-work?
+The ir-core allows a driver to start with a built in table, that can be
+dynamically replaced in userspace by a different table, and even with a
+different protocol, if supported by the driver/device.
 
-> After that, LRU on slabs should be fairly easy. Slab could provide a
-> private per-slab pointer for example that is managed by the caller.
-> Subsystem can then call into slab to find the objects.
+> But most of the world still uses analog (they can not afford yet the
+> transfer). Those tv-sticks have identical receivers. And there are usb
+> ir receivers not embedded to tv-sticks. Conceptually and technically it
+> has nothing to do with any tv or any other audiovisual system system
+> (e.g. a remote controlled weather station).
+> 
+> So dvb is both as a place and a name misleading.
 
-Sure with some minor changes we could have a call that is giving you the
-list of neighboring objects in a slab, while locking it? Then you can look
-at the objects and decide which ones can be tossed and then do another
-call to release the objects and unlock the slab.
+It happens that almost all tv products (analog or digital) come with some 
+IR support. But you can find also some products that are just IR.
 
+That's why we're moving it to be outside the V4L and the DVB directory.
+For now, it is at /drivers/media/IR (since it helps us to move the code, while
+there are still some dependencies at ir-common). But the better is to move it
+later to /drivers/IR or /drivers/input/IR.
+ 
+>> See drivers/media/IR on linux-next for the IR common code. The ir-core is
+>> provided by ir-keytable.c and ir-sysfs.c, and it is not DVB or V4L
+>> specific.
+> 
+> Well I was talking about HID remotes that don't give ir codes but key
+> codes. What to do with them?
 
+What happens if you use it to receive keycodes from a different IR using
+the same protocol?
 
+Maybe it can still be valid to keep allowing keycode translation.
+
+>> As I don't have any af9015 device, I'll likely postpone it or wait for
+>> someone to do the job.
+> 
+> Well that was the original point of my involvement. It can support both
+> the dvb-usb-remote and HID. The problem with af9015/dvb-usb-remote is
+> that it uses usb vendor class endpoint (all trough I have used 'vendor
+> class' to specifically mean usb vendor class). Usb vendor classes have
+> no standard. But af9015 can also use USB HID class (remote as keyboard)
+> in a standard manner. That would avoid using special device  based driver.
+
+Well, as HID, you may loose the capability of using a different IR than the
+one shipped with the af9015. It may make sense to just disable HID and use
+USB Vendor Class.
+ 
+> Well the thing is that even with usb each device can have non standard
+> user vendor endpoint. In case of af9015 it can provide the ir code.
+
+It doesn't matter how the IR code is get, kernel needs to translate it into
+a linux key. That's where the ir-core enters: instead of registering the device
+directly at input event, the driver registers via ir_input_register():
+
+int ir_input_register(struct input_dev *input_dev,
+                      const struct ir_scancode_table *rc_tab,
+                      const struct ir_dev_props *props)
+
+The arguments are the input device, the keycode->scancode table and an optional
+argument that specifies the IR supported protocols, and a callback function
+to be called when a different protocol is requested.
+
+The IR subsystem will do a dynamic allocation for the keytable and will take 
+care of EVIOCGKEY/EVIOCSKEY events. It will increase/decrease the keytable size
+if needed.
+
+This way, userspace may replace the scancode/keycode table and even the IR protocol,
+without needing to add any specific code at the driver.
+
+It will also create some sysfs nodes that will help udev to identify when a new IR
+device driver is loaded, allowing the keycode replacement during device hotplug.
+
+The only needed change, at the driver, is to replace input_register_device/input_unregister_device
+by ir_input_register/ir_input_unregister.
+
+> 
+>> The idea of the ir-core is to provide support for all those options.
+> 
+> Even for those that do provide key codes trough standard HID layer
+> instead of ir codes trough specific device drivers?
+
+It basically depends on what the HID layer receives from the IR. Yet, it is possible to
+use the ir-core layer in order to use an IR keycode to produce a different code. It is
+not always clear what certain remote keys are supposed to do.
+
+For example, should the <POWER> key turn off the PC, or just quit the application?
+
+>> The ir-core provides standard ways to replace the IR keycode and IR
+>> protocols.
+>> The IR protocol change is already working with vendor class with
+>> em28xx driver.
+> 
+> The thing is that remote controller trough HID layer does not provide IR
+> keycode but standard keyboard key code. And HID layer does not know that
+> it is a remote controller but sees it as an ordinary usb keyboard. The
+> question is that how can it tell the upper layer that it really is a
+> remote controller so that the event would end up to generic ir-core.
+
+For HID remote controllers, the only way I see is to have an USB ID list of devices
+that are known to be remote controllers and register them via ir_input_register,
+instead of input_register_device.
+
+Cheers,
+Mauro
