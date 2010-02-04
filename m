@@ -1,49 +1,153 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757064Ab0BDHct (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 02:32:49 -0500
-Received: from moutng.kundenserver.de ([212.227.17.9]:54237 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756843Ab0BDHco (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 02:32:44 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [PATCH] input: remove BKL from uinput open function
-Date: Thu, 4 Feb 2010 08:32:09 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
-Cc: John Kacur <jkacur@redhat.com>,
-       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Al Viro <viro@zeniv.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <201001302257.09354.arnd@arndb.de> <520f0cf11002011518y22c2f097s87872e7b5b1690d7@mail.gmail.com> <20100203050749.GA22110@core.coreip.homeip.net>
-In-Reply-To: <20100203050749.GA22110@core.coreip.homeip.net>
+	id S1755409Ab0BDHhA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 02:37:00 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39340 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751507Ab0BDHg6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 02:36:58 -0500
+Date: Thu, 4 Feb 2010 08:36:43 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Dave Airlie <airlied@gmail.com>
+Cc: Dave Airlie <airlied@linux.ie>, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
+Subject: Re: [crash, PATCH] Revert "drm/radeon/kms: move radeon KMS on/off
+ switch out of staging."
+Message-ID: <20100204073643.GA31291@elte.hu>
+References: <alpine.DEB.2.00.1002010215530.15366@skynet.skynet.ie>
+ <alpine.DEB.2.00.1002010253120.15366@skynet.skynet.ie>
+ <20100202081727.GA6788@elte.hu>
+ <21d7e9971002020035v22318962w6412ccd8d93449da@mail.gmail.com>
+ <20100202154656.GD27314@elte.hu>
+ <21d7e9971002021234y275fae02k410af92bb16fee73@mail.gmail.com>
+ <20100204062619.GA29154@elte.hu>
+ <21d7e9971002032239l5238f1fy33cafbd1ecc4b2bb@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201002040832.09805.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+tscfZtyO+WrnEuDEjpMObGBZGZdSit1uAL8Q
- 4pEy287jbZ08bofts2CXQ9ZjTKKCzKzU8S+2W9MRB7FkQRNMGC
- zVLHuOQPZBrm0fuIRKVSA==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <21d7e9971002032239l5238f1fy33cafbd1ecc4b2bb@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 03 February 2010, Dmitry Torokhov wrote:
-> OK, so how about the patch below? If it is accepted I will just switch
-> to
-> 
->         nonseekable_open(inode, file);
->         return 0;
-> 
-> style. I gonna add Al and akpm to CC to see if the patch will stick...
 
-Sounds reasonable, if only to prevent this from becoming a FAQ.
+* Dave Airlie <airlied@gmail.com> wrote:
 
-> VFS: clarify that nonseekable_open() will never fail
+> >> On Wed, Feb 3, 2010 at 1:46 AM, Ingo Molnar <mingo@elte.hu> wrote:
+> >> >
+> >> > * Dave Airlie <airlied@gmail.com> wrote:
+> >> >
+> >> >> On Tue, Feb 2, 2010 at 6:17 PM, Ingo Molnar <mingo@elte.hu> wrote:
+> >> >> >
+> >> >> > * Dave Airlie <airlied@linux.ie> wrote:
+> >> >> >
+> >> >> >> > Hi Linus,
+> >> >> >> >
+> >> >> >> > Please pull the 'drm-linus' branch from
+> >> >> >> > ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git drm-linus
+> >> >> >> >
+> >> >> >>
+> >> >> >> I've also added an oops fix I seem to lose off my radar to this tree.
+> >> >> >>
+> >> >> >> commit 17aafccab4352b422aa01fa6ebf82daff693a5b3
+> >> >> >> Author: Michel D??nzer <daenzer@vmware.com>
+> >> >> >> Date: ? Fri Jan 22 09:20:00 2010 +0100
+> >> >> >>
+> >> >> >> ? ? drm/radeon/kms: Fix oops after radeon_cs_parser_init() failure.
+> >> >> >
+> >> >>
+> >> >> Wierd this suggests something else is wrong on that machine can you get me
+> >> >> the whole dmesg? I'm guessing some iommu or swiotlb issue.
+> >> >
+> >> > This box has no known hardware or software problems, just this week it booted
+> >> > in excess of 1000 kernels so i'd exclude that angle for now.
+> >> >
+> >> > I have bisected the crash back to the DRM tree and the crash went away with
+> >> > the Kconfig revert i applied - and it got fixed by Jerome's patch. I posted
+> >> > my config and i posted the relevant boot log as well. Find below the full
+> >> > bootlog as well with vanilla -git (ab65832) and the config. (i dont think it
+> >> > matters)
+> >> >
+> >> >> I've asked Jerome to fix the oops, but really anyone with an old .config
+> >> >> won't get hit by this, and we've booted this on quite a lot of machines at
+> >> >> this point.
+> >> >
+> >> > I dont see the commit in yesterday's linux-next. It has very fresh
+> >> > timestamps:
+> >> >
+> >> > ?commit f71d0187987e691516cd10c2702f002c0e2f0edc
+> >> > ?Author: ? ? Dave Airlie <airlied@redhat.com>
+> >> > ?AuthorDate: Mon Feb 1 11:35:47 2010 +1000
+> >> > ?Commit: ? ? Dave Airlie <airlied@redhat.com>
+> >> > ?CommitDate: Mon Feb 1 11:35:47 2010 +1000
+> >> >
+> >> > What kind of widespread testing could this commit have gotten in the less
+> >> > than 24 hours before it hit mainline?
+> >> >
+> >>
+> >> Its shipping in a major distro by default, its planned to be shipped in an
+> >> even more major distro. Its been boot tested on 1000s of machines by 1000s
+> >> of ppl.
+> >
+> > Well but that's not the precise tree you sent to Linus, is it?
 > 
-> Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+> It pretty much is. If I could blame your crash on any of the recent patches 
+> I would but its something new and unfun. [...]
 
-Acked-by: Arnd Bergmann <arnd@arndb.de>
+You dont seem to realize the plain and simple fact that the bug (and some 
+other bug) was obscure before because this particular KMS aspect of the 
+radeon driver was in drivers/staging/, and it became more prominent via this 
+post-rc6 commit:
+
+ | From f71d0187987e691516cd10c2702f002c0e2f0edc Mon Sep 17 00:00:00 2001
+ | From: Dave Airlie <airlied@redhat.com>
+ | Date: Mon, 1 Feb 2010 11:35:47 +1000
+ | Subject: [PATCH] drm/radeon/kms: move radeon KMS on/off switch out of staging.
+ |
+ | We are happy enough that the KMS driver is stable enough for enough people
+ | for the kms enable/disable to leave staging. Distros can now contemplate
+ | turning this on.
+ |
+ | Signed-off-by: Dave Airlie <airlied@redhat.com>
+ | ---
+ |  drivers/gpu/drm/Kconfig |    2 ++
+ |  drivers/staging/Kconfig |    2 --
+ |  2 files changed, 2 insertions(+), 2 deletions(-)
+
+I never claimed (and still dont claim) that the bug is 'new' per se, so why 
+do you keep beating down on that straw man argument? I said it in my very 
+first mail that this bug got brought upon us by the Kconfig commit above:
+
+> > It's the moving of radeom KMS out of staging after -rc6 that causes it, 
+> > because it brought it into the scope of my testing:
+> >
+> >   f71d018: drm/radeon/kms: move radeon KMS on/off switch out of staging.
+> > 
+> > So at least on this box it's clearly not ready for mainline enablement 
+> > yet.
+
+I dont mind reporting bugs and testing patches (as i did), all i said is that 
+from a QA angle it's somewhat late to do that in -rc7. (It's not even a 
+completely new driver either, which people would know to stay away from - 
+it's a new config option of an existing driver, so i'd expect many people to 
+turn it on when they see it in the oldconfig - even though it's default-off.)
+
+You made the bug more prominent by moving it into the driver proper, after 
+-rc6, and while i dont mind reporting and working on bugs, your constant 
+denial is somewhat counter-productive, as (beyond the waste of time on these 
+emails) it suggests that we might see repeat incidents of this kind in the 
+future.
+
+Anyway, with two bugs in a row this commit is clearly too problematic for me 
+so i have reverted f71d018 from -tip.
+
+Thanks,
+
+	Ingo
