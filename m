@@ -1,46 +1,61 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933253Ab0BDQCg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 11:02:36 -0500
-Received: from verein.lst.de ([213.95.11.210]:37038 "EHLO verein.lst.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932422Ab0BDQCe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 11:02:34 -0500
-Date: Thu, 4 Feb 2010 17:00:57 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, David Miller <davem@davemloft.net>,
-       hch@lst.de, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, tony.luck@intel.com, ralf@linux-mips.org,
-       kyle@mcmartin.ca, benh@kernel.crashing.org, schwidefsky@de.ibm.com,
-       heiko.carstens@de.ibm.com, tglx@linutronix.de, mingo@redhat.com,
-       viro@zeniv.linux.org.uk
-Subject: Re: [PATCH 4/6] improve sys_personality for compat architectures
-Message-ID: <20100204160057.GA5120@lst.de>
-References: <201002021536.51928.arnd@arndb.de> <20100203.091309.52886984.davem@davemloft.net> <4B69D6BA.4030704@zytor.com> <201002040838.10783.arnd@arndb.de>
+	id S933261Ab0BDQE4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 11:04:56 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:60987 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932935Ab0BDQEz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 11:04:55 -0500
+Subject: Re: [PATCH 2/5] bitops: compile time optimization for
+ hweight_long(CONSTANT)
+From: Peter Zijlstra <peterz@infradead.org>
+To: Borislav Petkov <bp@amd64.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>, Jamie Lokier <jamie@shareable.org>,
+       Roland Dreier <rdreier@cisco.com>, Al Viro <viro@ZenIV.linux.org.uk>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20100204155419.GD32711@aftab>
+References: <20100201124825.cc024f2a.akpm@linux-foundation.org>
+	 <20100203133951.GA24357@localhost>
+	 <20100203070825.e36b3932.akpm@linux-foundation.org>
+	 <1265210157.24455.646.camel@laptop>
+	 <20100203074251.e2caa3f3.akpm@linux-foundation.org>
+	 <20100203181425.GB1367@aftab> <1265222875.24455.1020.camel@laptop>
+	 <4B69D362.10608@zytor.com> <20100204151050.GC32711@aftab>
+	 <1265296432.22001.18.camel@laptop>  <20100204155419.GD32711@aftab>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 04 Feb 2010 17:04:17 +0100
+Message-ID: <1265299457.22001.72.camel@laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <201002040838.10783.arnd@arndb.de>
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: 0 () 
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 04, 2010 at 08:38:10AM +0100, Arnd Bergmann wrote:
-> I think it would be better to have a consistent behavior across
-> architectures, so /something/ should be changed. On x86, the unused
-> sys32_personality function can probable just be removed, if nothing
-> else.
+On Thu, 2010-02-04 at 16:54 +0100, Borislav Petkov wrote:
+> On Thu, Feb 04, 2010 at 04:13:52PM +0100, Peter Zijlstra wrote:
+> > hweight_long() isn't an arch primitive, only __arch_hweight{8,16,32,64}
+> > are.
 > 
-> If we can get everyone to agree with the x86 way of handling this,
-> we can also remove all the special cases for sys32_personality in the
-> other architectures.
+> Yeah, I'm still looking for the proper location. hweight_long() is the
+> generic version so do we want to do the
+> 
+> #ifndef __HAVE_ARCH_POPCNT
+> static inline unsigned long hweight_long(unsigned long w)
+> ....
+> 
+> #endif
+> 
+> thing and define a x86-specific version? 
 
-Yes, this should be common over architectures.  Anyway, I expect there
-to be some discussion until we've reached that point, so for now I'll
-rebase patches 5 and 6 to not require this patch, and will send one
-to kill the unused x86 implementation.  Whatever is the final outcome
-can be implemented on top.
+No, just don't touch hweight_long(), simply provide
+__arch_hweight{8,16,32,64} and all will be well.
+
+hweight_long() is provided by <include/linux.h> and is constructed from
+height32() and hweight64() depending on the actual word size.
 
