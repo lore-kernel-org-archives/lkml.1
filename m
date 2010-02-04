@@ -1,141 +1,48 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933583Ab0BDRcQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 12:32:16 -0500
-Received: from kroah.org ([198.145.64.141]:34723 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933245Ab0BDRVy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 12:21:54 -0500
-X-Mailbox-Line: From linux@linux.site Thu Feb  4 09:15:07 2010
-Message-Id: <20100204171506.366897609@linux.site>
-User-Agent: quilt/0.47-14.9
-Date: Thu, 04 Feb 2010 09:12:03 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       "H. Peter Anvin" <hpa@zytor.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [32/74] x86: get rid of the insane TIF_ABI_PENDING bit
-In-Reply-To: <20100204171850.GA16539@kroah.com>
+	id S933447Ab0BDRd0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 12:33:26 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37552
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933594Ab0BDRdQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 12:33:16 -0500
+Date: Thu, 04 Feb 2010 09:33:29 -0800 (PST)
+Message-Id: <20100204.093329.164097227.davem@davemloft.net>
+To: peppe.cavallaro@st.com
+Cc: jkosina@suse.cz, sfr@canb.auug.org.au, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, lsorense@csclub.uwaterloo.ca,
+       netdev@vger.kernel.org, daniel@caiaq.de
+Subject: Re: linux-next: manual merge of the trivial tree with the net tree
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4B6AD11D.6050402@st.com>
+References: <alpine.LNX.2.00.1002041052020.15395@pobox.suse.cz>
+	<4B6AC28D.6090204@st.com>
+	<4B6AD11D.6050402@st.com>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.32-stable review patch.  If anyone has any objections, please let us know.
+From: Giuseppe CAVALLARO <peppe.cavallaro@st.com>
+Date: Thu, 04 Feb 2010 14:52:29 +0100
 
-------------------
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
+> 
+> Giuseppe CAVALLARO wrote:
+>> Hi Jiri,
+>> 
+>> The stmmac driver included in net-next has been restructured: for this
+>> reason both gmac.c and mac100.c files do not exist any more.
+>> 
+>> Let me know if I can help on this; I mean I'm happy to apply this latest
+>> changes to the stmmac in net-next and send a new patch.
+> 
+> patch attached
+> I hope it could be useful.
 
-From: H. Peter Anvin <hpa@zytor.com>
-
-commit 05d43ed8a89c159ff641d472f970e3f1baa66318 upstream.
-
-Now that the previous commit made it possible to do the personality
-setting at the point of no return, we do just that for ELF binaries.
-And suddenly all the reasons for that insane TIF_ABI_PENDING bit go
-away, and we can just make SET_PERSONALITY() just do the obvious thing
-for a 32-bit compat process.
-
-Everything becomes much more straightforward this way.
-
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- arch/x86/ia32/ia32_aout.c          |    1 -
- arch/x86/include/asm/elf.h         |   10 ++--------
- arch/x86/include/asm/thread_info.h |    2 --
- arch/x86/kernel/process.c          |   12 ------------
- arch/x86/kernel/process_64.c       |   11 +++++++++++
- 5 files changed, 13 insertions(+), 23 deletions(-)
-
---- a/arch/x86/ia32/ia32_aout.c
-+++ b/arch/x86/ia32/ia32_aout.c
-@@ -311,7 +311,6 @@ static int load_aout_binary(struct linux
- 	/* OK, This is the point of no return */
- 	set_personality(PER_LINUX);
- 	set_thread_flag(TIF_IA32);
--	clear_thread_flag(TIF_ABI_PENDING);
- 
- 	setup_new_exec(bprm);
- 
---- a/arch/x86/include/asm/elf.h
-+++ b/arch/x86/include/asm/elf.h
-@@ -197,14 +197,8 @@ do {							\
- 	set_fs(USER_DS);				\
- } while (0)
- 
--#define COMPAT_SET_PERSONALITY(ex)			\
--do {							\
--	if (test_thread_flag(TIF_IA32))			\
--		clear_thread_flag(TIF_ABI_PENDING);	\
--	else						\
--		set_thread_flag(TIF_ABI_PENDING);	\
--	current->personality |= force_personality32;	\
--} while (0)
-+void set_personality_ia32(void);
-+#define COMPAT_SET_PERSONALITY(ex) set_personality_ia32()
- 
- #define COMPAT_ELF_PLATFORM			("i686")
- 
---- a/arch/x86/include/asm/thread_info.h
-+++ b/arch/x86/include/asm/thread_info.h
-@@ -86,7 +86,6 @@ struct thread_info {
- #define TIF_NOTSC		16	/* TSC is not accessible in userland */
- #define TIF_IA32		17	/* 32bit process */
- #define TIF_FORK		18	/* ret_from_fork */
--#define TIF_ABI_PENDING		19
- #define TIF_MEMDIE		20
- #define TIF_DEBUG		21	/* uses debug registers */
- #define TIF_IO_BITMAP		22	/* uses I/O bitmap */
-@@ -110,7 +109,6 @@ struct thread_info {
- #define _TIF_NOTSC		(1 << TIF_NOTSC)
- #define _TIF_IA32		(1 << TIF_IA32)
- #define _TIF_FORK		(1 << TIF_FORK)
--#define _TIF_ABI_PENDING	(1 << TIF_ABI_PENDING)
- #define _TIF_DEBUG		(1 << TIF_DEBUG)
- #define _TIF_IO_BITMAP		(1 << TIF_IO_BITMAP)
- #define _TIF_FREEZE		(1 << TIF_FREEZE)
---- a/arch/x86/kernel/process_64.c
-+++ b/arch/x86/kernel/process_64.c
-@@ -540,6 +540,17 @@ sys_clone(unsigned long clone_flags, uns
- 	return do_fork(clone_flags, newsp, regs, 0, parent_tid, child_tid);
- }
- 
-+void set_personality_ia32(void)
-+{
-+	/* inherit personality from parent */
-+
-+	/* Make sure to be in 32bit mode */
-+	set_thread_flag(TIF_IA32);
-+
-+	/* Prepare the first "return" to user space */
-+	current_thread_info()->status |= TS_COMPAT;
-+}
-+
- unsigned long get_wchan(struct task_struct *p)
- {
- 	unsigned long stack;
---- a/arch/x86/kernel/process.c
-+++ b/arch/x86/kernel/process.c
-@@ -91,18 +91,6 @@ void flush_thread(void)
- {
- 	struct task_struct *tsk = current;
- 
--#ifdef CONFIG_X86_64
--	if (test_tsk_thread_flag(tsk, TIF_ABI_PENDING)) {
--		clear_tsk_thread_flag(tsk, TIF_ABI_PENDING);
--		if (test_tsk_thread_flag(tsk, TIF_IA32)) {
--			clear_tsk_thread_flag(tsk, TIF_IA32);
--		} else {
--			set_tsk_thread_flag(tsk, TIF_IA32);
--			current_thread_info()->status |= TS_COMPAT;
--		}
--	}
--#endif
--
- 	clear_tsk_thread_flag(tsk, TIF_DEBUG);
- 
- 	tsk->thread.debugreg0 = 0;
-
-
+Applied, thank you.
