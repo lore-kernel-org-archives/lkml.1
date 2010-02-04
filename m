@@ -1,50 +1,162 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758269Ab0BDNvx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 08:51:53 -0500
-Received: from mail-fx0-f220.google.com ([209.85.220.220]:44065 "EHLO
-	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750946Ab0BDNvv (ORCPT
+	id S932229Ab0BDNwv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 08:52:51 -0500
+Received: from eu1sys200aog101.obsmtp.com ([207.126.144.111]:47288 "EHLO
+	eu1sys200aog101.obsmtp.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752219Ab0BDNwt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 08:51:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=FFlYhVrpJbFVdbUG8Vzrst9ys2DqDDdcBcQw9JM2i4pr1gL93fiopOzsyyrsbhaR1f
-         z+eRtX7/7KwI6KwyCnYP6+/cr6U3INbtkiFtBHP2Vqtl9Vchdo/EmcsnnD2tTGkqFShN
-         ngBw2wfEIJIu/ATCH4Qgl3zLwFgRm0h+7HB/Y=
-Message-ID: <4B6AD0EE.9060801@gmail.com>
-Date: Thu, 04 Feb 2010 14:51:42 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.7) Gecko/20100111 SUSE/3.0.1-9.1 Thunderbird/3.0.1
+	Thu, 4 Feb 2010 08:52:49 -0500
+Message-ID: <4B6AD11D.6050402@st.com>
+Date: Thu, 04 Feb 2010 14:52:29 +0100
+From: Giuseppe CAVALLARO <peppe.cavallaro@st.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-CC: Jiri Kosina <jkosina@suse.cz>, Antti Palosaari <crope@iki.fi>,
-       mchehab@infradead.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, Pekka Sarnila <sarnila@adit.fi>,
-       linux-input@vger.kernel.org
-Subject: Re: [PATCH 1/1] media: dvb-usb/af9015, fix disconnection crashes
-References: <1264007972-6261-1-git-send-email-jslaby@suse.cz> <4B5CDB53.6030009@iki.fi> <4B5D6098.7010700@gmail.com> <4B5DDDFB.5020907@iki.fi> <alpine.LRH.2.00.1001261406010.15694@twin.jikos.cz> <4B6AA211.1060707@gmail.com> <4B6AB7E9.40607@redhat.com> <4B6AC333.6030308@gmail.com> <4B6ACEA3.3080900@redhat.com>
-In-Reply-To: <4B6ACEA3.3080900@redhat.com>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: David Miller <davem@davemloft.net>, sfr@canb.auug.org.au,
+       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       lsorense@csclub.uwaterloo.ca, netdev@vger.kernel.org, daniel@caiaq.de
+Subject: Re: linux-next: manual merge of the trivial tree with the net tree
+References: <20100203133011.75aef1d3.sfr@canb.auug.org.au> <alpine.LNX.2.00.1002031136560.15395@pobox.suse.cz> <20100203.200402.17600564.davem@davemloft.net> <alpine.LNX.2.00.1002041052020.15395@pobox.suse.cz> <4B6AC28D.6090204@st.com>
+In-Reply-To: <4B6AC28D.6090204@st.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/mixed;
+ boundary="------------030308050900040700080508"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/04/2010 02:41 PM, Mauro Carvalho Chehab wrote:
-> The point is that it is better to name the function right since the beginning.
+This is a multi-part message in MIME format.
+--------------030308050900040700080508
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-Sorry, I misunderstood you for the first time. It's .event member of
-hid_driver. Hence I named it dvb_event (or now rc_event or whatever).
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-The function may contain decisions on what to do with the event based
-for example on quirks set up in .probe. And if the function grows later,
-it may be factored out to rc_nokeyup_event. But rc_event is a root for
-the decision tree and it should be there forever. Does it make sense now?
+Giuseppe CAVALLARO wrote:
+> Hi Jiri,
+> 
+> The stmmac driver included in net-next has been restructured: for this
+> reason both gmac.c and mac100.c files do not exist any more.
+> 
+> Let me know if I can help on this; I mean I'm happy to apply this latest
+> changes to the stmmac in net-next and send a new patch.
 
+patch attached
+I hope it could be useful.
+
+Regards,
+Peppe
+
+> 
+> Peppe
+> 
+>> Daniel, could you please refresh the drivers/net/ and net/ bits of your 
+>> patch and resent it to netdev/Dave?
+> 
+>> I have already dropped it from my queue.
+> 
+>> Thanks,
+> 
+> 
+- --
+To unsubscribe from this list: send the line "unsubscribe netdev" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iEYEARECAAYFAktq0R0ACgkQ2Xo3j31MSSKeIgCggHG4aixy7SxkSuaVd/hH3fo/
+WZcAoK52FTpJLt/JJqJY2NopN0rFK3G1
+=Ur+x
+-----END PGP SIGNATURE-----
+
+--------------030308050900040700080508
+Content-Type: text/x-patch;
+ name="0001-stmmac-fix-lenght-typo-in-comments-and-code.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename*0="0001-stmmac-fix-lenght-typo-in-comments-and-code.patch"
+
+>From f7c63a1378d30d89a6b1a168b0450afb344e7d6d Mon Sep 17 00:00:00 2001
+From: Giuseppe Cavallaro <peppe.cavallaro@st.com>
+Date: Thu, 4 Feb 2010 13:58:58 +0100
+Subject: [linux-next] stmmac: fix 'lenght' typo in comments and code
+
+Signed-off-by: Giuseppe Cavallaro <peppe.cavallaro@st.com>
+---
+ drivers/net/stmmac/common.h         |    2 +-
+ drivers/net/stmmac/dwmac100.c       |    2 +-
+ drivers/net/stmmac/dwmac1000_dma.c  |    4 ++--
+ drivers/net/stmmac/stmmac_ethtool.c |    2 +-
+ 4 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/net/stmmac/common.h b/drivers/net/stmmac/common.h
+index 7267bcd..2a58172 100644
+--- a/drivers/net/stmmac/common.h
++++ b/drivers/net/stmmac/common.h
+@@ -44,7 +44,7 @@ struct stmmac_extra_stats {
+ 	unsigned long rx_toolong;
+ 	unsigned long rx_collision;
+ 	unsigned long rx_crc;
+-	unsigned long rx_lenght;
++	unsigned long rx_length;
+ 	unsigned long rx_mii;
+ 	unsigned long rx_multicast;
+ 	unsigned long rx_gmac_overflow;
+diff --git a/drivers/net/stmmac/dwmac100.c b/drivers/net/stmmac/dwmac100.c
+index 82dde77..ac48ed7 100644
+--- a/drivers/net/stmmac/dwmac100.c
++++ b/drivers/net/stmmac/dwmac100.c
+@@ -265,7 +265,7 @@ static int dwmac100_get_rx_frame_status(void *data,
+ 		ret = discard_frame;
+ 
+ 	if (unlikely(p->des01.rx.length_error)) {
+-		x->rx_lenght++;
++		x->rx_length++;
+ 		ret = discard_frame;
+ 	}
+ 	if (unlikely(p->des01.rx.mii_error)) {
+diff --git a/drivers/net/stmmac/dwmac1000_dma.c b/drivers/net/stmmac/dwmac1000_dma.c
+index 6824550..39d436a 100644
+--- a/drivers/net/stmmac/dwmac1000_dma.c
++++ b/drivers/net/stmmac/dwmac1000_dma.c
+@@ -230,7 +230,7 @@ static int dwmac1000_coe_rdes0(int ipc_err, int type, int payload_err)
+ 
+ 	/* bits 5 7 0 | Frame status
+ 	 * ----------------------------------------------------------
+-	 *      0 0 0 | IEEE 802.3 Type frame (lenght < 1536 octects)
++	 *      0 0 0 | IEEE 802.3 Type frame (length < 1536 octects)
+ 	 *      1 0 0 | IPv4/6 No CSUM errorS.
+ 	 *      1 0 1 | IPv4/6 CSUM PAYLOAD error
+ 	 *      1 1 0 | IPv4/6 CSUM IP HR error
+@@ -331,7 +331,7 @@ static int dwmac1000_get_rx_frame_status(void *data,
+ 	}
+ 	if (unlikely(p->des01.erx.length_error)) {
+ 		DBG(KERN_ERR "GMAC RX: length_error error\n");
+-		x->rx_lenght++;
++		x->rx_length++;
+ 		ret = discard_frame;
+ 	}
+ #ifdef STMMAC_VLAN_TAG_USED
+diff --git a/drivers/net/stmmac/stmmac_ethtool.c b/drivers/net/stmmac/stmmac_ethtool.c
+index 0abeff6..c021eaa 100644
+--- a/drivers/net/stmmac/stmmac_ethtool.c
++++ b/drivers/net/stmmac/stmmac_ethtool.c
+@@ -62,7 +62,7 @@ static const struct  stmmac_stats stmmac_gstrings_stats[] = {
+ 	STMMAC_STAT(rx_toolong),
+ 	STMMAC_STAT(rx_collision),
+ 	STMMAC_STAT(rx_crc),
+-	STMMAC_STAT(rx_lenght),
++	STMMAC_STAT(rx_length),
+ 	STMMAC_STAT(rx_mii),
+ 	STMMAC_STAT(rx_multicast),
+ 	STMMAC_STAT(rx_gmac_overflow),
 -- 
-js
+1.6.0.4
+
+
+--------------030308050900040700080508--
