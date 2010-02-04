@@ -1,271 +1,67 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933016Ab0BDAt6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 19:49:58 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:41488 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932925Ab0BDAt5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 19:49:57 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC][PATCH] PM: disable nonboot cpus before suspending devices
-Date: Thu, 4 Feb 2010 01:50:26 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.33-rc6-rjw; KDE/4.3.5; x86_64; ; )
-Cc: Sebastian Ott <sebott@linux.vnet.ibm.com>,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-References: <alpine.LFD.2.00.1001221841490.2266@localhost> <201002032334.37198.rjw@sisk.pl> <20100203150803.5a4b37fe.akpm@linux-foundation.org>
-In-Reply-To: <20100203150803.5a4b37fe.akpm@linux-foundation.org>
+	id S1758020Ab0BDAxi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 19:53:38 -0500
+Received: from mail-vw0-f46.google.com ([209.85.212.46]:42191 "EHLO
+	mail-vw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752142Ab0BDAxh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 19:53:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=H17nLZp14xKZZ07Adp/ioBGt6x2LAcgzXCG93TlhHriQzMOy5hjGJ1hUJyw/Vy//uM
+         GIg8n4WMp3NHZycEKijQR/eGhzvpBYC7CbjTSa7YiNZK8Zpi61ahWF1fJWJmb7MUVcOE
+         fisJ0e+cuZE96pUUOtZeQrMV/J24hoBIpHrCI=
+Date: Thu, 4 Feb 2010 01:53:30 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
+       dipankar@in.ibm.com, akpm@linux-foundation.org,
+       mathieu.desnoyers@polymtl.ca, josh@joshtriplett.org, dvhltc@us.ibm.com,
+       niv@us.ibm.com, tglx@linutronix.de, peterz@infradead.org,
+       rostedt@goodmis.org, Valdis.Kletnieks@vt.edu, dhowells@redhat.com
+Subject: Re: [PATCH RFC tip/core/rcu] v2 accelerate grace period if last
+	non-dynticked CPU
+Message-ID: <20100204005327.GJ5068@nowhere>
+References: <20100128153249.GA7087@linux.vnet.ibm.com> <20100131192343.GB5224@nowhere> <20100201042404.GD6721@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201002040150.26503.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100201042404.GD6721@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 04 February 2010, Andrew Morton wrote:
-> On Wed, 3 Feb 2010 23:34:37 +0100
-> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+On Sun, Jan 31, 2010 at 08:24:04PM -0800, Paul E. McKenney wrote:
+> There is nothing illegal about the following:
 > 
-> > On Wednesday 03 February 2010, Andrew Morton wrote:
-> > > On Wed, 3 Feb 2010 02:44:23 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> > > 
-> > > > +static inline gfp_t clear_gfp_allowed_mask(gfp_t mask)
-> > > > +{
-> > > > +	gfp_t ret = gfp_allowed_mask;
-> > > > +	gfp_allowed_mask &= ~mask;
-> > > > +	return ret;
-> > > > +}
-> > > 
-> > > Fair enuf.
-> > > 
-> > > Of course, this is all horridly racy/buggy without locking.  Would I be
-> > > correct in hoping that all the callers happen when the system is in
-> > > everyone-is-frozen mode?
-> > 
-> > As far as I can tell, gfp_allowed_mask is only touched during init apart from
-> > this.
+> 	static void my_rcu_callback(struct rcu_head *rcu)
+> 	{
+> 		struct foo *fp = container_of(rcu, struct foo, rcu_head);
 > 
-> Well yes - the new interfaces are the problem - they're racy!
+> 		if (fp->refcnt != 0) {
+> 			call_rcu(rcu);
+> 			return;
+> 		}
+> 		kfree(fp);
+> 	}
 > 
-> > > Perhaps we should add some documentation (or even an assertion) to
-> > > prevent someone from using these interfaces from within normal code.
-> > 
-> > I thought about that, but didn't invent anything smart enough.
-> > 
-> > Well, maybe except for a comment like "this must be called with pm_mutex held",
-> > because that's the only case when it would be really safe.
+> And allowing RCU_NEEDS_CPU_FLUSHES of infinity would work correctly in
+> some sense, but would be a massive power inefficiency.
 > 
-> Is that the locking rule?  My above guess was incorrect?
+> The choice of "5" allows a callback that posts one other callback,
+> which happens often enough to be worth the extra iterations.  It is
+> necessary to budget two passes through the loop per level of RCU
+> callback, one for the current CPU to start the grace period and another
+> for it to end it.
 > 
-> Maybe slip a
-> 
-> 	BUG_ON(!mutex_is_locked(&pm_mutex));
-> 
-> in there?
+> Seem reasonable?
 
-That actually is a good idea, although I prefer WARN_ON (BUG_ON would be
-rather blunt, so to speak, as it could kill setups not using suspend/hibernate
-at all).
 
-Updated patch follows.
+Yeah ok, I did not considered situations like the above example.
 
-Rafael
+Thanks.
 
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: MM / PM: Force GFP_NOIO during suspend/hibernation and resume (rev. 3)
-
-There are quite a few GFP_KERNEL memory allocations made during
-suspend/hibernation and resume that may cause the system to hang,
-because the I/O operations they depend on cannot be completed due to
-the underlying devices being suspended.
-
-Mitigate this problem by clearing the __GFP_IO and __GFP_FS bits in
-gfp_allowed_mask before suspend/hibernation and restoring the
-original values of these bits in gfp_allowed_mask durig the
-subsequent resume.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Reported-by: Maxim Levitsky <maximlevitsky@gmail.com>
----
- include/linux/gfp.h      |    7 +++----
- init/main.c              |    2 +-
- kernel/power/hibernate.c |    9 +++++++++
- kernel/power/suspend.c   |    3 +++
- mm/page_alloc.c          |   24 ++++++++++++++++++++++++
- 5 files changed, 40 insertions(+), 5 deletions(-)
-
-Index: linux-2.6/include/linux/gfp.h
-===================================================================
---- linux-2.6.orig/include/linux/gfp.h
-+++ linux-2.6/include/linux/gfp.h
-@@ -83,6 +83,7 @@ struct vm_area_struct;
- #define GFP_HIGHUSER_MOVABLE	(__GFP_WAIT | __GFP_IO | __GFP_FS | \
- 				 __GFP_HARDWALL | __GFP_HIGHMEM | \
- 				 __GFP_MOVABLE)
-+#define GFP_IOFS	(__GFP_IO | __GFP_FS)
- 
- #ifdef CONFIG_NUMA
- #define GFP_THISNODE	(__GFP_THISNODE | __GFP_NOWARN | __GFP_NORETRY)
-@@ -337,9 +338,7 @@ void drain_local_pages(void *dummy);
- 
- extern gfp_t gfp_allowed_mask;
- 
--static inline void set_gfp_allowed_mask(gfp_t mask)
--{
--	gfp_allowed_mask = mask;
--}
-+extern void set_gfp_allowed_mask(gfp_t mask);
-+extern gfp_t clear_gfp_allowed_mask(gfp_t mask);
- 
- #endif /* __LINUX_GFP_H */
-Index: linux-2.6/init/main.c
-===================================================================
---- linux-2.6.orig/init/main.c
-+++ linux-2.6/init/main.c
-@@ -601,7 +601,7 @@ asmlinkage void __init start_kernel(void
- 	local_irq_enable();
- 
- 	/* Interrupts are enabled now so all GFP allocations are safe. */
--	set_gfp_allowed_mask(__GFP_BITS_MASK);
-+	gfp_allowed_mask = __GFP_BITS_MASK;
- 
- 	kmem_cache_init_late();
- 
-Index: linux-2.6/mm/page_alloc.c
-===================================================================
---- linux-2.6.orig/mm/page_alloc.c
-+++ linux-2.6/mm/page_alloc.c
-@@ -76,6 +76,30 @@ unsigned long totalreserve_pages __read_
- int percpu_pagelist_fraction;
- gfp_t gfp_allowed_mask __read_mostly = GFP_BOOT_MASK;
- 
-+/*
-+ * The following functions are used by the suspend/hibernate code to temporarily
-+ * change gfp_allowed_mask in order to avoid using I/O during memory allocations
-+ * while devices are suspended.  To avoid races with the suspend/hibernate code,
-+ * they should always be called with pm_mutex held (gfp_allowed_mask also should
-+ * only be modified with pm_mutex held, unless the suspend/hibernate code is
-+ * guaranteed not to run in parallel with that modification).
-+ */
-+
-+void set_gfp_allowed_mask(gfp_t mask)
-+{
-+	WARN_ON(!mutex_is_locked(&pm_mutex));
-+	gfp_allowed_mask = mask;
-+}
-+
-+gfp_t clear_gfp_allowed_mask(gfp_t mask)
-+{
-+	gfp_t ret = gfp_allowed_mask;
-+
-+	WARN_ON(!mutex_is_locked(&pm_mutex));
-+	gfp_allowed_mask &= ~mask;
-+	return ret;
-+}
-+
- #ifdef CONFIG_HUGETLB_PAGE_SIZE_VARIABLE
- int pageblock_order __read_mostly;
- #endif
-Index: linux-2.6/kernel/power/hibernate.c
-===================================================================
---- linux-2.6.orig/kernel/power/hibernate.c
-+++ linux-2.6/kernel/power/hibernate.c
-@@ -323,6 +323,7 @@ static int create_image(int platform_mod
- int hibernation_snapshot(int platform_mode)
- {
- 	int error;
-+	gfp_t saved_mask;
- 
- 	error = platform_begin(platform_mode);
- 	if (error)
-@@ -334,6 +335,7 @@ int hibernation_snapshot(int platform_mo
- 		goto Close;
- 
- 	suspend_console();
-+	saved_mask = clear_gfp_allowed_mask(GFP_IOFS);
- 	error = dpm_suspend_start(PMSG_FREEZE);
- 	if (error)
- 		goto Recover_platform;
-@@ -351,6 +353,7 @@ int hibernation_snapshot(int platform_mo
- 
- 	dpm_resume_end(in_suspend ?
- 		(error ? PMSG_RECOVER : PMSG_THAW) : PMSG_RESTORE);
-+	set_gfp_allowed_mask(saved_mask);
- 	resume_console();
-  Close:
- 	platform_end(platform_mode);
-@@ -445,14 +448,17 @@ static int resume_target_kernel(bool pla
- int hibernation_restore(int platform_mode)
- {
- 	int error;
-+	gfp_t saved_mask;
- 
- 	pm_prepare_console();
- 	suspend_console();
-+	saved_mask = clear_gfp_allowed_mask(GFP_IOFS);
- 	error = dpm_suspend_start(PMSG_QUIESCE);
- 	if (!error) {
- 		error = resume_target_kernel(platform_mode);
- 		dpm_resume_end(PMSG_RECOVER);
- 	}
-+	set_gfp_allowed_mask(saved_mask);
- 	resume_console();
- 	pm_restore_console();
- 	return error;
-@@ -466,6 +472,7 @@ int hibernation_restore(int platform_mod
- int hibernation_platform_enter(void)
- {
- 	int error;
-+	gfp_t saved_mask;
- 
- 	if (!hibernation_ops)
- 		return -ENOSYS;
-@@ -481,6 +488,7 @@ int hibernation_platform_enter(void)
- 
- 	entering_platform_hibernation = true;
- 	suspend_console();
-+	saved_mask = clear_gfp_allowed_mask(GFP_IOFS);
- 	error = dpm_suspend_start(PMSG_HIBERNATE);
- 	if (error) {
- 		if (hibernation_ops->recover)
-@@ -518,6 +526,7 @@ int hibernation_platform_enter(void)
-  Resume_devices:
- 	entering_platform_hibernation = false;
- 	dpm_resume_end(PMSG_RESTORE);
-+	set_gfp_allowed_mask(saved_mask);
- 	resume_console();
- 
-  Close:
-Index: linux-2.6/kernel/power/suspend.c
-===================================================================
---- linux-2.6.orig/kernel/power/suspend.c
-+++ linux-2.6/kernel/power/suspend.c
-@@ -198,6 +198,7 @@ static int suspend_enter(suspend_state_t
- int suspend_devices_and_enter(suspend_state_t state)
- {
- 	int error;
-+	gfp_t saved_mask;
- 
- 	if (!suspend_ops)
- 		return -ENOSYS;
-@@ -208,6 +209,7 @@ int suspend_devices_and_enter(suspend_st
- 			goto Close;
- 	}
- 	suspend_console();
-+	saved_mask = clear_gfp_allowed_mask(GFP_IOFS);
- 	suspend_test_start();
- 	error = dpm_suspend_start(PMSG_SUSPEND);
- 	if (error) {
-@@ -224,6 +226,7 @@ int suspend_devices_and_enter(suspend_st
- 	suspend_test_start();
- 	dpm_resume_end(PMSG_RESUME);
- 	suspend_test_finish("resume devices");
-+	set_gfp_allowed_mask(saved_mask);
- 	resume_console();
-  Close:
- 	if (suspend_ops->end)
