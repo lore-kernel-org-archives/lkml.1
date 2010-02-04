@@ -1,57 +1,57 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758162Ab0BDNBL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 08:01:11 -0500
-Received: from mga14.intel.com ([143.182.124.37]:28879 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757910Ab0BDNBK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 08:01:10 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,404,1262592000"; 
-   d="scan'208";a="240396760"
-Date: Thu, 4 Feb 2010 21:00:56 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Clemens Ladisch <clemens@ladisch.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 01/11] readahead: limit readahead size for small devices
-Message-ID: <20100204130056.GB25905@localhost>
-References: <20100202152835.683907822@intel.com> <20100202153316.375570078@intel.com> <4B6A8455.5010403@ladisch.de>
+	id S1757908Ab0BDNEc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 08:04:32 -0500
+Received: from stinky.trash.net ([213.144.137.162]:44569 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755681Ab0BDNEb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 08:04:31 -0500
+Message-ID: <4B6AC5DC.60301@trash.net>
+Date: Thu, 04 Feb 2010 14:04:28 +0100
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B6A8455.5010403@ladisch.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Alexey Dobriyan <adobriyan@gmail.com>
+CC: Jon Masters <jonathan@jonmasters.org>,
+       Eric Dumazet <eric.dumazet@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>,
+       netfilter-devel <netfilter-devel@vger.kernel.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH] netfilter: per netns nf_conntrack_cachep
+References: <1265108690.2861.118.camel@tonnant>	 <1265134598.2861.191.camel@tonnant> <4B6870AF.6060109@trash.net>	 <4B6967BC.600@trash.net> <1265222289.2861.290.camel@tonnant>	 <20100203190948.GA5182@x200> <1265226227.2861.302.camel@tonnant>	 <4B6ABCB8.4080904@trash.net>	 <b6fcc0a1002040427n221da433n755350b4a41bbf9b@mail.gmail.com>	 <4B6ABDEF.8090005@trash.net> <b6fcc0a1002040435t150aa7axf2dc0b139ed8f258@mail.gmail.com>
+In-Reply-To: <b6fcc0a1002040435t150aa7axf2dc0b139ed8f258@mail.gmail.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Clemens,
-
-Thanks for the data!
-
-On Thu, Feb 04, 2010 at 04:24:53PM +0800, Clemens Ladisch wrote:
-> Wu Fengguang wrote:
-> > Anyone has 512/128MB USB stick?
+Alexey Dobriyan wrote:
+> On Thu, Feb 4, 2010 at 2:30 PM, Patrick McHardy <kaber@trash.net> wrote:
+>> Alexey Dobriyan wrote:
+>>> On Thu, Feb 4, 2010 at 2:25 PM, Patrick McHardy <kaber@trash.net> wrote:
+>>>> Jon Masters wrote:
+>>>>> On Wed, 2010-02-03 at 21:09 +0200, Alexey Dobriyan wrote:
+>>>>>> On Wed, Feb 03, 2010 at 01:38:09PM -0500, Jon Masters wrote:
+>>>>>>> *). Per namespace cacheing allocation (the cachep bits). We know it's
+>>>>>>> still possible for weirdness to happen in the SLAB cache here.
+>>>>>> Tiny race, needs reproducer.
+>>>>> Maybe. I think it's worth fixing anyway.
+>>>> Absolutely, I'll also apply Eric's patch with the %p fix for the
+>>>> slab name.
+>>> This would show kernel pointers in userspace ;-)
+>>> So, net->id is required.
+>> I don't see the problem. But yes, it would be nicer to have an ID.
 > 
-> 64 MB, USB full speed:
-> Bus 003 Device 003: ID 08ec:0011 M-Systems Flash Disk Pioneers DiskOnKey
-> 
-> 4KB:    139.339 s, 376 kB/s
-> 16KB:   81.0427 s, 647 kB/s
-> 32KB:   71.8513 s, 730 kB/s
-> 64KB:   67.3872 s, 778 kB/s
-> 128KB:  67.5434 s, 776 kB/s
-> 256KB:  65.9019 s, 796 kB/s
-> 512KB:  66.2282 s, 792 kB/s
-> 1024KB: 67.4632 s, 777 kB/s
-> 2048KB: 69.9759 s, 749 kB/s
+> This is done (or rather, not done) to not show attackers
+> where data structures are.
 
-It seems to reach good throughput at 64KB readahead size :)
+That's news to me, my /proc is full of kernel space pointers,
+including data.
 
-Thanks,
-Fengguang
+In any case, we need a fix for this suitable for 2.6.33. If
+you don't like using the pointer, please send a patch to add
+an id to the network namespaces.
