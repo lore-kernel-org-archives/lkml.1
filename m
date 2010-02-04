@@ -1,130 +1,64 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758441Ab0BDQoG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 11:44:06 -0500
-Received: from casper.infradead.org ([85.118.1.10]:48936 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758367Ab0BDQoE (ORCPT
+	id S1758392Ab0BDQnn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 11:43:43 -0500
+Received: from nlpi129.sbcis.sbc.com ([207.115.36.143]:57955 "EHLO
+	nlpi129.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758335Ab0BDQnl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 11:44:04 -0500
-Subject: Re: [Patch 0/2] sysfs: fix s_active lockdep warning
-From: Peter Zijlstra <peterz@infradead.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Greg KH <gregkh@suse.de>,
-       Thomas Gleixner <tglx@linutronix.de>, Cong Wang <amwang@redhat.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Tejun Heo <tj@kernel.org>, Miles Lane <miles.lane@gmail.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1002041027070.2470-100000@iolanthe.rowland.org>
-References: <Pine.LNX.4.44L0.1002041027070.2470-100000@iolanthe.rowland.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 04 Feb 2010 17:41:53 +0100
-Message-ID: <1265301713.22001.128.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 4 Feb 2010 11:43:41 -0500
+Date: Thu, 4 Feb 2010 10:42:53 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@router.home
+To: Richard Kennedy <richard@rsk.demon.co.uk>
+cc: penberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       lkml <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
+Subject: Re: [RFC] slub: ARCH_SLAB_MINALIGN defaults to 8 on x86_32. is this
+ too big?
+In-Reply-To: <1265217903.2118.86.camel@localhost>
+Message-ID: <alpine.DEB.2.00.1002041019300.28165@router.home>
+References: <1265206946.2118.57.camel@localhost>  <alpine.DEB.2.00.1002030932480.5671@router.home> <1265217903.2118.86.camel@localhost>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-02-04 at 11:35 -0500, Alan Stern wrote:
-> Greg:
-> 
-> You have accepted Thomas's patch "drivers/base: Convert dev->sem to
-> mutex".  It generates lockdep violations galore during device probing
-> and removal!  Luckily lockdep is smart enough only to print the first
-> occurrence.  Here's what I get early on during bootup:
+On Wed, 3 Feb 2010, Richard Kennedy wrote:
 
-<snip lockdep splat>
+> gives me this output :-
+> 32 bit : size = 12 , offset of l = 4
+> 64 bit : size = 16 , offset of l = 8
+>
+> Doesn't that suggest that it would be safe to use sizeof(void *) ?
+> (at least on x86 anyway).
 
-> On Thu, 4 Feb 2010, Peter Zijlstra wrote:
-> 
-> > The device tree had the problem that we could basically hold a device
-> > lock and an unspecified number of parent locks (iirc this was due to
-> > device probing, where we hold the bus lock while probing/adding child
-> > device, recursively). 
-> > 
-> > If we place each dev->lock into the same class (which would naively
-> > happen), then this would lead to recursive lock warnings. The proposed
-> > solution for this is to create MAX_LOCK_DEPTH classes and assign them to
-> > the dev->lock depending on the depth in the device tree (Alan said that
-> > MAX_LOCK_DEPTH is sufficient for all practical cases).
-> > 
-> > static struct lock_class_key dev_tree_classes[MAX_LOCK_DEPTH];
-> > 
-> > device_add() or thereabouts would have something like:
-> > 
-> > #ifdef CONFIG_PROVE_LOCKING
-> > 	BUG_ON(dev->depth >= MAX_LOCK_DEPTH);
-> > 	lockdep_set_class(dev->lock, &dev_tree_classes[dev->depth]);
-> > #endif
-> 
-> Unfortunately this doesn't really work.  Here is a patch implementing
-> the scheme:
-> 
-> Index: usb-2.6/drivers/base/core.c
-> ===================================================================
-> --- usb-2.6.orig/drivers/base/core.c
-> +++ usb-2.6/drivers/base/core.c
-> @@ -22,6 +22,7 @@
->  #include <linux/kallsyms.h>
->  #include <linux/mutex.h>
->  #include <linux/async.h>
-> +#include <linux/sched.h>
->  
->  #include "base.h"
->  #include "power/power.h"
-> @@ -671,6 +672,26 @@ static void setup_parent(struct device *
->  		dev->kobj.parent = kobj;
->  }
->  
-> +#ifdef CONFIG_PROVE_LOCKING
-> +static struct lock_class_key dev_tree_classes[MAX_LOCK_DEPTH];
-> +
-> +static void setup_mutex_depth(struct device *dev, struct device *parent)
-> +{
-> +	int depth = 0;
-> +
-> +	/* Dynamically determine the device's depth in the device tree */
-> +	while (parent) {
-> +		++depth;
-> +		parent = parent->parent;
-> +	}
-> +	BUG_ON(depth > MAX_LOCK_DEPTH);
-> +	lockdep_set_class(&dev->mutex, &dev_tree_classes[depth]);
-> +}
-> +#else
-> +static inline void setup_mutex_depth(struct device *dev,
-> +		struct device *parent) {}
-> +#endif
-> +
->  static int device_add_class_symlinks(struct device *dev)
->  {
->  	int error;
-> @@ -912,6 +933,7 @@ int device_add(struct device *dev)
->  
->  	parent = get_device(dev->parent);
->  	setup_parent(dev, parent);
-> +	setup_mutex_depth(dev, parent);
->  
->  	/* use parent numa_node */
->  	if (parent)
-> 
-> 
-> This doesn't address the fact that we really have multiple device trees
-> (for example, class devices are handled separately from normal
-> devices).  With the above patch installed, I still get lockdep
-> violations farther on during boot:
+Maybe. But the rule of thumb is to align objects by their size which we
+would be violating.
 
-<snip lockdep splat>
+A 64 bit object may span multiple cachelines if aligned to a 32 bit
+boundary. Which may result in nasty surprise because the object can no
+longer be read and written from memory in an atomic way. If there is
+a guarantee that no 64 bit operation ever occurs then it may be
+fine.
 
-Hmm, so you have multiple interacting trees? I had understood you only
-had a single device tree. So how many trees are there, is that fixed?
-Does the device know what tree it is going to end up in?
+Fetching a 64 bit object that straddles a cacheline boundary also requires
+2 fetches instead of one to read the object which can increase the
+cache footprint of functions accessing the structure.
 
-If yes, then you can extend the setup_mutex_depth() function to pick a
-different class stack for each tree.
+Slab allocators (aside from SLOB which is rarely used) assume the minimal
+alignment to be sizeof(unsigned long long).
+
+> We end up with a large number of buffer_heads and as they are pretty
+> small an extra 4 bytes does make a significant difference.
+> On my 64 bit machine I often see thousands of pages of buffer_heads, so
+> squeezing a few more per page could be a considerable saving.
+
+On your 64 bit machine you wont be able to do the optimization that you
+are talking about.
+
+The buffer head structure is already fairly big so this wont make too much
+of a difference.
 
