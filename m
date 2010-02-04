@@ -1,22 +1,22 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756551Ab0BDRhy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 12:37:54 -0500
-Received: from kroah.org ([198.145.64.141]:34591 "EHLO coco.kroah.org"
+	id S1757070Ab0BDRh6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 12:37:58 -0500
+Received: from kroah.org ([198.145.64.141]:34582 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932833Ab0BDRVb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 12:21:31 -0500
-X-Mailbox-Line: From linux@linux.site Thu Feb  4 09:14:50 2010
-Message-Id: <20100204171450.450060042@linux.site>
+	id S932772Ab0BDRV3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 12:21:29 -0500
+X-Mailbox-Line: From linux@linux.site Thu Feb  4 09:14:49 2010
+Message-Id: <20100204171449.412633582@linux.site>
 User-Agent: quilt/0.47-14.9
-Date: Thu, 04 Feb 2010 09:11:38 -0800
+Date: Thu, 04 Feb 2010 09:11:36 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       David Rientjes <rientjes@google.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [07/74] x86: Set hotpluggable nodes in nodes_possible_map
+Subject: [05/74] firewire: ohci: fix crashes with TSB43AB23 on 64bit systems
 In-Reply-To: <20100204171850.GA16539@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -26,53 +26,68 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: David Rientjes <rientjes@google.com>
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
 
-commit 3a5fc0e40cb467e692737bc798bc99773c81e1e2 upstream.
+commit 7a481436787cbc932af6c407b317ac603969a242 upstream.
 
-nodes_possible_map does not currently include nodes that have SRAT
-entries that are all ACPI_SRAT_MEM_HOT_PLUGGABLE since the bit is
-cleared in nodes_parsed if it does not have an online address range.
+Unsurprisingly, Texas Instruments TSB43AB23 exhibits the same behaviour
+as TSB43AB22/A in dual buffer IR DMA mode:  If descriptors are located
+at physical addresses above the 31 bit address range (2 GB), the
+controller will overwrite random memory.  With luck, this merely
+prevents video reception.  With only a little less luck, the machine
+crashes.
 
-Unequivocally setting the bit in nodes_parsed is insufficient since
-existing code, such as acpi_get_nodes(), assumes all nodes in the map
-have online address ranges.  In fact, all code using nodes_parsed
-assumes such nodes represent an address range of online memory.
+We use the same workaround here as with TSB43AB22/A:  Switch off the
+dual buffer capability flag and use packet-per-buffer IR DMA instead.
+Another possible workaround would be to limit the coherent DMA mask to
+31 bits.
 
-nodes_possible_map is created by unioning nodes_parsed and
-cpu_nodes_parsed; the former represents nodes with online memory and
-the latter represents memoryless nodes.  We now set the bit for
-hotpluggable nodes in cpu_nodes_parsed so that it also gets set in
-nodes_possible_map.
+In Linux 2.6.33, this change serves effectively only as documentation
+since dual buffer mode is not used for any controller anymore.  But
+somebody might want to re-enable it in the future to make use of
+features of dual buffer DMA that are not available in packet-per-buffer
+mode.
 
-[ hpa: Haicheng Li points out that this makes the naming of the
-  variable cpu_nodes_parsed somewhat counterintuitive.  However, leave
-  it as is in the interest of keeping the pure bug fix patch small. ]
+In Linux 2.6.32 and older, this update is vital for anyone with this
+controller, more than 2 GB RAM, a 64 bit kernel, and FireWire video or
+audio applications.
 
-Signed-off-by: David Rientjes <rientjes@google.com>
-Tested-by: Haicheng Li <haicheng.li@linux.intel.com>
-LKML-Reference: <alpine.DEB.2.00.1001201152040.30528@chino.kir.corp.google.com>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+We have at least four reports:
+http://bugzilla.kernel.org/show_bug.cgi?id=13808
+http://marc.info/?l=linux1394-user&m=126154279004083
+https://bugzilla.redhat.com/show_bug.cgi?id=552142
+http://marc.info/?l=linux1394-user&m=126432246128386
+
+Reported-by: Paul Johnson
+Reported-by: Ronneil Camara
+Reported-by: G Zornetzer
+Reported-by: Mark Thompson
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/mm/srat_64.c |    4 +++-
+ drivers/firewire/ohci.c |    4 +++-
  1 file changed, 3 insertions(+), 1 deletion(-)
 
---- a/arch/x86/mm/srat_64.c
-+++ b/arch/x86/mm/srat_64.c
-@@ -229,9 +229,11 @@ update_nodes_add(int node, unsigned long
- 			printk(KERN_ERR "SRAT: Hotplug zone not continuous. Partly ignored\n");
- 	}
+--- a/drivers/firewire/ohci.c
++++ b/drivers/firewire/ohci.c
+@@ -2412,6 +2412,7 @@ static void ohci_pmac_off(struct pci_dev
  
--	if (changed)
-+	if (changed) {
-+		node_set(node, cpu_nodes_parsed);
- 		printk(KERN_INFO "SRAT: hot plug zone found %Lx - %Lx\n",
- 				 nd->start, nd->end);
-+	}
- }
+ #define PCI_VENDOR_ID_AGERE		PCI_VENDOR_ID_ATT
+ #define PCI_DEVICE_ID_AGERE_FW643	0x5901
++#define PCI_DEVICE_ID_TI_TSB43AB23	0x8024
  
- /* Callback for parsing of the Proximity Domain <-> Memory Area mappings */
+ static int __devinit pci_probe(struct pci_dev *dev,
+ 			       const struct pci_device_id *ent)
+@@ -2477,7 +2478,8 @@ static int __devinit pci_probe(struct pc
+ #if !defined(CONFIG_X86_32)
+ 	/* dual-buffer mode is broken with descriptor addresses above 2G */
+ 	if (dev->vendor == PCI_VENDOR_ID_TI &&
+-	    dev->device == PCI_DEVICE_ID_TI_TSB43AB22)
++	    (dev->device == PCI_DEVICE_ID_TI_TSB43AB22 ||
++	     dev->device == PCI_DEVICE_ID_TI_TSB43AB23))
+ 		ohci->use_dualbuffer = false;
+ #endif
+ 
 
 
