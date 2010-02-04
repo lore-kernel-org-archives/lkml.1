@@ -1,86 +1,65 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758609Ab0BDXSg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 18:18:36 -0500
-Received: from mail-fx0-f220.google.com ([209.85.220.220]:46606 "EHLO
-	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758475Ab0BDXSe (ORCPT
+	id S1758616Ab0BDXTO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 18:19:14 -0500
+Received: from p01c11o143.mxlogic.net ([208.65.144.66]:38558 "EHLO
+	p01c11o143.mxlogic.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758475Ab0BDXTM convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 18:18:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=kSYwpPZLNKfw/bx7YJSDwgjiSJdyzLRh57SSETf3it+/grv2VEA10af16SpMmO9310
-         8XeZlpovOgsbmDaV+v/PR3j/nlaNRUkdpRIruGoY12exb1IKFRE/gnQUB5gLgDq8BYaK
-         oj72RtE0MEWf3rmrhBP7a6wtWMqVuH+zTV7kg=
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: linux-mmc@vger.kernel.org
-Cc: Philip Langdale <philipl@overt.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: [PATCH] MMC: fix hang if card was removed during suspend and unsafe resume was enabled
-Date: Fri,  5 Feb 2010 01:18:15 +0200
-Message-Id: <1265325495-4220-1-git-send-email-maximlevitsky@gmail.com>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1265219241.12549.8.camel@maxim-laptop>
-References: <1265219241.12549.8.camel@maxim-laptop>
+	Thu, 4 Feb 2010 18:19:12 -0500
+X-MXL-Hash: 4b6b55f0441903f1-87b8e390ba0b1244754a1b287601c8d71c33c62b
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: Re: [PATCH 2.6.33 1/4] net: Micrel KSZ8841/2 PCI Ethernet driver
+Date: Thu, 4 Feb 2010 15:18:54 -0800
+Message-ID: <14385191E87B904DBD836449AA30269D021A51@MORGANITE.micrel.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 2.6.33 1/4] net: Micrel KSZ8841/2 PCI Ethernet driver
+Thread-Index: Acql8GuJFGGdevVDS6aRwlZCKMd9bw==
+From: "Ha, Tristram" <Tristram.Ha@Micrel.Com>
+To: "Dave Miller" <davem@davemloft.net>
+Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "Stephen Hemminger" <shemminger@vyatta.com>, <netdev@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 04 Feb 2010 23:18:54.0903 (UTC) FILETIME=[6B934C70:01CAA5F0]
+X-Spam: [F=0.2000000000; CM=0.500; S=0.200(2010011101)]
+X-MAIL-FROM: <tristram.ha@micrel.com>
+X-SOURCE-IP: [65.218.208.2]
+X-AnalysisOut: [v=1.0 c=1 a=0RN4rdAoExkA:10 a=J3BOMSfJb05aRia9DmE+FQ==:17 ]
+X-AnalysisOut: [a=ATUHBX0TWO8JkiUIsMwA:9 a=YKM-8P-3Y5yaZvzim7IA:7 a=a8sOD-]
+X-AnalysisOut: [qGc6vbnySUOb6DrCzSpAkA:4]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently removal of the card leads to del_disk called indirectly by mmc core.
-This function expects userspace to be running, which isn't when .resume is called
+Dave Miller wrote:
+>> This is a resubmission of the Micrel KSZ8841/2 PCI Ethernet driver.
+>
+> The procfs stuff is a non-starter.
+>
+> There will undoubtedly be other devices that have switch-like
+> facilities that we'd like to export configuration support for.
+>
+> The last thing we want is a bunch of procfs files that each
+> driver decides the layout and behavior of.
+>
+> We need a centralized way to config such things, and probably
+> the best is to have a rtnl_link_ops facility to get at the
+> ports and configure them with attribute blobs or similar.
+>
+> We also said in your first submission that the way you're
+> getting at the bridge STP stuff with things like:
+>
+> +/* Needed for STP support. */
+> +#ifdef CONFIG_KSZ8842_STP
+> +#include <../net/bridge/br_private.h>
+> +#endif
+> Yet you left all of this stuff in there.
 
-Fix that by removing the code that did that in mmc_resume_host. It is possible
-because card detection logic will kick it later and remove the card.
+In my discussions with Alan Cox and Stephen Hemminger, I thought they kind of agree to the code's inclusion in the driver.  Sorry for my misunderstanding.  I will submit another one with those code removed.
 
-Also make mtd workqueue freezeable, so it won't attempt to add/remove the card
-while userspace is frozen.
-
-Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
----
- drivers/mmc/core/core.c |    9 ++-------
- 1 files changed, 2 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/mmc/core/core.c b/drivers/mmc/core/core.c
-index 30acd52..879d48d 100644
---- a/drivers/mmc/core/core.c
-+++ b/drivers/mmc/core/core.c
-@@ -1257,7 +1257,6 @@ int mmc_suspend_host(struct mmc_host *host, pm_message_t state)
- 	if (host->caps & MMC_CAP_DISABLE)
- 		cancel_delayed_work(&host->disable);
- 	cancel_delayed_work(&host->detect);
--	mmc_flush_scheduled_work();
- 
- 	mmc_bus_get(host);
- 	if (host->bus_ops && !host->bus_dead) {
-@@ -1300,15 +1299,11 @@ int mmc_resume_host(struct mmc_host *host)
- 		mmc_select_voltage(host, host->ocr);
- 		BUG_ON(!host->bus_ops->resume);
- 		err = host->bus_ops->resume(host);
-+
- 		if (err) {
- 			printk(KERN_WARNING "%s: error %d during resume "
- 					    "(card was removed?)\n",
- 					    mmc_hostname(host), err);
--			if (host->bus_ops->remove)
--				host->bus_ops->remove(host);
--			mmc_claim_host(host);
--			mmc_detach_bus(host);
--			mmc_release_host(host);
- 			/* no need to bother upper layers */
- 			err = 0;
- 		}
-@@ -1332,7 +1327,7 @@ static int __init mmc_init(void)
- {
- 	int ret;
- 
--	workqueue = create_singlethread_workqueue("kmmcd");
-+	workqueue = create_freezeable_workqueue("kmmcd");
- 	if (!workqueue)
- 		return -ENOMEM;
- 
--- 
-1.6.3.3
-
+P.S. I did not actually receive your response from my company's e-mail server.  I copied it from LKML.
