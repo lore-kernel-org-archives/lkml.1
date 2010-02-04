@@ -1,102 +1,100 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756807Ab0BDIcY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 03:32:24 -0500
-Received: from mail-pz0-f189.google.com ([209.85.222.189]:49171 "EHLO
-	mail-pz0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752546Ab0BDIcW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 03:32:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=YtO1mz3NGNebhYjeGiBlukNJS2JaWMyCgOLHRoqJQ2PDWb9aB3XSvd+PH1k0pvJKne
-         8HSjtRXRb3bh/2OrwFwmsMUvRe09J6Mf8DGXxeFn6GGtjr5L6wkYHmSVZSaJJiAWkyex
-         0EciN4m1XALR8TK4+48s0qFGSVuo1FEj6l9vc=
-MIME-Version: 1.0
-In-Reply-To: <20100127015947.GA11685@kroah.com>
-References: <5c343a41001220840x6ce6bd29q3b69bbc978b1899f@mail.gmail.com>
-	 <20100126170125.d199e52c.akpm@linux-foundation.org>
-	 <20100127015947.GA11685@kroah.com>
-Date: Thu, 4 Feb 2010 08:32:21 +0000
-Message-ID: <5c343a41002040032w54bb9953nd6bfe60a06553625@mail.gmail.com>
-Subject: Re: usbmc seems broken
-From: Neil Kalo <neilkalo@gmail.com>
-To: Greg KH <greg@kroah.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org, Steve Holland <sdh4@iastate.edu>,
-       Oliver Neukum <oliver@neukum.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1755626Ab0BDIgn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 03:36:43 -0500
+Received: from bamako.nerim.net ([62.4.17.28]:54976 "EHLO bamako.nerim.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751341Ab0BDIgl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 03:36:41 -0500
+Date: Thu, 4 Feb 2010 09:36:38 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: ebiederm@xmission.com (Eric W. Biederman)
+Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
+       Tejun Heo <tj@kernel.org>, Serge Hallyn <serue@us.ibm.com>
+Subject: Re: [PATCH] sysfs: sysfs_sd_setattr set iattrs unconditionally
+Message-ID: <20100204093638.3116055e@hyperion.delvare>
+In-Reply-To: <m1hbpxlbhn.fsf_-_@fess.ebiederm.org>
+References: <20100120131602.12aa48f7@hyperion.delvare>
+	<m1ocko6fkx.fsf@fess.ebiederm.org>
+	<20100120160008.7d59688b@hyperion.delvare>
+	<20100122041913.GC4302@suse.de>
+	<20100203091138.1ababf5e@hyperion.delvare>
+	<20100203142218.GA27676@suse.de>
+	<m1hbpxlbhn.fsf_-_@fess.ebiederm.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Upgraded to: 2.6.32.7-37.fc12.i686.PAE
+On Wed, 03 Feb 2010 23:13:24 -0800, Eric W. Biederman wrote:
+> 
+> There is currently a bug in sysfs_sd_setattr inherited from
+> sysfs_setattr in 2.6.32 where the first time we set the attributes
+> on a sysfs file we allocate backing store but do not set the
+> backing store attributes.  Resulting in overly restrictive
+> permissions on sysfs files.
+> 
+> The fix is to simply modify the code so that it always executes
+> when we update the sysfs attributes, as we did in 2.6.31 and earlier.
+> 
+> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 
-Still no joy. Plugging in the meter gives:
+Tested-by: Jean Delvare <khali@linux-fr.org>
 
-Feb  4 08:27:04 localhost kernel: usb 4-1: new full speed USB device
-using ohci_hcd and address 2
-Feb  4 08:27:04 localhost kernel: usb 4-1: New USB device found,
-idVendor=05e6, idProduct=2100
-Feb  4 08:27:04 localhost kernel: usb 4-1: New USB device strings:
-Mfr=2, Product=3, SerialNumber=1
-Feb  4 08:27:04 localhost kernel: usb 4-1: Product: 2100 Multimeter
-Feb  4 08:27:04 localhost kernel: usb 4-1: Manufacturer: KEITHLEY INSTRUMENTS
-Feb  4 08:27:04 localhost kernel: usb 4-1: SerialNumber: 1160791
-Feb  4 08:27:04 localhost kernel: usb 4-1: configuration #1 chosen from 1 choice
-Feb  4 08:27:04 localhost kernel: usbcore: registered new interface
-driver usbtmc
+> ---
+>  fs/sysfs/inode.c |   35 +++++++++++++++++------------------
+>  1 files changed, 17 insertions(+), 18 deletions(-)
+> 
+> diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
+> index 220b758..6a06a1d 100644
+> --- a/fs/sysfs/inode.c
+> +++ b/fs/sysfs/inode.c
+> @@ -81,24 +81,23 @@ int sysfs_sd_setattr(struct sysfs_dirent *sd, struct iattr * iattr)
+>  		if (!sd_attrs)
+>  			return -ENOMEM;
+>  		sd->s_iattr = sd_attrs;
+> -	} else {
+> -		/* attributes were changed at least once in past */
+> -		iattrs = &sd_attrs->ia_iattr;
+> -
+> -		if (ia_valid & ATTR_UID)
+> -			iattrs->ia_uid = iattr->ia_uid;
+> -		if (ia_valid & ATTR_GID)
+> -			iattrs->ia_gid = iattr->ia_gid;
+> -		if (ia_valid & ATTR_ATIME)
+> -			iattrs->ia_atime = iattr->ia_atime;
+> -		if (ia_valid & ATTR_MTIME)
+> -			iattrs->ia_mtime = iattr->ia_mtime;
+> -		if (ia_valid & ATTR_CTIME)
+> -			iattrs->ia_ctime = iattr->ia_ctime;
+> -		if (ia_valid & ATTR_MODE) {
+> -			umode_t mode = iattr->ia_mode;
+> -			iattrs->ia_mode = sd->s_mode = mode;
+> -		}
+> +	}
+> +	/* attributes were changed at least once in past */
+> +	iattrs = &sd_attrs->ia_iattr;
+> +
+> +	if (ia_valid & ATTR_UID)
+> +		iattrs->ia_uid = iattr->ia_uid;
+> +	if (ia_valid & ATTR_GID)
+> +		iattrs->ia_gid = iattr->ia_gid;
+> +	if (ia_valid & ATTR_ATIME)
+> +		iattrs->ia_atime = iattr->ia_atime;
+> +	if (ia_valid & ATTR_MTIME)
+> +		iattrs->ia_mtime = iattr->ia_mtime;
+> +	if (ia_valid & ATTR_CTIME)
+> +		iattrs->ia_ctime = iattr->ia_ctime;
+> +	if (ia_valid & ATTR_MODE) {
+> +		umode_t mode = iattr->ia_mode;
+> +		iattrs->ia_mode = sd->s_mode = mode;
+>  	}
+>  	return 0;
+>  }
 
-But "cat /dev/usbtmc0" gives:
-cat: /dev/usbtmc0: Connection timed out
 
-And in the logs:
-Feb  4 08:27:35 localhost kernel: usbtmc 4-1:1.0: Unable to read data,
-error -110
-
-The very old driver still works:
-
-Feb  4 08:31:02 localhost kernel: USBTMC: MKDEV
-Feb  4 08:31:02 localhost kernel: USBTMC: CDEV_ADD f900000 1
-Feb  4 08:31:02 localhost kernel: usbcore: registered new interface
-driver USBTMC
-
-[root@mc22 usbtmc-module]# cat /dev/usbtmc0
-Minor Number    Manufacturer    Product Serial Number
-001     KEITHLEY INSTRUMENTS    2100 Multimeter 1160791
-
-On Wed, Jan 27, 2010 at 1:59 AM, Greg KH <greg@kroah.com> wrote:
-> On Tue, Jan 26, 2010 at 05:01:25PM -0800, Andrew Morton wrote:
->> (cc's added)
->>
->> On Fri, 22 Jan 2010 16:40:06 +0000
->> Neil Kalo <neilkalo@gmail.com> wrote:
->>
->> > I cannot get usbtmc to work with my device. I am using fedora 12:
->> > 2.6.31.12-174.2.3.fc12.i686.PAE
->> >
->> > Jan 22 15:40:26 localhost kernel: usb 4-1: new full speed USB device
->> > using ohci_hcd and address 4
->> > Jan 22 15:40:26 localhost kernel: usb 4-1: New USB device found,
->> > idVendor=05e6, idProduct=2100
->> > Jan 22 15:40:26 localhost kernel: usb 4-1: New USB device strings:
->> > Mfr=2, Product=3, SerialNumber=1
->> > Jan 22 15:40:26 localhost kernel: usb 4-1: Product: 2100 Multimeter
->> > Jan 22 15:40:26 localhost kernel: usb 4-1: Manufacturer: KEITHLEY INSTRUMENTS
->> > Jan 22 15:40:26 localhost kernel: usb 4-1: SerialNumber: 1160791
->> > Jan 22 15:40:26 localhost kernel: usb 4-1: configuration #1 chosen from 1 choice
->> > Jan 22 15:40:26 localhost kernel: usbtmc 4-1:1.0: can't read capabilities
->
-> This was a bug in this version of the driver.
->
-> Please upgrade to 2.6.32, the problem is fixed.
->
-> If you are curious, commit id d0a38365d9585bf3fb71f7c57fd532441a14f3e8
-> solved the problem.
->
-> Hope this helps,
->
-> greg k-h
->
+-- 
+Jean Delvare
