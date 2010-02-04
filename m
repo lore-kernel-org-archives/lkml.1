@@ -1,44 +1,59 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757409Ab0BDEjg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 23:39:36 -0500
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:50516 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756182Ab0BDEjd (ORCPT
+	id S1757377Ab0BDEwj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 23:52:39 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:53425 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756899Ab0BDEwh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 23:39:33 -0500
-Date: Thu, 4 Feb 2010 13:39:23 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: George Spelvin <linux@horizon.com>
-Cc: catalin.marinas@arm.com, linux-kernel@vger.kernel.org
-Subject: Re: USB mass storage and ARM cache coherency
-Message-ID: <20100204043923.GC451@linux-sh.org>
-References: <20100203235644.3084.qmail@science.horizon.com>
+	Wed, 3 Feb 2010 23:52:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=Csnwqw06mh0SxeDaNgc496xbUQMZGd+Qy8kOwI6yoaKm5et9LyhCxKAzVcE52V9mU1
+         ZoH1hbwBRtF9WHOzC+HmiuyBEZgdqdDgeIHVLJHX1dS3tSw8aVvjrO2zPqHzOMe8QG9g
+         naqsCCmk5kuabi7c4ybrh/jqZMX8cQ1oKc028=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100203235644.3084.qmail@science.horizon.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <4B620A72.7050202@gmail.com>
+References: <43e72e891001281338u5f05307ble5360c3dac6ab9a2@mail.gmail.com>
+	 <4B620A72.7050202@gmail.com>
+Date: Thu, 4 Feb 2010 04:52:36 +0000
+Message-ID: <3ace41891002032052h13be767buabb77523c0cc2d90@mail.gmail.com>
+Subject: Re: Linux wireless GSoC 2010 project ideas
+From: Hin-Tak Leung <hintak.leung@gmail.com>
+To: Till Kamppeter <till.kamppeter@gmail.com>
+Cc: "Luis R. Rodriguez" <mcgrof@gmail.com>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       lsb-discuss@lists.linux-foundation.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 03, 2010 at 06:56:44PM -0500, George Spelvin wrote:
-> > Apart from that, flush_dcache_page() doesn't have any data flow
-> > information. Optimisations could be done on ARM if we know that the
-> > kernel only intends to read from a page (no flushing necessary with a
-> > non-aliasing D-cache).
-> 
-> Already done in flush_dcache_page().  If possible (uniprocessor), it just
-> flags the page as PG_dcache_dirty, and defers the actual flush operation
-> until it's mapped somewhere else (either a virtual alias or executable).
-> 
-Try reading the thread again, as you seem to have missed the point
-completely. The issue isn't with lazy dcache writeback, the issue is that
-flush_dcache_page() is a bit of a sledgehammer for cases when directional
-information is available. The DMA mapping operations conversely are aware
-of data flow and optimize accordingly.
+On 1/28/10, Till Kamppeter <till.kamppeter@gmail.com> wrote:
+> Great to hear from you.
+>
+> I will apply again for the LF entering as a mentoring organization and I
+> will add your projects to the list of proposed projects for the LF
+> application.
 
-Additionally, with something like a flush_dcache_range() it's possible
-to optimize for large ranges as opposed to page-at-a-time looping for
-anything that needs to flag PG_dcache_dirty on a bulk group of pages.
+Perhaps at this point, it might be a good idea to share some insights
+for reasons of failures/non-competition. I think the first year (2008)
+of LF's participation, it was 6/8 competion over all? How did 2009 do?
+Luis mentioned that 2/3 failed out of the 3 wireless-related project,
+but AFAIK there were about 10 accepted in 2009 under the LF umbrella -
+what's the completion rate for the other 7? It is probably a good idea
+to write some of that up (non-competition and the possibility of
+re-do) in one of Linux Foundation's wiki pages.
+
+AFAIK the overall non-competition rate across all organization is
+about 10% so the 2/8 in 2008 wasn't too bad.
+
+> P. S.: Do you know someone with knowledge in data compression? I will
+> run a project at OpenPrinting which is about data compression.
+
+What are you thinking of? :-)
+
+Hin-Tak
