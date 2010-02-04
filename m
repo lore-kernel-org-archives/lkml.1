@@ -1,55 +1,90 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756498Ab0BDHIx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 02:08:53 -0500
-Received: from straum.hexapodia.org ([64.81.70.185]:47693 "EHLO
-	straum.hexapodia.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753719Ab0BDHIw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 02:08:52 -0500
-Date: Wed, 3 Feb 2010 23:08:47 -0800
-From: Andy Isaacson <adi@hexapodia.org>
-To: Tejun Heo <tj@kernel.org>
-Cc: linux-kernel@vger.kernel.org, dri-devel@lists.sourceforge.net
-Subject: Re: [2.6.33-rc6-git regression] idr fix breaks Xorg
-Message-ID: <20100204070847.GM15124@hexapodia.org>
-References: <20100204012837.GC538@hexapodia.org> <4B6A3AED.1000102@kernel.org>
+	id S1756543Ab0BDHKk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 02:10:40 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:41403 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752024Ab0BDHKj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 02:10:39 -0500
+Date: Thu, 4 Feb 2010 18:10:32 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Greg KH <greg@kroah.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: linux-next: driver-core tree build warning
+Message-Id: <20100204181032.1b5cbfb2.sfr@canb.auug.org.au>
+In-Reply-To: <20100203022247.GA11904@kroah.com>
+References: <20100119172741.2dd81553.sfr@canb.auug.org.au>
+	<20100119210417.GC10928@kroah.com>
+	<20100120104525.752a790f.sfr@canb.auug.org.au>
+	<20100120172543.e884a8af.sfr@canb.auug.org.au>
+	<20100120174441.e1b12fd7.sfr@canb.auug.org.au>
+	<20100121231010.GB29796@kroah.com>
+	<20100129182115.99918a0e.sfr@canb.auug.org.au>
+	<20100203022247.GA11904@kroah.com>
+X-Mailer: Sylpheed 3.0.0beta7 (GTK+ 2.18.6; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B6A3AED.1000102@kernel.org>
-User-Agent: Mutt/1.4.2.3i
-X-GPG-Fingerprint: 1914 0645 FD53 C18E EEEF C402 4A69 B1F3 68D2 A63F
-X-GPG-Key-URL: http://web.hexapodia.org/~adi/gpg.txt
-X-Domestic-Surveillance: money launder bomb tax evasion
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__4_Feb_2010_18_10_32_+1100__/b=AmP+JDX/Lk_4"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 04, 2010 at 12:11:41PM +0900, Tejun Heo wrote:
-> On 02/04/2010 10:28 AM, Andy Isaacson wrote:
-> > On my Dell Latitude e4300 commit 859ddf0974 ("idr: fix a critical
-> > misallocation bug") causes Xorg to segfault with the following
-> > backtrace:
-> 
-> Does the following patch make any difference?
-> 
-> diff --git a/lib/idr.c b/lib/idr.c
-> index ba7d37c..a96c604 100644
-> --- a/lib/idr.c
-> +++ b/lib/idr.c
-> @@ -140,7 +140,8 @@ static int sub_alloc(struct idr *idp, int *starting_id, struct idr_layer **pa)
->  	id = *starting_id;
->   restart:
->  	p = idp->top;
-> -	l = p->layer;
-> +	l = idp->layers;
-> +	pa[l--] = NULL;
->  	while (1) {
->  		/*
->  		 * We run around this while until we reach the leaf node...
+--Signature=_Thu__4_Feb_2010_18_10_32_+1100__/b=AmP+JDX/Lk_4
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Alas, no -- with that patch applied Xorg still segfaults in the same
-place.
+Hi Greg,
 
--andy
+On Tue, 2 Feb 2010 18:22:47 -0800 Greg KH <greg@kroah.com> wrote:
+>
+> On Fri, Jan 29, 2010 at 06:21:15PM +1100, Stephen Rothwell wrote:
+> >=20
+> > > -static CLASS_ATTR(probe, S_IWUSR, NULL, cpu_probe_store);
+> > > -static CLASS_ATTR(release, S_IWUSR, NULL, cpu_release_store);
+> > > +static SYSDEV_ATTR(probe, S_IWUSR, NULL, cpu_probe_store);
+> >=20
+> > This defines attr_probe as a "struct sysdev_attribute" whose attr eleme=
+nt
+> > is a "struct attribute".
+> >=20
+> > > +static SYSDEV_ATTR(release, S_IWUSR, NULL, cpu_release_store);
+> > >  #endif /* CONFIG_ARCH_CPU_PROBE_RELEASE */
+> > > =20
+> > >  #else /* ... !CONFIG_HOTPLUG_CPU */
+> > > @@ -261,8 +261,8 @@ int __init cpu_dev_init(void)
+> > > =20
+> > >  static struct sysdev_class_attribute *cpu_sysdev_class_attrs[] =3D {
+> > >  #ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
+> > > -	&class_attr_probe.attr,
+> > > -	&class_attr_release.attr,
+> > > +	&attr_probe.attr,
+> >=20
+> > so here we are initialising a "struct sysdev_class_attribute *" with a
+> > "struct attribute *".  Thus the warning.
+>=20
+> Doh, sorry about that.  I've fixed it up now and pushed it out.
+
+Still not right :-( &attr_probe and &attr_release are "struct
+sysdev_attribute *" after this patch, but are being assigned to "struct
+sysdev_class_attribute *" ...
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__4_Feb_2010_18_10_32_+1100__/b=AmP+JDX/Lk_4
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAktqcugACgkQjjKRsyhoI8yR/QCgqDvuA6z5ZgPWLOZBODKo45li
+4EYAnR3JV+qaTJijerd/UJrfcEHWPlNw
+=UGfJ
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__4_Feb_2010_18_10_32_+1100__/b=AmP+JDX/Lk_4--
