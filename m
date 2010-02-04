@@ -1,316 +1,166 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933023Ab0BDAcr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 19:32:47 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:41452 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932096Ab0BDAcp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 19:32:45 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Len Brown <lenb@kernel.org>
-Subject: [PATCH] ACPI / EC: Remove race between EC driver and suspend process (rev. 3)
-Date: Thu, 4 Feb 2010 01:33:22 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.33-rc6-rjw; KDE/4.3.5; x86_64; ; )
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Thomas Renninger <trenn@suse.de>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Alan Jenkins <sourcejedi.lkml@googlemail.com>
-References: <201001310029.48717.rjw@sisk.pl> <201002030132.21406.rjw@sisk.pl>
-In-Reply-To: <201002030132.21406.rjw@sisk.pl>
+	id S933033Ab0BDAeQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 19:34:16 -0500
+Received: from bld-mail16.adl2.internode.on.net ([150.101.137.101]:43150 "EHLO
+	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933009Ab0BDAeO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 19:34:14 -0500
+Date: Thu, 4 Feb 2010 11:34:10 +1100
+From: Dave Chinner <david@fromorbit.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Andi Kleen <andi@firstfloor.org>, tytso@mit.edu,
+       Miklos Szeredi <miklos@szeredi.hu>,
+       Alexander Viro <viro@ftp.linux.org.uk>,
+       Christoph Hellwig <hch@infradead.org>,
+       Christoph Lameter <clameter@sgi.com>, Rik van Riel <riel@redhat.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, akpm@linux-foundation.org,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickins <hugh@veritas.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: inodes: Support generic defragmentation
+Message-ID: <20100204003410.GD5332@discord.disaster>
+References: <20100129204931.789743493@quilx.com> <20100129205004.405949705@quilx.com> <20100130192623.GE788@thunk.org> <20100131083409.GF29555@one.firstfloor.org> <20100131135933.GM15853@discord.disaster> <alpine.DEB.2.00.1002030920500.5671@router.home>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201002040133.22604.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.1002030920500.5671@router.home>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 03 February 2010, Rafael J. Wysocki wrote:
-> On Sunday 31 January 2010, Rafael J. Wysocki wrote:
-> > Hi,
-> > 
-> > While Maxim is testing if the patch below helps with
-> > http://bugzilla.kernel.org/show_bug.cgi?id=14668
-> > I think it's necessary anyway.
-> > 
-> > The problem is that currently there's nothing to prevent us from suspending in
-> > the middle of an EC transaction in progress, at least as far as I can see.
-> > As a result, we can suspend with the ACPI global lock held or something like
-> > this, which leads to problems especially for hibernation (if the resume kernel
-> > passes control to the image kernel in the middle of an EC transaction, things
-> > aren't nice).  For this reason I think we should wait until there are no EC
-> > transactions in progress before we suspend and we should prevent any new
-> > EC transactions from starting after that point.  The patch below does that.
+On Wed, Feb 03, 2010 at 09:31:49AM -0600, Christoph Lameter wrote:
+> On Mon, 1 Feb 2010, Dave Chinner wrote:
 > 
-> After discussing the patch with Alex I have a new version which is appended
-> below.  This one causes EC transactions to be discarded after we've executed
-> _PTS (which is reasonable IMO) and allows them to happen again very early
-> during wake-up, so effectively the resume behavior should be unchanged.
+> > > The standard case is the classic updatedb. Lots of dentries/inodes cached
+> > > with no or little corresponding data cache.
+> >
+> > I don't believe that updatedb has anything to do with causing
+> > internal inode/dentry slab fragmentation. In all my testing I rarely
+> > see use-once filesystem traversals cause internal slab
+> > fragmentation. This appears to be a result of use-once filesystem
+> > traversal resulting in slab pages full of objects that have the same
+> > locality of access.  Hence each new slab page that traversal
+> > allocates will contain objects that will be adjacent in the LRU.
+> > Hence LRU-based reclaim is very likely to free all the objects on
+> > each page in the same pass and as such no fragmentation will occur.
+> 
+> updatedb causes lots of partially allocated slab pages. While updatedb
+> runs other filesystem activities occur. And updatedb does not work in
+> straightforward linear fashion. dentries are cached and slowly expired etc
+> etc.
 
-Unfortunately I overlooked the fact that this patch would break the error paths
-and test modes where we also have to allow EC transactions to happen again
-after they've been "suspended".  Sorry about that.
+Sure, but my point was that updatedb hits lots of inodes only once,
+and for those objects the order of caching and expiration are
+exactly the same. Hence after reclaim of the updatedb dentries/inodes
+the amount of fragmentation in the slab will be almost exactly the
+same as it was before the updatedb run.
 
-Updated patch follows.
+> > All the cases of inode/dentry slab fragmentation I have seen are a
+> > result of access patterns that result in slab pages containing
+> > objects with different temporal localities. It's when the access
+> > pattern is sufficiently distributed throughout the working set we
+> > get the "need to free 95% of the objects in the entire cache to free
+> > a single page" type of reclaim behaviour.
+> 
+> There are also other factors at play like the different NUMA node,
+> concurrent processes.
 
-Rafael
+Yes, those are just more factors in the access patterns being
+"sufficiently distributed throughout the working set".
 
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: ACPI / EC: Remove race between EC driver and suspend process (rev. 3)
+> > AFAICT, the defrag patches as they stand don't really address the
+> > fundamental problem of differing temporal locality inside a slab
+> > page.  It makes the assumption that "partial page == defrag
+> > candidate" but there isn't any further consideration of when any of
+> > the remaing objects were last accessed. I think that this really
+> > does need to be taken into account, especially considering that the
+> > allocator tries to fill partial pages with new objects before
+> > allocating new pages and so the page under reclaim might contain
+> > very recently allocated objects.
+> 
+> Reclaim is only run if there is memory pressure. This means that lots of
+> reclaimable entities exist and therefore we can assume that many of these
+> have had a somewhat long lifetime. The allocator tries to fill partial
+> pages with new objects and then retires those pages to the full slab list.
+> Those are not subject to reclaim efforts covered here. A page under
+> reclaim is likely to contain many recently freed objects.
 
-There is a race between the suspend process and the EC driver that
-may result in suspending in the middle of an EC transaction in
-progress, which in turn may lead to unpredictable behavior of the
-platform.
+Not necessarily. It might contain only one recently reclaimed object,
+but have several other hot objects in the page....
 
-To remove that race condition, add a helpers for suspending and
-resuming EC transactions in a safe way to be executed by the ACPI
-platform suspend/hibernate callbacks.  Modify these callbacks so
-that the EC transactions are suspended right after executing the
-_PTS global control method and are allowed to happen right after
-the low-level wake-up.
+> The remaining objects may have a long lifetime and a high usage pattern
+> but it is worth to relocate them into other slabs if they prevent reclaim
+> of the page.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Reported-by: Maxim Levitsky <maximlevitsky@gmail.com>
----
- drivers/acpi/ec.c       |   45 ++++++++++++++++++++++++++++++++++++++++++++-
- drivers/acpi/internal.h |    3 +++
- drivers/acpi/sleep.c    |   47 +++++++++++++++++++++++++++++------------------
- 3 files changed, 76 insertions(+), 19 deletions(-)
+I completely disagree. If you have to trash all the cache hot
+information related to the cached object in the process of
+relocating it, then you've just screwed up application performance
+and in a completely unpredictable manner. Admins will be tearing out
+their hair trying to work out why their applications randomly slow
+down....
 
-Index: linux-2.6/drivers/acpi/ec.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/ec.c
-+++ linux-2.6/drivers/acpi/ec.c
-@@ -76,8 +76,9 @@ enum ec_command {
- enum {
- 	EC_FLAGS_QUERY_PENDING,		/* Query is pending */
- 	EC_FLAGS_GPE_STORM,		/* GPE storm detected */
--	EC_FLAGS_HANDLERS_INSTALLED	/* Handlers for GPE and
-+	EC_FLAGS_HANDLERS_INSTALLED,	/* Handlers for GPE and
- 					 * OpReg are installed */
-+	EC_FLAGS_SUSPENDED,		/* Driver is suspended */
- };
- 
- /* If we find an EC via the ECDT, we need to keep a ptr to its context */
-@@ -291,6 +292,12 @@ static int acpi_ec_transaction(struct ac
- 	if (t->rdata)
- 		memset(t->rdata, 0, t->rlen);
- 	mutex_lock(&ec->lock);
-+	if (test_bit(EC_FLAGS_SUSPENDED, &ec->flags)) {
-+		pr_err(PREFIX
-+			"transaction discarded due to power transition\n");
-+		status = -EINVAL;
-+		goto unlock;
-+	}
- 	if (ec->global_lock) {
- 		status = acpi_acquire_global_lock(ACPI_EC_UDELAY_GLK, &glk);
- 		if (ACPI_FAILURE(status)) {
-@@ -445,6 +452,42 @@ int ec_transaction(u8 command,
- 
- EXPORT_SYMBOL(ec_transaction);
- 
-+void acpi_ec_suspend_transactions(void)
-+{
-+	struct acpi_ec *ec = first_ec;
-+
-+	if (!ec)
-+		return;
-+
-+	mutex_lock(&ec->lock);
-+	/* Prevent transactions from happening while suspended */
-+	set_bit(EC_FLAGS_SUSPENDED, &ec->flags);
-+	mutex_unlock(&ec->lock);
-+}
-+
-+void acpi_ec_resume_transactions(void)
-+{
-+	struct acpi_ec *ec = first_ec;
-+
-+	if (!ec)
-+		return;
-+
-+	mutex_lock(&ec->lock);
-+	/* Allow transactions to happen again */
-+	clear_bit(EC_FLAGS_SUSPENDED, &ec->flags);
-+	mutex_unlock(&ec->lock);
-+}
-+
-+void acpi_ec_resume_transactions_noirq(void)
-+{
-+	/*
-+	 * Allow transactions to happen again (this function is called from
-+	 * atomic context during wake-up, so we don't need to acquire the mutex)
-+	 */
-+	if (first_ec)
-+		clear_bit(EC_FLAGS_SUSPENDED, &first_ec->flags);
-+}
-+
- static int acpi_ec_query_unlocked(struct acpi_ec *ec, u8 * data)
- {
- 	int result;
-Index: linux-2.6/drivers/acpi/internal.h
-===================================================================
---- linux-2.6.orig/drivers/acpi/internal.h
-+++ linux-2.6/drivers/acpi/internal.h
-@@ -49,6 +49,9 @@ void acpi_early_processor_set_pdc(void);
- int acpi_ec_init(void);
- int acpi_ec_ecdt_probe(void);
- int acpi_boot_ec_enable(void);
-+void acpi_ec_suspend_transactions(void);
-+void acpi_ec_resume_transactions(void);
-+void acpi_ec_resume_transactions_noirq(void);
- 
- /*--------------------------------------------------------------------------
-                                   Suspend/Resume
-Index: linux-2.6/drivers/acpi/sleep.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/sleep.c
-+++ linux-2.6/drivers/acpi/sleep.c
-@@ -110,11 +110,12 @@ void __init acpi_old_suspend_ordering(vo
- }
- 
- /**
-- *	acpi_pm_disable_gpes - Disable the GPEs.
-+ *	acpi_pm_freeze - Disable the GPEs and suspend EC transactions.
-  */
--static int acpi_pm_disable_gpes(void)
-+static int acpi_pm_freeze(void)
- {
- 	acpi_disable_all_gpes();
-+	acpi_ec_suspend_transactions();
- 	return 0;
- }
- 
-@@ -142,7 +143,8 @@ static int acpi_pm_prepare(void)
- 	int error = __acpi_pm_prepare();
- 
- 	if (!error)
--		acpi_disable_all_gpes();
-+		acpi_pm_freeze();
-+
- 	return error;
- }
- 
-@@ -276,6 +278,8 @@ static int acpi_suspend_enter(suspend_st
- 	 */
- 	acpi_disable_all_gpes();
- 
-+	acpi_ec_resume_transactions_noirq();
-+
- 	local_irq_restore(flags);
- 	printk(KERN_DEBUG "Back to C!\n");
- 
-@@ -286,6 +290,12 @@ static int acpi_suspend_enter(suspend_st
- 	return ACPI_SUCCESS(status) ? 0 : -EFAULT;
- }
- 
-+static void acpi_suspend_finish(void)
-+{
-+	acpi_ec_resume_transactions();
-+	acpi_pm_finish();
-+}
-+
- static int acpi_suspend_state_valid(suspend_state_t pm_state)
- {
- 	u32 acpi_state;
-@@ -307,7 +317,7 @@ static struct platform_suspend_ops acpi_
- 	.begin = acpi_suspend_begin,
- 	.prepare_late = acpi_pm_prepare,
- 	.enter = acpi_suspend_enter,
--	.wake = acpi_pm_finish,
-+	.wake = acpi_suspend_finish,
- 	.end = acpi_pm_end,
- };
- 
-@@ -333,9 +343,9 @@ static int acpi_suspend_begin_old(suspen
- static struct platform_suspend_ops acpi_suspend_ops_old = {
- 	.valid = acpi_suspend_state_valid,
- 	.begin = acpi_suspend_begin_old,
--	.prepare_late = acpi_pm_disable_gpes,
-+	.prepare_late = acpi_pm_freeze,
- 	.enter = acpi_suspend_enter,
--	.wake = acpi_pm_finish,
-+	.wake = acpi_suspend_finish,
- 	.end = acpi_pm_end,
- 	.recover = acpi_pm_finish,
- };
-@@ -522,6 +532,7 @@ static int acpi_hibernation_enter(void)
- 	status = acpi_enter_sleep_state(ACPI_STATE_S4);
- 	/* Reprogram control registers and execute _BFS */
- 	acpi_leave_sleep_state_prep(ACPI_STATE_S4);
-+	acpi_ec_resume_transactions_noirq();
- 	local_irq_restore(flags);
- 
- 	return ACPI_SUCCESS(status) ? 0 : -EFAULT;
-@@ -530,6 +541,7 @@ static int acpi_hibernation_enter(void)
- static void acpi_hibernation_finish(void)
- {
- 	hibernate_nvs_free();
-+	acpi_ec_resume_transactions();
- 	acpi_pm_finish();
- }
- 
-@@ -550,10 +562,12 @@ static void acpi_hibernation_leave(void)
- 	}
- 	/* Restore the NVS memory area */
- 	hibernate_nvs_restore();
-+	acpi_ec_resume_transactions_noirq();
- }
- 
--static void acpi_pm_enable_gpes(void)
-+static void acpi_pm_thaw(void)
- {
-+	acpi_ec_resume_transactions();
- 	acpi_enable_all_runtime_gpes();
- }
- 
-@@ -565,8 +579,8 @@ static struct platform_hibernation_ops a
- 	.prepare = acpi_pm_prepare,
- 	.enter = acpi_hibernation_enter,
- 	.leave = acpi_hibernation_leave,
--	.pre_restore = acpi_pm_disable_gpes,
--	.restore_cleanup = acpi_pm_enable_gpes,
-+	.pre_restore = acpi_pm_freeze,
-+	.restore_cleanup = acpi_pm_thaw,
- };
- 
- /**
-@@ -598,12 +612,9 @@ static int acpi_hibernation_begin_old(vo
- 
- static int acpi_hibernation_pre_snapshot_old(void)
- {
--	int error = acpi_pm_disable_gpes();
--
--	if (!error)
--		hibernate_nvs_save();
--
--	return error;
-+	acpi_pm_freeze();
-+	hibernate_nvs_save();
-+	return 0;
- }
- 
- /*
-@@ -615,11 +626,11 @@ static struct platform_hibernation_ops a
- 	.end = acpi_pm_end,
- 	.pre_snapshot = acpi_hibernation_pre_snapshot_old,
- 	.finish = acpi_hibernation_finish,
--	.prepare = acpi_pm_disable_gpes,
-+	.prepare = acpi_pm_freeze,
- 	.enter = acpi_hibernation_enter,
- 	.leave = acpi_hibernation_leave,
--	.pre_restore = acpi_pm_disable_gpes,
--	.restore_cleanup = acpi_pm_enable_gpes,
-+	.pre_restore = acpi_pm_freeze,
-+	.restore_cleanup = acpi_pm_thaw,
- 	.recover = acpi_pm_finish,
- };
- #endif /* CONFIG_HIBERNATION */
+> > Someone in a previous discussion on this patch set (Nick? Hugh,
+> > maybe? I can't find the reference right now) mentioned something
+> > like this about the design of the force-reclaim operations. IIRC the
+> > suggestion was that it may be better to track LRU-ness by per-slab
+> > page rather than per-object so that reclaim can target the slab
+> > pages that - on aggregate - had the oldest objects in it. I think
+> > this has merit - prevention of internal fragmentation seems like a
+> > better approach to me than to try to cure it after it is already
+> > present....
+> 
+> LRUness exists in terms of the list of partial slab pages. Frequently
+> allocated slabs are in the front of the queue and less used slabs are in
+> the rear. Defrag/reclaim occurs from the rear.
+
+You missed my point again. You're still talking about tracking pages
+with no regard to the objects remaining in the pages. A page, full
+or partial, is a candidate for object reclaim if none of the objects
+on it are referenced and have not been referenced for some time.
+
+You are currently relying on the existing LRU reclaim to move a slab
+from full to partial to trigger defragmentation, but you ignore the
+hotness of the rest of the objects on the page by trying to reclaim
+the page that has been partial for the longest period of time.
+
+What it comes down to is that the slab has two states for objects -
+allocated and free - but what we really need here is 3 states -
+allocated, unused and freed. We currently track unused objects
+outside the slab in LRU lists and, IMO, that is the source of our
+fragmentation problems because it has no knowledge of the spatial
+layout of the slabs and the state of other objects in the page.
+
+What I'm suggesting is that we ditch the external LRUs and track the
+"unused" state inside the slab and then use that knowledge to decide
+which pages to reclaim.  e.g. slab_object_used() is called when the
+first reference on an object is taken. slab_object_unused() is
+called when the reference count goes to zero. The slab can then
+track unused objects internally and when reclaim is needed can
+select pages (full or partial) that only contain unused objects to
+reclaim.
+
+>From there the existing reclaim algorithms could be used to reclaim
+the objects. i.e. the shrinkers become a slab reclaim callout that
+are passed a linked list of objects to reclaim, very similar to the
+way __shrink_dcache_sb() and prune_icache() first build a list of
+objects to reclaim, then work off that list of objects.
+
+If the goal is to reduce fragmentation, then this seems like a
+much better approach to me - it is inherently fragmentation
+resistent and much more closely aligned to existing object reclaim
+algorithms.
+
+If the goal is random slab page shootdown (e.g. for hwpoison), then
+it's a much more complex problem because you can't shoot down
+active, referenced objects without revoke(). Hence I think the
+two problem spaces should be kept separate as it's not obvious
+that they can both be solved with the same mechanism....
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
