@@ -1,25 +1,23 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933248Ab0BDRV4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 12:21:56 -0500
-Received: from kroah.org ([198.145.64.141]:34634 "EHLO coco.kroah.org"
+	id S933567Ab0BDR3y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 12:29:54 -0500
+Received: from kroah.org ([198.145.64.141]:34822 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758528Ab0BDRVk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 12:21:40 -0500
-X-Mailbox-Line: From linux@linux.site Thu Feb  4 09:14:58 2010
-Message-Id: <20100204171458.220472073@linux.site>
+	id S933297Ab0BDRWI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 12:22:08 -0500
+X-Mailbox-Line: From linux@linux.site Thu Feb  4 09:15:14 2010
+Message-Id: <20100204171513.770478536@linux.site>
 User-Agent: quilt/0.47-14.9
-Date: Thu, 04 Feb 2010 09:11:48 -0800
+Date: Thu, 04 Feb 2010 09:12:16 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       Neil Horman <nhorman@tuxdriver.com>,
-       Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
+       Jarek Poplawski <jarkao2@gmail.com>,
        "David S. Miller" <davem@davemloft.net>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [17/74] e1000: enhance frame fragment detection
+Subject: [45/74] sky2: Fix oops in sky2_xmit_frame() after TX timeout
 In-Reply-To: <20100204171850.GA16539@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,76 +27,40 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+From: Jarek Poplawski <jarkao2@gmail.com>
 
-commit 40a14deaf411592b57cb0720f0e8004293ab9865 upstream.
+[ Upstream commit 9db2f1bec36805e57a003f7bb90e003815d96de8 ]
 
-Originally From: Neil Horman <nhorman@tuxdriver.com>
-Modified by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+During TX timeout procedure dev could be awoken too early, e.g. by
+sky2_complete_tx() called from sky2_down(). Then sky2_xmit_frame()
+can run while buffers are freed causing an oops. This patch fixes it
+by adding netif_device_present() test in sky2_tx_complete().
 
-Hey all-
-	A security discussion was recently given:
-http://events.ccc.de/congress/2009/Fahrplan//events/3596.en.html
-And a patch that I submitted awhile back was brought up.  Apparently some of
-their testing revealed that they were able to force a buffer fragment in e1000
-in which the trailing fragment was greater than 4 bytes.  As a result the
-fragment check I introduced failed to detect the fragement and a partial
-invalid frame was passed up into the network stack.  I've written this patch
-to correct it.  I'm in the process of testing it now, but it makes good
-logical sense to me.  Effectively it maintains a per-adapter state variable
-which detects a non-EOP frame, and discards it and subsequent non-EOP frames
-leading up to _and_ _including_ the next positive-EOP frame (as it is by
-definition the last fragment).  This should prevent any and all partial frames
-from entering the network stack from e1000.
+Fixes: http://bugzilla.kernel.org/show_bug.cgi?id=14925
 
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Acked-by: Neil Horman <nhorman@tuxdriver.com>
-Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+With debugging by: Mike McCormack <mikem@ring3k.org>
+
+Reported-by: Berck E. Nash <flyboy@gmail.com>
+Tested-by: Berck E. Nash <flyboy@gmail.com>
+Signed-off-by: Jarek Poplawski <jarkao2@gmail.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/e1000/e1000.h      |    2 ++
- drivers/net/e1000/e1000_main.c |   13 +++++++++++--
- 2 files changed, 13 insertions(+), 2 deletions(-)
+ drivers/net/sky2.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
---- a/drivers/net/e1000/e1000.h
-+++ b/drivers/net/e1000/e1000.h
-@@ -326,6 +326,8 @@ struct e1000_adapter {
- 	/* for ioport free */
- 	int bars;
- 	int need_ioport;
-+
-+	bool discarding;
- };
+--- a/drivers/net/sky2.c
++++ b/drivers/net/sky2.c
+@@ -1806,7 +1806,8 @@ static void sky2_tx_complete(struct sky2
+ 	sky2->tx_cons = idx;
+ 	smp_mb();
  
- enum e1000_state_t {
---- a/drivers/net/e1000/e1000_main.c
-+++ b/drivers/net/e1000/e1000_main.c
-@@ -3827,13 +3827,22 @@ static bool e1000_clean_rx_irq(struct e1
- 
- 		length = le16_to_cpu(rx_desc->length);
- 		/* !EOP means multiple descriptors were used to store a single
--		 * packet, also make sure the frame isn't just CRC only */
--		if (unlikely(!(status & E1000_RXD_STAT_EOP) || (length <= 4))) {
-+		 * packet, if thats the case we need to toss it.  In fact, we
-+		 * to toss every packet with the EOP bit clear and the next
-+		 * frame that _does_ have the EOP bit set, as it is by
-+		 * definition only a frame fragment
-+		 */
-+		if (unlikely(!(status & E1000_RXD_STAT_EOP)))
-+			adapter->discarding = true;
-+
-+		if (adapter->discarding) {
- 			/* All receives must fit into a single buffer */
- 			E1000_DBG("%s: Receive packet consumed multiple"
- 				  " buffers\n", netdev->name);
- 			/* recycle */
- 			buffer_info->skb = skb;
-+			if (status & E1000_RXD_STAT_EOP)
-+				adapter->discarding = false;
- 			goto next_desc;
- 		}
+-	if (tx_avail(sky2) > MAX_SKB_TX_LE + 4)
++	/* Wake unless it's detached, and called e.g. from sky2_down() */
++	if (tx_avail(sky2) > MAX_SKB_TX_LE + 4 && netif_device_present(dev))
+ 		netif_wake_queue(dev);
+ }
  
 
 
