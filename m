@@ -1,92 +1,65 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758118Ab0BDWxm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 17:53:42 -0500
-Received: from smtp-out.google.com ([216.239.44.51]:19340 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750968Ab0BDWxl (ORCPT
+	id S1758562Ab0BDWzf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 17:55:35 -0500
+Received: from g6t0184.atlanta.hp.com ([15.193.32.61]:8080 "EHLO
+	g6t0184.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757590Ab0BDWzc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 17:53:41 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=trpf5DL5qR1sEkkenXeUjDh9uMUzsUAmgzNwKhyqtCF1rlBjDEv7rny30z/RGLMUZ
-	zPs8yTUcKSoBFWrpEh8fg==
-Date: Thu, 4 Feb 2010 14:53:32 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Frans Pop <elendil@planet.nl>
-cc: Rik van Riel <riel@redhat.com>, l.lunak@suse.cz,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Nick Piggin <npiggin@suse.de>, jkosina@suse.cz
-Subject: Re: Improving OOM killer
-In-Reply-To: <201002042331.34086.elendil@planet.nl>
-Message-ID: <alpine.DEB.2.00.1002041435200.19721@chino.kir.corp.google.com>
-References: <201002012302.37380.l.lunak@suse.cz> <20100203170127.GH19641@balbir.in.ibm.com> <alpine.DEB.2.00.1002031021190.14088@chino.kir.corp.google.com> <201002032355.01260.l.lunak@suse.cz> <alpine.DEB.2.00.1002031600490.27918@chino.kir.corp.google.com>
- <4B6A1241.60009@redhat.com> <4B6A1241.60009@redhat.com> <alpine.DEB.2.00.1002041339220.6071@chino.kir.corp.google.com> <201002042331.34086.elendil@planet.nl>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 4 Feb 2010 17:55:32 -0500
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Larry Finger <Larry.Finger@lwfinger.net>
+Subject: Re: [PATCH v1 0/7] PCI: try enabling "pci=use_crs" again
+Date: Thu, 4 Feb 2010 15:55:26 -0700
+User-Agent: KMail/1.9.10
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, Tony Luck <tony.luck@intel.com>,
+       linux-pci@vger.kernel.org, Peter Haight <peterh@sapros.com>,
+       Gary Hade <garyhade@us.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org, Yinghai Lu <yinghai@kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+References: <20100203233617.10803.92102.stgit@bob.kio> <4B6A4F17.2080806@lwfinger.net> <201002041055.58953.bjorn.helgaas@hp.com>
+In-Reply-To: <201002041055.58953.bjorn.helgaas@hp.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <201002041555.28365.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 4 Feb 2010, Frans Pop wrote:
+On Thursday 04 February 2010 10:55:57 am Bjorn Helgaas wrote:
+> On Wednesday 03 February 2010 09:37:43 pm Larry Finger wrote:
 
-> Shouldn't fork bomb detection take into account the age of children?
-> After all, long running processes with a lot of long running children are 
-> rather unlikely to be runaway fork _bombs_.
+> > In addition to the above, my system now boots with "pci=use_crs", unlike when I
+> > filed the Bugzilla.
 > 
+> Huh.  From http://lkml.org/lkml/2009/6/24/11, I had assumed the main
+> problem was that we overflowed the 16-entry bus resource table, but
+> there must be more to it.
+> 
+> If you can build and boot the linux-next branch with my patches and
+> collect the dmesg log, maybe it will have a clue.  You can boot without
+> "pci=use_crs"; I don't think that will make any difference on your box.
 
-Yeah, Lubos mentioned using cpu time as a requirement, in addition to the 
-already existing child->mm != parent->mm, as a prerequisite to be added 
-into the tally to check the forkbomb threshold.  I think something like 
-this would be appropriate:
+Thanks for testing these and collecting the dmesg log
+(http://bugzilla.kernel.org/attachment.cgi?id=24914).  That
+log is from the PCI linux-next branch plus my patches, without
+using "pci=use_crs".
 
-	struct task_cputime task_time;
-	int forkcount = 0;
-	int child_rss = 0;
+On the current upstream (e.g., the c80d292 kernel you started with),
+we have PCI_BUS_NUM_RESOURCES == 16.  Your _CRS returns 17 windows
+(the "pci_root PNP0A08:00 host bridge window" lines), so when you
+boot with "pci=use_crs", we should be discarding the last window,
+which is an important one:
 
-	...
+  pci_root PNP0A08:00: host bridge window [mem 0xc0000000-0xfebfffff]
 
-	list_for_each_entry(child, &p->children, sibling) {
-		unsigned long runtime;
+Can you collect the dmesg log from the c80d292 kernel with "pci=use_crs"?
+I'm sorry to trouble you for this, but it still looks to me like that
+should fail, so I'd really like to understand why it's working.
 
-		task_lock(child);
-		if (!child->mm || child->mm == p->mm) {
-			task_unlock(child);
-			continue;
-		}
-		thread_group_cputime(child, &task_time);
-		runtime = cputime_to_jiffies(task_time.utime) +
-				cputime_to_jiffies(task_time.stime);
-
-		/*
-		 * Only threads that have run for less than a second are
-		 * considered toward the forkbomb, these threads rarely
-		 * get to execute at all in such cases anyway.
-		 */
-		if (runtime < HZ) {
-			task_unlock(child);
-			continue;
-		}
-		child_rss += get_mm_rss(child->mm);
-		forkcount++;
-	}
-
-	if (forkcount > sysctl_oom_forkbomb_thres) {
-		/*
-		 * Penalize forkbombs by considering the average rss and
-		 * how many factors we are over the threshold.
-		 */
-		points += child_rss / sysctl_oom_forkbomb_thres;
-	}
-
-I changed the calculation from lowest child rss to average child rss, so 
-this is functionally equivalent to
-
-(average rss size of children) * (# of first-generated execve children) /
-			sysctl_oom_forkbomb_thres
+Bjorn
