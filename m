@@ -1,58 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756208Ab0BDCDu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 21:03:50 -0500
-Received: from [12.51.93.24] ([12.51.93.24]:45699 "EHLO mail.asimco-na.com"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1755006Ab0BDCDr convert rfc822-to-8bit (ORCPT
+	id S1756221Ab0BDCFS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 21:05:18 -0500
+Received: from mga14.intel.com ([143.182.124.37]:12100 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755006Ab0BDCFO convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 21:03:47 -0500
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 2.6.27.7-9-pae #7 SMP 1/1] networking tcp: Writing tcp socket be atomic
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Date: Thu, 4 Feb 2010 10:03:44 +0800
-Message-ID: <DB4F116661E3B0428456BB7E379EF4BB3C5F57@MX.asimcotech.com>
+	Wed, 3 Feb 2010 21:05:14 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,402,1262592000"; 
+   d="scan'208";a="240237808"
+From: "Lu, Hongjiu" <hongjiu.lu@intel.com>
+To: Roland McGrath <roland@redhat.com>
+CC: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Oleg Nesterov <oleg@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Lachner, Peter" <peter.lachner@intel.com>
+Date: Wed, 3 Feb 2010 18:05:11 -0800
+Subject: RE: [patch] x86: ptrace and core-dump extensions for xstate
+Thread-Topic: [patch] x86: ptrace and core-dump extensions for xstate
+Thread-Index: AcqlPiLUZH2xsqwMR9ezc7006eRRjAAAEdNA
+Message-ID: <8EA2C2C4116BF44AB370468FBF85A7770123AAB2E8@orsmsx504.amr.corp.intel.com>
+References: <1265076025.2802.194.camel@sbs-t61.sc.intel.com>
+	<20100203230817.E6529AA@magilla.sf.frob.com>
+	<8EA2C2C4116BF44AB370468FBF85A7770123AAB0AE@orsmsx504.amr.corp.intel.com>
+ <20100204020224.45379725@magilla.sf.frob.com>
+In-Reply-To: <20100204020224.45379725@magilla.sf.frob.com>
+Accept-Language: en-US
+Content-Language: en-US
 X-MS-Has-Attach: 
 X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 2.6.27.7-9-pae #7 SMP 1/1] networking tcp: Writing tcp socket be atomic
-Thread-Index: Acqk8T7vjVlNYGhIRK6V4u3vsfawqwATF1ig
-References: <474C17045AA24E3F8519EE76BAB47439@JOHNYE1> <20100203.085249.98326242.davem@davemloft.net>
-From: "John Ye" <johny@asimco.com.cn>
-To: "David Miller" <davem@davemloft.net>
-Cc: <kuznet@ms2.inr.ac.ru>, <netdev@vger.kernel.org>, <jmorris@namei.org>,
-       <kaber@coreworks.de>, <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 04 Feb 2010 01:51:41.0052 (UTC) FILETIME=[989CE3C0:01CAA53C]
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David,
+> 
+> > Gdb calls cpuid during startup time to find out the actual xstate_size
+> > on the target machine. It has to be reliable. There is no need for
+> > another ptrace option. But we should document it clearly in ABI.
+> 
+> As I said, I think that is an extremely poor API choice.  There is no such
+> arcane requirement in the API now, so we do not have add one.
+> 
 
-Thanks.
-The option TCP_ATOMIC is not a must.
-We can make atomic be default if the data size is less than a fixed size, just the same as pipe.
-For example, if the data size is less than 512, we don't split the data so it goes atomically.
-
-John Ye
-
-
------Original Message-----
-From: David Miller [mailto:davem@davemloft.net] 
-Sent: 2010Äê2ÔÂ4ÈÕ 0:53
-To: John Ye
-Cc: kuznet@ms2.inr.ac.ru; netdev@vger.kernel.org; jmorris@namei.org; kaber@coreworks.de; linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.27.7-9-pae #7 SMP 1/1] networking tcp: Writing tcp socket be atomic
+That is how processor works.
 
 
-Locking belongs inside of the application, not in the kernel.
-
-As evidenced by the fact that you had to add new socket options, the
-application needs to be modified anyways.
-
-It's therefore just as easy to add the appropriate locking to the
-sequences where the application writes over the TCP socket.  And
-it avoids having to modify the kernel at all.
+H.J.
