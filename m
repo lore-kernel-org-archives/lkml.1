@@ -1,21 +1,23 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933545Ab0BDR20 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 12:28:26 -0500
-Received: from kroah.org ([198.145.64.141]:34869 "EHLO coco.kroah.org"
+	id S933411Ab0BDR3M (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 12:29:12 -0500
+Received: from kroah.org ([198.145.64.141]:34801 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933324Ab0BDRWQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 12:22:16 -0500
-X-Mailbox-Line: From linux@linux.site Thu Feb  4 09:15:18 2010
-Message-Id: <20100204171518.111950133@linux.site>
+	id S933306Ab0BDRWL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 12:22:11 -0500
+X-Mailbox-Line: From linux@linux.site Thu Feb  4 09:15:15 2010
+Message-Id: <20100204171515.390422663@linux.site>
 User-Agent: quilt/0.47-14.9
-Date: Thu, 04 Feb 2010 09:12:24 -0800
+Date: Thu, 04 Feb 2010 09:12:19 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, linux-mm@kvack.org,
-       Nick Piggin <npiggin@suse.de>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [53/74] mm: percpu-vmap fix RCU list walking
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Jarek Poplawski <jarkao2@gmail.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [48/74] ax25: netrom: rose: Fix timer oopses
 In-Reply-To: <20100204171850.GA16539@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -25,107 +27,141 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Nick Piggin <npiggin@suse.de>
+From: Jarek Poplawski <jarkao2@gmail.com>
 
-commit de5604231ce4bc8db1bc1dcd27d8540cbedf1518 upstream.
+[ Upstream commit d00c362f1b0ff54161e0a42b4554ac621a9ef92d ]
 
-RCU list walking of the per-cpu vmap cache was broken.  It did not use
-RCU primitives, and also the union of free_list and rcu_head is
-obviously wrong (because free_list is indeed the list we are RCU
-walking).
+Wrong ax25_cb refcounting in ax25_send_frame() and by its callers can
+cause timer oopses (first reported with 2.6.29.6 kernel).
 
-While we are there, remove a couple of unused fields from an earlier
-iteration.
+Fixes: http://bugzilla.kernel.org/show_bug.cgi?id=14905
 
-These APIs aren't actually used anywhere, because of problems with the
-XFS conversion.  Christoph has now verified that the problems are solved
-with these patches.  Also it is an exported interface, so I think it
-will be good to be merged now (and Christoph wants to get the XFS
-changes into their local tree).
-
-Cc: linux-mm@kvack.org
-Tested-by: Christoph Hellwig <hch@infradead.org>
-Signed-off-by: Nick Piggin <npiggin@suse.de>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Reported-by: Bernard Pidoux <bpidoux@free.fr>
+Tested-by: Bernard Pidoux <bpidoux@free.fr>
+Signed-off-by: Jarek Poplawski <jarkao2@gmail.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- mm/vmalloc.c |   20 ++++++--------------
- 1 file changed, 6 insertions(+), 14 deletions(-)
+ include/net/netrom.h  |    2 ++
+ net/ax25/ax25_out.c   |    6 ++++++
+ net/netrom/nr_route.c |   11 ++++++-----
+ net/rose/rose_link.c  |    8 ++++++++
+ net/rose/rose_route.c |    5 +++++
+ 5 files changed, 27 insertions(+), 5 deletions(-)
 
---- a/mm/vmalloc.c
-+++ b/mm/vmalloc.c
-@@ -667,8 +667,6 @@ static bool vmap_initialized __read_most
- struct vmap_block_queue {
- 	spinlock_t lock;
- 	struct list_head free;
--	struct list_head dirty;
--	unsigned int nr_dirty;
- };
- 
- struct vmap_block {
-@@ -678,10 +676,8 @@ struct vmap_block {
- 	unsigned long free, dirty;
- 	DECLARE_BITMAP(alloc_map, VMAP_BBMAP_BITS);
- 	DECLARE_BITMAP(dirty_map, VMAP_BBMAP_BITS);
--	union {
--		struct list_head free_list;
--		struct rcu_head rcu_head;
--	};
-+	struct list_head free_list;
-+	struct rcu_head rcu_head;
- };
- 
- /* Queue of free and dirty vmap blocks, for allocation and flushing purposes */
-@@ -757,7 +753,7 @@ static struct vmap_block *new_vmap_block
- 	vbq = &get_cpu_var(vmap_block_queue);
- 	vb->vbq = vbq;
- 	spin_lock(&vbq->lock);
--	list_add(&vb->free_list, &vbq->free);
-+	list_add_rcu(&vb->free_list, &vbq->free);
- 	spin_unlock(&vbq->lock);
- 	put_cpu_var(vmap_cpu_blocks);
- 
-@@ -776,8 +772,6 @@ static void free_vmap_block(struct vmap_
- 	struct vmap_block *tmp;
- 	unsigned long vb_idx;
- 
--	BUG_ON(!list_empty(&vb->free_list));
--
- 	vb_idx = addr_to_vb_idx(vb->va->va_start);
- 	spin_lock(&vmap_block_tree_lock);
- 	tmp = radix_tree_delete(&vmap_block_tree, vb_idx);
-@@ -816,7 +810,7 @@ again:
- 			vb->free -= 1UL << order;
- 			if (vb->free == 0) {
- 				spin_lock(&vbq->lock);
--				list_del_init(&vb->free_list);
-+				list_del_rcu(&vb->free_list);
- 				spin_unlock(&vbq->lock);
- 			}
- 			spin_unlock(&vb->lock);
-@@ -860,11 +854,11 @@ static void vb_free(const void *addr, un
- 	BUG_ON(!vb);
- 
- 	spin_lock(&vb->lock);
--	bitmap_allocate_region(vb->dirty_map, offset >> PAGE_SHIFT, order);
-+	BUG_ON(bitmap_allocate_region(vb->dirty_map, offset >> PAGE_SHIFT, order));
- 
- 	vb->dirty += 1UL << order;
- 	if (vb->dirty == VMAP_BBMAP_BITS) {
--		BUG_ON(vb->free || !list_empty(&vb->free_list));
-+		BUG_ON(vb->free);
- 		spin_unlock(&vb->lock);
- 		free_vmap_block(vb);
- 	} else
-@@ -1033,8 +1027,6 @@ void __init vmalloc_init(void)
- 		vbq = &per_cpu(vmap_block_queue, i);
- 		spin_lock_init(&vbq->lock);
- 		INIT_LIST_HEAD(&vbq->free);
--		INIT_LIST_HEAD(&vbq->dirty);
--		vbq->nr_dirty = 0;
+--- a/include/net/netrom.h
++++ b/include/net/netrom.h
+@@ -132,6 +132,8 @@ static __inline__ void nr_node_put(struc
+ static __inline__ void nr_neigh_put(struct nr_neigh *nr_neigh)
+ {
+ 	if (atomic_dec_and_test(&nr_neigh->refcount)) {
++		if (nr_neigh->ax25)
++			ax25_cb_put(nr_neigh->ax25);
+ 		kfree(nr_neigh->digipeat);
+ 		kfree(nr_neigh);
+ 	}
+--- a/net/ax25/ax25_out.c
++++ b/net/ax25/ax25_out.c
+@@ -92,6 +92,12 @@ ax25_cb *ax25_send_frame(struct sk_buff 
+ #endif
  	}
  
- 	/* Import existing vmlist entries. */
++	/*
++	 * There is one ref for the state machine; a caller needs
++	 * one more to put it back, just like with the existing one.
++	 */
++	ax25_cb_hold(ax25);
++
+ 	ax25_cb_add(ax25);
+ 
+ 	ax25->state = AX25_STATE_1;
+--- a/net/netrom/nr_route.c
++++ b/net/netrom/nr_route.c
+@@ -842,12 +842,13 @@ int nr_route_frame(struct sk_buff *skb, 
+ 	dptr  = skb_push(skb, 1);
+ 	*dptr = AX25_P_NETROM;
+ 
+-	ax25s = ax25_send_frame(skb, 256, (ax25_address *)dev->dev_addr, &nr_neigh->callsign, nr_neigh->digipeat, nr_neigh->dev);
+-	if (nr_neigh->ax25 && ax25s) {
+-		/* We were already holding this ax25_cb */
++	ax25s = nr_neigh->ax25;
++	nr_neigh->ax25 = ax25_send_frame(skb, 256,
++					 (ax25_address *)dev->dev_addr,
++					 &nr_neigh->callsign,
++					 nr_neigh->digipeat, nr_neigh->dev);
++	if (ax25s)
+ 		ax25_cb_put(ax25s);
+-	}
+-	nr_neigh->ax25 = ax25s;
+ 
+ 	dev_put(dev);
+ 	ret = (nr_neigh->ax25 != NULL);
+--- a/net/rose/rose_link.c
++++ b/net/rose/rose_link.c
+@@ -101,13 +101,17 @@ static void rose_t0timer_expiry(unsigned
+ static int rose_send_frame(struct sk_buff *skb, struct rose_neigh *neigh)
+ {
+ 	ax25_address *rose_call;
++	ax25_cb *ax25s;
+ 
+ 	if (ax25cmp(&rose_callsign, &null_ax25_address) == 0)
+ 		rose_call = (ax25_address *)neigh->dev->dev_addr;
+ 	else
+ 		rose_call = &rose_callsign;
+ 
++	ax25s = neigh->ax25;
+ 	neigh->ax25 = ax25_send_frame(skb, 260, rose_call, &neigh->callsign, neigh->digipeat, neigh->dev);
++	if (ax25s)
++		ax25_cb_put(ax25s);
+ 
+ 	return (neigh->ax25 != NULL);
+ }
+@@ -120,13 +124,17 @@ static int rose_send_frame(struct sk_buf
+ static int rose_link_up(struct rose_neigh *neigh)
+ {
+ 	ax25_address *rose_call;
++	ax25_cb *ax25s;
+ 
+ 	if (ax25cmp(&rose_callsign, &null_ax25_address) == 0)
+ 		rose_call = (ax25_address *)neigh->dev->dev_addr;
+ 	else
+ 		rose_call = &rose_callsign;
+ 
++	ax25s = neigh->ax25;
+ 	neigh->ax25 = ax25_find_cb(rose_call, &neigh->callsign, neigh->digipeat, neigh->dev);
++	if (ax25s)
++		ax25_cb_put(ax25s);
+ 
+ 	return (neigh->ax25 != NULL);
+ }
+--- a/net/rose/rose_route.c
++++ b/net/rose/rose_route.c
+@@ -234,6 +234,8 @@ static void rose_remove_neigh(struct ros
+ 
+ 	if ((s = rose_neigh_list) == rose_neigh) {
+ 		rose_neigh_list = rose_neigh->next;
++		if (rose_neigh->ax25)
++			ax25_cb_put(rose_neigh->ax25);
+ 		kfree(rose_neigh->digipeat);
+ 		kfree(rose_neigh);
+ 		return;
+@@ -242,6 +244,8 @@ static void rose_remove_neigh(struct ros
+ 	while (s != NULL && s->next != NULL) {
+ 		if (s->next == rose_neigh) {
+ 			s->next = rose_neigh->next;
++			if (rose_neigh->ax25)
++				ax25_cb_put(rose_neigh->ax25);
+ 			kfree(rose_neigh->digipeat);
+ 			kfree(rose_neigh);
+ 			return;
+@@ -810,6 +814,7 @@ void rose_link_failed(ax25_cb *ax25, int
+ 
+ 	if (rose_neigh != NULL) {
+ 		rose_neigh->ax25 = NULL;
++		ax25_cb_put(ax25);
+ 
+ 		rose_del_route_by_neigh(rose_neigh);
+ 		rose_kill_by_neigh(rose_neigh);
 
 
