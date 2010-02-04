@@ -1,36 +1,78 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933112Ab0BDBkH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 20:40:07 -0500
-Received: from khc.piap.pl ([195.187.100.11]:45660 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933094Ab0BDBj4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 20:39:56 -0500
-From: Krzysztof Halasa <khc@pm.waw.pl>
-To: Joe Perches <joe@perches.com>
-Cc: Mark Lord <kernel@teksavvy.com>, linux-kernel@vger.kernel.org,
-       Jeff Garzik <jgarzik@pobox.com>, linux-ide@vger.kernel.org
-Subject: Re: [PATCH 02/10] drivers/ata: Fix continuation line formats
-References: <cover.1265095093.git.joe@perches.com>
-	<12d39ac4f14bfe82a02b4ee246d183b48988fe12.1265095094.git.joe@perches.com>
-	<4B69B0A0.2040701@teksavvy.com>
-	<1265224535.24887.16.camel@Joe-Laptop.home>
-Date: Thu, 04 Feb 2010 02:39:53 +0100
-In-Reply-To: <1265224535.24887.16.camel@Joe-Laptop.home> (Joe Perches's
-	message of "Wed, 03 Feb 2010 11:15:35 -0800")
-Message-ID: <m3pr4lye1i.fsf@intrepid.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S933092Ab0BDBmT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 20:42:19 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47819 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932983Ab0BDBmS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 20:42:18 -0500
+Date: Wed, 3 Feb 2010 17:41:50 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Sebastian Ott <sebott@linux.vnet.ibm.com>,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [RFC][PATCH] PM: disable nonboot cpus before suspending devices
+Message-Id: <20100203174150.192a417a.akpm@linux-foundation.org>
+In-Reply-To: <20100203172147.2411966d.akpm@linux-foundation.org>
+References: <alpine.LFD.2.00.1001221841490.2266@localhost>
+	<201002032334.37198.rjw@sisk.pl>
+	<20100203150803.5a4b37fe.akpm@linux-foundation.org>
+	<201002040150.26503.rjw@sisk.pl>
+	<20100203172147.2411966d.akpm@linux-foundation.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joe Perches <joe@perches.com> writes:
+On Wed, 3 Feb 2010 17:21:47 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> If it's ever agreed that all lines > 80 cols are OK or
-> new args after column 80 are OK, then sure.
+> On Thu, 4 Feb 2010 01:50:26 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> 
+> > --- linux-2.6.orig/mm/page_alloc.c
+> > +++ linux-2.6/mm/page_alloc.c
+> > @@ -76,6 +76,30 @@ unsigned long totalreserve_pages __read_
+> >  int percpu_pagelist_fraction;
+> >  gfp_t gfp_allowed_mask __read_mostly = GFP_BOOT_MASK;
+> >  
+> > +/*
+> > + * The following functions are used by the suspend/hibernate code to temporarily
+> > + * change gfp_allowed_mask in order to avoid using I/O during memory allocations
+> > + * while devices are suspended.  To avoid races with the suspend/hibernate code,
+> > + * they should always be called with pm_mutex held (gfp_allowed_mask also should
+> > + * only be modified with pm_mutex held, unless the suspend/hibernate code is
+> > + * guaranteed not to run in parallel with that modification).
+> > + */
+> > +
+> > +void set_gfp_allowed_mask(gfp_t mask)
+> > +{
+> > +	WARN_ON(!mutex_is_locked(&pm_mutex));
+> > +	gfp_allowed_mask = mask;
+> > +}
+> > +
+> > +gfp_t clear_gfp_allowed_mask(gfp_t mask)
+> > +{
+> > +	gfp_t ret = gfp_allowed_mask;
+> > +
+> > +	WARN_ON(!mutex_is_locked(&pm_mutex));
+> > +	gfp_allowed_mask &= ~mask;
+> > +	return ret;
+> > +}
+> 
+> Maybe put an ifdef CONFIG_foo around these so they don't get included
+> when they're unneeded?
+> 
 
-It's been already agreed they are OK for any code.
-There is no problem with complexity there, is there?
--- 
-Krzysztof Halasa
+I guess this:
+
+mm/built-in.o: In function `clear_gfp_allowed_mask':
+: undefined reference to `pm_mutex'
+mm/built-in.o: In function `set_gfp_allowed_mask':
+: undefined reference to `pm_mutex'
+
+kinda answers my question.
