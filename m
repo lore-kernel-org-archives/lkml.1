@@ -1,78 +1,142 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933092Ab0BDBmT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 20:42:19 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47819 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932983Ab0BDBmS (ORCPT
+	id S1753615Ab0BDBrG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 20:47:06 -0500
+Received: from mail-vw0-f46.google.com ([209.85.212.46]:62540 "EHLO
+	mail-vw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750921Ab0BDBrB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 20:42:18 -0500
-Date: Wed, 3 Feb 2010 17:41:50 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Sebastian Ott <sebott@linux.vnet.ibm.com>,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [RFC][PATCH] PM: disable nonboot cpus before suspending devices
-Message-Id: <20100203174150.192a417a.akpm@linux-foundation.org>
-In-Reply-To: <20100203172147.2411966d.akpm@linux-foundation.org>
-References: <alpine.LFD.2.00.1001221841490.2266@localhost>
-	<201002032334.37198.rjw@sisk.pl>
-	<20100203150803.5a4b37fe.akpm@linux-foundation.org>
-	<201002040150.26503.rjw@sisk.pl>
-	<20100203172147.2411966d.akpm@linux-foundation.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 3 Feb 2010 20:47:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=CIJ2YoaU4VK+rfO14168WMA4RHirOFDDyDDy1oZmLchy4hLcGM7GuS34F5uVjX3RbT
+         TMOsw8HEB1BTqLdgeZccKhaTgSqlUNv8hpV8CWoXOOclRNbieL4BJdHfbwVf6R3/beYB
+         Lm3/LIV+b9umXpAA4cNVVssqMD4BsaaIkp7MU=
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       "K. Prasad" <prasad@linux.vnet.ibm.com>,
+       Maneesh Soni <maneesh@in.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Martin <schwidefsky@de.ibm.com>
+Subject: [GIT PULL] hw-breakpoint fix
+Date: Thu,  4 Feb 2010 02:46:54 +0100
+Message-Id: <1265248014-7338-1-git-send-regression-fweisbec@gmail.com>
+X-Mailer: git-send-email 1.6.2.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Feb 2010 17:21:47 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
+Ingo,
 
-> On Thu, 4 Feb 2010 01:50:26 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> 
-> > --- linux-2.6.orig/mm/page_alloc.c
-> > +++ linux-2.6/mm/page_alloc.c
-> > @@ -76,6 +76,30 @@ unsigned long totalreserve_pages __read_
-> >  int percpu_pagelist_fraction;
-> >  gfp_t gfp_allowed_mask __read_mostly = GFP_BOOT_MASK;
-> >  
-> > +/*
-> > + * The following functions are used by the suspend/hibernate code to temporarily
-> > + * change gfp_allowed_mask in order to avoid using I/O during memory allocations
-> > + * while devices are suspended.  To avoid races with the suspend/hibernate code,
-> > + * they should always be called with pm_mutex held (gfp_allowed_mask also should
-> > + * only be modified with pm_mutex held, unless the suspend/hibernate code is
-> > + * guaranteed not to run in parallel with that modification).
-> > + */
-> > +
-> > +void set_gfp_allowed_mask(gfp_t mask)
-> > +{
-> > +	WARN_ON(!mutex_is_locked(&pm_mutex));
-> > +	gfp_allowed_mask = mask;
-> > +}
-> > +
-> > +gfp_t clear_gfp_allowed_mask(gfp_t mask)
-> > +{
-> > +	gfp_t ret = gfp_allowed_mask;
-> > +
-> > +	WARN_ON(!mutex_is_locked(&pm_mutex));
-> > +	gfp_allowed_mask &= ~mask;
-> > +	return ret;
-> > +}
-> 
-> Maybe put an ifdef CONFIG_foo around these so they don't get included
-> when they're unneeded?
-> 
+Please pull the perf/urgent branch that can be found at:
 
-I guess this:
+git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git
+	perf/urgent
 
-mm/built-in.o: In function `clear_gfp_allowed_mask':
-: undefined reference to `pm_mutex'
-mm/built-in.o: In function `set_gfp_allowed_mask':
-: undefined reference to `pm_mutex'
+Thanks,
+	Frederic
+---
 
-kinda answers my question.
+Mahesh Salgaonkar (1):
+      perf: Make bp_len type to u64 generic across the arch
+
+
+ include/linux/hw_breakpoint.h |    2 +-
+ include/linux/perf_event.h    |    6 ++----
+ kernel/hw_breakpoint.c        |    2 +-
+ kernel/perf_event.c           |    2 +-
+ 4 files changed, 5 insertions(+), 7 deletions(-)
+
+---
+commit cd757645fbdc34a8343c04bb0e74e06fccc2cb10
+Author: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+Date:   Sat Jan 30 10:25:18 2010 +0530
+
+    perf: Make bp_len type to u64 generic across the arch
+    
+    Change 'bp_len' type to __u64 to make it work across archs as
+    the s390 architecture watch point length can be upto 2^64.
+    
+    reference:
+    	http://lkml.org/lkml/2010/1/25/212
+    
+    This is an ABI change that is not backward compatible with
+    the previous hardware breakpoint info layout integrated in this
+    development cycle, a rebuilt of perf tools is necessary for
+    versions based on 2.6.33-rc1 - 2.6.33-rc6 to work with a
+    kernel based on this patch.
+    
+    Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+    Acked-by: Peter Zijlstra <peterz@infradead.org>
+    Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+    Cc: "K. Prasad" <prasad@linux.vnet.ibm.com>
+    Cc: Maneesh Soni <maneesh@in.ibm.com>
+    Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+    Cc: Martin <schwidefsky@de.ibm.com>
+    LKML-Reference: <20100130045518.GA20776@in.ibm.com>
+    Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+
+diff --git a/include/linux/hw_breakpoint.h b/include/linux/hw_breakpoint.h
+index 070ba06..5977b72 100644
+--- a/include/linux/hw_breakpoint.h
++++ b/include/linux/hw_breakpoint.h
+@@ -44,7 +44,7 @@ static inline int hw_breakpoint_type(struct perf_event *bp)
+ 	return bp->attr.bp_type;
+ }
+ 
+-static inline int hw_breakpoint_len(struct perf_event *bp)
++static inline unsigned long hw_breakpoint_len(struct perf_event *bp)
+ {
+ 	return bp->attr.bp_len;
+ }
+diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
+index 8fa7187..a177698 100644
+--- a/include/linux/perf_event.h
++++ b/include/linux/perf_event.h
+@@ -211,11 +211,9 @@ struct perf_event_attr {
+ 		__u32		wakeup_watermark; /* bytes before wakeup   */
+ 	};
+ 
+-	__u32			__reserved_2;
+-
+-	__u64			bp_addr;
+ 	__u32			bp_type;
+-	__u32			bp_len;
++	__u64			bp_addr;
++	__u64			bp_len;
+ };
+ 
+ /*
+diff --git a/kernel/hw_breakpoint.c b/kernel/hw_breakpoint.c
+index 8a5c7d5..967e661 100644
+--- a/kernel/hw_breakpoint.c
++++ b/kernel/hw_breakpoint.c
+@@ -360,8 +360,8 @@ EXPORT_SYMBOL_GPL(register_user_hw_breakpoint);
+ int modify_user_hw_breakpoint(struct perf_event *bp, struct perf_event_attr *attr)
+ {
+ 	u64 old_addr = bp->attr.bp_addr;
++	u64 old_len = bp->attr.bp_len;
+ 	int old_type = bp->attr.bp_type;
+-	int old_len = bp->attr.bp_len;
+ 	int err = 0;
+ 
+ 	perf_event_disable(bp);
+diff --git a/kernel/perf_event.c b/kernel/perf_event.c
+index d27746b..2b19297 100644
+--- a/kernel/perf_event.c
++++ b/kernel/perf_event.c
+@@ -4580,7 +4580,7 @@ static int perf_copy_attr(struct perf_event_attr __user *uattr,
+ 	if (attr->type >= PERF_TYPE_MAX)
+ 		return -EINVAL;
+ 
+-	if (attr->__reserved_1 || attr->__reserved_2)
++	if (attr->__reserved_1)
+ 		return -EINVAL;
+ 
+ 	if (attr->sample_type & ~(PERF_SAMPLE_MAX-1))
