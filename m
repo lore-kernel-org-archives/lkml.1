@@ -1,22 +1,23 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933455Ab0BDRXL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 12:23:11 -0500
-Received: from kroah.org ([198.145.64.141]:34904 "EHLO coco.kroah.org"
+	id S933390Ab0BDRYh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 12:24:37 -0500
+Received: from kroah.org ([198.145.64.141]:35009 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933351Ab0BDRWY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 12:22:24 -0500
-X-Mailbox-Line: From linux@linux.site Thu Feb  4 09:15:23 2010
-Message-Id: <20100204171522.587621313@linux.site>
+	id S933392Ab0BDRWg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 12:22:36 -0500
+X-Mailbox-Line: From linux@linux.site Thu Feb  4 09:15:30 2010
+Message-Id: <20100204171529.992677090@linux.site>
 User-Agent: quilt/0.47-14.9
-Date: Thu, 04 Feb 2010 09:12:32 -0800
+Date: Thu, 04 Feb 2010 09:12:45 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Evgeniy Polyakov <zbr@ioremap.net>, Greg Kroah-Hartman <gregkh@suse.de>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [61/74] connector: Delete buggy notification code.
+       Andreas Schwab <schwab@linux-m68k.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [74/74] powerpc: TIF_ABI_PENDING bit removal
 In-Reply-To: <20100204171850.GA16539@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -26,326 +27,80 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Evgeniy Polyakov <zbr@ioremap.net>
+From: Andreas Schwab <schwab@linux-m68k.org>
 
-commit f98bfbd78c37c5946cc53089da32a5f741efdeb7 upstream.
+commit 94f28da8409c6059135e89ac64a0839993124155 upstream.
 
-On Tue, Feb 02, 2010 at 02:57:14PM -0800, Greg KH (gregkh@suse.de) wrote:
-> > There are at least two ways to fix it: using a big cannon and a small
-> > one. The former way is to disable notification registration, since it is
-> > not used by anyone at all. Second way is to check whether calling
-> > process is root and its destination group is -1 (kind of priveledged
-> > one) before command is dispatched to workqueue.
->
-> Well if no one is using it, removing it makes the most sense, right?
->
-> No objection from me, care to make up a patch either way for this?
+Here are the powerpc bits to remove TIF_ABI_PENDING now that
+set_personality() is called at the appropriate place in exec.
 
-Getting it is not used, let's drop support for notifications about
-(un)registered events from connector.
-Another option was to check credentials on receiving, but we can always
-restore it without bugs if needed, but genetlink has a wider code base
-and none complained, that userspace can not get notification when some
-other clients were (un)registered.
-
-Kudos for Sebastian Krahmer <krahmer@suse.de>, who found a bug in the
-code.
-
-Signed-off-by: Evgeniy Polyakov <zbr@ioremap.net>
-Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Andreas Schwab <schwab@linux-m68k.org>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/connector/connector.c |  175 ------------------------------------------
- include/linux/connector.h     |   32 -------
- 2 files changed, 207 deletions(-)
+ arch/powerpc/include/asm/elf.h         |    8 ++------
+ arch/powerpc/include/asm/thread_info.h |    2 --
+ arch/powerpc/kernel/process.c          |   12 ------------
+ 3 files changed, 2 insertions(+), 20 deletions(-)
 
---- a/drivers/connector/connector.c
-+++ b/drivers/connector/connector.c
-@@ -36,17 +36,6 @@ MODULE_LICENSE("GPL");
- MODULE_AUTHOR("Evgeniy Polyakov <zbr@ioremap.net>");
- MODULE_DESCRIPTION("Generic userspace <-> kernelspace connector.");
+--- a/arch/powerpc/include/asm/elf.h
++++ b/arch/powerpc/include/asm/elf.h
+@@ -236,14 +236,10 @@ typedef elf_vrregset_t elf_fpxregset_t;
+ #ifdef __powerpc64__
+ # define SET_PERSONALITY(ex)					\
+ do {								\
+-	unsigned long new_flags = 0;				\
+ 	if ((ex).e_ident[EI_CLASS] == ELFCLASS32)		\
+-		new_flags = _TIF_32BIT;				\
+-	if ((current_thread_info()->flags & _TIF_32BIT)		\
+-	    != new_flags)					\
+-		set_thread_flag(TIF_ABI_PENDING);		\
++		set_thread_flag(TIF_32BIT);			\
+ 	else							\
+-		clear_thread_flag(TIF_ABI_PENDING);		\
++		clear_thread_flag(TIF_32BIT);			\
+ 	if (personality(current->personality) != PER_LINUX32)	\
+ 		set_personality(PER_LINUX |			\
+ 			(current->personality & (~PER_MASK)));	\
+--- a/arch/powerpc/include/asm/thread_info.h
++++ b/arch/powerpc/include/asm/thread_info.h
+@@ -111,7 +111,6 @@ static inline struct thread_info *curren
+ #define TIF_NOTIFY_RESUME	13	/* callback before returning to user */
+ #define TIF_FREEZE		14	/* Freezing for suspend */
+ #define TIF_RUNLATCH		15	/* Is the runlatch enabled? */
+-#define TIF_ABI_PENDING		16	/* 32/64 bit switch needed */
  
--static u32 cn_idx = CN_IDX_CONNECTOR;
--static u32 cn_val = CN_VAL_CONNECTOR;
--
--module_param(cn_idx, uint, 0);
--module_param(cn_val, uint, 0);
--MODULE_PARM_DESC(cn_idx, "Connector's main device idx.");
--MODULE_PARM_DESC(cn_val, "Connector's main device val.");
--
--static DEFINE_MUTEX(notify_lock);
--static LIST_HEAD(notify_list);
--
- static struct cn_dev cdev;
+ /* as above, but as bit values */
+ #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
+@@ -129,7 +128,6 @@ static inline struct thread_info *curren
+ #define _TIF_NOTIFY_RESUME	(1<<TIF_NOTIFY_RESUME)
+ #define _TIF_FREEZE		(1<<TIF_FREEZE)
+ #define _TIF_RUNLATCH		(1<<TIF_RUNLATCH)
+-#define _TIF_ABI_PENDING	(1<<TIF_ABI_PENDING)
+ #define _TIF_SYSCALL_T_OR_A	(_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT|_TIF_SECCOMP)
  
- static int cn_already_initialized;
-@@ -210,54 +199,6 @@ static void cn_rx_skb(struct sk_buff *__
- }
+ #define _TIF_USER_WORK_MASK	(_TIF_SIGPENDING | _TIF_NEED_RESCHED | \
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -554,18 +554,6 @@ void exit_thread(void)
  
- /*
-- * Notification routing.
-- *
-- * Gets id and checks if there are notification request for it's idx
-- * and val.  If there are such requests notify the listeners with the
-- * given notify event.
-- *
-- */
--static void cn_notify(struct cb_id *id, u32 notify_event)
--{
--	struct cn_ctl_entry *ent;
--
--	mutex_lock(&notify_lock);
--	list_for_each_entry(ent, &notify_list, notify_entry) {
--		int i;
--		struct cn_notify_req *req;
--		struct cn_ctl_msg *ctl = ent->msg;
--		int idx_found, val_found;
--
--		idx_found = val_found = 0;
--
--		req = (struct cn_notify_req *)ctl->data;
--		for (i = 0; i < ctl->idx_notify_num; ++i, ++req) {
--			if (id->idx >= req->first &&
--					id->idx < req->first + req->range) {
--				idx_found = 1;
--				break;
--			}
--		}
--
--		for (i = 0; i < ctl->val_notify_num; ++i, ++req) {
--			if (id->val >= req->first &&
--					id->val < req->first + req->range) {
--				val_found = 1;
--				break;
--			}
--		}
--
--		if (idx_found && val_found) {
--			struct cn_msg m = { .ack = notify_event, };
--
--			memcpy(&m.id, id, sizeof(m.id));
--			cn_netlink_send(&m, ctl->group, GFP_KERNEL);
--		}
--	}
--	mutex_unlock(&notify_lock);
--}
--
--/*
-  * Callback add routing - adds callback with given ID and name.
-  * If there is registered callback with the same ID it will not be added.
-  *
-@@ -276,8 +217,6 @@ int cn_add_callback(struct cb_id *id, ch
- 	if (err)
- 		return err;
- 
--	cn_notify(id, 0);
--
- 	return 0;
- }
- EXPORT_SYMBOL_GPL(cn_add_callback);
-@@ -295,111 +234,9 @@ void cn_del_callback(struct cb_id *id)
- 	struct cn_dev *dev = &cdev;
- 
- 	cn_queue_del_callback(dev->cbdev, id);
--	cn_notify(id, 1);
- }
- EXPORT_SYMBOL_GPL(cn_del_callback);
- 
--/*
-- * Checks two connector's control messages to be the same.
-- * Returns 1 if they are the same or if the first one is corrupted.
-- */
--static int cn_ctl_msg_equals(struct cn_ctl_msg *m1, struct cn_ctl_msg *m2)
--{
--	int i;
--	struct cn_notify_req *req1, *req2;
--
--	if (m1->idx_notify_num != m2->idx_notify_num)
--		return 0;
--
--	if (m1->val_notify_num != m2->val_notify_num)
--		return 0;
--
--	if (m1->len != m2->len)
--		return 0;
--
--	if ((m1->idx_notify_num + m1->val_notify_num) * sizeof(*req1) !=
--	    m1->len)
--		return 1;
--
--	req1 = (struct cn_notify_req *)m1->data;
--	req2 = (struct cn_notify_req *)m2->data;
--
--	for (i = 0; i < m1->idx_notify_num; ++i) {
--		if (req1->first != req2->first || req1->range != req2->range)
--			return 0;
--		req1++;
--		req2++;
--	}
--
--	for (i = 0; i < m1->val_notify_num; ++i) {
--		if (req1->first != req2->first || req1->range != req2->range)
--			return 0;
--		req1++;
--		req2++;
--	}
--
--	return 1;
--}
--
--/*
-- * Main connector device's callback.
-- *
-- * Used for notification of a request's processing.
-- */
--static void cn_callback(struct cn_msg *msg, struct netlink_skb_parms *nsp)
--{
--	struct cn_ctl_msg *ctl;
--	struct cn_ctl_entry *ent;
--	u32 size;
--
--	if (msg->len < sizeof(*ctl))
--		return;
--
--	ctl = (struct cn_ctl_msg *)msg->data;
--
--	size = (sizeof(*ctl) + ((ctl->idx_notify_num +
--				 ctl->val_notify_num) *
--				sizeof(struct cn_notify_req)));
--
--	if (msg->len != size)
--		return;
--
--	if (ctl->len + sizeof(*ctl) != msg->len)
--		return;
--
--	/*
--	 * Remove notification.
--	 */
--	if (ctl->group == 0) {
--		struct cn_ctl_entry *n;
--
--		mutex_lock(&notify_lock);
--		list_for_each_entry_safe(ent, n, &notify_list, notify_entry) {
--			if (cn_ctl_msg_equals(ent->msg, ctl)) {
--				list_del(&ent->notify_entry);
--				kfree(ent);
--			}
--		}
--		mutex_unlock(&notify_lock);
--
--		return;
--	}
--
--	size += sizeof(*ent);
--
--	ent = kzalloc(size, GFP_KERNEL);
--	if (!ent)
--		return;
--
--	ent->msg = (struct cn_ctl_msg *)(ent + 1);
--
--	memcpy(ent->msg, ctl, size - sizeof(*ent));
--
--	mutex_lock(&notify_lock);
--	list_add(&ent->notify_entry, &notify_list);
--	mutex_unlock(&notify_lock);
--}
--
- static int cn_proc_show(struct seq_file *m, void *v)
+ void flush_thread(void)
  {
- 	struct cn_queue_dev *dev = cdev.cbdev;
-@@ -437,11 +274,8 @@ static const struct file_operations cn_f
- static int __devinit cn_init(void)
- {
- 	struct cn_dev *dev = &cdev;
--	int err;
- 
- 	dev->input = cn_rx_skb;
--	dev->id.idx = cn_idx;
--	dev->id.val = cn_val;
- 
- 	dev->nls = netlink_kernel_create(&init_net, NETLINK_CONNECTOR,
- 					 CN_NETLINK_USERS + 0xf,
-@@ -457,14 +291,6 @@ static int __devinit cn_init(void)
- 
- 	cn_already_initialized = 1;
- 
--	err = cn_add_callback(&dev->id, "connector", &cn_callback);
--	if (err) {
--		cn_already_initialized = 0;
--		cn_queue_free_dev(dev->cbdev);
--		netlink_kernel_release(dev->nls);
--		return -EINVAL;
+-#ifdef CONFIG_PPC64
+-	struct thread_info *t = current_thread_info();
+-
+-	if (test_ti_thread_flag(t, TIF_ABI_PENDING)) {
+-		clear_ti_thread_flag(t, TIF_ABI_PENDING);
+-		if (test_ti_thread_flag(t, TIF_32BIT))
+-			clear_ti_thread_flag(t, TIF_32BIT);
+-		else
+-			set_ti_thread_flag(t, TIF_32BIT);
 -	}
+-#endif
 -
- 	proc_net_fops_create(&init_net, "connector", S_IRUGO, &cn_file_ops);
+ 	discard_lazy_cpu_state();
  
- 	return 0;
-@@ -478,7 +304,6 @@ static void __devexit cn_fini(void)
- 
- 	proc_net_remove(&init_net, "connector");
- 
--	cn_del_callback(&dev->id);
- 	cn_queue_free_dev(dev->cbdev);
- 	netlink_kernel_release(dev->nls);
- }
---- a/include/linux/connector.h
-+++ b/include/linux/connector.h
-@@ -24,9 +24,6 @@
- 
- #include <linux/types.h>
- 
--#define CN_IDX_CONNECTOR		0xffffffff
--#define CN_VAL_CONNECTOR		0xffffffff
--
- /*
-  * Process Events connector unique ids -- used for message routing
-  */
-@@ -73,30 +70,6 @@ struct cn_msg {
- 	__u8 data[0];
- };
- 
--/*
-- * Notify structure - requests notification about
-- * registering/unregistering idx/val in range [first, first+range].
-- */
--struct cn_notify_req {
--	__u32 first;
--	__u32 range;
--};
--
--/*
-- * Main notification control message
-- * *_notify_num 	- number of appropriate cn_notify_req structures after 
-- *				this struct.
-- * group 		- notification receiver's idx.
-- * len 			- total length of the attached data.
-- */
--struct cn_ctl_msg {
--	__u32 idx_notify_num;
--	__u32 val_notify_num;
--	__u32 group;
--	__u32 len;
--	__u8 data[0];
--};
--
- #ifdef __KERNEL__
- 
- #include <asm/atomic.h>
-@@ -149,11 +122,6 @@ struct cn_callback_entry {
- 	u32 seq, group;
- };
- 
--struct cn_ctl_entry {
--	struct list_head notify_entry;
--	struct cn_ctl_msg *msg;
--};
--
- struct cn_dev {
- 	struct cb_id id;
- 
+ 	if (current->thread.dabr) {
 
 
