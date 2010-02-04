@@ -1,23 +1,22 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933480Ab0BDRX1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 12:23:27 -0500
-Received: from kroah.org ([198.145.64.141]:34996 "EHLO coco.kroah.org"
+	id S933455Ab0BDRXL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 12:23:11 -0500
+Received: from kroah.org ([198.145.64.141]:34904 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933385Ab0BDRWe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 12:22:34 -0500
-X-Mailbox-Line: From linux@linux.site Thu Feb  4 09:15:29 2010
-Message-Id: <20100204171528.884576832@linux.site>
+	id S933351Ab0BDRWY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 12:22:24 -0500
+X-Mailbox-Line: From linux@linux.site Thu Feb  4 09:15:23 2010
+Message-Id: <20100204171522.587621313@linux.site>
 User-Agent: quilt/0.47-14.9
-Date: Thu, 04 Feb 2010 09:12:43 -0800
+Date: Thu, 04 Feb 2010 09:12:32 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Felix Fietkau <nbd@openwrt.org>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [72/74] ath9k: fix eeprom INI values override for 2GHz-only cards
+       Evgeniy Polyakov <zbr@ioremap.net>, Greg Kroah-Hartman <gregkh@suse.de>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [61/74] connector: Delete buggy notification code.
 In-Reply-To: <20100204171850.GA16539@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -27,61 +26,326 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Felix Fietkau <nbd@openwrt.org>
+From: Evgeniy Polyakov <zbr@ioremap.net>
 
-commit aa8bc9ef18a2c5b2b97e1f36ee9604cf15743f96 upstream.
+commit f98bfbd78c37c5946cc53089da32a5f741efdeb7 upstream.
 
-Among other changes, this commit:
+On Tue, Feb 02, 2010 at 02:57:14PM -0800, Greg KH (gregkh@suse.de) wrote:
+> > There are at least two ways to fix it: using a big cannon and a small
+> > one. The former way is to disable notification registration, since it is
+> > not used by anyone at all. Second way is to check whether calling
+> > process is root and its destination group is -1 (kind of priveledged
+> > one) before command is dispatched to workqueue.
+>
+> Well if no one is using it, removing it makes the most sense, right?
+>
+> No objection from me, care to make up a patch either way for this?
 
-   commit 06d0f0663e11cab4ec5f2c143a118d71a12fbbe9
-   Author: Sujith <Sujith.Manoharan@atheros.com>
-   Date:   Thu Feb 12 10:06:45 2009 +0530
+Getting it is not used, let's drop support for notifications about
+(un)registered events from connector.
+Another option was to check credentials on receiving, but we can always
+restore it without bugs if needed, but genetlink has a wider code base
+and none complained, that userspace can not get notification when some
+other clients were (un)registered.
 
-   ath9k: Enable Fractional N mode
+Kudos for Sebastian Krahmer <krahmer@suse.de>, who found a bug in the
+code.
 
-changed the hw attach code to fix up initialization values only for
-dual band devices, however the commit message did not give a reason as
-to why this would be useful or necessary.
-
-According to tests by Jorge Boncompte, this breaks at least some
-2GHz-only cards, so the code should be changed back to the
-unconditional INI fixup.
-
-Signed-off-by: Felix Fietkau <nbd@openwrt.org>
-Reported-by: Jorge Boncompte <jorge@dti2.net>
-Tested-by: Pavel Roskin <proski@gnu.org>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
+Signed-off-by: Evgeniy Polyakov <zbr@ioremap.net>
+Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/ath/ath9k/hw.c |    7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
+ drivers/connector/connector.c |  175 ------------------------------------------
+ include/linux/connector.h     |   32 -------
+ 2 files changed, 207 deletions(-)
 
---- a/drivers/net/wireless/ath/ath9k/hw.c
-+++ b/drivers/net/wireless/ath/ath9k/hw.c
-@@ -880,12 +880,11 @@ static void ath9k_hw_init_mode_gain_regs
- 	}
+--- a/drivers/connector/connector.c
++++ b/drivers/connector/connector.c
+@@ -36,17 +36,6 @@ MODULE_LICENSE("GPL");
+ MODULE_AUTHOR("Evgeniy Polyakov <zbr@ioremap.net>");
+ MODULE_DESCRIPTION("Generic userspace <-> kernelspace connector.");
+ 
+-static u32 cn_idx = CN_IDX_CONNECTOR;
+-static u32 cn_val = CN_VAL_CONNECTOR;
+-
+-module_param(cn_idx, uint, 0);
+-module_param(cn_val, uint, 0);
+-MODULE_PARM_DESC(cn_idx, "Connector's main device idx.");
+-MODULE_PARM_DESC(cn_val, "Connector's main device val.");
+-
+-static DEFINE_MUTEX(notify_lock);
+-static LIST_HEAD(notify_list);
+-
+ static struct cn_dev cdev;
+ 
+ static int cn_already_initialized;
+@@ -210,54 +199,6 @@ static void cn_rx_skb(struct sk_buff *__
  }
  
--static void ath9k_hw_init_11a_eeprom_fix(struct ath_hw *ah)
-+static void ath9k_hw_init_eeprom_fix(struct ath_hw *ah)
+ /*
+- * Notification routing.
+- *
+- * Gets id and checks if there are notification request for it's idx
+- * and val.  If there are such requests notify the listeners with the
+- * given notify event.
+- *
+- */
+-static void cn_notify(struct cb_id *id, u32 notify_event)
+-{
+-	struct cn_ctl_entry *ent;
+-
+-	mutex_lock(&notify_lock);
+-	list_for_each_entry(ent, &notify_list, notify_entry) {
+-		int i;
+-		struct cn_notify_req *req;
+-		struct cn_ctl_msg *ctl = ent->msg;
+-		int idx_found, val_found;
+-
+-		idx_found = val_found = 0;
+-
+-		req = (struct cn_notify_req *)ctl->data;
+-		for (i = 0; i < ctl->idx_notify_num; ++i, ++req) {
+-			if (id->idx >= req->first &&
+-					id->idx < req->first + req->range) {
+-				idx_found = 1;
+-				break;
+-			}
+-		}
+-
+-		for (i = 0; i < ctl->val_notify_num; ++i, ++req) {
+-			if (id->val >= req->first &&
+-					id->val < req->first + req->range) {
+-				val_found = 1;
+-				break;
+-			}
+-		}
+-
+-		if (idx_found && val_found) {
+-			struct cn_msg m = { .ack = notify_event, };
+-
+-			memcpy(&m.id, id, sizeof(m.id));
+-			cn_netlink_send(&m, ctl->group, GFP_KERNEL);
+-		}
+-	}
+-	mutex_unlock(&notify_lock);
+-}
+-
+-/*
+  * Callback add routing - adds callback with given ID and name.
+  * If there is registered callback with the same ID it will not be added.
+  *
+@@ -276,8 +217,6 @@ int cn_add_callback(struct cb_id *id, ch
+ 	if (err)
+ 		return err;
+ 
+-	cn_notify(id, 0);
+-
+ 	return 0;
+ }
+ EXPORT_SYMBOL_GPL(cn_add_callback);
+@@ -295,111 +234,9 @@ void cn_del_callback(struct cb_id *id)
+ 	struct cn_dev *dev = &cdev;
+ 
+ 	cn_queue_del_callback(dev->cbdev, id);
+-	cn_notify(id, 1);
+ }
+ EXPORT_SYMBOL_GPL(cn_del_callback);
+ 
+-/*
+- * Checks two connector's control messages to be the same.
+- * Returns 1 if they are the same or if the first one is corrupted.
+- */
+-static int cn_ctl_msg_equals(struct cn_ctl_msg *m1, struct cn_ctl_msg *m2)
+-{
+-	int i;
+-	struct cn_notify_req *req1, *req2;
+-
+-	if (m1->idx_notify_num != m2->idx_notify_num)
+-		return 0;
+-
+-	if (m1->val_notify_num != m2->val_notify_num)
+-		return 0;
+-
+-	if (m1->len != m2->len)
+-		return 0;
+-
+-	if ((m1->idx_notify_num + m1->val_notify_num) * sizeof(*req1) !=
+-	    m1->len)
+-		return 1;
+-
+-	req1 = (struct cn_notify_req *)m1->data;
+-	req2 = (struct cn_notify_req *)m2->data;
+-
+-	for (i = 0; i < m1->idx_notify_num; ++i) {
+-		if (req1->first != req2->first || req1->range != req2->range)
+-			return 0;
+-		req1++;
+-		req2++;
+-	}
+-
+-	for (i = 0; i < m1->val_notify_num; ++i) {
+-		if (req1->first != req2->first || req1->range != req2->range)
+-			return 0;
+-		req1++;
+-		req2++;
+-	}
+-
+-	return 1;
+-}
+-
+-/*
+- * Main connector device's callback.
+- *
+- * Used for notification of a request's processing.
+- */
+-static void cn_callback(struct cn_msg *msg, struct netlink_skb_parms *nsp)
+-{
+-	struct cn_ctl_msg *ctl;
+-	struct cn_ctl_entry *ent;
+-	u32 size;
+-
+-	if (msg->len < sizeof(*ctl))
+-		return;
+-
+-	ctl = (struct cn_ctl_msg *)msg->data;
+-
+-	size = (sizeof(*ctl) + ((ctl->idx_notify_num +
+-				 ctl->val_notify_num) *
+-				sizeof(struct cn_notify_req)));
+-
+-	if (msg->len != size)
+-		return;
+-
+-	if (ctl->len + sizeof(*ctl) != msg->len)
+-		return;
+-
+-	/*
+-	 * Remove notification.
+-	 */
+-	if (ctl->group == 0) {
+-		struct cn_ctl_entry *n;
+-
+-		mutex_lock(&notify_lock);
+-		list_for_each_entry_safe(ent, n, &notify_list, notify_entry) {
+-			if (cn_ctl_msg_equals(ent->msg, ctl)) {
+-				list_del(&ent->notify_entry);
+-				kfree(ent);
+-			}
+-		}
+-		mutex_unlock(&notify_lock);
+-
+-		return;
+-	}
+-
+-	size += sizeof(*ent);
+-
+-	ent = kzalloc(size, GFP_KERNEL);
+-	if (!ent)
+-		return;
+-
+-	ent->msg = (struct cn_ctl_msg *)(ent + 1);
+-
+-	memcpy(ent->msg, ctl, size - sizeof(*ent));
+-
+-	mutex_lock(&notify_lock);
+-	list_add(&ent->notify_entry, &notify_list);
+-	mutex_unlock(&notify_lock);
+-}
+-
+ static int cn_proc_show(struct seq_file *m, void *v)
  {
- 	u32 i, j;
+ 	struct cn_queue_dev *dev = cdev.cbdev;
+@@ -437,11 +274,8 @@ static const struct file_operations cn_f
+ static int __devinit cn_init(void)
+ {
+ 	struct cn_dev *dev = &cdev;
+-	int err;
  
--	if ((ah->hw_version.devid == AR9280_DEVID_PCI) &&
--	    test_bit(ATH9K_MODE_11A, ah->caps.wireless_modes)) {
-+	if (ah->hw_version.devid == AR9280_DEVID_PCI) {
+ 	dev->input = cn_rx_skb;
+-	dev->id.idx = cn_idx;
+-	dev->id.val = cn_val;
  
- 		/* EEPROM Fixup */
- 		for (i = 0; i < ah->iniModes.ia_rows; i++) {
-@@ -980,7 +979,7 @@ int ath9k_hw_init(struct ath_hw *ah)
+ 	dev->nls = netlink_kernel_create(&init_net, NETLINK_CONNECTOR,
+ 					 CN_NETLINK_USERS + 0xf,
+@@ -457,14 +291,6 @@ static int __devinit cn_init(void)
  
- 	ath9k_hw_init_mode_gain_regs(ah);
- 	ath9k_hw_fill_cap_info(ah);
--	ath9k_hw_init_11a_eeprom_fix(ah);
-+	ath9k_hw_init_eeprom_fix(ah);
+ 	cn_already_initialized = 1;
  
- 	r = ath9k_hw_init_macaddr(ah);
- 	if (r) {
+-	err = cn_add_callback(&dev->id, "connector", &cn_callback);
+-	if (err) {
+-		cn_already_initialized = 0;
+-		cn_queue_free_dev(dev->cbdev);
+-		netlink_kernel_release(dev->nls);
+-		return -EINVAL;
+-	}
+-
+ 	proc_net_fops_create(&init_net, "connector", S_IRUGO, &cn_file_ops);
+ 
+ 	return 0;
+@@ -478,7 +304,6 @@ static void __devexit cn_fini(void)
+ 
+ 	proc_net_remove(&init_net, "connector");
+ 
+-	cn_del_callback(&dev->id);
+ 	cn_queue_free_dev(dev->cbdev);
+ 	netlink_kernel_release(dev->nls);
+ }
+--- a/include/linux/connector.h
++++ b/include/linux/connector.h
+@@ -24,9 +24,6 @@
+ 
+ #include <linux/types.h>
+ 
+-#define CN_IDX_CONNECTOR		0xffffffff
+-#define CN_VAL_CONNECTOR		0xffffffff
+-
+ /*
+  * Process Events connector unique ids -- used for message routing
+  */
+@@ -73,30 +70,6 @@ struct cn_msg {
+ 	__u8 data[0];
+ };
+ 
+-/*
+- * Notify structure - requests notification about
+- * registering/unregistering idx/val in range [first, first+range].
+- */
+-struct cn_notify_req {
+-	__u32 first;
+-	__u32 range;
+-};
+-
+-/*
+- * Main notification control message
+- * *_notify_num 	- number of appropriate cn_notify_req structures after 
+- *				this struct.
+- * group 		- notification receiver's idx.
+- * len 			- total length of the attached data.
+- */
+-struct cn_ctl_msg {
+-	__u32 idx_notify_num;
+-	__u32 val_notify_num;
+-	__u32 group;
+-	__u32 len;
+-	__u8 data[0];
+-};
+-
+ #ifdef __KERNEL__
+ 
+ #include <asm/atomic.h>
+@@ -149,11 +122,6 @@ struct cn_callback_entry {
+ 	u32 seq, group;
+ };
+ 
+-struct cn_ctl_entry {
+-	struct list_head notify_entry;
+-	struct cn_ctl_msg *msg;
+-};
+-
+ struct cn_dev {
+ 	struct cb_id id;
+ 
 
 
