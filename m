@@ -1,85 +1,101 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755435Ab0BDDbP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 22:31:15 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:33560 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751352Ab0BDDbM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 22:31:12 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Thu, 4 Feb 2010 12:27:42 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Andi Kleen <andi@firstfloor.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "stable@kernel.org" <stable@kernel.org>,
-       "juha_motorsportcom@luukku.com" <juha_motorsportcom@luukku.com>
-Subject: Re: [stable] [PATCH] devmem: check vmalloc address on kmem
- read/write
-Message-Id: <20100204122742.2e1c38f8.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20100204031854.GA14324@localhost>
-References: <20100122045914.993668874@intel.com>
-	<20100203234724.GA23902@kroah.com>
-	<20100204024202.GD6343@localhost>
-	<20100204115801.cac7c342.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100204031854.GA14324@localhost>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
+	id S1756023Ab0BDDbl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 22:31:41 -0500
+Received: from sh.osrg.net ([192.16.179.4]:55084 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751352Ab0BDDbj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 22:31:39 -0500
+Date: Thu, 4 Feb 2010 12:31:23 +0900
+To: davem@davemloft.net
+Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, James.Bottomley@suse.de
+Subject: Re: [PATCH -mm 1/4] DMA-API.txt: add dma_sync_single/sg API
+ description
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20100203.192123.112190123.davem@davemloft.net>
+References: <1265253206-17744-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+	<20100203.192123.112190123.davem@davemloft.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20100204123056Q.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Thu, 04 Feb 2010 12:31:24 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 4 Feb 2010 11:18:54 +0800
-Wu Fengguang <fengguang.wu@intel.com> wrote:
+On Wed, 03 Feb 2010 19:21:23 -0800 (PST)
+David Miller <davem@davemloft.net> wrote:
 
-> On Thu, Feb 04, 2010 at 10:58:01AM +0800, KAMEZAWA Hiroyuki wrote:
-> > On Thu, 4 Feb 2010 10:42:02 +0800
-> > Wu Fengguang <fengguang.wu@intel.com> wrote:
-> > 
-> > > From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> > > 
-> > > commit 325fda71d0badc1073dc59f12a948f24ff05796a upstream.
-> > > 
-> > > Otherwise vmalloc_to_page() will BUG().
-> > > 
-> > > This also makes the kmem read/write implementation aligned with mem(4):
-> > > "References to nonexistent locations cause errors to be returned." Here
-> > > we return -ENXIO (inspired by Hugh) if no bytes have been transfered
-> > > to/from user space, otherwise return partial read/write results.
-> > > 
-> > 
-> > Wu-san, I have additonal fix to this patch. Now, *ppos update is unstable..
-> > Could you make merged one ?
-> > Maybe this one makes the all behavior clearer.
-> > 
-> > ==
-> > This is a more fix for devmem-check-vmalloc-address-on-kmem-read-write.patch
-> > Now, the condition for updating *ppos is not good. (it's updated even if EFAULT
-> > occurs..). This fixes that.
-> > 
-> > 
-> > Reported-by: "Juha Leppanen" <juha_motorsportcom@luukku.com>
+> From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> Date: Thu,  4 Feb 2010 12:13:22 +0900
 > 
-> Sorry, can you elaborate the problem? How it break the application?
+> > This adds the description of the following eight function:
+> > 
+> > dma_sync_single_for_cpu
+> > pci_dma_sync_single_for_cpuvoid
+>                              ^^^^
 > 
-> It looks that do_generic_file_read() also updates *ppos progressively,
-> no one complains about that.
+> That "void" is probably some cut and paste error :-)
+
+Oops.
+
+
+> > dma_sync_single_for_device
+> > pci_dma_sync_single_for_device
+> > dma_sync_sg_for_cpu
+> > pci_dma_sync_sg_for_cpu
+> > dma_sync_sg_for_device
+> > pci_dma_sync_sg_for_device
+> > 
+> > It was unclear that the API permits a partial sync (some network
+> > drivers already do though). I made it clear that the sync_single API
+> > can do a partial sync but the sync_sg API can't.
+> > 
+> > We could do a partial sync with the sync_sg too, however, it's
+> > difficult for driver writers to correctly use the sync_sg API for a
+> > partial sync since the scatterlists passed in to the mapping API can
+> > be modified. It's unlikely that driver writers want to do a partial
+> > sync with the sync_sg API (because the sync_sg API are usually used
+> > for block drivers). So I think that it's better to forbid a partial
+> > sync with the sync_sg API.
+> > 
+> > Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 > 
-Ah...it seems I misunderstood something...ok, *ppos should be updated every time.
+> Acked-by: David S. Miller <davem@davemloft.net>
 
-I startted from adding comment on following line and got into a maze.
+Thanks,
 
->   return (virtr + wrote) ? : err;
+I found other two typos in the commit log so here's the update.
 
-Sorry for noise.
+=
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH -mm 1/4] DMA-API.txt: add dma_sync_single/sg API description
 
--Kame
+This adds the description of the following eight function:
 
+dma_sync_single_for_cpu
+pci_dma_sync_single_for_cpu
+dma_sync_single_for_device
+pci_dma_sync_single_for_device
+dma_sync_sg_for_cpu
+pci_dma_sync_sg_for_cpu
+dma_sync_sg_for_device
+pci_dma_sync_sg_for_device
+
+It was unclear that the API permits a partial sync (some network
+drivers already do though). I made it clear that the sync_single API
+can do a partial sync but the sync_sg API can't.
+
+We could do a partial sync with the sync_sg API too, however, it's
+difficult for driver writers to correctly use the sync_sg API for a
+partial sync since the scatterlists passed in to the mapping API can't
+be modified. It's unlikely that driver writers want to do a partial
+sync with the sync_sg API (because the sync_sg API are usually used
+for block drivers). So I think that it's better to forbid a partial
+sync with the sync_sg API.
+
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Acked-by: David S. Miller <davem@davemloft.net>
+Cc: James Bottomley <James.Bottomley@suse.de>
