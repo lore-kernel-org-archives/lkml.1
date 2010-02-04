@@ -1,177 +1,57 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932392Ab0BDPD6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 10:03:58 -0500
-Received: from psa.adit.fi ([217.112.250.17]:51989 "EHLO psa.adit.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758155Ab0BDPDz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 10:03:55 -0500
-Message-ID: <4B6AE241.6090900@adit.fi>
-Date: Thu, 04 Feb 2010 17:05:37 +0200
-From: Pekka Sarnila <sarnila@adit.fi>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.8) Gecko/20070113 Debian/1.7.8-1sarge10
-X-Accept-Language: en
+	id S932547Ab0BDPEY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 10:04:24 -0500
+Received: from smtp-out.google.com ([216.239.44.51]:46678 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932346Ab0BDPEU convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 10:04:20 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=byDLckf2IN8zTW15sumL7PDTZdEOEar7Oeq480edcTI+eam4vrNMP2jgKw48vVja3
+	H8tQNR0XBlIkyiCCFUH5g==
 MIME-Version: 1.0
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-CC: Jiri Slaby <jirislaby@gmail.com>, Jiri Kosina <jkosina@suse.cz>,
-       Antti Palosaari <crope@iki.fi>, mchehab@infradead.org,
-       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
-       linux-input@vger.kernel.org
-Subject: Re: [PATCH 1/1] media: dvb-usb/af9015, fix disconnection crashes
-References: <1264007972-6261-1-git-send-email-jslaby@suse.cz> <4B5CDB53.6030009@iki.fi> <4B5D6098.7010700@gmail.com> <4B5DDDFB.5020907@iki.fi> <alpine.LRH.2.00.1001261406010.15694@twin.jikos.cz> <4B6AA211.1060707@gmail.com> <4B6ACA4B.2030906@adit.fi> <4B6AD3DB.8090801@redhat.com>
-In-Reply-To: <4B6AD3DB.8090801@redhat.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <1265295545.24455.2270.camel@laptop>
+References: <4b674594.0a04d00a.6005.2567@mx.google.com>
+	 <1265295302.24455.2265.camel@laptop>
+	 <1265295545.24455.2270.camel@laptop>
+Date: Thu, 4 Feb 2010 16:04:17 +0100
+Message-ID: <bd4cb8901002040704vcd2d8feo82e2e1c166a02669@mail.gmail.com>
+Subject: Re: [PATCH] perf_events: AMD event scheduling (v2)
+From: Stephane Eranian <eranian@google.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, paulus@samba.org,
+       davem@davemloft.net, fweisbec@gmail.com, robert.richter@amd.com,
+       perfmon2-devel@lists.sf.net, eranian@gmail.com
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Feb 4, 2010 at 3:59 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+>
+> On Thu, 2010-02-04 at 15:55 +0100, Peter Zijlstra wrote:
+> > > +     if (boot_cpu_data.x86_max_cores < 2)
+> > > +             return;
+> >
+> > So there are no single core AMD chips that have a NorthBridge PMU? What
+> > about the recent 64bit single core laptop chips?
+>
+> D'0h, for those there is no need to create inter-cpu constraints.
+>
+Exactly!
 
 
-Mauro Carvalho Chehab wrote:
-> Pekka Sarnila wrote:
-> 
->>The problem using vendor class is that there is no standard. Each vendor
->>can define its own way using endpoints (and has done so e.g Logitech
->>joysticks). Thus each usb ir receiver must have its own specific driver.
->> However then you get the raw ir codes. When using HID class, generic
->>HID driver can do the job. But then you get HID key codes directly not
->>ir codes.
-> 
-> We started writing an abstraction layer for IR, using the input. The idea
-> is to allow the IR receivers to work with different IR's, as several users
-> prefer to use universal IR's to control their devices, instead of the original
-> one. This is already used by all V4L drivers and I intend to port most of
-> the DVB drivers to use it as well soon.
-
-This is very good.
-
-The problem here is that at least afatech ir receiver has the ir code to 
-key code build in, so trough HID you can use only the remote whose ir to 
-key translate table has been loaded to the aftech device. Unless that 
-can be easily controlled by the user HID is no good for this.
-
-> 
->>Also this should not be seen at all as dvb question. First, not all the
->>world uses dvb standard (including USA) but uses very similar tv-sticks
->>with identical ir receivers and remotes. 
-> 
-> Despiste its name, the DVB subsystem is not specific for DVB standards, but
-> it is meant to be used by all DTV standards (and almost all DTV standards
-> are already supported).
-
-But most of the world still uses analog (they can not afford yet the 
-transfer). Those tv-sticks have identical receivers. And there are usb 
-ir receivers not embedded to tv-sticks. Conceptually and technically it 
-has nothing to do with any tv or any other audiovisual system system 
-(e.g. a remote controlled weather station).
-
-So dvb is both as a place and a name misleading.
-
->>Second there are many other
->>type of usb devices with ir receiver. So dvb layer should not be
->>involved at all. There maybe would be need for hid-ir-remote layer (your
->>code suggestion moved there). However even there IMHO better would be
->>just to improve HID <-> input layer interface so that input layer could
->>divert the remotes input to generic remotes layer instead of keyboard
->>layer. IMHO this would be the real linux way.
->  
-> This is already happening.
-> 
-> See drivers/media/IR on linux-next for the IR common code. The ir-core is
-> provided by ir-keytable.c and ir-sysfs.c, and it is not DVB or V4L specific.
-
-Well I was talking about HID remotes that don't give ir codes but key 
-codes. What to do with them?
-
-> The ir-common module were developed for V4L drivers and will probably be
-> changed into a more generic way, with the integration with lirc.
-> 
-> 
->>However linux usb layer has been build so that it was technically
->>impossible to put it there without completely redesigning usb <-> higher
->>layer (including HID) interface. But I'm of the opinion that that
->>redesign should be done anyway. 
-> 
-> Feel free to submit patches. My plan is to integrate the DVB devices soon
-
-Yes, I have thought of it. But it is a big job, I'm quite busy, and 
-after all mostly the benefit is more esthetical than practical. A lot of 
-other usb strandard and vendor class interrupt endpoint drivers beside 
-HID should be rewritten. Writing new ones would be easier though.
-
-> into the new ir-core. I should start with dvb-usb-remote, where most of the
-> DVB USB devices use to attach their IR's. Unfortunately, af9015 doesn't 
-> rely on the dvb-usb-remote, so, it will require some specific changes.
-> As I don't have any af9015 device, I'll likely postpone it or wait for
-> someone to do the job.
-
-Well that was the original point of my involvement. It can support both 
-the dvb-usb-remote and HID. The problem with af9015/dvb-usb-remote is 
-that it uses usb vendor class endpoint (all trough I have used 'vendor 
-class' to specifically mean usb vendor class). Usb vendor classes have 
-no standard. But af9015 can also use USB HID class (remote as keyboard) 
-in a standard manner. That would avoid using special device  based driver.
-
->>Now the question is, how much all usb based ir receivers have in common,
->>and how much they differ. This should determine on what level and in
->>which way they should be handled. How much and on what level there
->>should be common code and where device specific driver code would be
->>needed and where and how the ir-to-code translate should take place.
-> 
-> 
-> There are several different ways for IR receivers, and, at least for 
-> vendor class, no standard way to handle. They can use GPIO polling,
-> they can use i2c layer, they can use IRQ (on PCI devices) and the data
-> may be provided in parallel or on a serial interface.
-
-Well the thing is that even with usb each device can have non standard 
-user vendor endpoint. In case of af9015 it can provide the ir code.
-
-> The idea of the ir-core is to provide support for all those options.
-
-Even for those that do provide key codes trough standard HID layer 
-instead of ir codes trough specific device drivers?
-
->>IMHO all that have HID endpoint that works (either as such or with some
->>generic quirk) should be handled by HID first and then conveyed to
->>generic remotes layer that handles all remote controllers what ever the
->>lower layers (and does translate per remote not per ir receiver). Vendor
->>class should be avoided unless that's the only way to make it work
->>right. But using HID is not without problems either.
-> 
-> Almost all chipsets only provide IR via vendor class. I agree that using 
-> standard HID class is the better way for doing it.
-
-Yes, but look below.
-
->>Now with the two receivers that need the quirk. If they don't have
->>vendor class bulk endpoint for reading ir codes, then specific driver is
->>out anyway. However then changes to HID driver would be needed to make
->>the translate work. The quirk just makes them work as generic usb
->>keyboard with no remote specific translate. With afatech, driver loads
->>the translate table to the device, different for different remotes. I
->>don't know if one table could handle them all. Maybe this table should
->>be loaded from a user space file. Nor do I know how it is with other
->>receivers: can the table be loaded or is it fixed. In any case a generic
->>secondary per remote user configurable translate would be highly
->>desirable. And I don't mean lircd. This job is IMHO kernel level job and
->>lircd won't work here anyway. It does ir code to key code or function
->>translate not key code to key code translate. How nice it would be if
->>there would be a generic usb ir receiver class that all vendors used.
->>There seems to be no way to  make this well and clean.
-> 
-> 
-> The ir-core provides standard ways to replace the IR keycode and IR protocols.
-> The IR protocol change is already working with vendor class with em28xx driver.
-
-The thing is that remote controller trough HID layer does not provide IR 
-keycode but standard keyboard key code. And HID layer does not know that 
-it is a remote controller but sees it as an ordinary usb keyboard. The 
-question is that how can it tell the upper layer that it really is a 
-remote controller so that the event would end up to generic ir-core.
-
-Pekka
-
-> Cheers,
-> Mauro
+--
+Stephane Eranian  | EMEA Software Engineering
+Google France | 38 avenue de l'Opéra | 75002 Paris
+Tel : +33 (0) 1 42 68 53 00
+This email may be confidential or privileged. If you received this
+communication by mistake, please
+don't forward it to anyone else, please erase all copies and
+attachments, and please let me know that
+it went to the wrong person. Thanks
