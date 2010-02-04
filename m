@@ -1,278 +1,155 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758393Ab0BDTcg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 14:32:36 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:45451 "EHLO ogre.sisk.pl"
+	id S1758423Ab0BDTc7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 14:32:59 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48902 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758231Ab0BDTcb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 14:32:31 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC][PATCH] PM: disable nonboot cpus before suspending devices
-Date: Thu, 4 Feb 2010 20:33:01 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.33-rc6-rjw; KDE/4.3.5; x86_64; ; )
-Cc: Sebastian Ott <sebott@linux.vnet.ibm.com>,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-References: <alpine.LFD.2.00.1001221841490.2266@localhost> <20100203172147.2411966d.akpm@linux-foundation.org> <20100203174150.192a417a.akpm@linux-foundation.org>
-In-Reply-To: <20100203174150.192a417a.akpm@linux-foundation.org>
+	id S932355Ab0BDTcy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 14:32:54 -0500
+Date: Thu, 4 Feb 2010 20:32:32 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Alex Deucher <alexdeucher@gmail.com>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Dave Airlie <airlied@linux.ie>,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       dri-devel@lists.sf.net
+Subject: Re: hung bootup with "drm/radeon/kms: move radeon KMS on/off switch
+ out of staging."
+Message-ID: <20100204193232.GD6665@elte.hu>
+References: <20100204071705.GA28403@elte.hu>
+ <20100204164859.GA17878@srcf.ucam.org>
+ <20100204170826.GA16397@elte.hu>
+ <20100204173602.GA19855@srcf.ucam.org>
+ <20100204175445.GB27361@elte.hu>
+ <20100204175928.GA20595@srcf.ucam.org>
+ <20100204181218.GA6175@elte.hu>
+ <a728f9f91002041030o7c8d38edxe573bc0a1327d79@mail.gmail.com>
+ <20100204190649.GB6665@elte.hu>
+ <a728f9f91002041118m6415844fp1740f18fdc1c9757@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201002042033.01192.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a728f9f91002041118m6415844fp1740f18fdc1c9757@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 04 February 2010, Andrew Morton wrote:
-> On Wed, 3 Feb 2010 17:21:47 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
+
+* Alex Deucher <alexdeucher@gmail.com> wrote:
+
+> On Thu, Feb 4, 2010 at 2:06 PM, Ingo Molnar <mingo@elte.hu> wrote:
+> >
+> > * Alex Deucher <alexdeucher@gmail.com> wrote:
+> >
+> >> On Thu, Feb 4, 2010 at 1:12 PM, Ingo Molnar <mingo@elte.hu> wrote:
+> >> >
+> >> > * Matthew Garrett <mjg59@srcf.ucam.org> wrote:
+> >> >
+> >> >> On Thu, Feb 04, 2010 at 06:54:45PM +0100, Ingo Molnar wrote:
+> >> >>
+> >> >> > But you could claim that it's not a regression because 1) technically the
+> >> >> > code got introduced in drivers/staging/, and staging drivers are not on
+> >> >> > the regression list 2) the Kconfig value is default-off so it can only
+> >> >> > harm those who got lured by a new Kconfig value popping up in -rc7 in a
+> >> >> > well working driver they already have enabled.
+> >> >> >
+> >> >> > So the moving of driver functionality from drivers/staging/ to drivers/
+> >> >> > is a grey area it appears. Wouldnt it have been better to do this in the
+> >> >> > next merge window, as all other drivers do? It's not new hardware
+> >> >> > enablement either, it's feature enablement for an existing driver.
+> >> >>
+> >> >> The reason the option was in staging (as has been mentioned before) was
+> >> >> because the ABI wasn't felt to be stable enough. Upstream is now willing to
+> >> >> commit to that stability, so now seems as good a time to move it as any.
+> >> >> There's no code change and there's no default configuration change, so I
+> >> >> really can't see any way that it can be classed as a regression.
+> >> >
+> >> > But that argument in essence renders the regression policy meaningless for
+> >> > such code: just about any new driver feature under the sun could be shaped as
+> >> > a Kconfig option, introduced via a drivers/staging Kconfig entry, and then
+> >> > activated via a twoliner commit in a later -rc.
+> >> >
+> >> > IMHO the point of tracking regressions is to reduce the bugginess of the
+> >> > kernel and thus to help users, not to give ground for legalistic arguments.
+> >> >
+> >> > There _are_ common-sense exceptions from the regression rules, such as the
+> >> > introduction of a new piece of hardware that was previously unsupported
+> >> > (hence there's no expectation of stability) - but the tweaking of an
+> >> > existing, widely used driver (even if the new opion is default-off) hardly
+> >> > seems to qualify for that.
+> >> >
+> >>
+> >> This is a completely new driver. ?It's only part of the existing drm for
+> >> compatibility reasons. ?It requires an entirely different graphics stack
+> >> above it and works very differently from the old drm stack.
+> >
+> > Will the user know? IMHO what matters in the end is user expectation.
+> >
+> > Lets walk through what a current kernel tester of the drm/radeon driver sees
+> > when he types 'make oldconfig' after installing the (to-be-released) .33-rc7
+> > kernel. Firstly, the user with a brand-new distro already has this enabled:
+> >
+> > ?CONFIG_DRM_RADEON=y
+> >
+> > and knows the driver, and it performs adequately. Then in -rc7 he gets a new
+> > option:
+> >
+> > ?ATI Radeon (DRM_RADEON) [Y/n/?] y
+> > ? ?Enable modesetting on radeon by default (DRM_RADEON_KMS) [N/y/?] (NEW)
+> >
+> > The user might easily go: "Hey this is a driver i already have, and there's a
+> > new sub-option for this well-working driver. Sure, enable it, these kernel
+> > folks know what they are doing and i rarely see any crashes past -rc2
+> > kernels."
+> >
+> > Does this new option tell him what you just told me, that:
+> >
+> > ?> This is a completely new driver. ?It's only part of the existing drm for
+> > ?> compatibility reasons. ?It requires an entirely different graphics stack
+> > ?> above it and works very differently from the old drm stack.
+> >
+> > ?
+> >
+> > it doesnt. Even if he types '?', it tells:
+> >
+> > ?CONFIG_DRM_RADEON_KMS:
+> >
+> > ?Choose this option if you want kernel modesetting enabled by default,
+> > ?and you have a new enough userspace to support this. Running old
+> > ?userspaces with this enabled will cause pain.
+> >
+> > The user will likely go "cool I have a fresh distro with recent Xorg, lets
+> > try it".
+> >
 > 
-> > On Thu, 4 Feb 2010 01:50:26 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> > 
-> > > --- linux-2.6.orig/mm/page_alloc.c
-> > > +++ linux-2.6/mm/page_alloc.c
-> > > @@ -76,6 +76,30 @@ unsigned long totalreserve_pages __read_
-> > >  int percpu_pagelist_fraction;
-> > >  gfp_t gfp_allowed_mask __read_mostly = GFP_BOOT_MASK;
-> > >  
-> > > +/*
-> > > + * The following functions are used by the suspend/hibernate code to temporarily
-> > > + * change gfp_allowed_mask in order to avoid using I/O during memory allocations
-> > > + * while devices are suspended.  To avoid races with the suspend/hibernate code,
-> > > + * they should always be called with pm_mutex held (gfp_allowed_mask also should
-> > > + * only be modified with pm_mutex held, unless the suspend/hibernate code is
-> > > + * guaranteed not to run in parallel with that modification).
-> > > + */
-> > > +
-> > > +void set_gfp_allowed_mask(gfp_t mask)
-> > > +{
-> > > +	WARN_ON(!mutex_is_locked(&pm_mutex));
-> > > +	gfp_allowed_mask = mask;
-> > > +}
-> > > +
-> > > +gfp_t clear_gfp_allowed_mask(gfp_t mask)
-> > > +{
-> > > +	gfp_t ret = gfp_allowed_mask;
-> > > +
-> > > +	WARN_ON(!mutex_is_locked(&pm_mutex));
-> > > +	gfp_allowed_mask &= ~mask;
-> > > +	return ret;
-> > > +}
-> > 
-> > Maybe put an ifdef CONFIG_foo around these so they don't get included
-> > when they're unneeded?
-> > 
-> 
-> I guess this:
-> 
-> mm/built-in.o: In function `clear_gfp_allowed_mask':
-> : undefined reference to `pm_mutex'
-> mm/built-in.o: In function `set_gfp_allowed_mask':
-> : undefined reference to `pm_mutex'
-> 
-> kinda answers my question.
+> And if it crashes, he'll report a bug and we'll fix it.
 
-Sorry about that.  I tend to forget about test-compiling with CONFIG_PM unset.
+Nobody has reacted to my related boot hang bugreport yet - and it's detailed 
+and fully reproducible (so i can test any proposed fixes as well in short 
+order). I.e. my limited testing has triggered two separate bugs in the same 
+driver - and this will show up in -rc7.
 
-The one below shouldn't have this issue.
+It might be all OK and no-one else will see trouble. Or past patterns might 
+repeat themselves and i might simply be an early bird for trouble to come.
 
-Rafael
+My (oft repeated) point is that adding new sub-features to existing drivers 
+is not what we do in late -rc's: there's simply not enough time to shake out 
+bugs/regressions in them.
 
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: MM / PM: Force GFP_NOIO during suspend/hibernation and resume (rev. 3)
+We introduce new functionality to existing drivers in the merge window - in 
+the two weeks following a stable kernel's release.
 
-There are quite a few GFP_KERNEL memory allocations made during
-suspend/hibernation and resume that may cause the system to hang,
-because the I/O operations they depend on cannot be completed due to
-the underlying devices being suspended.
+In late -rc's we only try to fix regressions. Sometimes we make exceptions 
+for pragmatic reasons, but then we are straightforward about those reasons 
+and try to warn users about our zeal to help them with cool, new, 
+not-to-be-missed GPU functionality ;-)
 
-Mitigate this problem by clearing the __GFP_IO and __GFP_FS bits in
-gfp_allowed_mask before suspend/hibernation and restoring the
-original values of these bits in gfp_allowed_mask durig the
-subsequent resume.
+Thanks,
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Reported-by: Maxim Levitsky <maximlevitsky@gmail.com>
----
- include/linux/gfp.h      |    7 +++----
- init/main.c              |    2 +-
- kernel/power/hibernate.c |    9 +++++++++
- kernel/power/suspend.c   |    3 +++
- mm/page_alloc.c          |   26 ++++++++++++++++++++++++++
- 5 files changed, 42 insertions(+), 5 deletions(-)
-
-Index: linux-2.6/include/linux/gfp.h
-===================================================================
---- linux-2.6.orig/include/linux/gfp.h
-+++ linux-2.6/include/linux/gfp.h
-@@ -83,6 +83,7 @@ struct vm_area_struct;
- #define GFP_HIGHUSER_MOVABLE	(__GFP_WAIT | __GFP_IO | __GFP_FS | \
- 				 __GFP_HARDWALL | __GFP_HIGHMEM | \
- 				 __GFP_MOVABLE)
-+#define GFP_IOFS	(__GFP_IO | __GFP_FS)
- 
- #ifdef CONFIG_NUMA
- #define GFP_THISNODE	(__GFP_THISNODE | __GFP_NOWARN | __GFP_NORETRY)
-@@ -337,9 +338,7 @@ void drain_local_pages(void *dummy);
- 
- extern gfp_t gfp_allowed_mask;
- 
--static inline void set_gfp_allowed_mask(gfp_t mask)
--{
--	gfp_allowed_mask = mask;
--}
-+extern void set_gfp_allowed_mask(gfp_t mask);
-+extern gfp_t clear_gfp_allowed_mask(gfp_t mask);
- 
- #endif /* __LINUX_GFP_H */
-Index: linux-2.6/init/main.c
-===================================================================
---- linux-2.6.orig/init/main.c
-+++ linux-2.6/init/main.c
-@@ -601,7 +601,7 @@ asmlinkage void __init start_kernel(void
- 	local_irq_enable();
- 
- 	/* Interrupts are enabled now so all GFP allocations are safe. */
--	set_gfp_allowed_mask(__GFP_BITS_MASK);
-+	gfp_allowed_mask = __GFP_BITS_MASK;
- 
- 	kmem_cache_init_late();
- 
-Index: linux-2.6/mm/page_alloc.c
-===================================================================
---- linux-2.6.orig/mm/page_alloc.c
-+++ linux-2.6/mm/page_alloc.c
-@@ -76,6 +76,32 @@ unsigned long totalreserve_pages __read_
- int percpu_pagelist_fraction;
- gfp_t gfp_allowed_mask __read_mostly = GFP_BOOT_MASK;
- 
-+#ifdef CONFIG_PM_SLEEP
-+/*
-+ * The following functions are used by the suspend/hibernate code to temporarily
-+ * change gfp_allowed_mask in order to avoid using I/O during memory allocations
-+ * while devices are suspended.  To avoid races with the suspend/hibernate code,
-+ * they should always be called with pm_mutex held (gfp_allowed_mask also should
-+ * only be modified with pm_mutex held, unless the suspend/hibernate code is
-+ * guaranteed not to run in parallel with that modification).
-+ */
-+
-+void set_gfp_allowed_mask(gfp_t mask)
-+{
-+	WARN_ON(!mutex_is_locked(&pm_mutex));
-+	gfp_allowed_mask = mask;
-+}
-+
-+gfp_t clear_gfp_allowed_mask(gfp_t mask)
-+{
-+	gfp_t ret = gfp_allowed_mask;
-+
-+	WARN_ON(!mutex_is_locked(&pm_mutex));
-+	gfp_allowed_mask &= ~mask;
-+	return ret;
-+}
-+#endif /* CONFIG_PM_SLEEP */
-+
- #ifdef CONFIG_HUGETLB_PAGE_SIZE_VARIABLE
- int pageblock_order __read_mostly;
- #endif
-Index: linux-2.6/kernel/power/hibernate.c
-===================================================================
---- linux-2.6.orig/kernel/power/hibernate.c
-+++ linux-2.6/kernel/power/hibernate.c
-@@ -323,6 +323,7 @@ static int create_image(int platform_mod
- int hibernation_snapshot(int platform_mode)
- {
- 	int error;
-+	gfp_t saved_mask;
- 
- 	error = platform_begin(platform_mode);
- 	if (error)
-@@ -334,6 +335,7 @@ int hibernation_snapshot(int platform_mo
- 		goto Close;
- 
- 	suspend_console();
-+	saved_mask = clear_gfp_allowed_mask(GFP_IOFS);
- 	error = dpm_suspend_start(PMSG_FREEZE);
- 	if (error)
- 		goto Recover_platform;
-@@ -351,6 +353,7 @@ int hibernation_snapshot(int platform_mo
- 
- 	dpm_resume_end(in_suspend ?
- 		(error ? PMSG_RECOVER : PMSG_THAW) : PMSG_RESTORE);
-+	set_gfp_allowed_mask(saved_mask);
- 	resume_console();
-  Close:
- 	platform_end(platform_mode);
-@@ -445,14 +448,17 @@ static int resume_target_kernel(bool pla
- int hibernation_restore(int platform_mode)
- {
- 	int error;
-+	gfp_t saved_mask;
- 
- 	pm_prepare_console();
- 	suspend_console();
-+	saved_mask = clear_gfp_allowed_mask(GFP_IOFS);
- 	error = dpm_suspend_start(PMSG_QUIESCE);
- 	if (!error) {
- 		error = resume_target_kernel(platform_mode);
- 		dpm_resume_end(PMSG_RECOVER);
- 	}
-+	set_gfp_allowed_mask(saved_mask);
- 	resume_console();
- 	pm_restore_console();
- 	return error;
-@@ -466,6 +472,7 @@ int hibernation_restore(int platform_mod
- int hibernation_platform_enter(void)
- {
- 	int error;
-+	gfp_t saved_mask;
- 
- 	if (!hibernation_ops)
- 		return -ENOSYS;
-@@ -481,6 +488,7 @@ int hibernation_platform_enter(void)
- 
- 	entering_platform_hibernation = true;
- 	suspend_console();
-+	saved_mask = clear_gfp_allowed_mask(GFP_IOFS);
- 	error = dpm_suspend_start(PMSG_HIBERNATE);
- 	if (error) {
- 		if (hibernation_ops->recover)
-@@ -518,6 +526,7 @@ int hibernation_platform_enter(void)
-  Resume_devices:
- 	entering_platform_hibernation = false;
- 	dpm_resume_end(PMSG_RESTORE);
-+	set_gfp_allowed_mask(saved_mask);
- 	resume_console();
- 
-  Close:
-Index: linux-2.6/kernel/power/suspend.c
-===================================================================
---- linux-2.6.orig/kernel/power/suspend.c
-+++ linux-2.6/kernel/power/suspend.c
-@@ -198,6 +198,7 @@ static int suspend_enter(suspend_state_t
- int suspend_devices_and_enter(suspend_state_t state)
- {
- 	int error;
-+	gfp_t saved_mask;
- 
- 	if (!suspend_ops)
- 		return -ENOSYS;
-@@ -208,6 +209,7 @@ int suspend_devices_and_enter(suspend_st
- 			goto Close;
- 	}
- 	suspend_console();
-+	saved_mask = clear_gfp_allowed_mask(GFP_IOFS);
- 	suspend_test_start();
- 	error = dpm_suspend_start(PMSG_SUSPEND);
- 	if (error) {
-@@ -224,6 +226,7 @@ int suspend_devices_and_enter(suspend_st
- 	suspend_test_start();
- 	dpm_resume_end(PMSG_RESUME);
- 	suspend_test_finish("resume devices");
-+	set_gfp_allowed_mask(saved_mask);
- 	resume_console();
-  Close:
- 	if (suspend_ops->end)
+	Ingo
