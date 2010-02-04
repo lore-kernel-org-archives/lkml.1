@@ -1,55 +1,42 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757544Ab0BDSdd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 13:33:33 -0500
-Received: from mail-fx0-f220.google.com ([209.85.220.220]:43499 "EHLO
-	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757282Ab0BDSdb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 13:33:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=h8DC1l8ZOa8cJ3smJF4dR0eHz6ItYz7gX8bmIGQkOgprFtUbhRa74Q2oWWsOp39BsI
-         11L67gHzjdEKon2gyZxz+B5eK62mUT7BWpLno8Pu9F0f8KVRTvXypDbgD3x8Cz2DxY5u
-         McVdEMTgj8gnDD8Qxvh0sCSGmvm9umSKQa3AM=
-Message-ID: <4B6B12F2.2080102@gmail.com>
-Date: Thu, 04 Feb 2010 19:33:22 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.7) Gecko/20100111 SUSE/3.0.1-9.1 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-CC: Jiri Kosina <jkosina@suse.cz>, Antti Palosaari <crope@iki.fi>,
-       mchehab@infradead.org, linux-kernel@vger.kernel.org,
-       Mauro Carvalho Chehab <mchehab@redhat.com>, linux-media@vger.kernel.org,
-       Pekka Sarnila <sarnila@adit.fi>, linux-input@vger.kernel.org
-Subject: Re: [PATCH 1/1] media: dvb-usb/af9015, fix disconnection crashes
-References: <1264007972-6261-1-git-send-email-jslaby@suse.cz> <4B5CDB53.6030009@iki.fi> <4B5D6098.7010700@gmail.com> <4B5DDDFB.5020907@iki.fi> <alpine.LRH.2.00.1001261406010.15694@twin.jikos.cz> <4B6AA211.1060707@gmail.com> <20100204181404.GC10965@core.coreip.homeip.net>
-In-Reply-To: <20100204181404.GC10965@core.coreip.homeip.net>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1757566Ab0BDShT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 13:37:19 -0500
+Received: from poutre.nerim.net ([62.4.16.124]:63071 "EHLO poutre.nerim.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753611Ab0BDShP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 13:37:15 -0500
+Date: Thu, 4 Feb 2010 19:37:12 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Steven King <sfking@fdwdc.com>
+Cc: lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] hwmon: driver for TI tmp102 temperature sensor
+Message-ID: <20100204193712.22e8b6e7@hyperion.delvare>
+In-Reply-To: <201002031723.49976.sfking@fdwdc.com>
+References: <201002031723.49976.sfking@fdwdc.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/04/2010 07:14 PM, Dmitry Torokhov wrote:
-> On Thu, Feb 04, 2010 at 11:31:45AM +0100, Jiri Slaby wrote:
->  +
->> +static int dvb_event(struct hid_device *hdev, struct hid_field *field,
->> +		struct hid_usage *usage, __s32 value)
->> +{
->> +	/* we won't get a "key up" event */
->> +	if (value) {
->> +		input_event(field->hidinput->input, usage->type, usage->code, 1);
->> +		input_event(field->hidinput->input, usage->type, usage->code, 0);
-> 
-> Do not ever forget input_sync(), you need 2 of them here.
-> 
-> With the latest changes to evdev, if you are using SIGIO you won't get
-> wioken up until EV_SYN/SYN_REPORT.
+Hi Steven,
 
-HID layer syncs on its own. So the second is not needed. Why is needed
-the first?
+On Wed, 3 Feb 2010 17:23:49 -0800, Steven King wrote:
+> The TI TMP102 is similar to the lm75.  It differs from the lm75 by having a 16 bit conf register
+> and the temp registers have a minimum resolution of 12bits; the extended conf register
+> can select 13 bit resolution (which this driver does) and also change the update rate (which this
+> driver currently doesn't use).
+> 
+> Signed-off-by: Steven King <sfking@fdwdc.com>
+> ---
+> 
+> Driver for the TI TMP102.
 
-I.e. should there be one also in dvb_usb_read_remote_control?
+Could you please send a dump of your TMP102 chip, using i2cdump in word
+mode?
+
+-- 
+Jean Delvare
