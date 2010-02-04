@@ -1,24 +1,24 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933470Ab0BDRXV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 12:23:21 -0500
-Received: from kroah.org ([198.145.64.141]:34984 "EHLO coco.kroah.org"
+	id S933460Ab0BDRXS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 12:23:18 -0500
+Received: from kroah.org ([198.145.64.141]:34977 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933384Ab0BDRWd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 12:22:33 -0500
+	id S933381Ab0BDRWc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 12:22:32 -0500
 X-Mailbox-Line: From linux@linux.site Thu Feb  4 09:15:28 2010
-Message-Id: <20100204171528.299088377@linux.site>
+Message-Id: <20100204171527.690221668@linux.site>
 User-Agent: quilt/0.47-14.9
-Date: Thu, 04 Feb 2010 09:12:42 -0800
+Date: Thu, 04 Feb 2010 09:12:41 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>,
-       Kay Sievers <kay.sievers@vrfy.org>, Peter Osterlund <petero2@telia.com>,
-       Al Viro <viro@zeniv.linux.org.uk>, Jens Axboe <jens.axboe@oracle.com>,
+       =?ISO-8859-15?q?Richard=20R=C3=B6jfors?= 
+	<richard.rojfors@pelagicore.com>,
+       Peter Korsgaard <jacmet@sunsite.dk>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [71/74] pktcdvd: removing device does not remove its sysfs dir
+Subject: [70/74] uartlite: fix crash when using as console
 In-Reply-To: <20100204171850.GA16539@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -28,40 +28,94 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+From: Richard Röjfors <richard.rojfors@pelagicore.com>
 
-commit ca0bf64d99f6e3f6e2fe2585e52a0ac57354beac upstream.
+commit 03eac7bb882a75e6ee5705288f7ec36ad2e7d0d5 upstream.
 
-This is the counterpart to cba767175becadc5c4016cceb7bfdd2c7fe722f4
-("pktcdvd: remove broken dev_t export of class devices").  Device is not
-registered using dev_t, so it should not be destroyed using device_destroy
-which looks up the device by dev_t.  This will fail and adding the device
-again will fail with the "duplicate name" error.  This is fixed using
-device_unregister instead of device_destroy.
+Move the ulite_console_setup to the .devinit section since it might be
+called on probe, which is in devinit.  Fixes the crash below where the
+uartlite hw is probed after the .init section is freed from the kernel.
 
-Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-Cc: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Peter Osterlund <petero2@telia.com>
-Cc: Al Viro <viro@zeniv.linux.org.uk>
-Cc: Jens Axboe <jens.axboe@oracle.com>
+uartlite: ttyUL0 at MMIO 0xc8000100 (irq = 30) is a uartlite
+BUG: unable to handle kernel NULL pointer dereference at (null)
+IP: [<c176720e>] ulite_console_setup+0x6f/0xa8
+*pdpt = 0000000036fb0001 *pde = 0000000000000000
+Oops: 0000 [#1] PREEMPT SMP
+last sysfs file: /sys/devices/pci0000:00/0000:00:1f.1/host0/uevent
+Modules linked in: puffin(+) serio_raw
+
+Pid: 151, comm: modprobe Not tainted (2.6.31.5-1.0.b1-b1 #1) POULSBO
+EIP: 0060:[<c176720e>] EFLAGS: 00010246 CPU: 0
+EIP is at ulite_console_setup+0x6f/0xa8
+EAX: c16ec824 EBX: c16ec824 ECX: c176719f EDX: 00000000
+ESI: 00000000 EDI: c17b42c4 EBP: f6fd1cf0 ESP: f6fd1cd8
+ DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+Process modprobe (pid: 151, ti=f6fd0000 task=f6fa1020 task.ti=f6fd0000)
+Stack:
+ c1031f51 00000000 00000000 00000246 c182237c f7742000 f6fd1d5c c11fd316
+<0> c16ec85c f77420d4 0000001e 00000000 00000000 c1633e78 4f494d4d 63783020
+<0> 30303038 00303031 f6fd1d3c c10e0786 f6fd1d48 00000000 f6fd1d48 00000000
+Call Trace:
+ [<c1031f51>] ? register_console+0xf6/0x1fc
+ [<c11fd316>] ? uart_add_one_port+0x237/0x2bb
+ [<c10e0786>] ? sysfs_add_one+0x13/0xd3
+ [<c10e142f>] ? sysfs_do_create_link+0xba/0xfc
+ [<c146f200>] ? ulite_probe+0x198/0x1eb
+ [<c12064ee>] ? platform_drv_probe+0xc/0xe
+ [<c120597b>] ? driver_probe_device+0x79/0x105
+ [<c1205a8e>] ? __device_attach+0x28/0x30
+ [<c120511f>] ? bus_for_each_drv+0x3d/0x67
+ [<c1205af9>] ? device_attach+0x44/0x58
+ [<c1205a66>] ? __device_attach+0x0/0x30
+ [<c1204fb8>] ? bus_probe_device+0x1f/0x34
+ [<c1203e68>] ? device_add+0x385/0x4c0
+ [<c148491f>] ? _write_unlock+0x8/0x1f
+ [<c1206aac>] ? platform_device_add+0xd9/0x11c
+ [<c120c685>] ? mfd_add_devices+0x165/0x1bc
+ [<f831b378>] ? puffin_probe+0x2d0/0x390 [puffin]
+ [<c11a08ef>] ? pci_match_device+0xa0/0xa7
+ [<c11a07bc>] ? local_pci_probe+0xe/0x10
+ [<c11a11db>] ? pci_device_probe+0x43/0x66
+ [<c120597b>] ? driver_probe_device+0x79/0x105
+ [<c1205a4a>] ? __driver_attach+0x43/0x5f
+ [<c120535d>] ? bus_for_each_dev+0x3d/0x67
+ [<c1205852>] ? driver_attach+0x14/0x16
+ [<c1205a07>] ? __driver_attach+0x0/0x5f
+ [<c1204dea>] ? bus_add_driver+0xf9/0x220
+ [<c1205c8f>] ? driver_register+0x8b/0xeb
+ [<c11a1518>] ? __pci_register_driver+0x43/0x9f
+ [<c10477ef>] ? __blocking_notifier_call_chain+0x40/0x4c
+ [<f831f000>] ? puffin_init+0x0/0x48 [puffin]
+ [<f831f017>] ? puffin_init+0x17/0x48 [puffin]
+ [<c1001139>] ? do_one_initcall+0x4c/0x131
+ [<c105607b>] ? sys_init_module+0xa7/0x1b7
+ [<c1002a61>] ? syscall_call+0x7/0xb
+ Code: 6e 74 00 00 00 92 33 00 00 18 00 0e 01 73 79 6e 63 65 2d 72 65 67 69 73 74 72 79 0c 00 49 32
+00 00 14 00 09 01 61 6c 73 61 2d 69 <6e> 66 6f 00 00 00 42 37 00 00 10 00 07 01 6b 69 6c 6c 61 6c 6c
+EIP: [<c176720e>] ulite_console_setup+0x6f/0xa8 SS:ESP 0068:f6fd1cd8
+CR2: 0000000000000000
+
+Signed-off-by: Richard Röjfors <richard.rojfors@pelagicore.com>
+Acked-by: Peter Korsgaard <jacmet@sunsite.dk>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/block/pktcdvd.c |    2 +-
+ drivers/serial/uartlite.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/block/pktcdvd.c
-+++ b/drivers/block/pktcdvd.c
-@@ -322,7 +322,7 @@ static void pkt_sysfs_dev_remove(struct
- 	pkt_kobj_remove(pd->kobj_stat);
- 	pkt_kobj_remove(pd->kobj_wqueue);
- 	if (class_pktcdvd)
--		device_destroy(class_pktcdvd, pd->pkt_dev);
-+		device_unregister(pd->dev);
+--- a/drivers/serial/uartlite.c
++++ b/drivers/serial/uartlite.c
+@@ -394,7 +394,7 @@ static void ulite_console_write(struct c
+ 		spin_unlock_irqrestore(&port->lock, flags);
  }
  
- 
+-static int __init ulite_console_setup(struct console *co, char *options)
++static int __devinit ulite_console_setup(struct console *co, char *options)
+ {
+ 	struct uart_port *port;
+ 	int baud = 9600;
 
 
