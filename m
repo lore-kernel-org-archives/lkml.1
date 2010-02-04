@@ -1,21 +1,23 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756556Ab0BDRid (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 12:38:33 -0500
-Received: from kroah.org ([198.145.64.141]:34569 "EHLO coco.kroah.org"
+	id S1752080Ab0BDRjF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 12:39:05 -0500
+Received: from kroah.org ([198.145.64.141]:34557 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758482Ab0BDRV1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 12:21:27 -0500
-X-Mailbox-Line: From linux@linux.site Thu Feb  4 09:14:48 2010
-Message-Id: <20100204171448.330762047@linux.site>
+	id S1758435Ab0BDRVZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 12:21:25 -0500
+X-Mailbox-Line: From linux@linux.site Thu Feb  4 09:14:47 2010
+Message-Id: <20100204171447.247021743@linux.site>
 User-Agent: quilt/0.47-14.9
-Date: Thu, 04 Feb 2010 09:11:34 -0800
+Date: Thu, 04 Feb 2010 09:11:32 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       James Bottomley <James.Bottomley@suse.de>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [03/74] mm: add new read_cache_page_gfp() helper function
+Subject: [01/74] [SCSI] scsi_lib: Fix bug in completion of bidi commands
 In-Reply-To: <20100204171850.GA16539@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -25,189 +27,53 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Linus Torvalds <torvalds@linux-foundation.org>
+From: Boaz Harrosh <bharrosh@panasas.com>
 
-commit 0531b2aac59c2296570ac52bfc032ef2ace7d5e1 upstream.
+commit 63c43b0ec1765b74c734d465ba6345ef4f434df8 upstream.
 
-It's a simplified 'read_cache_page()' which takes a page allocation
-flag, so that different paths can control how aggressive the memory
-allocations are that populate a address space.
+Because of the terrible structuring of scsi-bidi-commands
+it breaks some of the life time rules of a scsi-command.
+It is now not allowed to free up the block-request before
+cleanup and partial deallocation of the scsi-command. (Which
+is not so for none bidi commands)
 
-In particular, the intel GPU object mapping code wants to be able to do
-a certain amount of own internal memory management by automatically
-shrinking the address space when memory starts getting tight.  This
-allows it to dynamically use different memory allocation policies on a
-per-allocation basis, rather than depend on the (static) address space
-gfp policy.
+The right fix to this problem would be to make bidi command
+a first citizen by allocating a scsi_sdb pointer at scsi command
+just like cmd->prot_sdb. The bidi sdb should be allocated/deallocated
+as part of the get/put_command (Again like the prot_sdb) and the
+current decoupling of scsi_cmnd and blk-request should be kept.
 
-The actual new function is a one-liner, but re-organizing the helper
-functions to the point where you can do this with a single line of code
-is what most of the patch is all about.
+For now make sure scsi_release_buffers() is called before the
+call to blk_end_request_all() which might cause the suicide of
+the block requests. At best the leak of bidi buffers, at worse
+a crash, as there is a race between the existence of the bidi_request
+and the free of the associated bidi_sdb.
 
-Tested-by: Chris Wilson <chris@chris-wilson.co.uk>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+The reason this was never hit before is because only OSD has the potential
+of doing asynchronous bidi commands. (So does bsg but it is never used)
+And OSD clients just happen to do all their bidi commands synchronously, up
+until recently.
+
+Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
+Signed-off-by: James Bottomley <James.Bottomley@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/linux/pagemap.h |    2 
- mm/filemap.c            |  100 ++++++++++++++++++++++++++++++++----------------
- 2 files changed, 70 insertions(+), 32 deletions(-)
+ drivers/scsi/scsi_lib.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/include/linux/pagemap.h
-+++ b/include/linux/pagemap.h
-@@ -253,6 +253,8 @@ extern struct page * read_cache_page_asy
- extern struct page * read_cache_page(struct address_space *mapping,
- 				pgoff_t index, filler_t *filler,
- 				void *data);
-+extern struct page * read_cache_page_gfp(struct address_space *mapping,
-+				pgoff_t index, gfp_t gfp_mask);
- extern int read_cache_pages(struct address_space *mapping,
- 		struct list_head *pages, filler_t *filler, void *data);
+--- a/drivers/scsi/scsi_lib.c
++++ b/drivers/scsi/scsi_lib.c
+@@ -749,9 +749,9 @@ void scsi_io_completion(struct scsi_cmnd
+ 			 */
+ 			req->next_rq->resid_len = scsi_in(cmd)->resid;
  
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -1655,14 +1655,15 @@ EXPORT_SYMBOL(generic_file_readonly_mmap
- static struct page *__read_cache_page(struct address_space *mapping,
- 				pgoff_t index,
- 				int (*filler)(void *,struct page*),
--				void *data)
-+				void *data,
-+				gfp_t gfp)
- {
- 	struct page *page;
- 	int err;
- repeat:
- 	page = find_get_page(mapping, index);
- 	if (!page) {
--		page = page_cache_alloc_cold(mapping);
-+		page = __page_cache_alloc(gfp | __GFP_COLD);
- 		if (!page)
- 			return ERR_PTR(-ENOMEM);
- 		err = add_to_page_cache_lru(page, mapping, index, GFP_KERNEL);
-@@ -1682,31 +1683,18 @@ repeat:
- 	return page;
- }
++			scsi_release_buffers(cmd);
+ 			blk_end_request_all(req, 0);
  
--/**
-- * read_cache_page_async - read into page cache, fill it if needed
-- * @mapping:	the page's address_space
-- * @index:	the page index
-- * @filler:	function to perform the read
-- * @data:	destination for read data
-- *
-- * Same as read_cache_page, but don't wait for page to become unlocked
-- * after submitting it to the filler.
-- *
-- * Read into the page cache. If a page already exists, and PageUptodate() is
-- * not set, try to fill the page but don't wait for it to become unlocked.
-- *
-- * If the page does not get brought uptodate, return -EIO.
-- */
--struct page *read_cache_page_async(struct address_space *mapping,
-+static struct page *do_read_cache_page(struct address_space *mapping,
- 				pgoff_t index,
- 				int (*filler)(void *,struct page*),
--				void *data)
-+				void *data,
-+				gfp_t gfp)
-+
- {
- 	struct page *page;
- 	int err;
- 
- retry:
--	page = __read_cache_page(mapping, index, filler, data);
-+	page = __read_cache_page(mapping, index, filler, data, gfp);
- 	if (IS_ERR(page))
- 		return page;
- 	if (PageUptodate(page))
-@@ -1731,8 +1719,67 @@ out:
- 	mark_page_accessed(page);
- 	return page;
- }
-+
-+/**
-+ * read_cache_page_async - read into page cache, fill it if needed
-+ * @mapping:	the page's address_space
-+ * @index:	the page index
-+ * @filler:	function to perform the read
-+ * @data:	destination for read data
-+ *
-+ * Same as read_cache_page, but don't wait for page to become unlocked
-+ * after submitting it to the filler.
-+ *
-+ * Read into the page cache. If a page already exists, and PageUptodate() is
-+ * not set, try to fill the page but don't wait for it to become unlocked.
-+ *
-+ * If the page does not get brought uptodate, return -EIO.
-+ */
-+struct page *read_cache_page_async(struct address_space *mapping,
-+				pgoff_t index,
-+				int (*filler)(void *,struct page*),
-+				void *data)
-+{
-+	return do_read_cache_page(mapping, index, filler, data, mapping_gfp_mask(mapping));
-+}
- EXPORT_SYMBOL(read_cache_page_async);
- 
-+static struct page *wait_on_page_read(struct page *page)
-+{
-+	if (!IS_ERR(page)) {
-+		wait_on_page_locked(page);
-+		if (!PageUptodate(page)) {
-+			page_cache_release(page);
-+			page = ERR_PTR(-EIO);
-+		}
-+	}
-+	return page;
-+}
-+
-+/**
-+ * read_cache_page_gfp - read into page cache, using specified page allocation flags.
-+ * @mapping:	the page's address_space
-+ * @index:	the page index
-+ * @gfp:	the page allocator flags to use if allocating
-+ *
-+ * This is the same as "read_mapping_page(mapping, index, NULL)", but with
-+ * any new page allocations done using the specified allocation flags. Note
-+ * that the Radix tree operations will still use GFP_KERNEL, so you can't
-+ * expect to do this atomically or anything like that - but you can pass in
-+ * other page requirements.
-+ *
-+ * If the page does not get brought uptodate, return -EIO.
-+ */
-+struct page *read_cache_page_gfp(struct address_space *mapping,
-+				pgoff_t index,
-+				gfp_t gfp)
-+{
-+	filler_t *filler = (filler_t *)mapping->a_ops->readpage;
-+
-+	return wait_on_page_read(do_read_cache_page(mapping, index, filler, NULL, gfp));
-+}
-+EXPORT_SYMBOL(read_cache_page_gfp);
-+
- /**
-  * read_cache_page - read into page cache, fill it if needed
-  * @mapping:	the page's address_space
-@@ -1750,18 +1797,7 @@ struct page *read_cache_page(struct addr
- 				int (*filler)(void *,struct page*),
- 				void *data)
- {
--	struct page *page;
--
--	page = read_cache_page_async(mapping, index, filler, data);
--	if (IS_ERR(page))
--		goto out;
--	wait_on_page_locked(page);
--	if (!PageUptodate(page)) {
--		page_cache_release(page);
--		page = ERR_PTR(-EIO);
--	}
-- out:
--	return page;
-+	return wait_on_page_read(read_cache_page_async(mapping, index, filler, data));
- }
- EXPORT_SYMBOL(read_cache_page);
- 
+-			scsi_release_buffers(cmd);
+ 			scsi_next_command(cmd);
+ 			return;
+ 		}
 
 
