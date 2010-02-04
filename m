@@ -1,144 +1,182 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932523Ab0BEIwB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 03:52:01 -0500
-Received: from smtp1.entryit.no ([212.4.42.179]:30054 "EHLO smtp1.entryit.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932229Ab0BEIwA convert rfc822-to-8bit (ORCPT
+	id S932719Ab0BEIz3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 03:55:29 -0500
+Received: from business.midphase.com ([67.213.211.48]:55160 "EHLO
+	business.midphase.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932646Ab0BEIz1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 03:52:00 -0500
-From: Eirik Aanonsen <EAA@wprmedical.com>
-To: Greg KH <greg@kroah.com>
-CC: "kernel@avr32linux.org" <kernel@avr32linux.org>,
-       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Fri, 5 Feb 2010 09:49:25 +0100
-Subject: RE: [PATCH 1/1] atmel uaba : Adding invert vbus_pin
-Thread-Topic: [PATCH 1/1] atmel uaba : Adding invert vbus_pin
-Thread-Index: AcqfpEybfFhFKupAQX6EKt+48WD2bgGm4FRQ
-Message-ID: <B5E0EDE940845B429B7ECCE186529F2C065D09FB89@dware2702>
-References: <B5E0EDE940845B429B7ECCE186529F2C0641D177FD@dware2702>
- <20100115185457.GG12146@kroah.com>
- <B5E0EDE940845B429B7ECCE186529F2C0641D181F7@dware2702>
- <20100119044912.GB10262@kroah.com>
- <B5E0EDE940845B429B7ECCE186529F2C0641D18303@dware2702>
- <20100127224053.GB25655@kroah.com>
-In-Reply-To: <20100127224053.GB25655@kroah.com>
-Accept-Language: nb-NO
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: nb-NO
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	Fri, 5 Feb 2010 03:55:27 -0500
+X-Greylist: delayed 46679 seconds by postgrey-1.27 at vger.kernel.org; Fri, 05 Feb 2010 03:55:27 EST
+Subject: [PATCH] Staging: rtl8192e: fix spacing style issues in
+ r8180_93cx6.c
+From: Tim Schofield <tim@weberpafrica.com>
+To: gregkh@suse.de
+Cc: devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 04 Feb 2010 19:57:09 +0000
+Message-ID: <1265313429.29197.3.camel@aglovale>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - business.midphase.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - weberpafrica.com
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-...
-> 
-> The patch below is somehow corrupted, and I couldn't figure out why.
-> 
-> Care to regenerate it and send it again?
-> 
-> Sorry for the delay,
-> 
-> greg k-h
+>From ffe4ef649fc0bcd553d8901492a5385a42be585a Mon Sep 17 00:00:00 2001
+From: Tim Schofield <tim@weberpafrica.com>
+Date: Thu, 4 Feb 2010 18:28:48 +0000
+Subject: [PATCH] Staging: rtl8192e: fix spacing style issues in r8180_93cx6.c
+ This is a patch to the r8180_93cx6.c file that fixes up spacing issue warnings found by the checkpatch.pl tool
+ Signed-off-by: Tim Schofield <tim@weberpafrica.com>
 
-Hi
-
-Trying again
-
-Eirik
-
-
-
-Adding vbus_pin_inverted so that the usb detect pin can be active high or low depending on HW implementation
- also replaced the gpio_get_value(udc->vbus_pin); with a call to vbus_is_present(udc);
-This allows the driver to be loaded and save about 0,15W on the consumption.
-
-Signed-off-by: Eirik Aanonsen <eaa@wprmedical.com>
 ---
- arch/avr32/mach-at32ap/at32ap700x.c |    7 +++++--
- drivers/usb/gadget/atmel_usba_udc.c |    5 +++--
- drivers/usb/gadget/atmel_usba_udc.h |    1 +
- include/linux/usb/atmel_usba_udc.h  |    1 +
- 4 files changed, 10 insertions(+), 4 deletions(-)
+ drivers/staging/rtl8192e/r8180_93cx6.c |   63 ++++++++++++++++----------------
+ 1 files changed, 32 insertions(+), 31 deletions(-)
 
-diff --git a/arch/avr32/mach-at32ap/at32ap700x.c b/arch/avr32/mach-at32ap/at32ap700x.c
-index 1aa1ea5..83d55f0 100644
---- a/arch/avr32/mach-at32ap/at32ap700x.c
-+++ b/arch/avr32/mach-at32ap/at32ap700x.c
-@@ -1767,10 +1767,13 @@ at32_add_device_usba(unsigned int id, struct usba_platform_data *data)
- 					  ARRAY_SIZE(usba0_resource)))
- 		goto out_free_pdev;
+diff --git a/drivers/staging/rtl8192e/r8180_93cx6.c b/drivers/staging/rtl8192e/r8180_93cx6.c
+index 79f7a0f..262ed5f 100644
+--- a/drivers/staging/rtl8192e/r8180_93cx6.c
++++ b/drivers/staging/rtl8192e/r8180_93cx6.c
+@@ -22,7 +22,7 @@
  
--	if (data)
-+	if (data) {
- 		usba_data.pdata.vbus_pin = data->vbus_pin;
--	else
-+		usba_data.pdata.vbus_pin_inverted = data->vbus_pin_inverted;
-+	} else {
- 		usba_data.pdata.vbus_pin = -EINVAL;
-+		usba_data.pdata.vbus_pin_inverted = -EINVAL;
-+	}
- 
- 	data = &usba_data.pdata;
- 	data->num_ep = ARRAY_SIZE(at32_usba_ep);
-diff --git a/drivers/usb/gadget/atmel_usba_udc.c b/drivers/usb/gadget/atmel_usba_udc.c
-index 4e970cf..93344d7 100644
---- a/drivers/usb/gadget/atmel_usba_udc.c
-+++ b/drivers/usb/gadget/atmel_usba_udc.c
-@@ -320,7 +320,7 @@ static inline void usba_cleanup_debugfs(struct usba_udc *udc)
- static int vbus_is_present(struct usba_udc *udc)
+ static void eprom_cs(struct net_device *dev, short bit)
  {
- 	if (gpio_is_valid(udc->vbus_pin))
--		return gpio_get_value(udc->vbus_pin);
-+		return gpio_get_value(udc->vbus_pin) ^ udc->vbus_pin_inverted;
+-	if(bit)
++	if (bit)
+ 		write_nic_byte(dev, EPROM_CMD,
+ 			       (1<<EPROM_CS_SHIFT) | \
+ 			       read_nic_byte(dev, EPROM_CMD)); //enable EPROM
+@@ -38,23 +38,23 @@ static void eprom_cs(struct net_device *dev, short bit)
+ static void eprom_ck_cycle(struct net_device *dev)
+ {
+ 	write_nic_byte(dev, EPROM_CMD,
+-		       (1<<EPROM_CK_SHIFT) | read_nic_byte(dev,EPROM_CMD));
++		       (1<<EPROM_CK_SHIFT) | read_nic_byte(dev, EPROM_CMD));
+ 	force_pci_posting(dev);
+ 	udelay(EPROM_DELAY);
+ 	write_nic_byte(dev, EPROM_CMD,
+-		       read_nic_byte(dev, EPROM_CMD) &~ (1<<EPROM_CK_SHIFT));
++		       read_nic_byte(dev, EPROM_CMD) & ~(1<<EPROM_CK_SHIFT));
+ 	force_pci_posting(dev);
+ 	udelay(EPROM_DELAY);
+ }
  
- 	/* No Vbus detection: Assume always present */
- 	return 1;
-@@ -1763,7 +1763,7 @@ static irqreturn_t usba_vbus_irq(int irq, void *devid)
- 	if (!udc->driver)
- 		goto out;
  
--	vbus = gpio_get_value(udc->vbus_pin);
-+	vbus = vbus_is_present(udc);
- 	if (vbus != udc->vbus_prev) {
- 		if (vbus) {
- 			toggle_bias(1);
-@@ -2000,6 +2000,7 @@ static int __init usba_udc_probe(struct platform_device *pdev)
- 	if (gpio_is_valid(pdata->vbus_pin)) {
- 		if (!gpio_request(pdata->vbus_pin, "atmel_usba_udc")) {
- 			udc->vbus_pin = pdata->vbus_pin;
-+			udc->vbus_pin_inverted = pdata->vbus_pin_inverted;
+-static void eprom_w(struct net_device *dev,short bit)
++static void eprom_w(struct net_device *dev, short bit)
+ {
+-	if(bit)
++	if (bit)
+ 		write_nic_byte(dev, EPROM_CMD, (1<<EPROM_W_SHIFT) | \
+-			       read_nic_byte(dev,EPROM_CMD));
++			       read_nic_byte(dev, EPROM_CMD));
+ 	else
+-		write_nic_byte(dev, EPROM_CMD, read_nic_byte(dev,EPROM_CMD)\
++		write_nic_byte(dev, EPROM_CMD, read_nic_byte(dev, EPROM_CMD)\
+ 			       &~(1<<EPROM_W_SHIFT));
  
- 			ret = request_irq(gpio_to_irq(udc->vbus_pin),
- 					usba_vbus_irq, 0,
-diff --git a/drivers/usb/gadget/atmel_usba_udc.h b/drivers/usb/gadget/atmel_usba_udc.h
-index f7baea3..88a2e07 100644
---- a/drivers/usb/gadget/atmel_usba_udc.h
-+++ b/drivers/usb/gadget/atmel_usba_udc.h
-@@ -323,6 +323,7 @@ struct usba_udc {
- 	struct platform_device *pdev;
- 	int irq;
- 	int vbus_pin;
-+	int vbus_pin_inverted;
- 	struct clk *pclk;
- 	struct clk *hclk;
+ 	force_pci_posting(dev);
+@@ -66,10 +66,11 @@ static short eprom_r(struct net_device *dev)
+ {
+ 	short bit;
  
-diff --git a/include/linux/usb/atmel_usba_udc.h b/include/linux/usb/atmel_usba_udc.h
-index 6311fa2..baf41c8 100644
---- a/include/linux/usb/atmel_usba_udc.h
-+++ b/include/linux/usb/atmel_usba_udc.h
-@@ -15,6 +15,7 @@ struct usba_ep_data {
+-	bit=(read_nic_byte(dev, EPROM_CMD) & (1<<EPROM_R_SHIFT) );
++	bit = (read_nic_byte(dev, EPROM_CMD) & (1<<EPROM_R_SHIFT));
+ 	udelay(EPROM_DELAY);
  
- struct usba_platform_data {
- 	int			vbus_pin;
-+	int		 	vbus_pin_inverted;
- 	int			num_ep;
- 	struct usba_ep_data	ep[0];
- };
+-	if(bit) return 1;
++	if (bit)
++		return 1;
+ 	return 0;
+ }
+ 
+@@ -78,7 +79,7 @@ static void eprom_send_bits_string(struct net_device *dev, short b[], int len)
+ {
+ 	int i;
+ 
+-	for(i=0; i<len; i++){
++	for (i = 0; i < len; i++) {
+ 		eprom_w(dev, b[i]);
+ 		eprom_ck_cycle(dev);
+ 	}
+@@ -88,37 +89,37 @@ static void eprom_send_bits_string(struct net_device *dev, short b[], int len)
+ u32 eprom_read(struct net_device *dev, u32 addr)
+ {
+ 	struct r8192_priv *priv = ieee80211_priv(dev);
+-	short read_cmd[]={1,1,0};
++	short read_cmd[] = {1, 1, 0};
+ 	short addr_str[8];
+ 	int i;
+ 	int addr_len;
+ 	u32 ret;
+ 
+-	ret=0;
++	ret = 0;
+         //enable EPROM programming
+ 	write_nic_byte(dev, EPROM_CMD,
+ 		       (EPROM_CMD_PROGRAM<<EPROM_CMD_OPERATING_MODE_SHIFT));
+ 	force_pci_posting(dev);
+ 	udelay(EPROM_DELAY);
+ 
+-	if (priv->epromtype==EPROM_93c56){
+-		addr_str[7]=addr & 1;
+-		addr_str[6]=addr & (1<<1);
+-		addr_str[5]=addr & (1<<2);
+-		addr_str[4]=addr & (1<<3);
+-		addr_str[3]=addr & (1<<4);
+-		addr_str[2]=addr & (1<<5);
+-		addr_str[1]=addr & (1<<6);
+-		addr_str[0]=addr & (1<<7);
+-		addr_len=8;
+-	}else{
+-		addr_str[5]=addr & 1;
+-		addr_str[4]=addr & (1<<1);
+-		addr_str[3]=addr & (1<<2);
+-		addr_str[2]=addr & (1<<3);
+-		addr_str[1]=addr & (1<<4);
+-		addr_str[0]=addr & (1<<5);
+-		addr_len=6;
++	if (priv->epromtype == EPROM_93c56) {
++		addr_str[7] = addr & 1;
++		addr_str[6] = addr & (1<<1);
++		addr_str[5] = addr & (1<<2);
++		addr_str[4] = addr & (1<<3);
++		addr_str[3] = addr & (1<<4);
++		addr_str[2] = addr & (1<<5);
++		addr_str[1] = addr & (1<<6);
++		addr_str[0] = addr & (1<<7);
++		addr_len = 8;
++	} else {
++		addr_str[5] = addr & 1;
++		addr_str[4] = addr & (1<<1);
++		addr_str[3] = addr & (1<<2);
++		addr_str[2] = addr & (1<<3);
++		addr_str[1] = addr & (1<<4);
++		addr_str[0] = addr & (1<<5);
++		addr_len = 6;
+ 	}
+ 	eprom_cs(dev, 1);
+ 	eprom_ck_cycle(dev);
+@@ -129,7 +130,7 @@ u32 eprom_read(struct net_device *dev, u32 addr)
+ 	//I'm unsure if it is necessary, but anyway shouldn't hurt
+ 	eprom_w(dev, 0);
+ 
+-	for(i=0;i<16;i++){
++	for (i = 0; i < 16; i++) {
+ 		//eeprom needs a clk cycle between writing opcode&adr
+ 		//and reading data. (eeprom outs a dummy 0)
+ 		eprom_ck_cycle(dev);
 -- 
-1.5.4.3
+1.6.3.3
+
+
+
