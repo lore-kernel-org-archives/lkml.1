@@ -1,220 +1,90 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758625Ab0BDXUf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 18:20:35 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:51917 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758583Ab0BDXUd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 18:20:33 -0500
-Date: Fri, 5 Feb 2010 10:20:30 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Tony Lindgren <tony@atomide.com>, <linux-omap@vger.kernel.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Russell King <rmk@arm.linux.org.uk>
-Subject: linux-next: manual merge of the omap tree with the arm tree
-Message-Id: <20100205102030.c8b139a1.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta7 (GTK+ 2.18.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
+	id S1758639Ab0BDXUn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 18:20:43 -0500
+Received: from exprod6og107.obsmtp.com ([64.18.1.208]:41983 "HELO
+	exprod6og107.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1758627Ab0BDXUj convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 18:20:39 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7BIT
+Subject: RE: [PWM PATCH 0/5] Implements a common PWM API
+Date: Thu, 4 Feb 2010 18:20:41 -0500
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE190902152C2F@mi8nycmail19.Mi8.com>
+In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE1909020E99C5@mi8nycmail19.Mi8.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PWM PATCH 0/5] Implements a common PWM API
+Thread-Index: Acqj16TEqjVC+2BMRtqcHXm7QpgQlwAV0lAgAHBMIoA=
+References: <cover.1265094517.git.bgat@billgatliff.com> <BD79186B4FD85F4B8E60E381CAEE1909020E99C5@mi8nycmail19.Mi8.com>
+From: "H Hartley Sweeten" <hartleys@visionengravers.com>
+To: "H Hartley Sweeten" <hartleys@visionengravers.com>,
+       "Bill Gatliff" <bgat@billgatliff.com>, <linux-embedded@vger.kernel.org>
+Cc: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 04 Feb 2010 23:20:37.0847 (UTC) FILETIME=[A8EF4E70:01CAA5F0]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Tuesday, February 02, 2010 10:44 AM, H Hartley Sweeten wrote:
+> On Tuesday, February 02, 2010 12:15 AM, Bill Gatliff wrote:
+>> This patch series implements a common PWM API.  This series incorporates
+>> the feedback from the linux-embedded mailing list and elsewhere; the author
+>> greatly appreciates the efforts of everyone who reviewed the previous version
+>> of this code.
+>> 
+>> Bill Gatliff (5):
+>>   API to consolidate PWM devices behind a common user and kernel
+>>     interface
+>>   Emulates PWM hardware using a high-resolution timer and a GPIO pin
+>>   Expunge old Atmel PWMC driver, replacing it with one that conforms to
+>>     the PWM API
+>>   PWM-based LED control
+>>   LED "dimmer" trigger
+>> 
+>>  Documentation/pwm.txt       |  260 ++++++++++++++++++
+>>  drivers/leds/leds-pwm.c     |  224 +++++++++-------
+>>  drivers/leds/ledtrig-dim.c  |   95 +++++++
+>>  drivers/misc/Makefile       |    6 +-
+>>  drivers/misc/atmel_pwm.c    |  409 ----------------------------
+>>  drivers/pwm/atmel-pwm.c     |  589 ++++++++++++++++++++++++++++++++++++++++
+>>  drivers/pwm/gpio.c          |  307 +++++++++++++++++++++
+>>  drivers/pwm/pwm.c           |  633 +++++++++++++++++++++++++++++++++++++++++++
+>>  include/linux/pwm.h         |   31 --
+>>  include/linux/pwm/pwm-led.h |   34 +++
+>>  include/linux/pwm/pwm.h     |  170 ++++++++++++
+>>  11 files changed, 2217 insertions(+), 541 deletions(-)
+>>  create mode 100644 Documentation/pwm.txt
+>>  create mode 100644 drivers/leds/ledtrig-dim.c
+>>  delete mode 100644 drivers/misc/atmel_pwm.c
+>>  create mode 100644 drivers/pwm/atmel-pwm.c
+>>  create mode 100644 drivers/pwm/gpio.c
+>>  create mode 100644 drivers/pwm/pwm.c
+>>  delete mode 100644 include/linux/pwm.h
+>>  create mode 100644 include/linux/pwm/pwm-led.h
+>>  create mode 100644 include/linux/pwm/pwm.h
+>
+> I think the following files/patches are missing from this series:
+>
+> drivers/Kconfig
+> drivers/Makefile
+> drivers/leds/Kconfig
+> drivers/leds/Makefile
+> drivers/pwm/Kconfig
+> drivers/pwm/Makefile
 
-Today's linux-next merge of the omap tree got a conflict in
-arch/arm/mach-omap1/include/mach/debug-macro.S
-arch/arm/mach-omap2/include/mach/debug-macro.S between commit
-7f62dc4756eaf761570b96250630d48f80397d64 ("ARM: 5910/1: ARM: Add tmp
-register for addruart and loadsp") from the arm tree and commit 209f5d2d2c8e385834d138ac593df86504a28ffe ("omap: Make
-uncompress code and DEBUG_LL code generic") from the omap tree.
+Bill,
 
-I fixed it up (see below) and can carry the fix as necessary.
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+When you do repost this series please make sure that pwm support can only be
+selected if CONFIG_SYSFS is enabled.  Your original patches did not have this.
 
-diff --cc arch/arm/mach-omap1/include/mach/debug-macro.S
-index 8c74cab,0187391..0000000
---- a/arch/arm/mach-omap1/include/mach/debug-macro.S
-+++ b/arch/arm/mach-omap1/include/mach/debug-macro.S
-@@@ -11,7 -11,43 +11,43 @@@
-   *
-  */
-  
-+ #include <linux/serial_reg.h>
-+ 
-+ #include <plat/serial.h>
-+ 
-+ 		.pushsection .data
-+ omap_uart_phys:	.word	0x0
-+ omap_uart_virt:	.word	0x0
-+ 		.popsection
-+ 
-+ 		/*
-+ 		 * Note that this code won't work if the bootloader passes
-+ 		 * a wrong machine ID number in r1. To debug, just hardcode
-+ 		 * the desired UART phys and virt addresses temporarily into
-+ 		 * the omap_uart_phys and omap_uart_virt above.
-+ 		 */
- -		.macro	addruart,rx
- +		.macro	addruart, rx, tmp
-+ 
-+ 		/* Use omap_uart_phys/virt if already configured */
-+ 9:		mrc	p15, 0, \rx, c1, c0
-+ 		tst	\rx, #1			@ MMU enabled?
-+ 		ldreq	\rx, =omap_uart_phys	@ physical base address
-+ 		ldrne	\rx, =omap_uart_virt	@ virtual base
-+ 		ldr	\rx, [\rx, #0]
-+ 		cmp	\rx, #0			@ is port configured?
-+ 		bne	99f			@ already configured
-+ 
-+ 		/* Check 7XX UART1 scratchpad register for uart to use */
-+ 		mrc	p15, 0, \rx, c1, c0
-+ 		tst	\rx, #1			@ MMU enabled?
-+ 		moveq	\rx, #0xff000000	@ physical base address
-+ 		movne	\rx, #0xfe000000	@ virtual base
-+ 		orr	\rx, \rx, #0x00fb0000	@ OMAP1UART1
-+ 		ldrb	\rx, [\rx, #(UART_SCR << OMAP7XX_PORT_SHIFT)]
-+ 		cmp	\rx, #0			@ anything in 7XX scratchpad?
-+ 		bne	10f			@ found 7XX uart
-+ 
-+ 		/* Check 15xx/16xx UART1 scratchpad register for uart to use */
-  		mrc	p15, 0, \rx, c1, c0
-  		tst	\rx, #1			@ MMU enabled?
-  		moveq	\rx, #0xff000000	@ physical base address
-diff --cc arch/arm/mach-omap2/include/mach/debug-macro.S
-index 86979d7,eb05a22..0000000
---- a/arch/arm/mach-omap2/include/mach/debug-macro.S
-+++ b/arch/arm/mach-omap2/include/mach/debug-macro.S
-@@@ -11,32 -11,107 +11,107 @@@
-   *
-  */
-  
-+ #include <linux/serial_reg.h>
-+ 
-+ #include <plat/serial.h>
-+ 
-+ #define UART_OFFSET(addr)	((addr) & 0x00ffffff)
-+ 
-+ 		.pushsection .data
-+ omap_uart_phys:	.word	0
-+ omap_uart_virt:	.word	0
-+ omap_uart_lsr:	.word	0
-+ 		.popsection
-+ 
-+ 		/*
-+ 		 * Note that this code won't work if the bootloader passes
-+ 		 * a wrong machine ID number in r1. To debug, just hardcode
-+ 		 * the desired UART phys and virt addresses temporarily into
-+ 		 * the omap_uart_phys and omap_uart_virt above.
-+ 		 */
- -		.macro	addruart,rx
- +		.macro	addruart, rx, tmp
-+ 
-+ 		/* Use omap_uart_phys/virt if already configured */
-+ 10:		mrc	p15, 0, \rx, c1, c0
-+ 		tst	\rx, #1			@ MMU enabled?
-+ 		ldreq	\rx, =omap_uart_phys	@ physical base address
-+ 		ldrne	\rx, =omap_uart_virt	@ virtual base address
-+ 		ldr	\rx, [\rx, #0]
-+ 		cmp	\rx, #0			@ is port configured?
-+ 		bne	99f			@ already configured
-+ 
-+ 		/* Check UART1 scratchpad register for uart to use */
-  		mrc	p15, 0, \rx, c1, c0
-  		tst	\rx, #1			@ MMU enabled?
-- #ifdef  CONFIG_ARCH_OMAP2
-  		moveq	\rx, #0x48000000	@ physical base address
-  		movne	\rx, #0xfa000000	@ virtual base
-- 		orr	\rx, \rx, #0x0006a000
-- #ifdef CONFIG_OMAP_LL_DEBUG_UART2
-- 		add	\rx, \rx, #0x00002000	@ UART 2
-- #endif
-- #ifdef CONFIG_OMAP_LL_DEBUG_UART3
-- 		add	\rx, \rx, #0x00004000	@ UART 3
-- #endif
-- 
-- #elif defined(CONFIG_ARCH_OMAP3) || defined(CONFIG_ARCH_OMAP4)
-- 		moveq	\rx, #0x48000000	@ physical base address
-- 		movne	\rx, #0xfa000000	@ virtual base
-- 		orr	\rx, \rx, #0x0006a000
-- #ifdef CONFIG_OMAP_LL_DEBUG_UART2
-- 		add	\rx, \rx, #0x00002000	@ UART 2
-- #endif
-- #ifdef CONFIG_OMAP_LL_DEBUG_UART3
-- 		add	\rx, \rx, #0x00fb0000	@ UART 3
-- 		add	\rx, \rx, #0x00006000
-- #endif
-- #endif
-+ 		orr	\rx, \rx, #0x0006a000	@ uart1 on omap2/3/4
-+ 		ldrb	\rx, [\rx, #(UART_SCR << OMAP_PORT_SHIFT)] @ scratchpad
-+ 
-+ 		/* Select the UART to use based on the UART1 scratchpad value */
-+ 		cmp	\rx, #0			@ no port configured?
-+ 		beq	21f			@ if none, try to use UART1
-+ 		cmp	\rx, #OMAP2UART1	@ OMAP2/3/4UART1
-+ 		beq	21f			@ configure OMAP2/3/4UART1
-+ 		cmp	\rx, #OMAP2UART2	@ OMAP2/3/4UART2
-+ 		beq	22f			@ configure OMAP2/3/4UART2
-+ 		cmp	\rx, #OMAP2UART3	@ only on 24xx
-+ 		beq	23f			@ configure OMAP2UART3
-+ 		cmp	\rx, #OMAP3UART3	@ only on 34xx
-+ 		beq	33f			@ configure OMAP3UART3
-+ 		cmp	\rx, #OMAP4UART3	@ only on 44xx
-+ 		beq	43f			@ configure OMAP4UART3
-+ 		cmp	\rx, #OMAP3UART4	@ only on 36xx
-+ 		beq	34f			@ configure OMAP3UART4
-+ 		cmp	\rx, #OMAP4UART4	@ only on 44xx
-+ 		beq	44f			@ configure OMAP4UART4
-+ 		cmp	\rx, #ZOOM_UART		@ only on zoom2/3
-+ 		beq	95f			@ configure ZOOM_UART
-+ 
-+ 		/* Configure the UART offset from the phys/virt base */
-+ 21:		mov	\rx, #UART_OFFSET(OMAP2_UART1_BASE)	@ omap2/3/4
-+ 		b	98f
-+ 22:		mov	\rx, #UART_OFFSET(OMAP2_UART2_BASE)	@ omap2/3/4
-+ 		b	98f
-+ 23:		mov	\rx, #UART_OFFSET(OMAP2_UART3_BASE)
-+ 		b	98f
-+ 33:		mov	\rx, #UART_OFFSET(OMAP3_UART1_BASE)
-+ 		add	\rx, \rx, #0x00fb0000
-+ 		add	\rx, \rx, #0x00006000		@ OMAP3_UART3_BASE
-+ 		b	98f
-+ 34:		mov	\rx, #UART_OFFSET(OMAP3_UART1_BASE)
-+ 		add	\rx, \rx, #0x00fb0000
-+ 		add	\rx, \rx, #0x00028000		@ OMAP3_UART4_BASE
-+ 		b	98f
-+ 43:		mov	\rx, #UART_OFFSET(OMAP4_UART3_BASE)
-+ 		b	98f
-+ 44:		mov	\rx, #UART_OFFSET(OMAP4_UART4_BASE)
-+ 		b	98f
-+ 95:		mov	\rx, #ZOOM_UART_BASE
-+ 		ldr	r1, =omap_uart_phys
-+ 		str	\rx, [r1, #0]
-+ 		mov	\rx, #ZOOM_UART_VIRT
-+ 		ldr	r1, =omap_uart_virt
-+ 		str	\rx, [r1, #0]
-+ 		mov	\rx, #(UART_LSR << ZOOM_PORT_SHIFT)
-+ 		ldr	r1, =omap_uart_lsr
-+ 		str	\rx, [r1, #0]
-+ 		b	10b
-+ 
-+ 		/* Store both phys and virt address for the uart */
-+ 98:		add	\rx, \rx, #0x48000000	@ phys base
-+ 		ldr	r1, =omap_uart_phys
-+ 		str	\rx, [r1, #0]
-+ 		sub	\rx, \rx, #0x48000000	@ phys base
-+ 		add	\rx, \rx, #0xfa000000	@ virt base
-+ 		ldr	r1, =omap_uart_virt
-+ 		str	\rx, [r1, #0]
-+ 		mov	\rx, #(UART_LSR << OMAP_PORT_SHIFT)
-+ 		ldr	r1, =omap_uart_lsr
-+ 		str	\rx, [r1, #0]
-+ 
-+ 		b	10b
-+ 99:
-  		.endm
-  
-  		.macro	senduart,rd,rx
+I look forward to seeing the update.
+
+BTW, setting pwm.dev = &pdev->dev in my driver did fix the Ooops.
+
+Regards,
+Hartley
