@@ -1,65 +1,220 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758616Ab0BDXTO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 18:19:14 -0500
-Received: from p01c11o143.mxlogic.net ([208.65.144.66]:38558 "EHLO
-	p01c11o143.mxlogic.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758475Ab0BDXTM convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 18:19:12 -0500
-X-MXL-Hash: 4b6b55f0441903f1-87b8e390ba0b1244754a1b287601c8d71c33c62b
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
+	id S1758625Ab0BDXUf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 18:20:35 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:51917 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758583Ab0BDXUd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 18:20:33 -0500
+Date: Fri, 5 Feb 2010 10:20:30 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Tony Lindgren <tony@atomide.com>, <linux-omap@vger.kernel.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Russell King <rmk@arm.linux.org.uk>
+Subject: linux-next: manual merge of the omap tree with the arm tree
+Message-Id: <20100205102030.c8b139a1.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0beta7 (GTK+ 2.18.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: Re: [PATCH 2.6.33 1/4] net: Micrel KSZ8841/2 PCI Ethernet driver
-Date: Thu, 4 Feb 2010 15:18:54 -0800
-Message-ID: <14385191E87B904DBD836449AA30269D021A51@MORGANITE.micrel.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 2.6.33 1/4] net: Micrel KSZ8841/2 PCI Ethernet driver
-Thread-Index: Acql8GuJFGGdevVDS6aRwlZCKMd9bw==
-From: "Ha, Tristram" <Tristram.Ha@Micrel.Com>
-To: "Dave Miller" <davem@davemloft.net>
-Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Stephen Hemminger" <shemminger@vyatta.com>, <netdev@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 04 Feb 2010 23:18:54.0903 (UTC) FILETIME=[6B934C70:01CAA5F0]
-X-Spam: [F=0.2000000000; CM=0.500; S=0.200(2010011101)]
-X-MAIL-FROM: <tristram.ha@micrel.com>
-X-SOURCE-IP: [65.218.208.2]
-X-AnalysisOut: [v=1.0 c=1 a=0RN4rdAoExkA:10 a=J3BOMSfJb05aRia9DmE+FQ==:17 ]
-X-AnalysisOut: [a=ATUHBX0TWO8JkiUIsMwA:9 a=YKM-8P-3Y5yaZvzim7IA:7 a=a8sOD-]
-X-AnalysisOut: [qGc6vbnySUOb6DrCzSpAkA:4]
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Miller wrote:
->> This is a resubmission of the Micrel KSZ8841/2 PCI Ethernet driver.
->
-> The procfs stuff is a non-starter.
->
-> There will undoubtedly be other devices that have switch-like
-> facilities that we'd like to export configuration support for.
->
-> The last thing we want is a bunch of procfs files that each
-> driver decides the layout and behavior of.
->
-> We need a centralized way to config such things, and probably
-> the best is to have a rtnl_link_ops facility to get at the
-> ports and configure them with attribute blobs or similar.
->
-> We also said in your first submission that the way you're
-> getting at the bridge STP stuff with things like:
->
-> +/* Needed for STP support. */
-> +#ifdef CONFIG_KSZ8842_STP
-> +#include <../net/bridge/br_private.h>
-> +#endif
-> Yet you left all of this stuff in there.
+Hi all,
 
-In my discussions with Alan Cox and Stephen Hemminger, I thought they kind of agree to the code's inclusion in the driver.  Sorry for my misunderstanding.  I will submit another one with those code removed.
+Today's linux-next merge of the omap tree got a conflict in
+arch/arm/mach-omap1/include/mach/debug-macro.S
+arch/arm/mach-omap2/include/mach/debug-macro.S between commit
+7f62dc4756eaf761570b96250630d48f80397d64 ("ARM: 5910/1: ARM: Add tmp
+register for addruart and loadsp") from the arm tree and commit 209f5d2d2c8e385834d138ac593df86504a28ffe ("omap: Make
+uncompress code and DEBUG_LL code generic") from the omap tree.
 
-P.S. I did not actually receive your response from my company's e-mail server.  I copied it from LKML.
+I fixed it up (see below) and can carry the fix as necessary.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --cc arch/arm/mach-omap1/include/mach/debug-macro.S
+index 8c74cab,0187391..0000000
+--- a/arch/arm/mach-omap1/include/mach/debug-macro.S
++++ b/arch/arm/mach-omap1/include/mach/debug-macro.S
+@@@ -11,7 -11,43 +11,43 @@@
+   *
+  */
+  
++ #include <linux/serial_reg.h>
++ 
++ #include <plat/serial.h>
++ 
++ 		.pushsection .data
++ omap_uart_phys:	.word	0x0
++ omap_uart_virt:	.word	0x0
++ 		.popsection
++ 
++ 		/*
++ 		 * Note that this code won't work if the bootloader passes
++ 		 * a wrong machine ID number in r1. To debug, just hardcode
++ 		 * the desired UART phys and virt addresses temporarily into
++ 		 * the omap_uart_phys and omap_uart_virt above.
++ 		 */
+ -		.macro	addruart,rx
+ +		.macro	addruart, rx, tmp
++ 
++ 		/* Use omap_uart_phys/virt if already configured */
++ 9:		mrc	p15, 0, \rx, c1, c0
++ 		tst	\rx, #1			@ MMU enabled?
++ 		ldreq	\rx, =omap_uart_phys	@ physical base address
++ 		ldrne	\rx, =omap_uart_virt	@ virtual base
++ 		ldr	\rx, [\rx, #0]
++ 		cmp	\rx, #0			@ is port configured?
++ 		bne	99f			@ already configured
++ 
++ 		/* Check 7XX UART1 scratchpad register for uart to use */
++ 		mrc	p15, 0, \rx, c1, c0
++ 		tst	\rx, #1			@ MMU enabled?
++ 		moveq	\rx, #0xff000000	@ physical base address
++ 		movne	\rx, #0xfe000000	@ virtual base
++ 		orr	\rx, \rx, #0x00fb0000	@ OMAP1UART1
++ 		ldrb	\rx, [\rx, #(UART_SCR << OMAP7XX_PORT_SHIFT)]
++ 		cmp	\rx, #0			@ anything in 7XX scratchpad?
++ 		bne	10f			@ found 7XX uart
++ 
++ 		/* Check 15xx/16xx UART1 scratchpad register for uart to use */
+  		mrc	p15, 0, \rx, c1, c0
+  		tst	\rx, #1			@ MMU enabled?
+  		moveq	\rx, #0xff000000	@ physical base address
+diff --cc arch/arm/mach-omap2/include/mach/debug-macro.S
+index 86979d7,eb05a22..0000000
+--- a/arch/arm/mach-omap2/include/mach/debug-macro.S
++++ b/arch/arm/mach-omap2/include/mach/debug-macro.S
+@@@ -11,32 -11,107 +11,107 @@@
+   *
+  */
+  
++ #include <linux/serial_reg.h>
++ 
++ #include <plat/serial.h>
++ 
++ #define UART_OFFSET(addr)	((addr) & 0x00ffffff)
++ 
++ 		.pushsection .data
++ omap_uart_phys:	.word	0
++ omap_uart_virt:	.word	0
++ omap_uart_lsr:	.word	0
++ 		.popsection
++ 
++ 		/*
++ 		 * Note that this code won't work if the bootloader passes
++ 		 * a wrong machine ID number in r1. To debug, just hardcode
++ 		 * the desired UART phys and virt addresses temporarily into
++ 		 * the omap_uart_phys and omap_uart_virt above.
++ 		 */
+ -		.macro	addruart,rx
+ +		.macro	addruart, rx, tmp
++ 
++ 		/* Use omap_uart_phys/virt if already configured */
++ 10:		mrc	p15, 0, \rx, c1, c0
++ 		tst	\rx, #1			@ MMU enabled?
++ 		ldreq	\rx, =omap_uart_phys	@ physical base address
++ 		ldrne	\rx, =omap_uart_virt	@ virtual base address
++ 		ldr	\rx, [\rx, #0]
++ 		cmp	\rx, #0			@ is port configured?
++ 		bne	99f			@ already configured
++ 
++ 		/* Check UART1 scratchpad register for uart to use */
+  		mrc	p15, 0, \rx, c1, c0
+  		tst	\rx, #1			@ MMU enabled?
+- #ifdef  CONFIG_ARCH_OMAP2
+  		moveq	\rx, #0x48000000	@ physical base address
+  		movne	\rx, #0xfa000000	@ virtual base
+- 		orr	\rx, \rx, #0x0006a000
+- #ifdef CONFIG_OMAP_LL_DEBUG_UART2
+- 		add	\rx, \rx, #0x00002000	@ UART 2
+- #endif
+- #ifdef CONFIG_OMAP_LL_DEBUG_UART3
+- 		add	\rx, \rx, #0x00004000	@ UART 3
+- #endif
+- 
+- #elif defined(CONFIG_ARCH_OMAP3) || defined(CONFIG_ARCH_OMAP4)
+- 		moveq	\rx, #0x48000000	@ physical base address
+- 		movne	\rx, #0xfa000000	@ virtual base
+- 		orr	\rx, \rx, #0x0006a000
+- #ifdef CONFIG_OMAP_LL_DEBUG_UART2
+- 		add	\rx, \rx, #0x00002000	@ UART 2
+- #endif
+- #ifdef CONFIG_OMAP_LL_DEBUG_UART3
+- 		add	\rx, \rx, #0x00fb0000	@ UART 3
+- 		add	\rx, \rx, #0x00006000
+- #endif
+- #endif
++ 		orr	\rx, \rx, #0x0006a000	@ uart1 on omap2/3/4
++ 		ldrb	\rx, [\rx, #(UART_SCR << OMAP_PORT_SHIFT)] @ scratchpad
++ 
++ 		/* Select the UART to use based on the UART1 scratchpad value */
++ 		cmp	\rx, #0			@ no port configured?
++ 		beq	21f			@ if none, try to use UART1
++ 		cmp	\rx, #OMAP2UART1	@ OMAP2/3/4UART1
++ 		beq	21f			@ configure OMAP2/3/4UART1
++ 		cmp	\rx, #OMAP2UART2	@ OMAP2/3/4UART2
++ 		beq	22f			@ configure OMAP2/3/4UART2
++ 		cmp	\rx, #OMAP2UART3	@ only on 24xx
++ 		beq	23f			@ configure OMAP2UART3
++ 		cmp	\rx, #OMAP3UART3	@ only on 34xx
++ 		beq	33f			@ configure OMAP3UART3
++ 		cmp	\rx, #OMAP4UART3	@ only on 44xx
++ 		beq	43f			@ configure OMAP4UART3
++ 		cmp	\rx, #OMAP3UART4	@ only on 36xx
++ 		beq	34f			@ configure OMAP3UART4
++ 		cmp	\rx, #OMAP4UART4	@ only on 44xx
++ 		beq	44f			@ configure OMAP4UART4
++ 		cmp	\rx, #ZOOM_UART		@ only on zoom2/3
++ 		beq	95f			@ configure ZOOM_UART
++ 
++ 		/* Configure the UART offset from the phys/virt base */
++ 21:		mov	\rx, #UART_OFFSET(OMAP2_UART1_BASE)	@ omap2/3/4
++ 		b	98f
++ 22:		mov	\rx, #UART_OFFSET(OMAP2_UART2_BASE)	@ omap2/3/4
++ 		b	98f
++ 23:		mov	\rx, #UART_OFFSET(OMAP2_UART3_BASE)
++ 		b	98f
++ 33:		mov	\rx, #UART_OFFSET(OMAP3_UART1_BASE)
++ 		add	\rx, \rx, #0x00fb0000
++ 		add	\rx, \rx, #0x00006000		@ OMAP3_UART3_BASE
++ 		b	98f
++ 34:		mov	\rx, #UART_OFFSET(OMAP3_UART1_BASE)
++ 		add	\rx, \rx, #0x00fb0000
++ 		add	\rx, \rx, #0x00028000		@ OMAP3_UART4_BASE
++ 		b	98f
++ 43:		mov	\rx, #UART_OFFSET(OMAP4_UART3_BASE)
++ 		b	98f
++ 44:		mov	\rx, #UART_OFFSET(OMAP4_UART4_BASE)
++ 		b	98f
++ 95:		mov	\rx, #ZOOM_UART_BASE
++ 		ldr	r1, =omap_uart_phys
++ 		str	\rx, [r1, #0]
++ 		mov	\rx, #ZOOM_UART_VIRT
++ 		ldr	r1, =omap_uart_virt
++ 		str	\rx, [r1, #0]
++ 		mov	\rx, #(UART_LSR << ZOOM_PORT_SHIFT)
++ 		ldr	r1, =omap_uart_lsr
++ 		str	\rx, [r1, #0]
++ 		b	10b
++ 
++ 		/* Store both phys and virt address for the uart */
++ 98:		add	\rx, \rx, #0x48000000	@ phys base
++ 		ldr	r1, =omap_uart_phys
++ 		str	\rx, [r1, #0]
++ 		sub	\rx, \rx, #0x48000000	@ phys base
++ 		add	\rx, \rx, #0xfa000000	@ virt base
++ 		ldr	r1, =omap_uart_virt
++ 		str	\rx, [r1, #0]
++ 		mov	\rx, #(UART_LSR << OMAP_PORT_SHIFT)
++ 		ldr	r1, =omap_uart_lsr
++ 		str	\rx, [r1, #0]
++ 
++ 		b	10b
++ 99:
+  		.endm
+  
+  		.macro	senduart,rd,rx
