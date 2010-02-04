@@ -1,117 +1,49 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756767Ab0BDHcn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 02:32:43 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:43538 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751975Ab0BDHcl (ORCPT
+	id S1757064Ab0BDHct (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 02:32:49 -0500
+Received: from moutng.kundenserver.de ([212.227.17.9]:54237 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756843Ab0BDHco (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 02:32:41 -0500
-To: Greg KH <gregkh@suse.de>
-Cc: Jean Delvare <khali@linux-fr.org>, LKML <linux-kernel@vger.kernel.org>,
-       Tejun Heo <tj@kernel.org>, Serge Hallyn <serue@us.ibm.com>,
-       stable@kernel.org
-Subject: [PATCH] sysfs: sysfs_setattr set iattrs unconditionally
-References: <20100120131602.12aa48f7@hyperion.delvare>
-	<m1ocko6fkx.fsf@fess.ebiederm.org>
-	<20100120160008.7d59688b@hyperion.delvare>
-	<20100122041913.GC4302@suse.de>
-	<20100203091138.1ababf5e@hyperion.delvare>
-	<20100203142218.GA27676@suse.de>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Wed, 03 Feb 2010 23:32:36 -0800
-In-Reply-To: <20100203142218.GA27676@suse.de> (Greg KH's message of "Wed\, 3 Feb 2010 06\:22\:18 -0800")
-Message-ID: <m1d40llaln.fsf_-_@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Thu, 4 Feb 2010 02:32:44 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH] input: remove BKL from uinput open function
+Date: Thu, 4 Feb 2010 08:32:09 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
+Cc: John Kacur <jkacur@redhat.com>,
+       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Al Viro <viro@zeniv.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <201001302257.09354.arnd@arndb.de> <520f0cf11002011518y22c2f097s87872e7b5b1690d7@mail.gmail.com> <20100203050749.GA22110@core.coreip.homeip.net>
+In-Reply-To: <20100203050749.GA22110@core.coreip.homeip.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Scanned: No (on in01.mta.xmission.com); SAEximRunCond expanded to false
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002040832.09805.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+tscfZtyO+WrnEuDEjpMObGBZGZdSit1uAL8Q
+ 4pEy287jbZ08bofts2CXQ9ZjTKKCzKzU8S+2W9MRB7FkQRNMGC
+ zVLHuOQPZBrm0fuIRKVSA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wednesday 03 February 2010, Dmitry Torokhov wrote:
+> OK, so how about the patch below? If it is accepted I will just switch
+> to
+> 
+>         nonseekable_open(inode, file);
+>         return 0;
+> 
+> style. I gonna add Al and akpm to CC to see if the patch will stick...
 
-There is currently a bug in sysfs_setattr where the first time
-we set the attributes on a sysfs file we allocate backing store
-but do not set the backing store attributes.  Resulting in overly
-restrictive permissions on sysfs files.
+Sounds reasonable, if only to prevent this from becoming a FAQ.
 
-This bug is masked by the fact we that we do update the vfs inode
-so it will only show up after the vfs inode has been evicted
-causing surprise sysfs attribute changes.
+> VFS: clarify that nonseekable_open() will never fail
+> 
+> Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
 
-The fix is to simply modify the code so that it always executes
-when we update the sysfs attributes, as we did in 2.6.31 and earlier.
-
-This is a backported version of my similiar change for 2.6.33-rc6
-against sysfs_sd_setattr, for the stable 2.6.32 tree.
-
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
----
- fs/sysfs/inode.c |   47 +++++++++++++++++++++++------------------------
- 1 files changed, 23 insertions(+), 24 deletions(-)
-
-diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
-index e28cecf..02a022a 100644
---- a/fs/sysfs/inode.c
-+++ b/fs/sysfs/inode.c
-@@ -94,30 +94,29 @@ int sysfs_setattr(struct dentry * dentry, struct iattr * iattr)
- 		if (!sd_attrs)
- 			return -ENOMEM;
- 		sd->s_iattr = sd_attrs;
--	} else {
--		/* attributes were changed at least once in past */
--		iattrs = &sd_attrs->ia_iattr;
--
--		if (ia_valid & ATTR_UID)
--			iattrs->ia_uid = iattr->ia_uid;
--		if (ia_valid & ATTR_GID)
--			iattrs->ia_gid = iattr->ia_gid;
--		if (ia_valid & ATTR_ATIME)
--			iattrs->ia_atime = timespec_trunc(iattr->ia_atime,
--					inode->i_sb->s_time_gran);
--		if (ia_valid & ATTR_MTIME)
--			iattrs->ia_mtime = timespec_trunc(iattr->ia_mtime,
--					inode->i_sb->s_time_gran);
--		if (ia_valid & ATTR_CTIME)
--			iattrs->ia_ctime = timespec_trunc(iattr->ia_ctime,
--					inode->i_sb->s_time_gran);
--		if (ia_valid & ATTR_MODE) {
--			umode_t mode = iattr->ia_mode;
--
--			if (!in_group_p(inode->i_gid) && !capable(CAP_FSETID))
--				mode &= ~S_ISGID;
--			iattrs->ia_mode = sd->s_mode = mode;
--		}
-+	}
-+	/* attributes were changed at least once in past */
-+	iattrs = &sd_attrs->ia_iattr;
-+
-+	if (ia_valid & ATTR_UID)
-+		iattrs->ia_uid = iattr->ia_uid;
-+	if (ia_valid & ATTR_GID)
-+		iattrs->ia_gid = iattr->ia_gid;
-+	if (ia_valid & ATTR_ATIME)
-+		iattrs->ia_atime = timespec_trunc(iattr->ia_atime,
-+			inode->i_sb->s_time_gran);
-+	if (ia_valid & ATTR_MTIME)
-+		iattrs->ia_mtime = timespec_trunc(iattr->ia_mtime,
-+			inode->i_sb->s_time_gran);
-+	if (ia_valid & ATTR_CTIME)
-+		iattrs->ia_ctime = timespec_trunc(iattr->ia_ctime,
-+			inode->i_sb->s_time_gran);
-+	if (ia_valid & ATTR_MODE) {
-+		umode_t mode = iattr->ia_mode;
-+
-+		if (!in_group_p(inode->i_gid) && !capable(CAP_FSETID))
-+			mode &= ~S_ISGID;
-+		iattrs->ia_mode = sd->s_mode = mode;
- 	}
- 	return error;
- }
--- 
-1.6.5.2.143.g8cc62
-
+Acked-by: Arnd Bergmann <arnd@arndb.de>
