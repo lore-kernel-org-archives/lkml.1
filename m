@@ -1,46 +1,85 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754708Ab0BDIZH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 03:25:07 -0500
-Received: from smtprelay02.ispgateway.de ([80.67.29.24]:40176 "EHLO
-	smtprelay02.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755626Ab0BDIY7 (ORCPT
+	id S1757267Ab0BDIZe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 03:25:34 -0500
+Received: from smtp.nokia.com ([192.100.122.233]:47263 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756641Ab0BDIZF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 03:24:59 -0500
-X-Greylist: delayed 150045 seconds by postgrey-1.27 at vger.kernel.org; Thu, 04 Feb 2010 03:24:59 EST
-Message-ID: <4B6A8455.5010403@ladisch.de>
-Date: Thu, 04 Feb 2010 09:24:53 +0100
-From: Clemens Ladisch <clemens@ladisch.de>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: Wu Fengguang <fengguang.wu@intel.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       linux-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 01/11] readahead: limit readahead size for small devices
-References: <20100202152835.683907822@intel.com> <20100202153316.375570078@intel.com>
-In-Reply-To: <20100202153316.375570078@intel.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-Df-Sender: linux-kernel@cl.domainfactory-kunde.de
+	Thu, 4 Feb 2010 03:25:05 -0500
+From: Samu Onkalo <samu.p.onkalo@nokia.com>
+To: eric.piel@tremplin-utc.net
+Cc: pavel@ucw.cz, daniel@caiaq.de, lm-sensors@lm-sensors.org,
+       linux-kernel@vger.kernel.org, Samu Onkalo <samu.p.onkalo@nokia.com>
+Subject: [PATCH 0/6] lis3lv02d: Power management, click and threshold interrupts
+Date: Thu,  4 Feb 2010 10:24:02 +0200
+Message-Id: <1265271848-26559-1-git-send-email-samu.p.onkalo@nokia.com>
+X-Mailer: git-send-email 1.6.0.4
+X-OriginalArrivalTime: 04 Feb 2010 08:24:16.0573 (UTC) FILETIME=[70CC26D0:01CAA573]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wu Fengguang wrote:
-> Anyone has 512/128MB USB stick?
+Lis3 accelerometer chip family changes for power management,
+click and threshold event handling.
 
-64 MB, USB full speed:
-Bus 003 Device 003: ID 08ec:0011 M-Systems Flash Disk Pioneers DiskOnKey
+Patch set adds interrupt handlers for click/tap events and threshold
+based events. Actual configuration which events are enabled
+is done via platform data. All the features cannot be used in parallel.
+Interrupts are implemented only for 8 bit device, since I'm not familiar
+with other devices and I don't have suitable testing environment.
 
-4KB:    139.339 s, 376 kB/s
-16KB:   81.0427 s, 647 kB/s
-32KB:   71.8513 s, 730 kB/s
-64KB:   67.3872 s, 778 kB/s
-128KB:  67.5434 s, 776 kB/s
-256KB:  65.9019 s, 796 kB/s
-512KB:  66.2282 s, 792 kB/s
-1024KB: 67.4632 s, 777 kB/s
-2048KB: 69.9759 s, 749 kB/s
+Changes:
+
+  lis3: Add missing constants for 8bit device
+This is quite clear. Some click feature related register definitions
+were missing.
+
+  lis3: Separate configuration function for 8 bit device
+Move platformdata based configurations for 8 bit device to
+separate function to keep common part little bit more readable.
+
+  lis3: Introduce platform data for second ff / wu unit
+8 bit device has two freefall / wakeup detection blocks. Add possibility
+to configure also the second unit. Change hipass filter configuration
+to platform data. Change is compatible with existing platform data.
+
+  lis3: Power control for the chip
+This kind of feature has been in the driver earlier. It was removed
+because saving was so small in laptop environment. However, in smaller
+devices, even a small saving need to be implemented. When driver detects
+that no-one is really interested about the acceleration, chip is powered down.
+Input device, freefall device and sysfs are controlling this. By default,
+chip is powered on to keep functionality similar to current implementation.
+
+  lis3: Add skeletons for interrupt handlers
+Interrupt handlers are added in two patches to keep changes cleaner.
+This first patch adds two dummy threaded interrupt handlers for 8 bit device. 
+
+  lis3: Interrupt handlers for 8bit wakeup and click events
+This patch adds content to dummy handlers. Depending on the chip configuration,
+either click or ff/wu handling is called. For click event, BTN input event is
+sent separately for each axes. For threshold event, coordinates are updated
+immediatelly to input device. This allows input device to be used either in
+polled mode and / or interrupt driven mode. Polling can stopped from userspace
+by via input device sysfs.
+
+Patch set applies to 2.6.33-RC6 tree.
+Tested with 2.6.32 environment for omap3
+
+Samu Onkalo (6):
+  lis3: Add missing constants for 8bit device
+  lis3: Separate configuration function for 8 bit device
+  lis3: Introduce platform data for second ff / wu unit
+  lis3: Power control for the chip
+  lis3: Add skeletons for interrupt handlers
+  lis3: Interrupt handlers for 8bit wakeup and click events
+
+ drivers/hwmon/lis3lv02d.c     |  308 +++++++++++++++++++++++++++++++++--------
+ drivers/hwmon/lis3lv02d.h     |   12 ++
+ drivers/hwmon/lis3lv02d_i2c.c |    8 +-
+ drivers/hwmon/lis3lv02d_spi.c |   12 +-
+ include/linux/lis3lv02d.h     |   12 ++
+ 5 files changed, 287 insertions(+), 65 deletions(-)
+
