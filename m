@@ -1,24 +1,24 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932959Ab0BDUC5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 15:02:57 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51668
+	id S933147Ab0BDUDe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 15:03:34 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51677
 	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932879Ab0BDUC4 (ORCPT
+	by vger.kernel.org with ESMTP id S932929Ab0BDUDb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 15:02:56 -0500
-Date: Thu, 04 Feb 2010 12:03:09 -0800 (PST)
-Message-Id: <20100204.120309.51395616.davem@davemloft.net>
-To: s.L-H@gmx.de
-Cc: hadi@cyberus.ca, gregkh@suse.de, linux-kernel@vger.kernel.org,
+	Thu, 4 Feb 2010 15:03:31 -0500
+Date: Thu, 04 Feb 2010 12:03:45 -0800 (PST)
+Message-Id: <20100204.120345.51673241.davem@davemloft.net>
+To: hadi@cyberus.ca
+Cc: s.L-H@gmx.de, gregkh@suse.de, linux-kernel@vger.kernel.org,
        stable@kernel.org
 Subject: Re: patch net-restore-ip-source-validation.patch added to
  2.6.32-stable tree
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <201002042049.31582.s.L-H@gmx.de>
+In-Reply-To: <1265313056.4651.18.camel@bigi>
 References: <201002041931.40493.s.L-H@gmx.de>
 	<1265308725.4651.14.camel@bigi>
-	<201002042049.31582.s.L-H@gmx.de>
+	<1265313056.4651.18.camel@bigi>
 X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -27,28 +27,30 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Stefan Lippers-Hollmann" <s.L-H@gmx.de>
-Date: Thu, 4 Feb 2010 20:49:29 +0100
+From: jamal <hadi@cyberus.ca>
+Date: Thu, 04 Feb 2010 14:50:56 -0500
 
-> --- a/include/linux/sysctl.h
-> +++ b/include/linux/sysctl.h
-> @@ -490,6 +490,7 @@ enum
->  	NET_IPV4_CONF_PROMOTE_SECONDARIES=20,
->  	NET_IPV4_CONF_ARP_ACCEPT=21,
->  	NET_IPV4_CONF_ARP_NOTIFY=22,
-> +	NET_IPV4_CONF_ACCEPT_LOCAL=23,
->  	NET_IPV4_CONF_SRC_VMARK=24,
->  	__NET_IPV4_CONF_MAX
->  };
+> Ok, I was able to reproduce it finally. This fixes it:
 > 
-> isn't sufficient, 2.6.32.8-rc1 plus the suggested patch above fails to boot
-> as well (this time on amd64):
+> ---
+> diff --git a/kernel/sysctl_check.c b/kernel/sysctl_check.c
+> index b6e7aae..469193c 100644
+> --- a/kernel/sysctl_check.c
+> +++ b/kernel/sysctl_check.c
+> @@ -220,6 +220,7 @@ static const struct trans_ctl_table
+> trans_net_ipv4_conf_vars_table[] = {
+>         { NET_IPV4_CONF_PROMOTE_SECONDARIES,    "promote_secondaries" },
+>         { NET_IPV4_CONF_ARP_ACCEPT,             "arp_accept" },
+>         { NET_IPV4_CONF_ARP_NOTIFY,             "arp_notify" },
+> +       { NET_IPV4_CONF_SRC_VMARK,              "src_valid_mark" },
+>         {}
+>  };
+> ---
+> 
+> Note we dont have that code anymore in current tree - thats why it
+> was missed...
+> If this works, Greg/Dave - please include it in the -stable patch.
 
-Yeah you can't just add the sysctl value without filling in the
-name string in net/ipv4/devinet.c like the rest of Patrick's
-change did.
+I see, thanks for figuring this out Jamal.
 
-Maybe just using a value of 23 for NET_IPV4_CONF_SRC_VMARK
-will work best, can you try that?
-
-Thanks.
+Acked-by: David S. Miller <davem@davemloft.net>
