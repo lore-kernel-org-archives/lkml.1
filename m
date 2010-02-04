@@ -1,103 +1,90 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758088Ab0BDJ5Q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 04:57:16 -0500
-Received: from hera.kernel.org ([140.211.167.34]:60117 "EHLO hera.kernel.org"
+	id S1758128Ab0BDJ5e (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 04:57:34 -0500
+Received: from hera.kernel.org ([140.211.167.34]:60141 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756389Ab0BDJ5E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 04:57:04 -0500
-Date: Thu, 4 Feb 2010 09:55:40 GMT
-From: tip-bot for Masami Hiramatsu <mhiramat@redhat.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       jkenisto@us.ibm.com, ananth@in.ibm.com,
-       dle-develop@lists.sourceforge.net, fweisbec@gmail.com,
-       rostedt@goodmis.org, compudj@krystal.dyndns.org, jbaron@redhat.com,
-       tglx@linutronix.de, mhiramat@redhat.com, mingo@elte.hu,
-       systemtap@sources.redhat.com
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       jkenisto@us.ibm.com, ananth@in.ibm.com,
-       dle-develop@lists.sourceforge.net, fweisbec@gmail.com,
-       rostedt@goodmis.org, compudj@krystal.dyndns.org, jbaron@redhat.com,
-       tglx@linutronix.de, mhiramat@redhat.com, systemtap@sources.redhat.com,
+	id S1758108Ab0BDJ5V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 04:57:21 -0500
+Date: Thu, 4 Feb 2010 09:56:41 GMT
+From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
+       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
+       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, fweisbec@gmail.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
        mingo@elte.hu
-In-Reply-To: <20100202214918.4694.94179.stgit@dhcp-100-2-132.bos.redhat.com>
-References: <20100202214918.4694.94179.stgit@dhcp-100-2-132.bos.redhat.com>
+In-Reply-To: <new-submission>
+References: <new-submission>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/core] kprobes: Check probe address is reserved
-Message-ID: <tip-4554dbcb85a4ed2abaa2b6fa15649b796699ec89@git.kernel.org>
-Git-Commit-ID: 4554dbcb85a4ed2abaa2b6fa15649b796699ec89
+Subject: [tip:perf/core] perf_events: Optimize perf_event_task_tick()
+Message-ID: <tip-9717e6cd3db22eade7dbae0fc9235c66325a7132@git.kernel.org>
+Git-Commit-ID: 9717e6cd3db22eade7dbae0fc9235c66325a7132
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 04 Feb 2010 09:55:40 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 04 Feb 2010 09:56:43 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  4554dbcb85a4ed2abaa2b6fa15649b796699ec89
-Gitweb:     http://git.kernel.org/tip/4554dbcb85a4ed2abaa2b6fa15649b796699ec89
-Author:     Masami Hiramatsu <mhiramat@redhat.com>
-AuthorDate: Tue, 2 Feb 2010 16:49:18 -0500
+Commit-ID:  9717e6cd3db22eade7dbae0fc9235c66325a7132
+Gitweb:     http://git.kernel.org/tip/9717e6cd3db22eade7dbae0fc9235c66325a7132
+Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
+AuthorDate: Thu, 28 Jan 2010 13:57:44 +0100
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 4 Feb 2010 09:36:19 +0100
+CommitDate: Thu, 4 Feb 2010 09:59:49 +0100
 
-kprobes: Check probe address is reserved
+perf_events: Optimize perf_event_task_tick()
 
-Check whether the address of new probe is already reserved by
-ftrace or alternatives (on x86) when registering new probe.
-If reserved, it returns an error and not register the probe.
+Pretty much all of the calls do perf_disable/perf_enable cycles, pull
+that out to cut back on hardware programming.
 
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: systemtap <systemtap@sources.redhat.com>
-Cc: DLE <dle-develop@lists.sourceforge.net>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: przemyslaw@pawelczyk.it
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
 Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Cc: Jim Keniston <jkenisto@us.ibm.com>
-Cc: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Cc: Jason Baron <jbaron@redhat.com>
-LKML-Reference: <20100202214918.4694.94179.stgit@dhcp-100-2-132.bos.redhat.com>
+LKML-Reference: <new-submission>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- arch/x86/kernel/kprobes.c |    3 +++
- kernel/kprobes.c          |    4 +++-
- 2 files changed, 6 insertions(+), 1 deletions(-)
+ kernel/perf_event.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
-index 9453815..5de9f4a 100644
---- a/arch/x86/kernel/kprobes.c
-+++ b/arch/x86/kernel/kprobes.c
-@@ -337,6 +337,9 @@ static void __kprobes arch_copy_kprobe(struct kprobe *p)
+diff --git a/kernel/perf_event.c b/kernel/perf_event.c
+index 40f8b07..087025f 100644
+--- a/kernel/perf_event.c
++++ b/kernel/perf_event.c
+@@ -1573,12 +1573,8 @@ static void rotate_ctx(struct perf_event_context *ctx)
+ 	raw_spin_lock(&ctx->lock);
  
- int __kprobes arch_prepare_kprobe(struct kprobe *p)
- {
-+	if (alternatives_text_reserved(p->addr, p->addr))
-+		return -EINVAL;
+ 	/* Rotate the first entry last of non-pinned groups */
+-	perf_disable();
+-
+ 	list_rotate_left(&ctx->flexible_groups);
+ 
+-	perf_enable();
+-
+ 	raw_spin_unlock(&ctx->lock);
+ }
+ 
+@@ -1593,6 +1589,8 @@ void perf_event_task_tick(struct task_struct *curr)
+ 	cpuctx = &__get_cpu_var(perf_cpu_context);
+ 	ctx = curr->perf_event_ctxp;
+ 
++	perf_disable();
 +
- 	if (!can_probe((unsigned long)p->addr))
- 		return -EILSEQ;
- 	/* insn: must be on special executable page on x86. */
-diff --git a/kernel/kprobes.c b/kernel/kprobes.c
-index 9907a03..c3340e8 100644
---- a/kernel/kprobes.c
-+++ b/kernel/kprobes.c
-@@ -44,6 +44,7 @@
- #include <linux/debugfs.h>
- #include <linux/kdebug.h>
- #include <linux/memory.h>
-+#include <linux/ftrace.h>
+ 	perf_ctx_adjust_freq(&cpuctx->ctx);
+ 	if (ctx)
+ 		perf_ctx_adjust_freq(ctx);
+@@ -1608,6 +1606,8 @@ void perf_event_task_tick(struct task_struct *curr)
+ 	cpu_ctx_sched_in(cpuctx, EVENT_FLEXIBLE);
+ 	if (ctx)
+ 		task_ctx_sched_in(curr, EVENT_FLEXIBLE);
++
++	perf_enable();
+ }
  
- #include <asm-generic/sections.h>
- #include <asm/cacheflush.h>
-@@ -703,7 +704,8 @@ int __kprobes register_kprobe(struct kprobe *p)
- 
- 	preempt_disable();
- 	if (!kernel_text_address((unsigned long) p->addr) ||
--	    in_kprobes_functions((unsigned long) p->addr)) {
-+	    in_kprobes_functions((unsigned long) p->addr) ||
-+	    ftrace_text_reserved(p->addr, p->addr)) {
- 		preempt_enable();
- 		return -EINVAL;
- 	}
+ static int event_enable_on_exec(struct perf_event *event,
