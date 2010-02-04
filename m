@@ -1,71 +1,43 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756696Ab0BDInA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 03:43:00 -0500
-Received: from mail-ew0-f228.google.com ([209.85.219.228]:42595 "EHLO
-	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753994Ab0BDIm6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 03:42:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=F931bHDXvu2uSKFBArsVtqsOx0gtBWcrr9kF776jFwQnRHR7dekgkiZ2rwuZET4Ty3
-         VsV99/lDa1O0+sGxe0BOFD6tbbh5c+jx9oxKijrUd8DHym4C5UwpXQ3Uc0M1Y5nJkpjC
-         i6abp7CMWeIPynF20guiu9Gxt+CzEKO8fj7HU=
-Message-ID: <4B6A8889.4070407@gmail.com>
-Date: Thu, 04 Feb 2010 10:42:49 +0200
-From: Oleg Kutkov <elenbert@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	id S1756254Ab0BDIp4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 03:45:56 -0500
+Received: from hera.kernel.org ([140.211.167.34]:57052 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754552Ab0BDIpw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 03:45:52 -0500
+Message-ID: <4B6A890F.3090102@kernel.org>
+Date: Thu, 04 Feb 2010 17:45:03 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: Problem with set_memory_rw
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Dave Airlie <airlied@gmail.com>
+CC: Andy Isaacson <adi@hexapodia.org>, linux-kernel@vger.kernel.org,
+       dri-devel@lists.sourceforge.net
+Subject: Re: [2.6.33-rc6-git regression] idr fix breaks Xorg
+References: <20100204012837.GC538@hexapodia.org>	 <20100204075642.GA28286@hexapodia.org> <4B6A8278.8070001@kernel.org> <21d7e9971002040040w5910357j1a4b35ec256728b@mail.gmail.com>
+In-Reply-To: <21d7e9971002040040w5910357j1a4b35ec256728b@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 04 Feb 2010 08:45:06 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
-"KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com 
-<mailto:kamezawa.hiroyu@jp.fujitsu.com>> wrote:
-> set_memory_rw()'s 1st argument requires virtual address.
-> So, you need virtual address of the page you want.
->
->  - phys_to_virt() ... convert physical address to virtual address.
->  - virt_to_phys() ... convert virtual address to physical.
->
-> Anyway, RW is vitual address mapping's attribute and not for physical.
->
-> Thanks,
-> -Kame   
->
+On 02/04/2010 05:40 PM, Dave Airlie wrote:
+> Hmm at this late stage, maybe revert first? since the old idr code works fine
+> with the subsystems in question.
+> 
+> The drm idr code usage isn't anything crazy, the EBADF is the return code
+> from the mmap ioctl when it calls the idr lookup function for a handle.
+> 
+> The lookup function is just an idr_find inside a spinlock.
 
-Thank for answer!
-But this is a very strange, because 0x0509940, i passed, - it a virtual 
-memory address (i got it from System.map, this is a system call table, 
-on my machine). set_memory_rw return zero, anyway. So i can't continue 
-writing to memory. Maybe, system call table is much write protected, so 
-i can't change attribute of memory page?
-One more interesting thing:
+Yeap, you're right.  I'll send a patch to revert it.
 
-struct page *pg;
-pg = virt_to_page(addr);
-unsigned long page_addr;
-page_addr = (unsigned long) page_address(pg);
+Thanks.
 
-
-addr - this is my virtual address (provided by System.map)
-But page_addr got another value!
-What wrong?
-Sorry, if my questions is to stupid.
-
-P.S. I know, that overwriting system call table is very bad, i just 
-experimenting with my own network drivers and i need to replace some 
-network system calls..
-
-
-Best regard,
-Oleg.
-
+-- 
+tejun
