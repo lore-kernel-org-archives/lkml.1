@@ -1,141 +1,82 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758100Ab0BDJ5K (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 04:57:10 -0500
-Received: from hera.kernel.org ([140.211.167.34]:60115 "EHLO hera.kernel.org"
+	id S1758062Ab0BDJ4t (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 04:56:49 -0500
+Received: from hera.kernel.org ([140.211.167.34]:60076 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756333Ab0BDJ5E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 04:57:04 -0500
-Date: Thu, 4 Feb 2010 09:55:07 GMT
-From: tip-bot for Masami Hiramatsu <mhiramat@redhat.com>
+	id S1758003Ab0BDJ4m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 04:56:42 -0500
+Date: Thu, 4 Feb 2010 09:56:10 GMT
+From: tip-bot for Yong Zhang <yong.zhang0@gmail.com>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       jkenisto@us.ibm.com, ananth@in.ibm.com,
-       dle-develop@lists.sourceforge.net, fweisbec@gmail.com,
-       rostedt@goodmis.org, compudj@krystal.dyndns.org, tglx@linutronix.de,
-       mhiramat@redhat.com, mingo@elte.hu, systemtap@sources.redhat.com
+       a.p.zijlstra@chello.nl, rusty@rustcorp.com.au, yong.zhang0@gmail.com,
+       tglx@linutronix.de, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       jkenisto@us.ibm.com, ananth@in.ibm.com,
-       dle-develop@lists.sourceforge.net, fweisbec@gmail.com,
-       rostedt@goodmis.org, compudj@krystal.dyndns.org, tglx@linutronix.de,
-       mhiramat@redhat.com, mingo@elte.hu, systemtap@sources.redhat.com
-In-Reply-To: <20100202214904.4694.24330.stgit@dhcp-100-2-132.bos.redhat.com>
-References: <20100202214904.4694.24330.stgit@dhcp-100-2-132.bos.redhat.com>
+       rusty@rustcorp.com.au, a.p.zijlstra@chello.nl, tglx@linutronix.de,
+       yong.zhang0@gmail.com, mingo@elte.hu
+In-Reply-To: <2674af741001282257r28c97a92o9f90cf16fe8d3d84@mail.gmail.com>
+References: <2674af741001282257r28c97a92o9f90cf16fe8d3d84@mail.gmail.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/core] kprobes: Disable booster when CONFIG_PREEMPT=y
-Message-ID: <tip-615d0ebbc782b67296e3226c293f520f93f93515@git.kernel.org>
-Git-Commit-ID: 615d0ebbc782b67296e3226c293f520f93f93515
+Subject: [tip:sched/core] sched: Change usage of rt_rq->rt_se to rt_rq->tg->rt_se[cpu]
+Message-ID: <tip-74b7eb5885415ed41d012f432398d1b697115b5f@git.kernel.org>
+Git-Commit-ID: 74b7eb5885415ed41d012f432398d1b697115b5f
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 04 Feb 2010 09:55:09 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 04 Feb 2010 09:56:11 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  615d0ebbc782b67296e3226c293f520f93f93515
-Gitweb:     http://git.kernel.org/tip/615d0ebbc782b67296e3226c293f520f93f93515
-Author:     Masami Hiramatsu <mhiramat@redhat.com>
-AuthorDate: Tue, 2 Feb 2010 16:49:04 -0500
+Commit-ID:  74b7eb5885415ed41d012f432398d1b697115b5f
+Gitweb:     http://git.kernel.org/tip/74b7eb5885415ed41d012f432398d1b697115b5f
+Author:     Yong Zhang <yong.zhang0@gmail.com>
+AuthorDate: Fri, 29 Jan 2010 14:57:52 +0800
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 4 Feb 2010 09:36:18 +0100
+CommitDate: Thu, 4 Feb 2010 09:57:32 +0100
 
-kprobes: Disable booster when CONFIG_PREEMPT=y
+sched: Change usage of rt_rq->rt_se to rt_rq->tg->rt_se[cpu]
 
-Disable kprobe booster when CONFIG_PREEMPT=y at this time,
-because it can't ensure that all kernel threads preempted on
-kprobe's boosted slot run out from the slot even using
-freeze_processes().
+This is the first step to remove rt_rq member rt_se because it have the
+same meaning with tg->rt_se[cpu]. And the latter style is also used by
+the fair scheduling class.
 
-The booster on preemptive kernel will be resumed if
-synchronize_tasks() or something like that is introduced.
-
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: systemtap <systemtap@sources.redhat.com>
-Cc: DLE <dle-develop@lists.sourceforge.net>
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Jim Keniston <jkenisto@us.ibm.com>
-Cc: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-LKML-Reference: <20100202214904.4694.24330.stgit@dhcp-100-2-132.bos.redhat.com>
+Signed-off-by: Yong Zhang <yong.zhang0@gmail.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+LKML-Reference: <2674af741001282257r28c97a92o9f90cf16fe8d3d84@mail.gmail.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- arch/ia64/kernel/kprobes.c |    2 +-
- arch/x86/kernel/kprobes.c  |    2 +-
- kernel/kprobes.c           |   29 ++---------------------------
- 3 files changed, 4 insertions(+), 29 deletions(-)
+ kernel/sched_rt.c |   10 ++++++++--
+ 1 files changed, 8 insertions(+), 2 deletions(-)
 
-diff --git a/arch/ia64/kernel/kprobes.c b/arch/ia64/kernel/kprobes.c
-index 9adac44..7026b29 100644
---- a/arch/ia64/kernel/kprobes.c
-+++ b/arch/ia64/kernel/kprobes.c
-@@ -870,7 +870,7 @@ static int __kprobes pre_kprobes_handler(struct die_args *args)
- 		return 1;
+diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
+index ca49ceb..bf3e38f 100644
+--- a/kernel/sched_rt.c
++++ b/kernel/sched_rt.c
+@@ -199,8 +199,11 @@ static void dequeue_rt_entity(struct sched_rt_entity *rt_se);
  
- ss_probe:
--#if !defined(CONFIG_PREEMPT) || defined(CONFIG_FREEZER)
-+#if !defined(CONFIG_PREEMPT)
- 	if (p->ainsn.inst_flag == INST_FLAG_BOOSTABLE && !p->post_handler) {
- 		/* Boost up -- we can execute copied instructions directly */
- 		ia64_psr(regs)->ri = p->ainsn.slot;
-diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
-index 5b8c750..9453815 100644
---- a/arch/x86/kernel/kprobes.c
-+++ b/arch/x86/kernel/kprobes.c
-@@ -429,7 +429,7 @@ void __kprobes arch_prepare_kretprobe(struct kretprobe_instance *ri,
- static void __kprobes setup_singlestep(struct kprobe *p, struct pt_regs *regs,
- 				       struct kprobe_ctlblk *kcb)
+ static void sched_rt_rq_enqueue(struct rt_rq *rt_rq)
  {
--#if !defined(CONFIG_PREEMPT) || defined(CONFIG_FREEZER)
-+#if !defined(CONFIG_PREEMPT)
- 	if (p->ainsn.boostable == 1 && !p->post_handler) {
- 		/* Boost up -- we can execute copied instructions directly */
- 		reset_current_kprobe();
-diff --git a/kernel/kprobes.c b/kernel/kprobes.c
-index b7df302..9907a03 100644
---- a/kernel/kprobes.c
-+++ b/kernel/kprobes.c
-@@ -124,30 +124,6 @@ static LIST_HEAD(kprobe_insn_pages);
- static int kprobe_garbage_slots;
- static int collect_garbage_slots(void);
++	int this_cpu = smp_processor_id();
+ 	struct task_struct *curr = rq_of_rt_rq(rt_rq)->curr;
+-	struct sched_rt_entity *rt_se = rt_rq->rt_se;
++	struct sched_rt_entity *rt_se;
++
++	rt_se = rt_rq->tg->rt_se[this_cpu];
  
--static int __kprobes check_safety(void)
--{
--	int ret = 0;
--#if defined(CONFIG_PREEMPT) && defined(CONFIG_FREEZER)
--	ret = freeze_processes();
--	if (ret == 0) {
--		struct task_struct *p, *q;
--		do_each_thread(p, q) {
--			if (p != current && p->state == TASK_RUNNING &&
--			    p->pid != 0) {
--				printk("Check failed: %s is running\n",p->comm);
--				ret = -1;
--				goto loop_end;
--			}
--		} while_each_thread(p, q);
--	}
--loop_end:
--	thaw_processes();
--#else
--	synchronize_sched();
--#endif
--	return ret;
--}
--
- /**
-  * __get_insn_slot() - Find a slot on an executable page for an instruction.
-  * We allocate an executable page if there's no room on existing ones.
-@@ -235,9 +211,8 @@ static int __kprobes collect_garbage_slots(void)
+ 	if (rt_rq->rt_nr_running) {
+ 		if (rt_se && !on_rt_rq(rt_se))
+@@ -212,7 +215,10 @@ static void sched_rt_rq_enqueue(struct rt_rq *rt_rq)
+ 
+ static void sched_rt_rq_dequeue(struct rt_rq *rt_rq)
  {
- 	struct kprobe_insn_page *kip, *next;
+-	struct sched_rt_entity *rt_se = rt_rq->rt_se;
++	int this_cpu = smp_processor_id();
++	struct sched_rt_entity *rt_se;
++
++	rt_se = rt_rq->tg->rt_se[this_cpu];
  
--	/* Ensure no-one is preepmted on the garbages */
--	if (check_safety())
--		return -EAGAIN;
-+	/* Ensure no-one is interrupted on the garbages */
-+	synchronize_sched();
- 
- 	list_for_each_entry_safe(kip, next, &kprobe_insn_pages, list) {
- 		int i;
+ 	if (rt_se && on_rt_rq(rt_se))
+ 		dequeue_rt_entity(rt_se);
