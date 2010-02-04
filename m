@@ -1,23 +1,22 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758523Ab0BDRVj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 12:21:39 -0500
-Received: from kroah.org ([198.145.64.141]:34608 "EHLO coco.kroah.org"
+	id S933617Ab0BDRfW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 12:35:22 -0500
+Received: from kroah.org ([198.145.64.141]:34628 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932968Ab0BDRVe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 12:21:34 -0500
-X-Mailbox-Line: From linux@linux.site Thu Feb  4 09:14:52 2010
-Message-Id: <20100204171452.218912543@linux.site>
+	id S1758519Ab0BDRVi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 12:21:38 -0500
+X-Mailbox-Line: From linux@linux.site Thu Feb  4 09:14:57 2010
+Message-Id: <20100204171455.992389734@linux.site>
 User-Agent: quilt/0.47-14.9
-Date: Thu, 04 Feb 2010 09:11:41 -0800
+Date: Thu, 04 Feb 2010 09:11:46 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Felix Beck <felix.beck@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Zhao Yakui <yakui.zhao@intel.com>, Len Brown <len.brown@intel.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [10/74] [S390] zcrypt: Do not remove coprocessor for error 8/72
+Subject: [15/74] ACPI: Advertise to BIOS in _OSC: _OST on _PPC changes
 In-Reply-To: <20100204171850.GA16539@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -27,45 +26,43 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Felix Beck <felix.beck@de.ibm.com>
+From: Zhao Yakui <yakui.zhao@intel.com>
 
-commit 19b123ebacacdce5e75045bfe82122b01c821a5b upstream.
+commit 6a4e2b7503d1f630bface040cf0f5a7aac1fabdb upstream.
 
-In a case where the number of the input data is bigger than the
-modulus of the key, the coprocessor adapters will report an 8/72
-error. This case is not caught yet, thus the adapter will be taken
-offline. To prevent this, we return an -EINVAL instead.
+If the BIOS pokes the system-wide OSC bits to see if Linux
+supports evaluating _OST after a _PPC change notification,
+answer yes.
 
-Signed-off-by: Felix Beck <felix.beck@de.ibm.com>
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Also, fix an oversight where we neglected to set the OSC
+bit advertising processor aggregator device support
+when acpi-pad is compiled as a module.
+
+Signed-off-by: Zhao Yakui <yakui.zhao@intel.com>
+Signed-off-by: Len Brown <len.brown@intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/s390/crypto/zcrypt_pcicc.c  |    2 ++
- drivers/s390/crypto/zcrypt_pcixcc.c |    2 ++
- 2 files changed, 4 insertions(+)
+ drivers/acpi/bus.c |    7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
---- a/drivers/s390/crypto/zcrypt_pcicc.c
-+++ b/drivers/s390/crypto/zcrypt_pcicc.c
-@@ -373,6 +373,8 @@ static int convert_type86(struct zcrypt_
- 			zdev->max_mod_size = PCICC_MAX_MOD_SIZE_OLD;
- 			return -EAGAIN;
- 		}
-+		if (service_rc == 8 && service_rs == 72)
-+			return -EINVAL;
- 		zdev->online = 0;
- 		return -EAGAIN;	/* repeat the request on a different device. */
- 	}
---- a/drivers/s390/crypto/zcrypt_pcixcc.c
-+++ b/drivers/s390/crypto/zcrypt_pcixcc.c
-@@ -462,6 +462,8 @@ static int convert_type86_ica(struct zcr
- 		}
- 		if (service_rc == 12 && service_rs == 769)
- 			return -EINVAL;
-+		if (service_rc == 8 && service_rs == 72)
-+			return -EINVAL;
- 		zdev->online = 0;
- 		return -EAGAIN;	/* repeat the request on a different device. */
- 	}
+--- a/drivers/acpi/bus.c
++++ b/drivers/acpi/bus.c
+@@ -490,9 +490,14 @@ static void acpi_bus_osc_support(void)
+ 
+ 	capbuf[OSC_QUERY_TYPE] = OSC_QUERY_ENABLE;
+ 	capbuf[OSC_SUPPORT_TYPE] = OSC_SB_PR3_SUPPORT; /* _PR3 is in use */
+-#ifdef CONFIG_ACPI_PROCESSOR_AGGREGATOR
++#if defined(CONFIG_ACPI_PROCESSOR_AGGREGATOR) ||\
++			defined(CONFIG_ACPI_PROCESSOR_AGGREGATOR_MODULE)
+ 	capbuf[OSC_SUPPORT_TYPE] |= OSC_SB_PAD_SUPPORT;
+ #endif
++
++#if defined(CONFIG_ACPI_PROCESSOR) || defined(CONFIG_ACPI_PROCESSOR_MODULE)
++	capbuf[OSC_SUPPORT_TYPE] |= OSC_SB_PPC_OST_SUPPORT;
++#endif
+ 	if (ACPI_FAILURE(acpi_get_handle(NULL, "\\_SB", &handle)))
+ 		return;
+ 	if (ACPI_SUCCESS(acpi_run_osc(handle, &context)))
 
 
