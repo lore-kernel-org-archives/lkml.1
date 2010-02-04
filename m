@@ -1,22 +1,22 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933132Ab0BDRVs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 12:21:48 -0500
-Received: from kroah.org ([198.145.64.141]:34604 "EHLO coco.kroah.org"
+	id S933592Ab0BDRcz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 12:32:55 -0500
+Received: from kroah.org ([198.145.64.141]:34700 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932930Ab0BDRVd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 12:21:33 -0500
-X-Mailbox-Line: From linux@linux.site Thu Feb  4 09:14:52 2010
-Message-Id: <20100204171451.492266211@linux.site>
+	id S933152Ab0BDRVu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 12:21:50 -0500
+X-Mailbox-Line: From linux@linux.site Thu Feb  4 09:15:04 2010
+Message-Id: <20100204171504.319037841@linux.site>
 User-Agent: quilt/0.47-14.9
-Date: Thu, 04 Feb 2010 09:11:40 -0800
+Date: Thu, 04 Feb 2010 09:11:59 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Tejun Heo <tj@kernel.org>, Jeff Garzik <jgarzik@redhat.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>, Mel Gorman <mel@csn.ul.ie>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [09/74] libata: retry FS IOs even if it has failed with AC_ERR_INVALID
+Subject: [28/74] mm: fix migratetype bug which slowed swapping
 In-Reply-To: <20100204171850.GA16539@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -26,46 +26,55 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Tejun Heo <tj@kernel.org>
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
 
-commit 534ead709235b967b659947c55d9130873a432c4 upstream.
+commit a7016235a61d520e6806f38129001d935c4b6661 upstream.
 
-libata currently doesn't retry if a command fails with AC_ERR_INVALID
-assuming that retrying won't get it any further even if retried.
-However, a failure may be classified as invalid through hardware
-glitch (incorrect reading of the error register or firmware bug) and
-there isn't whole lot to gain by not retrying as actually invalid
-commands will be failed immediately.  Also, commands serving FS IOs
-are extremely unlikely to be invalid.  Retry FS IOs even if it's
-marked invalid.
+After memory pressure has forced it to dip into the reserves, 2.6.32's
+5f8dcc21211a3d4e3a7a5ca366b469fb88117f61 "page-allocator: split per-cpu
+list into one-list-per-migrate-type" has been returning MIGRATE_RESERVE
+pages to the MIGRATE_MOVABLE free_list: in some sense depleting reserves.
 
-Transient and incorrect invalid failure was seen while debugging
-firmware related issue on Samsung n130 on bko#14314.
+Fix that in the most straightforward way (which, considering the overheads
+of alternative approaches, is Mel's preference): the right migratetype is
+already in page_private(page), but free_pcppages_bulk() wasn't using it.
 
-  http://bugzilla.kernel.org/show_bug.cgi?id=14314
+How did this bug show up?  As a 20% slowdown in my tmpfs loop kbuild
+swapping tests, on PowerMac G5 with SLUB allocator.  Bisecting to that
+commit was easy, but explaining the magnitude of the slowdown not easy.
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Reported-by: Johannes Stezenbach <js@sig21.net>
-Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+The same effect appears, but much less markedly, with SLAB, and even
+less markedly on other machines (the PowerMac divides into fewer zones
+than x86, I think that may be a factor).  We guess that lumpy reclaim
+of short-lived high-order pages is implicated in some way, and probably
+this bug has been tickling a poor decision somewhere in page reclaim.
+
+But instrumentation hasn't told me much, I've run out of time and
+imagination to determine exactly what's going on, and shouldn't hold up
+the fix any longer: it's valid, and might even fix other misbehaviours.
+
+Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Acked-by: Mel Gorman <mel@csn.ul.ie>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/ata/libata-eh.c |    5 +++--
+ mm/page_alloc.c |    5 +++--
  1 file changed, 3 insertions(+), 2 deletions(-)
 
---- a/drivers/ata/libata-eh.c
-+++ b/drivers/ata/libata-eh.c
-@@ -2019,8 +2019,9 @@ static void ata_eh_link_autopsy(struct a
- 			qc->err_mask &= ~(AC_ERR_DEV | AC_ERR_OTHER);
- 
- 		/* determine whether the command is worth retrying */
--		if (!(qc->err_mask & AC_ERR_INVALID) &&
--		    ((qc->flags & ATA_QCFLAG_IO) || qc->err_mask != AC_ERR_DEV))
-+		if (qc->flags & ATA_QCFLAG_IO ||
-+		    (!(qc->err_mask & AC_ERR_INVALID) &&
-+		     qc->err_mask != AC_ERR_DEV))
- 			qc->flags |= ATA_QCFLAG_RETRY;
- 
- 		/* accumulate error info */
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -559,8 +559,9 @@ static void free_pcppages_bulk(struct zo
+ 			page = list_entry(list->prev, struct page, lru);
+ 			/* must delete as __free_one_page list manipulates */
+ 			list_del(&page->lru);
+-			__free_one_page(page, zone, 0, migratetype);
+-			trace_mm_page_pcpu_drain(page, 0, migratetype);
++			/* MIGRATE_MOVABLE list may include MIGRATE_RESERVEs */
++			__free_one_page(page, zone, 0, page_private(page));
++			trace_mm_page_pcpu_drain(page, 0, page_private(page));
+ 		} while (--count && --batch_free && !list_empty(list));
+ 	}
+ 	spin_unlock(&zone->lock);
 
 
