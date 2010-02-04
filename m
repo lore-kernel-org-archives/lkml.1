@@ -1,61 +1,41 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757525Ab0BDLNi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 06:13:38 -0500
-Received: from qw-out-2122.google.com ([74.125.92.25]:3043 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755403Ab0BDLNg (ORCPT
+	id S1757669Ab0BDL0c (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 06:26:32 -0500
+Received: from smtp-out003.kontent.com ([81.88.40.217]:33589 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756279Ab0BDL0b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 06:13:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:subject:from:reply-to:to:cc:in-reply-to:references
-         :content-type:date:message-id:mime-version:x-mailer
-         :content-transfer-encoding;
-        b=dxEjyQh1f20CABYzF6+S/0HuENGTjxpZgFOJKO+1arErwaMdQWhpHggXhiOWxBqEHj
-         Idt54RBJCXUjEcRoDVypT9+FmTbFoB6cPKdwh9OiavzVM+5jE9sR4UJKAdb6OL1+djUp
-         pJfgnRazNAStU/eazkSTSUdETUdDsbvuTEEbQ=
-Subject: Re: patch net-restore-ip-source-validation.patch added to
- 2.6.32-stable tree
-From: jamal <hadi@cyberus.ca>
-Reply-To: hadi@cyberus.ca
-To: Stefan Lippers-Hollmann <s.L-H@gmx.de>
-Cc: gregkh@suse.de, linux-kernel@vger.kernel.org, davem@davemloft.net,
-       stable@kernel.org
-In-Reply-To: <201002032114.59960.s.L-H@gmx.de>
-References: <1265060041850@kroah.org>  <201002032114.59960.s.L-H@gmx.de>
-Content-Type: text/plain
-Date: Thu, 04 Feb 2010 06:13:31 -0500
-Message-Id: <1265282011.4204.12.camel@bigi>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1
+	Thu, 4 Feb 2010 06:26:31 -0500
+From: Oliver Neukum <oliver@neukum.org>
+To: Paul Rolland <rol@as2917.net>
+Subject: Re: usbserial speed limitations ?
+Date: Thu, 4 Feb 2010 12:26:21 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.33-rc6-0.1-default; KDE/4.3.1; x86_64; ; )
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-usb@vger.kernel.org
+References: <20100204095855.10993d1a@tux.DEF.witbe.net>
+In-Reply-To: <20100204095855.10993d1a@tux.DEF.witbe.net>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <201002041226.21379.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi there,
-
-I am downloading 2.6.32-7 to see if i can reproduce it. My gut is
-telling me it will be hard to see in my setup.
-Can you try to see if it something in your boot initialization i.e with
-no init e.g something like init=/bin/sh and then initcall_debug?
-
-cheers,
-jamal
-
-On Wed, 2010-02-03 at 21:14 +0100, Stefan Lippers-Hollmann wrote:
-
+Am Donnerstag, 4. Februar 2010 09:58:55 schrieb Paul Rolland:
+> "Maximum connection speed is limited by the current generic usbserial
+> driver to approximately less than 500kbps."
 > 
-> This patch, as part of the current 2.6.32 stable queue, breaks booting with
-> an oops very early, before the framebuffer got a chance to initialize 
-> (unfortunately most of it is cut with the unavoidable vga=0, so I didn't 
-> write it down yet), on amd64 and i386 (kernel configs attached). Removing
-> just this patch from queue-2.6.32 fixes the problem for me; kernel 2.6.33 
-> HEAD doesn't seem to be affected.
-> 
+> Is there really such a speed limitation in the usbserial module/driver ?
+> This modem is HSPA+, which should allow a theorical maximum downspeed of
+> 20MBps, not 500kbps...
 
-> Regards
-> 	Stefan Lippers-Hollmann
-> 
+In the generic usbserial driver this speed limit indeed exists.
+But you are not supposed to use it with that kind of device.
+Most likely the correct driver would be either option or sierra.
+Please post lsusb -v for your device.
 
+	Regards
+		Oliver
