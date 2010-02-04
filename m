@@ -1,62 +1,100 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754552Ab0BDIYo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 03:24:44 -0500
-Received: from moutng.kundenserver.de ([212.227.126.186]:57520 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751990Ab0BDIYn (ORCPT
+	id S1755590Ab0BDIYv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 03:24:51 -0500
+Received: from smtp.nokia.com ([192.100.122.230]:17199 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751990Ab0BDIYs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 03:24:43 -0500
-Subject: [PATCH] Staging: comedi: fix brace coding style in comedi_fops.c
-From: Paul Elms <paul@uprocera.co.uk>
-To: gregkh@suse.de, wfp5p@virginia.edu, shawn.bohrer@gmail.com,
-       fmhess@users.sourceforge.net
-Cc: devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 04 Feb 2010 08:24:28 +0000
-Message-ID: <1265271868.2483.2.camel@arthur>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX18QZ5oAJvhzybUtkzhS6erDOQhKw6AB9+laULU
- kIruTUAWg4gx50MXhMzQbGuIdRWHwtXYk9VsJLq9XhYlA+G2n0
- PS5K2ILw3stvJZX6lle+quaQRjWjoAT
+	Thu, 4 Feb 2010 03:24:48 -0500
+From: Samu Onkalo <samu.p.onkalo@nokia.com>
+To: eric.piel@tremplin-utc.net
+Cc: pavel@ucw.cz, daniel@caiaq.de, lm-sensors@lm-sensors.org,
+       linux-kernel@vger.kernel.org, Samu Onkalo <samu.p.onkalo@nokia.com>
+Subject: [PATCH 3/6] lis3: Introduce platform data for second ff / wu unit
+Date: Thu,  4 Feb 2010 10:24:05 +0200
+Message-Id: <1265271848-26559-4-git-send-email-samu.p.onkalo@nokia.com>
+X-Mailer: git-send-email 1.6.0.4
+In-Reply-To: <1265271848-26559-1-git-send-email-samu.p.onkalo@nokia.com>
+References: <1265271848-26559-1-git-send-email-samu.p.onkalo@nokia.com>
+X-OriginalArrivalTime: 04 Feb 2010 08:24:23.0086 (UTC) FILETIME=[74ADF4E0:01CAA573]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 38f32cfc823e40b4b64a2977bc79c00990b29837 Mon Sep 17 00:00:00 2001
-From: Paul Elms <paul@uprocera.co.uk>
-Date: Tue, 2 Feb 2010 17:34:50 +0000
-Subject: [PATCH] Staging: comedi: fix brace coding style in comedi_fops.c
+8 bit device has two wakeup / free fall units. It was not possible
+to configure the second unit. This patch introduces configuration
+entry to the platform data and also corresponding changes to the
+8 bit setup function.
 
-This patch to the comedi_fops.c file fixes a brace warning found by the checkpatch.pl tool
-Signed-off-by: Paul Elms <paul@uprocera.co.uk>
+High pass filters were enabled by default. Patch introduces configuration
+option for high pass filter cut off frequency and also possibility to
+disable or enable the filter via platform data.
+Since the control is a new one and default state was filter enabled,
+new option is used to disable the filter. This way old platform data
+is still compatible with the change.
+
+Signed-off-by: Samu Onkalo <samu.p.onkalo@nokia.com>
 ---
- drivers/staging/comedi/comedi_fops.c |    6 ++----
- 1 files changed, 2 insertions(+), 4 deletions(-)
+ drivers/hwmon/lis3lv02d.c |   15 +++++++++++++--
+ include/linux/lis3lv02d.h |    9 +++++++++
+ 2 files changed, 22 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/staging/comedi/comedi_fops.c b/drivers/staging/comedi/comedi_fops.c
-index 8117748..79653e8 100644
---- a/drivers/staging/comedi/comedi_fops.c
-+++ b/drivers/staging/comedi/comedi_fops.c
-@@ -2004,12 +2004,10 @@ void comedi_event(struct comedi_device *dev, struct comedi_subdevice *s)
- 	if (async->cb_mask & s->async->events) {
- 		if (comedi_get_subdevice_runflags(s) & SRF_USER) {
- 			wake_up_interruptible(&async->wait_head);
--			if (s->subdev_flags & SDF_CMD_READ) {
-+			if (s->subdev_flags & SDF_CMD_READ)
- 				kill_fasync(&dev->async_queue, SIGIO, POLL_IN);
--			}
--			if (s->subdev_flags & SDF_CMD_WRITE) {
-+			if (s->subdev_flags & SDF_CMD_WRITE)
- 				kill_fasync(&dev->async_queue, SIGIO, POLL_OUT);
--			}
- 		} else {
- 			if (async->cb_func)
- 				async->cb_func(s->async->events, async->cb_arg);
+diff --git a/drivers/hwmon/lis3lv02d.c b/drivers/hwmon/lis3lv02d.c
+index 99fd45d..50f3123 100644
+--- a/drivers/hwmon/lis3lv02d.c
++++ b/drivers/hwmon/lis3lv02d.c
+@@ -524,6 +524,8 @@ EXPORT_SYMBOL_GPL(lis3lv02d_remove_fs);
+ static void lis3lv02d_8b_configure(struct lis3lv02d *dev,
+ 				struct lis3lv02d_platform_data *p)
+ {
++	int ctrl2 = p->hipass_ctrl;
++
+ 	if (p->click_flags) {
+ 		dev->write(dev, CLICK_CFG, p->click_flags);
+ 		dev->write(dev, CLICK_TIMELIMIT, p->click_time_limit);
+@@ -540,9 +542,18 @@ static void lis3lv02d_8b_configure(struct lis3lv02d *dev,
+ 		dev->write(dev, FF_WU_THS_1, p->wakeup_thresh & 0x7f);
+ 		/* default to 2.5ms for now */
+ 		dev->write(dev, FF_WU_DURATION_1, 1);
+-		/* enable high pass filter for both free-fall units */
+-		dev->write(dev, CTRL_REG2, HP_FF_WU1 | HP_FF_WU2);
++		ctrl2 ^= HP_FF_WU1; /* Xor to keep compatible with old pdata*/
++	}
++
++	if (p->wakeup_flags2) {
++		dev->write(dev, FF_WU_CFG_2, p->wakeup_flags2);
++		dev->write(dev, FF_WU_THS_2, p->wakeup_thresh2 & 0x7f);
++		/* default to 2.5ms for now */
++		dev->write(dev, FF_WU_DURATION_2, 1);
++		ctrl2 ^= HP_FF_WU2; /* Xor to keep compatible with old pdata*/
+ 	}
++	/* Configure hipass filters */
++	dev->write(dev, CTRL_REG2, ctrl2);
+ }
+ 
+ /*
+diff --git a/include/linux/lis3lv02d.h b/include/linux/lis3lv02d.h
+index f1ca0dc..d625199 100644
+--- a/include/linux/lis3lv02d.h
++++ b/include/linux/lis3lv02d.h
+@@ -43,6 +43,15 @@ struct lis3lv02d_platform_data {
+ #define LIS3_WAKEUP_Z_HI	(1 << 5)
+ 	unsigned char wakeup_flags;
+ 	unsigned char wakeup_thresh;
++	unsigned char wakeup_flags2;
++	unsigned char wakeup_thresh2;
++#define LIS3_HIPASS_CUTFF_8HZ   0
++#define LIS3_HIPASS_CUTFF_4HZ   1
++#define LIS3_HIPASS_CUTFF_2HZ   2
++#define LIS3_HIPASS_CUTFF_1HZ   3
++#define LIS3_HIPASS1_DISABLE    (1 << 2)
++#define LIS3_HIPASS2_DISABLE    (1 << 3)
++	unsigned char hipass_ctrl;
+ #define LIS3_NO_MAP		0
+ #define LIS3_DEV_X		1
+ #define LIS3_DEV_Y		2
 -- 
-1.6.3.3
-
-
+1.6.0.4
 
