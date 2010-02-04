@@ -1,22 +1,23 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933487Ab0BDRbi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 12:31:38 -0500
-Received: from kroah.org ([198.145.64.141]:34750 "EHLO coco.kroah.org"
+	id S933356Ab0BDRaL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 12:30:11 -0500
+Received: from kroah.org ([198.145.64.141]:34815 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933266Ab0BDRV6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 12:21:58 -0500
-X-Mailbox-Line: From linux@linux.site Thu Feb  4 09:15:09 2010
-Message-Id: <20100204171508.769784740@linux.site>
+	id S933295Ab0BDRWH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 12:22:07 -0500
+X-Mailbox-Line: From linux@linux.site Thu Feb  4 09:15:13 2010
+Message-Id: <20100204171513.218726173@linux.site>
 User-Agent: quilt/0.47-14.9
-Date: Thu, 04 Feb 2010 09:12:07 -0800
+Date: Thu, 04 Feb 2010 09:12:15 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Eric Anholt <eric@anholt.net>,
+       Octavian Purdila <opurdila@ixiacom.com>,
+       "David S. Miller" <davem@davemloft.net>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [36/74] drm/i915: only enable hotplug for detected outputs
+Subject: [44/74] tcp: update the netstamp_needed counter when cloning sockets
 In-Reply-To: <20100204171850.GA16539@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -26,264 +27,41 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
+From: Octavian Purdila <opurdila@ixiacom.com>
 
-commit b01f2c3a4a37d09a47ad73ccbb46d554d21cfeb0 upstream.
+[ Upstream commit 704da560c0a0120d8869187f511491a00951a1d3 ]
 
-This patch changes around our hotplug enable code a bit to only enable
-it for ports we actually detect and initialize.  This prevents problems
-with stuck or spurious interrupts on outputs that aren't actually wired
-up, and is generally more correct.
+This fixes a netstamp_needed accounting issue when the listen socket
+has SO_TIMESTAMP set:
 
-Fixes FDO bug #23183.
+    s = socket(AF_INET, SOCK_STREAM, 0);
+    setsockopt(s, SOL_SOCKET, SO_TIMESTAMP, 1); -> netstamp_needed = 1
+    bind(s, ...);
+    listen(s, ...);
+    s2 = accept(s, ...); -> netstamp_needed = 1
+    close(s2); -> netstamp_needed = 0
+    close(s); -> netstamp_needed = -1
 
-Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
-Signed-off-by: Eric Anholt <eric@anholt.net>
+Signed-off-by: Octavian Purdila <opurdila@ixiacom.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/gpu/drm/i915/i915_dma.c      |    4 ++--
- drivers/gpu/drm/i915/i915_irq.c      |   30 +++++++++++++++++++-----------
- drivers/gpu/drm/i915/i915_reg.h      |    8 --------
- drivers/gpu/drm/i915/intel_crt.c     |    2 ++
- drivers/gpu/drm/i915/intel_display.c |   26 ++++++++++++++++++++------
- drivers/gpu/drm/i915/intel_dp.c      |    6 ++++++
- drivers/gpu/drm/i915/intel_hdmi.c    |    5 +++++
- drivers/gpu/drm/i915/intel_sdvo.c    |    3 +++
- drivers/gpu/drm/i915/intel_tv.c      |    2 ++
- 9 files changed, 59 insertions(+), 27 deletions(-)
+ net/core/sock.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
---- a/drivers/gpu/drm/i915/i915_dma.c
-+++ b/drivers/gpu/drm/i915/i915_dma.c
-@@ -1252,6 +1252,8 @@ static int i915_load_modeset_init(struct
- 	if (ret)
- 		goto destroy_ringbuffer;
+--- a/net/core/sock.c
++++ b/net/core/sock.c
+@@ -1181,6 +1181,10 @@ struct sock *sk_clone(const struct sock 
  
-+	intel_modeset_init(dev);
+ 		if (newsk->sk_prot->sockets_allocated)
+ 			percpu_counter_inc(newsk->sk_prot->sockets_allocated);
 +
- 	ret = drm_irq_install(dev);
- 	if (ret)
- 		goto destroy_ringbuffer;
-@@ -1266,8 +1268,6 @@ static int i915_load_modeset_init(struct
- 
- 	I915_WRITE(INSTPM, (1 << 5) | (1 << 21));
- 
--	intel_modeset_init(dev);
--
- 	drm_helper_initial_config(dev);
- 
- 	return 0;
---- a/drivers/gpu/drm/i915/i915_irq.c
-+++ b/drivers/gpu/drm/i915/i915_irq.c
-@@ -1044,6 +1044,10 @@ void i915_driver_irq_preinstall(struct d
- 	(void) I915_READ(IER);
- }
- 
-+/*
-+ * Must be called after intel_modeset_init or hotplug interrupts won't be
-+ * enabled correctly.
-+ */
- int i915_driver_irq_postinstall(struct drm_device *dev)
- {
- 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
-@@ -1066,19 +1070,23 @@ int i915_driver_irq_postinstall(struct d
- 	if (I915_HAS_HOTPLUG(dev)) {
- 		u32 hotplug_en = I915_READ(PORT_HOTPLUG_EN);
- 
--		/* Leave other bits alone */
--		hotplug_en |= HOTPLUG_EN_MASK;
-+		/* Note HDMI and DP share bits */
-+		if (dev_priv->hotplug_supported_mask & HDMIB_HOTPLUG_INT_STATUS)
-+			hotplug_en |= HDMIB_HOTPLUG_INT_EN;
-+		if (dev_priv->hotplug_supported_mask & HDMIC_HOTPLUG_INT_STATUS)
-+			hotplug_en |= HDMIC_HOTPLUG_INT_EN;
-+		if (dev_priv->hotplug_supported_mask & HDMID_HOTPLUG_INT_STATUS)
-+			hotplug_en |= HDMID_HOTPLUG_INT_EN;
-+		if (dev_priv->hotplug_supported_mask & SDVOC_HOTPLUG_INT_STATUS)
-+			hotplug_en |= SDVOC_HOTPLUG_INT_EN;
-+		if (dev_priv->hotplug_supported_mask & SDVOB_HOTPLUG_INT_STATUS)
-+			hotplug_en |= SDVOB_HOTPLUG_INT_EN;
-+		if (dev_priv->hotplug_supported_mask & CRT_HOTPLUG_INT_STATUS)
-+			hotplug_en |= CRT_HOTPLUG_INT_EN;
-+		/* Ignore TV since it's buggy */
-+
- 		I915_WRITE(PORT_HOTPLUG_EN, hotplug_en);
- 
--		dev_priv->hotplug_supported_mask = CRT_HOTPLUG_INT_STATUS |
--			TV_HOTPLUG_INT_STATUS | SDVOC_HOTPLUG_INT_STATUS |
--			SDVOB_HOTPLUG_INT_STATUS;
--		if (IS_G4X(dev)) {
--			dev_priv->hotplug_supported_mask |=
--				HDMIB_HOTPLUG_INT_STATUS |
--				HDMIC_HOTPLUG_INT_STATUS |
--				HDMID_HOTPLUG_INT_STATUS;
--		}
- 		/* Enable in IER... */
- 		enable_mask |= I915_DISPLAY_PORT_INTERRUPT;
- 		/* and unmask in IMR */
---- a/drivers/gpu/drm/i915/i915_reg.h
-+++ b/drivers/gpu/drm/i915/i915_reg.h
-@@ -863,14 +863,6 @@
- #define CRT_HOTPLUG_DETECT_VOLTAGE_475MV	(1 << 2)
- #define CRT_HOTPLUG_MASK			(0x3fc) /* Bits 9-2 */
- #define CRT_FORCE_HOTPLUG_MASK			0xfffffe1f
--#define HOTPLUG_EN_MASK (HDMIB_HOTPLUG_INT_EN | \
--			 HDMIC_HOTPLUG_INT_EN |	  \
--			 HDMID_HOTPLUG_INT_EN |	  \
--			 SDVOB_HOTPLUG_INT_EN |	  \
--			 SDVOC_HOTPLUG_INT_EN |	  \
--			 TV_HOTPLUG_INT_EN |	  \
--			 CRT_HOTPLUG_INT_EN)
--
- 
- #define PORT_HOTPLUG_STAT	0x61114
- #define   HDMIB_HOTPLUG_INT_STATUS		(1 << 29)
---- a/drivers/gpu/drm/i915/intel_crt.c
-+++ b/drivers/gpu/drm/i915/intel_crt.c
-@@ -576,4 +576,6 @@ void intel_crt_init(struct drm_device *d
- 	drm_connector_helper_add(connector, &intel_crt_connector_helper_funcs);
- 
- 	drm_sysfs_connector_add(connector);
-+
-+	dev_priv->hotplug_supported_mask |= CRT_HOTPLUG_INT_STATUS;
- }
---- a/drivers/gpu/drm/i915/intel_display.c
-+++ b/drivers/gpu/drm/i915/intel_display.c
-@@ -4068,29 +4068,43 @@ static void intel_setup_outputs(struct d
- 		bool found = false;
- 
- 		if (I915_READ(SDVOB) & SDVO_DETECTED) {
-+			DRM_DEBUG_KMS("probing SDVOB\n");
- 			found = intel_sdvo_init(dev, SDVOB);
--			if (!found && SUPPORTS_INTEGRATED_HDMI(dev))
-+			if (!found && SUPPORTS_INTEGRATED_HDMI(dev)) {
-+				DRM_DEBUG_KMS("probing HDMI on SDVOB\n");
- 				intel_hdmi_init(dev, SDVOB);
-+			}
- 
--			if (!found && SUPPORTS_INTEGRATED_DP(dev))
-+			if (!found && SUPPORTS_INTEGRATED_DP(dev)) {
-+				DRM_DEBUG_KMS("probing DP_B\n");
- 				intel_dp_init(dev, DP_B);
-+			}
- 		}
- 
- 		/* Before G4X SDVOC doesn't have its own detect register */
- 
--		if (I915_READ(SDVOB) & SDVO_DETECTED)
-+		if (I915_READ(SDVOB) & SDVO_DETECTED) {
-+			DRM_DEBUG_KMS("probing SDVOC\n");
- 			found = intel_sdvo_init(dev, SDVOC);
-+		}
- 
- 		if (!found && (I915_READ(SDVOC) & SDVO_DETECTED)) {
- 
--			if (SUPPORTS_INTEGRATED_HDMI(dev))
-+			if (SUPPORTS_INTEGRATED_HDMI(dev)) {
-+				DRM_DEBUG_KMS("probing HDMI on SDVOC\n");
- 				intel_hdmi_init(dev, SDVOC);
--			if (SUPPORTS_INTEGRATED_DP(dev))
-+			}
-+			if (SUPPORTS_INTEGRATED_DP(dev)) {
-+				DRM_DEBUG_KMS("probing DP_C\n");
- 				intel_dp_init(dev, DP_C);
-+			}
- 		}
- 
--		if (SUPPORTS_INTEGRATED_DP(dev) && (I915_READ(DP_D) & DP_DETECTED))
-+		if (SUPPORTS_INTEGRATED_DP(dev) &&
-+		    (I915_READ(DP_D) & DP_DETECTED)) {
-+			DRM_DEBUG_KMS("probing DP_D\n");
- 			intel_dp_init(dev, DP_D);
-+		}
- 	} else if (IS_I8XX(dev))
- 		intel_dvo_init(dev);
- 
---- a/drivers/gpu/drm/i915/intel_dp.c
-+++ b/drivers/gpu/drm/i915/intel_dp.c
-@@ -1290,14 +1290,20 @@ intel_dp_init(struct drm_device *dev, in
- 			break;
- 		case DP_B:
- 		case PCH_DP_B:
-+			dev_priv->hotplug_supported_mask |=
-+				HDMIB_HOTPLUG_INT_STATUS;
- 			name = "DPDDC-B";
- 			break;
- 		case DP_C:
- 		case PCH_DP_C:
-+			dev_priv->hotplug_supported_mask |=
-+				HDMIC_HOTPLUG_INT_STATUS;
- 			name = "DPDDC-C";
- 			break;
- 		case DP_D:
- 		case PCH_DP_D:
-+			dev_priv->hotplug_supported_mask |=
-+				HDMID_HOTPLUG_INT_STATUS;
- 			name = "DPDDC-D";
- 			break;
++		if (sock_flag(newsk, SOCK_TIMESTAMP) ||
++		    sock_flag(newsk, SOCK_TIMESTAMPING_RX_SOFTWARE))
++			net_enable_timestamp();
  	}
---- a/drivers/gpu/drm/i915/intel_hdmi.c
-+++ b/drivers/gpu/drm/i915/intel_hdmi.c
-@@ -254,21 +254,26 @@ void intel_hdmi_init(struct drm_device *
- 	if (sdvox_reg == SDVOB) {
- 		intel_output->clone_mask = (1 << INTEL_HDMIB_CLONE_BIT);
- 		intel_output->ddc_bus = intel_i2c_create(dev, GPIOE, "HDMIB");
-+		dev_priv->hotplug_supported_mask |= HDMIB_HOTPLUG_INT_STATUS;
- 	} else if (sdvox_reg == SDVOC) {
- 		intel_output->clone_mask = (1 << INTEL_HDMIC_CLONE_BIT);
- 		intel_output->ddc_bus = intel_i2c_create(dev, GPIOD, "HDMIC");
-+		dev_priv->hotplug_supported_mask |= HDMIC_HOTPLUG_INT_STATUS;
- 	} else if (sdvox_reg == HDMIB) {
- 		intel_output->clone_mask = (1 << INTEL_HDMID_CLONE_BIT);
- 		intel_output->ddc_bus = intel_i2c_create(dev, PCH_GPIOE,
- 								"HDMIB");
-+		dev_priv->hotplug_supported_mask |= HDMIB_HOTPLUG_INT_STATUS;
- 	} else if (sdvox_reg == HDMIC) {
- 		intel_output->clone_mask = (1 << INTEL_HDMIE_CLONE_BIT);
- 		intel_output->ddc_bus = intel_i2c_create(dev, PCH_GPIOD,
- 								"HDMIC");
-+		dev_priv->hotplug_supported_mask |= HDMIC_HOTPLUG_INT_STATUS;
- 	} else if (sdvox_reg == HDMID) {
- 		intel_output->clone_mask = (1 << INTEL_HDMIF_CLONE_BIT);
- 		intel_output->ddc_bus = intel_i2c_create(dev, PCH_GPIOF,
- 								"HDMID");
-+		dev_priv->hotplug_supported_mask |= HDMID_HOTPLUG_INT_STATUS;
- 	}
- 	if (!intel_output->ddc_bus)
- 		goto err_connector;
---- a/drivers/gpu/drm/i915/intel_sdvo.c
-+++ b/drivers/gpu/drm/i915/intel_sdvo.c
-@@ -2743,6 +2743,7 @@ static void intel_sdvo_create_enhance_pr
- 
- bool intel_sdvo_init(struct drm_device *dev, int output_device)
- {
-+	struct drm_i915_private *dev_priv = dev->dev_private;
- 	struct drm_connector *connector;
- 	struct intel_output *intel_output;
- 	struct intel_sdvo_priv *sdvo_priv;
-@@ -2789,10 +2790,12 @@ bool intel_sdvo_init(struct drm_device *
- 		intel_output->ddc_bus = intel_i2c_create(dev, GPIOE, "SDVOB DDC BUS");
- 		sdvo_priv->analog_ddc_bus = intel_i2c_create(dev, GPIOA,
- 						"SDVOB/VGA DDC BUS");
-+		dev_priv->hotplug_supported_mask |= SDVOB_HOTPLUG_INT_STATUS;
- 	} else {
- 		intel_output->ddc_bus = intel_i2c_create(dev, GPIOE, "SDVOC DDC BUS");
- 		sdvo_priv->analog_ddc_bus = intel_i2c_create(dev, GPIOA,
- 						"SDVOC/VGA DDC BUS");
-+		dev_priv->hotplug_supported_mask |= SDVOC_HOTPLUG_INT_STATUS;
- 	}
- 
- 	if (intel_output->ddc_bus == NULL)
---- a/drivers/gpu/drm/i915/intel_tv.c
-+++ b/drivers/gpu/drm/i915/intel_tv.c
-@@ -1801,6 +1801,8 @@ intel_tv_init(struct drm_device *dev)
- 	drm_connector_attach_property(connector,
- 				   dev->mode_config.tv_bottom_margin_property,
- 				   tv_priv->margin[TV_MARGIN_BOTTOM]);
-+
-+	dev_priv->hotplug_supported_mask |= TV_HOTPLUG_INT_STATUS;
  out:
- 	drm_sysfs_connector_add(connector);
- }
+ 	return newsk;
 
 
