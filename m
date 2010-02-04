@@ -1,62 +1,86 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758602Ab0BDXP7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 18:15:59 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:53003 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758514Ab0BDXP6 (ORCPT
+	id S1758609Ab0BDXSg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 18:18:36 -0500
+Received: from mail-fx0-f220.google.com ([209.85.220.220]:46606 "EHLO
+	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758475Ab0BDXSe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 18:15:58 -0500
-Date: Thu, 4 Feb 2010 23:16:21 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Kevin Pedretti" <ktpedre@sandia.gov>
-Cc: "David Miller" <davem@davemloft.net>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] seastar - SeaStar Ethernet driver
-Message-ID: <20100204231621.7a13695a@lxorguk.ukuu.org.uk>
-In-Reply-To: <1265324464.23523.51.camel@hawkeye.sandia.gov>
-References: <20100202205845.GE5246@hawkeye.sandia.gov>
-	<20100202.134251.15604523.davem@davemloft.net>
-	<1265160242.15726.20.camel@hawkeye.sandia.gov>
-	<20100202.174045.135005544.davem@davemloft.net>
-	<1265324464.23523.51.camel@hawkeye.sandia.gov>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 4 Feb 2010 18:18:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=kSYwpPZLNKfw/bx7YJSDwgjiSJdyzLRh57SSETf3it+/grv2VEA10af16SpMmO9310
+         8XeZlpovOgsbmDaV+v/PR3j/nlaNRUkdpRIruGoY12exb1IKFRE/gnQUB5gLgDq8BYaK
+         oj72RtE0MEWf3rmrhBP7a6wtWMqVuH+zTV7kg=
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: linux-mmc@vger.kernel.org
+Cc: Philip Langdale <philipl@overt.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: [PATCH] MMC: fix hang if card was removed during suspend and unsafe resume was enabled
+Date: Fri,  5 Feb 2010 01:18:15 +0200
+Message-Id: <1265325495-4220-1-git-send-email-maximlevitsky@gmail.com>
+X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <1265219241.12549.8.camel@maxim-laptop>
+References: <1265219241.12549.8.camel@maxim-laptop>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Ethernet Frame:     [6 bytes h_dest][6 bytes h_source][2 bytes h_proto][data...]
-> SeaStar DG Message: [2 bytes length][1 byte MBZ][1 byte msg type (2 << 5) for IP)][data...]
-> 
-> I think it would be possible to re-factor it so that the Ethernet frame
-> is encapsulated in its entirety within a seastar message, rather than
-> the current scheme of jamming the critical info from the Ethernet header
-> into the seastar datagram header.  I will pursue that if you want... the
-> drawback is that it would break compatibility with Cray's existing
-> proprietary IP over SeaStar driver, making this driver pretty much
-> useless for the kinds of things us and others would like to do (e.g.,
-> leave service nodes booted with Cray's proprietary software stack and
-> talking to compute nodes running this driver).
+Currently removal of the card leads to del_disk called indirectly by mmc core.
+This function expects userspace to be running, which isn't when .resume is called
 
-Perhaps it shouldn't be pretending to be an ethernet driver - that is
-sort of the root cause of all the confusion and the fact things like the
-bridging layer will try and grab it etc ? If it claimed to be a new
-hardware type you'd take a brief hit on getting the new hw type into the
-tools but it would mean
+Fix that by removing the code that did that in mmc_resume_host. It is possible
+because card detection logic will kick it later and remove the card.
 
-- tcpdump etc once coaxed would display seastar frames not fake ethernet
-- the config tools would actually report what it really was
-- non IP layers and userspace won't keep trying to do things you don't
-  want (what does it do right now with vlans I wonder 8))
-- there will be no ARP confusion
+Also make mtd workqueue freezeable, so it won't attempt to add/remove the card
+while userspace is frozen.
 
-If it wants to stay compatible and pretend to be ethernet you probably
-need a message type for "encapsulated ethernet", you can then encapsulate
-anything not IP and stay compatible by keeping IP sent the way it is
-now ? Thats if it wants to in the first place.
+Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
+---
+ drivers/mmc/core/core.c |    9 ++-------
+ 1 files changed, 2 insertions(+), 7 deletions(-)
 
-Alan
+diff --git a/drivers/mmc/core/core.c b/drivers/mmc/core/core.c
+index 30acd52..879d48d 100644
+--- a/drivers/mmc/core/core.c
++++ b/drivers/mmc/core/core.c
+@@ -1257,7 +1257,6 @@ int mmc_suspend_host(struct mmc_host *host, pm_message_t state)
+ 	if (host->caps & MMC_CAP_DISABLE)
+ 		cancel_delayed_work(&host->disable);
+ 	cancel_delayed_work(&host->detect);
+-	mmc_flush_scheduled_work();
+ 
+ 	mmc_bus_get(host);
+ 	if (host->bus_ops && !host->bus_dead) {
+@@ -1300,15 +1299,11 @@ int mmc_resume_host(struct mmc_host *host)
+ 		mmc_select_voltage(host, host->ocr);
+ 		BUG_ON(!host->bus_ops->resume);
+ 		err = host->bus_ops->resume(host);
++
+ 		if (err) {
+ 			printk(KERN_WARNING "%s: error %d during resume "
+ 					    "(card was removed?)\n",
+ 					    mmc_hostname(host), err);
+-			if (host->bus_ops->remove)
+-				host->bus_ops->remove(host);
+-			mmc_claim_host(host);
+-			mmc_detach_bus(host);
+-			mmc_release_host(host);
+ 			/* no need to bother upper layers */
+ 			err = 0;
+ 		}
+@@ -1332,7 +1327,7 @@ static int __init mmc_init(void)
+ {
+ 	int ret;
+ 
+-	workqueue = create_singlethread_workqueue("kmmcd");
++	workqueue = create_freezeable_workqueue("kmmcd");
+ 	if (!workqueue)
+ 		return -ENOMEM;
+ 
+-- 
+1.6.3.3
+
