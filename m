@@ -1,23 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933562Ab0BDR3f (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 12:29:35 -0500
-Received: from kroah.org ([198.145.64.141]:34831 "EHLO coco.kroah.org"
+	id S933545Ab0BDR20 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 12:28:26 -0500
+Received: from kroah.org ([198.145.64.141]:34869 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933300Ab0BDRWJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 12:22:09 -0500
-X-Mailbox-Line: From linux@linux.site Thu Feb  4 09:15:14 2010
-Message-Id: <20100204171514.263483751@linux.site>
+	id S933324Ab0BDRWQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 12:22:16 -0500
+X-Mailbox-Line: From linux@linux.site Thu Feb  4 09:15:18 2010
+Message-Id: <20100204171518.111950133@linux.site>
 User-Agent: quilt/0.47-14.9
-Date: Thu, 04 Feb 2010 09:12:17 -0800
+Date: Thu, 04 Feb 2010 09:12:24 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jamal Hadi Salim <hadi@cyberus.ca>,
-       "David S. Miller" <davem@davemloft.net>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [46/74] net: restore ip source validation
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, linux-mm@kvack.org,
+       Nick Piggin <npiggin@suse.de>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [53/74] mm: percpu-vmap fix RCU list walking
 In-Reply-To: <20100204171850.GA16539@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -27,72 +25,107 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jamal Hadi Salim <hadi@cyberus.ca>
+From: Nick Piggin <npiggin@suse.de>
 
-[ Upstream commit 28f6aeea3f12d37bd258b2c0d5ba891bff4ec479 ]
+commit de5604231ce4bc8db1bc1dcd27d8540cbedf1518 upstream.
 
-when using policy routing and the skb mark:
-there are cases where a back path validation requires us
-to use a different routing table for src ip validation than
-the one used for mapping ingress dst ip.
-One such a case is transparent proxying where we pretend to be
-the destination system and therefore the local table
-is used for incoming packets but possibly a main table would
-be used on outbound.
-Make the default behavior to allow the above and if users
-need to turn on the symmetry via sysctl src_valid_mark
+RCU list walking of the per-cpu vmap cache was broken.  It did not use
+RCU primitives, and also the union of free_list and rcu_head is
+obviously wrong (because free_list is indeed the list we are RCU
+walking).
 
-Signed-off-by: Jamal Hadi Salim <hadi@cyberus.ca>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+While we are there, remove a couple of unused fields from an earlier
+iteration.
+
+These APIs aren't actually used anywhere, because of problems with the
+XFS conversion.  Christoph has now verified that the problems are solved
+with these patches.  Also it is an exported interface, so I think it
+will be good to be merged now (and Christoph wants to get the XFS
+changes into their local tree).
+
+Cc: linux-mm@kvack.org
+Tested-by: Christoph Hellwig <hch@infradead.org>
+Signed-off-by: Nick Piggin <npiggin@suse.de>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/linux/inetdevice.h |    1 +
- include/linux/sysctl.h     |    1 +
- net/ipv4/devinet.c         |    1 +
- net/ipv4/fib_frontend.c    |    2 ++
- 4 files changed, 5 insertions(+)
+ mm/vmalloc.c |   20 ++++++--------------
+ 1 file changed, 6 insertions(+), 14 deletions(-)
 
---- a/include/linux/inetdevice.h
-+++ b/include/linux/inetdevice.h
-@@ -83,6 +83,7 @@ static inline void ipv4_devconf_setall(s
- #define IN_DEV_FORWARD(in_dev)		IN_DEV_CONF_GET((in_dev), FORWARDING)
- #define IN_DEV_MFORWARD(in_dev)		IN_DEV_ANDCONF((in_dev), MC_FORWARDING)
- #define IN_DEV_RPFILTER(in_dev)		IN_DEV_MAXCONF((in_dev), RP_FILTER)
-+#define IN_DEV_SRC_VMARK(in_dev)    	IN_DEV_ORCONF((in_dev), SRC_VMARK)
- #define IN_DEV_SOURCE_ROUTE(in_dev)	IN_DEV_ANDCONF((in_dev), \
- 						       ACCEPT_SOURCE_ROUTE)
- #define IN_DEV_BOOTP_RELAY(in_dev)	IN_DEV_ANDCONF((in_dev), BOOTP_RELAY)
---- a/include/linux/sysctl.h
-+++ b/include/linux/sysctl.h
-@@ -490,6 +490,7 @@ enum
- 	NET_IPV4_CONF_PROMOTE_SECONDARIES=20,
- 	NET_IPV4_CONF_ARP_ACCEPT=21,
- 	NET_IPV4_CONF_ARP_NOTIFY=22,
-+	NET_IPV4_CONF_SRC_VMARK=24,
- 	__NET_IPV4_CONF_MAX
+--- a/mm/vmalloc.c
++++ b/mm/vmalloc.c
+@@ -667,8 +667,6 @@ static bool vmap_initialized __read_most
+ struct vmap_block_queue {
+ 	spinlock_t lock;
+ 	struct list_head free;
+-	struct list_head dirty;
+-	unsigned int nr_dirty;
  };
  
---- a/net/ipv4/devinet.c
-+++ b/net/ipv4/devinet.c
-@@ -1450,6 +1450,7 @@ static struct devinet_sysctl_table {
- 		DEVINET_SYSCTL_RW_ENTRY(SEND_REDIRECTS, "send_redirects"),
- 		DEVINET_SYSCTL_RW_ENTRY(ACCEPT_SOURCE_ROUTE,
- 					"accept_source_route"),
-+		DEVINET_SYSCTL_RW_ENTRY(SRC_VMARK, "src_valid_mark"),
- 		DEVINET_SYSCTL_RW_ENTRY(PROXY_ARP, "proxy_arp"),
- 		DEVINET_SYSCTL_RW_ENTRY(MEDIUM_ID, "medium_id"),
- 		DEVINET_SYSCTL_RW_ENTRY(BOOTP_RELAY, "bootp_relay"),
---- a/net/ipv4/fib_frontend.c
-+++ b/net/ipv4/fib_frontend.c
-@@ -251,6 +251,8 @@ int fib_validate_source(__be32 src, __be
- 	if (in_dev) {
- 		no_addr = in_dev->ifa_list == NULL;
- 		rpf = IN_DEV_RPFILTER(in_dev);
-+		if (mark && !IN_DEV_SRC_VMARK(in_dev))
-+			fl.mark = 0;
- 	}
- 	rcu_read_unlock();
+ struct vmap_block {
+@@ -678,10 +676,8 @@ struct vmap_block {
+ 	unsigned long free, dirty;
+ 	DECLARE_BITMAP(alloc_map, VMAP_BBMAP_BITS);
+ 	DECLARE_BITMAP(dirty_map, VMAP_BBMAP_BITS);
+-	union {
+-		struct list_head free_list;
+-		struct rcu_head rcu_head;
+-	};
++	struct list_head free_list;
++	struct rcu_head rcu_head;
+ };
  
+ /* Queue of free and dirty vmap blocks, for allocation and flushing purposes */
+@@ -757,7 +753,7 @@ static struct vmap_block *new_vmap_block
+ 	vbq = &get_cpu_var(vmap_block_queue);
+ 	vb->vbq = vbq;
+ 	spin_lock(&vbq->lock);
+-	list_add(&vb->free_list, &vbq->free);
++	list_add_rcu(&vb->free_list, &vbq->free);
+ 	spin_unlock(&vbq->lock);
+ 	put_cpu_var(vmap_cpu_blocks);
+ 
+@@ -776,8 +772,6 @@ static void free_vmap_block(struct vmap_
+ 	struct vmap_block *tmp;
+ 	unsigned long vb_idx;
+ 
+-	BUG_ON(!list_empty(&vb->free_list));
+-
+ 	vb_idx = addr_to_vb_idx(vb->va->va_start);
+ 	spin_lock(&vmap_block_tree_lock);
+ 	tmp = radix_tree_delete(&vmap_block_tree, vb_idx);
+@@ -816,7 +810,7 @@ again:
+ 			vb->free -= 1UL << order;
+ 			if (vb->free == 0) {
+ 				spin_lock(&vbq->lock);
+-				list_del_init(&vb->free_list);
++				list_del_rcu(&vb->free_list);
+ 				spin_unlock(&vbq->lock);
+ 			}
+ 			spin_unlock(&vb->lock);
+@@ -860,11 +854,11 @@ static void vb_free(const void *addr, un
+ 	BUG_ON(!vb);
+ 
+ 	spin_lock(&vb->lock);
+-	bitmap_allocate_region(vb->dirty_map, offset >> PAGE_SHIFT, order);
++	BUG_ON(bitmap_allocate_region(vb->dirty_map, offset >> PAGE_SHIFT, order));
+ 
+ 	vb->dirty += 1UL << order;
+ 	if (vb->dirty == VMAP_BBMAP_BITS) {
+-		BUG_ON(vb->free || !list_empty(&vb->free_list));
++		BUG_ON(vb->free);
+ 		spin_unlock(&vb->lock);
+ 		free_vmap_block(vb);
+ 	} else
+@@ -1033,8 +1027,6 @@ void __init vmalloc_init(void)
+ 		vbq = &per_cpu(vmap_block_queue, i);
+ 		spin_lock_init(&vbq->lock);
+ 		INIT_LIST_HEAD(&vbq->free);
+-		INIT_LIST_HEAD(&vbq->dirty);
+-		vbq->nr_dirty = 0;
+ 	}
+ 
+ 	/* Import existing vmlist entries. */
 
 
