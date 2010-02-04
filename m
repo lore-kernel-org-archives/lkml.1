@@ -1,137 +1,42 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754882Ab0BDROP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 12:14:15 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:55200 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753018Ab0BDROM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 12:14:12 -0500
-Message-ID: <4B6B0039.7010206@redhat.com>
-Date: Thu, 04 Feb 2010 15:13:29 -0200
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
+	id S1758443Ab0BDRPo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 12:15:44 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36118 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753086Ab0BDRPn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 12:15:43 -0500
+Date: Thu, 4 Feb 2010 09:15:08 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Ingo Molnar <mingo@elte.hu>
+cc: Matthew Garrett <mjg59@srcf.ucam.org>, Dave Airlie <airlied@gmail.com>,
+       Dave Airlie <airlied@linux.ie>, linux-kernel@vger.kernel.org,
+       dri-devel@lists.sf.net
+Subject: Re: hung bootup with "drm/radeon/kms: move radeon KMS on/off switch
+ out of staging."
+In-Reply-To: <20100204170826.GA16397@elte.hu>
+Message-ID: <alpine.LFD.2.00.1002040913420.3707@localhost.localdomain>
+References: <alpine.DEB.2.00.1002010215530.15366@skynet.skynet.ie> <alpine.DEB.2.00.1002010253120.15366@skynet.skynet.ie> <20100202081727.GA6788@elte.hu> <21d7e9971002020035v22318962w6412ccd8d93449da@mail.gmail.com> <20100202154656.GD27314@elte.hu>
+ <21d7e9971002021234y275fae02k410af92bb16fee73@mail.gmail.com> <20100204062619.GA29154@elte.hu> <20100204071705.GA28403@elte.hu> <20100204164859.GA17878@srcf.ucam.org> <20100204170826.GA16397@elte.hu>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Pekka Sarnila <sarnila@adit.fi>
-CC: Jiri Slaby <jirislaby@gmail.com>, Jiri Kosina <jkosina@suse.cz>,
-       Antti Palosaari <crope@iki.fi>, mchehab@infradead.org,
-       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
-       linux-input@vger.kernel.org
-Subject: Re: [PATCH 1/1] media: dvb-usb/af9015, fix disconnection crashes
-References: <1264007972-6261-1-git-send-email-jslaby@suse.cz> <4B5CDB53.6030009@iki.fi> <4B5D6098.7010700@gmail.com> <4B5DDDFB.5020907@iki.fi> <alpine.LRH.2.00.1001261406010.15694@twin.jikos.cz> <4B6AA211.1060707@gmail.com> <4B6ACA4B.2030906@adit.fi> <4B6AD3DB.8090801@redhat.com> <4B6AE241.6090900@adit.fi>
-In-Reply-To: <4B6AE241.6090900@adit.fi>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pekka Sarnila wrote:
 
-> The problem here is that at least afatech ir receiver has the ir code to
-> key code build in, so trough HID you can use only the remote whose ir to
-> key translate table has been loaded to the aftech device. Unless that
-> can be easily controlled by the user HID is no good for this.
 
-The ir-core allows a driver to start with a built in table, that can be
-dynamically replaced in userspace by a different table, and even with a
-different protocol, if supported by the driver/device.
-
-> But most of the world still uses analog (they can not afford yet the
-> transfer). Those tv-sticks have identical receivers. And there are usb
-> ir receivers not embedded to tv-sticks. Conceptually and technically it
-> has nothing to do with any tv or any other audiovisual system system
-> (e.g. a remote controlled weather station).
+On Thu, 4 Feb 2010, Ingo Molnar wrote:
 > 
-> So dvb is both as a place and a name misleading.
+> Well, once i applied the revert i got no more hangs or crashes today, in lots 
+> of bootups. This is fully repeatable - if i re-apply that commit with the 
+> config i sent the hang happens again.
 
-It happens that almost all tv products (analog or digital) come with some 
-IR support. But you can find also some products that are just IR.
+But that's just because when it was in staging, you'd never enable it, 
+right? Because your config generator always turns off staging stuff. IOW, 
+it's not the code - it's more an interaction with how your test-bed works.
 
-That's why we're moving it to be outside the V4L and the DVB directory.
-For now, it is at /drivers/media/IR (since it helps us to move the code, while
-there are still some dependencies at ir-common). But the better is to move it
-later to /drivers/IR or /drivers/input/IR.
- 
->> See drivers/media/IR on linux-next for the IR common code. The ir-core is
->> provided by ir-keytable.c and ir-sysfs.c, and it is not DVB or V4L
->> specific.
-> 
-> Well I was talking about HID remotes that don't give ir codes but key
-> codes. What to do with them?
-
-What happens if you use it to receive keycodes from a different IR using
-the same protocol?
-
-Maybe it can still be valid to keep allowing keycode translation.
-
->> As I don't have any af9015 device, I'll likely postpone it or wait for
->> someone to do the job.
-> 
-> Well that was the original point of my involvement. It can support both
-> the dvb-usb-remote and HID. The problem with af9015/dvb-usb-remote is
-> that it uses usb vendor class endpoint (all trough I have used 'vendor
-> class' to specifically mean usb vendor class). Usb vendor classes have
-> no standard. But af9015 can also use USB HID class (remote as keyboard)
-> in a standard manner. That would avoid using special device  based driver.
-
-Well, as HID, you may loose the capability of using a different IR than the
-one shipped with the af9015. It may make sense to just disable HID and use
-USB Vendor Class.
- 
-> Well the thing is that even with usb each device can have non standard
-> user vendor endpoint. In case of af9015 it can provide the ir code.
-
-It doesn't matter how the IR code is get, kernel needs to translate it into
-a linux key. That's where the ir-core enters: instead of registering the device
-directly at input event, the driver registers via ir_input_register():
-
-int ir_input_register(struct input_dev *input_dev,
-                      const struct ir_scancode_table *rc_tab,
-                      const struct ir_dev_props *props)
-
-The arguments are the input device, the keycode->scancode table and an optional
-argument that specifies the IR supported protocols, and a callback function
-to be called when a different protocol is requested.
-
-The IR subsystem will do a dynamic allocation for the keytable and will take 
-care of EVIOCGKEY/EVIOCSKEY events. It will increase/decrease the keytable size
-if needed.
-
-This way, userspace may replace the scancode/keycode table and even the IR protocol,
-without needing to add any specific code at the driver.
-
-It will also create some sysfs nodes that will help udev to identify when a new IR
-device driver is loaded, allowing the keycode replacement during device hotplug.
-
-The only needed change, at the driver, is to replace input_register_device/input_unregister_device
-by ir_input_register/ir_input_unregister.
-
-> 
->> The idea of the ir-core is to provide support for all those options.
-> 
-> Even for those that do provide key codes trough standard HID layer
-> instead of ir codes trough specific device drivers?
-
-It basically depends on what the HID layer receives from the IR. Yet, it is possible to
-use the ir-core layer in order to use an IR keycode to produce a different code. It is
-not always clear what certain remote keys are supposed to do.
-
-For example, should the <POWER> key turn off the PC, or just quit the application?
-
->> The ir-core provides standard ways to replace the IR keycode and IR
->> protocols.
->> The IR protocol change is already working with vendor class with
->> em28xx driver.
-> 
-> The thing is that remote controller trough HID layer does not provide IR
-> keycode but standard keyboard key code. And HID layer does not know that
-> it is a remote controller but sees it as an ordinary usb keyboard. The
-> question is that how can it tell the upper layer that it really is a
-> remote controller so that the event would end up to generic ir-core.
-
-For HID remote controllers, the only way I see is to have an USB ID list of devices
-that are known to be remote controllers and register them via ir_input_register,
-instead of input_register_device.
-
-Cheers,
-Mauro
+			Linus
