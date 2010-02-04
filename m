@@ -1,65 +1,87 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758562Ab0BDWzf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 17:55:35 -0500
-Received: from g6t0184.atlanta.hp.com ([15.193.32.61]:8080 "EHLO
-	g6t0184.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757590Ab0BDWzc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 17:55:32 -0500
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Larry Finger <Larry.Finger@lwfinger.net>
-Subject: Re: [PATCH v1 0/7] PCI: try enabling "pci=use_crs" again
-Date: Thu, 4 Feb 2010 15:55:26 -0700
-User-Agent: KMail/1.9.10
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, Tony Luck <tony.luck@intel.com>,
-       linux-pci@vger.kernel.org, Peter Haight <peterh@sapros.com>,
-       Gary Hade <garyhade@us.ibm.com>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org, Yinghai Lu <yinghai@kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <20100203233617.10803.92102.stgit@bob.kio> <4B6A4F17.2080806@lwfinger.net> <201002041055.58953.bjorn.helgaas@hp.com>
-In-Reply-To: <201002041055.58953.bjorn.helgaas@hp.com>
+	id S1758586Ab0BDXH6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 18:07:58 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:46298 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753245Ab0BDXH4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 18:07:56 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 1/2] PM / Runtime: Add sysfs switch for disabling device run-time PM (rev. 2)
+Date: Fri, 5 Feb 2010 00:08:52 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.33-rc6-rjw; KDE/4.3.5; x86_64; ; )
+Cc: pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Alan Stern <stern@rowland.harvard.edu>, Greg KH <greg@kroah.com>
+References: <201001180129.55219.rjw@sisk.pl> <201001212359.38886.rjw@sisk.pl> <20100204224623.GB1436@ucw.cz>
+In-Reply-To: <20100204224623.GB1436@ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <201002041555.28365.bjorn.helgaas@hp.com>
+Message-Id: <201002050008.52699.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 04 February 2010 10:55:57 am Bjorn Helgaas wrote:
-> On Wednesday 03 February 2010 09:37:43 pm Larry Finger wrote:
-
-> > In addition to the above, my system now boots with "pci=use_crs", unlike when I
-> > filed the Bugzilla.
+On Thursday 04 February 2010, Pavel Machek wrote:
+> Hi!
 > 
-> Huh.  From http://lkml.org/lkml/2009/6/24/11, I had assumed the main
-> problem was that we overflowed the 16-entry bus resource table, but
-> there must be more to it.
+> >  /*
+> > + *	control - Report/change current runtime PM setting of the device
+> > + *
+> > + *	Runtime power management of a device can be blocked with the help of
+> > + *	this attribute.  All devices have one of the following two values for
+> > + *	the power/control file:
+> > + *
+> > + *	 + "auto\n" to allow the device to be power managed at run time;
+> > + *	 + "on\n" to prevent the device from being power managed at run time;
 > 
-> If you can build and boot the linux-next branch with my patches and
-> collect the dmesg log, maybe it will have a clue.  You can boot without
-> "pci=use_crs"; I don't think that will make any difference on your box.
+> I find interface with mandatory \n quite 'interesting'. 
 
-Thanks for testing these and collecting the dmesg log
-(http://bugzilla.kernel.org/attachment.cgi?id=24914).  That
-log is from the PCI linux-next branch plus my patches, without
-using "pci=use_crs".
+This simply follows the other descriptions in this file.
 
-On the current upstream (e.g., the c80d292 kernel you started with),
-we have PCI_BUS_NUM_RESOURCES == 16.  Your _CRS returns 17 windows
-(the "pci_root PNP0A08:00 host bridge window" lines), so when you
-boot with "pci=use_crs", we should be discarding the last window,
-which is an important one:
+> Plus english is strange here. All devices have ... "auto" to allow...?
+> Strange formulation. List the values first, then add "write ... to allow"?
 
-  pci_root PNP0A08:00: host bridge window [mem 0xc0000000-0xfebfffff]
+Ditto.
 
-Can you collect the dmesg log from the c80d292 kernel with "pci=use_crs"?
-I'm sorry to trouble you for this, but it still looks to me like that
-should fail, so I'd really like to understand why it's working.
+> > + *	The default for all devices is "auto", which means that devices may be
+> > + *	subject to automatic power management, depending on their drivers.
+> 
+> Is it wise to specify 'auto' default value for devices without runtime
+> pm?
 
-Bjorn
+Yes, it is.  It means the user space doesn't care whether or not the device is
+power managed at run-time.
+
+> > +static ssize_t control_store(struct device * dev, struct device_attribute *attr,
+> > +			     const char * buf, size_t n)
+> > +{
+> > +	char *cp;
+> > +	int len = n;
+> > +
+> > +	cp = memchr(buf, '\n', n);
+> > +	if (cp)
+> > +		len = cp - buf;
+> > +	if (len == sizeof ctrl_auto - 1 && strncmp(buf, ctrl_auto, len) == 0)
+> > +		pm_runtime_allow(dev);
+> 
+> parenthesis after sizeof?
+
+This notation is used throughout this file too.
+
+> Do I read it correctly that all of
+> 
+> "auto"
+> "auto\n"
+> "auto\non\nIm confused"
+> 
+> will switch to auto?
+
+Perhaps it would, but what exactly is the problem with that?
+
+Rafael
