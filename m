@@ -1,52 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932668Ab0BDTjR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 14:39:17 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52448 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932363Ab0BDTjQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 14:39:16 -0500
-Date: Thu, 4 Feb 2010 11:37:24 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Sven Joachim <svenjoac@gmx.de>
-cc: Greg KH <greg@kroah.com>, Ben Hutchings <ben@decadent.org.uk>,
-       stable-review@kernel.org, stable@kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [stable] [PATCH] Fix 'flush_old_exec()/setup_new_exec()' split
-In-Reply-To: <87iqacdcfj.fsf@turtle.gmx.de>
-Message-ID: <alpine.LFD.2.00.1002041135110.3707@localhost.localdomain>
-References: <1265245849.3362.1.camel@localhost> <1265256174.2952.11.camel@localhost> <alpine.LFD.2.00.1002032135380.3707@localhost.localdomain> <1265272174.2952.20.camel@localhost> <20100204143848.GB15438@kroah.com> <87sk9gbzzt.fsf@turtle.gmx.de>
- <20100204185752.GA18595@kroah.com> <87iqacdcfj.fsf@turtle.gmx.de>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S932721Ab0BDTkp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 14:40:45 -0500
+Received: from mga03.intel.com ([143.182.124.21]:59183 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932363Ab0BDTko (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 14:40:44 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,406,1262592000"; 
+   d="scan'208";a="240560222"
+Subject: Re: [PATCH] HPET: Drop WARN_ON for mismatch on HPET CMP readback
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: "tglx@linutronix.de" <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20100204193224.GA8957@basil.fritz.box>
+References: <20100204191112.GA10135@basil.fritz.box>
+	 <1265311335.16916.586.camel@localhost.localdomain>
+	 <20100204193224.GA8957@basil.fritz.box>
+Content-Type: text/plain
+Date: Thu, 04 Feb 2010 11:40:42 -0800
+Message-Id: <1265312442.16916.588.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 4 Feb 2010, Sven Joachim wrote:
-
-> On 2010-02-04 19:57 +0100, Greg KH wrote:
+On Thu, 2010-02-04 at 11:32 -0800, Andi Kleen wrote:
+> On Thu, Feb 04, 2010 at 11:22:15AM -0800, Pallipadi, Venkatesh wrote:
+> > On Thu, 2010-02-04 at 11:11 -0800, Andi Kleen wrote:
+> > >  HPET: Drop WARN_ON for mismatch on HPET CMP readback
+> > >     
+> > >     At least one Intel chipset seems to always return a constant value
+> > >     when reading back the HPET CMP register. This triggers the WARN_ON_ONCE
+> > >     on each boot.
+> > 
+> > I don't know of chipset returning a constant value. Which chipset is
+> > this one?
 > 
-> > On Thu, Feb 04, 2010 at 07:46:30PM +0100, Sven Joachim wrote:
-> >> It seems they are all there, but on my system with 64-bit kernel and
-> >> 32-bit userland, 2.6.32.8-rc1 still panics in the way noticed by Ben.
-> >
-> > Does 2.6.33-rc6 also cause you the same problem?
-> 
-> A build from Linus' current git tree (commit 7ab02af42 was added after
-> 2.6.33-rc6, so I skipped that version) does not show the problem.
-> Actually, I'm using it right now.
+> Ibex Peak. That is I'm not sure it's fully constant, but at least
+> it's always the same value on the HPET read triggering on boot.
 
-Ok, then that's just really odd. I don't think there are any other changes 
-in this area, and the whole init problem sure as hell smells like execve 
-setup problems. And afaik, 2.6.32.8-rc1 should have all the commits from 
-current -git.
+OK. Yes. Ibexpeak is the same problem as ICH9, with reads not returning
+the most recent write.
 
-Maybe we're looking at a separate issue after all.
+Thanks,
+Venki
 
-			Linus
+
