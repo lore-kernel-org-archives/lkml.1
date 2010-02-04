@@ -1,88 +1,39 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933063Ab0BDUDI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 15:03:08 -0500
-Received: from xenotime.net ([72.52.64.118]:53140 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S932976Ab0BDUDE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 15:03:04 -0500
-Message-ID: <4B6B27F5.6090504@xenotime.net>
-Date: Thu, 04 Feb 2010 12:03:01 -0800
-From: Randy Dunlap <rdunlap@xenotime.net>
-Organization: YPO4
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       David Rientjes <rientjes@google.com>
-Subject: Re: mmotm 2010-02-03-20-09 uploaded (mmap.c)
-References: <201002040435.o144Z5jc007582@imap1.linux-foundation.org>	<4B6B0E9F.5060002@xenotime.net> <20100204105827.2270aff0.akpm@linux-foundation.org>
-In-Reply-To: <20100204105827.2270aff0.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S933115Ab0BDUEt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 15:04:49 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51682
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932906Ab0BDUEr convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 15:04:47 -0500
+Date: Thu, 04 Feb 2010 12:05:01 -0800 (PST)
+Message-Id: <20100204.120501.110961896.davem@davemloft.net>
+To: u.kleine-koenig@pengutronix.de
+Cc: gregkh@suse.de, linux-kernel@vger.kernel.org, 12o3l@tiscali.nl,
+       rmk+kernel@arm.linux.org.uk, netdev@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH 9/9] net: move am79c961's probe function to
+ .devinit.text
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1265313417-5568-9-git-send-email-u.kleine-koenig@pengutronix.de>
+References: <20100203150850.GA28815@kroah.com>
+	<1265313417-5568-9-git-send-email-u.kleine-koenig@pengutronix.de>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/04/10 10:58, Andrew Morton wrote:
-> On Thu, 04 Feb 2010 10:14:55 -0800
-> Randy Dunlap<rdunlap@xenotime.net>  wrote:
->
->> On 02/03/10 20:09, akpm@linux-foundation.org wrote:
->>> The mm-of-the-moment snapshot 2010-02-03-20-09 has been uploaded to
->>>
->>>      http://userweb.kernel.org/~akpm/mmotm/
->>>
->>> and will soon be available at
->>>
->>>      git://zen-kernel.org/kernel/mmotm.git
->>>
->>> It contains the following patches against 2.6.33-rc6:
->>
->>
->> In some config cases, this patch seems to have a problem:
->>     sysctl-clean-up-vm-related-variable-declarations.patch
->>
->> In mm/mmap.c:
->> +#ifdef HAVE_ARCH_PICK_MMAP_LAYOUT
->> +/* Used by each architecture's private code and sysctl. */
->> +int sysctl_legacy_va_layout;
->> +#endif
->>
->> mm/mmap.c:92: error: expected identifier or '(' before numeric constant
->>
->> I guess that sometimes sysctl_legacy_va_layout is a #define:
->> from include/linux/mm.h:
->>
->> #ifdef CONFIG_SYSCTL
->> extern int sysctl_legacy_va_layout;
->> #else
->> #define sysctl_legacy_va_layout 0
->> #endif
->>
->> and indeed the failing builds do not have CONFIG_SYSCTL enabled.
->
-> Thanks.  This, I guess:
->
-> --- a/mm/mmap.c~sysctl-clean-up-vm-related-variable-declarations-fix
-> +++ a/mm/mmap.c
-> @@ -87,7 +87,7 @@ int sysctl_overcommit_ratio = 50;	/* def
->   int sysctl_max_map_count __read_mostly = DEFAULT_MAX_MAP_COUNT;
->   struct percpu_counter vm_committed_as;
->
-> -#ifdef HAVE_ARCH_PICK_MMAP_LAYOUT
-> +#if defined(HAVE_ARCH_PICK_MMAP_LAYOUT)&&  defined(CONFIG_SYSCTL)
->   /* Used by each architecture's private code and sysctl. */
->   int sysctl_legacy_va_layout;
->   #endif
-> _
->
+From: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+Date: Thu,  4 Feb 2010 20:56:57 +0100
 
-Yep, that works.  Thanks.
+> @David Miller: this patch is in patchwork with State: Not Applicable.
+> Does that mean that netdev isn't the right tree for this patch?
 
-Acked-by: Randy Dunlap <rdunlap@xenotime.net>
+I was under the impression that someone would pick up the
+whole set as a unit.
 
-
--- 
-~Randy
+If you want me to take it into net-next-2.6 I can.
