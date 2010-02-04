@@ -1,155 +1,147 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758423Ab0BDTc7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 14:32:59 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48902 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932355Ab0BDTcy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 14:32:54 -0500
-Date: Thu, 4 Feb 2010 20:32:32 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Alex Deucher <alexdeucher@gmail.com>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Dave Airlie <airlied@linux.ie>,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       dri-devel@lists.sf.net
-Subject: Re: hung bootup with "drm/radeon/kms: move radeon KMS on/off switch
- out of staging."
-Message-ID: <20100204193232.GD6665@elte.hu>
-References: <20100204071705.GA28403@elte.hu>
- <20100204164859.GA17878@srcf.ucam.org>
- <20100204170826.GA16397@elte.hu>
- <20100204173602.GA19855@srcf.ucam.org>
- <20100204175445.GB27361@elte.hu>
- <20100204175928.GA20595@srcf.ucam.org>
- <20100204181218.GA6175@elte.hu>
- <a728f9f91002041030o7c8d38edxe573bc0a1327d79@mail.gmail.com>
- <20100204190649.GB6665@elte.hu>
- <a728f9f91002041118m6415844fp1740f18fdc1c9757@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a728f9f91002041118m6415844fp1740f18fdc1c9757@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+	id S932601Ab0BDTdM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 14:33:12 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37153 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758431Ab0BDTdE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 14:33:04 -0500
+Date: Thu, 4 Feb 2010 11:31:45 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, stable@kernel.org
+Subject: Re: [PATCH] procfs: Fix refcnt leak on proc_self_follow_link()
+ error path
+Message-Id: <20100204113145.a635005c.akpm@linux-foundation.org>
+In-Reply-To: <20100114015557.GF19799@ZenIV.linux.org.uk>
+References: <87aawkjxlf.fsf@devron.myhome.or.jp>
+	<20100113194300.GA4673@ZenIV.linux.org.uk>
+	<20100113162504.1c06c5e6.akpm@linux-foundation.org>
+	<20100114015557.GF19799@ZenIV.linux.org.uk>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 14 Jan 2010 01:55:57 +0000
+Al Viro <viro@ZenIV.linux.org.uk> wrote:
 
-* Alex Deucher <alexdeucher@gmail.com> wrote:
-
-> On Thu, Feb 4, 2010 at 2:06 PM, Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> > * Alex Deucher <alexdeucher@gmail.com> wrote:
-> >
-> >> On Thu, Feb 4, 2010 at 1:12 PM, Ingo Molnar <mingo@elte.hu> wrote:
-> >> >
-> >> > * Matthew Garrett <mjg59@srcf.ucam.org> wrote:
-> >> >
-> >> >> On Thu, Feb 04, 2010 at 06:54:45PM +0100, Ingo Molnar wrote:
-> >> >>
-> >> >> > But you could claim that it's not a regression because 1) technically the
-> >> >> > code got introduced in drivers/staging/, and staging drivers are not on
-> >> >> > the regression list 2) the Kconfig value is default-off so it can only
-> >> >> > harm those who got lured by a new Kconfig value popping up in -rc7 in a
-> >> >> > well working driver they already have enabled.
-> >> >> >
-> >> >> > So the moving of driver functionality from drivers/staging/ to drivers/
-> >> >> > is a grey area it appears. Wouldnt it have been better to do this in the
-> >> >> > next merge window, as all other drivers do? It's not new hardware
-> >> >> > enablement either, it's feature enablement for an existing driver.
-> >> >>
-> >> >> The reason the option was in staging (as has been mentioned before) was
-> >> >> because the ABI wasn't felt to be stable enough. Upstream is now willing to
-> >> >> commit to that stability, so now seems as good a time to move it as any.
-> >> >> There's no code change and there's no default configuration change, so I
-> >> >> really can't see any way that it can be classed as a regression.
-> >> >
-> >> > But that argument in essence renders the regression policy meaningless for
-> >> > such code: just about any new driver feature under the sun could be shaped as
-> >> > a Kconfig option, introduced via a drivers/staging Kconfig entry, and then
-> >> > activated via a twoliner commit in a later -rc.
-> >> >
-> >> > IMHO the point of tracking regressions is to reduce the bugginess of the
-> >> > kernel and thus to help users, not to give ground for legalistic arguments.
-> >> >
-> >> > There _are_ common-sense exceptions from the regression rules, such as the
-> >> > introduction of a new piece of hardware that was previously unsupported
-> >> > (hence there's no expectation of stability) - but the tweaking of an
-> >> > existing, widely used driver (even if the new opion is default-off) hardly
-> >> > seems to qualify for that.
-> >> >
-> >>
-> >> This is a completely new driver. ?It's only part of the existing drm for
-> >> compatibility reasons. ?It requires an entirely different graphics stack
-> >> above it and works very differently from the old drm stack.
-> >
-> > Will the user know? IMHO what matters in the end is user expectation.
-> >
-> > Lets walk through what a current kernel tester of the drm/radeon driver sees
-> > when he types 'make oldconfig' after installing the (to-be-released) .33-rc7
-> > kernel. Firstly, the user with a brand-new distro already has this enabled:
-> >
-> > ?CONFIG_DRM_RADEON=y
-> >
-> > and knows the driver, and it performs adequately. Then in -rc7 he gets a new
-> > option:
-> >
-> > ?ATI Radeon (DRM_RADEON) [Y/n/?] y
-> > ? ?Enable modesetting on radeon by default (DRM_RADEON_KMS) [N/y/?] (NEW)
-> >
-> > The user might easily go: "Hey this is a driver i already have, and there's a
-> > new sub-option for this well-working driver. Sure, enable it, these kernel
-> > folks know what they are doing and i rarely see any crashes past -rc2
-> > kernels."
-> >
-> > Does this new option tell him what you just told me, that:
-> >
-> > ?> This is a completely new driver. ?It's only part of the existing drm for
-> > ?> compatibility reasons. ?It requires an entirely different graphics stack
-> > ?> above it and works very differently from the old drm stack.
-> >
-> > ?
-> >
-> > it doesnt. Even if he types '?', it tells:
-> >
-> > ?CONFIG_DRM_RADEON_KMS:
-> >
-> > ?Choose this option if you want kernel modesetting enabled by default,
-> > ?and you have a new enough userspace to support this. Running old
-> > ?userspaces with this enabled will cause pain.
-> >
-> > The user will likely go "cool I have a fresh distro with recent Xorg, lets
-> > try it".
-> >
+> On Wed, Jan 13, 2010 at 04:25:04PM -0800, Andrew Morton wrote:
+> > On Wed, 13 Jan 2010 19:43:01 +0000
+> > Al Viro <viro@ZenIV.linux.org.uk> wrote:
+> > 
+> > > On Tue, Jan 12, 2010 at 03:38:36AM +0900, OGAWA Hirofumi wrote:
+> > > > 
+> > > > If ->follow_link handler return the error, it should decrement
+> > > > nd->path refcnt.
+> > > > 
+> > > > This patch fix it.
+> > > 
+> > > It's OK for -stable, but for the next tree... not really.  I'd rather
+> > > kill vfs_follow_link() uses here and in gfs2; see #untested in vfs-2.6.git
+> > > for details.
+> > 
+> > Confused.  Is #untested planned for 2.6.33?  If not, how do we fix this
+> > bug in .33?
 > 
-> And if it crashes, he'll report a bug and we'll fix it.
+> My preference would be a backport of corresponding bits - they _are_ safe.
+> I can live with procfs/gfs2 stuff getting into the tree as-is to be
+> converted later (and note that at least procfs one is fairly old - it goes
+> back to commit 488e5bc4560d0b510c1ddc451c51a6cc14e3a930
+> Author: Eric W. Biederman <ebiederm@xmission.com>
+> Date:   Fri Feb 8 04:18:34 2008 -0800
+>     proc: proper pidns handling for /proc/self
+> so it's prime -stable fodder, whatever form of fix we prefer for that).
+> 
+> For post-2.6.33 we definitely have good reasons to fix that stuff by
+> providing ->put_link() and switching to nd_set_link() for those.  It
+> allows to kill fsckloads of symlink body copying when doing open() on
+> pathname that resolves to a symlink, which is worth a lot.
 
-Nobody has reacted to my related boot hang bugreport yet - and it's detailed 
-and fully reproducible (so i can test any proposed fixes as well in short 
-order). I.e. my limited testing has triggered two separate bugs in the same 
-driver - and this will show up in -rc7.
+I see this in linux-next:
 
-It might be all OK and no-one else will see trouble. Or past patterns might 
-repeat themselves and i might simply be an early bird for trouble to come.
+commit 1427acc5655198f0196178846599a62656e92df0
+Author:     Al Viro <viro@zeniv.linux.org.uk>
+AuthorDate: Thu Jan 14 01:03:28 2010 -0500
+Commit:     Al Viro <viro@zeniv.linux.org.uk>
+CommitDate: Sat Jan 30 00:03:55 2010 -0500
 
-My (oft repeated) point is that adding new sub-features to existing drivers 
-is not what we do in late -rc's: there's simply not enough time to shake out 
-bugs/regressions in them.
+    Switch proc/self to nd_set_link()
+    
+    Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 
-We introduce new functionality to existing drivers in the merge window - in 
-the two weeks following a stable kernel's release.
+diff --git a/fs/proc/base.c b/fs/proc/base.c
+index e42bbd8..58324c2 100644
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
+@@ -2369,16 +2369,30 @@ static void *proc_self_follow_link(struct dentry *dentry, struct nameidata *nd)
+ {
+ 	struct pid_namespace *ns = dentry->d_sb->s_fs_info;
+ 	pid_t tgid = task_tgid_nr_ns(current, ns);
+-	char tmp[PROC_NUMBUF];
+-	if (!tgid)
+-		return ERR_PTR(-ENOENT);
+-	sprintf(tmp, "%d", task_tgid_nr_ns(current, ns));
+-	return ERR_PTR(vfs_follow_link(nd,tmp));
++	char *name = ERR_PTR(-ENOENT);
++	if (tgid) {
++		name = __getname();
++		if (!name)
++			name = ERR_PTR(-ENOMEM);
++		else
++			sprintf(name, "%d", tgid);
++	}
++	nd_set_link(nd, name);
++	return NULL;
++}
++
++static void proc_self_put_link(struct dentry *dentry, struct nameidata *nd,
++				void *cookie)
++{
++	char *s = nd_get_link(nd);
++	if (!IS_ERR(s))
++		__putname(s);
+ }
+ 
+ static const struct inode_operations proc_self_inode_operations = {
+ 	.readlink	= proc_self_readlink,
+ 	.follow_link	= proc_self_follow_link,
++	.put_link	= proc_self_put_link,
+ };
+ 
+ /*
 
-In late -rc's we only try to fix regressions. Sometimes we make exceptions 
-for pragmatic reasons, but then we are straightforward about those reasons 
-and try to warn users about our zeal to help them with cool, new, 
-not-to-be-missed GPU functionality ;-)
+which I assume fixes the bug?
 
-Thanks,
+> I'm still not 100% sure which way to go for -stable (and .33 - these are
+> equivalent in that respect).  Posted patches touch only the codepaths
+> where we are currently guaranteed to leak and all things equal that'd be
+> an argument in their favour.  OTOH, the minimal alternative for e.g. gfs2
+> would be to make buffer allocation unconditional, use nd_set_link() instead
+> of vfs_follow_link() and leave freeing to put_link().  Which can be followed
+> by killing special gfs2 ->readlink(), since now generic_readlink() will
+> work just fine (and gfs2_readlinki() can be folded into gfs2_follow_link(),
+> simplifying things even more).  In other words, long-term variant is not
+> much more intrusive and it's just as safe.  So that argument in favour
+> of posted variant is not particulary strong, especially wrt 2.6.33.
+> 
+> So basically it boils down to doing truly minimal fix vs. doing the same
+> thing (almost as trivial) we'll do past .33.
+> 
+> FWIW, it may be as simple as "is posted gfs2 patch already in a published
+> gfs2 tree and if it is, how inconvenient for gfs2 folks would it be to
+> replace it?"; I'm really ambivalent about that one...
 
-	Ingo
+But nothing for 2.6.33 or -stable yet?
+
+What we could do is to merge the above into 2.6.34-rc1 with a
+Cc:stable@kernel.org in the changelog and when it's had a bit of
+testing, the -stable guys could merge it back into 2.6.33.x, 2.6.32.x,
+etc?
+
+
