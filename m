@@ -1,65 +1,123 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753994Ab0BDIKc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 03:10:32 -0500
-Received: from smtp.outflux.net ([198.145.64.163]:45191 "EHLO smtp.outflux.net"
+	id S1754189Ab0BDIRH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 03:17:07 -0500
+Received: from trinity.fluff.org ([89.16.178.74]:47295 "EHLO trinity.fluff.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753373Ab0BDIK3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 03:10:29 -0500
-Date: Thu, 4 Feb 2010 00:09:23 -0800
-From: Kees Cook <kees.cook@canonical.com>
-To: Alex Riesen <raa.lkml@gmail.com>
-Cc: James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serue@us.ibm.com>,
-       Casey Schaufler <casey@schaufler-ca.com>,
-       linux-security-module@vger.kernel.org, Eric Paris <eparis@redhat.com>,
-       David Howells <dhowells@redhat.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Simon Kagstrom <simon.kagstrom@netinsight.net>,
-       David Woodhouse <David.Woodhouse@intel.com>,
-       Robin Getz <rgetz@analog.com>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Paul Moore <paul.moore@hp.com>,
-       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-       Stephen Smalley <sds@tycho.nsa.gov>,
-       Etienne Basset <etienne.basset@numericable.fr>,
-       "David P. Quigley" <dpquigl@tycho.nsa.gov>,
-       LKLM <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v2 1/2] syslog: distinguish between /proc/kmsg and
- syscalls
-Message-ID: <20100204080923.GL19355@outflux.net>
-References: <20100202055354.GV19355@outflux.net>
- <4B67C2EA.705@schaufler-ca.com>
- <20100202202054.GW19355@outflux.net>
- <20100202212510.GG32305@us.ibm.com>
- <alpine.LRH.2.00.1002030859220.14592@tundra.namei.org>
- <20100203233643.GI19355@outflux.net>
- <81b0412b1002032358j163d2e3fm2c0353ba3ec2842a@mail.gmail.com>
+	id S1751072Ab0BDIRB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 03:17:01 -0500
+Date: Thu, 4 Feb 2010 08:16:54 +0000
+From: Ben Dooks <ben-linux@fluff.org>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org,
+       Nios2 development list <nios2-dev@sopc.et.ntust.edu.tw>,
+       linux-kernel@vger.kernel.org, Ian Abbott <abbotti@mev.co.uk>,
+       Thomas Abraham <thomas.ab@samsung.com>,
+       Thomas Chou <thomas@wytron.com.tw>, ben-linux@fluff.org,
+       linux-arm-kernel@lists.infradead.org
+Subject: Re: [git patches] new hardware support for atang tree
+Message-ID: <20100204081654.GD13267@trinity.fluff.org>
+References: <201002031940.20129.bzolnier@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <81b0412b1002032358j163d2e3fm2c0353ba3ec2842a@mail.gmail.com>
-Organization: Canonical
-X-HELO: www.outflux.net
+In-Reply-To: <201002031940.20129.bzolnier@gmail.com>
+X-Disclaimer: These are my views alone.
+X-URL: http://www.fluff.org/
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: ben@trinity.fluff.org
+X-SA-Exim-Scanned: No (on trinity.fluff.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alex,
-
-On Thu, Feb 04, 2010 at 08:58:43AM +0100, Alex Riesen wrote:
-> > +       /* /proc/kmsg can open be opened by CAP_SYS_ADMIN */
-> > +       if (type != 1 && from_file)
-> > +               return 0;
+On Wed, Feb 03, 2010 at 07:40:20PM +0100, Bartlomiej Zolnierkiewicz wrote:
 > 
-> "can open be opened"?
+> Since I haven't seen any progress on mainstreaming of s3c-ide and
+> pata_altera_cf patches in the recent months I decided to merge them
+> into staging section of my tree in order to help in keeping them
+> in-sync with ongoing changes..
 
-Erk, sorry.  s/open //
+Please be aware the plat-s3c64xx and plat-s3c is currently in the process
+of being removed, the s3c64xx is an development dead-end and thus we know
+exactly what has to be supported, plat-s3c is getting so empty i've shoved
+the stuff either up into plat-s3c24xx or down into plat-samsung.
 
-James, do you want a patch for that?
+Quite a lot of this change is currently in RMK's trees, the rest is just
+being finalised for submission next week.
 
--Kees
+I might be interested in taking the platform definitions into my tree
+as the registers should be usable either for libata or ide.
+ 
+> DISCLAIMER: the fact of getting patches merged into atang tree means
+> that from now on they will be getting updates for changes happening
+> in atang tree and it should not be treated as an indication regarding
+> decisions taken by 'upstream' kernel trees
+> 
+> 
+> The following changes since commit 18c77417cbb9c595935d5ccb2e55309f0fb75a06:
+>   Bartlomiej Zolnierkiewicz (1):
+>         ide: remove hwif_chipset_t type
+> 
+> are available in the git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/bart/misc.git atang-v4.4
+> 
+> Thomas Abraham (8):
+>       S3C64XX: Add physical address definition for Compact Flash controller.
+>       S3C64XX: Add MEM_SYS_CFG register definition.
+>       S3C64XX: Add IDE controller register definitions.
+>       S3C64XX: Add clock source definition for IDE controller.
+>       S3C64XX: Add platform data and driver resources for IDE controller driver.
+>       S3C6410: Add platform data for S3C IDE controller driver
+>       S3C64XX: Include IDE device code in compilation.
+>       drivers/staging: Add Samsung S3C IDE controller driver
+> 
+> Thomas Chou (1):
+>       drivers/staging: New PATA driver for Altera CompactFlash.
+> 
+>  arch/arm/mach-s3c6400/include/mach/map.h        |    4 +
+>  arch/arm/mach-s3c6410/mach-smdk6410.c           |   14 +-
+>  arch/arm/plat-s3c/include/plat/devs.h           |    1 +
+>  arch/arm/plat-s3c/include/plat/ide.h            |   36 +
+>  arch/arm/plat-s3c/include/plat/regs-ide.h       |   56 ++
+>  arch/arm/plat-s3c64xx/Makefile                  |    1 +
+>  arch/arm/plat-s3c64xx/clock.c                   |    6 +
+>  arch/arm/plat-s3c64xx/dev-ide.c                 |   88 +++
+>  arch/arm/plat-s3c64xx/include/plat/regs-clock.h |    3 +
+>  drivers/staging/Kconfig                         |    4 +
+>  drivers/staging/Makefile                        |    2 +
+>  drivers/staging/pata_altera_cf/Kconfig          |   11 +
+>  drivers/staging/pata_altera_cf/Makefile         |    1 +
+>  drivers/staging/pata_altera_cf/TODO             |    5 +
+>  drivers/staging/pata_altera_cf/pata_altera_cf.c |  582 ++++++++++++++++
+>  drivers/staging/s3c-ide/Kconfig                 |    8 +
+>  drivers/staging/s3c-ide/Makefile                |    1 +
+>  drivers/staging/s3c-ide/TODO                    |    6 +
+>  drivers/staging/s3c-ide/s3c-ide.c               |  822 +++++++++++++++++++++++
+>  19 files changed, 1650 insertions(+), 1 deletions(-)
+>  create mode 100644 arch/arm/plat-s3c/include/plat/ide.h
+>  create mode 100644 arch/arm/plat-s3c/include/plat/regs-ide.h
+>  create mode 100644 arch/arm/plat-s3c64xx/dev-ide.c
+>  create mode 100644 drivers/staging/pata_altera_cf/Kconfig
+>  create mode 100644 drivers/staging/pata_altera_cf/Makefile
+>  create mode 100644 drivers/staging/pata_altera_cf/TODO
+>  create mode 100644 drivers/staging/pata_altera_cf/pata_altera_cf.c
+>  create mode 100644 drivers/staging/s3c-ide/Kconfig
+>  create mode 100644 drivers/staging/s3c-ide/Makefile
+>  create mode 100644 drivers/staging/s3c-ide/TODO
+>  create mode 100644 drivers/staging/s3c-ide/s3c-ide.c
+> 
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
 
 -- 
-Kees Cook
-Ubuntu Security Team
+-- 
+Ben
+
+Q:      What's a light-year?
+A:      One-third less calories than a regular year.
+
