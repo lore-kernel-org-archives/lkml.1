@@ -1,75 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932792Ab0BDVtK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 16:49:10 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:40738 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757684Ab0BDVtH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 16:49:07 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=YEC0CcPDtrtf8tEEBjf5myChooI0T9opKaVzdnZOZj+p4yonzPLgCp8zFTmQLfPyz
-	W3fIYJl9G58rty90wRGqg==
-Date: Thu, 4 Feb 2010 13:48:59 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Rik van Riel <riel@redhat.com>
-cc: Lubos Lunak <l.lunak@suse.cz>, Balbir Singh <balbir@linux.vnet.ibm.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+	id S932916Ab0BDVua (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 16:50:30 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:46090 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757770Ab0BDVu2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 16:50:28 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] Net / pktgen: Fix freezing problem
+Date: Thu, 4 Feb 2010 22:50:58 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.33-rc6-rjw; KDE/4.3.5; x86_64; ; )
+Cc: NetDev <netdev@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Nick Piggin <npiggin@suse.de>, Jiri Kosina <jkosina@suse.cz>
-Subject: Re: Improving OOM killer
-In-Reply-To: <4B6A1241.60009@redhat.com>
-Message-ID: <alpine.DEB.2.00.1002041339220.6071@chino.kir.corp.google.com>
-References: <201002012302.37380.l.lunak@suse.cz> <20100203170127.GH19641@balbir.in.ibm.com> <alpine.DEB.2.00.1002031021190.14088@chino.kir.corp.google.com> <201002032355.01260.l.lunak@suse.cz> <alpine.DEB.2.00.1002031600490.27918@chino.kir.corp.google.com>
- <4B6A1241.60009@redhat.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+       David Miller <davem@davemloft.net>,
+       Ciprian Dorin Craciun <ciprian.craciun@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002042250.58944.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Feb 2010, Rik van Riel wrote:
+From: Rafael J. Wysocki <rjw@sisk.pl>
+Subject: Net / pktgen: Fix freezing problem
 
-> > Do you have any comments about the forkbomb detector or its threshold that
-> > I've put in my heuristic?  I think detecting these scenarios is still an
-> > important issue that we need to address instead of simply removing it from
-> > consideration entirely.
-> 
-> I believe that malicious users are best addressed in person,
-> or preemptively through cgroups and rlimits.
-> 
+Add missing try_to_freeze() to one of the pktgen_thread_worker() code
+paths so that it doesn't block suspend/hibernation.
 
-Forkbombs need not be the result of malicious users.
+Fixes http://bugzilla.kernel.org/show_bug.cgi?id=15006
 
-> Having a process with over 500 children is quite possible
-> with things like apache, Oracle, postgres and other forking
-> daemons.
-> 
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Reported-and-tested-by: Ciprian Dorin Craciun <ciprian.craciun@gmail.com>
+---
+ net/core/pktgen.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-It's clear that the forkbomb threshold would need to be definable from 
-userspace and probably default to something high such as 1000.
-
-Keep in mind that we're in the oom killer here, though.  So we're out of 
-memory and we need to kill something; should Apache, Oracle, and postgres 
-not be penalized for their cost of running by factoring in something like 
-this?
-
-	(lowest rss size of children) * (# of first-generation children) / 
-			(forkbomb threshold)
-
-> Killing the parent process can result in the service
-> becoming unavailable, and in some cases even data
-> corruption.
-> 
-
-There's only one possible rememdy for that, which is OOM_DISABLE; the oom 
-killer cannot possibly predict data corruption as the result of killing a 
-process and this is no different.  Everything besides init, kthreads, 
-OOM_DISABLE threads, and threads that do not share the same cpuset, memcg, 
-or set of allowed mempolicy nodes are candidates for oom kill.
+Index: linux-2.6/net/core/pktgen.c
+===================================================================
+--- linux-2.6.orig/net/core/pktgen.c
++++ linux-2.6/net/core/pktgen.c
+@@ -3524,6 +3524,7 @@ static int pktgen_thread_worker(void *ar
+ 			wait_event_interruptible_timeout(t->queue,
+ 							 t->control != 0,
+ 							 HZ/10);
++			try_to_freeze();
+ 			continue;
+ 		}
+ 
