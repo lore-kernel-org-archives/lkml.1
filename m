@@ -1,100 +1,46 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757135Ab0BDIZR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 03:25:17 -0500
-Received: from smtp.nokia.com ([192.100.122.230]:17321 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756798Ab0BDIZL (ORCPT
+	id S1754708Ab0BDIZH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 03:25:07 -0500
+Received: from smtprelay02.ispgateway.de ([80.67.29.24]:40176 "EHLO
+	smtprelay02.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755626Ab0BDIY7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 03:25:11 -0500
-From: Samu Onkalo <samu.p.onkalo@nokia.com>
-To: eric.piel@tremplin-utc.net
-Cc: pavel@ucw.cz, daniel@caiaq.de, lm-sensors@lm-sensors.org,
-       linux-kernel@vger.kernel.org, Samu Onkalo <samu.p.onkalo@nokia.com>
-Subject: [PATCH 2/6] lis3: Separate configuration function for 8 bit device
-Date: Thu,  4 Feb 2010 10:24:04 +0200
-Message-Id: <1265271848-26559-3-git-send-email-samu.p.onkalo@nokia.com>
-X-Mailer: git-send-email 1.6.0.4
-In-Reply-To: <1265271848-26559-1-git-send-email-samu.p.onkalo@nokia.com>
-References: <1265271848-26559-1-git-send-email-samu.p.onkalo@nokia.com>
-X-OriginalArrivalTime: 04 Feb 2010 08:24:21.0104 (UTC) FILETIME=[737F8700:01CAA573]
-X-Nokia-AV: Clean
+	Thu, 4 Feb 2010 03:24:59 -0500
+X-Greylist: delayed 150045 seconds by postgrey-1.27 at vger.kernel.org; Thu, 04 Feb 2010 03:24:59 EST
+Message-ID: <4B6A8455.5010403@ladisch.de>
+Date: Thu, 04 Feb 2010 09:24:53 +0100
+From: Clemens Ladisch <clemens@ladisch.de>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+MIME-Version: 1.0
+To: Wu Fengguang <fengguang.wu@intel.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       linux-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 01/11] readahead: limit readahead size for small devices
+References: <20100202152835.683907822@intel.com> <20100202153316.375570078@intel.com>
+In-Reply-To: <20100202153316.375570078@intel.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+X-Df-Sender: linux-kernel@cl.domainfactory-kunde.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Separate configuration function for 8 bit version of the chip.
-This way generic part of the init function stays little bit
-more readable.
+Wu Fengguang wrote:
+> Anyone has 512/128MB USB stick?
 
-Signed-off-by: Samu Onkalo <samu.p.onkalo@nokia.com>
----
- drivers/hwmon/lis3lv02d.c |   45 ++++++++++++++++++++++++++-------------------
- 1 files changed, 26 insertions(+), 19 deletions(-)
+64 MB, USB full speed:
+Bus 003 Device 003: ID 08ec:0011 M-Systems Flash Disk Pioneers DiskOnKey
 
-diff --git a/drivers/hwmon/lis3lv02d.c b/drivers/hwmon/lis3lv02d.c
-index b2f2277..99fd45d 100644
---- a/drivers/hwmon/lis3lv02d.c
-+++ b/drivers/hwmon/lis3lv02d.c
-@@ -521,6 +521,30 @@ int lis3lv02d_remove_fs(struct lis3lv02d *lis3)
- }
- EXPORT_SYMBOL_GPL(lis3lv02d_remove_fs);
- 
-+static void lis3lv02d_8b_configure(struct lis3lv02d *dev,
-+				struct lis3lv02d_platform_data *p)
-+{
-+	if (p->click_flags) {
-+		dev->write(dev, CLICK_CFG, p->click_flags);
-+		dev->write(dev, CLICK_TIMELIMIT, p->click_time_limit);
-+		dev->write(dev, CLICK_LATENCY, p->click_latency);
-+		dev->write(dev, CLICK_WINDOW, p->click_window);
-+		dev->write(dev, CLICK_THSZ, p->click_thresh_z & 0xf);
-+		dev->write(dev, CLICK_THSY_X,
-+			(p->click_thresh_x & 0xf) |
-+			(p->click_thresh_y << 4));
-+	}
-+
-+	if (p->wakeup_flags) {
-+		dev->write(dev, FF_WU_CFG_1, p->wakeup_flags);
-+		dev->write(dev, FF_WU_THS_1, p->wakeup_thresh & 0x7f);
-+		/* default to 2.5ms for now */
-+		dev->write(dev, FF_WU_DURATION_1, 1);
-+		/* enable high pass filter for both free-fall units */
-+		dev->write(dev, CTRL_REG2, HP_FF_WU1 | HP_FF_WU2);
-+	}
-+}
-+
- /*
-  * Initialise the accelerometer and the various subsystems.
-  * Should be rather independent of the bus system.
-@@ -567,25 +591,8 @@ int lis3lv02d_init_device(struct lis3lv02d *dev)
- 	if (dev->pdata) {
- 		struct lis3lv02d_platform_data *p = dev->pdata;
- 
--		if (p->click_flags && (dev->whoami == WAI_8B)) {
--			dev->write(dev, CLICK_CFG, p->click_flags);
--			dev->write(dev, CLICK_TIMELIMIT, p->click_time_limit);
--			dev->write(dev, CLICK_LATENCY, p->click_latency);
--			dev->write(dev, CLICK_WINDOW, p->click_window);
--			dev->write(dev, CLICK_THSZ, p->click_thresh_z & 0xf);
--			dev->write(dev, CLICK_THSY_X,
--					(p->click_thresh_x & 0xf) |
--					(p->click_thresh_y << 4));
--		}
--
--		if (p->wakeup_flags && (dev->whoami == WAI_8B)) {
--			dev->write(dev, FF_WU_CFG_1, p->wakeup_flags);
--			dev->write(dev, FF_WU_THS_1, p->wakeup_thresh & 0x7f);
--			/* default to 2.5ms for now */
--			dev->write(dev, FF_WU_DURATION_1, 1);
--			/* enable high pass filter for both free-fall units */
--			dev->write(dev, CTRL_REG2, HP_FF_WU1 | HP_FF_WU2);
--		}
-+		if (dev->whoami == WAI_8B)
-+			lis3lv02d_8b_configure(dev, p);
- 
- 		if (p->irq_cfg)
- 			dev->write(dev, CTRL_REG3, p->irq_cfg);
--- 
-1.6.0.4
-
+4KB:    139.339 s, 376 kB/s
+16KB:   81.0427 s, 647 kB/s
+32KB:   71.8513 s, 730 kB/s
+64KB:   67.3872 s, 778 kB/s
+128KB:  67.5434 s, 776 kB/s
+256KB:  65.9019 s, 796 kB/s
+512KB:  66.2282 s, 792 kB/s
+1024KB: 67.4632 s, 777 kB/s
+2048KB: 69.9759 s, 749 kB/s
