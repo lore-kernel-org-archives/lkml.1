@@ -1,19 +1,20 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933097Ab0BDOkn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 09:40:43 -0500
-Received: from g1t0028.austin.hp.com ([15.216.28.35]:27525 "EHLO
-	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933043Ab0BDOkh (ORCPT
+	id S933007Ab0BDOkW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 09:40:22 -0500
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:20754 "EHLO
+	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932961Ab0BDOkR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 09:40:37 -0500
-Subject: [PATCH 23/30] hpsa:  when resetting devices, print out which device
+	Thu, 4 Feb 2010 09:40:17 -0500
+Subject: [PATCH 20/30] hpsa: Don't return DID_NO_CONNECT when a device is
+	merely not ready
 To: James.Bottomley@HansenPartnership.com, akpm@linux-foundation.org
 From: "Stephen M. Cameron" <scameron@beardog.cce.hp.com>
 Cc: mikem@beardog.cce.hp.com, brace@beardog.cce.hp.com, matthew.gates@hp.com,
        linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Date: Thu, 04 Feb 2010 08:43:21 -0600
-Message-ID: <20100204144321.10406.76657.stgit@beardog.cce.hp.com>
+Date: Thu, 04 Feb 2010 08:43:05 -0600
+Message-ID: <20100204144305.10406.63403.stgit@beardog.cce.hp.com>
 In-Reply-To: <20100204144012.10406.14868.stgit@beardog.cce.hp.com>
 References: <20100204144012.10406.14868.stgit@beardog.cce.hp.com>
 User-Agent: StGit/0.15
@@ -24,34 +25,26 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stephen M. Cameron <scameron@beardog.cce.hp.com>
+From: Matt Gates <matthew.gates@hp.com>
 
-hpsa:  when resetting devices, print out which device
+hpsa: Don't return DID_NO_CONNECT when a device is merely not ready
 
+Signed-off-by: Matt Gates <matthew.gates@hp.com>
 Signed-off-by: Stephen M. Cameron <scameron@beardog.cce.hp.com>
 ---
- drivers/scsi/hpsa.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/scsi/hpsa.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
 diff --git a/drivers/scsi/hpsa.c b/drivers/scsi/hpsa.c
-index f889ec8..db12bc2 100644
+index d07b3d3..320d686 100644
 --- a/drivers/scsi/hpsa.c
 +++ b/drivers/scsi/hpsa.c
-@@ -2141,14 +2141,14 @@ static int hpsa_eh_device_reset_handler(struct scsi_cmnd *scsicmd)
- 	h = sdev_to_hba(scsicmd->device);
- 	if (h == NULL) /* paranoia */
- 		return FAILED;
--	dev_warn(&h->pdev->dev, "resetting drive\n");
--
- 	dev = scsicmd->device->hostdata;
- 	if (!dev) {
- 		dev_err(&h->pdev->dev, "hpsa_eh_device_reset_handler: "
- 			"device lookup failed.\n");
- 		return FAILED;
- 	}
-+	dev_warn(&h->pdev->dev, "resetting device %d:%d:%d:%d\n",
-+		h->scsi_host->host_no, dev->bus, dev->target, dev->lun);
- 	/* send a reset to the SCSI LUN which the command was sent to */
- 	rc = hpsa_send_reset(h, dev->scsi3addr);
- 	if (rc == 0 && wait_for_device_to_become_ready(h, dev->scsi3addr) == 0)
+@@ -1029,7 +1029,6 @@ static void complete_scsi_command(struct CommandList *cp,
+ 				 * required
+ 				 */
+ 				if ((asc == 0x04) && (ascq == 0x03)) {
+-					cmd->result = DID_NO_CONNECT << 16;
+ 					dev_warn(&h->pdev->dev, "cp %p "
+ 						"has check condition: unit "
+ 						"not ready, manual "
 
