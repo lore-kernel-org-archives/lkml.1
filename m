@@ -1,99 +1,96 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756461Ab0BDLFc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 06:05:32 -0500
-Received: from gate.lvk.cs.msu.su ([158.250.17.1]:41952 "EHLO
-	mail.lvk.cs.msu.su" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755267Ab0BDLFb (ORCPT
+	id S1757163Ab0BDLGh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 06:06:37 -0500
+Received: from mga05.intel.com ([192.55.52.89]:49325 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756555Ab0BDLGg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 06:05:31 -0500
-X-Spam-ASN: 
-Date: Thu, 4 Feb 2010 14:05:22 +0300
-From: Alexander Gordeev <lasaine@lvk.cs.msu.su>
-To: john stultz <johnstul@us.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxpps@ml.enneenne.com,
-       "Nikita V. Youshchenko" <yoush@cs.msu.su>, stas@lvk.cs.msu.su,
-       Rodolfo Giometti <giometti@enneenne.com>,
-       Rodolfo Giometti <giometti@linux.it>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "William S. Brasher" <billb958@door.net>, Reg Clemens <clemens@dwf.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@linux.intel.com>, John Kacur <jkacur@redhat.com>
-Subject: Re: [PATCH 2/5] pps: capture MONOTONIC_RAW timestamps as well
-Message-ID: <20100204140522.42330436@desktopvm.lvknet>
-In-Reply-To: <1265235976.3255.67.camel@work-vm>
-References: <cover.1265228858.git.lasaine@lvk.cs.msu.su>
- <67507a9818993cfcf0139668c11569a6f3ff1981.1265228858.git.lasaine@lvk.cs.msu.su>
- <1265235976.3255.67.camel@work-vm>
-Organization: LVK
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/0mj8pUY6BndtJicboDXKhem";
- protocol="application/pgp-signature"; micalg=PGP-SHA256
-X-AV-Checked: ClamAV using ClamSMTP
+	Thu, 4 Feb 2010 06:06:36 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,404,1262592000"; 
+   d="scan'208";a="537675637"
+Message-ID: <4B6AAA39.6000300@linux.intel.com>
+Date: Thu, 04 Feb 2010 19:06:33 +0800
+From: Haicheng Li <haicheng.li@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>
+CC: Andi Kleen <andi@firstfloor.org>, Suresh.b.siddha@intel.com,
+       lenb@kernel.org, trenn@suse.de,
+       "Zheng, Shaohui" <shaohui.zheng@intel.com>,
+       linux-kernel@vger.kernel.org, "Chen, Gong" <gong.chen@intel.com>,
+       "Lv, Jane" <jane.lv@intel.com>
+Subject: [PATCH] x86, acpi: map hotadded cpu to correct node.
+References: <C8EDE645B81E5141A8C6B2F73FD9265117C58A3504@shzsmsx501.ccr.corp.intel.com> <20100203220328.GG7510@basil.fritz.box>
+In-Reply-To: <20100203220328.GG7510@basil.fritz.box>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/0mj8pUY6BndtJicboDXKhem
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+x86: map hotadded cpu to correct node.
 
-=D0=92 Wed, 03 Feb 2010 14:26:16 -0800
-john stultz <johnstul@us.ibm.com> =D0=BF=D0=B8=D1=88=D0=B5=D1=82:
+When hotadd new cpu to system, if its affinitive node is online, should map the cpu to its own node. 
+otherwise, let kernel select one online node for the new cpu later.
 
-> On Wed, 2010-02-03 at 23:56 +0300, Alexander Gordeev wrote:
-> > MONOTONIC_RAW clock timestamps are ideally suited for frequency
-> > calculation and also fit well into the original NTP hardpps design.
-> > Now phase and frequency can be adjusted separately: the former
-> > based on REALTIME clock and the latter based on MONOTONIC_RAW clock.
-> > A new function getnstime_raw_and_real is added to timekeeping
-> > subsystem to capture both timestamps at the same time and
-> > atomically.
->=20
-> Hrmm. So while I understand the need for it, the
-> getnstime_raw_and_real() makes me cringe a little. Part of the issue
-> is that there are multiple CLOCK_IDs and the current interface allows
-> for accesses to only one at a time. There's a similar hack in the
-> hrtimer code to get the CLOCK_REALTIME and CLOCK_MONOTONIC values at
-> the same time. Next I worry that folks will want a
-> getnstime_mono_and_raw() or a getnstime_real_mono_and_raw(), then a
-> getnstime_real_and_realcoarse(), etc..=20
->=20
-> I'm almost thinking the way to handle this would be a better
-> abstraction, like a get_two_times(CLOCKID, timepsec*, CLOCKID,
-> timespec*). But that might need some further discussion. Anyone else
-> have thoughts here?
+Signed-off-by: Haicheng Li <haicheng.li@linux.intel.com>
+---
+  arch/x86/kernel/acpi/boot.c |   21 +++++++++++++++++++++
+  1 files changed, 21 insertions(+), 0 deletions(-)
 
-Agreed with you completely. I don't like the approach but failed to
-invent anything better.
-=20
-> So yea not opposed to this patch, but maybe try to avoid exporting the
-> symbol, so modules don't end up using it and we can change it fairly
-> easily later.
+diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+index 67e929b..92a4861 100644
+--- a/arch/x86/kernel/acpi/boot.c
++++ b/arch/x86/kernel/acpi/boot.c
+@@ -49,6 +49,7 @@ EXPORT_SYMBOL(acpi_disabled);
 
-Well, I'd like to, but how? getnstime_raw_and_real() is used in
-module added in one of the next commits.
+  #ifdef	CONFIG_X86_64
+  # include <asm/proto.h>
++# include <asm/numa_64.h>
+  #endif				/* X86 */
 
---=20
-  Alexander
+  #define BAD_MADT_ENTRY(entry, end) (					    \
+@@ -482,6 +483,25 @@ int acpi_register_gsi(struct device *dev, u32 gsi, int trigger, int polarity)
+   */
+  #ifdef CONFIG_ACPI_HOTPLUG_CPU
 
---Sig_/0mj8pUY6BndtJicboDXKhem
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
++static void acpi_map_cpu2node(acpi_handle handle, int cpu, int physid)
++{
++#ifdef CONFIG_ACPI_NUMA
++	int nid;
++
++	nid = acpi_get_node(handle);
++	if (!node_online(nid))
++		return;
++#ifdef CONFIG_X86_64
++	apicid_to_node[physid] = nid;
++	numa_set_node(cpu, nid);
++#else /* CONFIG_X86_32 */
++	apicid_2_node[physid] = nid;
++	cpu_to_node_map[cpu] = nid;
++#endif
++
++#endif
++}
++
+  static int __cpuinit _acpi_map_lsapic(acpi_handle handle, int *pcpu)
+  {
+  	struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
+@@ -540,6 +560,7 @@ static int __cpuinit _acpi_map_lsapic(acpi_handle handle, int *pcpu)
+  	}
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+  	cpu = cpumask_first(new_map);
++	acpi_map_cpu2node(handle, cpu, physid);
 
-iQEcBAEBCAAGBQJLaqnyAAoJEElrwznyooJbfXoH/iM1SL0vlW4fpmMDyq6PJams
-zaaP0rAXyO39GUh/S//UlMuW4sduTttgFdS8beGZ6zuMganUDO3cj79xi0d75Mqr
-VXxOF4M5Z0D/NNrVysm0NtbZq3TVubuW25GwkKGONqvohlA+DUcjnUM932QMpoXp
-PVEp59hvYDs6KfQsdiTx8CXffLflrwTlG8yRs5D0V86eyw6/Kk8wFhnDAykiRQsP
-Y5hH/JetkvSf7dpNh8nbGjLN5Y4Y5jQ0fIZ+OKYPAwZbn2zpYYHJxp/vVdK2GOGX
-ErtkKV3Rm3DRUNgWBLkq0sZA6nXtCD5D1olL5kgmQ/hEtc3p5YbHvC+mifmUgyg=
-=jxm1
------END PGP SIGNATURE-----
+  	*pcpu = cpu;
+  	retval = 0;
+-- 
+1.6.0.rc1
 
---Sig_/0mj8pUY6BndtJicboDXKhem--
+
+
+
+-haicheng
