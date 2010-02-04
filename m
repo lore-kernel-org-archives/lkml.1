@@ -1,24 +1,22 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933620Ab0BDRel (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 12:34:41 -0500
-Received: from kroah.org ([198.145.64.141]:34650 "EHLO coco.kroah.org"
+	id S933612Ab0BDRee (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 12:34:34 -0500
+Received: from kroah.org ([198.145.64.141]:34654 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933027Ab0BDRVm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 12:21:42 -0500
-X-Mailbox-Line: From linux@linux.site Thu Feb  4 09:14:59 2010
-Message-Id: <20100204171459.393442905@linux.site>
+	id S933082Ab0BDRVn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 12:21:43 -0500
+X-Mailbox-Line: From linux@linux.site Thu Feb  4 09:15:00 2010
+Message-Id: <20100204171459.918511620@linux.site>
 User-Agent: quilt/0.47-14.9
-Date: Thu, 04 Feb 2010 09:11:50 -0800
+Date: Thu, 04 Feb 2010 09:11:51 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
-       "David S. Miller" <davem@davemloft.net>,
+       Zhenyu Wang <zhenyuw@linux.intel.com>, Eric Anholt <eric@anholt.net>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [19/74] e1000/e1000e: dont use small hardware rx buffers
+Subject: [20/74] drm/i915: Reload hangcheck timer too for Ironlake
 In-Reply-To: <20100204171850.GA16539@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -28,111 +26,30 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+From: Zhenyu Wang <zhenyuw@linux.intel.com>
 
-commit 9926146b15fd96d78a4f7c32e7a26d50639369f4 upstream.
+commit c566ec49159b806db95a90fd8f37448376cd0ad2 upstream.
 
-When testing the "e1000: enhance frame fragment detection" (and e1000e)
-patches we found some bugs with reducing the MTU size.  The 1024 byte
-descriptor used with the 1000 mtu test also (re) introduced the
-(originally) reported bug, and causes us to need the e1000_clean_tx_irq
-"enhance frame fragment detection" fix.
+Make sure hangcheck timer won't beat us unexpectedly on Ironlake.
 
-So what has occured here is that 2.6.32 is only vulnerable for mtu <
-1500 due to the jumbo specific routines in both e1000 and e1000e.
-So, 2.6.32 needs the 2kB buffer len fix for those smaller MTUs, but
-is not vulnerable to the original issue reported.  It has been pointed
-out that this vulnerability needs to be patched in older kernels that
-don't have the e1000 jumbo routine.  Without the jumbo routines, we
-need the "enhance frame fragment detection" fix the e1000, old
-e1000e is only vulnerable for < 1500 mtu, and needs a similar
-fix.  We split the patches up to provide easy backport paths.
-
-There is only a slight bit of extra code when this fix and the
-original "enhance frame fragment detection" fixes are applied, so
-please apply both, even though it is a bit of overkill.
-
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Zhenyu Wang <zhenyuw@linux.intel.com>
+Signed-off-by: Eric Anholt <eric@anholt.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/e1000/e1000_main.c |   20 +-------------------
- drivers/net/e1000e/netdev.c    |   20 +-------------------
- 2 files changed, 2 insertions(+), 38 deletions(-)
+ drivers/gpu/drm/i915/i915_irq.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
---- a/drivers/net/e1000/e1000_main.c
-+++ b/drivers/net/e1000/e1000_main.c
-@@ -1698,18 +1698,6 @@ static void e1000_setup_rctl(struct e100
- 	rctl &= ~E1000_RCTL_SZ_4096;
- 	rctl |= E1000_RCTL_BSEX;
- 	switch (adapter->rx_buffer_len) {
--		case E1000_RXBUFFER_256:
--			rctl |= E1000_RCTL_SZ_256;
--			rctl &= ~E1000_RCTL_BSEX;
--			break;
--		case E1000_RXBUFFER_512:
--			rctl |= E1000_RCTL_SZ_512;
--			rctl &= ~E1000_RCTL_BSEX;
--			break;
--		case E1000_RXBUFFER_1024:
--			rctl |= E1000_RCTL_SZ_1024;
--			rctl &= ~E1000_RCTL_BSEX;
--			break;
- 		case E1000_RXBUFFER_2048:
- 		default:
- 			rctl |= E1000_RCTL_SZ_2048;
-@@ -3154,13 +3142,7 @@ static int e1000_change_mtu(struct net_d
- 	 *  however with the new *_jumbo_rx* routines, jumbo receives will use
- 	 *  fragmented skbs */
+--- a/drivers/gpu/drm/i915/i915_irq.c
++++ b/drivers/gpu/drm/i915/i915_irq.c
+@@ -282,6 +282,8 @@ irqreturn_t igdng_irq_handler(struct drm
+ 		dev_priv->mm.irq_gem_seqno = seqno;
+ 		trace_i915_gem_request_complete(dev, seqno);
+ 		DRM_WAKEUP(&dev_priv->irq_queue);
++		dev_priv->hangcheck_count = 0;
++		mod_timer(&dev_priv->hangcheck_timer, jiffies + DRM_I915_HANGCHECK_PERIOD);
+ 	}
  
--	if (max_frame <= E1000_RXBUFFER_256)
--		adapter->rx_buffer_len = E1000_RXBUFFER_256;
--	else if (max_frame <= E1000_RXBUFFER_512)
--		adapter->rx_buffer_len = E1000_RXBUFFER_512;
--	else if (max_frame <= E1000_RXBUFFER_1024)
--		adapter->rx_buffer_len = E1000_RXBUFFER_1024;
--	else if (max_frame <= E1000_RXBUFFER_2048)
-+	if (max_frame <= E1000_RXBUFFER_2048)
- 		adapter->rx_buffer_len = E1000_RXBUFFER_2048;
- 	else
- #if (PAGE_SIZE >= E1000_RXBUFFER_16384)
---- a/drivers/net/e1000e/netdev.c
-+++ b/drivers/net/e1000e/netdev.c
-@@ -2347,18 +2347,6 @@ static void e1000_setup_rctl(struct e100
- 	rctl &= ~E1000_RCTL_SZ_4096;
- 	rctl |= E1000_RCTL_BSEX;
- 	switch (adapter->rx_buffer_len) {
--	case 256:
--		rctl |= E1000_RCTL_SZ_256;
--		rctl &= ~E1000_RCTL_BSEX;
--		break;
--	case 512:
--		rctl |= E1000_RCTL_SZ_512;
--		rctl &= ~E1000_RCTL_BSEX;
--		break;
--	case 1024:
--		rctl |= E1000_RCTL_SZ_1024;
--		rctl &= ~E1000_RCTL_BSEX;
--		break;
- 	case 2048:
- 	default:
- 		rctl |= E1000_RCTL_SZ_2048;
-@@ -4338,13 +4326,7 @@ static int e1000_change_mtu(struct net_d
- 	 * fragmented skbs
- 	 */
- 
--	if (max_frame <= 256)
--		adapter->rx_buffer_len = 256;
--	else if (max_frame <= 512)
--		adapter->rx_buffer_len = 512;
--	else if (max_frame <= 1024)
--		adapter->rx_buffer_len = 1024;
--	else if (max_frame <= 2048)
-+	if (max_frame <= 2048)
- 		adapter->rx_buffer_len = 2048;
- 	else
- 		adapter->rx_buffer_len = 4096;
+ 	I915_WRITE(GTIIR, gt_iir);
 
 
