@@ -1,180 +1,138 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758271Ab0BDNoU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 08:44:20 -0500
-Received: from mga01.intel.com ([192.55.52.88]:57257 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758230Ab0BDNoR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 08:44:17 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,404,1262592000"; 
-   d="scan'208";a="537708427"
-Date: Thu, 4 Feb 2010 21:44:06 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 00/11] [RFC] 512K readahead size with thrashing safe
-	readahead
-Message-ID: <20100204134406.GB26442@localhost>
-References: <20100202152835.683907822@intel.com> <20100202223803.GF3922@redhat.com> <20100203062756.GB22890@localhost> <20100203152454.GA17059@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100203152454.GA17059@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1758248Ab0BDNtz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 08:49:55 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:44468 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752219Ab0BDNty (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 08:49:54 -0500
+X-Authority-Analysis: v=1.0 c=1 a=5drdlUbjATAA:10 a=7U3hwN5JcxgA:10 a=20KFwNOVAAAA:8 a=meVymXHHAAAA:8 a=pGLkceISAAAA:8 a=tIakn2unZ5NFST6ecQoA:9 a=i07kh-lsmIDlv95Z7OYA:7 a=tU-Na4tYY30UmvEYiMeK_8EiHRQA:4 a=jEp0ucaQiEUA:10 a=jeBq3FmKZ4MA:10 a=MSl-tDqOz04A:10
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: Re: [PATCH -tip 4/4] ftrace: Remove record freezing
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       =?UTF-8?Q?Przemys=C5=82awPawe=C5=82czyk?= <przemyslaw@pawelczyk.it>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+In-Reply-To: <20100202214925.4694.73469.stgit@dhcp-100-2-132.bos.redhat.com>
+References: <20100202214856.4694.72709.stgit@dhcp-100-2-132.bos.redhat.com>
+	 <20100202214925.4694.73469.stgit@dhcp-100-2-132.bos.redhat.com>
+Content-Type: text/plain; charset="UTF-8"
+Organization: Kihon Technologies Inc.
+Date: Thu, 04 Feb 2010 08:49:50 -0500
+Message-ID: <1265291391.24386.16.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek,
+Sorry for the late reply.
 
-> I have got two paths to the HP EVA and got multipath device setup(dm-3). I
-> noticed with vanilla kernel read_ahead_kb=128 after boot but with your patches
-> applied it is set to 4. So looks like something went wrong with device
-> size/capacity detection hence wrong defaults. Manually setting
-> read_ahead_kb=512, got me better performance as compare to vanilla kernel.
+
+On Tue, 2010-02-02 at 16:49 -0500, Masami Hiramatsu wrote:
+> Remove record freezing. Because kprobes never puts probe on
+> ftrace's mcount call anymore, it doesn't need ftrace to check
+> whether kprobes on it.
 > 
-> AVERAGE[bsr]    
-> ------- 
-> job       Set NR  ReadBW(KB/s)   MaxClat(us)    WriteBW(KB/s)  MaxClat(us)    
-> ---       --- --  ------------   -----------    -------------  -----------    
-> bsr       3   1   190302         97937.3        0              0              
-> bsr       3   2   185636         223286         0              0              
-> bsr       3   4   185986         363658         0              0              
-> bsr       3   8   184352         428478         0              0              
-> bsr       3   16  185646         594311         0              0              
+> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+> Cc: Ingo Molnar <mingo@elte.hu>
 
-This looks good, thank you for the data!  I added them to the changelog :)
+Acked-by: Steven Rostedt <rostedt@goodmis.org>
 
-Thanks,
-Fengguang
----
-readahead: bump up the default readahead size
+-- Steve
 
-Use 512kb max readahead size, and 32kb min readahead size.
+> Cc: Przemysław Pawełczyk <przemyslaw@pawelczyk.it>
+> Cc: Frederic Weisbecker <fweisbec@gmail.com>
+> ---
+> 
+>  include/linux/ftrace.h |    1 -
+>  kernel/trace/ftrace.c  |   39 ---------------------------------------
+>  2 files changed, 0 insertions(+), 40 deletions(-)
+> 
+> diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
+> index 9d127ef..eb054ae 100644
+> --- a/include/linux/ftrace.h
+> +++ b/include/linux/ftrace.h
+> @@ -143,7 +143,6 @@ enum {
+>  	FTRACE_FL_ENABLED	= (1 << 3),
+>  	FTRACE_FL_NOTRACE	= (1 << 4),
+>  	FTRACE_FL_CONVERTED	= (1 << 5),
+> -	FTRACE_FL_FROZEN	= (1 << 6),
+>  };
+>  
+>  struct dyn_ftrace {
+> diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+> index 3d90661..1904797 100644
+> --- a/kernel/trace/ftrace.c
+> +++ b/kernel/trace/ftrace.c
+> @@ -22,7 +22,6 @@
+>  #include <linux/hardirq.h>
+>  #include <linux/kthread.h>
+>  #include <linux/uaccess.h>
+> -#include <linux/kprobes.h>
+>  #include <linux/ftrace.h>
+>  #include <linux/sysctl.h>
+>  #include <linux/ctype.h>
+> @@ -898,36 +897,6 @@ static struct dyn_ftrace *ftrace_free_records;
+>  		}				\
+>  	}
+>  
+> -#ifdef CONFIG_KPROBES
+> -
+> -static int frozen_record_count;
+> -
+> -static inline void freeze_record(struct dyn_ftrace *rec)
+> -{
+> -	if (!(rec->flags & FTRACE_FL_FROZEN)) {
+> -		rec->flags |= FTRACE_FL_FROZEN;
+> -		frozen_record_count++;
+> -	}
+> -}
+> -
+> -static inline void unfreeze_record(struct dyn_ftrace *rec)
+> -{
+> -	if (rec->flags & FTRACE_FL_FROZEN) {
+> -		rec->flags &= ~FTRACE_FL_FROZEN;
+> -		frozen_record_count--;
+> -	}
+> -}
+> -
+> -static inline int record_frozen(struct dyn_ftrace *rec)
+> -{
+> -	return rec->flags & FTRACE_FL_FROZEN;
+> -}
+> -#else
+> -# define freeze_record(rec)			({ 0; })
+> -# define unfreeze_record(rec)			({ 0; })
+> -# define record_frozen(rec)			({ 0; })
+> -#endif /* CONFIG_KPROBES */
+> -
+>  static void ftrace_free_rec(struct dyn_ftrace *rec)
+>  {
+>  	rec->freelist = ftrace_free_records;
+> @@ -1091,14 +1060,6 @@ static void ftrace_replace_code(int enable)
+>  		    !(rec->flags & FTRACE_FL_CONVERTED))
+>  			continue;
+>  
+> -		/* ignore updates to this record's mcount site */
+> -		if (get_kprobe((void *)rec->ip)) {
+> -			freeze_record(rec);
+> -			continue;
+> -		} else {
+> -			unfreeze_record(rec);
+> -		}
+> -
+>  		failed = __ftrace_replace_code(rec, enable);
+>  		if (failed) {
+>  			rec->flags |= FTRACE_FL_FAILED;
+> 
+> 
 
-The former helps io performance for common workloads.
-The latter will be used in the thrashing safe context readahead.
 
--- Rationals on the 512kb size --
-
-I believe it yields more I/O throughput without noticeably increasing
-I/O latency for today's HDD.
-
-For example, for a 100MB/s and 8ms access time HDD:
-
-io_size KB  access_time  transfer_time  io_latency   util%   throughput KB/s
-4           8             0.04           8.04        0.49%    497.57  
-8           8             0.08           8.08        0.97%    990.33  
-16          8             0.16           8.16        1.92%   1961.69 
-32          8             0.31           8.31        3.76%   3849.62 
-64          8             0.62           8.62        7.25%   7420.29 
-128         8             1.25           9.25       13.51%  13837.84
-256         8             2.50          10.50       23.81%  24380.95
-512         8             5.00          13.00       38.46%  39384.62
-1024        8            10.00          18.00       55.56%  56888.89
-2048        8            20.00          28.00       71.43%  73142.86
-4096        8            40.00          48.00       83.33%  85333.33
-
-The 128KB => 512KB readahead size boosts IO throughput from ~13MB/s to
-~39MB/s, while merely increases (minimal) IO latency from 9.25ms to 13ms.
-
-As for SSD, I find that Intel X25-M SSD desires large readahead size
-even for sequential reads:
-
-	rasize	1st run		2nd run
-	----------------------------------
-	  4k	123 MB/s	122 MB/s
-	 16k  	153 MB/s	153 MB/s
-	 32k	161 MB/s	162 MB/s
-	 64k	167 MB/s	168 MB/s
-	128k	197 MB/s	197 MB/s
-	256k	217 MB/s	217 MB/s
-	512k	238 MB/s	234 MB/s
-	  1M	251 MB/s	248 MB/s
-	  2M	259 MB/s	257 MB/s
-   	  4M	269 MB/s	264 MB/s
-	  8M	266 MB/s	266 MB/s
-
-The two other impacts of an enlarged readahead size are
-
-- memory footprint (caused by readahead miss)
-	Sequential readahead hit ratio is pretty high regardless of max
-	readahead size; the extra memory footprint is mainly caused by
-	enlarged mmap read-around.
-	I measured my desktop:
-	- under Xwindow:
-		128KB readahead hit ratio = 143MB/230MB = 62%
-		512KB readahead hit ratio = 138MB/248MB = 55%
-		  1MB readahead hit ratio = 130MB/253MB = 51%
-	- under console: (seems more stable than the Xwindow data)
-		128KB readahead hit ratio = 30MB/56MB   = 53%
-		  1MB readahead hit ratio = 30MB/59MB   = 51%
-	So the impact to memory footprint looks acceptable.
-
-- readahead thrashing
-	It will now cost 1MB readahead buffer per stream.  Memory tight
-	systems typically do not run multiple streams; but if they do
-	so, it should help I/O performance as long as we can avoid
-	thrashing, which can be achieved with the following patches.
-
--- Benchmarks by Vivek Goyal --
-
-I have got two paths to the HP EVA and got multipath device setup(dm-3).
-I run increasing number of sequential readers. File system is ext3 and
-filesize is 1G.
-I have run the tests 3 times (3sets) and taken the average of it.
-
-Workload=bsr      iosched=cfq     Filesz=1G   bs=32K
-======================================================================
-                    2.6.33-rc5                2.6.33-rc5-readahead
-job   Set NR  ReadBW(KB/s)   MaxClat(us)    ReadBW(KB/s)   MaxClat(us)
----   --- --  ------------   -----------    ------------   -----------
-bsr   3   1   141768         130965         190302         97937.3    
-bsr   3   2   131979         135402         185636         223286     
-bsr   3   4   132351         420733         185986         363658     
-bsr   3   8   133152         455434         184352         428478     
-bsr   3   16  130316         674499         185646         594311     
-
-I ran same test on a different piece of hardware. There are few SATA disks
-(5-6) in striped configuration behind a hardware RAID controller.
-
-Workload=bsr      iosched=cfq     Filesz=1G   bs=32K
-======================================================================
-                    2.6.33-rc5                2.6.33-rc5-readahead
-job   Set NR  ReadBW(KB/s)   MaxClat(us)    ReadBW(KB/s)   MaxClat(us)    
----   --- --  ------------   -----------    ------------   -----------    
-bsr   3   1   147569         14369.7        160191         22752          
-bsr   3   2   124716         243932         149343         184698         
-bsr   3   4   123451         327665         147183         430875         
-bsr   3   8   122486         455102         144568         484045         
-bsr   3   16  117645         1.03957e+06    137485         1.06257e+06    
-
-Tested-by: Vivek Goyal <vgoyal@redhat.com>
-CC: Jens Axboe <jens.axboe@oracle.com>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Martin Schwidefsky <schwidefsky@de.ibm.com>
-CC: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
----
- include/linux/mm.h |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
---- linux.orig/include/linux/mm.h	2010-01-30 17:38:49.000000000 +0800
-+++ linux/include/linux/mm.h	2010-01-30 18:09:58.000000000 +0800
-@@ -1184,8 +1184,8 @@ int write_one_page(struct page *page, in
- void task_dirty_inc(struct task_struct *tsk);
- 
- /* readahead.c */
--#define VM_MAX_READAHEAD	128	/* kbytes */
--#define VM_MIN_READAHEAD	16	/* kbytes (includes current page) */
-+#define VM_MAX_READAHEAD	512	/* kbytes */
-+#define VM_MIN_READAHEAD	32	/* kbytes (includes current page) */
- 
- int force_page_cache_readahead(struct address_space *mapping, struct file *filp,
- 			pgoff_t offset, unsigned long nr_to_read);
