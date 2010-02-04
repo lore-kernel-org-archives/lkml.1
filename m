@@ -1,22 +1,23 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933558Ab0BDRco (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 12:32:44 -0500
-Received: from kroah.org ([198.145.64.141]:34708 "EHLO coco.kroah.org"
+	id S933092Ab0BDRVo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 12:21:44 -0500
+Received: from kroah.org ([198.145.64.141]:34612 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933161Ab0BDRVv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 12:21:51 -0500
-X-Mailbox-Line: From linux@linux.site Thu Feb  4 09:15:05 2010
-Message-Id: <20100204171504.826515743@linux.site>
+	id S932831Ab0BDRVf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 12:21:35 -0500
+X-Mailbox-Line: From linux@linux.site Thu Feb  4 09:14:53 2010
+Message-Id: <20100204171452.915396715@linux.site>
 User-Agent: quilt/0.47-14.9
-Date: Thu, 04 Feb 2010 09:12:00 -0800
+Date: Thu, 04 Feb 2010 09:11:42 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Mike Frysinger <vapier@gentoo.org>, David Howells <dhowells@redhat.com>,
+       Stefan Haberland <stefan.haberland@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [29/74] FDPIC: Respect PT_GNU_STACK exec protection markings when creating NOMMU stack
+Subject: [11/74] [S390] dasd: fix possible NULL pointer errors
 In-Reply-To: <20100204171850.GA16539@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -26,105 +27,104 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Mike Frysinger <vapier@gentoo.org>
+From: Stefan Haberland <stefan.haberland@de.ibm.com>
 
-commit 04e4f2b18c8de1389d1e00fef0f42a8099910daf upstream.
+commit 294001a80c9810e2fe27aaaad7df8be12a103065 upstream.
 
-The current code will load the stack size and protection markings, but
-then only use the markings in the MMU code path.  The NOMMU code path
-always passes PROT_EXEC to the mmap() call.  While this doesn't matter
-to most people whilst the code is running, it will cause a pointless
-icache flush when starting every FDPIC application.  Typically this
-icache flush will be of a region on the order of 128KB in size, or may
-be the entire icache, depending on the facilities available on the CPU.
+Fix possible NULL pointer in DASD messages and correct discipline
+checking.
 
-In the case where the arch default behaviour seems to be desired
-(EXSTACK_DEFAULT), we probe VM_STACK_FLAGS for VM_EXEC to determine
-whether we should be setting PROT_EXEC or not.
-
-For arches that support an MPU (Memory Protection Unit - an MMU without
-the virtual mapping capability), setting PROT_EXEC or not will make an
-important difference.
-
-It should be noted that this change also affects the executability of
-the brk region, since ELF-FDPIC has that share with the stack.  However,
-this is probably irrelevant as NOMMU programs aren't likely to use the
-brk region, preferring instead allocation via mmap().
-
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-Signed-off-by: David Howells <dhowells@redhat.com>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Stefan Haberland <stefan.haberland@de.ibm.com>
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/blackfin/include/asm/page.h |    5 +++++
- arch/frv/include/asm/page.h      |    2 --
- fs/binfmt_elf_fdpic.c            |   13 +++++++++++--
- 3 files changed, 16 insertions(+), 4 deletions(-)
+ drivers/s390/block/dasd.c       |    8 ++++----
+ drivers/s390/block/dasd_eckd.c  |    2 +-
+ drivers/s390/block/dasd_ioctl.c |    7 ++-----
+ drivers/s390/block/dasd_proc.c  |    7 ++-----
+ 4 files changed, 9 insertions(+), 15 deletions(-)
 
---- a/arch/blackfin/include/asm/page.h
-+++ b/arch/blackfin/include/asm/page.h
-@@ -10,4 +10,9 @@
- #include <asm-generic/page.h>
- #define MAP_NR(addr) (((unsigned long)(addr)-PAGE_OFFSET) >> PAGE_SHIFT)
+--- a/drivers/s390/block/dasd.c
++++ b/drivers/s390/block/dasd.c
+@@ -1005,8 +1005,8 @@ static void dasd_handle_killed_request(s
+ 	if (device == NULL ||
+ 	    device != dasd_device_from_cdev_locked(cdev) ||
+ 	    strncmp(device->discipline->ebcname, (char *) &cqr->magic, 4)) {
+-		DBF_DEV_EVENT(DBF_DEBUG, device, "invalid device in request: "
+-			      "bus_id %s", dev_name(&cdev->dev));
++		DBF_EVENT_DEVID(DBF_DEBUG, cdev, "%s",
++				"invalid device in request");
+ 		return;
+ 	}
  
-+#define VM_DATA_DEFAULT_FLAGS \
-+	(VM_READ | VM_WRITE | \
-+	((current->personality & READ_IMPLIES_EXEC) ? VM_EXEC : 0 ) | \
-+		 VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC)
-+
- #endif
---- a/arch/frv/include/asm/page.h
-+++ b/arch/frv/include/asm/page.h
-@@ -63,12 +63,10 @@ extern unsigned long max_pfn;
- #define virt_addr_valid(kaddr)	pfn_valid(__pa(kaddr) >> PAGE_SHIFT)
+@@ -1078,8 +1078,8 @@ void dasd_int_handler(struct ccw_device 
+ 	device = (struct dasd_device *) cqr->startdev;
+ 	if (!device ||
+ 	    strncmp(device->discipline->ebcname, (char *) &cqr->magic, 4)) {
+-		DBF_DEV_EVENT(DBF_DEBUG, device, "invalid device in request: "
+-			      "bus_id %s", dev_name(&cdev->dev));
++		DBF_EVENT_DEVID(DBF_DEBUG, cdev, "%s",
++				"invalid device in request");
+ 		return;
+ 	}
  
+--- a/drivers/s390/block/dasd_eckd.c
++++ b/drivers/s390/block/dasd_eckd.c
+@@ -2980,7 +2980,7 @@ static void dasd_eckd_dump_sense_ccw(str
+ 	len += sprintf(page + len, KERN_ERR PRINTK_HEADER
+ 		       " in req: %p CS: 0x%02X DS: 0x%02X CC: 0x%02X RC: %d\n",
+ 		       req, scsw_cstat(&irb->scsw), scsw_dstat(&irb->scsw),
+-		       scsw_cc(&irb->scsw), req->intrc);
++		       scsw_cc(&irb->scsw), req ? req->intrc : 0);
+ 	len += sprintf(page + len, KERN_ERR PRINTK_HEADER
+ 		       " device %s: Failing CCW: %p\n",
+ 		       dev_name(&device->cdev->dev),
+--- a/drivers/s390/block/dasd_ioctl.c
++++ b/drivers/s390/block/dasd_ioctl.c
+@@ -260,7 +260,7 @@ static int dasd_ioctl_information(struct
+ 	struct ccw_dev_id dev_id;
  
--#ifdef CONFIG_MMU
- #define VM_DATA_DEFAULT_FLAGS \
- 	(VM_READ | VM_WRITE | \
- 	((current->personality & READ_IMPLIES_EXEC) ? VM_EXEC : 0 ) | \
- 		 VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC)
--#endif
+ 	base = block->base;
+-	if (!base->discipline->fill_info)
++	if (!base->discipline || !base->discipline->fill_info)
+ 		return -EINVAL;
  
- #endif /* __ASSEMBLY__ */
+ 	dasd_info = kzalloc(sizeof(struct dasd_information2_t), GFP_KERNEL);
+@@ -303,10 +303,7 @@ static int dasd_ioctl_information(struct
+ 	dasd_info->features |=
+ 		((base->features & DASD_FEATURE_READONLY) != 0);
  
---- a/fs/binfmt_elf_fdpic.c
-+++ b/fs/binfmt_elf_fdpic.c
-@@ -171,6 +171,9 @@ static int load_elf_fdpic_binary(struct 
- #ifdef ELF_FDPIC_PLAT_INIT
- 	unsigned long dynaddr;
- #endif
-+#ifndef CONFIG_MMU
-+	unsigned long stack_prot;
-+#endif
- 	struct file *interpreter = NULL; /* to shut gcc up */
- 	char *interpreter_name = NULL;
- 	int executable_stack;
-@@ -316,6 +319,8 @@ static int load_elf_fdpic_binary(struct 
- 	 * defunct, deceased, etc. after this point we have to exit via
- 	 * error_kill */
- 	set_personality(PER_LINUX_FDPIC);
-+	if (elf_read_implies_exec(&exec_params.hdr, executable_stack))
-+		current->personality |= READ_IMPLIES_EXEC;
- 	set_binfmt(&elf_fdpic_format);
+-	if (base->discipline)
+-		memcpy(dasd_info->type, base->discipline->name, 4);
+-	else
+-		memcpy(dasd_info->type, "none", 4);
++	memcpy(dasd_info->type, base->discipline->name, 4);
  
- 	current->mm->start_code = 0;
-@@ -377,9 +382,13 @@ static int load_elf_fdpic_binary(struct 
- 	if (stack_size < PAGE_SIZE * 2)
- 		stack_size = PAGE_SIZE * 2;
- 
-+	stack_prot = PROT_READ | PROT_WRITE;
-+	if (executable_stack == EXSTACK_ENABLE_X ||
-+	    (executable_stack == EXSTACK_DEFAULT && VM_STACK_FLAGS & VM_EXEC))
-+		stack_prot |= PROT_EXEC;
-+
- 	down_write(&current->mm->mmap_sem);
--	current->mm->start_brk = do_mmap(NULL, 0, stack_size,
--					 PROT_READ | PROT_WRITE | PROT_EXEC,
-+	current->mm->start_brk = do_mmap(NULL, 0, stack_size, stack_prot,
- 					 MAP_PRIVATE | MAP_ANONYMOUS | MAP_GROWSDOWN,
- 					 0);
- 
+ 	if (block->request_queue->request_fn) {
+ 		struct list_head *l;
+--- a/drivers/s390/block/dasd_proc.c
++++ b/drivers/s390/block/dasd_proc.c
+@@ -71,7 +71,7 @@ dasd_devices_show(struct seq_file *m, vo
+ 	/* Print device number. */
+ 	seq_printf(m, "%s", dev_name(&device->cdev->dev));
+ 	/* Print discipline string. */
+-	if (device != NULL && device->discipline != NULL)
++	if (device->discipline != NULL)
+ 		seq_printf(m, "(%s)", device->discipline->name);
+ 	else
+ 		seq_printf(m, "(none)");
+@@ -91,10 +91,7 @@ dasd_devices_show(struct seq_file *m, vo
+ 	substr = (device->features & DASD_FEATURE_READONLY) ? "(ro)" : " ";
+ 	seq_printf(m, "%4s: ", substr);
+ 	/* Print device status information. */
+-	switch ((device != NULL) ? device->state : -1) {
+-	case -1:
+-		seq_printf(m, "unknown");
+-		break;
++	switch (device->state) {
+ 	case DASD_STATE_NEW:
+ 		seq_printf(m, "new");
+ 		break;
 
 
