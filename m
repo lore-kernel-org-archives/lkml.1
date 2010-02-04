@@ -1,72 +1,284 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933067Ab0BDBen (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 20:34:43 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:54303 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933050Ab0BDBem (ORCPT
+	id S933077Ab0BDBiu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 20:38:50 -0500
+Received: from adelie.canonical.com ([91.189.90.139]:44631 "EHLO
+	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933050Ab0BDBir (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 20:34:42 -0500
-Message-ID: <4B6A242C.8060104@infradead.org>
-Date: Wed, 03 Feb 2010 23:34:36 -0200
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
+	Wed, 3 Feb 2010 20:38:47 -0500
+Message-ID: <4B6A2514.9020200@canonical.com>
+Date: Wed, 03 Feb 2010 17:38:28 -0800
+From: John Johansen <john.johansen@canonical.com>
+Organization: Canonical
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: Tobias Lorenz <tobias.lorenz@gmx.net>
-CC: Roel Kluin <roel.kluin@gmail.com>, linux-media@vger.kernel.org,
+To: Kees Cook <kees.cook@canonical.com>
+CC: James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serue@us.ibm.com>,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       linux-security-module@vger.kernel.org, Eric Paris <eparis@redhat.com>,
+       David Howells <dhowells@redhat.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>, Ingo Molnar <mingo@elte.hu>,
        Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] radio-si470x-common: -EINVAL overwritten in si470x_vidioc_s_tuner()
-References: <4B69D2F5.2050100@gmail.com> <201002032252.36514.tobias.lorenz@gmx.net>
-In-Reply-To: <201002032252.36514.tobias.lorenz@gmx.net>
+       Simon Kagstrom <simon.kagstrom@netinsight.net>,
+       David Woodhouse <David.Woodhouse@intel.com>,
+       Robin Getz <rgetz@analog.com>, Greg Kroah-Hartman <gregkh@suse.de>,
+       Paul Moore <paul.moore@hp.com>,
+       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+       Stephen Smalley <sds@tycho.nsa.gov>,
+       Etienne Basset <etienne.basset@numericable.fr>,
+       "David P. Quigley" <dpquigl@tycho.nsa.gov>,
+       LKLM <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v2 2/2] syslog: use defined constants instead of raw numbers
+References: <20100202055354.GV19355@outflux.net> <4B67C2EA.705@schaufler-ca.com> <20100202202054.GW19355@outflux.net> <20100202212510.GG32305@us.ibm.com> <alpine.LRH.2.00.1002030859220.14592@tundra.namei.org> <20100203233713.GJ19355@outflux.net>
+In-Reply-To: <20100203233713.GJ19355@outflux.net>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tobias Lorenz wrote:
-> Hello Roel,
+Kees Cook wrote:
+> Right now the syslog "type" action are just raw numbers which makes
+> the source difficult to follow.  This patch replaces the raw numbers
+> with defined constants for some level of sanity.
 > 
-> no, the default value of retval makes no difference to the function.
+> Signed-off-by: Kees Cook <kees.cook@canonical.com>
+
+Acked-by: John Johansen <john.johansen@canonical.com>
+
+> ---
+>  fs/proc/kmsg.c           |   10 +++++-----
+>  include/linux/syslog.h   |   23 +++++++++++++++++++++++
+>  kernel/printk.c          |   45 +++++++++++++++++++--------------------------
+>  security/commoncap.c     |    5 +++--
+>  security/selinux/hooks.c |   21 +++++++++++----------
+>  5 files changed, 61 insertions(+), 43 deletions(-)
 > 
-> Retval is set by si470x_disconnect_check and si470x_set_register.
-> After each call, retval is checked.
-> There is no need to reset it passed.
-> 
-> The only reason, there is a default value is my static code checker, saying variables should have default values.
-> Setting it to -EINVAL seems more reasonable to me than setting it 0.
-> In fact the patch would bring up the warning on setting default values again.
+> diff --git a/fs/proc/kmsg.c b/fs/proc/kmsg.c
+> index 6a3d843..cfe90a4 100644
+> --- a/fs/proc/kmsg.c
+> +++ b/fs/proc/kmsg.c
+> @@ -21,12 +21,12 @@ extern wait_queue_head_t log_wait;
+>  
+>  static int kmsg_open(struct inode * inode, struct file * file)
+>  {
+> -	return do_syslog(1, NULL, 0, SYSLOG_FROM_FILE);
+> +	return do_syslog(SYSLOG_ACTION_OPEN, NULL, 0, SYSLOG_FROM_FILE);
+>  }
+>  
+>  static int kmsg_release(struct inode * inode, struct file * file)
+>  {
+> -	(void) do_syslog(0, NULL, 0, SYSLOG_FROM_FILE);
+> +	(void) do_syslog(SYSLOG_ACTION_CLOSE, NULL, 0, SYSLOG_FROM_FILE);
+>  	return 0;
+>  }
+>  
+> @@ -34,15 +34,15 @@ static ssize_t kmsg_read(struct file *file, char __user *buf,
+>  			 size_t count, loff_t *ppos)
+>  {
+>  	if ((file->f_flags & O_NONBLOCK) &&
+> -	    !do_syslog(9, NULL, 0, SYSLOG_FROM_FILE))
+> +	    !do_syslog(SYSLOG_ACTION_SIZE_UNREAD, NULL, 0, SYSLOG_FROM_FILE))
+>  		return -EAGAIN;
+> -	return do_syslog(2, buf, count, SYSLOG_FROM_FILE);
+> +	return do_syslog(SYSLOG_ACTION_READ, buf, count, SYSLOG_FROM_FILE);
+>  }
+>  
+>  static unsigned int kmsg_poll(struct file *file, poll_table *wait)
+>  {
+>  	poll_wait(file, &log_wait, wait);
+> -	if (do_syslog(9, NULL, 0, SYSLOG_FROM_FILE))
+> +	if (do_syslog(SYSLOG_ACTION_SIZE_UNREAD, NULL, 0, SYSLOG_FROM_FILE))
+>  		return POLLIN | POLLRDNORM;
+>  	return 0;
+>  }
+> diff --git a/include/linux/syslog.h b/include/linux/syslog.h
+> index 5f02b18..3891139 100644
+> --- a/include/linux/syslog.h
+> +++ b/include/linux/syslog.h
+> @@ -21,6 +21,29 @@
+>  #ifndef _LINUX_SYSLOG_H
+>  #define _LINUX_SYSLOG_H
+>  
+> +/* Close the log.  Currently a NOP. */
+> +#define SYSLOG_ACTION_CLOSE          0
+> +/* Open the log. Currently a NOP. */
+> +#define SYSLOG_ACTION_OPEN           1
+> +/* Read from the log. */
+> +#define SYSLOG_ACTION_READ           2
+> +/* Read all messages remaining in the ring buffer. */
+> +#define SYSLOG_ACTION_READ_ALL       3
+> +/* Read and clear all messages remaining in the ring buffer */
+> +#define SYSLOG_ACTION_READ_CLEAR     4
+> +/* Clear ring buffer. */
+> +#define SYSLOG_ACTION_CLEAR          5
+> +/* Disable printk's to console */
+> +#define SYSLOG_ACTION_CONSOLE_OFF    6
+> +/* Enable printk's to console */
+> +#define SYSLOG_ACTION_CONSOLE_ON     7
+> +/* Set level of messages printed to console */
+> +#define SYSLOG_ACTION_CONSOLE_LEVEL  8
+> +/* Return number of unread characters in the log buffer */
+> +#define SYSLOG_ACTION_SIZE_UNREAD    9
+> +/* Return size of the log buffer */
+> +#define SYSLOG_ACTION_SIZE_BUFFER   10
+> +
+>  #define SYSLOG_FROM_CALL 0
+>  #define SYSLOG_FROM_FILE 1
+>  
+> diff --git a/kernel/printk.c b/kernel/printk.c
+> index 1771b34..4067412 100644
+> --- a/kernel/printk.c
+> +++ b/kernel/printk.c
+> @@ -259,21 +259,6 @@ static inline void boot_delay_msec(void)
+>  }
+>  #endif
+>  
+> -/*
+> - * Commands to do_syslog:
+> - *
+> - * 	0 -- Close the log.  Currently a NOP.
+> - * 	1 -- Open the log. Currently a NOP.
+> - * 	2 -- Read from the log.
+> - * 	3 -- Read all messages remaining in the ring buffer.
+> - * 	4 -- Read and clear all messages remaining in the ring buffer
+> - * 	5 -- Clear ring buffer.
+> - * 	6 -- Disable printk's to console
+> - * 	7 -- Enable printk's to console
+> - *	8 -- Set level of messages printed to console
+> - *	9 -- Return number of unread characters in the log buffer
+> - *     10 -- Return size of the log buffer
+> - */
+>  int do_syslog(int type, char __user *buf, int len, bool from_file)
+>  {
+>  	unsigned i, j, limit, count;
+> @@ -286,11 +271,11 @@ int do_syslog(int type, char __user *buf, int len, bool from_file)
+>  		return error;
+>  
+>  	switch (type) {
+> -	case 0:		/* Close log */
+> +	case SYSLOG_ACTION_CLOSE:	/* Close log */
+>  		break;
+> -	case 1:		/* Open log */
+> +	case SYSLOG_ACTION_OPEN:	/* Open log */
+>  		break;
+> -	case 2:		/* Read from log */
+> +	case SYSLOG_ACTION_READ:	/* Read from log */
+>  		error = -EINVAL;
+>  		if (!buf || len < 0)
+>  			goto out;
+> @@ -321,10 +306,12 @@ int do_syslog(int type, char __user *buf, int len, bool from_file)
+>  		if (!error)
+>  			error = i;
+>  		break;
+> -	case 4:		/* Read/clear last kernel messages */
+> +	/* Read/clear last kernel messages */
+> +	case SYSLOG_ACTION_READ_CLEAR:
+>  		do_clear = 1;
+>  		/* FALL THRU */
+> -	case 3:		/* Read last kernel messages */
+> +	/* Read last kernel messages */
+> +	case SYSLOG_ACTION_READ_ALL:
+>  		error = -EINVAL;
+>  		if (!buf || len < 0)
+>  			goto out;
+> @@ -377,21 +364,25 @@ int do_syslog(int type, char __user *buf, int len, bool from_file)
+>  			}
+>  		}
+>  		break;
+> -	case 5:		/* Clear ring buffer */
+> +	/* Clear ring buffer */
+> +	case SYSLOG_ACTION_CLEAR:
+>  		logged_chars = 0;
+>  		break;
+> -	case 6:		/* Disable logging to console */
+> +	/* Disable logging to console */
+> +	case SYSLOG_ACTION_CONSOLE_OFF:
+>  		if (saved_console_loglevel == -1)
+>  			saved_console_loglevel = console_loglevel;
+>  		console_loglevel = minimum_console_loglevel;
+>  		break;
+> -	case 7:		/* Enable logging to console */
+> +	/* Enable logging to console */
+> +	case SYSLOG_ACTION_CONSOLE_ON:
+>  		if (saved_console_loglevel != -1) {
+>  			console_loglevel = saved_console_loglevel;
+>  			saved_console_loglevel = -1;
+>  		}
+>  		break;
+> -	case 8:		/* Set level of messages printed to console */
+> +	/* Set level of messages printed to console */
+> +	case SYSLOG_ACTION_CONSOLE_LEVEL:
+>  		error = -EINVAL;
+>  		if (len < 1 || len > 8)
+>  			goto out;
+> @@ -402,10 +393,12 @@ int do_syslog(int type, char __user *buf, int len, bool from_file)
+>  		saved_console_loglevel = -1;
+>  		error = 0;
+>  		break;
+> -	case 9:		/* Number of chars in the log buffer */
+> +	/* Number of chars in the log buffer */
+> +	case SYSLOG_ACTION_SIZE_UNREAD:
+>  		error = log_end - log_start;
+>  		break;
+> -	case 10:	/* Size of the log buffer */
+> +	/* Size of the log buffer */
+> +	case SYSLOG_ACTION_SIZE_BUFFER:
+>  		error = log_buf_len;
+>  		break;
+>  	default:
+> diff --git a/security/commoncap.c b/security/commoncap.c
+> index 677fad9..cf01b2e 100644
+> --- a/security/commoncap.c
+> +++ b/security/commoncap.c
+> @@ -897,9 +897,10 @@ error:
+>  int cap_syslog(int type, bool from_file)
+>  {
+>  	/* /proc/kmsg can open be opened by CAP_SYS_ADMIN */
+> -	if (type != 1 && from_file)
+> +	if (type != SYSLOG_ACTION_OPEN && from_file)
+>  		return 0;
+> -	if ((type != 3 && type != 10) && !capable(CAP_SYS_ADMIN))
+> +	if ((type != SYSLOG_ACTION_READ_ALL &&
+> +	     type != SYSLOG_ACTION_SIZE_BUFFER) && !capable(CAP_SYS_ADMIN))
+>  		return -EPERM;
+>  	return 0;
+>  }
+> diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
+> index a4862a0..6b36ce2 100644
+> --- a/security/selinux/hooks.c
+> +++ b/security/selinux/hooks.c
+> @@ -2059,20 +2059,21 @@ static int selinux_syslog(int type, bool from_file)
+>  		return rc;
+>  
+>  	switch (type) {
+> -	case 3:		/* Read last kernel messages */
+> -	case 10:	/* Return size of the log buffer */
+> +	case SYSLOG_ACTION_READ_ALL:	/* Read last kernel messages */
+> +	case SYSLOG_ACTION_SIZE_BUFFER:	/* Return size of the log buffer */
+>  		rc = task_has_system(current, SYSTEM__SYSLOG_READ);
+>  		break;
+> -	case 6:		/* Disable logging to console */
+> -	case 7:		/* Enable logging to console */
+> -	case 8:		/* Set level of messages printed to console */
+> +	case SYSLOG_ACTION_CONSOLE_OFF:	/* Disable logging to console */
+> +	case SYSLOG_ACTION_CONSOLE_ON:	/* Enable logging to console */
+> +	/* Set level of messages printed to console */
+> +	case SYSLOG_ACTION_CONSOLE_LEVEL:
+>  		rc = task_has_system(current, SYSTEM__SYSLOG_CONSOLE);
+>  		break;
+> -	case 0:		/* Close log */
+> -	case 1:		/* Open log */
+> -	case 2:		/* Read from log */
+> -	case 4:		/* Read/clear last kernel messages */
+> -	case 5:		/* Clear ring buffer */
+> +	case SYSLOG_ACTION_CLOSE:	/* Close log */
+> +	case SYSLOG_ACTION_OPEN:	/* Open log */
+> +	case SYSLOG_ACTION_READ:	/* Read from log */
+> +	case SYSLOG_ACTION_READ_CLEAR:	/* Read/clear last kernel messages */
+> +	case SYSLOG_ACTION_CLEAR:	/* Clear ring buffer */
+>  	default:
+>  		rc = task_has_system(current, SYSTEM__SYSLOG_MOD);
+>  		break;
 
-Well, your static code checker is then broken ;)
-
->>  	struct si470x_device *radio = video_drvdata(file);
->> -	int retval = -EINVAL;
->> +	int retval;
->>  
->>  	/* safety checks */
->>  	retval = si470x_disconnect_check(radio);
-
-You may just do then:
-
-	int retval = si470x_disconnect_check(radio);
-
->>  	if (retval)
->>  		goto done;
->> +	retval = -EINVAL;
->>  
->>  	if (tuner->index != 0)
->>  		goto done;
->>
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-media" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
-
--- 
-
-Cheers,
-Mauro
