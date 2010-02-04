@@ -1,70 +1,62 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756257Ab0BDCHd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 21:07:33 -0500
-Received: from hera.kernel.org ([140.211.167.34]:58276 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754922Ab0BDCHc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 21:07:32 -0500
-Message-ID: <4B6A2D29.3010804@kernel.org>
-Date: Thu, 04 Feb 2010 11:12:57 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
-MIME-Version: 1.0
-To: Oleg Nesterov <oleg@redhat.com>
-CC: Simon Kagstrom <simon.kagstrom@netinsight.net>,
-       linux-kernel@vger.kernel.org, laijs@cn.fujitsu.com,
-       rusty@rustcorp.com.au, akpm@linux-foundation.org, mingo@elte.hu
-Subject: Re: [PATCH] core: workqueue: BUG_ON on workqueue recursion
-References: <20100203122755.0fd4fb7e@marrow.netinsight.se> <20100203194350.GA13824@redhat.com>
-In-Reply-To: <20100203194350.GA13824@redhat.com>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 04 Feb 2010 02:06:15 +0000 (UTC)
+	id S1756322Ab0BDCLU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 21:11:20 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50730
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753020Ab0BDCLS convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 21:11:18 -0500
+Date: Wed, 03 Feb 2010 18:11:32 -0800 (PST)
+Message-Id: <20100203.181132.194298727.davem@davemloft.net>
+To: eric.dumazet@gmail.com
+Cc: kronos.it@gmail.com, adobriyan@gmail.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH] af_key: fix netns ops ordering on module load/unload
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1265032590.2848.40.camel@edumazet-laptop>
+References: <20100130125327.GA4258@x200>
+	<68676e01002010550l2654208dged864973a996c381@mail.gmail.com>
+	<1265032590.2848.40.camel@edumazet-laptop>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+From: Eric Dumazet <eric.dumazet@gmail.com>
+Date: Mon, 01 Feb 2010 14:56:30 +0100
 
-On 02/04/2010 04:43 AM, Oleg Nesterov wrote:
-> On 02/03, Simon Kagstrom wrote:
->>
->> When the workqueue is flushed from workqueue context (recursively), the
->> system enters a strange state where things at random (dependent on the
->> global workqueue) start misbehaving. For example, for us the console and
->> logins locks up while the web server continues running.
->>
->> Since the system becomes unstable, change this to a BUG_ON instead.
+> Le lundi 01 février 2010 à 14:50 +0100, Luca Tettamanti a écrit :
+>> On Sat, Jan 30, 2010 at 1:53 PM, Alexey Dobriyan <adobriyan@gmail.com> wrote:
 > 
-> I agree with this patch. We are going to deadlock anyway, if the
-> condition is true the caller is cwq->current_work, this means
-> flush_cpu_workqueue() will insert the barrier and hang.
+>> > [PATCH] af_key: fix netns ops ordering on module load/unload
+>> >
+>> > 1. After sock_register() returns, it's possible to create sockets,
+>> >   even if module still not initialized fully (blame generic module code
+>> >   for that!)
+>> > 2. Consequently, pfkey_create() can be called with pfkey_net_id still not
+>> >   initialized which will BUG_ON in net_generic():
+>> >        kernel BUG at include/net/netns/generic.h:43!
+>> > 3. During netns shutdown, netns ops should be unregistered after
+>> >   key manager unregistered because key manager calls can be triggered
+>> >   from xfrm_user module:
+>> >
+>> >        general protection fault: 0000 [#1] PREEMPT SMP DEBUG_PAGEALLOC
+>> >        pfkey_broadcast+0x111/0x210 [af_key]
+>> >        pfkey_send_notify+0x16a/0x300 [af_key]
+>> >        km_state_notify+0x41/0x70
+>> >        xfrm_flush_sa+0x75/0x90 [xfrm_user]
+>> > 4. Unregister netns ops after socket ops just in case and for symmetry.
+>> >
+>> > Reported by Luca Tettamanti.
+>> >
+>> > Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+>> 
+>> Tested-by: Luca Tettamanti <kronos.it@gmail.com>
 > 
-> However,
-> 
->> @@ -482,7 +482,7 @@ static int flush_cpu_workqueue(struct cpu_workqueue_struct *cwq)
->>  	int active = 0;
->>  	struct wq_barrier barr;
->>
->> -	WARN_ON(cwq->thread == current);
->> +	BUG_ON(cwq->thread == current);
-> 
-> Another option is change the code to do
-> 
-> 	if (WARN_ON(cwq->thread == current))
-> 		return;
-> 
-> This gives the kernel chance to survive after the warning.
-> 
-> What do you think?
+> Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
 
-Yeah, I like this one better too.  Even solely for debugging,
-WARN_ON() is better as often users don't have reliable ways to gather
-kernel log after a BUG_ON().
-
-Thanks.
-
--- 
-tejun
+Applied, thanks everyone!
