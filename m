@@ -1,63 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757266Ab0BDSPB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 13:15:01 -0500
-Received: from xenotime.net ([72.52.64.118]:43059 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1757059Ab0BDSPA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 13:15:00 -0500
-Message-ID: <4B6B0E9F.5060002@xenotime.net>
-Date: Thu, 04 Feb 2010 10:14:55 -0800
-From: Randy Dunlap <rdunlap@xenotime.net>
-Organization: YPO4
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+	id S1757275Ab0BDSPu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 13:15:50 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:39382 "EHLO
+	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756537Ab0BDSPs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 13:15:48 -0500
+Date: Thu, 4 Feb 2010 18:15:40 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Dave Airlie <airlied@gmail.com>, Dave Airlie <airlied@linux.ie>,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       dri-devel@lists.sf.net
+Subject: Re: hung bootup with "drm/radeon/kms: move radeon KMS on/off
+	switch out of staging."
+Message-ID: <20100204181540.GA20922@srcf.ucam.org>
+References: <20100202154656.GD27314@elte.hu> <21d7e9971002021234y275fae02k410af92bb16fee73@mail.gmail.com> <20100204062619.GA29154@elte.hu> <20100204071705.GA28403@elte.hu> <20100204164859.GA17878@srcf.ucam.org> <20100204170826.GA16397@elte.hu> <20100204173602.GA19855@srcf.ucam.org> <20100204175445.GB27361@elte.hu> <20100204175928.GA20595@srcf.ucam.org> <20100204181218.GA6175@elte.hu>
 MIME-Version: 1.0
-To: akpm@linux-foundation.org
-CC: linux-kernel@vger.kernel.org,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: mmotm 2010-02-03-20-09 uploaded (mmap.c)
-References: <201002040435.o144Z5jc007582@imap1.linux-foundation.org>
-In-Reply-To: <201002040435.o144Z5jc007582@imap1.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100204181218.GA6175@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
+X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/03/10 20:09, akpm@linux-foundation.org wrote:
-> The mm-of-the-moment snapshot 2010-02-03-20-09 has been uploaded to
->
->     http://userweb.kernel.org/~akpm/mmotm/
->
-> and will soon be available at
->
->     git://zen-kernel.org/kernel/mmotm.git
->
-> It contains the following patches against 2.6.33-rc6:
+On Thu, Feb 04, 2010 at 07:12:18PM +0100, Ingo Molnar wrote:
+> 
+> * Matthew Garrett <mjg59@srcf.ucam.org> wrote:
+> > The reason the option was in staging (as has been mentioned before) was 
+> > because the ABI wasn't felt to be stable enough. Upstream is now willing to 
+> > commit to that stability, so now seems as good a time to move it as any. 
+> > There's no code change and there's no default configuration change, so I 
+> > really can't see any way that it can be classed as a regression.
+> 
+> But that argument in essence renders the regression policy meaningless for 
+> such code: just about any new driver feature under the sun could be shaped as 
+> a Kconfig option, introduced via a drivers/staging Kconfig entry, and then 
+> activated via a twoliner commit in a later -rc.
 
-
-In some config cases, this patch seems to have a problem:
-   sysctl-clean-up-vm-related-variable-declarations.patch
-
-In mm/mmap.c:
-+#ifdef HAVE_ARCH_PICK_MMAP_LAYOUT
-+/* Used by each architecture's private code and sysctl. */
-+int sysctl_legacy_va_layout;
-+#endif
-
-mm/mmap.c:92: error: expected identifier or '(' before numeric constant
-
-I guess that sometimes sysctl_legacy_va_layout is a #define:
-from include/linux/mm.h:
-
-#ifdef CONFIG_SYSCTL
-extern int sysctl_legacy_va_layout;
-#else
-#define sysctl_legacy_va_layout 0
-#endif
-
-and indeed the failing builds do not have CONFIG_SYSCTL enabled.
-
+Before this patch, CONFIG_DRM_RADEON_KMS=y would crash your system on 
+boot. After this patch, CONFIG_DRM_RADEON_KMS=y still crashes your 
+system. There's certainly the argument that this means it's premature to 
+make that change, but given that the same configuration behaves in the 
+same way, it's clearly not a regression.
 
 -- 
-~Randy
+Matthew Garrett | mjg59@srcf.ucam.org
