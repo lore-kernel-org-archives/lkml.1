@@ -1,44 +1,62 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754943Ab0BDIRv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 03:17:51 -0500
-Received: from hera.kernel.org ([140.211.167.34]:35630 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753744Ab0BDIRt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 03:17:49 -0500
-Message-ID: <4B6A8278.8070001@kernel.org>
-Date: Thu, 04 Feb 2010 17:16:56 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
-MIME-Version: 1.0
-To: Andy Isaacson <adi@hexapodia.org>
-CC: linux-kernel@vger.kernel.org, dri-devel@lists.sourceforge.net
-Subject: Re: [2.6.33-rc6-git regression] idr fix breaks Xorg
-References: <20100204012837.GC538@hexapodia.org> <20100204075642.GA28286@hexapodia.org>
-In-Reply-To: <20100204075642.GA28286@hexapodia.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1754552Ab0BDIYo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 03:24:44 -0500
+Received: from moutng.kundenserver.de ([212.227.126.186]:57520 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751990Ab0BDIYn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 03:24:43 -0500
+Subject: [PATCH] Staging: comedi: fix brace coding style in comedi_fops.c
+From: Paul Elms <paul@uprocera.co.uk>
+To: gregkh@suse.de, wfp5p@virginia.edu, shawn.bohrer@gmail.com,
+       fmhess@users.sourceforge.net
+Cc: devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 04 Feb 2010 08:24:28 +0000
+Message-ID: <1265271868.2483.2.camel@arthur>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 04 Feb 2010 08:16:59 +0000 (UTC)
+X-Provags-ID: V01U2FsdGVkX18QZ5oAJvhzybUtkzhS6erDOQhKw6AB9+laULU
+ kIruTUAWg4gx50MXhMzQbGuIdRWHwtXYk9VsJLq9XhYlA+G2n0
+ PS5K2ILw3stvJZX6lle+quaQRjWjoAT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+>From 38f32cfc823e40b4b64a2977bc79c00990b29837 Mon Sep 17 00:00:00 2001
+From: Paul Elms <paul@uprocera.co.uk>
+Date: Tue, 2 Feb 2010 17:34:50 +0000
+Subject: [PATCH] Staging: comedi: fix brace coding style in comedi_fops.c
 
-On 02/04/2010 04:56 PM, Andy Isaacson wrote:
-> 1265267921.568269 ioctl(8, 0xc020645e, 0x7fffe2196980) = -1 EBADF (Bad file descriptor)
+This patch to the comedi_fops.c file fixes a brace warning found by the checkpatch.pl tool
+Signed-off-by: Paul Elms <paul@uprocera.co.uk>
+---
+ drivers/staging/comedi/comedi_fops.c |    6 ++----
+ 1 files changed, 2 insertions(+), 4 deletions(-)
 
-Hmm... -EBADF?  I suppose it doesn't mean that the fd is invalid in
-this case but that the mapped object can't be found for some reason?
-Can anyone more familiar with the subsystem explain what's going on?
-
-> 1265267921.568649 write(2, "../../../libdrm/intel/intel_bufmgr_gem.c:637: Error mapping buffer 1073741824 (gen4 WM state): Bad file descriptor .\n", 117) = 117
-> 1265267921.569039 --- SIGSEGV (Segmentation fault) @ 0 (0) ---
-
-I'll forward the fore mentioned fix as it at least fixes one reported
-failure.
-
-Thanks.
-
+diff --git a/drivers/staging/comedi/comedi_fops.c b/drivers/staging/comedi/comedi_fops.c
+index 8117748..79653e8 100644
+--- a/drivers/staging/comedi/comedi_fops.c
++++ b/drivers/staging/comedi/comedi_fops.c
+@@ -2004,12 +2004,10 @@ void comedi_event(struct comedi_device *dev, struct comedi_subdevice *s)
+ 	if (async->cb_mask & s->async->events) {
+ 		if (comedi_get_subdevice_runflags(s) & SRF_USER) {
+ 			wake_up_interruptible(&async->wait_head);
+-			if (s->subdev_flags & SDF_CMD_READ) {
++			if (s->subdev_flags & SDF_CMD_READ)
+ 				kill_fasync(&dev->async_queue, SIGIO, POLL_IN);
+-			}
+-			if (s->subdev_flags & SDF_CMD_WRITE) {
++			if (s->subdev_flags & SDF_CMD_WRITE)
+ 				kill_fasync(&dev->async_queue, SIGIO, POLL_OUT);
+-			}
+ 		} else {
+ 			if (async->cb_func)
+ 				async->cb_func(s->async->events, async->cb_arg);
 -- 
-tejun
+1.6.3.3
+
+
+
