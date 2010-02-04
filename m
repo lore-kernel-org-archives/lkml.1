@@ -1,74 +1,47 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933141Ab0BDT6p (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 14:58:45 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:42573 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932788Ab0BDT5J (ORCPT
+	id S933127Ab0BDT6J (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 14:58:09 -0500
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:63769 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932834Ab0BDT56 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 14:57:09 -0500
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org
-Cc: Roel Kluin <12o3l@tiscali.nl>, Russell King <rmk+kernel@arm.linux.org.uk>,
-       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 9/9] net: move am79c961's probe function to .devinit.text
-Date: Thu,  4 Feb 2010 20:56:57 +0100
-Message-Id: <1265313417-5568-9-git-send-email-u.kleine-koenig@pengutronix.de>
-X-Mailer: git-send-email 1.6.6
-In-Reply-To: <20100203150850.GA28815@kroah.com>
-References: <20100203150850.GA28815@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+	Thu, 4 Feb 2010 14:57:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:subject:from:reply-to:to:cc:in-reply-to:references
+         :content-type:date:message-id:mime-version:x-mailer
+         :content-transfer-encoding;
+        b=dC0RVJuhMj5gxEOAB6mFxfnMyIchsuDoByOcvJ15qnhN9/WnVNm//tE/dVuXTqZmRo
+         Iov2NwqnEid+VJqqPQi6iGsgCqnvIXOcz0//ovsZ/lC/o00VfKU7UG6nIwxgrlMm+AiM
+         D+5QMCvGN0T39ZuJrlObyMBg0wYVNmSIX3qN8=
+Subject: Re: patch net-restore-ip-source-validation.patch added to
+ 2.6.32-stable tree
+From: jamal <hadi@cyberus.ca>
+Reply-To: hadi@cyberus.ca
+To: Stefan Lippers-Hollmann <s.L-H@gmx.de>
+Cc: gregkh@suse.de, linux-kernel@vger.kernel.org, davem@davemloft.net,
+       stable@kernel.org
+In-Reply-To: <201002042049.31582.s.L-H@gmx.de>
+References: <1265060041850@kroah.org> <201002041931.40493.s.L-H@gmx.de>
+	 <1265308725.4651.14.camel@bigi>  <201002042049.31582.s.L-H@gmx.de>
+Content-Type: text/plain
+Date: Thu, 04 Feb 2010 14:57:51 -0500
+Message-Id: <1265313471.4651.21.camel@bigi>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A pointer to am79c961_probe is passed to the core via
-platform_driver_register and so the function must not disappear when the
-.init sections are discarded.  Otherwise (if also having HOTPLUG=y)
-unbinding and binding a device to the driver via sysfs will result in an
-oops as does a device being registered late.
+Hi,
 
-An alternative to this patch is using platform_driver_probe instead of
-platform_driver_register plus removing the pointer to the probe function
-from the struct platform_driver.
+Can you try the little patch i sent? I think it fixes it.
+BTW, thanks for your perseverance in chasing things - it motivated
+me to look closer....
 
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: Roel Kluin <12o3l@tiscali.nl>
-Cc: Russell King <rmk+kernel@arm.linux.org.uk>
-Cc: netdev@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>
----
-Hello,
+cheers,
+jamal
 
-@David Miller: this patch is in patchwork with State: Not Applicable.
-Does that mean that netdev isn't the right tree for this patch?
-
-Best regards
-Uwe
-
- drivers/net/arm/am79c961a.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/net/arm/am79c961a.c b/drivers/net/arm/am79c961a.c
-index 164b37e..1c3c1f9 100644
---- a/drivers/net/arm/am79c961a.c
-+++ b/drivers/net/arm/am79c961a.c
-@@ -680,7 +680,7 @@ static const struct net_device_ops am79c961_netdev_ops = {
- #endif
- };
- 
--static int __init am79c961_probe(struct platform_device *pdev)
-+static int __devinit am79c961_probe(struct platform_device *pdev)
- {
- 	struct resource *res;
- 	struct net_device *dev;
--- 
-1.6.6
 
