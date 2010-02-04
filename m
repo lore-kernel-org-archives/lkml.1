@@ -1,74 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754068Ab0BDRNc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 12:13:32 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39423 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753528Ab0BDRNb (ORCPT
+	id S1754263Ab0BDROL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 12:14:11 -0500
+Received: from nlpi157.sbcis.sbc.com ([207.115.36.171]:44031 "EHLO
+	nlpi157.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753018Ab0BDROJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 12:13:31 -0500
-Date: Thu, 4 Feb 2010 09:13:18 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-cc: Al Viro <viro@ZenIV.linux.org.uk>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH][RFC] %pd - for printing dentry name
-In-Reply-To: <20100204160206.GG6676@linux.vnet.ibm.com>
-Message-ID: <alpine.LFD.2.00.1002040848330.3707@localhost.localdomain>
-References: <20100201222511.GA12882@ZenIV.linux.org.uk> <alpine.LFD.2.00.1002011431490.3664@localhost.localdomain> <20100201231847.GC12882@ZenIV.linux.org.uk> <20100202065341.GF6292@linux.vnet.ibm.com> <20100203024931.GA6307@linux.vnet.ibm.com>
- <alpine.LFD.2.00.1002040715570.3707@localhost.localdomain> <20100204160206.GG6676@linux.vnet.ibm.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 4 Feb 2010 12:14:09 -0500
+Date: Thu, 4 Feb 2010 11:13:15 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@router.home
+To: Nick Piggin <npiggin@suse.de>
+cc: Dave Chinner <david@fromorbit.com>, tytso@mit.edu,
+       Andi Kleen <andi@firstfloor.org>, Miklos Szeredi <miklos@szeredi.hu>,
+       Alexander Viro <viro@ftp.linux.org.uk>,
+       Christoph Hellwig <hch@infradead.org>,
+       Christoph Lameter <clameter@sgi.com>, Rik van Riel <riel@redhat.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, akpm@linux-foundation.org,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickins <hugh@veritas.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: inodes: Support generic defragmentation
+In-Reply-To: <20100204093350.GE13318@laptop>
+Message-ID: <alpine.DEB.2.00.1002041109500.28165@router.home>
+References: <20100129204931.789743493@quilx.com> <20100129205004.405949705@quilx.com> <20100130192623.GE788@thunk.org> <20100131083409.GF29555@one.firstfloor.org> <20100131135933.GM15853@discord.disaster> <alpine.DEB.2.00.1002030920500.5671@router.home>
+ <20100204003410.GD5332@discord.disaster> <20100204030736.GB25885@thunk.org> <20100204033911.GE5332@discord.disaster> <20100204093350.GE13318@laptop>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 4 Feb 2010, Nick Piggin wrote:
+
+> Well what I described is to do the slab pinning from the reclaim path
+> (rather than from slab calling into the subsystem). All slab locking
+> basically "innermost", so you can pretty much poke the slab layer as
+> much as you like from the subsystem.
+
+Reclaim/defrag is called from the reclaim path (of the VM). We could
+enable a call from the fs reclaim code into the slab. But how would this
+work?
+
+> After that, LRU on slabs should be fairly easy. Slab could provide a
+> private per-slab pointer for example that is managed by the caller.
+> Subsystem can then call into slab to find the objects.
+
+Sure with some minor changes we could have a call that is giving you the
+list of neighboring objects in a slab, while locking it? Then you can look
+at the objects and decide which ones can be tossed and then do another
+call to release the objects and unlock the slab.
 
 
-On Thu, 4 Feb 2010, Paul E. McKenney wrote:
-> 
-> Ah, good point on the hash size.  And given that DNAME_INLINE_LEN_MIN
-> is 40 characters on 32-bit systems and 32 characters on 64-bit systems,
-> I agree that while a four-character increase might be nice, it cannot be
-> said to be an emergency.
 
-Well, what we _could_ do is to make the 'length' field be part of the name 
-itself, and just keep the hash separate. The hash (and parenthood) is what 
-we check most in the hot inner loop, and don't want to have any extra 
-indirection (or cache misses) for. The name length we check only later, 
-after we've done all other checks (and after we've gotten the spinlock, 
-which is the big thing).
-
-So qstr->len is _not_ performance critical in the same way that qstr->hash 
-is.
-
-So we might not save 4 bytes, but we _could_ try to move the length field 
-into the name with something like
-
-	struct qstr_name {
-		unsigned short len;
-		char name[];
-	};
-
-	struct qstr {
-		unsigned int hash;
-		const struct qstr_name *name;
-	};
-
-but the problem then is one of alignment (ie that pointer generally wants 
-8-byte alignment on 64-bit architectures, so none of this _helps_ unless 
-we also move some other 4-byte field into the qstr (we could look at 
-making 'd_time' be a 32-bit entry, for example, and move it in there).
-
-Or we could do really crazy things, and put the four first characters of 
-d_iname inside the qstr etc etc. It's just that it all gets totally 
-unnatural very quickly.
-
-So 'struct dentry' is one of the most important data structures we have 
-(just because you easily end up with millions of them), but since we 
-already control its size by varying the inline name length, I doubt that 
-playing really fancy games is worth it.
-
-			Linus
