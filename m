@@ -1,19 +1,19 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932295Ab0BDOjN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 09:39:13 -0500
-Received: from g4t0014.houston.hp.com ([15.201.24.17]:3506 "EHLO
-	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756346Ab0BDOjL (ORCPT
+	id S932714Ab0BDOjj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 09:39:39 -0500
+Received: from g6t0184.atlanta.hp.com ([15.193.32.61]:7732 "EHLO
+	g6t0184.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932356Ab0BDOja (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 09:39:11 -0500
-Subject: [PATCH 07/30] hpsa: return proper error codes not minus one.
+	Thu, 4 Feb 2010 09:39:30 -0500
+Subject: [PATCH 05/30] hpsa: make adjust_hpsa_scsi_table return void.
 To: James.Bottomley@HansenPartnership.com, akpm@linux-foundation.org
 From: "Stephen M. Cameron" <scameron@beardog.cce.hp.com>
 Cc: mikem@beardog.cce.hp.com, brace@beardog.cce.hp.com, matthew.gates@hp.com,
        linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Date: Thu, 04 Feb 2010 08:41:59 -0600
-Message-ID: <20100204144159.10406.19763.stgit@beardog.cce.hp.com>
+Date: Thu, 04 Feb 2010 08:41:49 -0600
+Message-ID: <20100204144149.10406.67225.stgit@beardog.cce.hp.com>
 In-Reply-To: <20100204144012.10406.14868.stgit@beardog.cce.hp.com>
 References: <20100204144012.10406.14868.stgit@beardog.cce.hp.com>
 User-Agent: StGit/0.15
@@ -26,115 +26,32 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Stephen M. Cameron <scameron@beardog.cce.hp.com>
 
-hpsa: return proper error codes not minus one.
+hpsa: make adjust_hpsa_scsi_table return void.
 
 Signed-off-by: Stephen M. Cameron <scameron@beardog.cce.hp.com>
 ---
- drivers/scsi/hpsa.c |   37 ++++++++++++++++++++++---------------
- 1 files changed, 22 insertions(+), 15 deletions(-)
+ drivers/scsi/hpsa.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/scsi/hpsa.c b/drivers/scsi/hpsa.c
-index 9017e64..8389cce 100644
+index 2c256e3..6fe5142 100644
 --- a/drivers/scsi/hpsa.c
 +++ b/drivers/scsi/hpsa.c
-@@ -1130,11 +1130,11 @@ static int hpsa_scsi_detect(struct ctlr_info *h)
- 	dev_err(&h->pdev->dev, "hpsa_scsi_detect: scsi_add_host"
- 		" failed for controller %d\n", h->ctlr);
- 	scsi_host_put(sh);
--	return -1;
-+	return error;
-  fail:
- 	dev_err(&h->pdev->dev, "hpsa_scsi_detect: scsi_host_alloc"
- 		" failed for controller %d\n", h->ctlr);
--	return -1;
-+	return -ENOMEM;
+@@ -733,7 +733,7 @@ static int hpsa_scsi_find_entry(struct hpsa_scsi_dev_t *needle,
+ 	return DEVICE_NOT_FOUND;
  }
  
- static void hpsa_pci_unmap(struct pci_dev *pdev,
-@@ -1271,7 +1271,7 @@ static int hpsa_scsi_do_inquiry(struct ctlr_info *h, unsigned char *scsi3addr,
- 
- 	if (c == NULL) {			/* trouble... */
- 		dev_warn(&h->pdev->dev, "cmd_special_alloc returned NULL!\n");
--		return -1;
-+		return -ENOMEM;
- 	}
- 
- 	fill_cmd(c, HPSA_INQUIRY, h, buf, bufsize, page, scsi3addr, TYPE_CMD);
-@@ -3284,7 +3284,7 @@ err_out_free_res:
- static int __devinit hpsa_init_one(struct pci_dev *pdev,
- 				    const struct pci_device_id *ent)
+-static int adjust_hpsa_scsi_table(struct ctlr_info *h, int hostno,
++static void adjust_hpsa_scsi_table(struct ctlr_info *h, int hostno,
+ 	struct hpsa_scsi_dev_t *sd[], int nsds)
  {
--	int i;
-+	int i, rc;
- 	int dac;
- 	struct ctlr_info *h;
- 
-@@ -3312,14 +3312,15 @@ static int __devinit hpsa_init_one(struct pci_dev *pdev,
- 	BUILD_BUG_ON(sizeof(struct CommandList) % 8);
- 	h = kzalloc(sizeof(*h), GFP_KERNEL);
- 	if (!h)
--		return -1;
-+		return -ENOMEM;
- 
- 	h->busy_initializing = 1;
- 	INIT_HLIST_HEAD(&h->cmpQ);
- 	INIT_HLIST_HEAD(&h->reqQ);
- 	mutex_init(&h->busy_shutting_down);
- 	init_completion(&h->scan_wait);
--	if (hpsa_pci_init(h, pdev) != 0)
-+	rc = hpsa_pci_init(h, pdev);
-+	if (rc != 0)
- 		goto clean1;
- 
- 	sprintf(h->devname, "hpsa%d", number_of_controllers);
-@@ -3328,19 +3329,24 @@ static int __devinit hpsa_init_one(struct pci_dev *pdev,
- 	h->pdev = pdev;
- 
- 	/* configure PCI DMA stuff */
--	if (!pci_set_dma_mask(pdev, DMA_BIT_MASK(64)))
-+	rc = pci_set_dma_mask(pdev, DMA_BIT_MASK(64));
-+	if (rc == 0) {
- 		dac = 1;
--	else if (!pci_set_dma_mask(pdev, DMA_BIT_MASK(32)))
--		dac = 0;
--	else {
--		dev_err(&pdev->dev, "no suitable DMA available\n");
--		goto clean1;
-+	} else {
-+		rc = pci_set_dma_mask(pdev, DMA_BIT_MASK(32));
-+		if (rc == 0) {
-+			dac = 0;
-+		} else {
-+			dev_err(&pdev->dev, "no suitable DMA available\n");
-+			goto clean1;
-+		}
- 	}
- 
- 	/* make sure the board interrupts are off */
- 	h->access.set_intr_mask(h, HPSA_INTR_OFF);
--	if (request_irq(h->intr[SIMPLE_MODE_INT], do_hpsa_intr,
--			IRQF_DISABLED | IRQF_SHARED, h->devname, h)) {
-+	rc = request_irq(h->intr[SIMPLE_MODE_INT], do_hpsa_intr,
-+			IRQF_DISABLED | IRQF_SHARED, h->devname, h);
-+	if (rc) {
- 		dev_err(&pdev->dev, "unable to get irq %d for %s\n",
- 		       h->intr[SIMPLE_MODE_INT], h->devname);
- 		goto clean2;
-@@ -3363,6 +3369,7 @@ static int __devinit hpsa_init_one(struct pci_dev *pdev,
- 	    || (h->cmd_pool == NULL)
- 	    || (h->errinfo_pool == NULL)) {
- 		dev_err(&pdev->dev, "out of memory");
-+		rc = -ENOMEM;
- 		goto clean4;
- 	}
- 	spin_lock_init(&h->lock);
-@@ -3397,7 +3404,7 @@ clean2:
- clean1:
- 	h->busy_initializing = 0;
- 	kfree(h);
--	return -1;
-+	return rc;
+ 	/* sd contains scsi3 addresses and devtypes, and inquiry
+@@ -859,7 +859,6 @@ static int adjust_hpsa_scsi_table(struct ctlr_info *h, int hostno,
+ free_and_out:
+ 	kfree(added);
+ 	kfree(removed);
+-	return 0;
  }
  
- static void hpsa_flush_cache(struct ctlr_info *h)
+ /*
 
