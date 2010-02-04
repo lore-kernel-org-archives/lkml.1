@@ -1,117 +1,109 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754552Ab0BDHEQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 02:04:16 -0500
-Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:51359 "EHLO
-	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753534Ab0BDHEN (ORCPT
+	id S1754708Ab0BDHGG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 02:06:06 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:58932 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753714Ab0BDHGC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 02:04:13 -0500
-Message-ID: <4B6A716D.90802@dcl.info.waseda.ac.jp>
-Date: Thu, 04 Feb 2010 16:04:13 +0900
-From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091211 Shredder/3.0
+	Thu, 4 Feb 2010 02:06:02 -0500
+To: Greg KH <gregkh@suse.de>
+Cc: Jean Delvare <khali@linux-fr.org>, LKML <linux-kernel@vger.kernel.org>,
+       Tejun Heo <tj@kernel.org>, Serge Hallyn <serue@us.ibm.com>
+Subject: Re: sysfs_chmod_file() broken in 2.6.33-rc4-git6
+References: <20100120131602.12aa48f7@hyperion.delvare>
+	<m1ocko6fkx.fsf@fess.ebiederm.org>
+	<20100120160008.7d59688b@hyperion.delvare>
+	<20100122041913.GC4302@suse.de>
+	<20100203091138.1ababf5e@hyperion.delvare>
+	<20100203142218.GA27676@suse.de>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Wed, 03 Feb 2010 23:05:50 -0800
+In-Reply-To: <20100203142218.GA27676@suse.de> (Greg KH's message of "Wed\, 3 Feb 2010 06\:22\:18 -0800")
+Message-ID: <m1mxzplbu9.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: linux-kernel@vger.kernel.org, Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Tom Zanussi <tzanussi@gmail.com>, Jens Axboe <jens.axboe@oracle.com>,
-       Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
-       Mike Galbraith <efault@gmx.de>, Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH 00/12 v2] perf lock: New subcommand "perf lock", for analyzing
- lock statistics
-References: <1264851813-8413-1-git-send-email-mitake@dcl.info.waseda.ac.jp> <20100131082953.GA12715@elte.hu>
-In-Reply-To: <20100131082953.GA12715@elte.hu>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2010年01月31日 17:29, Ingo Molnar wrote:
->
-> FYI, i've applied a file/line-less version of 'perf lock' to perf/core today.
->
-> The basic workflow is the usual:
->
->    perf lock record sleep 1     # or some other command
->    perf lock report             # or 'perf lock trace'
->
-> [ I think we can do all the things that file/line can do with a less intrusive
->    (and more standard) call-site-IP based approach. For now we can key off the
->    names of the locks, that's coarser but also informative and allows us to
->    progress.
->
->    I've renamed 'perf lock prof' to 'perf lock report' - which is more in line
->    with other perf tools. ]
->
-> The tool clearly needs more work at the moment: i have tried perf lock on a 16
-> cpus box, and it was very slow, while it didnt really record all that many
-> events to justify the slowdown. A simple:
->
->    perf lock record sleep 1
->
-> makes the system very slow and requires a Ctrl-C to stop:
->
->   # time perf lock record sleep 1
->   ^C[ perf record: Woken up 0 times to write data ]
->   [ perf record: Captured and wrote 5.204 MB perf.data (~227374 samples) ]
->
->    real	0m11.941s
->    user	0m0.020s
->    sys	0m11.661s
->
-> (The kernel config i used witht that is attached.)
->
-> My suspicion is that the overhead of CONFIG_LOCK_STAT based tracing is way too
-> high at the moment, and needs to be reduced. I have removed the '-R' option
-> from perf lock record (which it got from perf sched where it makes sense but
-> here it's not really needed and -R further increases overhead), but that has
-> not solved the slowdown.
->
-> 'top' shows this kind of messy picture of a high-overhead system:
->
->    PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
-> 15003 root      20   0 28900 1116  784 R 102.2  0.0   0:14.23 perf
-> 14981 mingo     20   0 15068 1396  880 R 85.7  0.0   0:11.67 top
-> 15036 nobody    30  10  120m  22m 3224 R 74.4  0.1   0:04.47 cc1
-> 15030 nobody    30  10  125m  27m 2744 R 64.6  0.1   0:03.88 cc1
->     20 root      20   0     0    0    0 R 53.4  0.0   0:15.04 ksoftirqd/8
->   7646 nobody    30  10 23488  720  264 S 51.9  0.0   0:04.96 distccd
->     43 root      20   0     0    0    0 R 50.2  0.0   0:06.26 events/8
-> 15037 nobody    30  10 15696 4248  876 S 39.3  0.0   0:02.36 as
->   2891 nobody    30  10 23488  764  264 R 24.8  0.0   0:03.26 distccd
+Greg KH <gregkh@suse.de> writes:
 
-Yeah, overhead is main problem of perf lock now,
-I'll work on it with Frederic's new patches, these are awesome.
-
+> On Wed, Feb 03, 2010 at 09:11:38AM +0100, Jean Delvare wrote:
+>> On Thu, 21 Jan 2010 20:19:13 -0800, Greg KH wrote:
+>> > On Wed, Jan 20, 2010 at 04:00:08PM +0100, Jean Delvare wrote:
+>> > > On Wed, 20 Jan 2010 06:01:02 -0800, Eric W. Biederman wrote:
+>> > > > Does this fix your issue?
+>> > > > 
+>> > > > Eric
+>> > > > 
+>> > > > 
+>> > > > diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
+>> > > > index 220b758..6a06a1d 100644
+>> > > > --- a/fs/sysfs/inode.c
+>> > > > +++ b/fs/sysfs/inode.c
+>> > > > @@ -81,24 +81,23 @@ int sysfs_sd_setattr(struct sysfs_dirent *sd, struct iattr * iattr)
+>> > > >  		if (!sd_attrs)
+>> > > >  			return -ENOMEM;
+>> > > >  		sd->s_iattr = sd_attrs;
+>> > > > -	} else {
+>> > > > -		/* attributes were changed at least once in past */
+>> > > > -		iattrs = &sd_attrs->ia_iattr;
+>> > > > -
+>> > > > -		if (ia_valid & ATTR_UID)
+>> > > > -			iattrs->ia_uid = iattr->ia_uid;
+>> > > > -		if (ia_valid & ATTR_GID)
+>> > > > -			iattrs->ia_gid = iattr->ia_gid;
+>> > > > -		if (ia_valid & ATTR_ATIME)
+>> > > > -			iattrs->ia_atime = iattr->ia_atime;
+>> > > > -		if (ia_valid & ATTR_MTIME)
+>> > > > -			iattrs->ia_mtime = iattr->ia_mtime;
+>> > > > -		if (ia_valid & ATTR_CTIME)
+>> > > > -			iattrs->ia_ctime = iattr->ia_ctime;
+>> > > > -		if (ia_valid & ATTR_MODE) {
+>> > > > -			umode_t mode = iattr->ia_mode;
+>> > > > -			iattrs->ia_mode = sd->s_mode = mode;
+>> > > > -		}
+>> > > > +	}
+>> > > > +	/* attributes were changed at least once in past */
+>> > > > +	iattrs = &sd_attrs->ia_iattr;
+>> > > > +
+>> > > > +	if (ia_valid & ATTR_UID)
+>> > > > +		iattrs->ia_uid = iattr->ia_uid;
+>> > > > +	if (ia_valid & ATTR_GID)
+>> > > > +		iattrs->ia_gid = iattr->ia_gid;
+>> > > > +	if (ia_valid & ATTR_ATIME)
+>> > > > +		iattrs->ia_atime = iattr->ia_atime;
+>> > > > +	if (ia_valid & ATTR_MTIME)
+>> > > > +		iattrs->ia_mtime = iattr->ia_mtime;
+>> > > > +	if (ia_valid & ATTR_CTIME)
+>> > > > +		iattrs->ia_ctime = iattr->ia_ctime;
+>> > > > +	if (ia_valid & ATTR_MODE) {
+>> > > > +		umode_t mode = iattr->ia_mode;
+>> > > > +		iattrs->ia_mode = sd->s_mode = mode;
+>> > > >  	}
+>> > > >  	return 0;
+>> > > >  }
+>> > > 
+>> > > Yes, this fixes my problem. Thanks for the fast fix!
+>> > 
+>> > Great, Eric, care to resend this so that I can submit it for inclusion?
+>> 
+>> Ping Eric, the patch is still not in Linus' tree.
 >
-> A couple of other details i noticed:
+> Nor mine :)
 >
->   - 'perf lock' does not show up in the list of commands if one types 'perf'.
->     You can fix this by adding it to command-list.txt.
->
->   - i think we should add a reference to 'perf lock' in the config
->     LOCK_STAT entry's help text in lib/Kconfig.debug - so that people can see
->     what tool to use with lock statistics.
+> Eric, care to send it to me?
 
-Thanks, I've fixed these two points and prepared patch.
-I'll send it later.
+Apologies for the long delay.  I have been extremely out of it lately.
+I am should have a signed off by version sent shortly.  I looked and
+this problem also exists in 2.6.32 but hides because in that case we
+directly update the vfs inode so sysfs_chmod works until the vfs inode
+is evicted.   I will send you a patch for 2.6.32 -stable as well.
 
->
->   - perf report should be used to further reduce the overhead of
->     CONFIG_LOCK_STAT. If we want people to use this to tune for performance, we
->     want it to be exceptionally fast. Both the perf-lock-running and
->     perf-lock-not-running cases should be optimized. (Perhaps dynamic patching
->     techniques should be considered as well.)
->
->   - we waste 30 characters for the 'ID' column in perf lock report, which is in
->     all hexa, while no human would ever really read it, and would rarely rely
->     on it as well. Should be removed and only added back on option request or
->     so.
-
-Yes, address of lockdep is optional thing. This should be removed.
-
-Thanks,
-	Hitoshi
+Eric
