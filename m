@@ -1,44 +1,71 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751655Ab0BDFQX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 00:16:23 -0500
-Received: from mail.perches.com ([173.55.12.10]:1853 "EHLO mail.perches.com"
+	id S1751354Ab0BDFQI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 00:16:08 -0500
+Received: from arroyo.ext.ti.com ([192.94.94.40]:49013 "EHLO arroyo.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751326Ab0BDFQQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 00:16:16 -0500
-Subject: Re: [PATCH 02/10] drivers/ata: Fix continuation line formats
-From: Joe Perches <joe@perches.com>
-To: Mark Lord <kernel@teksavvy.com>, Sergey Matyukevich <geomatsi@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>,
-       linux-ide@vger.kernel.org
-In-Reply-To: <4B6A5443.6090804@teksavvy.com>
-References: <cover.1265095093.git.joe@perches.com>
-	 <12d39ac4f14bfe82a02b4ee246d183b48988fe12.1265095094.git.joe@perches.com>
-	 <4B69B0A0.2040701@teksavvy.com> <1265224535.24887.16.camel@Joe-Laptop.home>
-	 <4B6A5443.6090804@teksavvy.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 03 Feb 2010 21:16:15 -0800
-Message-ID: <1265260575.31964.13.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	id S1750743Ab0BDFQG convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 00:16:06 -0500
+From: "Shilimkar, Santosh" <santosh.shilimkar@ti.com>
+To: Abhijeet Dharmapurikar <adharmap@codeaurora.org>,
+       Catalin Marinas <catalin.marinas@arm.com>
+CC: Daniel Walker <dwalker@codeaurora.org>,
+       Russell King <linux@arm.linux.org.uk>, Tony Lindgren <tony@atomide.com>,
+       "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Larry Bassel <lbassel@quicinc.com>,
+       "linux-arm-kernel@lists.infradead.org" 
+	<linux-arm-kernel@lists.infradead.org>
+Date: Thu, 4 Feb 2010 10:45:29 +0530
+Subject: RE: [RFC PATCH] ARM: Change the mandatory barriers implementation
+Thread-Topic: [RFC PATCH] ARM: Change the mandatory barriers implementation
+Thread-Index: AcqlMEA4RYb5hBdcQayfD2BC9g1QewAJ/JXA
+Message-ID: <EAF47CD23C76F840A9E7FCE10091EFAB02C0B421AC@dbde02.ent.ti.com>
+References: <20100203161434.15912.42697.stgit@pc1117.cambridge.arm.com>
+ <4B6A131B.1070005@codeaurora.org>
+In-Reply-To: <4B6A131B.1070005@codeaurora.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-02-03 at 23:59 -0500, Mark Lord wrote:
-> You are the code nanny trying to get this patch in.  Not me.
+> -----Original Message-----
+> From: linux-arm-kernel-bounces@lists.infradead.org [mailto:linux-arm-kernel-
+> bounces@lists.infradead.org] On Behalf Of Abhijeet Dharmapurikar
+> Sent: Thursday, February 04, 2010 5:52 AM
+> To: Catalin Marinas
+> Cc: Daniel Walker; Russell King; Tony Lindgren; linux-arm-msm@vger.kernel.org; linux-
+> kernel@vger.kernel.org; Larry Bassel; linux-arm-kernel@lists.infradead.org
+> Subject: Re: [RFC PATCH] ARM: Change the mandatory barriers implementation
+> 
+> > The mandatory barriers (mb, rmb, wmb) are used even on uniprocessor
+> > systems for things like ordering Normal Non-cacheable memory accesses
+> > with DMA transfer (via Device memory writes). The current implementation
+> > uses dmb() for mb() and friends but this is not sufficient. The DMB only
+> > ensures the ordering of accesses with regards to a single observer
+> > accessing the same memory. If a DMA transfer is started by a write to
+> > Device memory, the data to be transfered may not reach the main memory
+> > (even if mapped as Normal Non-cacheable) before the device receives the
+> > notification to begin the transfer. The only barrier that would help in
+> > this situation is DSB which would completely drain the write buffers.
+> 
+> On ARMv7, DMB guarantees that all accesses prior to DMB are observed by
+> an observer if that observer sees any accesses _after_ the DMB. In this
+> case, since DMA engine observes a write to itself( It is being written
+> to and hence must observe the write) it should also see the writes to
+> the buffers. A dmb() after the writes to buffer and before write to DMA
+> engine should suffice.
+This may be true if the DMA engine is an observer in the cluster. Without
+coherence hardware, DMA won't see the correct data without draining the write
+buffer. So DSB is necessary in DMA case at least.
 
-Nope, I'm just the guy that identified the defect
-and proposed a patch.  You can fix it differently
-if you want.  Jeff could fix it differently as well.
-I don't care that much.  I don't own a device that
-uses this controller.  I'll never see the message.
-Perhaps no one ever will.
-
-Maybe Sergey Matyukevich, the original author, wants
-to fix it up in another way.
-http://patchwork.kernel.org/patch/76246/
-
-cheers, Joe
-
+Regards,
+Santosh
