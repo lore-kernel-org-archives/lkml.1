@@ -1,59 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933032Ab0BDVxa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 16:53:30 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:29769 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753413Ab0BDVx2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 16:53:28 -0500
-Subject: Re: [PATCH -next] libertas/if_spi: needs linux/semaphore.h
-From: Dan Williams <dcbw@redhat.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, akpm <akpm@linux-foundation.org>,
-       Andrey Yurovsky <andrey@cozybit.com>, Colin McCabe <colin@cozybit.com>,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       linux-wireless@vger.kernel.org
-In-Reply-To: <20100203153107.28184ef0.randy.dunlap@oracle.com>
-References: <20100203172625.c9340392.sfr@canb.auug.org.au>
-	 <20100203153107.28184ef0.randy.dunlap@oracle.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 04 Feb 2010 13:52:57 -0800
-Message-ID: <1265320377.4290.7.camel@localhost.localdomain>
+	id S1758019Ab0BDV43 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 16:56:29 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51454
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752139Ab0BDV40 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 16:56:26 -0500
+Date: Thu, 04 Feb 2010 13:56:39 -0800 (PST)
+Message-Id: <20100204.135639.69720709.davem@davemloft.net>
+To: penguin-kernel@I-love.SAKURA.ne.jp
+Cc: opurdila@ixiacom.com, amwang@redhat.com, linux-kernel@vger.kernel.org,
+       eric.dumazet@gmail.com, linux-rdma@vger.kernel.org,
+       netdev@vger.kernel.org, nhorman@tuxdriver.com,
+       linux-sctp@vger.kernel.org
+Subject: Re: [RFC Patch] net: reserve ports for applications using fixed
+ port numbers
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <201002050645.CEC95380.MLOtOVFFHSFOQJ@I-love.SAKURA.ne.jp>
+References: <20100204.094110.64247447.davem@davemloft.net>
+	<201002042015.51092.opurdila@ixiacom.com>
+	<201002050645.CEC95380.MLOtOVFFHSFOQJ@I-love.SAKURA.ne.jp>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
 Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-02-03 at 15:31 -0800, Randy Dunlap wrote:
-> From: Randy Dunlap <randy.dunlap@oracle.com>
-> 
-> libertas/if_spi.c needs to #include linux/semaphore.h to fix build errors:
-> 
-> drivers/net/wireless/libertas/if_spi.c:59: error: field 'spi_ready' has incomplete type
-> drivers/net/wireless/libertas/if_spi.c:60: error: field 'spi_thread_terminated' has incomplete type
-> drivers/net/wireless/libertas/if_spi.c:785: error: implicit declaration of function 'down_interruptible'
-> drivers/net/wireless/libertas/if_spi.c:787: error: implicit declaration of function 'up'
-> drivers/net/wireless/libertas/if_spi.c:834: error: implicit declaration of function 'down'
-> drivers/net/wireless/libertas/if_spi.c:943: error: implicit declaration of function 'sema_init'
-> 
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Date: Fri, 5 Feb 2010 06:45:28 +0900
 
-Acked-by: Dan Williams <dcbw@redhat.com>
+> Octavian Purdila wrote:
+>> 
+>> int inet_is_reserved_local_port(int port)
+>> {
+>> 	if (test_bit(port, reserved_ports))
+>> 		return 1;
+>> 	return 0;
+>> }
+>> 
+> Above check is exactly what I'm doing in the LSM hook.
 
-> ---
->  drivers/net/wireless/libertas/if_spi.c |    1 +
->  1 file changed, 1 insertion(+)
-> 
-> --- linux-next-20100203.orig/drivers/net/wireless/libertas/if_spi.c
-> +++ linux-next-20100203/drivers/net/wireless/libertas/if_spi.c
-> @@ -23,6 +23,7 @@
->  #include <linux/kthread.h>
->  #include <linux/list.h>
->  #include <linux/netdevice.h>
-> +#include <linux/semaphore.h>
->  #include <linux/spi/libertas_spi.h>
->  #include <linux/spi/spi.h>
->  
+But his version can be done inline in 2 or 3 instructions.
 
+An LSM hook will result in an indirect function call,
+all live registers spilled to the stack, then all of
+those reloaded when the function returns.
 
+It will be much more expensive.
