@@ -1,58 +1,38 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932408Ab0BDPOR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 10:14:17 -0500
-Received: from casper.infradead.org ([85.118.1.10]:45488 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756515Ab0BDPOQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 10:14:16 -0500
-Subject: Re: [PATCH 2/5] bitops: compile time optimization for
- hweight_long(CONSTANT)
-From: Peter Zijlstra <peterz@infradead.org>
+	id S932494Ab0BDPVq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 10:21:46 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:43448 "EHLO mail.zytor.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932346Ab0BDPVo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 10:21:44 -0500
+Message-ID: <4B6AE4BE.70600@zytor.com>
+Date: Thu, 04 Feb 2010 07:16:14 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
+MIME-Version: 1.0
 To: Borislav Petkov <bp@amd64.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
+CC: Peter Zijlstra <peterz@infradead.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        Wu Fengguang <fengguang.wu@intel.com>,
        LKML <linux-kernel@vger.kernel.org>, Jamie Lokier <jamie@shareable.org>,
        Roland Dreier <rdreier@cisco.com>, Al Viro <viro@ZenIV.linux.org.uk>,
        "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
        Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 2/5] bitops: compile time optimization for hweight_long(CONSTANT)
+References: <20100130094515.475881280@intel.com> <20100130094957.692671259@intel.com> <20100201124825.cc024f2a.akpm@linux-foundation.org> <20100203133951.GA24357@localhost> <20100203070825.e36b3932.akpm@linux-foundation.org> <1265210157.24455.646.camel@laptop> <20100203074251.e2caa3f3.akpm@linux-foundation.org> <20100203181425.GB1367@aftab> <1265222875.24455.1020.camel@laptop> <4B69D362.10608@zytor.com> <20100204151050.GC32711@aftab>
 In-Reply-To: <20100204151050.GC32711@aftab>
-References: <20100130094515.475881280@intel.com>
-	 <20100130094957.692671259@intel.com>
-	 <20100201124825.cc024f2a.akpm@linux-foundation.org>
-	 <20100203133951.GA24357@localhost>
-	 <20100203070825.e36b3932.akpm@linux-foundation.org>
-	 <1265210157.24455.646.camel@laptop>
-	 <20100203074251.e2caa3f3.akpm@linux-foundation.org>
-	 <20100203181425.GB1367@aftab> <1265222875.24455.1020.camel@laptop>
-	 <4B69D362.10608@zytor.com>  <20100204151050.GC32711@aftab>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 04 Feb 2010 16:13:52 +0100
-Message-ID: <1265296432.22001.18.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-02-04 at 16:10 +0100, Borislav Petkov wrote:
-> On Wed, Feb 03, 2010 at 11:49:54AM -0800, H. Peter Anvin wrote:
-> > On 02/03/2010 10:47 AM, Peter Zijlstra wrote:
-> > > On Wed, 2010-02-03 at 19:14 +0100, Borislav Petkov wrote:
-> > > 
-> > >> alternative("call hweightXX", "popcnt", X86_FEATURE_POPCNT)
-> > > 
-> > > Make sure to apply a 0xff bitmask to the popcnt r16 call for hweight8(),
-> > > and hweight64() needs a bit of magic for 32bit, but yes, something like
-> > > that ought to work nicely.
-> > > 
-> > 
-> > Arguably the "best" option is to have the alternative being a jump to an
-> > out-of-line stub which does the necessary parameter marshalling before
-> > calling a stub.  This technique is already used in a few other places.
+On 02/04/2010 07:10 AM, Borislav Petkov wrote:
+>>
+>> Arguably the "best" option is to have the alternative being a jump to an
+>> out-of-line stub which does the necessary parameter marshalling before
+>> calling a stub.  This technique is already used in a few other places.
 > 
 > Ok, here's a first alpha prototype and completely untested. The asm
 > output looks ok though. I've added separate 32-bit and 64-bit helpers in
@@ -68,27 +48,14 @@ On Thu, 2010-02-04 at 16:10 +0100, Borislav Petkov wrote:
 > it.
 > 
 > Please take a good look and let me know what do you guys think.
+> 
 
-> +int arch_hweight_long(unsigned long w)
-> +{
-> +	if (sizeof(w) == 4) {
-> +		asm volatile("movl %[w], %%eax" :: [w] "r" (w));
-> +		alternative("call _hweight32",
-> +			    "call _popcnt32",
-> +			    X86_FEATURE_POPCNT);
-> +		asm volatile("" : "=a" (w));
-> +
-> +	} else {
-> +		asm volatile("movq %[w], %%rax" :: [w] "r" (w));
-> +		alternative("call _hweight64",
-> +			    "call _popcnt64",
-> +			    X86_FEATURE_POPCNT);
-> +		asm volatile("" : "=a" (w));
-> +	}
-> +	return w;
-> +}
+I think you misunderstood me.  The idea was to use the alternatives
+mechanism to put the popcnt instruction inline instead of the call.
 
-hweight_long() isn't an arch primitive, only __arch_hweight{8,16,32,64}
-are.
+	-hpa
 
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
