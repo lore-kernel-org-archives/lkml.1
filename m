@@ -1,69 +1,51 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932464Ab0BDTUZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 14:20:25 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:59134 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932227Ab0BDTUW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 14:20:22 -0500
-Date: Thu, 4 Feb 2010 20:20:20 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       venkatesh.pallipadi@intel.com
-Subject: [PATCH] HPET: Drop WARN_ON for mismatch on HPET CMP readback II
-Message-ID: <20100204192020.GA10323@basil.fritz.box>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	id S932481Ab0BDTWR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 14:22:17 -0500
+Received: from mga02.intel.com ([134.134.136.20]:5226 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932078Ab0BDTWQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 14:22:16 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,406,1262592000"; 
+   d="scan'208";a="489724055"
+Subject: Re: [PATCH] HPET: Drop WARN_ON for mismatch on HPET CMP readback
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: "tglx@linutronix.de" <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20100204191112.GA10135@basil.fritz.box>
+References: <20100204191112.GA10135@basil.fritz.box>
+Content-Type: text/plain
+Date: Thu, 04 Feb 2010 11:22:15 -0800
+Message-Id: <1265311335.16916.586.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2010-02-04 at 11:11 -0800, Andi Kleen wrote:
+>  HPET: Drop WARN_ON for mismatch on HPET CMP readback
+>     
+>     At least one Intel chipset seems to always return a constant value
+>     when reading back the HPET CMP register. This triggers the WARN_ON_ONCE
+>     on each boot.
 
-[AK: Sorry, here's the version that actually compiles. Forgot to do
-the final commit to git]
+I don't know of chipset returning a constant value. Which chipset is
+this one?
+There is a chipset ICH9/10 errata where it returns a previous value,
+instead of most recently written value. I had a patch for that here.
 
-    HPET: Drop WARN_ON for mismatch on HPET CMP readback
-    
-    At least one Intel chipset seems to always return a constant value
-    when reading back the HPET CMP register. This triggers the WARN_ON_ONCE
-    on each boot.
-    
-    In addition the WARN_ON was buggy: it has a side-effect and
-    actually needed code could be optimized out if someone disabled
-    CONFIG_BUG.
-    
-    So far there's no indication that miscompare on reading
-    points to actual problem.
-    
-    So simply drop the WARN_ON_ONCE.
-    
-    Based on discussions with Thomas Gleixner.
-    
-    Signed-off-by: Andi Kleen <ak@linux.intel.com>
+http://marc.info/?l=linux-kernel&m=125849385330302&w=2
 
-diff --git a/arch/x86/kernel/hpet.c b/arch/x86/kernel/hpet.c
-index ad80a1c..c7eb16f 100644
---- a/arch/x86/kernel/hpet.c
-+++ b/arch/x86/kernel/hpet.c
-@@ -394,14 +394,11 @@ static int hpet_next_event(unsigned long delta,
- 	 * at that point and we would wait for the next hpet interrupt
- 	 * forever. We found out that reading the CMP register back
- 	 * forces the transfer so we can rely on the comparison with
--	 * the counter register below. If the read back from the
--	 * compare register does not match the value we programmed
--	 * then we might have a real hardware problem. We can not do
--	 * much about it here, but at least alert the user/admin with
--	 * a prominent warning.
-+	 * the counter register below. 
-+         * But don't actually check the read-back value. Some Intel chipsets
-+	 * return always the same value.
- 	 */
--	WARN_ONCE(hpet_readl(HPET_Tn_CMP(timer)) != cnt,
--		  KERN_WARNING "hpet: compare register read back failed.\n");
-+	(void)hpet_readl(HPET_Tn_CMP(timer));
- 
- 	return (s32)(hpet_readl(HPET_COUNTER) - cnt) >= 0 ? -ETIME : 0;
- }
+I wanted to send out final patch with a pointer to ICH9/10 spec update
+which describes the errata. But, look like that spec update hasn't
+happened yet. As we found issue with atleast one chipset with this
+warn_on, I would prefer retaining it, with a fix like above.
+
+Thanks,
+Venki
+
+
