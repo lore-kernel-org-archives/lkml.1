@@ -1,57 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757908Ab0BDNEc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 08:04:32 -0500
-Received: from stinky.trash.net ([213.144.137.162]:44569 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755681Ab0BDNEb (ORCPT
+	id S932167Ab0BDNEl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 08:04:41 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:48829 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758140Ab0BDNEj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 08:04:31 -0500
-Message-ID: <4B6AC5DC.60301@trash.net>
-Date: Thu, 04 Feb 2010 14:04:28 +0100
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
+	Thu, 4 Feb 2010 08:04:39 -0500
+Date: Thu, 4 Feb 2010 11:04:26 -0200
+From: Arnaldo Carvalho de Melo <acme@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 1/9] perf symbols: Remove perf_session usage in symbols
+ layer
+Message-ID: <20100204130426.GC17391@ghostprotocols.net>
+References: <1265223128-11786-1-git-send-email-acme@infradead.org>
+ <20100204092613.GA32169@elte.hu>
 MIME-Version: 1.0
-To: Alexey Dobriyan <adobriyan@gmail.com>
-CC: Jon Masters <jonathan@jonmasters.org>,
-       Eric Dumazet <eric.dumazet@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>,
-       netfilter-devel <netfilter-devel@vger.kernel.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH] netfilter: per netns nf_conntrack_cachep
-References: <1265108690.2861.118.camel@tonnant>	 <1265134598.2861.191.camel@tonnant> <4B6870AF.6060109@trash.net>	 <4B6967BC.600@trash.net> <1265222289.2861.290.camel@tonnant>	 <20100203190948.GA5182@x200> <1265226227.2861.302.camel@tonnant>	 <4B6ABCB8.4080904@trash.net>	 <b6fcc0a1002040427n221da433n755350b4a41bbf9b@mail.gmail.com>	 <4B6ABDEF.8090005@trash.net> <b6fcc0a1002040435t150aa7axf2dc0b139ed8f258@mail.gmail.com>
-In-Reply-To: <b6fcc0a1002040435t150aa7axf2dc0b139ed8f258@mail.gmail.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100204092613.GA32169@elte.hu>
+X-Url: http://acmel.wordpress.com
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexey Dobriyan wrote:
-> On Thu, Feb 4, 2010 at 2:30 PM, Patrick McHardy <kaber@trash.net> wrote:
->> Alexey Dobriyan wrote:
->>> On Thu, Feb 4, 2010 at 2:25 PM, Patrick McHardy <kaber@trash.net> wrote:
->>>> Jon Masters wrote:
->>>>> On Wed, 2010-02-03 at 21:09 +0200, Alexey Dobriyan wrote:
->>>>>> On Wed, Feb 03, 2010 at 01:38:09PM -0500, Jon Masters wrote:
->>>>>>> *). Per namespace cacheing allocation (the cachep bits). We know it's
->>>>>>> still possible for weirdness to happen in the SLAB cache here.
->>>>>> Tiny race, needs reproducer.
->>>>> Maybe. I think it's worth fixing anyway.
->>>> Absolutely, I'll also apply Eric's patch with the %p fix for the
->>>> slab name.
->>> This would show kernel pointers in userspace ;-)
->>> So, net->id is required.
->> I don't see the problem. But yes, it would be nicer to have an ID.
+Em Thu, Feb 04, 2010 at 10:26:13AM +0100, Ingo Molnar escreveu:
+> these changes reintroduce the 'perf top exits' bug:
 > 
-> This is done (or rather, not done) to not show attackers
-> where data structures are.
+>  $ perf top -v
+>  map_groups__set_modules_path_dir: cannot open /lib/modules/2.6.33-rc6-tip-00586-g398dde3-dirty/kernel dir
+> 
+> It's the non-existence of modules that causes a disorderly exit. I sent you 
+> my config with the earlier bugreport - i think if you tried that config you'd 
+> see a similar failure. I've fixed it via the commit below for now.
 
-That's news to me, my /proc is full of kernel space pointers,
-including data.
+I tried with your config, problem was that it has:
 
-In any case, we need a fix for this suitable for 2.6.33. If
-you don't like using the pointer, please send a patch to add
-an id to the network namespaces.
+CONFIG_MODULES=y
+
+And lots of things marked as modules and I forgot to forgot to do a
+'make modules_install' :-\
+
+Anyway, its fixed now and I have yet another entry for 'perf test' :-)
+
+Thanks!
+
+- Arnaldo
