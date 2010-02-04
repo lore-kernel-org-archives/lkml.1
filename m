@@ -1,59 +1,60 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756186Ab0BDDUv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 22:20:51 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:8907 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754948Ab0BDDUs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 22:20:48 -0500
-Message-ID: <4B6A3DBA.1000706@redhat.com>
-Date: Thu, 04 Feb 2010 11:23:38 +0800
-From: Cong Wang <amwang@redhat.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20091001)
-MIME-Version: 1.0
-To: Octavian Purdila <opurdila@ixiacom.com>
-CC: linux-kernel@vger.kernel.org, Eric Dumazet <eric.dumazet@gmail.com>,
-       linux-rdma@vger.kernel.org, netdev@vger.kernel.org,
-       Neil Horman <nhorman@tuxdriver.com>, linux-sctp@vger.kernel.org,
-       David Miller <davem@davemloft.net>
-Subject: Re: [RFC Patch] net: reserve ports for applications using fixed port
- numbers
-References: <20100203043332.3817.27932.sendpatchset@localhost.localdomain> <201002031312.48531.opurdila@ixiacom.com>
-In-Reply-To: <201002031312.48531.opurdila@ixiacom.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1756254Ab0BDDVO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 22:21:14 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41359
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754948Ab0BDDVK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 22:21:10 -0500
+Date: Wed, 03 Feb 2010 19:21:23 -0800 (PST)
+Message-Id: <20100203.192123.112190123.davem@davemloft.net>
+To: fujita.tomonori@lab.ntt.co.jp
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       James.Bottomley@suse.de
+Subject: Re: [PATCH -mm 1/4] DMA-API.txt: add dma_sync_single/sg API
+ description
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1265253206-17744-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+References: <1265253206-17744-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Octavian Purdila wrote:
-> On Wednesday 03 February 2010 06:30:07 you wrote:
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Date: Thu,  4 Feb 2010 12:13:22 +0900
+
+> This adds the description of the following eight function:
 > 
->> This patch introduces /proc/sys/net/ipv4/ip_local_reserved_ports,
->> it can be used like ip_local_port_range, but this is used to
->> reserve ports for third-party applications which use fixed
->> port numbers within ip_local_port_range.
->>
->> This only affects the applications which call socket functions
->> like bind(2) with port number 0, to prevent the kernel getting the ports
->> within the specified range for them. For applications which use fixed
->> port number, it will have no effects.
+> dma_sync_single_for_cpu
+> pci_dma_sync_single_for_cpuvoid
+                             ^^^^
+
+That "void" is probably some cut and paste error :-)
+
+> dma_sync_single_for_device
+> pci_dma_sync_single_for_device
+> dma_sync_sg_for_cpu
+> pci_dma_sync_sg_for_cpu
+> dma_sync_sg_for_device
+> pci_dma_sync_sg_for_device
 > 
-> It also affects the case where applications do connect, without previously 
-> doing bind, right?
-
-
-Yeah, I forgot to mention this, sorry.
-
+> It was unclear that the API permits a partial sync (some network
+> drivers already do though). I made it clear that the sync_single API
+> can do a partial sync but the sync_sg API can't.
 > 
->> Any comments are welcome.
+> We could do a partial sync with the sync_sg too, however, it's
+> difficult for driver writers to correctly use the sync_sg API for a
+> partial sync since the scatterlists passed in to the mapping API can
+> be modified. It's unlikely that driver writers want to do a partial
+> sync with the sync_sg API (because the sync_sg API are usually used
+> for block drivers). So I think that it's better to forbid a partial
+> sync with the sync_sg API.
 > 
-> I think it might be useful to allow setting individual ports as reserved, not 
-> only ranges, for example by using a bitmap. 
-> 
+> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 
-This is a good idea, but I am not sure if this will be overkill? :-/
-Also, using bitmap is not friendly to sysctl interface, I am afraid.
-
-
-Thanks!
+Acked-by: David S. Miller <davem@davemloft.net>
