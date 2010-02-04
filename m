@@ -1,83 +1,106 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758152Ab0BDMu6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 07:50:58 -0500
-Received: from eu1sys200aog104.obsmtp.com ([207.126.144.117]:50797 "EHLO
-	eu1sys200aog104.obsmtp.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756508Ab0BDMu4 (ORCPT
+	id S1758169Ab0BDMxP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 07:53:15 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:25170 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758130Ab0BDMxN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 07:50:56 -0500
-Message-ID: <4B6AC28D.6090204@st.com>
-Date: Thu, 04 Feb 2010 13:50:21 +0100
-From: Giuseppe CAVALLARO <peppe.cavallaro@st.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Thu, 4 Feb 2010 07:53:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=vmwqPhk8L3K5hoFFCYAFrK+DZfZzU7zCxFyC/EuH2+pM/1zqzLNGrFJEWIwl/8+xg4
+         7W3fjFMsZC6UiJ/RKn2TGNR/CScGwz5izQeNkNkB1EZ5d0VWWP5yqO3yKNNYpmNh3t5Q
+         bSc/ABgTgq6FrMcC2vBqpZSgxHEDvT9r0AhE4=
+Message-ID: <4B6AC333.6030308@gmail.com>
+Date: Thu, 04 Feb 2010 13:53:07 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.7) Gecko/20100111 SUSE/3.0.1-9.1 Thunderbird/3.0.1
 MIME-Version: 1.0
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: David Miller <davem@davemloft.net>, sfr@canb.auug.org.au,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       lsorense@csclub.uwaterloo.ca, netdev@vger.kernel.org, daniel@caiaq.de
-Subject: Re: linux-next: manual merge of the trivial tree with the net tree
-References: <20100203133011.75aef1d3.sfr@canb.auug.org.au> <alpine.LNX.2.00.1002031136560.15395@pobox.suse.cz> <20100203.200402.17600564.davem@davemloft.net> <alpine.LNX.2.00.1002041052020.15395@pobox.suse.cz>
-In-Reply-To: <alpine.LNX.2.00.1002041052020.15395@pobox.suse.cz>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=US-ASCII
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+CC: Jiri Kosina <jkosina@suse.cz>, Antti Palosaari <crope@iki.fi>,
+       mchehab@infradead.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, Pekka Sarnila <sarnila@adit.fi>,
+       linux-input@vger.kernel.org
+Subject: Re: [PATCH 1/1] media: dvb-usb/af9015, fix disconnection crashes
+References: <1264007972-6261-1-git-send-email-jslaby@suse.cz> <4B5CDB53.6030009@iki.fi> <4B5D6098.7010700@gmail.com> <4B5DDDFB.5020907@iki.fi> <alpine.LRH.2.00.1001261406010.15694@twin.jikos.cz> <4B6AA211.1060707@gmail.com> <4B6AB7E9.40607@redhat.com>
+In-Reply-To: <4B6AB7E9.40607@redhat.com>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
-
-Hi Jiri,
-
-Jiri Kosina wrote:
-> On Wed, 3 Feb 2010, David Miller wrote:
+On 02/04/2010 01:04 PM, Mauro Carvalho Chehab wrote:
+>> I have 2 dvb-t receivers and both of them need fullspeed quirk. Further
+>> disable_rc_polling (a dvb_usb module parameter) must be set to not get
+>> doubled characters now. And then, it works like a charm.
 > 
->>> I think the best thing is me dropping the net/ and drivers/net hunks of 
->>> this patch and taking it through Davem's tree ... I have already dropped 
->>> those hunks from my tree. Dave, the patch is below, please consider 
->>> applying.
->>  ...
->>> From: Daniel Mack <daniel@caiaq.de>
->>> Subject: [PATCH] net: fix 'lenght' typo in comments and code
->>>
->>> Some misspelled occurences of 'octet' and some comments were also fixed
->>> as I was on it.
->>>
->>> Signed-off-by: Daniel Mack <daniel@caiaq.de>
->>> Cc: Jiri Kosina <trivial@kernel.org>
->>> Cc: Joe Perches <joe@perches.com>
->>> Cc: Junio C Hamano <gitster@pobox.com>
->>> Signed-off-by: Jiri Kosina <jkosina@suse.cz>
->> This doesn't apply to net-next-2.6 at all:
+> Module parameters always bothers me. They should be used as last resort alternatives
+> when there's no other possible way to make it work properly.
+> 
+> If we know for sure that the RC polling should be disabled by an specific device, 
+> just add this logic at the driver.
+
+Yes, this is planned and written below:
+
+>> Note that, it's just some kind of proof of concept. A migration of
+>> af9015 devices from dvb-usb-remote needs to be done first.
 >>
->> error: patch failed: drivers/net/ppp_generic.c:1436
->> error: drivers/net/ppp_generic.c: patch does not apply
->> error: drivers/net/stmmac/gmac.c: does not exist in index
->> error: drivers/net/stmmac/mac100.c: does not exist in index
-
-The stmmac driver included in net-next has been restructured: for this
-reason both gmac.c and mac100.c files do not exist any more.
-
-Let me know if I can help on this; I mean I'm happy to apply this latest
-changes to the stmmac in net-next and send a new patch.
-
-Peppe
-
-> Daniel, could you please refresh the drivers/net/ and net/ bits of your 
-> patch and resent it to netdev/Dave?
+>> Ideas, comments?
 > 
-> I have already dropped it from my queue.
-> 
-> Thanks,
-> 
+> Please next time, send the patch inlined. As you're using Thunderbird, you'll likely need
+> Asalted-patches[1] to avoid thunderbird to destroy your patches.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+I must disagree for two reasons: (a) it was not patch intended for merge
+and (b) it was a plain-text attachment which is fine even for
+submission. However I don't like patches as attachments so if I decide
+to submit it for a merge later, you will not see it as an attachment
+then :).
 
-iEYEARECAAYFAktqwo0ACgkQ2Xo3j31MSSLr+QCeM4cA87vv6uQoY1rHf4Wl7Ye8
-v1wAnAtI6RWt5wNUFJZRTQ2mEOP4EuE9
-=G2hJ
------END PGP SIGNATURE-----
+> +config HID_DVB
+> +	tristate "DVB remotes support" if EMBEDDED
+> +	depends on USB_HID
+> +	default !EMBEDDED
+> +	---help---
+> +	Say Y here if you have DVB remote controllers.
+> +
+> 
+> I think the better would be to use a more generic name, like HID_RC (for Remote Controller).
+> I suspect we may need in the future other hacks for other similar devices.
+
+Seconded. I would only go for some other abbreviation other than RC or
+not abbreviate that at all.
+
+> +static int dvb_event(struct hid_device *hdev, struct hid_field *field,
+> +		struct hid_usage *usage, __s32 value)
+> +{
+> +	/* we won't get a "key up" event */
+> +	if (value) {
+> +		input_event(field->hidinput->input, usage->type, usage->code, 1);
+> +		input_event(field->hidinput->input, usage->type, usage->code, 0);
+> +	}
+> +	return 1;
+> +}
+> 
+> Several V4L/DVB IR's have keyup/keydown events. So I think the name here is also wrong:
+> it is better to name the function as dvb_nokeyup_event() and eventually add an specific
+> quirk to indicate devices that only have key up events.
+
+If such appear later, it can be rewritten. I don't plan to add such
+functionality now until somebody comes with device IDs which should be
+handled that way and tests it, because I guess I will definitely do it
+wrong otherwise. Do you know/have such a device?
+
+There are many of quirks needed for various devices. I already wrote
+about af9005 which sends key repeat aside from key down etc. But the
+same as above, I can't test it (and don't want to introduce
+regressions). So again, if somebody can test it, I'll be happy to code it.
+
+thanks for the input,
+-- 
+js
