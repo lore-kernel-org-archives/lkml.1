@@ -1,22 +1,22 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933348Ab0BDRWW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 12:22:22 -0500
-Received: from kroah.org ([198.145.64.141]:34730 "EHLO coco.kroah.org"
+	id S933331Ab0BDRWR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 12:22:17 -0500
+Received: from kroah.org ([198.145.64.141]:34721 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933240Ab0BDRVz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 12:21:55 -0500
-X-Mailbox-Line: From linux@linux.site Thu Feb  4 09:15:07 2010
-Message-Id: <20100204171507.112727504@linux.site>
+	id S932859Ab0BDRVx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 12:21:53 -0500
+X-Mailbox-Line: From linux@linux.site Thu Feb  4 09:15:06 2010
+Message-Id: <20100204171505.853000526@linux.site>
 User-Agent: quilt/0.47-14.9
-Date: Thu, 04 Feb 2010 09:12:04 -0800
+Date: Thu, 04 Feb 2010 09:12:02 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       =?ISO-8859-15?q?David=20H=C3=A4rdeman?= <david@hardeman.nu>,
-       Dmitry Torokhov <dtor@mail.ru>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [33/74] Input: winbond-cir - remove dmesg spam
+       "David S. Miller" <davem@davemloft.net>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [31/74] sparc: TIF_ABI_PENDING bit removal
 In-Reply-To: <20100204171850.GA16539@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -26,32 +26,86 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: David Härdeman <david@hardeman.nu>
+From: David Miller <davem@davemloft.net>
 
-commit 93fb84b50fe03aabca8d9dea5d3ba521a07e8571 upstream.
+commit 94673e968cbcce07fa78dac4b0ae05d24b5816e1 upstream.
 
-I missed converting one dev_info call to deb_dbg before submitting the driver.
-Without this change, a message will be printed to dmesg for each button press
-if a RC6 remote is used.
+Here are the sparc bits to remove TIF_ABI_PENDING now that
+set_personality() is called at the appropriate place in exec.
 
-Signed-off-by: David Härdeman <david@hardeman.nu>
-Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/input/misc/winbond-cir.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/sparc/include/asm/elf_64.h         |   13 +++----------
+ arch/sparc/include/asm/thread_info_64.h |    4 +---
+ arch/sparc/kernel/process_64.c          |    8 --------
+ 3 files changed, 4 insertions(+), 21 deletions(-)
 
---- a/drivers/input/misc/winbond-cir.c
-+++ b/drivers/input/misc/winbond-cir.c
-@@ -768,7 +768,7 @@ wbcir_parse_rc6(struct device *dev, stru
- 		return;
- 	}
+--- a/arch/sparc/include/asm/elf_64.h
++++ b/arch/sparc/include/asm/elf_64.h
+@@ -196,17 +196,10 @@ static inline unsigned int sparc64_elf_h
+ #define ELF_PLATFORM	(NULL)
  
--	dev_info(dev, "IR-RC6 ad 0x%02X cm 0x%02X cu 0x%04X "
-+	dev_dbg(dev, "IR-RC6 ad 0x%02X cm 0x%02X cu 0x%04X "
- 		"toggle %u mode %u scan 0x%08X\n",
- 		address,
- 		command,
+ #define SET_PERSONALITY(ex)				\
+-do {	unsigned long new_flags = current_thread_info()->flags; \
+-	new_flags &= _TIF_32BIT;			\
+-	if ((ex).e_ident[EI_CLASS] == ELFCLASS32)	\
+-		new_flags |= _TIF_32BIT;		\
++do {	if ((ex).e_ident[EI_CLASS] == ELFCLASS32)	\
++		set_thread_flag(TIF_32BIT);		\
+ 	else						\
+-		new_flags &= ~_TIF_32BIT;		\
+-	if ((current_thread_info()->flags & _TIF_32BIT) \
+-	    != new_flags)				\
+-		set_thread_flag(TIF_ABI_PENDING);	\
+-	else						\
+-		clear_thread_flag(TIF_ABI_PENDING);	\
++		clear_thread_flag(TIF_32BIT);		\
+ 	/* flush_thread will update pgd cache */	\
+ 	if (personality(current->personality) != PER_LINUX32)	\
+ 		set_personality(PER_LINUX |		\
+--- a/arch/sparc/include/asm/thread_info_64.h
++++ b/arch/sparc/include/asm/thread_info_64.h
+@@ -227,12 +227,11 @@ register struct thread_info *current_thr
+ /* flag bit 8 is available */
+ #define TIF_SECCOMP		9	/* secure computing */
+ #define TIF_SYSCALL_AUDIT	10	/* syscall auditing active */
+-/* flag bit 11 is available */
+ /* NOTE: Thread flags >= 12 should be ones we have no interest
+  *       in using in assembly, else we can't use the mask as
+  *       an immediate value in instructions such as andcc.
+  */
+-#define TIF_ABI_PENDING		12
++/* flag bit 12 is available */
+ #define TIF_MEMDIE		13
+ #define TIF_POLLING_NRFLAG	14
+ #define TIF_FREEZE		15	/* is freezing for suspend */
+@@ -246,7 +245,6 @@ register struct thread_info *current_thr
+ #define _TIF_32BIT		(1<<TIF_32BIT)
+ #define _TIF_SECCOMP		(1<<TIF_SECCOMP)
+ #define _TIF_SYSCALL_AUDIT	(1<<TIF_SYSCALL_AUDIT)
+-#define _TIF_ABI_PENDING	(1<<TIF_ABI_PENDING)
+ #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
+ #define _TIF_FREEZE		(1<<TIF_FREEZE)
+ 
+--- a/arch/sparc/kernel/process_64.c
++++ b/arch/sparc/kernel/process_64.c
+@@ -365,14 +365,6 @@ void flush_thread(void)
+ 	struct thread_info *t = current_thread_info();
+ 	struct mm_struct *mm;
+ 
+-	if (test_ti_thread_flag(t, TIF_ABI_PENDING)) {
+-		clear_ti_thread_flag(t, TIF_ABI_PENDING);
+-		if (test_ti_thread_flag(t, TIF_32BIT))
+-			clear_ti_thread_flag(t, TIF_32BIT);
+-		else
+-			set_ti_thread_flag(t, TIF_32BIT);
+-	}
+-
+ 	mm = t->task->mm;
+ 	if (mm)
+ 		tsb_context_switch(mm);
 
 
