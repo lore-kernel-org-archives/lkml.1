@@ -1,72 +1,68 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758199Ab0BDVRl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 16:17:41 -0500
-Received: from smtp103.biz.mail.mud.yahoo.com ([68.142.200.238]:49113 "HELO
-	smtp103.biz.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757865Ab0BDVRk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 16:17:40 -0500
-X-Yahoo-SMTP: qGLgp.mswBDSnFfWmYVMF5Rmg6NJ
-X-YMail-OSG: 7rqAYTsVM1lK8V7.O7ZfYPUQ8.akbM8wF1dVYYp9dVvGsCFgAWvqEl1V6zuZsu7Ge09sXB4BpOxRCPkKLcogHgIiQK1HTpW.x472IMgl5kRCkS5GzMyJcjcrOUokgZvmdzYA5L84DpZv5To0alSyAbFc1VSnOK_Cxhr0vnsE0koURkHF.Rm.t9hTP.OfJ2qyUcIOzr5sverU5jc..YQLfm7XCP2PWVElXl8UY8KevWQdxW_b8NXy9AV8jcYCwYJU36RbUz.Xs5rNdMPcisEWhBvsjv3i.awRqsiuyEJp1DiAzqTah0bAKYnZN2Ti5gYw5qiVy72UlFE6wAdbZpb0ABjN7CdE0ap2DCmODa4rZ8ASlIK0rv9xj8V.XMA81aPbAaF0n8c59Q--
-X-Yahoo-Newman-Property: ymail-3
-From: Steven King <sfking@fdwdc.com>
-Organization: fdwdc.com
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] hwmon: driver for TI tmp102 temperature sensor
-Date: Thu, 4 Feb 2010 13:17:37 -0800
-User-Agent: KMail/1.9.9
-Cc: Jean Delvare <khali@linux-fr.org>, lm-sensors@lm-sensors.org,
-       linux-kernel@vger.kernel.org
-References: <201002031723.49976.sfking@fdwdc.com> <20100204102203.ecf4bbb5.akpm@linux-foundation.org>
-In-Reply-To: <20100204102203.ecf4bbb5.akpm@linux-foundation.org>
+	id S1758271Ab0BDVTI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 16:19:08 -0500
+Received: from tundra.namei.org ([65.99.196.166]:57614 "EHLO tundra.namei.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757865Ab0BDVTE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 16:19:04 -0500
+Date: Fri, 5 Feb 2010 08:17:59 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+To: Kees Cook <kees.cook@canonical.com>
+cc: Alex Riesen <raa.lkml@gmail.com>, "Serge E. Hallyn" <serue@us.ibm.com>,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       linux-security-module@vger.kernel.org, Eric Paris <eparis@redhat.com>,
+       David Howells <dhowells@redhat.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Simon Kagstrom <simon.kagstrom@netinsight.net>,
+       David Woodhouse <David.Woodhouse@intel.com>,
+       Robin Getz <rgetz@analog.com>, Greg Kroah-Hartman <gregkh@suse.de>,
+       Paul Moore <paul.moore@hp.com>,
+       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+       Stephen Smalley <sds@tycho.nsa.gov>,
+       Etienne Basset <etienne.basset@numericable.fr>,
+       "David P. Quigley" <dpquigl@tycho.nsa.gov>,
+       LKLM <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v2 1/2] syslog: distinguish between /proc/kmsg and
+ syscalls
+In-Reply-To: <20100204080923.GL19355@outflux.net>
+Message-ID: <alpine.LRH.2.00.1002050817120.3356@tundra.namei.org>
+References: <20100202055354.GV19355@outflux.net> <4B67C2EA.705@schaufler-ca.com> <20100202202054.GW19355@outflux.net> <20100202212510.GG32305@us.ibm.com> <alpine.LRH.2.00.1002030859220.14592@tundra.namei.org> <20100203233643.GI19355@outflux.net>
+ <81b0412b1002032358j163d2e3fm2c0353ba3ec2842a@mail.gmail.com> <20100204080923.GL19355@outflux.net>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <201002041317.37574.sfking@fdwdc.com>
+Content-Type: MULTIPART/MIXED; BOUNDARY="1665246916-1476481985-1265318281=:3356"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 04 February 2010 10:22:03 Andrew Morton wrote:
-> On Wed, 3 Feb 2010 17:23:49 -0800
->
-> Steven King <sfking@fdwdc.com> wrote:
-> > The TI TMP102 is similar to the lm75.  It differs from the lm75 by having
-> > a 16 bit conf register and the temp registers have a minimum resolution
-> > of 12bits; the extended conf register can select 13 bit resolution (which
-> > this driver does) and also change the update rate (which this driver
-> > currently doesn't use).
->
-> A neat little driver.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Thanks.
+--1665246916-1476481985-1265318281=:3356
+Content-Type: TEXT/PLAIN; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 
-> checkpatch spits this warning:
->
->     WARNING: struct dev_pm_ops should normally be const
->     #387: FILE: drivers/hwmon/tmp102.c:300:
->     +static struct dev_pm_ops tmp102_dev_pm_ops = {
->
-> which seems truthful enough.
+On Thu, 4 Feb 2010, Kees Cook wrote:
 
-Indeed.   I am, however, somewhat surprised since I ran the patch thru 
-checkpatch before posting it and no errors or warnings were reported.  Is 
-there a version of checkpatch other than the one included in the tree that I 
-should be using?
+> Hi Alex,
+> 
+> On Thu, Feb 04, 2010 at 08:58:43AM +0100, Alex Riesen wrote:
+> > > +       /* /proc/kmsg can open be opened by CAP_SYS_ADMIN */
+> > > +       if (type != 1 && from_file)
+> > > +               return 0;
+> > 
+> > "can open be opened"?
+> 
+> Erk, sorry.  s/open //
+> 
+> James, do you want a patch for that?
 
->
-> And doing this will hurt readers' brains less:
->
->
->
-> Use conventional array-walk loop.
+I guess... and 'opened with' might be better.
 
-Ah yes, an idiosyncrasy of mine in preferring do while over for loops 
-especially when I 'know' the initial test will pass.  Whatever is the 
-preferred idiom for the kernel is fine with me.
 
 -- 
-Steven King -- sfking at fdwdc dot com
+James Morris
+<jmorris@namei.org>
+--1665246916-1476481985-1265318281=:3356--
