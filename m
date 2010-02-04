@@ -1,22 +1,22 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933478Ab0BDRfu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 12:35:50 -0500
-Received: from kroah.org ([198.145.64.141]:34624 "EHLO coco.kroah.org"
+	id S933558Ab0BDRco (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 12:32:44 -0500
+Received: from kroah.org ([198.145.64.141]:34708 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758513Ab0BDRVh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 12:21:37 -0500
-X-Mailbox-Line: From linux@linux.site Thu Feb  4 09:14:55 2010
-Message-Id: <20100204171455.136424630@linux.site>
+	id S933161Ab0BDRVv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 12:21:51 -0500
+X-Mailbox-Line: From linux@linux.site Thu Feb  4 09:15:05 2010
+Message-Id: <20100204171504.826515743@linux.site>
 User-Agent: quilt/0.47-14.9
-Date: Thu, 04 Feb 2010 09:11:45 -0800
+Date: Thu, 04 Feb 2010 09:12:00 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Shaohua Li <shaohua.li@intel.com>, Len Brown <len.brown@intel.com>,
+       Mike Frysinger <vapier@gentoo.org>, David Howells <dhowells@redhat.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [14/74] ACPI: fix OSC regression that caused aer and pciehp not to load
+Subject: [29/74] FDPIC: Respect PT_GNU_STACK exec protection markings when creating NOMMU stack
 In-Reply-To: <20100204171850.GA16539@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -26,79 +26,105 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Shaohua Li <shaohua.li@intel.com>
+From: Mike Frysinger <vapier@gentoo.org>
 
-commit 9dc130fccb874f2959ef313d7922d306dc6d4f75 upstream.
+commit 04e4f2b18c8de1389d1e00fef0f42a8099910daf upstream.
 
-Executing _OSC returns a buffer, which has an acpi object in it.
-Don't directly returns the buffer, instead, we return the acpi object's
-buffer. This fixes a regression since caller of acpi_run_osc expects
-an acpi object's buffer returned.
+The current code will load the stack size and protection markings, but
+then only use the markings in the MMU code path.  The NOMMU code path
+always passes PROT_EXEC to the mmap() call.  While this doesn't matter
+to most people whilst the code is running, it will cause a pointless
+icache flush when starting every FDPIC application.  Typically this
+icache flush will be of a region on the order of 128KB in size, or may
+be the entire icache, depending on the facilities available on the CPU.
 
-Tested-by: Yinghai Lu <yinghai@kernel.org>
-Signed-off-by: Shaohua Li <shaohua.li@intel.com>
-Signed-off-by: Len Brown <len.brown@intel.com>
+In the case where the arch default behaviour seems to be desired
+(EXSTACK_DEFAULT), we probe VM_STACK_FLAGS for VM_EXEC to determine
+whether we should be setting PROT_EXEC or not.
+
+For arches that support an MPU (Memory Protection Unit - an MMU without
+the virtual mapping capability), setting PROT_EXEC or not will make an
+important difference.
+
+It should be noted that this change also affects the executability of
+the brk region, since ELF-FDPIC has that share with the stack.  However,
+this is probably irrelevant as NOMMU programs aren't likely to use the
+brk region, preferring instead allocation via mmap().
+
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+Signed-off-by: David Howells <dhowells@redhat.com>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/acpi/bus.c |   26 ++++++++++++++++++--------
- 1 file changed, 18 insertions(+), 8 deletions(-)
+ arch/blackfin/include/asm/page.h |    5 +++++
+ arch/frv/include/asm/page.h      |    2 --
+ fs/binfmt_elf_fdpic.c            |   13 +++++++++++--
+ 3 files changed, 16 insertions(+), 4 deletions(-)
 
---- a/drivers/acpi/bus.c
-+++ b/drivers/acpi/bus.c
-@@ -397,6 +397,7 @@ acpi_status acpi_run_osc(acpi_handle han
- 	union acpi_object *out_obj;
- 	u8 uuid[16];
- 	u32 errors;
-+	struct acpi_buffer output = {ACPI_ALLOCATE_BUFFER, NULL};
+--- a/arch/blackfin/include/asm/page.h
++++ b/arch/blackfin/include/asm/page.h
+@@ -10,4 +10,9 @@
+ #include <asm-generic/page.h>
+ #define MAP_NR(addr) (((unsigned long)(addr)-PAGE_OFFSET) >> PAGE_SHIFT)
  
- 	if (!context)
- 		return AE_ERROR;
-@@ -419,16 +420,16 @@ acpi_status acpi_run_osc(acpi_handle han
- 	in_params[3].buffer.length 	= context->cap.length;
- 	in_params[3].buffer.pointer 	= context->cap.pointer;
++#define VM_DATA_DEFAULT_FLAGS \
++	(VM_READ | VM_WRITE | \
++	((current->personality & READ_IMPLIES_EXEC) ? VM_EXEC : 0 ) | \
++		 VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC)
++
+ #endif
+--- a/arch/frv/include/asm/page.h
++++ b/arch/frv/include/asm/page.h
+@@ -63,12 +63,10 @@ extern unsigned long max_pfn;
+ #define virt_addr_valid(kaddr)	pfn_valid(__pa(kaddr) >> PAGE_SHIFT)
  
--	status = acpi_evaluate_object(handle, "_OSC", &input, &context->ret);
-+	status = acpi_evaluate_object(handle, "_OSC", &input, &output);
- 	if (ACPI_FAILURE(status))
- 		return status;
  
--	/* return buffer should have the same length as cap buffer */
--	if (context->ret.length != context->cap.length)
-+	if (!output.length)
- 		return AE_NULL_OBJECT;
+-#ifdef CONFIG_MMU
+ #define VM_DATA_DEFAULT_FLAGS \
+ 	(VM_READ | VM_WRITE | \
+ 	((current->personality & READ_IMPLIES_EXEC) ? VM_EXEC : 0 ) | \
+ 		 VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC)
+-#endif
  
--	out_obj = context->ret.pointer;
--	if (out_obj->type != ACPI_TYPE_BUFFER) {
-+	out_obj = output.pointer;
-+	if (out_obj->type != ACPI_TYPE_BUFFER
-+		|| out_obj->buffer.length != context->cap.length) {
- 		acpi_print_osc_error(handle, context,
- 			"_OSC evaluation returned wrong type");
- 		status = AE_TYPE;
-@@ -457,11 +458,20 @@ acpi_status acpi_run_osc(acpi_handle han
- 		goto out_kfree;
- 	}
- out_success:
--	return AE_OK;
-+	context->ret.length = out_obj->buffer.length;
-+	context->ret.pointer = kmalloc(context->ret.length, GFP_KERNEL);
-+	if (!context->ret.pointer) {
-+		status =  AE_NO_MEMORY;
-+		goto out_kfree;
-+	}
-+	memcpy(context->ret.pointer, out_obj->buffer.pointer,
-+		context->ret.length);
-+	status =  AE_OK;
+ #endif /* __ASSEMBLY__ */
  
- out_kfree:
--	kfree(context->ret.pointer);
--	context->ret.pointer = NULL;
-+	kfree(output.pointer);
-+	if (status != AE_OK)
-+		context->ret.pointer = NULL;
- 	return status;
- }
- EXPORT_SYMBOL(acpi_run_osc);
+--- a/fs/binfmt_elf_fdpic.c
++++ b/fs/binfmt_elf_fdpic.c
+@@ -171,6 +171,9 @@ static int load_elf_fdpic_binary(struct 
+ #ifdef ELF_FDPIC_PLAT_INIT
+ 	unsigned long dynaddr;
+ #endif
++#ifndef CONFIG_MMU
++	unsigned long stack_prot;
++#endif
+ 	struct file *interpreter = NULL; /* to shut gcc up */
+ 	char *interpreter_name = NULL;
+ 	int executable_stack;
+@@ -316,6 +319,8 @@ static int load_elf_fdpic_binary(struct 
+ 	 * defunct, deceased, etc. after this point we have to exit via
+ 	 * error_kill */
+ 	set_personality(PER_LINUX_FDPIC);
++	if (elf_read_implies_exec(&exec_params.hdr, executable_stack))
++		current->personality |= READ_IMPLIES_EXEC;
+ 	set_binfmt(&elf_fdpic_format);
+ 
+ 	current->mm->start_code = 0;
+@@ -377,9 +382,13 @@ static int load_elf_fdpic_binary(struct 
+ 	if (stack_size < PAGE_SIZE * 2)
+ 		stack_size = PAGE_SIZE * 2;
+ 
++	stack_prot = PROT_READ | PROT_WRITE;
++	if (executable_stack == EXSTACK_ENABLE_X ||
++	    (executable_stack == EXSTACK_DEFAULT && VM_STACK_FLAGS & VM_EXEC))
++		stack_prot |= PROT_EXEC;
++
+ 	down_write(&current->mm->mmap_sem);
+-	current->mm->start_brk = do_mmap(NULL, 0, stack_size,
+-					 PROT_READ | PROT_WRITE | PROT_EXEC,
++	current->mm->start_brk = do_mmap(NULL, 0, stack_size, stack_prot,
+ 					 MAP_PRIVATE | MAP_ANONYMOUS | MAP_GROWSDOWN,
+ 					 0);
+ 
 
 
