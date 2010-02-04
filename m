@@ -1,68 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752546Ab0BDFsk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 00:48:40 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:49031 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751220Ab0BDFsi (ORCPT
+	id S1753234Ab0BDGCn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 01:02:43 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:51392 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752444Ab0BDGCl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 00:48:38 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Thu, 4 Feb 2010 14:45:11 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Oleg Kutkov <elenbert@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Problem with set_memory_rw
-Message-Id: <20100204144511.b50d3191.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <4B6A5A81.2030207@gmail.com>
-References: <4B6A5A81.2030207@gmail.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 4 Feb 2010 01:02:41 -0500
+Date: Thu, 4 Feb 2010 06:02:37 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH][RFC] %pd - for printing dentry name
+Message-ID: <20100204060237.GD30031@ZenIV.linux.org.uk>
+References: <20100201222511.GA12882@ZenIV.linux.org.uk>
+ <alpine.LFD.2.00.1002011431490.3664@localhost.localdomain>
+ <20100201231847.GC12882@ZenIV.linux.org.uk>
+ <alpine.LFD.2.00.1002012018400.3664@localhost.localdomain>
+ <20100202050037.GE12882@ZenIV.linux.org.uk>
+ <20100202063631.GB6175@laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100202063631.GB6175@laptop>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 04 Feb 2010 07:26:25 +0200
-Oleg Kutkov <elenbert@gmail.com> wrote:
+On Tue, Feb 02, 2010 at 05:36:31PM +1100, Nick Piggin wrote:
 
-> Hello, this is my first post in a mailing list, so excuse me if 
-> something wrong...
-> I'm new in kernel and try to do some manipulation with memory pages.
-> For manipulating memory page attributes i used set_memory_rw(),
-> but function returning 0 and i can't continue writing to memory,
-> because page, that i want to change, is read only by default.
-> This is part of my code:
-> 
-> 
-> long unsigned addr;
-> 
-> addr = 0x0509940;              //this is addres in memory, that i  want 
-> to overwrite (read only, for default)
-> 
-> set_memory_rw(addr, 1);    //try to set rw permission on this addres for 
-> one memory page.
-> 
-> 
-> So, function return zero, this is error, as i can understand. If i try 
-> to write by this address - kernel write in log error messages, such as 
-> "Unable to handle kernel request at address 0x0509940".
-> This is kernel bug or something wrong in my code?
-> 
-> Thank for any help.
-> 
+> I ended up having to use a seqlock to do name comparison without locks
+> (and without holding references for that matter, just RCU).  However
+> name comparison is obviously a lot more critical because you can't
+> ignore races, so you might be able to do something simpler.
 
-set_memory_rw()'s 1st argument requires virtual address.
-So, you need virtual address of the page you want.
- 
-  - phys_to_virt() ... convert physical address to virtual address.
-  - virt_to_phys() ... convert virtual address to physical.
+Umm...  Your ->d_seq, you mean?  IIRC, that stuff landed too close to
+do_filp_open() queue back then *and* had potential headache from hell
+with vfsmount side of that business.
 
-Anyway, RW is vitual address mapping's attribute and not for physical.
+I've reread it now.  Comments:
+	* mntput() is blocking.  When refcount goes to 0, we get
+dput() on root, possibly followed by actual fs shutdown.  Very
+much not an RCU fodder, even though most of the calls will be OK.
+We can do a variant that would do atomic_dec_and_bail() instead ;-)
+I.e. decrement atomically if greater than 1, bail out otherwise.
+	* why do you bail out on LOOKUP_PARENT?  For that matter, why
+do you do that so late?
+	* how does that interact with d_materialise_unique()?  Sure,
+you bail out on NFS anyway, but it's still not nice to leave relying just
+on that.
+	* why can we access dentry->d_inode->i_op contents?  Or dentry->d_op
+one, for that matter...
 
-Thanks,
--Kame
-
-
+BTW, I'd love to take the entire "last component" part of link_path_walk()
+out into a separate function and away from link_path_walk(), leaving
+basically just the LOOKUP_PARENT case in there.  Price: trailing symlinks
+need to be handled by an iterative loop in do_follow_link().  And
+that actually ends up an improvement both in stack depth and in overall
+code cleanup.  Nothing like the horrors in do_filp_open(), TYVM (said
+horrors had mostly gone away in #untested, BTW, and I'm going to move
+that series to for-next shortly).  However, we are still several prereqs
+away from link_path_walk() split, so that'll have to wait a bit.  In
+any case, LOOKUP_PARENT is very much worth the first-class treatment...
