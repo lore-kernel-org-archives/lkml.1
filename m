@@ -1,59 +1,61 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932140Ab0BDMdX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 07:33:23 -0500
-Received: from mailout.kepe.gr ([79.107.103.8]:47276 "EHLO mailin.kepe.gr"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758050Ab0BDMdW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 07:33:22 -0500
-X-AuditID: c15c859b-ad6b9bb000000a80-df-4b6ab2e419ed
-Message-ID: <16888.212.116.219.200.1265281296.squirrel@webmail.kepe.gr>
-Date: Thu, 4 Feb 2010 13:01:36 +0200 (EET)
-Subject: WONNING 
-From: "Mr. Richard Adams" <info@loterie.ch>
-Reply-To: webmailadminhelper1@mail2webmaster.com
-User-Agent: SquirrelMail/1.4.4
+	id S1758113Ab0BDMgA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 07:36:00 -0500
+Received: from mail-iw0-f189.google.com ([209.85.223.189]:63002 "EHLO
+	mail-iw0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757910Ab0BDMf7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 07:35:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=ZbOXRqAdmXcnH6q9LRNVTf15padqycV4zMaynKFQpOMZ0bvK42Grijb4Bdij2dDJQx
+         V7en/gmi0YuJpTYIYAc75aZUNplLdfHXt6RT5yymJ6YtmmisiTb/suisUrPCesN19gex
+         H9wbqXBcaFGK/XO0UMRfJ8Cp4vXE69pAoUOGE=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
-To: undisclosed-recipients:;
-X-Brightmail-Tracker: AAAAAA==
+In-Reply-To: <4B6ABDEF.8090005@trash.net>
+References: <1265108690.2861.118.camel@tonnant>
+	 <1265134598.2861.191.camel@tonnant> <4B6870AF.6060109@trash.net>
+	 <4B6967BC.600@trash.net> <1265222289.2861.290.camel@tonnant>
+	 <20100203190948.GA5182@x200> <1265226227.2861.302.camel@tonnant>
+	 <4B6ABCB8.4080904@trash.net>
+	 <b6fcc0a1002040427n221da433n755350b4a41bbf9b@mail.gmail.com>
+	 <4B6ABDEF.8090005@trash.net>
+Date: Thu, 4 Feb 2010 14:35:56 +0200
+Message-ID: <b6fcc0a1002040435t150aa7axf2dc0b139ed8f258@mail.gmail.com>
+Subject: Re: [PATCH] netfilter: per netns nf_conntrack_cachep
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Patrick McHardy <kaber@trash.net>
+Cc: Jon Masters <jonathan@jonmasters.org>,
+       Eric Dumazet <eric.dumazet@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>,
+       netfilter-devel <netfilter-devel@vger.kernel.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Feb 4, 2010 at 2:30 PM, Patrick McHardy <kaber@trash.net> wrote:
+> Alexey Dobriyan wrote:
+>> On Thu, Feb 4, 2010 at 2:25 PM, Patrick McHardy <kaber@trash.net> wrote:
+>>> Jon Masters wrote:
+>>>> On Wed, 2010-02-03 at 21:09 +0200, Alexey Dobriyan wrote:
+>>>>> On Wed, Feb 03, 2010 at 01:38:09PM -0500, Jon Masters wrote:
+>>>>>> *). Per namespace cacheing allocation (the cachep bits). We know it's
+>>>>>> still possible for weirdness to happen in the SLAB cache here.
+>>>>> Tiny race, needs reproducer.
+>>>> Maybe. I think it's worth fixing anyway.
+>>> Absolutely, I'll also apply Eric's patch with the %p fix for the
+>>> slab name.
+>>
+>> This would show kernel pointers in userspace ;-)
+>> So, net->id is required.
+>
+> I don't see the problem. But yes, it would be nicer to have an ID.
 
-Dear Webmail customers,
-
-We recently noticed that important mails are delayed before received
-due to our anti-spam filter.We are currently verifying our subscribers
-email accounts in order to increase the Efficiency of our web mail
-
-features.
-
-We are deleting all unused Web Mail account,
-To confirm your account is currently in use and join in the
-Recent Upgrade Taking Place,
-
-You must Reply to this email by Providing your  email Password
-in the blank space below. Failure to do this will immediately
-render your  email address deactivated from our database.
-
-Email Username : .............
-Email Password : .............
-Date of Birth  : .............
-
-Attention! Webmail Account holder who refuses to abide by this update
-will loose the account without prior notice after receiving this
-
-warning message
-
-Thanks for using  webmail Web mail
-
-Webmail WebMail Admin System
-Warning Code :UCIX782X
-E-mail:webmailadminhelper1@mail2webmaster.com
-
-
+This is done (or rather, not done) to not show attackers
+where data structures are.
