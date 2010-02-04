@@ -1,52 +1,85 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756632Ab0BDR7l (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 12:59:41 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:42310 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756472Ab0BDR7j (ORCPT
+	id S1756739Ab0BDR7w (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 12:59:52 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36832 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756472Ab0BDR7t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 12:59:39 -0500
-Date: Thu, 4 Feb 2010 17:59:28 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Dave Airlie <airlied@gmail.com>, Dave Airlie <airlied@linux.ie>,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       dri-devel@lists.sf.net
-Subject: Re: hung bootup with "drm/radeon/kms: move radeon KMS on/off
-	switch out of staging."
-Message-ID: <20100204175928.GA20595@srcf.ucam.org>
-References: <20100202081727.GA6788@elte.hu> <21d7e9971002020035v22318962w6412ccd8d93449da@mail.gmail.com> <20100202154656.GD27314@elte.hu> <21d7e9971002021234y275fae02k410af92bb16fee73@mail.gmail.com> <20100204062619.GA29154@elte.hu> <20100204071705.GA28403@elte.hu> <20100204164859.GA17878@srcf.ucam.org> <20100204170826.GA16397@elte.hu> <20100204173602.GA19855@srcf.ucam.org> <20100204175445.GB27361@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100204175445.GB27361@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
+	Thu, 4 Feb 2010 12:59:49 -0500
+Date: Thu, 4 Feb 2010 09:58:18 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Stefani Seibold <stefani@seibold.net>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>, Greg Kroah-Hartman <gregkh@suse.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
+       "Ira W. Snyder" <iws@ovro.caltech.edu>
+Subject: Re: [PATCH] enhanced reimplemention of the kfifo API
+Message-Id: <20100204095818.0d854a86.akpm@linux-foundation.org>
+In-Reply-To: <1265302360.28857.18.camel@wall-e>
+References: <1264597243.3607.24.camel@wall-e>
+	<20100203120504.6da9b000.akpm@linux-foundation.org>
+	<1265234991.24040.46.camel@wall-e>
+	<20100203150545.ebb69cad.akpm@linux-foundation.org>
+	<1265302360.28857.18.camel@wall-e>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 04, 2010 at 06:54:45PM +0100, Ingo Molnar wrote:
+On Thu, 04 Feb 2010 17:52:40 +0100
+Stefani Seibold <stefani@seibold.net> wrote:
 
-> But you could claim that it's not a regression because 1) technically the 
-> code got introduced in drivers/staging/, and staging drivers are not on the 
-> regression list 2) the Kconfig value is default-off so it can only harm those 
-> who got lured by a new Kconfig value popping up in -rc7 in a well working 
-> driver they already have enabled.
+> ...
+> > > > > +#define	kfifo_out_locked(fifo, buf, n, lock) \
+> > > > > +__kfifo_check( \
+> > > > > +({ \
+> > > > > +	unsigned long __flags; \
+> > > > > +	unsigned int __ret; \
+> > > > > +	spin_lock_irqsave(lock, __flags); \
+> > > > > +	__ret = kfifo_out(fifo, buf, n); \
+> > > > > +	spin_unlock_irqrestore(lock, __flags); \
+> > > > > +	__ret; \
+> > > > > +}) \
+> > > > > +)
+> > > > 
+> > > > This is poorly named.  Generally "foo_locked" is to be called when the
+> > > > caller has already taken the lock.  This identifier inverts that
+> > > > convention.
+> > > > 
+> > > 
+> > > This is the same name as the current kfifo API. Renaming it would break
+> > > a lot of drivers. But if there is no complain and you insist i will
+> > > rename it and fix the current users.
+> > 
+> > argh, we goofed.
+> > 
+> > yeah, it'd be nice to fix it sometime, please.  Not urgent.
+> > 
+> > A good way to fix it would be to add a new function with a new name
+> > then migrate all callers over to that name then when it's done, remove
+> > the old name.
+> > 
 > 
-> So the moving of driver functionality from drivers/staging/ to drivers/ is a 
-> grey area it appears. Wouldnt it have been better to do this in the next 
-> merge window, as all other drivers do? It's not new hardware enablement 
-> either, it's feature enablement for an existing driver.
+> I will do this in the next release. Would be kfifo_out_spinlocked() and
+> kfifo_in_spinlocked() for the new names okay?
 
-The reason the option was in staging (as has been mentioned before) was 
-because the ABI wasn't felt to be stable enough. Upstream is now willing 
-to commit to that stability, so now seems as good a time to move it as 
-any. There's no code change and there's no default configuration change, 
-so I really can't see any way that it can be classed as a regression.
+Good enough.  It's a bit sad to needlessly expose the type of lock in
+the identifier but not the end of the world.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+> 
+> One offer to solve the egg and chicken problem: Let us include the
+> functions kfifo_to_user(), kfifo_from_user(),  kfifo_esize(),
+> kfifo_recsize() and the dynamic record handling. If there will be no
+> users in at least 9 months we remove it from the API. We talk here about
+> 400 bytes of code.
+> 
+> In the mean time me and other developer will have a change to modify the
+> existing driver to the new API and/or post drivers or core kernel code
+> which is using this functionality. 
+> 
+
+Sounds OK to me.
