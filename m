@@ -1,67 +1,85 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756789Ab0BDKyO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 05:54:14 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:30559 "EHLO mx1.redhat.com"
+	id S1756569Ab0BDK7L (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 05:59:11 -0500
+Received: from wine.ocn.ne.jp ([122.1.235.145]:55380 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754235Ab0BDKyE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 05:54:04 -0500
-Date: Thu, 4 Feb 2010 11:52:13 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Simon Kagstrom <simon.kagstrom@netinsight.net>
-Cc: Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org,
-       laijs@cn.fujitsu.com, rusty@rustcorp.com.au, akpm@linux-foundation.org,
-       mingo@elte.hu
-Subject: Re: [PATCH v2] core: workqueue: return on workqueue recursion
-Message-ID: <20100204105213.GB21188@redhat.com>
-References: <20100203122755.0fd4fb7e@marrow.netinsight.se> <20100203194350.GA13824@redhat.com> <4B6A2D29.3010804@kernel.org> <20100204090216.131fc73f@marrow.netinsight.se>
-MIME-Version: 1.0
+	id S1754235Ab0BDK7I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 05:59:08 -0500
+To: amwang@redhat.com, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org
+Cc: opurdila@ixiacom.com, eric.dumazet@gmail.com, linux-rdma@vger.kernel.org,
+       netdev@vger.kernel.org, nhorman@tuxdriver.com,
+       linux-sctp@vger.kernel.org, davem@davemloft.net
+Subject: Re: [RFC Patch v2] net: reserve ports for applications using fixed port numbers
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+References: <20100204101533.4619.34599.sendpatchset@localhost.localdomain>
+In-Reply-To: <20100204101533.4619.34599.sendpatchset@localhost.localdomain>
+Message-Id: <201002041959.JEG43202.JQOFHFOVSFMtLO@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.51 PL2]
+X-Accept-Language: ja,en,zh
+Date: Thu, 4 Feb 2010 19:59:00 +0900
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100204090216.131fc73f@marrow.netinsight.se>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/04, Simon Kagstrom wrote:
->
-> When the workqueue is flushed from workqueue context (recursively), the
-> system enters a strange state where things at random (dependent on the
-> global workqueue) start misbehaving. For example, for us the console and
-> logins locks up while the web server continues running.
->
-> The system becomes unstable since the workqueue barrier locks the
-> workqueue. This patch instead returns if the workqueue is flushed
-> recursively, which keeps the workqueue alive but warns.
->
-> Signed-off-by: Simon Kagstrom <simon.kagstrom@netinsight.net>
+Hello.
 
-Acked-by: Oleg Nesterov <oleg@redhat.com>
+Amerigo Wang wrote:
+> diff --git a/net/ipv4/inet_hashtables.c b/net/ipv4/inet_hashtables.c
+> index 2b79377..d3e160a 100644
+> --- a/net/ipv4/inet_hashtables.c
+> +++ b/net/ipv4/inet_hashtables.c
+> @@ -456,6 +456,8 @@ int __inet_hash_connect(struct inet_timewait_death_row *death_row,
+>  		local_bh_disable();
+>  		for (i = 1; i <= remaining; i++) {
+>  			port = low + (i + offset) % remaining;
+> +			if (inet_is_reserved_local_port(port))
+> +				continue;
+>  			head = &hinfo->bhash[inet_bhashfn(net, port,
+>  					hinfo->bhash_size)];
+>  			spin_lock(&head->lock);
 
-> ---
-> ChangeLog:
-> 	* Instead of BUG_ON, warn and return on recursive calls as suggested
-> 	  by Oleg Nesterov and Tejun Hao
->
->  kernel/workqueue.c |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
->
-> diff --git a/kernel/workqueue.c b/kernel/workqueue.c
-> index dee4865..49f8fa7 100644
-> --- a/kernel/workqueue.c
-> +++ b/kernel/workqueue.c
-> @@ -482,7 +482,8 @@ static int flush_cpu_workqueue(struct cpu_workqueue_struct *cwq)
->  	int active = 0;
->  	struct wq_barrier barr;
->
-> -	WARN_ON(cwq->thread == current);
-> +	if (WARN_ON(cwq->thread == current))
-> +		return 1;
->
->  	spin_lock_irq(&cwq->lock);
->  	if (!list_empty(&cwq->worklist) || cwq->current_work != NULL) {
-> --
-> 1.6.0.4
->
+I'm planning to add a LSM hook here.
 
+If root user sets min port value less than 1024 to
+/proc/sys/net/ipv4/ip_local_port_range , a process without CAP_NET_BIND_SERVICE
+capability can bind to privileged port by "bind() with port == 0" or "connect()
+without bind()" because the condition is
+
+	err = -EACCES;
+	if (snum && snum < PROT_SOCK && !capable(CAP_NET_BIND_SERVICE))
+		goto out;
+
+I consider this is a security problem if MAC is enabled. MAC is used for
+dividing root user's privilege. With MAC, somebody doing some part of root
+user's jobs may set min port value to less than 1024.
+
+Also, some applications needs fixed local port numbers (e.g. 3128 for Squid,
+8080 for Tomcat). The port numbers I want to reserve are more complex than
+simple min-max range like /proc/sys/net/ipv4/ip_local_reserved_ports .
+
+Therefore, TOMOYO wants to insert a LSM hook (
+http://tomoyo.sourceforge.jp/cgi-bin/lxr/source/net/ipv4/udp.c#L235
+http://tomoyo.sourceforge.jp/cgi-bin/lxr/source/net/ipv4/inet_connection_sock.c#L114
+http://tomoyo.sourceforge.jp/cgi-bin/lxr/source/net/ipv4/inet_hashtables.c#L459
+) and allow reserving local ports like
+
+  deny_autobind 0-1023
+  deny_autobind 3128
+  deny_autobind 8080
+
+so that
+
+  applications which need such ports won't be unexpectedly blocked by
+  other application's temporary port usage (i.e. "bind() with port == 0" or
+  "connect() without bind()")
+
+and
+
+  MAC guarantees that processes without CAP_NET_BIND_SERVICE can never bind
+  to privileged port
+
+.
