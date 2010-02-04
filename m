@@ -1,74 +1,64 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758490Ab0BDTwu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 14:52:50 -0500
-Received: from aa012msr.fastwebnet.it ([85.18.95.72]:51014 "EHLO
-	aa012msr.fastwebnet.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758322Ab0BDTwt (ORCPT
+	id S932845Ab0BDTzx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 14:55:53 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46180 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932681Ab0BDTzw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 14:52:49 -0500
-X-Greylist: delayed 412 seconds by postgrey-1.27 at vger.kernel.org; Thu, 04 Feb 2010 14:52:49 EST
-Date: Thu, 4 Feb 2010 20:45:36 +0100
-From: Paolo Ornati <ornati@fastwebnet.it>
-To: Nick Bowler <nbowler@elliptictech.com>
-Cc: linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [BISECTED] post -rc6 regression, X server crash.
-Message-ID: <20100204204536.3316dff0@fastwebnet.it>
-In-Reply-To: <20100204143630.GA18161@emergent.ellipticsemi.com>
-References: <20100204143630.GA18161@emergent.ellipticsemi.com>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 4 Feb 2010 14:55:52 -0500
+Date: Thu, 4 Feb 2010 11:54:55 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Sven Joachim <svenjoac@gmx.de>
+cc: Greg KH <greg@kroah.com>, Ben Hutchings <ben@decadent.org.uk>,
+       stable-review@kernel.org, stable@kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [stable] [PATCH] Fix 'flush_old_exec()/setup_new_exec()' split
+In-Reply-To: <87r5p0wzrt.fsf@turtle.gmx.de>
+Message-ID: <alpine.LFD.2.00.1002041150100.3707@localhost.localdomain>
+References: <1265245849.3362.1.camel@localhost> <1265256174.2952.11.camel@localhost> <alpine.LFD.2.00.1002032135380.3707@localhost.localdomain> <1265272174.2952.20.camel@localhost> <20100204143848.GB15438@kroah.com> <87sk9gbzzt.fsf@turtle.gmx.de>
+ <alpine.LFD.2.00.1002041102530.3707@localhost.localdomain> <87r5p0wzrt.fsf@turtle.gmx.de>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 4 Feb 2010 09:36:30 -0500
-Nick Bowler <nbowler@elliptictech.com> wrote:
 
-> I'm using Intel KMS with xf86-video-intel 2.10.0.  I bisected the issue
-> to the following commit.  Reverting the commit allows Xorg to start
-> again.
+
+On Thu, 4 Feb 2010, Sven Joachim wrote:
+
+> On 2010-02-04 20:11 +0100, Linus Torvalds wrote:
 > 
-> 859ddf09743a8cc680af33f7259ccd0fd36bfe9d is the first bad commit
-> commit 859ddf09743a8cc680af33f7259ccd0fd36bfe9d
-> Author: Tejun Heo <tj@kernel.org>
-> Date:   Tue Feb 2 13:43:58 2010 -0800
+> > Sven/Ben: is /sbin/init (or wherever debian puts it) a regular ELF file? 
+> > Shared libraries? Anything at all special about it? I wonder why it seems 
+> > to have issues, when other 32-bit programs don't.
 > 
->     idr: fix a critical misallocation bug
+> ,----
+> | % file /sbin/init
+> | /sbin/init: ELF 32-bit LSB executable, Intel 80386, version 1 (SYSV), dynamically linked (uses shared libs), for GNU/Linux 2.6.18, stripped
+> | % ldd /sbin/init
+> | 	linux-gate.so.1 =>  (0xf770d000)
+> | 	libsepol.so.1 => /lib/libsepol.so.1 (0xf76c0000)
+> | 	libselinux.so.1 => /lib/libselinux.so.1 (0xf76a6000)
+> | 	libc.so.6 => /lib/i686/cmov/libc.so.6 (0xf755e000)
+> | 	libdl.so.2 => /lib/i686/cmov/libdl.so.2 (0xf755a000)
+> | 	/lib/ld-linux.so.2 (0xf770e000)
+> `----
+> 
+> Apparently nothing special, and booting with init=/bin/bash does not
+> change anything.
 
-Me too, with different chipset and driver version.
+Yeah, well, if my current -git tree works, then there is something else 
+going on. 
 
-Reverting that commit fixes the problem for me.
+But I don't really see anything relevant _except_ for those commits. I do 
+note that mainline also has the do_wait() thread optimizations since 
+2.6.32, and I guess those aren't in stable, but I really don't see them 
+interacting with that whole flush_old_exec thing in any way.
 
-xf86-video-intel 2.9.1
+Very odd.
 
-Xorg.0.log
-=============
-...
-(II) intel(0): Integrated Graphics Chipset: Intel(R) 965G
-...
-
-Backtrace:
-0: X(xorg_backtrace+0x26) [0x4ec0e6]
-1: X(xf86SigHandler+0x39) [0x491769]
-2: /lib/libc.so.6 [0x7fbf6439e3a0]
-3: /usr/lib64/xorg/modules/drivers//intel_drv.so [0x7fbf62dc5b28]
-4: /usr/lib64/xorg/modules/drivers//intel_drv.so(gen4_render_state_init+0x41f) [0x7fbf62dc6eff]
-5: /usr/lib64/xorg/modules/drivers//intel_drv.so [0x7fbf62d9d115]
-6: /usr/lib64/xorg/modules/drivers//intel_drv.so [0x7fbf62d9e333]
-7: X(AddScreen+0x1c6) [0x430ae6]
-8: X(InitOutput+0x241) [0x46b421]
-9: X(main+0x200) [0x4311f0]
-10: /lib/libc.so.6(__libc_start_main+0xe6) [0x7fbf6438aa26]
-11: X [0x430839]
-
-Fatal server error:
-Caught signal 11.  Server aborting
-
--- 
-	Paolo Ornati
-	Linux 2.6.33-rc6-00155-gdb8b522 on x86_64
+		Linus
