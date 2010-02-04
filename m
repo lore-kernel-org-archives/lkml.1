@@ -1,70 +1,88 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932997Ab0BDAW2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 19:22:28 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:62541 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932329Ab0BDAW0 (ORCPT
+	id S932994Ab0BDAW6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 19:22:58 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:50106 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932096Ab0BDAW5 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 19:22:26 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:x-system-of-record;
-	b=UjQrPvzm7YKMZCxt2WRNs2us3woFS4Q+0hY+lT4HDw5bSv06V8L/kvdzFDdqXh7q+
-	un/yxAtmOAgAPW0mqPkDw==
-MIME-Version: 1.0
-In-Reply-To: <1265241793.24455.1647.camel@laptop>
-References: <1265129772.24455.329.camel@laptop>
-	 <bd4cb8901002030522s6306fdf4qbf4eb48c0674d980@mail.gmail.com>
-	 <1265205361.24455.533.camel@laptop>
-	 <bd4cb8901002030607y519c191av733231ba2aec2e9c@mail.gmail.com>
-	 <1265206784.24455.568.camel@laptop>
-	 <bd4cb8901002030630naaa83c1j397759750007ae4c@mail.gmail.com>
-	 <1265208012.24455.592.camel@laptop>
-	 <1265241010.24455.1627.camel@laptop>
-	 <bd4cb8901002031551h3f1edb2bj706c768344fcd93f@mail.gmail.com>
-	 <1265241793.24455.1647.camel@laptop>
-Date: Thu, 4 Feb 2010 01:22:19 +0100
-Message-ID: <bd4cb8901002031622q42e3dba3y76168a71cfb75165@mail.gmail.com>
-Subject: Re: [RFC][PATCH] perf_events, x86: PEBS support
-From: Stephane Eranian <eranian@google.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
-       "Metzger, Markus T" <markus.t.metzger@intel.com>,
+	Wed, 3 Feb 2010 19:22:57 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: John Kacur <jkacur@redhat.com>
+Subject: Re: [RFC][PATCH] vmscan: balance local_irq_disable() and  local_irq_enable()
+Cc: kosaki.motohiro@jp.fujitsu.com, rostedt@goodmis.org,
        lkml <linux-kernel@vger.kernel.org>,
-       Robert Richter <robert.richter@amd.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Jamie Iles <jamie.iles@picochip.com>, Paul Mundt <lethal@linux-sh.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, perfmon2-devel@lists.sf.net
-Content-Type: text/plain; charset=UTF-8
-X-System-Of-Record: true
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>, Johannes Weiner <hannes@cmpxchg.org>,
+       Minchan Kim <minchan.kim@gmail.com>, linux-mm@kvack.org
+In-Reply-To: <520f0cf11002031212p4f1497e3he82dce3af668e676@mail.gmail.com>
+References: <1265227746.24386.15.camel@gandalf.stny.rr.com> <520f0cf11002031212p4f1497e3he82dce3af668e676@mail.gmail.com>
+Message-Id: <20100204091938.C2C6.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 8BIT
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Thu,  4 Feb 2010 09:22:54 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 4, 2010 at 1:03 AM, Peter Zijlstra <peterz@infradead.org> wrote:
-> On Thu, 2010-02-04 at 00:51 +0100, Stephane Eranian wrote:
->> On Thu, Feb 4, 2010 at 12:50 AM, Peter Zijlstra <peterz@infradead.org> wrote:
->> > On Wed, 2010-02-03 at 15:40 +0100, Peter Zijlstra wrote:
->> >>
->> >> If only they would reset the counter on overflow instead of on record,
->> >> that would solve quite a few issues I imagine.
->> >
->> > So I tried enabling the regular PMC overflow interrupt and reprogramming
->> > the counter from that, but touching the counter seems to destroy the
->> > PEBS assist, so much for that idea.
->> >
->> Yes, you have to leave the INT bit off, otherwise you get an
->> interrupt for each overflow, thus you lose the buffer advantage.
->
-> Well sure, but that's not the point. I was thinking that if we need to
-> do single event pebs anyway, we might as well try to reprogram on the
-> PMC overflow interrupt instead of on the PEBS overflow and curb some of
-> that drift.
->
-With INT on, you get the interrupt on the first overflow and incur the
-regular skid. There is nothing you can do to make PEBS better from
-SW. The HW has to improve. I have reported those issues to Intel
-a long time ago. They understand them quite well and I am hopeful
-things will improve over time.
+> On Wed, Feb 3, 2010 at 9:09 PM, Steven Rostedt <rostedt@goodmis.org> wrote:
+> > t On Wed, 2010-02-03 at 20:53 +0100, John Kacur wrote:
+> >> Balance local_irq_disable() and local_irq_enable() as well as
+> >> spin_lock_irq() and spin_lock_unlock_irq
+> >>
+> >> Signed-off-by: John Kacur <jkacur@redhat.com>
+> >> ---
+> >>  mm/vmscan.c |    3 ++-
+> >>  1 files changed, 2 insertions(+), 1 deletions(-)
+> >>
+> >> diff --git a/mm/vmscan.c b/mm/vmscan.c
+> >> index c26986c..b895025 100644
+> >> --- a/mm/vmscan.c
+> >> +++ b/mm/vmscan.c
+> >> @@ -1200,8 +1200,9 @@ static unsigned long shrink_inactive_list(unsigned long max_scan,
+> >>               if (current_is_kswapd())
+> >>                       __count_vm_events(KSWAPD_STEAL, nr_freed);
+> >>               __count_zone_vm_events(PGSTEAL, zone, nr_freed);
+> >> +             local_irq_enable();
+> >>
+> >> -             spin_lock(&zone->lru_lock);
+> >> +             spin_lock_irq(&zone->lru_lock);
+> >>               /*
+> >>                * Put back any unfreeable pages.
+> >>                */
+> >
+> >
+> > The above looks wrong. I don't know the code, but just by looking at
+> > where the locking and interrupts are, I can take a guess.
+> >
+> > Lets add a little more of the code:
+> >
+> >                local_irq_disable();
+> >                if (current_is_kswapd())
+> >                        __count_vm_events(KSWAPD_STEAL, nr_freed);
+> >                __count_zone_vm_events(PGSTEAL, zone, nr_freed);
+> >
+> >                spin_lock(&zone->lru_lock);
+> >                /*
+> >
+> > I'm guessing the __count_zone_vm_events and friends need interrupts
+> > disabled here, probably due to per cpu stuff. But if you enable
+> > interrupts before the spin_lock() you may let an interrupt come in and
+> > invalidate what was done above it.
+> >
+> > So no, I do not think enabling interrupts here is a good thing.
+> >
+> 
+> okay, and since we have already done local_irq_disable(), then that is
+> why we only need the spin_lock() and not the spin_lock_irq() flavour?
+
+Yes, spin_lock_irq() is equivalent to spin_lock() + irq_disable().
+Now, we already disabled irq. then, we only need spin_lock().
+
+So, I don't think shrink_inactive_list need any fix.
+
+
