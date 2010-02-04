@@ -1,134 +1,181 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758301Ab0BDPmg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 10:42:36 -0500
-Received: from mail-fx0-f220.google.com ([209.85.220.220]:35848 "EHLO
-	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756698Ab0BDPme (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 10:42:34 -0500
-Subject: Re: [PATCH] exit: PR_SET_ANCHOR for marking processes as reapers
- for child processes
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Lennart Poettering <lennart@poettering.net>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20100202120457.GA19605@omega>
-References: <20100202120457.GA19605@omega>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 04 Feb 2010 16:42:55 +0100
-Message-ID: <1265298175.24100.8.camel@yio.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.29.5 
-Content-Transfer-Encoding: 7bit
+	id S932632Ab0BDPrJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 10:47:09 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:36695 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932472Ab0BDPrG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 10:47:06 -0500
+Date: Thu, 4 Feb 2010 07:47:00 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Paul Mackerras <paulus@samba.org>,
+       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
+       Li Zefan <lizf@cn.fujitsu.com>, Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH 10/11] tracing/perf: Fix lock events recursions in the
+	fast path
+Message-ID: <20100204154700.GE6676@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <1265188475-23509-1-git-send-regression-fweisbec@gmail.com> <1265188475-23509-11-git-send-regression-fweisbec@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1265188475-23509-11-git-send-regression-fweisbec@gmail.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-02-02 at 13:04 +0100, Lennart Poettering wrote:
-> Right now, if a process dies all its children are reparented to init.
-> This logic has good uses, i.e. for double forking when daemonizing.
-> However it also allows child processes to "escape" their parents,
-> which
-> is a problem for software like session managers (such as
-> gnome-session)
-> or other process supervisors.
+On Wed, Feb 03, 2010 at 10:14:34AM +0100, Frederic Weisbecker wrote:
+> There are rcu locked read side areas in the path where we submit
+> a trace events. And these rcu_read_(un)lock() trigger lock events,
+> which create recursive events.
 > 
-> This patch adds a simple flag for each process that marks it as an
-> "anchor" process for all its children and grandchildren. If a child of
-> such an anchor dies all its children will not be reparented to init,
-> but instead to this anchor, escaping this anchor process is not possible.
-> A task with this flag set hence acts is little "sub-init".
+> One pair in do_perf_sw_event:
 > 
-> Anchors are fully recursive: if an anchor dies, all its children are
-> reparented to next higher anchor in the process tree.
+> __lock_acquire
+>       |
+>       |--96.11%-- lock_acquire
+>       |          |
+>       |          |--27.21%-- do_perf_sw_event
+>       |          |          perf_tp_event
+>       |          |          |
+>       |          |          |--49.62%-- ftrace_profile_lock_release
+>       |          |          |          lock_release
+>       |          |          |          |
+>       |          |          |          |--33.85%-- _raw_spin_unlock
 > 
-> This is orthogonal to PID namespaces. PID namespaces virtualize the
-> actual IDs in addition to introducing "sub-inits". This patch
-> introduces
-> "sub-inits" inside the same PID namespace.
+> Another pair in perf_output_begin/end:
+> 
+> __lock_acquire
+>       |--23.40%-- perf_output_begin
+>       |          |          __perf_event_overflow
+>       |          |          perf_swevent_overflow
+>       |          |          perf_swevent_add
+>       |          |          perf_swevent_ctx_event
+>       |          |          do_perf_sw_event
+>       |          |          perf_tp_event
+>       |          |          |
+>       |          |          |--55.37%-- ftrace_profile_lock_acquire
+>       |          |          |          lock_acquire
+>       |          |          |          |
+>       |          |          |          |--37.31%-- _raw_spin_lock
+> 
+> The problem is not that much the trace recursion itself, as we have a
+> recursion protection already (though it's always wasteful to recurse).
+> But the trace events are outside the lockdep recursion protection, then
+> each lockdep event triggers a lock trace, which will trigger two
+> other lockdep events. Here the recursive lock trace event won't
+> be taken because of the trace recursion, so the recursion stops there
+> but lockdep will still analyse these new events:
+> 
+> To sum up, for each lockdep events we have:
+> 
+> 	lock_*()
+> 	     |
+>              trace lock_acquire
+>                   |
+>                   ----- rcu_read_lock()
+>                   |          |
+>                   |          lock_acquire()
+>                   |          |
+>                   |          trace_lock_acquire() (stopped)
+>                   |          |
+> 		  |          lockdep analyze
+>                   |
+>                   ----- rcu_read_unlock()
+>                              |
+>                              lock_release
+>                              |
+>                              trace_lock_release() (stopped)
+>                              |
+>                              lockdep analyze
+> 
+> And you can repeat the above two times as we have two rcu read side
+> sections when we submit an event.
+> 
+> This is fixed in this pacth by using the non-lockdep versions of
+> rcu_read_(un)lock.
 
-Sounds good to me. And seems useful for all sorts of session tracking
-and "prettifying ps". :)
+Hmmm...  Perhaps I should rename __rcu_read_lock() to something more
+meaningful if it is to be used outside of the RCU files.  In the
+meantime:
 
-It seems to work fine here. With a double-fork, the child gets the
-intermediate-fork pid as the parent, and when this dies, it get
-re-parented to the anchor pid instead of directly to pid 1. Only when
-the anchor pid dies, it will be re-parented to pid 1.
+Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-Thanks,
-Kay
-
-$ ./sub-init 1
-[26209] main: anchor=1
-[26209] main: forked 'help' 26210
-[26209] main: wait for 'help' to exit 26210
-[26210] help: has parent 26209
-[26210] help: forked 'child' 26211, sleep
-[26211] child: has parent 26210, sleep
-[26211] child: has parent 26210, sleep
-[26210] help: exit
-[26209] main: 'help' 26210 returned, sleep
-[26211] child: has parent 26209, sleep
-[26211] child: has parent 26209, sleep
-[26209] main: exit
-[26211] child: has parent 1, sleep
-[26211] child: has parent 1, sleep
-[26211] child: has parent 1, sleep
-[26211] child: has parent 1, sleep
-[26211] child: has parent 1, sleep
-[26211] child: has parent 1, sleep
-[26211] child: exit
-
-
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/prctl.h>
-#include <sys/wait.h>
-
-#define PR_SET_ANCHOR 35
-#define PR_GET_ANCHOR 36
-
-int main(int argc, char *argv[])
-{
-	int is_anch;
-	pid_t pid;
-
-	if (argc > 1)
-		prctl(PR_SET_ANCHOR, 1);
-	prctl(PR_GET_ANCHOR, &is_anch);
-	printf("[%i] main: anchor=%i\n", getpid(), is_anch);
-
-	pid = fork();
-	if (pid == 0) {
-		pid_t pid2;
-
-		printf("[%i] help: has parent %i\n", getpid(), getppid());
-		pid2 = fork();
-		if (pid2 == 0) {
-			int i;
-
-			for (i = 0; i < 30; i += 3) {
-				printf("[%i] child: has parent %i, sleep\n", getpid(), getppid());
-				sleep(1);
-			}
-			printf("[%i] child: exit\n", getpid());
-		} else {
-			printf("[%i] help: forked 'child' %i, sleep\n", getpid(), pid2);
-			sleep(2);
-			printf("[%i] help: exit\n", getpid());
-			return 0;
-		}
-	} else {
-		printf("[%i] main: forked 'help' %i\n", getpid(), pid);
-		printf("[%i] main: wait for 'help' to exit %i\n", getpid(), pid);
-		waitpid(pid, NULL, 0);
-		printf("[%i] main: 'help' %i returned, sleep\n", getpid(), pid);
-		sleep(2);
-		printf("[%i] main: exit\n", getpid());
-	}
-
-	return 0;
-}
-
+> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> Cc: Peter Zijlstra <peterz@infradead.org>
+> Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+> Cc: Steven Rostedt <rostedt@goodmis.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+> Cc: Li Zefan <lizf@cn.fujitsu.com>
+> Cc: Lai Jiangshan <laijs@cn.fujitsu.com>
+> Cc: Masami Hiramatsu <mhiramat@redhat.com>
+> Cc: Jens Axboe <jens.axboe@oracle.com>
+> ---
+>  kernel/perf_event.c |   10 +++++-----
+>  1 files changed, 5 insertions(+), 5 deletions(-)
+> 
+> diff --git a/kernel/perf_event.c b/kernel/perf_event.c
+> index 280ae44..98fd360 100644
+> --- a/kernel/perf_event.c
+> +++ b/kernel/perf_event.c
+> @@ -2986,7 +2986,7 @@ int perf_output_begin(struct perf_output_handle *handle,
+>  		u64			 lost;
+>  	} lost_event;
+> 
+> -	rcu_read_lock();
+> +	__rcu_read_lock();
+>  	/*
+>  	 * For inherited events we send all the output towards the parent.
+>  	 */
+> @@ -3051,7 +3051,7 @@ fail:
+>  	atomic_inc(&data->lost);
+>  	perf_output_unlock(handle);
+>  out:
+> -	rcu_read_unlock();
+> +	__rcu_read_unlock();
+> 
+>  	return -ENOSPC;
+>  }
+> @@ -3072,7 +3072,7 @@ void perf_output_end(struct perf_output_handle *handle)
+>  	}
+> 
+>  	perf_output_unlock(handle);
+> -	rcu_read_unlock();
+> +	__rcu_read_unlock();
+>  }
+> 
+>  static u32 perf_event_pid(struct perf_event *event, struct task_struct *p)
+> @@ -4116,7 +4116,7 @@ static void do_perf_sw_event(enum perf_type_id type, u32 event_id,
+>  	struct perf_event_context *ctx;
+> 
+>  	cpuctx = &__get_cpu_var(perf_cpu_context);
+> -	rcu_read_lock();
+> +	__rcu_read_lock();
+>  	perf_swevent_ctx_event(&cpuctx->ctx, type, event_id,
+>  				 nr, nmi, data, regs);
+>  	/*
+> @@ -4126,7 +4126,7 @@ static void do_perf_sw_event(enum perf_type_id type, u32 event_id,
+>  	ctx = rcu_dereference(current->perf_event_ctxp);
+>  	if (ctx)
+>  		perf_swevent_ctx_event(ctx, type, event_id, nr, nmi, data, regs);
+> -	rcu_read_unlock();
+> +	__rcu_read_unlock();
+>  }
+> 
+>  void __perf_sw_event(u32 event_id, u64 nr, int nmi,
+> -- 
+> 1.6.2.3
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
