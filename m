@@ -1,121 +1,78 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932957Ab0BDT5N (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 14:57:13 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:42555 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932779Ab0BDT5G (ORCPT
+	id S933022Ab0BDT7k (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 14:59:40 -0500
+Received: from outbound-mail-01.bluehost.com ([69.89.21.11]:42078 "HELO
+	outbound-mail-01.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S932879Ab0BDT7i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 14:57:06 -0500
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Arnaud Patard <arnaud.patard@rtp-net.org>,
-       Ben Dooks <ben-linux@fluff.org>,
-       Dmitry Baryshkov <dbaryshkov@gmail.com>,
-       Eric Miao <eric.miao@marvell.com>,
-       Kristoffer Ericson <Kristoffer.Ericson@gmail.com>,
-       Liam Girdwood <liam.girdwood@wolfsonmicro.com>,
-       Paul Sokolovsky <pmiscml@gmail.com>, Richard Purdie <rpurdie@rpsys.net>,
-       Russell King <rmk+kernel@arm.linux.org.uk>
-Subject: [PATCH 1/9] platform-drivers: move probe to .devinit.text in arch/arm
-Date: Thu,  4 Feb 2010 20:56:49 +0100
-Message-Id: <1265313417-5568-1-git-send-email-u.kleine-koenig@pengutronix.de>
-X-Mailer: git-send-email 1.6.6
-In-Reply-To: <20100203150850.GA28815@kroah.com>
-References: <20100203150850.GA28815@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+	Thu, 4 Feb 2010 14:59:38 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=WEKsV8UmmsBQ+YWaPqbijb/O9gPmGKmE07f/aYVXBCaYTl+izB2gQ1qZIEpUjDTk1rWLExTSIn5WLOPzQMz/zddVC169MagKw3zngfFUDjBV/C2W7VczRASxBGkTBpOq;
+Date: Thu, 4 Feb 2010 11:53:16 -0800
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Alex Deucher <alexdeucher@gmail.com>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, Dave Airlie <airlied@linux.ie>,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       dri-devel@lists.sf.net
+Subject: Re: hung bootup with "drm/radeon/kms: move radeon KMS on/off switch
+ out of staging."
+Message-ID: <20100204115316.69beee75@jbarnes-piketon>
+In-Reply-To: <20100204193232.GD6665@elte.hu>
+References: <20100204071705.GA28403@elte.hu>
+	<20100204164859.GA17878@srcf.ucam.org>
+	<20100204170826.GA16397@elte.hu>
+	<20100204173602.GA19855@srcf.ucam.org>
+	<20100204175445.GB27361@elte.hu>
+	<20100204175928.GA20595@srcf.ucam.org>
+	<20100204181218.GA6175@elte.hu>
+	<a728f9f91002041030o7c8d38edxe573bc0a1327d79@mail.gmail.com>
+	<20100204190649.GB6665@elte.hu>
+	<a728f9f91002041118m6415844fp1740f18fdc1c9757@mail.gmail.com>
+	<20100204193232.GD6665@elte.hu>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A pointer to a probe callback is passed to the core via
-platform_driver_register and so the function must not disappear when the
-.init sections are discarded.  Otherwise (if also having HOTPLUG=y)
-unbinding and binding a device to the driver via sysfs will result in an
-oops as does a device being registered late.
+On Thu, 4 Feb 2010 20:32:32 +0100
+Ingo Molnar <mingo@elte.hu> wrote:
+> Nobody has reacted to my related boot hang bugreport yet - and it's
+> detailed and fully reproducible (so i can test any proposed fixes as
+> well in short order). I.e. my limited testing has triggered two
+> separate bugs in the same driver - and this will show up in -rc7.
+> 
+> It might be all OK and no-one else will see trouble. Or past patterns
+> might repeat themselves and i might simply be an early bird for
+> trouble to come.
+> 
+> My (oft repeated) point is that adding new sub-features to existing
+> drivers is not what we do in late -rc's: there's simply not enough
+> time to shake out bugs/regressions in them.
+> 
+> We introduce new functionality to existing drivers in the merge
+> window - in the two weeks following a stable kernel's release.
 
-An alternative to this patch is using platform_driver_probe instead of
-platform_driver_register plus removing the pointer to the probe function
-from the struct platform_driver.
+This is the .config issue right?  It doesn't sound like the bug is new,
+you're just seeing now it because of the way you run tests.  It
+shouldn't affect any more or fewer users than it did before, and
+reverting the "move radeon KMS out of staging" won't fix the bug at all
+or prevent anyone from seeing it.  People using KMS will still use KMS
+and people without it won't, because no one actually uses allyes
+configs, and the option defaults to N anyway.
 
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Arnaud Patard <arnaud.patard@rtp-net.org>
-Cc: Ben Dooks <ben-linux@fluff.org>
-Cc: Dmitry Baryshkov <dbaryshkov@gmail.com>
-Cc: Eric Miao <eric.miao@marvell.com>
-Cc: Kristoffer Ericson <Kristoffer.Ericson@gmail.com>
-Cc: Liam Girdwood <liam.girdwood@wolfsonmicro.com>
-Cc: Paul Sokolovsky <pmiscml@gmail.com>
-Cc: Richard Purdie <rpurdie@rpsys.net>
-Cc: Russell King <rmk+kernel@arm.linux.org.uk>
----
- arch/arm/mach-pxa/corgi_ssp.c           |    2 +-
- arch/arm/mach-pxa/sharpsl_pm.c          |    2 +-
- arch/arm/mach-s3c2410/h1940-bluetooth.c |    2 +-
- arch/arm/mach-sa1100/jornada720_ssp.c   |    2 +-
- 4 files changed, 4 insertions(+), 4 deletions(-)
+> In late -rc's we only try to fix regressions. Sometimes we make
+> exceptions for pragmatic reasons, but then we are straightforward
+> about those reasons and try to warn users about our zeal to help them
+> with cool, new, not-to-be-missed GPU functionality ;-)
 
-diff --git a/arch/arm/mach-pxa/corgi_ssp.c b/arch/arm/mach-pxa/corgi_ssp.c
-index a5ee707..1d9bc11 100644
---- a/arch/arm/mach-pxa/corgi_ssp.c
-+++ b/arch/arm/mach-pxa/corgi_ssp.c
-@@ -204,7 +204,7 @@ void __init corgi_ssp_set_machinfo(struct corgissp_machinfo *machinfo)
- 	ssp_machinfo = machinfo;
- }
- 
--static int __init corgi_ssp_probe(struct platform_device *dev)
-+static int __devinit corgi_ssp_probe(struct platform_device *dev)
- {
- 	int ret;
- 
-diff --git a/arch/arm/mach-pxa/sharpsl_pm.c b/arch/arm/mach-pxa/sharpsl_pm.c
-index 67229a1..463d874 100644
---- a/arch/arm/mach-pxa/sharpsl_pm.c
-+++ b/arch/arm/mach-pxa/sharpsl_pm.c
-@@ -900,7 +900,7 @@ static struct platform_suspend_ops sharpsl_pm_ops = {
- };
- #endif
- 
--static int __init sharpsl_pm_probe(struct platform_device *pdev)
-+static int __devinit sharpsl_pm_probe(struct platform_device *pdev)
- {
- 	int ret;
- 
-diff --git a/arch/arm/mach-s3c2410/h1940-bluetooth.c b/arch/arm/mach-s3c2410/h1940-bluetooth.c
-index b7d1f8d..a3f3c7b 100644
---- a/arch/arm/mach-s3c2410/h1940-bluetooth.c
-+++ b/arch/arm/mach-s3c2410/h1940-bluetooth.c
-@@ -56,7 +56,7 @@ static const struct rfkill_ops h1940bt_rfkill_ops = {
- 	.set_block = h1940bt_set_block,
- };
- 
--static int __init h1940bt_probe(struct platform_device *pdev)
-+static int __devinit h1940bt_probe(struct platform_device *pdev)
- {
- 	struct rfkill *rfk;
- 	int ret = 0;
-diff --git a/arch/arm/mach-sa1100/jornada720_ssp.c b/arch/arm/mach-sa1100/jornada720_ssp.c
-index 506a5e5..9b6dee5 100644
---- a/arch/arm/mach-sa1100/jornada720_ssp.c
-+++ b/arch/arm/mach-sa1100/jornada720_ssp.c
-@@ -130,7 +130,7 @@ void jornada_ssp_end(void)
- };
- EXPORT_SYMBOL(jornada_ssp_end);
- 
--static int __init jornada_ssp_probe(struct platform_device *dev)
-+static int __devinit jornada_ssp_probe(struct platform_device *dev)
- {
- 	int ret;
- 
+Agree, I just don't think this is a regression or an exception.
+
 -- 
-1.6.6
-
+Jesse Barnes, Intel Open Source Technology Center
