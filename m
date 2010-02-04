@@ -1,64 +1,47 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933189Ab0BDXi3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 18:38:29 -0500
-Received: from mail.vyatta.com ([76.74.103.46]:57924 "EHLO mail.vyatta.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932934Ab0BDXi2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 18:38:28 -0500
-Date: Thu, 4 Feb 2010 15:38:07 -0800
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: "Ha, Tristram" <Tristram.Ha@Micrel.Com>
-Cc: "Dave Miller" <davem@davemloft.net>, "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2.6.33 1/4] net: Micrel KSZ8841/2 PCI Ethernet driver
-Message-ID: <20100204153807.69d9037a@nehalam>
-In-Reply-To: <14385191E87B904DBD836449AA30269D021A51@MORGANITE.micrel.com>
-References: <14385191E87B904DBD836449AA30269D021A51@MORGANITE.micrel.com>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+	id S933413Ab0BDXkV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 18:40:21 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47139
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933112Ab0BDXkT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 18:40:19 -0500
+Date: Thu, 04 Feb 2010 15:40:31 -0800 (PST)
+Message-Id: <20100204.154031.124668996.davem@davemloft.net>
+To: Tristram.Ha@Micrel.Com
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.33 4/4] net: Add PCI vendor and device ids for
+ Micrel KSZ8841/2 PCI devices
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <14385191E87B904DBD836449AA30269D021A55@MORGANITE.micrel.com>
+References: <14385191E87B904DBD836449AA30269D021A55@MORGANITE.micrel.com>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 4 Feb 2010 15:18:54 -0800
-"Ha, Tristram" <Tristram.Ha@Micrel.Com> wrote:
+From: "Ha, Tristram" <Tristram.Ha@Micrel.Com>
+Date: Thu, 4 Feb 2010 15:28:29 -0800
 
-> Dave Miller wrote:
-> >> This is a resubmission of the Micrel KSZ8841/2 PCI Ethernet driver.
-> >
-> > The procfs stuff is a non-starter.
-> >
-> > There will undoubtedly be other devices that have switch-like
-> > facilities that we'd like to export configuration support for.
-> >
-> > The last thing we want is a bunch of procfs files that each
-> > driver decides the layout and behavior of.
-> >
-> > We need a centralized way to config such things, and probably
-> > the best is to have a rtnl_link_ops facility to get at the
-> > ports and configure them with attribute blobs or similar.
-> >
-> > We also said in your first submission that the way you're
-> > getting at the bridge STP stuff with things like:
-> >
-> > +/* Needed for STP support. */
-> > +#ifdef CONFIG_KSZ8842_STP
-> > +#include <../net/bridge/br_private.h>
-> > +#endif
-> > Yet you left all of this stuff in there.
+> From: Tristram Ha <Tristram.Ha@micrel.com>
 > 
-> In my discussions with Alan Cox and Stephen Hemminger, I thought they kind of agree to the code's inclusion in the driver.  Sorry for my misunderstanding.  I will submit another one with those code removed.
+> Add PCI vendor and device ids for Micrel KSZ8841/2 PCI devices.
 > 
-> P.S. I did not actually receive your response from my company's e-mail server.  I copied it from LKML.
+> Signed-off-by: Tristram Ha <Tristram.Ha@micrel.com>
 
-I would rather move any defines needed by driver to
-new file: include/net/bridge.h
-and include it in br_private.h
+We no longer add device ID defines to the linux/pci_ids.h
+file, in fact it's been this way for several years.
 
-Don't want device dumpster diving into bridge control structures.
+Just use constants or local devices in your driver.
 
--- 
+Furthermore, because you made this the last patch, the
+tree would fail to build at the point where the first
+three of your patches are applied.
+
+This breaks GIT bisection, and is severely frowned upon.  The tree
+must build with all available kernel config options enabled at every
+step of applying your set of patches.
