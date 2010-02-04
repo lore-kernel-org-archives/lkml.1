@@ -1,58 +1,104 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758496Ab0BDRbO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 12:31:14 -0500
-Received: from mail-gx0-f224.google.com ([209.85.217.224]:38593 "EHLO
-	mail-gx0-f224.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933397Ab0BDRbE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 12:31:04 -0500
-Message-ID: <4B6B0450.4000507@billgatliff.com>
-Date: Thu, 04 Feb 2010 11:30:56 -0600
-From: Bill Gatliff <bgat@billgatliff.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
-MIME-Version: 1.0
-To: H Hartley Sweeten <hartleys@visionengravers.com>
-CC: linux-embedded@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PWM PATCH 1/5] API to consolidate PWM devices behind a common
- user and kernel interface
-References: <cover.1265094517.git.bgat@billgatliff.com> <c5873aa7c5d20254a9e54fc1ff179345b77c16b5.1265094517.git.bgat@billgatliff.com> <BD79186B4FD85F4B8E60E381CAEE190902152ADB@mi8nycmail19.Mi8.com> <4B6A5BAA.2030908@billgatliff.com>
-In-Reply-To: <4B6A5BAA.2030908@billgatliff.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S933248Ab0BDRV4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 12:21:56 -0500
+Received: from kroah.org ([198.145.64.141]:34634 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758528Ab0BDRVk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 12:21:40 -0500
+X-Mailbox-Line: From linux@linux.site Thu Feb  4 09:14:58 2010
+Message-Id: <20100204171458.220472073@linux.site>
+User-Agent: quilt/0.47-14.9
+Date: Thu, 04 Feb 2010 09:11:48 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       Neil Horman <nhorman@tuxdriver.com>,
+       Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [17/74] e1000: enhance frame fragment detection
+In-Reply-To: <20100204171850.GA16539@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bill Gatliff wrote:
-> H Hartley Sweeten wrote:
->   
->> Your older patch just used printk's to output the messages.  I think the
->> Oops is being caused by the dev_<level>(pwm->dev, ...).  Where is pwm->dev
->> being setup?
->>   
->>     
->
-> The intention was to save the result from device_create() called from
-> __pwm_create_sysfs(), but I'm suspicious that the patch I posted doesn't
-> have that code for some reason.  My local git repo here doesn't seem to
-> have it.  Hmmm...
->   
+2.6.32-stable review patch.  If anyone has any objections, please let us know.
 
-No, that's not right.  Disregard the above.
+------------------
 
-If the PWM device in question is already known to the kernel, then
-before you call pwm_register() you must set pwm->dev to the address of
-that device structure.  I need to come up with a better way to handle this.
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
-If the PWM device isn't already known to the kernel as a true struct
-device, then I don't yet have a Plan B.  Drat.  :(
+commit 40a14deaf411592b57cb0720f0e8004293ab9865 upstream.
 
+Originally From: Neil Horman <nhorman@tuxdriver.com>
+Modified by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
-b.g.
+Hey all-
+	A security discussion was recently given:
+http://events.ccc.de/congress/2009/Fahrplan//events/3596.en.html
+And a patch that I submitted awhile back was brought up.  Apparently some of
+their testing revealed that they were able to force a buffer fragment in e1000
+in which the trailing fragment was greater than 4 bytes.  As a result the
+fragment check I introduced failed to detect the fragement and a partial
+invalid frame was passed up into the network stack.  I've written this patch
+to correct it.  I'm in the process of testing it now, but it makes good
+logical sense to me.  Effectively it maintains a per-adapter state variable
+which detects a non-EOP frame, and discards it and subsequent non-EOP frames
+leading up to _and_ _including_ the next positive-EOP frame (as it is by
+definition the last fragment).  This should prevent any and all partial frames
+from entering the network stack from e1000.
 
--- 
-Bill Gatliff
-bgat@billgatliff.com
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Acked-by: Neil Horman <nhorman@tuxdriver.com>
+Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ drivers/net/e1000/e1000.h      |    2 ++
+ drivers/net/e1000/e1000_main.c |   13 +++++++++++--
+ 2 files changed, 13 insertions(+), 2 deletions(-)
+
+--- a/drivers/net/e1000/e1000.h
++++ b/drivers/net/e1000/e1000.h
+@@ -326,6 +326,8 @@ struct e1000_adapter {
+ 	/* for ioport free */
+ 	int bars;
+ 	int need_ioport;
++
++	bool discarding;
+ };
+ 
+ enum e1000_state_t {
+--- a/drivers/net/e1000/e1000_main.c
++++ b/drivers/net/e1000/e1000_main.c
+@@ -3827,13 +3827,22 @@ static bool e1000_clean_rx_irq(struct e1
+ 
+ 		length = le16_to_cpu(rx_desc->length);
+ 		/* !EOP means multiple descriptors were used to store a single
+-		 * packet, also make sure the frame isn't just CRC only */
+-		if (unlikely(!(status & E1000_RXD_STAT_EOP) || (length <= 4))) {
++		 * packet, if thats the case we need to toss it.  In fact, we
++		 * to toss every packet with the EOP bit clear and the next
++		 * frame that _does_ have the EOP bit set, as it is by
++		 * definition only a frame fragment
++		 */
++		if (unlikely(!(status & E1000_RXD_STAT_EOP)))
++			adapter->discarding = true;
++
++		if (adapter->discarding) {
+ 			/* All receives must fit into a single buffer */
+ 			E1000_DBG("%s: Receive packet consumed multiple"
+ 				  " buffers\n", netdev->name);
+ 			/* recycle */
+ 			buffer_info->skb = skb;
++			if (status & E1000_RXD_STAT_EOP)
++				adapter->discarding = false;
+ 			goto next_desc;
+ 		}
+ 
 
 
