@@ -1,62 +1,49 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757969Ab0BDWSf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 17:18:35 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:46177 "EHLO ogre.sisk.pl"
+	id S1758301Ab0BDWVx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 17:21:53 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:41784 "EHLO mail.zytor.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757441Ab0BDWSe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 17:18:34 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Net / pktgen: Fix freezing problem
-Date: Thu, 4 Feb 2010 23:19:22 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.33-rc6-rjw; KDE/4.3.5; x86_64; ; )
-Cc: LKML <linux-kernel@vger.kernel.org>, NetDev <netdev@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       David Miller <davem@davemloft.net>,
-       Ciprian Dorin Craciun <ciprian.craciun@gmail.com>,
-       Greg KH <gregkh@suse.de>
-References: <201002042250.58944.rjw@sisk.pl> <20100204141239.aa94e75c.akpm@linux-foundation.org>
-In-Reply-To: <20100204141239.aa94e75c.akpm@linux-foundation.org>
+	id S1757831Ab0BDWVw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 17:21:52 -0500
+Message-ID: <4B6B47A1.3050606@zytor.com>
+Date: Thu, 04 Feb 2010 14:18:09 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+CC: Roland McGrath <roland@redhat.com>, Oleg Nesterov <oleg@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Lu, Hongjiu" <hongjiu.lu@intel.com>,
+       "Lachner, Peter" <peter.lachner@intel.com>
+Subject: Re: [patch] x86: ptrace and core-dump extensions for xstate
+References: <1265076025.2802.194.camel@sbs-t61.sc.intel.com>	 <20100203230817.E6529AA@magilla.sf.frob.com>	 <1265315329.2768.167.camel@sbs-t61.sc.intel.com>	 <20100204205543.E1D11E7@magilla.sf.frob.com> <1265321114.2768.256.camel@sbs-t61.sc.intel.com>
+In-Reply-To: <1265321114.2768.256.camel@sbs-t61.sc.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <201002042319.22226.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 04 February 2010, Andrew Morton wrote:
-> On Thu, 4 Feb 2010 22:50:58 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+On 02/04/2010 02:05 PM, Suresh Siddha wrote:
 > 
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > Subject: Net / pktgen: Fix freezing problem
-> > 
-> > Add missing try_to_freeze() to one of the pktgen_thread_worker() code
-> > paths so that it doesn't block suspend/hibernation.
-> > 
-> > Fixes http://bugzilla.kernel.org/show_bug.cgi?id=15006
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > Reported-and-tested-by: Ciprian Dorin Craciun <ciprian.craciun@gmail.com>
-> > ---
-> >  net/core/pktgen.c |    1 +
-> >  1 file changed, 1 insertion(+)
-> > 
-> > Index: linux-2.6/net/core/pktgen.c
-> > ===================================================================
-> > --- linux-2.6.orig/net/core/pktgen.c
-> > +++ linux-2.6/net/core/pktgen.c
-> > @@ -3524,6 +3524,7 @@ static int pktgen_thread_worker(void *ar
-> >  			wait_event_interruptible_timeout(t->queue,
-> >  							 t->control != 0,
-> >  							 HZ/10);
-> > +			try_to_freeze();
-> >  			continue;
-> >  		}
-> >  
+> So in the example you provided before:
 > 
-> Also needed in -stable, IMO.
+>         struct iovec iov = { mybuffer, mylength };
+>         ret = ptrace(PTRACE_GETREGSET, NT_X86_XSTATE, &iov);
+> 
+> You wanted to propose common data format (iov) for all of the NT_* ?
+> 
 
-Indeed.
+How about encoding the regset number into the command, e.g.
+ptrace(PTRACE_GETREGS(NT_X86_XSTATE), length, buffer)
+
+... where we have ...
+
+#define PTRACE_GETREGS(r) (((r) << 16) | PTRACE_GETREGS_CMD)
+
+... or something like that?
+
+	-hpa
+
