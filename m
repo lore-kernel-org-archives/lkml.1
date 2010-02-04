@@ -1,24 +1,24 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933460Ab0BDRXS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 12:23:18 -0500
-Received: from kroah.org ([198.145.64.141]:34977 "EHLO coco.kroah.org"
+	id S933415Ab0BDRWr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 12:22:47 -0500
+Received: from kroah.org ([198.145.64.141]:34808 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933381Ab0BDRWc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 12:22:32 -0500
-X-Mailbox-Line: From linux@linux.site Thu Feb  4 09:15:28 2010
-Message-Id: <20100204171527.690221668@linux.site>
+	id S933309Ab0BDRWM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 12:22:12 -0500
+X-Mailbox-Line: From linux@linux.site Thu Feb  4 09:15:16 2010
+Message-Id: <20100204171515.880676617@linux.site>
 User-Agent: quilt/0.47-14.9
-Date: Thu, 04 Feb 2010 09:12:41 -0800
+Date: Thu, 04 Feb 2010 09:12:20 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Alexander Graf <agraf@suse.de>, Greg KH <gregkh@suse.de>
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       =?ISO-8859-15?q?Richard=20R=C3=B6jfors?= 
-	<richard.rojfors@pelagicore.com>,
-       Peter Korsgaard <jacmet@sunsite.dk>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [70/74] uartlite: fix crash when using as console
+       Avi Kivity <avi@redhat.com>, KVM list <kvm@vger.kernel.org>,
+       Glauber Costa <glommer@redhat.com>,
+       Marcelo Tosatti <mtosatti@redhat.com>
+Subject: [49/74] KVM: allow userspace to adjust kvmclock offset
 In-Reply-To: <20100204171850.GA16539@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -28,94 +28,191 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Richard Röjfors <richard.rojfors@pelagicore.com>
+From: Glauber Costa <glommer@redhat.com>
 
-commit 03eac7bb882a75e6ee5705288f7ec36ad2e7d0d5 upstream.
+(cherry picked from afbcf7ab8d1bc8c2d04792f6d9e786e0adeb328d)
 
-Move the ulite_console_setup to the .devinit section since it might be
-called on probe, which is in devinit.  Fixes the crash below where the
-uartlite hw is probed after the .init section is freed from the kernel.
+When we migrate a kvm guest that uses pvclock between two hosts, we may
+suffer a large skew. This is because there can be significant differences
+between the monotonic clock of the hosts involved. When a new host with
+a much larger monotonic time starts running the guest, the view of time
+will be significantly impacted.
 
-uartlite: ttyUL0 at MMIO 0xc8000100 (irq = 30) is a uartlite
-BUG: unable to handle kernel NULL pointer dereference at (null)
-IP: [<c176720e>] ulite_console_setup+0x6f/0xa8
-*pdpt = 0000000036fb0001 *pde = 0000000000000000
-Oops: 0000 [#1] PREEMPT SMP
-last sysfs file: /sys/devices/pci0000:00/0000:00:1f.1/host0/uevent
-Modules linked in: puffin(+) serio_raw
+Situation is much worse when we do the opposite, and migrate to a host with
+a smaller monotonic clock.
 
-Pid: 151, comm: modprobe Not tainted (2.6.31.5-1.0.b1-b1 #1) POULSBO
-EIP: 0060:[<c176720e>] EFLAGS: 00010246 CPU: 0
-EIP is at ulite_console_setup+0x6f/0xa8
-EAX: c16ec824 EBX: c16ec824 ECX: c176719f EDX: 00000000
-ESI: 00000000 EDI: c17b42c4 EBP: f6fd1cf0 ESP: f6fd1cd8
- DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-Process modprobe (pid: 151, ti=f6fd0000 task=f6fa1020 task.ti=f6fd0000)
-Stack:
- c1031f51 00000000 00000000 00000246 c182237c f7742000 f6fd1d5c c11fd316
-<0> c16ec85c f77420d4 0000001e 00000000 00000000 c1633e78 4f494d4d 63783020
-<0> 30303038 00303031 f6fd1d3c c10e0786 f6fd1d48 00000000 f6fd1d48 00000000
-Call Trace:
- [<c1031f51>] ? register_console+0xf6/0x1fc
- [<c11fd316>] ? uart_add_one_port+0x237/0x2bb
- [<c10e0786>] ? sysfs_add_one+0x13/0xd3
- [<c10e142f>] ? sysfs_do_create_link+0xba/0xfc
- [<c146f200>] ? ulite_probe+0x198/0x1eb
- [<c12064ee>] ? platform_drv_probe+0xc/0xe
- [<c120597b>] ? driver_probe_device+0x79/0x105
- [<c1205a8e>] ? __device_attach+0x28/0x30
- [<c120511f>] ? bus_for_each_drv+0x3d/0x67
- [<c1205af9>] ? device_attach+0x44/0x58
- [<c1205a66>] ? __device_attach+0x0/0x30
- [<c1204fb8>] ? bus_probe_device+0x1f/0x34
- [<c1203e68>] ? device_add+0x385/0x4c0
- [<c148491f>] ? _write_unlock+0x8/0x1f
- [<c1206aac>] ? platform_device_add+0xd9/0x11c
- [<c120c685>] ? mfd_add_devices+0x165/0x1bc
- [<f831b378>] ? puffin_probe+0x2d0/0x390 [puffin]
- [<c11a08ef>] ? pci_match_device+0xa0/0xa7
- [<c11a07bc>] ? local_pci_probe+0xe/0x10
- [<c11a11db>] ? pci_device_probe+0x43/0x66
- [<c120597b>] ? driver_probe_device+0x79/0x105
- [<c1205a4a>] ? __driver_attach+0x43/0x5f
- [<c120535d>] ? bus_for_each_dev+0x3d/0x67
- [<c1205852>] ? driver_attach+0x14/0x16
- [<c1205a07>] ? __driver_attach+0x0/0x5f
- [<c1204dea>] ? bus_add_driver+0xf9/0x220
- [<c1205c8f>] ? driver_register+0x8b/0xeb
- [<c11a1518>] ? __pci_register_driver+0x43/0x9f
- [<c10477ef>] ? __blocking_notifier_call_chain+0x40/0x4c
- [<f831f000>] ? puffin_init+0x0/0x48 [puffin]
- [<f831f017>] ? puffin_init+0x17/0x48 [puffin]
- [<c1001139>] ? do_one_initcall+0x4c/0x131
- [<c105607b>] ? sys_init_module+0xa7/0x1b7
- [<c1002a61>] ? syscall_call+0x7/0xb
- Code: 6e 74 00 00 00 92 33 00 00 18 00 0e 01 73 79 6e 63 65 2d 72 65 67 69 73 74 72 79 0c 00 49 32
-00 00 14 00 09 01 61 6c 73 61 2d 69 <6e> 66 6f 00 00 00 42 37 00 00 10 00 07 01 6b 69 6c 6c 61 6c 6c
-EIP: [<c176720e>] ulite_console_setup+0x6f/0xa8 SS:ESP 0068:f6fd1cd8
-CR2: 0000000000000000
+This proposed ioctl will allow userspace to inform us what is the monotonic
+clock value in the source host, so we can keep the time skew short, and
+more importantly, never goes backwards. Userspace may also need to trigger
+the current data, since from the first migration onwards, it won't be
+reflected by a simple call to clock_gettime() anymore.
 
-Signed-off-by: Richard Röjfors <richard.rojfors@pelagicore.com>
-Acked-by: Peter Korsgaard <jacmet@sunsite.dk>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+[marcelo: future-proof abi with a flags field]
+[jan: fix KVM_GET_CLOCK by clearing flags field instead of checking it]
+
+Signed-off-by: Glauber Costa <glommer@redhat.com>
+Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
+Signed-off-by: Avi Kivity <avi@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/serial/uartlite.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ Documentation/kvm/api.txt       |   36 ++++++++++++++++++++++++++++++++++
+ arch/x86/include/asm/kvm_host.h |    1 
+ arch/x86/kvm/x86.c              |   42 +++++++++++++++++++++++++++++++++++++++-
+ include/linux/kvm.h             |    9 ++++++++
+ 4 files changed, 87 insertions(+), 1 deletion(-)
 
---- a/drivers/serial/uartlite.c
-+++ b/drivers/serial/uartlite.c
-@@ -394,7 +394,7 @@ static void ulite_console_write(struct c
- 		spin_unlock_irqrestore(&port->lock, flags);
- }
+--- a/arch/x86/include/asm/kvm_host.h
++++ b/arch/x86/include/asm/kvm_host.h
+@@ -412,6 +412,7 @@ struct kvm_arch{
+ 	unsigned long irq_sources_bitmap;
+ 	unsigned long irq_states[KVM_IOAPIC_NUM_PINS];
+ 	u64 vm_init_tsc;
++	s64 kvmclock_offset;
+ };
  
--static int __init ulite_console_setup(struct console *co, char *options)
-+static int __devinit ulite_console_setup(struct console *co, char *options)
- {
- 	struct uart_port *port;
- 	int baud = 9600;
+ struct kvm_vm_stat {
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -680,7 +680,8 @@ static void kvm_write_guest_time(struct 
+ 	/* With all the info we got, fill in the values */
+ 
+ 	vcpu->hv_clock.system_time = ts.tv_nsec +
+-				     (NSEC_PER_SEC * (u64)ts.tv_sec);
++				     (NSEC_PER_SEC * (u64)ts.tv_sec) + v->kvm->arch.kvmclock_offset;
++
+ 	/*
+ 	 * The interface expects us to write an even number signaling that the
+ 	 * update is finished. Since the guest won't see the intermediate
+@@ -1227,6 +1228,7 @@ int kvm_dev_ioctl_check_extension(long e
+ 	case KVM_CAP_PIT2:
+ 	case KVM_CAP_PIT_STATE2:
+ 	case KVM_CAP_SET_IDENTITY_MAP_ADDR:
++	case KVM_CAP_ADJUST_CLOCK:
+ 		r = 1;
+ 		break;
+ 	case KVM_CAP_COALESCED_MMIO:
+@@ -2424,6 +2426,44 @@ long kvm_arch_vm_ioctl(struct file *filp
+ 		r = 0;
+ 		break;
+ 	}
++	case KVM_SET_CLOCK: {
++		struct timespec now;
++		struct kvm_clock_data user_ns;
++		u64 now_ns;
++		s64 delta;
++
++		r = -EFAULT;
++		if (copy_from_user(&user_ns, argp, sizeof(user_ns)))
++			goto out;
++
++		r = -EINVAL;
++		if (user_ns.flags)
++			goto out;
++
++		r = 0;
++		ktime_get_ts(&now);
++		now_ns = timespec_to_ns(&now);
++		delta = user_ns.clock - now_ns;
++		kvm->arch.kvmclock_offset = delta;
++		break;
++	}
++	case KVM_GET_CLOCK: {
++		struct timespec now;
++		struct kvm_clock_data user_ns;
++		u64 now_ns;
++
++		ktime_get_ts(&now);
++		now_ns = timespec_to_ns(&now);
++		user_ns.clock = kvm->arch.kvmclock_offset + now_ns;
++		user_ns.flags = 0;
++
++		r = -EFAULT;
++		if (copy_to_user(argp, &user_ns, sizeof(user_ns)))
++			goto out;
++		r = 0;
++		break;
++	}
++
+ 	default:
+ 		;
+ 	}
+--- a/Documentation/kvm/api.txt
++++ b/Documentation/kvm/api.txt
+@@ -593,6 +593,42 @@ struct kvm_irqchip {
+ 	} chip;
+ };
+ 
++4.27 KVM_GET_CLOCK
++
++Capability: KVM_CAP_ADJUST_CLOCK
++Architectures: x86
++Type: vm ioctl
++Parameters: struct kvm_clock_data (out)
++Returns: 0 on success, -1 on error
++
++Gets the current timestamp of kvmclock as seen by the current guest. In
++conjunction with KVM_SET_CLOCK, it is used to ensure monotonicity on scenarios
++such as migration.
++
++struct kvm_clock_data {
++	__u64 clock;  /* kvmclock current value */
++	__u32 flags;
++	__u32 pad[9];
++};
++
++4.28 KVM_SET_CLOCK
++
++Capability: KVM_CAP_ADJUST_CLOCK
++Architectures: x86
++Type: vm ioctl
++Parameters: struct kvm_clock_data (in)
++Returns: 0 on success, -1 on error
++
++Sets the current timestamp of kvmclock to the valued specific in its parameter.
++In conjunction with KVM_GET_CLOCK, it is used to ensure monotonicity on scenarios
++such as migration.
++
++struct kvm_clock_data {
++	__u64 clock;  /* kvmclock current value */
++	__u32 flags;
++	__u32 pad[9];
++};
++
+ 5. The kvm_run structure
+ 
+ Application code obtains a pointer to the kvm_run structure by
+--- a/include/linux/kvm.h
++++ b/include/linux/kvm.h
+@@ -439,6 +439,7 @@ struct kvm_ioeventfd {
+ #endif
+ #define KVM_CAP_IOEVENTFD 36
+ #define KVM_CAP_SET_IDENTITY_MAP_ADDR 37
++#define KVM_CAP_ADJUST_CLOCK 39
+ 
+ #ifdef KVM_CAP_IRQ_ROUTING
+ 
+@@ -501,6 +502,12 @@ struct kvm_irqfd {
+ 	__u8  pad[20];
+ };
+ 
++struct kvm_clock_data {
++	__u64 clock;
++	__u32 flags;
++	__u32 pad[9];
++};
++
+ /*
+  * ioctls for VM fds
+  */
+@@ -550,6 +557,8 @@ struct kvm_irqfd {
+ #define KVM_CREATE_PIT2		   _IOW(KVMIO, 0x77, struct kvm_pit_config)
+ #define KVM_SET_BOOT_CPU_ID        _IO(KVMIO, 0x78)
+ #define KVM_IOEVENTFD             _IOW(KVMIO, 0x79, struct kvm_ioeventfd)
++#define KVM_SET_CLOCK             _IOW(KVMIO, 0x7b, struct kvm_clock_data)
++#define KVM_GET_CLOCK             _IOR(KVMIO, 0x7c, struct kvm_clock_data)
+ 
+ /*
+  * ioctls for vcpu fds
 
 
