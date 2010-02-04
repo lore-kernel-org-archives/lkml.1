@@ -1,235 +1,135 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933417Ab0BDUaF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 15:30:05 -0500
-Received: from mga03.intel.com ([143.182.124.21]:19023 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932877Ab0BDU3z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 15:29:55 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,407,1262592000"; 
-   d="scan'208";a="240579381"
-Subject: Re: [patch] x86: ptrace and core-dump extensions for xstate
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
-To: Roland McGrath <roland@redhat.com>
-Cc: Oleg Nesterov <oleg@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Lu, Hongjiu" <hongjiu.lu@intel.com>,
-       "Lachner, Peter" <peter.lachner@intel.com>
-In-Reply-To: <20100203230817.E6529AA@magilla.sf.frob.com>
-References: <1265076025.2802.194.camel@sbs-t61.sc.intel.com>
-	 <20100203230817.E6529AA@magilla.sf.frob.com>
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Thu, 04 Feb 2010 12:28:49 -0800
-Message-Id: <1265315329.2768.167.camel@sbs-t61.sc.intel.com>
+	id S933422Ab0BDUdu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 15:33:50 -0500
+Received: from outbound-mail-01.bluehost.com ([69.89.21.11]:59866 "HELO
+	outbound-mail-01.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S933156Ab0BDUds (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 15:33:48 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=bdp+rpUtYMxWIJeowdXna3eQdz4P8JGPrFP+cBesyHUCnZeAMMtPSI8NGWtvASQCllvYoqV1xAEp5ys11SjZZ02nCWE11BqLnNJCABVAyGEczqMNJyKbdQTze8VxGGtW;
+Date: Thu, 4 Feb 2010 12:33:00 -0800
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Alex Deucher <alexdeucher@gmail.com>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, Dave Airlie <airlied@linux.ie>,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       dri-devel@lists.sf.net
+Subject: Re: hung bootup with "drm/radeon/kms: move radeon KMS on/off switch
+ out of staging."
+Message-ID: <20100204123300.7497429b@jbarnes-piketon>
+In-Reply-To: <20100204202254.GA24716@elte.hu>
+References: <20100204170826.GA16397@elte.hu>
+	<20100204173602.GA19855@srcf.ucam.org>
+	<20100204175445.GB27361@elte.hu>
+	<20100204175928.GA20595@srcf.ucam.org>
+	<20100204181218.GA6175@elte.hu>
+	<a728f9f91002041030o7c8d38edxe573bc0a1327d79@mail.gmail.com>
+	<20100204190649.GB6665@elte.hu>
+	<a728f9f91002041118m6415844fp1740f18fdc1c9757@mail.gmail.com>
+	<20100204193232.GD6665@elte.hu>
+	<20100204115316.69beee75@jbarnes-piketon>
+	<20100204202254.GA24716@elte.hu>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-02-03 at 15:08 -0800, Roland McGrath wrote:
-> Please also CC Oleg on things related to user_regset and/or ptrace,
-> as per MAINTAINERS.
+On Thu, 4 Feb 2010 21:22:54 +0100
+Ingo Molnar <mingo@elte.hu> wrote:
+> > This is the .config issue right?  It doesn't sound like the bug is
+> > new, you're just seeing now it because of the way you run tests.
+> > It shouldn't affect any more or fewer users than it did before, and
+> > reverting the "move radeon KMS out of staging" won't fix the bug at
+> > all or prevent anyone from seeing it.  People using KMS will still
+> > use KMS and people without it won't, [...]
+> 
+> I think you are missing my point. My point is very simple: existing
+> non-KMS users of CONFIG_DRM_RADON=y (a pre-existing driver) might
+> turn on the new sub-feature (CONFIG_DRM_RADEON_KMS=y), in the
+> expectation that this is a safe addition to his currently
+> well-working driver.
 
-Sure.
+Oh I thought it was you who was missing the point, thus my
+explanation. :)
 
-> 
-> Please make this two patches.  The first one should add the regset, which
-> implicitly adds it to core dumps, and makes fixed the note layout aspect of
-> the permanent userland ABI.  The second one should add the new ptrace
-> requests, which is a further addition to the userland ABI.
+Enabling KMS support is documented in Kconfig and doesn't default to
+'y', so I don't know how valid your concern is, even though I
+understand it.
 
-Sure. Let's come to the agreement on the ABI changes and then I can
-split the patches accordingly.
+> ( I have to confess i do that all the time for drivers that work well
+> for me, and if it pops up in a late -rc i sure expect it to be safe
+> to enable. I dont even read the help text most of the time - if the
+> single-line summary sounds useful i enable it. Especially if the
+> Kconfig help entry says it's safe with a new distro, it's not
+> CONFIG_EXPERIMENTAL, it's not marked CONFIG_BROKEN, it's not in
+> CONFIG_STAGING, etc. )
+> 
+> That action might hang or crash his kernel, and if that user then
+> reports:
+> 
+>   " Hey, -rc7 just hung on me after enabling this new .config option
+> it offered for the radeon driver i am using, please add this to the
+> list of regressions. "
+> 
+> is this really the right kind of reply:
+> 
+>  " Since we moved it from drivers/staging/ to drivers/ this hang you
+> are seeing is technically not a regression, we might or might not fix
+> it. "
+> 
+> ?
+> 
+> I doubt the user would be overly enthusiastic about that kind of
+> reply ;-)
 
-> 
-> > For more information on how to use this API by users like debuggers and core
-> > dump, please refer to comments in arch/x86/include/asm/ptrace-abi.h
-> 
-> There are some obvious typos in that comment.  Please fix those up.
+Whether or not it's a regression is mostly irrelevant, it's a real bug
+and the radeon guys are working on fixing it.  I really don't think
+they'll be flooded with reports of this issue with the removal of the
+staging dependency, but that's just my guess.
 
-Can you please elaborate?
+> Guys, you should really _think_ about it a minute and realize what
+> the purpose of a regression policy is.
 
-> 
-> > +int xstateregs_active(struct task_struct *target,
-> > +		      const struct user_regset *regset)
-> > +{
-> > +	return (cpu_has_xsave && tsk_used_math(target)) ? xstate_size : 0;
-> > +}
-> 
-> The return value here is "n" not "n * size", so xstate_size is wrong.  You
-> can just use regset->n instead.  I'll further note that when !cpu_has_xsave,
-> regset->n will be zero.  So all you really need is:
-> 
-> 	return tsk_used_math(target) ? regset->n : 0;
-> 
-> i.e., the same as fpregs_active.  So I would just use:
-> 
-> 	#define xstateregs_active	fpregs_active
-> 
-> with a comment explaining that they are same and why.
+Everyone understands it, but really:
+  - this is *not* a driver regression, the code is the same, you just
+    don't need to enable staging to get it anymore
+  - using allyesconfig or enabling non-default options requires thought
+    and preferably reading the Kconfig text, so making this option more
+    available should be generally safe (that doesn't mean it's bug free
+    as you've discovered though).
 
-Makes sense.
+> It's not to be a PITA to subsystem maintainers, it's not an annoyance
+> just to keep you from doing cool stuff. It's not something which you
+> should try to lawyer your way out of via an as narrow interpretation
+> as you can.
 
-> 
-> > +	/*
-> > +	 * First copy the fxsave bytes 0..463
-> > +	 */
-> > +	ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
-> > +				  &target->thread.xstate->xsave, 0,
-> > +				  (sizeof(struct i387_fxsave_struct) -
-> > +				   sizeof(xstate_fx_sw_bytes)));
-> > +	/*
-> > +	 * Copy the 48bytes defined by software
-> > +	 */
-> > +	ret |= user_regset_copyout(&pos, &count, &kbuf, &ubuf,
-> > +				   xstate_fx_sw_bytes,
-> > +				   (sizeof(struct i387_fxsave_struct) -
-> > +				    sizeof(xstate_fx_sw_bytes)),
-> > +				   sizeof(struct i387_fxsave_struct));
-> > +	/*
-> > +	 * Copy the rest of xstate memory layout
-> > +	 */
-> > +	ret |= user_regset_copyout(&pos, &count, &kbuf, &ubuf,
-> > +				   &target->thread.xstate->xsave.xsave_hdr,
-> > +				   sizeof(struct i387_fxsave_struct), -1);
-> 
-> This is wrong for the error cases.  user_regset_copyout returns an error
-> code or 0, so "|=" is a strange thing to with its return value.  In fact,
-> it only ever returns 0 or -EFAULT, so |= will produce the value you want.
-> But | is a pretty strange thing to do with two error codes.
-> 
-> It's problematically wrong for a different reason.  In the error case,
-> user_regset_copyout returns without updating pos, count, and ubuf (i.e.
-> it returns having done nothing when returning an error, which is a pretty
-> normal convention).  So, if the first call fails then the second call will
-> have pos < start_pos and hit the BUG_ON.  IOW, be sure to test your new
-> ptrace call with an invalid userland pointer (e.g. NULL) passed in.
+I'm certainly not trying to split hairs here, I just think you're
+overreacting to this issue by labeling it a regression and implying
+that the commit should be reverted.
 
-oops. Will fix it.
+> A regression policy is something that generally helps the quality of
+> Linux, so it's worth interpreting broadly and generously in spirit
+> not just in letter. If there's a single most prominent complaint i
+> hear about the upstream kernel is that it breaks too often. (right
+> after 'it doesnt support my graphics hardware' - so i sure can relate
+> to the pragmatic reasons of pushing KMS strongly!)
 
-> 
-> In short, replace "ret |=" with "if (likely(!ret))\n\tret = ".
-> 
-> 
-> This is up to you, but personally I would define something akin to:
-> 
-> 	struct xstate_info {
-> 		union {
-> 			struct i387_fxsave_struct fxsave;
-> 			struct {
-> 				u64 i387[58];
-> 				u64 xstate_fx_sw[XSTATE_FX_SW_WORDS];
-> 			};
-> 		};
-> 		struct xsave_hdr_struct xsave_hdr;
-> 		u64 xsave_state[0];
-> 	};
-> 
-> and then use offsetof rather than manual arithmetic in those
-> user_regset_copyout calls.  IMHO it would be better to have this in
-> ptrace-abi.h along with some macros for what the fx_sw indices are (I guess
-> only 0 is defined now, but whatever) rather than relegate that info to
-> magic numbers in a comment and userland code doing manual arithmetic.
-> But even if you just put it locally in ptrace.c, it makes the ptrace
-> code less prone to possible arithmetic typos.
+No one's going to say we shouldn't shoot for high quality, but hiding
+things under a config option doesn't fix regressions, and making config
+options easier to enable doesn't introduce them, this is still
+ultimately a .config issue, not a new code regression.
 
-Agree. Will update it.
+But we've made too big a deal of this already; my interest in this bug
+is purely academic.  I think it should be solved, and preferably not by
+hiding the config option again, since that's totally irrelevant to the
+real issue.
 
-> 
-> 
-> > +	case PTRACE_GETXSTATEREGS:	/* Get the child extended state. */
-> > +		return copy_regset_to_user(child,
-> > +					   task_user_regset_view(current),
-> > +					   REGSET_XSTATE,
-> > +					   0, xstate_size,
-> > +					   datap);
-> > +
-> > +	case PTRACE_SETXSTATEREGS:	/* Set the child extended state. */
-> > +		return copy_regset_from_user(child,
-> > +					     task_user_regset_view(current),
-> > +					     REGSET_XSTATE,
-> > +					     0, xstate_size,
-> > +					     datap);
-> 
-> I think this is a poor choice of interface for this.  The other existing
-> PTRACE_GET*REGS calls use a fixed-size and fixed-layout block that is a
-> known constant in the userland ABI.  Here, userland has no way to know
-> xstate_size, so you are accessing a chunk of user memory where userland
-> doesn't really know how much you are going to access.
-> 
-> AFAICT from skimming the Intel manuals, there is no specified upper bound
-> on how big the xsave size might grow in future processors.  I would think
-> that it might be limited to a page, since there is no way to indicate a
-> partial copy to restart after a page fault.  So for unpinned access (such
-> as in user mode, or the user memory access in the signal frame setup), in
-> full-thrashing situations an xsave spanning multiple pages might thrash
-> totally and never make progress.  OTOH, the manual does not say that the
-> buffer can't span two pages today, just that it has to be 64-byte aligned.
-> So perhaps we already have that issue (for signal frame setup or for direct
-> user-space uses of xsave/xrstor) and it's just not really an issue that
-> matters (thrashing is thrashing--it's already pathological, so who cares if
-> it's literal livelock or not).  
-
-This issue is not new and gets handled in the same way as for existing
-fxsave/fxrstor, as they don't specify page alignment restrictions.
-
-> The upshot being, I don't think there is an
-> obvious upper bound that userland can presume statically here.
-> 
-> AFAICT, the only way for userland to guess xstate_size is to use cpuid
-> itself.  Even if that is actually reliable, or even if the kernel gave
-> userland some other means to know the kernel's xstate_size value, IMHO that
-> is a pretty dubious and error-prone way to construct the ABI.  Usually when
-> userland supplies a buffer whose size is not a permanent constant of the
-> ABI, userland says how big a buffer it's passing in.
-> 
-> The most obvious change would be just s/xstate_size/MIN(addr, xstate_size)/.
-> i.e. userland passes in the maximum size it wants in the other argument.
-
-Ok. I would like to enforce that "addr == xstate_size", so that we don't
-have to complicate the kernel implementation in trying to interpret what
-state the user knows based on the size passed by the user etc. User
-should use cpuid to get the size of the xstate buffer supported by the
-OS and processor. Kernel can check and throw an error with out silently
-corrupting the user who is not following the requirements.
-
-> But IMHO this is a fine opportunity not to add another one-off request for
-> a particular regset type, and then never add another one again.  Instead,
-> we can add a general-purpose request to handle any regset based on what is
-> already part of the userland ABI: the NT_* codes and the regset layouts
-> they imply on each machine.
-> 
-> e.g.
-> 	struct iovec iov = { mybuffer, mylength };
-> 	ret = ptrace(PTRACE_GETREGSET, NT_X86_XSTATE, &iov);
-> 
-> or something along those lines.  We could implement a generic
-> PTRACE_GETREGSET and PTRACE_SETREGSET in {,compat_}ptrace_request() on
-> CONFIG_HAVE_ARCH_TRACEHOOK machines.  
-> 
-> Then all any arch ever has to do in future is just define a new user_regset
-> in its user_regset_view for a new thing.
-> 
-> I'll make Oleg implement it if you don't do it yourself ;-).  We can all
-> work out together exactly what the interface should be, I don't have any
-> special fixed ideas.
-
-We probably have to extend regset infrastructure to track which NT_*
-types are part of PTRACE_[GET|SET]REGSET and which are not. Also, I am
-not sure if pushing the ptrace interpretation of the user pointer into
-the regset routines is a good idea. Potentially this regset get/set
-routines can be used by signal handling (in addition to kernel core dump
-etc) aswell and for compatibility reasons etc their format might be
-different from ptrace. Your idea sounds like a good idea in-general and
-if there is a clean interface, then I can work with Oleg to make this
-generic for future.
-
-thanks,
-suresh
-
+-- 
+Jesse Barnes, Intel Open Source Technology Center
