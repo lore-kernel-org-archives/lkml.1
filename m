@@ -1,56 +1,57 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932078Ab0BDI0E (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 03:26:04 -0500
-Received: from smtp.nokia.com ([192.100.122.233]:47257 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755686Ab0BDIZC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 03:25:02 -0500
-From: Samu Onkalo <samu.p.onkalo@nokia.com>
-To: eric.piel@tremplin-utc.net
-Cc: pavel@ucw.cz, daniel@caiaq.de, lm-sensors@lm-sensors.org,
-       linux-kernel@vger.kernel.org, Samu Onkalo <samu.p.onkalo@nokia.com>
-Subject: [PATCH 1/6] lis3: Add missing constants for 8bit device
-Date: Thu,  4 Feb 2010 10:24:03 +0200
-Message-Id: <1265271848-26559-2-git-send-email-samu.p.onkalo@nokia.com>
-X-Mailer: git-send-email 1.6.0.4
-In-Reply-To: <1265271848-26559-1-git-send-email-samu.p.onkalo@nokia.com>
-References: <1265271848-26559-1-git-send-email-samu.p.onkalo@nokia.com>
-X-OriginalArrivalTime: 04 Feb 2010 08:24:19.0461 (UTC) FILETIME=[7284D350:01CAA573]
-X-Nokia-AV: Clean
+	id S1756208Ab0BDIY6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 03:24:58 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43260 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755626Ab0BDIYx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 03:24:53 -0500
+Date: Thu, 4 Feb 2010 09:24:28 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Borislav Petkov <bp@amd64.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org, x86 <x86@kernel.org>
+Subject: Re: mtrr/state.c unused?
+Message-ID: <20100204082428.GA21938@elte.hu>
+References: <20100203202425.GC1367@aftab>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100203202425.GC1367@aftab>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Definitions for click were missing.
 
-Signed-off-by: Samu Onkalo <samu.p.onkalo@nokia.com>
----
- drivers/hwmon/lis3lv02d.h |   10 ++++++++++
- 1 files changed, 10 insertions(+), 0 deletions(-)
+* Borislav Petkov <bp@amd64.org> wrote:
 
-diff --git a/drivers/hwmon/lis3lv02d.h b/drivers/hwmon/lis3lv02d.h
-index e6a01f4..692e244 100644
---- a/drivers/hwmon/lis3lv02d.h
-+++ b/drivers/hwmon/lis3lv02d.h
-@@ -196,6 +196,16 @@ enum lis3lv02d_dd_src {
- 	DD_SRC_IA	= 0x40,
- };
- 
-+enum lis3lv02d_click_src_8b {
-+	CLICK_SINGLE_X	= 0x01,
-+	CLICK_DOUBLE_X	= 0x02,
-+	CLICK_SINGLE_Y	= 0x04,
-+	CLICK_DOUBLE_Y	= 0x08,
-+	CLICK_SINGLE_Z	= 0x10,
-+	CLICK_DOUBLE_Z	= 0x20,
-+	CLICK_IA	= 0x40,
-+};
-+
- struct axis_conversion {
- 	s8	x;
- 	s8	y;
--- 
-1.6.0.4
+> It looks like <arch/x86/kernel/cpu/mtrr/state.c> is not used by
+> anything in the kernel.
 
+Good catch - i dont see it used either. Mind sending a patch?
+
+> 
+> Besides cleanups, the only relevant patch in the git history is:
+> 
+> commit 2ec1df4130c60d1eb49dc0fa0ed15858fede6b05
+> Author: Thomas Gleixner <tglx@linutronix.de>
+> Date:   Thu Oct 11 11:16:28 2007 +0200
+> 
+>     i386: move kernel/cpu/mtrr
+> 
+> 
+> which adds it. Hmm...
+
+Might be a dead code artifact from the original unification.
+
+Thanks,
+
+	Ingo
