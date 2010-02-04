@@ -1,63 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757510Ab0BDSc6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 13:32:58 -0500
-Received: from mail.gmx.net ([213.165.64.20]:43217 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1757282Ab0BDSc5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 13:32:57 -0500
-X-Authenticated: #1587495
-X-Provags-ID: V01U2FsdGVkX1+SfF5oDmuSTHxUP49iuQWmiAGTX14OM49wOIzhJX
-	6xIlAcv744/vtp
-From: "Stefan Lippers-Hollmann" <s.L-H@gmx.de>
-To: hadi@cyberus.ca
-Subject: Re: patch net-restore-ip-source-validation.patch added to 2.6.32-stable tree
-Date: Thu, 4 Feb 2010 19:31:38 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.33-rc6-sidux-686; KDE/4.3.4; i686; ; )
-Cc: gregkh@suse.de, linux-kernel@vger.kernel.org, davem@davemloft.net,
-       stable@kernel.org
-References: <1265060041850@kroah.org> <201002041850.31310.s.L-H@gmx.de> <1265307247.4651.2.camel@bigi>
-In-Reply-To: <1265307247.4651.2.camel@bigi>
+	id S1757544Ab0BDSdd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 13:33:33 -0500
+Received: from mail-fx0-f220.google.com ([209.85.220.220]:43499 "EHLO
+	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757282Ab0BDSdb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 13:33:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=h8DC1l8ZOa8cJ3smJF4dR0eHz6ItYz7gX8bmIGQkOgprFtUbhRa74Q2oWWsOp39BsI
+         11L67gHzjdEKon2gyZxz+B5eK62mUT7BWpLno8Pu9F0f8KVRTvXypDbgD3x8Cz2DxY5u
+         McVdEMTgj8gnDD8Qxvh0sCSGmvm9umSKQa3AM=
+Message-ID: <4B6B12F2.2080102@gmail.com>
+Date: Thu, 04 Feb 2010 19:33:22 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.7) Gecko/20100111 SUSE/3.0.1-9.1 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+CC: Jiri Kosina <jkosina@suse.cz>, Antti Palosaari <crope@iki.fi>,
+       mchehab@infradead.org, linux-kernel@vger.kernel.org,
+       Mauro Carvalho Chehab <mchehab@redhat.com>, linux-media@vger.kernel.org,
+       Pekka Sarnila <sarnila@adit.fi>, linux-input@vger.kernel.org
+Subject: Re: [PATCH 1/1] media: dvb-usb/af9015, fix disconnection crashes
+References: <1264007972-6261-1-git-send-email-jslaby@suse.cz> <4B5CDB53.6030009@iki.fi> <4B5D6098.7010700@gmail.com> <4B5DDDFB.5020907@iki.fi> <alpine.LRH.2.00.1001261406010.15694@twin.jikos.cz> <4B6AA211.1060707@gmail.com> <20100204181404.GC10965@core.coreip.homeip.net>
+In-Reply-To: <20100204181404.GC10965@core.coreip.homeip.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <201002041931.40493.s.L-H@gmx.de>
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
-
-On Thursday 04 February 2010, jamal wrote:
-> On Thu, 2010-02-04 at 18:50 +0100, Stefan Lippers-Hollmann wrote:
-> > sysctl table check failed
+On 02/04/2010 07:14 PM, Dmitry Torokhov wrote:
+> On Thu, Feb 04, 2010 at 11:31:45AM +0100, Jiri Slaby wrote:
+>  +
+>> +static int dvb_event(struct hid_device *hdev, struct hid_field *field,
+>> +		struct hid_usage *usage, __s32 value)
+>> +{
+>> +	/* we won't get a "key up" event */
+>> +	if (value) {
+>> +		input_event(field->hidinput->input, usage->type, usage->code, 1);
+>> +		input_event(field->hidinput->input, usage->type, usage->code, 0);
 > 
-> Can you look at your patched source include/linux/sysctl.h
-> and see whether you see the following lines:
-> ----
->         NET_IPV4_CONF_ARP_ACCEPT=21,
->         NET_IPV4_CONF_ARP_NOTIFY=22,
->         NET_IPV4_CONF_ACCEPT_LOCAL=23,
->         NET_IPV4_CONF_SRC_VMARK=24,
->         __NET_IPV4_CONF_MAX
-> ---
+> Do not ever forget input_sync(), you need 2 of them here.
 > 
-> I have a feeling you are missing NET_IPV4_CONF_ACCEPT_LOCAL
+> With the latest changes to evdev, if you are using SIGIO you won't get
+> wioken up until EV_SYN/SYN_REPORT.
 
-Yes, you're 100% right - such a hunk is missing from queue-2.6.32 [1]
+HID layer syncs on its own. So the second is not needed. Why is needed
+the first?
 
-	http://git.kernel.org/?p=linux/kernel/git/stable/stable-queue.git;a=blob;f=queue-2.6.32/net-restore-ip-source-validation.patch;h=8cc634adad59c2f67626f853e0fcce5ca8f1d579;hb=HEAD
-
-and from 2.6.32.8-rc1 [2]
-
-	$ wget -qO- kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.32.8-rc1.gz | zgrep NET_IPV4_CONF_ACCEPT_LOCAL
-	$
-
-Regards
-	Stefan Lippers-Hollmann
-
-[1]	git://git.kernel.org/pub/scm/linux/kernel/git/stable/stable-queue.git
-[2]	[46/74] net: restore ip source validation, Message-Id: <20100204171514.263483751@linux.site>
+I.e. should there be one also in dvb_usb_read_remote_control?
