@@ -1,23 +1,22 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933356Ab0BDRaL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 12:30:11 -0500
-Received: from kroah.org ([198.145.64.141]:34815 "EHLO coco.kroah.org"
+	id S933508Ab0BDRaT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 12:30:19 -0500
+Received: from kroah.org ([198.145.64.141]:34808 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933295Ab0BDRWH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 12:22:07 -0500
+	id S933293Ab0BDRWG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 12:22:06 -0500
 X-Mailbox-Line: From linux@linux.site Thu Feb  4 09:15:13 2010
-Message-Id: <20100204171513.218726173@linux.site>
+Message-Id: <20100204171512.656175088@linux.site>
 User-Agent: quilt/0.47-14.9
-Date: Thu, 04 Feb 2010 09:12:15 -0800
+Date: Thu, 04 Feb 2010 09:12:14 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, gregkh@suse.de,
+       tglx@linutronix.de
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Octavian Purdila <opurdila@ixiacom.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [44/74] tcp: update the netstamp_needed counter when cloning sockets
+       Aaro Koskinen <aaro.koskinen@iki.fi>
+Subject: [43/74] clocksource: fix compilation if no GENERIC_TIME
 In-Reply-To: <20100204171850.GA16539@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -27,41 +26,46 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Octavian Purdila <opurdila@ixiacom.com>
+From: Aaro Koskinen <aaro.koskinen@iki.fi>
 
-[ Upstream commit 704da560c0a0120d8869187f511491a00951a1d3 ]
+commit a362c638bdf052bf424bce7645d39b101090f6ba upstream
 
-This fixes a netstamp_needed accounting issue when the listen socket
-has SO_TIMESTAMP set:
+Commit a9238ce3bb0fda6e760780b702c6cbd3793087d3 broke compilation on
+platforms that do not implement GENERIC_TIME (e.g. iop32x):
 
-    s = socket(AF_INET, SOCK_STREAM, 0);
-    setsockopt(s, SOL_SOCKET, SO_TIMESTAMP, 1); -> netstamp_needed = 1
-    bind(s, ...);
-    listen(s, ...);
-    s2 = accept(s, ...); -> netstamp_needed = 1
-    close(s2); -> netstamp_needed = 0
-    close(s); -> netstamp_needed = -1
+  kernel/time/clocksource.c: In function 'clocksource_register':
+  kernel/time/clocksource.c:556: error: implicit declaration of function 'clocksource_max_deferment'
 
-Signed-off-by: Octavian Purdila <opurdila@ixiacom.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Provide the implementation of clocksource_max_deferment() also for
+such platforms.
+
+Signed-off-by: Aaro Koskinen <aaro.koskinen@iki.fi>
+Cc: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/core/sock.c |    4 ++++
- 1 file changed, 4 insertions(+)
+ kernel/time/clocksource.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/net/core/sock.c
-+++ b/net/core/sock.c
-@@ -1181,6 +1181,10 @@ struct sock *sk_clone(const struct sock 
+--- a/kernel/time/clocksource.c
++++ b/kernel/time/clocksource.c
+@@ -413,8 +413,6 @@ void clocksource_touch_watchdog(void)
+ 	clocksource_resume_watchdog();
+ }
  
- 		if (newsk->sk_prot->sockets_allocated)
- 			percpu_counter_inc(newsk->sk_prot->sockets_allocated);
+-#ifdef CONFIG_GENERIC_TIME
+-
+ /**
+  * clocksource_max_deferment - Returns max time the clocksource can be deferred
+  * @cs:         Pointer to clocksource
+@@ -456,6 +454,8 @@ static u64 clocksource_max_deferment(str
+ 	return max_nsecs - (max_nsecs >> 5);
+ }
+ 
++#ifdef CONFIG_GENERIC_TIME
 +
-+		if (sock_flag(newsk, SOCK_TIMESTAMP) ||
-+		    sock_flag(newsk, SOCK_TIMESTAMPING_RX_SOFTWARE))
-+			net_enable_timestamp();
- 	}
- out:
- 	return newsk;
+ /**
+  * clocksource_select - Select the best clocksource available
+  *
 
 
