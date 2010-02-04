@@ -1,36 +1,39 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932572Ab0BDVnm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 16:43:42 -0500
-Received: from mail.bits-goa.ac.in ([210.212.160.113]:51255 "EHLO
-	warrior.bits-goa.ac.in" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756513Ab0BDVnj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 16:43:39 -0500
-Date: Fri, 5 Feb 2010 03:11:05 +0530 (IST)
-From: DEEPAK AGRAWAL <f2006075@bits-goa.ac.in>
-Reply-To: Canadian Agent <trevorallan24@gala.net>
-Message-ID: <1547015320.312161265319665934.JavaMail.root@warrior.bits-goa.ac.in>
-Subject: GOOD NEWS!!!
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-X-Mailer: Zimbra 6.0.1_GA_1816.RHEL5_64 (zclient/6.0.1_GA_1816.RHEL5_64)
-To: undisclosed-recipients:;
+	id S932668Ab0BDVph (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 16:45:37 -0500
+Received: from wine.ocn.ne.jp ([122.1.235.145]:50833 "EHLO smtp.wine.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757544Ab0BDVpf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 16:45:35 -0500
+To: opurdila@ixiacom.com, davem@davemloft.net
+Cc: amwang@redhat.com, linux-kernel@vger.kernel.org, eric.dumazet@gmail.com,
+       linux-rdma@vger.kernel.org, netdev@vger.kernel.org,
+       nhorman@tuxdriver.com, linux-sctp@vger.kernel.org
+Subject: Re: [RFC Patch] net: reserve ports for applications using fixed port numbers
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+References: <201002031312.48531.opurdila@ixiacom.com>
+	<201002041444.01897.opurdila@ixiacom.com>
+	<20100204.094110.64247447.davem@davemloft.net>
+	<201002042015.51092.opurdila@ixiacom.com>
+In-Reply-To: <201002042015.51092.opurdila@ixiacom.com>
+Message-Id: <201002050645.CEC95380.MLOtOVFFHSFOQJ@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.51 PL2]
+X-Accept-Language: ja,en,zh
+Date: Fri, 5 Feb 2010 06:45:28 +0900
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-
-Your e-mail address has made you, 
-a winner of 2,500,000GBP in the Canadian Lottery Promo.
-Contact our British Agent for more details,
- 
-Mr. Trevor Allan e-mail:
-trevorallan50@gala.net , Tel:+447031979972.
-
-Thank You.
-Lotto Co-ordinator (Dennis McCloud) 
- 
+Octavian Purdila wrote:
+> 
+> int inet_is_reserved_local_port(int port)
+> {
+> 	if (test_bit(port, reserved_ports))
+> 		return 1;
+> 	return 0;
+> }
+> 
+Above check is exactly what I'm doing in the LSM hook.
