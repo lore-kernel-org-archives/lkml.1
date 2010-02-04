@@ -1,53 +1,70 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932981Ab0BDAWS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 19:22:18 -0500
-Received: from wolverine02.qualcomm.com ([199.106.114.251]:11045 "EHLO
-	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932096Ab0BDAWP (ORCPT
+	id S932997Ab0BDAW2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 19:22:28 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:62541 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932329Ab0BDAW0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 19:22:15 -0500
-X-IronPort-AV: E=McAfee;i="5400,1158,5881"; a="33403407"
-Message-ID: <4B6A131B.1070005@codeaurora.org>
-Date: Wed, 03 Feb 2010 16:21:47 -0800
-From: Abhijeet Dharmapurikar <adharmap@codeaurora.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+	Wed, 3 Feb 2010 19:22:26 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:x-system-of-record;
+	b=UjQrPvzm7YKMZCxt2WRNs2us3woFS4Q+0hY+lT4HDw5bSv06V8L/kvdzFDdqXh7q+
+	un/yxAtmOAgAPW0mqPkDw==
 MIME-Version: 1.0
-To: Catalin Marinas <catalin.marinas@arm.com>
-CC: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-       Tony Lindgren <tony@atomide.com>, Larry Bassel <lbassel@quicinc.com>,
-       Daniel Walker <dwalker@codeaurora.org>,
-       Russell King <linux@arm.linux.org.uk>, linux-arm-msm@vger.kernel.org
-Subject: Re: [RFC PATCH] ARM: Change the mandatory barriers implementation
-References: <20100203161434.15912.42697.stgit@pc1117.cambridge.arm.com>
-In-Reply-To: <20100203161434.15912.42697.stgit@pc1117.cambridge.arm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <1265241793.24455.1647.camel@laptop>
+References: <1265129772.24455.329.camel@laptop>
+	 <bd4cb8901002030522s6306fdf4qbf4eb48c0674d980@mail.gmail.com>
+	 <1265205361.24455.533.camel@laptop>
+	 <bd4cb8901002030607y519c191av733231ba2aec2e9c@mail.gmail.com>
+	 <1265206784.24455.568.camel@laptop>
+	 <bd4cb8901002030630naaa83c1j397759750007ae4c@mail.gmail.com>
+	 <1265208012.24455.592.camel@laptop>
+	 <1265241010.24455.1627.camel@laptop>
+	 <bd4cb8901002031551h3f1edb2bj706c768344fcd93f@mail.gmail.com>
+	 <1265241793.24455.1647.camel@laptop>
+Date: Thu, 4 Feb 2010 01:22:19 +0100
+Message-ID: <bd4cb8901002031622q42e3dba3y76168a71cfb75165@mail.gmail.com>
+Subject: Re: [RFC][PATCH] perf_events, x86: PEBS support
+From: Stephane Eranian <eranian@google.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
+       "Metzger, Markus T" <markus.t.metzger@intel.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Robert Richter <robert.richter@amd.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Jamie Iles <jamie.iles@picochip.com>, Paul Mundt <lethal@linux-sh.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, perfmon2-devel@lists.sf.net
+Content-Type: text/plain; charset=UTF-8
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The mandatory barriers (mb, rmb, wmb) are used even on uniprocessor
-> systems for things like ordering Normal Non-cacheable memory accesses
-> with DMA transfer (via Device memory writes). The current implementation
-> uses dmb() for mb() and friends but this is not sufficient. The DMB only
-> ensures the ordering of accesses with regards to a single observer
-> accessing the same memory. If a DMA transfer is started by a write to
-> Device memory, the data to be transfered may not reach the main memory
-> (even if mapped as Normal Non-cacheable) before the device receives the
-> notification to begin the transfer. The only barrier that would help in
-> this situation is DSB which would completely drain the write buffers.
-
-On ARMv7, DMB guarantees that all accesses prior to DMB are observed by 
-an observer if that observer sees any accesses _after_ the DMB. In this 
-case, since DMA engine observes a write to itself( It is being written 
-to and hence must observe the write) it should also see the writes to 
-the buffers. A dmb() after the writes to buffer and before write to DMA 
-engine should suffice.
-
-Moreover an mb() could be in places where accesses to ARM's Device type 
-memory need ordering and are 1kb apart. Such usages of mb() would result 
-in a dsb() and could cause performance problems.
-
-Since you mention the write buffers this probably applies only to ARMv6. 
-Correct me here, I think that dmb on ARMv6 should suffice too.
+On Thu, Feb 4, 2010 at 1:03 AM, Peter Zijlstra <peterz@infradead.org> wrote:
+> On Thu, 2010-02-04 at 00:51 +0100, Stephane Eranian wrote:
+>> On Thu, Feb 4, 2010 at 12:50 AM, Peter Zijlstra <peterz@infradead.org> wrote:
+>> > On Wed, 2010-02-03 at 15:40 +0100, Peter Zijlstra wrote:
+>> >>
+>> >> If only they would reset the counter on overflow instead of on record,
+>> >> that would solve quite a few issues I imagine.
+>> >
+>> > So I tried enabling the regular PMC overflow interrupt and reprogramming
+>> > the counter from that, but touching the counter seems to destroy the
+>> > PEBS assist, so much for that idea.
+>> >
+>> Yes, you have to leave the INT bit off, otherwise you get an
+>> interrupt for each overflow, thus you lose the buffer advantage.
+>
+> Well sure, but that's not the point. I was thinking that if we need to
+> do single event pebs anyway, we might as well try to reprogram on the
+> PMC overflow interrupt instead of on the PEBS overflow and curb some of
+> that drift.
+>
+With INT on, you get the interrupt on the first overflow and incur the
+regular skid. There is nothing you can do to make PEBS better from
+SW. The HW has to improve. I have reported those issues to Intel
+a long time ago. They understand them quite well and I am hopeful
+things will improve over time.
