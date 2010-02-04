@@ -1,18 +1,18 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933118Ab0BDXbT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 18:31:19 -0500
+	id S933412Ab0BDXeh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 18:34:37 -0500
 Received: from mail-fx0-f220.google.com ([209.85.220.220]:52390 "EHLO
 	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758631Ab0BDXbQ (ORCPT
+	with ESMTP id S933112Ab0BDXbW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 18:31:16 -0500
+	Thu, 4 Feb 2010 18:31:22 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=im1575SNRxl3mcvDXEMDP/uC0SIINvAih46uVQFcmm3b6zneEHv2UEoJsbCu93zDei
-         6jk75wuMUJ3fcbA7o8F7de1zEoHDAvt/NZdhP1O+tGKezP+9j+4eZ0rsYyyFy1k8rSrN
-         zapxgGjZHr45kU7kW5ySyUpctrocI7CbOe80M=
+        b=PFiqMOrwTxN5GsDkz8yr23iBU8HRHyLkYlP32u1fqBB4OuK2lbuLB0PwAdaeIIlwsf
+         a7iasZln7Q4IJtfCWxnKU/vo03pmslB7iziRhxqDC/jj4p0u9dorydTXidKY59t4eOOc
+         nmoTGUvbza3anpsfxKNG29SA4aoAkjEAWet20=
 From: Maxim Levitsky <maximlevitsky@gmail.com>
 To: David Woodhouse <dwmw2@infradead.org>
 Cc: Artem Bityutskiy <dedekind1@gmail.com>,
@@ -21,9 +21,9 @@ Cc: Artem Bityutskiy <dedekind1@gmail.com>,
        Alex Dubov <oakad@yahoo.com>, joern <joern@logfs.org>,
        Thomas Gleixner <tglx@linutronix.de>,
        Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: [PATCH 01/17] MTD: create lockless versions of {get,put}_mtd_device This will be used to resolve deadlock in block translation layer.
-Date: Fri,  5 Feb 2010 01:30:41 +0200
-Message-Id: <1265326257-4446-2-git-send-email-maximlevitsky@gmail.com>
+Subject: [PATCH 03/17] blktrans: track open and close calls.
+Date: Fri,  5 Feb 2010 01:30:43 +0200
+Message-Id: <1265326257-4446-4-git-send-email-maximlevitsky@gmail.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1265326257-4446-1-git-send-email-maximlevitsky@gmail.com>
 References: <1265326257-4446-1-git-send-email-maximlevitsky@gmail.com>
@@ -31,124 +31,79 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-These functions can be used as long as we don't need access to global mtd table, but have
-a pointer to the mtd device.
+This patch adds tracking for open and close calls.
+Now trans ->open and ->release are never called twise in a row
+->release is also called once before mtd device disappers
+
+Proper locking will be added in follow up patch
 
 Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
 ---
- drivers/mtd/mtdcore.c   |   60 ++++++++++++++++++++++++++++++----------------
- include/linux/mtd/mtd.h |    3 +-
- 2 files changed, 41 insertions(+), 22 deletions(-)
+ drivers/mtd/mtd_blkdevs.c    |   17 +++++++++++++++++
+ include/linux/mtd/blktrans.h |    1 +
+ 2 files changed, 18 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/mtd/mtdcore.c b/drivers/mtd/mtdcore.c
-index c356c0a..3bdb7e8 100644
---- a/drivers/mtd/mtdcore.c
-+++ b/drivers/mtd/mtdcore.c
-@@ -453,27 +453,38 @@ struct mtd_info *get_mtd_device(struct mtd_info *mtd, int num)
- 			ret = NULL;
- 	}
+diff --git a/drivers/mtd/mtd_blkdevs.c b/drivers/mtd/mtd_blkdevs.c
+index 93c87af..9ac8f22 100644
+--- a/drivers/mtd/mtd_blkdevs.c
++++ b/drivers/mtd/mtd_blkdevs.c
+@@ -128,6 +128,9 @@ static int blktrans_open(struct block_device *bdev, fmode_t mode)
+ 	if (!get_mtd_device(NULL, dev->mtd->index))
+ 		goto out;
  
--	if (!ret)
--		goto out_unlock;
--
--	if (!try_module_get(ret->owner))
--		goto out_unlock;
--
--	if (ret->get_device) {
--		err = ret->get_device(ret);
--		if (err)
--			goto out_put;
-+	if (!ret) {
-+		ret = ERR_PTR(err);
++	if (dev->open++)
 +		goto out;
- 	}
++
+ 	if (!try_module_get(tr->owner))
+ 		goto out_tr;
  
--	ret->usecount++;
-+	err = __get_mtd_device(ret);
-+	if (err)
-+		ret = ERR_PTR(err);
-+out:
- 	mutex_unlock(&mtd_table_mutex);
- 	return ret;
-+}
+@@ -153,6 +156,9 @@ static int blktrans_release(struct gendisk *disk, fmode_t mode)
+ 	struct mtd_blktrans_ops *tr = dev->tr;
+ 	int ret = 0;
  
--out_put:
--	module_put(ret->owner);
--out_unlock:
--	mutex_unlock(&mtd_table_mutex);
--	return ERR_PTR(err);
++	if (--dev->open)
++		return 0;
 +
-+int __get_mtd_device(struct mtd_info *mtd)
-+{
-+	int err;
-+
-+	if (!try_module_get(mtd->owner))
-+		return -ENODEV;
-+
-+	if (mtd->get_device) {
-+
-+		err = mtd->get_device(mtd);
-+
-+		if (err) {
-+			module_put(mtd->owner);
-+			return err;
-+		}
+ 	if (tr->release)
+ 		ret = tr->release(dev);
+ 
+@@ -304,6 +310,7 @@ int add_mtd_blktrans_dev(struct mtd_blktrans_dev *new)
+ 	if (new->readonly)
+ 		set_disk_ro(gd, 1);
+ 
++	new->open = 0;
+ 	add_disk(gd);
+ 
+ 	return 0;
+@@ -333,6 +340,16 @@ int del_mtd_blktrans_dev(struct mtd_blktrans_dev *old)
+ 	/* Stop the thread */
+ 	kthread_stop(old->thread);
+ 
++	if (old->open) {
++		if (old->tr->release)
++			old->tr->release(old);
++		put_mtd_device(old->mtd);
 +	}
-+	mtd->usecount++;
-+	return 0;
++
++	/* From now on, no calls into trans can be made */
++	/* Mtd device will be gone real soon now */
++	old->mtd = NULL;
++
+ 	blk_cleanup_queue(old->rq);
+ 	return 0;
  }
- 
- /**
-@@ -524,14 +535,19 @@ out_unlock:
- 
- void put_mtd_device(struct mtd_info *mtd)
- {
--	int c;
--
- 	mutex_lock(&mtd_table_mutex);
--	c = --mtd->usecount;
-+	__put_mtd_device(mtd);
-+	mutex_unlock(&mtd_table_mutex);
-+
-+}
-+
-+void __put_mtd_device(struct mtd_info *mtd)
-+{
-+	--mtd->usecount;
-+	BUG_ON(mtd->usecount < 0);
-+
- 	if (mtd->put_device)
- 		mtd->put_device(mtd);
--	mutex_unlock(&mtd_table_mutex);
--	BUG_ON(c < 0);
- 
- 	module_put(mtd->owner);
- }
-@@ -569,7 +585,9 @@ EXPORT_SYMBOL_GPL(add_mtd_device);
- EXPORT_SYMBOL_GPL(del_mtd_device);
- EXPORT_SYMBOL_GPL(get_mtd_device);
- EXPORT_SYMBOL_GPL(get_mtd_device_nm);
-+EXPORT_SYMBOL_GPL(__get_mtd_device);
- EXPORT_SYMBOL_GPL(put_mtd_device);
-+EXPORT_SYMBOL_GPL(__put_mtd_device);
- EXPORT_SYMBOL_GPL(register_mtd_user);
- EXPORT_SYMBOL_GPL(unregister_mtd_user);
- EXPORT_SYMBOL_GPL(default_mtd_writev);
-diff --git a/include/linux/mtd/mtd.h b/include/linux/mtd/mtd.h
-index 0f32a9b..662d747 100644
---- a/include/linux/mtd/mtd.h
-+++ b/include/linux/mtd/mtd.h
-@@ -290,8 +290,9 @@ extern int add_mtd_device(struct mtd_info *mtd);
- extern int del_mtd_device (struct mtd_info *mtd);
- 
- extern struct mtd_info *get_mtd_device(struct mtd_info *mtd, int num);
-+extern int __get_mtd_device(struct mtd_info *mtd);
-+extern void __put_mtd_device(struct mtd_info *mtd);
- extern struct mtd_info *get_mtd_device_nm(const char *name);
--
- extern void put_mtd_device(struct mtd_info *mtd);
- 
- 
+diff --git a/include/linux/mtd/blktrans.h b/include/linux/mtd/blktrans.h
+index a4b3928..507f7b2 100644
+--- a/include/linux/mtd/blktrans.h
++++ b/include/linux/mtd/blktrans.h
+@@ -24,6 +24,7 @@ struct mtd_blktrans_dev {
+ 	int devnum;
+ 	unsigned long size;
+ 	int readonly;
++	int open;
+ 	struct gendisk *disk;
+ 	struct task_struct *thread;
+ 	struct request_queue *rq;
 -- 
 1.6.3.3
 
