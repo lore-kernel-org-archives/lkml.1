@@ -1,55 +1,115 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758322Ab0BDUN7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 15:13:59 -0500
-Received: from acsinet11.oracle.com ([141.146.126.233]:61598 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753791Ab0BDUN5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 15:13:57 -0500
-Message-ID: <4B6B2A27.9070600@oracle.com>
-Date: Thu, 04 Feb 2010 12:12:23 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+	id S933221Ab0BDUXb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 15:23:31 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51548 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751633Ab0BDUXa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 15:23:30 -0500
+Date: Thu, 4 Feb 2010 21:22:54 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Alex Deucher <alexdeucher@gmail.com>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, Dave Airlie <airlied@linux.ie>,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       dri-devel@lists.sf.net
+Subject: Re: hung bootup with "drm/radeon/kms: move radeon KMS on/off switch
+ out of staging."
+Message-ID: <20100204202254.GA24716@elte.hu>
+References: <20100204170826.GA16397@elte.hu>
+ <20100204173602.GA19855@srcf.ucam.org>
+ <20100204175445.GB27361@elte.hu>
+ <20100204175928.GA20595@srcf.ucam.org>
+ <20100204181218.GA6175@elte.hu>
+ <a728f9f91002041030o7c8d38edxe573bc0a1327d79@mail.gmail.com>
+ <20100204190649.GB6665@elte.hu>
+ <a728f9f91002041118m6415844fp1740f18fdc1c9757@mail.gmail.com>
+ <20100204193232.GD6665@elte.hu>
+ <20100204115316.69beee75@jbarnes-piketon>
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
-Subject: [PATCH -next] pci hotplug: fix ibmphp build error
-References: <20100204185736.6628ab9a.sfr@canb.auug.org.au>
-In-Reply-To: <20100204185736.6628ab9a.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt354.oracle.com [141.146.40.154]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090202.4B6B2A7F.005D:SCFMA4539814,ss=1,fgs=0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100204115316.69beee75@jbarnes-piketon>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Add header file to fix build error:
+* Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
 
-drivers/pci/hotplug/ibmphp_hpc.c:135: error: implicit declaration of function 'init_MUTEX'
-drivers/pci/hotplug/ibmphp_hpc.c:136: error: implicit declaration of function 'init_MUTEX_LOCKED'
-drivers/pci/hotplug/ibmphp_hpc.c:797: error: implicit declaration of function 'down'
-drivers/pci/hotplug/ibmphp_hpc.c:807: error: implicit declaration of function 'up'
+> On Thu, 4 Feb 2010 20:32:32 +0100
+> Ingo Molnar <mingo@elte.hu> wrote:
+> > Nobody has reacted to my related boot hang bugreport yet - and it's
+> > detailed and fully reproducible (so i can test any proposed fixes as
+> > well in short order). I.e. my limited testing has triggered two
+> > separate bugs in the same driver - and this will show up in -rc7.
+> > 
+> > It might be all OK and no-one else will see trouble. Or past patterns
+> > might repeat themselves and i might simply be an early bird for
+> > trouble to come.
+> > 
+> > My (oft repeated) point is that adding new sub-features to existing
+> > drivers is not what we do in late -rc's: there's simply not enough
+> > time to shake out bugs/regressions in them.
+> > 
+> > We introduce new functionality to existing drivers in the merge
+> > window - in the two weeks following a stable kernel's release.
+> 
+> This is the .config issue right?  It doesn't sound like the bug is new, 
+> you're just seeing now it because of the way you run tests.  It shouldn't 
+> affect any more or fewer users than it did before, and reverting the "move 
+> radeon KMS out of staging" won't fix the bug at all or prevent anyone from 
+> seeing it.  People using KMS will still use KMS and people without it 
+> won't, [...]
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
-  drivers/pci/hotplug/ibmphp_hpc.c |    1 +
-  1 file changed, 1 insertion(+)
+I think you are missing my point. My point is very simple: existing non-KMS 
+users of CONFIG_DRM_RADON=y (a pre-existing driver) might turn on the new 
+sub-feature (CONFIG_DRM_RADEON_KMS=y), in the expectation that this is a safe 
+addition to his currently well-working driver.
 
---- linux-next-20100204.orig/drivers/pci/hotplug/ibmphp_hpc.c
-+++ linux-next-20100204/drivers/pci/hotplug/ibmphp_hpc.c
-@@ -35,6 +35,7 @@
-  #include <linux/init.h>
-  #include <linux/mutex.h>
-  #include <linux/sched.h>
-+#include <linux/semaphore.h>
-  #include <linux/kthread.h>
-  #include "ibmphp.h"
-  
+( I have to confess i do that all the time for drivers that work well for me, 
+  and if it pops up in a late -rc i sure expect it to be safe to enable. I 
+  dont even read the help text most of the time - if the single-line summary 
+  sounds useful i enable it. Especially if the Kconfig help entry says it's 
+  safe with a new distro, it's not CONFIG_EXPERIMENTAL, it's not marked 
+  CONFIG_BROKEN, it's not in CONFIG_STAGING, etc. )
+
+That action might hang or crash his kernel, and if that user then reports:
+
+  " Hey, -rc7 just hung on me after enabling this new .config option it 
+    offered for the radeon driver i am using, please add this to the list of 
+    regressions. "
+
+is this really the right kind of reply:
+
+ " Since we moved it from drivers/staging/ to drivers/ this hang you are 
+   seeing is technically not a regression, we might or might not fix it. "
+
+?
+
+I doubt the user would be overly enthusiastic about that kind of reply ;-)
+
+Guys, you should really _think_ about it a minute and realize what the 
+purpose of a regression policy is.
+
+It's not to be a PITA to subsystem maintainers, it's not an annoyance just to 
+keep you from doing cool stuff. It's not something which you should try to 
+lawyer your way out of via an as narrow interpretation as you can.
+
+A regression policy is something that generally helps the quality of Linux, 
+so it's worth interpreting broadly and generously in spirit not just in 
+letter. If there's a single most prominent complaint i hear about the 
+upstream kernel is that it breaks too often. (right after 'it doesnt support 
+my graphics hardware' - so i sure can relate to the pragmatic reasons of 
+pushing KMS strongly!)
+
+If i run into a crash and a hang, you can bet that others will as well.
+
+	Ingo
