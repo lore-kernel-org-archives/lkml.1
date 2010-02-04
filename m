@@ -1,55 +1,62 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932817Ab0BDTru (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 14:47:50 -0500
-Received: from www.tglx.de ([62.245.132.106]:51756 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932572Ab0BDTrt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 14:47:49 -0500
-Date: Thu, 4 Feb 2010 20:46:19 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-cc: Andi Kleen <andi@firstfloor.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] HPET: Drop WARN_ON for mismatch on HPET CMP readback
-In-Reply-To: <1265312442.16916.588.camel@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.1002042043140.3006@localhost.localdomain>
-References: <20100204191112.GA10135@basil.fritz.box>  <1265311335.16916.586.camel@localhost.localdomain>  <20100204193224.GA8957@basil.fritz.box> <1265312442.16916.588.camel@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1758371Ab0BDTtH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 14:49:07 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:43676 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758155Ab0BDTtF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 14:49:05 -0500
+Date: Thu, 4 Feb 2010 17:48:51 -0200
+From: Arnaldo Carvalho de Melo <acme@infradead.org>
+To: Kirill Smelkov <kirr@landau.phys.spbu.ru>
+Cc: Mike Galbraith <efault@gmx.de>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 8/9] perf annotate: fix it for non-prelinked *.so
+Message-ID: <20100204194851.GA12121@ghostprotocols.net>
+References: <1265223128-11786-1-git-send-email-acme@infradead.org> <1265223128-11786-8-git-send-email-acme@infradead.org> <1265265106.6364.5.camel@marge.simson.net> <20100204193403.GA22781@landau.phys.spbu.ru>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100204193403.GA22781@landau.phys.spbu.ru>
+X-Url: http://acmel.wordpress.com
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 4 Feb 2010, Pallipadi, Venkatesh wrote:
-
-> On Thu, 2010-02-04 at 11:32 -0800, Andi Kleen wrote:
-> > On Thu, Feb 04, 2010 at 11:22:15AM -0800, Pallipadi, Venkatesh wrote:
-> > > On Thu, 2010-02-04 at 11:11 -0800, Andi Kleen wrote:
-> > > >  HPET: Drop WARN_ON for mismatch on HPET CMP readback
-> > > >     
-> > > >     At least one Intel chipset seems to always return a constant value
-> > > >     when reading back the HPET CMP register. This triggers the WARN_ON_ONCE
-> > > >     on each boot.
-> > > 
-> > > I don't know of chipset returning a constant value. Which chipset is
-> > > this one?
+Em Thu, Feb 04, 2010 at 10:34:04PM +0300, Kirill Smelkov escreveu:
+> On Thu, Feb 04, 2010 at 07:31:46AM +0100, Mike Galbraith wrote:
+> > Monkey see monkey do.
 > > 
-> > Ibex Peak. That is I'm not sure it's fully constant, but at least
-> > it's always the same value on the HPET read triggering on boot.
+> > perf tools: fix perf top module symbol annotation.
+> >  		"objdump --start-address=0x%016Lx "
+> >  			 "--stop-address=0x%016Lx -dS %s",
+> > -		map->unmap_ip(map, sym->start),
+> > -		map->unmap_ip(map, sym->end), path);
+> > +		map__rip_2objdump(map, sym->start),
+> > +		map__rip_2objdump(map, sym->end), path);
 > 
-> OK. Yes. Ibexpeak is the same problem as ICH9, with reads not returning
-> the most recent write.
+> If I recall correctly, that's not enough.
+> 
+> The problem is top code is also wrong at mapping objdump addresses to
+> absolute ip. That is another part of builtin-top.c which does
+> map->unmap_ip(), and I've already suggested a fix back at holidays:
+> 
+> http://marc.info/?l=linux-kernel&m=126295508002536&w=2
 
-OTOH, none of the modern chipsets needs (hopefully) the read back to
-avoid that missing interrupt issue which we saw on ATI.
+Yeah, I was looking at Mike's report about 'perf annotate' not working
+with modules, debugged, wrote a patch that looed at the ELF header obj
+type as the key to apply or not the unmap_ip operation and when it was
+working I thought I saw that patch somewhere, looked at yours and
+applied it instead.
 
-So we could quite well do without the read back operation and save a
-fair amount of cpu cycles that way. We can make it mandatory on those
-ATI chips and have a command line option which helps us to debug
-fallout or new problem cases.
+Then I was testing your subsequent patches but had to call it a day,
+sent what I had that at least fixed 'annotate' and Mike took it from
+there.
 
-Thanks,
-
-	tglx
+Looking at this now.
+ 
+- Arnaldo
