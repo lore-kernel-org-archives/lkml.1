@@ -1,22 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757070Ab0BDRh6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 12:37:58 -0500
-Received: from kroah.org ([198.145.64.141]:34582 "EHLO coco.kroah.org"
+	id S1756556Ab0BDRid (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 12:38:33 -0500
+Received: from kroah.org ([198.145.64.141]:34569 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932772Ab0BDRV3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 12:21:29 -0500
-X-Mailbox-Line: From linux@linux.site Thu Feb  4 09:14:49 2010
-Message-Id: <20100204171449.412633582@linux.site>
+	id S1758482Ab0BDRV1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 12:21:27 -0500
+X-Mailbox-Line: From linux@linux.site Thu Feb  4 09:14:48 2010
+Message-Id: <20100204171448.330762047@linux.site>
 User-Agent: quilt/0.47-14.9
-Date: Thu, 04 Feb 2010 09:11:36 -0800
+Date: Thu, 04 Feb 2010 09:11:34 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [05/74] firewire: ohci: fix crashes with TSB43AB23 on 64bit systems
+Subject: [03/74] mm: add new read_cache_page_gfp() helper function
 In-Reply-To: <20100204171850.GA16539@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -26,68 +25,189 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+From: Linus Torvalds <torvalds@linux-foundation.org>
 
-commit 7a481436787cbc932af6c407b317ac603969a242 upstream.
+commit 0531b2aac59c2296570ac52bfc032ef2ace7d5e1 upstream.
 
-Unsurprisingly, Texas Instruments TSB43AB23 exhibits the same behaviour
-as TSB43AB22/A in dual buffer IR DMA mode:  If descriptors are located
-at physical addresses above the 31 bit address range (2 GB), the
-controller will overwrite random memory.  With luck, this merely
-prevents video reception.  With only a little less luck, the machine
-crashes.
+It's a simplified 'read_cache_page()' which takes a page allocation
+flag, so that different paths can control how aggressive the memory
+allocations are that populate a address space.
 
-We use the same workaround here as with TSB43AB22/A:  Switch off the
-dual buffer capability flag and use packet-per-buffer IR DMA instead.
-Another possible workaround would be to limit the coherent DMA mask to
-31 bits.
+In particular, the intel GPU object mapping code wants to be able to do
+a certain amount of own internal memory management by automatically
+shrinking the address space when memory starts getting tight.  This
+allows it to dynamically use different memory allocation policies on a
+per-allocation basis, rather than depend on the (static) address space
+gfp policy.
 
-In Linux 2.6.33, this change serves effectively only as documentation
-since dual buffer mode is not used for any controller anymore.  But
-somebody might want to re-enable it in the future to make use of
-features of dual buffer DMA that are not available in packet-per-buffer
-mode.
+The actual new function is a one-liner, but re-organizing the helper
+functions to the point where you can do this with a single line of code
+is what most of the patch is all about.
 
-In Linux 2.6.32 and older, this update is vital for anyone with this
-controller, more than 2 GB RAM, a 64 bit kernel, and FireWire video or
-audio applications.
-
-We have at least four reports:
-http://bugzilla.kernel.org/show_bug.cgi?id=13808
-http://marc.info/?l=linux1394-user&m=126154279004083
-https://bugzilla.redhat.com/show_bug.cgi?id=552142
-http://marc.info/?l=linux1394-user&m=126432246128386
-
-Reported-by: Paul Johnson
-Reported-by: Ronneil Camara
-Reported-by: G Zornetzer
-Reported-by: Mark Thompson
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Tested-by: Chris Wilson <chris@chris-wilson.co.uk>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/firewire/ohci.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ include/linux/pagemap.h |    2 
+ mm/filemap.c            |  100 ++++++++++++++++++++++++++++++++----------------
+ 2 files changed, 70 insertions(+), 32 deletions(-)
 
---- a/drivers/firewire/ohci.c
-+++ b/drivers/firewire/ohci.c
-@@ -2412,6 +2412,7 @@ static void ohci_pmac_off(struct pci_dev
+--- a/include/linux/pagemap.h
++++ b/include/linux/pagemap.h
+@@ -253,6 +253,8 @@ extern struct page * read_cache_page_asy
+ extern struct page * read_cache_page(struct address_space *mapping,
+ 				pgoff_t index, filler_t *filler,
+ 				void *data);
++extern struct page * read_cache_page_gfp(struct address_space *mapping,
++				pgoff_t index, gfp_t gfp_mask);
+ extern int read_cache_pages(struct address_space *mapping,
+ 		struct list_head *pages, filler_t *filler, void *data);
  
- #define PCI_VENDOR_ID_AGERE		PCI_VENDOR_ID_ATT
- #define PCI_DEVICE_ID_AGERE_FW643	0x5901
-+#define PCI_DEVICE_ID_TI_TSB43AB23	0x8024
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -1655,14 +1655,15 @@ EXPORT_SYMBOL(generic_file_readonly_mmap
+ static struct page *__read_cache_page(struct address_space *mapping,
+ 				pgoff_t index,
+ 				int (*filler)(void *,struct page*),
+-				void *data)
++				void *data,
++				gfp_t gfp)
+ {
+ 	struct page *page;
+ 	int err;
+ repeat:
+ 	page = find_get_page(mapping, index);
+ 	if (!page) {
+-		page = page_cache_alloc_cold(mapping);
++		page = __page_cache_alloc(gfp | __GFP_COLD);
+ 		if (!page)
+ 			return ERR_PTR(-ENOMEM);
+ 		err = add_to_page_cache_lru(page, mapping, index, GFP_KERNEL);
+@@ -1682,31 +1683,18 @@ repeat:
+ 	return page;
+ }
  
- static int __devinit pci_probe(struct pci_dev *dev,
- 			       const struct pci_device_id *ent)
-@@ -2477,7 +2478,8 @@ static int __devinit pci_probe(struct pc
- #if !defined(CONFIG_X86_32)
- 	/* dual-buffer mode is broken with descriptor addresses above 2G */
- 	if (dev->vendor == PCI_VENDOR_ID_TI &&
--	    dev->device == PCI_DEVICE_ID_TI_TSB43AB22)
-+	    (dev->device == PCI_DEVICE_ID_TI_TSB43AB22 ||
-+	     dev->device == PCI_DEVICE_ID_TI_TSB43AB23))
- 		ohci->use_dualbuffer = false;
- #endif
+-/**
+- * read_cache_page_async - read into page cache, fill it if needed
+- * @mapping:	the page's address_space
+- * @index:	the page index
+- * @filler:	function to perform the read
+- * @data:	destination for read data
+- *
+- * Same as read_cache_page, but don't wait for page to become unlocked
+- * after submitting it to the filler.
+- *
+- * Read into the page cache. If a page already exists, and PageUptodate() is
+- * not set, try to fill the page but don't wait for it to become unlocked.
+- *
+- * If the page does not get brought uptodate, return -EIO.
+- */
+-struct page *read_cache_page_async(struct address_space *mapping,
++static struct page *do_read_cache_page(struct address_space *mapping,
+ 				pgoff_t index,
+ 				int (*filler)(void *,struct page*),
+-				void *data)
++				void *data,
++				gfp_t gfp)
++
+ {
+ 	struct page *page;
+ 	int err;
+ 
+ retry:
+-	page = __read_cache_page(mapping, index, filler, data);
++	page = __read_cache_page(mapping, index, filler, data, gfp);
+ 	if (IS_ERR(page))
+ 		return page;
+ 	if (PageUptodate(page))
+@@ -1731,8 +1719,67 @@ out:
+ 	mark_page_accessed(page);
+ 	return page;
+ }
++
++/**
++ * read_cache_page_async - read into page cache, fill it if needed
++ * @mapping:	the page's address_space
++ * @index:	the page index
++ * @filler:	function to perform the read
++ * @data:	destination for read data
++ *
++ * Same as read_cache_page, but don't wait for page to become unlocked
++ * after submitting it to the filler.
++ *
++ * Read into the page cache. If a page already exists, and PageUptodate() is
++ * not set, try to fill the page but don't wait for it to become unlocked.
++ *
++ * If the page does not get brought uptodate, return -EIO.
++ */
++struct page *read_cache_page_async(struct address_space *mapping,
++				pgoff_t index,
++				int (*filler)(void *,struct page*),
++				void *data)
++{
++	return do_read_cache_page(mapping, index, filler, data, mapping_gfp_mask(mapping));
++}
+ EXPORT_SYMBOL(read_cache_page_async);
+ 
++static struct page *wait_on_page_read(struct page *page)
++{
++	if (!IS_ERR(page)) {
++		wait_on_page_locked(page);
++		if (!PageUptodate(page)) {
++			page_cache_release(page);
++			page = ERR_PTR(-EIO);
++		}
++	}
++	return page;
++}
++
++/**
++ * read_cache_page_gfp - read into page cache, using specified page allocation flags.
++ * @mapping:	the page's address_space
++ * @index:	the page index
++ * @gfp:	the page allocator flags to use if allocating
++ *
++ * This is the same as "read_mapping_page(mapping, index, NULL)", but with
++ * any new page allocations done using the specified allocation flags. Note
++ * that the Radix tree operations will still use GFP_KERNEL, so you can't
++ * expect to do this atomically or anything like that - but you can pass in
++ * other page requirements.
++ *
++ * If the page does not get brought uptodate, return -EIO.
++ */
++struct page *read_cache_page_gfp(struct address_space *mapping,
++				pgoff_t index,
++				gfp_t gfp)
++{
++	filler_t *filler = (filler_t *)mapping->a_ops->readpage;
++
++	return wait_on_page_read(do_read_cache_page(mapping, index, filler, NULL, gfp));
++}
++EXPORT_SYMBOL(read_cache_page_gfp);
++
+ /**
+  * read_cache_page - read into page cache, fill it if needed
+  * @mapping:	the page's address_space
+@@ -1750,18 +1797,7 @@ struct page *read_cache_page(struct addr
+ 				int (*filler)(void *,struct page*),
+ 				void *data)
+ {
+-	struct page *page;
+-
+-	page = read_cache_page_async(mapping, index, filler, data);
+-	if (IS_ERR(page))
+-		goto out;
+-	wait_on_page_locked(page);
+-	if (!PageUptodate(page)) {
+-		page_cache_release(page);
+-		page = ERR_PTR(-EIO);
+-	}
+- out:
+-	return page;
++	return wait_on_page_read(read_cache_page_async(mapping, index, filler, data));
+ }
+ EXPORT_SYMBOL(read_cache_page);
  
 
 
