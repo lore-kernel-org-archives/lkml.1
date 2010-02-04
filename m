@@ -1,173 +1,70 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757246Ab0BDHtL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 02:49:11 -0500
-Received: from mail-iw0-f201.google.com ([209.85.223.201]:40581 "EHLO
-	mail-iw0-f201.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756670Ab0BDHtG convert rfc822-to-8bit (ORCPT
+	id S1757256Ab0BDH4t (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 02:56:49 -0500
+Received: from straum.hexapodia.org ([64.81.70.185]:28490 "EHLO
+	straum.hexapodia.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754725Ab0BDH4q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 02:49:06 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=VdHGNwzHXp7zzqP0SUOvvZKyf0coX93ZIS2N7Ozmv1SCpjKTtQknE2qi7bhfx/fSUG
-         p5ja8bnunJrLMQ1ovk/BwC6w1E8CFes8pCDcWgVpLLFHddnkXuEN4BqcGBOEImeW7Wh+
-         56nnIDxNlU4GMNSAossRwf4O58JewYCxwnurc=
-MIME-Version: 1.0
-In-Reply-To: <20100204073643.GA31291@elte.hu>
-References: <alpine.DEB.2.00.1002010215530.15366@skynet.skynet.ie>
-	 <alpine.DEB.2.00.1002010253120.15366@skynet.skynet.ie>
-	 <20100202081727.GA6788@elte.hu>
-	 <21d7e9971002020035v22318962w6412ccd8d93449da@mail.gmail.com>
-	 <20100202154656.GD27314@elte.hu>
-	 <21d7e9971002021234y275fae02k410af92bb16fee73@mail.gmail.com>
-	 <20100204062619.GA29154@elte.hu>
-	 <21d7e9971002032239l5238f1fy33cafbd1ecc4b2bb@mail.gmail.com>
-	 <20100204073643.GA31291@elte.hu>
-Date: Thu, 4 Feb 2010 17:49:03 +1000
-Message-ID: <21d7e9971002032349j3b06e6b7m6e662351a14c4698@mail.gmail.com>
-Subject: Re: [crash, PATCH] Revert "drm/radeon/kms: move radeon KMS on/off 
-	switch out of staging."
-From: Dave Airlie <airlied@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Dave Airlie <airlied@linux.ie>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Thu, 4 Feb 2010 02:56:46 -0500
+Date: Wed, 3 Feb 2010 23:56:42 -0800
+From: Andy Isaacson <adi@hexapodia.org>
+To: linux-kernel@vger.kernel.org, dri-devel@lists.sourceforge.net,
+       Tejun Heo <tj@kernel.org>
+Subject: Re: [2.6.33-rc6-git regression] idr fix breaks Xorg
+Message-ID: <20100204075642.GA28286@hexapodia.org>
+References: <20100204012837.GC538@hexapodia.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100204012837.GC538@hexapodia.org>
+User-Agent: Mutt/1.4.2.3i
+X-GPG-Fingerprint: 1914 0645 FD53 C18E EEEF C402 4A69 B1F3 68D2 A63F
+X-GPG-Key-URL: http://web.hexapodia.org/~adi/gpg.txt
+X-Domestic-Surveillance: money launder bomb tax evasion
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 4, 2010 at 5:36 PM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Dave Airlie <airlied@gmail.com> wrote:
->
->> >> On Wed, Feb 3, 2010 at 1:46 AM, Ingo Molnar <mingo@elte.hu> wrote:
->> >> >
->> >> > * Dave Airlie <airlied@gmail.com> wrote:
->> >> >
->> >> >> On Tue, Feb 2, 2010 at 6:17 PM, Ingo Molnar <mingo@elte.hu> wrote:
->> >> >> >
->> >> >> > * Dave Airlie <airlied@linux.ie> wrote:
->> >> >> >
->> >> >> >> > Hi Linus,
->> >> >> >> >
->> >> >> >> > Please pull the 'drm-linus' branch from
->> >> >> >> > ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git drm-linus
->> >> >> >> >
->> >> >> >>
->> >> >> >> I've also added an oops fix I seem to lose off my radar to this tree.
->> >> >> >>
->> >> >> >> commit 17aafccab4352b422aa01fa6ebf82daff693a5b3
->> >> >> >> Author: Michel D??nzer <daenzer@vmware.com>
->> >> >> >> Date: ? Fri Jan 22 09:20:00 2010 +0100
->> >> >> >>
->> >> >> >> ? ? drm/radeon/kms: Fix oops after radeon_cs_parser_init() failure.
->> >> >> >
->> >> >>
->> >> >> Wierd this suggests something else is wrong on that machine can you get me
->> >> >> the whole dmesg? I'm guessing some iommu or swiotlb issue.
->> >> >
->> >> > This box has no known hardware or software problems, just this week it booted
->> >> > in excess of 1000 kernels so i'd exclude that angle for now.
->> >> >
->> >> > I have bisected the crash back to the DRM tree and the crash went away with
->> >> > the Kconfig revert i applied - and it got fixed by Jerome's patch. I posted
->> >> > my config and i posted the relevant boot log as well. Find below the full
->> >> > bootlog as well with vanilla -git (ab65832) and the config. (i dont think it
->> >> > matters)
->> >> >
->> >> >> I've asked Jerome to fix the oops, but really anyone with an old .config
->> >> >> won't get hit by this, and we've booted this on quite a lot of machines at
->> >> >> this point.
->> >> >
->> >> > I dont see the commit in yesterday's linux-next. It has very fresh
->> >> > timestamps:
->> >> >
->> >> > ?commit f71d0187987e691516cd10c2702f002c0e2f0edc
->> >> > ?Author: ? ? Dave Airlie <airlied@redhat.com>
->> >> > ?AuthorDate: Mon Feb 1 11:35:47 2010 +1000
->> >> > ?Commit: ? ? Dave Airlie <airlied@redhat.com>
->> >> > ?CommitDate: Mon Feb 1 11:35:47 2010 +1000
->> >> >
->> >> > What kind of widespread testing could this commit have gotten in the less
->> >> > than 24 hours before it hit mainline?
->> >> >
->> >>
->> >> Its shipping in a major distro by default, its planned to be shipped in an
->> >> even more major distro. Its been boot tested on 1000s of machines by 1000s
->> >> of ppl.
->> >
->> > Well but that's not the precise tree you sent to Linus, is it?
->>
->> It pretty much is. If I could blame your crash on any of the recent patches
->> I would but its something new and unfun. [...]
->
-> You dont seem to realize the plain and simple fact that the bug (and some
-> other bug) was obscure before because this particular KMS aspect of the
-> radeon driver was in drivers/staging/, and it became more prominent via this
-> post-rc6 commit:
->
->  | From f71d0187987e691516cd10c2702f002c0e2f0edc Mon Sep 17 00:00:00 2001
->  | From: Dave Airlie <airlied@redhat.com>
->  | Date: Mon, 1 Feb 2010 11:35:47 +1000
->  | Subject: [PATCH] drm/radeon/kms: move radeon KMS on/off switch out of staging.
->  |
->  | We are happy enough that the KMS driver is stable enough for enough people
->  | for the kms enable/disable to leave staging. Distros can now contemplate
->  | turning this on.
->  |
->  | Signed-off-by: Dave Airlie <airlied@redhat.com>
->  | ---
->  |  drivers/gpu/drm/Kconfig |    2 ++
->  |  drivers/staging/Kconfig |    2 --
->  |  2 files changed, 2 insertions(+), 2 deletions(-)
->
-> I never claimed (and still dont claim) that the bug is 'new' per se, so why
-> do you keep beating down on that straw man argument? I said it in my very
-> first mail that this bug got brought upon us by the Kconfig commit above:
->
->> > It's the moving of radeom KMS out of staging after -rc6 that causes it,
->> > because it brought it into the scope of my testing:
->> >
->> >   f71d018: drm/radeon/kms: move radeon KMS on/off switch out of staging.
->> >
->> > So at least on this box it's clearly not ready for mainline enablement
->> > yet.
->
-> I dont mind reporting bugs and testing patches (as i did), all i said is that
-> from a QA angle it's somewhat late to do that in -rc7. (It's not even a
-> completely new driver either, which people would know to stay away from -
-> it's a new config option of an existing driver, so i'd expect many people to
-> turn it on when they see it in the oldconfig - even though it's default-off.)
->
-> You made the bug more prominent by moving it into the driver proper, after
-> -rc6, and while i dont mind reporting and working on bugs, your constant
-> denial is somewhat counter-productive, as (beyond the waste of time on these
-> emails) it suggests that we might see repeat incidents of this kind in the
-> future.
->
-> Anyway, with two bugs in a row this commit is clearly too problematic for me
-> so i have reverted f71d018 from -tip.
->
+On Wed, Feb 03, 2010 at 05:28:37PM -0800, Andy Isaacson wrote:
+> On my Dell Latitude e4300 commit 859ddf0974 ("idr: fix a critical
+> misallocation bug") causes Xorg to segfault with the following
+> backtrace:
+> 
+> ...
+> (II) intel(0): Initializing HW Cursor
+> (II) intel(0): No memory allocations
+> 
+> Backtrace:
+> 0: /usr/bin/X11/X(xorg_backtrace+0x26) [0x4f00c6]
+> 1: /usr/bin/X11/X(xf86SigHandler+0x41) [0x4852c1]
+> 2: /lib/libc.so.6 [0x7fbdad071530]
+> 3: /usr/lib/xorg/modules/drivers//intel_drv.so [0x7fbdab8a1cbd]
+> 4: /usr/lib/xorg/modules/drivers//intel_drv.so(gen4_render_state_init+0x416) [0x
+> 7fbdab8a2a36]
+> 5: /usr/lib/xorg/modules/drivers//intel_drv.so [0x7fbdab87d3e8]
+> 6: /usr/lib/xorg/modules/drivers//intel_drv.so [0x7fbdab87e6fb]
+> 7: /usr/bin/X11/X(AddScreen+0x1d4) [0x4337c4]
+> 8: /usr/bin/X11/X(InitOutput+0x76f) [0x46f27f]
+> 9: /usr/bin/X11/X(main+0x1fe) [0x433ece]
+> 10: /lib/libc.so.6(__libc_start_main+0xfd) [0x7fbdad05cabd]
+> 11: /usr/bin/X11/X [0x433509]
+> Saw signal 11.  Server aborting.
 
-I haven't denied anything, I'm merely stating one bug on one machine isn't
-the end of the known world.
+strace perhaps shows some more illuminating results; I suspect the
+SEGV is due to a failed ioctl.  (This is a different run than the above,
+obviously.)
 
-the Kconfig clearly states you need to review your userspace to use this code,
-so if people are turning things on blindly they are going to get problems. This
-is true for all KMS drivers and will remain true. allytesconfig isn't something
-that anyone runs in a non-test configuration. The only place you can get the
-correct userspace is via a distro like F12 or Ubuntu in which case you've
-already booted their kernel and not seen the problems, or have built all
-the userspace anyways.
+1265267921.566623 ioctl(8, 0xc020645e, 0x7fffe2196980) = 0
+1265267921.566944 ioctl(8, 0x400c645f, 0x7fffe21969a0) = 0
+1265267921.567272 brk(0x20e7000)        = 0x20e7000
+1265267921.567602 ioctl(8, 0x40046460, 0x7fffe21969a0) = 0
+1265267921.567922 ioctl(8, 0xc010645b, 0x7fffe2196990) = 0
+1265267921.568269 ioctl(8, 0xc020645e, 0x7fffe2196980) = -1 EBADF (Bad file descriptor)
+1265267921.568649 write(2, "../../../libdrm/intel/intel_bufmgr_gem.c:637: Error mapping buffer 1073741824 (gen4 WM state): Bad file descriptor .\n", 117) = 117
+1265267921.569039 --- SIGSEGV (Segmentation fault) @ 0 (0) ---
 
-Jerome's patch fixes the oops part of the problem doesn't it? I'll be
-pushing that out as soon
-as I get some time to review it and fix the warning you saw. Look x86 has
-broken a lot more shit at later rc times so please step down from that
-high horse
-please already.
+The full strace is at
+http://web.hexapodia.org/~adi/bugs/201002-xorg-segv/Xorg.strace
 
-Dave.
+-andy
