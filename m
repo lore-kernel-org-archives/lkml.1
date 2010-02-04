@@ -1,115 +1,100 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753527Ab0BDGjm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 01:39:42 -0500
-Received: from mail-iw0-f201.google.com ([209.85.223.201]:63664 "EHLO
-	mail-iw0-f201.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753186Ab0BDGjl (ORCPT
+	id S1753841Ab0BDGqU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 01:46:20 -0500
+Received: from norsk5.dsl.xmission.com ([166.70.24.44]:50789 "EHLO
+	master.douglaskthompson.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753485Ab0BDGqS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 01:39:41 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=wZTN6CwEuiBUMAbqhZiHtrWkbKADyNNTDwrdi98Y6apHcNtapwmMOidzG4nV4JKtSQ
-         Cg0eriIMJeCtV/5ll5DU6e1MYFUY0xLEEH/ubobqUOwGAAak0dq4Od8Y2xO3OVSoj1tg
-         e/FjlTRbgUyWdSCwpm6meIB/Raq9u5YZbR7kA=
+	Thu, 4 Feb 2010 01:46:18 -0500
+Date: Wed, 03 Feb 2010 23:46:17 -0700
+From: dougthompson@xmission.com
+To: ptyser@xes-inc.com, bluesmoke-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: [PATCH 3/7] edac: mpc85xx mask ecc syndrome correctly
+Message-ID: <4b6a6d39.J71G67KApK17nfMk%dougthompson@xmission.com>
+User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
-In-Reply-To: <20100204062619.GA29154@elte.hu>
-References: <alpine.DEB.2.00.1002010215530.15366@skynet.skynet.ie>
-	 <alpine.DEB.2.00.1002010253120.15366@skynet.skynet.ie>
-	 <20100202081727.GA6788@elte.hu>
-	 <21d7e9971002020035v22318962w6412ccd8d93449da@mail.gmail.com>
-	 <20100202154656.GD27314@elte.hu>
-	 <21d7e9971002021234y275fae02k410af92bb16fee73@mail.gmail.com>
-	 <20100204062619.GA29154@elte.hu>
-Date: Thu, 4 Feb 2010 16:39:40 +1000
-Message-ID: <21d7e9971002032239l5238f1fy33cafbd1ecc4b2bb@mail.gmail.com>
-Subject: Re: [crash, PATCH] Revert "drm/radeon/kms: move radeon KMS on/off 
-	switch out of staging."
-From: Dave Airlie <airlied@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Dave Airlie <airlied@linux.ie>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> On Wed, Feb 3, 2010 at 1:46 AM, Ingo Molnar <mingo@elte.hu> wrote:
->> >
->> > * Dave Airlie <airlied@gmail.com> wrote:
->> >
->> >> On Tue, Feb 2, 2010 at 6:17 PM, Ingo Molnar <mingo@elte.hu> wrote:
->> >> >
->> >> > * Dave Airlie <airlied@linux.ie> wrote:
->> >> >
->> >> >> > Hi Linus,
->> >> >> >
->> >> >> > Please pull the 'drm-linus' branch from
->> >> >> > ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git drm-linus
->> >> >> >
->> >> >>
->> >> >> I've also added an oops fix I seem to lose off my radar to this tree.
->> >> >>
->> >> >> commit 17aafccab4352b422aa01fa6ebf82daff693a5b3
->> >> >> Author: Michel D??nzer <daenzer@vmware.com>
->> >> >> Date: ? Fri Jan 22 09:20:00 2010 +0100
->> >> >>
->> >> >> ? ? drm/radeon/kms: Fix oops after radeon_cs_parser_init() failure.
->> >> >
->> >>
->> >> Wierd this suggests something else is wrong on that machine can you get me
->> >> the whole dmesg? I'm guessing some iommu or swiotlb issue.
->> >
->> > This box has no known hardware or software problems, just this week it booted
->> > in excess of 1000 kernels so i'd exclude that angle for now.
->> >
->> > I have bisected the crash back to the DRM tree and the crash went away with
->> > the Kconfig revert i applied - and it got fixed by Jerome's patch. I posted
->> > my config and i posted the relevant boot log as well. Find below the full
->> > bootlog as well with vanilla -git (ab65832) and the config. (i dont think it
->> > matters)
->> >
->> >> I've asked Jerome to fix the oops, but really anyone with an old .config
->> >> won't get hit by this, and we've booted this on quite a lot of machines at
->> >> this point.
->> >
->> > I dont see the commit in yesterday's linux-next. It has very fresh
->> > timestamps:
->> >
->> > ?commit f71d0187987e691516cd10c2702f002c0e2f0edc
->> > ?Author: ? ? Dave Airlie <airlied@redhat.com>
->> > ?AuthorDate: Mon Feb 1 11:35:47 2010 +1000
->> > ?Commit: ? ? Dave Airlie <airlied@redhat.com>
->> > ?CommitDate: Mon Feb 1 11:35:47 2010 +1000
->> >
->> > What kind of widespread testing could this commit have gotten in the less
->> > than 24 hours before it hit mainline?
->> >
->>
->> Its shipping in a major distro by default, its planned to be shipped in an
->> even more major distro. Its been boot tested on 1000s of machines by 1000s
->> of ppl.
->
-> Well but that's not the precise tree you sent to Linus, is it?
+From: Peter Tyser <ptyser@xes-inc.com>
 
-It pretty much is. If I could blame your crash on any of the recent
-patches I would
-but its something new and unfun. Most of the fixes in the Linus tree
-are directly
-from fixes to Fedora/Ubuntu bug reports.
+With a 64-bit wide data bus only the lowest 8-bits of the ECC syndrome
+are relevant.  With a 32-bit wide data bus only the lowest 16-bits are
+relevant on most architectures.
 
-even after reviewing the dmesg I can't see why its failing on that system,
+Without this change, the ECC syndrome displayed can be mildly confusing,
+eg:
 
-If you could build 2.6.32 on that machine with the staging flag
-enabled and see if
-it works it would at least tell us if it is something in recent times
-or just something
-thats always been there.
+  EDAC MPC85xx MC1: syndrome: 0x25252525
 
-Unless some other option in make allyesconfig is conflicting and we've never hit
-it before. Fedora is close to allyesconfig but not pathalogical like
-allyesconfig is.
+When in reality the ECC syndrome is 0x25.
 
-Dave.
+A variety of Freescale manual's say a variety of different things about
+how to decode the CAPTURE_ECC (syndrome) register.  I don't have a
+system with a 32-bit bus to test on, but I believe the change is
+correct.  It'd be good to get an ACK from someone at Freescale
+about this change though.
+
+Signed-off-by: Peter Tyser <ptyser@xes-inc.com>
+Signed-off-by: Doug Thompson <dougthompson@xmission.com>
+---
+ drivers/edac/mpc85xx_edac.c |   12 +++++++++++-
+ drivers/edac/mpc85xx_edac.h |    3 +++
+ 2 files changed, 14 insertions(+), 1 deletions(-)
+
+Index: linux-2.6.33-rc4/drivers/edac/mpc85xx_edac.c
+===================================================================
+--- linux-2.6.33-rc4.orig/drivers/edac/mpc85xx_edac.c	2010-01-13 00:16:00.000000000 -0700
++++ linux-2.6.33-rc4/drivers/edac/mpc85xx_edac.c	2010-01-13 00:16:06.000000000 -0700
+@@ -672,6 +672,7 @@ static void mpc85xx_mc_check(struct mem_
+ {
+ 	struct mpc85xx_mc_pdata *pdata = mci->pvt_info;
+ 	struct csrow_info *csrow;
++	u32 bus_width;
+ 	u32 err_detect;
+ 	u32 syndrome;
+ 	u32 err_addr;
+@@ -692,6 +693,15 @@ static void mpc85xx_mc_check(struct mem_
+ 	}
+ 
+ 	syndrome = in_be32(pdata->mc_vbase + MPC85XX_MC_CAPTURE_ECC);
++
++	/* Mask off appropriate bits of syndrome based on bus width */
++	bus_width = (in_be32(pdata->mc_vbase + MPC85XX_MC_DDR_SDRAM_CFG) &
++			DSC_DBW_MASK) ? 32 : 64;
++	if (bus_width == 64)
++		syndrome &= 0xff;
++	else
++		syndrome &= 0xffff;
++
+ 	err_addr = in_be32(pdata->mc_vbase + MPC85XX_MC_CAPTURE_ADDRESS);
+ 	pfn = err_addr >> PAGE_SHIFT;
+ 
+@@ -707,7 +717,7 @@ static void mpc85xx_mc_check(struct mem_
+ 	mpc85xx_mc_printk(mci, KERN_ERR, "Capture Data Low: %#8.8x\n",
+ 			  in_be32(pdata->mc_vbase +
+ 				  MPC85XX_MC_CAPTURE_DATA_LO));
+-	mpc85xx_mc_printk(mci, KERN_ERR, "syndrome: %#8.8x\n", syndrome);
++	mpc85xx_mc_printk(mci, KERN_ERR, "syndrome: %#2.2x\n", syndrome);
+ 	mpc85xx_mc_printk(mci, KERN_ERR, "err addr: %#8.8x\n", err_addr);
+ 	mpc85xx_mc_printk(mci, KERN_ERR, "PFN: %#8.8x\n", pfn);
+ 
+Index: linux-2.6.33-rc4/drivers/edac/mpc85xx_edac.h
+===================================================================
+--- linux-2.6.33-rc4.orig/drivers/edac/mpc85xx_edac.h	2010-01-13 00:15:28.000000000 -0700
++++ linux-2.6.33-rc4/drivers/edac/mpc85xx_edac.h	2010-01-13 00:16:06.000000000 -0700
+@@ -48,6 +48,9 @@
+ #define DSC_MEM_EN	0x80000000
+ #define DSC_ECC_EN	0x20000000
+ #define DSC_RD_EN	0x10000000
++#define DSC_DBW_MASK	0x00180000
++#define DSC_DBW_32	0x00080000
++#define DSC_DBW_64	0x00000000
+ 
+ #define DSC_SDTYPE_MASK		0x07000000
+ 
