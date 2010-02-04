@@ -1,96 +1,68 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757279Ab0BDH6k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 02:58:40 -0500
-Received: from cantor.suse.de ([195.135.220.2]:34907 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754725Ab0BDH6i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 02:58:38 -0500
-From: Lubos Lunak <l.lunak@suse.cz>
-To: David Rientjes <rientjes@google.com>
-Subject: Re: Improving OOM killer
-Date: Thu, 4 Feb 2010 08:58:32 +0100
-User-Agent: KMail/1.9.10
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>, Rik van Riel <riel@redhat.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Nick Piggin <npiggin@suse.de>, Jiri Kosina <jkosina@suse.cz>
-References: <201002012302.37380.l.lunak@suse.cz> <201002032355.01260.l.lunak@suse.cz> <alpine.DEB.2.00.1002031600490.27918@chino.kir.corp.google.com>
-In-Reply-To: <alpine.DEB.2.00.1002031600490.27918@chino.kir.corp.google.com>
+	id S932072Ab0BDH6s (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 02:58:48 -0500
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:33421 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757242Ab0BDH6p convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 02:58:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=wuh/YzdTM+h/9Vkh8WrAdGFMaOAt6jTSWwe+WT/JjXn58Cn16Cusc9aSE0LcRXMhp3
+         AYXvqTlLtzEoVwsNJrKXQvTmLxE4QMKkPx35V7QaL7gsE641UuZq0b5rVCGx3gge0vm4
+         Sfm/z0ctVP4gs1LWl9jJj+lqjP4vG0tfRKpf4=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <201002040858.33046.l.lunak@suse.cz>
+In-Reply-To: <20100203233643.GI19355@outflux.net>
+References: <20100202055354.GV19355@outflux.net>
+	 <4B67C2EA.705@schaufler-ca.com> <20100202202054.GW19355@outflux.net>
+	 <20100202212510.GG32305@us.ibm.com>
+	 <alpine.LRH.2.00.1002030859220.14592@tundra.namei.org>
+	 <20100203233643.GI19355@outflux.net>
+Date: Thu, 4 Feb 2010 08:58:43 +0100
+Message-ID: <81b0412b1002032358j163d2e3fm2c0353ba3ec2842a@mail.gmail.com>
+Subject: Re: [PATCH v2 1/2] syslog: distinguish between /proc/kmsg and 
+	syscalls
+From: Alex Riesen <raa.lkml@gmail.com>
+To: Kees Cook <kees.cook@canonical.com>
+Cc: James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serue@us.ibm.com>,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       linux-security-module@vger.kernel.org, Eric Paris <eparis@redhat.com>,
+       David Howells <dhowells@redhat.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Simon Kagstrom <simon.kagstrom@netinsight.net>,
+       David Woodhouse <David.Woodhouse@intel.com>,
+       Robin Getz <rgetz@analog.com>, Greg Kroah-Hartman <gregkh@suse.de>,
+       Paul Moore <paul.moore@hp.com>,
+       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+       Stephen Smalley <sds@tycho.nsa.gov>,
+       Etienne Basset <etienne.basset@numericable.fr>,
+       "David P. Quigley" <dpquigl@tycho.nsa.gov>,
+       LKLM <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 04 of February 2010, David Rientjes wrote:
-> On Wed, 3 Feb 2010, Lubos Lunak wrote:
-> >  As far as I'm concerned, this is a huge improvement over the current
-> > code (and, incidentally :), quite close to what I originally wanted). I'd
-> > be willing to test it in few real-world desktop cases if you provide a
-> > patch.
->
-> There're some things that still need to be worked out,
+On Thu, Feb 4, 2010 at 00:36, Kees Cook <kees.cook@canonical.com> wrote:
+> @@ -888,12 +889,16 @@ error:
+>  /**
+>  * cap_syslog - Determine whether syslog function is permitted
+>  * @type: Function requested
+> + * @from_file: Whether this request came from an open file (i.e. /proc)
+>  *
+>  * Determine whether the current process is permitted to use a particular
+>  * syslog function, returning 0 if permission is granted, -ve if not.
+>  */
+> -int cap_syslog(int type)
+> +int cap_syslog(int type, bool from_file)
+>  {
+> +       /* /proc/kmsg can open be opened by CAP_SYS_ADMIN */
+> +       if (type != 1 && from_file)
+> +               return 0;
 
- Ok. Just please do not let the perfect stand in the way of the good for way 
-too long.
-
-> Do you have any comments about the forkbomb detector or its threshold that
-> I've put in my heuristic?  I think detecting these scenarios is still an
-> important issue that we need to address instead of simply removing it from
-> consideration entirely.
-
- I think before finding out the answer it should be first figured out what the 
-question is :). Besides the vague "forkbomb" description I still don't know 
-what realistic scenarios this is supposed to handle. IMO trying to cover 
-intentional abuse is a lost fight, so I think the purpose of this code should 
-be just to handle cases when there's a mistake leading to relatively fast 
-spawning of children of a specific parent that'll lead to OOM. The shape of 
-the children subtree doesn't matter, it can be either a parent with many 
-direct children, or children being created recursively, I think any case is 
-possible here. A realistic example would be e.g. by mistake 
-typing 'make -j22' instead of 'make -j2' and overloading the machine by too 
-many g++ instances. That would be actually a non-trivial tree of children, 
-with recursive make and sh processes in it.
-
- A good way to detect this would be checking in badness() if the process has 
-any children with relatively low CPU and real time values (let's say 
-something less than a minute). If yes, the badness score should also account 
-for all these children, recursively. I'm not sure about the exact formula, 
-just summing up the memory usage like it is done now does not fit your 0-1000 
-score idea, and it's also wrong because it doesn't take sharing of memory 
-into consideration (e.g. a KDE app with several kdelibs-based children could 
-achieve a massive score here because of extensive sharing, even though the 
-actual memory usage increase caused by them could be insignificant). I don't 
-know kernel internals, so I don't know how feasible it would be, but one 
-naive idea would be to simply count how big portion of the total memory all 
-these considered processes occupy.
-
- This indeed would not handle the case when a tree of processes would slowly 
-leak, for example there being a bug in Apache and all the forked children of 
-the master process leaking memory equally, but none of the single children 
-leaking enough to score more than a single unrelated innocent process. Here I 
-question how realistic such scenario actually would be, and mainly the actual 
-possibility of detecting such case. I do not see how code could distinguish 
-this from the case of using Konsole or XTerm to launch a number of unrelated 
-KDE/X applications each of which would occupy a considerable amount of 
-memory. Here clearly killing the Konsole/XTerm and all the spawned 
-applications with it is incorrect, so with no obvious offender the OOM killer 
-would simply have to pick something. And since you now probably feel the urge 
-to point out oom_adj again, I want to point out again that it's not a very 
-good solution for the desktop and that Konsole/XTerm should not have such 
-protection, unless the user explicitly does it themselves - e.g. Konsole can 
-be set to infinite scrollback, so when accidentally running something that 
-produces a huge amount of output Konsole actually could be the only right 
-process to kill. So I think the case of slowly leaking group of children 
-cannot be reasonably solved in code.
-
--- 
- Lubos Lunak
- openSUSE Boosters team, KDE developer
- l.lunak@suse.cz , l.lunak@kde.org
+"can open be opened"?
