@@ -1,123 +1,218 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758394Ab0BDQjM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 11:39:12 -0500
-Received: from mho-02-ewr.mailhop.org ([204.13.248.72]:59466 "EHLO
-	mho-02-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758351Ab0BDQjJ (ORCPT
+	id S1758447Ab0BDQkG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 11:40:06 -0500
+Received: from mail-fx0-f220.google.com ([209.85.220.220]:61323 "EHLO
+	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758325Ab0BDQkE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 11:39:09 -0500
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 72.249.23.125
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX19OaB4O9ekLqFgVjL0sXpCS
-Date: Thu, 4 Feb 2010 08:39:30 -0800
-From: Tony Lindgren <tony@atomide.com>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Abhijeet Dharmapurikar <adharmap@codeaurora.org>,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-       Larry Bassel <lbassel@quicinc.com>,
-       Daniel Walker <dwalker@codeaurora.org>,
-       Russell King <linux@arm.linux.org.uk>, linux-arm-msm@vger.kernel.org
-Subject: Re: [RFC PATCH] ARM: Change the mandatory barriers implementation
-Message-ID: <20100204163929.GR22747@atomide.com>
-References: <4B6A131B.1070005@codeaurora.org>
- <1265289330.28746.58.camel@pc1117.cambridge.arm.com>
+	Thu, 4 Feb 2010 11:40:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=rZYwV92ktZ3Z/CzSEgn5YGiXD7myInK1TScYUca8iXG0sKNhP8BsNS1tnnsN99mWKD
+         agwurTiHB4s14c9pAdc3KT5zk0SmGeqTS5Cr5Ueq75YdClXNTjq+2iIiq6YQYAdyf4xE
+         jYp5u53o5AMgdYw8r7MzNW+po644jJ52KefHE=
+Message-ID: <4B6AF85C.6050104@gmail.com>
+Date: Thu, 04 Feb 2010 11:39:56 -0500
+From: Chandra Shekhar Sah <edu4madh@gmail.com>
+User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.5; en-US; rv:1.9.1.7) Gecko/20100111 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1265289330.28746.58.camel@pc1117.cambridge.arm.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Grant Grundler <grundler@google.com>
+CC: Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: port multiplier problem
+References: <4B5885F7.2020007@gmail.com> <4B679EA9.6030203@kernel.org>	 <4B6833DD.1020001@gmail.com> <4B683581.7070708@kernel.org>	 <4B683DEF.3000302@gmail.com>	 <da824cf31002020844r12cada26x57f96b0aa24b59c6@mail.gmail.com>	 <4B686B2B.2080406@gmail.com>	 <da824cf31002021104v72efcd05ne639091042d5999d@mail.gmail.com>	 <4B687B7C.2070406@gmail.com> <da824cf31002031837t1cf2357bsbb53a3b4ea5e671f@mail.gmail.com>
+In-Reply-To: <da824cf31002031837t1cf2357bsbb53a3b4ea5e671f@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Catalin Marinas <catalin.marinas@arm.com> [100204 05:13]:
-> On Thu, 2010-02-04 at 00:21 +0000, Abhijeet Dharmapurikar wrote:
-> > > The mandatory barriers (mb, rmb, wmb) are used even on uniprocessor
-> > > systems for things like ordering Normal Non-cacheable memory accesses
-> > > with DMA transfer (via Device memory writes). The current implementation
-> > > uses dmb() for mb() and friends but this is not sufficient. The DMB only
-> > > ensures the ordering of accesses with regards to a single observer
-> > > accessing the same memory. If a DMA transfer is started by a write to
-> > > Device memory, the data to be transfered may not reach the main memory
-> > > (even if mapped as Normal Non-cacheable) before the device receives the
-> > > notification to begin the transfer. The only barrier that would help in
-> > > this situation is DSB which would completely drain the write buffers.
-> > 
-> > On ARMv7, DMB guarantees that all accesses prior to DMB are observed by
-> > an observer if that observer sees any accesses _after_ the DMB. In this
-> > case, since DMA engine observes a write to itself( It is being written
-> > to and hence must observe the write) it should also see the writes to
-> > the buffers. A dmb() after the writes to buffer and before write to DMA
-> > engine should suffice.
-> 
-> I asked our processor architect for a clarification on the wording of
-> the DMB definition but the "all accesses" part most likely refer to
-> accesses to the same peripheral or memory block (but not together).
-> Intuitively, you can have a hardware configuration as below:
-> 
->      CPU   Device
->       |     | |
->       +-----+ |      (1)
->       |       |
->     Buffer    |
->       |       |
->       +---+---+      (2)
->           |
->          RAM
-> 
-> The peripheral register write and memory write go on different paths. A
-> DMB may ensure the ordering at level (1) but there could be delays
-> before a write reaches the RAM and the peripheral would get the DMA
-> start notification before that. Only DSB would ensure the draining of
-> the buffer.
+Hi Grant,
 
-Additionally if there's an external bus at (1), the ARM ordering may
-does not guarantee that bus is done.
+I compared PMP part with Chris dmesg and here are some similarities:
+=================================
+Similarity
+=================================
+sata_sil24 0000:03:02.0: version 1.1
+sata_sil24 0000:03:02.0: PCI INT A -> GSI 18 (level, low) -> IRQ 18
+scsi3 : sata_sil24
+scsi4 : sata_sil24
+scsi5 : sata_sil24
+scsi6 : sata_sil24
+ata3: SATA max UDMA/100 host m128@0xea009000 port 0xea000000 irq 18
+ata4: SATA max UDMA/100 host m128@0xea009000 port 0xea002000 irq 18
+ata5: SATA max UDMA/100 host m128@0xea009000 port 0xea004000 irq 18
+ata6: SATA max UDMA/100 host m128@0xea009000 port 0xea006000 irq 18
+aic7xxx 0000:03:04.1: PCI INT B -> GSI 18 (level, low) -> IRQ 18
+ata3: SATA link up 3.0 Gbps (SStatus 123 SControl 0)
+ata3.15: Port Multiplier 1.1, 0x1095:0x3726 r23, 6 ports, feat 0x1/0x9
+ata3.00: hard resetting link
+ata3.00: SATA link down (SStatus 0 SControl 10)
+ata3.01: hard resetting link
+ata3.01: SATA link down (SStatus 0 SControl 320)
+ata3.02: hard resetting link
+ata3.02: SATA link down (SStatus 0 SControl 320)
+ata3.03: hard resetting link
+ata3.03: SATA link down (SStatus 0 SControl 320)
+ata3.04: hard resetting link
+ata3.04: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+ata3.05: hard resetting link
+ata3.05: SATA link up 1.5 Gbps (SStatus 113 SControl 320)
+ata3.04: failed to IDENTIFY (I/O error, err_mask=0x11)
+===============================================
 
-For example, on omap L3/L4 buses we need to do a readback from the same
-device on the bus to ensure the write got to the device. Otherwise things
-like spurious interrupts can happen as the device has not yet acked the
-interrupt while ARM thinks the handler is done.
- 
-> > Moreover an mb() could be in places where accesses to ARM's Device type
-> > memory need ordering and are 1kb apart. Such usages of mb() would result
-> > in a dsb() and could cause performance problems.
-> 
-> Note that accesses to Device memory are ordered relative to each-other
-> without any barrier. If you have weakly ordered I/O (not the ARM case),
-> there's mmiowb() for this.
-> 
-> If you need ordering between accesses to Normal memory and Device
-> memory, a DSB is needed, hence the definition of mb() to be a DSB (some
-> processors like Cortex-A8 implement DMB so that it drains the write
-> buffer but this is not always the case on other implementations).
-> 
-> Of course, there are situations when you only need ordering of Normal
-> memory accesses without any peripheral access and a DMB would be fine in
-> this situation. But so far Linux uses mb() for both situations, hence
-> I'm taking the less optimal approach for Normal-Normal ordering.
+However, I got some extra errors in my case (shown below):
+===============================================
+ata3.04: exception Emask 0x10 SAct 0x0 SErr 0x4010000 action 0xf
+ata3.04: SError: { PHYRdyChg DevExch }
 
-Yeah. The device access is ordered relative to each-other, but since
-the device writes may directly affect ARM (for example IRQ status),
-a readback from the device is the only way to guarantee ordering for
-an external bus.
+ata3.04: PHY status changed but maxed out on retries, giving up
+ata3.04: Manully issue scan to resume this link
+ata3.04: exception Emask 0x10 SAct 0x0 SErr 0x4050000 action 0xf t4
+ata3.04: irq_stat 0x01060002, failed to transmit command FIS
+ata3.04: SError: { PHYRdyChg CommWake DevExch }
+ata3.04: limiting SATA link speed to 1.5 Gbps
 
-In most cases only the ordering of instructions matters and there
-the barriers work just fine. Just FYI, in case others are experiencing
-similar issues.
- 
-> > Since you mention the write buffers this probably applies only to ARMv6.
-> > Correct me here, I think that dmb on ARMv6 should suffice too.
-> 
-> I can't guarantee. It depends on the processor implementation
-> (ARM11MPCore may have a different behaviour). Linux on ARM should pretty
-> much be architecturally generic.
+ata4.15: hard resetting link
+ata3.15: qc timeout (cmd 0xe4)
+ata3.01: failed to read SCR 2 (Emask=0x4)
+ata3.01: COMRESET failed (errno=-5)
+ata3.01: failed to read SCR 0 (Emask=0x40)
+ata3.01: reset failed, giving up
 
-Also, my experience is that what I describe above was rare on v6 omaps
-(or some different problem), but was happening often on v7 omaps.
+ata4.05: SATA link up 1.5 Gbps (SStatus 113 SControl 320)
+ata4: PMP SError.N set for some ports, repeating recovery
+ata4.04: hard resetting link
 
-Regards,
+ata4.15: hard resetting link
+RPC: Registered udp transport module.
+RPC: Registered tcp transport module.
+SELinux: initialized (dev rpc_pipefs, type rpc_pipefs), uses genfs_contexts
+ata4.15: SATA link up 3.0 Gbps (SStatus 123 SControl 0)
 
-Tony
+ata4: PMP SError.N set for some ports, repeating recovery
+==========================================
+
+Chris's post remind me about the LED light. In my drives (all hot 
+swappable), each has two LEDs: one for power (green light) and another 
+(orange light) probably showing the activity of the drive and it is 
+related with PMP because this orange light does not lit if I connect the 
+drive to direct sata port (with direct sata connection, disks are 
+working fine).
+
+When the disk array was working fine (few months ago), the orange light 
+lit for a very short time when the disk's power is switched on and then 
+it turns off. It lit again when disk is working. However, now the orange 
+light does not turn off. I saw similar thing in the manual of sil3726 
+PMP, saying that some light turn off after disk is ready (I don't know 
+which light).
+
+Thanks,
+CN
+
+
+On 2/3/10 9:37 PM, Grant Grundler wrote:
+> On Tue, Feb 2, 2010 at 11:22 AM, Chandra Shekhar Sah<edu4madh@gmail.com>  wrote:
+>    
+>> Hi Grant,
+>>
+>> Thank for reply.
+>> Yes, PMP is sil3726. The backplane of the disk array has two PMP (each
+>> 1-to-5 as you have mentioned) and two sata direct connection without PMP.
+>> So, 10 disk are behind 2 PMP.
+>>      
+> Ah ok. That explains your "5-5-1-1" comment now. I tried to find a
+> Data sheet for this board but only found one in Chinese:
+>      www.norco.com.cn/UpLoadFile/Manual/DS-12X0-CN.pdf
+>
+> and I unfortunately don't speak/read chinese. Probably doesn't matter
+> though since...
+>
+> This email thread looks like a duplicate of a previous bug report:
+>     http://markmail.org/message/lp3ynvfefejpiy2r
+>
+> (or search for  "Ubuntu 9.04 (2.6.28-14) and eSATA Port Multiplier
+> (PMP) Not working")
+>
+> Chandra, you might read through that thread and dmesg output (posted by Chris K)
+> to see what else you have in common.
+>
+> I had two questions on that thread that never got answered:
+>     http://markmail.org/message/snpekoj4qexrslk5
+>
+> | How can we find out if anyone has the SEMB properly wired up?
+> | Would it be hard to make libata aware of "SEMB port not responding" case?
+> | ie if the SEMB port times out or has no link, reduce the port count of
+> | the sil3726 PMP by one.
+> |
+> | Maybe add a "enable_sil24_semb" flag to libata?
+> | (avoid checking unless someone asks for it). I hate magic flags but also
+> | don't want to subject most people to the timeout delay.
+>
+> I (or Gwendal) can post a patch (and lightly test) for any of the above.
+> Just need to get some guidance so we don't waste our time.
+>
+> thanks,
+> grant
+>
+>    
+>> Total is 12 disks. The sata host controller is
+>> sil3124. Picture of the backplane is attached.
+>>
+>> Thanks,
+>> Chandra
+>>
+>> On 2/2/10 2:04 PM, Grant Grundler wrote:
+>>      
+>>> On Tue, Feb 2, 2010 at 10:12 AM, Chandra Shekhar Sah<edu4madh@gmail.com>
+>>>   wrote:
+>>>
+>>>        
+>>>> Hi Grant,
+>>>>
+>>>> There are 6 Seagate Barracuda and 6 Hitachi DeskStar.
+>>>>
+>>>>          
+>>> I thought 0x1095/0x3726 was a Silicon Image part. Can you confirm this?
+>>>
+>>> If it is, this sounds like a broken implementation to me. Here is what
+>>> the Silicon Image 3726 Data Sheet says in the introduction:
+>>>      Silicon Image’s SiI3726 is 1-to-5 SATA Port Multiplier designed to
+>>> provide a high performance link between a single SATA host port and 5
+>>> SATA device ports.
+>>>
+>>> So I don't know where the 6th device is getting connected. Some
+>>> explanation/data sheet from the HW vendor would be helpful at this
+>>> point.
+>>>
+>>>
+>>>        
+>>>> Seagate Model: ST3750640AS
+>>>> Firmware: 3.AAK
+>>>>
+>>>> Hitachi Model:HDS721075KLA330
+>>>> Firmware: Not sure
+>>>>
+>>>>          
+>>> Both of these drives work behind Sil3726. (First hand experience).
+>>>
+>>>
+>>>        
+>>>> I have attached pictures of both labels, in case.
+>>>>
+>>>>          
+>>> Perfect - thanks for posting those.
+>>>
+>>> thanks,
+>>> grant
+>>>
+>>>
+>>>        
+>>
+>>      
+>    
+
