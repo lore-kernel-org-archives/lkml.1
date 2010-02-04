@@ -1,22 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933592Ab0BDRcz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 12:32:55 -0500
-Received: from kroah.org ([198.145.64.141]:34700 "EHLO coco.kroah.org"
+	id S933583Ab0BDRcQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 12:32:16 -0500
+Received: from kroah.org ([198.145.64.141]:34723 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933152Ab0BDRVu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 12:21:50 -0500
-X-Mailbox-Line: From linux@linux.site Thu Feb  4 09:15:04 2010
-Message-Id: <20100204171504.319037841@linux.site>
+	id S933245Ab0BDRVy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 12:21:54 -0500
+X-Mailbox-Line: From linux@linux.site Thu Feb  4 09:15:07 2010
+Message-Id: <20100204171506.366897609@linux.site>
 User-Agent: quilt/0.47-14.9
-Date: Thu, 04 Feb 2010 09:11:59 -0800
+Date: Thu, 04 Feb 2010 09:12:03 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>, Mel Gorman <mel@csn.ul.ie>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [28/74] mm: fix migratetype bug which slowed swapping
+       "H. Peter Anvin" <hpa@zytor.com>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [32/74] x86: get rid of the insane TIF_ABI_PENDING bit
 In-Reply-To: <20100204171850.GA16539@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -26,55 +25,117 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+From: H. Peter Anvin <hpa@zytor.com>
 
-commit a7016235a61d520e6806f38129001d935c4b6661 upstream.
+commit 05d43ed8a89c159ff641d472f970e3f1baa66318 upstream.
 
-After memory pressure has forced it to dip into the reserves, 2.6.32's
-5f8dcc21211a3d4e3a7a5ca366b469fb88117f61 "page-allocator: split per-cpu
-list into one-list-per-migrate-type" has been returning MIGRATE_RESERVE
-pages to the MIGRATE_MOVABLE free_list: in some sense depleting reserves.
+Now that the previous commit made it possible to do the personality
+setting at the point of no return, we do just that for ELF binaries.
+And suddenly all the reasons for that insane TIF_ABI_PENDING bit go
+away, and we can just make SET_PERSONALITY() just do the obvious thing
+for a 32-bit compat process.
 
-Fix that in the most straightforward way (which, considering the overheads
-of alternative approaches, is Mel's preference): the right migratetype is
-already in page_private(page), but free_pcppages_bulk() wasn't using it.
+Everything becomes much more straightforward this way.
 
-How did this bug show up?  As a 20% slowdown in my tmpfs loop kbuild
-swapping tests, on PowerMac G5 with SLUB allocator.  Bisecting to that
-commit was easy, but explaining the magnitude of the slowdown not easy.
-
-The same effect appears, but much less markedly, with SLAB, and even
-less markedly on other machines (the PowerMac divides into fewer zones
-than x86, I think that may be a factor).  We guess that lumpy reclaim
-of short-lived high-order pages is implicated in some way, and probably
-this bug has been tickling a poor decision somewhere in page reclaim.
-
-But instrumentation hasn't told me much, I've run out of time and
-imagination to determine exactly what's going on, and shouldn't hold up
-the fix any longer: it's valid, and might even fix other misbehaviours.
-
-Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Acked-by: Mel Gorman <mel@csn.ul.ie>
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- mm/page_alloc.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ arch/x86/ia32/ia32_aout.c          |    1 -
+ arch/x86/include/asm/elf.h         |   10 ++--------
+ arch/x86/include/asm/thread_info.h |    2 --
+ arch/x86/kernel/process.c          |   12 ------------
+ arch/x86/kernel/process_64.c       |   11 +++++++++++
+ 5 files changed, 13 insertions(+), 23 deletions(-)
 
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -559,8 +559,9 @@ static void free_pcppages_bulk(struct zo
- 			page = list_entry(list->prev, struct page, lru);
- 			/* must delete as __free_one_page list manipulates */
- 			list_del(&page->lru);
--			__free_one_page(page, zone, 0, migratetype);
--			trace_mm_page_pcpu_drain(page, 0, migratetype);
-+			/* MIGRATE_MOVABLE list may include MIGRATE_RESERVEs */
-+			__free_one_page(page, zone, 0, page_private(page));
-+			trace_mm_page_pcpu_drain(page, 0, page_private(page));
- 		} while (--count && --batch_free && !list_empty(list));
- 	}
- 	spin_unlock(&zone->lock);
+--- a/arch/x86/ia32/ia32_aout.c
++++ b/arch/x86/ia32/ia32_aout.c
+@@ -311,7 +311,6 @@ static int load_aout_binary(struct linux
+ 	/* OK, This is the point of no return */
+ 	set_personality(PER_LINUX);
+ 	set_thread_flag(TIF_IA32);
+-	clear_thread_flag(TIF_ABI_PENDING);
+ 
+ 	setup_new_exec(bprm);
+ 
+--- a/arch/x86/include/asm/elf.h
++++ b/arch/x86/include/asm/elf.h
+@@ -197,14 +197,8 @@ do {							\
+ 	set_fs(USER_DS);				\
+ } while (0)
+ 
+-#define COMPAT_SET_PERSONALITY(ex)			\
+-do {							\
+-	if (test_thread_flag(TIF_IA32))			\
+-		clear_thread_flag(TIF_ABI_PENDING);	\
+-	else						\
+-		set_thread_flag(TIF_ABI_PENDING);	\
+-	current->personality |= force_personality32;	\
+-} while (0)
++void set_personality_ia32(void);
++#define COMPAT_SET_PERSONALITY(ex) set_personality_ia32()
+ 
+ #define COMPAT_ELF_PLATFORM			("i686")
+ 
+--- a/arch/x86/include/asm/thread_info.h
++++ b/arch/x86/include/asm/thread_info.h
+@@ -86,7 +86,6 @@ struct thread_info {
+ #define TIF_NOTSC		16	/* TSC is not accessible in userland */
+ #define TIF_IA32		17	/* 32bit process */
+ #define TIF_FORK		18	/* ret_from_fork */
+-#define TIF_ABI_PENDING		19
+ #define TIF_MEMDIE		20
+ #define TIF_DEBUG		21	/* uses debug registers */
+ #define TIF_IO_BITMAP		22	/* uses I/O bitmap */
+@@ -110,7 +109,6 @@ struct thread_info {
+ #define _TIF_NOTSC		(1 << TIF_NOTSC)
+ #define _TIF_IA32		(1 << TIF_IA32)
+ #define _TIF_FORK		(1 << TIF_FORK)
+-#define _TIF_ABI_PENDING	(1 << TIF_ABI_PENDING)
+ #define _TIF_DEBUG		(1 << TIF_DEBUG)
+ #define _TIF_IO_BITMAP		(1 << TIF_IO_BITMAP)
+ #define _TIF_FREEZE		(1 << TIF_FREEZE)
+--- a/arch/x86/kernel/process_64.c
++++ b/arch/x86/kernel/process_64.c
+@@ -540,6 +540,17 @@ sys_clone(unsigned long clone_flags, uns
+ 	return do_fork(clone_flags, newsp, regs, 0, parent_tid, child_tid);
+ }
+ 
++void set_personality_ia32(void)
++{
++	/* inherit personality from parent */
++
++	/* Make sure to be in 32bit mode */
++	set_thread_flag(TIF_IA32);
++
++	/* Prepare the first "return" to user space */
++	current_thread_info()->status |= TS_COMPAT;
++}
++
+ unsigned long get_wchan(struct task_struct *p)
+ {
+ 	unsigned long stack;
+--- a/arch/x86/kernel/process.c
++++ b/arch/x86/kernel/process.c
+@@ -91,18 +91,6 @@ void flush_thread(void)
+ {
+ 	struct task_struct *tsk = current;
+ 
+-#ifdef CONFIG_X86_64
+-	if (test_tsk_thread_flag(tsk, TIF_ABI_PENDING)) {
+-		clear_tsk_thread_flag(tsk, TIF_ABI_PENDING);
+-		if (test_tsk_thread_flag(tsk, TIF_IA32)) {
+-			clear_tsk_thread_flag(tsk, TIF_IA32);
+-		} else {
+-			set_tsk_thread_flag(tsk, TIF_IA32);
+-			current_thread_info()->status |= TS_COMPAT;
+-		}
+-	}
+-#endif
+-
+ 	clear_tsk_thread_flag(tsk, TIF_DEBUG);
+ 
+ 	tsk->thread.debugreg0 = 0;
 
 
