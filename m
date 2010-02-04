@@ -1,298 +1,73 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757840Ab0BDKMY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 05:12:24 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:47990 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756393Ab0BDKMW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 05:12:22 -0500
-Date: Thu, 4 Feb 2010 05:12:08 -0500
-From: Amerigo Wang <amwang@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: Octavian Purdila <opurdila@ixiacom.com>,
-       Eric Dumazet <eric.dumazet@gmail.com>, linux-rdma@vger.kernel.org,
-       netdev@vger.kernel.org, Neil Horman <nhorman@tuxdriver.com>,
-       linux-sctp@vger.kernel.org, Amerigo Wang <amwang@redhat.com>,
-       David Miller <davem@davemloft.net>
-Message-Id: <20100204101533.4619.34599.sendpatchset@localhost.localdomain>
-Subject: [RFC Patch v2] net: reserve ports for applications using fixed port numbers
+	id S1758052Ab0BDKMd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 05:12:33 -0500
+Received: from mail-iw0-f189.google.com ([209.85.223.189]:52968 "EHLO
+	mail-iw0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757938Ab0BDKM3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 05:12:29 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=fHZBMJfolGe0TC5fQBgSgQ/fB7PafiuvRs61/vlCMq+k0S67yvwvqDdIKlrnkekwLO
+         VnuC4ymKGJeN+nPrZctrn8bldZORLZcmfY0Y9pxVlN+6i4+ANW7t4gYkfjGUG31PX//P
+         W1BU1EjBDAl1iVqdBu0pcH6LylChS4cDlEy3s=
+Message-ID: <4B6A9DE6.6080501@gmail.com>
+Date: Thu, 04 Feb 2010 02:13:58 -0800
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091114 Lightning/1.0pre Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Jan Beulich <JBeulich@novell.com>
+CC: Ingo Molnar <mingo@elte.hu>, Dan Carpenter <error27@gmail.com>,
+       bernhard.kaindl@gmx.net, Thomas Gleixner <tglx@linutronix.de>,
+       linux1394-devel@lists.sourceforge.net,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Rafael Wysocki <rjw@sisk.pl>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       ebiderman@xmission.com, hpa@zytor.com
+Subject: Re: ohci1394_dma=early crash since 2.6.32 (was Re: [Bug		 #14487]
+ PANIC: early exception 08 rip 246:10 error		 ffffffff810251b5 cr2 0)
+References: <UgwvXSBS_tM.A.alD.1EiZLB@chimera> <de962C6zBxL.A.H1G.1HiZLB@chimera> <4B6630CA.9010207@gmail.com> <20100201125441.GB2576@bicker> <4B671606.3080405@gmail.com> <4B673233.8000300@s5r6.in-berlin.de> <4B6740B5.5070601@gmail.com> <4B675534.5070107@s5r6.in-berlin.de> <4B676917.2080506@gmail.com> <4B67BC12.4080709@s5r6.in-berlin.de> <4B67C4D2.5050205@gmail.com> <4B67CC55.40301@s5r6.in-berlin.de> <4B67CCEC.2030103@s5r6.in-berlin.de> <4B68D4CA.2010803@gmail.com> <4B694D5C020000780002D6DA@vpn.id2.novell.com> <4B6A0123.3010607@gmail.com> <4B6A9960020000780002DA6B@vpn.id2.novell.com> <4B6A8DA9.4090804@gmail.com> <4B6A9D4C020000780002DA99@vpn.id2.novell.com> <4B6A90BB.7090405@gmail.com> <4B6AA2D6020000780002DAD1@vpn.id2.novell.com> <4B6A97ED.6080605@gmail.com> <4B6AA817020000780002DB11@vpn.id2.novell.com>
+In-Reply-To: <4B6AA817020000780002DB11@vpn.id2.novell.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-V2:
-update the documentation
-update the changelog
-fix the checking code in udp
+On 02/04/10 01:57, Jan Beulich wrote:
+>>>> "Justin P. Mattock"<justinmattock@gmail.com>  04.02.10 10:48>>>
+>> I see:
+>>
+>> ohci.registers = (void *)fix_to_virt(FIX_OHCI1394_BASE);
+>>
+>> then I think it calls:
+>>
+>> set_fixmap_nocache(FIX_OHCI1394_BASE, ohci_base);
+>>
+>> I'm guessing somewhere with the fix_to_virt might be something
+>> (but could be wrong);
+>
+> No, it ought to be that set_fixmap_nocache().
+>
+> Jan
+>
+>
 
-This patch introduces /proc/sys/net/ipv4/ip_local_reserved_ports,
-it can be used like ip_local_port_range, but this is used to
-reserve ports for third-party applications which use fixed
-port numbers within ip_local_port_range.
 
-This only affects the applications which call socket functions
-like bind(2) with port number 0, or connect() etc., to prevent the kernel
-getting the ports within the specified range for them. For applications
-which use fixed port number, it will have no effects.
+hmm..
+as a quick test I did try:
 
-Any comments are welcome.
+set_fixmap(FIX_OHCI1394_BASE, ohci_base);
+(maybe ohci_base)
 
-Signed-off-by: WANG Cong <amwang@redhat.com>
-Cc: Octavian Purdila <opurdila@ixiacom.com>
-Cc: David Miller <davem@davemloft.net>
-Cc: Neil Horman <nhorman@tuxdriver.com>
-Cc: Eric Dumazet <eric.dumazet@gmail.com>
+which still hit, maybe something else
+in the set of calls is hitting
+i.g. address specific or something.
+(I'll have to keep looking on this);
 
----
+Justin P. mattock
 
-diff --git a/Documentation/networking/ip-sysctl.txt b/Documentation/networking/ip-sysctl.txt
-index 006b39d..0795ac3 100644
---- a/Documentation/networking/ip-sysctl.txt
-+++ b/Documentation/networking/ip-sysctl.txt
-@@ -564,6 +564,14 @@ ip_local_port_range - 2 INTEGERS
- 	(i.e. by default) range 1024-4999 is enough to issue up to
- 	2000 connections per second to systems supporting timestamps.
- 
-+ip_local_reserved_ports - 2 INTEGERS
-+	Specify the port range which is reserved for known third-party
-+	applications, in case the kernel picks those ports for other
-+	applications, e.g. when calling connect() or bind() with port
-+	number 0. The range shall not go beyond the range specifed in
-+	ip_local_port_range. "0 0" means no ports are reserved.
-+	Default: 0 0
-+
- ip_nonlocal_bind - BOOLEAN
- 	If set, allows processes to bind() to non-local IP addresses,
- 	which can be quite useful - but may break some applications.
-diff --git a/drivers/infiniband/core/cma.c b/drivers/infiniband/core/cma.c
-index cc9b594..8248fc6 100644
---- a/drivers/infiniband/core/cma.c
-+++ b/drivers/infiniband/core/cma.c
-@@ -1979,6 +1979,8 @@ retry:
- 	/* FIXME: add proper port randomization per like inet_csk_get_port */
- 	do {
- 		ret = idr_get_new_above(ps, bind_list, next_port, &port);
-+		if (inet_is_reserved_local_port(port))
-+			ret = -EAGAIN;
- 	} while ((ret == -EAGAIN) && idr_pre_get(ps, GFP_KERNEL));
- 
- 	if (ret)
-@@ -2997,10 +2999,13 @@ static int __init cma_init(void)
- {
- 	int ret, low, high, remaining;
- 
--	get_random_bytes(&next_port, sizeof next_port);
- 	inet_get_local_port_range(&low, &high);
-+again:
-+	get_random_bytes(&next_port, sizeof next_port);
- 	remaining = (high - low) + 1;
- 	next_port = ((unsigned int) next_port % remaining) + low;
-+	if (inet_is_reserved_local_port(next_port))
-+		goto again;
- 
- 	cma_wq = create_singlethread_workqueue("rdma_cm");
- 	if (!cma_wq)
-diff --git a/include/net/ip.h b/include/net/ip.h
-index fb63371..f70acad 100644
---- a/include/net/ip.h
-+++ b/include/net/ip.h
-@@ -181,8 +181,10 @@ extern void snmp_mib_free(void *ptr[2]);
- extern struct local_ports {
- 	seqlock_t	lock;
- 	int		range[2];
--} sysctl_local_ports;
-+} sysctl_local_ports, sysctl_local_reserved_ports;
- extern void inet_get_local_port_range(int *low, int *high);
-+extern void inet_get_local_reserved_ports(int *from, int *to);
-+extern int inet_is_reserved_local_port(int port);
- 
- extern int sysctl_ip_default_ttl;
- extern int sysctl_ip_nonlocal_bind;
-diff --git a/net/ipv4/inet_connection_sock.c b/net/ipv4/inet_connection_sock.c
-index ee16475..ee13e48 100644
---- a/net/ipv4/inet_connection_sock.c
-+++ b/net/ipv4/inet_connection_sock.c
-@@ -37,6 +37,11 @@ struct local_ports sysctl_local_ports __read_mostly = {
- 	.range = { 32768, 61000 },
- };
- 
-+struct local_ports sysctl_local_reserved_ports __read_mostly = {
-+	.lock = SEQLOCK_UNLOCKED,
-+	.range = { 0, 0 },
-+};
-+
- void inet_get_local_port_range(int *low, int *high)
- {
- 	unsigned seq;
-@@ -49,6 +54,28 @@ void inet_get_local_port_range(int *low, int *high)
- }
- EXPORT_SYMBOL(inet_get_local_port_range);
- 
-+void inet_get_local_reserved_ports(int *from, int *to)
-+{
-+	unsigned int seq;
-+	do {
-+		seq = read_seqbegin(&sysctl_local_reserved_ports.lock);
-+
-+		*from = sysctl_local_reserved_ports.range[0];
-+		*to = sysctl_local_reserved_ports.range[1];
-+	} while (read_seqretry(&sysctl_local_reserved_ports.lock, seq));
-+}
-+
-+int inet_is_reserved_local_port(int port)
-+{
-+	int min, max;
-+
-+	inet_get_local_reserved_ports(&min, &max);
-+	if (min && max)
-+		return (port >= min && port <= max);
-+	return 0;
-+}
-+EXPORT_SYMBOL(inet_is_reserved_local_port);
-+
- int inet_csk_bind_conflict(const struct sock *sk,
- 			   const struct inet_bind_bucket *tb)
- {
-@@ -105,6 +132,8 @@ again:
- 		inet_get_local_port_range(&low, &high);
- 		remaining = (high - low) + 1;
- 		smallest_rover = rover = net_random() % remaining + low;
-+		if (inet_is_reserved_local_port(rover))
-+			goto again;
- 
- 		smallest_size = -1;
- 		do {
-diff --git a/net/ipv4/inet_hashtables.c b/net/ipv4/inet_hashtables.c
-index 2b79377..d3e160a 100644
---- a/net/ipv4/inet_hashtables.c
-+++ b/net/ipv4/inet_hashtables.c
-@@ -456,6 +456,8 @@ int __inet_hash_connect(struct inet_timewait_death_row *death_row,
- 		local_bh_disable();
- 		for (i = 1; i <= remaining; i++) {
- 			port = low + (i + offset) % remaining;
-+			if (inet_is_reserved_local_port(port))
-+				continue;
- 			head = &hinfo->bhash[inet_bhashfn(net, port,
- 					hinfo->bhash_size)];
- 			spin_lock(&head->lock);
-diff --git a/net/ipv4/sysctl_net_ipv4.c b/net/ipv4/sysctl_net_ipv4.c
-index 7e3712c..0791010 100644
---- a/net/ipv4/sysctl_net_ipv4.c
-+++ b/net/ipv4/sysctl_net_ipv4.c
-@@ -23,6 +23,7 @@
- 
- static int zero;
- static int tcp_retr1_max = 255;
-+static int ip_local_reserved_ports_min[] = { 0, 0 };
- static int ip_local_port_range_min[] = { 1, 1 };
- static int ip_local_port_range_max[] = { 65535, 65535 };
- 
-@@ -63,6 +64,51 @@ static int ipv4_local_port_range(ctl_table *table, int write,
- 	return ret;
- }
- 
-+static void set_reserved_port_range(int range[2])
-+{
-+	write_seqlock(&sysctl_local_reserved_ports.lock);
-+	sysctl_local_reserved_ports.range[0] = range[0];
-+	sysctl_local_reserved_ports.range[1] = range[1];
-+	write_sequnlock(&sysctl_local_reserved_ports.lock);
-+}
-+
-+static int ipv4_local_reserved_ports(ctl_table *table, int write,
-+				     void __user *buffer,
-+				     size_t *lenp, loff_t *ppos)
-+{
-+	int ret;
-+	int range[2];
-+	int reserved_range[2];
-+	ctl_table tmp = {
-+		.data = &reserved_range,
-+		.maxlen = sizeof(reserved_range),
-+		.mode = table->mode,
-+		.extra1 = &ip_local_reserved_ports_min,
-+		.extra2 = &ip_local_port_range_max,
-+	};
-+
-+	inet_get_local_reserved_ports(reserved_range, reserved_range+1);
-+	ret = proc_dointvec_minmax(&tmp, write, buffer, lenp, ppos);
-+
-+	if (write && ret == 0) {
-+		inet_get_local_port_range(range, range + 1);
-+		if (!reserved_range[0] && !reserved_range[1]) {
-+			set_reserved_port_range(reserved_range);
-+		} else {
-+			if (reserved_range[1] < reserved_range[0])
-+				ret = -EINVAL;
-+			else if (reserved_range[0] < range[0])
-+				ret = -EINVAL;
-+			else if (reserved_range[1] > range[1])
-+				ret = -EINVAL;
-+			else
-+				set_reserved_port_range(reserved_range);
-+		}
-+	}
-+
-+	return ret;
-+}
-+
- static int proc_tcp_congestion_control(ctl_table *ctl, int write,
- 				       void __user *buffer, size_t *lenp, loff_t *ppos)
- {
-@@ -298,6 +344,13 @@ static struct ctl_table ipv4_table[] = {
- 		.mode		= 0644,
- 		.proc_handler	= ipv4_local_port_range,
- 	},
-+	{
-+		.procname	= "ip_local_reserved_ports",
-+		.data		= &sysctl_local_reserved_ports.range,
-+		.maxlen		= sizeof(sysctl_local_reserved_ports.range),
-+		.mode		= 0644,
-+		.proc_handler	= ipv4_local_reserved_ports,
-+	},
- #ifdef CONFIG_IP_MULTICAST
- 	{
- 		.procname	= "igmp_max_memberships",
-diff --git a/net/ipv4/udp.c b/net/ipv4/udp.c
-index f0126fd..4bb825e 100644
---- a/net/ipv4/udp.c
-+++ b/net/ipv4/udp.c
-@@ -203,6 +203,7 @@ int udp_lib_get_port(struct sock *sk, unsigned short snum,
- 
- 	if (!snum) {
- 		int low, high, remaining;
-+		int min, max;
- 		unsigned rand;
- 		unsigned short first, last;
- 		DECLARE_BITMAP(bitmap, PORTS_PER_CHAIN);
-@@ -210,6 +211,7 @@ int udp_lib_get_port(struct sock *sk, unsigned short snum,
- 		inet_get_local_port_range(&low, &high);
- 		remaining = (high - low) + 1;
- 
-+again:
- 		rand = net_random();
- 		first = (((u64)rand * remaining) >> 32) + low;
- 		/*
-@@ -217,6 +219,9 @@ int udp_lib_get_port(struct sock *sk, unsigned short snum,
- 		 */
- 		rand = (rand | 1) * (udptable->mask + 1);
- 		last = first + udptable->mask + 1;
-+		inet_get_local_reserved_ports(&min, &max);
-+		if (!(first > max || last < min))
-+			goto again;
- 		do {
- 			hslot = udp_hashslot(udptable, net, first);
- 			bitmap_zero(bitmap, PORTS_PER_CHAIN);
-diff --git a/net/sctp/socket.c b/net/sctp/socket.c
-index 67fdac9..d685141 100644
---- a/net/sctp/socket.c
-+++ b/net/sctp/socket.c
-@@ -5432,6 +5432,8 @@ static long sctp_get_port_local(struct sock *sk, union sctp_addr *addr)
- 			rover++;
- 			if ((rover < low) || (rover > high))
- 				rover = low;
-+			if (inet_is_reserved_local_port(rover))
-+				continue;
- 			index = sctp_phashfn(rover);
- 			head = &sctp_port_hashtable[index];
- 			sctp_spin_lock(&head->lock);
