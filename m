@@ -1,53 +1,58 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757461Ab0BDEz0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 23:55:26 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:23639 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757271Ab0BDEzY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 23:55:24 -0500
+	id S1757417Ab0BDE7z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 23:59:55 -0500
+Received: from ironport2-out.teksavvy.com ([206.248.154.181]:32992 "EHLO
+	ironport2-out.pppoe.ca" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756899Ab0BDE7x (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 23:59:53 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AlsBAB7jaUtLd/sX/2dsb2JhbAAIgyvEdpAUgS6CPloE
+X-IronPort-AV: E=Sophos;i="4.49,402,1262581200"; 
+   d="scan'208";a="55291225"
+Message-ID: <4B6A5443.6090804@teksavvy.com>
+Date: Wed, 03 Feb 2010 23:59:47 -0500
+From: Mark Lord <kernel@teksavvy.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Joe Perches <joe@perches.com>
+CC: linux-kernel@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>,
+       linux-ide@vger.kernel.org
+Subject: Re: [PATCH 02/10] drivers/ata: Fix continuation line formats
+References: <cover.1265095093.git.joe@perches.com>	 <12d39ac4f14bfe82a02b4ee246d183b48988fe12.1265095094.git.joe@perches.com>	 <4B69B0A0.2040701@teksavvy.com> <1265224535.24887.16.camel@Joe-Laptop.home>
+In-Reply-To: <1265224535.24887.16.camel@Joe-Laptop.home>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: "Lu, Hongjiu" <hongjiu.lu@intel.com>
-X-Fcc: ~/Mail/linus
-Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Oleg Nesterov <oleg@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Lachner, Peter" <peter.lachner@intel.com>
-Subject: RE: [patch] x86: ptrace and core-dump extensions for xstate
-In-Reply-To: Lu, Hongjiu's message of  Wednesday, 3 February 2010 18:22:53 -0800 <8EA2C2C4116BF44AB370468FBF85A7770123AAB303@orsmsx504.amr.corp.intel.com>
-References: <1265076025.2802.194.camel@sbs-t61.sc.intel.com>
-	<20100203230817.E6529AA@magilla.sf.frob.com>
-	<8EA2C2C4116BF44AB370468FBF85A7770123AAB0AE@orsmsx504.amr.corp.intel.com>
-	<20100204020224.45379725@magilla.sf.frob.com>
-	<8EA2C2C4116BF44AB370468FBF85A7770123AAB2E8@orsmsx504.amr.corp.intel.com>
-	<20100204021659.AB348C880@magilla.sf.frob.com>
-	<8EA2C2C4116BF44AB370468FBF85A7770123AAB303@orsmsx504.amr.corp.intel.com>
-Emacs: resistance is futile; you will be assimilated and byte-compiled.
-Message-Id: <20100204045458.5AA2F7290@magilla.sf.frob.com>
-Date: Wed,  3 Feb 2010 20:54:58 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> To support XSAVE, gdb needs to know XCR0 as well as XSTATE size.
-> We can get those info from kernel via system call or cpuid. I
-> prefer cpuid over system call.
+Joe Perches wrote:
+> On Wed, 2010-02-03 at 12:21 -0500, Mark Lord wrote:
+>> Joe Perches wrote:
+>>> String constants that are continued on subsequent lines with \
+>>> are not good.
+> []
+>>> -		dev_warn(ap->dev, "Failed to compute ATA timing %d, \
+>>> -				set PIO_0 timing\n", ret);
+>>> +		dev_warn(ap->dev, "Failed to compute ATA timing %d, set PIO_0 timing\n",
+>>> +			 ret);
+>> NAK.  Just stick the ret); part onto the same line and be done with it.
+> 
+> :resend that I mistakenly sent only to Mark, with a couple more comments
+> 
+> I disagree.
+> 
+> Look at the long line wrapping style of the rest of the file
+> and most of the kernel source.  No additional arguments to
+> functions are generally used after column 80.
+> 
+> If it's ever agreed that all lines > 80 cols are OK or
+> new args after column 80 are OK, then sure.  Until then,
+> if you want it, you should do it.
+..
 
-Suresh's patch puts this value in the xsave block, in what Suresh calls
-"sw_usable_bytes".  See the asm/ptrace-abi.h comment in the patch you
-signed off on.
+You are the code nanny trying to get this patch in.  Not me.
 
-How is that not sufficient?  If it is indeed not sufficient to usefully
-interpret the xsave block, then how could an xsave block in a core dump
-file ever possibly be examined if it might not have been generated on the
-same system and kernel where the debugger is doing the examination?  If
-the NT_X86_XSTATE note as implemented in Suresh's patch is indeed not
-entirely self-contained in this way, then NAK on that new note format.
-
-
-Thanks,
-Roland
+-ml
