@@ -1,73 +1,141 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758115Ab0BDJ5X (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 04:57:23 -0500
-Received: from hera.kernel.org ([140.211.167.34]:60132 "EHLO hera.kernel.org"
+	id S1758100Ab0BDJ5K (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 04:57:10 -0500
+Received: from hera.kernel.org ([140.211.167.34]:60115 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758003Ab0BDJ5P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 04:57:15 -0500
-Date: Thu, 4 Feb 2010 09:56:26 GMT
-From: tip-bot for Yong Zhang <yong.zhang0@gmail.com>
+	id S1756333Ab0BDJ5E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 04:57:04 -0500
+Date: Thu, 4 Feb 2010 09:55:07 GMT
+From: tip-bot for Masami Hiramatsu <mhiramat@redhat.com>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, rusty@rustcorp.com.au, yong.zhang0@gmail.com,
-       tglx@linutronix.de, mingo@elte.hu
+       jkenisto@us.ibm.com, ananth@in.ibm.com,
+       dle-develop@lists.sourceforge.net, fweisbec@gmail.com,
+       rostedt@goodmis.org, compudj@krystal.dyndns.org, tglx@linutronix.de,
+       mhiramat@redhat.com, mingo@elte.hu, systemtap@sources.redhat.com
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       rusty@rustcorp.com.au, a.p.zijlstra@chello.nl, tglx@linutronix.de,
-       yong.zhang0@gmail.com, mingo@elte.hu
-In-Reply-To: <2674af741001282258q38781619u653ca4a7dd267347@mail.gmail.com>
-References: <2674af741001282258q38781619u653ca4a7dd267347@mail.gmail.com>
+       jkenisto@us.ibm.com, ananth@in.ibm.com,
+       dle-develop@lists.sourceforge.net, fweisbec@gmail.com,
+       rostedt@goodmis.org, compudj@krystal.dyndns.org, tglx@linutronix.de,
+       mhiramat@redhat.com, mingo@elte.hu, systemtap@sources.redhat.com
+In-Reply-To: <20100202214904.4694.24330.stgit@dhcp-100-2-132.bos.redhat.com>
+References: <20100202214904.4694.24330.stgit@dhcp-100-2-132.bos.redhat.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:sched/core] sched: Remove member rt_se from struct rt_rq
-Message-ID: <tip-23577256953c870de9b724c3a2611ce7be6a1e4e@git.kernel.org>
-Git-Commit-ID: 23577256953c870de9b724c3a2611ce7be6a1e4e
+Subject: [tip:perf/core] kprobes: Disable booster when CONFIG_PREEMPT=y
+Message-ID: <tip-615d0ebbc782b67296e3226c293f520f93f93515@git.kernel.org>
+Git-Commit-ID: 615d0ebbc782b67296e3226c293f520f93f93515
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 04 Feb 2010 09:56:26 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 04 Feb 2010 09:55:09 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  23577256953c870de9b724c3a2611ce7be6a1e4e
-Gitweb:     http://git.kernel.org/tip/23577256953c870de9b724c3a2611ce7be6a1e4e
-Author:     Yong Zhang <yong.zhang0@gmail.com>
-AuthorDate: Fri, 29 Jan 2010 14:58:47 +0800
+Commit-ID:  615d0ebbc782b67296e3226c293f520f93f93515
+Gitweb:     http://git.kernel.org/tip/615d0ebbc782b67296e3226c293f520f93f93515
+Author:     Masami Hiramatsu <mhiramat@redhat.com>
+AuthorDate: Tue, 2 Feb 2010 16:49:04 -0500
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 4 Feb 2010 09:57:33 +0100
+CommitDate: Thu, 4 Feb 2010 09:36:18 +0100
 
-sched: Remove member rt_se from struct rt_rq
+kprobes: Disable booster when CONFIG_PREEMPT=y
 
-It's a duplicate of tg->rt_se[cpu] and the only usage is
-sched_rt_rq_dequeue() and sched_rt_rq_enqueue(). After the
-first patch to those two function. rt_se can be removed.
+Disable kprobe booster when CONFIG_PREEMPT=y at this time,
+because it can't ensure that all kernel threads preempted on
+kprobe's boosted slot run out from the slot even using
+freeze_processes().
 
-Signed-off-by: Yong Zhang <yong.zhang0@gmail.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <2674af741001282258q38781619u653ca4a7dd267347@mail.gmail.com>
+The booster on preemptive kernel will be resumed if
+synchronize_tasks() or something like that is introduced.
+
+Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: systemtap <systemtap@sources.redhat.com>
+Cc: DLE <dle-develop@lists.sourceforge.net>
+Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Jim Keniston <jkenisto@us.ibm.com>
+Cc: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+LKML-Reference: <20100202214904.4694.24330.stgit@dhcp-100-2-132.bos.redhat.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- kernel/sched.c |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
+ arch/ia64/kernel/kprobes.c |    2 +-
+ arch/x86/kernel/kprobes.c  |    2 +-
+ kernel/kprobes.c           |   29 ++---------------------------
+ 3 files changed, 4 insertions(+), 29 deletions(-)
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 2386f54..6cee227 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -436,7 +436,6 @@ struct rt_rq {
- 	struct rq *rq;
- 	struct list_head leaf_rt_rq_list;
- 	struct task_group *tg;
--	struct sched_rt_entity *rt_se;
- #endif
- };
+diff --git a/arch/ia64/kernel/kprobes.c b/arch/ia64/kernel/kprobes.c
+index 9adac44..7026b29 100644
+--- a/arch/ia64/kernel/kprobes.c
++++ b/arch/ia64/kernel/kprobes.c
+@@ -870,7 +870,7 @@ static int __kprobes pre_kprobes_handler(struct die_args *args)
+ 		return 1;
  
-@@ -7592,7 +7591,6 @@ static void init_tg_rt_entry(struct task_group *tg, struct rt_rq *rt_rq,
- 	tg->rt_rq[cpu] = rt_rq;
- 	init_rt_rq(rt_rq, rq);
- 	rt_rq->tg = tg;
--	rt_rq->rt_se = rt_se;
- 	rt_rq->rt_runtime = tg->rt_bandwidth.rt_runtime;
- 	if (add)
- 		list_add(&rt_rq->leaf_rt_rq_list, &rq->leaf_rt_rq_list);
+ ss_probe:
+-#if !defined(CONFIG_PREEMPT) || defined(CONFIG_FREEZER)
++#if !defined(CONFIG_PREEMPT)
+ 	if (p->ainsn.inst_flag == INST_FLAG_BOOSTABLE && !p->post_handler) {
+ 		/* Boost up -- we can execute copied instructions directly */
+ 		ia64_psr(regs)->ri = p->ainsn.slot;
+diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
+index 5b8c750..9453815 100644
+--- a/arch/x86/kernel/kprobes.c
++++ b/arch/x86/kernel/kprobes.c
+@@ -429,7 +429,7 @@ void __kprobes arch_prepare_kretprobe(struct kretprobe_instance *ri,
+ static void __kprobes setup_singlestep(struct kprobe *p, struct pt_regs *regs,
+ 				       struct kprobe_ctlblk *kcb)
+ {
+-#if !defined(CONFIG_PREEMPT) || defined(CONFIG_FREEZER)
++#if !defined(CONFIG_PREEMPT)
+ 	if (p->ainsn.boostable == 1 && !p->post_handler) {
+ 		/* Boost up -- we can execute copied instructions directly */
+ 		reset_current_kprobe();
+diff --git a/kernel/kprobes.c b/kernel/kprobes.c
+index b7df302..9907a03 100644
+--- a/kernel/kprobes.c
++++ b/kernel/kprobes.c
+@@ -124,30 +124,6 @@ static LIST_HEAD(kprobe_insn_pages);
+ static int kprobe_garbage_slots;
+ static int collect_garbage_slots(void);
+ 
+-static int __kprobes check_safety(void)
+-{
+-	int ret = 0;
+-#if defined(CONFIG_PREEMPT) && defined(CONFIG_FREEZER)
+-	ret = freeze_processes();
+-	if (ret == 0) {
+-		struct task_struct *p, *q;
+-		do_each_thread(p, q) {
+-			if (p != current && p->state == TASK_RUNNING &&
+-			    p->pid != 0) {
+-				printk("Check failed: %s is running\n",p->comm);
+-				ret = -1;
+-				goto loop_end;
+-			}
+-		} while_each_thread(p, q);
+-	}
+-loop_end:
+-	thaw_processes();
+-#else
+-	synchronize_sched();
+-#endif
+-	return ret;
+-}
+-
+ /**
+  * __get_insn_slot() - Find a slot on an executable page for an instruction.
+  * We allocate an executable page if there's no room on existing ones.
+@@ -235,9 +211,8 @@ static int __kprobes collect_garbage_slots(void)
+ {
+ 	struct kprobe_insn_page *kip, *next;
+ 
+-	/* Ensure no-one is preepmted on the garbages */
+-	if (check_safety())
+-		return -EAGAIN;
++	/* Ensure no-one is interrupted on the garbages */
++	synchronize_sched();
+ 
+ 	list_for_each_entry_safe(kip, next, &kprobe_insn_pages, list) {
+ 		int i;
