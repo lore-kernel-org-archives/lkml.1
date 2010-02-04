@@ -1,22 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752272Ab0BDFkS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 00:40:18 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:39029 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751890Ab0BDFkP (ORCPT
+	id S1752546Ab0BDFsk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 00:48:40 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:49031 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751220Ab0BDFsi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 00:40:15 -0500
+	Thu, 4 Feb 2010 00:48:38 -0500
 X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Thu, 4 Feb 2010 14:36:45 +0900
+Date: Thu, 4 Feb 2010 14:45:11 +0900
 From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: "linux-mm@kvack.org" <linux-mm@kvack.org>
-Cc: "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: [PATCH] memcg: use for each online for making sum of percpu counter
-Message-Id: <20100204143645.87b5fc28.kamezawa.hiroyu@jp.fujitsu.com>
+To: Oleg Kutkov <elenbert@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Problem with set_memory_rw
+Message-Id: <20100204144511.b50d3191.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <4B6A5A81.2030207@gmail.com>
+References: <4B6A5A81.2030207@gmail.com>
 Organization: FUJITSU Co. LTD.
 X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
@@ -26,116 +25,44 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tested on mmotm-2010-02-03.
+On Thu, 04 Feb 2010 07:26:25 +0200
+Oleg Kutkov <elenbert@gmail.com> wrote:
 
-Balbir-san, how about this patch ? It seems not so difficult as expected.
+> Hello, this is my first post in a mailing list, so excuse me if 
+> something wrong...
+> I'm new in kernel and try to do some manipulation with memory pages.
+> For manipulating memory page attributes i used set_memory_rw(),
+> but function returning 0 and i can't continue writing to memory,
+> because page, that i want to change, is read only by default.
+> This is part of my code:
+> 
+> 
+> long unsigned addr;
+> 
+> addr = 0x0509940;              //this is addres in memory, that i  want 
+> to overwrite (read only, for default)
+> 
+> set_memory_rw(addr, 1);    //try to set rw permission on this addres for 
+> one memory page.
+> 
+> 
+> So, function return zero, this is error, as i can understand. If i try 
+> to write by this address - kernel write in log error messages, such as 
+> "Unable to handle kernel request at address 0x0509940".
+> This is kernel bug or something wrong in my code?
+> 
+> Thank for any help.
+> 
 
-==
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-
-memcg-use-for-each-online-cpus-for-making-sum-of-percpu-counter
-
-Now, memcg's percpu coutner uses for_each_possible_cpus() for
-handling cpu hotplug. But it adds some overhead on a server
-which has an additonal cpu hotplug slot which is not used.
-
-This patch adds cpu hotplug callback for memcg's percpu counter
-and make use of for_each_online_cpu().
-
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
----
- mm/memcontrol.c |   35 ++++++++++++++++++++++++++++++++---
- 1 file changed, 32 insertions(+), 3 deletions(-)
-
-Index: mmotm-2.6.33-Feb3/mm/memcontrol.c
-===================================================================
---- mmotm-2.6.33-Feb3.orig/mm/memcontrol.c
-+++ mmotm-2.6.33-Feb3/mm/memcontrol.c
-@@ -223,6 +223,8 @@ struct mem_cgroup {
- 	 */
- 	unsigned long 	move_charge_at_immigrate;
+set_memory_rw()'s 1st argument requires virtual address.
+So, you need virtual address of the page you want.
  
-+	/* list of all memcgs. currently used for cpu hotplug+percpu counter */
-+	struct list_head list;
- 	/*
- 	 * percpu counter.
- 	 */
-@@ -504,7 +506,7 @@ static s64 mem_cgroup_read_stat(struct m
- 	int cpu;
- 	s64 val = 0;
- 
--	for_each_possible_cpu(cpu)
-+	for_each_online_cpu(cpu)
- 		val += per_cpu(mem->stat->count[idx], cpu);
- 	return val;
- }
-@@ -1405,17 +1407,37 @@ static void drain_all_stock_sync(void)
- 	atomic_dec(&memcg_drain_count);
- }
- 
--static int __cpuinit memcg_stock_cpu_callback(struct notifier_block *nb,
-+DEFINE_MUTEX(memcg_hotcpu_lock);
-+LIST_HEAD(memcg_hotcpu_list);
-+
-+static int __cpuinit memcg_cpu_unplug_callback(struct notifier_block *nb,
- 					unsigned long action,
- 					void *hcpu)
- {
- 	int cpu = (unsigned long)hcpu;
-+	struct mem_cgroup *memcg;
- 	struct memcg_stock_pcp *stock;
-+	int idx;
-+	s64 val;
- 
- 	if (action != CPU_DEAD)
- 		return NOTIFY_OK;
- 	stock = &per_cpu(memcg_stock, cpu);
- 	drain_stock(stock);
-+
-+	/* Move dead percpu counter's value to online cpu */
-+	mutex_lock(&memcg_hotcpu_lock);
-+	list_for_each_entry(memcg, &memcg_hotcpu_list, list) {
-+		for (idx = MEM_CGROUP_STAT_CACHE;
-+		     idx <= MEM_CGROUP_STAT_SWAPOUT;
-+		     idx++) {
-+			val = per_cpu(memcg->stat->count[idx], cpu);
-+			per_cpu(memcg->stat->count[idx], cpu) = 0;
-+			this_cpu_add(memcg->stat->count[idx], val);
-+		}
-+	}
-+	mutex_unlock(&memcg_hotcpu_lock);
-+
- 	return NOTIFY_OK;
- }
- 
-@@ -3626,6 +3648,10 @@ static struct mem_cgroup *mem_cgroup_all
- 		else
- 			vfree(mem);
- 		mem = NULL;
-+	} else {
-+		mutex_lock(&memcg_hotcpu_lock);
-+		list_add(&mem->list, &memcg_hotcpu_list);
-+		mutex_unlock(&memcg_hotcpu_lock);
- 	}
- 	return mem;
- }
-@@ -3651,6 +3677,9 @@ static void __mem_cgroup_free(struct mem
- 	for_each_node_state(node, N_POSSIBLE)
- 		free_mem_cgroup_per_zone_info(mem, node);
- 
-+	mutex_lock(&memcg_hotcpu_lock);
-+	list_del(&mem->list);
-+	mutex_unlock(&memcg_hotcpu_lock);
- 	free_percpu(mem->stat);
- 	if (sizeof(struct mem_cgroup) < PAGE_SIZE)
- 		kfree(mem);
-@@ -3753,7 +3782,7 @@ mem_cgroup_create(struct cgroup_subsys *
- 						&per_cpu(memcg_stock, cpu);
- 			INIT_WORK(&stock->work, drain_local_stock);
- 		}
--		hotcpu_notifier(memcg_stock_cpu_callback, 0);
-+		hotcpu_notifier(memcg_cpu_unplug_callback, 0);
- 	} else {
- 		parent = mem_cgroup_from_cont(cont->parent);
- 		mem->use_hierarchy = parent->use_hierarchy;
+  - phys_to_virt() ... convert physical address to virtual address.
+  - virt_to_phys() ... convert virtual address to physical.
+
+Anyway, RW is vitual address mapping's attribute and not for physical.
+
+Thanks,
+-Kame
+
 
