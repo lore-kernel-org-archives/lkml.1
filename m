@@ -1,66 +1,46 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932697Ab0BDPaW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 10:30:22 -0500
-Received: from e23smtp05.au.ibm.com ([202.81.31.147]:39599 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932221Ab0BDPaU (ORCPT
+	id S1758308Ab0BDPi0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 10:38:26 -0500
+Received: from liberdade.minaslivre.org ([72.232.254.139]:57897 "EHLO
+	liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755140Ab0BDPiY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 10:30:20 -0500
-Date: Thu, 4 Feb 2010 21:00:13 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Rik van Riel <riel@redhat.com>
-Cc: jdike@addtoit.com, kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
-       avi@redhat.com, aarcange@redhat.com, mtosatti@redhat.com
-Subject: Re: [PATCH] emulate accessed bit for EPT
-Message-ID: <20100204153013.GK19641@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20100203161103.11e2b572@annuminas.surriel.com>
- <20100204041212.GI19641@balbir.in.ibm.com>
- <4B6ACE5B.9080601@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <4B6ACE5B.9080601@redhat.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+	Thu, 4 Feb 2010 10:38:24 -0500
+From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+To: davem@davemloft.net
+Cc: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>,
+       Urs Thuermann <urs.thuermann@volkswagen.de>,
+       Oliver Hartkopp <oliver.hartkopp@volkswagen.de>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] can: ems_usb: removed duplicated code setting local echo support
+Date: Thu,  4 Feb 2010 13:33:44 -0200
+Message-Id: <1265297624-1853-1-git-send-email-cascardo@holoscopio.com>
+X-Mailer: git-send-email 1.6.6.1
+In-Reply-To: <20100203.203256.227182356.davem@davemloft.net>
+References: <20100203.203256.227182356.davem@davemloft.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Rik van Riel <riel@redhat.com> [2010-02-04 08:40:43]:
+Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+---
+ drivers/net/can/usb/ems_usb.c |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
-> On 02/03/2010 11:12 PM, Balbir Singh wrote:
-> >* Rik van Riel<riel@redhat.com>  [2010-02-03 16:11:03]:
-> >
-> >>Currently KVM pretends that pages with EPT mappings never got
-> >>accessed.  This has some side effects in the VM, like swapping
-> >>out actively used guest pages and needlessly breaking up actively
-> >>used hugepages.
-> >>
-> >>We can avoid those very costly side effects by emulating the
-> >>accessed bit for EPT PTEs, which should only be slightly costly
-> >>because pages pass through page_referenced infrequently.
-> 
-> >Quite a clever implementation, one side effect is that one would see a
-> >larger number of minor faults with EPT enabled and an increase in
-> >allocation/frees of rmap entries, but that can be easily explained.
-> 
-> I suspect it won't be very many. I have been monitoring
-> /proc/meminfo on my system while testing this patch, and
-> it is quite typical that the size of the inactive anon
-> list does not change for minutes at a time.
-> 
-> In other words, no pages are moved onto or off of the
-> inactive anon list for several minutes. That corresponds
-> to a very small number of minor faults introduced by my
-> patch.
-> 
-> Of course, when the system is swapping, we will have more
-> minor faults.  However, minor faults should be less of a
-> performance issue than major faults :)
->
-
-I do agree with you. 
-
+diff --git a/drivers/net/can/usb/ems_usb.c b/drivers/net/can/usb/ems_usb.c
+index bfab283..11c8784 100644
+--- a/drivers/net/can/usb/ems_usb.c
++++ b/drivers/net/can/usb/ems_usb.c
+@@ -1024,8 +1024,6 @@ static int ems_usb_probe(struct usb_interface *intf,
+ 	dev->can.do_set_mode = ems_usb_set_mode;
+ 	dev->can.ctrlmode_supported = CAN_CTRLMODE_3_SAMPLES;
+ 
+-	netdev->flags |= IFF_ECHO; /* we support local echo */
+-
+ 	netdev->netdev_ops = &ems_usb_netdev_ops;
+ 
+ 	netdev->flags |= IFF_ECHO; /* we support local echo */
 -- 
-	Balbir
+1.6.6.1
+
