@@ -1,166 +1,293 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933033Ab0BDAeQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 19:34:16 -0500
-Received: from bld-mail16.adl2.internode.on.net ([150.101.137.101]:43150 "EHLO
-	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933009Ab0BDAeO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 19:34:14 -0500
-Date: Thu, 4 Feb 2010 11:34:10 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Andi Kleen <andi@firstfloor.org>, tytso@mit.edu,
-       Miklos Szeredi <miklos@szeredi.hu>,
-       Alexander Viro <viro@ftp.linux.org.uk>,
-       Christoph Hellwig <hch@infradead.org>,
-       Christoph Lameter <clameter@sgi.com>, Rik van Riel <riel@redhat.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, akpm@linux-foundation.org,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickins <hugh@veritas.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: inodes: Support generic defragmentation
-Message-ID: <20100204003410.GD5332@discord.disaster>
-References: <20100129204931.789743493@quilx.com> <20100129205004.405949705@quilx.com> <20100130192623.GE788@thunk.org> <20100131083409.GF29555@one.firstfloor.org> <20100131135933.GM15853@discord.disaster> <alpine.DEB.2.00.1002030920500.5671@router.home>
+	id S933035Ab0BDAfe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 19:35:34 -0500
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:40031 "EHLO e9.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932991Ab0BDAfc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 19:35:32 -0500
+Date: Wed, 3 Feb 2010 18:35:28 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Kees Cook <kees.cook@canonical.com>
+Cc: James Morris <jmorris@namei.org>, Casey Schaufler <casey@schaufler-ca.com>,
+       linux-security-module@vger.kernel.org, Eric Paris <eparis@redhat.com>,
+       David Howells <dhowells@redhat.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Simon Kagstrom <simon.kagstrom@netinsight.net>,
+       David Woodhouse <David.Woodhouse@intel.com>,
+       Robin Getz <rgetz@analog.com>, Greg Kroah-Hartman <gregkh@suse.de>,
+       Paul Moore <paul.moore@hp.com>,
+       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+       Stephen Smalley <sds@tycho.nsa.gov>,
+       Etienne Basset <etienne.basset@numericable.fr>,
+       "David P. Quigley" <dpquigl@tycho.nsa.gov>,
+       LKLM <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v2 2/2] syslog: use defined constants instead of raw
+ numbers
+Message-ID: <20100204003528.GB16681@us.ibm.com>
+References: <20100202055354.GV19355@outflux.net>
+ <4B67C2EA.705@schaufler-ca.com>
+ <20100202202054.GW19355@outflux.net>
+ <20100202212510.GG32305@us.ibm.com>
+ <alpine.LRH.2.00.1002030859220.14592@tundra.namei.org>
+ <20100203233713.GJ19355@outflux.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.1002030920500.5671@router.home>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20100203233713.GJ19355@outflux.net>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 03, 2010 at 09:31:49AM -0600, Christoph Lameter wrote:
-> On Mon, 1 Feb 2010, Dave Chinner wrote:
+Quoting Kees Cook (kees.cook@canonical.com):
+> Right now the syslog "type" action are just raw numbers which makes
+> the source difficult to follow.  This patch replaces the raw numbers
+> with defined constants for some level of sanity.
 > 
-> > > The standard case is the classic updatedb. Lots of dentries/inodes cached
-> > > with no or little corresponding data cache.
-> >
-> > I don't believe that updatedb has anything to do with causing
-> > internal inode/dentry slab fragmentation. In all my testing I rarely
-> > see use-once filesystem traversals cause internal slab
-> > fragmentation. This appears to be a result of use-once filesystem
-> > traversal resulting in slab pages full of objects that have the same
-> > locality of access.  Hence each new slab page that traversal
-> > allocates will contain objects that will be adjacent in the LRU.
-> > Hence LRU-based reclaim is very likely to free all the objects on
-> > each page in the same pass and as such no fragmentation will occur.
+> Signed-off-by: Kees Cook <kees.cook@canonical.com>
+
+Acked-by: Serge Hallyn <serue@us.ibm.com>
+
+> ---
+>  fs/proc/kmsg.c           |   10 +++++-----
+>  include/linux/syslog.h   |   23 +++++++++++++++++++++++
+>  kernel/printk.c          |   45 +++++++++++++++++++--------------------------
+>  security/commoncap.c     |    5 +++--
+>  security/selinux/hooks.c |   21 +++++++++++----------
+>  5 files changed, 61 insertions(+), 43 deletions(-)
 > 
-> updatedb causes lots of partially allocated slab pages. While updatedb
-> runs other filesystem activities occur. And updatedb does not work in
-> straightforward linear fashion. dentries are cached and slowly expired etc
-> etc.
-
-Sure, but my point was that updatedb hits lots of inodes only once,
-and for those objects the order of caching and expiration are
-exactly the same. Hence after reclaim of the updatedb dentries/inodes
-the amount of fragmentation in the slab will be almost exactly the
-same as it was before the updatedb run.
-
-> > All the cases of inode/dentry slab fragmentation I have seen are a
-> > result of access patterns that result in slab pages containing
-> > objects with different temporal localities. It's when the access
-> > pattern is sufficiently distributed throughout the working set we
-> > get the "need to free 95% of the objects in the entire cache to free
-> > a single page" type of reclaim behaviour.
+> diff --git a/fs/proc/kmsg.c b/fs/proc/kmsg.c
+> index 6a3d843..cfe90a4 100644
+> --- a/fs/proc/kmsg.c
+> +++ b/fs/proc/kmsg.c
+> @@ -21,12 +21,12 @@ extern wait_queue_head_t log_wait;
 > 
-> There are also other factors at play like the different NUMA node,
-> concurrent processes.
-
-Yes, those are just more factors in the access patterns being
-"sufficiently distributed throughout the working set".
-
-> > AFAICT, the defrag patches as they stand don't really address the
-> > fundamental problem of differing temporal locality inside a slab
-> > page.  It makes the assumption that "partial page == defrag
-> > candidate" but there isn't any further consideration of when any of
-> > the remaing objects were last accessed. I think that this really
-> > does need to be taken into account, especially considering that the
-> > allocator tries to fill partial pages with new objects before
-> > allocating new pages and so the page under reclaim might contain
-> > very recently allocated objects.
+>  static int kmsg_open(struct inode * inode, struct file * file)
+>  {
+> -	return do_syslog(1, NULL, 0, SYSLOG_FROM_FILE);
+> +	return do_syslog(SYSLOG_ACTION_OPEN, NULL, 0, SYSLOG_FROM_FILE);
+>  }
 > 
-> Reclaim is only run if there is memory pressure. This means that lots of
-> reclaimable entities exist and therefore we can assume that many of these
-> have had a somewhat long lifetime. The allocator tries to fill partial
-> pages with new objects and then retires those pages to the full slab list.
-> Those are not subject to reclaim efforts covered here. A page under
-> reclaim is likely to contain many recently freed objects.
-
-Not necessarily. It might contain only one recently reclaimed object,
-but have several other hot objects in the page....
-
-> The remaining objects may have a long lifetime and a high usage pattern
-> but it is worth to relocate them into other slabs if they prevent reclaim
-> of the page.
-
-I completely disagree. If you have to trash all the cache hot
-information related to the cached object in the process of
-relocating it, then you've just screwed up application performance
-and in a completely unpredictable manner. Admins will be tearing out
-their hair trying to work out why their applications randomly slow
-down....
-
-> > Someone in a previous discussion on this patch set (Nick? Hugh,
-> > maybe? I can't find the reference right now) mentioned something
-> > like this about the design of the force-reclaim operations. IIRC the
-> > suggestion was that it may be better to track LRU-ness by per-slab
-> > page rather than per-object so that reclaim can target the slab
-> > pages that - on aggregate - had the oldest objects in it. I think
-> > this has merit - prevention of internal fragmentation seems like a
-> > better approach to me than to try to cure it after it is already
-> > present....
+>  static int kmsg_release(struct inode * inode, struct file * file)
+>  {
+> -	(void) do_syslog(0, NULL, 0, SYSLOG_FROM_FILE);
+> +	(void) do_syslog(SYSLOG_ACTION_CLOSE, NULL, 0, SYSLOG_FROM_FILE);
+>  	return 0;
+>  }
 > 
-> LRUness exists in terms of the list of partial slab pages. Frequently
-> allocated slabs are in the front of the queue and less used slabs are in
-> the rear. Defrag/reclaim occurs from the rear.
-
-You missed my point again. You're still talking about tracking pages
-with no regard to the objects remaining in the pages. A page, full
-or partial, is a candidate for object reclaim if none of the objects
-on it are referenced and have not been referenced for some time.
-
-You are currently relying on the existing LRU reclaim to move a slab
-from full to partial to trigger defragmentation, but you ignore the
-hotness of the rest of the objects on the page by trying to reclaim
-the page that has been partial for the longest period of time.
-
-What it comes down to is that the slab has two states for objects -
-allocated and free - but what we really need here is 3 states -
-allocated, unused and freed. We currently track unused objects
-outside the slab in LRU lists and, IMO, that is the source of our
-fragmentation problems because it has no knowledge of the spatial
-layout of the slabs and the state of other objects in the page.
-
-What I'm suggesting is that we ditch the external LRUs and track the
-"unused" state inside the slab and then use that knowledge to decide
-which pages to reclaim.  e.g. slab_object_used() is called when the
-first reference on an object is taken. slab_object_unused() is
-called when the reference count goes to zero. The slab can then
-track unused objects internally and when reclaim is needed can
-select pages (full or partial) that only contain unused objects to
-reclaim.
-
->From there the existing reclaim algorithms could be used to reclaim
-the objects. i.e. the shrinkers become a slab reclaim callout that
-are passed a linked list of objects to reclaim, very similar to the
-way __shrink_dcache_sb() and prune_icache() first build a list of
-objects to reclaim, then work off that list of objects.
-
-If the goal is to reduce fragmentation, then this seems like a
-much better approach to me - it is inherently fragmentation
-resistent and much more closely aligned to existing object reclaim
-algorithms.
-
-If the goal is random slab page shootdown (e.g. for hwpoison), then
-it's a much more complex problem because you can't shoot down
-active, referenced objects without revoke(). Hence I think the
-two problem spaces should be kept separate as it's not obvious
-that they can both be solved with the same mechanism....
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+> @@ -34,15 +34,15 @@ static ssize_t kmsg_read(struct file *file, char __user *buf,
+>  			 size_t count, loff_t *ppos)
+>  {
+>  	if ((file->f_flags & O_NONBLOCK) &&
+> -	    !do_syslog(9, NULL, 0, SYSLOG_FROM_FILE))
+> +	    !do_syslog(SYSLOG_ACTION_SIZE_UNREAD, NULL, 0, SYSLOG_FROM_FILE))
+>  		return -EAGAIN;
+> -	return do_syslog(2, buf, count, SYSLOG_FROM_FILE);
+> +	return do_syslog(SYSLOG_ACTION_READ, buf, count, SYSLOG_FROM_FILE);
+>  }
+> 
+>  static unsigned int kmsg_poll(struct file *file, poll_table *wait)
+>  {
+>  	poll_wait(file, &log_wait, wait);
+> -	if (do_syslog(9, NULL, 0, SYSLOG_FROM_FILE))
+> +	if (do_syslog(SYSLOG_ACTION_SIZE_UNREAD, NULL, 0, SYSLOG_FROM_FILE))
+>  		return POLLIN | POLLRDNORM;
+>  	return 0;
+>  }
+> diff --git a/include/linux/syslog.h b/include/linux/syslog.h
+> index 5f02b18..3891139 100644
+> --- a/include/linux/syslog.h
+> +++ b/include/linux/syslog.h
+> @@ -21,6 +21,29 @@
+>  #ifndef _LINUX_SYSLOG_H
+>  #define _LINUX_SYSLOG_H
+> 
+> +/* Close the log.  Currently a NOP. */
+> +#define SYSLOG_ACTION_CLOSE          0
+> +/* Open the log. Currently a NOP. */
+> +#define SYSLOG_ACTION_OPEN           1
+> +/* Read from the log. */
+> +#define SYSLOG_ACTION_READ           2
+> +/* Read all messages remaining in the ring buffer. */
+> +#define SYSLOG_ACTION_READ_ALL       3
+> +/* Read and clear all messages remaining in the ring buffer */
+> +#define SYSLOG_ACTION_READ_CLEAR     4
+> +/* Clear ring buffer. */
+> +#define SYSLOG_ACTION_CLEAR          5
+> +/* Disable printk's to console */
+> +#define SYSLOG_ACTION_CONSOLE_OFF    6
+> +/* Enable printk's to console */
+> +#define SYSLOG_ACTION_CONSOLE_ON     7
+> +/* Set level of messages printed to console */
+> +#define SYSLOG_ACTION_CONSOLE_LEVEL  8
+> +/* Return number of unread characters in the log buffer */
+> +#define SYSLOG_ACTION_SIZE_UNREAD    9
+> +/* Return size of the log buffer */
+> +#define SYSLOG_ACTION_SIZE_BUFFER   10
+> +
+>  #define SYSLOG_FROM_CALL 0
+>  #define SYSLOG_FROM_FILE 1
+> 
+> diff --git a/kernel/printk.c b/kernel/printk.c
+> index 1771b34..4067412 100644
+> --- a/kernel/printk.c
+> +++ b/kernel/printk.c
+> @@ -259,21 +259,6 @@ static inline void boot_delay_msec(void)
+>  }
+>  #endif
+> 
+> -/*
+> - * Commands to do_syslog:
+> - *
+> - * 	0 -- Close the log.  Currently a NOP.
+> - * 	1 -- Open the log. Currently a NOP.
+> - * 	2 -- Read from the log.
+> - * 	3 -- Read all messages remaining in the ring buffer.
+> - * 	4 -- Read and clear all messages remaining in the ring buffer
+> - * 	5 -- Clear ring buffer.
+> - * 	6 -- Disable printk's to console
+> - * 	7 -- Enable printk's to console
+> - *	8 -- Set level of messages printed to console
+> - *	9 -- Return number of unread characters in the log buffer
+> - *     10 -- Return size of the log buffer
+> - */
+>  int do_syslog(int type, char __user *buf, int len, bool from_file)
+>  {
+>  	unsigned i, j, limit, count;
+> @@ -286,11 +271,11 @@ int do_syslog(int type, char __user *buf, int len, bool from_file)
+>  		return error;
+> 
+>  	switch (type) {
+> -	case 0:		/* Close log */
+> +	case SYSLOG_ACTION_CLOSE:	/* Close log */
+>  		break;
+> -	case 1:		/* Open log */
+> +	case SYSLOG_ACTION_OPEN:	/* Open log */
+>  		break;
+> -	case 2:		/* Read from log */
+> +	case SYSLOG_ACTION_READ:	/* Read from log */
+>  		error = -EINVAL;
+>  		if (!buf || len < 0)
+>  			goto out;
+> @@ -321,10 +306,12 @@ int do_syslog(int type, char __user *buf, int len, bool from_file)
+>  		if (!error)
+>  			error = i;
+>  		break;
+> -	case 4:		/* Read/clear last kernel messages */
+> +	/* Read/clear last kernel messages */
+> +	case SYSLOG_ACTION_READ_CLEAR:
+>  		do_clear = 1;
+>  		/* FALL THRU */
+> -	case 3:		/* Read last kernel messages */
+> +	/* Read last kernel messages */
+> +	case SYSLOG_ACTION_READ_ALL:
+>  		error = -EINVAL;
+>  		if (!buf || len < 0)
+>  			goto out;
+> @@ -377,21 +364,25 @@ int do_syslog(int type, char __user *buf, int len, bool from_file)
+>  			}
+>  		}
+>  		break;
+> -	case 5:		/* Clear ring buffer */
+> +	/* Clear ring buffer */
+> +	case SYSLOG_ACTION_CLEAR:
+>  		logged_chars = 0;
+>  		break;
+> -	case 6:		/* Disable logging to console */
+> +	/* Disable logging to console */
+> +	case SYSLOG_ACTION_CONSOLE_OFF:
+>  		if (saved_console_loglevel == -1)
+>  			saved_console_loglevel = console_loglevel;
+>  		console_loglevel = minimum_console_loglevel;
+>  		break;
+> -	case 7:		/* Enable logging to console */
+> +	/* Enable logging to console */
+> +	case SYSLOG_ACTION_CONSOLE_ON:
+>  		if (saved_console_loglevel != -1) {
+>  			console_loglevel = saved_console_loglevel;
+>  			saved_console_loglevel = -1;
+>  		}
+>  		break;
+> -	case 8:		/* Set level of messages printed to console */
+> +	/* Set level of messages printed to console */
+> +	case SYSLOG_ACTION_CONSOLE_LEVEL:
+>  		error = -EINVAL;
+>  		if (len < 1 || len > 8)
+>  			goto out;
+> @@ -402,10 +393,12 @@ int do_syslog(int type, char __user *buf, int len, bool from_file)
+>  		saved_console_loglevel = -1;
+>  		error = 0;
+>  		break;
+> -	case 9:		/* Number of chars in the log buffer */
+> +	/* Number of chars in the log buffer */
+> +	case SYSLOG_ACTION_SIZE_UNREAD:
+>  		error = log_end - log_start;
+>  		break;
+> -	case 10:	/* Size of the log buffer */
+> +	/* Size of the log buffer */
+> +	case SYSLOG_ACTION_SIZE_BUFFER:
+>  		error = log_buf_len;
+>  		break;
+>  	default:
+> diff --git a/security/commoncap.c b/security/commoncap.c
+> index 677fad9..cf01b2e 100644
+> --- a/security/commoncap.c
+> +++ b/security/commoncap.c
+> @@ -897,9 +897,10 @@ error:
+>  int cap_syslog(int type, bool from_file)
+>  {
+>  	/* /proc/kmsg can open be opened by CAP_SYS_ADMIN */
+> -	if (type != 1 && from_file)
+> +	if (type != SYSLOG_ACTION_OPEN && from_file)
+>  		return 0;
+> -	if ((type != 3 && type != 10) && !capable(CAP_SYS_ADMIN))
+> +	if ((type != SYSLOG_ACTION_READ_ALL &&
+> +	     type != SYSLOG_ACTION_SIZE_BUFFER) && !capable(CAP_SYS_ADMIN))
+>  		return -EPERM;
+>  	return 0;
+>  }
+> diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
+> index a4862a0..6b36ce2 100644
+> --- a/security/selinux/hooks.c
+> +++ b/security/selinux/hooks.c
+> @@ -2059,20 +2059,21 @@ static int selinux_syslog(int type, bool from_file)
+>  		return rc;
+> 
+>  	switch (type) {
+> -	case 3:		/* Read last kernel messages */
+> -	case 10:	/* Return size of the log buffer */
+> +	case SYSLOG_ACTION_READ_ALL:	/* Read last kernel messages */
+> +	case SYSLOG_ACTION_SIZE_BUFFER:	/* Return size of the log buffer */
+>  		rc = task_has_system(current, SYSTEM__SYSLOG_READ);
+>  		break;
+> -	case 6:		/* Disable logging to console */
+> -	case 7:		/* Enable logging to console */
+> -	case 8:		/* Set level of messages printed to console */
+> +	case SYSLOG_ACTION_CONSOLE_OFF:	/* Disable logging to console */
+> +	case SYSLOG_ACTION_CONSOLE_ON:	/* Enable logging to console */
+> +	/* Set level of messages printed to console */
+> +	case SYSLOG_ACTION_CONSOLE_LEVEL:
+>  		rc = task_has_system(current, SYSTEM__SYSLOG_CONSOLE);
+>  		break;
+> -	case 0:		/* Close log */
+> -	case 1:		/* Open log */
+> -	case 2:		/* Read from log */
+> -	case 4:		/* Read/clear last kernel messages */
+> -	case 5:		/* Clear ring buffer */
+> +	case SYSLOG_ACTION_CLOSE:	/* Close log */
+> +	case SYSLOG_ACTION_OPEN:	/* Open log */
+> +	case SYSLOG_ACTION_READ:	/* Read from log */
+> +	case SYSLOG_ACTION_READ_CLEAR:	/* Read/clear last kernel messages */
+> +	case SYSLOG_ACTION_CLEAR:	/* Clear ring buffer */
+>  	default:
+>  		rc = task_has_system(current, SYSTEM__SYSLOG_MOD);
+>  		break;
+> -- 
+> 1.6.5
+> 
+> 
+> -- 
+> Kees Cook
+> Ubuntu Security Team
