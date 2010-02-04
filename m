@@ -1,41 +1,57 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758509Ab0BDQtR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 11:49:17 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:56112 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758351Ab0BDQtQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 11:49:16 -0500
-Date: Thu, 4 Feb 2010 16:48:59 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Dave Airlie <airlied@gmail.com>, Dave Airlie <airlied@linux.ie>,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       dri-devel@lists.sf.net
-Subject: Re: hung bootup with "drm/radeon/kms: move radeon KMS on/off
-	switch out of staging."
-Message-ID: <20100204164859.GA17878@srcf.ucam.org>
-References: <alpine.DEB.2.00.1002010215530.15366@skynet.skynet.ie> <alpine.DEB.2.00.1002010253120.15366@skynet.skynet.ie> <20100202081727.GA6788@elte.hu> <21d7e9971002020035v22318962w6412ccd8d93449da@mail.gmail.com> <20100202154656.GD27314@elte.hu> <21d7e9971002021234y275fae02k410af92bb16fee73@mail.gmail.com> <20100204062619.GA29154@elte.hu> <20100204071705.GA28403@elte.hu>
+	id S1751171Ab0BDQvm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 11:51:42 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:10376 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750968Ab0BDQvk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 11:51:40 -0500
+Date: Thu, 4 Feb 2010 17:51:05 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Arjan van de Ven <arjan@linux.intel.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: PATCH? process_32.c:__switch_to() calls __math_state_restore()
+	before updating current_task
+Message-ID: <20100204165105.GA5905@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100204071705.GA28403@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 04, 2010 at 08:17:05AM +0100, Ingo Molnar wrote:
+I didn't try to verify __switch_to()->__math_state_restore() is really
+wrong, this is more the question than the patch. But at least the code
+looks wrong, it calls __math_state_restore() which uses curent before
+current_task was updated.
 
-> btw., i just found another bug activated via this same commit, a boot hang 
-> after DRM init:
+Uncompiled/untested.
 
-The commit in question didn't cause the hang, so reverting it isn't the 
-appropriate fix.
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+--- a/arch/x86/kernel/process_32.c
++++ b/arch/x86/kernel/process_32.c
+@@ -377,9 +377,6 @@ __switch_to(struct task_struct *prev_p, 
+ 	 */
+ 	arch_end_context_switch(next_p);
+ 
+-	if (preload_fpu)
+-		__math_state_restore();
+-
+ 	/*
+ 	 * Restore %gs if needed (which is common)
+ 	 */
+@@ -388,6 +385,9 @@ __switch_to(struct task_struct *prev_p, 
+ 
+ 	percpu_write(current_task, next_p);
+ 
++	if (preload_fpu)
++		__math_state_restore();
++
+ 	return prev_p;
+ }
+ 
+
