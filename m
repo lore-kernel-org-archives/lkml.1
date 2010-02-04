@@ -1,61 +1,302 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758113Ab0BDMgA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 07:36:00 -0500
-Received: from mail-iw0-f189.google.com ([209.85.223.189]:63002 "EHLO
-	mail-iw0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757910Ab0BDMf7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 07:35:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=ZbOXRqAdmXcnH6q9LRNVTf15padqycV4zMaynKFQpOMZ0bvK42Grijb4Bdij2dDJQx
-         V7en/gmi0YuJpTYIYAc75aZUNplLdfHXt6RT5yymJ6YtmmisiTb/suisUrPCesN19gex
-         H9wbqXBcaFGK/XO0UMRfJ8Cp4vXE69pAoUOGE=
+	id S1758103Ab0BDMnw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 07:43:52 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:38899 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758005Ab0BDMnu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 07:43:50 -0500
+Date: Thu, 4 Feb 2010 13:43:48 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] [ALSA] es1968: remove unused code and macros
+Message-ID: <alpine.LNX.2.00.1002041342160.15395@pobox.suse.cz>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <4B6ABDEF.8090005@trash.net>
-References: <1265108690.2861.118.camel@tonnant>
-	 <1265134598.2861.191.camel@tonnant> <4B6870AF.6060109@trash.net>
-	 <4B6967BC.600@trash.net> <1265222289.2861.290.camel@tonnant>
-	 <20100203190948.GA5182@x200> <1265226227.2861.302.camel@tonnant>
-	 <4B6ABCB8.4080904@trash.net>
-	 <b6fcc0a1002040427n221da433n755350b4a41bbf9b@mail.gmail.com>
-	 <4B6ABDEF.8090005@trash.net>
-Date: Thu, 4 Feb 2010 14:35:56 +0200
-Message-ID: <b6fcc0a1002040435t150aa7axf2dc0b139ed8f258@mail.gmail.com>
-Subject: Re: [PATCH] netfilter: per netns nf_conntrack_cachep
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Patrick McHardy <kaber@trash.net>
-Cc: Jon Masters <jonathan@jonmasters.org>,
-       Eric Dumazet <eric.dumazet@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>,
-       netfilter-devel <netfilter-devel@vger.kernel.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 4, 2010 at 2:30 PM, Patrick McHardy <kaber@trash.net> wrote:
-> Alexey Dobriyan wrote:
->> On Thu, Feb 4, 2010 at 2:25 PM, Patrick McHardy <kaber@trash.net> wrote:
->>> Jon Masters wrote:
->>>> On Wed, 2010-02-03 at 21:09 +0200, Alexey Dobriyan wrote:
->>>>> On Wed, Feb 03, 2010 at 01:38:09PM -0500, Jon Masters wrote:
->>>>>> *). Per namespace cacheing allocation (the cachep bits). We know it's
->>>>>> still possible for weirdness to happen in the SLAB cache here.
->>>>> Tiny race, needs reproducer.
->>>> Maybe. I think it's worth fixing anyway.
->>> Absolutely, I'll also apply Eric's patch with the %p fix for the
->>> slab name.
->>
->> This would show kernel pointers in userspace ;-)
->> So, net->id is required.
->
-> I don't see the problem. But yes, it would be nicer to have an ID.
+Remove code that has been commented out since beginning of git history.
 
-This is done (or rather, not done) to not show attackers
-where data structures are.
+Also remove macros that are not used throughout the driver code at all.
+
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+---
+ sound/pci/es1968.c |  181 ----------------------------------------------------
+ 1 files changed, 0 insertions(+), 181 deletions(-)
+
+diff --git a/sound/pci/es1968.c b/sound/pci/es1968.c
+index a11f453..5c35075 100644
+--- a/sound/pci/es1968.c
++++ b/sound/pci/es1968.c
+@@ -173,19 +173,10 @@ MODULE_PARM_DESC(joystick, "Enable joystick.");
+ #define ESS_FMT_STEREO     	0x01
+ #define ESS_FMT_16BIT      	0x02
+ 
+-#define DAC_RUNNING		1
+-#define ADC_RUNNING		2
+-
+ /* Values for the ESM_LEGACY_AUDIO_CONTROL */
+ 
+ #define ESS_DISABLE_AUDIO	0x8000
+ #define ESS_ENABLE_SERIAL_IRQ	0x4000
+-#define IO_ADRESS_ALIAS		0x0020
+-#define MPU401_IRQ_ENABLE	0x0010
+-#define MPU401_IO_ENABLE	0x0008
+-#define GAME_IO_ENABLE		0x0004
+-#define FM_IO_ENABLE		0x0002
+-#define SB_IO_ENABLE		0x0001
+ 
+ /* Values for the ESM_CONFIG_A */
+ 
+@@ -193,9 +184,6 @@ MODULE_PARM_DESC(joystick, "Enable joystick.");
+ #define PIC_SNOOP2		0x2000
+ #define SAFEGUARD		0x0800
+ #define DMA_CLEAR		0x0700
+-#define DMA_DDMA		0x0000
+-#define DMA_TDMA		0x0100
+-#define DMA_PCPCI		0x0200
+ #define POST_WRITE		0x0080
+ #define PCI_TIMING		0x0040
+ #define SWAP_LR			0x0020
+@@ -217,7 +205,6 @@ MODULE_PARM_DESC(joystick, "Enable joystick.");
+ #define RINGB_DIS_VALIDATION	0x0008
+ #define RINGB_EN_SPDIF		0x0010
+ #define	RINGB_EN_2CODEC		0x0020
+-#define RINGB_SING_BIT_DUAL	0x0040
+ 
+ /* ****Port Adresses**** */
+ 
+@@ -231,7 +218,6 @@ MODULE_PARM_DESC(joystick, "Enable joystick.");
+ #define ESM_RING_BUS_DEST	0x34
+ #define ESM_RING_BUS_CONTR_A	0x36
+ #define ESM_RING_BUS_CONTR_B	0x38
+-#define ESM_RING_BUS_SDO	0x3A
+ 
+ /*   WaveCache*/
+ #define WC_INDEX		0x10
+@@ -239,15 +225,9 @@ MODULE_PARM_DESC(joystick, "Enable joystick.");
+ #define WC_CONTROL		0x14
+ 
+ /*   ASSP*/
+-#define ASSP_INDEX		0x80
+-#define ASSP_MEMORY		0x82
+-#define ASSP_DATA		0x84
+ #define ASSP_CONTROL_A		0xA2
+ #define ASSP_CONTROL_B		0xA4
+ #define ASSP_CONTROL_C		0xA6
+-#define ASSP_HOSTW_INDEX	0xA8
+-#define ASSP_HOSTW_DATA		0xAA
+-#define ASSP_HOSTW_IRQ		0xAC
+ /* Midi */
+ #define ESM_MPU401_PORT		0x98
+ /* Others */
+@@ -256,19 +236,11 @@ MODULE_PARM_DESC(joystick, "Enable joystick.");
+ #define IDR0_DATA_PORT		0x00
+ #define IDR1_CRAM_POINTER	0x01
+ #define IDR2_CRAM_DATA		0x02
+-#define IDR3_WAVE_DATA		0x03
+-#define IDR4_WAVE_PTR_LOW	0x04
+-#define IDR5_WAVE_PTR_HI	0x05
+-#define IDR6_TIMER_CTRL		0x06
+ #define IDR7_WAVE_ROMRAM	0x07
+ 
+-#define WRITEABLE_MAP		0xEFFFFF
+-#define READABLE_MAP		0x64003F
+-
+ /* PCI Register */
+ 
+ #define ESM_LEGACY_AUDIO_CONTROL 0x40
+-#define ESM_ACPI_COMMAND	0x54
+ #define ESM_CONFIG_A		0x50
+ #define ESM_CONFIG_B		0x52
+ #define ESM_DDMA		0x60
+@@ -280,149 +252,23 @@ MODULE_PARM_DESC(joystick, "Enable joystick.");
+ /* Host IRQ Control Bits */
+ #define ESM_RESET_MAESTRO	0x8000
+ #define ESM_RESET_DIRECTSOUND   0x4000
+-#define ESM_HIRQ_ClkRun		0x0100
+ #define ESM_HIRQ_HW_VOLUME	0x0040
+-#define ESM_HIRQ_HARPO		0x0030	/* What's that? */
+-#define ESM_HIRQ_ASSP		0x0010
+ #define	ESM_HIRQ_DSIE		0x0004
+ #define ESM_HIRQ_MPU401		0x0002
+-#define ESM_HIRQ_SB		0x0001
+ 
+ /* Host IRQ Status Bits */
+ #define ESM_MPU401_IRQ		0x02
+-#define ESM_SB_IRQ		0x01
+ #define ESM_SOUND_IRQ		0x04
+-#define	ESM_ASSP_IRQ		0x10
+ #define ESM_HWVOL_IRQ		0x40
+ 
+ #define ESS_SYSCLK		50000000
+ #define ESM_BOB_FREQ 		200
+ #define ESM_BOB_FREQ_MAX	800
+ 
+-#define ESM_FREQ_ESM1  		(49152000L / 1024L)	/* default rate 48000 */
+-#define ESM_FREQ_ESM2  		(50000000L / 1024L)
+-
+ /* APU Modes: reg 0x00, bit 4-7 */
+-#define ESM_APU_MODE_SHIFT	4
+-#define ESM_APU_MODE_MASK	(0xf << 4)
+-#define	ESM_APU_OFF		0x00
+-#define	ESM_APU_16BITLINEAR	0x01	/* 16-Bit Linear Sample Player */
+-#define	ESM_APU_16BITSTEREO	0x02	/* 16-Bit Stereo Sample Player */
+ #define	ESM_APU_8BITLINEAR	0x03	/* 8-Bit Linear Sample Player */
+-#define	ESM_APU_8BITSTEREO	0x04	/* 8-Bit Stereo Sample Player */
+-#define	ESM_APU_8BITDIFF	0x05	/* 8-Bit Differential Sample Playrer */
+-#define	ESM_APU_DIGITALDELAY	0x06	/* Digital Delay Line */
+-#define	ESM_APU_DUALTAP		0x07	/* Dual Tap Reader */
+-#define	ESM_APU_CORRELATOR	0x08	/* Correlator */
+ #define	ESM_APU_INPUTMIXER	0x09	/* Input Mixer */
+-#define	ESM_APU_WAVETABLE	0x0A	/* Wave Table Mode */
+ #define	ESM_APU_SRCONVERTOR	0x0B	/* Sample Rate Convertor */
+-#define	ESM_APU_16BITPINGPONG	0x0C	/* 16-Bit Ping-Pong Sample Player */
+-#define	ESM_APU_RESERVED1	0x0D	/* Reserved 1 */
+-#define	ESM_APU_RESERVED2	0x0E	/* Reserved 2 */
+-#define	ESM_APU_RESERVED3	0x0F	/* Reserved 3 */
+-
+-/* reg 0x00 */
+-#define ESM_APU_FILTER_Q_SHIFT		0
+-#define ESM_APU_FILTER_Q_MASK		(3 << 0)
+-/* APU Filtey Q Control */
+-#define ESM_APU_FILTER_LESSQ	0x00
+-#define ESM_APU_FILTER_MOREQ	0x03
+-
+-#define ESM_APU_FILTER_TYPE_SHIFT	2
+-#define ESM_APU_FILTER_TYPE_MASK	(3 << 2)
+-#define ESM_APU_ENV_TYPE_SHIFT		8
+-#define ESM_APU_ENV_TYPE_MASK		(3 << 8)
+-#define ESM_APU_ENV_STATE_SHIFT		10
+-#define ESM_APU_ENV_STATE_MASK		(3 << 10)
+-#define ESM_APU_END_CURVE		(1 << 12)
+-#define ESM_APU_INT_ON_LOOP		(1 << 13)
+-#define ESM_APU_DMA_ENABLE		(1 << 14)
+-
+-/* reg 0x02 */
+-#define ESM_APU_SUBMIX_GROUP_SHIRT	0
+-#define ESM_APU_SUBMIX_GROUP_MASK	(7 << 0)
+-#define ESM_APU_SUBMIX_MODE		(1 << 3)
+-#define ESM_APU_6dB			(1 << 4)
+-#define ESM_APU_DUAL_EFFECT		(1 << 5)
+-#define ESM_APU_EFFECT_CHANNELS_SHIFT	6
+-#define ESM_APU_EFFECT_CHANNELS_MASK	(3 << 6)
+-
+-/* reg 0x03 */
+-#define ESM_APU_STEP_SIZE_MASK		0x0fff
+-
+-/* reg 0x04 */
+-#define ESM_APU_PHASE_SHIFT		0
+-#define ESM_APU_PHASE_MASK		(0xff << 0)
+-#define ESM_APU_WAVE64K_PAGE_SHIFT	8	/* most 8bit of wave start offset */
+-#define ESM_APU_WAVE64K_PAGE_MASK	(0xff << 8)
+-
+-/* reg 0x05 - wave start offset */
+-/* reg 0x06 - wave end offset */
+-/* reg 0x07 - wave loop length */
+-
+-/* reg 0x08 */
+-#define ESM_APU_EFFECT_GAIN_SHIFT	0
+-#define ESM_APU_EFFECT_GAIN_MASK	(0xff << 0)
+-#define ESM_APU_TREMOLO_DEPTH_SHIFT	8
+-#define ESM_APU_TREMOLO_DEPTH_MASK	(0xf << 8)
+-#define ESM_APU_TREMOLO_RATE_SHIFT	12
+-#define ESM_APU_TREMOLO_RATE_MASK	(0xf << 12)
+-
+-/* reg 0x09 */
+-/* bit 0-7 amplitude dest? */
+-#define ESM_APU_AMPLITUDE_NOW_SHIFT	8
+-#define ESM_APU_AMPLITUDE_NOW_MASK	(0xff << 8)
+-
+-/* reg 0x0a */
+-#define ESM_APU_POLAR_PAN_SHIFT		0
+-#define ESM_APU_POLAR_PAN_MASK		(0x3f << 0)
+-/* Polar Pan Control */
+-#define	ESM_APU_PAN_CENTER_CIRCLE		0x00
+-#define	ESM_APU_PAN_MIDDLE_RADIUS		0x01
+-#define	ESM_APU_PAN_OUTSIDE_RADIUS		0x02
+-
+-#define ESM_APU_FILTER_TUNING_SHIFT	8
+-#define ESM_APU_FILTER_TUNING_MASK	(0xff << 8)
+-
+-/* reg 0x0b */
+-#define ESM_APU_DATA_SRC_A_SHIFT	0
+-#define ESM_APU_DATA_SRC_A_MASK		(0x7f << 0)
+-#define ESM_APU_INV_POL_A		(1 << 7)
+-#define ESM_APU_DATA_SRC_B_SHIFT	8
+-#define ESM_APU_DATA_SRC_B_MASK		(0x7f << 8)
+-#define ESM_APU_INV_POL_B		(1 << 15)
+-
+-#define ESM_APU_VIBRATO_RATE_SHIFT	0
+-#define ESM_APU_VIBRATO_RATE_MASK	(0xf << 0)
+-#define ESM_APU_VIBRATO_DEPTH_SHIFT	4
+-#define ESM_APU_VIBRATO_DEPTH_MASK	(0xf << 4)
+-#define ESM_APU_VIBRATO_PHASE_SHIFT	8
+-#define ESM_APU_VIBRATO_PHASE_MASK	(0xff << 8)
+-
+-/* reg 0x0c */
+-#define ESM_APU_RADIUS_SELECT		(1 << 6)
+-
+-/* APU Filter Control */
+-#define	ESM_APU_FILTER_2POLE_LOPASS	0x00
+-#define	ESM_APU_FILTER_2POLE_BANDPASS	0x01
+-#define	ESM_APU_FILTER_2POLE_HIPASS	0x02
+-#define	ESM_APU_FILTER_1POLE_LOPASS	0x03
+-#define	ESM_APU_FILTER_1POLE_HIPASS	0x04
+-#define	ESM_APU_FILTER_OFF		0x05
+-
+-/* APU ATFP Type */
+-#define	ESM_APU_ATFP_AMPLITUDE			0x00
+-#define	ESM_APU_ATFP_TREMELO			0x01
+-#define	ESM_APU_ATFP_FILTER			0x02
+-#define	ESM_APU_ATFP_PAN			0x03
+-
+-/* APU ATFP Flags */
+-#define	ESM_APU_ATFP_FLG_OFF			0x00
+-#define	ESM_APU_ATFP_FLG_WAIT			0x01
+-#define	ESM_APU_ATFP_FLG_DONE			0x02
+-#define	ESM_APU_ATFP_FLG_INPROCESS		0x03
+-
+ 
+ /* capture mixing buffer size */
+ #define ESM_MEM_ALIGN		0x1000
+@@ -729,33 +575,6 @@ static u16 apu_get_register(struct es1968 *chip, u16 channel, u8 reg)
+ 	return v;
+ }
+ 
+-#if 0 /* ASSP is not supported */
+-
+-static void assp_set_register(struct es1968 *chip, u32 reg, u32 value)
+-{
+-	unsigned long flags;
+-
+-	spin_lock_irqsave(&chip->reg_lock, flags);
+-	outl(reg, chip->io_port + ASSP_INDEX);
+-	outl(value, chip->io_port + ASSP_DATA);
+-	spin_unlock_irqrestore(&chip->reg_lock, flags);
+-}
+-
+-static u32 assp_get_register(struct es1968 *chip, u32 reg)
+-{
+-	unsigned long flags;
+-	u32 value;
+-
+-	spin_lock_irqsave(&chip->reg_lock, flags);
+-	outl(reg, chip->io_port + ASSP_INDEX);
+-	value = inl(chip->io_port + ASSP_DATA);
+-	spin_unlock_irqrestore(&chip->reg_lock, flags);
+-
+-	return value;
+-}
+-
+-#endif
+-
+ static void wave_set_register(struct es1968 *chip, u16 reg, u16 value)
+ {
+ 	unsigned long flags;
+-- 
+1.6.4.2
