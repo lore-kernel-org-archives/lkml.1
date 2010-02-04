@@ -1,132 +1,137 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755674Ab0BDCiC (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 21:38:02 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:44360 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751477Ab0BDCh6 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 21:37:58 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=IY7ybKhdFM+po9n7sHDQWWvYUTsgf1pxkxxI6SphZBUvuJ7rajBm5LNIGavvUyb7e
-	eEg9Kyo289GtRujcPrZwQ==
+	id S1752292Ab0BDCmN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 21:42:13 -0500
+Received: from mga01.intel.com ([192.55.52.88]:19897 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750791Ab0BDCmJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 21:42:09 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,402,1262592000"; 
+   d="scan'208";a="537566163"
+Date: Thu, 4 Feb 2010 10:42:02 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Greg KH <greg@kroah.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Andi Kleen <andi@firstfloor.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "stable@kernel.org" <stable@kernel.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: [stable] [PATCH] devmem: check vmalloc address on kmem read/write
+Message-ID: <20100204024202.GD6343@localhost>
+References: <20100122045914.993668874@intel.com> <20100203234724.GA23902@kroah.com>
 MIME-Version: 1.0
-In-Reply-To: <4B687B7C.2070406@gmail.com>
-References: <4B5885F7.2020007@gmail.com> <4B679EA9.6030203@kernel.org>
-	 <4B6833DD.1020001@gmail.com> <4B683581.7070708@kernel.org>
-	 <4B683DEF.3000302@gmail.com>
-	 <da824cf31002020844r12cada26x57f96b0aa24b59c6@mail.gmail.com>
-	 <4B686B2B.2080406@gmail.com>
-	 <da824cf31002021104v72efcd05ne639091042d5999d@mail.gmail.com>
-	 <4B687B7C.2070406@gmail.com>
-Date: Wed, 3 Feb 2010 18:37:53 -0800
-Message-ID: <da824cf31002031837t1cf2357bsbb53a3b4ea5e671f@mail.gmail.com>
-Subject: Re: port multiplier problem
-From: Grant Grundler <grundler@google.com>
-To: Chandra Shekhar Sah <edu4madh@gmail.com>
-Cc: Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100203234724.GA23902@kroah.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 2, 2010 at 11:22 AM, Chandra Shekhar Sah <edu4madh@gmail.com> wrote:
-> Hi Grant,
->
-> Thank for reply.
-> Yes, PMP is sil3726. The backplane of the disk array has two PMP (each
-> 1-to-5 as you have mentioned) and two sata direct connection without PMP.
-> So, 10 disk are behind 2 PMP.
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-Ah ok. That explains your "5-5-1-1" comment now. I tried to find a
-Data sheet for this board but only found one in Chinese:
-    www.norco.com.cn/UpLoadFile/Manual/DS-12X0-CN.pdf
+commit 325fda71d0badc1073dc59f12a948f24ff05796a upstream.
 
-and I unfortunately don't speak/read chinese. Probably doesn't matter
-though since...
+Otherwise vmalloc_to_page() will BUG().
 
-This email thread looks like a duplicate of a previous bug report:
-   http://markmail.org/message/lp3ynvfefejpiy2r
+This also makes the kmem read/write implementation aligned with mem(4):
+"References to nonexistent locations cause errors to be returned." Here
+we return -ENXIO (inspired by Hugh) if no bytes have been transfered
+to/from user space, otherwise return partial read/write results.
 
-(or search for  "Ubuntu 9.04 (2.6.28-14) and eSATA Port Multiplier
-(PMP) Not working")
+CC: Greg Kroah-Hartman <gregkh@suse.de>
+CC: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+CC: <stable@kernel.org>
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+---
+ drivers/char/mem.c |   28 ++++++++++++++++++----------
+ 1 file changed, 18 insertions(+), 10 deletions(-)
 
-Chandra, you might read through that thread and dmesg output (posted by Chris K)
-to see what else you have in common.
-
-I had two questions on that thread that never got answered:
-   http://markmail.org/message/snpekoj4qexrslk5
-
-| How can we find out if anyone has the SEMB properly wired up?
-| Would it be hard to make libata aware of "SEMB port not responding" case?
-| ie if the SEMB port times out or has no link, reduce the port count of
-| the sil3726 PMP by one.
-|
-| Maybe add a "enable_sil24_semb" flag to libata?
-| (avoid checking unless someone asks for it). I hate magic flags but also
-| don't want to subject most people to the timeout delay.
-
-I (or Gwendal) can post a patch (and lightly test) for any of the above.
-Just need to get some guidance so we don't waste our time.
-
-thanks,
-grant
-
-> Total is 12 disks. The sata host controller is
-> sil3124. Picture of the backplane is attached.
->
-> Thanks,
-> Chandra
->
-> On 2/2/10 2:04 PM, Grant Grundler wrote:
->>
->> On Tue, Feb 2, 2010 at 10:12 AM, Chandra Shekhar Sah<edu4madh@gmail.com>
->>  wrote:
->>
->>>
->>> Hi Grant,
->>>
->>> There are 6 Seagate Barracuda and 6 Hitachi DeskStar.
->>>
->>
->> I thought 0x1095/0x3726 was a Silicon Image part. Can you confirm this?
->>
->> If it is, this sounds like a broken implementation to me. Here is what
->> the Silicon Image 3726 Data Sheet says in the introduction:
->>     Silicon Image’s SiI3726 is 1-to-5 SATA Port Multiplier designed to
->> provide a high performance link between a single SATA host port and 5
->> SATA device ports.
->>
->> So I don't know where the 6th device is getting connected. Some
->> explanation/data sheet from the HW vendor would be helpful at this
->> point.
->>
->>
->>>
->>> Seagate Model: ST3750640AS
->>> Firmware: 3.AAK
->>>
->>> Hitachi Model:HDS721075KLA330
->>> Firmware: Not sure
->>>
->>
->> Both of these drives work behind Sil3726. (First hand experience).
->>
->>
->>>
->>> I have attached pictures of both labels, in case.
->>>
->>
->> Perfect - thanks for posting those.
->>
->> thanks,
->> grant
->>
->>
->
->
+--- linux-2.6.32.orig/drivers/char/mem.c	2010-02-04 10:28:19.000000000 +0800
++++ linux-2.6.32/drivers/char/mem.c	2010-02-04 10:37:55.000000000 +0800
+@@ -408,6 +408,7 @@ static ssize_t read_kmem(struct file *fi
+ 	unsigned long p = *ppos;
+ 	ssize_t low_count, read, sz;
+ 	char * kbuf; /* k-addr because vread() takes vmlist_lock rwlock */
++	int err = 0;
+ 
+ 	read = 0;
+ 	if (p < (unsigned long) high_memory) {
+@@ -464,14 +465,18 @@ static ssize_t read_kmem(struct file *fi
+ 		while (count > 0) {
+ 			int len = count;
+ 
++			if (!is_vmalloc_or_module_addr((void *)p)) {
++				err = -ENXIO;
++				break;
++			}
+ 			if (len > PAGE_SIZE)
+ 				len = PAGE_SIZE;
+ 			len = vread(kbuf, (char *)p, len);
+ 			if (!len)
+ 				break;
+ 			if (copy_to_user(buf, kbuf, len)) {
+-				free_page((unsigned long)kbuf);
+-				return -EFAULT;
++				err = -EFAULT;
++				break;
+ 			}
+ 			count -= len;
+ 			buf += len;
+@@ -480,8 +485,8 @@ static ssize_t read_kmem(struct file *fi
+ 		}
+ 		free_page((unsigned long)kbuf);
+ 	}
+- 	*ppos = p;
+- 	return read;
++	*ppos = p;
++	return read ? read : err;
+ }
+ 
+ 
+@@ -557,6 +562,7 @@ static ssize_t write_kmem(struct file * 
+ 	ssize_t virtr = 0;
+ 	ssize_t written;
+ 	char * kbuf; /* k-addr because vwrite() takes vmlist_lock rwlock */
++	int err = 0;
+ 
+ 	if (p < (unsigned long) high_memory) {
+ 
+@@ -580,15 +586,17 @@ static ssize_t write_kmem(struct file * 
+ 		while (count > 0) {
+ 			int len = count;
+ 
++			if (!is_vmalloc_or_module_addr((void *)p)) {
++				err = -ENXIO;
++				break;
++			}
+ 			if (len > PAGE_SIZE)
+ 				len = PAGE_SIZE;
+ 			if (len) {
+ 				written = copy_from_user(kbuf, buf, len);
+ 				if (written) {
+-					if (wrote + virtr)
+-						break;
+-					free_page((unsigned long)kbuf);
+-					return -EFAULT;
++					err = -EFAULT;
++					break;
+ 				}
+ 			}
+ 			len = vwrite(kbuf, (char *)p, len);
+@@ -600,8 +608,8 @@ static ssize_t write_kmem(struct file * 
+ 		free_page((unsigned long)kbuf);
+ 	}
+ 
+- 	*ppos = p;
+- 	return virtr + wrote;
++	*ppos = p;
++	return virtr + wrote ? : err;
+ }
+ #endif
+ 
