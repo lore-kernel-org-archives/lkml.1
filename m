@@ -1,98 +1,98 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757663Ab0BDNNH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 08:13:07 -0500
-Received: from s15228384.onlinehome-server.info ([87.106.30.177]:38204 "EHLO
-	mail.x86-64.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754317Ab0BDNNE (ORCPT
+	id S1758094Ab0BDNQT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 08:16:19 -0500
+Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:58261 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755933Ab0BDNQR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 08:13:04 -0500
-Date: Thu, 4 Feb 2010 14:13:14 +0100
-From: Borislav Petkov <bp@amd64.org>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, x86 <x86@kernel.org>
-Subject: [PATCH] x86, cacheinfo: Remove NUMA dependency
-Message-ID: <20100204131314.GB32711@aftab>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Organization: Advanced Micro Devices =?iso-8859-1?Q?GmbH?=
-	=?iso-8859-1?Q?=2C_Karl-Hammerschmidt-Str=2E_34=2C_85609_Dornach_bei_M=FC?=
-	=?iso-8859-1?Q?nchen=2C_Gesch=E4ftsf=FChrer=3A_Thomas_M=2E_McCoy=2C_Giuli?=
-	=?iso-8859-1?Q?ano_Meroni=2C_Andrew_Bowd=2C_Sitz=3A_Dornach=2C_Gemeinde_A?=
-	=?iso-8859-1?Q?schheim=2C_Landkreis_M=FCnchen=2C_Registergericht_M=FCnche?=
-	=?iso-8859-1?Q?n=2C?= HRB Nr. 43632
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Thu, 4 Feb 2010 08:16:17 -0500
+Subject: Re: [RFC PATCH] ARM: Change the mandatory barriers implementation
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Abhijeet Dharmapurikar <adharmap@codeaurora.org>
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+       Tony Lindgren <tony@atomide.com>, Larry Bassel <lbassel@quicinc.com>,
+       Daniel Walker <dwalker@codeaurora.org>,
+       Russell King <linux@arm.linux.org.uk>, linux-arm-msm@vger.kernel.org
+In-Reply-To: <4B6A131B.1070005@codeaurora.org>
+References: <4B6A131B.1070005@codeaurora.org>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Thu, 04 Feb 2010 13:15:30 +0000
+Message-Id: <1265289330.28746.58.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 04 Feb 2010 13:15:31.0658 (UTC) FILETIME=[20C282A0:01CAA59C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, 2010-02-04 at 00:21 +0000, Abhijeet Dharmapurikar wrote:
+> > The mandatory barriers (mb, rmb, wmb) are used even on uniprocessor
+> > systems for things like ordering Normal Non-cacheable memory accesses
+> > with DMA transfer (via Device memory writes). The current implementation
+> > uses dmb() for mb() and friends but this is not sufficient. The DMB only
+> > ensures the ordering of accesses with regards to a single observer
+> > accessing the same memory. If a DMA transfer is started by a write to
+> > Device memory, the data to be transfered may not reach the main memory
+> > (even if mapped as Normal Non-cacheable) before the device receives the
+> > notification to begin the transfer. The only barrier that would help in
+> > this situation is DSB which would completely drain the write buffers.
+> 
+> On ARMv7, DMB guarantees that all accesses prior to DMB are observed by
+> an observer if that observer sees any accesses _after_ the DMB. In this
+> case, since DMA engine observes a write to itself( It is being written
+> to and hence must observe the write) it should also see the writes to
+> the buffers. A dmb() after the writes to buffer and before write to DMA
+> engine should suffice.
 
-this is a small fix ontop of the L3 cache index disable series from last
-week. It is based on tip:x86/cpu and slated for .34 too.
+I asked our processor architect for a clarification on the wording of
+the DMB definition but the "all accesses" part most likely refer to
+accesses to the same peripheral or memory block (but not together).
+Intuitively, you can have a hardware configuration as below:
 
-Please apply,
-thanks.
+     CPU   Device
+      |     | |
+      +-----+ |      (1)
+      |       |
+    Buffer    |
+      |       |
+      +---+---+      (2)
+          |
+         RAM
 
---
->From 031c4cc06d4668c4fa6b0363e2e32c8b30afbf67 Mon Sep 17 00:00:00 2001
-From: Borislav Petkov <borislav.petkov@amd.com>
-Date: Thu, 4 Feb 2010 12:09:07 +0100
-Subject: [PATCH] x86, cacheinfo: Remove NUMA dependency
+The peripheral register write and memory write go on different paths. A
+DMB may ensure the ordering at level (1) but there could be delays
+before a write reaches the RAM and the peripheral would get the DMA
+start notification before that. Only DSB would ensure the draining of
+the buffer.
 
-The show/store_cache_disable routines depend unnecessarily on NUMA's
-cpu_to_node and the disabling of cache indices breaks when !CONFIG_NUMA.
-Remove that dependency by using a helper which returns always the
-correct node id.
+> Moreover an mb() could be in places where accesses to ARM's Device type
+> memory need ordering and are 1kb apart. Such usages of mb() would result
+> in a dsb() and could cause performance problems.
 
-While at it, enable L3 Cache Index disable on revD1 Istanbuls which
-sport the feature too.
+Note that accesses to Device memory are ordered relative to each-other
+without any barrier. If you have weakly ordered I/O (not the ARM case),
+there's mmiowb() for this.
 
-Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
----
- arch/x86/kernel/cpu/intel_cacheinfo.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+If you need ordering between accesses to Normal memory and Device
+memory, a DSB is needed, hence the definition of mb() to be a DSB (some
+processors like Cortex-A8 implement DMB so that it drains the write
+buffer but this is not always the case on other implementations).
 
-diff --git a/arch/x86/kernel/cpu/intel_cacheinfo.c b/arch/x86/kernel/cpu/intel_cacheinfo.c
-index 589b705..be5f5c2 100644
---- a/arch/x86/kernel/cpu/intel_cacheinfo.c
-+++ b/arch/x86/kernel/cpu/intel_cacheinfo.c
-@@ -327,7 +327,7 @@ amd_check_l3_disable(int index, struct _cpuid4_info_regs *this_leaf)
- 
- 	/* see errata #382 and #388 */
- 	if ((boot_cpu_data.x86 == 0x10) &&
--	    ((boot_cpu_data.x86_model < 0x9) ||
-+	    ((boot_cpu_data.x86_model < 0x8) ||
- 	     (boot_cpu_data.x86_mask  < 0x1)))
- 		return;
- 
-@@ -744,7 +744,7 @@ static ssize_t show_cache_disable(struct _cpuid4_info *this_leaf, char *buf,
- 				  unsigned int index)
- {
- 	int cpu = cpumask_first(to_cpumask(this_leaf->shared_cpu_map));
--	int node = cpu_to_node(cpu);
-+	int node = amd_get_nb_id(cpu);
- 	struct pci_dev *dev = node_to_k8_nb_misc(node);
- 	unsigned int reg = 0;
- 
-@@ -771,7 +771,7 @@ static ssize_t store_cache_disable(struct _cpuid4_info *this_leaf,
- 	const char *buf, size_t count, unsigned int index)
- {
- 	int cpu = cpumask_first(to_cpumask(this_leaf->shared_cpu_map));
--	int node = cpu_to_node(cpu);
-+	int node = amd_get_nb_id(cpu);
- 	struct pci_dev *dev = node_to_k8_nb_misc(node);
- 	unsigned long val = 0;
- 
+Of course, there are situations when you only need ordering of Normal
+memory accesses without any peripheral access and a DMB would be fine in
+this situation. But so far Linux uses mb() for both situations, hence
+I'm taking the less optimal approach for Normal-Normal ordering.
+
+> Since you mention the write buffers this probably applies only to ARMv6.
+> Correct me here, I think that dmb on ARMv6 should suffice too.
+
+I can't guarantee. It depends on the processor implementation
+(ARM11MPCore may have a different behaviour). Linux on ARM should pretty
+much be architecturally generic.
+
 -- 
-1.6.6
+Catalin
 
--- 
-Regards/Gruss,
-Boris.
-
---
-Advanced Micro Devices, Inc.
-Operating Systems Research Center
