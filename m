@@ -1,87 +1,90 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758586Ab0BDXH6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 18:07:58 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:46298 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753245Ab0BDXH4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 18:07:56 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 1/2] PM / Runtime: Add sysfs switch for disabling device run-time PM (rev. 2)
-Date: Fri, 5 Feb 2010 00:08:52 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.33-rc6-rjw; KDE/4.3.5; x86_64; ; )
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Alan Stern <stern@rowland.harvard.edu>, Greg KH <greg@kroah.com>
-References: <201001180129.55219.rjw@sisk.pl> <201001212359.38886.rjw@sisk.pl> <20100204224623.GB1436@ucw.cz>
-In-Reply-To: <20100204224623.GB1436@ucw.cz>
+	id S1758596Ab0BDXJG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 18:09:06 -0500
+Received: from sentry-three.sandia.gov ([132.175.109.17]:43177 "EHLO
+	sentry-three.sandia.gov" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754889Ab0BDXJE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 18:09:04 -0500
+X-WSS-ID: 0KXCAZ9-08-3QH-02
+X-M-MSG: 
+X-Server-Uuid: AF72F651-81B1-4134-BA8C-A8E1A4E620FF
+Subject: Re: [PATCH] seastar - SeaStar Ethernet driver
+From: "Kevin Pedretti" <ktpedre@sandia.gov>
+To: "David Miller" <davem@davemloft.net>
+cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20100202.174045.135005544.davem@davemloft.net>
+References: <20100202205845.GE5246@hawkeye.sandia.gov>
+ <20100202.134251.15604523.davem@davemloft.net>
+ <1265160242.15726.20.camel@hawkeye.sandia.gov>
+ <20100202.174045.135005544.davem@davemloft.net>
+Date: Thu, 4 Feb 2010 16:01:04 -0700
+Message-ID: <1265324464.23523.51.camel@hawkeye.sandia.gov>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+X-Mailer: Evolution 2.28.1
+X-TMWD-Spam-Summary: TS=20100204230856; ID=1; SEV=2.3.1;
+ DFV=B2010020419; IFV=NA; AIF=B2010020419; RPD=5.03.0010; ENG=NA;
+ RPDID=7374723D303030312E30413031303230322E34423642353338382E303032333A534346535441543838363133332C73733D312C6667733D30;
+ CAT=NONE; CON=NONE; SIG=AAAAAAAAAAAAAAAAAAAAAAAAfQ==
+X-MMS-Spam-Filter-ID: B2010020419_5.03.0010
+X-WSS-ID: 67758C0C2DG2131795-01-01
+Content-Type: text/plain;
+ charset=utf-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <201002050008.52699.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 04 February 2010, Pavel Machek wrote:
-> Hi!
+On Tue, 2010-02-02 at 18:40 -0700, David Miller wrote:
+> From: "Kevin Pedretti" <ktpedre@sandia.gov>
+> Date: Tue, 2 Feb 2010 18:24:02 -0700
 > 
-> >  /*
-> > + *	control - Report/change current runtime PM setting of the device
-> > + *
-> > + *	Runtime power management of a device can be blocked with the help of
-> > + *	this attribute.  All devices have one of the following two values for
-> > + *	the power/control file:
-> > + *
-> > + *	 + "auto\n" to allow the device to be power managed at run time;
-> > + *	 + "on\n" to prevent the device from being power managed at run time;
+> > 4. Device only supports IPv4? -> Yes, that's correct. No IPv6 support.
+> > The driver squashes everything but IPv4 in eth2ss().
 > 
-> I find interface with mandatory \n quite 'interesting'. 
-
-This simply follows the other descriptions in this file.
-
-> Plus english is strange here. All devices have ... "auto" to allow...?
-> Strange formulation. List the values first, then add "write ... to allow"?
-
-Ditto.
-
-> > + *	The default for all devices is "auto", which means that devices may be
-> > + *	subject to automatic power management, depending on their drivers.
+> Not just IPV6, what about other ethernet protocols?
 > 
-> Is it wise to specify 'auto' default value for devices without runtime
-> pm?
+> What about ARP?  How does IPV4 work if you only accept ETH_P_IP?  You
+> need to accept at least ETH_P_ARP for things to work.
 
-Yes, it is.  It means the user space doesn't care whether or not the device is
-power managed at run-time.
 
-> > +static ssize_t control_store(struct device * dev, struct device_attribute *attr,
-> > +			     const char * buf, size_t n)
-> > +{
-> > +	char *cp;
-> > +	int len = n;
-> > +
-> > +	cp = memchr(buf, '\n', n);
-> > +	if (cp)
-> > +		len = cp - buf;
-> > +	if (len == sizeof ctrl_auto - 1 && strncmp(buf, ctrl_auto, len) == 0)
-> > +		pm_runtime_allow(dev);
-> 
-> parenthesis after sizeof?
+The only thing the driver supports currently is point-to-point IPv4,
+nothing else.  The limitation is that the header format for datagram
+messages is fixed, and it isn't really setup for Ethernet encapsulation:
 
-This notation is used throughout this file too.
+Ethernet Frame:     [6 bytes h_dest][6 bytes h_source][2 bytes h_proto][data...]
+SeaStar DG Message: [2 bytes length][1 byte MBZ][1 byte msg type (2 << 5) for IP)][data...]
 
-> Do I read it correctly that all of
-> 
-> "auto"
-> "auto\n"
-> "auto\non\nIm confused"
-> 
-> will switch to auto?
+I think it would be possible to re-factor it so that the Ethernet frame
+is encapsulated in its entirety within a seastar message, rather than
+the current scheme of jamming the critical info from the Ethernet header
+into the seastar datagram header.  I will pursue that if you want... the
+drawback is that it would break compatibility with Cray's existing
+proprietary IP over SeaStar driver, making this driver pretty much
+useless for the kinds of things us and others would like to do (e.g.,
+leave service nodes booted with Cray's proprietary software stack and
+talking to compute nodes running this driver).
 
-Perhaps it would, but what exactly is the problem with that?
+As far as ARP goes, it isn't supported since the underlying network is
+point-to-point only with no hardware broadcast.  At bootup, each node's
+ARP table is pre-populated with entries for every node in the system,
+and each node's MAC address encodes its node ID on the mesh.  This
+driver uses the NID in the target MAC address to know who to send the
+skb to.
 
-Rafael
+I think it would be possible to emulate ARP in software using
+point-to-point messages (send this packet to my 6 nearest neighbors,
+neighbors send to their neighbors, etc.) but that would be quite a bit
+more complicated compared to the static ARP table solution.  Again, it
+would also break compatibility with Cray's proprietary driver.
+
+Please let me know if these issues are show-stoppers as far as inclusion
+goes.  We would like to get this open-source driver into the kernel so
+us and others with Cray XT systems can start to benefit from it, and
+continue to automatically track kernel API changes. 
+
+Kevin
+
+
