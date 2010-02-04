@@ -1,18 +1,18 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933406Ab0BDXdv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 18:33:51 -0500
-Received: from mail-fx0-f220.google.com ([209.85.220.220]:47667 "EHLO
+	id S933344Ab0BDXeQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 18:34:16 -0500
+Received: from mail-fx0-f220.google.com ([209.85.220.220]:52390 "EHLO
 	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933165Ab0BDXb2 (ORCPT
+	with ESMTP id S933185Ab0BDXb0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 18:31:28 -0500
+	Thu, 4 Feb 2010 18:31:26 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=JCQuBQbuZj38Pgo6Vg6m6WlCA2dQryLXFyeMZjSQPy/xka37eBduNI/ezC4/aAaZ5H
-         ZiFgq6RhYEX6KCGR2u270UnNPDnpSgaTfUxxyLLf7q2iy7Graj/QV+EjO2VIQJXDQNov
-         yz29uxdvD/frCJlhLEWZS1KrDL39nu6CUv/dQ=
+        b=GmHKJO9YcT9pYRqVFtI9EY3yxZttd1Z5fauj2V62hXm/jud594x2ebNVyQ6jFg2HgJ
+         ZR2Kop5EmogT8wRzU5fg2RlOCUiM31jy4ZMaVrYOjCvNhFHAcd+DboyOBkEg9a6dllW4
+         c6zPYiJif+0+z/iUpoTjfy+mmvWWhtWPhs/mA=
 From: Maxim Levitsky <maximlevitsky@gmail.com>
 To: David Woodhouse <dwmw2@infradead.org>
 Cc: Artem Bityutskiy <dedekind1@gmail.com>,
@@ -21,9 +21,9 @@ Cc: Artem Bityutskiy <dedekind1@gmail.com>,
        Alex Dubov <oakad@yahoo.com>, joern <joern@logfs.org>,
        Thomas Gleixner <tglx@linutronix.de>,
        Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: [PATCH 07/17] blktrans: allow FTL drivers to export sysfs attributes
-Date: Fri,  5 Feb 2010 01:30:47 +0200
-Message-Id: <1265326257-4446-8-git-send-email-maximlevitsky@gmail.com>
+Subject: [PATCH 05/17] blktrans: add proper locking
+Date: Fri,  5 Feb 2010 01:30:45 +0200
+Message-Id: <1265326257-4446-6-git-send-email-maximlevitsky@gmail.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1265326257-4446-1-git-send-email-maximlevitsky@gmail.com>
 References: <1265326257-4446-1-git-send-email-maximlevitsky@gmail.com>
@@ -31,73 +31,177 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch add ability to export sysfs attributes below
-block disk device.
-This can be used to pass UDEV information about the FTL
-and could include vendor, serial, version, etc...
+First, use lockless versions of get/put_mtd_device
+We don't care what happened to mtd table, because we have a pointer
+to mtd device. It guaranteed to exist till we do final put_mtd_device
+
+Also add locking to prevent all kinds or races
 
 Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
 ---
- drivers/mtd/mtd_blkdevs.c    |   11 ++++++++++-
- include/linux/mtd/blktrans.h |    2 ++
- 2 files changed, 12 insertions(+), 1 deletions(-)
+ drivers/mtd/mtd_blkdevs.c |   84 ++++++++++++++++++++++++++++----------------
+ 1 files changed, 53 insertions(+), 31 deletions(-)
 
 diff --git a/drivers/mtd/mtd_blkdevs.c b/drivers/mtd/mtd_blkdevs.c
-index 9992b2d..ac9d3f5 100644
+index 1b89e59..082969c 100644
 --- a/drivers/mtd/mtd_blkdevs.c
 +++ b/drivers/mtd/mtd_blkdevs.c
-@@ -316,7 +316,6 @@ int add_mtd_blktrans_dev(struct mtd_blktrans_dev *new)
- 
- 	set_capacity(gd, (new->size * tr->blksize) >> 9);
- 
+@@ -123,33 +123,33 @@ static int blktrans_open(struct block_device *bdev, fmode_t mode)
+ {
+ 	struct mtd_blktrans_dev *dev = bdev->bd_disk->private_data;
+ 	struct mtd_blktrans_ops *tr = dev->tr;
+-	int ret = -ENODEV;
 -
- 	/* Create the request queue */
- 	spin_lock_init(&new->queue_lock);
- 	new->rq = blk_init_queue(mtd_blktrans_request, &new->queue_lock);
-@@ -349,6 +348,11 @@ int add_mtd_blktrans_dev(struct mtd_blktrans_dev *new)
- 	new->open = 0;
- 	add_disk(gd);
+-	if (!get_mtd_device(NULL, dev->mtd->index))
+-		goto out;
++	int ret = 0;
  
-+	if (new->disk_attributes)
-+		sysfs_create_group(&disk_to_dev(gd)->kobj,
-+					new->disk_attributes);
++	mutex_lock(&dev->lock);
+ 	if (dev->open++)
+ 		goto out;
+ 
+ 	if (dev->deleted)
+ 		goto out;
+ 
++	ret = -ENODEV;
+ 	if (!try_module_get(tr->owner))
+-		goto out_tr;
++		goto out;
+ 
+-	/* FIXME: Locking. A hot pluggable device can go away
+-	   (del_mtd_device can be called for it) without its module
+-	   being unloaded. */
+-	dev->mtd->usecount++;
++	if (__get_mtd_device(dev->mtd)) {
++		module_put(tr->owner);
++		goto out;
++	}
+ 
+ 	ret = 0;
+ 	if (tr->open && (ret = tr->open(dev))) {
+-		dev->mtd->usecount--;
+-		put_mtd_device(dev->mtd);
+-	out_tr:
+ 		module_put(tr->owner);
++		__put_mtd_device(dev->mtd);
++		goto out;
 +
+ 	}
+  out:
++	mutex_unlock(&dev->lock);
+ 	return ret;
+ }
+ 
+@@ -159,17 +159,10 @@ static int blktrans_release(struct gendisk *disk, fmode_t mode)
+ 	struct mtd_blktrans_ops *tr = dev->tr;
+ 	int ret = 0;
+ 
++	mutex_lock(&dev->lock);
+ 	if (--dev->open)
+-		return 0;
+-
+-	if (tr->release)
+-		ret = tr->release(dev);
++		goto out;
+ 
+-	if (!ret) {
+-		dev->mtd->usecount--;
+-		put_mtd_device(dev->mtd);
+-		module_put(tr->owner);
+-	}
+ 
+ 	/* Free the private data */
+ 	if (dev->deleted) {
+@@ -179,33 +172,59 @@ static int blktrans_release(struct gendisk *disk, fmode_t mode)
+ 		return 0;
+ 	}
+ 
++	ret = tr->release ? tr->release(dev) : 0;
++	module_put(tr->owner);
 +
++	if (dev->mtd)
++		__put_mtd_device(dev->mtd);
++out:
++	mutex_unlock(&dev->lock);
+ 	return ret;
+ }
+ 
+ static int blktrans_getgeo(struct block_device *bdev, struct hd_geometry *geo)
+ {
+ 	struct mtd_blktrans_dev *dev = bdev->bd_disk->private_data;
++	int error;
++
++	mutex_lock(&dev->lock);
+ 
++	error = -ENODEV;
++	if (dev->deleted)
++		goto out;
++
++	error = -ENOTTY;
+ 	if (dev->tr->getgeo)
+-		return dev->tr->getgeo(dev, geo);
+-	return -ENOTTY;
++		error = dev->tr->getgeo(dev, geo);
++out:
++	mutex_unlock(&dev->lock);
++	return error;
+ }
+ 
+ static int blktrans_ioctl(struct block_device *bdev, fmode_t mode,
+ 			      unsigned int cmd, unsigned long arg)
+ {
+ 	struct mtd_blktrans_dev *dev = bdev->bd_disk->private_data;
+-	struct mtd_blktrans_ops *tr = dev->tr;
++	int error = -ENODEV;
++
++	mutex_lock(&dev->lock);
++
++	if (dev->deleted)
++		goto out;
++
++	error = -ENOTTY;
+ 
+ 	switch (cmd) {
+ 	case BLKFLSBUF:
+-		if (tr->flush)
+-			return tr->flush(dev);
+-		/* The core code did the work, we had nothing to do. */
+-		return 0;
++		if (dev->tr->flush)
++			error = dev->tr->flush(dev);
++		break;
+ 	default:
+-		return -ENOTTY;
++		break;
+ 	}
++out:
++	mutex_unlock(&dev->lock);
++	return error;
+ }
+ 
+ static const struct block_device_operations mtd_blktrans_ops = {
+@@ -353,16 +372,19 @@ int del_mtd_blktrans_dev(struct mtd_blktrans_dev *old)
+ 	/* Stop the thread */
+ 	kthread_stop(old->thread);
+ 
++	/* Tell trans driver to release the device */
++	mutex_lock(&old->lock);
++
+ 	if (old->open) {
+ 		if (old->tr->release)
+ 			old->tr->release(old);
+-		put_mtd_device(old->mtd);
++		__put_mtd_device(old->mtd);
+ 	}
+ 
+ 	/* From now on, no calls into trans can be made */
+ 	/* Mtd device will be gone real soon now */
+ 	old->mtd = NULL;
+-
++	mutex_unlock(&old->lock);
+ 	blk_cleanup_queue(old->rq);
  	return 0;
- error4:
- 	blk_cleanup_queue(new->rq);
-@@ -375,6 +379,11 @@ int del_mtd_blktrans_dev(struct mtd_blktrans_dev *old)
- 	/* stop new requests to arrive */
- 	del_gendisk(old->disk);
- 
-+
-+	if (old->disk_attributes)
-+		sysfs_remove_group(&disk_to_dev(old->disk)->kobj,
-+						old->disk_attributes);
-+
- 	/* flush current requests */
- 	spin_lock_irqsave(&old->queue_lock, flags);
- 	old->deleted = 1;
-diff --git a/include/linux/mtd/blktrans.h b/include/linux/mtd/blktrans.h
-index e276aca..faf1e54 100644
---- a/include/linux/mtd/blktrans.h
-+++ b/include/linux/mtd/blktrans.h
-@@ -9,6 +9,7 @@
- #define __MTD_TRANS_H__
- 
- #include <linux/mutex.h>
-+#include <linux/sysfs.h>
- 
- struct hd_geometry;
- struct mtd_info;
-@@ -27,6 +28,7 @@ struct mtd_blktrans_dev {
- 	int deleted;
- 	int open;
- 	struct gendisk *disk;
-+	struct attribute_group *disk_attributes;
- 	struct task_struct *thread;
- 	struct request_queue *rq;
- 	spinlock_t queue_lock;
+ }
 -- 
 1.6.3.3
 
