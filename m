@@ -1,60 +1,69 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755609Ab0BDUhu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 15:37:50 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:31124 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751890Ab0BDUht (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 15:37:49 -0500
-Message-ID: <4B6B2FF5.6040706@redhat.com>
-Date: Thu, 04 Feb 2010 15:37:09 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
+	id S1756168Ab0BDUjw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 15:39:52 -0500
+Received: from mail-iw0-f189.google.com ([209.85.223.189]:55440 "EHLO
+	mail-iw0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753018Ab0BDUjv convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 15:39:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=wQkOeg0JhghM5bYtzk8/A+iBpexgw6Fpg9KomT15iDrotwT74Iu3bciEtBsodRuh+C
+         40e3RG10+RBFmRQZjiOYfm1mYARTLUfRLAzXIhRyARTKcIw3//4EW/EXpwNr/k4UJMkX
+         oX0rRhmNxvGBeMQx7AgkgQ3FW/l5JeEPE0u8w=
 MIME-Version: 1.0
+In-Reply-To: <20100202154450.GC27314@elte.hu>
+References: <alpine.DEB.2.00.1002010215530.15366@skynet.skynet.ie>
+	 <alpine.DEB.2.00.1002010253120.15366@skynet.skynet.ie>
+	 <20100202081727.GA6788@elte.hu>
+	 <alpine.DEB.2.00.1002020824001.20769@skynet.skynet.ie>
+	 <20100202154450.GC27314@elte.hu>
+Date: Fri, 5 Feb 2010 06:39:50 +1000
+Message-ID: <21d7e9971002041239i5e842698pd8a775f833fc5d51@mail.gmail.com>
+Subject: Re: [crash, PATCH] Revert "drm/radeon/kms: move radeon KMS on/off 
+	switch out of staging."
+From: Dave Airlie <airlied@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
-CC: lkml <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
-       Przemys??awPawe??czyk <przemyslaw@pawelczyk.it>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Jason Baron <jbaron@redhat.com>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>
-Subject: Re: [PATCH -tip 0/4] kprobes updates
-References: <20100202214856.4694.72709.stgit@dhcp-100-2-132.bos.redhat.com> <20100204090626.GA30663@elte.hu>
-In-Reply-To: <20100204090626.GA30663@elte.hu>
-X-Enigmail-Version: 1.0.1
+Cc: Dave Airlie <airlied@linux.ie>, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> 
-> FYI, there's this new build warning on x86 defconfig:
-> 
-> arch/x86/kernel/alternative.c: In function 'alternatives_text_reserved':
-> arch/x86/kernel/alternative.c:402: warning: comparison of distinct pointer types lacks a cast
-> arch/x86/kernel/alternative.c:402: warning: comparison of distinct pointer types lacks a cast
-> arch/x86/kernel/alternative.c:405: warning: comparison of distinct pointer types lacks a cast
-> arch/x86/kernel/alternative.c:405: warning: comparison of distinct pointer types lacks a cast
-> 
-> Caused by:
-> 
-> 2cfa197: ftrace/alternatives: Introducing *_text_reserved functions
+On Wed, Feb 3, 2010 at 1:44 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Dave Airlie <airlied@linux.ie> wrote:
+>
+>> > It's the moving of radeom KMS out of staging after -rc6 that causes it,
+>> > because it brought it into the scope of my testing:
+>> >
+>> >  f71d018: drm/radeon/kms: move radeon KMS on/off switch out of staging.
+>> >
+>> > So at least on this box it's clearly not ready for mainline enablement
+>> > yet. I've attached the revert patch further below.
+>>
+>> Its not enabled by default so reverting this doesn't make much sense.
+>
+> I boot allyesconfig kernels regularly, which testing method works fine with
+> another 2000+ upstream drivers. (including the dozens of drivers which match
+> to active hardware components on that box)
 
-Oops, thanks. I'll fix it in next patches.
+Okay this was something I wondered about, since these are *not* allyesconfig
+.configs, I've generated some and CONFIG_FB_RADEON is always on here, and
+you seem to not have that enabled (not that enabling it is a good idea
+it is in fact
+a really bad idea).
 
-Thank you,
+So do you have something you are running after allyesconfig to fix things? or
+have you just got a config that is close enough to allyesconfig.
 
--- 
-Masami Hiramatsu
+I'm building kernels with your .config now and boot testing them on
+the full range of
+hardware I have/
 
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+Dave.
