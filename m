@@ -1,56 +1,57 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758013Ab0BDCXI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 21:23:08 -0500
-Received: from mga03.intel.com ([143.182.124.21]:32605 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756044Ab0BDCXD convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 21:23:03 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,402,1262592000"; 
-   d="scan'208";a="240242612"
-From: "Lu, Hongjiu" <hongjiu.lu@intel.com>
-To: Roland McGrath <roland@redhat.com>
-CC: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Oleg Nesterov <oleg@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Lachner, Peter" <peter.lachner@intel.com>
-Date: Wed, 3 Feb 2010 18:22:53 -0800
-Subject: RE: [patch] x86: ptrace and core-dump extensions for xstate
-Thread-Topic: [patch] x86: ptrace and core-dump extensions for xstate
-Thread-Index: AcqlQFmSbfe0pQjSTb6kLKIjmgcF4wAABu8A
-Message-ID: <8EA2C2C4116BF44AB370468FBF85A7770123AAB303@orsmsx504.amr.corp.intel.com>
-References: <1265076025.2802.194.camel@sbs-t61.sc.intel.com>
-	<20100203230817.E6529AA@magilla.sf.frob.com>
-	<8EA2C2C4116BF44AB370468FBF85A7770123AAB0AE@orsmsx504.amr.corp.intel.com>
-	<20100204020224.45379725@magilla.sf.frob.com>
-	<8EA2C2C4116BF44AB370468FBF85A7770123AAB2E8@orsmsx504.amr.corp.intel.com>
- <20100204021659.AB348C880@magilla.sf.frob.com>
-In-Reply-To: <20100204021659.AB348C880@magilla.sf.frob.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	id S1754978Ab0BDCdl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 21:33:41 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:56708 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753367Ab0BDCdh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 21:33:37 -0500
+Message-ID: <4B6A316B.3040509@cn.fujitsu.com>
+Date: Thu, 04 Feb 2010 10:31:07 +0800
+From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Paul Mackerras <paulus@samba.org>,
+       Peter Zijlstra <peterz@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] perf tools: using O_LARGEFILE to open perf data file
+  - fix
+References: <4B68F32A.9040203@cn.fujitsu.com> <4B6958B8.3000606@cn.fujitsu.com> <20100203131911.GA25223@elte.hu>
+In-Reply-To: <20100203131911.GA25223@elte.hu>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > That is how processor works.
-> 
-> We're not talking about the processor.
-> We're talking about the API of a Linux system call.
-> 
-> 
-
-To support XSAVE, gdb needs to know XCR0 as well as XSTATE size.
-We can get those info from kernel via system call or cpuid. I
-prefer cpuid over system call.
 
 
-H.J.
+Ingo Molnar wrote:
+> * Xiao Guangrong <xiaoguangrong@cn.fujitsu.com> wrote:
+> 
+>> Setting _FILE_OFFSET_BITS and using O_LARGEFILE, lseek64, etc, is
+>> redundant. Thanks H. Peter Anvin for point out
+>>
+>> Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+>> ---
+>>  tools/perf/builtin-record.c        |    3 +--
+>>  tools/perf/util/header.c           |   21 ++++++++++-----------
+>>  tools/perf/util/session.c          |    3 +--
+>>  tools/perf/util/trace-event-read.c |   14 +++++++-------
+>>  4 files changed, 19 insertions(+), 22 deletions(-)
+> 
+> i already applied the v1 patch - mind sending a delta patch that removes the 
+> redundant definitions?
+> 
+
+Hi Ingo,
+
+This patch is the delta patch, i used the _FILE_OFFSET_BITS defining and removed
+O_LARGEFILE/lseek64 to keep code clean.
+
+I'll integrate Peter's comments and send the new version.
+
+Thanks,
+Xiao 
