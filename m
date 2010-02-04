@@ -1,66 +1,70 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753234Ab0BDGCn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 01:02:43 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:51392 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752444Ab0BDGCl (ORCPT
+	id S1753323Ab0BDGNW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 01:13:22 -0500
+Received: from mail-yx0-f189.google.com ([209.85.210.189]:47591 "EHLO
+	mail-yx0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752725Ab0BDGNV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 01:02:41 -0500
-Date: Thu, 4 Feb 2010 06:02:37 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH][RFC] %pd - for printing dentry name
-Message-ID: <20100204060237.GD30031@ZenIV.linux.org.uk>
-References: <20100201222511.GA12882@ZenIV.linux.org.uk>
- <alpine.LFD.2.00.1002011431490.3664@localhost.localdomain>
- <20100201231847.GC12882@ZenIV.linux.org.uk>
- <alpine.LFD.2.00.1002012018400.3664@localhost.localdomain>
- <20100202050037.GE12882@ZenIV.linux.org.uk>
- <20100202063631.GB6175@laptop>
+	Thu, 4 Feb 2010 01:13:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=Rt1ND25C9r15Ec5hm5Yn8C5fpHsK/yWbtIqV2PLPCiM+MA4EvSXz6BQFYsqKZJX+8S
+         fK6MKKNMW5j/Oh1Mx5cA+RtU7VDzbAk3cB7WMFFxGZZy5HCx7Ef7bWkvO0p1fP3/yBDS
+         AW1wnTxw+jIJlSKeKcWzqCklgwQ4rTAVs21jQ=
+Message-ID: <4B6A657E.4050408@pobox.com>
+Date: Thu, 04 Feb 2010 01:13:18 -0500
+From: Jeff Garzik <jgarzik@pobox.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100202063631.GB6175@laptop>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+To: Emese Revfy <re.emese@gmail.com>
+CC: lenb@kernel.org, bjorn.helgaas@hp.com, jbarnes@virtuousgeek.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Constify struct acpi_dock_ops for v2.6.33-rc6
+References: <4B65D72B.8070000@gmail.com>
+In-Reply-To: <4B65D72B.8070000@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 02, 2010 at 05:36:31PM +1100, Nick Piggin wrote:
+On 01/31/2010 02:16 PM, Emese Revfy wrote:
+> From: Emese Revfy<re.emese@gmail.com>
+>
+> Constify struct acpi_dock_ops.
+>
+> This is part of the ops structure constification
+> effort started by Arjan van de Ven et al.
+>
+> Benefits of this constification:
+>
+>   * prevents modification of data that is shared
+>     (referenced) by many other structure instances
+>     at runtime
+>
+>   * detects/prevents accidental (but not intentional)
+>     modification attempts on archs that enforce
+>     read-only kernel data at runtime
+>
+>   * potentially better optimized code as the compiler
+>     can assume that the const data cannot be changed
+>
+>   * the compiler/linker move const data into .rodata
+>     and therefore exclude them from false sharing
+>
+> Signed-off-by: Emese Revfy<re.emese@gmail.com>
+> ---
+>
+>   drivers/acpi/dock.c                |    4 ++--
+>   drivers/ata/libata-acpi.c          |    4 ++--
+>   drivers/pci/hotplug/acpiphp_glue.c |    2 +-
+>   include/acpi/acpi_drivers.h        |    4 ++--
+>   4 files changed, 7 insertions(+), 7 deletions(-)
 
-> I ended up having to use a seqlock to do name comparison without locks
-> (and without holding references for that matter, just RCU).  However
-> name comparison is obviously a lot more critical because you can't
-> ignore races, so you might be able to do something simpler.
+Acked-by: Jeff Garzik <jgarzik@redhat.com>
 
-Umm...  Your ->d_seq, you mean?  IIRC, that stuff landed too close to
-do_filp_open() queue back then *and* had potential headache from hell
-with vfsmount side of that business.
 
-I've reread it now.  Comments:
-	* mntput() is blocking.  When refcount goes to 0, we get
-dput() on root, possibly followed by actual fs shutdown.  Very
-much not an RCU fodder, even though most of the calls will be OK.
-We can do a variant that would do atomic_dec_and_bail() instead ;-)
-I.e. decrement atomically if greater than 1, bail out otherwise.
-	* why do you bail out on LOOKUP_PARENT?  For that matter, why
-do you do that so late?
-	* how does that interact with d_materialise_unique()?  Sure,
-you bail out on NFS anyway, but it's still not nice to leave relying just
-on that.
-	* why can we access dentry->d_inode->i_op contents?  Or dentry->d_op
-one, for that matter...
-
-BTW, I'd love to take the entire "last component" part of link_path_walk()
-out into a separate function and away from link_path_walk(), leaving
-basically just the LOOKUP_PARENT case in there.  Price: trailing symlinks
-need to be handled by an iterative loop in do_follow_link().  And
-that actually ends up an improvement both in stack depth and in overall
-code cleanup.  Nothing like the horrors in do_filp_open(), TYVM (said
-horrors had mostly gone away in #untested, BTW, and I'm going to move
-that series to for-next shortly).  However, we are still several prereqs
-away from link_path_walk() split, so that'll have to wait a bit.  In
-any case, LOOKUP_PARENT is very much worth the first-class treatment...
