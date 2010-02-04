@@ -1,63 +1,122 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932295Ab0BDODb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 09:03:31 -0500
-Received: from ironport2-out.teksavvy.com ([206.248.154.183]:21265 "EHLO
-	ironport2-out.pppoe.ca" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932248Ab0BDOD3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 09:03:29 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ak0BAKRiaktLd/sX/2dsb2JhbAAIgyvDXpAHgS6CQ1oE
-X-IronPort-AV: E=Sophos;i="4.49,404,1262581200"; 
-   d="scan'208";a="55306217"
-Message-ID: <4B6AD3AF.5010501@teksavvy.com>
-Date: Thu, 04 Feb 2010 09:03:27 -0500
-From: Mark Lord <kernel@teksavvy.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	id S932323Ab0BDOEq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 09:04:46 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:54499 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932241Ab0BDOEp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 09:04:45 -0500
+Message-ID: <4B6AD3DB.8090801@redhat.com>
+Date: Thu, 04 Feb 2010 12:04:11 -0200
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Joe Perches <joe@perches.com>, linux-kernel@vger.kernel.org,
-       Jeff Garzik <jgarzik@pobox.com>, linux-ide@vger.kernel.org
-Subject: Re: [PATCH 02/10] drivers/ata: Fix continuation line formats
-References: <cover.1265095093.git.joe@perches.com>	<12d39ac4f14bfe82a02b4ee246d183b48988fe12.1265095094.git.joe@perches.com>	<4B69B0A0.2040701@teksavvy.com>	<1265224535.24887.16.camel@Joe-Laptop.home>	<4B6A5443.6090804@teksavvy.com> <20100203211331.81d9bb69.akpm@linux-foundation.org>
-In-Reply-To: <20100203211331.81d9bb69.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Pekka Sarnila <sarnila@adit.fi>
+CC: Jiri Slaby <jirislaby@gmail.com>, Jiri Kosina <jkosina@suse.cz>,
+       Antti Palosaari <crope@iki.fi>, mchehab@infradead.org,
+       linux-kernel@vger.kernel.org, linux-media@vger.kernel.org,
+       linux-input@vger.kernel.org
+Subject: Re: [PATCH 1/1] media: dvb-usb/af9015, fix disconnection crashes
+References: <1264007972-6261-1-git-send-email-jslaby@suse.cz> <4B5CDB53.6030009@iki.fi> <4B5D6098.7010700@gmail.com> <4B5DDDFB.5020907@iki.fi> <alpine.LRH.2.00.1001261406010.15694@twin.jikos.cz> <4B6AA211.1060707@gmail.com> <4B6ACA4B.2030906@adit.fi>
+In-Reply-To: <4B6ACA4B.2030906@adit.fi>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Wed, 03 Feb 2010 23:59:47 -0500 Mark Lord <kernel@teksavvy.com> wrote:
->> Joe Perches wrote:
->>> If it's ever agreed that all lines > 80 cols are OK or
->>> new args after column 80 are OK, then sure.  Until then,
->>> if you want it, you should do it.
->> ..
->>
->> You are the code nanny trying to get this patch in.  Not me.
->>
-> 
-> It's a runtime bug.  Are "code nannies" supposed to "try" to fix
-> runtime bugs in libata while others just sit there and insult them?
-..
+Pekka Sarnila wrote:
 
-Oh, there's a service affecting bug there?
-Well, I guess that means we should accept a shoddy patch, then.  :)
+> The problem using vendor class is that there is no standard. Each vendor
+> can define its own way using endpoints (and has done so e.g Logitech
+> joysticks). Thus each usb ir receiver must have its own specific driver.
+>  However then you get the raw ir codes. When using HID class, generic
+> HID driver can do the job. But then you get HID key codes directly not
+> ir codes.
 
-But seriously, I didn't mean anything bad by it, just that
-it ought to be simple for the original sender to just reformat it
-and resubmit.  Just like everyone else here does on a daily basis.
+We started writing an abstraction layer for IR, using the input. The idea
+is to allow the IR receivers to work with different IR's, as several users
+prefer to use universal IR's to control their devices, instead of the original
+one. This is already used by all V4L drivers and I intend to port most of
+the DVB drivers to use it as well soon.
 
-No point in making the code harder to read/understand for no good reason.
+> Also this should not be seen at all as dvb question. First, not all the
+> world uses dvb standard (including USA) but uses very similar tv-sticks
+> with identical ir receivers and remotes. 
 
-But if these patches are robot generated (by a code scan tool or something),
-then the original sender (Joe) might have many others in the queue
-throughout the kernel, which could explain the reluctance here.
+Despiste its name, the DVB subsystem is not specific for DVB standards, but
+it is meant to be used by all DTV standards (and almost all DTV standards
+are already supported).
 
-Really, though the best solution would be for Jeff to just edit
-that one line as he integrates the patch, like Linus would do.
-I imagine Jeff's already done that by now.  ;)
+> Second there are many other
+> type of usb devices with ir receiver. So dvb layer should not be
+> involved at all. There maybe would be need for hid-ir-remote layer (your
+> code suggestion moved there). However even there IMHO better would be
+> just to improve HID <-> input layer interface so that input layer could
+> divert the remotes input to generic remotes layer instead of keyboard
+> layer. IMHO this would be the real linux way.
 
-Cheers
+This is already happening.
+
+See drivers/media/IR on linux-next for the IR common code. The ir-core is
+provided by ir-keytable.c and ir-sysfs.c, and it is not DVB or V4L specific.
+
+The ir-common module were developed for V4L drivers and will probably be
+changed into a more generic way, with the integration with lirc.
+
+> However linux usb layer has been build so that it was technically
+> impossible to put it there without completely redesigning usb <-> higher
+> layer (including HID) interface. But I'm of the opinion that that
+> redesign should be done anyway. 
+
+Feel free to submit patches. My plan is to integrate the DVB devices soon
+into the new ir-core. I should start with dvb-usb-remote, where most of the
+DVB USB devices use to attach their IR's. Unfortunately, af9015 doesn't 
+rely on the dvb-usb-remote, so, it will require some specific changes.
+As I don't have any af9015 device, I'll likely postpone it or wait for
+someone to do the job.
+
+> Now the question is, how much all usb based ir receivers have in common,
+> and how much they differ. This should determine on what level and in
+> which way they should be handled. How much and on what level there
+> should be common code and where device specific driver code would be
+> needed and where and how the ir-to-code translate should take place.
+
+There are several different ways for IR receivers, and, at least for 
+vendor class, no standard way to handle. They can use GPIO polling,
+they can use i2c layer, they can use IRQ (on PCI devices) and the data
+may be provided in parallel or on a serial interface.
+
+The idea of the ir-core is to provide support for all those options.
+
+> IMHO all that have HID endpoint that works (either as such or with some
+> generic quirk) should be handled by HID first and then conveyed to
+> generic remotes layer that handles all remote controllers what ever the
+> lower layers (and does translate per remote not per ir receiver). Vendor
+> class should be avoided unless that's the only way to make it work
+> right. But using HID is not without problems either.
+
+Almost all chipsets only provide IR via vendor class. I agree that using 
+standard HID class is the better way for doing it.
+
+> Now with the two receivers that need the quirk. If they don't have
+> vendor class bulk endpoint for reading ir codes, then specific driver is
+> out anyway. However then changes to HID driver would be needed to make
+> the translate work. The quirk just makes them work as generic usb
+> keyboard with no remote specific translate. With afatech, driver loads
+> the translate table to the device, different for different remotes. I
+> don't know if one table could handle them all. Maybe this table should
+> be loaded from a user space file. Nor do I know how it is with other
+> receivers: can the table be loaded or is it fixed. In any case a generic
+> secondary per remote user configurable translate would be highly
+> desirable. And I don't mean lircd. This job is IMHO kernel level job and
+> lircd won't work here anyway. It does ir code to key code or function
+> translate not key code to key code translate. How nice it would be if
+> there would be a generic usb ir receiver class that all vendors used.
+> There seems to be no way to  make this well and clean.
+
+The ir-core provides standard ways to replace the IR keycode and IR protocols.
+The IR protocol change is already working with vendor class with em28xx driver.
+
+Cheers,
+Mauro
