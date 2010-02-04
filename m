@@ -1,19 +1,19 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932792Ab0BDOjo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 09:39:44 -0500
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:11069 "EHLO
-	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932728Ab0BDOjl (ORCPT
+	id S932823Ab0BDOjs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 09:39:48 -0500
+Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:28608 "EHLO
+	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932722Ab0BDOjk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 09:39:41 -0500
-Subject: [PATCH 06/30] hpsa: remove superfluous returns from void functions.
+	Thu, 4 Feb 2010 09:39:40 -0500
+Subject: [PATCH 11/30] hpsa: eliminate unnecessary memcpys
 To: James.Bottomley@HansenPartnership.com, akpm@linux-foundation.org
 From: "Stephen M. Cameron" <scameron@beardog.cce.hp.com>
 Cc: mikem@beardog.cce.hp.com, brace@beardog.cce.hp.com, matthew.gates@hp.com,
        linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Date: Thu, 04 Feb 2010 08:41:54 -0600
-Message-ID: <20100204144154.10406.41188.stgit@beardog.cce.hp.com>
+Date: Thu, 04 Feb 2010 08:42:19 -0600
+Message-ID: <20100204144219.10406.86923.stgit@beardog.cce.hp.com>
 In-Reply-To: <20100204144012.10406.14868.stgit@beardog.cce.hp.com>
 References: <20100204144012.10406.14868.stgit@beardog.cce.hp.com>
 User-Agent: StGit/0.15
@@ -26,48 +26,51 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Stephen M. Cameron <scameron@beardog.cce.hp.com>
 
-hpsa: remove superfluous returns from void functions.
+hpsa: eliminate unnecessary memcpys
 
 Signed-off-by: Stephen M. Cameron <scameron@beardog.cce.hp.com>
 ---
- drivers/scsi/hpsa.c |    5 +----
- 1 files changed, 1 insertions(+), 4 deletions(-)
+ drivers/scsi/hpsa.c |   11 +++--------
+ 1 files changed, 3 insertions(+), 8 deletions(-)
 
 diff --git a/drivers/scsi/hpsa.c b/drivers/scsi/hpsa.c
-index 6fe5142..9017e64 100644
+index 4594200..ba3dead 100644
 --- a/drivers/scsi/hpsa.c
 +++ b/drivers/scsi/hpsa.c
-@@ -898,7 +898,7 @@ static int hpsa_slave_alloc(struct scsi_device *sdev)
- 
- static void hpsa_slave_destroy(struct scsi_device *sdev)
+@@ -1483,14 +1483,11 @@ static void figure_bus_target_lun(struct ctlr_info *h,
+ 	u8 *lunaddrbytes, int *bus, int *target, int *lun,
+ 	struct hpsa_scsi_dev_t *device)
  {
--	return; /* nothing to do. */
-+	/* nothing to do. */
- }
+-
+ 	u32 lunid;
  
- static void hpsa_scsi_setup(struct ctlr_info *h)
-@@ -906,7 +906,6 @@ static void hpsa_scsi_setup(struct ctlr_info *h)
- 	h->ndevices = 0;
- 	h->scsi_host = NULL;
- 	spin_lock_init(&h->devlock);
--	return;
- }
- 
- static void complete_scsi_command(struct CommandList *cp,
-@@ -1775,7 +1774,6 @@ out:
- 	kfree(inq_buff);
- 	kfree(physdev_list);
- 	kfree(logdev_list);
--	return;
- }
- 
- /* hpsa_scatter_gather takes a struct scsi_cmnd, (cmd), and does the pci
-@@ -3106,7 +3104,6 @@ default_int_mode:
- #endif				/* CONFIG_PCI_MSI */
- 	/* if we get here we're going to use the default interrupt mode */
- 	h->intr[SIMPLE_MODE_INT] = pdev->irq;
--	return;
- }
- 
- static int hpsa_pci_init(struct ctlr_info *h, struct pci_dev *pdev)
+ 	if (is_logical_dev_addr_mode(lunaddrbytes)) {
+ 		/* logical device */
+-		memcpy(&lunid, lunaddrbytes, sizeof(lunid));
+-		lunid = le32_to_cpu(lunid);
+-
++		lunid = le32_to_cpu(*((__le32 *) lunaddrbytes));
+ 		if (is_msa2xxx(h, device)) {
+ 			*bus = 1;
+ 			*target = (lunid >> 16) & 0x3fff;
+@@ -1578,8 +1575,7 @@ static int hpsa_gather_lun_info(struct ctlr_info *h,
+ 		dev_err(&h->pdev->dev, "report physical LUNs failed.\n");
+ 		return -1;
+ 	}
+-	memcpy(nphysicals, &physdev->LUNListLength[0], sizeof(*nphysicals));
+-	*nphysicals = be32_to_cpu(*nphysicals) / 8;
++	*nphysicals = be32_to_cpu(*((__be32 *)physdev->LUNListLength)) / 8;
+ 	if (*nphysicals > HPSA_MAX_PHYS_LUN) {
+ 		dev_warn(&h->pdev->dev, "maximum physical LUNs (%d) exceeded."
+ 			"  %d LUNs ignored.\n", HPSA_MAX_PHYS_LUN,
+@@ -1590,8 +1586,7 @@ static int hpsa_gather_lun_info(struct ctlr_info *h,
+ 		dev_err(&h->pdev->dev, "report logical LUNs failed.\n");
+ 		return -1;
+ 	}
+-	memcpy(nlogicals, &logdev->LUNListLength[0], sizeof(*nlogicals));
+-	*nlogicals = be32_to_cpu(*nlogicals) / 8;
++	*nlogicals = be32_to_cpu(*((__be32 *) logdev->LUNListLength)) / 8;
+ 	/* Reject Logicals in excess of our max capability. */
+ 	if (*nlogicals > HPSA_MAX_LUN) {
+ 		dev_warn(&h->pdev->dev,
 
