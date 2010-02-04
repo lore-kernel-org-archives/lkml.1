@@ -1,18 +1,18 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933007Ab0BDXeJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 18:34:09 -0500
-Received: from fg-out-1718.google.com ([72.14.220.152]:3474 "EHLO
+	id S933402Ab0BDXdk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 18:33:40 -0500
+Received: from fg-out-1718.google.com ([72.14.220.156]:32260 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933158Ab0BDXb1 (ORCPT
+	with ESMTP id S933210Ab0BDXbd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 18:31:27 -0500
+	Thu, 4 Feb 2010 18:31:33 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=fFMSY9XdkW1NN41pE2td7pI9Uk5QEMDwRNQNUxCQTWMoIGUUhhm5zjgUl6ItyaMTj4
-         bWHWhkR12RTcgR9vgR7y2ajp/zVjG9znMaDNTPVmpaQKUpcEcrjnabZPIdoMwHhVWmUJ
-         uubYP+gBuAZXgQp/LV6wcNXSwE8jEaB0xKyhg=
+        b=yBQpLzUP8OnxBvGNfyjAByNUDT3ub69ywLFxEs/6QIQd2bv//o7eHEs6U+CmNcdGax
+         UpqLzSmKd0Q9CtuhIhAXQrD2poCMJSYmMZAnCfwRh8jK5S4PyQFjyzZaojH5X42+fOn9
+         47KxmWzL7Vkt6maI3X2hg38ahyT8ZWU/DcBKw=
 From: Maxim Levitsky <maximlevitsky@gmail.com>
 To: David Woodhouse <dwmw2@infradead.org>
 Cc: Artem Bityutskiy <dedekind1@gmail.com>,
@@ -21,9 +21,9 @@ Cc: Artem Bityutskiy <dedekind1@gmail.com>,
        Alex Dubov <oakad@yahoo.com>, joern <joern@logfs.org>,
        Thomas Gleixner <tglx@linutronix.de>,
        Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: [PATCH 06/17] blktrans: flush all requests before we remove the device
-Date: Fri,  5 Feb 2010 01:30:46 +0200
-Message-Id: <1265326257-4446-7-git-send-email-maximlevitsky@gmail.com>
+Subject: [PATCH 10/17] MTD: nand: make reads using MTD_OOB_RAW affect only ECC validation
+Date: Fri,  5 Feb 2010 01:30:50 +0200
+Message-Id: <1265326257-4446-11-git-send-email-maximlevitsky@gmail.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1265326257-4446-1-git-send-email-maximlevitsky@gmail.com>
 References: <1265326257-4446-1-git-send-email-maximlevitsky@gmail.com>
@@ -31,54 +31,101 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Flush all requests, so we can be sure we don't deadlock the system later
-when we remove the disk queue.
+This changes the behavier of MTD_OOB_RAW. It used to read both OOB and data
+to the data buffer, however you would still need to specify the dummy oob buffer.
+
+This is only used in one place, but makes it hard to read data+oob without ECC
+test, thus I removed that behavier, and fixed the user.
+
+Now MTD_OOB_RAW behaves like MTD_OOB_PLACE, but doesn't do ECC validation
 
 Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
 ---
- drivers/mtd/mtd_blkdevs.c |   14 +++++++++++++-
- 1 files changed, 13 insertions(+), 1 deletions(-)
+ drivers/mtd/nand/nand_base.c |    5 -----
+ drivers/mtd/nand/nand_bbt.c  |   26 ++++++++++++++++++++++----
+ include/linux/mtd/mtd.h      |    4 +---
+ 3 files changed, 23 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/mtd/mtd_blkdevs.c b/drivers/mtd/mtd_blkdevs.c
-index 082969c..9992b2d 100644
---- a/drivers/mtd/mtd_blkdevs.c
-+++ b/drivers/mtd/mtd_blkdevs.c
-@@ -115,7 +115,13 @@ static int mtd_blktrans_thread(void *arg)
- static void mtd_blktrans_request(struct request_queue *rq)
+diff --git a/drivers/mtd/nand/nand_base.c b/drivers/mtd/nand/nand_base.c
+index 405c538..8ff36be 100644
+--- a/drivers/mtd/nand/nand_base.c
++++ b/drivers/mtd/nand/nand_base.c
+@@ -1286,8 +1286,6 @@ static int nand_do_read_ops(struct mtd_info *mtd, loff_t from,
+ 
+ 			if (unlikely(oob)) {
+ 
+-				/* Raw mode does data:oob:data:oob */
+-				if (ops->mode != MTD_OOB_RAW) {
+ 					int toread = min(oobreadlen,
+ 								max_oobsize);
+ 					if (toread) {
+@@ -1295,9 +1293,6 @@ static int nand_do_read_ops(struct mtd_info *mtd, loff_t from,
+ 							oob, ops, toread);
+ 						oobreadlen -= toread;
+ 					}
+-				} else
+-					buf = nand_transfer_oob(chip,
+-						buf, ops, mtd->oobsize);
+ 			}
+ 
+ 			if (!(chip->options & NAND_NO_READRDY)) {
+diff --git a/drivers/mtd/nand/nand_bbt.c b/drivers/mtd/nand/nand_bbt.c
+index 55c23e5..387c45c 100644
+--- a/drivers/mtd/nand/nand_bbt.c
++++ b/drivers/mtd/nand/nand_bbt.c
+@@ -237,15 +237,33 @@ static int scan_read_raw(struct mtd_info *mtd, uint8_t *buf, loff_t offs,
+ 			 size_t len)
  {
- 	struct mtd_blktrans_dev *dev = rq->queuedata;
--	wake_up_process(dev->thread);
-+	struct request *req = NULL;
+ 	struct mtd_oob_ops ops;
++	int res;
+ 
+ 	ops.mode = MTD_OOB_RAW;
+ 	ops.ooboffs = 0;
+ 	ops.ooblen = mtd->oobsize;
+-	ops.oobbuf = buf;
+-	ops.datbuf = buf;
+-	ops.len = len;
+ 
+-	return mtd->read_oob(mtd, offs, &ops);
 +
-+	if (dev->deleted)
-+		while ((req = blk_fetch_request(rq)) != NULL)
-+			__blk_end_request_all(req, -ENODEV);
-+	else
-+		wake_up_process(dev->thread);
++	while (len > 0) {
++		if (len <= mtd->writesize) {
++			ops.oobbuf = buf + len;
++			ops.datbuf = buf;
++			ops.len = len;
++			return mtd->read_oob(mtd, offs, &ops);
++		} else {
++			ops.oobbuf = buf + mtd->writesize;
++			ops.datbuf = buf;
++			ops.len = mtd->writesize;
++			res = mtd->read_oob(mtd, offs, &ops);
++
++			if (res)
++				return res;
++		}
++
++		buf += mtd->oobsize + mtd->writesize;
++		len -= mtd->writesize;
++	}
++	return 0;
  }
  
- 
-@@ -357,6 +363,8 @@ error1:
- 
- int del_mtd_blktrans_dev(struct mtd_blktrans_dev *old)
- {
-+	unsigned long flags;
-+
- 	if (mutex_trylock(&mtd_table_mutex)) {
- 		mutex_unlock(&mtd_table_mutex);
- 		BUG();
-@@ -367,7 +375,11 @@ int del_mtd_blktrans_dev(struct mtd_blktrans_dev *old)
- 	/* stop new requests to arrive */
- 	del_gendisk(old->disk);
- 
-+	/* flush current requests */
-+	spin_lock_irqsave(&old->queue_lock, flags);
- 	old->deleted = 1;
-+	blk_start_queue(old->rq);
-+	spin_unlock_irqrestore(&old->queue_lock, flags);
- 
- 	/* Stop the thread */
- 	kthread_stop(old->thread);
+ /*
+diff --git a/include/linux/mtd/mtd.h b/include/linux/mtd/mtd.h
+index 662d747..84bb375 100644
+--- a/include/linux/mtd/mtd.h
++++ b/include/linux/mtd/mtd.h
+@@ -61,9 +61,7 @@ struct mtd_erase_region_info {
+  * MTD_OOB_PLACE:	oob data are placed at the given offset
+  * MTD_OOB_AUTO:	oob data are automatically placed at the free areas
+  *			which are defined by the ecclayout
+- * MTD_OOB_RAW:		mode to read raw data+oob in one chunk. The oob data
+- *			is inserted into the data. Thats a raw image of the
+- *			flash contents.
++ * MTD_OOB_RAW:		mode to read oob and data without doing ECC checking
+  */
+ typedef enum {
+ 	MTD_OOB_PLACE,
 -- 
 1.6.3.3
 
