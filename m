@@ -1,64 +1,78 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932845Ab0BDTzx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 14:55:53 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46180 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932681Ab0BDTzw (ORCPT
+	id S933003Ab0BDT5Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 14:57:16 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:42557 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932868Ab0BDT5H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 14:55:52 -0500
-Date: Thu, 4 Feb 2010 11:54:55 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Sven Joachim <svenjoac@gmx.de>
-cc: Greg KH <greg@kroah.com>, Ben Hutchings <ben@decadent.org.uk>,
-       stable-review@kernel.org, stable@kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [stable] [PATCH] Fix 'flush_old_exec()/setup_new_exec()' split
-In-Reply-To: <87r5p0wzrt.fsf@turtle.gmx.de>
-Message-ID: <alpine.LFD.2.00.1002041150100.3707@localhost.localdomain>
-References: <1265245849.3362.1.camel@localhost> <1265256174.2952.11.camel@localhost> <alpine.LFD.2.00.1002032135380.3707@localhost.localdomain> <1265272174.2952.20.camel@localhost> <20100204143848.GB15438@kroah.com> <87sk9gbzzt.fsf@turtle.gmx.de>
- <alpine.LFD.2.00.1002041102530.3707@localhost.localdomain> <87r5p0wzrt.fsf@turtle.gmx.de>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 4 Feb 2010 14:57:07 -0500
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org
+Cc: "Stanley.Miao" <stanley.miao@windriver.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Madhusudhan Chikkature <madhu.cr@ti.com>,
+       Felipe Balbi <felipe.balbi@nokia.com>
+Subject: [PATCH 6/9] w1: move omap_hdq's probe function to .devinit.text
+Date: Thu,  4 Feb 2010 20:56:54 +0100
+Message-Id: <1265313417-5568-6-git-send-email-u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 1.6.6
+In-Reply-To: <20100203150850.GA28815@kroah.com>
+References: <20100203150850.GA28815@kroah.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+A pointer to omap_hdq_probe is passed to the core via
+platform_driver_register and so the function must not disappear when the
+.init sections are discarded.  Otherwise (if also having HOTPLUG=y)
+unbinding and binding a device to the driver via sysfs will result in an
+oops as does a device being registered late.
 
+An alternative to this patch is using platform_driver_probe instead of
+platform_driver_register plus removing the pointer to the probe function
+from the struct platform_driver.
 
-On Thu, 4 Feb 2010, Sven Joachim wrote:
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+Cc: Stanley.Miao <stanley.miao@windriver.com>
+Acked-by: Evgeniy Polyakov <zbr@ioremap.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Madhusudhan Chikkature <madhu.cr@ti.com>
+Cc: Felipe Balbi <felipe.balbi@nokia.com>
+---
+ drivers/w1/masters/omap_hdq.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-> On 2010-02-04 20:11 +0100, Linus Torvalds wrote:
-> 
-> > Sven/Ben: is /sbin/init (or wherever debian puts it) a regular ELF file? 
-> > Shared libraries? Anything at all special about it? I wonder why it seems 
-> > to have issues, when other 32-bit programs don't.
-> 
-> ,----
-> | % file /sbin/init
-> | /sbin/init: ELF 32-bit LSB executable, Intel 80386, version 1 (SYSV), dynamically linked (uses shared libs), for GNU/Linux 2.6.18, stripped
-> | % ldd /sbin/init
-> | 	linux-gate.so.1 =>  (0xf770d000)
-> | 	libsepol.so.1 => /lib/libsepol.so.1 (0xf76c0000)
-> | 	libselinux.so.1 => /lib/libselinux.so.1 (0xf76a6000)
-> | 	libc.so.6 => /lib/i686/cmov/libc.so.6 (0xf755e000)
-> | 	libdl.so.2 => /lib/i686/cmov/libdl.so.2 (0xf755a000)
-> | 	/lib/ld-linux.so.2 (0xf770e000)
-> `----
-> 
-> Apparently nothing special, and booting with init=/bin/bash does not
-> change anything.
+diff --git a/drivers/w1/masters/omap_hdq.c b/drivers/w1/masters/omap_hdq.c
+index 0d92969..22977d3 100644
+--- a/drivers/w1/masters/omap_hdq.c
++++ b/drivers/w1/masters/omap_hdq.c
+@@ -72,7 +72,7 @@ struct hdq_data {
+ 	int			init_trans;
+ };
+ 
+-static int __init omap_hdq_probe(struct platform_device *pdev);
++static int __devinit omap_hdq_probe(struct platform_device *pdev);
+ static int omap_hdq_remove(struct platform_device *pdev);
+ 
+ static struct platform_driver omap_hdq_driver = {
+@@ -558,7 +558,7 @@ static void omap_w1_write_byte(void *_hdq, u8 byte)
+ 	return;
+ }
+ 
+-static int __init omap_hdq_probe(struct platform_device *pdev)
++static int __devinit omap_hdq_probe(struct platform_device *pdev)
+ {
+ 	struct hdq_data *hdq_data;
+ 	struct resource *res;
+-- 
+1.6.6
 
-Yeah, well, if my current -git tree works, then there is something else 
-going on. 
-
-But I don't really see anything relevant _except_ for those commits. I do 
-note that mainline also has the do_wait() thread optimizations since 
-2.6.32, and I guess those aren't in stable, but I really don't see them 
-interacting with that whole flush_old_exec thing in any way.
-
-Very odd.
-
-		Linus
