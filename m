@@ -1,73 +1,67 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932294Ab0BDVbU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 16:31:20 -0500
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:49408 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755457Ab0BDVbR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 16:31:17 -0500
-Date: Thu, 4 Feb 2010 15:31:06 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: James Morris <jmorris@namei.org>
-Cc: Kees Cook <kees.cook@canonical.com>, Alex Riesen <raa.lkml@gmail.com>,
-       Casey Schaufler <casey@schaufler-ca.com>,
-       linux-security-module@vger.kernel.org, Eric Paris <eparis@redhat.com>,
-       David Howells <dhowells@redhat.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+	id S932464Ab0BDVcH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 16:32:07 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:38417 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752080Ab0BDVcF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 16:32:05 -0500
+Date: Thu, 4 Feb 2010 22:31:58 +0100
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: Ralf Baechle <ralf@linux-mips.org>
+Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
        Andrew Morton <akpm@linux-foundation.org>,
-       Simon Kagstrom <simon.kagstrom@netinsight.net>,
-       David Woodhouse <David.Woodhouse@intel.com>,
-       Robin Getz <rgetz@analog.com>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Paul Moore <paul.moore@hp.com>,
-       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-       Stephen Smalley <sds@tycho.nsa.gov>,
-       Etienne Basset <etienne.basset@numericable.fr>,
-       "David P. Quigley" <dpquigl@tycho.nsa.gov>,
-       LKLM <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v2 1/2] syslog: distinguish between /proc/kmsg and
- syscalls
-Message-ID: <20100204213106.GB25497@us.ibm.com>
-References: <20100202055354.GV19355@outflux.net>
- <4B67C2EA.705@schaufler-ca.com>
- <20100202202054.GW19355@outflux.net>
- <20100202212510.GG32305@us.ibm.com>
- <alpine.LRH.2.00.1002030859220.14592@tundra.namei.org>
- <20100203233643.GI19355@outflux.net>
- <81b0412b1002032358j163d2e3fm2c0353ba3ec2842a@mail.gmail.com>
- <20100204080923.GL19355@outflux.net>
- <alpine.LRH.2.00.1002050817120.3356@tundra.namei.org>
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Dmitri Vorobiev <dmitri.vorobiev@movial.fi>,
+       Henrik Kretzschmar <henne@nachtwindheim.de>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Kay Sievers <kay.sievers@vrfy.org>, peter fuerst <post@pfrst.de>,
+       Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+Subject: Re: [PATCH 2/9] platform-drivers: move probe to .devinit.text in
+	drivers/scsi
+Message-ID: <20100204213158.GB3035@pengutronix.de>
+References: <20100203150850.GA28815@kroah.com> <1265313417-5568-2-git-send-email-u.kleine-koenig@pengutronix.de> <20100204202507.GA24912@linux-mips.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <alpine.LRH.2.00.1002050817120.3356@tundra.namei.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20100204202507.GA24912@linux-mips.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting James Morris (jmorris@namei.org):
-> On Thu, 4 Feb 2010, Kees Cook wrote:
-> 
-> > Hi Alex,
-> > 
-> > On Thu, Feb 04, 2010 at 08:58:43AM +0100, Alex Riesen wrote:
-> > > > +       /* /proc/kmsg can open be opened by CAP_SYS_ADMIN */
-> > > > +       if (type != 1 && from_file)
-> > > > +               return 0;
-> > > 
-> > > "can open be opened"?
-> > 
-> > Erk, sorry.  s/open //
-> > 
-> > James, do you want a patch for that?
-> 
-> I guess... and 'opened with' might be better.
+Hello,
 
-I'd still as mentioned yesterday prefer "requires CAP_SYS_ADMIN to open"
-Otherwise, every time I see the comment I expect stricter requirements,
-not laxer ones, on the other actions.  However, I think with the second
-patch switching 1 for a meaningful name, the comment isn't even necessary
-or noticable any more.
+On Thu, Feb 04, 2010 at 09:25:07PM +0100, Ralf Baechle wrote:
+> On Thu, Feb 04, 2010 at 08:56:50PM +0100, Uwe Kleine-König wrote:
+> 
+> > A pointer to a probe callback is passed to the core via
+> > platform_driver_register and so the function must not disappear when the
+> > .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
+> > unbinding and binding a device to the driver via sysfs will result in an
+> > oops as does a device being registered late.
+> > 
+> > An alternative to this patch is using platform_driver_probe instead of
+> > platform_driver_register plus removing the pointer to the probe function
+> > from the struct platform_driver.
+> 
+> sgiwd93 bits looks good, so
+> 
+> Acked-by: Ralf Baechle <ralf@linux-mips.org>
+> 
+> The IP22 hardware doesn't support hotplugging so this bug isn't dangerous.
+You can still trigger it via sysfs.  You need to be root though.
 
--serge
+Best regards
+Uwe
+
+-- 
+Pengutronix e.K.                              | Uwe Kleine-König            |
+Industrial Linux Solutions                    | http://www.pengutronix.de/  |
