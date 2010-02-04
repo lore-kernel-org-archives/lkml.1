@@ -1,116 +1,98 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756324Ab0BDHNZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 02:13:25 -0500
-Received: from havoc.gtf.org ([69.61.125.42]:48903 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752024Ab0BDHNX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 02:13:23 -0500
-Date: Thu, 4 Feb 2010 02:13:22 -0500
-From: Jeff Garzik <jeff@garzik.org>
-To: linux-ide@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>, dgilbert@interlog.com, tj@kernel.org,
-       hch@infradead.org, catalin.marinas@arm.com
-Subject: [git patches] Proposed libata updates for 2.6.33-rc
-Message-ID: <20100204071322.GA20387@havoc.gtf.org>
-Mime-Version: 1.0
+	id S1756807Ab0BDHNe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 02:13:34 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:52540 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756702Ab0BDHN3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 02:13:29 -0500
+To: Greg KH <gregkh@suse.de>
+Cc: Jean Delvare <khali@linux-fr.org>, LKML <linux-kernel@vger.kernel.org>,
+       Tejun Heo <tj@kernel.org>, Serge Hallyn <serue@us.ibm.com>
+Subject: [PATCH] sysfs: sysfs_sd_setattr set iattrs unconditionally
+References: <20100120131602.12aa48f7@hyperion.delvare>
+	<m1ocko6fkx.fsf@fess.ebiederm.org>
+	<20100120160008.7d59688b@hyperion.delvare>
+	<20100122041913.GC4302@suse.de>
+	<20100203091138.1ababf5e@hyperion.delvare>
+	<20100203142218.GA27676@suse.de>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Wed, 03 Feb 2010 23:13:24 -0800
+In-Reply-To: <20100203142218.GA27676@suse.de> (Greg KH's message of "Wed\, 3 Feb 2010 06\:22\:18 -0800")
+Message-ID: <m1hbpxlbhn.fsf_-_@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Below is the current content of the 'upstream-linus' branch of
-git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/libata-dev.git upstream-linus
+There is currently a bug in sysfs_sd_setattr inherited from
+sysfs_setattr in 2.6.32 where the first time we set the attributes
+on a sysfs file we allocate backing store but do not set the
+backing store attributes.  Resulting in overly restrictive
+permissions on sysfs files.
 
-consisting of the following proposed 2.6.33-rc fixes:
+The fix is to simply modify the code so that it always executes
+when we update the sysfs attributes, as we did in 2.6.31 and earlier.
 
- drivers/ata/ahci.c        |   15 +++++++++++++++
- drivers/ata/libata-scsi.c |    2 +-
- drivers/ata/libata-sff.c  |    3 +++
- include/linux/ata.h       |    4 ++--
- 4 files changed, 21 insertions(+), 3 deletions(-)
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+---
+ fs/sysfs/inode.c |   35 +++++++++++++++++------------------
+ 1 files changed, 17 insertions(+), 18 deletions(-)
 
-Catalin Marinas (1):
-      [libata] Call flush_dcache_page after PIO data transfers in libata-sff.c
-
-Christoph Hellwig (1):
-      libata: fix ata_id_logical_per_physical_sectors
-
-Douglas Gilbert (1):
-      libata-scsi passthru: fix bug which truncated LBA48 return values
-
-Tejun Heo (1):
-      ahci: add Acer G725 to broken suspend list
-
-diff --git a/drivers/ata/ahci.c b/drivers/ata/ahci.c
-index b8bea10..b343903 100644
---- a/drivers/ata/ahci.c
-+++ b/drivers/ata/ahci.c
-@@ -2868,6 +2868,21 @@ static bool ahci_broken_suspend(struct pci_dev *pdev)
- 			},
- 			.driver_data = "F.23",	/* cutoff BIOS version */
- 		},
-+		/*
-+		 * Acer eMachines G725 has the same problem.  BIOS
-+		 * V1.03 is known to be broken.  V3.04 is known to
-+		 * work.  Inbetween, there are V1.06, V2.06 and V3.03
-+		 * that we don't have much idea about.  For now,
-+		 * blacklist anything older than V3.04.
-+		 */
-+		{
-+			.ident = "G725",
-+			.matches = {
-+				DMI_MATCH(DMI_SYS_VENDOR, "eMachines"),
-+				DMI_MATCH(DMI_PRODUCT_NAME, "eMachines G725"),
-+			},
-+			.driver_data = "V3.04",	/* cutoff BIOS version */
-+		},
- 		{ }	/* terminate list */
- 	};
- 	const struct dmi_system_id *dmi = dmi_first_match(sysids);
-diff --git a/drivers/ata/libata-scsi.c b/drivers/ata/libata-scsi.c
-index f4ea5a8..d096fbc 100644
---- a/drivers/ata/libata-scsi.c
-+++ b/drivers/ata/libata-scsi.c
-@@ -2875,7 +2875,7 @@ static unsigned int ata_scsi_pass_thru(struct ata_queued_cmd *qc)
- 	 * write indication (used for PIO/DMA setup), result TF is
- 	 * copied back and we don't whine too much about its failure.
- 	 */
--	tf->flags = ATA_TFLAG_ISADDR | ATA_TFLAG_DEVICE;
-+	tf->flags |= ATA_TFLAG_ISADDR | ATA_TFLAG_DEVICE;
- 	if (scmd->sc_data_direction == DMA_TO_DEVICE)
- 		tf->flags |= ATA_TFLAG_WRITE;
- 
-diff --git a/drivers/ata/libata-sff.c b/drivers/ata/libata-sff.c
-index 741065c..730ef3c 100644
---- a/drivers/ata/libata-sff.c
-+++ b/drivers/ata/libata-sff.c
-@@ -893,6 +893,9 @@ static void ata_pio_sector(struct ata_queued_cmd *qc)
- 				       do_write);
- 	}
- 
-+	if (!do_write)
-+		flush_dcache_page(page);
+diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
+index 220b758..6a06a1d 100644
+--- a/fs/sysfs/inode.c
++++ b/fs/sysfs/inode.c
+@@ -81,24 +81,23 @@ int sysfs_sd_setattr(struct sysfs_dirent *sd, struct iattr * iattr)
+ 		if (!sd_attrs)
+ 			return -ENOMEM;
+ 		sd->s_iattr = sd_attrs;
+-	} else {
+-		/* attributes were changed at least once in past */
+-		iattrs = &sd_attrs->ia_iattr;
+-
+-		if (ia_valid & ATTR_UID)
+-			iattrs->ia_uid = iattr->ia_uid;
+-		if (ia_valid & ATTR_GID)
+-			iattrs->ia_gid = iattr->ia_gid;
+-		if (ia_valid & ATTR_ATIME)
+-			iattrs->ia_atime = iattr->ia_atime;
+-		if (ia_valid & ATTR_MTIME)
+-			iattrs->ia_mtime = iattr->ia_mtime;
+-		if (ia_valid & ATTR_CTIME)
+-			iattrs->ia_ctime = iattr->ia_ctime;
+-		if (ia_valid & ATTR_MODE) {
+-			umode_t mode = iattr->ia_mode;
+-			iattrs->ia_mode = sd->s_mode = mode;
+-		}
++	}
++	/* attributes were changed at least once in past */
++	iattrs = &sd_attrs->ia_iattr;
 +
- 	qc->curbytes += qc->sect_size;
- 	qc->cursg_ofs += qc->sect_size;
- 
-diff --git a/include/linux/ata.h b/include/linux/ata.h
-index 38a6948..20f3156 100644
---- a/include/linux/ata.h
-+++ b/include/linux/ata.h
-@@ -647,9 +647,9 @@ static inline int ata_id_has_large_logical_sectors(const u16 *id)
- 	return id[ATA_ID_SECTOR_SIZE] & (1 << 13);
++	if (ia_valid & ATTR_UID)
++		iattrs->ia_uid = iattr->ia_uid;
++	if (ia_valid & ATTR_GID)
++		iattrs->ia_gid = iattr->ia_gid;
++	if (ia_valid & ATTR_ATIME)
++		iattrs->ia_atime = iattr->ia_atime;
++	if (ia_valid & ATTR_MTIME)
++		iattrs->ia_mtime = iattr->ia_mtime;
++	if (ia_valid & ATTR_CTIME)
++		iattrs->ia_ctime = iattr->ia_ctime;
++	if (ia_valid & ATTR_MODE) {
++		umode_t mode = iattr->ia_mode;
++		iattrs->ia_mode = sd->s_mode = mode;
+ 	}
+ 	return 0;
  }
- 
--static inline u8 ata_id_logical_per_physical_sectors(const u16 *id)
-+static inline u16 ata_id_logical_per_physical_sectors(const u16 *id)
- {
--	return id[ATA_ID_SECTOR_SIZE] & 0xf;
-+	return 1 << (id[ATA_ID_SECTOR_SIZE] & 0xf);
- }
- 
- static inline int ata_id_has_lba48(const u16 *id)
+-- 
+1.6.5.2.143.g8cc62
+
