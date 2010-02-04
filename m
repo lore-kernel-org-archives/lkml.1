@@ -1,23 +1,24 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933355Ab0BDR0q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 12:26:46 -0500
-Received: from kroah.org ([198.145.64.141]:34924 "EHLO coco.kroah.org"
+	id S933503Ab0BDR03 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 12:26:29 -0500
+Received: from kroah.org ([198.145.64.141]:34937 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933356Ab0BDRWZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 12:22:25 -0500
-X-Mailbox-Line: From linux@linux.site Thu Feb  4 09:15:23 2010
-Message-Id: <20100204171523.217298853@linux.site>
+	id S933364Ab0BDRW1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 12:22:27 -0500
+X-Mailbox-Line: From linux@linux.site Thu Feb  4 09:15:24 2010
+Message-Id: <20100204171524.332399752@linux.site>
 User-Agent: quilt/0.47-14.9
-Date: Thu, 04 Feb 2010 09:12:33 -0800
+Date: Thu, 04 Feb 2010 09:12:35 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Ajit Khaparde <ajitk@serverengines.com>,
-       "David S. Miller" <davem@davemloft.net>,
+       Anfei <anfei.zhou@gmail.com>, Russell King <rmk@arm.linux.org.uk>,
+       Miklos Szeredi <miklos@szeredi.hu>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, <linux-arch@vger.kernel.org>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [62/74] be2net: Bug fix to support newer generation of BE ASIC
+Subject: [64/74] mm: flush dcache before writing into page to avoid alias
 In-Reply-To: <20100204171850.GA16539@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -27,104 +28,75 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Ajit Khaparde <ajitk@serverengines.com>
+From: anfei zhou <anfei.zhou@gmail.com>
 
-commit 7b139c83c590d4965259aad8889cbb08104b2891 upstream.
+commit 931e80e4b3263db75c8e34f078d22f11bbabd3a3 upstream.
 
-Bug fix in be2net for newer generation of BladeEngine ASIC.
+The cache alias problem will happen if the changes of user shared mapping
+is not flushed before copying, then user and kernel mapping may be mapped
+into two different cache line, it is impossible to guarantee the coherence
+after iov_iter_copy_from_user_atomic.  So the right steps should be:
 
-Signed-off-by: Ajit Khaparde <ajitk@serverengines.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+	flush_dcache_page(page);
+	kmap_atomic(page);
+	write to page;
+	kunmap_atomic(page);
+	flush_dcache_page(page);
+
+More precisely, we might create two new APIs flush_dcache_user_page and
+flush_dcache_kern_page to replace the two flush_dcache_page accordingly.
+
+Here is a snippet tested on omap2430 with VIPT cache, and I think it is
+not ARM-specific:
+
+	int val = 0x11111111;
+	fd = open("abc", O_RDWR);
+	addr = mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
+	*(addr+0) = 0x44444444;
+	tmp = *(addr+0);
+	*(addr+1) = 0x77777777;
+	write(fd, &val, sizeof(int));
+	close(fd);
+
+The results are not always 0x11111111 0x77777777 at the beginning as expected.  Sometimes we see 0x44444444 0x77777777.
+
+Signed-off-by: Anfei <anfei.zhou@gmail.com>
+Cc: Russell King <rmk@arm.linux.org.uk>
+Cc: Miklos Szeredi <miklos@szeredi.hu>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: <linux-arch@vger.kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/benet/be.h      |    5 +++++
- drivers/net/benet/be_cmds.h |    3 ++-
- drivers/net/benet/be_main.c |   25 +++++++++++++++++++++++--
- 3 files changed, 30 insertions(+), 3 deletions(-)
+ fs/fuse/file.c |    3 +++
+ mm/filemap.c   |    3 +++
+ 2 files changed, 6 insertions(+)
 
---- a/drivers/net/benet/be.h
-+++ b/drivers/net/benet/be.h
-@@ -272,8 +272,13 @@ struct be_adapter {
- 	u32 cap;
- 	u32 rx_fc;		/* Rx flow control */
- 	u32 tx_fc;		/* Tx flow control */
-+	u8 generation;		/* BladeEngine ASIC generation */
- };
+--- a/fs/fuse/file.c
++++ b/fs/fuse/file.c
+@@ -828,6 +828,9 @@ static ssize_t fuse_fill_write_pages(str
+ 		if (!page)
+ 			break;
  
-+/* BladeEngine Generation numbers */
-+#define BE_GEN2 2
-+#define BE_GEN3 3
++		if (mapping_writably_mapped(mapping))
++			flush_dcache_page(page);
 +
- extern const struct ethtool_ops be_ethtool_ops;
+ 		pagefault_disable();
+ 		tmp = iov_iter_copy_from_user_atomic(page, ii, offset, bytes);
+ 		pagefault_enable();
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -2253,6 +2253,9 @@ again:
+ 		if (unlikely(status))
+ 			break;
  
- #define drvr_stats(adapter)		(&adapter->stats.drvr_stats)
---- a/drivers/net/benet/be_cmds.h
-+++ b/drivers/net/benet/be_cmds.h
-@@ -154,7 +154,8 @@ struct be_cmd_req_hdr {
- 	u8 domain;		/* dword 0 */
- 	u32 timeout;		/* dword 1 */
- 	u32 request_length;	/* dword 2 */
--	u32 rsvd;		/* dword 3 */
-+	u8 version;		/* dword 3 */
-+	u8 rsvd[3];		/* dword 3 */
- };
- 
- #define RESP_HDR_INFO_OPCODE_SHIFT	0	/* bits 0 - 7 */
---- a/drivers/net/benet/be_main.c
-+++ b/drivers/net/benet/be_main.c
-@@ -1944,6 +1944,7 @@ static void be_unmap_pci_bars(struct be_
- static int be_map_pci_bars(struct be_adapter *adapter)
- {
- 	u8 __iomem *addr;
-+	int pcicfg_reg;
- 
- 	addr = ioremap_nocache(pci_resource_start(adapter->pdev, 2),
- 			pci_resource_len(adapter->pdev, 2));
-@@ -1957,8 +1958,13 @@ static int be_map_pci_bars(struct be_ada
- 		goto pci_map_err;
- 	adapter->db = addr;
- 
--	addr = ioremap_nocache(pci_resource_start(adapter->pdev, 1),
--			pci_resource_len(adapter->pdev, 1));
-+	if (adapter->generation == BE_GEN2)
-+		pcicfg_reg = 1;
-+	else
-+		pcicfg_reg = 0;
++		if (mapping_writably_mapped(mapping))
++			flush_dcache_page(page);
 +
-+	addr = ioremap_nocache(pci_resource_start(adapter->pdev, pcicfg_reg),
-+			pci_resource_len(adapter->pdev, pcicfg_reg));
- 	if (addr == NULL)
- 		goto pci_map_err;
- 	adapter->pcicfg = addr;
-@@ -2028,6 +2034,7 @@ static int be_stats_init(struct be_adapt
- 	cmd->va = pci_alloc_consistent(adapter->pdev, cmd->size, &cmd->dma);
- 	if (cmd->va == NULL)
- 		return -1;
-+	memset(cmd->va, cmd->size, 0);
- 	return 0;
- }
- 
-@@ -2101,6 +2108,20 @@ static int __devinit be_probe(struct pci
- 		goto rel_reg;
- 	}
- 	adapter = netdev_priv(netdev);
-+
-+	switch (pdev->device) {
-+	case BE_DEVICE_ID1:
-+	case OC_DEVICE_ID1:
-+		adapter->generation = BE_GEN2;
-+		break;
-+	case BE_DEVICE_ID2:
-+	case OC_DEVICE_ID2:
-+		adapter->generation = BE_GEN3;
-+		break;
-+	default:
-+		adapter->generation = 0;
-+	}
-+
- 	adapter->pdev = pdev;
- 	pci_set_drvdata(pdev, adapter);
- 	adapter->netdev = netdev;
+ 		pagefault_disable();
+ 		copied = iov_iter_copy_from_user_atomic(page, i, offset, bytes);
+ 		pagefault_enable();
 
 
