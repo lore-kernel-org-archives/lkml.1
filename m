@@ -1,171 +1,68 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757320Ab0BDI63 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 03:58:29 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:44787 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755626Ab0BDI62 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 03:58:28 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Thu, 4 Feb 2010 17:55:02 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] memcg: use for each online for making sum of percpu
- counter
-Message-Id: <20100204175502.2d830679.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20100204082743.GJ19641@balbir.in.ibm.com>
-References: <20100204143645.87b5fc28.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100204082743.GJ19641@balbir.in.ibm.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1757499Ab0BDI6s (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 03:58:48 -0500
+Received: from hera.kernel.org ([140.211.167.34]:57087 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751567Ab0BDI6q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 03:58:46 -0500
+Message-ID: <4B6A8C01.5020403@kernel.org>
+Date: Thu, 04 Feb 2010 17:57:37 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>, dri-devel@lists.sourceforge.net,
+       Dave Airlie <airlied@gmail.com>, Greg KH <greg@kroah.com>,
+       Eric Paris <eparis@redhat.com>
+Subject: [PATCH 2.6.33-rc6] idr: revert misallocation bug fix
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 04 Feb 2010 08:57:41 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 4 Feb 2010 13:57:43 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+Commit 859ddf09743a8cc680af33f7259ccd0fd36bfe9d tried to fix
+misallocation bug but broke full bit marking by not clearing
+pa[idp->layers] and also is causing X failures due to lookup failure
+in drm code.  The cause of the latter hasn't been found yet.  Revert
+the fix for now.
 
-> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2010-02-04 14:36:45]:
-> 
-> > Tested on mmotm-2010-02-03.
-> > 
-> > Balbir-san, how about this patch ? It seems not so difficult as expected.
-> > 
-> > ==
-> > From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> > 
-> > memcg-use-for-each-online-cpus-for-making-sum-of-percpu-counter
-> > 
-> > Now, memcg's percpu coutner uses for_each_possible_cpus() for
-> > handling cpu hotplug. But it adds some overhead on a server
-> > which has an additonal cpu hotplug slot which is not used.
-> > 
-> > This patch adds cpu hotplug callback for memcg's percpu counter
-> > and make use of for_each_online_cpu().
-> > 
-> > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> > ---
-> >  mm/memcontrol.c |   35 ++++++++++++++++++++++++++++++++---
-> >  1 file changed, 32 insertions(+), 3 deletions(-)
-> > 
-> > Index: mmotm-2.6.33-Feb3/mm/memcontrol.c
-> > ===================================================================
-> > --- mmotm-2.6.33-Feb3.orig/mm/memcontrol.c
-> > +++ mmotm-2.6.33-Feb3/mm/memcontrol.c
-> > @@ -223,6 +223,8 @@ struct mem_cgroup {
-> >  	 */
-> >  	unsigned long 	move_charge_at_immigrate;
-> > 
-> > +	/* list of all memcgs. currently used for cpu hotplug+percpu counter */
-> > +	struct list_head list;
-> >  	/*
-> >  	 * percpu counter.
-> >  	 */
-> > @@ -504,7 +506,7 @@ static s64 mem_cgroup_read_stat(struct m
-> >  	int cpu;
-> >  	s64 val = 0;
-> > 
-> > -	for_each_possible_cpu(cpu)
-> > +	for_each_online_cpu(cpu)
-> >  		val += per_cpu(mem->stat->count[idx], cpu);
-> >  	return val;
-> >  }
-> > @@ -1405,17 +1407,37 @@ static void drain_all_stock_sync(void)
-> >  	atomic_dec(&memcg_drain_count);
-> >  }
-> > 
-> > -static int __cpuinit memcg_stock_cpu_callback(struct notifier_block *nb,
-> > +DEFINE_MUTEX(memcg_hotcpu_lock);
-> > +LIST_HEAD(memcg_hotcpu_list);
-> > +
-> > +static int __cpuinit memcg_cpu_unplug_callback(struct notifier_block *nb,
-> >  					unsigned long action,
-> >  					void *hcpu)
-> >  {
-> >  	int cpu = (unsigned long)hcpu;
-> > +	struct mem_cgroup *memcg;
-> >  	struct memcg_stock_pcp *stock;
-> > +	int idx;
-> > +	s64 val;
-> > 
-> >  	if (action != CPU_DEAD)
-> >  		return NOTIFY_OK;
-> >  	stock = &per_cpu(memcg_stock, cpu);
-> >  	drain_stock(stock);
-> > +
-> > +	/* Move dead percpu counter's value to online cpu */
-> > +	mutex_lock(&memcg_hotcpu_lock);
-> > +	list_for_each_entry(memcg, &memcg_hotcpu_list, list) {
-> > +		for (idx = MEM_CGROUP_STAT_CACHE;
-> > +		     idx <= MEM_CGROUP_STAT_SWAPOUT;
-> > +		     idx++) {
-> 
-> Should we add a for_each_stat_idx() macro?
-> 
-I used bare codes because EVENT_COUNTERs are not target.
+Signed-off-by: Tejun Heo <tj@kernel.org>
+---
+Sorry this wasn't found before hitting mainline.  It looks like this
+will have to stay broken for a bit more.  I'll make an userland
+test rig and find out what's going on.
 
+Thanks.
 
-> > +			val = per_cpu(memcg->stat->count[idx], cpu);
-> > +			per_cpu(memcg->stat->count[idx], cpu) = 0;
-> > +			this_cpu_add(memcg->stat->count[idx], val);
-> 
-> So the CPU that deals with the hotplug notification moves the stats to
-> its own counter? Seems fair enough.
-> 
-yes. I hope there will be no requests to get per-cpu statitstics...
+ lib/idr.c |    7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
-
-> > +		}
-> > +	}
-> > +	mutex_unlock(&memcg_hotcpu_lock);
-> > +
-> >  	return NOTIFY_OK;
-> >  }
-> > 
-> > @@ -3626,6 +3648,10 @@ static struct mem_cgroup *mem_cgroup_all
-> >  		else
-> >  			vfree(mem);
-> >  		mem = NULL;
-> > +	} else {
-> > +		mutex_lock(&memcg_hotcpu_lock);
-> > +		list_add(&mem->list, &memcg_hotcpu_list);
-> > +		mutex_unlock(&memcg_hotcpu_lock);
-> >  	}
-> >  	return mem;
-> >  }
-> > @@ -3651,6 +3677,9 @@ static void __mem_cgroup_free(struct mem
-> >  	for_each_node_state(node, N_POSSIBLE)
-> >  		free_mem_cgroup_per_zone_info(mem, node);
-> > 
-> > +	mutex_lock(&memcg_hotcpu_lock);
-> > +	list_del(&mem->list);
-> > +	mutex_unlock(&memcg_hotcpu_lock);
-> >  	free_percpu(mem->stat);
-> >  	if (sizeof(struct mem_cgroup) < PAGE_SIZE)
-> >  		kfree(mem);
-> > @@ -3753,7 +3782,7 @@ mem_cgroup_create(struct cgroup_subsys *
-> >  						&per_cpu(memcg_stock, cpu);
-> >  			INIT_WORK(&stock->work, drain_local_stock);
-> >  		}
-> > -		hotcpu_notifier(memcg_stock_cpu_callback, 0);
-> > +		hotcpu_notifier(memcg_cpu_unplug_callback, 0);
-> >  	} else {
-> >  		parent = mem_cgroup_from_cont(cont->parent);
-> >  		mem->use_hierarchy = parent->use_hierarchy;
-> >
-> 
-> Looks good, but I've not tested it yet. 
-> 
-Ok, I just did small test of online/offline cpus.
-
-Thanks,
--Kame
-
+diff --git a/lib/idr.c b/lib/idr.c
+index ba7d37c..1cac726 100644
+--- a/lib/idr.c
++++ b/lib/idr.c
+@@ -140,7 +140,8 @@ static int sub_alloc(struct idr *idp, int *starting_id, struct idr_layer **pa)
+ 	id = *starting_id;
+  restart:
+ 	p = idp->top;
+-	l = p->layer;
++	l = idp->layers;
++	pa[l--] = NULL;
+ 	while (1) {
+ 		/*
+ 		 * We run around this while until we reach the leaf node...
+@@ -154,8 +155,8 @@ static int sub_alloc(struct idr *idp, int *starting_id, struct idr_layer **pa)
+ 			oid = id;
+ 			id = (id | ((1 << (IDR_BITS * l)) - 1)) + 1;
+ 
+-			/* did id go over the limit? */
+-			if (id >= (1 << (idp->layers * IDR_BITS))) {
++			/* if already at the top layer, we need to grow */
++			if (!(p = pa[l])) {
+ 				*starting_id = id;
+ 				return IDR_NEED_TO_GROW;
+ 			}
