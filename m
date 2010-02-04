@@ -1,39 +1,41 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758461Ab0BDQrz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 11:47:55 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:59532 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758376Ab0BDQry (ORCPT
+	id S1758509Ab0BDQtR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 11:49:17 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:56112 "EHLO
+	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758351Ab0BDQtQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 11:47:54 -0500
-Subject: Re: [Patch 0/2] sysfs: fix s_active lockdep warning
-From: Peter Zijlstra <peterz@infradead.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Greg KH <gregkh@suse.de>,
-       Thomas Gleixner <tglx@linutronix.de>, Cong Wang <amwang@redhat.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Tejun Heo <tj@kernel.org>, Miles Lane <miles.lane@gmail.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1002041027070.2470-100000@iolanthe.rowland.org>
-References: <Pine.LNX.4.44L0.1002041027070.2470-100000@iolanthe.rowland.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 04 Feb 2010 17:46:05 +0100
-Message-ID: <1265301965.22001.133.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 4 Feb 2010 11:49:16 -0500
+Date: Thu, 4 Feb 2010 16:48:59 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Dave Airlie <airlied@gmail.com>, Dave Airlie <airlied@linux.ie>,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       dri-devel@lists.sf.net
+Subject: Re: hung bootup with "drm/radeon/kms: move radeon KMS on/off
+	switch out of staging."
+Message-ID: <20100204164859.GA17878@srcf.ucam.org>
+References: <alpine.DEB.2.00.1002010215530.15366@skynet.skynet.ie> <alpine.DEB.2.00.1002010253120.15366@skynet.skynet.ie> <20100202081727.GA6788@elte.hu> <21d7e9971002020035v22318962w6412ccd8d93449da@mail.gmail.com> <20100202154656.GD27314@elte.hu> <21d7e9971002021234y275fae02k410af92bb16fee73@mail.gmail.com> <20100204062619.GA29154@elte.hu> <20100204071705.GA28403@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100204071705.GA28403@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
+X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-02-04 at 11:35 -0500, Alan Stern wrote:
-> +#include <linux/sched.h>
+On Thu, Feb 04, 2010 at 08:17:05AM +0100, Ingo Molnar wrote:
 
-#include <linux/lockdep.h>
+> btw., i just found another bug activated via this same commit, a boot hang 
+> after DRM init:
 
-should be sufficient I think.
+The commit in question didn't cause the hang, so reverting it isn't the 
+appropriate fix.
 
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
