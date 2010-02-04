@@ -1,60 +1,58 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756141Ab0BDCCx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 21:02:53 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:58644 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1755556Ab0BDCCw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 21:02:52 -0500
-Message-ID: <4B6A2A51.7050408@cn.fujitsu.com>
-Date: Thu, 04 Feb 2010 10:00:49 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	id S1756208Ab0BDCDu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 21:03:50 -0500
+Received: from [12.51.93.24] ([12.51.93.24]:45699 "EHLO mail.asimco-na.com"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1755006Ab0BDCDr convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 21:03:47 -0500
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Simon Kagstrom <simon.kagstrom@netinsight.net>
-CC: linux-kernel@vger.kernel.org, oleg@redhat.com, rusty@rustcorp.com.au,
-       tj@kernel.org, akpm@linux-foundation.org, mingo@elte.hu
-Subject: Re: [PATCH] core: workqueue: BUG_ON on workqueue recursion
-References: <20100203122755.0fd4fb7e@marrow.netinsight.se>
-In-Reply-To: <20100203122755.0fd4fb7e@marrow.netinsight.se>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="gb2312"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 2.6.27.7-9-pae #7 SMP 1/1] networking tcp: Writing tcp socket be atomic
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Date: Thu, 4 Feb 2010 10:03:44 +0800
+Message-ID: <DB4F116661E3B0428456BB7E379EF4BB3C5F57@MX.asimcotech.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 2.6.27.7-9-pae #7 SMP 1/1] networking tcp: Writing tcp socket be atomic
+Thread-Index: Acqk8T7vjVlNYGhIRK6V4u3vsfawqwATF1ig
+References: <474C17045AA24E3F8519EE76BAB47439@JOHNYE1> <20100203.085249.98326242.davem@davemloft.net>
+From: "John Ye" <johny@asimco.com.cn>
+To: "David Miller" <davem@davemloft.net>
+Cc: <kuznet@ms2.inr.ac.ru>, <netdev@vger.kernel.org>, <jmorris@namei.org>,
+       <kaber@coreworks.de>, <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 04 Feb 2010 01:51:41.0052 (UTC) FILETIME=[989CE3C0:01CAA53C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Simon Kagstrom wrote:
-> When the workqueue is flushed from workqueue context (recursively), the
-> system enters a strange state where things at random (dependent on the
-> global workqueue) start misbehaving. For example, for us the console and
-> logins locks up while the web server continues running.
-> 
-> Since the system becomes unstable, change this to a BUG_ON instead.
+David,
 
-For design view, we should disallow this recursion when using workqueue.
+Thanks.
+The option TCP_ATOMIC is not a must.
+We can make atomic be default if the data size is less than a fixed size, just the same as pipe.
+For example, if the data size is less than 512, we don't split the data so it goes atomically.
 
-I like BUG_ON. But it is not a fatal end usually when it happens,
-most developers would like to let system go on.
+John Ye
 
-Acked-by: Lai Jiangshan <laijs@cn.fujitsu.com>
 
-> 
-> Signed-off-by: Simon Kagstrom <simon.kagstrom@netinsight.net>
-> ---
->  kernel/workqueue.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/kernel/workqueue.c b/kernel/workqueue.c
-> index dee4865..e617d29 100644
-> --- a/kernel/workqueue.c
-> +++ b/kernel/workqueue.c
-> @@ -482,7 +482,7 @@ static int flush_cpu_workqueue(struct cpu_workqueue_struct *cwq)
->  	int active = 0;
->  	struct wq_barrier barr;
->  
-> -	WARN_ON(cwq->thread == current);
-> +	BUG_ON(cwq->thread == current);
->  
->  	spin_lock_irq(&cwq->lock);
->  	if (!list_empty(&cwq->worklist) || cwq->current_work != NULL) {
+-----Original Message-----
+From: David Miller [mailto:davem@davemloft.net] 
+Sent: 2010Äê2ÔÂ4ÈÕ 0:53
+To: John Ye
+Cc: kuznet@ms2.inr.ac.ru; netdev@vger.kernel.org; jmorris@namei.org; kaber@coreworks.de; linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.27.7-9-pae #7 SMP 1/1] networking tcp: Writing tcp socket be atomic
 
+
+Locking belongs inside of the application, not in the kernel.
+
+As evidenced by the fact that you had to add new socket options, the
+application needs to be modified anyways.
+
+It's therefore just as easy to add the appropriate locking to the
+sequences where the application writes over the TCP socket.  And
+it avoids having to modify the kernel at all.
