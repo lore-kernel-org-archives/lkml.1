@@ -1,58 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932602Ab0BDP3a (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 10:29:30 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38347 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932221Ab0BDP33 (ORCPT
+	id S932697Ab0BDPaW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 10:30:22 -0500
+Received: from e23smtp05.au.ibm.com ([202.81.31.147]:39599 "EHLO
+	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932221Ab0BDPaU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 10:29:29 -0500
-Date: Thu, 4 Feb 2010 07:29:25 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-cc: Al Viro <viro@ZenIV.linux.org.uk>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH][RFC] %pd - for printing dentry name
-In-Reply-To: <20100203024931.GA6307@linux.vnet.ibm.com>
-Message-ID: <alpine.LFD.2.00.1002040715570.3707@localhost.localdomain>
-References: <20100201222511.GA12882@ZenIV.linux.org.uk> <alpine.LFD.2.00.1002011431490.3664@localhost.localdomain> <20100201231847.GC12882@ZenIV.linux.org.uk> <20100202065341.GF6292@linux.vnet.ibm.com> <20100203024931.GA6307@linux.vnet.ibm.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 4 Feb 2010 10:30:20 -0500
+Date: Thu, 4 Feb 2010 21:00:13 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Rik van Riel <riel@redhat.com>
+Cc: jdike@addtoit.com, kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+       avi@redhat.com, aarcange@redhat.com, mtosatti@redhat.com
+Subject: Re: [PATCH] emulate accessed bit for EPT
+Message-ID: <20100204153013.GK19641@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20100203161103.11e2b572@annuminas.surriel.com>
+ <20100204041212.GI19641@balbir.in.ibm.com>
+ <4B6ACE5B.9080601@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <4B6ACE5B.9080601@redhat.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Rik van Riel <riel@redhat.com> [2010-02-04 08:40:43]:
 
-
-On Tue, 2 Feb 2010, Paul E. McKenney wrote:
+> On 02/03/2010 11:12 PM, Balbir Singh wrote:
+> >* Rik van Riel<riel@redhat.com>  [2010-02-03 16:11:03]:
+> >
+> >>Currently KVM pretends that pages with EPT mappings never got
+> >>accessed.  This has some side effects in the VM, like swapping
+> >>out actively used guest pages and needlessly breaking up actively
+> >>used hugepages.
+> >>
+> >>We can avoid those very costly side effects by emulating the
+> >>accessed bit for EPT PTEs, which should only be slightly costly
+> >>because pages pass through page_referenced infrequently.
 > 
-> One stupid question: why are the hash and length ints rather than shorts?
-> Doesn't the maximum filename length fit into a 16-bit short?  In fact,
-> doesn't the maximum length of a full pathname fit into a 16-bit short?
+> >Quite a clever implementation, one side effect is that one would see a
+> >larger number of minor faults with EPT enabled and an increase in
+> >allocation/frees of rmap entries, but that can be easily explained.
+> 
+> I suspect it won't be very many. I have been monitoring
+> /proc/meminfo on my system while testing this patch, and
+> it is quite typical that the size of the inactive anon
+> list does not change for minutes at a time.
+> 
+> In other words, no pages are moved onto or off of the
+> inactive anon list for several minutes. That corresponds
+> to a very small number of minor faults introduced by my
+> patch.
+> 
+> Of course, when the system is swapping, we will have more
+> minor faults.  However, minor faults should be less of a
+> performance issue than major faults :)
+>
 
-Yes, the name length could easily be just 16 bits. 
+I do agree with you. 
 
-The hash, though, is a different matter. We actually want lots of bits to 
-spread out the dentries and 16 bits for hashing would be too small (on my 
-machine, the dentry cache hash table has half a million entries and takes 
-4MB of space - space I'll happily give it to keep the hash chains short).
-
-So we need at least 20 bits (and probably more on big machines).
-
-Now, we could decide that having just 16 bits for the name hash is enough, 
-because we do mix in the address of the 'parent' dentry, and we might 
-decide that that is worth a few bits (taking the number of total bits up 
-to enough to look up half a million entries)
-
-We could also use bitfields, and give the name length say 10 bits, and 22 
-bits to the hash, which togethr with the extra bits from the parent 
-pointer might well work out fine.
-
-It might be worth trying. But is playing that kind of game worth four 
-extra characters in the inline name? If it were to make the difference 
-between "core dentry fields fit in a cacheline" vs "needs two cachelines", 
-then maybe it would be worth it. But I don't think that's the case.
-
-		Linus
+-- 
+	Balbir
