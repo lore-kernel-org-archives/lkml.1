@@ -1,106 +1,68 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756135Ab0BDJjY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 04:39:24 -0500
-Received: from mga07.intel.com ([143.182.124.22]:39390 "EHLO
-	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753426Ab0BDJjW (ORCPT
+	id S1756311Ab0BDJkh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 04:40:37 -0500
+Received: from smtp.nokia.com ([192.100.105.134]:47237 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753395Ab0BDJke (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 04:39:22 -0500
-Message-Id: <89k83a$756q97@azsmga001.ch.intel.com>
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,403,1262592000"; 
-   d="scan'208";a="240347431"
-Date: Thu, 04 Feb 2010 09:39:17 +0000
-To: Tejun Heo <tj@kernel.org>, Andy Isaacson <adi@hexapodia.org>
-Subject: Re: [2.6.33-rc6-git regression] idr fix breaks Xorg
-Cc: dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-References: <20100204012837.GC538@hexapodia.org> <20100204075642.GA28286@hexapodia.org> <4B6A8278.8070001@kernel.org>
-From: Chris Wilson <chris@chris-wilson.co.uk>
-In-Reply-To: <4B6A8278.8070001@kernel.org>
+	Thu, 4 Feb 2010 04:40:34 -0500
+Subject: Re: linux-next: manual merge of the omap_dss2 tree with the omap
+ tree
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+To: ext Tony Lindgren <tony@atomide.com>
+Cc: Grazvydas Ignotas <notasas@gmail.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Hunter Adrian (Nokia-D/Helsinki)" <adrian.hunter@nokia.com>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
+In-Reply-To: <20100203171227.GD22747@atomide.com>
+References: <20100203152947.f4955d91.sfr@canb.auug.org.au>
+	 <6ed0b2681002030429t1f6b33e9r3b6ea667fffb0f6a@mail.gmail.com>
+	 <20100203171227.GD22747@atomide.com>
+Content-Type: text/plain; charset="UTF-8"
+Organization: Nokia
+Date: Thu, 04 Feb 2010 11:42:55 +0200
+Message-ID: <1265276575.17836.10.camel@tubuntu.research.nokia.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 04 Feb 2010 09:40:04.0206 (UTC) FILETIME=[0765E0E0:01CAA57E]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 04 Feb 2010 17:16:56 +0900, Tejun Heo <tj@kernel.org> wrote:
-> Hello,
+On Wed, 2010-02-03 at 18:12 +0100, ext Tony Lindgren wrote:
+> * Grazvydas Ignotas <notasas@gmail.com> [100203 04:27]:
+> > hi,
+> > 
+> > On Wed, Feb 3, 2010 at 6:29 AM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> > > Hi Tomi,
+> > >
+> > > Today's linux-next merge of the omap_dss2 tree got a conflict in
+> > > arch/arm/mach-omap2/board-omap3pandora.c between commit
+> > > f8b6f704105164eac7c043a48f79c4234e03e4b2 ("omap: Rename hsmmc symbols to
+> > > reflect independence from twl4030") from the omap tree and commit
+> > > aacb4387a1e6f3b57977375532c6d8e47fcd5652 ("OMAP: pandora: add DSS2
+> > > support and related regulators") from the omap_dss2 tree.
+> > 
+> > I've rebased my patch against linux-omap/for-next (attached). To fix
+> > the conflict, Tomi can rebase his queue on linux-omap/for-next, or
+> > Tony can simply take this to his queue - this has no "hard"
+> > dependencies on other queued DSS2 changes, has only board file changes
+> > and builds fine in linux-omap/for-next. I would prefer the second
+> > option, as I plan sending more boardfile changes to linux-omap.
 > 
-> On 02/04/2010 04:56 PM, Andy Isaacson wrote:
-> > 1265267921.568269 ioctl(8, 0xc020645e, 0x7fffe2196980) = -1 EBADF (Bad file descriptor)
+> Thanks Stephen and Grazvydas.
 > 
-> Hmm... -EBADF?  I suppose it doesn't mean that the fd is invalid in
-> this case but that the mapped object can't be found for some reason?
-> Can anyone more familiar with the subsystem explain what's going on?
-
-Correct, in this case we pass in an 'fd' via the ioctl that we wish to
-mmap. idr is then used to translate that handle back to one of our buffer
-objects, which is then prepared for mapping.
-
-In this context, it is the immediate lookup of the handle following
-allocation that is failing. The critical bit of code lives in
-drivers/gpu/drm/drm_gem.c:
-
-int
-drm_gem_handle_create(struct drm_file *file_priv,
-                       struct drm_gem_object *obj,
-                       u32 *handlep)
-{
-        int     ret;
-
-        /*
-         * Get the user-visible handle using idr.
-         */
-again:
-        /* ensure there is space available to allocate a handle */
-        if (idr_pre_get(&file_priv->object_idr, GFP_KERNEL) == 0)
-                return -ENOMEM;
-
-        /* do the allocation under our spinlock */
-        spin_lock(&file_priv->table_lock);
-        ret = idr_get_new_above(&file_priv->object_idr, obj, 1, (int
-*)handlep);
-        spin_unlock(&file_priv->table_lock);
-        if (ret == -EAGAIN)
-                goto again;
-
-        if (ret != 0)
-                return ret;
-
-        drm_gem_object_handle_reference(obj);
-        return 0;
-}
-
-struct drm_gem_object *
-drm_gem_object_lookup(struct drm_device *dev, struct drm_file *filp,
-                      u32 handle)
-{
-        struct drm_gem_object *obj;
-
-        spin_lock(&filp->table_lock);
-
-        /* Check if we currently have a reference on the object */
-        obj = idr_find(&filp->object_idr, handle);
-        if (obj == NULL) {
-                spin_unlock(&filp->table_lock);
-                return NULL;
-        }
-
-        drm_gem_object_reference(obj);
-
-        spin_unlock(&filp->table_lock);
-
-        return obj;
-}
-
-Can you see any problems here?
-
+> This sounds good to me, I've added this patch into omap for-next.
 > 
-> > 1265267921.568649 write(2, "../../../libdrm/intel/intel_bufmgr_gem.c:637: Error mapping buffer 1073741824 (gen4 WM state): Bad file descriptor .\n", 117) = 117
-> > 1265267921.569039 --- SIGSEGV (Segmentation fault) @ 0 (0) ---
+> Tomi can you please drop the earlier version from your branch?
 
-This SEGV is just lazy error handling in the userspace driver; the
-impossible just happened.
--ickle
+Sounds good to me. I dropped the patch from my tree.
 
--- 
-Chris Wilson, Intel Open Source Technology Centre
+ Tomi
+
+
