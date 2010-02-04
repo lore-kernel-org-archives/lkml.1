@@ -1,116 +1,71 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758250Ab0BDNm0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 08:42:26 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:32065 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758122Ab0BDNmY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 08:42:24 -0500
-Message-ID: <4B6ACEA3.3080900@redhat.com>
-Date: Thu, 04 Feb 2010 11:41:55 -0200
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
-MIME-Version: 1.0
-To: Jiri Slaby <jirislaby@gmail.com>
-CC: Jiri Kosina <jkosina@suse.cz>, Antti Palosaari <crope@iki.fi>,
-       mchehab@infradead.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, Pekka Sarnila <sarnila@adit.fi>,
-       linux-input@vger.kernel.org
-Subject: Re: [PATCH 1/1] media: dvb-usb/af9015, fix disconnection crashes
-References: <1264007972-6261-1-git-send-email-jslaby@suse.cz> <4B5CDB53.6030009@iki.fi> <4B5D6098.7010700@gmail.com> <4B5DDDFB.5020907@iki.fi> <alpine.LRH.2.00.1001261406010.15694@twin.jikos.cz> <4B6AA211.1060707@gmail.com> <4B6AB7E9.40607@redhat.com> <4B6AC333.6030308@gmail.com>
-In-Reply-To: <4B6AC333.6030308@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1758261Ab0BDNm4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 08:42:56 -0500
+Received: from dallas.jonmasters.org ([72.29.103.172]:36083 "EHLO
+	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758094Ab0BDNmy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 08:42:54 -0500
+Subject: Re: [PATCH] netfilter: per netns nf_conntrack_cachep
+From: Jon Masters <jonathan@jonmasters.org>
+To: Patrick McHardy <kaber@trash.net>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>,
+       Eric Dumazet <eric.dumazet@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>,
+       netfilter-devel <netfilter-devel@vger.kernel.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+In-Reply-To: <4B6ACD9A.1090905@trash.net>
+References: <1265108690.2861.118.camel@tonnant>
+	 <1265134598.2861.191.camel@tonnant> <4B6870AF.6060109@trash.net>
+	 <4B6967BC.600@trash.net> <1265222289.2861.290.camel@tonnant>
+	 <20100203190948.GA5182@x200> <1265226227.2861.302.camel@tonnant>
+	 <4B6ABCB8.4080904@trash.net>
+	 <b6fcc0a1002040427n221da433n755350b4a41bbf9b@mail.gmail.com>
+	 <4B6ABDEF.8090005@trash.net>
+	 <b6fcc0a1002040435t150aa7axf2dc0b139ed8f258@mail.gmail.com>
+	 <4B6AC5DC.60301@trash.net> <1265289486.2861.436.camel@tonnant>
+	 <4B6ACD9A.1090905@trash.net>
+Content-Type: text/plain
+Organization: World Organi[sz]ation of Broken Dreams
+Date: Thu, 04 Feb 2010 08:42:30 -0500
+Message-Id: <1265290950.2861.460.camel@tonnant>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
 Content-Transfer-Encoding: 7bit
+X-SA-Do-Not-Run: Yes
+X-SA-Exim-Connect-IP: 127.0.0.1
+X-SA-Exim-Mail-From: jonathan@jonmasters.org
+X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Slaby wrote:
-> On 02/04/2010 01:04 PM, Mauro Carvalho Chehab wrote:
->>> I have 2 dvb-t receivers and both of them need fullspeed quirk. Further
->>> disable_rc_polling (a dvb_usb module parameter) must be set to not get
->>> doubled characters now. And then, it works like a charm.
->> Module parameters always bothers me. They should be used as last resort alternatives
->> when there's no other possible way to make it work properly.
->>
->> If we know for sure that the RC polling should be disabled by an specific device, 
->> just add this logic at the driver.
+On Thu, 2010-02-04 at 14:37 +0100, Patrick McHardy wrote:
+> Jon Masters wrote:
+> > On Thu, 2010-02-04 at 14:04 +0100, Patrick McHardy wrote:
+> >> In any case, we need a fix for this suitable for 2.6.33. If
+> >> you don't like using the pointer, please send a patch to add
+> >> an id to the network namespaces.
+> > 
+> > Right. I think the quick solution is fine for 2.6.33. So that makes the
+> > hashtable non-resize patch, the crash fix, and the cachep bits. I will
+> > try to get involved and help you out with the per-ns hashtable clean
+> > rather than just being a whiner :)
 > 
-> Yes, this is planned and written below:
-
-Ok.
+> This is the patch I'm going to commit unless unless there are further
+> objections. Its Eric's patch with a change on top to allocate a unique
+> name for the slab.
 > 
->>> Note that, it's just some kind of proof of concept. A migration of
->>> af9015 devices from dvb-usb-remote needs to be done first.
->>>
->>> Ideas, comments?
->> Please next time, send the patch inlined. As you're using Thunderbird, you'll likely need
->> Asalted-patches[1] to avoid thunderbird to destroy your patches.
+> > Thanks a bunch! Fedora kernels have already been built with this fix,
+> > since it will allow us to close a fair number of "KVM goes boom" bugs.
 > 
-> I must disagree for two reasons: (a) it was not patch intended for merge
-> and (b) it was a plain-text attachment which is fine even for
-> submission. However I don't like patches as attachments so if I decide
-> to submit it for a merge later, you will not see it as an attachment
-> then :).
+> Thanks as well for your help.
 
-Attachments aren't good for reply, as they appear as a file. So, people need to
-open the attachment on a separate application to see and to cut-and-paste
-if they want to comment, like what I did.
+Patch looks fine to me for the moment, unless it *really* matters about
+the pointer exposure.
 
->> +config HID_DVB
->> +	tristate "DVB remotes support" if EMBEDDED
->> +	depends on USB_HID
->> +	default !EMBEDDED
->> +	---help---
->> +	Say Y here if you have DVB remote controllers.
->> +
->>
->> I think the better would be to use a more generic name, like HID_RC (for Remote Controller).
->> I suspect we may need in the future other hacks for other similar devices.
-> 
-> Seconded. I would only go for some other abbreviation other than RC or
-> not abbreviate that at all.
-
-we're using irrcv at the IR remote class. So, this can be another name for it.
-
->> +static int dvb_event(struct hid_device *hdev, struct hid_field *field,
->> +		struct hid_usage *usage, __s32 value)
->> +{
->> +	/* we won't get a "key up" event */
->> +	if (value) {
->> +		input_event(field->hidinput->input, usage->type, usage->code, 1);
->> +		input_event(field->hidinput->input, usage->type, usage->code, 0);
->> +	}
->> +	return 1;
->> +}
->>
->> Several V4L/DVB IR's have keyup/keydown events. So I think the name here is also wrong:
->> it is better to name the function as dvb_nokeyup_event() and eventually add an specific
->> quirk to indicate devices that only have key up events.
-> 
-> If such appear later, it can be rewritten. I don't plan to add such
-> functionality now until somebody comes with device IDs which should be
-> handled that way and tests it, because I guess I will definitely do it
-> wrong otherwise. 
-> Do you know/have such a device?
-
-I have several devices here with different ways to generate keyup/keydown or
-keydown/repeat, but they don't export a standard usb HID interface (in a matter
-of fact, I have just one PCI device that came with a separate USB HID interface,
-but this device always worked fine - also - as it has physically a separate device -
-it doesn't generate any conflict with the DVB hardware).
-
-The point is that it is better to name the function right since the beginning.
- 
-> There are many of quirks needed for various devices. I already wrote
-> about af9005 which sends key repeat aside from key down etc. But the
-> same as above, I can't test it (and don't want to introduce
-> regressions). So again, if somebody can test it, I'll be happy to code it.
-> 
-> thanks for the input,
+Jon.
 
 
--- 
-
-Cheers,
-Mauro
