@@ -1,56 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755782Ab0BDDPg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Feb 2010 22:15:36 -0500
-Received: from sh.osrg.net ([192.16.179.4]:55529 "EHLO sh.osrg.net"
+	id S1755617Ab0BDDRy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Feb 2010 22:17:54 -0500
+Received: from hera.kernel.org ([140.211.167.34]:40373 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755316Ab0BDDPb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Feb 2010 22:15:31 -0500
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-To: linux-kernel@vger.kernel.org
-Cc: fujita.tomonori@lab.ntt.co.jp, akpm@linux-foundation.org,
-       Richard Henderson <rth@twiddle.net>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Matt Turner <mattst88@gmail.com>
-Subject: [PATCH -mm 3/4] alpha: remove dma_sync_single_range
-Date: Thu,  4 Feb 2010 12:13:24 +0900
-Message-Id: <1265253206-17744-3-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1265253206-17744-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-References: <1265253206-17744-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Thu, 04 Feb 2010 12:14:51 +0900 (JST)
+	id S1754858Ab0BDDRv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Feb 2010 22:17:51 -0500
+Message-ID: <4B6A3DED.6060708@kernel.org>
+Date: Thu, 04 Feb 2010 12:24:29 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+MIME-Version: 1.0
+To: Grant Grundler <grundler@google.com>
+CC: Chandra Shekhar Sah <edu4madh@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: port multiplier problem
+References: <4B5885F7.2020007@gmail.com> <4B679EA9.6030203@kernel.org>	 <4B6833DD.1020001@gmail.com> <4B683581.7070708@kernel.org>	 <4B683DEF.3000302@gmail.com>	 <da824cf31002020844r12cada26x57f96b0aa24b59c6@mail.gmail.com>	 <4B686B2B.2080406@gmail.com>	 <da824cf31002021104v72efcd05ne639091042d5999d@mail.gmail.com>	 <4B687B7C.2070406@gmail.com> <da824cf31002031837t1cf2357bsbb53a3b4ea5e671f@mail.gmail.com>
+In-Reply-To: <da824cf31002031837t1cf2357bsbb53a3b4ea5e671f@mail.gmail.com>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 04 Feb 2010 03:17:47 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-dma_sync_single_for_cpu/for_device supports a partial sync so there is
-no point to have dma_sync_single_range (also dma_sync_single was
-obsoleted long ago, replaced with dma_sync_single_for_cpu/for_device).
+On 02/04/2010 11:37 AM, Grant Grundler wrote:
+> I had two questions on that thread that never got answered:
+>    http://markmail.org/message/snpekoj4qexrslk5
+> 
+> | How can we find out if anyone has the SEMB properly wired up?
+> | Would it be hard to make libata aware of "SEMB port not responding" case?
+> | ie if the SEMB port times out or has no link, reduce the port count of
+> | the sil3726 PMP by one.
+> |
+> | Maybe add a "enable_sil24_semb" flag to libata?
+> | (avoid checking unless someone asks for it). I hate magic flags but also
+> | don't want to subject most people to the timeout delay.
+> 
+> I (or Gwendal) can post a patch (and lightly test) for any of the above.
+> Just need to get some guidance so we don't waste our time.
 
-There is no user of dma_sync_single_range() in mainline and only Alpha
-architecture supports dma_sync_single_range(). So it's unlikely that
-someone out of the tree uses it.
+It's not really sil24 tho.  But anyways, I think we can just disable
+them altogether.  It's not like they have ever worked.  Just limiting
+both 3726 and 4726 to 5 ports should be fine.  That said, I'm not
+quite sure this is relevant to the reported problem but it's worth a
+shot.
 
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: Richard Henderson <rth@twiddle.net>
-Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Cc: Matt Turner <mattst88@gmail.com>
----
- arch/alpha/include/asm/dma-mapping.h |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+Thanks.
 
-diff --git a/arch/alpha/include/asm/dma-mapping.h b/arch/alpha/include/asm/dma-mapping.h
-index 04eb568..f514ede 100644
---- a/arch/alpha/include/asm/dma-mapping.h
-+++ b/arch/alpha/include/asm/dma-mapping.h
-@@ -59,7 +59,6 @@ int dma_set_mask(struct device *dev, u64 mask);
- 
- #define dma_sync_single_for_cpu(dev, addr, size, dir)	  ((void)0)
- #define dma_sync_single_for_device(dev, addr, size, dir)  ((void)0)
--#define dma_sync_single_range(dev, addr, off, size, dir)  ((void)0)
- #define dma_sync_sg_for_cpu(dev, sg, nents, dir)	  ((void)0)
- #define dma_sync_sg_for_device(dev, sg, nents, dir)	  ((void)0)
- #define dma_cache_sync(dev, va, size, dir)		  ((void)0)
 -- 
-1.5.6.5
-
+tejun
