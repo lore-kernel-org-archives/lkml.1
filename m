@@ -1,100 +1,113 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932537Ab0BENmq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 08:42:46 -0500
-Received: from faui40.informatik.uni-erlangen.de ([131.188.34.40]:58368 "EHLO
-	faui40.informatik.uni-erlangen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932444Ab0BENmo (ORCPT
+	id S932700Ab0BENmx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 08:42:53 -0500
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:42976 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932587Ab0BENmu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 08:42:44 -0500
-Date: Fri, 5 Feb 2010 14:42:57 +0100
-From: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Anatolij Gustschin <agust@denx.de>,
-       Alexander Shishkin <virtuoso@slind.org>,
-       Valentin Sitdikov <valentin.sitdikov@siemens.com>,
-       Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org
-Cc: vamos@i4.informatik.uni-erlangen.de
-Subject: [PATCH] obsolete config in kernel source (LWMON5)
-Message-ID: <20100205134256.GB7077@faui49.informatik.uni-erlangen.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Fri, 5 Feb 2010 08:42:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=kzJsqNsouKuwFQCkmqaPlLuoKMkOlNoyN1ckvSa/BQ9uQeGQPvpzA92JXZKMUo9FBi
+         b52UNSxtx/ExlxGiRn2Dn55KdhMS83aHDKbcUn4l0+L6KLlemvbeO5GZLYW+7wwhWWg+
+         EfMpFK8WQqWcxgghzbFXvJjaOjMeSYbTVzz1o=
+Subject: Re: [PATCH] MMC: fix hang if card was removed during suspend and
+ unsafe resume was enabled
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: Adrian Hunter <adrian.hunter@nokia.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
+       Philip Langdale <philipl@overt.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Schummer Jorg.2 (EXT-Tieto/Espoo)" <ext-jorg.2.schummer@nokia.com>,
+       nico@fluxnic.net, nico@marvell.com
+In-Reply-To: <4B6BF02A.2080501@nokia.com>
+References: <1265219241.12549.8.camel@maxim-laptop>
+	 <1265325495-4220-1-git-send-email-maximlevitsky@gmail.com>
+	 <20100204160957.1c51cc1b.akpm@linux-foundation.org>
+	 <4B6BF02A.2080501@nokia.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 05 Feb 2010 15:42:43 +0200
+Message-ID: <1265377363.12577.4.camel@maxim-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all!
-
-	As part of the VAMOS[0] research project at the University of
-Erlangen we're checking referential integrity between kernel KConfig
-options and in-code Conditional blocks.
-
-	LWMON5 is a larger chunk from the kategory unreachable and
-here for ever. Seems this board was either only available from
-external trees or has been removed a long time ago. If you agree it
-might be worth removing it.
-
-	Please keep me informed of this patch getting confirmed /
-merged so we can keep track of it.
-
-Regards
-
-	Christoph Egger
-
-[0] http://vamos1.informatik.uni-erlangen.de/
-
-----
->From 8334822cc79b4cf0b7f6844ebd952ebb24ee046f Mon Sep 17 00:00:00 2001
-From: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
-Date: Fri, 5 Feb 2010 13:49:13 +0100
-Subject: [PATCH] Remove conditionalizing on LWMON5
-
-There was some condigionalizing for the LWMON5 boards in kernel
-source. However infrastructure for enabling this isn't here so
-probably the special case code can go as well.
-
-Signed-off-by: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
----
- drivers/video/mb862xx/mb862xxfb.c |   13 -------------
- 1 files changed, 0 insertions(+), 13 deletions(-)
-
-diff --git a/drivers/video/mb862xx/mb862xxfb.c b/drivers/video/mb862xx/mb862xxfb.c
-index fabb0c5..8280a58 100644
---- a/drivers/video/mb862xx/mb862xxfb.c
-+++ b/drivers/video/mb862xx/mb862xxfb.c
-@@ -31,15 +31,6 @@
- #define CARMINE_MEM_SIZE	0x8000000
- #define DRV_NAME		"mb862xxfb"
- 
--#if defined(CONFIG_LWMON5)
--static struct mb862xx_gc_mode lwmon5_gc_mode = {
--	/* Mode for Sharp LQ104V1DG61 TFT LCD Panel */
--	{ "640x480", 60, 640, 480, 40000, 48, 16, 32, 11, 96, 2, 0, 0, 0 },
--	/* 16 bits/pixel, 32MB, 100MHz, SDRAM memory mode value */
--	16, 0x2000000, GC_CCF_COT_100, 0x414fb7f2
--};
--#endif
--
- #if defined(CONFIG_SOCRATES)
- static struct mb862xx_gc_mode socrates_gc_mode = {
- 	/* Mode for Prime View PM070WL4 TFT LCD Panel */
-@@ -600,10 +591,6 @@ static int __devinit of_platform_mb862xx_probe(struct of_device *ofdev,
- 		goto irqdisp;
- 	}
- 
--#if defined(CONFIG_LWMON5)
--	par->gc_mode = &lwmon5_gc_mode;
--#endif
--
- #if defined(CONFIG_SOCRATES)
- 	par->gc_mode = &socrates_gc_mode;
- #endif
--- 
-1.6.3.3
+On Fri, 2010-02-05 at 12:17 +0200, Adrian Hunter wrote: 
+> ext Andrew Morton wrote:
+> > On Fri,  5 Feb 2010 01:18:15 +0200 Maxim Levitsky <maximlevitsky@gmail.com> wrote:
+> > 
+> >> Currently removal of the card leads to del_disk called indirectly by mmc core.
+> >> This function expects userspace to be running, which isn't when .resume is called
+> >>
+> >> Fix that by removing the code that did that in mmc_resume_host. It is possible
+> >> because card detection logic will kick it later and remove the card.
+> > 
+> > I don't really understand.  The above implies that to trigger this bug,
+> > one needs to physically remove the card during a resume operation.  ie:
+> > a human-vs-computer race.  Sounds unlikely?
+> > 
+> > So...  exactly what steps does the user need to take to trigger this
+> > bug?
+> > 
+> >> Also make mtd workqueue freezeable, so it won't attempt to add/remove the card
+> >> while userspace is frozen.
+> >>
+> >>
+> >> diff --git a/drivers/mmc/core/core.c b/drivers/mmc/core/core.c
+> >> index 30acd52..879d48d 100644
+> >> --- a/drivers/mmc/core/core.c
+> >> +++ b/drivers/mmc/core/core.c
+> >> @@ -1257,7 +1257,6 @@ int mmc_suspend_host(struct mmc_host *host, pm_message_t state)
+> >>  	if (host->caps & MMC_CAP_DISABLE)
+> >>  		cancel_delayed_work(&host->disable);
+> >>  	cancel_delayed_work(&host->detect);
+> >> -	mmc_flush_scheduled_work();
+> >>  
+> >>  	mmc_bus_get(host);
+> >>  	if (host->bus_ops && !host->bus_dead) {
+> >> @@ -1300,15 +1299,11 @@ int mmc_resume_host(struct mmc_host *host)
+> >>  		mmc_select_voltage(host, host->ocr);
+> >>  		BUG_ON(!host->bus_ops->resume);
+> >>  		err = host->bus_ops->resume(host);
+> >> +
+> >>  		if (err) {
+> >>  			printk(KERN_WARNING "%s: error %d during resume "
+> >>  					    "(card was removed?)\n",
+> >>  					    mmc_hostname(host), err);
+> >> -			if (host->bus_ops->remove)
+> >> -				host->bus_ops->remove(host);
+> >> -			mmc_claim_host(host);
+> >> -			mmc_detach_bus(host);
+> >> -			mmc_release_host(host);
+> > 
+> > afacit that code's been there since March 2009.  I'd have thought that
+> > someone would have noticed "kernel hangs on resume" before now.
+> > 
+> > Do you think the patch should be backported into 2.6.32.x and eariler?
+> 
+> It looks like the code was introduced in 2.6.32.x by commit
+> 
+> 95cdfb72b9bc568803f395c266152c71b034b461
+> 
+> cc'ing the author Nicolas Pitre
 
 
+I don't think this is this commit fault.
+The problem lies somewhere in block layer.
+del_disk hangs if called while usrspace is frozen.
+Because I assume that this code was tested, I guess that it was possible
+to call del_disk in this way once.
 
+Fixing CONFIG_MMC_UNSAFE_RESUME=n not to do del_disk, won't be easy...
+
+Best regards,
+Maxim Levitsky
 
 
