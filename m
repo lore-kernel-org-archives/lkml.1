@@ -1,40 +1,80 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752964Ab0BETUF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 14:20:05 -0500
-Received: from nlpi129.sbcis.sbc.com ([207.115.36.143]:43337 "EHLO
-	nlpi129.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751484Ab0BETUB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 14:20:01 -0500
-Date: Fri, 5 Feb 2010 13:19:48 -0600 (CST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@router.home
-To: Andi Kleen <andi@firstfloor.org>
-cc: submit@firstfloor.org, linux-kernel@vger.kernel.org, haicheng.li@intel.com,
-       penberg@cs.helsinki.fi, linux-mm@kvack.org
-Subject: Re: [PATCH] [0/4] SLAB: Fix a couple of slab memory hotadd issues
-In-Reply-To: <201002031039.710275915@firstfloor.org>
-Message-ID: <alpine.DEB.2.00.1002051316350.25989@router.home>
-References: <201002031039.710275915@firstfloor.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1754336Ab0BET2Z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 14:28:25 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:55366 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751792Ab0BET2X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Feb 2010 14:28:23 -0500
+Date: Fri, 5 Feb 2010 14:27:26 -0500
+From: Jeff Layton <jlayton@redhat.com>
+To: smfrench@gmail.com
+Cc: linux-fsdevel@vger.kernel.org, linux-cifs-client@lists.samba.org,
+       linux-kernel@vger.kernel.org, stable@kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Subject: Re: [linux-cifs-client] [PATCH] cifs: fix length calculation for
+ converted unicode readdir names
+Message-ID: <20100205142726.5dc96ca0@tlielax.poochiereds.net>
+In-Reply-To: <1265393640-7296-1-git-send-email-jlayton@redhat.com>
+References: <1265393640-7296-1-git-send-email-jlayton@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Feb 2010, Andi Kleen wrote:
+On Fri,  5 Feb 2010 13:14:00 -0500
+Jeff Layton <jlayton@redhat.com> wrote:
 
-> This fixes various problems in slab found during memory hotadd testing.
+> cifs_from_ucs2 returns the length of the converted name, including the
+> length of the NULL terminator. We don't want to include the NULL
+> terminator in the dentry name length however since that'll throw off the
+> hash calculation for the dentry cache.
+> 
+> I believe that this is the root cause of several problems that have
+> cropped up recently that seem to be papered over with the "noserverino"
+> mount option. More confirmation of that would be good, but this is
+> clearly a bug and it fixes at least one reproducible problem that
+> was reported.
+> 
+> This patch fixes at least this reproducer in this kernel.org bug:
+> 
+>     http://bugzilla.kernel.org/show_bug.cgi?id=15088#c12
+> 
+> Reported-by: Bjorn Tore Sund <bjorn.sund@it.uib.no>
+> Signed-off-by: Jeff Layton <jlayton@redhat.com>
+> Cc: stable@kernel.org
 
-It changes the bootstrap semantics. The requirement was so far that slab
-initialization must be complete before slab operations can be used.
+To be clear...I think we need to get this into mainline kernels ASAP.
+It causes some very subtle bugs in inode refcounting and dcache
+handling.
 
-This patchset allows such use before bootstrap on a node is complete and
-also allows the running of cache reaper before bootstrap is done.
+I suspect that it'll fix a number of other oddball problems that have
+been reported recently too, but only time and testing will tell that
+for sure.
 
-I have a bad feeling that this could be the result of Pekka's changes to
-the bootstrap.
+Also, should add Shaggy's Acked-by:
+
+Acked-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+
+> ---
+>  fs/cifs/readdir.c |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+> 
+> diff --git a/fs/cifs/readdir.c b/fs/cifs/readdir.c
+> index f84062f..f5618f8 100644
+> --- a/fs/cifs/readdir.c
+> +++ b/fs/cifs/readdir.c
+> @@ -666,6 +666,7 @@ static int cifs_get_name_from_search_buf(struct qstr *pqst,
+>  					   min(len, max_len), nlt,
+>  					   cifs_sb->mnt_cifs_flags &
+>  						CIFS_MOUNT_MAP_SPECIAL_CHR);
+> +		pqst->len -= nls_nullsize(nlt);
+>  	} else {
+>  		pqst->name = filename;
+>  		pqst->len = len;
 
 
+-- 
+Jeff Layton <jlayton@redhat.com>
