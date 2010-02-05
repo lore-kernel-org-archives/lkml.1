@@ -1,41 +1,110 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933347Ab0BEPO7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 10:14:59 -0500
-Received: from mail-pz0-f173.google.com ([209.85.222.173]:61679 "EHLO
-	mail-pz0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933009Ab0BEPO6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 10:14:58 -0500
-X-Greylist: delayed 424 seconds by postgrey-1.27 at vger.kernel.org; Fri, 05 Feb 2010 10:14:57 EST
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=F/aBw8Ai5/9sRXelenIVUh27bz2cEOVBPoQWo/v6TEXpb8SwkytHgYXUAhVqgmjvl1
-         3JSUfn4NKi2dUqddd+FS6dFBbB0JAyhLJu9sKMS/OD3TzC9tv8sLOZ9S1uc++GwZ+lyI
-         tmZ1Qsl9PQz/9cyh/TRiMicGS6WTGgJ3h5lv8=
-Date: Fri, 5 Feb 2010 23:10:21 +0800
-From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-To: Toralf =?utf-8?Q?F=C3=B6rster?= <toralf.foerster@gmx.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.32.8-stable review : kernel crashed asap
-Message-ID: <20100205151021.GB9690@hack>
-References: <201002042129.41462.toralf.foerster@gmx.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <201002042129.41462.toralf.foerster@gmx.de>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	id S933369Ab0BEPSW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 10:18:22 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:51344 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932268Ab0BEPSV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Feb 2010 10:18:21 -0500
+Subject: Re: [PATCH] obsolete config in kernel source (BUFFER_DEBUG)
+From: James Bottomley <James.Bottomley@suse.de>
+To: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
+Cc: oliver@neukum.name, aliakc@web.de, lenehan@twibble.org,
+       u.kleine-koenig@pengutronix.de, jkosina@suse.cz, dc395x@twibble.org,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       vamos@i4.informatik.uni-erlangen.de
+In-Reply-To: <20100205133500.GC6874@faui49.informatik.uni-erlangen.de>
+References: <20100205133500.GC6874@faui49.informatik.uni-erlangen.de>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 05 Feb 2010 09:18:07 -0600
+Message-ID: <1265383087.14404.35.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 04, 2010 at 09:29:41PM +0100, Toralf Förster wrote:
->Immediately during boot it crashed w/ the attached config - no lines within 
->syslog  to post.
->
+On Fri, 2010-02-05 at 14:35 +0100, Christoph Egger wrote:
+> 	As part of the VAMOS[0] research project at the University of
+> Erlangen we're checking referential integrity between kernel KConfig
+> options and in-code Conditional blocks.
+> 
+> 	This is another example of a block of code, here since ever
+> and never compiled in modern history. Couldn't find out much more
+> about it but as it can't be set for ages it might be wise to just
+> remove it right now?
 
-What error messages did you see on your screen?
+To be honest, not really unless the person maintaining the driver
+agrees.  The reason for not doing this to obsolete drivers is that
+although in theory git will remember it, trying to find a lost block of
+code in git is time consuming and you often have to know where to look
+for it.  Secondly, the code might be relevant to someone actually
+needing to fix or use the driver.  Sometimes the code in non compiled
+blocks can give valuable insights into how the driver actually worked.
+
+Often, for dead code we don't quite know what to do with, we surround it
+with #if 0/#endif blocks to make it quite clear it's not compiled, but
+for nonexistent config options, that's not really necessary.
+
+> 	Please keep me informed of this patch getting confirmed /
+> merged so we can keep track of it.
+> 
+> Regards
+> 
+> 	Christoph Egger
+> 
+> [0] http://vamos1.informatik.uni-erlangen.de/
+> 
+> ----
+> From 5cb8acd3f6939c617d6f28bd3eabb276c443c34e Mon Sep 17 00:00:00 2001
+> From: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
+> Date: Fri, 5 Feb 2010 13:39:33 +0100
+> Subject: [PATCH] Remove config SCSI_DC395x_TRMS1040_TRADMAP
+> 
+> There's exactly one in source-check for SCSI_DC395x_TRMS1040_TRADMAP
+> imported with the first git revision and no corresponding KConfig Item
+> ever. Removing this single left-over block from the kernel config.
+> 
+> Signed-off-by: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
+> ---
+>  drivers/scsi/dc395x.c |   22 ----------------------
+>  1 files changed, 0 insertions(+), 22 deletions(-)
+> 
+> diff --git a/drivers/scsi/dc395x.c b/drivers/scsi/dc395x.c
+> index 6c59c02..7b3d0d3 100644
+> --- a/drivers/scsi/dc395x.c
+> +++ b/drivers/scsi/dc395x.c
+> @@ -1160,29 +1160,7 @@ complete:
+>  static int dc395x_bios_param(struct scsi_device *sdev,
+>  		struct block_device *bdev, sector_t capacity, int *info)
+>  {
+> -#ifdef CONFIG_SCSI_DC395x_TRMS1040_TRADMAP
+> -	int heads, sectors, cylinders;
+> -	struct AdapterCtlBlk *acb;
+> -	int size = capacity;
+> -
+> -	dprintkdbg(DBG_0, "dc395x_bios_param..............\n");
+> -	acb = (struct AdapterCtlBlk *)sdev->host->hostdata;
+> -	heads = 64;
+> -	sectors = 32;
+> -	cylinders = size / (heads * sectors);
+> -
+> -	if ((acb->gmode2 & NAC_GREATER_1G) && (cylinders > 1024)) {
+> -		heads = 255;
+> -		sectors = 63;
+> -		cylinders = size / (heads * sectors);
+> -	}
+> -	geom[0] = heads;
+> -	geom[1] = sectors;
+> -	geom[2] = cylinders;
+> -	return 0;
+
+So this looks like a standard bios remapping for something ... I'd guess
+a traditional mapping flag for the TekRam 1040.  Someone would likely
+have to dig into history to find out what it was originally for and why
+it's still here.
+
+James
+
+
