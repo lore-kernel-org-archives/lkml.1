@@ -1,49 +1,48 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932430Ab0BENYL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 08:24:11 -0500
-Received: from borg.medozas.de ([188.40.89.202]:34197 "EHLO borg.medozas.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932309Ab0BENYJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 08:24:09 -0500
-Date: Fri, 5 Feb 2010 14:24:08 +0100 (CET)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Jens Axboe <jens.axboe@oracle.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: kswapd continuously active
-In-Reply-To: <20100205131220.GK1025@kernel.dk>
-Message-ID: <alpine.LSU.2.01.1002051423020.23211@obet.zrqbmnf.qr>
-References: <alpine.LSU.2.01.1001230037350.20442@obet.zrqbmnf.qr> <20100125130627.GO13771@kernel.dk> <alpine.LSU.2.01.1001251416340.8189@obet.zrqbmnf.qr> <alpine.LSU.2.01.1002051329090.7843@obet.zrqbmnf.qr> <20100205130002.GI1025@kernel.dk>
- <alpine.LSU.2.01.1002051408280.23211@obet.zrqbmnf.qr> <20100205131220.GK1025@kernel.dk>
-User-Agent: Alpine 2.01 (LSU 1266 2009-07-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S932436Ab0BEN2y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 08:28:54 -0500
+Received: from senator.holtmann.net ([87.106.208.187]:55274 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755230Ab0BEN2x (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Feb 2010 08:28:53 -0500
+Subject: Re: [PATCH] Bluetooth: Keep a copy of each HID device's report
+ descriptor.
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Bastien Nocera <hadess@hadess.net>
+Cc: Michael Poole <mdpoole@troilus.org>, Jiri Kosina <jkosina@suse.cz>,
+       "Gunn, Brian" <bgunn@solekai.com>, Ping <pinglinux@gmail.com>,
+       linux-kernel@vger.kernel.org,
+       BlueZ development <linux-bluetooth@vger.kernel.org>
+In-Reply-To: <1265374184.3117.22.camel@localhost.localdomain>
+References: <alpine.LNX.2.00.1001291515560.356@pobox.suse.cz>
+	 <1264783166.29532.5302.camel@localhost.localdomain>
+	 <87iqakifm8.fsf@troilus.org>
+	 <1264860663.29532.7887.camel@localhost.localdomain>
+	 <871vh1gpaz.fsf_-_@troilus.org>
+	 <1265374184.3117.22.camel@localhost.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 05 Feb 2010 05:27:51 -0800
+Message-ID: <1265376471.31341.210.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 2010-02-05 14:12, Jens Axboe wrote:
->> >> Today this happened again. So I looked at /proc/meminfo to paste today's
->> >> values next to those from January. That is when I noticed the "Dirty"
->> >> value - and thus I ran
->> >> 
->> >> 	watch -d -n 1 'grep Dirty /proc/meminfo'
->> >> 
->> >> What I see is that the dirty amount - a sync is currently running -
->> >> only decreases with at most 400 KB/sec, often less than that.
->> >
->> >I'm guessing the barriers and commits are what is killing your
->> >performance. What happens with barrier=0?
->> 
->> The ext4 filesystem is already mounted with barrier=0. If there
->> is any block-level barriers I also can turn off, what would be
->> the command?
->
->barrier=0 is enough. I do wonder why your writeback rate is that slow,
->then. The disk has write back caching enabled?
+Hi Bastien,
 
-Yes, that seems to be the case at least. In fact the box is all fluffy 
-when nobody runs sync(1), which is what makes it so strange.
+> > This patch works for me.  Bastien, does it also fix it for you?
+> 
+> Patch works great. Thanks for hunting it down.
 
-sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't 
-support DPO or FUA
+now I only need a modified version as requested and I can push that one
+upstream with all the other fixes from the UnPlugFest testing.
+
+Regards
+
+Marcel
+
+
