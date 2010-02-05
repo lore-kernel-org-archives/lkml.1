@@ -1,13 +1,13 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933449Ab0BEBrn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 20:47:43 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:65139 "EHLO song.cn.fujitsu.com"
+	id S933347Ab0BEBrP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 20:47:15 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:60089 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S932877Ab0BEBrj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 20:47:39 -0500
-Message-ID: <4B6B78CB.1040908@cn.fujitsu.com>
-Date: Fri, 05 Feb 2010 09:47:55 +0800
+	id S932739Ab0BEBrK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 20:47:10 -0500
+Message-ID: <4B6B78AD.1030809@cn.fujitsu.com>
+Date: Fri, 05 Feb 2010 09:47:25 +0800
 From: Li Zefan <lizf@cn.fujitsu.com>
 User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
@@ -15,7 +15,7 @@ To: David Miller <davem@davemloft.net>
 CC: Andrew Morton <akpm@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>,
        "netdev@vger.kernel.org" <netdev@vger.kernel.org>
-Subject: [PATCH 13/13] net: atm: use seq_list_foo() helpers
+Subject: [PATCH 11/13] net: irda: use seq_list_foo() helpers
 References: <4B6B77FE.5000104@cn.fujitsu.com>
 In-Reply-To: <4B6B77FE.5000104@cn.fujitsu.com>
 Content-Type: text/plain; charset=UTF-8
@@ -28,60 +28,63 @@ Simplify seq_file code.
 
 Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 ---
- net/atm/proc.c      |    2 +-
- net/atm/resources.c |   18 ++----------------
- 2 files changed, 3 insertions(+), 17 deletions(-)
+ net/irda/irlan/irlan_common.c |   26 ++++----------------------
+ 1 files changed, 4 insertions(+), 22 deletions(-)
 
-diff --git a/net/atm/proc.c b/net/atm/proc.c
-index ab8419a..c0c3a79 100644
---- a/net/atm/proc.c
-+++ b/net/atm/proc.c
-@@ -236,7 +236,7 @@ static int atm_dev_seq_show(struct seq_file *seq, void *v)
- 		"Itf Type    ESI/\"MAC\"addr "
- 		"AAL(TX,err,RX,err,drop) ...               [refcnt]\n";
- 
--	if (v == SEQ_START_TOKEN)
-+	if (v == &atm_devs)
- 		seq_puts(seq, atm_dev_banner);
- 	else {
- 		struct atm_dev *dev = list_entry(v, struct atm_dev, dev_list);
-diff --git a/net/atm/resources.c b/net/atm/resources.c
-index f4091d6..bbd01b0 100644
---- a/net/atm/resources.c
-+++ b/net/atm/resources.c
-@@ -454,21 +454,10 @@ done:
- 	return error;
- }
- 
--static inline void *dev_get_idx(loff_t left)
--{
--	struct list_head *p;
+diff --git a/net/irda/irlan/irlan_common.c b/net/irda/irlan/irlan_common.c
+index 315ead3..2141593 100644
+--- a/net/irda/irlan/irlan_common.c
++++ b/net/irda/irlan/irlan_common.c
+@@ -1128,19 +1128,8 @@ int irlan_extract_param(__u8 *buf, char *name, char *value, __u16 *len)
+  */
+ static void *irlan_seq_start(struct seq_file *seq, loff_t *pos)
+ {
+-	int i = 1;
+-	struct irlan_cb *self;
 -
--	list_for_each(p, &atm_devs) {
--		if (!--left)
--			break;
+ 	rcu_read_lock();
+-	if (*pos == 0)
+-		return SEQ_START_TOKEN;
+-
+-	list_for_each_entry(self, &irlans, dev_list) {
+-		if (*pos == i)
+-			return self;
+-		++i;
 -	}
--	return (p != &atm_devs) ? p : NULL;
--}
--
- void *atm_dev_seq_start(struct seq_file *seq, loff_t *pos)
- {
- 	mutex_lock(&atm_dev_mutex);
--	return *pos ? dev_get_idx(*pos) : SEQ_START_TOKEN;
-+	return seq_list_start_head(&atm_devs, *pos);
+-	return NULL;
++	return seq_list_start_head(&irlans, *pos);
  }
  
- void atm_dev_seq_stop(struct seq_file *seq, void *v)
-@@ -478,8 +467,5 @@ void atm_dev_seq_stop(struct seq_file *seq, void *v)
- 
- void *atm_dev_seq_next(struct seq_file *seq, void *v, loff_t *pos)
+ /* Return entry after v, and increment pos */
+@@ -1148,14 +1137,7 @@ static void *irlan_seq_next(struct seq_file *seq, void *v, loff_t *pos)
  {
+ 	struct list_head *nxt;
+ 
 -	++*pos;
--	v = (v == SEQ_START_TOKEN)
--		? atm_devs.next : ((struct list_head *)v)->next;
--	return (v == &atm_devs) ? NULL : v;
-+	return seq_list_next(v, &atm_devs, pos);
+-	if (v == SEQ_START_TOKEN)
+-		nxt = irlans.next;
+-	else
+-		nxt = ((struct irlan_cb *)v)->dev_list.next;
+-
+-	return (nxt == &irlans) ? NULL
+-		: list_entry(nxt, struct irlan_cb, dev_list);
++	return seq_list_next(v, &irlans, pos);
  }
+ 
+ /* End of reading /proc file */
+@@ -1170,10 +1152,10 @@ static void irlan_seq_stop(struct seq_file *seq, void *v)
+  */
+ static int irlan_seq_show(struct seq_file *seq, void *v)
+ {
+-	if (v == SEQ_START_TOKEN)
++	if (v == &irlans)
+ 		seq_puts(seq, "IrLAN instances:\n");
+ 	else {
+-		struct irlan_cb *self = v;
++		struct irlan_cb *self = list_entry(v, struct irlan_cb, list);
+ 
+ 		IRDA_ASSERT(self != NULL, return -1;);
+ 		IRDA_ASSERT(self->magic == IRLAN_MAGIC, return -1;);
 -- 
 1.6.3
 
