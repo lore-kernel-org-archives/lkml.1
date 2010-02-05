@@ -1,131 +1,137 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757563Ab0BEU6g (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 15:58:36 -0500
-Received: from e33.co.us.ibm.com ([32.97.110.151]:45271 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755424Ab0BEU6d (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 15:58:33 -0500
-Subject: [PATCHv4 2/2] powerpc: implement arch_scale_smt_power for Power7
-From: Joel Schopp <jschopp@austin.ibm.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: ego@in.ibm.com, linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, benh@kernel.crashing.org,
-       jschopp@austin.ibm.com
-In-Reply-To: <1264721088.10385.1.camel@jschopp-laptop>
-References: <1264017638.5717.121.camel@jschopp-laptop>
-	 <1264017847.5717.132.camel@jschopp-laptop>
-	 <1264548495.12239.56.camel@jschopp-laptop>
-	 <1264720855.9660.22.camel@jschopp-laptop>
-	 <1264721088.10385.1.camel@jschopp-laptop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 05 Feb 2010 14:57:58 -0600
-Message-ID: <1265403478.6089.41.camel@jschopp-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	id S933766Ab0BEVFV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 16:05:21 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:55034 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933386Ab0BEVFT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Feb 2010 16:05:19 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+X-Fcc: ~/Mail/linus
+Cc: Oleg Nesterov <oleg@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Lu, Hongjiu" <hongjiu.lu@intel.com>,
+       "Lachner, Peter" <peter.lachner@intel.com>
+Subject: Re: [patch] x86: ptrace and core-dump extensions for xstate
+In-Reply-To: Suresh Siddha's message of  Thursday, 4 February 2010 14:05:14 -0800 <1265321114.2768.256.camel@sbs-t61.sc.intel.com>
+References: <1265076025.2802.194.camel@sbs-t61.sc.intel.com>
+	<20100203230817.E6529AA@magilla.sf.frob.com>
+	<1265315329.2768.167.camel@sbs-t61.sc.intel.com>
+	<20100204205543.E1D11E7@magilla.sf.frob.com>
+	<1265321114.2768.256.camel@sbs-t61.sc.intel.com>
+X-Zippy-Says: When you said ``HEAVILY FORESTED'' it reminded me of an overdue
+    CLEANING BILL..  Don't you SEE?  O'Grogan SWALLOWED a VALUABLE
+    COIN COLLECTION and HAD to murder the ONLY MAN who KNEW!!
+Message-Id: <20100205210249.7B486E7@magilla.sf.frob.com>
+Date: Fri,  5 Feb 2010 13:02:49 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Power7 processors running in SMT4 mode with 2, 3, or 4 idle threads 
-there is performance benefit to idling the higher numbered threads in
-the core.  
+> Roland, All I found after double checking is:
+> 
+> > For now, only first 8 bytes of the sw_usable_bytes[464..467]
+> 
+> should be
+> 
+> > For now, only first 8 bytes of the sw_usable_bytes[464..471]
 
-This patch implements arch_scale_smt_power to dynamically update smt
-thread power in these idle cases in order to prefer threads 0,1 over
-threads 2,3 within a core.
+I didn't notice that one, because I didn't check any of your arithmetic.
 
-Signed-off-by: Joel Schopp <jschopp@austin.ibm.com>
----
-Version 3 adds the #ifdef to avoid compiling on kernels that don't need it
-Index: linux-2.6.git/arch/powerpc/kernel/smp.c
-===================================================================
---- linux-2.6.git.orig/arch/powerpc/kernel/smp.c
-+++ linux-2.6.git/arch/powerpc/kernel/smp.c
-@@ -620,3 +620,61 @@ void __cpu_die(unsigned int cpu)
- 		smp_ops->cpu_die(cpu);
- }
- #endif
-+
-+#ifdef CONFIG_SCHED_SMT
-+unsigned long arch_scale_smt_power(struct sched_domain *sd, int cpu)
-+{
-+	int sibling;
-+	int idle_count = 0;
-+	int thread;
-+
-+	/* Setup the default weight and smt_gain used by most cpus for SMT
-+	 * Power.  Doing this right away covers the default case and can be
-+	 * used by cpus that modify it dynamically.
-+	 */
-+	struct cpumask *sibling_map = sched_domain_span(sd);
-+	unsigned long weight = cpumask_weight(sibling_map);
-+	unsigned long smt_gain = sd->smt_gain;
-+
-+
-+	if (cpu_has_feature(CPU_FTR_ASYNC_SMT4) && weight == 4) {
-+		for_each_cpu(sibling, sibling_map) {
-+			if (idle_cpu(sibling))
-+				idle_count++;
-+		}
-+
-+		/* the following section attempts to tweak cpu power based
-+		 * on current idleness of the threads dynamically at runtime
-+		 */
-+		if (idle_count > 1) {
-+			thread = cpu_thread_in_core(cpu);
-+			if (thread < 2) {
-+				/* add 75 % to thread power */
-+				smt_gain += (smt_gain >> 1) + (smt_gain >> 2);
-+			} else {
-+				 /* subtract 75 % to thread power */
-+				smt_gain = smt_gain >> 2;
-+			}
-+		}
-+	}
-+
-+	/* default smt gain is 1178, weight is # of SMT threads */
-+	switch (weight) {
-+	case 1:
-+		/*divide by 1, do nothing*/
-+		break;
-+	case 2:
-+		smt_gain = smt_gain >> 1;
-+		break;
-+	case 4:
-+		smt_gain = smt_gain >> 2;
-+		break;
-+	default:
-+		smt_gain /= weight;
-+		break;
-+	}
-+
-+	return smt_gain;
-+
-+}
-+#endif
-Index: linux-2.6.git/arch/powerpc/include/asm/cputable.h
-===================================================================
---- linux-2.6.git.orig/arch/powerpc/include/asm/cputable.h
-+++ linux-2.6.git/arch/powerpc/include/asm/cputable.h
-@@ -195,6 +195,7 @@ extern const char *powerpc_base_platform
- #define CPU_FTR_SAO			LONG_ASM_CONST(0x0020000000000000)
- #define CPU_FTR_CP_USE_DCBTZ		LONG_ASM_CONST(0x0040000000000000)
- #define CPU_FTR_UNALIGNED_LD_STD	LONG_ASM_CONST(0x0080000000000000)
-+#define CPU_FTR_ASYNC_SMT4		LONG_ASM_CONST(0x0100000000000000)
- 
- #ifndef __ASSEMBLY__
- 
-@@ -409,7 +410,7 @@ extern const char *powerpc_base_platform
- 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
- 	    CPU_FTR_COHERENT_ICACHE | CPU_FTR_LOCKLESS_TLBIE | \
- 	    CPU_FTR_PURR | CPU_FTR_SPURR | CPU_FTR_REAL_LE | \
--	    CPU_FTR_DSCR | CPU_FTR_SAO)
-+	    CPU_FTR_DSCR | CPU_FTR_SAO | CPU_FTR_ASYNC_SMT4)
- #define CPU_FTRS_CELL	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
- 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
- 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
+> Let me know if I am overlooking something.
+
+I only meant the pure English errors.  Here is the comment with some
+grammar and punctuation fixed:
+
++/*
++ * The structure layout used in PTRACE_GETXSTATEREGS/PTRACE_SETXSTATEREGS is
++ * the same as the memory layout of xsave used by the processor (except
++ * for the bytes 464..511, which can be used by the software).  The size
++ * of the structure that users need to use for these two interfaces can be
++ * obtained by doing:
++ * 	cpuid_count(0xd, 0, &eax, &ptrace_xstateregs_struct_size, &ecx, &edx);
++ * i.e., cpuid.(eax=0xd,ecx=0).ebx will be the size that user (debuggers, etc.)
++ * need to use.
++ *
++ * The format of this structure will be like:
++ * 	struct {
++ * 		fxsave_bytes[0..463]
++ * 		sw_usable_bytes[464..511]
++ * 		xsave_hdr_bytes[512..575]
++ * 		avx_bytes[576..831]
++ * 		future_state etc
++ * 	}
++ *
++ * The same memory layout will be used for the core-dump NT_X86_XSTATE
++ * note representing the xstate registers.
++ *
++ * For now, only the first 8 bytes of the sw_usable_bytes[464..471] will
++ * be used and will be set to OS enabled xstate mask (which is same as the
++ * 64bit mask returned by the xgetbv's xCR0).  Users (analyzing core dump
++ * remotely, etc.) can use this mask as well as the mask saved in the
++ * xstate_hdr bytes and interpret what states the processor/OS supports
++ * and what states are in modified/initialized conditions for the
++ * particular process/thread.
++ *
++ * Also when the user modifies certain state FP/SSE/etc through this
++ * PTRACE_SETXSTATEREGS, they must ensure that the xsave_hdr.xstate_bv
++ * bytes[512..519] of the above memory layout are updated correspondingly.
++ * i.e., for example when FP state is modified to a non-init state,
++ * xsave_hdr.xstate_bv's bit 0 must be set to '1', when SSE is modified to
++ * non-init state, xsave_hdr.xstate_bv's bit 1 must to be set to '1', etc.
++ */
+
+> Yes. No size limit as of now.
+
+Ok.  Thanks for the clear answer.
+
+> Ok. I think I can agree, if we are ok with giving room for the ptrace
+> (or any other user of the API) to make a mistake and corrupt reg-state
+> of the process under debug, if it doesn't follow rules.
+
+This is not new, and it's not a problem.  The bottom line is that ptrace
+can do whatever the process could have done to itself.
+
+> Thought some of them might be only relevant to core-dump or based on
+> permissions etc. But I guess get/set routines of the regset should be
+> able to take care of this?
+
+The whole point of user_regset is that whatever user-space machine state
+there is to be had can be accessed consistently by whatever means.  If
+there is something that you don't want debuggers to be able to access, then
+user_regset is not where it belongs.  There is no rationale I can imagine
+for having something in a core dump but not readable by debuggers when the
+process is still alive.
+
+The only issue that I can imagine you might be referring to when you say
+"based on permissions etc." is state that you cannot set arbitrarily from
+user mode.  The only such example we have is NT_386_IOPERM, which you just
+cannot set at all via user_regset.  If we were to allow debuggers to change
+that data at all, then its .set function would need to do some permission
+checking.  
+
+For everything else that is really part of the user-mode register state per
+se, it just doesn't make sense to think about any kind of "permission
+checking" beyond the simple masks applied to eflags, mxcsr, etc.  The
+debugger can make the user process do anything that the process could do
+itself, which of course includes changing all its registers.
+
+> So in the example you provided before:
+> 
+>         struct iovec iov = { mybuffer, mylength };
+>         ret = ptrace(PTRACE_GETREGSET, NT_X86_XSTATE, &iov);
+> 
+> You wanted to propose common data format (iov) for all of the NT_* ?
+
+I'm not sure I understand your question.  The iovec is just API trivia,
+part of communicating "I want this regset and I want these bytes of it".
+This has nothing to do with the actual data format of each regset.
 
 
+Thanks,
+Roland
