@@ -1,85 +1,231 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933680Ab0BEHcp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 02:32:45 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40975 "EHLO mx2.mail.elte.hu"
+	id S933709Ab0BEHkp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 02:40:45 -0500
+Received: from gwu.lbox.cz ([62.245.111.132]:43647 "EHLO gwu.lbox.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933606Ab0BEHcn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 02:32:43 -0500
-Date: Fri, 5 Feb 2010 08:32:22 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Dave Airlie <airlied@gmail.com>
-Cc: Dave Airlie <airlied@linux.ie>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
-Subject: Re: [crash, PATCH] Revert "drm/radeon/kms: move radeon KMS on/off
- switch out of staging."
-Message-ID: <20100205073222.GE9320@elte.hu>
-References: <alpine.DEB.2.00.1002010215530.15366@skynet.skynet.ie>
- <alpine.DEB.2.00.1002010253120.15366@skynet.skynet.ie>
- <20100202081727.GA6788@elte.hu>
- <alpine.DEB.2.00.1002020824001.20769@skynet.skynet.ie>
- <20100202154450.GC27314@elte.hu>
- <21d7e9971002041239i5e842698pd8a775f833fc5d51@mail.gmail.com>
- <20100204204655.GA19050@elte.hu>
- <21d7e9971002041314yf8c55p4a7cb638efa0d24a@mail.gmail.com>
- <21d7e9971002041643i1f6a122fk517abb308606b548@mail.gmail.com>
+	id S933648Ab0BEHko (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Feb 2010 02:40:44 -0500
+Date: Fri, 5 Feb 2010 08:36:59 +0100
+From: Nikola Ciprich <nikola.ciprich@linuxbox.cz>
+To: Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, stable-review@kernel.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: [Stable-review] [00/74] 2.6.32.8-stable review
+Message-ID: <20100205073659.GD31093@develbox.linuxbox.cz>
+References: <20100204171850.GA16539@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="GpGaEY17fSl8rd50"
 Content-Disposition: inline
-In-Reply-To: <21d7e9971002041643i1f6a122fk517abb308606b548@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+In-Reply-To: <20100204171850.GA16539@kroah.com>
+User-Agent: Mutt/1.5.20 (2009-12-10)
+X-Milter-Copy-Status: I
+X-Antivirus: on proxybox by Kaspersky antivirus, engine 5.5.10, data 3199153 records(05-02-2010)
+X-Spam-Score: N/A (trusted relay)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Dave Airlie <airlied@gmail.com> wrote:
+--GpGaEY17fSl8rd50
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> >>
-> >> These were random configs - the size doesnt match an allyesconfig, those are
-> >> way bigger. My above comment related to the first crash, and to my argument
-> >> that all other drivers are fine during bootup - and there's a lot of them.
-> >>
-> >>> So do you have something you are running after allyesconfig to fix things?
-> >>> or have you just got a config that is close enough to allyesconfig.
-> >>>
-> >>> I'm building kernels with your .config now and boot testing them on the
-> >>> full range of hardware I have/
-> >>
-> >> Thanks. Is there something i can enable to get a better log for you to find
-> >> out where (and why) it's hanging? It's still early during bootup so the box
-> >> is not particularly debuggable - so i'm not sure i can get a task list dump,
-> >> etc., unfortunately.
-> >>
-> > Do you have NMI watchdog enabled? (does it work that early)
-> >
-> > a backtrace of where it hangs would be nice,
-> >
-> > Also a dmesg from booting with drm.debug=15 might help narrow it down
-> > also.
-> >
-> 
-> Okay I've booted this on the rv370 + rv380 machines I have, I've no old 
-> Athlon's though so I'm trying to get RHTS to give me access to one or two 
-> internally,
-> 
-> Another question, that came to mind, what is there any monitors plugged in? 
-> or a KVM or something? if yes can you try without and if no can you try 
-> with?
-> 
-> Also can you add CONFIG_FRAMEBUFFER_CONSOLE as well since I don't think we 
-> test often without it.
+Hi Greg,
+just tried it, and it crashes during boot.
+Previous 2.6.32.x versions were OK.
+here is the screen:
+http://nelide.cz/downloads/2.6.32.8-crash.png
+sorry if it's a bit crude, but I'm leaving for 4 days vacation,
+so I'm in a bit of hurry :)
+On Tuesday, I can provide more testing/whatever if needed.
+cheers
+nik
 
-ok - i'll try your suggestions and send an update - will probably have to 
-wait until next week. Feel free to deprioritize the bug until then (i have my 
-revert as a short-term band-aid), unless others report similar problems too.
+On Thu, Feb 04, 2010 at 09:18:50AM -0800, Greg KH wrote:
+> This is the start of the stable review cycle for the 2.6.32.8 release.
+> There are 74 patches in this series, all will be posted as a response
+> to this one.  If anyone has any issues with these being applied, please
+> let us know.  If anyone is a maintainer of the proper subsystem, and
+> wants to add a Signed-off-by: line to the patch, please respond with it.
+>=20
+> Due to travelling to FOSDEM, I have not been able to test this release
+> as well as I would have liked to.  Also, given the complexity of some of
+> these changes, it would be great if people could really test this
+> release to verify that it works properly.  All help here is greatly
+> appreciated.
+>=20
+> Responses should be made by Sunday, Feb 7 00:00:00 UTC.
+> Anything received after that time might be too late.
+>=20
+> The whole patch series can be found in one patch at:
+> 	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.32.8-rc1.gz
+> and the diffstat can be found below.
+>=20
+> thanks,
+>=20
+> greg k-h
+>=20
+>=20
+>  Documentation/kvm/api.txt                 |   36 ++
+>  Makefile                                  |    2 +-
+>  arch/blackfin/include/asm/page.h          |    5 +
+>  arch/frv/include/asm/page.h               |    2 -
+>  arch/powerpc/include/asm/elf.h            |    8 +-
+>  arch/powerpc/include/asm/thread_info.h    |    2 -
+>  arch/powerpc/kernel/process.c             |   12 -
+>  arch/s390/kernel/entry.S                  |    1 +
+>  arch/s390/kernel/entry64.S                |    1 +
+>  arch/sh/kernel/process_64.c               |    2 +-
+>  arch/sparc/include/asm/elf_64.h           |   13 +-
+>  arch/sparc/include/asm/thread_info_64.h   |    4 +-
+>  arch/sparc/kernel/process_64.c            |    8 -
+>  arch/x86/Kconfig                          |    6 -
+>  arch/x86/ia32/ia32_aout.c                 |   11 +-
+>  arch/x86/include/asm/cpu_debug.h          |  127 ------
+>  arch/x86/include/asm/elf.h                |   10 +-
+>  arch/x86/include/asm/hpet.h               |    1 +
+>  arch/x86/include/asm/kvm_host.h           |    1 +
+>  arch/x86/include/asm/thread_info.h        |    2 -
+>  arch/x86/kernel/amd_iommu.c               |    2 +-
+>  arch/x86/kernel/cpu/Makefile              |    2 -
+>  arch/x86/kernel/cpu/cpu_debug.c           |  688 -----------------------=
+------
+>  arch/x86/kernel/hpet.c                    |    8 +
+>  arch/x86/kernel/process.c                 |   12 -
+>  arch/x86/kernel/process_64.c              |   11 +
+>  arch/x86/kernel/quirks.c                  |   13 +
+>  arch/x86/kernel/reboot.c                  |    9 +
+>  arch/x86/kernel/setup.c                   |   14 +-
+>  arch/x86/kvm/x86.c                        |   42 ++-
+>  arch/x86/mm/srat_64.c                     |    4 +-
+>  arch/x86/oprofile/nmi_int.c               |    3 +-
+>  drivers/acpi/bus.c                        |  163 +++++++
+>  drivers/ata/libata-core.c                 |   38 ++-
+>  drivers/ata/libata-eh.c                   |    5 +-
+>  drivers/block/pktcdvd.c                   |    2 +-
+>  drivers/char/random.c                     |    9 -
+>  drivers/connector/connector.c             |  175 --------
+>  drivers/firewire/core-card.c              |   42 ++-
+>  drivers/firewire/ohci.c                   |    4 +-
+>  drivers/gpu/drm/drm_gem.c                 |   13 -
+>  drivers/gpu/drm/i915/i915_debugfs.c       |    2 +-
+>  drivers/gpu/drm/i915/i915_dma.c           |    4 +-
+>  drivers/gpu/drm/i915/i915_drv.h           |    2 +-
+>  drivers/gpu/drm/i915/i915_gem.c           |   54 +--
+>  drivers/gpu/drm/i915/i915_irq.c           |   32 +-
+>  drivers/gpu/drm/i915/i915_reg.h           |    8 -
+>  drivers/gpu/drm/i915/intel_crt.c          |    2 +
+>  drivers/gpu/drm/i915/intel_display.c      |   26 +-
+>  drivers/gpu/drm/i915/intel_dp.c           |    6 +
+>  drivers/gpu/drm/i915/intel_hdmi.c         |    5 +
+>  drivers/gpu/drm/i915/intel_sdvo.c         |    3 +
+>  drivers/gpu/drm/i915/intel_tv.c           |    2 +
+>  drivers/infiniband/hw/ipath/ipath_fs.c    |    4 +-
+>  drivers/input/misc/winbond-cir.c          |    2 +-
+>  drivers/message/fusion/mptbase.c          |    2 +
+>  drivers/mtd/ubi/cdev.c                    |    1 -
+>  drivers/net/benet/be.h                    |    5 +
+>  drivers/net/benet/be_cmds.h               |    3 +-
+>  drivers/net/benet/be_main.c               |   25 +-
+>  drivers/net/e1000/e1000.h                 |    2 +
+>  drivers/net/e1000/e1000_main.c            |   33 +-
+>  drivers/net/e1000e/e1000.h                |    1 +
+>  drivers/net/e1000e/netdev.c               |   45 +-
+>  drivers/net/sky2.c                        |    3 +-
+>  drivers/net/starfire.c                    |    5 +-
+>  drivers/net/wireless/ath/ath9k/hw.c       |    7 +-
+>  drivers/net/wireless/ath/ath9k/main.c     |    2 +-
+>  drivers/net/wireless/iwlwifi/iwl-agn-rs.c |    2 +-
+>  drivers/regulator/wm8350-regulator.c      |    4 +-
+>  drivers/s390/block/dasd.c                 |    8 +-
+>  drivers/s390/block/dasd_eckd.c            |    2 +-
+>  drivers/s390/block/dasd_ioctl.c           |    7 +-
+>  drivers/s390/block/dasd_proc.c            |    7 +-
+>  drivers/s390/crypto/zcrypt_pcicc.c        |    2 +
+>  drivers/s390/crypto/zcrypt_pcixcc.c       |    2 +
+>  drivers/scsi/scsi_lib.c                   |    2 +-
+>  drivers/serial/uartlite.c                 |    2 +-
+>  drivers/usb/host/r8a66597-hcd.c           |   17 +-
+>  drivers/video/imxfb.c                     |    6 +-
+>  drivers/video/mx3fb.c                     |   12 +-
+>  fs/9p/vfs_super.c                         |    3 +-
+>  fs/affs/affs.h                            |    2 +-
+>  fs/affs/namei.c                           |    7 +-
+>  fs/affs/super.c                           |   31 +-
+>  fs/affs/symlink.c                         |    7 +-
+>  fs/bfs/inode.c                            |   43 +-
+>  fs/binfmt_aout.c                          |    1 +
+>  fs/binfmt_elf.c                           |   27 +-
+>  fs/binfmt_elf_fdpic.c                     |   16 +-
+>  fs/binfmt_flat.c                          |    1 +
+>  fs/binfmt_som.c                           |    1 +
+>  fs/bio-integrity.c                        |    3 +-
+>  fs/bio.c                                  |    7 +-
+>  fs/exec.c                                 |   36 +-
+>  fs/fuse/file.c                            |    3 +
+>  fs/romfs/super.c                          |    1 +
+>  include/linux/acpi.h                      |   16 +
+>  include/linux/binfmts.h                   |    1 +
+>  include/linux/connector.h                 |   32 --
+>  include/linux/inetdevice.h                |    1 +
+>  include/linux/kvm.h                       |    9 +
+>  include/linux/libata.h                    |    3 +
+>  include/linux/pagemap.h                   |    2 +
+>  include/linux/sched.h                     |    2 +-
+>  include/linux/sysctl.h                    |    1 +
+>  include/net/netrom.h                      |    2 +
+>  kernel/cred.c                             |    2 +-
+>  kernel/time/clocksource.c                 |    4 +-
+>  mm/filemap.c                              |  103 +++--
+>  mm/page_alloc.c                           |    5 +-
+>  mm/vmalloc.c                              |  109 ++++-
+>  net/ax25/ax25_out.c                       |    6 +
+>  net/core/sock.c                           |    4 +
+>  net/ipv4/devinet.c                        |    1 +
+>  net/ipv4/fib_frontend.c                   |    2 +
+>  net/mac80211/driver-trace.h               |    2 +-
+>  net/netrom/nr_route.c                     |   11 +-
+>  net/packet/af_packet.c                    |   19 +-
+>  net/rose/rose_link.c                      |    8 +
+>  net/rose/rose_route.c                     |    5 +
+>  security/selinux/hooks.c                  |    2 +-
+>  122 files changed, 952 insertions(+), 1461 deletions(-)
+>=20
+> _______________________________________________
+> Stable-review mailing list
+> Stable-review@linux.kernel.org
+> http://linux.kernel.org/mailman/listinfo/stable-review
+>=20
 
-Thanks,
+--=20
+-------------------------------------
+Ing. Nikola CIPRICH
+LinuxBox.cz, s.r.o.
+28. rijna 168, 709 01 Ostrava
 
-	Ingo
+tel.:   +420 596 603 142
+fax:    +420 596 621 273
+mobil:  +420 777 093 799
+www.linuxbox.cz
+
+mobil servis: +420 737 238 656
+email servis: servis@linuxbox.cz
+-------------------------------------
+
+--GpGaEY17fSl8rd50
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQFLa8qb3xdJJrLygV4RAsxbAKCMVWu/BE595k/+G7PWLf1l2uxYpQCeNdQk
+fbgzDlW6q7WM0+xeo8XjDoU=
+=WrWx
+-----END PGP SIGNATURE-----
+
+--GpGaEY17fSl8rd50--
