@@ -1,48 +1,59 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932850Ab0BENwI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 08:52:08 -0500
-Received: from mail-pz0-f189.google.com ([209.85.222.189]:58412 "EHLO
-	mail-pz0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932444Ab0BENwF (ORCPT
+	id S932884Ab0BENwq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 08:52:46 -0500
+Received: from mail-px0-f182.google.com ([209.85.216.182]:60383 "EHLO
+	mail-px0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932444Ab0BENwp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 08:52:05 -0500
+	Fri, 5 Feb 2010 08:52:45 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=hjpJ6dtFbQBkg1BJLfDF25FKBZbB7znHw2975o958nzEnAB+2cCGc87KOigSo3LJ0/
-         MOh2srxcwPUx5yEJLap9Wc3uhQ3s7qKPCIM3j9/KTRMquAm064PRwp/sZEQew7EpiHTf
-         b2Rc7gfh+y6WXLuDLrE4uqTZCrandSm69Wsm8=
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=qXgYBbE70wr0VEZ693+yKHbp2rmhDY6BWQukP/48X9Bp53nSGg5dnahiNy1RM5OEdm
+         Y1qHRP4+/J/FlavvFx7LYXcc6iiorp9jed7qRUl07j7ZvDNHbBt+SwopjUzZulPI/BXF
+         EEklmpX0mLzfTDvVkW24RkqlM0yOF7+0m8oHo=
 From: Yong Zhang <yong.zhang0@gmail.com>
 To: linux-kernel@vger.kernel.org
-Cc: a.p.zijlstra@chello.nl, mingo@elte.hu
-Subject: [PATCH 0/4] correct onstack wait_queue_head declaration
-Date: Fri,  5 Feb 2010 21:52:00 +0800
-Message-Id: <1265377920-5898-1-git-send-email-yong.zhang0@gmail.com>
+Cc: a.p.zijlstra@chello.nl, mingo@elte.hu,
+       Dan Williams <dan.j.williams@intel.com>,
+       Maciej Sosnowski <maciej.sosnowski@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nicolas Ferre <nicolas.ferre@atmel.com>
+Subject: [PATCH 1/4] dmaengine: correct onstack wait_queue_head declaration
+Date: Fri,  5 Feb 2010 21:52:37 +0800
+Message-Id: <b1dccd762d3d04ab75d79d1d9b097d593a89f32a.1265375697.git.yong.zhang0@gmail.com>
 X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <1265377920-5898-1-git-send-email-yong.zhang0@gmail.com>
+References: <1265377920-5898-1-git-send-email-yong.zhang0@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Onstack wait_queue_head must be declared with
-DECLARE_WAIT_QUEUE_HEAD_ONSTACK. Otherwise it will make lockdep
-warn. So fix the wrong usage in this patchset.
-
-BTW, I split it to 4 patches to send to different maintainer
-though it's due to the same issue. If you have no objection
-on this kind of fix, I can also send it in one patch for some
-simplification.
+Use DECLARE_WAIT_QUEUE_HEAD_ONSTACK to make lockdep happy
 
 Signed-off-by: Yong Zhang <yong.zhang0@gmail.com>
+Cc: Dan Williams <dan.j.williams@intel.com>
+Cc: Maciej Sosnowski <maciej.sosnowski@intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Nicolas Ferre <nicolas.ferre@atmel.com>
+---
+ drivers/dma/dmatest.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Yong Zhang (4):
-      dmaengine: correct onstack wait_queue_head declaration
-      [SCSI] bfa: correct onstack wait_queue_head declaration
-      V4L/DVB: gspca - sn9c20x: correct onstack wait_queue_head declaration
-      Staging: rt2860: correct onstack wait_queue_head declaration
+diff --git a/drivers/dma/dmatest.c b/drivers/dma/dmatest.c
+index 8b90516..948d563 100644
+--- a/drivers/dma/dmatest.c
++++ b/drivers/dma/dmatest.c
+@@ -467,7 +467,7 @@ err_srcs:
+ 
+ 	if (iterations > 0)
+ 		while (!kthread_should_stop()) {
+-			DECLARE_WAIT_QUEUE_HEAD(wait_dmatest_exit);
++			DECLARE_WAIT_QUEUE_HEAD_ONSTACK(wait_dmatest_exit);
+ 			interruptible_sleep_on(&wait_dmatest_exit);
+ 		}
+ 
+-- 
+1.6.3.3
 
- drivers/dma/dmatest.c                |    2 +-
- drivers/media/video/gspca/sn9c20x.c  |    2 +-
- drivers/scsi/bfa/bfad_im.c           |    4 ++--
- drivers/staging/rt2860/rt_main_dev.c |    2 +-
- 4 files changed, 5 insertions(+), 5 deletions(-)
