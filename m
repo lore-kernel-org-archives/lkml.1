@@ -1,20 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932471Ab0BEN3t (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 08:29:49 -0500
-Received: from faui40.informatik.uni-erlangen.de ([131.188.34.40]:57674 "EHLO
+	id S932485Ab0BENet (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 08:34:49 -0500
+Received: from faui40.informatik.uni-erlangen.de ([131.188.34.40]:57982 "EHLO
 	faui40.informatik.uni-erlangen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932091Ab0BEN3q (ORCPT
+	by vger.kernel.org with ESMTP id S932410Ab0BENer (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 08:29:46 -0500
-Date: Fri, 5 Feb 2010 14:29:59 +0100
+	Fri, 5 Feb 2010 08:34:47 -0500
+Date: Fri, 5 Feb 2010 14:35:00 +0100
 From: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
-To: Jeff Garzik <jgarzik@pobox.com>, Erik Inge Bols?? <knan-lkml@anduin.net>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: vamos@i4.informatik.uni-erlangen.de, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH] non-existant config in kernel source (CONFIG_AHCI)
-Message-ID: <20100205132959.GB6874@faui49.informatik.uni-erlangen.de>
+To: oliver@neukum.name, aliakc@web.de, lenehan@twibble.org,
+       James.Bottomley@suse.de, u.kleine-koenig@pengutronix.de,
+       jkosina@suse.cz, dc395x@twibble.org, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Cc: vamos@i4.informatik.uni-erlangen.de
+Subject: [PATCH] obsolete config in kernel source (BUFFER_DEBUG)
+Message-ID: <20100205133500.GC6874@faui49.informatik.uni-erlangen.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -29,13 +30,10 @@ Hi all!
 Erlangen we're checking referential integrity between kernel KConfig
 options and in-code Conditional blocks.
 
-	While there's one place that is checking for CONFIG_AHCI, this
-config being referenced from printed books and people pointing to this
-config item I can't find it anywhere in the kernel kconfig
-infrastruture and it doesn't seem to ever have been there (since
-git). Is this maybe a typo for CONFIG_SATA_AHCI? reading the
-information for the affected piece of source it would actually make
-sense.
+	This is another example of a block of code, here since ever
+and never compiled in modern history. Couldn't find out much more
+about it but as it can't be set for ages it might be wise to just
+remove it right now?
 
 	Please keep me informed of this patch getting confirmed /
 merged so we can keep track of it.
@@ -47,35 +45,56 @@ Regards
 [0] http://vamos1.informatik.uni-erlangen.de/
 
 ----
->From 60136f94d9c97f9a788738e30731e25bd794322b Mon Sep 17 00:00:00 2001
+>From 5cb8acd3f6939c617d6f28bd3eabb276c443c34e Mon Sep 17 00:00:00 2001
 From: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
-Date: Fri, 5 Feb 2010 13:26:33 +0100
-Subject: [PATCH] CONFIG_AHCI is really CONFIG_SATA_AHCI
+Date: Fri, 5 Feb 2010 13:39:33 +0100
+Subject: [PATCH] Remove config SCSI_DC395x_TRMS1040_TRADMAP
 
-The marvell driver comtains a fallback to ahci for the sata ports
-which is incorrectly checked as CONFIG_AHCI while the only AHCI config
-item is actually called SATA_AHCI (which also sounds sensible
-considering it's a fallback for the sata ports).
+There's exactly one in source-check for SCSI_DC395x_TRMS1040_TRADMAP
+imported with the first git revision and no corresponding KConfig Item
+ever. Removing this single left-over block from the kernel config.
 
 Signed-off-by: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
 ---
- drivers/ata/pata_marvell.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/scsi/dc395x.c |   22 ----------------------
+ 1 files changed, 0 insertions(+), 22 deletions(-)
 
-diff --git a/drivers/ata/pata_marvell.c b/drivers/ata/pata_marvell.c
-index 950da39..eabd138 100644
---- a/drivers/ata/pata_marvell.c
-+++ b/drivers/ata/pata_marvell.c
-@@ -147,7 +147,7 @@ static int marvell_init_one (struct pci_dev *pdev, const struct pci_device_id *i
- 	if (pdev->device == 0x6101)
- 		ppi[1] = &ata_dummy_port_info;
+diff --git a/drivers/scsi/dc395x.c b/drivers/scsi/dc395x.c
+index 6c59c02..7b3d0d3 100644
+--- a/drivers/scsi/dc395x.c
++++ b/drivers/scsi/dc395x.c
+@@ -1160,29 +1160,7 @@ complete:
+ static int dc395x_bios_param(struct scsi_device *sdev,
+ 		struct block_device *bdev, sector_t capacity, int *info)
+ {
+-#ifdef CONFIG_SCSI_DC395x_TRMS1040_TRADMAP
+-	int heads, sectors, cylinders;
+-	struct AdapterCtlBlk *acb;
+-	int size = capacity;
+-
+-	dprintkdbg(DBG_0, "dc395x_bios_param..............\n");
+-	acb = (struct AdapterCtlBlk *)sdev->host->hostdata;
+-	heads = 64;
+-	sectors = 32;
+-	cylinders = size / (heads * sectors);
+-
+-	if ((acb->gmode2 & NAC_GREATER_1G) && (cylinders > 1024)) {
+-		heads = 255;
+-		sectors = 63;
+-		cylinders = size / (heads * sectors);
+-	}
+-	geom[0] = heads;
+-	geom[1] = sectors;
+-	geom[2] = cylinders;
+-	return 0;
+-#else
+ 	return scsicam_bios_param(bdev, capacity, info);
+-#endif
+ }
  
--#if defined(CONFIG_AHCI) || defined(CONFIG_AHCI_MODULE)
-+#if defined(CONFIG_SATA_AHCI) || defined(SATA_CONFIG_AHCI_MODULE)
- 	if (!marvell_pata_active(pdev)) {
- 		printk(KERN_INFO DRV_NAME ": PATA port not active, deferring to AHCI driver.\n");
- 		return -ENODEV;
+ 
 -- 
 1.6.3.3
+
 
 
