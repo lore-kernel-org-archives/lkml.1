@@ -1,102 +1,114 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932952Ab0BEGbZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 01:31:25 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:52134 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932117Ab0BEGbY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 01:31:24 -0500
-Message-ID: <4B6BBBB0.40301@redhat.com>
-Date: Fri, 05 Feb 2010 14:33:20 +0800
-From: Cong Wang <amwang@redhat.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20091001)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Tejun Heo <tj@kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Miles Lane <miles.lane@gmail.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Larry Finger <Larry.Finger@lwfinger.net>, akpm@linux-foundation.org
-Subject: Re: [Patch] sysfs: add lockdep class support to s_active
-References: <20100205062814.4119.53209.sendpatchset@localhost.localdomain>
-In-Reply-To: <20100205062814.4119.53209.sendpatchset@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S933086Ab0BEGco (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 01:32:44 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60938
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932117Ab0BEGcm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Feb 2010 01:32:42 -0500
+Date: Thu, 04 Feb 2010 22:32:55 -0800 (PST)
+Message-Id: <20100204.223255.146893399.davem@davemloft.net>
+To: sfr@canb.auug.org.au
+Cc: netdev@vger.kernel.org, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, nicholasx.d.nunley@intel.com
+Subject: Re: linux-next: build failure after merge of the net tree
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20100205165059.0b5d5363.sfr@canb.auug.org.au>
+References: <20100205165059.0b5d5363.sfr@canb.auug.org.au>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Amerigo Wang wrote:
-> Recently we met a lockdep warning from sysfs during s2ram or cpu hotplug.
-> As reported by several people, it is something like:
-> 
-> [ 6967.926563] ACPI: Preparing to enter system sleep state S3
-> [ 6967.956156] Disabling non-boot CPUs ...
-> [ 6967.970401]
-> [ 6967.970408] =============================================
-> [ 6967.970419] [ INFO: possible recursive locking detected ]
-> [ 6967.970431] 2.6.33-rc2-git6 #27
-> [ 6967.970439] ---------------------------------------------
-> [ 6967.970450] pm-suspend/22147 is trying to acquire lock:
-> [ 6967.970460]  (s_active){++++.+}, at: [<c10d2941>]
-> sysfs_hash_and_remove+0x3d/0x4f
-> [ 6967.970493]
-> [ 6967.970497] but task is already holding lock:
-> [ 6967.970506]  (s_active){++++.+}, at: [<c10d4110>]
-> sysfs_get_active_two+0x16/0x36
-> [...]
-> 
-> Eric already provides a patch for this[1], but it still can't fix the
-> problem. Based on his work and Peter's suggestion, I write this patch,
-> hopefully we can fix the warning completely.
-> 
-> This patch put sysfs s_active into two classes, one is for PM, the other
-> is for the rest, so lockdep will distinguish them.
-> 
-> 1. http://lkml.org/lkml/2010/1/10/282
-> 
-> 
-> Reported-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Reported-by: Larry Finger <Larry.Finger@lwfinger.net>
-> Reported-by: Miles Lane <miles.lane@gmail.com>
-> Reported-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-> Signed-off-by: WANG Cong <amwang@redhat.com>
-> Cc: Eric W. Biederman <ebiederm@xmission.com>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Cc: Tejun Heo <tj@kernel.org>
-> Cc: Greg Kroah-Hartman <gregkh@suse.de>
-> 
-> 
-> ---
-> diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
-> index dc30d9e..72a8d0b 100644
-> --- a/fs/sysfs/file.c
-> +++ b/fs/sysfs/file.c
-> @@ -24,6 +24,8 @@
->  
->  #include "sysfs.h"
->  
-> +static struct lock_class_key sysfs_classes[SYSFS_NR_CLASSES];
-> +
->  /* used in crash dumps to help with debugging */
->  static char last_sysfs_file[PATH_MAX];
->  void sysfs_printk_last_file(void)
-> @@ -504,11 +506,16 @@ int sysfs_add_file_mode(struct sysfs_dirent *dir_sd,
->  	struct sysfs_addrm_cxt acxt;
->  	struct sysfs_dirent *sd;
->  	int rc;
-> +	int class;
->  
->  	sd = sysfs_new_dirent(attr->name, mode, type);
->  	if (!sd)
->  		return -ENOMEM;
->  	sd->s_attr.attr = (void *)attr;
-> +	class = SYSFS_ATTR_NORMAL;
-> +	if (sysfs_type(sd) == SYSFS_KOBJ_ATTR)
-> +		class = sd->s_attr.attr->class;
-> +	lockdep_set_class(&sd->s_active, &sysfs_classes[class]);
->  
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Fri, 5 Feb 2010 16:50:59 +1100
 
-Oops! I missed one part, please ignore this patch...
+> Hi Dave,
+> 
+> After merging the scsi-post-merge tree, today's linux-next build (powerpc
+> allyesconfig and i386 defconfig) failed like this:
+> 
+> drivers/net/e1000e/built-in.o: In function `e1000_has_link':
+> (.opd+0x1d58): multiple definition of `e1000_has_link'
+> drivers/net/e1000/built-in.o:(.opd+0x588): first defined here
+> 
+> Caused by commit b548192acaebcb05d6a87d1e94f19835b1a18a8b ("e1000: Report
+> link status in ethtool when interface is down").
+> 
+> I have reverted that commit for today.
+
+Damn namespace pollution, this is one of a zillion reasons
+I prefer drivers are written in one sorce file, then people
+can name their functions however they like and they're all
+marked static so it doesn't cause problems like this.
+
+I've fixed it up as follows in net-next-2.6
+
+Thanks!
+
+e1000e: Fix namespace conflicts wrt. e1000_has_link
+
+Reported by Stephen Rothwell.
+
+Signed-off-by: David S. Miller <davem@davemloft.net>
+---
+ drivers/net/e1000e/e1000.h   |    2 +-
+ drivers/net/e1000e/ethtool.c |    2 +-
+ drivers/net/e1000e/netdev.c  |    4 ++--
+ 3 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/net/e1000e/e1000.h b/drivers/net/e1000e/e1000.h
+index 318bdb2..c2ec095 100644
+--- a/drivers/net/e1000e/e1000.h
++++ b/drivers/net/e1000e/e1000.h
+@@ -459,7 +459,7 @@ extern int e1000e_setup_tx_resources(struct e1000_adapter *adapter);
+ extern void e1000e_free_rx_resources(struct e1000_adapter *adapter);
+ extern void e1000e_free_tx_resources(struct e1000_adapter *adapter);
+ extern void e1000e_update_stats(struct e1000_adapter *adapter);
+-extern bool e1000_has_link(struct e1000_adapter *adapter);
++extern bool e1000e_has_link(struct e1000_adapter *adapter);
+ extern void e1000e_set_interrupt_capability(struct e1000_adapter *adapter);
+ extern void e1000e_reset_interrupt_capability(struct e1000_adapter *adapter);
+ 
+diff --git a/drivers/net/e1000e/ethtool.c b/drivers/net/e1000e/ethtool.c
+index 0aa50c2..b33e3cb 100644
+--- a/drivers/net/e1000e/ethtool.c
++++ b/drivers/net/e1000e/ethtool.c
+@@ -202,7 +202,7 @@ static u32 e1000_get_link(struct net_device *netdev)
+ 	if (!netif_carrier_ok(netdev))
+ 		mac->get_link_status = 1;
+ 
+-	return e1000_has_link(adapter);
++	return e1000e_has_link(adapter);
+ }
+ 
+ static int e1000_set_spd_dplx(struct e1000_adapter *adapter, u16 spddplx)
+diff --git a/drivers/net/e1000e/netdev.c b/drivers/net/e1000e/netdev.c
+index 14a80f8..ffa37c6 100644
+--- a/drivers/net/e1000e/netdev.c
++++ b/drivers/net/e1000e/netdev.c
+@@ -3472,7 +3472,7 @@ static void e1000_print_link_info(struct e1000_adapter *adapter)
+ 	       ((ctrl & E1000_CTRL_TFCE) ? "TX" : "None" )));
+ }
+ 
+-bool e1000_has_link(struct e1000_adapter *adapter)
++bool e1000e_has_link(struct e1000_adapter *adapter)
+ {
+ 	struct e1000_hw *hw = &adapter->hw;
+ 	bool link_active = 0;
+@@ -3553,7 +3553,7 @@ static void e1000_watchdog_task(struct work_struct *work)
+ 	u32 link, tctl;
+ 	int tx_pending = 0;
+ 
+-	link = e1000_has_link(adapter);
++	link = e1000e_has_link(adapter);
+ 	if ((netif_carrier_ok(netdev)) && link) {
+ 		e1000e_enable_receives(adapter);
+ 		goto link_up;
+-- 
+1.6.6.1
+
