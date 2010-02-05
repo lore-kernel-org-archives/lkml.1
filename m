@@ -1,86 +1,97 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757804Ab0BECMm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 21:12:42 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:52572 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1756001Ab0BECMl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1757883Ab0BECMn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 21:12:43 -0500
+Received: from buzzloop.caiaq.de ([212.112.241.133]:45525 "EHLO
+	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756018Ab0BECMl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 4 Feb 2010 21:12:41 -0500
-Message-ID: <4B6B7EA8.4070104@cn.fujitsu.com>
-Date: Fri, 05 Feb 2010 10:12:56 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+Date: Fri, 5 Feb 2010 03:12:18 +0100
+From: Daniel Mack <daniel@caiaq.de>
+To: Samu Onkalo <samu.p.onkalo@nokia.com>
+Cc: eric.piel@tremplin-utc.net, pavel@ucw.cz, lm-sensors@lm-sensors.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/6] lis3lv02d: Power management, click and threshold
+ interrupts
+Message-ID: <20100205021217.GL28972@buzzloop.caiaq.de>
+References: <1265271848-26559-1-git-send-email-samu.p.onkalo@nokia.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: David Miller <davem@davemloft.net>, LKML <linux-kernel@vger.kernel.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>
-Subject: Re: [PATCH 00/13] net: simplify seq_file code
-References: <4B6B77FE.5000104@cn.fujitsu.com>	<4B6B780D.10003@cn.fujitsu.com> <20100204175828.51b9e8a1.akpm@linux-foundation.org>
-In-Reply-To: <20100204175828.51b9e8a1.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1265271848-26559-1-git-send-email-samu.p.onkalo@nokia.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Fri, 05 Feb 2010 09:44:45 +0800 Li Zefan <lizf@cn.fujitsu.com> wrote:
+On Thu, Feb 04, 2010 at 10:24:02AM +0200, Samu Onkalo wrote:
+> Lis3 accelerometer chip family changes for power management,
+> click and threshold event handling.
 > 
->> +struct hlist_node *seq_hlist_start(struct hlist_head *head, loff_t pos)
->> +{
->> +	struct hlist_node *node;
->> +
->> +	hlist_for_each(node, head)
->> +		if (pos-- == 0)
->> +			return node;
->> +	return NULL;
->> +}
->> +EXPORT_SYMBOL(seq_hlist_start);
->> +
->> +struct hlist_node *seq_hlist_start_head(struct hlist_head *head, loff_t pos)
->> +{
->> +	if (!pos)
->> +		return SEQ_START_TOKEN;
->> +
->> +	return seq_hlist_start(head, pos - 1);
->> +}
->> +EXPORT_SYMBOL(seq_hlist_start_head);
->> +
->> +struct hlist_node *seq_hlist_next(void *v, struct hlist_head *head,
->> +				  loff_t *ppos)
->> +{
->> +	struct hlist_node *node = v;
->> +
->> +	++*ppos;
->> +	if (v == SEQ_START_TOKEN)
->> +		return head->first;
->> +	else
->> +		return node->next;
->> +}
->> +EXPORT_SYMBOL(seq_hlist_next);
+> Patch set adds interrupt handlers for click/tap events and threshold
+> based events. Actual configuration which events are enabled
+> is done via platform data. All the features cannot be used in parallel.
+> Interrupts are implemented only for 8 bit device, since I'm not familiar
+> with other devices and I don't have suitable testing environment.
+
+I'll give these patches a test on my boards next week and get back to
+you.
+
+Thanks,
+Daniel
+
+
+> Changes:
 > 
-> Oy.  Most of the global functions in seq_file.c are kerneldocumented,
-> as they should be!
+>   lis3: Add missing constants for 8bit device
+> This is quite clear. Some click feature related register definitions
+> were missing.
 > 
-
-I'll add kerneldoc in v2 patchset if I have to resend, otherwise I'll
-send a delta patch for this.
-
-> Shouldn't seq_hlist_start_head() have been called seq_hlist_prev()?
+>   lis3: Separate configuration function for 8 bit device
+> Move platformdata based configurations for 8 bit device to
+> separate function to keep common part little bit more readable.
 > 
-
-The list_head version has the name seq_list_start_head().
-
-If you need to print a title in a seq_file, call seq_list_start_head()
-in ->start() handler, otherwise call seq_list_start().
-
-Those functions really need kerneldoc. ;)
-
-> Should seq_hlist_start() be passed *ppos, and update *ppos so the
-> caller can then call seq_hlist_next() and seq_hlist_prev()?
+>   lis3: Introduce platform data for second ff / wu unit
+> 8 bit device has two freefall / wakeup detection blocks. Add possibility
+> to configure also the second unit. Change hipass filter configuration
+> to platform data. Change is compatible with existing platform data.
 > 
-
-No, the ->start() callback of seq_operations shouldn't update *ppos.
-I fixed some bugs in ftrace debugfs files which were caused by
-updating *ppos in start().
-
+>   lis3: Power control for the chip
+> This kind of feature has been in the driver earlier. It was removed
+> because saving was so small in laptop environment. However, in smaller
+> devices, even a small saving need to be implemented. When driver detects
+> that no-one is really interested about the acceleration, chip is powered down.
+> Input device, freefall device and sysfs are controlling this. By default,
+> chip is powered on to keep functionality similar to current implementation.
+> 
+>   lis3: Add skeletons for interrupt handlers
+> Interrupt handlers are added in two patches to keep changes cleaner.
+> This first patch adds two dummy threaded interrupt handlers for 8 bit device. 
+> 
+>   lis3: Interrupt handlers for 8bit wakeup and click events
+> This patch adds content to dummy handlers. Depending on the chip configuration,
+> either click or ff/wu handling is called. For click event, BTN input event is
+> sent separately for each axes. For threshold event, coordinates are updated
+> immediatelly to input device. This allows input device to be used either in
+> polled mode and / or interrupt driven mode. Polling can stopped from userspace
+> by via input device sysfs.
+> 
+> Patch set applies to 2.6.33-RC6 tree.
+> Tested with 2.6.32 environment for omap3
+> 
+> Samu Onkalo (6):
+>   lis3: Add missing constants for 8bit device
+>   lis3: Separate configuration function for 8 bit device
+>   lis3: Introduce platform data for second ff / wu unit
+>   lis3: Power control for the chip
+>   lis3: Add skeletons for interrupt handlers
+>   lis3: Interrupt handlers for 8bit wakeup and click events
+> 
+>  drivers/hwmon/lis3lv02d.c     |  308 +++++++++++++++++++++++++++++++++--------
+>  drivers/hwmon/lis3lv02d.h     |   12 ++
+>  drivers/hwmon/lis3lv02d_i2c.c |    8 +-
+>  drivers/hwmon/lis3lv02d_spi.c |   12 +-
+>  include/linux/lis3lv02d.h     |   12 ++
+>  5 files changed, 287 insertions(+), 65 deletions(-)
+> 
