@@ -1,127 +1,58 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755621Ab0BELXM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 06:23:12 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:43636 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755409Ab0BELXI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 06:23:08 -0500
-Date: Fri, 5 Feb 2010 12:23:06 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: David Miller <davem@davemloft.net>
-Cc: sfr@canb.auug.org.au, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, adam.buchbinder@gmail.com,
-       netdev@vger.kernel.org, bhutchings@solarflare.com
-Subject: Re: linux-next: manual merge of the trivial tree with the net tree
-In-Reply-To: <alpine.LNX.2.00.1002050935470.15395@pobox.suse.cz>
-Message-ID: <alpine.LNX.2.00.1002051216460.15395@pobox.suse.cz>
-References: <20100205133747.14ca83f2.sfr@canb.auug.org.au> <20100204.202645.18974249.davem@davemloft.net> <alpine.LNX.2.00.1002050935470.15395@pobox.suse.cz>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	id S1755008Ab0BELlL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 06:41:11 -0500
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:48894 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754032Ab0BELlJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Feb 2010 06:41:09 -0500
+X-Greylist: delayed 3691 seconds by postgrey-1.27 at vger.kernel.org; Fri, 05 Feb 2010 06:41:09 EST
+Date: Fri, 5 Feb 2010 11:39:14 +0100
+From: Rodolfo Giometti <giometti@enneenne.com>
+To: Alexander Gordeev <lasaine@lvk.cs.msu.su>
+Cc: linux-kernel@vger.kernel.org, linuxpps@ml.enneenne.com,
+       "Nikita V. Youshchenko" <yoush@cs.msu.su>, stas@lvk.cs.msu.su,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Message-ID: <20100205103914.GE9908@gundam.enneenne.com>
+Mail-Followup-To: Alexander Gordeev <lasaine@lvk.cs.msu.su>,
+	linux-kernel@vger.kernel.org, linuxpps@ml.enneenne.com,
+	"Nikita V. Youshchenko" <yoush@cs.msu.su>, stas@lvk.cs.msu.su,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>
+References: <cover.1265228858.git.lasaine@lvk.cs.msu.su> <4cea1fe6020a188298922fac15e35e3fefed14ad.1265228858.git.lasaine@lvk.cs.msu.su>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4cea1fe6020a188298922fac15e35e3fefed14ad.1265228858.git.lasaine@lvk.cs.msu.su>
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 192.168.32.254
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: Re: [PATCH 4/5] pps: add parallel port PPS signal generator
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 5 Feb 2010, Jiri Kosina wrote:
+On Wed, Feb 03, 2010 at 11:56:50PM +0300, Alexander Gordeev wrote:
+> Add PPS signal generator which utilizes STROBE pin of a parallel port to
+> send PPS signals. It uses parport abstraction layer and hrtimers to
+> precisely control the signal.
 
-> > > Today's linux-next merge of the trivial tree got a conflict in 
-> > > drivers/net/sfc/mcdi_pcol.h between commit 
-> > > 5297a98d5dd6de86fe1e2ffc9ea60cdf59b71443 ("sfc: Update MCDI protocol 
-> > > definitions") from the net tree and commit 
-> > > 4887b438e6880c73c4b44d868211e70c1f3deaec ("Fix misspelling of 
-> > > "successful" and variants in comments") from the trivial tree.
-> > > 
-> > > I fixed it up (see below) and can carry the fix as necessary.
-> > 
-> > Ugh, this is the second spelling fix that's hit a conflict
-> > in the same exact tree.
-> > 
-> > Please, submit these things to the subsystem maintainers instead
-> > of keeping them together in a totally seperate tree.  That way
-> > we won't have to keep fighting these things.
-> 
-> Well, no problem with that. 
-> 
-> Some maintainers just don't want to be buggered with such patches though, 
-> and I always take care of sending this queue to Linus only when all the 
-> trees which had conflict in linux-next are already in (and I do the 
-> conflict resolution myself), so this should be exactly zero additional 
-> work for subsystem maintainers.
-> 
-> But if you don't like this, I'll just start refusing all the trivial 
-> patches touching net/ and drivers/net/ and will redirect them your way.
+What this generators are used for?
 
+Ciao,
 
-Ayway, below is the hunk that I have already dropped from my tree (so that 
-conflict in linux-next is gone), please feel free to apply it to your 
-tree, and let me known whether you want me to reject all furutre patches 
-touching net/ and driver/net/ to be refused on my side and redirected your 
-way, or if you are fine with me handling the conflict resolution before I 
-push them to Linus.
+Rodolfo
 
-Thanks.
+-- 
 
-
-
-From: Adam Buchbinder <adam.buchbinder@gmail.com>
-Subject: NET: Fix misspelling of "successful" and variants in comments.
-
-Some comments misspell "successful" or variants of the word; this
-fixes them. No code changes.
-
-Signed-off-by: Adam Buchbinder <adam.buchbinder@gmail.com>
-Signed-off-by: Jiri Kosina <jkosina@suse.cz>
-
-diff --git a/drivers/net/sfc/mcdi_pcol.h b/drivers/net/sfc/mcdi_pcol.h
-index 2a85360..f61e1de 100644
---- a/drivers/net/sfc/mcdi_pcol.h
-+++ b/drivers/net/sfc/mcdi_pcol.h
-@@ -853,7 +853,7 @@
-  * Poll for BIST completion
-  *
-  * Returns a single status code, and a binary blob of phy-specific
-- * bist output. If the driver can't succesfully parse the BIST output,
-+ * bist output. If the driver can't successfully parse the BIST output,
-  * it should still respect the Pass/Fail in OUT.RESULT.
-  *
-  * Locks required: PHY_LOCK  if doing a  PHY BIST
-diff --git a/drivers/net/wimax/i2400m/fw.c b/drivers/net/wimax/i2400m/fw.c
-index 64cdfeb..40ee5f6 100644
---- a/drivers/net/wimax/i2400m/fw.c
-+++ b/drivers/net/wimax/i2400m/fw.c
-@@ -1595,7 +1595,7 @@ int i2400m_dev_bootstrap(struct i2400m *i2400m, enum i2400m_bri flags)
- 		i2400m->fw_name = fw_name;
- 		ret = i2400m_fw_bootstrap(i2400m, fw, flags);
- 		release_firmware(fw);
--		if (ret >= 0)	/* firmware loaded succesfully */
-+		if (ret >= 0)	/* firmware loaded successfully */
- 			break;
- 		i2400m->fw_name = NULL;
- 	}
-diff --git a/drivers/net/wireless/rt2x00/rt2x00link.c b/drivers/net/wireless/rt2x00/rt2x00link.c
-index 0efbf5a..ffee9f8 100644
---- a/drivers/net/wireless/rt2x00/rt2x00link.c
-+++ b/drivers/net/wireless/rt2x00/rt2x00link.c
-@@ -240,7 +240,7 @@ void rt2x00link_update_stats(struct rt2x00_dev *rt2x00dev,
- 	struct ieee80211_hdr *hdr = (struct ieee80211_hdr *)skb->data;
- 
- 	/*
--	 * Frame was received successfully since non-succesfull
-+	 * Frame was received successfully since non-successful
- 	 * frames would have been dropped by the hardware.
- 	 */
- 	qual->rx_success++;
-diff --git a/drivers/net/wireless/rt2x00/rt2x00usb.c b/drivers/net/wireless/rt2x00/rt2x00usb.c
-index 0a751e7..8b8c500 100644
---- a/drivers/net/wireless/rt2x00/rt2x00usb.c
-+++ b/drivers/net/wireless/rt2x00/rt2x00usb.c
-@@ -200,7 +200,7 @@ static void rt2x00usb_interrupt_txdone(struct urb *urb)
- 	 * Obtain the status about this packet.
- 	 * Note that when the status is 0 it does not mean the
- 	 * frame was send out correctly. It only means the frame
--	 * was succesfully pushed to the hardware, we have no
-+	 * was successfully pushed to the hardware, we have no
- 	 * way to determine the transmission status right now.
- 	 * (Only indirectly by looking at the failed TX counters
- 	 * in the register).
+GNU/Linux Solutions                  e-mail: giometti@enneenne.com
+Linux Device Driver                          giometti@linux.it
+Embedded Systems                     phone:  +39 349 2432127
+UNIX programming                     skype:  rodolfo.giometti
+Freelance ICT Italia - Consulente ICT Italia - www.consulenti-ict.it
