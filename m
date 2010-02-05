@@ -1,61 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933945Ab0BEWVz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 17:21:55 -0500
-Received: from out01.mta.xmission.com ([166.70.13.231]:36363 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933918Ab0BEWVx (ORCPT
+	id S933940Ab0BEWbS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 17:31:18 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:50655 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933852Ab0BEWbR convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 17:21:53 -0500
-To: Sven Joachim <svenjoac@gmx.de>
-Cc: hadi@cyberus.ca, Randolf Pohl <randolf.pohl@gmx.de>, gregkh@suse.de,
-       linux-kernel@vger.kernel.org, stable@kernel.org,
-       stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: [46/74] net: restore ip source validation
-References: <20100205143441.280460@gmx.net> <1265381514.5661.1.camel@bigi>
-	<87wryr4qkk.fsf@turtle.gmx.de> <m1mxzn8mj5.fsf@fess.ebiederm.org>
-	<87pr4jxuzl.fsf@turtle.gmx.de>
-From: ebiederm@xmission.com (Eric W. Biederman)
-In-Reply-To: <87pr4jxuzl.fsf@turtle.gmx.de> (Sven Joachim's message of "Fri\, 05 Feb 2010 21\:55\:58 +0100")
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-Date: Fri, 05 Feb 2010 14:21:49 -0800
-Message-ID: <m1fx5fe32a.fsf@fess.ebiederm.org>
+	Fri, 5 Feb 2010 17:31:17 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [Bug #15108] Blank screen with KMS enabled (on clevo M5xN laptop)
+Date: Fri, 5 Feb 2010 23:31:58 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.33-rc6-rjw; KDE/4.3.5; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       " =?utf-8?q?J=C3=A9r=C3=A9my?= Lal" <kapouer@melix.org>,
+       rui.zhang@intel.com
+References: <UgwvXSBS_tM.A.alD.1EiZLB@chimera> <de962C6zBxL.A.YOE.IFiZLB@chimera> <20100205110811.16d64ded@jbarnes-piketon>
+In-Reply-To: <20100205110811.16d64ded@jbarnes-piketon>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); SAEximRunCond expanded to false
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <201002052331.58297.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sven Joachim <svenjoac@gmx.de> writes:
+On Friday 05 February 2010, Jesse Barnes wrote:
+> On Mon,  1 Feb 2010 01:43:21 +0100 (CET)
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> 
+> > This message has been generated automatically as a part of a report
+> > of regressions introduced between 2.6.31 and 2.6.32.
+> > 
+> > The following bug entry is on the current list of known regressions
+> > introduced between 2.6.31 and 2.6.32.  Please verify if it still
+> > should be listed and let me know (either way).
+> > 
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15108
+> > Subject		: Blank screen with KMS enabled (on clevo M5xN
+> > laptop) Submitter	: Jérémy Lal <kapouer@melix.org>
+> > Date		: 2010-01-22 20:30 (10 days old)
+> 
+> Looks like this one has a patch available.
+> 
+> Rui, is the patch upstream already?
 
-> On 2010-02-05 21:17 +0100, Eric W. Biederman wrote:
->
->> Bah.  That DEVINET_SYSCTL_ENTRY requires having a binary sysctl
->> assigned, just to use as an index.
->>
->> Which of course trips over all of the fine checks in sysctl_check.c to
->> keep people from assigning new binary sysctls by accident.
->>
->> That is the only place in the kernel where he have that problem, I wonder
->> how much work it will be to finish untangling.
->
-> Isn't that already done in 2.6.33, looking at commit 83ac201b ?  Forgive
-> my ignorance, I am a layman.
+I don't see it in there.
 
-In 2.6.33 the enumeration in sysctl.h still serves double duty as an index
-into a per network device bitmap and as the binary sysctl number.  You are
-correct that the rest of the binary sysctl code is decoupled in 2.6.33.
-
-In 2.6.32 the implementation is also still coupled and that difference is
-what caused problems for the backport.
-
-I just wince whenever I noticed we have touched sysctl.h.
-
-Eric
-
+Rafael
