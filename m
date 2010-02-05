@@ -1,116 +1,116 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751714Ab0BEKO4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 05:14:56 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:62505 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751005Ab0BEKOy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 05:14:54 -0500
-From: Xiaotian Feng <dfeng@redhat.com>
-To: linux-security-module@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Xiaotian Feng <dfeng@redhat.com>,
-       Mimi Zohar <zohar@us.ibm.com>, James Morris <jmorris@namei.org>,
-       Eric Paris <eparis@redhat.com>, Al Viro <viro@zeniv.linux.org.uk>,
-       Serge Hallyn <serue@us.ibm.com>
-Subject: [PATCH] ima: avoid null pointer deref in ima_main.c
-Date: Fri,  5 Feb 2010 18:14:41 +0800
-Message-Id: <1265364881-8140-1-git-send-email-dfeng@redhat.com>
+	id S1752153Ab0BEKRF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 05:17:05 -0500
+Received: from mail.gmx.net ([213.165.64.20]:57642 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751005Ab0BEKRB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Feb 2010 05:17:01 -0500
+X-Authenticated: #28250155
+X-Provags-ID: V01U2FsdGVkX1/Xn/J/9r7X+234FOI6tKgPELBvGLEx8MfVKm20uu
+	P1uXOUMlpUMamx
+From: Sven Joachim <svenjoac@gmx.de>
+To: Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Jamal Hadi Salim <hadi@cyberus.ca>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: [46/74] net: restore ip source validation
+References: <20100204171850.GA16539@kroah.com>
+	<20100204171514.263483751@linux.site>
+Date: Fri, 05 Feb 2010 11:16:56 +0100
+In-Reply-To: <20100204171514.263483751@linux.site> (Greg KH's message of "Thu,
+	04 Feb 2010 09:12:17 -0800")
+Message-ID: <87pr4khtrb.fsf@turtle.gmx.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.92 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.42999999999999999
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've met following oops when kernel is running ltp test pipe07.
-Which is trying to open pipes until EMFILE is returned.
+On 2010-02-04 18:12 +0100, Greg KH wrote:
 
-BUG: unable to handle kernel NULL pointer dereference at 00000000000000ae
-IP: [<ffffffff811f4c75>] ima_file_free+0x2e/0x26d
-PGD 21d7cc067 PUD 21b20b067 PMD 0
-Oops: 0000 [#1] SMP
-last sysfs file: /sys/kernel/mm/ksm/run
-CPU 2
-Pid: 1581, comm: pipe07 Not tainted 2.6.33-rc6-git #59 0M860N/OptiPlex 760
-RIP: 0010:[<ffffffff811f4c75>]  [<ffffffff811f4c75>] ima_file_free+0x2e/0x26d
-RSP: 0018:ffff88021d0bbe38  EFLAGS: 00010202
-RAX: ffff88022b550700 RBX: ffff88021ac4e8c0 RCX: ffff88021d776300
-RDX: 0000000000000000 RSI: 0000000000000001 RDI: ffff88021ac4e8c0
-RBP: ffff88021d0bbe88 R08: ffff88021d0bbe18 R09: 0000000000000000
-R10: 0000000000000000 R11: 0000000000000000 R12: ffff88021ac4e8c0
-R13: 0000000000000000 R14: 00000000ffffffe8 R15: ffff88021d0bbf38
-FS:  00007ff0f45ed700(0000) GS:ffff88002fa00000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: 00000000000000ae CR3: 000000021d7ff000 CR4: 00000000000406e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process pipe07 (pid: 1581, threadinfo ffff88021d0ba000, task ffff88021801a400)
-Stack:
- ffff88021d0bbe68 ffff88002fbd25b0 0000041c1d0bbe68 ffff88021ac4e8c0
-<0> ffff88021ac4ea00 ffff88021ac4e8c0 ffff88021ac4ea00 ffff88021ac4e8c0
-<0> 00000000ffffffe8 ffff88021d0bbf38 ffff88021d0bbea8 ffffffff811dc02d
-Call Trace:
- [<ffffffff811dc02d>] security_file_free+0x2d/0x31
- [<ffffffff81115dfe>] put_filp+0x22/0x36
- [<ffffffff8111baf8>] free_write_pipe+0x2f/0x33
- [<ffffffff8111c74d>] do_pipe_flags+0xdc/0xf6
- [<ffffffff8111c788>] sys_pipe2+0x21/0x63
- [<ffffffff8111c7da>] sys_pipe+0x10/0x12
- [<ffffffff81009bf2>] system_call_fastpath+0x16/0x1b
-Code: e5 41 57 41 56 41 55 41 54 53 48 83 ec 28 0f 1f 44 00 00 83 3d 94 0c 61 01 00 48 8b 47 18 49 89 fc 4c 8b 68 50 0f 84 2d 02 00 00 <41> 0f b7 85 ae 00 00 00 25 00 f0 00 00 3d 00 80 00 00 0f 85 15
-RIP  [<ffffffff811f4c75>] ima_file_free+0x2e/0x26d
- RSP <ffff88021d0bbe38>
-CR2: 00000000000000ae
+> 2.6.32-stable review patch.  If anyone has any objections, please let us know.
 
-With this patch, my system doesn't oops with ltp testcase pipe06/pipe07.
+It's a bit hard to believe, but it is this patch which triggered the
+boot-time crashes¹ that several people, including me, observed.
+Reverting it avoids the kernel panic, and I'm running a kernel with the
+other 73 patches applied right now.
 
-Signed-off-by: Xiaotian Feng <dfeng@redhat.com>
-Cc: Mimi Zohar <zohar@us.ibm.com>
-Cc: James Morris <jmorris@namei.org>
-Cc: Eric Paris <eparis@redhat.com>
-Cc: Al Viro <viro@zeniv.linux.org.uk>
-Cc: Serge Hallyn <serue@us.ibm.com>
----
- security/integrity/ima/ima_main.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+Sven
 
-diff --git a/security/integrity/ima/ima_main.c b/security/integrity/ima/ima_main.c
-index a89f44d..7ea9c22 100644
---- a/security/integrity/ima/ima_main.c
-+++ b/security/integrity/ima/ima_main.c
-@@ -141,7 +141,7 @@ void ima_file_free(struct file *file)
- 	struct inode *inode = file->f_dentry->d_inode;
- 	struct ima_iint_cache *iint;
- 
--	if (!ima_initialized || !S_ISREG(inode->i_mode))
-+	if (!ima_initialized || !inode || !S_ISREG(inode->i_mode))
- 		return;
- 	iint = ima_iint_find_get(inode);
- 	if (!iint)
-@@ -221,7 +221,7 @@ int ima_path_check(struct path *path, int mask)
- 	struct file *file = NULL;
- 	int rc;
- 
--	if (!ima_initialized || !S_ISREG(inode->i_mode))
-+	if (!ima_initialized || !inode || !S_ISREG(inode->i_mode))
- 		return 0;
- 	iint = ima_iint_find_get(inode);
- 	if (!iint)
-@@ -277,7 +277,7 @@ static int process_measurement(struct file *file, const unsigned char *filename,
- 	struct ima_iint_cache *iint;
- 	int rc;
- 
--	if (!ima_initialized || !S_ISREG(inode->i_mode))
-+	if (!ima_initialized || !inode || !S_ISREG(inode->i_mode))
- 		return 0;
- 	iint = ima_iint_find_get(inode);
- 	if (!iint)
-@@ -311,7 +311,7 @@ void ima_counts_get(struct file *file)
- 	struct inode *inode = file->f_dentry->d_inode;
- 	struct ima_iint_cache *iint;
- 
--	if (!ima_initialized || !S_ISREG(inode->i_mode))
-+	if (!ima_initialized || !inode || !S_ISREG(inode->i_mode))
- 		return;
- 	iint = ima_iint_find_get(inode);
- 	if (!iint)
--- 
-1.6.5.2
 
+¹ http://nelide.cz/downloads/2.6.32.8-crash.png
+
+> ------------------
+>
+> From: Jamal Hadi Salim <hadi@cyberus.ca>
+>
+> [ Upstream commit 28f6aeea3f12d37bd258b2c0d5ba891bff4ec479 ]
+>
+> when using policy routing and the skb mark:
+> there are cases where a back path validation requires us
+> to use a different routing table for src ip validation than
+> the one used for mapping ingress dst ip.
+> One such a case is transparent proxying where we pretend to be
+> the destination system and therefore the local table
+> is used for incoming packets but possibly a main table would
+> be used on outbound.
+> Make the default behavior to allow the above and if users
+> need to turn on the symmetry via sysctl src_valid_mark
+>
+> Signed-off-by: Jamal Hadi Salim <hadi@cyberus.ca>
+> Signed-off-by: David S. Miller <davem@davemloft.net>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+>
+> ---
+>  include/linux/inetdevice.h |    1 +
+>  include/linux/sysctl.h     |    1 +
+>  net/ipv4/devinet.c         |    1 +
+>  net/ipv4/fib_frontend.c    |    2 ++
+>  4 files changed, 5 insertions(+)
+>
+> --- a/include/linux/inetdevice.h
+> +++ b/include/linux/inetdevice.h
+> @@ -83,6 +83,7 @@ static inline void ipv4_devconf_setall(s
+>  #define IN_DEV_FORWARD(in_dev)		IN_DEV_CONF_GET((in_dev), FORWARDING)
+>  #define IN_DEV_MFORWARD(in_dev)		IN_DEV_ANDCONF((in_dev), MC_FORWARDING)
+>  #define IN_DEV_RPFILTER(in_dev)		IN_DEV_MAXCONF((in_dev), RP_FILTER)
+> +#define IN_DEV_SRC_VMARK(in_dev)    	IN_DEV_ORCONF((in_dev), SRC_VMARK)
+>  #define IN_DEV_SOURCE_ROUTE(in_dev)	IN_DEV_ANDCONF((in_dev), \
+>  						       ACCEPT_SOURCE_ROUTE)
+>  #define IN_DEV_BOOTP_RELAY(in_dev)	IN_DEV_ANDCONF((in_dev), BOOTP_RELAY)
+> --- a/include/linux/sysctl.h
+> +++ b/include/linux/sysctl.h
+> @@ -490,6 +490,7 @@ enum
+>  	NET_IPV4_CONF_PROMOTE_SECONDARIES=20,
+>  	NET_IPV4_CONF_ARP_ACCEPT=21,
+>  	NET_IPV4_CONF_ARP_NOTIFY=22,
+> +	NET_IPV4_CONF_SRC_VMARK=24,
+>  	__NET_IPV4_CONF_MAX
+>  };
+>  
+> --- a/net/ipv4/devinet.c
+> +++ b/net/ipv4/devinet.c
+> @@ -1450,6 +1450,7 @@ static struct devinet_sysctl_table {
+>  		DEVINET_SYSCTL_RW_ENTRY(SEND_REDIRECTS, "send_redirects"),
+>  		DEVINET_SYSCTL_RW_ENTRY(ACCEPT_SOURCE_ROUTE,
+>  					"accept_source_route"),
+> +		DEVINET_SYSCTL_RW_ENTRY(SRC_VMARK, "src_valid_mark"),
+>  		DEVINET_SYSCTL_RW_ENTRY(PROXY_ARP, "proxy_arp"),
+>  		DEVINET_SYSCTL_RW_ENTRY(MEDIUM_ID, "medium_id"),
+>  		DEVINET_SYSCTL_RW_ENTRY(BOOTP_RELAY, "bootp_relay"),
+> --- a/net/ipv4/fib_frontend.c
+> +++ b/net/ipv4/fib_frontend.c
+> @@ -251,6 +251,8 @@ int fib_validate_source(__be32 src, __be
+>  	if (in_dev) {
+>  		no_addr = in_dev->ifa_list == NULL;
+>  		rpf = IN_DEV_RPFILTER(in_dev);
+> +		if (mark && !IN_DEV_SRC_VMARK(in_dev))
+> +			fl.mark = 0;
+>  	}
+>  	rcu_read_unlock();
