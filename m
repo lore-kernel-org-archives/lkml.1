@@ -1,64 +1,112 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933615Ab0BERW4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 12:22:56 -0500
-Received: from cantor.suse.de ([195.135.220.2]:32898 "EHLO mx1.suse.de"
+	id S933639Ab0BERXI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 12:23:08 -0500
+Received: from cantor.suse.de ([195.135.220.2]:32904 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932282Ab0BERWw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 12:22:52 -0500
-Date: Fri, 5 Feb 2010 09:14:43 -0800
+	id S933538Ab0BERWz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Feb 2010 12:22:55 -0500
+Date: Fri, 5 Feb 2010 09:19:36 -0800
 From: Greg KH <gregkh@suse.de>
-To: Chihau Chau <chihau@gmail.com>
-Cc: devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] Staging: samsung-laptop: fix coding style issues
-Message-ID: <20100205171443.GE14145@suse.de>
-References: <1265346708-9633-1-git-send-email-chihau@gmail.com>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Cc: Josh Holland <jrh@joshh.co.uk>, alan@linux.intel.com,
+       andre.goddard@gmail.com, devel@driverdev.osuosl.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Staging: rar: fixed up rar_driver.{h,c}
+Message-ID: <20100205171936.GG14145@suse.de>
+References: <1265318585-24236-1-git-send-email-jrh@joshh.co.uk> <m3eil0o72j.fsf@intrepid.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1265346708-9633-1-git-send-email-chihau@gmail.com>
+In-Reply-To: <m3eil0o72j.fsf@intrepid.localdomain>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 05, 2010 at 02:11:48AM -0300, Chihau Chau wrote:
-> From: Chihau Chau <chihau@gmail.com>
+On Fri, Feb 05, 2010 at 01:32:52AM +0100, Krzysztof Halasa wrote:
+> Josh Holland <jrh@joshh.co.uk> writes:
 > 
-> This fixes some lines over 80 characters coding style issues
+> > This is a patch to the rar_driver.c and rar_driver.h files to remove
+> > style issues found by the checkpatch.pl script.
+> >
+> > +++ b/drivers/staging/rar/rar_driver.c
+> > @@ -68,7 +68,8 @@ static void __exit rar_exit_handler(void);
+> >  /*
+> >    function that is activated on the successfull probe of the RAR device
+> >  */
+> > -static int __devinit rar_probe(struct pci_dev *pdev, const struct pci_device_id *ent);
+> > +static int __devinit rar_probe(struct pci_dev *pdev,
+> > +	const struct pci_device_id *ent);
 > 
-> Signed-off-by: Chihau Chau <chihau@gmail.com>
-> ---
->  drivers/staging/samsung-laptop/samsung-laptop.c |    9 ++++++---
->  1 files changed, 6 insertions(+), 3 deletions(-)
+> It's agreed such changes make it worse. The 80-column "ERROR" should be
+> ignored, and it will be removed from checkpatch.
 > 
-> diff --git a/drivers/staging/samsung-laptop/samsung-laptop.c b/drivers/staging/samsung-laptop/samsung-laptop.c
-> index 4877138..87ec773 100644
-> --- a/drivers/staging/samsung-laptop/samsung-laptop.c
-> +++ b/drivers/staging/samsung-laptop/samsung-laptop.c
-> @@ -99,7 +99,8 @@ static struct rfkill *rfk;
->  
->  static int force;
->  module_param(force, bool, 0);
-> -MODULE_PARM_DESC(force, "Disable the DMI check and forces the driver to be loaded");
-> +MODULE_PARM_DESC(force, "Disable the DMI check and forces the driver to be "
-> +								"loaded");
+> > -	printk(KERN_WARNING "rar- result from send ctl register is %x\n"
+> > -	  ,result);
+> > +	printk(KERN_WARNING "rar- result from send ctl register is %x\n",
+> > +			result);
+> 
+> Also, here (and then) - I'd just make it a single line if you're changing
+> it. I'd be far from "unwrapping" all code across the kernel, though
+> (without otherwise changing the lines in question).
 
-Um, care to move the whole string down one line to make it nicer to look
-at?
+No, this is fine, no problem with this change.
 
->  static int debug;
->  module_param(debug, bool, S_IRUGO | S_IWUSR);
-> @@ -370,7 +371,8 @@ static struct dmi_system_id __initdata samsung_dmi_table[] = {
->  	{
->  		.ident = "N128",
->  		.matches = {
-> -			DMI_MATCH(DMI_SYS_VENDOR, "SAMSUNG ELECTRONICS CO., LTD."),
-> +			DMI_MATCH(DMI_SYS_VENDOR,
-> +					"SAMSUNG ELECTRONICS CO., LTD."),
+> > +		if (memrar_get_rar_addr(pdev, (*i).low, &(rar_addr[n].low))
+> > +			|| memrar_get_rar_addr(pdev, (*i).high,
+> > +			   &(rar_addr[n].high))) {
+> > +			result = -1;
+> > +			break;
+> > +		}
+> 
+> Isn't the following a bit more readable?
+> 
+> +		if (memrar_get_rar_addr(pdev, i->low, &rar_addr[n].low) ||
+> +		    memrar_get_rar_addr(pdev, i->high, &rar_addr[n].high)) {
+> +			result = -1;
+> +			break;
+> +		}
 
-Like this, what you did here was fine, can you do this above as well and
-resubmit the whole thing to me so I can apply it?
+The latter is nicer, but it doesn't really matter :)
+
+> It doesn't make sense to split the printk, at least every single output
+> line printed shouldn't be broken into pieces (but perhaps one single
+> line for the whole printk() is best).
+> Also I like the post-increments (z++) more, but maybe it's just me.
+> 
+> > +		size_t z;
+> > +		for (z = 0; z != MRST_NUM_RAR; ++z) {
+> > +			printk(KERN_WARNING "rar - "
+> > +			"BRAR[%Zd] physical address low\n"
+> > +			"\tlow:  0x%08x\n"
+> > +			"\thigh: 0x%08x\n",
+> > +			z,
+> > +			rar_addr[z].low,
+> > +			rar_addr[z].high);
+> 
+> 
+> > -#define DEBUG_PRINT_0(DEBUG_LEVEL , info) \
+> > -do \
+> > -{ \
+> > -  if(DEBUG_LEVEL) \
+> > -  { \
+> > -    printk(KERN_WARNING info); \
+> > -  } \
+> > -}while(0)
+> > +#define DEBUG_PRINT_0(DEBUG_LEVEL, info) \
+> > +do { \
+> > +	if (DEBUG_LEVEL) \
+> > +		printk(KERN_WARNING info); \
+> > +} while (0)
+> 
+> Also I think moving these backslashes to the right of the macro code is
+> preferred, isn't it?
+
+
+It doesn't matter all that much.
+
+Overall this looks fine, I'll queue it up.
 
 thanks,
 
