@@ -1,75 +1,71 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755898Ab0BENAG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 08:00:06 -0500
-Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:44378 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751047Ab0BENAE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 08:00:04 -0500
-Date: Fri, 5 Feb 2010 14:00:02 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Jan Engelhardt <jengelh@medozas.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: kswapd continuously active
-Message-ID: <20100205130002.GI1025@kernel.dk>
-References: <alpine.LSU.2.01.1001230037350.20442@obet.zrqbmnf.qr> <20100125130627.GO13771@kernel.dk> <alpine.LSU.2.01.1001251416340.8189@obet.zrqbmnf.qr> <alpine.LSU.2.01.1002051329090.7843@obet.zrqbmnf.qr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LSU.2.01.1002051329090.7843@obet.zrqbmnf.qr>
+	id S932196Ab0BENCR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 08:02:17 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:53119 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751047Ab0BENCQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Feb 2010 08:02:16 -0500
+Subject: Re: [PATCH 10/11] tracing/perf: Fix lock events recursions in the
+ fast path
+From: Peter Zijlstra <peterz@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Lai Jiangshan <laijs@cn.fujitsu.com>, paulmck@linux.vnet.ibm.com,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Paul Mackerras <paulus@samba.org>,
+       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
+       Li Zefan <lizf@cn.fujitsu.com>, Masami Hiramatsu <mhiramat@redhat.com>,
+       Jens Axboe <jens.axboe@oracle.com>
+In-Reply-To: <1265371973.22001.508.camel@laptop>
+References: <1265188475-23509-1-git-send-regression-fweisbec@gmail.com>
+	 <1265188475-23509-11-git-send-regression-fweisbec@gmail.com>
+	 <20100204154700.GE6676@linux.vnet.ibm.com> <4B6B84A1.60805@cn.fujitsu.com>
+	 <1265363102.22001.286.camel@laptop> <1265363441.22001.300.camel@laptop>
+	 <20100205104937.GB29515@elte.hu>  <1265371808.22001.502.camel@laptop>
+	 <1265371973.22001.508.camel@laptop>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 05 Feb 2010 14:01:55 +0100
+Message-ID: <1265374915.22001.562.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 05 2010, Jan Engelhardt wrote:
+On Fri, 2010-02-05 at 13:12 +0100, Peter Zijlstra wrote:
+> On Fri, 2010-02-05 at 13:10 +0100, Peter Zijlstra wrote:
+> > On Fri, 2010-02-05 at 11:49 +0100, Ingo Molnar wrote:
+> > > 
+> > > > That said, I'm not at all happy about removing lockdep annotations to make 
+> > > > the tracer faster, that's really counter productive.
+> > > 
+> > > Are there no dynamic techniques that could be used here?
+> > > 
+> > > Lockdep obviously wants maximum instrumentation coverage - performance be 
+> > > damned.
+> > > 
+> > > Lock profiling/tracing/visualization wants the minimum subset of events it is 
+> > > interested in - everything else is unnecessary overhead.
+> > 
+> > Well, they could start by moving the tracepoint inside the lockdep
+> > recursion check.
 > 
-> On Monday 2010-01-25 14:22, Jan Engelhardt wrote:
-> >On Monday 2010-01-25 14:06, Jens Axboe wrote:
-> >>> 
-> >>> with 2.6.32.2 on sparc64 I am seeing that there is a sync(1) process 
-> >>> busy in D state, with the following trace:
-> >>> 
-> >>> sync          D 000000000079299c  7552  4851      1 0x208061101000004
-> >>> Call Trace:
-> >>>  [000000000053ca58] bdi_sched_wait+0xc/0x1c[...]
-> >>>  [000000000053ca78] sync_inodes_sb+0x10/0xfc
-> >>> 
-> >>> kswapd is also active all the time, writing something to disk[...]
-> >>
-> >>That doesn't sound good. What does /proc/meminfo say? What file systems
-> >>are you using?
+> IIRC the reason its now outside is that you'd loose tracepoint on
+> lockdep_off() usage, but having the tracer folks help on removing any
+> such usage is of course a good thing.
 > 
-> >January 25			Feb-05
-> >MemTotal:        8166752 kB	8166752
-> >MemFree:         3243552 kB	3781776
-> >Buffers:          207968 kB	4912
-> >Cached:          2728216 kB	2684400
-> >SwapCached:            0 kB	0
-> >Active:          2203136 kB	495624
-> >Inactive:        2152544 kB	3263136
-> >Active(anon):    1167256 kB	488168
-> >Inactive(anon):   252952 kB	583912
-> >Active(file):    1035880 kB	7456
-> >Inactive(file):  1899592 kB	2679224
-> >Unevictable:           0 kB	0
-> >Mlocked:               0 kB	0
-> >SwapTotal:             0 kB	0
-> >SwapFree:              0 kB	0
-> >Dirty:            141624 kB	2662184
-> >Writeback:             0 kB	..
-> 
-> Today this happened again. So I looked at /proc/meminfo to paste today's
-> values next to those from January. That is when I noticed the "Dirty"
-> value - and thus I ran
-> 
-> 	watch -d -n 1 'grep Dirty /proc/meminfo'
-> 
-> What I see is that the dirty amount - a sync is currently running -
-> only decreases with at most 400 KB/sec, often less than that.
+> The usage thereof in nmi_enter() doesn't seem like a problem, since
+> you're not supposed to be using locks from nmi context anyway, more so,
+> I'd not be adverse to putting BUG_ON(in_nmi()) in every lockdep hook.
 
-I'm guessing the barriers and commits are what is killing your
-performance. What happens with barrier=0?
+Another nasty side effect is that it (lockdep recursion) isn't IRQ aware
+in that we don't do any tracking for IRQ's that hit while we're doing
+lockdep. We can fix that using a recursion context like we did for perf,
+that would actually improve lockdep itself too.
 
--- 
-Jens Axboe
+
 
