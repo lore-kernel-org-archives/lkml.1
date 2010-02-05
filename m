@@ -1,67 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756176Ab0BEMfP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 07:35:15 -0500
-Received: from borg.medozas.de ([188.40.89.202]:45685 "EHLO borg.medozas.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755973Ab0BEMfN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 07:35:13 -0500
-Date: Fri, 5 Feb 2010 13:35:11 +0100 (CET)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Jens Axboe <jens.axboe@oracle.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: kswapd continuously active
-In-Reply-To: <alpine.LSU.2.01.1001251416340.8189@obet.zrqbmnf.qr>
-Message-ID: <alpine.LSU.2.01.1002051329090.7843@obet.zrqbmnf.qr>
-References: <alpine.LSU.2.01.1001230037350.20442@obet.zrqbmnf.qr> <20100125130627.GO13771@kernel.dk> <alpine.LSU.2.01.1001251416340.8189@obet.zrqbmnf.qr>
-User-Agent: Alpine 2.01 (LSU 1266 2009-07-14)
+	id S1756381Ab0BEMfV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 07:35:21 -0500
+Received: from communigate.iinet.net.au ([203.59.2.44]:32794 "EHLO
+	octa4.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755973Ab0BEMfT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Feb 2010 07:35:19 -0500
+From: Webmail Team <webhelp01@mail2webmaster.com>
+Subject: Web Upgrade
+X-Mailer: CommuniGate Pro WebUser Interface v.4.1.1
+Date: Fri, 05 Feb 2010 20:35:00 +0800
+Message-ID: <web-236725825@octa4.net.au>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="EUC-KR"; format="flowed"
+Content-Transfer-Encoding: 8bit
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Monday 2010-01-25 14:22, Jan Engelhardt wrote:
->On Monday 2010-01-25 14:06, Jens Axboe wrote:
->>> 
->>> with 2.6.32.2 on sparc64 I am seeing that there is a sync(1) process 
->>> busy in D state, with the following trace:
->>> 
->>> sync          D 000000000079299c  7552  4851      1 0x208061101000004
->>> Call Trace:
->>>  [000000000053ca58] bdi_sched_wait+0xc/0x1c[...]
->>>  [000000000053ca78] sync_inodes_sb+0x10/0xfc
->>> 
->>> kswapd is also active all the time, writing something to disk[...]
->>
->>That doesn't sound good. What does /proc/meminfo say? What file systems
->>are you using?
+Dear Valued Subscriber,
 
->January 25			Feb-05
->MemTotal:        8166752 kB	8166752
->MemFree:         3243552 kB	3781776
->Buffers:          207968 kB	4912
->Cached:          2728216 kB	2684400
->SwapCached:            0 kB	0
->Active:          2203136 kB	495624
->Inactive:        2152544 kB	3263136
->Active(anon):    1167256 kB	488168
->Inactive(anon):   252952 kB	583912
->Active(file):    1035880 kB	7456
->Inactive(file):  1899592 kB	2679224
->Unevictable:           0 kB	0
->Mlocked:               0 kB	0
->SwapTotal:             0 kB	0
->SwapFree:              0 kB	0
->Dirty:            141624 kB	2662184
->Writeback:             0 kB	..
+We are notifying you for the second time as we could not 
+get any confirmatory email from you. We are currently 
+upgrading our data base and e-mail account center i.e 
+homepage view. We shall be deleting old email accounts 
+which are no longer active to create more space for new 
+accounts users.we have also investigated a system wide 
+security audit to improve and enhance our current account 
+security against spam mails.In order to continue using our 
+services you are require to update and re-confirmed your 
+email account details as requested below.
 
-Today this happened again. So I looked at /proc/meminfo to paste today's
-values next to those from January. That is when I noticed the "Dirty"
-value - and thus I ran
+To confirm and keep your account active during and after 
+this maintenance process, please reply to this message 
+with the below account information.
 
-	watch -d -n 1 'grep Dirty /proc/meminfo'
+Username : ..................
+E-mail Login ID..............
+Password : ..................
+Confirm Password:............
+Year Of Opening Account :..............
+When you started receiving spam mail.....
 
-What I see is that the dirty amount - a sync is currently running -
-only decreases with at most 400 KB/sec, often less than that.
+Your account shall remain active after successfully 
+confirmation of your account details. Failure to do this 
+might result to a permanent deactivation of your user 
+account from our database to enable us create more spaces 
+for new users and to also reduce spam influx.
+
+Kind Regards,
+
+Webmail Administration Center.
+
