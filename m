@@ -1,73 +1,64 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932769Ab0BEAn6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 19:43:58 -0500
-Received: from mail-iw0-f189.google.com ([209.85.223.189]:56233 "EHLO
-	mail-iw0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757609Ab0BEAn5 (ORCPT
+	id S933478Ab0BEApA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 19:45:00 -0500
+Received: from sentry-three.sandia.gov ([132.175.109.17]:50905 "EHLO
+	sentry-three.sandia.gov" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755015Ab0BEAo6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 19:43:57 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=AlS9MlpC2m6WXleVh0X42aAlpaOnFqQWS+BpEzHHoNgCimjN8qsnINLsyGZ9nT8kcR
-         I7mS+RSQMtBreQ8WdcDa/BVMp5xeFYLwrc/JzaUCRXBIpzPsGR8VaT/mfS5GjnPU2x0q
-         Fxe7pwtD/E0K2a0xbQ8o4l0kREnUO5DoIseFM=
+	Thu, 4 Feb 2010 19:44:58 -0500
+X-WSS-ID: 0KXCFF3-08-BNO-02
+X-M-MSG: 
+X-Server-Uuid: AF72F651-81B1-4134-BA8C-A8E1A4E620FF
+Subject: Re: [PATCH] seastar - SeaStar Ethernet driver
+From: "Kevin Pedretti" <ktpedre@sandia.gov>
+To: "David Miller" <davem@davemloft.net>
+cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20100204.151357.18104114.davem@davemloft.net>
+References: <1265160242.15726.20.camel@hawkeye.sandia.gov>
+ <20100202.174045.135005544.davem@davemloft.net>
+ <1265324464.23523.51.camel@hawkeye.sandia.gov>
+ <20100204.151357.18104114.davem@davemloft.net>
+Date: Thu, 4 Feb 2010 17:36:54 -0700
+Message-ID: <1265330214.23523.78.camel@hawkeye.sandia.gov>
 MIME-Version: 1.0
-In-Reply-To: <21d7e9971002041314yf8c55p4a7cb638efa0d24a@mail.gmail.com>
-References: <alpine.DEB.2.00.1002010215530.15366@skynet.skynet.ie>
-	 <alpine.DEB.2.00.1002010253120.15366@skynet.skynet.ie>
-	 <20100202081727.GA6788@elte.hu>
-	 <alpine.DEB.2.00.1002020824001.20769@skynet.skynet.ie>
-	 <20100202154450.GC27314@elte.hu>
-	 <21d7e9971002041239i5e842698pd8a775f833fc5d51@mail.gmail.com>
-	 <20100204204655.GA19050@elte.hu>
-	 <21d7e9971002041314yf8c55p4a7cb638efa0d24a@mail.gmail.com>
-Date: Fri, 5 Feb 2010 10:43:56 +1000
-Message-ID: <21d7e9971002041643i1f6a122fk517abb308606b548@mail.gmail.com>
-Subject: Re: [crash, PATCH] Revert "drm/radeon/kms: move radeon KMS on/off 
-	switch out of staging."
-From: Dave Airlie <airlied@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Dave Airlie <airlied@linux.ie>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
-Content-Type: text/plain; charset=ISO-8859-1
+X-Mailer: Evolution 2.28.1
+X-TMWD-Spam-Summary: TS=20100205004444; ID=1; SEV=2.3.1;
+ DFV=B2010020501; IFV=NA; AIF=B2010020501; RPD=5.03.0010; ENG=NA;
+ RPDID=7374723D303030312E30413031303230342E34423642363946432E303033353A534346535441543838363133332C73733D312C6667733D30;
+ CAT=NONE; CON=NONE; SIG=AAAAAAAAAAAAAAAAAAAAAAAAfQ==
+X-MMS-Spam-Filter-ID: B2010020501_5.03.0010
+X-WSS-ID: 6775B6702DG2140312-01-01
+Content-Type: text/plain;
+ charset=utf-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>
->> These were random configs - the size doesnt match an allyesconfig, those are
->> way bigger. My above comment related to the first crash, and to my argument
->> that all other drivers are fine during bootup - and there's a lot of them.
->>
->>> So do you have something you are running after allyesconfig to fix things?
->>> or have you just got a config that is close enough to allyesconfig.
->>>
->>> I'm building kernels with your .config now and boot testing them on the
->>> full range of hardware I have/
->>
->> Thanks. Is there something i can enable to get a better log for you to find
->> out where (and why) it's hanging? It's still early during bootup so the box
->> is not particularly debuggable - so i'm not sure i can get a task list dump,
->> etc., unfortunately.
->>
-> Do you have NMI watchdog enabled? (does it work that early)
->
-> a backtrace of where it hangs would be nice,
->
-> Also a dmesg from booting with drm.debug=15 might help narrow it down
-> also.
->
+On Thu, 2010-02-04 at 16:13 -0700, David Miller wrote:
+> From: "Kevin Pedretti" <ktpedre@sandia.gov>
+> Date: Thu, 4 Feb 2010 16:01:04 -0700
+> 
+> > Please let me know if these issues are show-stoppers as far as inclusion
+> > goes.  We would like to get this open-source driver into the kernel so
+> > us and others with Cray XT systems can start to benefit from it, and
+> > continue to automatically track kernel API changes. 
+> 
+> I may let it in as-is, thanks for the explanations.
+> 
+> Could you at least consider perhaps that since it isn't
+> really ethernet, not pretending that it is may be something
+> to look at?
 
-Okay I've booted this on the rv370 + rv380 machines I have, I've no old Athlon's
-though so I'm trying to get RHTS to give me access to one or two internally,
+Sure, I'm open to doing this and would appreciate any example drivers
+you could point me at.  We do need to keep the capability though of
+talking to Cray's existing proprietary "ethernet" over seastar driver,
+which the existing driver does.  If we go this route of being a
+non-Ethernet device, do you think it would still be possible to support
+this?
 
-Another question, that came to mind, what is there any monitors plugged in?
-or a KVM or something? if yes can you try without and if no can you try with?
+Kevin
 
-Also can you add CONFIG_FRAMEBUFFER_CONSOLE as well since I
-don't think we test often without it.
 
-Dave.
