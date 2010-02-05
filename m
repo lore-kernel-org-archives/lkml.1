@@ -1,88 +1,149 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932919Ab0BEJjX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 04:39:23 -0500
-Received: from out01.mta.xmission.com ([166.70.13.231]:39788 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932748Ab0BEJjV convert rfc822-to-8bit (ORCPT
+	id S1756315Ab0BEJob (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 04:44:31 -0500
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:47547 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754515Ab0BEJo3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 04:39:21 -0500
-To: Xiaotian Feng <xtfeng@gmail.com>
-Cc: Amerigo Wang <amwang@redhat.com>, linux-kernel@vger.kernel.org,
-       Tejun Heo <tj@kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Miles Lane <miles.lane@gmail.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Larry Finger <Larry.Finger@lwfinger.net>, akpm@linux-foundation.org
-Subject: Re: [Patch v2] sysfs: add lockdep class support to s_active
-References: <20100205064622.4141.72867.sendpatchset@localhost.localdomain>
-	<7b6bb4a51002042309v3ca1dd0p60b9dbcacdafaee6@mail.gmail.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Fri, 05 Feb 2010 01:39:07 -0800
-In-Reply-To: <7b6bb4a51002042309v3ca1dd0p60b9dbcacdafaee6@mail.gmail.com> (Xiaotian Feng's message of "Fri\, 5 Feb 2010 15\:09\:49 +0800")
-Message-ID: <m1zl3odnt0.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); SAEximRunCond expanded to false
+	Fri, 5 Feb 2010 04:44:29 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=Pl4y5d0JyWXPGNXYzkXnLlRQv5nLDD8ukuQvvpW1nkqGKFwbcT2/UgpUtS0msQGofT
+         Nhh4MMluYHIjU6jcdrezfj6Qg21jtIO4IbTatEpJiVlbxTKT9bcEGZcmQk08tNSEg3ds
+         d9zTuhyx7DPvvbsgoq2l3mv3eDTKtY3eWN5s4=
+Subject: Re: [PATCH 11/17] MTD: nand: fix bug that prevented write of more
+ that	one page by ->write_oob
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: "stanley.miao" <stanley.miao@windriver.com>
+Cc: David Woodhouse <dwmw2@infradead.org>, Alex Dubov <oakad@yahoo.com>,
+       Artem Bityutskiy <dedekind1@gmail.com>, joern <joern@logfs.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mtd <linux-mtd@lists.infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <4B6B81AD.40704@windriver.com>
+References: <1265326257-4446-1-git-send-email-maximlevitsky@gmail.com>
+	 <1265326257-4446-12-git-send-email-maximlevitsky@gmail.com>
+	 <4B6B81AD.40704@windriver.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 05 Feb 2010 11:44:23 +0200
+Message-ID: <1265363063.15383.27.camel@maxim-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Xiaotian Feng <xtfeng@gmail.com> writes:
+On Fri, 2010-02-05 at 10:25 +0800, stanley.miao wrote: 
+> ops->ooblen is the oob bytes to write, you add a argument for 
+> nand_fill_oob to do this,
+> it is redundant.
+No its not.
+ops->ooblen can be legitimately larger that mtd->oobsize because user
+might want to write two or more pages in a row.
 
-> On Fri, Feb 5, 2010 at 2:42 PM, Amerigo Wang <amwang@redhat.com> wrote:
->> Recently we met a lockdep warning from sysfs during s2ram or cpu hotplug.
->> As reported by several people, it is something like:
->>
->> [ 6967.926563] ACPI: Preparing to enter system sleep state S3
->> [ 6967.956156] Disabling non-boot CPUs ...
->> [ 6967.970401]
->> [ 6967.970408] =============================================
->> [ 6967.970419] [ INFO: possible recursive locking detected ]
->> [ 6967.970431] 2.6.33-rc2-git6 #27
->> [ 6967.970439] ---------------------------------------------
->> [ 6967.970450] pm-suspend/22147 is trying to acquire lock:
->> [ 6967.970460]  (s_active){++++.+}, at: [<c10d2941>]
->> sysfs_hash_and_remove+0x3d/0x4f
->> [ 6967.970493]
->> [ 6967.970497] but task is already holding lock:
->> [ 6967.970506]  (s_active){++++.+}, at: [<c10d4110>]
->> sysfs_get_active_two+0x16/0x36
->> [...]
->>
->> Eric already provides a patch for this[1], but it still can't fix the
->> problem. Based on his work and Peter's suggestion, I write this patch,
->> hopefully we can fix the warning completely.
->>
->> This patch put sysfs s_active into two classes, one is for PM, the other
->> is for the rest, so lockdep will distinguish them.
->
-> I think this patch does not hit the root cause, we have a similiar
-> warning which is not related with PM.
+I want to be able to write two pages + two oobs in same time.
 
-The root cause is that our locking is crazy complicated.  No lockdep
-changes are going to fix that.
 
-What we can do and what the patch does is teach lockdep to treat some
-of the sysfs files as a different group (subclass) from other sysfs
-files.  Which keeps us from overgeneralizing too much and having
-a better signal to noise ratio.
 
-As for the block device problem goes, I can't easily say that
-the block layer is correct.  I expect it is because changing
-the scheduler is unlikely to delete block devices.  If the block layer
-has bugs then adding another subclass as Amerigo suggests should simply
-make lockdep warnings harder to trigger and more accurate so that
-sounds like a path worth walking.
+> 
+> I know the bug you want to fix, the ops->ooblen may be illegal. But this 
+> patch can't this
+> problem. If (ops->offset + ops->ooblen) > mtd->oobsize, it still will 
+> write beyond a page.
+This is true, I just didn't use the ops->offset....
 
-In general I recommend that pieces of code that need to do a lot of
-work in a sysfs attribute consider using a work queue or a kernel
-thread, as that can be easier to analyze.
 
-Eric
+> 
+> I think the right method is that nand_do_write_ops do the check like 
+> nand_do_write_oob,
+> I have the patch yesterday.
+> 
+> http://patchwork.ozlabs.org/patch/44450/
+This again won't work for multipage writes I have in mind.
+However if ops->ooboffs is set, I think multipage write shouldn't be
+allowed
+
+This is:
+
+if (ops->ooboffs && (ops->ooboffs + ops->ooblen) > len))
+
+Also check for 'ops->ooboffs >= len' is almost redundant.
+Only case it would trigger is when 'ops->ooblen == 0'
+But this probably can be dealt with, without error.
+
+Best regards,
+Maxim Levitsky
+
+> 
+> Stanley.
+> 
+> Maxim Levitsky wrote:
+> > Although nand_do_write_ops intends to allow such mode, it fails do do so
+> > Probably this was never tested
+> >
+> > Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
+> > ---
+> >  drivers/mtd/nand/nand_base.c |   16 +++++++++-------
+> >  1 files changed, 9 insertions(+), 7 deletions(-)
+> >
+> > diff --git a/drivers/mtd/nand/nand_base.c b/drivers/mtd/nand/nand_base.c
+> > index 8ff36be..29e986e 100644
+> > --- a/drivers/mtd/nand/nand_base.c
+> > +++ b/drivers/mtd/nand/nand_base.c
+> > @@ -1879,11 +1879,9 @@ static int nand_write_page(struct mtd_info *mtd, struct nand_chip *chip,
+> >   * @oob:	oob data buffer
+> >   * @ops:	oob ops structure
+> >   */
+> > -static uint8_t *nand_fill_oob(struct nand_chip *chip, uint8_t *oob,
+> > -				  struct mtd_oob_ops *ops)
+> > +static uint8_t *nand_fill_oob(struct nand_chip *chip, uint8_t *oob, size_t len,
+> > +						struct mtd_oob_ops *ops)
+> >   
+> 
+> ops->ooblen is the oob bytes to write, you add a prara
+> 
+> >  {
+> > -	size_t len = ops->ooblen;
+> > -
+> >  	switch(ops->mode) {
+> >  
+> >  	case MTD_OOB_PLACE:
+> > @@ -1938,6 +1936,7 @@ static int nand_do_write_ops(struct mtd_info *mtd, loff_t to,
+> >  	int chipnr, realpage, page, blockmask, column;
+> >  	struct nand_chip *chip = mtd->priv;
+> >  	uint32_t writelen = ops->len;
+> > +	uint32_t oobwritelen = ops->ooblen;
+> >  	uint8_t *oob = ops->oobbuf;
+> >  	uint8_t *buf = ops->datbuf;
+> >  	int ret, subpage;
+> > @@ -1994,8 +1993,11 @@ static int nand_do_write_ops(struct mtd_info *mtd, loff_t to,
+> >  			wbuf = chip->buffers->databuf;
+> >  		}
+> >  
+> > -		if (unlikely(oob))
+> > -			oob = nand_fill_oob(chip, oob, ops);
+> > +		if (unlikely(oob)) {
+> > +			size_t len = min(oobwritelen, mtd->oobsize);
+> > +			oob = nand_fill_oob(chip, oob, len, ops);
+> > +			oobwritelen -= len;
+> > +		}
+> >  
+> >  		ret = chip->write_page(mtd, chip, wbuf, page, cached,
+> >  				       (ops->mode == MTD_OOB_RAW));
+> > @@ -2169,7 +2171,7 @@ static int nand_do_write_oob(struct mtd_info *mtd, loff_t to,
+> >  		chip->pagebuf = -1;
+> >  
+> >  	memset(chip->oob_poi, 0xff, mtd->oobsize);
+> > -	nand_fill_oob(chip, ops->oobbuf, ops);
+> > +	nand_fill_oob(chip, ops->oobbuf, ops->ooblen, ops);
+> >  	status = chip->ecc.write_oob(mtd, chip, page & chip->pagemask);
+> >  	memset(chip->oob_poi, 0xff, mtd->oobsize);
+> >  
+> >   
+> 
+
+
