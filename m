@@ -1,174 +1,84 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933642Ab0BEH33 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 02:29:29 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49504 "EHLO mx2.mail.elte.hu"
+	id S933680Ab0BEHcp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 02:32:45 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40975 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933578Ab0BEH31 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 02:29:27 -0500
-Date: Fri, 5 Feb 2010 08:28:58 +0100
+	id S933606Ab0BEHcn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Feb 2010 02:32:43 -0500
+Date: Fri, 5 Feb 2010 08:32:22 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Keiichi KII <k-keiichi@bx.jp.nec.com>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Jason Baron <jbaron@redhat.com>,
-       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-Cc: linux-kernel@vger.kernel.org, lwoodman@redhat.com, linux-mm@kvack.org,
-       Tom Zanussi <tzanussi@gmail.com>, riel@redhat.com, rostedt@goodmis.org,
-       akpm@linux-foundation.org, fweisbec@gmail.com,
-       Munehiro Ikeda <m-ikeda@ds.jp.nec.com>,
-       Atsushi Tsuji <a-tsuji@bk.jp.nec.com>
-Subject: Re: [RFC PATCH -tip 0/2 v3] pagecache tracepoints proposal
-Message-ID: <20100205072858.GC9320@elte.hu>
-References: <4B6B7FBF.9090005@bx.jp.nec.com>
+To: Dave Airlie <airlied@gmail.com>
+Cc: Dave Airlie <airlied@linux.ie>, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
+Subject: Re: [crash, PATCH] Revert "drm/radeon/kms: move radeon KMS on/off
+ switch out of staging."
+Message-ID: <20100205073222.GE9320@elte.hu>
+References: <alpine.DEB.2.00.1002010215530.15366@skynet.skynet.ie>
+ <alpine.DEB.2.00.1002010253120.15366@skynet.skynet.ie>
+ <20100202081727.GA6788@elte.hu>
+ <alpine.DEB.2.00.1002020824001.20769@skynet.skynet.ie>
+ <20100202154450.GC27314@elte.hu>
+ <21d7e9971002041239i5e842698pd8a775f833fc5d51@mail.gmail.com>
+ <20100204204655.GA19050@elte.hu>
+ <21d7e9971002041314yf8c55p4a7cb638efa0d24a@mail.gmail.com>
+ <21d7e9971002041643i1f6a122fk517abb308606b548@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4B6B7FBF.9090005@bx.jp.nec.com>
+In-Reply-To: <21d7e9971002041643i1f6a122fk517abb308606b548@mail.gmail.com>
 User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
+X-ELTE-SpamScore: 0.0
 X-ELTE-SpamLevel: 
 X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Keiichi KII <k-keiichi@bx.jp.nec.com> wrote:
+* Dave Airlie <airlied@gmail.com> wrote:
 
-> Hello,
+> >>
+> >> These were random configs - the size doesnt match an allyesconfig, those are
+> >> way bigger. My above comment related to the first crash, and to my argument
+> >> that all other drivers are fine during bootup - and there's a lot of them.
+> >>
+> >>> So do you have something you are running after allyesconfig to fix things?
+> >>> or have you just got a config that is close enough to allyesconfig.
+> >>>
+> >>> I'm building kernels with your .config now and boot testing them on the
+> >>> full range of hardware I have/
+> >>
+> >> Thanks. Is there something i can enable to get a better log for you to find
+> >> out where (and why) it's hanging? It's still early during bootup so the box
+> >> is not particularly debuggable - so i'm not sure i can get a task list dump,
+> >> etc., unfortunately.
+> >>
+> > Do you have NMI watchdog enabled? (does it work that early)
+> >
+> > a backtrace of where it hangs would be nice,
+> >
+> > Also a dmesg from booting with drm.debug=15 might help narrow it down
+> > also.
+> >
 > 
-> This is v3 of a patchset to add some tracepoints for pagecache.
+> Okay I've booted this on the rv370 + rv380 machines I have, I've no old 
+> Athlon's though so I'm trying to get RHTS to give me access to one or two 
+> internally,
 > 
-> I would propose several tracepoints for tracing pagecache behavior and
-> a script for these.
-> By using both the tracepoints and the script, we can analysis pagecache behavior
-> like usage or hit ratio with high resolution like per process or per file. 
-> Example output of the script looks like:
+> Another question, that came to mind, what is there any monitors plugged in? 
+> or a KVM or something? if yes can you try without and if no can you try 
+> with?
 > 
-> [process list]
-> o yum-3215
->                           cache find  cache hit  cache hit
->         device      inode      count      count      ratio
->   --------------------------------------------------------
->          253:0         16      34434      34130     99.12%
->          253:0        198       9692       9463     97.64%
->          253:0        639        647        628     97.06%
->          253:0        778         32         29     90.62%
->          253:0       7305      50225      49005     97.57%
->          253:0     144217         12         10     83.33%
->          253:0     262775         16         13     81.25%
-> *snip*
-> 
-> -------------------------------------------------------------------------------
-> 
-> [file list]
->         device              cached
->      (maj:min)      inode    pages
->   --------------------------------
->          253:0         16     5752
->          253:0        198     2233
->          253:0        639       51
->          253:0        778       86
->          253:0       7305    12307
->          253:0     144217       11
->          253:0     262775       39
-> *snip*
-> 
-> [process list]
-> o yum-3215
->         device              cached    added  removed      indirect
->      (maj:min)      inode    pages    pages    pages removed pages
->   ----------------------------------------------------------------
->          253:0         16    34130     5752        0             0
->          253:0        198     9463     2233        0             0
->          253:0        639      628       51        0             0
->          253:0        778       29       78        0             0
->          253:0       7305    49005    12307        0             0
->          253:0     144217       10       11        0             0
->          253:0     262775       13       39        0             0
-> *snip*
->   ----------------------------------------------------------------
->   total:                    102346    26165        1             0
-> 
-> We can now know system-wide pagecache usage by /proc/meminfo.
-> But we have no method to get higher resolution information like per file or
-> per process usage than system-wide one.
-> A process may share some pagecache or add a pagecache to the memory or
-> remove a pagecache from the memory.
-> If a pagecache miss hit ratio rises, maybe it leads to extra I/O and
-> affects system performance.
-> 
-> So, by using the tracepoints we can get the following information.
->  1. how many pagecaches each process has per each file
->  2. how many pages are cached per each file
->  3. how many pagecaches each process shares
->  4. how often each process adds/removes pagecache
->  5. how long a pagecache stays in the memory
->  6. pagecache hit rate per file
-> 
-> Especially, the monitoring pagecache usage per each file and pagecache hit 
-> ratio would help us tune some applications like database.
-> And it will also help us tune the kernel parameters like "vm.dirty_*".
-> 
-> Changelog since v2
->   o add new script to monitor pagecache hit ratio per process.
->   o use DECLARE_EVENT_CLASS
-> 
-> Changelog since v1
->   o Add a script based on "perf trace stream scripting support".
-> 
-> Any comments are welcome.
+> Also can you add CONFIG_FRAMEBUFFER_CONSOLE as well since I don't think we 
+> test often without it.
 
-Looks really nice IMO! It also demonstrates nicely the extensibility via 
-Tom's perf trace scripting engine. (which will soon get a Python script 
-engine as well, so Perl and C wont be the only possibility to extend perf 
-with.)
-
-I've Cc:-ed a few parties who might be interested in this. Wu Fengguang has 
-done MM instrumentation in this area before - there might be some common 
-ground instead of scattered functionality in /proc, debugfs, perf and 
-elsewhere?
-
-Note that there's also these older experimental commits in tip:tracing/mm 
-that introduce the notion of 'object collections' and adds the ability to 
-trace them:
-
-3383e37: tracing, page-allocator: Add a postprocessing script for page-allocator-related ftrace events
-c33b359: tracing, page-allocator: Add trace event for page traffic related to the buddy lists
-0d524fb: tracing, mm: Add trace events for anti-fragmentation falling back to other migratetypes
-b9a2817: tracing, page-allocator: Add trace events for page allocation and page freeing
-08b6cb8: perf_counter tools: Provide default bfd_demangle() function in case it's not around
-eb46710: tracing/mm: rename 'trigger' file to 'dump_range'
-1487a7a: tracing/mm: fix mapcount trace record field
-dcac8cd: tracing/mm: add page frame snapshot trace
-
-this concept, if refreshed a bit and extended to the page cache, would allow 
-the recording/snapshotting of the MM state of all currently present pages in 
-the page-cache - a possibly nice addition to the dynamic technique you apply 
-in your patches.
-
-there's similar "object collections" work underway for 'perf lock' btw., by 
-Hitoshi Mitake and Frederic.
-
-So there's lots of common ground and lots of interest.
-
-Btw., instead of "perf trace record pagecache-usage", you might want to think 
-about introducing a higher level tool as well: 'perf mm' or 'perf pagecache' 
-- just like we have 'perf kmem' for SLAB instrumentation, 'perf sched' for 
-scheduler instrumentation and 'perf lock' for locking instrumentation. [with 
-'perf timer' having been posted too.]
-
-'perf mm' could then still map to Perl scripts, it's just a convenience. It 
-could then harbor other MM related instrumentation bits as well. Just an idea 
-- this is a possibility, if you are trying to achieve higher organization.
+ok - i'll try your suggestions and send an update - will probably have to 
+wait until next week. Feel free to deprioritize the bug until then (i have my 
+revert as a short-term band-aid), unless others report similar problems too.
 
 Thanks,
 
