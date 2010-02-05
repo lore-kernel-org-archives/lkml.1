@@ -1,91 +1,57 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933482Ab0BEAKP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 19:10:15 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45770 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933467Ab0BEAKN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 19:10:13 -0500
-Date: Thu, 4 Feb 2010 16:09:57 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: linux-mmc@vger.kernel.org, Philip Langdale <philipl@overt.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Jorg Schummer <ext-jorg.2.schummer@nokia.com>
-Subject: Re: [PATCH] MMC: fix hang if card was removed during suspend and
- unsafe resume was enabled
-Message-Id: <20100204160957.1c51cc1b.akpm@linux-foundation.org>
-In-Reply-To: <1265325495-4220-1-git-send-email-maximlevitsky@gmail.com>
-References: <1265219241.12549.8.camel@maxim-laptop>
-	<1265325495-4220-1-git-send-email-maximlevitsky@gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	id S933524Ab0BEAQZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 19:16:25 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:41535 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933490Ab0BEAQX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 19:16:23 -0500
+Date: Fri, 5 Feb 2010 11:16:17 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Tony Lindgren <tony@atomide.com>
+Cc: linux-omap@vger.kernel.org, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Russell King <rmk@arm.linux.org.uk>
+Subject: Re: linux-next: manual merge of the omap tree with the arm tree
+Message-Id: <20100205111617.c602983f.sfr@canb.auug.org.au>
+In-Reply-To: <20100204233019.GY22747@atomide.com>
+References: <20100205102030.c8b139a1.sfr@canb.auug.org.au>
+	<20100204233019.GY22747@atomide.com>
+X-Mailer: Sylpheed 3.0.0beta7 (GTK+ 2.18.6; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__5_Feb_2010_11_16_17_+1100_vuToXvntX+XmYF5n"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri,  5 Feb 2010 01:18:15 +0200 Maxim Levitsky <maximlevitsky@gmail.com> wrote:
+--Signature=_Fri__5_Feb_2010_11_16_17_+1100_vuToXvntX+XmYF5n
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Currently removal of the card leads to del_disk called indirectly by mmc core.
-> This function expects userspace to be running, which isn't when .resume is called
-> 
-> Fix that by removing the code that did that in mmc_resume_host. It is possible
-> because card detection logic will kick it later and remove the card.
+Hi Tony,
 
-I don't really understand.  The above implies that to trigger this bug,
-one needs to physically remove the card during a resume operation.  ie:
-a human-vs-computer race.  Sounds unlikely?
+On Thu, 4 Feb 2010 15:30:19 -0800 Tony Lindgren <tony@atomide.com> wrote:
+>
+> Thanks, I'll sort it out in omap for-next tree so they merge
+> cleanly.
 
-So...  exactly what steps does the user need to take to trigger this
-bug?
+Thanks
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-> Also make mtd workqueue freezeable, so it won't attempt to add/remove the card
-> while userspace is frozen.
-> 
-> 
-> diff --git a/drivers/mmc/core/core.c b/drivers/mmc/core/core.c
-> index 30acd52..879d48d 100644
-> --- a/drivers/mmc/core/core.c
-> +++ b/drivers/mmc/core/core.c
-> @@ -1257,7 +1257,6 @@ int mmc_suspend_host(struct mmc_host *host, pm_message_t state)
->  	if (host->caps & MMC_CAP_DISABLE)
->  		cancel_delayed_work(&host->disable);
->  	cancel_delayed_work(&host->detect);
-> -	mmc_flush_scheduled_work();
->  
->  	mmc_bus_get(host);
->  	if (host->bus_ops && !host->bus_dead) {
-> @@ -1300,15 +1299,11 @@ int mmc_resume_host(struct mmc_host *host)
->  		mmc_select_voltage(host, host->ocr);
->  		BUG_ON(!host->bus_ops->resume);
->  		err = host->bus_ops->resume(host);
-> +
->  		if (err) {
->  			printk(KERN_WARNING "%s: error %d during resume "
->  					    "(card was removed?)\n",
->  					    mmc_hostname(host), err);
-> -			if (host->bus_ops->remove)
-> -				host->bus_ops->remove(host);
-> -			mmc_claim_host(host);
-> -			mmc_detach_bus(host);
-> -			mmc_release_host(host);
+--Signature=_Fri__5_Feb_2010_11_16_17_+1100_vuToXvntX+XmYF5n
+Content-Type: application/pgp-signature
 
-afacit that code's been there since March 2009.  I'd have thought that
-someone would have noticed "kernel hangs on resume" before now.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-Do you think the patch should be backported into 2.6.32.x and eariler?
+iEYEARECAAYFAktrY1EACgkQjjKRsyhoI8zc7wCfSkDBBce45/ZYgUqEuY+6kG0M
+C1AAn39yKkTQmxPv5uPckvIedJZ3L2j6
+=SQnr
+-----END PGP SIGNATURE-----
 
->  			/* no need to bother upper layers */
->  			err = 0;
->  		}
-> @@ -1332,7 +1327,7 @@ static int __init mmc_init(void)
->  {
->  	int ret;
->  
-> -	workqueue = create_singlethread_workqueue("kmmcd");
-> +	workqueue = create_freezeable_workqueue("kmmcd");
->  	if (!workqueue)
->  		return -ENOMEM;
+--Signature=_Fri__5_Feb_2010_11_16_17_+1100_vuToXvntX+XmYF5n--
