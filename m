@@ -1,24 +1,24 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933294Ab0BEOi0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 09:38:26 -0500
-Received: from mail-yw0-f189.google.com ([209.85.211.189]:37588 "EHLO
-	mail-yw0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932589Ab0BEOh3 (ORCPT
+	id S933340Ab0BEOin (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 09:38:43 -0500
+Received: from mail-gx0-f224.google.com ([209.85.217.224]:56967 "EHLO
+	mail-gx0-f224.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756749Ab0BEOhV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 09:37:29 -0500
+	Fri, 5 Feb 2010 09:37:21 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=QgzRXMZ1iwL9siL9CKgtRH6SE1HHZ4GonI3T7qkUqD1PrNhqOGkVghZfp7S8VRgLNw
-         o69Xo8F8NY3ej7gmf3OuOO4zPz8OReJyUvi5Jb6JDc3+O9MqgMOQ56qR5vlmfByOkLOO
-         tkfKk8mkEY9Fb+qhQ644akHDKoV4IU33gVjBo=
+        b=h1aOGAYx4CcROni/PafHpDTC9A+zICw6FHzDlGfs/OKwZBEurNMjL3DxTWT/Y3N3pi
+         YIKUa7Q3wsZ9H3x7wfcN8Bl4XilxhzR/ijGV3/t75ZCsKDgkbPUN3jtYulBaGjfGsYQC
+         fKcQ9W3rjfwDx5R3VFByAVyDQ7KHTCVW2xVX8=
 From: Brian Gerst <brgerst@gmail.com>
 To: hpa@zytor.com
 Cc: x86@kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 4/7] x86-64: Use BUILDIO in io_64.h
-Date: Fri,  5 Feb 2010 09:37:06 -0500
-Message-Id: <1265380629-3212-5-git-send-email-brgerst@gmail.com>
+Subject: [PATCH 2/7] x86-32: Remove _local variants of in/out from io_32.h
+Date: Fri,  5 Feb 2010 09:37:04 -0500
+Message-Id: <1265380629-3212-3-git-send-email-brgerst@gmail.com>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <1265380629-3212-1-git-send-email-brgerst@gmail.com>
 References: <1265380629-3212-1-git-send-email-brgerst@gmail.com>
@@ -26,141 +26,70 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Copied from io_32.h.
+These were leftover from the numaq support that was removed in commit
+1fba38703d0ce8a5ff0fad9df3eccc6b55cf2cfb.
 
 Signed-off-by: Brian Gerst <brgerst@gmail.com>
 ---
- arch/x86/include/asm/io_64.h |  112 ++++++++++++++----------------------------
- 1 files changed, 37 insertions(+), 75 deletions(-)
+ arch/x86/include/asm/io_32.h |   34 ++++------------------------------
+ 1 files changed, 4 insertions(+), 30 deletions(-)
 
-diff --git a/arch/x86/include/asm/io_64.h b/arch/x86/include/asm/io_64.h
-index 040bf74..4a94aef 100644
---- a/arch/x86/include/asm/io_64.h
-+++ b/arch/x86/include/asm/io_64.h
-@@ -104,86 +104,48 @@ static inline void slow_down_io(void)
+diff --git a/arch/x86/include/asm/io_32.h b/arch/x86/include/asm/io_32.h
+index e16b9db..72a6a4a 100644
+--- a/arch/x86/include/asm/io_32.h
++++ b/arch/x86/include/asm/io_32.h
+@@ -120,47 +120,21 @@ static inline void slow_down_io(void)
  
  #endif
  
--/*
-- * Talk about misusing macros..
-- */
--#define __OUT1(s, x)							\
--static inline void out##s(unsigned x value, unsigned short port) {
+-#define __BUILDIO(bwl, bw, type)				\
+-static inline void out##bwl(unsigned type value, int port)	\
+-{								\
+-	out##bwl##_local(value, port);				\
+-}								\
+-								\
+-static inline unsigned type in##bwl(int port)			\
+-{								\
+-	return in##bwl##_local(port);				\
+-}
 -
--#define __OUT2(s, s1, s2)				\
--asm volatile ("out" #s " %" s1 "0,%" s2 "1"
--
--#ifndef REALLY_SLOW_IO
--#define REALLY_SLOW_IO
--#define UNSET_REALLY_SLOW_IO
--#endif
--
--#define __OUT(s, s1, x)							\
--	__OUT1(s, x) __OUT2(s, s1, "w") : : "a" (value), "Nd" (port));	\
--	}								\
--	__OUT1(s##_p, x) __OUT2(s, s1, "w") : : "a" (value), "Nd" (port)); \
-+#define BUILDIO(bwl, bw, type)						\
+ #define BUILDIO(bwl, bw, type)						\
+-static inline void out##bwl##_local(unsigned type value, int port)	\
 +static inline void out##bwl(unsigned type value, int port)		\
-+{									\
+ {									\
+-	asm volatile("out" #bwl " %" #bw "0, %w1"		\
 +	asm volatile("out" #bwl " %" #bw "0, %w1"			\
-+		     : : "a"(value), "Nd"(port));			\
-+}									\
-+									\
+ 		     : : "a"(value), "Nd"(port));			\
+ }									\
+ 									\
+-static inline unsigned type in##bwl##_local(int port)			\
 +static inline unsigned type in##bwl(int port)				\
-+{									\
-+	unsigned type value;						\
+ {									\
+ 	unsigned type value;						\
+-	asm volatile("in" #bwl " %w1, %" #bw "0"		\
 +	asm volatile("in" #bwl " %w1, %" #bw "0"			\
-+		     : "=a"(value) : "Nd"(port));			\
-+	return value;							\
-+}									\
-+									\
-+static inline void out##bwl##_p(unsigned type value, int port)		\
-+{									\
-+	out##bwl(value, port);						\
- 	slow_down_io();							\
--}
--
--#define __IN1(s)							\
--static inline RETURN_TYPE in##s(unsigned short port)			\
-+}									\
-+									\
-+static inline unsigned type in##bwl##_p(int port)			\
+ 		     : "=a"(value) : "Nd"(port));			\
+ 	return value;							\
+ }									\
+ 									\
+-static inline void out##bwl##_local_p(unsigned type value, int port)	\
+-{									\
+-	out##bwl##_local(value, port);					\
+-	slow_down_io();							\
+-}									\
+-									\
+-static inline unsigned type in##bwl##_local_p(int port)			\
+-{									\
+-	unsigned type value = in##bwl##_local(port);			\
+-	slow_down_io();							\
+-	return value;							\
+-}									\
+-									\
+-__BUILDIO(bwl, bw, type)						\
+-									\
+ static inline void out##bwl##_p(unsigned type value, int port)		\
  {									\
--	RETURN_TYPE _v;
--
--#define __IN2(s, s1, s2)						\
--	asm volatile ("in" #s " %" s2 "1,%" s1 "0"
--
--#define __IN(s, s1, i...)						\
--	__IN1(s) __IN2(s, s1, "w") : "=a" (_v) : "Nd" (port), ##i);	\
--	return _v;							\
--	}								\
--	__IN1(s##_p) __IN2(s, s1, "w") : "=a" (_v) : "Nd" (port), ##i);	\
--	slow_down_io(); \
--	return _v; }
--
--#ifdef UNSET_REALLY_SLOW_IO
--#undef REALLY_SLOW_IO
--#endif
--
--#define __INS(s)							\
--static inline void ins##s(unsigned short port, void *addr,		\
--			  unsigned long count)				\
-+	unsigned type value = in##bwl(port);				\
-+	slow_down_io();							\
-+	return value;							\
-+}									\
-+									\
-+static inline void outs##bwl(int port, const void *addr, unsigned long count) \
- {									\
--	asm volatile ("rep ; ins" #s					\
--		      : "=D" (addr), "=c" (count)			\
--		      : "d" (port), "0" (addr), "1" (count));		\
--}
--
--#define __OUTS(s)							\
--static inline void outs##s(unsigned short port, const void *addr,	\
--			   unsigned long count)				\
-+	asm volatile("rep; outs" #bwl					\
-+		     : "+S"(addr), "+c"(count) : "d"(port));		\
-+}									\
-+									\
-+static inline void ins##bwl(int port, void *addr, unsigned long count)	\
- {									\
--	asm volatile ("rep ; outs" #s					\
--		      : "=S" (addr), "=c" (count)			\
--		      : "d" (port), "0" (addr), "1" (count));		\
-+	asm volatile("rep; ins" #bwl					\
-+		     : "+D"(addr), "+c"(count) : "d"(port));		\
- }
- 
--#define RETURN_TYPE unsigned char
--__IN(b, "")
--#undef RETURN_TYPE
--#define RETURN_TYPE unsigned short
--__IN(w, "")
--#undef RETURN_TYPE
--#define RETURN_TYPE unsigned int
--__IN(l, "")
--#undef RETURN_TYPE
--
--__OUT(b, "b", char)
--__OUT(w, "w", short)
--__OUT(l, , int)
--
--__INS(b)
--__INS(w)
--__INS(l)
--
--__OUTS(b)
--__OUTS(w)
--__OUTS(l)
--
-+BUILDIO(b, b, char)
-+BUILDIO(w, w, short)
-+BUILDIO(l, , int)
- 
- #endif /* _ASM_X86_IO_64_H */
+ 	out##bwl(value, port);						\
 -- 
 1.6.6
 
