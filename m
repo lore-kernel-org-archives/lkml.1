@@ -1,77 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934117Ab0BFAIj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 19:08:39 -0500
-Received: from hera.kernel.org ([140.211.167.34]:45056 "EHLO hera.kernel.org"
+	id S934128Ab0BFAJP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 19:09:15 -0500
+Received: from cantor.suse.de ([195.135.220.2]:43637 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933744Ab0BFAIi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 19:08:38 -0500
-Message-ID: <4B6CB26C.405@kernel.org>
-Date: Fri, 05 Feb 2010 16:06:04 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	id S933744Ab0BFAJN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Feb 2010 19:09:13 -0500
+Date: Fri, 5 Feb 2010 15:58:33 -0800
+From: Greg KH <gregkh@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Chris Verges <chrisv@cyberswitching.com>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Rob Owings <rowings@thermistor.com>
+Subject: Re: [PATCH] linux-2.6.32-directemp
+Message-ID: <20100205235833.GA16411@suse.de>
+References: <68FBE0F3CE97264395875AC1C468F22C24A5BD@mail03.cyberswitching.local> <20100205124038.4f1e83ac.akpm@linux-foundation.org> <68FBE0F3CE97264395875AC1C468F22C24A608@mail03.cyberswitching.local> <20100205134600.59eb8fae.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Brandon Philips <bphilips@suse.de>
-CC: Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Suresh Siddha <suresh.b.siddha@intel.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: keep chip_data in create_irq_nr and destroy_irq
-References: <20100203033109.GA17985@jenkins.home.ifup.org> <4B694DEF.70301@kernel.org> <20100203174216.GB17985@jenkins.home.ifup.org> <4B6BDAC0.3090900@kernel.org> <20100205210926.GE4930@jenkins.home.ifup.org> <4B6C9F69.4040605@kernel.org> <20100205225535.GF4930@jenkins.home.ifup.org>
-In-Reply-To: <20100205225535.GF4930@jenkins.home.ifup.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100205134600.59eb8fae.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/05/2010 02:55 PM, Brandon Philips wrote:
-> On 14:44 Fri 05 Feb 2010, Yinghai Lu wrote:
->> On 02/05/2010 01:09 PM, Brandon Philips wrote:
->>> @@ -77,7 +90,8 @@ void dynamic_irq_cleanup(unsigned int ir
->>>  	}
->>>  	desc->msi_desc = NULL;
->>>  	desc->handler_data = NULL;
->>> -	desc->chip_data = NULL;
->>> +	if (!keep_chip_data)
->>> +		desc->chip_data = NULL;
->>>  	desc->handle_irq = handle_bad_irq;
->>>  	desc->chip = &no_irq_chip;
->>>  	desc->name = NULL;
->>> @@ -85,6 +99,26 @@ void dynamic_irq_cleanup(unsigned int ir
->>>  	raw_spin_unlock_irqrestore(&desc->lock, flags);
->>>  }
->>>  
->>> +/**
->>> + *	dynamic_irq_cleanup - cleanup a dynamically allocated irq
->>> + *	@irq:	irq number to initialize
->>> + */
->>> +void dynamic_irq_cleanup(unsigned int irq)
->>> +{
->>> +	dynamic_irq_init_x(irq, false);
->>
->> should be dynamic_irq_cleanup_x here.
->>
->>> +}
->>> +
->>> +/**
->>> + *	dynamic_irq_cleanup_keep_chip_data - cleanup a dynamically allocated irq
->>> + *	@irq:	irq number to initialize
->>> + *
->>> + * 	does not set irq_to_desc(irq)->chip_data to NULL
->>> + */
->>> +void dynamic_irq_cleanup_keep_chip_data(unsigned int irq)
->>> +{
->>> +	dynamic_irq_init_x(irq, true);
->>
->> should be dynamic_irq_cleanup_x
+On Fri, Feb 05, 2010 at 01:46:00PM -0800, Andrew Morton wrote:
+> On Fri, 5 Feb 2010 13:32:27 -0800
+> "Chris Verges" <chrisv@cyberswitching.com> wrote:
 > 
-> Oops, right. I will fix this up along with the externs as hpa
-> suggested and send again.
-
+> > > *snip*
+> > 
+> > Hi Andrew,
+> > 
+> > Thanks for the technical review.  I'll make the changes and send back a
+> > new patch.  Would you like a patch against your -mm tree or a fresh
+> > patch against linux-2.6.32?
 > 
-> What are your thoughts on locking? Does it look OK as is?
-> 
+> I guess a new patch would be best - #1 was a bit of a mess.  Please
+> give the patch a good title (I chose "usb: QTI DirecTEMP USB
+> thermometer/hygrometer driver support") and if possible, include it
+> within the body of the email so more people are likely to look at it. 
+> If your email client can't do that correctly, use a text/plain
+> attachment.
 
-ok to me.
+Sorry, but no, this driver will not be accepted, as it can be done just
+fine from userspace instead of a kernel driver, as discussed before.
 
-YH
+We have removed drivers from the kernel for this very reason, we don't
+want to add new ones in with the same problem.
+
+thanks,
+
+greg k-h
