@@ -1,231 +1,70 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933709Ab0BEHkp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 02:40:45 -0500
-Received: from gwu.lbox.cz ([62.245.111.132]:43647 "EHLO gwu.lbox.cz"
+	id S1754044Ab0BEHvi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 02:51:38 -0500
+Received: from hera.kernel.org ([140.211.167.34]:47749 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933648Ab0BEHko (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 02:40:44 -0500
-Date: Fri, 5 Feb 2010 08:36:59 +0100
-From: Nikola Ciprich <nikola.ciprich@linuxbox.cz>
-To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, stable-review@kernel.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [Stable-review] [00/74] 2.6.32.8-stable review
-Message-ID: <20100205073659.GD31093@develbox.linuxbox.cz>
-References: <20100204171850.GA16539@kroah.com>
+	id S1753866Ab0BEHvg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Feb 2010 02:51:36 -0500
+Date: Fri, 5 Feb 2010 07:48:40 GMT
+From: tip-bot for Masami Hiramatsu <mhiramat@redhat.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       ananth@in.ibm.com, dle-develop@lists.sourceforge.net,
+       rostedt@goodmis.org, tglx@linutronix.de, mhiramat@redhat.com,
+       mingo@elte.hu, systemtap@sources.redhat.com
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       ananth@in.ibm.com, dle-develop@lists.sourceforge.net,
+       rostedt@goodmis.org, tglx@linutronix.de, mhiramat@redhat.com,
+       mingo@elte.hu, systemtap@sources.redhat.com
+In-Reply-To: <20100205062433.3745.36726.stgit@dhcp-100-2-132.bos.redhat.com>
+References: <20100205062433.3745.36726.stgit@dhcp-100-2-132.bos.redhat.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perf/core] kprobes: Add mcount to the kprobes blacklist
+Message-ID: <tip-5ecaafdbf44b1ba400b746c60c401d54c7ee0863@git.kernel.org>
+Git-Commit-ID: 5ecaafdbf44b1ba400b746c60c401d54c7ee0863
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="GpGaEY17fSl8rd50"
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20100204171850.GA16539@kroah.com>
-User-Agent: Mutt/1.5.20 (2009-12-10)
-X-Milter-Copy-Status: I
-X-Antivirus: on proxybox by Kaspersky antivirus, engine 5.5.10, data 3199153 records(05-02-2010)
-X-Spam-Score: N/A (trusted relay)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Fri, 05 Feb 2010 07:48:42 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  5ecaafdbf44b1ba400b746c60c401d54c7ee0863
+Gitweb:     http://git.kernel.org/tip/5ecaafdbf44b1ba400b746c60c401d54c7ee0863
+Author:     Masami Hiramatsu <mhiramat@redhat.com>
+AuthorDate: Fri, 5 Feb 2010 01:24:34 -0500
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 5 Feb 2010 08:13:57 +0100
 
---GpGaEY17fSl8rd50
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+kprobes: Add mcount to the kprobes blacklist
 
-Hi Greg,
-just tried it, and it crashes during boot.
-Previous 2.6.32.x versions were OK.
-here is the screen:
-http://nelide.cz/downloads/2.6.32.8-crash.png
-sorry if it's a bit crude, but I'm leaving for 4 days vacation,
-so I'm in a bit of hurry :)
-On Tuesday, I can provide more testing/whatever if needed.
-cheers
-nik
+Since mcount function can be called from everywhere,
+it should be blacklisted. Moreover, the "mcount" symbol
+is a special symbol name. So, it is better to put it in
+the generic blacklist.
 
-On Thu, Feb 04, 2010 at 09:18:50AM -0800, Greg KH wrote:
-> This is the start of the stable review cycle for the 2.6.32.8 release.
-> There are 74 patches in this series, all will be posted as a response
-> to this one.  If anyone has any issues with these being applied, please
-> let us know.  If anyone is a maintainer of the proper subsystem, and
-> wants to add a Signed-off-by: line to the patch, please respond with it.
->=20
-> Due to travelling to FOSDEM, I have not been able to test this release
-> as well as I would have liked to.  Also, given the complexity of some of
-> these changes, it would be great if people could really test this
-> release to verify that it works properly.  All help here is greatly
-> appreciated.
->=20
-> Responses should be made by Sunday, Feb 7 00:00:00 UTC.
-> Anything received after that time might be too late.
->=20
-> The whole patch series can be found in one patch at:
-> 	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.32.8-rc1.gz
-> and the diffstat can be found below.
->=20
-> thanks,
->=20
-> greg k-h
->=20
->=20
->  Documentation/kvm/api.txt                 |   36 ++
->  Makefile                                  |    2 +-
->  arch/blackfin/include/asm/page.h          |    5 +
->  arch/frv/include/asm/page.h               |    2 -
->  arch/powerpc/include/asm/elf.h            |    8 +-
->  arch/powerpc/include/asm/thread_info.h    |    2 -
->  arch/powerpc/kernel/process.c             |   12 -
->  arch/s390/kernel/entry.S                  |    1 +
->  arch/s390/kernel/entry64.S                |    1 +
->  arch/sh/kernel/process_64.c               |    2 +-
->  arch/sparc/include/asm/elf_64.h           |   13 +-
->  arch/sparc/include/asm/thread_info_64.h   |    4 +-
->  arch/sparc/kernel/process_64.c            |    8 -
->  arch/x86/Kconfig                          |    6 -
->  arch/x86/ia32/ia32_aout.c                 |   11 +-
->  arch/x86/include/asm/cpu_debug.h          |  127 ------
->  arch/x86/include/asm/elf.h                |   10 +-
->  arch/x86/include/asm/hpet.h               |    1 +
->  arch/x86/include/asm/kvm_host.h           |    1 +
->  arch/x86/include/asm/thread_info.h        |    2 -
->  arch/x86/kernel/amd_iommu.c               |    2 +-
->  arch/x86/kernel/cpu/Makefile              |    2 -
->  arch/x86/kernel/cpu/cpu_debug.c           |  688 -----------------------=
-------
->  arch/x86/kernel/hpet.c                    |    8 +
->  arch/x86/kernel/process.c                 |   12 -
->  arch/x86/kernel/process_64.c              |   11 +
->  arch/x86/kernel/quirks.c                  |   13 +
->  arch/x86/kernel/reboot.c                  |    9 +
->  arch/x86/kernel/setup.c                   |   14 +-
->  arch/x86/kvm/x86.c                        |   42 ++-
->  arch/x86/mm/srat_64.c                     |    4 +-
->  arch/x86/oprofile/nmi_int.c               |    3 +-
->  drivers/acpi/bus.c                        |  163 +++++++
->  drivers/ata/libata-core.c                 |   38 ++-
->  drivers/ata/libata-eh.c                   |    5 +-
->  drivers/block/pktcdvd.c                   |    2 +-
->  drivers/char/random.c                     |    9 -
->  drivers/connector/connector.c             |  175 --------
->  drivers/firewire/core-card.c              |   42 ++-
->  drivers/firewire/ohci.c                   |    4 +-
->  drivers/gpu/drm/drm_gem.c                 |   13 -
->  drivers/gpu/drm/i915/i915_debugfs.c       |    2 +-
->  drivers/gpu/drm/i915/i915_dma.c           |    4 +-
->  drivers/gpu/drm/i915/i915_drv.h           |    2 +-
->  drivers/gpu/drm/i915/i915_gem.c           |   54 +--
->  drivers/gpu/drm/i915/i915_irq.c           |   32 +-
->  drivers/gpu/drm/i915/i915_reg.h           |    8 -
->  drivers/gpu/drm/i915/intel_crt.c          |    2 +
->  drivers/gpu/drm/i915/intel_display.c      |   26 +-
->  drivers/gpu/drm/i915/intel_dp.c           |    6 +
->  drivers/gpu/drm/i915/intel_hdmi.c         |    5 +
->  drivers/gpu/drm/i915/intel_sdvo.c         |    3 +
->  drivers/gpu/drm/i915/intel_tv.c           |    2 +
->  drivers/infiniband/hw/ipath/ipath_fs.c    |    4 +-
->  drivers/input/misc/winbond-cir.c          |    2 +-
->  drivers/message/fusion/mptbase.c          |    2 +
->  drivers/mtd/ubi/cdev.c                    |    1 -
->  drivers/net/benet/be.h                    |    5 +
->  drivers/net/benet/be_cmds.h               |    3 +-
->  drivers/net/benet/be_main.c               |   25 +-
->  drivers/net/e1000/e1000.h                 |    2 +
->  drivers/net/e1000/e1000_main.c            |   33 +-
->  drivers/net/e1000e/e1000.h                |    1 +
->  drivers/net/e1000e/netdev.c               |   45 +-
->  drivers/net/sky2.c                        |    3 +-
->  drivers/net/starfire.c                    |    5 +-
->  drivers/net/wireless/ath/ath9k/hw.c       |    7 +-
->  drivers/net/wireless/ath/ath9k/main.c     |    2 +-
->  drivers/net/wireless/iwlwifi/iwl-agn-rs.c |    2 +-
->  drivers/regulator/wm8350-regulator.c      |    4 +-
->  drivers/s390/block/dasd.c                 |    8 +-
->  drivers/s390/block/dasd_eckd.c            |    2 +-
->  drivers/s390/block/dasd_ioctl.c           |    7 +-
->  drivers/s390/block/dasd_proc.c            |    7 +-
->  drivers/s390/crypto/zcrypt_pcicc.c        |    2 +
->  drivers/s390/crypto/zcrypt_pcixcc.c       |    2 +
->  drivers/scsi/scsi_lib.c                   |    2 +-
->  drivers/serial/uartlite.c                 |    2 +-
->  drivers/usb/host/r8a66597-hcd.c           |   17 +-
->  drivers/video/imxfb.c                     |    6 +-
->  drivers/video/mx3fb.c                     |   12 +-
->  fs/9p/vfs_super.c                         |    3 +-
->  fs/affs/affs.h                            |    2 +-
->  fs/affs/namei.c                           |    7 +-
->  fs/affs/super.c                           |   31 +-
->  fs/affs/symlink.c                         |    7 +-
->  fs/bfs/inode.c                            |   43 +-
->  fs/binfmt_aout.c                          |    1 +
->  fs/binfmt_elf.c                           |   27 +-
->  fs/binfmt_elf_fdpic.c                     |   16 +-
->  fs/binfmt_flat.c                          |    1 +
->  fs/binfmt_som.c                           |    1 +
->  fs/bio-integrity.c                        |    3 +-
->  fs/bio.c                                  |    7 +-
->  fs/exec.c                                 |   36 +-
->  fs/fuse/file.c                            |    3 +
->  fs/romfs/super.c                          |    1 +
->  include/linux/acpi.h                      |   16 +
->  include/linux/binfmts.h                   |    1 +
->  include/linux/connector.h                 |   32 --
->  include/linux/inetdevice.h                |    1 +
->  include/linux/kvm.h                       |    9 +
->  include/linux/libata.h                    |    3 +
->  include/linux/pagemap.h                   |    2 +
->  include/linux/sched.h                     |    2 +-
->  include/linux/sysctl.h                    |    1 +
->  include/net/netrom.h                      |    2 +
->  kernel/cred.c                             |    2 +-
->  kernel/time/clocksource.c                 |    4 +-
->  mm/filemap.c                              |  103 +++--
->  mm/page_alloc.c                           |    5 +-
->  mm/vmalloc.c                              |  109 ++++-
->  net/ax25/ax25_out.c                       |    6 +
->  net/core/sock.c                           |    4 +
->  net/ipv4/devinet.c                        |    1 +
->  net/ipv4/fib_frontend.c                   |    2 +
->  net/mac80211/driver-trace.h               |    2 +-
->  net/netrom/nr_route.c                     |   11 +-
->  net/packet/af_packet.c                    |   19 +-
->  net/rose/rose_link.c                      |    8 +
->  net/rose/rose_route.c                     |    5 +
->  security/selinux/hooks.c                  |    2 +-
->  122 files changed, 952 insertions(+), 1461 deletions(-)
->=20
-> _______________________________________________
-> Stable-review mailing list
-> Stable-review@linux.kernel.org
-> http://linux.kernel.org/mailman/listinfo/stable-review
->=20
+Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: systemtap <systemtap@sources.redhat.com>
+Cc: DLE <dle-develop@lists.sourceforge.net>
+Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+LKML-Reference: <20100205062433.3745.36726.stgit@dhcp-100-2-132.bos.redhat.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ kernel/kprobes.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
---=20
--------------------------------------
-Ing. Nikola CIPRICH
-LinuxBox.cz, s.r.o.
-28. rijna 168, 709 01 Ostrava
-
-tel.:   +420 596 603 142
-fax:    +420 596 621 273
-mobil:  +420 777 093 799
-www.linuxbox.cz
-
-mobil servis: +420 737 238 656
-email servis: servis@linuxbox.cz
--------------------------------------
-
---GpGaEY17fSl8rd50
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQFLa8qb3xdJJrLygV4RAsxbAKCMVWu/BE595k/+G7PWLf1l2uxYpQCeNdQk
-fbgzDlW6q7WM0+xeo8XjDoU=
-=WrWx
------END PGP SIGNATURE-----
-
---GpGaEY17fSl8rd50--
+diff --git a/kernel/kprobes.c b/kernel/kprobes.c
+index c3340e8..ccec774 100644
+--- a/kernel/kprobes.c
++++ b/kernel/kprobes.c
+@@ -94,6 +94,7 @@ static struct kprobe_blackpoint kprobe_blacklist[] = {
+ 	{"native_get_debugreg",},
+ 	{"irq_entries_start",},
+ 	{"common_interrupt",},
++	{"mcount",},	/* mcount can be called from everywhere */
+ 	{NULL}    /* Terminator */
+ };
+ 
