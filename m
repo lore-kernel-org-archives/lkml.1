@@ -1,76 +1,80 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933249Ab0BEOj0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 09:39:26 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42889 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933048Ab0BEOjY (ORCPT
+	id S933014Ab0BEOos (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 09:44:48 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:57368 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932268Ab0BEOor (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 09:39:24 -0500
-Date: Fri, 5 Feb 2010 06:39:11 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: linux-mmc@vger.kernel.org, Philip Langdale <philipl@overt.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Jorg Schummer <ext-jorg.2.schummer@nokia.com>,
-       linux-pm <linux-pm@lists.linux-foundation.org>
-Subject: Re: [PATCH] MMC: fix hang if card was removed during suspend and
- unsafe resume was enabled
-Message-Id: <20100205063911.05eca1c6.akpm@linux-foundation.org>
-In-Reply-To: <1265379560.14522.2.camel@maxim-laptop>
-References: <1265219241.12549.8.camel@maxim-laptop>
-	<1265325495-4220-1-git-send-email-maximlevitsky@gmail.com>
-	<20100204160957.1c51cc1b.akpm@linux-foundation.org>
-	<1265358702.3424.8.camel@maxim-laptop>
-	<20100205061335.b664aa20.akpm@linux-foundation.org>
-	<1265379560.14522.2.camel@maxim-laptop>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Fri, 5 Feb 2010 09:44:47 -0500
+X-Authority-Analysis: v=1.0 c=1 a=45efoH4BFn8A:10 a=7U3hwN5JcxgA:10 a=9Z1gkl8m1grKNVAiKDEA:9 a=va_0jIROo2jyHueNLpvwXh9H94oA:4
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: Re: [PATCH 03/11] tracing: Inject lock_class_init events on
+ registration
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Paul Mackerras <paulus@samba.org>,
+       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
+       Li Zefan <lizf@cn.fujitsu.com>, Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Johannes Berg <johannes@sipsolutions.net>
+In-Reply-To: <1265380207.22001.654.camel@laptop>
+References: <1265188475-23509-1-git-send-regression-fweisbec@gmail.com>
+	 <1265188475-23509-4-git-send-regression-fweisbec@gmail.com>
+	 <1265379199.24386.26.camel@gandalf.stny.rr.com>
+	 <1265380207.22001.654.camel@laptop>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Kihon Technologies Inc.
+Date: Fri, 05 Feb 2010 09:44:44 -0500
+Message-ID: <1265381084.24386.30.camel@gandalf.stny.rr.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 05 Feb 2010 16:19:20 +0200 Maxim Levitsky <maximlevitsky@gmail.com> wrote:
+On Fri, 2010-02-05 at 15:30 +0100, Peter Zijlstra wrote:
+> On Fri, 2010-02-05 at 09:13 -0500, Steven Rostedt wrote:
 
+> > register_event_callback("event", "command", command_func, 
+> > 		command_enable_func,
+> > 		command_disable_func);
 > > 
-> > There is no del_disk in the kernel.  Let's be more specific (and
-> > accurate!) about the hang.  I assume it's
-> > mmc_remove_card->device_del->kobject_uevent?
-> Sorry!
-> I was referring to del_gendisk. 
+> > Where command_func, command_enable_func and command_disable_func can all
+> > be a function pointer or NULL.
+> > 
+> > command_func gets called every time the event is hit while enabled.
+> > 
+> > command_enable_func gets called when the event is enabled
+> > 
+> > command_disable_func gets called when the event is disabled.
 > 
-> <4>[15241.042047]  [<ffffffff8106620a>] ? prepare_to_wait+0x2a/0x90
-> <4>[15241.042159]  [<ffffffff810790bd>] ? trace_hardirqs_on+0xd/0x10
-> <4>[15241.042271]  [<ffffffff8140db12>] ? _raw_spin_unlock_irqrestore+0x42/0x80
-> <4>[15241.042386]  [<ffffffff8112a390>] ? bdi_sched_wait+0x0/0x20
-> <4>[15241.042496]  [<ffffffff8112a39e>] bdi_sched_wait+0xe/0x20
-> <4>[15241.042606]  [<ffffffff8140af6f>] __wait_on_bit+0x5f/0x90
-> <4>[15241.042714]  [<ffffffff8112a390>] ? bdi_sched_wait+0x0/0x20
-> <4>[15241.042824]  [<ffffffff8140b018>] out_of_line_wait_on_bit+0x78/0x90
-> <4>[15241.042935]  [<ffffffff81065fd0>] ? wake_bit_function+0x0/0x40
-> <4>[15241.043045]  [<ffffffff8112a2d3>] ? bdi_queue_work+0xa3/0xe0
-> <4>[15241.043155]  [<ffffffff8112a37f>] bdi_sync_writeback+0x6f/0x80
-> <4>[15241.043265]  [<ffffffff8112a3d2>] sync_inodes_sb+0x22/0x120
-> <4>[15241.043375]  [<ffffffff8112f1d2>] __sync_filesystem+0x82/0x90
-> <4>[15241.043485]  [<ffffffff8112f3db>] sync_filesystem+0x4b/0x70
-> <4>[15241.043594]  [<ffffffff811391de>] fsync_bdev+0x2e/0x60
-> <4>[15241.043704]  [<ffffffff812226be>] invalidate_partition+0x2e/0x50
-> <4>[15241.043816]  [<ffffffff8116b92f>] del_gendisk+0x3f/0x140
-> <4>[15241.043926]  [<ffffffffa00c0233>] mmc_blk_remove+0x33/0x60 [mmc_block]
-> <4>[15241.044043]  [<ffffffff81338977>] mmc_bus_remove+0x17/0x20
-> <4>[15241.044152]  [<ffffffff812ce746>] __device_release_driver+0x66/0xc0
-> <4>[15241.044264]  [<ffffffff812ce89d>] device_release_driver+0x2d/0x40
-> <4>[15241.044375]  [<ffffffff812cd9b5>] bus_remove_device+0xb5/0x120
-> <4>[15241.044486]  [<ffffffff812cb46f>] device_del+0x12f/0x1a0
-> <4>[15241.044593]  [<ffffffff81338a5b>] mmc_remove_card+0x5b/0x90
-> <4>[15241.044702]  [<ffffffff8133ac27>] mmc_sd_remove+0x27/0x50
-> <4>[15241.044811]  [<ffffffff81337d8c>] mmc_resume_host+0x10c/0x140
-> <4>[15241.044929]  [<ffffffffa00850e9>] sdhci_resume_host+0x69/0xa0 [sdhci]
-> <4>[15241.045044]  [<ffffffffa0bdc39e>] sdhci_pci_resume+0x8e/0xb0 [sdhci_pci]
+> Well, that will solve johill's polling thing, but not work nicely with
+> the proposed collection iteration stuff.
+> 
 
-So what's the hang?  del_gendisk is doing IO?  I'd assumed that it was
-because it was calling kobject_uevent, but userspace is frozen.
+Actually, johill and I decided that this was not the proper solution for
+him ;-)
 
-Why is it this hard :(
+I wanted to do this so we could add a lot more functionality and
+flexibility to events. Start the tracer when this event is hit, stop in
+on that event, but only when the filters match. Things like that. And
+I'm sure people could come up with much better and more imaginative
+commands that would be useful for tracing.
+
+What does not fit with this proposal? I really hate adding more macros
+for every new feature or functionality we need. It is ugly and will
+become a maintenance nightmare.
+
+-- Steve
+
+
+
+
