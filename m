@@ -1,95 +1,76 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933340Ab0BEOin (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 09:38:43 -0500
-Received: from mail-gx0-f224.google.com ([209.85.217.224]:56967 "EHLO
-	mail-gx0-f224.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756749Ab0BEOhV (ORCPT
+	id S933249Ab0BEOj0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 09:39:26 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42889 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933048Ab0BEOjY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 09:37:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=h1aOGAYx4CcROni/PafHpDTC9A+zICw6FHzDlGfs/OKwZBEurNMjL3DxTWT/Y3N3pi
-         YIKUa7Q3wsZ9H3x7wfcN8Bl4XilxhzR/ijGV3/t75ZCsKDgkbPUN3jtYulBaGjfGsYQC
-         fKcQ9W3rjfwDx5R3VFByAVyDQ7KHTCVW2xVX8=
-From: Brian Gerst <brgerst@gmail.com>
-To: hpa@zytor.com
-Cc: x86@kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/7] x86-32: Remove _local variants of in/out from io_32.h
-Date: Fri,  5 Feb 2010 09:37:04 -0500
-Message-Id: <1265380629-3212-3-git-send-email-brgerst@gmail.com>
-X-Mailer: git-send-email 1.6.6
-In-Reply-To: <1265380629-3212-1-git-send-email-brgerst@gmail.com>
-References: <1265380629-3212-1-git-send-email-brgerst@gmail.com>
+	Fri, 5 Feb 2010 09:39:24 -0500
+Date: Fri, 5 Feb 2010 06:39:11 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Cc: linux-mmc@vger.kernel.org, Philip Langdale <philipl@overt.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jorg Schummer <ext-jorg.2.schummer@nokia.com>,
+       linux-pm <linux-pm@lists.linux-foundation.org>
+Subject: Re: [PATCH] MMC: fix hang if card was removed during suspend and
+ unsafe resume was enabled
+Message-Id: <20100205063911.05eca1c6.akpm@linux-foundation.org>
+In-Reply-To: <1265379560.14522.2.camel@maxim-laptop>
+References: <1265219241.12549.8.camel@maxim-laptop>
+	<1265325495-4220-1-git-send-email-maximlevitsky@gmail.com>
+	<20100204160957.1c51cc1b.akpm@linux-foundation.org>
+	<1265358702.3424.8.camel@maxim-laptop>
+	<20100205061335.b664aa20.akpm@linux-foundation.org>
+	<1265379560.14522.2.camel@maxim-laptop>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-These were leftover from the numaq support that was removed in commit
-1fba38703d0ce8a5ff0fad9df3eccc6b55cf2cfb.
+On Fri, 05 Feb 2010 16:19:20 +0200 Maxim Levitsky <maximlevitsky@gmail.com> wrote:
 
-Signed-off-by: Brian Gerst <brgerst@gmail.com>
----
- arch/x86/include/asm/io_32.h |   34 ++++------------------------------
- 1 files changed, 4 insertions(+), 30 deletions(-)
+> > 
+> > There is no del_disk in the kernel.  Let's be more specific (and
+> > accurate!) about the hang.  I assume it's
+> > mmc_remove_card->device_del->kobject_uevent?
+> Sorry!
+> I was referring to del_gendisk. 
+> 
+> <4>[15241.042047]  [<ffffffff8106620a>] ? prepare_to_wait+0x2a/0x90
+> <4>[15241.042159]  [<ffffffff810790bd>] ? trace_hardirqs_on+0xd/0x10
+> <4>[15241.042271]  [<ffffffff8140db12>] ? _raw_spin_unlock_irqrestore+0x42/0x80
+> <4>[15241.042386]  [<ffffffff8112a390>] ? bdi_sched_wait+0x0/0x20
+> <4>[15241.042496]  [<ffffffff8112a39e>] bdi_sched_wait+0xe/0x20
+> <4>[15241.042606]  [<ffffffff8140af6f>] __wait_on_bit+0x5f/0x90
+> <4>[15241.042714]  [<ffffffff8112a390>] ? bdi_sched_wait+0x0/0x20
+> <4>[15241.042824]  [<ffffffff8140b018>] out_of_line_wait_on_bit+0x78/0x90
+> <4>[15241.042935]  [<ffffffff81065fd0>] ? wake_bit_function+0x0/0x40
+> <4>[15241.043045]  [<ffffffff8112a2d3>] ? bdi_queue_work+0xa3/0xe0
+> <4>[15241.043155]  [<ffffffff8112a37f>] bdi_sync_writeback+0x6f/0x80
+> <4>[15241.043265]  [<ffffffff8112a3d2>] sync_inodes_sb+0x22/0x120
+> <4>[15241.043375]  [<ffffffff8112f1d2>] __sync_filesystem+0x82/0x90
+> <4>[15241.043485]  [<ffffffff8112f3db>] sync_filesystem+0x4b/0x70
+> <4>[15241.043594]  [<ffffffff811391de>] fsync_bdev+0x2e/0x60
+> <4>[15241.043704]  [<ffffffff812226be>] invalidate_partition+0x2e/0x50
+> <4>[15241.043816]  [<ffffffff8116b92f>] del_gendisk+0x3f/0x140
+> <4>[15241.043926]  [<ffffffffa00c0233>] mmc_blk_remove+0x33/0x60 [mmc_block]
+> <4>[15241.044043]  [<ffffffff81338977>] mmc_bus_remove+0x17/0x20
+> <4>[15241.044152]  [<ffffffff812ce746>] __device_release_driver+0x66/0xc0
+> <4>[15241.044264]  [<ffffffff812ce89d>] device_release_driver+0x2d/0x40
+> <4>[15241.044375]  [<ffffffff812cd9b5>] bus_remove_device+0xb5/0x120
+> <4>[15241.044486]  [<ffffffff812cb46f>] device_del+0x12f/0x1a0
+> <4>[15241.044593]  [<ffffffff81338a5b>] mmc_remove_card+0x5b/0x90
+> <4>[15241.044702]  [<ffffffff8133ac27>] mmc_sd_remove+0x27/0x50
+> <4>[15241.044811]  [<ffffffff81337d8c>] mmc_resume_host+0x10c/0x140
+> <4>[15241.044929]  [<ffffffffa00850e9>] sdhci_resume_host+0x69/0xa0 [sdhci]
+> <4>[15241.045044]  [<ffffffffa0bdc39e>] sdhci_pci_resume+0x8e/0xb0 [sdhci_pci]
 
-diff --git a/arch/x86/include/asm/io_32.h b/arch/x86/include/asm/io_32.h
-index e16b9db..72a6a4a 100644
---- a/arch/x86/include/asm/io_32.h
-+++ b/arch/x86/include/asm/io_32.h
-@@ -120,47 +120,21 @@ static inline void slow_down_io(void)
- 
- #endif
- 
--#define __BUILDIO(bwl, bw, type)				\
--static inline void out##bwl(unsigned type value, int port)	\
--{								\
--	out##bwl##_local(value, port);				\
--}								\
--								\
--static inline unsigned type in##bwl(int port)			\
--{								\
--	return in##bwl##_local(port);				\
--}
--
- #define BUILDIO(bwl, bw, type)						\
--static inline void out##bwl##_local(unsigned type value, int port)	\
-+static inline void out##bwl(unsigned type value, int port)		\
- {									\
--	asm volatile("out" #bwl " %" #bw "0, %w1"		\
-+	asm volatile("out" #bwl " %" #bw "0, %w1"			\
- 		     : : "a"(value), "Nd"(port));			\
- }									\
- 									\
--static inline unsigned type in##bwl##_local(int port)			\
-+static inline unsigned type in##bwl(int port)				\
- {									\
- 	unsigned type value;						\
--	asm volatile("in" #bwl " %w1, %" #bw "0"		\
-+	asm volatile("in" #bwl " %w1, %" #bw "0"			\
- 		     : "=a"(value) : "Nd"(port));			\
- 	return value;							\
- }									\
- 									\
--static inline void out##bwl##_local_p(unsigned type value, int port)	\
--{									\
--	out##bwl##_local(value, port);					\
--	slow_down_io();							\
--}									\
--									\
--static inline unsigned type in##bwl##_local_p(int port)			\
--{									\
--	unsigned type value = in##bwl##_local(port);			\
--	slow_down_io();							\
--	return value;							\
--}									\
--									\
--__BUILDIO(bwl, bw, type)						\
--									\
- static inline void out##bwl##_p(unsigned type value, int port)		\
- {									\
- 	out##bwl(value, port);						\
--- 
-1.6.6
+So what's the hang?  del_gendisk is doing IO?  I'd assumed that it was
+because it was calling kobject_uevent, but userspace is frozen.
 
+Why is it this hard :(
