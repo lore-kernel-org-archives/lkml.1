@@ -1,49 +1,135 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752135Ab0BEFo0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 00:44:26 -0500
-Received: from mail.gmx.net ([213.165.64.20]:53415 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751620Ab0BEFoZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 00:44:25 -0500
-X-Authenticated: #28250155
-X-Provags-ID: V01U2FsdGVkX19rWk9hwiJrmvd2u+MQcUBwH5eTQciOpWjVoIZXB8
-	hn2dpT7oZ7OYSK
-From: Sven Joachim <svenjoac@gmx.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Greg KH <greg@kroah.com>, Ben Hutchings <ben@decadent.org.uk>,
-       stable-review@kernel.org, stable@kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [stable] [PATCH] Fix 'flush_old_exec()/setup_new_exec()' split
-References: <1265245849.3362.1.camel@localhost>
-	<1265256174.2952.11.camel@localhost>
-	<alpine.LFD.2.00.1002032135380.3707@localhost.localdomain>
-	<1265272174.2952.20.camel@localhost>
-	<20100204143848.GB15438@kroah.com> <87sk9gbzzt.fsf@turtle.gmx.de>
-	<20100204185752.GA18595@kroah.com> <87iqacdcfj.fsf@turtle.gmx.de>
-	<alpine.LFD.2.00.1002041135110.3707@localhost.localdomain>
-Date: Fri, 05 Feb 2010 06:44:21 +0100
-In-Reply-To: <alpine.LFD.2.00.1002041135110.3707@localhost.localdomain> (Linus
-	Torvalds's message of "Thu, 4 Feb 2010 11:37:24 -0800 (PST)")
-Message-ID: <87eil0dyoa.fsf@turtle.gmx.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.92 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.70999999999999996
+	id S1752422Ab0BEFtz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 00:49:55 -0500
+Received: from sh.osrg.net ([192.16.179.4]:58785 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751794Ab0BEFtx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Feb 2010 00:49:53 -0500
+Date: Fri, 5 Feb 2010 14:49:33 +0900
+To: netdev@vger.kernel.org
+Cc: mb@bu3sch.de, linville@tuxdriver.com, linux-kernel@vger.kernel.org,
+       zambrano@broadcom.com, davem@davemloft.net
+Subject: [PATCH] ssb: replace the dma_sync_single_range_for_cpu/device API
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20100205144920X.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Fri, 05 Feb 2010 14:49:35 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2010-02-04 20:37 +0100, Linus Torvalds wrote:
+There are only two users of the dma_sync_single_range_for_cpu/device
+API in mainline (mlx4 and ssb). The
+dma_sync_single_range_for_cpu/device API has never been documented and
+the dma_sync_single_for_cpu/device API also support a partial sync.
 
-> Ok, then that's just really odd. I don't think there are any other changes 
-> in this area, and the whole init problem sure as hell smells like execve 
-> setup problems. And afaik, 2.6.32.8-rc1 should have all the commits from 
-> current -git.
->
-> Maybe we're looking at a separate issue after all.
+This converts ssb (and b44) to use the dma_sync_single_for_cpu/device
+API (preparations for the removal of the
+dma_sync_single_range_for_cpu/device API). It also removes unnecessary
+ssb_dma_sync_single_range_for_cpu/device.
 
-Possibly, because a 32-bit 2.6.32.8-rc1 kernel also panics very early.
+This lets dma_desc_align_mask alone in b44 but we can remove it since
+dma_sync_single_for_cpu/device() rounds up/down safely.
 
-Sven
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+---
+ drivers/net/b44.c       |   10 +++-----
+ include/linux/ssb/ssb.h |   51 -----------------------------------------------
+ 2 files changed, 4 insertions(+), 57 deletions(-)
+
+diff --git a/drivers/net/b44.c b/drivers/net/b44.c
+index 44b66be..c3177e3 100644
+--- a/drivers/net/b44.c
++++ b/drivers/net/b44.c
+@@ -148,9 +148,8 @@ static inline void b44_sync_dma_desc_for_device(struct ssb_device *sdev,
+ 						unsigned long offset,
+ 						enum dma_data_direction dir)
+ {
+-	ssb_dma_sync_single_range_for_device(sdev, dma_base,
+-					     offset & dma_desc_align_mask,
+-					     dma_desc_sync_size, dir);
++	ssb_dma_sync_single_for_device(sdev, dma_base + (offset & dma_desc_align_mask),
++				       dma_desc_sync_size, dir);
+ }
+ 
+ static inline void b44_sync_dma_desc_for_cpu(struct ssb_device *sdev,
+@@ -158,9 +157,8 @@ static inline void b44_sync_dma_desc_for_cpu(struct ssb_device *sdev,
+ 					     unsigned long offset,
+ 					     enum dma_data_direction dir)
+ {
+-	ssb_dma_sync_single_range_for_cpu(sdev, dma_base,
+-					  offset & dma_desc_align_mask,
+-					  dma_desc_sync_size, dir);
++	ssb_dma_sync_single_for_cpu(sdev, dma_base + (offset & dma_desc_align_mask),
++				    dma_desc_sync_size, dir);
+ }
+ 
+ static inline unsigned long br32(const struct b44 *bp, unsigned long reg)
+diff --git a/include/linux/ssb/ssb.h b/include/linux/ssb/ssb.h
+index 24f9885..e99c5d3 100644
+--- a/include/linux/ssb/ssb.h
++++ b/include/linux/ssb/ssb.h
+@@ -580,57 +580,6 @@ static inline void ssb_dma_sync_single_for_device(struct ssb_device *dev,
+ 	__ssb_dma_not_implemented(dev);
+ }
+ 
+-static inline void ssb_dma_sync_single_range_for_cpu(struct ssb_device *dev,
+-						     dma_addr_t dma_addr,
+-						     unsigned long offset,
+-						     size_t size,
+-						     enum dma_data_direction dir)
+-{
+-	switch (dev->bus->bustype) {
+-	case SSB_BUSTYPE_PCI:
+-#ifdef CONFIG_SSB_PCIHOST
+-		/* Just sync everything. That's all the PCI API can do. */
+-		pci_dma_sync_single_for_cpu(dev->bus->host_pci, dma_addr,
+-					    offset + size, dir);
+-		return;
+-#endif
+-		break;
+-	case SSB_BUSTYPE_SSB:
+-		dma_sync_single_range_for_cpu(dev->dev, dma_addr, offset,
+-					      size, dir);
+-		return;
+-	default:
+-		break;
+-	}
+-	__ssb_dma_not_implemented(dev);
+-}
+-
+-static inline void ssb_dma_sync_single_range_for_device(struct ssb_device *dev,
+-							dma_addr_t dma_addr,
+-							unsigned long offset,
+-							size_t size,
+-							enum dma_data_direction dir)
+-{
+-	switch (dev->bus->bustype) {
+-	case SSB_BUSTYPE_PCI:
+-#ifdef CONFIG_SSB_PCIHOST
+-		/* Just sync everything. That's all the PCI API can do. */
+-		pci_dma_sync_single_for_device(dev->bus->host_pci, dma_addr,
+-					       offset + size, dir);
+-		return;
+-#endif
+-		break;
+-	case SSB_BUSTYPE_SSB:
+-		dma_sync_single_range_for_device(dev->dev, dma_addr, offset,
+-						 size, dir);
+-		return;
+-	default:
+-		break;
+-	}
+-	__ssb_dma_not_implemented(dev);
+-}
+-
+-
+ #ifdef CONFIG_SSB_PCIHOST
+ /* PCI-host wrapper driver */
+ extern int ssb_pcihost_register(struct pci_driver *driver);
+-- 
+1.5.6.5
+
