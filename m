@@ -1,77 +1,76 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754783Ab0BELFA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 06:05:00 -0500
-Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:55493 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753014Ab0BELE6 (ORCPT
+	id S1754881Ab0BELJe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 06:09:34 -0500
+Received: from tx2ehsobe003.messaging.microsoft.com ([65.55.88.13]:7281 "EHLO
+	TX2EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753014Ab0BELJc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 06:04:58 -0500
-Subject: Re: [RFC PATCH] ARM: Change the mandatory barriers implementation
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Abhijeet Dharmapurikar <adharmap@codeaurora.org>
-Cc: Daniel Walker <dwalker@codeaurora.org>,
-       Russell King <linux@arm.linux.org.uk>, Tony Lindgren <tony@atomide.com>,
-       linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Larry Bassel <lbassel@quicinc.com>,
-       linux-arm-kernel@lists.infradead.org
-In-Reply-To: <1265289330.28746.58.camel@pc1117.cambridge.arm.com>
-References: <4B6A131B.1070005@codeaurora.org>
-	 <1265289330.28746.58.camel@pc1117.cambridge.arm.com>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Fri, 05 Feb 2010 11:04:33 +0000
-Message-Id: <1265367873.7692.52.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 05 Feb 2010 11:04:34.0552 (UTC) FILETIME=[FFF90780:01CAA652]
+	Fri, 5 Feb 2010 06:09:32 -0500
+X-SpamScore: -10
+X-BigFish: VPS-10(z2d9boz1432R98dN4015Lzz1202hzzz32i87h6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-DOMAIN-IP-MATCH: fail
+X-WSS-ID: 0KXD7WB-02-3N6-02
+X-M-MSG: 
+Date: Fri, 5 Feb 2010 12:00:11 +0100
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: David Woodhouse <dwmw2@infradead.org>
+CC: kvm@vger.kernel.org, Marcelo Tosatti <mtosatti@redhat.com>,
+       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
+       Avi Kivity <avi@redhat.com>, Joerg Roedel <joro@8bytes.org>
+Subject: Re: [PATCH 04/11 v2] VT-d: Change {un}map_range functions to
+ implement {un}map interface
+Message-ID: <20100205110011.GY16236@amd.com>
+References: <1264678682-30655-1-git-send-email-joerg.roedel@amd.com>
+ <1264678682-30655-5-git-send-email-joerg.roedel@amd.com>
+ <1264712382.9059.1109.camel@macbook.infradead.org>
+ <20100129090526.GT17809@8bytes.org>
+ <20100201141646.GC16236@amd.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20100201141646.GC16236@amd.com>
+Organization: Advanced Micro Devices =?iso-8859-1?Q?GmbH?=
+	=?iso-8859-1?Q?=2C_Karl-Hammerschmidt-Str=2E_34=2C_85609_Dornach_bei_M=FC?=
+	=?iso-8859-1?Q?nchen=2C_Gesch=E4ftsf=FChrer=3A_Thomas_M=2E_McCoy=2C_Giuli?=
+	=?iso-8859-1?Q?ano_Meroni=2C_Andrew_Bowd=2C_Sitz=3A_Dornach=2C_Gemeinde_A?=
+	=?iso-8859-1?Q?schheim=2C_Landkreis_M=FCnchen=2C_Registergericht_M=FCnche?=
+	=?iso-8859-1?Q?n=2C?= HRB Nr. 43632
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-OriginalArrivalTime: 05 Feb 2010 11:00:12.0063 (UTC) FILETIME=[638462F0:01CAA652]
+X-Reverse-DNS: unknown
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-02-04 at 13:15 +0000, Catalin Marinas wrote:
-> On Thu, 2010-02-04 at 00:21 +0000, Abhijeet Dharmapurikar wrote:
-> > > The mandatory barriers (mb, rmb, wmb) are used even on uniprocessor
-> > > systems for things like ordering Normal Non-cacheable memory accesses
-> > > with DMA transfer (via Device memory writes). The current implementation
-> > > uses dmb() for mb() and friends but this is not sufficient. The DMB only
-> > > ensures the ordering of accesses with regards to a single observer
-> > > accessing the same memory. If a DMA transfer is started by a write to
-> > > Device memory, the data to be transfered may not reach the main memory
-> > > (even if mapped as Normal Non-cacheable) before the device receives the
-> > > notification to begin the transfer. The only barrier that would help in
-> > > this situation is DSB which would completely drain the write buffers.
-> >
-> > On ARMv7, DMB guarantees that all accesses prior to DMB are observed by
-> > an observer if that observer sees any accesses _after_ the DMB. In this
-> > case, since DMA engine observes a write to itself( It is being written
-> > to and hence must observe the write) it should also see the writes to
-> > the buffers. A dmb() after the writes to buffer and before write to DMA
-> > engine should suffice.
+Hi David,
+
+On Mon, Feb 01, 2010 at 03:16:46PM +0100, Joerg Roedel wrote:
+> On Fri, Jan 29, 2010 at 10:05:26AM +0100, Joerg Roedel wrote:
+> > > Um, that's not a page-size based interface. Page size isn't always 4KiB;
+> > > this code runs on IA64 too.
+> > > 
+> > > We have enough fun with CPU vs. DMA page size on IA64 already :)
+> > 
+> > Ah right. So this should be
+> > 
+> > 	size     = PAGE_SIZE << gfp_order;
+> > 
+> > Right? The interface is meant to map the same amount of memory which
+> > alloc_pages(gfp_order) would return. Same for the return value of the
+> > unmap function.
 > 
-> I asked our processor architect for a clarification on the wording of
-> the DMB definition but the "all accesses" part most likely refer to
-> accesses to the same peripheral or memory block (but not together).
+> Ok, here is an updated patch (also updated in the iommu/largepage
+> branch). Does it look ok to you David?
 
-I got some clarification and there is nothing wrong with the definition
-of the DMB. The catch here is that "observe" (as per the ARM ARM) is
-defined only for master accesses. The DMA engine in this case above does
-not "observe" the write to itself as this is a slave access to one of
-its memory-mapped ports.
+have you had a chance to look at the new version of the patch? If you
+are fine with it and with the overall concept of this patchset I would
+be cool if you could give your Acks. I would like to send this code to
+Linus in the next merge window.
 
-So, the code below:
+Thanks,
 
-	STR	[Normal non-cacheable]
-	DMB
-	STR	[Device]
+	Joerg
 
-puts the first store in Group A (according to the DMB definition) and
-the second store in Group B but since the DMA device does not "observe"
-Group B in this case, there is no requirement for the ordering between
-the observability of the store to normal memory and the observability of
-the side-effects of the store to the DMA device.
-
--- 
-Catalin
 
