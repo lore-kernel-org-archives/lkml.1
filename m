@@ -1,37 +1,64 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933501Ab0BEHUe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 02:20:34 -0500
-Received: from mail-ew0-f228.google.com ([209.85.219.228]:36382 "EHLO
-	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932913Ab0BEHUd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 02:20:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type;
-        b=PWjLEV2hZIrZdjR6cZVXsNdFZB+TwDtFoUH+maLHWjGf4igmmtxsdWx+bvRI/czhoI
-         Mb4QLMr81WJRK3Wn5xNsklfk0oeomkrgJ+489uY5ZZTUPVWmI9Y1AuhC0v5MqIiJDqXO
-         yZmVdtK93gHStOfZdT7gWvDL3kClBFbZq13dU=
+	id S933562Ab0BEHWL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 02:22:11 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:59545 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932913Ab0BEHWJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Feb 2010 02:22:09 -0500
+Message-ID: <4B6BC7E4.5070909@redhat.com>
+Date: Fri, 05 Feb 2010 15:25:24 +0800
+From: Cong Wang <amwang@redhat.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20091001)
 MIME-Version: 1.0
-In-Reply-To: <5e9821061002042140le7ba356s48e535c9d8b637ec@mail.gmail.com>
-References: <4B6B193D.4060106@gmail.com> <3e8340491002041126l44bb28a7u8f427f0f5c05e57e@mail.gmail.com> 
-	<5e9821061002042140le7ba356s48e535c9d8b637ec@mail.gmail.com>
-From: Bryan Donlan <bdonlan@gmail.com>
-Date: Fri, 5 Feb 2010 02:20:11 -0500
-Message-ID: <3e8340491002042320y783b6e2am37d63353297e2ce1@mail.gmail.com>
-Subject: Re: Intercepting system calls
-To: Oleg Kutkov <elenbert@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+To: Bart Van Assche <bvanassche@acm.org>
+CC: linux-kernel@vger.kernel.org, Eric Dumazet <eric.dumazet@gmail.com>,
+       linux-rdma@vger.kernel.org, netdev@vger.kernel.org,
+       Neil Horman <nhorman@tuxdriver.com>, linux-sctp@vger.kernel.org,
+       David Miller <davem@davemloft.net>
+Subject: Re: [RFC Patch] net: reserve ports for applications using fixed port
+ 	numbers
+References: <20100203043332.3817.27932.sendpatchset@localhost.localdomain> <e2e108261002042311w59ba1372ld9f8fb2f369ca434@mail.gmail.com>
+In-Reply-To: <e2e108261002042311w59ba1372ld9f8fb2f369ca434@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2010/2/5 Oleg Kutkov <elenbert@gmail.com>:
-> Hello. l need to capture and process outgoing and incoming packets from all
-> network interfaces, include virtual interfaces. So I try to overload socket
-> and if_rx. I'm not found another way to do that.
+Bart Van Assche wrote:
+> On Wed, Feb 3, 2010 at 5:30 AM, Amerigo Wang <amwang@redhat.com> wrote:
+>> This patch introduces /proc/sys/net/ipv4/ip_local_reserved_ports,
+>> it can be used like ip_local_port_range, but this is used to
+>> reserve ports for third-party applications which use fixed
+>> port numbers within ip_local_port_range.
+>>
+>> This only affects the applications which call socket functions
+>> like bind(2) with port number 0, to prevent the kernel getting the ports
+>> within the specified range for them. For applications which use fixed
+>> port number, it will have no effects.
+>>
+>> Any comments are welcome.
+> 
+> Relying on fixed port numbers is generally considered as a shortcoming
+> in the application. It would be helpful if you could explain more in
+> detail why port number reservation is necessary. Maybe there exists
+> another solution that does not require modifying the bind() system
+> call.
+> 
 
-Why not just use libpcap?
+The problem is that there are some existing applications which use
+fixed port number, we don't have chances to change this for them,
+thus making them working is desired, so they want to reserve these
+port for those applications.
+
+For example, if I have an appliction which uses port 40000, but
+before this application starts, another application gets this port
+number by bind() with port 0 (i.e. chosen by kernel), in this case,
+that application will fail to start. Again, we don't have any chance
+to change the source code of that application.
+
+Hope this can make the problem clear.
+
+Thanks.
+
