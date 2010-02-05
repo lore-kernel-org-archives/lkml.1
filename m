@@ -1,69 +1,81 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756438Ab0BEI5R (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 03:57:17 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:44434 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756018Ab0BEI5Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 03:57:16 -0500
-To: Amerigo Wang <amwang@redhat.com>
-Cc: linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Miles Lane <miles.lane@gmail.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Larry Finger <Larry.Finger@lwfinger.net>, akpm@linux-foundation.org
-Subject: Re: [Patch v2] sysfs: add lockdep class support to s_active
-References: <20100205064622.4141.72867.sendpatchset@localhost.localdomain>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Fri, 05 Feb 2010 00:57:12 -0800
-In-Reply-To: <20100205064622.4141.72867.sendpatchset@localhost.localdomain> (Amerigo Wang's message of "Fri\, 5 Feb 2010 01\:42\:56 -0500")
-Message-ID: <m14olwjc0n.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	id S1755124Ab0BEJAf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 04:00:35 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33305 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753513Ab0BEJAd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Feb 2010 04:00:33 -0500
+Date: Fri, 5 Feb 2010 10:00:09 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Dave Airlie <airlied@linux.ie>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, dri-devel@lists.sf.net,
+       Alex Deucher <alexdeucher@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org
+Subject: Re: hung bootup with "drm/radeon/kms: move radeon KMS on/off switch
+ out of staging."
+Message-ID: <20100205090009.GA8272@elte.hu>
+References: <20100204190649.GB6665@elte.hu>
+ <a728f9f91002041118m6415844fp1740f18fdc1c9757@mail.gmail.com>
+ <20100204193232.GD6665@elte.hu>
+ <20100204115316.69beee75@jbarnes-piketon>
+ <20100204202254.GA24716@elte.hu>
+ <20100204204829.GA24608@srcf.ucam.org>
+ <20100204210559.GC19050@elte.hu>
+ <20100204210950.GA25295@srcf.ucam.org>
+ <20100205075645.GF9320@elte.hu>
+ <alpine.DEB.2.00.1002050832450.2995@skynet.skynet.ie>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); SAEximRunCond expanded to false
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.1002050832450.2995@skynet.skynet.ie>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Amerigo Wang <amwang@redhat.com> writes:
 
-> Recently we met a lockdep warning from sysfs during s2ram or cpu hotplug.
-> As reported by several people, it is something like:
->
-> [ 6967.926563] ACPI: Preparing to enter system sleep state S3
-> [ 6967.956156] Disabling non-boot CPUs ...
-> [ 6967.970401]
-> [ 6967.970408] =============================================
-> [ 6967.970419] [ INFO: possible recursive locking detected ]
-> [ 6967.970431] 2.6.33-rc2-git6 #27
-> [ 6967.970439] ---------------------------------------------
-> [ 6967.970450] pm-suspend/22147 is trying to acquire lock:
-> [ 6967.970460]  (s_active){++++.+}, at: [<c10d2941>]
-> sysfs_hash_and_remove+0x3d/0x4f
-> [ 6967.970493]
-> [ 6967.970497] but task is already holding lock:
-> [ 6967.970506]  (s_active){++++.+}, at: [<c10d4110>]
-> sysfs_get_active_two+0x16/0x36
-> [...]
->
-> Eric already provides a patch for this[1], but it still can't fix the
-> problem. Based on his work and Peter's suggestion, I write this patch,
-> hopefully we can fix the warning completely.
->
-> This patch put sysfs s_active into two classes, one is for PM, the other
-> is for the rest, so lockdep will distinguish them.
->
-> 1. http://lkml.org/lkml/2010/1/10/282
+* Dave Airlie <airlied@linux.ie> wrote:
 
-What testing has this patch seen?
+> 
+> > If it now does not boot up if all its sub-options are enabled, even of some 
+> > of those sub-options are new, does that count as a driver regression? Sure it 
+> > does to me ...
+> 
+> But it doesn't to anyone else under any reasonable meaning of the word 
+> regression.
 
-In particular does this work to actually clear up the pm case?
+There are reactions in this thread that contradict your 'anyone else' point.
 
-Eric
+> The config option states
+> "Choose this option if you want kernel modesetting enabled by default,
+>           and you have a new enough userspace to support this. Running old
+>           userspaces with this enabled will cause pain."
+> 
+> Will cause pain sounds painful to me, I can make it seem much worse if 
+> you'd like.
+
+Except you are missing that the hang (and the first crash as well) happens on 
+brand-new user-space just as much - not just on 'old userspaces'.
+
+The bugs i've triggered are independent of any user-space component - it 
+happens with a fresh distro just as much.
+
+As i suggested before, at least the text should be updated to include what 
+has been written about CONFIG_DRM_RADEON_KMS in this thread before:
+
+ > This is a completely new driver.  It's only part of the existing drm for 
+ > compatibility reasons.  It requires an entirely different graphics stack 
+ > above it and works very differently from the old drm stack.
+
+Thanks,
+
+	Ingo
