@@ -1,42 +1,134 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934030Ab0BEW6V (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 17:58:21 -0500
-Received: from mail-px0-f182.google.com ([209.85.216.182]:35508 "EHLO
-	mail-px0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933950Ab0BEW6T (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 17:58:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=uNRm82iDQGlKqK4uFUadXDgPfdR89OMWp1H2MSRAf7Pzszh2f0nn3NDuZoHDokJC5a
-         178grPimufAurMSr8/qX9PPl0YVonQxRZuIMcADg5o+n/Pk/32VubL12G0KTmaenmSCW
-         l6GLB2fOQY4ECWPgdFn0QhSSR8ay6i6w2t8Ww=
+	id S934055Ab0BEW7B (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 17:59:01 -0500
+Received: from hera.kernel.org ([140.211.167.34]:58853 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933950Ab0BEW66 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Feb 2010 17:58:58 -0500
+Date: Fri, 5 Feb 2010 22:57:35 GMT
+From: tip-bot for Mike Travis <travis@sgi.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       travis@sgi.com, holt@sgi.com, airlied@linux.ie,
+       akpm@linux-foundation.org, steiner@sgi.com, jbarnes@virtuousgeek.org,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       travis@sgi.com, holt@sgi.com, airlied@linux.ie,
+       jbarnes@virtuousgeek.org, akpm@linux-foundation.org, steiner@sgi.com,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <201002022238.o12McE1J018723@imap1.linux-foundation.org>
+References: <201002022238.o12McE1J018723@imap1.linux-foundation.org>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/pci] pci: Update pci_set_vga_state() to call arch functions
+Message-ID: <tip-95a8b6efc5d07103583f706c8a5889437d537939@git.kernel.org>
+Git-Commit-ID: 95a8b6efc5d07103583f706c8a5889437d537939
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-In-Reply-To: <b1dccd762d3d04ab75d79d1d9b097d593a89f32a.1265375697.git.yong.zhang0@gmail.com>
-References: <1265377920-5898-1-git-send-email-yong.zhang0@gmail.com>
-	 <b1dccd762d3d04ab75d79d1d9b097d593a89f32a.1265375697.git.yong.zhang0@gmail.com>
-Date: Fri, 5 Feb 2010 15:58:18 -0700
-X-Google-Sender-Auth: caef3556a9c78edb
-Message-ID: <e9c3a7c21002051458p6517370i1bae6d2ab64ededc@mail.gmail.com>
-Subject: Re: [PATCH 1/4] dmaengine: correct onstack wait_queue_head 
-	declaration
-From: Dan Williams <dan.j.williams@intel.com>
-To: Yong Zhang <yong.zhang0@gmail.com>
-Cc: linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, mingo@elte.hu,
-       Maciej Sosnowski <maciej.sosnowski@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nicolas Ferre <nicolas.ferre@atmel.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Fri, 05 Feb 2010 22:57:36 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 5, 2010 at 6:52 AM, Yong Zhang <yong.zhang0@gmail.com> wrote:
-> Use DECLARE_WAIT_QUEUE_HEAD_ONSTACK to make lockdep happy
->
-> Signed-off-by: Yong Zhang <yong.zhang0@gmail.com>
+Commit-ID:  95a8b6efc5d07103583f706c8a5889437d537939
+Gitweb:     http://git.kernel.org/tip/95a8b6efc5d07103583f706c8a5889437d537939
+Author:     Mike Travis <travis@sgi.com>
+AuthorDate: Tue, 2 Feb 2010 14:38:13 -0800
+Committer:  H. Peter Anvin <hpa@zytor.com>
+CommitDate: Fri, 5 Feb 2010 14:05:41 -0800
 
-Thanks, applied and pushed back out on async_tx.git#fixes.
+pci: Update pci_set_vga_state() to call arch functions
+
+Update pci_set_vga_state to call arch dependent functions to enable Legacy
+VGA I/O transactions to be redirected to correct target.
+
+[akpm@linux-foundation.org: make pci_register_set_vga_state() __init]
+Signed-off-by: Mike Travis <travis@sgi.com>
+LKML-Reference: <201002022238.o12McE1J018723@imap1.linux-foundation.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Robin Holt <holt@sgi.com>
+Cc: Jack Steiner <steiner@sgi.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: David Airlie <airlied@linux.ie>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+---
+ drivers/pci/pci.c   |   25 ++++++++++++++++++++++++-
+ include/linux/pci.h |    5 +++++
+ 2 files changed, 29 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index 315fea4..ac2a576 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -2615,6 +2615,23 @@ int pci_resource_bar(struct pci_dev *dev, int resno, enum pci_bar_type *type)
+ 	return 0;
+ }
+ 
++/* Some architectures require additional programming to enable VGA */
++static arch_set_vga_state_t arch_set_vga_state;
++
++void __init pci_register_set_vga_state(arch_set_vga_state_t func)
++{
++	arch_set_vga_state = func;	/* NULL disables */
++}
++
++static int pci_set_vga_state_arch(struct pci_dev *dev, bool decode,
++		      unsigned int command_bits, bool change_bridge)
++{
++	if (arch_set_vga_state)
++		return arch_set_vga_state(dev, decode, command_bits,
++						change_bridge);
++	return 0;
++}
++
+ /**
+  * pci_set_vga_state - set VGA decode state on device and parents if requested
+  * @dev: the PCI device
+@@ -2628,9 +2645,15 @@ int pci_set_vga_state(struct pci_dev *dev, bool decode,
+ 	struct pci_bus *bus;
+ 	struct pci_dev *bridge;
+ 	u16 cmd;
++	int rc;
+ 
+ 	WARN_ON(command_bits & ~(PCI_COMMAND_IO|PCI_COMMAND_MEMORY));
+ 
++	/* ARCH specific VGA enables */
++	rc = pci_set_vga_state_arch(dev, decode, command_bits, change_bridge);
++	if (rc)
++		return rc;
++
+ 	pci_read_config_word(dev, PCI_COMMAND, &cmd);
+ 	if (decode == true)
+ 		cmd |= command_bits;
+@@ -2845,6 +2868,7 @@ EXPORT_SYMBOL(pcim_pin_device);
+ EXPORT_SYMBOL(pci_disable_device);
+ EXPORT_SYMBOL(pci_find_capability);
+ EXPORT_SYMBOL(pci_bus_find_capability);
++EXPORT_SYMBOL(pci_register_set_vga_state);
+ EXPORT_SYMBOL(pci_release_regions);
+ EXPORT_SYMBOL(pci_request_regions);
+ EXPORT_SYMBOL(pci_request_regions_exclusive);
+@@ -2877,4 +2901,3 @@ EXPORT_SYMBOL(pci_target_state);
+ EXPORT_SYMBOL(pci_prepare_to_sleep);
+ EXPORT_SYMBOL(pci_back_from_sleep);
+ EXPORT_SYMBOL_GPL(pci_set_pcie_reset_state);
+-
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 174e539..5da166e 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -955,6 +955,11 @@ static inline int pci_proc_domain(struct pci_bus *bus)
+ }
+ #endif /* CONFIG_PCI_DOMAINS */
+ 
++/* some architectures require additional setup to direct VGA traffic */
++typedef int (*arch_set_vga_state_t)(struct pci_dev *pdev, bool decode,
++		      unsigned int command_bits, bool change_bridge);
++extern void pci_register_set_vga_state(arch_set_vga_state_t func);
++
+ #else /* CONFIG_PCI is not enabled */
+ 
+ /*
