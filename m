@@ -1,55 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755952Ab0BEEEY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 23:04:24 -0500
-Received: from mho-02-ewr.mailhop.org ([204.13.248.72]:64390 "EHLO
-	mho-02-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751150Ab0BEEEW (ORCPT
+	id S1756739Ab0BEEG5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 23:06:57 -0500
+Received: from netrider.rowland.org ([192.131.102.5]:45328 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751150Ab0BEEG4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 23:04:22 -0500
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 72.249.23.125
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX18no5yy30q5wAX6/7docxpv
-Date: Thu, 4 Feb 2010 20:04:44 -0800
-From: Tony Lindgren <tony@atomide.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-omap@vger.kernel.org, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Russell King <rmk@arm.linux.org.uk>
-Subject: Re: linux-next: manual merge of the omap tree with the arm tree
-Message-ID: <20100205040444.GH22747@atomide.com>
-References: <20100205102030.c8b139a1.sfr@canb.auug.org.au>
- <20100204233019.GY22747@atomide.com>
- <20100205111617.c602983f.sfr@canb.auug.org.au>
+	Thu, 4 Feb 2010 23:06:56 -0500
+Date: Thu, 4 Feb 2010 23:06:53 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Cong Wang <amwang@redhat.com>
+cc: Peter Zijlstra <peterz@infradead.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, Greg KH <gregkh@suse.de>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Tejun Heo <tj@kernel.org>, Miles Lane <miles.lane@gmail.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Larry Finger <Larry.Finger@lwfinger.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Patch 0/2] sysfs: fix s_active lockdep warning
+In-Reply-To: <4B6B8BD5.8020404@redhat.com>
+Message-ID: <Pine.LNX.4.44L0.1002042306180.11360-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100205111617.c602983f.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Stephen Rothwell <sfr@canb.auug.org.au> [100204 16:13]:
-> Hi Tony,
+On Fri, 5 Feb 2010, Cong Wang wrote:
+
+> Alan Stern wrote:
+> > On Thu, 4 Feb 2010, Peter Zijlstra wrote:
+> > 
+> >> On Thu, 2010-02-04 at 11:35 -0500, Alan Stern wrote:
+> >>> +#include <linux/sched.h>
+> >> #include <linux/lockdep.h>
+> >>
+> >> should be sufficient I think.
+> > 
+> > No, it's not.  It leaves MAX_LOCK_DEPTH undeclared.  Beats me why that 
+> > symbol ended up in sched.h...
+> > 
 > 
-> On Thu, 4 Feb 2010 15:30:19 -0800 Tony Lindgren <tony@atomide.com> wrote:
-> >
-> > Thanks, I'll sort it out in omap for-next tree so they merge
-> > cleanly.
+> because task_struct->held_locks uses it, but it seems better to move
+> it into lockdep.h...
 
-Tried figuring out a clean mergeable solution, but it looks like
-I need to manually merge or rebase the omap patches with patch
-"ARM: 5910/1: ARM: Add tmp register for addruart and loadsp".
+Be my guest!  :-)
 
-If we move the related debug-macro.S changes from omap tree to
-Russell's tree, then I can't build my following multi-omap
-patches..
+Alan Stern
 
-Russell, can you please let me know if you have some static
-commit ID containing the patch above that I could use that as
-base for my patches?
-
-Regards,
-
-Tony
