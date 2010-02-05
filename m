@@ -1,62 +1,121 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753619Ab0BEPbA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 10:31:00 -0500
-Received: from netrider.rowland.org ([192.131.102.5]:38982 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751207Ab0BEPa7 (ORCPT
+	id S1752726Ab0BEPhn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 10:37:43 -0500
+Received: from casper.infradead.org ([85.118.1.10]:40600 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750804Ab0BEPhl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 10:30:59 -0500
-Date: Fri, 5 Feb 2010 10:30:58 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Peter Zijlstra <peterz@infradead.org>
-cc: "Eric W. Biederman" <ebiederm@xmission.com>, Greg KH <gregkh@suse.de>,
-       Thomas Gleixner <tglx@linutronix.de>, Cong Wang <amwang@redhat.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Tejun Heo <tj@kernel.org>, Miles Lane <miles.lane@gmail.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Patch 0/2] sysfs: fix s_active lockdep warning
-In-Reply-To: <1265365117.22001.377.camel@laptop>
-Message-ID: <Pine.LNX.4.44L0.1002051021120.22829-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 5 Feb 2010 10:37:41 -0500
+Subject: [RFC][PATCH] perf_events: Fix FORK events
+From: Peter Zijlstra <peterz@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Thomas Gleixner <tglx@linutronix.de>
+Content-Type: multipart/mixed; boundary="=-6BKwlM+v1yFPbAzjcztE"
+Date: Fri, 05 Feb 2010 16:37:23 +0100
+Message-ID: <1265384243.30057.42.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 5 Feb 2010, Peter Zijlstra wrote:
 
-> Right, so this device stuff is much more complicated than I was led to
-> believe ;-)
+--=-6BKwlM+v1yFPbAzjcztE
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 
-Haven't I told you all along that tree-structured locking is
-complicated?  :-)
+Hi,
 
-> So the device core doesn't know, so how are you guys making sure there
-> really are no deadlocks hidden in there somewhere?
+While looking into a problem reported by Pekka, I noticed that I wasn't
+receiving any FORK events for a workload that did fork (see attachment).
 
-In the code I've seen, deadlocks are avoided by always taking the locks
-in the same order.  But who knows?  Maybe there _are_ some hidden
-deadlocks lurking.  For now we can't rely on lockdep to find them,
-though, because it gets sidetracked by all the false positives.
+After making the below change, stuff started working again, thing is,
+I'm not sure why.
 
-> >  But for now perhaps a compromise is in
-> > order.  We could make the switch from semaphores to mutexes while
-> > avoiding lockdep issues by assigning the device mutexes to a
-> > "don't-verify" class.  Is there such a thing, or could it be added?
-> 
-> Something like the below might work, but it should go along with a
-> checkpatch.pl mod to ensure we don't grow any new users (just don't feel
-> like brushing up my perl fu enough to actually make sense of that
-> script)
+The main change is sending the FORK event to the parent instead of the
+child thread, however perf_event_fork() is at the end of copy_process(),
+which is after perf_event_init_task() which inherits all the counters,
+so it should all have worked as it was.
 
-I'll try it out in the next few days, and if it looks good maybe the 
-checkpatch maintainers can lend some assistance before it gets 
-submitted.
+We could of course just slam the commit in and not worry about it, but
+that just doesn't feel right.
 
-Alan Stern
+Alternatively, I'm really really dense and I'm totally missing the
+obvious.
+
+Signed-ff-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ kernel/perf_event.c |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/kernel/perf_event.c b/kernel/perf_event.c
+index ab8a312..01655fa 100644
+--- a/kernel/perf_event.c
++++ b/kernel/perf_event.c
+@@ -3399,8 +3399,6 @@ static void perf_event_task_output(struct perf_event *event,
+ 	task_event->event_id.tid = perf_event_tid(event, task);
+ 	task_event->event_id.ptid = perf_event_tid(event, current);
+ 
+-	task_event->event_id.time = perf_clock();
+-
+ 	perf_output_put(&handle, task_event->event_id);
+ 
+ 	perf_output_end(&handle);
+@@ -3440,7 +3438,7 @@ static void perf_event_task_event(struct perf_task_event *task_event)
+ 	cpuctx = &get_cpu_var(perf_cpu_context);
+ 	perf_event_task_ctx(&cpuctx->ctx, task_event);
+ 	if (!ctx)
+-		ctx = rcu_dereference(task_event->task->perf_event_ctxp);
++		ctx = rcu_dereference(current->perf_event_ctxp);
+ 	if (ctx)
+ 		perf_event_task_ctx(ctx, task_event);
+ 	put_cpu_var(perf_cpu_context);
+@@ -3471,6 +3469,7 @@ static void perf_event_task(struct task_struct *task,
+ 			/* .ppid */
+ 			/* .tid  */
+ 			/* .ptid */
++			.time = perf_clock(),
+ 		},
+ 	};
+ 
+
+
+--=-6BKwlM+v1yFPbAzjcztE
+Content-Disposition: attachment; filename="loop_1b_instructions-4x.c"
+Content-Type: text/x-csrc; name="loop_1b_instructions-4x.c"; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <time.h>
+
+main ()
+{
+	int i;
+
+	fork();
+	fork();
+
+	for (i = 0; i < 100000000; i++) {
+		asm("nop");
+		asm("nop");
+		asm("nop");
+		asm("nop");
+		asm("nop");
+		asm("nop");
+		asm("nop");
+	}
+	wait(NULL);
+	wait(NULL);
+	wait(NULL);
+	wait(NULL);
+}
+
+--=-6BKwlM+v1yFPbAzjcztE--
 
