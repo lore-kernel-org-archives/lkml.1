@@ -1,45 +1,80 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932726Ab0BENsJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 08:48:09 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:37030 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932451Ab0BENsG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 08:48:06 -0500
-In-Reply-To: <1265364881-8140-1-git-send-email-dfeng@redhat.com>
-References: <1265364881-8140-1-git-send-email-dfeng@redhat.com>
-To: Xiaotian Feng <dfeng@redhat.com>
-Cc: Xiaotian Feng <dfeng@redhat.com>, Eric Paris <eparis@redhat.com>,
-       James Morris <jmorris@namei.org>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, serue@linux.vnet.ibm.com,
-       Al Viro <viro@zeniv.linux.org.uk>
+	id S932733Ab0BENtp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 08:49:45 -0500
+Received: from faui40.informatik.uni-erlangen.de ([131.188.34.40]:58809 "EHLO
+	faui40.informatik.uni-erlangen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755482Ab0BENto (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Feb 2010 08:49:44 -0500
+Date: Fri, 5 Feb 2010 14:49:58 +0100
+From: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
+To: linux-kernel@vger.kernel.org
+Cc: vamos@i4.informatik.uni-erlangen.de
+Subject: [PATCH] obsolete config in kernel source (SA1100_CT6001)
+Message-ID: <20100205134958.GD7077@faui49.informatik.uni-erlangen.de>
 MIME-Version: 1.0
-Subject: Re: [PATCH] ima: avoid null pointer deref in ima_main.c
-X-KeepSent: D4EDD9E8:3C38BC7C-852576C1:004B1271;
- type=4; name=$KeepSent
-X-Mailer: Lotus Notes Release 8.5 December 05, 2008
-Message-ID: <OFD4EDD9E8.3C38BC7C-ON852576C1.004B1271-852576C1.004BCFCC@us.ibm.com>
-From: Mimi Zohar <zohar@us.ibm.com>
-Date: Fri, 5 Feb 2010 08:48:04 -0500
-X-MIMETrack: Serialize by Router on D01ML604/01/M/IBM(Release 8.5.1HF41 | October 22, 2009) at
- 02/05/2010 08:48:04,
-	Serialize complete at 02/05/2010 08:48:04
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Xiaotian Feng <dfeng@redhat.com> wrote on 02/05/2010 05:14:41 AM:
+Hi all!
 
-> I've met following oops when kernel is running ltp test pipe07.
-> Which is trying to open pipes until EMFILE is returned.
+	As part of the VAMOS[0] research project at the University of
+Erlangen we're checking referential integrity between kernel KConfig
+options and in-code Conditional blocks.
 
-This is a known bug and a patch was posted by J.R Okajima on Dec 29th
-http://lkml.org/lkml/2009/12/29/13.
+	This is another small block of Code depending on a COnfig Item
+that can't ever be set because it doesn't exist on the kconfig side
+(looks removed to me). Please consider getting rid of it.
 
-James, Al, can we get the patch applied?
+	Please keep me informed of this patch getting confirmed /
+merged so we can keep track of it.
 
-Mimi
+Regards
+
+	Christoph Egger
+
+[0] http://vamos1.informatik.uni-erlangen.de/
+
+----
+>From d401b4f449d52dae984788b0995061e9841e1b54 Mon Sep 17 00:00:00 2001
+From: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
+Date: Fri, 5 Feb 2010 14:02:34 +0100
+Subject: [PATCH] Remove CONFIG_SA1100_CT6001
+
+The SA1100_CT6001 needed special-casing because of being a 8bit
+devince on a 16bit bus. However this piece of hardware is no longer
+available in the linux kernel so the special case can go as well
+
+Signed-off-by: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
+---
+ include/linux/com20020.h |    4 ----
+ 1 files changed, 0 insertions(+), 4 deletions(-)
+
+diff --git a/include/linux/com20020.h b/include/linux/com20020.h
+index 5dcfb94..bed9de6 100644
+--- a/include/linux/com20020.h
++++ b/include/linux/com20020.h
+@@ -35,11 +35,7 @@ extern const struct net_device_ops com20020_netdev_ops;
+ #define ARCNET_TOTAL_SIZE 8
+ 
+ /* various register addresses */
+-#ifdef CONFIG_SA1100_CT6001
+-#define BUS_ALIGN  2  /* 8 bit device on a 16 bit bus - needs padding */
+-#else
+ #define BUS_ALIGN  1
+-#endif
+ 
+ 
+ #define _INTMASK  (ioaddr+BUS_ALIGN*0)	/* writable */
+-- 
+1.6.3.3
+
+
 
 
 
