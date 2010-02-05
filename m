@@ -1,97 +1,41 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757004Ab0BEPHf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 10:07:35 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:64866 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756860Ab0BEPHe (ORCPT
+	id S933347Ab0BEPO7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 10:14:59 -0500
+Received: from mail-pz0-f173.google.com ([209.85.222.173]:61679 "EHLO
+	mail-pz0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933009Ab0BEPO6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 10:07:34 -0500
-X-Authority-Analysis: v=1.0 c=1 a=I-JJUczq-h8A:10 a=7U3hwN5JcxgA:10 a=cSO2TwNd55vs58XwrioA:9 a=ocU2zQ1OOGZc23lXetIA:7 a=7ln1613p3qGR1QhPpBNAC4lIXZUA:4
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Subject: Re: [PATCH 02/11] tracing: Introduce TRACE_EVENT_INJECT
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Paul Mackerras <paulus@samba.org>,
-       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
-       Li Zefan <lizf@cn.fujitsu.com>, Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Jens Axboe <jens.axboe@oracle.com>
-In-Reply-To: <1265381604.22001.682.camel@laptop>
-References: <1265188475-23509-1-git-send-regression-fweisbec@gmail.com>
-	 <1265188475-23509-3-git-send-regression-fweisbec@gmail.com>
-	 <1265381266.24386.32.camel@gandalf.stny.rr.com>
-	 <1265381604.22001.682.camel@laptop>
-Content-Type: text/plain; charset="ISO-8859-15"
-Organization: Kihon Technologies Inc.
-Date: Fri, 05 Feb 2010 10:07:32 -0500
-Message-ID: <1265382452.24386.38.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 5 Feb 2010 10:14:58 -0500
+X-Greylist: delayed 424 seconds by postgrey-1.27 at vger.kernel.org; Fri, 05 Feb 2010 10:14:57 EST
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=F/aBw8Ai5/9sRXelenIVUh27bz2cEOVBPoQWo/v6TEXpb8SwkytHgYXUAhVqgmjvl1
+         3JSUfn4NKi2dUqddd+FS6dFBbB0JAyhLJu9sKMS/OD3TzC9tv8sLOZ9S1uc++GwZ+lyI
+         tmZ1Qsl9PQz/9cyh/TRiMicGS6WTGgJ3h5lv8=
+Date: Fri, 5 Feb 2010 23:10:21 +0800
+From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+To: Toralf =?utf-8?Q?F=C3=B6rster?= <toralf.foerster@gmx.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.32.8-stable review : kernel crashed asap
+Message-ID: <20100205151021.GB9690@hack>
+References: <201002042129.41462.toralf.foerster@gmx.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <201002042129.41462.toralf.foerster@gmx.de>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-02-05 at 15:53 +0100, Peter Zijlstra wrote:
-> On Fri, 2010-02-05 at 09:47 -0500, Steven Rostedt wrote:
-> > On Wed, 2010-02-03 at 10:14 +0100, Frederic Weisbecker wrote:
-> > > TRACE_EVENT_INJECT macro is the same as TRACE_EVENT but takes one
-> > 
-> > >  #undef DEFINE_EVENT
-> > >  #define DEFINE_EVENT(template, call, proto, args)		\
-> > >  static void ftrace_profile_##call(proto)			\
-> > > diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
-> > > index 189b09b..5c75cc7 100644
-> > > --- a/kernel/trace/trace_events.c
-> > > +++ b/kernel/trace/trace_events.c
-> > > @@ -142,6 +142,9 @@ static int ftrace_event_enable_disable(struct ftrace_event_call *call,
-> > >  				break;
-> > >  			}
-> > >  			call->enabled = 1;
-> > > +
-> > > +			if (call->inject)
-> > > +				call->inject();
-> > >  		}
-> > >  		break;
-> > >  	}
-> > 
-> > With the proposal I'm suggesting:
-> > 
-> > register_event_command(event, NULL, NULL, inject_me, inject_me, data);
-> > 
-> > The above would do basically what this patch does. When ever the event
-> > is enabled or disabled the inject_me function will be called.
-> > 
-> > Would this work?
-> 
-> No, because a dump all inject sucks chunks.
+On Thu, Feb 04, 2010 at 09:29:41PM +0100, Toralf Förster wrote:
+>Immediately during boot it crashed w/ the attached config - no lines within 
+>syslog  to post.
+>
 
-How would it be dumping all?
-
-You need to pick an event to register, not all events will do this.
-
-How is this different than defining a TRACE_EVENT_INJECT()?  Now
-lock_class_init will always call this inject.
-
-What I am proposing is to add the lock_class_init just as TRACE_EVENT()
-and then in a initcall, do:
-
-register_event_command("lock_class_init", NULL, NULL, inject_me, 
-			inject_me, data);
-
-The above would have lock_class_init, when enabled or disabled call
-inject_me. Isn't that exactly what the TRACE_EVENT_INJECT() is doing?
-
-I have no qualms about adding lock_class_init, I just don't think we
-need another TRACE_EVENT macro, that is very inflexible. I rather
-consolidate the macros in ftrace.h than be adding new ones.
-
--- Steve
-
-
+What error messages did you see on your screen?
