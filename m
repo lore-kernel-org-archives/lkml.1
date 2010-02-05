@@ -1,54 +1,112 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933746Ab0BESr6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 13:47:58 -0500
-Received: from mga02.intel.com ([134.134.136.20]:59514 "EHLO mga02.intel.com"
+	id S933751Ab0BESsS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 13:48:18 -0500
+Received: from mga03.intel.com ([143.182.124.21]:52985 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933713Ab0BESr4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 13:47:56 -0500
+	id S933729Ab0BESsP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Feb 2010 13:48:15 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.49,414,1262592000"; 
-   d="scan'208";a="593522686"
+   d="scan'208";a="240978464"
 From: Mark Allyn <mark.a.allyn@intel.com>
 To: linux-kernel@vger.kernel.org, alan@linux.intel.com,
        charles.f.johnson@intel.com, greg@kroah.com
 Cc: Mark Allyn <mark.a.allyn@intel.com>
-Subject: [PATCH 1/6] staging;rar_register: renaming driver to rar_register
-Date: Fri,  5 Feb 2010 10:52:09 -0800
-Message-Id: <1265395929-15946-1-git-send-email-mark.a.allyn@intel.com>
+Subject: [PATCH 2/6] staging:rar_register: renaming directory to rar_register
+Date: Fri,  5 Feb 2010 10:52:26 -0800
+Message-Id: <1265395946-15973-1-git-send-email-mark.a.allyn@intel.com>
 X-Mailer: git-send-email 1.6.0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patch renames rar_driver to rar_register to clarifiy and differentiate
-from rar_handler that will be submitted later
+Renames the directory in which the driver files
+are located; again for clarity.
 
 Signed-off-by: Mark Allyn <mark.a.allyn@intel.com>
 ---
- drivers/staging/rar/Makefile       |    2 +-
- drivers/staging/rar/rar_driver.c   |  440 ------------------------------------
- drivers/staging/rar/rar_driver.h   |   89 --------
- drivers/staging/rar/rar_register.c |  440 ++++++++++++++++++++++++++++++++++++
- drivers/staging/rar/rar_register.h |   89 ++++++++
- 5 files changed, 530 insertions(+), 530 deletions(-)
- delete mode 100644 drivers/staging/rar/rar_driver.c
- delete mode 100644 drivers/staging/rar/rar_driver.h
- create mode 100644 drivers/staging/rar/rar_register.c
- create mode 100644 drivers/staging/rar/rar_register.h
+ drivers/staging/Kconfig                     |    2 +-
+ drivers/staging/Makefile                    |    2 +-
+ drivers/staging/rar/Kconfig                 |   17 -
+ drivers/staging/rar/Makefile                |    2 -
+ drivers/staging/rar/rar_register.c          |  440 ---------------------------
+ drivers/staging/rar/rar_register.h          |   89 ------
+ drivers/staging/rar_register/Kconfig        |   17 +
+ drivers/staging/rar_register/Makefile       |    2 +
+ drivers/staging/rar_register/rar_register.c |  440 +++++++++++++++++++++++++++
+ drivers/staging/rar_register/rar_register.h |   89 ++++++
+ 10 files changed, 550 insertions(+), 550 deletions(-)
+ delete mode 100644 drivers/staging/rar/Kconfig
+ delete mode 100644 drivers/staging/rar/Makefile
+ delete mode 100644 drivers/staging/rar/rar_register.c
+ delete mode 100644 drivers/staging/rar/rar_register.h
+ create mode 100644 drivers/staging/rar_register/Kconfig
+ create mode 100644 drivers/staging/rar_register/Makefile
+ create mode 100644 drivers/staging/rar_register/rar_register.c
+ create mode 100644 drivers/staging/rar_register/rar_register.h
 
-diff --git a/drivers/staging/rar/Makefile b/drivers/staging/rar/Makefile
-index 5422ed0..d5954cc 100644
---- a/drivers/staging/rar/Makefile
-+++ b/drivers/staging/rar/Makefile
-@@ -1,2 +1,2 @@
- EXTRA_CFLAGS += -DLITTLE__ENDIAN
--obj-$(CONFIG_RAR_REGISTER) += rar_driver.o
-+obj-$(CONFIG_RAR_REGISTER) += rar_register.o
-diff --git a/drivers/staging/rar/rar_driver.c b/drivers/staging/rar/rar_driver.c
+diff --git a/drivers/staging/Kconfig b/drivers/staging/Kconfig
+index 4a2afe7..212ba9a 100644
+--- a/drivers/staging/Kconfig
++++ b/drivers/staging/Kconfig
+@@ -111,7 +111,7 @@ source "drivers/staging/hv/Kconfig"
+ 
+ source "drivers/staging/vme/Kconfig"
+ 
+-source "drivers/staging/rar/Kconfig"
++source "drivers/staging/rar_register/Kconfig"
+ 
+ source "drivers/staging/sep/Kconfig"
+ 
+diff --git a/drivers/staging/Makefile b/drivers/staging/Makefile
+index dc40493..6415f38 100644
+--- a/drivers/staging/Makefile
++++ b/drivers/staging/Makefile
+@@ -36,7 +36,7 @@ obj-$(CONFIG_VT6656)		+= vt6656/
+ obj-$(CONFIG_FB_UDL)		+= udlfb/
+ obj-$(CONFIG_HYPERV)		+= hv/
+ obj-$(CONFIG_VME_BUS)		+= vme/
+-obj-$(CONFIG_RAR_REGISTER)	+= rar/
++obj-$(CONFIG_RAR_REGISTER)	+= rar_register/
+ obj-$(CONFIG_DX_SEP)		+= sep/
+ obj-$(CONFIG_IIO)		+= iio/
+ obj-$(CONFIG_RAMZSWAP)		+= ramzswap/
+diff --git a/drivers/staging/rar/Kconfig b/drivers/staging/rar/Kconfig
 deleted file mode 100644
-index a85a7da..0000000
---- a/drivers/staging/rar/rar_driver.c
+index 17f8bf3..0000000
+--- a/drivers/staging/rar/Kconfig
++++ /dev/null
+@@ -1,17 +0,0 @@
+-#
+-# RAR device configuration
+-#
+-
+-menu "RAR Register Driver"
+-#
+-#	Restricted Access Register Manager
+-#
+-config RAR_REGISTER
+-	tristate "Restricted Access Region Register Driver"
+-	default n
+-	---help---
+-		This driver allows other kernel drivers access to the
+-		contents of the restricted access region control
+-		registers.
+-
+-endmenu
+diff --git a/drivers/staging/rar/Makefile b/drivers/staging/rar/Makefile
+deleted file mode 100644
+index d5954cc..0000000
+--- a/drivers/staging/rar/Makefile
++++ /dev/null
+@@ -1,2 +0,0 @@
+-EXTRA_CFLAGS += -DLITTLE__ENDIAN
+-obj-$(CONFIG_RAR_REGISTER) += rar_register.o
+diff --git a/drivers/staging/rar/rar_register.c b/drivers/staging/rar/rar_register.c
+deleted file mode 100644
+index 51eb5a3..0000000
+--- a/drivers/staging/rar/rar_register.c
 +++ /dev/null
 @@ -1,440 +0,0 @@
 -#include <linux/init.h>
@@ -68,7 +126,7 @@ index a85a7da..0000000
 -#include <linux/pci.h>
 -#include <linux/firmware.h>
 -#include <linux/sched.h>
--#include "rar_driver.h"
+-#include "rar_register.h"
 -
 -/* The following defines are for the IPC process to retrieve RAR in */
 -
@@ -491,10 +549,10 @@ index a85a7da..0000000
 -	} else
 -		return -ENODEV;
 -}
-diff --git a/drivers/staging/rar/rar_driver.h b/drivers/staging/rar/rar_driver.h
+diff --git a/drivers/staging/rar/rar_register.h b/drivers/staging/rar/rar_register.h
 deleted file mode 100644
 index 4172fbf..0000000
---- a/drivers/staging/rar/rar_driver.h
+--- a/drivers/staging/rar/rar_register.h
 +++ /dev/null
 @@ -1,89 +0,0 @@
 -/* === RAR Physical Addresses === */
@@ -586,11 +644,42 @@ index 4172fbf..0000000
 -	} \
 -} while (0)
 -
-diff --git a/drivers/staging/rar/rar_register.c b/drivers/staging/rar/rar_register.c
+diff --git a/drivers/staging/rar_register/Kconfig b/drivers/staging/rar_register/Kconfig
+new file mode 100644
+index 0000000..17f8bf3
+--- /dev/null
++++ b/drivers/staging/rar_register/Kconfig
+@@ -0,0 +1,17 @@
++#
++# RAR device configuration
++#
++
++menu "RAR Register Driver"
++#
++#	Restricted Access Register Manager
++#
++config RAR_REGISTER
++	tristate "Restricted Access Region Register Driver"
++	default n
++	---help---
++		This driver allows other kernel drivers access to the
++		contents of the restricted access region control
++		registers.
++
++endmenu
+diff --git a/drivers/staging/rar_register/Makefile b/drivers/staging/rar_register/Makefile
+new file mode 100644
+index 0000000..d5954cc
+--- /dev/null
++++ b/drivers/staging/rar_register/Makefile
+@@ -0,0 +1,2 @@
++EXTRA_CFLAGS += -DLITTLE__ENDIAN
++obj-$(CONFIG_RAR_REGISTER) += rar_register.o
+diff --git a/drivers/staging/rar_register/rar_register.c b/drivers/staging/rar_register/rar_register.c
 new file mode 100644
 index 0000000..51eb5a3
 --- /dev/null
-+++ b/drivers/staging/rar/rar_register.c
++++ b/drivers/staging/rar_register/rar_register.c
 @@ -0,0 +1,440 @@
 +#include <linux/init.h>
 +#include <linux/module.h>
@@ -1032,11 +1121,11 @@ index 0000000..51eb5a3
 +	} else
 +		return -ENODEV;
 +}
-diff --git a/drivers/staging/rar/rar_register.h b/drivers/staging/rar/rar_register.h
+diff --git a/drivers/staging/rar_register/rar_register.h b/drivers/staging/rar_register/rar_register.h
 new file mode 100644
 index 0000000..4172fbf
 --- /dev/null
-+++ b/drivers/staging/rar/rar_register.h
++++ b/drivers/staging/rar_register/rar_register.h
 @@ -0,0 +1,89 @@
 +/* === RAR Physical Addresses === */
 +struct RAR_address_struct {
