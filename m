@@ -1,13 +1,13 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932916Ab0BEBp6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 20:45:58 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:56673 "EHLO song.cn.fujitsu.com"
+	id S932956Ab0BEBqR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 20:46:17 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:63313 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S932519Ab0BEBpy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 20:45:54 -0500
-Message-ID: <4B6B7862.3090604@cn.fujitsu.com>
-Date: Fri, 05 Feb 2010 09:46:10 +0800
+	id S932515Ab0BEBqL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 20:46:11 -0500
+Message-ID: <4B6B7872.107@cn.fujitsu.com>
+Date: Fri, 05 Feb 2010 09:46:26 +0800
 From: Li Zefan <lizf@cn.fujitsu.com>
 User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
@@ -15,7 +15,7 @@ To: David Miller <davem@davemloft.net>
 CC: Andrew Morton <akpm@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>,
        "netdev@vger.kernel.org" <netdev@vger.kernel.org>
-Subject: [PATCH 06/13] net: netrom: use seq_hlist_foo() helpers
+Subject: [PATCH 07/13] net: ax25: use seq_hlist_foo() helpers
 References: <4B6B77FE.5000104@cn.fujitsu.com>
 In-Reply-To: <4B6B77FE.5000104@cn.fujitsu.com>
 Content-Type: text/plain; charset=UTF-8
@@ -28,150 +28,100 @@ Simplify seq_file code.
 
 Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 ---
- net/netrom/af_netrom.c |   21 ++----------------
- net/netrom/nr_route.c  |   53 ++++++++---------------------------------------
- 2 files changed, 12 insertions(+), 62 deletions(-)
+ net/ax25/af_ax25.c  |   18 +++---------------
+ net/ax25/ax25_uid.c |   25 ++++---------------------
+ 2 files changed, 7 insertions(+), 36 deletions(-)
 
-diff --git a/net/netrom/af_netrom.c b/net/netrom/af_netrom.c
-index 71604c6..a249127 100644
---- a/net/netrom/af_netrom.c
-+++ b/net/netrom/af_netrom.c
-@@ -1267,28 +1267,13 @@ static int nr_ioctl(struct socket *sock, unsigned int cmd, unsigned long arg)
- 
- static void *nr_info_start(struct seq_file *seq, loff_t *pos)
+diff --git a/net/ax25/af_ax25.c b/net/ax25/af_ax25.c
+index 5588ba6..a5beedf 100644
+--- a/net/ax25/af_ax25.c
++++ b/net/ax25/af_ax25.c
+@@ -1863,25 +1863,13 @@ static int ax25_ioctl(struct socket *sock, unsigned int cmd, unsigned long arg)
+ static void *ax25_info_start(struct seq_file *seq, loff_t *pos)
+ 	__acquires(ax25_list_lock)
  {
--	struct sock *s;
+-	struct ax25_cb *ax25;
 -	struct hlist_node *node;
--	int i = 1;
+-	int i = 0;
 -
- 	spin_lock_bh(&nr_list_lock);
--	if (*pos == 0)
--		return SEQ_START_TOKEN;
--
--	sk_for_each(s, node, &nr_list) {
+ 	spin_lock_bh(&ax25_list_lock);
+-	ax25_for_each(ax25, node, &ax25_list) {
 -		if (i == *pos)
--			return s;
+-			return ax25;
 -		++i;
 -	}
 -	return NULL;
-+	return seq_hlist_start_head(&nr_list, *pos);
++	return seq_hlist_start(&ax25_list, *pos);
  }
  
- static void *nr_info_next(struct seq_file *seq, void *v, loff_t *pos)
+ static void *ax25_info_next(struct seq_file *seq, void *v, loff_t *pos)
  {
 -	++*pos;
 -
--	return (v == SEQ_START_TOKEN) ? sk_head(&nr_list)
--		: sk_next((struct sock *)v);
-+	return seq_hlist_next(v, &nr_list, pos);
+-	return hlist_entry( ((struct ax25_cb *)v)->ax25_node.next,
+-			    struct ax25_cb, ax25_node);
++	return seq_hlist_next(v, &ax25_list, pos);
  }
  
- static void nr_info_stop(struct seq_file *seq, void *v)
-@@ -1298,7 +1283,7 @@ static void nr_info_stop(struct seq_file *seq, void *v)
+ static void ax25_info_stop(struct seq_file *seq, void *v)
+@@ -1892,7 +1880,7 @@ static void ax25_info_stop(struct seq_file *seq, void *v)
  
- static int nr_info_show(struct seq_file *seq, void *v)
+ static int ax25_info_show(struct seq_file *seq, void *v)
  {
--	struct sock *s = v;
-+	struct sock *s = sk_entry(v);
- 	struct net_device *dev;
- 	struct nr_sock *nr;
- 	const char *devname;
-diff --git a/net/netrom/nr_route.c b/net/netrom/nr_route.c
-index e2e2d33..5cc6480 100644
---- a/net/netrom/nr_route.c
-+++ b/net/netrom/nr_route.c
-@@ -863,33 +863,13 @@ int nr_route_frame(struct sk_buff *skb, ax25_cb *ax25)
+-	ax25_cb *ax25 = v;
++	ax25_cb *ax25 = hlist_entry(v, struct ax25_cb, ax25_node);
+ 	char buf[11];
+ 	int k;
  
- static void *nr_node_start(struct seq_file *seq, loff_t *pos)
+diff --git a/net/ax25/ax25_uid.c b/net/ax25/ax25_uid.c
+index 832bcf0..9f13f6e 100644
+--- a/net/ax25/ax25_uid.c
++++ b/net/ax25/ax25_uid.c
+@@ -146,31 +146,13 @@ int ax25_uid_ioctl(int cmd, struct sockaddr_ax25 *sax)
+ static void *ax25_uid_seq_start(struct seq_file *seq, loff_t *pos)
+ 	__acquires(ax25_uid_lock)
  {
--	struct nr_node *nr_node;
+-	struct ax25_uid_assoc *pt;
 -	struct hlist_node *node;
 -	int i = 1;
 -
- 	spin_lock_bh(&nr_node_list_lock);
+ 	read_lock(&ax25_uid_lock);
+-
 -	if (*pos == 0)
 -		return SEQ_START_TOKEN;
 -
--	nr_node_for_each(nr_node, node, &nr_node_list) {
+-	ax25_uid_for_each(pt, node, &ax25_uid_list) {
 -		if (i == *pos)
--			return nr_node;
+-			return pt;
 -		++i;
 -	}
--
 -	return NULL;
-+	return seq_hlist_start_head(&nr_node_list, *pos);
++	return seq_hlist_start_head(&ax25_uid_list, *pos);
  }
  
- static void *nr_node_next(struct seq_file *seq, void *v, loff_t *pos)
+ static void *ax25_uid_seq_next(struct seq_file *seq, void *v, loff_t *pos)
  {
--	struct hlist_node *node;
 -	++*pos;
--
--	node = (v == SEQ_START_TOKEN)
--		? nr_node_list.first
--		: ((struct nr_node *)v)->node_node.next;
--
--	return hlist_entry(node, struct nr_node, node_node);
-+	return seq_hlist_next(v, &nr_node_list, pos);
+-	if (v == SEQ_START_TOKEN)
+-		return ax25_uid_list.first;
+-	else
+-		return hlist_entry(((ax25_uid_assoc *)v)->uid_node.next,
+-			   ax25_uid_assoc, uid_node);
++	return seq_hlist_next(v, &ax25_uid_list, pos);
  }
  
- static void nr_node_stop(struct seq_file *seq, void *v)
-@@ -906,7 +886,9 @@ static int nr_node_show(struct seq_file *seq, void *v)
- 		seq_puts(seq,
- 			 "callsign  mnemonic w n qual obs neigh qual obs neigh qual obs neigh\n");
- 	else {
--		struct nr_node *nr_node = v;
-+		struct nr_node *nr_node = hlist_entry(v, struct nr_node,
-+						      node_node);
-+
- 		nr_node_lock(nr_node);
- 		seq_printf(seq, "%-9s %-7s  %d %d",
- 			ax2asc(buf, &nr_node->callsign),
-@@ -949,31 +931,13 @@ const struct file_operations nr_nodes_fops = {
- 
- static void *nr_neigh_start(struct seq_file *seq, loff_t *pos)
- {
--	struct nr_neigh *nr_neigh;
--	struct hlist_node *node;
--	int i = 1;
--
- 	spin_lock_bh(&nr_neigh_list_lock);
--	if (*pos == 0)
--		return SEQ_START_TOKEN;
--
--	nr_neigh_for_each(nr_neigh, node, &nr_neigh_list) {
--		if (i == *pos)
--			return nr_neigh;
--	}
--	return NULL;
-+	return seq_hlist_start_head(&nr_neigh_list, *pos);
- }
- 
- static void *nr_neigh_next(struct seq_file *seq, void *v, loff_t *pos)
- {
--	struct hlist_node *node;
--	++*pos;
--
--	node = (v == SEQ_START_TOKEN)
--		? nr_neigh_list.first
--		: ((struct nr_neigh *)v)->neigh_node.next;
--
--	return hlist_entry(node, struct nr_neigh, neigh_node);
-+	return seq_hlist_next(v, &nr_neigh_list, pos);
- }
- 
- static void nr_neigh_stop(struct seq_file *seq, void *v)
-@@ -989,8 +953,9 @@ static int nr_neigh_show(struct seq_file *seq, void *v)
+ static void ax25_uid_seq_stop(struct seq_file *seq, void *v)
+@@ -186,8 +168,9 @@ static int ax25_uid_seq_show(struct seq_file *seq, void *v)
  	if (v == SEQ_START_TOKEN)
- 		seq_puts(seq, "addr  callsign  dev  qual lock count failed digipeaters\n");
+ 		seq_printf(seq, "Policy: %d\n", ax25_uid_policy);
  	else {
--		struct nr_neigh *nr_neigh = v;
-+		struct nr_neigh *nr_neigh;
+-		struct ax25_uid_assoc *pt = v;
++		struct ax25_uid_assoc *pt;
  
-+		nr_neigh = hlist_entry(v, struct nr_neigh, neigh_node);
- 		seq_printf(seq, "%05d %-9s %-4s  %3d    %d   %3d    %3d",
- 			nr_neigh->number,
- 			ax2asc(buf, &nr_neigh->callsign),
++		pt = hlist_entry(v, struct ax25_uid_assoc, uid_node);
+ 		seq_printf(seq, "%6d %s\n", pt->uid, ax2asc(buf, &pt->call));
+ 	}
+ 	return 0;
 -- 
 1.6.3
 
