@@ -1,80 +1,47 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755005Ab0BEIbw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 03:31:52 -0500
-Received: from mail-fx0-f220.google.com ([209.85.220.220]:40893 "EHLO
-	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752314Ab0BEIbv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 03:31:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=hmFKiv+JDULw6IChaoo/h8oRI/SwRFJifUIHa2KncHkdETggYIJaeCr8GrUIsDxiD4
-         iFJX1FFaPFkS3fXpcxxTLjy2EImnlUq6OJN39LygTurwEHJR+PEiOcytJxCto7nq1bhh
-         JM9VJ/A7t6m6vruLN+kc3qXGg16Ic9Pqz17Fk=
-Subject: Re: [PATCH] MMC: fix hang if card was removed during suspend and
- unsafe resume was enabled
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-mmc@vger.kernel.org, Philip Langdale <philipl@overt.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Jorg Schummer <ext-jorg.2.schummer@nokia.com>,
-       linux-pm <linux-pm@lists.linux-foundation.org>
-In-Reply-To: <20100204160957.1c51cc1b.akpm@linux-foundation.org>
-References: <1265219241.12549.8.camel@maxim-laptop>
-	 <1265325495-4220-1-git-send-email-maximlevitsky@gmail.com>
-	 <20100204160957.1c51cc1b.akpm@linux-foundation.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 05 Feb 2010 10:31:42 +0200
-Message-ID: <1265358702.3424.8.camel@maxim-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	id S1755389Ab0BEIeg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 03:34:36 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:44236 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753644Ab0BEIef (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Feb 2010 03:34:35 -0500
+Date: Fri, 5 Feb 2010 08:34:22 +0000 (GMT)
+From: Dave Airlie <airlied@linux.ie>
+X-X-Sender: airlied@skynet.skynet.ie
+To: Ingo Molnar <mingo@elte.hu>
+cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-kernel@vger.kernel.org,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, dri-devel@lists.sf.net,
+       Alex Deucher <alexdeucher@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org
+Subject: Re: hung bootup with "drm/radeon/kms: move radeon KMS on/off switch
+ out of staging."
+In-Reply-To: <20100205075645.GF9320@elte.hu>
+Message-ID: <alpine.DEB.2.00.1002050832450.2995@skynet.skynet.ie>
+References: <20100204181218.GA6175@elte.hu> <a728f9f91002041030o7c8d38edxe573bc0a1327d79@mail.gmail.com> <20100204190649.GB6665@elte.hu> <a728f9f91002041118m6415844fp1740f18fdc1c9757@mail.gmail.com> <20100204193232.GD6665@elte.hu> <20100204115316.69beee75@jbarnes-piketon>
+ <20100204202254.GA24716@elte.hu> <20100204204829.GA24608@srcf.ucam.org> <20100204210559.GC19050@elte.hu> <20100204210950.GA25295@srcf.ucam.org> <20100205075645.GF9320@elte.hu>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-02-04 at 16:09 -0800, Andrew Morton wrote: 
-> On Fri,  5 Feb 2010 01:18:15 +0200 Maxim Levitsky <maximlevitsky@gmail.com> wrote:
-> 
-> > Currently removal of the card leads to del_disk called indirectly by mmc core.
-> > This function expects userspace to be running, which isn't when .resume is called
-> > 
-> > Fix that by removing the code that did that in mmc_resume_host. It is possible
-> > because card detection logic will kick it later and remove the card.
-> 
-> I don't really understand.  The above implies that to trigger this bug,
-> one needs to physically remove the card during a resume operation.  ie:
-> a human-vs-computer race.  Sounds unlikely?
-> 
-> So...  exactly what steps does the user need to take to trigger this
 
-Sorry for describing this poorly.
-The steps are:
+> If it now does not boot up if all its sub-options are enabled, even of some 
+> of those sub-options are new, does that count as a driver regression? Sure it 
+> does to me ...
 
--> Have a kernel with CONFIG_MMC_UNSAFE_RESUME
--> Insert MMC/SD card
--> Suspend/hibernate the system
--> While system is hibernated/suspended pull the card off
--> Resume the system
--> Hang
+But it doesn't to anyone else under any reasonable meaning of the word 
+regression. 
 
+The config option states
+"Choose this option if you want kernel modesetting enabled by default,
+          and you have a new enough userspace to support this. Running old
+          userspaces with this enabled will cause pain."
 
-if CONFIG_MMC_UNSAFE_RESUME is set, mmc core allows the user to
-suspend/resume the card normally assuming he won't change the card or
-modify it in another system. The former case is actually handled quite
-well.
+Will cause pain sounds painful to me, I can make it seem much worse if 
+you'd like.
 
-if CONFIG_MMC_UNSAFE_RESUME isn't set, it removes the card during
-suspend, and I now think (and will test) that this will still hang the
-system this time on suspend.
-
-Maybe we can make del_disk behave well if called with userspace frozen?
-After all if user calls it, very likely that hardware is absent thus
-there is no point in syncing (which I think triggers the hang)....
-
-Best regards,
-Maxim Levitsky
-
+Dave.
