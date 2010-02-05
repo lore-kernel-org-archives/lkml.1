@@ -1,22 +1,24 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755368Ab0BEE0e (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 23:26:34 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45424
+	id S1755825Ab0BEE1m (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 23:27:42 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45432
 	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754333Ab0BEE0c (ORCPT
+	by vger.kernel.org with ESMTP id S1754361Ab0BEE1l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 23:26:32 -0500
-Date: Thu, 04 Feb 2010 20:26:45 -0800 (PST)
-Message-Id: <20100204.202645.18974249.davem@davemloft.net>
-To: sfr@canb.auug.org.au
-Cc: jkosina@suse.cz, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       adam.buchbinder@gmail.com, netdev@vger.kernel.org,
-       bhutchings@solarflare.com
-Subject: Re: linux-next: manual merge of the trivial tree with the net tree
+	Thu, 4 Feb 2010 23:27:41 -0500
+Date: Thu, 04 Feb 2010 20:27:54 -0800 (PST)
+Message-Id: <20100204.202754.252960217.davem@davemloft.net>
+To: Tristram.Ha@Micrel.Com
+Cc: shemminger@vyatta.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.33 4/4] net: Add PCI vendor and device ids for
+ Micrel KSZ8841/2 PCI devices
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <20100205133747.14ca83f2.sfr@canb.auug.org.au>
-References: <20100205133747.14ca83f2.sfr@canb.auug.org.au>
+In-Reply-To: <14385191E87B904DBD836449AA30269D5CC333@MORGANITE.micrel.com>
+References: <14385191E87B904DBD836449AA30269D021A55@MORGANITE.micrel.com>
+	<20100204154004.44e3d607@nehalam>
+	<14385191E87B904DBD836449AA30269D5CC333@MORGANITE.micrel.com>
 X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -25,23 +27,19 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Fri, 5 Feb 2010 13:37:47 +1100
+From: "Ha, Tristram" <Tristram.Ha@Micrel.Com>
+Date: Thu, 4 Feb 2010 18:55:31 -0800
 
-> Today's linux-next merge of the trivial tree got a conflict in
-> drivers/net/sfc/mcdi_pcol.h between commit
-> 5297a98d5dd6de86fe1e2ffc9ea60cdf59b71443 ("sfc: Update MCDI protocol
-> definitions") from the net tree and commit
-> 4887b438e6880c73c4b44d868211e70c1f3deaec ("Fix misspelling of
-> "successful" and variants in comments") from the trivial tree.
+> Stephen Hemminger wrote:
+>> Current practice is to NOT update this file and instead keep constants
+> in the individual driver.
 > 
-> I fixed it up (see below) and can carry the fix as necessary.
+> It seems I received conflicted recommendation from Alan Cox:
 
-Ugh, this is the second spelling fix that's hit a conflict
-in the same exact tree.
+Alan's understanding is several years out of date.
 
-Please, submit these things to the subsystem maintainers instead
-of keeping them together in a totally seperate tree.  That way
-we won't have to keep fighting these things.
+Stephen's is correct.
 
-Thanks.
+But you don't need these stupid defines at all, all you
+use them for is the PCI device ID table in your driver
+so just use constants.
