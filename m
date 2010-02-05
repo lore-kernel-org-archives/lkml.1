@@ -1,70 +1,82 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933668Ab0BEBIs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 20:08:48 -0500
-Received: from ixro-out-rtc.ixiacom.com ([92.87.192.98]:30064 "EHLO
-	ixro-ex1.ixiacom.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933649Ab0BEBIq (ORCPT
+	id S933656Ab0BEBHW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 20:07:22 -0500
+Received: from sentry-three.sandia.gov ([132.175.109.17]:33177 "EHLO
+	sentry-three.sandia.gov" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933609Ab0BEBHU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 20:08:46 -0500
-From: Octavian Purdila <opurdila@ixiacom.com>
-Organization: Ixia
-To: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-Subject: Re: [RFC Patch] net: reserve ports for applications using fixed port numbers
-Date: Fri, 5 Feb 2010 03:05:22 +0200
-User-Agent: KMail/1.12.2 (Linux/2.6.32-trunk-686; KDE/4.3.2; i686; ; )
-Cc: davem@davemloft.net, amwang@redhat.com, linux-kernel@vger.kernel.org,
-       eric.dumazet@gmail.com, linux-rdma@vger.kernel.org,
-       netdev@vger.kernel.org, nhorman@tuxdriver.com,
-       linux-sctp@vger.kernel.org
-References: <20100204.094110.64247447.davem@davemloft.net> <20100204.135639.69720709.davem@davemloft.net> <201002050041.o150fCO8081208@www262.sakura.ne.jp>
-In-Reply-To: <201002050041.o150fCO8081208@www262.sakura.ne.jp>
+	Thu, 4 Feb 2010 20:07:20 -0500
+X-WSS-ID: 0KXCGGE-08-CMQ-02
+X-M-MSG: 
+X-Server-Uuid: AF72F651-81B1-4134-BA8C-A8E1A4E620FF
+Subject: Re: [PATCH] seastar - SeaStar Ethernet driver
+From: "Kevin Pedretti" <ktpedre@sandia.gov>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+cc: "David Miller" <davem@davemloft.net>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20100204231621.7a13695a@lxorguk.ukuu.org.uk>
+References: <20100202205845.GE5246@hawkeye.sandia.gov>
+ <20100202.134251.15604523.davem@davemloft.net>
+ <1265160242.15726.20.camel@hawkeye.sandia.gov>
+ <20100202.174045.135005544.davem@davemloft.net>
+ <1265324464.23523.51.camel@hawkeye.sandia.gov>
+ <20100204231621.7a13695a@lxorguk.ukuu.org.uk>
+Date: Thu, 4 Feb 2010 17:59:23 -0700
+Message-ID: <1265331563.23523.100.camel@hawkeye.sandia.gov>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
+X-Mailer: Evolution 2.28.1
+X-TMWD-Spam-Summary: TS=20100205010712; ID=1; SEV=2.3.1;
+ DFV=B2010020501; IFV=NA; AIF=B2010020501; RPD=5.03.0010; ENG=NA;
+ RPDID=7374723D303030312E30413031303230372E34423642364634302E303043353A534346535441543838363133332C73733D312C6667733D30;
+ CAT=NONE; CON=NONE; SIG=AAAAAAAAAAAAAAAAAAAAAAAAfQ==
+X-MMS-Spam-Filter-ID: B2010020501_5.03.0010
+X-WSS-ID: 6775B0B52DG2141254-01-01
+Content-Type: text/plain;
+ charset=utf-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <201002050305.22227.opurdila@ixiacom.com>
-X-OriginalArrivalTime: 05 Feb 2010 01:08:44.0192 (UTC) FILETIME=[C3190200:01CAA5FF]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 05 February 2010 02:41:12 you wrote:
-> David Miller wrote:
-> > > Octavian Purdila wrote:
-> > >> int inet_is_reserved_local_port(int port)
-> > >> {
-> > >> 	if (test_bit(port, reserved_ports))
-> > >> 		return 1;
-> > >> 	return 0;
-> > >> }
-> > >
-> > > Above check is exactly what I'm doing in the LSM hook.
-> >
-> > But his version can be done inline in 2 or 3 instructions.
-> >
-> > An LSM hook will result in an indirect function call,
-> > all live registers spilled to the stack, then all of
-> > those reloaded when the function returns.
-> >
-> > It will be much more expensive.
+On Thu, 2010-02-04 at 16:16 -0700, Alan Cox wrote:
+> - tcpdump etc once coaxed would display seastar frames not fake ethernet
+> - the config tools would actually report what it really was
+> - non IP layers and userspace won't keep trying to do things you don't
+>   want (what does it do right now with vlans I wonder 8))
+> - there will be no ARP confusion
 > 
-> If you can accept his version, I want to use his version (with an interface
->  for updating above "reserved_ports" by not only root user's sysctl() but
->  also MAC's policy configuration).
-> 
+> If it wants to stay compatible and pretend to be ethernet you probably
+> need a message type for "encapsulated ethernet", you can then encapsulate
+> anything not IP and stay compatible by keeping IP sent the way it is
+> now ? Thats if it wants to in the first place.
 
-I think that simply using an interface to update the reserved_ports from MAC 
-policy configuration module wouldn't work, as root will be able to modify the 
-policy via sysctl.
+I agree the current situation is rather confusing and a lot or most of
+the standard tools will break.  I have used tcpdump with some success,
+but I'm sure there's lots of stuff broken.
 
-I think that we might need to:
+We do need to stay compatible with the existing proprietary driver.  The
+usage model we're after is leaving all of the service nodes (nodes users
+login to, serve I/O, etc.) booted with the existing proprietary software
+and rebooting the compute nodes (99% of the nodes) with a modern Linux
+kernel running this open-source seastar driver.  The compute nodes need
+to be able to communicate with each other and with the service nodes
+using IP (point-to-point).  Users login to the service nodes and then,
+for example, can ssh to compute nodes, scp files to compute nodes,
+etc.  
 
-a) have a reserved_port updater
+Probably critical background: each service node and each compute node
+has a seastar NIC that directly connects to nearest neighbors, forming a
+3-D torus.  The only way for the nodes to communicate is via this
+network. 
 
-b) put a LSM hook into that
+I like the idea of encapsulating whole ethernet frames in a new message
+type.  But won't the lack of broadcast (and multi-cast) still be an
+issue for most protocols?  I also don't have much control over the
+seastar header, but can probably find an ignored bit somewhere to mark
+the new message type.
 
-c) use the reserved_port updater from sysctl
-
+Kevin
 
 
