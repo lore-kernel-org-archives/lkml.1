@@ -1,229 +1,237 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934032Ab0BEWl1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 17:41:27 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:1835 "EHLO mx1.redhat.com"
+	id S933980Ab0BEWqc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 17:46:32 -0500
+Received: from hera.kernel.org ([140.211.167.34]:56765 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934011Ab0BEWkJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 17:40:09 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip v9 6/9] kprobes/x86: Cleanup save/restore registers
-To: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Jim Keniston <jkenisto@us.ibm.com>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Anders Kaseorg <andersk@ksplice.com>,
-       Tim Abbott <tabbott@ksplice.com>, Andi Kleen <andi@firstfloor.org>,
-       Jason Baron <jbaron@redhat.com>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>
-Date: Fri, 05 Feb 2010 17:47:00 -0500
-Message-ID: <20100205224700.31959.50786.stgit@dhcp-100-2-132.bos.redhat.com>
-In-Reply-To: <20100205224613.31959.59651.stgit@dhcp-100-2-132.bos.redhat.com>
-References: <20100205224613.31959.59651.stgit@dhcp-100-2-132.bos.redhat.com>
-User-Agent: StGIT/0.14.3
+	id S933956Ab0BEWqa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Feb 2010 17:46:30 -0500
+Message-ID: <4B6C9F69.4040605@kernel.org>
+Date: Fri, 05 Feb 2010 14:44:57 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: Brandon Philips <bphilips@suse.de>
+CC: Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Suresh Siddha <suresh.b.siddha@intel.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: keep chip_data in create_irq_nr and destroy_irq
+References: <20100203033109.GA17985@jenkins.home.ifup.org> <4B694DEF.70301@kernel.org> <20100203174216.GB17985@jenkins.home.ifup.org> <4B6BDAC0.3090900@kernel.org> <20100205210926.GE4930@jenkins.home.ifup.org>
+In-Reply-To: <20100205210926.GE4930@jenkins.home.ifup.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Introduce SAVE/RESOTRE_REGS_STRING for cleanup kretprobe-trampoline asm
-code. These macros will be used for emulating interruption.
+On 02/05/2010 01:09 PM, Brandon Philips wrote:
+> When two drivers are setting up MSI-X at the same time via
+> pci_enable_msix() there is a race.  See this dmesg excerpt:
+> 
+> [   85.170610] ixgbe 0000:02:00.1: irq 97 for MSI/MSI-X
+> [   85.170611]   alloc irq_desc for 99 on node -1
+> [   85.170613] igb 0000:08:00.1: irq 98 for MSI/MSI-X
+> [   85.170614]   alloc kstat_irqs on node -1
+> [   85.170616] alloc irq_2_iommu on node -1
+> [   85.170617]   alloc irq_desc for 100 on node -1
+> [   85.170619]   alloc kstat_irqs on node -1
+> [   85.170621] alloc irq_2_iommu on node -1
+> [   85.170625] ixgbe 0000:02:00.1: irq 99 for MSI/MSI-X
+> [   85.170626]   alloc irq_desc for 101 on node -1
+> [   85.170628] igb 0000:08:00.1: irq 100 for MSI/MSI-X
+> [   85.170630]   alloc kstat_irqs on node -1
+> [   85.170631] alloc irq_2_iommu on node -1
+> [   85.170635]   alloc irq_desc for 102 on node -1
+> [   85.170636]   alloc kstat_irqs on node -1
+> [   85.170639] alloc irq_2_iommu on node -1
+> [   85.170646] BUG: unable to handle kernel NULL pointer dereference
+> at 0000000000000088
+> 
+> As you can see igb and ixgbe are both alternating on create_irq_nr()
+> via pci_enable_msix() in their probe function.
+> 
+> ixgbe: While looping through irq_desc_ptrs[] via create_irq_nr() ixgbe
+> choses irq_desc_ptrs[102] and exits the loop, drops vector_lock and
+> calls dynamic_irq_init. Then it sets irq_desc_ptrs[102]->chip_data =
+> NULL via dynamic_irq_init().
+> 
+> igb: Grabs the vector_lock now and starts looping over irq_desc_ptrs[]
+> via create_irq_nr(). It gets to irq_desc_ptrs[102] and does this:
+> 
+> 	cfg_new = irq_desc_ptrs[102]->chip_data;
+> 	if (cfg_new->vector != 0)
+> 		continue;
+> 
+> This hits the NULL deref.
+> 
+> Another possible race exists via pci_disable_msix() in a driver or in
+> the number of error paths that call free_msi_irqs():
+> 
+> destroy_irq()
+> dynamic_irq_cleanup() which sets desc->chip_data = NULL
+> ...race window...
+> desc->chip_data = cfg;
+> 
+> Remove the save and restore code for cfg in create_irq_nr() and
+> destroy_irq() and take the desc->lock when checking the irq_cfg.
+> 
+> Reported-and-analyzed-by: Brandon Philips <bphilips@suse.de>
+> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> Signed-off-by: Brandon Phiilps <bphilips@suse.de>
+> Cc: stable@kernel.org
+> 
+> ---
+>  arch/x86/kernel/apic/io_apic.c |   14 +++--------
+>  include/linux/irq.h            |    2 +
+>  kernel/irq/chip.c              |   52 +++++++++++++++++++++++++++++++++--------
+>  3 files changed, 49 insertions(+), 19 deletions(-)
+> 
+> Index: linux-2.6/arch/x86/kernel/apic/io_apic.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/kernel/apic/io_apic.c
+> +++ linux-2.6/arch/x86/kernel/apic/io_apic.c
+> @@ -3228,12 +3228,9 @@ unsigned int create_irq_nr(unsigned int
+>  	}
+>  	spin_unlock_irqrestore(&vector_lock, flags);
+>  
+> -	if (irq > 0) {
+> -		dynamic_irq_init(irq);
+> -		/* restore it, in case dynamic_irq_init clear it */
+> -		if (desc_new)
+> -			desc_new->chip_data = cfg_new;
+> -	}
+> +	if (irq > 0)
+> +		dynamic_irq_init_keep_chip_data(irq);
+> +
+>  	return irq;
+>  }
+>  
+> @@ -3260,10 +3257,7 @@ void destroy_irq(unsigned int irq)
+>  
+>  	/* store it, in case dynamic_irq_cleanup clear it */
+>  	desc = irq_to_desc(irq);
+> -	cfg = desc->chip_data;
+> -	dynamic_irq_cleanup(irq);
+> -	/* connect back irq_cfg */
+> -	desc->chip_data = cfg;
+> +	dynamic_irq_cleanup_keep_chip_data(irq);
+>  
+>  	free_irte(irq);
+>  	spin_lock_irqsave(&vector_lock, flags);
+> Index: linux-2.6/include/linux/irq.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/irq.h
+> +++ linux-2.6/include/linux/irq.h
+> @@ -400,7 +400,9 @@ static inline int irq_has_action(unsigne
+>  
+>  /* Dynamic irq helper functions */
+>  extern void dynamic_irq_init(unsigned int irq);
+> +extern void dynamic_irq_init_keep_chip_data(unsigned int irq);
+>  extern void dynamic_irq_cleanup(unsigned int irq);
+> +extern void dynamic_irq_cleanup_keep_chip_data(unsigned int irq);
+>  
+>  /* Set/get chip/data for an IRQ: */
+>  extern int set_irq_chip(unsigned int irq, struct irq_chip *chip);
+> Index: linux-2.6/kernel/irq/chip.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/irq/chip.c
+> +++ linux-2.6/kernel/irq/chip.c
+> @@ -18,11 +18,7 @@
+>  
+>  #include "internals.h"
+>  
+> -/**
+> - *	dynamic_irq_init - initialize a dynamically allocated irq
+> - *	@irq:	irq number to initialize
+> - */
+> -void dynamic_irq_init(unsigned int irq)
+> +static void dynamic_irq_init_x(unsigned int irq, bool keep_chip_data)
+>  {
+>  	struct irq_desc *desc;
+>  	unsigned long flags;
+> @@ -41,7 +37,8 @@ void dynamic_irq_init(unsigned int irq)
+>  	desc->depth = 1;
+>  	desc->msi_desc = NULL;
+>  	desc->handler_data = NULL;
+> -	desc->chip_data = NULL;
+> +	if (!keep_chip_data)
+> +		desc->chip_data = NULL;
+>  	desc->action = NULL;
+>  	desc->irq_count = 0;
+>  	desc->irqs_unhandled = 0;
+> @@ -55,10 +52,26 @@ void dynamic_irq_init(unsigned int irq)
+>  }
+>  
+>  /**
+> - *	dynamic_irq_cleanup - cleanup a dynamically allocated irq
+> + *	dynamic_irq_init - initialize a dynamically allocated irq
+>   *	@irq:	irq number to initialize
+>   */
+> -void dynamic_irq_cleanup(unsigned int irq)
+> +void dynamic_irq_init(unsigned int irq)
+> +{
+> +	dynamic_irq_init_x(irq, false);
+> +}
+> +
+> +/**
+> + *	dynamic_irq_init_keep_chip_data - initialize a dynamically allocated irq
+> + *	@irq:	irq number to initialize
+> + *
+> + * 	does not set irq_to_desc(irq)->chip_data to NULL
+> + */
+> +void dynamic_irq_init_keep_chip_data(unsigned int irq)
+> +{
+> +	dynamic_irq_init_x(irq, true);
+> +}
+> +
+> +static void dynamic_irq_cleanup_x(unsigned int irq, bool keep_chip_data)
+>  {
+>  	struct irq_desc *desc = irq_to_desc(irq);
+>  	unsigned long flags;
+> @@ -77,7 +90,8 @@ void dynamic_irq_cleanup(unsigned int ir
+>  	}
+>  	desc->msi_desc = NULL;
+>  	desc->handler_data = NULL;
+> -	desc->chip_data = NULL;
+> +	if (!keep_chip_data)
+> +		desc->chip_data = NULL;
+>  	desc->handle_irq = handle_bad_irq;
+>  	desc->chip = &no_irq_chip;
+>  	desc->name = NULL;
+> @@ -85,6 +99,26 @@ void dynamic_irq_cleanup(unsigned int ir
+>  	raw_spin_unlock_irqrestore(&desc->lock, flags);
+>  }
+>  
+> +/**
+> + *	dynamic_irq_cleanup - cleanup a dynamically allocated irq
+> + *	@irq:	irq number to initialize
+> + */
+> +void dynamic_irq_cleanup(unsigned int irq)
+> +{
+> +	dynamic_irq_init_x(irq, false);
 
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Jim Keniston <jkenisto@us.ibm.com>
-Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Cc: Christoph Hellwig <hch@infradead.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: H. Peter Anvin <hpa@zytor.com>
-Cc: Anders Kaseorg <andersk@ksplice.com>
-Cc: Tim Abbott <tabbott@ksplice.com>
-Cc: Andi Kleen <andi@firstfloor.org>
-Cc: Jason Baron <jbaron@redhat.com>
-Cc: Mathieu Desnoyers <compudj@krystal.dyndns.org>
----
-
- arch/x86/kernel/kprobes.c |  128 ++++++++++++++++++++++++---------------------
- 1 files changed, 67 insertions(+), 61 deletions(-)
-
-diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
-index c69bb65..4ae95be 100644
---- a/arch/x86/kernel/kprobes.c
-+++ b/arch/x86/kernel/kprobes.c
-@@ -554,6 +554,69 @@ static int __kprobes kprobe_handler(struct pt_regs *regs)
- 	return 0;
- }
- 
-+#ifdef CONFIG_X86_64
-+#define SAVE_REGS_STRING		\
-+	/* Skip cs, ip, orig_ax. */	\
-+	"	subq $24, %rsp\n"	\
-+	"	pushq %rdi\n"		\
-+	"	pushq %rsi\n"		\
-+	"	pushq %rdx\n"		\
-+	"	pushq %rcx\n"		\
-+	"	pushq %rax\n"		\
-+	"	pushq %r8\n"		\
-+	"	pushq %r9\n"		\
-+	"	pushq %r10\n"		\
-+	"	pushq %r11\n"		\
-+	"	pushq %rbx\n"		\
-+	"	pushq %rbp\n"		\
-+	"	pushq %r12\n"		\
-+	"	pushq %r13\n"		\
-+	"	pushq %r14\n"		\
-+	"	pushq %r15\n"
-+#define RESTORE_REGS_STRING		\
-+	"	popq %r15\n"		\
-+	"	popq %r14\n"		\
-+	"	popq %r13\n"		\
-+	"	popq %r12\n"		\
-+	"	popq %rbp\n"		\
-+	"	popq %rbx\n"		\
-+	"	popq %r11\n"		\
-+	"	popq %r10\n"		\
-+	"	popq %r9\n"		\
-+	"	popq %r8\n"		\
-+	"	popq %rax\n"		\
-+	"	popq %rcx\n"		\
-+	"	popq %rdx\n"		\
-+	"	popq %rsi\n"		\
-+	"	popq %rdi\n"		\
-+	/* Skip orig_ax, ip, cs */	\
-+	"	addq $24, %rsp\n"
-+#else
-+#define SAVE_REGS_STRING		\
-+	/* Skip cs, ip, orig_ax and gs. */	\
-+	"	subl $16, %esp\n"	\
-+	"	pushl %fs\n"		\
-+	"	pushl %ds\n"		\
-+	"	pushl %es\n"		\
-+	"	pushl %eax\n"		\
-+	"	pushl %ebp\n"		\
-+	"	pushl %edi\n"		\
-+	"	pushl %esi\n"		\
-+	"	pushl %edx\n"		\
-+	"	pushl %ecx\n"		\
-+	"	pushl %ebx\n"
-+#define RESTORE_REGS_STRING		\
-+	"	popl %ebx\n"		\
-+	"	popl %ecx\n"		\
-+	"	popl %edx\n"		\
-+	"	popl %esi\n"		\
-+	"	popl %edi\n"		\
-+	"	popl %ebp\n"		\
-+	"	popl %eax\n"		\
-+	/* Skip ds, es, fs, gs, orig_ax, and ip. Note: don't pop cs here*/\
-+	"	addl $24, %esp\n"
-+#endif
-+
- /*
-  * When a retprobed function returns, this code saves registers and
-  * calls trampoline_handler() runs, which calls the kretprobe's handler.
-@@ -567,65 +630,16 @@ static void __used __kprobes kretprobe_trampoline_holder(void)
- 			/* We don't bother saving the ss register */
- 			"	pushq %rsp\n"
- 			"	pushfq\n"
--			/*
--			 * Skip cs, ip, orig_ax.
--			 * trampoline_handler() will plug in these values
--			 */
--			"	subq $24, %rsp\n"
--			"	pushq %rdi\n"
--			"	pushq %rsi\n"
--			"	pushq %rdx\n"
--			"	pushq %rcx\n"
--			"	pushq %rax\n"
--			"	pushq %r8\n"
--			"	pushq %r9\n"
--			"	pushq %r10\n"
--			"	pushq %r11\n"
--			"	pushq %rbx\n"
--			"	pushq %rbp\n"
--			"	pushq %r12\n"
--			"	pushq %r13\n"
--			"	pushq %r14\n"
--			"	pushq %r15\n"
-+			SAVE_REGS_STRING
- 			"	movq %rsp, %rdi\n"
- 			"	call trampoline_handler\n"
- 			/* Replace saved sp with true return address. */
- 			"	movq %rax, 152(%rsp)\n"
--			"	popq %r15\n"
--			"	popq %r14\n"
--			"	popq %r13\n"
--			"	popq %r12\n"
--			"	popq %rbp\n"
--			"	popq %rbx\n"
--			"	popq %r11\n"
--			"	popq %r10\n"
--			"	popq %r9\n"
--			"	popq %r8\n"
--			"	popq %rax\n"
--			"	popq %rcx\n"
--			"	popq %rdx\n"
--			"	popq %rsi\n"
--			"	popq %rdi\n"
--			/* Skip orig_ax, ip, cs */
--			"	addq $24, %rsp\n"
-+			RESTORE_REGS_STRING
- 			"	popfq\n"
- #else
- 			"	pushf\n"
--			/*
--			 * Skip cs, ip, orig_ax and gs.
--			 * trampoline_handler() will plug in these values
--			 */
--			"	subl $16, %esp\n"
--			"	pushl %fs\n"
--			"	pushl %es\n"
--			"	pushl %ds\n"
--			"	pushl %eax\n"
--			"	pushl %ebp\n"
--			"	pushl %edi\n"
--			"	pushl %esi\n"
--			"	pushl %edx\n"
--			"	pushl %ecx\n"
--			"	pushl %ebx\n"
-+			SAVE_REGS_STRING
- 			"	movl %esp, %eax\n"
- 			"	call trampoline_handler\n"
- 			/* Move flags to cs */
-@@ -633,15 +647,7 @@ static void __used __kprobes kretprobe_trampoline_holder(void)
- 			"	movl %edx, 52(%esp)\n"
- 			/* Replace saved flags with true return address. */
- 			"	movl %eax, 56(%esp)\n"
--			"	popl %ebx\n"
--			"	popl %ecx\n"
--			"	popl %edx\n"
--			"	popl %esi\n"
--			"	popl %edi\n"
--			"	popl %ebp\n"
--			"	popl %eax\n"
--			/* Skip ds, es, fs, gs, orig_ax and ip */
--			"	addl $24, %esp\n"
-+			RESTORE_REGS_STRING
- 			"	popf\n"
- #endif
- 			"	ret\n");
+should be dynamic_irq_cleanup_x here.
 
 
--- 
-Masami Hiramatsu
 
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
+> +}
+> +
+> +/**
+> + *	dynamic_irq_cleanup_keep_chip_data - cleanup a dynamically allocated irq
+> + *	@irq:	irq number to initialize
+> + *
+> + * 	does not set irq_to_desc(irq)->chip_data to NULL
+> + */
+> +void dynamic_irq_cleanup_keep_chip_data(unsigned int irq)
+> +{
+> +	dynamic_irq_init_x(irq, true);
 
-e-mail: mhiramat@redhat.com
+should be dynamic_irq_cleanup_x
+
+> +}
+> +
+>  
+>  /**
+>   *	set_irq_chip - set the irq chip for an irq
+
+YH
