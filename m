@@ -1,67 +1,51 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757347Ab0BEUSA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 15:18:00 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:49794 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753561Ab0BEUR7 (ORCPT
+	id S1754078Ab0BEUW2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 15:22:28 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:36651 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752659Ab0BEUW0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 15:17:59 -0500
-To: Sven Joachim <svenjoac@gmx.de>
-Cc: hadi@cyberus.ca, Randolf Pohl <randolf.pohl@gmx.de>, gregkh@suse.de,
-       linux-kernel@vger.kernel.org, stable@kernel.org,
-       stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: [46/74] net: restore ip source validation
-References: <20100205143441.280460@gmx.net> <1265381514.5661.1.camel@bigi>
-	<87wryr4qkk.fsf@turtle.gmx.de>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Fri, 05 Feb 2010 12:17:50 -0800
-In-Reply-To: <87wryr4qkk.fsf@turtle.gmx.de> (Sven Joachim's message of "Fri\, 05 Feb 2010 17\:04\:11 +0100")
-Message-ID: <m1mxzn8mj5.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Fri, 5 Feb 2010 15:22:26 -0500
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, haicheng.li@intel.com,
+       penberg@cs.helsinki.fi, linux-mm@kvack.org
+Subject: Re: [PATCH] [0/4] SLAB: Fix a couple of slab memory hotadd issues
+From: Andi Kleen <andi@firstfloor.org>
+References: <201002031039.710275915@firstfloor.org>
+	<alpine.DEB.2.00.1002051316350.25989@router.home>
+Date: Fri, 05 Feb 2010 21:22:21 +0100
+In-Reply-To: <alpine.DEB.2.00.1002051316350.25989@router.home> (Christoph Lameter's message of "Fri, 5 Feb 2010 13:19:48 -0600 (CST)")
+Message-ID: <87636bv3eq.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sven Joachim <svenjoac@gmx.de> writes:
+Christoph Lameter <cl@linux-foundation.org> writes:
 
-> On 2010-02-05 15:51 +0100, jamal wrote:
+> On Wed, 3 Feb 2010, Andi Kleen wrote:
 >
->> The problem is elsewhere. Here's the fix.
->>
->> --
->> diff --git a/kernel/sysctl_check.c b/kernel/sysctl_check.c
->> index b6e7aae..469193c 100644
->> --- a/kernel/sysctl_check.c
->> +++ b/kernel/sysctl_check.c
->> @@ -220,6 +220,7 @@ static const struct trans_ctl_table
->> trans_net_ipv4_conf_vars_table[] = {
->>         { NET_IPV4_CONF_PROMOTE_SECONDARIES,    "promote_secondaries" },
->>         { NET_IPV4_CONF_ARP_ACCEPT,             "arp_accept" },
->>         { NET_IPV4_CONF_ARP_NOTIFY,             "arp_notify" },
->> +       { NET_IPV4_CONF_SRC_VMARK,              "src_valid_mark" },
->>         {}
->>  };
->> ---
+>> This fixes various problems in slab found during memory hotadd testing.
 >
-> Well spotted, that fixes it.  Your mailer is broken however, it
-> converted tabs into spaces, so I had to add the changed line manually.
+> It changes the bootstrap semantics. The requirement was so far that slab
+> initialization must be complete before slab operations can be used.
 
-Bah.  That DEVINET_SYSCTL_ENTRY requires having a binary sysctl
-assigned, just to use as an index.
+The problem is that slab itself uses slab it initialize itself.
 
-Which of course trips over all of the fine checks in sysctl_check.c to
-keep people from assigning new binary sysctls by accident.
+> This patchset allows such use before bootstrap on a node is complete and
+> also allows the running of cache reaper before bootstrap is done.
+>
+> I have a bad feeling that this could be the result of Pekka's changes to
+> the bootstrap.
 
-That is the only place in the kernel where he have that problem, I wonder
-how much work it will be to finish untangling.
+Not sure I fully follow what you're saying.
 
-Eric
+Are you saying this is a regression fix after all?
+
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
