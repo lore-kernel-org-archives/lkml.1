@@ -1,49 +1,63 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754495Ab0BELqp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 06:46:45 -0500
-Received: from darkstar.wilibox.com ([195.14.175.138]:36243 "EHLO
-	darkstar.wilibox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753126Ab0BELqo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 06:46:44 -0500
-Message-ID: <4B6C051F.3080702@gmail.com>
-Date: Fri, 05 Feb 2010 13:46:39 +0200
-From: Paulius Zaleckas <paulius.zaleckas@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
-MIME-Version: 1.0
-Newsgroups: gmane.linux.network,gmane.linux.kernel
-To: Li Zefan <lizf@cn.fujitsu.com>
-CC: David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>
-Subject: Re: [PATCH 11/13] net: irda: use seq_list_foo() helpers
-References: <4B6B77FE.5000104@cn.fujitsu.com> <4B6B78AD.1030809@cn.fujitsu.com>
-In-Reply-To: <4B6B78AD.1030809@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1754963Ab0BELtV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 06:49:21 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:37427 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753126Ab0BELtT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Feb 2010 06:49:19 -0500
+Date: Fri, 5 Feb 2010 22:49:11 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: David Miller <davem@davemloft.net>
+Cc: netdev@vger.kernel.org, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, nicholasx.d.nunley@intel.com
+Subject: Re: linux-next: build failure after merge of the net tree
+Message-Id: <20100205224911.d6b089e5.sfr@canb.auug.org.au>
+In-Reply-To: <20100204.223255.146893399.davem@davemloft.net>
+References: <20100205165059.0b5d5363.sfr@canb.auug.org.au>
+	<20100204.223255.146893399.davem@davemloft.net>
+X-Mailer: Sylpheed 3.0.0beta7 (GTK+ 2.18.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__5_Feb_2010_22_49_11_+1100_KU75_Hlq_bBdonsn"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/05/2010 03:47 AM, Li Zefan wrote:
-[...]
->   /* Return entry after v, and increment pos */
-> @@ -1148,14 +1137,7 @@ static void *irlan_seq_next(struct seq_file *seq, void *v, loff_t *pos)
->   {
->   	struct list_head *nxt;
+--Signature=_Fri__5_Feb_2010_22_49_11_+1100_KU75_Hlq_bBdonsn
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-you should remove nxt declaration.
+Hi Dave,
 
-> -	++*pos;
-> -	if (v == SEQ_START_TOKEN)
-> -		nxt = irlans.next;
-> -	else
-> -		nxt = ((struct irlan_cb *)v)->dev_list.next;
-> -
-> -	return (nxt ==&irlans) ? NULL
-> -		: list_entry(nxt, struct irlan_cb, dev_list);
-> +	return seq_list_next(v,&irlans, pos);
->   }
-[...]
+On Thu, 04 Feb 2010 22:32:55 -0800 (PST) David Miller <davem@davemloft.net>=
+ wrote:
+>
+> Damn namespace pollution, this is one of a zillion reasons
+> I prefer drivers are written in one sorce file, then people
+> can name their functions however they like and they're all
+> marked static so it doesn't cause problems like this.
+>=20
+> I've fixed it up as follows in net-next-2.6
+
+Looks good, thanks.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__5_Feb_2010_22_49_11_+1100_KU75_Hlq_bBdonsn
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAktsBbcACgkQjjKRsyhoI8yI6ACdEU60Y5WDizRAvjbVKhHGw6Vv
+gCcAnRephHf7qNNaGiLGakB2s2KGKRTu
+=qRnG
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__5_Feb_2010_22_49_11_+1100_KU75_Hlq_bBdonsn--
