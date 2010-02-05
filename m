@@ -1,69 +1,91 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933114Ab0BEOQs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 09:16:48 -0500
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:41286 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932962Ab0BEOQq convert rfc822-to-8bit (ORCPT
+	id S933129Ab0BEOR1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 09:17:27 -0500
+Received: from mail.dev.rtsoft.ru ([213.79.90.226]:51503 "HELO
+	mail.dev.rtsoft.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S932962Ab0BEORZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 09:16:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=pz+7kJsFUeKFUL9Qj1J02WY8FHjGNCcBN7QwcVYhTadi/dLFqxhylDDTcknFvBE/ij
-         dZWSN/MIsZJYzviXH5ii/ptq7e/SIwTAkqVXV00Inf3XpjrRbjrob/aqqfJuyvDstghW
-         e0H9L/jUPzWh+mLjYHB+PW5vWaPt91YtY1Caw=
+	Fri, 5 Feb 2010 09:17:25 -0500
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Fri, 05 Feb 2010 09:17:25 EST
+Message-ID: <4B6C266D.6060209@ru.mvista.com>
+Date: Fri, 05 Feb 2010 17:08:45 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-In-Reply-To: <20100205132219.GA6874@faui49.informatik.uni-erlangen.de>
-References: <20100205132219.GA6874@faui49.informatik.uni-erlangen.de>
-From: roel kluin <roel.kluin@gmail.com>
-Date: Fri, 5 Feb 2010 15:16:25 +0100
-Message-ID: <25e057c01002050616x59c927fbpaf13f477ec012ec5@mail.gmail.com>
-Subject: Re: [PATCH] obsolete config in kernel source (USE_INTERNAL_TIMER)
 To: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
-Cc: Samuel Ortiz <samuel@sortiz.org>, "David S. Miller" <davem@davemloft.net>,
-       Stephen Hemminger <shemminger@vyatta.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Patrick McHardy <kaber@trash.net>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, vamos@i4.informatik.uni-erlangen.de
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+CC: Jeff Garzik <jgarzik@pobox.com>, Erik Inge Bols?? <knan-lkml@anduin.net>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       vamos@i4.informatik.uni-erlangen.de,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] non-existant config in kernel source (CONFIG_AHCI)
+References: <20100205132959.GB6874@faui49.informatik.uni-erlangen.de>
+In-Reply-To: <20100205132959.GB6874@faui49.informatik.uni-erlangen.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->        As part of the VAMOS[0] research project at the University of
+Hello.
+
+Christoph Egger wrote:
+
+> 	As part of the VAMOS[0] research project at the University of
 > Erlangen we're checking referential integrity between kernel KConfig
 > options and in-code Conditional blocks.
 >
->        USE_INTERNAL_TIMER is another candidate. As can be seen on the
-> comment of the #undef instruction this part was quite likely never
-> working and safeguards were added si it is never enabled.
+> 	While there's one place that is checking for CONFIG_AHCI, this
+> config being referenced from printed books and people pointing to this
+> config item I can't find it anywhere in the kernel kconfig
+> infrastruture and it doesn't seem to ever have been there (since
+> git). Is this maybe a typo for CONFIG_SATA_AHCI? reading the
+> information for the affected piece of source it would actually make
+> sense.
 >
->        Please keep me informed of this patch getting confirmed /
+> 	Please keep me informed of this patch getting confirmed /
 > merged so we can keep track of it.
 >
 > Regards
 >
->        Christoph Egger
+> 	Christoph Egger
 >
 > [0] http://vamos1.informatik.uni-erlangen.de/
 >
 > ----
-> From f027b61661aaac1fd58536e17894e486d5fb3d3f Mon Sep 17 00:00:00 2001
+> From 60136f94d9c97f9a788738e30731e25bd794322b Mon Sep 17 00:00:00 2001
 > From: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
-> Date: Fri, 5 Feb 2010 13:11:16 +0100
-> Subject: [PATCH] USE_INTERNAL_TIMER explicitely #undef-ed and not in kconfig
+> Date: Fri, 5 Feb 2010 13:26:33 +0100
+> Subject: [PATCH] CONFIG_AHCI is really CONFIG_SATA_AHCI
 >
-> CONFIG_USE_INTERNAL_TIMER seems to be the remainings of some
-> experiment. It is explicitely #undef-ed as not working, only
-> referenced from one source file and rather aged.
->
-> Hereby cleaning it from the kernel tree.
+> The marvell driver comtains a fallback to ahci for the sata ports
+>   
+
+   Only "contains".
+
+> which is incorrectly checked as CONFIG_AHCI while the only AHCI config
+> item is actually called SATA_AHCI (which also sounds sensible
+> considering it's a fallback for the sata ports).
 >
 > Signed-off-by: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
+> ---
+>  drivers/ata/pata_marvell.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/drivers/ata/pata_marvell.c b/drivers/ata/pata_marvell.c
+> index 950da39..eabd138 100644
+> --- a/drivers/ata/pata_marvell.c
+> +++ b/drivers/ata/pata_marvell.c
+> @@ -147,7 +147,7 @@ static int marvell_init_one (struct pci_dev *pdev, const struct pci_device_id *i
+>  	if (pdev->device == 0x6101)
+>  		ppi[1] = &ata_dummy_port_info;
+>  
+> -#if defined(CONFIG_AHCI) || defined(CONFIG_AHCI_MODULE)
+> +#if defined(CONFIG_SATA_AHCI) || defined(SATA_CONFIG_AHCI_MODULE)
+>   
 
-Looks correct to me,
+   You surely meant CONFIG_SATA_AHCI_MODULE.
 
-Acked-by: Roel Kluin <roel.kluin@gmail.com>
+WBR, Sergei
+
