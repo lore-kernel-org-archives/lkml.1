@@ -1,55 +1,76 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933395Ab0BEPTV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 10:19:21 -0500
-Received: from netrider.rowland.org ([192.131.102.5]:39910 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S932309Ab0BEPTT (ORCPT
+	id S933374Ab0BEP00 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 10:26:26 -0500
+Received: from faui40.informatik.uni-erlangen.de ([131.188.34.40]:63559 "EHLO
+	faui40.informatik.uni-erlangen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932766Ab0BEP0Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 10:19:19 -0500
-Date: Fri, 5 Feb 2010 10:19:18 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Pavel Machek <pavel@ucw.cz>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, Greg KH <greg@kroah.com>
-Subject: Re: [PATCH 1/2] PM / Runtime: Add sysfs switch for disabling device
- run-time PM (rev. 2)
-In-Reply-To: <20100205062718.GA1384@ucw.cz>
-Message-ID: <Pine.LNX.4.44L0.1002051014020.22829-100000@netrider.rowland.org>
+	Fri, 5 Feb 2010 10:26:24 -0500
+Date: Fri, 5 Feb 2010 16:26:35 +0100
+From: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
+To: Frans Pop <elendil@planet.nl>
+Cc: jgarzik@pobox.com, knan-lkml@anduin.net, bzolnier@gmail.com,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       vamos@i4.informatik.uni-erlangen.de, alan@lxorguk.ukuu.org.uk
+Subject: Re: [PATCH] non-existant config in kernel source (CONFIG_AHCI)
+Message-ID: <20100205152635.GC7299@faui49.informatik.uni-erlangen.de>
+References: <20100205132959.GB6874@faui49.informatik.uni-erlangen.de>
+ <201002051457.04135.elendil@planet.nl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <201002051457.04135.elendil@planet.nl>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 5 Feb 2010, Pavel Machek wrote:
-
-> 
-> > > > + *	The default for all devices is "auto", which means that devices may be
-> > > > + *	subject to automatic power management, depending on their drivers.
-> > > 
-> > > Is it wise to specify 'auto' default value for devices without runtime
-> > > pm?
+On Fri, Feb 05, 2010 at 02:57:00PM +0100, Frans Pop wrote:
+> Christoph Egger wrote:
+> > --- a/drivers/ata/pata_marvell.c
+> > +++ b/drivers/ata/pata_marvell.c
+> > @@ -147,7 +147,7 @@ static int marvell_init_one (struct pci_dev *pdev,
+> > 	if (pdev->device == 0x6101)
+> >		ppi[1] = &ata_dummy_port_info;
 > > 
-> > Yes, it is.  It means the user space doesn't care whether or not the device is
-> > power managed at run-time.
+> > -#if defined(CONFIG_AHCI) || defined(CONFIG_AHCI_MODULE)
+> > +#if defined(CONFIG_SATA_AHCI) || defined(SATA_CONFIG_AHCI_MODULE)
 > 
-> Well, defaulting to 'on' for drivers when runtime pm is experimental
-> seems logical. and there will be such drivers...
+> Shouldn't the last be CONFIG_SATA_AHCI_MODULE ?
 
-It's really not very important what the default setting is.  Runtime PM
-is always initially disabled, regardless of the "auto"/"on" setting,
-until the driver explicitly enables it.  At that time the driver also
-has the option of changing the setting from "auto" to "on".
+Right my fault. Updated patch below
 
-So if a driver writer wants to support runtime PM but thinks that his
-implementation (or the device!) may be buggy, he can easily arrange
-things so the user has to change the sysfs setting to make anything
-happen.
+-----
+>From 60136f94d9c97f9a788738e30731e25bd794322b Mon Sep 17 00:00:00 2001
+From: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
+Date: Fri, 5 Feb 2010 13:26:33 +0100
+Subject: [PATCH] CONFIG_AHCI is really CONFIG_SATA_AHCI
 
-Alan Stern
+The marvell driver comtains a fallback to ahci for the sata ports
+which is incorrectly checked as CONFIG_AHCI while the only AHCI config
+item is actually called SATA_AHCI (which also sounds sensible
+considering it's a fallback for the sata ports).
+
+Signed-off-by: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
+---
+ drivers/ata/pata_marvell.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/ata/pata_marvell.c b/drivers/ata/pata_marvell.c
+index 950da39..eabd138 100644
+--- a/drivers/ata/pata_marvell.c
++++ b/drivers/ata/pata_marvell.c
+@@ -147,7 +147,7 @@ static int marvell_init_one (struct pci_dev *pdev, const struct pci_device_id *i
+ 	if (pdev->device == 0x6101)
+ 		ppi[1] = &ata_dummy_port_info;
+ 
+-#if defined(CONFIG_AHCI) || defined(CONFIG_AHCI_MODULE)
++#if defined(CONFIG_SATA_AHCI) || defined(CONFIG_SATA_AHCI_MODULE)
+ 	if (!marvell_pata_active(pdev)) {
+ 		printk(KERN_INFO DRV_NAME ": PATA port not active, deferring to AHCI driver.\n");
+ 		return -ENODEV;
+-- 
+1.6.3.3
+
 
