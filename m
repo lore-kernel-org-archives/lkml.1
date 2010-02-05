@@ -1,68 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933698Ab0BEDlx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 22:41:53 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:23519 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932696Ab0BEDlw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 22:41:52 -0500
-Message-ID: <4B6B93E3.1060504@redhat.com>
-Date: Fri, 05 Feb 2010 11:43:31 +0800
-From: Cong Wang <amwang@redhat.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20091001)
+	id S1757945Ab0BEEAB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 23:00:01 -0500
+Received: from mail-ew0-f228.google.com ([209.85.219.228]:60202 "EHLO
+	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757866Ab0BEEAA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 23:00:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=t2IswNc19YHQsM+2yPUNSNtYFOzqp67JpkMgxNWQYT9+cQFx5Se+7IeRX3bOwdYHg0
+         o22wsxcwZ7stHB44hUkRg/e80z5c+B1nU4F2nc52rhZuveQNui2XdzOZ1ivAJVvyszP0
+         81IXrLnnWmrvIFumfZm4JYfUIsaY/nbPLbAkY=
+Date: Fri, 5 Feb 2010 04:59:57 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Alexander Beregalov <a.beregalov@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: reiserfs deadlock
+Message-ID: <20100205035953.GB5408@nowhere>
+References: <a4423d671002031103r230f66cai4ab25236504bcf15@mail.gmail.com> <a4423d671002031108x6c2682edl9a147c35ac9c2815@mail.gmail.com> <20100203202909.GA5068@nowhere> <a4423d671002031443q283bab49wd15cd4de556d9557@mail.gmail.com> <20100203225232.GI5068@nowhere> <a4423d671002041746q1d918972i7c180d38a7c1d52@mail.gmail.com>
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>, Greg KH <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>,
-       Miles Lane <miles.lane@gmail.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Larry Finger <Larry.Finger@lwfinger.net>, akpm@linux-foundation.org,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [Patch 0/2] sysfs: fix s_active lockdep warning
-References: <20100129070516.4058.77227.sendpatchset@localhost.localdomain>	 <m1eil9v0j9.fsf@fess.ebiederm.org> <4B629E7F.5020200@redhat.com>	 <m1zl3xt49k.fsf@fess.ebiederm.org> <20100129142223.GB12539@suse.de>	 <1264787848.24455.31.camel@laptop> <20100129181024.GA12934@suse.de>	 <1264788860.24455.35.camel@laptop> <20100129182114.GA13219@suse.de>	 <1264795834.24455.43.camel@laptop>  <m1y6jgpsax.fsf@fess.ebiederm.org> <1265283496.24455.1939.camel@laptop>
-In-Reply-To: <1265283496.24455.1939.camel@laptop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a4423d671002041746q1d918972i7c180d38a7c1d52@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Fri, 2010-01-29 at 12:30 -0800, Eric W. Biederman wrote:
+On Fri, Feb 05, 2010 at 04:46:38AM +0300, Alexander Beregalov wrote:
+> Hi Frederic
 > 
->> We get false positives when the code of a sysfs attribute
->> synchronously removes other sysfs attributes.  In general that is not
->> safe due to hotplug etc, but there are specific instances of static
->> sysfs entries like the pm_core where it appears to be safe.
->>
->> I am not familiar with the device core lockdep issues.  Are they similar?
-> 
-> The device tree had the problem that we could basically hold a device
-> lock and an unspecified number of parent locks (iirc this was due to
-> device probing, where we hold the bus lock while probing/adding child
-> device, recursively). 
-> 
-> If we place each dev->lock into the same class (which would naively
-> happen), then this would lead to recursive lock warnings. The proposed
-> solution for this is to create MAX_LOCK_DEPTH classes and assign them to
-> the dev->lock depending on the depth in the device tree (Alan said that
-> MAX_LOCK_DEPTH is sufficient for all practical cases).
-> 
-> static struct lock_class_key dev_tree_classes[MAX_LOCK_DEPTH];
-> 
-> device_add() or thereabouts would have something like:
-> 
-> #ifdef CONFIG_PROVE_LOCKING
-> 	BUG_ON(dev->depth >= MAX_LOCK_DEPTH);
-> 	lockdep_set_class(dev->lock, &dev_tree_classes[dev->depth]);
-> #endif
-> 
-> 
+> Does it help?
 
-Nice explanation!
 
-I see, we should set the class of the lock when after we holding it...
-I will update my patch.
+Nope :-S
 
-Thank you!
+I need the full stracktraces. Plus the fact a thread holds
+the reiserfs lock doesn't help much in this regard. This
+is a drawback of lockdep: "holding" a lock in such lock dump
+means either: the task holds the lock _or_ the task requests the
+lock and block on it.
+
+The only way to determine if a task really holds the reiserfs
+lock is to look at the stack trace and see if it blocks on
+reiserfs_write_lock_*() or something else. If this is something
+else, then it means it really holds it, and there are fair
+chances this is exactly the stacktrace we want: the one that
+raised the softlockup.
+
+Thanks!
+
