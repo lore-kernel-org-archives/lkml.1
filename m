@@ -1,94 +1,70 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933591Ab0BEA50 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 19:57:26 -0500
-Received: from rcsinet12.oracle.com ([148.87.113.124]:32409 "EHLO
-	rcsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933445Ab0BEAzN (ORCPT
+	id S933668Ab0BEBIs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 20:08:48 -0500
+Received: from ixro-out-rtc.ixiacom.com ([92.87.192.98]:30064 "EHLO
+	ixro-ex1.ixiacom.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933649Ab0BEBIq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 19:55:13 -0500
-From: Joel Becker <joel.becker@oracle.com>
-To: ocfs2-devel@oss.oracle.com
-Cc: linux-kernel@vger.kernel.org, mfasheh@suse.com
-Subject: [PATCH 01/10] ocfs2_dlmfs: Add capabilities parameter.
-Date: Thu,  4 Feb 2010 16:54:54 -0800
-Message-Id: <1265331303-19881-2-git-send-email-joel.becker@oracle.com>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1265331303-19881-1-git-send-email-joel.becker@oracle.com>
-References: <1265331303-19881-1-git-send-email-joel.becker@oracle.com>
-X-Source-IP: acsmt354.oracle.com [141.146.40.154]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090209.4B6B6C6D.0154:SCFMA4539814,ss=1,fgs=0
+	Thu, 4 Feb 2010 20:08:46 -0500
+From: Octavian Purdila <opurdila@ixiacom.com>
+Organization: Ixia
+To: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+Subject: Re: [RFC Patch] net: reserve ports for applications using fixed port numbers
+Date: Fri, 5 Feb 2010 03:05:22 +0200
+User-Agent: KMail/1.12.2 (Linux/2.6.32-trunk-686; KDE/4.3.2; i686; ; )
+Cc: davem@davemloft.net, amwang@redhat.com, linux-kernel@vger.kernel.org,
+       eric.dumazet@gmail.com, linux-rdma@vger.kernel.org,
+       netdev@vger.kernel.org, nhorman@tuxdriver.com,
+       linux-sctp@vger.kernel.org
+References: <20100204.094110.64247447.davem@davemloft.net> <20100204.135639.69720709.davem@davemloft.net> <201002050041.o150fCO8081208@www262.sakura.ne.jp>
+In-Reply-To: <201002050041.o150fCO8081208@www262.sakura.ne.jp>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002050305.22227.opurdila@ixiacom.com>
+X-OriginalArrivalTime: 05 Feb 2010 01:08:44.0192 (UTC) FILETIME=[C3190200:01CAA5FF]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Over time, dlmfs has added some features that were not part of the
-initial ABI.  Unfortunately, some of these features are not detectable
-via standard usage.  For example, Linux's default poll always returns
-POLLIN, so there is no way for a caller of poll(2) to know when dlmfs
-added poll support.  Instead, we provide this list of new capabilities.
+On Friday 05 February 2010 02:41:12 you wrote:
+> David Miller wrote:
+> > > Octavian Purdila wrote:
+> > >> int inet_is_reserved_local_port(int port)
+> > >> {
+> > >> 	if (test_bit(port, reserved_ports))
+> > >> 		return 1;
+> > >> 	return 0;
+> > >> }
+> > >
+> > > Above check is exactly what I'm doing in the LSM hook.
+> >
+> > But his version can be done inline in 2 or 3 instructions.
+> >
+> > An LSM hook will result in an indirect function call,
+> > all live registers spilled to the stack, then all of
+> > those reloaded when the function returns.
+> >
+> > It will be much more expensive.
+> 
+> If you can accept his version, I want to use his version (with an interface
+>  for updating above "reserved_ports" by not only root user's sysctl() but
+>  also MAC's policy configuration).
+> 
 
-Capabilities is a read-only attribute.  We do it as a module parameter
-so we can discover it whether dlmfs is built in, loaded, or even not
-loaded (via modinfo).
+I think that simply using an interface to update the reserved_ports from MAC 
+policy configuration module wouldn't work, as root will be able to modify the 
+policy via sysctl.
 
-The ABI features are local to this machine's dlmfs mount.  This is
-distinct from the locking protocol, which is concerned with inter-node
-interaction.
+I think that we might need to:
 
-Signed-off-by: Joel Becker <joel.becker@oracle.com>
----
- fs/ocfs2/dlm/dlmfs.c |   36 ++++++++++++++++++++++++++++++++++++
- 1 files changed, 36 insertions(+), 0 deletions(-)
+a) have a reserved_port updater
 
-diff --git a/fs/ocfs2/dlm/dlmfs.c b/fs/ocfs2/dlm/dlmfs.c
-index 02bf178..77d0df4 100644
---- a/fs/ocfs2/dlm/dlmfs.c
-+++ b/fs/ocfs2/dlm/dlmfs.c
-@@ -81,6 +81,42 @@ static const struct dlm_protocol_version user_locking_protocol = {
- 	.pv_minor = OCFS2_LOCKING_PROTOCOL_MINOR,
- };
- 
-+
-+/*
-+ * These are the ABI capabilities of dlmfs.
-+ *
-+ * Over time, dlmfs has added some features that were not part of the
-+ * initial ABI.  Unfortunately, some of these features are not detectable
-+ * via standard usage.  For example, Linux's default poll always returns
-+ * POLLIN, so there is no way for a caller of poll(2) to know when dlmfs
-+ * added poll support.  Instead, we provide this list of new capabilities.
-+ *
-+ * Capabilities is a read-only attribute.  We do it as a module parameter
-+ * so we can discover it whether dlmfs is built in, loaded, or even not
-+ * loaded.
-+ *
-+ * The ABI features are local to this machine's dlmfs mount.  This is
-+ * distinct from the locking protocol, which is concerned with inter-node
-+ * interaction.
-+ */
-+#define DLMFS_CAPABILITIES ""
-+extern int param_set_dlmfs_capabilities(const char *val,
-+					struct kernel_param *kp)
-+{
-+	printk(KERN_ERR "%s: readonly parameter\n", kp->name);
-+	return -EINVAL;
-+}
-+static int param_get_dlmfs_capabilities(char *buffer,
-+					struct kernel_param *kp)
-+{
-+	return strlcpy(buffer, DLMFS_CAPABILITIES,
-+		       strlen(DLMFS_CAPABILITIES) + 1);
-+}
-+module_param_call(capabilities, param_set_dlmfs_capabilities,
-+		  param_get_dlmfs_capabilities, NULL, 0444);
-+MODULE_PARM_DESC(capabilities, DLMFS_CAPABILITIES);
-+
-+
- /*
-  * decodes a set of open flags into a valid lock level and a set of flags.
-  * returns < 0 if we have invalid flags
--- 
-1.6.6.1
+b) put a LSM hook into that
+
+c) use the reserved_port updater from sysctl
+
+
 
