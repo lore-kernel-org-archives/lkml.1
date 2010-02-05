@@ -1,113 +1,119 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932700Ab0BENmx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 08:42:53 -0500
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:42976 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932587Ab0BENmu (ORCPT
+	id S932650Ab0BENrI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 08:47:08 -0500
+Received: from faui40.informatik.uni-erlangen.de ([131.188.34.40]:58624 "EHLO
+	faui40.informatik.uni-erlangen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932451Ab0BENrG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 08:42:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=kzJsqNsouKuwFQCkmqaPlLuoKMkOlNoyN1ckvSa/BQ9uQeGQPvpzA92JXZKMUo9FBi
-         b52UNSxtx/ExlxGiRn2Dn55KdhMS83aHDKbcUn4l0+L6KLlemvbeO5GZLYW+7wwhWWg+
-         EfMpFK8WQqWcxgghzbFXvJjaOjMeSYbTVzz1o=
-Subject: Re: [PATCH] MMC: fix hang if card was removed during suspend and
- unsafe resume was enabled
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: Adrian Hunter <adrian.hunter@nokia.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
-       Philip Langdale <philipl@overt.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "Schummer Jorg.2 (EXT-Tieto/Espoo)" <ext-jorg.2.schummer@nokia.com>,
-       nico@fluxnic.net, nico@marvell.com
-In-Reply-To: <4B6BF02A.2080501@nokia.com>
-References: <1265219241.12549.8.camel@maxim-laptop>
-	 <1265325495-4220-1-git-send-email-maximlevitsky@gmail.com>
-	 <20100204160957.1c51cc1b.akpm@linux-foundation.org>
-	 <4B6BF02A.2080501@nokia.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 05 Feb 2010 15:42:43 +0200
-Message-ID: <1265377363.12577.4.camel@maxim-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 5 Feb 2010 08:47:06 -0500
+Date: Fri, 5 Feb 2010 14:47:18 +0100
+From: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
+To: Alexey Dobriyan <adobriyan@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>,
+       Jiri Kosina <jkosina@suse.cz>, Greg Kroah-Hartman <gregkh@suse.de>,
+       Alan Cox <alan@linux.intel.com>, Vikram Pandita <vikram.pandita@ti.com>,
+       Christian Pellegrin <chripell@fsfe.org>, linux-kernel@vger.kernel.org
+Cc: vamos@i4.informatik.uni-erlangen.de
+Subject: [PATCH] obsolete config in kernel source (HARD_PPS)
+Message-ID: <20100205134718.GC7077@faui49.informatik.uni-erlangen.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-02-05 at 12:17 +0200, Adrian Hunter wrote: 
-> ext Andrew Morton wrote:
-> > On Fri,  5 Feb 2010 01:18:15 +0200 Maxim Levitsky <maximlevitsky@gmail.com> wrote:
-> > 
-> >> Currently removal of the card leads to del_disk called indirectly by mmc core.
-> >> This function expects userspace to be running, which isn't when .resume is called
-> >>
-> >> Fix that by removing the code that did that in mmc_resume_host. It is possible
-> >> because card detection logic will kick it later and remove the card.
-> > 
-> > I don't really understand.  The above implies that to trigger this bug,
-> > one needs to physically remove the card during a resume operation.  ie:
-> > a human-vs-computer race.  Sounds unlikely?
-> > 
-> > So...  exactly what steps does the user need to take to trigger this
-> > bug?
-> > 
-> >> Also make mtd workqueue freezeable, so it won't attempt to add/remove the card
-> >> while userspace is frozen.
-> >>
-> >>
-> >> diff --git a/drivers/mmc/core/core.c b/drivers/mmc/core/core.c
-> >> index 30acd52..879d48d 100644
-> >> --- a/drivers/mmc/core/core.c
-> >> +++ b/drivers/mmc/core/core.c
-> >> @@ -1257,7 +1257,6 @@ int mmc_suspend_host(struct mmc_host *host, pm_message_t state)
-> >>  	if (host->caps & MMC_CAP_DISABLE)
-> >>  		cancel_delayed_work(&host->disable);
-> >>  	cancel_delayed_work(&host->detect);
-> >> -	mmc_flush_scheduled_work();
-> >>  
-> >>  	mmc_bus_get(host);
-> >>  	if (host->bus_ops && !host->bus_dead) {
-> >> @@ -1300,15 +1299,11 @@ int mmc_resume_host(struct mmc_host *host)
-> >>  		mmc_select_voltage(host, host->ocr);
-> >>  		BUG_ON(!host->bus_ops->resume);
-> >>  		err = host->bus_ops->resume(host);
-> >> +
-> >>  		if (err) {
-> >>  			printk(KERN_WARNING "%s: error %d during resume "
-> >>  					    "(card was removed?)\n",
-> >>  					    mmc_hostname(host), err);
-> >> -			if (host->bus_ops->remove)
-> >> -				host->bus_ops->remove(host);
-> >> -			mmc_claim_host(host);
-> >> -			mmc_detach_bus(host);
-> >> -			mmc_release_host(host);
-> > 
-> > afacit that code's been there since March 2009.  I'd have thought that
-> > someone would have noticed "kernel hangs on resume" before now.
-> > 
-> > Do you think the patch should be backported into 2.6.32.x and eariler?
-> 
-> It looks like the code was introduced in 2.6.32.x by commit
-> 
-> 95cdfb72b9bc568803f395c266152c71b034b461
-> 
-> cc'ing the author Nicolas Pitre
+Hi all!
 
+	As part of the VAMOS[0] research project at the University of
+Erlangen we're checking referential integrity between kernel KConfig
+options and in-code Conditional blocks.
 
-I don't think this is this commit fault.
-The problem lies somewhere in block layer.
-del_disk hangs if called while usrspace is frozen.
-Because I assume that this code was tested, I guess that it was possible
-to call del_disk in this way once.
+	There are a bunch of files in the current linux tree checking
+for CONFIG_HARD_PPS which isn't in KConfig neither any other media of
+setting it as far as I can tell and has been like this for ages.
 
-Fixing CONFIG_MMC_UNSAFE_RESUME=n not to do del_disk, won't be easy...
+	As this is seemingly unnecessary and a bit confusing when
+going over the tree it migt be beneficial to clean out these parts
+from the actual source.
 
-Best regards,
-Maxim Levitsky
+	Please keep me informed of this patch getting confirmed /
+merged so we can keep track of it.
 
+Regards
+
+	Christoph Egger
+
+[0] http://vamos1.informatik.uni-erlangen.de/
+
+----
+>From f0276583080d5732f160b9dcf6f45caddac3a999 Mon Sep 17 00:00:00 2001
+From: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
+Date: Fri, 5 Feb 2010 13:59:53 +0100
+Subject: [PATCH] Remove HARD_PPS conditionalizing
+
+HARD_PPS is another case of unsetable CONFIG_* Item that hasn't been
+touched in git history. It  is currently still used in 3 source files
+which this patch addresses.
+
+Signed-off-by: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
+---
+ drivers/char/amiserial.c     |    5 -----
+ drivers/serial/68360serial.c |    5 -----
+ include/linux/serial_core.h  |    5 -----
+ 3 files changed, 0 insertions(+), 15 deletions(-)
+
+diff --git a/drivers/char/amiserial.c b/drivers/char/amiserial.c
+index 6c32fbf..7e33af5 100644
+--- a/drivers/char/amiserial.c
++++ b/drivers/char/amiserial.c
+@@ -390,11 +390,6 @@ static void check_modem_status(struct async_struct *info)
+ 			icount->dsr++;
+ 		if (dstatus & SER_DCD) {
+ 			icount->dcd++;
+-#ifdef CONFIG_HARD_PPS
+-			if ((info->flags & ASYNC_HARDPPS_CD) &&
+-			    !(status & SER_DCD))
+-				hardpps();
+-#endif
+ 		}
+ 		if (dstatus & SER_CTS)
+ 			icount->cts++;
+diff --git a/drivers/serial/68360serial.c b/drivers/serial/68360serial.c
+index 24661cd..dc05e36 100644
+--- a/drivers/serial/68360serial.c
++++ b/drivers/serial/68360serial.c
+@@ -557,11 +557,6 @@ static _INLINE_ void check_modem_status(struct async_struct *info)
+ 			icount->dsr++;
+ 		if (status & UART_MSR_DDCD) {
+ 			icount->dcd++;
+-#ifdef CONFIG_HARD_PPS
+-			if ((info->flags & ASYNC_HARDPPS_CD) &&
+-			    (status & UART_MSR_DCD))
+-				hardpps();
+-#endif
+ 		}
+ 		if (status & UART_MSR_DCTS)
+ 			icount->cts++;
+diff --git a/include/linux/serial_core.h b/include/linux/serial_core.h
+index 8c3dd36..677f261 100644
+--- a/include/linux/serial_core.h
++++ b/include/linux/serial_core.h
+@@ -494,11 +494,6 @@ uart_handle_dcd_change(struct uart_port *uport, unsigned int status)
+ 
+ 	uport->icount.dcd++;
+ 
+-#ifdef CONFIG_HARD_PPS
+-	if ((uport->flags & UPF_HARDPPS_CD) && status)
+-		hardpps();
+-#endif
+-
+ 	if (port->flags & ASYNC_CHECK_CD) {
+ 		if (status)
+ 			wake_up_interruptible(&port->open_wait);
+-- 
+1.6.3.3
 
