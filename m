@@ -1,62 +1,44 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932979Ab0BENxK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 08:53:10 -0500
-Received: from mail-pz0-f189.google.com ([209.85.222.189]:59613 "EHLO
-	mail-pz0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932444Ab0BENxD (ORCPT
+	id S932888Ab0BEN5I (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 08:57:08 -0500
+Received: from Cpsmtpm-eml109.kpnxchange.com ([195.121.3.13]:62574 "EHLO
+	CPSMTPM-EML109.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932621Ab0BEN5G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 08:53:03 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=d28Rbvx2XBZWcVFkSRKuqaBUYusMzw5ATELWBXQC2ZbUb1ublxtk5GBJ1OnQz9AV6f
-         ivnUzol+W86rZMSZRHGmdaf7wzFId8QmVICkeGaW3/pYbTP9uPoh+rqfQpeNcq1hqVeI
-         cxMYdVGB2juSFemifRYNxUuN83pKi36LLkrR4=
-From: Yong Zhang <yong.zhang0@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: a.p.zijlstra@chello.nl, mingo@elte.hu, Brian Johnson <brijohn@gmail.com>,
-       Jean-Francois Moine <moinejf@free.fr>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       linux-media@vger.kernel.org
-Subject: [PATCH 3/4] V4L/DVB: gspca - sn9c20x: correct onstack wait_queue_head declaration
-Date: Fri,  5 Feb 2010 21:52:39 +0800
-Message-Id: <bc78da996dc04da174f51d2dbe1df4b084a07a3f.1265375697.git.yong.zhang0@gmail.com>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <b47c0527f1471857fec4662da1bfd0bb9e6071a7.1265375697.git.yong.zhang0@gmail.com>
-References: <1265377920-5898-1-git-send-email-yong.zhang0@gmail.com>
- <b1dccd762d3d04ab75d79d1d9b097d593a89f32a.1265375697.git.yong.zhang0@gmail.com>
- <b47c0527f1471857fec4662da1bfd0bb9e6071a7.1265375697.git.yong.zhang0@gmail.com>
-In-Reply-To: <b1dccd762d3d04ab75d79d1d9b097d593a89f32a.1265375697.git.yong.zhang0@gmail.com>
-References: <b1dccd762d3d04ab75d79d1d9b097d593a89f32a.1265375697.git.yong.zhang0@gmail.com>
+	Fri, 5 Feb 2010 08:57:06 -0500
+From: Frans Pop <elendil@planet.nl>
+To: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
+Subject: Re: [PATCH] non-existant config in kernel source (CONFIG_AHCI)
+Date: Fri, 5 Feb 2010 14:57:00 +0100
+User-Agent: KMail/1.9.9
+Cc: jgarzik@pobox.com, knan-lkml@anduin.net, bzolnier@gmail.com,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       vamos@i4.informatik.uni-erlangen.de, alan@lxorguk.ukuu.org.uk
+References: <20100205132959.GB6874@faui49.informatik.uni-erlangen.de>
+In-reply-To: <20100205132959.GB6874@faui49.informatik.uni-erlangen.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <201002051457.04135.elendil@planet.nl>
+X-OriginalArrivalTime: 05 Feb 2010 13:57:04.0168 (UTC) FILETIME=[18D31A80:01CAA66B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use DECLARE_WAIT_QUEUE_HEAD_ONSTACK to make lockdep happy
+Christoph Egger wrote:
+> --- a/drivers/ata/pata_marvell.c
+> +++ b/drivers/ata/pata_marvell.c
+> @@ -147,7 +147,7 @@ static int marvell_init_one (struct pci_dev *pdev,
+> 	if (pdev->device == 0x6101)
+>		ppi[1] = &ata_dummy_port_info;
+> 
+> -#if defined(CONFIG_AHCI) || defined(CONFIG_AHCI_MODULE)
+> +#if defined(CONFIG_SATA_AHCI) || defined(SATA_CONFIG_AHCI_MODULE)
 
-Signed-off-by: Yong Zhang <yong.zhang0@gmail.com>
-Cc: Brian Johnson <brijohn@gmail.com>
-Cc: Jean-Francois Moine <moinejf@free.fr>
-Cc: Mauro Carvalho Chehab <mchehab@infradead.org>
-Cc: linux-media@vger.kernel.org
----
- drivers/media/video/gspca/sn9c20x.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Shouldn't the last be CONFIG_SATA_AHCI_MODULE ?
 
-diff --git a/drivers/media/video/gspca/sn9c20x.c b/drivers/media/video/gspca/sn9c20x.c
-index 0ca1c06..8f75fbc 100644
---- a/drivers/media/video/gspca/sn9c20x.c
-+++ b/drivers/media/video/gspca/sn9c20x.c
-@@ -1426,7 +1426,7 @@ static int input_kthread(void *data)
- 	struct gspca_dev *gspca_dev = (struct gspca_dev *)data;
- 	struct sd *sd = (struct sd *) gspca_dev;
- 
--	DECLARE_WAIT_QUEUE_HEAD(wait);
-+	DECLARE_WAIT_QUEUE_HEAD_ONSTACK(wait);
- 	set_freezable();
- 	for (;;) {
- 		if (kthread_should_stop())
--- 
-1.6.3.3
-
+Cheers,
+FJP
