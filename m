@@ -1,190 +1,116 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933377Ab0BEBrb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 20:47:31 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:51120 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S932877Ab0BEBrZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 20:47:25 -0500
-Message-ID: <4B6B78BC.80103@cn.fujitsu.com>
-Date: Fri, 05 Feb 2010 09:47:40 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	id S933108Ab0BEBqq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 20:46:46 -0500
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:33509 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932929Ab0BEBqk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 20:46:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=vrFicK/2g+V+TTr+yQAuutvyCaRf667KX4EM9q9HOg6uqoKgZHibg5OzEhShPJiT1+
+         gSf3ndQ4+R98P67QDwMmvj3wW3mfpCFgUWwkCJTZRBTpnCuY2y5hV1/Sq5UPV7JA7RQa
+         rYWFpwtiQ4uHdHKjltHaLccfjijwcNgyty1yE=
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>
-Subject: [PATCH 12/13] net: ipx: use seq_list_foo() helpers
-References: <4B6B77FE.5000104@cn.fujitsu.com>
-In-Reply-To: <4B6B77FE.5000104@cn.fujitsu.com>
+In-Reply-To: <20100203225232.GI5068@nowhere>
+References: <a4423d671002031103r230f66cai4ab25236504bcf15@mail.gmail.com>
+	 <a4423d671002031108x6c2682edl9a147c35ac9c2815@mail.gmail.com>
+	 <20100203202909.GA5068@nowhere>
+	 <a4423d671002031443q283bab49wd15cd4de556d9557@mail.gmail.com>
+	 <20100203225232.GI5068@nowhere>
+Date: Fri, 5 Feb 2010 04:46:38 +0300
+Message-ID: <a4423d671002041746q1d918972i7c180d38a7c1d52@mail.gmail.com>
+Subject: Re: reiserfs deadlock
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Simplify seq_file code.
+Hi Frederic
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
- net/ipx/ipx_proc.c |   89 +++++++---------------------------------------------
- 1 files changed, 12 insertions(+), 77 deletions(-)
+Does it help?
 
-diff --git a/net/ipx/ipx_proc.c b/net/ipx/ipx_proc.c
-index 5761784..cd44358 100644
---- a/net/ipx/ipx_proc.c
-+++ b/net/ipx/ipx_proc.c
-@@ -13,45 +13,15 @@
- #include <net/tcp_states.h>
- #include <net/ipx.h>
- 
--static __inline__ struct ipx_interface *ipx_get_interface_idx(loff_t pos)
--{
--	struct ipx_interface *i;
--
--	list_for_each_entry(i, &ipx_interfaces, node)
--		if (!pos--)
--			goto out;
--	i = NULL;
--out:
--	return i;
--}
--
--static struct ipx_interface *ipx_interfaces_next(struct ipx_interface *i)
--{
--	struct ipx_interface *rc = NULL;
--
--	if (i->node.next != &ipx_interfaces)
--		rc = list_entry(i->node.next, struct ipx_interface, node);
--	return rc;
--}
--
- static void *ipx_seq_interface_start(struct seq_file *seq, loff_t *pos)
- {
--	loff_t l = *pos;
--
- 	spin_lock_bh(&ipx_interfaces_lock);
--	return l ? ipx_get_interface_idx(--l) : SEQ_START_TOKEN;
-+	return seq_list_start_head(&ipx_interfaces, *pos);
- }
- 
- static void *ipx_seq_interface_next(struct seq_file *seq, void *v, loff_t *pos)
- {
--	struct ipx_interface *i;
--
--	++*pos;
--	if (v == SEQ_START_TOKEN)
--		i = ipx_interfaces_head();
--	else
--		i = ipx_interfaces_next(v);
--	return i;
-+	return seq_list_next(v, &ipx_interfaces, pos);
- }
- 
- static void ipx_seq_interface_stop(struct seq_file *seq, void *v)
-@@ -63,7 +33,7 @@ static int ipx_seq_interface_show(struct seq_file *seq, void *v)
- {
- 	struct ipx_interface *i;
- 
--	if (v == SEQ_START_TOKEN) {
-+	if (v == &ipx_interfaces) {
- 		seq_puts(seq, "Network    Node_Address   Primary  Device     "
- 			      "Frame_Type");
- #ifdef IPX_REFCNT_DEBUG
-@@ -73,7 +43,7 @@ static int ipx_seq_interface_show(struct seq_file *seq, void *v)
- 		goto out;
- 	}
- 
--	i = v;
-+	i = list_entry(v, struct ipx_interface, node);
- 	seq_printf(seq, "%08lX   ", (unsigned long int)ntohl(i->if_netnum));
- 	seq_printf(seq, "%02X%02X%02X%02X%02X%02X   ",
- 			i->if_node[0], i->if_node[1], i->if_node[2],
-@@ -89,53 +59,16 @@ out:
- 	return 0;
- }
- 
--static struct ipx_route *ipx_routes_head(void)
--{
--	struct ipx_route *rc = NULL;
--
--	if (!list_empty(&ipx_routes))
--		rc = list_entry(ipx_routes.next, struct ipx_route, node);
--	return rc;
--}
--
--static struct ipx_route *ipx_routes_next(struct ipx_route *r)
--{
--	struct ipx_route *rc = NULL;
--
--	if (r->node.next != &ipx_routes)
--		rc = list_entry(r->node.next, struct ipx_route, node);
--	return rc;
--}
--
--static __inline__ struct ipx_route *ipx_get_route_idx(loff_t pos)
--{
--	struct ipx_route *r;
--
--	list_for_each_entry(r, &ipx_routes, node)
--		if (!pos--)
--			goto out;
--	r = NULL;
--out:
--	return r;
--}
--
- static void *ipx_seq_route_start(struct seq_file *seq, loff_t *pos)
- {
--	loff_t l = *pos;
- 	read_lock_bh(&ipx_routes_lock);
--	return l ? ipx_get_route_idx(--l) : SEQ_START_TOKEN;
-+	return seq_list_start_head(&ipx_routes, *pos);
- }
- 
- static void *ipx_seq_route_next(struct seq_file *seq, void *v, loff_t *pos)
- {
--	struct ipx_route *r;
--
- 	++*pos;
--	if (v == SEQ_START_TOKEN)
--		r = ipx_routes_head();
--	else
--		r = ipx_routes_next(v);
--	return r;
-+	return seq_list_next(v, &ipx_routes, pos);
- }
- 
- static void ipx_seq_route_stop(struct seq_file *seq, void *v)
-@@ -147,11 +80,13 @@ static int ipx_seq_route_show(struct seq_file *seq, void *v)
- {
- 	struct ipx_route *rt;
- 
--	if (v == SEQ_START_TOKEN) {
-+	if (v == &ipx_routes) {
- 		seq_puts(seq, "Network    Router_Net   Router_Node\n");
- 		goto out;
- 	}
--	rt = v;
-+
-+	rt = list_entry(v, struct ipx_route, node);
-+
- 	seq_printf(seq, "%08lX   ", (unsigned long int)ntohl(rt->ir_net));
- 	if (rt->ir_routed)
- 		seq_printf(seq, "%08lX     %02X%02X%02X%02X%02X%02X\n",
-@@ -226,9 +161,9 @@ static void *ipx_seq_socket_next(struct seq_file *seq, void *v, loff_t *pos)
- 	spin_unlock_bh(&i->if_sklist_lock);
- 	sk = NULL;
- 	for (;;) {
--		i = ipx_interfaces_next(i);
--		if (!i)
-+		if (i->node.next == &ipx_interfaces)
- 			break;
-+		i = list_entry(i->node.next, struct ipx_interface, node);
- 		spin_lock_bh(&i->if_sklist_lock);
- 		if (!hlist_empty(&i->if_sklist)) {
- 			sk = sk_head(&i->if_sklist);
--- 
-1.6.3
+2 locks held by metalog/1558:
+ #0:  (&sb->s_type->i_mutex_key#5){+.+.+.}, at: [<c106a501>]
+generic_file_aio_write+0x41/0xb0
+ #1:  (&REISERFS_SB(s)->lock){+.+.+.}, at: [<c1110ed8>]
+reiserfs_write_lock_once+0x28/0x50
 
+2 locks held by svscan/1600:
+ #0:  (&sb->s_type->i_mutex_key#5){+.+.+.}, at: [<c10a0112>]
+vfs_readdir+0x52/0xa0
+ #1:  (&REISERFS_SB(s)->lock){+.+.+.}, at: [<c1110f28>]
+reiserfs_write_lock+0x28/0x40
+
+3 locks held by agetty/1868:
+ #0:  (&p->cred_guard_mutex){+.+.+.}, at: [<c10972f4>]
+prepare_bprm_creds+0x24/0x60
+ #1:  (&sb->s_type->i_mutex_key#5){+.+.+.}, at: [<c109a4bb>]
+do_lookup+0xbb/0x1c0
+ #2:  (&REISERFS_SB(s)->lock){+.+.+.}, at: [<c1110ed8>]
+reiserfs_write_lock_once+0x28/0x50
+
+2 locks held by modprobe/1871:
+ #0:  (&sb->s_type->i_mutex_key#5){+.+.+.}, at: [<c10a0112>]
+vfs_readdir+0x52/0xa0
+ #1:  (&REISERFS_SB(s)->lock){+.+.+.}, at: [<c1110f28>]
+reiserfs_write_lock+0x28/0x40
+
+2 locks held by fcron/1872:
+ #0:  (&sb->s_type->i_mutex_key#5){+.+.+.}, at: [<c109d903>]
+do_filp_open+0x173/0x9f0
+ #1:  (&REISERFS_SB(s)->lock){+.+.+.}, at: [<c1110ed8>]
+reiserfs_write_lock_once+0x28/0x50
+
+3 locks held by ddclient/1588:
+ #0:  (&sb->s_type->i_mutex_key#5){+.+.+.}, at: [<c1091417>]
+do_truncate+0x57/0x90
+ #1:  (&sb->s_type->i_alloc_sem_key#3){+.+...}, at: [<c10a65e6>]
+notify_change+0x1d6/0x330
+ #2:  (&REISERFS_SB(s)->lock){+.+.+.}, at: [<c1110ed8>]
+reiserfs_write_lock_once+0x28/0x50
+
+2 locks held by multilog/1615:
+ #0:  (&sb->s_type->i_mutex_key#5){+.+.+.}, at: [<c106a501>]
+generic_file_aio_write+0x41/0xb0
+ #1:  (&REISERFS_SB(s)->lock){+.+.+.}, at: [<c1110ed8>]
+reiserfs_write_lock_once+0x28/0x50
+
+2 locks held by nfsd/1734:
+ #0:  (hash_sem){.+.+.+}, at: [<c1131a2d>] exp_readlock+0xd/0x10
+ #1:  (&REISERFS_SB(s)->lock){+.+.+.}, at: [<c1110f28>]
+reiserfs_write_lock+0x28/0x40
+2 locks held by nfsd/1735:
+ #0:  (hash_sem){.+.+.+}, at: [<c1131a2d>] exp_readlock+0xd/0x10
+ #1:  (&REISERFS_SB(s)->lock){+.+.+.}, at: [<c1110f28>]
+reiserfs_write_lock+0x28/0x40
+2 locks held by nfsd/1736:
+ #0:  (hash_sem){.+.+.+}, at: [<c1131a2d>] exp_readlock+0xd/0x10
+ #1:  (&REISERFS_SB(s)->lock){+.+.+.}, at: [<c1110f28>]
+reiserfs_write_lock+0x28/0x40
+2 locks held by nfsd/1737:
+ #0:  (hash_sem){.+.+.+}, at: [<c1131a2d>] exp_readlock+0xd/0x10
+ #1:  (&REISERFS_SB(s)->lock){+.+.+.}, at: [<c1110f28>]
+reiserfs_write_lock+0x28/0x40
+2 locks held by nfsd/1738:
+ #0:  (hash_sem){.+.+.+}, at: [<c1131a2d>] exp_readlock+0xd/0x10
+ #1:  (&REISERFS_SB(s)->lock){+.+.+.}, at: [<c1110f28>]
+reiserfs_write_lock+0x28/0x40
+2 locks held by nfsd/1739:
+ #0:  (hash_sem){.+.+.+}, at: [<c1131a2d>] exp_readlock+0xd/0x10
+ #1:  (&REISERFS_SB(s)->lock){+.+.+.}, at: [<c1110f28>]
+reiserfs_write_lock+0x28/0x40
+2 locks held by nfsd/1740:
+ #0:  (hash_sem){.+.+.+}, at: [<c1131a2d>] exp_readlock+0xd/0x10
+ #1:  (&REISERFS_SB(s)->lock){+.+.+.}, at: [<c1110f28>]
+reiserfs_write_lock+0x28/0x40
+2 locks held by nfsd/1741:
+ #0:  (hash_sem){.+.+.+}, at: [<c1131a2d>] exp_readlock+0xd/0x10
+ #1:  (&REISERFS_SB(s)->lock){+.+.+.}, at: [<c1110f28>]
+reiserfs_write_lock+0x28/0x40
