@@ -1,135 +1,137 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933677Ab0BECju (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 21:39:50 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:65454 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1756001Ab0BECjt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 21:39:49 -0500
-Message-ID: <4B6B84A1.60805@cn.fujitsu.com>
-Date: Fri, 05 Feb 2010 10:38:25 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	id S933693Ab0BECnK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 21:43:10 -0500
+Received: from mail.windriver.com ([147.11.1.11]:36014 "EHLO
+	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933263Ab0BECnI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 21:43:08 -0500
+Message-ID: <4B6B86EE.5050803@windriver.com>
+Date: Fri, 05 Feb 2010 10:48:14 +0800
+From: "stanley.miao" <stanley.miao@windriver.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: paulmck@linux.vnet.ibm.com
-CC: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Paul Mackerras <paulus@samba.org>,
-       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
-       Li Zefan <lizf@cn.fujitsu.com>, Masami Hiramatsu <mhiramat@redhat.com>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH 10/11] tracing/perf: Fix lock events recursions in the
- fast path
-References: <1265188475-23509-1-git-send-regression-fweisbec@gmail.com> <1265188475-23509-11-git-send-regression-fweisbec@gmail.com> <20100204154700.GE6676@linux.vnet.ibm.com>
-In-Reply-To: <20100204154700.GE6676@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+CC: David Woodhouse <dwmw2@infradead.org>, Alex Dubov <oakad@yahoo.com>,
+       Artem Bityutskiy <dedekind1@gmail.com>, joern <joern@logfs.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mtd <linux-mtd@lists.infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 10/17] MTD: nand: make reads using MTD_OOB_RAW affect
+ only ECC	validation
+References: <1265326257-4446-1-git-send-email-maximlevitsky@gmail.com> <1265326257-4446-11-git-send-email-maximlevitsky@gmail.com>
+In-Reply-To: <1265326257-4446-11-git-send-email-maximlevitsky@gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 05 Feb 2010 02:41:58.0996 (UTC) FILETIME=[C9DC5940:01CAA60C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul E. McKenney wrote:
-> On Wed, Feb 03, 2010 at 10:14:34AM +0100, Frederic Weisbecker wrote:
->> There are rcu locked read side areas in the path where we submit
->> a trace events. And these rcu_read_(un)lock() trigger lock events,
->> which create recursive events.
->>
->> One pair in do_perf_sw_event:
->>
->> __lock_acquire
->>       |
->>       |--96.11%-- lock_acquire
->>       |          |
->>       |          |--27.21%-- do_perf_sw_event
->>       |          |          perf_tp_event
->>       |          |          |
->>       |          |          |--49.62%-- ftrace_profile_lock_release
->>       |          |          |          lock_release
->>       |          |          |          |
->>       |          |          |          |--33.85%-- _raw_spin_unlock
->>
->> Another pair in perf_output_begin/end:
->>
->> __lock_acquire
->>       |--23.40%-- perf_output_begin
->>       |          |          __perf_event_overflow
->>       |          |          perf_swevent_overflow
->>       |          |          perf_swevent_add
->>       |          |          perf_swevent_ctx_event
->>       |          |          do_perf_sw_event
->>       |          |          perf_tp_event
->>       |          |          |
->>       |          |          |--55.37%-- ftrace_profile_lock_acquire
->>       |          |          |          lock_acquire
->>       |          |          |          |
->>       |          |          |          |--37.31%-- _raw_spin_lock
->>
->> The problem is not that much the trace recursion itself, as we have a
->> recursion protection already (though it's always wasteful to recurse).
->> But the trace events are outside the lockdep recursion protection, then
->> each lockdep event triggers a lock trace, which will trigger two
->> other lockdep events. Here the recursive lock trace event won't
->> be taken because of the trace recursion, so the recursion stops there
->> but lockdep will still analyse these new events:
->>
->> To sum up, for each lockdep events we have:
->>
->> 	lock_*()
->> 	     |
->>              trace lock_acquire
->>                   |
->>                   ----- rcu_read_lock()
->>                   |          |
->>                   |          lock_acquire()
->>                   |          |
->>                   |          trace_lock_acquire() (stopped)
->>                   |          |
->> 		  |          lockdep analyze
->>                   |
->>                   ----- rcu_read_unlock()
->>                              |
->>                              lock_release
->>                              |
->>                              trace_lock_release() (stopped)
->>                              |
->>                              lockdep analyze
->>
->> And you can repeat the above two times as we have two rcu read side
->> sections when we submit an event.
->>
->> This is fixed in this pacth by using the non-lockdep versions of
->> rcu_read_(un)lock.
-> 
-> Hmmm...  Perhaps I should rename __rcu_read_lock() to something more
-> meaningful if it is to be used outside of the RCU files.  In the
-> meantime:
-> 
-> Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> 
+Maxim Levitsky wrote:
+> This changes the behavier of MTD_OOB_RAW. It used to read both OOB and data
+> to the data buffer, however you would still need to specify the dummy oob buffer.
+>
+> This is only used in one place, but makes it hard to read data+oob without ECC
+> test, thus I removed that behavier, and fixed the user.
+>
+> Now MTD_OOB_RAW behaves like MTD_OOB_PLACE, but doesn't do ECC validation
+>
+> Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
+> ---
+>  drivers/mtd/nand/nand_base.c |    5 -----
+>  drivers/mtd/nand/nand_bbt.c  |   26 ++++++++++++++++++++++----
+>  include/linux/mtd/mtd.h      |    4 +---
+>  3 files changed, 23 insertions(+), 12 deletions(-)
+>
+> diff --git a/drivers/mtd/nand/nand_base.c b/drivers/mtd/nand/nand_base.c
+> index 405c538..8ff36be 100644
+> --- a/drivers/mtd/nand/nand_base.c
+> +++ b/drivers/mtd/nand/nand_base.c
+> @@ -1286,8 +1286,6 @@ static int nand_do_read_ops(struct mtd_info *mtd, loff_t from,
+>  
+>  			if (unlikely(oob)) {
+>  
+> -				/* Raw mode does data:oob:data:oob */
+> -				if (ops->mode != MTD_OOB_RAW) {
+>   
 
-Perhaps we can use the existed rcu_read_lock_sched_notrace().
+I am not sure if it is legal to modify the behavior of MTD_OOB_RAW. But 
+if you
+remove the "if" command, the following code should be indent again.
 
-not relate to this patchset, but RCU & lockdep:
+Stanley.
 
-We need to remove lockdep from rcu_read_lock_*().
+>  					int toread = min(oobreadlen,
+>  								max_oobsize);
+>  					if (toread) {
+> @@ -1295,9 +1293,6 @@ static int nand_do_read_ops(struct mtd_info *mtd, loff_t from,
+>  							oob, ops, toread);
+>  						oobreadlen -= toread;
+>  					}
+> -				} else
+> -					buf = nand_transfer_oob(chip,
+> -						buf, ops, mtd->oobsize);
+>  			}
+>  
+>  			if (!(chip->options & NAND_NO_READRDY)) {
+> diff --git a/drivers/mtd/nand/nand_bbt.c b/drivers/mtd/nand/nand_bbt.c
+> index 55c23e5..387c45c 100644
+> --- a/drivers/mtd/nand/nand_bbt.c
+> +++ b/drivers/mtd/nand/nand_bbt.c
+> @@ -237,15 +237,33 @@ static int scan_read_raw(struct mtd_info *mtd, uint8_t *buf, loff_t offs,
+>  			 size_t len)
+>  {
+>  	struct mtd_oob_ops ops;
+> +	int res;
+>  
+>  	ops.mode = MTD_OOB_RAW;
+>  	ops.ooboffs = 0;
+>  	ops.ooblen = mtd->oobsize;
+> -	ops.oobbuf = buf;
+> -	ops.datbuf = buf;
+> -	ops.len = len;
+>  
+> -	return mtd->read_oob(mtd, offs, &ops);
+> +
+> +	while (len > 0) {
+> +		if (len <= mtd->writesize) {
+> +			ops.oobbuf = buf + len;
+> +			ops.datbuf = buf;
+> +			ops.len = len;
+> +			return mtd->read_oob(mtd, offs, &ops);
+> +		} else {
+> +			ops.oobbuf = buf + mtd->writesize;
+> +			ops.datbuf = buf;
+> +			ops.len = mtd->writesize;
+> +			res = mtd->read_oob(mtd, offs, &ops);
+> +
+> +			if (res)
+> +				return res;
+> +		}
+> +
+> +		buf += mtd->oobsize + mtd->writesize;
+> +		len -= mtd->writesize;
+> +	}
+> +	return 0;
+>  }
+>  
+>  /*
+> diff --git a/include/linux/mtd/mtd.h b/include/linux/mtd/mtd.h
+> index 662d747..84bb375 100644
+> --- a/include/linux/mtd/mtd.h
+> +++ b/include/linux/mtd/mtd.h
+> @@ -61,9 +61,7 @@ struct mtd_erase_region_info {
+>   * MTD_OOB_PLACE:	oob data are placed at the given offset
+>   * MTD_OOB_AUTO:	oob data are automatically placed at the free areas
+>   *			which are defined by the ecclayout
+> - * MTD_OOB_RAW:		mode to read raw data+oob in one chunk. The oob data
+> - *			is inserted into the data. Thats a raw image of the
+> - *			flash contents.
+> + * MTD_OOB_RAW:		mode to read oob and data without doing ECC checking
+>   */
+>  typedef enum {
+>  	MTD_OOB_PLACE,
+>   
 
-1) rcu_read_lock() is deadlock-immunity,
-   we get very little benefit from lockdep.
-
-rcu_read_lock()
-   lock_acquire(read=2,check=1)
-
- * Values for check:
- *
- *   0: disabled
- *   1: simple checks (freeing, held-at-exit-time, etc.)
- *   2: full validation
- */
-
-We can check it by other methods.
-
-2) popular distributions and some companies enable lockdep for their kernel.
-   rcu_read_lock_*() are the most frequent lock in kernel.
-   lock_acquire() is not fast enough, it is a big function for RCU.
