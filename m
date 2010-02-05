@@ -1,44 +1,83 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933544Ab0BERFK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 12:05:10 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:54508 "EHLO mx2.suse.de"
+	id S1757033Ab0BERJ0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 12:09:26 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:22582 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932521Ab0BERFJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 12:05:09 -0500
-Date: Fri, 5 Feb 2010 08:57:51 -0800
-From: Greg KH <gregkh@suse.de>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>,
-       Jiri Kosina <jkosina@suse.cz>, Alan Cox <alan@linux.intel.com>,
-       Vikram Pandita <vikram.pandita@ti.com>,
-       Christian Pellegrin <chripell@fsfe.org>, linux-kernel@vger.kernel.org,
-       vamos@i4.informatik.uni-erlangen.de
-Subject: Re: [PATCH] obsolete config in kernel source (HARD_PPS)
-Message-ID: <20100205165751.GB10922@suse.de>
-References: <20100205134718.GC7077@faui49.informatik.uni-erlangen.de> <20100205143937.5081eacb@lxorguk.ukuu.org.uk>
+	id S1752892Ab0BERJZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Feb 2010 12:09:25 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+Subject: [PATCH -tip v2] x86/alternatives: Fix build warning
+To: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>
+Cc: systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Masami Hiramatsu <mhiramat@redhat.com>
+Date: Fri, 05 Feb 2010 12:16:47 -0500
+Message-ID: <20100205171647.15750.37221.stgit@dhcp-100-2-132.bos.redhat.com>
+In-Reply-To: <20100205071249.GB9320@elte.hu>
+References: <20100205071249.GB9320@elte.hu>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100205143937.5081eacb@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 05, 2010 at 02:39:37PM +0000, Alan Cox wrote:
-> > 	There are a bunch of files in the current linux tree checking
-> > for CONFIG_HARD_PPS which isn't in KConfig neither any other media of
-> > setting it as far as I can tell and has been like this for ages.
-> 
-> HARD_PPS isn't yet upstream but having the hooks there is useful in the
-> meantime
+Fixes below warnings.
 
-Ok, I'll ignore this patch.
+====
+FYI, there's this new build warning on x86 defconfig:
 
-thanks,
+arch/x86/kernel/alternative.c: In function 'alternatives_text_reserved':
+arch/x86/kernel/alternative.c:402: warning: comparison of distinct pointer types lacks a cast
+arch/x86/kernel/alternative.c:402: warning: comparison of distinct pointer types lacks a cast
+arch/x86/kernel/alternative.c:405: warning: comparison of distinct pointer types lacks a cast
+arch/x86/kernel/alternative.c:405: warning: comparison of distinct pointer types lacks a cast
 
-greg k-h
+Caused by:
+
+2cfa197: ftrace/alternatives: Introducing *_text_reserved functions
+====
+
+Changes in v2:
+ - Use local variables to compare, instead of type casts.
+
+Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+Reported-by: Ingo Molnar <mingo@elte.hu>
+---
+
+ arch/x86/kernel/alternative.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/arch/x86/kernel/alternative.c b/arch/x86/kernel/alternative.c
+index 3832fdc..e6ea034 100644
+--- a/arch/x86/kernel/alternative.c
++++ b/arch/x86/kernel/alternative.c
+@@ -397,12 +397,14 @@ int alternatives_text_reserved(void *start, void *end)
+ {
+ 	struct smp_alt_module *mod;
+ 	u8 **ptr;
++	u8 *text_start = start;
++	u8 *text_end = end;
+ 
+ 	list_for_each_entry(mod, &smp_alt_modules, next) {
+-		if (mod->text > end || mod->text_end < start)
++		if (mod->text > text_end || mod->text_end < text_start)
+ 			continue;
+ 		for (ptr = mod->locks; ptr < mod->locks_end; ptr++)
+-			if (start <= *ptr && end >= *ptr)
++			if (text_start <= *ptr && text_end >= *ptr)
+ 				return 1;
+ 	}
+ 
+
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
