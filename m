@@ -1,135 +1,59 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752422Ab0BEFtz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 00:49:55 -0500
-Received: from sh.osrg.net ([192.16.179.4]:58785 "EHLO sh.osrg.net"
+	id S1752771Ab0BEFvJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 00:51:09 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:49697 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751794Ab0BEFtx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 00:49:53 -0500
-Date: Fri, 5 Feb 2010 14:49:33 +0900
-To: netdev@vger.kernel.org
-Cc: mb@bu3sch.de, linville@tuxdriver.com, linux-kernel@vger.kernel.org,
-       zambrano@broadcom.com, davem@davemloft.net
-Subject: [PATCH] ssb: replace the dma_sync_single_range_for_cpu/device API
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+	id S1752204Ab0BEFvG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Feb 2010 00:51:06 -0500
+Date: Fri, 5 Feb 2010 16:50:59 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: David Miller <davem@davemloft.net>, <netdev@vger.kernel.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Nick Nunley <nicholasx.d.nunley@intel.com>
+Subject: linux-next: build failure after merge of the net tree
+Message-Id: <20100205165059.0b5d5363.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0beta7 (GTK+ 2.18.6; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20100205144920X.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Fri, 05 Feb 2010 14:49:35 +0900 (JST)
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__5_Feb_2010_16_50_59_+1100_b8V.lbLiILDVfOYJ"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There are only two users of the dma_sync_single_range_for_cpu/device
-API in mainline (mlx4 and ssb). The
-dma_sync_single_range_for_cpu/device API has never been documented and
-the dma_sync_single_for_cpu/device API also support a partial sync.
+--Signature=_Fri__5_Feb_2010_16_50_59_+1100_b8V.lbLiILDVfOYJ
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-This converts ssb (and b44) to use the dma_sync_single_for_cpu/device
-API (preparations for the removal of the
-dma_sync_single_range_for_cpu/device API). It also removes unnecessary
-ssb_dma_sync_single_range_for_cpu/device.
+Hi Dave,
 
-This lets dma_desc_align_mask alone in b44 but we can remove it since
-dma_sync_single_for_cpu/device() rounds up/down safely.
+After merging the scsi-post-merge tree, today's linux-next build (powerpc
+allyesconfig and i386 defconfig) failed like this:
 
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
----
- drivers/net/b44.c       |   10 +++-----
- include/linux/ssb/ssb.h |   51 -----------------------------------------------
- 2 files changed, 4 insertions(+), 57 deletions(-)
+drivers/net/e1000e/built-in.o: In function `e1000_has_link':
+(.opd+0x1d58): multiple definition of `e1000_has_link'
+drivers/net/e1000/built-in.o:(.opd+0x588): first defined here
 
-diff --git a/drivers/net/b44.c b/drivers/net/b44.c
-index 44b66be..c3177e3 100644
---- a/drivers/net/b44.c
-+++ b/drivers/net/b44.c
-@@ -148,9 +148,8 @@ static inline void b44_sync_dma_desc_for_device(struct ssb_device *sdev,
- 						unsigned long offset,
- 						enum dma_data_direction dir)
- {
--	ssb_dma_sync_single_range_for_device(sdev, dma_base,
--					     offset & dma_desc_align_mask,
--					     dma_desc_sync_size, dir);
-+	ssb_dma_sync_single_for_device(sdev, dma_base + (offset & dma_desc_align_mask),
-+				       dma_desc_sync_size, dir);
- }
- 
- static inline void b44_sync_dma_desc_for_cpu(struct ssb_device *sdev,
-@@ -158,9 +157,8 @@ static inline void b44_sync_dma_desc_for_cpu(struct ssb_device *sdev,
- 					     unsigned long offset,
- 					     enum dma_data_direction dir)
- {
--	ssb_dma_sync_single_range_for_cpu(sdev, dma_base,
--					  offset & dma_desc_align_mask,
--					  dma_desc_sync_size, dir);
-+	ssb_dma_sync_single_for_cpu(sdev, dma_base + (offset & dma_desc_align_mask),
-+				    dma_desc_sync_size, dir);
- }
- 
- static inline unsigned long br32(const struct b44 *bp, unsigned long reg)
-diff --git a/include/linux/ssb/ssb.h b/include/linux/ssb/ssb.h
-index 24f9885..e99c5d3 100644
---- a/include/linux/ssb/ssb.h
-+++ b/include/linux/ssb/ssb.h
-@@ -580,57 +580,6 @@ static inline void ssb_dma_sync_single_for_device(struct ssb_device *dev,
- 	__ssb_dma_not_implemented(dev);
- }
- 
--static inline void ssb_dma_sync_single_range_for_cpu(struct ssb_device *dev,
--						     dma_addr_t dma_addr,
--						     unsigned long offset,
--						     size_t size,
--						     enum dma_data_direction dir)
--{
--	switch (dev->bus->bustype) {
--	case SSB_BUSTYPE_PCI:
--#ifdef CONFIG_SSB_PCIHOST
--		/* Just sync everything. That's all the PCI API can do. */
--		pci_dma_sync_single_for_cpu(dev->bus->host_pci, dma_addr,
--					    offset + size, dir);
--		return;
--#endif
--		break;
--	case SSB_BUSTYPE_SSB:
--		dma_sync_single_range_for_cpu(dev->dev, dma_addr, offset,
--					      size, dir);
--		return;
--	default:
--		break;
--	}
--	__ssb_dma_not_implemented(dev);
--}
--
--static inline void ssb_dma_sync_single_range_for_device(struct ssb_device *dev,
--							dma_addr_t dma_addr,
--							unsigned long offset,
--							size_t size,
--							enum dma_data_direction dir)
--{
--	switch (dev->bus->bustype) {
--	case SSB_BUSTYPE_PCI:
--#ifdef CONFIG_SSB_PCIHOST
--		/* Just sync everything. That's all the PCI API can do. */
--		pci_dma_sync_single_for_device(dev->bus->host_pci, dma_addr,
--					       offset + size, dir);
--		return;
--#endif
--		break;
--	case SSB_BUSTYPE_SSB:
--		dma_sync_single_range_for_device(dev->dev, dma_addr, offset,
--						 size, dir);
--		return;
--	default:
--		break;
--	}
--	__ssb_dma_not_implemented(dev);
--}
--
--
- #ifdef CONFIG_SSB_PCIHOST
- /* PCI-host wrapper driver */
- extern int ssb_pcihost_register(struct pci_driver *driver);
--- 
-1.5.6.5
+Caused by commit b548192acaebcb05d6a87d1e94f19835b1a18a8b ("e1000: Report
+link status in ethtool when interface is down").
 
+I have reverted that commit for today.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__5_Feb_2010_16_50_59_+1100_b8V.lbLiILDVfOYJ
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAktrscMACgkQjjKRsyhoI8x6hACbBLrjSzG6pb8CdOzoEyvDgLwE
+IO0An1FaPxClHjS/3D0zWdarMYLtL/N+
+=tScb
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__5_Feb_2010_16_50_59_+1100_b8V.lbLiILDVfOYJ--
