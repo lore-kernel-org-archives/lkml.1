@@ -1,69 +1,78 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933497Ab0BERCp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 12:02:45 -0500
-Received: from mga10.intel.com ([192.55.52.92]:40112 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756023Ab0BERCn (ORCPT
+	id S933585Ab0BERFN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 12:05:13 -0500
+Received: from mail-fx0-f211.google.com ([209.85.220.211]:46742 "EHLO
+	mail-fx0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932415Ab0BERFJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 12:02:43 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,414,1262592000"; 
-   d="scan'208";a="770488679"
-Message-ID: <4710.10.255.24.35.1265389362.squirrel@linux.intel.com>
-Date: Fri, 5 Feb 2010 09:02:42 -0800 (PST)
-Subject: [Patch]fixed: perf cannot show existing process callgraph symbol
-From: austin_zhang@linux.intel.com
-To: a.p.zijlstra@chello.nl, paulus@samba.org, mingo@elte.hu, acme@redhat.com
-Cc: linux-kernel@vger.kernel.org, austin.zhang@intel.com
-User-Agent: SquirrelMail/1.4.8-5.el4.centos.8
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+	Fri, 5 Feb 2010 12:05:09 -0500
+X-Greylist: delayed 1941 seconds by postgrey-1.27 at vger.kernel.org; Fri, 05 Feb 2010 12:05:09 EST
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=kjsdmlmM3kBQo2oThPRwX4kDz5ZtCFVFH3FeU/esW5DiltUarGFRxwz9gOvXwN4663
+         sYFhIhZgSdpLoinYXZUzn2+pQIb/+wGSUVtOjgMEuPE2XKkZ8EAe/TEVf/AcO2U6YvDP
+         /f4fm9Iz3p4zv9lEVDmz2sQ7HH9/uy79xPdNo=
+Subject: Re: [PATCH 13/17] MTD: export few functions from nand_base.c
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: "stanley.miao" <stanley.miao@windriver.com>
+Cc: David Woodhouse <dwmw2@infradead.org>, Alex Dubov <oakad@yahoo.com>,
+       Artem Bityutskiy <dedekind1@gmail.com>, joern <joern@logfs.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mtd <linux-mtd@lists.infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <4B6B8338.5060608@windriver.com>
+References: <1265326257-4446-1-git-send-email-maximlevitsky@gmail.com>
+	 <1265326257-4446-14-git-send-email-maximlevitsky@gmail.com>
+	 <4B6B8338.5060608@windriver.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 05 Feb 2010 19:05:04 +0200
+Message-ID: <1265389504.18186.4.camel@maxim-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When 'perf record -g' a existing process, even with debuginfo
-packages, still cannnot get symbol from 'perf report'.
+On Fri, 2010-02-05 at 10:32 +0800, stanley.miao wrote: 
+> Maxim Levitsky wrote:
+> > This exports:
+> >
+> > nand_do_read_oob
+> > nand_do_write_oob
+> >   
+> 
+> nand_do_read_oob and nand_do_write_oob can't be exported. They are internal
+> functions in NAND subsystem. If you want use them, please use mtd->read_oob
+> and mtd->write_oob.
+> 
+> Stanley.
+> 
+> > nand_get_device
+> > nand_put_device
+> >
+> > This functions will be used to implement custom oob based
+> > bad block handling in upcoming smartmedia common module
+> >
 
-try:
-perf record -g -p `pidof xxx` -f
-perf report
+Actually I don't like this patch ether.
 
-    68.26%    :1181           b74870f2  [.] 0x000000b74870f2
-              |
-              |--32.09%-- 0xb73b5b44
-              |          0xb7487102
-              |          0xb748a4e2
-              |          0xb748633d
-              |          0xb73b41cd
-              |          0xb73b4467
-              |          0xb747d531
+The problem is that nand_erase_nand first takes the lock, and then calls
+the ->block_bad.
 
-The reason is: for existing process, in __cmd_record(),
-the pid is 0 rather than the existing process id.
+I could make the ->block_bad always take the lock (and this will allow
+using ->read_oob) by first checking that all erase blocks are good, and
+then doing the erase.
+This would change the behavior slightly (Now if you attempt to erase
+several erase blocks and one of them is marked as bad, erase stops at
+first bad block. With the change, erase will fail completely.
+Is this ok?
 
-Signed-off-by: Austin Zhang <austin_zhang@linux.intel.com>
----
- tools/perf/builtin-record.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Best regards,
+Maxim Levitsky
 
-diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
-index 2654253..1d62d2a 100644
---- a/tools/perf/builtin-record.c
-+++ b/tools/perf/builtin-record.c
-@@ -552,7 +552,7 @@ static int __cmd_record(int argc, const char **argv)
- 	}
 
- 	if (!system_wide && profile_cpu == -1)
--		event__synthesize_thread(pid, process_synthesized_event,
-+		event__synthesize_thread(target_pid, process_synthesized_event,
- 					 session);
- 	else
- 		event__synthesize_threads(process_synthesized_event, session);
--- 
-1.6.1.3
 
