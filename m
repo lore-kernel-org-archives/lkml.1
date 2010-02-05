@@ -1,35 +1,30 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756315Ab0BEJob (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 04:44:31 -0500
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:47547 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754515Ab0BEJo3 (ORCPT
+	id S932447Ab0BEJp3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 04:45:29 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:38089 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754910Ab0BEJp2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 04:44:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=Pl4y5d0JyWXPGNXYzkXnLlRQv5nLDD8ukuQvvpW1nkqGKFwbcT2/UgpUtS0msQGofT
-         Nhh4MMluYHIjU6jcdrezfj6Qg21jtIO4IbTatEpJiVlbxTKT9bcEGZcmQk08tNSEg3ds
-         d9zTuhyx7DPvvbsgoq2l3mv3eDTKtY3eWN5s4=
-Subject: Re: [PATCH 11/17] MTD: nand: fix bug that prevented write of more
- that	one page by ->write_oob
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: "stanley.miao" <stanley.miao@windriver.com>
-Cc: David Woodhouse <dwmw2@infradead.org>, Alex Dubov <oakad@yahoo.com>,
-       Artem Bityutskiy <dedekind1@gmail.com>, joern <joern@logfs.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-mtd <linux-mtd@lists.infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <4B6B81AD.40704@windriver.com>
-References: <1265326257-4446-1-git-send-email-maximlevitsky@gmail.com>
-	 <1265326257-4446-12-git-send-email-maximlevitsky@gmail.com>
-	 <4B6B81AD.40704@windriver.com>
+	Fri, 5 Feb 2010 04:45:28 -0500
+Subject: Re: [PATCH 10/11] tracing/perf: Fix lock events recursions in the
+ fast path
+From: Peter Zijlstra <peterz@infradead.org>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: paulmck@linux.vnet.ibm.com, Frederic Weisbecker <fweisbec@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Paul Mackerras <paulus@samba.org>,
+       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
+       Li Zefan <lizf@cn.fujitsu.com>, Masami Hiramatsu <mhiramat@redhat.com>,
+       Jens Axboe <jens.axboe@oracle.com>
+In-Reply-To: <4B6B84A1.60805@cn.fujitsu.com>
+References: <1265188475-23509-1-git-send-regression-fweisbec@gmail.com>
+	 <1265188475-23509-11-git-send-regression-fweisbec@gmail.com>
+	 <20100204154700.GE6676@linux.vnet.ibm.com>  <4B6B84A1.60805@cn.fujitsu.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 05 Feb 2010 11:44:23 +0200
-Message-ID: <1265363063.15383.27.camel@maxim-laptop>
+Date: Fri, 05 Feb 2010 10:45:02 +0100
+Message-ID: <1265363102.22001.286.camel@laptop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
@@ -37,113 +32,121 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-02-05 at 10:25 +0800, stanley.miao wrote: 
-> ops->ooblen is the oob bytes to write, you add a argument for 
-> nand_fill_oob to do this,
-> it is redundant.
-No its not.
-ops->ooblen can be legitimately larger that mtd->oobsize because user
-might want to write two or more pages in a row.
-
-I want to be able to write two pages + two oobs in same time.
-
-
-
+On Fri, 2010-02-05 at 10:38 +0800, Lai Jiangshan wrote:
+> Paul E. McKenney wrote:
+> > On Wed, Feb 03, 2010 at 10:14:34AM +0100, Frederic Weisbecker wrote:
+> >> There are rcu locked read side areas in the path where we submit
+> >> a trace events. And these rcu_read_(un)lock() trigger lock events,
+> >> which create recursive events.
+> >>
+> >> One pair in do_perf_sw_event:
+> >>
+> >> __lock_acquire
+> >>       |
+> >>       |--96.11%-- lock_acquire
+> >>       |          |
+> >>       |          |--27.21%-- do_perf_sw_event
+> >>       |          |          perf_tp_event
+> >>       |          |          |
+> >>       |          |          |--49.62%-- ftrace_profile_lock_release
+> >>       |          |          |          lock_release
+> >>       |          |          |          |
+> >>       |          |          |          |--33.85%-- _raw_spin_unlock
+> >>
+> >> Another pair in perf_output_begin/end:
+> >>
+> >> __lock_acquire
+> >>       |--23.40%-- perf_output_begin
+> >>       |          |          __perf_event_overflow
+> >>       |          |          perf_swevent_overflow
+> >>       |          |          perf_swevent_add
+> >>       |          |          perf_swevent_ctx_event
+> >>       |          |          do_perf_sw_event
+> >>       |          |          perf_tp_event
+> >>       |          |          |
+> >>       |          |          |--55.37%-- ftrace_profile_lock_acquire
+> >>       |          |          |          lock_acquire
+> >>       |          |          |          |
+> >>       |          |          |          |--37.31%-- _raw_spin_lock
+> >>
+> >> The problem is not that much the trace recursion itself, as we have a
+> >> recursion protection already (though it's always wasteful to recurse).
+> >> But the trace events are outside the lockdep recursion protection, then
+> >> each lockdep event triggers a lock trace, which will trigger two
+> >> other lockdep events. Here the recursive lock trace event won't
+> >> be taken because of the trace recursion, so the recursion stops there
+> >> but lockdep will still analyse these new events:
+> >>
+> >> To sum up, for each lockdep events we have:
+> >>
+> >> 	lock_*()
+> >> 	     |
+> >>              trace lock_acquire
+> >>                   |
+> >>                   ----- rcu_read_lock()
+> >>                   |          |
+> >>                   |          lock_acquire()
+> >>                   |          |
+> >>                   |          trace_lock_acquire() (stopped)
+> >>                   |          |
+> >> 		  |          lockdep analyze
+> >>                   |
+> >>                   ----- rcu_read_unlock()
+> >>                              |
+> >>                              lock_release
+> >>                              |
+> >>                              trace_lock_release() (stopped)
+> >>                              |
+> >>                              lockdep analyze
+> >>
+> >> And you can repeat the above two times as we have two rcu read side
+> >> sections when we submit an event.
+> >>
+> >> This is fixed in this pacth by using the non-lockdep versions of
+> >> rcu_read_(un)lock.
+> > 
+> > Hmmm...  Perhaps I should rename __rcu_read_lock() to something more
+> > meaningful if it is to be used outside of the RCU files.  In the
+> > meantime:
+> > 
+> > Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> > 
 > 
-> I know the bug you want to fix, the ops->ooblen may be illegal. But this 
-> patch can't this
-> problem. If (ops->offset + ops->ooblen) > mtd->oobsize, it still will 
-> write beyond a page.
-This is true, I just didn't use the ops->offset....
-
-
+> Perhaps we can use the existed rcu_read_lock_sched_notrace().
 > 
-> I think the right method is that nand_do_write_ops do the check like 
-> nand_do_write_oob,
-> I have the patch yesterday.
+> not relate to this patchset, but RCU & lockdep:
 > 
-> http://patchwork.ozlabs.org/patch/44450/
-This again won't work for multipage writes I have in mind.
-However if ops->ooboffs is set, I think multipage write shouldn't be
-allowed
+> We need to remove lockdep from rcu_read_lock_*().
 
-This is:
+I'm not at all convinced we need to do any such thing, remember its
+debugging stuff, performance, while nice, doesn't really count.
 
-if (ops->ooboffs && (ops->ooboffs + ops->ooblen) > len))
 
-Also check for 'ops->ooboffs >= len' is almost redundant.
-Only case it would trigger is when 'ops->ooblen == 0'
-But this probably can be dealt with, without error.
+> 1) rcu_read_lock() is deadlock-immunity,
+>    we get very little benefit from lockdep.
 
-Best regards,
-Maxim Levitsky
+Except it detects things like failing to unlock, or going into userspace
+while holding an rcu_read_lock()
 
+Also, Paul has been spending lots of effort on getting rcu_dereference()
+annotated.
+
+> rcu_read_lock()
+>    lock_acquire(read=2,check=1)
 > 
-> Stanley.
+>  * Values for check:
+>  *
+>  *   0: disabled
+>  *   1: simple checks (freeing, held-at-exit-time, etc.)
+>  *   2: full validation
+>  */
 > 
-> Maxim Levitsky wrote:
-> > Although nand_do_write_ops intends to allow such mode, it fails do do so
-> > Probably this was never tested
-> >
-> > Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
-> > ---
-> >  drivers/mtd/nand/nand_base.c |   16 +++++++++-------
-> >  1 files changed, 9 insertions(+), 7 deletions(-)
-> >
-> > diff --git a/drivers/mtd/nand/nand_base.c b/drivers/mtd/nand/nand_base.c
-> > index 8ff36be..29e986e 100644
-> > --- a/drivers/mtd/nand/nand_base.c
-> > +++ b/drivers/mtd/nand/nand_base.c
-> > @@ -1879,11 +1879,9 @@ static int nand_write_page(struct mtd_info *mtd, struct nand_chip *chip,
-> >   * @oob:	oob data buffer
-> >   * @ops:	oob ops structure
-> >   */
-> > -static uint8_t *nand_fill_oob(struct nand_chip *chip, uint8_t *oob,
-> > -				  struct mtd_oob_ops *ops)
-> > +static uint8_t *nand_fill_oob(struct nand_chip *chip, uint8_t *oob, size_t len,
-> > +						struct mtd_oob_ops *ops)
-> >   
+> We can check it by other methods.
 > 
-> ops->ooblen is the oob bytes to write, you add a prara
-> 
-> >  {
-> > -	size_t len = ops->ooblen;
-> > -
-> >  	switch(ops->mode) {
-> >  
-> >  	case MTD_OOB_PLACE:
-> > @@ -1938,6 +1936,7 @@ static int nand_do_write_ops(struct mtd_info *mtd, loff_t to,
-> >  	int chipnr, realpage, page, blockmask, column;
-> >  	struct nand_chip *chip = mtd->priv;
-> >  	uint32_t writelen = ops->len;
-> > +	uint32_t oobwritelen = ops->ooblen;
-> >  	uint8_t *oob = ops->oobbuf;
-> >  	uint8_t *buf = ops->datbuf;
-> >  	int ret, subpage;
-> > @@ -1994,8 +1993,11 @@ static int nand_do_write_ops(struct mtd_info *mtd, loff_t to,
-> >  			wbuf = chip->buffers->databuf;
-> >  		}
-> >  
-> > -		if (unlikely(oob))
-> > -			oob = nand_fill_oob(chip, oob, ops);
-> > +		if (unlikely(oob)) {
-> > +			size_t len = min(oobwritelen, mtd->oobsize);
-> > +			oob = nand_fill_oob(chip, oob, len, ops);
-> > +			oobwritelen -= len;
-> > +		}
-> >  
-> >  		ret = chip->write_page(mtd, chip, wbuf, page, cached,
-> >  				       (ops->mode == MTD_OOB_RAW));
-> > @@ -2169,7 +2171,7 @@ static int nand_do_write_oob(struct mtd_info *mtd, loff_t to,
-> >  		chip->pagebuf = -1;
-> >  
-> >  	memset(chip->oob_poi, 0xff, mtd->oobsize);
-> > -	nand_fill_oob(chip, ops->oobbuf, ops);
-> > +	nand_fill_oob(chip, ops->oobbuf, ops->ooblen, ops);
-> >  	status = chip->ecc.write_oob(mtd, chip, page & chip->pagemask);
-> >  	memset(chip->oob_poi, 0xff, mtd->oobsize);
-> >  
-> >   
-> 
+> 2) popular distributions and some companies enable lockdep for their kernel.
+>    rcu_read_lock_*() are the most frequent lock in kernel.
+>    lock_acquire() is not fast enough, it is a big function for RCU.
 
+Its debug stuff, get over it, we're not going to limit its coverage
+because people do silly things.
 
