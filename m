@@ -1,213 +1,92 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753623Ab0BEKYJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 05:24:09 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:54460 "EHLO gir.skynet.ie"
+	id S1754180Ab0BEKsU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 05:48:20 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47736 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751007Ab0BEKYF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 05:24:05 -0500
-Date: Fri, 5 Feb 2010 10:23:50 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: David Rientjes <rientjes@google.com>
-Cc: Andrea Arcangeli <aarcange@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Adam Litke <agl@us.ibm.com>, Avi Kivity <avi@redhat.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 2/7] Export unusable free space index via
-	/proc/pagetypeinfo
-Message-ID: <20100205102349.GB20412@csn.ul.ie>
-References: <1262795169-9095-1-git-send-email-mel@csn.ul.ie> <1262795169-9095-3-git-send-email-mel@csn.ul.ie> <alpine.DEB.2.00.1001281411290.30252@chino.kir.corp.google.com>
+	id S1753842Ab0BEKsS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Feb 2010 05:48:18 -0500
+Date: Fri, 5 Feb 2010 11:47:52 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Dave Airlie <airlied@gmail.com>
+Cc: Dave Airlie <airlied@linux.ie>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       dri-devel@lists.sf.net, Alex Deucher <alexdeucher@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org
+Subject: Re: hung bootup with "drm/radeon/kms: move radeon KMS on/off switch
+ out of staging."
+Message-ID: <20100205104752.GA29515@elte.hu>
+References: <20100204193232.GD6665@elte.hu>
+ <20100204115316.69beee75@jbarnes-piketon>
+ <20100204202254.GA24716@elte.hu>
+ <20100204204829.GA24608@srcf.ucam.org>
+ <20100204210559.GC19050@elte.hu>
+ <20100204210950.GA25295@srcf.ucam.org>
+ <20100205075645.GF9320@elte.hu>
+ <alpine.DEB.2.00.1002050832450.2995@skynet.skynet.ie>
+ <20100205090009.GA8272@elte.hu>
+ <21d7e9971002050118h7ff48386v2c8fede0519b8975@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.1001281411290.30252@chino.kir.corp.google.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <21d7e9971002050118h7ff48386v2c8fede0519b8975@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 28, 2010 at 02:27:39PM -0800, David Rientjes wrote:
-> On Wed, 6 Jan 2010, Mel Gorman wrote:
-> 
-> > Unusuable free space index is a measure of external fragmentation that
-> > takes the allocation size into account. For the most part, the huge page
-> > size will be the size of interest but not necessarily so it is exported
-> > on a per-order and per-zone basis via /proc/pagetypeinfo.
-> > 
-> > The index is normally calculated as a value between 0 and 1 which is
-> > obviously unsuitable within the kernel. Instead, the first three decimal
-> > places are used as a value between 0 and 1000 for an integer approximation.
-> > 
-> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> > ---
-> >  mm/vmstat.c |   99 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-> >  1 files changed, 99 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/mm/vmstat.c b/mm/vmstat.c
-> > index 6051fba..e1ea2d5 100644
-> > --- a/mm/vmstat.c
-> > +++ b/mm/vmstat.c
-> > @@ -451,6 +451,104 @@ static int frag_show(struct seq_file *m, void *arg)
-> >  	return 0;
-> >  }
-> >  
-> > +
-> > +struct config_page_info {
-> > +	unsigned long free_pages;
-> > +	unsigned long free_blocks_total;
-> > +	unsigned long free_blocks_suitable;
-> > +};
-> > +
-> > +/*
-> > + * Calculate the number of free pages in a zone, how many contiguous
-> > + * pages are free and how many are large enough to satisfy an allocation of
-> > + * the target size. Note that this function makes to attempt to estimate
-> > + * how many suitable free blocks there *might* be if MOVABLE pages were
-> > + * migrated. Calculating that is possible, but expensive and can be
-> > + * figured out from userspace
-> > + */
-> > +static void fill_contig_page_info(struct zone *zone,
-> > +				unsigned int suitable_order,
-> > +				struct config_page_info *info)
-> 
-> There's a descrepency between the name of the function and the name of the 
-> struct, I think they were probably both meant to be contig_page_info.
-> 
 
-Fixed
+* Dave Airlie <airlied@gmail.com> wrote:
 
-> > +{
-> > +	unsigned int order;
-> > +
-> > +	info->free_pages = 0;
-> > +	info->free_blocks_total = 0;
-> > +	info->free_blocks_suitable = 0;
-> > +
-> > +	for (order = 0; order < MAX_ORDER; order++) {
-> > +		unsigned long blocks;
-> > +
-> > +		/* Count number of free blocks */
-> > +		blocks = zone->free_area[order].nr_free;
-> > +		info->free_blocks_total += blocks;
-> > +
-> > +		/* Count free base pages */
-> > +		info->free_pages += blocks << order;
-> > +
-> > +		/* Count the suitable free blocks */
-> > +		if (order >= suitable_order)
-> > +			info->free_blocks_suitable += blocks <<
-> > +						(order - suitable_order);
-> > +	}
-> > +}
-> > +
-> > +/*
-> > + * Return an index indicating how much of the available free memory is
-> > + * unusable for an allocation of the requested size.
-> > + */
-> > +int unusable_free_index(struct zone *zone,
-> > +				unsigned int order,
-> > +				struct config_page_info *info)
+> On Fri, Feb 5, 2010 at 7:00 PM, Ingo Molnar <mingo@elte.hu> wrote:
+> >
+> > * Dave Airlie <airlied@linux.ie> wrote:
+> >
+> >>
+> >> > If it now does not boot up if all its sub-options are enabled, even of some
+> >> > of those sub-options are new, does that count as a driver regression? Sure it
+> >> > does to me ...
+> >>
+> >> But it doesn't to anyone else under any reasonable meaning of the word
+> >> regression.
+> >
+> > There are reactions in this thread that contradict your 'anyone else' point.
+> >
+> >> The config option states
+> >> "Choose this option if you want kernel modesetting enabled by default,
+> >> ? ? ? ? ? and you have a new enough userspace to support this. Running old
+> >> ? ? ? ? ? userspaces with this enabled will cause pain."
+> >>
+> >> Will cause pain sounds painful to me, I can make it seem much worse if
+> >> you'd like.
+> >
+> > Except you are missing that the hang (and the first crash as well) happens on
+> > brand-new user-space just as much - not just on 'old userspaces'.
+> >
+> > The bugs i've triggered are independent of any user-space component - it
+> > happens with a fresh distro just as much.
+> >
+> > As i suggested before, at least the text should be updated to include what
+> > has been written about CONFIG_DRM_RADEON_KMS in this thread before:
+> >
+> > ?> This is a completely new driver. ?It's only part of the existing drm for
+> > ?> compatibility reasons. ?It requires an entirely different graphics stack
+> > ?> above it and works very differently from the old drm stack.
+> >
 > 
-> Should be static?
+> Okay I've attached a patch with a revised Kconfig in it.
 > 
+> Does this sound more like reality?
 
-Fixed
+Looks perfect to me!
 
-> > +{
-> > +	/* No free memory is interpreted as all free memory is unusable */
-> > +	if (info->free_pages == 0)
-> > +		return 100;
-> > +
-> > +	/*
-> > +	 * Index should be a value between 0 and 1. Return a value to 3
-> > +	 * decimal places.
-> > +	 *
-> > +	 * 0 => no fragmentation
-> > +	 * 1 => high fragmentation
-> > +	 */
-> > +	return ((info->free_pages - (info->free_blocks_suitable << order)) * 1000) / info->free_pages;
-> > +
-> 
-> This value is only for userspace consumption via /proc/pagetypeinfo, so 
-> I'm wondering why it needs to be exported as an index.  Other than a loss 
-> of precision, wouldn't this be easier to understand (especially when 
-> coupled with the free page counts already exported) if it were multipled 
-> by 100 rather than 1000 and shown as a percent of _usable_ free memory at 
-> each order? 
+Acked-by: Ingo Molnar <mingo@elte.hu>
 
-I find it easier to understand either way, but that's hardly a surprise.
-The 1000 is because of the loss of precision. I can make it a 100 but I
-don't think it makes much of a difference.
-
-> Otherwise, we're left doing this "free - unusuable" 
-> calculation while the number of unusuable pages at an order isn't 
-> necessarily of great interest as a vanilla value.
-> 
-> > +}
-> > +
-> > +static void pagetypeinfo_showunusable_print(struct seq_file *m,
-> > +					pg_data_t *pgdat, struct zone *zone)
-> > +{
-> > +	unsigned int order;
-> > +
-> > +	/* Alloc on stack as interrupts are disabled for zone walk */
-> > +	struct config_page_info info;
-> > +
-> > +	seq_printf(m, "Node %4d, zone %8s %19s",
-> > +				pgdat->node_id,
-> > +				zone->name, " ");
-> > +	for (order = 0; order < MAX_ORDER; ++order) {
-> > +		fill_contig_page_info(zone, order, &info);
-> 
-> It's a shame we can't keep this data for the fragmentation index exported 
-> subsequently in patch 3.
-> 
-
-It could. When I did first, it made things messier and the patches less
-clear-cut so I kept it simple as it wasn't performance-critical.
-
-> > +		seq_printf(m, "%6d ", unusable_free_index(zone, order, &info));
-> > +	}
-> > +
-> > +	seq_putc(m, '\n');
-> > +}
-> > +
-> > +/*
-> > + * Display unusable free space index
-> > + * XXX: Could be a lot more efficient, but it's not a critical path
-> > + */
-> > +static int pagetypeinfo_showunusable(struct seq_file *m, void *arg)
-> > +{
-> > +	pg_data_t *pgdat = (pg_data_t *)arg;
-> > +
-> > +	seq_printf(m, "\nUnusable free space index at order\n");
-> > +	walk_zones_in_node(m, pgdat, pagetypeinfo_showunusable_print);
-> > +
-> > +	return 0;
-> > +}
-> > +
-> >  static void pagetypeinfo_showfree_print(struct seq_file *m,
-> >  					pg_data_t *pgdat, struct zone *zone)
-> >  {
-> > @@ -558,6 +656,7 @@ static int pagetypeinfo_show(struct seq_file *m, void *arg)
-> >  	seq_printf(m, "Pages per block:  %lu\n", pageblock_nr_pages);
-> >  	seq_putc(m, '\n');
-> >  	pagetypeinfo_showfree(m, pgdat);
-> > +	pagetypeinfo_showunusable(m, pgdat);
-> >  	pagetypeinfo_showblockcount(m, pgdat);
-> >  
-> >  	return 0;
-> 
-> /proc/pagetypeinfo isn't documented, but that's been fine until now 
-> because all of the fields dealing with "free pages" and "number of blocks" 
-> are easily understood.  That changes now because there is no clear 
-> understanding of "fragmentation index" in userspace, so we'll probably 
-> need some kind of memory compaction documentation eventually.
-> 
-
-Agreed.
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+	Ingo
