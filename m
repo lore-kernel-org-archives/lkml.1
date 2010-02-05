@@ -1,67 +1,75 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933224Ab0BEGsN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 01:48:13 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:50397 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933055Ab0BEGsL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 01:48:11 -0500
-Date: Fri, 5 Feb 2010 07:48:09 +0100
-From: Sascha Hauer <s.hauer@pengutronix.de>
-To: Amit Kucheria <amit.kucheria@canonical.com>
-Cc: List Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel@lists.infradead.org, linux@arm.linux.org.uk,
-       valentin.longchamp@epfl.ch, daniel@caiaq.de, grant.likely@secretlab.ca,
-       Dinh.Nguyen@freescale.com, r.herring@freescale.com,
-       bryan.wu@canonical.com
-Subject: Re: [PATCHv2 11/11] mxc: Add imx51_defconfig
-Message-ID: <20100205064809.GZ6130@pengutronix.de>
-References: <cover.1265173480.git.amit.kucheria@canonical.com> <23d720d71fcb0d088fa1829fccaa4823090e1346.1265173480.git.amit.kucheria@canonical.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <23d720d71fcb0d088fa1829fccaa4823090e1346.1265173480.git.amit.kucheria@canonical.com>
-X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
-X-URL: http://www.pengutronix.de/
-X-IRC: #ptxdist @freenode
-X-Accept-Language: de,en
-X-Accept-Content-Type: text/plain
-X-Impressum: Pengutronix - Industrial Linux Solutions Handelsregister:
-	Amtsgericht Hildesheim, HRA 2686 Peiner Strasse 6-8, 31137
-	Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
-	+49-5121-206917-5555 Inhaber: Dipl.-Ing. Robert Schwebel
-X-Message-Flag: See Message Headers for Impressum
-X-Uptime: 07:46:41 up 115 days, 19:35, 33 users,  load average: 0.05, 0.36,
-	0.95
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: sha@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+	id S933296Ab0BEGyn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 01:54:43 -0500
+Received: from mail.gmx.net ([213.165.64.20]:44438 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S933242Ab0BEGyl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Feb 2010 01:54:41 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+kXWEbT6SkMU7DzEFwrF2a+mhtUcJMjO3/tQUZdH
+	ZUiPW9KFGZ4wwm
+Subject: Re: [PATCH 8/9] perf annotate: fix it for non-prelinked *.so
+From: Mike Galbraith <efault@gmx.de>
+To: Arnaldo Carvalho de Melo <acme@infradead.org>
+Cc: Kirill Smelkov <kirr@landau.phys.spbu.ru>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20100204194851.GA12121@ghostprotocols.net>
+References: <1265223128-11786-1-git-send-email-acme@infradead.org>
+	 <1265223128-11786-8-git-send-email-acme@infradead.org>
+	 <1265265106.6364.5.camel@marge.simson.net>
+	 <20100204193403.GA22781@landau.phys.spbu.ru>
+	 <20100204194851.GA12121@ghostprotocols.net>
+Content-Type: text/plain
+Date: Fri, 05 Feb 2010 07:54:38 +0100
+Message-Id: <1265352878.14282.2.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.55000000000000004
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Amit,
-
-On Tue, Feb 02, 2010 at 09:16:33PM -0800, Amit Kucheria wrote:
-> This config is used to test the base support for i.MX51 processors on the
-> Babbage board
+On Thu, 2010-02-04 at 17:48 -0200, Arnaldo Carvalho de Melo wrote:
+> Em Thu, Feb 04, 2010 at 10:34:04PM +0300, Kirill Smelkov escreveu:
+> > On Thu, Feb 04, 2010 at 07:31:46AM +0100, Mike Galbraith wrote:
+> > > Monkey see monkey do.
+> > > 
+> > > perf tools: fix perf top module symbol annotation.
+> > >  		"objdump --start-address=0x%016Lx "
+> > >  			 "--stop-address=0x%016Lx -dS %s",
+> > > -		map->unmap_ip(map, sym->start),
+> > > -		map->unmap_ip(map, sym->end), path);
+> > > +		map__rip_2objdump(map, sym->start),
+> > > +		map__rip_2objdump(map, sym->end), path);
+> > 
+> > If I recall correctly, that's not enough.
+> > 
+> > The problem is top code is also wrong at mapping objdump addresses to
+> > absolute ip. That is another part of builtin-top.c which does
+> > map->unmap_ip(), and I've already suggested a fix back at holidays:
+> > 
+> > http://marc.info/?l=linux-kernel&m=126295508002536&w=2
 > 
-> Signed-off-by: Amit Kucheria <amit.kucheria@canonical.com>
-> ---
->  arch/arm/configs/imx51_defconfig | 1286 ++++++++++++++++++++++++++++++++++++++
->  1 files changed, 1286 insertions(+), 0 deletions(-)
->  create mode 100644 arch/arm/configs/imx51_defconfig
+> Yeah, I was looking at Mike's report about 'perf annotate' not working
+> with modules, debugged, wrote a patch that looed at the ELF header obj
+> type as the key to apply or not the unmap_ip operation and when it was
+> working I thought I saw that patch somewhere, looked at yours and
+> applied it instead.
+> 
+> Then I was testing your subsequent patches but had to call it a day,
+> sent what I had that at least fixed 'annotate' and Mike took it from
+> there.
+> 
+> Looking at this now.
 
-Can you rename this to mx51_defconfig? All other i.MX defconfigs begin
-with mx.
+Hm, seems to work fine.
 
-Sascha
+(piddle)
 
--- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+Aha, the rest is needed for userland annotation to work.
+
+	-Mike
+
