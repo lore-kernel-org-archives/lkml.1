@@ -1,124 +1,62 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752909Ab0BEKT2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 05:19:28 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:44264 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752331Ab0BEKT0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 05:19:26 -0500
-Subject: Re: [Patch 0/2] sysfs: fix s_active lockdep warning
-From: Peter Zijlstra <peterz@infradead.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Greg KH <gregkh@suse.de>,
-       Thomas Gleixner <tglx@linutronix.de>, Cong Wang <amwang@redhat.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Tejun Heo <tj@kernel.org>, Miles Lane <miles.lane@gmail.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.1002041322390.1261-100000@iolanthe.rowland.org>
-References: <Pine.LNX.4.44L0.1002041322390.1261-100000@iolanthe.rowland.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 05 Feb 2010 11:18:37 +0100
-Message-ID: <1265365117.22001.377.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	id S1753404Ab0BEKXb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 05:23:31 -0500
+Received: from mail.gmx.net ([213.165.64.20]:57974 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753147Ab0BEKXa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Feb 2010 05:23:30 -0500
+X-Authenticated: #28250155
+X-Provags-ID: V01U2FsdGVkX1/n8kYl/33nOqfDmeCCqCd8vqICDr9AcxNwLbDq6o
+	ZNQaZ1CIMPWaos
+From: Sven Joachim <svenjoac@gmx.de>
+To: Ben Hutchings <ben@decadent.org.uk>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       stable-review@kernel.org, stable@kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [stable] [PATCH] Fix 'flush_old_exec()/setup_new_exec()' split
+References: <1265245849.3362.1.camel@localhost>
+	<1265256174.2952.11.camel@localhost>
+	<alpine.LFD.2.00.1002032135380.3707@localhost.localdomain>
+	<1265272174.2952.20.camel@localhost>
+	<20100204143848.GB15438@kroah.com> <87sk9gbzzt.fsf@turtle.gmx.de>
+	<alpine.LFD.2.00.1002041102530.3707@localhost.localdomain>
+	<20100204222522.GF20379@decadent.org.uk>
+Date: Fri, 05 Feb 2010 11:23:26 +0100
+In-Reply-To: <20100204222522.GF20379@decadent.org.uk> (Ben Hutchings's message
+	of "Thu, 4 Feb 2010 22:25:22 +0000")
+Message-ID: <87iqachtgh.fsf@turtle.gmx.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.92 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.64000000000000001
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-02-04 at 13:37 -0500, Alan Stern wrote:
-> On Thu, 4 Feb 2010, Peter Zijlstra wrote:
-> 
-> > > This doesn't address the fact that we really have multiple device trees
-> > > (for example, class devices are handled separately from normal
-> > > devices).  With the above patch installed, I still get lockdep
-> > > violations farther on during boot:
-> > 
-> > <snip lockdep splat>
-> > 
-> > Hmm, so you have multiple interacting trees? I had understood you only
-> > had a single device tree.
-> 
-> The real situation is kind of complicated, and I'm not familiar with
-> all the details.  But it's certainly true that a driver will want to
-> work with (and lock!) multiple struct device's that don't have a
-> parent-child relation in the tree.  The simplest example is regular
-> devices together with class devices, and another might be PCI devices
-> together with their "shadow" ACPI devices.
-> 
-> >  So how many trees are there, is that fixed?
-> > Does the device know what tree it is going to end up in?
-> 
-> The driver generally knows, but AFAIK that information is not passed 
-> back to the driver core.  At least, not directly -- you might say that 
-> it could be deduced from the parent pointer, assuming the core already 
-> knows all about the parent.
-> 
-> > If yes, then you can extend the setup_mutex_depth() function to pick a
-> > different class stack for each tree.
-> 
-> Maybe this could be done. 
+On 2010-02-04 23:25 +0100, Ben Hutchings wrote:
 
-Right, so this device stuff is much more complicated than I was led to
-believe ;-)
+> In a Debian initramfs, /init is a script interpreted by /bin/sh.
 
-So the device core doesn't know, so how are you guys making sure there
-really are no deadlocks hidden in there somewhere?
+Yes, I tested without an initramfs though.  The crash happens actually
+before init is run.
 
->  But for now perhaps a compromise is in
-> order.  We could make the switch from semaphores to mutexes while
-> avoiding lockdep issues by assigning the device mutexes to a
-> "don't-verify" class.  Is there such a thing, or could it be added?
+> I've now tested i386 userland on an x86_64 kernel with all the relevant
+> patches on top of 2.6.32.7:
+>
+> fdpic-respect-pt_gnu_stack-exec-protection-markings-when-creating-nommu-stack.patch
+> split-flush_old_exec-into-two-functions.patch
+> sparc-tif_abi_pending-bit-removal.patch
+> x86-get-rid-of-the-insane-tif_abi_pending-bit.patch
+> fix-flush_old_exec-setup_new_exec-split.patch
+> powerpc-tif_abi_pending-bit-removal.patch
+>
+> This works perfectly, so far as I can see.
 
-Something like the below might work, but it should go along with a
-checkpatch.pl mod to ensure we don't grow any new users (just don't feel
-like brushing up my perl fu enough to actually make sense of that
-script)
+It seems so.  The faulty patch is actually the cherry-pick of commit
+28f6aeea (net: restore ip source validation), reverting that leads to a
+kernel that runs fine.  And this has nothing to do with 64-bit vs
+32-bit.
 
----
- include/linux/lockdep.h |    2 ++
- kernel/lockdep.c        |    5 +++++
- 2 files changed, 7 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/lockdep.h b/include/linux/lockdep.h
-index 9ccf0e2..4e30ab4 100644
---- a/include/linux/lockdep.h
-+++ b/include/linux/lockdep.h
-@@ -40,6 +40,8 @@ struct lock_class_key {
- 	struct lockdep_subclass_key	subkeys[MAX_LOCKDEP_SUBCLASSES];
- };
- 
-+extern struct lock_class_key __lockdep_no_validate__;
-+
- #define LOCKSTAT_POINTS		4
- 
- /*
-diff --git a/kernel/lockdep.c b/kernel/lockdep.c
-index c62ec14..af65a34 100644
---- a/kernel/lockdep.c
-+++ b/kernel/lockdep.c
-@@ -2716,6 +2716,8 @@ void lockdep_init_map(struct lockdep_map *lock, const char *name,
- }
- EXPORT_SYMBOL_GPL(lockdep_init_map);
- 
-+struct lock_class_key __lockdep_no_validate__;
-+
- /*
-  * This gets called for every mutex_lock*()/spin_lock*() operation.
-  * We maintain the dependency maps and validate the locking attempt:
-@@ -2750,6 +2752,9 @@ static int __lock_acquire(struct lockdep_map *lock, unsigned int subclass,
- 		return 0;
- 	}
- 
-+	if (lock->key == &__lockdep_no_validate__)
-+		check = 1;
-+
- 	if (!subclass)
- 		class = lock->class_cache;
- 	/*
-
-
+Sven
