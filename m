@@ -1,392 +1,63 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933671Ab0BEC3e (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 21:29:34 -0500
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:53550 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933661Ab0BEC3c (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 21:29:32 -0500
-Message-ID: <4B6B81B7.8040303@bx.jp.nec.com>
-Date: Thu, 04 Feb 2010 21:25:59 -0500
-From: Keiichi KII <k-keiichi@bx.jp.nec.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, mingo@elte.hu
-CC: Keiichi KII <k-keiichi@bx.jp.nec.com>, lwoodman@redhat.com,
-       linux-mm@kvack.org, Tom Zanussi <tzanussi@gmail.com>, riel@redhat.com,
-       rostedt@goodmis.org, akpm@linux-foundation.org, fweisbec@gmail.com,
-       Munehiro Ikeda <m-ikeda@ds.jp.nec.com>,
-       Atsushi Tsuji <a-tsuji@bk.jp.nec.com>
-Subject: [RFC PATCH -tip 2/2 v3] add scripts for pagecache analysis per process
-References: <4B6B7FBF.9090005@bx.jp.nec.com>
-In-Reply-To: <4B6B7FBF.9090005@bx.jp.nec.com>
-Content-Type: text/plain; charset=ISO-2022-JP
+	id S933661Ab0BEChv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 21:37:51 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:33554 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756001Ab0BEChu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 21:37:50 -0500
+Date: Fri, 5 Feb 2010 13:37:47 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Adam Buchbinder <adam.buchbinder@gmail.com>,
+       David Miller <davem@davemloft.net>, <netdev@vger.kernel.org>,
+       Ben Hutchings <bhutchings@solarflare.com>
+Subject: linux-next: manual merge of the trivial tree with the net tree
+Message-Id: <20100205133747.14ca83f2.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0beta7 (GTK+ 2.18.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The scripts are implemented based on the trace stream scripting support.
-And the scripts implement the following and depend on the page cache 
-tracepoints.
+Hi Jiri,
 
- - pagecache hit ratio per process
- - how many pagecaches each process has per each file
- - how many pages are cached per each file
- - how many pagecaches each process shares
+Today's linux-next merge of the trivial tree got a conflict in
+drivers/net/sfc/mcdi_pcol.h between commit
+5297a98d5dd6de86fe1e2ffc9ea60cdf59b71443 ("sfc: Update MCDI protocol
+definitions") from the net tree and commit
+4887b438e6880c73c4b44d868211e70c1f3deaec ("Fix misspelling of
+"successful" and variants in comments") from the trivial tree.
 
-To monitor pagecache hit ratio per process, run "pagecache-hit-ratio-record"
-or "pref trace record pagecache-hit-ratio" to record perf data for 
-"pagecache-hit-ration.pl" and run "pagecache-hit-ratio-report" or
-"perf trace report pagecache-usage" to display.
+I fixed it up (see below) and can carry the fix as necessary.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-The below outputs show execution sample.
-
-[process list]
-o yum-3215
-                          cache find  cache hit  cache hit
-        device      inode      count      count      ratio
-  --------------------------------------------------------
-         253:0         16      34434      34130     99.12%
-         253:0        198       9692       9463     97.64%
-         253:0        639        647        628     97.06%
-         253:0        778         32         29     90.62%
-         253:0       7305      50225      49005     97.57%
-         253:0     144217         12         10     83.33%
-         253:0     262775         16         13     81.25%
-*snip*
-
-To monitor pagecache usage per a process, run "pagecache-usage-record" or
-"perf trace record pagecache-usage" to record perf data for 
-"pagecache-usage.pl" and run "pagecache-usage-report" or "perf trace report
-pagecache-usage" to display.
-
-The below outputs show execution sample.
-
-[file list]
-        device              cached
-     (maj:min)      inode    pages
-  --------------------------------
-         253:0         16     5752
-         253:0        198     2233
-         253:0        639       51
-         253:0        778       86
-         253:0       7305    12307
-         253:0     144217       11
-         253:0     262775       39
-*snip*
-
-[process list]
-o yum-3215
-        device              cached    added  removed      indirect
-     (maj:min)      inode    pages    pages    pages removed pages
-  ----------------------------------------------------------------
-         253:0         16    34130     5752        0             0
-         253:0        198     9463     2233        0             0
-         253:0        639      628       51        0             0
-         253:0        778       29       78        0             0
-         253:0       7305    49005    12307        0             0
-         253:0     144217       10       11        0             0
-         253:0     262775       13       39        0             0
-*snip*
-  ----------------------------------------------------------------
-  total:                    102346    26165        1             0
-
->From the output, we can know some information like:
-
-- if "added pages" > "cached pages" on process list then
-    It means repeating add/remove pagecache many times.
-  => Bad case for pagecache usage
-
-- if "added pages" <= "cached pages" on process list then
-    It means no unnecessary I/O operations.
-  => Good case for pagecache usage.
-
-- if "caches" on file list > 
-         sum "cached pages" per each file on process list then
-    It means there are unneccessary pagecaches in the memory. 
-  => Bad case for pagecache usage
-
-Signed-off-by: Keiichi Kii <k-keiichi@bx.jp.nec.com>
-Cc: Atsushi Tsuji <a-tsuji@bk.jp.nec.com>
----
- tools/perf/scripts/perl/bin/pagecache-hit-ratio-record |    7 
- tools/perf/scripts/perl/bin/pagecache-hit-ratio-report |    6 
- tools/perf/scripts/perl/bin/pagecache-usage-record     |    7 
- tools/perf/scripts/perl/bin/pagecache-usage-report     |    6 
- tools/perf/scripts/perl/pagecache-hit-ratio.pl         |   75 +++++++++
- tools/perf/scripts/perl/pagecache-usage.pl             |  136 +++++++++++++++++
- 6 files changed, 237 insertions(+)
-
-Index: linux-2.6-tip/tools/perf/scripts/perl/bin/pagecache-usage-record
-===================================================================
---- /dev/null
-+++ linux-2.6-tip/tools/perf/scripts/perl/bin/pagecache-usage-record
-@@ -0,0 +1,7 @@
-+#!/bin/bash
-+perf record -c 1 -f -a -M -R -e filemap:add_to_page_cache -e filemap:find_get_page -e filemap:remove_from_page_cache
-+
-+
-+
-+
-+
-Index: linux-2.6-tip/tools/perf/scripts/perl/bin/pagecache-usage-report
-===================================================================
---- /dev/null
-+++ linux-2.6-tip/tools/perf/scripts/perl/bin/pagecache-usage-report
-@@ -0,0 +1,6 @@
-+#!/bin/bash
-+# description: pagecache usage per process
-+perf trace -s ~/libexec/perf-core/scripts/perl/pagecache-usage.pl
-+
-+
-+
-Index: linux-2.6-tip/tools/perf/scripts/perl/pagecache-usage.pl
-===================================================================
---- /dev/null
-+++ linux-2.6-tip/tools/perf/scripts/perl/pagecache-usage.pl
-@@ -0,0 +1,136 @@
-+#!/usr/bin/perl -w
-+# (C) 2010, Keiichi Kii <k-keiichi@bx.jp.nec.com>
-+# Licensed under the terms of the GNU GPL License version 2
-+
-+# Display pagecache usage per a process
-+
-+use lib "$ENV{'PERF_EXEC_PATH'}/scripts/perl/Perf-Trace-Util/lib";
-+use lib "./Perf-Trace-Util/lib";
-+use Perf::Trace::Core;
-+use Perf::Trace::Context;
-+use Perf::Trace::Util;
-+use List::Util qw/sum/;
-+
-+my %files;
-+my %processes;
-+my %records;
-+
-+sub trace_end
-+{
-+	print_pagecache_usage_per_file();
-+	print "\n";
-+	print_pagecache_usage_per_process();
-+}
-+
-+sub filemap::remove_from_page_cache
-+{
-+	my ($event_name, $context, $common_cpu, $common_secs, $common_nsecs,
-+	    $common_pid, $common_comm,
-+	    $s_dev, $i_ino, $offset) = @_;
-+	my ($f, $r) = get_record($common_comm."-".$common_pid, $s_dev, $i_ino);
-+
-+	delete $$f{$offset};
-+	if (defined $$r{added}{$offset}) {
-+	    $$r{removed}++;
-+	} else {
-+	    $$r{indirect_removed}++;
-+	}
-+}
-+
-+sub filemap::add_to_page_cache
-+{
-+	my ($event_name, $context, $common_cpu, $common_secs, $common_nsecs,
-+	    $common_pid, $common_comm,
-+	    $s_dev, $i_ino, $offset) = @_;
-+	my ($f, $r) = get_record($common_comm."-".$common_pid, $s_dev, $i_ino);
-+
-+	$$f{$offset}++;
-+	$$r{added}{$offset}++;
-+}
-+
-+sub filemap::find_get_page
-+{
-+	my ($event_name, $context, $common_cpu, $common_secs, $common_nsecs,
-+	    $common_pid, $common_comm,
-+	    $s_dev, $i_ino, $offset, $page) = @_;
-+	my ($f, $r) = get_record($common_comm."-".$common_pid, $s_dev, $i_ino);
-+
-+	if ($page != 0) {
-+	    $$f{$offset}++;
-+	    $$r{cached}++;
-+	}
-+}
-+
-+sub get_record
-+{
-+	my ($p, $dev, $inode) = @_;
-+
-+	unless (defined($files{$dev}{$inode})) {
-+	    $files{$dev}{$inode} = {};
-+	}
-+	$f = $files{$dev}{$inode};
-+	unless (defined($records{$p}{$f})) {
-+	    $records{$p}{$f} =
-+	      {inode => $inode, dev => $dev, added => {},
-+	       cached => 0, removed => 0, indirect_removed => 0};
-+	}
-+	return $f, $records{$p}{$f};
-+}
-+
-+sub minor
-+{
-+	my $dev = shift;
-+	return $dev & ((1 << 20) - 1);
-+}
-+
-+sub major
-+{
-+	my $dev = shift;
-+	return $dev >> 20;
-+}
-+
-+sub print_pagecache_usage_per_file
-+{
-+	print "[file list]\n";
-+	printf("  %12s %10s %8s\n", "device", "", "cached");
-+	printf("  %12s %10s %8s\n", "(maj:min)", "inode", "pages");
-+	printf("  %s\n", '-' x 32);
-+	while(my($dev, $file) = each(%files)) {
-+	    foreach my $inode (sort { $a <=> $b } keys %$file) {
-+		my $count = values %{$$file{$inode}};
-+		next if $count == 0;
-+		printf("  %12s %10d %8d\n",
-+		       major($dev).":".minor($dev), $inode, $count);
-+	    }
-+	}
-+}
-+
-+sub print_pagecache_usage_per_process
-+{
-+	print "[process list]\n";
-+	while(my ($pid, $v) = each(%records)) {
-+	    my ($sum_cached, $sum_added, $sum_removed, $sum_indirect_removed);
-+	    print "o $pid\n";
-+	    printf("  %12s %10s %8s %8s %8s %13s\n", "device", "",
-+		   "cached", "added", "removed", "indirect");
-+	    printf("  %12s %10s %8s %8s %8s %13s\n", "(maj:min)", "inode",
-+		   "pages", "pages", "pages", "removed pages");
-+	    printf("  %s\n", '-' x 64);
-+	    foreach my $r (sort { $$a{inode} <=> $$b{inode} } values %$v) {
-+		my $added_num = scalar(keys %{$$r{added}}) == 0 ?
-+		    0 : List::Util::sum(values %{$$r{added}});
-+		$sum_cached += $$r{cached};
-+		$sum_added += $added_num;
-+		$sum_removed += $$r{removed};
-+		$sum_indirect_removed += $$r{indirect_removed};
-+		printf("  %12s %10d %8d %8d %8d %13d\n",
-+		       major($$r{dev}).":".minor($$r{dev}), $$r{inode},
-+		       $$r{cached}, $added_num, $$r{removed},
-+		       $$r{indirect_removed});
-+	    }
-+	    printf("  %s\n", '-' x 64);
-+	    printf("  total: %5s %10s %8d %8d %8d %13d\n", "", "", $sum_cached,
-+		   $sum_added, $sum_removed, $sum_indirect_removed);
-+	    print "\n";
-+	}
-+}
-Index: linux-2.6-tip/tools/perf/scripts/perl/bin/pagecache-hit-ratio-record
-===================================================================
---- /dev/null
-+++ linux-2.6-tip/tools/perf/scripts/perl/bin/pagecache-hit-ratio-record
-@@ -0,0 +1,7 @@
-+#!/bin/bash
-+perf record -c 1 -f -a -M -R -e filemap:find_get_page
-+
-+
-+
-+
-+
-Index: linux-2.6-tip/tools/perf/scripts/perl/bin/pagecache-hit-ratio-report
-===================================================================
---- /dev/null
-+++ linux-2.6-tip/tools/perf/scripts/perl/bin/pagecache-hit-ratio-report
-@@ -0,0 +1,6 @@
-+#!/bin/bash
-+# description: monitor pagecache hit ratio per process
-+perf trace -s ~/libexec/perf-core/scripts/perl/pagecache-hit-ratio.pl
-+
-+
-+
-Index: linux-2.6-tip/tools/perf/scripts/perl/pagecache-hit-ratio.pl
-===================================================================
---- /dev/null
-+++ linux-2.6-tip/tools/perf/scripts/perl/pagecache-hit-ratio.pl
-@@ -0,0 +1,75 @@
-+#!/usr/bin/perl -w
-+# (C) 2010, Keiichi Kii <k-keiichi@bx.jp.nec.com>
-+# Licensed under the terms of the GNU GPL License version 2
-+
-+# Display pagecache hit ratio per process
-+
-+use lib "$ENV{'PERF_EXEC_PATH'}/scripts/perl/Perf-Trace-Util/lib";
-+use lib "./Perf-Trace-Util/lib";
-+use Perf::Trace::Core;
-+use Perf::Trace::Context;
-+use Perf::Trace::Util;
-+
-+my %records;
-+
-+sub trace_end
-+{
-+	print_pagecache_hit_ratio();
-+}
-+
-+sub filemap::find_get_page
-+{
-+	my ($event_name, $context, $common_cpu, $common_secs, $common_nsecs,
-+	    $common_pid, $common_comm,
-+	    $s_dev, $i_ino, $offset, $page) = @_;
-+	my $r = get_record($common_comm."-".$common_pid, $s_dev, $i_ino);
-+
-+	if ($page != 0) {
-+	    $$r{hit}++;
-+	} else {
-+	    $$r{miss}++;
-+	}
-+}
-+
-+sub get_record
-+{
-+	my ($p, $dev, $inode) = @_;
-+
-+	unless (defined($records{$p}{$dev.":".$inode})) {
-+	    $records{$p}{$dev.":".$inode} = {inode => $inode, dev => $dev,
-+					    hit => 0, miss => 0};
-+	}
-+	return $records{$p}{$dev.":".$inode};
-+}
-+
-+sub minor
-+{
-+	my $dev = shift;
-+	return $dev & ((1 << 20) - 1);
-+}
-+
-+sub major
-+{
-+	my $dev = shift;
-+	return $dev >> 20;
-+}
-+
-+sub print_pagecache_hit_ratio
-+{
-+	print "[process list]\n";
-+	while(my ($pid, $v) = each(%records)) {
-+	    print "o $pid\n";
-+	    printf("  %12s %10s %10s %10s %10s\n", "", "",
-+		   "cache find", "cache hit", "cache hit");
-+	    printf("  %12s %10s %10s %10s %10s\n", "device", "inode",
-+		   "count", "count", "ratio");
-+	    printf("  %s\n", '-' x 56);
-+	    foreach my $r (sort { $$a{inode} <=> $$b{inode} } values %$v) {
-+		printf("  %12s %10d %10d %10d %9.2f%%\n",
-+		       major($$r{dev}).":".minor($$r{dev}), $$r{inode},
-+		       $$r{miss} + $$r{hit}, $$r{hit},
-+		       $$r{hit} / ($$r{miss} + $$r{hit}) * 100);
-+	    }
-+	    print "\n";
-+	}
-+}
-
-
-
-
+diff --cc drivers/net/sfc/mcdi_pcol.h
+index bd59302,f61e1de..0000000
+--- a/drivers/net/sfc/mcdi_pcol.h
++++ b/drivers/net/sfc/mcdi_pcol.h
+@@@ -859,14 -852,11 +859,14 @@@
+  /* MC_CMD_POLL_PHY_BIST: (variadic output)
+   * Poll for BIST completion
+   *
+ - * Returns a single status code, and a binary blob of phy-specific
+ - * bist output. If the driver can't successfully parse the BIST output,
+ - * it should still respect the Pass/Fail in OUT.RESULT.
+ + * Returns a single status code, and optionally some PHY specific
+ + * bist output. The driver should only consume the BIST output
+ + * after validating OUTLEN and PHY_CFG.PHY_TYPE.
+   *
+-  * If a driver can't succesfully parse the BIST output, it should
+ - * Locks required: PHY_LOCK  if doing a  PHY BIST
+++ * If a driver can't successfully parse the BIST output, it should
+ + * still respect the pass/Fail in OUT.RESULT
+ + *
+ + * Locks required: PHY_LOCK if doing a  PHY BIST
+   * Return code: 0, EACCES (if PHY_LOCK is not held)
+   */
+  #define MC_CMD_POLL_BIST 0x26
