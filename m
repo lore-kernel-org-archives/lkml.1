@@ -1,42 +1,48 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933572Ab0BGWus (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Feb 2010 17:50:48 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:55137 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756143Ab0BGWpa convert rfc822-to-8bit (ORCPT
+	id S1756601Ab0BGW6H (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Feb 2010 17:58:07 -0500
+Received: from smtp-out003.kontent.com ([81.88.40.217]:46559 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755970Ab0BGW6F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Feb 2010 17:45:30 -0500
-Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>,
-       "Grant Wilson" <grant.wilson@zen.co.uk>
-References: <4Ht3jFrT7uE.A.JI.-nzbLB@chimera>
-In-Reply-To: <4Ht3jFrT7uE.A.JI.-nzbLB@chimera>
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+	Sun, 7 Feb 2010 17:58:05 -0500
+From: Oliver Neukum <oliver@neukum.org>
+To: David Rientjes <rientjes@google.com>
+Subject: Re: Improving OOM killer
+Date: Fri, 5 Feb 2010 08:35:30 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.33-rc6-0.1-default; KDE/4.3.1; x86_64; ; )
+Cc: Jiri Kosina <jkosina@suse.cz>, Lubos Lunak <l.lunak@suse.cz>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Rik van Riel <riel@redhat.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Nick Piggin <npiggin@suse.de>
+References: <201002012302.37380.l.lunak@suse.cz> <alpine.LNX.2.00.1002041044080.15395@pobox.suse.cz> <alpine.DEB.2.00.1002041335140.6071@chino.kir.corp.google.com>
+In-Reply-To: <alpine.DEB.2.00.1002041335140.6071@chino.kir.corp.google.com>
 MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-ID: <445R0ey9hAI.A.khC.KqzbLB@chimera>
-Subject: [Bug #14937] WARNING: at kernel/lockdep.c:2830
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sun,  7 Feb 2010 23:28:48 +0100 (CET)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002050835.30550.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This message has been generated automatically as a part of a summary report
-of recent regressions.
+Am Donnerstag, 4. Februar 2010 22:39:08 schrieb David Rientjes:
+> > If we really want kernel to detect forkbombs (*), we'd have to establish 
+> > completely separate infrastructure for that (with its own knobs for tuning 
+> > and possibilities of disabling it completely).
+> > 
+> 
+> That's what we're trying to do, we can look at the shear number of 
+> children that the parent has forked and check for it to be over a certain 
+> "forkbombing threshold" (which, yes, can be tuned from userspace), the 
+> uptime of those children, their resident set size, etc., to attempt to 
+> find a sane heuristic that penalizes them.
 
-The following bug entry is on the current list of known regressions
-from 2.6.32.  Please verify if it still should be listed and let the tracking team
-know (either way).
+Wouldn't it be saner to have a selection by user, so that users that
+are over the overcommit limit are targeted?
 
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14937
-Subject		: WARNING: at kernel/lockdep.c:2830
-Submitter	: Grant Wilson <grant.wilson@zen.co.uk>
-Date		: 2009-12-27 13:35 (43 days old)
-References	: http://marc.info/?l=linux-kernel&m=126192220404829&w=4
-
-
+	Regards
+		Oliver
