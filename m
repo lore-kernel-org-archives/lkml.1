@@ -1,109 +1,94 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933619Ab0BEA4h (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 19:56:37 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:49612 "EHLO
-	rcsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933530Ab0BEAzO (ORCPT
+	id S933591Ab0BEA50 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 19:57:26 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:32409 "EHLO
+	rcsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933445Ab0BEAzN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 19:55:14 -0500
+	Thu, 4 Feb 2010 19:55:13 -0500
 From: Joel Becker <joel.becker@oracle.com>
 To: ocfs2-devel@oss.oracle.com
 Cc: linux-kernel@vger.kernel.org, mfasheh@suse.com
-Subject: [PATCH 02/10] ocfs2_dlmfs: Use poll() to signify BASTs.
-Date: Thu,  4 Feb 2010 16:54:55 -0800
-Message-Id: <1265331303-19881-3-git-send-email-joel.becker@oracle.com>
+Subject: [PATCH 01/10] ocfs2_dlmfs: Add capabilities parameter.
+Date: Thu,  4 Feb 2010 16:54:54 -0800
+Message-Id: <1265331303-19881-2-git-send-email-joel.becker@oracle.com>
 X-Mailer: git-send-email 1.5.6.5
 In-Reply-To: <1265331303-19881-1-git-send-email-joel.becker@oracle.com>
 References: <1265331303-19881-1-git-send-email-joel.becker@oracle.com>
 X-Source-IP: acsmt354.oracle.com [141.146.40.154]
 X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090203.4B6B6C6C.0001:SCFMA4539814,ss=1,fgs=0
+X-CT-RefId: str=0001.0A090209.4B6B6C6D.0154:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-o2dlm's userspace filesystem is an easy way to use the DLM from
-userspace.  It is intentionally simple. For example, it does not allow
-for asynchronous behavior or lock conversion.  This is intentional to
-keep the interface simple.
+Over time, dlmfs has added some features that were not part of the
+initial ABI.  Unfortunately, some of these features are not detectable
+via standard usage.  For example, Linux's default poll always returns
+POLLIN, so there is no way for a caller of poll(2) to know when dlmfs
+added poll support.  Instead, we provide this list of new capabilities.
 
-Because there is no asynchronous notification, there is no way for a
-process holding a lock to know another node needs the lock.  This is the
-number one complaint of ocfs2_dlmfs users.  Turns out, we can solve this
-very easily.  We add poll() support to ocfs2_dlmfs.  When a BAST is
-received, the lock's file descriptor will receive POLLIN.
+Capabilities is a read-only attribute.  We do it as a module parameter
+so we can discover it whether dlmfs is built in, loaded, or even not
+loaded (via modinfo).
 
-This is trivial to implement.  Userdlm already has an appropriate
-waitqueue, and the lock knows when it is blocked.
-
-We add the "bast" capability to tell userspace this is available.
-
-Signed-off-by: Joel Becker <joel.becker@oracle.com>
-Acked-by: Mark Fasheh <mfasheh@suse.com>
+The ABI features are local to this machine's dlmfs mount.  This is
+distinct from the locking protocol, which is concerned with inter-node
+interaction.
 
 Signed-off-by: Joel Becker <joel.becker@oracle.com>
 ---
- fs/ocfs2/dlm/dlmfs.c |   24 +++++++++++++++++++++++-
- 1 files changed, 23 insertions(+), 1 deletions(-)
+ fs/ocfs2/dlm/dlmfs.c |   36 ++++++++++++++++++++++++++++++++++++
+ 1 files changed, 36 insertions(+), 0 deletions(-)
 
 diff --git a/fs/ocfs2/dlm/dlmfs.c b/fs/ocfs2/dlm/dlmfs.c
-index 77d0df4..ddf55da 100644
+index 02bf178..77d0df4 100644
 --- a/fs/ocfs2/dlm/dlmfs.c
 +++ b/fs/ocfs2/dlm/dlmfs.c
-@@ -43,6 +43,7 @@
- #include <linux/init.h>
- #include <linux/string.h>
- #include <linux/backing-dev.h>
-+#include <linux/poll.h>
- 
- #include <asm/uaccess.h>
- 
-@@ -98,8 +99,12 @@ static const struct dlm_protocol_version user_locking_protocol = {
-  * The ABI features are local to this machine's dlmfs mount.  This is
-  * distinct from the locking protocol, which is concerned with inter-node
-  * interaction.
-+ *
-+ * Capabilities:
-+ * - bast	: POLLIN against the file descriptor of a held lock
-+ *		  signifies a bast fired on the lock.
-  */
--#define DLMFS_CAPABILITIES ""
-+#define DLMFS_CAPABILITIES "bast"
- extern int param_set_dlmfs_capabilities(const char *val,
- 					struct kernel_param *kp)
- {
-@@ -215,6 +220,22 @@ static int dlmfs_file_release(struct inode *inode,
- 	return 0;
- }
- 
-+static unsigned int dlmfs_file_poll(struct file *file, poll_table *wait)
-+{
-+	int event = 0;
-+	struct inode *inode = file->f_path.dentry->d_inode;
-+	struct dlmfs_inode_private *ip = DLMFS_I(inode);
-+
-+	poll_wait(file, &ip->ip_lockres.l_event, wait);
-+
-+	spin_lock(&ip->ip_lockres.l_lock);
-+	if (ip->ip_lockres.l_flags & USER_LOCK_BLOCKED)
-+		event = POLLIN | POLLRDNORM;
-+	spin_unlock(&ip->ip_lockres.l_lock);
-+
-+	return event;
-+}
-+
- static ssize_t dlmfs_file_read(struct file *filp,
- 			       char __user *buf,
- 			       size_t count,
-@@ -585,6 +606,7 @@ static int dlmfs_fill_super(struct super_block * sb,
- static const struct file_operations dlmfs_file_operations = {
- 	.open		= dlmfs_file_open,
- 	.release	= dlmfs_file_release,
-+	.poll		= dlmfs_file_poll,
- 	.read		= dlmfs_file_read,
- 	.write		= dlmfs_file_write,
+@@ -81,6 +81,42 @@ static const struct dlm_protocol_version user_locking_protocol = {
+ 	.pv_minor = OCFS2_LOCKING_PROTOCOL_MINOR,
  };
+ 
++
++/*
++ * These are the ABI capabilities of dlmfs.
++ *
++ * Over time, dlmfs has added some features that were not part of the
++ * initial ABI.  Unfortunately, some of these features are not detectable
++ * via standard usage.  For example, Linux's default poll always returns
++ * POLLIN, so there is no way for a caller of poll(2) to know when dlmfs
++ * added poll support.  Instead, we provide this list of new capabilities.
++ *
++ * Capabilities is a read-only attribute.  We do it as a module parameter
++ * so we can discover it whether dlmfs is built in, loaded, or even not
++ * loaded.
++ *
++ * The ABI features are local to this machine's dlmfs mount.  This is
++ * distinct from the locking protocol, which is concerned with inter-node
++ * interaction.
++ */
++#define DLMFS_CAPABILITIES ""
++extern int param_set_dlmfs_capabilities(const char *val,
++					struct kernel_param *kp)
++{
++	printk(KERN_ERR "%s: readonly parameter\n", kp->name);
++	return -EINVAL;
++}
++static int param_get_dlmfs_capabilities(char *buffer,
++					struct kernel_param *kp)
++{
++	return strlcpy(buffer, DLMFS_CAPABILITIES,
++		       strlen(DLMFS_CAPABILITIES) + 1);
++}
++module_param_call(capabilities, param_set_dlmfs_capabilities,
++		  param_get_dlmfs_capabilities, NULL, 0444);
++MODULE_PARM_DESC(capabilities, DLMFS_CAPABILITIES);
++
++
+ /*
+  * decodes a set of open flags into a valid lock level and a set of flags.
+  * returns < 0 if we have invalid flags
 -- 
 1.6.6.1
 
