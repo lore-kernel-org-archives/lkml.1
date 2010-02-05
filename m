@@ -1,65 +1,86 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933422Ab0BECBd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 21:01:33 -0500
-Received: from acsinet11.oracle.com ([141.146.126.233]:58086 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932739Ab0BECBc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 21:01:32 -0500
-Date: Thu, 4 Feb 2010 20:59:14 -0500
-From: Chris Mason <chris.mason@oracle.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-btrfs@vger.kernel.org
-Subject: [GIT PULL] Btrfs updates for 2.6.33
-Message-ID: <20100205015913.GA2770@think>
-Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-btrfs@vger.kernel.org
+	id S1757804Ab0BECMm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 21:12:42 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:52572 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1756001Ab0BECMl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 21:12:41 -0500
+Message-ID: <4B6B7EA8.4070104@cn.fujitsu.com>
+Date: Fri, 05 Feb 2010 10:12:56 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Source-IP: acsmt355.oracle.com [141.146.40.155]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090201.4B6B7BD5.0180:SCFMA4539814,ss=1,fgs=0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: David Miller <davem@davemloft.net>, LKML <linux-kernel@vger.kernel.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>
+Subject: Re: [PATCH 00/13] net: simplify seq_file code
+References: <4B6B77FE.5000104@cn.fujitsu.com>	<4B6B780D.10003@cn.fujitsu.com> <20100204175828.51b9e8a1.akpm@linux-foundation.org>
+In-Reply-To: <20100204175828.51b9e8a1.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello everyone,
+Andrew Morton wrote:
+> On Fri, 05 Feb 2010 09:44:45 +0800 Li Zefan <lizf@cn.fujitsu.com> wrote:
+> 
+>> +struct hlist_node *seq_hlist_start(struct hlist_head *head, loff_t pos)
+>> +{
+>> +	struct hlist_node *node;
+>> +
+>> +	hlist_for_each(node, head)
+>> +		if (pos-- == 0)
+>> +			return node;
+>> +	return NULL;
+>> +}
+>> +EXPORT_SYMBOL(seq_hlist_start);
+>> +
+>> +struct hlist_node *seq_hlist_start_head(struct hlist_head *head, loff_t pos)
+>> +{
+>> +	if (!pos)
+>> +		return SEQ_START_TOKEN;
+>> +
+>> +	return seq_hlist_start(head, pos - 1);
+>> +}
+>> +EXPORT_SYMBOL(seq_hlist_start_head);
+>> +
+>> +struct hlist_node *seq_hlist_next(void *v, struct hlist_head *head,
+>> +				  loff_t *ppos)
+>> +{
+>> +	struct hlist_node *node = v;
+>> +
+>> +	++*ppos;
+>> +	if (v == SEQ_START_TOKEN)
+>> +		return head->first;
+>> +	else
+>> +		return node->next;
+>> +}
+>> +EXPORT_SYMBOL(seq_hlist_next);
+> 
+> Oy.  Most of the global functions in seq_file.c are kerneldocumented,
+> as they should be!
+> 
 
-The master branch of the btrfs unstable tree:
+I'll add kerneldoc in v2 patchset if I have to resend, otherwise I'll
+send a delta patch for this.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/mason/btrfs-unstable.git master
+> Shouldn't seq_hlist_start_head() have been called seq_hlist_prev()?
+> 
 
-Has a small collection of fixes.  These are mostly bugs, but I put in
-one of Josef's safer performance tweaks as well.
+The list_head version has the name seq_list_start_head().
 
-Aneesh Kumar K.V (1) commits (+3/-1):
-    Btrfs: apply updated fallocate i_size fix
+If you need to print a title in a seq_file, call seq_list_start_head()
+in ->start() handler, otherwise call seq_list_start().
 
-Josef Bacik (1) commits (+2/-44):
-    Btrfs: do not try and lookup the file extent when finishing ordered io
+Those functions really need kerneldoc. ;)
 
-Miao Xie (1) commits (+8/-2):
-    Btrfs: remove BUG_ON() due to mounting bad filesystem
+> Should seq_hlist_start() be passed *ppos, and update *ppos so the
+> caller can then call seq_hlist_next() and seq_hlist_prev()?
+> 
 
-Roel Kluin (1) commits (+1/-1):
-    Btrfs: make error return negative in btrfs_sync_file()
+No, the ->start() callback of seq_operations shouldn't update *ppos.
+I fixed some bugs in ftrace debugfs files which were caused by
+updating *ppos in start().
 
-Zheng Yan (2) commits (+5/-6):
-    Btrfs: fix race between allocate and release extent buffer. (+1/-2)
-    Btrfs: Fix oopsen when dropping empty tree. (+4/-4)
-
-Total: (6) commits
-
- fs/btrfs/disk-io.c     |    7 +++++-
- fs/btrfs/extent-tree.c |    8 +++----
- fs/btrfs/extent_io.c   |    3 --
- fs/btrfs/file.c        |    2 -
- fs/btrfs/inode.c       |   50 ++++---------------------------------------------
- fs/btrfs/relocation.c  |    3 +-
- 6 files changed, 19 insertions(+), 54 deletions(-)
