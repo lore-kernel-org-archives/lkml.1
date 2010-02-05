@@ -1,64 +1,102 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933908Ab0BEV7n (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 16:59:43 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:41886 "EHLO mail.zytor.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933863Ab0BEV7l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 16:59:41 -0500
-Message-ID: <4B6C93A2.1090302@zytor.com>
-Date: Fri, 05 Feb 2010 13:54:42 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: Borislav Petkov <bp@amd64.org>
-CC: Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>, Jamie Lokier <jamie@shareable.org>,
-       Roland Dreier <rdreier@cisco.com>, Al Viro <viro@ZenIV.linux.org.uk>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Brian Gerst <brgerst@gmail.com>
-Subject: Re: [PATCH 2/5] bitops: compile time optimization for hweight_long(CONSTANT)
-References: <20100203070825.e36b3932.akpm@linux-foundation.org> <1265210157.24455.646.camel@laptop> <20100203074251.e2caa3f3.akpm@linux-foundation.org> <20100203181425.GB1367@aftab> <1265222875.24455.1020.camel@laptop> <4B69D362.10608@zytor.com> <20100204151050.GC32711@aftab> <1265296432.22001.18.camel@laptop> <20100204155419.GD32711@aftab> <1265299457.22001.72.camel@laptop> <20100205121139.GA9044@aftab>
-In-Reply-To: <20100205121139.GA9044@aftab>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S933913Ab0BEWCP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 17:02:15 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55142 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933863Ab0BEWCO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Feb 2010 17:02:14 -0500
+Date: Fri, 5 Feb 2010 14:01:50 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Amerigo Wang <amwang@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Alexander Viro <viro@zeniv.linux.org.uk>,
+       Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [Patch] compat ioctl: fix some build warnings
+Message-Id: <20100205140150.7f5df97b.akpm@linux-foundation.org>
+In-Reply-To: <20100205070921.4179.39579.sendpatchset@localhost.localdomain>
+References: <20100205070921.4179.39579.sendpatchset@localhost.localdomain>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/05/2010 04:11 AM, Borislav Petkov wrote:
-> +
-> +unsigned int __arch_hweight16(unsigned int w)
-> +{
-> +	unsigned int res = 0;
-> +
-> +	asm volatile("xor %%dh, %%dh\n\t"
-> +		     __arch_hweight_alt(32)
-> +			: "=di" (res)
-> +			: "di" (w)
-> +			: "ecx", "memory");
-> +
+On Fri, 5 Feb 2010 02:05:56 -0500
+Amerigo Wang <amwang@redhat.com> wrote:
 
-This is wrong in more ways than I can shake a stick at.
+> I got these warnings:
+> 
+> fs/compat_ioctl.c: In function ___compat_sys_ioctl':
+> fs/compat_ioctl.c:534: warning: ___karg' may be used uninitialized in this function
+> fs/compat_ioctl.c:533: warning: ___kcmd' may be used uninitialized in this function
+> fs/compat_ioctl.c:656: warning: ___ret' may be used uninitialized in this function
+> 
+> These warnings are harmless, so just shut gcc up.
+> 
+> Signed-off-by: WANG Cong <amwang@redhat.com>
+> Cc: Alexander Viro <viro@zeniv.linux.org.uk>
+> Cc: Arnd Bergmann <arnd@arndb.de>
+> 
+> ---
+> diff --git a/fs/compat_ioctl.c b/fs/compat_ioctl.c
+> index c5c45de..2468f80 100644
+> --- a/fs/compat_ioctl.c
+> +++ b/fs/compat_ioctl.c
+> @@ -543,6 +543,8 @@ static int mt_ioctl_trans(unsigned int fd, unsigned int cmd, void __user *argp)
+>  		kcmd = MTIOCGET;
+>  		karg = &get;
+>  		break;
+> +	default:
+> +		return -EINVAL;
+>  	}
+>  	set_fs (KERNEL_DS);
+>  	err = sys_ioctl (fd, kcmd, (unsigned long)karg);
+> @@ -653,7 +655,7 @@ static int set_raw32_request(struct raw_config_request *req, struct raw32_config
+>  static int raw_ioctl(unsigned fd, unsigned cmd,
+>  		struct raw32_config_request __user *user_req)
+>  {
+> -        int ret;
+> +        int ret = -EINVAL;
+>  
+>          switch (cmd) {
+>          case RAW_SETBIND:
 
-a) "di" doesn't mean the DI register - it means the DX register (d) or
-an immediate (i).  Since you don't have any reference to either %0 or %1
-in your code, you have no way of knowing which one it is.  The
-constraint for the di register is "D".
+Unfortunately that adds more code for something which cannot happen at
+runtime.
 
-b) On 32 bits, the first argument register is in %eax (with %edx used
-for the upper half of a 32-bit argument), but on 64 bits, the first
-argument is in %rdi, with the return still in %rax.
+I guess we could do this trick:
 
-c) You call a C function, but you don't clobber the set of registers
-that a C function would clobber.  You either need to put the function in
-an assembly wrapper (which is better in the long run), or clobber the
-full set of registers that is clobbered by a C function (which is better
-in the short term) -- which is eax, edx, ecx on 32 bits, but rax, rdi,
-esi, rdx, rcx, r8, r9, r10, r11 on 64 bits.
+--- a/fs/compat_ioctl.c~a
++++ a/fs/compat_ioctl.c
+@@ -539,7 +539,7 @@ static int mt_ioctl_trans(unsigned int f
+ 		kcmd = MTIOCPOS;
+ 		karg = &pos;
+ 		break;
+-	case MTIOCGET32:
++	default:	/* MTIOCGET32 */
+ 		kcmd = MTIOCGET;
+ 		karg = &get;
+ 		break;
+@@ -657,7 +657,7 @@ static int raw_ioctl(unsigned fd, unsign
+ 
+         switch (cmd) {
+         case RAW_SETBIND:
+-        case RAW_GETBIND: {
++        default: {	/* RAW_GETBIND */
+                 struct raw_config_request req;
+                 mm_segment_t oldfs = get_fs();
+ 
+_
 
-d) On the other hand, you do *not* need a "memory" clobber.
 
-	-hpa
+Which actually reduces code:
+
+akpm:/usr/src/25> size fs/compat_ioctl.o
+   text    data     bss     dec     hex filename
+   9012    2232    2864   14108    371c fs/compat_ioctl.o
+
+   8968    2232    2848   14048    36e0 fs/compat_ioctl.o
+
