@@ -1,91 +1,77 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754673Ab0BELB6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 06:01:58 -0500
-Received: from tx2ehsobe002.messaging.microsoft.com ([65.55.88.12]:37113 "EHLO
-	TX2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754018Ab0BELB4 (ORCPT
+	id S1754783Ab0BELFA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 06:05:00 -0500
+Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:55493 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753014Ab0BELE6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 06:01:56 -0500
-X-SpamScore: -6
-X-BigFish: VPS-6(z1857rz146fK1432R98dNzz1202hzzz32i6bh87h43j61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-DOMAIN-IP-MATCH: fail
-X-WSS-ID: 0KXD7YX-02-3PH-02
-X-M-MSG: 
-Date: Fri, 5 Feb 2010 12:01:45 +0100
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Marcelo Tosatti <mtosatti@redhat.com>
-CC: Joerg Roedel <joro@8bytes.org>, Avi Kivity <avi@redhat.com>,
-       David Woodhouse <dwmw2@infradead.org>, kvm@vger.kernel.org,
-       iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 06/11] kvm: Change kvm_iommu_map_pages to map large
- pages
-Message-ID: <20100205110145.GZ16236@amd.com>
-References: <1264678682-30655-1-git-send-email-joerg.roedel@amd.com>
- <1264678682-30655-7-git-send-email-joerg.roedel@amd.com>
- <20100128222455.GA26274@amt.cnet>
- <20100129093233.GU17809@8bytes.org>
- <20100201141804.GD16236@amd.com>
- <20100201193017.GA27065@amt.cnet>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20100201193017.GA27065@amt.cnet>
-Organization: Advanced Micro Devices =?iso-8859-1?Q?GmbH?=
-	=?iso-8859-1?Q?=2C_Karl-Hammerschmidt-Str=2E_34=2C_85609_Dornach_bei_M=FC?=
-	=?iso-8859-1?Q?nchen=2C_Gesch=E4ftsf=FChrer=3A_Thomas_M=2E_McCoy=2C_Giuli?=
-	=?iso-8859-1?Q?ano_Meroni=2C_Andrew_Bowd=2C_Sitz=3A_Dornach=2C_Gemeinde_A?=
-	=?iso-8859-1?Q?schheim=2C_Landkreis_M=FCnchen=2C_Registergericht_M=FCnche?=
-	=?iso-8859-1?Q?n=2C?= HRB Nr. 43632
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-OriginalArrivalTime: 05 Feb 2010 11:01:46.0122 (UTC) FILETIME=[9B94A6A0:01CAA652]
-X-Reverse-DNS: unknown
+	Fri, 5 Feb 2010 06:04:58 -0500
+Subject: Re: [RFC PATCH] ARM: Change the mandatory barriers implementation
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Abhijeet Dharmapurikar <adharmap@codeaurora.org>
+Cc: Daniel Walker <dwalker@codeaurora.org>,
+       Russell King <linux@arm.linux.org.uk>, Tony Lindgren <tony@atomide.com>,
+       linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Larry Bassel <lbassel@quicinc.com>,
+       linux-arm-kernel@lists.infradead.org
+In-Reply-To: <1265289330.28746.58.camel@pc1117.cambridge.arm.com>
+References: <4B6A131B.1070005@codeaurora.org>
+	 <1265289330.28746.58.camel@pc1117.cambridge.arm.com>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Fri, 05 Feb 2010 11:04:33 +0000
+Message-Id: <1265367873.7692.52.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 05 Feb 2010 11:04:34.0552 (UTC) FILETIME=[FFF90780:01CAA652]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Marcelo, Avi,
-
-On Mon, Feb 01, 2010 at 05:30:17PM -0200, Marcelo Tosatti wrote:
-> On Mon, Feb 01, 2010 at 03:18:04PM +0100, Joerg Roedel wrote:
-> > On Fri, Jan 29, 2010 at 10:32:33AM +0100, Joerg Roedel wrote:
-> > > On Thu, Jan 28, 2010 at 08:24:55PM -0200, Marcelo Tosatti wrote:
-> > > > On Thu, Jan 28, 2010 at 12:37:57PM +0100, Joerg Roedel wrote:
-> > > > > +static pfn_t kvm_pin_pages(struct kvm *kvm, struct kvm_memory_slot *slot,
-> > > > > +			   gfn_t gfn, unsigned long size)
-> > > > > +{
-> > > > > +	gfn_t end_gfn;
-> > > > > +	pfn_t pfn;
-> > > > > +
-> > > > > +	pfn     = gfn_to_pfn_memslot(kvm, slot, gfn);
-> > > > 
-> > > > If gfn_to_pfn_memslot returns pfn of bad_page, you might create a
-> > > > large iommu translation for it?
-> > > 
-> > > Right. But that was broken even before this patch. Anyway, I will fix
-> > > it.
-> > > 
-> > > > > +		/* Map into IO address space */
-> > > > > +		r = iommu_map(domain, gfn_to_gpa(gfn), pfn_to_hpa(pfn),
-> > > > > +			      get_order(page_size), flags);
-> > > > > +
-> > > > > +		gfn += page_size >> PAGE_SHIFT;
-> > > > 
-> > > > Should increase gfn after checking for failure, otherwise wrong
-> > > > npages is passed to kvm_iommu_put_pages.
-> > > 
-> > > True. Will fix that too.
-> > 
-> > Here is the updated patch (also updated in the iommu/largepage branch of
-> > my tree). Does it look ok?
+On Thu, 2010-02-04 at 13:15 +0000, Catalin Marinas wrote:
+> On Thu, 2010-02-04 at 00:21 +0000, Abhijeet Dharmapurikar wrote:
+> > > The mandatory barriers (mb, rmb, wmb) are used even on uniprocessor
+> > > systems for things like ordering Normal Non-cacheable memory accesses
+> > > with DMA transfer (via Device memory writes). The current implementation
+> > > uses dmb() for mb() and friends but this is not sufficient. The DMB only
+> > > ensures the ordering of accesses with regards to a single observer
+> > > accessing the same memory. If a DMA transfer is started by a write to
+> > > Device memory, the data to be transfered may not reach the main memory
+> > > (even if mapped as Normal Non-cacheable) before the device receives the
+> > > notification to begin the transfer. The only barrier that would help in
+> > > this situation is DSB which would completely drain the write buffers.
+> >
+> > On ARMv7, DMB guarantees that all accesses prior to DMB are observed by
+> > an observer if that observer sees any accesses _after_ the DMB. In this
+> > case, since DMA engine observes a write to itself( It is being written
+> > to and hence must observe the write) it should also see the writes to
+> > the buffers. A dmb() after the writes to buffer and before write to DMA
+> > engine should suffice.
 > 
-> Yes, addresses the concern.
+> I asked our processor architect for a clarification on the wording of
+> the DMB definition but the "all accesses" part most likely refer to
+> accesses to the same peripheral or memory block (but not together).
 
-Are there any further objections against this patchset? If not it would
-be cool if you could give me some acks for the kvm specific parts of
-this patchset.
+I got some clarification and there is nothing wrong with the definition
+of the DMB. The catch here is that "observe" (as per the ARM ARM) is
+defined only for master accesses. The DMA engine in this case above does
+not "observe" the write to itself as this is a slave access to one of
+its memory-mapped ports.
 
-	Joerg
+So, the code below:
 
+	STR	[Normal non-cacheable]
+	DMB
+	STR	[Device]
+
+puts the first store in Group A (according to the DMB definition) and
+the second store in Group B but since the DMA device does not "observe"
+Group B in this case, there is no requirement for the ordering between
+the observability of the store to normal memory and the observability of
+the side-effects of the store to the DMA device.
+
+-- 
+Catalin
 
