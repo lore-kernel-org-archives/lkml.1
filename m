@@ -1,38 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754281Ab0BEP5T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 10:57:19 -0500
-Received: from 78-33-71-188.static.enta.net ([78.33.71.188]:62359 "EHLO
-	localhost.localdomain" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752112Ab0BEP5S (ORCPT
+	id S1754186Ab0BEQB2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 11:01:28 -0500
+Received: from mail-fx0-f211.google.com ([209.85.220.211]:44611 "EHLO
+	mail-fx0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750832Ab0BEQB0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 10:57:18 -0500
-X-Greylist: delayed 4478 seconds by postgrey-1.27 at vger.kernel.org; Fri, 05 Feb 2010 10:57:18 EST
-Date: Fri, 5 Feb 2010 14:39:37 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>,
-       Jiri Kosina <jkosina@suse.cz>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Alan Cox <alan@linux.intel.com>, Vikram Pandita <vikram.pandita@ti.com>,
-       Christian Pellegrin <chripell@fsfe.org>, linux-kernel@vger.kernel.org,
-       vamos@i4.informatik.uni-erlangen.de
-Subject: Re: [PATCH] obsolete config in kernel source (HARD_PPS)
-Message-ID: <20100205143937.5081eacb@lxorguk.ukuu.org.uk>
-In-Reply-To: <20100205134718.GC7077@faui49.informatik.uni-erlangen.de>
-References: <20100205134718.GC7077@faui49.informatik.uni-erlangen.de>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.5; i686-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 5 Feb 2010 11:01:26 -0500
+X-Greylist: delayed 406 seconds by postgrey-1.27 at vger.kernel.org; Fri, 05 Feb 2010 11:01:26 EST
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=YfmhepiIdvElN7Y7HhbZlWyBj5Grnby3yzfFVP7Sl6aTitPrucOkVjOPz1CBCwxGyJ
+         UyLnYQzU7tNT7zdGOA/Hz7k0hd0OV3Cj0SIANeYg+HNHefbFzV3PkUoj0KkroXR2SbJc
+         HqabgqYKPNjxsA9gz4gwAzwAtqxLwssa+cdFQ=
+Date: Fri, 5 Feb 2010 23:57:01 +0800
+From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+To: Toralf =?utf-8?Q?F=C3=B6rster?= <toralf.foerster@gmx.de>
+Cc: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: 2.6.32.8-stable review : kernel crashed asap
+Message-ID: <20100205155701.GC9690@hack>
+References: <201002042129.41462.toralf.foerster@gmx.de> <20100205151021.GB9690@hack> <201002051622.02980.toralf.foerster@gmx.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <201002051622.02980.toralf.foerster@gmx.de>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 	There are a bunch of files in the current linux tree checking
-> for CONFIG_HARD_PPS which isn't in KConfig neither any other media of
-> setting it as far as I can tell and has been like this for ages.
+On Fri, Feb 05, 2010 at 04:22:02PM +0100, Toralf Förster wrote:
+>
+>Américo Wang wrote at 16:10:21
+>> On Thu, Feb 04, 2010 at 09:29:41PM +0100, Toralf Förster wrote:
+>> >Immediately during boot it crashed w/ the attached config - no lines
+>> > within syslog  to post.
+>> 
+>> What error messages did you see on your screen?
+>> 
+>
+>I attached a screen shot.
+>
 
-HARD_PPS isn't yet upstream but having the hooks there is useful in the
-meantime
+Thanks! It's better that if you can capture these info via netconsole
+or something like that, so that you copy and paste them into email.
+
+Hmm, it seems that a null pointer deref happened in
+net/ipv4/devinet.c::inetdev_init(), so Cc'ing netdev guys....
+
+Could you please run the command:
+
+  addr2line -e your_2.6.32.8_vmlinux 0xc11fea28
+
+to check in which line we dereferenced a null pointer?
+
+Thank you!
+
+-- 
+Live like a child, think like the god.
+ 
