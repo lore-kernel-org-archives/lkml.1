@@ -1,58 +1,69 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932697Ab0BEI4I (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 03:56:08 -0500
-Received: from mail-fx0-f220.google.com ([209.85.220.220]:34531 "EHLO
-	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932269Ab0BEI4E convert rfc822-to-8bit (ORCPT
+	id S1756438Ab0BEI5R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 03:57:17 -0500
+Received: from out02.mta.xmission.com ([166.70.13.232]:44434 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756018Ab0BEI5Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 03:56:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Fi2WOx+RudlHHR8IUGY0C/DX1Y+HcgveIG6mzKBh54g3KI70Z31O63ssKxBkHyoCiI
-         L6c2K0Q7c8+hw9ndBAL2TJ2W4WfpHAQUickNaZER0vLp+Zk6uDxM2ajuiH044Ody0t4W
-         xlhFLr+5aymKYezdIRO88y26lc9jn+uEQSPL4=
+	Fri, 5 Feb 2010 03:57:16 -0500
+To: Amerigo Wang <amwang@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Miles Lane <miles.lane@gmail.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Larry Finger <Larry.Finger@lwfinger.net>, akpm@linux-foundation.org
+Subject: Re: [Patch v2] sysfs: add lockdep class support to s_active
+References: <20100205064622.4141.72867.sendpatchset@localhost.localdomain>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Fri, 05 Feb 2010 00:57:12 -0800
+In-Reply-To: <20100205064622.4141.72867.sendpatchset@localhost.localdomain> (Amerigo Wang's message of "Fri\, 5 Feb 2010 01\:42\:56 -0500")
+Message-ID: <m14olwjc0n.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-In-Reply-To: <1265326257-4446-11-git-send-email-maximlevitsky@gmail.com>
-References: <1265326257-4446-1-git-send-email-maximlevitsky@gmail.com>
-	 <1265326257-4446-11-git-send-email-maximlevitsky@gmail.com>
-Date: Fri, 5 Feb 2010 09:56:02 +0100
-Message-ID: <acd2a5931002050056l119844f5s30c30ccfc1a15596@mail.gmail.com>
-Subject: Re: [PATCH 10/17] MTD: nand: make reads using MTD_OOB_RAW affect only 
-	ECC validation
-From: Vitaly Wool <vitalywool@gmail.com>
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: David Woodhouse <dwmw2@infradead.org>, Alex Dubov <oakad@yahoo.com>,
-       Artem Bityutskiy <dedekind1@gmail.com>, joern <joern@logfs.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-mtd <linux-mtd@lists.infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 5, 2010 at 12:30 AM, Maxim Levitsky <maximlevitsky@gmail.com> wrote:
-> This changes the behavier of MTD_OOB_RAW. It used to read both OOB and data
-> to the data buffer, however you would still need to specify the dummy oob buffer.
->
-> This is only used in one place, but makes it hard to read data+oob without ECC
-> test, thus I removed that behavier, and fixed the user.
->
-> Now MTD_OOB_RAW behaves like MTD_OOB_PLACE, but doesn't do ECC validation
->
-> Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
-> ---
->  drivers/mtd/nand/nand_base.c |    5 -----
->  drivers/mtd/nand/nand_bbt.c  |   26 ++++++++++++++++++++++----
->  include/linux/mtd/mtd.h      |    4 +---
->  3 files changed, 23 insertions(+), 12 deletions(-)
+Amerigo Wang <amwang@redhat.com> writes:
 
-Could you please provide a clearer description of why you think this
-is necessary?
+> Recently we met a lockdep warning from sysfs during s2ram or cpu hotplug.
+> As reported by several people, it is something like:
+>
+> [ 6967.926563] ACPI: Preparing to enter system sleep state S3
+> [ 6967.956156] Disabling non-boot CPUs ...
+> [ 6967.970401]
+> [ 6967.970408] =============================================
+> [ 6967.970419] [ INFO: possible recursive locking detected ]
+> [ 6967.970431] 2.6.33-rc2-git6 #27
+> [ 6967.970439] ---------------------------------------------
+> [ 6967.970450] pm-suspend/22147 is trying to acquire lock:
+> [ 6967.970460]  (s_active){++++.+}, at: [<c10d2941>]
+> sysfs_hash_and_remove+0x3d/0x4f
+> [ 6967.970493]
+> [ 6967.970497] but task is already holding lock:
+> [ 6967.970506]  (s_active){++++.+}, at: [<c10d4110>]
+> sysfs_get_active_two+0x16/0x36
+> [...]
+>
+> Eric already provides a patch for this[1], but it still can't fix the
+> problem. Based on his work and Peter's suggestion, I write this patch,
+> hopefully we can fix the warning completely.
+>
+> This patch put sysfs s_active into two classes, one is for PM, the other
+> is for the rest, so lockdep will distinguish them.
+>
+> 1. http://lkml.org/lkml/2010/1/10/282
 
-Thanks,
-   Vitaly
+What testing has this patch seen?
+
+In particular does this work to actually clear up the pm case?
+
+Eric
