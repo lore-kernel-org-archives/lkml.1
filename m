@@ -1,45 +1,80 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754778Ab0BEI2A (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 03:28:00 -0500
-Received: from mail-fx0-f220.google.com ([209.85.220.220]:57521 "EHLO
+	id S1755005Ab0BEIbw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 03:31:52 -0500
+Received: from mail-fx0-f220.google.com ([209.85.220.220]:40893 "EHLO
 	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754496Ab0BEI16 (ORCPT
+	with ESMTP id S1752314Ab0BEIbv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 03:27:58 -0500
+	Fri, 5 Feb 2010 03:31:51 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=SB6PbV6bL+PKT/zg3aG/x/kbzpopCGzaAsSpTkxXLmqCjKx3BdD50K9hoVBiQMcB9x
-         CXpsAi/mr/GTPbycJZ1fv8py2Pa3Glw/csfDQFGGwxdAOotSCc15ixtz/yxSYX1aG8/H
-         0piAW+ily1kdhiWNsAZIcZGShnRKcDqPOvhyE=
-MIME-Version: 1.0
-In-Reply-To: <201002031039.710275915@firstfloor.org>
-References: <201002031039.710275915@firstfloor.org>
-Date: Fri, 5 Feb 2010 10:27:57 +0200
-X-Google-Sender-Auth: c624a376eaeaa3a2
-Message-ID: <84144f021002050027r3617d333scb875163e2e04c27@mail.gmail.com>
-Subject: Re: [PATCH] [0/4] SLAB: Fix a couple of slab memory hotadd issues
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: submit@firstfloor.org, linux-kernel@vger.kernel.org, haicheng.li@intel.com,
-       linux-mm@kvack.org, Christoph Lameter <cl@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=hmFKiv+JDULw6IChaoo/h8oRI/SwRFJifUIHa2KncHkdETggYIJaeCr8GrUIsDxiD4
+         iFJX1FFaPFkS3fXpcxxTLjy2EImnlUq6OJN39LygTurwEHJR+PEiOcytJxCto7nq1bhh
+         JM9VJ/A7t6m6vruLN+kc3qXGg16Ic9Pqz17Fk=
+Subject: Re: [PATCH] MMC: fix hang if card was removed during suspend and
+ unsafe resume was enabled
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-mmc@vger.kernel.org, Philip Langdale <philipl@overt.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jorg Schummer <ext-jorg.2.schummer@nokia.com>,
+       linux-pm <linux-pm@lists.linux-foundation.org>
+In-Reply-To: <20100204160957.1c51cc1b.akpm@linux-foundation.org>
+References: <1265219241.12549.8.camel@maxim-laptop>
+	 <1265325495-4220-1-git-send-email-maximlevitsky@gmail.com>
+	 <20100204160957.1c51cc1b.akpm@linux-foundation.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 05 Feb 2010 10:31:42 +0200
+Message-ID: <1265358702.3424.8.camel@maxim-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andi,
+On Thu, 2010-02-04 at 16:09 -0800, Andrew Morton wrote: 
+> On Fri,  5 Feb 2010 01:18:15 +0200 Maxim Levitsky <maximlevitsky@gmail.com> wrote:
+> 
+> > Currently removal of the card leads to del_disk called indirectly by mmc core.
+> > This function expects userspace to be running, which isn't when .resume is called
+> > 
+> > Fix that by removing the code that did that in mmc_resume_host. It is possible
+> > because card detection logic will kick it later and remove the card.
+> 
+> I don't really understand.  The above implies that to trigger this bug,
+> one needs to physically remove the card during a resume operation.  ie:
+> a human-vs-computer race.  Sounds unlikely?
+> 
+> So...  exactly what steps does the user need to take to trigger this
 
-On Wed, Feb 3, 2010 at 11:39 PM, Andi Kleen <andi@firstfloor.org> wrote:
-> This fixes various problems in slab found during memory hotadd testing.
->
-> All straight forward bug fixes, so could be still .33 candidates.
+Sorry for describing this poorly.
+The steps are:
 
-AFAICT, they aren't regression fixes so they should wait for .34, no?
-The patches look good to me. Nick, Christoph, you might want to take a
-peek at them before I shove them in linux-next.
+-> Have a kernel with CONFIG_MMC_UNSAFE_RESUME
+-> Insert MMC/SD card
+-> Suspend/hibernate the system
+-> While system is hibernated/suspended pull the card off
+-> Resume the system
+-> Hang
 
-                        Pekka
+
+if CONFIG_MMC_UNSAFE_RESUME is set, mmc core allows the user to
+suspend/resume the card normally assuming he won't change the card or
+modify it in another system. The former case is actually handled quite
+well.
+
+if CONFIG_MMC_UNSAFE_RESUME isn't set, it removes the card during
+suspend, and I now think (and will test) that this will still hang the
+system this time on suspend.
+
+Maybe we can make del_disk behave well if called with userspace frozen?
+After all if user calls it, very likely that hardware is absent thus
+there is no point in syncing (which I think triggers the hang)....
+
+Best regards,
+Maxim Levitsky
+
