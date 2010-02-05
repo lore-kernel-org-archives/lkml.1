@@ -1,137 +1,175 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933766Ab0BEVFV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 16:05:21 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:55034 "EHLO mx1.redhat.com"
+	id S933823Ab0BEVG5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 16:06:57 -0500
+Received: from cantor.suse.de ([195.135.220.2]:39583 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933386Ab0BEVFT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 16:05:19 -0500
+	id S933402Ab0BEVGz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Feb 2010 16:06:55 -0500
+Date: Fri, 5 Feb 2010 13:05:34 -0800
+From: Brandon Philips <bphilips@suse.de>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Suresh Siddha <suresh.b.siddha@intel.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: keep chip_data in create_irq_nr
+Message-ID: <20100205210534.GD4930@jenkins.home.ifup.org>
+References: <20100203033109.GA17985@jenkins.home.ifup.org>
+ <4B694DEF.70301@kernel.org>
+ <20100203174216.GB17985@jenkins.home.ifup.org>
+ <4B6BDAC0.3090900@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-X-Fcc: ~/Mail/linus
-Cc: Oleg Nesterov <oleg@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Lu, Hongjiu" <hongjiu.lu@intel.com>,
-       "Lachner, Peter" <peter.lachner@intel.com>
-Subject: Re: [patch] x86: ptrace and core-dump extensions for xstate
-In-Reply-To: Suresh Siddha's message of  Thursday, 4 February 2010 14:05:14 -0800 <1265321114.2768.256.camel@sbs-t61.sc.intel.com>
-References: <1265076025.2802.194.camel@sbs-t61.sc.intel.com>
-	<20100203230817.E6529AA@magilla.sf.frob.com>
-	<1265315329.2768.167.camel@sbs-t61.sc.intel.com>
-	<20100204205543.E1D11E7@magilla.sf.frob.com>
-	<1265321114.2768.256.camel@sbs-t61.sc.intel.com>
-X-Zippy-Says: When you said ``HEAVILY FORESTED'' it reminded me of an overdue
-    CLEANING BILL..  Don't you SEE?  O'Grogan SWALLOWED a VALUABLE
-    COIN COLLECTION and HAD to murder the ONLY MAN who KNEW!!
-Message-Id: <20100205210249.7B486E7@magilla.sf.frob.com>
-Date: Fri,  5 Feb 2010 13:02:49 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <4B6BDAC0.3090900@kernel.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Roland, All I found after double checking is:
+On 00:45 Fri 05 Feb 2010, Yinghai Lu wrote:
+> Brodon found:
+> race happened when two drivers were setting up MSI-X at the same
+> time via pci_enable_msix(). See this dmesg excerpt:
 > 
-> > For now, only first 8 bytes of the sw_usable_bytes[464..467]
+> [   85.170610] ixgbe 0000:02:00.1: irq 97 for MSI/MSI-X
+> [   85.170611]   alloc irq_desc for 99 on node -1
+> [   85.170613] igb 0000:08:00.1: irq 98 for MSI/MSI-X
+> [   85.170614]   alloc kstat_irqs on node -1
+> [   85.170616] alloc irq_2_iommu on node -1
+> [   85.170617]   alloc irq_desc for 100 on node -1
+> [   85.170619]   alloc kstat_irqs on node -1
+> [   85.170621] alloc irq_2_iommu on node -1
+> [   85.170625] ixgbe 0000:02:00.1: irq 99 for MSI/MSI-X
+> [   85.170626]   alloc irq_desc for 101 on node -1
+> [   85.170628] igb 0000:08:00.1: irq 100 for MSI/MSI-X
+> [   85.170630]   alloc kstat_irqs on node -1
+> [   85.170631] alloc irq_2_iommu on node -1
+> [   85.170635]   alloc irq_desc for 102 on node -1
+> [   85.170636]   alloc kstat_irqs on node -1
+> [   85.170639] alloc irq_2_iommu on node -1
+> [   85.170646] BUG: unable to handle kernel NULL pointer dereference
+> at 0000000000000088
 > 
-> should be
+> As you can see igb and ixgbe are both alternating on create_irq_nr()
+> via pci_enable_msix() in their probe function.
 > 
-> > For now, only first 8 bytes of the sw_usable_bytes[464..471]
-
-I didn't notice that one, because I didn't check any of your arithmetic.
-
-> Let me know if I am overlooking something.
-
-I only meant the pure English errors.  Here is the comment with some
-grammar and punctuation fixed:
-
-+/*
-+ * The structure layout used in PTRACE_GETXSTATEREGS/PTRACE_SETXSTATEREGS is
-+ * the same as the memory layout of xsave used by the processor (except
-+ * for the bytes 464..511, which can be used by the software).  The size
-+ * of the structure that users need to use for these two interfaces can be
-+ * obtained by doing:
-+ * 	cpuid_count(0xd, 0, &eax, &ptrace_xstateregs_struct_size, &ecx, &edx);
-+ * i.e., cpuid.(eax=0xd,ecx=0).ebx will be the size that user (debuggers, etc.)
-+ * need to use.
-+ *
-+ * The format of this structure will be like:
-+ * 	struct {
-+ * 		fxsave_bytes[0..463]
-+ * 		sw_usable_bytes[464..511]
-+ * 		xsave_hdr_bytes[512..575]
-+ * 		avx_bytes[576..831]
-+ * 		future_state etc
-+ * 	}
-+ *
-+ * The same memory layout will be used for the core-dump NT_X86_XSTATE
-+ * note representing the xstate registers.
-+ *
-+ * For now, only the first 8 bytes of the sw_usable_bytes[464..471] will
-+ * be used and will be set to OS enabled xstate mask (which is same as the
-+ * 64bit mask returned by the xgetbv's xCR0).  Users (analyzing core dump
-+ * remotely, etc.) can use this mask as well as the mask saved in the
-+ * xstate_hdr bytes and interpret what states the processor/OS supports
-+ * and what states are in modified/initialized conditions for the
-+ * particular process/thread.
-+ *
-+ * Also when the user modifies certain state FP/SSE/etc through this
-+ * PTRACE_SETXSTATEREGS, they must ensure that the xsave_hdr.xstate_bv
-+ * bytes[512..519] of the above memory layout are updated correspondingly.
-+ * i.e., for example when FP state is modified to a non-init state,
-+ * xsave_hdr.xstate_bv's bit 0 must be set to '1', when SSE is modified to
-+ * non-init state, xsave_hdr.xstate_bv's bit 1 must to be set to '1', etc.
-+ */
-
-> Yes. No size limit as of now.
-
-Ok.  Thanks for the clear answer.
-
-> Ok. I think I can agree, if we are ok with giving room for the ptrace
-> (or any other user of the API) to make a mistake and corrupt reg-state
-> of the process under debug, if it doesn't follow rules.
-
-This is not new, and it's not a problem.  The bottom line is that ptrace
-can do whatever the process could have done to itself.
-
-> Thought some of them might be only relevant to core-dump or based on
-> permissions etc. But I guess get/set routines of the regset should be
-> able to take care of this?
-
-The whole point of user_regset is that whatever user-space machine state
-there is to be had can be accessed consistently by whatever means.  If
-there is something that you don't want debuggers to be able to access, then
-user_regset is not where it belongs.  There is no rationale I can imagine
-for having something in a core dump but not readable by debuggers when the
-process is still alive.
-
-The only issue that I can imagine you might be referring to when you say
-"based on permissions etc." is state that you cannot set arbitrarily from
-user mode.  The only such example we have is NT_386_IOPERM, which you just
-cannot set at all via user_regset.  If we were to allow debuggers to change
-that data at all, then its .set function would need to do some permission
-checking.  
-
-For everything else that is really part of the user-mode register state per
-se, it just doesn't make sense to think about any kind of "permission
-checking" beyond the simple masks applied to eflags, mxcsr, etc.  The
-debugger can make the user process do anything that the process could do
-itself, which of course includes changing all its registers.
-
-> So in the example you provided before:
+> ixgbe: While looping through irq_desc_ptrs[] via create_irq_nr() ixgbe
+> choses irq_desc_ptrs[102] and exits the loop, drops vector_lock and
+> calls dynamic_irq_init. Then it sets irq_desc_ptrs[102]->chip_data =
+> NULL via dynamic_irq_init().
 > 
->         struct iovec iov = { mybuffer, mylength };
->         ret = ptrace(PTRACE_GETREGSET, NT_X86_XSTATE, &iov);
+> igb: Grabs the vector_lock now and starts looping over irq_desc_ptrs[]
+> via create_irq_nr(). It gets to irq_desc_ptrs[102] and does this:
 > 
-> You wanted to propose common data format (iov) for all of the NT_* ?
+> 	cfg_new = irq_desc_ptrs[102]->chip_data;
+> 	if (cfg_new->vector != 0)
+> 		continue;
+> 
+> This hits the NULL deref.
+> 
+> so let remove the save and restore code.
+> just don't clear it in that path
+>
+> Index: linux-2.6/arch/x86/kernel/apic/io_apic.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/kernel/apic/io_apic.c
+> +++ linux-2.6/arch/x86/kernel/apic/io_apic.c
+> @@ -3280,12 +3280,9 @@ unsigned int create_irq_nr(unsigned int
+>  	}
+>  	spin_unlock_irqrestore(&vector_lock, flags);
+>  
+> -	if (irq > 0) {
+> -		dynamic_irq_init(irq);
+> -		/* restore it, in case dynamic_irq_init clear it */
+> -		if (desc_new)
+> -			desc_new->chip_data = cfg_new;
+> -	}
+> +	if (irq > 0)
+> +		dynamic_irq_init_keep_chip_data(irq);
+> +
+>  	return irq;
+>  }
 
-I'm not sure I understand your question.  The iovec is just API trivia,
-part of communicating "I want this regset and I want these bytes of it".
-This has nothing to do with the actual data format of each regset.
+Nearly every function in kernel/irq/chip.c takes the desc->lock when
+manipulating the fields of the irq_desc including chip_data. Should
+create_irq_nr() do the same when getting the chip_data field?
 
+I am just a bit confused on what protects the chip_data field now.
 
-Thanks,
-Roland
+Actually, while looking at your patch there is a related race in
+destroy_irq() that I just noticed. This race could happen via
+pci_disable_msix() in a driver or in the number of error paths that
+call free_msi_irqs():
+
+destroy_irq()
+dynamic_irq_cleanup() which sets desc->chip_data = NULL
+...race window...
+desc->chip_data = cfg;
+
+It could race with create_irq_nr() in the same way in the irq destroy
+path.
+
+So, I will reply after this with a combined patch fixing this
+potential race along with the minor things below.
+
+Cheers,
+
+	Brandon
+
+>  
+> Index: linux-2.6/include/linux/irq.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/irq.h
+> +++ linux-2.6/include/linux/irq.h
+> @@ -400,6 +400,7 @@ static inline int irq_has_action(unsigne
+>  
+>  /* Dynamic irq helper functions */
+>  extern void dynamic_irq_init(unsigned int irq);
+> +void dynamic_irq_init_keep_chip_data(unsigned int irq);
+>  extern void dynamic_irq_cleanup(unsigned int irq);
+
+Missing extern?
+
+>  /* Set/get chip/data for an IRQ: */
+> Index: linux-2.6/kernel/irq/chip.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/irq/chip.c
+> +++ linux-2.6/kernel/irq/chip.c
+> @@ -22,7 +22,7 @@
+>   *	dynamic_irq_init - initialize a dynamically allocated irq
+>   *	@irq:	irq number to initialize
+
+Update kerndoc?
+
+> +static void dynamic_irq_init_x(unsigned int irq, bool keep_chip_data)
+>  {
+>  	struct irq_desc *desc;
+>  	unsigned long flags;
+> @@ -41,7 +41,8 @@ void dynamic_irq_init(unsigned int irq)
+>  	desc->depth = 1;
+>  	desc->msi_desc = NULL;
+>  	desc->handler_data = NULL;
+> -	desc->chip_data = NULL;
+> +	if (!keep_chip_data)
+> +		desc->chip_data = NULL;
+>  	desc->action = NULL;
+>  	desc->irq_count = 0;
+>  	desc->irqs_unhandled = 0;
+> @@ -54,6 +55,16 @@ void dynamic_irq_init(unsigned int irq)
+>  	raw_spin_unlock_irqrestore(&desc->lock, flags);
+>  }
+>  
+> +void dynamic_irq_init(unsigned int irq)
+> +{
+> +	dynamic_irq_init_x(irq, false);
+> +}
+> +
+> +void dynamic_irq_init_keep_chip_data(unsigned int irq)
+> +{
+> +	dynamic_irq_init_x(irq, true);
+> +}
+> +
+>  /**
+>   *	dynamic_irq_cleanup - cleanup a dynamically allocated irq
+>   *	@irq:	irq number to initialize
