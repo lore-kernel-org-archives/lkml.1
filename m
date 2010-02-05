@@ -1,68 +1,116 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756176Ab0BEB1U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Feb 2010 20:27:20 -0500
-Received: from mail-yw0-f189.google.com ([209.85.211.189]:57501 "EHLO
-	mail-yw0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753478Ab0BEB1S (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Feb 2010 20:27:18 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=fUO55VApnACU39E99h4jLuVBfdLhK+woS0IRyIKFaKhUdyGLBGygiOPRTah+2EkseS
-         Zyb90gyicpRicN9T1cFstfw9zLXNsLXNKN3Lq2fngdXZ0W49g0fUDfVcIFsEUln3xftG
-         O3m1FlElwIhM11EEuACx8dZdqtubZsrmTEiSM=
-From: Chihau Chau <chihau@gmail.com>
-To: gregkh@suse.de, wfp5p@virginia.edu, sgayda2@uiuc.edu,
-       mithlesh@linsyssoft.com
-Cc: devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org,
-       Chihau Chau <chihau@gmail.com>
-Subject: [PATCH 1/1] Staging: comedi: poc: fix coding style issues
-Date: Thu,  4 Feb 2010 22:27:05 -0300
-Message-Id: <1265333225-6726-1-git-send-email-chihau@gmail.com>
-X-Mailer: git-send-email 1.5.6.3
+	id S1756478Ab0BEB3n (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Feb 2010 20:29:43 -0500
+Received: from havoc.gtf.org ([69.61.125.42]:52926 "EHLO havoc.gtf.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755338Ab0BEB3l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Feb 2010 20:29:41 -0500
+Date: Thu, 4 Feb 2010 20:29:41 -0500
+From: Jeff Garzik <jeff@garzik.org>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: [git patches] libata fixes
+Message-ID: <20100205012940.GA22072@havoc.gtf.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Chihau Chau <chihau@gmail.com>
 
-This fixes a line over 80 characters and a brace warnings.
+Please pull from 'upstream-linus' branch of
+master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git upstream-linus
 
-Signed-off-by: Chihau Chau <chihau@gmail.com>
----
- drivers/staging/comedi/drivers/poc.c |    9 ++++-----
- 1 files changed, 4 insertions(+), 5 deletions(-)
+to receive the following updates:
 
-diff --git a/drivers/staging/comedi/drivers/poc.c b/drivers/staging/comedi/drivers/poc.c
-index d23e588..207d5ee 100644
---- a/drivers/staging/comedi/drivers/poc.c
-+++ b/drivers/staging/comedi/drivers/poc.c
-@@ -136,8 +136,8 @@ static int poc_attach(struct comedi_device *dev, struct comedi_devconfig *it)
- 	/* check if io addresses are available */
- 	if (!request_region(iobase, iosize, "dac02")) {
- 		printk
--		    ("I/O port conflict: failed to allocate ports 0x%lx to 0x%lx\n",
--		     iobase, iobase + iosize - 1);
-+		    ("I/O port conflict: failed to allocate ports 0x%lx to "
-+					"0x%lx\n", iobase, iobase + iosize - 1);
- 		return -EIO;
+ drivers/ata/ahci.c        |   15 +++++++++++++++
+ drivers/ata/libata-scsi.c |    2 +-
+ drivers/ata/libata-sff.c  |    3 +++
+ include/linux/ata.h       |    4 ++--
+ 4 files changed, 21 insertions(+), 3 deletions(-)
+
+Catalin Marinas (1):
+      [libata] Call flush_dcache_page after PIO data transfers in libata-sff.c
+
+Christoph Hellwig (1):
+      libata: fix ata_id_logical_per_physical_sectors
+
+Douglas Gilbert (1):
+      libata-scsi passthru: fix bug which truncated LBA48 return values
+
+Tejun Heo (1):
+      ahci: add Acer G725 to broken suspend list
+
+diff --git a/drivers/ata/ahci.c b/drivers/ata/ahci.c
+index b8bea10..b343903 100644
+--- a/drivers/ata/ahci.c
++++ b/drivers/ata/ahci.c
+@@ -2868,6 +2868,21 @@ static bool ahci_broken_suspend(struct pci_dev *pdev)
+ 			},
+ 			.driver_data = "F.23",	/* cutoff BIOS version */
+ 		},
++		/*
++		 * Acer eMachines G725 has the same problem.  BIOS
++		 * V1.03 is known to be broken.  V3.04 is known to
++		 * work.  Inbetween, there are V1.06, V2.06 and V3.03
++		 * that we don't have much idea about.  For now,
++		 * blacklist anything older than V3.04.
++		 */
++		{
++			.ident = "G725",
++			.matches = {
++				DMI_MATCH(DMI_SYS_VENDOR, "eMachines"),
++				DMI_MATCH(DMI_PRODUCT_NAME, "eMachines G725"),
++			},
++			.driver_data = "V3.04",	/* cutoff BIOS version */
++		},
+ 		{ }	/* terminate list */
+ 	};
+ 	const struct dmi_system_id *dmi = dmi_first_match(sysids);
+diff --git a/drivers/ata/libata-scsi.c b/drivers/ata/libata-scsi.c
+index f4ea5a8..d096fbc 100644
+--- a/drivers/ata/libata-scsi.c
++++ b/drivers/ata/libata-scsi.c
+@@ -2875,7 +2875,7 @@ static unsigned int ata_scsi_pass_thru(struct ata_queued_cmd *qc)
+ 	 * write indication (used for PIO/DMA setup), result TF is
+ 	 * copied back and we don't whine too much about its failure.
+ 	 */
+-	tf->flags = ATA_TFLAG_ISADDR | ATA_TFLAG_DEVICE;
++	tf->flags |= ATA_TFLAG_ISADDR | ATA_TFLAG_DEVICE;
+ 	if (scmd->sc_data_direction == DMA_TO_DEVICE)
+ 		tf->flags |= ATA_TFLAG_WRITE;
+ 
+diff --git a/drivers/ata/libata-sff.c b/drivers/ata/libata-sff.c
+index 741065c..730ef3c 100644
+--- a/drivers/ata/libata-sff.c
++++ b/drivers/ata/libata-sff.c
+@@ -893,6 +893,9 @@ static void ata_pio_sector(struct ata_queued_cmd *qc)
+ 				       do_write);
  	}
- 	dev->iobase = iobase;
-@@ -156,10 +156,9 @@ static int poc_attach(struct comedi_device *dev, struct comedi_devconfig *it)
- 	s->insn_write = this_board->winsn;
- 	s->insn_read = this_board->rinsn;
- 	s->insn_bits = this_board->insnbits;
--	if (s->type == COMEDI_SUBD_AO || s->type == COMEDI_SUBD_DO) {
-+	if (s->type == COMEDI_SUBD_AO || s->type == COMEDI_SUBD_DO)
- 		s->subdev_flags = SDF_WRITABLE;
--	}
--
+ 
++	if (!do_write)
++		flush_dcache_page(page);
 +
- 	return 0;
+ 	qc->curbytes += qc->sect_size;
+ 	qc->cursg_ofs += qc->sect_size;
+ 
+diff --git a/include/linux/ata.h b/include/linux/ata.h
+index 38a6948..20f3156 100644
+--- a/include/linux/ata.h
++++ b/include/linux/ata.h
+@@ -647,9 +647,9 @@ static inline int ata_id_has_large_logical_sectors(const u16 *id)
+ 	return id[ATA_ID_SECTOR_SIZE] & (1 << 13);
  }
  
--- 
-1.5.6.3
-
+-static inline u8 ata_id_logical_per_physical_sectors(const u16 *id)
++static inline u16 ata_id_logical_per_physical_sectors(const u16 *id)
+ {
+-	return id[ATA_ID_SECTOR_SIZE] & 0xf;
++	return 1 << (id[ATA_ID_SECTOR_SIZE] & 0xf);
+ }
+ 
+ static inline int ata_id_has_lba48(const u16 *id)
