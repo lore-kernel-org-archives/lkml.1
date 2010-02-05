@@ -1,98 +1,68 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933866Ab0BEVjG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 16:39:06 -0500
-Received: from cantor.suse.de ([195.135.220.2]:40288 "EHLO mx1.suse.de"
+	id S933875Ab0BEVkV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 16:40:21 -0500
+Received: from mga03.intel.com ([143.182.124.21]:29476 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933814Ab0BEVjD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 16:39:03 -0500
-Message-ID: <4B6C8FF0.3090106@suse.cz>
-Date: Fri, 05 Feb 2010 22:38:56 +0100
-From: Michal Marek <mmarek@suse.cz>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Hui Zhu <hui.zhu@windriver.com>
-Cc: =?UTF-8?B?QW3DqXJpY28gV2FuZw==?= <xiyou.wangcong@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Sam Ravnborg <sam@ravnborg.org>, ozan@pardus.org.tr,
-       Matthew Wilcox <willy@linux.intel.com>, linux-kernel@vger.kernel.org,
-       teawater@gmail.com
-Subject: Re: [PATCH] markup_oops.pl: add options to improve cross-sompilation
-  environments
-References: <4B5E5D4F.50803@windriver.com>	 <2375c9f91001251905p6ed99405m3915ac56e230605f@mail.gmail.com>	 <4B5E9BE9.2030702@windriver.com> <2375c9f91001252353u52f437b0t7ddd643a57047e1c@mail.gmail.com> <4B5EB223.60307@windriver.com> <4B6344CA.10504@suse.cz> <4B666982.1020007@windriver.com>
-In-Reply-To: <4B666982.1020007@windriver.com>
-Content-Type: text/plain; charset=UTF-8
+	id S933844Ab0BEVkU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Feb 2010 16:40:20 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,415,1262592000"; 
+   d="scan'208";a="241031724"
+Subject: Re: [patch] x86: ptrace and core-dump extensions for xstate
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Oleg Nesterov <oleg@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Lu, Hongjiu" <hongjiu.lu@intel.com>,
+       "Lachner, Peter" <peter.lachner@intel.com>
+In-Reply-To: <20100205211515.9805FE7@magilla.sf.frob.com>
+References: <1265076025.2802.194.camel@sbs-t61.sc.intel.com>
+	 <20100203230817.E6529AA@magilla.sf.frob.com>
+	 <1265315329.2768.167.camel@sbs-t61.sc.intel.com>
+	 <20100204205543.E1D11E7@magilla.sf.frob.com>
+	 <1265321114.2768.256.camel@sbs-t61.sc.intel.com>
+	 <4B6B47A1.3050606@zytor.com>  <20100205211515.9805FE7@magilla.sf.frob.com>
+Content-Type: text/plain
+Organization: Intel Corp
+Date: Fri, 05 Feb 2010 13:39:14 -0800
+Message-Id: <1265405954.2812.89.camel@sbs-t61.sc.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1.2.2010 06:41, Hui Zhu wrote:
-> I make a patch according to your mail.
+On Fri, 2010-02-05 at 13:15 -0800, Roland McGrath wrote:
+> > #define PTRACE_GETREGS(r) (((r) << 16) | PTRACE_GETREGS_CMD)
+> > 
+> > ... or something like that?
 > 
-> Best regards,
-> Hui
-> 
-> 1. Fix a little format issue.
-> 2. Check the return of "Getopt::Long::GetOptions".  Output usage and
-> exit if it get error.
-> 3. Change $ARGV[$#ARGV] to $ARGV[0].
-> 4. Change the code which get $modulefile from modinfo.  Replace the
-> pipeline with `modinfo -F filename $module`.
-> 4. Change usage from "Specify the module directory name" to "Specify the
-> module filename".
-> 
-> Signed-off-by: Hui Zhu <teawater@gmail.com>
+> (You can't use that exact name, it's taken.)  IMHO this is some spurious
+> obfuscation that is not warranted by saving the two get_user calls in the
+> kernel.  
 
-Thanks, I applied the previous and this patch. Just to make sure I
-didn't miss any of your patches, can you check that
-http://repo.or.cz/w/linux-kbuild.git/blob/refs/heads/for-next:/scripts/markup_oops.pl
-has all your changes? If something is missing, please resend it, thanks.
+Also value of NT_PRXFPREG complicates things bit more
 
-Michal
+#define NT_PRXFPREG     0x46e62b7f      /* copied from gdb5.1/include/elf/common.h */
 
-> ---
-> scripts/markup_oops.pl |   10 +++++-----
-> 1 file changed, 5 insertions(+), 5 deletions(-)
-> 
-> --- a/scripts/markup_oops.pl
-> +++ b/scripts/markup_oops.pl
-> @@ -23,10 +23,10 @@ my $modulefile = "";
-> # Get options
-> Getopt::Long::GetOptions(
->     'cross-compile|c=s'    => \$cross_compile,
-> -    'module|m=s'    => \$modulefile,
-> +    'module|m=s'        => \$modulefile,
->     'help|h'        => \&usage,
-> -);
-> -my $vmlinux_name = $ARGV[$#ARGV];
-> +) || usage ();
-> +my $vmlinux_name = $ARGV[0];
-> if (!defined($vmlinux_name)) {
->     my $kerver = `uname -r`;
->     chomp($kerver);
-> @@ -193,7 +193,7 @@ if ($target eq "0") {
-> # if it's a module, we need to find the .ko file and calculate a load
-> offset
-> if ($module ne "") {
->     if ($modulefile eq "") {
-> -        my $modulefile = `modinfo $module | grep '^filename:' | awk '{
-> print \$2 }'`;
-> +        $modulefile = `modinfo -F filename $module`;
->         chomp($modulefile);
->     }
->     $filename = $modulefile;
-> @@ -361,7 +361,7 @@ Usage:
-> 
-> OPTION:
->   -c, --cross-compile CROSS_COMPILE    Specify the prefix used for
-> toolchain.
-> -  -m, --module MODULE_DIRNAME        Specify the module directory name.
-> +  -m, --module MODULE_DIRNAME        Specify the module filename.
->   -h, --help                Help.
-> EOT
->     exit;
-> 
-> 
+In this context, we have to perhaps use bits 31 and 29 to represent this
+generic ptrace interface and the corresponding GET/SET commands.
+
+> (OTOH, my suggestion requires a whole extra 5 lines of code or so
+> in compat_sys_ptrace because the indirection in the ABI is sensitive to
+> userland word size.)  But I don't feel strongly about the particulars of
+> the ptrace API addition, just that it be generic to cover any regset and
+> not be prone to implicit buffer-size miscommunications.  I'll leave it to
+> whatever Oleg wants to implement.
+
+Ok. I will split the previous patch in to two patches and re-post it. I
+can help Oleg with reviewing and testing the generic implementation
+whenever it is ready.
+
+thanks,
+suresh
 
