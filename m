@@ -1,59 +1,72 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752771Ab0BEFvJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 00:51:09 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:49697 "EHLO smtps.tip.net.au"
+	id S1752629Ab0BEFww (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 00:52:52 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:49736 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752204Ab0BEFvG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 00:51:06 -0500
-Date: Fri, 5 Feb 2010 16:50:59 +1100
+	id S1751444Ab0BEFwv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Feb 2010 00:52:51 -0500
+Date: Fri, 5 Feb 2010 16:52:47 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: David Miller <davem@davemloft.net>, <netdev@vger.kernel.org>
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
 Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Nick Nunley <nicholasx.d.nunley@intel.com>
-Subject: linux-next: build failure after merge of the net tree
-Message-Id: <20100205165059.0b5d5363.sfr@canb.auug.org.au>
+       Matthias Benesch <twoof7@freenet.de>,
+       Ralph Metzler <rjkm@metzlerbros.de>, Oliver Endriss <o.endriss@gmx.de>
+Subject: linux-next: build failure after merge of the v4l-dvb tree
+Message-Id: <20100205165247.bee325be.sfr@canb.auug.org.au>
 X-Mailer: Sylpheed 3.0.0beta7 (GTK+ 2.18.6; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__5_Feb_2010_16_50_59_+1100_b8V.lbLiILDVfOYJ"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__5_Feb_2010_16_50_59_+1100_b8V.lbLiILDVfOYJ
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi Dave,
+Hi Mauro,
 
 After merging the scsi-post-merge tree, today's linux-next build (powerpc
-allyesconfig and i386 defconfig) failed like this:
+allyesconfig) failed like this:
 
-drivers/net/e1000e/built-in.o: In function `e1000_has_link':
-(.opd+0x1d58): multiple definition of `e1000_has_link'
-drivers/net/e1000/built-in.o:(.opd+0x588): first defined here
+drivers/media/dvb/ngene/ngene-core.c: In function 'ngene_release_buffers':
+drivers/media/dvb/ngene/ngene-core.c:1443: error: implicit declaration of function 'vfree'
+drivers/media/dvb/ngene/ngene-core.c: In function 'ngene_get_buffers':
+drivers/media/dvb/ngene/ngene-core.c:1454: error: implicit declaration of function 'vmalloc'
+drivers/media/dvb/ngene/ngene-core.c:1454: warning: assignment makes pointer from integer without a cast
+drivers/media/dvb/ngene/ngene-core.c:1461: warning: assignment makes pointer from integer without a cast
+drivers/media/dvb/ngene/ngene-core.c:1467: warning: assignment makes pointer from integer without a cast
+drivers/media/dvb/ngene/ngene-core.c: In function 'ngene_probe':
+drivers/media/dvb/ngene/ngene-core.c:1836: warning: assignment makes pointer from integer without a cast
 
-Caused by commit b548192acaebcb05d6a87d1e94f19835b1a18a8b ("e1000: Report
-link status in ethtool when interface is down").
+Caused by commit b54c755d6263efe376f3dfc8c72c8e7b4fb4f4c1 ("V4L/DVB:
+ngene: Initial check-in").
 
-I have reverted that commit for today.
---=20
+I added the following patch for today.
+
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Fri, 5 Feb 2010 16:46:47 +1100
+Subject: [PATCH] V4L/DVB: using vmalloc requires include linux/vmalloc.h
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ drivers/media/dvb/ngene/ngene-core.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/media/dvb/ngene/ngene-core.c b/drivers/media/dvb/ngene/ngene-core.c
+index ea610e4..cb5982e 100644
+--- a/drivers/media/dvb/ngene/ngene-core.c
++++ b/drivers/media/dvb/ngene/ngene-core.c
+@@ -41,6 +41,7 @@
+ #include <linux/version.h>
+ #include <linux/byteorder/generic.h>
+ #include <linux/firmware.h>
++#include <linux/vmalloc.h>
+ 
+ #include "ngene.h"
+ 
+-- 
+1.6.6.1
+
+-- 
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 http://www.canb.auug.org.au/~sfr/
-
---Signature=_Fri__5_Feb_2010_16_50_59_+1100_b8V.lbLiILDVfOYJ
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAktrscMACgkQjjKRsyhoI8x6hACbBLrjSzG6pb8CdOzoEyvDgLwE
-IO0An1FaPxClHjS/3D0zWdarMYLtL/N+
-=tScb
------END PGP SIGNATURE-----
-
---Signature=_Fri__5_Feb_2010_16_50_59_+1100_b8V.lbLiILDVfOYJ--
