@@ -1,67 +1,60 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933772Ab0BEStX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 13:49:23 -0500
-Received: from mga02.intel.com ([134.134.136.20]:24941 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933756Ab0BEStU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 13:49:20 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,414,1262592000"; 
-   d="scan'208";a="593522972"
-From: Mark Allyn <mark.a.allyn@intel.com>
-To: linux-kernel@vger.kernel.org, alan@linux.intel.com,
-       charles.f.johnson@intel.com, greg@kroah.com
-Cc: Mark Allyn <mark.a.allyn@intel.com>
-Subject: [PATCH 6/6] staging:rar_register: add suspend and resume functions
-Date: Fri,  5 Feb 2010 10:53:34 -0800
-Message-Id: <1265396014-16107-1-git-send-email-mark.a.allyn@intel.com>
-X-Mailer: git-send-email 1.6.0.6
+	id S1757329Ab0BESuh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 13:50:37 -0500
+Received: from outbound-mail-313.bluehost.com ([67.222.54.6]:44769 "HELO
+	outbound-mail-313.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757273Ab0BESuf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Feb 2010 13:50:35 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=p/qXK2I1Ngd+kyZCeNUm4VugHULCHgzYWykR/u8i9KjHa3i3f9uy0MINVjWoDlc6uuw0ZPNR+3Ctv4m9vwwsHx9NxOc+KKuBd8hCt0vkyL7mw9DrzeYfMDaDvlWAkfUK;
+Date: Fri, 5 Feb 2010 10:49:44 -0800
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Eric Anholt" <eric@anholt.net>, "Thomas Meyer" <thomas@m3y3r.de>
+Subject: Re: [Bug #14670] i915: playing video via XVideo extension makes the
+ screen flicker
+Message-ID: <20100205104944.30200925@jbarnes-piketon>
+In-Reply-To: <de962C6zBxL.A.TKG.HHiZLB@chimera>
+References: <UgwvXSBS_tM.A.alD.1EiZLB@chimera>
+	<de962C6zBxL.A.TKG.HHiZLB@chimera>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add suspend and resume functions (which are currently stubs
-returning -ENOSYS)
+On Mon,  1 Feb 2010 01:43:12 +0100 (CET)
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-Signed-off-by: Mark Allyn <mark.a.allyn@intel.com>
----
- drivers/staging/rar_register/rar_register.c |   15 ++++++++++++++-
- 1 files changed, 14 insertions(+), 1 deletions(-)
+> This message has been generated automatically as a part of a report
+> of regressions introduced between 2.6.31 and 2.6.32.
+> 
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.31 and 2.6.32.  Please verify if it still
+> should be listed and let me know (either way).
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14670
+> Subject		: i915: playing video via XVideo extension
+> makes the screen flicker Submitter	: Thomas Meyer
+> <thomas@m3y3r.de> Date		: 2009-11-23 13:15 (70 days old)
+> First-Bad-Commit:
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=b42d4c5c6a872815d711e5d51a600f5122c38eee
+> References	: http://lkml.org/lkml/2010/1/11/150
 
-diff --git a/drivers/staging/rar_register/rar_register.c b/drivers/staging/rar_register/rar_register.c
-index c9dcc99..bfc0e31 100644
---- a/drivers/staging/rar_register/rar_register.c
-+++ b/drivers/staging/rar_register/rar_register.c
-@@ -506,6 +506,17 @@ int register_rar(int (*callback)(void *yourparameter), void *yourparameter)
- }
- EXPORT_SYMBOL(register_rar);
- 
-+/* Suspend - returns -ENOSYS */
-+static int rar_suspend(struct pci_dev *dev, pm_message_t state)
-+{
-+	return -ENOSYS;
-+}
-+
-+static int rar_resume(struct pci_dev *dev)
-+{
-+	return -ENOSYS;
-+}
-+
- /*
-  * This function registers the driver with the device subsystem (
-  * either PCI, USB, etc).
-@@ -582,7 +593,9 @@ const struct pci_device_id *my_id_table = rar_pci_id_tbl;
- static struct pci_driver rar_pci_driver = {
- 	.name = "rar_register_driver",
- 	.id_table = rar_pci_id_tbl,
--	.probe = rar_probe
-+	.probe = rar_probe,
-+	.suspend = rar_suspend,
-+	.resume = rar_resume
- };
- 
- static int __init rar_init_handler(void)
+Just updated the bug.  Looks like we know where the problem is, just
+need a couple more patches tested.
+
+Thomas, can you check my addition and provide feedback?
+
+Thanks,
 -- 
-1.6.0.6
-
+Jesse Barnes, Intel Open Source Technology Center
