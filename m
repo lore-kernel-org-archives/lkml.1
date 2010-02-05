@@ -1,67 +1,116 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756168Ab0BENMX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 08:12:23 -0500
-Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:46229 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753432Ab0BENMW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 08:12:22 -0500
-Date: Fri, 5 Feb 2010 14:12:21 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Jan Engelhardt <jengelh@medozas.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: kswapd continuously active
-Message-ID: <20100205131220.GK1025@kernel.dk>
-References: <alpine.LSU.2.01.1001230037350.20442@obet.zrqbmnf.qr> <20100125130627.GO13771@kernel.dk> <alpine.LSU.2.01.1001251416340.8189@obet.zrqbmnf.qr> <alpine.LSU.2.01.1002051329090.7843@obet.zrqbmnf.qr> <20100205130002.GI1025@kernel.dk> <alpine.LSU.2.01.1002051408280.23211@obet.zrqbmnf.qr>
+	id S1756294Ab0BENNW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 08:13:22 -0500
+Received: from faui40.informatik.uni-erlangen.de ([131.188.34.40]:56856 "EHLO
+	faui40.informatik.uni-erlangen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753432Ab0BENNU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Feb 2010 08:13:20 -0500
+Date: Fri, 5 Feb 2010 14:13:33 +0100
+From: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
+To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Jan Kara <jack@suse.cz>, "Theodore Ts'o" <tytso@mit.edu>,
+       Kazuo Moriwaka <moriwaka@redhat.com>,
+       H Hartley Sweeten <hsweeten@visionengravers.com>,
+       Joel Becker <joel.becker@oracle.com>, linux-ext4@vger.kernel.org
+Cc: vamos@i4.informatik.uni-erlangen.de
+Subject: [PATCH] obsolete config in kernel source (BUFFER_DEBUG)
+Message-ID: <20100205131333.GB6540@faui49.informatik.uni-erlangen.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LSU.2.01.1002051408280.23211@obet.zrqbmnf.qr>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 05 2010, Jan Engelhardt wrote:
-> 
-> On Friday 2010-02-05 14:00, Jens Axboe wrote:
-> >> >January 25			Feb-05
-> >> >MemTotal:        8166752 kB	8166752
-> >> >MemFree:         3243552 kB	3781776
-> >> >Buffers:          207968 kB	4912
-> >> >Cached:          2728216 kB	2684400
-> >> >SwapCached:            0 kB	0
-> >> >Active:          2203136 kB	495624
-> >> >Inactive:        2152544 kB	3263136
-> >> >Active(anon):    1167256 kB	488168
-> >> >Inactive(anon):   252952 kB	583912
-> >> >Active(file):    1035880 kB	7456
-> >> >Inactive(file):  1899592 kB	2679224
-> >> >Unevictable:           0 kB	0
-> >> >Mlocked:               0 kB	0
-> >> >SwapTotal:             0 kB	0
-> >> >SwapFree:              0 kB	0
-> >> >Dirty:            141624 kB	2662184
-> >> >Writeback:             0 kB	..
-> >> 
-> >> Today this happened again. So I looked at /proc/meminfo to paste today's
-> >> values next to those from January. That is when I noticed the "Dirty"
-> >> value - and thus I ran
-> >> 
-> >> 	watch -d -n 1 'grep Dirty /proc/meminfo'
-> >> 
-> >> What I see is that the dirty amount - a sync is currently running -
-> >> only decreases with at most 400 KB/sec, often less than that.
-> >
-> >I'm guessing the barriers and commits are what is killing your
-> >performance. What happens with barrier=0?
-> 
-> The ext4 filesystem is already mounted with barrier=0. If there
-> is any block-level barriers I also can turn off, what would be
-> the command?
+Hi all!
 
-barrier=0 is enough. I do wonder why your writeback rate is that slow,
-then. The disk has write back caching enabled?
+	As part of the VAMOS[0] research project at the University of
+Erlangen we're checking referential integrity between kernel KConfig
+options and in-code Conditional blocks.
 
+	With some commit somewhere around 2.4.15 the last hint of
+CONFIG_BUFFER_DEBUG (apart from the 2 occurences this patch addresses)
+-- some documentation -- was removed from the kernel source. However
+this one piece of code made it till today. Time to go forward and
+remove it?
+
+	Please keep me informed of this patch getting confirmed /
+merged so we can keep track of it.
+
+Regards
+
+	Christoph Egger
+
+[0] http://vamos1.informatik.uni-erlangen.de/
+
+----
+>From cb255f19dc90e027c2f903e24c16d1f179bac67e Mon Sep 17 00:00:00 2001
+From: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
+Date: Fri, 5 Feb 2010 13:08:06 +0100
+Subject: [PATCH] remove references to BUFFER_DEBUG
+
+CONFIG_BUFFER_DEBUG seems to have been removed from the documentation
+somewhere around 2.4.15 and seemingly hasn't been available even
+longer. It is, however, still referenced at one place from the jbd
+code (one is a copy of the other header). Time to clean it up
+
+Signed-off-by: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
+---
+ include/linux/jbd.h  |   11 -----------
+ include/linux/jbd2.h |   11 -----------
+ 2 files changed, 0 insertions(+), 22 deletions(-)
+
+diff --git a/include/linux/jbd.h b/include/linux/jbd.h
+index 331530c..f3aa59c 100644
+--- a/include/linux/jbd.h
++++ b/include/linux/jbd.h
+@@ -246,19 +246,8 @@ typedef struct journal_superblock_s
+ 
+ #define J_ASSERT(assert)	BUG_ON(!(assert))
+ 
+-#if defined(CONFIG_BUFFER_DEBUG)
+-void buffer_assertion_failure(struct buffer_head *bh);
+-#define J_ASSERT_BH(bh, expr)						\
+-	do {								\
+-		if (!(expr))						\
+-			buffer_assertion_failure(bh);			\
+-		J_ASSERT(expr);						\
+-	} while (0)
+-#define J_ASSERT_JH(jh, expr)	J_ASSERT_BH(jh2bh(jh), expr)
+-#else
+ #define J_ASSERT_BH(bh, expr)	J_ASSERT(expr)
+ #define J_ASSERT_JH(jh, expr)	J_ASSERT(expr)
+-#endif
+ 
+ #if defined(JBD_PARANOID_IOFAIL)
+ #define J_EXPECT(expr, why...)		J_ASSERT(expr)
+diff --git a/include/linux/jbd2.h b/include/linux/jbd2.h
+index 638ce45..4cf6191 100644
+--- a/include/linux/jbd2.h
++++ b/include/linux/jbd2.h
+@@ -284,19 +284,8 @@ typedef struct journal_superblock_s
+ 
+ #define J_ASSERT(assert)	BUG_ON(!(assert))
+ 
+-#if defined(CONFIG_BUFFER_DEBUG)
+-void buffer_assertion_failure(struct buffer_head *bh);
+-#define J_ASSERT_BH(bh, expr)						\
+-	do {								\
+-		if (!(expr))						\
+-			buffer_assertion_failure(bh);			\
+-		J_ASSERT(expr);						\
+-	} while (0)
+-#define J_ASSERT_JH(jh, expr)	J_ASSERT_BH(jh2bh(jh), expr)
+-#else
+ #define J_ASSERT_BH(bh, expr)	J_ASSERT(expr)
+ #define J_ASSERT_JH(jh, expr)	J_ASSERT(expr)
+-#endif
+ 
+ #if defined(JBD2_PARANOID_IOFAIL)
+ #define J_EXPECT(expr, why...)		J_ASSERT(expr)
 -- 
-Jens Axboe
+1.6.3.3
 
