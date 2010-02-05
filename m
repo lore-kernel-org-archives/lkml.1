@@ -1,57 +1,67 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756158Ab0BEMbj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 07:31:39 -0500
-Received: from ixro-out-rtc.ixiacom.com ([92.87.192.98]:11565 "EHLO
-	ixro-ex1.ixiacom.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755706Ab0BEMbh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 07:31:37 -0500
-From: Octavian Purdila <opurdila@ixiacom.com>
-Organization: Ixia
-To: Cong Wang <amwang@redhat.com>
-Subject: Re: [RFC Patch] net: reserve ports for applications using fixed port numbers
-Date: Fri, 5 Feb 2010 14:28:12 +0200
-User-Agent: KMail/1.12.2 (Linux/2.6.32-trunk-686; KDE/4.3.2; i686; ; )
-Cc: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>, davem@davemloft.net,
-       linux-kernel@vger.kernel.org, eric.dumazet@gmail.com,
-       linux-rdma@vger.kernel.org, netdev@vger.kernel.org,
-       nhorman@tuxdriver.com, linux-sctp@vger.kernel.org
-References: <20100204.094110.64247447.davem@davemloft.net> <201002050305.22227.opurdila@ixiacom.com> <4B6BB447.8080806@redhat.com>
-In-Reply-To: <4B6BB447.8080806@redhat.com>
+	id S1756176Ab0BEMfP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 07:35:15 -0500
+Received: from borg.medozas.de ([188.40.89.202]:45685 "EHLO borg.medozas.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755973Ab0BEMfN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Feb 2010 07:35:13 -0500
+Date: Fri, 5 Feb 2010 13:35:11 +0100 (CET)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Jens Axboe <jens.axboe@oracle.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: kswapd continuously active
+In-Reply-To: <alpine.LSU.2.01.1001251416340.8189@obet.zrqbmnf.qr>
+Message-ID: <alpine.LSU.2.01.1002051329090.7843@obet.zrqbmnf.qr>
+References: <alpine.LSU.2.01.1001230037350.20442@obet.zrqbmnf.qr> <20100125130627.GO13771@kernel.dk> <alpine.LSU.2.01.1001251416340.8189@obet.zrqbmnf.qr>
+User-Agent: Alpine 2.01 (LSU 1266 2009-07-14)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201002051428.12767.opurdila@ixiacom.com>
-X-OriginalArrivalTime: 05 Feb 2010 12:31:35.0328 (UTC) FILETIME=[27CC3A00:01CAA65F]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 05 February 2010 08:01:43 you wrote:
 
-> >> If you can accept his version, I want to use his version (with an
-> >> interface for updating above "reserved_ports" by not only root user's
-> >> sysctl() but also MAC's policy configuration).
-> >
-> > I think that simply using an interface to update the reserved_ports from
-> > MAC policy configuration module wouldn't work, as root will be able to
-> > modify the policy via sysctl.
-> >
-> > I think that we might need to:
-> >
-> > a) have a reserved_port updater
-> >
-> > b) put a LSM hook into that
-> >
-> > c) use the reserved_port updater from sysctl
-> 
-> Ideally, you'd provide an interface for port allocator to use, so
-> doing port reservation will be easier.
-> 
+On Monday 2010-01-25 14:22, Jan Engelhardt wrote:
+>On Monday 2010-01-25 14:06, Jens Axboe wrote:
+>>> 
+>>> with 2.6.32.2 on sparc64 I am seeing that there is a sync(1) process 
+>>> busy in D state, with the following trace:
+>>> 
+>>> sync          D 000000000079299c  7552  4851      1 0x208061101000004
+>>> Call Trace:
+>>>  [000000000053ca58] bdi_sched_wait+0xc/0x1c[...]
+>>>  [000000000053ca78] sync_inodes_sb+0x10/0xfc
+>>> 
+>>> kswapd is also active all the time, writing something to disk[...]
+>>
+>>That doesn't sound good. What does /proc/meminfo say? What file systems
+>>are you using?
 
-If I understand the TOMOYO requirements correctly, we need a way to restrict a 
-user action based on some security policy (in this case the ability to clear 
-reserved ports). Traditionally that has been done with LSM hooks, so I think 
-that approach is preferable.
+>January 25			Feb-05
+>MemTotal:        8166752 kB	8166752
+>MemFree:         3243552 kB	3781776
+>Buffers:          207968 kB	4912
+>Cached:          2728216 kB	2684400
+>SwapCached:            0 kB	0
+>Active:          2203136 kB	495624
+>Inactive:        2152544 kB	3263136
+>Active(anon):    1167256 kB	488168
+>Inactive(anon):   252952 kB	583912
+>Active(file):    1035880 kB	7456
+>Inactive(file):  1899592 kB	2679224
+>Unevictable:           0 kB	0
+>Mlocked:               0 kB	0
+>SwapTotal:             0 kB	0
+>SwapFree:              0 kB	0
+>Dirty:            141624 kB	2662184
+>Writeback:             0 kB	..
+
+Today this happened again. So I looked at /proc/meminfo to paste today's
+values next to those from January. That is when I noticed the "Dirty"
+value - and thus I ran
+
+	watch -d -n 1 'grep Dirty /proc/meminfo'
+
+What I see is that the dirty amount - a sync is currently running -
+only decreases with at most 400 KB/sec, often less than that.
