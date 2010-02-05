@@ -1,83 +1,92 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757625Ab0BEVSG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 16:18:06 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:52930 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757511Ab0BEVSC (ORCPT
+	id S1757618Ab0BEVUz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 16:20:55 -0500
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:56270 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751546Ab0BEVUx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 16:18:02 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=DBY6HMmMCh86DAJAEqW6nycY09S539hxinV12kHSkxZRqvD4PjoHeqMiEd1F2XPCK
-	lngWbh7Rk2SPMoA9eW5Ww==
-Date: Fri, 5 Feb 2010 13:17:56 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Andi Kleen <andi@firstfloor.org>
-cc: submit@firstfloor.org, linux-kernel@vger.kernel.org, haicheng.li@intel.com,
-       penberg@cs.helsinki.fi, linux-mm@kvack.org
-Subject: Re: [PATCH] [2/4] SLAB: Set up the l3 lists for the memory of freshly
- added memory
-In-Reply-To: <20100203213913.D5CD4B1620@basil.firstfloor.org>
-Message-ID: <alpine.DEB.2.00.1002051316300.2376@chino.kir.corp.google.com>
-References: <201002031039.710275915@firstfloor.org> <20100203213913.D5CD4B1620@basil.firstfloor.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Fri, 5 Feb 2010 16:20:53 -0500
+Message-ID: <4B6C8B53.2030601@bx.jp.nec.com>
+Date: Fri, 05 Feb 2010 16:19:15 -0500
+From: Keiichi KII <k-keiichi@bx.jp.nec.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+To: Ingo Molnar <mingo@elte.hu>
+CC: Wu Fengguang <fengguang.wu@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Jason Baron <jbaron@redhat.com>,
+       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
+       linux-kernel@vger.kernel.org, lwoodman@redhat.com, linux-mm@kvack.org,
+       Tom Zanussi <tzanussi@gmail.com>, riel@redhat.com,
+       Munehiro Ikeda <m-ikeda@ds.jp.nec.com>,
+       Atsushi Tsuji <a-tsuji@bk.jp.nec.com>
+Subject: Re: [RFC PATCH -tip 0/2 v3] pagecache tracepoints proposal
+References: <4B6B7FBF.9090005@bx.jp.nec.com> <20100205072858.GC9320@elte.hu>
+In-Reply-To: <20100205072858.GC9320@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Feb 2010, Andi Kleen wrote:
+Hello,
 
-> Index: linux-2.6.33-rc3-ak/mm/slab.c
-> ===================================================================
-> --- linux-2.6.33-rc3-ak.orig/mm/slab.c
-> +++ linux-2.6.33-rc3-ak/mm/slab.c
-> @@ -115,6 +115,7 @@
->  #include	<linux/reciprocal_div.h>
->  #include	<linux/debugobjects.h>
->  #include	<linux/kmemcheck.h>
-> +#include	<linux/memory.h>
->  
->  #include	<asm/cacheflush.h>
->  #include	<asm/tlbflush.h>
-> @@ -1560,6 +1561,20 @@ void __init kmem_cache_init(void)
->  	g_cpucache_up = EARLY;
->  }
->  
-> +static int slab_memory_callback(struct notifier_block *self,
-> +				unsigned long action, void *arg)
-> +{
-> +	struct memory_notify *mn = (struct memory_notify *)arg;
+(02/05/10 02:28), Ingo Molnar wrote:
+> Looks really nice IMO! It also demonstrates nicely the extensibility via 
+> Tom's perf trace scripting engine. (which will soon get a Python script 
+> engine as well, so Perl and C wont be the only possibility to extend perf 
+> with.)
+> 
+> I've Cc:-ed a few parties who might be interested in this. Wu Fengguang has 
+> done MM instrumentation in this area before - there might be some common 
+> ground instead of scattered functionality in /proc, debugfs, perf and 
+> elsewhere?
+> 
+> Note that there's also these older experimental commits in tip:tracing/mm 
+> that introduce the notion of 'object collections' and adds the ability to 
+> trace them:
+> 
+> 3383e37: tracing, page-allocator: Add a postprocessing script for page-allocator-related ftrace events
+> c33b359: tracing, page-allocator: Add trace event for page traffic related to the buddy lists
+> 0d524fb: tracing, mm: Add trace events for anti-fragmentation falling back to other migratetypes
+> b9a2817: tracing, page-allocator: Add trace events for page allocation and page freeing
+> 08b6cb8: perf_counter tools: Provide default bfd_demangle() function in case it's not around
+> eb46710: tracing/mm: rename 'trigger' file to 'dump_range'
+> 1487a7a: tracing/mm: fix mapcount trace record field
+> dcac8cd: tracing/mm: add page frame snapshot trace
+> 
+> this concept, if refreshed a bit and extended to the page cache, would allow 
+> the recording/snapshotting of the MM state of all currently present pages in 
+> the page-cache - a possibly nice addition to the dynamic technique you apply 
+> in your patches.
+> there's similar "object collections" work underway for 'perf lock' btw., by 
+> Hitoshi Mitake and Frederic.
+>
+> So there's lots of common ground and lots of interest.
+> 
+> Btw., instead of "perf trace record pagecache-usage", you might want to think 
+> about introducing a higher level tool as well: 'perf mm' or 'perf pagecache' 
+> - just like we have 'perf kmem' for SLAB instrumentation, 'perf sched' for 
+> scheduler instrumentation and 'perf lock' for locking instrumentation. [with 
+> 'perf timer' having been posted too.]
+> 
+> 'perf mm' could then still map to Perl scripts, it's just a convenience. It 
+> could then harbor other MM related instrumentation bits as well. Just an idea 
+> - this is a possibility, if you are trying to achieve higher organization.
 
-No cast necessary.
+Thank you for your information about "perf lock" and "tip:tracing/mm" things.
+I think it's very useful to merge 'object collections' about tracing/mm into 
+"perf mm". So, I will introduce a higer level tool like "perf mm" for the 
+mm related things as next step.
+These will help me implement "perf mm".
 
-> +
-> +	/*
-> +	 * When a node goes online allocate l3s early.	 This way
-> +	 * kmalloc_node() works for it.
-> +	 */
-> +	if (action == MEM_ONLINE && mn->status_change_nid >= 0)
-> +		slab_node_prepare(mn->status_change_nid);
-> +	return NOTIFY_OK;
-> +}
-> +
->  void __init kmem_cache_init_late(void)
->  {
->  	struct kmem_cache *cachep;
-> @@ -1583,6 +1598,8 @@ void __init kmem_cache_init_late(void)
->  	 */
->  	register_cpu_notifier(&cpucache_notifier);
->  
-> +	hotplug_memory_notifier(slab_memory_callback, SLAB_CALLBACK_PRI);
+And tom's perf trace scripting engine is very flexible.
+I will try to implement "perf mm" based on his scripting engine and 
+harbor other MM related instrumentation like the above if I can.
 
-Only needed for CONFIG_NUMA.
-
-> +
->  	/*
->  	 * The reap timers are started later, with a module init call: That part
->  	 * of the kernel is not yet operational.
+Thanks,
+Keiichi
