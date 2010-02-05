@@ -1,21 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933726Ab0BESo5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 13:44:57 -0500
-Received: from mga11.intel.com ([192.55.52.93]:42295 "EHLO mga11.intel.com"
+	id S933735Ab0BESrj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 13:47:39 -0500
+Received: from mga02.intel.com ([134.134.136.20]:12974 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933601Ab0BESo4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 13:44:56 -0500
+	id S933708Ab0BESri (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Feb 2010 13:47:38 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.49,414,1262592000"; 
-   d="scan'208";a="538198407"
+   d="scan'208";a="490020771"
 From: Mark Allyn <mark.a.allyn@intel.com>
 To: linux-kernel@vger.kernel.org, alan@linux.intel.com,
-       charles.f.johnson@intel.com
+       charles.f.johnson@intel.com, greg@kroah.com
 Cc: Mark Allyn <mark.a.allyn@intel.com>
 Subject: Patch set for Restricted Access Region Register driver
-Date: Fri,  5 Feb 2010 10:49:09 -0800
-Message-Id: <1265395749-15855-1-git-send-email-mark.a.allyn@intel.com>
+Date: Fri,  5 Feb 2010 10:51:52 -0800
+Message-Id: <1265395912-15918-1-git-send-email-mark.a.allyn@intel.com>
 X-Mailer: git-send-email 1.6.0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
