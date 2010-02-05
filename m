@@ -1,49 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757405Ab0BEU4H (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 15:56:07 -0500
-Received: from mail.gmx.net ([213.165.64.20]:47908 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754309Ab0BEU4F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 15:56:05 -0500
-X-Authenticated: #28250155
-X-Provags-ID: V01U2FsdGVkX1/tK1kw9Avti598pCmatxhDEBZvLPWfQJCgDbvM7I
-	HcwuD6iWuLf+yA
-From: Sven Joachim <svenjoac@gmx.de>
-To: ebiederm@xmission.com (Eric W. Biederman)
-Cc: hadi@cyberus.ca, Randolf Pohl <randolf.pohl@gmx.de>, gregkh@suse.de,
-       linux-kernel@vger.kernel.org, stable@kernel.org,
-       stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: [46/74] net: restore ip source validation
-References: <20100205143441.280460@gmx.net> <1265381514.5661.1.camel@bigi>
-	<87wryr4qkk.fsf@turtle.gmx.de> <m1mxzn8mj5.fsf@fess.ebiederm.org>
-Date: Fri, 05 Feb 2010 21:55:58 +0100
-In-Reply-To: <m1mxzn8mj5.fsf@fess.ebiederm.org> (Eric W. Biederman's message
-	of "Fri, 05 Feb 2010 12:17:50 -0800")
-Message-ID: <87pr4jxuzl.fsf@turtle.gmx.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.92 (gnu/linux)
+	id S1757451Ab0BEU4c (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 15:56:32 -0500
+Received: from nlpi157.sbcis.sbc.com ([207.115.36.171]:34567 "EHLO
+	nlpi157.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755572Ab0BEU4a (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Feb 2010 15:56:30 -0500
+Date: Fri, 5 Feb 2010 14:55:20 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@router.home
+To: Andi Kleen <andi@firstfloor.org>
+cc: linux-kernel@vger.kernel.org, haicheng.li@intel.com,
+       penberg@cs.helsinki.fi, linux-mm@kvack.org
+Subject: Re: [PATCH] [0/4] SLAB: Fix a couple of slab memory hotadd issues
+In-Reply-To: <87636bv3eq.fsf@basil.nowhere.org>
+Message-ID: <alpine.DEB.2.00.1002051453050.27740@router.home>
+References: <201002031039.710275915@firstfloor.org> <alpine.DEB.2.00.1002051316350.25989@router.home> <87636bv3eq.fsf@basil.nowhere.org>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.66000000000000003
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2010-02-05 21:17 +0100, Eric W. Biederman wrote:
+On Fri, 5 Feb 2010, Andi Kleen wrote:
 
-> Bah.  That DEVINET_SYSCTL_ENTRY requires having a binary sysctl
-> assigned, just to use as an index.
+> > It changes the bootstrap semantics. The requirement was so far that slab
+> > initialization must be complete before slab operations can be used.
 >
-> Which of course trips over all of the fine checks in sysctl_check.c to
-> keep people from assigning new binary sysctls by accident.
+> The problem is that slab itself uses slab it initialize itself.
+
+slab uses itself and also the page allocator to bootstrap itself. The
+sequence was always a bit fragile. The page allocator also needs to use
+the slab allocator in turn to bootstrap itself.
+
+> > This patchset allows such use before bootstrap on a node is complete and
+> > also allows the running of cache reaper before bootstrap is done.
+> >
+> > I have a bad feeling that this could be the result of Pekka's changes to
+> > the bootstrap.
 >
-> That is the only place in the kernel where he have that problem, I wonder
-> how much work it will be to finish untangling.
+> Not sure I fully follow what you're saying.
+>
+> Are you saying this is a regression fix after all?
 
-Isn't that already done in 2.6.33, looking at commit 83ac201b ?  Forgive
-my ignorance, I am a layman.
+I am saying that we may have more trouble lurking here.
 
-Sen
+If we fix it this way then the bootstrap of a node is different from
+system bootstrap that so far does not need these special measures.
+
