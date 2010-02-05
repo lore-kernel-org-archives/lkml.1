@@ -1,85 +1,37 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753718Ab0BEHNM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 02:13:12 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59696 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753356Ab0BEHNL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 02:13:11 -0500
-Date: Fri, 5 Feb 2010 08:12:49 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>
-Subject: Re: [PATCH -tip 1/2] x86/alternatives: Fix build warning
-Message-ID: <20100205071249.GB9320@elte.hu>
-References: <20100205062427.3745.85746.stgit@dhcp-100-2-132.bos.redhat.com>
+	id S933501Ab0BEHUe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 02:20:34 -0500
+Received: from mail-ew0-f228.google.com ([209.85.219.228]:36382 "EHLO
+	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932913Ab0BEHUd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Feb 2010 02:20:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type;
+        b=PWjLEV2hZIrZdjR6cZVXsNdFZB+TwDtFoUH+maLHWjGf4igmmtxsdWx+bvRI/czhoI
+         Mb4QLMr81WJRK3Wn5xNsklfk0oeomkrgJ+489uY5ZZTUPVWmI9Y1AuhC0v5MqIiJDqXO
+         yZmVdtK93gHStOfZdT7gWvDL3kClBFbZq13dU=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100205062427.3745.85746.stgit@dhcp-100-2-132.bos.redhat.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <5e9821061002042140le7ba356s48e535c9d8b637ec@mail.gmail.com>
+References: <4B6B193D.4060106@gmail.com> <3e8340491002041126l44bb28a7u8f427f0f5c05e57e@mail.gmail.com> 
+	<5e9821061002042140le7ba356s48e535c9d8b637ec@mail.gmail.com>
+From: Bryan Donlan <bdonlan@gmail.com>
+Date: Fri, 5 Feb 2010 02:20:11 -0500
+Message-ID: <3e8340491002042320y783b6e2am37d63353297e2ce1@mail.gmail.com>
+Subject: Re: Intercepting system calls
+To: Oleg Kutkov <elenbert@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+2010/2/5 Oleg Kutkov <elenbert@gmail.com>:
+> Hello. l need to capture and process outgoing and incoming packets from all
+> network interfaces, include virtual interfaces. So I try to overload socket
+> and if_rx. I'm not found another way to do that.
 
-* Masami Hiramatsu <mhiramat@redhat.com> wrote:
-
-> Fixes below warnings.
-> 
-> ====
-> FYI, there's this new build warning on x86 defconfig:
-> 
-> arch/x86/kernel/alternative.c: In function 'alternatives_text_reserved':
-> arch/x86/kernel/alternative.c:402: warning: comparison of distinct pointer types lacks a cast
-> arch/x86/kernel/alternative.c:402: warning: comparison of distinct pointer types lacks a cast
-> arch/x86/kernel/alternative.c:405: warning: comparison of distinct pointer types lacks a cast
-> arch/x86/kernel/alternative.c:405: warning: comparison of distinct pointer types lacks a cast
-> 
-> Caused by:
-> 
-> 2cfa197: ftrace/alternatives: Introducing *_text_reserved functions
-> ====
-> 
-> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-> Reported-by: Ingo Molnar <mingo@elte.hu>
-> ---
-> 
->  arch/x86/kernel/alternative.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/x86/kernel/alternative.c b/arch/x86/kernel/alternative.c
-> index 3832fdc..99d9920 100644
-> --- a/arch/x86/kernel/alternative.c
-> +++ b/arch/x86/kernel/alternative.c
-> @@ -399,10 +399,10 @@ int alternatives_text_reserved(void *start, void *end)
->  	u8 **ptr;
->  
->  	list_for_each_entry(mod, &smp_alt_modules, next) {
-> -		if (mod->text > end || mod->text_end < start)
-> +		if (mod->text > (u8 *)end || mod->text_end < (u8 *)start)
->  			continue;
->  		for (ptr = mod->locks; ptr < mod->locks_end; ptr++)
-> -			if (start <= *ptr && end >= *ptr)
-> +			if ((u8 *)start <= *ptr && (u8 *)end >= *ptr)
->  				return 1;
->  	}
-
-Such casts are a bit ugly and in general type casts are somewhat dangerous.
-
-One possible solution would be to add intermediary local variables 
-(text_start/text_end) with u8 * type and assign start/end to them - which can 
-be done without a cast.
-
-Thanks,
-
-	Ingo
+Why not just use libpcap?
