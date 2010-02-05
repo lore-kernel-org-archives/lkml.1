@@ -1,174 +1,189 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933663Ab0BERtd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 12:49:33 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:47355 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753674Ab0BERtb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 12:49:31 -0500
-Date: Fri, 5 Feb 2010 17:49:18 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       epasch@de.ibm.com, SCHILLIG@de.ibm.com,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>, christof.schmitt@de.ibm.com,
-       thoss@de.ibm.com, hare@suse.de
-Subject: Re: Performance regression in scsi sequential throughput (iozone)
-	due to "e084b - page-allocator: preserve PFN ordering when
-	__GFP_COLD is set"
-Message-ID: <20100205174917.GB11512@csn.ul.ie>
-References: <20091207150906.GC14743@csn.ul.ie> <4B1E93EE.60602@linux.vnet.ibm.com> <4B210754.2020601@linux.vnet.ibm.com> <20091211112009.GC30670@csn.ul.ie> <4B225B9E.2020702@linux.vnet.ibm.com> <4B2B85C7.80502@linux.vnet.ibm.com> <20091218174250.GC21194@csn.ul.ie> <4B4F0E60.1020601@linux.vnet.ibm.com> <20100119113306.GA23881@csn.ul.ie> <4B6C3E6E.6050303@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <4B6C3E6E.6050303@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	id S933677Ab0BERu3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 12:50:29 -0500
+Received: from mail.windriver.com ([147.11.1.11]:65024 "EHLO
+	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752638Ab0BERu2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Feb 2010 12:50:28 -0500
+From: Jason Wessel <jason.wessel@windriver.com>
+To: gregkh@suse.de
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Jason Wessel <jason.wessel@windriver.com>,
+       Eric Biederman <ebiederm@xmission.com>,
+       Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: [PATCH 1/1] ehci-dbgp: split PID register updates for IN and OUT pipes
+Date: Fri,  5 Feb 2010 11:49:05 -0600
+Message-Id: <1265392145-24197-1-git-send-email-jason.wessel@windriver.com>
+X-Mailer: git-send-email 1.6.4.rc1
+X-OriginalArrivalTime: 05 Feb 2010 17:51:30.0484 (UTC) FILETIME=[D9009740:01CAA68B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 05, 2010 at 04:51:10PM +0100, Christian Ehrhardt wrote:
-> I'll keep the old thread below as reference.
->
-> After taking a round of ensuring reproducibility and a pile of new  
-> measurements I now can come back with several new insights.
->
-> FYI - I'm now running iozone triplets (4, then 8, then 16 parallel  
-> threads) with sequential read load and all that 4 times to find  
-> potential noise. But since I changed to that load instead of random read  
-> wit hone thread and ensuring the most memory is cleared (sync + echo 3 >  
-> /proc/sys/vm/drop_caches + a few sleeps) . The noise is now down <2%.  
-> For detailed questions about the setup feel free to ask me directly as I  
-> won't flood this thread too much with such details.
-> 
+This patch addresses two problems:
 
-Is there any chance you have a driver script for the test that you could send
-me? I'll then try reproducing based on that script and see what happens. I'm
-not optimistic I'll be able to reproduce the problem because I think
-it's specific to your setup but you never know.
+1) Bulk reads should always use the DATA0 for the pid, and the write
+   PID should toggle between DATA0 and DATA1.  The fix is using
+   dbgp_pid_write_update() and dbgp_pid_read_update().
 
-> So in the past I identified git id e084b for bringing a huge  
-> degradation, that is still true, but I need to revert my old statement  
-> that unapplying e084b on v2.6.32 helps - it simply doesn't.
->
+2) The delay loop for waiting for a transaction was not long enough to
+   always complete the initial handshake inside dbgp_wait_until_done().
+   After the initial handshake the maximum delay length is never reached.
 
-Hmm, ok. Odd that it used to work but now doesn't.
+The combined result of these two changes allows for the removal of the
+forced resynchronization where a bulk write was issued with a dummy
+data payload only to get the device to start accepting data writes
+again.
 
-How reproducible are these results with patch e084b reverted? i.e. I know
-it does not work now, but did reverting on the old kernel always fix it
-or were there occasions where the figures would be still bad?
+CC: Greg Kroah-Hartman <gregkh@suse.de>
+CC: Eric Biederman <ebiederm@xmission.com>
+CC: Yinghai Lu <yhlu.kernel@gmail.com>
+Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
+---
+ drivers/usb/early/ehci-dbgp.c |   68 +++++++++++++++++------------------------
+ 1 files changed, 28 insertions(+), 40 deletions(-)
 
-> Another bisect (keepign e084b reverted) brought up git id 5f8dcc21 which  
-> came in later. Both patches unapplied individually don't improve  
-> anything. But both patches reverted at the same time on git v2.6.32  
-> bring us back to our old values (remember that is more than 2Gb/s  
-> improvement in throughput)!
->
-> Unfortunately 5f8dcc21 is as unobvious as e84b in explaining how this  
-> can cause so much trouble.
->
-
-There is a bug in commit 5f8dcc21. One consequence of it is that swap-based
-workloads can suffer. A second is that users of high-order allocations can
-enter direct reclaim a lot more than previously. This was fixed in commit
-a7016235a61d520e6806f38129001d935c4b6661 but you say that's not the fix in
-your case. 
-
-The only other interesting thing in commit 5f8dcc21 is that it increases
-the memory overhead of a per-cpu structure. If your memory usage is really
-borderline, it might have been just enough to push it over the edge.
-
-> In the past I identified congestion_wait as the point where the "time is  
-> lost" when comparing good and bad case. Fortunately at least this is  
-> still true when comparing 2.6.32 vs 2.6.32 with both patches reverted.
-> So I upgraded my old counter patches a bit and can now report the following:
->
-> BAD CASE
->                                                                4 THREAD  READ               8 THREAD READ               16 THREAD READ         16THR % portions
-> perf_count_congestion_wait                                        305                        1970                        8980
-> perf_count_call_congestion_wait_from_alloc_pages_high_priority      0                           0                           0
-> perf_count_call_congestion_wait_from_alloc_pages_slowpath         305                        1970                        8979                   100.00%
-> perf_count_pages_direct_reclaim                                  1153                        6818                        3221
-> perf_count_failed_pages_direct_reclaim                            305                        1556                        8979
-
-Something is wrong with the counters there. For 16 threads, it says direct
-reclaim was entered 3221 but it failed 8979 times. How does that work? The
-patch you supplied below looks like a patch on top of another debugging patch.
-Can you send the full debugging patch please?
-
-> perf_count_failed_pages_direct_reclaim_but_progress               305                        1478                        8979                   27.87%
->
-> GOOD CASE WITH REVERTS                                          4 THREAD  READ               8 THREAD READ               16 THREAD READ        16THR % portions
-> perf_count_congestion_wait                                         25                          76                         1114
-> perf_count_call_congestion_wait_from_alloc_pages_high_priority      0                           0                            0
-> perf_count_call_congestion_wait_from_alloc_pages_slowpath          25                          76                         1114               99.98%
-> perf_count_pages_direct_reclaim                                  1054                        9150                        62297
-> perf_count_failed_pages_direct_reclaim                             25                          64                         1114
-> perf_count_failed_pages_direct_reclaim_but_progress                25                          57                         1114                1.79%
->
->
-> I hope the format is kept, it should be good with every monospace viewer.
-
-It got manged but I think I've it fixed above. The biggest thing I can see
-is that direct reclaim is a lot more successful with the patches reverted but
-that in itself doesn't make sense. Neither patch affects how many pages should
-be free or reclaimable - just what order they are allocated and freed in.
-
-With botgh patches reverted, is the performance 100% reliable or does it
-sometimes vary?
-
-If reverting 5f8dcc21 is required, I'm leaning towards believing that the
-additional memory overhead with that patch is enough to push this workload
-over the edge where entering direct reclaim is necessary a lot more to keep
-the zones over the min watermark. You mentioned early on that adding 64MB
-to the machine makes the problem go away. Do you know what the cut-off point
-is? For example, is adding 4MB enough?
-
-If a small amount of memory does help, I'd also test with min_free_kbytes
-at a lower value? If reducing it restores the performance, it again implies
-that memory usage is the real problem.
-
-Thing is, even if adding small amounts of memory or reducing
-min_free_kbytes helps, it does not explain why e084b ever made a
-difference because all that patch does is alter the ordering of pages on
-the free list. That might have some cache consequences but it would not
-impact direct reclaim like this.
-
-> You can all clearly see that the patches somehow affect the ratio at  
-> which __alloc_pages_direct_reclaim runs into a race between try_to_free  
-> pages that could actually free something, but a few lines below can't  
-> get a page from the free list.
-
-There actually is potentially a significant delay from when direct
-reclaim returns and a new allocation attempt happens. However, it's been
-like this for a long time so I don't think it's the issue.
-
-I have a prototype patch that removes usage of congestion_wait() altogether
-and puts processes to sleep on a waitqueue waiting for watermarks to restore
-or a timeout. However, I think it would be just treating the symptoms here
-rather than the real issue.
-
-> Outside in the function alloc_pages_slowpath this leads to a call to  
-> congestion_wait which is absolutely futile as there are absolutely no  
-> writes in flight to wait for.
->
-> Now this kills effectively up to 80% of our throughput - Any idea of  
-> better understanding the link between the patches and the effect is  
-> welcome and might lead to a solution.
->
-> FYI - I tried all patches you suggested - none of them affects this.
->
-
-I'm still at a total loss to explain this. Memory overhead of the second
-patch is a vague possibility and worth checking out by slightly increasing
-available memory on the partition or reducing min_free_kbytes. It does not
-explain why the first patch makes a difference.
-
-> <SNIP>
-
+diff --git a/drivers/usb/early/ehci-dbgp.c b/drivers/usb/early/ehci-dbgp.c
+index 2958a12..6e98a36 100644
+--- a/drivers/usb/early/ehci-dbgp.c
++++ b/drivers/usb/early/ehci-dbgp.c
+@@ -66,8 +66,6 @@ static struct ehci_dev ehci_dev;
+ 
+ #define USB_DEBUG_DEVNUM 127
+ 
+-#define DBGP_DATA_TOGGLE	0x8800
+-
+ #ifdef DBGP_DEBUG
+ #define dbgp_printk printk
+ static void dbgp_ehci_status(char *str)
+@@ -88,11 +86,6 @@ static inline void dbgp_ehci_status(char *str) { }
+ static inline void dbgp_printk(const char *fmt, ...) { }
+ #endif
+ 
+-static inline u32 dbgp_pid_update(u32 x, u32 tok)
+-{
+-	return ((x ^ DBGP_DATA_TOGGLE) & 0xffff00) | (tok & 0xff);
+-}
+-
+ static inline u32 dbgp_len_update(u32 x, u32 len)
+ {
+ 	return (x & ~0x0f) | (len & 0x0f);
+@@ -136,6 +129,19 @@ static inline u32 dbgp_len_update(u32 x, u32 len)
+ 
+ #define DBGP_MAX_PACKET		8
+ #define DBGP_TIMEOUT		(250 * 1000)
++#define DBGP_LOOPS		1000
++
++static inline u32 dbgp_pid_write_update(u32 x, u32 tok)
++{
++	static int data0 = USB_PID_DATA1;
++	data0 ^= USB_PID_DATA_TOGGLE;
++	return (x & 0xffff0000) | (data0 << 8) | (tok & 0xff);
++}
++
++static inline u32 dbgp_pid_read_update(u32 x, u32 tok)
++{
++	return (x & 0xffff0000) | (USB_PID_DATA0 << 8) | (tok & 0xff);
++}
+ 
+ static int dbgp_wait_until_complete(void)
+ {
+@@ -180,7 +186,7 @@ static int dbgp_wait_until_done(unsigned ctrl)
+ {
+ 	u32 pids, lpid;
+ 	int ret;
+-	int loop = 3;
++	int loop = DBGP_LOOPS;
+ 
+ retry:
+ 	writel(ctrl | DBGP_GO, &ehci_debug->control);
+@@ -197,6 +203,8 @@ retry:
+ 		 */
+ 		if (ret == -DBGP_TIMEOUT && !dbgp_not_safe)
+ 			dbgp_not_safe = 1;
++		if (ret == -DBGP_ERR_BAD && --loop > 0)
++			goto retry;
+ 		return ret;
+ 	}
+ 
+@@ -245,12 +253,20 @@ static inline void dbgp_get_data(void *buf, int size)
+ 		bytes[i] = (hi >> (8*(i - 4))) & 0xff;
+ }
+ 
+-static int dbgp_out(u32 addr, const char *bytes, int size)
++static int dbgp_bulk_write(unsigned devnum, unsigned endpoint,
++			 const char *bytes, int size)
+ {
++	int ret;
++	u32 addr;
+ 	u32 pids, ctrl;
+ 
++	if (size > DBGP_MAX_PACKET)
++		return -1;
++
++	addr = DBGP_EPADDR(devnum, endpoint);
++
+ 	pids = readl(&ehci_debug->pids);
+-	pids = dbgp_pid_update(pids, USB_PID_OUT);
++	pids = dbgp_pid_write_update(pids, USB_PID_OUT);
+ 
+ 	ctrl = readl(&ehci_debug->control);
+ 	ctrl = dbgp_len_update(ctrl, size);
+@@ -260,34 +276,7 @@ static int dbgp_out(u32 addr, const char *bytes, int size)
+ 	dbgp_set_data(bytes, size);
+ 	writel(addr, &ehci_debug->address);
+ 	writel(pids, &ehci_debug->pids);
+-	return dbgp_wait_until_done(ctrl);
+-}
+-
+-static int dbgp_bulk_write(unsigned devnum, unsigned endpoint,
+-			 const char *bytes, int size)
+-{
+-	int ret;
+-	int loops = 5;
+-	u32 addr;
+-	if (size > DBGP_MAX_PACKET)
+-		return -1;
+-
+-	addr = DBGP_EPADDR(devnum, endpoint);
+-try_again:
+-	if (loops--) {
+-		ret = dbgp_out(addr, bytes, size);
+-		if (ret == -DBGP_ERR_BAD) {
+-			int try_loops = 3;
+-			do {
+-				/* Emit a dummy packet to re-sync communication
+-				 * with the debug device */
+-				if (dbgp_out(addr, "12345678", 8) >= 0) {
+-					udelay(2);
+-					goto try_again;
+-				}
+-			} while (try_loops--);
+-		}
+-	}
++	ret = dbgp_wait_until_done(ctrl);
+ 
+ 	return ret;
+ }
+@@ -304,7 +293,7 @@ static int dbgp_bulk_read(unsigned devnum, unsigned endpoint, void *data,
+ 	addr = DBGP_EPADDR(devnum, endpoint);
+ 
+ 	pids = readl(&ehci_debug->pids);
+-	pids = dbgp_pid_update(pids, USB_PID_IN);
++	pids = dbgp_pid_read_update(pids, USB_PID_IN);
+ 
+ 	ctrl = readl(&ehci_debug->control);
+ 	ctrl = dbgp_len_update(ctrl, size);
+@@ -362,7 +351,6 @@ static int dbgp_control_msg(unsigned devnum, int requesttype,
+ 	return dbgp_bulk_read(devnum, 0, data, size);
+ }
+ 
+-
+ /* Find a PCI capability */
+ static u32 __init find_cap(u32 num, u32 slot, u32 func, int cap)
+ {
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+1.6.4.rc1
+
