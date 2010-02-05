@@ -1,46 +1,47 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933878Ab0BEVn7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 16:43:59 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:55869 "EHLO mail.zytor.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757431Ab0BEVn6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 16:43:58 -0500
-Message-ID: <4B6C90D9.5050203@zytor.com>
-Date: Fri, 05 Feb 2010 13:42:49 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: Brandon Philips <bphilips@suse.de>
-CC: Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Suresh Siddha <suresh.b.siddha@intel.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: keep chip_data in create_irq_nr
-References: <20100203033109.GA17985@jenkins.home.ifup.org> <4B694DEF.70301@kernel.org> <20100203174216.GB17985@jenkins.home.ifup.org> <4B6BDAC0.3090900@kernel.org> <20100205210534.GD4930@jenkins.home.ifup.org>
-In-Reply-To: <20100205210534.GD4930@jenkins.home.ifup.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1757688Ab0BEVrI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 16:47:08 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42816 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757518Ab0BEVrD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Feb 2010 16:47:03 -0500
+Date: Fri, 5 Feb 2010 13:46:00 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Chris Verges" <chrisv@cyberswitching.com>
+Cc: "Greg Kroah-Hartman" <gregkh@suse.de>, <linux-usb@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>, "Rob Owings" <rowings@thermistor.com>
+Subject: Re: [PATCH] linux-2.6.32-directemp
+Message-Id: <20100205134600.59eb8fae.akpm@linux-foundation.org>
+In-Reply-To: <68FBE0F3CE97264395875AC1C468F22C24A608@mail03.cyberswitching.local>
+References: <68FBE0F3CE97264395875AC1C468F22C24A5BD@mail03.cyberswitching.local>
+	<20100205124038.4f1e83ac.akpm@linux-foundation.org>
+	<68FBE0F3CE97264395875AC1C468F22C24A608@mail03.cyberswitching.local>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/05/2010 01:05 PM, Brandon Philips wrote:
->>  
->> Index: linux-2.6/include/linux/irq.h
->> ===================================================================
->> --- linux-2.6.orig/include/linux/irq.h
->> +++ linux-2.6/include/linux/irq.h
->> @@ -400,6 +400,7 @@ static inline int irq_has_action(unsigne
->>  
->>  /* Dynamic irq helper functions */
->>  extern void dynamic_irq_init(unsigned int irq);
->> +void dynamic_irq_init_keep_chip_data(unsigned int irq);
->>  extern void dynamic_irq_cleanup(unsigned int irq);
-> 
-> Missing extern?
-> 
+On Fri, 5 Feb 2010 13:32:27 -0800
+"Chris Verges" <chrisv@cyberswitching.com> wrote:
 
-Quite the opposite -- function prototypes don't need "extern", and
-putting "extern" on them is generally considered bad style.
+> > *snip*
+> 
+> Hi Andrew,
+> 
+> Thanks for the technical review.  I'll make the changes and send back a
+> new patch.  Would you like a patch against your -mm tree or a fresh
+> patch against linux-2.6.32?
 
-	-hpa
+I guess a new patch would be best - #1 was a bit of a mess.  Please
+give the patch a good title (I chose "usb: QTI DirecTEMP USB
+thermometer/hygrometer driver support") and if possible, include it
+within the body of the email so more people are likely to look at it. 
+If your email client can't do that correctly, use a text/plain
+attachment.
+
+Thanks.
