@@ -1,24 +1,24 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756955Ab0BEOhX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 09:37:23 -0500
-Received: from mail-gx0-f224.google.com ([209.85.217.224]:56967 "EHLO
-	mail-gx0-f224.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756689Ab0BEOhU (ORCPT
+	id S933169Ab0BEOhb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 09:37:31 -0500
+Received: from mail-yx0-f193.google.com ([209.85.210.193]:49631 "EHLO
+	mail-yx0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932268Ab0BEOhZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 09:37:20 -0500
+	Fri, 5 Feb 2010 09:37:25 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=d0V1mNoQvK+70tK3pxrX4qDy4sN+qQrAGLPkLYIR9U0kLwSEHcAPNI6H6DEmdJ0PzS
-         GfznDBfFPMe58UjjZvbHCwo6MXlDstWtGBcs66/kVWfvGjDSaVcPht/kl4XHC6xiY9rx
-         qs7zCHMYjG29nRSJiTIjRr5VYkgBEQ+noGQsE=
+        b=vpB0iHoePUEW5TjUFsXBF0mZO6IPRHRLx+D2f3aEQu+9PLKQ6y5Jc5tAGatRHQiX99
+         xZXpHQpKQZeh75UTn1+84dj2McpTQb51fvkS9wOfjCobLj64hAkSZDb1LgkGedJNjhLj
+         LbkHCVljqGGN0AQwjCJL5HhukLqXMWJrwkfNw=
 From: Brian Gerst <brgerst@gmail.com>
 To: hpa@zytor.com
 Cc: x86@kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/7] x86-32: Move XQUAD definitions to numaq.h
-Date: Fri,  5 Feb 2010 09:37:03 -0500
-Message-Id: <1265380629-3212-2-git-send-email-brgerst@gmail.com>
+Subject: [PATCH 3/7] x86-64: Reorganize io_64.h
+Date: Fri,  5 Feb 2010 09:37:05 -0500
+Message-Id: <1265380629-3212-4-git-send-email-brgerst@gmail.com>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <1265380629-3212-1-git-send-email-brgerst@gmail.com>
 References: <1265380629-3212-1-git-send-email-brgerst@gmail.com>
@@ -26,66 +26,127 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Make it more similar to io_32.h.  No real code changes.
+
 Signed-off-by: Brian Gerst <brgerst@gmail.com>
 ---
- arch/x86/include/asm/io_32.h |    3 ---
- arch/x86/include/asm/numaq.h |    4 ++++
- arch/x86/pci/numaq_32.c      |    6 +-----
- 3 files changed, 5 insertions(+), 8 deletions(-)
+ arch/x86/include/asm/io_64.h |   90 +++++++++++++++++++++++-------------------
+ 1 files changed, 49 insertions(+), 41 deletions(-)
 
-diff --git a/arch/x86/include/asm/io_32.h b/arch/x86/include/asm/io_32.h
-index a299900..e16b9db 100644
---- a/arch/x86/include/asm/io_32.h
-+++ b/arch/x86/include/asm/io_32.h
-@@ -37,9 +37,6 @@
+diff --git a/arch/x86/include/asm/io_64.h b/arch/x86/include/asm/io_64.h
+index 2440678..040bf74 100644
+--- a/arch/x86/include/asm/io_64.h
++++ b/arch/x86/include/asm/io_64.h
+@@ -35,6 +35,54 @@
    *  - Arnaldo Carvalho de Melo <acme@conectiva.com.br>
    */
  
--#define XQUAD_PORTIO_BASE 0xfe400000
--#define XQUAD_PORTIO_QUAD 0x40000  /* 256k per quad. */
--
- #ifdef __KERNEL__
- 
- #include <asm-generic/iomap.h>
-diff --git a/arch/x86/include/asm/numaq.h b/arch/x86/include/asm/numaq.h
-index 9f0a5f5..13370b9 100644
---- a/arch/x86/include/asm/numaq.h
-+++ b/arch/x86/include/asm/numaq.h
-@@ -33,6 +33,10 @@ extern int get_memcfg_numaq(void);
- 
- extern void *xquad_portio;
- 
-+#define XQUAD_PORTIO_BASE 0xfe400000
-+#define XQUAD_PORTIO_QUAD 0x40000  /* 256k per quad. */
-+#define XQUAD_PORT_ADDR(port, quad) (xquad_portio + (XQUAD_PORTIO_QUAD*quad) + port)
++#ifdef __KERNEL__
 +
++#include <asm-generic/iomap.h>
++
++#include <linux/vmalloc.h>
++
++/*
++ * Convert a virtual cached pointer to an uncached pointer
++ */
++#define xlate_dev_kmem_ptr(p)	p
++
++void memset_io(volatile void __iomem *a, int b, size_t c);
++
++void __memcpy_fromio(void *, unsigned long, unsigned);
++static inline void memcpy_fromio(void *to, const volatile void __iomem *from,
++				 unsigned len)
++{
++	__memcpy_fromio(to, (unsigned long)from, len);
++}
++
++void __memcpy_toio(unsigned long, const void *, unsigned);
++static inline void memcpy_toio(volatile void __iomem *to, const void *from,
++			       unsigned len)
++{
++	__memcpy_toio((unsigned long)to, from, len);
++}
++
++/*
++ * ISA space is 'always mapped' on a typical x86 system, no need to
++ * explicitly ioremap() it. The fact that the ISA IO space is mapped
++ * to PAGE_OFFSET is pure coincidence - it does not mean ISA values
++ * are physical addresses. The following constant pointer can be
++ * used as the IO-area pointer (it can be iounmapped as well, so the
++ * analogy with PCI is quite large):
++ */
++#define __ISA_IO_base ((char __iomem *)(PAGE_OFFSET))
++
++/*
++ *	Cache management
++ *
++ *	This needed for two cases
++ *	1. Out of order aware processors
++ *	2. Accidentally out of order processors (PPro errata #51)
++ */
++#define flush_write_buffers() do { } while (0)
++
++#endif /* __KERNEL__ */
++
+ extern void native_io_delay(void);
+ 
+ extern int io_delay_type;
+@@ -53,6 +101,7 @@ static inline void slow_down_io(void)
+ 	native_io_delay();
+ #endif
+ }
++
+ #endif
+ 
  /*
-  * SYS_CFG_DATA_PRIV_ADDR, struct eachquadmem, and struct sys_cfg_data are the
-  */
-diff --git a/arch/x86/pci/numaq_32.c b/arch/x86/pci/numaq_32.c
-index 8eb295e..8884a1c 100644
---- a/arch/x86/pci/numaq_32.c
-+++ b/arch/x86/pci/numaq_32.c
-@@ -8,9 +8,7 @@
- #include <asm/apic.h>
- #include <asm/mpspec.h>
- #include <asm/pci_x86.h>
+@@ -136,46 +185,5 @@ __OUTS(b)
+ __OUTS(w)
+ __OUTS(l)
+ 
+-#if defined(__KERNEL__) && defined(__x86_64__)
 -
--#define XQUAD_PORTIO_BASE 0xfe400000
--#define XQUAD_PORTIO_QUAD 0x40000  /* 256k per quad. */
-+#include <asm/numaq.h>
- 
- #define BUS2QUAD(global) (mp_bus_id_to_node[global])
- 
-@@ -18,8 +16,6 @@
- 
- #define QUADLOCAL2BUS(quad,local) (quad_local_to_mp_bus_id[quad][local])
- 
--#define XQUAD_PORT_ADDR(port, quad) (xquad_portio + (XQUAD_PORTIO_QUAD*quad) + port)
+-#include <linux/vmalloc.h>
 -
- #define PCI_CONF1_MQ_ADDRESS(bus, devfn, reg) \
- 	(0x80000000 | (BUS2LOCAL(bus) << 16) | (devfn << 8) | (reg & ~3))
+-#include <asm-generic/iomap.h>
+-
+-void __memcpy_fromio(void *, unsigned long, unsigned);
+-void __memcpy_toio(unsigned long, const void *, unsigned);
+-
+-static inline void memcpy_fromio(void *to, const volatile void __iomem *from,
+-				 unsigned len)
+-{
+-	__memcpy_fromio(to, (unsigned long)from, len);
+-}
+-
+-static inline void memcpy_toio(volatile void __iomem *to, const void *from,
+-			       unsigned len)
+-{
+-	__memcpy_toio((unsigned long)to, from, len);
+-}
+-
+-void memset_io(volatile void __iomem *a, int b, size_t c);
+-
+-/*
+- * ISA space is 'always mapped' on a typical x86 system, no need to
+- * explicitly ioremap() it. The fact that the ISA IO space is mapped
+- * to PAGE_OFFSET is pure coincidence - it does not mean ISA values
+- * are physical addresses. The following constant pointer can be
+- * used as the IO-area pointer (it can be iounmapped as well, so the
+- * analogy with PCI is quite large):
+- */
+-#define __ISA_IO_base ((char __iomem *)(PAGE_OFFSET))
+-
+-#define flush_write_buffers()
+-
+-/*
+- * Convert a virtual cached pointer to an uncached pointer
+- */
+-#define xlate_dev_kmem_ptr(p)	p
+-
+-#endif /* __KERNEL__ */
  
+ #endif /* _ASM_X86_IO_64_H */
 -- 
 1.6.6
 
