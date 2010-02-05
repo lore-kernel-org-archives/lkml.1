@@ -1,106 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933895Ab0BEV6o (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 16:58:44 -0500
-Received: from polaris.joshh.co.uk ([212.13.195.18]:36753 "EHLO
-	polaris.joshh.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933863Ab0BEV6n (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 16:58:43 -0500
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.5 AWL AWL: From: address is in the auto white-list
-From: Josh Holland <jrh@joshh.co.uk>
-To: Greg Kroah-Hartman <gregkh@suse.de>, Alan Cox <alan@linux.intel.com>
-Cc: Josh Holland <jrh@joshh.co.uk>,
-       =?utf-8?q?Andr=C3=A9=20Goddard=20Rosa?= <andre.goddard@gmail.com>,
-       devel@driverdevv.osuosl.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] Staging: rar: More style changes to rar_driver.c
-Date: Fri,  5 Feb 2010 21:58:26 +0000
-Message-Id: <1265407106-19937-1-git-send-email-jrh@joshh.co.uk>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1265318585-24236-1-git-send-email-jrh@joshh.co.uk>
-References: <1265318585-24236-1-git-send-email-jrh@joshh.co.uk>
+	id S933902Ab0BEV7N (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 16:59:13 -0500
+Received: from cantor.suse.de ([195.135.220.2]:40878 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933863Ab0BEV7K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Feb 2010 16:59:10 -0500
+Message-ID: <4B6C94AC.7000301@suse.cz>
+Date: Fri, 05 Feb 2010 22:59:08 +0100
+From: Michal Marek <mmarek@suse.cz>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org
+Subject: Re: tags: include headers before source files
+References: <Pine.LNX.4.64.1002031704550.6324@axis700.grange>
+In-Reply-To: <Pine.LNX.4.64.1002031704550.6324@axis700.grange>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Following advice from Krzysztof Halasa, I made a few changes to the
-style bits in rar_driver.c
+On 3.2.2010 17:25, Guennadi Liakhovetski wrote:
+> Currently looking up a structure definition in TAGS / tags takes one to 
+> one of multiple "static struct X" definitions in arch sources, which makes 
+> it for many structs practically impossible to get to the required header. 
+> This patch changes the order of sources being tagged to first scan 
+> architecture includes, then the top-level include/ directory, and only 
+> then the rest. It also takes into account, that many architectures have 
+> more than one include directory, i.e., not only arch/$ARCH/include, but 
+> also arch/$ARCH/mach-X/include etc.
 
-Signed-off-by: Josh Holland <jrh@joshh.co.uk>
----
- drivers/staging/rar/rar_driver.c |   21 +++++++++------------
- 1 files changed, 9 insertions(+), 12 deletions(-)
+Hi Guennadi
 
-diff --git a/drivers/staging/rar/rar_driver.c b/drivers/staging/rar/rar_driver.c
-index 886a819..a905192 100644
---- a/drivers/staging/rar/rar_driver.c
-+++ b/drivers/staging/rar/rar_driver.c
-@@ -68,8 +68,7 @@ static void __exit rar_exit_handler(void);
- /*
-   function that is activated on the successfull probe of the RAR device
- */
--static int __devinit rar_probe(struct pci_dev *pdev,
--	const struct pci_device_id *ent);
-+static int __devinit rar_probe(struct pci_dev *pdev, const struct pci_device_id *ent);
- 
- static struct pci_device_id rar_pci_id_tbl[] = {
- 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x4110) },
-@@ -102,7 +101,7 @@ static int memrar_get_rar_addr(struct pci_dev *pdev, int offset, u32 *addr)
- 	 *   2.  [23:16]: Port
- 	 *   3.  [15:8]: Register Offset
- 	 *   4.  [7:4]: Byte Enables (use 0xF to set all of these bits
--	 *              to 1)
-+	 *		to 1)
- 	 *   5.  [3:0]: reserved
- 	 *
- 	 *  Read (0xD0) and write (0xE0) opcodes are written to the
-@@ -147,8 +146,7 @@ static int memrar_get_rar_addr(struct pci_dev *pdev, int offset, u32 *addr)
- 	/* Send the control message */
- 	result = pci_write_config_dword(pdev, LNC_MCR_OFFSET, message);
- 
--	printk(KERN_WARNING "rar- result from send ctl register is %x\n",
--			result);
-+	printk(KERN_WARNING "rar- result from send ctl register is %x\n", result);
- 
- 	if (!result)
- 		result = pci_read_config_dword(pdev, LNC_MDR_OFFSET, addr);
-@@ -180,7 +178,7 @@ static int memrar_set_rar_addr(struct pci_dev *pdev, int offset, u32 addr)
- 	 *   2.  [23:16]: Port
- 	 *   3.  [15:8]: Register Offset
- 	 *   4.  [7:4]: Byte Enables (use 0xF to set all of these bits
--	 *              to 1)
-+	 *		to 1)
- 	 *   5.  [3:0]: reserved
- 	 *
- 	 *  Read (0xD0) and write (0xE0) opcodes are written to the
-@@ -276,9 +274,8 @@ static int memrar_init_rar_params(struct pci_dev *pdev)
- 		return -ENODEV;
- 
- 	for (i = offsets; i != end; ++i, ++n) {
--		if (memrar_get_rar_addr(pdev, (*i).low, &(rar_addr[n].low))
--			|| memrar_get_rar_addr(pdev, (*i).high,
--			   &(rar_addr[n].high))) {
-+		if (memrar_get_rar_addr(pdev, (*i).low, &(rar_addr[n].low)) ||
-+		    memrar_get_rar_addr(pdev, (*i).high, &(rar_addr[n].high))) {
- 			result = -1;
- 			break;
- 		}
-@@ -289,9 +286,9 @@ static int memrar_init_rar_params(struct pci_dev *pdev)
- 
- 	if (result == 0) {
- 		size_t z;
--		for (z = 0; z != MRST_NUM_RAR; ++z) {
--			printk(KERN_WARNING "rar - "
--			"BRAR[%Zd] physical address low\n"
-+		for (z = 0; z != MRST_NUM_RAR; z++) {
-+			printk(KERN_WARNING
-+			"rar - BRAR[%Zd] physical address low\n"
- 			"\tlow:  0x%08x\n"
- 			"\thigh: 0x%08x\n",
- 			z,
--- 
-1.6.3.3
+This is a cool idea, but there is one issue:
+
+
+>  # find sources in arch/$1/include
+>  find_arch_include_sources()
+>  {
+> -	find ${tree}arch/$1/include $ignore -name "$2" -print;
+> +	include=$(find ${tree}arch/$1/ -name include -type d);
+> +	archincludedir+=$include
+> +	find $include $ignore -name "$2" -print;
+
+You need to check if $include isn't empty, which it is on i386 or x86_64
+(and on other archs where $ARCH != $SRCARCH). If I do a 'make cscope'
+after your change, the second find statement crawls the whole filesystem.
+
+Michal
 
