@@ -1,92 +1,149 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754180Ab0BEKsU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 05:48:20 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47736 "EHLO mx2.mail.elte.hu"
+	id S1754244Ab0BEKuF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 05:50:05 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48223 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753842Ab0BEKsS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 05:48:18 -0500
-Date: Fri, 5 Feb 2010 11:47:52 +0100
+	id S1753320Ab0BEKuD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Feb 2010 05:50:03 -0500
+Date: Fri, 5 Feb 2010 11:49:37 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Dave Airlie <airlied@gmail.com>
-Cc: Dave Airlie <airlied@linux.ie>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       dri-devel@lists.sf.net, Alex Deucher <alexdeucher@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org
-Subject: Re: hung bootup with "drm/radeon/kms: move radeon KMS on/off switch
- out of staging."
-Message-ID: <20100205104752.GA29515@elte.hu>
-References: <20100204193232.GD6665@elte.hu>
- <20100204115316.69beee75@jbarnes-piketon>
- <20100204202254.GA24716@elte.hu>
- <20100204204829.GA24608@srcf.ucam.org>
- <20100204210559.GC19050@elte.hu>
- <20100204210950.GA25295@srcf.ucam.org>
- <20100205075645.GF9320@elte.hu>
- <alpine.DEB.2.00.1002050832450.2995@skynet.skynet.ie>
- <20100205090009.GA8272@elte.hu>
- <21d7e9971002050118h7ff48386v2c8fede0519b8975@mail.gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Lai Jiangshan <laijs@cn.fujitsu.com>, paulmck@linux.vnet.ibm.com,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Paul Mackerras <paulus@samba.org>,
+       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
+       Li Zefan <lizf@cn.fujitsu.com>, Masami Hiramatsu <mhiramat@redhat.com>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH 10/11] tracing/perf: Fix lock events recursions in the
+ fast path
+Message-ID: <20100205104937.GB29515@elte.hu>
+References: <1265188475-23509-1-git-send-regression-fweisbec@gmail.com>
+ <1265188475-23509-11-git-send-regression-fweisbec@gmail.com>
+ <20100204154700.GE6676@linux.vnet.ibm.com>
+ <4B6B84A1.60805@cn.fujitsu.com>
+ <1265363102.22001.286.camel@laptop>
+ <1265363441.22001.300.camel@laptop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <21d7e9971002050118h7ff48386v2c8fede0519b8975@mail.gmail.com>
+In-Reply-To: <1265363441.22001.300.camel@laptop>
 User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
+X-ELTE-SpamScore: -2.0
 X-ELTE-SpamLevel: 
 X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Dave Airlie <airlied@gmail.com> wrote:
+* Peter Zijlstra <peterz@infradead.org> wrote:
 
-> On Fri, Feb 5, 2010 at 7:00 PM, Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> > * Dave Airlie <airlied@linux.ie> wrote:
-> >
-> >>
-> >> > If it now does not boot up if all its sub-options are enabled, even of some
-> >> > of those sub-options are new, does that count as a driver regression? Sure it
-> >> > does to me ...
-> >>
-> >> But it doesn't to anyone else under any reasonable meaning of the word
-> >> regression.
-> >
-> > There are reactions in this thread that contradict your 'anyone else' point.
-> >
-> >> The config option states
-> >> "Choose this option if you want kernel modesetting enabled by default,
-> >> ? ? ? ? ? and you have a new enough userspace to support this. Running old
-> >> ? ? ? ? ? userspaces with this enabled will cause pain."
-> >>
-> >> Will cause pain sounds painful to me, I can make it seem much worse if
-> >> you'd like.
-> >
-> > Except you are missing that the hang (and the first crash as well) happens on
-> > brand-new user-space just as much - not just on 'old userspaces'.
-> >
-> > The bugs i've triggered are independent of any user-space component - it
-> > happens with a fresh distro just as much.
-> >
-> > As i suggested before, at least the text should be updated to include what
-> > has been written about CONFIG_DRM_RADEON_KMS in this thread before:
-> >
-> > ?> This is a completely new driver. ?It's only part of the existing drm for
-> > ?> compatibility reasons. ?It requires an entirely different graphics stack
-> > ?> above it and works very differently from the old drm stack.
-> >
+> On Fri, 2010-02-05 at 10:45 +0100, Peter Zijlstra wrote:
+> > On Fri, 2010-02-05 at 10:38 +0800, Lai Jiangshan wrote:
+> > > Paul E. McKenney wrote:
+> > > > On Wed, Feb 03, 2010 at 10:14:34AM +0100, Frederic Weisbecker wrote:
+> > > >> There are rcu locked read side areas in the path where we submit
+> > > >> a trace events. And these rcu_read_(un)lock() trigger lock events,
+> > > >> which create recursive events.
+> > > >>
+> > > >> One pair in do_perf_sw_event:
+> > > >>
+> > > >> __lock_acquire
+> > > >>       |
+> > > >>       |--96.11%-- lock_acquire
+> > > >>       |          |
+> > > >>       |          |--27.21%-- do_perf_sw_event
+> > > >>       |          |          perf_tp_event
+> > > >>       |          |          |
+> > > >>       |          |          |--49.62%-- ftrace_profile_lock_release
+> > > >>       |          |          |          lock_release
+> > > >>       |          |          |          |
+> > > >>       |          |          |          |--33.85%-- _raw_spin_unlock
+> > > >>
+> > > >> Another pair in perf_output_begin/end:
+> > > >>
+> > > >> __lock_acquire
+> > > >>       |--23.40%-- perf_output_begin
+> > > >>       |          |          __perf_event_overflow
+> > > >>       |          |          perf_swevent_overflow
+> > > >>       |          |          perf_swevent_add
+> > > >>       |          |          perf_swevent_ctx_event
+> > > >>       |          |          do_perf_sw_event
+> > > >>       |          |          perf_tp_event
+> > > >>       |          |          |
+> > > >>       |          |          |--55.37%-- ftrace_profile_lock_acquire
+> > > >>       |          |          |          lock_acquire
+> > > >>       |          |          |          |
+> > > >>       |          |          |          |--37.31%-- _raw_spin_lock
+> > > >>
+> > > >> The problem is not that much the trace recursion itself, as we have a
+> > > >> recursion protection already (though it's always wasteful to recurse).
+> > > >> But the trace events are outside the lockdep recursion protection, then
+> > > >> each lockdep event triggers a lock trace, which will trigger two
+> > > >> other lockdep events. Here the recursive lock trace event won't
+> > > >> be taken because of the trace recursion, so the recursion stops there
+> > > >> but lockdep will still analyse these new events:
+> > > >>
+> > > >> To sum up, for each lockdep events we have:
+> > > >>
+> > > >> 	lock_*()
+> > > >> 	     |
+> > > >>              trace lock_acquire
+> > > >>                   |
+> > > >>                   ----- rcu_read_lock()
+> > > >>                   |          |
+> > > >>                   |          lock_acquire()
+> > > >>                   |          |
+> > > >>                   |          trace_lock_acquire() (stopped)
+> > > >>                   |          |
+> > > >> 		  |          lockdep analyze
+> > > >>                   |
+> > > >>                   ----- rcu_read_unlock()
+> > > >>                              |
+> > > >>                              lock_release
+> > > >>                              |
+> > > >>                              trace_lock_release() (stopped)
+> > > >>                              |
+> > > >>                              lockdep analyze
+> > > >>
+> > > >> And you can repeat the above two times as we have two rcu read side
+> > > >> sections when we submit an event.
+> > > >>
+> > > >> This is fixed in this pacth by using the non-lockdep versions of
+> > > >> rcu_read_(un)lock.
+> > > > 
+> > > > Hmmm...  Perhaps I should rename __rcu_read_lock() to something more
+> > > > meaningful if it is to be used outside of the RCU files.  In the
+> > > > meantime:
+> > > > 
+> > > > Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> > > > 
+> > > 
+> > > Perhaps we can use the existed rcu_read_lock_sched_notrace().
+> > > 
+> > > not relate to this patchset, but RCU & lockdep:
+> > > 
+> > > We need to remove lockdep from rcu_read_lock_*().
+> > 
+> > I'm not at all convinced we need to do any such thing, remember its
+> > debugging stuff, performance, while nice, doesn't really count.
 > 
-> Okay I've attached a patch with a revised Kconfig in it.
-> 
-> Does this sound more like reality?
+> That said, I'm not at all happy about removing lockdep annotations to make 
+> the tracer faster, that's really counter productive.
 
-Looks perfect to me!
+Are there no dynamic techniques that could be used here?
 
-Acked-by: Ingo Molnar <mingo@elte.hu>
+Lockdep obviously wants maximum instrumentation coverage - performance be 
+damned.
+
+Lock profiling/tracing/visualization wants the minimum subset of events it is 
+interested in - everything else is unnecessary overhead.
 
 	Ingo
