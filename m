@@ -1,41 +1,73 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751463Ab0BEFJ1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 00:09:27 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36845
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750992Ab0BEFJ0 (ORCPT
+	id S1751531Ab0BEFL5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 00:11:57 -0500
+Received: from mail-gx0-f224.google.com ([209.85.217.224]:48257 "EHLO
+	mail-gx0-f224.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750992Ab0BEFLz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 00:09:26 -0500
-Date: Thu, 04 Feb 2010 21:09:39 -0800 (PST)
-Message-Id: <20100204.210939.133998827.davem@davemloft.net>
-To: fujita.tomonori@lab.ntt.co.jp
-Cc: netdev@vger.kernel.org, rolandd@cisco.com, eli@mellanox.co.il,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] mlx4: replace the dma_sync_single_range_for_cpu/device
- API
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20100205135626G.fujita.tomonori@lab.ntt.co.jp>
-References: <20100205135626G.fujita.tomonori@lab.ntt.co.jp>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 5 Feb 2010 00:11:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=MKwyBUKkh35Kt5x2IxqXijTrNF/OW9enskbBtp2HTK4ofUomiRpytb3d0VxCHER/pj
+         1xVhmMJA+JlmDJQW5Sb3KnMr+wZXbEOP8IBFou3bmpBcZ2finJgpKg7qG9EL3PCRyiOq
+         tKQlmkzWwNLYUqDArbY7qySKZe1arCY7Fifr0=
+From: Chihau Chau <chihau@gmail.com>
+To: gregkh@suse.de
+Cc: devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org,
+       Chihau Chau <chihau@gmail.com>
+Subject: [PATCH 2/2] Staging: samsung-laptop: fix coding style issues
+Date: Fri,  5 Feb 2010 02:11:48 -0300
+Message-Id: <1265346708-9633-1-git-send-email-chihau@gmail.com>
+X-Mailer: git-send-email 1.5.6.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Date: Fri, 5 Feb 2010 13:57:42 +0900
+From: Chihau Chau <chihau@gmail.com>
 
-> There are only two users of the dma_sync_single_range_for_cpu/device
-> API in mainline (mlx4 and ssb). The
-> dma_sync_single_range_for_cpu/device API has never been documented and
-> the dma_sync_single_for_cpu/device API also support a partial sync.
-> 
-> This converts mlx4 to use the dma_sync_single_for_cpu/device API
-> (preparations for the removal of the dma_sync_single_range_for_cpu/device API).
-> 
-> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+This fixes some lines over 80 characters coding style issues
 
-Acked-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Chihau Chau <chihau@gmail.com>
+---
+ drivers/staging/samsung-laptop/samsung-laptop.c |    9 ++++++---
+ 1 files changed, 6 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/staging/samsung-laptop/samsung-laptop.c b/drivers/staging/samsung-laptop/samsung-laptop.c
+index 4877138..87ec773 100644
+--- a/drivers/staging/samsung-laptop/samsung-laptop.c
++++ b/drivers/staging/samsung-laptop/samsung-laptop.c
+@@ -99,7 +99,8 @@ static struct rfkill *rfk;
+ 
+ static int force;
+ module_param(force, bool, 0);
+-MODULE_PARM_DESC(force, "Disable the DMI check and forces the driver to be loaded");
++MODULE_PARM_DESC(force, "Disable the DMI check and forces the driver to be "
++								"loaded");
+ 
+ static int debug;
+ module_param(debug, bool, S_IRUGO | S_IWUSR);
+@@ -370,7 +371,8 @@ static struct dmi_system_id __initdata samsung_dmi_table[] = {
+ 	{
+ 		.ident = "N128",
+ 		.matches = {
+-			DMI_MATCH(DMI_SYS_VENDOR, "SAMSUNG ELECTRONICS CO., LTD."),
++			DMI_MATCH(DMI_SYS_VENDOR,
++					"SAMSUNG ELECTRONICS CO., LTD."),
+ 			DMI_MATCH(DMI_PRODUCT_NAME, "N128"),
+ 			DMI_MATCH(DMI_BOARD_NAME, "N128"),
+ 		},
+@@ -379,7 +381,8 @@ static struct dmi_system_id __initdata samsung_dmi_table[] = {
+ 	{
+ 		.ident = "N130",
+ 		.matches = {
+-			DMI_MATCH(DMI_SYS_VENDOR, "SAMSUNG ELECTRONICS CO., LTD."),
++			DMI_MATCH(DMI_SYS_VENDOR,
++					"SAMSUNG ELECTRONICS CO., LTD."),
+ 			DMI_MATCH(DMI_PRODUCT_NAME, "N130"),
+ 			DMI_MATCH(DMI_BOARD_NAME, "N130"),
+ 		},
+-- 
+1.5.6.3
+
