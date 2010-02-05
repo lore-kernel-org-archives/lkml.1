@@ -1,68 +1,71 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755090Ab0BETar (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 14:30:47 -0500
-Received: from outbound-mail-01.bluehost.com ([69.89.21.11]:37203 "HELO
-	outbound-mail-01.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752711Ab0BETap (ORCPT
+	id S932265Ab0BETrd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 14:47:33 -0500
+Received: from mga02.intel.com ([134.134.136.20]:34784 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755780Ab0BETrb convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 14:30:45 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=RCkygtiQ1ymoX8Kz7D4RDS0T3oWKKi7+LkRHsVkuxXZsFYTlRpvvJP/nzMkOEIxGuyBoDZWveGP5j4mQccxWoh2hGpyRdom+Q96V7tGd78j6iToxv6n6l8DQ2SacQ4kW;
-Date: Fri, 5 Feb 2010 11:29:52 -0800
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Soeren Sonnenburg <sonne@debian.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       dri-devel@lists.sourceforge.net
-Subject: Re: [Bug #15043] Display goes off with i915.powersave=1 after
- suspend-resume
-Message-ID: <20100205112952.01affddb@jbarnes-piketon>
-In-Reply-To: <201002042142.02127.rjw@sisk.pl>
-References: <vZZJKzCUn4G.A.CPB.F7hZLB@chimera>
-	<d3IDKWHT5gE.A.-nC.G8hZLB@chimera>
-	<1265314137.10203.0.camel@no>
-	<201002042142.02127.rjw@sisk.pl>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+	Fri, 5 Feb 2010 14:47:31 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,415,1262592000"; 
+   d="scan'208";a="490036877"
+From: "Lu, Hongjiu" <hongjiu.lu@intel.com>
+To: "H. Peter Anvin" <hpa@zytor.com>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+CC: Roland McGrath <roland@redhat.com>, Oleg Nesterov <oleg@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Lachner, Peter" <peter.lachner@intel.com>
+Date: Fri, 5 Feb 2010 11:47:25 -0800
+Subject: RE: [patch] x86: ptrace and core-dump extensions for xstate
+Thread-Topic: [patch] x86: ptrace and core-dump extensions for xstate
+Thread-Index: Acql6Gik3I/wm2uATS+KdYOSQ9CNJgAs3s8A
+Message-ID: <8EA2C2C4116BF44AB370468FBF85A7770123B84115@orsmsx504.amr.corp.intel.com>
+References: <1265076025.2802.194.camel@sbs-t61.sc.intel.com>
+	 <20100203230817.E6529AA@magilla.sf.frob.com>
+	 <1265315329.2768.167.camel@sbs-t61.sc.intel.com>
+	 <20100204205543.E1D11E7@magilla.sf.frob.com>
+ <1265321114.2768.256.camel@sbs-t61.sc.intel.com> <4B6B47A1.3050606@zytor.com>
+In-Reply-To: <4B6B47A1.3050606@zytor.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 4 Feb 2010 21:42:02 +0100
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-
-> On Thursday 04 February 2010, Soeren Sonnenburg wrote:
-> > On Mon, 2010-02-01 at 01:22 +0100, Rafael J. Wysocki wrote:
-> > > This message has been generated automatically as a part of a
-> > > report of recent regressions.
-> > > 
-> > > The following bug entry is on the current list of known
-> > > regressions from 2.6.32.  Please verify if it still should be
-> > > listed and let me know (either way).
-> > > 
-> > > 
-> > > Bug-Entry	:
-> > > http://bugzilla.kernel.org/show_bug.cgi?id=15043
-> > > Subject		: Display goes off with i915.powersave=1
-> > > after suspend-resume Submitter	: Soeren Sonnenburg
-> > > <sonne@debian.org> Date		: 2010-01-10 20:09 (22
-> > > days old) References	:
-> > > http://marc.info/?l=linux-kernel&m=126315457519505&w=4
-> > 
-> > yes still exists in current git.
 > 
-> Thanks for the update.
+> On 02/04/2010 02:05 PM, Suresh Siddha wrote:
+> >
+> > So in the example you provided before:
+> >
+> >         struct iovec iov = { mybuffer, mylength };
+> >         ret = ptrace(PTRACE_GETREGSET, NT_X86_XSTATE, &iov);
+> >
+> > You wanted to propose common data format (iov) for all of the NT_* ?
+> >
+> 
+> How about encoding the regset number into the command, e.g.
+> ptrace(PTRACE_GETREGS(NT_X86_XSTATE), length, buffer)
+> 
+> ... where we have ...
+> 
+> #define PTRACE_GETREGS(r) (((r) << 16) | PTRACE_GETREGS_CMD)
+> 
+> ... or something like that?
+> 
 
-Just updated the corresponding FDO bug
-(https://bugs.freedesktop.org/show_bug.cgi?id=24314).  There are some
-hw bugs related to FBC handling on 945GM though, so we may have to
-disable it on some machines.
+I like this idea.
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+BTW, it should be
+
+ptrace(PTRACE_GETREGS(NT_X86_XSTATE), pid, length, buffer)
+
+
+H.J.
