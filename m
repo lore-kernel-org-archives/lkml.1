@@ -1,65 +1,79 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754225Ab0BFEYF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 23:24:05 -0500
-Received: from ozlabs.org ([203.10.76.45]:40101 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753428Ab0BFEYD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 23:24:03 -0500
-Date: Sat, 6 Feb 2010 15:20:38 +1100
-From: Anton Blanchard <anton@samba.org>
-To: Michael Neuling <mikey@neuling.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Serge Hallyn <serue@us.ibm.com>, WANG Cong <xiyou.wangcong@gmail.com>,
-       Paul Mackerras <paulus@samba.org>, benh@kernel.crashing.org,
-       miltonm@bga.com, aeb@cwi.nl
-Subject: Re: Stack size protection broken on ppc64
-Message-ID: <20100206042038.GB32246@kryten>
-References: <3984.1265416993@neuling.org>
+	id S1754501Ab0BFEZT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 23:25:19 -0500
+Received: from mail-iw0-f185.google.com ([209.85.223.185]:53148 "EHLO
+	mail-iw0-f185.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753867Ab0BFEZQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Feb 2010 23:25:16 -0500
+X-Greylist: delayed 493 seconds by postgrey-1.27 at vger.kernel.org; Fri, 05 Feb 2010 23:25:16 EST
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=oLprMpF13KJkxj2zAehMvirAGLq77zo/MvlcA+MUq8kcv0ngdxCozZ9MfTXj5SHwZz
+         0MhhlotA7CmgMBUThpPUjufsOth1fXMJ9Fp+CDVVN87R5aEEGKha9ikAmvlPnKRhe5c5
+         2xWB2X6H4uIPmayIMoPFr+Dik9zX+zL0YkRyI=
+Date: Sat, 6 Feb 2010 12:19:26 +0800
+From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+To: Toralf =?utf-8?Q?F=C3=B6rster?= <toralf.foerster@gmx.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
+Subject: Re: 2.6.32.8-stable review : kernel crashed asap
+Message-ID: <20100206041926.GA4529@hack>
+References: <201002042129.41462.toralf.foerster@gmx.de> <201002051622.02980.toralf.foerster@gmx.de> <20100205155701.GC9690@hack> <201002051730.39578.toralf.foerster@gmx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <3984.1265416993@neuling.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <201002051730.39578.toralf.foerster@gmx.de>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Feb 05, 2010 at 05:30:39PM +0100, Toralf Förster wrote:
+>
+>Américo Wang wrote at 16:57:01
+>> On Fri, Feb 05, 2010 at 04:22:02PM +0100, Toralf Förster wrote:
+>> >Américo Wang wrote at 16:10:21
+>> >
+>> >> On Thu, Feb 04, 2010 at 09:29:41PM +0100, Toralf Förster wrote:
+>> >> >Immediately during boot it crashed w/ the attached config - no lines
+>> >> > within syslog  to post.
+>> >>
+>> >> What error messages did you see on your screen?
+>> >
+>> >I attached a screen shot.
+>> 
+>> Thanks! It's better that if you can capture these info via netconsole
+>> or something like that, so that you copy and paste them into email.
+>I know - but I'm at home where I've only this ThinkPad ...
+>
+>> Hmm, it seems that a null pointer deref happened in
+>> net/ipv4/devinet.c::inetdev_init(), so Cc'ing netdev guys....
+>> 
+>> Could you please run the command:
+>> 
+>>   addr2line -e your_2.6.32.8_vmlinux 0xc11fea28
+>> 
+>> to check in which line we dereferenced a null pointer?
+>
+>Here's the information :
+>
+>n22 /usr/src/linux-2.6.32.8 # addr2line -e vmlinux 0xc11fea28
+>devinet.c:0
+>
 
-Hi,
+Hmm, thanks, we already found the problem, I think the patch here:
 
-> On recent ppc64 kernels, limiting the stack (using 'ulimit -s blah') is
-> now more restrictive than it was before.  On 2.6.31 with 4k pages I
-> could run 'ulimit -s 16; /usr/bin/test' without a problem.  Now with
-> mainline, even 'ulimit -s 64; /usr/bin/test' gets killed.
-> 
-> Using 64k pages is even worse.  I can't even run '/bin/ls' with a 1MB
-> stack (ulimit -s 1024; /bin/ls).  Hence, it seems new kernels are too
-> restrictive, rather than the old kernels being too liberal.
+http://patchwork.kernel.org/patch/77357/
 
-It looks like this is causing it:
+should be able to fix this problem.
 
-#define EXTRA_STACK_VM_PAGES    20      /* random */
+Thanks for reporting!
 
-...
-
-#ifdef CONFIG_STACK_GROWSUP
-        stack_base = vma->vm_end + EXTRA_STACK_VM_PAGES * PAGE_SIZE;
-#else
-        stack_base = vma->vm_start - EXTRA_STACK_VM_PAGES * PAGE_SIZE;
-#endif
-
-Which got added back in 2005 in a memory overcommit patch. It only took 5
-years for us to go back and review that random setting :)
-
-The comment from Andries explains the purpose:
-
-    (1) It reserves a reasonable amount of virtual stack space (amount
-        randomly chosen, no guarantees given) when the process is started, so
-        that the common utilities will not be killed by segfault on stack
-        extension.
-
-This explains why 64kB is much worse. The extra stack reserve should be in kB
-and we also need to be careful not to ask for more than our rlimit.
-
-Anton
+-- 
+Live like a child, think like the god.
+ 
