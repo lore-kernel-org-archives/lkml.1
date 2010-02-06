@@ -1,39 +1,36 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933206Ab0BFXBB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Feb 2010 18:01:01 -0500
-Received: from ey-out-2122.google.com ([74.125.78.26]:9685 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932104Ab0BFXA7 convert rfc822-to-8bit (ORCPT
+	id S933252Ab0BFXE6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Feb 2010 18:04:58 -0500
+Received: from mail-iw0-f189.google.com ([209.85.223.189]:42953 "EHLO
+	mail-iw0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932999Ab0BFXE5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Feb 2010 18:00:59 -0500
+	Sat, 6 Feb 2010 18:04:57 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=FmLDalio+vSkd4xaIZMwPD5KSuR0dD1QbfLMKJ6vsVVEvFy+WUk9eIAR1ZCX6uwdAq
-         A/NW4ypHnNHLWfXBG7nPo8/iPYK/nlf/EweEnUtDCgpn5VydyWo902oPWpmj2wL+7uNn
-         JBbaVaE4KdsSJ+2//2rMe3qw6kevmDg6A29Lg=
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=Wn91tVImf8zOPUQ5h59ExeaGZr6ynWTNVCly5ws83GOLVRFsOt7YbaHzkRTNSIGP7o
+         fEjyxCUTwsUi115xpz30DPUIeiVLTNCgZi15wzwv34LJFPwuuMBKEJFb8lDY2KjukbFm
+         NN66FOW0MjKfabnUEvqpf50xqeDojg/RjJMSM=
+Message-ID: <4B6DF5FD.5030708@gmail.com>
+Date: Sat, 06 Feb 2010 15:06:37 -0800
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091114 Lightning/1.0pre Thunderbird/3.0b4
 MIME-Version: 1.0
-In-Reply-To: <alpine.LFD.2.00.1002061445210.3829@localhost.localdomain>
-References: <alpine.LFD.2.00.1002061422430.3829@localhost.localdomain>
-	 <alpine.LFD.2.00.1002061445210.3829@localhost.localdomain>
-Date: Sat, 6 Feb 2010 18:00:58 -0500
-X-Google-Sender-Auth: 3d21c645bfc6c29d
-Message-ID: <520f0cf11002061500v6cb49e23qae6cf14ae4d835b8@mail.gmail.com>
-Subject: Re: Linux 2.6.33-rc7
-From: John Kacur <jkacur@redhat.com>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.33-rc7
+References: <alpine.LFD.2.00.1002061422430.3829@localhost.localdomain> <alpine.LFD.2.00.1002061445210.3829@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.1002061445210.3829@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 6, 2010 at 5:49 PM, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
+On 02/06/10 14:49, Linus Torvalds wrote:
 >
 >
 > On Sat, 6 Feb 2010, Linus Torvalds wrote:
@@ -54,13 +51,25 @@ On Sat, Feb 6, 2010 at 5:49 PM, Linus Torvalds
 > Of course, if you really care about bandwidth, you're better off just
 > fetching the git trees instead, but the question for non-git users is:
 >
->   Would it be ok to _only_ have the 'bz2' patches and tar-balls?
+>     Would it be ok to _only_ have the 'bz2' patches and tar-balls?
 >
 > Having two copies of every large file seems silly, if nobody really
 > requires the traditional .gz format..
 >
->                Linus
+> 		Linus
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
 
-I mostly just use git these days, but when I do fetch something, it's
-always .bz2, I haven't fetched tar.gz in quite some time. Don't know
-if the embedded folks need tar.gz.
+
+having .bz2 is always what I use, but one thing I've noticed if you
+have a system without bzip2(or whatever the package tar depends on), tar 
+wont work with those.
+I'd say keep with .tar.gz this way any system will always
+uncompressed.
+
+Justin P. Mattock
+
