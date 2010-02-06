@@ -1,18 +1,19 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753582Ab0BFImG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Feb 2010 03:42:06 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:35718 "EHLO mgw2.diku.dk"
+	id S1753937Ab0BFImo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Feb 2010 03:42:44 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:35740 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751226Ab0BFImE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Feb 2010 03:42:04 -0500
-Date: Sat, 6 Feb 2010 09:42:00 +0100 (CET)
+	id S1752876Ab0BFIml (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Feb 2010 03:42:41 -0500
+Date: Sat, 6 Feb 2010 09:42:39 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: Russell King <linux@arm.linux.org.uk>,
-       linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 1/11] arch/arm/plat-pxa: Correct NULL test
-Message-ID: <Pine.LNX.4.64.1002060941410.8092@ask.diku.dk>
+To: Joerg Roedel <joerg.roedel@amd.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       x86@kernel.org, iommu@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 3/11] arch/x86/kernel: Correct NULL test
+Message-ID: <Pine.LNX.4.64.1002060942170.8092@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -21,7 +22,7 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Julia Lawall <julia@diku.dk>
 
-Test the value that was just allocated rather than the previously tested one.
+dev was tested just above, so drop the second test.
 
 A simplified version of the semantic match that finds this problem is as
 follows: (http://coccinelle.lip6.fr/)
@@ -45,19 +46,19 @@ if (x == NULL || ...) {
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- arch/arm/plat-pxa/dma.c             |    2 +-
+ arch/x86/kernel/amd_iommu.c         |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/arm/plat-pxa/dma.c b/arch/arm/plat-pxa/dma.c
-index 2975798..bcfda50 100644
---- a/arch/arm/plat-pxa/dma.c
-+++ b/arch/arm/plat-pxa/dma.c
-@@ -244,7 +244,7 @@ static void pxa_dma_init_debugfs(void)
+diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
+index adb0ba0..2c4a501 100644
+--- a/arch/x86/kernel/amd_iommu.c
++++ b/arch/x86/kernel/amd_iommu.c
+@@ -118,7 +118,7 @@ static bool check_device(struct device *dev)
+ 		return false;
  
- 	dbgfs_chan = kmalloc(sizeof(*dbgfs_state) * num_dma_channels,
- 			     GFP_KERNEL);
--	if (!dbgfs_state)
-+	if (!dbgfs_chan)
- 		goto err_alloc;
+ 	/* No device or no PCI device */
+-	if (!dev || dev->bus != &pci_bus_type)
++	if (dev->bus != &pci_bus_type)
+ 		return false;
  
- 	chandir = debugfs_create_dir("channels", dbgfs_root);
+ 	devid = get_device_id(dev);
