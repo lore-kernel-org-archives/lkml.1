@@ -1,124 +1,99 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756209Ab0BFWHG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Feb 2010 17:07:06 -0500
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:53259 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755742Ab0BFWHD convert rfc822-to-8bit (ORCPT
+	id S933015Ab0BFWbR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Feb 2010 17:31:17 -0500
+Received: from smtp-out.google.com ([216.239.44.51]:56709 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756237Ab0BFWbQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Feb 2010 17:07:03 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=luIpcQIVQG0GVlAbVMa0ZvKFLTVRoYVgR38uEtzJYkJC3rNB6Mho66K5s7Q7Hl5ulr
-         SRc5JB9+ZZ3Ppn4F8+5xjS/M2j9n3vEh4JjT0IfDbXJBNoNmOgnGkmrSWRAxcPjmzssW
-         cZ8WbPuI3NBTOkAcGIEgwG/RLO5hOM8lPoCeU=
+	Sat, 6 Feb 2010 17:31:16 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=kfQeXBLT3aq1u41ojxWNnuSVjY54syNYAvl/BgltS8PJgshivYcznDDGMy4zdaARg
+	0L4ZJUxFADAqnLM7xVLtw==
+Date: Sat, 6 Feb 2010 14:31:07 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Andi Kleen <andi@firstfloor.org>
+cc: submit@firstfloor.org, linux-kernel@vger.kernel.org, haicheng.li@intel.com,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-mm@kvack.org
+Subject: Re: [PATCH] [1/4] SLAB: Handle node-not-up case in
+ fallback_alloc()
+In-Reply-To: <20100206155624.GA2777@one.firstfloor.org>
+Message-ID: <alpine.DEB.2.00.1002061418590.23073@chino.kir.corp.google.com>
+References: <201002031039.710275915@firstfloor.org> <20100203213912.D3081B1620@basil.firstfloor.org> <alpine.DEB.2.00.1002051251390.2376@chino.kir.corp.google.com> <20100206072508.GN29555@one.firstfloor.org> <alpine.DEB.2.00.1002060148300.17897@chino.kir.corp.google.com>
+ <20100206155624.GA2777@one.firstfloor.org>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <Pine.LNX.4.64.1002060942170.8092@ask.diku.dk>
-References: <Pine.LNX.4.64.1002060942170.8092@ask.diku.dk>
-Date: Sat, 6 Feb 2010 23:07:00 +0100
-Message-ID: <4e0ef1451002061407i6262b927l1eacfe2e5a3618c7@mail.gmail.com>
-Subject: Re: [PATCH 3/11] arch/x86/kernel: Correct NULL test
-From: Ludovic FERRE <ludovic.ferre@gmail.com>
-To: Julia Lawall <julia@diku.dk>
-Cc: Joerg Roedel <joerg.roedel@amd.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       x86@kernel.org, iommu@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Julia,
+On Sat, 6 Feb 2010, Andi Kleen wrote:
 
-May be it would be worthy to take your changes one step further and to
-report if the function is called with a null device pointer (which
-indicates a problem in the calling code, right?).
+> > If a hot-added node has not been initialized for the cache, your code is 
+> > picking an existing one in zonelist order which may be excluded by 
+> > current's cpuset.  Thus, your code has a very real chance of having 
+> > kmem_getpages() return NULL because get_page_from_freelist() will reject 
+> > non-atomic ALLOC_CPUSET allocations for prohibited nodes.  That isn't a 
+> > scenario that requires a "funny cpuset," it just has to not allow whatever 
+> > initialized node comes first in the zonelist.
+> 
+> The point was that you would need to run whoever triggers the memory
+> hotadd in a cpuset with limitations. That would be a clear
+> don't do that if hurts(tm)
+>  
 
-Here's a patch moving the null pointer check to its own if block and
-reporting the null pointer function call using printk based on
-2.6.33-rc6 code.
+With a subset of memory nodes, yes.  What else prohibits that except for 
+your new code?  
 
-diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
-index 23824fe..1a1d87c 100644
---- a/arch/x86/kernel/amd_iommu.c
-+++ b/arch/x86/kernel/amd_iommu.c
-@@ -114,11 +114,17 @@ static bool check_device(struct device *dev)
- {
-       u16 devid;
+There's a second issue with this approach that I eluded to above: you're 
+picking the first initialized node for the cache based solely on whether 
+it is allocated or not.  kmem_getpages() may still return NULL when it 
+would return new slab for any other initialized node, so you're better off 
+trying them all.
 
--       if (!dev || !dev->dma_mask)
-+       /* Function is called with a null pointer. Flag this and return false */
-+       if (!dev){
-+               printk(KERN_INFO "amd_iommu check_device called with a
-null pointer device\n");
-+               return false;
-+       }
-+
-+       if (!dev->dma_mask)
-               return false;
+In other words, my earlier (untested) suggestion:
 
-       /* No device or no PCI device */
--       if (!dev || dev->bus != &pci_bus_type)
-+       if (dev->bus != &pci_bus_type)
-               return false;
+diff --git a/mm/slab.c b/mm/slab.c
+--- a/mm/slab.c
++++ b/mm/slab.c
+@@ -3172,6 +3172,7 @@ static void *fallback_alloc(struct kmem_cache *cache, gfp_t flags)
+ 	gfp_t local_flags;
+ 	struct zoneref *z;
+ 	struct zone *zone;
++	nodemask_t allowed_nodes = NODE_MASK_NONE;
+ 	enum zone_type high_zoneidx = gfp_zone(flags);
+ 	void *obj = NULL;
+ 	int nid;
+@@ -3197,6 +3198,7 @@ retry:
+ 					flags | GFP_THISNODE, nid);
+ 				if (obj)
+ 					break;
++				node_set(nid, allowed_nodes);
+ 		}
+ 	}
+ 
+@@ -3210,7 +3212,15 @@ retry:
+ 		if (local_flags & __GFP_WAIT)
+ 			local_irq_enable();
+ 		kmem_flagcheck(cache, flags);
+-		obj = kmem_getpages(cache, local_flags, numa_node_id());
++		nid = numa_node_id();
++		if (cache->nodelists[nid])
++			obj = kmem_getpages(cache, local_flags, nid);
++		else
++			for_each_node_mask(nid, allowed_nodes) {
++				obj = kmem_getpages(cache, local_flags, nid);
++				if (obj)
++					break;
++			}
+ 		if (local_flags & __GFP_WAIT)
+ 			local_irq_disable();
+ 		if (obj) {
 
-       devid = get_device_id(dev);
-
-On Sat, Feb 6, 2010 at 9:42 AM, Julia Lawall <julia@diku.dk> wrote:
-> From: Julia Lawall <julia@diku.dk>
->
-> dev was tested just above, so drop the second test.
->
-> A simplified version of the semantic match that finds this problem is as
-> follows: (http://coccinelle.lip6.fr/)
->
-> // <smpl>
-> @r@
-> expression *x;
-> expression e;
-> identifier l;
-> @@
->
-> if (x == NULL || ...) {
->    ... when forall
->    return ...; }
-> ... when != goto l;
->    when != x = e
->    when != &x
-> *x == NULL
-> // </smpl>
->
-> Signed-off-by: Julia Lawall <julia@diku.dk>
->
-> ---
->  arch/x86/kernel/amd_iommu.c         |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
->
-> diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
-> index adb0ba0..2c4a501 100644
-> --- a/arch/x86/kernel/amd_iommu.c
-> +++ b/arch/x86/kernel/amd_iommu.c
-> @@ -118,7 +118,7 @@ static bool check_device(struct device *dev)
->                return false;
->
->        /* No device or no PCI device */
-> -       if (!dev || dev->bus != &pci_bus_type)
-> +       if (dev->bus != &pci_bus_type)
->                return false;
->
->        devid = get_device_id(dev);
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
-
-
-
--- 
-Ludovic
+Anyway, I'll leave these otherwise unnecessary limitations to Pekka.  
+Thanks.
