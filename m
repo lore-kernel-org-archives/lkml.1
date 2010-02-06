@@ -1,149 +1,216 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933415Ab0BFRtK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Feb 2010 12:49:10 -0500
-Received: from cpsmtpm-eml102.kpnxchange.com ([195.121.3.6]:56146 "EHLO
-	CPSMTPM-EML102.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932383Ab0BFRr2 (ORCPT
+	id S933196Ab0BFRs4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Feb 2010 12:48:56 -0500
+Received: from cpsmtpm-eml103.kpnxchange.com ([195.121.3.7]:62929 "EHLO
+	CPSMTPM-EML103.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932405Ab0BFRr2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 6 Feb 2010 12:47:28 -0500
 From: Frans Pop <elendil@planet.nl>
 To: linux-kernel@vger.kernel.org
-Cc: Frans Pop <elendil@planet.nl>, linux-arm-kernel@lists.infradead.org,
-       Russell King <linux@arm.linux.org.uk>
-Subject: [PATCH 02/16] arm: remove trailing spaces in messages
-Date: Sat,  6 Feb 2010 18:47:09 +0100
-Message-Id: <1265478443-31072-2-git-send-email-elendil@planet.nl>
+Cc: Frans Pop <elendil@planet.nl>, x86@kernel.org, Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH 10/16] x86: remove trailing space in messages
+Date: Sat,  6 Feb 2010 18:47:17 +0100
+Message-Id: <1265478443-31072-10-git-send-email-elendil@planet.nl>
 X-Mailer: git-send-email 1.6.6.1
 In-Reply-To: <201002061844.45212.elendil@planet.nl>
 References: <201002061844.45212.elendil@planet.nl>
-X-OriginalArrivalTime: 06 Feb 2010 17:47:26.0118 (UTC) FILETIME=[71C30C60:01CAA754]
+X-OriginalArrivalTime: 06 Feb 2010 17:47:26.0340 (UTC) FILETIME=[71E4EC40:01CAA754]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Also make 'Displaying register contents' messages consistent in
-mach-bcmring/csp/{dmac/dmacHw_extra.c,tmr/tmrHw.c}.
-
-Minor checkpatch fixes for mach-lh7a40x/clcd.c and mach-pxa/pxa27x.c.
+In arch/x86/kvm/vmx.c also:
+- join two related error messages into a single line
+- remove an unnecessary period
 
 Signed-off-by: Frans Pop <elendil@planet.nl>
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: Russell King <linux@arm.linux.org.uk>
+Cc: x86@kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>
 ---
- arch/arm/mach-bcmring/csp/dmac/dmacHw_extra.c |    2 +-
- arch/arm/mach-bcmring/csp/tmr/tmrHw.c         |    2 +-
- arch/arm/mach-lh7a40x/clcd.c                  |    8 ++++----
- arch/arm/mach-pxa/pxa27x.c                    |    8 ++++----
- arch/arm/mach-pxa/stargate2.c                 |    2 +-
- arch/arm/mach-sa1100/jornada720_ssp.c         |    2 +-
- 6 files changed, 12 insertions(+), 12 deletions(-)
 
-diff --git a/arch/arm/mach-bcmring/csp/dmac/dmacHw_extra.c b/arch/arm/mach-bcmring/csp/dmac/dmacHw_extra.c
-index ff7b436..6ef32dc 100644
---- a/arch/arm/mach-bcmring/csp/dmac/dmacHw_extra.c
-+++ b/arch/arm/mach-bcmring/csp/dmac/dmacHw_extra.c
-@@ -73,7 +73,7 @@ static void DisplayRegisterContents(int module,	/*   [ IN ] DMA Controller unit
-     ) {
- 	int chan;
+Please review the following with extra attention:
+- arch/x86/boot/mkcpustr.c
+- arch/x86/tools/test_get_len.c
+---
+ arch/x86/boot/mkcpustr.c          |    2 +-
+ arch/x86/kernel/apic/apic.c       |    2 +-
+ arch/x86/kernel/apic/io_apic.c    |    2 +-
+ arch/x86/kernel/apic/numaq_32.c   |    2 +-
+ arch/x86/kernel/apm_32.c          |    4 ++--
+ arch/x86/kernel/efi.c             |    2 +-
+ arch/x86/kernel/microcode_intel.c |    2 +-
+ arch/x86/kernel/uv_sysfs.c        |    6 +++---
+ arch/x86/kvm/vmx.c                |    5 ++---
+ arch/x86/tools/test_get_len.c     |    4 ++--
+ 10 files changed, 15 insertions(+), 16 deletions(-)
+
+diff --git a/arch/x86/boot/mkcpustr.c b/arch/x86/boot/mkcpustr.c
+index 8ef60f2..919257f 100644
+--- a/arch/x86/boot/mkcpustr.c
++++ b/arch/x86/boot/mkcpustr.c
+@@ -22,7 +22,7 @@ int main(void)
+ 	int i, j;
+ 	const char *str;
  
--	(*fpPrint) ("Displaying register content \n\n");
-+	(*fpPrint) ("Displaying register contents\n\n");
- 	(*fpPrint) ("Module %d: Interrupt raw transfer              0x%X\n",
- 		    module, (uint32_t) (dmacHw_REG_INT_RAW_TRAN(module)));
- 	(*fpPrint) ("Module %d: Interrupt raw block                 0x%X\n",
-diff --git a/arch/arm/mach-bcmring/csp/tmr/tmrHw.c b/arch/arm/mach-bcmring/csp/tmr/tmrHw.c
-index 5c1c9a0..b086285 100644
---- a/arch/arm/mach-bcmring/csp/tmr/tmrHw.c
-+++ b/arch/arm/mach-bcmring/csp/tmr/tmrHw.c
-@@ -498,7 +498,7 @@ tmrHw_ID_t tmrHw_getInterruptSource(void	/*  void */
- void tmrHw_printDebugInfo(tmrHw_ID_t timerId,	/*  [ IN ] Timer id */
- 			  int (*fpPrint) (const char *, ...)	/*  [ IN ] Print callback function */
- ) {
--	(*fpPrint) ("Displaying register contents \n\n");
-+	(*fpPrint) ("Displaying register contents\n\n");
- 	(*fpPrint) ("Timer %d: Load value              0x%X\n", timerId,
- 		    pTmrHw[timerId].LoadValue);
- 	(*fpPrint) ("Timer %d: Background load value   0x%X\n", timerId,
-diff --git a/arch/arm/mach-lh7a40x/clcd.c b/arch/arm/mach-lh7a40x/clcd.c
-index c472b9e..231a24a 100644
---- a/arch/arm/mach-lh7a40x/clcd.c
-+++ b/arch/arm/mach-lh7a40x/clcd.c
-@@ -147,10 +147,10 @@ static int lh7a40x_clcd_setup (struct clcd_fb *fb)
- 	fb->fb.screen_base
- 		= dma_alloc_writecombine (&fb->dev->dev, len,
- 					  &dma, GFP_KERNEL);
--	printk ("CLCD: LCD setup fb virt 0x%p phys 0x%p l %x io 0x%p \n",
-+	printk("CLCD: LCD setup fb virt 0x%p phys 0x%p l %x io 0x%p\n",
- 		fb->fb.screen_base, (void*) dma, len,
- 		(void*) io_p2v (CLCDC_PHYS));
--	printk ("CLCD: pixclock %d\n", lcd_panel.mode.pixclock);
-+	printk("CLCD: pixclock %d\n", lcd_panel.mode.pixclock);
+-	printf("static const char x86_cap_strs[] = \n");
++	printf("static const char x86_cap_strs[] =\n");
  
- 	if (!fb->fb.screen_base) {
- 		printk(KERN_ERR "CLCD: unable to map framebuffer\n");
-@@ -231,10 +231,10 @@ void __init lh7a40x_clcd_init (void)
- {
- 	int i;
- 	int result;
--	printk ("CLCD: registering amba devices\n");
-+	printk("CLCD: registering amba devices\n");
- 	for (i = 0; i < ARRAY_SIZE(amba_devs); i++) {
- 		struct amba_device *d = amba_devs[i];
- 		result = amba_device_register(d, &iomem_resource);
--		printk ("  %d -> %d\n", i ,result);
-+		printk("  %d -> %d\n", i, result);
+ 	for (i = 0; i < NCAPINTS; i++) {
+ 		for (j = 0; j < 32; j++) {
+diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
+index 3987e44..a85f216 100644
+--- a/arch/x86/kernel/apic/apic.c
++++ b/arch/x86/kernel/apic/apic.c
+@@ -581,7 +581,7 @@ calibrate_by_pmtimer(long deltapm, long *delta, long *deltatsc)
+ 		res = (((u64)(*deltatsc)) * pm_100ms);
+ 		do_div(res, deltapm);
+ 		apic_printk(APIC_VERBOSE, "TSC delta adjusted to "
+-					  "PM-Timer: %lu (%ld) \n",
++					  "PM-Timer: %lu (%ld)\n",
+ 					(unsigned long)res, *deltatsc);
+ 		*deltatsc = (long)res;
  	}
+diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
+index 53243ca..6bdd2c7 100644
+--- a/arch/x86/kernel/apic/io_apic.c
++++ b/arch/x86/kernel/apic/io_apic.c
+@@ -1647,7 +1647,7 @@ __apicdebuginit(void) print_IO_APIC(void)
+ 	printk(KERN_DEBUG ".... IRQ redirection table:\n");
+ 
+ 	printk(KERN_DEBUG " NR Dst Mask Trig IRR Pol"
+-			  " Stat Dmod Deli Vect:   \n");
++			  " Stat Dmod Deli Vect:\n");
+ 
+ 	for (i = 0; i <= reg_01.bits.entries; i++) {
+ 		struct IO_APIC_route_entry entry;
+diff --git a/arch/x86/kernel/apic/numaq_32.c b/arch/x86/kernel/apic/numaq_32.c
+index 98c4665..47dd856 100644
+--- a/arch/x86/kernel/apic/numaq_32.c
++++ b/arch/x86/kernel/apic/numaq_32.c
+@@ -225,7 +225,7 @@ static void __init smp_read_mpc_oem(struct mpc_table *mpc)
+ 
+ 	mpc_record = 0;
+ 	printk(KERN_INFO
+-		"Found an OEM MPC table at %8p - parsing it ... \n", oemtable);
++		"Found an OEM MPC table at %8p - parsing it...\n", oemtable);
+ 
+ 	if (memcmp(oemtable->signature, MPC_OEM_SIGNATURE, 4)) {
+ 		printk(KERN_WARNING
+diff --git a/arch/x86/kernel/apm_32.c b/arch/x86/kernel/apm_32.c
+index b5b6b23..031aa88 100644
+--- a/arch/x86/kernel/apm_32.c
++++ b/arch/x86/kernel/apm_32.c
+@@ -1992,8 +1992,8 @@ static int __init apm_is_horked_d850md(const struct dmi_system_id *d)
+ 		apm_info.disabled = 1;
+ 		printk(KERN_INFO "%s machine detected. "
+ 		       "Disabling APM.\n", d->ident);
+-		printk(KERN_INFO "This bug is fixed in bios P15 which is available for \n");
+-		printk(KERN_INFO "download from support.intel.com \n");
++		printk(KERN_INFO "This bug is fixed in bios P15 which is available for\n");
++		printk(KERN_INFO "download from support.intel.com\n");
+ 	}
+ 	return 0;
  }
-diff --git a/arch/arm/mach-pxa/pxa27x.c b/arch/arm/mach-pxa/pxa27x.c
-index 6a0b731..039f21f 100644
---- a/arch/arm/mach-pxa/pxa27x.c
-+++ b/arch/arm/mach-pxa/pxa27x.c
-@@ -73,14 +73,14 @@ unsigned int pxa27x_get_clk_frequency_khz(int info)
- 	S  = (b) ? L : (L/2);
+diff --git a/arch/x86/kernel/efi.c b/arch/x86/kernel/efi.c
+index cdcfb12..c2fa9b8 100644
+--- a/arch/x86/kernel/efi.c
++++ b/arch/x86/kernel/efi.c
+@@ -362,7 +362,7 @@ void __init efi_init(void)
+ 		printk(KERN_ERR PFX "Could not map the firmware vendor!\n");
+ 	early_iounmap(tmp, 2);
  
- 	if (info) {
--		printk( KERN_INFO "Run Mode clock: %d.%02dMHz (*%d)\n",
-+		printk(KERN_INFO "Run Mode clock: %d.%02dMHz (*%d)\n",
- 			L / 1000000, (L % 1000000) / 10000, l );
--		printk( KERN_INFO "Turbo Mode clock: %d.%02dMHz (*%d.%d, %sactive)\n",
-+		printk(KERN_INFO "Turbo Mode clock: %d.%02dMHz (*%d.%d, %sactive)\n",
- 			N / 1000000, (N % 1000000)/10000, n2 / 2, (n2 % 2)*5,
- 			(t) ? "" : "in" );
--		printk( KERN_INFO "Memory clock: %d.%02dMHz (/%d)\n",
-+		printk(KERN_INFO "Memory clock: %d.%02dMHz (/%d)\n",
- 			M / 1000000, (M % 1000000) / 10000, m );
--		printk( KERN_INFO "System bus clock: %d.%02dMHz \n",
-+		printk(KERN_INFO "System bus clock: %d.%02dMHz\n",
- 			S / 1000000, (S % 1000000) / 10000 );
+-	printk(KERN_INFO "EFI v%u.%.02u by %s \n",
++	printk(KERN_INFO "EFI v%u.%.02u by %s\n",
+ 	       efi.systab->hdr.revision >> 16,
+ 	       efi.systab->hdr.revision & 0xffff, vendor);
+ 
+diff --git a/arch/x86/kernel/microcode_intel.c b/arch/x86/kernel/microcode_intel.c
+index ebd193e..85a343e 100644
+--- a/arch/x86/kernel/microcode_intel.c
++++ b/arch/x86/kernel/microcode_intel.c
+@@ -328,7 +328,7 @@ static int apply_microcode(int cpu)
+ 		       cpu_num, mc_intel->hdr.rev);
+ 		return -1;
+ 	}
+-	pr_info("CPU%d updated to revision 0x%x, date = %04x-%02x-%02x \n",
++	pr_info("CPU%d updated to revision 0x%x, date = %04x-%02x-%02x\n",
+ 		cpu_num, val[1],
+ 		mc_intel->hdr.date & 0xffff,
+ 		mc_intel->hdr.date >> 24,
+diff --git a/arch/x86/kernel/uv_sysfs.c b/arch/x86/kernel/uv_sysfs.c
+index 36afb98..309c70f 100644
+--- a/arch/x86/kernel/uv_sysfs.c
++++ b/arch/x86/kernel/uv_sysfs.c
+@@ -54,19 +54,19 @@ static int __init sgi_uv_sysfs_init(void)
+ 	if (!sgi_uv_kobj)
+ 		sgi_uv_kobj = kobject_create_and_add("sgi_uv", firmware_kobj);
+ 	if (!sgi_uv_kobj) {
+-		printk(KERN_WARNING "kobject_create_and_add sgi_uv failed \n");
++		printk(KERN_WARNING "kobject_create_and_add sgi_uv failed\n");
+ 		return -EINVAL;
  	}
  
-diff --git a/arch/arm/mach-pxa/stargate2.c b/arch/arm/mach-pxa/stargate2.c
-index a98a434..54a041b 100644
---- a/arch/arm/mach-pxa/stargate2.c
-+++ b/arch/arm/mach-pxa/stargate2.c
-@@ -167,7 +167,7 @@ static int stargate2_reset_bluetooth(void)
- 	int err;
- 	err = gpio_request(SG2_BT_RESET, "SG2_BT_RESET");
- 	if (err) {
--		printk(KERN_ERR "Could not get gpio for bluetooth reset \n");
-+		printk(KERN_ERR "Could not get gpio for bluetooth reset\n");
- 		return err;
- 	}
- 	gpio_direction_output(SG2_BT_RESET, 1);
-diff --git a/arch/arm/mach-sa1100/jornada720_ssp.c b/arch/arm/mach-sa1100/jornada720_ssp.c
-index 506a5e5..3bf34ac 100644
---- a/arch/arm/mach-sa1100/jornada720_ssp.c
-+++ b/arch/arm/mach-sa1100/jornada720_ssp.c
-@@ -144,7 +144,7 @@ static int __init jornada_ssp_probe(struct platform_device *dev)
+ 	ret = sysfs_create_file(sgi_uv_kobj, &partition_id_attr.attr);
+ 	if (ret) {
+-		printk(KERN_WARNING "sysfs_create_file partition_id failed \n");
++		printk(KERN_WARNING "sysfs_create_file partition_id failed\n");
  		return ret;
  	}
  
--	printk(KERN_WARNING "SSP: initialization failed, trying non-irq solution \n");
-+	printk(KERN_WARNING "SSP: initialization failed, trying non-irq solution\n");
+ 	ret = sysfs_create_file(sgi_uv_kobj, &coherence_id_attr.attr);
+ 	if (ret) {
+-		printk(KERN_WARNING "sysfs_create_file coherence_id failed \n");
++		printk(KERN_WARNING "sysfs_create_file coherence_id failed\n");
+ 		return ret;
+ 	}
  
- 	/* init of Serial 4 port */
- 	Ser4MCCR0 = 0;
+diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
+index d4918d6..2e3377d 100644
+--- a/arch/x86/kvm/vmx.c
++++ b/arch/x86/kvm/vmx.c
+@@ -1570,7 +1570,7 @@ static void enter_lmode(struct kvm_vcpu *vcpu)
+ 
+ 	guest_tr_ar = vmcs_read32(GUEST_TR_AR_BYTES);
+ 	if ((guest_tr_ar & AR_TYPE_MASK) != AR_TYPE_BUSY_64_TSS) {
+-		printk(KERN_DEBUG "%s: tss fixup for long mode. \n",
++		printk(KERN_DEBUG "%s: tss fixup for long mode\n",
+ 		       __func__);
+ 		vmcs_write32(GUEST_TR_AR_BYTES,
+ 			     (guest_tr_ar & ~AR_TYPE_MASK)
+@@ -3343,8 +3343,7 @@ static int handle_ept_misconfig(struct kvm_vcpu *vcpu)
+ 
+ 	gpa = vmcs_read64(GUEST_PHYSICAL_ADDRESS);
+ 
+-	printk(KERN_ERR "EPT: Misconfiguration.\n");
+-	printk(KERN_ERR "EPT: GPA: 0x%llx\n", gpa);
++	printk(KERN_ERR "EPT: Misconfiguration; GPA: 0x%llx\n", gpa);
+ 
+ 	nr_sptes = kvm_mmu_get_spte_hierarchy(vcpu, gpa, sptes);
+ 
+diff --git a/arch/x86/tools/test_get_len.c b/arch/x86/tools/test_get_len.c
+index bee8d6a..13403fc 100644
+--- a/arch/x86/tools/test_get_len.c
++++ b/arch/x86/tools/test_get_len.c
+@@ -43,7 +43,7 @@ static int x86_64;
+ static void usage(void)
+ {
+ 	fprintf(stderr, "Usage: objdump -d a.out | awk -f distill.awk |"
+-		" %s [-y|-n] [-v] \n", prog);
++		" %s [-y|-n] [-v]\n", prog);
+ 	fprintf(stderr, "\t-y	64bit mode\n");
+ 	fprintf(stderr, "\t-n	32bit mode\n");
+ 	fprintf(stderr, "\t-v	verbose mode\n");
+@@ -69,7 +69,7 @@ static void dump_field(FILE *fp, const char *name, const char *indent,
+ 
+ static void dump_insn(FILE *fp, struct insn *insn)
+ {
+-	fprintf(fp, "Instruction = { \n");
++	fprintf(fp, "Instruction = {\n");
+ 	dump_field(fp, "prefixes", "\t",	&insn->prefixes);
+ 	dump_field(fp, "rex_prefix", "\t",	&insn->rex_prefix);
+ 	dump_field(fp, "vex_prefix", "\t",	&insn->vex_prefix);
 -- 
 1.6.6.1
 
