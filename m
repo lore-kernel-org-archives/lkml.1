@@ -1,58 +1,85 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755625Ab0BFThb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Feb 2010 14:37:31 -0500
-Received: from mail-iw0-f185.google.com ([209.85.223.185]:49951 "EHLO
-	mail-iw0-f185.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753991Ab0BFTh3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Feb 2010 14:37:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=xcVJimYTyS36ZbVLeqQjNkCkOvEzhZ+vSBghlaNnj10zKg0w7j+EPejzX3asRFPTQ9
-         fLA2ZvFgjPzxJOQoFefqy+5NkaEGPAGiUGSrMzb8HXSxIS1z/LAYU6OPKOtVkD8YcNfc
-         j/YlltVd0LiSc8Xy/wZyDQIK1YN897OAdyRpE=
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: "Justin P. Mattock" <justinmattock@gmail.com>
-Subject: [PATCH] Add an Apple iMac9,1 DMI entry to reboot.c so the machine reboot's properly.
-Date: Sat,  6 Feb 2010 11:36:16 -0800
-Message-Id: <1265484976-13414-1-git-send-email-justinmattock@gmail.com>
-X-Mailer: git-send-email 1.6.5.GIT
+	id S1755888Ab0BFUFY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Feb 2010 15:05:24 -0500
+Received: from cantor.suse.de ([195.135.220.2]:40809 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755400Ab0BFUFX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Feb 2010 15:05:23 -0500
+Date: Sat, 6 Feb 2010 12:05:06 -0800
+From: Brandon Philips <bphilips@suse.de>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Suresh Siddha <suresh.b.siddha@intel.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3] x86: keep chip_data in create_irq_nr and destroy_irq
+Message-ID: <20100206200506.GA8256@jenkins.home.ifup.org>
+References: <4B694DEF.70301@kernel.org>
+ <20100203174216.GB17985@jenkins.home.ifup.org>
+ <4B6BDAC0.3090900@kernel.org>
+ <20100205210926.GE4930@jenkins.home.ifup.org>
+ <4B6C9F69.4040605@kernel.org>
+ <20100205225535.GF4930@jenkins.home.ifup.org>
+ <4B6CB26C.405@kernel.org>
+ <20100206001832.GG4930@jenkins.home.ifup.org>
+ <20100206064247.GB15556@jenkins.home.ifup.org>
+ <4B6D173C.4070200@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B6D173C.4070200@kernel.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On the iMac9,1 sudo /sbin/reboot results in
-a black screen. Adding this DMI entry gets the 
-machine to reboot cleanly as it should.
+On 23:16 Fri 05 Feb 2010, Yinghai Lu wrote:
+> On 02/05/2010 10:42 PM, Brandon Philips wrote:
+> @@ -3308,17 +3305,12 @@ void destroy_irq(unsigned int irq)
+>  {
+>  	unsigned long flags;
+>  	struct irq_cfg *cfg;
+> -	struct irq_desc *desc;
+>  
+> -	/* store it, in case dynamic_irq_cleanup clear it */
+> -	desc = irq_to_desc(irq);
+> -	cfg = desc->chip_data;
+> -	dynamic_irq_cleanup(irq);
+> -	/* connect back irq_cfg */
+> -	desc->chip_data = cfg;
+> +	dynamic_irq_cleanup_keep_chip_data(irq);
+>  
+>  	free_irte(irq);
+>  	spin_lock_irqsave(&vector_lock, flags);
+> +	cfg = irq_to_desc(irq)->chip_data;
+>  	__clear_irq_vector(irq, cfg);
 
+Or even two lines better!
 
-Signed-off-by: Justin P. Mattock <justinmattock@gmail.com>
----
- arch/x86/kernel/reboot.c |    8 ++++++++
- 1 files changed, 8 insertions(+), 0 deletions(-)
-
-diff --git a/arch/x86/kernel/reboot.c b/arch/x86/kernel/reboot.c
-index 704bddc..2de6645 100644
---- a/arch/x86/kernel/reboot.c
-+++ b/arch/x86/kernel/reboot.c
-@@ -461,6 +461,14 @@ static struct dmi_system_id __initdata pci_reboot_dmi_table[] = {
- 			DMI_MATCH(DMI_PRODUCT_NAME, "Macmini3,1"),
- 		},
- 	},
-+	{	/* Handle problems with rebooting on Apple iMac9,1 */
-+		.callback = set_pci_reboot,
-+		.ident = "Apple iMac9,1",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Apple Inc."),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "iMac9,1"),
-+		},
-+	 },
- 	{ }
- };
+ void destroy_irq(unsigned int irq)
+ {
+        unsigned long flags;
+-       struct irq_cfg *cfg;
+-       struct irq_desc *desc;
  
--- 
-1.6.5.GIT
+-       /* store it, in case dynamic_irq_cleanup clear it */
+-       desc = irq_to_desc(irq);
+-       cfg = desc->chip_data;
+-       dynamic_irq_cleanup(irq);
+-       /* connect back irq_cfg */
+-       desc->chip_data = cfg;
++       dynamic_irq_cleanup_keep_chip_data(irq);
+ 
+        free_irte(irq);
+        spin_lock_irqsave(&vector_lock, flags);
+-       __clear_irq_vector(irq, cfg);
++       __clear_irq_vector(irq, get_irq_chip_data(irq));
+        spin_unlock_irqrestore(&vector_lock, flags);
+ }
+ 
 
+Sigh... I guess I will send the patch again :D
+
+Cheers, 
+
+	Brandon
