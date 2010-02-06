@@ -1,52 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752938Ab0BFPUV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Feb 2010 10:20:21 -0500
-Received: from fe01x03-cgp.akado.ru ([77.232.31.164]:59005 "EHLO akado.ru"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752252Ab0BFPUU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Feb 2010 10:20:20 -0500
-Date: Sat, 6 Feb 2010 18:20:40 +0300 (MSK)
-From: malc <av1474@comtv.ru>
-X-X-Sender: malc@linmac
-To: Mike Galbraith <efault@gmx.de>
-cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Scheduler oddity
-In-Reply-To: <1265458315.8803.79.camel@marge.simson.net>
-Message-ID: <alpine.LNX.2.00.1002061819330.18643@linmac>
-References: <alpine.LNX.2.00.1002051928230.4744@linmac> <1265458315.8803.79.camel@marge.simson.net>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	id S1754381Ab0BFPuc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Feb 2010 10:50:32 -0500
+Received: from mout.perfora.net ([74.208.4.195]:54421 "EHLO mout.perfora.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750889Ab0BFPub (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Feb 2010 10:50:31 -0500
+Message-ID: <4B6D8ED2.5060107@nctritech.com>
+Date: Sat, 06 Feb 2010 10:46:26 -0500
+From: "Jody@Tritech" <jody@nctritech.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100111 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] hda-intel: Avoid divide by zero crash
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1/52/hn0vgyGkiniOiGbx/rAffJiFUYn2NDWPs
+ uezQ0Lwk3nRXlZKPT9OiXl29oe6zSPD2YNaFpkyydYFYt8CXMO
+ 9X/YXAeUOgHnYmIxNFevn/BxOWqgvQpHxR6ei6j9dI=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 6 Feb 2010, Mike Galbraith wrote:
+On my AMD780V chipset, hda_intel.c can crash the kernel with a divide by 
+zero
+for as-yet unknown reasons. A simple check for zero prevents it, though
+the problem that causes it remains. Since the workaround is harmless and
+won't affect anyone except victims of this bug, it should be safe; 
+moreover,
+because this crash can be triggered by a user-mode application, there are
+denial of service implications on the systems affected by the bug without
+the patch.
+Signed-off-by: Jody Bruchon <jody@nctritech.com>
+--- linux-2.6.33-rc6/sound/pci/hda/hda_intel.c  2010-01-29 
+16:57:50.000000000 -0500
++++ linux-2.6.33-rc6-fix/sound/pci/hda/hda_intel.c      2010-02-06 
+09:44:10.028348166 -0500
+@@ -1878,6 +1878,12 @@
 
-> On Fri, 2010-02-05 at 19:33 +0300, malc wrote:
-> > Following test exhibits somewhat odd behaviour on, at least, 2.6.32.3 
-> > (ppc) and 2.6.29.1 (x86_64), perhaps someone could explain why.
-> 
-> Expected behavior.
-> 
-> SCHED_BATCH tasks do not wakeup preempt, preemption is tick driven.  The
-> writer therefore has time to fill the pipe/block, so reader can then
-> drain the pipe, leading to efficient data transfer.
-> 
-> SCHED_NORMAL tasks do preempt.  Every write wakes a reader who's
-> vruntime (CPU utilization fairness yardstick) lags the writer enough to
-> warrant preemption, so one write translates to one preemption followed
-> by a read.  The reader can't possibly catch up to the writer (being
-> synchronous) in either case, but the scheduler doesn't know that or
-> care, it simply tries to equalize the two.  Since the writer's CPU
-> utilization stems entirely from tiny writes, that time is what goes
-> toward equalizing the reader.  Result is the tiny I/Os the programmer
-> asked for, extreme low latency, and utterly horrid throughput.
-> 
+         if (!bdl_pos_adj[chip->dev_index])
+                 return 1; /* no delayed ack */
++       if (azx_dev->period_bytes == 0) {
++               printk(KERN_WARNING
++                       "hda-intel: Divide by zero was avoided "
++                       "in azx_dev->period_bytes.\n");
++               return 0;
++       }
+         if (pos % azx_dev->period_bytes > azx_dev->period_bytes / 2)
+                 return 0; /* NG - it's below the period boundary */
+         return 1; /* OK, it's fine */
 
-Thank you.
-
--- 
-mailto:av1474@comtv.ru
