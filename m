@@ -1,69 +1,65 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754153Ab0BFI6k (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Feb 2010 03:58:40 -0500
-Received: from moutng.kundenserver.de ([212.227.126.186]:50576 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752761Ab0BFI6i (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Feb 2010 03:58:38 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Patch] compat ioctl: fix some build warnings
-Date: Sat, 6 Feb 2010 09:58:16 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
-Cc: Amerigo Wang <amwang@redhat.com>, linux-kernel@vger.kernel.org,
-       Alexander Viro <viro@zeniv.linux.org.uk>
-References: <20100205070921.4179.39579.sendpatchset@localhost.localdomain> <20100205140150.7f5df97b.akpm@linux-foundation.org>
-In-Reply-To: <20100205140150.7f5df97b.akpm@linux-foundation.org>
+	id S1754430Ab0BFI72 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Feb 2010 03:59:28 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:46164 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752761Ab0BFI70 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Feb 2010 03:59:26 -0500
+Date: Sat, 6 Feb 2010 00:55:18 -0800
+From: Greg KH <gregkh@suse.de>
+To: Chris Verges <chrisv@cyberswitching.com>
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Rob Owings <rowings@thermistor.com>
+Subject: Re: [PATCH] linux-2.6.32-directemp
+Message-ID: <20100206085518.GA4680@suse.de>
+References: <68FBE0F3CE97264395875AC1C468F22C24A5BD@mail03.cyberswitching.local> <20100205124038.4f1e83ac.akpm@linux-foundation.org> <68FBE0F3CE97264395875AC1C468F22C24A608@mail03.cyberswitching.local> <20100205134600.59eb8fae.akpm@linux-foundation.org> <20100205235833.GA16411@suse.de> <68FBE0F3CE97264395875AC1C468F22C24A633@mail03.cyberswitching.local>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201002060958.16360.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/f35YvO16L5sYekuMlRfbJ9JSqNUGdV/x4alI
- mtQ1+dqacLloiix0f3dhb2GUq6fPHnWG0ggRp9ZMUmTyQQuKQM
- 49CCwHSgF4gZSmy5eqjIg==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <68FBE0F3CE97264395875AC1C468F22C24A633@mail03.cyberswitching.local>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 05 February 2010, Andrew Morton wrote:
-> Unfortunately that adds more code for something which cannot happen at
-> runtime.
+On Fri, Feb 05, 2010 at 04:26:42PM -0800, Chris Verges wrote:
+> > Sorry, but no, this driver will not be accepted, as it can be done
+> just
+> > fine from userspace instead of a kernel driver, as discussed before.
 > 
-> I guess we could do this trick:
+> Hi Greg,
 > 
-> --- a/fs/compat_ioctl.c~a
-> +++ a/fs/compat_ioctl.c
-> @@ -539,7 +539,7 @@ static int mt_ioctl_trans(unsigned int f
->                 kcmd = MTIOCPOS;
->                 karg = &pos;
->                 break;
-> -       case MTIOCGET32:
-> +       default:        /* MTIOCGET32 */
->                 kcmd = MTIOCGET;
->                 karg = &get;
->                 break;
-> @@ -657,7 +657,7 @@ static int raw_ioctl(unsigned fd, unsign
->  
->          switch (cmd) {
->          case RAW_SETBIND:
-> -        case RAW_GETBIND: {
-> +        default: {     /* RAW_GETBIND */
->                  struct raw_config_request req;
->                  mm_segment_t oldfs = get_fs();
->  
+> Sounds good.  I'll still be sending out an updated patch for anyone who
+> is interested in a kernel driver.  They're welcome to patch in the
+> driver themselves.
 
-Looks good to me. Actually, we could just kill the switch/case
-statement in raw_ioctl entirely, but I wouldn't bother at this
-point any more because there are already patches from both Al
-and me to kill that function by moving it into drivers/char/raw.c
+That's great.
 
-I need to check what happened to that patch and to the other
-patches I have removing code form fs/compat_ioctl.c, they might
-need to be updated before I can submit them for the next merge.
+> I may be missing some key piece of information about libusb and usbfs,
+> but it seems like it pushes a lot of the protocol communication off to
+> the user app.  So if there are several user apps that want to use the
+> same USB device, they either need a userland library or to re-implement
+> functionality; is that correct?
 
-In the meantime,
+Yes, that is true.
 
-Acked-by: Arnd Bergmann <arnd@arndb.de>
+> What I may be missing is the rationale behind pushing these drivers into
+> userland libraries and having yet another entity in the FOSS world that
+> is responsible for managing them.  The kernel seems like an obvious
+> clearinghouse for software/hardware interactions.  Yes, there may be
+> lots of drivers, but at least everyone knows where to go for them.  But
+> like I said before, I may be missing something.
+
+No, you are correct.  We want a driver in the kernel when it provides a
+common interface to a class of devices (network, tty, video, etc.)  For
+devices like yours, there is no specific class in the kernel (well,
+there is for hardware monitoring devices, but not for generic
+thermometers.)  So for that, you are going to write a custom userspace
+program anyway to be reading the temp value from sysfs, so you might as
+well just either use a library to talk to your device, or put it within
+the application itself.
+
+Hope this helps explain things,
+
+greg k-h
