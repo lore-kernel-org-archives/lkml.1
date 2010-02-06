@@ -1,53 +1,65 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752903Ab0BFDea (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 22:34:30 -0500
-Received: from [41.222.158.196] ([41.222.158.196]:58014 "EHLO
-	msvr2.muchs.ac.tz" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1751370Ab0BFDe2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 22:34:28 -0500
-X-Greylist: delayed 1476 seconds by postgrey-1.27 at vger.kernel.org; Fri, 05 Feb 2010 22:34:27 EST
-Message-ID: <20100206060633.13364a3i1t2l73y8@msvr2.muhas.ac.tz>
-Date: Sat, 06 Feb 2010 06:06:33 +0300
-From: Webmail Upgrade Team <upgradecct01@w.cn>
-Reply-to: upgradecct@w.cn
-To: undisclosed-recipients:;
-Subject: Upgrade Your Email Account
+	id S1754225Ab0BFEYF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 23:24:05 -0500
+Received: from ozlabs.org ([203.10.76.45]:40101 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753428Ab0BFEYD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Feb 2010 23:24:03 -0500
+Date: Sat, 6 Feb 2010 15:20:38 +1100
+From: Anton Blanchard <anton@samba.org>
+To: Michael Neuling <mikey@neuling.org>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Serge Hallyn <serue@us.ibm.com>, WANG Cong <xiyou.wangcong@gmail.com>,
+       Paul Mackerras <paulus@samba.org>, benh@kernel.crashing.org,
+       miltonm@bga.com, aeb@cwi.nl
+Subject: Re: Stack size protection broken on ppc64
+Message-ID: <20100206042038.GB32246@kryten>
+References: <3984.1265416993@neuling.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=ISO-8859-1;
-	DelSp="Yes";
-	format="flowed"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-User-Agent: Internet Messaging Program (IMP) H3 (4.3)
+In-Reply-To: <3984.1265416993@neuling.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ATTENTION:
-WEBMAIL SUBSCRIBER:
-This mail is to inform all our {WEBMAIL} users that we will be upgrading
-our site in a couple of days from now. So you as a Subscriber of our site
-you are required to send us your Email account details so as to enable us
-know if you are still making use of your mail box. Further informed that
-we will be deleting all mail account that is not functioning so as to
-create more space for new user. so you are to send us your mail account
-details which are as follows:
 
-*User name:
-*Password:
-*Date of Birth:
+Hi,
 
-Failure to do this will immediately render your email address deactivated
-from our database. Your response should be send to the following e-mail
-address. Your AdminManager:upgradecct@w.cn
+> On recent ppc64 kernels, limiting the stack (using 'ulimit -s blah') is
+> now more restrictive than it was before.  On 2.6.31 with 4k pages I
+> could run 'ulimit -s 16; /usr/bin/test' without a problem.  Now with
+> mainline, even 'ulimit -s 64; /usr/bin/test' gets killed.
+> 
+> Using 64k pages is even worse.  I can't even run '/bin/ls' with a 1MB
+> stack (ulimit -s 1024; /bin/ls).  Hence, it seems new kernels are too
+> restrictive, rather than the old kernels being too liberal.
 
-Yours In Service.
-Webmail Upgrade Team
+It looks like this is causing it:
 
+#define EXTRA_STACK_VM_PAGES    20      /* random */
 
-----------------------------------------------------------------
-This message was sent using IMP, the Internet Messaging Program.
+...
 
+#ifdef CONFIG_STACK_GROWSUP
+        stack_base = vma->vm_end + EXTRA_STACK_VM_PAGES * PAGE_SIZE;
+#else
+        stack_base = vma->vm_start - EXTRA_STACK_VM_PAGES * PAGE_SIZE;
+#endif
+
+Which got added back in 2005 in a memory overcommit patch. It only took 5
+years for us to go back and review that random setting :)
+
+The comment from Andries explains the purpose:
+
+    (1) It reserves a reasonable amount of virtual stack space (amount
+        randomly chosen, no guarantees given) when the process is started, so
+        that the common utilities will not be killed by segfault on stack
+        extension.
+
+This explains why 64kB is much worse. The extra stack reserve should be in kB
+and we also need to be careful not to ask for more than our rlimit.
+
+Anton
