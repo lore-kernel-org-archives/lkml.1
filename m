@@ -1,233 +1,58 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751401Ab0BFFjm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Feb 2010 00:39:42 -0500
-Received: from cantor.suse.de ([195.135.220.2]:49768 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750873Ab0BFFjl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Feb 2010 00:39:41 -0500
-Date: Fri, 5 Feb 2010 16:18:32 -0800
-From: Brandon Philips <bphilips@suse.de>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Suresh Siddha <suresh.b.siddha@intel.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH v2] x86: keep chip_data in create_irq_nr and destroy_irq
-Message-ID: <20100206001832.GG4930@jenkins.home.ifup.org>
-References: <20100203033109.GA17985@jenkins.home.ifup.org>
- <4B694DEF.70301@kernel.org>
- <20100203174216.GB17985@jenkins.home.ifup.org>
- <4B6BDAC0.3090900@kernel.org>
- <20100205210926.GE4930@jenkins.home.ifup.org>
- <4B6C9F69.4040605@kernel.org>
- <20100205225535.GF4930@jenkins.home.ifup.org>
- <4B6CB26C.405@kernel.org>
+	id S1751581Ab0BFFph (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Feb 2010 00:45:37 -0500
+Received: from msa104.auone-net.jp ([61.117.18.164]:36087 "EHLO
+	msa104.auone-net.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751032Ab0BFFpg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Feb 2010 00:45:36 -0500
+Date: Sat, 6 Feb 2010 14:45:33 +0900
+From: Kusanagi Kouichi <slash@ac.auone-net.jp>
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: linux-media@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] cx23885: Enable Message Signaled Interrupts(MSI).
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4B6CB26C.405@kernel.org>
 User-Agent: Mutt/1.5.20 (2009-06-14)
+Message-Id: <20100206054534.A84CF15C033@msa104.auone-net.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When two drivers are setting up MSI-X at the same time via
-pci_enable_msix() there is a race.  See this dmesg excerpt:
-
-[   85.170610] ixgbe 0000:02:00.1: irq 97 for MSI/MSI-X
-[   85.170611]   alloc irq_desc for 99 on node -1
-[   85.170613] igb 0000:08:00.1: irq 98 for MSI/MSI-X
-[   85.170614]   alloc kstat_irqs on node -1
-[   85.170616] alloc irq_2_iommu on node -1
-[   85.170617]   alloc irq_desc for 100 on node -1
-[   85.170619]   alloc kstat_irqs on node -1
-[   85.170621] alloc irq_2_iommu on node -1
-[   85.170625] ixgbe 0000:02:00.1: irq 99 for MSI/MSI-X
-[   85.170626]   alloc irq_desc for 101 on node -1
-[   85.170628] igb 0000:08:00.1: irq 100 for MSI/MSI-X
-[   85.170630]   alloc kstat_irqs on node -1
-[   85.170631] alloc irq_2_iommu on node -1
-[   85.170635]   alloc irq_desc for 102 on node -1
-[   85.170636]   alloc kstat_irqs on node -1
-[   85.170639] alloc irq_2_iommu on node -1
-[   85.170646] BUG: unable to handle kernel NULL pointer dereference
-at 0000000000000088
-
-As you can see igb and ixgbe are both alternating on create_irq_nr()
-via pci_enable_msix() in their probe function.
-
-ixgbe: While looping through irq_desc_ptrs[] via create_irq_nr() ixgbe
-choses irq_desc_ptrs[102] and exits the loop, drops vector_lock and
-calls dynamic_irq_init. Then it sets irq_desc_ptrs[102]->chip_data =
-NULL via dynamic_irq_init().
-
-igb: Grabs the vector_lock now and starts looping over irq_desc_ptrs[]
-via create_irq_nr(). It gets to irq_desc_ptrs[102] and does this:
-
-	cfg_new = irq_desc_ptrs[102]->chip_data;
-	if (cfg_new->vector != 0)
-		continue;
-
-This hits the NULL deref.
-
-Another possible race exists via pci_disable_msix() in a driver or in
-the number of error paths that call free_msi_irqs():
-
-destroy_irq()
-dynamic_irq_cleanup() which sets desc->chip_data = NULL
-...race window...
-desc->chip_data = cfg;
-
-Remove the save and restore code for cfg in create_irq_nr() and
-destroy_irq() to avoid the NULL.
-
-Reported-and-analyzed-by: Brandon Philips <bphilips@suse.de>
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-Signed-off-by: Brandon Phiilps <bphilips@suse.de>
-Cc: stable@kernel.org
-
+Signed-off-by: Kusanagi Kouichi <slash@ac.auone-net.jp>
 ---
- arch/x86/kernel/apic/io_apic.c |   14 +++--------
- include/linux/irq.h            |    2 +
- kernel/irq/chip.c              |   52 +++++++++++++++++++++++++++++++++--------
- 3 files changed, 49 insertions(+), 19 deletions(-)
+ drivers/media/video/cx23885/cx23885-core.c |    9 +++++++--
+ 1 files changed, 7 insertions(+), 2 deletions(-)
 
-Index: linux-2.6/arch/x86/kernel/apic/io_apic.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/apic/io_apic.c
-+++ linux-2.6/arch/x86/kernel/apic/io_apic.c
-@@ -3228,12 +3228,9 @@ unsigned int create_irq_nr(unsigned int
+diff --git a/drivers/media/video/cx23885/cx23885-core.c b/drivers/media/video/cx23885/cx23885-core.c
+index 0dde57e..7101c51 100644
+--- a/drivers/media/video/cx23885/cx23885-core.c
++++ b/drivers/media/video/cx23885/cx23885-core.c
+@@ -1953,8 +1953,12 @@ static int __devinit cx23885_initdev(struct pci_dev *pci_dev,
+ 		goto fail_irq;
  	}
- 	spin_unlock_irqrestore(&vector_lock, flags);
  
--	if (irq > 0) {
--		dynamic_irq_init(irq);
--		/* restore it, in case dynamic_irq_init clear it */
--		if (desc_new)
--			desc_new->chip_data = cfg_new;
--	}
-+	if (irq > 0)
-+		dynamic_irq_init_keep_chip_data(irq);
-+
- 	return irq;
- }
+-	err = request_irq(pci_dev->irq, cx23885_irq,
+-			  IRQF_SHARED | IRQF_DISABLED, dev->name, dev);
++	if (!pci_enable_msi(pci_dev))
++		err = request_irq(pci_dev->irq, cx23885_irq,
++				  IRQF_DISABLED, dev->name, dev);
++	else
++		err = request_irq(pci_dev->irq, cx23885_irq,
++				  IRQF_SHARED | IRQF_DISABLED, dev->name, dev);
+ 	if (err < 0) {
+ 		printk(KERN_ERR "%s: can't get IRQ %d\n",
+ 		       dev->name, pci_dev->irq);
+@@ -2000,6 +2004,7 @@ static void __devexit cx23885_finidev(struct pci_dev *pci_dev)
  
-@@ -3260,10 +3257,7 @@ void destroy_irq(unsigned int irq)
+ 	/* unregister stuff */
+ 	free_irq(pci_dev->irq, dev);
++	pci_disable_msi(pci_dev);
  
- 	/* store it, in case dynamic_irq_cleanup clear it */
- 	desc = irq_to_desc(irq);
--	cfg = desc->chip_data;
--	dynamic_irq_cleanup(irq);
--	/* connect back irq_cfg */
--	desc->chip_data = cfg;
-+	dynamic_irq_cleanup_keep_chip_data(irq);
- 
- 	free_irte(irq);
- 	spin_lock_irqsave(&vector_lock, flags);
-Index: linux-2.6/include/linux/irq.h
-===================================================================
---- linux-2.6.orig/include/linux/irq.h
-+++ linux-2.6/include/linux/irq.h
-@@ -400,7 +400,9 @@ static inline int irq_has_action(unsigne
- 
- /* Dynamic irq helper functions */
- extern void dynamic_irq_init(unsigned int irq);
-+void dynamic_irq_init_keep_chip_data(unsigned int irq);
- extern void dynamic_irq_cleanup(unsigned int irq);
-+void dynamic_irq_cleanup_keep_chip_data(unsigned int irq);
- 
- /* Set/get chip/data for an IRQ: */
- extern int set_irq_chip(unsigned int irq, struct irq_chip *chip);
-Index: linux-2.6/kernel/irq/chip.c
-===================================================================
---- linux-2.6.orig/kernel/irq/chip.c
-+++ linux-2.6/kernel/irq/chip.c
-@@ -18,11 +18,7 @@
- 
- #include "internals.h"
- 
--/**
-- *	dynamic_irq_init - initialize a dynamically allocated irq
-- *	@irq:	irq number to initialize
-- */
--void dynamic_irq_init(unsigned int irq)
-+static void dynamic_irq_init_x(unsigned int irq, bool keep_chip_data)
- {
- 	struct irq_desc *desc;
- 	unsigned long flags;
-@@ -41,7 +37,8 @@ void dynamic_irq_init(unsigned int irq)
- 	desc->depth = 1;
- 	desc->msi_desc = NULL;
- 	desc->handler_data = NULL;
--	desc->chip_data = NULL;
-+	if (!keep_chip_data)
-+		desc->chip_data = NULL;
- 	desc->action = NULL;
- 	desc->irq_count = 0;
- 	desc->irqs_unhandled = 0;
-@@ -55,10 +52,26 @@ void dynamic_irq_init(unsigned int irq)
- }
- 
- /**
-- *	dynamic_irq_cleanup - cleanup a dynamically allocated irq
-+ *	dynamic_irq_init - initialize a dynamically allocated irq
-  *	@irq:	irq number to initialize
-  */
--void dynamic_irq_cleanup(unsigned int irq)
-+void dynamic_irq_init(unsigned int irq)
-+{
-+	dynamic_irq_init_x(irq, false);
-+}
-+
-+/**
-+ *	dynamic_irq_init_keep_chip_data - initialize a dynamically allocated irq
-+ *	@irq:	irq number to initialize
-+ *
-+ * 	does not set irq_to_desc(irq)->chip_data to NULL
-+ */
-+void dynamic_irq_init_keep_chip_data(unsigned int irq)
-+{
-+	dynamic_irq_init_x(irq, true);
-+}
-+
-+static void dynamic_irq_cleanup_x(unsigned int irq, bool keep_chip_data)
- {
- 	struct irq_desc *desc = irq_to_desc(irq);
- 	unsigned long flags;
-@@ -77,7 +90,8 @@ void dynamic_irq_cleanup(unsigned int ir
- 	}
- 	desc->msi_desc = NULL;
- 	desc->handler_data = NULL;
--	desc->chip_data = NULL;
-+	if (!keep_chip_data)
-+		desc->chip_data = NULL;
- 	desc->handle_irq = handle_bad_irq;
- 	desc->chip = &no_irq_chip;
- 	desc->name = NULL;
-@@ -85,6 +99,26 @@ void dynamic_irq_cleanup(unsigned int ir
- 	raw_spin_unlock_irqrestore(&desc->lock, flags);
- }
- 
-+/**
-+ *	dynamic_irq_cleanup - cleanup a dynamically allocated irq
-+ *	@irq:	irq number to initialize
-+ */
-+void dynamic_irq_cleanup(unsigned int irq)
-+{
-+	dynamic_irq_cleanup_x(irq, false);
-+}
-+
-+/**
-+ *	dynamic_irq_cleanup_keep_chip_data - cleanup a dynamically allocated irq
-+ *	@irq:	irq number to initialize
-+ *
-+ * 	does not set irq_to_desc(irq)->chip_data to NULL
-+ */
-+void dynamic_irq_cleanup_keep_chip_data(unsigned int irq)
-+{
-+	dynamic_irq_cleanup_x(irq, true);
-+}
-+
- 
- /**
-  *	set_irq_chip - set the irq chip for an irq
+ 	cx23885_dev_unregister(dev);
+ 	v4l2_device_unregister(v4l2_dev);
+-- 
+1.6.6.1
+
