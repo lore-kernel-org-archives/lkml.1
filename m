@@ -1,25 +1,24 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932551Ab0BFUTX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Feb 2010 15:19:23 -0500
-Received: from mail-fx0-f211.google.com ([209.85.220.211]:58911 "EHLO
+	id S1756133Ab0BFUT1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Feb 2010 15:19:27 -0500
+Received: from mail-fx0-f211.google.com ([209.85.220.211]:37418 "EHLO
 	mail-fx0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755989Ab0BFUTR (ORCPT
+	with ESMTP id S1756002Ab0BFUTS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Feb 2010 15:19:17 -0500
+	Sat, 6 Feb 2010 15:19:18 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=gp6PxtR6rMztdxtvxhpZJIGtu4xcWtXY7H4Yi1oM7mGrnhp0A6VFl37OK5IFHABRln
-         HUIm4Q09Rm+FXmd6UcEoELTNmYQZGJ7dKMUyL2fiHQIdRKrjG2rQyXeylDZxTiuYmq5g
-         x7gX6UtFrNj96kRESKwSha3ZwCp17pwhgXFdo=
+        b=UushAi7DR3xVqAinpNUFWKCyW7ETI7HslEhjm4hEXQUPSJLGRbnF74y//MvCyi/Hte
+         RYVzUYTI0BP/0aMHT8G8Zw8DsbYxmoVUrv7yFk83bI8U01wNq7Q9g3II/Kj3diI6zj9F
+         l8hJPnkOowCeTAhKqmVd8FVaDypq1/Z9XK9Uk=
 From: Maxim Levitsky <maximlevitsky@gmail.com>
 To: netdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Maxim Levitsky <maximlevitsky@gmail.com>,
-       Maxim Levitsky <maxim-levitsky@gmail.com>
-Subject: [PATCH 2/6] DMFE: move pci ID definitions into pci_ids.h and clean up the code
-Date: Sat,  6 Feb 2010 22:18:58 +0200
-Message-Id: <1265487542-4447-3-git-send-email-maximlevitsky@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: [PATCH 4/6] DMFE: WOL fixes:
+Date: Sat,  6 Feb 2010 22:19:00 +0200
+Message-Id: <1265487542-4447-5-git-send-email-maximlevitsky@gmail.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1265487542-4447-1-git-send-email-maximlevitsky@gmail.com>
 References: <1265487542-4447-1-git-send-email-maximlevitsky@gmail.com>
@@ -27,260 +26,114 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Maxim Levitsky <maxim-levitsky@gmail.com>
+* Enable wol by default
+* Move wol initialization into common function
+* use pci_prepare_to_sleep/pci_back_from_sleep
+
+Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
 ---
- drivers/net/tulip/dmfe.c |   53 +++++++++++++++++++++++++--------------------
- drivers/net/tulip/dmfe.h |   15 +++---------
- include/linux/pci_ids.h  |    6 +++++
- 3 files changed, 39 insertions(+), 35 deletions(-)
+ drivers/net/tulip/dmfe.c |   51 +++++++++++++++++++++++----------------------
+ 1 files changed, 26 insertions(+), 25 deletions(-)
 
 diff --git a/drivers/net/tulip/dmfe.c b/drivers/net/tulip/dmfe.c
-index 158ffc2..ee93651 100644
+index ee93651..44e1e5d 100644
 --- a/drivers/net/tulip/dmfe.c
 +++ b/drivers/net/tulip/dmfe.c
-@@ -81,6 +81,7 @@
- #include <linux/spinlock.h>
- #include <linux/crc32.h>
- #include <linux/bitops.h>
-+#include <linux/pci_ids.h>
+@@ -1729,6 +1729,26 @@ static void dmfe_ethtool_get_wol(struct net_device *dev,
+ }
  
- #include <asm/processor.h>
- #include <linux/io.h>
-@@ -143,7 +144,7 @@ static int dmfe_open(struct net_device *dev)
- 	db->PHY_reg4 = 0x1e0;
  
- 	/* CR6 operation mode decision */
--	if (!chkmode || (db->chip_id == PCI_DM9132_ID) ||
-+	if (!chkmode || (db->chip_id == PCI_DEVICE_ID_DAVICOM_DM9132) ||
- 		(db->chip_revision >= 0x30)) {
- 		db->cr6_data |= DMFE_TXTH_256;
- 		db->cr0_data = CR0_DEFAULT;
-@@ -234,7 +235,7 @@ static void dmfe_hardware_init(struct net_device *dev)
- 
- 	/* RESET Phyxcer Chip by GPR port bit 7 */
- 	outl(0x180, ioaddr + DCR12);		/* Let bit 7 output port */
--	if (db->chip_id == PCI_DM9009_ID) {
-+	if (db->chip_id == PCI_DEVICE_ID_DAVICOM_DM9009) {
- 		outl(0x80, ioaddr + DCR12);	/* Issue RESET signal */
- 		mdelay(300);			/* Delay 300 ms */
- 	}
-@@ -255,7 +256,7 @@ static void dmfe_hardware_init(struct net_device *dev)
- 	dmfe_update_cr6(db->cr6_data, ioaddr);
- 
- 	/* Send setup frame */
--	if (db->chip_id == PCI_DM9132_ID)
-+	if (db->chip_id == PCI_DEVICE_ID_DAVICOM_DM9132)
- 		dm9132_id_table(dev, dev->mc_count);	/* DM9132 */
- 	else
- 		dmfe_send_filter_frame(dev, dev->mc_count); /* DM9102/DM9102A */
-@@ -625,7 +626,7 @@ static void dmfe_set_filter_mode(struct net_device *dev)
- 	}
- 
- 	DMFE_DBUG(0, "Set multicast address", dev->mc_count);
--	if (db->chip_id == PCI_DM9132_ID)
-+	if (db->chip_id == PCI_DEVICE_ID_DAVICOM_DM9132)
- 		dm9132_id_table(dev, dev->mc_count);	/* DM9132 */
- 	else
- 		dmfe_send_filter_frame(dev, dev->mc_count); /* DM9102/DM9102A */
-@@ -653,7 +654,8 @@ static void dmfe_timer(unsigned long data)
- 	/* Media mode process when Link OK before enter this route */
- 	if (db->first_in_callback == 0) {
- 		db->first_in_callback = 1;
--		if (db->chip_type && (db->chip_id == PCI_DM9102_ID)) {
++static void dmfe_set_wol(struct net_device *dev, int enabled)
++{
++	struct dmfe_board_info *db = netdev_priv(dev);
++	u32 tmp;
 +
-+		if (db->chip_type && (db->chip_id == PCI_DEVICE_ID_DAVICOM_DM9102)) {
- 			db->cr6_data &= ~0x40000;
- 			dmfe_update_cr6(db->cr6_data, db->ioaddr);
- 			phy_write(db->ioaddr,
-@@ -706,14 +708,16 @@ static void dmfe_timer(unsigned long data)
- 	}
- 
- 	/* Link status check, Dynamic media type change */
--	if (db->chip_id == PCI_DM9132_ID)
-+	if (db->chip_id == PCI_DEVICE_ID_DAVICOM_DM9132)
- 		tmp_cr12 = inb(db->ioaddr + DCR9 + 3);	/* DM9132 */
- 	else
- 		tmp_cr12 = inb(db->ioaddr + DCR12);	/* DM9102/DM9102A */
- 
--	if (((db->chip_id == PCI_DM9102_ID) &&
++	pci_read_config_dword(db->pdev, 0x40, &tmp);
++	tmp &= ~(DMFE_WOL_LINKCHANGE|DMFE_WOL_MAGICPACKET);
 +
-+	if (((db->chip_id == PCI_DEVICE_ID_DAVICOM_DM9102) &&
- 		(db->chip_revision == 0x30)) ||
--		((db->chip_id == PCI_DM9132_ID) &&
++	if (enabled && device_may_wakeup(&db->pdev->dev)) {
 +
-+		((db->chip_id == PCI_DEVICE_ID_DAVICOM_DM9132) &&
- 		(db->chip_revision == 0x10))) {
- 		/* DM9102A Chip */
- 		if (tmp_cr12 & 2)
-@@ -1111,7 +1115,7 @@ static u8 dmfe_sense_speed(struct dmfe_board_info *db)
- 
- 	if ((phy_mode & 0x24) == 0x24) {
- 
--		if (db->chip_id == PCI_DM9132_ID)	/* DM9132 */
-+		if (db->chip_id == PCI_DEVICE_ID_DAVICOM_DM9132)	/* DM9132 */
- 			phy_mode = phy_read(db->ioaddr,
- 				    db->phy_addr, 7, db->chip_id) & 0xf000;
- 		else 				/* DM9102/DM9102A */
-@@ -1164,7 +1168,7 @@ static void dmfe_set_phyxcer(struct dmfe_board_info *db)
- 	dmfe_update_cr6(db->cr6_data, db->ioaddr);
- 
- 	/* DM9009 Chip: Phyxcer reg18 bit12=0 */
--	if (db->chip_id == PCI_DM9009_ID) {
-+	if (db->chip_id == PCI_DEVICE_ID_DAVICOM_DM9009) {
- 		phy_reg = phy_read(db->ioaddr,
- 				   db->phy_addr, 18, db->chip_id) & ~0x1000;
- 
-@@ -1196,7 +1200,7 @@ static void dmfe_set_phyxcer(struct dmfe_board_info *db)
- 			break;
- 		}
- 
--		if (db->chip_id == PCI_DM9009_ID)
-+		if (db->chip_id == PCI_DEVICE_ID_DAVICOM_DM9009)
- 			phy_reg &= 0x61;
- 	}
- 
-@@ -1208,7 +1212,7 @@ static void dmfe_set_phyxcer(struct dmfe_board_info *db)
- 	phy_write(db->ioaddr, db->phy_addr, 4, phy_reg, db->chip_id);
- 
- 	/* Restart Auto-Negotiation */
--	if (db->chip_type && (db->chip_id == PCI_DM9102_ID))
-+	if (db->chip_type && (db->chip_id == PCI_DEVICE_ID_DAVICOM_DM9102))
- 		phy_write(db->ioaddr, db->phy_addr, 0, 0x1800, db->chip_id);
- 	if (!db->chip_type)
- 		phy_write(db->ioaddr, db->phy_addr, 0, 0x1200, db->chip_id);
-@@ -1265,7 +1269,7 @@ static void dmfe_process_mode(struct dmfe_board_info *db)
- 
- 			phy_write(db->ioaddr,
- 				  db->phy_addr, 0, phy_reg, db->chip_id);
--			if (db->chip_type && (db->chip_id == PCI_DM9102_ID))
-+			if (db->chip_type && (db->chip_id == PCI_DEVICE_ID_DAVICOM_DM9102))
- 				mdelay(20);
- 			phy_write(db->ioaddr,
- 				  db->phy_addr, 0, phy_reg, db->chip_id);
-@@ -1284,7 +1288,7 @@ static void phy_write(unsigned long iobase, u8 phy_addr, u8 offset,
- 	u16 i;
- 	unsigned long ioaddr;
- 
--	if (chip_id == PCI_DM9132_ID) {
-+	if (chip_id == PCI_DEVICE_ID_DAVICOM_DM9132) {
- 		ioaddr = iobase + 0x80 + offset * 4;
- 		outw(phy_data, ioaddr);
- 	} else {
-@@ -1335,7 +1339,7 @@ static u16 phy_read(unsigned long iobase, u8 phy_addr, u8 offset, u32 chip_id)
- 	u16 phy_data;
- 	unsigned long ioaddr;
- 
--	if (chip_id == PCI_DM9132_ID) {
-+	if (chip_id == PCI_DEVICE_ID_DAVICOM_DM9132) {
- 		/* DM9132 Chip */
- 		ioaddr = iobase + 0x80 + offset * 4;
- 		phy_data = inw(ioaddr);
-@@ -1765,8 +1769,8 @@ static int __devinit dmfe_probe(struct pci_dev *pdev,
- 	 *	tulip driver, except for early DM9100s.
- 	 */
- #ifdef CONFIG_TULIP_DM910X
--	if ((ent->driver_data == PCI_DM9100_ID && pdev->revision >= 0x30) ||
--	    ent->driver_data == PCI_DM9102_ID) {
-+	if ((pdev->device == PCI_DEVICE_ID_DAVICOM_DM9100 && pdev->revision >= 0x30) ||
-+	    pdev->device == PCI_DEVICE_ID_DAVICOM_DM9102) {
- 		struct device_node *dp = pci_device_to_OF_node(pdev);
- 
- 		if (dp && of_get_property(dp, "local-mac-address", NULL)) {
-@@ -1801,6 +1805,7 @@ static int __devinit dmfe_probe(struct pci_dev *pdev,
- 		goto err_out_disable;
- 	}
- 
++		if (db->wol_mode & WAKE_PHY)
++			tmp |= DMFE_WOL_LINKCHANGE;
++		if (db->wol_mode & WAKE_MAGIC)
++			tmp |= DMFE_WOL_MAGICPACKET;
 +
- 	if (pci_resource_len(pdev, 0) < (CHK_IO_SIZE(pdev))) {
- 		printk(KERN_ERR DRV_NAME ": Allocated I/O size too small\n");
- 		err = -ENODEV;
-@@ -1841,7 +1846,7 @@ static int __devinit dmfe_probe(struct pci_dev *pdev,
- 	db->buf_pool_start = db->buf_pool_ptr;
- 	db->buf_pool_dma_start = db->buf_pool_dma_ptr;
- 
--	db->chip_id = ent->driver_data;
-+	db->chip_id = pdev->device;
++	}
++	pci_write_config_dword(db->pdev, 0x40, tmp);
++}
++
++
+ static const struct ethtool_ops netdev_ethtool_ops = {
+ 	.get_drvinfo		= dmfe_ethtool_get_drvinfo,
+ 	.get_link               = ethtool_op_get_link,
+@@ -1849,7 +1869,8 @@ static int __devinit dmfe_probe(struct pci_dev *pdev,
+ 	db->chip_id = pdev->device;
  	db->ioaddr = pci_resource_start(pdev, 0);
  	db->chip_revision = pdev->revision;
- 	db->wol_mode = 0;
-@@ -1876,9 +1881,9 @@ static int __devinit dmfe_probe(struct pci_dev *pdev,
- 	if (err)
- 		goto err_out_free_buf;
+-	db->wol_mode = 0;
++	db->wol_mode = WAKE_MAGIC;
++	device_set_wakeup_enable(&pdev->dev, 1);
  
--	printk(KERN_INFO "%s: Davicom DM%04lx at pci%s, %pM, irq %d.\n",
-+	printk(KERN_INFO "%s: Davicom DM%04x at pci%s, %pM, irq %d.\n",
- 	       dev->name,
--	       ent->driver_data >> 16,
-+	       pdev->device,
- 	       pci_name(pdev),
- 	       dev->dev_addr,
- 	       dev->irq);
-@@ -2001,10 +2006,10 @@ static int dmfe_resume(struct pci_dev *pci_dev)
+ 	db->pdev = pdev;
  
+@@ -1940,7 +1961,6 @@ static int dmfe_suspend(struct pci_dev *pci_dev, pm_message_t state)
+ {
+ 	struct net_device *dev = pci_get_drvdata(pci_dev);
+ 	struct dmfe_board_info *db = netdev_priv(dev);
+-	u32 tmp;
  
- static struct pci_device_id dmfe_pci_tbl[] = {
--	{ 0x1282, 0x9132, PCI_ANY_ID, PCI_ANY_ID, 0, 0, PCI_DM9132_ID },
--	{ 0x1282, 0x9102, PCI_ANY_ID, PCI_ANY_ID, 0, 0, PCI_DM9102_ID },
--	{ 0x1282, 0x9100, PCI_ANY_ID, PCI_ANY_ID, 0, 0, PCI_DM9100_ID },
--	{ 0x1282, 0x9009, PCI_ANY_ID, PCI_ANY_ID, 0, 0, PCI_DM9009_ID },
-+	{ PCI_VDEVICE(DAVICOM, PCI_DEVICE_ID_DAVICOM_DM9132) },
-+	{ PCI_VDEVICE(DAVICOM, PCI_DEVICE_ID_DAVICOM_DM9102) },
-+	{ PCI_VDEVICE(DAVICOM, PCI_DEVICE_ID_DAVICOM_DM9100) },
-+	{ PCI_VDEVICE(DAVICOM, PCI_DEVICE_ID_DAVICOM_DM9009) },
- 	{ 0, }
- };
- MODULE_DEVICE_TABLE(pci, dmfe_pci_tbl);
-diff --git a/drivers/net/tulip/dmfe.h b/drivers/net/tulip/dmfe.h
-index 363e822..3bd2d87 100644
---- a/drivers/net/tulip/dmfe.h
-+++ b/drivers/net/tulip/dmfe.h
-@@ -64,10 +64,6 @@
- #define DRV_VERSION	"1.36.4"
- #define DRV_RELDATE	"2002-01-17"
+ 	/* Disable upper layer interface */
+ 	netif_device_detach(dev);
+@@ -1957,45 +1977,26 @@ static int dmfe_suspend(struct pci_dev *pci_dev, pm_message_t state)
+ 	dmfe_free_rxbuffer(db);
  
--#define PCI_DM9132_ID   0x91321282      /* Davicom DM9132 ID */
--#define PCI_DM9102_ID   0x91021282      /* Davicom DM9102 ID */
--#define PCI_DM9100_ID   0x91001282      /* Davicom DM9100 ID */
--#define PCI_DM9009_ID   0x90091282      /* Davicom DM9009 ID */
- 
- #define DM9102_IO_SIZE  0x80
- #define DM9102A_IO_SIZE 0x100
-@@ -152,14 +148,11 @@
- 		udelay(5); \
- 	} while (0);
- 
--#define __CHK_IO_SIZE(pci_id, dev_rev) \
-- ((((pci_id) == PCI_DM9132_ID) || ((dev_rev) >= 0x30)) ? \
--	DM9102A_IO_SIZE : DM9102_IO_SIZE)
+ 	/* Enable WOL */
+-	pci_read_config_dword(pci_dev, 0x40, &tmp);
+-	tmp &= ~(DMFE_WOL_LINKCHANGE|DMFE_WOL_MAGICPACKET);
 -
--#define CHK_IO_SIZE(pci_dev) \
--	(__CHK_IO_SIZE(((pci_dev)->device << 16) | (pci_dev)->vendor, \
--	(pci_dev)->revision))
+-	if (db->wol_mode & WAKE_PHY)
+-		tmp |= DMFE_WOL_LINKCHANGE;
+-	if (db->wol_mode & WAKE_MAGIC)
+-		tmp |= DMFE_WOL_MAGICPACKET;
+-
+-	pci_write_config_dword(pci_dev, 0x40, tmp);
+-
+-	pci_enable_wake(pci_dev, PCI_D3hot, 1);
+-	pci_enable_wake(pci_dev, PCI_D3cold, 1);
++	dmfe_set_wol(dev, 1);
  
-+#define CHK_IO_SIZE(pdev) \
-+	((pdev)->device == PCI_DEVICE_ID_DAVICOM_DM9132 || \
-+	 (pdev)->revision > 0x30 ? \
-+	DM9102A_IO_SIZE : DM9102_IO_SIZE)
+ 	/* Power down device*/
+ 	pci_save_state(pci_dev);
+-	pci_set_power_state(pci_dev, pci_choose_state(pci_dev, state));
+-
++	pci_prepare_to_sleep(pci_dev);
+ 	return 0;
+ }
  
- /* Structure/enum declaration ------------------------------- */
- struct tx_desc {
-diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
-index cca8a04..3086715 100644
---- a/include/linux/pci_ids.h
-+++ b/include/linux/pci_ids.h
-@@ -1416,6 +1416,12 @@
- #define PCI_DEVICE_ID_VORTEX_GDT6x11RP	0x0104
- #define PCI_DEVICE_ID_VORTEX_GDT6x21RP	0x0105
+ static int dmfe_resume(struct pci_dev *pci_dev)
+ {
+ 	struct net_device *dev = pci_get_drvdata(pci_dev);
+-	u32 tmp;
  
-+#define PCI_VENDOR_ID_DAVICOM		0x1282
-+#define PCI_DEVICE_ID_DAVICOM_DM9132	0x9132
-+#define PCI_DEVICE_ID_DAVICOM_DM9102	0x9102
-+#define PCI_DEVICE_ID_DAVICOM_DM9100	0x9100
-+#define PCI_DEVICE_ID_DAVICOM_DM9009	0x9009
-+
- #define PCI_VENDOR_ID_EF		0x111a
- #define PCI_DEVICE_ID_EF_ATM_FPGA	0x0000
- #define PCI_DEVICE_ID_EF_ATM_ASIC	0x0002
+-	pci_set_power_state(pci_dev, PCI_D0);
++	pci_back_from_sleep(pci_dev);
+ 	pci_restore_state(pci_dev);
+ 
+ 	/* Re-initilize DM910X board */
+ 	dmfe_hardware_init(dev);
+ 
+ 	/* Disable WOL */
+-	pci_read_config_dword(pci_dev, 0x40, &tmp);
+-
+-	tmp &= ~(DMFE_WOL_LINKCHANGE | DMFE_WOL_MAGICPACKET);
+-	pci_write_config_dword(pci_dev, 0x40, tmp);
+-
+-	pci_enable_wake(pci_dev, PCI_D3hot, 0);
+-	pci_enable_wake(pci_dev, PCI_D3cold, 0);
++	dmfe_set_wol(dev, 0);
+ 
+ 	/* Restart upper layer interface */
+ 	netif_device_attach(dev);
 -- 
 1.6.3.3
 
