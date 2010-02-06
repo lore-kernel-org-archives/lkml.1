@@ -1,46 +1,48 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755415Ab0BFJz0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Feb 2010 04:55:26 -0500
-Received: from kroah.org ([198.145.64.141]:48522 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754325Ab0BFJzY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755442Ab0BFJz1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Feb 2010 04:55:27 -0500
+Received: from smtp-out.google.com ([216.239.44.51]:22931 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753895Ab0BFJzY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 6 Feb 2010 04:55:24 -0500
-Date: Sat, 6 Feb 2010 01:55:15 -0800
-From: Greg KH <greg@kroah.com>
-To: Willy Tarreau <w@1wt.eu>
-Cc: Sven Joachim <svenjoac@gmx.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>, stable@kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, stable-review@kernel.org
-Subject: Re: [stable] [Stable-review] [PATCH] Fix
-	'flush_old_exec()/setup_new_exec()' split
-Message-ID: <20100206095515.GA6996@kroah.com>
-References: <1265256174.2952.11.camel@localhost> <alpine.LFD.2.00.1002032135380.3707@localhost.localdomain> <1265272174.2952.20.camel@localhost> <20100204143848.GB15438@kroah.com> <87sk9gbzzt.fsf@turtle.gmx.de> <20100204185752.GA18595@kroah.com> <87iqacdcfj.fsf@turtle.gmx.de> <20100206084936.GA4441@kroah.com> <87mxzm1zyr.fsf@turtle.gmx.de> <20100206093144.GE23328@1wt.eu>
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=wzhAFgt5IQtUAzVrXnuc2WAJJ18Ea9rN0V6ts0zMGGz3lJ+C1FZ9UtTu1rqfnonpp
+	1ktDjZJKq0MV8fKnCEr+g==
+Date: Sat, 6 Feb 2010 01:55:19 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Andi Kleen <andi@firstfloor.org>
+cc: submit@firstfloor.org, linux-kernel@vger.kernel.org, haicheng.li@intel.com,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-mm@kvack.org
+Subject: Re: [PATCH] [3/4] SLAB: Separate node initialization into separate
+ function
+In-Reply-To: <20100206072746.GP29555@one.firstfloor.org>
+Message-ID: <alpine.DEB.2.00.1002060153250.17897@chino.kir.corp.google.com>
+References: <201002031039.710275915@firstfloor.org> <20100203213914.D8654B1620@basil.firstfloor.org> <alpine.DEB.2.00.1002051324370.2376@chino.kir.corp.google.com> <20100206072746.GP29555@one.firstfloor.org>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100206093144.GE23328@1wt.eu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 06, 2010 at 10:31:44AM +0100, Willy Tarreau wrote:
-> On Sat, Feb 06, 2010 at 10:21:48AM +0100, Sven Joachim wrote:
-> > On 2010-02-06 09:49 +0100, Greg KH wrote:
-> > 
-> > > I think this was the sysctl issue, and have released a 2.6.32.8-rc2.
-> > > Can you test that to verify if it fixes your crash or not?
-> > 
-> > Yes, it fixes the issue.  I'm using -rc2 right now, did not notice any
-> > problems so far.
+On Sat, 6 Feb 2010, Andi Kleen wrote:
+
+> > in the series; slab_node_prepare() is called in that previous patch by a 
+> > memory hotplug callback without holding cache_chain_mutex (it's taken by 
+> > the cpu hotplug callback prior to calling cpuup_prepare() currently).  So 
+> > slab_node_prepare() should note that we require the mutex and the memory 
+> > hotplug callback should take it in the previous patch.
 > 
-> FWIW, it's running fine here too. I've tried to boot on a miniature
-> init launcher I have (statically linked one) and did not have any issue.
+> AFAIK the code is correct. If you feel the need for additional
+> documentation feel free to send patches yourself.
+> 
 
-Wonderful, thanks to both of you for letting me know.  I feel a lot
-better about this release now...
-
-thanks,
-
-greg k-h
+Documentation?  You're required to take cache_chain_mutex before calling 
+slab_node_prepare() in your memory hotplug notifier, it iterates 
+cache_chain.  Please look again.
