@@ -1,17 +1,17 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754554Ab0BFIoG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Feb 2010 03:44:06 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:52518 "EHLO mgw1.diku.dk"
+	id S1753941Ab0BFIoV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Feb 2010 03:44:21 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:35801 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753941Ab0BFIoA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Feb 2010 03:44:00 -0500
-Date: Sat, 6 Feb 2010 09:43:58 +0100 (CET)
+	id S1754149Ab0BFIoS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Feb 2010 03:44:18 -0500
+Date: Sat, 6 Feb 2010 09:44:15 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>, linux-media@vger.kernel.org,
+To: Paul Gortmaker <p_gortmaker@yahoo.com>, netdev@vger.kernel.org,
        linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 7/11] drivers/media: Correct NULL test
-Message-ID: <Pine.LNX.4.64.1002060943420.8092@ask.diku.dk>
+Subject: [PATCH 8/11] drivers/net: Correct NULL test
+Message-ID: <Pine.LNX.4.64.1002060943580.8092@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -20,7 +20,7 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Julia Lawall <julia@diku.dk>
 
-In each case, the NULL test has been performed already.
+Test the value that was just allocated rather than the previously tested one.
 
 A simplified version of the semantic match that finds this problem is as
 follows: (http://coccinelle.lip6.fr/)
@@ -44,37 +44,19 @@ if (x == NULL || ...) {
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/media/dvb/frontends/stv0900_core.c |    5 -----
- drivers/media/video/cpia.c                 |    3 ---
- 2 files changed, 8 deletions(-)
+ drivers/net/ax88796.c               |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/media/dvb/frontends/stv0900_core.c b/drivers/media/dvb/frontends/stv0900_core.c
-index 74791d5..9052a9b 100644
---- a/drivers/media/dvb/frontends/stv0900_core.c
-+++ b/drivers/media/dvb/frontends/stv0900_core.c
-@@ -1410,11 +1410,6 @@ static enum fe_stv0900_error stv0900_init_internal(struct dvb_frontend *fe,
- 		return error;
- 	}
+diff --git a/drivers/net/ax88796.c b/drivers/net/ax88796.c
+index 62d9c9c..1dd4403 100644
+--- a/drivers/net/ax88796.c
++++ b/drivers/net/ax88796.c
+@@ -921,7 +921,7 @@ static int ax_probe(struct platform_device *pdev)
+  		size = (res->end - res->start) + 1;
  
--	if (state->internal == NULL) {
--		error = STV0900_INVALID_HANDLE;
--		return error;
--	}
--
- 	intp = state->internal;
- 
- 	intp->demod_mode = p_init->demod_mode;
-diff --git a/drivers/media/video/cpia.c b/drivers/media/video/cpia.c
-index 551ddf2..933ae4c 100644
---- a/drivers/media/video/cpia.c
-+++ b/drivers/media/video/cpia.c
-@@ -3737,9 +3737,6 @@ static int cpia_mmap(struct file *file, struct vm_area_struct *vma)
- 	if (size > FRAME_NUM*CPIA_MAX_FRAME_SIZE)
- 		return -EINVAL;
- 
--	if (!cam || !cam->ops)
--		return -ENODEV;
--
- 	/* make this _really_ smp-safe */
- 	if (mutex_lock_interruptible(&cam->busy_lock))
- 		return -EINTR;
+ 		ax->mem2 = request_mem_region(res->start, size, pdev->name);
+-		if (ax->mem == NULL) {
++		if (ax->mem2 == NULL) {
+ 			dev_err(&pdev->dev, "cannot reserve registers\n");
+ 			ret = -ENXIO;
+ 			goto exit_mem1;
