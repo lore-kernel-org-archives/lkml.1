@@ -1,54 +1,41 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753321Ab0BFH0i (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Feb 2010 02:26:38 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:48447 "EHLO
+	id S1753374Ab0BFH1s (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Feb 2010 02:27:48 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:48454 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752625Ab0BFH0h (ORCPT
+	with ESMTP id S1752625Ab0BFH1r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Feb 2010 02:26:37 -0500
-Date: Sat, 6 Feb 2010 08:26:36 +0100
+	Sat, 6 Feb 2010 02:27:47 -0500
+Date: Sat, 6 Feb 2010 08:27:46 +0100
 From: Andi Kleen <andi@firstfloor.org>
 To: David Rientjes <rientjes@google.com>
 Cc: Andi Kleen <andi@firstfloor.org>, submit@firstfloor.org,
        linux-kernel@vger.kernel.org, haicheng.li@intel.com,
-       penberg@cs.helsinki.fi, linux-mm@kvack.org
-Subject: Re: [PATCH] [2/4] SLAB: Set up the l3 lists for the memory of freshly added memory
-Message-ID: <20100206072636.GO29555@one.firstfloor.org>
-References: <201002031039.710275915@firstfloor.org> <20100203213913.D5CD4B1620@basil.firstfloor.org> <alpine.DEB.2.00.1002051316300.2376@chino.kir.corp.google.com>
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-mm@kvack.org
+Subject: Re: [PATCH] [3/4] SLAB: Separate node initialization into separate function
+Message-ID: <20100206072746.GP29555@one.firstfloor.org>
+References: <201002031039.710275915@firstfloor.org> <20100203213914.D8654B1620@basil.firstfloor.org> <alpine.DEB.2.00.1002051324370.2376@chino.kir.corp.google.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.1002051316300.2376@chino.kir.corp.google.com>
+In-Reply-To: <alpine.DEB.2.00.1002051324370.2376@chino.kir.corp.google.com>
 User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 05, 2010 at 01:17:56PM -0800, David Rientjes wrote:
-> > +static int slab_memory_callback(struct notifier_block *self,
-> > +				unsigned long action, void *arg)
-> > +{
-> > +	struct memory_notify *mn = (struct memory_notify *)arg;
-> 
-> No cast necessary.
-
-It's standard practice to cast void *.
-
-> >  void __init kmem_cache_init_late(void)
-> >  {
-> >  	struct kmem_cache *cachep;
-> > @@ -1583,6 +1598,8 @@ void __init kmem_cache_init_late(void)
-> >  	 */
-> >  	register_cpu_notifier(&cpucache_notifier);
-> >  
-> > +	hotplug_memory_notifier(slab_memory_callback, SLAB_CALLBACK_PRI);
-> 
-> Only needed for CONFIG_NUMA.
+> As Christoph mentioned, this patch is out of order with the previous one 
 
 Ok.
 
--Andi
+> in the series; slab_node_prepare() is called in that previous patch by a 
+> memory hotplug callback without holding cache_chain_mutex (it's taken by 
+> the cpu hotplug callback prior to calling cpuup_prepare() currently).  So 
+> slab_node_prepare() should note that we require the mutex and the memory 
+> hotplug callback should take it in the previous patch.
 
--- 
-ak@linux.intel.com -- Speaking for myself only.
+AFAIK the code is correct. If you feel the need for additional
+documentation feel free to send patches yourself.
+
+-Andi
