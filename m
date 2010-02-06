@@ -1,56 +1,46 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755360Ab0BFJxK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Feb 2010 04:53:10 -0500
-Received: from smtp-out.google.com ([216.239.44.51]:22408 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755071Ab0BFJxH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Feb 2010 04:53:07 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=IvCykz+uEuVG1upNiYPc/nGJ6eR2wGVOW4I1JecLM6IHlcaDjyxzjslLxRvBM3Bmw
-	YJ0dPNwThDlqRI7UPTVPg==
-Date: Sat, 6 Feb 2010 01:53:00 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Andi Kleen <andi@firstfloor.org>
-cc: submit@firstfloor.org, linux-kernel@vger.kernel.org, haicheng.li@intel.com,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-mm@kvack.org
-Subject: Re: [PATCH] [1/4] SLAB: Handle node-not-up case in
- fallback_alloc()
-In-Reply-To: <20100206072508.GN29555@one.firstfloor.org>
-Message-ID: <alpine.DEB.2.00.1002060148300.17897@chino.kir.corp.google.com>
-References: <201002031039.710275915@firstfloor.org> <20100203213912.D3081B1620@basil.firstfloor.org> <alpine.DEB.2.00.1002051251390.2376@chino.kir.corp.google.com> <20100206072508.GN29555@one.firstfloor.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	id S1755415Ab0BFJz0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Feb 2010 04:55:26 -0500
+Received: from kroah.org ([198.145.64.141]:48522 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754325Ab0BFJzY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Feb 2010 04:55:24 -0500
+Date: Sat, 6 Feb 2010 01:55:15 -0800
+From: Greg KH <greg@kroah.com>
+To: Willy Tarreau <w@1wt.eu>
+Cc: Sven Joachim <svenjoac@gmx.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>, stable@kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, stable-review@kernel.org
+Subject: Re: [stable] [Stable-review] [PATCH] Fix
+	'flush_old_exec()/setup_new_exec()' split
+Message-ID: <20100206095515.GA6996@kroah.com>
+References: <1265256174.2952.11.camel@localhost> <alpine.LFD.2.00.1002032135380.3707@localhost.localdomain> <1265272174.2952.20.camel@localhost> <20100204143848.GB15438@kroah.com> <87sk9gbzzt.fsf@turtle.gmx.de> <20100204185752.GA18595@kroah.com> <87iqacdcfj.fsf@turtle.gmx.de> <20100206084936.GA4441@kroah.com> <87mxzm1zyr.fsf@turtle.gmx.de> <20100206093144.GE23328@1wt.eu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100206093144.GE23328@1wt.eu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 6 Feb 2010, Andi Kleen wrote:
-
-> > That other node must be allowed by current's cpuset, otherwise 
-> > kmem_getpages() will fail when get_page_from_freelist() iterates only over 
-> > unallowed nodes.
+On Sat, Feb 06, 2010 at 10:31:44AM +0100, Willy Tarreau wrote:
+> On Sat, Feb 06, 2010 at 10:21:48AM +0100, Sven Joachim wrote:
+> > On 2010-02-06 09:49 +0100, Greg KH wrote:
+> > 
+> > > I think this was the sysctl issue, and have released a 2.6.32.8-rc2.
+> > > Can you test that to verify if it fixes your crash or not?
+> > 
+> > Yes, it fixes the issue.  I'm using -rc2 right now, did not notice any
+> > problems so far.
 > 
-> All theses cases are really only interesting in the memory hotplug path
-> itself (afterwards the slab is working anyways and memory is there)
-> and if someone sets funny cpusets for those he gets what he deserves ...
-> 
+> FWIW, it's running fine here too. I've tried to boot on a miniature
+> init launcher I have (statically linked one) and did not have any issue.
 
-If a hot-added node has not been initialized for the cache, your code is 
-picking an existing one in zonelist order which may be excluded by 
-current's cpuset.  Thus, your code has a very real chance of having 
-kmem_getpages() return NULL because get_page_from_freelist() will reject 
-non-atomic ALLOC_CPUSET allocations for prohibited nodes.  That isn't a 
-scenario that requires a "funny cpuset," it just has to not allow whatever 
-initialized node comes first in the zonelist.
+Wonderful, thanks to both of you for letting me know.  I feel a lot
+better about this release now...
 
-My suggested alternative does not pick a single initialized node, rather 
-it tries all nodes that actually have a chance of having kmem_getpages() 
-succeed which increases the probability that your patch actually has an 
-effect for cpuset users.
+thanks,
+
+greg k-h
