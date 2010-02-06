@@ -1,17 +1,17 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755021Ab0BFIpE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Feb 2010 03:45:04 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:52545 "EHLO mgw1.diku.dk"
+	id S1755197Ab0BFIpW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Feb 2010 03:45:22 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:40481 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754507Ab0BFIpA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Feb 2010 03:45:00 -0500
-Date: Sat, 6 Feb 2010 09:44:58 +0100 (CET)
+	id S1755109Ab0BFIpR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Feb 2010 03:45:17 -0500
+Date: Sat, 6 Feb 2010 09:45:15 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 10/11] drivers/video/mbx: Correct NULL test
-Message-ID: <Pine.LNX.4.64.1002060944400.8092@ask.diku.dk>
+To: Alex Elder <aelder@sgi.com>, xfs-masters@oss.sgi.com, xfs@oss.sgi.com,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 11/11] fs/xfs: Correct NULL test
+Message-ID: <Pine.LNX.4.64.1002060944580.8092@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -44,19 +44,19 @@ if (x == NULL || ...) {
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/video/mbx/mbxfb.c           |    2 +-
+ fs/xfs/quota/xfs_qm.c               |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/mbx/mbxfb.c b/drivers/video/mbx/mbxfb.c
-index afea9ab..7140405 100644
---- a/drivers/video/mbx/mbxfb.c
-+++ b/drivers/video/mbx/mbxfb.c
-@@ -950,7 +950,7 @@ static int __devinit mbxfb_probe(struct platform_device *dev)
+diff --git a/fs/xfs/quota/xfs_qm.c b/fs/xfs/quota/xfs_qm.c
+index 11cfd82..4318cd5 100644
+--- a/fs/xfs/quota/xfs_qm.c
++++ b/fs/xfs/quota/xfs_qm.c
+@@ -123,7 +123,7 @@ xfs_Gqm_init(void)
+ 		goto out;
  
- 	mfbi->fb_virt_addr = ioremap_nocache(mfbi->fb_phys_addr,
- 					     res_size(mfbi->fb_req));
--	if (!mfbi->reg_virt_addr) {
-+	if (!mfbi->fb_virt_addr) {
- 		dev_err(&dev->dev, "failed to ioremap frame buffer\n");
- 		ret = -EINVAL;
- 		goto err4;
+ 	gdqhash = kmem_zalloc_large(hsize);
+-	if (!udqhash)
++	if (!gdqhash)
+ 		goto out_free_udqhash;
+ 
+ 	hsize /= sizeof(xfs_dqhash_t);
