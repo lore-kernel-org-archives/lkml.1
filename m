@@ -1,76 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933865Ab0BFCr2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 21:47:28 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:60728 "EHLO mx1.redhat.com"
+	id S934136Ab0BFCrv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 21:47:51 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:9885 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757729Ab0BFCr1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 21:47:27 -0500
+	id S933938Ab0BFCrg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Feb 2010 21:47:36 -0500
 From: Don Zickus <dzickus@redhat.com>
 To: mingo@elte.hu, peterz@infradead.org
 Cc: gorcunov@gmail.com, aris@redhat.com, linux-kernel@vger.kernel.org,
        Don Zickus <dzickus@redhat.com>
-Subject: [PATCH 1/3 v2] [x86] move notify_die from nmi.c to traps.c
-Date: Fri,  5 Feb 2010 21:47:03 -0500
-Message-Id: <1265424425-31562-2-git-send-email-dzickus@redhat.com>
-In-Reply-To: <1265424425-31562-1-git-send-email-dzickus@redhat.com>
-References: <1265424425-31562-1-git-send-email-dzickus@redhat.com>
+Subject: [PATCH 0/3 v2] new nmi_watchdog using perf events
+Date: Fri,  5 Feb 2010 21:47:02 -0500
+Message-Id: <1265424425-31562-1-git-send-email-dzickus@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In order to handle a new nmi_watchdog approach, I need to move the notify_die()
-routine out of nmi_watchdog_tick() and into default_do_nmi().  This lets me easily
-swap out the old nmi_watchdog with the new one with just a config change.
+This patch series tries to implement a new nmi_watchdog using the perf
+events subsystem.  I am posting this series early for feedback on the
+approach.  It isn't feature compatible with the old nmi_watchdog yet, nor
+does it have all the old workarounds either.
 
-The change probably makes sense from a high level perspective because the
-nmi_watchdog shouldn't be handling notify_die routines anyway.  However, this
-move does change the semantics a little bit.  Instead of checking on every nmi
-interrupt if the cpus are stuck, only check them on the nmi_watchdog interrupts.
+The basic design is to create an in-kernel performance counter that goes off
+every few seconds and checks for cpu lockups.  It is fairly straight
+forward.  Some of the quirks are making sure the cpu lockup detection works
+correctly.
 
-v2: move notify_die call into #idef block
+It has been lightly tested for now.  Once people are ok with the approach,
+I'll expand testing to more machines in our lab.
 
-Signed-off-by: Don Zickus <dzickus@redhat.com>
----
- arch/x86/kernel/apic/nmi.c |    7 -------
- arch/x86/kernel/traps.c    |    5 +++++
- 2 files changed, 5 insertions(+), 7 deletions(-)
+I tried taking a generic approach so all arches could use it if they want
+and then implement some per arch specific hooks.  I believe this is what
+Ingo was suggesting.  The initial work is based off of kernel/softlockup.c.
 
-diff --git a/arch/x86/kernel/apic/nmi.c b/arch/x86/kernel/apic/nmi.c
-index 0159a69..5d47682 100644
---- a/arch/x86/kernel/apic/nmi.c
-+++ b/arch/x86/kernel/apic/nmi.c
-@@ -400,13 +400,6 @@ nmi_watchdog_tick(struct pt_regs *regs, unsigned reason)
- 	int cpu = smp_processor_id();
- 	int rc = 0;
- 
--	/* check for other users first */
--	if (notify_die(DIE_NMI, "nmi", regs, reason, 2, SIGINT)
--			== NOTIFY_STOP) {
--		rc = 1;
--		touched = 1;
--	}
--
- 	sum = get_timer_irqs(cpu);
- 
- 	if (__get_cpu_var(nmi_touch)) {
-diff --git a/arch/x86/kernel/traps.c b/arch/x86/kernel/traps.c
-index 3339917..3be4687 100644
---- a/arch/x86/kernel/traps.c
-+++ b/arch/x86/kernel/traps.c
-@@ -400,7 +400,12 @@ static notrace __kprobes void default_do_nmi(struct pt_regs *regs)
- 		if (notify_die(DIE_NMI_IPI, "nmi_ipi", regs, reason, 2, SIGINT)
- 								== NOTIFY_STOP)
- 			return;
-+
- #ifdef CONFIG_X86_LOCAL_APIC
-+	        if (notify_die(DIE_NMI, "nmi", regs, reason, 2, SIGINT)
-+	        			                == NOTIFY_STOP)
-+	                return;
-+
- 		/*
- 		 * Ok, so this is none of the documented NMI sources,
- 		 * so it must be the NMI watchdog.
--- 
-1.6.6.83.gc9a2
+Any feedback would be great.
+
+v2:
+- moved a notify_die call into a #ifdef block
+- used better default values for configuring the nmi_watchdog based on
+  the old nmi_watchdog values
+
+Cheers,
+Don
+
+--
+damn it forgot to cc lkml
+
+Don Zickus (3):
+  [RFC][x86] move notify_die from nmi.c to traps.c
+  [RFC] nmi_watchdog: new implementation using perf events
+  [RFC] nmi_watchdog: config option to enable new nmi_watchdog
+
+ arch/x86/kernel/apic/Makefile |    7 ++-
+ arch/x86/kernel/apic/hw_nmi.c |  114 ++++++++++++++++++++++++
+ arch/x86/kernel/apic/nmi.c    |    7 --
+ arch/x86/kernel/traps.c       |    7 ++
+ include/linux/nmi.h           |    4 +
+ kernel/Makefile               |    1 +
+ kernel/nmi_watchdog.c         |  196 +++++++++++++++++++++++++++++++++++++++++
+ lib/Kconfig.debug             |   13 +++
+ 8 files changed, 341 insertions(+), 8 deletions(-)
+ create mode 100644 arch/x86/kernel/apic/hw_nmi.c
+ create mode 100644 kernel/nmi_watchdog.c
 
