@@ -1,17 +1,19 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753891Ab0BFImW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Feb 2010 03:42:22 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:35731 "EHLO mgw2.diku.dk"
+	id S1754069Ab0BFInI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Feb 2010 03:43:08 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:35752 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753729Ab0BFImT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Feb 2010 03:42:19 -0500
-Date: Sat, 6 Feb 2010 09:42:16 +0100 (CET)
+	id S1752761Ab0BFInF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Feb 2010 03:43:05 -0500
+Date: Sat, 6 Feb 2010 09:43:03 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org,
+To: Avi Kivity <avi@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, kvm@vger.kernel.org,
        linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 2/11] arch/mips/sni: Correct NULL test
-Message-ID: <Pine.LNX.4.64.1002060942010.8092@ask.diku.dk>
+Subject: [PATCH 4/11] arch/x86/kvm: Correct NULL test
+Message-ID: <Pine.LNX.4.64.1002060942390.8092@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -20,7 +22,7 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Julia Lawall <julia@diku.dk>
 
-Test the value that was just allocated rather than the previously tested one.
+msr was tested above, so the second test is not needed.
 
 A simplified version of the semantic match that finds this problem is as
 follows: (http://coccinelle.lip6.fr/)
@@ -42,21 +44,21 @@ if (x == NULL || ...) {
 // </smpl>
 
 Signed-off-by: Julia Lawall <julia@diku.dk>
-send
----
- arch/mips/sni/rm200.c               |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/mips/sni/rm200.c b/arch/mips/sni/rm200.c
-index 46f0069..31e2583 100644
---- a/arch/mips/sni/rm200.c
-+++ b/arch/mips/sni/rm200.c
-@@ -404,7 +404,7 @@ void __init sni_rm200_i8259_irqs(void)
- 	if (!rm200_pic_master)
- 		return;
- 	rm200_pic_slave = ioremap_nocache(0x160000a0, 4);
--	if (!rm200_pic_master) {
-+	if (!rm200_pic_slave) {
- 		iounmap(rm200_pic_master);
- 		return;
- 	}
+---
+ arch/x86/kvm/vmx.c                  |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
+
+diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
+index 7375ae1..422bfc8 100644
+--- a/arch/x86/kvm/vmx.c
++++ b/arch/x86/kvm/vmx.c
+@@ -1609,8 +1609,6 @@ static void vmx_set_efer(struct kvm_vcpu *vcpu, u64 efer)
+ 	 */
+ 	vmx_load_host_state(to_vmx(vcpu));
+ 	vcpu->arch.shadow_efer = efer;
+-	if (!msr)
+-		return;
+ 	if (efer & EFER_LMA) {
+ 		vmcs_write32(VM_ENTRY_CONTROLS,
+ 			     vmcs_read32(VM_ENTRY_CONTROLS) |
