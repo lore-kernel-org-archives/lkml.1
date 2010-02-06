@@ -1,88 +1,76 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934092Ab0BFCJv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Feb 2010 21:09:51 -0500
-Received: from mail.perches.com ([173.55.12.10]:1872 "EHLO mail.perches.com"
+	id S933865Ab0BFCr2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Feb 2010 21:47:28 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:60728 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757478Ab0BFCJu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Feb 2010 21:09:50 -0500
-Subject: [PATCH] include/linux/usb: Extend and neaten dbg macros
-From: Joe Perches <joe@perches.com>
-To: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: linux-usb <linux-usb@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 05 Feb 2010 18:09:49 -0800
-Message-ID: <1265422189.10226.73.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	id S1757729Ab0BFCr1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Feb 2010 21:47:27 -0500
+From: Don Zickus <dzickus@redhat.com>
+To: mingo@elte.hu, peterz@infradead.org
+Cc: gorcunov@gmail.com, aris@redhat.com, linux-kernel@vger.kernel.org,
+       Don Zickus <dzickus@redhat.com>
+Subject: [PATCH 1/3 v2] [x86] move notify_die from nmi.c to traps.c
+Date: Fri,  5 Feb 2010 21:47:03 -0500
+Message-Id: <1265424425-31562-2-git-send-email-dzickus@redhat.com>
+In-Reply-To: <1265424425-31562-1-git-send-email-dzickus@redhat.com>
+References: <1265424425-31562-1-git-send-email-dzickus@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add format/argument validation for #ifndef DEBUG dbg macro
-Neaten dbg macro definitions
+In order to handle a new nmi_watchdog approach, I need to move the notify_die()
+routine out of nmi_watchdog_tick() and into default_do_nmi().  This lets me easily
+swap out the old nmi_watchdog with the new one with just a config change.
 
-Signed-off-by: Joe Perches <joe@perches.com>
+The change probably makes sense from a high level perspective because the
+nmi_watchdog shouldn't be handling notify_die routines anyway.  However, this
+move does change the semantics a little bit.  Instead of checking on every nmi
+interrupt if the cpus are stuck, only check them on the nmi_watchdog interrupts.
+
+v2: move notify_die call into #idef block
+
+Signed-off-by: Don Zickus <dzickus@redhat.com>
 ---
- include/linux/usb.h        |   14 +++++++++-----
- include/linux/usb/serial.h |   13 +++++--------
- 2 files changed, 14 insertions(+), 13 deletions(-)
+ arch/x86/kernel/apic/nmi.c |    7 -------
+ arch/x86/kernel/traps.c    |    5 +++++
+ 2 files changed, 5 insertions(+), 7 deletions(-)
 
-diff --git a/include/linux/usb.h b/include/linux/usb.h
-index d7ace1b..c93a720 100644
---- a/include/linux/usb.h
-+++ b/include/linux/usb.h
-@@ -1582,14 +1582,18 @@ extern void usb_register_notify(struct notifier_block *nb);
- extern void usb_unregister_notify(struct notifier_block *nb);
+diff --git a/arch/x86/kernel/apic/nmi.c b/arch/x86/kernel/apic/nmi.c
+index 0159a69..5d47682 100644
+--- a/arch/x86/kernel/apic/nmi.c
++++ b/arch/x86/kernel/apic/nmi.c
+@@ -400,13 +400,6 @@ nmi_watchdog_tick(struct pt_regs *regs, unsigned reason)
+ 	int cpu = smp_processor_id();
+ 	int rc = 0;
  
- #ifdef DEBUG
--#define dbg(format, arg...) printk(KERN_DEBUG "%s: " format "\n" , \
--	__FILE__ , ## arg)
-+#define dbg(format, arg...)						\
-+	printk(KERN_DEBUG "%s: " format "\n", __FILE__, ##arg)
- #else
--#define dbg(format, arg...) do {} while (0)
-+#define dbg(format, arg...)						\
-+do {									\
-+	if (0)								\
-+		printk(KERN_DEBUG "%s: " format "\n", __FILE__, ##arg); \
-+} while (0)
- #endif
- 
--#define err(format, arg...) printk(KERN_ERR KBUILD_MODNAME ": " \
--	format "\n" , ## arg)
-+#define err(format, arg...)					\
-+	printk(KERN_ERR KBUILD_MODNAME ": " format "\n", ##arg)
- 
- /* debugfs stuff */
- extern struct dentry *usb_debug_root;
-diff --git a/include/linux/usb/serial.h b/include/linux/usb/serial.h
-index 1819396..0a458b8 100644
---- a/include/linux/usb/serial.h
-+++ b/include/linux/usb/serial.h
-@@ -351,14 +351,11 @@ static inline void usb_serial_debug_data(int debug,
- 
- /* Use our own dbg macro */
- #undef dbg
--#define dbg(format, arg...) \
--	do { \
--		if (debug) \
--			printk(KERN_DEBUG "%s: " format "\n" , __FILE__ , \
--				## arg); \
--	} while (0)
+-	/* check for other users first */
+-	if (notify_die(DIE_NMI, "nmi", regs, reason, 2, SIGINT)
+-			== NOTIFY_STOP) {
+-		rc = 1;
+-		touched = 1;
+-	}
 -
--
-+#define dbg(format, arg...)						\
-+do {									\
-+	if (debug)							\
-+		printk(KERN_DEBUG "%s: " format "\n", __FILE__, ##arg);	\
-+} while (0)
+ 	sum = get_timer_irqs(cpu);
  
- #endif /* __LINUX_USB_SERIAL_H */
- 
+ 	if (__get_cpu_var(nmi_touch)) {
+diff --git a/arch/x86/kernel/traps.c b/arch/x86/kernel/traps.c
+index 3339917..3be4687 100644
+--- a/arch/x86/kernel/traps.c
++++ b/arch/x86/kernel/traps.c
+@@ -400,7 +400,12 @@ static notrace __kprobes void default_do_nmi(struct pt_regs *regs)
+ 		if (notify_die(DIE_NMI_IPI, "nmi_ipi", regs, reason, 2, SIGINT)
+ 								== NOTIFY_STOP)
+ 			return;
++
+ #ifdef CONFIG_X86_LOCAL_APIC
++	        if (notify_die(DIE_NMI, "nmi", regs, reason, 2, SIGINT)
++	        			                == NOTIFY_STOP)
++	                return;
++
+ 		/*
+ 		 * Ok, so this is none of the documented NMI sources,
+ 		 * so it must be the NMI watchdog.
 -- 
-1.7.0.rc1.33.g07cf0f
-
-
+1.6.6.83.gc9a2
 
