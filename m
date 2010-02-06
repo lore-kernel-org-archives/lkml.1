@@ -1,17 +1,17 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754230Ab0BFIn0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Feb 2010 03:43:26 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:52509 "EHLO mgw1.diku.dk"
+	id S1754400Ab0BFInq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Feb 2010 03:43:46 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:35780 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753722Ab0BFInY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Feb 2010 03:43:24 -0500
-Date: Sat, 6 Feb 2010 09:43:21 +0100 (CET)
+	id S1753371Ab0BFInn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Feb 2010 03:43:43 -0500
+Date: Sat, 6 Feb 2010 09:43:41 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: Lars Ellenberg <drbd-dev@lists.linbit.com>, drbd-user@lists.linbit.com,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 5/11] drivers/block/drbd: Correct NULL test
-Message-ID: <Pine.LNX.4.64.1002060943040.8092@ask.diku.dk>
+To: Dan Williams <dan.j.williams@intel.com>, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH 6/11] drivers/dma: Correct NULL test
+Message-ID: <Pine.LNX.4.64.1002060943220.8092@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -20,7 +20,8 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Julia Lawall <julia@diku.dk>
 
-Test the value that was just allocated rather than the previously tested one.
+cohd_fin has already been verified not to be NULL, so the argument to
+BUG_ON cannot be true.
 
 A simplified version of the semantic match that finds this problem is as
 follows: (http://coccinelle.lip6.fr/)
@@ -44,19 +45,19 @@ if (x == NULL || ...) {
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/block/drbd/drbd_main.c      |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/dma/coh901318.c             |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/block/drbd/drbd_main.c b/drivers/block/drbd/drbd_main.c
-index ab871e0..d0c38a6 100644
---- a/drivers/block/drbd/drbd_main.c
-+++ b/drivers/block/drbd/drbd_main.c
-@@ -2770,7 +2770,7 @@ static int drbd_create_mempools(void)
+diff --git a/drivers/dma/coh901318.c b/drivers/dma/coh901318.c
+index b5f2ee0..64a9372 100644
+--- a/drivers/dma/coh901318.c
++++ b/drivers/dma/coh901318.c
+@@ -613,8 +613,6 @@ static void dma_tasklet(unsigned long data)
+ 	cohd_fin->pending_irqs--;
+ 	cohc->completed = cohd_fin->desc.cookie;
  
- 	drbd_ee_mempool = mempool_create(number,
- 		mempool_alloc_slab, mempool_free_slab, drbd_ee_cache);
--	if (drbd_request_mempool == NULL)
-+	if (drbd_ee_mempool == NULL)
- 		goto Enomem;
+-	BUG_ON(cohc->nbr_active_done && cohd_fin == NULL);
+-
+ 	if (cohc->nbr_active_done == 0)
+ 		return;
  
- 	/* drbd's page pool */
