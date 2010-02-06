@@ -1,73 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933244Ab0BFRs7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Feb 2010 12:48:59 -0500
-Received: from cpsmtpm-eml101.kpnxchange.com ([195.121.3.5]:53165 "EHLO
-	CPSMTPM-EML101.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932440Ab0BFRr2 (ORCPT
+	id S933506Ab0BFRtQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Feb 2010 12:49:16 -0500
+Received: from cpsmtpm-eml110.kpnxchange.com ([195.121.3.14]:62987 "EHLO
+	CPSMTPM-EML110.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932423Ab0BFRr2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 6 Feb 2010 12:47:28 -0500
 From: Frans Pop <elendil@planet.nl>
 To: linux-kernel@vger.kernel.org
-Cc: Frans Pop <elendil@planet.nl>, linux-ia64@vger.kernel.org,
-       Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>
-Subject: [PATCH 03/16] ia64: remove trailing space in messages
-Date: Sat,  6 Feb 2010 18:47:10 +0100
-Message-Id: <1265478443-31072-3-git-send-email-elendil@planet.nl>
+Cc: Frans Pop <elendil@planet.nl>, linux-cris-kernel@axis.com,
+       Jiri Kosina <trivial@kernel.org>
+Subject: [PATCH 12/16] cris/trivial: remove trailing space in message
+Date: Sat,  6 Feb 2010 18:47:19 +0100
+Message-Id: <1265478443-31072-12-git-send-email-elendil@planet.nl>
 X-Mailer: git-send-email 1.6.6.1
 In-Reply-To: <201002061844.45212.elendil@planet.nl>
 References: <201002061844.45212.elendil@planet.nl>
-X-OriginalArrivalTime: 06 Feb 2010 17:47:26.0073 (UTC) FILETIME=[71BC2E90:01CAA754]
+X-OriginalArrivalTime: 06 Feb 2010 17:47:26.0766 (UTC) FILETIME=[7225ECE0:01CAA754]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Frans Pop <elendil@planet.nl>
-Cc: linux-ia64@vger.kernel.org
-Cc: Tony Luck <tony.luck@intel.com>
-Cc: Fenghua Yu <fenghua.yu@intel.com>
----
- arch/ia64/ia32/sys_ia32.c  |    4 ++--
- arch/ia64/kernel/perfmon.c |    4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+In this case replaced with an extra period as an elipsis is usually
+three periods.
 
-diff --git a/arch/ia64/ia32/sys_ia32.c b/arch/ia64/ia32/sys_ia32.c
-index 045b746..8e441a4 100644
---- a/arch/ia64/ia32/sys_ia32.c
-+++ b/arch/ia64/ia32/sys_ia32.c
-@@ -2219,8 +2219,8 @@ static void access_fpreg_ia32(int regno, void *reg,
- 	else if (regno <= 7)
- 		f = &sw->f12 + (regno - 4);
- 	else {
--		printk(KERN_ERR "regno must be less than 7 \n");
--		 return;
-+		printk(KERN_ERR "regno must be less than 7\n");
-+		return;
+Signed-off-by: Frans Pop <elendil@planet.nl>
+Cc: linux-cris-kernel@axis.com
+Cc: Jiri Kosina <trivial@kernel.org>
+---
+ arch/cris/arch-v32/drivers/sync_serial.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/cris/arch-v32/drivers/sync_serial.c b/arch/cris/arch-v32/drivers/sync_serial.c
+index d2a0fbf..e5634fa 100644
+--- a/arch/cris/arch-v32/drivers/sync_serial.c
++++ b/arch/cris/arch-v32/drivers/sync_serial.c
+@@ -448,7 +448,7 @@ static int sync_serial_open(struct inode *inode, struct file *file)
+ 	/* Allow open this device twice (assuming one reader and one writer) */
+ 	if (port->busy == 2)
+ 	{
+-		DEBUG(printk(KERN_DEBUG "Device is busy.. \n"));
++		DEBUG(printk(KERN_DEBUG "Device is busy...\n"));
+ 		goto out;
  	}
  
- 	if (write)
-diff --git a/arch/ia64/kernel/perfmon.c b/arch/ia64/kernel/perfmon.c
-index 6bcbe21..b81e46b 100644
---- a/arch/ia64/kernel/perfmon.c
-+++ b/arch/ia64/kernel/perfmon.c
-@@ -2713,7 +2713,7 @@ pfm_context_create(pfm_context_t *ctx, void *arg, int count, struct pt_regs *reg
- 			goto buffer_error;
- 	}
- 
--	DPRINT(("ctx=%p flags=0x%x system=%d notify_block=%d excl_idle=%d no_msg=%d ctx_fd=%d \n",
-+	DPRINT(("ctx=%p flags=0x%x system=%d notify_block=%d excl_idle=%d no_msg=%d ctx_fd=%d\n",
- 		ctx,
- 		ctx_flags,
- 		ctx->ctx_fl_system,
-@@ -3677,7 +3677,7 @@ pfm_restart(pfm_context_t *ctx, void *arg, int count, struct pt_regs *regs)
- 	 * "self-monitoring".
- 	 */
- 	if (CTX_OVFL_NOBLOCK(ctx) == 0 && state == PFM_CTX_MASKED) {
--		DPRINT(("unblocking [%d] \n", task_pid_nr(task)));
-+		DPRINT(("unblocking [%d]\n", task_pid_nr(task)));
- 		complete(&ctx->ctx_restart_done);
- 	} else {
- 		DPRINT(("[%d] armed exit trap\n", task_pid_nr(task)));
 -- 
 1.6.6.1
 
