@@ -1,67 +1,124 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756163Ab0BFU5t (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Feb 2010 15:57:49 -0500
-Received: from cpsmtpm-eml103.kpnxchange.com ([195.121.3.7]:58772 "EHLO
-	CPSMTPM-EML103.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755944Ab0BFU5q (ORCPT
+	id S1756209Ab0BFWHG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Feb 2010 17:07:06 -0500
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:53259 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755742Ab0BFWHD convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Feb 2010 15:57:46 -0500
-From: Frans Pop <elendil@planet.nl>
-To: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/16] remove trailing spaces in messages
-Date: Sat, 6 Feb 2010 21:57:42 +0100
-User-Agent: KMail/1.9.9
-Cc: linux-alpha@vger.kernel.org, linux-ia64@vger.kernel.org,
-       linux-parisc@vger.kernel.org, linux-s390@vger.kernel.org,
-       sparclinux@vger.kernel.org
-References: <201002061844.45212.elendil@planet.nl>
-In-Reply-To: <201002061844.45212.elendil@planet.nl>
+	Sat, 6 Feb 2010 17:07:03 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=luIpcQIVQG0GVlAbVMa0ZvKFLTVRoYVgR38uEtzJYkJC3rNB6Mho66K5s7Q7Hl5ulr
+         SRc5JB9+ZZ3Ppn4F8+5xjS/M2j9n3vEh4JjT0IfDbXJBNoNmOgnGkmrSWRAxcPjmzssW
+         cZ8WbPuI3NBTOkAcGIEgwG/RLO5hOM8lPoCeU=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <201002062157.44357.elendil@planet.nl>
-X-OriginalArrivalTime: 06 Feb 2010 20:57:45.0075 (UTC) FILETIME=[07FD9C30:01CAA76F]
+In-Reply-To: <Pine.LNX.4.64.1002060942170.8092@ask.diku.dk>
+References: <Pine.LNX.4.64.1002060942170.8092@ask.diku.dk>
+Date: Sat, 6 Feb 2010 23:07:00 +0100
+Message-ID: <4e0ef1451002061407i6262b927l1eacfe2e5a3618c7@mail.gmail.com>
+Subject: Re: [PATCH 3/11] arch/x86/kernel: Correct NULL test
+From: Ludovic FERRE <ludovic.ferre@gmail.com>
+To: Julia Lawall <julia@diku.dk>
+Cc: Joerg Roedel <joerg.roedel@amd.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       x86@kernel.org, iommu@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Resending the patch cover letter for vger only as it didn't reach there for 
-some reason (# recipients maybe?).
+Hello Julia,
 
-+++++++++++
-This is a first series of patches to remove trailing spaces in messages. 
-Patches cover arch-specific code plus one fix for PM and one in 
-Documentation. Depending on how this series is received I'll continue
-with other parts of the kernel.
+May be it would be worthy to take your changes one step further and to
+report if the function is called with a null device pointer (which
+indicates a problem in the calling code, right?).
 
-Benefits are:
-- general cleanup and consistency
-- minor reduction in kernel size and user's log file size
-- reduced annoyance for people writing logcheck rules
+Here's a patch moving the null pointer check to its own if block and
+reporting the null pointer function call using printk based on
+2.6.33-rc6 code.
 
-The patch for m68k has been rebased against linux-next; all other
-patches apply against both mainline and -next (as of 5-2).
+diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
+index 23824fe..1a1d87c 100644
+--- a/arch/x86/kernel/amd_iommu.c
++++ b/arch/x86/kernel/amd_iommu.c
+@@ -114,11 +114,17 @@ static bool check_device(struct device *dev)
+ {
+       u16 devid;
 
-Shortstat:
- 74 files changed, 135 insertions(+), 136 deletions(-)
+-       if (!dev || !dev->dma_mask)
++       /* Function is called with a null pointer. Flag this and return false */
++       if (!dev){
++               printk(KERN_INFO "amd_iommu check_device called with a
+null pointer device\n");
++               return false;
++       }
++
++       if (!dev->dma_mask)
+               return false;
 
-Frans Pop (16):
-      alpha: remove trailing spaces in messages
-      arm: remove trailing spaces in messages
-      ia64: remove trailing space in messages
-      m68k: remove trailing space in messages
-      microblaze: remove trailing space in messages
-      mips: remove trailing space in messages
-      parisc: remove trailing space in messages
-      s390: remove trailing space in messages
-      sparc: remove trailing space in messages
-      x86: remove trailing space in messages
-      blackfin: remove trailing space in messages
-      cris/trivial: remove trailing space in message
-      powerpc: remove trailing space in messages
-      um: remove trailing space in messages
-      PM: remove trailing space in message
-      trivial: remove trailing space in spidev test program
+       /* No device or no PCI device */
+-       if (!dev || dev->bus != &pci_bus_type)
++       if (dev->bus != &pci_bus_type)
+               return false;
+
+       devid = get_device_id(dev);
+
+On Sat, Feb 6, 2010 at 9:42 AM, Julia Lawall <julia@diku.dk> wrote:
+> From: Julia Lawall <julia@diku.dk>
+>
+> dev was tested just above, so drop the second test.
+>
+> A simplified version of the semantic match that finds this problem is as
+> follows: (http://coccinelle.lip6.fr/)
+>
+> // <smpl>
+> @r@
+> expression *x;
+> expression e;
+> identifier l;
+> @@
+>
+> if (x == NULL || ...) {
+>    ... when forall
+>    return ...; }
+> ... when != goto l;
+>    when != x = e
+>    when != &x
+> *x == NULL
+> // </smpl>
+>
+> Signed-off-by: Julia Lawall <julia@diku.dk>
+>
+> ---
+>  arch/x86/kernel/amd_iommu.c         |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
+> index adb0ba0..2c4a501 100644
+> --- a/arch/x86/kernel/amd_iommu.c
+> +++ b/arch/x86/kernel/amd_iommu.c
+> @@ -118,7 +118,7 @@ static bool check_device(struct device *dev)
+>                return false;
+>
+>        /* No device or no PCI device */
+> -       if (!dev || dev->bus != &pci_bus_type)
+> +       if (dev->bus != &pci_bus_type)
+>                return false;
+>
+>        devid = get_device_id(dev);
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
+
+
+
+-- 
+Ludovic
