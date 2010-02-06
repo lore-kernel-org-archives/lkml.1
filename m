@@ -1,19 +1,17 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754069Ab0BFInI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Feb 2010 03:43:08 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:35752 "EHLO mgw2.diku.dk"
+	id S1754230Ab0BFIn0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Feb 2010 03:43:26 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:52509 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752761Ab0BFInF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Feb 2010 03:43:05 -0500
-Date: Sat, 6 Feb 2010 09:43:03 +0100 (CET)
+	id S1753722Ab0BFInY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Feb 2010 03:43:24 -0500
+Date: Sat, 6 Feb 2010 09:43:21 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: Avi Kivity <avi@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, kvm@vger.kernel.org,
+To: Lars Ellenberg <drbd-dev@lists.linbit.com>, drbd-user@lists.linbit.com,
        linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 4/11] arch/x86/kvm: Correct NULL test
-Message-ID: <Pine.LNX.4.64.1002060942390.8092@ask.diku.dk>
+Subject: [PATCH 5/11] drivers/block/drbd: Correct NULL test
+Message-ID: <Pine.LNX.4.64.1002060943040.8092@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -22,7 +20,7 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Julia Lawall <julia@diku.dk>
 
-msr was tested above, so the second test is not needed.
+Test the value that was just allocated rather than the previously tested one.
 
 A simplified version of the semantic match that finds this problem is as
 follows: (http://coccinelle.lip6.fr/)
@@ -46,19 +44,19 @@ if (x == NULL || ...) {
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- arch/x86/kvm/vmx.c                  |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
+ drivers/block/drbd/drbd_main.c      |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
-index 7375ae1..422bfc8 100644
---- a/arch/x86/kvm/vmx.c
-+++ b/arch/x86/kvm/vmx.c
-@@ -1609,8 +1609,6 @@ static void vmx_set_efer(struct kvm_vcpu *vcpu, u64 efer)
- 	 */
- 	vmx_load_host_state(to_vmx(vcpu));
- 	vcpu->arch.shadow_efer = efer;
--	if (!msr)
--		return;
- 	if (efer & EFER_LMA) {
- 		vmcs_write32(VM_ENTRY_CONTROLS,
- 			     vmcs_read32(VM_ENTRY_CONTROLS) |
+diff --git a/drivers/block/drbd/drbd_main.c b/drivers/block/drbd/drbd_main.c
+index ab871e0..d0c38a6 100644
+--- a/drivers/block/drbd/drbd_main.c
++++ b/drivers/block/drbd/drbd_main.c
+@@ -2770,7 +2770,7 @@ static int drbd_create_mempools(void)
+ 
+ 	drbd_ee_mempool = mempool_create(number,
+ 		mempool_alloc_slab, mempool_free_slab, drbd_ee_cache);
+-	if (drbd_request_mempool == NULL)
++	if (drbd_ee_mempool == NULL)
+ 		goto Enomem;
+ 
+ 	/* drbd's page pool */
