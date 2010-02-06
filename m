@@ -1,18 +1,17 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754919Ab0BFIoo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Feb 2010 03:44:44 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:52532 "EHLO mgw1.diku.dk"
+	id S1755021Ab0BFIpE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Feb 2010 03:45:04 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:52545 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753827Ab0BFIol (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Feb 2010 03:44:41 -0500
-Date: Sat, 6 Feb 2010 09:44:39 +0100 (CET)
+	id S1754507Ab0BFIpA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Feb 2010 03:45:00 -0500
+Date: Sat, 6 Feb 2010 09:44:58 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: "James E.J. Bottomley" <James.Bottomley@suse.de>,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+To: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
        kernel-janitors@vger.kernel.org
-Subject: [PATCH 9/11] drivers/scsi: Correct NULL test
-Message-ID: <Pine.LNX.4.64.1002060944160.8092@ask.diku.dk>
+Subject: [PATCH 10/11] drivers/video/mbx: Correct NULL test
+Message-ID: <Pine.LNX.4.64.1002060944400.8092@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -21,7 +20,7 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Julia Lawall <julia@diku.dk>
 
-fcf is tested in the line just below, so the first test is not needed.
+Test the value that was just allocated rather than the previously tested one.
 
 A simplified version of the semantic match that finds this problem is as
 follows: (http://coccinelle.lip6.fr/)
@@ -45,19 +44,19 @@ if (x == NULL || ...) {
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/scsi/fcoe/libfcoe.c         |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
+ drivers/video/mbx/mbxfb.c           |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/scsi/fcoe/libfcoe.c b/drivers/scsi/fcoe/libfcoe.c
-index 9823291..9b634bd 100644
---- a/drivers/scsi/fcoe/libfcoe.c
-+++ b/drivers/scsi/fcoe/libfcoe.c
-@@ -941,8 +941,6 @@ static void fcoe_ctlr_recv_clr_vlink(struct fcoe_ctlr *fip,
- 	u32	desc_mask;
+diff --git a/drivers/video/mbx/mbxfb.c b/drivers/video/mbx/mbxfb.c
+index afea9ab..7140405 100644
+--- a/drivers/video/mbx/mbxfb.c
++++ b/drivers/video/mbx/mbxfb.c
+@@ -950,7 +950,7 @@ static int __devinit mbxfb_probe(struct platform_device *dev)
  
- 	LIBFCOE_FIP_DBG(fip, "Clear Virtual Link received\n");
--	if (!fcf)
--		return;
- 	if (!fcf || !fc_host_port_id(lport->host))
- 		return;
- 
+ 	mfbi->fb_virt_addr = ioremap_nocache(mfbi->fb_phys_addr,
+ 					     res_size(mfbi->fb_req));
+-	if (!mfbi->reg_virt_addr) {
++	if (!mfbi->fb_virt_addr) {
+ 		dev_err(&dev->dev, "failed to ioremap frame buffer\n");
+ 		ret = -EINVAL;
+ 		goto err4;
