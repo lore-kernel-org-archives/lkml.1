@@ -1,17 +1,17 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757524Ab0BGEQW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Feb 2010 23:16:22 -0500
-Received: from mga03.intel.com ([143.182.124.21]:15018 "EHLO mga03.intel.com"
+	id S1757339Ab0BGEQT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Feb 2010 23:16:19 -0500
+Received: from mga11.intel.com ([192.55.52.93]:15527 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753406Ab0BGEOL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753676Ab0BGEOL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 6 Feb 2010 23:14:11 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.49,420,1262592000"; 
-   d="scan'208";a="241292581"
-Message-Id: <20100207041043.865667848@intel.com>
+   d="scan'208";a="770772770"
+Message-Id: <20100207041043.720697492@intel.com>
 User-Agent: quilt/0.48-1
-Date: Sun, 07 Feb 2010 12:10:21 +0800
+Date: Sun, 07 Feb 2010 12:10:20 +0800
 From: Wu Fengguang <fengguang.wu@intel.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 CC: Jens Axboe <jens.axboe@oracle.com>, Ingo Molnar <mingo@elte.hu>,
@@ -23,155 +23,205 @@ CC: Olivier Galibert <galibert@pobox.com>
 cc: Linux Memory Management List <linux-mm@kvack.org>
 CC: <linux-fsdevel@vger.kernel.org>
 Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 08/11] readahead: add tracing event
+Subject: [PATCH 07/11] readahead: record readahead patterns
 References: <20100207041013.891441102@intel.com>
-Content-Disposition: inline; filename=readahead-tracer.patch
+Content-Disposition: inline; filename=readahead-tracepoints.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Example output:
+Record the readahead pattern in ra_flags. This info can be examined by
+users via the readahead tracing/stats interfaces.
 
-# echo 1 > /debug/tracing/events/readahead/enable
-# cp test-file /dev/null
-# cat /debug/tracing/trace  # trimmed output
-readahead-initial(dev=0:15, ino=100177, req=0+2, ra=0+4-2, async=0) = 4
-readahead-subsequent(dev=0:15, ino=100177, req=2+2, ra=4+8-8, async=1) = 8
-readahead-subsequent(dev=0:15, ino=100177, req=4+2, ra=12+16-16, async=1) = 16
-readahead-subsequent(dev=0:15, ino=100177, req=12+2, ra=28+32-32, async=1) = 32
-readahead-subsequent(dev=0:15, ino=100177, req=28+2, ra=60+60-60, async=1) = 24
-readahead-subsequent(dev=0:15, ino=100177, req=60+2, ra=120+60-60, async=1) = 0
+Currently 7 patterns are defined:
+
+      	pattern			readahead for
+-----------------------------------------------------------
+	RA_PATTERN_INITIAL	start-of-file/oversize read
+	RA_PATTERN_SUBSEQUENT	trivial     sequential read
+	RA_PATTERN_CONTEXT	interleaved sequential read
+	RA_PATTERN_THRASH	thrashed    sequential read
+	RA_PATTERN_MMAP_AROUND	mmap fault
+	RA_PATTERN_FADVISE	posix_fadvise()
+	RA_PATTERN_RANDOM	random read
 
 CC: Ingo Molnar <mingo@elte.hu> 
 CC: Jens Axboe <jens.axboe@oracle.com> 
 CC: Peter Zijlstra <a.p.zijlstra@chello.nl> 
 Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 ---
- include/trace/events/readahead.h |   69 +++++++++++++++++++++++++++++
- mm/readahead.c                   |   22 +++++++++
- 2 files changed, 91 insertions(+)
+ include/linux/fs.h |   32 ++++++++++++++++++++++++++++++++
+ include/linux/mm.h |    4 +++-
+ mm/filemap.c       |    9 +++++++--
+ mm/readahead.c     |   17 +++++++++++++----
+ 4 files changed, 55 insertions(+), 7 deletions(-)
 
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux/include/trace/events/readahead.h	2010-02-07 11:46:42.000000000 +0800
-@@ -0,0 +1,69 @@
-+#undef TRACE_SYSTEM
-+#define TRACE_SYSTEM readahead
-+
-+#if !defined(_TRACE_READAHEAD_H) || defined(TRACE_HEADER_MULTI_READ)
-+#define _TRACE_READAHEAD_H
-+
-+#include <linux/tracepoint.h>
-+
-+extern const char * const ra_pattern_names[];
+--- linux.orig/include/linux/fs.h	2010-02-07 11:46:39.000000000 +0800
++++ linux/include/linux/fs.h	2010-02-07 11:46:40.000000000 +0800
+@@ -897,8 +897,40 @@ struct file_ra_state {
+ };
+ 
+ /* ra_flags bits */
++#define READAHEAD_PATTERN_SHIFT	20
++#define READAHEAD_PATTERN	0x00f00000
+ #define	READAHEAD_MMAP_MISS	0x0000ffff /* cache misses for mmap access */
+ #define READAHEAD_THRASHED	0x10000000
++#define	READAHEAD_MMAP		0x20000000
 +
 +/*
-+ * Tracepoint for guest mode entry.
++ * Which policy makes decision to do the current read-ahead IO?
 + */
-+TRACE_EVENT(readahead,
-+	TP_PROTO(struct address_space *mapping,
-+		 pgoff_t offset,
-+		 unsigned long req_size,
-+		 unsigned int ra_flags,
-+		 pgoff_t start,
-+		 unsigned int size,
-+		 unsigned int async_size,
-+		 unsigned int actual),
-+
-+	TP_ARGS(mapping, offset, req_size,
-+		ra_flags, start, size, async_size, actual),
-+
-+	TP_STRUCT__entry(
-+		__field(	dev_t,		dev		)
-+		__field(	ino_t,		ino		)
-+		__field(	pgoff_t,	offset		)
-+		__field(	unsigned long,	req_size	)
-+		__field(	unsigned int,	pattern		)
-+		__field(	pgoff_t,	start		)
-+		__field(	unsigned int,	size		)
-+		__field(	unsigned int,	async_size	)
-+		__field(	unsigned int,	actual		)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->dev		= mapping->host->i_sb->s_dev;
-+		__entry->ino		= mapping->host->i_ino;
-+		__entry->pattern	= ra_pattern(ra_flags);
-+		__entry->offset		= offset;
-+		__entry->req_size	= req_size;
-+		__entry->start		= start;
-+		__entry->size		= size;
-+		__entry->async_size	= async_size;
-+		__entry->actual		= actual;
-+	),
-+
-+	TP_printk("readahead-%s(dev=%d:%d, ino=%lu, "
-+		  "req=%lu+%lu, ra=%lu+%d-%d, async=%d) = %d",
-+			ra_pattern_names[__entry->pattern],
-+			MAJOR(__entry->dev),
-+			MINOR(__entry->dev),
-+			__entry->ino,
-+			__entry->offset,
-+			__entry->req_size,
-+			__entry->start,
-+			__entry->size,
-+			__entry->async_size,
-+			__entry->start > __entry->offset,
-+			__entry->actual)
-+);
-+
-+#endif /* _TRACE_READAHEAD_H */
-+
-+/* This part must be outside protection */
-+#include <trace/define_trace.h>
---- linux.orig/mm/readahead.c	2010-02-07 11:46:40.000000000 +0800
-+++ linux/mm/readahead.c	2010-02-07 11:46:42.000000000 +0800
-@@ -19,11 +19,25 @@
- #include <linux/pagevec.h>
- #include <linux/pagemap.h>
- 
-+#define CREATE_TRACE_POINTS
-+#include <trace/events/readahead.h>
-+
- /*
-  * Set async size to 1/# of the thrashing threshold.
-  */
- #define READAHEAD_ASYNC_RATIO	8
- 
-+const char * const ra_pattern_names[] = {
-+	[RA_PATTERN_INITIAL]		= "initial",
-+	[RA_PATTERN_SUBSEQUENT]		= "subsequent",
-+	[RA_PATTERN_CONTEXT]		= "context",
-+	[RA_PATTERN_THRASH]		= "thrash",
-+	[RA_PATTERN_MMAP_AROUND]	= "around",
-+	[RA_PATTERN_FADVISE]		= "fadvise",
-+	[RA_PATTERN_RANDOM]		= "random",
-+	[RA_PATTERN_ALL]		= "all",
++enum readahead_pattern {
++	RA_PATTERN_INITIAL,
++	RA_PATTERN_SUBSEQUENT,
++	RA_PATTERN_CONTEXT,
++	RA_PATTERN_THRASH,
++	RA_PATTERN_MMAP_AROUND,
++	RA_PATTERN_FADVISE,
++	RA_PATTERN_RANDOM,
++	RA_PATTERN_ALL,		/* for summary stats */
++	RA_PATTERN_MAX
 +};
 +
++static inline int ra_pattern(int ra_flags)
++{
++	int pattern = (ra_flags & READAHEAD_PATTERN)
++			       >> READAHEAD_PATTERN_SHIFT;
++
++	return min(pattern, RA_PATTERN_ALL);
++}
++
++static inline void ra_set_pattern(struct file_ra_state *ra, int pattern)
++{
++	ra->ra_flags = (ra->ra_flags & ~READAHEAD_PATTERN) |
++			    (pattern << READAHEAD_PATTERN_SHIFT);
++}
+ 
  /*
-  * Initialise a struct file's readahead state.  Assumes that the caller has
-  * memset *ra to zero.
-@@ -274,6 +288,11 @@ int force_page_cache_readahead(struct ad
- 		offset += this_chunk;
- 		nr_to_read -= this_chunk;
+  * Don't do ra_flags++ directly to avoid possible overflow:
+--- linux.orig/mm/readahead.c	2010-02-07 11:46:39.000000000 +0800
++++ linux/mm/readahead.c	2010-02-07 11:46:40.000000000 +0800
+@@ -291,7 +291,10 @@ unsigned long max_sane_readahead(unsigne
+  * Submit IO for the read-ahead request in file_ra_state.
+  */
+ unsigned long ra_submit(struct file_ra_state *ra,
+-		       struct address_space *mapping, struct file *filp)
++			struct address_space *mapping,
++			struct file *filp,
++			pgoff_t offset,
++			unsigned long req_size)
+ {
+ 	int actual;
+ 
+@@ -425,6 +428,7 @@ ondemand_readahead(struct address_space 
+ 	 * start of file
+ 	 */
+ 	if (!offset) {
++		ra_set_pattern(ra, RA_PATTERN_INITIAL);
+ 		ra->start = offset;
+ 		ra->size = get_init_ra_size(req_size, max);
+ 		ra->async_size = ra->size > req_size ?
+@@ -445,6 +449,7 @@ ondemand_readahead(struct address_space 
+ 	 */
+ 	if ((offset == (ra->start + ra->size - ra->async_size) ||
+ 	     offset == (ra->start + ra->size))) {
++		ra_set_pattern(ra, RA_PATTERN_SUBSEQUENT);
+ 		ra->start += ra->size;
+ 		ra->size = get_next_ra_size(ra, max);
+ 		ra->async_size = ra->size;
+@@ -455,6 +460,7 @@ ondemand_readahead(struct address_space 
+ 	 * oversize read, no need to query page cache
+ 	 */
+ 	if (req_size > max && !hit_readahead_marker) {
++		ra_set_pattern(ra, RA_PATTERN_INITIAL);
+ 		ra->start = offset;
+ 		ra->size = max;
+ 		ra->async_size = max;
+@@ -500,8 +506,10 @@ context_readahead:
+ 	 */
+ 	if (!size && !hit_readahead_marker) {
+ 		if (!ra_thrashed(ra, offset)) {
++			ra_set_pattern(ra, RA_PATTERN_RANDOM);
+ 			ra->size = min(req_size, max);
+ 		} else {
++			ra_set_pattern(ra, RA_PATTERN_THRASH);
+ 			retain_inactive_pages(mapping, offset, min(2 * max,
+ 						ra->start + ra->size - offset));
+ 			ra->size = max_t(int, ra->size/2, MIN_READAHEAD_PAGES);
+@@ -518,12 +526,13 @@ context_readahead:
+ 	if (size >= offset)
+ 		size *= 2;
+ 	/*
+-	 * pages to readahead are already cached
++	 * Pages to readahead are already cached?
+ 	 */
+ 	if (size <= start - offset)
+ 		return 0;
+-
+ 	size -= start - offset;
++
++	ra_set_pattern(ra, RA_PATTERN_CONTEXT);
+ 	ra->start = start;
+ 	ra->size = clamp_t(unsigned int, size, MIN_READAHEAD_PAGES, max);
+ 	ra->async_size = min(ra->size, 1 + size / READAHEAD_ASYNC_RATIO);
+@@ -539,7 +548,7 @@ readit:
+ 		ra->size += ra->async_size;
  	}
-+
-+	trace_readahead(mapping, offset, nr_to_read,
-+			RA_PATTERN_FADVISE << READAHEAD_PATTERN_SHIFT,
-+			offset, nr_to_read, 0, ret);
-+
- 	return ret;
+ 
+-	return ra_submit(ra, mapping, filp);
++	return ra_submit(ra, mapping, filp, offset, req_size);
  }
  
-@@ -301,6 +320,9 @@ unsigned long ra_submit(struct file_ra_s
- 	actual = __do_page_cache_readahead(mapping, filp,
- 					ra->start, ra->size, ra->async_size);
+ /**
+--- linux.orig/include/linux/mm.h	2010-02-07 11:46:35.000000000 +0800
++++ linux/include/linux/mm.h	2010-02-07 11:46:40.000000000 +0800
+@@ -1209,7 +1209,9 @@ void page_cache_async_readahead(struct a
+ unsigned long max_sane_readahead(unsigned long nr);
+ unsigned long ra_submit(struct file_ra_state *ra,
+ 			struct address_space *mapping,
+-			struct file *filp);
++			struct file *filp,
++			pgoff_t offset,
++			unsigned long req_size);
  
-+	trace_readahead(mapping, offset, req_size, ra->ra_flags,
-+			ra->start, ra->size, ra->async_size, actual);
-+
- 	return actual;
+ /* Do stack extension */
+ extern int expand_stack(struct vm_area_struct *vma, unsigned long address);
+--- linux.orig/mm/filemap.c	2010-02-07 11:46:37.000000000 +0800
++++ linux/mm/filemap.c	2010-02-07 11:46:40.000000000 +0800
+@@ -1413,6 +1413,7 @@ static void do_sync_mmap_readahead(struc
+ 
+ 	if (VM_SequentialReadHint(vma) ||
+ 			offset - 1 == (ra->prev_pos >> PAGE_CACHE_SHIFT)) {
++		ra->ra_flags |= READAHEAD_MMAP;
+ 		page_cache_sync_readahead(mapping, ra, file, offset,
+ 					  ra->ra_pages);
+ 		return;
+@@ -1431,10 +1432,12 @@ static void do_sync_mmap_readahead(struc
+ 	 */
+ 	ra_pages = max_sane_readahead(ra->ra_pages);
+ 	if (ra_pages) {
++		ra->ra_flags |= READAHEAD_MMAP;
++		ra_set_pattern(ra, RA_PATTERN_MMAP_AROUND);
+ 		ra->start = max_t(long, 0, offset - ra_pages/2);
+ 		ra->size = ra_pages;
+ 		ra->async_size = 0;
+-		ra_submit(ra, mapping, file);
++		ra_submit(ra, mapping, file, offset, 1);
+ 	}
  }
  
+@@ -1454,9 +1457,11 @@ static void do_async_mmap_readahead(stru
+ 	if (VM_RandomReadHint(vma))
+ 		return;
+ 	ra_mmap_miss_dec(ra);
+-	if (PageReadahead(page))
++	if (PageReadahead(page)) {
++		ra->ra_flags |= READAHEAD_MMAP;
+ 		page_cache_async_readahead(mapping, ra, file,
+ 					   page, offset, ra->ra_pages);
++	}
+ }
+ 
+ /**
 
 
