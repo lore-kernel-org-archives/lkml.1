@@ -1,39 +1,49 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755503Ab0BGOgo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Feb 2010 09:36:44 -0500
-Received: from mail.fem.tu-ilmenau.de ([141.24.101.79]:38445 "EHLO
-	mail.fem.tu-ilmenau.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751141Ab0BGOgn (ORCPT
+	id S932080Ab0BGOyZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Feb 2010 09:54:25 -0500
+Received: from lider.pardus.org.tr ([193.140.100.216]:42027 "EHLO
+	lider.pardus.org.tr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754595Ab0BGOyX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Feb 2010 09:36:43 -0500
-From: Johannes Hirte <johannes.hirte@fem.tu-ilmenau.de>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Subject: Re: BUG: Bad page state in process portageq
-Date: Sun, 7 Feb 2010 15:36:36 +0100
-User-Agent: KMail/1.13.0 (Linux/2.6.33-rc6-00228-g56dca4c; KDE/4.3.98; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <201002070145.47514.johannes.hirte@fem.tu-ilmenau.de> <20100207132331.GA4138@x200>
-In-Reply-To: <20100207132331.GA4138@x200>
+	Sun, 7 Feb 2010 09:54:23 -0500
+Message-ID: <4B6ED423.3090700@pardus.org.tr>
+Date: Sun, 07 Feb 2010 16:54:27 +0200
+From: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org
+Subject: Re: [GIT PATCHES for 2.6.33] DVB Mantis driver
+References: <4B531CDC.8020400@redhat.com>
+In-Reply-To: <4B531CDC.8020400@redhat.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <201002071536.37512.johannes.hirte@fem.tu-ilmenau.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Sonntag 07 Februar 2010 14:23:31 schrieb Alexey Dobriyan:
-> On Sun, Feb 07, 2010 at 01:45:46AM +0100, Johannes Hirte wrote:
-> > Feb  6 20:47:45 datengrab kernel: BUG: Bad page state in process portageq
-> > pfn:2846d
+Mauro Carvalho Chehab wrote:
+> Linus,
 > 
-> Run memtest.
+> Please pull from:
+>         ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/linux-2.6.git mantis
+> 
+> For the DVB mantis driver. This is a new driver that add support for the DVB devices
+> based on ST mantis chips. This design is becoming very popular and the driver were
+> already out of the kernel tree for some time.
+> 
+> As this driver doesn't touch on the existing code, were already confirmed to work
+> by several people, and is being on linux-next since December, I'm hoping that you'll
+> accept its late submission for 2.6.33.
+> 
 
-Sorry forgot to mention, the machine is with ECC RAM equipped. So if there are 
-any memory errors, shouldn't I find something in the logs, either BIOS or by 
-the edac driver?
+Hi,
 
-regards,
-  Johannes
+I don't know it it was intentional but those mantis and hopper drivers doesn't call MODULE_DEVICE_TABLE
+macro which makes them aliasless and hence not auto-loadable.
+
+Regards,
+Ozan Caglayan
