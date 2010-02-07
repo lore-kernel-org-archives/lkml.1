@@ -1,80 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757061Ab0BGT7S (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Feb 2010 14:59:18 -0500
-Received: from casper.infradead.org ([85.118.1.10]:38303 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754980Ab0BGT7Q (ORCPT
+	id S1755547Ab0BGUEY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Feb 2010 15:04:24 -0500
+Received: from eagle.jhcloos.com ([207.210.242.212]:39645 "EHLO
+	eagle.jhcloos.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751382Ab0BGUEW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Feb 2010 14:59:16 -0500
-Subject: Re: [PATCH] sched: Fix unused variable warning on UP (was: Re: 
- linux-next: tip tree build warning)
-From: Peter Zijlstra <peterz@infradead.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Stephen Rothwell <sfr@canb.auug.org.au>
-In-Reply-To: <10f740e81002071157p11b78784i8091d4790c29f30d@mail.gmail.com>
-References: <10f740e81002071157p11b78784i8091d4790c29f30d@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 07 Feb 2010 20:58:58 +0100
-Message-ID: <1265572738.12224.278.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 7 Feb 2010 15:04:22 -0500
+X-Greylist: delayed 485 seconds by postgrey-1.27 at vger.kernel.org; Sun, 07 Feb 2010 15:04:22 EST
+From: James Cloos <cloos@jhcloos.com>
+To: Mark Lord <kernel@teksavvy.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Linux 2.6.33-rc7
+In-Reply-To: <4B6E4793.3010201@teksavvy.com> (Mark Lord's message of "Sat, 06
+	Feb 2010 23:54:43 -0500")
+References: <alpine.LFD.2.00.1002061422430.3829@localhost.localdomain>
+	<alpine.LFD.2.00.1002061445210.3829@localhost.localdomain>
+	<4B6E4793.3010201@teksavvy.com>
+User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1.90 (gnu/linux)
+Face: iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAI1J
+ REFUOE+lU9ESgCAIg64P1y+ngUdxhl5H8wFbbM0OmUiEhKkCYaZThXCo6KE5sCbA1DDX3genvO4d
+ eBQgEMaM5qy6uWk4SfBYfdu9jvBN9nSVDOKRtwb+I3epboOsOX5pZbJNsBJFvmQQ05YMfieIBnYX
+ FK2N6dOawd97r/e8RjkTLzmMsiVgrAoEugtviCM3v2WzjgAAAABJRU5ErkJggg==
+Copyright: Copyright 2009 James Cloos
+OpenPGP: ED7DAEA6; url=http://jhcloos.com/public_key/0xED7DAEA6.asc
+OpenPGP-Fingerprint: E9E9 F828 61A4 6EA9 0F2B  63E7 997A 9F17 ED7D AEA6
+Date: Sun, 07 Feb 2010 14:10:31 -0500
+Message-ID: <m3k4uo275s.fsf@lugabout.jhcloos.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Hashcash: 1:30:100207:kernel@teksavvy.com::eJXzEa5GZFvSCXrz:0000000000000000000000000000000000000000086wXD
+X-Hashcash: 1:30:100207:linux-kernel@vger.kernel.org::fRmMfZ6i524qNc+e:00000000000000000000000000000000NbKqs
+X-Hashcash: 1:30:100207:torvalds@linux-foundation.org::5U3wLcbhZSIjrMoU:0000000000000000000000000000000pog4P
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2010-02-07 at 20:57 +0100, Geert Uytterhoeven wrote:
-> On Mon, Feb 1, 2010 at 08:12, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> > Today's linux-next build (powerpc allnoconfig) produced this warning:
-> >
-> > kernel/sched.c: In function 'wake_up_new_task':
-> > kernel/sched.c:2631: warning: unused variable 'cpu'
-> >
-> > Introduced by commit fabf318e5e4bda0aca2b0d617b191884fda62703 ("sched:
-> > Fix fork vs hotplug vs cpuset namespaces").
-> 
-> And now we have it in 2.6.33-rc7, too...
-> Patch below (FWIW, compile-tested on m68k with CONFIG_SMP=n only).
-> 
-> ---
-> From cbf4f334632ade9c5ed9b88728ec82af074e4ace Mon Sep 17 00:00:00 2001
-> From: Geert Uytterhoeven <geert@linux-m68k.org>
-> Date: Sun, 7 Feb 2010 20:47:30 +0100
-> Subject: [PATCH] sched: Fix unused variable warning on UP
-> 
-> Fix warning
-> 
-> | kernel/sched.c:2650: warning: unused variable 'cpu'
-> 
-> if CONFIG_SMP is not set.
-> 
-> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> ---
->  kernel/sched.c |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
-> 
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index 3a8fb30..c47561e 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -2647,9 +2647,10 @@ void wake_up_new_task(struct task_struct *p,
-> unsigned long clone_flags)
->  {
->  	unsigned long flags;
->  	struct rq *rq;
-> -	int cpu = get_cpu();
-> 
->  #ifdef CONFIG_SMP
-> +	int cpu = get_cpu();
-> +
->  	/*
->  	 * Fork balancing, do it here and not earlier because:
->  	 *  - cpus_allowed can change in the fork path
+>>>>> "Mark" == Mark Lord <kernel@teksavvy.com> writes:
 
-Which introduces a preempt imbalance... I like akpm's fix much better.
+Mark> I just wish the GNU tar folk had the sense to combine -z and -j
+Mark> into a single flag.
 
+Try the -a flag:
+
+ -a, --auto-compress   use archive suffix to determine the compression program
+
+(Which does seem to be on by default, now, as mentioned in the other reply.)
+
+-JimC
+-- 
+James Cloos <cloos@jhcloos.com>         OpenPGP: 1024D/ED7DAEA6
