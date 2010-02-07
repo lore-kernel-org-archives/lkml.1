@@ -1,55 +1,58 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933636Ab0BGKuU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Feb 2010 05:50:20 -0500
-Received: from 8bytes.org ([88.198.83.132]:40641 "EHLO 8bytes.org"
+	id S1754295Ab0BGKum (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Feb 2010 05:50:42 -0500
+Received: from borg.medozas.de ([188.40.89.202]:59313 "EHLO borg.medozas.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932087Ab0BGKuJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Feb 2010 05:50:09 -0500
-Date: Sun, 7 Feb 2010 11:50:08 +0100
-From: Joerg Roedel <joro@8bytes.org>
-To: Avi Kivity <avi@redhat.com>
-Cc: Joerg Roedel <joerg.roedel@amd.com>, Marcelo Tosatti <mtosatti@redhat.com>,
-       David Woodhouse <dwmw2@infradead.org>, kvm@vger.kernel.org,
-       iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 02/11] iommu-api: Add iommu_map and iommu_unmap
-	functions
-Message-ID: <20100207105007.GC17809@8bytes.org>
-References: <1264678682-30655-1-git-send-email-joerg.roedel@amd.com> <1264678682-30655-3-git-send-email-joerg.roedel@amd.com> <4B6E8A16.8050109@redhat.com>
+	id S932087Ab0BGKui (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Feb 2010 05:50:38 -0500
+Date: Sun, 7 Feb 2010 11:50:36 +0100 (CET)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Jens Axboe <jens.axboe@oracle.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: kswapd continuously active
+In-Reply-To: <alpine.LSU.2.01.1002051423020.23211@obet.zrqbmnf.qr>
+Message-ID: <alpine.LSU.2.01.1002071148150.26546@obet.zrqbmnf.qr>
+References: <alpine.LSU.2.01.1001230037350.20442@obet.zrqbmnf.qr> <20100125130627.GO13771@kernel.dk> <alpine.LSU.2.01.1001251416340.8189@obet.zrqbmnf.qr> <alpine.LSU.2.01.1002051329090.7843@obet.zrqbmnf.qr> <20100205130002.GI1025@kernel.dk>
+ <alpine.LSU.2.01.1002051408280.23211@obet.zrqbmnf.qr> <20100205131220.GK1025@kernel.dk> <alpine.LSU.2.01.1002051423020.23211@obet.zrqbmnf.qr>
+User-Agent: Alpine 2.01 (LSU 1266 2009-07-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B6E8A16.8050109@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 07, 2010 at 11:38:30AM +0200, Avi Kivity wrote:
-> On 01/28/2010 01:37 PM, Joerg Roedel wrote:
->> These two functions provide support for mapping and
->> unmapping physical addresses to io virtual addresses. The
->> difference to the iommu_(un)map_range() is that the new
->> functions take a gfp_order parameter instead of a size. This
->> allows the IOMMU backend implementations to detect easier if
->> a given range can be mapped by larger page sizes.
->> These new functions should replace the old ones in the long
->> term.
->>    
+
+On Friday 2010-02-05 14:24, Jan Engelhardt wrote:
+>>> The ext4 filesystem is already mounted with barrier=0. If there
+>>> is any block-level barriers I also can turn off, what would be
+>>> the command?
+>>
+>>barrier=0 is enough. I do wonder why your writeback rate is that slow,
+>>then. The disk has write back caching enabled?
 >
-> These seem to be less flexible in the long term.  Sure, it is easier for  
-> the backend to map to multiple page sizes if your iommu supports  
-> arbitrary power-of-two page sizes, but we should make the APIs easier  
-> for the callers, not the backend.
+>Yes, that seems to be the case at least. In fact the box is all fluffy 
+>when nobody runs sync(1), which is what makes it so strange.
+>
+>sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't 
+>support DPO or FUA
 
-These functions are as flexible as the old ones which just tok a size.
-The benefit of the new interface is that is makes the ability of the
-IOMMU to map the area with a large page (an get the benefit of fewer
-hardware tlb walks) visible to the caller. With the old interface the
-caller is tempted to just map ist whole area using 4kb page sizes.
-It gives a bit more complexity to the caller, thats right. But given
-that the page allocator in Linux always returns pages which are aligned
-to its size takes a lot of that complexity away.
+Here is an alternate trace that just happened.
 
-	Joerg
-
+INFO: task flush-8:0:343 blocked for more than 120 seconds.
+"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+flush-8:0     D 0000000000555930  6664   343      2 0x18000000000
+Call Trace:
+ [00000000005555f4] start_this_handle+0x324/0x4b0
+ [0000000000555930] jbd2_journal_start+0x94/0xc0
+ [000000000052ddb8] ext4_da_writepages+0x1e0/0x460
+ [000000000049bf30] do_writepages+0x28/0x48
+ [00000000004e6d58] writeback_single_inode+0xf0/0x330
+ [00000000004e7b24] writeback_inodes_wb+0x4c8/0x5d8
+ [00000000004e7da4] wb_writeback+0x170/0x1ec
+ [00000000004e8074] wb_do_writeback+0x188/0x1a4
+ [00000000004e80b8] bdi_writeback_task+0x28/0xa0
+ [00000000004a76c8] bdi_start_fn+0x64/0xc4
+ [0000000000475f84] kthread+0x58/0x6c
+ [000000000042ade0] kernel_thread+0x30/0x48
+ [0000000000475ee0] kthreadd+0xb8/0x104
