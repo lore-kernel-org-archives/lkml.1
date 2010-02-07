@@ -1,60 +1,98 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753432Ab0BGNkA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Feb 2010 08:40:00 -0500
-Received: from mail-ew0-f228.google.com ([209.85.219.228]:48108 "EHLO
-	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751007Ab0BGNj7 (ORCPT
+	id S1753939Ab0BGNqe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Feb 2010 08:46:34 -0500
+Received: from casper.infradead.org ([85.118.1.10]:55018 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751428Ab0BGNqd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Feb 2010 08:39:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=KvWzPIAdxX1wW9JL8R/4mAsjOKyevmnhj4wk29vY4dQy+jJEW3i2M6cZ8MneuS57Rq
-         ZzB8rn0YDgOMelM1hKJwWD3/LW7ArMOcCCsxSG5VD4Erjo6CpsKNhK4pkQviKws5ifn8
-         w9AcvhDzhLqjsoaVnRzyRzEo0n26IHLLW1kiM=
+	Sun, 7 Feb 2010 08:46:33 -0500
+From: Arnaldo Carvalho de Melo <acme@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
+       =?utf-8?q?Fr=C3=A9d=C3=A9ric=20Weisbecker?= <fweisbec@gmail.com>,
+       Kirill Smelkov <kirr@landau.phys.spbu.ru>,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>
+Subject: [PATCH 2/2] perf top: Use address pattern in lookup_sym_source
+Date: Sun,  7 Feb 2010 11:46:16 -0200
+Message-Id: <1265550376-12665-2-git-send-email-acme@infradead.org>
+X-Mailer: git-send-email 1.6.2.5
+In-Reply-To: <1265550376-12665-1-git-send-email-acme@infradead.org>
+References: <1265550376-12665-1-git-send-email-acme@infradead.org>
 MIME-Version: 1.0
-Date: Sun, 7 Feb 2010 08:39:57 -0500
-Message-ID: <deaa866a1002070539v47807006lc2f217d5c16a6b51@mail.gmail.com>
-Subject: Multi-card DRI interface timeframe
-From: Robert Bradbury <robert.bradbury@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Have: Radeon R3450 & Intel i915. Want multiple X terminals and multiple screens.
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
 
-Excerpted logs:
-Xorg.2.log:(II) RADEONHD(0): [DRI] installation complete
-Xorg.3.log:(EE) RADEONHD(0): [dri] DRIScreenInit failed.  Disabling DRI.
+Because we may have aliases, like __GI___strcoll_l in
+/lib64/libc-2.10.2.so that appears in objdump as:
 
-Xterms :0 and :1 are like :3.  I am under the impression that only one
-VT (here :2) can get the DRI interface.  That terminals is fast, the
-rest much less so. (Its also annoying that the DRI gets assigned to
-the VT/X started but assume thats an Xorg scheduling issue).
-I am under the impression that how many VTs/X Servers can use the DRI
-is a kernel issue.
+$ objdump --start-address=0x0000003715a86420 \
+           --stop-address=0x0000003715a872dc -dS /lib64/libc-2.10.2.so
 
-Q1: What is the kernel development time frame for allowing the active
-VT to take control of the DRI interface?
+0000003715a86420 <__strcoll_l>:
+  3715a86420:	55                   	push   %rbp
+  3715a86421:	48 89 e5             	mov    %rsp,%rbp
+  3715a86424:	41 57                	push   %r15
+[root@doppio linux-2.6-tip]#
 
-Now, this machine has both the Intel i915 graphics interface and F3450
-card with 2 video interfaces.  The X server (via Xorg.conf) has no
-problem setting up both hardware controllers.  It is possible to do
-dual screen (like xinerama but using a large virtual screen) across
-both Radeon interfaces.  However one cannot do "dual screen" (or
-tri-screen) across both hardware controllers.  (Of course in this
-situation it seems that switching VTs would involve switching both
-controllers so it would seem to me to involve kernel issues.)
+So look for the address exactly at the start of the line instead so that
+annotation can work for in these cases.
 
-Q2: What is the kernel development time frame for allowing mixing and
-matching video controller hardware across multiple screens?
+Cc: Frédéric Weisbecker <fweisbec@gmail.com>
+Cc: Kirill Smelkov <kirr@landau.phys.spbu.ru>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Paul Mackerras <paulus@samba.org>
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+---
+ tools/perf/builtin-top.c |   15 ++++++++-------
+ 1 files changed, 8 insertions(+), 7 deletions(-)
 
-I realize that this is not the focus of the LKML per se but the KMS,
-DRI, and controller drivers all *are* in the Kernel.  If other forums
-would be better for these types of questions then please suggest them.
+diff --git a/tools/perf/builtin-top.c b/tools/perf/builtin-top.c
+index befa57e..c72ab50 100644
+--- a/tools/perf/builtin-top.c
++++ b/tools/perf/builtin-top.c
+@@ -202,10 +202,9 @@ static void parse_source(struct sym_entry *syme)
+ 	len = sym->end - sym->start;
+ 
+ 	sprintf(command,
+-		"objdump --start-address=0x%016Lx "
+-			 "--stop-address=0x%016Lx -dS %s",
+-		map__rip_2objdump(map, sym->start),
+-		map__rip_2objdump(map, sym->end), path);
++		"objdump --start-address=%#0*Lx --stop-address=%#0*Lx -dS %s",
++		BITS_PER_LONG / 4, map__rip_2objdump(map, sym->start),
++		BITS_PER_LONG / 4, map__rip_2objdump(map, sym->end), path);
+ 
+ 	file = popen(command, "r");
+ 	if (!file)
+@@ -292,13 +291,15 @@ static void lookup_sym_source(struct sym_entry *syme)
+ {
+ 	struct symbol *symbol = sym_entry__symbol(syme);
+ 	struct source_line *line;
+-	char pattern[PATH_MAX];
++	const size_t pattern_len = BITS_PER_LONG / 4 + 2;
++	char pattern[pattern_len + 1];
+ 
+-	sprintf(pattern, "<%s>:", symbol->name);
++	sprintf(pattern, "%0*Lx <", BITS_PER_LONG / 4,
++		map__rip_2objdump(syme->map, symbol->start));
+ 
+ 	pthread_mutex_lock(&syme->src->lock);
+ 	for (line = syme->src->lines; line; line = line->next) {
+-		if (strstr(line->line, pattern)) {
++		if (memcmp(line->line, pattern, pattern_len) == 0) {
+ 			syme->src->source = line;
+ 			break;
+ 		}
+-- 
+1.6.2.5
 
-Thank you,
-Robert Bradbury
