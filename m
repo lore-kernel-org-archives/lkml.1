@@ -1,91 +1,49 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757104Ab0BGXZo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Feb 2010 18:25:44 -0500
-Received: from mail.gmx.net ([213.165.64.20]:40753 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1756457Ab0BGXZm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Feb 2010 18:25:42 -0500
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX1+gbvIjYwugznrJTQ0jYqV0ANiuq4Y/94zDMBKhWB
-	U5WuNXwdfLhgUH
-Date: Mon, 8 Feb 2010 00:25:59 +0100 (CET)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Michal Marek <mmarek@suse.cz>
-cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org
-Subject: [PATCH v2] tags: include headers before source files
-In-Reply-To: <4B6C94AC.7000301@suse.cz>
-Message-ID: <Pine.LNX.4.64.1002080022290.15951@axis700.grange>
-References: <Pine.LNX.4.64.1002031704550.6324@axis700.grange> <4B6C94AC.7000301@suse.cz>
+	id S1757121Ab0BGXdi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Feb 2010 18:33:38 -0500
+Received: from [159.226.40.154] ([159.226.40.154]:39288 "EHLO mail.loongson.cn"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1756073Ab0BGXdh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Feb 2010 18:33:37 -0500
+X-Greylist: delayed 1286 seconds by postgrey-1.27 at vger.kernel.org; Sun, 07 Feb 2010 18:33:36 EST
+Message-ID: <0d49f5f61741cbf3d248d72dd535c994.squirrel@mail.loongson.cn>
+Date: Mon, 8 Feb 2010 06:59:18 +0800 (CST)
+Subject: Upgrade Your Email Account
+From: "Webmail Upgrade Teamn" <info@upgrade.com>
+Reply-To: upgradecct@w.cn
+User-Agent: SquirrelMail/1.4.15
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.46999999999999997
+Content-Type: text/plain;charset=gb2312
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
+To: undisclosed-recipients:;
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently looking up a structure definition in TAGS / tags takes one to
-one of multiple "static struct X" definitions in arch sources, which makes
-it for many structs practically impossible to get to the required header.
-This patch changes the order of sources being tagged to first scan
-architecture includes, then the top-level include/ directory, and only
-then the rest. It also takes into account, that many architectures have
-more than one include directory, i.e., not only arch/$ARCH/include, but
-also arch/$ARCH/mach-X/include etc.
 
-Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Reviewed-by: WANG Cong <xiyou.wangcong@gmail.com>
----
 
-v1 -> v2:
 
-1. check if $include variable is not empty - thanks, Michal, for testing
+ATTENTION:
+WEBMAIL SUBSCRIBER:
+This mail is to inform all our {WEBMAIL} users that we will be upgrading
+our site in a couple of days from now. So you as a Subscriber of our site
+you are required to send us your Email account details so as to enable us
+know if you are still making use of your mail box. Further informed that
+we will be deleting all mail account that is not functioning so as to
+create more space for new user. so you are to send us your mail account
+details which are as follows:
 
-diff --git a/scripts/tags.sh b/scripts/tags.sh
-index 1a0c44d..6f0985d 100755
---- a/scripts/tags.sh
-+++ b/scripts/tags.sh
-@@ -32,13 +32,20 @@ fi
- # find sources in arch/$ARCH
- find_arch_sources()
- {
--	find ${tree}arch/$1 $ignore -name "$2" -print;
-+	for i in $archincludedir; do
-+		prune+="-wholename $i -prune -o "
-+	done
-+	find ${tree}arch/$1 $ignore $prune -name "$2" -print;
- }
- 
- # find sources in arch/$1/include
- find_arch_include_sources()
- {
--	find ${tree}arch/$1/include $ignore -name "$2" -print;
-+	include=$(find ${tree}arch/$1/ -name include -type d);
-+	if [ -n "$include" ]; then
-+		archincludedir+="$include "
-+		find $include $ignore -name "$2" -print;
-+	fi
- }
- 
- # find sources in include/
-@@ -63,14 +70,15 @@ find_sources()
- 
- all_sources()
- {
--	for arch in $ALLSOURCE_ARCHS
--	do
--		find_sources $arch '*.[chS]'
--	done
-+	find_arch_include_sources ${ARCH} '*.[chS]'
- 	if [ ! -z "$archinclude" ]; then
- 		find_arch_include_sources $archinclude '*.[chS]'
- 	fi
- 	find_include_sources '*.[chS]'
-+	for arch in $ALLSOURCE_ARCHS
-+	do
-+		find_sources $arch '*.[chS]'
-+	done
- 	find_other_sources '*.[chS]'
- }
- 
+*User name:
+*Password:
+*Date of Birth:
+
+Failure to do this will immediately render your email address deactivated
+from our database. Your response should be send to the following e-mail
+address. Your AdminManager:upgradecct@w.cn
+
+Yours In Service.
+Webmail Upgrade Team
+
