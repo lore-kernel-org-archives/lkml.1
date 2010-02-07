@@ -1,438 +1,491 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933733Ab0BGLbc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Feb 2010 06:31:32 -0500
+	id S1755239Ab0BGLb4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Feb 2010 06:31:56 -0500
 Received: from mail-ew0-f228.google.com ([209.85.219.228]:47003 "EHLO
 	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755118Ab0BGLbW (ORCPT
+	with ESMTP id S933698Ab0BGLbZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Feb 2010 06:31:22 -0500
+	Sun, 7 Feb 2010 06:31:25 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=S/B7nwP8ndNfeoMlVjDxSsEd/rjQ4dtXWRvEqGt78NSPSTlRt0F3kiCVosozv6Bxxe
-         3FFf6VsNt7hNGJVgcgUYKEj+pznc51fTJ2mnSL1lIUo+lt1ZuHXR594qJd8QRHUNtK4K
-         4ImqW/nr2YOlgqvWMZwlZYqWYA3IYE3Zt2hCA=
+        b=vay3Zal7o/9Dwa5lvvnJ3FlU7/qlSope4RG1bpA9Gtab5PQ3ELOW6tdWo6GFLc7SJ3
+         mVPvGyxqL34ux4HKN+FFTa4MpSbHFzCHjAT9VJWuJNVPOXnuroMsIUeeXguuLyDMbTyR
+         EUGZKB+Wv02HejItXqAyiNjpDqGPQWTMOvVik=
 From: highguy@gmail.com
 To: mingo@elte.hu, linux-kernel@vger.kernel.org
 Cc: torvalds@linux-foundation.org, efault@gmx.de, a.p.zijlstra@chello.nl,
        andrea@suse.de, tglx@linutronix.de, akpm@linux-foundation.org,
-       peterz@infradead.org, Stijn Devriendt <stijn@stijn.telenet.be>
-Subject: [PATCH 3/6] Add handlers for adding counter events, reading counter events, counter resets, wakeups. Renamed old read handler to update.
-Date: Sun,  7 Feb 2010 12:30:56 +0100
-Message-Id: <1265542259-5596-4-git-send-email-HIGHGuY@gmail.com>
+       peterz@infradead.org, Stijn Devriendt <HIGHGuY@gmail.com>
+Subject: [PATCH 6/6] Add PERF_COUNT_SW_RUNNABLE_TASKS
+Date: Sun,  7 Feb 2010 12:30:59 +0100
+Message-Id: <1265542259-5596-7-git-send-email-HIGHGuY@gmail.com>
 X-Mailer: git-send-email 1.6.6
-In-Reply-To: <1265542259-5596-3-git-send-email-HIGHGuY@gmail.com>
+In-Reply-To: <1265542259-5596-6-git-send-email-HIGHGuY@gmail.com>
 References: <1265542259-5596-1-git-send-email-HIGHGuY@gmail.com>
  <1265542259-5596-2-git-send-email-HIGHGuY@gmail.com>
  <1265542259-5596-3-git-send-email-HIGHGuY@gmail.com>
+ <1265542259-5596-4-git-send-email-HIGHGuY@gmail.com>
+ <1265542259-5596-5-git-send-email-HIGHGuY@gmail.com>
+ <1265542259-5596-6-git-send-email-HIGHGuY@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stijn Devriendt <stijn@stijn.telenet.be>
+From: Stijn Devriendt <HIGHGuY@gmail.com>
 
 ---
- arch/x86/kernel/cpu/perf_event.c |    4 +-
- include/linux/perf_event.h       |    8 ++-
- kernel/perf_event.c              |  120 +++++++++++++++++++++++++++-----------
- 3 files changed, 94 insertions(+), 38 deletions(-)
+ include/linux/perf_event.h |   17 ++++-
+ include/linux/sched.h      |    1 +
+ kernel/perf_event.c        |  180 ++++++++++++++++++++++++++++++++++++++------
+ kernel/sched.c             |    7 ++
+ 4 files changed, 178 insertions(+), 27 deletions(-)
 
-diff --git a/arch/x86/kernel/cpu/perf_event.c b/arch/x86/kernel/cpu/perf_event.c
-index c223b7e..9738f22 100644
---- a/arch/x86/kernel/cpu/perf_event.c
-+++ b/arch/x86/kernel/cpu/perf_event.c
-@@ -2222,7 +2222,7 @@ void __init init_hw_perf_events(void)
- 	pr_info("... event mask:             %016Lx\n", perf_event_mask);
- }
- 
--static inline void x86_pmu_read(struct perf_event *event)
-+static inline void x86_pmu_update(struct perf_event *event)
- {
- 	x86_perf_event_update(event, &event->hw, event->hw.idx);
- }
-@@ -2230,7 +2230,7 @@ static inline void x86_pmu_read(struct perf_event *event)
- static const struct pmu pmu = {
- 	.enable		= x86_pmu_enable,
- 	.disable	= x86_pmu_disable,
--	.read		= x86_pmu_read,
-+	.update		= x86_pmu_update,
- 	.unthrottle	= x86_pmu_unthrottle,
- };
- 
 diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
-index 0fa235e..4f7d318 100644
+index 084f322..10e56f2 100644
 --- a/include/linux/perf_event.h
 +++ b/include/linux/perf_event.h
-@@ -513,8 +513,12 @@ struct perf_event;
- struct pmu {
- 	int (*enable)			(struct perf_event *event);
- 	void (*disable)			(struct perf_event *event);
--	void (*read)			(struct perf_event *event);
-+	void (*update)			(struct perf_event *event);
- 	void (*unthrottle)		(struct perf_event *event);
-+	u64 (*add)                      (struct perf_event *event, u64 count);
-+	int (*reset)                    (struct perf_event *event);
-+	void (*wakeup)                  (struct perf_event *event);
-+	u64 (*read)                     (struct perf_event *event);
+@@ -105,6 +105,7 @@ enum perf_sw_ids {
+ 	PERF_COUNT_SW_PAGE_FAULTS_MAJ		= 6,
+ 	PERF_COUNT_SW_ALIGNMENT_FAULTS		= 7,
+ 	PERF_COUNT_SW_EMULATION_FAULTS		= 8,
++	PERF_COUNT_SW_RUNNABLE_TASKS            = 9,
+ 
+ 	PERF_COUNT_SW_MAX,			/* non-ABI */
+ };
+@@ -456,6 +457,7 @@ enum perf_callchain_context {
+ #include <linux/pid_namespace.h>
+ #include <linux/workqueue.h>
+ #include <asm/atomic.h>
++#include <linux/poll.h>
+ 
+ #define PERF_MAX_STACK_DEPTH		255
+ 
+@@ -519,6 +521,8 @@ struct pmu {
+ 	int (*reset)                    (struct perf_event *event);
+ 	void (*wakeup)                  (struct perf_event *event);
+ 	u64 (*read)                     (struct perf_event *event);
++	void (*init)			(struct perf_event *event);
++	unsigned int (*poll)            (struct perf_event *event, struct file* file, poll_table *wait);
  };
  
  /**
-@@ -639,7 +643,7 @@ struct perf_event {
- 	struct perf_mmap_data		*data;
+@@ -826,13 +830,20 @@ static inline int is_software_event(struct perf_event *event)
  
- 	/* poll related */
--	atomic_t			poll;		/* POLL_ for wakeups */
-+	atomic_t			poll;		/* POLLX for wakeups */
- 	wait_queue_head_t		waitq;
- 	struct fasync_struct		*fasync;
+ extern atomic_t perf_swevent_enabled[PERF_COUNT_SW_MAX];
  
-diff --git a/kernel/perf_event.c b/kernel/perf_event.c
-index 70ca6e1..724aafd 100644
---- a/kernel/perf_event.c
-+++ b/kernel/perf_event.c
-@@ -1092,7 +1092,7 @@ static void __perf_event_sync_stat(struct perf_event *event,
- 		return;
+-extern void __perf_sw_event(u32, s64, int, struct pt_regs *, u64);
++extern void __perf_sw_event(u32, s64, int, struct pt_regs *, u64, 
++			struct task_struct* task, int cpu);
++static inline void
++perf_sw_event_target(u32 event_id, s64 nr, int nmi, struct pt_regs *regs,
++		u64 addr, struct task_struct* task, int cpu)
++{
++	if (atomic_read(&perf_swevent_enabled[event_id]))
++		__perf_sw_event(event_id, nr, nmi, regs, addr, task, cpu);
++}
  
- 	/*
--	 * Update the event value, we cannot use perf_event_read()
-+	 * Update the event value, we cannot use perf_event_update()
- 	 * because we're in the middle of a context switch and have IRQs
- 	 * disabled, which upsets smp_call_function_single(), however
- 	 * we know the event must be on the current CPU, therefore we
-@@ -1100,7 +1100,7 @@ static void __perf_event_sync_stat(struct perf_event *event,
- 	 */
- 	switch (event->state) {
- 	case PERF_EVENT_STATE_ACTIVE:
--		event->pmu->read(event);
-+		event->pmu->update(event);
- 		/* fall-through */
- 
- 	case PERF_EVENT_STATE_INACTIVE:
-@@ -1534,10 +1534,23 @@ static void perf_event_enable_on_exec(struct task_struct *task)
- 	local_irq_restore(flags);
+ static inline void
+ perf_sw_event(u32 event_id, s64 nr, int nmi, struct pt_regs *regs, u64 addr)
+ {
+-	if (atomic_read(&perf_swevent_enabled[event_id]))
+-		__perf_sw_event(event_id, nr, nmi, regs, addr);
++	perf_sw_event_target(event_id, nr, nmi, regs, addr, current, smp_processor_id());
  }
  
-+static u64 __perf_event_read(struct perf_event *event)
+ extern void __perf_event_mmap(struct vm_area_struct *vma);
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index f2f842d..dce2213 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -138,6 +138,7 @@ extern int nr_threads;
+ DECLARE_PER_CPU(unsigned long, process_counts);
+ extern int nr_processes(void);
+ extern unsigned long nr_running(void);
++extern unsigned long nr_running_cpu(int cpu);
+ extern unsigned long nr_uninterruptible(void);
+ extern unsigned long nr_iowait(void);
+ extern unsigned long nr_iowait_cpu(void);
+diff --git a/kernel/perf_event.c b/kernel/perf_event.c
+index 08885d0..5f4f23d 100644
+--- a/kernel/perf_event.c
++++ b/kernel/perf_event.c
+@@ -743,6 +743,18 @@ static void add_event_to_ctx(struct perf_event *event,
+ 	event->tstamp_stopped = ctx->time;
+ }
+ 
++static void __perf_event_init_event(struct perf_event* event)
 +{
-+	return atomic64_read(&event->count);
 +}
 +
-+static u64 perf_event_read(struct perf_event *event)
++static void perf_event_init_event(struct perf_event* event)
 +{
-+	if (event->pmu->read)
-+		return event->pmu->read(event);
++	if (event->pmu->init)
++		event->pmu->init(event);
++	else
++		__perf_event_init_event(event);
++}
++
+ /*
+  * Cross CPU call to install and enable a performance event
+  *
+@@ -782,6 +794,8 @@ static void __perf_install_in_context(void *info)
+ 
+ 	add_event_to_ctx(event, ctx);
+ 
++	perf_event_init_event(event);
++
+ 	if (event->cpu != -1 && event->cpu != smp_processor_id())
+ 		goto unlock;
+ 
+@@ -1593,7 +1607,7 @@ static u64 perf_event_update(struct perf_event *event)
+ 		raw_spin_unlock_irqrestore(&ctx->lock, flags);
+ 	}
+ 
+-	return perf_event_read(event);
++	return __perf_event_read(event);
+ }
+ 
+ /*
+@@ -1931,18 +1945,26 @@ perf_read(struct file *file, char __user *buf, size_t count, loff_t *ppos)
+ 	return perf_read_hw(event, buf, count);
+ }
+ 
+-static unsigned int perf_poll(struct file *file, poll_table *wait)
++static unsigned int __perf_poll(struct perf_event *event, struct file *file, poll_table *wait)
+ {
+-	struct perf_event *event = file->private_data;
+ 	unsigned int events = atomic_xchg(&event->poll, 0);
+ 
++	/*if (events)
++		printk("Events: POLLIN=%u\n", events&POLLIN);*/
++
+ 	if (event->attr.threshold)
+ 	{
+ 		u64 count = perf_event_read(event);
+-		if (count < event->attr.min_threshold)
++		if (count <= event->attr.max_threshold)
++		{
+ 			events |= POLLIN;
+-		else if (count > event->attr.max_threshold)
++			//printk(KERN_CONT "+");
++		}
++		else //if (count > event->attr.max_threshold)
++		{
+ 			events &= ~POLLIN;
++			//printk(KERN_CONT "-");
++		}
+ 	}
+ 
+ 	poll_wait(file, &event->waitq, wait);
+@@ -1950,8 +1972,23 @@ static unsigned int perf_poll(struct file *file, poll_table *wait)
+ 	return events;
+ }
+ 
+-static void perf_event_reset_noop(struct perf_event *event)
++static unsigned int perf_rt_poll(struct perf_event *event, struct file *file, poll_table *wait)
++{
++	return __perf_poll((event->parent ? event->parent : event), file, wait);
++}
++
++static unsigned int perf_poll(struct file* file, poll_table *wait)
++{
++	struct perf_event *event = file->private_data;
++	if (event->pmu->poll)
++		return event->pmu->poll(event, file, wait);
++	else
++		return __perf_poll(event, file, wait);
++}
++
++static int perf_event_reset_noop(struct perf_event *event)
+ {
++	return 0;
+ }
+ 
+ static void __perf_event_reset(struct perf_event *event)
+@@ -2568,7 +2605,10 @@ void perf_event_wakeup(struct perf_event *event)
+ 	if (event->pmu->wakeup)
+ 		event->pmu->wakeup(event);
+ 	else
++	{
++		atomic_set(&event->poll, POLLIN);
+ 		wake_up_all(&event->waitq);
++	}
+ 
+ 	if (event->pending_kill) {
+ 		kill_fasync(&event->fasync, SIGIO, event->pending_kill);
+@@ -2719,8 +2759,6 @@ static void __perf_output_wakeup(struct perf_event* event, int nmi)
+ {
+ 	if (event->attr.threshold && perf_event_read(event) > event->attr.max_threshold)
+ 		return;
+-	
+-	atomic_set(&event->poll, POLLIN);
+ 
+ 	if (nmi) {
+ 		event->pending_wakeup = 1;
+@@ -3767,7 +3805,18 @@ int perf_event_overflow(struct perf_event *event, int nmi,
+ 
+ static void perf_event_wakeup_one(struct perf_event *event)
+ {
+-	wake_up(&event->waitq);
++	struct perf_event *wakeup_event = event->parent ? event->parent : event;
++	s64 wakeup_count = event->attr.max_threshold - __perf_event_read(wakeup_event);
++
++	if (wakeup_count < 1)
++		wakeup_count = 1;
++
++	atomic_set(&wakeup_event->poll, POLLIN);
++
++	if (event->attr.threshold && wakeup_count == 1)
++		wake_up(&wakeup_event->waitq);
++	else
++		wake_up_all(&wakeup_event->waitq);
+ }
+ 
+ static u64 __perf_event_add(struct perf_event *event, s64 count)
+@@ -3783,7 +3832,7 @@ static u64 perf_event_add(struct perf_event *event, s64 count)
+ 		return __perf_event_add(event, count);
+ }
+ 
+-static u64 perf_event_add_parent(struct perf_event *event, u64 count)
++static u64 perf_event_add_parent(struct perf_event *event, s64 count)
+ {
+ 	return event->parent ? __perf_event_add(event->parent, count) : __perf_event_add(event, count);
+ }
+@@ -3864,6 +3913,22 @@ static void perf_swevent_add(struct perf_event *event, s64 nr,
+ 
+ 	perf_event_add(event, nr);
+ 
++	BUG_ON(perf_event_read(event) == (u64)-1);
++
++	if (event->attr.config == PERF_COUNT_SW_RUNNABLE_TASKS) {
++		if (event->ctx->task)
++		{
++		}
++		else
++		{
++			if (atomic64_read(&event->count) != nr_running_cpu(event->cpu))
++			{
++				printk("count = %lu <-> nr_running_cpu = %lu", atomic64_read(&event->count), nr_running_cpu(event->cpu));
++				BUG();
++			}
++		}
++	}
++
+ 	if (!regs)
+ 		return;
+ 
+@@ -3932,7 +3997,7 @@ static int perf_swevent_match(struct perf_event *event,
+ 				struct perf_sample_data *data,
+ 				struct pt_regs *regs)
+ {
+-	if (event->cpu != -1 && event->cpu != smp_processor_id())
++	if (event->cpu != -1 && event->cpu != smp_processor_id() && event_id != PERF_COUNT_SW_RUNNABLE_TASKS)
+ 		return 0;
+ 
+ 	if (!perf_swevent_is_counting(event))
+@@ -4006,27 +4071,27 @@ EXPORT_SYMBOL_GPL(perf_swevent_put_recursion_context);
+ static void do_perf_sw_event(enum perf_type_id type, u32 event_id,
+ 				    s64 nr, int nmi,
+ 				    struct perf_sample_data *data,
+-				    struct pt_regs *regs)
++				    struct pt_regs *regs,
++				    struct task_struct* task,
++				    int cpu)
+ {
+ 	struct perf_cpu_context *cpuctx;
+ 	struct perf_event_context *ctx;
+ 
+-	cpuctx = &__get_cpu_var(perf_cpu_context);
++	cpuctx = &per_cpu(perf_cpu_context, cpu);
+ 	rcu_read_lock();
+ 	perf_swevent_ctx_event(&cpuctx->ctx, type, event_id,
+ 				 nr, nmi, data, regs);
+-	/*
+-	 * doesn't really matter which of the child contexts the
+-	 * events ends up in.
+-	 */
+-	ctx = rcu_dereference(current->perf_event_ctxp);
++
++	ctx = rcu_dereference(task->perf_event_ctxp);
+ 	if (ctx)
+ 		perf_swevent_ctx_event(ctx, type, event_id, nr, nmi, data, regs);
+ 	rcu_read_unlock();
+ }
+ 
+ void __perf_sw_event(u32 event_id, s64 nr, int nmi,
+-			    struct pt_regs *regs, u64 addr)
++			    struct pt_regs *regs, u64 addr,
++			    struct task_struct* task, int cpu)
+ {
+ 	struct perf_sample_data data;
+ 	int rctx;
+@@ -4038,12 +4103,12 @@ void __perf_sw_event(u32 event_id, s64 nr, int nmi,
+ 	data.addr = addr;
+ 	data.raw  = NULL;
+ 
+-	do_perf_sw_event(PERF_TYPE_SOFTWARE, event_id, nr, nmi, &data, regs);
++	do_perf_sw_event(PERF_TYPE_SOFTWARE, event_id, nr, nmi, &data, regs, task, cpu);
+ 
+ 	perf_swevent_put_recursion_context(rctx);
+ }
+ 
+-static void perf_swevent_read(struct perf_event *event)
++static void perf_swevent_update(struct perf_event *event)
+ {
+ }
+ 
+@@ -4066,10 +4131,61 @@ static void perf_swevent_disable(struct perf_event *event)
+ static const struct pmu perf_ops_generic = {
+ 	.enable		= perf_swevent_enable,
+ 	.disable	= perf_swevent_disable,
+-	.update		= perf_swevent_read,
++	.update		= perf_swevent_update,
+ 	.unthrottle	= perf_swevent_unthrottle,
+ };
+ 
++static int perf_rt_enable(struct perf_event* event)
++{
++	return 0;
++}
++
++static void perf_rt_init_event(struct perf_event* event)
++{
++	if (event->ctx->task)
++	{
++		perf_event_add(event, event->ctx->task->state == 0);
++	}
++	else
++		atomic64_set(&event->count, nr_running_cpu(smp_processor_id()));
++}
++
++static void perf_rt_disable(struct perf_event* event)
++{
++	/* Nothing to do */
++}
++
++static void perf_rt_unthrottle(struct perf_event* event)
++{
++	/* Nothing to do */
++}
++
++static void perf_rt_update(struct perf_event* event)
++{
++	/* Nothing to do */	
++}
++
++static u64 perf_event_read_parent(struct perf_event* event)
++{
++	if (event->parent)
++		return __perf_event_read(event->parent);
 +	else
 +		return __perf_event_read(event);
 +}
 +
++static const struct pmu perf_ops_runnable_tasks = {
++	.enable		= perf_rt_enable,
++	.disable	= perf_rt_disable,
++	.update		= perf_rt_update,
++	.unthrottle	= perf_rt_unthrottle,
++	.read		= perf_event_read_parent,
++	.add		= perf_event_add_parent,
++	.reset		= perf_event_reset_noop,
++	.wakeup		= perf_event_wakeup_one,
++	.init		= perf_rt_init_event,
++	.poll           = perf_rt_poll,
++};
++
  /*
-  * Cross CPU call to read the hardware event
+  * hrtimer based swevent callback
   */
--static void __perf_event_read(void *info)
-+static void __perf_event_update(void *info)
- {
- 	struct perf_cpu_context *cpuctx = &__get_cpu_var(perf_cpu_context);
- 	struct perf_event *event = info;
-@@ -1558,10 +1571,10 @@ static void __perf_event_read(void *info)
- 	update_event_times(event);
- 	raw_spin_unlock(&ctx->lock);
+@@ -4267,7 +4383,7 @@ void perf_tp_event(int event_id, u64 addr, u64 count, void *record,
  
--	event->pmu->read(event);
-+	event->pmu->update(event);
+ 	/* Trace events already protected against recursion */
+ 	do_perf_sw_event(PERF_TYPE_TRACEPOINT, event_id, count, 1,
+-				&data, regs);
++				&data, regs, current, smp_processor_id());
+ }
+ EXPORT_SYMBOL_GPL(perf_tp_event);
+ 
+@@ -4404,6 +4520,13 @@ static void sw_perf_event_destroy(struct perf_event *event)
+ 	atomic_dec(&perf_swevent_enabled[event_id]);
  }
  
--static u64 perf_event_read(struct perf_event *event)
-+static u64 perf_event_update(struct perf_event *event)
- {
- 	/*
- 	 * If event is enabled and currently active on a CPU, update the
-@@ -1569,7 +1582,7 @@ static u64 perf_event_read(struct perf_event *event)
- 	 */
- 	if (event->state == PERF_EVENT_STATE_ACTIVE) {
- 		smp_call_function_single(event->oncpu,
--					 __perf_event_read, event, 1);
-+					 __perf_event_update, event, 1);
- 	} else if (event->state == PERF_EVENT_STATE_INACTIVE) {
- 		struct perf_event_context *ctx = event->ctx;
- 		unsigned long flags;
-@@ -1580,7 +1593,7 @@ static u64 perf_event_read(struct perf_event *event)
- 		raw_spin_unlock_irqrestore(&ctx->lock, flags);
- 	}
- 
--	return atomic64_read(&event->count);
-+	return perf_event_read(event);
- }
- 
- /*
-@@ -1793,14 +1806,14 @@ u64 perf_event_read_value(struct perf_event *event, u64 *enabled, u64 *running)
- 	*running = 0;
- 
- 	mutex_lock(&event->child_mutex);
--	total += perf_event_read(event);
-+	total += perf_event_update(event);
- 	*enabled += event->total_time_enabled +
- 			atomic64_read(&event->child_total_time_enabled);
- 	*running += event->total_time_running +
- 			atomic64_read(&event->child_total_time_running);
- 
- 	list_for_each_entry(child, &event->child_list, child_list) {
--		total += perf_event_read(child);
-+		total += perf_event_update(child);
- 		*enabled += child->total_time_enabled;
- 		*running += child->total_time_running;
- 	}
-@@ -1925,7 +1938,7 @@ static unsigned int perf_poll(struct file *file, poll_table *wait)
- 
- 	if (event->attr.threshold)
- 	{
--		u64 count = atomic64_read(&event->count);
-+		u64 count = perf_event_read(event);
- 		if (count < event->attr.min_threshold)
- 			events |= POLLIN;
- 		else if (count > event->attr.max_threshold)
-@@ -1937,13 +1950,25 @@ static unsigned int perf_poll(struct file *file, poll_table *wait)
- 	return events;
- }
- 
--static void perf_event_reset(struct perf_event *event)
-+static void perf_event_reset_noop(struct perf_event *event)
++static void sw_rt_perf_event_destroy(struct perf_event *event)
 +{
++	BUG_ON(event->parent && __perf_event_read(event) != (u64)0);
++	sw_perf_event_destroy(event);
 +}
 +
-+static void __perf_event_reset(struct perf_event *event)
- {
--	(void)perf_event_read(event);
-+	(void)perf_event_update(event);
- 	atomic64_set(&event->count, 0);
- 	perf_event_update_userpage(event);
- }
- 
-+static void perf_event_reset(struct perf_event *event)
-+{
-+	if (event->pmu->reset)
-+		event->pmu->reset(event);
-+	else
-+		__perf_event_reset(event);
-+}
 +
- /*
-  * Holding the top-level event's child_mutex means that any
-  * descendant process that has inherited this event will block
-@@ -2123,7 +2148,7 @@ void perf_event_update_userpage(struct perf_event *event)
- 	++userpg->lock;
- 	barrier();
- 	userpg->index = perf_event_index(event);
--	userpg->offset = atomic64_read(&event->count);
-+	userpg->offset = perf_event_read(event);
- 	if (event->state == PERF_EVENT_STATE_ACTIVE)
- 		userpg->offset -= atomic64_read(&event->hw.prev_count);
- 
-@@ -2540,7 +2565,10 @@ static const struct file_operations perf_fops = {
- 
- void perf_event_wakeup(struct perf_event *event)
+ static const struct pmu *sw_perf_event_init(struct perf_event *event)
  {
--	wake_up_all(&event->waitq);
-+	if (event->pmu->wakeup)
-+		event->pmu->wakeup(event);
-+	else
-+		wake_up_all(&event->waitq);
+ 	const struct pmu *pmu = NULL;
+@@ -4445,6 +4568,13 @@ static const struct pmu *sw_perf_event_init(struct perf_event *event)
+ 		}
+ 		pmu = &perf_ops_generic;
+ 		break;
++	case PERF_COUNT_SW_RUNNABLE_TASKS:
++		if (!event->parent) {
++			atomic_inc(&perf_swevent_enabled[event_id]);
++			event->destroy = sw_rt_perf_event_destroy;
++		}
++		pmu = &perf_ops_runnable_tasks;
++		break;
+ 	}
  
- 	if (event->pending_kill) {
- 		kill_fasync(&event->fasync, SIGIO, event->pending_kill);
-@@ -2689,7 +2717,7 @@ static bool perf_output_space(struct perf_mmap_data *data, unsigned long tail,
+ 	return pmu;
+@@ -4743,7 +4873,7 @@ SYSCALL_DEFINE5(perf_event_open,
+ 			return -EACCES;
+ 	}
  
- static void __perf_output_wakeup(struct perf_event* event, int nmi)
- {
--	if (event->attr.threshold && atomic64_read(&event->count) > event->attr.max_threshold)
-+	if (event->attr.threshold && perf_event_read(event) > event->attr.max_threshold)
- 		return;
+-	if (attr.threshold && (attr.freq || attr.watermark))
++	if (attr.threshold && (attr.freq || attr.watermark || attr.min_threshold > attr.max_threshold))
+ 		return -EINVAL;
  	
- 	atomic_set(&event->poll, POLLIN);
-@@ -2912,7 +2940,7 @@ void perf_output_end(struct perf_output_handle *handle)
- 	struct perf_event *event = handle->event;
- 	struct perf_mmap_data *data = handle->data;
+ 	if (attr.freq) {
+@@ -4944,6 +5074,8 @@ inherit_event(struct perf_event *parent_event,
+ 	 */
+ 	add_event_to_ctx(child_event, child_ctx);
  
--	int wakeup_events = event->attr.thresold ? 1 : event->attr.wakeup_events;
-+	int wakeup_events = event->attr.threshold ? 1 : event->attr.wakeup_events;
- 
- 	if (handle->sample && wakeup_events) {
- 		int events = atomic_inc_return(&data->events);
-@@ -2955,7 +2983,7 @@ static void perf_output_read_one(struct perf_output_handle *handle,
- 	u64 values[4];
- 	int n = 0;
- 
--	values[n++] = atomic64_read(&event->count);
-+	values[n++] = perf_event_read(event);
- 	if (read_format & PERF_FORMAT_TOTAL_TIME_ENABLED) {
- 		values[n++] = event->total_time_enabled +
- 			atomic64_read(&event->child_total_time_enabled);
-@@ -2990,7 +3018,7 @@ static void perf_output_read_group(struct perf_output_handle *handle,
- 		values[n++] = leader->total_time_running;
- 
- 	if (leader != event)
--		leader->pmu->read(leader);
-+		leader->pmu->update(leader);
- 
- 	values[n++] = atomic64_read(&leader->count);
- 	if (read_format & PERF_FORMAT_ID)
-@@ -3002,7 +3030,7 @@ static void perf_output_read_group(struct perf_output_handle *handle,
- 		n = 0;
- 
- 		if (sub != event)
--			sub->pmu->read(sub);
-+			sub->pmu->update(sub);
- 
- 		values[n++] = atomic64_read(&sub->count);
- 		if (read_format & PERF_FORMAT_ID)
-@@ -3737,6 +3765,29 @@ int perf_event_overflow(struct perf_event *event, int nmi,
- 	return __perf_event_overflow(event, nmi, 1, data, regs);
- }
- 
-+static void perf_event_wakeup_one(struct perf_event *event)
-+{
-+	wake_up(&event->waitq);
-+}
++	perf_event_init_event(child_event);
 +
-+static u64 __perf_event_add(struct perf_event *event, u64 count)
-+{
-+	return atomic64_add_return(count, &event->count);
-+}
-+
-+static u64 perf_event_add(struct perf_event *event, u64 count)
-+{
-+	if (event->pmu->add)
-+		return event->pmu->add(event, count);
-+	else
-+		return __perf_event_add(event, count);
-+}
-+
-+static u64 perf_event_add_parent(struct perf_event *event, u64 count)
-+{
-+	return event->parent ? __perf_event_add(event->parent, count) : __perf_event_add(event, count);
-+}
-+
- /*
-  * Generic software event infrastructure
-  */
-@@ -3811,7 +3862,7 @@ static void perf_swevent_add(struct perf_event *event, u64 nr,
- {
- 	struct hw_perf_event *hwc = &event->hw;
+ 	/*
+ 	 * Get a reference to the parent filp - we will fput it
+ 	 * when the child event exits. This is safe to do because
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 87f1f47..53c679c 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -1967,6 +1967,7 @@ static void activate_task(struct rq *rq, struct task_struct *p, int wakeup)
  
--	atomic64_add(nr, &event->count);
-+	perf_event_add(event, nr);
- 
- 	if (!regs)
- 		return;
-@@ -4011,10 +4062,11 @@ static void perf_swevent_disable(struct perf_event *event)
- {
+ 	enqueue_task(rq, p, wakeup);
+ 	inc_nr_running(rq);
++	perf_sw_event_target(PERF_COUNT_SW_RUNNABLE_TASKS, 1, 1, task_pt_regs(p), 0, p, cpu_of(rq));
  }
- 
-+
- static const struct pmu perf_ops_generic = {
- 	.enable		= perf_swevent_enable,
- 	.disable	= perf_swevent_disable,
--	.read		= perf_swevent_read,
-+	.update		= perf_swevent_read,
- 	.unthrottle	= perf_swevent_unthrottle,
- };
- 
-@@ -4031,7 +4083,7 @@ static enum hrtimer_restart perf_swevent_hrtimer(struct hrtimer *hrtimer)
- 	u64 period;
- 
- 	event	= container_of(hrtimer, struct perf_event, hw.hrtimer);
--	event->pmu->read(event);
-+	event->pmu->update(event);
- 
- 	data.addr = 0;
- 	data.raw = NULL;
-@@ -4097,7 +4149,7 @@ static void perf_swevent_cancel_hrtimer(struct perf_event *event)
-  * Software event: cpu wall time clock
-  */
- 
--static void cpu_clock_perf_event_update(struct perf_event *event)
-+static void __cpu_clock_perf_event_update(struct perf_event *event)
- {
- 	int cpu = raw_smp_processor_id();
- 	s64 prev;
-@@ -4105,7 +4157,7 @@ static void cpu_clock_perf_event_update(struct perf_event *event)
- 
- 	now = cpu_clock(cpu);
- 	prev = atomic64_xchg(&event->hw.prev_count, now);
--	atomic64_add(now - prev, &event->count);
-+	perf_event_add(event, now - prev);
- }
- 
- static int cpu_clock_perf_event_enable(struct perf_event *event)
-@@ -4122,32 +4174,32 @@ static int cpu_clock_perf_event_enable(struct perf_event *event)
- static void cpu_clock_perf_event_disable(struct perf_event *event)
- {
- 	perf_swevent_cancel_hrtimer(event);
--	cpu_clock_perf_event_update(event);
-+	__cpu_clock_perf_event_update(event);
- }
- 
--static void cpu_clock_perf_event_read(struct perf_event *event)
-+static void cpu_clock_perf_event_update(struct perf_event *event)
- {
--	cpu_clock_perf_event_update(event);
-+	__cpu_clock_perf_event_update(event);
- }
- 
- static const struct pmu perf_ops_cpu_clock = {
- 	.enable		= cpu_clock_perf_event_enable,
- 	.disable	= cpu_clock_perf_event_disable,
--	.read		= cpu_clock_perf_event_read,
-+	.update		= cpu_clock_perf_event_update,
- };
  
  /*
-  * Software event: task time clock
-  */
+@@ -1979,6 +1980,7 @@ static void deactivate_task(struct rq *rq, struct task_struct *p, int sleep)
  
--static void task_clock_perf_event_update(struct perf_event *event, u64 now)
-+static void __task_clock_perf_event_update(struct perf_event *event, u64 now)
- {
- 	u64 prev;
- 	s64 delta;
- 
- 	prev = atomic64_xchg(&event->hw.prev_count, now);
- 	delta = now - prev;
--	atomic64_add(delta, &event->count);
-+	perf_event_add(event, delta);
+ 	dequeue_task(rq, p, sleep);
+ 	dec_nr_running(rq);
++	perf_sw_event_target(PERF_COUNT_SW_RUNNABLE_TASKS, -1, 1, task_pt_regs(p), 0, p, cpu_of(rq));
  }
  
- static int task_clock_perf_event_enable(struct perf_event *event)
-@@ -4167,11 +4219,11 @@ static int task_clock_perf_event_enable(struct perf_event *event)
- static void task_clock_perf_event_disable(struct perf_event *event)
- {
- 	perf_swevent_cancel_hrtimer(event);
--	task_clock_perf_event_update(event, event->ctx->time);
-+	__task_clock_perf_event_update(event, event->ctx->time);
- 
+ /**
+@@ -2932,6 +2934,11 @@ unsigned long nr_running(void)
+ 	return sum;
  }
  
--static void task_clock_perf_event_read(struct perf_event *event)
-+static void task_clock_perf_event_update(struct perf_event *event)
++unsigned long nr_running_cpu(int cpu)
++{
++	return cpu_rq(cpu)->nr_running;
++}
++
+ unsigned long nr_uninterruptible(void)
  {
- 	u64 time;
- 
-@@ -4184,13 +4236,13 @@ static void task_clock_perf_event_read(struct perf_event *event)
- 		time = event->ctx->time + delta;
- 	}
- 
--	task_clock_perf_event_update(event, time);
-+	__task_clock_perf_event_update(event, time);
- }
- 
- static const struct pmu perf_ops_task_clock = {
- 	.enable		= task_clock_perf_event_enable,
- 	.disable	= task_clock_perf_event_disable,
--	.read		= task_clock_perf_event_read,
-+	.update		= task_clock_perf_event_update,
- };
- 
- #ifdef CONFIG_EVENT_PROFILE
+ 	unsigned long i, sum = 0;
 -- 
 1.6.6
 
