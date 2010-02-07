@@ -1,113 +1,80 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751851Ab0BGHAg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Feb 2010 02:00:36 -0500
-Received: from out01.mta.xmission.com ([166.70.13.231]:33588 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751403Ab0BGHAe convert rfc822-to-8bit (ORCPT
+	id S1751951Ab0BGHAv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Feb 2010 02:00:51 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36847 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751930Ab0BGHAs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Feb 2010 02:00:34 -0500
-To: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, gregkh@suse.de,
+	Sun, 7 Feb 2010 02:00:48 -0500
+Date: Sat, 6 Feb 2010 22:59:56 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: =?ISO-8859-15?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>
+cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, gregkh@suse.de,
        taviso@google.com, viro@ZenIV.linux.org.uk,
-       linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
-       jdike@addtoit.com, jln@google.com, mpm@selenic.com
-Subject: Re: [2.6.33-rc5] tty: possible irq lock inversion dependency in tty_fasync
-References: <201002071452.IIF73922.VtFOJOHSFFLOQM@I-love.SAKURA.ne.jp>
-	<alpine.LFD.2.00.1002062226000.3829@localhost.localdomain>
-	<20100207064643.GA15533@hack>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Sat, 06 Feb 2010 23:00:20 -0800
-In-Reply-To: <20100207064643.GA15533@hack> (=?utf-8?Q?=22Am=C3=A9rico?=
- Wang"'s message of "Sun\, 7 Feb 2010 14\:46\:56 +0800")
-Message-ID: <m18wb58r97.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+       linux-kernel@vger.kernel.org, ebiederm@xmission.com,
+       alan@lxorguk.ukuu.org.uk, jdike@addtoit.com, jln@google.com,
+       mpm@selenic.com
+Subject: Re: [2.6.33-rc5] tty: possible irq lock inversion dependency in
+ tty_fasync
+In-Reply-To: <20100207064643.GA15533@hack>
+Message-ID: <alpine.LFD.2.00.1002062246390.3829@localhost.localdomain>
+References: <201002071452.IIF73922.VtFOJOHSFFLOQM@I-love.SAKURA.ne.jp> <alpine.LFD.2.00.1002062226000.3829@localhost.localdomain> <20100207064643.GA15533@hack>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
 Content-Transfer-Encoding: 8BIT
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am√©rico Wang <xiyou.wangcong@gmail.com> writes:
 
-> On Sat, Feb 06, 2010 at 10:31:30PM -0800, Linus Torvalds wrote:
->>
->>
->>On Sun, 7 Feb 2010, Tetsuo Handa wrote:
->>> 
->>> Below problem (which was introduced between 2.6.33-rc4 and 2.6.33-rc5) is
->>> not yet fixed as of 2.6.33-rc7.
->>> "git bisect start v2.6.33-rc5 v2.6.33-rc4" reported that
->>> 703625118069f9f8960d356676662d3db5a9d116 tty: fix race in tty_fasync
->>> is first bad commit.
->>
->>Yeah. I think we need to just revert that commit.
->>
->>Or maybe we could just do the following, rather than revert it outright: 
->>just get a ref to the 'struct pid' while holding the spinlock, and then 
->>releasing it after doing the __f_setown() call.
->
+
+On Sun, 7 Feb 2010, AmÈrico Wang wrote:
+> 
 > We already fixed this, a better fix:
->
+
+No we didn't.
+
 > http://lkml.org/lkml/2010/1/26/338
->
+> 
 > I sent a same fix with Greg's.
 
-That fix is present. See below.  Why does lockdep still warn?
-Do we have lockdep bug?
+We already did that. You didn't read Tetsuo's email carefully.
 
-Given that there is the only place we take f_owner.lock for write I
-don't see how f_owner.lock can be unsafe to be called with irqs
-disabled.
+Let's quote the important parts:
 
-commit b04da8bfdfbbd79544cab2fadfdc12e87eb01600
-Author: Greg Kroah-Hartman <gregkh@suse.de>
-Date:   Tue Jan 26 15:04:02 2010 -0800
+  "is not yet fixed as of 2.6.33-rc7."
 
-    fnctl: f_modown should call write_lock_irqsave/restore
-    
-    Commit 703625118069f9f8960d356676662d3db5a9d116 exposed that f_modown()
-    should call write_lock_irqsave instead of just write_lock_irq so that
-    because a caller could have a spinlock held and it would not be good to
-    renable interrupts.
-    
-    Cc: Eric W. Biederman <ebiederm@xmission.com>
-    Cc: Al Viro <viro@ZenIV.linux.org.uk>
-    Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-    Cc: Tavis Ormandy <taviso@google.com>
-    Cc: stable <stable@kernel.org>
-    Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+and also the _second_ lockdep complaint he quotes, which starts out with
 
-diff --git a/fs/fcntl.c b/fs/fcntl.c
-index 97e01dc..5ef953e 100644
---- a/fs/fcntl.c
-+++ b/fs/fcntl.c
-@@ -199,7 +199,9 @@ static int setfl(int fd, struct file * filp, unsigned long arg)
- static void f_modown(struct file *filp, struct pid *pid, enum pid_type type,
-                      int force)
- {
--       write_lock_irq(&filp->f_owner.lock);
-+       unsigned long flags;
-+
-+       write_lock_irqsave(&filp->f_owner.lock, flags);
-        if (force || !filp->f_owner.pid) {
-                put_pid(filp->f_owner.pid);
-                filp->f_owner.pid = get_pid(pid);
-@@ -211,7 +213,7 @@ static void f_modown(struct file *filp, struct pid *pid, enum pid_type type,
-                        filp->f_owner.euid = cred->euid;
-                }
-        }
--       write_unlock_irq(&filp->f_owner.lock);
-+       write_unlock_irqrestore(&filp->f_owner.lock, flags);
- }
- 
- int __f_setown(struct file *filp, struct pid *pid, enum pid_type type,
+  [   81.651199] =========================================================
+  [   81.651199] [ INFO: possible irq lock inversion dependency detected ]
+  [   81.651199] 2.6.33-rc7 #11
+  [   81.651199] ---------------------------------------------------------
 
+(note the -rc7 there).
 
+The problem? Look at f_getown: it does
+
+	read_lock(&filp->f_owner.lock);
+
+ie it holds f_owner without interrupts disabled. Now an interrupt comes 
+in, and takes 'siglock' because it ends up sending a signal (timer, SIGIO, 
+whatever). So you have a f_owner -> siglock ordering.
+
+But we _also_ have a siglock -> ctrl_lock -> f_owner ordering, in that 
+problematic tty_fasync() thing. So we have a ABBA deadlock situation.
+
+Yes, it's hard (practically impossible) to trigger, because you have to 
+get an interrupt just at the right point with all the right processes, but 
+lockdep seems to be entirely correct. 
+
+So it is simply _wrong_ to take f_owner while we hold ctrl_lock.
+
+Which is why I suggest just reverting both the original problematic commit 
+_and_ the commit you point to, and just fix the race with that pid_get/put 
+pair instead. As per my patch.
+
+		Linus
