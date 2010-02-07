@@ -1,93 +1,132 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933668Ab0BGKzF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Feb 2010 05:55:05 -0500
-Received: from moutng.kundenserver.de ([212.227.17.9]:64132 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932087Ab0BGKzD (ORCPT
+	id S1755070Ab0BGLYr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Feb 2010 06:24:47 -0500
+Received: from mail-yw0-f189.google.com ([209.85.211.189]:34656 "EHLO
+	mail-yw0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751926Ab0BGLYp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Feb 2010 05:55:03 -0500
-Date: Sun, 7 Feb 2010 11:54:48 +0100
-From: Heinz Diehl <htd@fancy-poultry.org>
-To: Xiaotian Feng <xtfeng@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       nhorman@tuxdriver.com, davem@davemloft.net
-Subject: Re: [Bug #15196] kmem_cache_create: duplicate cache ccid2_h
-Message-ID: <20100207105448.GA6623@fancy-poultry.org>
-References: <vZZJKzCUn4G.A.CPB.F7hZLB@chimera>
- <d3IDKWHT5gE.A.8sB.Q7hZLB@chimera>
- <7b6bb4a51001311930i7d72f60dj3b15ca3e1a715607@mail.gmail.com>
- <20100201150605.GA6175@fancy-poultry.org>
+	Sun, 7 Feb 2010 06:24:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=qhNgPyaA6X/MiuGkGAUlylmKsZj9ze+4IauNXJdhOh1bGTJ631Zrjrxe5Vo4a+YeCT
+         gLHFezMjGdJ4D7Z15bJs1quJ9bbrpTFGUAMu7qJlVf1P4azMZPYN+QQ3fH43AuPD5JTB
+         di4y+M091HHvTAA7B0c9YCmnwhfSnXoUpdwgM=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100201150605.GA6175@fancy-poultry.org>
-X-Accept-Language: no,dk,se,en,de
-Organization: private site
-X-OpenPGP-KeyID: 0xA9353F12
-X-OpenPGP-Fingerprint: C67E 9A93 1033 DF8A 9321  9F90 DC39 B8C3 A935 3F12
-X-OpenPGP-URL: http://www.fritha.org/htd.asc
-User-Agent: Mutt/1.5.20+20100131 (GNU/Linux)
-X-Provags-ID: V01U2FsdGVkX195KVtCu3dB3rjkppLd+XFWu6swEHo770ea9d0
- t9aIbdR2NZss6kZ6+3gjQvqMwHGgI3D755jk1PGndvhp53keEF
- Z0N3Isa9kJ5MPO4Jjcj3g==
+Date: Sun, 7 Feb 2010 19:24:44 +0800
+Message-ID: <628d1651002070324w424012eanda9392db26331905@mail.gmail.com>
+Subject: [PATCH] LSM: add static to security_ops variable
+From: wzt wzt <wzt.wzt@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: sds@tycho.nsa.gov, jmorris@namei.org, eparis@parisplace.org
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01.02.2010, Heinz Diehl wrote: 
+security_ops was declared as a global variable, so other drivers or
+kernel code can easily change its value, like:
 
-[....]
+extern struct security_operations *security_ops;
+security_ops = NULL;
 
-Quoting myself here...
+then insmod this driver immediately, it will get an oops.  Other evil
+drivers can aslo fake this variable as extern.
 
-> The patch was completely malformed, don't know what happened on the way,
-> but I applied it by hand. Yes, it fixes the problem for me.
+Signed-off-by: wzt <zhitong.wangzt@alibaba-inc.com>
+---
+ security/security.c      |   25 ++++++++++++++++++++++++-
+ security/selinux/hooks.c |   18 ++++++------------
+ 2 files changed, 30 insertions(+), 13 deletions(-)
 
-Xiaotiangs patch quoted in the thread listed here (coming via kernel.org's
-bugtracker)
+diff --git a/security/security.c b/security/security.c
+index 24e060b..781117d 100644
+--- a/security/security.c
++++ b/security/security.c
+@@ -26,7 +26,12 @@ static __initdata char chosen_lsm[SECURITY_NAME_MAX + 1] =
+ extern struct security_operations default_security_ops;
+ extern void security_fixup_ops(struct security_operations *ops);
 
- http://patchwork.kernel.org/patch/76023/
- 
-is missing some lines, and the patch attached at the end of the
-thread is incomplete and malformed, as reported earlier. I guess this is
-how it should have looked like (please correct me if I'm wrong):
+-struct security_operations *security_ops;      /* Initialized to NULL */
++static struct security_operations *security_ops;       /* Initialized
+to NULL */
++/*
++ * Minimal support for a secondary security module,
++ * just to allow the use of the capability module.
++ */
++static struct security_operations *secondary_ops;
 
-
---- /a/ccid.c	2010-02-06 23:17:12.000000000 +0100
-+++ /b/ccid.c	2010-02-07 09:50:40.000000000 +0100
-@@ -77,13 +77,13 @@
- 	return err;
- }
- 
--static struct kmem_cache *ccid_kmem_cache_create(int obj_size, char *slab_name_fmt, const char *fmt,...)
-+static struct kmem_cache *ccid_kmem_cache_create(int obj_size, char *slab_name_fmt, int length, const char *fmt,...)
+ static inline int verify(struct security_operations *ops)
  {
- 	struct kmem_cache *slab;
- 	va_list args;
- 
- 	va_start(args, fmt);
--	vsnprintf(slab_name_fmt, sizeof(slab_name_fmt), fmt, args);
-+	vsnprintf(slab_name_fmt, length, fmt, args);
- 	va_end(args);
- 
- 	slab = kmem_cache_create(slab_name_fmt, sizeof(struct ccid) + obj_size, 0,
-@@ -104,6 +104,7 @@
- 	ccid_ops->ccid_hc_rx_slab =
- 			ccid_kmem_cache_create(ccid_ops->ccid_hc_rx_obj_size,
- 					       ccid_ops->ccid_hc_rx_slab_name,
-+					       sizeof(ccid_ops->ccid_hc_rx_slab_name),
- 					       "ccid%u_hc_rx_sock",
- 					       ccid_ops->ccid_id);
- 	if (ccid_ops->ccid_hc_rx_slab == NULL)
-@@ -112,6 +113,7 @@
- 	ccid_ops->ccid_hc_tx_slab =
- 			ccid_kmem_cache_create(ccid_ops->ccid_hc_tx_obj_size,
- 					       ccid_ops->ccid_hc_tx_slab_name,
-+					       sizeof(ccid_ops->ccid_hc_tx_slab_name),
- 					       "ccid%u_hc_tx_sock",
- 					       ccid_ops->ccid_id);
- 	if (ccid_ops->ccid_hc_tx_slab == NULL)
+@@ -63,6 +68,24 @@ int __init security_init(void)
+        return 0;
+ }
 
++void reset_secondary_ops(void)
++{
++       secondary_ops = security_ops;
++       if (!secondary_ops)
++               panic("SELinux: No initial security operations\n");
++}
++
++void reset_security_ops(void)
++{
++       /* Reset security_ops to the secondary module, dummy or capability. */
++       security_ops = secondary_ops;
++}
+
+ /* Save user chosen LSM */
+ static int __init choose_lsm(char *str)
+ {
+diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
+index 9a2ee84..9e8607e 100644
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -92,7 +92,9 @@
+ #define NUM_SEL_MNT_OPTS 5
+
+ extern int selinux_nlmsg_lookup(u16 sclass, u16 nlmsg_type, u32 *perm);
+-extern struct security_operations *security_ops;
++extern void reset_secondary_ops(void);
++extern void reset_security_ops(void);
+
+ /* SECMARK reference count */
+ atomic_t selinux_secmark_refcount = ATOMIC_INIT(0);
+@@ -126,12 +128,6 @@ int selinux_enabled = 1;
+ #endif
+
+
+-/*
+- * Minimal support for a secondary security module,
+- * just to allow the use of the capability module.
+- */
+-static struct security_operations *secondary_ops;
+-
+ /* Lists of inode and superblock security structures initialized
+    before the policy was loaded. */
+ static LIST_HEAD(superblock_security_head);
+@@ -5672,9 +5668,8 @@ static __init int selinux_init(void)
+                                            0, SLAB_PANIC, NULL);
+        avc_init();
+
+-       secondary_ops = security_ops;
+-       if (!secondary_ops)
+-               panic("SELinux: No initial security operations\n");
++       reset_secondary_ops();
++
+        if (register_security(&selinux_ops))
+                panic("SELinux: Unable to register with kernel.\n");
+
+@@ -5835,8 +5830,7 @@ int selinux_disable(void)
+        selinux_disabled = 1;
+        selinux_enabled = 0;
+
+-       /* Reset security_ops to the secondary module, dummy or capability. */
+-       security_ops = secondary_ops;
++       reset_security_ops();
+
+        /* Try to destroy the avc node cache */
+        avc_disable();
+-- 
+1.6.6.1
