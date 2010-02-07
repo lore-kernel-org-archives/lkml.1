@@ -1,48 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932776Ab0BGSa4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Feb 2010 13:30:56 -0500
-Received: from casper.infradead.org ([85.118.1.10]:37374 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932346Ab0BGSaz (ORCPT
+	id S1756914Ab0BGScK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Feb 2010 13:32:10 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37385 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753203Ab0BGScI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Feb 2010 13:30:55 -0500
-Date: Sun, 7 Feb 2010 10:32:08 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Michael Breuer <mbreuer@majjas.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: x86 - cpu_relax - why nop vs. pause?
-Message-ID: <20100207103208.4e2ecfb4@infradead.org>
-In-Reply-To: <4B6EF853.9090704@majjas.com>
-References: <4B6EF853.9090704@majjas.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 7 Feb 2010 13:32:08 -0500
+Date: Sun, 7 Feb 2010 10:32:02 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Joel Becker <Joel.Becker@oracle.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.33-rc7
+In-Reply-To: <20100207102016.GH3416@mail.oracle.com>
+Message-ID: <alpine.LFD.2.00.1002071029040.3829@localhost.localdomain>
+References: <alpine.LFD.2.00.1002061422430.3829@localhost.localdomain> <alpine.LFD.2.00.1002061445210.3829@localhost.localdomain> <20100207102016.GH3416@mail.oracle.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 07 Feb 2010 12:28:51 -0500
-Michael Breuer <mbreuer@majjas.com> wrote:
 
-> I did search and noticed some old discussions. Looking at both Intel
-> and AMD documentation, it would seem that PAUSE is the preferred
-> instruction within a spin lock. Further, both Intel and AMD
-> specifications state that the instruction is backward compatible with
-> older x86 processors.
+
+On Sun, 7 Feb 2010, Joel Becker wrote:
 > 
+> 	When I grab tarballs, I only grab .gz.  Bandwidth isn't a
+> problem (3 minutes versus four on my DSL, I still switch over to another
+> screen and check back).  But .bz2 unpacks very slowly in the
+> environments I'm usually grabbing a tarball for.  I save more time
+> unpacking .gz than I do downloading .bz2.
 
-that's odd....
+Ok, there seems to be a fair number of people who prefer .gz files for 
+whatever reason. 
 
-rep nop and pause ought to be the same...
+So I guess I'll stay with the current setup. It's only (somebody elses) 
+diskspace, after all.
 
+Another option might be to stop generating the .bz2 files, of course. 
+Anybody who cares more about network bandwidth than CPU use (ie people who 
+would seem to prefer bz2) would be better off using git instead, which 
+packs things _way_ better, by virtue of being much more incremental.
 
+But at that point, I'm not even involved any more, because that bz2 
+generation is entirely scripted at kernel.org.
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+				Linus
