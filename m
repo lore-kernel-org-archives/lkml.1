@@ -1,15 +1,14 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756654Ab0BGWpe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Feb 2010 17:45:34 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:55136 "EHLO ogre.sisk.pl"
+	id S932072Ab0BGWqV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Feb 2010 17:46:21 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:55154 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755992Ab0BGWp3 convert rfc822-to-8bit (ORCPT
+	id S1756525Ab0BGWpw convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Feb 2010 17:45:29 -0500
+	Sun, 7 Feb 2010 17:45:52 -0500
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>,
-       "Lin Ming" <ming.m.lin@intel.com>, "Mike Galbraith" <efault@gmx.de>
+       Maciej Rutecki <maciej.rutecki@gmail.com>, "okias" <d.okias@gmail.com>
 References: <4Ht3jFrT7uE.A.JI.-nzbLB@chimera>
 In-Reply-To: <4Ht3jFrT7uE.A.JI.-nzbLB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -17,10 +16,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <445R0ey9hAI.A.eTC.-pzbLB@chimera>
-Subject: [Bug #14950] tbench regression with 2.6.33-rc1
+Message-ID: <445R0ey9hAI.A.qvB.DpzbLB@chimera>
+Subject: [Bug #15076] System panic under load with clockevents_program_event
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sun,  7 Feb 2010 23:28:48 +0100 (CET)
+Date: Sun,  7 Feb 2010 23:28:50 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -33,10 +32,9 @@ from 2.6.32.  Please verify if it still should be listed and let the tracking te
 know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14950
-Subject		: tbench regression with 2.6.33-rc1
-Submitter	: Lin Ming <ming.m.lin@intel.com>
-Date		: 2009-12-25 11:11 (45 days old)
-References	: http://marc.info/?l=linux-kernel&m=126174044213172&w=4
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15076
+Subject		: System panic under load with clockevents_program_event
+Submitter	: okias <d.okias@gmail.com>
+Date		: 2010-01-17 13:03 (22 days old)
 
 
