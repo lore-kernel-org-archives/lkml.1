@@ -1,71 +1,73 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752488Ab0BGCAr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Feb 2010 21:00:47 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:51381 "EHLO mail.zytor.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751607Ab0BGCAq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Feb 2010 21:00:46 -0500
-Message-ID: <4B6E1DA3.50204@zytor.com>
-Date: Sat, 06 Feb 2010 17:55:47 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
+	id S1753477Ab0BGDcM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Feb 2010 22:32:12 -0500
+Received: from mail.parknet.co.jp ([210.171.160.6]:56301 "EHLO
+	mail.parknet.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753235Ab0BGDcK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Feb 2010 22:32:10 -0500
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: "J. Bruce Fields" <bfields@fieldses.org>, Neil Brown <neilb@suse.de>
+Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Failure to fallback to nfsd-v3 (?)
+Date: Sun, 07 Feb 2010 12:32:04 +0900
+Message-ID: <87pr4h67rf.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.92 (gnu/linux)
 MIME-Version: 1.0
-To: Borislav Petkov <bp@amd64.org>
-CC: Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>, Jamie Lokier <jamie@shareable.org>,
-       Roland Dreier <rdreier@cisco.com>, Al Viro <viro@ZenIV.linux.org.uk>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Brian Gerst <brgerst@gmail.com>
-Subject: Re: [PATCH 2/5] bitops: compile time optimization for hweight_long(CONSTANT)
-References: <20100203074251.e2caa3f3.akpm@linux-foundation.org> <20100203181425.GB1367@aftab> <1265222875.24455.1020.camel@laptop> <4B69D362.10608@zytor.com> <20100204151050.GC32711@aftab> <1265296432.22001.18.camel@laptop> <20100204155419.GD32711@aftab> <1265299457.22001.72.camel@laptop> <20100205121139.GA9044@aftab> <4B6C93A2.1090302@zytor.com> <20100206093659.GA28326@aftab>
-In-Reply-To: <20100206093659.GA28326@aftab>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/06/2010 01:36 AM, Borislav Petkov wrote:
-> 
->> c) You call a C function, but you don't clobber the set of registers
->> that a C function would clobber.  You either need to put the function in
->> an assembly wrapper (which is better in the long run), or clobber the
->> full set of registers that is clobbered by a C function (which is better
->> in the short term) -- which is eax, edx, ecx on 32 bits, but rax, rdi,
->> esi, rdx, rcx, r8, r9, r10, r11 on 64 bits.
-> 
-> I think you mean rsi instead of esi here.
-> 
-> Well, the example Brian pointed me to - __mutex_fastpath_lock - lists
-> the full set of clobbered registers. Please elaborate on the assembly
-> wrapper for the function, wouldn't I need to list all the clobbered
-> registers there too or am I missing something?
-> 
+Hi,
 
-The notion there would be that you do push/pop in the assembly wrapper.
+I've recently noticed I couldn't mount nfs on 2.6.33-rc6. The environment is
 
->> d) On the other hand, you do *not* need a "memory" clobber.
-> 
-> Right, in this case we have all non-barrier like inlines so no memory
-> clobber, according to the comment above alternative() macro.
+	server (nfsd-v3, 2.6.33-rc6) <-> client (2.6.32.7, nfs-utils 1.2.1)
 
-OK, I'm missing something here.
+And mount command is
 
-A few more notions:
+	# mount server:/path /mntpoint
 
-a. This is exactly the kind of code where you don't want to put
-"volatile" on your asm statement, because it's a pure compute.
+(i.e. without any options. If I specified "vers=3" option, it works).
 
-b. It is really rather pointless to go through the whole alternatives
-work if you are then going to put it inside a function which isn't an
-inline ...
+With some debugging, it seems to change of the error code on nfsd - the
+log of failure is the following.
 
-	-hpa
+nfsd_dispatch: vers 4 proc 0
+nfsd_dispatch: vers 4 proc 1
+nfsv4 compound op #1/3: 24 (OP_PUTROOTFH)
+nfsv4 compound op ffff88012d9e10c0 opcnt 3 #1: 24: status 30000
+nfsv4 compound returned 30000
+nfsd: Dropping request; may be revisited later
+found domain *.xxx.xx
+found fsidtype 1
+found fsid length 4
+Path seems to be <>
+nfsd_dispatch: vers 4 proc 1
+nfsv4 compound op #1/3: 24 (OP_PUTROOTFH)
+nfsv4 compound op ffff88012dab6228 opcnt 3 #1: 24: status 10006
+nfsv4 compound returned 10006
 
+On the older kernel (2.6.32.7), it seems to fallback to nfsv3,
+
+nfsd_dispatch: vers 4 proc 0
+nfsd_dispatch: vers 4 proc 1
+nfsv4 compound op #1/3: 24 (OP_PUTROOTFH)
+nfsv4 compound op d9c04850 opcnt 3 #1: 24: status 2
+nfsv4 compound returned 2
+nfsd_dispatch: vers 3 proc 0
+[...]
+
+
+And the following commit seems to change the behavior.
+
+[nfsd4: fix error return when pseudoroot missing]
+f39bde24b275ddc45df1ed835725b609e178c7a0
+
+Well, anyway, is this a expected behavior change, or something bug?
+
+Thanks.
 -- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
