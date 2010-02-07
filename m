@@ -1,90 +1,98 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755736Ab0BGPKQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Feb 2010 10:10:16 -0500
-Received: from kcmailp04.birch.net ([216.212.0.99]:53626 "EHLO mx01.birch.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753088Ab0BGPKO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Feb 2010 10:10:14 -0500
-Message-ID: <4B6ED7E4.9020905@softplc.com>
-Date: Sun, 07 Feb 2010 09:10:28 -0600
-From: Dick Hollenbeck <dick@softplc.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	id S1756216Ab0BGQEi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Feb 2010 11:04:38 -0500
+Received: from mail-pz0-f187.google.com ([209.85.222.187]:64230 "EHLO
+	mail-pz0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754546Ab0BGQEg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Feb 2010 11:04:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=IikkO+uCGNSsoRmkFMhVbmY09iIgy4VHvfKazEeA1PyiJm7Jcr6nA1hS6oQo7JrzGP
+         9RxjKRw604/Yu3Ws+FkCjFAJnlLKymaobvNVZZok3x1IrudUBt5tnEImKnYAq8sqefar
+         mVDVEexU3hfSoVGLqrhrf+BZvG7vsfDzhIi6Y=
+Date: Mon, 8 Feb 2010 00:06:57 +0800
+From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>,
+       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, gregkh@suse.de,
+       taviso@google.com, viro@ZenIV.linux.org.uk,
+       linux-kernel@vger.kernel.org, ebiederm@xmission.com,
+       alan@lxorguk.ukuu.org.uk, jdike@addtoit.com, jln@google.com,
+       mpm@selenic.com
+Subject: Re: [2.6.33-rc5] tty: possible irq lock inversion dependency in
+	tty_fasync
+Message-ID: <20100207160657.GA17447@hack>
+References: <201002071452.IIF73922.VtFOJOHSFFLOQM@I-love.SAKURA.ne.jp> <alpine.LFD.2.00.1002062226000.3829@localhost.localdomain> <20100207064643.GA15533@hack> <alpine.LFD.2.00.1002062246390.3829@localhost.localdomain>
 MIME-Version: 1.0
-To: Phillip Lougher <phil.lougher@gmail.com>
-CC: linux-kernel@vger.kernel.org,
-       Phillip Lougher <phillip@lougher.demon.co.uk>
-Subject: Re: SquashFS on ARM9
-References: <4B6E0F88.2020402@softplc.com> <4B6E6959.60708@softplc.com> <cce9e37e1002070552h6514ecf5u634b184e4928a009@mail.gmail.com>
-In-Reply-To: <cce9e37e1002070552h6514ecf5u634b184e4928a009@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <alpine.LFD.2.00.1002062246390.3829@localhost.localdomain>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Phillip Lougher wrote:
-> On Sun, Feb 7, 2010 at 7:18 AM, Dick Hollenbeck <dick@softplc.com> wrote:
->   
->> Dick Hollenbeck wrote:
->>     
+On Sat, Feb 06, 2010 at 10:59:56PM -0800, Linus Torvalds wrote:
 >
->   
->> The image works OK if I build it with the 32 version of mksquashs on x86 vs x86_64 .
->>
->> Amazing, there are differences in file format other than endian-ness?
->>     
 >
-> If you've found a difference in filesystems built by mksquashfs on x86
-> vs x86_64, then it is a *bug*.
+>On Sun, 7 Feb 2010, Américo Wang wrote:
+>> 
+>> We already fixed this, a better fix:
 >
->   
->> So we have at least 3 forms of the file system image now?  I am
->> disappointed.  One would have sufficed.  I don't even buy the need for
->> LSbyte vs MSbyte being needed.  There should have been only one form of the
->> FS image.
->>
->> Ouch, this seems amateurish.   Can I assume it is the bitfields?   Get rid
->> of the bitfields!
->>
->>     
+>No we didn't.
 >
-> No need for insults, especially as it is based on an outdated
-> understanding.  Squashfs became fixed endian, and lost the bit-fields
-> in Squashfs 4.0.
+>> http://lkml.org/lkml/2010/1/26/338
+>> 
+>> I sent a same fix with Greg's.
 >
->   
->> For now I don't need anymore help.  Sorry if I burned down my bridge, I only
->> intend to offer strategy to improve the filesystem.
->>
->>     
+>We already did that. You didn't read Tetsuo's email carefully.
 >
-> I like constructive feedback, excessively critical feedback is usually
-> self-defeating as it generally gets ignored.  By saying "Sorry if I
-> burned down my bridge" means you obviously understand this, and so it
-> is weird you bothered to send the email.
+>Let's quote the important parts:
 >
-> If you'd like the bug tracked down please raise it on the
-> squashfs.sourceforge.net bug tracker.  Include as much information as
-> you can including distribution, architecture, Mksquashfs options etc.
-> It would be best if you can provide a testcase set of source
-> directories that generate differing Squashfs filesystems on
-> x86/x86_64.
+>  "is not yet fixed as of 2.6.33-rc7."
 >
-> Phillip
->   
-
-My objection and criticism was based on my perception that *unnecessary 
-risk had been taken* in using the bitfields.  I found no easy way to 
-follow continuity of squashfs evolution, no mailing list, history doc, 
-and made some assumptions based on an old LKML posting warning against 
-bitfields.  I've been bit by bitfields myself in the past.  Typically 
-human, my mistake was the same I was criticizing about, *taking 
-unnecessary risk* when I made the assumptions.
-
-I am sorry Phillip, your work is appreciated, your pay is too low, and 
-you did not deserve this.
-
-Dick
+>and also the _second_ lockdep complaint he quotes, which starts out with
+>
+>  [   81.651199] =========================================================
+>  [   81.651199] [ INFO: possible irq lock inversion dependency detected ]
+>  [   81.651199] 2.6.33-rc7 #11
+>  [   81.651199] ---------------------------------------------------------
+>
+>(note the -rc7 there).
+>
 
 
+Ah, I was just mislead by the subject... sigh
+
+
+>The problem? Look at f_getown: it does
+>
+>	read_lock(&filp->f_owner.lock);
+>
+>ie it holds f_owner without interrupts disabled. Now an interrupt comes 
+>in, and takes 'siglock' because it ends up sending a signal (timer, SIGIO, 
+>whatever). So you have a f_owner -> siglock ordering.
+>
+>But we _also_ have a siglock -> ctrl_lock -> f_owner ordering, in that 
+>problematic tty_fasync() thing. So we have a ABBA deadlock situation.
+>
+>Yes, it's hard (practically impossible) to trigger, because you have to 
+>get an interrupt just at the right point with all the right processes, but 
+>lockdep seems to be entirely correct. 
+>
+>So it is simply _wrong_ to take f_owner while we hold ctrl_lock.
+>
+>Which is why I suggest just reverting both the original problematic commit 
+>_and_ the commit you point to, and just fix the race with that pid_get/put 
+>pair instead. As per my patch.
+>
+
+Good analysis, this seems better for me too.
+
+Thank you!
