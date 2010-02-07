@@ -1,107 +1,73 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754612Ab0BGNtN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Feb 2010 08:49:13 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:50109 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752784Ab0BGNtM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Feb 2010 08:49:12 -0500
-Message-ID: <4B6EC472.4010502@redhat.com>
-Date: Sun, 07 Feb 2010 15:47:30 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+	id S1754830Ab0BGNw0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Feb 2010 08:52:26 -0500
+Received: from mail-fx0-f211.google.com ([209.85.220.211]:34342 "EHLO
+	mail-fx0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752837Ab0BGNwZ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Feb 2010 08:52:25 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=mKFAhor1ihsYssP9UYRbYdAqYKBaUxwX/3TZRS+JukMbQF6JZvb/A6Kbe+Dh9lM6/h
+         iXdqcnKkfFOQ6V+jXpUvY3TECNVbHFmMyMYt0e5OsXGF/8UQrciKhbzVCCkVGtz2Y374
+         +iaV9+z1gjQxClshEi4MB8A2DvQ2zpWzx4jL0=
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Peter Zijlstra <peterz@infradead.org>, Jim Keniston <jkenisto@us.ibm.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>, ananth@in.ibm.com,
-       Arnaldo Carvalho de Melo <acme@infradead.org>,
-       utrace-devel <utrace-devel@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Maneesh Soni <maneesh@in.ibm.com>, Mark Wielaard <mjw@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] [PATCH 1/7] User Space Breakpoint Assistance Layer (UBP)
-References: <1263852957.2266.38.camel@localhost.localdomain> <4B556855.6040800@redhat.com> <1263923265.4998.28.camel@localhost.localdomain> <4B56D027.3010808@redhat.com> <1263981472.4283.843.camel@laptop> <4B56F588.2060109@redhat.com> <20100127082440.GA16640@elte.hu> <4B5FFADB.5090209@redhat.com> <20100127090824.GA23570@elte.hu> <4B60067B.4060708@redhat.com> <20100127102311.GA973@elte.hu>
-In-Reply-To: <20100127102311.GA973@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <4B6E6959.60708@softplc.com>
+References: <4B6E0F88.2020402@softplc.com> <4B6E6959.60708@softplc.com>
+Date: Sun, 7 Feb 2010 13:52:23 +0000
+Message-ID: <cce9e37e1002070552h6514ecf5u634b184e4928a009@mail.gmail.com>
+Subject: Re: SquashFS on ARM9
+From: Phillip Lougher <phil.lougher@gmail.com>
+To: Dick Hollenbeck <dick@softplc.com>
+Cc: linux-kernel@vger.kernel.org,
+       Phillip Lougher <phillip@lougher.demon.co.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/27/2010 12:23 PM, Ingo Molnar wrote:
-> * Avi Kivity<avi@redhat.com>  wrote:
->    
+On Sun, Feb 7, 2010 at 7:18 AM, Dick Hollenbeck <dick@softplc.com> wrote:
+> Dick Hollenbeck wrote:
 
-(back from vacation)
-
->>> If so then you ignore the obvious solution to _that_ problem: dont use
->>> INT3 at all, but rebuild (or re-JIT) your program with explicit callbacks.
->>> It's _MUCH_ faster than _any_ breakpoint based solution - literally just
->>> the cost of a function call (or not even that - i've written very fast
->>> inlined tracers - they do rock when it comes to performance). Problem
->>> solved and none of the INT3 details matters at all.
->>>        
->> However did I not think of that?  Yes, and let's rip off kprobes tracing
->> from the kernel, we can always rebuild it.
->>
->> Well, I'm observing an issue in a production system now.  I may not want to
->> take it down, or if I take it down I may not be able to observe it again as
->> the problem takes a couple of days to show up, or I may not have the full
->> source, or it takes 10 minutes to build and so an iterative edit/build/run
->> cycle can stretch for hours.
->>      
-> You have somewhat misconstrued my argument. What i said above is that _if_ you
-> need extreme levels of performance you always have the option to go even
-> faster via specialized tracing solutions. I did not promote it as a
-> replacement solution. Specialization obviously brings in a new set of
-> problems: infexibility and non-transparency, an example of what you gave
-> above.
+> The image works OK if I build it with the 32 version of mksquashs on x86 vs x86_64 .
 >
-> Your proposed solution brings in precisely such kinds of issues, on a
-> different level, just to improve performance at the cost of transparency and
-> at the cost of features and robustness.
->    
+> Amazing, there are differences in file format other than endian-ness?
 
-We just disagree on the intrusiveness, then.  IMO it will be a very rare 
-application that really suffers from a vma injection, since most apps 
-don't manage their vmas directly but leave it to the kernel and ld.so.
+If you've found a difference in filesystems built by mksquashfs on x86
+vs x86_64, then it is a *bug*.
 
-> It's btw rather ironic as your arguments are somewhat similar to the Xen vs.
-> KVM argument just turned around: KVM started out slower by relying on hardware
-> implementation for virtualization while Xen relied on a clever but limiting
-> hack. With each CPU generation the hardware got faster, while the various
-> design limitations of Xen are hurting it and KVM is winning that race.
 >
-> A (partially) similar situation exists here: INT3 into ring 0 and handling it
-> there in a protected environment might be more expensive, but _if_ it matters
-> to performance it sure could be made faster in hardware (and in fact it will
-> become faster with every new generation of hardware).
->    
+> So we have at least 3 forms of the file system image now?  I am
+> disappointed.  One would have sufficed.  I don't even buy the need for
+> LSbyte vs MSbyte being needed.  There should have been only one form of the
+> FS image.
+>
+> Ouch, this seems amateurish.   Can I assume it is the bitfields?   Get rid
+> of the bitfields!
+>
 
-Not at all.  For kvm hardware eliminates exits completely where pv Xen 
-tries to reduce their cost, but an INT3 will be forever much more 
-expensive than a jump.
+No need for insults, especially as it is based on an outdated
+understanding.  Squashfs became fixed endian, and lost the bit-fields
+in Squashfs 4.0.
 
-You are right however that we should favour hardware support where 
-available, and for high bandwidth tracing, it is available: branch trace 
-store.  With that, it is easy to know how many times the processor 
-passed through some code point as well as to reconstruct the entire call 
-chain, basically what the function tracer does for the kernel.
+> For now I don't need anymore help.  Sorry if I burned down my bridge, I only
+> intend to offer strategy to improve the filesystem.
+>
 
-Do we have facilities for exposing that to userspace?  It can also be 
-very useful for the kernel.
+I like constructive feedback, excessively critical feedback is usually
+self-defeating as it generally gets ignored.  By saying "Sorry if I
+burned down my bridge" means you obviously understand this, and so it
+is weird you bothered to send the email.
 
-It will still be slower if we only trace a few points, and it can't 
-trace register and memory values, but it's a good tool to have IMO.
+If you'd like the bug tracked down please raise it on the
+squashfs.sourceforge.net bug tracker.  Include as much information as
+you can including distribution, architecture, Mksquashfs options etc.
+It would be best if you can provide a testcase set of source
+directories that generate differing Squashfs filesystems on
+x86/x86_64.
 
-> Both Peter and me are telling you that we are considering your solution too
-> specialized, at the cost of flexibility, features and robustness.
->    
-
-We'll agree to disagree on that then.
-
--- 
-error compiling committee.c: too many arguments to function
-
+Phillip
