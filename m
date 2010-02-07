@@ -1,248 +1,115 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755115Ab0BGVDN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Feb 2010 16:03:13 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:60841 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753504Ab0BGVDL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Feb 2010 16:03:11 -0500
-Date: Sun, 7 Feb 2010 13:02:50 -0800
-From: Brandon Philips <bphilips@suse.de>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Suresh Siddha <suresh.b.siddha@intel.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v4] x86: keep chip_data in create_irq_nr and destroy_irq
-Message-ID: <20100207210250.GB8256@jenkins.home.ifup.org>
-References: <4B694DEF.70301@kernel.org>
- <20100203174216.GB17985@jenkins.home.ifup.org>
- <4B6BDAC0.3090900@kernel.org>
- <20100205210926.GE4930@jenkins.home.ifup.org>
- <4B6C9F69.4040605@kernel.org>
- <20100205225535.GF4930@jenkins.home.ifup.org>
- <4B6CB26C.405@kernel.org>
- <20100206001832.GG4930@jenkins.home.ifup.org>
- <20100206064247.GB15556@jenkins.home.ifup.org>
- <4B6D173C.4070200@kernel.org>
+	id S1756031Ab0BGVFd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Feb 2010 16:05:33 -0500
+Received: from moutng.kundenserver.de ([212.227.126.171]:60895 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753948Ab0BGVFc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Feb 2010 16:05:32 -0500
+From: Bernhard Schiffner <bernhard@schiffner-limbach.de>
+To: Larry Finger <Larry.Finger@lwfinger.net>, linux-kernel@vger.kernel.org
+Subject: [mmiotrace] Make timestamps as printk() does.
+Date: Sun, 7 Feb 2010 22:05:26 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.32.7-0.1-desktop; KDE/4.3.5; i686; ; )
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B6D173C.4070200@kernel.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002072205.26665.bernhard@schiffner-limbach.de>
+X-Provags-ID: V01U2FsdGVkX1/6iEP7viBHmZQeTGUzyzCuzZqiFwP3lu/1WaO
+ +ATy7S44pNiYp5fgh225qOcX6PlZiX+4SJjX2bKQN7mA83KtPt
+ gYTzCr+b5dGGRsso5AKfg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Version 4: use get_irq_chip_data() in destroy_irq() to get rid of some
-local vars.
+Hallo,
 
-When two drivers are setting up MSI-X at the same time via
-pci_enable_msix() there is a race.  See this dmesg excerpt:
+this little patch makes a simple "sort -m" on output gotten from dmesg and  
+mmiotrace possible.
+It's a real help at least for me.
 
-[   85.170610] ixgbe 0000:02:00.1: irq 97 for MSI/MSI-X
-[   85.170611]   alloc irq_desc for 99 on node -1
-[   85.170613] igb 0000:08:00.1: irq 98 for MSI/MSI-X
-[   85.170614]   alloc kstat_irqs on node -1
-[   85.170616] alloc irq_2_iommu on node -1
-[   85.170617]   alloc irq_desc for 100 on node -1
-[   85.170619]   alloc kstat_irqs on node -1
-[   85.170621] alloc irq_2_iommu on node -1
-[   85.170625] ixgbe 0000:02:00.1: irq 99 for MSI/MSI-X
-[   85.170626]   alloc irq_desc for 101 on node -1
-[   85.170628] igb 0000:08:00.1: irq 100 for MSI/MSI-X
-[   85.170630]   alloc kstat_irqs on node -1
-[   85.170631] alloc irq_2_iommu on node -1
-[   85.170635]   alloc irq_desc for 102 on node -1
-[   85.170636]   alloc kstat_irqs on node -1
-[   85.170639] alloc irq_2_iommu on node -1
-[   85.170646] BUG: unable to handle kernel NULL pointer dereference
-at 0000000000000088
+Bernhard
+(CC me please, I'am not on this list.)
 
-As you can see igb and ixgbe are both alternating on create_irq_nr()
-via pci_enable_msix() in their probe function.
+------------
+    Make mmiotrace timestamps compareable to printk().
 
-ixgbe: While looping through irq_desc_ptrs[] via create_irq_nr() ixgbe
-choses irq_desc_ptrs[102] and exits the loop, drops vector_lock and
-calls dynamic_irq_init. Then it sets irq_desc_ptrs[102]->chip_data =
-NULL via dynamic_irq_init().
+diff --git a/kernel/trace/trace_mmiotrace.c b/kernel/trace/trace_mmiotrace.c
+index 0acd834..32c21f7 100644                                               
+--- a/kernel/trace/trace_mmiotrace.c                                        
++++ b/kernel/trace/trace_mmiotrace.c                                        
+@@ -146,7 +146,7 @@ static ssize_t mmio_read(struct trace_iterator *iter, 
+struct file *filp,
+        n = count_overruns(iter);                                                           
+        if (n) {                                                                            
+                /* XXX: This is later than where events were lost. */                       
+-               trace_seq_printf(s, "MARK 0.000000 Lost %lu events.\n", n);                 
++               trace_seq_printf(s, "[    0.000000] MARK Lost %lu events.\n", 
+n);           
+                if (!overrun_detected)                                                      
+                        pr_warning("mmiotrace has lost events.\n");                         
+                overrun_detected = true;                                                    
+@@ -186,21 +186,21 @@ static enum print_line_t mmio_print_rw(struct 
+trace_iterator *iter)   
+        switch (rw->opcode) {                                                               
+        case MMIO_READ:                                                                     
+                ret = trace_seq_printf(s,                                                   
+-                       "R %d %u.%06lu %d 0x%llx 0x%lx 0x%lx %d\n",                         
+-                       rw->width, secs, usec_rem, rw->map_id,                              
++                       "[%5lu.%06lu] R %d %d 0x%llx 0x%lx 0x%lx %d\n",                     
++                       secs, usec_rem, rw->width, rw->map_id,                              
+                        (unsigned long long)rw->phys,                                       
+                        rw->value, rw->pc, 0);                                              
+                break;                                                                      
+        case MMIO_WRITE:                                                                    
+                ret = trace_seq_printf(s,                                                   
+-                       "W %d %u.%06lu %d 0x%llx 0x%lx 0x%lx %d\n",                         
+-                       rw->width, secs, usec_rem, rw->map_id,                              
++                       "[%5lu.%06lu] W %d %d 0x%llx 0x%lx 0x%lx %d\n",                     
++                       secs, usec_rem, rw->width, rw->map_id,                              
+                        (unsigned long long)rw->phys,                                       
+                        rw->value, rw->pc, 0);                                              
+                break;                                                                      
+        case MMIO_UNKNOWN_OP:
+                ret = trace_seq_printf(s,
+-                       "UNKNOWN %u.%06lu %d 0x%llx %02lx,%02lx,"
++                       "[%5lu.%06lu] UNKNOWN %d 0x%llx %02lx,%02lx,"
+                        "%02lx 0x%lx %d\n",
+                        secs, usec_rem, rw->map_id,
+                        (unsigned long long)rw->phys,
+@@ -233,14 +233,14 @@ static enum print_line_t mmio_print_map(struct 
+trace_iterator *iter)
+        switch (m->opcode) {
+        case MMIO_PROBE:
+                ret = trace_seq_printf(s,
+-                       "MAP %u.%06lu %d 0x%llx 0x%lx 0x%lx 0x%lx %d\n",
++                       "[%5lu.%06lu] MAP %d 0x%llx 0x%lx 0x%lx 0x%lx %d\n",
+                        secs, usec_rem, m->map_id,
+                        (unsigned long long)m->phys, m->virt, m->len,
+                        0UL, 0);
+                break;
+        case MMIO_UNPROBE:
+                ret = trace_seq_printf(s,
+-                       "UNMAP %u.%06lu %d 0x%lx %d\n",
++                       "[%5lu.%06lu] UNMAP %d 0x%lx %d\n",
+                        secs, usec_rem, m->map_id, 0UL, 0);
+                break;
+        default:
+@@ -264,7 +264,7 @@ static enum print_line_t mmio_print_mark(struct 
+trace_iterator *iter)
+        int ret;
 
-igb: Grabs the vector_lock now and starts looping over irq_desc_ptrs[]
-via create_irq_nr(). It gets to irq_desc_ptrs[102] and does this:
+        /* The trailing newline must be in the message. */
+-       ret = trace_seq_printf(s, "MARK %u.%06lu %s", secs, usec_rem, msg);
++       ret = trace_seq_printf(s, "[%5lu.%06lu] MARK %s", secs, usec_rem, 
+msg);
+        if (!ret)
+                return TRACE_TYPE_PARTIAL_LINE;
 
-	cfg_new = irq_desc_ptrs[102]->chip_data;
-	if (cfg_new->vector != 0)
-		continue;
 
-This hits the NULL deref.
 
-Another possible race exists via pci_disable_msix() in a driver or in
-the number of error paths that call free_msi_irqs():
 
-destroy_irq()
-dynamic_irq_cleanup() which sets desc->chip_data = NULL
-...race window...
-desc->chip_data = cfg;
 
-Remove the save and restore code for cfg in create_irq_nr() and
-destroy_irq() and take the desc->lock when checking the irq_cfg.
 
-Reported-and-analyzed-by: Brandon Philips <bphilips@suse.de>
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-Signed-off-by: Brandon Phiilps <bphilips@suse.de>
-Cc: stable@kernel.org
-
----
- arch/x86/kernel/apic/io_apic.c |   20 +++------------
- include/linux/irq.h            |    2 +
- kernel/irq/chip.c              |   52 +++++++++++++++++++++++++++++++++--------
- 3 files changed, 50 insertions(+), 24 deletions(-)
-
-Index: linux-2.6/arch/x86/kernel/apic/io_apic.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/apic/io_apic.c
-+++ linux-2.6/arch/x86/kernel/apic/io_apic.c
-@@ -3228,12 +3228,9 @@ unsigned int create_irq_nr(unsigned int
- 	}
- 	spin_unlock_irqrestore(&vector_lock, flags);
- 
--	if (irq > 0) {
--		dynamic_irq_init(irq);
--		/* restore it, in case dynamic_irq_init clear it */
--		if (desc_new)
--			desc_new->chip_data = cfg_new;
--	}
-+	if (irq > 0)
-+		dynamic_irq_init_keep_chip_data(irq);
-+
- 	return irq;
- }
- 
-@@ -3255,19 +3252,12 @@ int create_irq(void)
- void destroy_irq(unsigned int irq)
- {
- 	unsigned long flags;
--	struct irq_cfg *cfg;
--	struct irq_desc *desc;
- 
--	/* store it, in case dynamic_irq_cleanup clear it */
--	desc = irq_to_desc(irq);
--	cfg = desc->chip_data;
--	dynamic_irq_cleanup(irq);
--	/* connect back irq_cfg */
--	desc->chip_data = cfg;
-+	dynamic_irq_cleanup_keep_chip_data(irq);
- 
- 	free_irte(irq);
- 	spin_lock_irqsave(&vector_lock, flags);
--	__clear_irq_vector(irq, cfg);
-+	__clear_irq_vector(irq, get_irq_chip_data(irq));
- 	spin_unlock_irqrestore(&vector_lock, flags);
- }
- 
-Index: linux-2.6/include/linux/irq.h
-===================================================================
---- linux-2.6.orig/include/linux/irq.h
-+++ linux-2.6/include/linux/irq.h
-@@ -400,7 +400,9 @@ static inline int irq_has_action(unsigne
- 
- /* Dynamic irq helper functions */
- extern void dynamic_irq_init(unsigned int irq);
-+void dynamic_irq_init_keep_chip_data(unsigned int irq);
- extern void dynamic_irq_cleanup(unsigned int irq);
-+void dynamic_irq_cleanup_keep_chip_data(unsigned int irq);
- 
- /* Set/get chip/data for an IRQ: */
- extern int set_irq_chip(unsigned int irq, struct irq_chip *chip);
-Index: linux-2.6/kernel/irq/chip.c
-===================================================================
---- linux-2.6.orig/kernel/irq/chip.c
-+++ linux-2.6/kernel/irq/chip.c
-@@ -18,11 +18,7 @@
- 
- #include "internals.h"
- 
--/**
-- *	dynamic_irq_init - initialize a dynamically allocated irq
-- *	@irq:	irq number to initialize
-- */
--void dynamic_irq_init(unsigned int irq)
-+static void dynamic_irq_init_x(unsigned int irq, bool keep_chip_data)
- {
- 	struct irq_desc *desc;
- 	unsigned long flags;
-@@ -41,7 +37,8 @@ void dynamic_irq_init(unsigned int irq)
- 	desc->depth = 1;
- 	desc->msi_desc = NULL;
- 	desc->handler_data = NULL;
--	desc->chip_data = NULL;
-+	if (!keep_chip_data)
-+		desc->chip_data = NULL;
- 	desc->action = NULL;
- 	desc->irq_count = 0;
- 	desc->irqs_unhandled = 0;
-@@ -55,10 +52,26 @@ void dynamic_irq_init(unsigned int irq)
- }
- 
- /**
-- *	dynamic_irq_cleanup - cleanup a dynamically allocated irq
-+ *	dynamic_irq_init - initialize a dynamically allocated irq
-  *	@irq:	irq number to initialize
-  */
--void dynamic_irq_cleanup(unsigned int irq)
-+void dynamic_irq_init(unsigned int irq)
-+{
-+	dynamic_irq_init_x(irq, false);
-+}
-+
-+/**
-+ *	dynamic_irq_init_keep_chip_data - initialize a dynamically allocated irq
-+ *	@irq:	irq number to initialize
-+ *
-+ * 	does not set irq_to_desc(irq)->chip_data to NULL
-+ */
-+void dynamic_irq_init_keep_chip_data(unsigned int irq)
-+{
-+	dynamic_irq_init_x(irq, true);
-+}
-+
-+static void dynamic_irq_cleanup_x(unsigned int irq, bool keep_chip_data)
- {
- 	struct irq_desc *desc = irq_to_desc(irq);
- 	unsigned long flags;
-@@ -77,7 +90,8 @@ void dynamic_irq_cleanup(unsigned int ir
- 	}
- 	desc->msi_desc = NULL;
- 	desc->handler_data = NULL;
--	desc->chip_data = NULL;
-+	if (!keep_chip_data)
-+		desc->chip_data = NULL;
- 	desc->handle_irq = handle_bad_irq;
- 	desc->chip = &no_irq_chip;
- 	desc->name = NULL;
-@@ -85,6 +99,26 @@ void dynamic_irq_cleanup(unsigned int ir
- 	raw_spin_unlock_irqrestore(&desc->lock, flags);
- }
- 
-+/**
-+ *	dynamic_irq_cleanup - cleanup a dynamically allocated irq
-+ *	@irq:	irq number to initialize
-+ */
-+void dynamic_irq_cleanup(unsigned int irq)
-+{
-+	dynamic_irq_cleanup_x(irq, false);
-+}
-+
-+/**
-+ *	dynamic_irq_cleanup_keep_chip_data - cleanup a dynamically allocated irq
-+ *	@irq:	irq number to initialize
-+ *
-+ * 	does not set irq_to_desc(irq)->chip_data to NULL
-+ */
-+void dynamic_irq_cleanup_keep_chip_data(unsigned int irq)
-+{
-+	dynamic_irq_cleanup_x(irq, true);
-+}
-+
- 
- /**
-  *	set_irq_chip - set the irq chip for an irq
