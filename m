@@ -1,84 +1,78 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754869Ab0BGDoo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Feb 2010 22:44:44 -0500
-Received: from mga01.intel.com ([192.55.52.88]:16528 "EHLO mga01.intel.com"
+	id S1753767Ab0BGEKA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Feb 2010 23:10:00 -0500
+Received: from fieldses.org ([174.143.236.118]:33005 "EHLO fieldses.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751607Ab0BGDns (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Feb 2010 22:43:48 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,420,1262592000"; 
-   d="scan'208";a="770770378"
-Message-Id: <20100207034223.893741884@intel.com>
-User-Agent: quilt/0.48-1
-Date: Sun, 07 Feb 2010 11:28:09 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Al Viro <viro@ZenIV.linux.org.uk>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       Wu Fengguang <fengguang.wu@intel.com>
-CC: Roland Dreier <rdreier@cisco.com>
-CC: "H. Peter Anvin" <hpa@zytor.com>
-CC: Borislav Petkov <bp@amd64.org>
-CC: Jamie Lokier <jamie@shareable.org>
-CC: Eric Paris <eparis@redhat.com>
-CC: Peter Zijlstra <peterz@infradead.org>
-cc: <linux-fsdevel@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 4/4] devmem: dont allow seek to last page
-References: <20100207032805.769788305@intel.com>
-Content-Disposition: inline; filename=mem-seek-fix
+	id S1753324Ab0BGEJ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Feb 2010 23:09:58 -0500
+Date: Sat, 6 Feb 2010 23:10:16 -0500
+From: "J. Bruce Fields" <bfields@fieldses.org>
+To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Cc: Neil Brown <neilb@suse.de>, linux-nfs@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Failure to fallback to nfsd-v3 (?)
+Message-ID: <20100207041016.GA16865@fieldses.org>
+References: <87pr4h67rf.fsf@devron.myhome.or.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87pr4h67rf.fsf@devron.myhome.or.jp>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-So as to return a uniform error -EOVERFLOW instead of a random one:
+On Sun, Feb 07, 2010 at 12:32:04PM +0900, OGAWA Hirofumi wrote:
+> Hi,
+> 
+> I've recently noticed I couldn't mount nfs on 2.6.33-rc6. The environment is
+> 
+> 	server (nfsd-v3, 2.6.33-rc6) <-> client (2.6.32.7, nfs-utils 1.2.1)
+> 
+> And mount command is
+> 
+> 	# mount server:/path /mntpoint
+> 
+> (i.e. without any options. If I specified "vers=3" option, it works).
+> 
+> With some debugging, it seems to change of the error code on nfsd - the
+> log of failure is the following.
+> 
+> nfsd_dispatch: vers 4 proc 0
+> nfsd_dispatch: vers 4 proc 1
+> nfsv4 compound op #1/3: 24 (OP_PUTROOTFH)
+> nfsv4 compound op ffff88012d9e10c0 opcnt 3 #1: 24: status 30000
+> nfsv4 compound returned 30000
+> nfsd: Dropping request; may be revisited later
+> found domain *.xxx.xx
+> found fsidtype 1
+> found fsid length 4
+> Path seems to be <>
+> nfsd_dispatch: vers 4 proc 1
+> nfsv4 compound op #1/3: 24 (OP_PUTROOTFH)
+> nfsv4 compound op ffff88012dab6228 opcnt 3 #1: 24: status 10006
+> nfsv4 compound returned 10006
+> 
+> On the older kernel (2.6.32.7), it seems to fallback to nfsv3,
+> 
+> nfsd_dispatch: vers 4 proc 0
+> nfsd_dispatch: vers 4 proc 1
+> nfsv4 compound op #1/3: 24 (OP_PUTROOTFH)
+> nfsv4 compound op d9c04850 opcnt 3 #1: 24: status 2
+> nfsv4 compound returned 2
+> nfsd_dispatch: vers 3 proc 0
+> [...]
+> 
+> 
+> And the following commit seems to change the behavior.
+> 
+> [nfsd4: fix error return when pseudoroot missing]
+> f39bde24b275ddc45df1ed835725b609e178c7a0
+> 
+> Well, anyway, is this a expected behavior change, or something bug?
 
-# kmem-seek 0xfffffffffffffff0
-seek /dev/kmem: Device or resource busy
-# kmem-seek 0xfffffffffffffff1
-seek /dev/kmem: Block device required
+It's expected.  I'd recommend turning off nfsv4 on the server (add "-N4"
+to the rpc.nfsd commandline) for now.
 
-Suggested by OGAWA Hirofumi.
-
-CC: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
----
- drivers/char/mem.c |   19 +++++++++++++------
- 1 file changed, 13 insertions(+), 6 deletions(-)
-
---- linux.orig/drivers/char/mem.c	2010-01-15 09:11:25.000000000 +0800
-+++ linux/drivers/char/mem.c	2010-01-20 09:45:55.000000000 +0800
-@@ -700,16 +700,23 @@ static loff_t memory_lseek(struct file *
- 
- 	mutex_lock(&file->f_path.dentry->d_inode->i_mutex);
- 	switch (orig) {
--		case 0:
-+		case SEEK_CUR:
-+			offset += file->f_pos;
-+			if ((unsigned long long)offset <
-+			    (unsigned long long)file->f_pos) {
-+				ret = -EOVERFLOW;
-+				break;
-+			}
-+		case SEEK_SET:
-+			/* to avoid userland mistaking f_pos=-9 as -EBADF=-9 */
-+			if ((unsigned long long)offset >= ~0xFFFULL) {
-+				ret = -EOVERFLOW;
-+				break;
-+			}
- 			file->f_pos = offset;
- 			ret = file->f_pos;
- 			force_successful_syscall_return();
- 			break;
--		case 1:
--			file->f_pos += offset;
--			ret = file->f_pos;
--			force_successful_syscall_return();
--			break;
- 		default:
- 			ret = -EINVAL;
- 	}
-
-
+--b.
