@@ -1,67 +1,106 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932300Ab0BGRKy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Feb 2010 12:10:54 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:49430 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753955Ab0BGRKw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Feb 2010 12:10:52 -0500
-Subject: Re: [RFC GIT PULL] perf/trace/lock optimization/scalability
- improvements
-From: Peter Zijlstra <peterz@infradead.org>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Paul Mackerras <paulus@samba.org>,
-       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
-       Li Zefan <lizf@cn.fujitsu.com>, Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Jens Axboe <jens.axboe@oracle.com>
-In-Reply-To: <20100203220735.GD5068@nowhere>
-References: <1265188475-23509-1-git-send-regression-fweisbec@gmail.com>
-	 <1265193196.24455.390.camel@laptop>  <20100203220735.GD5068@nowhere>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 07 Feb 2010 18:10:27 +0100
-Message-ID: <1265562627.12224.99.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	id S1756264Ab0BGRRR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Feb 2010 12:17:17 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:51436 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754301Ab0BGRRQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Feb 2010 12:17:16 -0500
+Date: Sun, 7 Feb 2010 18:16:15 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
+       Frank Heckenbach <f.heckenbach@fh-soft.de>,
+       Neil Horman <nhorman@tuxdriver.com>, Roland McGrath <roland@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] coredump: set ->group_exit_code for other CLONE_VM tasks
+	too
+Message-ID: <20100207171615.GA9854@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-02-03 at 23:07 +0100, Frederic Weisbecker wrote:
-> 
-> > 
-> > Which brings us to the ioctl() interface, we can do the above using
-> > ioctl()s, but it seems to me we're starting to get ioctl() heavy and
-> > should be looking at alternative ways of extending this.
-> > 
-> > Anybody any bright ideas?
-> > 
-> 
-> 
-> Using ioctl, we can basically have such structure:
-> 
-> struct perf_inject_req {
->         int start; (in)
->         int len;   (in)
->         int *read;  (out)
-> };
-> 
-> Using an idx will often imply rewalk a whole object list from
-> the beginning, which is perfectly fine.
-> 
-> If you prefer an alternate syscall, I can make it. I've been
-> told about ioctl drawbacks by the past, I personally think
-> ioctl has not only drawbacks: it avoids a proliferation
-> of syscalls. But that's how you prefer.
+User visible change.
 
-One thing we could do is add a PERF_TYPE_COLLECTION and have its read()
-method do something else than regular counters would, that way we can
-use read()/lseek()/stat() fd interface. The only trouble with that is
-that doesn't use the 'regular' output buffer.
+do_coredump() kills all threads which share the same ->mm but only
+the coredumping process gets the proper exit_code. Other tasks which
+share the same ->mm die "silently" and return status == 0 to parent.
 
-/me goes try and come up with yet another solution..
+This is historical behaviour, not actually a bug. But I think Frank
+Heckenbach rightly dislikes the current behaviour. Simple test-case:
+
+	#include <stdio.h>
+	#include <unistd.h>
+	#include <signal.h>
+	#include <sys/wait.h>
+
+	int main(void)
+	{
+		int stat;
+
+		if (!fork()) {
+			if (!vfork())
+				kill(getpid(), SIGQUIT);
+		}
+
+		wait(&stat);
+		printf("stat=%x\n", stat);
+		return 0;
+	}
+
+Before this patch it prints "stat=0" despite the fact the child was
+killed by SIGQUIT. After this patch the output is "stat=3" which
+obviously makes more sense.
+
+Even with this patch, only the task which originates the coredumping
+gets "|= 0x80" if the core was actually dumped, but at least the
+coredumping signal is visible to do_wait/etc.
+
+Reported-by: Frank Heckenbach <f.heckenbach@fh-soft.de>
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+---
+
+ fs/exec.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+--- V1/fs/exec.c~CD_STATUS	2009-12-18 00:20:50.000000000 +0100
++++ V1/fs/exec.c	2010-02-07 17:28:24.000000000 +0100
+@@ -1536,12 +1536,13 @@ out:
+ 	return ispipe;
+ }
+ 
+-static int zap_process(struct task_struct *start)
++static int zap_process(struct task_struct *start, int exit_code)
+ {
+ 	struct task_struct *t;
+ 	int nr = 0;
+ 
+ 	start->signal->flags = SIGNAL_GROUP_EXIT;
++	start->signal->group_exit_code = exit_code;
+ 	start->signal->group_stop_count = 0;
+ 
+ 	t = start;
+@@ -1566,8 +1567,7 @@ static inline int zap_threads(struct tas
+ 	spin_lock_irq(&tsk->sighand->siglock);
+ 	if (!signal_group_exit(tsk->signal)) {
+ 		mm->core_state = core_state;
+-		tsk->signal->group_exit_code = exit_code;
+-		nr = zap_process(tsk);
++		nr = zap_process(tsk, exit_code);
+ 	}
+ 	spin_unlock_irq(&tsk->sighand->siglock);
+ 	if (unlikely(nr < 0))
+@@ -1616,7 +1616,7 @@ static inline int zap_threads(struct tas
+ 			if (p->mm) {
+ 				if (unlikely(p->mm == mm)) {
+ 					lock_task_sighand(p, &flags);
+-					nr += zap_process(p);
++					nr += zap_process(p, exit_code);
+ 					unlock_task_sighand(p, &flags);
+ 				}
+ 				break;
 
