@@ -1,15 +1,15 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757139Ab0BGWpx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Feb 2010 17:45:53 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:55150 "EHLO ogre.sisk.pl"
+	id S932883Ab0BGWqX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Feb 2010 17:46:23 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:55156 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756665Ab0BGWps convert rfc822-to-8bit (ORCPT
+	id S1756991Ab0BGWpv convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Feb 2010 17:45:48 -0500
+	Sun, 7 Feb 2010 17:45:51 -0500
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
        Maciej Rutecki <maciej.rutecki@gmail.com>,
-       "Roman Mamedov" <roman@rm.pp.ru>
+       "Matej Laitl" <strohel@gmail.com>
 References: <4Ht3jFrT7uE.A.JI.-nzbLB@chimera>
 In-Reply-To: <4Ht3jFrT7uE.A.JI.-nzbLB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -17,10 +17,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <445R0ey9hAI.A.xxB.ZpzbLB@chimera>
-Subject: [Bug #15044] Much higher wakeups for "<kernel IPI> : Rescheduling interrupts" since 2.6.32.2
+Message-ID: <445R0ey9hAI.A.1tB.7ozbLB@chimera>
+Subject: [Bug #15114] X.org hang with [drm:i915_gem_do_execbuffer] *ERROR* in dmesg
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sun,  7 Feb 2010 23:28:49 +0100 (CET)
+Date: Sun,  7 Feb 2010 23:28:50 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -33,9 +33,9 @@ from 2.6.32.  Please verify if it still should be listed and let the tracking te
 know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15044
-Subject		: Much higher wakeups for "<kernel IPI> : Rescheduling interrupts" since 2.6.32.2
-Submitter	: Roman Mamedov <roman@rm.pp.ru>
-Date		: 2010-01-11 02:58 (28 days old)
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15114
+Subject		: X.org hang with [drm:i915_gem_do_execbuffer] *ERROR* in dmesg
+Submitter	: Matej Laitl <strohel@gmail.com>
+Date		: 2010-01-23 19:54 (16 days old)
 
 
