@@ -1,22 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755229Ab0BGEOW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Feb 2010 23:14:22 -0500
-Received: from mga09.intel.com ([134.134.136.24]:20236 "EHLO mga09.intel.com"
+	id S1756239Ab0BGEOp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Feb 2010 23:14:45 -0500
+Received: from mga09.intel.com ([134.134.136.24]:54229 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754970Ab0BGEOS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Feb 2010 23:14:18 -0500
+	id S1754885Ab0BGEOR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Feb 2010 23:14:17 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.49,420,1262592000"; 
-   d="scan'208";a="490282901"
-Message-Id: <20100207041042.996584378@intel.com>
+   d="scan'208";a="490282899"
+Message-Id: <20100207041044.148626934@intel.com>
 User-Agent: quilt/0.48-1
-Date: Sun, 07 Feb 2010 12:10:15 +0800
+Date: Sun, 07 Feb 2010 12:10:23 +0800
 From: Wu Fengguang <fengguang.wu@intel.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-CC: Jens Axboe <jens.axboe@oracle.com>, Chris Frost <frost@cs.ucla.edu>,
-       Steve VanDeBogart <vandebo@cs.ucla.edu>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+CC: Jens Axboe <jens.axboe@oracle.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        Wu Fengguang <fengguang.wu@intel.com>
 CC: Chris Mason <chris.mason@oracle.com>
 CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
@@ -25,111 +24,69 @@ CC: Olivier Galibert <galibert@pobox.com>
 cc: Linux Memory Management List <linux-mm@kvack.org>
 CC: <linux-fsdevel@vger.kernel.org>
 Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 02/11] readahead: retain inactive lru pages to be accessed soon
+Subject: [PATCH 10/11] readahead: dont do start-of-file readahead after lseek()
 References: <20100207041013.891441102@intel.com>
-Content-Disposition: inline; filename=readahead-retain-pages-find_get_page.patch
+Content-Disposition: inline; filename=readahead-lseek.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Chris Frost <frost@cs.ucla.edu>
+Some applications (eg. blkid, id3tool etc.) seek around the file
+to get information. For example, blkid does
+	     seek to	0
+	     read	1024
+	     seek to	1536
+	     read	16384
 
-Ensure that cached pages in the inactive list are not prematurely evicted;
-move such pages to lru head when they are covered by
-- in-kernel heuristic readahead
-- an posix_fadvise(POSIX_FADV_WILLNEED) hint from an application
+The start-of-file readahead heuristic is wrong for them, whose 
+access pattern can be identified by lseek() calls.
 
-Before this patch, pages already in core may be evicted before the
-pages covered by the same prefetch scan but that were not yet in core.
-Many small read requests may be forced on the disk because of this
-behavior.
+So test-and-set a READAHEAD_LSEEK flag on lseek() and don't
+do start-of-file readahead on seeing it. Proposed by Linus.
 
-In particular, posix_fadvise(... POSIX_FADV_WILLNEED) on an in-core page
-has no effect on the page's location in the LRU list, even if it is the
-next victim on the inactive list.
-
-This change helps address the performance problems we encountered
-while modifying SQLite and the GIMP to use large file prefetching.
-Overall these prefetching techniques improved the runtime of large
-benchmarks by 10-17x for these applications. More in the publication
-_Reducing Seek Overhead with Application-Directed Prefetching_ in
-USENIX ATC 2009 and at http://libprefetch.cs.ucla.edu/.
-
-Signed-off-by: Chris Frost <frost@cs.ucla.edu>
-Signed-off-by: Steve VanDeBogart <vandebo@cs.ucla.edu>
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Acked-by: Linus Torvalds <torvalds@linux-foundation.org> 
 Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 ---
- mm/readahead.c |   44 ++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 44 insertions(+)
+ fs/read_write.c    |    3 +++
+ include/linux/fs.h |    1 +
+ mm/readahead.c     |    5 +++++
+ 3 files changed, 9 insertions(+)
 
---- linux.orig/mm/readahead.c	2010-02-01 10:18:57.000000000 +0800
-+++ linux/mm/readahead.c	2010-02-01 10:20:51.000000000 +0800
-@@ -9,7 +9,9 @@
- 
- #include <linux/kernel.h>
- #include <linux/fs.h>
-+#include <linux/memcontrol.h>
- #include <linux/mm.h>
-+#include <linux/mm_inline.h>
- #include <linux/module.h>
- #include <linux/blkdev.h>
- #include <linux/backing-dev.h>
-@@ -133,6 +135,40 @@ out:
- }
- 
- /*
-+ * The file range is expected to be accessed in near future.  Move pages
-+ * (possibly in inactive lru tail) to lru head, so that they are retained
-+ * in memory for some reasonable time.
-+ */
-+static void retain_inactive_pages(struct address_space *mapping,
-+				  pgoff_t index, int len)
-+{
-+	int i;
-+	struct page *page;
-+	struct zone *zone;
-+
-+	for (i = 0; i < len; i++) {
-+		page = find_get_page(mapping, index + i);
-+		if (!page)
-+			continue;
-+
-+		zone = page_zone(page);
-+		spin_lock_irq(&zone->lru_lock);
-+
-+		if (PageLRU(page) &&
-+		    !PageActive(page) &&
-+		    !PageUnevictable(page)) {
-+			int lru = page_lru_base_type(page);
-+
-+			del_page_from_lru_list(zone, page, lru);
-+			add_page_to_lru_list(zone, page, lru);
+--- linux.orig/mm/readahead.c	2010-02-07 11:46:44.000000000 +0800
++++ linux/mm/readahead.c	2010-02-07 11:46:45.000000000 +0800
+@@ -625,6 +625,11 @@ ondemand_readahead(struct address_space 
+ 	if (!offset) {
+ 		ra_set_pattern(ra, RA_PATTERN_INITIAL);
+ 		ra->start = offset;
++		if ((ra->ra_flags & READAHEAD_LSEEK) && req_size <= max) {
++			ra->size = req_size;
++			ra->async_size = 0;
++			goto readit;
 +		}
-+
-+		spin_unlock_irq(&zone->lru_lock);
-+		put_page(page);
-+	}
-+}
-+
-+/*
-  * __do_page_cache_readahead() actually reads a chunk of disk.  It allocates all
-  * the pages first, then submits them all for I/O. This avoids the very bad
-  * behaviour which would occur if page allocations are causing VM writeback.
-@@ -184,6 +220,14 @@ __do_page_cache_readahead(struct address
+ 		ra->size = get_init_ra_size(req_size, max);
+ 		ra->async_size = ra->size > req_size ?
+ 				 ra->size - req_size : ra->size;
+--- linux.orig/fs/read_write.c	2010-02-07 11:46:29.000000000 +0800
++++ linux/fs/read_write.c	2010-02-07 11:46:45.000000000 +0800
+@@ -71,6 +71,9 @@ generic_file_llseek_unlocked(struct file
+ 		file->f_version = 0;
  	}
  
- 	/*
-+	 * Normally readahead will auto stop on cached segments, so we won't
-+	 * hit many cached pages. If it does happen, bring the inactive pages
-+	 * adjecent to the newly prefetched ones(if any).
-+	 */
-+	if (ret < nr_to_read)
-+		retain_inactive_pages(mapping, offset, page_idx);
++	if (!(file->f_ra.ra_flags & READAHEAD_LSEEK))
++		file->f_ra.ra_flags |= READAHEAD_LSEEK;
 +
-+	/*
- 	 * Now start the IO.  We ignore I/O errors - if the page is not
- 	 * uptodate then the caller will launch readpage again, and
- 	 * will then handle the error.
+ 	return offset;
+ }
+ EXPORT_SYMBOL(generic_file_llseek_unlocked);
+--- linux.orig/include/linux/fs.h	2010-02-07 11:46:40.000000000 +0800
++++ linux/include/linux/fs.h	2010-02-07 11:46:45.000000000 +0800
+@@ -902,6 +902,7 @@ struct file_ra_state {
+ #define	READAHEAD_MMAP_MISS	0x0000ffff /* cache misses for mmap access */
+ #define READAHEAD_THRASHED	0x10000000
+ #define	READAHEAD_MMAP		0x20000000
++#define	READAHEAD_LSEEK		0x40000000 /* be conservative after lseek() */
+ 
+ /*
+  * Which policy makes decision to do the current read-ahead IO?
 
 
