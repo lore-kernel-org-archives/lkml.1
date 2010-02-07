@@ -1,98 +1,114 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756216Ab0BGQEi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Feb 2010 11:04:38 -0500
-Received: from mail-pz0-f187.google.com ([209.85.222.187]:64230 "EHLO
-	mail-pz0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754546Ab0BGQEg (ORCPT
+	id S1756326Ab0BGQKr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Feb 2010 11:10:47 -0500
+Received: from mail-px0-f182.google.com ([209.85.216.182]:37696 "EHLO
+	mail-px0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754587Ab0BGQKp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Feb 2010 11:04:36 -0500
+	Sun, 7 Feb 2010 11:10:45 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=IikkO+uCGNSsoRmkFMhVbmY09iIgy4VHvfKazEeA1PyiJm7Jcr6nA1hS6oQo7JrzGP
-         9RxjKRw604/Yu3Ws+FkCjFAJnlLKymaobvNVZZok3x1IrudUBt5tnEImKnYAq8sqefar
-         mVDVEexU3hfSoVGLqrhrf+BZvG7vsfDzhIi6Y=
-Date: Mon, 8 Feb 2010 00:06:57 +0800
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=xBxB/YwncrZugLxEnHMoclev8aj/hoZWQ+rWjPtey/vFiucLkt/57huzBeZ7EvRjcD
+         zCtXL+hpqyZwbZFDobNESZliWLsJYthI/K0666nwAmYEpRZgsC3wy0LyicDVeA2YJFh8
+         yFlDIhNhp+Av2ZCrp9yAyfaLDbGHLTEkF3wVM=
+Date: Mon, 8 Feb 2010 00:13:11 +0800
 From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>,
-       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, gregkh@suse.de,
-       taviso@google.com, viro@ZenIV.linux.org.uk,
-       linux-kernel@vger.kernel.org, ebiederm@xmission.com,
-       alan@lxorguk.ukuu.org.uk, jdike@addtoit.com, jln@google.com,
-       mpm@selenic.com
-Subject: Re: [2.6.33-rc5] tty: possible irq lock inversion dependency in
-	tty_fasync
-Message-ID: <20100207160657.GA17447@hack>
-References: <201002071452.IIF73922.VtFOJOHSFFLOQM@I-love.SAKURA.ne.jp> <alpine.LFD.2.00.1002062226000.3829@localhost.localdomain> <20100207064643.GA15533@hack> <alpine.LFD.2.00.1002062246390.3829@localhost.localdomain>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: linux-kernel@vger.kernel.org, Michal Marek <mmarek@suse.cz>,
+       linux-kbuild@vger.kernel.org
+Subject: Re: tags: include headers before source files
+Message-ID: <20100207161311.GB17447@hack>
+References: <Pine.LNX.4.64.1002031704550.6324@axis700.grange>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <alpine.LFD.2.00.1002062246390.3829@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.64.1002031704550.6324@axis700.grange>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 06, 2010 at 10:59:56PM -0800, Linus Torvalds wrote:
+On Wed, Feb 03, 2010 at 05:25:27PM +0100, Guennadi Liakhovetski wrote:
+>Currently looking up a structure definition in TAGS / tags takes one to 
+>one of multiple "static struct X" definitions in arch sources, which makes 
+>it for many structs practically impossible to get to the required header. 
+>This patch changes the order of sources being tagged to first scan 
+>architecture includes, then the top-level include/ directory, and only 
+>then the rest. It also takes into account, that many architectures have 
+>more than one include directory, i.e., not only arch/$ARCH/include, but 
+>also arch/$ARCH/mach-X/include etc.
+
+This is a good idea!
+
 >
->
->On Sun, 7 Feb 2010, Américo Wang wrote:
->> 
->> We already fixed this, a better fix:
->
->No we didn't.
->
->> http://lkml.org/lkml/2010/1/26/338
->> 
->> I sent a same fix with Greg's.
->
->We already did that. You didn't read Tetsuo's email carefully.
->
->Let's quote the important parts:
->
->  "is not yet fixed as of 2.6.33-rc7."
->
->and also the _second_ lockdep complaint he quotes, which starts out with
->
->  [   81.651199] =========================================================
->  [   81.651199] [ INFO: possible irq lock inversion dependency detected ]
->  [   81.651199] 2.6.33-rc7 #11
->  [   81.651199] ---------------------------------------------------------
->
->(note the -rc7 there).
->
+>Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 
 
-Ah, I was just mislead by the subject... sigh
+Besides what Michal mentioned, this patch looks fine for me too.
 
+Reviewed-by: WANG Cong <xiyou.wangcong@gmail.com>
 
->The problem? Look at f_getown: it does
->
->	read_lock(&filp->f_owner.lock);
->
->ie it holds f_owner without interrupts disabled. Now an interrupt comes 
->in, and takes 'siglock' because it ends up sending a signal (timer, SIGIO, 
->whatever). So you have a f_owner -> siglock ordering.
->
->But we _also_ have a siglock -> ctrl_lock -> f_owner ordering, in that 
->problematic tty_fasync() thing. So we have a ABBA deadlock situation.
->
->Yes, it's hard (practically impossible) to trigger, because you have to 
->get an interrupt just at the right point with all the right processes, but 
->lockdep seems to be entirely correct. 
->
->So it is simply _wrong_ to take f_owner while we hold ctrl_lock.
->
->Which is why I suggest just reverting both the original problematic commit 
->_and_ the commit you point to, and just fix the race with that pid_get/put 
->pair instead. As per my patch.
->
+Thanks.
 
-Good analysis, this seems better for me too.
+>---
+>
+>I am no expert in Kbuild, so, please, review, comment, suggest 
+>improvements, but at least, this does make TAGS usable for me.
+>
+>diff --git a/scripts/tags.sh b/scripts/tags.sh
+>index 1a0c44d..b84ce1c 100755
+>--- a/scripts/tags.sh
+>+++ b/scripts/tags.sh
+>@@ -32,13 +32,18 @@ fi
+> # find sources in arch/$ARCH
+> find_arch_sources()
+> {
+>-	find ${tree}arch/$1 $ignore -name "$2" -print;
+>+	for i in $archincludedir; do
+>+		prune+="-wholename $i -prune -o "
+>+	done
+>+	find ${tree}arch/$1 $ignore $prune -name "$2" -print;
+> }
+> 
+> # find sources in arch/$1/include
+> find_arch_include_sources()
+> {
+>-	find ${tree}arch/$1/include $ignore -name "$2" -print;
+>+	include=$(find ${tree}arch/$1/ -name include -type d);
+>+	archincludedir+=$include
+>+	find $include $ignore -name "$2" -print;
+> }
+> 
+> # find sources in include/
+>@@ -63,14 +68,15 @@ find_sources()
+> 
+> all_sources()
+> {
+>-	for arch in $ALLSOURCE_ARCHS
+>-	do
+>-		find_sources $arch '*.[chS]'
+>-	done
+>+	find_arch_include_sources $ARCH '*.[chS]'
+> 	if [ ! -z "$archinclude" ]; then
+> 		find_arch_include_sources $archinclude '*.[chS]'
+> 	fi
+> 	find_include_sources '*.[chS]'
+>+	for arch in $ALLSOURCE_ARCHS
+>+	do
+>+		find_sources $arch '*.[chS]'
+>+	done
+> 	find_other_sources '*.[chS]'
+> }
+> 
+>--
+>To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>the body of a message to majordomo@vger.kernel.org
+>More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>Please read the FAQ at  http://www.tux.org/lkml/
 
-Thank you!
+-- 
+Live like a child, think like the god.
+ 
