@@ -1,36 +1,60 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752970Ab0BGNXb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Feb 2010 08:23:31 -0500
-Received: from mail-fx0-f211.google.com ([209.85.220.211]:60951 "EHLO
-	mail-fx0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751382Ab0BGNX3 (ORCPT
+	id S1753432Ab0BGNkA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Feb 2010 08:40:00 -0500
+Received: from mail-ew0-f228.google.com ([209.85.219.228]:48108 "EHLO
+	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751007Ab0BGNj7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Feb 2010 08:23:29 -0500
+	Sun, 7 Feb 2010 08:39:59 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=LM7rIMF6+EZ9AKiM06kM1YX2LG+1ClvGJ50tdrZRgiNmKQxRGyBmav7QHWuSsDmsJQ
-         NHeD1CCN3P3fsQBcjSN55Zi0r3BGxRCC+HvvZA6O8QYGcHvH5PxmXpYYjGHMsEjhMYmq
-         ABCN0RVgFVboyRS96GLdCUj4qCrYjTaRA89FI=
-Date: Sun, 7 Feb 2010 15:23:31 +0200
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Johannes Hirte <johannes.hirte@fem.tu-ilmenau.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: BUG: Bad page state in process portageq
-Message-ID: <20100207132331.GA4138@x200>
-References: <201002070145.47514.johannes.hirte@fem.tu-ilmenau.de>
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=KvWzPIAdxX1wW9JL8R/4mAsjOKyevmnhj4wk29vY4dQy+jJEW3i2M6cZ8MneuS57Rq
+         ZzB8rn0YDgOMelM1hKJwWD3/LW7ArMOcCCsxSG5VD4Erjo6CpsKNhK4pkQviKws5ifn8
+         w9AcvhDzhLqjsoaVnRzyRzEo0n26IHLLW1kiM=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <201002070145.47514.johannes.hirte@fem.tu-ilmenau.de>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Date: Sun, 7 Feb 2010 08:39:57 -0500
+Message-ID: <deaa866a1002070539v47807006lc2f217d5c16a6b51@mail.gmail.com>
+Subject: Multi-card DRI interface timeframe
+From: Robert Bradbury <robert.bradbury@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 07, 2010 at 01:45:46AM +0100, Johannes Hirte wrote:
-> Feb  6 20:47:45 datengrab kernel: BUG: Bad page state in process portageq pfn:2846d
+Have: Radeon R3450 & Intel i915. Want multiple X terminals and multiple screens.
 
-Run memtest.
+Excerpted logs:
+Xorg.2.log:(II) RADEONHD(0): [DRI] installation complete
+Xorg.3.log:(EE) RADEONHD(0): [dri] DRIScreenInit failed.  Disabling DRI.
+
+Xterms :0 and :1 are like :3.  I am under the impression that only one
+VT (here :2) can get the DRI interface.  That terminals is fast, the
+rest much less so. (Its also annoying that the DRI gets assigned to
+the VT/X started but assume thats an Xorg scheduling issue).
+I am under the impression that how many VTs/X Servers can use the DRI
+is a kernel issue.
+
+Q1: What is the kernel development time frame for allowing the active
+VT to take control of the DRI interface?
+
+Now, this machine has both the Intel i915 graphics interface and F3450
+card with 2 video interfaces.  The X server (via Xorg.conf) has no
+problem setting up both hardware controllers.  It is possible to do
+dual screen (like xinerama but using a large virtual screen) across
+both Radeon interfaces.  However one cannot do "dual screen" (or
+tri-screen) across both hardware controllers.  (Of course in this
+situation it seems that switching VTs would involve switching both
+controllers so it would seem to me to involve kernel issues.)
+
+Q2: What is the kernel development time frame for allowing mixing and
+matching video controller hardware across multiple screens?
+
+I realize that this is not the focus of the LKML per se but the KMS,
+DRI, and controller drivers all *are* in the Kernel.  If other forums
+would be better for these types of questions then please suggest them.
+
+Thank you,
+Robert Bradbury
