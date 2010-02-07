@@ -1,115 +1,116 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756031Ab0BGVFd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Feb 2010 16:05:33 -0500
-Received: from moutng.kundenserver.de ([212.227.126.171]:60895 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753948Ab0BGVFc (ORCPT
+	id S1756152Ab0BGVPP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Feb 2010 16:15:15 -0500
+Received: from mta2.srv.hcvlny.cv.net ([167.206.4.197]:58518 "EHLO
+	mta2.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754656Ab0BGVPN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Feb 2010 16:05:32 -0500
-From: Bernhard Schiffner <bernhard@schiffner-limbach.de>
-To: Larry Finger <Larry.Finger@lwfinger.net>, linux-kernel@vger.kernel.org
-Subject: [mmiotrace] Make timestamps as printk() does.
-Date: Sun, 7 Feb 2010 22:05:26 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.32.7-0.1-desktop; KDE/4.3.5; i686; ; )
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201002072205.26665.bernhard@schiffner-limbach.de>
-X-Provags-ID: V01U2FsdGVkX1/6iEP7viBHmZQeTGUzyzCuzZqiFwP3lu/1WaO
- +ATy7S44pNiYp5fgh225qOcX6PlZiX+4SJjX2bKQN7mA83KtPt
- gYTzCr+b5dGGRsso5AKfg==
+	Sun, 7 Feb 2010 16:15:13 -0500
+Date: Sun, 07 Feb 2010 16:15:05 -0500
+From: Michael Breuer <mbreuer@majjas.com>
+Subject: Re: x86 - cpu_relax - why nop vs. pause?
+In-reply-to: <4B6F1DAE.6020407@majjas.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Mike Galbraith <efault@gmx.de>
+Message-id: <4B6F2D59.1070508@majjas.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+References: <4B6EF853.9090704@majjas.com>
+ <1265566470.6280.10.camel@marge.simson.net> <4B6F1DAE.6020407@majjas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7)
+ Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hallo,
-
-this little patch makes a simple "sort -m" on output gotten from dmesg and  
-mmiotrace possible.
-It's a real help at least for me.
-
-Bernhard
-(CC me please, I'am not on this list.)
-
-------------
-    Make mmiotrace timestamps compareable to printk().
-
-diff --git a/kernel/trace/trace_mmiotrace.c b/kernel/trace/trace_mmiotrace.c
-index 0acd834..32c21f7 100644                                               
---- a/kernel/trace/trace_mmiotrace.c                                        
-+++ b/kernel/trace/trace_mmiotrace.c                                        
-@@ -146,7 +146,7 @@ static ssize_t mmio_read(struct trace_iterator *iter, 
-struct file *filp,
-        n = count_overruns(iter);                                                           
-        if (n) {                                                                            
-                /* XXX: This is later than where events were lost. */                       
--               trace_seq_printf(s, "MARK 0.000000 Lost %lu events.\n", n);                 
-+               trace_seq_printf(s, "[    0.000000] MARK Lost %lu events.\n", 
-n);           
-                if (!overrun_detected)                                                      
-                        pr_warning("mmiotrace has lost events.\n");                         
-                overrun_detected = true;                                                    
-@@ -186,21 +186,21 @@ static enum print_line_t mmio_print_rw(struct 
-trace_iterator *iter)   
-        switch (rw->opcode) {                                                               
-        case MMIO_READ:                                                                     
-                ret = trace_seq_printf(s,                                                   
--                       "R %d %u.%06lu %d 0x%llx 0x%lx 0x%lx %d\n",                         
--                       rw->width, secs, usec_rem, rw->map_id,                              
-+                       "[%5lu.%06lu] R %d %d 0x%llx 0x%lx 0x%lx %d\n",                     
-+                       secs, usec_rem, rw->width, rw->map_id,                              
-                        (unsigned long long)rw->phys,                                       
-                        rw->value, rw->pc, 0);                                              
-                break;                                                                      
-        case MMIO_WRITE:                                                                    
-                ret = trace_seq_printf(s,                                                   
--                       "W %d %u.%06lu %d 0x%llx 0x%lx 0x%lx %d\n",                         
--                       rw->width, secs, usec_rem, rw->map_id,                              
-+                       "[%5lu.%06lu] W %d %d 0x%llx 0x%lx 0x%lx %d\n",                     
-+                       secs, usec_rem, rw->width, rw->map_id,                              
-                        (unsigned long long)rw->phys,                                       
-                        rw->value, rw->pc, 0);                                              
-                break;                                                                      
-        case MMIO_UNKNOWN_OP:
-                ret = trace_seq_printf(s,
--                       "UNKNOWN %u.%06lu %d 0x%llx %02lx,%02lx,"
-+                       "[%5lu.%06lu] UNKNOWN %d 0x%llx %02lx,%02lx,"
-                        "%02lx 0x%lx %d\n",
-                        secs, usec_rem, rw->map_id,
-                        (unsigned long long)rw->phys,
-@@ -233,14 +233,14 @@ static enum print_line_t mmio_print_map(struct 
-trace_iterator *iter)
-        switch (m->opcode) {
-        case MMIO_PROBE:
-                ret = trace_seq_printf(s,
--                       "MAP %u.%06lu %d 0x%llx 0x%lx 0x%lx 0x%lx %d\n",
-+                       "[%5lu.%06lu] MAP %d 0x%llx 0x%lx 0x%lx 0x%lx %d\n",
-                        secs, usec_rem, m->map_id,
-                        (unsigned long long)m->phys, m->virt, m->len,
-                        0UL, 0);
-                break;
-        case MMIO_UNPROBE:
-                ret = trace_seq_printf(s,
--                       "UNMAP %u.%06lu %d 0x%lx %d\n",
-+                       "[%5lu.%06lu] UNMAP %d 0x%lx %d\n",
-                        secs, usec_rem, m->map_id, 0UL, 0);
-                break;
-        default:
-@@ -264,7 +264,7 @@ static enum print_line_t mmio_print_mark(struct 
-trace_iterator *iter)
-        int ret;
-
-        /* The trailing newline must be in the message. */
--       ret = trace_seq_printf(s, "MARK %u.%06lu %s", secs, usec_rem, msg);
-+       ret = trace_seq_printf(s, "[%5lu.%06lu] MARK %s", secs, usec_rem, 
-msg);
-        if (!ret)
-                return TRACE_TYPE_PARTIAL_LINE;
-
-
-
-
-
-
+On 02/07/2010 03:08 PM, Michael Breuer wrote:
+> On 2/7/2010 1:14 PM, Mike Galbraith wrote:
+> , and this got me thinking... and testing... I think there's an 
+> optimization issue with gcc:
+>
+> First of all - a bit of background on how I got here:
+>
+> After reading the Intel documentation, I tried replacing rep:nop with 
+> pause (in theory exactly what's shown above). The system hung on booting.
+> I then tried replacing nop with pause (rep:pause) and the system 
+> booted. Using the above example, the opcode becomes f3 f3 90 vs f3 90 
+> (rep nop).
+>
+> Given the above compiler test case, this seemed odd, to say the least. 
+> So I played a bit more with gcc. Seems that the optimizer (-O3) is 
+> handling the *three*cases differently (objdump output)
+>
+> Base code for all three cases (only change is the asm volitile line as 
+> shown for each case):
+>
+> static inline void pause(void)
+> {
+>         asm volatile("pause" ::: "memory");
+> }
+>
+> void main(void)
+> {
+>     pause();
+> }
+>
+> Case1 - asm volatile("pause" ::: "memory");
+> 0000000000400480 <main>:
+>   400480:    f3 90                    pause
+>   400482:    c3                       retq
+>   400483:    90                       nop
+>
+> Case2 - asm volitile("rep;nop" ::: "memory") Note: this didn't inline!
+>
+> 0000000000400474 <pause>:
+>   400474:    55                       push   %rbp
+>   400475:    48 89 e5                 mov    %rsp,%rbp
+>   400478:    f3 90                    pause
+>   40047a:    c9                       leaveq
+>   40047b:    c3                       retq
+>
+> 000000000040047c <main>:
+>   40047c:    55                       push   %rbp
+>   40047d:    48 89 e5                 mov    %rsp,%rbp
+>   400480:    e8 ef ff ff ff           callq  400474 <pause>
+>   400485:    c9                       leaveq
+>   400486:    c3                       retq
+>   400487:    90                       nop
+>   400488:    90                       nop
+>   400489:    90                       nop
+>   40048a:    90                       nop
+>   40048b:    90                       nop
+>   40048c:    90                       nop
+>   40048d:    90                       nop
+>   40048e:    90                       nop
+>   40048f:    90                       nop
+>
+> Case3 - asm volitile("rep;pause" ::: "memory")
+> 0000000000400480 <main>:
+>   400480:    f3 f3 90                 pause
+>   400483:    c3                       retq
+>   400484:    90                       nop
+> _______
+> Note the difference between opcodes case 1 and case 3, and the mess 
+> made by the compiler in case 2.
+>
+> As to benchmarks  - I've checked a few things, no formal or lasting 
+> stuff... but striking at first glance:
+>
+> 1) At idle, perf top shows time spent in _raw_spin_lock dropping from 
+> ~35% to ~25%.
+> 2) Running a media transcode (single core - handbrakecli): frame rate 
+> increased by about 5-10%.
+> 3) During file-intensive operations (#2, above, or copying large files 
+> - ext4 on software raid6) - latencytop shows a decerase on writing a 
+> page to disc from about 120ms to about 90ms.
+> -- 
+> To unsubscribe from this list: send the line "unsubscribe 
+> linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+Disregard case 2 - was missing -O3. With -O3 or -O2 rep;nop and pause 
+are identical. The interesting case is rep;pause which is different and 
+seems more efficient.
