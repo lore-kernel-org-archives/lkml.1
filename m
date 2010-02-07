@@ -1,63 +1,93 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754781Ab0BGKxG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Feb 2010 05:53:06 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:53100 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754141Ab0BGKxC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Feb 2010 05:53:02 -0500
-Message-ID: <4B6E9B7C.3030805@redhat.com>
-Date: Sun, 07 Feb 2010 12:52:44 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+	id S933668Ab0BGKzF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Feb 2010 05:55:05 -0500
+Received: from moutng.kundenserver.de ([212.227.17.9]:64132 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932087Ab0BGKzD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Feb 2010 05:55:03 -0500
+Date: Sun, 7 Feb 2010 11:54:48 +0100
+From: Heinz Diehl <htd@fancy-poultry.org>
+To: Xiaotian Feng <xtfeng@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       nhorman@tuxdriver.com, davem@davemloft.net
+Subject: Re: [Bug #15196] kmem_cache_create: duplicate cache ccid2_h
+Message-ID: <20100207105448.GA6623@fancy-poultry.org>
+References: <vZZJKzCUn4G.A.CPB.F7hZLB@chimera>
+ <d3IDKWHT5gE.A.8sB.Q7hZLB@chimera>
+ <7b6bb4a51001311930i7d72f60dj3b15ca3e1a715607@mail.gmail.com>
+ <20100201150605.GA6175@fancy-poultry.org>
 MIME-Version: 1.0
-To: Joerg Roedel <joro@8bytes.org>
-CC: Joerg Roedel <joerg.roedel@amd.com>, Marcelo Tosatti <mtosatti@redhat.com>,
-       David Woodhouse <dwmw2@infradead.org>, kvm@vger.kernel.org,
-       iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 02/11] iommu-api: Add iommu_map and iommu_unmap	functions
-References: <1264678682-30655-1-git-send-email-joerg.roedel@amd.com> <1264678682-30655-3-git-send-email-joerg.roedel@amd.com> <4B6E8A16.8050109@redhat.com> <20100207105007.GC17809@8bytes.org>
-In-Reply-To: <20100207105007.GC17809@8bytes.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100201150605.GA6175@fancy-poultry.org>
+X-Accept-Language: no,dk,se,en,de
+Organization: private site
+X-OpenPGP-KeyID: 0xA9353F12
+X-OpenPGP-Fingerprint: C67E 9A93 1033 DF8A 9321  9F90 DC39 B8C3 A935 3F12
+X-OpenPGP-URL: http://www.fritha.org/htd.asc
+User-Agent: Mutt/1.5.20+20100131 (GNU/Linux)
+X-Provags-ID: V01U2FsdGVkX195KVtCu3dB3rjkppLd+XFWu6swEHo770ea9d0
+ t9aIbdR2NZss6kZ6+3gjQvqMwHGgI3D755jk1PGndvhp53keEF
+ Z0N3Isa9kJ5MPO4Jjcj3g==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/07/2010 12:50 PM, Joerg Roedel wrote:
-> On Sun, Feb 07, 2010 at 11:38:30AM +0200, Avi Kivity wrote:
->    
->> On 01/28/2010 01:37 PM, Joerg Roedel wrote:
->>      
->>> These two functions provide support for mapping and
->>> unmapping physical addresses to io virtual addresses. The
->>> difference to the iommu_(un)map_range() is that the new
->>> functions take a gfp_order parameter instead of a size. This
->>> allows the IOMMU backend implementations to detect easier if
->>> a given range can be mapped by larger page sizes.
->>> These new functions should replace the old ones in the long
->>> term.
->>>
->>>        
->> These seem to be less flexible in the long term.  Sure, it is easier for
->> the backend to map to multiple page sizes if your iommu supports
->> arbitrary power-of-two page sizes, but we should make the APIs easier
->> for the callers, not the backend.
->>      
-> These functions are as flexible as the old ones which just tok a size.
-> The benefit of the new interface is that is makes the ability of the
-> IOMMU to map the area with a large page (an get the benefit of fewer
-> hardware tlb walks) visible to the caller. With the old interface the
-> caller is tempted to just map ist whole area using 4kb page sizes.
-> It gives a bit more complexity to the caller, thats right. But given
-> that the page allocator in Linux always returns pages which are aligned
-> to its size takes a lot of that complexity away.
->
->    
+On 01.02.2010, Heinz Diehl wrote: 
 
-You are right - I was thinking of the kvm use case which is range 
-oriented, but the ordinary kernel interfaces are gfp_order oriented.
+[....]
 
--- 
-error compiling committee.c: too many arguments to function
+Quoting myself here...
+
+> The patch was completely malformed, don't know what happened on the way,
+> but I applied it by hand. Yes, it fixes the problem for me.
+
+Xiaotiangs patch quoted in the thread listed here (coming via kernel.org's
+bugtracker)
+
+ http://patchwork.kernel.org/patch/76023/
+ 
+is missing some lines, and the patch attached at the end of the
+thread is incomplete and malformed, as reported earlier. I guess this is
+how it should have looked like (please correct me if I'm wrong):
+
+
+--- /a/ccid.c	2010-02-06 23:17:12.000000000 +0100
++++ /b/ccid.c	2010-02-07 09:50:40.000000000 +0100
+@@ -77,13 +77,13 @@
+ 	return err;
+ }
+ 
+-static struct kmem_cache *ccid_kmem_cache_create(int obj_size, char *slab_name_fmt, const char *fmt,...)
++static struct kmem_cache *ccid_kmem_cache_create(int obj_size, char *slab_name_fmt, int length, const char *fmt,...)
+ {
+ 	struct kmem_cache *slab;
+ 	va_list args;
+ 
+ 	va_start(args, fmt);
+-	vsnprintf(slab_name_fmt, sizeof(slab_name_fmt), fmt, args);
++	vsnprintf(slab_name_fmt, length, fmt, args);
+ 	va_end(args);
+ 
+ 	slab = kmem_cache_create(slab_name_fmt, sizeof(struct ccid) + obj_size, 0,
+@@ -104,6 +104,7 @@
+ 	ccid_ops->ccid_hc_rx_slab =
+ 			ccid_kmem_cache_create(ccid_ops->ccid_hc_rx_obj_size,
+ 					       ccid_ops->ccid_hc_rx_slab_name,
++					       sizeof(ccid_ops->ccid_hc_rx_slab_name),
+ 					       "ccid%u_hc_rx_sock",
+ 					       ccid_ops->ccid_id);
+ 	if (ccid_ops->ccid_hc_rx_slab == NULL)
+@@ -112,6 +113,7 @@
+ 	ccid_ops->ccid_hc_tx_slab =
+ 			ccid_kmem_cache_create(ccid_ops->ccid_hc_tx_obj_size,
+ 					       ccid_ops->ccid_hc_tx_slab_name,
++					       sizeof(ccid_ops->ccid_hc_tx_slab_name),
+ 					       "ccid%u_hc_tx_sock",
+ 					       ccid_ops->ccid_id);
+ 	if (ccid_ops->ccid_hc_tx_slab == NULL)
 
