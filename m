@@ -1,38 +1,42 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933144Ab0BGSkE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Feb 2010 13:40:04 -0500
-Received: from 8bytes.org ([88.198.83.132]:49164 "EHLO 8bytes.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932935Ab0BGSj5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Feb 2010 13:39:57 -0500
-Date: Sun, 7 Feb 2010 19:39:56 +0100
-From: Joerg Roedel <joro@8bytes.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Joel Becker <Joel.Becker@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.33-rc7
-Message-ID: <20100207183956.GB26388@8bytes.org>
-References: <alpine.LFD.2.00.1002061422430.3829@localhost.localdomain> <alpine.LFD.2.00.1002061445210.3829@localhost.localdomain> <20100207102016.GH3416@mail.oracle.com> <alpine.LFD.2.00.1002071029040.3829@localhost.localdomain>
+	id S933065Ab0BGS4w (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Feb 2010 13:56:52 -0500
+Received: from mail-fx0-f211.google.com ([209.85.220.211]:52617 "EHLO
+	mail-fx0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753505Ab0BGS4v (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Feb 2010 13:56:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=kra135p7EL0zyklCAWQLXrAg2hYF/l5r4+/2KhRxl2h/eaLekDUra/IMzm0xG/QKF3
+         xaPHwoQUV/2F5aFyIWiho6x0025FdEHbx7nZxQvKI3BzF0mGbYyW/czoDJAg2M3gnIIW
+         EhPkpLz2sN/ZMpCeHQdoRHFWauEvwyUJ8kCJ0=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.1002071029040.3829@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Date: Sun, 7 Feb 2010 13:56:47 -0500
+Message-ID: <45c77aec1002071056re61b8acg5f480f8ea83c68c@mail.gmail.com>
+Subject: Possible bug in insmod or the kernel?
+From: Larry Homes <larr.homes@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 07, 2010 at 10:32:02AM -0800, Linus Torvalds wrote:
-> Another option might be to stop generating the .bz2 files, of course. 
-> Anybody who cares more about network bandwidth than CPU use (ie people who 
-> would seem to prefer bz2) would be better off using git instead, which 
-> packs things _way_ better, by virtue of being much more incremental.
+Hello,
 
-The .bz2 files are downloaded by the ketchup script. I use it sometimes
-to get a specific kernel tree version on a machine without having to
-look up the urls to download them manually. So there are users for the
-.bz2 files too ;-)
+I am very new to kernel development and I was playing around with
+making modules. I found I could not retrieve commandline parameters in
+the module if the parameter has whitespace in it. I thought it was my
+lack of knowledge that was causing the error (and I still do
+honestly), but I made a forum post here
+http://forum.kernelnewbies.org/read.php?17,1354 regarding the issue,
+and someone suggested it may be a bug and I should post on LKML.
 
-	Joerg
+The forum post shows example code to demonstrate the issue. I am using
+archlinux and the latest kernel. I am not sure what other information
+you need, so feel free to ask for anything.
 
+
+Thanks
