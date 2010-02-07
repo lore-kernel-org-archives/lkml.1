@@ -1,89 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933360Ab0BGK2H (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Feb 2010 05:28:07 -0500
-Received: from gwu.lbox.cz ([62.245.111.132]:39991 "EHLO gwu.lbox.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753681Ab0BGK2F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Feb 2010 05:28:05 -0500
-Date: Sun, 7 Feb 2010 11:26:58 +0100
-From: Nikola Ciprich <nikola.ciprich@linuxbox.cz>
-To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, stable-review@kernel.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [Stable-review] [00/74] 2.6.32.8-stable review
-Message-ID: <20100207102658.GA24865@develbox.linuxbox.cz>
-References: <20100204171850.GA16539@kroah.com>
- <20100205073659.GD31093@develbox.linuxbox.cz>
- <20100205171250.GC14145@suse.de>
+	id S1754487Ab0BGKlq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Feb 2010 05:41:46 -0500
+Received: from mail-px0-f182.google.com ([209.85.216.182]:33985 "EHLO
+	mail-px0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754141Ab0BGKlo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Feb 2010 05:41:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject:references
+         :in-reply-to:content-type:content-transfer-encoding;
+        b=sLwRPpgB700/uHqy9U5NgRUeQh6xytXZFWH/Fssi7GGmehwz/VilZew7HmOCFLJycX
+         d//LOFHWjnDFY/cFK7cMWD7+egS0YLSacBKLLdp59m+sNAnKitc62lbj4AJnYwsew61R
+         dTgacCYiE7nv1AzbfL43vi2Wui0k0Gfw1zgS4=
+Message-ID: <4B6E994E.3080005@gmail.com>
+Date: Sun, 07 Feb 2010 02:43:26 -0800
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091114 Lightning/1.0pre Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="pf9I7BMVVzbSWLtt"
-Content-Disposition: inline
-In-Reply-To: <20100205171250.GC14145@suse.de>
-User-Agent: Mutt/1.5.20 (2009-12-10)
-X-Milter-Copy-Status: I
-X-Antivirus: on proxybox by Kaspersky antivirus, engine 5.5.10, data 3221735 records(07-02-2010)
-X-Spam-Score: N/A (trusted relay)
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.33-rc7
+References: <alpine.LFD.2.00.1002061422430.3829@localhost.localdomain> <alpine.LFD.2.00.1002061445210.3829@localhost.localdomain> <20100207102016.GH3416@mail.oracle.com>
+In-Reply-To: <20100207102016.GH3416@mail.oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 02/07/10 02:20, Joel Becker wrote:
+> On Sat, Feb 06, 2010 at 02:49:49PM -0800, Linus Torvalds wrote:
+>>     Would it be ok to _only_ have the 'bz2' patches and tar-balls?
+>>
+>> Having two copies of every large file seems silly, if nobody really
+>> requires the traditional .gz format..
+>
+> 	When I grab tarballs, I only grab .gz.  Bandwidth isn't a
+> problem (3 minutes versus four on my DSL, I still switch over to another
+> screen and check back).  But .bz2 unpacks very slowly in the
+> environments I'm usually grabbing a tarball for.  I save more time
+> unpacking .gz than I do downloading .bz2.
+> 	That said, I'm often doing repeated unpacks, so I could easily
+> turn a .bz2 into .gz when I first grab it, then use the local .gz.
+>
+> Joel
+>
 
---pf9I7BMVVzbSWLtt
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-yup, I just tried and it works well. thanks!
-nik
+(Not sure what the spec is.)
+the question is:
+if converting everything to .gz,
+yes is easy for everybody, because they don't
+need a bzip2 or xzutils(external app),
+but results in Linus's server having more mb's
+
+as opposed to having a bzip2, or lzma(xzutils)
+resulting in less mb's on the server(Linus's server)?
+
+I guess whatever gives Linus's server less space
+since he's kind enough to publish this for everybody..
 
 
-On Fri, Feb 05, 2010 at 09:12:50AM -0800, Greg KH wrote:
-> On Fri, Feb 05, 2010 at 08:36:59AM +0100, Nikola Ciprich wrote:
-> > Hi Greg,
-> > just tried it, and it crashes during boot.
-> > Previous 2.6.32.x versions were OK.
-> > here is the screen:
-> > http://nelide.cz/downloads/2.6.32.8-crash.png
-> > sorry if it's a bit crude, but I'm leaving for 4 days vacation,
-> > so I'm in a bit of hurry :)
-> > On Tuesday, I can provide more testing/whatever if needed.
->=20
-> Can you try the -rc2 release I just made if you get a chance?  It should
-> resolve this issue.
->=20
-> thanks,
->=20
-> greg k-h
->=20
-
---=20
--------------------------------------
-Ing. Nikola CIPRICH
-LinuxBox.cz, s.r.o.
-28. rijna 168, 709 01 Ostrava
-
-tel.:   +420 596 603 142
-fax:    +420 596 621 273
-mobil:  +420 777 093 799
-www.linuxbox.cz
-
-mobil servis: +420 737 238 656
-email servis: servis@linuxbox.cz
--------------------------------------
-
---pf9I7BMVVzbSWLtt
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQFLbpVy3xdJJrLygV4RArOkAKCgtlQ3TaWPgnGaFfrPor4iaHQiJwCg38Lu
-RpchiBz+3hiAxQ6A4yTqTxA=
-=4+xO
------END PGP SIGNATURE-----
-
---pf9I7BMVVzbSWLtt--
+Justin P. Mattock
