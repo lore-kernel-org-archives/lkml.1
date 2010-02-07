@@ -1,32 +1,62 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756130Ab0BGV3h (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Feb 2010 16:29:37 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:51650 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754878Ab0BGV3g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Feb 2010 16:29:36 -0500
-Date: Sun, 7 Feb 2010 23:26:19 +0200
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Eric Sandeen <sandeen@redhat.com>
-Cc: "Theodore Ts'o" <tytso@mit.edu>, Andreas Dilger <adilger@sun.com>,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.33-rc6: ext4 triggers warning about high order allocations
-Message-ID: <20100207212619.GA3226@redhat.com>
-References: <20100203060854.GA12489@redhat.com> <4B69AB60.5070609@redhat.com> <20100203175836.GA16907@redhat.com> <4B69CCE4.3000904@redhat.com> <20100207123032.GA3220@redhat.com> <4B6F0DE5.7060100@redhat.com>
+	id S1756051Ab0BGWOX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Feb 2010 17:14:23 -0500
+Received: from mail-iw0-f183.google.com ([209.85.223.183]:59452 "EHLO
+	mail-iw0-f183.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755397Ab0BGWOW convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Feb 2010 17:14:22 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=D8G0Jk42Ov1z9jO72JtyS08l0I0RFATOpsBnkMzmzaHxB1j9xpJYmP7yzdRPRyXdof
+         2cwnvEQGPZYPtANk/KIVhKlFoxinq3IXVOGSPCRroRKUqZvxwphT8hmdrbW9qnftfKue
+         jxHHcHyeTfi9QTPwfn4/HZbb7AkQV9afxIvAY=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B6F0DE5.7060100@redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <45c77aec1002071056re61b8acg5f480f8ea83c68c@mail.gmail.com>
+References: <45c77aec1002071056re61b8acg5f480f8ea83c68c@mail.gmail.com>
+Date: Mon, 8 Feb 2010 09:14:21 +1100
+Message-ID: <d45a3acc1002071414q318edea3m38f6d5ddbbd841bc@mail.gmail.com>
+Subject: Re: Possible bug in insmod or the kernel?
+From: andrew hendry <andrew.hendry@gmail.com>
+To: Larry Homes <larr.homes@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 07, 2010 at 01:00:53PM -0600, Eric Sandeen wrote:
-> > I have removed auto_da_alloc option, but still see a warning at boot:
-> 
-> Any chance you've still got it in an initrd or grub rootfs options, or similar?
+have a look around kernel/params.c
+/* You can use " around spaces, but can't escape ". */
+/* Hyphens and underscores equivalent in parameter names. */
+static char *next_arg(char *args, char **param, char **val)
 
-Looks like this was the case: I rebuilt initrd and it's gone.
+Your printks are probably showing the single quotes? probably not what
+you want in your name
 
+On Mon, Feb 8, 2010 at 5:56 AM, Larry Homes <larr.homes@gmail.com> wrote:
+> Hello,
+>
+> I am very new to kernel development and I was playing around with
+> making modules. I found I could not retrieve commandline parameters in
+> the module if the parameter has whitespace in it. I thought it was my
+> lack of knowledge that was causing the error (and I still do
+> honestly), but I made a forum post here
+> http://forum.kernelnewbies.org/read.php?17,1354 regarding the issue,
+> and someone suggested it may be a bug and I should post on LKML.
+>
+> The forum post shows example code to demonstrate the issue. I am using
+> archlinux and the latest kernel. I am not sure what other information
+> you need, so feel free to ask for anything.
+>
+>
+> Thanks
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
