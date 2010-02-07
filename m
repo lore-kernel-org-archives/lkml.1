@@ -1,53 +1,45 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751944Ab0BGH0w (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Feb 2010 02:26:52 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:44423 "EHLO mx2.suse.de"
+	id S1752149Ab0BGHfc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Feb 2010 02:35:32 -0500
+Received: from tundra.namei.org ([65.99.196.166]:59527 "EHLO tundra.namei.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750810Ab0BGH0u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Feb 2010 02:26:50 -0500
-Date: Sat, 6 Feb 2010 23:27:02 -0800
-From: Greg KH <gregkh@suse.de>
+	id S1751756Ab0BGHfa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Feb 2010 02:35:30 -0500
+Date: Sun, 7 Feb 2010 18:34:51 +1100 (EST)
+From: James Morris <jmorris@namei.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, taviso@google.com,
-       viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org,
-       ebiederm@xmission.com, alan@lxorguk.ukuu.org.uk, jdike@addtoit.com,
-       jln@google.com, mpm@selenic.com
-Subject: Re: [2.6.33-rc5] tty: possible irq lock inversion dependency in
-	tty_fasync
-Message-ID: <20100207072702.GA9768@suse.de>
-References: <201002071452.IIF73922.VtFOJOHSFFLOQM@I-love.SAKURA.ne.jp> <alpine.LFD.2.00.1002062226000.3829@localhost.localdomain> <alpine.LFD.2.00.1002062244310.3829@localhost.localdomain>
+cc: Xiaotian Feng <dfeng@redhat.com>, Eric Paris <eparis@redhat.com>,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       serue@linux.vnet.ibm.com, Al Viro <viro@zeniv.linux.org.uk>,
+       Eugene Teo <eugene@redhat.com>, Mimi Zohar <zohar@linux.vnet.ibm.com>
+Subject: [GIT][IMA] fix null pointer deref
+In-Reply-To: <OFD4EDD9E8.3C38BC7C-ON852576C1.004B1271-852576C1.004BCFCC@us.ibm.com>
+Message-ID: <alpine.LRH.2.00.1002071832080.21000@tundra.namei.org>
+References: <1265364881-8140-1-git-send-email-dfeng@redhat.com> <OFD4EDD9E8.3C38BC7C-ON852576C1.004B1271-852576C1.004BCFCC@us.ibm.com>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.1002062244310.3829@localhost.localdomain>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 06, 2010 at 10:46:01PM -0800, Linus Torvalds wrote:
-> 
-> 
-> On Sat, 6 Feb 2010, Linus Torvalds wrote:
-> > 
-> > Yeah. I think we need to just revert that commit.
-> > 
-> > Or maybe we could just do the following, rather than revert it outright: 
-> > just get a ref to the 'struct pid' while holding the spinlock, and then 
-> > releasing it after doing the __f_setown() call.
-> 
-> Btw, if we do this, then we should probably revert commit 
-> b04da8bfdfbbd79544cab2fadfdc12e87eb01600 at the same time.
-> 
-> Resulting patch would then look like the appended.
+Linus,
 
-The patch looks correct to me, thanks for fixing this.
+Please pull this bugfix.  I've verified that it fixes the null pointer 
+deref.
 
-  Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-Can you commit it to your tree, or do you need/want me to submit it?
+The following changes since commit 29275254caedfedce960cfe6df24b90cb04fe431:
+  Linus Torvalds (1):
+        Linux 2.6.33-rc7
 
-thanks,
+are available in the git repository at:
 
-greg k-h
+  ssh://master.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6 for-linus
+
+J. R. Okajima (1):
+      ima: fix null pointer deref
+
+ fs/pipe.c |    7 +++++--
+ 1 files changed, 5 insertions(+), 2 deletions(-)
