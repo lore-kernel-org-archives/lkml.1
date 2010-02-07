@@ -1,80 +1,83 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751951Ab0BGHAv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Feb 2010 02:00:51 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36847 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751930Ab0BGHAs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Feb 2010 02:00:48 -0500
-Date: Sat, 6 Feb 2010 22:59:56 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: =?ISO-8859-15?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>
-cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, gregkh@suse.de,
-       taviso@google.com, viro@ZenIV.linux.org.uk,
-       linux-kernel@vger.kernel.org, ebiederm@xmission.com,
-       alan@lxorguk.ukuu.org.uk, jdike@addtoit.com, jln@google.com,
-       mpm@selenic.com
-Subject: Re: [2.6.33-rc5] tty: possible irq lock inversion dependency in
- tty_fasync
-In-Reply-To: <20100207064643.GA15533@hack>
-Message-ID: <alpine.LFD.2.00.1002062246390.3829@localhost.localdomain>
-References: <201002071452.IIF73922.VtFOJOHSFFLOQM@I-love.SAKURA.ne.jp> <alpine.LFD.2.00.1002062226000.3829@localhost.localdomain> <20100207064643.GA15533@hack>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1752003Ab0BGHSf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Feb 2010 02:18:35 -0500
+Received: from kcmailp05.birch.net ([216.212.0.100]:63870 "EHLO mx01.birch.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751666Ab0BGHSe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Feb 2010 02:18:34 -0500
+Message-ID: <4B6E6959.60708@softplc.com>
+Date: Sun, 07 Feb 2010 01:18:49 -0600
+From: Dick Hollenbeck <dick@softplc.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
+To: linux-kernel@vger.kernel.org
+Subject: Re: SquashFS on ARM9
+References: <4B6E0F88.2020402@softplc.com>
+In-Reply-To: <4B6E0F88.2020402@softplc.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Dick Hollenbeck wrote:
+>
+> Dear Philip et. al,
+>
+>
+> I am using 2.6.30.5 on an ARM9 with squashfs.
+>
+> The squashFS image is built with x86_64 form of
+>
+>        mksquashfs version 4.1-CVS (2009/09/20)
+>
+> 64 bit linux program.
+ >  There are no problems on the development system, only the ARM9.
 
 
-On Sun, 7 Feb 2010, Américo Wang wrote:
-> 
-> We already fixed this, a better fix:
 
-No we didn't.
+OK I got more news:
 
-> http://lkml.org/lkml/2010/1/26/338
-> 
-> I sent a same fix with Greg's.
+The image works OK if I build it with the 32 version of mksquashs on x86.
 
-We already did that. You didn't read Tetsuo's email carefully.
+Amazing, there are differences in file format other than endian-ness?
 
-Let's quote the important parts:
+So we have at least 3 forms of the file system image now?  I am 
+disappointed.  One would have sufficed.  I don't even buy the need for 
+LSbyte vs MSbyte being needed.  There should have been only one form of 
+the FS image.
 
-  "is not yet fixed as of 2.6.33-rc7."
+Ouch, this seems amateurish.   Can I assume it is the bitfields?   Get 
+rid of the bitfields!
 
-and also the _second_ lockdep complaint he quotes, which starts out with
+Use #defines and OR and AND them please.
 
-  [   81.651199] =========================================================
-  [   81.651199] [ INFO: possible irq lock inversion dependency detected ]
-  [   81.651199] 2.6.33-rc7 #11
-  [   81.651199] ---------------------------------------------------------
+In the mksquashfs program, simply create some ints
 
-(note the -rc7 there).
+(1<<a)
+(1<<b)
 
-The problem? Look at f_getown: it does
+etc using #defines.
 
-	read_lock(&filp->f_owner.lock);
 
-ie it holds f_owner without interrupts disabled. Now an interrupt comes 
-in, and takes 'siglock' because it ends up sending a signal (timer, SIGIO, 
-whatever). So you have a f_owner -> siglock ordering.
+Andrew Morton warned you about this years ago.  You have the bitfields 
+using defines, its just that you control where the bits are:
 
-But we _also_ have a siglock -> ctrl_lock -> f_owner ordering, in that 
-problematic tty_fasync() thing. So we have a ABBA deadlock situation.
+#define MBIT (1<<2)
 
-Yes, it's hard (practically impossible) to trigger, because you have to 
-get an interrupt just at the right point with all the right processes, but 
-lockdep seems to be entirely correct. 
+struct s {
+    int32_t val;
+} r;
 
-So it is simply _wrong_ to take f_owner while we hold ctrl_lock.
 
-Which is why I suggest just reverting both the original problematic commit 
-_and_ the commit you point to, and just fix the race with that pid_get/put 
-pair instead. As per my patch.
+r.val |= MBIT;
 
-		Linus
+How hard is that really?
+
+For now I don't need anymore help.  Sorry if I burned down my bridge, I 
+only intend to offer strategy to improve the filesystem.
+
+Dick
+
+
