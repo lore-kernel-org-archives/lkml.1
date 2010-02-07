@@ -1,59 +1,60 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752390Ab0BGIMT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Feb 2010 03:12:19 -0500
-Received: from wine.ocn.ne.jp ([122.1.235.145]:56578 "EHLO smtp.wine.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751930Ab0BGIMS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Feb 2010 03:12:18 -0500
-To: gregkh@suse.de, torvalds@linux-foundation.org
-Cc: taviso@google.com, viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org,
-       ebiederm@xmission.com, alan@lxorguk.ukuu.org.uk, jdike@addtoit.com,
-       jln@google.com, mpm@selenic.com
-Subject: Re: [2.6.33-rc5] tty: possible irq lock inversion dependency intty_fasync
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-References: <201002071452.IIF73922.VtFOJOHSFFLOQM@I-love.SAKURA.ne.jp>
-	<alpine.LFD.2.00.1002062226000.3829@localhost.localdomain>
-	<alpine.LFD.2.00.1002062244310.3829@localhost.localdomain>
-	<20100207072702.GA9768@suse.de>
-In-Reply-To: <20100207072702.GA9768@suse.de>
-Message-Id: <201002071712.CBC51501.SFFtLOMOQVJHFO@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.51 PL2]
-X-Accept-Language: ja,en,zh
-Date: Sun, 7 Feb 2010 17:12:14 +0900
-Mime-Version: 1.0
+	id S933414Ab0BGIWB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Feb 2010 03:22:01 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:60245 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932099Ab0BGIV7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Feb 2010 03:21:59 -0500
+Date: Sun, 7 Feb 2010 08:21:58 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [git pull] VFS fixes for -rc8 (mostly IMA)
+Message-ID: <20100207082158.GG30031@ZenIV.linux.org.uk>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Sat, Feb 06, 2010 at 10:46:01PM -0800, Linus Torvalds wrote:
-> > 
-> > 
-> > On Sat, 6 Feb 2010, Linus Torvalds wrote:
-> > > 
-> > > Yeah. I think we need to just revert that commit.
-> > > 
-> > > Or maybe we could just do the following, rather than revert it outright: 
-> > > just get a ref to the 'struct pid' while holding the spinlock, and then 
-> > > releasing it after doing the __f_setown() call.
-> > 
-> > Btw, if we do this, then we should probably revert commit 
-> > b04da8bfdfbbd79544cab2fadfdc12e87eb01600 at the same time.
-> > 
-> > Resulting patch would then look like the appended.
-> 
-> The patch looks correct to me, thanks for fixing this.
-> 
->   Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
-> 
-> Can you commit it to your tree, or do you need/want me to submit it?
-> 
-> thanks,
-> 
-> greg k-h
-> 
-That patch solved the lockdep warning.
+Assorted fixes, mostly IMA ones.  Please pull from
+git://git.kernel.org/pub/scm/linux/kernel/git/viro/vfs-2.6.git/ for-linus
+(once it propagates, or from hera immediately)
 
-Thank you.
+Shortlog:
+Al Viro (3):
+      befs: fix leak
+      Take ima_path_check() in nfsd past dentry_open() in nfsd_open()
+      Take ima_file_free() to proper place.
+
+Eric Paris (1):
+      ima: initialize ima before inodes can be allocated
+
+Jun'ichi Nomura (1):
+      freeze_bdev: don't deactivate successfully frozen MS_RDONLY sb
+
+Mimi Zohar (3):
+      fix ima breakage
+      ima: rename ima_path_check to ima_file_check
+      ima: rename PATH_CHECK to FILE_CHECK
+
+Diffstat:
+ Documentation/ABI/testing/ima_policy |   12 +-
+ fs/befs/linuxvfs.c                   |    1 +
+ fs/block_dev.c                       |    7 +-
+ fs/file_table.c                      |    1 +
+ fs/namei.c                           |    6 +-
+ fs/nfsd/vfs.c                        |    2 +-
+ include/linux/ima.h                  |    4 +-
+ init/main.c                          |    2 +-
+ security/integrity/ima/ima.h         |    3 +-
+ security/integrity/ima/ima_api.c     |    4 +-
+ security/integrity/ima/ima_iint.c    |    9 +-
+ security/integrity/ima/ima_main.c    |  239 +++++++++++++---------------------
+ security/integrity/ima/ima_policy.c  |    9 +-
+ security/security.c                  |    2 -
+ 14 files changed, 123 insertions(+), 178 deletions(-)
