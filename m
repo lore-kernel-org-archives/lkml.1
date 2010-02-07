@@ -1,22 +1,22 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754979Ab0BGEOS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Feb 2010 23:14:18 -0500
-Received: from mga03.intel.com ([143.182.124.21]:15018 "EHLO mga03.intel.com"
+	id S1755229Ab0BGEOW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Feb 2010 23:14:22 -0500
+Received: from mga09.intel.com ([134.134.136.24]:20236 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754462Ab0BGEOO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Feb 2010 23:14:14 -0500
+	id S1754970Ab0BGEOS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Feb 2010 23:14:18 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.49,420,1262592000"; 
-   d="scan'208";a="241292586"
-Message-Id: <20100207041043.429863034@intel.com>
+   d="scan'208";a="490282901"
+Message-Id: <20100207041042.996584378@intel.com>
 User-Agent: quilt/0.48-1
-Date: Sun, 07 Feb 2010 12:10:18 +0800
+Date: Sun, 07 Feb 2010 12:10:15 +0800
 From: Wu Fengguang <fengguang.wu@intel.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-CC: Jens Axboe <jens.axboe@oracle.com>, Nick Piggin <npiggin@suse.de>,
-       Andi Kleen <andi@firstfloor.org>,
-       Steven Whitehouse <swhiteho@redhat.com>,
+CC: Jens Axboe <jens.axboe@oracle.com>, Chris Frost <frost@cs.ucla.edu>,
+       Steve VanDeBogart <vandebo@cs.ucla.edu>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
        Wu Fengguang <fengguang.wu@intel.com>
 CC: Chris Mason <chris.mason@oracle.com>
 CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
@@ -25,97 +25,111 @@ CC: Olivier Galibert <galibert@pobox.com>
 cc: Linux Memory Management List <linux-mm@kvack.org>
 CC: <linux-fsdevel@vger.kernel.org>
 Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 05/11] readahead: replace ra->mmap_miss with ra->ra_flags
+Subject: [PATCH 02/11] readahead: retain inactive lru pages to be accessed soon
 References: <20100207041013.891441102@intel.com>
-Content-Disposition: inline; filename=readahead-flags.patch
+Content-Disposition: inline; filename=readahead-retain-pages-find_get_page.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Introduce a readahead flags field and embed the existing mmap_miss in it
-(to save space).
+From: Chris Frost <frost@cs.ucla.edu>
 
-It will be possible to lose the flags in race conditions, however the
-impact should be limited.
+Ensure that cached pages in the inactive list are not prematurely evicted;
+move such pages to lru head when they are covered by
+- in-kernel heuristic readahead
+- an posix_fadvise(POSIX_FADV_WILLNEED) hint from an application
 
-CC: Nick Piggin <npiggin@suse.de>
-CC: Andi Kleen <andi@firstfloor.org>
-CC: Steven Whitehouse <swhiteho@redhat.com>
+Before this patch, pages already in core may be evicted before the
+pages covered by the same prefetch scan but that were not yet in core.
+Many small read requests may be forced on the disk because of this
+behavior.
+
+In particular, posix_fadvise(... POSIX_FADV_WILLNEED) on an in-core page
+has no effect on the page's location in the LRU list, even if it is the
+next victim on the inactive list.
+
+This change helps address the performance problems we encountered
+while modifying SQLite and the GIMP to use large file prefetching.
+Overall these prefetching techniques improved the runtime of large
+benchmarks by 10-17x for these applications. More in the publication
+_Reducing Seek Overhead with Application-Directed Prefetching_ in
+USENIX ATC 2009 and at http://libprefetch.cs.ucla.edu/.
+
+Signed-off-by: Chris Frost <frost@cs.ucla.edu>
+Signed-off-by: Steve VanDeBogart <vandebo@cs.ucla.edu>
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 ---
- include/linux/fs.h |   30 +++++++++++++++++++++++++++++-
- mm/filemap.c       |    7 ++-----
- 2 files changed, 31 insertions(+), 6 deletions(-)
+ mm/readahead.c |   44 ++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 44 insertions(+)
 
---- linux.orig/include/linux/fs.h	2010-02-07 11:46:35.000000000 +0800
-+++ linux/include/linux/fs.h	2010-02-07 11:46:37.000000000 +0800
-@@ -892,10 +892,38 @@ struct file_ra_state {
- 					   there are only # of pages ahead */
+--- linux.orig/mm/readahead.c	2010-02-01 10:18:57.000000000 +0800
++++ linux/mm/readahead.c	2010-02-01 10:20:51.000000000 +0800
+@@ -9,7 +9,9 @@
  
- 	unsigned int ra_pages;		/* Maximum readahead window */
--	unsigned int mmap_miss;		/* Cache miss stat for mmap accesses */
-+	unsigned int ra_flags;
- 	loff_t prev_pos;		/* Cache last read() position */
- };
+ #include <linux/kernel.h>
+ #include <linux/fs.h>
++#include <linux/memcontrol.h>
+ #include <linux/mm.h>
++#include <linux/mm_inline.h>
+ #include <linux/module.h>
+ #include <linux/blkdev.h>
+ #include <linux/backing-dev.h>
+@@ -133,6 +135,40 @@ out:
+ }
  
-+/* ra_flags bits */
-+#define	READAHEAD_MMAP_MISS	0x0000ffff /* cache misses for mmap access */
+ /*
++ * The file range is expected to be accessed in near future.  Move pages
++ * (possibly in inactive lru tail) to lru head, so that they are retained
++ * in memory for some reasonable time.
++ */
++static void retain_inactive_pages(struct address_space *mapping,
++				  pgoff_t index, int len)
++{
++	int i;
++	struct page *page;
++	struct zone *zone;
++
++	for (i = 0; i < len; i++) {
++		page = find_get_page(mapping, index + i);
++		if (!page)
++			continue;
++
++		zone = page_zone(page);
++		spin_lock_irq(&zone->lru_lock);
++
++		if (PageLRU(page) &&
++		    !PageActive(page) &&
++		    !PageUnevictable(page)) {
++			int lru = page_lru_base_type(page);
++
++			del_page_from_lru_list(zone, page, lru);
++			add_page_to_lru_list(zone, page, lru);
++		}
++
++		spin_unlock_irq(&zone->lru_lock);
++		put_page(page);
++	}
++}
 +
 +/*
-+ * Don't do ra_flags++ directly to avoid possible overflow:
-+ * the ra fields can be accessed concurrently in a racy way.
-+ */
-+static inline unsigned int ra_mmap_miss_inc(struct file_ra_state *ra)
-+{
-+	unsigned int miss = ra->ra_flags & READAHEAD_MMAP_MISS;
-+
-+	if (miss < READAHEAD_MMAP_MISS) {
-+		miss++;
-+		ra->ra_flags = miss | (ra->ra_flags &~ READAHEAD_MMAP_MISS);
-+	}
-+	return miss;
-+}
-+
-+static inline void ra_mmap_miss_dec(struct file_ra_state *ra)
-+{
-+	unsigned int miss = ra->ra_flags & READAHEAD_MMAP_MISS;
-+
-+	if (miss) {
-+		miss--;
-+		ra->ra_flags = miss | (ra->ra_flags &~ READAHEAD_MMAP_MISS);
-+	}
-+}
-+
- /*
-  * Check if @index falls in the readahead windows.
-  */
---- linux.orig/mm/filemap.c	2010-02-07 11:46:35.000000000 +0800
-+++ linux/mm/filemap.c	2010-02-07 11:46:37.000000000 +0800
-@@ -1418,14 +1418,12 @@ static void do_sync_mmap_readahead(struc
- 		return;
+  * __do_page_cache_readahead() actually reads a chunk of disk.  It allocates all
+  * the pages first, then submits them all for I/O. This avoids the very bad
+  * behaviour which would occur if page allocations are causing VM writeback.
+@@ -184,6 +220,14 @@ __do_page_cache_readahead(struct address
  	}
  
--	if (ra->mmap_miss < INT_MAX)
--		ra->mmap_miss++;
- 
  	/*
- 	 * Do we miss much more than hit in this file? If so,
- 	 * stop bothering with read-ahead. It will only hurt.
- 	 */
--	if (ra->mmap_miss > MMAP_LOTSAMISS)
-+	if (ra_mmap_miss_inc(ra) > MMAP_LOTSAMISS)
- 		return;
- 
- 	/*
-@@ -1455,8 +1453,7 @@ static void do_async_mmap_readahead(stru
- 	/* If we don't want any read-ahead, don't bother */
- 	if (VM_RandomReadHint(vma))
- 		return;
--	if (ra->mmap_miss > 0)
--		ra->mmap_miss--;
-+	ra_mmap_miss_dec(ra);
- 	if (PageReadahead(page))
- 		page_cache_async_readahead(mapping, ra, file,
- 					   page, offset, ra->ra_pages);
++	 * Normally readahead will auto stop on cached segments, so we won't
++	 * hit many cached pages. If it does happen, bring the inactive pages
++	 * adjecent to the newly prefetched ones(if any).
++	 */
++	if (ret < nr_to_read)
++		retain_inactive_pages(mapping, offset, page_idx);
++
++	/*
+ 	 * Now start the IO.  We ignore I/O errors - if the page is not
+ 	 * uptodate then the caller will launch readpage again, and
+ 	 * will then handle the error.
 
 
