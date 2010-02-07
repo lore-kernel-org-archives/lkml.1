@@ -1,106 +1,34 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756264Ab0BGRRR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Feb 2010 12:17:17 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:51436 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754301Ab0BGRRQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Feb 2010 12:17:16 -0500
-Date: Sun, 7 Feb 2010 18:16:15 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
-       Frank Heckenbach <f.heckenbach@fh-soft.de>,
-       Neil Horman <nhorman@tuxdriver.com>, Roland McGrath <roland@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] coredump: set ->group_exit_code for other CLONE_VM tasks
-	too
-Message-ID: <20100207171615.GA9854@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1756184Ab0BGR24 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Feb 2010 12:28:56 -0500
+Received: from mta1.srv.hcvlny.cv.net ([167.206.4.196]:49564 "EHLO
+	mta1.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754494Ab0BGR2z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Feb 2010 12:28:55 -0500
+Date: Sun, 07 Feb 2010 12:28:51 -0500
+From: Michael Breuer <mbreuer@majjas.com>
+Subject: x86 - cpu_relax - why nop vs. pause?
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Message-id: <4B6EF853.9090704@majjas.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.7)
+ Gecko/20100111 Lightning/1.0b2pre Thunderbird/3.0.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-User visible change.
+I did search and noticed some old discussions. Looking at both Intel and 
+AMD documentation, it would seem that PAUSE is the preferred instruction 
+within a spin lock. Further, both Intel and AMD specifications state 
+that the instruction is backward compatible with older x86 processors.
 
-do_coredump() kills all threads which share the same ->mm but only
-the coredumping process gets the proper exit_code. Other tasks which
-share the same ->mm die "silently" and return status == 0 to parent.
+For fun, I changed nop to pause on my core i7 920 (smt enabled) and I'm 
+seeing about a 5-10% performance improvement on 2.6.33 rc7. Perf top 
+shows time spent in spin_lock under load drops from an average of around 
+35% to about 25%.
 
-This is historical behaviour, not actually a bug. But I think Frank
-Heckenbach rightly dislikes the current behaviour. Simple test-case:
-
-	#include <stdio.h>
-	#include <unistd.h>
-	#include <signal.h>
-	#include <sys/wait.h>
-
-	int main(void)
-	{
-		int stat;
-
-		if (!fork()) {
-			if (!vfork())
-				kill(getpid(), SIGQUIT);
-		}
-
-		wait(&stat);
-		printf("stat=%x\n", stat);
-		return 0;
-	}
-
-Before this patch it prints "stat=0" despite the fact the child was
-killed by SIGQUIT. After this patch the output is "stat=3" which
-obviously makes more sense.
-
-Even with this patch, only the task which originates the coredumping
-gets "|= 0x80" if the core was actually dumped, but at least the
-coredumping signal is visible to do_wait/etc.
-
-Reported-by: Frank Heckenbach <f.heckenbach@fh-soft.de>
-Signed-off-by: Oleg Nesterov <oleg@redhat.com>
----
-
- fs/exec.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
-
---- V1/fs/exec.c~CD_STATUS	2009-12-18 00:20:50.000000000 +0100
-+++ V1/fs/exec.c	2010-02-07 17:28:24.000000000 +0100
-@@ -1536,12 +1536,13 @@ out:
- 	return ispipe;
- }
- 
--static int zap_process(struct task_struct *start)
-+static int zap_process(struct task_struct *start, int exit_code)
- {
- 	struct task_struct *t;
- 	int nr = 0;
- 
- 	start->signal->flags = SIGNAL_GROUP_EXIT;
-+	start->signal->group_exit_code = exit_code;
- 	start->signal->group_stop_count = 0;
- 
- 	t = start;
-@@ -1566,8 +1567,7 @@ static inline int zap_threads(struct tas
- 	spin_lock_irq(&tsk->sighand->siglock);
- 	if (!signal_group_exit(tsk->signal)) {
- 		mm->core_state = core_state;
--		tsk->signal->group_exit_code = exit_code;
--		nr = zap_process(tsk);
-+		nr = zap_process(tsk, exit_code);
- 	}
- 	spin_unlock_irq(&tsk->sighand->siglock);
- 	if (unlikely(nr < 0))
-@@ -1616,7 +1616,7 @@ static inline int zap_threads(struct tas
- 			if (p->mm) {
- 				if (unlikely(p->mm == mm)) {
- 					lock_task_sighand(p, &flags);
--					nr += zap_process(p);
-+					nr += zap_process(p, exit_code);
- 					unlock_task_sighand(p, &flags);
- 				}
- 				break;
-
+Thoughts?
