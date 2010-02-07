@@ -1,349 +1,248 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754022Ab0BGUr4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Feb 2010 15:47:56 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:54923 "EHLO ogre.sisk.pl"
+	id S1755115Ab0BGVDN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Feb 2010 16:03:13 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:60841 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751568Ab0BGUrx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Feb 2010 15:47:53 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Zhenyu Wang <zhenyuw@linux.intel.com>,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       Eric Anholt <eric@anholt.net>
-Subject: [PATCH] i915 / PM: Fix crash while aborting hibernation (Re: [linux-pm] [regression] "drm/i915: implement new pm ops" disables irq on aborted s2disk)
-Date: Sun, 7 Feb 2010 21:48:24 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.33-rc7-rjw; KDE/4.3.5; x86_64; ; )
-Cc: linux-pm@lists.linux-foundation.org, dri-devel@lists.sourceforge.net,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <4B695BA0.4000007@tuffmail.co.uk> <201002032344.41915.rjw@sisk.pl> <20100204013157.GA30011@zhen-devel.sh.intel.com>
-In-Reply-To: <20100204013157.GA30011@zhen-devel.sh.intel.com>
+	id S1753504Ab0BGVDL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Feb 2010 16:03:11 -0500
+Date: Sun, 7 Feb 2010 13:02:50 -0800
+From: Brandon Philips <bphilips@suse.de>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Suresh Siddha <suresh.b.siddha@intel.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v4] x86: keep chip_data in create_irq_nr and destroy_irq
+Message-ID: <20100207210250.GB8256@jenkins.home.ifup.org>
+References: <4B694DEF.70301@kernel.org>
+ <20100203174216.GB17985@jenkins.home.ifup.org>
+ <4B6BDAC0.3090900@kernel.org>
+ <20100205210926.GE4930@jenkins.home.ifup.org>
+ <4B6C9F69.4040605@kernel.org>
+ <20100205225535.GF4930@jenkins.home.ifup.org>
+ <4B6CB26C.405@kernel.org>
+ <20100206001832.GG4930@jenkins.home.ifup.org>
+ <20100206064247.GB15556@jenkins.home.ifup.org>
+ <4B6D173C.4070200@kernel.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201002072148.24588.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B6D173C.4070200@kernel.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 04 February 2010, Zhenyu Wang wrote:
-> On 2010.02.03 23:44:41 +0100, Rafael J. Wysocki wrote:
-> > On Wednesday 03 February 2010, Alan Jenkins wrote:
-> > > Hi
-> > > 
-> > > I found this regression on my EeePC 701 with modesetting enabled.  When 
-> > > I hibernate using s2disk, I can abort the hibernation by pressing the 
-> > > backspace key.  Doing so breaks X on 2.6.32-rc6 (but not 2.6.32).
-> > 
-> > Yeah.
-> > 
-> > To be honest, I knew that's going to happen, but didn't have the time to take
-> > care of it.
-> > 
-> > The problem is that i915 does literally _nothing_ in its .thaw() callback,
-> > although it should at least reverse whatever .freeze() did to the hardware
-> > (and memory allocations and so on), so that the adapter is functional
-> > after creating the image.
-> > 
-> > Fixing this requires some thought, though, because at the moment .freeze()
-> > thinks it's .suspend(), which is not the case as this report clearly shows.
-> > So, in fact i915_pci_suspend() has to be split into the .freeze() part and
-> > the poweroff part cleanly and that's not  so simple (at least to me).
-> > 
-> 
-> Right, I think that'll be more clean, stuff in i915_save/restore_state() need
-> to be splited too, especially isolate stuff for mode setting and other device
-> state, as what my original purpose for this is to remove extra mode setting 
-> cycle in old behavior so not waste time for hibernate.
+Version 4: use get_irq_chip_data() in destroy_irq() to get rid of some
+local vars.
 
-We can't really do that, because we'll need to restore the saved state at the
-resume-from-hibernation stage.
+When two drivers are setting up MSI-X at the same time via
+pci_enable_msix() there is a race.  See this dmesg excerpt:
 
-The appended patch fixes the issue for me, although it's been only tested
-a little.  It sort of defeats the purpose of commit
-cbda12d77ea590082edb6d30bd342a67ebc459e0, but I don't see any less invasive
-way to fix this except maybe for reverting that commit entirely.
+[   85.170610] ixgbe 0000:02:00.1: irq 97 for MSI/MSI-X
+[   85.170611]   alloc irq_desc for 99 on node -1
+[   85.170613] igb 0000:08:00.1: irq 98 for MSI/MSI-X
+[   85.170614]   alloc kstat_irqs on node -1
+[   85.170616] alloc irq_2_iommu on node -1
+[   85.170617]   alloc irq_desc for 100 on node -1
+[   85.170619]   alloc kstat_irqs on node -1
+[   85.170621] alloc irq_2_iommu on node -1
+[   85.170625] ixgbe 0000:02:00.1: irq 99 for MSI/MSI-X
+[   85.170626]   alloc irq_desc for 101 on node -1
+[   85.170628] igb 0000:08:00.1: irq 100 for MSI/MSI-X
+[   85.170630]   alloc kstat_irqs on node -1
+[   85.170631] alloc irq_2_iommu on node -1
+[   85.170635]   alloc irq_desc for 102 on node -1
+[   85.170636]   alloc kstat_irqs on node -1
+[   85.170639] alloc irq_2_iommu on node -1
+[   85.170646] BUG: unable to handle kernel NULL pointer dereference
+at 0000000000000088
 
-Note that the drm_irq_[un]install() thing may be unnecessary, but I wasn't sure
-about that and surely wouldn't suggest doing that for 2.6.33.  Also it looks like
-some things from the freeze and thaw parts may be moved to the "low-level"
-suspend and resume parts, respectively, but that would require some
-i915_gem_* surgery I was too scared to do.
+As you can see igb and ixgbe are both alternating on create_irq_nr()
+via pci_enable_msix() in their probe function.
 
-Alan, please test, i915 guys, please review.
+ixgbe: While looping through irq_desc_ptrs[] via create_irq_nr() ixgbe
+choses irq_desc_ptrs[102] and exits the loop, drops vector_lock and
+calls dynamic_irq_init. Then it sets irq_desc_ptrs[102]->chip_data =
+NULL via dynamic_irq_init().
 
-Rafael
+igb: Grabs the vector_lock now and starts looping over irq_desc_ptrs[]
+via create_irq_nr(). It gets to irq_desc_ptrs[102] and does this:
+
+	cfg_new = irq_desc_ptrs[102]->chip_data;
+	if (cfg_new->vector != 0)
+		continue;
+
+This hits the NULL deref.
+
+Another possible race exists via pci_disable_msix() in a driver or in
+the number of error paths that call free_msi_irqs():
+
+destroy_irq()
+dynamic_irq_cleanup() which sets desc->chip_data = NULL
+...race window...
+desc->chip_data = cfg;
+
+Remove the save and restore code for cfg in create_irq_nr() and
+destroy_irq() and take the desc->lock when checking the irq_cfg.
+
+Reported-and-analyzed-by: Brandon Philips <bphilips@suse.de>
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Signed-off-by: Brandon Phiilps <bphilips@suse.de>
+Cc: stable@kernel.org
 
 ---
-Subject: i915 / PM: Fix crash while aborting hibernation
-From: Rafael J. Wysocki <rjw@sisk.pl>
+ arch/x86/kernel/apic/io_apic.c |   20 +++------------
+ include/linux/irq.h            |    2 +
+ kernel/irq/chip.c              |   52 +++++++++++++++++++++++++++++++++--------
+ 3 files changed, 50 insertions(+), 24 deletions(-)
 
-Commit cbda12d77ea590082edb6d30bd342a67ebc459e0 (drm/i915: implement
-new pm ops for i915) introduced the problem that if s2disk
-hibernation is aborted, the system will crash, because
-i915_pm_freeze() does nothing, while it should at least reverse some
-operations carried out by i915_suspend().
-
-Fix this issue by splitting the i915 suspend into a freeze part a
-suspend part, where the latter is not executed before creating a
-hibernation image, and the i915 resume into a "low-level" resume
-part and a thaw part, where the former is not executed after the
-image has been created.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/gpu/drm/i915/i915_drv.c |  168 ++++++++++++++++++++++++----------------
- 1 file changed, 101 insertions(+), 67 deletions(-)
-
-Index: linux-2.6/drivers/gpu/drm/i915/i915_drv.c
+Index: linux-2.6/arch/x86/kernel/apic/io_apic.c
 ===================================================================
---- linux-2.6.orig/drivers/gpu/drm/i915/i915_drv.c
-+++ linux-2.6/drivers/gpu/drm/i915/i915_drv.c
-@@ -175,78 +175,100 @@ const static struct pci_device_id pciidl
- MODULE_DEVICE_TABLE(pci, pciidlist);
- #endif
+--- linux-2.6.orig/arch/x86/kernel/apic/io_apic.c
++++ linux-2.6/arch/x86/kernel/apic/io_apic.c
+@@ -3228,12 +3228,9 @@ unsigned int create_irq_nr(unsigned int
+ 	}
+ 	spin_unlock_irqrestore(&vector_lock, flags);
  
--static int i915_suspend(struct drm_device *dev, pm_message_t state)
-+static int i915_drm_freeze(struct drm_device *dev)
- {
--	struct drm_i915_private *dev_priv = dev->dev_private;
--
--	if (!dev || !dev_priv) {
--		DRM_ERROR("dev: %p, dev_priv: %p\n", dev, dev_priv);
--		DRM_ERROR("DRM not initialized, aborting suspend.\n");
--		return -ENODEV;
+-	if (irq > 0) {
+-		dynamic_irq_init(irq);
+-		/* restore it, in case dynamic_irq_init clear it */
+-		if (desc_new)
+-			desc_new->chip_data = cfg_new;
 -	}
--
--	if (state.event == PM_EVENT_PRETHAW)
--		return 0;
--
- 	pci_save_state(dev->pdev);
- 
- 	/* If KMS is active, we do the leavevt stuff here */
- 	if (drm_core_check_feature(dev, DRIVER_MODESET)) {
--		if (i915_gem_idle(dev))
-+		int error = i915_gem_idle(dev);
-+		if (error) {
- 			dev_err(&dev->pdev->dev,
--				"GEM idle failed, resume may fail\n");
-+				"GEM idle failed, resume might fail\n");
-+			return error;
-+		}
- 		drm_irq_uninstall(dev);
- 	}
- 
- 	i915_save_state(dev);
- 
-+	return 0;
-+}
++	if (irq > 0)
++		dynamic_irq_init_keep_chip_data(irq);
 +
-+static void i915_drm_suspend(struct drm_device *dev)
-+{
-+	struct drm_i915_private *dev_priv = dev->dev_private;
-+
- 	intel_opregion_free(dev, 1);
- 
-+	/* Modeset on resume, not lid events */
-+	dev_priv->modeset_on_lid = 0;
-+}
-+
-+static int i915_suspend(struct drm_device *dev, pm_message_t state)
-+{
-+	int error;
-+
-+	if (!dev || !dev->dev_private) {
-+		DRM_ERROR("dev: %p\n", dev);
-+		DRM_ERROR("DRM not initialized, aborting suspend.\n");
-+		return -ENODEV;
-+	}
-+
-+	if (state.event == PM_EVENT_PRETHAW)
-+		return 0;
-+
-+	error = i915_drm_freeze(dev);
-+	if (error)
-+		return error;
-+
-+	i915_drm_suspend(dev);
-+
- 	if (state.event == PM_EVENT_SUSPEND) {
- 		/* Shut down the device */
- 		pci_disable_device(dev->pdev);
- 		pci_set_power_state(dev->pdev, PCI_D3hot);
- 	}
- 
--	/* Modeset on resume, not lid events */
--	dev_priv->modeset_on_lid = 0;
--
- 	return 0;
+ 	return irq;
  }
  
--static int i915_resume(struct drm_device *dev)
-+static int i915_drm_thaw(struct drm_device *dev)
+@@ -3255,19 +3252,12 @@ int create_irq(void)
+ void destroy_irq(unsigned int irq)
  {
- 	struct drm_i915_private *dev_priv = dev->dev_private;
--	int ret = 0;
--
--	if (pci_enable_device(dev->pdev))
--		return -1;
--	pci_set_master(dev->pdev);
--
--	i915_restore_state(dev);
--
--	intel_opregion_init(dev, 1);
-+	int error = 0;
+ 	unsigned long flags;
+-	struct irq_cfg *cfg;
+-	struct irq_desc *desc;
  
- 	/* KMS EnterVT equivalent */
- 	if (drm_core_check_feature(dev, DRIVER_MODESET)) {
- 		mutex_lock(&dev->struct_mutex);
- 		dev_priv->mm.suspended = 0;
+-	/* store it, in case dynamic_irq_cleanup clear it */
+-	desc = irq_to_desc(irq);
+-	cfg = desc->chip_data;
+-	dynamic_irq_cleanup(irq);
+-	/* connect back irq_cfg */
+-	desc->chip_data = cfg;
++	dynamic_irq_cleanup_keep_chip_data(irq);
  
--		ret = i915_gem_init_ringbuffer(dev);
--		if (ret != 0)
--			ret = -1;
-+		error = i915_gem_init_ringbuffer(dev);
- 		mutex_unlock(&dev->struct_mutex);
+ 	free_irte(irq);
+ 	spin_lock_irqsave(&vector_lock, flags);
+-	__clear_irq_vector(irq, cfg);
++	__clear_irq_vector(irq, get_irq_chip_data(irq));
+ 	spin_unlock_irqrestore(&vector_lock, flags);
+ }
  
- 		drm_irq_install(dev);
--	}
--	if (drm_core_check_feature(dev, DRIVER_MODESET)) {
-+
- 		/* Resume the modeset for every activated CRTC */
- 		drm_helper_resume_force_mode(dev);
- 	}
+Index: linux-2.6/include/linux/irq.h
+===================================================================
+--- linux-2.6.orig/include/linux/irq.h
++++ linux-2.6/include/linux/irq.h
+@@ -400,7 +400,9 @@ static inline int irq_has_action(unsigne
  
- 	dev_priv->modeset_on_lid = 0;
+ /* Dynamic irq helper functions */
+ extern void dynamic_irq_init(unsigned int irq);
++void dynamic_irq_init_keep_chip_data(unsigned int irq);
+ extern void dynamic_irq_cleanup(unsigned int irq);
++void dynamic_irq_cleanup_keep_chip_data(unsigned int irq);
  
--	return ret;
-+	return error;
-+}
-+
-+static int i915_resume(struct drm_device *dev)
-+{
-+	if (pci_enable_device(dev->pdev))
-+		return -EIO;
-+
-+	pci_set_master(dev->pdev);
-+
-+	i915_restore_state(dev);
-+
-+	intel_opregion_init(dev, 1);
-+
-+	return i915_drm_thaw(dev);
+ /* Set/get chip/data for an IRQ: */
+ extern int set_irq_chip(unsigned int irq, struct irq_chip *chip);
+Index: linux-2.6/kernel/irq/chip.c
+===================================================================
+--- linux-2.6.orig/kernel/irq/chip.c
++++ linux-2.6/kernel/irq/chip.c
+@@ -18,11 +18,7 @@
+ 
+ #include "internals.h"
+ 
+-/**
+- *	dynamic_irq_init - initialize a dynamically allocated irq
+- *	@irq:	irq number to initialize
+- */
+-void dynamic_irq_init(unsigned int irq)
++static void dynamic_irq_init_x(unsigned int irq, bool keep_chip_data)
+ {
+ 	struct irq_desc *desc;
+ 	unsigned long flags;
+@@ -41,7 +37,8 @@ void dynamic_irq_init(unsigned int irq)
+ 	desc->depth = 1;
+ 	desc->msi_desc = NULL;
+ 	desc->handler_data = NULL;
+-	desc->chip_data = NULL;
++	if (!keep_chip_data)
++		desc->chip_data = NULL;
+ 	desc->action = NULL;
+ 	desc->irq_count = 0;
+ 	desc->irqs_unhandled = 0;
+@@ -55,10 +52,26 @@ void dynamic_irq_init(unsigned int irq)
  }
  
  /**
-@@ -387,57 +409,69 @@ i915_pci_remove(struct pci_dev *pdev)
- 	drm_put_dev(dev);
- }
- 
--static int
--i915_pci_suspend(struct pci_dev *pdev, pm_message_t state)
-+static int i915_pm_suspend(struct device *dev)
+- *	dynamic_irq_cleanup - cleanup a dynamically allocated irq
++ *	dynamic_irq_init - initialize a dynamically allocated irq
+  *	@irq:	irq number to initialize
+  */
+-void dynamic_irq_cleanup(unsigned int irq)
++void dynamic_irq_init(unsigned int irq)
++{
++	dynamic_irq_init_x(irq, false);
++}
++
++/**
++ *	dynamic_irq_init_keep_chip_data - initialize a dynamically allocated irq
++ *	@irq:	irq number to initialize
++ *
++ * 	does not set irq_to_desc(irq)->chip_data to NULL
++ */
++void dynamic_irq_init_keep_chip_data(unsigned int irq)
++{
++	dynamic_irq_init_x(irq, true);
++}
++
++static void dynamic_irq_cleanup_x(unsigned int irq, bool keep_chip_data)
  {
--	struct drm_device *dev = pci_get_drvdata(pdev);
-+	struct pci_dev *pdev = to_pci_dev(dev);
-+	struct drm_device *drm_dev = pci_get_drvdata(pdev);
-+	int error;
- 
--	return i915_suspend(dev, state);
--}
-+	if (!drm_dev || !drm_dev->dev_private) {
-+		dev_err(dev, "DRM not initialized, aborting suspend.\n");
-+		return -ENODEV;
-+	}
- 
--static int
--i915_pci_resume(struct pci_dev *pdev)
--{
--	struct drm_device *dev = pci_get_drvdata(pdev);
-+	error = i915_drm_freeze(drm_dev);
-+	if (error)
-+		return error;
- 
--	return i915_resume(dev);
--}
-+	i915_drm_suspend(drm_dev);
- 
--static int
--i915_pm_suspend(struct device *dev)
--{
--	return i915_pci_suspend(to_pci_dev(dev), PMSG_SUSPEND);
--}
-+	pci_disable_device(pdev);
-+	pci_set_power_state(pdev, PCI_D3hot);
- 
--static int
--i915_pm_resume(struct device *dev)
--{
--	return i915_pci_resume(to_pci_dev(dev));
-+	return 0;
+ 	struct irq_desc *desc = irq_to_desc(irq);
+ 	unsigned long flags;
+@@ -77,7 +90,8 @@ void dynamic_irq_cleanup(unsigned int ir
+ 	}
+ 	desc->msi_desc = NULL;
+ 	desc->handler_data = NULL;
+-	desc->chip_data = NULL;
++	if (!keep_chip_data)
++		desc->chip_data = NULL;
+ 	desc->handle_irq = handle_bad_irq;
+ 	desc->chip = &no_irq_chip;
+ 	desc->name = NULL;
+@@ -85,6 +99,26 @@ void dynamic_irq_cleanup(unsigned int ir
+ 	raw_spin_unlock_irqrestore(&desc->lock, flags);
  }
  
--static int
--i915_pm_freeze(struct device *dev)
-+static int i915_pm_resume(struct device *dev)
- {
--	return i915_pci_suspend(to_pci_dev(dev), PMSG_FREEZE);
-+	struct pci_dev *pdev = to_pci_dev(dev);
-+	struct drm_device *drm_dev = pci_get_drvdata(pdev);
++/**
++ *	dynamic_irq_cleanup - cleanup a dynamically allocated irq
++ *	@irq:	irq number to initialize
++ */
++void dynamic_irq_cleanup(unsigned int irq)
++{
++	dynamic_irq_cleanup_x(irq, false);
++}
 +
-+	return i915_resume(drm_dev);
- }
++/**
++ *	dynamic_irq_cleanup_keep_chip_data - cleanup a dynamically allocated irq
++ *	@irq:	irq number to initialize
++ *
++ * 	does not set irq_to_desc(irq)->chip_data to NULL
++ */
++void dynamic_irq_cleanup_keep_chip_data(unsigned int irq)
++{
++	dynamic_irq_cleanup_x(irq, true);
++}
++
  
--static int
--i915_pm_thaw(struct device *dev)
-+static int i915_pm_freeze(struct device *dev)
- {
--	/* thaw during hibernate, do nothing! */
--	return 0;
-+	struct pci_dev *pdev = to_pci_dev(dev);
-+	struct drm_device *drm_dev = pci_get_drvdata(pdev);
-+
-+	if (!drm_dev || !drm_dev->dev_private) {
-+		dev_err(dev, "DRM not initialized, aborting suspend.\n");
-+		return -ENODEV;
-+	}
-+
-+	return i915_drm_freeze(drm_dev);
- }
- 
--static int
--i915_pm_poweroff(struct device *dev)
-+static int i915_pm_thaw(struct device *dev)
- {
--	return i915_pci_suspend(to_pci_dev(dev), PMSG_HIBERNATE);
-+	struct pci_dev *pdev = to_pci_dev(dev);
-+	struct drm_device *drm_dev = pci_get_drvdata(pdev);
-+
-+	return i915_drm_thaw(drm_dev);
- }
- 
--static int
--i915_pm_restore(struct device *dev)
-+static int i915_pm_poweroff(struct device *dev)
- {
--	return i915_pci_resume(to_pci_dev(dev));
-+	struct pci_dev *pdev = to_pci_dev(dev);
-+	struct drm_device *drm_dev = pci_get_drvdata(pdev);
-+	int error;
-+
-+	error = i915_drm_freeze(drm_dev);
-+	if (!error)
-+		i915_drm_suspend(drm_dev);
-+
-+	return error;
- }
- 
- const struct dev_pm_ops i915_pm_ops = {
-@@ -446,7 +480,7 @@ const struct dev_pm_ops i915_pm_ops = {
-      .freeze = i915_pm_freeze,
-      .thaw = i915_pm_thaw,
-      .poweroff = i915_pm_poweroff,
--     .restore = i915_pm_restore,
-+     .restore = i915_pm_resume,
- };
- 
- static struct vm_operations_struct i915_gem_vm_ops = {
+ /**
+  *	set_irq_chip - set the irq chip for an irq
