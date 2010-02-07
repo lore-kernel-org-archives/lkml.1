@@ -1,16 +1,15 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757310Ab0BGWp4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Feb 2010 17:45:56 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:55152 "EHLO ogre.sisk.pl"
+	id S1757139Ab0BGWpx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Feb 2010 17:45:53 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:55150 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756678Ab0BGWps convert rfc822-to-8bit (ORCPT
+	id S1756665Ab0BGWps convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 7 Feb 2010 17:45:48 -0500
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
        Maciej Rutecki <maciej.rutecki@gmail.com>,
-       "Arnd Hannemann" <hannemann@nets.rwth-aachen.de>,
-       "Daniel Mack" <daniel@caiaq.de>
+       "Roman Mamedov" <roman@rm.pp.ru>
 References: <4Ht3jFrT7uE.A.JI.-nzbLB@chimera>
 In-Reply-To: <4Ht3jFrT7uE.A.JI.-nzbLB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -18,8 +17,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <445R0ey9hAI.A.K-B.epzbLB@chimera>
-Subject: [Bug #15039] leds_alix2: can't allocate I/O for GPIO
+Message-ID: <445R0ey9hAI.A.xxB.ZpzbLB@chimera>
+Subject: [Bug #15044] Much higher wakeups for "<kernel IPI> : Rescheduling interrupts" since 2.6.32.2
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Sun,  7 Feb 2010 23:28:49 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -34,12 +33,9 @@ from 2.6.32.  Please verify if it still should be listed and let the tracking te
 know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15039
-Subject		: leds_alix2: can't allocate I/O for GPIO
-Submitter	: Arnd Hannemann <hannemann@nets.rwth-aachen.de>
-Date		: 2010-01-07 10:26 (32 days old)
-References	: http://marc.info/?l=linux-kernel&m=126286001106257&w=4
-Handled-By	: Daniel Mack <daniel@caiaq.de>
-Patch		: http://patchwork.kernel.org/patch/72006/
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15044
+Subject		: Much higher wakeups for "<kernel IPI> : Rescheduling interrupts" since 2.6.32.2
+Submitter	: Roman Mamedov <roman@rm.pp.ru>
+Date		: 2010-01-11 02:58 (28 days old)
 
 
