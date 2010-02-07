@@ -1,44 +1,39 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755183Ab0BGOSZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Feb 2010 09:18:25 -0500
-Received: from kroah.org ([198.145.64.141]:60414 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754206Ab0BGOSY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Feb 2010 09:18:24 -0500
-Date: Sun, 7 Feb 2010 06:14:45 -0800
-From: Greg KH <greg@kroah.com>
-To: wzt wzt <wzt.wzt@gmail.com>
-Cc: linux-kernel@vger.kernel.org, sds@tycho.nsa.gov, jmorris@namei.org,
-       eparis@parisplace.org
-Subject: Re: [PATCH] LSM: add static to security_ops variable
-Message-ID: <20100207141445.GA19744@kroah.com>
-References: <628d1651002070324w424012eanda9392db26331905@mail.gmail.com>
+	id S1755503Ab0BGOgo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Feb 2010 09:36:44 -0500
+Received: from mail.fem.tu-ilmenau.de ([141.24.101.79]:38445 "EHLO
+	mail.fem.tu-ilmenau.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751141Ab0BGOgn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Feb 2010 09:36:43 -0500
+From: Johannes Hirte <johannes.hirte@fem.tu-ilmenau.de>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Subject: Re: BUG: Bad page state in process portageq
+Date: Sun, 7 Feb 2010 15:36:36 +0100
+User-Agent: KMail/1.13.0 (Linux/2.6.33-rc6-00228-g56dca4c; KDE/4.3.98; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <201002070145.47514.johannes.hirte@fem.tu-ilmenau.de> <20100207132331.GA4138@x200>
+In-Reply-To: <20100207132331.GA4138@x200>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <628d1651002070324w424012eanda9392db26331905@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002071536.37512.johannes.hirte@fem.tu-ilmenau.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 07, 2010 at 07:24:44PM +0800, wzt wzt wrote:
-> security_ops was declared as a global variable, so other drivers or
-> kernel code can easily change its value, like:
+Am Sonntag 07 Februar 2010 14:23:31 schrieb Alexey Dobriyan:
+> On Sun, Feb 07, 2010 at 01:45:46AM +0100, Johannes Hirte wrote:
+> > Feb  6 20:47:45 datengrab kernel: BUG: Bad page state in process portageq
+> > pfn:2846d
 > 
-> extern struct security_operations *security_ops;
-> security_ops = NULL;
-> 
-> then insmod this driver immediately, it will get an oops.  Other evil
-> drivers can aslo fake this variable as extern.
+> Run memtest.
 
-Evil drivers can do lots of things, if you can load a kernel module on
-the system, all bets are off.  Just making this a private variable does
-not mean much.
+Sorry forgot to mention, the machine is with ECC RAM equipped. So if there are 
+any memory errors, shouldn't I find something in the logs, either BIOS or by 
+the edac driver?
 
-What external module are you trying to keep from using this variable?
-
-thanks,
-
-greg k-h
+regards,
+  Johannes
