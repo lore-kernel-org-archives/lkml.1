@@ -1,84 +1,151 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756903Ab0BGTBB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Feb 2010 14:01:01 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:58777 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753505Ab0BGTA7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Feb 2010 14:00:59 -0500
-Message-ID: <4B6F0DE5.7060100@redhat.com>
-Date: Sun, 07 Feb 2010 13:00:53 -0600
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
-MIME-Version: 1.0
-To: "Michael S. Tsirkin" <mst@redhat.com>
-CC: "Theodore Ts'o" <tytso@mit.edu>, Andreas Dilger <adilger@sun.com>,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.33-rc6: ext4 triggers warning about high order allocations
-References: <20100203060854.GA12489@redhat.com> <4B69AB60.5070609@redhat.com> <20100203175836.GA16907@redhat.com> <4B69CCE4.3000904@redhat.com> <20100207123032.GA3220@redhat.com>
-In-Reply-To: <20100207123032.GA3220@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S1757227Ab0BGTMj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Feb 2010 14:12:39 -0500
+Received: from 87-194-149-168.bethere.co.uk ([87.194.149.168]:57758 "EHLO
+	svr2.cnick.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756543Ab0BGTMi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Feb 2010 14:12:38 -0500
+X-Greylist: delayed 874 seconds by postgrey-1.27 at vger.kernel.org; Sun, 07 Feb 2010 14:12:37 EST
+From: chris.nicholson@cnick.org.uk
+To: gregkh@suse.de, andrew@lunn.ch
+Cc: devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org,
+       Chris Nicholson <chris@localhost.localdomain>
+Subject: [PATCH] Staging: batman-adv: fix checkpatch.pl issues in hard-interface.c This is a patch to the hard-interface.c file that fixes up the checkpatch.pl issues Signed-off-by: Chris Nicholson <chris.nicholson@cnick.org.uk>
+Date: Sun,  7 Feb 2010 18:57:43 +0000
+Message-Id: <1265569063-3973-1-git-send-email-chris.nicholson@cnick.org.uk>
+X-Mailer: git-send-email 1.6.6
+X-OriginalArrivalTime: 07 Feb 2010 18:57:40.0411 (UTC) FILETIME=[6C16E0B0:01CAA827]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael S. Tsirkin wrote:
-> On Wed, Feb 03, 2010 at 01:22:12PM -0600, Eric Sandeen wrote:
->> Michael S. Tsirkin wrote:
->>> On Wed, Feb 03, 2010 at 10:59:12AM -0600, Eric Sandeen wrote:
->>>> Michael S. Tsirkin wrote:
->>>>> Hi!
->>>>> I got this warning at boot with 2.6.33-rc6:
->>>>>
->>>>> [   12.374168] ------------[ cut here ]------------
->>>>> [   12.375798] WARNING: at mm/page_alloc.c:1813 __alloc_pages_nodemask+0x180/0x666()
->>>>> [   12.377401] Hardware name: 2241B48
->>>>> [   12.378984] Modules linked in: [last unloaded: scsi_wait_scan]
->>>>> [   12.380593] Pid: 1, comm: init Not tainted 2.6.33-rc6-aa-nopat #50
->>>>> [   12.382194] Call Trace:
->>>>> [   12.383781]  [<ffffffff810b6b3e>] ? __alloc_pages_nodemask+0x180/0x666
->>>>> [   12.385390]  [<ffffffff81041cda>] warn_slowpath_common+0x77/0xa4
->>>>> [   12.386996]  [<ffffffff81041d16>] warn_slowpath_null+0xf/0x11
->>>>> [   12.388577]  [<ffffffff810b6b3e>] __alloc_pages_nodemask+0x180/0x666
->>>>> [   12.390168]  [<ffffffff81036a9b>] ? finish_task_switch+0x4b/0xb1
->>>>> [   12.391758]  [<ffffffff810b7036>] __get_free_pages+0x12/0x4f
->>>>> [   12.393354]  [<ffffffff810de892>] __kmalloc+0x42/0x116
->>>>> [   12.394934]  [<ffffffff812405bf>] match_number+0x35/0x98
->>>>> [   12.396493]  [<ffffffff8124064d>] match_int+0xb/0xd
->>>>> [   12.398045]  [<ffffffff81169c8c>] parse_options+0x5fe/0x733
->>>>> [   12.399594]  [<ffffffff811058c3>] ? __wait_on_buffer+0x1f/0x21
->>>>> [   12.401157]  [<ffffffff8116a2dc>] ext4_fill_super+0x373/0x2070
->>>> Are you mounting with any interesting options?
->>>>
->>>> -Eric
->>> Hmm yes:
->>>
->>> UUID=4670fcf0-09a8-4011-bf25-6e5e97f263c6 /                       ext4
->>> relatime,errors=remount-ro,auto_da_alloc,commit=300,journal_ioprio=7
->>                              ^^^^
->>
->> it's the auto_da_alloc option, which optionally takes a =X argument.
->> I think someone changed match_one() and broke it;
-> 
-> patch?
+From: Chris Nicholson <chris@localhost.localdomain>
 
-http://marc.info/?l=linux-ext4&m=126523161410367&w=2
+---
+ drivers/staging/batman-adv/hard-interface.c |   40 +++++++++++++++++---------
+ 1 files changed, 26 insertions(+), 14 deletions(-)
 
-should fix it.  I'm not sure what started tripping this upstream.
+diff --git a/drivers/staging/batman-adv/hard-interface.c b/drivers/staging/batman-adv/hard-interface.c
+index 5ea35da..c4ed846 100644
+--- a/drivers/staging/batman-adv/hard-interface.c
++++ b/drivers/staging/batman-adv/hard-interface.c
+@@ -87,9 +87,15 @@ static void check_known_mac_addr(uint8_t *addr)
+ 			continue;
+ 
+ 		addr_to_string(mac_string, addr);
+-		debug_log(LOG_TYPE_WARN, "The newly added mac address (%s) already exists on: %s\n",
+-		          mac_string, batman_if->dev);
+-		debug_log(LOG_TYPE_WARN, "It is strongly recommended to keep mac addresses unique to avoid problems!\n");
++		debug_log(LOG_TYPE_WARN, "The newly added mac address (%s) "
++							"already exists on: "
++							"%s\n",
++							mac_string,
++							batman_if->dev);
++		debug_log(LOG_TYPE_WARN, "It is strongly recommended to "
++							"keep mac addresses "
++							"unique avoid problems!"
++							"\n");
+ 	}
+ 	rcu_read_unlock();
+ }
+@@ -121,7 +127,8 @@ static int hardif_is_interface_up(char *dev)
+ 	if ((!list_empty(&if_list)) &&
+ 	    strncmp(((struct batman_if *)if_list.next)->dev, dev, IFNAMSIZ) &&
+ 	    !(((struct batman_if *)if_list.next)->if_active == IF_ACTIVE) &&
+-	    !(((struct batman_if *)if_list.next)->if_active == IF_TO_BE_ACTIVATED) &&
++	    !(((struct batman_if *)if_list.next)->if_active ==
++							IF_TO_BE_ACTIVATED) &&
+ 	    (!main_if_was_up())) {
+ 		rcu_read_unlock();
+ 		goto end;
+@@ -172,7 +179,7 @@ void hardif_deactivate_interface(struct batman_if *batman_if)
+ 	active_ifs--;
+ 
+ 	debug_log(LOG_TYPE_NOTICE, "Interface deactivated: %s\n",
+-	          batman_if->dev);
++							batman_if->dev);
+ }
+ 
+ /* (re)activate given interface. */
+@@ -236,7 +243,7 @@ static void hardif_activate_interface(struct batman_if *batman_if)
+ 		set_main_if_addr(batman_if->net_dev->dev_addr);
+ 
+ 	debug_log(LOG_TYPE_NOTICE, "Interface activated: %s\n",
+-	          batman_if->dev);
++							batman_if->dev);
+ 
+ 	return;
+ 
+@@ -324,7 +331,8 @@ int hardif_add_interface(char *dev, int if_num)
+ 	batman_if = kmalloc(sizeof(struct batman_if), GFP_KERNEL);
+ 
+ 	if (!batman_if) {
+-		debug_log(LOG_TYPE_WARN, "Can't add interface (%s): out of memory\n", dev);
++		debug_log(LOG_TYPE_WARN, "Can't add interface (%s): out of "
++							"memory\n", dev);
+ 		return -1;
+ 	}
+ 
+@@ -339,7 +347,8 @@ int hardif_add_interface(char *dev, int if_num)
+ 	batman_if->packet_buff = kmalloc(batman_if->packet_len, GFP_KERNEL);
+ 
+ 	if (!batman_if->packet_buff) {
+-		debug_log(LOG_TYPE_WARN, "Can't add interface packet (%s): out of memory\n", dev);
++		debug_log(LOG_TYPE_WARN, "Can't add interface packet (%s): out "
++							"of memory\n", dev);
+ 		goto out;
+ 	}
+ 
+@@ -389,7 +398,10 @@ int hardif_add_interface(char *dev, int if_num)
+ 	spin_unlock(&orig_hash_lock);
+ 
+ 	if (!hardif_is_interface_up(batman_if->dev))
+-		debug_log(LOG_TYPE_WARN, "Not using interface %s (retrying later): interface not active\n", batman_if->dev);
++		debug_log(LOG_TYPE_WARN, "Not using interface %s (retrying "
++							"later): interface "
++							"not active\n",
++							batman_if->dev);
+ 	else
+ 		hardif_activate_interface(batman_if);
+ 
+@@ -400,8 +412,7 @@ int hardif_add_interface(char *dev, int if_num)
+ 	return 1;
+ 
+ out:
+-	if (batman_if->packet_buff)
+-		kfree(batman_if->packet_buff);
++	kfree(batman_if->packet_buff);
+ 	kfree(batman_if);
+ 	kfree(dev);
+ 	return -1;
+@@ -413,7 +424,7 @@ char hardif_get_active_if_num(void)
+ }
+ 
+ static int hard_if_event(struct notifier_block *this,
+-                            unsigned long event, void *ptr)
++					unsigned long event, void *ptr)
+ {
+ 	struct net_device *dev = (struct net_device *)ptr;
+ 	struct batman_if *batman_if = get_batman_if_by_name(dev->name);
+@@ -436,7 +447,8 @@ static int hard_if_event(struct notifier_block *this,
+ 		break;
+ 	/* NETDEV_CHANGEADDR - mac address change - what are we doing here ? */
+ 	default:
+-		/* debug_log(LOG_TYPE_CRIT, "hard_if_event: %s %i\n", dev->name, event); */
++		/* debug_log(LOG_TYPE_CRIT, "hard_if_event: %s %i\n",
++							 dev->name, event); */
+ 		break;
+ 	};
+ 
+@@ -447,5 +459,5 @@ out:
+ }
+ 
+ struct notifier_block hard_if_notifier = {
+-        .notifier_call = hard_if_event,
++	.notifier_call = hard_if_event,
+ };
+-- 
+1.6.6
 
->> auto_da_alloc is
->> the default anyway, so you can just drop this for now.
->>
->> -Eric
-> 
-> 
-> I have removed auto_da_alloc option, but still see a warning at boot:
-
-Any chance you've still got it in an initrd or grub rootfs options, or similar?
-
-if not, perhaps you can narrow it down to which filesystem & which mount
-option is triggering this.
-
-Thanks,
--Eric
