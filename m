@@ -1,75 +1,59 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754358Ab0BHTPv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 14:15:51 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:38244 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754319Ab0BHTPs (ORCPT
+	id S1754324Ab0BHTQ2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 14:16:28 -0500
+Received: from mail-ew0-f228.google.com ([209.85.219.228]:41967 "EHLO
+	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754159Ab0BHTQ0 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 14:15:48 -0500
+	Mon, 8 Feb 2010 14:16:26 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=V/4Ee0spHeiku1tQPjQCzhkXrqJhZ8Sg9eCLIn1D+eHTuCEZIxiZb2D2+eHSkUE00K
-         +7mj58L3d6Q7gKxCoJRD44Ej1hfVtsHxVgJYzA7+hWTtBvf1ooslEFcP5qeywveYctUZ
-         T2zaQb+QOg1aOLOxdWQPK6xyGxIiGZoCPSmaU=
-Message-ID: <4B7062DF.2020005@gmail.com>
-Date: Mon, 08 Feb 2010 20:15:43 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.7) Gecko/20100111 SUSE/3.0.1-9.1 Thunderbird/3.0.1
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=i92S5p+ItcWt/2nlYsDgGp2KqyUCSzHFt6yLMO0QukTi0UBmAlW67ZL5Qw5lx6s7oy
+         pmUQ/15m+nZB/O6D75I4PzHnBKu9QYE/AhYsog+OP8jwO4YqyYp/Qgv44yuSmdzrUT+u
+         OZjMajqAFXySj/0FeiqOgfHf4cQupFx+445ME=
 MIME-Version: 1.0
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-CC: Jiri Slaby <jslaby@suse.cz>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org, x86@kernel.org,
-       Aristeu Sergio <arozansk@redhat.com>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>
-Subject: Re: [PATCH 1/1] X86: pci, fix section mismatch
-References: <1264756956-30006-1-git-send-email-jslaby@suse.cz> <20100208104426.50bef125@jbarnes-piketon>
-In-Reply-To: <20100208104426.50bef125@jbarnes-piketon>
+In-Reply-To: <445R0ey9hAI.A.2jB.iozbLB@chimera>
+References: <4Ht3jFrT7uE.A.JI.-nzbLB@chimera>
+	 <445R0ey9hAI.A.2jB.iozbLB@chimera>
+Date: Mon, 8 Feb 2010 20:16:24 +0100
+X-Google-Sender-Auth: f8bbe6e919f5d746
+Message-ID: <e2e108261002081116m5c13d081p161d8697464253f1@mail.gmail.com>
+Subject: Re: [Bug #15177] Asynchronous writes up to 30% slower than in 
+	previous kernel versions
+From: Bart Van Assche <bvanassche@acm.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Jens Axboe <jens.axboe@oracle.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/08/2010 07:44 PM, Jesse Barnes wrote:
-> On Fri, 29 Jan 2010 10:22:36 +0100
-> Jiri Slaby <jslaby@suse.cz> wrote:
-> 
->> pcibios_scan_specific_bus calls pci_scan_bus_on_node which is
->> __devinit. Mark pcibios_scan_specific_bus __devinit as well since
->> all users are now __init or __devinit.
->>
->> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
->> Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
->> Cc: linux-pci@vger.kernel.org
->> Cc: x86@kernel.org
->> ---
->>  arch/x86/pci/legacy.c |    2 +-
->>  1 files changed, 1 insertions(+), 1 deletions(-)
->>
->> diff --git a/arch/x86/pci/legacy.c b/arch/x86/pci/legacy.c
->> index a8194c8..8cf7835 100644
->> --- a/arch/x86/pci/legacy.c
->> +++ b/arch/x86/pci/legacy.c
->> @@ -39,7 +39,7 @@ static int __init pci_legacy_init(void)
->>  	return 0;
->>  }
->>  
->> -void pcibios_scan_specific_bus(int busn)
->> +void __devinit pcibios_scan_specific_bus(int busn)
->>  {
->>  	int devfn;
->>  	long node;
-> 
-> Does this apply to some x86 tree that I can't see?  Neither my tree nor
-> the -tip tree has this function and I don't see it in the history.
+On Sun, Feb 7, 2010 at 11:28 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>
+> This message has been generated automatically as a part of a summary report
+> of recent regressions.
+>
+> The following bug entry is on the current list of known regressions
+> from 2.6.32.  Please verify if it still should be listed and let the tracking team
+> know (either way).
+>
+>
+> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=15177
+> Subject         : Asynchronous writes up to 30% slower than in previous kernel versions
+> Submitter       : Bart Van Assche <bart.vanassche@gmail.com>
+> Date            : 2010-01-30 16:38 (9 days old)
 
-Ah, this seems to come from
-git://git.kernel.org/pub/scm/linux/kernel/git/mchehab/i7core.git#linux_next
+The regression compared to 2.6.32 is solved in 2.6.33-rc7 for the
+specific test mentioned in the Bugzilla entry. The regression compared
+to 2.6.28 is not yet solved though, so I'm not sure what should happen
+with this bug entry.
 
-as SHA:
-a120a84ebbc4cbc9c1addddd2b491e3683b842a6
-
-I'll resend to Mauro.
+Bart.
