@@ -1,57 +1,71 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754168Ab0BHKUM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 05:20:12 -0500
-Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:65221 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751839Ab0BHKUK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 05:20:10 -0500
-Subject: Re: USB mass storage and ARM cache coherency
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Andreas Mohr <andi@lisas.de>
-Cc: Pavel Machek <pavel@ucw.cz>,
-       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Ming Lei <tom.leiming@gmail.com>, linux-usb@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Sebastian Siewior <bigeasy@linutronix.de>, Greg KH <greg@kroah.com>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
-In-Reply-To: <20100208073334.GB7171@rhlx01.hs-esslingen.de>
-References: <20100208073334.GB7171@rhlx01.hs-esslingen.de>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Mon, 08 Feb 2010 10:19:44 +0000
-Message-Id: <1265624384.4020.25.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	id S1755303Ab0BHK1f (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 05:27:35 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:14682 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754942Ab0BHK1d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Feb 2010 05:27:33 -0500
+Message-ID: <4B6FE70C.6020107@redhat.com>
+Date: Mon, 08 Feb 2010 12:27:24 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+MIME-Version: 1.0
+To: Rik van Riel <riel@redhat.com>
+CC: jdike@addtoit.com, kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+       aarcange@redhat.com, mtosatti@redhat.com
+Subject: Re: [PATCH] emulate accessed bit for EPT
+References: <20100203161103.11e2b572@annuminas.surriel.com>
+In-Reply-To: <20100203161103.11e2b572@annuminas.surriel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 08 Feb 2010 10:19:46.0036 (UTC) FILETIME=[3CBB4B40:01CAA8A8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-02-08 at 07:33 +0000, Andreas Mohr wrote:
-> On Mon, Feb 08, 2010 at 07:55:19AM +0100, Pavel Machek wrote:
-> > Plus it does unneccessary flushes on x86, etc...
-> 
-> Noticed that as well, there should be an arch-obeying helper for this.
-> 
-> 
-> On my MIPSEL, I had urb->transfer_buffer NULL ptr crashes
-> (I think that was expected in case of a certain DMA setup, Alan said).
-> 
-> However, even with NULL check added I still had:
-> 
-> hub 2-1.1:1.0: state 7 ports 7 chg 0000 evt 0010
-> Unhandled kernel unaligned access[#1]:
+On 02/03/2010 11:11 PM, Rik van Riel wrote:
+> Currently KVM pretends that pages with EPT mappings never got
+> accessed.  This has some side effects in the VM, like swapping
+> out actively used guest pages and needlessly breaking up actively
+> used hugepages.
+>
+> We can avoid those very costly side effects by emulating the
+> accessed bit for EPT PTEs, which should only be slightly costly
+> because pages pass through page_referenced infrequently.
+>
+> TLB flushing is taken care of by kvm_mmu_notifier_clear_flush_young().
+>
+> This seems to help prevent KVM guests from being swapped out when
+> they should not on my system.
+>
+>    
 
-Just to avoid confusion - that's a similar patch applied to a different
-driver. The ISP1760 HCD driver works fine with my patch (transfer_buffer
-never seems to be NULL with latest mainline). I can't comment on the
-ehci-q.c driver (it looks like it has some support for DMA while my
-patch only applies to PIO drivers where transfer_buffer should be set).
+Applied, thanks.
+
+>
+> -	/* always return old for EPT */
+> +	/*
+> +	 * Emulate the accessed bit for EPT, by checking if this page has
+> +	 * an EPT mapping, and clearing it if it does. On the next access,
+> +	 * a new EPT mapping will be established.
+> +	 * This has some overhead, but not as much as the cost of swapping
+> +	 * out actively used pages or breaking up actively used hugepages.
+> +	 */
+>   	if (!shadow_accessed_mask)
+> -		return 0;
+> +		return kvm_unmap_rmapp(kvm, rmapp, data);
+>    
+
+This could be optimized by using a software-available bit for 'present' 
+and the rwx bits for young, that is:
+
+   (present, rwx) -> the page is present and recently accessed, will not 
+cause EPT violation
+   (present, !rwx) -> page is present but old, will cause EPT violation 
+but not rmap games and get_user_pages_fast().
+
+However that's best done later if ever.
 
 -- 
-Catalin
+error compiling committee.c: too many arguments to function
 
