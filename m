@@ -1,55 +1,105 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754649Ab0BHUAl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 15:00:41 -0500
-Received: from outbound-mail-01.bluehost.com ([69.89.21.11]:49643 "HELO
-	outbound-mail-01.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753199Ab0BHUAj (ORCPT
+	id S1754622Ab0BHUNB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 15:13:01 -0500
+Received: from fmmailgate01.web.de ([217.72.192.221]:36905 "EHLO
+	fmmailgate01.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752965Ab0BHUM7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 15:00:39 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=lO7Y74MhiG3tlChqVxLbDHwia/Sojv3WuPwyPJCz6bIuZ9vJpPduh+R9BJFcYG3UWIU6vWLVGNA6aCru+y+bqiukDXnED7bVD8zs4hpNqFUE+IqoUkYuDoXCOevH7YmR;
-Date: Mon, 8 Feb 2010 11:59:24 -0800
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Tony Luck <tony.luck@intel.com>,
-       linux-pci@vger.kernel.org, Peter Haight <peterh@sapros.com>,
-       Gary Hade <garyhade@us.ibm.com>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org, Yinghai Lu <yinghai@kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Larry Finger <Larry.Finger@lwfinger.net>
-Subject: Re: [PATCH v1 3/7] PCI: split up pci_read_bridge_bases()
-Message-ID: <20100208115924.5a817027@jbarnes-piketon>
-In-Reply-To: <20100203233910.10803.74241.stgit@bob.kio>
-References: <20100203233617.10803.92102.stgit@bob.kio>
-	<20100203233910.10803.74241.stgit@bob.kio>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+	Mon, 8 Feb 2010 15:12:59 -0500
+From: Jan Kiszka <jan.kiszka@web.de>
+To: David Miller <davem@davemloft.net>, Karsten Keil <isdn@linux-pingi.de>
+Cc: linux-kernel@vger.kernel.org, i4ldeveloper@listserv.isdn4linux.de,
+       isdn4linux@listserv.isdn4linux.de, netdev@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Marcel Holtmann <marcel@holtmann.org>
+Subject: [PATCH v2 00/41] CAPI: Major rework, tons of bug fixes
+Date: Mon,  8 Feb 2010 21:12:04 +0100
+Message-Id: <cover.1265659933.git.jan.kiszka@web.de>
+X-Mailer: git-send-email 1.6.0.2
+X-Provags-ID: V01U2FsdGVkX19LdlgYFjL/DuLvC4NcWPrtjKH8N/2emUyHJotg
+	YInYfHSeRrw7RI83AKZ6taNzlgVtCQzyHV89wsTk65PghPPmza
+	TrQkXjBF8=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 03 Feb 2010 16:39:11 -0700
-Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
+Here is the second take of my CAPI rework. I tried to address all
+feedback on v1, so this one comes with the following changes:
 
-> 
-> No functional change; this breaks up pci_read_bridge_bases() into
-> separate pieces for the I/O, memory, and prefetchable memory windows,
-> similar to how Yinghai recently split up pci_setup_bridge() in
-> 68e84ff3bdc.
-> 
-> Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
-> ---
+ o rebased over net-next
+ o reworked locking of the NCCI TTY using latest and greatest tty_port
+   features and kref, hopefully in the right way
+ o more fine-grained patch steps for the tricky TTY rework
+ o dynamic major for NCCI TTYs, ie. CAPI no longer claims 191
+ o dynamic TTY minor registrations, completely obsoleting capifs
+ o schedule capifs for removal
+ o some small additional cleanups
 
-This one conflicts a bit with Yinghai's recent stuff.  Can you respin
-against my linux-next branch?  May as well do the whole series, then
-I'll just apply it in one go.
+I kept my capifs fixes though this thing should die in the future. The
+work is done, and people may still use it due to their distro
+configuration (and the hard-wired loading by capiinit - needs fixing).
 
-Thanks,
--- 
-Jesse Barnes, Intel Open Source Technology Center
+You can pull this series from
+
+	git://git.kiszka.org/linux-2.6.git capi
+
+Jan
+
+Jan Kiszka (41):
+  CAPI: Fix leaks in capifs_new_ncci
+  CAPI: Sanitize capifs API
+  CAPI: Eliminate capifs_root variable
+  CAPI: Pin capifs instead of mounting it
+  CAPI: Reduce chattiness during module loading/removal
+  CAPI: Call a controller 'controller', not 'card'
+  CAPI: Convert capi drivers rwlock into mutex
+  CAPI: Rework capi_ctr_ready/down
+  CAPI: Rework controller state notifier
+  CAPI: Rework locking of controller data structures
+  CAPI: Rework application locking
+  CAPI: Reduce #ifdef mess around CONFIG_ISDN_CAPI_MIDDLEWARE
+  CAPI: Convert capidev_list_lock into a mutex
+  CAPI: Clean up capi_open/release
+  CAPI: Rework locking of capidev members
+  CAPI: Use non-atomic allocation during NCCI setup
+  CAPI: Fix racy capi_read
+  CAPI: Switch NCCI list to standard doubly linked list
+  CAPI: Switch capiminor list to array
+  CAPI: Clean up capinc_tty_init/exit
+  CAPI: Dynamically register minor devices
+  CAPI: Use dynamic major for NCCI TTYs by default
+  CAPI: Use kref on capiminor
+  CAPI: Establish install/cleanup handlers for capiminor TTYs
+  CAPI: Use tty_port to keep track of capiminor's tty
+  CAPI: Drop remaining NULL checks on tty->driver_data
+  CAPI: Issue synchronous hangup on capincci_free_minor
+  CAPI: Drop obsolete nccip from capiminor struct
+  CAPI: Clean up capiminors_lock
+  CAPI: Drop atomic ttyopencount
+  CAPI: Drop handle_minor_recv from capinc_tty_write
+  CAPI: Rework capiminor RX handler
+  CAPI: Rename datahandle_queue -> ackqueue_entry
+  CAPI: Use atomics for capiminor's datahandle and msgid
+  CAPI: Drop capiminor's unused inbytes counter
+  CAPI: Fix locking around capiminor's output queue and drop
+    workaround_lock
+  CAPI: Clean up capiminor_*_ack
+  CAPI: Drop return value of handle_minor_send
+  CAPI: Drop special controller lookup from capi20_put_message
+  CAPI: Schedule capifs for removal
+  CAPI: Remove experimental tag from middleware feature
+
+ Documentation/feature-removal-schedule.txt |   10 +
+ drivers/isdn/capi/Kconfig                  |   16 +-
+ drivers/isdn/capi/capi.c                   | 1108 ++++++++++++++--------------
+ drivers/isdn/capi/capidrv.c                |   48 +-
+ drivers/isdn/capi/capifs.c                 |  126 ++--
+ drivers/isdn/capi/capifs.h                 |   21 +-
+ drivers/isdn/capi/kcapi.c                  |  805 +++++++++++---------
+ drivers/isdn/capi/kcapi.h                  |   13 +-
+ drivers/isdn/capi/kcapi_proc.c             |   41 +-
+ include/linux/isdn/capilli.h               |    5 +-
+ include/linux/kernelcapi.h                 |   17 +-
+ 11 files changed, 1151 insertions(+), 1059 deletions(-)
+
