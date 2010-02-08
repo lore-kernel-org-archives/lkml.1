@@ -1,79 +1,34 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754171Ab0BHS7o (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 13:59:44 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49978 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751256Ab0BHS7n (ORCPT
+	id S1754203Ab0BHTAd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 14:00:33 -0500
+Received: from smtp-out003.kontent.com ([81.88.40.217]:53108 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751256Ab0BHTAb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 13:59:43 -0500
-Date: Mon, 8 Feb 2010 10:58:28 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: tytso@mit.edu
-Cc: Jan Kara <jack@suse.cz>,
-       Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>,
-       linux-kernel@vger.kernel.org, Kazuo Moriwaka <moriwaka@redhat.com>,
-       H Hartley Sweeten <hsweeten@visionengravers.com>,
-       Joel Becker <joel.becker@oracle.com>, linux-ext4@vger.kernel.org,
-       vamos@i4.informatik.uni-erlangen.de
-Subject: Re: [PATCH] obsolete config in kernel source (BUFFER_DEBUG)
-Message-Id: <20100208105828.1136310a.akpm@linux-foundation.org>
-In-Reply-To: <20100208155031.GK4494@thunk.org>
-References: <20100205131333.GB6540@faui49.informatik.uni-erlangen.de>
-	<20100208135629.GD4321@quack.suse.cz>
-	<20100208155031.GK4494@thunk.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 8 Feb 2010 14:00:31 -0500
+From: Oliver Neukum <oliver@neukum.org>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [REGRESSION] "USB: use kfifo to buffer usb-generic serial writes" causes gobi_loader to hang
+Date: Mon, 8 Feb 2010 20:00:31 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.33-rc6-0.1-default; KDE/4.3.1; x86_64; ; )
+Cc: dvomlehn@cisco.com, gregkh@suse.de, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <20100117025535.GB7045@srcf.ucam.org> <20100205195817.GA14285@srcf.ucam.org> <20100205213555.GA15760@srcf.ucam.org>
+In-Reply-To: <20100205213555.GA15760@srcf.ucam.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <201002082000.31135.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 8 Feb 2010 10:50:31 -0500 tytso@mit.edu wrote:
+Am Freitag, 5. Februar 2010 22:35:55 schrieb Matthew Garrett:
+> Full log is at http://www.codon.org.uk/~mjg59/gobi_log.gz
 
-> I don't have an objection with removing this, but does anyone have the
-> latest version of akpm's buffer debugging patches?
+I'm getting a 404.
 
-My version is datestamped four years ago :( It normally forward-ports
-fairly easily.
-
-> I *think* what happened is that akpm forward ported the removed buffer
-> debugging patches, or maybe rewrote it from scratch, but for whatever
-> reason they never made back into mainline.  Maybe they were too ugly
-> to live in mainline, but they have been really handy on occasion.
-
-I think Eric Sandeen might have a fresher version.  Nowadays it should
-be done with the tracing infrastructure, I guess.  Although that
-infrastructure may not be able to do this - the ext3 debug patch
-recorded an LRU array of the below structs within every buffer_head. 
-The various BUFFER_TRACE macros would emit a new record into the tail of the
-target bh's b[] ring.
-
-struct buffer_history {
-	struct buffer_history_item {
-		char *function;
-		char *info;
-		unsigned long b_state;
-		unsigned b_list:3;
-		unsigned b_jlist:4;
-		unsigned pg_dirty:1;
-		unsigned cpu:3;
-		unsigned b_count:8;
-		unsigned long b_blocknr;	/* For src != dest */
-#if defined(CONFIG_JBD) || defined(CONFIG_JBD_MODULE)
-		unsigned b_jcount:4;
-		unsigned b_jbd:1;
-		unsigned b_transaction:1;
-		unsigned b_next_transaction:1;
-		unsigned b_cp_transaction:1;
-		unsigned b_trans_is_running:1;
-		unsigned b_trans_is_committing:1;
-		void *b_frozen_data;
-		void *b_committed_data;
-#endif
-	} b[BUFFER_HISTORY_SIZE];
-	unsigned long b_history_head;	/* Next place to write */
-	unsigned long b_history_tail;	/* Oldest valid entry */
-};
-
+	Regards
+		Oliver
