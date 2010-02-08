@@ -1,71 +1,199 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752866Ab0BHHUO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 02:20:14 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:38714 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751708Ab0BHHUM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 02:20:12 -0500
-Date: Mon, 8 Feb 2010 08:19:54 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Don Zickus <dzickus@redhat.com>
-Cc: peterz@infradead.org, gorcunov@gmail.com, aris@redhat.com,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 3/3 v2] nmi_watchdog: config option to enable new
- nmi_watchdog
-Message-ID: <20100208071954.GA24721@elte.hu>
-References: <1265424425-31562-1-git-send-email-dzickus@redhat.com>
- <1265424425-31562-4-git-send-email-dzickus@redhat.com>
+	id S1753354Ab0BHHUp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 02:20:45 -0500
+Received: from mtagate2.de.ibm.com ([195.212.17.162]:46719 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752150Ab0BHHUn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Feb 2010 02:20:43 -0500
+Message-ID: <4B6FBB3F.4010701@linux.vnet.ibm.com>
+Date: Mon, 08 Feb 2010 08:20:31 +0100
+From: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1265424425-31562-4-git-send-email-dzickus@redhat.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Wu Fengguang <fengguang.wu@intel.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Clemens Ladisch <clemens@ladisch.de>,
+       Olivier Galibert <galibert@pobox.com>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       linux-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 03/11] readahead: bump up the default readahead size
+References: <20100207041013.891441102@intel.com> <20100207041043.147345346@intel.com>
+In-Reply-To: <20100207041043.147345346@intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is related to our discussion from October 09 e.g. 
+http://lkml.indiana.edu/hypermail/linux/kernel/0910.1/01468.html
 
-* Don Zickus <dzickus@redhat.com> wrote:
+I work for s390 where - as mainframe - we only have environments that 
+benefit from 512k readahead, but I still expect some embedded devices won't.
+While my idea of making it configurable was not liked in the past, it 
+may be still useful when introducing this default change to let some 
+small devices choose without patching the src (a number field defaulting 
+to 512 and explaining the past of that value would be really nice).
 
-> +config NMI_WATCHDOG
-> +	bool "Detect Hard Lockups with an NMI Watchdog"
-> +	depends on DEBUG_KERNEL && PERF_EVENTS
-> +	default y
-> +	help
-> +	  Say Y here to enable the kernel to use the NMI as a watchdog
-> +	  to detect hard lockups.  This is useful when a cpu hangs for no
-> +	  reason but can still respond to NMIs.  A backtrace is displayed
-> +	  for reviewing and reporting.
-> +
-> +	  The overhead should be minimal, just an extra NMI every few 
-> +	  seconds.
+For the discussion of 512 vs. 128 I can add from my measurements that I 
+have seen the following:
+- 512 is by far superior to 128 for sequential reads
+- improvements with iozone sequential read scaling from 1 to 64 parallel 
+processes up to +35%
+- readahead sizes larger than 512 reevealed to not be "more useful" but 
+increasing the chance of trashing in low mem systems
 
-Thought for later patches: I think an architecture should be able to express 
-via a Kconfig switch that it actually _has_ NMI events. There's architectures 
-which dont have a PMU driver and only have software events. There's also 
-architectures that have a PMU driver but no NMIs.
+So I appreciate this change with a little note that I would prefer a 
+config option.
+-> tested & acked-by Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
 
-Something like ARCH_HAS_NMI_PERF_EVENTS?
+Wu Fengguang wrote:
+ >
+ > Use 512kb max readahead size, and 32kb min readahead size.
+ >
+ > The former helps io performance for common workloads.
+ > The latter will be used in the thrashing safe context readahead.
+ >
+ > -- Rationals on the 512kb size --
+ >
+ > I believe it yields more I/O throughput without noticeably increasing
+ > I/O latency for today's HDD.
+ >
+ > For example, for a 100MB/s and 8ms access time HDD, its random IO or
+ > highly concurrent sequential IO would in theory be:
+ >
+ > io_size KB  access_time  transfer_time  io_latency   util%   
+throughput KB/s
+ > 4           8             0.04           8.04        0.49%    497.57 
+ > 8           8             0.08           8.08        0.97%    990.33 
+ > 16          8             0.16           8.16        1.92%   1961.69
+ > 32          8             0.31           8.31        3.76%   3849.62
+ > 64          8             0.62           8.62        7.25%   7420.29
+ > 128         8             1.25           9.25       13.51%  13837.84
+ > 256         8             2.50          10.50       23.81%  24380.95
+ > 512         8             5.00          13.00       38.46%  39384.62
+ > 1024        8            10.00          18.00       55.56%  56888.89
+ > 2048        8            20.00          28.00       71.43%  73142.86
+ > 4096        8            40.00          48.00       83.33%  85333.33
+ >
+ > The 128KB => 512KB readahead size boosts IO throughput from ~13MB/s to
+ > ~39MB/s, while merely increases (minimal) IO latency from 9.25ms to 13ms.
+ >
+ > As for SSD, I find that Intel X25-M SSD desires large readahead size
+ > even for sequential reads:
+ >
+ >     rasize    1st run        2nd run
+ >     ----------------------------------
+ >       4k    123 MB/s    122 MB/s
+ >      16k      153 MB/s    153 MB/s
+ >      32k    161 MB/s    162 MB/s
+ >      64k    167 MB/s    168 MB/s
+ >     128k    197 MB/s    197 MB/s
+ >     256k    217 MB/s    217 MB/s
+ >     512k    238 MB/s    234 MB/s
+ >       1M    251 MB/s    248 MB/s
+ >       2M    259 MB/s    257 MB/s
+ >          4M    269 MB/s    264 MB/s
+ >       8M    266 MB/s    266 MB/s
+ >
+ > The two other impacts of an enlarged readahead size are
+ >
+ > - memory footprint (caused by readahead miss)
+ >     Sequential readahead hit ratio is pretty high regardless of max
+ >     readahead size; the extra memory footprint is mainly caused by
+ >     enlarged mmap read-around.
+ >     I measured my desktop:
+ >     - under Xwindow:
+ >         128KB readahead hit ratio = 143MB/230MB = 62%
+ >         512KB readahead hit ratio = 138MB/248MB = 55%
+ >           1MB readahead hit ratio = 130MB/253MB = 51%
+ >     - under console: (seems more stable than the Xwindow data)
+ >         128KB readahead hit ratio = 30MB/56MB   = 53%
+ >           1MB readahead hit ratio = 30MB/59MB   = 51%
+ >     So the impact to memory footprint looks acceptable.
+ >
+ > - readahead thrashing
+ >     It will now cost 1MB readahead buffer per stream.  Memory tight
+ >     systems typically do not run multiple streams; but if they do
+ >     so, it should help I/O performance as long as we can avoid
+ >     thrashing, which can be achieved with the following patches.
+ >
+ > -- Benchmarks by Vivek Goyal --
+ >
+ > I have got two paths to the HP EVA and got multipath device setup(dm-3).
+ > I run increasing number of sequential readers. File system is ext3 and
+ > filesize is 1G.
+ > I have run the tests 3 times (3sets) and taken the average of it.
+ >
+ > Workload=bsr      iosched=cfq     Filesz=1G   bs=32K
+ > ======================================================================
+ >                     2.6.33-rc5                2.6.33-rc5-readahead
+ > job   Set NR  ReadBW(KB/s)   MaxClat(us)    ReadBW(KB/s)   MaxClat(us)
+ > ---   --- --  ------------   -----------    ------------   -----------
+ > bsr   3   1   141768         130965         190302         97937.3   
+ > bsr   3   2   131979         135402         185636         223286    
+ > bsr   3   4   132351         420733         185986         363658    
+ > bsr   3   8   133152         455434         184352         428478    
+ > bsr   3   16  130316         674499         185646         594311    
+ >
+ > I ran same test on a different piece of hardware. There are few SATA 
+disks
+ > (5-6) in striped configuration behind a hardware RAID controller.
+ >
+ > Workload=bsr      iosched=cfq     Filesz=1G   bs=32K
+ > ======================================================================
+ >                     2.6.33-rc5                2.6.33-rc5-readahead
+ > job   Set NR  ReadBW(KB/s)   MaxClat(us)    ReadBW(KB/s)   
+MaxClat(us)   
+ > ---   --- --  ------------   -----------    ------------   
+-----------   
+ > bsr   3   1   147569         14369.7        160191         
+22752         
+ > bsr   3   2   124716         243932         149343         
+184698        
+ > bsr   3   4   123451         327665         147183         
+430875        
+ > bsr   3   8   122486         455102         144568         
+484045        
+ > bsr   3   16  117645         1.03957e+06    137485         
+1.06257e+06   
+ >
+ > Tested-by: Vivek Goyal <vgoyal@redhat.com>
+ > CC: Jens Axboe <jens.axboe@oracle.com>
+ > CC: Chris Mason <chris.mason@oracle.com>
+ > CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
+ > CC: Martin Schwidefsky <schwidefsky@de.ibm.com>
+ > CC: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+ > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+ > ---
+ >  include/linux/mm.h |    4 ++--
+ >  1 file changed, 2 insertions(+), 2 deletions(-)
+ >
+ > --- linux.orig/include/linux/mm.h    2010-01-30 17:38:49.000000000 +0800
+ > +++ linux/include/linux/mm.h    2010-01-30 18:09:58.000000000 +0800
+ > @@ -1184,8 +1184,8 @@ int write_one_page(struct page *page, in
+ >  void task_dirty_inc(struct task_struct *tsk);
+ >
+ >  /* readahead.c */
+ > -#define VM_MAX_READAHEAD    128    /* kbytes */
+ > -#define VM_MIN_READAHEAD    16    /* kbytes (includes current page) */
+ > +#define VM_MAX_READAHEAD    512    /* kbytes */
+ > +#define VM_MIN_READAHEAD    32    /* kbytes (includes current page) */
+ >
+ >  int force_page_cache_readahead(struct address_space *mapping, struct 
+file *filp,
+ >              pgoff_t offset, unsigned long nr_to_read);
+ >
+ >
 
-Also, i havent checked, but what is the practical effect of the new generic 
-watchdog on x86 CPUs that does not have a native PMU driver yet - such as 
-P4s?
+-- 
 
-Anyway, i'll create a tip:perf/nmi topic branch for these patches, it 
-certainly looks like a useful generalization and a new architecture that has 
-perf could easily enable it, without having to write its own NMI watchdog 
-implementation. It's also useful for any new watchdog features that people 
-might want to add. Plus it makes the x86 PMU code cleaner in the long run as 
-well.
+Grüsse / regards, Christian Ehrhardt
+IBM Linux Technology Center, Open Virtualization 
 
-Thanks, 
-
-	Ingo
