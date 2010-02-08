@@ -1,146 +1,65 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755471Ab0BHKpz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 05:45:55 -0500
-Received: from ozlabs.org ([203.10.76.45]:53904 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753274Ab0BHKpy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 05:45:54 -0500
-From: Michael Neuling <mikey@neuling.org>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-cc: Anton Blanchard <anton@samba.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       Oleg Nesterov <oleg@redhat.com>, James Morris <jmorris@namei.org>,
-       Ingo Molnar <mingo@elte.hu>, linux-fsdevel@vger.kernel.org,
-       stable@kernel.org, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, Serge Hallyn <serue@us.ibm.com>,
-       WANG Cong <xiyou.wangcong@gmail.com>, Paul Mackerras <paulus@samba.org>,
-       benh@kernel.crashing.org, miltonm@bga.com, aeb@cwi.nl
-Subject: Re: [PATCH] Restrict stack space reservation to rlimit
-In-reply-to: <20100208145240.FB58.A69D9226@jp.fujitsu.com>
-References: <20100208141716.FB55.A69D9226@jp.fujitsu.com> <9729.1265607469@neuling.org> <20100208145240.FB58.A69D9226@jp.fujitsu.com>
-Comments: In-reply-to KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-   message dated "Mon, 08 Feb 2010 15:05:42 +0900."
-X-Mailer: MH-E 8.2; nmh 1.3; GNU Emacs 23.1.1
-Date: Mon, 08 Feb 2010 21:45:51 +1100
-Message-ID: <32102.1265625951@neuling.org>
+	id S1755475Ab0BHKuw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 05:50:52 -0500
+Received: from senator.holtmann.net ([87.106.208.187]:56273 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753614Ab0BHKuv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Feb 2010 05:50:51 -0500
+Subject: Re: [PATCH 3/3] nozomi: Tidy up the PCI table
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Alan Cox <alan@linux.intel.com>
+Cc: greg@kroah.com, linux-kernel@vger.kernel.org, p.hardwick@option.com
+In-Reply-To: <20100208100710.2794.73323.stgit@localhost.localdomain>
+References: <20100208100642.2794.73225.stgit@localhost.localdomain>
+	 <20100208100710.2794.73323.stgit@localhost.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 08 Feb 2010 11:49:49 +0100
+Message-ID: <1265626189.31341.260.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Alan,
 
-In message <20100208145240.FB58.A69D9226@jp.fujitsu.com> you wrote:
-> > > >  
-> > > > Hi,
-> > > > 
-> > > > > Why do we need page size independent stack size? It seems to have
-> > > > > compatibility breaking risk.
-> > > > 
-> > > > I don't think so. The current behaviour is clearly wrong, we dont need 
-a
-> > > > 16x larger stack just because you went from a 4kB to a 64kB base page
-> > > > size. The user application stack usage is the same in both cases.
-> > > 
-> > > I didn't discuss which behavior is better. Michael said he want to apply
-> > > his patch to 2.6.32 & 2.6.33. stable tree never accept the breaking
-> > > compatibility patch.
-> > > 
-> > > Your answer doesn't explain why can't we wait it until next merge window.
-> > > 
-> > > btw, personally, I like page size indepent stack size. but I'm not sure
-> > > why making stack size independency is related to bug fix.
-> > 
-> > I tend to agree.  
-> > 
-> > Below is just the bug fix to limit the reservation size based rlimit.
-> > We still reserve different stack sizes based on the page size as
-> > before (unless we hit rlimit of course).
+> Signed-off-by: Alan Cox <alan@linux.intel.com>
+> ---
 > 
-> Thanks.
-> 
-> I agree your patch in almost part. but I have very few requests.
+>  drivers/char/nozomi.c |    6 +-----
+>  1 files changed, 1 insertions(+), 5 deletions(-)
 > 
 > 
-> > Mikey
-> > 
-> > Restrict stack space reservation to rlimit
-> > 
-> > When reserving stack space for a new process, make sure we're not
-> > attempting to allocate more than rlimit allows.
-> > 
-> > This fixes a bug cause by b6a2fea39318e43fee84fa7b0b90d68bed92d2ba 
-> > "mm: variable length argument support" and unmasked by
-> > fc63cf237078c86214abcb2ee9926d8ad289da9b 
-> > "exec: setup_arg_pages() fails to return errors".
+> diff --git a/drivers/char/nozomi.c b/drivers/char/nozomi.c
+> index fac9157..86c9e64 100644
+> --- a/drivers/char/nozomi.c
+> +++ b/drivers/char/nozomi.c
+> @@ -136,10 +136,6 @@ static int debug;
+>  #define RECEIVE_BUF_MAX		4
+>  
 > 
-> Your initial mail have following problem use-case. please append it
-> into the patch description.
-> 
-> 	On recent ppc64 kernels, limiting the stack (using 'ulimit -s blah') is
-> 	now more restrictive than it was before.  On 2.6.31 with 4k pages I
-> 	could run 'ulimit -s 16; /usr/bin/test' without a problem.  Now with
-> 	mainline, even 'ulimit -s 64; /usr/bin/test' gets killed.
+> -/* Define all types of vendors and devices to support */
+> -#define VENDOR1		0x1931	/* Vendor Option */
+> -#define DEVICE1		0x000c	/* HSDPA card */
+> -
+>  #define R_IIR		0x0000	/* Interrupt Identity Register */
+>  #define R_FCR		0x0000	/* Flow Control Register */
+>  #define R_IER		0x0004	/* Interrupt Enable Register */
+> @@ -407,7 +403,7 @@ struct buffer {
+>  
+>  /*    Global variables */
+>  static const struct pci_device_id nozomi_pci_tbl[] __devinitconst = {
+> -	{PCI_DEVICE(VENDOR1, DEVICE1)},
+> +	{PCI_DEVICE(0x1931, 0x000c)},	/* Nozomi HSPDA */
+>  	{},
 
-Ok,  I'll add this info in.  
+that would be HSDPA actually.
 
-> 
-> > 
-> > Signed-off-by: Michael Neuling <mikey@neuling.org>
-> > Cc: Anton Blanchard <anton@samba.org>
-> > Cc: stable@kernel.org
-> > ---
-> >  fs/exec.c |    7 +++++--
-> >  1 file changed, 5 insertions(+), 2 deletions(-)
-> > 
-> > Index: linux-2.6-ozlabs/fs/exec.c
-> > ===================================================================
-> > --- linux-2.6-ozlabs.orig/fs/exec.c
-> > +++ linux-2.6-ozlabs/fs/exec.c
-> > @@ -627,10 +627,13 @@ int setup_arg_pages(struct linux_binprm 
-> >  			goto out_unlock;
-> >  	}
-> >  
-> > +	stack_base = min(EXTRA_STACK_VM_PAGES * PAGE_SIZE,
-> > +			 current->signal->rlim[RLIMIT_STACK].rlim_cur -
-> > +			   PAGE_SIZE);
-> 
-> This line is a bit unclear why "- PAGE_SIZE" is necessary.
+Regards
 
-This is because the stack is already 1 page in size.  I'm going to
-change that code to make it clearer...  hopefully :-)
+Marcel
 
-> personally, I like following likes explicit comments.
-> 
-> 	stack_expand = EXTRA_STACK_VM_PAGES * PAGE_SIZE;
-> 	stack_lim = ACCESS_ONCE(rlim[RLIMIT_STACK].rlim_cur);
-> 
-> 	/* Initial stack must not cause stack overflow. */
-> 	if (stack_expand + PAGE_SIZE > stack_lim)
-> 		stack_expand = stack_lim - PAGE_SIZE;
-> 
-> note: accessing rlim_cur require ACCESS_ONCE.
-> 
-> 
-> Thought?
 
-Thanks, looks better/clearer to me too.  I'll change, new patch coming....
-
-Mikey
-
-> 
-> 
-> >  #ifdef CONFIG_STACK_GROWSUP
-> > -	stack_base = vma->vm_end + EXTRA_STACK_VM_PAGES * PAGE_SIZE;
-> > +	stack_base = vma->vm_end + stack_base;
-> >  #else
-> > -	stack_base = vma->vm_start - EXTRA_STACK_VM_PAGES * PAGE_SIZE;
-> > +	stack_base = vma->vm_start - stack_base;
-> >  #endif
-> >  	ret = expand_stack(vma, stack_base);
-> >  	if (ret)
-> > 
-> 
-> 
-> 
