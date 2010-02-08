@@ -1,64 +1,64 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757299Ab0BGX5g (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Feb 2010 18:57:36 -0500
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:51539 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754917Ab0BGX5f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Feb 2010 18:57:35 -0500
-Date: Sun, 7 Feb 2010 23:57:34 +0000
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Joonyoung Shim <jy0922.shim@samsung.com>
-Cc: sameo@linux.intel.com, linux-kernel@vger.kernel.org,
-       kyungmin.park@samsung.com, myungjoo.ham@samsung.com
-Subject: Re: [PATCH] mfd: Fix WM8994 error handling
-Message-ID: <20100207235733.GB14408@opensource.wolfsonmicro.com>
-References: <4B6E145E.9090300@samsung.com>
+	id S1755383Ab0BHAHo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Feb 2010 19:07:44 -0500
+Received: from borg.medozas.de ([188.40.89.202]:37279 "EHLO borg.medozas.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754549Ab0BHAHn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Feb 2010 19:07:43 -0500
+Date: Mon, 8 Feb 2010 01:07:40 +0100 (CET)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Jens Axboe <jens.axboe@oracle.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: kswapd continuously active
+In-Reply-To: <alpine.LSU.2.01.1002071148150.26546@obet.zrqbmnf.qr>
+Message-ID: <alpine.LSU.2.01.1002080106240.11078@obet.zrqbmnf.qr>
+References: <alpine.LSU.2.01.1001230037350.20442@obet.zrqbmnf.qr> <20100125130627.GO13771@kernel.dk> <alpine.LSU.2.01.1001251416340.8189@obet.zrqbmnf.qr> <alpine.LSU.2.01.1002051329090.7843@obet.zrqbmnf.qr> <20100205130002.GI1025@kernel.dk>
+ <alpine.LSU.2.01.1002051408280.23211@obet.zrqbmnf.qr> <20100205131220.GK1025@kernel.dk> <alpine.LSU.2.01.1002051423020.23211@obet.zrqbmnf.qr> <alpine.LSU.2.01.1002071148150.26546@obet.zrqbmnf.qr>
+User-Agent: Alpine 2.01 (LSU 1266 2009-07-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B6E145E.9090300@samsung.com>
-X-Cookie: You will wish you hadn't.
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 07, 2010 at 10:16:14AM +0900, Joonyoung Shim wrote:
-> This patch fixes wrong goto statement for error handling on probe.
-> 
-> Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
-> Signed-off-by: Joonyoung Shim <jy0922.shim@samsung.com>
 
-Good catch, thanks.
+On Sunday 2010-02-07 11:50, Jan Engelhardt wrote:
+>On Friday 2010-02-05 14:24, Jan Engelhardt wrote:
+>>>> The ext4 filesystem is already mounted with barrier=0. If there
+>>>> is any block-level barriers I also can turn off, what would be
+>>>> the command?
+>>>
+>>>barrier=0 is enough. I do wonder why your writeback rate is that slow,
+>>>then. The disk has write back caching enabled?
+>>
+>>Yes, that seems to be the case at least. In fact the box is all fluffy 
+>>when nobody runs sync(1), which is what makes it so strange.
+>>
+>>sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't 
+>>support DPO or FUA
+>
+>Here is an alternate trace that just happened.
+>
+>INFO: task flush-8:0:343 blocked for more than 120 seconds.
+>"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+>flush-8:0     D 0000000000555930  6664   343      2 0x18000000000
+>Call Trace:
+> [00000000005555f4] start_this_handle+0x324/0x4b0
+> [0000000000555930] jbd2_journal_start+0x94/0xc0
+> [000000000052ddb8] ext4_da_writepages+0x1e0/0x460
+> [000000000049bf30] do_writepages+0x28/0x48
+> [00000000004e6d58] writeback_single_inode+0xf0/0x330
+> [00000000004e7b24] writeback_inodes_wb+0x4c8/0x5d8
+> [00000000004e7da4] wb_writeback+0x170/0x1ec
+> [00000000004e8074] wb_do_writeback+0x188/0x1a4
+> [00000000004e80b8] bdi_writeback_task+0x28/0xa0
+> [00000000004a76c8] bdi_start_fn+0x64/0xc4
+> [0000000000475f84] kthread+0x58/0x6c
+> [000000000042ade0] kernel_thread+0x30/0x48
+> [0000000000475ee0] kthreadd+0xb8/0x104
 
-Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-
-> ---
->  drivers/mfd/wm8994-core.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/mfd/wm8994-core.c b/drivers/mfd/wm8994-core.c
-> index 299c1af..844e1c1 100644
-> --- a/drivers/mfd/wm8994-core.c
-> +++ b/drivers/mfd/wm8994-core.c
-> @@ -305,14 +305,14 @@ static int wm8994_device_init(struct wm8994 *wm8994, unsigned long id, int irq)
->  				 wm8994->supplies);
->  	if (ret != 0) {
->  		dev_err(wm8994->dev, "Failed to get supplies: %d\n", ret);
-> -		goto err_get;
-> +		goto err_supplies;
->  	}
->  
->  	ret = regulator_bulk_enable(ARRAY_SIZE(wm8994_main_supplies),
->  				    wm8994->supplies);
->  	if (ret != 0) {
->  		dev_err(wm8994->dev, "Failed to enable supplies: %d\n", ret);
-> -		goto err_supplies;
-> +		goto err_get;
->  	}
->  
->  	ret = wm8994_reg_read(wm8994, WM8994_SOFTWARE_RESET);
-> -- 
-> 1.6.3.3
+Could it be that there is something synchronize_rcu()-like in the
+game that — as a result of how RCU works — just takes ages with 24
+VCPUs?
