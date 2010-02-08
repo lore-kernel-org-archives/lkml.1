@@ -1,116 +1,268 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754002Ab0BHQ4M (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 11:56:12 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:48710 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753617Ab0BHQ4J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 11:56:09 -0500
-Date: Mon, 8 Feb 2010 16:55:55 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       epasch@de.ibm.com, SCHILLIG@de.ibm.com,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>, christof.schmitt@de.ibm.com,
-       thoss@de.ibm.com, hare@suse.de, npiggin@suse.de
-Subject: Re: Performance regression in scsi sequential throughput (iozone)
-	due to "e084b - page-allocator: preserve PFN ordering when
-	__GFP_COLD is set"
-Message-ID: <20100208165555.GD23680@csn.ul.ie>
-References: <20091211112009.GC30670@csn.ul.ie> <4B225B9E.2020702@linux.vnet.ibm.com> <4B2B85C7.80502@linux.vnet.ibm.com> <20091218174250.GC21194@csn.ul.ie> <4B4F0E60.1020601@linux.vnet.ibm.com> <20100119113306.GA23881@csn.ul.ie> <4B6C3E6E.6050303@linux.vnet.ibm.com> <20100205174917.GB11512@csn.ul.ie> <4B70192C.3070601@linux.vnet.ibm.com> <20100208152131.GC23680@csn.ul.ie>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20100208152131.GC23680@csn.ul.ie>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	id S1754035Ab0BHRBy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 12:01:54 -0500
+Received: from ppp-156-198.adsl.restena.lu ([158.64.156.198]:49973 "EHLO
+	bonbons.gotdns.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752575Ab0BHRBv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Feb 2010 12:01:51 -0500
+X-Greylist: delayed 574 seconds by postgrey-1.27 at vger.kernel.org; Mon, 08 Feb 2010 12:01:50 EST
+Date: Mon, 8 Feb 2010 17:51:45 +0100
+From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
+To: Jiri Kosina <jkosina@suse.cz>, Oliver Neukum <oliver@neukum.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Marcel Holtmann <marcel@holtmann.org>,
+       H Hartley Sweeten <hsweeten@visionengravers.com>
+Cc: linux-usb@vger.kernel.org, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: S2R resume crash in 2.6.33-rc7 - NULL pointer dereference in
+ dev_get_drvdata() for usbhid
+Message-ID: <20100208175145.606ca761@neptune.home>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> <SNIP>
-> The prototype patch for avoiding congestion_wait is below. I'll start
-> work on a fallback-to-other-percpu-lists patch.
-> 
+2.6.33-rc7 (don't know if any previous version resumes properly)
+crashes during resume from S2Ram when my USB keyboard is connected but
+resumes properly (viafb corruption put apart) when the USB keyboard is
+not connected.
 
-And here is the prototype of the fallback-to-other-percpu-lists patch.
-I'm afraid I've only managed to test it on qemu. My three test machines are
-still occupied :(
+Keyboard detection:
+[    3.070054] usb 2-2: new full speed USB device using uhci_hcd and address 2
+[    3.220179] kbd_mode used greatest stack depth: 2228 bytes left
+[    3.276403] usb 2-2: New USB device found, idVendor=058f, idProduct=9462
+[    3.276514] usb 2-2: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+[    3.276619] usb 2-2: Product: Multimedia USB Keyboard
+[    3.276711] usb 2-2: Manufacturer: Multimedia USB Keyboard
+[    3.278056] loadkeys used greatest stack depth: 1904 bytes left
+[    3.278791] init-early.sh used greatest stack depth: 1700 bytes left
+[    3.282561] hub 2-2:1.0: USB hub found
+[    3.286387] hub 2-2:1.0: 3 ports detected
+[    3.571454] usb 2-2.1: new full speed USB device using uhci_hcd and address 3
+[    3.761474] usb 2-2.1: New USB device found, idVendor=058f, idProduct=9462
+[    3.761584] usb 2-2.1: New USB device strings: Mfr=1, Product=2, SerialNumber=3
+[    3.761719] usb 2-2.1: Product: Multimedia USB Keyboard
+[    3.762518] usb 2-2.1: Manufacturer: Multimedia USB Keyboard
+[    3.762612] usb 2-2.1: SerialNumber: Multimedia USB Keyboard
+[    3.789221] input: Multimedia USB Keyboard Multimedia USB Keyboard as /devices/pci0000:00/0000:00:10.0/usb2/2
+-2/2-2.1/2-2.1:1.0/input/input4
+[    3.789585] generic-usb 0003:058F:9462.0001: input: USB HID v1.10 Keyboard [Multimedia USB Keyboard Multimedi
+a USB Keyboard] on usb-0000:00:10.0-2.1/input0
+[    3.818001] generic-usb: probe of 0003:058F:9462.0002 failed with error -22
 
-==== CUT HERE ====
-page allocator: Fallback to other per-cpu lists when the target list is empty and memory is low
+Resume crash:
+[   48.130061] usb 2-2: reset full speed USB device using uhci_hcd and address 2
+[   48.591086] usb 2-2.1: reset full speed USB device using uhci_hcd and address 3
+[   48.741106] BUG: unable to handle kernel NULL pointer dereference at 00000020
+[   48.741558] IP: [<c11eabb0>] dev_get_drvdata+0x10/0x20
+[   48.741902] *pde = 00000000 
+[   48.742083] Oops: 0000 [#1] 
+[   48.742269] last sysfs file: /sys/power/state
+[   48.742528] Modules linked in: e_powersaver via_cputemp snd_hda_codec_via snd_hda_intel snd_hda_codec snd_pcm snd_timer via_agp snd soundcore viafb snd_page_alloc i2c_algo_bit cfbcopyarea cfbimgblt cfbfillrect sg agpgart
+[   48.743939] 
+[   48.744040] Pid: 1512, comm: bash Not tainted 2.6.33-rc7-venus #1 CX700+W697HG/CX700+W697HG
+[   48.744528] EIP: 0060:[<c11eabb0>] EFLAGS: 00010202 CPU: 0
+[   48.744859] EIP is at dev_get_drvdata+0x10/0x20
+[   48.745121] EAX: 0000001c EBX: f6814000 ECX: 00000000 EDX: 00000000
+[   48.745493] ESI: f68bd064 EDI: f6814000 EBP: f6539dbc ESP: f6539dbc
+[   48.745861]  DS: 0068 ES: 007b FS: 0000 GS: 0033 SS: 0068
+[   48.746178] Process bash (pid: 1512, ti=f6539000 task=f73686e0 task.ti=f6539000)
+[   48.746595] Stack:
+[   48.746716]  f6539dcc c12823fe f68bd064 f682fe00 f6539e00 c1282558 00000021 00000000
+[   48.747391] <0> 00000001 00000000 00000000 00001388 f68bd000 f692a000 f682fe00 00000001
+[   48.747975] <0> f682fe00 f6539e0c c12825a8 c149d690 f6539e34 c122e65a c1498654 f68bd000
+[   48.751052] Call Trace:
+[   48.751052]  [<c12823fe>] ? usbhid_restart_queues+0x3e/0x100
+[   48.751052]  [<c1282558>] ? hid_post_reset+0x98/0xc0
+[   48.751052]  [<c12825a8>] ? hid_reset_resume+0x28/0x30
+[   48.751052]  [<c122e65a>] ? usb_resume_interface+0x9a/0x190
+[   48.751052]  [<c123641f>] ? generic_resume+0xf/0x30
+[   48.751052]  [<c122eb0f>] ? usb_resume_both+0x8f/0x130
+[   48.751052]  [<c122f7fb>] ? usb_external_resume_device+0x2b/0x70
+[   48.751052]  [<c122f85d>] ? usb_resume+0x1d/0x30
+[   48.751052]  [<c12240ed>] ? usb_dev_resume+0xd/0x10
+[   48.751052]  [<c11ee1b4>] ? pm_op+0x94/0xb0
+[   48.751052]  [<c11711d0>] ? kobject_put+0x20/0x50
+[   48.751052]  [<c11ee9f9>] ? dpm_resume_end+0xe9/0x330
+[   48.751052]  [<c105131a>] ? resume_device_irqs+0x2a/0x60
+[   48.751052]  [<c104d0ff>] ? suspend_devices_and_enter+0x7f/0x1a0
+[   48.751052]  [<c132e0dd>] ? printk+0x18/0x1b
+[   48.751052]  [<c104d320>] ? enter_state+0x100/0x120
+[   48.751052]  [<c104cae0>] ? state_store+0x80/0xb0
+[   48.751052]  [<c104ca60>] ? state_store+0x0/0xb0
+[   48.751052]  [<c11710a4>] ? kobj_attr_store+0x24/0x30
+[   48.751052]  [<c10c27bd>] ? sysfs_write_file+0x9d/0xf0
+[   48.751052]  [<c10810cc>] ? vfs_write+0x9c/0x160
+[   48.751052]  [<c10c2720>] ? sysfs_write_file+0x0/0xf0
+[   48.751052]  [<c108124d>] ? sys_write+0x3d/0x70
+[   48.751052]  [<c1002bd0>] ? sysenter_do_call+0x12/0x26
+[   48.751052] Code: 55 89 e5 5d 83 f8 01 19 c0 f7 d0 83 e0 f0 c3 8d b6 00 00 00 00 8d bf 00 00 00 00 55 85 c0 89 e5 75 09 31 c0 5d c3 90 8d 74 26 00 <8b> 40 04 85 c0 74 f0 8b 40 40 5d c3 8d 74 26 00 55 89 e5 83 ec 
+[   48.751052] EIP: [<c11eabb0>] dev_get_drvdata+0x10/0x20 SS:ESP 0068:f6539dbc
+[   48.751052] CR2: 0000000000000020
+[   49.281981] ---[ end trace 1f0c734925556462 ]---
 
-When a per-cpu list of pages for a given migratetype is empty, the page
-allocator is called to refill the PCP list. It's possible when memory
-is low that this results in the process entering direct reclaim even
-if it wasn't strictly necessary because there were pages free for other
-migratetypes. Unconditionally falling back to other PCP lists hurts the
-fragmentation-avoidance strategy which is also undesirable.
+Could the crash be related to the generic-usb probe error?
 
-When the desired PCP list is empty, this patch checks how many free pages
-there are on the PCP lists and if refilling the list could result in direct
-reclaim. If direct reclaim is unlikely, the PCP list is refilled to maintain
-fragmentation-avoidance. Otherwise, a page from an alternative PCP list is
-chosen to maintain performance and avoid direct reclaim.
+lsusb -v for the keyboard:
+Bus 002 Device 003: ID 058f:9462 Alcor Micro Corp. 
+Device Descriptor:
+  bLength                18
+  bDescriptorType         1
+  bcdUSB               1.10
+  bDeviceClass            0 (Defined at Interface level)
+  bDeviceSubClass         0 
+  bDeviceProtocol         0 
+  bMaxPacketSize0         8
+  idVendor           0x058f Alcor Micro Corp.
+  idProduct          0x9462 
+  bcdDevice            4.10
+  iManufacturer           1 Multimedia USB Keyboard
+  iProduct                2 Multimedia USB Keyboard
+  iSerial                 3 Multimedia USB Keyboard
+  bNumConfigurations      1
+  Configuration Descriptor:
+    bLength                 9
+    bDescriptorType         2
+    wTotalLength           59
+    bNumInterfaces          2
+    bConfigurationValue     1
+    iConfiguration          0 
+    bmAttributes         0xa0
+      (Bus Powered)
+      Remote Wakeup
+    MaxPower               50mA
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        0
+      bAlternateSetting       0
+      bNumEndpoints           1
+      bInterfaceClass         3 Human Interface Device
+      bInterfaceSubClass      1 Boot Interface Subclass
+      bInterfaceProtocol      1 Keyboard
+      iInterface              0 
+        HID Device Descriptor:
+          bLength                 9
+          bDescriptorType        33
+          bcdHID               1.10
+          bCountryCode            0 Not supported
+          bNumDescriptors         1
+          bDescriptorType        34 Report
+          wDescriptorLength      65
+         Report Descriptors: 
+           ** UNAVAILABLE **
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            3
+          Transfer Type            Interrupt
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0008  1x 8 bytes
+        bInterval              10
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        1
+      bAlternateSetting       0
+      bNumEndpoints           1
+      bInterfaceClass         3 Human Interface Device
+      bInterfaceSubClass      0 No Subclass
+      bInterfaceProtocol      0 None
+      iInterface              0 
+        HID Device Descriptor:
+          bLength                 9
+          bDescriptorType        33
+          bcdHID               1.10
+          bCountryCode            0 Not supported
+          bNumDescriptors         1
+          bDescriptorType        34 Report
+          wDescriptorLength     106
+         Report Descriptors: 
+           ** UNAVAILABLE **
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x82  EP 2 IN
+        bmAttributes            3
+          Transfer Type            Interrupt
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0004  1x 4 bytes
+        bInterval             255
+Device Status:     0x0000
+  (Bus Powered)
 
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
----
- mm/page_alloc.c |   37 ++++++++++++++++++++++++++++++++++---
- 1 files changed, 34 insertions(+), 3 deletions(-)
+Bus 002 Device 002: ID 058f:9462 Alcor Micro Corp. 
+Device Descriptor:
+  bLength                18
+  bDescriptorType         1
+  bcdUSB               1.10
+  bDeviceClass            9 Hub
+  bDeviceSubClass         0 Unused
+  bDeviceProtocol         0 Full speed (or root) hub
+  bMaxPacketSize0         8
+  idVendor           0x058f Alcor Micro Corp.
+  idProduct          0x9462 
+  bcdDevice            1.58
+  iManufacturer           1 Multimedia USB Keyboard
+  iProduct                2 Multimedia USB Keyboard
+  iSerial                 0 
+  bNumConfigurations      1
+  Configuration Descriptor:
+    bLength                 9
+    bDescriptorType         2
+    wTotalLength           25
+    bNumInterfaces          1
+    bConfigurationValue     1
+    iConfiguration          0 
+    bmAttributes         0xa0
+      (Bus Powered)
+      Remote Wakeup
+    MaxPower               50mA
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        0
+      bAlternateSetting       0
+      bNumEndpoints           1
+      bInterfaceClass         9 Hub
+      bInterfaceSubClass      0 Unused
+      bInterfaceProtocol      0 Full speed (or root) hub
+      iInterface              0 
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            3
+          Transfer Type            Interrupt
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0001  1x 1 bytes
+        bInterval             255
+Hub Descriptor:
+  bLength               9
+  bDescriptorType      41
+  nNbrPorts             3
+  wHubCharacteristic 0x000d
+    Per-port power switching
+    Compound device
+    Per-port overcurrent protection
+  bPwrOn2PwrGood       22 * 2 milli seconds
+  bHubContrCurrent     50 milli Ampere
+  DeviceRemovable    0x02
+  PortPwrCtrlMask    0xff
+ Hub Port Status:
+   Port 1: 0000.0103 power enable connect
+   Port 2: 0000.0100 power
+   Port 3: 0000.0100 power
+Device Status:     0x0000
+  (Bus Powered)
 
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 8deb9d0..009d683 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -1168,6 +1168,39 @@ void split_page(struct page *page, unsigned int order)
- 		set_page_refcounted(page + i);
- }
- 
-+/* Decide whether to find an alternative PCP list or refill */
-+static struct list_head *pcp_fallback(struct zone *zone,
-+			struct per_cpu_pages *pcp, 
-+			int start_migratetype, int cold)
-+{
-+	int i;
-+	int migratetype;
-+	struct list_head *list;
-+	long free_pages = zone_page_state(zone, NR_FREE_PAGES) - pcp->batch;
-+
-+	/* 
-+	 * Find a PCPU list with free pages in the same order as
-+	 * fragmentation-avoidance fallback in the event that refilling
-+	 * the PCP list may result in direct reclaim
-+	 */
-+	if (pcp->count && free_pages <= low_wmark_pages(zone)) {
-+		for (i = 0; i < MIGRATE_PCPTYPES - 1; i++) {
-+			migratetype = fallbacks[start_migratetype][i];
-+			list = &pcp->lists[migratetype];
-+
-+			if (!list_empty(list))
-+				return list;
-+		}
-+	}
-+
-+	/* Alternatively, we need to allocate more memory to the PCP lists */
-+	list = &pcp->lists[start_migratetype];
-+	pcp->count += rmqueue_bulk(zone, 0, pcp->batch, list,
-+					migratetype, cold);
-+
-+	return list;
-+}
-+
- /*
-  * Really, prep_compound_page() should be called from __rmqueue_bulk().  But
-  * we cheat by calling it from here, in the order > 0 path.  Saves a branch
-@@ -1193,9 +1226,7 @@ again:
- 		list = &pcp->lists[migratetype];
- 		local_irq_save(flags);
- 		if (list_empty(list)) {
--			pcp->count += rmqueue_bulk(zone, 0,
--					pcp->batch, list,
--					migratetype, cold);
-+			list = pcp_fallback(zone, pcp, migratetype, cold);
- 			if (unlikely(list_empty(list)))
- 				goto failed;
- 		}
+
