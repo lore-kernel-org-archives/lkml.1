@@ -1,43 +1,75 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752950Ab0BHVCV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 16:02:21 -0500
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:55722 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751131Ab0BHVCU (ORCPT
+	id S1753139Ab0BHVD3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 16:03:29 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33922 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752130Ab0BHVD1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 16:02:20 -0500
-Date: Mon, 8 Feb 2010 22:02:19 +0100
-From: Andreas Mohr <andi@lisas.de>
-To: Andreas Mohr <andi@lisas.de>
-Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@redhat.com>, John Stultz <johnstul@us.ibm.com>
-Subject: Re: clocksource mutex deadlock, cat current_clocksource
-	(2.6.33-rc6/7)
-Message-ID: <20100208210219.GA22039@rhlx01.hs-esslingen.de>
-References: <alpine.LFD.2.00.1002061534020.2811@localhost.localdomain> <20100207191949.GA23665@rhlx01.hs-esslingen.de> <20100208053830.GA7128@rhlx01.hs-esslingen.de> <alpine.LFD.2.00.1002081010330.2811@localhost.localdomain> <20100208093719.GA15428@rhlx01.hs-esslingen.de> <alpine.LFD.2.00.1002081038430.2811@localhost.localdomain> <20100208194734.GA20316@rhlx01.hs-esslingen.de> <alpine.LFD.2.00.1002082117210.2811@localhost.localdomain> <alpine.LFD.2.00.1002082139360.2811@localhost.localdomain> <20100208205105.GA16990@rhlx01.hs-esslingen.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100208205105.GA16990@rhlx01.hs-esslingen.de>
-X-Priority: none
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 8 Feb 2010 16:03:27 -0500
+Date: Mon, 8 Feb 2010 13:02:48 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Cc: Grant Likely <grant.likely@secretlab.ca>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Bill Gatliff <bgat@billgatliff.com>,
+       Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/4] of/gpio: Implement GPIOLIB notifier hooks
+Message-Id: <20100208130248.72febd68.akpm@linux-foundation.org>
+In-Reply-To: <20100205203236.GC1475@oksana.dev.rtsoft.ru>
+References: <20100205203201.GA32281@oksana.dev.rtsoft.ru>
+	<20100205203236.GC1475@oksana.dev.rtsoft.ru>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 08, 2010 at 09:51:05PM +0100, Andreas Mohr wrote:
-> Looks like it:
-> - another bootup also had lockup message
-> - all /var/log/dmesg* have lockup message, oldest is:
-> 2010-02-07 20:00 dmesg.4.gz
+On Fri, 5 Feb 2010 23:32:36 +0300
+Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+
+> This patch implements GPIOLIB notifier hooks, and thus makes device-enabled
+> GPIO chips (i.e. the ones that have gpio_chip->dev specified) automatically
+> attached to the OpenFirmware subsystem. Which means that now we can handle
+> I2C and SPI GPIO chips almost* transparently.
 > 
-> Linux version 2.6.33-rc6 (root@note) (gcc version 4.3.4 (Debian 4.3.4-6)) #3 Sun Jan 31 23:47:51 CET 2010
+> * "Almost" because some chips still require platform data, and for these
+>   chips OF-glue is still needed, though with this support the glue will
+>   be much smaller.
+> 
 
--rc4 and 2.6.32.3 don't show lockup message, instant bootup without any
-visible delay.
+We can clean this up a little with the WARN_ON trick:
 
-Don't tell me I'm now supposed to try -rc5 and also rebuild -rc6 ;)
-If so, do tell early so that I have lots of time to get it built...
+diff -puN drivers/of/gpio.c~of-gpio-implement-gpiolib-notifier-hooks-fix drivers/of/gpio.c
+--- a/drivers/of/gpio.c~of-gpio-implement-gpiolib-notifier-hooks-fix
++++ a/drivers/of/gpio.c
+@@ -255,10 +255,8 @@ static int of_gpiochip_register_simple(s
+ {
+ 	struct of_gpio_chip *of_gc;
+ 
+-	if (np->data) {
+-		WARN_ON(1);
++	if (WARN_ON(np->data))
+ 		return -EBUSY;
+-	}
+ 
+ 	of_gc = kzalloc(sizeof(*of_gc), GFP_KERNEL);
+ 	if (!of_gc)
+@@ -287,10 +285,8 @@ static int of_gpiochip_unregister(struct
+ {
+ 	struct of_gpio_chip *of_gc = np->data;
+ 
+-	if (!of_gc || of_gc->chip != chip) {
+-		WARN_ON(1);
++	if (WARN_ON(!of_gc || of_gc->chip != chip))
+ 		return -EINVAL;
+-	}
+ 
+ 	np->data = NULL;
+ 	kfree(of_gc);
+_
 
-Andreas Mohr
