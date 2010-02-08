@@ -1,141 +1,74 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754484Ab0BHT1J (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 14:27:09 -0500
-Received: from mail.openrapids.net ([64.15.138.104]:34883 "EHLO
-	blackscsi.openrapids.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753172Ab0BHT1H (ORCPT
+	id S1754495Ab0BHTbN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 14:31:13 -0500
+Received: from ey-out-2122.google.com ([74.125.78.24]:17046 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751700Ab0BHTbL convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 14:27:07 -0500
-X-Greylist: delayed 482 seconds by postgrey-1.27 at vger.kernel.org; Mon, 08 Feb 2010 14:27:07 EST
-Date: Mon, 8 Feb 2010 14:18:58 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
-       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
-       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
-Subject: lockdep rcu-preempt and synchronize_srcu() awareness
-Message-ID: <20100208191858.GA16288@Krystal>
+	Mon, 8 Feb 2010 14:31:11 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=mc9cOx9fE4FfAYKkGKADO189ap5UcgGXGobT7XAVEVvU8Mo1CoAJISo3EhCeFwVDKR
+         kfqzTpca2aqBwEry0sxJdYj6w9SMU9xKtOPStH3nfPrOeDZ6glUgbWA+eMoUzM2mC9Sy
+         TEQukNkzsfheFYYOQG9pKM1SiypMdDMhNQZ20=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Editor: vi
-X-Info: http://www.efficios.com
-X-Operating-System: Linux/2.6.26-2-686 (i686)
-X-Uptime: 14:02:47 up 16 days, 21:40,  4 users,  load average: 1.02, 1.07,
-	0.86
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <201002082024.32483.rjw@sisk.pl>
+References: <2uzMDuY-7_O.A.M1G.7X1bLB@chimera> <201002081156.24020.rjw@sisk.pl>
+	 <b170af451002080349x4fb955b2wb9d0bdf6e6e03d0e@mail.gmail.com>
+	 <201002082024.32483.rjw@sisk.pl>
+Date: Mon, 8 Feb 2010 20:31:09 +0100
+Message-ID: <b170af451002081131w6f1e185epc4e0c13323b75934@mail.gmail.com>
+Subject: Re: [Bug #15096] Resume lock up -- bisected, commit 
+	3a1151e3f124fd1a2c54b8153f510f1a7c715369
+From: =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Len Brown <len.brown@intel.com>,
+       Stefan Bader <stefan.bader@canonical.com>,
+       Zhang Rui <rui.zhang@intel.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+W dniu 8 lutego 2010 20:24 użytkownik Rafael J. Wysocki <rjw@sisk.pl> napisał:
+> On Monday 08 February 2010, Rafał Miłecki wrote:
+>> W dniu 8 lutego 2010 11:56 użytkownik Rafael J. Wysocki <rjw@sisk.pl> napisał:
+>> > On Monday 08 February 2010, Rafał Miłecki wrote:
+>> >> 2010/2/8 Rafael J. Wysocki <rjw@sisk.pl>:
+>> >> > This message has been generated automatically as a part of a report
+>> >> > of regressions introduced between 2.6.31 and 2.6.32.
+>> >> >
+>> >> > The following bug entry is on the current list of known regressions
+>> >> > introduced between 2.6.31 and 2.6.32.  Please verify if it still should
+>> >> > be listed and let the tracking team know (either way).
+>> >> >
+>> >> >
+>> >> > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=15096
+>> >> > Subject         : Resume lock up -- bisected, commit 3a1151e3f124fd1a2c54b8153f510f1a7c715369
+>> >> > Submitter       : Rafał Miłecki <zajec5@gmail.com>
+>> >> > Date            : 2010-01-20 23:15 (19 days old)
+>> >> > First-Bad-Commit: http://git.kernel.org/git/linus/3a1151e3f124fd1a2c54b8153f510f1a7c715369
+>> >
+>> > It looks like we should revert this commit, seems broken.
+>> >
+>> > Anyway, I'll do my best to have a look at this bug later today.
+>>
+>> In such case I'd prefer to add "broken_DOS" flag for devices that were
+>> enabled by this patch. We could avoid restoring backlight on resume
+>> for broken_DOS then and maybe just update brightness to current value.
+>
+> Or perhaps we can try to restore the backlight at a different place.
 
-I just though about the following deadlock scenario involving rcu preempt and
-mutexes. I see that lockdep does not warn about it, and it actually triggers a
-deadlock on my box. It might be worth addressing for TREE_PREEMPT_RCU configs.
+I wanted to find out what causes this lock up by syncing modules
+resume or putting some delays. See bug report of my question.
+Unfortunately didn't get answer.
 
-CPU A:
-    mutex_lock(&test_mutex);
-    synchronize_rcu();
-    mutex_unlock(&test_mutex);
-
-CPU B:
-    rcu_read_lock();
-    mutex_lock(&test_mutex);
-    mutex_unlock(&test_mutex);
-    rcu_read_unlock();
-
-But given that it's not legit to take a mutex from within a rcu read lock in
-non-preemptible configs, I guess it's not much of a real-life problem, but I
-think SRCU is also affected, because there is no lockdep annotation around
-synchronize_srcu().
-
-So I think it would be good to mark rcu_read_lock/unlock as not permitting
-"might_sleep()" in non preemptable RCU configs, and having a look at lockdep
-SRCU support might be worthwhile.
-
-The following test module triggers the problem:
-
-
-/* test-rcu-lockdep.c
- *
- * Test RCU-awareness of lockdep. Don't look at the interface, it's aweful.
- * run, in parallel:
- *
- * cat /proc/testa 
- * cat /proc/testb
- */
-
-#include <linux/module.h>
-#include <linux/mutex.h>
-#include <linux/proc_fs.h>
-#include <linux/sched.h>
-#include <linux/delay.h>
-
-struct proc_dir_entry *pentrya = NULL;
-struct proc_dir_entry *pentryb = NULL;
-
-static DEFINE_MUTEX(test_mutex);
-
-static int my_opena(struct inode *inode, struct file *file)
-{
-	mutex_lock(&test_mutex);
-	synchronize_rcu();
-	mutex_unlock(&test_mutex);
-
-	return -EPERM;
-}
-
-
-static struct file_operations my_operationsa = {
-	.open = my_opena,
-};
-
-static int my_openb(struct inode *inode, struct file *file)
-{
-	rcu_read_lock();
-	mutex_lock(&test_mutex);
-	ssleep(1);
-	mutex_unlock(&test_mutex);
-	rcu_read_unlock();
-
-
-	return -EPERM;
-}
-
-
-static struct file_operations my_operationsb = {
-	.open = my_openb,
-};
-
-int init_module(void)
-{
-	pentrya = create_proc_entry("testa", 0444, NULL);
-	if (pentrya)
-		pentrya->proc_fops = &my_operationsa;
-
-	pentryb = create_proc_entry("testb", 0444, NULL);
-	if (pentryb)
-		pentryb->proc_fops = &my_operationsb;
-
-	return 0;
-}
-
-void cleanup_module(void)
-{
-	remove_proc_entry("testa", NULL);
-	remove_proc_entry("testb", NULL);
-}
-
-MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Mathieu Desnoyers");
-MODULE_DESCRIPTION("lockdep rcu test");
-
-
-
-Thanks,
-
-Mathieu
+-- 
+Rafał
