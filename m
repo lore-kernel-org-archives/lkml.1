@@ -1,40 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751364Ab0BHUnQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 15:43:16 -0500
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:38255 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750802Ab0BHUnP (ORCPT
+	id S1751631Ab0BHUsb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 15:48:31 -0500
+Received: from moutng.kundenserver.de ([212.227.17.8]:61246 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751166Ab0BHUsa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 15:43:15 -0500
-Date: Mon, 8 Feb 2010 21:43:14 +0100
-From: Andreas Mohr <andi@lisas.de>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Andreas Mohr <andi@lisas.de>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@redhat.com>, John Stultz <johnstul@us.ibm.com>
-Subject: Re: clocksource mutex deadlock, cat current_clocksource
-	(2.6.33-rc6/7)
-Message-ID: <20100208204314.GB6003@rhlx01.hs-esslingen.de>
-References: <20100206142141.GA12871@rhlx01.hs-esslingen.de> <alpine.LFD.2.00.1002061534020.2811@localhost.localdomain> <20100207191949.GA23665@rhlx01.hs-esslingen.de> <20100208053830.GA7128@rhlx01.hs-esslingen.de> <alpine.LFD.2.00.1002081010330.2811@localhost.localdomain> <20100208093719.GA15428@rhlx01.hs-esslingen.de> <alpine.LFD.2.00.1002081038430.2811@localhost.localdomain> <20100208194734.GA20316@rhlx01.hs-esslingen.de> <alpine.LFD.2.00.1002082117210.2811@localhost.localdomain>
+	Mon, 8 Feb 2010 15:48:30 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Christoph Hellwig <hch@infradead.org>
+Subject: Re: [PATCH 5/6] syscalls: add define syscall prefix macro
+Date: Mon, 8 Feb 2010 21:48:16 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31-rc8-00053-g43eb7c4-dirty; KDE/4.3.2; x86_64; ; )
+Cc: Jason Baron <jbaron@redhat.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       linux-kernel@vger.kernel.org, laijs@cn.fujitsu.com, lizf@cn.fujitsu.com,
+       rostedt@goodmis.org, fweisbec@gmail.com, mingo@elte.hu, hpa@zytor.com,
+       tglx@linutronix.de, mhiramat@redhat.com
+References: <cover.1265142153.git.jbaron@redhat.com> <201002081712.37166.arnd@arndb.de> <20100208175407.GA14187@infradead.org>
+In-Reply-To: <20100208175407.GA14187@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.1002082117210.2811@localhost.localdomain>
-X-Priority: none
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002082148.16556.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+n0OM3Rl5WkZhPv+xY32Mz0WDS0WU17W0KQou
+ eL6HkUT7A6xwzuRdgj6inSq13lbEPZ0gq6F+OorF5jyEhTGsGQ
+ yjX22VOQxdfUZiKyxITCQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 08, 2010 at 09:28:39PM +0100, Thomas Gleixner wrote:
-> There goes the theory :)
+On Monday 08 February 2010 18:54:07 Christoph Hellwig wrote:
+> On Mon, Feb 08, 2010 at 05:12:36PM +0100, Arnd Bergmann wrote:
+> > On Monday 08 February 2010, Jason Baron wrote:
+> > > So I was trying to keep the names of the arch ia32 compat sys calls the
+> > > same, ie 'sys32_blah'. However, I agree a common naming scheme makes
+> > > more sense. what about 'arch_compat_sys_blah'? So as to distinguish from
+> > > the common compat syscalls 'compat_sys_blah'.
+> > 
+> > Why do you need to distinguish them? I would hope that we never need to
+> > have a kernel with both a generic and an arch specific compat version
+> > of the same syscall.
 > 
-> Which compiler version are you using ?
-> 
-> Can you please provide the disassembly of kernel/time/timekeeping.o ?
+> Well, the usual alignment or number of arguments issues could lead to
+> just that.  We should deal with it the same way as for native syscalls.
 
-Heh, lots and lots of ""session crosstalk"" ;)
+Ah, right. The arch specific syscall may just be a wrapper calling the
+generic function, so we need them both.
 
-http://lisas.de/~andi/kernel/timekeeping_objdump.txt.gz
-
-Andreas Mohr
+	Arnd
