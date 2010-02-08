@@ -1,197 +1,69 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754332Ab0BHJxg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 04:53:36 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:9442 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751930Ab0BHJxf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 04:53:35 -0500
-Date: Mon, 8 Feb 2010 04:51:51 -0500
-From: Amerigo Wang <amwang@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: Tejun Heo <tj@kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Jens Axboe <jens.axboe@oracle.com>, Miles Lane <miles.lane@gmail.com>,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       Amerigo Wang <amwang@redhat.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>, akpm@linux-foundation.org
-Message-Id: <20100208095518.3612.73574.sendpatchset@localhost.localdomain>
-Subject: [Patch 1/2] sysfs: add lockdep class support to s_active
+	id S1755200Ab0BHJxm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 04:53:42 -0500
+Received: from casper.infradead.org ([85.118.1.10]:43355 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754550Ab0BHJxj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Feb 2010 04:53:39 -0500
+Date: Mon, 8 Feb 2010 01:53:49 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, rostedt@goodmis.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>, Tom Tromey <tromey@redhat.com>,
+       Kyle Moffett <kyle@moffetthome.net>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Oleg Nesterov <oleg@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>, linux-next@vger.kernel.org,
+       utrace-devel@redhat.com, Thomas Gleixner <tglx@linutronix.de>,
+       JimKeniston <jkenisto@us.ibm.com>
+Subject: Re: linux-next: add utrace tree
+Message-ID: <20100208015349.36a12efe@infradead.org>
+In-Reply-To: <20100208065425.GB1290@ucw.cz>
+References: <f73f7ab81001222220jfaf2edfwca3fa4c22b0b4d72@mail.gmail.com>
+	<alpine.LFD.2.00.1001232051510.3574@localhost.localdomain>
+	<m33a1tnbd9.fsf@fleche.redhat.com>
+	<alpine.LFD.2.00.1001251332370.3574@localhost.localdomain>
+	<m3636oh2rt.fsf@fleche.redhat.com>
+	<alpine.LFD.2.00.1001261535510.17519@localhost.localdomain>
+	<1264575134.4283.1983.camel@laptop>
+	<alpine.LFD.2.00.1001270231520.24253@localhost.localdomain>
+	<1264600792.31321.464.camel@gandalf.stny.rr.com>
+	<4B607B1A.3080007@zytor.com>
+	<20100208065425.GB1290@ucw.cz>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Recently we met a lockdep warning from sysfs during s2ram.
-As reported by several people, it is something like:
+On Mon, 8 Feb 2010 07:54:25 +0100
+Pavel Machek <pavel@ucw.cz> wrote:
 
-[ 6967.926563] ACPI: Preparing to enter system sleep state S3
-[ 6967.956156] Disabling non-boot CPUs ...
-[ 6967.970401]
-[ 6967.970408] =============================================
-[ 6967.970419] [ INFO: possible recursive locking detected ]
-[ 6967.970431] 2.6.33-rc2-git6 #27
-[ 6967.970439] ---------------------------------------------
-[ 6967.970450] pm-suspend/22147 is trying to acquire lock:
-[ 6967.970460]  (s_active){++++.+}, at: [<c10d2941>]
-sysfs_hash_and_remove+0x3d/0x4f
-[ 6967.970493]
-[ 6967.970497] but task is already holding lock:
-[ 6967.970506]  (s_active){++++.+}, at: [<c10d4110>]
-sysfs_get_active_two+0x16/0x36
-[...]
+> > No, it has nothing to do with ring.  It has to do with modifying
+> > code that another CPU could be executing at the same time, and with
+> > modifying code on the same processor through another virtual alias
+> > (they are different issues.)  The same issues apply regardless of
+> > the CPL of the processor.
+> 
+> ...but these are always 'there could be cpu bugs around' issues,
+> right? Like amd k6. AFAICT x86 always supported self-modifying code
+> without any extra barriers needed...
 
-Eric already provides a patch for this[1], but it still can't fix the
-problem. Based on his work and Peter's suggestion, I write this patch,
-hopefully we can fix the warning completely.
-
-This patch put sysfs s_active into two classes, one is for PM, the other
-is for the rest, so lockdep will distinguish them.
-
-Still, using a workqueue to do the cleaning work is another choice,
-as pointed by Eric. But not sure if it's better than this approach,
-this depends on if we want to eliminate all the similar cases hold
-the same class of locks, or just eliminate this one case. Please
-comment.
-
-I tested this patch, it fixes the problem.
-
-1. http://lkml.org/lkml/2010/1/10/282
+self modifying code yes, cross modifying code no.
 
 
-Reported-by: Larry Finger <Larry.Finger@lwfinger.net>
-Reported-by: Miles Lane <miles.lane@gmail.com>
-Reported-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-Signed-off-by: WANG Cong <amwang@redhat.com>
-Cc: Eric W. Biederman <ebiederm@xmission.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Tejun Heo <tj@kernel.org>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- fs/sysfs/dir.c        |    1 -
- fs/sysfs/file.c       |    7 +++++++
- fs/sysfs/sysfs.h      |   11 -----------
- include/linux/sysfs.h |    7 +++++++
- kernel/power/power.h  |   15 ++++++++-------
- 5 files changed, 22 insertions(+), 19 deletions(-)
-
-diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index 699f371..d7de269 100644
---- a/fs/sysfs/dir.c
-+++ b/fs/sysfs/dir.c
-@@ -354,7 +354,6 @@ struct sysfs_dirent *sysfs_new_dirent(const char *name, umode_t mode, int type)
- 
- 	atomic_set(&sd->s_count, 1);
- 	atomic_set(&sd->s_active, 0);
--	sysfs_dirent_init_lockdep(sd);
- 
- 	sd->s_name = name;
- 	sd->s_mode = mode;
-diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
-index dc30d9e..97e397a 100644
---- a/fs/sysfs/file.c
-+++ b/fs/sysfs/file.c
-@@ -24,6 +24,8 @@
- 
- #include "sysfs.h"
- 
-+static struct lock_class_key sysfs_classes[SYSFS_NR_CLASSES];
-+
- /* used in crash dumps to help with debugging */
- static char last_sysfs_file[PATH_MAX];
- void sysfs_printk_last_file(void)
-@@ -504,11 +506,16 @@ int sysfs_add_file_mode(struct sysfs_dirent *dir_sd,
- 	struct sysfs_addrm_cxt acxt;
- 	struct sysfs_dirent *sd;
- 	int rc;
-+	int class;
- 
- 	sd = sysfs_new_dirent(attr->name, mode, type);
- 	if (!sd)
- 		return -ENOMEM;
- 	sd->s_attr.attr = (void *)attr;
-+	class = SYSFS_ATTR_NORMAL;
-+	if (sysfs_type(sd) == SYSFS_KOBJ_ATTR)
-+		class = sd->s_attr.attr->class;
-+	lockdep_set_class_and_name(sd, &sysfs_classes[class], "s_active");
- 
- 	sysfs_addrm_start(&acxt, dir_sd);
- 	rc = sysfs_add_one(&acxt, sd);
-diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
-index cdd9377..dde4d73 100644
---- a/fs/sysfs/sysfs.h
-+++ b/fs/sysfs/sysfs.h
-@@ -88,17 +88,6 @@ static inline unsigned int sysfs_type(struct sysfs_dirent *sd)
- 	return sd->s_flags & SYSFS_TYPE_MASK;
- }
- 
--#ifdef CONFIG_DEBUG_LOCK_ALLOC
--#define sysfs_dirent_init_lockdep(sd)				\
--do {								\
--	static struct lock_class_key __key;			\
--								\
--	lockdep_init_map(&sd->dep_map, "s_active", &__key, 0);	\
--} while(0)
--#else
--#define sysfs_dirent_init_lockdep(sd) do {} while(0)
--#endif
--
- /*
-  * Context structure to be used while adding/removing nodes.
-  */
-diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
-index cfa8308..2b91b74 100644
---- a/include/linux/sysfs.h
-+++ b/include/linux/sysfs.h
-@@ -20,6 +20,12 @@
- struct kobject;
- struct module;
- 
-+enum sysfs_attr_lock_class {
-+	SYSFS_ATTR_NORMAL,
-+	SYSFS_ATTR_PM_CONTROL,
-+	SYSFS_NR_CLASSES,
-+};
-+
- /* FIXME
-  * The *owner field is no longer used.
-  * x86 tree has been cleaned up. The owner
-@@ -29,6 +35,7 @@ struct attribute {
- 	const char		*name;
- 	struct module		*owner;
- 	mode_t			mode;
-+	enum sysfs_attr_lock_class	class;
- };
- 
- struct attribute_group {
-diff --git a/kernel/power/power.h b/kernel/power/power.h
-index 46c5a26..67a6fe7 100644
---- a/kernel/power/power.h
-+++ b/kernel/power/power.h
-@@ -54,13 +54,14 @@ extern int hibernation_platform_enter(void);
- extern int pfn_is_nosave(unsigned long);
- 
- #define power_attr(_name) \
--static struct kobj_attribute _name##_attr = {	\
--	.attr	= {				\
--		.name = __stringify(_name),	\
--		.mode = 0644,			\
--	},					\
--	.show	= _name##_show,			\
--	.store	= _name##_store,		\
-+static struct kobj_attribute _name##_attr = {		\
-+	.attr	= {					\
-+		.name = __stringify(_name),		\
-+		.mode = 0644,				\
-+		.class = SYSFS_ATTR_PM_CONTROL,		\
-+	},						\
-+	.show	= _name##_show,				\
-+	.store	= _name##_store,			\
- }
- 
- /* Preferred image size in bytes (default 500 MB) */
 -- 
-1.5.5.6
-
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
