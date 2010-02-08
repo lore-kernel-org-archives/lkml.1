@@ -1,67 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754144Ab0BHSvW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 13:51:22 -0500
-Received: from outbound-mail-313.bluehost.com ([67.222.54.6]:43776 "HELO
-	outbound-mail-313.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753963Ab0BHSvU (ORCPT
+	id S1754186Ab0BHSvx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 13:51:53 -0500
+Received: from Cpsmtpm-eml106.kpnxchange.com ([195.121.3.10]:58738 "EHLO
+	CPSMTPM-EML106.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754150Ab0BHSvw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 13:51:20 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=mBCG+lqSO631pQO1LbSX2lD9YfAFkhmr/CmAnCFN8j/ghTlgExgkATcBhDNDy+UI0uKhiQFKbTxguL9prTARxJV6UqEA3i4mcZ6MYHnMF667Yex8L7Xkz13K3mSqM1X7;
-Date: Mon, 8 Feb 2010 10:50:12 -0800
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
-Subject: Re: [PATCH -next] pci hotplug: fix ibmphp build error
-Message-ID: <20100208105012.17053238@jbarnes-piketon>
-In-Reply-To: <4B6B2A27.9070600@oracle.com>
-References: <20100204185736.6628ab9a.sfr@canb.auug.org.au>
-	<4B6B2A27.9070600@oracle.com>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 8 Feb 2010 13:51:52 -0500
+From: Frans Pop <elendil@planet.nl>
+To: ccube <friends@ccube.de>
+Subject: Re: [PATCH] option.c added DELL wireless HSDPA 5540 Modem
+Date: Mon, 8 Feb 2010 19:51:49 +0100
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org
+References: <4B705244.2010606@ccube.de>
+In-reply-To: <4B705244.2010606@ccube.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+Content-Disposition: inline
+Message-Id: <201002081951.50321.elendil@planet.nl>
+X-OriginalArrivalTime: 08 Feb 2010 18:51:50.0961 (UTC) FILETIME=[C636CA10:01CAA8EF]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 04 Feb 2010 12:12:23 -0800
-Randy Dunlap <randy.dunlap@oracle.com> wrote:
+Hi,
 
-> From: Randy Dunlap <randy.dunlap@oracle.com>
-> 
-> Add header file to fix build error:
-> 
-> drivers/pci/hotplug/ibmphp_hpc.c:135: error: implicit declaration of
-> function 'init_MUTEX' drivers/pci/hotplug/ibmphp_hpc.c:136: error:
-> implicit declaration of function 'init_MUTEX_LOCKED'
-> drivers/pci/hotplug/ibmphp_hpc.c:797: error: implicit declaration of
-> function 'down' drivers/pci/hotplug/ibmphp_hpc.c:807: error: implicit
-> declaration of function 'up'
-> 
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> ---
->   drivers/pci/hotplug/ibmphp_hpc.c |    1 +
->   1 file changed, 1 insertion(+)
-> 
-> --- linux-next-20100204.orig/drivers/pci/hotplug/ibmphp_hpc.c
-> +++ linux-next-20100204/drivers/pci/hotplug/ibmphp_hpc.c
-> @@ -35,6 +35,7 @@
->   #include <linux/init.h>
->   #include <linux/mutex.h>
->   #include <linux/sched.h>
-> +#include <linux/semaphore.h>
->   #include <linux/kthread.h>
->   #include "ibmphp.h"
->   
-> 
+ccube wrote:
+> i really dont know if everything is correct.
+> This is my first submit into this mailing list.
+> I added support for my HSDPA UMTS-card.
+> Perhaps you can check! ;)
 
-Applied to linux-next, thanks.
+There are two main problems with your patch.
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+1) The lines in the patch have been line-wrapped by your mail client.
+   This means the patch will not apply.
+2) The patch is not signed off, which prevents inclusion.
+
+Please see Documentation/SubmittingPatches and the other documents 
+referenced there.
+
+You should also try to Cc the most relevant maintainers of the code you're 
+changing. In this case the linux-usb list (also on vger.kernel.org).
+
+Cheers,
+FJP
