@@ -1,50 +1,58 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933348Ab0BHDSh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Feb 2010 22:18:37 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:16356 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755969Ab0BHDSf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Feb 2010 22:18:35 -0500
-Message-ID: <4B6F834E.4010801@redhat.com>
-Date: Mon, 08 Feb 2010 11:21:50 +0800
-From: Cong Wang <amwang@redhat.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20091001)
+	id S933592Ab0BHDTi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Feb 2010 22:19:38 -0500
+Received: from smtpauth.net4india.com ([202.71.129.41]:34662 "EHLO
+	smtpauth.net4india.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757576Ab0BHDTg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Feb 2010 22:19:36 -0500
+Message-ID: <4B6F82B7.4090501@xenontk.org>
+Date: Mon, 08 Feb 2010 08:49:19 +0530
+From: David John <davidjon@xenontk.org>
+Reply-To: davidjon@xenontk.org
+User-Agent: Mozilla/5.0 (X11; X; Linux x86_64; rv:1.9.1.7) Gecko/20100120 Thunderbird/3.0.1
 MIME-Version: 1.0
-To: Octavian Purdila <opurdila@ixiacom.com>
-CC: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       eric.dumazet@gmail.com, linux-rdma@vger.kernel.org,
-       netdev@vger.kernel.org, nhorman@tuxdriver.com,
-       linux-sctp@vger.kernel.org
-Subject: Re: [RFC Patch] net: reserve ports for applications using fixed port
- numbers
-References: <201002031312.48531.opurdila@ixiacom.com> <201002042015.51092.opurdila@ixiacom.com> <4B6BA272.4090405@redhat.com> <201002051405.54029.opurdila@ixiacom.com>
-In-Reply-To: <201002051405.54029.opurdila@ixiacom.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Luiz Augusto von Dentz <luiz.dentz@openbossa.org>,
+       Marcel Holtmann <marcel@holtmann.org>
+Subject: Re: [Bug #15127] Bluetooth: sleeping function called from invalid
+ context
+References: <2uzMDuY-7_O.A.M1G.7X1bLB@chimera> <iuJeop2ribM.A.DgH.XY1bLB@chimera>
+In-Reply-To: <iuJeop2ribM.A.DgH.XY1bLB@chimera>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Octavian Purdila wrote:
-> On Friday 05 February 2010 06:45:38 you wrote:
+On 02/08/2010 05:58 AM, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of regressions introduced between 2.6.31 and 2.6.32.
 > 
->> Again, using bitmap algorithm is not a problem and it's better, the
->> problem is sysctl interface, how would you plan to interact with users
->> via sysctl/proc if you use bitmap to handle this? I would like to hear
->> more details about this.
->>
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.31 and 2.6.32.  Please verify if it still should
+> be listed and let the tracking team know (either way).
 > 
-> We could use something like positive values for setting and negative for reset 
-> (e.g. 3 would set the port in the bitmap and -3 would reset it).
-
-
-Hmm, then how do you output the info of those ports? Arrays of bitmaps?
-
 > 
-> But we would need new sysctl and proc handlers to handle the bitmap case (e.g. 
-> sysctl_bitmap, proc_dobitmap_minmax).
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15127
+> Subject		: Bluetooth: sleeping function called from invalid context
+> Submitter	: David John <davidjon@xenontk.org>
+> Date		: 2010-01-12 9:19 (27 days old)
+> First-Bad-Commit: http://git.kernel.org/git/linus/9e726b17422bade75fba94e625cd35fd1353e682
+> References	: http://marc.info/?l=linux-kernel&m=126328727021949&w=4
+> Handled-By	: Marcel Holtmann <marcel@holtmann.org>
+> Patch		: http://patchwork.kernel.org/patch/76019/
+> 
+> 
+> 
 
-Maybe.
+Hi Rafael,
 
-Thanks.
+The fix has not been merged yet, so please keep this open.
+
+Regards,
+David.
