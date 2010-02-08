@@ -1,114 +1,159 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755842Ab0BHUWj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 15:22:39 -0500
-Received: from fmmailgate03.web.de ([217.72.192.234]:53527 "EHLO
+	id S1755681Ab0BHUUN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 15:20:13 -0500
+Received: from fmmailgate03.web.de ([217.72.192.234]:53677 "EHLO
 	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754293Ab0BHUNA (ORCPT
+	with ESMTP id S1754808Ab0BHUNF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 15:13:00 -0500
+	Mon, 8 Feb 2010 15:13:05 -0500
 From: Jan Kiszka <jan.kiszka@web.de>
 To: David Miller <davem@davemloft.net>, Karsten Keil <isdn@linux-pingi.de>
 Cc: linux-kernel@vger.kernel.org, i4ldeveloper@listserv.isdn4linux.de,
        isdn4linux@listserv.isdn4linux.de, netdev@vger.kernel.org,
        Alan Cox <alan@lxorguk.ukuu.org.uk>,
        Marcel Holtmann <marcel@holtmann.org>
-Subject: [PATCH v2 04/41] CAPI: Pin capifs instead of mounting it
-Date: Mon,  8 Feb 2010 21:12:08 +0100
-Message-Id: <225c4c6dbff38f6f8fa780ca91dcffd81b139bb0.1265659933.git.jan.kiszka@web.de>
+Subject: [PATCH v2 14/41] CAPI: Clean up capi_open/release
+Date: Mon,  8 Feb 2010 21:12:18 +0100
+Message-Id: <4d410220c1c4e9da2c7fcfe113a3dadbf586ffbe.1265659934.git.jan.kiszka@web.de>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <cover.1265659933.git.jan.kiszka@web.de>
 References: <cover.1265659933.git.jan.kiszka@web.de>
 In-Reply-To: <cover.1265659933.git.jan.kiszka@web.de>
 References: <cover.1265659933.git.jan.kiszka@web.de>
-X-Provags-ID: V01U2FsdGVkX1/7O+yb4FRCiweAakDG+YKhk/RZAMkNmkEXenpb
-	FKDnjCKeqV0F7vmdxbOIbnW59+YEb/WPMcbnZs7SMRgX/vabka
-	s5mWHXrio=
+X-Provags-ID: V01U2FsdGVkX18iEDjcbbiLOFiCQ3DBBwn4i6pAyKC+4TDEvis1
+	YDV1vP80MUoexdjT57gkVvBpNut+7KRePfk4YY6ffUYOjJoC/l
+	hikUIjW+A=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Auto-mounting the capifs during module init prevents unloading its
-module. Instead, pin the filesystem as long as some NCCI node exists.
+Fold capidev_alloc and capidev_free into capi_open and capi_release -
+there are no other users. Someone pushed a lock_kernel into capi_open.
+Drop it, we don't need it. Also remove the useless test from open that
+checks for private_data == NULL.
 
 Signed-off-by: Jan Kiszka <jan.kiszka@web.de>
 ---
- drivers/isdn/capi/capifs.c |   27 ++++++++++++++++++---------
- 1 files changed, 18 insertions(+), 9 deletions(-)
+ drivers/isdn/capi/capi.c |   93 +++++++++++++++++-----------------------------
+ 1 files changed, 34 insertions(+), 59 deletions(-)
 
-diff --git a/drivers/isdn/capi/capifs.c b/drivers/isdn/capi/capifs.c
-index 6ae0edf..51c01ef 100644
---- a/drivers/isdn/capi/capifs.c
-+++ b/drivers/isdn/capi/capifs.c
-@@ -32,6 +32,7 @@ static char *revision = "$Revision: 1.1.2.3 $";
- #define CAPIFS_SUPER_MAGIC (('C'<<8)|'N')
- 
- static struct vfsmount *capifs_mnt;
-+static int capifs_mnt_count;
- 
- static struct {
- 	int setuid;
-@@ -140,7 +141,7 @@ static struct file_system_type capifs_fs_type = {
- 	.kill_sb	= kill_anon_super,
- };
- 
--struct dentry *capifs_new_ncci(unsigned int number, dev_t device)
-+static struct dentry *new_ncci(unsigned int number, dev_t device)
- {
- 	struct super_block *s = capifs_mnt->mnt_sb;
- 	struct dentry *root = s->s_root;
-@@ -187,6 +188,20 @@ unlock_out:
- 	return dentry;
+diff --git a/drivers/isdn/capi/capi.c b/drivers/isdn/capi/capi.c
+index 623412e..9d7c369 100644
+--- a/drivers/isdn/capi/capi.c
++++ b/drivers/isdn/capi/capi.c
+@@ -401,46 +401,6 @@ static struct capincci *capincci_find(struct capidev *cdev, u32 ncci)
+ 	return p;
  }
  
-+struct dentry *capifs_new_ncci(unsigned int number, dev_t device)
-+{
-+	struct dentry *dentry;
-+
-+	if (simple_pin_fs(&capifs_fs_type, &capifs_mnt, &capifs_mnt_count) < 0)
-+		return NULL;
-+
-+	dentry = new_ncci(number, device);
-+	if (!dentry)
-+		simple_release_fs(&capifs_mnt, &capifs_mnt_count);
-+
-+	return dentry;
-+}
-+
- void capifs_free_ncci(struct dentry *dentry)
- {
- 	struct dentry *root = capifs_mnt->mnt_sb->s_root;
-@@ -206,6 +221,8 @@ void capifs_free_ncci(struct dentry *dentry)
- 	dput(dentry);
- 
- 	mutex_unlock(&root->d_inode->i_mutex);
-+
-+	simple_release_fs(&capifs_mnt, &capifs_mnt_count);
- }
- 
- static int __init capifs_init(void)
-@@ -222,13 +239,6 @@ static int __init capifs_init(void)
- 		strcpy(rev, "1.0");
- 
- 	err = register_filesystem(&capifs_fs_type);
--	if (!err) {
--		capifs_mnt = kern_mount(&capifs_fs_type);
--		if (IS_ERR(capifs_mnt)) {
--			err = PTR_ERR(capifs_mnt);
--			unregister_filesystem(&capifs_fs_type);
--		}
+-/* -------- struct capidev ------------------------------------------ */
+-
+-static struct capidev *capidev_alloc(void)
+-{
+-	struct capidev *cdev;
+-
+-	cdev = kzalloc(sizeof(*cdev), GFP_KERNEL);
+-	if (!cdev)
+-		return NULL;
+-
+-	mutex_init(&cdev->ncci_list_mtx);
+-	skb_queue_head_init(&cdev->recvqueue);
+-	init_waitqueue_head(&cdev->recvwait);
+-
+-	mutex_lock(&capidev_list_lock);
+-	list_add_tail(&cdev->list, &capidev_list);
+-	mutex_unlock(&capidev_list_lock);
+-
+-        return cdev;
+-}
+-
+-static void capidev_free(struct capidev *cdev)
+-{
+-	mutex_lock(&capidev_list_lock);
+-	list_del(&cdev->list);
+-	mutex_unlock(&capidev_list_lock);
+-
+-	if (cdev->ap.applid) {
+-		capi20_release(&cdev->ap);
+-		cdev->ap.applid = 0;
 -	}
- 	if (!err)
- 		printk(KERN_NOTICE "capifs: Rev %s\n", rev);
- 	return err;
-@@ -237,7 +247,6 @@ static int __init capifs_init(void)
- static void __exit capifs_exit(void)
- {
- 	unregister_filesystem(&capifs_fs_type);
--	mntput(capifs_mnt);
+-	skb_queue_purge(&cdev->recvqueue);
+-
+-	mutex_lock(&cdev->ncci_list_mtx);
+-	capincci_free(cdev, 0xffffffff);
+-	mutex_unlock(&cdev->ncci_list_mtx);
+-
+-	kfree(cdev);
+-}
+-
+ #ifdef CONFIG_ISDN_CAPI_MIDDLEWARE
+ /* -------- handle data queue --------------------------------------- */
+ 
+@@ -991,30 +951,45 @@ capi_ioctl(struct inode *inode, struct file *file,
+ 	return -EINVAL;
  }
  
- EXPORT_SYMBOL(capifs_new_ncci);
+-static int
+-capi_open(struct inode *inode, struct file *file)
++static int capi_open(struct inode *inode, struct file *file)
+ {
+-	int ret;
+-	
+-	lock_kernel();
+-	if (file->private_data)
+-		ret = -EEXIST;
+-	else if ((file->private_data = capidev_alloc()) == NULL)
+-		ret = -ENOMEM;
+-	else
+-		ret = nonseekable_open(inode, file);
+-	unlock_kernel();
+-	return ret;
++	struct capidev *cdev;
++
++	cdev = kzalloc(sizeof(*cdev), GFP_KERNEL);
++	if (!cdev)
++		return -ENOMEM;
++
++	mutex_init(&cdev->ncci_list_mtx);
++	skb_queue_head_init(&cdev->recvqueue);
++	init_waitqueue_head(&cdev->recvwait);
++	file->private_data = cdev;
++
++	mutex_lock(&capidev_list_lock);
++	list_add_tail(&cdev->list, &capidev_list);
++	mutex_unlock(&capidev_list_lock);
++
++	return nonseekable_open(inode, file);
+ }
+ 
+-static int
+-capi_release(struct inode *inode, struct file *file)
++static int capi_release(struct inode *inode, struct file *file)
+ {
+-	struct capidev *cdev = (struct capidev *)file->private_data;
++	struct capidev *cdev = file->private_data;
+ 
+-	capidev_free(cdev);
+-	file->private_data = NULL;
+-	
++	mutex_lock(&capidev_list_lock);
++	list_del(&cdev->list);
++	mutex_unlock(&capidev_list_lock);
++
++	if (cdev->ap.applid) {
++		capi20_release(&cdev->ap);
++		cdev->ap.applid = 0;
++	}
++	skb_queue_purge(&cdev->recvqueue);
++
++	mutex_lock(&cdev->ncci_list_mtx);
++	capincci_free(cdev, 0xffffffff);
++	mutex_unlock(&cdev->ncci_list_mtx);
++
++	kfree(cdev);
+ 	return 0;
+ }
+ 
 -- 
 1.6.0.2
 
