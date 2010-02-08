@@ -1,70 +1,116 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753965Ab0BHQzm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 11:55:42 -0500
-Received: from rcsinet12.oracle.com ([148.87.113.124]:45916 "EHLO
-	rcsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753529Ab0BHQzk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 11:55:40 -0500
-Message-ID: <4B704188.4020009@oracle.com>
-Date: Mon, 08 Feb 2010 08:53:28 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+	id S1754002Ab0BHQ4M (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 11:56:12 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:48710 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753617Ab0BHQ4J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Feb 2010 11:56:09 -0500
+Date: Mon, 8 Feb 2010 16:55:55 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       epasch@de.ibm.com, SCHILLIG@de.ibm.com,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, christof.schmitt@de.ibm.com,
+       thoss@de.ibm.com, hare@suse.de, npiggin@suse.de
+Subject: Re: Performance regression in scsi sequential throughput (iozone)
+	due to "e084b - page-allocator: preserve PFN ordering when
+	__GFP_COLD is set"
+Message-ID: <20100208165555.GD23680@csn.ul.ie>
+References: <20091211112009.GC30670@csn.ul.ie> <4B225B9E.2020702@linux.vnet.ibm.com> <4B2B85C7.80502@linux.vnet.ibm.com> <20091218174250.GC21194@csn.ul.ie> <4B4F0E60.1020601@linux.vnet.ibm.com> <20100119113306.GA23881@csn.ul.ie> <4B6C3E6E.6050303@linux.vnet.ibm.com> <20100205174917.GB11512@csn.ul.ie> <4B70192C.3070601@linux.vnet.ibm.com> <20100208152131.GC23680@csn.ul.ie>
 MIME-Version: 1.0
-To: Jason Baron <jbaron@redhat.com>
-CC: Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
-       laijs@cn.fujitsu.com, lizf@cn.fujitsu.com, rostedt@goodmis.org,
-       fweisbec@gmail.com, mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de,
-       mhiramat@redhat.com
-Subject: Re: [PATCH 5/6] syscalls: add define syscall prefix macro
-References: <cover.1265142153.git.jbaron@redhat.com> <ce5ccbcc86e34954948239b17010c5537fb62917.1265142153.git.jbaron@redhat.com> <20100203130104.GB30003@osiris.boeblingen.de.ibm.com> <20100208154856.GC2688@redhat.com>
-In-Reply-To: <20100208154856.GC2688@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt355.oracle.com [141.146.40.155]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090204.4B7041E3.01F9:SCFMA4539814,ss=1,fgs=0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20100208152131.GC23680@csn.ul.ie>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/08/10 07:48, Jason Baron wrote:
-> On Wed, Feb 03, 2010 at 02:01:04PM +0100, Heiko Carstens wrote:
->> On Tue, Feb 02, 2010 at 04:21:55PM -0500, Jason Baron wrote:
->>> Add a new 'SYSCALL_PREFIX_DEFINE#()' style macro to include/linux/syscalls.h.
->>> This allows us to create syscalls via:
->>>
->>> SYSCALL_PREFIX_DEFINE1(32_, mmap, struct mmap_arg_struct __user *, arg);
->>>
->>> The standard 'SYSCALL_DEFINE#()' macro forces 'sys_blah', but for the 32 compat
->>> calls we want 'sys32_blah'.
->>
->> Not really. That's what you want for x86. But the generic name for compat syscalls
->> is compat_sys_whatever. The arch specific compat syscalls don't follow a common
->> naming scheme (yet).
->> Especially if you consider the idea to get automated correct sign extension via
->> hpa's planned script for compat syscalls it would be good if you would just name
->> that define something like SYSCALL_COMPAT.. or COMPAT_SYSCALL..
->> That way it would be easy to add a hook in there.
+> <SNIP>
+> The prototype patch for avoiding congestion_wait is below. I'll start
+> work on a fallback-to-other-percpu-lists patch.
 > 
-> So I was trying to keep the names of the arch ia32 compat sys calls the
-> same, ie 'sys32_blah'. However, I agree a common naming scheme makes
-> more sense. what about 'arch_compat_sys_blah'? So as to distinguish from
-> the common compat syscalls 'compat_sys_blah'.
 
-Hi,
-I can't find my copy of the original posting... sorry about that.
+And here is the prototype of the fallback-to-other-percpu-lists patch.
+I'm afraid I've only managed to test it on qemu. My three test machines are
+still occupied :(
 
-Are these new SYSCALL macros just a shorthand/shortcut to cut down on typing
-(and/or errors)?
+==== CUT HERE ====
+page allocator: Fallback to other per-cpu lists when the target list is empty and memory is low
 
-The added level of indirection makes problems for scripts/kernel-doc (well, if any of
-the syscalls have kernel-doc notation, that is).  I'd prefer not to see 2 levels of macros
-for defining a syscall, but if it has to live, please look into updating scripts/kernel-doc
-also.
+When a per-cpu list of pages for a given migratetype is empty, the page
+allocator is called to refill the PCP list. It's possible when memory
+is low that this results in the process entering direct reclaim even
+if it wasn't strictly necessary because there were pages free for other
+migratetypes. Unconditionally falling back to other PCP lists hurts the
+fragmentation-avoidance strategy which is also undesirable.
 
-thanks,
--- 
-~Randy
+When the desired PCP list is empty, this patch checks how many free pages
+there are on the PCP lists and if refilling the list could result in direct
+reclaim. If direct reclaim is unlikely, the PCP list is refilled to maintain
+fragmentation-avoidance. Otherwise, a page from an alternative PCP list is
+chosen to maintain performance and avoid direct reclaim.
+
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+---
+ mm/page_alloc.c |   37 ++++++++++++++++++++++++++++++++++---
+ 1 files changed, 34 insertions(+), 3 deletions(-)
+
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index 8deb9d0..009d683 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -1168,6 +1168,39 @@ void split_page(struct page *page, unsigned int order)
+ 		set_page_refcounted(page + i);
+ }
+ 
++/* Decide whether to find an alternative PCP list or refill */
++static struct list_head *pcp_fallback(struct zone *zone,
++			struct per_cpu_pages *pcp, 
++			int start_migratetype, int cold)
++{
++	int i;
++	int migratetype;
++	struct list_head *list;
++	long free_pages = zone_page_state(zone, NR_FREE_PAGES) - pcp->batch;
++
++	/* 
++	 * Find a PCPU list with free pages in the same order as
++	 * fragmentation-avoidance fallback in the event that refilling
++	 * the PCP list may result in direct reclaim
++	 */
++	if (pcp->count && free_pages <= low_wmark_pages(zone)) {
++		for (i = 0; i < MIGRATE_PCPTYPES - 1; i++) {
++			migratetype = fallbacks[start_migratetype][i];
++			list = &pcp->lists[migratetype];
++
++			if (!list_empty(list))
++				return list;
++		}
++	}
++
++	/* Alternatively, we need to allocate more memory to the PCP lists */
++	list = &pcp->lists[start_migratetype];
++	pcp->count += rmqueue_bulk(zone, 0, pcp->batch, list,
++					migratetype, cold);
++
++	return list;
++}
++
+ /*
+  * Really, prep_compound_page() should be called from __rmqueue_bulk().  But
+  * we cheat by calling it from here, in the order > 0 path.  Saves a branch
+@@ -1193,9 +1226,7 @@ again:
+ 		list = &pcp->lists[migratetype];
+ 		local_irq_save(flags);
+ 		if (list_empty(list)) {
+-			pcp->count += rmqueue_bulk(zone, 0,
+-					pcp->batch, list,
+-					migratetype, cold);
++			list = pcp_fallback(zone, pcp, migratetype, cold);
+ 			if (unlikely(list_empty(list)))
+ 				goto failed;
+ 		}
