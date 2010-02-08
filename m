@@ -1,103 +1,94 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753839Ab0BHHdh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 02:33:37 -0500
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:59079 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752099Ab0BHHdf (ORCPT
+	id S1754179Ab0BHHfH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 02:35:07 -0500
+Received: from e23smtp08.au.ibm.com ([202.81.31.141]:55399 "EHLO
+	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752100Ab0BHHfF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 02:33:35 -0500
-Date: Mon, 8 Feb 2010 08:33:34 +0100
-From: Andreas Mohr <andi@lisas.de>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Catalin Marinas <catalin.marinas@arm.com>,
-       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Ming Lei <tom.leiming@gmail.com>, linux-usb@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Sebastian Siewior <bigeasy@linutronix.de>, Greg KH <greg@kroah.com>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
-Subject: Re: USB mass storage and ARM cache coherency
-Message-ID: <20100208073334.GB7171@rhlx01.hs-esslingen.de>
-References: <20100129185434.GH19501@one-eyed-alien.net> <1265045354.25750.52.camel@pc1117.cambridge.arm.com> <20100208065519.GE1290@ucw.cz>
+	Mon, 8 Feb 2010 02:35:05 -0500
+Message-ID: <4B6FBEA3.7050803@linux.vnet.ibm.com>
+Date: Mon, 08 Feb 2010 13:04:59 +0530
+From: Rishikesh <risrajak@linux.vnet.ibm.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100208065519.GE1290@ucw.cz>
-X-Priority: none
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: subrata@linux.vnet.ibm.com, linux-kernel@vger.kernel.org
+CC: Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, svishuku@in.ibm.com,
+       "paul.larson" <paul.larson@ubuntu.com>,
+       Garrett Cooper <yanegomi@gmail.com>, Mike Frysinger <vapier@gentoo.org>,
+       Robbie Williamson <robbie@ubuntu.com>,
+       "manoj.iyer" <manoj.iyer@ubuntu.com>, Nathan Straz <nstraz@redhat.com>,
+       Michael Reed <mreed10@us.ibm.com>, Sudarshan Rao <rsudarsh@in.ibm.com>
+Subject: Re: [PATCH]: Changed in LTP maintainership responsibilities
+References: <4B6FAD84.5070804@linux.vnet.ibm.com> <1265613979.4754.16.camel@subratamodak.linux.ibm.com>
+In-Reply-To: <1265613979.4754.16.camel@subratamodak.linux.ibm.com>
+Content-Type: multipart/mixed;
+ boundary="------------060904000906020606000001"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+This is a multi-part message in MIME format.
+--------------060904000906020606000001
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Mon, Feb 08, 2010 at 07:55:19AM +0100, Pavel Machek wrote:
-> Plus it does unneccessary flushes on x86, etc...
+On 02/08/2010 12:56 PM, Subrata Modak wrote:
+> +M:     Rishikesh K Rajak<risrajak@linux.vnet.ibm.com>
+> +M:	Garrett Cooper<yanegomi@gmail.com>
+> +M:     Mike Frysinger<vapier@gentoo.org>
+> +M:     Subrata Modak<subrata@linux.vnet.ibm.com>
+>    
+Sure, Here is the updated patch.
 
-Noticed that as well, there should be an arch-obeying helper for this.
+Changed the LTP maintainer responsibities from 2010.
 
+Ref: http://marc.info/?l=ltp-list&m=126502242912536&w=2
 
-On my MIPSEL, I had urb->transfer_buffer NULL ptr crashes
-(I think that was expected in case of a certain DMA setup, Alan said).
+Signed-off By : Rishikesh K Rajak <risrajak@linux.vnet.ibm.com>
+---
+Index: linux-2.6/MAINTAINERS
+===================================================================
+--- linux-2.6.orig/MAINTAINERS  2010-02-08 11:27:59.000000000 +0530
++++ linux-2.6/MAINTAINERS       2010-02-08 13:03:53.000000000 +0530
+@@ -3411,8 +3411,10 @@
+  F:     drivers/scsi/sym53c8xx_2/
 
-However, even with NULL check added I still had:
-
-hub 2-1.1:1.0: state 7 ports 7 chg 0000 evt 0010
-Unhandled kernel unaligned access[#1]:
-Cpu 0
-$ 0   : 00000000 fffffffd 803b0000 00010000
-$ 4   : 08002042 8143bfe0 0043bfe0 0000000d
-$ 8   : 00000001 3b9aca00 c4653600 00000000
-$12   : 00000049 3b9aca00 81dbc868 00000000
-$16   : a1e00000 803b0000 8037f840 81dfaa80
-$20   : 00000000 81dd5080 80000000 00000000
-$24   : 00000000 80015a64
-$28   : 8033a000 8033bc10 a1dd83cc 801da5e4
-Hi    : 00000000
-Lo    : 00000000
-epc   : 800171e8 __flush_dcache_page+0x38/0x120
-    Not tainted
-ra    : 801da5e4 ehci_urb_done+0x180/0x1e4
-Status: 10009002    KERNEL EXL
-Cause : 00800010
-BadVA : 08002056
-PrId  : 00029029 (Broadcom BCM3302)
-Modules linked in:
-Process swapper (pid: 0, threadinfo=8033a000, task=8033c000, tls=00000000)
-Stack : 00000000 00000000 81e04980 801c80ac a1dd9060 a1dd8394 ffffff6a ffffff6a
-        81dfaa80 a1dd83cc a1dd8380 801db3a4 803a6a28 80068e9c 000003f8 00003fc0
-        a1dd81cc 801dea58 00000001 00000000 a1dd9360 81dd5080 a1dd8380 10009001
-        a1dd83cc 81dd5158 00000000 80318d44 81dd5158 00000001 00010031 801de8f4
-        81dd5158 8033bce0 803a76a0 803a0000 8033d860 8004f924 00000219 00000043
-        ...
-Call Trace:
-[<800171e8>] __flush_dcache_page+0x38/0x120
-[<801da5e4>] ehci_urb_done+0x180/0x1e4
-[<801db3a4>] qh_completions+0x484/0x554
-[<801de8f4>] ehci_work+0x1ec/0xb68
-[<801e2598>] ehci_irq+0x360/0x3a4
-[<801c7cf8>] usb_hcd_irq+0x64/0x15c
-[<80066d58>] handle_IRQ_event+0x90/0x280
-[<80068e80>] handle_percpu_irq+0x48/0x9c
-[<8000e228>] plat_irq_dispatch+0x15c/0x178
-[<80001444>] ret_from_irq+0x0/0x4
-[<80001680>] r4k_wait+0x20/0x40
-[<8000fe34>] cpu_idle+0x30/0x60
-[<80354a34>] start_kernel+0x338/0x350
+  LTP (Linux Test Project)
+-M:     Subrata Modak <subrata@linux.vnet.ibm.com>
+-M:     Mike Frysinger <vapier@gentoo.org>
++M:     Rishikesh K Rajak <risrajak@linux.vnet.ibm.com>
++M:     Garrett Cooper <yanegomi@gmail.com>
++M:     Mike Frysinger <vapier@gentoo.org>
++M:     Subrata Modak <subrata@linux.vnet.ibm.com>
+  L:     ltp-list@lists.sourceforge.net (subscribers-only)
+  W:     http://ltp.sourceforge.net/
+  T:     git git://git.kernel.org/pub/scm/linux/kernel/git/galak/ltp.git
 
 
-Code: 00000000  10800029  3c02803b <8c820014> 14400026  3c02803b  8c83001c  2482001c  14620021
-Disabling lock debugging due to kernel taint
-Kernel panic - not syncing: Fatal exception in interrupt
+--------------060904000906020606000001
+Content-Type: text/plain;
+ name="maintainr-changes.patch"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="maintainr-changes.patch"
 
-
-
-Seems like BadVA : 08002056 really isn't as aligned (offset 0x6) as it should be.
-
-I've given up on this now BTW, I'll wait until the dust has settled (i.e. some nice improvements
-have found their way to the kernel) and retry in some months with a much newer kernel version
-(currently patched-up 2.6.31.9) whether something remains to be fixed.
-I'll work on more productive things such as submitting some waiting patches.
-
-Andreas Mohr
+Q2hhbmdlZCB0aGUgTFRQIG1haW50YWluZXIgcmVzcG9uc2liaXRpZXMgZnJvbSAyMDEwLgoK
+UmVmOiBodHRwOi8vbWFyYy5pbmZvLz9sPWx0cC1saXN0Jm09MTI2NTAyMjQyOTEyNTM2Jnc9
+MgoKU2lnbmVkLW9mZiBCeSA6IFJpc2hpa2VzaCBLIFJhamFrIDxyaXNyYWpha0BsaW51eC52
+bmV0LmlibS5jb20+Ci0tLQpJbmRleDogbGludXgtMi42L01BSU5UQUlORVJTCj09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT0KLS0tIGxpbnV4LTIuNi5vcmlnL01BSU5UQUlORVJTCTIwMTAtMDItMDggMTE6Mjc6
+NTkuMDAwMDAwMDAwICswNTMwCisrKyBsaW51eC0yLjYvTUFJTlRBSU5FUlMJMjAxMC0wMi0w
+OCAxMzowMzo1My4wMDAwMDAwMDAgKzA1MzAKQEAgLTM0MTEsOCArMzQxMSwxMCBAQAogRjoJ
+ZHJpdmVycy9zY3NpL3N5bTUzYzh4eF8yLwogCiBMVFAgKExpbnV4IFRlc3QgUHJvamVjdCkK
+LU06CVN1YnJhdGEgTW9kYWsgPHN1YnJhdGFAbGludXgudm5ldC5pYm0uY29tPgotTToJTWlr
+ZSBGcnlzaW5nZXIgPHZhcGllckBnZW50b28ub3JnPgorTToJUmlzaGlrZXNoIEsgUmFqYWsg
+PHJpc3JhamFrQGxpbnV4LnZuZXQuaWJtLmNvbT4KK006CUdhcnJldHQgQ29vcGVyIDx5YW5l
+Z29taUBnbWFpbC5jb20+CitNOiAgICAgTWlrZSBGcnlzaW5nZXIgPHZhcGllckBnZW50b28u
+b3JnPgorTTogICAgIFN1YnJhdGEgTW9kYWsgPHN1YnJhdGFAbGludXgudm5ldC5pYm0uY29t
+PgogTDoJbHRwLWxpc3RAbGlzdHMuc291cmNlZm9yZ2UubmV0IChzdWJzY3JpYmVycy1vbmx5
+KQogVzoJaHR0cDovL2x0cC5zb3VyY2Vmb3JnZS5uZXQvCiBUOglnaXQgZ2l0Oi8vZ2l0Lmtl
+cm5lbC5vcmcvcHViL3NjbS9saW51eC9rZXJuZWwvZ2l0L2dhbGFrL2x0cC5naXQK
+--------------060904000906020606000001--
