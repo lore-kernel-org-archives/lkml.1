@@ -1,83 +1,63 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932106Ab0BHHiK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 02:38:10 -0500
-Received: from cantor.suse.de ([195.135.220.2]:56121 "EHLO mx1.suse.de"
+	id S1754695Ab0BHHo5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 02:44:57 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:44018 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753134Ab0BHHiE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 02:38:04 -0500
-Date: Mon, 8 Feb 2010 18:37:53 +1100
-From: Nick Piggin <npiggin@suse.de>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Dave Chinner <david@fromorbit.com>, tytso@mit.edu,
-       Andi Kleen <andi@firstfloor.org>, Miklos Szeredi <miklos@szeredi.hu>,
-       Alexander Viro <viro@ftp.linux.org.uk>,
-       Christoph Hellwig <hch@infradead.org>,
-       Christoph Lameter <clameter@sgi.com>, Rik van Riel <riel@redhat.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, akpm@linux-foundation.org,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickins <hugh@veritas.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: inodes: Support generic defragmentation
-Message-ID: <20100208073753.GC9781@laptop>
-References: <20100129205004.405949705@quilx.com>
- <20100130192623.GE788@thunk.org>
- <20100131083409.GF29555@one.firstfloor.org>
- <20100131135933.GM15853@discord.disaster>
- <alpine.DEB.2.00.1002030920500.5671@router.home>
- <20100204003410.GD5332@discord.disaster>
- <20100204030736.GB25885@thunk.org>
- <20100204033911.GE5332@discord.disaster>
- <20100204093350.GE13318@laptop>
- <alpine.DEB.2.00.1002041109500.28165@router.home>
+	id S1753220Ab0BHHo4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Feb 2010 02:44:56 -0500
+Date: Mon, 8 Feb 2010 08:44:38 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Paul Mackerras <paulus@samba.org>, lkml <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [RFC][PATCH] perf_events: Fix FORK events
+Message-ID: <20100208074438.GC24721@elte.hu>
+References: <1265384243.30057.42.camel@laptop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.1002041109500.28165@router.home>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <1265384243.30057.42.camel@laptop>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 04, 2010 at 11:13:15AM -0600, Christoph Lameter wrote:
-> On Thu, 4 Feb 2010, Nick Piggin wrote:
+
+* Peter Zijlstra <peterz@infradead.org> wrote:
+
+> Hi,
 > 
-> > Well what I described is to do the slab pinning from the reclaim path
-> > (rather than from slab calling into the subsystem). All slab locking
-> > basically "innermost", so you can pretty much poke the slab layer as
-> > much as you like from the subsystem.
+> While looking into a problem reported by Pekka, I noticed that I wasn't
+> receiving any FORK events for a workload that did fork (see attachment).
+
+ah yes, my old testcase for forks.
+
+> After making the below change, stuff started working again, thing is, I'm 
+> not sure why.
+
+In case it matters: that workload of 4x fork (and the whole fork events 
+mechanism) was always very sensitive to the precise timing of when a child 
+and a parent does what, in the final dance of wait(), do_exit(), 
+release_task(), etc. when a task exits. Especially on SMP systems.
+
+> The main change is sending the FORK event to the parent instead of the 
+> child thread, however perf_event_fork() is at the end of copy_process(), 
+> which is after perf_event_init_task() which inherits all the counters, so 
+> it should all have worked as it was.
 > 
-> Reclaim/defrag is called from the reclaim path (of the VM). We could
-> enable a call from the fs reclaim code into the slab. But how would this
-> work?
+> We could of course just slam the commit in and not worry about it, but
+> that just doesn't feel right.
 
-Well the exact details will depend, but I feel that things should
-get easier because you pin the object (and therefore the slab) via
-the normal and well tested reclaim paths.
+Would be nice to figure it out ...
 
-So for example, for dcache, you will come in and take the normal
-locks: dcache_lock, sb_lock, pin the sb, umount_lock. At which
-point you have pinned dentries without changing any locking. So
-then you can find the first entry on the LRU, and should be able
-to then build a list of dentries on the same slab.
-
-You still have the potential issue of now finding objects that would
-not be visible by searching the LRU alone. However at least the
-locking should be simplified.
-
- 
-> > After that, LRU on slabs should be fairly easy. Slab could provide a
-> > private per-slab pointer for example that is managed by the caller.
-> > Subsystem can then call into slab to find the objects.
-> 
-> Sure with some minor changes we could have a call that is giving you the
-> list of neighboring objects in a slab, while locking it? Then you can look
-> at the objects and decide which ones can be tossed and then do another
-> call to release the objects and unlock the slab.
-
-Yep. Well... you may not even need to ask slab layer to lock the
-slab. Provided that the subsystem is locking out changes. It could
-possibly be helpful to have a call to lock and unlock the slab,
-although usage of such an API would have to be very careful.
-
-Thanks,
-Nick
+	Ingo
