@@ -1,77 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753244Ab0BHXlB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 18:41:01 -0500
-Received: from outbound-mail-158.bluehost.com ([67.222.39.38]:43384 "HELO
-	outbound-mail-158.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752445Ab0BHXk7 (ORCPT
+	id S1753274Ab0BHXnk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 18:43:40 -0500
+Received: from mail-yw0-f189.google.com ([209.85.211.189]:59401 "EHLO
+	mail-yw0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750780Ab0BHXni convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 18:40:59 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=EFwz+I1FCqfK3RK8msOnUFXjZ2ZWXY7Svp1gh+kJZ9QVzbTFpOZu278HGN4i9K5DMs0lY3lY0huFeSLPADVXlinGRmeEhbPPJQw2zFAF775rEAjUXXQyKKCEZS7Z41xF;
-Date: Mon, 8 Feb 2010 15:39:50 -0800
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Mon, 8 Feb 2010 18:43:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=l0mcFC09eCzri0QBRoHSHcA7aBzkY4qAfip1a0fr6wVKD+PI5oIlL+mBzdLdflTgd1
+         JvPyRR4mASc0TqvUFSX9Mdpxp4+03wlszlya4nvToBa9zc3vBqZl36GqqkttirmPnti6
+         glxPwaNgh0f0XQTTuHko4Ucgy5gR7b90u9cxw=
+MIME-Version: 1.0
+In-Reply-To: <iuJeop2ribM.A.o7H.jY1bLB@chimera>
+References: <2uzMDuY-7_O.A.M1G.7X1bLB@chimera>
+	 <iuJeop2ribM.A.o7H.jY1bLB@chimera>
+Date: Mon, 8 Feb 2010 15:43:37 -0800
+Message-ID: <4807377b1002081543p33e13f0bv140141316ff6278f@mail.gmail.com>
+Subject: Re: [Bug #15042] socket(PF_INET6 hangs when ipv6 not yet initialized
+From: Jesse Brandeburg <jesse.brandeburg@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Chris Wilson <chris@chris-wilson.co.uk>, tomas m <tmezzadra@gmail.com>
-Subject: Re: [Bug #15004] i915: *ERROR* Execbuf while wedged
-Message-ID: <20100208153950.73f4e9a5@jbarnes-piketon>
-In-Reply-To: <20100208200044.GA2677@think>
-References: <UgwvXSBS_tM.A.alD.1EiZLB@chimera>
-	<de962C6zBxL.A.bvE.cFiZLB@chimera>
-	<20100205110100.57852c31@jbarnes-piketon>
-	<20100205190916.GD2858@think>
-	<20100205111747.6619b09b@jbarnes-piketon>
-	<20100208172410.GA11311@think>
-	<20100208093551.58a10643@jbarnes-piketon>
-	<20100208200044.GA2677@think>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+       Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Marc Haber <mh+linux-kernel@zugschlus.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 8 Feb 2010 15:00:44 -0500
-Chris Mason <chris.mason@oracle.com> wrote:
+On Sun, Feb 7, 2010 at 4:28 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> This message has been generated automatically as a part of a report
+> of regressions introduced between 2.6.31 and 2.6.32.
+>
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.31 and 2.6.32.  Please verify if it still should
+> be listed and let the tracking team know (either way).
+>
+>
+> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=15042
+> Subject         : socket(PF_INET6 hangs when ipv6 not yet initialized
+> Submitter       : Marc Haber <mh+linux-kernel@zugschlus.de>
+> Date            : 2010-01-10 14:28 (29 days old)
+> References      : http://marc.info/?l=linux-kernel&m=126313553029280&w=4
 
-> On Mon, Feb 08, 2010 at 09:35:51AM -0800, Jesse Barnes wrote:
-> > > 
-> > > Ok, updating to rc7 and updating my xf86 driver to 2.10 seems to
-> > > have fixed up my suspend/resume problems.  So, I should be able
-> > > to trigger the execbuf problem again.
-> > 
-> > I've heard some reports that the 2D driver introduces and fixes
-> > hangs, so it's possible 2.10 will fix both issues for you.
-> > 
-> > > Well, the rebooting isn't a huge deal, but if there's something I
-> > > can track/kick or force to core dump, would it help?
-> > 
-> > We do have a test in intel-gpu-tools that will instigate a hang,
-> > but it would be best to figure out what's causing it in your
-> > environment.
-> > 
-> 
-> [63516.632060] [drm:i915_hangcheck_elapsed] *ERROR* Hangcheck timer
-> elapsed... GPU hung [63516.632069] render error detected, EIR:
-> 0x00000000 [63516.632092] [drm:i915_do_wait_request] *ERROR*
-> i915_do_wait_request returns -5 (awaiting 2590581 at 2590579)
-> 
-> So, this popped up while surfing in firefox, which is usually where I
-> hit the execbuf errors.  X was totally stuck afterwards, but I could
-> switch to a vc and get the dmesg.
-> 
-> If there are specific procs that I can try to get traces of, just let
-> me know for next time.
-
-Hm, EIR is clear so this may be a failure of our hangcheck timer.
-
-Chris Wilson saw these recently too; hoping he has ideas.
-
--- 
-Jesse Barnes, Intel Open Source Technology Center
+probably fixed by this patch:
+http://marc.info/?l=linux-netdev&m=126565759512718&w=2
