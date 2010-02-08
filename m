@@ -1,77 +1,64 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754350Ab0BHTRj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 14:17:39 -0500
-Received: from wolverine02.qualcomm.com ([199.106.114.251]:26845 "EHLO
-	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751625Ab0BHTRh (ORCPT
+	id S1754400Ab0BHTV5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 14:21:57 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:59570 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754277Ab0BHTVz convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 14:17:37 -0500
-X-IronPort-AV: E=McAfee;i="5400,1158,5886"; a="33709059"
-Message-ID: <4B70634E.4040008@codeaurora.org>
-Date: Mon, 08 Feb 2010 11:17:34 -0800
-From: Abhijeet Dharmapurikar <adharmap@codeaurora.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+	Mon, 8 Feb 2010 14:21:55 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: =?utf-8?q?Rafa=C5=82_Mi=C5=82ecki?= <zajec5@gmail.com>
+Subject: Re: [Bug #15096] Resume lock up -- bisected, commit 3a1151e3f124fd1a2c54b8153f510f1a7c715369
+Date: Mon, 8 Feb 2010 20:22:43 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.33-rc7-rjw; KDE/4.3.5; x86_64; ; )
+Cc: Stefan Bader <stefan.bader@canonical.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Len Brown <len.brown@intel.com>, Zhang Rui <rui.zhang@intel.com>
+References: <2uzMDuY-7_O.A.M1G.7X1bLB@chimera> <4B7004F4.3030804@canonical.com> <b170af451002080438i18a1e541x8dc038f4b5f129f4@mail.gmail.com>
+In-Reply-To: <b170af451002080438i18a1e541x8dc038f4b5f129f4@mail.gmail.com>
 MIME-Version: 1.0
-To: Catalin Marinas <catalin.marinas@arm.com>
-CC: Daniel Walker <dwalker@codeaurora.org>,
-       Russell King <linux@arm.linux.org.uk>, Tony Lindgren <tony@atomide.com>,
-       linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Larry Bassel <lbassel@quicinc.com>,
-       linux-arm-kernel@lists.infradead.org
-Subject: Re: [RFC PATCH] ARM: Change the mandatory barriers implementation
-References: <4B6A131B.1070005@codeaurora.org>	 <1265289330.28746.58.camel@pc1117.cambridge.arm.com> <1265367873.7692.52.camel@pc1117.cambridge.arm.com>
-In-Reply-To: <1265367873.7692.52.camel@pc1117.cambridge.arm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <201002082022.43515.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Catalin Marinas wrote:
-> On Thu, 2010-02-04 at 13:15 +0000, Catalin Marinas wrote:
->> On Thu, 2010-02-04 at 00:21 +0000, Abhijeet Dharmapurikar wrote:
->>>> The mandatory barriers (mb, rmb, wmb) are used even on uniprocessor
->>>> systems for things like ordering Normal Non-cacheable memory accesses
->>>> with DMA transfer (via Device memory writes). The current implementation
->>>> uses dmb() for mb() and friends but this is not sufficient. The DMB only
->>>> ensures the ordering of accesses with regards to a single observer
->>>> accessing the same memory. If a DMA transfer is started by a write to
->>>> Device memory, the data to be transfered may not reach the main memory
->>>> (even if mapped as Normal Non-cacheable) before the device receives the
->>>> notification to begin the transfer. The only barrier that would help in
->>>> this situation is DSB which would completely drain the write buffers.
->>> On ARMv7, DMB guarantees that all accesses prior to DMB are observed by
->>> an observer if that observer sees any accesses _after_ the DMB. In this
->>> case, since DMA engine observes a write to itself( It is being written
->>> to and hence must observe the write) it should also see the writes to
->>> the buffers. A dmb() after the writes to buffer and before write to DMA
->>> engine should suffice.
->> I asked our processor architect for a clarification on the wording of
->> the DMB definition but the "all accesses" part most likely refer to
->> accesses to the same peripheral or memory block (but not together).
+On Monday 08 February 2010, Rafał Miłecki wrote:
+> 2010/2/8 Stefan Bader <stefan.bader@canonical.com>:
+> > Rafael J. Wysocki wrote:
+> >> On Monday 08 February 2010, Rafał Miłecki wrote:
+> >>> 2010/2/8 Rafael J. Wysocki <rjw@sisk.pl>:
+> >>>> This message has been generated automatically as a part of a report
+> >>>> of regressions introduced between 2.6.31 and 2.6.32.
+> >>>>
+> >>>> The following bug entry is on the current list of known regressions
+> >>>> introduced between 2.6.31 and 2.6.32.  Please verify if it still should
+> >>>> be listed and let the tracking team know (either way).
+> >>>>
+> >>>>
+> >>>> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=15096
+> >>>> Subject         : Resume lock up -- bisected, commit 3a1151e3f124fd1a2c54b8153f510f1a7c715369
+> >>>> Submitter       : Rafał Miłecki <zajec5@gmail.com>
+> >>>> Date            : 2010-01-20 23:15 (19 days old)
+> >>>> First-Bad-Commit: http://git.kernel.org/git/linus/3a1151e3f124fd1a2c54b8153f510f1a7c715369
+> >>
+> >> It looks like we should revert this commit, seems broken.
+> >
+> > Hm, otoh we had definitely people with some Asus laptops who where only be able
+> > to use backlight control with it. So I would rather prefer some work around to
+> > the suspend/resume problem (_DOS if I understood correctly).
 > 
-> I got some clarification and there is nothing wrong with the definition
-> of the DMB. The catch here is that "observe" (as per the ARM ARM) is
-> defined only for master accesses. The DMA engine in this case above does
-> not "observe" the write to itself as this is a slave access to one of
-> its memory-mapped ports.
-> 
-> So, the code below:
-> 
-> 	STR	[Normal non-cacheable]
-> 	DMB
-> 	STR	[Device]
-> 
-> puts the first store in Group A (according to the DMB definition) and
-> the second store in Group B but since the DMA device does not "observe"
-> Group B in this case, there is no requirement for the ordering between
-> the observability of the store to normal memory and the observability of
-> the side-effects of the store to the DMA device.
+> It's same case with my Sony VAIO. Without this I can not control
+> backlight. Eventually I can hack on GPU registers directly, but I
+> don't think it can be called solution.
 
-I agree now. DSB would be the right thing to do. Moreover the option to 
-have a barrier.h for each platform gives them a chance to fine tune 
-these barriers further.
+Well, do I understand correctly that without commit
+3a1151e3f124fd1a2c54b8153f510f1a7c715369 you can't control the backlight,
+but with the commit applied there's a resume problem on your box?
 
-
-
+Rafael
