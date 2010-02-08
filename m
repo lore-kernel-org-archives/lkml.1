@@ -1,51 +1,85 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754843Ab0BHJfq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 04:35:46 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:54785 "EHLO mail.zytor.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753355Ab0BHJfn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 04:35:43 -0500
-Message-ID: <4B6FD9A2.8070008@zytor.com>
-Date: Mon, 08 Feb 2010 01:30:10 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+	id S1754723Ab0BHJhW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 04:37:22 -0500
+Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:45864 "EHLO
+	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752199Ab0BHJhU convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Feb 2010 04:37:20 -0500
+Date: Mon, 8 Feb 2010 10:37:19 +0100
+From: Andreas Mohr <andi@lisas.de>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Andreas Mohr <andi@lisas.de>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@redhat.com>, John Stultz <johnstul@us.ibm.com>
+Subject: Re: clocksource mutex deadlock, cat current_clocksource
+	(2.6.33-rc6/7)
+Message-ID: <20100208093719.GA15428@rhlx01.hs-esslingen.de>
+References: <20100206142141.GA12871@rhlx01.hs-esslingen.de> <alpine.LFD.2.00.1002061534020.2811@localhost.localdomain> <20100207191949.GA23665@rhlx01.hs-esslingen.de> <20100208053830.GA7128@rhlx01.hs-esslingen.de> <alpine.LFD.2.00.1002081010330.2811@localhost.localdomain>
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: rostedt@goodmis.org, Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>, Tom Tromey <tromey@redhat.com>,
-       Kyle Moffett <kyle@moffetthome.net>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Oleg Nesterov <oleg@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>, linux-next@vger.kernel.org,
-       utrace-devel@redhat.com, Thomas Gleixner <tglx@linutronix.de>,
-       JimKeniston <jkenisto@us.ibm.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: linux-next: add utrace tree
-References: <f73f7ab81001222220jfaf2edfwca3fa4c22b0b4d72@mail.gmail.com> <alpine.LFD.2.00.1001232051510.3574@localhost.localdomain> <m33a1tnbd9.fsf@fleche.redhat.com> <alpine.LFD.2.00.1001251332370.3574@localhost.localdomain> <m3636oh2rt.fsf@fleche.redhat.com> <alpine.LFD.2.00.1001261535510.17519@localhost.localdomain> <1264575134.4283.1983.camel@laptop> <alpine.LFD.2.00.1001270231520.24253@localhost.localdomain> <1264600792.31321.464.camel@gandalf.stny.rr.com> <4B607B1A.3080007@zytor.com> <20100208065425.GB1290@ucw.cz>
-In-Reply-To: <20100208065425.GB1290@ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <alpine.LFD.2.00.1002081010330.2811@localhost.localdomain>
+X-Priority: none
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/07/2010 10:54 PM, Pavel Machek wrote:
->>
->> No, it has nothing to do with ring.  It has to do with modifying code
->> that another CPU could be executing at the same time, and with modifying
->> code on the same processor through another virtual alias (they are
->> different issues.)  The same issues apply regardless of the CPL of the
->> processor.
->
-> ...but these are always 'there could be cpu bugs around' issues,
-> right? Like amd k6. AFAICT x86 always supported self-modifying code
-> without any extra barriers needed...
->
+On Mon, Feb 08, 2010 at 10:13:00AM +0100, Thomas Gleixner wrote:
+> On Mon, 8 Feb 2010, Andreas Mohr wrote:
+> > 
+> > And then a cat current_clocksource managed to hang again.
+> 
+> Well, that's not surprising at all. If one task is stuck on clocksource_mutex,
+> then the next one will be stuck as well.
 
-*Self*-modifying code, yes.  *Cross*-modifying code, no.
+I believe here you are pointing at the initial bootup acpi_pm lockup which NMI
+watchdog detected. And not some thought that I somehow simply executed
+cat current_clocksource twice, given my wording which might erroneously
+hint at that.
 
-	-hpa
+
+So you'd think that we have a clocksource_mutex problem even before
+the initial bootup switch to acpi_pm?
+
+However I don't see how this could be the case, given that in some instances
+boot does continue after acpi_pm selection, albeit after a delay.
+
+> > (NOTE that the - now complete! - SysRq-T list does NOT show any backtraces
+> > of kwatchdog any more, only many other processes)
+> > Could it be that the (rather disruptive) NMI watchdog confuses the current state at
+> > change_clocksource and causes that stuff to get left with
+> > clocksource_mutex remaining taken?
+> 
+> Nope, the NMI watchdog is not involved. It merily tells us that the
+> task is stuck.
+
+OK.
+And after that message debug_locks is zeroed and kwatchdog is gone
+from the process list (probably during debug_locks change).
+
+
+
+I still can't make much reason of this behaviour.
+If we have a problem during acpi_pm selection on boot, then by all
+accounts it should get stuck completely (plus yielding watchdog's lockup
+message), not continue booting after some weird delay.
+OK, this particular delay phenomenon could still be explained
+by a pretty severe contention,
+but then after successfully having gotten the mutex it certainly
+shouldn't happen that then even after bootup the mutex remains blocked
+(as witnessed by the cat current_clocksource issue).
+After all all mutex use is fully symmetric, no surprises IMHO - unless
+NMI / SMI or so are involved.
+
+
+
+I'll explain what I think might be happening:
+bootup switches to acpi_pm, timekeeping gets borked, NMI watchdog complains
+due to timekeeping issues, brutally yanks the waiting acpi_pm switchover
+(thereby NOT releasing clocksource_mutex),
+and the result is that I have cat current_clocksource stuck in my userspace.
+
+Andreas Mohr
