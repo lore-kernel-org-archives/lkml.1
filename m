@@ -1,89 +1,70 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752603Ab0BHUuY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 15:50:24 -0500
-Received: from mail-fx0-f215.google.com ([209.85.220.215]:59266 "EHLO
-	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752473Ab0BHUuU (ORCPT
+	id S1752499Ab0BHUvK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 15:51:10 -0500
+Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:36090 "EHLO
+	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751543Ab0BHUvI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 15:50:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=eJKRTPGnBaILlq5wc2PZ+gEt6xFsfPnPhNSNMR9fWdJEV7dzvvQ6E11Aq3zgiPqFm8
-         WsUneGvAHeXYCoj6TbrffiJ/W1/c0eaX3IZk9nslGFVtZaqFwQsnT6wPMpwaBX177TC3
-         N1vVQJt7w0bbccllKIrpbehtMRZdqCsuXqtSc=
-Message-ID: <4B707904.4030102@lwfinger.net>
-Date: Mon, 08 Feb 2010 14:50:12 -0600
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100111 SUSE/3.0.1-1.1 Thunderbird/3.0.1
+	Mon, 8 Feb 2010 15:51:08 -0500
+Date: Mon, 8 Feb 2010 21:51:05 +0100
+From: Andreas Mohr <andi@lisas.de>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Andreas Mohr <andi@lisas.de>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@redhat.com>, John Stultz <johnstul@us.ibm.com>
+Subject: Re: clocksource mutex deadlock, cat current_clocksource
+	(2.6.33-rc6/7)
+Message-ID: <20100208205105.GA16990@rhlx01.hs-esslingen.de>
+References: <20100206142141.GA12871@rhlx01.hs-esslingen.de> <alpine.LFD.2.00.1002061534020.2811@localhost.localdomain> <20100207191949.GA23665@rhlx01.hs-esslingen.de> <20100208053830.GA7128@rhlx01.hs-esslingen.de> <alpine.LFD.2.00.1002081010330.2811@localhost.localdomain> <20100208093719.GA15428@rhlx01.hs-esslingen.de> <alpine.LFD.2.00.1002081038430.2811@localhost.localdomain> <20100208194734.GA20316@rhlx01.hs-esslingen.de> <alpine.LFD.2.00.1002082117210.2811@localhost.localdomain> <alpine.LFD.2.00.1002082139360.2811@localhost.localdomain>
 MIME-Version: 1.0
-To: Amerigo Wang <amwang@redhat.com>
-CC: linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Jens Axboe <jens.axboe@oracle.com>, Miles Lane <miles.lane@gmail.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>, akpm@linux-foundation.org
-Subject: Re: [Patch 2/2] block: add sysfs lockdep class for iosched
-References: <20100208095518.3612.73574.sendpatchset@localhost.localdomain> <20100208095530.3612.7843.sendpatchset@localhost.localdomain>
-In-Reply-To: <20100208095530.3612.7843.sendpatchset@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.1002082139360.2811@localhost.localdomain>
+X-Priority: none
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/08/2010 03:52 AM, Amerigo Wang wrote:
-> Similar to the previous PM case, in iosched, we hold an s_active
-> lock to store "scheduler", meanwhile we want to remove "iosched/*"
-> files.
+Hi,
+
+On Mon, Feb 08, 2010 at 09:40:24PM +0100, Thomas Gleixner wrote:
+> On Mon, 8 Feb 2010, Thomas Gleixner wrote:
+> > On Mon, 8 Feb 2010, Andreas Mohr wrote:
+> > Which compiler version are you using ?
+> > 
+> > Can you please provide the disassembly of kernel/time/timekeeping.o ?
 > 
-> This patch depends on the previous one. I tested it on my machine,
-> it fixes the problem.
-> 
-> Reported-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-> Signed-off-by: WANG Cong <amwang@redhat.com>
-> Cc: Jens Axboe <jens.axboe@oracle.com>
+> Is that NMI watchdog hit fully reproducible ?
 
-After applying the 2 patches to 2.6.33-rc7, I get the following:
+Looks like it:
+- another bootup also had lockup message
+- all /var/log/dmesg* have lockup message, oldest is:
+2010-02-07 20:00 dmesg.4.gz
 
-ACPI: bus type pci registered
-PCI: MMCONFIG for domain 0000 [bus 00-09] at [mem 0xe0000000-0xe09fffff] (base
-0xe0000000)
-PCI: MMCONFIG at [mem 0xe0000000-0xe09fffff] reserved in E820
-PCI: Using configuration type 1 for base access
-INFO: trying to register non-static key.
-the code is fine but needs lockdep annotation.
-turning off the locking correctness validator.
-Pid: 1, comm: swapper Not tainted 2.6.33-rc7-Linus-00010-g6339204-dirty #181
-Call Trace:
- [<ffffffff8107c6e6>] __lock_acquire+0xf86/0x1d30
- [<ffffffff81078e7f>] ? lockdep_init_map+0x5f/0x5d0
- [<ffffffff8107d52b>] lock_acquire+0x9b/0x120
- [<ffffffff81167a93>] ? sysfs_addrm_finish+0x43/0x70
- [<ffffffff81167243>] sysfs_deactivate+0xc3/0x110
- [<ffffffff81167a93>] ? sysfs_addrm_finish+0x43/0x70
- [<ffffffff813124d3>] ? mutex_lock_nested+0x243/0x300
- [<ffffffff81167a93>] sysfs_addrm_finish+0x43/0x70
- [<ffffffff81167af6>] remove_dir+0x36/0x40
- [<ffffffff81167b09>] sysfs_remove_subdir+0x9/0x10
- [<ffffffff81168ff6>] sysfs_remove_group+0x66/0xf0
- [<ffffffff81861555>] param_sysfs_init+0x102/0x277
- [<ffffffff8124a5bd>] ? sysdev_create_file+0xd/0x10
- [<ffffffff8130fe46>] ? register_cpu+0xa3/0xa5
- [<ffffffff81861453>] ? param_sysfs_init+0x0/0x277
- [<ffffffff810001d7>] do_one_initcall+0x37/0x190
- [<ffffffff8184c6d0>] kernel_init+0x14f/0x1a5
- [<ffffffff81003bd4>] kernel_thread_helper+0x4/0x10
- [<ffffffff8131417c>] ? restore_args+0x0/0x30
- [<ffffffff8184c581>] ? kernel_init+0x0/0x1a5
- [<ffffffff81003bd0>] ? kernel_thread_helper+0x0/0x10
+Linux version 2.6.33-rc6 (root@note) (gcc version 4.3.4 (Debian 4.3.4-6)) #3 Sun Jan 31 23:47:51 CET 2010
+.
+.
+.
+PM: Adding info for No Bus:cooling_device0
+Switching to clocksource acpi_pm
+BUG: NMI Watchdog detected LOCKUP on CPU0, ip c1046694, registers:
+Modules linked in:
 
-This dump does not occur with standard 2.6.33-rc7. As the above turns off the
-locking correctness validator, I cannot really test to see what happens when
-suspending.
+Pid: 266, comm: kwatchdog Not tainted 2.6.33-rc6 #3 Inspiron 8000
+/Inspiron 8000
+EIP: 0060:[<c1046694>] EFLAGS: 00000082 CPU: 0
+EIP is at timekeeping_forward_now+0xf0/0x11d
+EAX: 342100fe EBX: f3dcdfc8 ECX: 63826cfb EDX: ffffffff
+ESI: 003ffd7b EDI: 00000000 EBP: dfa31f50 ESP: dfa31f28
+ DS: 007b ES: 007b FS: 0000 GS: 0000 SS: 0068
+Process kwatchdog (pid: 266, ti=dfa31000 task=dfa4e0a0 task.ti=dfa31000)
+Stack:
+ 005b9e7e 00000000 6184c590 00000fff 002cb338 4b6f0da7 00000000 c13d8524
+<0> c13d8524 dfa31f48 dfa31f60 c10466d2 c13d8524 c13d8524 dfa31f6c
+c104725e
 
-Larry
+
+IOW, it's NOT gcc 4.4 and it's pretty darn reproducible.
+
+Andreas Mohr
