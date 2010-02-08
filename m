@@ -1,71 +1,128 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751705Ab0BHND0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 08:03:26 -0500
-Received: from mail-fx0-f211.google.com ([209.85.220.211]:58069 "EHLO
-	mail-fx0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751488Ab0BHNDY (ORCPT
+	id S1751685Ab0BHNEU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 08:04:20 -0500
+Received: from e23smtp07.au.ibm.com ([202.81.31.140]:47673 "EHLO
+	e23smtp07.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751475Ab0BHNET (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 08:03:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=iwQWd0GcBSvsjhAeLdETmUM+rTPSzdMFVYzB8reyrcl+F9l6FMyBuOipC5WBKVAQtx
-         q6gjY4hIeI9aHB1KPSrYyxWaQ3vwkxqJdxY6PAsOxz/QF3odI40/hZbAFX14srL/qPPb
-         bUDrkFflR1dqNsYj4sW/uGchcqnud5wwZGTKU=
+	Mon, 8 Feb 2010 08:04:19 -0500
+Date: Mon, 8 Feb 2010 18:34:12 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Keiichi KII <k-keiichi@bx.jp.nec.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, lwoodman@redhat.com,
+       linux-mm@kvack.org, Tom Zanussi <tzanussi@gmail.com>, riel@redhat.com,
+       rostedt@goodmis.org, akpm@linux-foundation.org, fweisbec@gmail.com,
+       Munehiro Ikeda <m-ikeda@ds.jp.nec.com>,
+       Atsushi Tsuji <a-tsuji@bk.jp.nec.com>
+Subject: Re: [RFC PATCH -tip 0/2 v3] pagecache tracepoints proposal
+Message-ID: <20100208130412.GB24467@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <4B6B7FBF.9090005@bx.jp.nec.com>
 MIME-Version: 1.0
-In-Reply-To: <1265633893.4020.72.camel@pc1117.cambridge.arm.com>
-References: <20100208111624.5387.37948.stgit@pc1117.cambridge.arm.com>
-	 <84144f021002080454j2db78133veda0c50a7eff7e6f@mail.gmail.com>
-	 <1265633893.4020.72.camel@pc1117.cambridge.arm.com>
-Date: Mon, 8 Feb 2010 15:03:22 +0200
-X-Google-Sender-Auth: c18a50c571356d45
-Message-ID: <84144f021002080503l5d1d1667xeb1fb4d72fabeadd@mail.gmail.com>
-Subject: Re: [PATCH] kmemcheck: Test the full object in kmemcheck_is_obj_initialized()
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: linux-kernel@vger.kernel.org, Vegard Nossum <vegardno@ifi.uio.no>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christian Casteyde <casteyde.christian@free.fr>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <4B6B7FBF.9090005@bx.jp.nec.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 8, 2010 at 2:58 PM, Catalin Marinas <catalin.marinas@arm.com> wrote:
-> On Mon, 2010-02-08 at 12:54 +0000, Pekka Enberg wrote:
->> On Mon, Feb 8, 2010 at 1:16 PM, Catalin Marinas <catalin.marinas@arm.com> wrote:
->> > This is a fix for bug #14845 (bugzilla.kernel.org). The
->> > update_checksum() function in mm/kmemleak.c calls
->> > kmemcheck_is_obj_initialised() before scanning an object. When
->> > KMEMCHECK_PARTIAL_OK is enabled, this function returns true. However,
->> > the crc32_le() reads smaller intervals (32-bit) for which
->> > kmemleak_is_obj_initialised() may be false leading to a kmemcheck
->> > warning.
->> >
->> > Note that kmemcheck_is_obj_initialized() is currently only used by
->> > kmemleak before scanning a memory location.
->> >
->> > Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
->> > Cc: Andrew Morton <akpm@linux-foundation.org>
->> > Cc: Christian Casteyde <casteyde.christian@free.fr>
->> > Cc: Pekka Enberg <penberg@cs.helsinki.fi>
->> > Cc: Vegard Nossum <vegardno@ifi.uio.no>
->>
->> Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
->>
->> Andrew, Vegard has been rather quiet lately so do you mind picking up
->> this patch? Alternatively, I can pick it up in slab.git if you so
->> prefer.
->
-> It's been pretty late indeed, sorry about that (I mostly work on ARM
-> hardware where kmemcheck isn't available and couldn't test the patch
-> earlier).
->
-> Anyway, IMHO it's not critical to be merged in 2.6.33 but it's up to
-> you.
+* Keiichi KII <k-keiichi@bx.jp.nec.com> [2010-02-04 21:17:35]:
 
-I think it's definitely .34 material but probably should go to -stable.
+> Hello,
+> 
+> This is v3 of a patchset to add some tracepoints for pagecache.
+> 
+> I would propose several tracepoints for tracing pagecache behavior and
+> a script for these.
+> By using both the tracepoints and the script, we can analysis pagecache behavior
+> like usage or hit ratio with high resolution like per process or per file. 
+> Example output of the script looks like:
+> 
+> [process list]
+> o yum-3215
+>                           cache find  cache hit  cache hit
+>         device      inode      count      count      ratio
+>   --------------------------------------------------------
+>          253:0         16      34434      34130     99.12%
+>          253:0        198       9692       9463     97.64%
+>          253:0        639        647        628     97.06%
+>          253:0        778         32         29     90.62%
+>          253:0       7305      50225      49005     97.57%
+>          253:0     144217         12         10     83.33%
+>          253:0     262775         16         13     81.25%
+> *snip*
 
-                        Pekka
+Very nice, we should be able to sum these to get a system wide view
+
+> 
+> -------------------------------------------------------------------------------
+> 
+> [file list]
+>         device              cached
+>      (maj:min)      inode    pages
+>   --------------------------------
+>          253:0         16     5752
+>          253:0        198     2233
+>          253:0        639       51
+>          253:0        778       86
+>          253:0       7305    12307
+>          253:0     144217       11
+>          253:0     262775       39
+> *snip*
+> 
+> [process list]
+> o yum-3215
+>         device              cached    added  removed      indirect
+>      (maj:min)      inode    pages    pages    pages removed pages
+>   ----------------------------------------------------------------
+>          253:0         16    34130     5752        0             0
+>          253:0        198     9463     2233        0             0
+>          253:0        639      628       51        0             0
+>          253:0        778       29       78        0             0
+>          253:0       7305    49005    12307        0             0
+>          253:0     144217       10       11        0             0
+>          253:0     262775       13       39        0             0
+> *snip*
+>   ----------------------------------------------------------------
+>   total:                    102346    26165        1             0
+                                                    ^^^
+                                                Is this 1 stray?
+> 
+> We can now know system-wide pagecache usage by /proc/meminfo.
+> But we have no method to get higher resolution information like per file or
+> per process usage than system-wide one.
+
+It would be really nice to see if we can detect the mapped from the
+unmapped page cache
+
+> A process may share some pagecache or add a pagecache to the memory or
+> remove a pagecache from the memory.
+> If a pagecache miss hit ratio rises, maybe it leads to extra I/O and
+> affects system performance.
+> 
+> So, by using the tracepoints we can get the following information.
+>  1. how many pagecaches each process has per each file
+>  2. how many pages are cached per each file
+>  3. how many pagecaches each process shares
+>  4. how often each process adds/removes pagecache
+>  5. how long a pagecache stays in the memory
+>  6. pagecache hit rate per file
+> 
+> Especially, the monitoring pagecache usage per each file and pagecache hit 
+> ratio would help us tune some applications like database.
+> And it will also help us tune the kernel parameters like "vm.dirty_*".
+> 
+> Changelog since v2
+>   o add new script to monitor pagecache hit ratio per process.
+>   o use DECLARE_EVENT_CLASS
+> 
+> Changelog since v1
+>   o Add a script based on "perf trace stream scripting support".
+> 
+> Any comments are welcome.
+
+-- 
+	Three Cheers,
+	Balbir
