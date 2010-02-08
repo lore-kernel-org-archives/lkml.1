@@ -1,70 +1,99 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752469Ab0BHWH0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 17:07:26 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44001 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750981Ab0BHWHZ (ORCPT
+	id S1752509Ab0BHWNe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 17:13:34 -0500
+Received: from bld-mail13.adl6.internode.on.net ([150.101.137.98]:53095 "EHLO
+	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750810Ab0BHWNd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 17:07:25 -0500
-Date: Mon, 8 Feb 2010 14:06:48 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 1/2] printk delay for each line break instead of
- callback
-Message-Id: <20100208140648.3c38d909.akpm@linux-foundation.org>
-In-Reply-To: <20100206133425.GA2562@darkstar>
-References: <20100206133425.GA2562@darkstar>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 8 Feb 2010 17:13:33 -0500
+Date: Tue, 9 Feb 2010 09:13:18 +1100
+From: Dave Chinner <david@fromorbit.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Christoph Lameter <cl@linux-foundation.org>, tytso@mit.edu,
+       Andi Kleen <andi@firstfloor.org>, Miklos Szeredi <miklos@szeredi.hu>,
+       Alexander Viro <viro@ftp.linux.org.uk>,
+       Christoph Hellwig <hch@infradead.org>,
+       Christoph Lameter <clameter@sgi.com>, Rik van Riel <riel@redhat.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, akpm@linux-foundation.org,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickins <hugh@veritas.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: inodes: Support generic defragmentation
+Message-ID: <20100208221318.GL11483@discord.disaster>
+References: <20100130192623.GE788@thunk.org> <20100131083409.GF29555@one.firstfloor.org> <20100131135933.GM15853@discord.disaster> <alpine.DEB.2.00.1002030920500.5671@router.home> <20100204003410.GD5332@discord.disaster> <20100204030736.GB25885@thunk.org> <20100204033911.GE5332@discord.disaster> <20100204093350.GE13318@laptop> <alpine.DEB.2.00.1002041109500.28165@router.home> <20100208073753.GC9781@laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100208073753.GC9781@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 6 Feb 2010 21:34:25 +0800
-Dave Young <hidave.darkstar@gmail.com> wrote:
-
-> printk delay for every callback does not make sense, change to delay every line
+On Mon, Feb 08, 2010 at 06:37:53PM +1100, Nick Piggin wrote:
+> On Thu, Feb 04, 2010 at 11:13:15AM -0600, Christoph Lameter wrote:
+> > On Thu, 4 Feb 2010, Nick Piggin wrote:
+> > 
+> > > Well what I described is to do the slab pinning from the reclaim path
+> > > (rather than from slab calling into the subsystem). All slab locking
+> > > basically "innermost", so you can pretty much poke the slab layer as
+> > > much as you like from the subsystem.
+> > 
+> > Reclaim/defrag is called from the reclaim path (of the VM). We could
+> > enable a call from the fs reclaim code into the slab. But how would this
+> > work?
 > 
-> Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
-> ---
+> Well the exact details will depend, but I feel that things should
+> get easier because you pin the object (and therefore the slab) via
+> the normal and well tested reclaim paths.
 > 
->  kernel/printk.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+> So for example, for dcache, you will come in and take the normal
+> locks: dcache_lock, sb_lock, pin the sb, umount_lock. At which
+> point you have pinned dentries without changing any locking. So
+> then you can find the first entry on the LRU, and should be able
+> to then build a list of dentries on the same slab.
 > 
-> --- linux-2.6.orig/kernel/printk.c	2010-02-02 13:38:47.646659531 +0800
-> +++ linux-2.6/kernel/printk.c	2010-02-02 13:39:19.446657319 +0800
-> @@ -678,7 +678,6 @@ asmlinkage int vprintk(const char *fmt, 
->  	char *p;
->  
->  	boot_delay_msec();
-> -	printk_delay();
->  
->  	preempt_disable();
->  	/* This stops the holder of console_sem just where we want him */
-> @@ -746,6 +745,7 @@ asmlinkage int vprintk(const char *fmt, 
->  	 */
->  	for ( ; *p; p++) {
->  		if (new_text_line) {
-> +			printk_delay();
->  			/* Always output the token */
->  			emit_log_char('<');
->  			emit_log_char(current_log_level + '0');
+> You still have the potential issue of now finding objects that would
+> not be visible by searching the LRU alone. However at least the
+> locking should be simplified.
 
-This moves the printk_delay() so that it is now inside
-spin_lock_irqsave(logbuf_lock).
+Very true, but that leads us to the same problem of fragmented
+caches because we empty unused objects off slabs that are still
+pinned by hot objects and don't free the page. I agree that we can't
+totally avoid this problem, but I still think that using an object
+based LRU for reclaim has a fundamental mismatch with page based
+reclaim that makes this problem worse than it could be.
 
-This fixes the race I mentioned in the previous email, but it seems a
-bad idea.  If the delay is long enough, it could even cause other CPUs
-to get hit by the NMI watchdog when trying to acquire logbuf_lock.
+FWIW, if we change the above to keeping a page based LRU in the slab
+cache and the slab picks a page to reclaim, then the problem goes
+mostly away, I think. We don't need to pin the slab to select and
+prepare a page to reclaim - the cache only needs to be locked before
+it starts reclaim. I think this has a much better chance of
+reclaiming entire pages in situations where LRU based reclaim will
+leave fragmentation.
 
-A better approach would be to perform the calculation of "how long must
-I delay" at this site, but perform the actual delay later, after the
-raw_local_irq_restore().  This means that if the printk contains
-"a\nb\nc\n" then we won't delay until the final \n, but that seems a
-fairly small problem.
+i.e. instead of:
 
+	shrink_slab
+	  -> external shrinker
+	    -> lock cache
+	    -> find reclaimable object
+	      -> call into slab w/ object
+	        -> return longer list of objects
+	    -> reclaim objects
 
+we do:
+
+	shrink_slab
+	  -> internal shrinker
+	    -> find oldest page and make object list
+	      -> external shrinker
+	        -> lock cache
+		-> reclaim objects
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
