@@ -1,86 +1,73 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754720Ab0BHTzl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 14:55:41 -0500
-Received: from adelie.canonical.com ([91.189.90.139]:39513 "EHLO
-	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754397Ab0BHTzj convert rfc822-to-8bit (ORCPT
+	id S1754731Ab0BHUBX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 15:01:23 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:60334 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753199Ab0BHUBV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 14:55:39 -0500
-Message-ID: <4B706C35.2040100@canonical.com>
-Date: Mon, 08 Feb 2010 20:55:33 +0100
-From: Stefan Bader <stefan.bader@canonical.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
+	Mon, 8 Feb 2010 15:01:21 -0500
+Date: Mon, 8 Feb 2010 15:00:44 -0500
+From: Chris Mason <chris.mason@oracle.com>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Len Brown <len.brown@intel.com>, Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [Bug #15096] Resume lock up -- bisected, commit 	3a1151e3f124fd1a2c54b8153f510f1a7c715369
-References: <2uzMDuY-7_O.A.M1G.7X1bLB@chimera> <4B7004F4.3030804@canonical.com>	 <b170af451002080438i18a1e541x8dc038f4b5f129f4@mail.gmail.com>	 <201002082022.43515.rjw@sisk.pl> <4B7066BA.7040806@canonical.com> <b170af451002081134g5620e463t663266ce706911ed@mail.gmail.com>
-In-Reply-To: <b170af451002081134g5620e463t663266ce706911ed@mail.gmail.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+       Chris Wilson <chris@chris-wilson.co.uk>, tomas m <tmezzadra@gmail.com>
+Subject: Re: [Bug #15004] i915: *ERROR* Execbuf while wedged
+Message-ID: <20100208200044.GA2677@think>
+Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
+	Jesse Barnes <jbarnes@virtuousgeek.org>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Kernel Testers List <kernel-testers@vger.kernel.org>,
+	Chris Wilson <chris@chris-wilson.co.uk>,
+	tomas m <tmezzadra@gmail.com>
+References: <UgwvXSBS_tM.A.alD.1EiZLB@chimera>
+ <de962C6zBxL.A.bvE.cFiZLB@chimera>
+ <20100205110100.57852c31@jbarnes-piketon>
+ <20100205190916.GD2858@think>
+ <20100205111747.6619b09b@jbarnes-piketon>
+ <20100208172410.GA11311@think>
+ <20100208093551.58a10643@jbarnes-piketon>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100208093551.58a10643@jbarnes-piketon>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Source-IP: acsmt354.oracle.com [141.146.40.154]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090204.4B706D76.00C8:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafał Miłecki wrote:
-> 2010/2/8 Stefan Bader <stefan.bader@canonical.com>:
->> Rafael J. Wysocki wrote:
->>> On Monday 08 February 2010, Rafał Miłecki wrote:
->>>> 2010/2/8 Stefan Bader <stefan.bader@canonical.com>:
->>>>> Rafael J. Wysocki wrote:
->>>>>> On Monday 08 February 2010, Rafał Miłecki wrote:
->>>>>>> 2010/2/8 Rafael J. Wysocki <rjw@sisk.pl>:
->>>>>>>> This message has been generated automatically as a part of a report
->>>>>>>> of regressions introduced between 2.6.31 and 2.6.32.
->>>>>>>>
->>>>>>>> The following bug entry is on the current list of known regressions
->>>>>>>> introduced between 2.6.31 and 2.6.32.  Please verify if it still should
->>>>>>>> be listed and let the tracking team know (either way).
->>>>>>>>
->>>>>>>>
->>>>>>>> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=15096
->>>>>>>> Subject         : Resume lock up -- bisected, commit 3a1151e3f124fd1a2c54b8153f510f1a7c715369
->>>>>>>> Submitter       : Rafał Miłecki <zajec5@gmail.com>
->>>>>>>> Date            : 2010-01-20 23:15 (19 days old)
->>>>>>>> First-Bad-Commit: http://git.kernel.org/git/linus/3a1151e3f124fd1a2c54b8153f510f1a7c715369
->>>>>> It looks like we should revert this commit, seems broken.
->>>>> Hm, otoh we had definitely people with some Asus laptops who where only be able
->>>>> to use backlight control with it. So I would rather prefer some work around to
->>>>> the suspend/resume problem (_DOS if I understood correctly).
->>>> It's same case with my Sony VAIO. Without this I can not control
->>>> backlight. Eventually I can hack on GPU registers directly, but I
->>>> don't think it can be called solution.
->>> Well, do I understand correctly that without commit
->>> 3a1151e3f124fd1a2c54b8153f510f1a7c715369 you can't control the backlight,
->>> but with the commit applied there's a resume problem on your box?
->>>
->>> Rafael
->> Rafał can correct me. I would phrase it that way that without the bisected
->> patch, there is no backlight control. And because there is with it, we hit the
->> next BIOS bug because the backlight driver now tries to correctly bring it back
->> on resume.
+On Mon, Feb 08, 2010 at 09:35:51AM -0800, Jesse Barnes wrote:
+> > 
+> > Ok, updating to rc7 and updating my xf86 driver to 2.10 seems to have
+> > fixed up my suspend/resume problems.  So, I should be able to trigger
+> > the execbuf problem again.
 > 
-> Do you suspect some conflict between video module and BIOS? Any more ideas?
+> I've heard some reports that the 2D driver introduces and fixes hangs,
+> so it's possible 2.10 will fix both issues for you.
 > 
-That would be my guess based on the (admitted not to be very deep reading across
-some of your and Rui's comments. He probably has a better Idea on that. But what
-the patch in question does is to allow video devices that have not all the
-methods defined (before _DOD *and* _DOS, after _DOD *or* _DOS) to be handled by
-the generic acpi video driver. And this gets you backlight control (by some
-additional methods). But now, as the driver is in use, it is in the
-suspend/resume path and this causes problems.
->From cross reading bugmail I had the feeling Rui was on a track while I did not
-follow close enough to take in any details.
-I would suspect that code assumes details from those two (_DOD and _DOS which is
-not there if the BIOS provides them both and is not handled as the driver used
-to be only used in that case). I probably should get back and read the bug
-report with all the info in detail somewhen tomorrow.
+> > Well, the rebooting isn't a huge deal, but if there's something I can
+> > track/kick or force to core dump, would it help?
+> 
+> We do have a test in intel-gpu-tools that will instigate a hang, but it
+> would be best to figure out what's causing it in your environment.
+> 
 
-Stefan
+[63516.632060] [drm:i915_hangcheck_elapsed] *ERROR* Hangcheck timer elapsed... GPU hung
+[63516.632069] render error detected, EIR: 0x00000000
+[63516.632092] [drm:i915_do_wait_request] *ERROR* i915_do_wait_request returns -5 (awaiting 2590581 at 2590579)
+
+So, this popped up while surfing in firefox, which is usually where I
+hit the execbuf errors.  X was totally stuck afterwards, but I could
+switch to a vc and get the dmesg.
+
+If there are specific procs that I can try to get traces of, just let
+me know for next time.
+
+-chris
 
