@@ -1,107 +1,147 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932258Ab0BHCxM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Feb 2010 21:53:12 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:33004 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932174Ab0BHCxL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Feb 2010 21:53:11 -0500
-Message-ID: <4B6F7D5A.50501@redhat.com>
-Date: Mon, 08 Feb 2010 10:56:26 +0800
-From: Cong Wang <amwang@redhat.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20091001)
+	id S932316Ab0BHCzU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Feb 2010 21:55:20 -0500
+Received: from rex.securecomputing.com ([203.24.151.4]:43565 "EHLO
+	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932174Ab0BHCzS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Feb 2010 21:55:18 -0500
+Message-ID: <4B6F7D3F.2020303@snapgear.com>
+Date: Mon, 08 Feb 2010 12:55:59 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, Alexander Viro <viro@zeniv.linux.org.uk>,
-       Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [Patch] compat ioctl: fix some build warnings
-References: <20100205070921.4179.39579.sendpatchset@localhost.localdomain> <20100205140150.7f5df97b.akpm@linux-foundation.org>
-In-Reply-To: <20100205140150.7f5df97b.akpm@linux-foundation.org>
+To: Amit Kucheria <amit.kucheria@canonical.com>
+CC: List Linux Kernel <linux-kernel@vger.kernel.org>,
+       Rob Herring <r.herring@freescale.com>, davem@davemloft.net,
+       netdev@vger.kernel.org, s.hauer@pengutronix.de, gerg@uclinux.org,
+       u.kleine-koenig@pengutronix.de, amit.kucheria@verdurent.com
+Subject: Re: [PATCH 1/3] fec: fix uninitialized rx buffer usage
+References: <cover.1265396105.git.amit.kucheria@canonical.com> <39ec69d1e3af809dcf210f4757ca2385efb5f9bc.1265396105.git.amit.kucheria@canonical.com>
+In-Reply-To: <39ec69d1e3af809dcf210f4757ca2385efb5f9bc.1265396105.git.amit.kucheria@canonical.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Fri, 5 Feb 2010 02:05:56 -0500
-> Amerigo Wang <amwang@redhat.com> wrote:
+Amit Kucheria wrote:
+> From: Rob Herring <r.herring@freescale.com>
 > 
->> I got these warnings:
->>
->> fs/compat_ioctl.c: In function ___compat_sys_ioctl':
->> fs/compat_ioctl.c:534: warning: ___karg' may be used uninitialized in this function
->> fs/compat_ioctl.c:533: warning: ___kcmd' may be used uninitialized in this function
->> fs/compat_ioctl.c:656: warning: ___ret' may be used uninitialized in this function
->>
->> These warnings are harmless, so just shut gcc up.
->>
->> Signed-off-by: WANG Cong <amwang@redhat.com>
->> Cc: Alexander Viro <viro@zeniv.linux.org.uk>
->> Cc: Arnd Bergmann <arnd@arndb.de>
->>
->> ---
->> diff --git a/fs/compat_ioctl.c b/fs/compat_ioctl.c
->> index c5c45de..2468f80 100644
->> --- a/fs/compat_ioctl.c
->> +++ b/fs/compat_ioctl.c
->> @@ -543,6 +543,8 @@ static int mt_ioctl_trans(unsigned int fd, unsigned int cmd, void __user *argp)
->>  		kcmd = MTIOCGET;
->>  		karg = &get;
->>  		break;
->> +	default:
->> +		return -EINVAL;
->>  	}
->>  	set_fs (KERNEL_DS);
->>  	err = sys_ioctl (fd, kcmd, (unsigned long)karg);
->> @@ -653,7 +655,7 @@ static int set_raw32_request(struct raw_config_request *req, struct raw32_config
->>  static int raw_ioctl(unsigned fd, unsigned cmd,
->>  		struct raw32_config_request __user *user_req)
->>  {
->> -        int ret;
->> +        int ret = -EINVAL;
->>  
->>          switch (cmd) {
->>          case RAW_SETBIND:
+> The fec driver was enabling receive buffer descriptor without allocating
+> the buffers. Make sure the buffer descriptors are initialized to not
+> start receiving packets.
 > 
-> Unfortunately that adds more code for something which cannot happen at
-> runtime.
+> Open also calls fec_restart after the rx buffers are allocated. With the code
+> in fec_restart, it zeroes out the buffer descriptors that have just been
+> setup.
 > 
-> I guess we could do this trick:
+> Signed-off-by: Rob Herring <r.herring@freescale.com>
+> Signed-off-by: Amit Kucheria <amit.kucheria@canonical.com>
+> Acked-by: Grant Likely <grant.likely@secretlab.ca>
+
+Acked-by: Greg Ungerer <gerg@uclinux.org>
+
+
+> ---
+>  drivers/net/fec.c |   57 +++++++++++++++++++++++++++--------------------------
+>  1 files changed, 29 insertions(+), 28 deletions(-)
 > 
-> --- a/fs/compat_ioctl.c~a
-> +++ a/fs/compat_ioctl.c
-> @@ -539,7 +539,7 @@ static int mt_ioctl_trans(unsigned int f
->  		kcmd = MTIOCPOS;
->  		karg = &pos;
->  		break;
-> -	case MTIOCGET32:
-> +	default:	/* MTIOCGET32 */
->  		kcmd = MTIOCGET;
->  		karg = &get;
->  		break;
-> @@ -657,7 +657,7 @@ static int raw_ioctl(unsigned fd, unsign
+> diff --git a/drivers/net/fec.c b/drivers/net/fec.c
+> index 16a1d58..9a8743d 100644
+> --- a/drivers/net/fec.c
+> +++ b/drivers/net/fec.c
+> @@ -1658,6 +1658,7 @@ static int fec_enet_init(struct net_device *dev, int index)
+>  {
+>  	struct fec_enet_private *fep = netdev_priv(dev);
+>  	struct bufdesc *cbd_base;
+> +	struct bufdesc *bdp;
+>  	int i;
 >  
->          switch (cmd) {
->          case RAW_SETBIND:
-> -        case RAW_GETBIND: {
-> +        default: {	/* RAW_GETBIND */
->                  struct raw_config_request req;
->                  mm_segment_t oldfs = get_fs();
+>  	/* Allocate memory for buffer descriptors. */
+> @@ -1710,6 +1711,34 @@ static int fec_enet_init(struct net_device *dev, int index)
+>  	/* Set MII speed to 2.5 MHz */
+>  	fep->phy_speed = ((((clk_get_rate(fep->clk) / 2 + 4999999)
+>  					/ 2500000) / 2) & 0x3F) << 1;
+> +
+> +	/* Initialize the receive buffer descriptors. */
+> +	bdp = fep->rx_bd_base;
+> +	for (i = 0; i < RX_RING_SIZE; i++) {
+> +
+> +		/* Initialize the BD for every fragment in the page. */
+> +		bdp->cbd_sc = 0;
+> +		bdp++;
+> +	}
+> +
+> +	/* Set the last buffer to wrap */
+> +	bdp--;
+> +	bdp->cbd_sc |= BD_SC_WRAP;
+> +
+> +	/* ...and the same for transmit */
+> +	bdp = fep->tx_bd_base;
+> +	for (i = 0; i < TX_RING_SIZE; i++) {
+> +
+> +		/* Initialize the BD for every fragment in the page. */
+> +		bdp->cbd_sc = 0;
+> +		bdp->cbd_bufaddr = 0;
+> +		bdp++;
+> +	}
+> +
+> +	/* Set the last buffer to wrap */
+> +	bdp--;
+> +	bdp->cbd_sc |= BD_SC_WRAP;
+> +
+>  	fec_restart(dev, 0);
 >  
-> _
-> 
-> 
-> Which actually reduces code:
-> 
-> akpm:/usr/src/25> size fs/compat_ioctl.o
->    text    data     bss     dec     hex filename
->    9012    2232    2864   14108    371c fs/compat_ioctl.o
-> 
->    8968    2232    2848   14048    36e0 fs/compat_ioctl.o
-> 
+>  	/* Queue up command to detect the PHY and initialize the
+> @@ -1730,7 +1759,6 @@ static void
+>  fec_restart(struct net_device *dev, int duplex)
+>  {
+>  	struct fec_enet_private *fep = netdev_priv(dev);
+> -	struct bufdesc *bdp;
+>  	int i;
+>  
+>  	/* Whack a reset.  We should wait for this. */
+> @@ -1768,33 +1796,6 @@ fec_restart(struct net_device *dev, int duplex)
+>  		}
+>  	}
+>  
+> -	/* Initialize the receive buffer descriptors. */
+> -	bdp = fep->rx_bd_base;
+> -	for (i = 0; i < RX_RING_SIZE; i++) {
+> -
+> -		/* Initialize the BD for every fragment in the page. */
+> -		bdp->cbd_sc = BD_ENET_RX_EMPTY;
+> -		bdp++;
+> -	}
+> -
+> -	/* Set the last buffer to wrap */
+> -	bdp--;
+> -	bdp->cbd_sc |= BD_SC_WRAP;
+> -
+> -	/* ...and the same for transmit */
+> -	bdp = fep->tx_bd_base;
+> -	for (i = 0; i < TX_RING_SIZE; i++) {
+> -
+> -		/* Initialize the BD for every fragment in the page. */
+> -		bdp->cbd_sc = 0;
+> -		bdp->cbd_bufaddr = 0;
+> -		bdp++;
+> -	}
+> -
+> -	/* Set the last buffer to wrap */
+> -	bdp--;
+> -	bdp->cbd_sc |= BD_SC_WRAP;
+> -
+>  	/* Enable MII mode */
+>  	if (duplex) {
+>  		/* MII enable / FD enable */
 
-Yeah! Definitely better.
 
-Thanks, Andrew!
-
+-- 
+------------------------------------------------------------------------
+Greg Ungerer  --  Principal Engineer        EMAIL:     gerg@snapgear.com
+SnapGear Group, McAfee                      PHONE:       +61 7 3435 2888
+8 Gardner Close                             FAX:         +61 7 3217 5323
+Milton, QLD, 4064, Australia                WEB: http://www.SnapGear.com
