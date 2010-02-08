@@ -1,118 +1,77 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755445Ab0BHUQo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 15:16:44 -0500
-Received: from fmmailgate01.web.de ([217.72.192.221]:37271 "EHLO
+	id S1755607Ab0BHUTY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 15:19:24 -0500
+Received: from fmmailgate01.web.de ([217.72.192.221]:37099 "EHLO
 	fmmailgate01.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753371Ab0BHUNN (ORCPT
+	with ESMTP id S1754837Ab0BHUNG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 15:13:13 -0500
+	Mon, 8 Feb 2010 15:13:06 -0500
 From: Jan Kiszka <jan.kiszka@web.de>
 To: David Miller <davem@davemloft.net>, Karsten Keil <isdn@linux-pingi.de>
 Cc: linux-kernel@vger.kernel.org, i4ldeveloper@listserv.isdn4linux.de,
        isdn4linux@listserv.isdn4linux.de, netdev@vger.kernel.org,
        Alan Cox <alan@lxorguk.ukuu.org.uk>,
        Marcel Holtmann <marcel@holtmann.org>
-Subject: [PATCH v2 30/41] CAPI: Drop atomic ttyopencount
-Date: Mon,  8 Feb 2010 21:12:34 +0100
-Message-Id: <30ac44a5faf0f7135d822d601651f328a8b14775.1265659936.git.jan.kiszka@web.de>
+Subject: [PATCH v2 17/41] CAPI: Fix racy capi_read
+Date: Mon,  8 Feb 2010 21:12:21 +0100
+Message-Id: <342ae07a02d368f2d76821f980c0118b55518f04.1265659935.git.jan.kiszka@web.de>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <cover.1265659933.git.jan.kiszka@web.de>
 References: <cover.1265659933.git.jan.kiszka@web.de>
 In-Reply-To: <cover.1265659933.git.jan.kiszka@web.de>
 References: <cover.1265659933.git.jan.kiszka@web.de>
-X-Provags-ID: V01U2FsdGVkX19u6rOvE7WfIGul9cvy/WRUvv3aSAHtpDNOwgw4
-	gdI9/qZycHlEiSpdMLCwp0MajFdIqcV6IMXipQndJiR8iCZ8Ft
-	8oqztcu1s=
+X-Provags-ID: V01U2FsdGVkX1/Wnf16tfmIrDwkiPuAgPENBWJx6VzkDfNDHsAL
+	Ka/Q5VhUM/g+dnzNo9muPCabx9r9rm4MrE0CsEhyj9KPzR4KC6
+	XczRtFp4o=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Not needed, tty->count keeps track of this information. At this chance,
-drop traces of ancient attempts to debug this logic via _DEBUG_REFCOUNT.
+capi_read still used interruptible_sleep_on, risking to miss a wakeup
+this way. Convert it to wait_event_interruptible.
 
 Signed-off-by: Jan Kiszka <jan.kiszka@web.de>
 ---
- drivers/isdn/capi/capi.c |   30 ++++++++++--------------------
- 1 files changed, 10 insertions(+), 20 deletions(-)
+ drivers/isdn/capi/capi.c |   19 +++++++------------
+ 1 files changed, 7 insertions(+), 12 deletions(-)
 
 diff --git a/drivers/isdn/capi/capi.c b/drivers/isdn/capi/capi.c
-index 0b264b4..867589a 100644
+index f8f8660..8abec96 100644
 --- a/drivers/isdn/capi/capi.c
 +++ b/drivers/isdn/capi/capi.c
-@@ -45,7 +45,6 @@ MODULE_DESCRIPTION("CAPI4Linux: Userspace /dev/capi20 interface");
- MODULE_AUTHOR("Carsten Paeth");
- MODULE_LICENSE("GPL");
+@@ -657,24 +657,19 @@ capi_read(struct file *file, char __user *buf, size_t count, loff_t *ppos)
+ 	struct capidev *cdev = (struct capidev *)file->private_data;
+ 	struct sk_buff *skb;
+ 	size_t copied;
++	int err;
  
--#undef _DEBUG_REFCOUNT		/* alloc/free and open/close debug */
- #undef _DEBUG_TTYFUNCS		/* call to tty_driver */
- #undef _DEBUG_DATAFLOW		/* data flow */
+ 	if (!cdev->ap.applid)
+ 		return -ENODEV;
  
-@@ -97,7 +96,6 @@ struct capiminor {
- 	int                ttyinstop;
- 	int                ttyoutstop;
- 	struct sk_buff    *ttyskb;
--	atomic_t           ttyopencount;
- 
- 	struct sk_buff_head inqueue;
- 	int                 inbytes;
-@@ -230,7 +228,6 @@ static struct capiminor *capiminor_alloc(struct capi20_appl *ap, u32 ncci)
- 	mp->ap = ap;
- 	mp->ncci = ncci;
- 	mp->msgid = 0;
--	atomic_set(&mp->ttyopencount,0);
- 	INIT_LIST_HEAD(&mp->ackqueue);
- 	spin_lock_init(&mp->ackqlock);
- 
-@@ -350,8 +347,17 @@ static void capincci_free_minor(struct capincci *np)
- static inline unsigned int capincci_minor_opencount(struct capincci *np)
- {
- 	struct capiminor *mp = np->minorp;
-+	unsigned int count = 0;
-+	struct tty_struct *tty;
- 
--	return mp ? atomic_read(&mp->ttyopencount) : 0;
-+	if (mp) {
-+		tty = tty_port_tty_get(&mp->port);
-+		if (tty) {
-+			count = tty->count;
-+			tty_kref_put(tty);
-+		}
-+	}
-+	return count;
- }
- 
- #else /* !CONFIG_ISDN_CAPI_MIDDLEWARE */
-@@ -1054,10 +1060,6 @@ static int capinc_tty_open(struct tty_struct *tty, struct file *filp)
- 		return err;
- 
- 	spin_lock_irqsave(&workaround_lock, flags);
--	atomic_inc(&mp->ttyopencount);
--#ifdef _DEBUG_REFCOUNT
--	printk(KERN_DEBUG "capinc_tty_open ocount=%d\n", atomic_read(&mp->ttyopencount));
--#endif
- 	handle_minor_recv(mp);
- 	spin_unlock_irqrestore(&workaround_lock, flags);
- 	return 0;
-@@ -1067,18 +1069,6 @@ static void capinc_tty_close(struct tty_struct *tty, struct file *filp)
- {
- 	struct capiminor *mp = tty->driver_data;
- 
--		if (atomic_dec_and_test(&mp->ttyopencount)) {
--#ifdef _DEBUG_REFCOUNT
--			printk(KERN_DEBUG "capinc_tty_close lastclose\n");
--#endif
--		}
--#ifdef _DEBUG_REFCOUNT
--		printk(KERN_DEBUG "capinc_tty_close ocount=%d\n", atomic_read(&mp->ttyopencount));
--#endif
+-	if ((skb = skb_dequeue(&cdev->recvqueue)) == NULL) {
 -
--#ifdef _DEBUG_REFCOUNT
--	printk(KERN_DEBUG "capinc_tty_close\n");
--#endif
- 	tty_port_close(&mp->port, tty, filp);
- }
- 
++	skb = skb_dequeue(&cdev->recvqueue);
++	if (!skb) {
+ 		if (file->f_flags & O_NONBLOCK)
+ 			return -EAGAIN;
+-
+-		for (;;) {
+-			interruptible_sleep_on(&cdev->recvwait);
+-			if ((skb = skb_dequeue(&cdev->recvqueue)) != NULL)
+-				break;
+-			if (signal_pending(current))
+-				break;
+-		}
+-		if (skb == NULL)
+-			return -ERESTARTNOHAND;
++		err = wait_event_interruptible(cdev->recvwait,
++				(skb = skb_dequeue(&cdev->recvqueue)));
++		if (err)
++			return err;
+ 	}
+ 	if (skb->len > count) {
+ 		skb_queue_head(&cdev->recvqueue, skb);
 -- 
 1.6.0.2
 
