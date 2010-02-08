@@ -1,108 +1,51 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754750Ab0BHJ2x (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 04:28:53 -0500
-Received: from mail-fx0-f211.google.com ([209.85.220.211]:46658 "EHLO
-	mail-fx0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753965Ab0BHJ2v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 04:28:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=FBYKkqqXRaKg2rWc5sV778+Q0yhheDt10cdabg+W7e38bO1DpIRWxZIQS5tfhbkVp2
-         o6E62EyJLhkEY73PNdJ60aOB3o8FmHlx1ELRjWHMAvg+uoqxNEn6n4la90PsgeLmV1f8
-         Knli+UzYywUaSl89/JhmOfoXaW4Dq/Am8xOG4=
-Date: Mon, 8 Feb 2010 10:28:45 +0100
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Borislav Petkov <bp@amd64.org>, Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>, Jamie Lokier <jamie@shareable.org>,
-       Roland Dreier <rdreier@cisco.com>, Al Viro <viro@ZenIV.linux.org.uk>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Brian Gerst <brgerst@gmail.com>
-Subject: Re: [PATCH 2/5] bitops: compile time optimization for
- hweight_long(CONSTANT)
-Message-ID: <20100208092845.GB12618@a1.tnic>
-Mail-Followup-To: Borislav Petkov <petkovbb@googlemail.com>,
-	"H. Peter Anvin" <hpa@zytor.com>, Borislav Petkov <bp@amd64.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Wu Fengguang <fengguang.wu@intel.com>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Jamie Lokier <jamie@shareable.org>,
-	Roland Dreier <rdreier@cisco.com>,
-	Al Viro <viro@ZenIV.linux.org.uk>,
-	"linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-	Ingo Molnar <mingo@elte.hu>, Brian Gerst <brgerst@gmail.com>
-References: <1265222875.24455.1020.camel@laptop>
- <4B69D362.10608@zytor.com>
- <20100204151050.GC32711@aftab>
- <1265296432.22001.18.camel@laptop>
- <20100204155419.GD32711@aftab>
- <1265299457.22001.72.camel@laptop>
- <20100205121139.GA9044@aftab>
- <4B6C93A2.1090302@zytor.com>
- <20100206093659.GA28326@aftab>
- <4B6E1DA3.50204@zytor.com>
+	id S1754843Ab0BHJfq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 04:35:46 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:54785 "EHLO mail.zytor.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753355Ab0BHJfn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Feb 2010 04:35:43 -0500
+Message-ID: <4B6FD9A2.8070008@zytor.com>
+Date: Mon, 08 Feb 2010 01:30:10 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <4B6E1DA3.50204@zytor.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Pavel Machek <pavel@ucw.cz>
+CC: rostedt@goodmis.org, Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>, Tom Tromey <tromey@redhat.com>,
+       Kyle Moffett <kyle@moffetthome.net>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Oleg Nesterov <oleg@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>, linux-next@vger.kernel.org,
+       utrace-devel@redhat.com, Thomas Gleixner <tglx@linutronix.de>,
+       JimKeniston <jkenisto@us.ibm.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: linux-next: add utrace tree
+References: <f73f7ab81001222220jfaf2edfwca3fa4c22b0b4d72@mail.gmail.com> <alpine.LFD.2.00.1001232051510.3574@localhost.localdomain> <m33a1tnbd9.fsf@fleche.redhat.com> <alpine.LFD.2.00.1001251332370.3574@localhost.localdomain> <m3636oh2rt.fsf@fleche.redhat.com> <alpine.LFD.2.00.1001261535510.17519@localhost.localdomain> <1264575134.4283.1983.camel@laptop> <alpine.LFD.2.00.1001270231520.24253@localhost.localdomain> <1264600792.31321.464.camel@gandalf.stny.rr.com> <4B607B1A.3080007@zytor.com> <20100208065425.GB1290@ucw.cz>
+In-Reply-To: <20100208065425.GB1290@ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 06, 2010 at 05:55:47PM -0800, H. Peter Anvin wrote:
-> > Well, the example Brian pointed me to - __mutex_fastpath_lock - lists
-> > the full set of clobbered registers. Please elaborate on the assembly
-> > wrapper for the function, wouldn't I need to list all the clobbered
-> > registers there too or am I missing something?
-> > 
-> 
-> The notion there would be that you do push/pop in the assembly wrapper.
+On 02/07/2010 10:54 PM, Pavel Machek wrote:
+>>
+>> No, it has nothing to do with ring.  It has to do with modifying code
+>> that another CPU could be executing at the same time, and with modifying
+>> code on the same processor through another virtual alias (they are
+>> different issues.)  The same issues apply regardless of the CPL of the
+>> processor.
+>
+> ...but these are always 'there could be cpu bugs around' issues,
+> right? Like amd k6. AFAICT x86 always supported self-modifying code
+> without any extra barriers needed...
+>
 
-Oh yes, something similar to SAVE/RESTORE_ALL in
-<arch/x86/kernel/entry_32.S> could work. Good idea!
+*Self*-modifying code, yes.  *Cross*-modifying code, no.
 
-> >> d) On the other hand, you do *not* need a "memory" clobber.
-> > 
-> > Right, in this case we have all non-barrier like inlines so no memory
-> > clobber, according to the comment above alternative() macro.
-> 
-> OK, I'm missing something here.
-> 
-> A few more notions:
-> 
-> a. This is exactly the kind of code where you don't want to put
-> "volatile" on your asm statement, because it's a pure compute.
-> 
-> b. It is really rather pointless to go through the whole alternatives
-> work if you are then going to put it inside a function which isn't an
-> inline ...
-
-Well, in the second version I did replace a 'call _hweightXX' with
-the actual popcnt opcode so the alternatives is only needed to do the
-replacement during boot. We might just as well do
-
-if (X86_FEATURE_POPCNT)
-	__hw_popcnt()
-else
-	__software_hweight()
-
-The only advantage of the alternatives is that it would save us the
-if-else test above each time we do cpumask_weight. However, the if-else
-approach is much more readable and obviates the need for all that macro
-magic and taking special care of calling c function from within asm. And
-since we do not call cpumask_weight all that often I'll honestly opt for
-alternative-less solution...
-
-Hmm...
-
-Thanks,
-Boris.
+	-hpa
