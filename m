@@ -1,67 +1,72 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751257Ab0BHLtl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 06:49:41 -0500
-Received: from mail-ew0-f228.google.com ([209.85.219.228]:52605 "EHLO
-	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750984Ab0BHLtj convert rfc822-to-8bit (ORCPT
+	id S1751251Ab0BHLwR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 06:52:17 -0500
+Received: from mail-yx0-f193.google.com ([209.85.210.193]:40607 "EHLO
+	mail-yx0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750984Ab0BHLwQ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 06:49:39 -0500
+	Mon, 8 Feb 2010 06:52:16 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :cc:content-type:content-transfer-encoding;
-        b=WlPoT7JwCdvo036oLElyzxYnO0dHJtN5qgvMaQHwjw3xibbayCagw6gmSBO6DWA906
-         gEjeVfMGTs0N01k1uPTGxLiIIa2SMwGQ/+3iUsjsyEzZITwbUhWPEh8wIN38mpiRwVpV
-         p84VKoAAdndFnmfLczmFEjsYulOi1adVZNKfg=
+        b=wyVI0gRmbJwYM1igtwwO3EI8XVNILRmjeV5fWfD+Vnle499h6kPIxElgpeLnV6FfyQ
+         L77brV3lXQTySMhfhlBEW2Ovfdz0B3qqhTXlu91PnK4QzsK/wMOcOfaddrLG5Lglp1rQ
+         XEPOhBIaB79fIH9N3d/8ExthihqF+pFaFuegw=
 MIME-Version: 1.0
-In-Reply-To: <201002081156.24020.rjw@sisk.pl>
-References: <2uzMDuY-7_O.A.M1G.7X1bLB@chimera>
-	 <iuJeop2ribM.A.fyH.fY1bLB@chimera>
-	 <b170af451002072345x1e7666adv7f105a5f847f4d0d@mail.gmail.com>
-	 <201002081156.24020.rjw@sisk.pl>
-Date: Mon, 8 Feb 2010 12:49:35 +0100
-Message-ID: <b170af451002080349x4fb955b2wb9d0bdf6e6e03d0e@mail.gmail.com>
-Subject: Re: [Bug #15096] Resume lock up -- bisected, commit 
-	3a1151e3f124fd1a2c54b8153f510f1a7c715369
-From: =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Len Brown <len.brown@intel.com>,
-       Stefan Bader <stefan.bader@canonical.com>,
-       Zhang Rui <rui.zhang@intel.com>
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <1265623245.1853.33.camel@laptop>
+References: <1265542259-5596-1-git-send-email-HIGHGuY@gmail.com>
+	 <1265623245.1853.33.camel@laptop>
+Date: Mon, 8 Feb 2010 12:52:15 +0100
+Message-ID: <c76f371a1002080352ta0a2f7jd7945dc8f834c2cd@mail.gmail.com>
+Subject: Re: [RFC][PATCH] PERF_COUNT_SW_RUNNABLE_TASKS: measure and act upon 
+	parallellism
+From: Stijn Devriendt <highguy@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       efault@gmx.de, andrea@suse.de, akpm@linux-foundation.org,
+       Tejun Heo <tj@kernel.org>, Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-W dniu 8 lutego 2010 11:56 użytkownik Rafael J. Wysocki <rjw@sisk.pl> napisał:
-> On Monday 08 February 2010, Rafał Miłecki wrote:
->> 2010/2/8 Rafael J. Wysocki <rjw@sisk.pl>:
->> > This message has been generated automatically as a part of a report
->> > of regressions introduced between 2.6.31 and 2.6.32.
->> >
->> > The following bug entry is on the current list of known regressions
->> > introduced between 2.6.31 and 2.6.32.  Please verify if it still should
->> > be listed and let the tracking team know (either way).
->> >
->> >
->> > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=15096
->> > Subject         : Resume lock up -- bisected, commit 3a1151e3f124fd1a2c54b8153f510f1a7c715369
->> > Submitter       : Rafał Miłecki <zajec5@gmail.com>
->> > Date            : 2010-01-20 23:15 (19 days old)
->> > First-Bad-Commit: http://git.kernel.org/git/linus/3a1151e3f124fd1a2c54b8153f510f1a7c715369
+On Mon, Feb 8, 2010 at 11:00 AM, Peter Zijlstra <peterz@infradead.org> wrote:
+> On Sun, 2010-02-07 at 12:30 +0100, highguy@gmail.com wrote:
 >
-> It looks like we should revert this commit, seems broken.
+>> Here's an initial RFC patch for the parallallism
+>> events for perf_events.
 >
-> Anyway, I'll do my best to have a look at this bug later today.
+> OK, so you managed to rub me totally the wrong way with posting this
+> yesterday:
+> �- you send me each patch twice
+> �- you used the horrible git sendmail default of --chain-reply-to
+> � (some day I'll write a script that will detect and auto-bounce
+> � �series sent to me like that)
+> �- you failed to provide a changelog for any of the patches
+> �- some subjects were long enough to be a changelog
+>
+> Please don't do that again ;-)
 
-In such case I'd prefer to add "broken_DOS" flag for devices that were
-enabled by this patch. We could avoid restoring backlight on resume
-for broken_DOS then and maybe just update brightness to current value.
+Sorry for that. I'm still getting used to the thing called 'git'. Apart
+from obviously sharing its name, there's not so
+much we have in common so far... VCS experiences currently
+don't go far beyond svn and the horrid CVS.
+I just used the reply-list from the initial series about this subject,
+perhaps you were listed twice in that one as well.
 
--- 
-Rafał
+Isn't no longer making --chain-reply-to the default an option?
+
+>
+> Anyway, it did get me thinking, how about something like the below?
+> <SNIP>
+
+That pretty much looks like what I need at first sight. I'll definately
+give it a very close look and test it out.
+The perf_event approach would be nice, but the implementations
+just seem to collide.
+
+Thanks for taking the time anyway,
+Stijn
