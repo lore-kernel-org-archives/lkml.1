@@ -1,15 +1,16 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933923Ab0BHAvV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Feb 2010 19:51:21 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:55589 "EHLO ogre.sisk.pl"
+	id S933939Ab0BHAwN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Feb 2010 19:52:13 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:55553 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757858Ab0BHAqe convert rfc822-to-8bit (ORCPT
+	id S1757754Ab0BHApy convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Feb 2010 19:46:34 -0500
+	Sun, 7 Feb 2010 19:45:54 -0500
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
        Maciej Rutecki <maciej.rutecki@gmail.com>,
-       "Jithin Emmanuel" <jithin1987@gmail.com>
+       "Stephen R. van den Berg" <srb@cuci.nl>,
+       "Trond Myklebust" <Trond.Myklebust@netapp.com>
 References: <2uzMDuY-7_O.A.M1G.7X1bLB@chimera>
 In-Reply-To: <2uzMDuY-7_O.A.M1G.7X1bLB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -17,10 +18,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <iuJeop2ribM.A.WL.qY1bLB@chimera>
-Subject: [Bug #15015] blank screen at random times in laptop when sitting idle
+Message-ID: <iuJeop2ribM.A.4EB.PZ1bLB@chimera>
+Subject: [Bug #14891] Deadlock regression related to NFS root
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Mon,  8 Feb 2010 01:28:20 +0100 (CET)
+Date: Mon,  8 Feb 2010 01:28:17 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -33,9 +34,11 @@ introduced between 2.6.31 and 2.6.32.  Please verify if it still should
 be listed and let the tracking team know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15015
-Subject		: blank screen at random times in laptop when sitting idle
-Submitter	: Jithin Emmanuel <jithin1987@gmail.com>
-Date		: 2010-01-09 16:48 (30 days old)
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14891
+Subject		: Deadlock regression related to NFS root
+Submitter	: Stephen R. van den Berg <srb@cuci.nl>
+Date		: 2009-11-24 0:24 (76 days old)
+References	: http://marc.info/?l=linux-kernel&m=125902279909452&w=4
+Handled-By	: Trond Myklebust <Trond.Myklebust@netapp.com>
 
 
