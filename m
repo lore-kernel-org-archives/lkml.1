@@ -1,40 +1,91 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751401Ab0BHRaA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 12:30:00 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:45144 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750739Ab0BHR37 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 12:29:59 -0500
-Date: Mon, 8 Feb 2010 15:29:31 -0200
-From: Marcelo Tosatti <mtosatti@redhat.com>
-To: Don Dupuis <dondster@gmail.com>, Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, Avi Kivity <avi@redhat.com>
-Subject: Re: kernel NULL pointer dereference/ kvm subsystem
-Message-ID: <20100208172931.GA5315@amt.cnet>
-References: <632b79000910060738l5ed0dd6ch60b4569d87d2ef0e@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <632b79000910060738l5ed0dd6ch60b4569d87d2ef0e@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+	id S1752410Ab0BHRhN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 12:37:13 -0500
+Received: from outbound-mail-01.bluehost.com ([69.89.21.11]:33540 "HELO
+	outbound-mail-01.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751764Ab0BHRhK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Feb 2010 12:37:10 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=YtuSsP1HDKtx/zqGRFA+3B0IzYgmncSA7n8CARgBjXs13fQYeQutJbeH3uC0ToE/aXuAL7uEgCNN8rsH5rLZpmtN8nqEGGIcaYFzWV3nwdVDBrYSqEEPslg3sBk0bNBD;
+Date: Mon, 8 Feb 2010 09:35:51 -0800
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Chris Wilson <chris@chris-wilson.co.uk>, tomas m <tmezzadra@gmail.com>
+Subject: Re: [Bug #15004] i915: *ERROR* Execbuf while wedged
+Message-ID: <20100208093551.58a10643@jbarnes-piketon>
+In-Reply-To: <20100208172410.GA11311@think>
+References: <UgwvXSBS_tM.A.alD.1EiZLB@chimera>
+	<de962C6zBxL.A.bvE.cFiZLB@chimera>
+	<20100205110100.57852c31@jbarnes-piketon>
+	<20100205190916.GD2858@think>
+	<20100205111747.6619b09b@jbarnes-piketon>
+	<20100208172410.GA11311@think>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 06, 2009 at 09:38:05AM -0500, Don Dupuis wrote:
-> Kernel 2.6.31.2
-> x86 64bit
+On Mon, 8 Feb 2010 12:24:10 -0500
+Chris Mason <chris.mason@oracle.com> wrote:
+
+> On Fri, Feb 05, 2010 at 11:17:47AM -0800, Jesse Barnes wrote:
+> > On Fri, 5 Feb 2010 14:09:16 -0500
+> > Chris Mason <chris.mason@oracle.com> wrote:
+> > 
+> > > On Fri, Feb 05, 2010 at 11:01:00AM -0800, Jesse Barnes wrote:
+> > > > On Mon,  1 Feb 2010 01:43:19 +0100 (CET)
+> > > > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> > > > 
+> > > > > This message has been generated automatically as a part of a
+> > > > > report of regressions introduced between 2.6.31 and 2.6.32.
+> > > > > 
+> > > > > The following bug entry is on the current list of known
+> > > > > regressions introduced between 2.6.31 and 2.6.32.  Please
+> > > > > verify if it still should be listed and let me know (either
+> > > > > way).
+> > > > > 
+> > > > > 
+> > > > > Bug-Entry	:
+> > > > > http://bugzilla.kernel.org/show_bug.cgi?id=15004
+> > > > > Subject		: i915: *ERROR* Execbuf while wedged
+> > > > > Submitter	: tomas m <tmezzadra@gmail.com>
+> > > > > Date		: 2010-01-07 18:53 (25 days old)
+> > > > 
+> > > > Can you bisect this to a particular kernel commit?  The
+> > > > particular error message means the kernel detected a GPU hang.
+> > > > That's usually a userspace bug, but the kernel should recover
+> > > > from it.
+> > > 
+> > > I see these about once a week, which would be a very difficult
+> > > bisect. The kernel does recover when I reboot, but beyond that
+> > > the messages loop forever.
+> > > 
+> > > I haven't yet seen it on 2.6.33-rc, but I'm still struggling with
+> > > suspend/resume failures and haven't really had a one week up time
+> > > yet.
 > 
-> Running numerous kvm linux guests and noticed this oops in messages
-> file. This didn't occur in 2.6.30.6
-> 
-> BUG: unable to handle kernel NULL pointer dereference at 0000000000000028
-> IP: [<ffffffffa01de29f>] kpit_elapsed+0x30/0x60 [kvm]
+> Ok, updating to rc7 and updating my xf86 driver to 2.10 seems to have
+> fixed up my suspend/resume problems.  So, I should be able to trigger
+> the execbuf problem again.
 
-Fixed by ace1546487a0fe4634e3251067f8a32cb2cdc099. 
+I've heard some reports that the 2D driver introduces and fixes hangs,
+so it's possible 2.10 will fix both issues for you.
 
-Greg, can you please cherry pick to 2.6.31.stable?
+> Well, the rebooting isn't a huge deal, but if there's something I can
+> track/kick or force to core dump, would it help?
 
-TIA
+We do have a test in intel-gpu-tools that will instigate a hang, but it
+would be best to figure out what's causing it in your environment.
 
+-- 
+Jesse Barnes, Intel Open Source Technology Center
