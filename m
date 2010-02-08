@@ -1,83 +1,76 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755523Ab0BISCg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 13:02:36 -0500
-Received: from hera.kernel.org ([140.211.167.34]:54239 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754995Ab0BISCe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Feb 2010 13:02:34 -0500
-Date: Tue, 9 Feb 2010 18:00:39 GMT
-From: tip-bot for Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       yinghai@kernel.org, stable@kernel.org, suresh.b.siddha@intel.com,
-       tglx@linutronix.de, shaohui.zheng@intel.com
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       yinghai@kernel.org, stable@kernel.org, suresh.b.siddha@intel.com,
-       tglx@linutronix.de, shaohui.zheng@intel.com
-In-Reply-To: <20100118201256.672679042@sbs-t61.sc.intel.com>
-References: <20100118201256.672679042@sbs-t61.sc.intel.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/urgent] x86, apic: Don't use logical-flat mode when CPU hotplug may exceed 8 CPUs
-Message-ID: <tip-418f727639cfc8f03068aae09f473c493c759b9b@git.kernel.org>
-Git-Commit-ID: 418f727639cfc8f03068aae09f473c493c759b9b
-X-Mailer: tip-git-log-daemon
+	id S1754325Ab0BISTe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 13:19:34 -0500
+Received: from 1-1-12-13a.han.sth.bostream.se ([82.182.30.168]:60176 "EHLO
+	palpatine.hardeman.nu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751499Ab0BISTd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Feb 2010 13:19:33 -0500
+Date: Mon, 8 Feb 2010 11:13:35 +0100
+From: David =?iso-8859-1?Q?H=E4rdeman?= <david@hardeman.nu>
+To: linux-acpi@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: Why does my driver (drivers/input/misc/winbond-cir.c) break
+ suspend?
+Message-ID: <20100208101335.GA13907@hardeman.nu>
+Mail-Followup-To: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Tue, 09 Feb 2010 18:00:43 +0000 (UTC)
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  418f727639cfc8f03068aae09f473c493c759b9b
-Gitweb:     http://git.kernel.org/tip/418f727639cfc8f03068aae09f473c493c759b9b
-Author:     Suresh Siddha <suresh.b.siddha@intel.com>
-AuthorDate: Tue, 9 Feb 2010 09:18:35 -0800
-Committer:  H. Peter Anvin <hpa@zytor.com>
-CommitDate: Tue, 9 Feb 2010 09:29:17 -0800
+I've been trying to debug a problem with my driver 
+(drivers/input/misc/winbond-cir.c) and suspend/resume.
 
-x86, apic: Don't use logical-flat mode when CPU hotplug may exceed 8 CPUs
+If the driver is loaded, my test computer (Intel DG45FC motherboard) 
+survives one suspend/resume cycle but hangs (no pings, no magic sysrq, 
+etc) on the second suspend attempt (tested on 2.6.32.X and currently 
+testing on a git checkout from yesterday).
 
-We need to fall back from logical-flat APIC mode to physical-flat mode
-when we have more than 8 CPUs.  However, in the presence of CPU
-hotplug, we have to consider the number of possible CPUs rather than
-the number of current CPUs; otherwise we may cross the 8-CPU boundary
-when CPUs are added later.
+After sprinkling a lot of printk's everywhere, it seems that the kernel 
+freezes either in the below call, or at a random time soon after it:
 
-Reported-by: Shaohui Zheng <shaohui.zheng@intel.com>
-Acked-by: Shaohui Zheng <shaohui.zheng@intel.com>
-Cc: Yinghai Lu <yinghai@kernel.org>
-LKML-Reference: <20100118201256.672679042@sbs-t61.sc.intel.com>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
-Cc: <stable@kernel.org>
----
- arch/x86/kernel/apic/apic.c     |    2 +-
- arch/x86/kernel/apic/probe_64.c |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+drivers/pnp/driver.c:pnp_bus_suspend(), calls
+pnp_dev->protocol->suspend()
 
-diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
-index 3987e44..fc1d579 100644
---- a/arch/x86/kernel/apic/apic.c
-+++ b/arch/x86/kernel/apic/apic.c
-@@ -1892,7 +1892,7 @@ void __cpuinit generic_processor_info(int apicid, int version)
- 		max_physical_apicid = apicid;
- 
- #ifdef CONFIG_X86_32
--	if (num_processors > 8) {
-+	if (num_possible_cpus() > 8) {
- 		switch (boot_cpu_data.x86_vendor) {
- 		case X86_VENDOR_INTEL:
- 			if (!APIC_XAPIC(version)) {
-diff --git a/arch/x86/kernel/apic/probe_64.c b/arch/x86/kernel/apic/probe_64.c
-index 450fe20..83e9be4 100644
---- a/arch/x86/kernel/apic/probe_64.c
-+++ b/arch/x86/kernel/apic/probe_64.c
-@@ -67,7 +67,7 @@ void __init default_setup_apic_routing(void)
- 	}
- #endif
- 
--	if (apic == &apic_flat && num_processors > 8)
-+	if (apic == &apic_flat && num_possible_cpus() > 8)
- 			apic = &apic_physflat;
- 
- 	printk(KERN_INFO "Setting APIC routing to %s\n", apic->name);
+Since this is a pnpacpi device, that is a call to:
+
+drivers/pnp/pnpacpi/core.c:pnpacpi_disable_resources(), which calls the 
+ACPI "_DIS" method for the "UAR3" object.
+
+Now, if I add a hack to my driver to remove the PNP_DISABLE flag from 
+device->capabilities (which means, AFAIK, that the above ACPI "_DIS" 
+method won't get called during suspend), I can reliably suspend and 
+resume, which is why I believe that this has got something to do with 
+ACPI even though the crash during suspend doesn't always happen while 
+"my" drivers _DIS method is being executed.
+
+I've tried debugging the ACPI method by doing:
+echo _DIS   >> /sys/module/acpi/parameters/trace_method_name
+echo enable >> /sys/module/acpi/parameters/trace_state
+
+and done a suspend/resume/suspend (i.e. caused the system to crash) 
+while capturing the output via netconsole. I can't derive any 
+interesting insights from the log though.
+
+The decompiled dsdt table and the log capture from netconsole is 
+attached to:
+http://bugzilla.kernel.org/show_bug.cgi?id=15257
+
+The first suspend starts at 203.176799 (the first line of the log) and 
+ends around 209.083233 (line 2576), the resume starts right after the 
+suspend and ends around 211.358430 (line 2712), the second suspend 
+starts at 342.876299 (line 2718) and ends where the log file ends (with 
+a freeze).
+
+Any suggestions on what to try next?
+
+(Please CC me on any replies)
+
+-- 
+David Härdeman
