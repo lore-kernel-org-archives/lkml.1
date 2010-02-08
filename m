@@ -1,17 +1,17 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755455Ab0BHKdN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 05:33:13 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:57014 "EHLO
+	id S1755479Ab0BHKd7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 05:33:59 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:57018 "EHLO
 	bob.linux.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753675Ab0BHKdL (ORCPT
+	with ESMTP id S1753675Ab0BHKd6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 05:33:11 -0500
+	Mon, 8 Feb 2010 05:33:58 -0500
 From: Alan Cox <alan@linux.intel.com>
-Subject: [PATCH] sdio_uart: Use kfifo instead of the messy circ stuff
+Subject: [PATCH] tty: Fix the ldisc hangup race
 To: linux-kernel@vger.kernel.org, greg@kroah.com
-Date: Mon, 08 Feb 2010 10:08:39 +0000
-Message-ID: <20100208100808.2887.38401.stgit@localhost.localdomain>
+Date: Mon, 08 Feb 2010 10:09:26 +0000
+Message-ID: <20100208100858.2930.80953.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -20,240 +20,119 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Revised patch to use the new kfifo API. This replaces the one that was dropped
-from -next due to collisions with the kfifo API changes.
+This was noticed by Matthias Urlichs and he proposed a fix. This patch
+does the fixing a different way to avoid introducing several new race
+conditions into the code.
+
+The problem case is TTY_DRIVER_RESET_TERMIOS = 0. In that case while we
+abort the ldisc change, the hangup processing has not cleaned up and restarted
+the ldisc either.
+
+We can't restart the ldisc stuff in the set_ldisc as we don't know what
+the hangup did and may touch stuff we shouldn't as we are no longer
+supposed to influence the tty at that point in case it has been re-opened
+before we get rescheduled.
+
+Instead do it the simple way. Always re-init the ldisc on the hangup, but
+use TTY_DRIVER_RESET_TERMIOS to indicate that we should force N_TTY.
 
 Signed-off-by: Alan Cox <alan@linux.intel.com>
+Cc: stable@kernel.org
 ---
 
- drivers/mmc/card/sdio_uart.c |   93 ++++++++++++++----------------------------
- 1 files changed, 30 insertions(+), 63 deletions(-)
+ drivers/char/tty_ldisc.c |   50 ++++++++++++++++++++++++++++------------------
+ 1 files changed, 30 insertions(+), 20 deletions(-)
 
 
-diff --git a/drivers/mmc/card/sdio_uart.c b/drivers/mmc/card/sdio_uart.c
-index a4e3775..723e508 100644
---- a/drivers/mmc/card/sdio_uart.c
-+++ b/drivers/mmc/card/sdio_uart.c
-@@ -37,6 +37,7 @@
- #include <linux/gfp.h>
- #include <linux/tty.h>
- #include <linux/tty_flip.h>
-+#include <linux/kfifo.h>
+diff --git a/drivers/char/tty_ldisc.c b/drivers/char/tty_ldisc.c
+index 3f653f7..500e740 100644
+--- a/drivers/char/tty_ldisc.c
++++ b/drivers/char/tty_ldisc.c
+@@ -706,12 +706,13 @@ static void tty_reset_termios(struct tty_struct *tty)
+ /**
+  *	tty_ldisc_reinit	-	reinitialise the tty ldisc
+  *	@tty: tty to reinit
++ *	@ldisc: line discipline to reinitialize
+  *
+- *	Switch the tty back to N_TTY line discipline and leave the
+- *	ldisc state closed
++ *	Switch the tty to a line discipline and leave the ldisc
++ *	state closed
+  */
  
- #include <linux/mmc/core.h>
- #include <linux/mmc/card.h>
-@@ -47,19 +48,9 @@
- #define UART_NR		8	/* Number of UARTs this driver can handle */
- 
- 
--#define UART_XMIT_SIZE	PAGE_SIZE
-+#define FIFO_SIZE	PAGE_SIZE
- #define WAKEUP_CHARS	256
- 
--#define circ_empty(circ)	((circ)->head == (circ)->tail)
--#define circ_clear(circ)	((circ)->head = (circ)->tail = 0)
--
--#define circ_chars_pending(circ) \
--		(CIRC_CNT((circ)->head, (circ)->tail, UART_XMIT_SIZE))
--
--#define circ_chars_free(circ) \
--		(CIRC_SPACE((circ)->head, (circ)->tail, UART_XMIT_SIZE))
--
--
- struct uart_icount {
- 	__u32	cts;
- 	__u32	dsr;
-@@ -82,7 +73,7 @@ struct sdio_uart_port {
- 	struct mutex		func_lock;
- 	struct task_struct	*in_sdio_uart_irq;
- 	unsigned int		regs_offset;
--	struct circ_buf		xmit;
-+	struct kfifo		xmit_fifo;
- 	spinlock_t		write_lock;
- 	struct uart_icount	icount;
- 	unsigned int		uartclk;
-@@ -105,6 +96,8 @@ static int sdio_uart_add_port(struct sdio_uart_port *port)
- 	kref_init(&port->kref);
- 	mutex_init(&port->func_lock);
- 	spin_lock_init(&port->write_lock);
-+	if (kfifo_alloc(&port->xmit_fifo, FIFO_SIZE, GFP_KERNEL))
-+		return -ENOMEM;
- 
- 	spin_lock(&sdio_uart_table_lock);
- 	for (index = 0; index < UART_NR; index++) {
-@@ -140,6 +133,7 @@ static void sdio_uart_port_destroy(struct kref *kref)
+-static void tty_ldisc_reinit(struct tty_struct *tty)
++static void tty_ldisc_reinit(struct tty_struct *tty, int ldisc)
  {
- 	struct sdio_uart_port *port =
- 		container_of(kref, struct sdio_uart_port, kref);
-+	kfifo_free(&port->xmit_fifo);
- 	kfree(port);
- }
+ 	struct tty_ldisc *ld;
  
-@@ -456,9 +450,11 @@ static void sdio_uart_receive_chars(struct sdio_uart_port *port,
- 
- static void sdio_uart_transmit_chars(struct sdio_uart_port *port)
- {
--	struct circ_buf *xmit = &port->xmit;
-+	struct kfifo *xmit = &port->xmit_fifo;
- 	int count;
- 	struct tty_struct *tty;
-+	u8 iobuf[16];
-+	int len;
- 
- 	if (port->x_char) {
- 		sdio_out(port, UART_TX, port->x_char);
-@@ -469,27 +465,25 @@ static void sdio_uart_transmit_chars(struct sdio_uart_port *port)
- 
- 	tty = tty_port_tty_get(&port->port);
- 
--	if (tty == NULL || circ_empty(xmit) ||
-+	if (tty == NULL || !kfifo_len(xmit) ||
- 				tty->stopped || tty->hw_stopped) {
- 		sdio_uart_stop_tx(port);
- 		tty_kref_put(tty);
- 		return;
- 	}
- 
--	count = 16;
--	do {
--		sdio_out(port, UART_TX, xmit->buf[xmit->tail]);
--		xmit->tail = (xmit->tail + 1) & (UART_XMIT_SIZE - 1);
-+	len = kfifo_out_locked(xmit, iobuf, 16, &port->write_lock);
-+	for (count = 0; count < len; count++) {
-+		sdio_out(port, UART_TX, iobuf[count]);
- 		port->icount.tx++;
--		if (circ_empty(xmit))
--			break;
--	} while (--count > 0);
-+	}
- 
--	if (circ_chars_pending(xmit) < WAKEUP_CHARS)
-+	len = kfifo_len(xmit);
-+	if (len < WAKEUP_CHARS) {
- 		tty_wakeup(tty);
--
--	if (circ_empty(xmit))
--		sdio_uart_stop_tx(port);
-+		if (len == 0)
-+			sdio_uart_stop_tx(port);
-+	}
- 	tty_kref_put(tty);
- }
- 
-@@ -632,7 +626,6 @@ static int sdio_uart_activate(struct tty_port *tport, struct tty_struct *tty)
- {
- 	struct sdio_uart_port *port =
- 			container_of(tport, struct sdio_uart_port, port);
--	unsigned long page;
- 	int ret;
- 
+@@ -721,10 +722,10 @@ static void tty_ldisc_reinit(struct tty_struct *tty)
  	/*
-@@ -641,22 +634,17 @@ static int sdio_uart_activate(struct tty_port *tport, struct tty_struct *tty)
+ 	 *	Switch the line discipline back
  	 */
- 	set_bit(TTY_IO_ERROR, &tty->flags);
- 
--	/* Initialise and allocate the transmit buffer. */
--	page = __get_free_page(GFP_KERNEL);
--	if (!page)
--		return -ENOMEM;
--	port->xmit.buf = (unsigned char *)page;
--	circ_clear(&port->xmit);
-+	kfifo_reset(&port->xmit_fifo);
- 
- 	ret = sdio_uart_claim_func(port);
- 	if (ret)
--		goto err1;
-+		return ret;
- 	ret = sdio_enable_func(port->func);
- 	if (ret)
--		goto err2;
-+		goto err1;
- 	ret = sdio_claim_irq(port->func, sdio_uart_irq);
- 	if (ret)
--		goto err3;
-+		goto err2;
- 
- 	/*
- 	 * Clear the FIFO buffers and disable them.
-@@ -700,12 +688,10 @@ static int sdio_uart_activate(struct tty_port *tport, struct tty_struct *tty)
- 	sdio_uart_release_func(port);
- 	return 0;
- 
--err3:
--	sdio_disable_func(port->func);
- err2:
--	sdio_uart_release_func(port);
-+	sdio_disable_func(port->func);
- err1:
--	free_page((unsigned long)port->xmit.buf);
-+	sdio_uart_release_func(port);
- 	return ret;
- }
- 
-@@ -727,7 +713,7 @@ static void sdio_uart_shutdown(struct tty_port *tport)
- 
- 	ret = sdio_uart_claim_func(port);
- 	if (ret)
--		goto skip;
-+		return;
- 
- 	sdio_uart_stop_rx(port);
- 
-@@ -749,10 +735,6 @@ static void sdio_uart_shutdown(struct tty_port *tport)
- 	sdio_disable_func(port->func);
- 
- 	sdio_uart_release_func(port);
--
--skip:
--	/* Free the transmit buffer page. */
--	free_page((unsigned long)port->xmit.buf);
+-	ld = tty_ldisc_get(N_TTY);
++	ld = tty_ldisc_get(ldisc);
+ 	BUG_ON(IS_ERR(ld));
+ 	tty_ldisc_assign(tty, ld);
+-	tty_set_termios_ldisc(tty, N_TTY);
++	tty_set_termios_ldisc(tty, ldisc);
  }
  
  /**
-@@ -822,27 +804,12 @@ static int sdio_uart_write(struct tty_struct *tty, const unsigned char *buf,
- 			   int count)
+@@ -745,6 +746,8 @@ static void tty_ldisc_reinit(struct tty_struct *tty)
+ void tty_ldisc_hangup(struct tty_struct *tty)
  {
- 	struct sdio_uart_port *port = tty->driver_data;
--	struct circ_buf *circ = &port->xmit;
--	int c, ret = 0;
-+	int ret;
+ 	struct tty_ldisc *ld;
++	int reset = tty->driver->flags & TTY_DRIVER_RESET_TERMIOS;
++	int err = 0;
  
- 	if (!port->func)
- 		return -ENODEV;
- 
--	spin_lock(&port->write_lock);
--	while (1) {
--		c = CIRC_SPACE_TO_END(circ->head, circ->tail, UART_XMIT_SIZE);
--		if (count < c)
--			c = count;
--		if (c <= 0)
--			break;
--		memcpy(circ->buf + circ->head, buf, c);
--		circ->head = (circ->head + c) & (UART_XMIT_SIZE - 1);
--		buf += c;
--		count -= c;
--		ret += c;
--	}
--	spin_unlock(&port->write_lock);
--
-+	ret = kfifo_in_locked(&port->xmit_fifo, buf, count, &port->write_lock);
- 	if (!(port->ier & UART_IER_THRI)) {
- 		int err = sdio_uart_claim_func(port);
- 		if (!err) {
-@@ -859,13 +826,13 @@ static int sdio_uart_write(struct tty_struct *tty, const unsigned char *buf,
- static int sdio_uart_write_room(struct tty_struct *tty)
- {
- 	struct sdio_uart_port *port = tty->driver_data;
--	return port ? circ_chars_free(&port->xmit) : 0;
-+	return FIFO_SIZE - kfifo_len(&port->xmit_fifo);
+ 	/*
+ 	 * FIXME! What are the locking issues here? This may me overdoing
+@@ -772,25 +775,32 @@ void tty_ldisc_hangup(struct tty_struct *tty)
+ 	wake_up_interruptible_poll(&tty->read_wait, POLLIN);
+ 	/*
+ 	 * Shutdown the current line discipline, and reset it to
+-	 * N_TTY.
++	 * N_TTY if need be.
++	 *
++	 * Avoid racing set_ldisc or tty_ldisc_release
+ 	 */
+-	if (tty->driver->flags & TTY_DRIVER_RESET_TERMIOS) {
+-		/* Avoid racing set_ldisc or tty_ldisc_release */
+-		mutex_lock(&tty->ldisc_mutex);
+-		tty_ldisc_halt(tty);
+-		if (tty->ldisc) {	/* Not yet closed */
+-			/* Switch back to N_TTY */
+-			tty_ldisc_reinit(tty);
+-			/* At this point we have a closed ldisc and we want to
+-			   reopen it. We could defer this to the next open but
+-			   it means auditing a lot of other paths so this is
+-			   a FIXME */
++	mutex_lock(&tty->ldisc_mutex);
++	tty_ldisc_halt(tty);
++	/* At this point we have a closed ldisc and we want to
++	   reopen it. We could defer this to the next open but
++	   it means auditing a lot of other paths so this is
++	   a FIXME */
++	if (tty->ldisc) {	/* Not yet closed */
++		if (reset == 0) {
++			tty_ldisc_reinit(tty, tty->termios->c_line);
++			err = tty_ldisc_open(tty, tty->ldisc);
++		}
++		/* If the re-open fails or we reset then go to N_TTY. The
++		   N_TTY open cannot fail */
++		if (reset || err) {
++			tty_ldisc_reinit(tty, N_TTY);
+ 			WARN_ON(tty_ldisc_open(tty, tty->ldisc));
+-			tty_ldisc_enable(tty);
+ 		}
+-		mutex_unlock(&tty->ldisc_mutex);
+-		tty_reset_termios(tty);
++		tty_ldisc_enable(tty);
+ 	}
++	mutex_unlock(&tty->ldisc_mutex);
++	if (reset)
++		tty_reset_termios(tty);
  }
  
- static int sdio_uart_chars_in_buffer(struct tty_struct *tty)
- {
- 	struct sdio_uart_port *port = tty->driver_data;
--	return port ? circ_chars_pending(&port->xmit) : 0;
-+	return kfifo_len(&port->xmit_fifo);
- }
- 
- static void sdio_uart_send_xchar(struct tty_struct *tty, char ch)
+ /**
 
