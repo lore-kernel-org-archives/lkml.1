@@ -1,57 +1,91 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755195Ab0BHUNt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 15:13:49 -0500
-Received: from fmmailgate03.web.de ([217.72.192.234]:54108 "EHLO
+	id S1754992Ab0BHUNP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 15:13:15 -0500
+Received: from fmmailgate03.web.de ([217.72.192.234]:53757 "EHLO
 	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755026Ab0BHUNS (ORCPT
+	with ESMTP id S1754881Ab0BHUNI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 15:13:18 -0500
+	Mon, 8 Feb 2010 15:13:08 -0500
 From: Jan Kiszka <jan.kiszka@web.de>
 To: David Miller <davem@davemloft.net>, Karsten Keil <isdn@linux-pingi.de>
 Cc: linux-kernel@vger.kernel.org, i4ldeveloper@listserv.isdn4linux.de,
        isdn4linux@listserv.isdn4linux.de, netdev@vger.kernel.org,
        Alan Cox <alan@lxorguk.ukuu.org.uk>,
        Marcel Holtmann <marcel@holtmann.org>
-Subject: [PATCH v2 41/41] CAPI: Remove experimental tag from middleware feature
-Date: Mon,  8 Feb 2010 21:12:45 +0100
-Message-Id: <9a3963c0dc8c0c598a4509e425a2a5f882d6fb96.1265659937.git.jan.kiszka@web.de>
+Subject: [PATCH v2 20/41] CAPI: Clean up capinc_tty_init/exit
+Date: Mon,  8 Feb 2010 21:12:24 +0100
+Message-Id: <5d527d17d635af5578d3e64b698bee4a8dd1450c.1265659935.git.jan.kiszka@web.de>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <cover.1265659933.git.jan.kiszka@web.de>
 References: <cover.1265659933.git.jan.kiszka@web.de>
 In-Reply-To: <cover.1265659933.git.jan.kiszka@web.de>
 References: <cover.1265659933.git.jan.kiszka@web.de>
-X-Provags-ID: V01U2FsdGVkX19NU3FCyhbt9rTe+OahLQyY+We7fq5OJc/qGq7v
-	5T7JRyXZB6QoIgZ8vWdEMrFkimFoRolyaVeMEXY26Ot/SMqmgg
-	Vqam0n/u8=
+X-Provags-ID: V01U2FsdGVkX1/xeT1EdXnrtZKlZb4Gd3xnYFmohOVvnUe5+dc6
+	ETaEpfUrHMAOdV/WJ37xaJZZHnkN5mW18kuI7dBHOAPR2ph5bJ
+	zlPajS6D0=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Despite all its bugs, the middleware support of our CAPI stack was
-already in use for many, many moons. And after going through its code,
-fixing all issues I found, I feel it deserves to officially become a
-non-experimental feature.
+Return proper error code if tty_register_driver fails. In contrast,
+tty_unregister_driver cannot practically fail, so drop that error
+handling. Finally, mark capinc_tty_init/exit with __init/__exit.
 
 Signed-off-by: Jan Kiszka <jan.kiszka@web.de>
 ---
- drivers/isdn/capi/Kconfig |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+ drivers/isdn/capi/capi.c |   20 ++++++++++----------
+ 1 files changed, 10 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/isdn/capi/Kconfig b/drivers/isdn/capi/Kconfig
-index d607d46..a168e8a 100644
---- a/drivers/isdn/capi/Kconfig
-+++ b/drivers/isdn/capi/Kconfig
-@@ -17,8 +17,7 @@ config CAPI_TRACE
- 	  If unsure, say Y.
+diff --git a/drivers/isdn/capi/capi.c b/drivers/isdn/capi/capi.c
+index 46f85ae..c22b349 100644
+--- a/drivers/isdn/capi/capi.c
++++ b/drivers/isdn/capi/capi.c
+@@ -1307,10 +1307,11 @@ static const struct tty_operations capinc_ops = {
+ 	.send_xchar = capinc_tty_send_xchar,
+ };
  
- config ISDN_CAPI_MIDDLEWARE
--	bool "CAPI2.0 Middleware support (EXPERIMENTAL)"
--	depends on EXPERIMENTAL
-+	bool "CAPI2.0 Middleware support"
- 	help
- 	  This option will enhance the capabilities of the /dev/capi20
- 	  interface.  It will provide a means of moving a data connection,
+-static int capinc_tty_init(void)
++static int __init capinc_tty_init(void)
+ {
+ 	struct tty_driver *drv;
+-	
++	int err;
++
+ 	if (capi_ttyminors > CAPINC_MAX_PORTS)
+ 		capi_ttyminors = CAPINC_MAX_PORTS;
+ 	if (capi_ttyminors <= 0)
+@@ -1340,23 +1341,22 @@ static int capinc_tty_init(void)
+ 	drv->init_termios.c_lflag = 0;
+ 	drv->flags = TTY_DRIVER_REAL_RAW|TTY_DRIVER_RESET_TERMIOS;
+ 	tty_set_operations(drv, &capinc_ops);
+-	if (tty_register_driver(drv)) {
++
++	err = tty_register_driver(drv);
++	if (err) {
+ 		put_tty_driver(drv);
+ 		kfree(capiminors);
+ 		printk(KERN_ERR "Couldn't register capi_nc driver\n");
+-		return -1;
++		return err;
+ 	}
+ 	capinc_tty_driver = drv;
+ 	return 0;
+ }
+ 
+-static void capinc_tty_exit(void)
++static void __exit capinc_tty_exit(void)
+ {
+-	struct tty_driver *drv = capinc_tty_driver;
+-	int retval;
+-	if ((retval = tty_unregister_driver(drv)))
+-		printk(KERN_ERR "capi: failed to unregister capi_nc driver (%d)\n", retval);
+-	put_tty_driver(drv);
++	tty_unregister_driver(capinc_tty_driver);
++	put_tty_driver(capinc_tty_driver);
+ 	kfree(capiminors);
+ }
+ 
 -- 
 1.6.0.2
 
