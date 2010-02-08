@@ -1,75 +1,61 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750892Ab0BHL21 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 06:28:27 -0500
-Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:39968 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750736Ab0BHL20 (ORCPT
+	id S1751021Ab0BHLgE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 06:36:04 -0500
+Received: from casper.infradead.org ([85.118.1.10]:49391 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750764Ab0BHLgD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 06:28:26 -0500
-Subject: Re: USB mass storage and ARM cache coherency
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Ming Lei <tom.leiming@gmail.com>, linux-usb@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Sebastian Siewior <bigeasy@linutronix.de>, Greg KH <greg@kroah.com>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
-In-Reply-To: <20100208105209.GA31671@atrey.karlin.mff.cuni.cz>
-References: <20100208065519.GE1290@ucw.cz>
-	 <1265622676.4020.19.camel@pc1117.cambridge.arm.com>
-	 <20100208105209.GA31671@atrey.karlin.mff.cuni.cz>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Mon, 08 Feb 2010 11:28:03 +0000
-Message-Id: <1265628483.4020.63.camel@pc1117.cambridge.arm.com>
+	Mon, 8 Feb 2010 06:36:03 -0500
+Subject: Re: BUG: sched_mc_powersavings broken on pre-Nehalem x86 platforms
+From: Peter Zijlstra <peterz@infradead.org>
+To: svaidy@linux.vnet.ibm.com
+Cc: Suresh B Siddha <suresh.b.siddha@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Ingo Molnar <mingo@elte.hu>, Gautham R Shenoy <ego@in.ibm.com>,
+       Arun Bharadwaj <arun@linux.vnet.ibm.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20100208100555.GD2931@dirshya.in.ibm.com>
+References: <20100208100555.GD2931@dirshya.in.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 08 Feb 2010 12:35:48 +0100
+Message-ID: <1265628948.1853.43.camel@laptop>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 08 Feb 2010 11:28:04.0483 (UTC) FILETIME=[C798AD30:01CAA8B1]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-02-08 at 10:52 +0000, Pavel Machek wrote:
-> > On Mon, 2010-02-08 at 06:55 +0000, Pavel Machek wrote:
-> > > > > So, let's put this in the HCD drivers and be done with it.
-> > > >
-> > > > The patch below is what fixes the I-D cache incoherency issues on ARM. I
-> > > > don't particularly like the solution but it seems to be the only one
-> > > > available.
-> > >
-> > > Really? It looks like arm should just flush the caches when mapping
-> > > executable page to the userspace.... you can't expect all the drivers
-> > > to be modified like that...
-> >
-> > We could of course flush the caches every time we get a page fault but
-> > that's far from optimal, especially since DMA-capable drivers to do
-> > not
+On Mon, 2010-02-08 at 15:35 +0530, Vaidyanathan Srinivasan wrote:
+
+>     Fix for sched_mc_powersavigs for pre-Nehalem platforms.
+>     Child sched domain should clear SD_PREFER_SIBLING if parent will have 
+>     SD_POWERSAVINGS_BALANCE because they are contradicting.
 > 
-> Maybe far for optimal, but it is something that should be done,
-> _first_. Correctness is more important than performance, and you can't
-> expect all drivers to behave like you want them.
+>     Sets the flags correctly based on sched_mc_power_savings.
+>     
+>     Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+> 
+> diff --git a/include/linux/sched.h b/include/linux/sched.h
+> index 6550415..ef6b7cd 100644
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -866,7 +866,10 @@ static inline int sd_balance_for_mc_power(void)
+>  	if (sched_smt_power_savings)
+>  		return SD_POWERSAVINGS_BALANCE;
+>  
+> -	return SD_PREFER_SIBLING;
+> +	if (!sched_mc_power_savings)
+> +		return SD_PREFER_SIBLING;
+> +
+> +	return 0;
+>  }
+>  
+>  static inline int sd_balance_for_package_power(void)
+> 
 
-I wouldn't call heavy cache flushing "correctness". We could as well
-disable the caches so that it is fully coherent.
+Looks good, thanks!
 
-The arch code follows an API defined in cachetlb.txt but the PIO drivers
-don't (some do, like mmci.c). It may be inconvenient to call
-flush_dcache_page() in the driver, hence I started a discussion on
-linux-arch on a PIO mapping API that x86 or other fully coherent
-architectures can leave it as no-ops.
-
-> Then you can add optimalizations not to do the flushes on drivers you
-> audited and where you care...
-
-Sorry but that's not really feasible (unless I don't fully understand
-what you mean) - if we do the cache flushing on the fault handling path
-in the arch code, there is no way for the arch code to know what driver
-is doing, unless we make this conditionally compiled with something like
-CONFIG_ARCH_NEEDS_HEAVY_FLUSHING.
-
--- 
-Catalin
+What's the status of getting rid of sched_{mc,smt}_power_savings?
 
