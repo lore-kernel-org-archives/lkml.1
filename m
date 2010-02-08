@@ -1,63 +1,134 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755160Ab0BHIGH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 03:06:07 -0500
-Received: from mga02.intel.com ([134.134.136.20]:51620 "EHLO mga02.intel.com"
+	id S1754794Ab0BHIT1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 03:19:27 -0500
+Received: from cantor.suse.de ([195.135.220.2]:57033 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753176Ab0BHIGA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 03:06:00 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,427,1262592000"; 
-   d="scan'208";a="593982788"
-From: Sheng Yang <sheng@linux.intel.com>
-To: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Cc: Keir Fraser <keir.fraser@eu.citrix.com>,
-       Ian Campbell <Ian.Campbell@citrix.com>,
-       xen-devel <xen-devel@lists.xensource.com>, linux-kernel@vger.kernel.org,
-       Sheng Yang <sheng@linux.intel.com>
-Subject: [PATCH 4/7] xen: The entrance for PV featured HVM
-Date: Mon,  8 Feb 2010 16:05:51 +0800
-Message-Id: <1265616354-7384-5-git-send-email-sheng@linux.intel.com>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1265616354-7384-1-git-send-email-sheng@linux.intel.com>
-References: <1265616354-7384-1-git-send-email-sheng@linux.intel.com>
+	id S1752109Ab0BHIT0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Feb 2010 03:19:26 -0500
+Date: Mon, 8 Feb 2010 19:19:18 +1100
+From: Nick Piggin <npiggin@suse.de>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>, Andi Kleen <andi@firstfloor.org>,
+       Steven Whitehouse <swhiteho@redhat.com>,
+       Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Clemens Ladisch <clemens@ladisch.de>,
+       Olivier Galibert <galibert@pobox.com>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       linux-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 05/11] readahead: replace ra->mmap_miss with
+ ra->ra_flags
+Message-ID: <20100208081918.GD9781@laptop>
+References: <20100207041013.891441102@intel.com>
+ <20100207041043.429863034@intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100207041043.429863034@intel.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-xen_guest_init() would setup the environment.
+On Sun, Feb 07, 2010 at 12:10:18PM +0800, Wu Fengguang wrote:
+> Introduce a readahead flags field and embed the existing mmap_miss in it
+> (to save space).
 
-Signed-off-by: Sheng Yang <sheng@linux.intel.com>
----
- arch/x86/kernel/setup.c |    8 ++++++++
- 1 files changed, 8 insertions(+), 0 deletions(-)
+Is that the only reason? 
+ 
+> It will be possible to lose the flags in race conditions, however the
+> impact should be limited.
 
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index f7b8b98..1568a27 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -113,6 +113,10 @@
- #endif
- #include <asm/mce.h>
- 
-+#ifdef CONFIG_XEN
-+#include <xen/xen.h>
-+#endif
-+
- /*
-  * end_pfn only includes RAM, while max_pfn_mapped includes all e820 entries.
-  * The direct mapping extends to max_pfn_mapped, so that we can directly access
-@@ -732,6 +736,10 @@ void __init setup_arch(char **cmdline_p)
- 
- 	x86_init.oem.arch_setup();
- 
-+#ifdef CONFIG_XEN
-+	xen_guest_init();
-+#endif
-+
- 	setup_memory_map();
- 	parse_setup_data();
- 	/* update the e820_saved too */
--- 
-1.5.4.5
+Is this really a good tradeoff? Randomly readahead behaviour can
+change.
 
+I never liked this mmap_miss counter, though. It doesn't seem like
+it can adapt properly for changing mmap access patterns.
+
+Is there any reason why the normal readahead algorithms can't
+detect this kind of behaviour (in much fewer than 100 misses) and
+also adapt much faster if the access changes?
+
+> 
+> CC: Nick Piggin <npiggin@suse.de>
+> CC: Andi Kleen <andi@firstfloor.org>
+> CC: Steven Whitehouse <swhiteho@redhat.com>
+> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> ---
+>  include/linux/fs.h |   30 +++++++++++++++++++++++++++++-
+>  mm/filemap.c       |    7 ++-----
+>  2 files changed, 31 insertions(+), 6 deletions(-)
+> 
+> --- linux.orig/include/linux/fs.h	2010-02-07 11:46:35.000000000 +0800
+> +++ linux/include/linux/fs.h	2010-02-07 11:46:37.000000000 +0800
+> @@ -892,10 +892,38 @@ struct file_ra_state {
+>  					   there are only # of pages ahead */
+>  
+>  	unsigned int ra_pages;		/* Maximum readahead window */
+> -	unsigned int mmap_miss;		/* Cache miss stat for mmap accesses */
+> +	unsigned int ra_flags;
+>  	loff_t prev_pos;		/* Cache last read() position */
+>  };
+>  
+> +/* ra_flags bits */
+> +#define	READAHEAD_MMAP_MISS	0x0000ffff /* cache misses for mmap access */
+> +
+> +/*
+> + * Don't do ra_flags++ directly to avoid possible overflow:
+> + * the ra fields can be accessed concurrently in a racy way.
+> + */
+> +static inline unsigned int ra_mmap_miss_inc(struct file_ra_state *ra)
+> +{
+> +	unsigned int miss = ra->ra_flags & READAHEAD_MMAP_MISS;
+> +
+> +	if (miss < READAHEAD_MMAP_MISS) {
+> +		miss++;
+> +		ra->ra_flags = miss | (ra->ra_flags &~ READAHEAD_MMAP_MISS);
+> +	}
+> +	return miss;
+> +}
+> +
+> +static inline void ra_mmap_miss_dec(struct file_ra_state *ra)
+> +{
+> +	unsigned int miss = ra->ra_flags & READAHEAD_MMAP_MISS;
+> +
+> +	if (miss) {
+> +		miss--;
+> +		ra->ra_flags = miss | (ra->ra_flags &~ READAHEAD_MMAP_MISS);
+> +	}
+> +}
+> +
+>  /*
+>   * Check if @index falls in the readahead windows.
+>   */
+> --- linux.orig/mm/filemap.c	2010-02-07 11:46:35.000000000 +0800
+> +++ linux/mm/filemap.c	2010-02-07 11:46:37.000000000 +0800
+> @@ -1418,14 +1418,12 @@ static void do_sync_mmap_readahead(struc
+>  		return;
+>  	}
+>  
+> -	if (ra->mmap_miss < INT_MAX)
+> -		ra->mmap_miss++;
+>  
+>  	/*
+>  	 * Do we miss much more than hit in this file? If so,
+>  	 * stop bothering with read-ahead. It will only hurt.
+>  	 */
+> -	if (ra->mmap_miss > MMAP_LOTSAMISS)
+> +	if (ra_mmap_miss_inc(ra) > MMAP_LOTSAMISS)
+>  		return;
+>  
+>  	/*
+> @@ -1455,8 +1453,7 @@ static void do_async_mmap_readahead(stru
+>  	/* If we don't want any read-ahead, don't bother */
+>  	if (VM_RandomReadHint(vma))
+>  		return;
+> -	if (ra->mmap_miss > 0)
+> -		ra->mmap_miss--;
+> +	ra_mmap_miss_dec(ra);
+>  	if (PageReadahead(page))
+>  		page_cache_async_readahead(mapping, ra, file,
+>  					   page, offset, ra->ra_pages);
+> 
