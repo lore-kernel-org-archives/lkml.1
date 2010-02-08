@@ -1,190 +1,359 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755713Ab0BHUVw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 15:21:52 -0500
-Received: from fmmailgate02.web.de ([217.72.192.227]:43129 "EHLO
-	fmmailgate02.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754709Ab0BHUNC (ORCPT
+	id S1755719Ab0BHUUT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 15:20:19 -0500
+Received: from fmmailgate01.web.de ([217.72.192.221]:37052 "EHLO
+	fmmailgate01.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754797Ab0BHUNF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 15:13:02 -0500
+	Mon, 8 Feb 2010 15:13:05 -0500
 From: Jan Kiszka <jan.kiszka@web.de>
 To: David Miller <davem@davemloft.net>, Karsten Keil <isdn@linux-pingi.de>
 Cc: linux-kernel@vger.kernel.org, i4ldeveloper@listserv.isdn4linux.de,
        isdn4linux@listserv.isdn4linux.de, netdev@vger.kernel.org,
        Alan Cox <alan@lxorguk.ukuu.org.uk>,
        Marcel Holtmann <marcel@holtmann.org>
-Subject: [PATCH v2 08/41] CAPI: Rework capi_ctr_ready/down
-Date: Mon,  8 Feb 2010 21:12:12 +0100
-Message-Id: <4aaae9df73f1fb2787127395dabe310bc7261980.1265659934.git.jan.kiszka@web.de>
+Subject: [PATCH v2 12/41] CAPI: Reduce #ifdef mess around CONFIG_ISDN_CAPI_MIDDLEWARE
+Date: Mon,  8 Feb 2010 21:12:16 +0100
+Message-Id: <e818da77d23c3f42ecf7127d723e9ee9d3664e39.1265659934.git.jan.kiszka@web.de>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <cover.1265659933.git.jan.kiszka@web.de>
 References: <cover.1265659933.git.jan.kiszka@web.de>
 In-Reply-To: <cover.1265659933.git.jan.kiszka@web.de>
 References: <cover.1265659933.git.jan.kiszka@web.de>
-X-Provags-ID: V01U2FsdGVkX1/ZnvLlL0mVDTBkES7VHxmOuLd4CbM0JyMIWaJi
-	fW/iKI+BnXGlMNvF1Zk/Z2es8eNDVS6FVrQdNifatcZZOG5/Di
-	zY3ITYVZ0=
+X-Provags-ID: V01U2FsdGVkX1+4Wwq2ccxnrdvD1U5BFWMX5nSRZSlbr2DL3wLQ
+	A9N3bO1M0oh094cW98NwRzI4FQ583EuImEapRd4dWZdLy7nhqM
+	wrJtYIgNw=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This step prepares the application of proper controller locking: Push
-all state changing work into the notify handler that are called by
-capi_ctr_ready and capi_ctr_down, switch detach_capi_ctr to issue a
-synchronous ctr_down. Also ensure that we do not go through any action
-if the state did not change.
+Make the code a bit more readable be providing stub functions for the
+!CONFIG_ISDN_CAPI_MIDDLEWARE case. Though a few lines are moved around,
+this comes with no functional changes.
 
 Signed-off-by: Jan Kiszka <jan.kiszka@web.de>
 ---
- drivers/isdn/capi/kcapi.c |   95 +++++++++++++++++++++++---------------------
- 1 files changed, 50 insertions(+), 45 deletions(-)
+ drivers/isdn/capi/capi.c |  150 +++++++++++++++++++++++++--------------------
+ 1 files changed, 83 insertions(+), 67 deletions(-)
 
-diff --git a/drivers/isdn/capi/kcapi.c b/drivers/isdn/capi/kcapi.c
-index c46964f..9362a7a 100644
---- a/drivers/isdn/capi/kcapi.c
-+++ b/drivers/isdn/capi/kcapi.c
-@@ -169,44 +169,74 @@ static void release_appl(struct capi_ctr *ctr, u16 applid)
+diff --git a/drivers/isdn/capi/capi.c b/drivers/isdn/capi/capi.c
+index 3b07797..7d2ca6b 100644
+--- a/drivers/isdn/capi/capi.c
++++ b/drivers/isdn/capi/capi.c
+@@ -23,14 +23,10 @@
+ #include <linux/smp_lock.h>
+ #include <linux/timer.h>
+ #include <linux/wait.h>
+-#ifdef CONFIG_ISDN_CAPI_MIDDLEWARE
+ #include <linux/tty.h>
+-#ifdef CONFIG_PPP
+ #include <linux/netdevice.h>
+ #include <linux/ppp_defs.h>
+ #include <linux/if_ppp.h>
+-#endif /* CONFIG_PPP */
+-#endif /* CONFIG_ISDN_CAPI_MIDDLEWARE */
+ #include <linux/skbuff.h>
+ #include <linux/proc_fs.h>
+ #include <linux/seq_file.h>
+@@ -56,17 +52,17 @@ MODULE_LICENSE("GPL");
+ /* -------- driver information -------------------------------------- */
  
- static void notify_up(u32 contr)
+ static struct class *capi_class;
+-
+ static int capi_major = 68;		/* allocated */
++
++module_param_named(major, capi_major, uint, 0);
++
+ #ifdef CONFIG_ISDN_CAPI_MIDDLEWARE
+-#define CAPINC_NR_PORTS	32
++#define CAPINC_NR_PORTS		32
+ #define CAPINC_MAX_PORTS	256
++
+ static int capi_ttymajor = 191;
+ static int capi_ttyminors = CAPINC_NR_PORTS;
+-#endif /* CONFIG_ISDN_CAPI_MIDDLEWARE */
+ 
+-module_param_named(major, capi_major, uint, 0);
+-#ifdef CONFIG_ISDN_CAPI_MIDDLEWARE
+ module_param_named(ttymajor, capi_ttymajor, uint, 0);
+ module_param_named(ttyminors, capi_ttyminors, uint, 0);
+ #endif /* CONFIG_ISDN_CAPI_MIDDLEWARE */
+@@ -81,7 +77,6 @@ module_param_named(ttyminors, capi_ttyminors, uint, 0);
+ 
+ struct capidev;
+ struct capincci;
+-#ifdef CONFIG_ISDN_CAPI_MIDDLEWARE
+ struct capiminor;
+ 
+ struct datahandle_queue {
+@@ -116,7 +111,6 @@ struct capiminor {
+ 	int nack;
+ 	spinlock_t ackqlock;
+ };
+-#endif /* CONFIG_ISDN_CAPI_MIDDLEWARE */
+ 
+ /* FIXME: The following lock is a sledgehammer-workaround to a
+  * locking issue with the capiminor (and maybe other) data structure(s).
+@@ -156,14 +150,13 @@ static DEFINE_RWLOCK(capidev_list_lock);
+ static LIST_HEAD(capidev_list);
+ 
+ #ifdef CONFIG_ISDN_CAPI_MIDDLEWARE
++
+ static DEFINE_RWLOCK(capiminor_list_lock);
+ static LIST_HEAD(capiminor_list);
+-#endif /* CONFIG_ISDN_CAPI_MIDDLEWARE */
+ 
+-#ifdef CONFIG_ISDN_CAPI_MIDDLEWARE
+ /* -------- datahandles --------------------------------------------- */
+ 
+-static int capincci_add_ack(struct capiminor *mp, u16 datahandle)
++static int capiminor_add_ack(struct capiminor *mp, u16 datahandle)
  {
--	struct capi_ctr *ctr = get_capi_ctr_by_nr(contr);
- 	struct capi20_appl *ap;
-+	struct capi_ctr *ctr;
- 	u16 applid;
+ 	struct datahandle_queue *n;
+ 	unsigned long flags;
+@@ -301,26 +294,17 @@ static struct capiminor *capiminor_find(unsigned int minor)
  
--	if (showcapimsgs & 1) {
-+	if (showcapimsgs & 1)
- 	        printk(KERN_DEBUG "kcapi: notify up contr %d\n", contr);
--	}
--	if (!ctr) {
-+
-+	ctr = get_capi_ctr_by_nr(contr);
-+	if (ctr) {
-+		if (ctr->state == CAPI_CTR_RUNNING)
-+			return;
-+
-+		ctr->state = CAPI_CTR_RUNNING;
-+
-+		for (applid = 1; applid <= CAPI_MAXAPPL; applid++) {
-+			ap = get_capi_appl_by_nr(applid);
-+			if (!ap || ap->release_in_progress)
-+				continue;
-+			register_appl(ctr, applid, &ap->rparam);
-+			if (ap->callback && !ap->release_in_progress)
-+				ap->callback(KCI_CONTRUP, contr,
-+					     &ctr->profile);
-+		}
-+	} else
- 		printk(KERN_WARNING "%s: invalid contr %d\n", __func__, contr);
--		return;
--	}
--	for (applid = 1; applid <= CAPI_MAXAPPL; applid++) {
--		ap = get_capi_appl_by_nr(applid);
--		if (!ap || ap->release_in_progress) continue;
--		register_appl(ctr, applid, &ap->rparam);
--		if (ap->callback && !ap->release_in_progress)
--			ap->callback(KCI_CONTRUP, contr, &ctr->profile);
--	}
+ 	return p;
  }
+-#endif /* CONFIG_ISDN_CAPI_MIDDLEWARE */
  
- /* -------- KCI_CONTRDOWN ------------------------------------- */
+ /* -------- struct capincci ----------------------------------------- */
  
--static void notify_down(u32 contr)
-+static void ctr_down(struct capi_ctr *ctr)
+-static struct capincci *capincci_alloc(struct capidev *cdev, u32 ncci)
++static void capincci_alloc_minor(struct capidev *cdev, struct capincci *np)
  {
- 	struct capi20_appl *ap;
- 	u16 applid;
+-	struct capincci *np, **pp;
+-#ifdef CONFIG_ISDN_CAPI_MIDDLEWARE
+-	struct capiminor *mp = NULL;
+-#endif /* CONFIG_ISDN_CAPI_MIDDLEWARE */
++	struct capiminor *mp;
  
--	if (showcapimsgs & 1) {
--        	printk(KERN_DEBUG "kcapi: notify down contr %d\n", contr);
--	}
-+	if (ctr->state == CAPI_CTR_DETECTED)
+-	np = kzalloc(sizeof(*np), GFP_ATOMIC);
+-	if (!np)
+-		return NULL;
+-	np->ncci = ncci;
+-	np->cdev = cdev;
+-#ifdef CONFIG_ISDN_CAPI_MIDDLEWARE
+-	mp = NULL;
+-	if (cdev->userflags & CAPIFLAG_HIGHJACKING)
+-		mp = np->minorp = capiminor_alloc(&cdev->ap, ncci);
++	if (!(cdev->userflags & CAPIFLAG_HIGHJACKING))
 +		return;
 +
-+	ctr->state = CAPI_CTR_DETECTED;
-+
-+	memset(ctr->manu, 0, sizeof(ctr->manu));
-+	memset(&ctr->version, 0, sizeof(ctr->version));
-+	memset(&ctr->profile, 0, sizeof(ctr->profile));
-+	memset(ctr->serial, 0, sizeof(ctr->serial));
- 
- 	for (applid = 1; applid <= CAPI_MAXAPPL; applid++) {
- 		ap = get_capi_appl_by_nr(applid);
--		if (ap && ap->callback && !ap->release_in_progress)
--			ap->callback(KCI_CONTRDOWN, contr, NULL);
-+		if (ap && !ap->release_in_progress) {
-+			if (ap->callback)
-+				ap->callback(KCI_CONTRDOWN, ctr->cnr, NULL);
-+			capi_ctr_put(ctr);
-+		}
++	mp = np->minorp = capiminor_alloc(&cdev->ap, np->ncci);
+ 	if (mp) {
+ 		mp->nccip = np;
+ #ifdef _DEBUG_REFCOUNT
+@@ -330,7 +314,58 @@ static struct capincci *capincci_alloc(struct capidev *cdev, u32 ncci)
+ 			capifs_new_ncci(mp->minor,
+ 					MKDEV(capi_ttymajor, mp->minor));
  	}
- }
- 
-+static void notify_down(u32 contr)
-+{
-+	struct capi_ctr *ctr;
-+
-+	if (showcapimsgs & 1)
-+		printk(KERN_DEBUG "kcapi: notify down contr %d\n", contr);
-+
-+	ctr = get_capi_ctr_by_nr(contr);
-+	if (ctr)
-+		ctr_down(ctr);
-+	else
-+		printk(KERN_WARNING "%s: invalid contr %d\n", __func__, contr);
+-#endif /* CONFIG_ISDN_CAPI_MIDDLEWARE */
 +}
 +
- static void notify_handler(struct work_struct *work)
++static void capincci_free_minor(struct capincci *np)
++{
++	struct capiminor *mp = np->minorp;
++
++	if (mp) {
++		capifs_free_ncci(mp->capifs_dentry);
++		if (mp->tty) {
++			mp->nccip = NULL;
++#ifdef _DEBUG_REFCOUNT
++			printk(KERN_DEBUG "reset mp->nccip\n");
++#endif
++			tty_hangup(mp->tty);
++		} else {
++			capiminor_free(mp);
++		}
++	}
++}
++
++static inline unsigned int capincci_minor_opencount(struct capincci *np)
++{
++	struct capiminor *mp = np->minorp;
++
++	return mp ? atomic_read(&mp->ttyopencount) : 0;
++}
++
++#else /* !CONFIG_ISDN_CAPI_MIDDLEWARE */
++
++static inline void
++capincci_alloc_minor(struct capidev *cdev, struct capincci *np) { }
++static inline void capincci_free_minor(struct capincci *np) { }
++
++static inline unsigned int capincci_minor_opencount(struct capincci *np)
++{
++	return 0;
++}
++
++#endif /* !CONFIG_ISDN_CAPI_MIDDLEWARE */
++
++static struct capincci *capincci_alloc(struct capidev *cdev, u32 ncci)
++{
++	struct capincci *np, **pp;
++
++	np = kzalloc(sizeof(*np), GFP_ATOMIC);
++	if (!np)
++		return NULL;
++	np->ncci = ncci;
++	np->cdev = cdev;
++
++	capincci_alloc_minor(cdev, np);
++
+ 	for (pp=&cdev->nccis; *pp; pp = &(*pp)->next)
+ 		;
+ 	*pp = np;
+@@ -340,29 +375,13 @@ static struct capincci *capincci_alloc(struct capidev *cdev, u32 ncci)
+ static void capincci_free(struct capidev *cdev, u32 ncci)
  {
- 	struct capi_notifier *np =
-@@ -368,8 +398,6 @@ EXPORT_SYMBOL(capi_ctr_handle_message);
+ 	struct capincci *np, **pp;
+-#ifdef CONFIG_ISDN_CAPI_MIDDLEWARE
+-	struct capiminor *mp;
+-#endif /* CONFIG_ISDN_CAPI_MIDDLEWARE */
  
- void capi_ctr_ready(struct capi_ctr *ctr)
- {
--	ctr->state = CAPI_CTR_RUNNING;
--
- 	printk(KERN_NOTICE "kcapi: controller [%03d] \"%s\" ready.\n",
- 	       ctr->cnr, ctr->name);
+ 	pp=&cdev->nccis;
+ 	while (*pp) {
+ 		np = *pp;
+ 		if (ncci == 0xffffffff || np->ncci == ncci) {
+ 			*pp = (*pp)->next;
+-#ifdef CONFIG_ISDN_CAPI_MIDDLEWARE
+-			if ((mp = np->minorp) != NULL) {
+-				capifs_free_ncci(mp->capifs_dentry);
+-				if (mp->tty) {
+-					mp->nccip = NULL;
+-#ifdef _DEBUG_REFCOUNT
+-					printk(KERN_DEBUG "reset mp->nccip\n");
+-#endif
+-					tty_hangup(mp->tty);
+-				} else {
+-					capiminor_free(mp);
+-				}
+-			}
+-#endif /* CONFIG_ISDN_CAPI_MIDDLEWARE */
++			capincci_free_minor(np);
+ 			kfree(np);
+ 			if (*pp == NULL) return;
+ 		} else {
+@@ -552,7 +571,7 @@ static int handle_minor_send(struct capiminor *mp)
+ 		capimsg_setu16(skb->data, 18, datahandle);
+ 		capimsg_setu16(skb->data, 20, 0);	/* Flags */
  
-@@ -388,28 +416,6 @@ EXPORT_SYMBOL(capi_ctr_ready);
+-		if (capincci_add_ack(mp, datahandle) < 0) {
++		if (capiminor_add_ack(mp, datahandle) < 0) {
+ 			skb_pull(skb, CAPI_DATA_B3_REQ_LEN);
+ 			skb_queue_head(&mp->outqueue, skb);
+ 			return count;
+@@ -628,10 +647,13 @@ static void capi_recv_message(struct capi20_appl *ap, struct sk_buff *skb)
+ 		spin_unlock_irqrestore(&workaround_lock, flags);
+ 		return;
+ 	}
++
+ #ifndef CONFIG_ISDN_CAPI_MIDDLEWARE
+ 	skb_queue_tail(&cdev->recvqueue, skb);
+ 	wake_up_interruptible(&cdev->recvwait);
++
+ #else /* CONFIG_ISDN_CAPI_MIDDLEWARE */
++
+ 	mp = np->minorp;
+ 	if (!mp) {
+ 		skb_queue_tail(&cdev->recvqueue, skb);
+@@ -639,10 +661,7 @@ static void capi_recv_message(struct capi20_appl *ap, struct sk_buff *skb)
+ 		spin_unlock_irqrestore(&workaround_lock, flags);
+ 		return;
+ 	}
+-
+-
+ 	if (CAPIMSG_SUBCOMMAND(skb->data) == CAPI_IND) {
+-		
+ 		datahandle = CAPIMSG_U16(skb->data, CAPIMSG_BASELEN+4+4+2);
+ #ifdef _DEBUG_DATAFLOW
+ 		printk(KERN_DEBUG "capi_signal: DATA_B3_IND %u len=%d\n",
+@@ -672,6 +691,7 @@ static void capi_recv_message(struct capi20_appl *ap, struct sk_buff *skb)
+ 		wake_up_interruptible(&cdev->recvwait);
+ 	}
+ #endif /* CONFIG_ISDN_CAPI_MIDDLEWARE */
++
+ 	spin_unlock_irqrestore(&workaround_lock, flags);
+ }
  
- void capi_ctr_down(struct capi_ctr *ctr)
- {
--	u16 appl;
--
--	DBG("");
--
--	if (ctr->state == CAPI_CTR_DETECTED)
--		return;
--
--	ctr->state = CAPI_CTR_DETECTED;
--
--	memset(ctr->manu, 0, sizeof(ctr->manu));
--	memset(&ctr->version, 0, sizeof(ctr->version));
--	memset(&ctr->profile, 0, sizeof(ctr->profile));
--	memset(ctr->serial, 0, sizeof(ctr->serial));
--
--	for (appl = 1; appl <= CAPI_MAXAPPL; appl++) {
--		struct capi20_appl *ap = get_capi_appl_by_nr(appl);
--		if (!ap || ap->release_in_progress)
--			continue;
--
--		capi_ctr_put(ctr);
--	}
--
- 	printk(KERN_NOTICE "kcapi: controller [%03d] down.\n", ctr->cnr);
+@@ -929,9 +949,6 @@ capi_ioctl(struct inode *inode, struct file *file,
+ 	case CAPI_NCCI_OPENCOUNT:
+ 		{
+ 			struct capincci *nccip;
+-#ifdef CONFIG_ISDN_CAPI_MIDDLEWARE
+-			struct capiminor *mp;
+-#endif /* CONFIG_ISDN_CAPI_MIDDLEWARE */
+ 			unsigned ncci;
+ 			int count = 0;
+ 			if (copy_from_user(&ncci, argp, sizeof(ncci)))
+@@ -942,11 +959,7 @@ capi_ioctl(struct inode *inode, struct file *file,
+ 				mutex_unlock(&cdev->ncci_list_mtx);
+ 				return 0;
+ 			}
+-#ifdef CONFIG_ISDN_CAPI_MIDDLEWARE
+-			if ((mp = nccip->minorp) != NULL) {
+-				count += atomic_read(&mp->ttyopencount);
+-			}
+-#endif /* CONFIG_ISDN_CAPI_MIDDLEWARE */
++			count += capincci_minor_opencount(nccip);
+ 			mutex_unlock(&cdev->ncci_list_mtx);
+ 			return count;
+ 		}
+@@ -1396,7 +1409,16 @@ static void capinc_tty_exit(void)
+ 	put_tty_driver(drv);
+ }
  
- 	notify_push(KCI_CONTRDOWN, ctr->cnr, 0, 0);
-@@ -513,8 +519,7 @@ EXPORT_SYMBOL(attach_capi_ctr);
+-#endif /* CONFIG_ISDN_CAPI_MIDDLEWARE */
++#else /* !CONFIG_ISDN_CAPI_MIDDLEWARE */
++
++static inline int capinc_tty_init(void)
++{
++	return 0;
++}
++
++static inline void capinc_tty_exit(void) { }
++
++#endif /* !CONFIG_ISDN_CAPI_MIDDLEWARE */
  
- int detach_capi_ctr(struct capi_ctr *ctr)
- {
--	if (ctr->state != CAPI_CTR_DETECTED)
--		capi_ctr_down(ctr);
-+	ctr_down(ctr);
+ /* -------- /proc functions ----------------------------------------- */
  
- 	ncontrollers--;
+@@ -1505,23 +1527,19 @@ static int __init capi_init(void)
  
+ 	device_create(capi_class, NULL, MKDEV(capi_major, 0), NULL, "capi");
+ 
+-#ifdef CONFIG_ISDN_CAPI_MIDDLEWARE
+ 	if (capinc_tty_init() < 0) {
+ 		device_destroy(capi_class, MKDEV(capi_major, 0));
+ 		class_destroy(capi_class);
+ 		unregister_chrdev(capi_major, "capi20");
+ 		return -ENOMEM;
+ 	}
+-#endif /* CONFIG_ISDN_CAPI_MIDDLEWARE */
+ 
+ 	proc_init();
+ 
+-#ifdef CONFIG_ISDN_CAPI_MIDDLEWARE
+ #if defined(CONFIG_ISDN_CAPI_CAPIFS) || defined(CONFIG_ISDN_CAPI_CAPIFS_MODULE)
+         compileinfo = " (middleware+capifs)";
+-#else
++#elif defined(CONFIG_ISDN_CAPI_MIDDLEWARE)
+         compileinfo = " (no capifs)";
+-#endif
+ #else
+         compileinfo = " (no middleware)";
+ #endif
+@@ -1539,9 +1557,7 @@ static void __exit capi_exit(void)
+ 	class_destroy(capi_class);
+ 	unregister_chrdev(capi_major, "capi20");
+ 
+-#ifdef CONFIG_ISDN_CAPI_MIDDLEWARE
+ 	capinc_tty_exit();
+-#endif
+ }
+ 
+ module_init(capi_init);
 -- 
 1.6.0.2
 
