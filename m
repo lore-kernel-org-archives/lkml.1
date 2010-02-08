@@ -1,70 +1,97 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751561Ab0BHFdw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 00:33:52 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:39098 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750839Ab0BHFdt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 00:33:49 -0500
-Date: Mon, 8 Feb 2010 05:33:41 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Mimi Zohar <zohar@us.ibm.com>
-Cc: Xiaotian Feng <dfeng@redhat.com>, Eric Paris <eparis@redhat.com>,
-       Eugene Teo <eugene@redhat.com>, James Morris <jmorris@namei.org>,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       linux-security-module-owner@vger.kernel.org, serue@linux.vnet.ibm.com,
+	id S1751645Ab0BHFhx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 00:37:53 -0500
+Received: from ozlabs.org ([203.10.76.45]:54898 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751311Ab0BHFhv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Feb 2010 00:37:51 -0500
+From: Michael Neuling <mikey@neuling.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+cc: Anton Blanchard <anton@samba.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Mimi Zohar <zohar@linux.vnet.ibm.com>
-Subject: Re: [GIT][IMA] fix null pointer deref
-Message-ID: <20100208053341.GI30031@ZenIV.linux.org.uk>
-References: <1265364881-8140-1-git-send-email-dfeng@redhat.com>
- <OFD4EDD9E8.3C38BC7C-ON852576C1.004B1271-852576C1.004BCFCC@us.ibm.com>
- <alpine.LRH.2.00.1002071832080.21000@tundra.namei.org>
- <20100207075658.GF30031@ZenIV.linux.org.uk>
- <OF4ED37009.B78CBF20-ON852576C4.0012975E-852576C4.00145EA3@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <OF4ED37009.B78CBF20-ON852576C4.0012975E-852576C4.00145EA3@us.ibm.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+       Alexander Viro <viro@zeniv.linux.org.uk>,
+       Oleg Nesterov <oleg@redhat.com>, James Morris <jmorris@namei.org>,
+       Ingo Molnar <mingo@elte.hu>, linux-fsdevel@vger.kernel.org,
+       stable@kernel.org, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Serge Hallyn <serue@us.ibm.com>,
+       WANG Cong <xiyou.wangcong@gmail.com>, Paul Mackerras <paulus@samba.org>,
+       benh@kernel.crashing.org, miltonm@bga.com, aeb@cwi.nl
+Subject: [PATCH] Restrict stack space reservation to rlimit
+In-reply-to: <20100208141716.FB55.A69D9226@jp.fujitsu.com>
+References: <20100208140323.FB52.A69D9226@jp.fujitsu.com> <20100208051104.GL32246@kryten> <20100208141716.FB55.A69D9226@jp.fujitsu.com>
+Comments: In-reply-to KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+   message dated "Mon, 08 Feb 2010 14:22:22 +0900."
+X-Mailer: MH-E 8.2; nmh 1.3; GNU Emacs 23.1.1
+Date: Mon, 08 Feb 2010 16:37:49 +1100
+Message-ID: <9729.1265607469@neuling.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 07, 2010 at 10:42:29PM -0500, Mimi Zohar wrote:
-
-> > ima_path_check() side is also of BUG_ON() variety (and isn't triggered).
+> >  
+> > Hi,
+> > 
+> > > Why do we need page size independent stack size? It seems to have
+> > > compatibility breaking risk.
+> > 
+> > I don't think so. The current behaviour is clearly wrong, we dont need a
+> > 16x larger stack just because you went from a 4kB to a 64kB base page
+> > size. The user application stack usage is the same in both cases.
 > 
-> hm, there was quite a bit of discussion that IMA should be called from
-> the security hooks (refer to http://lkml.org/lkml/2009/6/7/279),  so
-> commit 6c21a7f "LSM: imbed ima calls in the security hooks" moved them.
+> I didn't discuss which behavior is better. Michael said he want to apply
+> his patch to 2.6.32 & 2.6.33. stable tree never accept the breaking
+> compatibility patch.
+> 
+> Your answer doesn't explain why can't we wait it until next merge window.
+> 
+> btw, personally, I like page size indepent stack size. but I'm not sure
+> why making stack size independency is related to bug fix.
 
-You know, I'm -><- that close to posting a highly unprintable rant about
-hooks in general, associated style of development and resulting problems.
-With names named and *many* examples given.
+I tend to agree.  
 
-LSM is essentially a trashcan and just about everything icky gets swept
-over there.  That's fine, as long as one doesn't care whether their code
-makes sense and just wants to keep it away from unfriendly eyes.
+Below is just the bug fix to limit the reservation size based rlimit.
+We still reserve different stack sizes based on the page size as
+before (unless we hit rlimit of course).
 
-The first question one should ask is "what would be the natural point in
-object life cycle to do that", not "which hooks can I plug that into and
-how do I work around this, this and that".
+Mikey
 
-In this case, "when is struct file freed?" became a proxy for "when is
-an opened file closed?", with bogus heuristics added to distinguish the
-callers.  Nothing in VFS has promised NULL ->f_path.dentry for a struct
-file that hasn't been fully set up (i.e. hasn't transitioned to a state
-where fput() is the proper destructor).  The fact that you guys ran into
-a situation where you needed that kind of heuristics should've been
-a clear indicator that something was wrong; silently adding them into
-place that by design is outside of normal code was Wrong with capital WTF.
+Restrict stack space reservation to rlimit
 
-I'd better stop before that devolves into saying what I really think about
-LSM, assorted Creatures From Black Lagoon slipping into fs/*.c (and mm/*.c)
-once a year or so, et revolting cetera.  If I ever find a way to do that
-adequately without incoherent obscenities, I'll post it.
+When reserving stack space for a new process, make sure we're not
+attempting to allocate more than rlimit allows.
 
-The bottom line: minimizing patch footprint is a good thing, but NOT if
-it comes at the cost of bogus kludges.
+This fixes a bug cause by b6a2fea39318e43fee84fa7b0b90d68bed92d2ba 
+"mm: variable length argument support" and unmasked by
+fc63cf237078c86214abcb2ee9926d8ad289da9b 
+"exec: setup_arg_pages() fails to return errors".
+
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+Cc: Anton Blanchard <anton@samba.org>
+Cc: stable@kernel.org
+---
+ fs/exec.c |    7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+Index: linux-2.6-ozlabs/fs/exec.c
+===================================================================
+--- linux-2.6-ozlabs.orig/fs/exec.c
++++ linux-2.6-ozlabs/fs/exec.c
+@@ -627,10 +627,13 @@ int setup_arg_pages(struct linux_binprm 
+ 			goto out_unlock;
+ 	}
+ 
++	stack_base = min(EXTRA_STACK_VM_PAGES * PAGE_SIZE,
++			 current->signal->rlim[RLIMIT_STACK].rlim_cur -
++			   PAGE_SIZE);
+ #ifdef CONFIG_STACK_GROWSUP
+-	stack_base = vma->vm_end + EXTRA_STACK_VM_PAGES * PAGE_SIZE;
++	stack_base = vma->vm_end + stack_base;
+ #else
+-	stack_base = vma->vm_start - EXTRA_STACK_VM_PAGES * PAGE_SIZE;
++	stack_base = vma->vm_start - stack_base;
+ #endif
+ 	ret = expand_stack(vma, stack_base);
+ 	if (ret)
+
