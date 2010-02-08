@@ -1,39 +1,57 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933607Ab0BHDkO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Feb 2010 22:40:14 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51000
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757754Ab0BHDkN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Feb 2010 22:40:13 -0500
-Date: Sun, 07 Feb 2010 19:40:22 -0800 (PST)
-Message-Id: <20100207.194022.53074897.davem@davemloft.net>
-To: sfr@canb.auug.org.au
-Cc: netdev@vger.kernel.org, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, sri@us.ibm.com
-Subject: Re: linux-next: build failure after merge of the net tree
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20100208132243.ab967d9c.sfr@canb.auug.org.au>
-References: <20100208132243.ab967d9c.sfr@canb.auug.org.au>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	id S933620Ab0BHDmd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Feb 2010 22:42:33 -0500
+Received: from e7.ny.us.ibm.com ([32.97.182.137]:44268 "EHLO e7.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757756Ab0BHDmb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Feb 2010 22:42:31 -0500
+In-Reply-To: <20100207075658.GF30031@ZenIV.linux.org.uk>
+References: <1265364881-8140-1-git-send-email-dfeng@redhat.com> <OFD4EDD9E8.3C38BC7C-ON852576C1.004B1271-852576C1.004BCFCC@us.ibm.com> <alpine.LRH.2.00.1002071832080.21000@tundra.namei.org> <20100207075658.GF30031@ZenIV.linux.org.uk>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Xiaotian Feng <dfeng@redhat.com>, Eric Paris <eparis@redhat.com>,
+       Eugene Teo <eugene@redhat.com>, James Morris <jmorris@namei.org>,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       linux-security-module-owner@vger.kernel.org, serue@linux.vnet.ibm.com,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Mimi Zohar <zohar@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Subject: Re: [GIT][IMA] fix null pointer deref
+X-KeepSent: 4ED37009:B78CBF20-852576C4:0012975E;
+ type=4; name=$KeepSent
+X-Mailer: Lotus Notes Release 8.5 December 05, 2008
+Message-ID: <OF4ED37009.B78CBF20-ON852576C4.0012975E-852576C4.00145EA3@us.ibm.com>
+From: Mimi Zohar <zohar@us.ibm.com>
+Date: Sun, 7 Feb 2010 22:42:29 -0500
+X-MIMETrack: Serialize by Router on D01ML604/01/M/IBM(Release 8.5.1HF41 | October 22, 2009) at
+ 02/07/2010 22:42:29,
+	Serialize complete at 02/07/2010 22:42:29
+Content-Type: text/plain; charset="US-ASCII"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Mon, 8 Feb 2010 13:22:43 +1100
+Al Viro wrote on 02/07/2010 02:56:58 AM:
 
-> After merging the net tree, today's linux-next build (powerpc
-> ppc64_defconfig) failed like this:
- ...
-> Caused by commit bfd5f4a3d605e0f6054df0b59fe0907ff7e696d3 ("packet: Add
-> GSO/csum offload support").  This build has CONFIG_PACKET_MMAP unset.
+> On Sun, Feb 07, 2010 at 06:34:51PM +1100, James Morris wrote:
+> > Linus,
+> > 
+> > Please pull this bugfix.  I've verified that it fixes the null pointer 
+
+> > deref.
 > 
-> I used the version of the net tree from next-20100205 for today.
+> NAK.  In that form it's simply wrong; we should never get there with
+> NULL file->f_dentry->d_inode at all.  This is papering over the real
+> bug; I'll post a saner fix shortly.
+> 
+> The real problem is BS hiding of ima_file_free() inside a hook, with
+> condition that kinda-sorta happens to avoid bogus call most of the
+> time.
+> 
+> ima_path_check() side is also of BUG_ON() variety (and isn't triggered).
 
-Known problem, I'm fixing it by killing the config option,
-everyone should have that thing enabled by now.
+hm, there was quite a bit of discussion that IMA should be called from
+the security hooks (refer to http://lkml.org/lkml/2009/6/7/279),  so
+commit 6c21a7f "LSM: imbed ima calls in the security hooks" moved them.
+
+Mimi
