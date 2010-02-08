@@ -1,81 +1,68 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753422Ab0BHSNp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 13:13:45 -0500
-Received: from mail-fx0-f215.google.com ([209.85.220.215]:40003 "EHLO
-	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750962Ab0BHSNn convert rfc822-to-8bit (ORCPT
+	id S1753306Ab0BHSQH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 13:16:07 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:47819 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752047Ab0BHSQF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 13:13:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=TQU5aafap5Alfvjejaq7KHarHciiIfEjr7CQsoYdyXdHvUa1onV+7hIrUfLsylA4Ik
-         AJafEONaHa4s5pzYip2S6T9VcTuLfgWG9m7mcUr9qn6+84f7Bsk4n8FyEyU/jKe3bwWS
-         ivttKK8fpVZU41vlAFiLQ5kifNbI23jeJX/7Y=
+	Mon, 8 Feb 2010 13:16:05 -0500
+Date: Mon, 8 Feb 2010 13:16:02 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
+cc: Jiri Kosina <jkosina@suse.cz>, Oliver Neukum <oliver@neukum.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Marcel Holtmann <marcel@holtmann.org>,
+       H Hartley Sweeten <hsweeten@visionengravers.com>,
+       <linux-usb@vger.kernel.org>, <linux-input@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: S2R resume crash in 2.6.33-rc7 - NULL pointer dereference in
+ dev_get_drvdata() for usbhid
+In-Reply-To: <20100208175145.606ca761@neptune.home>
+Message-ID: <Pine.LNX.4.44L0.1002081313260.1316-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-In-Reply-To: <d45a3acc1002071414q318edea3m38f6d5ddbbd841bc@mail.gmail.com>
-References: <45c77aec1002071056re61b8acg5f480f8ea83c68c@mail.gmail.com>
-	 <d45a3acc1002071414q318edea3m38f6d5ddbbd841bc@mail.gmail.com>
-Date: Mon, 8 Feb 2010 13:13:40 -0500
-Message-ID: <45c77aec1002081013q2b07cb7flbd827a977ed51d4c@mail.gmail.com>
-Subject: Re: Possible bug in insmod or the kernel?
-From: Larry Homes <larr.homes@gmail.com>
-To: andrew hendry <andrew.hendry@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-No, the problem is not that the quotes are showing. The problem is
-that as soon as it sees a space, it assumes the following is the next
-parameters name. So for example:
+On Mon, 8 Feb 2010, Bruno [UTF-8] PrÃ©mont wrote:
 
-[root@myhost modules]# insmod hello3.ko name="john smith"
-insmod: error inserting 'hello3.ko': -1 Unknown symbol in module
+> 2.6.33-rc7 (don't know if any previous version resumes properly)
+> crashes during resume from S2Ram when my USB keyboard is connected but
+> resumes properly (viafb corruption put apart) when the USB keyboard is
+> not connected.
+> 
+> Keyboard detection:
+> [    3.070054] usb 2-2: new full speed USB device using uhci_hcd and address 2
+> [    3.220179] kbd_mode used greatest stack depth: 2228 bytes left
+> [    3.276403] usb 2-2: New USB device found, idVendor=058f, idProduct=9462
+> [    3.276514] usb 2-2: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+> [    3.276619] usb 2-2: Product: Multimedia USB Keyboard
+> [    3.276711] usb 2-2: Manufacturer: Multimedia USB Keyboard
+> [    3.278056] loadkeys used greatest stack depth: 1904 bytes left
+> [    3.278791] init-early.sh used greatest stack depth: 1700 bytes left
+> [    3.282561] hub 2-2:1.0: USB hub found
+> [    3.286387] hub 2-2:1.0: 3 ports detected
+> [    3.571454] usb 2-2.1: new full speed USB device using uhci_hcd and address 3
+> [    3.761474] usb 2-2.1: New USB device found, idVendor=058f, idProduct=9462
+> [    3.761584] usb 2-2.1: New USB device strings: Mfr=1, Product=2, SerialNumber=3
+> [    3.761719] usb 2-2.1: Product: Multimedia USB Keyboard
+> [    3.762518] usb 2-2.1: Manufacturer: Multimedia USB Keyboard
+> [    3.762612] usb 2-2.1: SerialNumber: Multimedia USB Keyboard
+> [    3.789221] input: Multimedia USB Keyboard Multimedia USB Keyboard as /devices/pci0000:00/0000:00:10.0/usb2/2
+> -2/2-2.1/2-2.1:1.0/input/input4
+> [    3.789585] generic-usb 0003:058F:9462.0001: input: USB HID v1.10 Keyboard [Multimedia USB Keyboard Multimedi
+> a USB Keyboard] on usb-0000:00:10.0-2.1/input0
+> [    3.818001] generic-usb: probe of 0003:058F:9462.0002 failed with error -22
 
-[root@myhost modules]# insmod hello3.ko "name=john smith"
-insmod: error inserting 'hello3.ko': -1 Unknown symbol in module
+> Could the crash be related to the generic-usb probe error?
 
-In both cases, dmesg shows:
+Yes, it could.  Can you post the contents of 
+/sys/kernel/debug/usb/devices (after mounting a debugfs filesystem on 
+/sys/kernel/debug), with the keyboard plugged in?
 
-hello3: Unknown parameter `smith'
+Alan Stern
 
-I looked at the params.c code and it seems like the above should work.
-
-On Sun, Feb 7, 2010 at 5:14 PM, andrew hendry <andrew.hendry@gmail.com> wrote:
-> have a look around kernel/params.c
-> /* You can use " around spaces, but can't escape ". */
-> /* Hyphens and underscores equivalent in parameter names. */
-> static char *next_arg(char *args, char **param, char **val)
->
-> Your printks are probably showing the single quotes? probably not what
-> you want in your name
->
-> On Mon, Feb 8, 2010 at 5:56 AM, Larry Homes <larr.homes@gmail.com> wrote:
->> Hello,
->>
->> I am very new to kernel development and I was playing around with
->> making modules. I found I could not retrieve commandline parameters in
->> the module if the parameter has whitespace in it. I thought it was my
->> lack of knowledge that was causing the error (and I still do
->> honestly), but I made a forum post here
->> http://forum.kernelnewbies.org/read.php?17,1354 regarding the issue,
->> and someone suggested it may be a bug and I should post on LKML.
->>
->> The forum post shows example code to demonstrate the issue. I am using
->> archlinux and the latest kernel. I am not sure what other information
->> you need, so feel free to ask for anything.
->>
->>
->> Thanks
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->>
->
