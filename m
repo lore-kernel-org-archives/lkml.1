@@ -1,52 +1,69 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753263Ab0BHPtu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 10:49:50 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:60405 "EHLO mx1.redhat.com"
+	id S1753328Ab0BHPvU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 10:51:20 -0500
+Received: from thunk.org ([69.25.196.29]:33122 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752369Ab0BHPtt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 10:49:49 -0500
-Date: Mon, 8 Feb 2010 10:48:56 -0500
-From: Jason Baron <jbaron@redhat.com>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, laijs@cn.fujitsu.com, lizf@cn.fujitsu.com,
-       rostedt@goodmis.org, fweisbec@gmail.com, mingo@elte.hu, hpa@zytor.com,
-       tglx@linutronix.de, mhiramat@redhat.com
-Subject: Re: [PATCH 5/6] syscalls: add define syscall prefix macro
-Message-ID: <20100208154856.GC2688@redhat.com>
-References: <cover.1265142153.git.jbaron@redhat.com> <ce5ccbcc86e34954948239b17010c5537fb62917.1265142153.git.jbaron@redhat.com> <20100203130104.GB30003@osiris.boeblingen.de.ibm.com>
+	id S1752676Ab0BHPvT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Feb 2010 10:51:19 -0500
+Date: Mon, 8 Feb 2010 10:50:31 -0500
+From: tytso@mit.edu
+To: Jan Kara <jack@suse.cz>
+Cc: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Kazuo Moriwaka <moriwaka@redhat.com>,
+       H Hartley Sweeten <hsweeten@visionengravers.com>,
+       Joel Becker <joel.becker@oracle.com>, linux-ext4@vger.kernel.org,
+       vamos@i4.informatik.uni-erlangen.de
+Subject: Re: [PATCH] obsolete config in kernel source (BUFFER_DEBUG)
+Message-ID: <20100208155031.GK4494@thunk.org>
+Mail-Followup-To: tytso@mit.edu, Jan Kara <jack@suse.cz>,
+	Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>,
+	linux-kernel@vger.kernel.org,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Kazuo Moriwaka <moriwaka@redhat.com>,
+	H Hartley Sweeten <hsweeten@visionengravers.com>,
+	Joel Becker <joel.becker@oracle.com>, linux-ext4@vger.kernel.org,
+	vamos@i4.informatik.uni-erlangen.de
+References: <20100205131333.GB6540@faui49.informatik.uni-erlangen.de>
+ <20100208135629.GD4321@quack.suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100203130104.GB30003@osiris.boeblingen.de.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20100208135629.GD4321@quack.suse.cz>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 03, 2010 at 02:01:04PM +0100, Heiko Carstens wrote:
-> On Tue, Feb 02, 2010 at 04:21:55PM -0500, Jason Baron wrote:
-> > Add a new 'SYSCALL_PREFIX_DEFINE#()' style macro to include/linux/syscalls.h.
-> > This allows us to create syscalls via:
+On Mon, Feb 08, 2010 at 02:56:29PM +0100, Jan Kara wrote:
+> On Fri 05-02-10 14:13:33, Christoph Egger wrote:
+> > Hi all!
 > > 
-> > SYSCALL_PREFIX_DEFINE1(32_, mmap, struct mmap_arg_struct __user *, arg);
+> > 	As part of the VAMOS[0] research project at the University of
+> > Erlangen we're checking referential integrity between kernel KConfig
+> > options and in-code Conditional blocks.
 > > 
-> > The standard 'SYSCALL_DEFINE#()' macro forces 'sys_blah', but for the 32 compat
-> > calls we want 'sys32_blah'.
-> 
-> Not really. That's what you want for x86. But the generic name for compat syscalls
-> is compat_sys_whatever. The arch specific compat syscalls don't follow a common
-> naming scheme (yet).
-> Especially if you consider the idea to get automated correct sign extension via
-> hpa's planned script for compat syscalls it would be good if you would just name
-> that define something like SYSCALL_COMPAT.. or COMPAT_SYSCALL..
-> That way it would be easy to add a hook in there.
+> > 	With some commit somewhere around 2.4.15 the last hint of
+> > CONFIG_BUFFER_DEBUG (apart from the 2 occurences this patch addresses)
+> > -- some documentation -- was removed from the kernel source. However
+> > this one piece of code made it till today. Time to go forward and
+> > remove it?
+> > 
+> > 	Please keep me informed of this patch getting confirmed /
+> > merged so we can keep track of it.
+>   Thanks, the patch looks good. I've merged it into my linux-fs tree and
+> will send it to Linus in the next merge window.
 
-So I was trying to keep the names of the arch ia32 compat sys calls the
-same, ie 'sys32_blah'. However, I agree a common naming scheme makes
-more sense. what about 'arch_compat_sys_blah'? So as to distinguish from
-the common compat syscalls 'compat_sys_blah'.
+I don't have an objection with removing this, but does anyone have the
+latest version of akpm's buffer debugging patches?
 
-thanks,
+I *think* what happened is that akpm forward ported the removed buffer
+debugging patches, or maybe rewrote it from scratch, but for whatever
+reason they never made back into mainline.  Maybe they were too ugly
+to live in mainline, but they have been really handy on occasion.
 
--Jason
+   	   	     	      	   	       - Ted
