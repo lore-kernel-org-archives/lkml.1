@@ -1,52 +1,45 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754572Ab0BHTgz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 14:36:55 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:59661 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753570Ab0BHTgx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 14:36:53 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Bart Van Assche <bvanassche@acm.org>
-Subject: Re: [Bug #15177] Asynchronous writes up to 30% slower than in previous kernel versions
-Date: Mon, 8 Feb 2010 20:37:49 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.33-rc7-rjw; KDE/4.3.5; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Jens Axboe <jens.axboe@oracle.com>
-References: <4Ht3jFrT7uE.A.JI.-nzbLB@chimera> <445R0ey9hAI.A.2jB.iozbLB@chimera> <e2e108261002081116m5c13d081p161d8697464253f1@mail.gmail.com>
-In-Reply-To: <e2e108261002081116m5c13d081p161d8697464253f1@mail.gmail.com>
+	id S1754635Ab0BHThd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 14:37:33 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:52054 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753572Ab0BHTh3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Feb 2010 14:37:29 -0500
+Date: Mon, 8 Feb 2010 14:37:26 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Julia Lawall <julia@diku.dk>
+Cc: Alex Elder <aelder@sgi.com>, xfs-masters@oss.sgi.com, xfs@oss.sgi.com,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 11/11] fs/xfs: Correct NULL test
+Message-ID: <20100208193726.GB9527@infradead.org>
+References: <Pine.LNX.4.64.1002060944580.8092@ask.diku.dk>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201002082037.49793.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.1002060944580.8092@ask.diku.dk>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 08 February 2010, Bart Van Assche wrote:
-> On Sun, Feb 7, 2010 at 11:28 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >
-> > This message has been generated automatically as a part of a summary report
-> > of recent regressions.
-> >
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.32.  Please verify if it still should be listed and let the tracking team
-> > know (either way).
-> >
-> >
-> > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=15177
-> > Subject         : Asynchronous writes up to 30% slower than in previous kernel versions
-> > Submitter       : Bart Van Assche <bart.vanassche@gmail.com>
-> > Date            : 2010-01-30 16:38 (9 days old)
-> 
-> The regression compared to 2.6.32 is solved in 2.6.33-rc7 for the
-> specific test mentioned in the Bugzilla entry. The regression compared
-> to 2.6.28 is not yet solved though, so I'm not sure what should happen
-> with this bug entry.
+On Sat, Feb 06, 2010 at 09:45:15AM +0100, Julia Lawall wrote:
+> diff --git a/fs/xfs/quota/xfs_qm.c b/fs/xfs/quota/xfs_qm.c
+> index 11cfd82..4318cd5 100644
+> --- a/fs/xfs/quota/xfs_qm.c
+> +++ b/fs/xfs/quota/xfs_qm.c
+> @@ -123,7 +123,7 @@ xfs_Gqm_init(void)
+>  		goto out;
+>  
+>  	gdqhash = kmem_zalloc_large(hsize);
+> -	if (!udqhash)
+> +	if (!gdqhash)
+>  		goto out_free_udqhash;
 
-I guess it's better to move it to the list of regressions from 2.6.28.
+Thanks, this looks correct,
 
-Rafael
+
+Reviewed-by: Christoph Hellwig <hch@lst.de>
