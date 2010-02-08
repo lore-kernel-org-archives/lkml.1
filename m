@@ -1,66 +1,141 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754469Ab0BHTYM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 14:24:12 -0500
-Received: from outbound-mail-158.bluehost.com ([67.222.39.38]:46791 "HELO
-	outbound-mail-158.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753506Ab0BHTYJ (ORCPT
+	id S1754484Ab0BHT1J (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 14:27:09 -0500
+Received: from mail.openrapids.net ([64.15.138.104]:34883 "EHLO
+	blackscsi.openrapids.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753172Ab0BHT1H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 14:24:09 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=P284S4Hp3OqeeAMSgjUDHhDjwiIykbD/RUqe1OudFuwJ5HuHdxrXowN4tLlmCHgPnuvJUMqjp/dTzXNHVfPbNvsq9lI6y0aGADXV5pZHsa5HKcKOw/QxfyIqdqGVcLAe;
-Date: Mon, 8 Feb 2010 11:22:57 -0800
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Alex Chiang <achiang@hp.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-       Yinghai Lu <yinghai@kernel.org>
-Subject: Re: [PATCH 1/9] pci: add pci_bridge_release_resources and
- pci_bus_release__bridge_resources
-Message-ID: <20100208112257.1cd54302@jbarnes-piketon>
-In-Reply-To: <1264150948-9052-2-git-send-email-yinghai@kernel.org>
-References: <1264150948-9052-1-git-send-email-yinghai@kernel.org>
-	<1264150948-9052-2-git-send-email-yinghai@kernel.org>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+	Mon, 8 Feb 2010 14:27:07 -0500
+X-Greylist: delayed 482 seconds by postgrey-1.27 at vger.kernel.org; Mon, 08 Feb 2010 14:27:07 EST
+Date: Mon, 8 Feb 2010 14:18:58 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
+       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
+       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
+Subject: lockdep rcu-preempt and synchronize_srcu() awareness
+Message-ID: <20100208191858.GA16288@Krystal>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Editor: vi
+X-Info: http://www.efficios.com
+X-Operating-System: Linux/2.6.26-2-686 (i686)
+X-Uptime: 14:02:47 up 16 days, 21:40,  4 users,  load average: 1.02, 1.07,
+	0.86
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 22 Jan 2010 01:02:20 -0800
-Yinghai Lu <yinghai@kernel.org> wrote:
+Hi,
 
-> so later we could use it to release small resource before pci assign
-> unassign res
-> 
-> -v2: change name to release_child_resources according to Jesse
-> -v3: according to Linus, move release_child_resources to resource.c
->      also need to put the lock around them all to avoid recursive
-> deep. (my test case only have one level that need to be released)
-> -v4: seperate release_child_resources to another patch
->      according to Bjorn, change hard code 3 to PCI_BRIDGE_RESOURCE_END
-> -v5: remove unused in the name, and also use enum for release type
-> according to Jesse
-> -v6: use pci_is_root_bus instead according to Alex.
-> -v7: remove the switch case in pci_bus_release_resources accord to
-> Alex -v8: change some comments and style according to Alex again
-> 
-> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> Reviewed-by: Alex Chiang <achiang@hp.com>
-> ---
+I just though about the following deadlock scenario involving rcu preempt and
+mutexes. I see that lockdep does not warn about it, and it actually triggers a
+deadlock on my box. It might be worth addressing for TREE_PREEMPT_RCU configs.
 
-Applied this series finally, thanks Yinghai for all your work
-responding to the feedback.  Let's hope it doesn't break too many
-things in 2.6.34!
+CPU A:
+    mutex_lock(&test_mutex);
+    synchronize_rcu();
+    mutex_unlock(&test_mutex);
+
+CPU B:
+    rcu_read_lock();
+    mutex_lock(&test_mutex);
+    mutex_unlock(&test_mutex);
+    rcu_read_unlock();
+
+But given that it's not legit to take a mutex from within a rcu read lock in
+non-preemptible configs, I guess it's not much of a real-life problem, but I
+think SRCU is also affected, because there is no lockdep annotation around
+synchronize_srcu().
+
+So I think it would be good to mark rcu_read_lock/unlock as not permitting
+"might_sleep()" in non preemptable RCU configs, and having a look at lockdep
+SRCU support might be worthwhile.
+
+The following test module triggers the problem:
+
+
+/* test-rcu-lockdep.c
+ *
+ * Test RCU-awareness of lockdep. Don't look at the interface, it's aweful.
+ * run, in parallel:
+ *
+ * cat /proc/testa 
+ * cat /proc/testb
+ */
+
+#include <linux/module.h>
+#include <linux/mutex.h>
+#include <linux/proc_fs.h>
+#include <linux/sched.h>
+#include <linux/delay.h>
+
+struct proc_dir_entry *pentrya = NULL;
+struct proc_dir_entry *pentryb = NULL;
+
+static DEFINE_MUTEX(test_mutex);
+
+static int my_opena(struct inode *inode, struct file *file)
+{
+	mutex_lock(&test_mutex);
+	synchronize_rcu();
+	mutex_unlock(&test_mutex);
+
+	return -EPERM;
+}
+
+
+static struct file_operations my_operationsa = {
+	.open = my_opena,
+};
+
+static int my_openb(struct inode *inode, struct file *file)
+{
+	rcu_read_lock();
+	mutex_lock(&test_mutex);
+	ssleep(1);
+	mutex_unlock(&test_mutex);
+	rcu_read_unlock();
+
+
+	return -EPERM;
+}
+
+
+static struct file_operations my_operationsb = {
+	.open = my_openb,
+};
+
+int init_module(void)
+{
+	pentrya = create_proc_entry("testa", 0444, NULL);
+	if (pentrya)
+		pentrya->proc_fops = &my_operationsa;
+
+	pentryb = create_proc_entry("testb", 0444, NULL);
+	if (pentryb)
+		pentryb->proc_fops = &my_operationsb;
+
+	return 0;
+}
+
+void cleanup_module(void)
+{
+	remove_proc_entry("testa", NULL);
+	remove_proc_entry("testb", NULL);
+}
+
+MODULE_LICENSE("GPL");
+MODULE_AUTHOR("Mathieu Desnoyers");
+MODULE_DESCRIPTION("lockdep rcu test");
+
+
 
 Thanks,
--- 
-Jesse Barnes, Intel Open Source Technology Center
+
+Mathieu
