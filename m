@@ -1,69 +1,48 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753328Ab0BHPvU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 10:51:20 -0500
-Received: from thunk.org ([69.25.196.29]:33122 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752676Ab0BHPvT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 10:51:19 -0500
-Date: Mon, 8 Feb 2010 10:50:31 -0500
-From: tytso@mit.edu
-To: Jan Kara <jack@suse.cz>
-Cc: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Kazuo Moriwaka <moriwaka@redhat.com>,
-       H Hartley Sweeten <hsweeten@visionengravers.com>,
-       Joel Becker <joel.becker@oracle.com>, linux-ext4@vger.kernel.org,
-       vamos@i4.informatik.uni-erlangen.de
-Subject: Re: [PATCH] obsolete config in kernel source (BUFFER_DEBUG)
-Message-ID: <20100208155031.GK4494@thunk.org>
-Mail-Followup-To: tytso@mit.edu, Jan Kara <jack@suse.cz>,
-	Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>,
-	linux-kernel@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Kazuo Moriwaka <moriwaka@redhat.com>,
-	H Hartley Sweeten <hsweeten@visionengravers.com>,
-	Joel Becker <joel.becker@oracle.com>, linux-ext4@vger.kernel.org,
-	vamos@i4.informatik.uni-erlangen.de
-References: <20100205131333.GB6540@faui49.informatik.uni-erlangen.de>
- <20100208135629.GD4321@quack.suse.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100208135629.GD4321@quack.suse.cz>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	id S1753827Ab0BHP6J (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 10:58:09 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:56231 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752558Ab0BHP6H (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Feb 2010 10:58:07 -0500
+Subject: Re: [RFC][PATCH] perf_events: Fix FORK events
+From: Peter Zijlstra <peterz@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Paul Mackerras <paulus@samba.org>, lkml <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <20100208074438.GC24721@elte.hu>
+References: <1265384243.30057.42.camel@laptop>
+	 <20100208074438.GC24721@elte.hu>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 08 Feb 2010 16:57:46 +0100
+Message-ID: <1265644666.11509.5.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 08, 2010 at 02:56:29PM +0100, Jan Kara wrote:
-> On Fri 05-02-10 14:13:33, Christoph Egger wrote:
-> > Hi all!
-> > 
-> > 	As part of the VAMOS[0] research project at the University of
-> > Erlangen we're checking referential integrity between kernel KConfig
-> > options and in-code Conditional blocks.
-> > 
-> > 	With some commit somewhere around 2.4.15 the last hint of
-> > CONFIG_BUFFER_DEBUG (apart from the 2 occurences this patch addresses)
-> > -- some documentation -- was removed from the kernel source. However
-> > this one piece of code made it till today. Time to go forward and
-> > remove it?
-> > 
-> > 	Please keep me informed of this patch getting confirmed /
-> > merged so we can keep track of it.
->   Thanks, the patch looks good. I've merged it into my linux-fs tree and
-> will send it to Linus in the next merge window.
+On Mon, 2010-02-08 at 08:44 +0100, Ingo Molnar wrote:
+> 
+> > We could of course just slam the commit in and not worry about it, but
+> > that just doesn't feel right.
+> 
+> Would be nice to figure it out ... 
 
-I don't have an objection with removing this, but does anyone have the
-latest version of akpm's buffer debugging patches?
+OK, so it is real simple, patch 22e19085 ("perf: Honour event state for
+aux stream data") drops all events for !ACTIVE and newly inherited child
+counters are INACTIVE.
 
-I *think* what happened is that akpm forward ported the removed buffer
-debugging patches, or maybe rewrote it from scratch, but for whatever
-reason they never made back into mainline.  Maybe they were too ugly
-to live in mainline, but they have been really handy on occasion.
+So we can either go with the original patch and send the FORK events to
+the parent because that's always ACTIVE (already true for COMM and
+MMAP), or weaken the state test to < INACTIVE, which would also satisfy
+Anton's case because PERF_EVENT_IOC_DISABLE sets events to OFF.
 
-   	   	     	      	   	       - Ted
+
+
