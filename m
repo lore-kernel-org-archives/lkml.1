@@ -1,49 +1,36 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752537Ab0BHWeh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 17:34:37 -0500
-Received: from kroah.org ([198.145.64.141]:45722 "EHLO coco.kroah.org"
+	id S1752760Ab0BHWe5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 17:34:57 -0500
+Received: from cantor.suse.de ([195.135.220.2]:54836 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752252Ab0BHWef (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 17:34:35 -0500
-Date: Sun, 7 Feb 2010 20:26:34 -0800
-From: Greg KH <greg@kroah.com>
-To: Richard Kennedy <richard@rsk.demon.co.uk>
-Cc: lkml <linux-kernel@vger.kernel.org>, devel@driverdev.osuosl.org
-Subject: Re: [PATCH] staging wlan-ng: fix to allow driver to be built on
-	2.6.33-rc6
-Message-ID: <20100208042634.GA30314@kroah.com>
-References: <1265283229.2175.10.camel@localhost>
+	id S1752643Ab0BHWey (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Feb 2010 17:34:54 -0500
+Date: Sun, 7 Feb 2010 22:55:47 -0800
+From: Greg KH <gregkh@suse.de>
+To: Tejun Heo <tj@kernel.org>
+Cc: Colin Guthrie <cguthrie@mandriva.org>, Kay Sievers <kay.sievers@vrfy.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] driver-core: fix race condition in get_device_parent()
+Message-ID: <20100208065547.GA12385@suse.de>
+References: <4B6BDD5E.7080904@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1265283229.2175.10.camel@localhost>
+In-Reply-To: <4B6BDD5E.7080904@kernel.org>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 04, 2010 at 11:33:49AM +0000, Richard Kennedy wrote:
-> Due to the re-factoring of wext in commit
-> 3d23e349d807177eaf519d444677cee86b1a04cf
->     
-> WIRELESS_EXT must now be selected in Kconfig to allow this driver to be
-> built.
->     
-> Also remove iw_handle_def private initialisations as they are no longer
-> need these.
->     
-> Signed-off-by: Richard Kennedy <richard@rsk.demon.co.uk>
-> 
-> ----
-> Hi Greg,
-> I hadn't built this driver for a while & just noticed that it doesn't
-> built on 2.6.33-rc6.
-> Here's a minimal fix to at least get it going.
+On Fri, Feb 05, 2010 at 05:57:02PM +0900, Tejun Heo wrote:
+> This fell through the crack.  This patch isn't very pretty but it's
+> better than having the race condition open.  Greg, can you please
+> apply this?
 
-Oops, i already have a patch in my tree that fixes this, so I just
-applid the second part of your patch, as the cleanup is valie.
+Yes, I'll queue it up and backport it to the -stable trees when it goes
+into Linus's tree.
 
-thanks,
+Thanks for the patch.
 
 greg k-h
