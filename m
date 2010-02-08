@@ -1,134 +1,45 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754794Ab0BHIT1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 03:19:27 -0500
-Received: from cantor.suse.de ([195.135.220.2]:57033 "EHLO mx1.suse.de"
+	id S1755226Ab0BHITr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 03:19:47 -0500
+Received: from ozlabs.org ([203.10.76.45]:38592 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752109Ab0BHIT0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 03:19:26 -0500
-Date: Mon, 8 Feb 2010 19:19:18 +1100
-From: Nick Piggin <npiggin@suse.de>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Andi Kleen <andi@firstfloor.org>,
-       Steven Whitehouse <swhiteho@redhat.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Clemens Ladisch <clemens@ladisch.de>,
-       Olivier Galibert <galibert@pobox.com>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       linux-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 05/11] readahead: replace ra->mmap_miss with
- ra->ra_flags
-Message-ID: <20100208081918.GD9781@laptop>
-References: <20100207041013.891441102@intel.com>
- <20100207041043.429863034@intel.com>
+	id S1754332Ab0BHITo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Feb 2010 03:19:44 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Subject: Re: [PATCH] vhost-net: switch to smp barriers
+Date: Mon, 8 Feb 2010 18:49:39 +1030
+User-Agent: KMail/1.12.2 (Linux/2.6.31-19-generic; KDE/4.3.2; i686; ; )
+Cc: kvm@vger.kernel.org, virtualization@lists.osdl.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>
+References: <20100201172101.GA10900@redhat.com> <20100207090749.GA12968@redhat.com>
+In-Reply-To: <20100207090749.GA12968@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100207041043.429863034@intel.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002081849.39512.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 07, 2010 at 12:10:18PM +0800, Wu Fengguang wrote:
-> Introduce a readahead flags field and embed the existing mmap_miss in it
-> (to save space).
-
-Is that the only reason? 
- 
-> It will be possible to lose the flags in race conditions, however the
-> impact should be limited.
-
-Is this really a good tradeoff? Randomly readahead behaviour can
-change.
-
-I never liked this mmap_miss counter, though. It doesn't seem like
-it can adapt properly for changing mmap access patterns.
-
-Is there any reason why the normal readahead algorithms can't
-detect this kind of behaviour (in much fewer than 100 misses) and
-also adapt much faster if the access changes?
-
+On Sun, 7 Feb 2010 07:37:49 pm Michael S. Tsirkin wrote:
+> On Mon, Feb 01, 2010 at 07:21:02PM +0200, Michael S. Tsirkin wrote:
+> > vhost-net only uses memory barriers to control SMP effects
+> > (communication with userspace potentially running on a different CPU),
+> > so it should use SMP barriers and not mandatory barriers for memory
+> > access ordering, as suggested by Documentation/memory-barriers.txt
+> > 
+> > Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
 > 
-> CC: Nick Piggin <npiggin@suse.de>
-> CC: Andi Kleen <andi@firstfloor.org>
-> CC: Steven Whitehouse <swhiteho@redhat.com>
-> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> ---
->  include/linux/fs.h |   30 +++++++++++++++++++++++++++++-
->  mm/filemap.c       |    7 ++-----
->  2 files changed, 31 insertions(+), 6 deletions(-)
 > 
-> --- linux.orig/include/linux/fs.h	2010-02-07 11:46:35.000000000 +0800
-> +++ linux/include/linux/fs.h	2010-02-07 11:46:37.000000000 +0800
-> @@ -892,10 +892,38 @@ struct file_ra_state {
->  					   there are only # of pages ahead */
->  
->  	unsigned int ra_pages;		/* Maximum readahead window */
-> -	unsigned int mmap_miss;		/* Cache miss stat for mmap accesses */
-> +	unsigned int ra_flags;
->  	loff_t prev_pos;		/* Cache last read() position */
->  };
->  
-> +/* ra_flags bits */
-> +#define	READAHEAD_MMAP_MISS	0x0000ffff /* cache misses for mmap access */
-> +
-> +/*
-> + * Don't do ra_flags++ directly to avoid possible overflow:
-> + * the ra fields can be accessed concurrently in a racy way.
-> + */
-> +static inline unsigned int ra_mmap_miss_inc(struct file_ra_state *ra)
-> +{
-> +	unsigned int miss = ra->ra_flags & READAHEAD_MMAP_MISS;
-> +
-> +	if (miss < READAHEAD_MMAP_MISS) {
-> +		miss++;
-> +		ra->ra_flags = miss | (ra->ra_flags &~ READAHEAD_MMAP_MISS);
-> +	}
-> +	return miss;
-> +}
-> +
-> +static inline void ra_mmap_miss_dec(struct file_ra_state *ra)
-> +{
-> +	unsigned int miss = ra->ra_flags & READAHEAD_MMAP_MISS;
-> +
-> +	if (miss) {
-> +		miss--;
-> +		ra->ra_flags = miss | (ra->ra_flags &~ READAHEAD_MMAP_MISS);
-> +	}
-> +}
-> +
->  /*
->   * Check if @index falls in the readahead windows.
->   */
-> --- linux.orig/mm/filemap.c	2010-02-07 11:46:35.000000000 +0800
-> +++ linux/mm/filemap.c	2010-02-07 11:46:37.000000000 +0800
-> @@ -1418,14 +1418,12 @@ static void do_sync_mmap_readahead(struc
->  		return;
->  	}
->  
-> -	if (ra->mmap_miss < INT_MAX)
-> -		ra->mmap_miss++;
->  
->  	/*
->  	 * Do we miss much more than hit in this file? If so,
->  	 * stop bothering with read-ahead. It will only hurt.
->  	 */
-> -	if (ra->mmap_miss > MMAP_LOTSAMISS)
-> +	if (ra_mmap_miss_inc(ra) > MMAP_LOTSAMISS)
->  		return;
->  
->  	/*
-> @@ -1455,8 +1453,7 @@ static void do_async_mmap_readahead(stru
->  	/* If we don't want any read-ahead, don't bother */
->  	if (VM_RandomReadHint(vma))
->  		return;
-> -	if (ra->mmap_miss > 0)
-> -		ra->mmap_miss--;
-> +	ra_mmap_miss_dec(ra);
->  	if (PageReadahead(page))
->  		page_cache_async_readahead(mapping, ra, file,
->  					   page, offset, ra->ra_pages);
-> 
+> Rusty, any feedback on this one?
+> Thanks!
+
+Yep.  barrier() is correct on UP to guard against preemption.
+
+Acked-by: Rusty Russell <rusty@rustcorp.com.au>
+
+Thanks,
+Rusty.
