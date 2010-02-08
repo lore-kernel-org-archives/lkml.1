@@ -1,58 +1,40 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753924Ab0BHSnl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 13:43:41 -0500
-Received: from mail.elliptictech.com ([209.217.122.41]:51211 "EHLO
-	emergent.ellipticsemi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752237Ab0BHSnk (ORCPT
+	id S1754044Ab0BHSnw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 13:43:52 -0500
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:64545 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753977Ab0BHSnv convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 13:43:40 -0500
-Date: Mon, 8 Feb 2010 13:43:38 -0500
-From: Nick Bowler <nbowler@elliptictech.com>
-To: Larry Homes <larr.homes@gmail.com>
-Cc: andrew hendry <andrew.hendry@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: Possible bug in insmod or the kernel?
-Message-ID: <20100208184338.GA17495@emergent.ellipticsemi.com>
-Mail-Followup-To: Larry Homes <larr.homes@gmail.com>,
-	andrew hendry <andrew.hendry@gmail.com>,
-	linux-kernel@vger.kernel.org
-References: <45c77aec1002071056re61b8acg5f480f8ea83c68c@mail.gmail.com>
- <d45a3acc1002071414q318edea3m38f6d5ddbbd841bc@mail.gmail.com>
- <45c77aec1002081013q2b07cb7flbd827a977ed51d4c@mail.gmail.com>
+	Mon, 8 Feb 2010 13:43:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :content-type:content-transfer-encoding;
+        b=r+JwrAOGZwgB7pa5RFKffkXjOF7C0TfzifhwNllvtvqSBHUS9cqp6cVKTrRLyaqi+0
+         NKgyejZjv8ZSaKWdRnrbedhXMgx7AO2HdUhwcGkj918nIxswDT+7vQA1zmboY8trobR+
+         bhsxPM/Li1nPshO6oq8iK8jGJMo28xnjxhGOw=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <45c77aec1002081013q2b07cb7flbd827a977ed51d4c@mail.gmail.com>
-Organization: Elliptic Technologies Inc.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <4B7036E5.7050601@gmail.com>
+References: <4B7036E5.7050601@gmail.com>
+From: roel kluin <roel.kluin@gmail.com>
+Date: Mon, 8 Feb 2010 19:43:25 +0100
+Message-ID: <25e057c01002081043reb909eet70f6bb86657fbd90@mail.gmail.com>
+Subject: Re: FRV: possibly bad unsigned comparison in show_backtrace()
+To: David Howells <dhowells@redhat.com>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 13:13 Mon 08 Feb     , Larry Homes wrote:
-> No, the problem is not that the quotes are showing. The problem is
-> that as soon as it sees a space, it assumes the following is the next
-> parameters name. So for example:
-> 
-> [root@myhost modules]# insmod hello3.ko name="john smith"
-> insmod: error inserting 'hello3.ko': -1 Unknown symbol in module
-> 
-> [root@myhost modules]# insmod hello3.ko "name=john smith"
-> insmod: error inserting 'hello3.ko': -1 Unknown symbol in module
-> 
-> In both cases, dmesg shows:
-> 
-> hello3: Unknown parameter `smith'
-> 
-> I looked at the params.c code and it seems like the above should work.
+On Mon, Feb 8, 2010 at 5:08 PM, Roel Kluin <roel.kluin@gmail.com> wrote:
+> In arch/frv/kernel/traps.c, show_backtrace(), if sp is 0
+> then the dump does not succeed because stop was set to 0
+> and unaltered when we reach the unsigned comparison:
+>
+>  while (tos < stop) {...}
 
-I'm not familiar with the code in question, but I suspect that it
-expects to actually see the quotation marks in the parameter value, but
-your shell is eating them.  Try
+I was mistaken, a while (tos >= stop) won't end
 
-  insmod hello3.ko 'name="john smith"'
-
-instead.
-
--- 
-Nick Bowler, Elliptic Technologies (http://www.elliptictech.com/)
+Roel
