@@ -1,147 +1,118 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932316Ab0BHCzU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Feb 2010 21:55:20 -0500
-Received: from rex.securecomputing.com ([203.24.151.4]:43565 "EHLO
-	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932174Ab0BHCzS (ORCPT
+	id S932340Ab0BHC4H (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Feb 2010 21:56:07 -0500
+Received: from mail-px0-f189.google.com ([209.85.216.189]:54963 "EHLO
+	mail-px0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932174Ab0BHC4E convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Feb 2010 21:55:18 -0500
-Message-ID: <4B6F7D3F.2020303@snapgear.com>
-Date: Mon, 08 Feb 2010 12:55:59 +1000
-From: Greg Ungerer <gerg@snapgear.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Sun, 7 Feb 2010 21:56:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=aYqajBRIhbNe4OSn6JWYB007tNuXfmiZWEGIxZLnAN91zwb8YUFDLIpWUXxjCpmtPs
+         bOaeOp7huChkihsno3BCavhm1jcoZUSesOp/INGIvtk/NcoH6atm7VCYYID2+GFOMFPj
+         JNcIjeqj806XachsyPd3v/nbSkzgid+cmZ9EI=
 MIME-Version: 1.0
-To: Amit Kucheria <amit.kucheria@canonical.com>
-CC: List Linux Kernel <linux-kernel@vger.kernel.org>,
-       Rob Herring <r.herring@freescale.com>, davem@davemloft.net,
-       netdev@vger.kernel.org, s.hauer@pengutronix.de, gerg@uclinux.org,
-       u.kleine-koenig@pengutronix.de, amit.kucheria@verdurent.com
-Subject: Re: [PATCH 1/3] fec: fix uninitialized rx buffer usage
-References: <cover.1265396105.git.amit.kucheria@canonical.com> <39ec69d1e3af809dcf210f4757ca2385efb5f9bc.1265396105.git.amit.kucheria@canonical.com>
-In-Reply-To: <39ec69d1e3af809dcf210f4757ca2385efb5f9bc.1265396105.git.amit.kucheria@canonical.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <4B6C8FF0.3090106@suse.cz>
+References: <4B5E5D4F.50803@windriver.com> <2375c9f91001251905p6ed99405m3915ac56e230605f@mail.gmail.com> 
+	<4B5E9BE9.2030702@windriver.com> <2375c9f91001252353u52f437b0t7ddd643a57047e1c@mail.gmail.com> 
+	<4B5EB223.60307@windriver.com> <4B6344CA.10504@suse.cz> <4B666982.1020007@windriver.com> 
+	<4B6C8FF0.3090106@suse.cz>
+From: Hui Zhu <teawater@gmail.com>
+Date: Mon, 8 Feb 2010 10:55:44 +0800
+Message-ID: <daef60381002071855m7a5d6d2cg7b9a9a48b6aef20e@mail.gmail.com>
+Subject: Re: [PATCH] markup_oops.pl: add options to improve cross-sompilation 
+	environments
+To: Michal Marek <mmarek@suse.cz>
+Cc: Hui Zhu <hui.zhu@windriver.com>,
+       =?ISO-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Sam Ravnborg <sam@ravnborg.org>, ozan@pardus.org.tr,
+       Matthew Wilcox <willy@linux.intel.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Amit Kucheria wrote:
-> From: Rob Herring <r.herring@freescale.com>
-> 
-> The fec driver was enabling receive buffer descriptor without allocating
-> the buffers. Make sure the buffer descriptors are initialized to not
-> start receiving packets.
-> 
-> Open also calls fec_restart after the rx buffers are allocated. With the code
-> in fec_restart, it zeroes out the buffer descriptors that have just been
-> setup.
-> 
-> Signed-off-by: Rob Herring <r.herring@freescale.com>
-> Signed-off-by: Amit Kucheria <amit.kucheria@canonical.com>
-> Acked-by: Grant Likely <grant.likely@secretlab.ca>
+Hi Michael,
 
-Acked-by: Greg Ungerer <gerg@uclinux.org>
+Looks you miss this one:
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=ef2b9b054580ef835078d8aa411bd06542cd5c1c
 
+Thanks,
+Hui
 
-> ---
->  drivers/net/fec.c |   57 +++++++++++++++++++++++++++--------------------------
->  1 files changed, 29 insertions(+), 28 deletions(-)
-> 
-> diff --git a/drivers/net/fec.c b/drivers/net/fec.c
-> index 16a1d58..9a8743d 100644
-> --- a/drivers/net/fec.c
-> +++ b/drivers/net/fec.c
-> @@ -1658,6 +1658,7 @@ static int fec_enet_init(struct net_device *dev, int index)
->  {
->  	struct fec_enet_private *fep = netdev_priv(dev);
->  	struct bufdesc *cbd_base;
-> +	struct bufdesc *bdp;
->  	int i;
->  
->  	/* Allocate memory for buffer descriptors. */
-> @@ -1710,6 +1711,34 @@ static int fec_enet_init(struct net_device *dev, int index)
->  	/* Set MII speed to 2.5 MHz */
->  	fep->phy_speed = ((((clk_get_rate(fep->clk) / 2 + 4999999)
->  					/ 2500000) / 2) & 0x3F) << 1;
-> +
-> +	/* Initialize the receive buffer descriptors. */
-> +	bdp = fep->rx_bd_base;
-> +	for (i = 0; i < RX_RING_SIZE; i++) {
-> +
-> +		/* Initialize the BD for every fragment in the page. */
-> +		bdp->cbd_sc = 0;
-> +		bdp++;
-> +	}
-> +
-> +	/* Set the last buffer to wrap */
-> +	bdp--;
-> +	bdp->cbd_sc |= BD_SC_WRAP;
-> +
-> +	/* ...and the same for transmit */
-> +	bdp = fep->tx_bd_base;
-> +	for (i = 0; i < TX_RING_SIZE; i++) {
-> +
-> +		/* Initialize the BD for every fragment in the page. */
-> +		bdp->cbd_sc = 0;
-> +		bdp->cbd_bufaddr = 0;
-> +		bdp++;
-> +	}
-> +
-> +	/* Set the last buffer to wrap */
-> +	bdp--;
-> +	bdp->cbd_sc |= BD_SC_WRAP;
-> +
->  	fec_restart(dev, 0);
->  
->  	/* Queue up command to detect the PHY and initialize the
-> @@ -1730,7 +1759,6 @@ static void
->  fec_restart(struct net_device *dev, int duplex)
->  {
->  	struct fec_enet_private *fep = netdev_priv(dev);
-> -	struct bufdesc *bdp;
->  	int i;
->  
->  	/* Whack a reset.  We should wait for this. */
-> @@ -1768,33 +1796,6 @@ fec_restart(struct net_device *dev, int duplex)
->  		}
->  	}
->  
-> -	/* Initialize the receive buffer descriptors. */
-> -	bdp = fep->rx_bd_base;
-> -	for (i = 0; i < RX_RING_SIZE; i++) {
-> -
-> -		/* Initialize the BD for every fragment in the page. */
-> -		bdp->cbd_sc = BD_ENET_RX_EMPTY;
-> -		bdp++;
-> -	}
-> -
-> -	/* Set the last buffer to wrap */
-> -	bdp--;
-> -	bdp->cbd_sc |= BD_SC_WRAP;
-> -
-> -	/* ...and the same for transmit */
-> -	bdp = fep->tx_bd_base;
-> -	for (i = 0; i < TX_RING_SIZE; i++) {
-> -
-> -		/* Initialize the BD for every fragment in the page. */
-> -		bdp->cbd_sc = 0;
-> -		bdp->cbd_bufaddr = 0;
-> -		bdp++;
-> -	}
-> -
-> -	/* Set the last buffer to wrap */
-> -	bdp--;
-> -	bdp->cbd_sc |= BD_SC_WRAP;
-> -
->  	/* Enable MII mode */
->  	if (duplex) {
->  		/* MII enable / FD enable */
-
-
--- 
-------------------------------------------------------------------------
-Greg Ungerer  --  Principal Engineer        EMAIL:     gerg@snapgear.com
-SnapGear Group, McAfee                      PHONE:       +61 7 3435 2888
-8 Gardner Close                             FAX:         +61 7 3217 5323
-Milton, QLD, 4064, Australia                WEB: http://www.SnapGear.com
+On Sat, Feb 6, 2010 at 05:38, Michal Marek <mmarek@suse.cz> wrote:
+> On 1.2.2010 06:41, Hui Zhu wrote:
+>> I make a patch according to your mail.
+>>
+>> Best regards,
+>> Hui
+>>
+>> 1. Fix a little format issue.
+>> 2. Check the return of "Getopt::Long::GetOptions".  Output usage and
+>> exit if it get error.
+>> 3. Change $ARGV[$#ARGV] to $ARGV[0].
+>> 4. Change the code which get $modulefile from modinfo.  Replace the
+>> pipeline with `modinfo -F filename $module`.
+>> 4. Change usage from "Specify the module directory name" to "Specify the
+>> module filename".
+>>
+>> Signed-off-by: Hui Zhu <teawater@gmail.com>
+>
+> Thanks, I applied the previous and this patch. Just to make sure I
+> didn't miss any of your patches, can you check that
+> http://repo.or.cz/w/linux-kbuild.git/blob/refs/heads/for-next:/scripts/markup_oops.pl
+> has all your changes? If something is missing, please resend it, thanks.
+>
+> Michal
+>
+>> ---
+>> scripts/markup_oops.pl |   10 +++++-----
+>> 1 file changed, 5 insertions(+), 5 deletions(-)
+>>
+>> --- a/scripts/markup_oops.pl
+>> +++ b/scripts/markup_oops.pl
+>> @@ -23,10 +23,10 @@ my $modulefile = "";
+>> # Get options
+>> Getopt::Long::GetOptions(
+>>     'cross-compile|c=s'    => \$cross_compile,
+>> -    'module|m=s'    => \$modulefile,
+>> +    'module|m=s'        => \$modulefile,
+>>     'help|h'        => \&usage,
+>> -);
+>> -my $vmlinux_name = $ARGV[$#ARGV];
+>> +) || usage ();
+>> +my $vmlinux_name = $ARGV[0];
+>> if (!defined($vmlinux_name)) {
+>>     my $kerver = `uname -r`;
+>>     chomp($kerver);
+>> @@ -193,7 +193,7 @@ if ($target eq "0") {
+>> # if it's a module, we need to find the .ko file and calculate a load
+>> offset
+>> if ($module ne "") {
+>>     if ($modulefile eq "") {
+>> -        my $modulefile = `modinfo $module | grep '^filename:' | awk '{
+>> print \$2 }'`;
+>> +        $modulefile = `modinfo -F filename $module`;
+>>         chomp($modulefile);
+>>     }
+>>     $filename = $modulefile;
+>> @@ -361,7 +361,7 @@ Usage:
+>>
+>> OPTION:
+>>   -c, --cross-compile CROSS_COMPILE    Specify the prefix used for
+>> toolchain.
+>> -  -m, --module MODULE_DIRNAME        Specify the module directory name.
+>> +  -m, --module MODULE_DIRNAME        Specify the module filename.
+>>   -h, --help                Help.
+>> EOT
+>>     exit;
+>>
+>>
+>
+>
