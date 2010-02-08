@@ -1,61 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756437Ab0BHCWy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Feb 2010 21:22:54 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:45017 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753942Ab0BHCWw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Feb 2010 21:22:52 -0500
-Date: Mon, 8 Feb 2010 13:22:43 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: David Miller <davem@davemloft.net>, <netdev@vger.kernel.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Sridhar Samudrala <sri@us.ibm.com>
-Subject: linux-next: build failure after merge of the net tree
-Message-Id: <20100208132243.ab967d9c.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta7 (GTK+ 2.18.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__8_Feb_2010_13_22_43_+1100_KM_2hHKPG.=88CWW"
+	id S1756711Ab0BHCYz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Feb 2010 21:24:55 -0500
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:41005 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756255Ab0BHCYx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Feb 2010 21:24:53 -0500
+Date: Mon, 8 Feb 2010 11:24:37 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] sh updates for 2.6.33-rc8
+Message-ID: <20100208022437.GC6839@linux-sh.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__8_Feb_2010_13_22_43_+1100_KM_2hHKPG.=88CWW
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This fixes up a number of crashes both with the unwinder and with booting
+from USB mass storage on certain CPUs. While the unwinder fixups aren't
+technically regression fixes, they address a fairly long-standing set of
+bugs. The HCD changes fix a fairly long-standing regression that was only
+recently reported.
 
-Hi Dave,
+Please pull from:
 
-After merging the net tree, today's linux-next build (powerpc
-ppc64_defconfig) failed like this:
+	master.kernel.org:/pub/scm/linux/kernel/git/lethal/sh-2.6.git sh/for-2.6.33
 
-net/packet/af_packet.c: In function 'packet_setsockopt':
-net/packet/af_packet.c:1977: error: 'struct packet_sock' has no member name=
-d 'rx_ring'
-net/packet/af_packet.c:1977: error: 'struct packet_sock' has no member name=
-d 'tx_ring'
+Which contains:
 
-Caused by commit bfd5f4a3d605e0f6054df0b59fe0907ff7e696d3 ("packet: Add
-GSO/csum offload support").  This build has CONFIG_PACKET_MMAP unset.
+Matt Fleming (4):
+      sh: Correct the offset of the return address in ret_from_exception
+      sh: Setup frame pointer in handle_exception path
+      sh: Don't continue unwinding across interrupts
+      sh: Remove superfluous setup_frame_reg call
 
-I used the version of the net tree from next-20100205 for today.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Paul Mundt (2):
+      usb: r8a66597-hcd: Flush the D-cache for the pipe-in transfer buffers.
+      usb: r8a66597-hcd: Fix up spinlock recursion in root hub polling.
 
---Signature=_Mon__8_Feb_2010_13_22_43_+1100_KM_2hHKPG.=88CWW
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAktvdXMACgkQjjKRsyhoI8wCjwCgklGTJHtFmHc0iZn41WGnsrpe
-NXgAoLGRv9enkPNIdahJLf2mzz+RsxQz
-=PhzF
------END PGP SIGNATURE-----
-
---Signature=_Mon__8_Feb_2010_13_22_43_+1100_KM_2hHKPG.=88CWW--
+ arch/sh/kernel/cpu/sh3/entry.S  |    3 +-
+ arch/sh/kernel/dwarf.c          |   20 +++++++++++++++++++
+ arch/sh/kernel/entry-common.S   |    8 ++++++-
+ drivers/usb/host/r8a66597-hcd.c |   41 +++++++++++++++++++++++++++-----------
+ 4 files changed, 58 insertions(+), 14 deletions(-)
