@@ -1,45 +1,48 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757132Ab0BHAJX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Feb 2010 19:09:23 -0500
-Received: from ozlabs.org ([203.10.76.45]:60384 "EHLO ozlabs.org"
+	id S933035Ab0BHAJg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Feb 2010 19:09:36 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:55387 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754946Ab0BHAJW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Feb 2010 19:09:22 -0500
-Date: Mon, 8 Feb 2010 11:04:35 +1100
-From: Anton Blanchard <anton@samba.org>
-To: Michael Neuling <mikey@neuling.org>
-Cc: stable@kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Serge Hallyn <serue@us.ibm.com>, WANG Cong <xiyou.wangcong@gmail.com>,
-       Paul Mackerras <paulus@samba.org>, benh@kernel.crashing.org,
-       miltonm@bga.com, aeb@cwi.nl
-Subject: Re: Stack size protection broken on ppc64
-Message-ID: <20100208000435.GJ32246@kryten>
-References: <3984.1265416993@neuling.org>
- <20100206042038.GB32246@kryten>
- <10125.1265451732@neuling.org>
+	id S1757562Ab0BHAJe convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Feb 2010 19:09:34 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: =?iso-8859-2?q?Mat=ECj_Laitl?= <strohel@gmail.com>
+Subject: Re: [Bug #15114] X.org hang with [drm:i915_gem_do_execbuffer] *ERROR* in dmesg
+Date: Mon, 8 Feb 2010 01:09:58 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.33-rc7-rjw; KDE/4.3.5; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Maciej Rutecki <maciej.rutecki@gmail.com>
+References: <4Ht3jFrT7uE.A.JI.-nzbLB@chimera> <445R0ey9hAI.A.1tB.7ozbLB@chimera> <201002080016.36393.strohel@gmail.com>
+In-Reply-To: <201002080016.36393.strohel@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <10125.1265451732@neuling.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: Text/Plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <201002080109.58924.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Monday 08 February 2010, Matìj Laitl wrote:
+> On Sunday 07 February 2010 23:28:50 Rafael J. Wysocki wrote:
+> > This message has been generated automatically as a part of a summary report
+> > of recent regressions.
+> > 
+> > The following bug entry is on the current list of known regressions
+> > from 2.6.32.  Please verify if it still should be listed and let the
+> > tracking team know (either way).
+> > 
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15114
+> > Subject		: X.org hang with [drm:i915_gem_do_execbuffer] *ERROR* in dmesg
+> > Submitter	: Matej Laitl <strohel@gmail.com>
+> > Date		: 2010-01-23 19:54 (16 days old)
+> 
+> I confirm the regression still exists in 2.6.33-rc6-00228-g56dca4c
 
-Hi,
+Thanks for the update.
 
-> Cool, thanks.  The following is based on this and fixes the problem for
-> me on PPC64 ie. the !CONFIG_STACK_GROWSUP case. 
-
-Thanks! Seeing the original setting of EXTRA_STACK_VM_PAGES is more or
-less random, I wonder if we should round EXTRA_STACK_VM_SIZE up to 128kB
-(or even down to 64kB) so it operates better with > 4kB pages.
-
-But in the end its probably of little use for the default OVERCOMMIT_GUESS
-setting, so the main thing is we dont terminate processes incorrectly.
-
-Acked-by: Anton Blanchard <anton@samba.org>
-
-Anton
+Rafael
