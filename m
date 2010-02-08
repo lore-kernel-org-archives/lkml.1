@@ -1,97 +1,105 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751645Ab0BHFhx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 00:37:53 -0500
-Received: from ozlabs.org ([203.10.76.45]:54898 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751311Ab0BHFhv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 00:37:51 -0500
-From: Michael Neuling <mikey@neuling.org>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-cc: Anton Blanchard <anton@samba.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       Oleg Nesterov <oleg@redhat.com>, James Morris <jmorris@namei.org>,
-       Ingo Molnar <mingo@elte.hu>, linux-fsdevel@vger.kernel.org,
-       stable@kernel.org, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, Serge Hallyn <serue@us.ibm.com>,
-       WANG Cong <xiyou.wangcong@gmail.com>, Paul Mackerras <paulus@samba.org>,
-       benh@kernel.crashing.org, miltonm@bga.com, aeb@cwi.nl
-Subject: [PATCH] Restrict stack space reservation to rlimit
-In-reply-to: <20100208141716.FB55.A69D9226@jp.fujitsu.com>
-References: <20100208140323.FB52.A69D9226@jp.fujitsu.com> <20100208051104.GL32246@kryten> <20100208141716.FB55.A69D9226@jp.fujitsu.com>
-Comments: In-reply-to KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-   message dated "Mon, 08 Feb 2010 14:22:22 +0900."
-X-Mailer: MH-E 8.2; nmh 1.3; GNU Emacs 23.1.1
-Date: Mon, 08 Feb 2010 16:37:49 +1100
-Message-ID: <9729.1265607469@neuling.org>
+	id S1751716Ab0BHFid (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 00:38:33 -0500
+Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:41087 "EHLO
+	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751106Ab0BHFib (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Feb 2010 00:38:31 -0500
+Date: Mon, 8 Feb 2010 06:38:30 +0100
+From: Andreas Mohr <andi@lisas.de>
+To: Andreas Mohr <andi@lisas.de>
+Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@redhat.com>, John Stultz <johnstul@us.ibm.com>
+Subject: Re: clocksource mutex deadlock, cat current_clocksource
+	(2.6.33-rc6/7)
+Message-ID: <20100208053830.GA7128@rhlx01.hs-esslingen.de>
+References: <20100206142141.GA12871@rhlx01.hs-esslingen.de> <alpine.LFD.2.00.1002061534020.2811@localhost.localdomain> <20100207191949.GA23665@rhlx01.hs-esslingen.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100207191949.GA23665@rhlx01.hs-esslingen.de>
+X-Priority: none
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >  
-> > Hi,
-> > 
-> > > Why do we need page size independent stack size? It seems to have
-> > > compatibility breaking risk.
-> > 
-> > I don't think so. The current behaviour is clearly wrong, we dont need a
-> > 16x larger stack just because you went from a 4kB to a 64kB base page
-> > size. The user application stack usage is the same in both cases.
-> 
-> I didn't discuss which behavior is better. Michael said he want to apply
-> his patch to 2.6.32 & 2.6.33. stable tree never accept the breaking
-> compatibility patch.
-> 
-> Your answer doesn't explain why can't we wait it until next merge window.
-> 
-> btw, personally, I like page size indepent stack size. but I'm not sure
-> why making stack size independency is related to bug fix.
+Hi,
 
-I tend to agree.  
+On Sun, Feb 07, 2010 at 08:19:49PM +0100, Andreas Mohr wrote:
+> Umm, CONFIG_FTRACE_NMI_ENTER, anyone?
+> That sounds like the most invasive candidate at least.
 
-Below is just the bug fix to limit the reservation size based rlimit.
-We still reserve different stack sizes based on the page size as
-before (unless we hit rlimit of course).
+Nope, that wasn't it.
+(I removed both CONFIG_DYNAMIC_FTRACE - which implicitly removes
+CONFIG_FTRACE_NMI_ENTER - and CONFIG_FTRACE_SYSCALLS)
 
-Mikey
+Next theory:
 
-Restrict stack space reservation to rlimit
+On this -rc7 upgrade, I had another NMI watchdog trigger on bootup:
 
-When reserving stack space for a new process, make sure we're not
-attempting to allocate more than rlimit allows.
+BUG: NMI Watchdog detected LOCKUP on CPU0, ip c1045170, registers:
+Modules linked in:
 
-This fixes a bug cause by b6a2fea39318e43fee84fa7b0b90d68bed92d2ba 
-"mm: variable length argument support" and unmasked by
-fc63cf237078c86214abcb2ee9926d8ad289da9b 
-"exec: setup_arg_pages() fails to return errors".
+Pid: 266, comm: kwatchdog Not tainted 2.6.33-rc7 #1 Inspiron 8000
+/Inspiron 8000
+EIP: 0060:[<c1045170>] EFLAGS: 00000082 CPU: 0
+EIP is at timekeeping_forward_now+0x116/0x139
+EAX: 00000000 EBX: efd7f032 ECX: fb5d3b74 EDX: 45643ff3
+ESI: 8e7480ca EDI: ffffffff EBP: df8cdf3c ESP: df8cdf18
+ DS: 007b ES: 007b FS: 0000 GS: 0000 SS: 0068
+Process kwatchdog (pid: 266, ti=df8cd000 task=df9bc1c0 task.ti=df8cd000)
+Stack:
+ 005ba19f 00000000 00000000 0000231e 2ab321bc 0000231e c13b6010 c13b6010
+<0> c13b6014 df8cdf4c c10451a4 c1392128 c13b6010 df8cdf58 c1045d16
+c13b6010
+<0> df8cdf70 c1046dc6 c130ee48 c130eeac c139212c c139212c df8cdf84
+c1046e36
+Call Trace:
+ [<c10451a4>] ? change_clocksource+0x11/0x3e
+ [<c1045d16>] ? timekeeping_notify+0x24/0x31
+ [<c1046dc6>] ? clocksource_select+0x9e/0xa7
+ [<c1046e36>] ? __clocksource_change_rating+0x67/0x6c
+ [<c1046f1c>] ? clocksource_watchdog_kthread+0xe1/0x104
+ [<c1046e3b>] ? clocksource_watchdog_kthread+0x0/0x104
+ [<c103e50c>] ? kthread+0x63/0x68
+ [<c103e4a9>] ? kthread+0x0/0x68
+ [<c1002cba>] ? kernel_thread_helper+0x6/0x10
+Code: ea f6 c1 20 0f 45 c2 0f 45 d7 89 c1 89 f7 8b 45 e4 89 d3 c1 ff 1f
+01 f1 11 fb 31 d2 eb 0a 81 c1 00 36 65 c4 83 d
+3 ff 42 83 fb 00 <77> f1 81 f9 ff c9 9a 3b 77 e9 89 45 e4 8d 04 02 a3 0c
+21 46 c1
+---[ end trace a7919e7f17c0a725 ]---
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
-Cc: Anton Blanchard <anton@samba.org>
-Cc: stable@kernel.org
----
- fs/exec.c |    7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
 
-Index: linux-2.6-ozlabs/fs/exec.c
-===================================================================
---- linux-2.6-ozlabs.orig/fs/exec.c
-+++ linux-2.6-ozlabs/fs/exec.c
-@@ -627,10 +627,13 @@ int setup_arg_pages(struct linux_binprm 
- 			goto out_unlock;
- 	}
- 
-+	stack_base = min(EXTRA_STACK_VM_PAGES * PAGE_SIZE,
-+			 current->signal->rlim[RLIMIT_STACK].rlim_cur -
-+			   PAGE_SIZE);
- #ifdef CONFIG_STACK_GROWSUP
--	stack_base = vma->vm_end + EXTRA_STACK_VM_PAGES * PAGE_SIZE;
-+	stack_base = vma->vm_end + stack_base;
- #else
--	stack_base = vma->vm_start - EXTRA_STACK_VM_PAGES * PAGE_SIZE;
-+	stack_base = vma->vm_start - stack_base;
- #endif
- 	ret = expand_stack(vma, stack_base);
- 	if (ret)
+And then a cat current_clocksource managed to hang again.
+(NOTE that the - now complete! - SysRq-T list does NOT show any backtraces
+of kwatchdog any more, only many other processes)
+Could it be that the (rather disruptive) NMI watchdog confuses the current state at
+change_clocksource and causes that stuff to get left with
+clocksource_mutex remaining taken?
 
+Then my userspace cat current_clocksource hits the leftover mutex and
+has nowhere to go...
+
+And, could it perhaps be that the NMI watchdog gets confused by
+simple timekeeping inconsistencies _during_ clocksource change?
+(in that case we'd simply need to make sure NMI watchdog remains
+satisfied with current conditions during clocksource rochade)
+
+
+And the lockdep thingy is suboptimal: a developer colleague told me that
+"INFO: lockdep is turned off." simply gets done after the first backtrace
+in order to avoid subsequent spews.
+But at that point in time some people (such as him) _would_ have liked to trace
+some further issues.
+
+So at least it should be enhanced to "INFO: lockdep is turned off (or defused!)."
+or some such to clearly indicate that something is rotten,
+and one should think of perhaps increasing one-time use to up to 3 times or so.
+
+Thanks,
+
+Andreas Mohr
