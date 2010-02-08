@@ -1,17 +1,14 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756983Ab0BHApW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Feb 2010 19:45:22 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:55496 "EHLO ogre.sisk.pl"
+	id S1757662Ab0BHApv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Feb 2010 19:45:51 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:55543 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755691Ab0BHApI convert rfc822-to-8bit (ORCPT
+	id S1757567Ab0BHApq convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Feb 2010 19:45:08 -0500
+	Sun, 7 Feb 2010 19:45:46 -0500
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>,
-       "Gary Trakhman" <gary.trakhman@gmail.com>,
-       "Jens Axboe" <jens.axboe@oracle.com>,
-       "Zhao Yakui" <yakui.zhao@intel.com>
+       Maciej Rutecki <maciej.rutecki@gmail.com>, "okias" <d.okias@gmail.com>
 References: <2uzMDuY-7_O.A.M1G.7X1bLB@chimera>
 In-Reply-To: <2uzMDuY-7_O.A.M1G.7X1bLB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,8 +16,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <iuJeop2ribM.A.MYB.yZ1bLB@chimera>
-Subject: [Bug #14782] Suspend hangs Lenovo SL300 after gdm login
+Message-ID: <iuJeop2ribM.A.8RB.mZ1bLB@chimera>
+Subject: [Bug #14817] When is system under load, then freeze/HD fail
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Mon,  8 Feb 2010 01:28:16 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,10 +32,9 @@ introduced between 2.6.31 and 2.6.32.  Please verify if it still should
 be listed and let the tracking team know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14782
-Subject		: Suspend hangs Lenovo SL300 after gdm login
-Submitter	: Gary Trakhman <gary.trakhman@gmail.com>
-Date		: 2009-12-10 18:53 (60 days old)
-First-Bad-Commit: http://git.kernel.org/git/linus/03ba3782e8dcc5b0e1efe440d33084f066e38cae
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14817
+Subject		: When is system under load, then freeze/HD fail
+Submitter	: okias <d.okias@gmail.com>
+Date		: 2009-12-15 11:12 (55 days old)
 
 
