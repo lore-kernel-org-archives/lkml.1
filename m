@@ -1,123 +1,94 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754216Ab0BHTCt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 14:02:49 -0500
-Received: from mail-yx0-f193.google.com ([209.85.210.193]:57980 "EHLO
-	mail-yx0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750962Ab0BHTCs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 14:02:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=Jj2uSlkPOJyaA5z7qb4H6szeiU9YEunVTCZ7IkCNKq1y4lx7RHWR/iIYYPW+/dR7OO
-         ALRoghXomwph8VUhYmtXk0LrwAWqA3RYyPBQDTljO/+y9/OQPoAWT0CvFnK/MNaFYxbL
-         xyJVUTWtKPOZ7FfwcGw+FOnYjvwYvjzdO0foM=
-From: Chihau Chau <chihau@gmail.com>
-To: gregkh@suse.de
-Cc: alan@linux.intel.com, andre.goddard@gmail.com, devel@driverdev.osuosl.org,
-       linux-kernel@vger.kernel.org, Chihau Chau <chihau@gmail.com>
-Subject: [PATCH] Staging: rar: rar_driver: fix some coding style issues
-Date: Mon,  8 Feb 2010 16:02:36 -0300
-Message-Id: <1265655756-26056-1-git-send-email-chihau@gmail.com>
-X-Mailer: git-send-email 1.5.6.3
+	id S1754233Ab0BHTDa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 14:03:30 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:38768 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750962Ab0BHTD2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Feb 2010 14:03:28 -0500
+Message-ID: <4B705FC8.1030407@redhat.com>
+Date: Mon, 08 Feb 2010 13:02:32 -0600
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: tytso@mit.edu, Jan Kara <jack@suse.cz>,
+       Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>,
+       linux-kernel@vger.kernel.org, Kazuo Moriwaka <moriwaka@redhat.com>,
+       H Hartley Sweeten <hsweeten@visionengravers.com>,
+       Joel Becker <joel.becker@oracle.com>, linux-ext4@vger.kernel.org,
+       vamos@i4.informatik.uni-erlangen.de
+Subject: Re: [PATCH] obsolete config in kernel source (BUFFER_DEBUG)
+References: <20100205131333.GB6540@faui49.informatik.uni-erlangen.de>	<20100208135629.GD4321@quack.suse.cz>	<20100208155031.GK4494@thunk.org> <20100208105828.1136310a.akpm@linux-foundation.org>
+In-Reply-To: <20100208105828.1136310a.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Chihau Chau <chihau@gmail.com>
+Andrew Morton wrote:
+> On Mon, 8 Feb 2010 10:50:31 -0500 tytso@mit.edu wrote:
+> 
+>> I don't have an objection with removing this, but does anyone have the
+>> latest version of akpm's buffer debugging patches?
+> 
+> My version is datestamped four years ago :( It normally forward-ports
+> fairly easily.
+> 
+>> I *think* what happened is that akpm forward ported the removed buffer
+>> debugging patches, or maybe rewrote it from scratch, but for whatever
+>> reason they never made back into mainline.  Maybe they were too ugly
+>> to live in mainline, but they have been really handy on occasion.
+> 
+> I think Eric Sandeen might have a fresher version. 
 
-This fixes some coding style issues like lines over 80 characters, "foo* bar"
-and spaces or tabs errors.
+If "fresh" means 2.6.18, I might ;)
 
-Signed-off-by: Chihau Chau <chihau@gmail.com>
----
- drivers/staging/rar/rar_driver.c |   31 +++++++++++--------------------
- 1 files changed, 11 insertions(+), 20 deletions(-)
+But yes they sure have come in handy from time to time.
 
-diff --git a/drivers/staging/rar/rar_driver.c b/drivers/staging/rar/rar_driver.c
-index d85d189..4ef1acf 100644
---- a/drivers/staging/rar/rar_driver.c
-+++ b/drivers/staging/rar/rar_driver.c
-@@ -68,7 +68,8 @@ static void __exit rar_exit_handler(void);
- /*
-   function that is activated on the successfull probe of the RAR device
- */
--static int __devinit rar_probe(struct pci_dev *pdev, const struct pci_device_id *ent);
-+static int __devinit rar_probe(struct pci_dev *pdev,
-+					const struct pci_device_id *ent);
- 
- static struct pci_device_id rar_pci_id_tbl[] = {
- 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x4110) },
-@@ -86,9 +87,7 @@ static struct pci_driver rar_pci_driver = {
- 
- /* This function is used to retrieved RAR info using the IPC message
-    bus interface */
--static int memrar_get_rar_addr(struct pci_dev* pdev,
--	                      int offset,
--	                      u32 *addr)
-+static int memrar_get_rar_addr(struct pci_devi *pdev, int offset, u32 *addr)
- {
- 	/*
- 	 * ======== The Lincroft Message Bus Interface ========
-@@ -140,23 +139,19 @@ static int memrar_get_rar_addr(struct pci_dev* pdev,
- 	       | (offset << 8)
- 	       | (LNC_MESSAGE_BYTE_WRITE_ENABLES << 4);
- 
--	printk(KERN_WARNING "rar- offset to LNC MSG is %x\n",offset);
-+	printk(KERN_WARNING "rar- offset to LNC MSG is %x\n", offset);
- 
- 	if (addr == 0)
- 		return -EINVAL;
- 
- 	/* Send the control message */
--	result = pci_write_config_dword(pdev,
--	                          LNC_MCR_OFFSET,
--	                          message);
-+	result = pci_write_config_dword(pdev, LNC_MCR_OFFSET, message);
- 
--	printk(KERN_WARNING "rar- result from send ctl register is %x\n"
--	  ,result);
-+	printk(KERN_WARNING "rar- result from send ctl register is %x\n",
-+								result);
- 
- 	if (!result)
--		result = pci_read_config_dword(pdev,
--		                              LNC_MDR_OFFSET,
--				              addr);
-+		result = pci_read_config_dword(pdev, LNC_MDR_OFFSET, addr);
- 
- 	printk(KERN_WARNING "rar- result from read data register is %x\n",
- 	  result);
-@@ -170,9 +165,7 @@ static int memrar_get_rar_addr(struct pci_dev* pdev,
- 		return 0;
- }
- 
--static int memrar_set_rar_addr(struct pci_dev* pdev,
--	                      int offset,
--	                      u32 addr)
-+static int memrar_set_rar_addr(struct pci_dev *pdev, int offset, u32 addr)
- {
- 	/*
- 	 * ======== The Lincroft Message Bus Interface ========
-@@ -225,15 +218,13 @@ static int memrar_set_rar_addr(struct pci_dev* pdev,
- 	       | (offset << 8)
- 	       | (LNC_MESSAGE_BYTE_WRITE_ENABLES << 4);
- 
--	printk(KERN_WARNING "rar- offset to LNC MSG is %x\n",offset);
-+	printk(KERN_WARNING "rar- offset to LNC MSG is %x\n", offset);
- 
- 	if (addr == 0)
- 		return -EINVAL;
- 
- 	/* Send the control message */
--	result = pci_write_config_dword(pdev,
--	                          LNC_MDR_OFFSET,
--	                          addr);
-+	result = pci_write_config_dword(pdev, LNC_MDR_OFFSET, addr);
- 
- 	printk(KERN_WARNING "rar- result from send ctl register is %x\n"
- 	  ,result);
--- 
-1.5.6.3
+> Nowadays it should
+> be done with the tracing infrastructure, I guess.
+
+that's kind of what I was thinking, too.
+
+-Eric
+
+>  Although that
+> infrastructure may not be able to do this - the ext3 debug patch
+> recorded an LRU array of the below structs within every buffer_head. 
+> The various BUFFER_TRACE macros would emit a new record into the tail of the
+> target bh's b[] ring.
+> 
+> struct buffer_history {
+> 	struct buffer_history_item {
+> 		char *function;
+> 		char *info;
+> 		unsigned long b_state;
+> 		unsigned b_list:3;
+> 		unsigned b_jlist:4;
+> 		unsigned pg_dirty:1;
+> 		unsigned cpu:3;
+> 		unsigned b_count:8;
+> 		unsigned long b_blocknr;	/* For src != dest */
+> #if defined(CONFIG_JBD) || defined(CONFIG_JBD_MODULE)
+> 		unsigned b_jcount:4;
+> 		unsigned b_jbd:1;
+> 		unsigned b_transaction:1;
+> 		unsigned b_next_transaction:1;
+> 		unsigned b_cp_transaction:1;
+> 		unsigned b_trans_is_running:1;
+> 		unsigned b_trans_is_committing:1;
+> 		void *b_frozen_data;
+> 		void *b_committed_data;
+> #endif
+> 	} b[BUFFER_HISTORY_SIZE];
+> 	unsigned long b_history_head;	/* Next place to write */
+> 	unsigned long b_history_tail;	/* Oldest valid entry */
+> };
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
