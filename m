@@ -1,52 +1,68 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751455Ab0BHKzq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 05:55:46 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:57290 "EHLO ogre.sisk.pl"
+	id S1751596Ab0BHK5X (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 05:57:23 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:36929 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750965Ab0BHKzo convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 05:55:44 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: =?utf-8?q?Rafa=C5=82_Mi=C5=82ecki?= <zajec5@gmail.com>
-Subject: Re: [Bug #15096] Resume lock up -- bisected, commit 3a1151e3f124fd1a2c54b8153f510f1a7c715369
-Date: Mon, 8 Feb 2010 11:56:23 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.33-rc7-rjw; KDE/4.3.5; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Len Brown <len.brown@intel.com>,
-       Stefan Bader <stefan.bader@canonical.com>,
-       Zhang Rui <rui.zhang@intel.com>
-References: <2uzMDuY-7_O.A.M1G.7X1bLB@chimera> <iuJeop2ribM.A.fyH.fY1bLB@chimera> <b170af451002072345x1e7666adv7f105a5f847f4d0d@mail.gmail.com>
-In-Reply-To: <b170af451002072345x1e7666adv7f105a5f847f4d0d@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <201002081156.24020.rjw@sisk.pl>
+	id S1750856Ab0BHK5W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Feb 2010 05:57:22 -0500
+Date: Mon, 8 Feb 2010 21:57:15 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Cc: Tony Lindgren <tony@atomide.com>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Vaibhav Hiremath <hvaibhav@ti.com>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
+Subject: Re: linux-next: manual merge of the omap_dss2 tree with the omap
+ tree
+Message-Id: <20100208215715.c78b2a9c.sfr@canb.auug.org.au>
+In-Reply-To: <1265621346.2433.27.camel@tubuntu.research.nokia.com>
+References: <20100208172521.abb500b4.sfr@canb.auug.org.au>
+	<1265621346.2433.27.camel@tubuntu.research.nokia.com>
+X-Mailer: Sylpheed 3.0.0beta7 (GTK+ 2.18.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__8_Feb_2010_21_57_15_+1100_bL=DquwXhwRRBvGS"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 08 February 2010, Rafał Miłecki wrote:
-> 2010/2/8 Rafael J. Wysocki <rjw@sisk.pl>:
-> > This message has been generated automatically as a part of a report
-> > of regressions introduced between 2.6.31 and 2.6.32.
-> >
-> > The following bug entry is on the current list of known regressions
-> > introduced between 2.6.31 and 2.6.32.  Please verify if it still should
-> > be listed and let the tracking team know (either way).
-> >
-> >
-> > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=15096
-> > Subject         : Resume lock up -- bisected, commit 3a1151e3f124fd1a2c54b8153f510f1a7c715369
-> > Submitter       : Rafał Miłecki <zajec5@gmail.com>
-> > Date            : 2010-01-20 23:15 (19 days old)
-> > First-Bad-Commit: http://git.kernel.org/git/linus/3a1151e3f124fd1a2c54b8153f510f1a7c715369
+--Signature=_Mon__8_Feb_2010_21_57_15_+1100_bL=DquwXhwRRBvGS
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-It looks like we should revert this commit, seems broken.
+Hi Tomi,
 
-Anyway, I'll do my best to have a look at this bug later today.
+On Mon, 08 Feb 2010 11:29:06 +0200 Tomi Valkeinen <tomi.valkeinen@nokia.com=
+> wrote:
+>
+> > P.S. Tomi, this omap_dss2 commit only has your Acked-by not Signed-off-=
+by.
+>=20
+> Hmm, do you mean there's something wrong with that, or "jfyi"? Aren't I,
+> as a subsys maintainer, supposed to ack the patches?
 
-Rafael
+If a patch goes through your tree, you are supposed to add a Signed-off-by
+line.  See Documentation/SubmittingPatches section called "Sign your
+work".
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Mon__8_Feb_2010_21_57_15_+1100_bL=DquwXhwRRBvGS
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAktv7gsACgkQjjKRsyhoI8x1NQCfRYoTrsBeCJ5ys0+sjstkNKz6
+CK8AnRXsHPHm3509JVoh1/hhRNVTZsha
+=Oiqi
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__8_Feb_2010_21_57_15_+1100_bL=DquwXhwRRBvGS--
