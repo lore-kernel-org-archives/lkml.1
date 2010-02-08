@@ -1,153 +1,120 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755094Ab0BHUNX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 15:13:23 -0500
-Received: from fmmailgate03.web.de ([217.72.192.234]:53809 "EHLO
-	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754935Ab0BHUNL (ORCPT
+	id S1755065Ab0BHUNV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 15:13:21 -0500
+Received: from fmmailgate01.web.de ([217.72.192.221]:37219 "EHLO
+	fmmailgate01.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754958Ab0BHUNM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 15:13:11 -0500
+	Mon, 8 Feb 2010 15:13:12 -0500
 From: Jan Kiszka <jan.kiszka@web.de>
 To: David Miller <davem@davemloft.net>, Karsten Keil <isdn@linux-pingi.de>
 Cc: linux-kernel@vger.kernel.org, i4ldeveloper@listserv.isdn4linux.de,
        isdn4linux@listserv.isdn4linux.de, netdev@vger.kernel.org,
        Alan Cox <alan@lxorguk.ukuu.org.uk>,
        Marcel Holtmann <marcel@holtmann.org>
-Subject: [PATCH v2 28/41] CAPI: Drop obsolete nccip from capiminor struct
-Date: Mon,  8 Feb 2010 21:12:32 +0100
-Message-Id: <5b17c4497189636fb9f9e2790d6ae0763600134e.1265659936.git.jan.kiszka@web.de>
+Subject: [PATCH v2 29/41] CAPI: Clean up capiminors_lock
+Date: Mon,  8 Feb 2010 21:12:33 +0100
+Message-Id: <58614af3fac044b20683a4d3789b33c5337b586c.1265659936.git.jan.kiszka@web.de>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <cover.1265659933.git.jan.kiszka@web.de>
 References: <cover.1265659933.git.jan.kiszka@web.de>
 In-Reply-To: <cover.1265659933.git.jan.kiszka@web.de>
 References: <cover.1265659933.git.jan.kiszka@web.de>
-X-Provags-ID: V01U2FsdGVkX19CYFtSOCeQ+PNwtocfPysuXGjg8WNG+8bQpjiC
-	A7tKLqO6tWluVpvOf+wAmZBsq4TyB/sHSxe4BXG0KRbKoUMHHb
-	kVeIKLJb4=
+X-Provags-ID: V01U2FsdGVkX1/TaxmOhLtjkujii6b4E8oQ89CwH0forSn66R1X
+	0CzQfMhkCJzOfafYw+rqMApVpnfQMAcRyFrsq8N1et+7AYfHLH
+	k5V9ReSX0=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The nccip in capiminor used to serve as an indicator that the NCCI was
-close. But we don't need this, we issue a hangup on capincci_free_minor.
-So drop this legacy.
+Use a plain spin lock for capiminors_lock, drop inconsistent irqsafe
+acquisitions (it's only used in process context anyway).
 
 Signed-off-by: Jan Kiszka <jan.kiszka@web.de>
 ---
- drivers/isdn/capi/capi.c |   44 +-------------------------------------------
- 1 files changed, 1 insertions(+), 43 deletions(-)
+ drivers/isdn/capi/capi.c |   21 +++++++++------------
+ 1 files changed, 9 insertions(+), 12 deletions(-)
 
 diff --git a/drivers/isdn/capi/capi.c b/drivers/isdn/capi/capi.c
-index b382ede..cf5e996 100644
+index cf5e996..0b264b4 100644
 --- a/drivers/isdn/capi/capi.c
 +++ b/drivers/isdn/capi/capi.c
-@@ -85,7 +85,6 @@ struct datahandle_queue {
- struct capiminor {
- 	struct kref kref;
+@@ -149,7 +149,7 @@ static LIST_HEAD(capidev_list);
  
--	struct capincci  *nccip;
- 	unsigned int      minor;
- 	struct dentry *capifs_dentry;
+ #ifdef CONFIG_ISDN_CAPI_MIDDLEWARE
  
-@@ -328,10 +327,6 @@ static void capincci_alloc_minor(struct capidev *cdev, struct capincci *np)
+-static DEFINE_RWLOCK(capiminors_lock);
++static DEFINE_SPINLOCK(capiminors_lock);
+ static struct capiminor **capiminors;
  
- 	mp = np->minorp = capiminor_alloc(&cdev->ap, np->ncci);
- 	if (mp) {
--		mp->nccip = np;
--#ifdef _DEBUG_REFCOUNT
--		printk(KERN_DEBUG "set mp->nccip\n");
--#endif
- 		device = MKDEV(capinc_tty_driver->major, mp->minor);
- 		mp->capifs_dentry = capifs_new_ncci(mp->minor, device);
- 	}
-@@ -347,10 +342,6 @@ static void capincci_free_minor(struct capincci *np)
+ static struct tty_driver *capinc_tty_driver;
+@@ -218,7 +218,6 @@ static struct capiminor *capiminor_alloc(struct capi20_appl *ap, u32 ncci)
+ 	struct capiminor *mp;
+ 	struct device *dev;
+ 	unsigned int minor;
+-	unsigned long flags;
  
- 		tty = tty_port_tty_get(&mp->port);
- 		if (tty) {
--			mp->nccip = NULL;
--#ifdef _DEBUG_REFCOUNT
--			printk(KERN_DEBUG "reset mp->nccip\n");
--#endif
- 			tty_vhangup(tty);
- 			tty_kref_put(tty);
+ 	mp = kzalloc(sizeof(*mp), GFP_KERNEL);
+   	if (!mp) {
+@@ -242,13 +241,13 @@ static struct capiminor *capiminor_alloc(struct capi20_appl *ap, u32 ncci)
+ 	mp->port.ops = &capiminor_port_ops;
+ 
+ 	/* Allocate the least unused minor number. */
+-	write_lock_irqsave(&capiminors_lock, flags);
++	spin_lock(&capiminors_lock);
+ 	for (minor = 0; minor < capi_ttyminors; minor++)
+ 		if (!capiminors[minor]) {
+ 			capiminors[minor] = mp;
+ 			break;
  		}
-@@ -1094,7 +1085,7 @@ static void capinc_tty_close(struct tty_struct *tty, struct file *filp)
- 	tty_port_close(&mp->port, tty, filp);
+-	write_unlock_irqrestore(&capiminors_lock, flags);
++	spin_unlock(&capiminors_lock);
+ 
+ 	if (minor == capi_ttyminors) {
+ 		printk(KERN_NOTICE "capi: out of minors\n");
+@@ -264,9 +263,9 @@ static struct capiminor *capiminor_alloc(struct capi20_appl *ap, u32 ncci)
+ 	return mp;
+ 
+ err_out2:
+-	write_lock_irqsave(&capiminors_lock, flags);
++	spin_lock(&capiminors_lock);
+ 	capiminors[minor] = NULL;
+-	write_unlock_irqrestore(&capiminors_lock, flags);
++	spin_unlock(&capiminors_lock);
+ 
+ err_out1:
+ 	kfree(mp);
+@@ -288,11 +287,11 @@ static struct capiminor *capiminor_get(unsigned int minor)
+ {
+ 	struct capiminor *mp;
+ 
+-	read_lock(&capiminors_lock);
++	spin_lock(&capiminors_lock);
+ 	mp = capiminors[minor];
+ 	if (mp)
+ 		kref_get(&mp->kref);
+-	read_unlock(&capiminors_lock);
++	spin_unlock(&capiminors_lock);
+ 
+ 	return mp;
  }
+@@ -304,13 +303,11 @@ static inline void capiminor_put(struct capiminor *mp)
  
--static int capinc_tty_write(struct tty_struct * tty,
-+static int capinc_tty_write(struct tty_struct *tty,
- 			    const unsigned char *buf, int count)
+ static void capiminor_free(struct capiminor *mp)
  {
- 	struct capiminor *mp = tty->driver_data;
-@@ -1105,13 +1096,6 @@ static int capinc_tty_write(struct tty_struct * tty,
- 	printk(KERN_DEBUG "capinc_tty_write(count=%d)\n", count);
- #endif
- 
--	if (!mp->nccip) {
--#ifdef _DEBUG_TTYFUNCS
--		printk(KERN_DEBUG "capinc_tty_write: mp or mp->ncci NULL\n");
--#endif
--		return 0;
--	}
+-	unsigned long flags;
 -
- 	spin_lock_irqsave(&workaround_lock, flags);
- 	skb = mp->ttyskb;
- 	if (skb) {
-@@ -1149,13 +1133,6 @@ static int capinc_tty_put_char(struct tty_struct *tty, unsigned char ch)
- 	printk(KERN_DEBUG "capinc_put_char(%u)\n", ch);
- #endif
+ 	tty_unregister_device(capinc_tty_driver, mp->minor);
  
--	if (!mp->nccip) {
--#ifdef _DEBUG_TTYFUNCS
--		printk(KERN_DEBUG "capinc_tty_put_char: mp or mp->ncci NULL\n");
--#endif
--		return 0;
--	}
--
- 	spin_lock_irqsave(&workaround_lock, flags);
- 	skb = mp->ttyskb;
- 	if (skb) {
-@@ -1192,13 +1169,6 @@ static void capinc_tty_flush_chars(struct tty_struct *tty)
- 	printk(KERN_DEBUG "capinc_tty_flush_chars\n");
- #endif
+-	write_lock_irqsave(&capiminors_lock, flags);
++	spin_lock(&capiminors_lock);
+ 	capiminors[mp->minor] = NULL;
+-	write_unlock_irqrestore(&capiminors_lock, flags);
++	spin_unlock(&capiminors_lock);
  
--	if (!mp->nccip) {
--#ifdef _DEBUG_TTYFUNCS
--		printk(KERN_DEBUG "capinc_tty_flush_chars: mp or mp->ncci NULL\n");
--#endif
--		return;
--	}
--
- 	spin_lock_irqsave(&workaround_lock, flags);
- 	skb = mp->ttyskb;
- 	if (skb) {
-@@ -1216,12 +1186,6 @@ static int capinc_tty_write_room(struct tty_struct *tty)
- 	struct capiminor *mp = tty->driver_data;
- 	int room;
- 
--	if (!mp->nccip) {
--#ifdef _DEBUG_TTYFUNCS
--		printk(KERN_DEBUG "capinc_tty_write_room: mp or mp->ncci NULL\n");
--#endif
--		return 0;
--	}
- 	room = CAPINC_MAX_SENDQUEUE-skb_queue_len(&mp->outqueue);
- 	room *= CAPI_MAX_BLKSIZE;
- #ifdef _DEBUG_TTYFUNCS
-@@ -1234,12 +1198,6 @@ static int capinc_tty_chars_in_buffer(struct tty_struct *tty)
- {
- 	struct capiminor *mp = tty->driver_data;
- 
--	if (!mp->nccip) {
--#ifdef _DEBUG_TTYFUNCS
--		printk(KERN_DEBUG "capinc_tty_chars_in_buffer: mp or mp->ncci NULL\n");
--#endif
--		return 0;
--	}
- #ifdef _DEBUG_TTYFUNCS
- 	printk(KERN_DEBUG "capinc_tty_chars_in_buffer = %d nack=%d sq=%d rq=%d\n",
- 			mp->outbytes, mp->nack,
+ 	capiminor_put(mp);
+ }
 -- 
 1.6.0.2
 
