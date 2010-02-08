@@ -1,113 +1,71 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751700Ab0BIAOt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 19:14:49 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:38139 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750995Ab0BIAOr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 19:14:47 -0500
-Subject: [PATCH 1/1 net-next] virtio_net: remove send queue
-From: Shirley Ma <mashirle@us.ibm.com>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, kvm@vger.kernel.org, rusty@rustcorp.com.au,
-       mst@redhat.com, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 08 Feb 2010 16:14:42 -0800
-Message-ID: <1265674482.4484.10.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
-Content-Transfer-Encoding: 7bit
+	id S1751896Ab0BIAQK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 19:16:10 -0500
+Received: from SMTP.ANDREW.CMU.EDU ([128.2.11.61]:58369 "EHLO
+	smtp.andrew.cmu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751421Ab0BIAQI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Feb 2010 19:16:08 -0500
+X-Greylist: delayed 1593 seconds by postgrey-1.27 at vger.kernel.org; Mon, 08 Feb 2010 19:16:08 EST
+Message-ID: <9464d2ed24ffe806f30c73018dfe471b.squirrel@webmail.andrew.cmu.edu>
+Date: Mon, 8 Feb 2010 18:49:32 -0500
+Subject: Bizzare issue resuming from suspend
+From: "Josh Watzman" <jwatzman@andrew.cmu.edu>
+To: linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.5.2 [SVN]
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-PMX-Version: 5.5.9.388399, Antispam-Engine: 2.7.2.376379, Antispam-Data: 2010.2.8.233621
+X-SMTP-Spam-Clean: 8% (
+ BODY_SIZE_1900_1999 0, BODY_SIZE_2000_LESS 0, BODY_SIZE_5000_LESS 0, BODY_SIZE_7000_LESS 0, TO_NO_NAME 0, WEBMAIL_SOURCE 0, WEBMAIL_USER_AGENT 0, __C230066_P3_5 0, __CT 0, __CTE 0, __CT_TEXT_PLAIN 0, __HAS_MSGID 0, __MIME_TEXT_ONLY 0, __MIME_VERSION 0, __PHISH_SPEAR_HTTP_RECEIVED 0, __PHISH_SPEAR_STRUCTURE_1 0, __PHISH_SPEAR_STRUCTURE_2 0, __SANE_MSGID 0, __TO_MALFORMED_2 0, __USER_AGENT 0)
+X-SMTP-Spam-Score: 8%
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now we have a virtio detach API (in commit
-f9bfbebf34eab707b065116cdc9699d25ba4252a), we don't need to track xmit
-skbs in the virio_net driver, which improves transmission performance.
+Hello,
 
-Signed-off-by: Shirley Ma <xma@us.ibm.com>
-Acked-by: Rusty Russell <rusty@rustcorp.com.au>
-Acked-by: Michael S. Tsirkin <mst@redhat.com>
----
- drivers/net/virtio_net.c |   26 ++++++++------------------
- 1 files changed, 8 insertions(+), 18 deletions(-)
+I'm having some weird issues where my MacBook Pro fails to resume from
+suspend. The failure mode is: backlight on, cdrom drive does its "reset"
+noise thing, but nothing other than that -- no response to keyboard, for
+example, when Control-Alt-F1 then Control-Alt-Delete should reboot.
 
-diff --git a/drivers/net/virtio_net.c b/drivers/net/virtio_net.c
-index 9d8984a..8069c08 100644
---- a/drivers/net/virtio_net.c
-+++ b/drivers/net/virtio_net.c
-@@ -56,9 +56,6 @@ struct virtnet_info
- 	/* Host will merge rx buffers for big packets (shake it! shake it!) */
- 	bool mergeable_rx_bufs;
- 
--	/* Send queue. */
--	struct sk_buff_head send;
--
- 	/* Work struct for refilling if we run low on memory. */
- 	struct delayed_work refill;
- 
-@@ -505,7 +502,6 @@ static unsigned int free_old_xmit_skbs(struct virtnet_info *vi)
- 
- 	while ((skb = vi->svq->vq_ops->get_buf(vi->svq, &len)) != NULL) {
- 		pr_debug("Sent skb %p\n", skb);
--		__skb_unlink(skb, &vi->send);
- 		vi->dev->stats.tx_bytes += skb->len;
- 		vi->dev->stats.tx_packets++;
- 		tot_sgs += skb_vnet_hdr(skb)->num_sg;
-@@ -588,15 +584,6 @@ again:
- 	}
- 	vi->svq->vq_ops->kick(vi->svq);
- 
--	/*
--	 * Put new one in send queue.  You'd expect we'd need this before
--	 * xmit_skb calls add_buf(), since the callback can be triggered
--	 * immediately after that.  But since the callback just triggers
--	 * another call back here, normal network xmit locking prevents the
--	 * race.
--	 */
--	__skb_queue_head(&vi->send, skb);
--
- 	/* Don't wait up for transmitted skbs to be freed. */
- 	skb_orphan(skb);
- 	nf_reset(skb);
-@@ -977,9 +964,6 @@ static int virtnet_probe(struct virtio_device *vdev)
- 			dev->features |= NETIF_F_HW_VLAN_FILTER;
- 	}
- 
--	/* Initialize our empty send queue. */
--	skb_queue_head_init(&vi->send);
--
- 	err = register_netdev(dev);
- 	if (err) {
- 		pr_debug("virtio_net: registering device failed\n");
-@@ -1016,6 +1000,12 @@ static void free_unused_bufs(struct virtnet_info *vi)
- {
- 	void *buf;
- 	while (1) {
-+		buf = vi->svq->vq_ops->detach_unused_buf(vi->svq);
-+		if (!buf)
-+			break;
-+		dev_kfree_skb(buf);
-+	}
-+	while (1) {
- 		buf = vi->rvq->vq_ops->detach_unused_buf(vi->rvq);
- 		if (!buf)
- 			break;
-@@ -1035,11 +1025,11 @@ static void __devexit virtnet_remove(struct virtio_device *vdev)
- 	/* Stop all the virtqueues. */
- 	vdev->config->reset(vdev);
- 
--	/* Free our skbs in send queue, if any. */
--	__skb_queue_purge(&vi->send);
- 
- 	unregister_netdev(vi->dev);
- 	cancel_delayed_work_sync(&vi->refill);
-+
-+	/* Free unused buffers in both send and recv, if any. */
- 	free_unused_bufs(vi);
- 
- 	vdev->config->del_vqs(vi->vdev);
+The following kernels consistently FAIL when resuming:
+ - 2.6.32.7 built from kernel.org 2.6.32 tarball + 2.6.32.7 patch
+ - 2.6.32.6 built from
+git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.32.y.git
+ - 2.6.32.7 built from
+git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.32.y.git
 
+The following kernel consistently SUCCEEDS when resuming:
+ - 2.6.32.6 built from kernel.org 2.6.32 tarball + 2.6.32.6 patch
 
+Note that 2.6.32.6 either fails or succeeds depending upon how I build it!
+To make sure, I built the two variations of .6 on the same day, no system
+changes in between, with the same .config, and did a diff -- everything
+was the same AFAICT, but the git one fails and the tarball one is fine!
 
+Google suggested to turn on the PM debug options and try a couple of
+things; I did the following on the tty of a 2.6.32.6 git build with
+.config modified only to turn on PM debugging:
+ - run through the /sys/power/pm_test options; it resumes successfully
+from everything except "none"
+ - echo 1 > /sys/power/pm_trace and use the magic number. dmesg on the
+next boot reported the number as "0:168:740" corresponding to
+"drivers/base/power/main.c:430" -- it did not report a device
+
+I have no idea how to debug this further -- I'm not (yet ;)) much of a
+kernel hacker. If someone wants to help me track it down, I'd love to
+help.
+
+Specs:
+MacBookPro2,2; Debian sid (not quite up-to-date as I keep things
+consistent to track this down); Core 2 Duo 2.33Ghz; 2G ram; 1G swapfile
+
+Thanks! Please CC me on replies, I'm not subscribed.
+jwatzman
+
+Sent from webmail -- not digitally signed
 
