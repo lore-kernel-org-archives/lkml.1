@@ -1,85 +1,148 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753345Ab0BHVHy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 16:07:54 -0500
-Received: from mail-pz0-f172.google.com ([209.85.222.172]:62292 "EHLO
-	mail-pz0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750780Ab0BHVHx convert rfc822-to-8bit (ORCPT
+	id S1753521Ab0BHVKt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 16:10:49 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:32808 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752537Ab0BHVKs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 16:07:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=Mp4R2AZi6CunbETgN4wcKTz+coWbVGketS33JD8q4WVPT91NVM4qTDl0zY8eNp1UeL
-         Hv9zLMl9clyla1oQYLrtfDG51OxzakiQ/7s5T4ydl450Lv/SkDXWwgV7+fO+uS6J6911
-         GCg0a5wcM1zI/1PiyQlv5fjOOvPR6MqAMjotc=
+	Mon, 8 Feb 2010 16:10:48 -0500
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: rtc-linux@googlegroups.com
+Cc: Paul Gortmaker <p_gortmaker@yahoo.com>,
+       Alessandro Zummo <a.zummo@towertech.it>,
+       =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+	<u.kleine-koenig@pengutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH] rtc/hctosys: only claim the RTC provided the system time if it did
+Date: Mon,  8 Feb 2010 22:10:18 +0100
+Message-Id: <1265663419-10165-1-git-send-email-u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 1.6.6
 MIME-Version: 1.0
-In-Reply-To: <Pine.LNX.4.64.1002060943220.8092@ask.diku.dk>
-References: <Pine.LNX.4.64.1002060943220.8092@ask.diku.dk>
-Date: Mon, 8 Feb 2010 14:07:52 -0700
-X-Google-Sender-Auth: 962cd7eedb6830be
-Message-ID: <e9c3a7c21002081307j567413adg6ed8aa04bf153e41@mail.gmail.com>
-Subject: Re: [PATCH 6/11] drivers/dma: Correct NULL test
-From: Dan Williams <dan.j.williams@intel.com>
-To: Julia Lawall <julia@diku.dk>, Linus Walleij <linus.walleij@stericsson.com>
-Cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ adding Linus in case this BUG_ON had a different intent, or can be deleted ]
+Moreover change error handling in rtc_hctosys() to use goto and so
+reduce the indention level.
 
-On Sat, Feb 6, 2010 at 1:43 AM, Julia Lawall <julia@diku.dk> wrote:
-> From: Julia Lawall <julia@diku.dk>
->
-> cohd_fin has already been verified not to be NULL, so the argument to
-> BUG_ON cannot be true.
->
-> A simplified version of the semantic match that finds this problem is as
-> follows: (http://coccinelle.lip6.fr/)
->
-> // <smpl>
-> @r@
-> expression *x;
-> expression e;
-> identifier l;
-> @@
->
-> if (x == NULL || ...) {
->    ... when forall
->    return ...; }
-> ... when != goto l;
->    when != x = e
->    when != &x
-> *x == NULL
-> // </smpl>
->
-> Signed-off-by: Julia Lawall <julia@diku.dk>
->
-> ---
->  drivers/dma/coh901318.c             |    2 --
->  1 files changed, 0 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/dma/coh901318.c b/drivers/dma/coh901318.c
-> index b5f2ee0..64a9372 100644
-> --- a/drivers/dma/coh901318.c
-> +++ b/drivers/dma/coh901318.c
-> @@ -613,8 +613,6 @@ static void dma_tasklet(unsigned long data)
->        cohd_fin->pending_irqs--;
->        cohc->completed = cohd_fin->desc.cookie;
->
-> -       BUG_ON(cohc->nbr_active_done && cohd_fin == NULL);
-> -
->        if (cohc->nbr_active_done == 0)
->                return;
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+Signed-off-by: Uwe Kleine-KÃ¶nig <u.kleine-koenig@pengutronix.de>
+---
+ drivers/rtc/hctosys.c |   59 ++++++++++++++++++++++++++++--------------------
+ include/linux/rtc.h   |    6 +++++
+ 2 files changed, 40 insertions(+), 25 deletions(-)
+
+diff --git a/drivers/rtc/hctosys.c b/drivers/rtc/hctosys.c
+index 33c0e98..bc90b09 100644
+--- a/drivers/rtc/hctosys.c
++++ b/drivers/rtc/hctosys.c
+@@ -22,48 +22,57 @@
+  * the best guess is to add 0.5s.
+  */
+ 
++int rtc_hctosys_ret = -ENODEV;
++
+ static int __init rtc_hctosys(void)
+ {
+-	int err;
++	int err = -ENODEV;
+ 	struct rtc_time tm;
++	struct timespec tv = {
++		.tv_nsec = NSEC_PER_SEC >> 1,
++	};
+ 	struct rtc_device *rtc = rtc_class_open(CONFIG_RTC_HCTOSYS_DEVICE);
+ 
+ 	if (rtc == NULL) {
+-		printk("%s: unable to open rtc device (%s)\n",
++		pr_err("%s: unable to open rtc device (%s)\n",
+ 			__FILE__, CONFIG_RTC_HCTOSYS_DEVICE);
+-		return -ENODEV;
++		goto err_open;
+ 	}
+ 
+ 	err = rtc_read_time(rtc, &tm);
+-	if (err == 0) {
+-		err = rtc_valid_tm(&tm);
+-		if (err == 0) {
+-			struct timespec tv;
++	if (err) {
++		dev_err(rtc->dev.parent,
++			"hctosys: unable to read the hardware clock\n");
++		goto err_read;
+ 
+-			tv.tv_nsec = NSEC_PER_SEC >> 1;
++	}
+ 
+-			rtc_tm_to_time(&tm, &tv.tv_sec);
++	err = rtc_valid_tm(&tm);
++	if (err) {
++		dev_err(rtc->dev.parent,
++			"hctosys: invalid date/time\n");
++		goto err_invalid;
++	}
+ 
+-			do_settimeofday(&tv);
++	rtc_tm_to_time(&tm, &tv.tv_sec);
+ 
+-			dev_info(rtc->dev.parent,
+-				"setting system clock to "
+-				"%d-%02d-%02d %02d:%02d:%02d UTC (%u)\n",
+-				tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
+-				tm.tm_hour, tm.tm_min, tm.tm_sec,
+-				(unsigned int) tv.tv_sec);
+-		}
+-		else
+-			dev_err(rtc->dev.parent,
+-				"hctosys: invalid date/time\n");
+-	}
+-	else
+-		dev_err(rtc->dev.parent,
+-			"hctosys: unable to read the hardware clock\n");
++	do_settimeofday(&tv);
+ 
++	dev_info(rtc->dev.parent,
++		"setting system clock to "
++		"%d-%02d-%02d %02d:%02d:%02d UTC (%u)\n",
++		tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
++		tm.tm_hour, tm.tm_min, tm.tm_sec,
++		(unsigned int) tv.tv_sec);
++
++err_invalid:
++err_read:
+ 	rtc_class_close(rtc);
+ 
+-	return 0;
++err_open:
++	rtc_hctosys_ret = err;
++
++	return err;
+ }
+ 
+ late_initcall(rtc_hctosys);
+diff --git a/include/linux/rtc.h b/include/linux/rtc.h
+index 60f88a7..14dbc83 100644
+--- a/include/linux/rtc.h
++++ b/include/linux/rtc.h
+@@ -238,6 +238,12 @@ static inline bool is_leap_year(unsigned int year)
+ 	return (!(year % 4) && (year % 100)) || !(year % 400);
+ }
+ 
++#ifdef CONFIG_RTC_HCTOSYS
++extern int rtc_hctosys_ret;
++#else
++#define rtc_hctosys_ret -ENODEV
++#endif
++
+ #endif /* __KERNEL__ */
+ 
+ #endif /* _LINUX_RTC_H_ */
+-- 
+1.6.6
+
