@@ -1,85 +1,89 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752954Ab0BHW4l (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 17:56:41 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:47006 "EHLO
-	rcsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752395Ab0BHW4k (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 17:56:40 -0500
-Date: Mon, 8 Feb 2010 14:56:05 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Eric B Munson <ebmunson@us.ibm.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       linux-man@vger.kernel.org, mtk.manpages@gmail.com,
-       Arnd Bergman <arnd@arndb.de>
-Subject: Re: [PATCH] Fix for
- hugetlb-add-map_hugetlb-for-mmaping-pseudo-anonymous-huge-page-regions.patch
- in -mm
-Message-Id: <20100208145605.5eea30b5.randy.dunlap@oracle.com>
-In-Reply-To: <Pine.LNX.4.64.0909152146470.25625@sister.anvils>
-References: <1252487811-9205-1-git-send-email-ebmunson@us.ibm.com>
-	<1253011613-6429-1-git-send-email-ebmunson@us.ibm.com>
-	<Pine.LNX.4.64.0909152146470.25625@sister.anvils>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
+	id S1753006Ab0BHXAl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 18:00:41 -0500
+Received: from mga01.intel.com ([192.55.52.88]:14948 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752124Ab0BHXAk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Feb 2010 18:00:40 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,432,1262592000"; 
+   d="scan'208";a="538943743"
+Subject: Re: PROBLEM: iwlagn kernel 2.6.32.3 ooops
+From: reinette chatre <reinette.chatre@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "lkml@Think-Future.de" <lkml@Think-Future.de>,
+       Linux Kernel-Liste <linux-kernel@vger.kernel.org>,
+       "ilw@linux.intel.com" <ilw@linux.intel.com>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>
+In-Reply-To: <20100208143118.e8e5a1ee.akpm@linux-foundation.org>
+References: <20100206170348.GB9411@localhost>
+	 <20100208143118.e8e5a1ee.akpm@linux-foundation.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 08 Feb 2010 15:00:39 -0800
+Message-ID: <1265670039.2551.1828.camel@rchatre-DESK>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt354.oracle.com [141.146.40.154]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090204.4B709697.0238:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Sep 2009 21:53:12 +0100 (BST) Hugh Dickins wrote:
 
-> On Tue, 15 Sep 2009, Eric B Munson wrote:
-> > Resending because this seems to have fallen between the cracks.
+
+On Mon, 2010-02-08 at 14:31 -0800, Andrew Morton wrote:
+> On Sat, 6 Feb 2010 18:03:50 +0100
+> lkml@Think-Future.de wrote:
+> > 
+> > 
+> > [250420.677157] ip: page allocation failure. order:3, mode:0x8020
 > 
-> Yes, indeed.  I think it isn't quite what Arnd was suggesting, but I
-> agree with you that we might as well go for 0x080000 (so that even Alpha
-> can be just a cut-and-paste job from asm-generic), and right now it's
-> more important to finalize the number than what file it appears in.
+> This one isn't an "oops" - it's a warning that a memory allocation
+> attempt failed.  Which is hardly surprising: an order-3 GFP_ATOMIC
+> allocation is highly unreliable and the driver just shouldn't be
+> attempting it.
+
+This is the familiar http://bugzilla.kernel.org/show_bug.cgi?id=14141
+which is not specific to iwlwifi.
+
+Even so, from 2.6.33 iwlwifi will be doing paged RX which reduces the
+amount of atomic memory needed. 
+
+> > [252109.496953] iwlagn: Intel(R) Wireless WiFi Link AGN driver for Linux, 1.3.27ks
+> > [252109.496961] iwlagn: Copyright(c) 2003-2009 Intel Corporation
+> > [252109.497071] iwlagn 0000:03:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
+> > [252109.497094] iwlagn 0000:03:00.0: setting latency timer to 64
+> > [252109.497156] iwlagn 0000:03:00.0: Detected Intel Wireless WiFi Link 4965AGN REV=0x4
+> > [252109.547060] iwlagn 0000:03:00.0: Tunable channels: 13 802.11bg, 19 802.11a channels
+> > [252109.547202] iwlagn 0000:03:00.0: irq 29 for MSI/MSI-X
+> > [252109.548104] phy14: Selected rate control algorithm 'iwl-agn-rs'
+> > [252109.921801] udev: renamed network interface wlan0 to eth1
+> > [252110.693015] iwlagn 0000:03:00.0: firmware: requesting iwlwifi-4965-2.ucode
+> > [252110.810198] iwlagn 0000:03:00.0: loaded firmware version 228.61.2.24
+> > [252110.989598] ------------[ cut here ]------------
+> > [252110.989620] WARNING: at drivers/net/wireless/iwlwifi/iwl-tx.c:1151 iwl_tx_cmd_complete+0x2ed/0x330 [iwlcore]()
 > 
-> Acked-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+> This one is a warning, not an oops.  It could be a consequence of the
+> memory allocation failure.
 
-so what happened with this patch ??
+Based on the preceding messages the driver was reloaded at this point so
+the previous memory allocations should have no effect.
 
-> > 
-> > The patch
-> > hugetlb-add-map_hugetlb-for-mmaping-pseudo-anonymous-huge-page-regions.patch
-> > used the value 0x40 for MAP_HUGETLB which is the same value used for
-> > various other flags on some architectures.  This collision causes
-> > unexpected use of huge pages in the best case and mmap to fail with
-> > ENOMEM or ENOSYS in the worst.  This patch changes the value for
-> > MAP_HUGETLB to a value that is not currently used on any arch.
-> > 
-> > This patch should be considered a fix to
-> > hugetlb-add-map_hugetlb-for-mmaping-pseudo-anonymous-huge-page-regions.patch.
-> > 
-> > Reported-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-> > Signed-off-by: Eric B Munson <ebmunson@us.ibm.com>
-> > ---
-> >  include/asm-generic/mman-common.h |    2 +-
-> >  1 files changed, 1 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/include/asm-generic/mman-common.h b/include/asm-generic/mman-common.h
-> > index 12f5982..e6adb68 100644
-> > --- a/include/asm-generic/mman-common.h
-> > +++ b/include/asm-generic/mman-common.h
-> > @@ -19,7 +19,7 @@
-> >  #define MAP_TYPE	0x0f		/* Mask for type of mapping */
-> >  #define MAP_FIXED	0x10		/* Interpret addr exactly */
-> >  #define MAP_ANONYMOUS	0x20		/* don't use a file */
-> > -#define MAP_HUGETLB	0x40		/* create a huge page mapping */
-> > +#define MAP_HUGETLB	0x080000	/* create a huge page mapping */
-> >  
-> >  #define MS_ASYNC	1		/* sync memory asynchronously */
-> >  #define MS_INVALIDATE	2		/* invalidate the caches */
-> > -- 
+>   If so, the code should be changed to
+> prevent this warning from coming out.  Because a GFP_ATOMIC memory
+> allocation failure is common, and expected (especially when it's
+> order-3!).  The driver should handle it without blurting big warnings.
 
----
-~Randy
+The warning is not related to the memory allocation failure. This is a
+different problem. While I dig a bit into the trace, could you please
+share the steps to reproduce? Could you please activate some debugging
+to see what else is going on at the time? 
+
+Please compile driver with CONFIG_IWLWIFI_DEBUG and load module with
+"modprobe iwlagn debug=0x1043fff"
+
+Thank you
+
+Reinette
+
+
