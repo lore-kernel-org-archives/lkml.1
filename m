@@ -1,124 +1,155 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755402Ab0BHURn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 15:17:43 -0500
-Received: from fmmailgate03.web.de ([217.72.192.234]:53809 "EHLO
+	id S1755583Ab0BHUSv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 15:18:51 -0500
+Received: from fmmailgate03.web.de ([217.72.192.234]:53702 "EHLO
 	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754916Ab0BHUNK (ORCPT
+	with ESMTP id S1754856Ab0BHUNG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 15:13:10 -0500
+	Mon, 8 Feb 2010 15:13:06 -0500
 From: Jan Kiszka <jan.kiszka@web.de>
 To: David Miller <davem@davemloft.net>, Karsten Keil <isdn@linux-pingi.de>
 Cc: linux-kernel@vger.kernel.org, i4ldeveloper@listserv.isdn4linux.de,
        isdn4linux@listserv.isdn4linux.de, netdev@vger.kernel.org,
        Alan Cox <alan@lxorguk.ukuu.org.uk>,
        Marcel Holtmann <marcel@holtmann.org>
-Subject: [PATCH v2 24/41] CAPI: Establish install/cleanup handlers for capiminor TTYs
-Date: Mon,  8 Feb 2010 21:12:28 +0100
-Message-Id: <292702a39a9383fcd6f98ff594415da35c1b7680.1265659935.git.jan.kiszka@web.de>
+Subject: [PATCH v2 18/41] CAPI: Switch NCCI list to standard doubly linked list
+Date: Mon,  8 Feb 2010 21:12:22 +0100
+Message-Id: <bae65a3aaf3ce9922f63145ffd0fc46768aac147.1265659935.git.jan.kiszka@web.de>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <cover.1265659933.git.jan.kiszka@web.de>
 References: <cover.1265659933.git.jan.kiszka@web.de>
 In-Reply-To: <cover.1265659933.git.jan.kiszka@web.de>
 References: <cover.1265659933.git.jan.kiszka@web.de>
-X-Provags-ID: V01U2FsdGVkX18+ZfRLSlS4Dbbwb/HePUA+DJYnY7R9ijjxMSv4
-	HDLhIbMMQ0sx0W9XTkVC/lEnMsW9Y9qTRk72tScFYp1X9uWzkW
-	oEGhKphac=
+X-Provags-ID: V01U2FsdGVkX1//vULHy9WkiGyquorBafFCruC+WpKYCr30EcG1
+	bYywKvB1Tamy6WmMyrED6bkIlAXS/C5FoIKvE57CmIa50WS6l0
+	sYVyMNbgU=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Properly associate/disassociate a capiminor object with its TTY via the
-install/cleanup handlers instead of trying to guess first open and last
-close.
+Replace open-coded NCCI list management with standard mechanisms.
 
 Signed-off-by: Jan Kiszka <jan.kiszka@web.de>
 ---
- drivers/isdn/capi/capi.c |   42 ++++++++++++++++++++++++++++--------------
- 1 files changed, 28 insertions(+), 14 deletions(-)
+ drivers/isdn/capi/capi.c |   52 +++++++++++++++++----------------------------
+ 1 files changed, 20 insertions(+), 32 deletions(-)
 
 diff --git a/drivers/isdn/capi/capi.c b/drivers/isdn/capi/capi.c
-index 732cdb5..3e4997a 100644
+index 8abec96..6704b2b 100644
 --- a/drivers/isdn/capi/capi.c
 +++ b/drivers/isdn/capi/capi.c
-@@ -1005,16 +1005,34 @@ static const struct file_operations capi_fops =
+@@ -122,7 +122,7 @@ struct capiminor {
+ static DEFINE_SPINLOCK(workaround_lock);
+ 
+ struct capincci {
+-	struct capincci *next;
++	struct list_head list;
+ 	u32		 ncci;
+ 	struct capidev	*cdev;
  #ifdef CONFIG_ISDN_CAPI_MIDDLEWARE
- /* -------- tty_operations for capincci ----------------------------- */
+@@ -139,7 +139,7 @@ struct capidev {
+ 	struct sk_buff_head recvqueue;
+ 	wait_queue_head_t recvwait;
  
--static int capinc_tty_open(struct tty_struct * tty, struct file * file)
-+static int
-+capinc_tty_install(struct tty_driver *driver, struct tty_struct *tty)
- {
--	struct capiminor *mp;
--	unsigned long flags;
-+	int idx = tty->index;
-+	struct capiminor *mp = capiminor_get(idx);
-+	int ret = tty_init_termios(tty);
-+
-+	if (ret == 0) {
-+		tty_driver_kref_get(driver);
-+		tty->count++;
-+		tty->driver_data = mp;
-+		driver->ttys[idx] = tty;
-+	} else
-+		capiminor_put(mp);
-+	return ret;
-+}
+-	struct capincci *nccis;
++	struct list_head nccis;
  
--	mp = capiminor_get(iminor(file->f_path.dentry->d_inode));
--	if (mp->nccip == NULL)
--		return -ENXIO;
-+static void capinc_tty_cleanup(struct tty_struct *tty)
-+{
-+	struct capiminor *mp = tty->driver_data;
-+	tty->driver_data = NULL;
-+	capiminor_put(mp);
-+}
- 
--	tty->driver_data = (void *)mp;
-+static int capinc_tty_open(struct tty_struct * tty, struct file * file)
-+{
-+	struct capiminor *mp = tty->driver_data;
-+	unsigned long flags;
- 
- 	spin_lock_irqsave(&workaround_lock, flags);
- 	if (atomic_read(&mp->ttyopencount) == 0)
-@@ -1030,15 +1048,12 @@ static int capinc_tty_open(struct tty_struct * tty, struct file * file)
- 
- static void capinc_tty_close(struct tty_struct * tty, struct file * file)
- {
--	struct capiminor *mp;
-+	struct capiminor *mp = tty->driver_data;
- 
--	mp = (struct capiminor *)tty->driver_data;
--	if (mp)	{
- 		if (atomic_dec_and_test(&mp->ttyopencount)) {
- #ifdef _DEBUG_REFCOUNT
- 			printk(KERN_DEBUG "capinc_tty_close lastclose\n");
- #endif
--			tty->driver_data = NULL;
- 			mp->tty = NULL;
- 		}
- #ifdef _DEBUG_REFCOUNT
-@@ -1047,9 +1062,6 @@ static void capinc_tty_close(struct tty_struct * tty, struct file * file)
- 		if (mp->nccip == NULL)
- 			capiminor_free(mp);
- 
--		capiminor_put(mp);
--	}
--
- #ifdef _DEBUG_REFCOUNT
- 	printk(KERN_DEBUG "capinc_tty_close\n");
- #endif
-@@ -1333,6 +1345,8 @@ static const struct tty_operations capinc_ops = {
- 	.flush_buffer = capinc_tty_flush_buffer,
- 	.set_ldisc = capinc_tty_set_ldisc,
- 	.send_xchar = capinc_tty_send_xchar,
-+	.install = capinc_tty_install,
-+	.cleanup = capinc_tty_cleanup,
+ 	struct mutex lock;
  };
+@@ -356,7 +356,7 @@ static inline unsigned int capincci_minor_opencount(struct capincci *np)
  
- static int __init capinc_tty_init(void)
+ static struct capincci *capincci_alloc(struct capidev *cdev, u32 ncci)
+ {
+-	struct capincci *np, **pp;
++	struct capincci *np;
+ 
+ 	np = kzalloc(sizeof(*np), GFP_KERNEL);
+ 	if (!np)
+@@ -366,39 +366,31 @@ static struct capincci *capincci_alloc(struct capidev *cdev, u32 ncci)
+ 
+ 	capincci_alloc_minor(cdev, np);
+ 
+-	for (pp=&cdev->nccis; *pp; pp = &(*pp)->next)
+-		;
+-	*pp = np;
+-        return np;
++	list_add_tail(&np->list, &cdev->nccis);
++
++	return np;
+ }
+ 
+ static void capincci_free(struct capidev *cdev, u32 ncci)
+ {
+-	struct capincci *np, **pp;
++	struct capincci *np, *tmp;
+ 
+-	pp=&cdev->nccis;
+-	while (*pp) {
+-		np = *pp;
++	list_for_each_entry_safe(np, tmp, &cdev->nccis, list)
+ 		if (ncci == 0xffffffff || np->ncci == ncci) {
+-			*pp = (*pp)->next;
+ 			capincci_free_minor(np);
++			list_del(&np->list);
+ 			kfree(np);
+-			if (*pp == NULL) return;
+-		} else {
+-			pp = &(*pp)->next;
+ 		}
+-	}
+ }
+ 
+ static struct capincci *capincci_find(struct capidev *cdev, u32 ncci)
+ {
+-	struct capincci *p;
++	struct capincci *np;
+ 
+-	for (p=cdev->nccis; p ; p = p->next) {
+-		if (p->ncci == ncci)
+-			break;
+-	}
+-	return p;
++	list_for_each_entry(np, &cdev->nccis, list)
++		if (np->ncci == ncci)
++			return np;
++	return NULL;
+ }
+ 
+ #ifdef CONFIG_ISDN_CAPI_MIDDLEWARE
+@@ -955,6 +947,7 @@ static int capi_open(struct inode *inode, struct file *file)
+ 	mutex_init(&cdev->lock);
+ 	skb_queue_head_init(&cdev->recvqueue);
+ 	init_waitqueue_head(&cdev->recvwait);
++	INIT_LIST_HEAD(&cdev->nccis);
+ 	file->private_data = cdev;
+ 
+ 	mutex_lock(&capidev_list_lock);
+@@ -1427,19 +1420,14 @@ static const struct file_operations capi20_proc_fops = {
+  */
+ static int capi20ncci_proc_show(struct seq_file *m, void *v)
+ {
+-        struct capidev *cdev;
+-        struct capincci *np;
+-	struct list_head *l;
++	struct capidev *cdev;
++	struct capincci *np;
+ 
+ 	mutex_lock(&capidev_list_lock);
+-	list_for_each(l, &capidev_list) {
+-		cdev = list_entry(l, struct capidev, list);
++	list_for_each_entry(cdev, &capidev_list, list) {
+ 		mutex_lock(&cdev->lock);
+-		for (np=cdev->nccis; np; np = np->next) {
+-			seq_printf(m, "%d 0x%x\n",
+-				       cdev->ap.applid,
+-				       np->ncci);
+-		}
++		list_for_each_entry(np, &cdev->nccis, list)
++			seq_printf(m, "%d 0x%x\n", cdev->ap.applid, np->ncci);
+ 		mutex_unlock(&cdev->lock);
+ 	}
+ 	mutex_unlock(&capidev_list_lock);
 -- 
 1.6.0.2
 
