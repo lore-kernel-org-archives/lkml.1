@@ -1,58 +1,78 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753753Ab0BHQao (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 11:30:44 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:43660 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753412Ab0BHQan (ORCPT
+	id S1753889Ab0BHQe6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 11:34:58 -0500
+Received: from mtagate5.uk.ibm.com ([194.196.100.165]:36401 "EHLO
+	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753646Ab0BHQe4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 11:30:43 -0500
-Subject: Re: [RFC][PATCH] perf_events: added new start/stop PMU callbacks
-From: Peter Zijlstra <peterz@infradead.org>
-To: eranian@google.com
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, paulus@samba.org,
-       davem@davemloft.net, fweisbec@gmail.com, robert.richter@amd.com,
-       perfmon2-devel@lists.sf.net, eranian@gmail.com
-In-Reply-To: <4b703875.0a04d00a.7896.ffffb824@mx.google.com>
-References: <4b703875.0a04d00a.7896.ffffb824@mx.google.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 08 Feb 2010 17:30:11 +0100
-Message-ID: <1265646612.11509.13.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 8 Feb 2010 11:34:56 -0500
+Date: Mon, 8 Feb 2010 17:34:54 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Jason Baron <jbaron@redhat.com>
+Cc: linux-kernel@vger.kernel.org, laijs@cn.fujitsu.com, lizf@cn.fujitsu.com,
+       rostedt@goodmis.org, fweisbec@gmail.com, mingo@elte.hu, hpa@zytor.com,
+       tglx@linutronix.de, mhiramat@redhat.com
+Subject: Re: [PATCH 4/6] tracing: add tracing support for compat syscalls
+Message-ID: <20100208163454.GE12726@osiris.boeblingen.de.ibm.com>
+References: <cover.1265142153.git.jbaron@redhat.com>
+ <bec426992cb9ab8f8abe07efb2baa785577a3855.1265142153.git.jbaron@redhat.com>
+ <20100203125251.GA30003@osiris.boeblingen.de.ibm.com>
+ <20100208154325.GB2688@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100208154325.GB2688@redhat.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-02-08 at 17:06 +0200, Stephane Eranian wrote:
-> 	In certain situations, the kernel may need to stop and start the
-> 	same event rapidly. The current PMU callbacks do not distinguish
-> 	between stop and release  (i.e., stop + free the resource). Thus,
-> 	a counter may be released, then it will be immediately re-acquired.
-> 	Event scheduling will again take place with no guarantee to assign
-> 	the same counter. On some processors, this may event yield to failure
-> 	to assign the event back due to competion between cores.
+On Mon, Feb 08, 2010 at 10:43:25AM -0500, Jason Baron wrote:
+> On Wed, Feb 03, 2010 at 01:52:51PM +0100, Heiko Carstens wrote:
+> > On Tue, Feb 02, 2010 at 04:21:51PM -0500, Jason Baron wrote:
+> > > Add core support to event tracing for compat syscalls. The basic idea is that we
+> > > check if we have a compat task via 'is_compat_task()'. If so, we lookup in the
+> > > new compat_syscalls_metadata table, the corresponding struct syscall_metadata, to
+> > > check syscall arguments and whether or not we are enabled.
+> > > 
+> > > Signed-off-by: Jason Baron <jbaron@redhat.com>
+> > > ---
+> > >  include/linux/compat.h        |    8 +++++
+> > >  include/trace/syscall.h       |    4 ++
+> > >  kernel/trace/trace.h          |    2 +
+> > >  kernel/trace/trace_syscalls.c |   63 +++++++++++++++++++++++++++++++++++-----
+> > >  4 files changed, 69 insertions(+), 8 deletions(-)
+> > > 
+> > > diff --git a/include/linux/compat.h b/include/linux/compat.h
+> > > index ef68119..ab2cda2 100644
+> > > --- a/include/linux/compat.h
+> > > +++ b/include/linux/compat.h
+> > > @@ -353,5 +353,13 @@ asmlinkage long compat_sys_newfstatat(unsigned int dfd, char __user * filename,
+> > >  asmlinkage long compat_sys_openat(unsigned int dfd, const char __user *filename,
+> > >  				  int flags, int mode);
+> > > 
+> > > +#else /* CONFIG_COMPAT */
+> > > +
+> > > +#define NR_syscalls_compat 0
+> > > +static inline int is_compat_task(void)
+> > > +{
+> > > +	return 0;
+> > > +}
+> > > +
+> > >  #endif /* CONFIG_COMPAT */
+> > >  #endif /* _LINUX_COMPAT_H */
+> > 
+> > This part will break compilation on s390, since it has already the same
+> > function defined for !CONFIG_COMPAT.
 > 
-> 	This patch is adding a new pair of callback to stop and restart a
-> 	counter without actually release the underlying counter resource.
-> 	On stop, the counter is stopped, its values saved and that's it.
-> 	On start, the value is reloaded and counter is restarted (on x86,
-> 	actual restart is delayed until perf_enable()).
-> 	
-> 	Note this patch does not provide support for non-X86 PMU. This needs
-> 	to be added.
+> If multiple arches want this definition, then it seems the the common
+> include/linux/compat.h is good place for it.
 > 
-> 	Signed-off-by: Stephane Eranian <eranian@google.com>
-> --
+> > In order to avoid the whole ifdef mess some s390 files do include
+> > asm/compat.h instead of linux/compat.h. This will get messy :)
+> 
+> is there a way for s390 to use the common include/linux/compat.h file?
+> what other arch defs are required? 
 
-I think we can do this much easier by adding a list_head to
-hw_perf_event and make event_list into a proper list, then we can remove
-that funny loop on remove and instead move the event to a remove_list
-when there's a put_event_constraint() method and iterate that list on
-hw_perf_enable().
-
-But before we do that, I think we need to look at the /* hardware */
-part of struct hw_perf_event, and make that arch specific, we've been
-growing that a lot lately and I don't think !x86 uses any of that.
-
+Yes of course it is possible (I think :). I'll send a patch.
