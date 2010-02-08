@@ -1,65 +1,57 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755475Ab0BHKuw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 05:50:52 -0500
-Received: from senator.holtmann.net ([87.106.208.187]:56273 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753614Ab0BHKuv (ORCPT
+	id S1754656Ab0BHKwS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 05:52:18 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:53308 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751445Ab0BHKwQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 05:50:51 -0500
-Subject: Re: [PATCH 3/3] nozomi: Tidy up the PCI table
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Alan Cox <alan@linux.intel.com>
-Cc: greg@kroah.com, linux-kernel@vger.kernel.org, p.hardwick@option.com
-In-Reply-To: <20100208100710.2794.73323.stgit@localhost.localdomain>
-References: <20100208100642.2794.73225.stgit@localhost.localdomain>
-	 <20100208100710.2794.73323.stgit@localhost.localdomain>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 08 Feb 2010 11:49:49 +0100
-Message-ID: <1265626189.31341.260.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
-Content-Transfer-Encoding: 7bit
+	Mon, 8 Feb 2010 05:52:16 -0500
+Date: Mon, 8 Feb 2010 11:52:10 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       Ming Lei <tom.leiming@gmail.com>, linux-usb@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Sebastian Siewior <bigeasy@linutronix.de>, Greg KH <greg@kroah.com>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+Subject: Re: USB mass storage and ARM cache coherency
+Message-ID: <20100208105209.GA31671@atrey.karlin.mff.cuni.cz>
+References: <20100208065519.GE1290@ucw.cz> <1265622676.4020.19.camel@pc1117.cambridge.arm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1265622676.4020.19.camel@pc1117.cambridge.arm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alan,
-
-> Signed-off-by: Alan Cox <alan@linux.intel.com>
-> ---
+> Hi,
 > 
->  drivers/char/nozomi.c |    6 +-----
->  1 files changed, 1 insertions(+), 5 deletions(-)
+> On Mon, 2010-02-08 at 06:55 +0000, Pavel Machek wrote:
+> > > > So, let's put this in the HCD drivers and be done with it.
+> > >
+> > > The patch below is what fixes the I-D cache incoherency issues on ARM. I
+> > > don't particularly like the solution but it seems to be the only one
+> > > available.
+> > 
+> > Really? It looks like arm should just flush the caches when mapping
+> > executable page to the userspace.... you can't expect all the drivers
+> > to be modified like that...
 > 
-> 
-> diff --git a/drivers/char/nozomi.c b/drivers/char/nozomi.c
-> index fac9157..86c9e64 100644
-> --- a/drivers/char/nozomi.c
-> +++ b/drivers/char/nozomi.c
-> @@ -136,10 +136,6 @@ static int debug;
->  #define RECEIVE_BUF_MAX		4
->  
-> 
-> -/* Define all types of vendors and devices to support */
-> -#define VENDOR1		0x1931	/* Vendor Option */
-> -#define DEVICE1		0x000c	/* HSDPA card */
-> -
->  #define R_IIR		0x0000	/* Interrupt Identity Register */
->  #define R_FCR		0x0000	/* Flow Control Register */
->  #define R_IER		0x0004	/* Interrupt Enable Register */
-> @@ -407,7 +403,7 @@ struct buffer {
->  
->  /*    Global variables */
->  static const struct pci_device_id nozomi_pci_tbl[] __devinitconst = {
-> -	{PCI_DEVICE(VENDOR1, DEVICE1)},
-> +	{PCI_DEVICE(0x1931, 0x000c)},	/* Nozomi HSPDA */
->  	{},
+> We could of course flush the caches every time we get a page fault but
+> that's far from optimal, especially since DMA-capable drivers to do
+> not
 
-that would be HSDPA actually.
+Maybe far for optimal, but it is something that should be done,
+_first_. Correctness is more important than performance, and you can't
+expect all drivers to behave like you want them.
 
-Regards
+Then you can add optimalizations not to do the flushes on drivers you
+audited and where you care...
 
-Marcel
-
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
