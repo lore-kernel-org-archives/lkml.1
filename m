@@ -1,132 +1,114 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755707Ab0BHUUQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 15:20:16 -0500
-Received: from fmmailgate01.web.de ([217.72.192.221]:37064 "EHLO
-	fmmailgate01.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754806Ab0BHUNF (ORCPT
+	id S1755842Ab0BHUWj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 15:22:39 -0500
+Received: from fmmailgate03.web.de ([217.72.192.234]:53527 "EHLO
+	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754293Ab0BHUNA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 15:13:05 -0500
+	Mon, 8 Feb 2010 15:13:00 -0500
 From: Jan Kiszka <jan.kiszka@web.de>
 To: David Miller <davem@davemloft.net>, Karsten Keil <isdn@linux-pingi.de>
 Cc: linux-kernel@vger.kernel.org, i4ldeveloper@listserv.isdn4linux.de,
        isdn4linux@listserv.isdn4linux.de, netdev@vger.kernel.org,
        Alan Cox <alan@lxorguk.ukuu.org.uk>,
        Marcel Holtmann <marcel@holtmann.org>
-Subject: [PATCH v2 13/41] CAPI: Convert capidev_list_lock into a mutex
-Date: Mon,  8 Feb 2010 21:12:17 +0100
-Message-Id: <7f00bf8e4209c405aed5007d6057730608612701.1265659934.git.jan.kiszka@web.de>
+Subject: [PATCH v2 04/41] CAPI: Pin capifs instead of mounting it
+Date: Mon,  8 Feb 2010 21:12:08 +0100
+Message-Id: <225c4c6dbff38f6f8fa780ca91dcffd81b139bb0.1265659933.git.jan.kiszka@web.de>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <cover.1265659933.git.jan.kiszka@web.de>
 References: <cover.1265659933.git.jan.kiszka@web.de>
 In-Reply-To: <cover.1265659933.git.jan.kiszka@web.de>
 References: <cover.1265659933.git.jan.kiszka@web.de>
-X-Provags-ID: V01U2FsdGVkX1/+/nw8ER4gANa7JowyAwXY5H7dXCndBdF7UpbA
-	8noG3Ejq91ngFOsRZ5WbH4vVaWApq5C0P3OJe4Qigb4ENQIyZe
-	B8F4eMVxM=
+X-Provags-ID: V01U2FsdGVkX1/7O+yb4FRCiweAakDG+YKhk/RZAMkNmkEXenpb
+	FKDnjCKeqV0F7vmdxbOIbnW59+YEb/WPMcbnZs7SMRgX/vabka
+	s5mWHXrio=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-No need for anything "harder" here (specifically no need for
-irqsave...). Also, make the list removal the first operation of
-capidev_free to avoid dumping half-released devices via /proc.
+Auto-mounting the capifs during module init prevents unloading its
+module. Instead, pin the filesystem as long as some NCCI node exists.
 
 Signed-off-by: Jan Kiszka <jan.kiszka@web.de>
 ---
- drivers/isdn/capi/capi.c |   24 ++++++++++++------------
- 1 files changed, 12 insertions(+), 12 deletions(-)
+ drivers/isdn/capi/capifs.c |   27 ++++++++++++++++++---------
+ 1 files changed, 18 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/isdn/capi/capi.c b/drivers/isdn/capi/capi.c
-index 7d2ca6b..623412e 100644
---- a/drivers/isdn/capi/capi.c
-+++ b/drivers/isdn/capi/capi.c
-@@ -146,7 +146,7 @@ struct capidev {
+diff --git a/drivers/isdn/capi/capifs.c b/drivers/isdn/capi/capifs.c
+index 6ae0edf..51c01ef 100644
+--- a/drivers/isdn/capi/capifs.c
++++ b/drivers/isdn/capi/capifs.c
+@@ -32,6 +32,7 @@ static char *revision = "$Revision: 1.1.2.3 $";
+ #define CAPIFS_SUPER_MAGIC (('C'<<8)|'N')
  
- /* -------- global variables ---------------------------------------- */
+ static struct vfsmount *capifs_mnt;
++static int capifs_mnt_count;
  
--static DEFINE_RWLOCK(capidev_list_lock);
-+static DEFINE_MUTEX(capidev_list_lock);
- static LIST_HEAD(capidev_list);
+ static struct {
+ 	int setuid;
+@@ -140,7 +141,7 @@ static struct file_system_type capifs_fs_type = {
+ 	.kill_sb	= kill_anon_super,
+ };
  
- #ifdef CONFIG_ISDN_CAPI_MIDDLEWARE
-@@ -406,7 +406,6 @@ static struct capincci *capincci_find(struct capidev *cdev, u32 ncci)
- static struct capidev *capidev_alloc(void)
+-struct dentry *capifs_new_ncci(unsigned int number, dev_t device)
++static struct dentry *new_ncci(unsigned int number, dev_t device)
  {
- 	struct capidev *cdev;
--	unsigned long flags;
- 
- 	cdev = kzalloc(sizeof(*cdev), GFP_KERNEL);
- 	if (!cdev)
-@@ -415,15 +414,19 @@ static struct capidev *capidev_alloc(void)
- 	mutex_init(&cdev->ncci_list_mtx);
- 	skb_queue_head_init(&cdev->recvqueue);
- 	init_waitqueue_head(&cdev->recvwait);
--	write_lock_irqsave(&capidev_list_lock, flags);
-+
-+	mutex_lock(&capidev_list_lock);
- 	list_add_tail(&cdev->list, &capidev_list);
--	write_unlock_irqrestore(&capidev_list_lock, flags);
-+	mutex_unlock(&capidev_list_lock);
-+
-         return cdev;
+ 	struct super_block *s = capifs_mnt->mnt_sb;
+ 	struct dentry *root = s->s_root;
+@@ -187,6 +188,20 @@ unlock_out:
+ 	return dentry;
  }
  
- static void capidev_free(struct capidev *cdev)
++struct dentry *capifs_new_ncci(unsigned int number, dev_t device)
++{
++	struct dentry *dentry;
++
++	if (simple_pin_fs(&capifs_fs_type, &capifs_mnt, &capifs_mnt_count) < 0)
++		return NULL;
++
++	dentry = new_ncci(number, device);
++	if (!dentry)
++		simple_release_fs(&capifs_mnt, &capifs_mnt_count);
++
++	return dentry;
++}
++
+ void capifs_free_ncci(struct dentry *dentry)
  {
--	unsigned long flags;
-+	mutex_lock(&capidev_list_lock);
-+	list_del(&cdev->list);
-+	mutex_unlock(&capidev_list_lock);
+ 	struct dentry *root = capifs_mnt->mnt_sb->s_root;
+@@ -206,6 +221,8 @@ void capifs_free_ncci(struct dentry *dentry)
+ 	dput(dentry);
  
- 	if (cdev->ap.applid) {
- 		capi20_release(&cdev->ap);
-@@ -435,9 +438,6 @@ static void capidev_free(struct capidev *cdev)
- 	capincci_free(cdev, 0xffffffff);
- 	mutex_unlock(&cdev->ncci_list_mtx);
- 
--	write_lock_irqsave(&capidev_list_lock, flags);
--	list_del(&cdev->list);
--	write_unlock_irqrestore(&capidev_list_lock, flags);
- 	kfree(cdev);
+ 	mutex_unlock(&root->d_inode->i_mutex);
++
++	simple_release_fs(&capifs_mnt, &capifs_mnt_count);
  }
  
-@@ -1431,7 +1431,7 @@ static int capi20_proc_show(struct seq_file *m, void *v)
-         struct capidev *cdev;
- 	struct list_head *l;
+ static int __init capifs_init(void)
+@@ -222,13 +239,6 @@ static int __init capifs_init(void)
+ 		strcpy(rev, "1.0");
  
--	read_lock(&capidev_list_lock);
-+	mutex_lock(&capidev_list_lock);
- 	list_for_each(l, &capidev_list) {
- 		cdev = list_entry(l, struct capidev, list);
- 		seq_printf(m, "0 %d %lu %lu %lu %lu\n",
-@@ -1441,7 +1441,7 @@ static int capi20_proc_show(struct seq_file *m, void *v)
- 			cdev->ap.nsentctlpkt,
- 			cdev->ap.nsentdatapkt);
- 	}
--	read_unlock(&capidev_list_lock);
-+	mutex_unlock(&capidev_list_lock);
- 	return 0;
+ 	err = register_filesystem(&capifs_fs_type);
+-	if (!err) {
+-		capifs_mnt = kern_mount(&capifs_fs_type);
+-		if (IS_ERR(capifs_mnt)) {
+-			err = PTR_ERR(capifs_mnt);
+-			unregister_filesystem(&capifs_fs_type);
+-		}
+-	}
+ 	if (!err)
+ 		printk(KERN_NOTICE "capifs: Rev %s\n", rev);
+ 	return err;
+@@ -237,7 +247,6 @@ static int __init capifs_init(void)
+ static void __exit capifs_exit(void)
+ {
+ 	unregister_filesystem(&capifs_fs_type);
+-	mntput(capifs_mnt);
  }
  
-@@ -1468,7 +1468,7 @@ static int capi20ncci_proc_show(struct seq_file *m, void *v)
-         struct capincci *np;
- 	struct list_head *l;
- 
--	read_lock(&capidev_list_lock);
-+	mutex_lock(&capidev_list_lock);
- 	list_for_each(l, &capidev_list) {
- 		cdev = list_entry(l, struct capidev, list);
- 		for (np=cdev->nccis; np; np = np->next) {
-@@ -1477,7 +1477,7 @@ static int capi20ncci_proc_show(struct seq_file *m, void *v)
- 				       np->ncci);
- 		}
- 	}
--	read_unlock(&capidev_list_lock);
-+	mutex_unlock(&capidev_list_lock);
- 	return 0;
- }
- 
+ EXPORT_SYMBOL(capifs_new_ncci);
 -- 
 1.6.0.2
 
