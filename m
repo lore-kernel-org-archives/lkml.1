@@ -1,95 +1,72 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932322Ab0BHDKc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Feb 2010 22:10:32 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:15410 "EHLO mx1.redhat.com"
+	id S932972Ab0BHDMy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Feb 2010 22:12:54 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:7969 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932174Ab0BHDKa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Feb 2010 22:10:30 -0500
-Message-ID: <4B6F8137.9070905@redhat.com>
-Date: Mon, 08 Feb 2010 11:12:55 +0800
+	id S1750965Ab0BHDMw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Feb 2010 22:12:52 -0500
+Message-ID: <4B6F81EF.4070103@redhat.com>
+Date: Mon, 08 Feb 2010 11:15:59 +0800
 From: Cong Wang <amwang@redhat.com>
 User-Agent: Thunderbird 2.0.0.23 (X11/20091001)
 MIME-Version: 1.0
-To: Xiaotian Feng <xtfeng@gmail.com>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>, linux-kernel@vger.kernel.org,
-       Tejun Heo <tj@kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Miles Lane <miles.lane@gmail.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Larry Finger <Larry.Finger@lwfinger.net>, akpm@linux-foundation.org
-Subject: Re: [Patch v2] sysfs: add lockdep class support to s_active
-References: <20100205064622.4141.72867.sendpatchset@localhost.localdomain>	 <7b6bb4a51002042309v3ca1dd0p60b9dbcacdafaee6@mail.gmail.com>	 <m1zl3odnt0.fsf@fess.ebiederm.org> <7b6bb4a51002050200m669ac1dv8b525cc843e10d60@mail.gmail.com>
-In-Reply-To: <7b6bb4a51002050200m669ac1dv8b525cc843e10d60@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+CC: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       opurdila@ixiacom.com, eric.dumazet@gmail.com,
+       linux-rdma@vger.kernel.org, netdev@vger.kernel.org,
+       nhorman@tuxdriver.com, linux-sctp@vger.kernel.org, davem@davemloft.net
+Subject: Re: [RFC Patch v2] net: reserve ports for applications using fixedport
+ numbers
+References: <20100204101533.4619.34599.sendpatchset@localhost.localdomain>	<201002041959.JEG43202.JQOFHFOVSFMtLO@I-love.SAKURA.ne.jp>	<4B6BA16E.3010002@redhat.com> <201002052021.CIC81776.QVSMJOLtFOFFHO@I-love.SAKURA.ne.jp>
+In-Reply-To: <201002052021.CIC81776.QVSMJOLtFOFFHO@I-love.SAKURA.ne.jp>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Xiaotian Feng wrote:
-> On Fri, Feb 5, 2010 at 5:39 PM, Eric W. Biederman <ebiederm@xmission.com> wrote:
->> Xiaotian Feng <xtfeng@gmail.com> writes:
->>
->>> On Fri, Feb 5, 2010 at 2:42 PM, Amerigo Wang <amwang@redhat.com> wrote:
->>>> Recently we met a lockdep warning from sysfs during s2ram or cpu hotplug.
->>>> As reported by several people, it is something like:
->>>>
->>>> [ 6967.926563] ACPI: Preparing to enter system sleep state S3
->>>> [ 6967.956156] Disabling non-boot CPUs ...
->>>> [ 6967.970401]
->>>> [ 6967.970408] =============================================
->>>> [ 6967.970419] [ INFO: possible recursive locking detected ]
->>>> [ 6967.970431] 2.6.33-rc2-git6 #27
->>>> [ 6967.970439] ---------------------------------------------
->>>> [ 6967.970450] pm-suspend/22147 is trying to acquire lock:
->>>> [ 6967.970460]  (s_active){++++.+}, at: [<c10d2941>]
->>>> sysfs_hash_and_remove+0x3d/0x4f
->>>> [ 6967.970493]
->>>> [ 6967.970497] but task is already holding lock:
->>>> [ 6967.970506]  (s_active){++++.+}, at: [<c10d4110>]
->>>> sysfs_get_active_two+0x16/0x36
->>>> [...]
->>>>
->>>> Eric already provides a patch for this[1], but it still can't fix the
->>>> problem. Based on his work and Peter's suggestion, I write this patch,
->>>> hopefully we can fix the warning completely.
->>>>
->>>> This patch put sysfs s_active into two classes, one is for PM, the other
->>>> is for the rest, so lockdep will distinguish them.
->>> I think this patch does not hit the root cause, we have a similiar
->>> warning which is not related with PM.
->> The root cause is that our locking is crazy complicated.  No lockdep
->> changes are going to fix that.
->>
->> What we can do and what the patch does is teach lockdep to treat some
->> of the sysfs files as a different group (subclass) from other sysfs
->> files.  Which keeps us from overgeneralizing too much and having
->> a better signal to noise ratio.
->>
->> As for the block device problem goes, I can't easily say that
->> the block layer is correct.  I expect it is because changing
->> the scheduler is unlikely to delete block devices.  If the block layer
->> has bugs then adding another subclass as Amerigo suggests should simply
->> make lockdep warnings harder to trigger and more accurate so that
->> sounds like a path worth walking.
->>
->> In general I recommend that pieces of code that need to do a lot of
->> work in a sysfs attribute consider using a work queue or a kernel
->> thread, as that can be easier to analyze.
+Tetsuo Handa wrote:
+> Cong Wang wrote:
+>> Oh, IIUC, TOMOYO is something like SELinux?
 > 
-> PM case
-> store /sys/devices/system/cpu1/online
-> remove /sys/devices/system/cpu1/cache/
+> Yes. It is a policy based mandatory access control implementation which is
+> applied to not only non root users but also root user. If MAC is enabled,
+> root user cannot freely modify via sysctl() or /proc/sys interface.
 > 
-> iosched case
-> store /sys/block/sdx/queue/scheduler
-> remove /sys/block/sdx/queue/iosched/
+>> So, it is somewhat weird to let users to use TOMOYO to reserve
+>> the ports with MAC.
 > 
-> So it looks like this is from sysfs layer ....
+> To add reserved port
 > 
+> echo deny_autobind 0-1023 | ccs-loadpolicy -e
+> echo deny_autobind 3128 | ccs-loadpolicy -e
+> echo deny_autobind 8080 | ccs-loadpolicy -e
+> 
+> and to delete reserved port
+> 
+> echo delete deny_autobind 0-1023 | ccs-loadpolicy -e
+> echo delete deny_autobind 3128 | ccs-loadpolicy -e
+> echo delete deny_autobind 8080 | ccs-loadpolicy -e
+> 
+> That's all. Quite easy.
 
-Right, and both locks are s_active, so I think they are the
-same problem, but I haven't check the iosched case carefully. ;)
 
+Hmm, but you are solving a non-security problem with a security
+tool, doesn't this look weird? ;-)
+
+> 
+>> For normal users /proc interface seems more friendly.
+> 
+> I think /proc/sys/net/ipv4/ip_local_reserved_ports interface wants
+> "struct list_head" for handling multiple sets of min/max pairs. I'm using
+> http://tomoyo.sourceforge.jp/cgi-bin/lxr/source/security/ccsecurity/autobind.c#L29
+> for that purpose.
+
+
+Yes, but I didn't plan to add multiple range support for
+ip_local_reserved_ports, like ip_local_port_range.
+
+Having that will be better but needs more efforts.
+
+Thanks.
