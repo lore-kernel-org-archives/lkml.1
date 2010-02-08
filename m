@@ -1,37 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752660Ab0BHLAR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 06:00:17 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:21389 "EHLO mx1.redhat.com"
+	id S1752109Ab0BHLDl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 06:03:41 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:57319 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752291Ab0BHLAN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 06:00:13 -0500
-Message-ID: <4B6FEE80.5030202@redhat.com>
-Date: Mon, 08 Feb 2010 18:59:12 +0800
-From: Xiaotian Feng <dfeng@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Lightning/1.0b2pre Thunderbird/3.0.1
+	id S1751138Ab0BHLDk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Feb 2010 06:03:40 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Heinz Diehl <htd@fancy-poultry.org>, Xiaotian Feng <xtfeng@gmail.com>
+Subject: Re: [Bug #15196] kmem_cache_create: duplicate cache ccid2_h
+Date: Mon, 8 Feb 2010 12:04:27 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.33-rc7-rjw; KDE/4.3.5; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Maciej Rutecki <maciej.rutecki@gmail.com>,
+       NetDev <netdev@vger.kernel.org>, David Miller <davem@davemloft.net>
+References: <4Ht3jFrT7uE.A.JI.-nzbLB@chimera> <445R0ey9hAI.A.tNB.XozbLB@chimera> <20100208071515.GA6473@fancy-poultry.org>
+In-Reply-To: <20100208071515.GA6473@fancy-poultry.org>
 MIME-Version: 1.0
-To: James Morris <jmorris@namei.org>
-CC: eparis@parisplace.org, sds@tycho.nsa.gov, paul.moore@hp.com,
-       serue@us.ibm.com, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH V2] selinux: fix memory leak in sel_make_bools
-References: <1250151976-19399-1-git-send-email-dfeng@redhat.com> <1250215360-20871-1-git-send-email-dfeng@redhat.com> <alpine.LRH.2.00.0908141606290.12770@tundra.namei.org>
-In-Reply-To: <alpine.LRH.2.00.0908141606290.12770@tundra.namei.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <201002081204.28039.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/14/2009 02:06 PM, James Morris wrote:
-> On Fri, 14 Aug 2009, Xiaotian Feng wrote:
->
->> In sel_make_bools, kernel allocates memory for bool_pending_names[i]
->> with security_get_bools. So if we just free bool_pending_names, those
->> memories for bool_pending_names[i] will be leaked.
->
-> Thanks, applied and pushed to Linus.
-This patch is missing or dropped? I'm not seeing this patch until 
-2.6.33-rc7, thanks.
+On Monday 08 February 2010, Heinz Diehl wrote:
+> On 08.02.2010, Rafael J. Wysocki wrote: 
+> 
+> > This message has been generated automatically as a part of a summary report
+> > of recent regressions.
+> > 
+> > The following bug entry is on the current list of known regressions
+> > from 2.6.32.  Please verify if it still should be listed and let the tracking team
+> > know (either way).
+> > 
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15196
+> > Subject		: kmem_cache_create: duplicate cache ccid2_h
+> > Submitter	: Heinz Diehl <htd@fancy-poultry.org>
+> > Date		: 2010-01-30 18:33 (9 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=126487640324942&w=4
+> > Handled-By	: Xiaotian Feng <xtfeng@gmail.com>
+> > Patch		: http://patchwork.kernel.org/patch/77601/
+> 
+> Yes, it's still present in -rc7.
 
+Hmm.  The bug is in net/dccp/ccid.c, so it looks like something for the
+networking guys to merge.
+
+Any chance to send a singed-off version of the patch do David?
+
+Rafael
