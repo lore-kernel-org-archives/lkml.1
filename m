@@ -1,151 +1,103 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755401Ab0BHUQJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 15:16:09 -0500
-Received: from fmmailgate02.web.de ([217.72.192.227]:43397 "EHLO
-	fmmailgate02.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754333Ab0BHUNO (ORCPT
+	id S1755254Ab0BHUPh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 15:15:37 -0500
+Received: from fmmailgate01.web.de ([217.72.192.221]:37294 "EHLO
+	fmmailgate01.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754983Ab0BHUNP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 15:13:14 -0500
+	Mon, 8 Feb 2010 15:13:15 -0500
 From: Jan Kiszka <jan.kiszka@web.de>
 To: David Miller <davem@davemloft.net>, Karsten Keil <isdn@linux-pingi.de>
 Cc: linux-kernel@vger.kernel.org, i4ldeveloper@listserv.isdn4linux.de,
        isdn4linux@listserv.isdn4linux.de, netdev@vger.kernel.org,
        Alan Cox <alan@lxorguk.ukuu.org.uk>,
        Marcel Holtmann <marcel@holtmann.org>
-Subject: [PATCH v2 32/41] CAPI: Rework capiminor RX handler
-Date: Mon,  8 Feb 2010 21:12:36 +0100
-Message-Id: <986a5c803a1c55bd0d7d721024a471fbe43953c9.1265659936.git.jan.kiszka@web.de>
+Subject: [PATCH v2 34/41] CAPI: Use atomics for capiminor's datahandle and msgid
+Date: Mon,  8 Feb 2010 21:12:38 +0100
+Message-Id: <2eb4b76c5496b13e970a4e034d14dcd617502f1c.1265659936.git.jan.kiszka@web.de>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <cover.1265659933.git.jan.kiszka@web.de>
 References: <cover.1265659933.git.jan.kiszka@web.de>
 In-Reply-To: <cover.1265659933.git.jan.kiszka@web.de>
 References: <cover.1265659933.git.jan.kiszka@web.de>
-X-Provags-ID: V01U2FsdGVkX19jxrWTEiQfV+TDbhG9R58Oa+PsAwVLoZdjaWkg
-	QCnEY9zy8semq93cYE2Nnhw5UUmTKCXl83hPBLuLoZ0SaGPzJj
-	XbdB6IpSc=
+X-Provags-ID: V01U2FsdGVkX19fdjtfGTcE4g9vv0o8gE4TjmeohlgW5j8oQCe1
+	+3RspEwxu4wVRWv+oOpycu6zapleJubTa9hyU/D5rQgxmpL4l9
+	1PX36/l48=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avoid re-queuing skbs unless the error detected in handle_recv_skb is
-expected to be recoverable such as lacking memory, a full CAPI queue, a
-full TTY input buffer, or a not yet existing TTY.
+The capiminor members datahandle and msgid are incremented outside any
+lock, so better do this atomically.
 
 Signed-off-by: Jan Kiszka <jan.kiszka@web.de>
 ---
- drivers/isdn/capi/capi.c |   60 +++++++++++++++++++++++++++++-----------------
- 1 files changed, 38 insertions(+), 22 deletions(-)
+ drivers/isdn/capi/capi.c |   16 +++++++---------
+ 1 files changed, 7 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/isdn/capi/capi.c b/drivers/isdn/capi/capi.c
-index 554fa1b..c5c54fa 100644
+index 9d4750a..08d5a8a 100644
 --- a/drivers/isdn/capi/capi.c
 +++ b/drivers/isdn/capi/capi.c
-@@ -436,15 +436,13 @@ gen_data_b3_resp_for(struct capiminor *mp, struct sk_buff *skb)
+@@ -87,10 +87,10 @@ struct capiminor {
+ 	unsigned int      minor;
+ 	struct dentry *capifs_dentry;
  
- static int handle_recv_skb(struct capiminor *mp, struct sk_buff *skb)
- {
-+	unsigned int datalen = skb->len - CAPIMSG_LEN(skb->data);
- 	struct tty_struct *tty;
- 	struct sk_buff *nskb;
--	int datalen;
- 	u16 errcode, datahandle;
- 	struct tty_ldisc *ld;
- 	int ret = -1;
+-	struct capi20_appl *ap;
+-	u32		 ncci;
+-	u16		 datahandle;
+-	u16		 msgid;
++	struct capi20_appl	*ap;
++	u32			ncci;
++	atomic_t		datahandle;
++	atomic_t		msgid;
  
--	datalen = skb->len - CAPIMSG_LEN(skb->data);
--
- 	tty = tty_port_tty_get(&mp->port);
- 	if (!tty) {
+ 	struct tty_port port;
+ 	int                ttyinstop;
+@@ -227,7 +227,6 @@ static struct capiminor *capiminor_alloc(struct capi20_appl *ap, u32 ncci)
+ 
+ 	mp->ap = ap;
+ 	mp->ncci = ncci;
+-	mp->msgid = 0;
+ 	INIT_LIST_HEAD(&mp->ackqueue);
+ 	spin_lock_init(&mp->ackqlock);
+ 
+@@ -427,7 +426,7 @@ gen_data_b3_resp_for(struct capiminor *mp, struct sk_buff *skb)
+ 		capimsg_setu16(s, 2, mp->ap->applid);
+ 		capimsg_setu8 (s, 4, CAPI_DATA_B3);
+ 		capimsg_setu8 (s, 5, CAPI_RESP);
+-		capimsg_setu16(s, 6, mp->msgid++);
++		capimsg_setu16(s, 6, atomic_inc_return(&mp->msgid));
+ 		capimsg_setu32(s, 8, mp->ncci);
+ 		capimsg_setu16(s, 12, datahandle);
+ 	}
+@@ -554,7 +553,7 @@ static int handle_minor_send(struct capiminor *mp)
+ 	}
+ 
+ 	while ((skb = skb_dequeue(&mp->outqueue)) != NULL) {
+-		datahandle = mp->datahandle;
++		datahandle = atomic_inc_return(&mp->datahandle);
+ 		len = (u16)skb->len;
+ 		skb_push(skb, CAPI_DATA_B3_REQ_LEN);
+ 		memset(skb->data, 0, CAPI_DATA_B3_REQ_LEN);
+@@ -562,7 +561,7 @@ static int handle_minor_send(struct capiminor *mp)
+ 		capimsg_setu16(skb->data, 2, mp->ap->applid);
+ 		capimsg_setu8 (skb->data, 4, CAPI_DATA_B3);
+ 		capimsg_setu8 (skb->data, 5, CAPI_REQ);
+-		capimsg_setu16(skb->data, 6, mp->msgid++);
++		capimsg_setu16(skb->data, 6, atomic_inc_return(&mp->msgid));
+ 		capimsg_setu32(skb->data, 8, mp->ncci);	/* NCCI */
+ 		capimsg_setu32(skb->data, 12, (u32)(long)skb->data);/* Data32 */
+ 		capimsg_setu16(skb->data, 16, len);	/* Data length */
+@@ -577,7 +576,6 @@ static int handle_minor_send(struct capiminor *mp)
+ 		}
+ 		errcode = capi20_put_message(mp->ap, skb);
+ 		if (errcode == CAPI_NOERROR) {
+-			mp->datahandle++;
+ 			count++;
+ 			mp->outbytes -= len;
  #ifdef _DEBUG_DATAFLOW
-@@ -454,50 +452,68 @@ static int handle_recv_skb(struct capiminor *mp, struct sk_buff *skb)
- 	}
- 	
- 	ld = tty_ldisc_ref(tty);
--	if (!ld)
--		goto out1;
-+	if (!ld) {
-+		/* fatal error, do not requeue */
-+		ret = 0;
-+		kfree_skb(skb);
-+		goto deref_tty;
-+	}
- 
- 	if (ld->ops->receive_buf == NULL) {
- #if defined(_DEBUG_DATAFLOW) || defined(_DEBUG_TTYFUNCS)
- 		printk(KERN_DEBUG "capi: ldisc has no receive_buf function\n");
- #endif
--		goto out2;
-+		/* fatal error, do not requeue */
-+		goto free_skb;
- 	}
- 	if (mp->ttyinstop) {
- #if defined(_DEBUG_DATAFLOW) || defined(_DEBUG_TTYFUNCS)
- 		printk(KERN_DEBUG "capi: recv tty throttled\n");
- #endif
--		goto out2;
-+		goto deref_ldisc;
- 	}
-+
- 	if (tty->receive_room < datalen) {
- #if defined(_DEBUG_DATAFLOW) || defined(_DEBUG_TTYFUNCS)
- 		printk(KERN_DEBUG "capi: no room in tty\n");
- #endif
--		goto out2;
-+		goto deref_ldisc;
- 	}
--	if ((nskb = gen_data_b3_resp_for(mp, skb)) == NULL) {
-+
-+	nskb = gen_data_b3_resp_for(mp, skb);
-+	if (!nskb) {
- 		printk(KERN_ERR "capi: gen_data_b3_resp failed\n");
--		goto out2;
-+		goto deref_ldisc;
- 	}
--	datahandle = CAPIMSG_U16(skb->data,CAPIMSG_BASELEN+4);
-+
-+	datahandle = CAPIMSG_U16(skb->data, CAPIMSG_BASELEN + 4);
-+
- 	errcode = capi20_put_message(mp->ap, nskb);
--	if (errcode != CAPI_NOERROR) {
-+
-+	if (errcode == CAPI_NOERROR) {
-+		skb_pull(skb, CAPIMSG_LEN(skb->data));
-+#ifdef _DEBUG_DATAFLOW
-+		printk(KERN_DEBUG "capi: DATA_B3_RESP %u len=%d => ldisc\n",
-+					datahandle, skb->len);
-+#endif
-+		ld->ops->receive_buf(tty, skb->data, NULL, skb->len);
-+	} else {
- 		printk(KERN_ERR "capi: send DATA_B3_RESP failed=%x\n",
- 				errcode);
- 		kfree_skb(nskb);
--		goto out2;
-+
-+		if (errcode == CAPI_SENDQUEUEFULL)
-+			goto deref_ldisc;
- 	}
--	(void)skb_pull(skb, CAPIMSG_LEN(skb->data));
--#ifdef _DEBUG_DATAFLOW
--	printk(KERN_DEBUG "capi: DATA_B3_RESP %u len=%d => ldisc\n",
--				datahandle, skb->len);
--#endif
--	ld->ops->receive_buf(tty, skb->data, NULL, skb->len);
--	kfree_skb(skb);
-+
-+free_skb:
- 	ret = 0;
--out2:
-+	kfree_skb(skb);
-+
-+deref_ldisc:
- 	tty_ldisc_deref(ld);
--out1:
-+
-+deref_tty:
- 	tty_kref_put(tty);
- 	return ret;
- }
 -- 
 1.6.0.2
 
