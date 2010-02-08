@@ -1,65 +1,101 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752686Ab0BHIxE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 03:53:04 -0500
-Received: from mail.gmx.net ([213.165.64.20]:36292 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751323Ab0BHIxA convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 03:53:00 -0500
-X-Authenticated: #5108953
-X-Provags-ID: V01U2FsdGVkX1/A5PFzUbXAHB2Ncsk9ANwFgt/UnVQo+1CeETfIey
-	Z9dfQFAg0ZmAxo
-From: Toralf =?iso-8859-1?q?F=F6rster?= <toralf.foerster@gmx.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bug #15100] X11 is black after resume from s2ram if my T400 was previous in docking station before
-Date: Mon, 8 Feb 2010 09:52:55 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.31.12; KDE/4.3.5; i686; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>,
-       "Eric Anholt" <eric@anholt.net>,
-       "Jesse Barnes" <jbarnes@virtuousgeek.org>,
-       "Matthew Garrett" <mjg@redhat.com>
-References: <2uzMDuY-7_O.A.M1G.7X1bLB@chimera> <iuJeop2ribM.A.YrH.bY1bLB@chimera>
-In-Reply-To: <iuJeop2ribM.A.YrH.bY1bLB@chimera>
+	id S1753218Ab0BHIxT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 03:53:19 -0500
+Received: from hera.kernel.org ([140.211.167.34]:59559 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752835Ab0BHIxL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Feb 2010 03:53:11 -0500
+Date: Mon, 8 Feb 2010 08:51:42 GMT
+From: tip-bot for Don Zickus <dzickus@redhat.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       tglx@linutronix.de, dzickus@redhat.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       tglx@linutronix.de, dzickus@redhat.com, mingo@elte.hu
+In-Reply-To: <1265424425-31562-2-git-send-email-dzickus@redhat.com>
+References: <1265424425-31562-2-git-send-email-dzickus@redhat.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perf/nmi] x86: Move notify_die from nmi.c to traps.c
+Message-ID: <tip-e40b17208b6805be50ffe891878662b6076206b9@git.kernel.org>
+Git-Commit-ID: e40b17208b6805be50ffe891878662b6076206b9
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <201002080952.55900.toralf.foerster@gmx.de>
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.55000000000000004
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Mon, 08 Feb 2010 08:51:42 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  e40b17208b6805be50ffe891878662b6076206b9
+Gitweb:     http://git.kernel.org/tip/e40b17208b6805be50ffe891878662b6076206b9
+Author:     Don Zickus <dzickus@redhat.com>
+AuthorDate: Fri, 5 Feb 2010 21:47:03 -0500
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Mon, 8 Feb 2010 08:29:02 +0100
 
-Rafael J. Wysocki wrote at 01:28:23
-> This message has been generated automatically as a part of a report
-> of regressions introduced between 2.6.31 and 2.6.32.
-> 
-> The following bug entry is on the current list of known regressions
-> introduced between 2.6.31 and 2.6.32.  Please verify if it still should
-> be listed and let the tracking team know (either way).
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15100
-> Subject		: X11 is black after resume from s2ram if my T400 was previous in
->  docking station before Submitter	: Toralf Förster <toralf.foerster@gmx.de>
-> Date		: 2010-01-21 08:56 (18 days old)
-> First-Bad-Commit:
->  http://git.kernel.org/git/linus/c1c7af60892070e4b82ad63bbfb95ae745056de0
-> 
+x86: Move notify_die from nmi.c to traps.c
 
-The current 2.6.33-rc7 has a much more worse behaviour. With the previuos 
-series I could (sometimes) put the ThinkPAd into the docking station again 
-(after wakeup) and the external screen shows the X11 screen or at least I 
-could press Ctr-Alt-Backspace and restart the X11 server. The current -rc7 
-however is balck, don't accept after wakeup key nor mouse nor any SysRQ 
-keyboard sequence.
+In order to handle a new nmi_watchdog approach, I need to move
+the notify_die() routine out of nmi_watchdog_tick() and into
+default_do_nmi(). This lets me easily swap out the old
+nmi_watchdog with the new one with just a config change.
 
+The change probably makes sense from a high level perspective
+because the nmi_watchdog shouldn't be handling notify_die
+routines anyway.  However, this move does change the semantics a
+little bit.  Instead of checking on every nmi interrupt if the
+cpus are stuck, only check them on the nmi_watchdog interrupts.
 
--- 
-MfG/Sincerely
-Toralf Förster
+ v2: Move notify_die call into #idef block
+
+Signed-off-by: Don Zickus <dzickus@redhat.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: gorcunov@gmail.com
+Cc: aris@redhat.com
+Cc: peterz@infradead.org
+LKML-Reference: <1265424425-31562-2-git-send-email-dzickus@redhat.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/kernel/apic/nmi.c |    7 -------
+ arch/x86/kernel/traps.c    |    5 +++++
+ 2 files changed, 5 insertions(+), 7 deletions(-)
+
+diff --git a/arch/x86/kernel/apic/nmi.c b/arch/x86/kernel/apic/nmi.c
+index 0159a69..5d47682 100644
+--- a/arch/x86/kernel/apic/nmi.c
++++ b/arch/x86/kernel/apic/nmi.c
+@@ -400,13 +400,6 @@ nmi_watchdog_tick(struct pt_regs *regs, unsigned reason)
+ 	int cpu = smp_processor_id();
+ 	int rc = 0;
+ 
+-	/* check for other users first */
+-	if (notify_die(DIE_NMI, "nmi", regs, reason, 2, SIGINT)
+-			== NOTIFY_STOP) {
+-		rc = 1;
+-		touched = 1;
+-	}
+-
+ 	sum = get_timer_irqs(cpu);
+ 
+ 	if (__get_cpu_var(nmi_touch)) {
+diff --git a/arch/x86/kernel/traps.c b/arch/x86/kernel/traps.c
+index 1168e44..51ef893 100644
+--- a/arch/x86/kernel/traps.c
++++ b/arch/x86/kernel/traps.c
+@@ -400,7 +400,12 @@ static notrace __kprobes void default_do_nmi(struct pt_regs *regs)
+ 		if (notify_die(DIE_NMI_IPI, "nmi_ipi", regs, reason, 2, SIGINT)
+ 								== NOTIFY_STOP)
+ 			return;
++
+ #ifdef CONFIG_X86_LOCAL_APIC
++	        if (notify_die(DIE_NMI, "nmi", regs, reason, 2, SIGINT)
++	        			                == NOTIFY_STOP)
++	                return;
++
+ 		/*
+ 		 * Ok, so this is none of the documented NMI sources,
+ 		 * so it must be the NMI watchdog.
