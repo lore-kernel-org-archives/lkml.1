@@ -1,94 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754233Ab0BHTDa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 14:03:30 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:38768 "EHLO mx1.redhat.com"
+	id S1754248Ab0BHTKE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 14:10:04 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:1025 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750962Ab0BHTD2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 14:03:28 -0500
-Message-ID: <4B705FC8.1030407@redhat.com>
-Date: Mon, 08 Feb 2010 13:02:32 -0600
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	id S1754062Ab0BHTKC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Feb 2010 14:10:02 -0500
+Message-ID: <4B70616C.9040901@redhat.com>
+Date: Mon, 08 Feb 2010 21:09:32 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: tytso@mit.edu, Jan Kara <jack@suse.cz>,
-       Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>,
-       linux-kernel@vger.kernel.org, Kazuo Moriwaka <moriwaka@redhat.com>,
-       H Hartley Sweeten <hsweeten@visionengravers.com>,
-       Joel Becker <joel.becker@oracle.com>, linux-ext4@vger.kernel.org,
-       vamos@i4.informatik.uni-erlangen.de
-Subject: Re: [PATCH] obsolete config in kernel source (BUFFER_DEBUG)
-References: <20100205131333.GB6540@faui49.informatik.uni-erlangen.de>	<20100208135629.GD4321@quack.suse.cz>	<20100208155031.GK4494@thunk.org> <20100208105828.1136310a.akpm@linux-foundation.org>
-In-Reply-To: <20100208105828.1136310a.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Marcelo Tosatti <mtosatti@redhat.com>
+CC: Don Dupuis <dondster@gmail.com>, Greg KH <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: kernel NULL pointer dereference/ kvm subsystem
+References: <632b79000910060738l5ed0dd6ch60b4569d87d2ef0e@mail.gmail.com> <20100208172931.GA5315@amt.cnet>
+In-Reply-To: <20100208172931.GA5315@amt.cnet>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Mon, 8 Feb 2010 10:50:31 -0500 tytso@mit.edu wrote:
-> 
->> I don't have an objection with removing this, but does anyone have the
->> latest version of akpm's buffer debugging patches?
-> 
-> My version is datestamped four years ago :( It normally forward-ports
-> fairly easily.
-> 
->> I *think* what happened is that akpm forward ported the removed buffer
->> debugging patches, or maybe rewrote it from scratch, but for whatever
->> reason they never made back into mainline.  Maybe they were too ugly
->> to live in mainline, but they have been really handy on occasion.
-> 
-> I think Eric Sandeen might have a fresher version. 
+On 02/08/2010 07:29 PM, Marcelo Tosatti wrote:
+> On Tue, Oct 06, 2009 at 09:38:05AM -0500, Don Dupuis wrote:
+>    
+>> Kernel 2.6.31.2
+>> x86 64bit
+>>
+>> Running numerous kvm linux guests and noticed this oops in messages
+>> file. This didn't occur in 2.6.30.6
+>>
+>> BUG: unable to handle kernel NULL pointer dereference at 0000000000000028
+>> IP: [<ffffffffa01de29f>] kpit_elapsed+0x30/0x60 [kvm]
+>>      
+> Fixed by ace1546487a0fe4634e3251067f8a32cb2cdc099.
+>
+> Greg, can you please cherry pick to 2.6.31.stable?
+>    
 
-If "fresh" means 2.6.18, I might ;)
+It's already in, 2.6.31.6 (and I think 31.y is dead).
 
-But yes they sure have come in handy from time to time.
+Rafael, this is #14376.
 
-> Nowadays it should
-> be done with the tracing infrastructure, I guess.
-
-that's kind of what I was thinking, too.
-
--Eric
-
->  Although that
-> infrastructure may not be able to do this - the ext3 debug patch
-> recorded an LRU array of the below structs within every buffer_head. 
-> The various BUFFER_TRACE macros would emit a new record into the tail of the
-> target bh's b[] ring.
-> 
-> struct buffer_history {
-> 	struct buffer_history_item {
-> 		char *function;
-> 		char *info;
-> 		unsigned long b_state;
-> 		unsigned b_list:3;
-> 		unsigned b_jlist:4;
-> 		unsigned pg_dirty:1;
-> 		unsigned cpu:3;
-> 		unsigned b_count:8;
-> 		unsigned long b_blocknr;	/* For src != dest */
-> #if defined(CONFIG_JBD) || defined(CONFIG_JBD_MODULE)
-> 		unsigned b_jcount:4;
-> 		unsigned b_jbd:1;
-> 		unsigned b_transaction:1;
-> 		unsigned b_next_transaction:1;
-> 		unsigned b_cp_transaction:1;
-> 		unsigned b_trans_is_running:1;
-> 		unsigned b_trans_is_committing:1;
-> 		void *b_frozen_data;
-> 		void *b_committed_data;
-> #endif
-> 	} b[BUFFER_HISTORY_SIZE];
-> 	unsigned long b_history_head;	/* Next place to write */
-> 	unsigned long b_history_tail;	/* Oldest valid entry */
-> };
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-- 
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
 
