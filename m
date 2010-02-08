@@ -1,10 +1,10 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755538Ab0BHUSK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 15:18:10 -0500
-Received: from fmmailgate02.web.de ([217.72.192.227]:43270 "EHLO
+	id S1755521Ab0BHURp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 15:17:45 -0500
+Received: from fmmailgate02.web.de ([217.72.192.227]:43278 "EHLO
 	fmmailgate02.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754906Ab0BHUNJ (ORCPT
+	with ESMTP id S1754914Ab0BHUNJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 8 Feb 2010 15:13:09 -0500
 From: Jan Kiszka <jan.kiszka@web.de>
@@ -13,73 +13,115 @@ Cc: linux-kernel@vger.kernel.org, i4ldeveloper@listserv.isdn4linux.de,
        isdn4linux@listserv.isdn4linux.de, netdev@vger.kernel.org,
        Alan Cox <alan@lxorguk.ukuu.org.uk>,
        Marcel Holtmann <marcel@holtmann.org>
-Subject: [PATCH v2 22/41] CAPI: Use dynamic major for NCCI TTYs by default
-Date: Mon,  8 Feb 2010 21:12:26 +0100
-Message-Id: <cbb968392af0a8f39193c812fc8afba63d79e6f2.1265659935.git.jan.kiszka@web.de>
+Subject: [PATCH v2 23/41] CAPI: Use kref on capiminor
+Date: Mon,  8 Feb 2010 21:12:27 +0100
+Message-Id: <dd97f250aec5139ce55bb88f41822f2fe76ee4e9.1265659935.git.jan.kiszka@web.de>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <cover.1265659933.git.jan.kiszka@web.de>
 References: <cover.1265659933.git.jan.kiszka@web.de>
 In-Reply-To: <cover.1265659933.git.jan.kiszka@web.de>
 References: <cover.1265659933.git.jan.kiszka@web.de>
-X-Provags-ID: V01U2FsdGVkX1/FoJNgNGTh1/cmyhu/TymtDFLpexc/0gAKnpOj
-	p5tagkLoXaZeTC6yvkZjeMq3vKerc/5CBlAxav75h+bQKO25Hz
-	8L+Bfe2A0=
+X-Provags-ID: V01U2FsdGVkX1+WcjgV6OZq/V8hKGFyXCmjFr5pV2lVkKLc7H5Z
+	x7XuZa2u2ag7M7MIyyT44sZ9raZTvI7ftK3+seOpXG7SYqIEK9
+	JA7oWalZ0=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-No need to allocate a fixed major for this TTY, both capifs and udev
-make this transparent to the user.
+Install a reference counter for capiminor objects. Acquire it when
+obtaining a capiminor from the array during capinc_tty_open, drop it
+when closing the tty again. Another reference is held for the hook-up
+with capincci.
 
 Signed-off-by: Jan Kiszka <jan.kiszka@web.de>
 ---
- drivers/isdn/capi/capi.c |   10 ++++------
- 1 files changed, 4 insertions(+), 6 deletions(-)
+ drivers/isdn/capi/capi.c |   37 ++++++++++++++++++++++++++++---------
+ 1 files changed, 28 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/isdn/capi/capi.c b/drivers/isdn/capi/capi.c
-index 901b79b..b1de0cb 100644
+index b1de0cb..732cdb5 100644
 --- a/drivers/isdn/capi/capi.c
 +++ b/drivers/isdn/capi/capi.c
-@@ -60,10 +60,8 @@ module_param_named(major, capi_major, uint, 0);
- #define CAPINC_NR_PORTS		32
- #define CAPINC_MAX_PORTS	256
+@@ -83,6 +83,8 @@ struct datahandle_queue {
+ };
  
--static int capi_ttymajor = 191;
- static int capi_ttyminors = CAPINC_NR_PORTS;
- 
--module_param_named(ttymajor, capi_ttymajor, uint, 0);
- module_param_named(ttyminors, capi_ttyminors, uint, 0);
- #endif /* CONFIG_ISDN_CAPI_MIDDLEWARE */
- 
-@@ -301,6 +299,7 @@ static struct capiminor *capiminor_get(unsigned int minor)
- static void capincci_alloc_minor(struct capidev *cdev, struct capincci *np)
- {
- 	struct capiminor *mp;
-+	dev_t device;
- 
- 	if (!(cdev->userflags & CAPIFLAG_HIGHJACKING))
- 		return;
-@@ -311,9 +310,8 @@ static void capincci_alloc_minor(struct capidev *cdev, struct capincci *np)
- #ifdef _DEBUG_REFCOUNT
- 		printk(KERN_DEBUG "set mp->nccip\n");
- #endif
--		mp->capifs_dentry =
--			capifs_new_ncci(mp->minor,
--					MKDEV(capi_ttymajor, mp->minor));
-+		device = MKDEV(capinc_tty_driver->major, mp->minor);
-+		mp->capifs_dentry = capifs_new_ncci(mp->minor, device);
+ struct capiminor {
++	struct kref kref;
++
+ 	struct capincci  *nccip;
+ 	unsigned int      minor;
+ 	struct dentry *capifs_dentry;
+@@ -223,6 +225,8 @@ static struct capiminor *capiminor_alloc(struct capi20_appl *ap, u32 ncci)
+ 		return NULL;
  	}
+ 
++	kref_init(&mp->kref);
++
+ 	mp->ap = ap;
+ 	mp->ncci = ncci;
+ 	mp->msgid = 0;
+@@ -265,18 +269,11 @@ err_out1:
+ 	return NULL;
  }
  
-@@ -1341,7 +1339,7 @@ static int __init capinc_tty_init(void)
- 	drv->owner = THIS_MODULE;
- 	drv->driver_name = "capi_nc";
- 	drv->name = "capi";
--	drv->major = capi_ttymajor;
-+	drv->major = 0;
- 	drv->minor_start = 0;
- 	drv->type = TTY_DRIVER_TYPE_SERIAL;
- 	drv->subtype = SERIAL_TYPE_NORMAL;
+-static void capiminor_free(struct capiminor *mp)
++static void capiminor_destroy(struct kref *kref)
+ {
+-	unsigned long flags;
+-
+-	tty_unregister_device(capinc_tty_driver, mp->minor);
+-
+-	write_lock_irqsave(&capiminors_lock, flags);
+-	capiminors[mp->minor] = NULL;
+-	write_unlock_irqrestore(&capiminors_lock, flags);
++	struct capiminor *mp = container_of(kref, struct capiminor, kref);
+ 
+ 	kfree_skb(mp->ttyskb);
+-	mp->ttyskb = NULL;
+ 	skb_queue_purge(&mp->inqueue);
+ 	skb_queue_purge(&mp->outqueue);
+ 	capiminor_del_all_ack(mp);
+@@ -289,11 +286,31 @@ static struct capiminor *capiminor_get(unsigned int minor)
+ 
+ 	read_lock(&capiminors_lock);
+ 	mp = capiminors[minor];
++	if (mp)
++		kref_get(&mp->kref);
+ 	read_unlock(&capiminors_lock);
+ 
+ 	return mp;
+ }
+ 
++static inline void capiminor_put(struct capiminor *mp)
++{
++	kref_put(&mp->kref, capiminor_destroy);
++}
++
++static void capiminor_free(struct capiminor *mp)
++{
++	unsigned long flags;
++
++	tty_unregister_device(capinc_tty_driver, mp->minor);
++
++	write_lock_irqsave(&capiminors_lock, flags);
++	capiminors[mp->minor] = NULL;
++	write_unlock_irqrestore(&capiminors_lock, flags);
++
++	capiminor_put(mp);
++}
++
+ /* -------- struct capincci ----------------------------------------- */
+ 
+ static void capincci_alloc_minor(struct capidev *cdev, struct capincci *np)
+@@ -1029,6 +1046,8 @@ static void capinc_tty_close(struct tty_struct * tty, struct file * file)
+ #endif
+ 		if (mp->nccip == NULL)
+ 			capiminor_free(mp);
++
++		capiminor_put(mp);
+ 	}
+ 
+ #ifdef _DEBUG_REFCOUNT
 -- 
 1.6.0.2
 
