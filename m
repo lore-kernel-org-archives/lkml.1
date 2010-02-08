@@ -1,65 +1,137 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754090Ab0BHSrV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 13:47:21 -0500
-Received: from mail-fx0-f215.google.com ([209.85.220.215]:64400 "EHLO
-	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753408Ab0BHSrU convert rfc822-to-8bit (ORCPT
+	id S1754113Ab0BHSsR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 13:48:17 -0500
+Received: from ppp-156-198.adsl.restena.lu ([158.64.156.198]:39260 "EHLO
+	bonbons.gotdns.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753408Ab0BHSsP convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 13:47:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=jm6i8g1Gqma5/wRzW56uaH28nOdh8EqpOGTxpdHBn+eMKuneM8vZs2Cr033lfs6pLU
-         wNZmgYMWtM2lZbxCo+HzKMc/a75CDLrmGt+/RxTFD3SUxFC5jcxHTuGYqCVsgeCKD/gV
-         alyftsNlZvIigTP4bQlxiE041ApA2qJg+vNiI=
-MIME-Version: 1.0
-In-Reply-To: <20100208184338.GA17495@emergent.ellipticsemi.com>
-References: <45c77aec1002071056re61b8acg5f480f8ea83c68c@mail.gmail.com>
-	 <d45a3acc1002071414q318edea3m38f6d5ddbbd841bc@mail.gmail.com>
-	 <45c77aec1002081013q2b07cb7flbd827a977ed51d4c@mail.gmail.com>
-	 <20100208184338.GA17495@emergent.ellipticsemi.com>
-Date: Mon, 8 Feb 2010 13:47:17 -0500
-Message-ID: <45c77aec1002081047t48ff5d9dp31c4b7352f61758e@mail.gmail.com>
-Subject: Re: Possible bug in insmod or the kernel?
-From: Larry Homes <larr.homes@gmail.com>
-To: Larry Homes <larr.homes@gmail.com>,
-       andrew hendry <andrew.hendry@gmail.com>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 8 Feb 2010 13:48:15 -0500
+Date: Mon, 8 Feb 2010 19:47:45 +0100
+From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Jiri Kosina <jkosina@suse.cz>, Oliver Neukum <oliver@neukum.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Marcel Holtmann <marcel@holtmann.org>,
+       H Hartley Sweeten <hsweeten@visionengravers.com>,
+       <linux-usb@vger.kernel.org>, <linux-input@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: S2R resume crash in 2.6.33-rc7 - NULL pointer dereference in
+ dev_get_drvdata() for usbhid
+Message-ID: <20100208194745.3aab6d1a@neptune.home>
+In-Reply-To: <Pine.LNX.4.44L0.1002081313260.1316-100000@iolanthe.rowland.org>
+References: <20100208175145.606ca761@neptune.home>
+	<Pine.LNX.4.44L0.1002081313260.1316-100000@iolanthe.rowland.org>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-That was it. The shell was eating the quotes. Thanks alot!
+On Mon, 8 Feb 2010, Bruno [UTF-8] PrÃ©mont wrote:
+> 2.6.33-rc7 (don't know if any previous version resumes properly)
+> crashes during resume from S2Ram when my USB keyboard is connected
+> but resumes properly (viafb corruption put apart) when the USB
+> keyboard is not connected.
+>
+> Keyboard detection:
+> [    3.070054] usb 2-2: new full speed USB device using uhci_hcd and address 2
+> [    3.220179] kbd_mode used greatest stack depth: 2228 bytes left
+> [    3.276403] usb 2-2: New USB device found, idVendor=058f, idProduct=9462
+> [    3.276514] usb 2-2: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+> [    3.276619] usb 2-2: Product: Multimedia USB Keyboard
+> [    3.276711] usb 2-2: Manufacturer: Multimedia USB Keyboard
+> [    3.278056] loadkeys used greatest stack depth: 1904 bytes left
+> [    3.278791] init-early.sh used greatest stack depth: 1700 bytes left
+> [    3.282561] hub 2-2:1.0: USB hub found
+> [    3.286387] hub 2-2:1.0: 3 ports detected
+> [    3.571454] usb 2-2.1: new full speed USB device using uhci_hcd and address 3
+> [    3.761474] usb 2-2.1: New USB device found, idVendor=058f, idProduct=9462
+> [    3.761584] usb 2-2.1: New USB device strings: Mfr=1, Product=2, SerialNumber=3
+> [    3.761719] usb 2-2.1: Product: Multimedia USB Keyboard
+> [    3.762518] usb 2-2.1: Manufacturer: Multimedia USB Keyboard
+> [    3.762612] usb 2-2.1: SerialNumber: Multimedia USB Keyboard
+> [    3.789221] input: Multimedia USB Keyboard Multimedia USB Keyboard as /devices/pci0000:00/0000:00:10.0/usb2/2-2/2-2.1/2-2.1:1.0/input/input4
+> [    3.789585] generic-usb 0003:058F:9462.0001: input: USB HID v1.10 Keyboard [Multimedia USB Keyboard Multimedia USB Keyboard] on usb-0000:00:10.0-2.1/input0
+> [    3.818001] generic-usb: probe of 0003:058F:9462.0002 failed with error -22  
 
-On Mon, Feb 8, 2010 at 1:43 PM, Nick Bowler <nbowler@elliptictech.com> wrote:
-> On 13:13 Mon 08 Feb     , Larry Homes wrote:
->> No, the problem is not that the quotes are showing. The problem is
->> that as soon as it sees a space, it assumes the following is the next
->> parameters name. So for example:
->>
->> [root@myhost modules]# insmod hello3.ko name="john smith"
->> insmod: error inserting 'hello3.ko': -1 Unknown symbol in module
->>
->> [root@myhost modules]# insmod hello3.ko "name=john smith"
->> insmod: error inserting 'hello3.ko': -1 Unknown symbol in module
->>
->> In both cases, dmesg shows:
->>
->> hello3: Unknown parameter `smith'
->>
->> I looked at the params.c code and it seems like the above should work.
->
-> I'm not familiar with the code in question, but I suspect that it
-> expects to actually see the quotation marks in the parameter value, but
-> your shell is eating them.  Try
->
->  insmod hello3.ko 'name="john smith"'
->
-> instead.
->
-> --
-> Nick Bowler, Elliptic Technologies (http://www.elliptictech.com/)
->
+
+On Mon, 08 February 2010 Alan Stern <stern@rowland.harvard.edu> wrote:
+> > Could the crash be related to the generic-usb probe error?
+> 
+> Yes, it could.  Can you post the contents of 
+> /sys/kernel/debug/usb/devices (after mounting a debugfs filesystem on 
+> /sys/kernel/debug), with the keyboard plugged in?
+
+Here it is:
+
+T:  Bus=04 Lev=00 Prnt=00 Port=00 Cnt=00 Dev#=  1 Spd=12  MxCh= 2
+B:  Alloc=  0/900 us ( 0%), #Int=  0, #Iso=  0
+D:  Ver= 1.10 Cls=09(hub  ) Sub=00 Prot=00 MxPS=64 #Cfgs=  1
+P:  Vendor=1d6b ProdID=0001 Rev= 2.06
+S:  Manufacturer=Linux 2.6.33-rc7-venus uhci_hcd
+S:  Product=UHCI Host Controller
+S:  SerialNumber=0000:00:10.2
+C:* #Ifs= 1 Cfg#= 1 Atr=e0 MxPwr=  0mA
+I:* If#= 0 Alt= 0 #EPs= 1 Cls=09(hub  ) Sub=00 Prot=00 Driver=hub
+E:  Ad=81(I) Atr=03(Int.) MxPS=   2 Ivl=255ms
+
+T:  Bus=03 Lev=00 Prnt=00 Port=00 Cnt=00 Dev#=  1 Spd=12  MxCh= 2
+B:  Alloc=  0/900 us ( 0%), #Int=  0, #Iso=  0
+D:  Ver= 1.10 Cls=09(hub  ) Sub=00 Prot=00 MxPS=64 #Cfgs=  1
+P:  Vendor=1d6b ProdID=0001 Rev= 2.06
+S:  Manufacturer=Linux 2.6.33-rc7-venus uhci_hcd
+S:  Product=UHCI Host Controller
+S:  SerialNumber=0000:00:10.1
+C:* #Ifs= 1 Cfg#= 1 Atr=e0 MxPwr=  0mA
+I:* If#= 0 Alt= 0 #EPs= 1 Cls=09(hub  ) Sub=00 Prot=00 Driver=hub
+E:  Ad=81(I) Atr=03(Int.) MxPS=   2 Ivl=255ms
+
+T:  Bus=02 Lev=00 Prnt=00 Port=00 Cnt=00 Dev#=  1 Spd=12  MxCh= 2
+B:  Alloc=  2/900 us ( 0%), #Int=  2, #Iso=  0
+D:  Ver= 1.10 Cls=09(hub  ) Sub=00 Prot=00 MxPS=64 #Cfgs=  1
+P:  Vendor=1d6b ProdID=0001 Rev= 2.06
+S:  Manufacturer=Linux 2.6.33-rc7-venus uhci_hcd
+S:  Product=UHCI Host Controller
+S:  SerialNumber=0000:00:10.0
+C:* #Ifs= 1 Cfg#= 1 Atr=e0 MxPwr=  0mA
+I:* If#= 0 Alt= 0 #EPs= 1 Cls=09(hub  ) Sub=00 Prot=00 Driver=hub
+E:  Ad=81(I) Atr=03(Int.) MxPS=   2 Ivl=255ms
+
+T:  Bus=02 Lev=01 Prnt=01 Port=01 Cnt=01 Dev#=  2 Spd=12  MxCh= 3
+D:  Ver= 1.10 Cls=09(hub  ) Sub=00 Prot=00 MxPS= 8 #Cfgs=  1
+P:  Vendor=058f ProdID=9462 Rev= 1.58
+S:  Manufacturer=Multimedia USB Keyboard
+S:  Product=Multimedia USB Keyboard
+C:* #Ifs= 1 Cfg#= 1 Atr=a0 MxPwr= 50mA
+I:* If#= 0 Alt= 0 #EPs= 1 Cls=09(hub  ) Sub=00 Prot=00 Driver=hub
+E:  Ad=81(I) Atr=03(Int.) MxPS=   1 Ivl=255ms
+
+T:  Bus=02 Lev=02 Prnt=02 Port=00 Cnt=01 Dev#=  3 Spd=12  MxCh= 0
+D:  Ver= 1.10 Cls=00(>ifc ) Sub=00 Prot=00 MxPS= 8 #Cfgs=  1
+P:  Vendor=058f ProdID=9462 Rev= 4.10
+S:  Manufacturer=Multimedia USB Keyboard
+S:  Product=Multimedia USB Keyboard
+S:  SerialNumber=Multimedia USB Keyboard
+C:* #Ifs= 2 Cfg#= 1 Atr=a0 MxPwr= 50mA
+I:* If#= 0 Alt= 0 #EPs= 1 Cls=03(HID  ) Sub=01 Prot=01 Driver=usbhid
+E:  Ad=81(I) Atr=03(Int.) MxPS=   8 Ivl=10ms
+I:* If#= 1 Alt= 0 #EPs= 1 Cls=03(HID  ) Sub=00 Prot=00 Driver=usbhid
+E:  Ad=82(I) Atr=03(Int.) MxPS=   4 Ivl=255ms
+
+T:  Bus=01 Lev=00 Prnt=00 Port=00 Cnt=00 Dev#=  1 Spd=480 MxCh= 6
+B:  Alloc=  0/800 us ( 0%), #Int=  0, #Iso=  0
+D:  Ver= 2.00 Cls=09(hub  ) Sub=00 Prot=00 MxPS=64 #Cfgs=  1
+P:  Vendor=1d6b ProdID=0002 Rev= 2.06
+S:  Manufacturer=Linux 2.6.33-rc7-venus ehci_hcd
+S:  Product=EHCI Host Controller
+S:  SerialNumber=0000:00:10.4
+C:* #Ifs= 1 Cfg#= 1 Atr=e0 MxPwr=  0mA
+I:* If#= 0 Alt= 0 #EPs= 1 Cls=09(hub  ) Sub=00 Prot=00 Driver=hub
+E:  Ad=81(I) Atr=03(Int.) MxPS=   4 Ivl=256ms
+
+
+Thanks,
+Bruno
