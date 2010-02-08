@@ -1,202 +1,64 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751881Ab0BHVip (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 16:38:45 -0500
-Received: from g1t0028.austin.hp.com ([15.216.28.35]:47888 "EHLO
-	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751259Ab0BHVin (ORCPT
+	id S1752078Ab0BHVjg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 16:39:36 -0500
+Received: from p01c12o142.mxlogic.net ([208.65.145.65]:35908 "EHLO
+	p01c12o142.mxlogic.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751507Ab0BHVje convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 16:38:43 -0500
-X-IMAP-Sender: achiang
-Date: Mon, 8 Feb 2010 14:30:14 -0700
-X-OfflineIMAP-x453206743-6c646c-494e424f582e4f7574626f78: 1265665121-0228732443882-v6.2.0
-From: Alex Chiang <achiang@hp.com>
-To: rdreier@cisco.com
-Cc: linux-rdma@vger.kernel.org, justin.chen@hp.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 00/18] Increase maximum number of Infiniband HCAs
-	per system
-Message-ID: <20100208213014.GA3503@grease>
-References: <20100202185235.28217.64521.stgit@bob.kio>
+	Mon, 8 Feb 2010 16:39:34 -0500
+X-MXL-Hash: 4b7084964e09412a-746b98cc6e71632279300b4e0c2730be970c1dae
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100202185235.28217.64521.stgit@bob.kio>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: [PATCH 2.6.33 2/3] net: Kconfig change for KSZ884X driver
+Date: Mon, 8 Feb 2010 13:38:28 -0800
+Message-ID: <14385191E87B904DBD836449AA30269D021A57@MORGANITE.micrel.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 2.6.33 2/3] net: Kconfig change for KSZ884X driver
+Thread-Index: AcqpBw1WCT48sCfGTiuCpVs+2mq4uw==
+From: "Ha, Tristram" <Tristram.Ha@Micrel.Com>
+To: "Dave Miller" <davem@davemloft.net>
+Cc: <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 08 Feb 2010 21:38:28.0942 (UTC) FILETIME=[0D799EE0:01CAA907]
+X-Spam: [F=0.2000000000; CM=0.500; S=0.200(2010011101)]
+X-MAIL-FROM: <tristram.ha@micrel.com>
+X-SOURCE-IP: [65.218.208.2]
+X-AnalysisOut: [v=1.0 c=1 a=3gXMHnU96PoA:10 a=J3BOMSfJb05aRia9DmE+FQ==:17 ]
+X-AnalysisOut: [a=Q4n7fi2PAAAA:8 a=gpeGt47jHdT7ORR_t74A:9 a=VootWrtJUJbc0V]
+X-AnalysisOut: [vtmLYCbRM12lAA:4 a=yJsD6ztlz_8A:10]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Roland,
+From: Tristram Ha <Tristram.Ha@micrel.com>
 
-Any thoughts on this patch series?
+Add Micrel KSZ8841/KSZ8842 PCI Ethernet chip support.
 
-Thanks,
-/ac
+Signed-off-by: Tristram Ha <Tristram.Ha@micrel.com>
+---
+This is a resubmission of the Micrel KSZ8841/2 PCI Ethernet driver.
 
-* Alex Chiang <achiang@hp.com>:
-> This is v2 of a patch series that increases the maximum number of
-> IB HCAs supported per system.
-> 
-> The original mail thread is here:
-> 	http://lkml.org/lkml/2010/1/29/346
-> 
-> One note, I decided to "copy/paste" since factoring out the overflow
-> code in the three drivers seemed like overkill. If so desired, I could
-> factor those three separate functions into something provided by the
-> core, but that seemed like more trouble than it was worth at the time.
-> 
-> As before, I still don't have access to a giant system, so what I did
-> to test was to stick 4 cards into a small system, and then modify the
-> limits with debug patches similar to this:
-> 
-> diff --git a/drivers/infiniband/core/ucm.c b/drivers/infiniband/core/ucm.c
-> index 7bf0a82..8581e64 100644
-> --- a/drivers/infiniband/core/ucm.c
-> +++ b/drivers/infiniband/core/ucm.c
-> @@ -102,7 +102,7 @@ struct ib_ucm_event {
->  enum {
->         IB_UCM_MAJOR = 231,
->         IB_UCM_BASE_MINOR = 224,
-> -       IB_UCM_MAX_DEVICES = 32
-> +       IB_UCM_MAX_DEVICES = 2
->  };
-> 
-> 
-> I tested all 3 drivers this way (uverbs, umad, ucm). I verified that
-> we're not leaking device numbers on multiple modprobe/rmmod cycles,
-> that there aren't any funny interactions when various combinations of
-> the drivers are loaded.
-> 
-> I did not test the rest of the OFED stack. I did write some trivial
-> programs to open the devices in /dev and close them again.
-> 
-> Here's an example of some of the testing:
-> 
-> 	dl585g2:~ # modprobe ib_uverbs
-> 	dl585g2:~ # modprobe ib_umad
-> 	dl585g2:~ # modprobe ib_ucm
-> 	dl585g2:~ # ls -l /dev/uverb*
-> 	crw-rw---- 1 root root 231, 192 Feb  2 05:55 /dev/uverbs0
-> 	crw-rw---- 1 root root 231, 193 Feb  2 05:55 /dev/uverbs1
-> 	crw-rw---- 1 root root 249,   0 Feb  2 05:55 /dev/uverbs2
-> 	crw-rw---- 1 root root 249,   1 Feb  2 05:55 /dev/uverbs3
-> 	dl585g2:~ # ls -l /dev/umad*
-> 	crw-rw---- 1 root root 231, 0 Feb  2 05:55 /dev/umad0
-> 	crw-rw---- 1 root root 231, 1 Feb  2 05:55 /dev/umad1
-> 	crw-rw---- 1 root root 231, 2 Feb  2 05:55 /dev/umad2
-> 	crw-rw---- 1 root root 231, 3 Feb  2 05:55 /dev/umad3
-> 	crw-rw---- 1 root root 248, 0 Feb  2 05:55 /dev/umad4
-> 	crw-rw---- 1 root root 248, 1 Feb  2 05:55 /dev/umad5
-> 	crw-rw---- 1 root root 248, 2 Feb  2 05:55 /dev/umad6
-> 	crw-rw---- 1 root root 248, 3 Feb  2 05:55 /dev/umad7
-> 	dl585g2:~ # ls -l /dev/issm*
-> 	crw-rw---- 1 root root 231, 4 Feb  2 05:55 /dev/issm0
-> 	crw-rw---- 1 root root 231, 5 Feb  2 05:55 /dev/issm1
-> 	crw-rw---- 1 root root 231, 6 Feb  2 05:55 /dev/issm2
-> 	crw-rw---- 1 root root 231, 7 Feb  2 05:55 /dev/issm3
-> 	crw-rw---- 1 root root 248, 4 Feb  2 05:55 /dev/issm4
-> 	crw-rw---- 1 root root 248, 5 Feb  2 05:55 /dev/issm5
-> 	crw-rw---- 1 root root 248, 6 Feb  2 05:55 /dev/issm6
-> 	crw-rw---- 1 root root 248, 7 Feb  2 05:55 /dev/issm7
-> 	dl585g2:~ # ls -l /dev/ucm*
-> 	crw-rw---- 1 root root 231, 224 Feb  2 05:55 /dev/ucm0
-> 	crw-rw---- 1 root root 231, 225 Feb  2 05:55 /dev/ucm1
-> 	crw-rw---- 1 root root 247,   0 Feb  2 05:55 /dev/ucm2
-> 	crw-rw---- 1 root root 247,   1 Feb  2 05:55 /dev/ucm3
-> 
-> Note that the major and minor numbers are behaving rather sanely.
-> 
-> 	dl585g2:~ # rmmod ib_ucm
-> 	dl585g2:~ # rmmod ib_uverbs
-> 	dl585g2:~ # rmmod ib_umad
-> 
-> Reset.
-> 
-> 	dl585g2:~ # modprobe ib_ucm
-> 	dl585g2:~ # ls -l /dev/ucm*
-> 	crw-rw---- 1 root root 231, 224 Feb  2 05:57 /dev/ucm0
-> 	crw-rw---- 1 root root 231, 225 Feb  2 05:57 /dev/ucm1
-> 	crw-rw---- 1 root root 248,   0 Feb  2 05:57 /dev/ucm2
-> 	crw-rw---- 1 root root 248,   1 Feb  2 05:57 /dev/ucm3
-> 
-> See that /dev/ucm* devices now have a different major number 
-> compared to last time(248 vs 247), since we loaded that driver first.
-> 
-> But wait, why is it 248 and not 249? Is there a leak somewhere?
-> 
-> 	dl585g2:~ # ls -l /dev/uverb*
-> 	crw-rw---- 1 root root 231, 192 Feb  2 05:57 /dev/uverbs0
-> 	crw-rw---- 1 root root 231, 193 Feb  2 05:57 /dev/uverbs1
-> 	crw-rw---- 1 root root 249,   0 Feb  2 05:57 /dev/uverbs2
-> 	crw-rw---- 1 root root 249,   1 Feb  2 05:57 /dev/uverbs3
-> 	dl585g2:~ # rmmod ib_uverbs
-> 	ERROR: Module ib_uverbs is in use by ib_ucm
-> 
-> Ah, ib_ucm is dependent on ib_uverbs, so when we modprobed ib_ucm,
-> in reality ib_uverbs got loaded first. See how it has a higher
-> major number.
-> 
-> 	dl585g2:~ # rmmod ib_ucm
-> 	dl585g2:~ # rmmod ib_uverbs
-> 	dl585g2:~ # modprobe ib_umad
-> 	dl585g2:~ # ls -l /dev/umad*
-> 	crw-rw---- 1 root root 231, 0 Feb  2 05:58 /dev/umad0
-> 	crw-rw---- 1 root root 231, 1 Feb  2 05:58 /dev/umad1
-> 	crw-rw---- 1 root root 231, 2 Feb  2 05:58 /dev/umad2
-> 	crw-rw---- 1 root root 231, 3 Feb  2 05:58 /dev/umad3
-> 	crw-rw---- 1 root root 249, 0 Feb  2 05:58 /dev/umad4
-> 	crw-rw---- 1 root root 249, 1 Feb  2 05:58 /dev/umad5
-> 	crw-rw---- 1 root root 249, 2 Feb  2 05:58 /dev/umad6
-> 	crw-rw---- 1 root root 249, 3 Feb  2 05:58 /dev/umad7
-> 	dl585g2:~ # ls -l /dev/issm*
-> 	crw-rw---- 1 root root 231, 4 Feb  2 05:58 /dev/issm0
-> 	crw-rw---- 1 root root 231, 5 Feb  2 05:58 /dev/issm1
-> 	crw-rw---- 1 root root 231, 6 Feb  2 05:58 /dev/issm2
-> 	crw-rw---- 1 root root 231, 7 Feb  2 05:58 /dev/issm3
-> 	crw-rw---- 1 root root 249, 4 Feb  2 05:58 /dev/issm4
-> 	crw-rw---- 1 root root 249, 5 Feb  2 05:58 /dev/issm5
-> 	crw-rw---- 1 root root 249, 6 Feb  2 05:58 /dev/issm6
-> 	crw-rw---- 1 root root 249, 7 Feb  2 05:58 /dev/issm7
-> 
-> Finally, after one more reset, we see ib_umad loaded first and
-> obtaining the major number of 249.
-> 
-> v1 -> v2:
-> 	- update umad and ucm drivers too
-> 
-> ---
-> 
-> Alex Chiang (18):
->       IB/uverbs: convert *cdev to cdev in struct ib_uverbs_device
->       IB/uverbs: remove dev_table
->       IB/uverbs: use stack variable 'devnum' in ib_uverbs_add_one
->       IB/uverbs: use stack variable 'base' in ib_uverbs_add_one
->       IB/uverbs: increase maximum devices supported
->       IB/uverbs: pack struct ib_uverbs_event_file tighter
->       IB/uverbs: whitespace cleanup
->       IB/umad: convert cdev pointers to embedded structs in struct ib_umad_port
->       IB/umad: remove port_table[]
->       IB/umad: use stack variable 'devnum' in ib_umad_init_port
->       IB/umad: use stack variable 'base' in ib_umad_init_port
->       IB/umad: increase maximum devices supported
->       IB/umad: clean whitespace
->       IB/ucm: use stack variable 'devnum' in ib_ucm_add_one
->       IB/ucm: use stack variable 'base' in ib_ucm_add_one
->       IB/ucm: increase maximum devices supported
->       IB/ucm: clean whitespace errors
->       IB/core: pack struct ib_device a little tighter
-> 
-> 
->  drivers/infiniband/core/ucm.c         |   63 ++++++++++--
->  drivers/infiniband/core/user_mad.c    |  173 +++++++++++++++++----------------
->  drivers/infiniband/core/uverbs.h      |   11 +-
->  drivers/infiniband/core/uverbs_main.c |  175 +++++++++++++++++++--------------
->  include/rdma/ib_verbs.h               |    4 -
->  5 files changed, 255 insertions(+), 171 deletions(-)
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+--- linux-2.6.33-rc5.old/drivers/net/Kconfig	2010-01-21 15:31:35.000000000 -0800
++++ linux-2.6.33-rc5.new/drivers/net/Kconfig	2010-02-04 12:12:58.000000000 -0800
+@@ -1368,6 +1368,17 @@ config AC3200
+ 	  To compile this driver as a module, choose M here. The module
+ 	  will be called ac3200.
+ 
++config KSZ884X_PCI
++	tristate "Micrel KSZ8841/2 PCI"
++	depends on NET_PCI && PCI
++	select MII
++	select CRC32
++	help
++	  This PCI driver is for Micrel KSZ8841/KSZ8842 PCI Ethernet chip.
++
++	  To compile this driver as a module, choose M here. The module
++	  will be called ksz884x.
++
+ config APRICOT
+ 	tristate "Apricot Xen-II on board Ethernet"
+ 	depends on NET_PCI && ISA
