@@ -1,102 +1,107 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757640Ab0BHCsN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Feb 2010 21:48:13 -0500
-Received: from mga10.intel.com ([192.55.52.92]:40414 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756990Ab0BHCsM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Feb 2010 21:48:12 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,425,1262592000"; 
-   d="scan'208";a="770925040"
-Message-ID: <4B6F7B66.5060404@linux.intel.com>
-Date: Mon, 08 Feb 2010 10:48:06 +0800
-From: Haicheng Li <haicheng.li@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	id S932258Ab0BHCxM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Feb 2010 21:53:12 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:33004 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932174Ab0BHCxL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Feb 2010 21:53:11 -0500
+Message-ID: <4B6F7D5A.50501@redhat.com>
+Date: Mon, 08 Feb 2010 10:56:26 +0800
+From: Cong Wang <amwang@redhat.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20091001)
 MIME-Version: 1.0
-To: Haicheng Li <haicheng.li@linux.intel.com>
-CC: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, Andi Kleen <andi@firstfloor.org>,
-       Suresh.b.siddha@intel.com, lenb@kernel.org, trenn@suse.de,
-       "Zheng, Shaohui" <shaohui.zheng@intel.com>,
-       linux-kernel@vger.kernel.org, "Chen, Gong" <gong.chen@intel.com>,
-       "Lv, Jane" <jane.lv@intel.com>, "Li, Haicheng" <haicheng.li@intel.com>
-Subject: Re: [PATCH] x86, acpi: map hotadded cpu to correct node.
-References: <C8EDE645B81E5141A8C6B2F73FD9265117C58A3504@shzsmsx501.ccr.corp.intel.com> <20100203220328.GG7510@basil.fritz.box> <4B6AAA39.6000300@linux.intel.com>
-In-Reply-To: <4B6AAA39.6000300@linux.intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, Alexander Viro <viro@zeniv.linux.org.uk>,
+       Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [Patch] compat ioctl: fix some build warnings
+References: <20100205070921.4179.39579.sendpatchset@localhost.localdomain> <20100205140150.7f5df97b.akpm@linux-foundation.org>
+In-Reply-To: <20100205140150.7f5df97b.akpm@linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hello,
+Andrew Morton wrote:
+> On Fri, 5 Feb 2010 02:05:56 -0500
+> Amerigo Wang <amwang@redhat.com> wrote:
+> 
+>> I got these warnings:
+>>
+>> fs/compat_ioctl.c: In function ___compat_sys_ioctl':
+>> fs/compat_ioctl.c:534: warning: ___karg' may be used uninitialized in this function
+>> fs/compat_ioctl.c:533: warning: ___kcmd' may be used uninitialized in this function
+>> fs/compat_ioctl.c:656: warning: ___ret' may be used uninitialized in this function
+>>
+>> These warnings are harmless, so just shut gcc up.
+>>
+>> Signed-off-by: WANG Cong <amwang@redhat.com>
+>> Cc: Alexander Viro <viro@zeniv.linux.org.uk>
+>> Cc: Arnd Bergmann <arnd@arndb.de>
+>>
+>> ---
+>> diff --git a/fs/compat_ioctl.c b/fs/compat_ioctl.c
+>> index c5c45de..2468f80 100644
+>> --- a/fs/compat_ioctl.c
+>> +++ b/fs/compat_ioctl.c
+>> @@ -543,6 +543,8 @@ static int mt_ioctl_trans(unsigned int fd, unsigned int cmd, void __user *argp)
+>>  		kcmd = MTIOCGET;
+>>  		karg = &get;
+>>  		break;
+>> +	default:
+>> +		return -EINVAL;
+>>  	}
+>>  	set_fs (KERNEL_DS);
+>>  	err = sys_ioctl (fd, kcmd, (unsigned long)karg);
+>> @@ -653,7 +655,7 @@ static int set_raw32_request(struct raw_config_request *req, struct raw32_config
+>>  static int raw_ioctl(unsigned fd, unsigned cmd,
+>>  		struct raw32_config_request __user *user_req)
+>>  {
+>> -        int ret;
+>> +        int ret = -EINVAL;
+>>  
+>>          switch (cmd) {
+>>          case RAW_SETBIND:
+> 
+> Unfortunately that adds more code for something which cannot happen at
+> runtime.
+> 
+> I guess we could do this trick:
+> 
+> --- a/fs/compat_ioctl.c~a
+> +++ a/fs/compat_ioctl.c
+> @@ -539,7 +539,7 @@ static int mt_ioctl_trans(unsigned int f
+>  		kcmd = MTIOCPOS;
+>  		karg = &pos;
+>  		break;
+> -	case MTIOCGET32:
+> +	default:	/* MTIOCGET32 */
+>  		kcmd = MTIOCGET;
+>  		karg = &get;
+>  		break;
+> @@ -657,7 +657,7 @@ static int raw_ioctl(unsigned fd, unsign
+>  
+>          switch (cmd) {
+>          case RAW_SETBIND:
+> -        case RAW_GETBIND: {
+> +        default: {	/* RAW_GETBIND */
+>                  struct raw_config_request req;
+>                  mm_segment_t oldfs = get_fs();
+>  
+> _
+> 
+> 
+> Which actually reduces code:
+> 
+> akpm:/usr/src/25> size fs/compat_ioctl.o
+>    text    data     bss     dec     hex filename
+>    9012    2232    2864   14108    371c fs/compat_ioctl.o
+> 
+>    8968    2232    2848   14048    36e0 fs/compat_ioctl.o
+> 
 
-any comments on this patch? in fact, it's a straightforward bug fix: with existing
-CPU hotadd code, new added CPUs won't be mapped to its own node. especially for hotadding
-a new node with CPU and MEM, new added memories can be mapped to this new node, but new added
-CPUs are always mapped to old nodes. This patch is to fix this obvious bug. thanks.
+Yeah! Definitely better.
 
--haicheng
+Thanks, Andrew!
 
-Haicheng Li wrote:
-> x86: map hotadded cpu to correct node.
-> 
-> When hotadd new cpu to system, if its affinitive node is online, should 
-> map the cpu to its own node. otherwise, let kernel select one online 
-> node for the new cpu later.
-> 
-> Signed-off-by: Haicheng Li <haicheng.li@linux.intel.com>
-> ---
->  arch/x86/kernel/acpi/boot.c |   21 +++++++++++++++++++++
->  1 files changed, 21 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-> index 67e929b..92a4861 100644
-> --- a/arch/x86/kernel/acpi/boot.c
-> +++ b/arch/x86/kernel/acpi/boot.c
-> @@ -49,6 +49,7 @@ EXPORT_SYMBOL(acpi_disabled);
-> 
->  #ifdef    CONFIG_X86_64
->  # include <asm/proto.h>
-> +# include <asm/numa_64.h>
->  #endif                /* X86 */
-> 
->  #define BAD_MADT_ENTRY(entry, end) (                        \
-> @@ -482,6 +483,25 @@ int acpi_register_gsi(struct device *dev, u32 gsi, 
-> int trigger, int polarity)
->   */
->  #ifdef CONFIG_ACPI_HOTPLUG_CPU
-> 
-> +static void acpi_map_cpu2node(acpi_handle handle, int cpu, int physid)
-> +{
-> +#ifdef CONFIG_ACPI_NUMA
-> +    int nid;
-> +
-> +    nid = acpi_get_node(handle);
-> +    if (!node_online(nid))
-> +        return;
-> +#ifdef CONFIG_X86_64
-> +    apicid_to_node[physid] = nid;
-> +    numa_set_node(cpu, nid);
-> +#else /* CONFIG_X86_32 */
-> +    apicid_2_node[physid] = nid;
-> +    cpu_to_node_map[cpu] = nid;
-> +#endif
-> +
-> +#endif
-> +}
-> +
->  static int __cpuinit _acpi_map_lsapic(acpi_handle handle, int *pcpu)
->  {
->      struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
-> @@ -540,6 +560,7 @@ static int __cpuinit _acpi_map_lsapic(acpi_handle 
-> handle, int *pcpu)
->      }
-> 
->      cpu = cpumask_first(new_map);
-> +    acpi_map_cpu2node(handle, cpu, physid);
-> 
->      *pcpu = cpu;
->      retval = 0;
