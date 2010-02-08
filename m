@@ -1,35 +1,70 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751350Ab0BHMAV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 07:00:21 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:38955 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750988Ab0BHMAT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 07:00:19 -0500
-Subject: Re: [RFC][PATCH] PERF_COUNT_SW_RUNNABLE_TASKS: measure and act
- upon parallellism
-From: Peter Zijlstra <peterz@infradead.org>
-To: Stijn Devriendt <highguy@gmail.com>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       efault@gmx.de, andrea@suse.de, akpm@linux-foundation.org,
-       Tejun Heo <tj@kernel.org>, Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <c76f371a1002080352ta0a2f7jd7945dc8f834c2cd@mail.gmail.com>
-References: <1265542259-5596-1-git-send-email-HIGHGuY@gmail.com>
-	 <1265623245.1853.33.camel@laptop>
-	 <c76f371a1002080352ta0a2f7jd7945dc8f834c2cd@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 08 Feb 2010 12:59:52 +0100
-Message-ID: <1265630392.1853.44.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	id S1751430Ab0BHMLF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 07:11:05 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:46956 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750984Ab0BHMLD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Feb 2010 07:11:03 -0500
+Date: Mon, 8 Feb 2010 12:10:48 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: David Rientjes <rientjes@google.com>
+Cc: Andrea Arcangeli <aarcange@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Adam Litke <agl@us.ibm.com>, Avi Kivity <avi@redhat.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 2/7] Export unusable free space index via
+	/proc/pagetypeinfo
+Message-ID: <20100208121048.GB23680@csn.ul.ie>
+References: <1262795169-9095-1-git-send-email-mel@csn.ul.ie> <1262795169-9095-3-git-send-email-mel@csn.ul.ie> <alpine.DEB.2.00.1001281411290.30252@chino.kir.corp.google.com> <20100205102349.GB20412@csn.ul.ie> <alpine.DEB.2.00.1002051336360.12934@chino.kir.corp.google.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.1002051336360.12934@chino.kir.corp.google.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-02-08 at 12:52 +0100, Stijn Devriendt wrote:
-> Isn't no longer making --chain-reply-to the default an option?
+On Fri, Feb 05, 2010 at 01:40:21PM -0800, David Rientjes wrote:
+> On Fri, 5 Feb 2010, Mel Gorman wrote:
+> 
+> > > > +	/*
+> > > > +	 * Index should be a value between 0 and 1. Return a value to 3
+> > > > +	 * decimal places.
+> > > > +	 *
+> > > > +	 * 0 => no fragmentation
+> > > > +	 * 1 => high fragmentation
+> > > > +	 */
+> > > > +	return ((info->free_pages - (info->free_blocks_suitable << order)) * 1000) / info->free_pages;
+> > > > +
+> > > 
+> > > This value is only for userspace consumption via /proc/pagetypeinfo, so 
+> > > I'm wondering why it needs to be exported as an index.  Other than a loss 
+> > > of precision, wouldn't this be easier to understand (especially when 
+> > > coupled with the free page counts already exported) if it were multipled 
+> > > by 100 rather than 1000 and shown as a percent of _usable_ free memory at 
+> > > each order? 
+> > 
+> > I find it easier to understand either way, but that's hardly a surprise.
+> > The 1000 is because of the loss of precision. I can make it a 100 but I
+> > don't think it makes much of a difference.
+> > 
+> 
+> This suggestion was coupled with the subsequent note that there is no 
+> documentation of what "unusuable free space index" is, except by the 
+> implementation itself.  Since the value isn't used by the kernel,  I think 
+> exporting the value as a percent would be easier understood by the user 
+> without looking up the semantics.  I don't have strong feelings either 
+> way, however.
+> 
 
-That will hopefully happen on the next major git release (1.7 iirc).
+I'm writing documentation. I'm keeping with the 1000 value because a) I
+like the precision and b) the fragmentation index is not related to
+percentages and I think having one as a percentage and the other as an
+index would cause confusion. Thanks
 
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
