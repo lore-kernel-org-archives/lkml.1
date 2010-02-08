@@ -1,45 +1,84 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752529Ab0BHGTw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 01:19:52 -0500
-Received: from tango.tkos.co.il ([62.219.50.35]:48699 "EHLO tango.tkos.co.il"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751235Ab0BHGTv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 01:19:51 -0500
-From: Baruch Siach <baruch@tkos.co.il>
+	id S1752693Ab0BHGWE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 01:22:04 -0500
+Received: from e28smtp06.in.ibm.com ([122.248.162.6]:36892 "EHLO
+	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752608Ab0BHGV7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Feb 2010 01:21:59 -0500
+Message-ID: <4B6FAD84.5070804@linux.vnet.ibm.com>
+Date: Mon, 08 Feb 2010 11:51:56 +0530
+From: Rishikesh <risrajak@linux.vnet.ibm.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+MIME-Version: 1.0
 To: linux-kernel@vger.kernel.org
-Cc: Baruch Siach <baruch@tkos.co.il>, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH] sched: fix unused variable warning when !CONFIG_SMP
-Date: Mon,  8 Feb 2010 08:18:52 +0200
-Message-Id: <de61b5c64f7809ea210c6b4bb3dc3061efe4429c.1265609796.git.baruch@tkos.co.il>
-X-Mailer: git-send-email 1.6.5
+CC: risrajak@in.ibm.com, subrata@linux.vnet.ibm.com,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, svishuku@in.ibm.com,
+       "paul.larson" <paul.larson@ubuntu.com>,
+       Garrett Cooper <yanegomi@gmail.com>, Mike Frysinger <vapier@gentoo.org>,
+       iranna.ankad@in.ibm.com
+Subject: [PATCH]: Changed in LTP maintainership responsibilities
+Content-Type: multipart/mixed;
+ boundary="------------020900030104020201000202"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This variable was introduced by fabf318e.
+This is a multi-part message in MIME format.
+--------------020900030104020201000202
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Signed-off-by: Baruch Siach <baruch@tkos.co.il>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Hi List,
+
+Please include this patch in mainline kernel.
+
+LTP maintainer responsibities have changed from 2010.
+
+Ref: http://marc.info/?l=ltp-list&m=126502242912536&w=2
+
+Signed-off By : Rishikesh K Rajak <risrajak@linux.vnet.ibm.com>
 ---
- kernel/sched.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Index: linux-2.6/MAINTAINERS
+===================================================================
+--- linux-2.6.orig/MAINTAINERS  2010-02-08 11:27:59.000000000 +0530
++++ linux-2.6/MAINTAINERS       2010-02-08 11:44:42.000000000 +0530
+@@ -3411,6 +3411,7 @@
+  F:     drivers/scsi/sym53c8xx_2/
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 3a8fb30..c9d9dff 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -2647,9 +2647,9 @@ void wake_up_new_task(struct task_struct *p, unsigned long clone_flags)
- {
- 	unsigned long flags;
- 	struct rq *rq;
-+#ifdef CONFIG_SMP
- 	int cpu = get_cpu();
+  LTP (Linux Test Project)
++M:     Rishikesh K Rajak <risrajak@linux.vnet.ibm.com>
+  M:     Subrata Modak <subrata@linux.vnet.ibm.com>
+  M:     Mike Frysinger <vapier@gentoo.org>
+  L:     ltp-list@lists.sourceforge.net (subscribers-only)
+
+
+--------------020900030104020201000202
+Content-Type: text/plain;
+ name="maintainr-changes.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="maintainr-changes.patch"
+
+Changed the LTP maintainer responsibities from 2010.
+
+Ref: http://marc.info/?l=ltp-list&m=126502242912536&w=2
+
+Signed-off By : Rishikesh K Rajak <risrajak@linux.vnet.ibm.com>
+---
+Index: linux-2.6/MAINTAINERS
+===================================================================
+--- linux-2.6.orig/MAINTAINERS	2010-02-08 11:27:59.000000000 +0530
++++ linux-2.6/MAINTAINERS	2010-02-08 11:44:42.000000000 +0530
+@@ -3411,6 +3411,7 @@
+ F:	drivers/scsi/sym53c8xx_2/
  
--#ifdef CONFIG_SMP
- 	/*
- 	 * Fork balancing, do it here and not earlier because:
- 	 *  - cpus_allowed can change in the fork path
--- 
-1.6.5
+ LTP (Linux Test Project)
++M:	Rishikesh K Rajak <risrajak@linux.vnet.ibm.com>
+ M:	Subrata Modak <subrata@linux.vnet.ibm.com>
+ M:	Mike Frysinger <vapier@gentoo.org>
+ L:	ltp-list@lists.sourceforge.net (subscribers-only)
 
+--------------020900030104020201000202--
