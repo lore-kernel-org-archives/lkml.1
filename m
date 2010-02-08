@@ -1,16 +1,15 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932794Ab0BHAqh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Feb 2010 19:46:37 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:55568 "EHLO ogre.sisk.pl"
+	id S933762Ab0BHAtv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Feb 2010 19:49:51 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:55611 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757800Ab0BHAqB convert rfc822-to-8bit (ORCPT
+	id S1757865Ab0BHAqj convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Feb 2010 19:46:01 -0500
+	Sun, 7 Feb 2010 19:46:39 -0500
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
        Maciej Rutecki <maciej.rutecki@gmail.com>,
-       "Jeff Garzik" <jeff@garzik.org>, "Mike Cui" <cuicui@gmail.com>,
-       "Robert Hancock" <hancockrwd@gmail.com>
+       "Marc Haber" <mh+linux-kernel@zugschlus.de>
 References: <2uzMDuY-7_O.A.M1G.7X1bLB@chimera>
 In-Reply-To: <2uzMDuY-7_O.A.M1G.7X1bLB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -18,10 +17,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <iuJeop2ribM.A.bq.AZ1bLB@chimera>
-Subject: [Bug #14922] 2.6.32 seemed to have broken nVidia MCP7A sata controller
+Message-ID: <iuJeop2ribM.A.o7H.jY1bLB@chimera>
+Subject: [Bug #15042] socket(PF_INET6 hangs when ipv6 not yet initialized
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Mon,  8 Feb 2010 01:28:18 +0100 (CET)
+Date: Mon,  8 Feb 2010 01:28:21 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -34,12 +33,10 @@ introduced between 2.6.31 and 2.6.32.  Please verify if it still should
 be listed and let the tracking team know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14922
-Subject		: 2.6.32 seemed to have broken nVidia MCP7A sata controller
-Submitter	: Mike Cui <cuicui@gmail.com>
-Date		: 2009-12-19 6:13 (51 days old)
-References	: http://marc.info/?l=linux-ide&m=126120323407742&w=4
-Handled-By	: Jeff Garzik <jeff@garzik.org>
-		  Robert Hancock <hancockrwd@gmail.com>
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15042
+Subject		: socket(PF_INET6 hangs when ipv6 not yet initialized
+Submitter	: Marc Haber <mh+linux-kernel@zugschlus.de>
+Date		: 2010-01-10 14:28 (29 days old)
+References	: http://marc.info/?l=linux-kernel&m=126313553029280&w=4
 
 
