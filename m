@@ -1,79 +1,99 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755206Ab0BHJrN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 04:47:13 -0500
-Received: from mail-qy0-f195.google.com ([209.85.221.195]:54332 "EHLO
-	mail-qy0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753965Ab0BHJrM (ORCPT
+	id S1753194Ab0BHJtQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 04:49:16 -0500
+Received: from mail-ew0-f228.google.com ([209.85.219.228]:58969 "EHLO
+	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751607Ab0BHJtP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 04:47:12 -0500
-X-Greylist: delayed 484 seconds by postgrey-1.27 at vger.kernel.org; Mon, 08 Feb 2010 04:47:11 EST
+	Mon, 8 Feb 2010 04:49:15 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=c93EvTmhGgavPTLCtL0x4tFAs2Y/k/hVmSX2PAmK0vGq3UbEf46icyBZFfN3ZBn6iD
-         WpvkbknSh1ZDTt672OtfGyi5FqGOE2/VA2gMSFuySOUsb1QaUGiJWnGXoGQObU+c+kiv
-         L/uCIzy0ElWRmQ5Z+YMbCDSmJj8pQxLcb3h8M=
+        d=googlemail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=x0SoyzrY51ogrKUhaSF9WRMmzFkI0j7q1+7JjFVJKK1pMsCzhPw/nW2r854j8fP1Ai
+         YbeRG+r/Ds18/j4gV0j/ha1bwtTcyHD9WSxhIID1W5lrwnWNCfLmytaNVgPN1zfrheJi
+         6OfJaRHMADjdkogOMJOUA0+pI6079OHvohNp8=
+Message-ID: <4B6FDE14.8070406@tuffmail.co.uk>
+Date: Mon, 08 Feb 2010 09:49:08 +0000
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-In-Reply-To: <20100208071954.GA24721@elte.hu>
-References: <1265424425-31562-1-git-send-email-dzickus@redhat.com>
-	 <1265424425-31562-4-git-send-email-dzickus@redhat.com>
-	 <20100208071954.GA24721@elte.hu>
-Date: Mon, 8 Feb 2010 12:39:06 +0300
-Message-ID: <aa79d98a1002080139h1d65fd6eq961cdbf040835e76@mail.gmail.com>
-Subject: Re: [PATCH 3/3 v2] nmi_watchdog: config option to enable new 
-	nmi_watchdog
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Don Zickus <dzickus@redhat.com>, peterz@infradead.org, aris@redhat.com,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Zhenyu Wang <zhenyuw@linux.intel.com>, Eric Anholt <eric@anholt.net>,
+       linux-pm@lists.linux-foundation.org, dri-devel@lists.sourceforge.net,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] i915 / PM: Fix crash while aborting hibernation (Re:
+ [linux-pm] [regression] "drm/i915: implement new pm ops" disables irq on
+ aborted s2disk)
+References: <4B695BA0.4000007@tuffmail.co.uk> <201002032344.41915.rjw@sisk.pl> <20100204013157.GA30011@zhen-devel.sh.intel.com> <201002072148.24588.rjw@sisk.pl>
+In-Reply-To: <201002072148.24588.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/8/10, Ingo Molnar <mingo@elte.hu> wrote:
+Rafael J. Wysocki wrote:
+> On Thursday 04 February 2010, Zhenyu Wang wrote:
+>   
+>> On 2010.02.03 23:44:41 +0100, Rafael J. Wysocki wrote:
+>>     
+>>> On Wednesday 03 February 2010, Alan Jenkins wrote:
+>>>       
+>>>> Hi
+>>>>
+>>>> I found this regression on my EeePC 701 with modesetting enabled.  When 
+>>>> I hibernate using s2disk, I can abort the hibernation by pressing the 
+>>>> backspace key.  Doing so breaks X on 2.6.32-rc6 (but not 2.6.32).
+>>>>         
+>>> Yeah.
+>>>
+>>> To be honest, I knew that's going to happen, but didn't have the time to take
+>>> care of it.
+>>>
+>>> The problem is that i915 does literally _nothing_ in its .thaw() callback,
+>>> although it should at least reverse whatever .freeze() did to the hardware
+>>> (and memory allocations and so on), so that the adapter is functional
+>>> after creating the image.
+>>>
+>>> Fixing this requires some thought, though, because at the moment .freeze()
+>>> thinks it's .suspend(), which is not the case as this report clearly shows.
+>>> So, in fact i915_pci_suspend() has to be split into the .freeze() part and
+>>> the poweroff part cleanly and that's not  so simple (at least to me).
+>>>
+>>>       
+>> Right, I think that'll be more clean, stuff in i915_save/restore_state() need
+>> to be splited too, especially isolate stuff for mode setting and other device
+>> state, as what my original purpose for this is to remove extra mode setting 
+>> cycle in old behavior so not waste time for hibernate.
+>>     
 >
-> * Don Zickus <dzickus@redhat.com> wrote:
+> We can't really do that, because we'll need to restore the saved state at the
+> resume-from-hibernation stage.
 >
->> +config NMI_WATCHDOG
->> +	bool "Detect Hard Lockups with an NMI Watchdog"
->> +	depends on DEBUG_KERNEL && PERF_EVENTS
->> +	default y
->> +	help
->> +	  Say Y here to enable the kernel to use the NMI as a watchdog
->> +	  to detect hard lockups.  This is useful when a cpu hangs for no
->> +	  reason but can still respond to NMIs.  A backtrace is displayed
->> +	  for reviewing and reporting.
->> +
->> +	  The overhead should be minimal, just an extra NMI every few
->> +	  seconds.
+> The appended patch fixes the issue for me, although it's been only tested
+> a little.  It sort of defeats the purpose of commit
+> cbda12d77ea590082edb6d30bd342a67ebc459e0, but I don't see any less invasive
+> way to fix this except maybe for reverting that commit entirely.
 >
-> Thought for later patches: I think an architecture should be able to express
-> via a Kconfig switch that it actually _has_ NMI events. There's
-> architectures
-> which dont have a PMU driver and only have software events. There's also
-> architectures that have a PMU driver but no NMIs.
+> Note that the drm_irq_[un]install() thing may be unnecessary, but I wasn't sure
+> about that and surely wouldn't suggest doing that for 2.6.33.  Also it looks like
+> some things from the freeze and thaw parts may be moved to the "low-level"
+> suspend and resume parts, respectively, but that would require some
+> i915_gem_* surgery I was too scared to do.
 >
-> Something like ARCH_HAS_NMI_PERF_EVENTS?
+> Alan, please test, i915 guys, please review.
 >
-> Also, i havent checked, but what is the practical effect of the new generic
-> watchdog on x86 CPUs that does not have a native PMU driver yet - such as
-> P4s?
->
+> Rafael
+>   
 
-p4 pmu is not yet implemented. I'll try to post on lkml the thnigs
-i've done for it today evening, though it's pretty ugly i would say.
+The patch works very nicely on my eeepc.
 
-> Anyway, i'll create a tip:perf/nmi topic branch for these patches, it
-> certainly looks like a useful generalization and a new architecture that has
-> perf could easily enable it, without having to write its own NMI watchdog
-> implementation. It's also useful for any new watchdog features that people
-> might want to add. Plus it makes the x86 PMU code cleaner in the long run as
-> well.
->
-> Thanks,
->
-> 	Ingo
->
+Thanks
+(and thanks again for all your hard work this cycle, and specifically 
+for pointing me to the s2disk hang-fix)
+
+Alan
