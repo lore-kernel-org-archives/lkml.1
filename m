@@ -1,65 +1,45 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755244Ab0BHKJF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 05:09:05 -0500
-Received: from chipmunk.wormnet.eu ([195.195.131.226]:40565 "EHLO
-	chipmunk.wormnet.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752554Ab0BHKJD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 05:09:03 -0500
-X-Greylist: delayed 556 seconds by postgrey-1.27 at vger.kernel.org; Mon, 08 Feb 2010 05:09:03 EST
-Date: Mon, 8 Feb 2010 09:59:43 +0000
-From: Alexander Clouter <alex@digriz.org.uk>
-To: Thomas Backlund <tmb@mandriva.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [Bug #14482] kernel BUG at fs/dcache.c:670 +lvm +md +ext3
-Message-ID: <20100208095943.GJ14551@chipmunk>
-References: <UgwvXSBS_tM.A.alD.1EiZLB@chimera> <de962C6zBxL.A.85G.9HiZLB@chimera> <4B66F79E.1040606@mandriva.org>
+	id S1755067Ab0BHKKJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 05:10:09 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:3477 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752554Ab0BHKKG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Feb 2010 05:10:06 -0500
+Message-ID: <4B6FE2E0.6080803@redhat.com>
+Date: Mon, 08 Feb 2010 12:09:36 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B66F79E.1040606@mandriva.org>
-Organization: diGriz
-X-URL: http://www.digriz.org.uk/
-X-JabberID: alex@digriz.org.uk
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: ananth@in.ibm.com
+CC: Peter Zijlstra <peterz@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Kyle Moffett <kyle@moffetthome.net>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       Oleg Nesterov <oleg@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>, Tom Tromey <tromey@redhat.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>, linux-next@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, utrace-devel@redhat.com,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: linux-next: add utrace tree
+References: <alpine.LFD.2.00.1001221614520.13231@localhost.localdomain> <f73f7ab81001222220jfaf2edfwca3fa4c22b0b4d72@mail.gmail.com> <alpine.LFD.2.00.1001232051510.3574@localhost.localdomain> <m33a1tnbd9.fsf@fleche.redhat.com> <alpine.LFD.2.00.1001251332370.3574@localhost.localdomain> <m3636oh2rt.fsf@fleche.redhat.com> <alpine.LFD.2.00.1001261535510.17519@localhost.localdomain> <1264575134.4283.1983.camel@laptop> <alpine.LFD.2.00.1001270231520.24253@localhost.localdomain> <1264589716.4283.2006.camel@laptop> <20100127110555.GB1842@in.ibm.com>
+In-Reply-To: <20100127110555.GB1842@in.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On 01/27/2010 01:05 PM, Ananth N Mavinakayanahalli wrote:
+> We don't need to write one. I don't know how easy it is to make the kvm
+> emulator less kvm-centric (vcpus, kvm_context, etc). Avi?
+>    
 
-* Thomas Backlund <tmb@mandriva.org> [2010-02-01 17:47:42+0200]:
->
-> 01.02.2010 02:43, Rafael J. Wysocki skrev:
->> This message has been generated automatically as a part of a report
->> of regressions introduced between 2.6.31 and 2.6.32.
->>
->> The following bug entry is on the current list of known regressions
->> introduced between 2.6.31 and 2.6.32.  Please verify if it still should
->> be listed and let me know (either way).
->>
->>
->> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14482
->> Subject		: kernel BUG at fs/dcache.c:670 +lvm +md +ext3
->> Submitter	: Alexander Clouter<alex@digriz.org.uk>
->> Date		: 2009-10-23 10:30 (101 days old)
->> References	: http://lkml.org/lkml/2009/10/23/50
->>
->
-> Afaik this is the same issue as the one referenced here:
->
-> http://lkml.org/lkml/2010/1/28/292
->
-> The patch in the above thread should fix the issue.
->
-I'm getting my hands on some not-in-production-state equipment to test 
-this with, so bear with me :)
-
-Cheers
+It's a lot of mindless work but not too difficult; replacing hardcoded 
+accessors with function pointers.
 
 -- 
-Alexander Clouter
-.sigmonster says: Dealer prices may vary.
+error compiling committee.c: too many arguments to function
+
