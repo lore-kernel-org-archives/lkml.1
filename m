@@ -1,19 +1,17 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755440Ab0BHKbt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 05:31:49 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:57010 "EHLO
+	id S1755455Ab0BHKdN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 05:33:13 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:57014 "EHLO
 	bob.linux.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753773Ab0BHKbr (ORCPT
+	with ESMTP id S1753675Ab0BHKdL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 05:31:47 -0500
+	Mon, 8 Feb 2010 05:33:11 -0500
 From: Alan Cox <alan@linux.intel.com>
-Subject: [PATCH 3/3] nozomi: Tidy up the PCI table
-To: greg@kroah.com, linux-kernel@vger.kernel.org, p.hardwick@option.com
-Date: Mon, 08 Feb 2010 10:07:15 +0000
-Message-ID: <20100208100710.2794.73323.stgit@localhost.localdomain>
-In-Reply-To: <20100208100642.2794.73225.stgit@localhost.localdomain>
-References: <20100208100642.2794.73225.stgit@localhost.localdomain>
+Subject: [PATCH] sdio_uart: Use kfifo instead of the messy circ stuff
+To: linux-kernel@vger.kernel.org, greg@kroah.com
+Date: Mon, 08 Feb 2010 10:08:39 +0000
+Message-ID: <20100208100808.2887.38401.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -22,35 +20,240 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Revised patch to use the new kfifo API. This replaces the one that was dropped
+from -next due to collisions with the kfifo API changes.
+
 Signed-off-by: Alan Cox <alan@linux.intel.com>
 ---
 
- drivers/char/nozomi.c |    6 +-----
- 1 files changed, 1 insertions(+), 5 deletions(-)
+ drivers/mmc/card/sdio_uart.c |   93 ++++++++++++++----------------------------
+ 1 files changed, 30 insertions(+), 63 deletions(-)
 
 
-diff --git a/drivers/char/nozomi.c b/drivers/char/nozomi.c
-index fac9157..86c9e64 100644
---- a/drivers/char/nozomi.c
-+++ b/drivers/char/nozomi.c
-@@ -136,10 +136,6 @@ static int debug;
- #define RECEIVE_BUF_MAX		4
+diff --git a/drivers/mmc/card/sdio_uart.c b/drivers/mmc/card/sdio_uart.c
+index a4e3775..723e508 100644
+--- a/drivers/mmc/card/sdio_uart.c
++++ b/drivers/mmc/card/sdio_uart.c
+@@ -37,6 +37,7 @@
+ #include <linux/gfp.h>
+ #include <linux/tty.h>
+ #include <linux/tty_flip.h>
++#include <linux/kfifo.h>
+ 
+ #include <linux/mmc/core.h>
+ #include <linux/mmc/card.h>
+@@ -47,19 +48,9 @@
+ #define UART_NR		8	/* Number of UARTs this driver can handle */
  
  
--/* Define all types of vendors and devices to support */
--#define VENDOR1		0x1931	/* Vendor Option */
--#define DEVICE1		0x000c	/* HSDPA card */
+-#define UART_XMIT_SIZE	PAGE_SIZE
++#define FIFO_SIZE	PAGE_SIZE
+ #define WAKEUP_CHARS	256
+ 
+-#define circ_empty(circ)	((circ)->head == (circ)->tail)
+-#define circ_clear(circ)	((circ)->head = (circ)->tail = 0)
 -
- #define R_IIR		0x0000	/* Interrupt Identity Register */
- #define R_FCR		0x0000	/* Flow Control Register */
- #define R_IER		0x0004	/* Interrupt Enable Register */
-@@ -407,7 +403,7 @@ struct buffer {
+-#define circ_chars_pending(circ) \
+-		(CIRC_CNT((circ)->head, (circ)->tail, UART_XMIT_SIZE))
+-
+-#define circ_chars_free(circ) \
+-		(CIRC_SPACE((circ)->head, (circ)->tail, UART_XMIT_SIZE))
+-
+-
+ struct uart_icount {
+ 	__u32	cts;
+ 	__u32	dsr;
+@@ -82,7 +73,7 @@ struct sdio_uart_port {
+ 	struct mutex		func_lock;
+ 	struct task_struct	*in_sdio_uart_irq;
+ 	unsigned int		regs_offset;
+-	struct circ_buf		xmit;
++	struct kfifo		xmit_fifo;
+ 	spinlock_t		write_lock;
+ 	struct uart_icount	icount;
+ 	unsigned int		uartclk;
+@@ -105,6 +96,8 @@ static int sdio_uart_add_port(struct sdio_uart_port *port)
+ 	kref_init(&port->kref);
+ 	mutex_init(&port->func_lock);
+ 	spin_lock_init(&port->write_lock);
++	if (kfifo_alloc(&port->xmit_fifo, FIFO_SIZE, GFP_KERNEL))
++		return -ENOMEM;
  
- /*    Global variables */
- static const struct pci_device_id nozomi_pci_tbl[] __devinitconst = {
--	{PCI_DEVICE(VENDOR1, DEVICE1)},
-+	{PCI_DEVICE(0x1931, 0x000c)},	/* Nozomi HSPDA */
- 	{},
- };
+ 	spin_lock(&sdio_uart_table_lock);
+ 	for (index = 0; index < UART_NR; index++) {
+@@ -140,6 +133,7 @@ static void sdio_uart_port_destroy(struct kref *kref)
+ {
+ 	struct sdio_uart_port *port =
+ 		container_of(kref, struct sdio_uart_port, kref);
++	kfifo_free(&port->xmit_fifo);
+ 	kfree(port);
+ }
  
+@@ -456,9 +450,11 @@ static void sdio_uart_receive_chars(struct sdio_uart_port *port,
+ 
+ static void sdio_uart_transmit_chars(struct sdio_uart_port *port)
+ {
+-	struct circ_buf *xmit = &port->xmit;
++	struct kfifo *xmit = &port->xmit_fifo;
+ 	int count;
+ 	struct tty_struct *tty;
++	u8 iobuf[16];
++	int len;
+ 
+ 	if (port->x_char) {
+ 		sdio_out(port, UART_TX, port->x_char);
+@@ -469,27 +465,25 @@ static void sdio_uart_transmit_chars(struct sdio_uart_port *port)
+ 
+ 	tty = tty_port_tty_get(&port->port);
+ 
+-	if (tty == NULL || circ_empty(xmit) ||
++	if (tty == NULL || !kfifo_len(xmit) ||
+ 				tty->stopped || tty->hw_stopped) {
+ 		sdio_uart_stop_tx(port);
+ 		tty_kref_put(tty);
+ 		return;
+ 	}
+ 
+-	count = 16;
+-	do {
+-		sdio_out(port, UART_TX, xmit->buf[xmit->tail]);
+-		xmit->tail = (xmit->tail + 1) & (UART_XMIT_SIZE - 1);
++	len = kfifo_out_locked(xmit, iobuf, 16, &port->write_lock);
++	for (count = 0; count < len; count++) {
++		sdio_out(port, UART_TX, iobuf[count]);
+ 		port->icount.tx++;
+-		if (circ_empty(xmit))
+-			break;
+-	} while (--count > 0);
++	}
+ 
+-	if (circ_chars_pending(xmit) < WAKEUP_CHARS)
++	len = kfifo_len(xmit);
++	if (len < WAKEUP_CHARS) {
+ 		tty_wakeup(tty);
+-
+-	if (circ_empty(xmit))
+-		sdio_uart_stop_tx(port);
++		if (len == 0)
++			sdio_uart_stop_tx(port);
++	}
+ 	tty_kref_put(tty);
+ }
+ 
+@@ -632,7 +626,6 @@ static int sdio_uart_activate(struct tty_port *tport, struct tty_struct *tty)
+ {
+ 	struct sdio_uart_port *port =
+ 			container_of(tport, struct sdio_uart_port, port);
+-	unsigned long page;
+ 	int ret;
+ 
+ 	/*
+@@ -641,22 +634,17 @@ static int sdio_uart_activate(struct tty_port *tport, struct tty_struct *tty)
+ 	 */
+ 	set_bit(TTY_IO_ERROR, &tty->flags);
+ 
+-	/* Initialise and allocate the transmit buffer. */
+-	page = __get_free_page(GFP_KERNEL);
+-	if (!page)
+-		return -ENOMEM;
+-	port->xmit.buf = (unsigned char *)page;
+-	circ_clear(&port->xmit);
++	kfifo_reset(&port->xmit_fifo);
+ 
+ 	ret = sdio_uart_claim_func(port);
+ 	if (ret)
+-		goto err1;
++		return ret;
+ 	ret = sdio_enable_func(port->func);
+ 	if (ret)
+-		goto err2;
++		goto err1;
+ 	ret = sdio_claim_irq(port->func, sdio_uart_irq);
+ 	if (ret)
+-		goto err3;
++		goto err2;
+ 
+ 	/*
+ 	 * Clear the FIFO buffers and disable them.
+@@ -700,12 +688,10 @@ static int sdio_uart_activate(struct tty_port *tport, struct tty_struct *tty)
+ 	sdio_uart_release_func(port);
+ 	return 0;
+ 
+-err3:
+-	sdio_disable_func(port->func);
+ err2:
+-	sdio_uart_release_func(port);
++	sdio_disable_func(port->func);
+ err1:
+-	free_page((unsigned long)port->xmit.buf);
++	sdio_uart_release_func(port);
+ 	return ret;
+ }
+ 
+@@ -727,7 +713,7 @@ static void sdio_uart_shutdown(struct tty_port *tport)
+ 
+ 	ret = sdio_uart_claim_func(port);
+ 	if (ret)
+-		goto skip;
++		return;
+ 
+ 	sdio_uart_stop_rx(port);
+ 
+@@ -749,10 +735,6 @@ static void sdio_uart_shutdown(struct tty_port *tport)
+ 	sdio_disable_func(port->func);
+ 
+ 	sdio_uart_release_func(port);
+-
+-skip:
+-	/* Free the transmit buffer page. */
+-	free_page((unsigned long)port->xmit.buf);
+ }
+ 
+ /**
+@@ -822,27 +804,12 @@ static int sdio_uart_write(struct tty_struct *tty, const unsigned char *buf,
+ 			   int count)
+ {
+ 	struct sdio_uart_port *port = tty->driver_data;
+-	struct circ_buf *circ = &port->xmit;
+-	int c, ret = 0;
++	int ret;
+ 
+ 	if (!port->func)
+ 		return -ENODEV;
+ 
+-	spin_lock(&port->write_lock);
+-	while (1) {
+-		c = CIRC_SPACE_TO_END(circ->head, circ->tail, UART_XMIT_SIZE);
+-		if (count < c)
+-			c = count;
+-		if (c <= 0)
+-			break;
+-		memcpy(circ->buf + circ->head, buf, c);
+-		circ->head = (circ->head + c) & (UART_XMIT_SIZE - 1);
+-		buf += c;
+-		count -= c;
+-		ret += c;
+-	}
+-	spin_unlock(&port->write_lock);
+-
++	ret = kfifo_in_locked(&port->xmit_fifo, buf, count, &port->write_lock);
+ 	if (!(port->ier & UART_IER_THRI)) {
+ 		int err = sdio_uart_claim_func(port);
+ 		if (!err) {
+@@ -859,13 +826,13 @@ static int sdio_uart_write(struct tty_struct *tty, const unsigned char *buf,
+ static int sdio_uart_write_room(struct tty_struct *tty)
+ {
+ 	struct sdio_uart_port *port = tty->driver_data;
+-	return port ? circ_chars_free(&port->xmit) : 0;
++	return FIFO_SIZE - kfifo_len(&port->xmit_fifo);
+ }
+ 
+ static int sdio_uart_chars_in_buffer(struct tty_struct *tty)
+ {
+ 	struct sdio_uart_port *port = tty->driver_data;
+-	return port ? circ_chars_pending(&port->xmit) : 0;
++	return kfifo_len(&port->xmit_fifo);
+ }
+ 
+ static void sdio_uart_send_xchar(struct tty_struct *tty, char ch)
 
