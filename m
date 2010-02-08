@@ -1,188 +1,89 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752409Ab0BHUuO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 15:50:14 -0500
-Received: from mta-1.ms.rz.RWTH-Aachen.DE ([134.130.7.72]:51166 "EHLO
-	mta-1.ms.rz.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751820Ab0BHUuL (ORCPT
+	id S1752603Ab0BHUuY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 15:50:24 -0500
+Received: from mail-fx0-f215.google.com ([209.85.220.215]:59266 "EHLO
+	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752473Ab0BHUuU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 15:50:11 -0500
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: text/plain; charset=ISO-8859-1
-X-IronPort-AV: E=Sophos;i="4.49,431,1262559600";   d="scan'208";a="44257405"
-Message-id: <4B707901.50905@tvk.rwth-aachen.de>
-Date: Mon, 08 Feb 2010 21:50:09 +0100
-From: Damian Lukowski <damian@tvk.rwth-aachen.de>
-User-Agent: Thunderbird 2.0.0.23 (X11/20091220)
-To: Andreas Petlund <apetlund@simula.no>
-Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       =?ISO-8859-1?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
-       Eric Dumazet <eric.dumazet@gmail.com>,
-       Arnd Hannemann <hannemann@nets.rwth-aachen.de>,
-       LKML <linux-kernel@vger.kernel.org>, shemminger@vyatta.com,
-       David Miller <davem@davemloft.net>, william.allen.simpson@gmail.com
-Subject: Re: [net-next PATCH v2 2/3] net: TCP thin linear timeouts
-References: <4B701EE2.1000006@simula.no>
-In-reply-to: <4B701EE2.1000006@simula.no>
-X-Enigmail-Version: 0.95.7
+	Mon, 8 Feb 2010 15:50:20 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=eJKRTPGnBaILlq5wc2PZ+gEt6xFsfPnPhNSNMR9fWdJEV7dzvvQ6E11Aq3zgiPqFm8
+         WsUneGvAHeXYCoj6TbrffiJ/W1/c0eaX3IZk9nslGFVtZaqFwQsnT6wPMpwaBX177TC3
+         N1vVQJt7w0bbccllKIrpbehtMRZdqCsuXqtSc=
+Message-ID: <4B707904.4030102@lwfinger.net>
+Date: Mon, 08 Feb 2010 14:50:12 -0600
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100111 SUSE/3.0.1-1.1 Thunderbird/3.0.1
+MIME-Version: 1.0
+To: Amerigo Wang <amwang@redhat.com>
+CC: linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Jens Axboe <jens.axboe@oracle.com>, Miles Lane <miles.lane@gmail.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>, akpm@linux-foundation.org
+Subject: Re: [Patch 2/2] block: add sysfs lockdep class for iosched
+References: <20100208095518.3612.73574.sendpatchset@localhost.localdomain> <20100208095530.3612.7843.sendpatchset@localhost.localdomain>
+In-Reply-To: <20100208095530.3612.7843.sendpatchset@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andreas Petlund schrieb:
-> Major change: Limit number of thin linear timeout tries to TCP_THIN_LT_RETRIES (currently 6).
+On 02/08/2010 03:52 AM, Amerigo Wang wrote:
+> Similar to the previous PM case, in iosched, we hold an s_active
+> lock to store "scheduler", meanwhile we want to remove "iosched/*"
+> files.
 > 
->>From ec71404702149bc9197c749e5d1d68656c87f98f Mon Sep 17 00:00:00 2001
-> From: Andreas Petlund <apetlund@simula.no>
-> Date: Mon, 8 Feb 2010 14:05:53 +0100
-> Subject: [PATCH 2/3] net: TCP thin linear timeouts
+> This patch depends on the previous one. I tested it on my machine,
+> it fixes the problem.
 > 
-> 
-> Signed-off-by: Andreas Petlund <apetlund@simula.no>
-> ---
->  include/linux/sysctl.h     |    1 +
->  include/linux/tcp.h        |    3 +++
->  include/net/tcp.h          |    4 ++++
->  net/ipv4/sysctl_net_ipv4.c |    7 +++++++
->  net/ipv4/tcp.c             |    5 +++++
->  net/ipv4/tcp_timer.c       |   19 ++++++++++++++++++-
->  6 files changed, 38 insertions(+), 1 deletions(-)
-> 
-> diff --git a/include/linux/sysctl.h b/include/linux/sysctl.h
-> index 9f236cd..d840d75 100644
-> --- a/include/linux/sysctl.h
-> +++ b/include/linux/sysctl.h
-> @@ -425,6 +425,7 @@ enum
->  	NET_TCP_ALLOWED_CONG_CONTROL=123,
->  	NET_TCP_MAX_SSTHRESH=124,
->  	NET_TCP_FRTO_RESPONSE=125,
-> +	NET_TCP_FORCE_THIN_LINEAR_TIMEOUTS=126,
->  };
->  
->  enum {
-> diff --git a/include/linux/tcp.h b/include/linux/tcp.h
-> index 7fee8a4..67da706 100644
-> --- a/include/linux/tcp.h
-> +++ b/include/linux/tcp.h
-> @@ -103,6 +103,7 @@ enum {
->  #define TCP_CONGESTION		13	/* Congestion control algorithm */
->  #define TCP_MD5SIG		14	/* TCP MD5 Signature (RFC2385) */
->  #define TCP_COOKIE_TRANSACTIONS	15	/* TCP Cookie Transactions */
-> +#define TCP_THIN_LT             16      /* Use linear timeouts for thin streams*/
->  
->  /* for TCP_INFO socket option */
->  #define TCPI_OPT_TIMESTAMPS	1
-> @@ -341,6 +342,8 @@ struct tcp_sock {
->  	u16	advmss;		/* Advertised MSS			*/
->  	u8	frto_counter;	/* Number of new acks after RTO */
->  	u8	nonagle;	/* Disable Nagle algorithm?             */
-> +	u8      thin_lt     : 1,/* Use linear timeouts for thin streams */
-> +		thin_undef  : 7;
->  
->  /* RTT measurement */
->  	u32	srtt;		/* smoothed round trip time << 3	*/
-> diff --git a/include/net/tcp.h b/include/net/tcp.h
-> index e5e2056..bc5856a 100644
-> --- a/include/net/tcp.h
-> +++ b/include/net/tcp.h
-> @@ -196,6 +196,9 @@ extern void tcp_time_wait(struct sock *sk, int state, int timeo);
->  #define TCP_NAGLE_CORK		2	/* Socket is corked	    */
->  #define TCP_NAGLE_PUSH		4	/* Cork is overridden for already queued data */
->  
-> +/* TCP thin-stream limits */
-> +#define TCP_THIN_LT_RETRIES     6       /* After 6 linear retries, do exp. backoff */
-> +
->  extern struct inet_timewait_death_row tcp_death_row;
->  
->  /* sysctl variables for tcp */
-> @@ -241,6 +244,7 @@ extern int sysctl_tcp_workaround_signed_windows;
->  extern int sysctl_tcp_slow_start_after_idle;
->  extern int sysctl_tcp_max_ssthresh;
->  extern int sysctl_tcp_cookie_size;
-> +extern int sysctl_tcp_force_thin_linear_timeouts;
->  
->  extern atomic_t tcp_memory_allocated;
->  extern struct percpu_counter tcp_sockets_allocated;
-> diff --git a/net/ipv4/sysctl_net_ipv4.c b/net/ipv4/sysctl_net_ipv4.c
-> index 7e3712c..cb2ed35 100644
-> --- a/net/ipv4/sysctl_net_ipv4.c
-> +++ b/net/ipv4/sysctl_net_ipv4.c
-> @@ -576,6 +576,13 @@ static struct ctl_table ipv4_table[] = {
->  		.proc_handler	= proc_dointvec
->  	},
->  	{
-> +		.procname       = "tcp_force_thin_linear_timeouts",
-> +		.data           = &sysctl_tcp_force_thin_linear_timeouts,
-> +		.maxlen         = sizeof(int),
-> +		.mode           = 0644,
-> +		.proc_handler   = proc_dointvec
-> +	},
-> +	{
->  		.procname	= "udp_mem",
->  		.data		= &sysctl_udp_mem,
->  		.maxlen		= sizeof(sysctl_udp_mem),
-> diff --git a/net/ipv4/tcp.c b/net/ipv4/tcp.c
-> index d5d69ea..cbc1ee3 100644
-> --- a/net/ipv4/tcp.c
-> +++ b/net/ipv4/tcp.c
-> @@ -2229,6 +2229,11 @@ static int do_tcp_setsockopt(struct sock *sk, int level,
->  		}
->  		break;
->  
-> +	case TCP_THIN_LT:
-> +		if (val)
-> +			tp->thin_lt = 1;
-> +		break;
-> +
->  	case TCP_CORK:
->  		/* When set indicates to always queue non-full frames.
->  		 * Later the user clears this option and we transmit
-> diff --git a/net/ipv4/tcp_timer.c b/net/ipv4/tcp_timer.c
-> index de7d1bf..f01a585 100644
-> --- a/net/ipv4/tcp_timer.c
-> +++ b/net/ipv4/tcp_timer.c
-> @@ -29,6 +29,7 @@ int sysctl_tcp_keepalive_intvl __read_mostly = TCP_KEEPALIVE_INTVL;
->  int sysctl_tcp_retries1 __read_mostly = TCP_RETR1;
->  int sysctl_tcp_retries2 __read_mostly = TCP_RETR2;
->  int sysctl_tcp_orphan_retries __read_mostly;
-> +int sysctl_tcp_force_thin_linear_timeouts __read_mostly;
->  
->  static void tcp_write_timer(unsigned long);
->  static void tcp_delack_timer(unsigned long);
-> @@ -415,7 +416,23 @@ void tcp_retransmit_timer(struct sock *sk)
->  	icsk->icsk_retransmits++;
->  
->  out_reset_timer:
-> -	icsk->icsk_rto = min(icsk->icsk_rto << 1, TCP_RTO_MAX);
-> +	/* If stream is thin, use linear timeouts. Since 'icsk_backoff' is
-> +	 * used to reset timer, set to 0. Recalculate 'icsk_rto' as this
-> +	 * might be increased if the stream oscillates between thin and thick,
-> +	 * thus the old value might already be too high compared to the value
-> +	 * set by 'tcp_set_rto' in tcp_input.c which resets the rto without
-> +	 * backoff. Limit to TCP_THIN_LT_RETRIES before initiating exponential
-> +	 * backoff behaviour to avoid continue hammering linear-timeout 
-> +	 * retransmissions into a black hole*/
-> +	if ((tp->thin_lt || sysctl_tcp_force_thin_linear_timeouts) &&
-> +	    tcp_stream_is_thin(sk) && sk->sk_state == TCP_ESTABLISHED &&
-> +	    icsk->icsk_retransmits <= TCP_THIN_LT_RETRIES) {
-> +		icsk->icsk_backoff = 0;
+> Reported-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+> Signed-off-by: WANG Cong <amwang@redhat.com>
+> Cc: Jens Axboe <jens.axboe@oracle.com>
 
-Hi,
-I think, this value should be at least 1, as icsk_backoff
-might be decreased to -1 and used for bit-shifting in tcp_v4_err().
-A lower boundary check might be even better.
+After applying the 2 patches to 2.6.33-rc7, I get the following:
 
-Regards
- Damian
+ACPI: bus type pci registered
+PCI: MMCONFIG for domain 0000 [bus 00-09] at [mem 0xe0000000-0xe09fffff] (base
+0xe0000000)
+PCI: MMCONFIG at [mem 0xe0000000-0xe09fffff] reserved in E820
+PCI: Using configuration type 1 for base access
+INFO: trying to register non-static key.
+the code is fine but needs lockdep annotation.
+turning off the locking correctness validator.
+Pid: 1, comm: swapper Not tainted 2.6.33-rc7-Linus-00010-g6339204-dirty #181
+Call Trace:
+ [<ffffffff8107c6e6>] __lock_acquire+0xf86/0x1d30
+ [<ffffffff81078e7f>] ? lockdep_init_map+0x5f/0x5d0
+ [<ffffffff8107d52b>] lock_acquire+0x9b/0x120
+ [<ffffffff81167a93>] ? sysfs_addrm_finish+0x43/0x70
+ [<ffffffff81167243>] sysfs_deactivate+0xc3/0x110
+ [<ffffffff81167a93>] ? sysfs_addrm_finish+0x43/0x70
+ [<ffffffff813124d3>] ? mutex_lock_nested+0x243/0x300
+ [<ffffffff81167a93>] sysfs_addrm_finish+0x43/0x70
+ [<ffffffff81167af6>] remove_dir+0x36/0x40
+ [<ffffffff81167b09>] sysfs_remove_subdir+0x9/0x10
+ [<ffffffff81168ff6>] sysfs_remove_group+0x66/0xf0
+ [<ffffffff81861555>] param_sysfs_init+0x102/0x277
+ [<ffffffff8124a5bd>] ? sysdev_create_file+0xd/0x10
+ [<ffffffff8130fe46>] ? register_cpu+0xa3/0xa5
+ [<ffffffff81861453>] ? param_sysfs_init+0x0/0x277
+ [<ffffffff810001d7>] do_one_initcall+0x37/0x190
+ [<ffffffff8184c6d0>] kernel_init+0x14f/0x1a5
+ [<ffffffff81003bd4>] kernel_thread_helper+0x4/0x10
+ [<ffffffff8131417c>] ? restore_args+0x0/0x30
+ [<ffffffff8184c581>] ? kernel_init+0x0/0x1a5
+ [<ffffffff81003bd0>] ? kernel_thread_helper+0x0/0x10
 
+This dump does not occur with standard 2.6.33-rc7. As the above turns off the
+locking correctness validator, I cannot really test to see what happens when
+suspending.
 
-> +		icsk->icsk_rto = min(__tcp_set_rto(tp), TCP_RTO_MAX);
-> +	} else {
-> +		/* Use normal (exponential) backoff */
-> +		icsk->icsk_rto = min(icsk->icsk_rto << 1, TCP_RTO_MAX);
-> +	}
->  	inet_csk_reset_xmit_timer(sk, ICSK_TIME_RETRANS, icsk->icsk_rto, TCP_RTO_MAX);
->  	if (retransmits_timed_out(sk, sysctl_tcp_retries1 + 1))
->  		__sk_dst_reset(sk);
-
+Larry
