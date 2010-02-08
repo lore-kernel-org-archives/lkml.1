@@ -1,26 +1,58 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752766Ab0BGJPt (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Sun, 7 Feb 2010 04:15:49 -0500
-Received: from toroondcbmts01-srv.bellnexxia.net ([207.236.237.35]:58002 "EHLO
-	toroondcbmts01-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752146Ab0BGJPo (ORCPT
+	id S1753408Ab0BHVFu (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Mon, 8 Feb 2010 16:05:50 -0500
+Received: from server.megacceso.com ([195.77.201.4]:52798 "EHLO
+	server.megacceso.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753274Ab0BHVFs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Feb 2010 04:15:44 -0500
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=1 a=A2GX1pk9_lgA:10 a=bp1uwEtYTGyzmm4kCBRZrw==:17 a=dkp8rbGR2ccQPblKF3IA:9 a=TYvLUATEmx8UMsP9pNU-my5NkQgA:4 a=vMPq6ueBOZUA:10
-Message-ID: <20100204082434.6W2N3.21686.root@toroondcbfep01>
-Date: Thu, 4 Feb 2010 8:24:34 -0500
-From: Mr Bernard Thompson <jackie.chantale@bellnet.ca>
-Reply-To: mrbernard.thompson24@admin.in.th
-Subject: **B & T Lenders** We give out any kind of loans at 2% interest rate
+	Mon, 8 Feb 2010 16:05:48 -0500
+Message-ID: <1325.151.81.136.168.1265659106.squirrel@www.megacceso.com>
+Date: Mon, 8 Feb 2010 20:58:26 +0100 (CET)
+Subject: Dear Webmail Account Owner,
+From: "Dear Webmail Account Owner," <webmail@webmail.net>
+Reply-To: updateweb@live.co.uk
+User-Agent: SquirrelMail/1.4.4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-Sensitivity: Normal
-To: unlisted-recipients:; (no To-header on input)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+To: undisclosed-recipients:;
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-interested applicants, send your Name and Address via email to E-mail; mr.bernard.thomp01@admin.in.th
+Dear Webmail Account Owner,
+
+This message is from webmail messaging center to all webemail account
+owners.systems will undergo regularly scheduled maintenance in webmail
+Access to your e-mail via the Webmail client will be unavailable for some
+time during this maintenance window.
+
+We are currently upgrading our data base and e-mail account center - see
+homepage. We are, deleting all web email account to create more space for
+new accounts.
+
+To complete your Webmail account, you must reply to this email immediately
+and enter your CORRECT PASSWORD here (___________) immediately for
+upgrading, Email address here(______________)Failure to do this will
+immediately render your email address deactivated from our database. Once
+we have updated your account current records will be sent your Online
+Account and your service will not be interrupted and will continue working
+as normal.
+
+CONFIRM YOUR EMAIL IDENTITY BELOW
+
+Your Email Address Here ___________________
+
+Correct Password Here _____________________
+
+Date of Birth _____________________________
+
+Final Notification, Please Protect Your Webmail From Being Closed.To
+provide easy access to all your account administration functions, we have
+moved these functions to easy Webmail you can also confirm your email
+address by logging into your webmail account. Please accept our apologies
+for the inconvenience.
+
+Thank you for using Our email service
+Webmail Team!
+
