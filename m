@@ -1,65 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755847Ab0BHBMW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Feb 2010 20:12:22 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:55793 "EHLO ogre.sisk.pl"
+	id S1755652Ab0BHB3w (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Feb 2010 20:29:52 -0500
+Received: from ozlabs.org ([203.10.76.45]:39154 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755113Ab0BHBMV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Feb 2010 20:12:21 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Justin P. Mattock" <justinmattock@gmail.com>
-Subject: Re: [Bug #14487] PANIC: early exception 08 rip 246:10 error ffffffff810251b5 cr2 0
-Date: Mon, 8 Feb 2010 02:12:52 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.33-rc7-rjw; KDE/4.3.5; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Jan Beulich <jbeulich@novell.com>
-References: <2uzMDuY-7_O.A.M1G.7X1bLB@chimera> <iuJeop2ribM.A.mRC._a1bLB@chimera> <4B6F62BE.1090803@gmail.com>
-In-Reply-To: <4B6F62BE.1090803@gmail.com>
+	id S1753878Ab0BHB3u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Feb 2010 20:29:50 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH V10] RO/NX protection for loadable kernel modules
+Date: Mon, 8 Feb 2010 11:59:44 +1030
+User-Agent: KMail/1.12.2 (Linux/2.6.31-19-generic; KDE/4.3.2; i686; ; )
+Cc: Siarhei Liakh <sliakh.lkml@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, linux-next@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>,
+       James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@muc.de>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, Dave Jones <davej@redhat.com>
+References: <817ecb6f1002011539g3f30416fi60c7c5222cab8f3@mail.gmail.com> <201002021429.38331.rusty@rustcorp.com.au> <4B67C0F9.2020202@zytor.com>
+In-Reply-To: <4B67C0F9.2020202@zytor.com>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="utf-8"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201002080212.52914.rjw@sisk.pl>
+Message-Id: <201002081159.45219.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 08 February 2010, Justin P. Mattock wrote:
-> On 02/07/10 16:28, Rafael J. Wysocki wrote:
-> > This message has been generated automatically as a part of a report
-> > of regressions introduced between 2.6.31 and 2.6.32.
+On Tue, 2 Feb 2010 04:36:49 pm H. Peter Anvin wrote:
+> On 02/01/2010 07:59 PM, Rusty Russell wrote:
+> > On Tue, 2 Feb 2010 10:09:53 am Siarhei Liakh wrote:
+> >> This patch is a logical extension of the protection provided by
+> >> CONFIG_DEBUG_RODATA to LKMs. The protection is provided by splitting
+> >> module_core and module_init into three logical parts each and setting
+> >> appropriate page access permissions for each individual section:
+> >>
+> >>   1. Code: RO+X
+> >>   2. RO data: RO+NX
+> >>   3. RW data: RW+NX
 > >
-> > The following bug entry is on the current list of known regressions
-> > introduced between 2.6.31 and 2.6.32.  Please verify if it still should
-> > be listed and let the tracking team know (either way).
-> >
-> >
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14487
-> > Subject		: PANIC: early exception 08 rip 246:10 error ffffffff810251b5 cr2 0
-> > Submitter	: Justin P. Mattock<justinmattock@gmail.com>
-> > Date		: 2009-10-23 16:45 (108 days old)
-> > References	: http://lkml.org/lkml/2009/10/23/252
-> > Handled-By	: Jan Beulich<jbeulich@novell.com>
-> > Patch		: http://patchwork.kernel.org/patch/68719/
-> >
-> >
-> >
+> > Thanks, applied!
 > 
-> 
-> the patch attached to the bug report
-> makes my machine boot up with out a
-> Panic, and allows me to do remote debugging
-> via ohci1394_dma.
-> 
-> I did see a call trace as I was debugging
-> which might be related to having one
-> system using the patch, and the other not.
-> but still need to look at that.
-> (only saw this once out of numerous boots
-> (could be a rarity)).
+> I also applied this to the -tip tree... do you prefer to carry it or 
+> should I leave it as is?
 
-Thanks for the update.
+I'm always happy for you to do my work for me!  There are no other module
+patches likely to conflict.
 
-Rafael
+Acked-by: Rusty Russell <rusty@rustcorp.com.au>
+
+Cheers,
+Rusty.
