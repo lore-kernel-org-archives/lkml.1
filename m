@@ -1,59 +1,146 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755573Ab0BHKhp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 05:37:45 -0500
-Received: from mail-in-11.arcor-online.net ([151.189.21.51]:46611 "EHLO
-	mail-in-11.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755423Ab0BHKhn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 05:37:43 -0500
-X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-06.arcor-online.net 0E11E39A7A8
-Date: Mon, 8 Feb 2010 11:37:37 +0100 (CET)
-From: Bodo Eggert <7eggert@gmx.de>
-To: Miklos Szeredi <miklos@szeredi.hu>
-cc: 7eggert@gmx.de, viro@ZenIV.linux.org.uk, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, eugene@redhat.com, mtk.manpages@gmail.com
-Subject: Re: [RFC PATCH] vfs: add MNT_NOFOLLOW flag to umount(2)
-In-Reply-To: <E1NdJKL-0003K8-S1@pomaz-ex.szeredi.hu>
-Message-ID: <alpine.LNX.1.10.1002081131170.26981@be10.lrz>
-References: <eae9I-mz-1@gated-at.bofh.it> <E1Nd6kb-000458-Ne@be1.7eggert.dyndns.org> <E1NdJKL-0003K8-S1@pomaz-ex.szeredi.hu>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1463758335-457837453-1265625458=:26981"
+	id S1755471Ab0BHKpz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 05:45:55 -0500
+Received: from ozlabs.org ([203.10.76.45]:53904 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753274Ab0BHKpy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Feb 2010 05:45:54 -0500
+From: Michael Neuling <mikey@neuling.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+cc: Anton Blanchard <anton@samba.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alexander Viro <viro@zeniv.linux.org.uk>,
+       Oleg Nesterov <oleg@redhat.com>, James Morris <jmorris@namei.org>,
+       Ingo Molnar <mingo@elte.hu>, linux-fsdevel@vger.kernel.org,
+       stable@kernel.org, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Serge Hallyn <serue@us.ibm.com>,
+       WANG Cong <xiyou.wangcong@gmail.com>, Paul Mackerras <paulus@samba.org>,
+       benh@kernel.crashing.org, miltonm@bga.com, aeb@cwi.nl
+Subject: Re: [PATCH] Restrict stack space reservation to rlimit
+In-reply-to: <20100208145240.FB58.A69D9226@jp.fujitsu.com>
+References: <20100208141716.FB55.A69D9226@jp.fujitsu.com> <9729.1265607469@neuling.org> <20100208145240.FB58.A69D9226@jp.fujitsu.com>
+Comments: In-reply-to KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+   message dated "Mon, 08 Feb 2010 15:05:42 +0900."
+X-Mailer: MH-E 8.2; nmh 1.3; GNU Emacs 23.1.1
+Date: Mon, 08 Feb 2010 21:45:51 +1100
+Message-ID: <32102.1265625951@neuling.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
----1463758335-457837453-1265625458=:26981
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+In message <20100208145240.FB58.A69D9226@jp.fujitsu.com> you wrote:
+> > > >  
+> > > > Hi,
+> > > > 
+> > > > > Why do we need page size independent stack size? It seems to have
+> > > > > compatibility breaking risk.
+> > > > 
+> > > > I don't think so. The current behaviour is clearly wrong, we dont need 
+a
+> > > > 16x larger stack just because you went from a 4kB to a 64kB base page
+> > > > size. The user application stack usage is the same in both cases.
+> > > 
+> > > I didn't discuss which behavior is better. Michael said he want to apply
+> > > his patch to 2.6.32 & 2.6.33. stable tree never accept the breaking
+> > > compatibility patch.
+> > > 
+> > > Your answer doesn't explain why can't we wait it until next merge window.
+> > > 
+> > > btw, personally, I like page size indepent stack size. but I'm not sure
+> > > why making stack size independency is related to bug fix.
+> > 
+> > I tend to agree.  
+> > 
+> > Below is just the bug fix to limit the reservation size based rlimit.
+> > We still reserve different stack sizes based on the page size as
+> > before (unless we hit rlimit of course).
+> 
+> Thanks.
+> 
+> I agree your patch in almost part. but I have very few requests.
+> 
+> 
+> > Mikey
+> > 
+> > Restrict stack space reservation to rlimit
+> > 
+> > When reserving stack space for a new process, make sure we're not
+> > attempting to allocate more than rlimit allows.
+> > 
+> > This fixes a bug cause by b6a2fea39318e43fee84fa7b0b90d68bed92d2ba 
+> > "mm: variable length argument support" and unmasked by
+> > fc63cf237078c86214abcb2ee9926d8ad289da9b 
+> > "exec: setup_arg_pages() fails to return errors".
+> 
+> Your initial mail have following problem use-case. please append it
+> into the patch description.
+> 
+> 	On recent ppc64 kernels, limiting the stack (using 'ulimit -s blah') is
+> 	now more restrictive than it was before.  On 2.6.31 with 4k pages I
+> 	could run 'ulimit -s 16; /usr/bin/test' without a problem.  Now with
+> 	mainline, even 'ulimit -s 64; /usr/bin/test' gets killed.
 
-On Fri, 5 Feb 2010, Miklos Szeredi wrote:
+Ok,  I'll add this info in.  
 
-> On Thu, 04 Feb 2010, Bodo Eggert wrote:
->> Miklos Szeredi <miklos@szeredi.hu> wrote:
->>
->>> Additionally, return -EINVAL if an unknown flag is encountered.  This
->>> makes it possible for the caller to determine if a flag is supported
->>> or not (at least on kernels with this patch).
->>
->> There should be a guaranteed-to-be-invalid flag or flag-combination in
->> order to safely detect this feature.
->
-> It's difficult though, because the app would have to make sure the
-> detection itself would reliably fail, and with a different error.
->
-> Simply checking the kernel version might be easier.
+> 
+> > 
+> > Signed-off-by: Michael Neuling <mikey@neuling.org>
+> > Cc: Anton Blanchard <anton@samba.org>
+> > Cc: stable@kernel.org
+> > ---
+> >  fs/exec.c |    7 +++++--
+> >  1 file changed, 5 insertions(+), 2 deletions(-)
+> > 
+> > Index: linux-2.6-ozlabs/fs/exec.c
+> > ===================================================================
+> > --- linux-2.6-ozlabs.orig/fs/exec.c
+> > +++ linux-2.6-ozlabs/fs/exec.c
+> > @@ -627,10 +627,13 @@ int setup_arg_pages(struct linux_binprm 
+> >  			goto out_unlock;
+> >  	}
+> >  
+> > +	stack_base = min(EXTRA_STACK_VM_PAGES * PAGE_SIZE,
+> > +			 current->signal->rlim[RLIMIT_STACK].rlim_cur -
+> > +			   PAGE_SIZE);
+> 
+> This line is a bit unclear why "- PAGE_SIZE" is necessary.
 
-Yes, that's exactly what I intend to make possible:
+This is because the stack is already 1 page in size.  I'm going to
+change that code to make it clearer...  hopefully :-)
 
-| ret =3D umount("/tmp/mkstmp", UMOUNT_IMPOSSIBLE_FLAG);
-| if (ret !=3D -1 || errno !=3D -EINVAL)
-|     goto extended_mount_flags_are_not_supported;
+> personally, I like following likes explicit comments.
+> 
+> 	stack_expand = EXTRA_STACK_VM_PAGES * PAGE_SIZE;
+> 	stack_lim = ACCESS_ONCE(rlim[RLIMIT_STACK].rlim_cur);
+> 
+> 	/* Initial stack must not cause stack overflow. */
+> 	if (stack_expand + PAGE_SIZE > stack_lim)
+> 		stack_expand = stack_lim - PAGE_SIZE;
+> 
+> note: accessing rlim_cur require ACCESS_ONCE.
+> 
+> 
+> Thought?
 
-Checking the kernel version is a bad idea, because the application might=20
-be portable, or features might be backported. =A2=A2
----1463758335-457837453-1265625458=:26981--
+Thanks, looks better/clearer to me too.  I'll change, new patch coming....
+
+Mikey
+
+> 
+> 
+> >  #ifdef CONFIG_STACK_GROWSUP
+> > -	stack_base = vma->vm_end + EXTRA_STACK_VM_PAGES * PAGE_SIZE;
+> > +	stack_base = vma->vm_end + stack_base;
+> >  #else
+> > -	stack_base = vma->vm_start - EXTRA_STACK_VM_PAGES * PAGE_SIZE;
+> > +	stack_base = vma->vm_start - stack_base;
+> >  #endif
+> >  	ret = expand_stack(vma, stack_base);
+> >  	if (ret)
+> > 
+> 
+> 
+> 
