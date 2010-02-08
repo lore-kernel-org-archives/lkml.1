@@ -1,48 +1,49 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933035Ab0BHAJg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Feb 2010 19:09:36 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:55387 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757562Ab0BHAJe convert rfc822-to-8bit (ORCPT
+	id S1753595Ab0BHA0M (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Feb 2010 19:26:12 -0500
+Received: from mail-out.m-online.net ([212.18.0.10]:58358 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751797Ab0BHA0I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Feb 2010 19:09:34 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: =?iso-8859-2?q?Mat=ECj_Laitl?= <strohel@gmail.com>
-Subject: Re: [Bug #15114] X.org hang with [drm:i915_gem_do_execbuffer] *ERROR* in dmesg
-Date: Mon, 8 Feb 2010 01:09:58 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.33-rc7-rjw; KDE/4.3.5; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>
-References: <4Ht3jFrT7uE.A.JI.-nzbLB@chimera> <445R0ey9hAI.A.1tB.7ozbLB@chimera> <201002080016.36393.strohel@gmail.com>
-In-Reply-To: <201002080016.36393.strohel@gmail.com>
+	Sun, 7 Feb 2010 19:26:08 -0500
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] compat_ioctl: add compat handler for TIOCGSID ioctl
+X-Yow: Someone is DROOLING on my collar!!
+Date: Mon, 08 Feb 2010 01:26:03 +0100
+Message-ID: <m21vgwa7z8.fsf@igel.home>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.92 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <201002080109.58924.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 08 February 2010, Matìj Laitl wrote:
-> On Sunday 07 February 2010 23:28:50 Rafael J. Wysocki wrote:
-> > This message has been generated automatically as a part of a summary report
-> > of recent regressions.
-> > 
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.32.  Please verify if it still should be listed and let the
-> > tracking team know (either way).
-> > 
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15114
-> > Subject		: X.org hang with [drm:i915_gem_do_execbuffer] *ERROR* in dmesg
-> > Submitter	: Matej Laitl <strohel@gmail.com>
-> > Date		: 2010-01-23 19:54 (16 days old)
-> 
-> I confirm the regression still exists in 2.6.33-rc6-00228-g56dca4c
+This is used by tcgetsid(3).
 
-Thanks for the update.
+Signed-off-by: Andreas Schwab <schwab@linux-m68k.org>
+---
+ fs/compat_ioctl.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-Rafael
+diff --git a/fs/compat_ioctl.c b/fs/compat_ioctl.c
+index c5c45de..a2f21bc 100644
+--- a/fs/compat_ioctl.c
++++ b/fs/compat_ioctl.c
+@@ -936,6 +936,7 @@ COMPATIBLE_IOCTL(TCSETSF)
+ COMPATIBLE_IOCTL(TIOCLINUX)
+ COMPATIBLE_IOCTL(TIOCSBRK)
+ COMPATIBLE_IOCTL(TIOCCBRK)
++COMPATIBLE_IOCTL(TIOCGSID)
+ COMPATIBLE_IOCTL(TIOCGICOUNT)
+ /* Little t */
+ COMPATIBLE_IOCTL(TIOCGETD)
+-- 
+1.6.6.1
+
+
+-- 
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
