@@ -1,15 +1,15 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933757Ab0BHAsI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Feb 2010 19:48:08 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:55675 "EHLO ogre.sisk.pl"
+	id S1757920Ab0BHAsp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Feb 2010 19:48:45 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:55656 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933707Ab0BHAr6 convert rfc822-to-8bit (ORCPT
+	id S933608Ab0BHAr0 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Feb 2010 19:47:58 -0500
+	Sun, 7 Feb 2010 19:47:26 -0500
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
        Maciej Rutecki <maciej.rutecki@gmail.com>,
-       "Cijoml Cijomlovic Cijomlov" <cijoml@volny.cz>
+       "Rich Ercolani" <rercola@acm.jhu.edu>
 References: <2uzMDuY-7_O.A.M1G.7X1bLB@chimera>
 In-Reply-To: <2uzMDuY-7_O.A.M1G.7X1bLB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -17,8 +17,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <iuJeop2ribM.A.D3G.AY1bLB@chimera>
-Subject: [Bug #15220] Kernel freezes when playing DVB stream and having 3D acceleration in the same time
+Message-ID: <iuJeop2ribM.A.44G.CY1bLB@chimera>
+Subject: [Bug #15206] uvcvideo fails to work since 2.6.32
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Mon,  8 Feb 2010 01:28:29 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -33,9 +33,9 @@ introduced between 2.6.31 and 2.6.32.  Please verify if it still should
 be listed and let the tracking team know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15220
-Subject		: Kernel freezes when playing DVB stream and having 3D acceleration in the same time
-Submitter	: Cijoml Cijomlovic Cijomlov <cijoml@volny.cz>
-Date		: 2010-02-03 20:34 (5 days old)
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15206
+Subject		: uvcvideo fails to work since 2.6.32
+Submitter	: Rich Ercolani <rercola@acm.jhu.edu>
+Date		: 2010-02-01 12:51 (7 days old)
 
 
