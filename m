@@ -1,66 +1,67 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754135Ab0BHStQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 13:49:16 -0500
-Received: from mga09.intel.com ([134.134.136.24]:48164 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753408Ab0BHStO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 13:49:14 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,431,1262592000"; 
-   d="scan'208";a="594129386"
-Subject: Re: PATCH? process_32.c:__switch_to() calls __math_state_restore()
- before updating current_task
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Arjan van de Ven <arjan@linux.intel.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20100205124407.GA24974@redhat.com>
-References: <20100204165105.GA5905@redhat.com>
-	 <1265305253.2768.7.camel@sbs-t61.sc.intel.com>
-	 <20100205124407.GA24974@redhat.com>
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Mon, 08 Feb 2010 10:48:10 -0800
-Message-Id: <1265654890.2843.27.camel@sbs-t61.sc.intel.com>
+	id S1754144Ab0BHSvW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 13:51:22 -0500
+Received: from outbound-mail-313.bluehost.com ([67.222.54.6]:43776 "HELO
+	outbound-mail-313.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753963Ab0BHSvU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Feb 2010 13:51:20 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=mBCG+lqSO631pQO1LbSX2lD9YfAFkhmr/CmAnCFN8j/ghTlgExgkATcBhDNDy+UI0uKhiQFKbTxguL9prTARxJV6UqEA3i4mcZ6MYHnMF667Yex8L7Xkz13K3mSqM1X7;
+Date: Mon, 8 Feb 2010 10:50:12 -0800
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
+Subject: Re: [PATCH -next] pci hotplug: fix ibmphp build error
+Message-ID: <20100208105012.17053238@jbarnes-piketon>
+In-Reply-To: <4B6B2A27.9070600@oracle.com>
+References: <20100204185736.6628ab9a.sfr@canb.auug.org.au>
+	<4B6B2A27.9070600@oracle.com>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-02-05 at 04:44 -0800, Oleg Nesterov wrote:
-> Could you please explain me another issue? I know nothing about fpu
-> handling, I am reading this code trying to understand the unrelated
-> bug with the old kernel.
+On Thu, 04 Feb 2010 12:12:23 -0800
+Randy Dunlap <randy.dunlap@oracle.com> wrote:
+
+> From: Randy Dunlap <randy.dunlap@oracle.com>
 > 
-> In short: why restore_i387_xstate() does init_fpu() when !used_math(),
-> can't (or shouldn't) it merely do set_used_math() ?
+> Add header file to fix build error:
 > 
-> 	restore_i387_xstate:
-> 		
-> 		if (!used_math()) {
-> 			err = init_fpu(tsk);
-> 			if (err)
-> 				return err;
-> 		}
+> drivers/pci/hotplug/ibmphp_hpc.c:135: error: implicit declaration of
+> function 'init_MUTEX' drivers/pci/hotplug/ibmphp_hpc.c:136: error:
+> implicit declaration of function 'init_MUTEX_LOCKED'
+> drivers/pci/hotplug/ibmphp_hpc.c:797: error: implicit declaration of
+> function 'down' drivers/pci/hotplug/ibmphp_hpc.c:807: error: implicit
+> declaration of function 'up'
 > 
-> note that buf != NULL. This means that used_math() was true when
-> get_sigframe() was called, otherwise buf == sigcontext->fpstate
-> would be NULL, right?
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> ---
+>   drivers/pci/hotplug/ibmphp_hpc.c |    1 +
+>   1 file changed, 1 insertion(+)
+> 
+> --- linux-next-20100204.orig/drivers/pci/hotplug/ibmphp_hpc.c
+> +++ linux-next-20100204/drivers/pci/hotplug/ibmphp_hpc.c
+> @@ -35,6 +35,7 @@
+>   #include <linux/init.h>
+>   #include <linux/mutex.h>
+>   #include <linux/sched.h>
+> +#include <linux/semaphore.h>
+>   #include <linux/kthread.h>
+>   #include "ibmphp.h"
+>   
+> 
 
-No. When the signal is delivered sigcontext->fpstate can be null and
-when we return from the signal handler, user can update the
-sigcontext->fpstate pointer and the user expects the kernel to update
-the fpstate of the process accordingly.
+Applied to linux-next, thanks.
 
-> So, the task must have the valid ->thread.xstate, 
-
-Need not be.
-
-thanks,
-suresh
-
+-- 
+Jesse Barnes, Intel Open Source Technology Center
