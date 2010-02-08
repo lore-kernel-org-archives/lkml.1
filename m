@@ -1,70 +1,87 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751430Ab0BHMLF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 07:11:05 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:46956 "EHLO gir.skynet.ie"
+	id S1751451Ab0BHMaZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 07:30:25 -0500
+Received: from wine.ocn.ne.jp ([122.1.235.145]:51126 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750984Ab0BHMLD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 07:11:03 -0500
-Date: Mon, 8 Feb 2010 12:10:48 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: David Rientjes <rientjes@google.com>
-Cc: Andrea Arcangeli <aarcange@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Adam Litke <agl@us.ibm.com>, Avi Kivity <avi@redhat.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 2/7] Export unusable free space index via
-	/proc/pagetypeinfo
-Message-ID: <20100208121048.GB23680@csn.ul.ie>
-References: <1262795169-9095-1-git-send-email-mel@csn.ul.ie> <1262795169-9095-3-git-send-email-mel@csn.ul.ie> <alpine.DEB.2.00.1001281411290.30252@chino.kir.corp.google.com> <20100205102349.GB20412@csn.ul.ie> <alpine.DEB.2.00.1002051336360.12934@chino.kir.corp.google.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.1002051336360.12934@chino.kir.corp.google.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	id S1750955Ab0BHMaW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Feb 2010 07:30:22 -0500
+To: tglx@linutronix.de
+Cc: oleg@redhat.com, linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com,
+       linux-security-module@vger.kernel.org
+Subject: [PATCH] Update comment on find_task_by_pid_ns
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+References: <20091210001308.247025548@linutronix.de>
+	<20091210004703.029784964@linutronix.de>
+	<20091210142036.GA8226@redhat.com>
+	<200912110008.BEJ00511.FVOJLtSMOFHOQF@I-love.SAKURA.ne.jp>
+	<alpine.LFD.2.00.0912102214180.3089@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0912102214180.3089@localhost.localdomain>
+Message-Id: <201002082130.JDC57339.OHOVJFQtFSLFMO@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.51 PL2]
+X-Accept-Language: ja,en,zh
+Date: Mon, 8 Feb 2010 21:30:17 +0900
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 05, 2010 at 01:40:21PM -0800, David Rientjes wrote:
-> On Fri, 5 Feb 2010, Mel Gorman wrote:
-> 
-> > > > +	/*
-> > > > +	 * Index should be a value between 0 and 1. Return a value to 3
-> > > > +	 * decimal places.
-> > > > +	 *
-> > > > +	 * 0 => no fragmentation
-> > > > +	 * 1 => high fragmentation
-> > > > +	 */
-> > > > +	return ((info->free_pages - (info->free_blocks_suitable << order)) * 1000) / info->free_pages;
-> > > > +
-> > > 
-> > > This value is only for userspace consumption via /proc/pagetypeinfo, so 
-> > > I'm wondering why it needs to be exported as an index.  Other than a loss 
-> > > of precision, wouldn't this be easier to understand (especially when 
-> > > coupled with the free page counts already exported) if it were multipled 
-> > > by 100 rather than 1000 and shown as a percent of _usable_ free memory at 
-> > > each order? 
+Thomas Gleixner wrote:
+> On Fri, 11 Dec 2009, Tetsuo Handa wrote:
+> > > Usually tasklist gives enough protection, but if copy_process() fails
+> > > it calls free_pid() lockless and does call_rcu(delayed_put_pid().
+> > > This means, without rcu lock find_pid_ns() can't scan the hash table
+> > > safely.
 > > 
-> > I find it easier to understand either way, but that's hardly a surprise.
-> > The 1000 is because of the loss of precision. I can make it a 100 but I
-> > don't think it makes much of a difference.
+> > So, we need to change below comment from "or" to "and" ?
+> 
+> No, both functions must be called with rcu_read_lock()
+> 
+> tasklist_lock read-held is not protecting the rcu lists and does not
+> protect against a concurrent update. It merily protects against tasks
+> going away or being added while we look up the lists.
+>  
+> > 378 /*
+> > 379  * Must be called under rcu_read_lock() or with tasklist_lock read-held.
+> > 380  */
+> > 381 struct task_struct *find_task_by_pid_ns(pid_t nr, struct pid_namespace *ns)
+> > 382 {
+> > 383         return pid_task(find_pid_ns(nr, ns), PIDTYPE_PID);
+> > 384 }
+> > 385
+> > 386 struct task_struct *find_task_by_vpid(pid_t vnr)
+> > 387 {
+> > 388         return find_task_by_pid_ns(vnr, current->nsproxy->pid_ns);
+> > 389 }
 > > 
 > 
-> This suggestion was coupled with the subsequent note that there is no 
-> documentation of what "unusuable free space index" is, except by the 
-> implementation itself.  Since the value isn't used by the kernel,  I think 
-> exporting the value as a percent would be easier understood by the user 
-> without looking up the semantics.  I don't have strong feelings either 
-> way, however.
+> Thanks,
 > 
+> 	tglx
 
-I'm writing documentation. I'm keeping with the 1000 value because a) I
-like the precision and b) the fragmentation index is not related to
-percentages and I think having one as a percentage and the other as an
-index would cause confusion. Thanks
+So, we need to update the comment on these functions?
+----------------------------------------
+[PATCH] Update comment on find_task_by_pid_ns
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Caller of find_task_by_vpid() and find_task_by_pid_ns() needs to call
+rcu_read_lock() rather than read_lock(&tasklist_lock) because find_pid_ns()
+uses RCU primitives but spinlock does not prevent RCU callback if preemptive
+RCU ( CONFIG_TREE_PREEMPT_RCU ) is enabled.
+
+Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+---
+ kernel/pid.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- linux-next.orig/kernel/pid.c
++++ linux-next/kernel/pid.c
+@@ -376,7 +376,7 @@ struct task_struct *pid_task(struct pid 
+ EXPORT_SYMBOL(pid_task);
+ 
+ /*
+- * Must be called under rcu_read_lock() or with tasklist_lock read-held.
++ * Must be called under rcu_read_lock().
+  */
+ struct task_struct *find_task_by_pid_ns(pid_t nr, struct pid_namespace *ns)
+ {
