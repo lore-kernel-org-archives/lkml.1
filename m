@@ -1,200 +1,190 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755794Ab0BHUV4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 15:21:56 -0500
-Received: from fmmailgate03.web.de ([217.72.192.234]:53575 "EHLO
-	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754691Ab0BHUNB (ORCPT
+	id S1755713Ab0BHUVw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 15:21:52 -0500
+Received: from fmmailgate02.web.de ([217.72.192.227]:43129 "EHLO
+	fmmailgate02.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754709Ab0BHUNC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 15:13:01 -0500
+	Mon, 8 Feb 2010 15:13:02 -0500
 From: Jan Kiszka <jan.kiszka@web.de>
 To: David Miller <davem@davemloft.net>, Karsten Keil <isdn@linux-pingi.de>
 Cc: linux-kernel@vger.kernel.org, i4ldeveloper@listserv.isdn4linux.de,
        isdn4linux@listserv.isdn4linux.de, netdev@vger.kernel.org,
        Alan Cox <alan@lxorguk.ukuu.org.uk>,
        Marcel Holtmann <marcel@holtmann.org>
-Subject: [PATCH v2 07/41] CAPI: Convert capi drivers rwlock into mutex
-Date: Mon,  8 Feb 2010 21:12:11 +0100
-Message-Id: <afc5cefa3ba6770536b9dea473f8c39320802995.1265659934.git.jan.kiszka@web.de>
+Subject: [PATCH v2 08/41] CAPI: Rework capi_ctr_ready/down
+Date: Mon,  8 Feb 2010 21:12:12 +0100
+Message-Id: <4aaae9df73f1fb2787127395dabe310bc7261980.1265659934.git.jan.kiszka@web.de>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <cover.1265659933.git.jan.kiszka@web.de>
 References: <cover.1265659933.git.jan.kiszka@web.de>
 In-Reply-To: <cover.1265659933.git.jan.kiszka@web.de>
 References: <cover.1265659933.git.jan.kiszka@web.de>
-X-Provags-ID: V01U2FsdGVkX19SasQ430brng35WJ0LMc0bi4cavJ4xKzss5q5D
-	iE1RZhbfISHdzICI+fTQVBpyVnHBBDTlaa69PDJKwH9cdJJBD2
-	5cVwNpziA=
+X-Provags-ID: V01U2FsdGVkX1/ZnvLlL0mVDTBkES7VHxmOuLd4CbM0JyMIWaJi
+	fW/iKI+BnXGlMNvF1Zk/Z2es8eNDVS6FVrQdNifatcZZOG5/Di
+	zY3ITYVZ0=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Turn the lock protecting registered capi drivers into a mutex and apply
-it consistently.
+This step prepares the application of proper controller locking: Push
+all state changing work into the notify handler that are called by
+capi_ctr_ready and capi_ctr_down, switch detach_capi_ctr to issue a
+synchronous ctr_down. Also ensure that we do not go through any action
+if the state did not change.
 
 Signed-off-by: Jan Kiszka <jan.kiszka@web.de>
 ---
- drivers/isdn/capi/kcapi.c      |   49 ++++++++++++++++++----------------------
- drivers/isdn/capi/kcapi.h      |    2 +-
- drivers/isdn/capi/kcapi_proc.c |    8 +++---
- 3 files changed, 27 insertions(+), 32 deletions(-)
+ drivers/isdn/capi/kcapi.c |   95 +++++++++++++++++++++++---------------------
+ 1 files changed, 50 insertions(+), 45 deletions(-)
 
 diff --git a/drivers/isdn/capi/kcapi.c b/drivers/isdn/capi/kcapi.c
-index f37c13b..c46964f 100644
+index c46964f..9362a7a 100644
 --- a/drivers/isdn/capi/kcapi.c
 +++ b/drivers/isdn/capi/kcapi.c
-@@ -61,7 +61,7 @@ static char capi_manufakturer[64] = "AVM Berlin";
- #define NCCI2CTRL(ncci)    (((ncci) >> 24) & 0x7f)
+@@ -169,44 +169,74 @@ static void release_appl(struct capi_ctr *ctr, u16 applid)
  
- LIST_HEAD(capi_drivers);
--DEFINE_RWLOCK(capi_drivers_list_lock);
-+DEFINE_MUTEX(capi_drivers_lock);
- 
- static DEFINE_RWLOCK(application_lock);
- static DEFINE_MUTEX(controller_mutex);
-@@ -540,11 +540,9 @@ EXPORT_SYMBOL(detach_capi_ctr);
- 
- void register_capi_driver(struct capi_driver *driver)
+ static void notify_up(u32 contr)
  {
--	unsigned long flags;
--
--	write_lock_irqsave(&capi_drivers_list_lock, flags);
-+	mutex_lock(&capi_drivers_lock);
- 	list_add_tail(&driver->list, &capi_drivers);
--	write_unlock_irqrestore(&capi_drivers_list_lock, flags);
-+	mutex_unlock(&capi_drivers_lock);
+-	struct capi_ctr *ctr = get_capi_ctr_by_nr(contr);
+ 	struct capi20_appl *ap;
++	struct capi_ctr *ctr;
+ 	u16 applid;
+ 
+-	if (showcapimsgs & 1) {
++	if (showcapimsgs & 1)
+ 	        printk(KERN_DEBUG "kcapi: notify up contr %d\n", contr);
+-	}
+-	if (!ctr) {
++
++	ctr = get_capi_ctr_by_nr(contr);
++	if (ctr) {
++		if (ctr->state == CAPI_CTR_RUNNING)
++			return;
++
++		ctr->state = CAPI_CTR_RUNNING;
++
++		for (applid = 1; applid <= CAPI_MAXAPPL; applid++) {
++			ap = get_capi_appl_by_nr(applid);
++			if (!ap || ap->release_in_progress)
++				continue;
++			register_appl(ctr, applid, &ap->rparam);
++			if (ap->callback && !ap->release_in_progress)
++				ap->callback(KCI_CONTRUP, contr,
++					     &ctr->profile);
++		}
++	} else
+ 		printk(KERN_WARNING "%s: invalid contr %d\n", __func__, contr);
+-		return;
+-	}
+-	for (applid = 1; applid <= CAPI_MAXAPPL; applid++) {
+-		ap = get_capi_appl_by_nr(applid);
+-		if (!ap || ap->release_in_progress) continue;
+-		register_appl(ctr, applid, &ap->rparam);
+-		if (ap->callback && !ap->release_in_progress)
+-			ap->callback(KCI_CONTRUP, contr, &ctr->profile);
+-	}
  }
  
- EXPORT_SYMBOL(register_capi_driver);
-@@ -558,11 +556,9 @@ EXPORT_SYMBOL(register_capi_driver);
+ /* -------- KCI_CONTRDOWN ------------------------------------- */
  
- void unregister_capi_driver(struct capi_driver *driver)
+-static void notify_down(u32 contr)
++static void ctr_down(struct capi_ctr *ctr)
  {
--	unsigned long flags;
--
--	write_lock_irqsave(&capi_drivers_list_lock, flags);
-+	mutex_lock(&capi_drivers_lock);
- 	list_del(&driver->list);
--	write_unlock_irqrestore(&capi_drivers_list_lock, flags);
-+	mutex_unlock(&capi_drivers_lock);
- }
+ 	struct capi20_appl *ap;
+ 	u16 applid;
  
- EXPORT_SYMBOL(unregister_capi_driver);
-@@ -899,7 +895,6 @@ static int old_capi_manufacturer(unsigned int cmd, void __user *data)
- 	struct capi_driver *driver = NULL;
- 	capiloaddata ldata;
- 	struct list_head *l;
--	unsigned long flags;
- 	int retval;
- 
- 	switch (cmd) {
-@@ -919,7 +914,8 @@ static int old_capi_manufacturer(unsigned int cmd, void __user *data)
- 		cparams.irq = cdef.irq;
- 		cparams.cardnr = cdef.cardnr;
- 
--		read_lock_irqsave(&capi_drivers_list_lock, flags);
-+		mutex_lock(&capi_drivers_lock);
+-	if (showcapimsgs & 1) {
+-        	printk(KERN_DEBUG "kcapi: notify down contr %d\n", contr);
+-	}
++	if (ctr->state == CAPI_CTR_DETECTED)
++		return;
 +
-                 switch (cdef.cardtype) {
- 			case AVM_CARDTYPE_B1:
- 				list_for_each(l, &capi_drivers) {
-@@ -940,18 +936,15 @@ static int old_capi_manufacturer(unsigned int cmd, void __user *data)
- 				break;
- 		}
- 		if (!driver) {
--			read_unlock_irqrestore(&capi_drivers_list_lock, flags);
- 			printk(KERN_ERR "kcapi: driver not loaded.\n");
--			return -EIO;
--		}
--		if (!driver->add_card) {
--			read_unlock_irqrestore(&capi_drivers_list_lock, flags);
-+			retval = -EIO;
-+		} else if (!driver->add_card) {
- 			printk(KERN_ERR "kcapi: driver has no add card function.\n");
--			return -EIO;
--		}
-+			retval = -EIO;
-+		} else
-+			retval = driver->add_card(driver, &cparams);
- 
--		retval = driver->add_card(driver, &cparams);
--		read_unlock_irqrestore(&capi_drivers_list_lock, flags);
-+		mutex_unlock(&capi_drivers_lock);
- 		return retval;
- 
- 	case AVMB1_LOAD:
-@@ -1107,6 +1100,8 @@ int capi20_manufacturer(unsigned int cmd, void __user *data)
- 		cparams.cardtype = 0;
- 		cdef.driver[sizeof(cdef.driver)-1] = 0;
- 
-+		mutex_lock(&capi_drivers_lock);
++	ctr->state = CAPI_CTR_DETECTED;
 +
- 		list_for_each(l, &capi_drivers) {
- 			driver = list_entry(l, struct capi_driver, list);
- 			if (strcmp(driver->name, cdef.driver) == 0)
-@@ -1115,15 +1110,15 @@ int capi20_manufacturer(unsigned int cmd, void __user *data)
- 		if (driver == NULL) {
- 			printk(KERN_ERR "kcapi: driver \"%s\" not loaded.\n",
- 					cdef.driver);
--			return -ESRCH;
--		}
--
--		if (!driver->add_card) {
-+			retval = -ESRCH;
-+		} else if (!driver->add_card) {
- 			printk(KERN_ERR "kcapi: driver \"%s\" has no add card function.\n", cdef.driver);
--			return -EIO;
--		}
-+			retval = -EIO;
-+		} else
-+			retval = driver->add_card(driver, &cparams);
++	memset(ctr->manu, 0, sizeof(ctr->manu));
++	memset(&ctr->version, 0, sizeof(ctr->version));
++	memset(&ctr->profile, 0, sizeof(ctr->profile));
++	memset(ctr->serial, 0, sizeof(ctr->serial));
  
--		return driver->add_card(driver, &cparams);
-+		mutex_unlock(&capi_drivers_lock);
-+		return retval;
+ 	for (applid = 1; applid <= CAPI_MAXAPPL; applid++) {
+ 		ap = get_capi_appl_by_nr(applid);
+-		if (ap && ap->callback && !ap->release_in_progress)
+-			ap->callback(KCI_CONTRDOWN, contr, NULL);
++		if (ap && !ap->release_in_progress) {
++			if (ap->callback)
++				ap->callback(KCI_CONTRDOWN, ctr->cnr, NULL);
++			capi_ctr_put(ctr);
++		}
  	}
+ }
  
- 	default:
-diff --git a/drivers/isdn/capi/kcapi.h b/drivers/isdn/capi/kcapi.h
-index f62c53b..07c5850 100644
---- a/drivers/isdn/capi/kcapi.h
-+++ b/drivers/isdn/capi/kcapi.h
-@@ -30,7 +30,7 @@ enum {
- };
- 
- extern struct list_head capi_drivers;
--extern rwlock_t capi_drivers_list_lock;
-+extern struct mutex capi_drivers_lock;
- 
- extern struct capi20_appl *capi_applications[CAPI_MAXAPPL];
- extern struct capi_ctr *capi_controller[CAPI_MAXCONTR];
-diff --git a/drivers/isdn/capi/kcapi_proc.c b/drivers/isdn/capi/kcapi_proc.c
-index 59fd16a..71b0761 100644
---- a/drivers/isdn/capi/kcapi_proc.c
-+++ b/drivers/isdn/capi/kcapi_proc.c
-@@ -238,9 +238,9 @@ static const struct file_operations proc_applstats_ops = {
- // ---------------------------------------------------------------------------
- 
- static void *capi_driver_start(struct seq_file *seq, loff_t *pos)
--	__acquires(&capi_drivers_list_lock)
-+	__acquires(&capi_drivers_lock)
++static void notify_down(u32 contr)
++{
++	struct capi_ctr *ctr;
++
++	if (showcapimsgs & 1)
++		printk(KERN_DEBUG "kcapi: notify down contr %d\n", contr);
++
++	ctr = get_capi_ctr_by_nr(contr);
++	if (ctr)
++		ctr_down(ctr);
++	else
++		printk(KERN_WARNING "%s: invalid contr %d\n", __func__, contr);
++}
++
+ static void notify_handler(struct work_struct *work)
  {
--	read_lock(&capi_drivers_list_lock);
-+	mutex_lock(&capi_drivers_lock);
- 	return seq_list_start(&capi_drivers, *pos);
- }
+ 	struct capi_notifier *np =
+@@ -368,8 +398,6 @@ EXPORT_SYMBOL(capi_ctr_handle_message);
  
-@@ -250,9 +250,9 @@ static void *capi_driver_next(struct seq_file *seq, void *v, loff_t *pos)
- }
- 
- static void capi_driver_stop(struct seq_file *seq, void *v)
--	__releases(&capi_drivers_list_lock)
-+	__releases(&capi_drivers_lock)
+ void capi_ctr_ready(struct capi_ctr *ctr)
  {
--	read_unlock(&capi_drivers_list_lock);
-+	mutex_unlock(&capi_drivers_lock);
- }
+-	ctr->state = CAPI_CTR_RUNNING;
+-
+ 	printk(KERN_NOTICE "kcapi: controller [%03d] \"%s\" ready.\n",
+ 	       ctr->cnr, ctr->name);
  
- static int capi_driver_show(struct seq_file *seq, void *v)
+@@ -388,28 +416,6 @@ EXPORT_SYMBOL(capi_ctr_ready);
+ 
+ void capi_ctr_down(struct capi_ctr *ctr)
+ {
+-	u16 appl;
+-
+-	DBG("");
+-
+-	if (ctr->state == CAPI_CTR_DETECTED)
+-		return;
+-
+-	ctr->state = CAPI_CTR_DETECTED;
+-
+-	memset(ctr->manu, 0, sizeof(ctr->manu));
+-	memset(&ctr->version, 0, sizeof(ctr->version));
+-	memset(&ctr->profile, 0, sizeof(ctr->profile));
+-	memset(ctr->serial, 0, sizeof(ctr->serial));
+-
+-	for (appl = 1; appl <= CAPI_MAXAPPL; appl++) {
+-		struct capi20_appl *ap = get_capi_appl_by_nr(appl);
+-		if (!ap || ap->release_in_progress)
+-			continue;
+-
+-		capi_ctr_put(ctr);
+-	}
+-
+ 	printk(KERN_NOTICE "kcapi: controller [%03d] down.\n", ctr->cnr);
+ 
+ 	notify_push(KCI_CONTRDOWN, ctr->cnr, 0, 0);
+@@ -513,8 +519,7 @@ EXPORT_SYMBOL(attach_capi_ctr);
+ 
+ int detach_capi_ctr(struct capi_ctr *ctr)
+ {
+-	if (ctr->state != CAPI_CTR_DETECTED)
+-		capi_ctr_down(ctr);
++	ctr_down(ctr);
+ 
+ 	ncontrollers--;
+ 
 -- 
 1.6.0.2
 
