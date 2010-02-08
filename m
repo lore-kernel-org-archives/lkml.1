@@ -1,153 +1,172 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752628Ab0BHVRe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 16:17:34 -0500
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:56561 "EHLO e8.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751962Ab0BHVRc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 16:17:32 -0500
-Date: Mon, 8 Feb 2010 13:17:29 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-Cc: linux-kernel@vger.kernel.org, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
-       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
-       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
-Subject: Re: lockdep rcu-preempt and synchronize_srcu() awareness
-Message-ID: <20100208211729.GF6797@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20100208191858.GA16288@Krystal>
+	id S1751975Ab0BHVVP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 16:21:15 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:46349 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751390Ab0BHVVN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Feb 2010 16:21:13 -0500
+Date: Mon, 8 Feb 2010 22:21:01 +0100
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: rtc-linux@googlegroups.com
+Cc: Paul Gortmaker <p_gortmaker@yahoo.com>,
+       Alessandro Zummo <a.zummo@towertech.it>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] rtc/hctosys: only claim the RTC provided the system
+	time if it did
+Message-ID: <20100208212101.GA10953@pengutronix.de>
+References: <1265663419-10165-1-git-send-email-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20100208191858.GA16288@Krystal>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1265663419-10165-1-git-send-email-u.kleine-koenig@pengutronix.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 08, 2010 at 02:18:58PM -0500, Mathieu Desnoyers wrote:
-> Hi,
-> 
-> I just though about the following deadlock scenario involving rcu preempt and
-> mutexes. I see that lockdep does not warn about it, and it actually triggers a
-> deadlock on my box. It might be worth addressing for TREE_PREEMPT_RCU configs.
-> 
-> CPU A:
->     mutex_lock(&test_mutex);
->     synchronize_rcu();
->     mutex_unlock(&test_mutex);
-> 
-> CPU B:
->     rcu_read_lock();
->     mutex_lock(&test_mutex);
->     mutex_unlock(&test_mutex);
->     rcu_read_unlock();
-> 
-> But given that it's not legit to take a mutex from within a rcu read lock in
-> non-preemptible configs, I guess it's not much of a real-life problem, but I
-> think SRCU is also affected, because there is no lockdep annotation around
-> synchronize_srcu().
+Hello,
 
-Indeed, doing this with SRCU would result in deadlock, and it is quite
-legal to acquire mutexes from within SRCU read-side critical sections.
-And similar deadlocks can be constructed using pthread_mutex_lock() and
-user-space RCU implementations.
+On Mon, Feb 08, 2010 at 10:10:18PM +0100, Uwe Kleine-König wrote:
+> Moreover change error handling in rtc_hctosys() to use goto and so
+> reduce the indention level.
+> 
+> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+> ---
+>  drivers/rtc/hctosys.c |   59 ++++++++++++++++++++++++++++--------------------
+>  include/linux/rtc.h   |    6 +++++
+>  2 files changed, 40 insertions(+), 25 deletions(-)
+> 
+> diff --git a/drivers/rtc/hctosys.c b/drivers/rtc/hctosys.c
+> index 33c0e98..bc90b09 100644
+> --- a/drivers/rtc/hctosys.c
+> +++ b/drivers/rtc/hctosys.c
+> @@ -22,48 +22,57 @@
+>   * the best guess is to add 0.5s.
+>   */
+>  
+> +int rtc_hctosys_ret = -ENODEV;
+> +
+>  static int __init rtc_hctosys(void)
+>  {
+> -	int err;
+> +	int err = -ENODEV;
+>  	struct rtc_time tm;
+> +	struct timespec tv = {
+> +		.tv_nsec = NSEC_PER_SEC >> 1,
+> +	};
+>  	struct rtc_device *rtc = rtc_class_open(CONFIG_RTC_HCTOSYS_DEVICE);
+>  
+>  	if (rtc == NULL) {
+> -		printk("%s: unable to open rtc device (%s)\n",
+> +		pr_err("%s: unable to open rtc device (%s)\n",
+>  			__FILE__, CONFIG_RTC_HCTOSYS_DEVICE);
+> -		return -ENODEV;
+> +		goto err_open;
+>  	}
+>  
+>  	err = rtc_read_time(rtc, &tm);
+> -	if (err == 0) {
+> -		err = rtc_valid_tm(&tm);
+> -		if (err == 0) {
+> -			struct timespec tv;
+> +	if (err) {
+> +		dev_err(rtc->dev.parent,
+> +			"hctosys: unable to read the hardware clock\n");
+> +		goto err_read;
+>  
+> -			tv.tv_nsec = NSEC_PER_SEC >> 1;
+> +	}
+>  
+> -			rtc_tm_to_time(&tm, &tv.tv_sec);
+> +	err = rtc_valid_tm(&tm);
+> +	if (err) {
+> +		dev_err(rtc->dev.parent,
+> +			"hctosys: invalid date/time\n");
+> +		goto err_invalid;
+> +	}
+>  
+> -			do_settimeofday(&tv);
+> +	rtc_tm_to_time(&tm, &tv.tv_sec);
+>  
+> -			dev_info(rtc->dev.parent,
+> -				"setting system clock to "
+> -				"%d-%02d-%02d %02d:%02d:%02d UTC (%u)\n",
+> -				tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
+> -				tm.tm_hour, tm.tm_min, tm.tm_sec,
+> -				(unsigned int) tv.tv_sec);
+> -		}
+> -		else
+> -			dev_err(rtc->dev.parent,
+> -				"hctosys: invalid date/time\n");
+> -	}
+> -	else
+> -		dev_err(rtc->dev.parent,
+> -			"hctosys: unable to read the hardware clock\n");
+> +	do_settimeofday(&tv);
+>  
+> +	dev_info(rtc->dev.parent,
+> +		"setting system clock to "
+> +		"%d-%02d-%02d %02d:%02d:%02d UTC (%u)\n",
+> +		tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
+> +		tm.tm_hour, tm.tm_min, tm.tm_sec,
+> +		(unsigned int) tv.tv_sec);
+> +
+> +err_invalid:
+> +err_read:
+>  	rtc_class_close(rtc);
+>  
+> -	return 0;
+> +err_open:
+> +	rtc_hctosys_ret = err;
+> +
+> +	return err;
+>  }
+>  
+>  late_initcall(rtc_hctosys);
+> diff --git a/include/linux/rtc.h b/include/linux/rtc.h
+> index 60f88a7..14dbc83 100644
+> --- a/include/linux/rtc.h
+> +++ b/include/linux/rtc.h
+> @@ -238,6 +238,12 @@ static inline bool is_leap_year(unsigned int year)
+>  	return (!(year % 4) && (year % 100)) || !(year % 400);
+>  }
+>  
+> +#ifdef CONFIG_RTC_HCTOSYS
+> +extern int rtc_hctosys_ret;
+> +#else
+> +#define rtc_hctosys_ret -ENODEV
+> +#endif
+> +
+>  #endif /* __KERNEL__ */
+>  
+>  #endif /* _LINUX_RTC_H_ */
+oops, I missed a hunk here, namely:
 
-The basic rule is "don't wait for a grace period to complete while in
-the corresponding flavor of RCU read-side critical section".  Your point,
-that it is possible to wait indirectly, is well taken.
+diff --git a/drivers/rtc/rtc-sysfs.c b/drivers/rtc/rtc-sysfs.c
+index 7dd23a6..380083c 100644
+--- a/drivers/rtc/rtc-sysfs.c
++++ b/drivers/rtc/rtc-sysfs.c
+@@ -107,8 +107,9 @@ rtc_sysfs_show_hctosys(struct device *dev, struct device_attribute *attr,
+ 		char *buf)
+ {
+ #ifdef CONFIG_RTC_HCTOSYS_DEVICE
+-	if (strcmp(dev_name(&to_rtc_device(dev)->dev),
+-		   CONFIG_RTC_HCTOSYS_DEVICE) == 0)
++	if (rtc_hctosys_ret == 0 &&
++			strcmp(dev_name(&to_rtc_device(dev)->dev),
++				CONFIG_RTC_HCTOSYS_DEVICE) == 0)
+ 		return sprintf(buf, "1\n");
+ 	else
+ #endif
 
-> So I think it would be good to mark rcu_read_lock/unlock as not permitting
-> "might_sleep()" in non preemptable RCU configs, and having a look at lockdep
-> SRCU support might be worthwhile.
-
-Given the in-progress lockdep enhancements to RCU, the information is at
-least present.  I can easily check for the direct case, but must defer
-to Peter Z on the indirect case.
-
-							Thanx, Paul
-
-> The following test module triggers the problem:
-> 
-> 
-> /* test-rcu-lockdep.c
->  *
->  * Test RCU-awareness of lockdep. Don't look at the interface, it's aweful.
->  * run, in parallel:
->  *
->  * cat /proc/testa 
->  * cat /proc/testb
->  */
-> 
-> #include <linux/module.h>
-> #include <linux/mutex.h>
-> #include <linux/proc_fs.h>
-> #include <linux/sched.h>
-> #include <linux/delay.h>
-> 
-> struct proc_dir_entry *pentrya = NULL;
-> struct proc_dir_entry *pentryb = NULL;
-> 
-> static DEFINE_MUTEX(test_mutex);
-> 
-> static int my_opena(struct inode *inode, struct file *file)
-> {
-> 	mutex_lock(&test_mutex);
-> 	synchronize_rcu();
-> 	mutex_unlock(&test_mutex);
-> 
-> 	return -EPERM;
-> }
-> 
-> 
-> static struct file_operations my_operationsa = {
-> 	.open = my_opena,
-> };
-> 
-> static int my_openb(struct inode *inode, struct file *file)
-> {
-> 	rcu_read_lock();
-> 	mutex_lock(&test_mutex);
-> 	ssleep(1);
-> 	mutex_unlock(&test_mutex);
-> 	rcu_read_unlock();
-> 
-> 
-> 	return -EPERM;
-> }
-> 
-> 
-> static struct file_operations my_operationsb = {
-> 	.open = my_openb,
-> };
-> 
-> int init_module(void)
-> {
-> 	pentrya = create_proc_entry("testa", 0444, NULL);
-> 	if (pentrya)
-> 		pentrya->proc_fops = &my_operationsa;
-> 
-> 	pentryb = create_proc_entry("testb", 0444, NULL);
-> 	if (pentryb)
-> 		pentryb->proc_fops = &my_operationsb;
-> 
-> 	return 0;
-> }
-> 
-> void cleanup_module(void)
-> {
-> 	remove_proc_entry("testa", NULL);
-> 	remove_proc_entry("testb", NULL);
-> }
-> 
-> MODULE_LICENSE("GPL");
-> MODULE_AUTHOR("Mathieu Desnoyers");
-> MODULE_DESCRIPTION("lockdep rcu test");
-> 
-> 
-> 
-> Thanks,
-> 
-> Mathieu
+-- 
+Pengutronix e.K.                              | Uwe Kleine-König            |
+Industrial Linux Solutions                    | http://www.pengutronix.de/  |
