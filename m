@@ -1,212 +1,193 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754913Ab0BHUNJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 15:13:09 -0500
-Received: from fmmailgate01.web.de ([217.72.192.221]:36936 "EHLO
-	fmmailgate01.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753736Ab0BHUM7 (ORCPT
+	id S1755554Ab0BHUSs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 15:18:48 -0500
+Received: from fmmailgate03.web.de ([217.72.192.234]:53712 "EHLO
+	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754861Ab0BHUNH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 15:12:59 -0500
+	Mon, 8 Feb 2010 15:13:07 -0500
 From: Jan Kiszka <jan.kiszka@web.de>
 To: David Miller <davem@davemloft.net>, Karsten Keil <isdn@linux-pingi.de>
 Cc: linux-kernel@vger.kernel.org, i4ldeveloper@listserv.isdn4linux.de,
        isdn4linux@listserv.isdn4linux.de, netdev@vger.kernel.org,
        Alan Cox <alan@lxorguk.ukuu.org.uk>,
        Marcel Holtmann <marcel@holtmann.org>
-Subject: [PATCH v2 02/41] CAPI: Sanitize capifs API
-Date: Mon,  8 Feb 2010 21:12:06 +0100
-Message-Id: <11a13230ef2929bbd143afebe5e7f2b567b07fe6.1265659933.git.jan.kiszka@web.de>
+Subject: [PATCH v2 19/41] CAPI: Switch capiminor list to array
+Date: Mon,  8 Feb 2010 21:12:23 +0100
+Message-Id: <2a5d0a1e03b34cce72714b3e8934af0ec961b70d.1265659935.git.jan.kiszka@web.de>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <cover.1265659933.git.jan.kiszka@web.de>
 References: <cover.1265659933.git.jan.kiszka@web.de>
 In-Reply-To: <cover.1265659933.git.jan.kiszka@web.de>
 References: <cover.1265659933.git.jan.kiszka@web.de>
-X-Provags-ID: V01U2FsdGVkX1/86V2+ntpwpk8qYayffMYr8elWx47T/qi+yjlw
-	bB3J4/iLRLt5k09AbzFHfrilHru06jeydJ0tN9ID11CH6nObeF
-	1xV/D1cak=
+X-Provags-ID: V01U2FsdGVkX1+9eTUexKwV8xIMwzgsOL3JlrcmwyZqyW1swMBX
+	Uvioqt0jW1BqfYTAayjx2R4SSew0YEni1LNA0WYmJBcTSLz4OH
+	qw7UKJXEA=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Instead of looking up the dentry of an NCCI node again in
-capifs_free_ncci pass the pointer via the capifs user.
-
-This patch also reduces the #ifdef mess in capi.c a bit as far as capifs
-was causing it.
+Using a plain array of pointers simplifies the management of capiminors.
 
 Signed-off-by: Jan Kiszka <jan.kiszka@web.de>
 ---
- drivers/isdn/capi/capi.c   |   14 +++++-------
- drivers/isdn/capi/capifs.c |   50 +++++++++++++++++++++++++------------------
- drivers/isdn/capi/capifs.h |   21 ++++++++++++++++-
- 3 files changed, 54 insertions(+), 31 deletions(-)
+ drivers/isdn/capi/capi.c |   75 +++++++++++++++++++++------------------------
+ 1 files changed, 35 insertions(+), 40 deletions(-)
 
 diff --git a/drivers/isdn/capi/capi.c b/drivers/isdn/capi/capi.c
-index 79f9364..dc5ac52 100644
+index 6704b2b..46f85ae 100644
 --- a/drivers/isdn/capi/capi.c
 +++ b/drivers/isdn/capi/capi.c
-@@ -42,9 +42,8 @@
- #include <linux/moduleparam.h>
- #include <linux/isdn/capiutil.h>
- #include <linux/isdn/capicmd.h>
--#if defined(CONFIG_ISDN_CAPI_CAPIFS) || defined(CONFIG_ISDN_CAPI_CAPIFS_MODULE)
-+
- #include "capifs.h"
--#endif
- 
- static char *revision = "$Revision: 1.1.2.7 $";
- 
-@@ -96,6 +95,7 @@ struct capiminor {
- 	struct list_head list;
- 	struct capincci  *nccip;
- 	unsigned int      minor;
-+	struct dentry *capifs_dentry;
- 
- 	struct capi20_appl *ap;
- 	u32		 ncci;
-@@ -328,9 +328,9 @@ static struct capincci *capincci_alloc(struct capidev *cdev, u32 ncci)
- #ifdef _DEBUG_REFCOUNT
- 		printk(KERN_DEBUG "set mp->nccip\n");
- #endif
--#if defined(CONFIG_ISDN_CAPI_CAPIFS) || defined(CONFIG_ISDN_CAPI_CAPIFS_MODULE)
--		capifs_new_ncci(mp->minor, MKDEV(capi_ttymajor, mp->minor));
--#endif
-+		mp->capifs_dentry =
-+			capifs_new_ncci(mp->minor,
-+					MKDEV(capi_ttymajor, mp->minor));
- 	}
- #endif /* CONFIG_ISDN_CAPI_MIDDLEWARE */
- 	for (pp=&cdev->nccis; *pp; pp = &(*pp)->next)
-@@ -353,9 +353,7 @@ static void capincci_free(struct capidev *cdev, u32 ncci)
- 			*pp = (*pp)->next;
- #ifdef CONFIG_ISDN_CAPI_MIDDLEWARE
- 			if ((mp = np->minorp) != NULL) {
--#if defined(CONFIG_ISDN_CAPI_CAPIFS) || defined(CONFIG_ISDN_CAPI_CAPIFS_MODULE)
--				capifs_free_ncci(mp->minor);
--#endif
-+				capifs_free_ncci(mp->capifs_dentry);
- 				if (mp->tty) {
- 					mp->nccip = NULL;
- #ifdef _DEBUG_REFCOUNT
-diff --git a/drivers/isdn/capi/capifs.c b/drivers/isdn/capi/capifs.c
-index dc68fcb..91aafad 100644
---- a/drivers/isdn/capi/capifs.c
-+++ b/drivers/isdn/capi/capifs.c
-@@ -141,31 +141,32 @@ static struct file_system_type capifs_fs_type = {
- 	.kill_sb	= kill_anon_super,
+@@ -85,7 +85,6 @@ struct datahandle_queue {
  };
  
--static struct dentry *get_node(int num)
--{
--	char s[10];
--	struct dentry *root = capifs_root;
--	mutex_lock(&root->d_inode->i_mutex);
--	return lookup_one_len(s, root, sprintf(s, "%d", num));
--}
--
--void capifs_new_ncci(unsigned int number, dev_t device)
-+struct dentry *capifs_new_ncci(unsigned int number, dev_t device)
+ struct capiminor {
+-	struct list_head list;
+ 	struct capincci  *nccip;
+ 	unsigned int      minor;
+ 	struct dentry *capifs_dentry;
+@@ -151,8 +150,8 @@ static LIST_HEAD(capidev_list);
+ 
+ #ifdef CONFIG_ISDN_CAPI_MIDDLEWARE
+ 
+-static DEFINE_RWLOCK(capiminor_list_lock);
+-static LIST_HEAD(capiminor_list);
++static DEFINE_RWLOCK(capiminors_lock);
++static struct capiminor **capiminors;
+ 
+ /* -------- datahandles --------------------------------------------- */
+ 
+@@ -213,8 +212,8 @@ static void capiminor_del_all_ack(struct capiminor *mp)
+ 
+ static struct capiminor *capiminor_alloc(struct capi20_appl *ap, u32 ncci)
  {
- 	struct dentry *dentry;
- 	struct inode *inode;
-+	char name[10];
-+	int namelen;
+-	struct capiminor *mp, *p;
+-	unsigned int minor = 0;
++	struct capiminor *mp;
++	unsigned int minor;
+ 	unsigned long flags;
  
--	dentry = get_node(number);
--	if (IS_ERR(dentry))
-+	mutex_lock(&capifs_root->d_inode->i_mutex);
-+
-+	namelen = sprintf(name, "%d", number);
-+	dentry = lookup_one_len(name, capifs_root, namelen);
-+	if (IS_ERR(dentry)) {
-+		dentry = NULL;
- 		goto unlock_out;
-+	}
+ 	mp = kzalloc(sizeof(*mp), GFP_KERNEL);
+@@ -233,31 +232,23 @@ static struct capiminor *capiminor_alloc(struct capi20_appl *ap, u32 ncci)
+ 	skb_queue_head_init(&mp->inqueue);
+ 	skb_queue_head_init(&mp->outqueue);
  
- 	if (dentry->d_inode) {
- 		dput(dentry);
-+		dentry = NULL;
- 		goto unlock_out;
- 	}
- 
- 	inode = new_inode(capifs_mnt->mnt_sb);
- 	if (!inode) {
- 		dput(dentry);
-+		dentry = NULL;
- 		goto unlock_out;
- 	}
- 
-@@ -177,24 +178,31 @@ void capifs_new_ncci(unsigned int number, dev_t device)
- 	init_special_inode(inode, S_IFCHR|config.mode, device);
- 
- 	d_instantiate(dentry, inode);
-+	dget(dentry);
- 
- unlock_out:
- 	mutex_unlock(&capifs_root->d_inode->i_mutex);
-+
-+	return dentry;
- }
- 
--void capifs_free_ncci(unsigned int number)
-+void capifs_free_ncci(struct dentry *dentry)
- {
--	struct dentry *dentry = get_node(number);
--
--	if (!IS_ERR(dentry)) {
--		struct inode *inode = dentry->d_inode;
--		if (inode) {
--			inode->i_nlink--;
--			d_delete(dentry);
--			dput(dentry);
+-	/* Allocate the least unused minor number.
+-	 */
+-	write_lock_irqsave(&capiminor_list_lock, flags);
+-	if (list_empty(&capiminor_list))
+-		list_add(&mp->list, &capiminor_list);
+-	else {
+-		list_for_each_entry(p, &capiminor_list, list) {
+-			if (p->minor > minor)
+-				break;
+-			minor++;
 -		}
-+	struct inode *inode;
-+
-+	if (!dentry)
-+		return;
-+
-+	mutex_lock(&capifs_root->d_inode->i_mutex);
-+
-+	inode = dentry->d_inode;
-+	if (inode) {
-+		drop_nlink(inode);
-+		d_delete(dentry);
- 		dput(dentry);
+-		
+-		if (minor < capi_ttyminors) {
+-			mp->minor = minor;
+-			list_add(&mp->list, p->list.prev);
++	/* Allocate the least unused minor number. */
++	write_lock_irqsave(&capiminors_lock, flags);
++	for (minor = 0; minor < capi_ttyminors; minor++)
++		if (!capiminors[minor]) {
++			capiminors[minor] = mp;
++			break;
+ 		}
+-	}
+-		write_unlock_irqrestore(&capiminor_list_lock, flags);
++	write_unlock_irqrestore(&capiminors_lock, flags);
+ 
+-	if (!(minor < capi_ttyminors)) {
++	if (minor == capi_ttyminors) {
+ 		printk(KERN_NOTICE "capi: out of minors\n");
+-			kfree(mp);
++		kfree(mp);
+ 		return NULL;
  	}
-+	dput(dentry);
+ 
++	mp->minor = minor;
 +
- 	mutex_unlock(&capifs_root->d_inode->i_mutex);
+ 	return mp;
  }
  
-diff --git a/drivers/isdn/capi/capifs.h b/drivers/isdn/capi/capifs.h
-index d0bd4c3..e193d11 100644
---- a/drivers/isdn/capi/capifs.h
-+++ b/drivers/isdn/capi/capifs.h
-@@ -7,5 +7,22 @@
-  *
-  */
+@@ -265,9 +256,9 @@ static void capiminor_free(struct capiminor *mp)
+ {
+ 	unsigned long flags;
  
--void capifs_new_ncci(unsigned int num, dev_t device);
--void capifs_free_ncci(unsigned int num);
-+#include <linux/dcache.h>
+-	write_lock_irqsave(&capiminor_list_lock, flags);
+-	list_del(&mp->list);
+-	write_unlock_irqrestore(&capiminor_list_lock, flags);
++	write_lock_irqsave(&capiminors_lock, flags);
++	capiminors[mp->minor] = NULL;
++	write_unlock_irqrestore(&capiminors_lock, flags);
+ 
+ 	kfree_skb(mp->ttyskb);
+ 	mp->ttyskb = NULL;
+@@ -279,20 +270,16 @@ static void capiminor_free(struct capiminor *mp)
+ 
+ static struct capiminor *capiminor_find(unsigned int minor)
+ {
+-	struct list_head *l;
+-	struct capiminor *p = NULL;
++	struct capiminor *mp;
+ 
+-	read_lock(&capiminor_list_lock);
+-	list_for_each(l, &capiminor_list) {
+-		p = list_entry(l, struct capiminor, list);
+-		if (p->minor == minor)
+-			break;
+-	}
+-	read_unlock(&capiminor_list_lock);
+-	if (l == &capiminor_list)
++	if (minor >= capi_ttyminors)
+ 		return NULL;
+ 
+-	return p;
++	read_lock(&capiminors_lock);
++	mp = capiminors[minor];
++	read_unlock(&capiminors_lock);
 +
-+#if defined(CONFIG_ISDN_CAPI_CAPIFS) || defined(CONFIG_ISDN_CAPI_CAPIFS_MODULE)
-+
-+struct dentry *capifs_new_ncci(unsigned int num, dev_t device);
-+void capifs_free_ncci(struct dentry *dentry);
-+
-+#else
-+
-+static inline struct dentry *capifs_new_ncci(unsigned int num, dev_t device)
-+{
-+	return NULL;
-+}
-+
-+static inline void capifs_free_ncci(struct dentry *dentry)
-+{
-+}
-+
-+#endif
++	return mp;
+ }
+ 
+ /* -------- struct capincci ----------------------------------------- */
+@@ -1329,10 +1316,16 @@ static int capinc_tty_init(void)
+ 	if (capi_ttyminors <= 0)
+ 		capi_ttyminors = CAPINC_NR_PORTS;
+ 
+-	drv = alloc_tty_driver(capi_ttyminors);
+-	if (!drv)
++	capiminors = kzalloc(sizeof(struct capi_minor *) * capi_ttyminors,
++			     GFP_KERNEL);
++	if (!capiminors)
+ 		return -ENOMEM;
+ 
++	drv = alloc_tty_driver(capi_ttyminors);
++	if (!drv) {
++		kfree(capiminors);
++		return -ENOMEM;
++	}
+ 	drv->owner = THIS_MODULE;
+ 	drv->driver_name = "capi_nc";
+ 	drv->name = "capi";
+@@ -1349,6 +1342,7 @@ static int capinc_tty_init(void)
+ 	tty_set_operations(drv, &capinc_ops);
+ 	if (tty_register_driver(drv)) {
+ 		put_tty_driver(drv);
++		kfree(capiminors);
+ 		printk(KERN_ERR "Couldn't register capi_nc driver\n");
+ 		return -1;
+ 	}
+@@ -1363,6 +1357,7 @@ static void capinc_tty_exit(void)
+ 	if ((retval = tty_unregister_driver(drv)))
+ 		printk(KERN_ERR "capi: failed to unregister capi_nc driver (%d)\n", retval);
+ 	put_tty_driver(drv);
++	kfree(capiminors);
+ }
+ 
+ #else /* !CONFIG_ISDN_CAPI_MIDDLEWARE */
 -- 
 1.6.0.2
 
