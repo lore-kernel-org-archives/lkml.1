@@ -1,105 +1,122 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754795Ab0BHIF7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 03:05:59 -0500
-Received: from mga09.intel.com ([134.134.136.24]:57492 "EHLO mga09.intel.com"
+	id S1752514Ab0BHIGT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 03:06:19 -0500
+Received: from mga02.intel.com ([134.134.136.20]:51620 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753014Ab0BHIF6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 03:05:58 -0500
+	id S1754915Ab0BHIGD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Feb 2010 03:06:03 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.49,427,1262592000"; 
-   d="scan'208";a="490500356"
+   d="scan'208";a="593982790"
 From: Sheng Yang <sheng@linux.intel.com>
 To: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 Cc: Keir Fraser <keir.fraser@eu.citrix.com>,
        Ian Campbell <Ian.Campbell@citrix.com>,
-       xen-devel <xen-devel@lists.xensource.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 0/7][v3] PV featured HVM(Hybrid) for Xen
-Date: Mon,  8 Feb 2010 16:05:47 +0800
-Message-Id: <1265616354-7384-1-git-send-email-sheng@linux.intel.com>
+       xen-devel <xen-devel@lists.xensource.com>, linux-kernel@vger.kernel.org,
+       Sheng Yang <sheng@linux.intel.com>
+Subject: [PATCH 6/7] xen: Unified checking for Xen of PV drivers to xenbus_register_frontend()
+Date: Mon,  8 Feb 2010 16:05:53 +0800
+Message-Id: <1265616354-7384-7-git-send-email-sheng@linux.intel.com>
 X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <1265616354-7384-1-git-send-email-sheng@linux.intel.com>
+References: <1265616354-7384-1-git-send-email-sheng@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Jeremy & Keir & Ian
 
-Here is the third version of patchset to enable Xen Hybrid extension support
-in Linux kernel.
+Signed-off-by: Sheng Yang <sheng@linux.intel.com>
+---
+ drivers/block/xen-blkfront.c |    3 ---
+ drivers/input/xen-kbdfront.c |    3 ---
+ drivers/net/xen-netfront.c   |    5 -----
+ drivers/video/xen-fbfront.c  |    3 ---
+ include/xen/xenbus.h         |    3 +++
+ 5 files changed, 3 insertions(+), 14 deletions(-)
 
-The Hybrid Extension is started from real mode like HVM guest, but also with a
-a range of PV features(e.g. PV halt, PV timer, event channel, as well as PV
-drivers). So guest with Hybrid extension feature can takes the advantages of
-both H/W virtualization and Para-Virtualization.
-
-The first two of the patchset imported several header file from Jeremy's tree
-and Xen tree, respect to Jeremy and Keir's works.
-
-The whole patchset based on Linux upstream.
-
-You need a line like:
-
-cpuid = [ '0x40000002:edx=0x3' ]
-
-in HVM configuration file to expose hybrid feature to guest, and
-
-CONFIG_XEN
-
-in the guest kernel configuration file to enable the hybrid support.
-
-And the compiled image can be used as native/pv domU/hvm guest/pv feature hvm kernel.
-
-Current the patchset support x86_64 only.
-
-Change from v2:
-1. change the name "hybrid" to "PV featured HVM".
-2. Unified the PV driver's judgement of xen_domain() to xen_evtchn_enabled().
-3. Move the function(evtchn) initialize hypercall near the real enabling place,
-rather than a unified place before function enabled.
-4. Remove the reserved E820 region for grant table. Use QEmu Xen platform
-device's MMIO instead.
-
-But the item 4 introduce another issue: the gnttab_init() is listed as a
-core_initcall, but the QEmu's Xen platform device is a device, the
-initialization would be much later(and we need more code to probe that
-device). Currently I just hardcode the MMIO address of platform device in the
-gnttab_init() for HVM initialization, but don't think it's a good idea. And
-since HVM's P2M is different from PV's address translate mechanism, we can't
-use PV code to initialize grant table. So I think we may still need to reserve
-several pages for it? The pages may be known by hypervisor, and use some way
-to notify guest, like Ian purposed earlier. But seems it still looks like we
-need E820... And more ideas?
-
-The major change from v1:
-1. SMP support.
-2. Modify the entrance point to avoid most of genernic kernel modification.
-3. Binding PV timer with event channel mechanism.
-
---
-regards
-Yang, Sheng
-
- arch/x86/include/asm/xen/cpuid.h     |   73 +++++++++++++
- arch/x86/include/asm/xen/hypercall.h |    6 +
- arch/x86/kernel/setup.c              |    8 ++
- arch/x86/xen/enlighten.c             |  188 ++++++++++++++++++++++++++++++++++
- arch/x86/xen/irq.c                   |   54 ++++++++++
- arch/x86/xen/smp.c                   |  144 ++++++++++++++++++++++++++-
- arch/x86/xen/xen-head.S              |    6 +
- arch/x86/xen/xen-ops.h               |    4 +
- drivers/block/xen-blkfront.c         |    3 -
- drivers/input/xen-kbdfront.c         |    6 +-
- drivers/net/xen-netfront.c           |    5 -
- drivers/video/xen-fbfront.c          |    6 +-
- drivers/xen/events.c                 |   66 +++++++++++-
- drivers/xen/grant-table.c            |   59 ++++++++++-
- drivers/xen/xenbus/xenbus_probe.c    |   22 +++-
- include/xen/events.h                 |    1 +
- include/xen/hvm.h                    |   28 +++++
- include/xen/interface/hvm/hvm_op.h   |   79 ++++++++++++++
- include/xen/interface/hvm/params.h   |  111 ++++++++++++++++++++
- include/xen/interface/xen.h          |    6 +-
- include/xen/xen.h                    |   11 ++
- include/xen/xenbus.h                 |    3 +
- 22 files changed, 861 insertions(+), 28 deletions(-)
+diff --git a/drivers/block/xen-blkfront.c b/drivers/block/xen-blkfront.c
+index 05a31e5..d6465c1 100644
+--- a/drivers/block/xen-blkfront.c
++++ b/drivers/block/xen-blkfront.c
+@@ -1068,9 +1068,6 @@ static struct xenbus_driver blkfront = {
+ 
+ static int __init xlblk_init(void)
+ {
+-	if (!xen_domain())
+-		return -ENODEV;
+-
+ 	if (register_blkdev(XENVBD_MAJOR, DEV_NAME)) {
+ 		printk(KERN_WARNING "xen_blk: can't get major %d with name %s\n",
+ 		       XENVBD_MAJOR, DEV_NAME);
+diff --git a/drivers/input/xen-kbdfront.c b/drivers/input/xen-kbdfront.c
+index c721c0a..febffc3 100644
+--- a/drivers/input/xen-kbdfront.c
++++ b/drivers/input/xen-kbdfront.c
+@@ -338,9 +338,6 @@ static struct xenbus_driver xenkbd_driver = {
+ 
+ static int __init xenkbd_init(void)
+ {
+-	if (!xen_domain())
+-		return -ENODEV;
+-
+ 	/* Nothing to do if running in dom0. */
+ 	if (xen_initial_domain())
+ 		return -ENODEV;
+diff --git a/drivers/net/xen-netfront.c b/drivers/net/xen-netfront.c
+index a869b45..d89fd0b 100644
+--- a/drivers/net/xen-netfront.c
++++ b/drivers/net/xen-netfront.c
+@@ -1804,14 +1804,9 @@ static struct xenbus_driver netfront_driver = {
+ 
+ static int __init netif_init(void)
+ {
+-	if (!xen_domain())
+-		return -ENODEV;
+-
+ 	if (xen_initial_domain())
+ 		return 0;
+ 
+-	printk(KERN_INFO "Initialising Xen virtual ethernet driver.\n");
+-
+ 	return xenbus_register_frontend(&netfront_driver);
+ }
+ module_init(netif_init);
+diff --git a/drivers/video/xen-fbfront.c b/drivers/video/xen-fbfront.c
+index 603598f..daff72f 100644
+--- a/drivers/video/xen-fbfront.c
++++ b/drivers/video/xen-fbfront.c
+@@ -683,9 +683,6 @@ static struct xenbus_driver xenfb_driver = {
+ 
+ static int __init xenfb_init(void)
+ {
+-	if (!xen_domain())
+-		return -ENODEV;
+-
+ 	/* Nothing to do if running in dom0. */
+ 	if (xen_initial_domain())
+ 		return -ENODEV;
+diff --git a/include/xen/xenbus.h b/include/xen/xenbus.h
+index b9763ba..9f68cf5 100644
+--- a/include/xen/xenbus.h
++++ b/include/xen/xenbus.h
+@@ -43,6 +43,7 @@
+ #include <xen/interface/grant_table.h>
+ #include <xen/interface/io/xenbus.h>
+ #include <xen/interface/io/xs_wire.h>
++#include <xen/xen.h>
+ 
+ /* Register callback to watch this node. */
+ struct xenbus_watch
+@@ -112,6 +113,8 @@ static inline int __must_check
+ xenbus_register_frontend(struct xenbus_driver *drv)
+ {
+ 	WARN_ON(drv->owner != THIS_MODULE);
++	if (!xen_domain())
++		return -ENODEV;
+ 	return __xenbus_register_frontend(drv, THIS_MODULE, KBUILD_MODNAME);
+ }
+ 
+-- 
+1.5.4.5
 
