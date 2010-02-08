@@ -1,144 +1,174 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753314Ab0BHXP7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 18:15:59 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:32820 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753254Ab0BHXP4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 18:15:56 -0500
-Date: Mon, 8 Feb 2010 15:15:50 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Joe Perches <joe@perches.com>
-Cc: Andy Whitcroft <apw@canonical.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] scripts/checkpatch.pl: Dramatically improve #define
- parse times
-Message-Id: <20100208151550.15796cad.akpm@linux-foundation.org>
-In-Reply-To: <1265167112.1945.184.camel@Joe-Laptop.home>
-References: <1265167112.1945.184.camel@Joe-Laptop.home>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1752530Ab0BHX27 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 18:28:59 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:36133 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751700Ab0BHX26 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Feb 2010 18:28:58 -0500
+Date: Mon, 8 Feb 2010 15:28:55 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+Cc: linux-kernel@vger.kernel.org, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
+       akpm@linux-foundation.org, josh@joshtriplett.org, dvhltc@us.ibm.com,
+       niv@us.ibm.com, tglx@linutronix.de, peterz@infradead.org,
+       rostedt@goodmis.org, Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
+       mingo@elte.hu
+Subject: Re: lockdep rcu-preempt and synchronize_srcu() awareness
+Message-ID: <20100208232855.GJ6797@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20100208191858.GA16288@Krystal> <20100208211729.GF6797@linux.vnet.ibm.com> <20100208215748.GA21527@Krystal>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100208215748.GA21527@Krystal>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 02 Feb 2010 19:18:32 -0800
-Joe Perches <joe@perches.com> wrote:
-
+On Mon, Feb 08, 2010 at 04:57:48PM -0500, Mathieu Desnoyers wrote:
+> * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> > On Mon, Feb 08, 2010 at 02:18:58PM -0500, Mathieu Desnoyers wrote:
+> > > Hi,
+> > > 
+> > > I just though about the following deadlock scenario involving rcu preempt and
+> > > mutexes. I see that lockdep does not warn about it, and it actually triggers a
+> > > deadlock on my box. It might be worth addressing for TREE_PREEMPT_RCU configs.
+> > > 
+> > > CPU A:
+> > >     mutex_lock(&test_mutex);
+> > >     synchronize_rcu();
+> > >     mutex_unlock(&test_mutex);
+> > > 
+> > > CPU B:
+> > >     rcu_read_lock();
+> > >     mutex_lock(&test_mutex);
+> > >     mutex_unlock(&test_mutex);
+> > >     rcu_read_unlock();
+> > > 
+> > > But given that it's not legit to take a mutex from within a rcu read lock in
+> > > non-preemptible configs, I guess it's not much of a real-life problem, but I
+> > > think SRCU is also affected, because there is no lockdep annotation around
+> > > synchronize_srcu().
+> > 
+> > Indeed, doing this with SRCU would result in deadlock, and it is quite
+> > legal to acquire mutexes from within SRCU read-side critical sections.
+> > And similar deadlocks can be constructed using pthread_mutex_lock() and
+> > user-space RCU implementations.
+> > 
+> > The basic rule is "don't wait for a grace period to complete while in
+> > the corresponding flavor of RCU read-side critical section".  Your point,
+> > that it is possible to wait indirectly, is well taken.
 > 
-> #define macros currently take a _very_ long time to parse because
-> the macro is being searched for multiple statements and unnecessary
-> searching is being done when comments are replaced with unprintable
-> characters.
+> Meanwhile, I'll add this to the Userspace RCU README:
 > 
-> For instance:
+> Interaction with mutexes
 > 
-> Without this patch:
-> $ time perl ./scripts/checkpatch.pl -f include/linux/mfd/wm831x/irq.h > /dev/null
+>         One must be careful to do not cause deadlocks due to interaction of
+>         synchronize_rcu() and RCU read-side with mutexes. If synchronize_rcu()
+>         is called with a mutex held, this mutex (or any mutex which has this
+>         mutex in its dependency chain) should not be acquired from within a RCU
+>         read-side critical section.
+
+Looks good to me!
+
+							Thanx, Paul
+
+> Thanks,
 > 
-> real	3m43.229s
-> user	3m42.254s
-> sys	0m0.332s
+> Mathieu
 > 
-> With this patch: 
-> $ time perl ./scripts/checkpatch.pl -f include/linux/mfd/wm831x/irq.h > /dev/null
-> 
-> real	0m1.372s
-> user	0m1.348s
-> sys	0m0.020s
-> 
-> A 160:1 improvement.
-> 
-> I don't know if this is correct, but it seems to work for me.
-
-This patch triggers lots of warnings:
-
-akpm:/usr/src/25> perl scripts/checkpatch.pl patches/drivers-char-memc-cleanups-fix.patch
-Use of uninitialized value in length at scripts/checkpatch.pl line 1589.
-Use of uninitialized value in substr at scripts/checkpatch.pl line 1589.
-Use of uninitialized value in substr at scripts/checkpatch.pl line 1589.
-Use of uninitialized value in pattern match (m//) at scripts/checkpatch.pl line 1597.
-Use of uninitialized value in pattern match (m//) at scripts/checkpatch.pl line 1655.
-Use of uninitialized value in length at scripts/checkpatch.pl line 1589.
-Use of uninitialized value in substr at scripts/checkpatch.pl line 1589.
-Use of uninitialized value in substr at scripts/checkpatch.pl line 1589.
-Use of uninitialized value in pattern match (m//) at scripts/checkpatch.pl line 1597.
-Use of uninitialized value in pattern match (m//) at scripts/checkpatch.pl line 1655.
-Use of uninitialized value in length at scripts/checkpatch.pl line 1589.
-Use of uninitialized value in substr at scripts/checkpatch.pl line 1589.
-Use of uninitialized value in substr at scripts/checkpatch.pl line 1589.
-Use of uninitialized value in pattern match (m//) at scripts/checkpatch.pl line 1597.
-Use of uninitialized value in pattern match (m//) at scripts/checkpatch.pl line 1655.
-Use of uninitialized value in length at scripts/checkpatch.pl line 1589.
-Use of uninitialized value in substr at scripts/checkpatch.pl line 1589.
-Use of uninitialized value in substr at scripts/checkpatch.pl line 1589.
-Use of uninitialized value in pattern match (m//) at scripts/checkpatch.pl line 1597.
-Use of uninitialized value in pattern match (m//) at scripts/checkpatch.pl line 1655.
-
-
-Test case:
-
-
-diff -puN drivers/char/mem.c~drivers-char-memc-cleanups-fix drivers/char/mem.c
---- a/drivers/char/mem.c~drivers-char-memc-cleanups-fix
-+++ a/drivers/char/mem.c
-@@ -579,7 +579,7 @@ static ssize_t read_port(struct file *fi
- 	if (!access_ok(VERIFY_WRITE, buf, count))
- 		return -EFAULT;
- 	while (count-- > 0 && i < 65536) {
--		if (__put_user(inb(i),tmp) < 0)
-+		if (__put_user(inb(i), tmp) < 0)
- 			return -EFAULT;
- 		i++;
- 		tmp++;
-@@ -594,7 +594,7 @@ static ssize_t write_port(struct file *f
- 	unsigned long i = *ppos;
- 	const char __user * tmp = buf;
- 
--	if (!access_ok(VERIFY_READ,buf,count))
-+	if (!access_ok(VERIFY_READ, buf, count))
- 		return -EFAULT;
- 	while (count-- > 0 && i < 65536) {
- 		char c;
-@@ -603,7 +603,7 @@ static ssize_t write_port(struct file *f
- 				break;
- 			return -EFAULT;
- 		}
--		outb(c,i);
-+		outb(c, i);
- 		i++;
- 		tmp++;
- 	}
-@@ -630,7 +630,7 @@ static int pipe_to_null(struct pipe_inod
- 	return sd->len;
- }
- 
--static ssize_t splice_write_null(struct pipe_inode_info *pipe,struct file *out,
-+static ssize_t splice_write_null(struct pipe_inode_info *pipe, struct file *out,
- 				 loff_t *ppos, size_t len, unsigned int flags)
- {
- 	return splice_from_pipe(pipe, out, ppos, len, flags, pipe_to_null);
-@@ -831,7 +831,7 @@ static ssize_t kmsg_write(struct file *f
- }
- 
- static const struct file_operations kmsg_fops = {
--	.write =	kmsg_write,
-+	.write = kmsg_write,
- };
- 
- static const struct memdev {
-@@ -907,7 +907,7 @@ static int __init chr_dev_init(void)
- 	if (err)
- 		return err;
- 
--	if (register_chrdev(MEM_MAJOR,"mem",&memory_fops))
-+	if (register_chrdev(MEM_MAJOR, "mem", &memory_fops))
- 		printk("unable to get major %d for memory devs\n", MEM_MAJOR);
- 
- 	mem_class = class_create(THIS_MODULE, "mem");
-_
-
-
-
+> > 
+> > > So I think it would be good to mark rcu_read_lock/unlock as not permitting
+> > > "might_sleep()" in non preemptable RCU configs, and having a look at lockdep
+> > > SRCU support might be worthwhile.
+> > 
+> > Given the in-progress lockdep enhancements to RCU, the information is at
+> > least present.  I can easily check for the direct case, but must defer
+> > to Peter Z on the indirect case.
+> > 
+> > 							Thanx, Paul
+> > 
+> > > The following test module triggers the problem:
+> > > 
+> > > 
+> > > /* test-rcu-lockdep.c
+> > >  *
+> > >  * Test RCU-awareness of lockdep. Don't look at the interface, it's aweful.
+> > >  * run, in parallel:
+> > >  *
+> > >  * cat /proc/testa 
+> > >  * cat /proc/testb
+> > >  */
+> > > 
+> > > #include <linux/module.h>
+> > > #include <linux/mutex.h>
+> > > #include <linux/proc_fs.h>
+> > > #include <linux/sched.h>
+> > > #include <linux/delay.h>
+> > > 
+> > > struct proc_dir_entry *pentrya = NULL;
+> > > struct proc_dir_entry *pentryb = NULL;
+> > > 
+> > > static DEFINE_MUTEX(test_mutex);
+> > > 
+> > > static int my_opena(struct inode *inode, struct file *file)
+> > > {
+> > > 	mutex_lock(&test_mutex);
+> > > 	synchronize_rcu();
+> > > 	mutex_unlock(&test_mutex);
+> > > 
+> > > 	return -EPERM;
+> > > }
+> > > 
+> > > 
+> > > static struct file_operations my_operationsa = {
+> > > 	.open = my_opena,
+> > > };
+> > > 
+> > > static int my_openb(struct inode *inode, struct file *file)
+> > > {
+> > > 	rcu_read_lock();
+> > > 	mutex_lock(&test_mutex);
+> > > 	ssleep(1);
+> > > 	mutex_unlock(&test_mutex);
+> > > 	rcu_read_unlock();
+> > > 
+> > > 
+> > > 	return -EPERM;
+> > > }
+> > > 
+> > > 
+> > > static struct file_operations my_operationsb = {
+> > > 	.open = my_openb,
+> > > };
+> > > 
+> > > int init_module(void)
+> > > {
+> > > 	pentrya = create_proc_entry("testa", 0444, NULL);
+> > > 	if (pentrya)
+> > > 		pentrya->proc_fops = &my_operationsa;
+> > > 
+> > > 	pentryb = create_proc_entry("testb", 0444, NULL);
+> > > 	if (pentryb)
+> > > 		pentryb->proc_fops = &my_operationsb;
+> > > 
+> > > 	return 0;
+> > > }
+> > > 
+> > > void cleanup_module(void)
+> > > {
+> > > 	remove_proc_entry("testa", NULL);
+> > > 	remove_proc_entry("testb", NULL);
+> > > }
+> > > 
+> > > MODULE_LICENSE("GPL");
+> > > MODULE_AUTHOR("Mathieu Desnoyers");
+> > > MODULE_DESCRIPTION("lockdep rcu test");
+> > > 
+> > > 
+> > > 
+> > > Thanks,
+> > > 
+> > > Mathieu
