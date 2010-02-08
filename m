@@ -1,62 +1,62 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753722Ab0BHS22 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 13:28:28 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:41268 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751256Ab0BHS20 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 13:28:26 -0500
-Date: Mon, 8 Feb 2010 19:28:16 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Joel Becker <Joel.Becker@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.33-rc7
-Message-ID: <20100208182816.GD1469@ucw.cz>
-References: <alpine.LFD.2.00.1002061422430.3829@localhost.localdomain> <alpine.LFD.2.00.1002061445210.3829@localhost.localdomain> <20100207102016.GH3416@mail.oracle.com> <alpine.LFD.2.00.1002071029040.3829@localhost.localdomain>
+	id S1753843Ab0BHSav (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 13:30:51 -0500
+Received: from fieldses.org ([174.143.236.118]:54728 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752016Ab0BHSas (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Feb 2010 13:30:48 -0500
+Date: Mon, 8 Feb 2010 13:31:06 -0500
+From: "J. Bruce Fields" <bfields@fieldses.org>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, Neil Brown <neilb@suse.de>,
+       linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Failure to fallback to nfsd-v3 (?)
+Message-ID: <20100208183106.GB10665@fieldses.org>
+References: <87pr4h67rf.fsf@devron.myhome.or.jp> <20100207041016.GA16865@fieldses.org> <8763695u96.fsf@devron.myhome.or.jp> <20100207083103.GA4602@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.1002071029040.3829@localhost.localdomain>
+In-Reply-To: <20100207083103.GA4602@infradead.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> > 	When I grab tarballs, I only grab .gz.  Bandwidth isn't a
-> > problem (3 minutes versus four on my DSL, I still switch over to another
-> > screen and check back).  But .bz2 unpacks very slowly in the
-> > environments I'm usually grabbing a tarball for.  I save more time
-> > unpacking .gz than I do downloading .bz2.
+On Sun, Feb 07, 2010 at 03:31:03AM -0500, Christoph Hellwig wrote:
+> On Sun, Feb 07, 2010 at 05:23:49PM +0900, OGAWA Hirofumi wrote:
+> > "J. Bruce Fields" <bfields@fieldses.org> writes:
+> > 
+> > >> And the following commit seems to change the behavior.
+> > >> 
+> > >> [nfsd4: fix error return when pseudoroot missing]
+> > >> f39bde24b275ddc45df1ed835725b609e178c7a0
+> > >> 
+> > >> Well, anyway, is this a expected behavior change, or something bug?
+> > >
+> > > It's expected.  I'd recommend turning off nfsv4 on the server (add "-N4"
+> > > to the rpc.nfsd commandline) for now.
+> > 
+> > This looks like the silent user visible change. So, it would be better
+> > to add more comment at least in changelog.
 > 
-> Ok, there seems to be a fair number of people who prefer .gz files for 
-> whatever reason. 
-> 
-> So I guess I'll stay with the current setup. It's only (somebody elses) 
-> diskspace, after all.
-> 
-> Another option might be to stop generating the .bz2 files, of
- > course. 
+> Or rather it should be fixed.  We should not silently break existing
+> and probably rather common setups.
 
-It would be good to keep ketchup working.
+It's really a bug that we're returning an error at all from this point
+in the code, so the new client mount code includes a workaround for this
+case, added with the code that attempts v4 first by default.
 
-> Anybody who cares more about network bandwidth than CPU use (ie people who 
-> would seem to prefer bz2) would be better off using git instead, which 
-> packs things _way_ better, by virtue of being much more incremental.
+The error we're returning was also wrong.  Unfortunately, my patch to
+fix the error went in at around the same time the new mount code went
+into nfs-utils, and we communicated poorly about the change.
 
-Well, yes, but git did really badly on arm/128MB machine when I
-tried. What would be *really* nice... could we get -rc-s relative to
-each other?
+So:
+	- I'm reverting the server patch.  I'd like to reinstate it
+	  eventually, depending on how widespread the new mount code
+	  was.
+	- We'll also make the mount workaround more robust.
+	- Most importantly, we need to stamp out the cases where the
+	  server hits this error.
 
-That would help a lot. Of course, git wins when you only produce diffs
-against .X release, but... That would be 80% bandwidth saving against
-current situation and still cpu-friendly.
-
-									Pavel
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+--b.
