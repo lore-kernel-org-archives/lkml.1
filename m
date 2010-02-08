@@ -1,73 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754731Ab0BHUBX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 15:01:23 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:60334 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753199Ab0BHUBV (ORCPT
+	id S1754649Ab0BHUAl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 15:00:41 -0500
+Received: from outbound-mail-01.bluehost.com ([69.89.21.11]:49643 "HELO
+	outbound-mail-01.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753199Ab0BHUAj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 15:01:21 -0500
-Date: Mon, 8 Feb 2010 15:00:44 -0500
-From: Chris Mason <chris.mason@oracle.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Chris Wilson <chris@chris-wilson.co.uk>, tomas m <tmezzadra@gmail.com>
-Subject: Re: [Bug #15004] i915: *ERROR* Execbuf while wedged
-Message-ID: <20100208200044.GA2677@think>
-Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
-	Jesse Barnes <jbarnes@virtuousgeek.org>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Kernel Testers List <kernel-testers@vger.kernel.org>,
-	Chris Wilson <chris@chris-wilson.co.uk>,
-	tomas m <tmezzadra@gmail.com>
-References: <UgwvXSBS_tM.A.alD.1EiZLB@chimera>
- <de962C6zBxL.A.bvE.cFiZLB@chimera>
- <20100205110100.57852c31@jbarnes-piketon>
- <20100205190916.GD2858@think>
- <20100205111747.6619b09b@jbarnes-piketon>
- <20100208172410.GA11311@think>
- <20100208093551.58a10643@jbarnes-piketon>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100208093551.58a10643@jbarnes-piketon>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Source-IP: acsmt354.oracle.com [141.146.40.154]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090204.4B706D76.00C8:SCFMA4539814,ss=1,fgs=0
+	Mon, 8 Feb 2010 15:00:39 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=lO7Y74MhiG3tlChqVxLbDHwia/Sojv3WuPwyPJCz6bIuZ9vJpPduh+R9BJFcYG3UWIU6vWLVGNA6aCru+y+bqiukDXnED7bVD8zs4hpNqFUE+IqoUkYuDoXCOevH7YmR;
+Date: Mon, 8 Feb 2010 11:59:24 -0800
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Tony Luck <tony.luck@intel.com>,
+       linux-pci@vger.kernel.org, Peter Haight <peterh@sapros.com>,
+       Gary Hade <garyhade@us.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org, Yinghai Lu <yinghai@kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Larry Finger <Larry.Finger@lwfinger.net>
+Subject: Re: [PATCH v1 3/7] PCI: split up pci_read_bridge_bases()
+Message-ID: <20100208115924.5a817027@jbarnes-piketon>
+In-Reply-To: <20100203233910.10803.74241.stgit@bob.kio>
+References: <20100203233617.10803.92102.stgit@bob.kio>
+	<20100203233910.10803.74241.stgit@bob.kio>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 08, 2010 at 09:35:51AM -0800, Jesse Barnes wrote:
-> > 
-> > Ok, updating to rc7 and updating my xf86 driver to 2.10 seems to have
-> > fixed up my suspend/resume problems.  So, I should be able to trigger
-> > the execbuf problem again.
+On Wed, 03 Feb 2010 16:39:11 -0700
+Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
+
 > 
-> I've heard some reports that the 2D driver introduces and fixes hangs,
-> so it's possible 2.10 will fix both issues for you.
+> No functional change; this breaks up pci_read_bridge_bases() into
+> separate pieces for the I/O, memory, and prefetchable memory windows,
+> similar to how Yinghai recently split up pci_setup_bridge() in
+> 68e84ff3bdc.
 > 
-> > Well, the rebooting isn't a huge deal, but if there's something I can
-> > track/kick or force to core dump, would it help?
-> 
-> We do have a test in intel-gpu-tools that will instigate a hang, but it
-> would be best to figure out what's causing it in your environment.
-> 
+> Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+> ---
 
-[63516.632060] [drm:i915_hangcheck_elapsed] *ERROR* Hangcheck timer elapsed... GPU hung
-[63516.632069] render error detected, EIR: 0x00000000
-[63516.632092] [drm:i915_do_wait_request] *ERROR* i915_do_wait_request returns -5 (awaiting 2590581 at 2590579)
+This one conflicts a bit with Yinghai's recent stuff.  Can you respin
+against my linux-next branch?  May as well do the whole series, then
+I'll just apply it in one go.
 
-So, this popped up while surfing in firefox, which is usually where I
-hit the execbuf errors.  X was totally stuck afterwards, but I could
-switch to a vc and get the dmesg.
-
-If there are specific procs that I can try to get traces of, just let
-me know for next time.
-
--chris
-
+Thanks,
+-- 
+Jesse Barnes, Intel Open Source Technology Center
