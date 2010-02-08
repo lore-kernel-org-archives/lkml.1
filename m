@@ -1,61 +1,86 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751947Ab0BHIdl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 03:33:41 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43730 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751066Ab0BHIdk (ORCPT
+	id S1752261Ab0BHIhl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 03:37:41 -0500
+Received: from moutng.kundenserver.de ([212.227.126.186]:50962 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751540Ab0BHIhj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 03:33:40 -0500
-Date: Mon, 8 Feb 2010 00:32:41 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH] sched: Fix unused variable warning on UP (was: Re: 
- linux-next: tip tree build warning)
-Message-Id: <20100208003241.1155a7e5.akpm@linux-foundation.org>
-In-Reply-To: <10f740e81002071231j6977c6c7ie3f9e82bd0170f21@mail.gmail.com>
-References: <10f740e81002071157p11b78784i8091d4790c29f30d@mail.gmail.com>
-	<1265572738.12224.278.camel@laptop>
-	<10f740e81002071226g3290d276q4c9df0e79a1e7ac0@mail.gmail.com>
-	<10f740e81002071231j6977c6c7ie3f9e82bd0170f21@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 8 Feb 2010 03:37:39 -0500
+Date: Mon, 8 Feb 2010 00:37:06 -0800 (PST)
+From: Christian Kujau <lists@nerdbynature.de>
+To: LKML <linux-kernel@vger.kernel.org>
+cc: dhowells@redhat.com, adkulkar@umail.iu.edu, arjan@infradead.org,
+       adobriyan@gmail.com
+Subject: Re: [PATCH] remove EXPERIMENTAL from NFS_FSCACHE
+In-Reply-To: <alpine.DEB.2.01.1002031037280.3483@bogon.housecafe.de>
+Message-ID: <alpine.DEB.2.01.1002080036300.27799@bogon.housecafe.de>
+References: <alpine.DEB.2.01.1002031037280.3483@bogon.housecafe.de>
+User-Agent: Alpine 2.01 (DEB 1266 2009-07-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Provags-ID: V01U2FsdGVkX19eY+ab45kyiuc0nF0Tdo0JhNhOaDExNwUilNa
+ g9ACQK9Jx5SISsQ4vObCpzIxPjA/NzASSyPM94Co1P/RbjU7Ub
+ 1KferqsI9mebGoNroj7CA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 7 Feb 2010 21:31:56 +0100 Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+On Wed, 3 Feb 2010 at 10:53, Christian Kujau wrote:
+> there's currently an open Ubuntu bug[0], with the intent to compile 
+> NFS_FSCACHE (and possibly AFS_FSCACHE, 9P_FSCACHE) into the standard 
+> Ubuntu kernel. However, since *_FSCACHE still depends on EXPERIMENTAL, 
+> this won't happen.
+> 
+> As Arjan van de Ven pointed out[1], the EXPERIMENTAL flag doesn't mean 
+> that much any more, I propose the following patch to fs/nfs/Kconfig. I'd 
+> do the same for fs/9p/Kconfig and fs/afs/Kconfig, but as I did not test 9p 
+> or AFS, I feel it would not be appropriate for me to remove the flag.
 
-> Shouldn't put_cpu() take a (possibly dummy) `cpu' parameter, as
-> returned by get_cpu()?
+....ping?
 
-Yeah, that always seemed a bit screwy.  Something like this...
+>
+> Please consider applying.
+> 
+> Thanks,
+> Christian.
+> 
+> [0] https://bugs.launchpad.net/ubuntu/+source/linux/+bug/440522/comments/5
+> [1] http://lkml.org/lkml/2010/1/23/145
+> 
+> Signed-off-by: Christian Kujau <lists@nerdbynature.de>
+> 
+>  Kconfig |    3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
+> 
+> diff --git a/fs/nfs/Kconfig b/fs/nfs/Kconfig
+> index 59e5673..a43d07e 100644
+> --- a/fs/nfs/Kconfig
+> +++ b/fs/nfs/Kconfig
+> @@ -95,8 +95,7 @@ config ROOT_NFS
+>  	  Most people say N here.
+>  
+>  config NFS_FSCACHE
+> -	bool "Provide NFS client caching support (EXPERIMENTAL)"
+> -	depends on EXPERIMENTAL
+> +	bool "Provide NFS client caching support"
+>  	depends on NFS_FS=m && FSCACHE || NFS_FS=y && FSCACHE=y
+>  	help
+>  	  Say Y here if you want NFS data to be cached locally on disc through
+> 
+> -- 
+> BOFH excuse #259:
+> 
+> Someone's tie is caught in the printer, and if anything else gets printed, he'll be in it too.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> 
 
---- a/include/linux/smp.h~a
-+++ a/include/linux/smp.h
-@@ -177,6 +177,15 @@ smp_call_function_any(const struct cpuma
- #define put_cpu()		preempt_enable()
- 
- /*
-+ * This just exists to touch the `cpu' arg, to suppress unused var
-+ * warnings
-+ */
-+static inline void put_cpu_nr(unsigned cpu)
-+{
-+	put_cpu();
-+}
-+
-+/*
-  * Callback to arch code if there's nosmp or maxcpus=0 on the
-  * boot command line:
-  */
-_
+-- 
+BOFH excuse #258:
 
+That's easy to fix, but I can't be bothered.
