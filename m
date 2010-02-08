@@ -1,72 +1,97 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932972Ab0BHDMy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Feb 2010 22:12:54 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:7969 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750965Ab0BHDMw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Feb 2010 22:12:52 -0500
-Message-ID: <4B6F81EF.4070103@redhat.com>
-Date: Mon, 08 Feb 2010 11:15:59 +0800
-From: Cong Wang <amwang@redhat.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20091001)
+	id S1757776Ab0BHDO4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Feb 2010 22:14:56 -0500
+Received: from mail-ww0-f46.google.com ([74.125.82.46]:64295 "EHLO
+	mail-ww0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757476Ab0BHDOz convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Feb 2010 22:14:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=O6c3t+rFtShcLMJugUBsqk64WBB8B04+nYWIocVbcS8a3wtVpYeLaDEcvqrWCuA2wl
+         GEs1+XTe38eNzU09Jvn5+zip9C04ksJIAgRO6/f3yGWswyVTOwgziWVVNR2FSUlVIRBe
+         FMUBxAyvgBrz8aOO561mzVe0/VLIrkw4tiqx0=
 MIME-Version: 1.0
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-CC: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       opurdila@ixiacom.com, eric.dumazet@gmail.com,
-       linux-rdma@vger.kernel.org, netdev@vger.kernel.org,
-       nhorman@tuxdriver.com, linux-sctp@vger.kernel.org, davem@davemloft.net
-Subject: Re: [RFC Patch v2] net: reserve ports for applications using fixedport
- numbers
-References: <20100204101533.4619.34599.sendpatchset@localhost.localdomain>	<201002041959.JEG43202.JQOFHFOVSFMtLO@I-love.SAKURA.ne.jp>	<4B6BA16E.3010002@redhat.com> <201002052021.CIC81776.QVSMJOLtFOFFHO@I-love.SAKURA.ne.jp>
-In-Reply-To: <201002052021.CIC81776.QVSMJOLtFOFFHO@I-love.SAKURA.ne.jp>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <4B6F803D.5080007@redhat.com>
+References: <Pine.LNX.4.44L0.1002051021120.22829-100000@netrider.rowland.org>
+	 <1265384517.30057.50.camel@laptop> <20100207092216.GA2585@darkstar>
+	 <4B6F803D.5080007@redhat.com>
+Date: Mon, 8 Feb 2010 11:14:53 +0800
+Message-ID: <a8e1da1002071914p21de488aobd14005b22aaf392@mail.gmail.com>
+Subject: Re: [Patch 0/2] sysfs: fix s_active lockdep warning
+From: Dave Young <hidave.darkstar@gmail.com>
+To: Cong Wang <amwang@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, Greg KH <gregkh@suse.de>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Tejun Heo <tj@kernel.org>, Miles Lane <miles.lane@gmail.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Larry Finger <Larry.Finger@lwfinger.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tetsuo Handa wrote:
-> Cong Wang wrote:
->> Oh, IIUC, TOMOYO is something like SELinux?
-> 
-> Yes. It is a policy based mandatory access control implementation which is
-> applied to not only non root users but also root user. If MAC is enabled,
-> root user cannot freely modify via sysctl() or /proc/sys interface.
-> 
->> So, it is somewhat weird to let users to use TOMOYO to reserve
->> the ports with MAC.
-> 
-> To add reserved port
-> 
-> echo deny_autobind 0-1023 | ccs-loadpolicy -e
-> echo deny_autobind 3128 | ccs-loadpolicy -e
-> echo deny_autobind 8080 | ccs-loadpolicy -e
-> 
-> and to delete reserved port
-> 
-> echo delete deny_autobind 0-1023 | ccs-loadpolicy -e
-> echo delete deny_autobind 3128 | ccs-loadpolicy -e
-> echo delete deny_autobind 8080 | ccs-loadpolicy -e
-> 
-> That's all. Quite easy.
+On Mon, Feb 8, 2010 at 11:08 AM, Cong Wang <amwang@redhat.com> wrote:
+> Dave Young wrote:
+>>
+>> On Fri, Feb 05, 2010 at 04:41:57PM +0100, Peter Zijlstra wrote:
+>>>
+>>> On Fri, 2010-02-05 at 10:30 -0500, Alan Stern wrote:
+>>>>
+>>>> On Fri, 5 Feb 2010, Peter Zijlstra wrote:
+>>>>
+>>>>> Right, so this device stuff is much more complicated than I was led to
+>>>>> believe ;-)
+>>>>
+>>>> Haven't I told you all along that tree-structured locking is
+>>>> complicated?  :-)
+>>>
+>>> Well, regular tree's aren't all that complicated, but multiple
+>>> inter-locking trees is a whole different story indeed.
+>>>
+>>
+>> I ever tried converting device semaphore to mutex, but failed with same
+>> issue.
+>>
+>> At least now there's no lockdep solution for it, so I recommend revert
+>> the mutex converting patch.
+>>
+>> following lockdep warning with rc6-mm1:
+>>
+>> [    0.397123] [    0.397124]
+>> =============================================
+>> [    0.397359] [ INFO: possible recursive locking detected ]
+>> [    0.397480] 2.6.33-rc6-mm1 #1
+>> [    0.397596] ---------------------------------------------
+>> [    0.397717] swapper/1 is trying to acquire lock:
+>> [    0.397836]  (&dev->mutex){+.+...}, at: [<c12662e4>]
+>> __driver_attach+0x38/0x63
+>> [    0.398162] [    0.398162] but task is already holding lock:
+>> [    0.398393]  (&dev->mutex){+.+...}, at: [<c12662d8>]
+>> __driver_attach+0x2c/0x63
+>> [    0.399999]
+>
+> Alan already provided a patch for this issue earlier in this thread.
+
+Yes, but device locks can not be classified with regular tree style.
+Please read the whole thread.
+
+>
+> Thanks.
+>
+>
 
 
-Hmm, but you are solving a non-security problem with a security
-tool, doesn't this look weird? ;-)
 
-> 
->> For normal users /proc interface seems more friendly.
-> 
-> I think /proc/sys/net/ipv4/ip_local_reserved_ports interface wants
-> "struct list_head" for handling multiple sets of min/max pairs. I'm using
-> http://tomoyo.sourceforge.jp/cgi-bin/lxr/source/security/ccsecurity/autobind.c#L29
-> for that purpose.
-
-
-Yes, but I didn't plan to add multiple range support for
-ip_local_reserved_ports, like ip_local_port_range.
-
-Having that will be better but needs more efforts.
-
-Thanks.
+-- 
+Regards
+dave
