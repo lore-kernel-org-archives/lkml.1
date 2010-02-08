@@ -1,68 +1,76 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753306Ab0BHSQH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 13:16:07 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:47819 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752047Ab0BHSQF (ORCPT
+	id S1753299Ab0BHSXe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 13:23:34 -0500
+Received: from wp065.webpack.hosteurope.de ([80.237.132.72]:39902 "EHLO
+	wp065.webpack.hosteurope.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752527Ab0BHSXd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 13:16:05 -0500
-Date: Mon, 8 Feb 2010 13:16:02 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-cc: Jiri Kosina <jkosina@suse.cz>, Oliver Neukum <oliver@neukum.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Marcel Holtmann <marcel@holtmann.org>,
-       H Hartley Sweeten <hsweeten@visionengravers.com>,
-       <linux-usb@vger.kernel.org>, <linux-input@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>
-Subject: Re: S2R resume crash in 2.6.33-rc7 - NULL pointer dereference in
- dev_get_drvdata() for usbhid
-In-Reply-To: <20100208175145.606ca761@neptune.home>
-Message-ID: <Pine.LNX.4.44L0.1002081313260.1316-100000@iolanthe.rowland.org>
+	Mon, 8 Feb 2010 13:23:33 -0500
+X-Greylist: delayed 1150 seconds by postgrey-1.27 at vger.kernel.org; Mon, 08 Feb 2010 13:23:33 EST
+Message-ID: <4B705244.2010606@ccube.de>
+Date: Mon, 08 Feb 2010 19:04:52 +0100
+From: ccube <friends@ccube.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100205 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] option.c added DELL wireless HSDPA 5540 Modem
+X-Enigmail-Version: 1.0.1
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-bounce-key: webpack.hosteurope.de;friends@ccube.de;1265653413;6c2ad677;
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 8 Feb 2010, Bruno [UTF-8] Prémont wrote:
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-> 2.6.33-rc7 (don't know if any previous version resumes properly)
-> crashes during resume from S2Ram when my USB keyboard is connected but
-> resumes properly (viafb corruption put apart) when the USB keyboard is
-> not connected.
-> 
-> Keyboard detection:
-> [    3.070054] usb 2-2: new full speed USB device using uhci_hcd and address 2
-> [    3.220179] kbd_mode used greatest stack depth: 2228 bytes left
-> [    3.276403] usb 2-2: New USB device found, idVendor=058f, idProduct=9462
-> [    3.276514] usb 2-2: New USB device strings: Mfr=1, Product=2, SerialNumber=0
-> [    3.276619] usb 2-2: Product: Multimedia USB Keyboard
-> [    3.276711] usb 2-2: Manufacturer: Multimedia USB Keyboard
-> [    3.278056] loadkeys used greatest stack depth: 1904 bytes left
-> [    3.278791] init-early.sh used greatest stack depth: 1700 bytes left
-> [    3.282561] hub 2-2:1.0: USB hub found
-> [    3.286387] hub 2-2:1.0: 3 ports detected
-> [    3.571454] usb 2-2.1: new full speed USB device using uhci_hcd and address 3
-> [    3.761474] usb 2-2.1: New USB device found, idVendor=058f, idProduct=9462
-> [    3.761584] usb 2-2.1: New USB device strings: Mfr=1, Product=2, SerialNumber=3
-> [    3.761719] usb 2-2.1: Product: Multimedia USB Keyboard
-> [    3.762518] usb 2-2.1: Manufacturer: Multimedia USB Keyboard
-> [    3.762612] usb 2-2.1: SerialNumber: Multimedia USB Keyboard
-> [    3.789221] input: Multimedia USB Keyboard Multimedia USB Keyboard as /devices/pci0000:00/0000:00:10.0/usb2/2
-> -2/2-2.1/2-2.1:1.0/input/input4
-> [    3.789585] generic-usb 0003:058F:9462.0001: input: USB HID v1.10 Keyboard [Multimedia USB Keyboard Multimedi
-> a USB Keyboard] on usb-0000:00:10.0-2.1/input0
-> [    3.818001] generic-usb: probe of 0003:058F:9462.0002 failed with error -22
+Hi folks,
+i really dont know if everything is correct.
+This is my first submit into this mailing list.
+I added support for my HSDPA UMTS-card.
+Perhaps you can check! ;)
 
-> Could the crash be related to the generic-usb probe error?
+regards,
+Lukas
 
-Yes, it could.  Can you post the contents of 
-/sys/kernel/debug/usb/devices (after mounting a debugfs filesystem on 
-/sys/kernel/debug), with the keyboard plugged in?
 
-Alan Stern
+- ---
 
+- --- drivers/usb/serial/option.c.old	2010-02-08 18:53:12.583195124 +0100
++++ drivers/usb/serial/option.c	2010-02-08 18:55:39.039023408 +0100
+@@ -246,6 +246,8 @@
+ #define DELL_PRODUCT_5520_MINICARD_GENERIC_L	0x8137
+ #define DELL_PRODUCT_5520_MINICARD_GENERIC_I	0x8138
+
++#define DELL_PRODUCT_5540_MINICARD		0x8184
++
+ #define DELL_PRODUCT_5730_MINICARD_SPRINT	0x8180
+ #define DELL_PRODUCT_5730_MINICARD_TELUS	0x8181
+ #define DELL_PRODUCT_5730_MINICARD_VZW		0x8182
+@@ -494,6 +496,7 @@
+ 	{ USB_DEVICE(DELL_VENDOR_ID, DELL_PRODUCT_5730_MINICARD_SPRINT) },	/*
+Dell Wireless 5730 Mobile Broadband EVDO/HSPA Mini-Card */
+ 	{ USB_DEVICE(DELL_VENDOR_ID, DELL_PRODUCT_5730_MINICARD_TELUS) },	/*
+Dell Wireless 5730 Mobile Broadband EVDO/HSPA Mini-Card */
+ 	{ USB_DEVICE(DELL_VENDOR_ID, DELL_PRODUCT_5730_MINICARD_VZW) }, 	/*
+Dell Wireless 5730 Mobile Broadband EVDO/HSPA Mini-Card */
++	{ USB_DEVICE(DELL_VENDOR_ID, DELL_PRODUCT_5540_MINICARD) }, 		/* Dell
+Wireless 5540 Mobile Broadband HSPA Mini-Card */
+ 	{ USB_DEVICE(ANYDATA_VENDOR_ID, ANYDATA_PRODUCT_ADU_E100A) },	/*
+ADU-E100, ADU-310 */
+ 	{ USB_DEVICE(ANYDATA_VENDOR_ID, ANYDATA_PRODUCT_ADU_500A) },
+ 	{ USB_DEVICE(ANYDATA_VENDOR_ID, ANYDATA_PRODUCT_ADU_620UW) },
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.14 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+
+iQEcBAEBAgAGBQJLcFJEAAoJEM98oVUsldl38A8H/1Wb1z8esHxL47IJ9Yidc4Su
+UgJyE2BLBZSbMclqHKv4csYii0Y4Fa0hFWifK79GwqwDdmFtiywT/ig9QGcYLEiO
++TemWMr1bvqvAicdadj1zdzpEZUsXvdSxoYnu3c5CLzKmk40/JlNQ50zxAb6RM71
+KK4CDPen160nVVnP8sQl3LxyXfNAK5nEB+ocrVRQiz8kKb+9oZs78yOC3nkqjC4K
+uZNnD/4ruFlYhNOqvnbfnSwefTpZtgo0OM8tSeTt4w8/7GRNkaXpa3ru/7GszSSu
+qx+ULIQZvcQhqRZPamMmbo9yhWflmcmE4mA6ffcP7cCTtLEucHvdALkLYT8PX6o=
+=zgdC
+-----END PGP SIGNATURE-----
