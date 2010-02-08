@@ -1,34 +1,202 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751580Ab0BHVim (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 16:38:42 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:58705 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751259Ab0BHVik (ORCPT
+	id S1751881Ab0BHVip (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 16:38:45 -0500
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:47888 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751259Ab0BHVin (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 16:38:40 -0500
-Date: Mon, 8 Feb 2010 21:38:59 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jan Kiszka <jan.kiszka@web.de>
-Cc: David Miller <davem@davemloft.net>, Karsten Keil <isdn@linux-pingi.de>,
-       linux-kernel@vger.kernel.org, i4ldeveloper@listserv.isdn4linux.de,
-       isdn4linux@listserv.isdn4linux.de, netdev@vger.kernel.org,
-       Marcel Holtmann <marcel@holtmann.org>
-Subject: Re: [PATCH v2 00/41] CAPI: Major rework, tons of bug fixes
-Message-ID: <20100208213859.1ee8241a@lxorguk.ukuu.org.uk>
-In-Reply-To: <cover.1265659933.git.jan.kiszka@web.de>
-References: <cover.1265659933.git.jan.kiszka@web.de>
-X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.6; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 8 Feb 2010 16:38:43 -0500
+X-IMAP-Sender: achiang
+Date: Mon, 8 Feb 2010 14:30:14 -0700
+X-OfflineIMAP-x453206743-6c646c-494e424f582e4f7574626f78: 1265665121-0228732443882-v6.2.0
+From: Alex Chiang <achiang@hp.com>
+To: rdreier@cisco.com
+Cc: linux-rdma@vger.kernel.org, justin.chen@hp.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 00/18] Increase maximum number of Infiniband HCAs
+	per system
+Message-ID: <20100208213014.GA3503@grease>
+References: <20100202185235.28217.64521.stgit@bob.kio>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100202185235.28217.64521.stgit@bob.kio>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->  o reworked locking of the NCCI TTY using latest and greatest tty_port
->    features and kref, hopefully in the right way
+Hi Roland,
 
-Looks sane to me
+Any thoughts on this patch series?
 
-Alan
+Thanks,
+/ac
+
+* Alex Chiang <achiang@hp.com>:
+> This is v2 of a patch series that increases the maximum number of
+> IB HCAs supported per system.
+> 
+> The original mail thread is here:
+> 	http://lkml.org/lkml/2010/1/29/346
+> 
+> One note, I decided to "copy/paste" since factoring out the overflow
+> code in the three drivers seemed like overkill. If so desired, I could
+> factor those three separate functions into something provided by the
+> core, but that seemed like more trouble than it was worth at the time.
+> 
+> As before, I still don't have access to a giant system, so what I did
+> to test was to stick 4 cards into a small system, and then modify the
+> limits with debug patches similar to this:
+> 
+> diff --git a/drivers/infiniband/core/ucm.c b/drivers/infiniband/core/ucm.c
+> index 7bf0a82..8581e64 100644
+> --- a/drivers/infiniband/core/ucm.c
+> +++ b/drivers/infiniband/core/ucm.c
+> @@ -102,7 +102,7 @@ struct ib_ucm_event {
+>  enum {
+>         IB_UCM_MAJOR = 231,
+>         IB_UCM_BASE_MINOR = 224,
+> -       IB_UCM_MAX_DEVICES = 32
+> +       IB_UCM_MAX_DEVICES = 2
+>  };
+> 
+> 
+> I tested all 3 drivers this way (uverbs, umad, ucm). I verified that
+> we're not leaking device numbers on multiple modprobe/rmmod cycles,
+> that there aren't any funny interactions when various combinations of
+> the drivers are loaded.
+> 
+> I did not test the rest of the OFED stack. I did write some trivial
+> programs to open the devices in /dev and close them again.
+> 
+> Here's an example of some of the testing:
+> 
+> 	dl585g2:~ # modprobe ib_uverbs
+> 	dl585g2:~ # modprobe ib_umad
+> 	dl585g2:~ # modprobe ib_ucm
+> 	dl585g2:~ # ls -l /dev/uverb*
+> 	crw-rw---- 1 root root 231, 192 Feb  2 05:55 /dev/uverbs0
+> 	crw-rw---- 1 root root 231, 193 Feb  2 05:55 /dev/uverbs1
+> 	crw-rw---- 1 root root 249,   0 Feb  2 05:55 /dev/uverbs2
+> 	crw-rw---- 1 root root 249,   1 Feb  2 05:55 /dev/uverbs3
+> 	dl585g2:~ # ls -l /dev/umad*
+> 	crw-rw---- 1 root root 231, 0 Feb  2 05:55 /dev/umad0
+> 	crw-rw---- 1 root root 231, 1 Feb  2 05:55 /dev/umad1
+> 	crw-rw---- 1 root root 231, 2 Feb  2 05:55 /dev/umad2
+> 	crw-rw---- 1 root root 231, 3 Feb  2 05:55 /dev/umad3
+> 	crw-rw---- 1 root root 248, 0 Feb  2 05:55 /dev/umad4
+> 	crw-rw---- 1 root root 248, 1 Feb  2 05:55 /dev/umad5
+> 	crw-rw---- 1 root root 248, 2 Feb  2 05:55 /dev/umad6
+> 	crw-rw---- 1 root root 248, 3 Feb  2 05:55 /dev/umad7
+> 	dl585g2:~ # ls -l /dev/issm*
+> 	crw-rw---- 1 root root 231, 4 Feb  2 05:55 /dev/issm0
+> 	crw-rw---- 1 root root 231, 5 Feb  2 05:55 /dev/issm1
+> 	crw-rw---- 1 root root 231, 6 Feb  2 05:55 /dev/issm2
+> 	crw-rw---- 1 root root 231, 7 Feb  2 05:55 /dev/issm3
+> 	crw-rw---- 1 root root 248, 4 Feb  2 05:55 /dev/issm4
+> 	crw-rw---- 1 root root 248, 5 Feb  2 05:55 /dev/issm5
+> 	crw-rw---- 1 root root 248, 6 Feb  2 05:55 /dev/issm6
+> 	crw-rw---- 1 root root 248, 7 Feb  2 05:55 /dev/issm7
+> 	dl585g2:~ # ls -l /dev/ucm*
+> 	crw-rw---- 1 root root 231, 224 Feb  2 05:55 /dev/ucm0
+> 	crw-rw---- 1 root root 231, 225 Feb  2 05:55 /dev/ucm1
+> 	crw-rw---- 1 root root 247,   0 Feb  2 05:55 /dev/ucm2
+> 	crw-rw---- 1 root root 247,   1 Feb  2 05:55 /dev/ucm3
+> 
+> Note that the major and minor numbers are behaving rather sanely.
+> 
+> 	dl585g2:~ # rmmod ib_ucm
+> 	dl585g2:~ # rmmod ib_uverbs
+> 	dl585g2:~ # rmmod ib_umad
+> 
+> Reset.
+> 
+> 	dl585g2:~ # modprobe ib_ucm
+> 	dl585g2:~ # ls -l /dev/ucm*
+> 	crw-rw---- 1 root root 231, 224 Feb  2 05:57 /dev/ucm0
+> 	crw-rw---- 1 root root 231, 225 Feb  2 05:57 /dev/ucm1
+> 	crw-rw---- 1 root root 248,   0 Feb  2 05:57 /dev/ucm2
+> 	crw-rw---- 1 root root 248,   1 Feb  2 05:57 /dev/ucm3
+> 
+> See that /dev/ucm* devices now have a different major number 
+> compared to last time(248 vs 247), since we loaded that driver first.
+> 
+> But wait, why is it 248 and not 249? Is there a leak somewhere?
+> 
+> 	dl585g2:~ # ls -l /dev/uverb*
+> 	crw-rw---- 1 root root 231, 192 Feb  2 05:57 /dev/uverbs0
+> 	crw-rw---- 1 root root 231, 193 Feb  2 05:57 /dev/uverbs1
+> 	crw-rw---- 1 root root 249,   0 Feb  2 05:57 /dev/uverbs2
+> 	crw-rw---- 1 root root 249,   1 Feb  2 05:57 /dev/uverbs3
+> 	dl585g2:~ # rmmod ib_uverbs
+> 	ERROR: Module ib_uverbs is in use by ib_ucm
+> 
+> Ah, ib_ucm is dependent on ib_uverbs, so when we modprobed ib_ucm,
+> in reality ib_uverbs got loaded first. See how it has a higher
+> major number.
+> 
+> 	dl585g2:~ # rmmod ib_ucm
+> 	dl585g2:~ # rmmod ib_uverbs
+> 	dl585g2:~ # modprobe ib_umad
+> 	dl585g2:~ # ls -l /dev/umad*
+> 	crw-rw---- 1 root root 231, 0 Feb  2 05:58 /dev/umad0
+> 	crw-rw---- 1 root root 231, 1 Feb  2 05:58 /dev/umad1
+> 	crw-rw---- 1 root root 231, 2 Feb  2 05:58 /dev/umad2
+> 	crw-rw---- 1 root root 231, 3 Feb  2 05:58 /dev/umad3
+> 	crw-rw---- 1 root root 249, 0 Feb  2 05:58 /dev/umad4
+> 	crw-rw---- 1 root root 249, 1 Feb  2 05:58 /dev/umad5
+> 	crw-rw---- 1 root root 249, 2 Feb  2 05:58 /dev/umad6
+> 	crw-rw---- 1 root root 249, 3 Feb  2 05:58 /dev/umad7
+> 	dl585g2:~ # ls -l /dev/issm*
+> 	crw-rw---- 1 root root 231, 4 Feb  2 05:58 /dev/issm0
+> 	crw-rw---- 1 root root 231, 5 Feb  2 05:58 /dev/issm1
+> 	crw-rw---- 1 root root 231, 6 Feb  2 05:58 /dev/issm2
+> 	crw-rw---- 1 root root 231, 7 Feb  2 05:58 /dev/issm3
+> 	crw-rw---- 1 root root 249, 4 Feb  2 05:58 /dev/issm4
+> 	crw-rw---- 1 root root 249, 5 Feb  2 05:58 /dev/issm5
+> 	crw-rw---- 1 root root 249, 6 Feb  2 05:58 /dev/issm6
+> 	crw-rw---- 1 root root 249, 7 Feb  2 05:58 /dev/issm7
+> 
+> Finally, after one more reset, we see ib_umad loaded first and
+> obtaining the major number of 249.
+> 
+> v1 -> v2:
+> 	- update umad and ucm drivers too
+> 
+> ---
+> 
+> Alex Chiang (18):
+>       IB/uverbs: convert *cdev to cdev in struct ib_uverbs_device
+>       IB/uverbs: remove dev_table
+>       IB/uverbs: use stack variable 'devnum' in ib_uverbs_add_one
+>       IB/uverbs: use stack variable 'base' in ib_uverbs_add_one
+>       IB/uverbs: increase maximum devices supported
+>       IB/uverbs: pack struct ib_uverbs_event_file tighter
+>       IB/uverbs: whitespace cleanup
+>       IB/umad: convert cdev pointers to embedded structs in struct ib_umad_port
+>       IB/umad: remove port_table[]
+>       IB/umad: use stack variable 'devnum' in ib_umad_init_port
+>       IB/umad: use stack variable 'base' in ib_umad_init_port
+>       IB/umad: increase maximum devices supported
+>       IB/umad: clean whitespace
+>       IB/ucm: use stack variable 'devnum' in ib_ucm_add_one
+>       IB/ucm: use stack variable 'base' in ib_ucm_add_one
+>       IB/ucm: increase maximum devices supported
+>       IB/ucm: clean whitespace errors
+>       IB/core: pack struct ib_device a little tighter
+> 
+> 
+>  drivers/infiniband/core/ucm.c         |   63 ++++++++++--
+>  drivers/infiniband/core/user_mad.c    |  173 +++++++++++++++++----------------
+>  drivers/infiniband/core/uverbs.h      |   11 +-
+>  drivers/infiniband/core/uverbs_main.c |  175 +++++++++++++++++++--------------
+>  include/rdma/ib_verbs.h               |    4 -
+>  5 files changed, 255 insertions(+), 171 deletions(-)
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
