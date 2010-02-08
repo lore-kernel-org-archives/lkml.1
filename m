@@ -1,64 +1,80 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755383Ab0BHAHo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Feb 2010 19:07:44 -0500
-Received: from borg.medozas.de ([188.40.89.202]:37279 "EHLO borg.medozas.de"
+	id S932809Ab0BHAH4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Feb 2010 19:07:56 -0500
+Received: from ozlabs.org ([203.10.76.45]:33650 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754549Ab0BHAHn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Feb 2010 19:07:43 -0500
-Date: Mon, 8 Feb 2010 01:07:40 +0100 (CET)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Jens Axboe <jens.axboe@oracle.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: kswapd continuously active
-In-Reply-To: <alpine.LSU.2.01.1002071148150.26546@obet.zrqbmnf.qr>
-Message-ID: <alpine.LSU.2.01.1002080106240.11078@obet.zrqbmnf.qr>
-References: <alpine.LSU.2.01.1001230037350.20442@obet.zrqbmnf.qr> <20100125130627.GO13771@kernel.dk> <alpine.LSU.2.01.1001251416340.8189@obet.zrqbmnf.qr> <alpine.LSU.2.01.1002051329090.7843@obet.zrqbmnf.qr> <20100205130002.GI1025@kernel.dk>
- <alpine.LSU.2.01.1002051408280.23211@obet.zrqbmnf.qr> <20100205131220.GK1025@kernel.dk> <alpine.LSU.2.01.1002051423020.23211@obet.zrqbmnf.qr> <alpine.LSU.2.01.1002071148150.26546@obet.zrqbmnf.qr>
-User-Agent: Alpine 2.01 (LSU 1266 2009-07-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	id S1755997Ab0BHAHy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Feb 2010 19:07:54 -0500
+From: Michael Neuling <mikey@neuling.org>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+cc: Alexander Viro <viro@zeniv.linux.org.uk>, Oleg Nesterov <oleg@redhat.com>,
+       James Morris <jmorris@namei.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-fsdevel@vger.kernel.org, Anton Blanchard <anton@samba.org>,
+       stable@kernel.org, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Serge Hallyn <serue@us.ibm.com>,
+       WANG Cong <xiyou.wangcong@gmail.com>, Paul Mackerras <paulus@samba.org>,
+       benh@kernel.crashing.org, miltonm@bga.com, aeb@cwi.nl
+Subject: [PATCH] Restrict stack space reservation to rlimit
+In-reply-to: <10125.1265451732@neuling.org>
+References: <3984.1265416993@neuling.org> <20100206042038.GB32246@kryten> <10125.1265451732@neuling.org>
+Comments: In-reply-to Michael Neuling <mikey@neuling.org>
+   message dated "Sat, 06 Feb 2010 21:22:12 +1100."
+X-Mailer: MH-E 8.2; nmh 1.3; GNU Emacs 23.1.1
+Date: Mon, 08 Feb 2010 11:07:52 +1100
+Message-ID: <18033.1265587672@neuling.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+apkm, linus: this or something like it needs to go into 2.6.33 (& 32) to
+fix 'ulimit -s'.  
 
-On Sunday 2010-02-07 11:50, Jan Engelhardt wrote:
->On Friday 2010-02-05 14:24, Jan Engelhardt wrote:
->>>> The ext4 filesystem is already mounted with barrier=0. If there
->>>> is any block-level barriers I also can turn off, what would be
->>>> the command?
->>>
->>>barrier=0 is enough. I do wonder why your writeback rate is that slow,
->>>then. The disk has write back caching enabled?
->>
->>Yes, that seems to be the case at least. In fact the box is all fluffy 
->>when nobody runs sync(1), which is what makes it so strange.
->>
->>sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't 
->>support DPO or FUA
->
->Here is an alternate trace that just happened.
->
->INFO: task flush-8:0:343 blocked for more than 120 seconds.
->"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
->flush-8:0     D 0000000000555930  6664   343      2 0x18000000000
->Call Trace:
-> [00000000005555f4] start_this_handle+0x324/0x4b0
-> [0000000000555930] jbd2_journal_start+0x94/0xc0
-> [000000000052ddb8] ext4_da_writepages+0x1e0/0x460
-> [000000000049bf30] do_writepages+0x28/0x48
-> [00000000004e6d58] writeback_single_inode+0xf0/0x330
-> [00000000004e7b24] writeback_inodes_wb+0x4c8/0x5d8
-> [00000000004e7da4] wb_writeback+0x170/0x1ec
-> [00000000004e8074] wb_do_writeback+0x188/0x1a4
-> [00000000004e80b8] bdi_writeback_task+0x28/0xa0
-> [00000000004a76c8] bdi_start_fn+0x64/0xc4
-> [0000000000475f84] kthread+0x58/0x6c
-> [000000000042ade0] kernel_thread+0x30/0x48
-> [0000000000475ee0] kthreadd+0xb8/0x104
+Mikey
 
-Could it be that there is something synchronize_rcu()-like in the
-game that — as a result of how RCU works — just takes ages with 24
-VCPUs?
+[PATCH] Restrict stack space reservation to rlimit
+
+When reserving stack space for a new process, make sure we're not
+attempting to allocate more than rlimit allows.
+
+Also, reserve the same stack size independent of page size.
+
+This fixes a bug unmasked by fc63cf237078c86214abcb2ee9926d8ad289da9b
+
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+Cc: Anton Blanchard <anton@samba.org>
+Cc: stable@kernel.org
+---
+ fs/exec.c |    9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
+
+Index: clone1/fs/exec.c
+===================================================================
+--- clone1.orig/fs/exec.c
++++ clone1/fs/exec.c
+@@ -554,7 +554,7 @@ static int shift_arg_pages(struct vm_are
+ 	return 0;
+ }
+ 
+-#define EXTRA_STACK_VM_PAGES	20	/* random */
++#define EXTRA_STACK_VM_SIZE	81920UL	/* randomly 20 4K pages */
+ 
+ /*
+  * Finalizes the stack vm_area_struct. The flags and permissions are updated,
+@@ -627,10 +627,13 @@ int setup_arg_pages(struct linux_binprm 
+ 			goto out_unlock;
+ 	}
+ 
++	stack_base = min(EXTRA_STACK_VM_SIZE,
++			 current->signal->rlim[RLIMIT_STACK].rlim_cur) -
++		PAGE_SIZE;
+ #ifdef CONFIG_STACK_GROWSUP
+-	stack_base = vma->vm_end + EXTRA_STACK_VM_PAGES * PAGE_SIZE;
++	stack_base = vma->vm_end + stack_base;
+ #else
+-	stack_base = vma->vm_start - EXTRA_STACK_VM_PAGES * PAGE_SIZE;
++	stack_base = vma->vm_start - stack_base;
+ #endif
+ 	ret = expand_stack(vma, stack_base);
+ 	if (ret)
