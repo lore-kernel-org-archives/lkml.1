@@ -1,122 +1,75 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750994Ab0BHLQn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 06:16:43 -0500
-Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:39172 "EHLO
+	id S1750892Ab0BHL21 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 06:28:27 -0500
+Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:39968 "EHLO
 	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750701Ab0BHLQm (ORCPT
+	by vger.kernel.org with ESMTP id S1750736Ab0BHL20 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 06:16:42 -0500
-Subject: [PATCH] kmemcheck: Test the full object in
-	kmemcheck_is_obj_initialized()
-To: linux-kernel@vger.kernel.org
+	Mon, 8 Feb 2010 06:28:26 -0500
+Subject: Re: USB mass storage and ARM cache coherency
 From: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Vegard Nossum <vegardno@ifi.uio.no>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Christian Casteyde <casteyde.christian@free.fr>
-Date: Mon, 08 Feb 2010 11:16:24 +0000
-Message-ID: <20100208111624.5387.37948.stgit@pc1117.cambridge.arm.com>
-User-Agent: StGit/0.15-51-gc7506
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       Ming Lei <tom.leiming@gmail.com>, linux-usb@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Sebastian Siewior <bigeasy@linutronix.de>, Greg KH <greg@kroah.com>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+In-Reply-To: <20100208105209.GA31671@atrey.karlin.mff.cuni.cz>
+References: <20100208065519.GE1290@ucw.cz>
+	 <1265622676.4020.19.camel@pc1117.cambridge.arm.com>
+	 <20100208105209.GA31671@atrey.karlin.mff.cuni.cz>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Mon, 08 Feb 2010 11:28:03 +0000
+Message-Id: <1265628483.4020.63.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 08 Feb 2010 11:16:25.0523 (UTC) FILETIME=[26FBD830:01CAA8B0]
+X-OriginalArrivalTime: 08 Feb 2010 11:28:04.0483 (UTC) FILETIME=[C798AD30:01CAA8B1]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a fix for bug #14845 (bugzilla.kernel.org). The
-update_checksum() function in mm/kmemleak.c calls
-kmemcheck_is_obj_initialised() before scanning an object. When
-KMEMCHECK_PARTIAL_OK is enabled, this function returns true. However,
-the crc32_le() reads smaller intervals (32-bit) for which
-kmemleak_is_obj_initialised() may be false leading to a kmemcheck
-warning.
+On Mon, 2010-02-08 at 10:52 +0000, Pavel Machek wrote:
+> > On Mon, 2010-02-08 at 06:55 +0000, Pavel Machek wrote:
+> > > > > So, let's put this in the HCD drivers and be done with it.
+> > > >
+> > > > The patch below is what fixes the I-D cache incoherency issues on ARM. I
+> > > > don't particularly like the solution but it seems to be the only one
+> > > > available.
+> > >
+> > > Really? It looks like arm should just flush the caches when mapping
+> > > executable page to the userspace.... you can't expect all the drivers
+> > > to be modified like that...
+> >
+> > We could of course flush the caches every time we get a page fault but
+> > that's far from optimal, especially since DMA-capable drivers to do
+> > not
+> 
+> Maybe far for optimal, but it is something that should be done,
+> _first_. Correctness is more important than performance, and you can't
+> expect all drivers to behave like you want them.
 
-Note that kmemcheck_is_obj_initialized() is currently only used by
-kmemleak before scanning a memory location.
+I wouldn't call heavy cache flushing "correctness". We could as well
+disable the caches so that it is fully coherent.
 
-Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Christian Casteyde <casteyde.christian@free.fr>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Vegard Nossum <vegardno@ifi.uio.no>
----
- arch/x86/mm/kmemcheck/kmemcheck.c |    2 +-
- arch/x86/mm/kmemcheck/shadow.c    |   16 ++++++++++++++--
- arch/x86/mm/kmemcheck/shadow.h    |    2 ++
- 3 files changed, 17 insertions(+), 3 deletions(-)
+The arch code follows an API defined in cachetlb.txt but the PIO drivers
+don't (some do, like mmci.c). It may be inconvenient to call
+flush_dcache_page() in the driver, hence I started a discussion on
+linux-arch on a PIO mapping API that x86 or other fully coherent
+architectures can leave it as no-ops.
 
-diff --git a/arch/x86/mm/kmemcheck/kmemcheck.c b/arch/x86/mm/kmemcheck/kmemcheck.c
-index 8cc1833..b3b531a 100644
---- a/arch/x86/mm/kmemcheck/kmemcheck.c
-+++ b/arch/x86/mm/kmemcheck/kmemcheck.c
-@@ -337,7 +337,7 @@ bool kmemcheck_is_obj_initialized(unsigned long addr, size_t size)
- 	if (!shadow)
- 		return true;
- 
--	status = kmemcheck_shadow_test(shadow, size);
-+	status = kmemcheck_shadow_test_all(shadow, size);
- 
- 	return status == KMEMCHECK_SHADOW_INITIALIZED;
- }
-diff --git a/arch/x86/mm/kmemcheck/shadow.c b/arch/x86/mm/kmemcheck/shadow.c
-index 3f66b82..aec1242 100644
---- a/arch/x86/mm/kmemcheck/shadow.c
-+++ b/arch/x86/mm/kmemcheck/shadow.c
-@@ -125,12 +125,12 @@ void kmemcheck_mark_initialized_pages(struct page *p, unsigned int n)
- 
- enum kmemcheck_shadow kmemcheck_shadow_test(void *shadow, unsigned int size)
- {
-+#ifdef CONFIG_KMEMCHECK_PARTIAL_OK
- 	uint8_t *x;
- 	unsigned int i;
- 
- 	x = shadow;
- 
--#ifdef CONFIG_KMEMCHECK_PARTIAL_OK
- 	/*
- 	 * Make sure _some_ bytes are initialized. Gcc frequently generates
- 	 * code to access neighboring bytes.
-@@ -139,13 +139,25 @@ enum kmemcheck_shadow kmemcheck_shadow_test(void *shadow, unsigned int size)
- 		if (x[i] == KMEMCHECK_SHADOW_INITIALIZED)
- 			return x[i];
- 	}
-+
-+	return x[0];
- #else
-+	return kmemcheck_shadow_test_all(shadow, size);
-+#endif
-+}
-+
-+enum kmemcheck_shadow kmemcheck_shadow_test_all(void *shadow, unsigned int size)
-+{
-+	uint8_t *x;
-+	unsigned int i;
-+
-+	x = shadow;
-+
- 	/* All bytes must be initialized. */
- 	for (i = 0; i < size; ++i) {
- 		if (x[i] != KMEMCHECK_SHADOW_INITIALIZED)
- 			return x[i];
- 	}
--#endif
- 
- 	return x[0];
- }
-diff --git a/arch/x86/mm/kmemcheck/shadow.h b/arch/x86/mm/kmemcheck/shadow.h
-index af46d9a..ff0b2f7 100644
---- a/arch/x86/mm/kmemcheck/shadow.h
-+++ b/arch/x86/mm/kmemcheck/shadow.h
-@@ -11,6 +11,8 @@ enum kmemcheck_shadow {
- void *kmemcheck_shadow_lookup(unsigned long address);
- 
- enum kmemcheck_shadow kmemcheck_shadow_test(void *shadow, unsigned int size);
-+enum kmemcheck_shadow kmemcheck_shadow_test_all(void *shadow,
-+						unsigned int size);
- void kmemcheck_shadow_set(void *shadow, unsigned int size);
- 
- #endif
+> Then you can add optimalizations not to do the flushes on drivers you
+> audited and where you care...
+
+Sorry but that's not really feasible (unless I don't fully understand
+what you mean) - if we do the cache flushing on the fault handling path
+in the arch code, there is no way for the arch code to know what driver
+is doing, unless we make this conditionally compiled with something like
+CONFIG_ARCH_NEEDS_HEAVY_FLUSHING.
+
+-- 
+Catalin
 
