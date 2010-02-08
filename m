@@ -1,69 +1,32 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757715Ab0BHDG5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Feb 2010 22:06:57 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:53659 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754891Ab0BHDGz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Feb 2010 22:06:55 -0500
-Message-ID: <4B6F803D.5080007@redhat.com>
-Date: Mon, 08 Feb 2010 11:08:45 +0800
-From: Cong Wang <amwang@redhat.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20091001)
+	id S932281Ab0BHDIY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Feb 2010 22:08:24 -0500
+Received: from email.essi.fr ([157.169.25.6]:53942 "EHLO
+	email.polytech.unice.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756123Ab0BHDIX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Feb 2010 22:08:23 -0500
+X-Greylist: delayed 1681 seconds by postgrey-1.27 at vger.kernel.org; Sun, 07 Feb 2010 22:08:23 EST
+Message-ID: <c79fe4075cd2d7ddc74cc25c0f3c4ac5.squirrel@webmail.polytech.unice.fr>
+Date: Mon, 8 Feb 2010 03:40:20 +0100 (CET)
+Subject: Congratulations
+From: "@GOOGLE 2010 PROMOTION" <2010pomotion@googlewinner.com>
+Reply-To: giveawayteam09@live.com
+User-Agent: SquirrelMail/1.4.17
 MIME-Version: 1.0
-To: Dave Young <hidave.darkstar@gmail.com>
-CC: Peter Zijlstra <peterz@infradead.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, Greg KH <gregkh@suse.de>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Tejun Heo <tj@kernel.org>, Miles Lane <miles.lane@gmail.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Patch 0/2] sysfs: fix s_active lockdep warning
-References: <Pine.LNX.4.44L0.1002051021120.22829-100000@netrider.rowland.org> <1265384517.30057.50.camel@laptop> <20100207092216.GA2585@darkstar>
-In-Reply-To: <20100207092216.GA2585@darkstar>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
+To: undisclosed-recipients:;
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Young wrote:
-> On Fri, Feb 05, 2010 at 04:41:57PM +0100, Peter Zijlstra wrote:
->> On Fri, 2010-02-05 at 10:30 -0500, Alan Stern wrote:
->>> On Fri, 5 Feb 2010, Peter Zijlstra wrote:
->>>
->>>> Right, so this device stuff is much more complicated than I was led to
->>>> believe ;-)
->>> Haven't I told you all along that tree-structured locking is
->>> complicated?  :-)
->> Well, regular tree's aren't all that complicated, but multiple
->> inter-locking trees is a whole different story indeed.
->>
-> 
-> I ever tried converting device semaphore to mutex, but failed with same issue.
-> 
-> At least now there's no lockdep solution for it, so I recommend revert
-> the mutex converting patch.
-> 
-> following lockdep warning with rc6-mm1:
-> 
-> [    0.397123] 
-> [    0.397124] =============================================
-> [    0.397359] [ INFO: possible recursive locking detected ]
-> [    0.397480] 2.6.33-rc6-mm1 #1
-> [    0.397596] ---------------------------------------------
-> [    0.397717] swapper/1 is trying to acquire lock:
-> [    0.397836]  (&dev->mutex){+.+...}, at: [<c12662e4>] __driver_attach+0x38/0x63
-> [    0.398162] 
-> [    0.398162] but task is already holding lock:
-> [    0.398393]  (&dev->mutex){+.+...}, at: [<c12662d8>] __driver_attach+0x2c/0x63
-> [    0.399999] 
 
-Alan already provided a patch for this issue earlier in this thread.
-
-Thanks.
+You won £850,000.00 GBP in google promotion.Ticket
+number:00869575733664,CGPN:7-22-71-00-66-
+12,Serial,numbers:BTD/8070447706/06,Lucky
+numbers:12-12-23-35-40-41(12),giveawayteam.johnson3@gmail.com
 
