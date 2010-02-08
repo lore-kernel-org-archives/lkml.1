@@ -1,48 +1,39 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757826Ab0BHDb2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Feb 2010 22:31:28 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:35155 "EHLO mail.zytor.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752988Ab0BHDb0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Feb 2010 22:31:26 -0500
-Message-ID: <4B6F84AA.70402@zytor.com>
-Date: Sun, 07 Feb 2010 19:27:38 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: James Cloos <cloos@jhcloos.com>
-CC: Mark Lord <kernel@teksavvy.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Linux 2.6.33-rc7
-References: <alpine.LFD.2.00.1002061422430.3829@localhost.localdomain>	<alpine.LFD.2.00.1002061445210.3829@localhost.localdomain>	<4B6E4793.3010201@teksavvy.com> <m3k4uo275s.fsf@lugabout.jhcloos.org>
-In-Reply-To: <m3k4uo275s.fsf@lugabout.jhcloos.org>
-Content-Type: text/plain; charset=UTF-8
+	id S933607Ab0BHDkO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Feb 2010 22:40:14 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51000
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757754Ab0BHDkN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Feb 2010 22:40:13 -0500
+Date: Sun, 07 Feb 2010 19:40:22 -0800 (PST)
+Message-Id: <20100207.194022.53074897.davem@davemloft.net>
+To: sfr@canb.auug.org.au
+Cc: netdev@vger.kernel.org, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, sri@us.ibm.com
+Subject: Re: linux-next: build failure after merge of the net tree
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20100208132243.ab967d9c.sfr@canb.auug.org.au>
+References: <20100208132243.ab967d9c.sfr@canb.auug.org.au>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/07/2010 11:10 AM, James Cloos wrote:
->>>>>> "Mark" == Mark Lord <kernel@teksavvy.com> writes:
-> 
-> Mark> I just wish the GNU tar folk had the sense to combine -z and -j
-> Mark> into a single flag.
-> 
-> Try the -a flag:
-> 
->  -a, --auto-compress   use archive suffix to determine the compression program
-> 
-> (Which does seem to be on by default, now, as mentioned in the other reply.)
-> 
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Mon, 8 Feb 2010 13:22:43 +1100
 
-For decompression it should use magic numbers, not filenames.  For
-compression, using filenames as a heuristic I guess makes sense.
+> After merging the net tree, today's linux-next build (powerpc
+> ppc64_defconfig) failed like this:
+ ...
+> Caused by commit bfd5f4a3d605e0f6054df0b59fe0907ff7e696d3 ("packet: Add
+> GSO/csum offload support").  This build has CONFIG_PACKET_MMAP unset.
+> 
+> I used the version of the net tree from next-20100205 for today.
 
-	-hpa
-
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+Known problem, I'm fixing it by killing the config option,
+everyone should have that thing enabled by now.
