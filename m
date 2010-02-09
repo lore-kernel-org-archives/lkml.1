@@ -1,113 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755469Ab0BIRqV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 12:46:21 -0500
-Received: from mail-fx0-f220.google.com ([209.85.220.220]:33832 "EHLO
-	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755345Ab0BIRqU (ORCPT
+	id S1755486Ab0BIRru (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 12:47:50 -0500
+Received: from mail.bausate.edu.pe ([200.48.249.125]:46599 "EHLO
+	mail.bausate.edu.pe" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755345Ab0BIRrs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Feb 2010 12:46:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=TO64hbE8gMgJd1GhHODvFD2AIh+ynwFkmwkvdrq3B4pYhUWA37f7DTOiuUp3hD7Yfm
-         0Q8kKCY4WqSS18WpkjHecNeeLX6Ygh6VboyvzUDS8dURmU2okSIX+iNOSYQIFoB+0pha
-         3VMm9RWYS8LCTWdlyjM5//U/M/7BgzMdyDJX0=
-Subject: Re: [PATCH 01/17] MTD: create lockless versions of
- {get,put}_mtd_device This will be used to resolve deadlock in block
- translation layer.
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: David Woodhouse <dwmw2@infradead.org>,
-       Artem Bityutskiy <dedekind1@gmail.com>,
-       linux-mtd <linux-mtd@lists.infradead.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Alex Dubov <oakad@yahoo.com>, joern <joern@logfs.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "stanley.miao" <stanley.miao@windriver.com>,
-       Vitaly Wool <vitalywool@gmail.com>
-In-Reply-To: <1265736206.9195.4.camel@maxim-laptop>
-References: <1265734665-22656-1-git-send-email-maximlevitsky@gmail.com>
-	 <1265734665-22656-2-git-send-email-maximlevitsky@gmail.com>
-	 <1265735693.11509.253.camel@laptop>  <1265736206.9195.4.camel@maxim-laptop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 09 Feb 2010 19:46:14 +0200
-Message-ID: <1265737574.9195.16.camel@maxim-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 9 Feb 2010 12:47:48 -0500
+Message-ID: <da5b2929fbfa2ae84aec1afa2b896cff.squirrel@mail.bausate.edu.pe>
+Date: Tue, 9 Feb 2010 02:03:45 -0000 (UTC)
+Subject: Congratulations - You have won
+From: "Microsoft Email Promotions" <promo2010@microsoft.com>
+Reply-To: ivannickersonsss@yahoo.com.hk
+User-Agent: SquirrelMail/1.4.16
+MIME-Version: 1.0
+Content-Type: text/plain;charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
+To: undisclosed-recipients:;
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-02-09 at 19:23 +0200, Maxim Levitsky wrote: 
-> On Tue, 2010-02-09 at 18:14 +0100, Peter Zijlstra wrote: 
-> > On Tue, 2010-02-09 at 18:57 +0200, Maxim Levitsky wrote:
-> > > These functions can be used as long as we don't need access to global mtd table, but have
-> > > a pointer to the mtd device.
-> > > 
-> > > Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
-> > > ---
-> > >  drivers/mtd/mtdcore.c   |   60 ++++++++++++++++++++++++++++++----------------
-> > >  include/linux/mtd/mtd.h |    3 +-
-> > >  2 files changed, 41 insertions(+), 22 deletions(-)
-> > 
-> > > +int __get_mtd_device(struct mtd_info *mtd)
-> > > +{
-> > > +	int err;
-> > > +
-> > > +	if (!try_module_get(mtd->owner))
-> > > +		return -ENODEV;
-> > > +
-> > > +	if (mtd->get_device) {
-> > > +
-> > > +		err = mtd->get_device(mtd);
-> > > +
-> > > +		if (err) {
-> > > +			module_put(mtd->owner);
-> > > +			return err;
-> > > +		}
-> > > +	}
-> > > +	mtd->usecount++;
-> > > +	return 0;
-> > >  }
-> > 
-> > > +void __put_mtd_device(struct mtd_info *mtd)
-> > > +{
-> > > +	--mtd->usecount;
-> > > +	BUG_ON(mtd->usecount < 0);
-> > > +
-> > >  	if (mtd->put_device)
-> > >  		mtd->put_device(mtd);
-> > >  
-> > >  	module_put(mtd->owner);
-> > >  }
-> > 
-> > That's racy, use kref.
-> > 
-> Couldn't agree with you more.
-> 
-> However, these functions aren't intended for general use, and probably
-> will be used by mtd translation layer only. I do have a lock that
-> protects concurrent use of these functions.
-> 
-> Thus, I better add a comment about this?
-However on second thought, there is still a race if two FTLs access same
-mtd device.
-While this might seem impossible, and I say it is quite dangerous. I can
-imagine using both some FTL and mtdblock for testing.
+Congratulations - You have won
 
-Just using kref (nothing against it) won't help here.
-The mtd->get_device/put_device aren't expecting to be called
-concurrently ether...
+The MICROSOFT EMAIL PROMO TEAM is glad to announce that
+after a successful completion of the PROMO DRAWS held on the
+8th February 2010,your e-mail address,attached to winning
+numbers:(11) (80) (12)(96) (09) (43) won in the Tenth
+lottery category.
 
-I can add per mtd lock, but it is a bit ugly...
+You have therefore been approved to claim a total sum of
+£250,000,00 Pounds Sterling in cash credited to REF NO:MICRO-L/2009-END10.
 
-What do you think?
+All participants were selected through our Microsoft computer
+ballot system drawn from 167,000 Names,as part of our
+International  "E-MAIL" Promotion Program for our prominent
+MS-WORD users all over the world and for the continuous use
+of the internet. You are advised to contact the claims
+processor with the details below via his e-mail address :
 
-Best regards,
-Maxim Levitsky
+NAME:  Ivan Nickerson
+EMAIL: ivannickersonde@yahoo.com.hk
 
+PLEASE NOTE YOU ARE TO SEND THE FOLLOWING INFORMATION TO CLAIM YOUR PRIZE:
+1.Full Name:... 2.Address:... 3.Phone:... 4.Country:... 5.Sex/Gender:...
+
+
+YOURS SINCERELY,
+ANASTACIA SHEFFIELD.
 
 
