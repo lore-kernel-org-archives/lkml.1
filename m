@@ -1,46 +1,62 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752909Ab0BIJIw (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Tue, 9 Feb 2010 04:08:52 -0500
-Received: from fallback5.mail.ru ([94.100.176.59]:54490 "EHLO
-	fallback5.mail.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751227Ab0BIJIv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Feb 2010 04:08:51 -0500
-X-Greylist: delayed 536 seconds by postgrey-1.27 at vger.kernel.org; Tue, 09 Feb 2010 04:08:50 EST
-From: Evgeniy Dushistov <dushistov@mail.ru>
-To: Alex Viskovatoff <viskovatoff@imap.cc>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-        linux-kernel@vger.kernel.org
-Subject: =?koi8-r?Q?Re=3A_[PATCH]_fs/ufs=3A_Recognize_Solaris-specific_file_system_state?=
-Mime-Version: 1.0
-X-Mailer: mPOP Web-Mail 2.19
-X-Originating-IP: 192.168.2.49 via proxy [213.167.60.22]
-Date: Tue, 09 Feb 2010 11:58:02 +0300
-References: <1265683224.4096.1358983441@webmail.messagingengine.com>
-In-Reply-To: <1265683224.4096.1358983441@webmail.messagingengine.com>
-Reply-To: Evgeniy Dushistov <dushistov@mail.ru>
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-Id: <E1Nelv0-0001bT-00.dushistov-mail-ru@f247.mail.ru>
-X-Spam: Not detected
-X-Mras: Ok
+	id S1754507Ab0BIOIL (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Tue, 9 Feb 2010 09:08:11 -0500
+Received: from sh.osrg.net ([192.16.179.4]:36531 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754239Ab0BIOIJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Feb 2010 09:08:09 -0500
+From: e@lab.ntt.co.jp
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, fujita.tomonori@lab.ntt.co.jp,
+        Richard Henderson <rth@twiddle.net>,
+        Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+        Matt Turner <mattst88@gmail.com>
+Subject: [PATCH -mm 03/12] alpha: use asm-generic/pci-dma-common.h
+Date: Tue,  9 Feb 2010 22:35:15 +0900
+Message-Id: <1265722524-9493-4-git-send-email-e>
+X-Mailer: git-send-email 1.5.6.5
+In-Reply-To: <1265722524-9493-1-git-send-email-e>
+References: <1265722524-9493-1-git-send-email-e>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 09 Feb 2010 23:07:46 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 
------Original Message-----
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: Richard Henderson <rth@twiddle.net>
+Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Cc: Matt Turner <mattst88@gmail.com>
+---
+ arch/alpha/include/asm/pci.h |   14 ++------------
+ 1 files changed, 2 insertions(+), 12 deletions(-)
 
->Recent releases of Solaris set the fs_clean state of an unmounted UFS file system as FSLOG ("logging fs"). However, the Linux kernel currently does not recognize the value which represents this state. Thus, attempting to mount such a file system rw produces the message
->
->kernel: ufs_read_super: can't grok fs_clean 0xfffffffd
->
->and the file system is mounted read-only. This patch makes the kernel recognize that value.
->
-
-There is some minor style error. Do not forget use scripts/checkpatch.pl.
-And may be better will be send copy to Andrew Morton <akpm@linux-foundation.org>,
-instead of Linus Torvalds. He will be resend your patch to Linus, during next merge window.
-
-Acked-by: Evgeniy Dushistov  +dushistov@mail.ru 
+diff --git a/arch/alpha/include/asm/pci.h b/arch/alpha/include/asm/pci.h
+index dd8dcab..6d2a8cc 100644
+--- a/arch/alpha/include/asm/pci.h
++++ b/arch/alpha/include/asm/pci.h
+@@ -120,18 +120,8 @@ extern void pci_unmap_single(struct pci_dev *, dma_addr_t, size_t, int);
+ extern void pci_unmap_page(struct pci_dev *, dma_addr_t, size_t, int);
+ 
+ /* pci_unmap_{single,page} is not a nop, thus... */
+-#define DECLARE_PCI_UNMAP_ADDR(ADDR_NAME)	\
+-	dma_addr_t ADDR_NAME;
+-#define DECLARE_PCI_UNMAP_LEN(LEN_NAME)		\
+-	__u32 LEN_NAME;
+-#define pci_unmap_addr(PTR, ADDR_NAME)			\
+-	((PTR)->ADDR_NAME)
+-#define pci_unmap_addr_set(PTR, ADDR_NAME, VAL)		\
+-	(((PTR)->ADDR_NAME) = (VAL))
+-#define pci_unmap_len(PTR, LEN_NAME)			\
+-	((PTR)->LEN_NAME)
+-#define pci_unmap_len_set(PTR, LEN_NAME, VAL)		\
+-	(((PTR)->LEN_NAME) = (VAL))
++#define HAVE_ARCH_PCI_UNMAP
++#include <asm-generic/pci-dma-common.h>
+ 
+ /* Map a set of buffers described by scatterlist in streaming mode for
+    PCI DMA.  This is the scatter-gather version of the above
+-- 
+1.5.6.5
 
