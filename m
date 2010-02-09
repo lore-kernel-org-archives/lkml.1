@@ -1,59 +1,94 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752584Ab0BIVfr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 16:35:47 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:40901 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751608Ab0BIVfq (ORCPT
+	id S1751608Ab0BIVf7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 16:35:59 -0500
+Received: from mail-yx0-f193.google.com ([209.85.210.193]:41815 "EHLO
+	mail-yx0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753328Ab0BIVfz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Feb 2010 16:35:46 -0500
+	Tue, 9 Feb 2010 16:35:55 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=xeSuLTOSWerLz7jrUBqrBTDvQzbwy3x6Yq0TUw77v16XODMGGgzI86Iad9DLytDaNH
-         jI3OhvuBMGe/YjvkvRL9ae/kp21ObNya4Vg7As8rShkOKkvDhZB49QkPPS6jIrzgtSmU
-         E5OMKMIPFB62kvQONcafVGolAzVCaxchL3mTc=
-Date: Wed, 10 Feb 2010 00:35:42 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Stephane Eranian <eranian@google.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Don Zickus <dzickus@redhat.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC perf,x86] P4 PMU early draft
-Message-ID: <20100209213542.GC5068@lenovo>
-References: <20100208184504.GB5130@lenovo> <bd4cb8901002091313h3bc739fbi872567fdb219d752@mail.gmail.com>
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=jxSdWFfisjTie07W8+kxb6M6lebyJ//mF8XMtJaYDQDVA01C/Ob/SyCfTRYUTFIbLh
+         xcbwE5ny3Dcd7GCSMkAT4cOVbpxtMAWuUMiVH9d3KSc0O8ALfjKLY5VmBk/xevGZHQzM
+         AAEtUtA8K9skn42C+x2fXctpVUUUuQ95O+L7g=
+Message-ID: <4B71D59E.2060102@gmail.com>
+Date: Tue, 09 Feb 2010 13:37:34 -0800
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091114 Lightning/1.0pre Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <bd4cb8901002091313h3bc739fbi872567fdb219d752@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Michael Poole <mdpoole@troilus.org>
+CC: Jiri Kosina <jkosina@suse.cz>, linux-input@vger.kernel.org,
+       Marcel Holtmann <marcel@holtmann.org>, linux-bluetooth@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/2] Provide a driver for the Apple Magic Mouse
+References: <alpine.LNX.2.00.1001291515560.356@pobox.suse.cz>	<dd18b0c31002082322m4238a4a6m73fc30752ba30447@mail.gmail.com>	<1265710460.2383.5685.camel@localhost.localdomain>	<201002090736.55576.edt@aei.ca>	<alpine.LNX.2.00.1002091339190.30967@pobox.suse.cz> <87y6j2eeqv.fsf_-_@troilus.org>
+In-Reply-To: <87y6j2eeqv.fsf_-_@troilus.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 09, 2010 at 10:13:59PM +0100, Stephane Eranian wrote:
-> Cyrill,
-> 
-> On Mon, Feb 8, 2010 at 7:45 PM, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-...
-> >
-> > Stephane, I know you've been (and still is, right?) working on P4 driver
-> > for libpmu (not sure if I remember correctly this name). Perhaps we should
-> > take some ideas from there?
-> >
-> The library is called libpfm (perfmon) and libpfm4 (perf_events). It has
-> support for Netburst (pentium4). It does the assignment of events to
-> counters in user mode. I did not write the P4 support and it was a very long
-> time ago. I don't recall all the details, except that this was really difficult.
-> You may want to take a look at pfmlib_pentium4.c.
+On 02/09/10 05:10, Michael Poole wrote:
+> I think this patch is ready for real review.  The Magic Mouse requires
+> that a driver send an unlock Report(Feature) command, similar to the
+> Wacom wireless tablet and Sixaxis controller quirks.  This turns on an
+> Input Report that isn't published in the input Report descriptor that
+> contains touch data (and usually overrides the normal motion and click
+> Report).
+>
+> Because the mouse has only one switch and no scroll wheel, the driver
+> (under control of parameters) emulates a middle button and scroll wheel.
+> User space could also ignore and/or re-synthesize those events based on
+> the reported events.
+>
+> The first patch exports hid_register_report() so the driver can turn on
+> the multitouch report.  The second patch adds the device ID and the
+> driver.  Some user-space tools to talk to the mouse directly (that is,
+> when it is not associated with the host's HIDP stack) are at
+> http://github.com/entrope/linux-magicmouse .
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
 
-Yeah, I've a look taken on it. Interesting. Thanks! Will take more precise look
-as only get spare time slot :)
 
-> 
-> I am still actively developing libpfm4 for perf_events. The P4 support is
-> not available because I don't know how perf_events is going to support
-> it. I'll update the library once that is settled.
-> 
-	-- Cyrill
+First, is I made a mistake with the procedure(early post) i.g.
+sudo /usr/bin/test-device trusted D4:9A:20:88:C7:48
+forgot to add yes at the end.
+(so rebooting works and so forth).
+
+As to this module I pulled the latest mainstream
+added:
+http://lkml.org/lkml/2010/1/29/146
+plus the two other patches you had submitted with this thread and
+everything compiled good.
+
+Glad to see the mouse is working with these patches(thank you vary much 
+gentlemen).
+
+I can scroll up and down(need to get used to this).
+copy/past works
+right/left click works.
+(need to figure out forward/reverse with firefox probably).
+
+suspend works. I'm getting a resumbit urb, but that's been there
+prior to this module. Although there was a moment after wakeup
+I turned off the mouse, then reconnecting didnt, but then on another 
+go(reboot)it worked(maybe hit some odd thing).
+
+Other than not seeing any menu entry under hid
+with make menuconfig, I would have to say vary nice
+job with this, all functions I need to function are
+there(scroll,right/left click, copy/past).
+
+nice job, and thanks for this..
+(without this I would of had a non
+functional magic mouse).
+
+Justin P. Mattock
