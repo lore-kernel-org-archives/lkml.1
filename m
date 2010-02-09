@@ -1,82 +1,192 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753783Ab0BIIbY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 03:31:24 -0500
-Received: from mail-fx0-f220.google.com ([209.85.220.220]:47505 "EHLO
-	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751691Ab0BIIbV convert rfc822-to-8bit (ORCPT
+	id S1753881Ab0BIIbb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 03:31:31 -0500
+Received: from e23smtp04.au.ibm.com ([202.81.31.146]:43827 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753508Ab0BIIbX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Feb 2010 03:31:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=X1t9vCF8iJxnw4M54yeSKjBATcSSzJgxenJKJrDH54abA77C4Hrh0tBu9t6VCJfheL
-         wDJZJEruaqnoz28FtYz24o7HegvJdNAeMZGyiwusYivm4jukhzoHLDI7iaoje7WEbKnf
-         4IxkD9O9QWwFoTmhf985u6zoauSSON42wVlZk=
+	Tue, 9 Feb 2010 03:31:23 -0500
+Date: Tue, 9 Feb 2010 14:01:16 +0530
+From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: linux-kernel@vger.kernel.org, Arun Bharadwaj <arun@linux.vnet.ibm.com>
+Subject: [v11 PATCH 3/9]: cpuidle: implement a list based approach to
+ register a set of idle routines
+Message-ID: <20100209083116.GD29988@linux.vnet.ibm.com>
+Reply-To: arun@linux.vnet.ibm.com
+References: <20100209082815.GA29988@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Date: Tue, 9 Feb 2010 09:31:19 +0100
-Message-ID: <96eeef951002090031o29529ef4jc43d8f3b0eace42c@mail.gmail.com>
-Subject: Why does my driver (drivers/input/misc/winbond-cir.c) break suspend?
-From: David <dhardeman@gmail.com>
-To: linux-acpi@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20100209082815.GA29988@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've been trying to debug a problem with my driver
-(drivers/input/misc/winbond-cir.c) and suspend/resume.
+* Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2010-02-09 13:58:16]:
 
-If the driver is loaded, my test computer (Intel DG45FC motherboard)
-survives one suspend/resume cycle but hangs (no pings, no magic sysrq,
-etc) on the second suspend attempt (tested on 2.6.32.X and currently
-testing on a git checkout from yesterday).
+Implement a list based registering mechanism for architectures which
+have multiple sets of idle routines which are to be registered.
 
-After sprinkling a lot of printk's everywhere, it seems that the kernel
-freezes either in the below call, or at a random time soon after it:
+Currently, in x86 it is done by merely setting pm_idle = idle_routine
+and managing this pm_idle pointer is messy.
 
-drivers/pnp/driver.c:pnp_bus_suspend(), calls
-pnp_dev->protocol->suspend()
+To give an example of how this mechanism works:
+In x86, initially, idle routine is selected from the set of poll/mwait/
+c1e/default idle loops. So the selected idle loop is registered in cpuidle
+as one idle state cpuidle devices. Once ACPI comes up, it registers
+another set of idle states on top of this state. Again, suppose a module
+registers another set of idle loops, it is added to this list.
 
-Since this is a pnpacpi device, that is a call to:
+This provides a clean way of registering and unregistering idle state
+routines.
 
-drivers/pnp/pnpacpi/core.c:pnpacpi_disable_resources(), which calls the
-ACPI "_DIS" method for the "UAR3" object.
+In the current implementation, pm_idle is set as the current idle routine
+being used and the old idle routine has to be maintained and when a module
+registers/unregisters an idle routine, confusion arises.
 
-Now, if I add a hack to my driver to remove the PNP_DISABLE flag from
-device->capabilities (which means, AFAIK, that the above ACPI "_DIS"
-method won't get called during suspend), I can reliably suspend and
-resume, which is why I believe that this has got something to do with
-ACPI even though the crash during suspend doesn't always happen while
-"my" drivers _DIS method is being executed.
 
-I've tried debugging the ACPI method by doing:
-echo _DIS   >> /sys/module/acpi/parameters/trace_method_name
-echo enable >> /sys/module/acpi/parameters/trace_state
+Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+---
+ drivers/cpuidle/cpuidle.c |   54 ++++++++++++++++++++++++++++++++++++++++------
+ include/linux/cpuidle.h   |    1 
+ 2 files changed, 48 insertions(+), 7 deletions(-)
 
-and done a suspend/resume/suspend (i.e. caused the system to crash)
-while capturing the output via netconsole. I can't derive any
-interesting insights from the log though.
-
-The decompiled dsdt table and the log capture from netconsole is
-attached to:
-http://bugzilla.kernel.org/show_bug.cgi?id=15257
-
-The first suspend starts at 203.176799 (the first line of the log) and
-ends around 209.083233 (line 2576), the resume starts right after the
-suspend and ends around 211.358430 (line 2712), the second suspend
-starts at 342.876299 (line 2718) and ends where the log file ends (with
-a freeze).
-
-Any suggestions on what to try next?
-
-(Please CC me on any replies)
-
-Regards,
-David Härdeman
-
-(I'm using this email address instead of david@hardeman.nu for now
-since my mail server is down)
+Index: linux.trees.git/drivers/cpuidle/cpuidle.c
+===================================================================
+--- linux.trees.git.orig/drivers/cpuidle/cpuidle.c
++++ linux.trees.git/drivers/cpuidle/cpuidle.c
+@@ -22,6 +22,7 @@
+ #include "cpuidle.h"
+ 
+ DEFINE_PER_CPU(struct cpuidle_device *, cpuidle_devices);
++DEFINE_PER_CPU(struct list_head, cpuidle_devices_list);
+ 
+ DEFINE_MUTEX(cpuidle_lock);
+ 
+@@ -129,6 +130,45 @@ void cpuidle_resume_and_unlock(void)
+ 
+ EXPORT_SYMBOL_GPL(cpuidle_resume_and_unlock);
+ 
++int cpuidle_add_to_list(struct cpuidle_device *dev)
++{
++	int ret, cpu = dev->cpu;
++	struct cpuidle_device *old_dev;
++
++	if (!list_empty(&per_cpu(cpuidle_devices_list, cpu))) {
++		old_dev = list_first_entry(&per_cpu(cpuidle_devices_list, cpu),
++				struct cpuidle_device, idle_list);
++		cpuidle_remove_state_sysfs(old_dev);
++	}
++
++	list_add(&dev->idle_list, &per_cpu(cpuidle_devices_list, cpu));
++	ret = cpuidle_add_state_sysfs(dev);
++	return ret;
++}
++
++void cpuidle_remove_from_list(struct cpuidle_device *dev)
++{
++	struct cpuidle_device *temp_dev;
++	struct list_head *pos;
++	int ret, cpu = dev->cpu;
++
++	list_for_each(pos, &per_cpu(cpuidle_devices_list, cpu)) {
++		temp_dev = container_of(pos, struct cpuidle_device, idle_list);
++		if (dev == temp_dev) {
++			list_del(&temp_dev->idle_list);
++			cpuidle_remove_state_sysfs(temp_dev);
++			break;
++		}
++	}
++
++	if (!list_empty(&per_cpu(cpuidle_devices_list, cpu))) {
++		temp_dev = list_first_entry(&per_cpu(cpuidle_devices_list, cpu),
++					struct cpuidle_device, idle_list);
++		ret = cpuidle_add_state_sysfs(temp_dev);
++	}
++	cpuidle_kick_cpus();
++}
++
+ /**
+  * cpuidle_enable_device - enables idle PM for a CPU
+  * @dev: the CPU
+@@ -153,9 +193,6 @@ int cpuidle_enable_device(struct cpuidle
+ 			return ret;
+ 	}
+ 
+-	if ((ret = cpuidle_add_state_sysfs(dev)))
+-		return ret;
+-
+ 	if (cpuidle_curr_governor->enable &&
+ 	    (ret = cpuidle_curr_governor->enable(dev)))
+ 		goto fail_sysfs;
+@@ -174,7 +211,7 @@ int cpuidle_enable_device(struct cpuidle
+ 	return 0;
+ 
+ fail_sysfs:
+-	cpuidle_remove_state_sysfs(dev);
++	cpuidle_remove_from_list(dev);
+ 
+ 	return ret;
+ }
+@@ -199,8 +236,6 @@ void cpuidle_disable_device(struct cpuid
+ 
+ 	if (cpuidle_curr_governor->disable)
+ 		cpuidle_curr_governor->disable(dev);
+-
+-	cpuidle_remove_state_sysfs(dev);
+ }
+ 
+ EXPORT_SYMBOL_GPL(cpuidle_disable_device);
+@@ -271,6 +306,7 @@ int cpuidle_register_device(struct cpuid
+ 	}
+ 
+ 	cpuidle_enable_device(dev);
++	cpuidle_add_to_list(dev);
+ 
+ 	mutex_unlock(&cpuidle_lock);
+ 
+@@ -292,6 +328,7 @@ void cpuidle_unregister_device(struct cp
+ 	cpuidle_pause_and_lock();
+ 
+ 	cpuidle_disable_device(dev);
++	cpuidle_remove_from_list(dev);
+ 
+ 	per_cpu(cpuidle_devices, dev->cpu) = NULL;
+ 
+@@ -342,12 +379,15 @@ static inline void latency_notifier_init
+  */
+ static int __init cpuidle_init(void)
+ {
+-	int ret;
++	int ret, cpu;
+ 
+ 	ret = cpuidle_add_class_sysfs(&cpu_sysdev_class);
+ 	if (ret)
+ 		return ret;
+ 
++	for_each_possible_cpu(cpu)
++		INIT_LIST_HEAD(&per_cpu(cpuidle_devices_list, cpu));
++
+ 	latency_notifier_init(&cpuidle_latency_notifier);
+ 
+ 	return 0;
+Index: linux.trees.git/include/linux/cpuidle.h
+===================================================================
+--- linux.trees.git.orig/include/linux/cpuidle.h
++++ linux.trees.git/include/linux/cpuidle.h
+@@ -92,6 +92,7 @@ struct cpuidle_device {
+ 	struct cpuidle_state_kobj *kobjs[CPUIDLE_STATE_MAX];
+ 	struct cpuidle_state	*last_state;
+ 
++	struct list_head	idle_list;
+ 	struct kobject		kobj;
+ 	struct completion	kobj_unregister;
+ 	void			*governor_data;
