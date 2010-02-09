@@ -1,50 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754070Ab0BIJZv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 04:25:51 -0500
-Received: from kuber.nabble.com ([216.139.236.158]:59966 "EHLO
-	kuber.nabble.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751499Ab0BIJZu (ORCPT
+	id S1753941Ab0BIJ2G (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 04:28:06 -0500
+Received: from mail-qy0-f200.google.com ([209.85.221.200]:60446 "EHLO
+	mail-qy0-f200.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752256Ab0BIJ2E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Feb 2010 04:25:50 -0500
-Message-ID: <27512493.post@talk.nabble.com>
-Date: Tue, 9 Feb 2010 01:25:49 -0800 (PST)
-From: luckygala <lucky2@libero.it>
-To: linux-kernel@vger.kernel.org
-Subject: Re: plz help fixing lirc_igorplugusb kernel module
-In-Reply-To: <21606877.post@talk.nabble.com>
+	Tue, 9 Feb 2010 04:28:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :content-type;
+        b=RG5ZLjEaB4UVLVD8dYwsvtECW42m/gtpyXaydFJB/E9mD4gzjd1VMJE4mXaHPw2DNZ
+         7qWQy+7+Ru4PP1WC7qibiMdaJCUkHWR1Am27GZv/7Jc1sK3nYKXThO4nu6IJoUS09TZu
+         7wWzOQC39LIm6uhcTgVjCT9TxAYJiyMAVcHss=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-Nabble-From: lucky2@libero.it
-References: <567e52cd0901201139s1bd4e585o4a3af400c213d237@mail.gmail.com> <87c.4976ffbf.5f61c@altium.nl> <21605162.post@talk.nabble.com> <4237.49788488.6c688@altium.nl> <21606877.post@talk.nabble.com>
+In-Reply-To: <430c80e91002090103l5751d569pd306ca1f0ccca8ba@mail.gmail.com>
+References: <430c80e91002090103l5751d569pd306ca1f0ccca8ba@mail.gmail.com>
+From: Pranith Kumar <bobby.prani@gmail.com>
+Date: Tue, 9 Feb 2010 14:57:43 +0530
+Message-ID: <430c80e91002090127u1742d043ub29f1c547fe73590@mail.gmail.com>
+Subject: Fwd: Possible performance improvement?
+To: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+---------- Forwarded message ----------
+From: Pranith Kumar <bobby.prani@gmail.com>
+Date: Tue, Feb 9, 2010 at 2:33 PM
+Subject: Possible performance improvement?
+To: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
 
 
+Hey Ingo,
 
-gsmd wrote:
-> 
-> 
-> Dick Streefland wrote:
->> 
->> I suggest removing at least this line, to see if
->> that helps.
->> 
-> Well, removing the entire if (ir->buf_in[2] != 0) block leads to nothing
-> being displayed on key press. Only occasional GET_INFRACODE: error 0
-> messages.
-> 
+I recently happened to come across this thesis[1] which
+presents some very concrete results with stats regarding
+the performance of Linux CFS with an implementation of Redline.
 
-i have the same problem with igorplugusb and the buffer overrun when i push
-any buttons of my remote
+It would really be great if you could take some time out of your
+busy schedule and quickly look up the figures to see the performance
+comparison and if we could adapt some ideas. I am willing to give it
+a try if you think its worth it.
 
-Can anyone explain to me, in detail, how i can solve the problem?
-i need the steps to made the changes that you sugested in this forum
-thanks a lot
--- 
-View this message in context: http://old.nabble.com/plz-help-fixing-lirc_igorplugusb-kernel-module-tp21570131p27512493.html
-Sent from the linux-kernel mailing list archive at Nabble.com.
+Thanks,
+--
+Pranith.
 
+
+[1] http://scholarworks.umass.edu/cgi/viewcontent.cgi?article=1071&context=open_access_dissertations
