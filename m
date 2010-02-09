@@ -1,20 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754556Ab0BIXQK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 18:16:10 -0500
-Received: from kroah.org ([198.145.64.141]:57922 "EHLO coco.kroah.org"
+	id S1754640Ab0BIXQs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 18:16:48 -0500
+Received: from kroah.org ([198.145.64.141]:57929 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753211Ab0BIXQI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Feb 2010 18:16:08 -0500
-Date: Tue, 9 Feb 2010 15:16:03 -0800
+	id S1752603Ab0BIXQr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Feb 2010 18:16:47 -0500
+Date: Tue, 9 Feb 2010 15:16:39 -0800
 From: Greg KH <gregkh@suse.de>
 To: Mauro Carvalho Chehab <mchehab@infradead.org>
 Cc: Matthias Schwarzott <zzam@gentoo.org>,
        Douglas Schilling Landgraf <dougsland@redhat.com>,
        Andreas Oberritter <obi@linuxtv.org>, linux-media@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Andreas Gruenbacher <agruen@suse.de>
+       linux-kernel@vger.kernel.org, Andreas Gruenbacher <agruen@suse.de>,
+       Richard Guenther <rguenther@suse.de>
 Subject: [PATCH] dvb: l64781.ko broken with gcc 4.5
-Message-ID: <20100209231603.GA22588@kroah.com>
+Message-ID: <20100209231639.GA22646@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
