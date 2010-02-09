@@ -1,187 +1,49 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753676Ab0BIG4b (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 01:56:31 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:57410 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752758Ab0BIG4a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Feb 2010 01:56:30 -0500
-Message-ID: <4B71072B.1030405@cn.fujitsu.com>
-Date: Tue, 09 Feb 2010 14:56:43 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	id S1753604Ab0BIG5k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 01:57:40 -0500
+Received: from mail-qy0-f200.google.com ([209.85.221.200]:63601 "EHLO
+	mail-qy0-f200.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752988Ab0BIG5i (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Feb 2010 01:57:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=Hm1Cp0AeX+zKIftnYZFUb2X+0pGsqEayUM6KAJ/n9e2e9HtfEfrkWXrkFo6L7qdEF2
+         5KkdmM1E3bXnRiPtOGm+gJWdlJm9/M64iPzUDApqhfmJDINGO9UrrphQAnyD1lz9m62+
+         2G7+06apwHMHVncApqv6/vHoquDuoGbMv1dpo=
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] ftrace: Allow to remove a single function from function graph
- filter
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20100209042348.GA2558@brick.ozlabs.ibm.com>
+References: <20100208184504.GB5130@lenovo>
+	 <20100209042348.GA2558@brick.ozlabs.ibm.com>
+Date: Tue, 9 Feb 2010 09:57:35 +0300
+Message-ID: <aa79d98a1002082257o3883a102y160ff2bb14c2077e@mail.gmail.com>
+Subject: Re: [RFC perf,x86] P4 PMU early draft
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       Stephane Eranian <eranian@google.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Don Zickus <dzickus@redhat.com>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I don't see why we can only clear all functions from the filter.
+On 2/9/10, Paul Mackerras <paulus@samba.org> wrote:
+> On Mon, Feb 08, 2010 at 09:45:04PM +0300, Cyrill Gorcunov wrote:
+>
+>> The main problem in implementing P4 PMU is that it has much more
+>> restrictions for event to MSR mapping. So to fit into current
+>> perf_events model I made the following:
+>
+> Is there somewhere accessible on the web where I can read about the P4
+> PMU?  I'm interested to see if the constraint representation and
+> search I used on the POWER processors would be applicable.
+>
+> Paul.
+>
 
-After patching:
-
-  # echo sys_open > set_graph_function
-  # echo sys_close >> set_graph_function
-  # cat set_graph_function
-  sys_open
-  sys_close
-  # echo '!sys_close' >> set_graph_function
-  # cat set_graph_function
-  sys_open
-
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
- kernel/trace/ftrace.c |   51 +++++++++++++++++++++++++++++-------------------
- kernel/trace/trace.h  |    3 +-
- 2 files changed, 33 insertions(+), 21 deletions(-)
-
-diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index 1e6640f..4ec779d 100644
---- a/kernel/trace/ftrace.c
-+++ b/kernel/trace/ftrace.c
-@@ -2426,6 +2426,7 @@ static const struct file_operations ftrace_notrace_fops = {
- static DEFINE_MUTEX(graph_lock);
- 
- int ftrace_graph_count;
-+int ftrace_graph_filter_enabled;
- unsigned long ftrace_graph_funcs[FTRACE_GRAPH_MAX_FUNCS] __read_mostly;
- 
- static void *
-@@ -2448,7 +2449,7 @@ static void *g_start(struct seq_file *m, loff_t *pos)
- 	mutex_lock(&graph_lock);
- 
- 	/* Nothing, tell g_show to print all functions are enabled */
--	if (!ftrace_graph_count && !*pos)
-+	if (!ftrace_graph_filter_enabled && !*pos)
- 		return (void *)1;
- 
- 	return __g_next(m, pos);
-@@ -2494,6 +2495,7 @@ ftrace_graph_open(struct inode *inode, struct file *file)
- 	mutex_lock(&graph_lock);
- 	if ((file->f_mode & FMODE_WRITE) &&
- 	    (file->f_flags & O_TRUNC)) {
-+		ftrace_graph_filter_enabled = 0;
- 		ftrace_graph_count = 0;
- 		memset(ftrace_graph_funcs, 0, sizeof(ftrace_graph_funcs));
- 	}
-@@ -2519,7 +2521,7 @@ ftrace_set_func(unsigned long *array, int *idx, char *buffer)
- 	struct dyn_ftrace *rec;
- 	struct ftrace_page *pg;
- 	int search_len;
--	int found = 0;
-+	int fail = 1;
- 	int type, not;
- 	char *search;
- 	bool exists;
-@@ -2530,37 +2532,51 @@ ftrace_set_func(unsigned long *array, int *idx, char *buffer)
- 
- 	/* decode regex */
- 	type = filter_parse_regex(buffer, strlen(buffer), &search, &not);
--	if (not)
--		return -EINVAL;
-+	if (!not && *idx >= FTRACE_GRAPH_MAX_FUNCS)
-+		return -EBUSY;
- 
- 	search_len = strlen(search);
- 
- 	mutex_lock(&ftrace_lock);
- 	do_for_each_ftrace_rec(pg, rec) {
- 
--		if (*idx >= FTRACE_GRAPH_MAX_FUNCS)
--			break;
--
- 		if (rec->flags & (FTRACE_FL_FAILED | FTRACE_FL_FREE))
- 			continue;
- 
- 		if (ftrace_match_record(rec, search, search_len, type)) {
--			/* ensure it is not already in the array */
-+			/* if it is in the array */
- 			exists = false;
--			for (i = 0; i < *idx; i++)
-+			for (i = 0; i < *idx; i++) {
- 				if (array[i] == rec->ip) {
- 					exists = true;
- 					break;
- 				}
--			if (!exists)
--				array[(*idx)++] = rec->ip;
--			found = 1;
-+			}
-+
-+			if (!not) {
-+				if (!exists) {
-+					array[(*idx)++] = rec->ip;
-+					if (*idx >= FTRACE_GRAPH_MAX_FUNCS)
-+						goto out;
-+				}
-+				fail = 0;
-+			} else {
-+				if (exists) {
-+					array[i] = array[--(*idx)];
-+					array[*idx] = 0;
-+					fail = 0;
-+				}
-+			}
- 		}
- 	} while_for_each_ftrace_rec();
--
-+out:
- 	mutex_unlock(&ftrace_lock);
- 
--	return found ? 0 : -EINVAL;
-+	if (fail)
-+		return -EINVAL;
-+
-+	ftrace_graph_filter_enabled = 1;
-+	return 0;
- }
- 
- static ssize_t
-@@ -2570,16 +2586,11 @@ ftrace_graph_write(struct file *file, const char __user *ubuf,
- 	struct trace_parser parser;
- 	ssize_t read, ret;
- 
--	if (!cnt || cnt < 0)
-+	if (!cnt)
- 		return 0;
- 
- 	mutex_lock(&graph_lock);
- 
--	if (ftrace_graph_count >= FTRACE_GRAPH_MAX_FUNCS) {
--		ret = -EBUSY;
--		goto out_unlock;
--	}
--
- 	if (trace_parser_get_init(&parser, FTRACE_BUFF_MAX)) {
- 		ret = -ENOMEM;
- 		goto out_unlock;
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index 9a69b9c..d2929ca 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -499,6 +499,7 @@ trace_print_graph_duration(unsigned long long duration, struct trace_seq *s);
- #ifdef CONFIG_DYNAMIC_FTRACE
- /* TODO: make this variable */
- #define FTRACE_GRAPH_MAX_FUNCS		32
-+extern int ftrace_graph_filter_enabled;
- extern int ftrace_graph_count;
- extern unsigned long ftrace_graph_funcs[FTRACE_GRAPH_MAX_FUNCS];
- 
-@@ -506,7 +507,7 @@ static inline int ftrace_graph_addr(unsigned long addr)
- {
- 	int i;
- 
--	if (!ftrace_graph_count)
-+	if (!ftrace_graph_filter_enabled)
- 		return 1;
- 
- 	for (i = 0; i < ftrace_graph_count; i++) {
--- 
-1.6.3
-
+I've been using intel sdm, from intel.com
