@@ -1,74 +1,60 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753283Ab0BICGM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 21:06:12 -0500
-Received: from mail001.aei.ca ([206.123.6.130]:41397 "EHLO mail001.aei.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752857Ab0BICGK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 21:06:10 -0500
-From: Ed Tomlinson <edt@aei.ca>
-To: Marcel Holtmann <marcel@holtmann.org>
-Subject: Re: [PATCH] Bluetooth: Keep a copy of each HID device's report descriptor.
-Date: Mon, 8 Feb 2010 21:06:06 -0500
-User-Agent: KMail/1.12.4 (Linux/2.6.32.8-crc; KDE/4.3.5; x86_64; ; )
-Cc: Michael Poole <mdpoole@troilus.org>, Bastien Nocera <hadess@hadess.net>,
-       Jiri Kosina <jkosina@suse.cz>, "Gunn, Brian" <bgunn@solekai.com>,
-       Jiri Kosina <jkosina@suse.cz>, Ping <pinglinux@gmail.com>,
-       linux-kernel@vger.kernel.org,
-       BlueZ development <linux-bluetooth@vger.kernel.org>
-References: <alpine.LNX.2.00.1001291515560.356@pobox.suse.cz> <87vdebfvfk.fsf@troilus.org> <1265392303.31341.235.camel@localhost.localdomain>
-In-Reply-To: <1265392303.31341.235.camel@localhost.localdomain>
+	id S1753317Ab0BICNY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 21:13:24 -0500
+Received: from qw-out-2122.google.com ([74.125.92.26]:10578 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751763Ab0BICNX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Feb 2010 21:13:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=XOpKVAtpGwatktAIYi5OJuHYbQN+j709b77Kv2QsRPd5vo6IlQ4zJbHOK8849C14P3
+         Tpq22+4uNq02a+Q2hFJJp2Ey4ZCGI26ffbHlgjWULW20UiVIbxY6Yhm5JytxKBZ3X3K5
+         cpupBEst8+rCkh8NLDYygY3NDRPWv08mCQMN8=
 MIME-Version: 1.0
-Message-Id: <201002082106.06301.edt@aei.ca>
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20100208124845.f652e951.akpm@linux-foundation.org>
+References: <28c262361002042258v7a7b8e87y3e376eaeb152b608@mail.gmail.com>
+	 <20100208124845.f652e951.akpm@linux-foundation.org>
+Date: Tue, 9 Feb 2010 10:13:21 +0800
+Message-ID: <2375c9f91002081813w32a59b29l42c734cb2271324c@mail.gmail.com>
+Subject: Re: [BUG?] recursive locking in acpi_bus_register_driver
+From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Minchan Kim <minchan.kim@gmail.com>, Len Brown <lenb@kernel.org>,
+       inux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Greg KH <greg@kroah.com>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, Feb 9, 2010 at 4:48 AM, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Fri, 5 Feb 2010 15:58:07 +0900
+> Minchan Kim <minchan.kim@gmail.com> wrote:
+>
+>> Is this a known bug or my hardware is bad ?
+>> I use mmotm 2010-02-03-20-09.
+>>
+>> I didn't have a problem in 2.6.32.
+>> Unfortunately I can't test it at next week.
+>> I hope this problem can be reproduced easily.
+>>
+>
+> It would be useful if you could work out whether this bug is only in
+> -mm, or is in linux-next or is in mainline, please.
+>
+> Probably it's in linux-next, and it might be due to driver core changes
+> or acpi changes.
+>
 
-I have been trying to test Michael's magic mouse drivers against 32.7 (or .8-rc).   Is there a tree
-based on .32 with these patches?  If not would it be possible to post the patches to lkml?  I do not
-mind sorting out a few conflicts - this thread assume one knows a little more about the process being 
-used here than is obvious.
+Due the convert from semphore to mutex in driver core code, I think.
+This is a known issue.
 
-TIA
-Ed Tomlinson
+> Either way, we should get this weeded out lest the offending code turns
+> up in 2.6.34-rc1.
 
-On Friday 05 February 2010 12:51:43 Marcel Holtmann wrote:
-> Hi Michael,
-> 
-> > > looks good to me. I just prefer that you do the allocation of the report
-> > > descriptor before the HID object:
-> > 
-> > An updated patch is below.  Sorry for the delay -- inclement weather
-> > here got in the way of testing this as quickly as I would have liked.
-> > 
-> > From e245ef87247f5e257db40c412af7991c9af375ab Mon Sep 17 00:00:00 2001
-> > From: Michael Poole <mdpoole@troilus.org>
-> > Date: Fri, 5 Feb 2010 12:21:38 -0500
-> > Subject: [PATCH] Bluetooth: Keep a copy of each HID device's report descriptor.
-> > 
-> > The report descriptor is read by user space (via the Service
-> > Discovery Protocol), so it is only available during the ioctl
-> > to connect.  However, the probe function that needs the
-> > descriptor might not be called until a specific module is
-> > loaded.  Keep a copy of the descriptor so it is available for
-> > later use.
-> 
-> patch has been applied. Thanks.
-> 
-> Regards
-> 
-> Marcel
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
+Alan Stern is working on this, the patch he provided still needs to be
+discussed, I think.
