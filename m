@@ -1,119 +1,200 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754408Ab0BIMzG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 07:55:06 -0500
-Received: from moutng.kundenserver.de ([212.227.17.10]:60763 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754359Ab0BIMzE (ORCPT
+	id S1754361Ab0BINAx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 08:00:53 -0500
+Received: from casper.infradead.org ([85.118.1.10]:33083 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753561Ab0BINAv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Feb 2010 07:55:04 -0500
-From: Karsten Keil <isdn@linux-pingi.de>
-Reply-To: isdn@linux-pingi.de
-To: Jan Kiszka <jan.kiszka@web.de>
-Subject: Re: [PATCH v2 00/41] CAPI: Major rework, tons of bug fixes
-Date: Tue, 9 Feb 2010 13:54:23 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.27.39-0.2-default; KDE/4.3.1; x86_64; ; )
-Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       i4ldeveloper@listserv.isdn4linux.de, isdn4linux@listserv.isdn4linux.de,
-       netdev@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Marcel Holtmann <marcel@holtmann.org>
-References: <cover.1265659933.git.jan.kiszka@web.de>
-In-Reply-To: <cover.1265659933.git.jan.kiszka@web.de>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-6"
+	Tue, 9 Feb 2010 08:00:51 -0500
+Subject: Re: [RFC][PATCH] perf_events: added new start/stop PMU callbacks
+From: Peter Zijlstra <peterz@infradead.org>
+To: Stephane Eranian <eranian@google.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, paulus@samba.org,
+       davem@davemloft.net, fweisbec@gmail.com, robert.richter@amd.com,
+       perfmon2-devel@lists.sf.net, eranian@gmail.com
+In-Reply-To: <bd4cb8901002080921p311e29fbmcdf0841b0af558a@mail.gmail.com>
+References: <4b703875.0a04d00a.7896.ffffb824@mx.google.com>
+	 <1265646612.11509.13.camel@laptop>
+	 <bd4cb8901002080921p311e29fbmcdf0841b0af558a@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 09 Feb 2010 14:00:38 +0100
+Message-ID: <1265720438.11509.241.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-Message-Id: <201002091354.23389.isdn@linux-pingi.de>
-X-Provags-ID: V01U2FsdGVkX1+/xrIS67v2f/JXXQVlZ0UV63brxNt46LCRwng
- rzE01cWQ4+ToO4lWUN5wVvd407SiqWGCgBTNC1EMD2hdPD8sEE
- d9xA8xfPEF1Sq0e4PFmjHOx3ky8kUeI
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Montag, 8. Februar 2010 21:12:04 Jan Kiszka wrote:
-> Here is the second take of my CAPI rework. I tried to address all
-> feedback on v1, so this one comes with the following changes:
+On Mon, 2010-02-08 at 18:21 +0100, Stephane Eranian wrote:
 > 
->  o rebased over net-next
->  o reworked locking of the NCCI TTY using latest and greatest tty_port
->    features and kref, hopefully in the right way
->  o more fine-grained patch steps for the tricky TTY rework
->  o dynamic major for NCCI TTYs, ie. CAPI no longer claims 191
->  o dynamic TTY minor registrations, completely obsoleting capifs
->  o schedule capifs for removal
->  o some small additional cleanups
-> 
-> I kept my capifs fixes though this thing should die in the future. The
-> work is done, and people may still use it due to their distro
-> configuration (and the hard-wired loading by capiinit - needs fixing).
-> 
-> You can pull this series from
-> 
-> 	git://git.kiszka.org/linux-2.6.git capi
-> 
-Thank you for that effort, it looks very good for me.
+> Not sure why it's easier. It saves memory for sure, but that problem
+> is independent of the issue I was trying to address.
 
-I will acknowlegde them, after a few tests.
+You're right, the thing I had overlooked is that delaying that release
+will mess up the constraints for new events.
+
+OK, lets go with this, we can do all other architectures by doing a
+fallback to enable/disable, because for everything except the new AMD
+code that is still correct. If at some time in the future start/stop
+becomes something that will be called frequently, architectures can
+provide optimized versions that by-pass the constraint checking (the
+current use is rare).
+
+---
+Subject: perf_events: Add new start/stop PMU callbacks
+From: Stephane Eranian <eranian@google.com>
+Date: Mon, 8 Feb 2010 17:06:01 +0200
+
+In certain situations, the kernel may need to stop and start the
+same event rapidly. The current PMU callbacks do not distinguish
+between stop and release  (i.e., stop + free the resource). Thus,
+a counter may be released, then it will be immediately re-acquired.
+Event scheduling will again take place with no guarantee to assign
+the same counter. On some processors, this may event yield to failure
+to assign the event back due to competion between cores.
+
+This patch is adding a new pair of callback to stop and restart a
+counter without actually release the underlying counter resource.
+On stop, the counter is stopped, its values saved and that's it.
+On start, the value is reloaded and counter is restarted (on x86,
+actual restart is delayed until perf_enable()).
+
+Signed-off-by: Stephane Eranian <eranian@google.com>
+[ added fallback to ->enable/->disable for all other PMUs 
+  fixed x86_pmu_start() to call x86_pmu.enable() 
+  merged __x86_pmu_disable into x86_pmu_stop() ]
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+LKML-Reference: <4b703875.0a04d00a.7896.ffffb824@mx.google.com>
+---
+ arch/x86/kernel/cpu/perf_event.c |   24 ++++++++++++++++++++----
+ include/linux/perf_event.h       |    2 ++
+ kernel/perf_event.c              |   20 ++++++++++++++++++--
+ 3 files changed, 40 insertions(+), 6 deletions(-)
+
+Index: linux-2.6/arch/x86/kernel/cpu/perf_event.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/perf_event.c
++++ linux-2.6/arch/x86/kernel/cpu/perf_event.c
+@@ -1495,7 +1495,7 @@ static inline int match_prev_assignment(
+ 		hwc->last_tag == cpuc->tags[i];
+ }
+ 
+-static void __x86_pmu_disable(struct perf_event *event, struct cpu_hw_events *cpuc);
++static void x86_pmu_stop(struct perf_event *event);
+ 
+ void hw_perf_enable(void)
+ {
+@@ -1533,7 +1533,7 @@ void hw_perf_enable(void)
+ 			    match_prev_assignment(hwc, cpuc, i))
+ 				continue;
+ 
+-			__x86_pmu_disable(event, cpuc);
++			x86_pmu_stop(event);
+ 
+ 			hwc->idx = -1;
+ 		}
+@@ -1801,6 +1801,19 @@ static int x86_pmu_enable(struct perf_ev
+ 	return 0;
+ }
+ 
++static int x86_pmu_start(struct perf_event *event)
++{
++	struct hw_perf_event *hwc = &event->hw;
++
++	if (hwc->idx == -1)
++		return -EAGAIN;
++
++	x86_perf_event_set_period(event, hwc, hwc->idx);
++	x86_pmu.enable(hwc, hwc->idx);
++
++	return 0;
++}
++
+ static void x86_pmu_unthrottle(struct perf_event *event)
+ {
+ 	struct cpu_hw_events *cpuc = &__get_cpu_var(cpu_hw_events);
+@@ -1924,8 +1937,9 @@ static void intel_pmu_drain_bts_buffer(s
+ 	event->pending_kill = POLL_IN;
+ }
+ 
+-static void __x86_pmu_disable(struct perf_event *event, struct cpu_hw_events *cpuc)
++static void x86_pmu_stop(struct perf_event *event)
+ {
++	struct cpu_hw_events *cpuc = &__get_cpu_var(cpu_hw_events);
+ 	struct hw_perf_event *hwc = &event->hw;
+ 	int idx = hwc->idx;
+ 
+@@ -1954,7 +1968,7 @@ static void x86_pmu_disable(struct perf_
+ 	struct cpu_hw_events *cpuc = &__get_cpu_var(cpu_hw_events);
+ 	int i;
+ 
+-	__x86_pmu_disable(event, cpuc);
++	x86_pmu_stop(event);
+ 
+ 	for (i = 0; i < cpuc->n_events; i++) {
+ 		if (event == cpuc->event_list[i]) {
+@@ -2667,6 +2681,8 @@ static inline void x86_pmu_read(struct p
+ static const struct pmu pmu = {
+ 	.enable		= x86_pmu_enable,
+ 	.disable	= x86_pmu_disable,
++	.start		= x86_pmu_start,
++	.stop		= x86_pmu_stop,
+ 	.read		= x86_pmu_read,
+ 	.unthrottle	= x86_pmu_unthrottle,
+ };
+Index: linux-2.6/include/linux/perf_event.h
+===================================================================
+--- linux-2.6.orig/include/linux/perf_event.h
++++ linux-2.6/include/linux/perf_event.h
+@@ -511,6 +511,8 @@ struct perf_event;
+ struct pmu {
+ 	int (*enable)			(struct perf_event *event);
+ 	void (*disable)			(struct perf_event *event);
++	int (*start)			(struct perf_event *event);
++	void (*stop)			(struct perf_event *event);
+ 	void (*read)			(struct perf_event *event);
+ 	void (*unthrottle)		(struct perf_event *event);
+ };
+Index: linux-2.6/kernel/perf_event.c
+===================================================================
+--- linux-2.6.orig/kernel/perf_event.c
++++ linux-2.6/kernel/perf_event.c
+@@ -1493,6 +1493,22 @@ do {					\
+ 	return div64_u64(dividend, divisor);
+ }
+ 
++static void perf_event_stop(struct perf_event *event)
++{
++	if (!event->pmu->stop)
++		return event->pmu->disable(event);
++
++	return event->pmu->stop(event);
++}
++
++static int perf_event_start(struct perf_event *event)
++{
++	if (!event->pmu->start)
++		return event->pmu->enable(event);
++
++	return event->pmu->start(event);
++}
++
+ static void perf_adjust_period(struct perf_event *event, u64 nsec, u64 count)
+ {
+ 	struct hw_perf_event *hwc = &event->hw;
+@@ -1513,9 +1529,9 @@ static void perf_adjust_period(struct pe
+ 
+ 	if (atomic64_read(&hwc->period_left) > 8*sample_period) {
+ 		perf_disable();
+-		event->pmu->disable(event);
++		perf_event_stop(event);
+ 		atomic64_set(&hwc->period_left, 0);
+-		event->pmu->enable(event);
++		perf_event_start(event);
+ 		perf_enable();
+ 	}
+ }
 
 
-> Jan
-> 
-> Jan Kiszka (41):
->   CAPI: Fix leaks in capifs_new_ncci
->   CAPI: Sanitize capifs API
->   CAPI: Eliminate capifs_root variable
->   CAPI: Pin capifs instead of mounting it
->   CAPI: Reduce chattiness during module loading/removal
->   CAPI: Call a controller 'controller', not 'card'
->   CAPI: Convert capi drivers rwlock into mutex
->   CAPI: Rework capi_ctr_ready/down
->   CAPI: Rework controller state notifier
->   CAPI: Rework locking of controller data structures
->   CAPI: Rework application locking
->   CAPI: Reduce #ifdef mess around CONFIG_ISDN_CAPI_MIDDLEWARE
->   CAPI: Convert capidev_list_lock into a mutex
->   CAPI: Clean up capi_open/release
->   CAPI: Rework locking of capidev members
->   CAPI: Use non-atomic allocation during NCCI setup
->   CAPI: Fix racy capi_read
->   CAPI: Switch NCCI list to standard doubly linked list
->   CAPI: Switch capiminor list to array
->   CAPI: Clean up capinc_tty_init/exit
->   CAPI: Dynamically register minor devices
->   CAPI: Use dynamic major for NCCI TTYs by default
->   CAPI: Use kref on capiminor
->   CAPI: Establish install/cleanup handlers for capiminor TTYs
->   CAPI: Use tty_port to keep track of capiminor's tty
->   CAPI: Drop remaining NULL checks on tty->driver_data
->   CAPI: Issue synchronous hangup on capincci_free_minor
->   CAPI: Drop obsolete nccip from capiminor struct
->   CAPI: Clean up capiminors_lock
->   CAPI: Drop atomic ttyopencount
->   CAPI: Drop handle_minor_recv from capinc_tty_write
->   CAPI: Rework capiminor RX handler
->   CAPI: Rename datahandle_queue -> ackqueue_entry
->   CAPI: Use atomics for capiminor's datahandle and msgid
->   CAPI: Drop capiminor's unused inbytes counter
->   CAPI: Fix locking around capiminor's output queue and drop
->     workaround_lock
->   CAPI: Clean up capiminor_*_ack
->   CAPI: Drop return value of handle_minor_send
->   CAPI: Drop special controller lookup from capi20_put_message
->   CAPI: Schedule capifs for removal
->   CAPI: Remove experimental tag from middleware feature
-> 
->  Documentation/feature-removal-schedule.txt |   10 +
->  drivers/isdn/capi/Kconfig                  |   16 +-
->  drivers/isdn/capi/capi.c                   | 1108
->  ++++++++++++++-------------- drivers/isdn/capi/capidrv.c                | 
->   48 +-
->  drivers/isdn/capi/capifs.c                 |  126 ++--
->  drivers/isdn/capi/capifs.h                 |   21 +-
->  drivers/isdn/capi/kcapi.c                  |  805 +++++++++++---------
->  drivers/isdn/capi/kcapi.h                  |   13 +-
->  drivers/isdn/capi/kcapi_proc.c             |   41 +-
->  include/linux/isdn/capilli.h               |    5 +-
->  include/linux/kernelcapi.h                 |   17 +-
->  11 files changed, 1151 insertions(+), 1059 deletions(-)
-> 
