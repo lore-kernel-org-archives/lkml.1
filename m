@@ -1,117 +1,72 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753425Ab0BICfL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 21:35:11 -0500
-Received: from mail-ew0-f228.google.com ([209.85.219.228]:51664 "EHLO
-	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752018Ab0BICfG convert rfc822-to-8bit (ORCPT
+	id S1753506Ab0BICk0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 21:40:26 -0500
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:50952 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752857Ab0BICkZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 21:35:06 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=C3mKIEsT5IoNiXzfFkjosUlXq+ZMA7bv91MYkSmlRuppZvgMrl/Zd8dKMi5kHTUkp6
-         OUB02DOdjsrYez3M7pmwoUsjAfvks4iAZjwxmDWoygxpseYU8+AXPRSzztXDzbfUJnSk
-         EH874GSGKIXBD2aHNDGEO9LhCtKFHEbs2Yhvs=
+	Mon, 8 Feb 2010 21:40:25 -0500
+Message-Id: <1265683224.4096.1358983441@webmail.messagingengine.com>
+X-Sasl-Enc: F2iWXKgkmmroIe2g2lHjaDKdgjgyF/wa3JDyVCyYXAum 1265683224
+From: "Alex Viskovatoff" <viskovatoff@imap.cc>
+To: "Evgeniy Dushistov" <dushistov@mail.ru>
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-In-Reply-To: <20100208140127.ca80bc97.akpm@linux-foundation.org>
-References: <20100206134056.GB2562@darkstar>
-	 <20100208135654.04b79bbc.akpm@linux-foundation.org>
-	 <20100208140127.ca80bc97.akpm@linux-foundation.org>
-Date: Tue, 9 Feb 2010 10:35:04 +0800
-Message-ID: <a8e1da1002081835m789168f7h73f1709e69228b15@mail.gmail.com>
-Subject: Re: [PATCH 2/2] allow printk delay after multi lines
-From: Dave Young <hidave.darkstar@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+X-Mailer: MessagingEngine.com Webmail Interface
+Subject: [PATCH] fs/ufs: Recognize Solaris-specific file system state
+Date: Mon, 08 Feb 2010 21:40:24 -0500
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 9, 2010 at 6:01 AM, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Mon, 8 Feb 2010 13:56:54 -0800
-> Andrew Morton <akpm@linux-foundation.org> wrote:
->
->> On Sat, 6 Feb 2010 21:40:56 +0800
->> Dave Young <hidave.darkstar@gmail.com> wrote:
->>
->> > printk delay help us to capture printk messages on some unconvenient senarios,
->> > but it is still not easy to read.
->> >
->> > Add another sysctl variable printk_delay_per_lines to make it more readable.
->> > We can set the lines according to screen height, then take pictures by camera.
->> >
->> > kmesg will delay printk_delay_per_lines * printk_delay_msecs milliseconds
->> > after every printk_delay_per_lines lines when printk_delay is enabled.
->> >
->> > Setting the lines by proc/sysctl interface:
->> > /proc/sys/kernel/printk_delay_per_lines
->> >
->> > Andrew, sorry, I have not find time to cleanup the kernel.h sysctl variables.
->> > If I'm free I will try to do it.
->> >
->> > The value range from 1 - 100, default value is 1
->> >
->> > ...
->> >
->> > --- linux-2.6.orig/include/linux/kernel.h   2010-02-02 13:38:09.537495564 +0800
->> > +++ linux-2.6/include/linux/kernel.h        2010-02-02 13:40:47.657480122 +0800
->> > @@ -246,6 +246,7 @@ extern bool printk_timed_ratelimit(unsig
->> >                                unsigned int interval_msec);
->> >
->> >  extern int printk_delay_msec;
->> > +extern int printk_delay_per_lines;
->> >
->> >  /*
->> >   * Print a one-time message (analogous to WARN_ONCE() et al):
->> > --- linux-2.6.orig/kernel/printk.c  2010-02-02 13:39:19.446657319 +0800
->> > +++ linux-2.6/kernel/printk.c       2010-02-02 13:40:47.660813615 +0800
->> > @@ -656,16 +656,26 @@ static int new_text_line = 1;
->> >  static char printk_buf[1024];
->> >
->> >  int printk_delay_msec __read_mostly;
->> > +int printk_delay_per_lines __read_mostly;
->> >
->> >  static inline void printk_delay(void)
->> >  {
->> >     if (unlikely(printk_delay_msec)) {
->> > -           int m = printk_delay_msec;
->> > +           static int m, l;
->> >
->> > +           if (!l)
->> > +                   l = printk_delay_per_lines;
->> > +
->> > +           if (--l) {
->> > +                   m += printk_delay_msec;
->> > +                   return;
->> > +           }
->> > +           m += printk_delay_msec;
->> >             while (m--) {
->> >                     mdelay(1);
->> >                     touch_nmi_watchdog();
->> >             }
->> > +           m = 0;
->> >     }
->> >  }
->>
->
-> Also...
->
-> - The above code is racy: if multiple CPUs run printk_delay()
->  concurrently, `m' and `l' will get mucked up.
->
->  We should verify that the effects of this race are benign.  This
->  will be hard.
->
->  Or we fix the race.  One could add locking (irq-safe locking), but
->  I suspect a better approach would be to use atomic ops.
->
+Recent releases of Solaris set the fs_clean state of an unmounted UFS file system as FSLOG ("logging fs"). However, the Linux kernel currently does not recognize the value which represents this state. Thus, attempting to mount such a file system rw produces the message
 
-will change to  use atomic ops
+kernel: ufs_read_super: can't grok fs_clean 0xfffffffd
 
--- 
-Regards
-dave
+and the file system is mounted read-only. This patch makes the kernel recognize that value.
+
+Signed-off-by: Alex Viskovatoff <viskovatoff@imap.cc>
+---
+The definitions I used in the patch can be found here:
+http://cvs.opensolaris.org/source/xref/onnv/onnv-gate/usr/src/uts/common/sys/fs/ufs_fs.h
+
+--- linux-2.6.32.7-vanilla/fs/ufs/super.c	2010-01-28 18:06:20.000000000 -0500
++++ linux-2.6/fs/ufs/super.c	2010-02-07 14:56:39.933794932 -0500
+@@ -965,6 +965,9 @@ magic_found:
+ 		case UFS_FSSTABLE:
+ 			UFSD("fs is stable\n");
+ 			break;
++		case UFS_FSLOG :
++			UFSD("fs is logging fs\n");
++			break;
+ 		case UFS_FSOSF1:
+ 			UFSD("fs is DEC OSF/1\n");
+ 			break;
+diff -uprN -X linux-2.6.32.7-vanilla/Documentation/dontdiff linux-2.6.32.7-vanilla/fs/ufs/ufs_fs.h linux-2.6/fs/ufs/ufs_fs.h
+--- linux-2.6.32.7-vanilla/fs/ufs/ufs_fs.h	2010-01-28 18:06:20.000000000 -0500
++++ linux-2.6/fs/ufs/ufs_fs.h	2010-02-08 17:32:49.392619575 -0500
+@@ -138,6 +138,7 @@ typedef __u16 __bitwise __fs16;
+ 
+ #define UFS_USEEFT  ((__u16)65535)
+ 
++/* fs_clean values */
+ #define UFS_FSOK      0x7c269d38
+ #define UFS_FSACTIVE  ((__s8)0x00)
+ #define UFS_FSCLEAN   ((__s8)0x01)
+@@ -145,6 +146,11 @@ typedef __u16 __bitwise __fs16;
+ #define UFS_FSOSF1    ((__s8)0x03)	/* is this correct for DEC OSF/1? */
+ #define UFS_FSBAD     ((__s8)0xff)
+ 
++/* Solaris-specific fs_clean values */
++#define UFS_FSSUSPEND ((__s8)0xfe)	/* temporarily suspended */
++#define UFS_FSLOG     ((__s8)0xfd)	/* logging fs */
++#define UFS_FSFIX     ((__s8)0xfc)	/* being repaired while mounted */
++
+ /* From here to next blank line, s_flags for ufs_sb_info */
+ /* directory entry encoding */
+ #define UFS_DE_MASK		0x00000010	/* mask for the following */
+
