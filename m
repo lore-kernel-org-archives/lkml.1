@@ -1,50 +1,48 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754991Ab0BIQ5I (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 11:57:08 -0500
-Received: from zcars04e.nortel.com ([47.129.242.56]:53879 "EHLO
-	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754034Ab0BIQ5E (ORCPT
+	id S1755051Ab0BIQ57 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 11:57:59 -0500
+Received: from mail-bw0-f223.google.com ([209.85.218.223]:65144 "EHLO
+	mail-bw0-f223.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754034Ab0BIQ56 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Feb 2010 11:57:04 -0500
-Message-ID: <4B71927D.6030607@nortel.com>
-Date: Tue, 09 Feb 2010 10:51:09 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: Rik van Riel <riel@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org
-Subject: tracking memory usage/leak in "inactive" field in /proc/meminfo?
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 09 Feb 2010 16:56:56.0639 (UTC) FILETIME=[E34A7CF0:01CAA9A8]
+	Tue, 9 Feb 2010 11:57:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=Zjp4hqFdAqRCxYv7m5ePb5VY677JfAdWe1IVOjPsUH6XEFjYFC6j9E2R4RorbCI9ta
+         nZ0H25HXdA3f/RSbckKlx9+FuuVCoFd1C3G618HkwPtUV4Ic5jqG8cQy6KEWz10c2tgJ
+         7jeTJucrobrWVO6ED+34UgfN0q/8zbVcw+ioA=
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Artem Bityutskiy <dedekind1@gmail.com>,
+       linux-mtd <linux-mtd@lists.infradead.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Alex Dubov <oakad@yahoo.com>, joern <joern@logfs.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "stanley.miao" <stanley.miao@windriver.com>,
+       Vitaly Wool <vitalywool@gmail.com>
+Subject: [PATCH 0/17 V7] Work to enable SmartMedia/xD support in mtd subsystem
+Date: Tue,  9 Feb 2010 18:57:28 +0200
+Message-Id: <1265734665-22656-1-git-send-email-maximlevitsky@gmail.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+This is next version of my work.
 
-I'm hoping you can help me out.  I'm on a 2.6.27 x86 system and I'm
-seeing the "inactive" field in /proc/meminfo slowly growing over time to
-the point where eventually the oom-killer kicks in and starts killing
-things.  The growth is not evident in any other field in /proc/meminfo.
 
-I'm trying to figure out where the memory is going, and what it's being
-used for.
+Patches #1-#8 fix hotplug in mtd block translation layer
+(Patch #7 adds minor feature for FTL drivers to be able to export sysfs attributes)
 
-As I've found, the fields in /proc/meminfo don't add up...in particular,
-active+inactive is quite a bit larger than
-buffers+cached+dirty+anonpages+mapped+pagetables+vmallocused.  Initially
-the difference is about 156MB, but after about 13 hrs the difference is
-240MB.
+Patches #9-#13 fix several issues in NAND subsystem
 
-How can I track down where this is going?  Can you suggest any
-instrumentation that I can add?
+Patch #16 adds a driver for my xD card reader.
+I hope that writing drivers for other readers won't be that hard now.
 
-I'm reasonably capable, but I'm getting seriously confused trying to
-sort out the memory subsystem.  Some pointers would be appreciated.
+Patch #17 adds generic SmartMedia/xD FTL
 
-Thanks,
+Best regards,
+	Maxim Levitsky
 
-Chris
