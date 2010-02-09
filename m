@@ -1,21 +1,22 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754225Ab0BIJU3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 04:20:29 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:49202 "EHLO song.cn.fujitsu.com"
+	id S1754260Ab0BIJU5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 04:20:57 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:55046 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754097Ab0BIJU0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Feb 2010 04:20:26 -0500
-Message-ID: <4B7128DD.9020708@cn.fujitsu.com>
-Date: Tue, 09 Feb 2010 17:20:29 +0800
+	id S1754121Ab0BIJUx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Feb 2010 04:20:53 -0500
+Message-ID: <4B712901.1030802@cn.fujitsu.com>
+Date: Tue, 09 Feb 2010 17:21:05 +0800
 From: Li Zefan <lizf@cn.fujitsu.com>
 User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
 To: David Miller <davem@davemloft.net>
 CC: Andrew Morton <akpm@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>
-Subject: [PATCH 09/13] net: af_key: use seq_hlist_foo() helpers
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       Paulius Zaleckas <paulius.zaleckas@gmail.com>
+Subject: [PATCH 11/13] net: irda: use seq_list_foo() helpers
 References: <4B712849.9040400@cn.fujitsu.com>
 In-Reply-To: <4B712849.9040400@cn.fujitsu.com>
 Content-Type: text/plain; charset=UTF-8
@@ -28,57 +29,63 @@ Simplify seq_file code.
 
 Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 ---
- net/key/af_key.c |   20 +++-----------------
- 1 files changed, 3 insertions(+), 17 deletions(-)
+ net/irda/irlan/irlan_common.c |   28 ++++------------------------
+ 1 files changed, 4 insertions(+), 24 deletions(-)
 
-diff --git a/net/key/af_key.c b/net/key/af_key.c
-index 76fa6fe..cb006b6 100644
---- a/net/key/af_key.c
-+++ b/net/key/af_key.c
-@@ -3655,9 +3655,8 @@ static const struct net_proto_family pfkey_family_ops = {
- #ifdef CONFIG_PROC_FS
- static int pfkey_seq_show(struct seq_file *f, void *v)
+diff --git a/net/irda/irlan/irlan_common.c b/net/irda/irlan/irlan_common.c
+index 315ead3..98911c4 100644
+--- a/net/irda/irlan/irlan_common.c
++++ b/net/irda/irlan/irlan_common.c
+@@ -1128,34 +1128,14 @@ int irlan_extract_param(__u8 *buf, char *name, char *value, __u16 *len)
+  */
+ static void *irlan_seq_start(struct seq_file *seq, loff_t *pos)
  {
--	struct sock *s;
-+	struct sock *s = sk_entry(v);
- 
--	s = (struct sock *)v;
- 	if (v == SEQ_START_TOKEN)
- 		seq_printf(f ,"sk       RefCnt Rmem   Wmem   User   Inode\n");
- 	else
-@@ -3676,19 +3675,9 @@ static void *pfkey_seq_start(struct seq_file *f, loff_t *ppos)
- {
- 	struct net *net = seq_file_net(f);
- 	struct netns_pfkey *net_pfkey = net_generic(net, pfkey_net_id);
--	struct sock *s;
--	struct hlist_node *node;
--	loff_t pos = *ppos;
- 
- 	read_lock(&pfkey_table_lock);
--	if (pos == 0)
+-	int i = 1;
+-	struct irlan_cb *self;
+-
+ 	rcu_read_lock();
+-	if (*pos == 0)
 -		return SEQ_START_TOKEN;
 -
--	sk_for_each(s, node, &net_pfkey->table)
--		if (pos-- == 1)
--			return s;
--
+-	list_for_each_entry(self, &irlans, dev_list) {
+-		if (*pos == i)
+-			return self;
+-		++i;
+-	}
 -	return NULL;
-+	return seq_hlist_start_head(&net_pfkey->table, *ppos);
++	return seq_list_start_head(&irlans, *pos);
  }
  
- static void *pfkey_seq_next(struct seq_file *f, void *v, loff_t *ppos)
-@@ -3696,10 +3685,7 @@ static void *pfkey_seq_next(struct seq_file *f, void *v, loff_t *ppos)
- 	struct net *net = seq_file_net(f);
- 	struct netns_pfkey *net_pfkey = net_generic(net, pfkey_net_id);
- 
--	++*ppos;
--	return (v == SEQ_START_TOKEN) ?
--		sk_head(&net_pfkey->table) :
--			sk_next((struct sock *)v);
-+	return seq_hlist_next(v, &net_pfkey->table, ppos);
+ /* Return entry after v, and increment pos */
+ static void *irlan_seq_next(struct seq_file *seq, void *v, loff_t *pos)
+ {
+-	struct list_head *nxt;
+-
+-	++*pos;
+-	if (v == SEQ_START_TOKEN)
+-		nxt = irlans.next;
+-	else
+-		nxt = ((struct irlan_cb *)v)->dev_list.next;
+-
+-	return (nxt == &irlans) ? NULL
+-		: list_entry(nxt, struct irlan_cb, dev_list);
++	return seq_list_next(v, &irlans, pos);
  }
  
- static void pfkey_seq_stop(struct seq_file *f, void *v)
+ /* End of reading /proc file */
+@@ -1170,10 +1150,10 @@ static void irlan_seq_stop(struct seq_file *seq, void *v)
+  */
+ static int irlan_seq_show(struct seq_file *seq, void *v)
+ {
+-	if (v == SEQ_START_TOKEN)
++	if (v == &irlans)
+ 		seq_puts(seq, "IrLAN instances:\n");
+ 	else {
+-		struct irlan_cb *self = v;
++		struct irlan_cb *self = list_entry(v, struct irlan_cb, list);
+ 
+ 		IRDA_ASSERT(self != NULL, return -1;);
+ 		IRDA_ASSERT(self->magic == IRLAN_MAGIC, return -1;);
 -- 
 1.6.3
 
