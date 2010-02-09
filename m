@@ -1,50 +1,61 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753613Ab0BIDZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 22:25:27 -0500
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:47819 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753150Ab0BIDZZ (ORCPT
+	id S1753768Ab0BIDZ4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 22:25:56 -0500
+Received: from mail-yx0-f193.google.com ([209.85.210.193]:35378 "EHLO
+	mail-yx0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753624Ab0BIDZx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 22:25:25 -0500
-Date: Mon, 8 Feb 2010 22:20:44 -0500
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: linux-next: manual merge of the net tree with the
- wireless-current tree
-Message-ID: <20100209032044.GA3397@tuxdriver.com>
-References: <20100209132444.d90b48a6.sfr@canb.auug.org.au>
+	Mon, 8 Feb 2010 22:25:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=VyOabq31qMWK6ivsWR4TlvqTDJ1OCzXuX8Yx40P6QcutPUUAllPLReDy7yKe2ww7Dz
+         9OeqjiThQPdaf4pJT78a8mT++HgtCp1sthID7Zdv7bMpg3+HCLbCEHUd5jzAI1weERRd
+         UZnOiA/Sd6zetFKfqUtsuli5QzAjfbc169zgw=
+Message-ID: <4B70D75A.7010600@gmail.com>
+Date: Tue, 09 Feb 2010 12:32:42 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20100209132444.d90b48a6.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: davidsen@tmr.com, linux-kernel@vger.kernel.org,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       linux-ext4@vger.kernel.org
+Subject: Re: 2.6.33-rc6 crashes on resume
+References: <4B70982F.8090208@roadwarrior3.tmr.com> <201002090016.18027.rjw@sisk.pl>
+In-Reply-To: <201002090016.18027.rjw@sisk.pl>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 09, 2010 at 01:24:44PM +1100, Stephen Rothwell wrote:
-> Hi all,
+On 02/09/2010 08:16 AM, Rafael J. Wysocki wrote:
+> On Tuesday 09 February 2010, Bill Davidsen wrote:
+>> Pretty simple to reproduce, boot, suspend, press shift
+>>
+>> Acer Aspire 1681, Celeron, 2.6.33-rc6. Trace and config attached.
 > 
-> Today's linux-next merge of the net tree got a conflict in
-> net/mac80211/scan.c between commit
-> c0ce77b8323c1a0d4eeef97caf16c0ea971222a9 ("mac80211: fix deferred
-> hardware scan requests") from the wireless-current tree and commit
-> af6b63741cc4e4dfd575d06beb333b11a8a6e0c0 ("mac80211: generalise work
-> handling") from the net tree.
+> This looks suspicious:
 > 
-> I resolved this the same way it is resolved in the merge of the
-> wireless-current tree into the wireless tree.
+> Feb  8 17:32:47 roadwarrior3 kernel: ata2.00: ACPI cmd 03/42:00:00:00:a0:ef (CFA REQUEST EXTENDED ERROR) rejected by device (Stat=0x51 Err=0x04)
+> Feb  8 17:32:47 roadwarrior3 kernel: sd 0:0:0:0: [sda] Starting disk
+> Feb  8 17:32:47 roadwarrior3 kernel: ata2.00: ACPI cmd 00/0c:00:00:00:a0:ef (NOP) rejected by device (Stat=0x51 Err=0x04)
+> Feb  8 17:32:47 roadwarrior3 kernel: ata2.00: configured for UDMA/33
+> Feb  8 17:32:47 roadwarrior3 kernel: firewire_core: rediscovered device fw0
+> Feb  8 17:32:47 roadwarrior3 kernel: ata1.00: ACPI cmd 03/45:00:00:00:a0:ef (CFA REQUEST EXTENDED ERROR) rejected by device (Stat=0x51 Err=0x04)
+> Feb  8 17:32:47 roadwarrior3 kernel: ata1.00: ACPI cmd 00/0c:00:00:00:a0:ef (NOP) rejected by device (Stat=0x51 Err=0x04)
+> Feb  8 17:32:47 roadwarrior3 kernel: ata1.00: configured for UDMA/100
 
-Maybe it would make sense to pull the wireless trees _before_ the
-greater net trees?  That way you can get the benefit of my merge
-conflict resolutions automatically.
+These aren't harmful in themselves.  It just means that the device
+failed commands BIOS requested via ACPI.  Just in case, does
+"libata.noacpi=1" make any difference to the oops?
 
-John
+Thanks.
+
 -- 
-John W. Linville                Someday the world will need a hero, and you
-linville@tuxdriver.com                  might be all we have.  Be ready.
+tejun
