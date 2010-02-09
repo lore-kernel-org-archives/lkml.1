@@ -1,18 +1,18 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753672Ab0BITks (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 14:40:48 -0500
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:54595 "EHLO
+	id S1753211Ab0BITia (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 14:38:30 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:54627 "EHLO
 	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751851Ab0BITdt (ORCPT
+	with ESMTP id S1752123Ab0BITdt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 9 Feb 2010 14:33:49 -0500
 MIME-version: 1.0
 Content-transfer-encoding: 7BIT
 Content-type: TEXT/PLAIN
-Date: Tue, 09 Feb 2010 11:32:15 -0800
+Date: Tue, 09 Feb 2010 11:32:27 -0800
 From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 04/35] x86/pci: amd one chain system to use pci read out res
+Subject: [PATCH 16/35] sparsemem: put usemap for one node together
 In-reply-to: <1265743966-17065-1-git-send-email-yinghai@kernel.org>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
@@ -22,94 +22,170 @@ Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
        Christoph Lameter <cl@linux-foundation.org>,
        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
        Yinghai Lu <yinghai@kernel.org>
-Message-id: <1265743966-17065-5-git-send-email-yinghai@kernel.org>
+Message-id: <1265743966-17065-17-git-send-email-yinghai@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 References: <1265743966-17065-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-found MSI amd k8 based laptops is hiding [0x70000000, 0x80000000) RAM from
-e820.
+could save some buf instead of applying one by one
 
-enable amd one chain even for all.
+could help that system that is going to use early_res instead of bootmem
+less entries in early_res make search more faster on system with more memory.
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-Acked-by: Jesse Barnes <jbarnes@virtuousgeek.org>
 ---
- arch/x86/pci/amd_bus.c  |    7 ++++---
- arch/x86/pci/bus_numa.c |    5 -----
- arch/x86/pci/bus_numa.h |    1 -
- 3 files changed, 4 insertions(+), 9 deletions(-)
+ mm/sparse.c |   84 ++++++++++++++++++++++++++++++++++++++++++++++------------
+ 1 files changed, 66 insertions(+), 18 deletions(-)
 
-diff --git a/arch/x86/pci/amd_bus.c b/arch/x86/pci/amd_bus.c
-index 2356ea1..e467071 100644
---- a/arch/x86/pci/amd_bus.c
-+++ b/arch/x86/pci/amd_bus.c
-@@ -87,11 +87,12 @@ static int __init early_fill_mp_bus_info(void)
- 	struct range range[RANGE_NUM];
- 	u64 val;
- 	u32 address;
-+	int found;
+diff --git a/mm/sparse.c b/mm/sparse.c
+index 6ce4aab..0cdaf0b 100644
+--- a/mm/sparse.c
++++ b/mm/sparse.c
+@@ -271,7 +271,8 @@ static unsigned long *__kmalloc_section_usemap(void)
  
- 	if (!early_pci_allowed())
- 		return -1;
+ #ifdef CONFIG_MEMORY_HOTREMOVE
+ static unsigned long * __init
+-sparse_early_usemap_alloc_pgdat_section(struct pglist_data *pgdat)
++sparse_early_usemaps_alloc_pgdat_section(struct pglist_data *pgdat,
++					 unsigned long count)
+ {
+ 	unsigned long section_nr;
  
--	found_all_numa_early = 0;
-+	found = 0;
- 	for (i = 0; i < ARRAY_SIZE(pci_probes); i++) {
- 		u32 id;
- 		u16 device;
-@@ -105,12 +106,12 @@ static int __init early_fill_mp_bus_info(void)
- 		device = (id>>16) & 0xffff;
- 		if (pci_probes[i].vendor == vendor &&
- 		    pci_probes[i].device == device) {
--			found_all_numa_early = 1;
-+			found = 1;
- 			break;
- 		}
+@@ -286,7 +287,7 @@ sparse_early_usemap_alloc_pgdat_section(struct pglist_data *pgdat)
+ 	 * this problem.
+ 	 */
+ 	section_nr = pfn_to_section_nr(__pa(pgdat) >> PAGE_SHIFT);
+-	return alloc_bootmem_section(usemap_size(), section_nr);
++	return alloc_bootmem_section(usemap_size() * count, section_nr);
+ }
+ 
+ static void __init check_usemap_section_nr(int nid, unsigned long *usemap)
+@@ -329,7 +330,8 @@ static void __init check_usemap_section_nr(int nid, unsigned long *usemap)
+ }
+ #else
+ static unsigned long * __init
+-sparse_early_usemap_alloc_pgdat_section(struct pglist_data *pgdat)
++sparse_early_usemaps_alloc_pgdat_section(struct pglist_data *pgdat,
++					 unsigned long count)
+ {
+ 	return NULL;
+ }
+@@ -339,27 +341,40 @@ static void __init check_usemap_section_nr(int nid, unsigned long *usemap)
+ }
+ #endif /* CONFIG_MEMORY_HOTREMOVE */
+ 
+-static unsigned long *__init sparse_early_usemap_alloc(unsigned long pnum)
++static void __init sparse_early_usemaps_alloc_node(unsigned long**usemap_map,
++				 unsigned long pnum_begin,
++				 unsigned long pnum_end,
++				 unsigned long usemap_count, int nodeid)
+ {
+-	unsigned long *usemap;
+-	struct mem_section *ms = __nr_to_section(pnum);
+-	int nid = sparse_early_nid(ms);
+-
+-	usemap = sparse_early_usemap_alloc_pgdat_section(NODE_DATA(nid));
+-	if (usemap)
+-		return usemap;
++	void *usemap;
++	unsigned long pnum;
++	int size = usemap_size();
+ 
+-	usemap = alloc_bootmem_node(NODE_DATA(nid), usemap_size());
++	usemap = sparse_early_usemaps_alloc_pgdat_section(NODE_DATA(nodeid),
++								 usemap_count);
+ 	if (usemap) {
+-		check_usemap_section_nr(nid, usemap);
+-		return usemap;
++		for (pnum = pnum_begin; pnum < pnum_end; pnum++) {
++			if (!present_section_nr(pnum))
++				continue;
++			usemap_map[pnum] = usemap;
++			usemap += size;
++		}
++		return;
  	}
  
--	if (!found_all_numa_early)
-+	if (!found)
- 		return 0;
+-	/* Stupid: suppress gcc warning for SPARSEMEM && !NUMA */
+-	nid = 0;
++	usemap = alloc_bootmem_node(NODE_DATA(nodeid), size * usemap_count);
++	if (usemap) {
++		for (pnum = pnum_begin; pnum < pnum_end; pnum++) {
++			if (!present_section_nr(pnum))
++				continue;
++			usemap_map[pnum] = usemap;
++			usemap += size;
++			check_usemap_section_nr(nodeid, usemap_map[pnum]);
++		}
++		return;
++	}
  
- 	pci_root_num = 0;
-diff --git a/arch/x86/pci/bus_numa.c b/arch/x86/pci/bus_numa.c
-index 30f65ce..3411687 100644
---- a/arch/x86/pci/bus_numa.c
-+++ b/arch/x86/pci/bus_numa.c
-@@ -5,7 +5,6 @@
+ 	printk(KERN_WARNING "%s: allocation failed\n", __func__);
+-	return NULL;
+ }
  
- int pci_root_num;
- struct pci_root_info pci_root_info[PCI_ROOT_NR];
--int found_all_numa_early;
- 
- void x86_pci_root_bus_res_quirks(struct pci_bus *b)
+ #ifndef CONFIG_SPARSEMEM_VMEMMAP
+@@ -396,6 +411,7 @@ static struct page __init *sparse_early_mem_map_alloc(unsigned long pnum)
+ void __attribute__((weak)) __meminit vmemmap_populate_print_last(void)
  {
-@@ -21,10 +20,6 @@ void x86_pci_root_bus_res_quirks(struct pci_bus *b)
- 	if (!pci_root_num)
- 		return;
+ }
++
+ /*
+  * Allocate the accumulated non-linear sections, allocate a mem_map
+  * for each and record the physical to section mapping.
+@@ -407,6 +423,9 @@ void __init sparse_init(void)
+ 	unsigned long *usemap;
+ 	unsigned long **usemap_map;
+ 	int size;
++	int nodeid_begin = 0;
++	unsigned long pnum_begin = 0;
++	unsigned long usemap_count;
  
--	/* for amd, if only one root bus, don't need to do anything */
--	if (pci_root_num < 2 && found_all_numa_early)
--		return;
--
- 	for (i = 0; i < pci_root_num; i++) {
- 		if (pci_root_info[i].bus_min == b->number)
- 			break;
-diff --git a/arch/x86/pci/bus_numa.h b/arch/x86/pci/bus_numa.h
-index 374ecc5..f63e802 100644
---- a/arch/x86/pci/bus_numa.h
-+++ b/arch/x86/pci/bus_numa.h
-@@ -20,7 +20,6 @@ struct pci_root_info {
- #define PCI_ROOT_NR 4
- extern int pci_root_num;
- extern struct pci_root_info pci_root_info[PCI_ROOT_NR];
--extern int found_all_numa_early;
+ 	/*
+ 	 * map is using big page (aka 2M in x86 64 bit)
+@@ -425,10 +444,39 @@ void __init sparse_init(void)
+ 		panic("can not allocate usemap_map\n");
  
- extern void update_res(struct pci_root_info *info, resource_size_t start,
- 		      resource_size_t end, unsigned long flags, int merge);
+ 	for (pnum = 0; pnum < NR_MEM_SECTIONS; pnum++) {
++		struct mem_section *ms;
++
+ 		if (!present_section_nr(pnum))
+ 			continue;
+-		usemap_map[pnum] = sparse_early_usemap_alloc(pnum);
++		ms = __nr_to_section(pnum);
++		nodeid_begin = sparse_early_nid(ms);
++		pnum_begin = pnum;
++		break;
++	}
++	usemap_count = 1;
++	for (pnum = pnum_begin + 1; pnum < NR_MEM_SECTIONS; pnum++) {
++		struct mem_section *ms;
++		int nodeid;
++
++		if (!present_section_nr(pnum))
++			continue;
++		ms = __nr_to_section(pnum);
++		nodeid = sparse_early_nid(ms);
++		if (nodeid == nodeid_begin) {
++			usemap_count++;
++			continue;
++		}
++		/* ok, we need to take cake of from pnum_begin to pnum - 1*/
++		sparse_early_usemaps_alloc_node(usemap_map, pnum_begin, pnum,
++						 usemap_count, nodeid_begin);
++		/* new start, update count etc*/
++		nodeid_begin = nodeid;
++		pnum_begin = pnum;
++		usemap_count = 1;
+ 	}
++	/* ok, last chunk */
++	sparse_early_usemaps_alloc_node(usemap_map, pnum_begin, NR_MEM_SECTIONS,
++					 usemap_count, nodeid_begin);
+ 
+ 	for (pnum = 0; pnum < NR_MEM_SECTIONS; pnum++) {
+ 		if (!present_section_nr(pnum))
 -- 
 1.6.4.2
 
