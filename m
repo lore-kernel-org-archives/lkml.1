@@ -1,74 +1,119 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754379Ab0BIMxT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 07:53:19 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:41198 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754225Ab0BIMxR (ORCPT
+	id S1754408Ab0BIMzG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 07:55:06 -0500
+Received: from moutng.kundenserver.de ([212.227.17.10]:60763 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754359Ab0BIMzE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Feb 2010 07:53:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=aDGJParlLsLACNUHNX722lB9fsErEChf+FAYRWunbY5OHFz1O9UAOgbK+GEJueRQpM
-         xxnLZuUi8dJAw/qeHIyGB6Ady6WC4X8VnxbbpqsuOVdMgZ86kc1rOtOKq0s3pRLAhoQW
-         mwtn65boBL5Bifdlz/pwU8cvlZPwXFYOG5RiI=
-Message-ID: <4B715C55.5090102@gmail.com>
-Date: Tue, 09 Feb 2010 14:00:05 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+	Tue, 9 Feb 2010 07:55:04 -0500
+From: Karsten Keil <isdn@linux-pingi.de>
+Reply-To: isdn@linux-pingi.de
+To: Jan Kiszka <jan.kiszka@web.de>
+Subject: Re: [PATCH v2 00/41] CAPI: Major rework, tons of bug fixes
+Date: Tue, 9 Feb 2010 13:54:23 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.27.39-0.2-default; KDE/4.3.1; x86_64; ; )
+Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       i4ldeveloper@listserv.isdn4linux.de, isdn4linux@listserv.isdn4linux.de,
+       netdev@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Marcel Holtmann <marcel@holtmann.org>
+References: <cover.1265659933.git.jan.kiszka@web.de>
+In-Reply-To: <cover.1265659933.git.jan.kiszka@web.de>
 MIME-Version: 1.0
-To: Greg Kroah-Hartman <gregkh@suse.de>, sarah.a.sharp@linux.intel.com,
-       linux-usb@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] USB: don't read past config->interface[] if usb_control_msg()
- fails in usb_reset_configuration()
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="iso-8859-6"
 Content-Transfer-Encoding: 7bit
+Message-Id: <201002091354.23389.isdn@linux-pingi.de>
+X-Provags-ID: V01U2FsdGVkX1+/xrIS67v2f/JXXQVlZ0UV63brxNt46LCRwng
+ rzE01cWQ4+ToO4lWUN5wVvd407SiqWGCgBTNC1EMD2hdPD8sEE
+ d9xA8xfPEF1Sq0e4PFmjHOx3ky8kUeI
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-After the loop `for (i = 0; i < config->desc.bNumInterfaces; i++)' if no
-break occurred, i equals config->desc.bNumInterfaces. so if
-usb_control_msg() failed then after goto reset_old_alts we read from
-config->interface[config->desc.bNumInterfaces].
+On Montag, 8. Februar 2010 21:12:04 Jan Kiszka wrote:
+> Here is the second take of my CAPI rework. I tried to address all
+> feedback on v1, so this one comes with the following changes:
+> 
+>  o rebased over net-next
+>  o reworked locking of the NCCI TTY using latest and greatest tty_port
+>    features and kref, hopefully in the right way
+>  o more fine-grained patch steps for the tricky TTY rework
+>  o dynamic major for NCCI TTYs, ie. CAPI no longer claims 191
+>  o dynamic TTY minor registrations, completely obsoleting capifs
+>  o schedule capifs for removal
+>  o some small additional cleanups
+> 
+> I kept my capifs fixes though this thing should die in the future. The
+> work is done, and people may still use it due to their distro
+> configuration (and the hard-wired loading by capiinit - needs fixing).
+> 
+> You can pull this series from
+> 
+> 	git://git.kiszka.org/linux-2.6.git capi
+> 
+Thank you for that effort, it looks very good for me.
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-diff --git a/drivers/usb/core/message.c b/drivers/usb/core/message.c
-index 9bc95fe..00b49bc 100644
---- a/drivers/usb/core/message.c
-+++ b/drivers/usb/core/message.c
-@@ -1466,10 +1466,15 @@ int usb_reset_configuration(struct usb_device *dev)
- 			retval = usb_hcd_alloc_bandwidth(dev, NULL,
- 					intf->cur_altsetting, alt);
- 		if (retval < 0)
--			break;
-+			/* If not, reinstate the old alternate settings */
-+			goto reset_old_alts;
- 	}
--	/* If not, reinstate the old alternate settings */
-+	retval = usb_control_msg(dev, usb_sndctrlpipe(dev, 0),
-+			USB_REQ_SET_CONFIGURATION, 0,
-+			config->desc.bConfigurationValue, 0,
-+			NULL, 0, USB_CTRL_SET_TIMEOUT);
- 	if (retval < 0) {
-+		i--;
- reset_old_alts:
- 		for (; i >= 0; i--) {
- 			struct usb_interface *intf = config->interface[i];
-@@ -1485,12 +1490,6 @@ reset_old_alts:
- 		mutex_unlock(&hcd->bandwidth_mutex);
- 		return retval;
- 	}
--	retval = usb_control_msg(dev, usb_sndctrlpipe(dev, 0),
--			USB_REQ_SET_CONFIGURATION, 0,
--			config->desc.bConfigurationValue, 0,
--			NULL, 0, USB_CTRL_SET_TIMEOUT);
--	if (retval < 0)
--		goto reset_old_alts;
- 	mutex_unlock(&hcd->bandwidth_mutex);
- 
- 	/* re-init hc/hcd interface/endpoint state */
+I will acknowlegde them, after a few tests.
+
+
+> Jan
+> 
+> Jan Kiszka (41):
+>   CAPI: Fix leaks in capifs_new_ncci
+>   CAPI: Sanitize capifs API
+>   CAPI: Eliminate capifs_root variable
+>   CAPI: Pin capifs instead of mounting it
+>   CAPI: Reduce chattiness during module loading/removal
+>   CAPI: Call a controller 'controller', not 'card'
+>   CAPI: Convert capi drivers rwlock into mutex
+>   CAPI: Rework capi_ctr_ready/down
+>   CAPI: Rework controller state notifier
+>   CAPI: Rework locking of controller data structures
+>   CAPI: Rework application locking
+>   CAPI: Reduce #ifdef mess around CONFIG_ISDN_CAPI_MIDDLEWARE
+>   CAPI: Convert capidev_list_lock into a mutex
+>   CAPI: Clean up capi_open/release
+>   CAPI: Rework locking of capidev members
+>   CAPI: Use non-atomic allocation during NCCI setup
+>   CAPI: Fix racy capi_read
+>   CAPI: Switch NCCI list to standard doubly linked list
+>   CAPI: Switch capiminor list to array
+>   CAPI: Clean up capinc_tty_init/exit
+>   CAPI: Dynamically register minor devices
+>   CAPI: Use dynamic major for NCCI TTYs by default
+>   CAPI: Use kref on capiminor
+>   CAPI: Establish install/cleanup handlers for capiminor TTYs
+>   CAPI: Use tty_port to keep track of capiminor's tty
+>   CAPI: Drop remaining NULL checks on tty->driver_data
+>   CAPI: Issue synchronous hangup on capincci_free_minor
+>   CAPI: Drop obsolete nccip from capiminor struct
+>   CAPI: Clean up capiminors_lock
+>   CAPI: Drop atomic ttyopencount
+>   CAPI: Drop handle_minor_recv from capinc_tty_write
+>   CAPI: Rework capiminor RX handler
+>   CAPI: Rename datahandle_queue -> ackqueue_entry
+>   CAPI: Use atomics for capiminor's datahandle and msgid
+>   CAPI: Drop capiminor's unused inbytes counter
+>   CAPI: Fix locking around capiminor's output queue and drop
+>     workaround_lock
+>   CAPI: Clean up capiminor_*_ack
+>   CAPI: Drop return value of handle_minor_send
+>   CAPI: Drop special controller lookup from capi20_put_message
+>   CAPI: Schedule capifs for removal
+>   CAPI: Remove experimental tag from middleware feature
+> 
+>  Documentation/feature-removal-schedule.txt |   10 +
+>  drivers/isdn/capi/Kconfig                  |   16 +-
+>  drivers/isdn/capi/capi.c                   | 1108
+>  ++++++++++++++-------------- drivers/isdn/capi/capidrv.c                | 
+>   48 +-
+>  drivers/isdn/capi/capifs.c                 |  126 ++--
+>  drivers/isdn/capi/capifs.h                 |   21 +-
+>  drivers/isdn/capi/kcapi.c                  |  805 +++++++++++---------
+>  drivers/isdn/capi/kcapi.h                  |   13 +-
+>  drivers/isdn/capi/kcapi_proc.c             |   41 +-
+>  include/linux/isdn/capilli.h               |    5 +-
+>  include/linux/kernelcapi.h                 |   17 +-
+>  11 files changed, 1151 insertions(+), 1059 deletions(-)
+> 
