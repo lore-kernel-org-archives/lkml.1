@@ -1,111 +1,58 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754065Ab0BIKOn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 05:14:43 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:35630 "EHLO mx1.redhat.com"
+	id S1752153Ab0BIKRs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 05:17:48 -0500
+Received: from cantor.suse.de ([195.135.220.2]:40764 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753642Ab0BIKOl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Feb 2010 05:14:41 -0500
-Subject: Re: [PATCH] Bluetooth: Keep a copy of each HID device's report 
- descriptor.
-From: Bastien Nocera <hadess@hadess.net>
-To: Justin Mattock <justinmattock@gmail.com>
-Cc: Ed Tomlinson <edt@aei.ca>, Marcel Holtmann <marcel@holtmann.org>,
-       Michael Poole <mdpoole@troilus.org>, Jiri Kosina <jkosina@suse.cz>,
-       "Gunn, Brian" <bgunn@solekai.com>, Ping <pinglinux@gmail.com>,
-       linux-kernel@vger.kernel.org,
-       BlueZ development <linux-bluetooth@vger.kernel.org>
-In-Reply-To: <dd18b0c31002082322m4238a4a6m73fc30752ba30447@mail.gmail.com>
-References: <alpine.LNX.2.00.1001291515560.356@pobox.suse.cz>
-	 <87vdebfvfk.fsf@troilus.org>
-	 <1265392303.31341.235.camel@localhost.localdomain>
-	 <201002082106.06301.edt@aei.ca>
-	 <dd18b0c31002082322m4238a4a6m73fc30752ba30447@mail.gmail.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Date: Tue, 09 Feb 2010 10:14:20 +0000
-Message-ID: <1265710460.2383.5685.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	id S1751406Ab0BIKRq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Feb 2010 05:17:46 -0500
+Date: Tue, 9 Feb 2010 11:17:44 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: "L.P. White" <lpw25@cam.ac.uk>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] HID: Add mapping for "AL Network Chat" usage
+In-Reply-To: <Prayer.1.3.2.1002081302050.29006@hermes-2.csi.cam.ac.uk>
+Message-ID: <alpine.LNX.2.00.1002091117070.30967@pobox.suse.cz>
+References: <Prayer.1.3.2.1002081302050.29006@hermes-2.csi.cam.ac.uk>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-02-08 at 23:22 -0800, Justin Mattock wrote:
-> > TIA
-> > Ed Tomlinson
-> >
-> > On Friday 05 February 2010 12:51:43 Marcel Holtmann wrote:
-> >> Hi Michael,
-> >>
-> >> > > looks good to me. I just prefer that you do the allocation of the report
-> >> > > descriptor before the HID object:
-> >> >
-> >> > An updated patch is below.  Sorry for the delay -- inclement weather
-> >> > here got in the way of testing this as quickly as I would have liked.
-> >> >
-> >> > From e245ef87247f5e257db40c412af7991c9af375ab Mon Sep 17 00:00:00 2001
-> >> > From: Michael Poole <mdpoole@troilus.org>
-> >> > Date: Fri, 5 Feb 2010 12:21:38 -0500
-> >> > Subject: [PATCH] Bluetooth: Keep a copy of each HID device's report descriptor.
-> >> >
-> >> > The report descriptor is read by user space (via the Service
-> >> > Discovery Protocol), so it is only available during the ioctl
-> >> > to connect.  However, the probe function that needs the
-> >> > descriptor might not be called until a specific module is
-> >> > loaded.  Keep a copy of the descriptor so it is available for
-> >> > later use.
-> >>
-> >> patch has been applied. Thanks.
-> >>
-> >> Regards
-> >>
-> >> Marcel
-> >>
-> >>
-> >> --
-> >> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> >> the body of a message to majordomo@vger.kernel.org
-> >> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> >> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
-> > Hi,
-> >
-> > I have been trying to test Michael's magic mouse drivers against 32.7 (or .8-rc).   Is there a tree
-> > based on .32 with these patches?  If not would it be possible to post the patches to lkml?  I do not
-> > mind sorting out a few conflicts - this thread assume one knows a little more about the process being
-> > used here than is obvious.
-> >
-> 
-> 
-> just got one of those magic things as well.
-> I did apply the patchs to the current HEAD, but
-> am getting a lifeless result i.g. here's what I did:
-> 
-> sudo /usr/bin/hcitool scan
-> sudo /usr/bin/simple-agent hci0 D4:9A:20:88:C7:48
-> sudo /usr/bin/dbus-send --system --dest=org.bluez --print-reply
-> /org/bluez/1897/hci0/dev_D4_9A_20_88_C7_48 org.bluez.Input.Connect
-> sudo /usr/bin/test-device trusted D4:9A:20:88:C7:48
-> 
-> the thing works after that(no scroll), fast cursor though.
-> then reboot
-> once up and running nothing.
-> cat /var/log/daemon.log (shows this)
-> 
-> Feb  8 22:57:40 Linux-1 bluetoothd[1973]: link_key_request
-> (sba=00:25:00:C0:6C:4F, dba=D4:9A:20:88:C7:48)
-> Feb  8 22:58:21 Linux-1 bluetoothd[1973]: last message repeated 5 times
-> Feb  8 22:59:21 Linux-1 bluetoothd[1973]: last message repeated 3 times
-> Feb  8 23:03:10 Linux-1 bluetoothd[1973]: link_key_request
-> (sba=00:25:00:C0:6C:4F, dba=D4:9A:20:88:C7:48)
+On Mon, 8 Feb 2010, L.P. White wrote:
 
-That means that your computer and the mouse aren't paired. The pin code
-for Apple mice is usually "0000" (as opposed to most mice which don't
-need pairing, just a poke and setting as trusted).
+> From: Leo P White <lpw25@cam.ac.uk>
+> 
+> Adding a mapping for the 'AL Network Chat' usage from the 'Consumer' usage
+> page (USB HID Usage Tables v1.11). This usage is used by some keyboards for a
+> multimedia key.
+> 
+> Signed-off-by: Leo P White <lpw25@cam.ac.uk>
+> 
+> ---
+> 
+> diff -upNr linux.orig/drivers/hid/hid-input.c
+> linux.new/drivers/hid/hid-input.c --- linux.orig/drivers/hid/hid-input.c
+> 2010-02-06 22:17:12.000000000 +0000 +++ linux.new/drivers/hid/hid-input.c
+> 2010-02-08 12:32:13.005554190 +0000 @@ -400,6 +400,7 @@ static void
+> hidinput_configure_usage(str
+> 		case 0x192: map_key_clear(KEY_CALC);		break;
+> 		case 0x194: map_key_clear(KEY_FILE);		break;
+> 		case 0x196: map_key_clear(KEY_WWW);		break;
+> +		case 0x199: map_key_clear(KEY_CHAT);		break;
+> 		case 0x19c: map_key_clear(KEY_LOGOFF);		break;
+> 		case 0x19e: map_key_clear(KEY_COFFEE);		break;
+> 		case 0x1a6: map_key_clear(KEY_HELP);		break;
 
-> (could be missing something though(don't use gnome/kde-bluetooth)although
-> mightymouse works).
+Thanks for the patch. It has been line-wrapped and whitespace-damaged.
 
-Cheers
+I have fixed it up by hand on my end and applied it, but please keep that 
+in mind for you future patch submissions.
 
+Thanks,
+
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
