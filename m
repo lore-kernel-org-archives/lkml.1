@@ -1,131 +1,126 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754750Ab0BIXUK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 18:20:10 -0500
-Received: from palm.sejo.be ([86.39.155.213]:51670 "EHLO palm.sejo.be"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751167Ab0BIXUI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Feb 2010 18:20:08 -0500
-From: Jochen Maes <jochen.maes@sejo.be>
-To: gregkh@suse.de
-Cc: linux-kernel@vger.kernel.org, Jochen Maes <jochen.maes@sejo.be>
-Subject: [PATCH] drivers: dream: Codestyle fix
-Date: Wed, 10 Feb 2010 00:19:46 +0100
-Message-Id: <1265757586-14726-1-git-send-email-jochen.maes@sejo.be>
-X-Mailer: git-send-email 1.6.6
+	id S1754794Ab0BIXW0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 18:22:26 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51215 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753144Ab0BIXWY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Feb 2010 18:22:24 -0500
+Date: Tue, 9 Feb 2010 15:22:14 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Nikanth Karthikesan <knikanth@suse.de>
+Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Wu Fengguang <fengguang.wu@intel.com>
+Subject: Re: [PATCH] Make vm_max_readahead configurable at run-time
+Message-Id: <20100209152214.2b8bd2ad.akpm@linux-foundation.org>
+In-Reply-To: <201002091659.27037.knikanth@suse.de>
+References: <201002091659.27037.knikanth@suse.de>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	Fixed Codestyle issues
+On Tue, 9 Feb 2010 16:59:26 +0530
+Nikanth Karthikesan <knikanth@suse.de> wrote:
 
-Signed-off-by: Jochen Maes <jochen.maes@sejo.be>
----
- drivers/staging/dream/pmem.c |   26 ++++++++++++--------------
- 1 files changed, 12 insertions(+), 14 deletions(-)
+> Make vm_max_readahead configurable at run-time. Expose a sysctl knob
+> in procfs to change it. This would ensure that new disks added would
+> use this value as their default read_ahead_kb.
+> 
 
-diff --git a/drivers/staging/dream/pmem.c b/drivers/staging/dream/pmem.c
-index def6468..503ba21 100644
---- a/drivers/staging/dream/pmem.c
-+++ b/drivers/staging/dream/pmem.c
-@@ -37,17 +37,17 @@
-  * the file should not be released until put_pmem_file is called */
- #define PMEM_FLAGS_BUSY 0x1
- /* indicates that this is a suballocation of a larger master range */
--#define PMEM_FLAGS_CONNECTED 0x1 << 1
-+#define PMEM_FLAGS_CONNECTED ( 0x1 << 1 )
- /* indicates this is a master and not a sub allocation and that it is mmaped */
--#define PMEM_FLAGS_MASTERMAP 0x1 << 2
-+#define PMEM_FLAGS_MASTERMAP ( 0x1 << 2 )
- /* submap and unsubmap flags indicate:
-  * 00: subregion has never been mmaped
-  * 10: subregion has been mmaped, reference to the mm was taken
-  * 11: subretion has ben released, refernece to the mm still held
-  * 01: subretion has been released, reference to the mm has been released
-  */
--#define PMEM_FLAGS_SUBMAP 0x1 << 3
--#define PMEM_FLAGS_UNSUBMAP 0x1 << 4
-+#define PMEM_FLAGS_SUBMAP ( 0x1 << 3 )
-+#define PMEM_FLAGS_UNSUBMAP ( 0x1 << 4 )
- 
- 
- struct pmem_data {
-@@ -91,7 +91,7 @@ struct pmem_region_node {
- 
- #define PMEM_DEBUG_MSGS 0
- #if PMEM_DEBUG_MSGS
--#define DLOG(fmt,args...) \
-+#define DLOG(fmt, args...) \
- 	do { printk(KERN_INFO "[%s:%s:%d] "fmt, __FILE__, __func__, __LINE__, \
- 		    ##args); } \
- 	while (0)
-@@ -152,7 +152,7 @@ struct pmem_info {
- static struct pmem_info pmem[PMEM_MAX_DEVICES];
- static int id_count;
- 
--#define PMEM_IS_FREE(id, index) !(pmem[id].bitmap[index].allocated)
-+#define PMEM_IS_FREE(id, index) ( !(pmem[id].bitmap[index].allocated) )
- #define PMEM_ORDER(id, index) pmem[id].bitmap[index].order
- #define PMEM_BUDDY_INDEX(id, index) (index ^ (1 << PMEM_ORDER(id, index)))
- #define PMEM_NEXT_INDEX(id, index) (index + (1 << PMEM_ORDER(id, index)))
-@@ -708,9 +708,8 @@ int get_pmem_addr(struct file *file, unsigned long *start,
- 	struct pmem_data *data;
- 	int id;
- 
--	if (!is_pmem_file(file) || !has_allocation(file)) {
-+	if (!is_pmem_file(file) || !has_allocation(file))
- 		return -1;
--	}
- 
- 	data = (struct pmem_data *)file->private_data;
- 	if (data->index == -1) {
-@@ -789,9 +788,8 @@ void flush_pmem_file(struct file *file, unsigned long offset, unsigned long len)
- 	struct list_head *elt;
- 	void *flush_start, *flush_end;
- 
--	if (!is_pmem_file(file) || !has_allocation(file)) {
-+	if (!is_pmem_file(file) || !has_allocation(file))
- 		return;
--	}
- 
- 	id = get_id(file);
- 	data = (struct pmem_data *)file->private_data;
-@@ -833,7 +831,7 @@ static int pmem_connect(unsigned long connect, struct file *file)
- 	src_file = fget_light(connect, &put_needed);
- 	DLOG("connect %p to %p\n", file, src_file);
- 	if (!src_file) {
--		printk("pmem: src file not found!\n");
-+		printk(KERN_INFO "pmem: src file not found!\n");
- 		ret = -EINVAL;
- 		goto err_no_file;
- 	}
-@@ -846,7 +844,7 @@ static int pmem_connect(unsigned long connect, struct file *file)
- 	src_data = (struct pmem_data *)src_file->private_data;
- 
- 	if (has_allocation(file) && (data->index != src_data->index)) {
--		printk("pmem: file is already mapped but doesn't match this"
-+		printk(KERN_INFO "pmem: file is already mapped but doesn't match this"
- 		       " src_file!\n");
- 		ret = -EINVAL;
- 		goto err_bad_file;
-@@ -885,7 +883,7 @@ lock_mm:
- 		mm = get_task_mm(data->task);
- 		if (!mm) {
- #if PMEM_DEBUG
--			printk("pmem: can't remap task is gone!\n");
-+			printk(KERN_DEBUG "pmem: can't remap task is gone!\n");
- #endif
- 			up_read(&data->sem);
- 			return -1;
-@@ -936,7 +934,7 @@ int pmem_remap(struct pmem_region *region, struct file *file,
- 	if (unlikely(!PMEM_IS_PAGE_ALIGNED(region->offset) ||
- 		 !PMEM_IS_PAGE_ALIGNED(region->len))) {
- #if PMEM_DEBUG
--		printk("pmem: request for unaligned pmem suballocation "
-+		printk(KERN_DEBUG "pmem: request for unaligned pmem suballocation "
- 		       "%lx %lx\n", region->offset, region->len);
- #endif
- 		return -EINVAL;
--- 
-1.6.6
+hm, I guess that's useful.
 
+> +int sysctl_vm_max_readahead_handler(struct ctl_table *, int,
+> +					void __user *, size_t *, loff_t *);
+
+I don't particuarly like the practice of leaving out the identifiers. 
+They're useful for documentation purposes and it's irritating when you
+look at a declaration for some real reason, only to find that the identifiers
+were left out.
+
+>  int force_page_cache_readahead(struct address_space *mapping, struct file *filp,
+>  			pgoff_t offset, unsigned long nr_to_read);
+> Index: linux-2.6/mm/backing-dev.c
+> ===================================================================
+> --- linux-2.6.orig/mm/backing-dev.c
+> +++ linux-2.6/mm/backing-dev.c
+> @@ -18,7 +18,7 @@ EXPORT_SYMBOL(default_unplug_io_fn);
+>  
+>  struct backing_dev_info default_backing_dev_info = {
+>  	.name		= "default",
+> -	.ra_pages	= VM_MAX_READAHEAD * 1024 / PAGE_CACHE_SIZE,
+> +	.ra_pages	= INITIAL_VM_MAX_READAHEAD * 1024 / PAGE_CACHE_SIZE,
+>  	.state		= 0,
+>  	.capabilities	= BDI_CAP_MAP_COPY,
+>  	.unplug_io_fn	= default_unplug_io_fn,
+> Index: linux-2.6/mm/readahead.c
+> ===================================================================
+> --- linux-2.6.orig/mm/readahead.c
+> +++ linux-2.6/mm/readahead.c
+> @@ -17,6 +17,19 @@
+>  #include <linux/pagevec.h>
+>  #include <linux/pagemap.h>
+>  
+> +unsigned long vm_max_readahead = INITIAL_VM_MAX_READAHEAD;
+> +
+> +int sysctl_vm_max_readahead_handler(struct ctl_table *table, int write,
+> +		void __user *buffer, size_t *length, loff_t *ppos)
+> +{
+> +	proc_doulongvec_minmax(table, write, buffer, length, ppos);
+> +
+> +	default_backing_dev_info.ra_pages =
+> +			vm_max_readahead >> (PAGE_CACHE_SHIFT - 10);
+> +
+> +	return 0;
+> +}
+
+Hang on.  This doesn't only affect newly-added disks.  It also affects
+presently-mounted filesystems which are using default_backing_dev_info.
+xfs, btrfs, blockdevs, nilfs, raw, mtd.
+
+What's the effect of this change?  (It should be in the changelog)
+
+>  #endif
+> -
+> +	{
+> +		.procname	= "max_readahead_kb",
+> +		.data		= &vm_max_readahead,
+> +		.maxlen		= sizeof(vm_max_readahead),
+> +		.mode		= 0644,
+> +		.proc_handler	= sysctl_vm_max_readahead_handler,
+> +	},
+
+It'd be nice if the in-kernel and /proc/identifiers were more similar. 
+That would require that vm_max_readahead be renamed to
+vm_max_readahead_kb.  We could not bother, I guess.  But
+vm_max_readahead_kb is a better identifier.
+
+>  	{ }
+>  };
+>  
+> Index: linux-2.6/Documentation/sysctl/vm.txt
+> ===================================================================
+> --- linux-2.6.orig/Documentation/sysctl/vm.txt
+> +++ linux-2.6/Documentation/sysctl/vm.txt
+> @@ -31,6 +31,7 @@ Currently, these files are in /proc/sys/
+>  - laptop_mode
+>  - legacy_va_layout
+>  - lowmem_reserve_ratio
+> +- max_readahead_kb
+>  - max_map_count
+>  - memory_failure_early_kill
+>  - memory_failure_recovery
+> @@ -263,6 +264,12 @@ The minimum value is 1 (1/1 -> 100%).
+>  
+>  ==============================================================
+>  
+> +max_readahead_kb:
+> +
+> +This file contains the default maximum readahead that would be used.
+> +
+
+I think we could provide a more detailed description than this, please.
