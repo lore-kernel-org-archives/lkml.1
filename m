@@ -1,72 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753506Ab0BICk0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 21:40:26 -0500
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:50952 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752857Ab0BICkZ (ORCPT
+	id S1753566Ab0BICm5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 21:42:57 -0500
+Received: from mail-gx0-f224.google.com ([209.85.217.224]:57548 "EHLO
+	mail-gx0-f224.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752857Ab0BICmz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 21:40:25 -0500
-Message-Id: <1265683224.4096.1358983441@webmail.messagingengine.com>
-X-Sasl-Enc: F2iWXKgkmmroIe2g2lHjaDKdgjgyF/wa3JDyVCyYXAum 1265683224
-From: "Alex Viskovatoff" <viskovatoff@imap.cc>
-To: "Evgeniy Dushistov" <dushistov@mail.ru>
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
+	Mon, 8 Feb 2010 21:42:55 -0500
+From: "Gustavo F. Padovan" <padovan@profusion.mobi>
+To: linux-kernel@vger.kernel.org
+Cc: mingo@elte.hu, akpm@linux-foundation.org
+Subject: [PATCH] printk: Avoid warning when CONFIG_PRINTK is disabled
+Date: Tue,  9 Feb 2010 00:42:47 -0200
+Message-Id: <1265683367-25845-1-git-send-email-padovan@profusion.mobi>
+X-Mailer: git-send-email 1.6.0.6
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="us-ascii"
-X-Mailer: MessagingEngine.com Webmail Interface
-Subject: [PATCH] fs/ufs: Recognize Solaris-specific file system state
-Date: Mon, 08 Feb 2010 21:40:24 -0500
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Recent releases of Solaris set the fs_clean state of an unmounted UFS file system as FSLOG ("logging fs"). However, the Linux kernel currently does not recognize the value which represents this state. Thus, attempting to mount such a file system rw produces the message
-
-kernel: ufs_read_super: can't grok fs_clean 0xfffffffd
-
-and the file system is mounted read-only. This patch makes the kernel recognize that value.
-
-Signed-off-by: Alex Viskovatoff <viskovatoff@imap.cc>
+kernel/printk.c:72: warning: ‘saved_console_loglevel’ defined but not used
 ---
-The definitions I used in the patch can be found here:
-http://cvs.opensolaris.org/source/xref/onnv/onnv-gate/usr/src/uts/common/sys/fs/ufs_fs.h
+ kernel/printk.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
---- linux-2.6.32.7-vanilla/fs/ufs/super.c	2010-01-28 18:06:20.000000000 -0500
-+++ linux-2.6/fs/ufs/super.c	2010-02-07 14:56:39.933794932 -0500
-@@ -965,6 +965,9 @@ magic_found:
- 		case UFS_FSSTABLE:
- 			UFSD("fs is stable\n");
- 			break;
-+		case UFS_FSLOG :
-+			UFSD("fs is logging fs\n");
-+			break;
- 		case UFS_FSOSF1:
- 			UFSD("fs is DEC OSF/1\n");
- 			break;
-diff -uprN -X linux-2.6.32.7-vanilla/Documentation/dontdiff linux-2.6.32.7-vanilla/fs/ufs/ufs_fs.h linux-2.6/fs/ufs/ufs_fs.h
---- linux-2.6.32.7-vanilla/fs/ufs/ufs_fs.h	2010-01-28 18:06:20.000000000 -0500
-+++ linux-2.6/fs/ufs/ufs_fs.h	2010-02-08 17:32:49.392619575 -0500
-@@ -138,6 +138,7 @@ typedef __u16 __bitwise __fs16;
+diff --git a/kernel/printk.c b/kernel/printk.c
+index 1751c45..ed6487d 100644
+--- a/kernel/printk.c
++++ b/kernel/printk.c
+@@ -69,8 +69,6 @@ int console_printk[4] = {
+ 	DEFAULT_CONSOLE_LOGLEVEL,	/* default_console_loglevel */
+ };
  
- #define UFS_USEEFT  ((__u16)65535)
+-static int saved_console_loglevel = -1;
+-
+ /*
+  * Low level drivers may need that to know if they can schedule in
+  * their unblank() callback or not. So let's export it.
+@@ -145,6 +143,7 @@ static char __log_buf[__LOG_BUF_LEN];
+ static char *log_buf = __log_buf;
+ static int log_buf_len = __LOG_BUF_LEN;
+ static unsigned logged_chars; /* Number of chars produced since last read+clear operation */
++static int saved_console_loglevel = -1;
  
-+/* fs_clean values */
- #define UFS_FSOK      0x7c269d38
- #define UFS_FSACTIVE  ((__s8)0x00)
- #define UFS_FSCLEAN   ((__s8)0x01)
-@@ -145,6 +146,11 @@ typedef __u16 __bitwise __fs16;
- #define UFS_FSOSF1    ((__s8)0x03)	/* is this correct for DEC OSF/1? */
- #define UFS_FSBAD     ((__s8)0xff)
- 
-+/* Solaris-specific fs_clean values */
-+#define UFS_FSSUSPEND ((__s8)0xfe)	/* temporarily suspended */
-+#define UFS_FSLOG     ((__s8)0xfd)	/* logging fs */
-+#define UFS_FSFIX     ((__s8)0xfc)	/* being repaired while mounted */
-+
- /* From here to next blank line, s_flags for ufs_sb_info */
- /* directory entry encoding */
- #define UFS_DE_MASK		0x00000010	/* mask for the following */
+ #ifdef CONFIG_KEXEC
+ /*
+-- 
+1.6.4.4
 
