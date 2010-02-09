@@ -1,62 +1,75 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754239Ab0BIXEJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 18:04:09 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:46838 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751436Ab0BIXEH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Feb 2010 18:04:07 -0500
-From: Matthew Garrett <mjg@redhat.com>
-To: e1000-devel@lists.sourceforge.net
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Matthew Garrett <mjg@redhat.com>
-Subject: [PATCH 2/2] e1000e: Don't disable jumbo frames on 82537L due to eeprom contents
-Date: Tue,  9 Feb 2010 18:03:50 -0500
-Message-Id: <1265756630-8093-2-git-send-email-mjg@redhat.com>
-X-Mailer: git-send-email 1.6.6.1
-In-Reply-To: <1265756630-8093-1-git-send-email-mjg@redhat.com>
-References: <1265756630-8093-1-git-send-email-mjg@redhat.com>
-X-SA-Do-Not-Run: Yes
-X-SA-Exim-Connect-IP: 209.6.34.250
-X-SA-Exim-Mail-From: mjg@redhat.com
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
+	id S1753748Ab0BIXJp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 18:09:45 -0500
+Received: from cantor.suse.de ([195.135.220.2]:38006 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752075Ab0BIXJo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Feb 2010 18:09:44 -0500
+Date: Tue, 9 Feb 2010 15:07:30 -0800
+From: Greg KH <gregkh@suse.de>
+To: Jochen Maes <jochen.maes@sejo.be>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] drivers: dream: Codestyle fix
+Message-ID: <20100209230730.GD21484@suse.de>
+References: <1265756347-14172-1-git-send-email-jochen.maes@sejo.be>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1265756347-14172-1-git-send-email-jochen.maes@sejo.be>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-According to the 82537L errata, jumbo frames will work correctly if ASPM
-is disabled. Since we disable ASPM on these devices, leave jumbo frames
-enabled.
+On Tue, Feb 09, 2010 at 11:59:07PM +0100, Jochen Maes wrote:
+> 	Fixed Codestyle issues
+> 
+> Signed-off-by: Jochen Maes <jochen.maes@sejo.be>
+> ---
+>  drivers/staging/dream/pmem.c |   26 ++++++++++++--------------
+>  1 files changed, 12 insertions(+), 14 deletions(-)
+> 
+> diff --git a/drivers/staging/dream/pmem.c b/drivers/staging/dream/pmem.c
+> index def6468..ec4e7d1 100644
+> --- a/drivers/staging/dream/pmem.c
+> +++ b/drivers/staging/dream/pmem.c
+> @@ -37,17 +37,17 @@
+>   * the file should not be released until put_pmem_file is called */
+>  #define PMEM_FLAGS_BUSY 0x1
+>  /* indicates that this is a suballocation of a larger master range */
+> -#define PMEM_FLAGS_CONNECTED 0x1 << 1
+> +#define PMEM_FLAGS_CONNECTED { 0x1 << 1 }
 
-Signed-off-by: Matthew Garrett <mjg@redhat.com>
----
- drivers/net/e1000e/82571.c |   12 ------------
- 1 files changed, 0 insertions(+), 12 deletions(-)
+Shouldn't this be using a ( ) and not { } ?
 
-diff --git a/drivers/net/e1000e/82571.c b/drivers/net/e1000e/82571.c
-index 02d67d0..2df00cc 100644
---- a/drivers/net/e1000e/82571.c
-+++ b/drivers/net/e1000e/82571.c
-@@ -381,18 +381,6 @@ static s32 e1000_get_variants_82571(struct e1000_adapter *adapter)
- 		if (pdev->device == E1000_DEV_ID_82571EB_SERDES_QUAD)
- 			adapter->flags &= ~FLAG_HAS_WOL;
- 		break;
--
--	case e1000_82573:
--		if (pdev->device == E1000_DEV_ID_82573L) {
--			if (e1000_read_nvm(&adapter->hw, NVM_INIT_3GIO_3, 1,
--				       &eeprom_data) < 0)
--				break;
--			if (!(eeprom_data & NVM_WORD1A_ASPM_MASK)) {
--				adapter->flags |= FLAG_HAS_JUMBO_FRAMES;
--				adapter->max_hw_frame_size = DEFAULT_JUMBO;
--			}
--		}
--		break;
- 	default:
- 		break;
- 	}
--- 
-1.6.6.1
+>  /* indicates this is a master and not a sub allocation and that it is mmaped */
+> -#define PMEM_FLAGS_MASTERMAP 0x1 << 2
+> +#define PMEM_FLAGS_MASTERMAP { 0x1 << 2 }
+>  /* submap and unsubmap flags indicate:
+>   * 00: subregion has never been mmaped
+>   * 10: subregion has been mmaped, reference to the mm was taken
+>   * 11: subretion has ben released, refernece to the mm still held
+>   * 01: subretion has been released, reference to the mm has been released
+>   */
+> -#define PMEM_FLAGS_SUBMAP 0x1 << 3
+> -#define PMEM_FLAGS_UNSUBMAP 0x1 << 4
+> +#define PMEM_FLAGS_SUBMAP { 0x1 << 3 }
+> +#define PMEM_FLAGS_UNSUBMAP { 0x1 << 4 }
 
+Same for these.
+
+> @@ -152,7 +152,7 @@ struct pmem_info {
+>  static struct pmem_info pmem[PMEM_MAX_DEVICES];
+>  static int id_count;
+>  
+> -#define PMEM_IS_FREE(id, index) !(pmem[id].bitmap[index].allocated)
+> +#define PMEM_IS_FREE(id, index) { !(pmem[id].bitmap[index].allocated) }
+
+And this.
+
+care to fix this up and resend the patch?
+
+thanks,
+
+greg k-h
