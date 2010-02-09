@@ -1,93 +1,51 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754311Ab0BIWIx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 17:08:53 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42727 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753344Ab0BIWIu (ORCPT
+	id S1754416Ab0BIWJi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 17:09:38 -0500
+Received: from mailgw10.se.ericsson.net ([193.180.251.61]:50058 "EHLO
+	mailgw10.se.ericsson.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753311Ab0BIWJg convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Feb 2010 17:08:50 -0500
-Date: Tue, 9 Feb 2010 14:08:18 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Cc: oleg@redhat.com, tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       paulmck@linux.vnet.ibm.com, linux-security-module@vger.kernel.org
-Subject: Re: [PATCH] Update comment on find_task_by_pid_ns
-Message-Id: <20100209140818.43bb9770.akpm@linux-foundation.org>
-In-Reply-To: <201002090642.EBE48414.HLJVFOQFSOFOMt@I-love.SAKURA.ne.jp>
-References: <alpine.LFD.2.00.0912102214180.3089@localhost.localdomain>
-	<201002082130.JDC57339.OHOVJFQtFSLFMO@I-love.SAKURA.ne.jp>
-	<20100208132101.GA7129@redhat.com>
-	<alpine.LFD.2.00.1002081802510.2811@localhost.localdomain>
-	<20100208171643.GA19230@redhat.com>
-	<201002090642.EBE48414.HLJVFOQFSOFOMt@I-love.SAKURA.ne.jp>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 9 Feb 2010 17:09:36 -0500
+X-Greylist: delayed 901 seconds by postgrey-1.27 at vger.kernel.org; Tue, 09 Feb 2010 17:09:36 EST
+X-AuditID: c1b4fb3d-b7b85ae00000097d-9e-4b71d999c847
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 6/11] drivers/dma: Correct NULL test
+Date: Tue, 9 Feb 2010 22:54:36 +0100
+Message-ID: <A6D19A13FE030A409EC4362C172E091F0E79D583@eseldmw101.eemea.ericsson.se>
+In-Reply-To: <e9c3a7c21002081307j567413adg6ed8aa04bf153e41@mail.gmail.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 6/11] drivers/dma: Correct NULL test
+Thread-Index: AcqpAslUyZJTwKcoSlC6h6oKespPIgAz3KFA
+References: <Pine.LNX.4.64.1002060943220.8092@ask.diku.dk> <e9c3a7c21002081307j567413adg6ed8aa04bf153e41@mail.gmail.com>
+From: "Linus Walleij" <linus.walleij@stericsson.com>
+To: "Dan Williams" <dan.j.williams@intel.com>, "Julia Lawall" <julia@diku.dk>
+Cc: <linux-kernel@vger.kernel.org>, <kernel-janitors@vger.kernel.org>
+X-OriginalArrivalTime: 09 Feb 2010 21:54:33.0205 (UTC) FILETIME=[76A23A50:01CAA9D2]
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 9 Feb 2010 06:42:45 +0900
-Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp> wrote:
+[Dan/Julia]
 
-> OK. I updated description.
-> 
-> As of 2.6.32 , below users are missing rcu_read_lock().
-> 
-> Users missing rcu_read_lock() when calling find_task_by_vpid():
-> 
->   SYSCALL_DEFINE3(ioprio_set) in fs/ioprio.c
->   SYSCALL_DEFINE2(ioprio_get) in fs/ioprio.c
->   cap_get_target_pid() in kernel/capability.c
+> On Sat, Feb 6, 2010 at 1:43 AM, Julia Lawall <julia@diku.dk> wrote:
+> > From: Julia Lawall <julia@diku.dk>
+> >
+> > cohd_fin has already been verified not to be NULL, so the 
+> argument to
+> > BUG_ON cannot be true.
 
-Actually, cap_get_target_pid() uses rcu_read_lock() and doesn't take
-tasklist_lock.
+Acked-by: Linus Walleij <linus.walleij@stericsson.com>
 
->   audit_prepare_user_tty() in kernel/audit.c
->   audit_receive_msg() in kernel/audit.c
->   check_clock() in kernel/posix-cpu-timers.c
->   posix_cpu_timer_create() in kernel/posix-cpu-timers.c
->   SYSCALL_DEFINE3(setpriority) in kernel/sys.c
->   SYSCALL_DEFINE2(getpriority) in kernel/sys.c
->   SYSCALL_DEFINE2(setpgid) in kernel/sys.c
->   SYSCALL_DEFINE1(sched_getscheduler) in kernel/sched.c
->   SYSCALL_DEFINE2(sched_getparam) in kernel/sched.c
->   sched_setaffinity() in kernel/sched.c
->   sched_getaffinity() in kernel/sched.c
->   SYSCALL_DEFINE2(sched_rr_get_interval) in kernel/sched.c
->   tomoyo_is_select_one() in security/tomoyo/common.c
->   tomoyo_read_pid() in security/tomoyo/common.c
->   SYSCALL_DEFINE6(move_pages) in mm/migrate.c
->   SYSCALL_DEFINE4(migrate_pages) in mm/mempolicy.c
->   find_process_by_pid() in arch/mips/kernel/mips-mt-fpaff.c
->   pfm_get_task() in arch/ia64/kernel/perfmon.c
->   cxn_pin_by_pid() in arch/frv/mm/mmu-context.c
-> 
-> Users missing rcu_read_lock() when calling find_task_by_pid_ns():
-> 
->   rest_init() in init/main.c
->   getthread() in kernel/kgdb.c
->   mconsole_stack() in arch/um/drivers/mconsole_kern.c
-> 
-> What should we do? Adding rcu_read_lock()/rcu_read_unlock() to each
-> callers? Or adding rcu_read_lock()/rcu_read_unlock() inside
-> find_task_by_pid_ns()?
+BTW I've got some more DMA patches for COH 901 318 and even
+a client using it cooking, if you apply this I'll happily
+rebase as soon as I can see it in -next.
 
-Putting rcu_read_lock() in the callee isn't a complete solution. 
-Because the function would still be returning a task_struct* without
-any locking held and without taking a reference against it.  So that
-pointer is useless to the caller!
-
-We could add a new function which looks up the task and then takes a
-reference on it, insde suitable locks.  The caller would then use the
-task_struct and then remember to call put_task_struct() to unpin it. 
-This prevents the task_struct from getting freed while it's being
-manipulated, but it doesn't prevent fields within it from being altered
-- that's up to the caller to sort out.
-
-One fix is to go through all those callsites and add the rcu_read_lock.
-That kinda sucks.  Perhaps writing the new function which returns a
-pinned task_struct is better?
-
+Linus Walleij
