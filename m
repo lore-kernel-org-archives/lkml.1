@@ -1,200 +1,169 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754361Ab0BINAx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 08:00:53 -0500
-Received: from casper.infradead.org ([85.118.1.10]:33083 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753561Ab0BINAv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Feb 2010 08:00:51 -0500
-Subject: Re: [RFC][PATCH] perf_events: added new start/stop PMU callbacks
-From: Peter Zijlstra <peterz@infradead.org>
-To: Stephane Eranian <eranian@google.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, paulus@samba.org,
-       davem@davemloft.net, fweisbec@gmail.com, robert.richter@amd.com,
-       perfmon2-devel@lists.sf.net, eranian@gmail.com
-In-Reply-To: <bd4cb8901002080921p311e29fbmcdf0841b0af558a@mail.gmail.com>
-References: <4b703875.0a04d00a.7896.ffffb824@mx.google.com>
-	 <1265646612.11509.13.camel@laptop>
-	 <bd4cb8901002080921p311e29fbmcdf0841b0af558a@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 09 Feb 2010 14:00:38 +0100
-Message-ID: <1265720438.11509.241.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	id S1754394Ab0BINCM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 08:02:12 -0500
+Received: from kroah.org ([198.145.64.141]:56025 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754137Ab0BINCK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Feb 2010 08:02:10 -0500
+Date: Tue, 9 Feb 2010 05:01:30 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, stable@kernel.org
+Cc: lwn@lwn.net
+Subject: Linux 2.6.32.8
+Message-ID: <20100209130130.GA29652@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-02-08 at 18:21 +0100, Stephane Eranian wrote:
-> 
-> Not sure why it's easier. It saves memory for sure, but that problem
-> is independent of the issue I was trying to address.
+I'm announcing the release of the 2.6.32.8 kernel.
 
-You're right, the thing I had overlooked is that delaying that release
-will mess up the constraints for new events.
+Sorry for the delay in releasing it, but there were a few crashes that
+people had reported, combined with verifying that a security problem
+really was fixed and backported properly, along with travel to and from
+FOSDEM, all which caused delays.  Look, a release at 5am, jet lag sucks
+at times...
 
-OK, lets go with this, we can do all other architectures by doing a
-fallback to enable/disable, because for everything except the new AMD
-code that is still correct. If at some time in the future start/stop
-becomes something that will be called frequently, architectures can
-provide optimized versions that by-pass the constraint checking (the
-current use is rare).
+And of course all users of the 2.6.32 kernel series are very strongly
+encouraged to upgrade.
 
----
-Subject: perf_events: Add new start/stop PMU callbacks
-From: Stephane Eranian <eranian@google.com>
-Date: Mon, 8 Feb 2010 17:06:01 +0200
+The updated 2.6.32.y git tree can be found at:
+        git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.32.y.git
+and can be browsed at the normal kernel.org git web browser:
+        http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.32.y.git;a=summary
 
-In certain situations, the kernel may need to stop and start the
-same event rapidly. The current PMU callbacks do not distinguish
-between stop and release  (i.e., stop + free the resource). Thus,
-a counter may be released, then it will be immediately re-acquired.
-Event scheduling will again take place with no guarantee to assign
-the same counter. On some processors, this may event yield to failure
-to assign the event back due to competion between cores.
+thanks,
 
-This patch is adding a new pair of callback to stop and restart a
-counter without actually release the underlying counter resource.
-On stop, the counter is stopped, its values saved and that's it.
-On start, the value is reloaded and counter is restarted (on x86,
-actual restart is delayed until perf_enable()).
+greg k-h
 
-Signed-off-by: Stephane Eranian <eranian@google.com>
-[ added fallback to ->enable/->disable for all other PMUs 
-  fixed x86_pmu_start() to call x86_pmu.enable() 
-  merged __x86_pmu_disable into x86_pmu_stop() ]
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <4b703875.0a04d00a.7896.ffffb824@mx.google.com>
----
- arch/x86/kernel/cpu/perf_event.c |   24 ++++++++++++++++++++----
- include/linux/perf_event.h       |    2 ++
- kernel/perf_event.c              |   20 ++++++++++++++++++--
- 3 files changed, 40 insertions(+), 6 deletions(-)
+------------
 
-Index: linux-2.6/arch/x86/kernel/cpu/perf_event.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/perf_event.c
-+++ linux-2.6/arch/x86/kernel/cpu/perf_event.c
-@@ -1495,7 +1495,7 @@ static inline int match_prev_assignment(
- 		hwc->last_tag == cpuc->tags[i];
- }
- 
--static void __x86_pmu_disable(struct perf_event *event, struct cpu_hw_events *cpuc);
-+static void x86_pmu_stop(struct perf_event *event);
- 
- void hw_perf_enable(void)
- {
-@@ -1533,7 +1533,7 @@ void hw_perf_enable(void)
- 			    match_prev_assignment(hwc, cpuc, i))
- 				continue;
- 
--			__x86_pmu_disable(event, cpuc);
-+			x86_pmu_stop(event);
- 
- 			hwc->idx = -1;
- 		}
-@@ -1801,6 +1801,19 @@ static int x86_pmu_enable(struct perf_ev
- 	return 0;
- }
- 
-+static int x86_pmu_start(struct perf_event *event)
-+{
-+	struct hw_perf_event *hwc = &event->hw;
-+
-+	if (hwc->idx == -1)
-+		return -EAGAIN;
-+
-+	x86_perf_event_set_period(event, hwc, hwc->idx);
-+	x86_pmu.enable(hwc, hwc->idx);
-+
-+	return 0;
-+}
-+
- static void x86_pmu_unthrottle(struct perf_event *event)
- {
- 	struct cpu_hw_events *cpuc = &__get_cpu_var(cpu_hw_events);
-@@ -1924,8 +1937,9 @@ static void intel_pmu_drain_bts_buffer(s
- 	event->pending_kill = POLL_IN;
- }
- 
--static void __x86_pmu_disable(struct perf_event *event, struct cpu_hw_events *cpuc)
-+static void x86_pmu_stop(struct perf_event *event)
- {
-+	struct cpu_hw_events *cpuc = &__get_cpu_var(cpu_hw_events);
- 	struct hw_perf_event *hwc = &event->hw;
- 	int idx = hwc->idx;
- 
-@@ -1954,7 +1968,7 @@ static void x86_pmu_disable(struct perf_
- 	struct cpu_hw_events *cpuc = &__get_cpu_var(cpu_hw_events);
- 	int i;
- 
--	__x86_pmu_disable(event, cpuc);
-+	x86_pmu_stop(event);
- 
- 	for (i = 0; i < cpuc->n_events; i++) {
- 		if (event == cpuc->event_list[i]) {
-@@ -2667,6 +2681,8 @@ static inline void x86_pmu_read(struct p
- static const struct pmu pmu = {
- 	.enable		= x86_pmu_enable,
- 	.disable	= x86_pmu_disable,
-+	.start		= x86_pmu_start,
-+	.stop		= x86_pmu_stop,
- 	.read		= x86_pmu_read,
- 	.unthrottle	= x86_pmu_unthrottle,
- };
-Index: linux-2.6/include/linux/perf_event.h
-===================================================================
---- linux-2.6.orig/include/linux/perf_event.h
-+++ linux-2.6/include/linux/perf_event.h
-@@ -511,6 +511,8 @@ struct perf_event;
- struct pmu {
- 	int (*enable)			(struct perf_event *event);
- 	void (*disable)			(struct perf_event *event);
-+	int (*start)			(struct perf_event *event);
-+	void (*stop)			(struct perf_event *event);
- 	void (*read)			(struct perf_event *event);
- 	void (*unthrottle)		(struct perf_event *event);
- };
-Index: linux-2.6/kernel/perf_event.c
-===================================================================
---- linux-2.6.orig/kernel/perf_event.c
-+++ linux-2.6/kernel/perf_event.c
-@@ -1493,6 +1493,22 @@ do {					\
- 	return div64_u64(dividend, divisor);
- }
- 
-+static void perf_event_stop(struct perf_event *event)
-+{
-+	if (!event->pmu->stop)
-+		return event->pmu->disable(event);
-+
-+	return event->pmu->stop(event);
-+}
-+
-+static int perf_event_start(struct perf_event *event)
-+{
-+	if (!event->pmu->start)
-+		return event->pmu->enable(event);
-+
-+	return event->pmu->start(event);
-+}
-+
- static void perf_adjust_period(struct perf_event *event, u64 nsec, u64 count)
- {
- 	struct hw_perf_event *hwc = &event->hw;
-@@ -1513,9 +1529,9 @@ static void perf_adjust_period(struct pe
- 
- 	if (atomic64_read(&hwc->period_left) > 8*sample_period) {
- 		perf_disable();
--		event->pmu->disable(event);
-+		perf_event_stop(event);
- 		atomic64_set(&hwc->period_left, 0);
--		event->pmu->enable(event);
-+		perf_event_start(event);
- 		perf_enable();
- 	}
- }
-
-
+ Documentation/kvm/api.txt                 |   36 +
+ Makefile                                  |    2 
+ arch/blackfin/include/asm/page.h          |    5 
+ arch/frv/include/asm/page.h               |    2 
+ arch/powerpc/include/asm/elf.h            |    8 
+ arch/powerpc/include/asm/thread_info.h    |    2 
+ arch/powerpc/kernel/process.c             |   12 
+ arch/s390/kernel/entry.S                  |    1 
+ arch/s390/kernel/entry64.S                |    1 
+ arch/sh/kernel/process_64.c               |    2 
+ arch/sparc/include/asm/elf_64.h           |   13 
+ arch/sparc/include/asm/thread_info_64.h   |    4 
+ arch/sparc/kernel/process_64.c            |    8 
+ arch/x86/Kconfig                          |    6 
+ arch/x86/ia32/ia32_aout.c                 |   11 
+ arch/x86/include/asm/cpu_debug.h          |  127 -----
+ arch/x86/include/asm/elf.h                |   10 
+ arch/x86/include/asm/hpet.h               |    1 
+ arch/x86/include/asm/kvm_host.h           |    1 
+ arch/x86/include/asm/thread_info.h        |    2 
+ arch/x86/kernel/amd_iommu.c               |    2 
+ arch/x86/kernel/cpu/Makefile              |    2 
+ arch/x86/kernel/cpu/cpu_debug.c           |  688 ------------------------------
+ arch/x86/kernel/hpet.c                    |    8 
+ arch/x86/kernel/process.c                 |   12 
+ arch/x86/kernel/process_64.c              |   11 
+ arch/x86/kernel/quirks.c                  |   13 
+ arch/x86/kernel/reboot.c                  |    9 
+ arch/x86/kernel/setup.c                   |   14 
+ arch/x86/kvm/x86.c                        |   42 +
+ arch/x86/mm/srat_64.c                     |    4 
+ arch/x86/oprofile/nmi_int.c               |    3 
+ drivers/acpi/bus.c                        |  163 +++++++
+ drivers/ata/libata-core.c                 |   38 +
+ drivers/ata/libata-eh.c                   |    5 
+ drivers/block/pktcdvd.c                   |    2 
+ drivers/char/random.c                     |    9 
+ drivers/connector/connector.c             |  175 -------
+ drivers/firewire/core-card.c              |   42 +
+ drivers/firewire/ohci.c                   |    4 
+ drivers/gpu/drm/drm_gem.c                 |   13 
+ drivers/gpu/drm/i915/i915_debugfs.c       |    2 
+ drivers/gpu/drm/i915/i915_dma.c           |    4 
+ drivers/gpu/drm/i915/i915_drv.h           |    2 
+ drivers/gpu/drm/i915/i915_gem.c           |   54 --
+ drivers/gpu/drm/i915/i915_irq.c           |   32 -
+ drivers/gpu/drm/i915/i915_reg.h           |    8 
+ drivers/gpu/drm/i915/intel_crt.c          |    2 
+ drivers/gpu/drm/i915/intel_display.c      |   26 -
+ drivers/gpu/drm/i915/intel_dp.c           |    6 
+ drivers/gpu/drm/i915/intel_hdmi.c         |    5 
+ drivers/gpu/drm/i915/intel_sdvo.c         |    3 
+ drivers/gpu/drm/i915/intel_tv.c           |    2 
+ drivers/infiniband/hw/ipath/ipath_fs.c    |    4 
+ drivers/input/misc/winbond-cir.c          |    2 
+ drivers/message/fusion/mptbase.c          |    2 
+ drivers/mtd/ubi/cdev.c                    |    1 
+ drivers/net/benet/be.h                    |    5 
+ drivers/net/benet/be_cmds.h               |    3 
+ drivers/net/benet/be_main.c               |   25 +
+ drivers/net/e1000/e1000.h                 |    2 
+ drivers/net/e1000/e1000_main.c            |   33 -
+ drivers/net/e1000e/e1000.h                |    1 
+ drivers/net/e1000e/netdev.c               |   45 -
+ drivers/net/sky2.c                        |    3 
+ drivers/net/starfire.c                    |    5 
+ drivers/net/wireless/ath/ath9k/hw.c       |    7 
+ drivers/net/wireless/ath/ath9k/main.c     |    2 
+ drivers/net/wireless/iwlwifi/iwl-agn-rs.c |    2 
+ drivers/regulator/wm8350-regulator.c      |    4 
+ drivers/s390/block/dasd.c                 |    8 
+ drivers/s390/block/dasd_eckd.c            |    2 
+ drivers/s390/block/dasd_ioctl.c           |    7 
+ drivers/s390/block/dasd_proc.c            |    7 
+ drivers/s390/crypto/zcrypt_pcicc.c        |    2 
+ drivers/s390/crypto/zcrypt_pcixcc.c       |    2 
+ drivers/scsi/scsi_lib.c                   |    2 
+ drivers/serial/uartlite.c                 |    2 
+ drivers/usb/host/r8a66597-hcd.c           |   17 
+ drivers/video/imxfb.c                     |    6 
+ drivers/video/mx3fb.c                     |   12 
+ fs/9p/vfs_super.c                         |    3 
+ fs/affs/affs.h                            |    2 
+ fs/affs/namei.c                           |    7 
+ fs/affs/super.c                           |   31 -
+ fs/affs/symlink.c                         |    7 
+ fs/bfs/inode.c                            |   43 -
+ fs/binfmt_aout.c                          |    1 
+ fs/binfmt_elf.c                           |   27 -
+ fs/binfmt_elf_fdpic.c                     |   16 
+ fs/binfmt_flat.c                          |    1 
+ fs/binfmt_som.c                           |    1 
+ fs/bio-integrity.c                        |    3 
+ fs/bio.c                                  |    7 
+ fs/exec.c                                 |   36 -
+ fs/fuse/file.c                            |    3 
+ fs/romfs/super.c                          |    1 
+ include/linux/acpi.h                      |   16 
+ include/linux/binfmts.h                   |    1 
+ include/linux/connector.h                 |   32 -
+ include/linux/inetdevice.h                |    1 
+ include/linux/kvm.h                       |    9 
+ include/linux/libata.h                    |    3 
+ include/linux/pagemap.h                   |    2 
+ include/linux/sched.h                     |    2 
+ include/linux/sysctl.h                    |    1 
+ include/net/netrom.h                      |    2 
+ kernel/cred.c                             |    2 
+ kernel/sysctl_check.c                     |    1 
+ kernel/time/clocksource.c                 |    4 
+ mm/filemap.c                              |  103 +++-
+ mm/page_alloc.c                           |    5 
+ mm/vmalloc.c                              |  109 +++-
+ net/ax25/ax25_out.c                       |    6 
+ net/core/sock.c                           |    4 
+ net/ipv4/devinet.c                        |    1 
+ net/ipv4/fib_frontend.c                   |    2 
+ net/mac80211/driver-trace.h               |    2 
+ net/netrom/nr_route.c                     |   11 
+ net/packet/af_packet.c                    |   19 
+ net/rose/rose_link.c                      |    8 
+ net/rose/rose_route.c                     |    5 
+ security/selinux/hooks.c                  |    2 
+ 123 files changed, 953 insertions(+), 1461 deletions(-)
