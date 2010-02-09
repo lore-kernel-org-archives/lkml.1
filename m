@@ -1,92 +1,108 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754428Ab0BIL3a (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 06:29:30 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:34401 "EHLO mx2.suse.de"
+	id S1754227Ab0BILec (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 06:34:32 -0500
+Received: from tac.ki.iif.hu ([193.6.222.43]:54944 "EHLO tac.ki.iif.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754189Ab0BIL3K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Feb 2010 06:29:10 -0500
-From: Nikanth Karthikesan <knikanth@suse.de>
-Organization: suse.de
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] Remove references to CTL_UNNUMBERED which has been removed
-Date: Tue, 9 Feb 2010 16:59:24 +0530
-User-Agent: KMail/1.12.2 (Linux/2.6.31.8-0.1-desktop; KDE/4.3.1; x86_64; ; )
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
+	id S1752793Ab0BILe3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Feb 2010 06:34:29 -0500
+From: Ferenc Wagner <wferi@niif.hu>
+To: netdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: netconsole dumbs the system
+References: <87iqa74f2s.fsf@tac.ki.iif.hu>
+Date: Tue, 09 Feb 2010 12:34:27 +0100
+In-Reply-To: <87iqa74f2s.fsf@tac.ki.iif.hu> (Ferenc Wagner's message of "Mon,
+	08 Feb 2010 22:01:31 +0100")
+Message-ID: <87mxziej7f.fsf@tac.ki.iif.hu>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201002091659.24421.knikanth@suse.de>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove references to CTL_UNNUMBERED which has been removed.
+Ferenc Wagner <wferi@niif.hu> writes:
 
-Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
+> # modprobe netconsole netconsole=@10.0.0.6/eth0,@10.0.0.7/
+>
+> that kills off the consoles: past kernel messages start pouring over all
+> consoles, the new network console included, then it suddenly dies off in
+> the middle, with one more line on the VC than sent to the network.  At
+> this point, the machine still responds to ping, the keyboard leds work,
+> but otherwise it's impossible to interact with it.  No SysRq, even.
+> Being in the initramfs, there are no network services to test.  If I
+> load netconsole in the running system, there isn't much backlog to pour
+> out, and the problem doesn't appear.  What could be wrong here?
 
----
+I really shouldn't harass public mailing lists while running to the
+train.  So.  This happens on 2.6.32.7, and has nothing to do with
+bonding or vlans.  Stopping early in the initramfs (before any network
+setup) and starting netconsole brings down the console for good.  This
+time I ran with an IPMI SoL console:
 
-Index: linux-2.6/kernel/sysctl.c
-===================================================================
---- linux-2.6.orig/kernel/sysctl.c
-+++ linux-2.6/kernel/sysctl.c
-@@ -232,10 +232,6 @@ static struct ctl_table root_table[] = {
- 		.mode		= 0555,
- 		.child		= dev_table,
- 	},
--/*
-- * NOTE: do not add new entries to this table unless you have read
-- * Documentation/sysctl/ctl_unnumbered.txt
-- */
- 	{ }
- };
- 
-@@ -936,10 +932,6 @@ static struct ctl_table kern_table[] = {
- 		.proc_handler	= proc_dointvec,
- 	},
- #endif
--/*
-- * NOTE: do not add new entries to this table unless you have read
-- * Documentation/sysctl/ctl_unnumbered.txt
-- */
- 	{ }
- };
- 
-@@ -1282,10 +1274,6 @@ static struct ctl_table vm_table[] = {
- 	},
- #endif
- 
--/*
-- * NOTE: do not add new entries to this table unless you have read
-- * Documentation/sysctl/ctl_unnumbered.txt
-- */
- 	{ }
- };
- 
-@@ -1433,10 +1421,6 @@ static struct ctl_table fs_table[] = {
- 		.child		= binfmt_misc_table,
- 	},
- #endif
--/*
-- * NOTE: do not add new entries to this table unless you have read
-- * Documentation/sysctl/ctl_unnumbered.txt
-- */
- 	{ }
- };
- 
-Index: linux-2.6/Documentation/sysctl/00-INDEX
-===================================================================
---- linux-2.6.orig/Documentation/sysctl/00-INDEX
-+++ linux-2.6/Documentation/sysctl/00-INDEX
-@@ -4,8 +4,6 @@ README
- 	- general information about /proc/sys/ sysctl files.
- abi.txt
- 	- documentation for /proc/sys/abi/*.
--ctl_unnumbered.txt
--	- explanation of why one should not add new binary sysctl numbers.
- fs.txt
- 	- documentation for /proc/sys/fs/*.
- kernel.txt
+[...]
+[   34.315957] sd 1:0:0:0: [sdc] Assuming drive cache: write through
+[   34.354246] sd 1:0:0:0: [sdc] Attached SCSI disk
+
+(initramfs) modprobe netconsole netconsole=@10.0.0.6/eth0,@10.0.0.4/
+[  786.966032] netconsole: local port 6665
+[  786.988917] netconsole: local IP 10.0.0.6
+[  787.012829] netconsole: interface eth0
+[  787.035185] netconsole: remote port 6666
+[  787.058583] netconsole: remote IP 10.0.0.4
+[  787.083022] netconsole: remote ethernet address ff:ff:ff:ff:ff:ff
+[  787.119428] netconsole: device eth0 not up yet, forcing it
+[  787.202838] ADDRCONF(NETDEV_UP): eth0: link is not ready
+[  788.200104] tg3: eth0: Link is up at 1000 Mbps, full duplex.
+[  788.233896] tg3: eth0: Flow control is off for TX and off for RX.
+[  788.270419] ADDRCONF(NETDEV_CHANGE): eth0: link becomes ready
+[    0.000000] Initializing cgroup subsys cpuset
+[    0.000000] Initializing cgroup subsys cpu
+[    0.000000] Linux version 2.6.32.7 (wferi@rs22) (gcc version 4.3.2 (Debian 4.3.2-1.1) ) #1 SMP Sun Feb 7 14:35:57 CET 2010
+[...]
+[   16.320885] sd 1:0:0:0: [sdc] Result: hostbyte=DID_OK driverbyte=DRIVER_SENSE
+[   16.363561] sd 1:0:0:0: [sdc] Sense Key : Not Ready [current] 
+[   16.398490] sd 1:0:0:0: [sdc] Add. Sense: Logical unit not ready, manual intervention required
+Killed
+(initramfs) cat /proc/modules
+netconsole 8307 1 - Loading 0xf83d6000
+configfs 15052 2 netconsole, Live 0xf83c5000
+sd_mod 25601 0 - Live 0xf83ad000
+crc_t10dif 1012 1 sd_mod, Live 0xf839a000
+usbhid 26560 0 - Live 0xf8320000
+hid 50453 1 usbhid, Live 0xf82e8000
+ata_generic 2015 0 - Live 0xf7fe9000
+ata_piix 17009 0 - Live 0xf7fdd000
+libata 113304 2 ata_generic,ata_piix, Live 0xf7fa4000
+uhci_hcd 15893 0 - Live 0xf7f51000
+mptspi 9545 0 - Live 0xf7f3f000
+mptscsih 13672 1 mptspi, Live 0xf7f2c000
+ide_pci_generic 1924 0 - Live 0xf7f1d000
+mptbase 42788 2 mptspi,mptscsih, Live 0xf7f06000
+ehci_hcd 26986 0 - Live 0xf7ee5000
+qla2xxx 180864 0 - Live 0xf7e9b000
+piix 3556 0 - Live 0xf7e57000
+scsi_transport_spi 14722 1 mptspi, Live 0xf7e37000
+tg3 87833 0 - Live 0xf7e10000
+scsi_transport_fc 28295 1 qla2xxx, Live 0xf7dd8000
+scsi_tgt 6834 1 scsi_transport_fc, Live 0xf7dba000
+scsi_mod 100649 8 sd_mod,libata,mptspi,mptscsih,qla2xxx,scsi_transport_spi,scsi_transport_fc,scsi_tgt, Live 0xf7d2a000
+ide_core 63358 2 ide_pci_generic,piix, Live 0xf7cdd000
+libphy 11178 1 tg3, Live 0xf7cb3000
+usbcore 97786 4 usbhid,uhci_hcd,ehci_hcd, Live 0xf7c81000
+nls_base 4541 1 usbcore, Live 0xf7c4d000
+button 3598 0 - Live 0xf7c42000
+thermal 9198 0 - Live 0xf7c34000
+fan 2590 0 - Live 0xf7c26000
+thermal_sys 9378 2 thermal,fan, Live 0xf7c19000
+(initramfs) modpro
+
+That is, after the "Killed" message (which I don't quite get, is that
+related to the modprobe command?) I was still able to issue a command,
+and to start typing another one.  Then came silence...  And not all
+kernel messages were sent through the network, only the first part of
+it, as the timestamps show.
+-- 
+Thanks,
+Feri.
