@@ -1,63 +1,72 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751624Ab0BITGx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 14:06:53 -0500
-Received: from mail-ww0-f46.google.com ([74.125.82.46]:35163 "EHLO
-	mail-ww0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751561Ab0BITGv (ORCPT
+	id S1751531Ab0BITGm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 14:06:42 -0500
+Received: from mail.dev.rtsoft.ru ([213.79.90.226]:52812 "HELO
+	mail.dev.rtsoft.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751489Ab0BITGk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Feb 2010 14:06:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type;
-        b=JXNdKpixU87k2tvFqU+PsgBXlmK6J46y/rnFIzMLW0otV0NJevh376bNwCxOolI0Kb
-         FrlsoMnXwmADe8Pcnl63CVg6iNQRafNB/7pCMixOLdFM5L95MyboE8pty+dbIiarN5jL
-         YdYHDf0rOS8OYOpN9a3ZYIUB2m/9XjEmvjkAM=
+	Tue, 9 Feb 2010 14:06:40 -0500
+Date: Tue, 9 Feb 2010 22:06:38 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Bill Gatliff <bgat@billgatliff.com>,
+       Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/4] of/gpio: Implement GPIOLIB notifier hooks
+Message-ID: <20100209190638.GA16013@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20100205203201.GA32281@oksana.dev.rtsoft.ru>
+ <20100205203236.GC1475@oksana.dev.rtsoft.ru>
+ <fa686aa41002090908tbeed469k417af2a59757f8a@mail.gmail.com>
 MIME-Version: 1.0
-Date: Tue, 9 Feb 2010 13:06:49 -0600
-Message-ID: <a4e6962a1002091106g3ffaa6a4ga8070b53d0b1becd@mail.gmail.com>
-Subject: [GiT PULL] 9p file system bug fixes for 2.6.33-rc7
-From: Eric Van Hensbergen <ericvh@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       V9FS Developers <v9fs-developer@lists.sourceforge.net>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <fa686aa41002090908tbeed469k417af2a59757f8a@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following changes since commit 08c4f1b096cc2468908ea58a77d2ef92ef765c52:
-  Linus Torvalds (1):
-        Merge branch 'v4l_for_linus' of git://linuxtv.org/fixes
+On Tue, Feb 09, 2010 at 10:08:00AM -0700, Grant Likely wrote:
+> On Fri, Feb 5, 2010 at 1:32 PM, Anton Vorontsov
+> <avorontsov@ru.mvista.com> wrote:
+> > This patch implements GPIOLIB notifier hooks, and thus makes device-enabled
+> > GPIO chips (i.e. the ones that have gpio_chip->dev specified) automatically
+> > attached to the OpenFirmware subsystem. Which means that now we can handle
+> > I2C and SPI GPIO chips almost* transparently.
+[...]
+> One concern.
+> 
+> How does an OF-aware GPIO driver override these settings?  What is to
+> be done when a GPIO chip requires a different xlate hook?  Or a
+> different number of gpio_cells?
 
-are available in the git repository at:
+A lot of options...
 
-  ssh://master.kernel.org/pub/scm/linux/kernel/git/ericvh/v9fs.git for-linus
+1. They can hook up onto a notifier chain, ensure that their callback
+   will be called after OF GPIO subsystem (using notifiers' priority
+   mechanism), and fixup needed stuff.
 
-Aneesh Kumar K.V (1):
-      9p: Fix the kernel crash on a failed mount
+2. They can write their own full fledged OF bindings, i.e. they will
+   need to allocate of_gc struct and save it into np->data.
+   of_gpiochip_register_simple() won't touch np->data if it's already
+   used.
 
-Eric Van Hensbergen (6):
-      net/9p: fix virtio transport to correctly update status on connect
-      net/9p: fail when user specifies a transport which we can't find
-      net/9p: fix statsize inside twstat
-      9p: fix option parsing
-      9p: fix memory leak in v9fs_parse_options()
-      9p: fix p9_client_destroy unconditional calling v9fs_put_trans
+   If/when needed, we can write some helper function, i.e.
+   of_gpiochip_register(gpiochip, node, xlate_callback).
 
-M. Mohan Kumar (1):
-      9p: Include fsync support for 9p client
+3. Or of/gpio.c code will handle this by itself, iff the xlate and
+   gpio-cells scheme seems generic enough.
 
- fs/9p/v9fs.c          |   33 +++++++++++++++++++-----------
- fs/9p/v9fs_vfs.h      |    1 +
- fs/9p/vfs_file.c      |   19 +++++++++++++++++
- fs/9p/vfs_inode.c     |    2 +-
- net/9p/client.c       |   53 ++++++++++++++++++++++++++++++++----------------
- net/9p/trans_fd.c     |   10 +++++---
- net/9p/trans_rdma.c   |    9 ++++---
- net/9p/trans_virtio.c |    4 ++-
- 8 files changed, 91 insertions(+), 40 deletions(-)
+4. May be more...
 
-thanks,
+Thanks,
 
-      -eric
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
