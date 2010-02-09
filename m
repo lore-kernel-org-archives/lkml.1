@@ -1,53 +1,114 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754150Ab0BIMNN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 07:13:13 -0500
-Received: from mail-yx0-f193.google.com ([209.85.210.193]:65115 "EHLO
-	mail-yx0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751979Ab0BIMNM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Feb 2010 07:13:12 -0500
-From: "Gustavo F. Padovan" <padovan@profusion.mobi>
-To: linux-kernel@vger.kernel.org
-Cc: jaharkes@cs.cmu.edu, coda@cs.cmu.edu, codalist@TELEMANN.coda.cs.cmu.edu
-Subject: [PATCH] coda: fix warning when CONFIG_SYSCTL is disabled
-Date: Tue,  9 Feb 2010 10:12:54 -0200
-Message-Id: <1265717574-26274-1-git-send-email-padovan@profusion.mobi>
-X-Mailer: git-send-email 1.6.0.6
+	id S1754181Ab0BIMhB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 07:37:01 -0500
+Received: from mail001.aei.ca ([206.123.6.130]:48002 "EHLO mail001.aei.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753868Ab0BIMg7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Feb 2010 07:36:59 -0500
+From: Ed Tomlinson <edt@aei.ca>
+To: Bastien Nocera <hadess@hadess.net>
+Subject: Re: [PATCH] Bluetooth: Keep a copy of each HID device's report descriptor.
+Date: Tue, 9 Feb 2010 07:36:55 -0500
+User-Agent: KMail/1.12.4 (Linux/2.6.32.8-crc; KDE/4.3.5; x86_64; ; )
+Cc: Justin Mattock <justinmattock@gmail.com>,
+       Marcel Holtmann <marcel@holtmann.org>,
+       Michael Poole <mdpoole@troilus.org>, Jiri Kosina <jkosina@suse.cz>,
+       "Gunn, Brian" <bgunn@solekai.com>, Ping <pinglinux@gmail.com>,
+       linux-kernel@vger.kernel.org,
+       BlueZ development <linux-bluetooth@vger.kernel.org>
+References: <alpine.LNX.2.00.1001291515560.356@pobox.suse.cz> <dd18b0c31002082322m4238a4a6m73fc30752ba30447@mail.gmail.com> <1265710460.2383.5685.camel@localhost.localdomain>
+In-Reply-To: <1265710460.2383.5685.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002090736.55576.edt@aei.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fs/coda/sysctl.c:18: warning: ‘coda_table’ defined but not used
+On Tuesday 09 February 2010 05:14:20 Bastien Nocera wrote:
+> On Mon, 2010-02-08 at 23:22 -0800, Justin Mattock wrote:
+> > > TIA
+> > > Ed Tomlinson
+> > >
+> > > On Friday 05 February 2010 12:51:43 Marcel Holtmann wrote:
+> > >> Hi Michael,
+> > >>
+> > >> > > looks good to me. I just prefer that you do the allocation of the report
+> > >> > > descriptor before the HID object:
+> > >> >
+> > >> > An updated patch is below.  Sorry for the delay -- inclement weather
+> > >> > here got in the way of testing this as quickly as I would have liked.
+> > >> >
+> > >> > From e245ef87247f5e257db40c412af7991c9af375ab Mon Sep 17 00:00:00 2001
+> > >> > From: Michael Poole <mdpoole@troilus.org>
+> > >> > Date: Fri, 5 Feb 2010 12:21:38 -0500
+> > >> > Subject: [PATCH] Bluetooth: Keep a copy of each HID device's report descriptor.
+> > >> >
+> > >> > The report descriptor is read by user space (via the Service
+> > >> > Discovery Protocol), so it is only available during the ioctl
+> > >> > to connect.  However, the probe function that needs the
+> > >> > descriptor might not be called until a specific module is
+> > >> > loaded.  Keep a copy of the descriptor so it is available for
+> > >> > later use.
+> > >>
+> > >> patch has been applied. Thanks.
+> > >>
+> > >> Regards
+> > >>
+> > >> Marcel
+> > >>
+> > >>
+> > >> --
+> > >> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > >> the body of a message to majordomo@vger.kernel.org
+> > >> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > >> Please read the FAQ at  http://www.tux.org/lkml/
+> > 
+> > 
+> > > Hi,
+> > >
+> > > I have been trying to test Michael's magic mouse drivers against 32.7 (or .8-rc).   Is there a tree
+> > > based on .32 with these patches?  If not would it be possible to post the patches to lkml?  I do not
+> > > mind sorting out a few conflicts - this thread assume one knows a little more about the process being
+> > > used here than is obvious.
+> > >
+> > 
+> > 
+> > just got one of those magic things as well.
+> > I did apply the patchs to the current HEAD, but
+> > am getting a lifeless result i.g. here's what I did:
+> > 
+> > sudo /usr/bin/hcitool scan
+> > sudo /usr/bin/simple-agent hci0 D4:9A:20:88:C7:48
+> > sudo /usr/bin/dbus-send --system --dest=org.bluez --print-reply
+> > /org/bluez/1897/hci0/dev_D4_9A_20_88_C7_48 org.bluez.Input.Connect
+> > sudo /usr/bin/test-device trusted D4:9A:20:88:C7:48
+> > 
+> > the thing works after that(no scroll), fast cursor though.
+> > then reboot
+> > once up and running nothing.
+> > cat /var/log/daemon.log (shows this)
+> > 
+> > Feb  8 22:57:40 Linux-1 bluetoothd[1973]: link_key_request
+> > (sba=00:25:00:C0:6C:4F, dba=D4:9A:20:88:C7:48)
+> > Feb  8 22:58:21 Linux-1 bluetoothd[1973]: last message repeated 5 times
+> > Feb  8 22:59:21 Linux-1 bluetoothd[1973]: last message repeated 3 times
+> > Feb  8 23:03:10 Linux-1 bluetoothd[1973]: link_key_request
+> > (sba=00:25:00:C0:6C:4F, dba=D4:9A:20:88:C7:48)
+> 
+> That means that your computer and the mouse aren't paired. The pin code
+> for Apple mice is usually "0000" (as opposed to most mice which don't
+> need pairing, just a poke and setting as trusted).
+> 
+> > (could be missing something though(don't use gnome/kde-bluetooth)although
+> > mightymouse works).
 
-Signed-off-by: Gustavo F. Padovan <padovan@profusion.mobi>
----
- fs/coda/sysctl.c |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
+The magicmouse part is the easy piece.  What I am looking for is the patches to the kernel
+that add the new function to bluetooth allowing the extra probing.  eg the patches (or tree 
+based on .32) that addthe initial version of  "hidp_output_raw_report" and friends.
 
-diff --git a/fs/coda/sysctl.c b/fs/coda/sysctl.c
-index c6405ce..c4ccf15 100644
---- a/fs/coda/sysctl.c
-+++ b/fs/coda/sysctl.c
-@@ -13,7 +13,6 @@
- 
- #ifdef CONFIG_SYSCTL
- static struct ctl_table_header *fs_table_header;
--#endif
- 
- static ctl_table coda_table[] = {
- 	{
-@@ -40,7 +39,6 @@ static ctl_table coda_table[] = {
- 	{}
- };
- 
--#ifdef CONFIG_SYSCTL
- static ctl_table fs_table[] = {
- 	{
- 		.procname	= "coda",
--- 
-1.6.4.4
-
+Thanks
+Ed 
