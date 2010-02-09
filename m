@@ -1,18 +1,18 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753628Ab0BITjo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 14:39:44 -0500
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:54616 "EHLO
+	id S1753283Ab0BITig (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 14:38:36 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:54601 "EHLO
 	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752078Ab0BITdt (ORCPT
+	with ESMTP id S1751896Ab0BITdt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 9 Feb 2010 14:33:49 -0500
 MIME-version: 1.0
 Content-transfer-encoding: 7BIT
 Content-type: TEXT/PLAIN
-Date: Tue, 09 Feb 2010 11:32:22 -0800
+Date: Tue, 09 Feb 2010 11:32:17 -0800
 From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 11/35] x86: introduce max_early_res and early_res_count
+Subject: [PATCH 06/35] x86/pci: add cap_resource
 In-reply-to: <1265743966-17065-1-git-send-email-yinghai@kernel.org>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
@@ -22,162 +22,98 @@ Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
        Christoph Lameter <cl@linux-foundation.org>,
        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
        Yinghai Lu <yinghai@kernel.org>
-Message-id: <1265743966-17065-12-git-send-email-yinghai@kernel.org>
+Message-id: <1265743966-17065-7-git-send-email-yinghai@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 References: <1265743966-17065-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-to prepare allocate early res array from fine_e820_area
+prepare for 32bit pci root bus
+
+-v2: hpa said we should compare with (resource_size_t)~0
+-v3: according to Linus to use MAX_RESOURCE instead.
+     also need need to put related patches together
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Acked-by: Jesse Barnes <jbarnes@virtuousgeek.org>
 ---
- arch/x86/kernel/e820.c |   47 ++++++++++++++++++++++++++++++++---------------
- 1 files changed, 32 insertions(+), 15 deletions(-)
+ arch/x86/pci/amd_bus.c  |    8 +++++---
+ arch/x86/pci/bus_numa.c |    4 ++++
+ include/linux/range.h   |    8 ++++++++
+ 3 files changed, 17 insertions(+), 3 deletions(-)
 
-diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
-index dfb1689..cf7f7d0 100644
---- a/arch/x86/kernel/e820.c
-+++ b/arch/x86/kernel/e820.c
-@@ -732,14 +732,18 @@ core_initcall(e820_mark_nvs_memory);
- /*
-  * Early reserved memory areas.
-  */
--#define MAX_EARLY_RES 32
-+/*
-+ * need to make sure this one is bigger enough before
-+ * find_e820_area could be used
-+ */
-+#define MAX_EARLY_RES_X 32
+diff --git a/arch/x86/pci/amd_bus.c b/arch/x86/pci/amd_bus.c
+index e8bb553..9bcb6fe 100644
+--- a/arch/x86/pci/amd_bus.c
++++ b/arch/x86/pci/amd_bus.c
+@@ -201,7 +201,7 @@ static int __init early_fill_mp_bus_info(void)
  
- struct early_res {
- 	u64 start, end;
--	char name[16];
-+	char name[15];
- 	char overlap_ok;
- };
--static struct early_res early_res[MAX_EARLY_RES] __initdata = {
-+static struct early_res early_res_x[MAX_EARLY_RES_X] __initdata = {
- 	{ 0, PAGE_SIZE, "BIOS data page", 1 },	/* BIOS data page */
- #if defined(CONFIG_X86_32) && defined(CONFIG_X86_TRAMPOLINE)
- 	/*
-@@ -753,12 +757,22 @@ static struct early_res early_res[MAX_EARLY_RES] __initdata = {
- 	{}
- };
+ 	memset(range, 0, sizeof(range));
+ 	/* 0xfd00000000-0xffffffffff for HT */
+-	range[0].end = (0xfdULL<<32) - 1;
++	range[0].end = cap_resource((0xfdULL<<32) - 1);
  
-+static int max_early_res __initdata = MAX_EARLY_RES_X;
-+static struct early_res *early_res __initdata = &early_res_x[0];
-+static int early_res_count __initdata =
-+#ifdef CONFIG_X86_32
-+	2
-+#else
-+	1
-+#endif
-+	;
+ 	/* need to take out [0, TOM) for RAM*/
+ 	address = MSR_K8_TOP_MEM1;
+@@ -286,7 +286,8 @@ static int __init early_fill_mp_bus_info(void)
+ 			}
+ 		}
+ 
+-		update_res(info, start, end, IORESOURCE_MEM, 1);
++		update_res(info, cap_resource(start), cap_resource(end),
++				 IORESOURCE_MEM, 1);
+ 		subtract_range(range, RANGE_NUM, start, end);
+ 		printk(KERN_CONT "\n");
+ 	}
+@@ -321,7 +322,8 @@ static int __init early_fill_mp_bus_info(void)
+ 			if (!range[i].end)
+ 				continue;
+ 
+-			update_res(info, range[i].start, range[i].end,
++			update_res(info, cap_resource(range[i].start),
++				   cap_resource(range[i].end),
+ 				   IORESOURCE_MEM, 1);
+ 		}
+ 	}
+diff --git a/arch/x86/pci/bus_numa.c b/arch/x86/pci/bus_numa.c
+index 3411687..3510778 100644
+--- a/arch/x86/pci/bus_numa.c
++++ b/arch/x86/pci/bus_numa.c
+@@ -1,5 +1,6 @@
+ #include <linux/init.h>
+ #include <linux/pci.h>
++#include <linux/range.h>
+ 
+ #include "bus_numa.h"
+ 
+@@ -55,6 +56,9 @@ void __devinit update_res(struct pci_root_info *info, resource_size_t start,
+ 	if (start > end)
+ 		return;
+ 
++	if (start == MAX_RESOURCE)
++		return;
 +
- static int __init find_overlapped_early(u64 start, u64 end)
- {
- 	int i;
- 	struct early_res *r;
+ 	if (!merge)
+ 		goto addit;
  
--	for (i = 0; i < MAX_EARLY_RES && early_res[i].end; i++) {
-+	for (i = 0; i < max_early_res && early_res[i].end; i++) {
- 		r = &early_res[i];
- 		if (end > r->start && start < r->end)
- 			break;
-@@ -776,13 +790,14 @@ static void __init drop_range(int i)
- {
- 	int j;
+diff --git a/include/linux/range.h b/include/linux/range.h
+index 0789f14..44c623e 100644
+--- a/include/linux/range.h
++++ b/include/linux/range.h
+@@ -19,4 +19,12 @@ int clean_sort_range(struct range *range, int az);
  
--	for (j = i + 1; j < MAX_EARLY_RES && early_res[j].end; j++)
-+	for (j = i + 1; j < max_early_res && early_res[j].end; j++)
- 		;
+ void sort_range(struct range *range, int nr_range);
  
- 	memmove(&early_res[i], &early_res[i + 1],
- 	       (j - 1 - i) * sizeof(struct early_res));
- 
- 	early_res[j - 1].end = 0;
-+	early_res_count--;
- }
- 
- /*
-@@ -801,9 +816,9 @@ static void __init drop_overlaps_that_are_ok(u64 start, u64 end)
- 	struct early_res *r;
- 	u64 lower_start, lower_end;
- 	u64 upper_start, upper_end;
--	char name[16];
-+	char name[15];
- 
--	for (i = 0; i < MAX_EARLY_RES && early_res[i].end; i++) {
-+	for (i = 0; i < max_early_res && early_res[i].end; i++) {
- 		r = &early_res[i];
- 
- 		/* Continue past non-overlapping ranges */
-@@ -859,7 +874,7 @@ static void __init __reserve_early(u64 start, u64 end, char *name,
- 	struct early_res *r;
- 
- 	i = find_overlapped_early(start, end);
--	if (i >= MAX_EARLY_RES)
-+	if (i >= max_early_res)
- 		panic("Too many early reservations");
- 	r = &early_res[i];
- 	if (r->end)
-@@ -872,6 +887,7 @@ static void __init __reserve_early(u64 start, u64 end, char *name,
- 	r->overlap_ok = overlap_ok;
- 	if (name)
- 		strncpy(r->name, name, sizeof(r->name) - 1);
-+	early_res_count++;
- }
- 
- /*
-@@ -924,7 +940,7 @@ void __init free_early(u64 start, u64 end)
- 
- 	i = find_overlapped_early(start, end);
- 	r = &early_res[i];
--	if (i >= MAX_EARLY_RES || r->end != end || r->start != start)
-+	if (i >= max_early_res || r->end != end || r->start != start)
- 		panic("free_early on not reserved area: %llx-%llx!",
- 			 start, end - 1);
- 
-@@ -935,14 +951,15 @@ void __init early_res_to_bootmem(u64 start, u64 end)
- {
- 	int i, count;
- 	u64 final_start, final_end;
-+	int idx = 0;
- 
- 	count  = 0;
--	for (i = 0; i < MAX_EARLY_RES && early_res[i].end; i++)
-+	for (i = 0; i < max_early_res && early_res[i].end; i++)
- 		count++;
- 
--	printk(KERN_INFO "(%d early reservations) ==> bootmem [%010llx - %010llx]\n",
--			 count, start, end);
--	for (i = 0; i < count; i++) {
-+	printk(KERN_INFO "(%d/%d early reservations) ==> bootmem [%010llx - %010llx]\n",
-+			 count - idx, max_early_res, start, end);
-+	for (i = idx; i < count; i++) {
- 		struct early_res *r = &early_res[i];
- 		printk(KERN_INFO "  #%d [%010llx - %010llx] %16s", i,
- 			r->start, r->end, r->name);
-@@ -969,7 +986,7 @@ static inline int __init bad_addr(u64 *addrp, u64 size, u64 align)
- again:
- 	i = find_overlapped_early(addr, addr + size);
- 	r = &early_res[i];
--	if (i < MAX_EARLY_RES && r->end) {
-+	if (i < max_early_res && r->end) {
- 		*addrp = addr = round_up(r->end, align);
- 		changed = 1;
- 		goto again;
-@@ -986,7 +1003,7 @@ static inline int __init bad_addr_size(u64 *addrp, u64 *sizep, u64 align)
- 	int changed = 0;
- again:
- 	last = addr + size;
--	for (i = 0; i < MAX_EARLY_RES && early_res[i].end; i++) {
-+	for (i = 0; i < max_early_res && early_res[i].end; i++) {
- 		struct early_res *r = &early_res[i];
- 		if (last > r->start && addr < r->start) {
- 			size = r->start - addr;
++#define MAX_RESOURCE ((resource_size_t)~0)
++static inline resource_size_t cap_resource(u64 val)
++{
++	if (val > MAX_RESOURCE)
++		return MAX_RESOURCE;
++	else
++		return val;
++}
+ #endif
 -- 
 1.6.4.2
 
