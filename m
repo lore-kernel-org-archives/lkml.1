@@ -1,55 +1,178 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753655Ab0BILxF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 06:53:05 -0500
-Received: from smtp.citrix.com ([66.165.176.89]:27767 "EHLO SMTP.CITRIX.COM"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752602Ab0BILw7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Feb 2010 06:52:59 -0500
+	id S1754129Ab0BILyr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 06:54:47 -0500
+Received: from smtp02.citrix.com ([66.165.176.63]:38744 "EHLO
+	SMTP02.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752602Ab0BILyq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Feb 2010 06:54:46 -0500
 X-IronPort-AV: E=Sophos;i="4.49,436,1262581200"; 
-   d="scan'208";a="7119844"
-Subject: Re: [PATCH 5/7] xen: Make event channel work with PV featured HVM
-From: Ian Campbell <Ian.Campbell@citrix.com>
-To: Sheng Yang <sheng@linux.intel.com>
-CC: Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>,
-       Keir Fraser <Keir.Fraser@eu.citrix.com>,
-       xen-devel <xen-devel@lists.xensource.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <1265616354-7384-6-git-send-email-sheng@linux.intel.com>
-References: <1265616354-7384-1-git-send-email-sheng@linux.intel.com>
-	 <1265616354-7384-6-git-send-email-sheng@linux.intel.com>
-Content-Type: text/plain; charset="UTF-8"
-Organization: Citrix Systems, Inc.
-Date: Tue, 9 Feb 2010 11:52:56 +0000
-Message-ID: <1265716376.24394.32669.camel@zakaz.uk.xensource.com>
-MIME-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 7bit
+   d="scan'208";a="83401470"
+From: Ian Campbell <ian.campbell@citrix.com>
+To: linux-kernel@vger.kernel.org
+Cc: Ian Campbell <ian.campbell@citrix.com>, x86@kernel.org
+Subject: [PATCH] x86: allow allocation of highmem user page tables to be disabled when CONFIG_HIGHPTE=y
+Date: Tue,  9 Feb 2010 11:54:43 +0000
+Message-Id: <1265716483-558-1-git-send-email-ian.campbell@citrix.com>
+X-Mailer: git-send-email 1.5.6.5
+X-OriginalArrivalTime: 09 Feb 2010 11:54:45.0356 (UTC) FILETIME=[AC3442C0:01CAA97E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-02-08 at 08:05 +0000, Sheng Yang wrote:
-> +       if (xen_hvm_pv_evtchn_enabled()) {
-> +               if (enable_hvm_pv(HVM_PV_EVTCHN))
-> +                       return -EINVAL;
-> +[...]
-> +               callback_via = HVM_CALLBACK_VECTOR(X86_PLATFORM_IPI_VECTOR);
-> +               set_callback_via(callback_via);
-> +
-> +               x86_platform_ipi_callback = do_hvm_pv_evtchn_intr; 
+Distros generally (I looked at Debian, RHEL5 and SLES11) seem to
+enable CONFIG_HIGHPTE for any x86 configuration which has highmem
+enabled. This means that the overhead applies even to machines which
+have a fairly modest amount of high memory and which therefore do not
+really benefit from allocating PTEs in high memory but still pay the
+price of the additional mapping operations.
 
-Why this indirection via X86_PLATFORM_IPI_VECTOR?
+Running kernbench on a 4G box I found that with CONFIG_HIGHPTE=y but
+no actual highptes being allocated there was a reduction in system
+time used from 59.737s to 55.9s.
 
-Apart from that why not use CALLBACKOP_register subop CALLBACKTYPE_event
-pointing to xen_hypervisor_callback the same as a full PV guest?
+With CONFIG_HIGHPTE=y and highmem PTEs being allocated:
+  Average Optimal load -j 4 Run (std deviation):
+  Elapsed Time 175.396 (0.238914)
+  User Time 515.983 (5.85019)
+  System Time 59.737 (1.26727)
+  Percent CPU 263.8 (71.6796)
+  Context Switches 39989.7 (4672.64)
+  Sleeps 42617.7 (246.307)
 
-This would remove all the evtchn related code from HVMOP_enable_pv which
-I think should be eventually unnecessary as an independent hypercall
-since all HVM guests should simply be PV capable by default -- the
-hypervisor only needs to track if the guest has made use of specific PV
-functionality, not the umbrella "is PV" state.
+With CONFIG_HIGHPTE=y but with no highmem PTEs being allocated:
+  Average Optimal load -j 4 Run (std deviation):
+  Elapsed Time 174.278 (0.831968)
+  User Time 515.659 (6.07012)
+  System Time 55.9 (1.07799)
+  Percent CPU 263.8 (71.266)
+  Context Switches 39929.6 (4485.13)
+  Sleeps 42583.7 (373.039)
 
-Ian.
+This patch allows the user to control the allocation of PTEs in
+highmem from the command line ("userpte=nohigh") but retains the
+status-quo as the default.
 
+It is possible that some simple heuristic could be developed which
+allows auto-tuning of this option however I don't have a sufficiently
+large machine available to me to perform any particularly meaningful
+experiments. We could probably handwave up an argument for a threshold
+at 16G of total RAM.
+
+Assuming 768M of lowmem we have 196608 potential lowmem PTE
+pages. Each page can map 2M of RAM in a PAE-enabled configuration,
+meaning a maximum of 384G of RAM could potentially be mapped using
+lowmem PTEs.
+
+Even allowing generous factor of 10 to account for other required
+lowmem allocations, generous slop to account for page sharing (which
+reduces the total amount of RAM mappable by a given number of PT
+pages) and other innacuracies in the estimations it would seem that
+even a 32G machine would not have a particularly pressing need for
+highmem PTEs. I think 32G could be considered to be at the upper bound
+of what might be sensible on a 32 bit machine (although I think in
+practice 64G is still supported).
+
+It's seems questionable if HIGHPTE is even a win for any amount of RAM
+you would sensibly run a 32 bit kernel on rather than going 64 bit.
+
+Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
+Cc: x86@kernel.org
+---
+ Documentation/kernel-parameters.txt |    7 +++++++
+ arch/x86/include/asm/pgalloc.h      |    5 +++++
+ arch/x86/mm/pgtable.c               |   31 ++++++++++++++++++++++++++-----
+ 3 files changed, 38 insertions(+), 5 deletions(-)
+
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 736d456..67c69ff 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -2694,6 +2694,13 @@ and is between 256 and 4096 characters. It is defined in the file
+ 					medium is write-protected).
+ 			Example: quirks=0419:aaf5:rl,0421:0433:rc
+ 
++	userpte=
++			[X86] Flags controlling user PTE allocations.
++
++				nohigh = do not allocate PTE pages in
++					HIGHMEM regardless of setting
++					of CONFIG_HIGHPTE.
++
+ 	vdso=		[X86,SH]
+ 			vdso=2: enable compat VDSO (default with COMPAT_VDSO)
+ 			vdso=1: enable VDSO (default)
+diff --git a/arch/x86/include/asm/pgalloc.h b/arch/x86/include/asm/pgalloc.h
+index 0e8c2a0..271de94 100644
+--- a/arch/x86/include/asm/pgalloc.h
++++ b/arch/x86/include/asm/pgalloc.h
+@@ -23,6 +23,11 @@ static inline void paravirt_release_pud(unsigned long pfn) {}
+ #endif
+ 
+ /*
++ * Flags to use when allocating a user page table page.
++ */
++extern gfp_t __userpte_alloc_gfp;
++
++/*
+  * Allocate and free page tables.
+  */
+ extern pgd_t *pgd_alloc(struct mm_struct *);
+diff --git a/arch/x86/mm/pgtable.c b/arch/x86/mm/pgtable.c
+index ed34f5e..c9ba9de 100644
+--- a/arch/x86/mm/pgtable.c
++++ b/arch/x86/mm/pgtable.c
+@@ -6,6 +6,14 @@
+ 
+ #define PGALLOC_GFP GFP_KERNEL | __GFP_NOTRACK | __GFP_REPEAT | __GFP_ZERO
+ 
++#ifdef CONFIG_HIGHPTE
++#define PGALLOC_USER_GFP __GFP_HIGHMEM
++#else
++#define PGALLOC_USER_GFP 0
++#endif
++
++gfp_t __userpte_alloc_gfp = PGALLOC_GFP | PGALLOC_USER_GFP;
++
+ pte_t *pte_alloc_one_kernel(struct mm_struct *mm, unsigned long address)
+ {
+ 	return (pte_t *)__get_free_page(PGALLOC_GFP);
+@@ -15,16 +23,29 @@ pgtable_t pte_alloc_one(struct mm_struct *mm, unsigned long address)
+ {
+ 	struct page *pte;
+ 
+-#ifdef CONFIG_HIGHPTE
+-	pte = alloc_pages(PGALLOC_GFP | __GFP_HIGHMEM, 0);
+-#else
+-	pte = alloc_pages(PGALLOC_GFP, 0);
+-#endif
++	pte = alloc_pages(__userpte_alloc_gfp, 0);
+ 	if (pte)
+ 		pgtable_page_ctor(pte);
+ 	return pte;
+ }
+ 
++static int __init setup_userpte(char *arg)
++{
++	if (!arg)
++		return -EINVAL;
++
++	/*
++	 * "userpte=nohigh" disables allocation of user pagetables in
++	 * high memory.
++	 */
++	if (strcmp(arg, "nohigh") == 0)
++		__userpte_alloc_gfp &= ~__GFP_HIGHMEM;
++	else
++		return -EINVAL;
++	return 0;
++}
++early_param("userpte", setup_userpte);
++
+ void ___pte_free_tlb(struct mmu_gather *tlb, struct page *pte)
+ {
+ 	pgtable_page_dtor(pte);
+-- 
+1.5.6.5
 
