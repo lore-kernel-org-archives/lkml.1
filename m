@@ -1,13 +1,13 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754201Ab0BIJUX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 04:20:23 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:61410 "EHLO song.cn.fujitsu.com"
+	id S1754225Ab0BIJU3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 04:20:29 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:49202 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753858Ab0BIJUU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Feb 2010 04:20:20 -0500
-Message-ID: <4B7128CF.7040903@cn.fujitsu.com>
-Date: Tue, 09 Feb 2010 17:20:15 +0800
+	id S1754097Ab0BIJU0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Feb 2010 04:20:26 -0500
+Message-ID: <4B7128DD.9020708@cn.fujitsu.com>
+Date: Tue, 09 Feb 2010 17:20:29 +0800
 From: Li Zefan <lizf@cn.fujitsu.com>
 User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
@@ -15,7 +15,7 @@ To: David Miller <davem@davemloft.net>
 CC: Andrew Morton <akpm@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>,
        "netdev@vger.kernel.org" <netdev@vger.kernel.org>
-Subject: [PATCH 08/13] net: appletalk: use seq_hlist_foo() helpers
+Subject: [PATCH 09/13] net: af_key: use seq_hlist_foo() helpers
 References: <4B712849.9040400@cn.fujitsu.com>
 In-Reply-To: <4B712849.9040400@cn.fujitsu.com>
 Content-Type: text/plain; charset=UTF-8
@@ -28,65 +28,57 @@ Simplify seq_file code.
 
 Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 ---
- net/appletalk/atalk_proc.c |   30 +++---------------------------
- 1 files changed, 3 insertions(+), 27 deletions(-)
+ net/key/af_key.c |   20 +++-----------------
+ 1 files changed, 3 insertions(+), 17 deletions(-)
 
-diff --git a/net/appletalk/atalk_proc.c b/net/appletalk/atalk_proc.c
-index 80caad1..6ef0e76 100644
---- a/net/appletalk/atalk_proc.c
-+++ b/net/appletalk/atalk_proc.c
-@@ -144,40 +144,16 @@ out:
- 	return 0;
- }
+diff --git a/net/key/af_key.c b/net/key/af_key.c
+index 76fa6fe..cb006b6 100644
+--- a/net/key/af_key.c
++++ b/net/key/af_key.c
+@@ -3655,9 +3655,8 @@ static const struct net_proto_family pfkey_family_ops = {
+ #ifdef CONFIG_PROC_FS
+ static int pfkey_seq_show(struct seq_file *f, void *v)
+ {
+-	struct sock *s;
++	struct sock *s = sk_entry(v);
  
--static __inline__ struct sock *atalk_get_socket_idx(loff_t pos)
--{
+-	s = (struct sock *)v;
+ 	if (v == SEQ_START_TOKEN)
+ 		seq_printf(f ,"sk       RefCnt Rmem   Wmem   User   Inode\n");
+ 	else
+@@ -3676,19 +3675,9 @@ static void *pfkey_seq_start(struct seq_file *f, loff_t *ppos)
+ {
+ 	struct net *net = seq_file_net(f);
+ 	struct netns_pfkey *net_pfkey = net_generic(net, pfkey_net_id);
 -	struct sock *s;
 -	struct hlist_node *node;
+-	loff_t pos = *ppos;
+ 
+ 	read_lock(&pfkey_table_lock);
+-	if (pos == 0)
+-		return SEQ_START_TOKEN;
 -
--	sk_for_each(s, node, &atalk_sockets)
--		if (!pos--)
--			goto found;
--	s = NULL;
--found:
--	return s;
--}
+-	sk_for_each(s, node, &net_pfkey->table)
+-		if (pos-- == 1)
+-			return s;
 -
- static void *atalk_seq_socket_start(struct seq_file *seq, loff_t *pos)
- 	__acquires(atalk_sockets_lock)
- {
--	loff_t l = *pos;
--
- 	read_lock_bh(&atalk_sockets_lock);
--	return l ? atalk_get_socket_idx(--l) : SEQ_START_TOKEN;
-+	return seq_hlist_start_head(&atalk_sockets, *pos);
+-	return NULL;
++	return seq_hlist_start_head(&net_pfkey->table, *ppos);
  }
  
- static void *atalk_seq_socket_next(struct seq_file *seq, void *v, loff_t *pos)
- {
--	struct sock *i;
--
--	++*pos;
--	if (v == SEQ_START_TOKEN) {
--		i = sk_head(&atalk_sockets);
--		goto out;
--	}
--	i = sk_next(v);
--out:
--	return i;
-+	return seq_hlist_next(v, &atalk_sockets, pos);
+ static void *pfkey_seq_next(struct seq_file *f, void *v, loff_t *ppos)
+@@ -3696,10 +3685,7 @@ static void *pfkey_seq_next(struct seq_file *f, void *v, loff_t *ppos)
+ 	struct net *net = seq_file_net(f);
+ 	struct netns_pfkey *net_pfkey = net_generic(net, pfkey_net_id);
+ 
+-	++*ppos;
+-	return (v == SEQ_START_TOKEN) ?
+-		sk_head(&net_pfkey->table) :
+-			sk_next((struct sock *)v);
++	return seq_hlist_next(v, &net_pfkey->table, ppos);
  }
  
- static void atalk_seq_socket_stop(struct seq_file *seq, void *v)
-@@ -197,7 +173,7 @@ static int atalk_seq_socket_show(struct seq_file *seq, void *v)
- 		goto out;
- 	}
- 
--	s = v;
-+	s = sk_entry(v);
- 	at = at_sk(s);
- 
- 	seq_printf(seq, "%02X   %04X:%02X:%02X  %04X:%02X:%02X  %08X:%08X "
+ static void pfkey_seq_stop(struct seq_file *f, void *v)
 -- 
 1.6.3
 
