@@ -1,41 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752025Ab0BIFf7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 00:35:59 -0500
-Received: from casper.infradead.org ([85.118.1.10]:59679 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751413Ab0BIFf6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Feb 2010 00:35:58 -0500
-Date: Mon, 8 Feb 2010 21:36:43 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: chihau Chau <chihau@gmail.com>
-Cc: bfields@fieldses.org, neilb@suse.de, viro@zeniv.linux.org.uk,
-       Trond.Myklebust@netapp.com, bharrosh@panasas.com,
-       akpm@linux-foundation.org, linux-nfs@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Chihau Chau <chihau@gmail.com>
-Subject: Re: [PATCH] fs: nfsd: export: fix coding style issues
-Message-ID: <20100208213643.540d92a4@infradead.org>
-In-Reply-To: <1265665013-32162-1-git-send-email-chihau@gmail.com>
-References: <1265665013-32162-1-git-send-email-chihau@gmail.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+	id S1752090Ab0BIFhQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 00:37:16 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:34990 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750855Ab0BIFhO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Feb 2010 00:37:14 -0500
+Date: Tue, 9 Feb 2010 16:37:08 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Eric Paris <eparis@redhat.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: linux-next: manual merge of the fsnotify tree with the vfs tree
+Message-Id: <20100209163708.b7ae6d05.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0beta7 (GTK+ 2.18.6; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__9_Feb_2010_16_37_08_+1100_HCiHHartNOiDc_dj"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> -static struct svc_expkey *svc_expkey_update(struct svc_expkey *new, struct svc_expkey *old); 
-> +static struct svc_expkey *svc_expkey_update(struct svc_expkey *new,
-> +							struct svc_expkey *old); 
+--Signature=_Tue__9_Feb_2010_16_37_08_+1100_HCiHHartNOiDc_dj
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+Hi Eric,
 
-how is this an improvement ? I don't find the 2nd more more readable
+Today's linux-next merge of the fsnotify tree got a conflict in
+fs/namei.c between commit 123df2944c436c80640c4281c5bc9c7950b18687 ("Lose
+the new_name argument of fsnotify_move()") from the vfs tree and commit
+2df5764e29a813f6ba63be094ab8aadc704a78fd ("fsnotify: use unsigned char *
+for dentry->d_name.name") from the fsnotify tree.
 
-also, are you planning to do real changes to this file? If not, I would suggest not doing cleanups like this;
-while cleanups like the other things you did are fine as a first step to doing real work on a file, it's usually
-not liked very much to ONLY do such cosmetic things...
+The former removed the code changed by the latter, so I used the former.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__9_Feb_2010_16_37_08_+1100_HCiHHartNOiDc_dj
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAktw9IQACgkQjjKRsyhoI8yHWACcDMPQAzJyY5Tex3nN4Lb58veW
+vJQAoK361LhJIR2ZqYrubrp0sOMN1fOA
+=CLbM
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__9_Feb_2010_16_37_08_+1100_HCiHHartNOiDc_dj--
