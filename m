@@ -1,46 +1,149 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752003Ab0BITax (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 14:30:53 -0500
-Received: from sabe.cs.wisc.edu ([128.105.6.20]:41243 "EHLO sabe.cs.wisc.edu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751265Ab0BITav (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Feb 2010 14:30:51 -0500
-Message-ID: <4B71B7D9.9040501@cs.wisc.edu>
-Date: Tue, 09 Feb 2010 13:30:33 -0600
-From: Mike Christie <michaelc@cs.wisc.edu>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: Tao Ma <tao.ma@oracle.com>
-CC: open-iscsi@googlegroups.com, linux-kernel@vger.kernel.org
-Subject: Re: lockdep warning for iscsi in 2.6.33-rc6
-References: <4B7107CF.3060703@oracle.com>
-In-Reply-To: <4B7107CF.3060703@oracle.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1752720Ab0BITd7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 14:33:59 -0500
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:40016 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752225Ab0BITdq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Feb 2010 14:33:46 -0500
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: TEXT/PLAIN
+Date: Tue, 09 Feb 2010 11:32:41 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+Subject: [PATCH 30/35] sparseirq: use radix_tree instead of ptrs array
+In-reply-to: <1265743966-17065-1-git-send-email-yinghai@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+       Yinghai Lu <yinghai@kernel.org>
+Message-id: <1265743966-17065-31-git-send-email-yinghai@kernel.org>
+X-Mailer: git-send-email 1.6.4.2
+References: <1265743966-17065-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/09/2010 12:59 AM, Tao Ma wrote:
-> Hi Mike,
-> I meet with a lockdep warning for iscsi in 2.6.33-rc6.
-> the lockdep is attached.
->
+use radix_tree irq_desc_tree instead of irq_desc_ptrs.
 
-If the lockdep output is saying that there is a problem with the iscsi 
-host taking its mutex then the scsi host mutex, I think that might be a 
-mistake in the lockdep detection. We always take the iscsi host mutex 
-then take the scsi host mutex.
+-v2: according to Eric and cyrill to use radix_tree_lookup_slot and radix_tree_replace_slot
 
-Could it get confused if we are scanning two hosts at the same time? If 
-it is just looking at if a lock is being taken then it would look like 
-host1 has its ihost->mutex and then took its shost->mutex, but then 
-host2 could start to get scanned at the same time, and it is going to 
-take its ihost->mutex. It would then look like we are trying to grab a 
-ihost->mutex while holding a shost->mutex. However, the mutexs are not 
-global and they are different instances of the mutex because each host 
-has its own.
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+---
+ kernel/irq/handle.c |   49 +++++++++++++++++++++++++------------------------
+ 1 files changed, 25 insertions(+), 24 deletions(-)
 
-If that is not the problem, maybe it has something to do with some sysfs 
-lock and ata doing scanning while iscsi is.
+diff --git a/kernel/irq/handle.c b/kernel/irq/handle.c
+index 266f798..76d5a67 100644
+--- a/kernel/irq/handle.c
++++ b/kernel/irq/handle.c
+@@ -19,6 +19,7 @@
+ #include <linux/kernel_stat.h>
+ #include <linux/rculist.h>
+ #include <linux/hash.h>
++#include <linux/radix-tree.h>
+ #include <trace/events/irq.h>
+ 
+ #include "internals.h"
+@@ -127,7 +128,26 @@ static void init_one_irq_desc(int irq, struct irq_desc *desc, int node)
+  */
+ DEFINE_RAW_SPINLOCK(sparse_irq_lock);
+ 
+-static struct irq_desc **irq_desc_ptrs __read_mostly;
++static RADIX_TREE(irq_desc_tree, GFP_ATOMIC);
++
++static void set_irq_desc(unsigned int irq, struct irq_desc *desc)
++{
++	radix_tree_insert(&irq_desc_tree, irq, desc);
++}
++
++struct irq_desc *irq_to_desc(unsigned int irq)
++{
++	return radix_tree_lookup(&irq_desc_tree, irq);
++}
++
++void replace_irq_desc(unsigned int irq, struct irq_desc *desc)
++{
++	void **ptr;
++
++	ptr = radix_tree_lookup_slot(&irq_desc_tree, irq);
++	if (ptr)
++		radix_tree_replace_slot(ptr, desc);
++}
+ 
+ static struct irq_desc irq_desc_legacy[NR_IRQS_LEGACY] __cacheline_aligned_in_smp = {
+ 	[0 ... NR_IRQS_LEGACY-1] = {
+@@ -159,9 +179,6 @@ int __init early_irq_init(void)
+ 	legacy_count = ARRAY_SIZE(irq_desc_legacy);
+ 	node = first_online_node;
+ 
+-	/* allocate irq_desc_ptrs array based on nr_irqs */
+-	irq_desc_ptrs = kcalloc(nr_irqs, sizeof(void *), GFP_NOWAIT);
+-
+ 	/* allocate based on nr_cpu_ids */
+ 	kstat_irqs_legacy = kzalloc_node(NR_IRQS_LEGACY * nr_cpu_ids *
+ 					  sizeof(int), GFP_NOWAIT, node);
+@@ -175,28 +192,12 @@ int __init early_irq_init(void)
+ 		lockdep_set_class(&desc[i].lock, &irq_desc_lock_class);
+ 		alloc_desc_masks(&desc[i], node, true);
+ 		init_desc_masks(&desc[i]);
+-		irq_desc_ptrs[i] = desc + i;
++		set_irq_desc(i, &desc[i]);
+ 	}
+ 
+-	for (i = legacy_count; i < nr_irqs; i++)
+-		irq_desc_ptrs[i] = NULL;
+-
+ 	return arch_early_irq_init();
+ }
+ 
+-struct irq_desc *irq_to_desc(unsigned int irq)
+-{
+-	if (irq_desc_ptrs && irq < nr_irqs)
+-		return irq_desc_ptrs[irq];
+-
+-	return NULL;
+-}
+-
+-void replace_irq_desc(unsigned int irq, struct irq_desc *desc)
+-{
+-	irq_desc_ptrs[irq] = desc;
+-}
+-
+ struct irq_desc * __ref irq_to_desc_alloc_node(unsigned int irq, int node)
+ {
+ 	struct irq_desc *desc;
+@@ -208,14 +209,14 @@ struct irq_desc * __ref irq_to_desc_alloc_node(unsigned int irq, int node)
+ 		return NULL;
+ 	}
+ 
+-	desc = irq_desc_ptrs[irq];
++	desc = irq_to_desc(irq);
+ 	if (desc)
+ 		return desc;
+ 
+ 	raw_spin_lock_irqsave(&sparse_irq_lock, flags);
+ 
+ 	/* We have to check it to avoid races with another CPU */
+-	desc = irq_desc_ptrs[irq];
++	desc = irq_to_desc(irq);
+ 	if (desc)
+ 		goto out_unlock;
+ 
+@@ -228,7 +229,7 @@ struct irq_desc * __ref irq_to_desc_alloc_node(unsigned int irq, int node)
+ 	}
+ 	init_one_irq_desc(irq, desc, node);
+ 
+-	irq_desc_ptrs[irq] = desc;
++	set_irq_desc(irq, desc);
+ 
+ out_unlock:
+ 	raw_spin_unlock_irqrestore(&sparse_irq_lock, flags);
+-- 
+1.6.4.2
+
