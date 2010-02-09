@@ -1,75 +1,32 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754008Ab0BIKJN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 05:09:13 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:59818 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752822Ab0BIKJK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Feb 2010 05:09:10 -0500
-Date: Tue, 9 Feb 2010 11:09:08 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Tony Lindgren <tony@atomide.com>, Russell King <rmk@arm.linux.org.uk>,
-       Daniel Mack <daniel@caiaq.de>, Ben Dooks <ben-linux@fluff.org>
-Subject: Re: linux-next: manual merge of the trivial tree with the arm tree
-In-Reply-To: <20100208154840.a58f46ad.sfr@canb.auug.org.au>
-Message-ID: <alpine.LNX.2.00.1002091108080.30967@pobox.suse.cz>
-References: <20100208154840.a58f46ad.sfr@canb.auug.org.au>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	id S1754051Ab0BIKLZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 05:11:25 -0500
+Received: from web82008.mail.mud.yahoo.com ([66.163.178.252]:29002 "HELO
+	web82008.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753872Ab0BIKLY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Feb 2010 05:11:24 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=sbcglobal.net;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:To:MIME-Version:Content-Type;
+  b=xzZtHnlZrjwx4+D8hglaujRITMXnU18DJ8wZTdtX2KSoIr4kUuki5NwjYKQ01QFwVfVRkSlWsKiYRrGbMxTsDm6NQ8eF1B+tj+l23sdXxi4TNfukBMhHG4J9I2l/TbdzRhvY7hXROCkD/4RAmKFk1cqMMSMPwfrbKhAKMAEWEi0=;
+Message-ID: <369.95984.qm@web82008.mail.mud.yahoo.com>
+X-YMail-OSG: TN6owhQVM1k2B6NKz9B6JYurUUhVDTS8DTT5nmP0gahJ95Z3zdJWzhSU8xL4WztSJgC6j_EBmKWvYh7_fuwPCBQN3hQHqsVtdkE47nKmbGFMi_1_rOobxSk7w27NtRh..T7es4.NGmH3w9HTVa9pGtzSYqCwdfH8W1mYf6LrEN5gU3cwinC0t0LZZAJr5xQobAw3aTJnTDmfP2dAw_cwnJ5WAZY2f4P0ctlYcVF6scCwoYDwTWifdWUVmZiBFiwlZY4xcuwsen8O28XKBRvKQJUszTBI13ctG_Gg.BsFduRv_gKdFbjDm7Ym5ibqK044O4esZYKH8tPqVoDxIo0v4q33JwrnJjSOplrN4ioY9cFm070gMesrSMVzDVX2JkuPkCTsCKF_F0EOi5h4OYED9_D._6fcQ0NB2viLLMNZRF2THC4bda14YuaRycvCd2fQoDOCCqqBSgp.RDZPrf7R_Cz_cl0TGcl4HZB5cHy1IQFSj4ni.kDPFI_OEH2CNYuMtLBf4oqJ0jpGhQjd_eboiH1dVa8EPzXfskMcav7ROFzGOVxoqJJy06FXw77JM8anctgCvKWwYrEjg7LYAtc.H0nglDjwR913nPkPKQt8QjTgiRFIVcmg.zB7hgkT.W1RIRdj9b7qgCwO2.dHlKZTYLtgM65o.9HmNmDpn8tSsOt6OOJiQhdCqpC69yDXb82OP9vkGLjafoW39XbJIFWw2phzkbZuXCfRkj.iFdmXfUeOZoW8J26zIWEBd0ibRUfTf.MdgQiTSrRDeeodhQ--
+X-Mailer: YahooMailClassic/9.1.10 YahooMailWebService/0.8.100.260964
+Date: Tue, 9 Feb 2010 02:11:22 -0800 (PST)
+From: Tb Promo <weber.mark@sbcglobal.net>
+Reply-To: uktobacco@9.cn
+To: undisclosed recipients:;
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 8 Feb 2010, Stephen Rothwell wrote:
 
-> Hi Jiri,
-> 
-> Today's linux-next merge of the trivial tree got a conflict in
-> arch/arm/mach-u300/include/mach/debug-macro.S between commit
-> 7f62dc4756eaf761570b96250630d48f80397d64 ("ARM: 5910/1: ARM: Add tmp
-> register for addruart and loadsp") from the arm tree and commit
-> ba5584a307a1166597fbbe970ffdf49c8b7ee42a ("tree-wide: Assorted spelling
-> fixes") from the trivial tree.
-> 
-> Just context changes.  I fixed it up (see below) and can carry the fix as
-> necessary.
+Your Email ID has been awarded 1,000,000,00 GBP in the Tobacco New Year Promo send your details.
 
-Thanks for the fix, I will leave this up to merge with Linus when either I 
-or Linus will fix that up.
-
-On Mon, 8 Feb 2010, Stephen Rothwell wrote:
-
-> Today's linux-next merge of the trivial tree got a conflict in
-> arch/arm/plat-s3c64xx/irq.c between commit
-> 51022cf6591ae2945960d034788bdeffa28cde13 ("ARM: SAMSUNG: Move IRQ UART
-> handling for newer devices to plat-samsung") from the arm tree and commit
-> ba5584a307a1166597fbbe970ffdf49c8b7ee42a ("tree-wide: Assorted spelling
-> fixes") from the trivial tree.
-> 
-> The former removes the comment updated by the latter.
-
-Removed the hunk, thanks.
-
-On Mon, 8 Feb 2010, Stephen Rothwell wrote:
-
-> Hi Jiri,
-> 
-> Today's linux-next merge of the trivial tree got a conflict in
-> arch/arm/plat-s5pc1xx/irq.c between commit
-> be97162d47b2e067f9d21097650f2f0405dacc9f ("ARM: S5PC1XX: Use common UART
-> IRQ handling code") from the arm tree and commit
-> ba5584a307a1166597fbbe970ffdf49c8b7ee42a ("tree-wide: Assorted spelling
-> fixes") from the trivial tree.
-> 
-> The former removes the comment updated by the latter.
-
-Removed this one as well.
-
-Thanks!
-
--- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+Names....
+Address....
+Tel....
