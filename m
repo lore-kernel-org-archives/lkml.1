@@ -1,64 +1,47 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753403Ab0BIG11 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 01:27:27 -0500
-Received: from mail-ww0-f46.google.com ([74.125.82.46]:63616 "EHLO
-	mail-ww0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751253Ab0BIG10 convert rfc822-to-8bit (ORCPT
+	id S1753542Ab0BIGcK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 01:32:10 -0500
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:39537 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751668Ab0BIGcF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Feb 2010 01:27:26 -0500
+	Tue, 9 Feb 2010 01:32:05 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=q3Kqk+UahC78c60axvny+6TYF4z42ugjVMcIw9XEO+VBb99zL6cfpDSezRigUFAZKM
-         jqLWUTAKknSG3TbDpmQ2xtG8B2MMRc0/Pws2+PLSaUdup3G3T7dtpPOxIVGSZ6HAO46L
-         VGN7T1VkKT8xrOLc2hkFH0Ia6fbrRNoiBH/v8=
-MIME-Version: 1.0
-In-Reply-To: <20100208220753.61a39bab.akpm@linux-foundation.org>
-References: <20100206134056.GB2562@darkstar>
-	 <20100208135654.04b79bbc.akpm@linux-foundation.org>
-	 <a8e1da1002081831j6fdea8a7v41cc07b635ab7dda@mail.gmail.com>
-	 <a8e1da1002082156s3145a775o7424bc47ac503636@mail.gmail.com>
-	 <20100208220753.61a39bab.akpm@linux-foundation.org>
-Date: Tue, 9 Feb 2010 14:27:25 +0800
-Message-ID: <a8e1da1002082227s6bebd2e8id0f6c6a04d832d24@mail.gmail.com>
-Subject: Re: [PATCH 2/2] allow printk delay after multi lines
-From: Dave Young <hidave.darkstar@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=XH56LaK5TfnzSMmbI/Di64rUVZG9gl4pLxq/kgrZwanlw7yKj7IXrgqnK5WIHaXwbx
+         tFr7jhqhRtfTwyJu1EtZJwYHBS6YpkRgDZer1HE1F/TvOZNn3CxvIvg8SF1o2qxoHdss
+         4FnQEllkjJh07PiotxWPJzEXj7Gc8n/13i6K4=
+Subject: Re: [net-next PATCH v2 2/3] net: TCP thin linear timeouts
+From: Eric Dumazet <eric.dumazet@gmail.com>
+To: Andreas Petlund <apetlund@simula.no>
+Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       Ilpo =?ISO-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
+       Arnd Hannemann <hannemann@nets.rwth-aachen.de>,
+       LKML <linux-kernel@vger.kernel.org>, shemminger@vyatta.com,
+       David Miller <davem@davemloft.net>, william.allen.simpson@gmail.com
+In-Reply-To: <4B701EE2.1000006@simula.no>
+References: <4B701EE2.1000006@simula.no>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 09 Feb 2010 07:31:59 +0100
+Message-ID: <1265697119.4236.99.camel@edumazet-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 9, 2010 at 2:07 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Tue, 9 Feb 2010 13:56:34 +0800 Dave Young <hidave.darkstar@gmail.com> wrote:
->
->> BTW, for the sysctl variables. I found in kernel.h there's:
->> printk/console_loglevel/panic related extern variables for sysctl.
->>
->> console_loglevel and panic related variables are used here and there,
->> not just for sysctl, so I think it should stay in kernel.h.
->>
->> The printk related variables for sysctl and all the extern variables in
->> sysctl.c can be move to sysctl.h. Seems no need new head file.
->>
->> Andrew, what's your opinion?
->
-> Symbols which are defined in printk.c and which are used in other
-> compilation units should be declared in printk.h!
->
-> We mucked up in the past by putting these things in kernel.h and as
-> externs in sysctl.c, but that's no reason to continue to do so.  As a
-> special-case, it makes convenience sense to declare printk() itself and
-> the loglevel strings etc in kernel.h, but that _is_ a special case.
->
+Le lundi 08 février 2010 à 15:25 +0100, Andreas Petlund a écrit :
+>  
+> +	case TCP_THIN_LT:
+> +		if (val)
+> +			tp->thin_lt = 1;
+> +		break;
+> +
 
-Lazy is bad, hehe :)
-Will do that in a updated patchset, Thanks.
+Why not allowing user to clear thin_lt ?
 
--- 
-Regards
-dave
+
