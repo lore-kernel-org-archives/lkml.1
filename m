@@ -1,79 +1,102 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753570Ab0BIJnU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 04:43:20 -0500
-Received: from mail-fx0-f220.google.com ([209.85.220.220]:62948 "EHLO
-	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752234Ab0BIJnT (ORCPT
+	id S1753853Ab0BIJvA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 04:51:00 -0500
+Received: from mail-pz0-f201.google.com ([209.85.222.201]:49849 "EHLO
+	mail-pz0-f201.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753075Ab0BIJu6 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Feb 2010 04:43:19 -0500
-Message-ID: <4B712DA5.4000802@petalogix.com>
-Date: Tue, 09 Feb 2010 10:40:53 +0100
-From: Michal Simek <michal.simek@petalogix.com>
-Reply-To: michal.simek@petalogix.com
-User-Agent: Thunderbird 2.0.0.22 (X11/20090625)
+	Tue, 9 Feb 2010 04:50:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=FsOTp6a6z7YCGt2KuVcxxE8o1QvSxzVG/tAa7GRnLm+DItWWMUpl3GiUzJR7YwkEVO
+         kWz0g97/fhEYTL1HC5WXm1NU3cHzgQ2jnvjmsPKj1+l0rUPO+I8wABVJXy9j8ZQYB1/E
+         vMUWNnIwHHdplgxtqTBn2eeCZMn4BbFfj57a8=
 MIME-Version: 1.0
-To: avorontsov@ru.mvista.com
-CC: Grant Likely <grant.likely@secretlab.ca>,
-       David Brownell <dbrownell@users.sourceforge.net>,
+In-Reply-To: <20100209091408.29971.63921.sendpatchset@localhost.localdomain>
+References: <20100209091408.29971.63921.sendpatchset@localhost.localdomain>
+Date: Tue, 9 Feb 2010 17:23:11 +0800
+Message-ID: <7b6bb4a51002090123v2bdf1582ua0b78bc99dceeb81@mail.gmail.com>
+Subject: Re: [Patch] cpufreq: fix a deadlock during shutting down
+From: Xiaotian Feng <xtfeng@gmail.com>
+To: Amerigo Wang <amwang@redhat.com>
+Cc: linux-kernel@vger.kernel.org,
        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       David Miller <davem@davemloft.net>, Michal Simek <monstr@monstr.eu>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       devicetree-discuss@lists.ozlabs.org, microblaze-uclinux@itee.uq.edu.au
-Subject: Re: [PATCH RFC 0/3] Implement refcounting for OF GPIO chips
-References: <20100205204949.GA2575@oksana.dev.rtsoft.ru>
-In-Reply-To: <20100205204949.GA2575@oksana.dev.rtsoft.ru>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+       Dave Jones <davej@redhat.com>, cpufreq@vger.kernel.org,
+       Prarit Bhargava <prarit@redhat.com>, Thomas Renninger <trenn@suse.de>,
+       akpm@linux-foundation.org,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Anton Vorontsov wrote:
-> Hi all,
-> 
-> OF GPIO infrastructure is using dynamic GPIO bases, so it is possible
-> that of_get_gpio()'s returned GPIO number will be no longer valid, or
-> worse, it may point to an unexpected GPIO controller.
-> 
-> This scenario is possible:
-> 
-> driver A:               driver B:              driver C:
-> ---------               ---------              ---------
->                         gpiochip_add()
-> gpio = of_get_gpio()
->                         gpiochip_remove()
->                                                gpiochip_add()
-> gpio_request(gpio);
-> gpio_set_value(gpio);
-> 
-> That is, driver A assumes that it is working with GPIO from driver B,
-> but in practice it may disappear and driver C will take its GPIO base
-> number, so it will provide the same GPIO numbers.
-> 
-> The above situation is hard to trigger, but the issue is there
-> nonetheless, and so needs fixing.
+On Tue, Feb 9, 2010 at 5:10 PM, Amerigo Wang <amwang@redhat.com> wrote:
+>
+> Benjamin reported that, the machine deadlocks right after printing the
+> following when doing a shutdown:
+>
+> halt/4071 is trying to acquire lock:
+>  (s_active){++++.+}, at: [<c0000000001ef868>] .sysfs_addrm_finish+0x58/0xc0
+>
+> but task is already holding lock:
+>  (&per_cpu(cpu_policy_rwsem, cpu)){+.+.+.}, at: [<c0000000004cd6ac>] .lock_policy_rwsem_write+0x84/0xf4
+>
+> which lock already depends on the new lock.
+>
+> the existing dependency chain (in reverse order) is:
+>
+> <nothing else ... machine deadlocked here>
+>
+>
+> This is because we are trying to kobject_put() a kobject while
+> we are holding cpu policy rwsem. So just move kobject_put()
+> down after releasing the rwsem.
+>
+> Totally untested.
+>
+> Reported-by: Xiaotian Feng <xtfeng@gmail.com>
+> Reported-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Signed-off-by: WANG Cong <amwang@redhat.com>
+> Cc: Dave Jones <davej@redhat.com>
+> Cc: Thomas Renninger <trenn@suse.de>
+> Cc: Prarit Bhargava <prarit@redhat.com>
+> Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+>
+> ---
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 67bc2ec..222b35f 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -1113,6 +1113,7 @@ static int __cpufreq_remove_dev(struct sys_device *sys_dev)
+>        unsigned int cpu = sys_dev->id;
+>        unsigned long flags;
+>        struct cpufreq_policy *data;
+> +       struct kobject *kobj;
+>  #ifdef CONFIG_SMP
+>        struct sys_device *cpu_sys_dev;
+>        unsigned int j;
+> @@ -1192,7 +1193,7 @@ static int __cpufreq_remove_dev(struct sys_device *sys_dev)
+>        if (cpufreq_driver->target)
+>                __cpufreq_governor(data, CPUFREQ_GOV_STOP);
+>
+> -       kobject_put(&data->kobj);
+> +       kobj = &data->kobj;
+>
+>        /* we need to make sure that the underlying kobj is actually
+>         * not referenced anymore by anybody before we proceed with
 
+Then kernel will wait_for_completion(&data->kobj_unregister); forever.....
 
-I tested xilinx gpio driver, heartbeat trigger and access through sysfs 
-and I haven't found any problem. There is only small part of code for 
-Microblaze and it is the same with PowerPC. If is Ben OK with it, I am 
-ok too.
-
-Thanks,
-Michal
-
-
-> 
-> Thanks,
-> 
-> p.s. The patches are based on top of
->      '[PATCH v2 0/4] OF GPIO integration for I2C/SPI GPIO chips'
->      http://lkml.org/lkml/2010/2/5/243
-> 
-
-
--- 
-Michal Simek, Ing. (M.Eng)
-PetaLogix - Linux Solutions for a Reconfigurable World
-w: www.petalogix.com p: +61-7-30090663,+42-0-721842854 f: +61-7-30090663
+> @@ -1207,6 +1208,7 @@ static int __cpufreq_remove_dev(struct sys_device *sys_dev)
+>
+>        unlock_policy_rwsem_write(cpu);
+>
+> +       kobject_put(kobj);
+>        free_cpumask_var(data->related_cpus);
+>        free_cpumask_var(data->cpus);
+>        kfree(data);
+>
