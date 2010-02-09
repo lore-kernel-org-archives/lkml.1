@@ -1,103 +1,149 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754961Ab0BIQio (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 11:38:44 -0500
-Received: from exprod6ob113.obsmtp.com ([64.18.1.30]:40023 "HELO psmtp.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1754927Ab0BIQim convert rfc822-to-8bit (ORCPT
+	id S1755007Ab0BIQlj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 11:41:39 -0500
+Received: from e37.co.us.ibm.com ([32.97.110.158]:45714 "EHLO
+	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754987Ab0BIQlh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Feb 2010 11:38:42 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Tue, 9 Feb 2010 11:41:37 -0500
+Date: Tue, 9 Feb 2010 08:41:16 -0800
+From: Gary Hade <garyhade@us.ibm.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Gary Hade <garyhade@us.ibm.com>, linux-pm@lists.linux-foundation.org,
+       Linux PCI <linux-pci@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "Moore, Robert" <robert.moore@intel.com>,
+       Matthew Garrett <mjg@redhat.com>
+Subject: Re: [linux-pm] [PATCH 8/9] PCI / ACPI / PM: Platform support for
+	PCI PME wake-up (rev. 7)
+Message-ID: <20100209164116.GA7289@us.ibm.com>
+References: <201001101431.38630.rjw@sisk.pl> <20100208233708.GB10429@us.ibm.com> <20100209005324.GB17124@us.ibm.com> <201002091348.20245.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: [Q] i2c-taos-evm bus driver
-Date: Tue, 9 Feb 2010 11:38:37 -0500
-Message-ID: <BD79186B4FD85F4B8E60E381CAEE190902152FBE@mi8nycmail19.Mi8.com>
-In-Reply-To: <20100209091639.5b6e39a5@hyperion.delvare>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [Q] i2c-taos-evm bus driver
-Thread-Index: AcqpYDeCppYKt5X6SBGAkJc09mHCxAARO8kg
-References: <BD79186B4FD85F4B8E60E381CAEE190902152F0E@mi8nycmail19.Mi8.com> <20100209091639.5b6e39a5@hyperion.delvare>
-From: "H Hartley Sweeten" <hartleys@visionengravers.com>
-To: "Jean Delvare" <khali@linux-fr.org>
-Cc: <linux-kernel@vger.kernel.org>, "Linux I2C" <linux-i2c@vger.kernel.org>
-X-OriginalArrivalTime: 09 Feb 2010 16:38:40.0036 (UTC) FILETIME=[55AA2640:01CAA9A6]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <201002091348.20245.rjw@sisk.pl>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, February 09, 2010 1:17 AM, Jean Delvare wrote:
-> Hi Hartley,
-
-Hello
-
-> Please send i2c-specific questions to the linux-i2c list, as specified
-> in MAINTAINERS.
-
-Sorry about that.
-
-> On Mon, 8 Feb 2010 18:15:26 -0500, H Hartley Sweeten wrote:
->> Is the i2c-taos-evm bus driver broken?
->
-> No, it works reasonably fine. I was using it myself no later than one
-> month ago. Out of curiosity, with which exact evaluation module do you
-> plan to use it?
-
-I'm not actually...
-
-I am trying to figure out how a serio driver actually gets "hooked" to a
-serial port.  The i2c-taos-evm driver looked simple enough to play with
-in order to figure it out.  I was trying to follow the Documentation in
-order to use it and ran into the issue below.
-
->> The Documentation says to use the following to tell the kernel that
->> the device is on the first serial port:
->> 
->> # inputattach --taos-evm /dev/ttyS0
->> 
->> When I try that I get:
->> 
->> inputattach: invalid mode
->> 
->> I checked the source for inputattach on my system (Debian 5.0) and
->> --taos-evm is missing.  And I have not been able to locate a newer
->> version of the user-space utility.
->> 
->> Should this driver be marked broken?
->
-> No. What is broken is input-utils' upstream. I tried submitting patches
-> 2.5 years ago:
->  http://sourceforge.net/tracker/?group_id=3063&atid=303063
->
-> As you can see, nobody took care of them. Apparently I then did not
-> even bother sending the one adding support for the TAOS EVM.
-
-Yeah.  I did a bit of searching yesterday and it appears the user space
-tools development went stale around the end of the 2.4 - start of the 2.6
-kernel.
-
-> The patch in question is still applied to the openSUSE version of the
-> input-utils package. If you have access to the openSUSE build system,
-> you can see it here:
->   https://build.opensuse.org/package/view_file?file=input-utils-add-taos-evm-support.patch&package=input-utils&project=openSUSE%3A11.0
-
-> In case you don't, I'm attaching it too. I might add it to the patch
-> tracking system on sourceforge too. Not that I really expect upstream
-> to pick it in a timely manner, but at least other distributions would
-> see it and may decide to include it.
+On Tue, Feb 09, 2010 at 01:48:20PM +0100, Rafael J. Wysocki wrote:
+> On Tuesday 09 February 2010, Gary Hade wrote:
+> > On Mon, Feb 08, 2010 at 03:37:08PM -0800, Gary Hade wrote:
+> > > On Mon, Feb 08, 2010 at 10:30:30PM +0100, Rafael J. Wysocki wrote:
+> > > > On Monday 08 February 2010, Rafael J. Wysocki wrote:
+> > > > > On Monday 08 February 2010, Gary Hade wrote:
+> > > > > > On Sat, Feb 06, 2010 at 09:11:56PM +0100, Rafael J. Wysocki wrote:
+> > > > > > > On Saturday 06 February 2010, Bjorn Helgaas wrote:
+> > > > > > > > On Sunday 10 January 2010 07:01:03 am Rafael J. Wysocki wrote:
+> > > > > > > > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > > > > > > 
+> > > > > > > > > Although the majority of PCI devices can generate PMEs that in
+> > > > > > > > > principle may be used to wake up devices suspended at run time,
+> > > > > > > > > platform support is generally necessary to convert PMEs into wake-up
+> > > > > > > > > events that can be delivered to the kernel.  If ACPI is used for this
+> > > > > > > > > purpose, a PME generated by a PCI device will trigger the ACPI GPE
+> > > > > > > > > associated with the device to generate an ACPI wake-up event that we
+> > > > > > > > > can set up a handler for, provided that everything is configured
+> > > > > > > > > correctly.
+> > > > > > > > 
+> > > > > > > > I think acpiphp needs a little attention after this patch.  Gary
+> > > > > > > > Hade noticed while testing Jesse's linux-next branch that acpiphp
+> > > > > > > > complains like this:
+> > > > > > > > 
+> > > > > > > >   acpiphp: ACPI Hot Plug PCI Controller Driver version: 0.5
+> > > > > > > >   acpiphp: Slot [9] registered
+> > > > > > > >   acpiphp: Slot [10] registered
+> > > > > > > >   acpiphp_glue: failed to register interrupt notify handler
+> > > > > > > >   acpiphp: Slot [6] registered
+> > > > > > > >   acpiphp_glue: failed to register interrupt notify handler
+> > > > > > > > 
+> > > > > > > > I reproduced this on an HP rx3600 (ia64), and found that acpiphp
+> > > > > > > > doesn't complain on commit 82533a617f453, but it *does* complain
+> > > > > > > > on commit fb3383bb4ac6e, which seems to be this patch.
+> > > > > > > 
+> > > > > > > I can't see the possible reason looking at the code alone.
+> > > > > > > 
+> > > > > > > Could you add a debug printk() printing the error code returned by
+> > > > > > > pci_acpi_add_hp_notifier() in acpiphp_glue.c:register_slot(), please?
+> > > > > > 
+> > > > > > Rafael, On the system where I ran into the problem it returns
+> > > > > > AE_NOT_FOUND.  See below.
+> > > > > 
+> > > > > Thanks!
+> > > > > 
+> > > > > Well, that means there's no struct acpi_device object associated with handle.
+> > > > > 
+> > > > > I must admit I didn't take that into consideration, but it should be easily
+> > > > > fixable.  I'll send a patch for that later today.
+> > > > 
+> > > > Patch appended.
+> > > > 
+> > > > If the theory is correct, it should fix the issue.  Please test.
+> > > 
+> > > Well, acpiphp now loads OK with no disturbing messages:
+> > > [  247.360878] pci_hotplug: PCI Hot Plug PCI Core version: 0.5
+> > > [  247.385048] acpiphp: ACPI Hot Plug PCI Controller Driver version: 0.5
+> > > [  247.385459] acpiphp_glue: found PCI host-bus bridge with hot-pluggable slots
+> > > [  247.385486] acpiphp_glue: found ACPI PCI Hotplug slot 1 at PCI 0000:02:01
+> > > [  247.385519] acpiphp: Slot [1] registered
+> > > [  247.386167] acpiphp_glue: found PCI host-bus bridge with hot-pluggable slots
+> > > [  247.386196] acpiphp_glue: found ACPI PCI Hotplug slot 2 at PCI 0000:06:01
+> > > [  247.386225] acpiphp: Slot [2] registered
+> > > [  247.386828] acpiphp_glue: found PCI-to-PCI bridge at PCI 0000:0a:00.0
+> > > [  247.386861] acpiphp_glue: found ACPI PCI Hotplug slot 3 at PCI 0000:0b:00
+> > > [  247.386902] acpiphp: Slot [3] registered
+> > > [  247.387564] acpiphp_glue: found PCI-to-PCI bridge at PCI 0000:0f:00.0
+> > > [  247.387597] acpiphp_glue: found ACPI PCI Hotplug slot 4 at PCI 0000:10:00
+> > > [  247.387620] acpiphp: Slot [4] registered
+> > > [  247.388293] acpiphp_glue: found PCI-to-PCI bridge at PCI 0000:14:00.0
+> > > [  247.388324] acpiphp_glue: found ACPI PCI Hotplug slot 5 at PCI 0000:15:00
+> > > [  247.388347] acpiphp: Slot [5] registered
+> > > [  247.389041] acpiphp_glue: found PCI-to-PCI bridge at PCI 0000:19:00.0
+> > > [  247.389077] acpiphp_glue: found ACPI PCI Hotplug slot 6 at PCI 0000:1a:00
+> > > [  247.389114] acpiphp: Slot [6] registered
+> > > [  247.389736] acpiphp_glue: Bus 0000:1a has 1 slot
+> > > [  247.389739] acpiphp_glue: Bus 0000:15 has 1 slot
+> > > [  247.389742] acpiphp_glue: Bus 0000:10 has 1 slot
+> > > [  247.389746] acpiphp_glue: Bus 0000:0b has 1 slot
+> > > [  247.389748] acpiphp_glue: Bus 0000:06 has 1 slot
+> > > [  247.389751] acpiphp_glue: Bus 0000:02 has 1 slot
+> > > [  247.389753] acpiphp_glue: Total 6 slots
+> > > 
+> > > However, I didn't have a chance to confirm that hot-add of a
+> > > PCI card works correctly before someone else swiped the system
+> > > from me for a while.  I will verify this when I get it back,
+> > > hopefully later today.
+> > 
+> > I got the system back but unfortunately have some bad news.
+> > The system has 2 hotpluggable PCI-X slots and 4 hotpluggable
+> > PCIe slots.  I tried hot-adding both a PCI-X card and a PCIe
+> > card but acpiphp did not seem to see the hot-add event for
+> > either card.  acpiphp was loaded with debug=1 and issued no
+> > messages when I added the cards.
 > 
-> Hope that helps,
+> I gather it works without the $subject patch?
 
-That helps.  Thanks.
+I don't know for sure.  Late Friday after running into the handler
+registration issue I reverted 8/9 which required hand fixup for
+one hunk failure.  I then got some compile errors which I assumed
+may be related to my non-removal of some of the other patches in the
+series.  I started reverting the entire series but got a failure right
+away with 9/9 but didn't take the time to try to resolve it.
 
-Do you know if there is a way to make the connection in kernel?
+Since it sounds like you are doubtful that your changes are
+responsible for this new issue I will try to make time to fuss
+with this more today.
 
-Also, do you know if there is any information on the serio stuff
-available anywhere?  Other than just reading the kernel source I
-have not been able to locate anything.
+Gary
 
-Thanks for the reply,
-Hartley
+-- 
+Gary Hade
+System x Enablement
+IBM Linux Technology Center
+503-578-4503  IBM T/L: 775-4503
+garyhade@us.ibm.com
+http://www.ibm.com/linux/ltc
+
