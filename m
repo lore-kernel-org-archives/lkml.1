@@ -1,68 +1,82 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754255Ab0BILkF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 06:40:05 -0500
-Received: from mail1.slb.deg.dub.stisp.net ([84.203.253.98]:5647 "HELO
-	mail1.slb.deg.dub.stisp.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752153Ab0BILkB (ORCPT
+	id S1753933Ab0BILwb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 06:52:31 -0500
+Received: from mail-ew0-f228.google.com ([209.85.219.228]:46385 "EHLO
+	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752602Ab0BILw3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Feb 2010 06:40:01 -0500
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Tue, 09 Feb 2010 06:40:00 EST
-Message-ID: <4B71475A.8020209@draigBrady.com>
-Date: Tue, 09 Feb 2010 11:30:34 +0000
-From: =?ISO-8859-1?Q?P=E1draig_Brady?= <P@draigBrady.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100111 Thunderbird/3.0.1
+	Tue, 9 Feb 2010 06:52:29 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=LDf0qADbVYMjmhYA47hJssT42kV1E0fty05mAxXUiUoPlJGiaxR7X9BBwMJFXmu7/a
+         F1zEKmusun2ZQ5FuDZamlFP2c5mL1YFzD83nJvll1R5owFO8OmGbbaUbvdZVBbae/puB
+         pJpghFXmD/D7fX+qXT8edmRy2ugWGZPi5AoAg=
+Message-ID: <4B714E15.4020909@gmail.com>
+Date: Tue, 09 Feb 2010 12:59:17 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.33-rc7
-References: <alpine.LFD.2.00.1002061422430.3829@localhost.localdomain> <alpine.LFD.2.00.1002061445210.3829@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.1002061445210.3829@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+To: Mauro Carvalho Chehab <mchehab@infradead.org>, linux-media@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] video_device: don't free_irq() an element past array vpif_obj.dev[]
+ and fix test
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/02/10 22:49, Linus Torvalds wrote:
-> Oh, and I forgot to ask one thing I had intended to ask in the release
-> notes..
->
-> Do people really care about the old-fashioned tar.gz and patch.gz files?
-> I've always uploaded the tar-files and patches compressed with gzip,
-> because that's the "traditional" way, and then we have a script that also
-> re-compresses things as 'bz2' because it compresses better and many people
-> are bandwidth-limited and much prefer the better compression.
->
-> Of course, if you really care about bandwidth, you're better off just
-> fetching the git trees instead, but the question for non-git users is:
->
->     Would it be ok to _only_ have the 'bz2' patches and tar-balls?
->
-> Having two copies of every large file seems silly, if nobody really
-> requires the traditional .gz format..
+In vpif_get_std_info(): std_info doesn't need the NULL test, it was already
+dereferenced anyway. If std_info->stdid is 0 we could early return -1.
 
-For reference, we've stopped releasing bz2 files for the coreutils project.
-We use gz for compatibility and xz for increased compression ratio/decompression speed.
+In vpif_probe(): local variable q was only assigned. If we error out with
+either last two goto's then j equals VPIF_DISPLAY_MAX_DEVICES. So after the
+probe_out: label, k also reaches VPIF_DISPLAY_MAX_DEVICES after the loop. In
+the first iteration in the loop after vpif_int_err: a free_irq() can occur
+of an element &vpif_obj.dev[VPIF_DISPLAY_MAX_DEVICES]->channel_id which is
+outside vpif_obj.dev[] array boundaries.
 
-$ rpm -q xz gzip bzip2
-xz-4.999.9-0.1.beta.20091007git.fc11.i586
-gzip-1.3.12-10.fc11.i586
-bzip2-1.0.5-5.fc11.i586
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+Or am I mistaken?
 
-$ bzip2 -dc linux-2.6.33-rc7.tar.bz2 | xz > linux-2.6.33-rc7.tar.xz
-$ xz -dc linux-2.6.33-rc7.tar.xz | gzip > linux-2.6.33-rc7.tar.gz
-$ l
--rw-rw-r-- 1 padraig 66,191,954 Feb  6 22:27 linux-2.6.33-rc7.tar.bz2
--rw-rw-r-- 1 padraig 56,347,392 Feb  9 11:17 linux-2.6.33-rc7.tar.xz
--rw-rw-r-- 1 padraig 85,300,209 Feb  9 11:20 linux-2.6.33-rc7.tar.gz
-
-$ time bzip2 -dc linux-2.6.33-rc7.tar.bz2 >/dev/null
-real    0m30.132s
-$ time gzip -dc linux-2.6.33-rc7.tar.gz >/dev/null
-real    0m4.996s
-$ time xz -dc linux-2.6.33-rc7.tar.xz >/dev/null
-real    0m11.003s
-
-cheers,
-Pádraig.
+diff --git a/drivers/media/video/davinci/vpif_display.c b/drivers/media/video/davinci/vpif_display.c
+index dfddef7..8f6605d 100644
+--- a/drivers/media/video/davinci/vpif_display.c
++++ b/drivers/media/video/davinci/vpif_display.c
+@@ -383,7 +383,7 @@ static int vpif_get_std_info(struct channel_obj *ch)
+ 	int index;
+ 
+ 	std_info->stdid = vid_ch->stdid;
+-	if (!std_info)
++	if (!std_info->stdid)
+ 		return -1;
+ 
+ 	for (index = 0; index < ARRAY_SIZE(ch_params); index++) {
+@@ -1423,7 +1423,7 @@ static __init int vpif_probe(struct platform_device *pdev)
+ {
+ 	struct vpif_subdev_info *subdevdata;
+ 	struct vpif_display_config *config;
+-	int i, j = 0, k, q, m, err = 0;
++	int i, j = 0, k, m, err = 0;
+ 	struct i2c_adapter *i2c_adap;
+ 	struct common_obj *common;
+ 	struct channel_obj *ch;
+@@ -1573,10 +1573,12 @@ probe_out:
+ 		video_device_release(ch->video_dev);
+ 		ch->video_dev = NULL;
+ 	}
++	if (k == VPIF_DISPLAY_MAX_DEVICES)
++		k = VPIF_DISPLAY_MAX_DEVICES - 1;
+ vpif_int_err:
+ 	v4l2_device_unregister(&vpif_obj.v4l2_dev);
+ 	vpif_err("VPIF IRQ request failed\n");
+-	for (q = k; k >= 0; k--) {
++	for (; k >= 0; k--) {
+ 		for (m = i; m >= res->start; m--)
+ 			free_irq(m, (void *)(&vpif_obj.dev[k]->channel_id));
+ 		res = platform_get_resource(pdev, IORESOURCE_IRQ, k-1);
