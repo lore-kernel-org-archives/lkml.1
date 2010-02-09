@@ -1,75 +1,39 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753748Ab0BIXJp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 18:09:45 -0500
-Received: from cantor.suse.de ([195.135.220.2]:38006 "EHLO mx1.suse.de"
+	id S1754036Ab0BIXMq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 18:12:46 -0500
+Received: from mail.tmr.com ([64.65.253.246]:38299 "EHLO partygirl.tmr.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752075Ab0BIXJo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Feb 2010 18:09:44 -0500
-Date: Tue, 9 Feb 2010 15:07:30 -0800
-From: Greg KH <gregkh@suse.de>
-To: Jochen Maes <jochen.maes@sejo.be>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drivers: dream: Codestyle fix
-Message-ID: <20100209230730.GD21484@suse.de>
-References: <1265756347-14172-1-git-send-email-jochen.maes@sejo.be>
+	id S1751672Ab0BIXMp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Feb 2010 18:12:45 -0500
+Message-ID: <4B71EBD8.8070406@tmr.com>
+Date: Tue, 09 Feb 2010 18:12:24 -0500
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.21) Gecko/20090507 Fedora/1.1.16-1.fc9 NOT Firefox/3.0.11 pango-text SeaMonkey/1.1.16
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1265756347-14172-1-git-send-email-jochen.maes@sejo.be>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.33-rc6 crashes on resume
+References: <4B70982F.8090208@roadwarrior3.tmr.com> <201002090009.50118.rjw@sisk.pl>
+In-Reply-To: <201002090009.50118.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 09, 2010 at 11:59:07PM +0100, Jochen Maes wrote:
-> 	Fixed Codestyle issues
+Rafael J. Wysocki wrote:
+> On Tuesday 09 February 2010, Bill Davidsen wrote:
+>> Pretty simple to reproduce, boot, suspend, press shift
+>>
+>> Acer Aspire 1681, Celeron, 2.6.33-rc6. Trace and config attached.
 > 
-> Signed-off-by: Jochen Maes <jochen.maes@sejo.be>
-> ---
->  drivers/staging/dream/pmem.c |   26 ++++++++++++--------------
->  1 files changed, 12 insertions(+), 14 deletions(-)
+> I guess 2.6.32 didn't crash?
 > 
-> diff --git a/drivers/staging/dream/pmem.c b/drivers/staging/dream/pmem.c
-> index def6468..ec4e7d1 100644
-> --- a/drivers/staging/dream/pmem.c
-> +++ b/drivers/staging/dream/pmem.c
-> @@ -37,17 +37,17 @@
->   * the file should not be released until put_pmem_file is called */
->  #define PMEM_FLAGS_BUSY 0x1
->  /* indicates that this is a suballocation of a larger master range */
-> -#define PMEM_FLAGS_CONNECTED 0x1 << 1
-> +#define PMEM_FLAGS_CONNECTED { 0x1 << 1 }
+Wasn't testing. 2.6.32.5 didn't crash, later Fedora kernels kill the touchpad, I 
+can dig up the old bugzilla if you can't find it.
 
-Shouldn't this be using a ( ) and not { } ?
-
->  /* indicates this is a master and not a sub allocation and that it is mmaped */
-> -#define PMEM_FLAGS_MASTERMAP 0x1 << 2
-> +#define PMEM_FLAGS_MASTERMAP { 0x1 << 2 }
->  /* submap and unsubmap flags indicate:
->   * 00: subregion has never been mmaped
->   * 10: subregion has been mmaped, reference to the mm was taken
->   * 11: subretion has ben released, refernece to the mm still held
->   * 01: subretion has been released, reference to the mm has been released
->   */
-> -#define PMEM_FLAGS_SUBMAP 0x1 << 3
-> -#define PMEM_FLAGS_UNSUBMAP 0x1 << 4
-> +#define PMEM_FLAGS_SUBMAP { 0x1 << 3 }
-> +#define PMEM_FLAGS_UNSUBMAP { 0x1 << 4 }
-
-Same for these.
-
-> @@ -152,7 +152,7 @@ struct pmem_info {
->  static struct pmem_info pmem[PMEM_MAX_DEVICES];
->  static int id_count;
->  
-> -#define PMEM_IS_FREE(id, index) !(pmem[id].bitmap[index].allocated)
-> +#define PMEM_IS_FREE(id, index) { !(pmem[id].bitmap[index].allocated) }
-
-And this.
-
-care to fix this up and resend the patch?
-
-thanks,
-
-greg k-h
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
