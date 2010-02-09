@@ -1,89 +1,64 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753346Ab0BIGXo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 01:23:44 -0500
-Received: from mtagate2.de.ibm.com ([195.212.17.162]:45698 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751457Ab0BIGXn (ORCPT
+	id S1753403Ab0BIG11 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 01:27:27 -0500
+Received: from mail-ww0-f46.google.com ([74.125.82.46]:63616 "EHLO
+	mail-ww0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751253Ab0BIG10 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Feb 2010 01:23:43 -0500
-Message-ID: <4B70FF66.7020602@linux.vnet.ibm.com>
-Date: Tue, 09 Feb 2010 07:23:34 +0100
-From: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Tue, 9 Feb 2010 01:27:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=q3Kqk+UahC78c60axvny+6TYF4z42ugjVMcIw9XEO+VBb99zL6cfpDSezRigUFAZKM
+         jqLWUTAKknSG3TbDpmQ2xtG8B2MMRc0/Pws2+PLSaUdup3G3T7dtpPOxIVGSZ6HAO46L
+         VGN7T1VkKT8xrOLc2hkFH0Ia6fbrRNoiBH/v8=
 MIME-Version: 1.0
-To: Mel Gorman <mel@csn.ul.ie>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       epasch@de.ibm.com, SCHILLIG@de.ibm.com,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>, christof.schmitt@de.ibm.com,
-       thoss@de.ibm.com, hare@suse.de, npiggin@suse.de
-Subject: Re: Performance regression in scsi sequential throughput (iozone)
- due to "e084b - page-allocator: preserve PFN ordering when	__GFP_COLD is
- set"
-References: <4B210754.2020601@linux.vnet.ibm.com> <20091211112009.GC30670@csn.ul.ie> <4B225B9E.2020702@linux.vnet.ibm.com> <4B2B85C7.80502@linux.vnet.ibm.com> <20091218174250.GC21194@csn.ul.ie> <4B4F0E60.1020601@linux.vnet.ibm.com> <20100119113306.GA23881@csn.ul.ie> <4B6C3E6E.6050303@linux.vnet.ibm.com> <20100205174917.GB11512@csn.ul.ie> <4B70192C.3070601@linux.vnet.ibm.com> <20100208152131.GC23680@csn.ul.ie>
-In-Reply-To: <20100208152131.GC23680@csn.ul.ie>
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20100208220753.61a39bab.akpm@linux-foundation.org>
+References: <20100206134056.GB2562@darkstar>
+	 <20100208135654.04b79bbc.akpm@linux-foundation.org>
+	 <a8e1da1002081831j6fdea8a7v41cc07b635ab7dda@mail.gmail.com>
+	 <a8e1da1002082156s3145a775o7424bc47ac503636@mail.gmail.com>
+	 <20100208220753.61a39bab.akpm@linux-foundation.org>
+Date: Tue, 9 Feb 2010 14:27:25 +0800
+Message-ID: <a8e1da1002082227s6bebd2e8id0f6c6a04d832d24@mail.gmail.com>
+Subject: Re: [PATCH 2/2] allow printk delay after multi lines
+From: Dave Young <hidave.darkstar@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-Mel Gorman wrote:
-> On Mon, Feb 08, 2010 at 03:01:16PM +0100, Christian Ehrhardt wrote:
+On Tue, Feb 9, 2010 at 2:07 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Tue, 9 Feb 2010 13:56:34 +0800 Dave Young <hidave.darkstar@gmail.com> wrote:
+>
+>> BTW, for the sysctl variables. I found in kernel.h there's:
+>> printk/console_loglevel/panic related extern variables for sysctl.
 >>
->> Mel Gorman wrote:
->>> On Fri, Feb 05, 2010 at 04:51:10PM +0100, Christian Ehrhardt wrote:
->>>   
->>>> I'll keep the old thread below as reference.
->>>>
->>>> After taking a round of ensuring reproducibility and a pile of new   
->>>> measurements I now can come back with several new insights.
->>>>
->>>> FYI - I'm now running iozone triplets (4, then 8, then 16 parallel   
->>>> threads) with sequential read load and all that 4 times to find   
->>>> potential noise. But since I changed to that load instead of random 
->>>> read  wit hone thread and ensuring the most memory is cleared (sync + 
->>>> echo 3 >  /proc/sys/vm/drop_caches + a few sleeps) . The noise is now 
->>>> down <2%.  For detailed questions about the setup feel free to ask me 
->>>> directly as I  won't flood this thread too much with such details.
->>>>
->>>>     
->>> Is there any chance you have a driver script for the test that you could send
->>> me? I'll then try reproducing based on that script and see what happens. I'm
->>> not optimistic I'll be able to reproduce the problem because I think
->>> it's specific to your setup but you never know.
->>>   
->> I don't have one as it runs in a bigger automated test environment, but  
->> it is easy enough to write down something comparable.
-> 
-> I'd appreciate it, thanks.
-> 
+>> console_loglevel and panic related variables are used here and there,
+>> not just for sysctl, so I think it should stay in kernel.h.
+>>
+>> The printk related variables for sysctl and all the extern variables in
+>> sysctl.c can be move to sysctl.h. Seems no need new head file.
+>>
+>> Andrew, what's your opinion?
+>
+> Symbols which are defined in printk.c and which are used in other
+> compilation units should be declared in printk.h!
+>
+> We mucked up in the past by putting these things in kernel.h and as
+> externs in sysctl.c, but that's no reason to continue to do so. Â As a
+> special-case, it makes convenience sense to declare printk() itself and
+> the loglevel strings etc in kernel.h, but that _is_ a special case.
+>
 
-Testing of your two patches starts in a few minutes, thanks in advance.
+Lazy is bad, hehe :)
+Will do that in a updated patchset, Thanks.
 
-Here the info how to execute the core of the test - I cross fingers that anyone else can reproduce it that way :-)
-
-I use it in a huge automation framework which takes care of setting up the system, disks, gathering statistics and so on, but it essentially comes down to something simple like that:
-
-#!/bin/bash
-# reboot your system with 256m
-# attach 16 disks (usually up to 64, but 16 should be enough to show the issue)
-# mount your disks at /mnt/subw0, /mnt/subw1, ...
-for i in 4 8 16 4 8 16 4 8 16 4 8 16
-do
-        sync; sleep 10s; echo 3 > /proc/sys/vm/drop_caches; sleep 2s;
-        iozone -s 2000m -r 64k -t $i  -e -w -R -C  -i 0 -F /mnt/subw0 /mnt/subw1 /mnt/subw2 /mnt/subw3 /mnt/subw4 /mnt/subw5 /mnt/subw6 /mnt/subw7 /mnt/subw8 /mnt/subw9 /mnt/subw10 /mnt/subw11 /mnt/subw12 /mnt/subw13 /mnt/subw14 /mnt/subw15
-        sync; sleep 10s; echo 3 > /proc/sys/vm/drop_caches; sleep 2s;
-        iozone -s 2000m -r 64k -t $i  -e -w -R -C  -i 1 -F /mnt/subw0 /mnt/subw1 /mnt/subw2 /mnt/subw3 /mnt/subw4 /mnt/subw5 /mnt/subw6 /mnt/subw7 /mnt/subw8 /mnt/subw9 /mnt/subw10 /mnt/subw11 /mnt/subw12 /mnt/subw13 /mnt/subw14 /mnt/subw15
-done
-# while we could reduce the number of writes to one 16 thread write I use it that way as it is more similar to our original load (makes no difference anyway)
-
-[...]
 -- 
-
-Grüsse / regards, Christian Ehrhardt
-IBM Linux Technology Center, Open Virtualization 
+Regards
+dave
