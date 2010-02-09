@@ -1,58 +1,78 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755326Ab0BIRNg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 12:13:36 -0500
-Received: from mail-iw0-f171.google.com ([209.85.223.171]:42094 "EHLO
-	mail-iw0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754761Ab0BIRNe convert rfc822-to-8bit (ORCPT
+	id S1755242Ab0BIRPI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 12:15:08 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:34396 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754943Ab0BIRPH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Feb 2010 12:13:34 -0500
-MIME-Version: 1.0
-In-Reply-To: <20100205203236.GC1475@oksana.dev.rtsoft.ru>
-References: <20100205203201.GA32281@oksana.dev.rtsoft.ru> <20100205203236.GC1475@oksana.dev.rtsoft.ru>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Tue, 9 Feb 2010 10:13:11 -0700
-X-Google-Sender-Auth: c2fdce183ff1a73a
-Message-ID: <fa686aa41002090913t4c72a3b8o5fda68723bc8d089@mail.gmail.com>
-Subject: Re: [PATCH 3/4] of/gpio: Implement GPIOLIB notifier hooks
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Bill Gatliff <bgat@billgatliff.com>,
-       Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 9 Feb 2010 12:15:07 -0500
+Subject: Re: [PATCH 01/17] MTD: create lockless versions of
+ {get,put}_mtd_device This will be used to resolve deadlock in block
+ translation layer.
+From: Peter Zijlstra <peterz@infradead.org>
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Cc: David Woodhouse <dwmw2@infradead.org>,
+       Artem Bityutskiy <dedekind1@gmail.com>,
+       linux-mtd <linux-mtd@lists.infradead.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Alex Dubov <oakad@yahoo.com>, joern <joern@logfs.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "stanley.miao" <stanley.miao@windriver.com>,
+       Vitaly Wool <vitalywool@gmail.com>
+In-Reply-To: <1265734665-22656-2-git-send-email-maximlevitsky@gmail.com>
+References: <1265734665-22656-1-git-send-email-maximlevitsky@gmail.com>
+	 <1265734665-22656-2-git-send-email-maximlevitsky@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 09 Feb 2010 18:14:53 +0100
+Message-ID: <1265735693.11509.253.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 5, 2010 at 1:32 PM, Anton Vorontsov
-<avorontsov@ru.mvista.com> wrote:
-> This patch implements GPIOLIB notifier hooks, and thus makes device-enabled
-> GPIO chips (i.e. the ones that have gpio_chip->dev specified) automatically
-> attached to the OpenFirmware subsystem. Which means that now we can handle
-> I2C and SPI GPIO chips almost* transparently.
->
-> * "Almost" because some chips still require platform data, and for these
->  chips OF-glue is still needed, though with this support the glue will
->  be much smaller.
->
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+On Tue, 2010-02-09 at 18:57 +0200, Maxim Levitsky wrote:
+> These functions can be used as long as we don't need access to global mtd table, but have
+> a pointer to the mtd device.
+> 
+> Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
 > ---
-> +static struct notifier_block of_gpio_nb = {
-> +       .notifier_call = of_gpio_notify,
-> +};
-> +
-> +static int __init of_gpio_notifier_init(void)
+>  drivers/mtd/mtdcore.c   |   60 ++++++++++++++++++++++++++++++----------------
+>  include/linux/mtd/mtd.h |    3 +-
+>  2 files changed, 41 insertions(+), 22 deletions(-)
+
+> +int __get_mtd_device(struct mtd_info *mtd)
 > +{
-> +       return blocking_notifier_chain_register(&gpio_notifier, &of_gpio_nb);
-> +}
-> +arch_initcall(of_gpio_notifier_init);
+> +	int err;
+> +
+> +	if (!try_module_get(mtd->owner))
+> +		return -ENODEV;
+> +
+> +	if (mtd->get_device) {
+> +
+> +		err = mtd->get_device(mtd);
+> +
+> +		if (err) {
+> +			module_put(mtd->owner);
+> +			return err;
+> +		}
+> +	}
+> +	mtd->usecount++;
+> +	return 0;
+>  }
 
-Another concern;  if any gpio chips get registered before this
-arch_initcall (not sure if it is possible or not), then those chips
-won't get registered with the of gpio infrastructure.
+> +void __put_mtd_device(struct mtd_info *mtd)
+> +{
+> +	--mtd->usecount;
+> +	BUG_ON(mtd->usecount < 0);
+> +
+>  	if (mtd->put_device)
+>  		mtd->put_device(mtd);
+>  
+>  	module_put(mtd->owner);
+>  }
 
-g.
+That's racy, use kref.
+
