@@ -1,49 +1,46 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752587Ab0BIUbr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 15:31:47 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57523 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751874Ab0BIUbq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Feb 2010 15:31:46 -0500
-Date: Tue, 9 Feb 2010 12:30:37 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-Subject: Re: [PATCH 15/35] x86: make 64 bit use early_res instead of bootmem
- before slab
-Message-Id: <20100209123037.733fee7b.akpm@linux-foundation.org>
-In-Reply-To: <1265743966-17065-16-git-send-email-yinghai@kernel.org>
-References: <1265743966-17065-1-git-send-email-yinghai@kernel.org>
-	<1265743966-17065-16-git-send-email-yinghai@kernel.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1753055Ab0BIUgo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 15:36:44 -0500
+Received: from mail.crca.org.au ([67.207.131.56]:51989 "EHLO crca.org.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752256Ab0BIUgn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Feb 2010 15:36:43 -0500
+X-Bogosity: Ham, spamicity=0.000000
+Message-ID: <4B71C7E0.80900@crca.org.au>
+Date: Wed, 10 Feb 2010 07:38:56 +1100
+From: Nigel Cunningham <ncunningham@crca.org.au>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Nix <nix@esperi.org.uk>
+CC: Bill Davidsen <davidsen@tmr.com>, tuxonice-devel@lists.tuxonice.net,
+       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
+Subject: Re: [TuxOnIce-devel] LZO irreversible output?
+References: <4B69ECE5.5060505@crca.org.au> <201002032354.11284.rjw@sisk.pl>	<4B6A4F07.3090509@crca.org.au> <hkneh9$djl$1@ger.gmane.org>	<4B6FCC47.2030705@crca.org.au> <874olq1fis.fsf@spindle.srvr.nix>
+In-Reply-To: <874olq1fis.fsf@spindle.srvr.nix>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 09 Feb 2010 11:32:26 -0800
-Yinghai Lu <yinghai@kernel.org> wrote:
+Hi.
 
-> +config NO_BOOTMEM
-> +	default y
-> +	bool "Disable Bootmem code"
-> +	depends on X86_64
-> +	---help---
-> +	  use early_res directly instead of bootmem before slab is ready.
-> +
+Nix wrote:
+> On 8 Feb 2010, Nigel Cunningham verbalised:
+>> That said, the actual code that TuxOnIce uses does already initialise
+>> the variable to PAGE_SIZE, so it seems that I might just have to run
+>> with the checking code enabled (with this fix) for a while, until the
+>> issue is found.
+> 
+> If you push the fix somewhere I'll run with it as well and see if I can
+> make this problem happen again. (So far I've only seen it with both
+> compression and max_workers > 1, but I haven't done a systematic check
+> for this so it could be an illusion.)
 
-s/use/Use/
+I will do - I've just been very slow to because I'm in the middle of
+switching website hosting at the moment (as well as the week-to-week
+parts of my real job!). Too much to do and not enough time :)
 
-It would help if the help was a bit more helpful than this.  It
-provides no indication why one would want to enable this option, nor
-what the effects of doing so might be.
-
+Nigel
