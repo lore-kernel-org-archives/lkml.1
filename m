@@ -1,75 +1,35 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751851Ab0BITSF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 14:18:05 -0500
-Received: from casper.infradead.org ([85.118.1.10]:55987 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750892Ab0BITSC (ORCPT
+	id S1751539Ab0BIT0I (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 14:26:08 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37419
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751076Ab0BIT0G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Feb 2010 14:18:02 -0500
-Date: Tue, 9 Feb 2010 19:18:00 +0000 (GMT)
-From: James Simmons <jsimmons@infradead.org>
-To: Julia Lawall <julia@diku.dk>
-cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 10/11] drivers/video/mbx: Correct NULL test
-In-Reply-To: <Pine.LNX.4.64.1002060944400.8092@ask.diku.dk>
-Message-ID: <alpine.LFD.2.00.1002091917340.26270@casper.infradead.org>
-References: <Pine.LNX.4.64.1002060944400.8092@ask.diku.dk>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 9 Feb 2010 14:26:06 -0500
+Date: Tue, 09 Feb 2010 11:26:18 -0800 (PST)
+Message-Id: <20100209.112618.06799977.davem@davemloft.net>
+To: e@lab.ntt.co.jp
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       fujita.tomonori@lab.ntt.co.jp
+Subject: Re: [PATCH -mm 11/12] sparc: use asm-generic/pci-dma-common.h
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1265722524-9493-12-git-send-email-e>
+References: <1265722524-9493-1-git-send-email-e>
+	<1265722524-9493-12-git-send-email-e>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: e@lab.ntt.co.jp
+Date: Tue,  9 Feb 2010 22:35:23 +0900
 
-> From: Julia Lawall <julia@diku.dk>
+> From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 > 
-> Test the value that was just allocated rather than the previously tested one.
-> 
-> A simplified version of the semantic match that finds this problem is as
-> follows: (http://coccinelle.lip6.fr/)
-> 
-> // <smpl>
-> @r@
-> expression *x;
-> expression e;
-> identifier l;
-> @@
-> 
-> if (x == NULL || ...) {
->     ... when forall
->     return ...; }
-> ... when != goto l;
->     when != x = e
->     when != &x
-> *x == NULL
-> // </smpl>
-> 
-> Signed-off-by: Julia Lawall <julia@diku.dk>
+> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 
-Acked-by: James Simmons <jsimmons@infradead.org>
- 
-> ---
->  drivers/video/mbx/mbxfb.c           |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/video/mbx/mbxfb.c b/drivers/video/mbx/mbxfb.c
-> index afea9ab..7140405 100644
-> --- a/drivers/video/mbx/mbxfb.c
-> +++ b/drivers/video/mbx/mbxfb.c
-> @@ -950,7 +950,7 @@ static int __devinit mbxfb_probe(struct platform_device *dev)
->  
->  	mfbi->fb_virt_addr = ioremap_nocache(mfbi->fb_phys_addr,
->  					     res_size(mfbi->fb_req));
-> -	if (!mfbi->reg_virt_addr) {
-> +	if (!mfbi->fb_virt_addr) {
->  		dev_err(&dev->dev, "failed to ioremap frame buffer\n");
->  		ret = -EINVAL;
->  		goto err4;
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+Acked-by: David S. Miller <davem@davemloft.net>
