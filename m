@@ -1,64 +1,81 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754496Ab0BIND7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 08:03:59 -0500
-Received: from smtp.ctxuk.citrix.com ([62.200.22.115]:7187 "EHLO
-	SMTP.EU.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754225Ab0BIND5 (ORCPT
+	id S1754402Ab0BINEs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 08:04:48 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:41368 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753513Ab0BINEq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Feb 2010 08:03:57 -0500
-X-Greylist: delayed 903 seconds by postgrey-1.27 at vger.kernel.org; Tue, 09 Feb 2010 08:03:57 EST
-X-IronPort-AV: E=Sophos;i="4.49,436,1262563200"; 
-   d="scan'208";a="9383913"
-Date: Tue, 9 Feb 2010 12:51:02 +0000
-From: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
-X-X-Sender: sstabellini@kaball-desktop
-To: Sheng Yang <sheng@linux.intel.com>
-CC: Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       xen-devel <xen-devel@lists.xensource.com>,
-       Keir Fraser <Keir.Fraser@eu.citrix.com>,
-       Ian Campbell <Ian.Campbell@eu.citrix.com>
-Subject: Re: [Xen-devel] [PATCH 5/7] xen: Make event channel work with PV
- featured HVM
-In-Reply-To: <1265616354-7384-6-git-send-email-sheng@linux.intel.com>
-Message-ID: <alpine.DEB.2.00.1002091233110.11349@kaball-desktop>
-References: <1265616354-7384-1-git-send-email-sheng@linux.intel.com> <1265616354-7384-6-git-send-email-sheng@linux.intel.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Tue, 9 Feb 2010 08:04:46 -0500
+Subject: Re: [RFC][PATCH] perf_events: added new start/stop PMU callbacks
+From: Peter Zijlstra <peterz@infradead.org>
+To: Stephane Eranian <eranian@google.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, paulus@samba.org,
+       davem@davemloft.net, fweisbec@gmail.com, robert.richter@amd.com,
+       perfmon2-devel@lists.sf.net, eranian@gmail.com
+In-Reply-To: <bd4cb8901002080921p311e29fbmcdf0841b0af558a@mail.gmail.com>
+References: <4b703875.0a04d00a.7896.ffffb824@mx.google.com>
+	 <1265646612.11509.13.camel@laptop>
+	 <bd4cb8901002080921p311e29fbmcdf0841b0af558a@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 09 Feb 2010 14:04:21 +0100
+Message-ID: <1265720661.11509.245.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 8 Feb 2010, Sheng Yang wrote:
-> We mapped each IOAPIC pin to a VIRQ, so that we can deliver interrupt through
-> these VIRQs.
+On Mon, 2010-02-08 at 18:21 +0100, Stephane Eranian wrote:
 > 
-> We used X86_PLATFORM_IPI_VECTOR as the noficiation vector for hypervisor
-> to notify guest about the event.
-> 
-> The Xen PV timer is used to provide guest a reliable timer.
-> 
-> The patch also enabled SMP support, then we can support IPI through evtchn as well.
-> 
-> Then we don't need IOAPIC/LAPIC...
-> 
+> > But before we do that, I think we need to look at the /* hardware */
+> > part of struct hw_perf_event, and make that arch specific, we've been
+> > growing that a lot lately and I don't think !x86 uses any of that.
 
-First of all I want to say that this series looks much better than the
-previous one.
+I looked at the pahole output:
 
-However I think there might still be some room for improvement:
-wouldn't it make more sense to map vectors to event channels instead of
-IOAPIC pins? This way it could work for MSI and passthrought devices
-too. Also it would make sense to have a per-vector delivery option in
-vlapic.c in xen: vlapic_set_irq should probably be the function that
-decides how to inject the vector into the guest, either using the
-classic emulated method or an event channel.
-The decision should come from a matrix so that the guest might decide to
-enable event channels on a per vector basis instead of having a single
-global switch.
-It seems to me that doing an intx to event channel translation in
-hvm/irq.c is not the right thing in the right place.
+$ pahole -C hw_perf_event build/arch/x86/kernel/cpu/perf_event.o
+struct hw_perf_event {
+        union {
+                struct {
+                        u64        config;               /*     0     8 */
+                        u64        last_tag;             /*     8     8 */
+                        long unsigned int config_base;   /*    16     8 */
+                        long unsigned int event_base;    /*    24     8 */
+                        int        idx;                  /*    32     4 */
+                        int        last_cpu;             /*    36     4 */
+                };                                       /*          40 */
+                struct {
+                        s64        remaining;            /*     0     8 */
+                        struct hrtimer hrtimer;          /*     8    96 */
+                        /* --- cacheline 1 boundary (64 bytes) was 40 bytes ago --- */
+                };                                       /*         104 */
+                union {
+                        struct arch_hw_breakpoint info;  /*          24 */
+                };                                       /*          24 */
+        };                                               /*     0   104 */
+        /* --- cacheline 1 boundary (64 bytes) was 40 bytes ago --- */
+        atomic64_t                 prev_count;           /*   104     8 */
+        u64                        sample_period;        /*   112     8 */
+        u64                        last_period;          /*   120     8 */
+        /* --- cacheline 2 boundary (128 bytes) --- */
+        atomic64_t                 period_left;          /*   128     8 */
+        u64                        interrupts;           /*   136     8 */
+        u64                        freq_time_stamp;      /*   144     8 */
+        u64                        freq_count_stamp;     /*   152     8 */
 
+        /* size: 160, cachelines: 3 */
+        /* last cacheline: 32 bytes */
+};
+
+which suggests we still have plenty of room to grow without adding undue
+overhead on other architectures, that struct hrtimer is the largest
+thing in there.
+
+> It is clear it will need to grow much more to host non-counting features.
+> I have played with that myself a few weeks back. So, yes the saved state
+> needs to be arch specific.
+
+What do you mean by non-counting features?
 
