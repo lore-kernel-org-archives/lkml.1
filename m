@@ -1,18 +1,18 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753586Ab0BITkq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 14:40:46 -0500
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:54604 "EHLO
+	id S1753778Ab0BITlL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 14:41:11 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:54623 "EHLO
 	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752283Ab0BITdt (ORCPT
+	with ESMTP id S1752109Ab0BITdt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 9 Feb 2010 14:33:49 -0500
 MIME-version: 1.0
 Content-transfer-encoding: 7BIT
 Content-type: TEXT/PLAIN
-Date: Tue, 09 Feb 2010 11:32:18 -0800
+Date: Tue, 09 Feb 2010 11:32:25 -0800
 From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 07/35] x86/pci: enable pci root res read out for 32bit too
+Subject: [PATCH 14/35] x86: only call dma32_reserve_bootmem 64bit !CONFIG_NUMA
 In-reply-to: <1265743966-17065-1-git-send-email-yinghai@kernel.org>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
@@ -22,118 +22,105 @@ Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
        Christoph Lameter <cl@linux-foundation.org>,
        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
        Yinghai Lu <yinghai@kernel.org>
-Message-id: <1265743966-17065-8-git-send-email-yinghai@kernel.org>
+Message-id: <1265743966-17065-15-git-send-email-yinghai@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 References: <1265743966-17065-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-should be good for 32bit too.
-
--v3: cast res->start
--v4: according to Linus, to use %pR instead of cast
+64bit NUMA already make enough space under 4G with new early_node_mem
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-Acked-by: Jesse Barnes <jbarnes@virtuousgeek.org>
 ---
- arch/x86/pci/Makefile   |    3 +--
- arch/x86/pci/amd_bus.c  |   18 ++----------------
- arch/x86/pci/bus_numa.h |    4 ++--
- arch/x86/pci/i386.c     |    4 ----
- 4 files changed, 5 insertions(+), 24 deletions(-)
+ arch/x86/include/asm/pci.h    |    2 ++
+ arch/x86/include/asm/pci_64.h |    2 --
+ arch/x86/kernel/pci-dma.c     |   13 ++++++++++---
+ arch/x86/kernel/setup.c       |    7 -------
+ 4 files changed, 12 insertions(+), 12 deletions(-)
 
-diff --git a/arch/x86/pci/Makefile b/arch/x86/pci/Makefile
-index 39fba37..0b7d3e9 100644
---- a/arch/x86/pci/Makefile
-+++ b/arch/x86/pci/Makefile
-@@ -14,8 +14,7 @@ obj-$(CONFIG_X86_VISWS)		+= visws.o
- obj-$(CONFIG_X86_NUMAQ)		+= numaq_32.o
+diff --git a/arch/x86/include/asm/pci.h b/arch/x86/include/asm/pci.h
+index ada8c20..b4a00dd 100644
+--- a/arch/x86/include/asm/pci.h
++++ b/arch/x86/include/asm/pci.h
+@@ -124,6 +124,8 @@ extern void pci_iommu_alloc(void);
+ #include "pci_64.h"
+ #endif
  
- obj-y				+= common.o early.o
--obj-y				+= amd_bus.o
--obj-$(CONFIG_X86_64)		+= bus_numa.o
-+obj-y				+= amd_bus.o bus_numa.o
++void dma32_reserve_bootmem(void);
++
+ /* implement the pci_ DMA API in terms of the generic device dma_ one */
+ #include <asm-generic/pci-dma-compat.h>
  
- ifeq ($(CONFIG_PCI_DEBUG),y)
- EXTRA_CFLAGS += -DDEBUG
-diff --git a/arch/x86/pci/amd_bus.c b/arch/x86/pci/amd_bus.c
-index 9bcb6fe..badef12 100644
---- a/arch/x86/pci/amd_bus.c
-+++ b/arch/x86/pci/amd_bus.c
-@@ -6,9 +6,7 @@
+diff --git a/arch/x86/include/asm/pci_64.h b/arch/x86/include/asm/pci_64.h
+index ae5e40f..fe15cfb 100644
+--- a/arch/x86/include/asm/pci_64.h
++++ b/arch/x86/include/asm/pci_64.h
+@@ -22,8 +22,6 @@ extern int (*pci_config_read)(int seg, int bus, int dev, int fn,
+ extern int (*pci_config_write)(int seg, int bus, int dev, int fn,
+ 			       int reg, int len, u32 value);
  
- #include <asm/pci_x86.h>
+-extern void dma32_reserve_bootmem(void);
+-
+ #endif /* __KERNEL__ */
+ 
+ #endif /* _ASM_X86_PCI_64_H */
+diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
+index 75e14e2..1aa966c 100644
+--- a/arch/x86/kernel/pci-dma.c
++++ b/arch/x86/kernel/pci-dma.c
+@@ -65,7 +65,7 @@ int dma_set_mask(struct device *dev, u64 mask)
+ }
+ EXPORT_SYMBOL(dma_set_mask);
  
 -#ifdef CONFIG_X86_64
- #include <asm/pci-direct.h>
++#if defined(CONFIG_X86_64) && !defined(CONFIG_NUMA)
+ static __initdata void *dma32_bootmem_ptr;
+ static unsigned long dma32_bootmem_size __initdata = (128ULL<<20);
+ 
+@@ -116,14 +116,21 @@ static void __init dma32_free_bootmem(void)
+ 	dma32_bootmem_ptr = NULL;
+ 	dma32_bootmem_size = 0;
+ }
++#else
++void __init dma32_reserve_bootmem(void)
++{
++}
++static void __init dma32_free_bootmem(void)
++{
++}
++
+ #endif
+ 
+ void __init pci_iommu_alloc(void)
+ {
+-#ifdef CONFIG_X86_64
+ 	/* free the range so iommu could get some range less than 4G */
+ 	dma32_free_bootmem();
+-#endif
++
+ 	if (pci_swiotlb_detect())
+ 		goto out;
+ 
+diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+index 48cadbb..ea4141b 100644
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -969,14 +969,7 @@ void __init setup_arch(char **cmdline_p)
+ 	initmem_init(0, max_pfn, acpi, k8);
+ 	early_res_to_bootmem(0, max_low_pfn<<PAGE_SHIFT);
+ 
+-#ifdef CONFIG_X86_64
+-	/*
+-	 * dma32_reserve_bootmem() allocates bootmem which may conflict
+-	 * with the crashkernel command line, so do that after
+-	 * reserve_crashkernel()
+-	 */
+ 	dma32_reserve_bootmem();
 -#endif
  
- #include "bus_numa.h"
+ 	reserve_ibft_region();
  
-@@ -17,8 +15,6 @@
-  * also get peer root bus resource for io,mmio
-  */
- 
--#ifdef CONFIG_X86_64
--
- struct pci_hostbridge_probe {
- 	u32 bus;
- 	u32 slot;
-@@ -339,24 +335,14 @@ static int __init early_fill_mp_bus_info(void)
- 		       info->bus_min, info->bus_max, info->node, info->link);
- 		for (j = 0; j < res_num; j++) {
- 			res = &info->res[j];
--			printk(KERN_DEBUG "bus: %02x index %x %s: [%llx, %llx]\n",
--			       busnum, j,
--			       (res->flags & IORESOURCE_IO)?"io port":"mmio",
--			       res->start, res->end);
-+			printk(KERN_DEBUG "bus: %02x index %x %pR\n",
-+				       busnum, j, res);
- 		}
- 	}
- 
- 	return 0;
- }
- 
--#else  /* !CONFIG_X86_64 */
--
--static int __init early_fill_mp_bus_info(void) { return 0; }
--
--#endif /* !CONFIG_X86_64 */
--
--/* common 32/64 bit code */
--
- #define ENABLE_CF8_EXT_CFG      (1ULL << 46)
- 
- static void enable_pci_io_ecs(void *unused)
-diff --git a/arch/x86/pci/bus_numa.h b/arch/x86/pci/bus_numa.h
-index f63e802..08d8e15 100644
---- a/arch/x86/pci/bus_numa.h
-+++ b/arch/x86/pci/bus_numa.h
-@@ -1,5 +1,5 @@
--#ifdef CONFIG_X86_64
--
-+#ifndef __BUS_NUMA_H
-+#define __BUS_NUMA_H
- /*
-  * sub bus (transparent) will use entres from 3 to store extra from
-  * root, so need to make sure we have enough slot there, Should we
-diff --git a/arch/x86/pci/i386.c b/arch/x86/pci/i386.c
-index 5dc9e8c..f4e8481 100644
---- a/arch/x86/pci/i386.c
-+++ b/arch/x86/pci/i386.c
-@@ -257,10 +257,6 @@ void __init pcibios_resource_survey(void)
-  */
- fs_initcall(pcibios_assign_resources);
- 
--void __weak x86_pci_root_bus_res_quirks(struct pci_bus *b)
--{
--}
--
- /*
-  *  If we set up a device for bus mastering, we need to check the latency
-  *  timer as certain crappy BIOSes forget to set it properly.
 -- 
 1.6.4.2
 
