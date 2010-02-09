@@ -1,76 +1,59 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752204Ab0BIVfG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 16:35:06 -0500
-Received: from mail.df.lth.se ([194.47.250.12]:53071 "EHLO df.lth.se"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751169Ab0BIVfE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Feb 2010 16:35:04 -0500
-From: Linus Walleij <linus.walleij@stericsson.com>
-To: Dan Williams <dan.j.williams@intel.com>, linux-kernel@vger.kernel.org
-Cc: Linus Walleij <linus.walleij@stericsson.com>
-Subject: [PATCH] Debugging options for the DMA engine subsystem
-Date: Tue,  9 Feb 2010 22:34:54 +0100
-Message-Id: <1265751294-23584-1-git-send-email-linus.walleij@stericsson.com>
-X-Mailer: git-send-email 1.6.2.rc1
+	id S1752584Ab0BIVfr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 16:35:47 -0500
+Received: from fg-out-1718.google.com ([72.14.220.154]:40901 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751608Ab0BIVfq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Feb 2010 16:35:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=xeSuLTOSWerLz7jrUBqrBTDvQzbwy3x6Yq0TUw77v16XODMGGgzI86Iad9DLytDaNH
+         jI3OhvuBMGe/YjvkvRL9ae/kp21ObNya4Vg7As8rShkOKkvDhZB49QkPPS6jIrzgtSmU
+         E5OMKMIPFB62kvQONcafVGolAzVCaxchL3mTc=
+Date: Wed, 10 Feb 2010 00:35:42 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Stephane Eranian <eranian@google.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Don Zickus <dzickus@redhat.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC perf,x86] P4 PMU early draft
+Message-ID: <20100209213542.GC5068@lenovo>
+References: <20100208184504.GB5130@lenovo> <bd4cb8901002091313h3bc739fbi872567fdb219d752@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <bd4cb8901002091313h3bc739fbi872567fdb219d752@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds Kconfig options for DEBUG and VERBOSE_DEBUG to the DMA
-engine subsystem, I got tired of editing the Makefile manually
-each time I want to debug things in here, modelled this on the
-debug switches for other subsystems and works like a charm when
-working on our DMA engines.
+On Tue, Feb 09, 2010 at 10:13:59PM +0100, Stephane Eranian wrote:
+> Cyrill,
+> 
+> On Mon, Feb 8, 2010 at 7:45 PM, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+...
+> >
+> > Stephane, I know you've been (and still is, right?) working on P4 driver
+> > for libpmu (not sure if I remember correctly this name). Perhaps we should
+> > take some ideas from there?
+> >
+> The library is called libpfm (perfmon) and libpfm4 (perf_events). It has
+> support for Netburst (pentium4). It does the assignment of events to
+> counters in user mode. I did not write the P4 support and it was a very long
+> time ago. I don't recall all the details, except that this was really difficult.
+> You may want to take a look at pfmlib_pentium4.c.
 
-Signed-off-by: Linus Walleij <linus.walleij@stericsson.com>
----
- drivers/dma/Kconfig  |   16 ++++++++++++++++
- drivers/dma/Makefile |    7 +++++++
- 2 files changed, 23 insertions(+), 0 deletions(-)
+Yeah, I've a look taken on it. Interesting. Thanks! Will take more precise look
+as only get spare time slot :)
 
-diff --git a/drivers/dma/Kconfig b/drivers/dma/Kconfig
-index e02d74b..1f4bbd6 100644
---- a/drivers/dma/Kconfig
-+++ b/drivers/dma/Kconfig
-@@ -13,6 +13,22 @@ menuconfig DMADEVICES
- 	  DMA Device drivers supported by the configured arch, it may
- 	  be empty in some cases.
- 
-+config DMADEVICES_DEBUG
-+        bool "DMA Engine debugging"
-+        depends on DMADEVICES != n
-+        help
-+          This is an option for use by developers; most people should
-+          say N here.  This enables DMA engine core and driver debugging.
-+
-+config DMADEVICES_VDEBUG
-+        bool "DMA Engine verbose debugging"
-+        depends on DMADEVICES_DEBUG != n
-+        help
-+          This is an option for use by developers; most people should
-+          say N here.  This enables deeper (more verbose) debugging of
-+          the DMA engine core and drivers.
-+
-+
- if DMADEVICES
- 
- comment "DMA Devices"
-diff --git a/drivers/dma/Makefile b/drivers/dma/Makefile
-index 807053d..54112d6 100644
---- a/drivers/dma/Makefile
-+++ b/drivers/dma/Makefile
-@@ -1,3 +1,10 @@
-+ifeq ($(CONFIG_DMADEVICES_DEBUG),y)
-+	EXTRA_CFLAGS	+= -DDEBUG
-+endif
-+ifeq ($(CONFIG_DMADEVICES_VDEBUG),y)
-+	EXTRA_CFLAGS	+= -DVERBOSE_DEBUG
-+endif
-+
- obj-$(CONFIG_DMA_ENGINE) += dmaengine.o
- obj-$(CONFIG_NET_DMA) += iovlock.o
- obj-$(CONFIG_DMATEST) += dmatest.o
--- 
-1.6.3.3
-
+> 
+> I am still actively developing libpfm4 for perf_events. The P4 support is
+> not available because I don't know how perf_events is going to support
+> it. I'll update the library once that is settled.
+> 
+	-- Cyrill
