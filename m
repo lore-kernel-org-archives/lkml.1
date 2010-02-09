@@ -1,54 +1,117 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753495Ab0BICfN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 21:35:13 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:48653 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752857Ab0BICfK (ORCPT
+	id S1753425Ab0BICfL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 21:35:11 -0500
+Received: from mail-ew0-f228.google.com ([209.85.219.228]:51664 "EHLO
+	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752018Ab0BICfG convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 21:35:10 -0500
-Date: Mon, 8 Feb 2010 20:35:02 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Brian Gerst <brgerst@gmail.com>
-Subject: [PATCH RFC] Make AT_VECTOR_SIZE_ARCH 2 for x86-32
-Message-ID: <20100209023502.GA15408@us.ibm.com>
+	Mon, 8 Feb 2010 21:35:06 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=C3mKIEsT5IoNiXzfFkjosUlXq+ZMA7bv91MYkSmlRuppZvgMrl/Zd8dKMi5kHTUkp6
+         OUB02DOdjsrYez3M7pmwoUsjAfvks4iAZjwxmDWoygxpseYU8+AXPRSzztXDzbfUJnSk
+         EH874GSGKIXBD2aHNDGEO9LhCtKFHEbs2Yhvs=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20100208140127.ca80bc97.akpm@linux-foundation.org>
+References: <20100206134056.GB2562@darkstar>
+	 <20100208135654.04b79bbc.akpm@linux-foundation.org>
+	 <20100208140127.ca80bc97.akpm@linux-foundation.org>
+Date: Tue, 9 Feb 2010 10:35:04 +0800
+Message-ID: <a8e1da1002081835m789168f7h73f1709e69228b15@mail.gmail.com>
+Subject: Re: [PATCH 2/2] allow printk delay after multi lines
+From: Dave Young <hidave.darkstar@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Both x86-32 and x86-64 with 32-bit compat use ARCH_DLINFO_IA32,
-which defines two saved_auxv entries.  But system.h only defines
-AT_VECTOR_SIZE_ARCH as 2 for CONFIG_IA32_EMULATION, not for
-CONFIG_X86_32.  Fix that.
+On Tue, Feb 9, 2010 at 6:01 AM, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Mon, 8 Feb 2010 13:56:54 -0800
+> Andrew Morton <akpm@linux-foundation.org> wrote:
+>
+>> On Sat, 6 Feb 2010 21:40:56 +0800
+>> Dave Young <hidave.darkstar@gmail.com> wrote:
+>>
+>> > printk delay help us to capture printk messages on some unconvenient senarios,
+>> > but it is still not easy to read.
+>> >
+>> > Add another sysctl variable printk_delay_per_lines to make it more readable.
+>> > We can set the lines according to screen height, then take pictures by camera.
+>> >
+>> > kmesg will delay printk_delay_per_lines * printk_delay_msecs milliseconds
+>> > after every printk_delay_per_lines lines when printk_delay is enabled.
+>> >
+>> > Setting the lines by proc/sysctl interface:
+>> > /proc/sys/kernel/printk_delay_per_lines
+>> >
+>> > Andrew, sorry, I have not find time to cleanup the kernel.h sysctl variables.
+>> > If I'm free I will try to do it.
+>> >
+>> > The value range from 1 - 100, default value is 1
+>> >
+>> > ...
+>> >
+>> > --- linux-2.6.orig/include/linux/kernel.h   2010-02-02 13:38:09.537495564 +0800
+>> > +++ linux-2.6/include/linux/kernel.h        2010-02-02 13:40:47.657480122 +0800
+>> > @@ -246,6 +246,7 @@ extern bool printk_timed_ratelimit(unsig
+>> >                                unsigned int interval_msec);
+>> >
+>> >  extern int printk_delay_msec;
+>> > +extern int printk_delay_per_lines;
+>> >
+>> >  /*
+>> >   * Print a one-time message (analogous to WARN_ONCE() et al):
+>> > --- linux-2.6.orig/kernel/printk.c  2010-02-02 13:39:19.446657319 +0800
+>> > +++ linux-2.6/kernel/printk.c       2010-02-02 13:40:47.660813615 +0800
+>> > @@ -656,16 +656,26 @@ static int new_text_line = 1;
+>> >  static char printk_buf[1024];
+>> >
+>> >  int printk_delay_msec __read_mostly;
+>> > +int printk_delay_per_lines __read_mostly;
+>> >
+>> >  static inline void printk_delay(void)
+>> >  {
+>> >     if (unlikely(printk_delay_msec)) {
+>> > -           int m = printk_delay_msec;
+>> > +           static int m, l;
+>> >
+>> > +           if (!l)
+>> > +                   l = printk_delay_per_lines;
+>> > +
+>> > +           if (--l) {
+>> > +                   m += printk_delay_msec;
+>> > +                   return;
+>> > +           }
+>> > +           m += printk_delay_msec;
+>> >             while (m--) {
+>> >                     mdelay(1);
+>> >                     touch_nmi_watchdog();
+>> >             }
+>> > +           m = 0;
+>> >     }
+>> >  }
+>>
+>
+> Also...
+>
+> - The above code is racy: if multiple CPUs run printk_delay()
+>  concurrently, `m' and `l' will get mucked up.
+>
+>  We should verify that the effects of this race are benign.  This
+>  will be hard.
+>
+>  Or we fix the race.  One could add locking (irq-safe locking), but
+>  I suspect a better approach would be to use atomic ops.
+>
 
-Am I on crack?
+will change to  use atomic ops
 
-Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
----
- arch/x86/include/asm/system.h |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/arch/x86/include/asm/system.h b/arch/x86/include/asm/system.h
-index ecb544e..e04740f 100644
---- a/arch/x86/include/asm/system.h
-+++ b/arch/x86/include/asm/system.h
-@@ -11,9 +11,9 @@
- #include <linux/irqflags.h>
- 
- /* entries in ARCH_DLINFO: */
--#ifdef CONFIG_IA32_EMULATION
-+#if defined(CONFIG_IA32_EMULATION) || !defined(CONFIG_X86_64)
- # define AT_VECTOR_SIZE_ARCH 2
--#else
-+#else /* else it's non-compat x86-64 */
- # define AT_VECTOR_SIZE_ARCH 1
- #endif
- 
 -- 
-1.6.0.4
-
+Regards
+dave
