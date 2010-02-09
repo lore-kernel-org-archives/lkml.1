@@ -1,18 +1,18 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752749Ab0BITiX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 14:38:23 -0500
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:54611 "EHLO
+	id S1753592Ab0BITjk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 14:39:40 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:54618 "EHLO
 	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752046Ab0BITdt (ORCPT
+	with ESMTP id S1752090Ab0BITdt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 9 Feb 2010 14:33:49 -0500
 MIME-version: 1.0
 Content-transfer-encoding: 7BIT
 Content-type: TEXT/PLAIN
-Date: Tue, 09 Feb 2010 11:32:19 -0800
+Date: Tue, 09 Feb 2010 11:32:23 -0800
 From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 08/35] x86: change range end to start+size
+Subject: [PATCH 12/35] x86: dynamic increase early_res array size
 In-reply-to: <1265743966-17065-1-git-send-email-yinghai@kernel.org>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
@@ -22,305 +22,110 @@ Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
        Christoph Lameter <cl@linux-foundation.org>,
        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
        Yinghai Lu <yinghai@kernel.org>
-Message-id: <1265743966-17065-9-git-send-email-yinghai@kernel.org>
+Message-id: <1265743966-17065-13-git-send-email-yinghai@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 References: <1265743966-17065-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-so make interface more consistent with early_res.
-later we can share some code with early_res.
+use early_res_count to track the num, and use find_e820 to get new buffer.
+and copy from old to new one.
+
+also clear early_res to prevent later invalid using
+
+-v2 _check_and_double_early_res should take new start
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 ---
- arch/x86/kernel/cpu/mtrr/cleanup.c |   32 ++++++++++++++++----------------
- arch/x86/pci/amd_bus.c             |   24 ++++++++++++++----------
- kernel/range.c                     |   20 ++++++++++----------
- 3 files changed, 40 insertions(+), 36 deletions(-)
+ arch/x86/kernel/e820.c |   53 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 53 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/kernel/cpu/mtrr/cleanup.c b/arch/x86/kernel/cpu/mtrr/cleanup.c
-index 669da09..06130b5 100644
---- a/arch/x86/kernel/cpu/mtrr/cleanup.c
-+++ b/arch/x86/kernel/cpu/mtrr/cleanup.c
-@@ -78,13 +78,13 @@ x86_get_mtrr_mem_range(struct range *range, int nr_range,
- 		base = range_state[i].base_pfn;
- 		size = range_state[i].size_pfn;
- 		nr_range = add_range_with_merge(range, RANGE_NUM, nr_range,
--						base, base + size - 1);
-+						base, base + size);
- 	}
- 	if (debug_print) {
- 		printk(KERN_DEBUG "After WB checking\n");
- 		for (i = 0; i < nr_range; i++)
- 			printk(KERN_DEBUG "MTRR MAP PFN: %016llx - %016llx\n",
--				 range[i].start, range[i].end + 1);
-+				 range[i].start, range[i].end);
- 	}
- 
- 	/* Take out UC ranges: */
-@@ -106,11 +106,11 @@ x86_get_mtrr_mem_range(struct range *range, int nr_range,
- 			size -= (1<<(20-PAGE_SHIFT)) - base;
- 			base = 1<<(20-PAGE_SHIFT);
- 		}
--		subtract_range(range, RANGE_NUM, base, base + size - 1);
-+		subtract_range(range, RANGE_NUM, base, base + size);
- 	}
- 	if (extra_remove_size)
- 		subtract_range(range, RANGE_NUM, extra_remove_base,
--				 extra_remove_base + extra_remove_size  - 1);
-+				 extra_remove_base + extra_remove_size);
- 
- 	if  (debug_print) {
- 		printk(KERN_DEBUG "After UC checking\n");
-@@ -118,7 +118,7 @@ x86_get_mtrr_mem_range(struct range *range, int nr_range,
- 			if (!range[i].end)
- 				continue;
- 			printk(KERN_DEBUG "MTRR MAP PFN: %016llx - %016llx\n",
--				 range[i].start, range[i].end + 1);
-+				 range[i].start, range[i].end);
- 		}
- 	}
- 
-@@ -128,7 +128,7 @@ x86_get_mtrr_mem_range(struct range *range, int nr_range,
- 		printk(KERN_DEBUG "After sorting\n");
- 		for (i = 0; i < nr_range; i++)
- 			printk(KERN_DEBUG "MTRR MAP PFN: %016llx - %016llx\n",
--				 range[i].start, range[i].end + 1);
-+				 range[i].start, range[i].end);
- 	}
- 
- 	return nr_range;
-@@ -142,7 +142,7 @@ static unsigned long __init sum_ranges(struct range *range, int nr_range)
- 	int i;
- 
- 	for (i = 0; i < nr_range; i++)
--		sum += range[i].end + 1 - range[i].start;
-+		sum += range[i].end - range[i].start;
- 
- 	return sum;
+diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
+index cf7f7d0..e13bbd0 100644
+--- a/arch/x86/kernel/e820.c
++++ b/arch/x86/kernel/e820.c
+@@ -916,6 +916,48 @@ void __init reserve_early_overlap_ok(u64 start, u64 end, char *name)
+ 	__reserve_early(start, end, name, 1);
  }
-@@ -489,7 +489,7 @@ x86_setup_var_mtrrs(struct range *range, int nr_range,
- 	/* Write the range: */
- 	for (i = 0; i < nr_range; i++) {
- 		set_var_mtrr_range(&var_state, range[i].start,
--				   range[i].end - range[i].start + 1);
-+				   range[i].end - range[i].start);
- 	}
  
- 	/* Write the last range: */
-@@ -720,7 +720,7 @@ int __init mtrr_cleanup(unsigned address_bits)
- 	 * and fixed mtrrs should take effect before var mtrr for it:
- 	 */
- 	nr_range = add_range_with_merge(range, RANGE_NUM, nr_range, 0,
--					(1ULL<<(20 - PAGE_SHIFT)) - 1);
-+					1ULL<<(20 - PAGE_SHIFT));
- 	/* Sort the ranges: */
- 	sort_range(range, nr_range);
- 
-@@ -939,9 +939,9 @@ int __init mtrr_trim_uncached_memory(unsigned long end_pfn)
- 	nr_range = 0;
- 	if (mtrr_tom2) {
- 		range[nr_range].start = (1ULL<<(32 - PAGE_SHIFT));
--		range[nr_range].end = (mtrr_tom2 >> PAGE_SHIFT) - 1;
--		if (highest_pfn < range[nr_range].end + 1)
--			highest_pfn = range[nr_range].end + 1;
-+		range[nr_range].end = mtrr_tom2 >> PAGE_SHIFT;
-+		if (highest_pfn < range[nr_range].end)
-+			highest_pfn = range[nr_range].end;
- 		nr_range++;
- 	}
- 	nr_range = x86_get_mtrr_mem_range(range, nr_range, 0, 0);
-@@ -953,15 +953,15 @@ int __init mtrr_trim_uncached_memory(unsigned long end_pfn)
- 
- 	/* Check the holes: */
- 	for (i = 0; i < nr_range - 1; i++) {
--		if (range[i].end + 1 < range[i+1].start)
--			total_trim_size += real_trim_memory(range[i].end + 1,
-+		if (range[i].end < range[i+1].start)
-+			total_trim_size += real_trim_memory(range[i].end,
- 							    range[i+1].start);
- 	}
- 
- 	/* Check the top: */
- 	i = nr_range - 1;
--	if (range[i].end + 1 < end_pfn)
--		total_trim_size += real_trim_memory(range[i].end + 1,
-+	if (range[i].end < end_pfn)
-+		total_trim_size += real_trim_memory(range[i].end,
- 							 end_pfn);
- 
- 	if (total_trim_size) {
-diff --git a/arch/x86/pci/amd_bus.c b/arch/x86/pci/amd_bus.c
-index badef12..1f4f84d 100644
---- a/arch/x86/pci/amd_bus.c
-+++ b/arch/x86/pci/amd_bus.c
-@@ -145,7 +145,7 @@ static int __init early_fill_mp_bus_info(void)
- 	def_link = (reg >> 8) & 0x03;
- 
- 	memset(range, 0, sizeof(range));
--	range[0].end = 0xffff;
-+	add_range(range, RANGE_NUM, 0, 0, 0xffff + 1);
- 	/* io port resource */
- 	for (i = 0; i < 4; i++) {
- 		reg = read_pci_config(bus, slot, 1, 0xc0 + (i << 3));
-@@ -175,7 +175,7 @@ static int __init early_fill_mp_bus_info(void)
- 		if (end > 0xffff)
- 			end = 0xffff;
- 		update_res(info, start, end, IORESOURCE_IO, 1);
--		subtract_range(range, RANGE_NUM, start, end);
-+		subtract_range(range, RANGE_NUM, start, end + 1);
- 	}
- 	/* add left over io port range to def node/link, [0, 0xffff] */
- 	/* find the position */
-@@ -190,14 +190,16 @@ static int __init early_fill_mp_bus_info(void)
- 			if (!range[i].end)
- 				continue;
- 
--			update_res(info, range[i].start, range[i].end,
-+			update_res(info, range[i].start, range[i].end - 1,
- 				   IORESOURCE_IO, 1);
- 		}
- 	}
- 
- 	memset(range, 0, sizeof(range));
- 	/* 0xfd00000000-0xffffffffff for HT */
--	range[0].end = cap_resource((0xfdULL<<32) - 1);
-+	end = cap_resource((0xfdULL<<32) - 1);
-+	end++;
-+	add_range(range, RANGE_NUM, 0, 0, end);
- 
- 	/* need to take out [0, TOM) for RAM*/
- 	address = MSR_K8_TOP_MEM1;
-@@ -205,14 +207,15 @@ static int __init early_fill_mp_bus_info(void)
- 	end = (val & 0xffffff800000ULL);
- 	printk(KERN_INFO "TOM: %016llx aka %lldM\n", end, end>>20);
- 	if (end < (1ULL<<32))
--		subtract_range(range, RANGE_NUM, 0, end - 1);
-+		subtract_range(range, RANGE_NUM, 0, end);
- 
- 	/* get mmconfig */
- 	get_pci_mmcfg_amd_fam10h_range();
- 	/* need to take out mmconf range */
- 	if (fam10h_mmconf_end) {
- 		printk(KERN_DEBUG "Fam 10h mmconf [%llx, %llx]\n", fam10h_mmconf_start, fam10h_mmconf_end);
--		subtract_range(range, RANGE_NUM, fam10h_mmconf_start, fam10h_mmconf_end);
-+		subtract_range(range, RANGE_NUM, fam10h_mmconf_start,
-+				 fam10h_mmconf_end + 1);
- 	}
- 
- 	/* mmio resource */
-@@ -267,7 +270,8 @@ static int __init early_fill_mp_bus_info(void)
- 				/* we got a hole */
- 				endx = fam10h_mmconf_start - 1;
- 				update_res(info, start, endx, IORESOURCE_MEM, 0);
--				subtract_range(range, RANGE_NUM, start, endx);
-+				subtract_range(range, RANGE_NUM, start,
-+						 endx + 1);
- 				printk(KERN_CONT " ==> [%llx, %llx]", start, endx);
- 				start = fam10h_mmconf_end + 1;
- 				changed = 1;
-@@ -284,7 +288,7 @@ static int __init early_fill_mp_bus_info(void)
- 
- 		update_res(info, cap_resource(start), cap_resource(end),
- 				 IORESOURCE_MEM, 1);
--		subtract_range(range, RANGE_NUM, start, end);
-+		subtract_range(range, RANGE_NUM, start, end + 1);
- 		printk(KERN_CONT "\n");
- 	}
- 
-@@ -299,7 +303,7 @@ static int __init early_fill_mp_bus_info(void)
- 		rdmsrl(address, val);
- 		end = (val & 0xffffff800000ULL);
- 		printk(KERN_INFO "TOM2: %016llx aka %lldM\n", end, end>>20);
--		subtract_range(range, RANGE_NUM, 1ULL<<32, end - 1);
-+		subtract_range(range, RANGE_NUM, 1ULL<<32, end);
- 	}
- 
- 	/*
-@@ -319,7 +323,7 @@ static int __init early_fill_mp_bus_info(void)
- 				continue;
- 
- 			update_res(info, cap_resource(range[i].start),
--				   cap_resource(range[i].end),
-+				   cap_resource(range[i].end - 1),
- 				   IORESOURCE_MEM, 1);
- 		}
- 	}
-diff --git a/kernel/range.c b/kernel/range.c
-index 71e0021..74e2e61 100644
---- a/kernel/range.c
-+++ b/kernel/range.c
-@@ -13,7 +13,7 @@
- 
- int add_range(struct range *range, int az, int nr_range, u64 start, u64 end)
- {
--	if (start > end)
-+	if (start >= end)
- 		return nr_range;
- 
- 	/* Out of slots: */
-@@ -33,7 +33,7 @@ int add_range_with_merge(struct range *range, int az, int nr_range,
- {
- 	int i;
- 
--	if (start > end)
-+	if (start >= end)
- 		return nr_range;
- 
- 	/* Try to merge it with old one: */
-@@ -46,7 +46,7 @@ int add_range_with_merge(struct range *range, int az, int nr_range,
- 
- 		common_start = max(range[i].start, start);
- 		common_end = min(range[i].end, end);
--		if (common_start > common_end + 1)
-+		if (common_start > common_end)
- 			continue;
- 
- 		final_start = min(range[i].start, start);
-@@ -65,7 +65,7 @@ void subtract_range(struct range *range, int az, u64 start, u64 end)
- {
- 	int i, j;
- 
--	if (start > end)
-+	if (start >= end)
++static void __init __check_and_double_early_res(u64 start)
++{
++	u64 end, size, mem;
++	struct early_res *new;
++
++	/* do we have enough slots left ? */
++	if ((max_early_res - early_res_count) > max(max_early_res/8, 2))
++		return;
++
++	/* double it */
++	end = max_pfn_mapped << PAGE_SHIFT;
++	size = sizeof(struct early_res) * max_early_res * 2;
++	mem = find_e820_area(start, end, size, sizeof(struct early_res));
++
++	if (mem == -1ULL)
++		panic("can not find more space for early_res array");
++
++	new = __va(mem);
++	/* save the first one for own */
++	new[0].start = mem;
++	new[0].end = mem + size;
++	new[0].overlap_ok = 0;
++	/* copy old to new */
++	if (early_res == early_res_x) {
++		memcpy(&new[1], &early_res[0],
++			 sizeof(struct early_res) * max_early_res);
++		memset(&new[max_early_res+1], 0,
++			 sizeof(struct early_res) * (max_early_res - 1));
++		early_res_count++;
++	} else {
++		memcpy(&new[1], &early_res[1],
++			 sizeof(struct early_res) * (max_early_res - 1));
++		memset(&new[max_early_res], 0,
++			 sizeof(struct early_res) * max_early_res);
++	}
++	memset(&early_res[0], 0, sizeof(struct early_res) * max_early_res);
++	early_res = new;
++	max_early_res *= 2;
++	printk(KERN_DEBUG "early_res array is doubled to %d at [%llx - %llx]\n",
++		max_early_res, mem, mem + size - 1);
++}
++
+ /*
+  * Most early reservations come here.
+  *
+@@ -929,6 +971,8 @@ void __init reserve_early(u64 start, u64 end, char *name)
+ 	if (start >= end)
  		return;
  
- 	for (j = 0; j < az; j++) {
-@@ -79,15 +79,15 @@ void subtract_range(struct range *range, int az, u64 start, u64 end)
- 		}
++	__check_and_double_early_res(end);
++
+ 	drop_overlaps_that_are_ok(start, end);
+ 	__reserve_early(start, end, name, 0);
+ }
+@@ -957,6 +1001,10 @@ void __init early_res_to_bootmem(u64 start, u64 end)
+ 	for (i = 0; i < max_early_res && early_res[i].end; i++)
+ 		count++;
  
- 		if (start <= range[j].start && end < range[j].end &&
--		    range[j].start < end + 1) {
--			range[j].start = end + 1;
-+		    range[j].start < end) {
-+			range[j].start = end;
- 			continue;
- 		}
- 
- 
- 		if (start > range[j].start && end >= range[j].end &&
--		    range[j].end > start - 1) {
--			range[j].end = start - 1;
-+		    range[j].end > start) {
-+			range[j].end = start;
- 			continue;
- 		}
- 
-@@ -99,11 +99,11 @@ void subtract_range(struct range *range, int az, u64 start, u64 end)
- 			}
- 			if (i < az) {
- 				range[i].end = range[j].end;
--				range[i].start = end + 1;
-+				range[i].start = end;
- 			} else {
- 				printk(KERN_ERR "run of slot in ranges\n");
- 			}
--			range[j].end = start - 1;
-+			range[j].end = start;
- 			continue;
- 		}
++	/* need to skip first one ?*/
++	if (early_res != early_res_x)
++		idx = 1;
++
+ 	printk(KERN_INFO "(%d/%d early reservations) ==> bootmem [%010llx - %010llx]\n",
+ 			 count - idx, max_early_res, start, end);
+ 	for (i = idx; i < count; i++) {
+@@ -974,6 +1022,11 @@ void __init early_res_to_bootmem(u64 start, u64 end)
+ 		reserve_bootmem_generic(final_start, final_end - final_start,
+ 				BOOTMEM_DEFAULT);
  	}
++	/* clear them */
++	memset(&early_res[0], 0, sizeof(struct early_res) * max_early_res);
++	early_res = NULL;
++	max_early_res = 0;
++	early_res_count = 0;
+ }
+ 
+ /* Check for already reserved areas */
 -- 
 1.6.4.2
 
