@@ -1,39 +1,58 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753598Ab0BIKXT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 05:23:19 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:60213 "EHLO mx2.suse.de"
+	id S1754065Ab0BIKqj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 05:46:39 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:36791 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751891Ab0BIKXS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Feb 2010 05:23:18 -0500
-Date: Tue, 9 Feb 2010 11:23:13 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Anton Blanchard <anton@samba.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Remove reference to kthread_create_on_cpu
-In-Reply-To: <201002091604.43557.rusty@rustcorp.com.au>
-Message-ID: <alpine.LNX.2.00.1002091122590.30967@pobox.suse.cz>
-References: <20100209040740.GB3702@kryten> <201002091604.43557.rusty@rustcorp.com.au>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1752067Ab0BIKqh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Feb 2010 05:46:37 -0500
+Date: Tue, 9 Feb 2010 21:46:30 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: michal.simek@petalogix.com
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: linux-next: manual merge of the microblaze tree with Linus'
+ tree
+Message-Id: <20100209214630.27159afb.sfr@canb.auug.org.au>
+In-Reply-To: <4B711A5F.7020304@petalogix.com>
+References: <20100209110710.c7b6992b.sfr@canb.auug.org.au>
+	<4B711A5F.7020304@petalogix.com>
+X-Mailer: Sylpheed 3.0.0beta7 (GTK+ 2.18.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__9_Feb_2010_21_46_30_+1100_+EWziOS8y+gu+7Vi"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 9 Feb 2010, Rusty Russell wrote:
+--Signature=_Tue__9_Feb_2010_21_46_30_+1100_+EWziOS8y+gu+7Vi
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> > kthread_create_on_cpu doesn't exist so update a comment in kthread.c to
-> > reflect this.
-> > 
-> > Signed-off-by: Anton Blanchard <anton@samba.org>
-> 
-> Acked-by: Rusty Russell <rusty@rustcorp.com.au>
+Hi Michal,
 
-Applied, thanks.
+On Tue, 09 Feb 2010 09:18:39 +0100 Michal Simek <michal.simek@petalogix.com=
+> wrote:
+>
+> Yes, I know about. I am fixing it.
 
--- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+Great, thanks.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__9_Feb_2010_21_46_30_+1100_+EWziOS8y+gu+7Vi
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAktxPQYACgkQjjKRsyhoI8x1XQCgjA+Y7tqlwpZwEn58c0806PRc
+BZ4AnRCa9ah/tCbKr2milTzTZRJh3VJl
+=h7DZ
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__9_Feb_2010_21_46_30_+1100_+EWziOS8y+gu+7Vi--
