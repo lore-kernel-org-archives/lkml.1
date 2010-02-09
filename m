@@ -1,78 +1,65 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754166Ab0BIKwy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 05:52:54 -0500
-Received: from hera.kernel.org ([140.211.167.34]:41691 "EHLO hera.kernel.org"
+	id S1754201Ab0BIKxH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 05:53:07 -0500
+Received: from hera.kernel.org ([140.211.167.34]:41706 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754134Ab0BIKwu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Feb 2010 05:52:50 -0500
-Date: Tue, 9 Feb 2010 10:52:00 GMT
+	id S1753923Ab0BIKxD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Feb 2010 05:53:03 -0500
+Date: Tue, 9 Feb 2010 10:52:16 GMT
 From: tip-bot for Anton Blanchard <anton@samba.org>
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       anton@samba.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, anton@samba.org, paulus@samba.org,
-       acme@redhat.com, linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+Cc: linux-kernel@vger.kernel.org, anton@samba.org, hpa@zytor.com,
+       mingo@redhat.com, a.p.zijlstra@chello.nl, rusty@rustcorp.com.au,
        tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20100209034304.GA3702@kryten>
-References: <20100209034304.GA3702@kryten>
+Reply-To: mingo@redhat.com, hpa@zytor.com, anton@samba.org,
+       linux-kernel@vger.kernel.org, rusty@rustcorp.com.au,
+       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <20100209040740.GB3702@kryten>
+References: <20100209040740.GB3702@kryten>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/urgent] perf: Fix hypervisor sample reporting
-Message-ID: <tip-7fbfc683f1cc4051aa095ebe48d9d1e8b015682d@git.kernel.org>
-Git-Commit-ID: 7fbfc683f1cc4051aa095ebe48d9d1e8b015682d
+Subject: [tip:sched/core] kthread, sched: Remove reference to kthread_create_on_cpu
+Message-ID: <tip-301ba0457f1ed853fc08e57785f8c87fe7e49c68@git.kernel.org>
+Git-Commit-ID: 301ba0457f1ed853fc08e57785f8c87fe7e49c68
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Tue, 09 Feb 2010 10:52:01 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Tue, 09 Feb 2010 10:52:16 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  7fbfc683f1cc4051aa095ebe48d9d1e8b015682d
-Gitweb:     http://git.kernel.org/tip/7fbfc683f1cc4051aa095ebe48d9d1e8b015682d
+Commit-ID:  301ba0457f1ed853fc08e57785f8c87fe7e49c68
+Gitweb:     http://git.kernel.org/tip/301ba0457f1ed853fc08e57785f8c87fe7e49c68
 Author:     Anton Blanchard <anton@samba.org>
-AuthorDate: Tue, 9 Feb 2010 14:43:05 +1100
+AuthorDate: Tue, 9 Feb 2010 15:07:40 +1100
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 9 Feb 2010 10:52:40 +0100
+CommitDate: Tue, 9 Feb 2010 11:47:39 +0100
 
-perf: Fix hypervisor sample reporting
+kthread, sched: Remove reference to kthread_create_on_cpu
 
-cpumode bits are defined as such:
-
- #define PERF_RECORD_MISC_KERNEL                 (1 << 0)
- #define PERF_RECORD_MISC_USER                   (2 << 0)
- #define PERF_RECORD_MISC_HYPERVISOR             (3 << 0)
-
-We need to compare against the complete value of cpumode,
-otherwise hypervisor samples get incorrectly attributed as
-userspace.
+kthread_create_on_cpu doesn't exist so update a comment in
+kthread.c to reflect this.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
+Acked-by: Rusty Russell <rusty@rustcorp.com.au>
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: fweisbec@gmail.com
-LKML-Reference: <20100209034304.GA3702@kryten>
+LKML-Reference: <20100209040740.GB3702@kryten>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- tools/perf/util/event.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ kernel/kthread.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/tools/perf/util/event.c b/tools/perf/util/event.c
-index bb0fd6d..8a9e6ba 100644
---- a/tools/perf/util/event.c
-+++ b/tools/perf/util/event.c
-@@ -295,10 +295,10 @@ void thread__find_addr_location(struct thread *self,
- 	al->thread = self;
- 	al->addr = addr;
- 
--	if (cpumode & PERF_RECORD_MISC_KERNEL) {
-+	if (cpumode == PERF_RECORD_MISC_KERNEL) {
- 		al->level = 'k';
- 		mg = &session->kmaps;
--	} else if (cpumode & PERF_RECORD_MISC_USER)
-+	} else if (cpumode == PERF_RECORD_MISC_USER)
- 		al->level = '.';
- 	else {
- 		al->level = 'H';
+diff --git a/kernel/kthread.c b/kernel/kthread.c
+index fbb6222..82ed0ea 100644
+--- a/kernel/kthread.c
++++ b/kernel/kthread.c
+@@ -101,7 +101,7 @@ static void create_kthread(struct kthread_create_info *create)
+  *
+  * Description: This helper function creates and names a kernel
+  * thread.  The thread will be stopped: use wake_up_process() to start
+- * it.  See also kthread_run(), kthread_create_on_cpu().
++ * it.  See also kthread_run().
+  *
+  * When woken, the thread will run @threadfn() with @data as its
+  * argument. @threadfn() can either call do_exit() directly if it is a
