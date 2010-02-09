@@ -1,39 +1,72 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754036Ab0BIXMq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 18:12:46 -0500
-Received: from mail.tmr.com ([64.65.253.246]:38299 "EHLO partygirl.tmr.com"
+	id S1754556Ab0BIXQK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 18:16:10 -0500
+Received: from kroah.org ([198.145.64.141]:57922 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751672Ab0BIXMp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Feb 2010 18:12:45 -0500
-Message-ID: <4B71EBD8.8070406@tmr.com>
-Date: Tue, 09 Feb 2010 18:12:24 -0500
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.21) Gecko/20090507 Fedora/1.1.16-1.fc9 NOT Firefox/3.0.11 pango-text SeaMonkey/1.1.16
+	id S1753211Ab0BIXQI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Feb 2010 18:16:08 -0500
+Date: Tue, 9 Feb 2010 15:16:03 -0800
+From: Greg KH <gregkh@suse.de>
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: Matthias Schwarzott <zzam@gentoo.org>,
+       Douglas Schilling Landgraf <dougsland@redhat.com>,
+       Andreas Oberritter <obi@linuxtv.org>, linux-media@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Andreas Gruenbacher <agruen@suse.de>
+Subject: [PATCH] dvb: l64781.ko broken with gcc 4.5
+Message-ID: <20100209231603.GA22588@kroah.com>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.33-rc6 crashes on resume
-References: <4B70982F.8090208@roadwarrior3.tmr.com> <201002090009.50118.rjw@sisk.pl>
-In-Reply-To: <201002090009.50118.rjw@sisk.pl>
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> On Tuesday 09 February 2010, Bill Davidsen wrote:
->> Pretty simple to reproduce, boot, suspend, press shift
->>
->> Acer Aspire 1681, Celeron, 2.6.33-rc6. Trace and config attached.
-> 
-> I guess 2.6.32 didn't crash?
-> 
-Wasn't testing. 2.6.32.5 didn't crash, later Fedora kernels kill the touchpad, I 
-can dig up the old bugzilla if you can't find it.
+From: Richard Guenther <rguenther@suse.de>
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+I'm trying to fix it on the GCC side (PR43007), but the module is
+quite stupid in using ULL constants to operate on u32 values:
+
+static int apply_frontend_param (struct dvb_frontend* fe, struct
+dvb_frontend_parameters *param)
+{
+...
+ static const u32 ppm = 8000;
+ u32 spi_bias;
+...
+
+ spi_bias *= 1000ULL;
+ spi_bias /= 1000ULL + ppm/1000;
+
+
+which causes current GCC 4.5 to emit calls to __udivdi3 for i?86 again.
+
+This patch fixes this issue.
+
+Signed-off-by: Richard Guenther <rguenther@suse.de>
+Cc: Andreas Gruenbacher <agruen@suse.de>
+Cc: stable <stable@kernel.org>
+Cc: Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: Matthias Schwarzott <zzam@gentoo.org>
+Cc: Douglas Schilling Landgraf <dougsland@redhat.com>
+Cc: Andreas Oberritter <obi@linuxtv.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ drivers/media/dvb/frontends/l64781.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+--- a/drivers/media/dvb/frontends/l64781.c
++++ b/drivers/media/dvb/frontends/l64781.c
+@@ -192,8 +192,8 @@ static int apply_frontend_param (struct
+ 	spi_bias *= qam_tab[p->constellation];
+ 	spi_bias /= p->code_rate_HP + 1;
+ 	spi_bias /= (guard_tab[p->guard_interval] + 32);
+-	spi_bias *= 1000ULL;
+-	spi_bias /= 1000ULL + ppm/1000;
++	spi_bias *= 1000;
++	spi_bias /= 1000 + ppm/1000;
+ 	spi_bias *= p->code_rate_HP;
+ 
+ 	val0x04 = (p->transmission_mode << 2) | p->guard_interval;
