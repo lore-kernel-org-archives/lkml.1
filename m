@@ -1,18 +1,18 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753296Ab0BIA54 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Feb 2010 19:57:56 -0500
-Received: from rcsinet12.oracle.com ([148.87.113.124]:17577 "EHLO
+	id S1753434Ab0BIA6I (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Feb 2010 19:58:08 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:52316 "EHLO
 	rcsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752046Ab0BIA5z (ORCPT
+	with ESMTP id S1753329Ab0BIA6D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Feb 2010 19:57:55 -0500
-Date: Mon, 8 Feb 2010 16:55:54 -0800
+	Mon, 8 Feb 2010 19:58:03 -0500
+Date: Mon, 8 Feb 2010 16:56:25 -0800
 From: Randy Dunlap <randy.dunlap@oracle.com>
 To: lkml <linux-kernel@vger.kernel.org>
-Cc: akpm <akpm@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH 1/4] docum/timers: split txt and source files
-Message-Id: <20100208165554.18d0420b.randy.dunlap@oracle.com>
+Cc: akpm <akpm@linux-foundation.org>, Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: [PATCH 3/4] docum/fs: split txt and source files
+Message-Id: <20100208165625.aaa9688f.randy.dunlap@oracle.com>
 Organization: Oracle Linux Eng.
 X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
@@ -20,613 +20,135 @@ Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 X-Source-IP: acsmt354.oracle.com [141.146.40.154]
 X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090204.4B70B2FC.015C:SCFMA4539814,ss=1,fgs=0
+X-CT-RefId: str=0001.0A090204.4B70B2E2.0099:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Documentation/timers/hpet.txt:
-Expose example and tool source files in the Documentation/timers/ directory in
-their own files instead of being buried (almost hidden) in readme/txt files.
-This should help to prevent bitrot.
-
-This will make them more visible/usable to users who may need
-to use them, to developers who may need to test with them, and
-to anyone who would fix/update them if they were more visible.
-
-Also, if any of these possibly should not be in the kernel tree at
-all, it will be clearer that they are here and we can discuss if
-they should be removed.
+Make dnotify_test.c source file and add it to Makefile so that
+bitrot can be prevented.
 
 Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
+cc: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- Documentation/Makefile              |    2 
- Documentation/timers/00-INDEX       |    2 
- Documentation/timers/Makefile       |    8 
- Documentation/timers/hpet.txt       |  273 --------------------------
- Documentation/timers/hpet_example.c |  269 +++++++++++++++++++++++++
- 5 files changed, 282 insertions(+), 272 deletions(-)
+ Documentation/Makefile                   |    2 -
+ Documentation/filesystems/00-INDEX       |    2 +
+ Documentation/filesystems/Makefile       |    8 ++++
+ Documentation/filesystems/dnotify.txt    |   39 ++-------------------
+ Documentation/filesystems/dnotify_test.c |   34 ++++++++++++++++++
+ 5 files changed, 50 insertions(+), 35 deletions(-)
 
---- lnx-2633-rc7.orig/Documentation/timers/hpet.txt
-+++ lnx-2633-rc7/Documentation/timers/hpet.txt
-@@ -26,274 +26,5 @@ initialization.  An example of this init
- arch/x86/kernel/hpet.c.
- 
- The driver provides a userspace API which resembles the API found in the
--RTC driver framework.  An example user space program is provided below.
--
--#include <stdio.h>
--#include <stdlib.h>
--#include <unistd.h>
--#include <fcntl.h>
--#include <string.h>
--#include <memory.h>
--#include <malloc.h>
--#include <time.h>
--#include <ctype.h>
--#include <sys/types.h>
--#include <sys/wait.h>
--#include <signal.h>
--#include <fcntl.h>
--#include <errno.h>
--#include <sys/time.h>
--#include <linux/hpet.h>
--
--
--extern void hpet_open_close(int, const char **);
--extern void hpet_info(int, const char **);
--extern void hpet_poll(int, const char **);
--extern void hpet_fasync(int, const char **);
--extern void hpet_read(int, const char **);
--
--#include <sys/poll.h>
--#include <sys/ioctl.h>
--#include <signal.h>
--
--struct hpet_command {
--	char		*command;
--	void		(*func)(int argc, const char ** argv);
--} hpet_command[] = {
--	{
--		"open-close",
--		hpet_open_close
--	},
--	{
--		"info",
--		hpet_info
--	},
--	{
--		"poll",
--		hpet_poll
--	},
--	{
--		"fasync",
--		hpet_fasync
--	},
--};
--
--int
--main(int argc, const char ** argv)
--{
--	int	i;
--
--	argc--;
--	argv++;
--
--	if (!argc) {
--		fprintf(stderr, "-hpet: requires command\n");
--		return -1;
--	}
--
--
--	for (i = 0; i < (sizeof (hpet_command) / sizeof (hpet_command[0])); i++)
--		if (!strcmp(argv[0], hpet_command[i].command)) {
--			argc--;
--			argv++;
--			fprintf(stderr, "-hpet: executing %s\n",
--				hpet_command[i].command);
--			hpet_command[i].func(argc, argv);
--			return 0;
--		}
--
--	fprintf(stderr, "do_hpet: command %s not implemented\n", argv[0]);
--
--	return -1;
--}
--
--void
--hpet_open_close(int argc, const char **argv)
--{
--	int	fd;
--
--	if (argc != 1) {
--		fprintf(stderr, "hpet_open_close: device-name\n");
--		return;
--	}
--
--	fd = open(argv[0], O_RDONLY);
--	if (fd < 0)
--		fprintf(stderr, "hpet_open_close: open failed\n");
--	else
--		close(fd);
--
--	return;
--}
--
--void
--hpet_info(int argc, const char **argv)
--{
--}
--
--void
--hpet_poll(int argc, const char **argv)
--{
--	unsigned long		freq;
--	int			iterations, i, fd;
--	struct pollfd		pfd;
--	struct hpet_info	info;
--	struct timeval		stv, etv;
--	struct timezone		tz;
--	long			usec;
--
--	if (argc != 3) {
--		fprintf(stderr, "hpet_poll: device-name freq iterations\n");
--		return;
--	}
--
--	freq = atoi(argv[1]);
--	iterations = atoi(argv[2]);
--
--	fd = open(argv[0], O_RDONLY);
--
--	if (fd < 0) {
--		fprintf(stderr, "hpet_poll: open of %s failed\n", argv[0]);
--		return;
--	}
--
--	if (ioctl(fd, HPET_IRQFREQ, freq) < 0) {
--		fprintf(stderr, "hpet_poll: HPET_IRQFREQ failed\n");
--		goto out;
--	}
--
--	if (ioctl(fd, HPET_INFO, &info) < 0) {
--		fprintf(stderr, "hpet_poll: failed to get info\n");
--		goto out;
--	}
--
--	fprintf(stderr, "hpet_poll: info.hi_flags 0x%lx\n", info.hi_flags);
--
--	if (info.hi_flags && (ioctl(fd, HPET_EPI, 0) < 0)) {
--		fprintf(stderr, "hpet_poll: HPET_EPI failed\n");
--		goto out;
--	}
--
--	if (ioctl(fd, HPET_IE_ON, 0) < 0) {
--		fprintf(stderr, "hpet_poll, HPET_IE_ON failed\n");
--		goto out;
--	}
--
--	pfd.fd = fd;
--	pfd.events = POLLIN;
--
--	for (i = 0; i < iterations; i++) {
--		pfd.revents = 0;
--		gettimeofday(&stv, &tz);
--		if (poll(&pfd, 1, -1) < 0)
--			fprintf(stderr, "hpet_poll: poll failed\n");
--		else {
--			long 	data;
--
--			gettimeofday(&etv, &tz);
--			usec = stv.tv_sec * 1000000 + stv.tv_usec;
--			usec = (etv.tv_sec * 1000000 + etv.tv_usec) - usec;
--
--			fprintf(stderr,
--				"hpet_poll: expired time = 0x%lx\n", usec);
--
--			fprintf(stderr, "hpet_poll: revents = 0x%x\n",
--				pfd.revents);
--
--			if (read(fd, &data, sizeof(data)) != sizeof(data)) {
--				fprintf(stderr, "hpet_poll: read failed\n");
--			}
--			else
--				fprintf(stderr, "hpet_poll: data 0x%lx\n",
--					data);
--		}
--	}
--
--out:
--	close(fd);
--	return;
--}
--
--static int hpet_sigio_count;
--
--static void
--hpet_sigio(int val)
--{
--	fprintf(stderr, "hpet_sigio: called\n");
--	hpet_sigio_count++;
--}
--
--void
--hpet_fasync(int argc, const char **argv)
--{
--	unsigned long		freq;
--	int			iterations, i, fd, value;
--	sig_t			oldsig;
--	struct hpet_info	info;
--
--	hpet_sigio_count = 0;
--	fd = -1;
--
--	if ((oldsig = signal(SIGIO, hpet_sigio)) == SIG_ERR) {
--		fprintf(stderr, "hpet_fasync: failed to set signal handler\n");
--		return;
--	}
--
--	if (argc != 3) {
--		fprintf(stderr, "hpet_fasync: device-name freq iterations\n");
--		goto out;
--	}
--
--	fd = open(argv[0], O_RDONLY);
--
--	if (fd < 0) {
--		fprintf(stderr, "hpet_fasync: failed to open %s\n", argv[0]);
--		return;
--	}
--
--
--	if ((fcntl(fd, F_SETOWN, getpid()) == 1) ||
--		((value = fcntl(fd, F_GETFL)) == 1) ||
--		(fcntl(fd, F_SETFL, value | O_ASYNC) == 1)) {
--		fprintf(stderr, "hpet_fasync: fcntl failed\n");
--		goto out;
--	}
--
--	freq = atoi(argv[1]);
--	iterations = atoi(argv[2]);
--
--	if (ioctl(fd, HPET_IRQFREQ, freq) < 0) {
--		fprintf(stderr, "hpet_fasync: HPET_IRQFREQ failed\n");
--		goto out;
--	}
--
--	if (ioctl(fd, HPET_INFO, &info) < 0) {
--		fprintf(stderr, "hpet_fasync: failed to get info\n");
--		goto out;
--	}
--
--	fprintf(stderr, "hpet_fasync: info.hi_flags 0x%lx\n", info.hi_flags);
--
--	if (info.hi_flags && (ioctl(fd, HPET_EPI, 0) < 0)) {
--		fprintf(stderr, "hpet_fasync: HPET_EPI failed\n");
--		goto out;
--	}
--
--	if (ioctl(fd, HPET_IE_ON, 0) < 0) {
--		fprintf(stderr, "hpet_fasync, HPET_IE_ON failed\n");
--		goto out;
--	}
--
--	for (i = 0; i < iterations; i++) {
--		(void) pause();
--		fprintf(stderr, "hpet_fasync: count = %d\n", hpet_sigio_count);
--	}
--
--out:
--	signal(SIGIO, oldsig);
--
--	if (fd >= 0)
--		close(fd);
--
--	return;
--}
-+RTC driver framework.  An example user space program is provided in
-+file:Documentation/timers/hpet_example.c
 --- /dev/null
-+++ lnx-2633-rc7/Documentation/timers/hpet_example.c
-@@ -0,0 +1,269 @@
-+#include <stdio.h>
-+#include <stdlib.h>
-+#include <unistd.h>
-+#include <fcntl.h>
-+#include <string.h>
-+#include <memory.h>
-+#include <malloc.h>
-+#include <time.h>
-+#include <ctype.h>
-+#include <sys/types.h>
-+#include <sys/wait.h>
-+#include <signal.h>
-+#include <fcntl.h>
-+#include <errno.h>
-+#include <sys/time.h>
-+#include <linux/hpet.h>
-+
-+
-+extern void hpet_open_close(int, const char **);
-+extern void hpet_info(int, const char **);
-+extern void hpet_poll(int, const char **);
-+extern void hpet_fasync(int, const char **);
-+extern void hpet_read(int, const char **);
-+
-+#include <sys/poll.h>
-+#include <sys/ioctl.h>
-+#include <signal.h>
-+
-+struct hpet_command {
-+	char		*command;
-+	void		(*func)(int argc, const char ** argv);
-+} hpet_command[] = {
-+	{
-+		"open-close",
-+		hpet_open_close
-+	},
-+	{
-+		"info",
-+		hpet_info
-+	},
-+	{
-+		"poll",
-+		hpet_poll
-+	},
-+	{
-+		"fasync",
-+		hpet_fasync
-+	},
-+};
-+
-+int
-+main(int argc, const char ** argv)
-+{
-+	int	i;
-+
-+	argc--;
-+	argv++;
-+
-+	if (!argc) {
-+		fprintf(stderr, "-hpet: requires command\n");
-+		return -1;
-+	}
-+
-+
-+	for (i = 0; i < (sizeof (hpet_command) / sizeof (hpet_command[0])); i++)
-+		if (!strcmp(argv[0], hpet_command[i].command)) {
-+			argc--;
-+			argv++;
-+			fprintf(stderr, "-hpet: executing %s\n",
-+				hpet_command[i].command);
-+			hpet_command[i].func(argc, argv);
-+			return 0;
-+		}
-+
-+	fprintf(stderr, "do_hpet: command %s not implemented\n", argv[0]);
-+
-+	return -1;
-+}
-+
-+void
-+hpet_open_close(int argc, const char **argv)
-+{
-+	int	fd;
-+
-+	if (argc != 1) {
-+		fprintf(stderr, "hpet_open_close: device-name\n");
-+		return;
-+	}
-+
-+	fd = open(argv[0], O_RDONLY);
-+	if (fd < 0)
-+		fprintf(stderr, "hpet_open_close: open failed\n");
-+	else
-+		close(fd);
-+
-+	return;
-+}
-+
-+void
-+hpet_info(int argc, const char **argv)
-+{
-+}
-+
-+void
-+hpet_poll(int argc, const char **argv)
-+{
-+	unsigned long		freq;
-+	int			iterations, i, fd;
-+	struct pollfd		pfd;
-+	struct hpet_info	info;
-+	struct timeval		stv, etv;
-+	struct timezone		tz;
-+	long			usec;
-+
-+	if (argc != 3) {
-+		fprintf(stderr, "hpet_poll: device-name freq iterations\n");
-+		return;
-+	}
-+
-+	freq = atoi(argv[1]);
-+	iterations = atoi(argv[2]);
-+
-+	fd = open(argv[0], O_RDONLY);
-+
-+	if (fd < 0) {
-+		fprintf(stderr, "hpet_poll: open of %s failed\n", argv[0]);
-+		return;
-+	}
-+
-+	if (ioctl(fd, HPET_IRQFREQ, freq) < 0) {
-+		fprintf(stderr, "hpet_poll: HPET_IRQFREQ failed\n");
-+		goto out;
-+	}
-+
-+	if (ioctl(fd, HPET_INFO, &info) < 0) {
-+		fprintf(stderr, "hpet_poll: failed to get info\n");
-+		goto out;
-+	}
-+
-+	fprintf(stderr, "hpet_poll: info.hi_flags 0x%lx\n", info.hi_flags);
-+
-+	if (info.hi_flags && (ioctl(fd, HPET_EPI, 0) < 0)) {
-+		fprintf(stderr, "hpet_poll: HPET_EPI failed\n");
-+		goto out;
-+	}
-+
-+	if (ioctl(fd, HPET_IE_ON, 0) < 0) {
-+		fprintf(stderr, "hpet_poll, HPET_IE_ON failed\n");
-+		goto out;
-+	}
-+
-+	pfd.fd = fd;
-+	pfd.events = POLLIN;
-+
-+	for (i = 0; i < iterations; i++) {
-+		pfd.revents = 0;
-+		gettimeofday(&stv, &tz);
-+		if (poll(&pfd, 1, -1) < 0)
-+			fprintf(stderr, "hpet_poll: poll failed\n");
-+		else {
-+			long 	data;
-+
-+			gettimeofday(&etv, &tz);
-+			usec = stv.tv_sec * 1000000 + stv.tv_usec;
-+			usec = (etv.tv_sec * 1000000 + etv.tv_usec) - usec;
-+
-+			fprintf(stderr,
-+				"hpet_poll: expired time = 0x%lx\n", usec);
-+
-+			fprintf(stderr, "hpet_poll: revents = 0x%x\n",
-+				pfd.revents);
-+
-+			if (read(fd, &data, sizeof(data)) != sizeof(data)) {
-+				fprintf(stderr, "hpet_poll: read failed\n");
-+			}
-+			else
-+				fprintf(stderr, "hpet_poll: data 0x%lx\n",
-+					data);
-+		}
-+	}
-+
-+out:
-+	close(fd);
-+	return;
-+}
-+
-+static int hpet_sigio_count;
-+
-+static void
-+hpet_sigio(int val)
-+{
-+	fprintf(stderr, "hpet_sigio: called\n");
-+	hpet_sigio_count++;
-+}
-+
-+void
-+hpet_fasync(int argc, const char **argv)
-+{
-+	unsigned long		freq;
-+	int			iterations, i, fd, value;
-+	sig_t			oldsig;
-+	struct hpet_info	info;
-+
-+	hpet_sigio_count = 0;
-+	fd = -1;
-+
-+	if ((oldsig = signal(SIGIO, hpet_sigio)) == SIG_ERR) {
-+		fprintf(stderr, "hpet_fasync: failed to set signal handler\n");
-+		return;
-+	}
-+
-+	if (argc != 3) {
-+		fprintf(stderr, "hpet_fasync: device-name freq iterations\n");
-+		goto out;
-+	}
-+
-+	fd = open(argv[0], O_RDONLY);
-+
-+	if (fd < 0) {
-+		fprintf(stderr, "hpet_fasync: failed to open %s\n", argv[0]);
-+		return;
-+	}
-+
-+
-+	if ((fcntl(fd, F_SETOWN, getpid()) == 1) ||
-+		((value = fcntl(fd, F_GETFL)) == 1) ||
-+		(fcntl(fd, F_SETFL, value | O_ASYNC) == 1)) {
-+		fprintf(stderr, "hpet_fasync: fcntl failed\n");
-+		goto out;
-+	}
-+
-+	freq = atoi(argv[1]);
-+	iterations = atoi(argv[2]);
-+
-+	if (ioctl(fd, HPET_IRQFREQ, freq) < 0) {
-+		fprintf(stderr, "hpet_fasync: HPET_IRQFREQ failed\n");
-+		goto out;
-+	}
-+
-+	if (ioctl(fd, HPET_INFO, &info) < 0) {
-+		fprintf(stderr, "hpet_fasync: failed to get info\n");
-+		goto out;
-+	}
-+
-+	fprintf(stderr, "hpet_fasync: info.hi_flags 0x%lx\n", info.hi_flags);
-+
-+	if (info.hi_flags && (ioctl(fd, HPET_EPI, 0) < 0)) {
-+		fprintf(stderr, "hpet_fasync: HPET_EPI failed\n");
-+		goto out;
-+	}
-+
-+	if (ioctl(fd, HPET_IE_ON, 0) < 0) {
-+		fprintf(stderr, "hpet_fasync, HPET_IE_ON failed\n");
-+		goto out;
-+	}
-+
-+	for (i = 0; i < iterations; i++) {
-+		(void) pause();
-+		fprintf(stderr, "hpet_fasync: count = %d\n", hpet_sigio_count);
-+	}
-+
-+out:
-+	signal(SIGIO, oldsig);
-+
-+	if (fd >= 0)
-+		close(fd);
-+
-+	return;
-+}
---- lnx-2633-rc7.orig/Documentation/Makefile
-+++ lnx-2633-rc7/Documentation/Makefile
-@@ -1,3 +1,3 @@
- obj-m := DocBook/ accounting/ auxdisplay/ connector/ \
- 	filesystems/configfs/ ia64/ networking/ \
--	pcmcia/ spi/ video4linux/ vm/ watchdog/src/
-+	pcmcia/ spi/ timers/ video4linux/ vm/ watchdog/src/
---- /dev/null
-+++ lnx-2633-rc7/Documentation/timers/Makefile
++++ lnx-2633-rc7/Documentation/filesystems/Makefile
 @@ -0,0 +1,8 @@
 +# kbuild trick to avoid linker error. Can be omitted if a module is built.
 +obj- := dummy.o
 +
 +# List of programs to build
-+hostprogs-y := hpet_example
++hostprogs-y := dnotify_test
 +
 +# Tell kbuild to always build the programs
 +always := $(hostprogs-y)
---- lnx-2633-rc7.orig/Documentation/timers/00-INDEX
-+++ lnx-2633-rc7/Documentation/timers/00-INDEX
-@@ -4,6 +4,8 @@ highres.txt
- 	- High resolution timers and dynamic ticks design notes
- hpet.txt
- 	- High Precision Event Timer Driver for Linux
-+hpet_example.c
-+	- sample hpet timer test program
- hrtimers.txt
- 	- subsystem for high-resolution kernel timers
- timer_stats.txt
+--- lnx-2633-rc7.orig/Documentation/filesystems/dnotify.txt
++++ lnx-2633-rc7/Documentation/filesystems/dnotify.txt
+@@ -62,38 +62,9 @@ disabled, fcntl(fd, F_NOTIFY, ...) will 
+ 
+ Example
+ -------
++See Documentation/filesystems/dnotify_test.c for an example.
+ 
+-	#define _GNU_SOURCE	/* needed to get the defines */
+-	#include <fcntl.h>	/* in glibc 2.2 this has the needed
+-					   values defined */
+-	#include <signal.h>
+-	#include <stdio.h>
+-	#include <unistd.h>
+-
+-	static volatile int event_fd;
+-
+-	static void handler(int sig, siginfo_t *si, void *data)
+-	{
+-		event_fd = si->si_fd;
+-	}
+-
+-	int main(void)
+-	{
+-		struct sigaction act;
+-		int fd;
+-
+-		act.sa_sigaction = handler;
+-		sigemptyset(&act.sa_mask);
+-		act.sa_flags = SA_SIGINFO;
+-		sigaction(SIGRTMIN + 1, &act, NULL);
+-
+-		fd = open(".", O_RDONLY);
+-		fcntl(fd, F_SETSIG, SIGRTMIN + 1);
+-		fcntl(fd, F_NOTIFY, DN_MODIFY|DN_CREATE|DN_MULTISHOT);
+-		/* we will now be notified if any of the files
+-		   in "." is modified or new files are created */
+-		while (1) {
+-			pause();
+-			printf("Got event on fd=%d\n", event_fd);
+-		}
+-	}
++NOTE
++----
++Beginning with Linux 2.6.13, dnotify has been replaced by inotify.
++See Documentation/filesystems/inotify.txt for more information on it.
+--- /dev/null
++++ lnx-2633-rc7/Documentation/filesystems/dnotify_test.c
+@@ -0,0 +1,34 @@
++#define _GNU_SOURCE	/* needed to get the defines */
++#include <fcntl.h>	/* in glibc 2.2 this has the needed
++				   values defined */
++#include <signal.h>
++#include <stdio.h>
++#include <unistd.h>
++
++static volatile int event_fd;
++
++static void handler(int sig, siginfo_t *si, void *data)
++{
++	event_fd = si->si_fd;
++}
++
++int main(void)
++{
++	struct sigaction act;
++	int fd;
++
++	act.sa_sigaction = handler;
++	sigemptyset(&act.sa_mask);
++	act.sa_flags = SA_SIGINFO;
++	sigaction(SIGRTMIN + 1, &act, NULL);
++
++	fd = open(".", O_RDONLY);
++	fcntl(fd, F_SETSIG, SIGRTMIN + 1);
++	fcntl(fd, F_NOTIFY, DN_MODIFY|DN_CREATE|DN_MULTISHOT);
++	/* we will now be notified if any of the files
++	   in "." is modified or new files are created */
++	while (1) {
++		pause();
++		printf("Got event on fd=%d\n", event_fd);
++	}
++}
+--- lnx-2633-rc7.orig/Documentation/filesystems/00-INDEX
++++ lnx-2633-rc7/Documentation/filesystems/00-INDEX
+@@ -32,6 +32,8 @@ dlmfs.txt
+ 	- info on the userspace interface to the OCFS2 DLM.
+ dnotify.txt
+ 	- info about directory notification in Linux.
++dnotify_test.c
++	- example program for dnotify
+ ecryptfs.txt
+ 	- docs on eCryptfs: stacked cryptographic filesystem for Linux.
+ exofs.txt
+--- lnx-2633-rc7.orig/Documentation/Makefile
++++ lnx-2633-rc7/Documentation/Makefile
+@@ -1,3 +1,3 @@
+ obj-m := DocBook/ accounting/ auxdisplay/ connector/ \
+-	filesystems/configfs/ ia64/ laptops/ networking/ \
++	filesystems/ filesystems/configfs/ ia64/ laptops/ networking/ \
+ 	pcmcia/ spi/ timers/ video4linux/ vm/ watchdog/src/
