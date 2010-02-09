@@ -1,82 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753933Ab0BILwb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 06:52:31 -0500
-Received: from mail-ew0-f228.google.com ([209.85.219.228]:46385 "EHLO
-	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752602Ab0BILw3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Feb 2010 06:52:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=LDf0qADbVYMjmhYA47hJssT42kV1E0fty05mAxXUiUoPlJGiaxR7X9BBwMJFXmu7/a
-         F1zEKmusun2ZQ5FuDZamlFP2c5mL1YFzD83nJvll1R5owFO8OmGbbaUbvdZVBbae/puB
-         pJpghFXmD/D7fX+qXT8edmRy2ugWGZPi5AoAg=
-Message-ID: <4B714E15.4020909@gmail.com>
-Date: Tue, 09 Feb 2010 12:59:17 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+	id S1753655Ab0BILxF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 06:53:05 -0500
+Received: from smtp.citrix.com ([66.165.176.89]:27767 "EHLO SMTP.CITRIX.COM"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752602Ab0BILw7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Feb 2010 06:52:59 -0500
+X-IronPort-AV: E=Sophos;i="4.49,436,1262581200"; 
+   d="scan'208";a="7119844"
+Subject: Re: [PATCH 5/7] xen: Make event channel work with PV featured HVM
+From: Ian Campbell <Ian.Campbell@citrix.com>
+To: Sheng Yang <sheng@linux.intel.com>
+CC: Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>,
+       Keir Fraser <Keir.Fraser@eu.citrix.com>,
+       xen-devel <xen-devel@lists.xensource.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <1265616354-7384-6-git-send-email-sheng@linux.intel.com>
+References: <1265616354-7384-1-git-send-email-sheng@linux.intel.com>
+	 <1265616354-7384-6-git-send-email-sheng@linux.intel.com>
+Content-Type: text/plain; charset="UTF-8"
+Organization: Citrix Systems, Inc.
+Date: Tue, 9 Feb 2010 11:52:56 +0000
+Message-ID: <1265716376.24394.32669.camel@zakaz.uk.xensource.com>
 MIME-Version: 1.0
-To: Mauro Carvalho Chehab <mchehab@infradead.org>, linux-media@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] video_device: don't free_irq() an element past array vpif_obj.dev[]
- and fix test
-Content-Type: text/plain; charset=ISO-8859-1
+X-Mailer: Evolution 2.28.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In vpif_get_std_info(): std_info doesn't need the NULL test, it was already
-dereferenced anyway. If std_info->stdid is 0 we could early return -1.
+On Mon, 2010-02-08 at 08:05 +0000, Sheng Yang wrote:
+> +       if (xen_hvm_pv_evtchn_enabled()) {
+> +               if (enable_hvm_pv(HVM_PV_EVTCHN))
+> +                       return -EINVAL;
+> +[...]
+> +               callback_via = HVM_CALLBACK_VECTOR(X86_PLATFORM_IPI_VECTOR);
+> +               set_callback_via(callback_via);
+> +
+> +               x86_platform_ipi_callback = do_hvm_pv_evtchn_intr; 
 
-In vpif_probe(): local variable q was only assigned. If we error out with
-either last two goto's then j equals VPIF_DISPLAY_MAX_DEVICES. So after the
-probe_out: label, k also reaches VPIF_DISPLAY_MAX_DEVICES after the loop. In
-the first iteration in the loop after vpif_int_err: a free_irq() can occur
-of an element &vpif_obj.dev[VPIF_DISPLAY_MAX_DEVICES]->channel_id which is
-outside vpif_obj.dev[] array boundaries.
+Why this indirection via X86_PLATFORM_IPI_VECTOR?
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-Or am I mistaken?
+Apart from that why not use CALLBACKOP_register subop CALLBACKTYPE_event
+pointing to xen_hypervisor_callback the same as a full PV guest?
 
-diff --git a/drivers/media/video/davinci/vpif_display.c b/drivers/media/video/davinci/vpif_display.c
-index dfddef7..8f6605d 100644
---- a/drivers/media/video/davinci/vpif_display.c
-+++ b/drivers/media/video/davinci/vpif_display.c
-@@ -383,7 +383,7 @@ static int vpif_get_std_info(struct channel_obj *ch)
- 	int index;
- 
- 	std_info->stdid = vid_ch->stdid;
--	if (!std_info)
-+	if (!std_info->stdid)
- 		return -1;
- 
- 	for (index = 0; index < ARRAY_SIZE(ch_params); index++) {
-@@ -1423,7 +1423,7 @@ static __init int vpif_probe(struct platform_device *pdev)
- {
- 	struct vpif_subdev_info *subdevdata;
- 	struct vpif_display_config *config;
--	int i, j = 0, k, q, m, err = 0;
-+	int i, j = 0, k, m, err = 0;
- 	struct i2c_adapter *i2c_adap;
- 	struct common_obj *common;
- 	struct channel_obj *ch;
-@@ -1573,10 +1573,12 @@ probe_out:
- 		video_device_release(ch->video_dev);
- 		ch->video_dev = NULL;
- 	}
-+	if (k == VPIF_DISPLAY_MAX_DEVICES)
-+		k = VPIF_DISPLAY_MAX_DEVICES - 1;
- vpif_int_err:
- 	v4l2_device_unregister(&vpif_obj.v4l2_dev);
- 	vpif_err("VPIF IRQ request failed\n");
--	for (q = k; k >= 0; k--) {
-+	for (; k >= 0; k--) {
- 		for (m = i; m >= res->start; m--)
- 			free_irq(m, (void *)(&vpif_obj.dev[k]->channel_id));
- 		res = platform_get_resource(pdev, IORESOURCE_IRQ, k-1);
+This would remove all the evtchn related code from HVMOP_enable_pv which
+I think should be eventually unnecessary as an independent hypercall
+since all HVM guests should simply be PV capable by default -- the
+hypervisor only needs to track if the guest has made use of specific PV
+functionality, not the umbrella "is PV" state.
+
+Ian.
+
+
