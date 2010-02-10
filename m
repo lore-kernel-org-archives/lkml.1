@@ -1,18 +1,18 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754761Ab0BJJWb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 04:22:31 -0500
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:39183 "EHLO
+	id S1754422Ab0BJJWX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 04:22:23 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:39190 "EHLO
 	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753768Ab0BJJWE (ORCPT
+	with ESMTP id S1753475Ab0BJJWG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 04:22:04 -0500
+	Wed, 10 Feb 2010 04:22:06 -0500
 MIME-version: 1.0
 Content-transfer-encoding: 7BIT
 Content-type: TEXT/PLAIN
-Date: Wed, 10 Feb 2010 01:20:28 -0800
+Date: Wed, 10 Feb 2010 01:20:30 -0800
 From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 24/35] x86: make 32bit support NO_BOOTMEM
+Subject: [PATCH 26/35] x86: add find_fw_memmap_area
 In-reply-to: <1265793639-15071-1-git-send-email-yinghai@kernel.org>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
@@ -22,112 +22,110 @@ Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
        Christoph Lameter <cl@linux-foundation.org>,
        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
        Yinghai Lu <yinghai@kernel.org>
-Message-id: <1265793639-15071-25-git-send-email-yinghai@kernel.org>
+Message-id: <1265793639-15071-27-git-send-email-yinghai@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 References: <1265793639-15071-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-let's make 32bit consistent with 64bit
-
--v2: Andrew pointed out for 32bit that we should use -1ULL
+so could move early_res up
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 ---
- arch/x86/Kconfig            |    1 -
- arch/x86/kernel/early_res.c |    3 +++
- arch/x86/mm/init_32.c       |    6 ++++++
- arch/x86/mm/numa_32.c       |    3 +++
- 4 files changed, 12 insertions(+), 1 deletions(-)
+ arch/x86/include/asm/early_res.h |    1 +
+ arch/x86/kernel/e820.c           |    4 ++++
+ arch/x86/kernel/early_res.c      |   17 +++++++++++------
+ 3 files changed, 16 insertions(+), 6 deletions(-)
 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 9543984..29f9efb 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -571,7 +571,6 @@ config PARAVIRT_DEBUG
- config NO_BOOTMEM
- 	default y
- 	bool "Disable Bootmem code"
--	depends on X86_64
- 	---help---
- 	  Use early_res directly instead of bootmem before slab is ready.
- 		- allocator (buddy) [generic]
+diff --git a/arch/x86/include/asm/early_res.h b/arch/x86/include/asm/early_res.h
+index 5a4d2eb..9758f3d 100644
+--- a/arch/x86/include/asm/early_res.h
++++ b/arch/x86/include/asm/early_res.h
+@@ -12,6 +12,7 @@ u64 find_early_area(u64 ei_start, u64 ei_last, u64 start, u64 end,
+ 			 u64 size, u64 align);
+ u64 find_early_area_size(u64 ei_start, u64 ei_last, u64 start,
+ 			 u64 *sizep, u64 align);
++u64 find_fw_memmap_area(u64 start, u64 end, u64 size, u64 align);
+ #include <linux/range.h>
+ int get_free_all_memory_range(struct range **rangep, int nodeid);
+ 
+diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
+index b4e512b..36918d8 100644
+--- a/arch/x86/kernel/e820.c
++++ b/arch/x86/kernel/e820.c
+@@ -748,6 +748,10 @@ u64 __init find_e820_area(u64 start, u64 end, u64 size, u64 align)
+ 	return -1ULL;
+ }
+ 
++u64 __init find_fw_memmap_area(u64 start, u64 end, u64 size, u64 align)
++{
++	return find_e820_area(start, end, size, align);
++}
+ /*
+  * Find next free range after *start
+  */
 diff --git a/arch/x86/kernel/early_res.c b/arch/x86/kernel/early_res.c
-index 52804e9..c8be692 100644
+index c8be692..e1d8be1 100644
 --- a/arch/x86/kernel/early_res.c
 +++ b/arch/x86/kernel/early_res.c
-@@ -354,6 +354,9 @@ int __init get_free_all_memory_range(struct range **rangep, int nodeid)
+@@ -7,16 +7,14 @@
+ #include <linux/bootmem.h>
+ #include <linux/mm.h>
  
- 	/* need to go over early_node_map to find out good range for node */
- 	nr_range = add_from_early_node_map(range, count, nr_range, nodeid);
-+#ifdef CONFIG_X86_32
-+	subtract_range(range, count, max_low_pfn, -1ULL);
-+#endif
- 	subtract_early_res(range, count);
- 	nr_range = clean_sort_range(range, count);
+-#include <asm/e820.h>
+ #include <asm/early_res.h>
+-#include <asm/proto.h>
  
-diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
-index 2dccde0..262867a 100644
---- a/arch/x86/mm/init_32.c
-+++ b/arch/x86/mm/init_32.c
-@@ -748,6 +748,7 @@ static void __init zone_sizes_init(void)
- 	free_area_init_nodes(max_zone_pfns);
+ /*
+  * Early reserved memory areas.
+  */
+ /*
+  * need to make sure this one is bigger enough before
+- * find_e820_area could be used
++ * find_fw_memmap_area could be used
+  */
+ #define MAX_EARLY_RES_X 32
+ 
+@@ -180,6 +178,13 @@ void __init reserve_early_overlap_ok(u64 start, u64 end, char *name)
+ 	__reserve_early(start, end, name, 1);
  }
  
-+#ifndef CONFIG_NO_BOOTMEM
- static unsigned long __init setup_node_bootmem(int nodeid,
- 				 unsigned long start_pfn,
- 				 unsigned long end_pfn,
-@@ -767,9 +768,11 @@ static unsigned long __init setup_node_bootmem(int nodeid,
- 
- 	return bootmap + bootmap_size;
- }
-+#endif
- 
- void __init setup_bootmem_allocator(void)
++u64 __init __weak find_fw_memmap_area(u64 start, u64 end, u64 size, u64 align)
++{
++	panic("should have find_fw_memmap_area defined with arch");
++
++	return -1ULL;
++}
++
+ static void __init __check_and_double_early_res(u64 ex_start, u64 ex_end)
  {
-+#ifndef CONFIG_NO_BOOTMEM
- 	int nodeid;
- 	unsigned long bootmap_size, bootmap;
- 	/*
-@@ -781,11 +784,13 @@ void __init setup_bootmem_allocator(void)
- 	if (bootmap == -1L)
- 		panic("Cannot find bootmem map of size %ld\n", bootmap_size);
- 	reserve_early(bootmap, bootmap + bootmap_size, "BOOTMAP");
-+#endif
- 
- 	printk(KERN_INFO "  mapped low ram: 0 - %08lx\n",
- 		 max_pfn_mapped<<PAGE_SHIFT);
- 	printk(KERN_INFO "  low ram: 0 - %08lx\n", max_low_pfn<<PAGE_SHIFT);
- 
-+#ifndef CONFIG_NO_BOOTMEM
- 	for_each_online_node(nodeid) {
- 		 unsigned long start_pfn, end_pfn;
- 
-@@ -803,6 +808,7 @@ void __init setup_bootmem_allocator(void)
- 		bootmap = setup_node_bootmem(nodeid, start_pfn, end_pfn,
- 						 bootmap);
+ 	u64 start, end, size, mem;
+@@ -198,13 +203,13 @@ static void __init __check_and_double_early_res(u64 ex_start, u64 ex_end)
+ 		start = early_res[0].end;
+ 	end = ex_start;
+ 	if (start + size < end)
+-		mem = find_e820_area(start, end, size,
++		mem = find_fw_memmap_area(start, end, size,
+ 					 sizeof(struct early_res));
+ 	if (mem == -1ULL) {
+ 		start = ex_end;
+ 		end = max_pfn_mapped << PAGE_SHIFT;
+ 		if (start + size < end)
+-			mem = find_e820_area(start, end, size,
++			mem = find_fw_memmap_area(start, end, size,
+ 						 sizeof(struct early_res));
  	}
-+#endif
+ 	if (mem == -1ULL)
+@@ -343,7 +348,7 @@ int __init get_free_all_memory_range(struct range **rangep, int nodeid)
+ 		start = MAX_DMA32_PFN << PAGE_SHIFT;
+ #endif
+ 	end = max_pfn_mapped << PAGE_SHIFT;
+-	mem = find_e820_area(start, end, size, sizeof(struct range));
++	mem = find_fw_memmap_area(start, end, size, sizeof(struct range));
+ 	if (mem == -1ULL)
+ 		panic("can not find more space for range free");
  
- 	after_bootmem = 1;
- }
-diff --git a/arch/x86/mm/numa_32.c b/arch/x86/mm/numa_32.c
-index b20760c..809baaa 100644
---- a/arch/x86/mm/numa_32.c
-+++ b/arch/x86/mm/numa_32.c
-@@ -418,7 +418,10 @@ void __init initmem_init(unsigned long start_pfn, unsigned long end_pfn,
- 
- 	for_each_online_node(nid) {
- 		memset(NODE_DATA(nid), 0, sizeof(struct pglist_data));
-+		NODE_DATA(nid)->node_id = nid;
-+#ifndef CONFIG_NO_BOOTMEM
- 		NODE_DATA(nid)->bdata = &bootmem_node_data[nid];
-+#endif
- 	}
- 
- 	setup_bootmem_allocator();
 -- 
 1.6.4.2
 
