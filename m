@@ -1,190 +1,239 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755594Ab0BJQtM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 11:49:12 -0500
-Received: from xenotime.net ([72.52.64.118]:32868 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755245Ab0BJQtK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 11:49:10 -0500
-Date: Wed, 10 Feb 2010 08:49:08 -0800
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: Richard Hartmann <richih.mailinglist@gmail.com>
-Cc: linux-crypto@vger.kernel.org, Andy Whitcroft <apw@canonical.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Walker <dwalker@fifo99.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] SCRIPTS: s/should/must/ for all ERRORs
-Message-Id: <20100210084908.ad315b9b.rdunlap@xenotime.net>
-In-Reply-To: <1265762465-21114-1-git-send-email-richih.mailinglist@gmail.com>
-References: <1265762465-21114-1-git-send-email-richih.mailinglist@gmail.com>
-Organization: YPO4
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1755723Ab0BJQxZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 11:53:25 -0500
+Received: from londo.lunn.ch ([80.238.139.98]:34063 "EHLO londo.lunn.ch"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755681Ab0BJQxX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Feb 2010 11:53:23 -0500
+X-Greylist: delayed 1410 seconds by postgrey-1.27 at vger.kernel.org; Wed, 10 Feb 2010 11:53:23 EST
+Date: Wed, 10 Feb 2010 17:28:45 +0100
+From: Andrew Lunn <andrew@lunn.ch>
+To: chris.nicholson@cnick.org.uk
+Cc: gregkh@suse.de, andrew@lunn.ch, devel@driverdev.osuosl.org,
+       linux-kernel@vger.kernel.org,
+       Chris Nicholson <chris@localhost.localdomain>
+Subject: Re: [PATCH] Staging: batman-adv: fix checkpatch.pl issues in
+ hard-interface.c This is a patch to the hard-interface.c file that fixes
+ up the checkpatch.pl issues Signed-off-by: Chris Nicholson
+ <chris.nicholson@cnick.org.uk>
+Message-ID: <20100210162845.GG2900@lunn.ch>
+References: <1265569063-3973-1-git-send-email-chris.nicholson@cnick.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1265569063-3973-1-git-send-email-chris.nicholson@cnick.org.uk>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 10 Feb 2010 01:41:03 +0100 Richard Hartmann wrote:
+Hi Chris
 
+Thanks for the patch.
+
+However i have some stylistic issues with the patch. You seem to like
+right justification of wrapped lines. I much prefer left.
+
+On Sun, Feb 07, 2010 at 06:57:43PM +0000, chris.nicholson@cnick.org.uk wrote:
+> From: Chris Nicholson <chris@localhost.localdomain>
 > 
-> Signed-off-by: Richard Hartmann <richih.mailinglist@gmail.com>
 > ---
-
-Well, I will gladly disagree.  checkpatch is an advisory tool.
-It has no such final authority to enforce /must/.
-
-/must/ would OK on syntax errors that must be fixed before they will compile.
-
-
->  scripts/checkpatch.pl |   32 ++++++++++++++++----------------
->  1 files changed, 16 insertions(+), 16 deletions(-)
+>  drivers/staging/batman-adv/hard-interface.c |   40 +++++++++++++++++---------
+>  1 files changed, 26 insertions(+), 14 deletions(-)
 > 
-> diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
-> index d5405aa..96ca9f0 100755
-> --- a/scripts/checkpatch.pl
-> +++ b/scripts/checkpatch.pl
-> @@ -1355,7 +1355,7 @@ sub process {
->  			my $ptr = substr($blank, 0, length($utf8_prefix)) . "^";
->  			my $hereptr = "$hereline$ptr\n";
+> diff --git a/drivers/staging/batman-adv/hard-interface.c b/drivers/staging/batman-adv/hard-interface.c
+> index 5ea35da..c4ed846 100644
+> --- a/drivers/staging/batman-adv/hard-interface.c
+> +++ b/drivers/staging/batman-adv/hard-interface.c
+> @@ -87,9 +87,15 @@ static void check_known_mac_addr(uint8_t *addr)
+>  			continue;
 >  
-> -			ERROR("Invalid UTF-8, patch and commit message should be encoded in UTF-8\n" . $hereptr);
-> +			ERROR("Invalid UTF-8, patch and commit message must be encoded in UTF-8\n" . $hereptr);
->  		}
->  
->  # ignore non-hunk lines and lines being removed
-> @@ -1408,7 +1408,7 @@ sub process {
->  		if ($rawline =~ /^\+\s* \t\s*\S/ ||
->  		    $rawline =~ /^\+\s*        \s*/) {
->  			my $herevet = "$here\n" . cat_vet($rawline) . "\n";
-> -			ERROR("code indent should use tabs where possible\n" . $herevet);
-> +			ERROR("code indent must use tabs where possible\n" . $herevet);
->  		}
->  
->  # check we are in a valid C source file if not then ignore this hunk
-> @@ -1515,7 +1515,7 @@ sub process {
->  				}
->  			}
->  			if ($err ne '') {
-> -				ERROR("switch and case should be at the same indent\n$hereline$err");
-> +				ERROR("switch and case must be at the same indent\n$hereline$err");
->  			}
->  		}
->  
-> @@ -1543,7 +1543,7 @@ sub process {
->  			#print "pre<$pre_ctx>\nline<$line>\nctx<$ctx>\nnext<$lines[$ctx_ln - 1]>\n";
->  
->  			if ($ctx !~ /{\s*/ && defined($lines[$ctx_ln -1]) && $lines[$ctx_ln - 1] =~ /^\+\s*{/) {
-> -				ERROR("that open brace { should be on the previous line\n" .
-> +				ERROR("that open brace { must be on the previous line\n" .
->  					"$here\n$ctx\n$lines[$ctx_ln - 1]\n");
->  			}
->  			if ($level == 0 && $pre_ctx !~ /}\s*while\s*\($/ &&
-> @@ -1682,7 +1682,7 @@ sub process {
->  # check for initialisation to aggregates open brace on the next line
->  		if ($line =~ /^.\s*{/ &&
->  		    $prevline =~ /(?:^|[^=])=\s*$/) {
-> -			ERROR("that open brace { should be on the previous line\n" . $hereprev);
-> +			ERROR("that open brace { must be on the previous line\n" . $hereprev);
->  		}
->  
->  #
-> @@ -1777,7 +1777,7 @@ sub process {
->  
->  			#print "from<$from> to<$to>\n";
->  			if ($from ne $to) {
-> -				ERROR("\"(foo$from)\" should be \"(foo$to)\"\n" .  $herecurr);
-> +				ERROR("\"(foo$from)\" must be \"(foo$to)\"\n" .  $herecurr);
->  			}
->  		} elsif ($line =~ m{\b$NonptrType(\s*(?:$Modifier\b\s*|\*\s*)+)($Ident)}) {
->  			my ($from, $to, $ident) = ($1, $1, $2);
-> @@ -1794,7 +1794,7 @@ sub process {
->  
->  			#print "from<$from> to<$to> ident<$ident>\n";
->  			if ($from ne $to && $ident !~ /^$Modifier$/) {
-> -				ERROR("\"foo${from}bar\" should be \"foo${to}bar\"\n" .  $herecurr);
-> +				ERROR("\"foo${from}bar\" must be \"foo${to}bar\"\n" .  $herecurr);
->  			}
->  		}
->  
-> @@ -2188,7 +2188,7 @@ sub process {
->  					$stat_real = "[...]\n$stat_real";
->  				}
->  
-> -				ERROR("trailing statements should be on next line\n" . $herecurr . $stat_real);
-> +				ERROR("trailing statements must be on next line\n" . $herecurr . $stat_real);
->  			}
->  		}
->  
-> @@ -2212,12 +2212,12 @@ sub process {
->  			my $s = $1;
->  			$s =~ s/$;//g; 	# Remove any comments
->  			if ($s !~ /^\s*(?:\sif|(?:{|)\s*\\?\s*$)/) {
-> -				ERROR("trailing statements should be on next line\n" . $herecurr);
-> +				ERROR("trailing statements must be on next line\n" . $herecurr);
->  			}
->  		}
->  # if should not continue a brace
->  		if ($line =~ /}\s*if\b/) {
-> -			ERROR("trailing statements should be on next line\n" .
-> +			ERROR("trailing statements must be on next line\n" .
->  				$herecurr);
->  		}
->  # case and default should not have general statements after them
-> @@ -2227,14 +2227,14 @@ sub process {
->  			\s*return\s+
->  		    )/xg)
->  		{
-> -			ERROR("trailing statements should be on next line\n" . $herecurr);
-> +			ERROR("trailing statements must be on next line\n" . $herecurr);
->  		}
->  
->  		# Check for }<nl>else {, these must be at the same
->  		# indent level to be relevant to each other.
->  		if ($prevline=~/}\s*$/ and $line=~/^.\s*else\s*/ and
->  						$previndent == $indent) {
-> -			ERROR("else should follow close brace '}'\n" . $hereprev);
-> +			ERROR("else must follow close brace '}'\n" . $hereprev);
->  		}
->  
->  		if ($prevline=~/}\s*$/ and $line=~/^.\s*while\s*/ and
-> @@ -2247,7 +2247,7 @@ sub process {
->  			$s =~ s/\n.*//g;
->  
->  			if ($s =~ /^\s*;/) {
-> -				ERROR("while should follow close brace '}'\n" . $hereprev);
-> +				ERROR("while must follow close brace '}'\n" . $hereprev);
->  			}
->  		}
->  
-> @@ -2356,7 +2356,7 @@ sub process {
->  				if ($rest !~ /while\s*\(/ &&
->  				    $dstat !~ /$exceptions/)
->  				{
-> -					ERROR("Macros with multiple statements should be enclosed in a do - while loop\n" . "$here\n$ctx\n");
-> +					ERROR("Macros with multiple statements must be enclosed in a do - while loop\n" . "$here\n$ctx\n");
->  				}
->  
->  			} elsif ($ctx !~ /;/) {
-> @@ -2366,7 +2366,7 @@ sub process {
->  				    $dstat !~ /^\.$Ident\s*=/ &&
->  				    $dstat =~ /$Operators/)
->  				{
-> -					ERROR("Macros with complex values should be enclosed in parenthesis\n" . "$here\n$ctx\n");
-> +					ERROR("Macros with complex values must be enclosed in parenthesis\n" . "$here\n$ctx\n");
->  				}
->  			}
->  		}
-> @@ -2564,7 +2564,7 @@ sub process {
->  # storage class and type.
->  		if ($line =~ /\b$Type\s+$Inline\b/ ||
->  		    $line =~ /\b$Inline\s+$Storage\b/) {
-> -			ERROR("inline keyword should sit between storage class and type\n" . $herecurr);
-> +			ERROR("inline keyword must sit between storage class and type\n" . $herecurr);
->  		}
->  
->  # Check for __inline__ and __inline, prefer inline
-> -- 
+>  		addr_to_string(mac_string, addr);
+> -		debug_log(LOG_TYPE_WARN, "The newly added mac address (%s) already exists on: %s\n",
+> -		          mac_string, batman_if->dev);
+> -		debug_log(LOG_TYPE_WARN, "It is strongly recommended to keep mac addresses unique to avoid problems!\n");
+> +		debug_log(LOG_TYPE_WARN, "The newly added mac address (%s) "
+> +							"already exists on: "
+> +							"%s\n",
+> +							mac_string,
+> +							batman_if->dev);
+> +		debug_log(LOG_TYPE_WARN, "It is strongly recommended to "
+> +							"keep mac addresses "
+> +							"unique avoid problems!"
+> +							"\n");
 
----
-~Randy
+Here i would prefer
+
+		debug_log(LOG_TYPE_WARN, "The newly added mac address (%s) "
+			  "already exists on: %s\n",
+			  mac_string, batman_if->dev);
+		debug_log(LOG_TYPE_WARN, "It is strongly recommended to "
+			  "keep mac addresses unique avoid problems!\n");
+
+
+>  	}
+>  	rcu_read_unlock();
+>  }
+> @@ -121,7 +127,8 @@ static int hardif_is_interface_up(char *dev)
+>  	if ((!list_empty(&if_list)) &&
+>  	    strncmp(((struct batman_if *)if_list.next)->dev, dev, IFNAMSIZ) &&
+>  	    !(((struct batman_if *)if_list.next)->if_active == IF_ACTIVE) &&
+> -	    !(((struct batman_if *)if_list.next)->if_active == IF_TO_BE_ACTIVATED) &&
+> +	    !(((struct batman_if *)if_list.next)->if_active ==
+> +							IF_TO_BE_ACTIVATED) &&
+Here i would put:
+	    !(((struct batman_if *)if_list.next)->if_active ==
+	      IF_TO_BE_ACTIVATED) &&
+       
+
+>  	    (!main_if_was_up())) {
+>  		rcu_read_unlock();
+>  		goto end;
+> @@ -172,7 +179,7 @@ void hardif_deactivate_interface(struct batman_if *batman_if)
+>  	active_ifs--;
+>  
+>  	debug_log(LOG_TYPE_NOTICE, "Interface deactivated: %s\n",
+> -	          batman_if->dev);
+> +							batman_if->dev);
+
+There is some tab/space issues here, but batman_if->dev); should be
+under the LOG_
+
+>  }
+>  
+>  /* (re)activate given interface. */
+> @@ -236,7 +243,7 @@ static void hardif_activate_interface(struct batman_if *batman_if)
+>  		set_main_if_addr(batman_if->net_dev->dev_addr);
+>  
+>  	debug_log(LOG_TYPE_NOTICE, "Interface activated: %s\n",
+> -	          batman_if->dev);
+> +							batman_if->dev);
+
+Same comment as above.
+  
+[snip]
+
+> @@ -400,8 +412,7 @@ int hardif_add_interface(char *dev, int if_num)
+>  	return 1;
+>  
+>  out:
+> -	if (batman_if->packet_buff)
+> -		kfree(batman_if->packet_buff);
+> +	kfree(batman_if->packet_buff);
+>  	kfree(batman_if);
+>  	kfree(dev);
+>  	return -1;
+> @@ -413,7 +424,7 @@ char hardif_get_active_if_num(void)
+
+This has already been fixed in linux-next. The code is going through
+quite a lot of changes at the moment as part of the cleanup needed to
+get out of stating. So i suggest you look at linux-next and not so
+much as the latest -rc kernel, which is now somewhat out of date.
+
+Here is a patch of how I think it should look like. With this
+patch, the linux-next version of hard-interface.c is checkpatch.pl
+clean. Is there anything i have missed? I will add the appropriate
+headers and send it to GregKH sometime soon with my next batch of
+patches for staging.
+
+Thanks
+	Andrew
+
+diff --git a/drivers/staging/batman-adv/hard-interface.c b/drivers/staging/batman-adv/hard-interface.c
+index f8b1ba3..229b94e 100644
+--- a/drivers/staging/batman-adv/hard-interface.c
++++ b/drivers/staging/batman-adv/hard-interface.c
+@@ -83,9 +83,11 @@ static void check_known_mac_addr(uint8_t *addr)
+ 		if (!compare_orig(batman_if->net_dev->dev_addr, addr))
+ 			continue;
+ 
+-		printk(KERN_WARNING "batman-adv:The newly added mac address (%pM) already exists on: %s\n",
++		printk(KERN_WARNING "batman-adv:The newly added mac address "
++		       "(%pM) already exists on: %s\n",
+ 		       addr, batman_if->dev);
+-		printk(KERN_WARNING "batman-adv:It is strongly recommended to keep mac addresses unique to avoid problems!\n");
++		printk(KERN_WARNING "batman-adv:It is strongly recommended to "
++		       "keep mac addresses unique to avoid problems!\n");
+ 	}
+ 	rcu_read_unlock();
+ }
+@@ -117,7 +119,8 @@ static int hardif_is_interface_up(char *dev)
+ 	if ((!list_empty(&if_list)) &&
+ 	    strncmp(((struct batman_if *)if_list.next)->dev, dev, IFNAMSIZ) &&
+ 	    !(((struct batman_if *)if_list.next)->if_active == IF_ACTIVE) &&
+-	    !(((struct batman_if *)if_list.next)->if_active == IF_TO_BE_ACTIVATED) &&
++	    !(((struct batman_if *)if_list.next)->if_active ==
++	      IF_TO_BE_ACTIVATED) &&
+ 	    (!main_if_was_up())) {
+ 		rcu_read_unlock();
+ 		goto end;
+@@ -162,7 +165,7 @@ void hardif_deactivate_interface(struct batman_if *batman_if)
+ 	active_ifs--;
+ 
+ 	printk(KERN_INFO "batman-adv:Interface deactivated: %s\n",
+-		  batman_if->dev);
++	       batman_if->dev);
+ }
+ 
+ /* (re)activate given interface. */
+@@ -245,7 +248,8 @@ static int resize_orig(struct orig_node *orig_node, int if_num)
+ 	data_ptr = kmalloc((if_num + 1) * sizeof(TYPE_OF_WORD) * NUM_WORDS,
+ 			   GFP_ATOMIC);
+ 	if (!data_ptr) {
+-		printk(KERN_ERR "batman-adv:Can't resize orig: out of memory\n");
++		printk(KERN_ERR "batman-adv:Can't resize orig: "
++		       "out of memory\n");
+ 		return -1;
+ 	}
+ 
+@@ -256,7 +260,8 @@ static int resize_orig(struct orig_node *orig_node, int if_num)
+ 
+ 	data_ptr = kmalloc((if_num + 1) * sizeof(uint8_t), GFP_ATOMIC);
+ 	if (!data_ptr) {
+-		printk(KERN_ERR "batman-adv:Can't resize orig: out of memory\n");
++		printk(KERN_ERR "batman-adv:Can't resize orig:"
++		       "out of memory\n");
+ 		return -1;
+ 	}
+ 
+@@ -280,7 +285,8 @@ int hardif_add_interface(char *dev, int if_num)
+ 	batman_if = kmalloc(sizeof(struct batman_if), GFP_KERNEL);
+ 
+ 	if (!batman_if) {
+-		printk(KERN_ERR "batman-adv:Can't add interface (%s): out of memory\n", dev);
++		printk(KERN_ERR "batman-adv:Can't add interface (%s):"
++		       "out of memory\n", dev);
+ 		return -1;
+ 	}
+ 
+@@ -294,7 +300,8 @@ int hardif_add_interface(char *dev, int if_num)
+ 	batman_if->packet_buff = kmalloc(batman_if->packet_len, GFP_KERNEL);
+ 
+ 	if (!batman_if->packet_buff) {
+-		printk(KERN_ERR "batman-adv:Can't add interface packet (%s): out of memory\n", dev);
++		printk(KERN_ERR "batman-adv:Can't add interface packet (%s):"
++		       "out of memory\n", dev);
+ 		goto out;
+ 	}
+ 
+@@ -344,7 +351,9 @@ int hardif_add_interface(char *dev, int if_num)
+ 	spin_unlock_irqrestore(&orig_hash_lock, flags);
+ 
+ 	if (!hardif_is_interface_up(batman_if->dev))
+-		printk(KERN_ERR "batman-adv:Not using interface %s (retrying later): interface not active\n", batman_if->dev);
++		printk(KERN_ERR "batman-adv:Not using interface %s "
++		       "(retrying later): interface not active\n",
++		       batman_if->dev);
+ 	else
+ 		hardif_activate_interface(batman_if);
+ 
+@@ -505,7 +514,6 @@ err_free:
+ 
+ }
+ 
+-
+ struct notifier_block hard_if_notifier = {
+ 	.notifier_call = hard_if_event,
+ };
+
