@@ -1,52 +1,59 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756758Ab0BJXlz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 18:41:55 -0500
-Received: from hera.kernel.org ([140.211.167.34]:40420 "EHLO hera.kernel.org"
+	id S1756732Ab0BJXvh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 18:51:37 -0500
+Received: from hera.kernel.org ([140.211.167.34]:55411 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755831Ab0BJXly (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 18:41:54 -0500
-Message-ID: <4B7344A4.1030607@kernel.org>
-Date: Thu, 11 Feb 2010 08:43:32 +0900
+	id S1755431Ab0BJXvf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Feb 2010 18:51:35 -0500
+Message-ID: <4B734718.2070805@kernel.org>
+Date: Thu, 11 Feb 2010 08:54:00 +0900
 From: Tejun Heo <tj@kernel.org>
 User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-To: Miklos Szeredi <miklos@szeredi.hu>
-CC: mszeredi@suse.cz, linux-kernel@vger.kernel.org,
-       fuse-devel@lists.sourceforge.net, polynomial-c@gentoo.org,
-       akpm@linux-foundation.org
-Subject: Re: [fuse-devel] [PATCH] FUSE/CUSE: implement direct mmap support
-References: <4B70FBE4.7050700@kernel.org> <E1NerZ6-0007N6-UY@pomaz-ex.szeredi.hu> <4B7296DF.207@kernel.org> <E1NfAl6-0000o4-8Z@pomaz-ex.szeredi.hu> <4B729F07.8020704@kernel.org> <E1NfBTc-0000vk-59@pomaz-ex.szeredi.hu> <4B72A802.6040009@kernel.org> <E1NfE50-0001EK-Ao@pomaz-ex.szeredi.hu>
-In-Reply-To: <E1NfE50-0001EK-Ao@pomaz-ex.szeredi.hu>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: =?ISO-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>,
+       Neil Brown <neilb@suse.de>, Greg Kroah-Hartman <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sysfs: differentiate between locking links and non-links
+References: <19314.1869.847327.15190@notabene.brown>	<2375c9f91002091808n713275dsc9ace8f51871364e@mail.gmail.com>	<4B7217CF.2080702@kernel.org> <m1vde57c11.fsf@fess.ebiederm.org>	<4B728CFE.40208@kernel.org> <m1sk992bji.fsf@fess.ebiederm.org>
+In-Reply-To: <m1sk992bji.fsf@fess.ebiederm.org>
 X-Enigmail-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 10 Feb 2010 23:40:59 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 10 Feb 2010 23:51:28 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Hello, Eric.
 
-On 02/11/2010 12:02 AM, Miklos Szeredi wrote:
->> Yeah, sure.  FUSE server is free to give them separate regions.  The
->> only restriction is the SHMLBA alignment which is pretty easy to
->> adhere to.
+On 02/11/2010 03:25 AM, Eric W. Biederman wrote:
+>> Maybe I'm glossly misunderstanding it but wouldn't embedding struct
+>> lockdep_map into sysfs_node as in work_struct do the trick?
 > 
-> What I really meant was: does it ever happen that mapping a *single
-> open file* of a chardev twice will result in two different maps?
-> Or will the maps be only different if it was a different open of the
-> device?
+> In lockdep_init_map there is the following check:
+> 
+> 	/*
+> 	 * Sanity check, the lock-class key must be persistent:
+> 	 */
+> 	if (!static_obj(key)) {
+> 		printk("BUG: key %p not in .data!\n", key);
+> 		DEBUG_LOCKS_WARN_ON(1);
+> 		return;
+> 	}
 
-I don't know if there is one but ->mmap() implementation is definitely
-allowed to do that.
+Right, the lockdep_map is not the class, it's the lock instance.
 
-> If there's a pattern there, we might make the sharing/non-sharing
-> automated, and greatly simplify the interface.
+> It needs playing with but I think we can embed something in struct
+> attribute, and simply disallow dynamically allocated instances of
+> struct attribute.
 
-Isn't the interface pretty simple as it is?  If we want to make it
-easier for API users by imposing limits, I think the correct layer to
-do that would be at the library level.
+But I think something along this line would be the right way to do it,
+instead of trying to mark up all the use cases manually.  I'm pretty
+sure if we start by giving separate classes to different sysfs types
+(by attr or by sysfs_ops) there will be far less special cases which
+would need manual markups.
 
 Thanks.
 
