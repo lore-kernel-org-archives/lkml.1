@@ -1,94 +1,69 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755323Ab0BJUCx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 15:02:53 -0500
-Received: from mail-ew0-f228.google.com ([209.85.219.228]:52354 "EHLO
-	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751639Ab0BJUCw (ORCPT
+	id S1755842Ab0BJUDF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 15:03:05 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:17321 "EHLO
+	rcsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755538Ab0BJUDA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 15:02:52 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:from:date:message-id:subject:to:content-type;
-        b=CPYDfk5w9oZ+KT/lIyct6DCLjBlwUS6uTUWyHScxqY/IitkfXcW3XT5aJIhiGF5p0Y
-         hNO6KHR7rJ5lIhCefeWa79SPyrASU7+r7kRIMA8ar4prM4ldof+3iT84b8hgpIxRI0/K
-         51CfYFNBHqCaip4x7lqH0uBqWxDQtVZgMhAtw=
+	Wed, 10 Feb 2010 15:03:00 -0500
+Date: Wed, 10 Feb 2010 15:01:34 -0500
+From: Chris Mason <chris.mason@oracle.com>
+To: Jiri Slaby <jslaby@suse.cz>
+Cc: linux-kernel@vger.kernel.org, jirislaby@gmail.com,
+       linux-btrfs@vger.kernel.org
+Subject: Re: [PATCH 1/1] FS: btrfs, use helpers for rlimits
+Message-ID: <20100210200134.GK18175@think>
+Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
+	Jiri Slaby <jslaby@suse.cz>, linux-kernel@vger.kernel.org,
+	jirislaby@gmail.com, linux-btrfs@vger.kernel.org
+References: <1265832009-8070-1-git-send-email-jslaby@suse.cz>
 MIME-Version: 1.0
-From: Alexander Lam <lambchop468@gmail.com>
-Date: Wed, 10 Feb 2010 15:02:30 -0500
-Message-ID: <dfb03c971002101202i37f4a243jc6bfb44bc853cb5d@mail.gmail.com>
-Subject: mtrr cleanup not doing anything on 2.6.33-rc7
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1265832009-8070-1-git-send-email-jslaby@suse.cz>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Source-IP: acsmt353.oracle.com [141.146.40.153]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090201.4B7310DC.0080:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+Thanks, I have this queued up for .34
 
-Please CC: me when replying.
+-chris
 
-My kernel config has the following:
-CONFIG_MTRR=y
-CONFIG_MTRR_SANITIZER=y
-CONFIG_MTRR_SANITIZER_ENABLE_DEFAULT=1
-CONFIG_MTRR_SANITIZER_SPARE_REG_NR_DEFAULT=1
-
-With previous kernels, dmesg would show that the sanitizer was indeed
-cleaning up the mtrrs [1]
-
-but now, with 2.6.33-rc7 there is no indication that this is occuring,
-and the intel i915 driver complains:
-   [    0.613419] i915 0000:00:02.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-   [    0.614577] i915 0000:00:02.0: setting latency timer to 64
-   [    0.625446] mtrr: no more MTRRs available
-   [    0.625529] [drm] MTRR allocation failed.  Graphics performance
-may suffer.
-
-What has changed and what do I need to do to make the mtrr sanitation
-work again?
-
-[1]: dmesg from previous kernels:
-[    0.000000] MTRR default type: uncachable
-[    0.000000] MTRR fixed ranges enabled:
-[    0.000000]   00000-9FFFF write-back
-[    0.000000]   A0000-BFFFF uncachable
-[    0.000000]   C0000-C7FFF write-protect
-[    0.000000]   C8000-EFFFF uncachable
-[    0.000000]   F0000-FFFFF write-protect
-[    0.000000] MTRR variable ranges enabled:
-[    0.000000]   0 base 0FFFE0000 mask 0FFFE0000 write-protect
-[    0.000000]   1 base 0FFFC0000 mask 0FFFE0000 uncachable
-[    0.000000]   2 base 000000000 mask 0E0000000 write-back
-[    0.000000]   3 base 020000000 mask 0E0000000 write-back
-[    0.000000]   4 base 03F800000 mask 0FF800000 uncachable
-[    0.000000]   5 base 03F600000 mask 0FFE00000 uncachable
-[    0.000000]   6 base 03F500000 mask 0FFF00000 uncachable
-[    0.000000]   7 base 000000000 mask 0FFFE0000 uncachable
-[    0.000000] x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
-[    0.000000] original variable MTRRs
-[    0.000000] reg 0, base: 4194176KB, range: 128KB, type WP
-[    0.000000] reg 1, base: 4194048KB, range: 128KB, type UC
-[    0.000000] reg 2, base: 0GB, range: 512MB, type WB
-[    0.000000] reg 3, base: 512MB, range: 512MB, type WB
-[    0.000000] reg 4, base: 1016MB, range: 8MB, type UC
-[    0.000000] reg 5, base: 1014MB, range: 2MB, type UC
-[    0.000000] reg 6, base: 1013MB, range: 1MB, type UC
-[    0.000000] reg 7, base: 0GB, range: 128KB, type UC
-[    0.000000] WARNING: BIOS bug: VAR MTRR 7 contains strange UC entry
-under 1M, check with your system vendor!
-[    0.000000] total RAM coverred: 1013M
-[    0.000000] Found optimal setting for mtrr clean up
-[    0.000000]  gran_size: 64K  chunk_size: 16M         num_reg: 4
- lose cover RAM: 0G
-[    0.000000] New variable MTRRs
-[    0.000000] reg 0, base: 0GB, range: 1GB, type WB
-[    0.000000] reg 1, base: 1013MB, range: 1MB, type UC
-[    0.000000] reg 2, base: 1014MB, range: 2MB, type UC
-[    0.000000] reg 3, base: 1016MB, range: 8MB, type UC
-[    0.000000] x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
-
-
-Thanks,
--- 
-Alexander Lam
+On Wed, Feb 10, 2010 at 09:00:09PM +0100, Jiri Slaby wrote:
+> Make sure compiler won't do weird things with limits. E.g. fetching
+> them twice may return 2 different values after writable limits are
+> implemented.
+> 
+> I.e. either use rlimit helpers added in
+> 3e10e716abf3c71bdb5d86b8f507f9e72236c9cd
+> or ACCESS_ONCE if not applicable.
+> 
+> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+> Cc: Chris Mason <chris.mason@oracle.com>
+> Cc: linux-btrfs@vger.kernel.org
+> ---
+>  fs/btrfs/inode.c |    3 +--
+>  1 files changed, 1 insertions(+), 2 deletions(-)
+> 
+> diff --git a/fs/btrfs/inode.c b/fs/btrfs/inode.c
+> index c41db6d..5aa0cef 100644
+> --- a/fs/btrfs/inode.c
+> +++ b/fs/btrfs/inode.c
+> @@ -3256,8 +3256,7 @@ static int btrfs_setattr_size(struct inode *inode, struct iattr *attr)
+>  		return 0;
+>  
+>  	if (attr->ia_size > inode->i_size) {
+> -		unsigned long limit;
+> -		limit = current->signal->rlim[RLIMIT_FSIZE].rlim_cur;
+> +		unsigned long limit = rlimit(RLIMIT_FSIZE);
+>  		if (attr->ia_size > inode->i_sb->s_maxbytes)
+>  			return -EFBIG;
+>  		if (limit != RLIM_INFINITY && attr->ia_size > limit) {
+> -- 
+> 1.6.6.1
+> 
