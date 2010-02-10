@@ -1,18 +1,18 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754867Ab0BJJYI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 04:24:08 -0500
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:60141 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754148Ab0BJJWM (ORCPT
+	id S1754931Ab0BJJYc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 04:24:32 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:39210 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753984Ab0BJJWL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 04:22:12 -0500
+	Wed, 10 Feb 2010 04:22:11 -0500
 MIME-version: 1.0
 Content-transfer-encoding: 7BIT
 Content-type: TEXT/PLAIN
-Date: Wed, 10 Feb 2010 01:20:37 -0800
+Date: Wed, 10 Feb 2010 01:20:35 -0800
 From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 33/35] use nr_cpus= to set nr_cpu_ids early
+Subject: [PATCH 31/35] sparseirq: use radix_tree instead of ptrs array
 In-reply-to: <1265793639-15071-1-git-send-email-yinghai@kernel.org>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
@@ -22,125 +22,128 @@ Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
        Christoph Lameter <cl@linux-foundation.org>,
        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
        Yinghai Lu <yinghai@kernel.org>
-Message-id: <1265793639-15071-34-git-send-email-yinghai@kernel.org>
+Message-id: <1265793639-15071-32-git-send-email-yinghai@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 References: <1265793639-15071-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-on x86, before prefill_possible_map(), nr_cpu_ids will be NR_CPUS aka CONFIG_NR_CPUS
+use radix_tree irq_desc_tree instead of irq_desc_ptrs.
 
-add nr_cpus= to set nr_cpu_ids. so we can simulate cpus <=8 are installed on
-normal config.
-
--v2: accordging to Christoph, acpi_numa_init should use nr_cpu_ids in stead of
-     NR_CPUS.
--v3: add doc in kernel-parameters.txt according to Andrew.
+-v2: according to Eric and cyrill to use radix_tree_lookup_slot and radix_tree_replace_slot
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-Acked-by: Linus Torvalds <torvalds@linux-foundation.org>
 ---
- Documentation/kernel-parameters.txt |    6 ++++++
- arch/ia64/kernel/acpi.c             |    4 ++--
- arch/x86/kernel/smpboot.c           |    7 ++++---
- drivers/acpi/numa.c                 |    4 ++--
- init/main.c                         |   14 ++++++++++++++
- 5 files changed, 28 insertions(+), 7 deletions(-)
+ kernel/irq/handle.c |   49 +++++++++++++++++++++++++------------------------
+ 1 files changed, 25 insertions(+), 24 deletions(-)
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 5bf45c0..e5c507a 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -1775,6 +1775,12 @@ and is between 256 and 4096 characters. It is defined in the file
- 			purges which is reported from either PAL_VM_SUMMARY or
- 			SAL PALO.
+diff --git a/kernel/irq/handle.c b/kernel/irq/handle.c
+index 266f798..76d5a67 100644
+--- a/kernel/irq/handle.c
++++ b/kernel/irq/handle.c
+@@ -19,6 +19,7 @@
+ #include <linux/kernel_stat.h>
+ #include <linux/rculist.h>
+ #include <linux/hash.h>
++#include <linux/radix-tree.h>
+ #include <trace/events/irq.h>
  
-+	nr_cpus=	[SMP] Maximum number of processors that	an SMP kernel
-+			could support.  nr_cpus=n : n >= 1 limits the kernel to
-+			supporting 'n' processors. Later in runtime you can not
-+			use hotplug cpu feature to put more cpu back to online.
-+			just like you compile the kernel NR_CPUS=n
+ #include "internals.h"
+@@ -127,7 +128,26 @@ static void init_one_irq_desc(int irq, struct irq_desc *desc, int node)
+  */
+ DEFINE_RAW_SPINLOCK(sparse_irq_lock);
+ 
+-static struct irq_desc **irq_desc_ptrs __read_mostly;
++static RADIX_TREE(irq_desc_tree, GFP_ATOMIC);
 +
- 	nr_uarts=	[SERIAL] maximum number of UARTs to be registered.
- 
- 	numa_zonelist_order= [KNL, BOOT] Select zonelist order for NUMA.
-diff --git a/arch/ia64/kernel/acpi.c b/arch/ia64/kernel/acpi.c
-index 40574ae..605a08b 100644
---- a/arch/ia64/kernel/acpi.c
-+++ b/arch/ia64/kernel/acpi.c
-@@ -881,8 +881,8 @@ __init void prefill_possible_map(void)
- 
- 	possible = available_cpus + additional_cpus;
- 
--	if (possible > NR_CPUS)
--		possible = NR_CPUS;
-+	if (possible > nr_cpu_ids)
-+		possible = nr_cpu_ids;
- 
- 	printk(KERN_INFO "SMP: Allowing %d CPUs, %d hotplug CPUs\n",
- 		possible, max((possible - available_cpus), 0));
-diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-index c08829a..da99eef 100644
---- a/arch/x86/kernel/smpboot.c
-+++ b/arch/x86/kernel/smpboot.c
-@@ -1215,11 +1215,12 @@ __init void prefill_possible_map(void)
- 
- 	total_cpus = max_t(int, possible, num_processors + disabled_cpus);
- 
--	if (possible > CONFIG_NR_CPUS) {
-+	/* nr_cpu_ids could be reduced via nr_cpus= */
-+	if (possible > nr_cpu_ids) {
- 		printk(KERN_WARNING
- 			"%d Processors exceeds NR_CPUS limit of %d\n",
--			possible, CONFIG_NR_CPUS);
--		possible = CONFIG_NR_CPUS;
-+			possible, nr_cpu_ids);
-+		possible = nr_cpu_ids;
- 	}
- 
- 	printk(KERN_INFO "SMP: Allowing %d CPUs, %d hotplug CPUs\n",
-diff --git a/drivers/acpi/numa.c b/drivers/acpi/numa.c
-index 7ad48df..b872546 100644
---- a/drivers/acpi/numa.c
-+++ b/drivers/acpi/numa.c
-@@ -279,9 +279,9 @@ int __init acpi_numa_init(void)
- 	/* SRAT: Static Resource Affinity Table */
- 	if (!acpi_table_parse(ACPI_SIG_SRAT, acpi_parse_srat)) {
- 		acpi_table_parse_srat(ACPI_SRAT_TYPE_X2APIC_CPU_AFFINITY,
--				      acpi_parse_x2apic_affinity, NR_CPUS);
-+				     acpi_parse_x2apic_affinity, nr_cpu_ids);
- 		acpi_table_parse_srat(ACPI_SRAT_TYPE_CPU_AFFINITY,
--				      acpi_parse_processor_affinity, NR_CPUS);
-+				     acpi_parse_processor_affinity, nr_cpu_ids);
- 		ret = acpi_table_parse_srat(ACPI_SRAT_TYPE_MEMORY_AFFINITY,
- 					    acpi_parse_memory_affinity,
- 					    NR_NODE_MEMBLKS);
-diff --git a/init/main.c b/init/main.c
-index 8451878..05b5283 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -149,6 +149,20 @@ static int __init nosmp(char *str)
- 
- early_param("nosmp", nosmp);
- 
-+/* this is hard limit */
-+static int __init nrcpus(char *str)
++static void set_irq_desc(unsigned int irq, struct irq_desc *desc)
 +{
-+	int nr_cpus;
-+
-+	get_option(&str, &nr_cpus);
-+	if (nr_cpus > 0 && nr_cpus < nr_cpu_ids)
-+		nr_cpu_ids = nr_cpus;
-+
-+	return 0;
++	radix_tree_insert(&irq_desc_tree, irq, desc);
 +}
 +
-+early_param("nr_cpus", nrcpus);
++struct irq_desc *irq_to_desc(unsigned int irq)
++{
++	return radix_tree_lookup(&irq_desc_tree, irq);
++}
 +
- static int __init maxcpus(char *str)
++void replace_irq_desc(unsigned int irq, struct irq_desc *desc)
++{
++	void **ptr;
++
++	ptr = radix_tree_lookup_slot(&irq_desc_tree, irq);
++	if (ptr)
++		radix_tree_replace_slot(ptr, desc);
++}
+ 
+ static struct irq_desc irq_desc_legacy[NR_IRQS_LEGACY] __cacheline_aligned_in_smp = {
+ 	[0 ... NR_IRQS_LEGACY-1] = {
+@@ -159,9 +179,6 @@ int __init early_irq_init(void)
+ 	legacy_count = ARRAY_SIZE(irq_desc_legacy);
+ 	node = first_online_node;
+ 
+-	/* allocate irq_desc_ptrs array based on nr_irqs */
+-	irq_desc_ptrs = kcalloc(nr_irqs, sizeof(void *), GFP_NOWAIT);
+-
+ 	/* allocate based on nr_cpu_ids */
+ 	kstat_irqs_legacy = kzalloc_node(NR_IRQS_LEGACY * nr_cpu_ids *
+ 					  sizeof(int), GFP_NOWAIT, node);
+@@ -175,28 +192,12 @@ int __init early_irq_init(void)
+ 		lockdep_set_class(&desc[i].lock, &irq_desc_lock_class);
+ 		alloc_desc_masks(&desc[i], node, true);
+ 		init_desc_masks(&desc[i]);
+-		irq_desc_ptrs[i] = desc + i;
++		set_irq_desc(i, &desc[i]);
+ 	}
+ 
+-	for (i = legacy_count; i < nr_irqs; i++)
+-		irq_desc_ptrs[i] = NULL;
+-
+ 	return arch_early_irq_init();
+ }
+ 
+-struct irq_desc *irq_to_desc(unsigned int irq)
+-{
+-	if (irq_desc_ptrs && irq < nr_irqs)
+-		return irq_desc_ptrs[irq];
+-
+-	return NULL;
+-}
+-
+-void replace_irq_desc(unsigned int irq, struct irq_desc *desc)
+-{
+-	irq_desc_ptrs[irq] = desc;
+-}
+-
+ struct irq_desc * __ref irq_to_desc_alloc_node(unsigned int irq, int node)
  {
- 	get_option(&str, &setup_max_cpus);
+ 	struct irq_desc *desc;
+@@ -208,14 +209,14 @@ struct irq_desc * __ref irq_to_desc_alloc_node(unsigned int irq, int node)
+ 		return NULL;
+ 	}
+ 
+-	desc = irq_desc_ptrs[irq];
++	desc = irq_to_desc(irq);
+ 	if (desc)
+ 		return desc;
+ 
+ 	raw_spin_lock_irqsave(&sparse_irq_lock, flags);
+ 
+ 	/* We have to check it to avoid races with another CPU */
+-	desc = irq_desc_ptrs[irq];
++	desc = irq_to_desc(irq);
+ 	if (desc)
+ 		goto out_unlock;
+ 
+@@ -228,7 +229,7 @@ struct irq_desc * __ref irq_to_desc_alloc_node(unsigned int irq, int node)
+ 	}
+ 	init_one_irq_desc(irq, desc, node);
+ 
+-	irq_desc_ptrs[irq] = desc;
++	set_irq_desc(irq, desc);
+ 
+ out_unlock:
+ 	raw_spin_unlock_irqrestore(&sparse_irq_lock, flags);
 -- 
 1.6.4.2
 
