@@ -1,66 +1,79 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756187Ab0BJR7Q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 12:59:16 -0500
-Received: from mail-ew0-f228.google.com ([209.85.219.228]:39608 "EHLO
-	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756071Ab0BJR7N convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 12:59:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=uti8PLuLh2HCJQDM1/Vt/C83hCGNDCVIJZpdtzySk/VZXcQo1FdtaMhsyeEVRxYPDg
-         /sUR9VUFtdI7gPAou4akc6eW0F1XKwTDnRIqNB14hnCR+SUh8LzTjTgzvhr6OIukWHup
-         rcW823cuh8+MI2UDFXDU9xCI9lvxr6nn+/gXE=
+	id S1756229Ab0BJSAc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 13:00:32 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:43282 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754640Ab0BJSAa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Feb 2010 13:00:30 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Gary Hade <garyhade@us.ibm.com>
+Subject: Re: [PATCH 8/9] PCI / ACPI / PM: Platform support for PCI PME wake-up (rev. 7)
+Date: Wed, 10 Feb 2010 19:00:54 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.33-rc7-rjw; KDE/4.3.5; x86_64; ; )
+Cc: linux-pm@lists.linux-foundation.org, Linux PCI <linux-pci@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "Moore, Robert" <robert.moore@intel.com>,
+       Matthew Garrett <mjg@redhat.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>
+References: <201001101431.38630.rjw@sisk.pl> <201002100212.29904.rjw@sisk.pl> <20100210174826.GB10093@us.ibm.com>
+In-Reply-To: <20100210174826.GB10093@us.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20100210084908.ad315b9b.rdunlap@xenotime.net>
-References: <1265762465-21114-1-git-send-email-richih.mailinglist@gmail.com>
-	 <20100210084908.ad315b9b.rdunlap@xenotime.net>
-Date: Wed, 10 Feb 2010 18:59:11 +0100
-Message-ID: <2d460de71002100959j49c25e37n11a8870454251d84@mail.gmail.com>
-Subject: Re: [PATCH 2/3] SCRIPTS: s/should/must/ for all ERRORs
-From: Richard Hartmann <richih.mailinglist@gmail.com>
-To: Randy Dunlap <rdunlap@xenotime.net>
-Cc: linux-crypto@vger.kernel.org, Andy Whitcroft <apw@canonical.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Walker <dwalker@fifo99.com>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002101900.54478.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 10, 2010 at 17:49, Randy Dunlap <rdunlap@xenotime.net> wrote:
+On Wednesday 10 February 2010, Gary Hade wrote:
+> On Wed, Feb 10, 2010 at 02:12:29AM +0100, Rafael J. Wysocki wrote:
+> > On Wednesday 10 February 2010, Rafael J. Wysocki wrote:
+> > > On Wednesday 10 February 2010, Gary Hade wrote:
+> > > > On Tue, Feb 09, 2010 at 12:58:39PM -0800, Gary Hade wrote:
+> > > ...
+> > > > > OK.  I already confirmed that the problem reproduces with your
+> > > > > patches applied.  I am now in the process of trying vanilla
+> > > > > 2.6.33-rc7.  If hot-add works with 2.6.33-rc7 I will give
+> > > > > your patch a try.
+> > > > 
+> > > > The hot-add worked fine with an unpatched 2.6.33-rc7.
+> > > 
+> > > Good.
+> > > 
+> > > > The new patch when added to the 2.6.33-rc7 tree that
+> > > > included the original patchset unfortunately did not
+> > > > correct the problem.
+> > > 
+> > > Bad.
+> > > 
+> > > Well, fortunately I have another one, but I haven't tested it myself yet except
+> > > for checking that it builds.  Hopefully it won't break things more.
+> > > 
+> > > The patch below applies on top of 2.6.33-rc7 with my PCI runtime PM patchset
+> > > applied.  Please test it and let me know the results.
+> > 
+> > Sorry, I sent a wrong version of the patch by mistake, it doesn't even build.
+> > The correct one is appended.
+> 
+> No problem.  I received this message before doing anything with
+> the previous one.
+> 
+> Sorry, both hot-add and hot-remove behaviors appear unchanged
+> with this patch.
 
-> Well, I will gladly disagree.  checkpatch is an advisory tool.
-> It has no such final authority to enforce /must/.
->
-> /must/ would OK on syntax errors that must be fixed before they will compile.
+Hmm, that's kind of strange.  I'm getting suspicious.
 
-fwiw, Joe Perches raised the same point in private conversation so there
-are two votes against this patch.
+> I would like to dig into the code and help with the debugging
+> but I am swamped with other things right now.  However, feel 
+> free to continue using me for testing if you have other ideas
+> you want me to try.
 
-I submitted it knowing that it might be controversial, but I went with
-the rest of the wording in checkpatch. Other errors have similar
-wording, for example prohibited, but that does not mean I am hell-bent
-on arguing this point.
+Thanks, of course I have some ideas. :-)
 
-Personally, I feel that warnings are suggestions and errors are hard
-limits, but it is, of course, OK to disagree with this stance. This is
-part of the reason why I submitted it as three separate patches instead
-of a single one.
+First, please try to test 2.6.33-rc7 with patches [1/9] - [7/9] applied
+(ie. without the $subject patch and [9/9]).  Let's make sure we're debugging
+the right patch.
 
-This decision is not mine to make in any case. Dropping it is totally
-fine by me.
-
-
-Thanks for your feedback,
-Richard
-
-
-PS: As I am new to the whole concept of touching the large scary kernel
-let me use this opportunity to ask if I should expect answers on the
-other patch emails or if they are just merged zsh-style: Silently and
-you will notice what went through when you pull a few days later.
+Rafael
