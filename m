@@ -1,61 +1,118 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755250Ab0BJBdw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 20:33:52 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:45819 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755197Ab0BJBdt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Feb 2010 20:33:49 -0500
-Date: Wed, 10 Feb 2010 12:33:37 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       James Smart <james.smart@emulex.com>
-Subject: linux-next: build failure after merge of the scsi tree
-Message-Id: <20100210123337.7a715aa0.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta7 (GTK+ 2.18.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__10_Feb_2010_12_33_37_+1100_puv4N.cnF43vaFSl"
+	id S1755239Ab0BJBex (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 20:34:53 -0500
+Received: from mail-vw0-f46.google.com ([209.85.212.46]:53956 "EHLO
+	mail-vw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755131Ab0BJBeu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Feb 2010 20:34:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=V7+dsgr26rsxfxXzKkBrK0w+Arh8AH5jh19lugQD91H7tYjlILo+WcMVjKy2W6RcH8
+         77Q1d71Tw8oLvcu2hBU3DbroSvjGITi9Qm4Eqy4FFAixo0AkxwAsKTog9iWTPBrRne/P
+         O9Rl5grCp1qfVRg12yuMsmrtD8b8eoe+ZXpB0=
+From: Richard Hartmann <richih.mailinglist@gmail.com>
+To: linux-crypto@vger.kernel.org
+Cc: Richard Hartmann <richih.mailinglist@gmail.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org
+Subject: [PATCH 1/1] CRYPTO: Fix checkpatch errors & warnings in deflate.c
+Date: Wed, 10 Feb 2010 02:34:15 +0100
+Message-Id: <1265765656-26181-1-git-send-email-richih.mailinglist@gmail.com>
+X-Mailer: git-send-email 1.6.6.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__10_Feb_2010_12_33_37_+1100_puv4N.cnF43vaFSl
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi James,
+Signed-off-by: Richard Hartmann <richih.mailinglist@gmail.com>
+---
+ crypto/deflate.c |   20 ++++++++++----------
+ 1 files changed, 10 insertions(+), 10 deletions(-)
 
-After merging the scsi tree, today's linux-next build (powerpc
-ppc64_defconfig) failed like this:
+diff --git a/crypto/deflate.c b/crypto/deflate.c
+index 9128da4..463dc85 100644
+--- a/crypto/deflate.c
++++ b/crypto/deflate.c
+@@ -1,14 +1,14 @@
+-/* 
++/*
+  * Cryptographic API.
+  *
+  * Deflate algorithm (RFC 1951), implemented here primarily for use
+  * by IPCOMP (RFC 3173 & RFC 2394).
+  *
+  * Copyright (c) 2003 James Morris <jmorris@intercode.com.au>
+- * 
++ *
+  * This program is free software; you can redistribute it and/or modify it
+  * under the terms of the GNU General Public License as published by the Free
+- * Software Foundation; either version 2 of the License, or (at your option) 
++ * Software Foundation; either version 2 of the License, or (at your option)
+  * any later version.
+  *
+  * FIXME: deflate transforms will require up to a total of about 436k of kernel
+@@ -49,7 +49,7 @@ static int deflate_comp_init(struct deflate_ctx *ctx)
+ 	struct z_stream_s *stream = &ctx->comp_stream;
+ 
+ 	stream->workspace = vmalloc(zlib_deflate_workspacesize());
+-	if (!stream->workspace ) {
++	if (!stream->workspace) {
+ 		ret = -ENOMEM;
+ 		goto out;
+ 	}
+@@ -61,7 +61,7 @@ static int deflate_comp_init(struct deflate_ctx *ctx)
+ 		ret = -EINVAL;
+ 		goto out_free;
+ 	}
+-out:	
++out:
+ 	return ret;
+ out_free:
+ 	vfree(stream->workspace);
+@@ -74,7 +74,7 @@ static int deflate_decomp_init(struct deflate_ctx *ctx)
+ 	struct z_stream_s *stream = &ctx->decomp_stream;
+ 
+ 	stream->workspace = kzalloc(zlib_inflate_workspacesize(), GFP_KERNEL);
+-	if (!stream->workspace ) {
++	if (!stream->workspace) {
+ 		ret = -ENOMEM;
+ 		goto out;
+ 	}
+@@ -106,7 +106,7 @@ static int deflate_init(struct crypto_tfm *tfm)
+ {
+ 	struct deflate_ctx *ctx = crypto_tfm_ctx(tfm);
+ 	int ret;
+-	
++
+ 	ret = deflate_comp_init(ctx);
+ 	if (ret)
+ 		goto out;
+@@ -153,11 +153,11 @@ static int deflate_compress(struct crypto_tfm *tfm, const u8 *src,
+ out:
+ 	return ret;
+ }
+- 
++
+ static int deflate_decompress(struct crypto_tfm *tfm, const u8 *src,
+ 			      unsigned int slen, u8 *dst, unsigned int *dlen)
+ {
+-	
++
+ 	int ret = 0;
+ 	struct deflate_ctx *dctx = crypto_tfm_ctx(tfm);
+ 	struct z_stream_s *stream = &dctx->decomp_stream;
+@@ -182,7 +182,7 @@ static int deflate_decompress(struct crypto_tfm *tfm, const u8 *src,
+ 	if (ret == Z_OK && !stream->avail_in && stream->avail_out) {
+ 		u8 zerostuff = 0;
+ 		stream->next_in = &zerostuff;
+-		stream->avail_in = 1; 
++		stream->avail_in = 1;
+ 		ret = zlib_inflate(stream, Z_FINISH);
+ 	}
+ 	if (ret != Z_STREAM_END) {
+-- 
+1.6.6.1
 
-drivers/scsi/lpfc/lpfc_bsg.c: In function 'lpfc_bsg_diag_mode':
-drivers/scsi/lpfc/lpfc_bsg.c:1496: error: implicit declaration of function =
-'msleep'
-
-Caused by commit 3b5dd52aaffd291edea9f939ed46a960b240bb45 ("[SCSI] lpfc
-8.3.8: (BSG4) Add new vendor specific BSG Commands").
-
-Missing include of linux/delay.h?
-
-I have used the version of the scsi tree from next-20100209 for today.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__10_Feb_2010_12_33_37_+1100_puv4N.cnF43vaFSl
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAktyDPEACgkQjjKRsyhoI8wi+ACeJvZyqnMAJ2sFwAcc92bFkmj0
-4yoAnj6d8UF/FWA40bcg97i71N9IkP8A
-=/1E1
------END PGP SIGNATURE-----
-
---Signature=_Wed__10_Feb_2010_12_33_37_+1100_puv4N.cnF43vaFSl--
