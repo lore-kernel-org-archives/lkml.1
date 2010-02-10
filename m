@@ -1,49 +1,71 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753746Ab0BJNex (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 08:34:53 -0500
-Received: from smtp.nokia.com ([192.100.105.134]:23841 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750933Ab0BJNev (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 08:34:51 -0500
-From: Eduardo Valentin <eduardo.valentin@nokia.com>
-To: sameo@linux.intel.com
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Eduardo Valentin <eduardo.valentin@nokia.com>
-Subject: [PATCH 1/1] MFD: twl4030-core: Fix a typo in the twl_has_pwrbutton definition
-Date: Wed, 10 Feb 2010 15:33:48 +0200
-Message-Id: <1265808828-11433-1-git-send-email-eduardo.valentin@nokia.com>
-X-Mailer: git-send-email 1.6.5.7.g9ecb2
-X-OriginalArrivalTime: 10 Feb 2010 13:34:03.0574 (UTC) FILETIME=[B5FDED60:01CAAA55]
-X-Nokia-AV: Clean
+	id S1753306Ab0BJNhN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 08:37:13 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:20174 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751982Ab0BJNhL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Feb 2010 08:37:11 -0500
+Date: Wed, 10 Feb 2010 14:35:56 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Salman Qazi <sqazi@google.com>
+Cc: Roland Dreier <rolandd@cisco.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: Race in ptrace.
+Message-ID: <20100210133556.GA21925@redhat.com>
+References: <20100208221632.A7D6F9B33B@bumblebee1.mtv.corp.google.com> <20100208143231.6d804590.akpm@linux-foundation.org> <20100209112700.GA4258@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100209112700.GA4258@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Eduardo Valentin <eduardo.valentin@nokia.com>
+On 02/09, Oleg Nesterov wrote:
+>
+> Salman Qazi wrote:
+> >
+> > A race in ptrace was pointed to us by a fellow Google engineer, Tavis
+> > Ormandy.  The race involves interaction between a tracer, a tracee and
+> > an antagonist.  The tracer is tracing the tracee with PTRACE_SYSCALL and
+> > waits on the tracee.  In the mean time, an antagonist blasts the tracee
+> > with SIGCONTs.
+>
+> Could you please explain how did observe this race? Do you have a
+> test-case, or could you explain how we can reproduce it?
+>
+> Because,
+>
+> > It turns out that a SIGCONT wakes up the
+> > tracee in kernel mode,
+>
+> SIGCONT must not wake up a TASK_TRACED task.
 
-Change the typo CONFIG_INPUT_TWL4030_PWBUTTON_MODULE in the
-twl_has_pwrbutton definition to CONFIG_INPUT_TWL4030_PWRBUTTON_MODULE.
+In case I wasn't clear...
 
-Signed-off-by: Eduardo Valentin <eduardo.valentin@nokia.com>
----
- drivers/mfd/twl4030-core.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+--- a/kernel/signal.c
++++ b/kernel/signal.c
+@@ -697,6 +697,10 @@ static int prepare_signal(int sig, struct task_struct *p, int from_ancestor_ns)
+ 		 * and wake all threads.
+ 		 */
+ 		rm_from_queue(SIG_KERNEL_STOP_MASK, &signal->shared_pending);
++		if (p->ptrace & PT_PTRACED) {
++			p->ptrace |= PT_WAKING;
++			mb();
++		}
 
-diff --git a/drivers/mfd/twl4030-core.c b/drivers/mfd/twl4030-core.c
-index 0004823..04656f8 100644
---- a/drivers/mfd/twl4030-core.c
-+++ b/drivers/mfd/twl4030-core.c
-@@ -134,7 +134,7 @@
- #define TWL4030_NUM_SLAVES		4
- 
- #if defined(CONFIG_INPUT_TWL4030_PWRBUTTON) \
--	|| defined(CONFIG_INPUT_TWL4030_PWBUTTON_MODULE)
-+	|| defined(CONFIG_INPUT_TWL4030_PWRBUTTON_MODULE)
- #define twl_has_pwrbutton()	true
- #else
- #define twl_has_pwrbutton()	false
--- 
-1.6.5.7.g9ecb2
+Please note that we are going to do wake_up_state(state), and
+this state can never have __TASK_TRACED bit set.
+
+And we can't change ->ptrace here, we can race with the tracer.
+
+There are other problems with this patch, but the main problem
+is that I can't understand what this patch tries to fix.
+
+IOW, please provide more info ;)
+
+Oleg.
 
