@@ -1,83 +1,61 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754970Ab0BJBVk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 20:21:40 -0500
-Received: from mail-vw0-f46.google.com ([209.85.212.46]:41794 "EHLO
-	mail-vw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754818Ab0BJBVi (ORCPT
+	id S1754995Ab0BJBWA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 20:22:00 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:1447 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754515Ab0BJBV6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Feb 2010 20:21:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=cRqtgacZr14YUYDKqWPBYzUZgHo6T9bB10pDDz8UFiusjuVsb9VuCw+T/Ney+vMcyH
-         faV75w/d5b6OxavCjfZWCxNzUjx23oQTPsw+aga+/QmwtRJDHBTy7wexRBIdiCxijNEw
-         85oCLjrXp0z4Af6PMsO3vEczhz5uYKrVeKHc8=
-From: Richard Hartmann <richih.mailinglist@gmail.com>
-To: richih.mailinglist@gmail.com
-Cc: Herbert Xu <herbert@gondor.apana.org.au>,
-       "David S. Miller" <davem@davemloft.net>,
-       Steffen Klassert <steffen.klassert@secunet.com>,
-       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
-Subject: [PATCH 1/1] CRYPTO: Fix checkpatch errors & warnings in authenc.c
-Date: Wed, 10 Feb 2010 02:20:45 +0100
-Message-Id: <1265764847-23516-1-git-send-email-richih.mailinglist@gmail.com>
-X-Mailer: git-send-email 1.6.6.1
+	Tue, 9 Feb 2010 20:21:58 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=FQRmHQobOVvNCP93nI6OdKcLTfWpw5vlKD/jaRgV0vsBsaFLg5yyY9HaDAhu4ieuh
+	HjMAlvSgOAB9HfartwD3Q==
+Date: Tue, 9 Feb 2010 17:21:48 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Neil Brown <neilb@suse.de>
+cc: "Eric W. Biederman" <ebiederm@xmission.com>, Tejun Heo <tj@kernel.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sysfs: differentiate  between locking links and
+ non-links
+In-Reply-To: <19314.1869.847327.15190@notabene.brown>
+Message-ID: <alpine.DEB.2.00.1002091716580.13999@chino.kir.corp.google.com>
+References: <19314.1869.847327.15190@notabene.brown>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 10 Feb 2010, Neil Brown wrote:
 
-Signed-off-by: Richard Hartmann <richih.mailinglist@gmail.com>
----
- crypto/authenc.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
+> commit 2e502cfe444b68f6ef6b8b2abe83b6112564095b
+> Author: NeilBrown <neilb@suse.de>
+> Date:   Wed Feb 10 09:43:45 2010 +1100
+> 
+>     sysfs: differentiate  between locking links and non-links for sysfs
+>     
+>     symlinks and non-symlink is sysfs are very different.
+>     A symlink can never be locked (active) while an attribute
+>     modification routine is running.  So removing symlink from an
+>     attribute 'store' routine should be permitted without any lockdep
+>     warnings.
+>     
+>     So split the lockdep context for 's_active' in two, one for symlinks
+>     and other for everything else.
+>     
 
-diff --git a/crypto/authenc.c b/crypto/authenc.c
-index 4d6f49a..1887090 100644
---- a/crypto/authenc.c
-+++ b/crypto/authenc.c
-@@ -194,7 +194,7 @@ static void authenc_verify_ahash_update_done(struct crypto_async_request *areq,
- 	scatterwalk_map_and_copy(ihash, areq_ctx->sg, areq_ctx->cryptlen,
- 				 authsize, 0);
- 
--	err = memcmp(ihash, ahreq->result, authsize) ? -EBADMSG: 0;
-+	err = memcmp(ihash, ahreq->result, authsize) ? -EBADMSG : 0;
- 	if (err)
- 		goto out;
- 
-@@ -231,7 +231,7 @@ static void authenc_verify_ahash_done(struct crypto_async_request *areq,
- 	scatterwalk_map_and_copy(ihash, areq_ctx->sg, areq_ctx->cryptlen,
- 				 authsize, 0);
- 
--	err = memcmp(ihash, ahreq->result, authsize) ? -EBADMSG: 0;
-+	err = memcmp(ihash, ahreq->result, authsize) ? -EBADMSG : 0;
- 	if (err)
- 		goto out;
- 
-@@ -464,7 +464,7 @@ static int crypto_authenc_verify(struct aead_request *req,
- 	ihash = ohash + authsize;
- 	scatterwalk_map_and_copy(ihash, areq_ctx->sg, areq_ctx->cryptlen,
- 				 authsize, 0);
--	return memcmp(ihash, ohash, authsize) ? -EBADMSG: 0;
-+	return memcmp(ihash, ohash, authsize) ? -EBADMSG : 0;
- }
- 
- static int crypto_authenc_iverify(struct aead_request *req, u8 *iv,
-@@ -557,11 +557,11 @@ static int crypto_authenc_init_tfm(struct crypto_tfm *tfm)
- 
- 	ctx->auth = auth;
- 	ctx->enc = enc;
--	
-+
- 	tfm->crt_aead.reqsize = max_t(unsigned int,
- 				crypto_ahash_reqsize(auth) + ctx->reqoff +
- 				sizeof(struct authenc_request_ctx) +
--				sizeof(struct ahash_request), 
-+				sizeof(struct ahash_request),
- 				sizeof(struct skcipher_givcrypt_request) +
- 				crypto_ablkcipher_reqsize(enc) +
- 				crypto_ablkcipher_ivsize(enc));
--- 
-1.6.6.1
+What happens for hard links such as writing to 
+/sys/devices/block/xxx/queue/scheduler to change an I/O scheduler which 
+requires sd->dep_map and sd->parent->dep_map in sysfs_get_active_two() to 
+pin both?  The call to kobject_del() invokes the destruction that also 
+requires sd->dep_map in sysfs_deactivate() because of the s_active lockdep 
+annotation.
 
+This is the scenario that is presented in
+http://bugzilla.kernel.org/show_bug.cgi?id=15202.
