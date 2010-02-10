@@ -1,17 +1,17 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756021Ab0BJRYf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 12:24:35 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:42700 "EHLO mx1.redhat.com"
+	id S1755939Ab0BJRYW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 12:24:22 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:58468 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755776Ab0BJRXP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755794Ab0BJRXP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 10 Feb 2010 12:23:15 -0500
 From: Avi Kivity <avi@redhat.com>
 To: kvm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 36/40] KVM: convert slots_lock to a mutex
-Date: Wed, 10 Feb 2010 19:23:05 +0200
-Message-Id: <1265822589-11155-37-git-send-email-avi@redhat.com>
+Subject: [PATCH 33/40] KVM: x86: switch kvm_set_memory_alias to SRCU update
+Date: Wed, 10 Feb 2010 19:23:02 +0200
+Message-Id: <1265822589-11155-34-git-send-email-avi@redhat.com>
 In-Reply-To: <1265822589-11155-1-git-send-email-avi@redhat.com>
 References: <1265822589-11155-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -20,381 +20,190 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Marcelo Tosatti <mtosatti@redhat.com>
 
+Using a similar two-step procedure as for memslots.
+
 Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
 ---
- arch/ia64/kvm/kvm-ia64.c  |    4 ++--
- arch/powerpc/kvm/book3s.c |    4 ++--
- arch/x86/kvm/i8254.c      |    2 +-
- arch/x86/kvm/i8259.c      |    4 ++--
- arch/x86/kvm/vmx.c        |    8 ++++----
- arch/x86/kvm/x86.c        |   16 ++++++++--------
- include/linux/kvm_host.h  |    2 +-
- virt/kvm/coalesced_mmio.c |   14 +++++++-------
- virt/kvm/eventfd.c        |   10 +++++-----
- virt/kvm/ioapic.c         |    4 ++--
- virt/kvm/kvm_main.c       |   10 +++++-----
- 11 files changed, 39 insertions(+), 39 deletions(-)
+ arch/x86/include/asm/kvm_host.h |    4 ++
+ arch/x86/kvm/x86.c              |   60 +++++++++++++++++++++++++++++++++------
+ include/linux/kvm_host.h        |    6 ++++
+ virt/kvm/kvm_main.c             |    4 +-
+ 4 files changed, 63 insertions(+), 11 deletions(-)
 
-diff --git a/arch/ia64/kvm/kvm-ia64.c b/arch/ia64/kvm/kvm-ia64.c
-index d5e3846..e6ac549 100644
---- a/arch/ia64/kvm/kvm-ia64.c
-+++ b/arch/ia64/kvm/kvm-ia64.c
-@@ -1834,7 +1834,7 @@ int kvm_vm_ioctl_get_dirty_log(struct kvm *kvm,
- 	struct kvm_memory_slot *memslot;
- 	int is_dirty = 0;
- 
--	down_write(&kvm->slots_lock);
-+	mutex_lock(&kvm->slots_lock);
- 	spin_lock(&kvm->arch.dirty_log_lock);
- 
- 	r = kvm_ia64_sync_dirty_log(kvm, log);
-@@ -1854,7 +1854,7 @@ int kvm_vm_ioctl_get_dirty_log(struct kvm *kvm,
- 	}
- 	r = 0;
- out:
--	up_write(&kvm->slots_lock);
-+	mutex_unlock(&kvm->slots_lock);
- 	spin_unlock(&kvm->arch.dirty_log_lock);
- 	return r;
- }
-diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
-index bb8873d..492dcc1 100644
---- a/arch/powerpc/kvm/book3s.c
-+++ b/arch/powerpc/kvm/book3s.c
-@@ -857,7 +857,7 @@ int kvm_vm_ioctl_get_dirty_log(struct kvm *kvm,
- 	int is_dirty = 0;
- 	int r, n;
- 
--	down_write(&kvm->slots_lock);
-+	mutex_lock(&kvm->slots_lock);
- 
- 	r = kvm_get_dirty_log(kvm, log, &is_dirty);
- 	if (r)
-@@ -879,7 +879,7 @@ int kvm_vm_ioctl_get_dirty_log(struct kvm *kvm,
- 
- 	r = 0;
- out:
--	up_write(&kvm->slots_lock);
-+	mutex_unlock(&kvm->slots_lock);
- 	return r;
- }
- 
-diff --git a/arch/x86/kvm/i8254.c b/arch/x86/kvm/i8254.c
-index a7259e8..caad189 100644
---- a/arch/x86/kvm/i8254.c
-+++ b/arch/x86/kvm/i8254.c
-@@ -602,7 +602,7 @@ static const struct kvm_io_device_ops speaker_dev_ops = {
- 	.write    = speaker_ioport_write,
+diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
+index 7cdcb3d..6c8c7c5 100644
+--- a/arch/x86/include/asm/kvm_host.h
++++ b/arch/x86/include/asm/kvm_host.h
+@@ -368,8 +368,12 @@ struct kvm_mem_alias {
+ 	gfn_t base_gfn;
+ 	unsigned long npages;
+ 	gfn_t target_gfn;
++#define KVM_ALIAS_INVALID     1UL
++	unsigned long flags;
  };
  
--/* Caller must have writers lock on slots_lock */
-+/* Caller must hold slots_lock */
- struct kvm_pit *kvm_create_pit(struct kvm *kvm, u32 flags)
- {
- 	struct kvm_pit *pit;
-diff --git a/arch/x86/kvm/i8259.c b/arch/x86/kvm/i8259.c
-index b7d145b..d5753a7 100644
---- a/arch/x86/kvm/i8259.c
-+++ b/arch/x86/kvm/i8259.c
-@@ -533,9 +533,9 @@ struct kvm_pic *kvm_create_pic(struct kvm *kvm)
- 	 * Initialize PIO device
- 	 */
- 	kvm_iodevice_init(&s->dev, &picdev_ops);
--	down_write(&kvm->slots_lock);
-+	mutex_lock(&kvm->slots_lock);
- 	ret = kvm_io_bus_register_dev(kvm, KVM_PIO_BUS, &s->dev);
--	up_write(&kvm->slots_lock);
-+	mutex_unlock(&kvm->slots_lock);
- 	if (ret < 0) {
- 		kfree(s);
- 		return NULL;
-diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
-index 22ab713..f04e2ff 100644
---- a/arch/x86/kvm/vmx.c
-+++ b/arch/x86/kvm/vmx.c
-@@ -2223,7 +2223,7 @@ static int alloc_apic_access_page(struct kvm *kvm)
- 	struct kvm_userspace_memory_region kvm_userspace_mem;
- 	int r = 0;
- 
--	down_write(&kvm->slots_lock);
-+	mutex_lock(&kvm->slots_lock);
- 	if (kvm->arch.apic_access_page)
- 		goto out;
- 	kvm_userspace_mem.slot = APIC_ACCESS_PAGE_PRIVATE_MEMSLOT;
-@@ -2236,7 +2236,7 @@ static int alloc_apic_access_page(struct kvm *kvm)
- 
- 	kvm->arch.apic_access_page = gfn_to_page(kvm, 0xfee00);
- out:
--	up_write(&kvm->slots_lock);
-+	mutex_unlock(&kvm->slots_lock);
- 	return r;
- }
- 
-@@ -2245,7 +2245,7 @@ static int alloc_identity_pagetable(struct kvm *kvm)
- 	struct kvm_userspace_memory_region kvm_userspace_mem;
- 	int r = 0;
- 
--	down_write(&kvm->slots_lock);
-+	mutex_lock(&kvm->slots_lock);
- 	if (kvm->arch.ept_identity_pagetable)
- 		goto out;
- 	kvm_userspace_mem.slot = IDENTITY_PAGETABLE_PRIVATE_MEMSLOT;
-@@ -2260,7 +2260,7 @@ static int alloc_identity_pagetable(struct kvm *kvm)
- 	kvm->arch.ept_identity_pagetable = gfn_to_page(kvm,
- 			kvm->arch.ept_identity_map_addr >> PAGE_SHIFT);
- out:
--	up_write(&kvm->slots_lock);
-+	mutex_unlock(&kvm->slots_lock);
- 	return r;
- }
- 
++#define KVM_ARCH_HAS_UNALIAS_INSTANTIATION
++
+ struct kvm_mem_aliases {
+ 	struct kvm_mem_alias aliases[KVM_ALIAS_SLOTS];
+ 	int naliases;
 diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 0cb795c..4b00831 100644
+index 2d7c040..59f4da4 100644
 --- a/arch/x86/kvm/x86.c
 +++ b/arch/x86/kvm/x86.c
-@@ -2209,14 +2209,14 @@ static int kvm_vm_ioctl_set_nr_mmu_pages(struct kvm *kvm,
- 	if (kvm_nr_mmu_pages < KVM_MIN_ALLOC_MMU_PAGES)
- 		return -EINVAL;
- 
--	down_write(&kvm->slots_lock);
-+	mutex_lock(&kvm->slots_lock);
- 	spin_lock(&kvm->mmu_lock);
- 
- 	kvm_mmu_change_mmu_pages(kvm, kvm_nr_mmu_pages);
- 	kvm->arch.n_requested_mmu_pages = kvm_nr_mmu_pages;
- 
- 	spin_unlock(&kvm->mmu_lock);
--	up_write(&kvm->slots_lock);
-+	mutex_unlock(&kvm->slots_lock);
- 	return 0;
+@@ -38,6 +38,7 @@
+ #include <linux/intel-iommu.h>
+ #include <linux/cpufreq.h>
+ #include <linux/user-return-notifier.h>
++#include <linux/srcu.h>
+ #include <trace/events/kvm.h>
+ #undef TRACE_INCLUDE_FILE
+ #define CREATE_TRACE_POINTS
+@@ -2224,11 +2225,32 @@ static int kvm_vm_ioctl_get_nr_mmu_pages(struct kvm *kvm)
+ 	return kvm->arch.n_alloc_mmu_pages;
  }
  
-@@ -2293,7 +2293,7 @@ static int kvm_vm_ioctl_set_memory_alias(struct kvm *kvm,
- 	if (!aliases)
- 		goto out;
++gfn_t unalias_gfn_instantiation(struct kvm *kvm, gfn_t gfn)
++{
++	int i;
++	struct kvm_mem_alias *alias;
++	struct kvm_mem_aliases *aliases;
++
++	aliases = rcu_dereference(kvm->arch.aliases);
++
++	for (i = 0; i < aliases->naliases; ++i) {
++		alias = &aliases->aliases[i];
++		if (alias->flags & KVM_ALIAS_INVALID)
++			continue;
++		if (gfn >= alias->base_gfn
++		    && gfn < alias->base_gfn + alias->npages)
++			return alias->target_gfn + gfn - alias->base_gfn;
++	}
++	return gfn;
++}
++
+ gfn_t unalias_gfn(struct kvm *kvm, gfn_t gfn)
+ {
+ 	int i;
+ 	struct kvm_mem_alias *alias;
+-	struct kvm_mem_aliases *aliases = kvm->arch.aliases;
++	struct kvm_mem_aliases *aliases;
++
++	aliases = rcu_dereference(kvm->arch.aliases);
  
--	down_write(&kvm->slots_lock);
-+	mutex_lock(&kvm->slots_lock);
- 
- 	/* invalidate any gfn reference in case of deletion/shrinking */
- 	memcpy(aliases, kvm->arch.aliases, sizeof(struct kvm_mem_aliases));
-@@ -2329,7 +2329,7 @@ static int kvm_vm_ioctl_set_memory_alias(struct kvm *kvm,
- 	r = 0;
- 
- out_unlock:
--	up_write(&kvm->slots_lock);
-+	mutex_unlock(&kvm->slots_lock);
- out:
- 	return r;
- }
-@@ -2463,7 +2463,7 @@ int kvm_vm_ioctl_get_dirty_log(struct kvm *kvm,
- 	unsigned long is_dirty = 0;
- 	unsigned long *dirty_bitmap = NULL;
- 
--	down_write(&kvm->slots_lock);
-+	mutex_lock(&kvm->slots_lock);
+ 	for (i = 0; i < aliases->naliases; ++i) {
+ 		alias = &aliases->aliases[i];
+@@ -2249,7 +2271,7 @@ static int kvm_vm_ioctl_set_memory_alias(struct kvm *kvm,
+ {
+ 	int r, n;
+ 	struct kvm_mem_alias *p;
+-	struct kvm_mem_aliases *aliases;
++	struct kvm_mem_aliases *aliases, *old_aliases;
  
  	r = -EINVAL;
- 	if (log->slot >= KVM_MEMORY_SLOTS)
-@@ -2513,7 +2513,7 @@ int kvm_vm_ioctl_get_dirty_log(struct kvm *kvm,
- out_free:
- 	vfree(dirty_bitmap);
+ 	/* General sanity checks */
+@@ -2266,28 +2288,48 @@ static int kvm_vm_ioctl_set_memory_alias(struct kvm *kvm,
+ 	    < alias->target_phys_addr)
+ 		goto out;
+ 
++	r = -ENOMEM;
++	aliases = kzalloc(sizeof(struct kvm_mem_aliases), GFP_KERNEL);
++	if (!aliases)
++		goto out;
++
+ 	down_write(&kvm->slots_lock);
+-	spin_lock(&kvm->mmu_lock);
+ 
+-	aliases = kvm->arch.aliases;
++	/* invalidate any gfn reference in case of deletion/shrinking */
++	memcpy(aliases, kvm->arch.aliases, sizeof(struct kvm_mem_aliases));
++	aliases->aliases[alias->slot].flags |= KVM_ALIAS_INVALID;
++	old_aliases = kvm->arch.aliases;
++	rcu_assign_pointer(kvm->arch.aliases, aliases);
++	synchronize_srcu_expedited(&kvm->srcu);
++	kvm_mmu_zap_all(kvm);
++	kfree(old_aliases);
++
++	r = -ENOMEM;
++	aliases = kzalloc(sizeof(struct kvm_mem_aliases), GFP_KERNEL);
++	if (!aliases)
++		goto out_unlock;
++
++	memcpy(aliases, kvm->arch.aliases, sizeof(struct kvm_mem_aliases));
+ 
+ 	p = &aliases->aliases[alias->slot];
+ 	p->base_gfn = alias->guest_phys_addr >> PAGE_SHIFT;
+ 	p->npages = alias->memory_size >> PAGE_SHIFT;
+ 	p->target_gfn = alias->target_phys_addr >> PAGE_SHIFT;
++	p->flags &= ~(KVM_ALIAS_INVALID);
+ 
+ 	for (n = KVM_ALIAS_SLOTS; n > 0; --n)
+ 		if (aliases->aliases[n - 1].npages)
+ 			break;
+ 	aliases->naliases = n;
+ 
+-	spin_unlock(&kvm->mmu_lock);
+-	kvm_mmu_zap_all(kvm);
++	old_aliases = kvm->arch.aliases;
++	rcu_assign_pointer(kvm->arch.aliases, aliases);
++	synchronize_srcu_expedited(&kvm->srcu);
++	kfree(old_aliases);
++	r = 0;
+ 
++out_unlock:
+ 	up_write(&kvm->slots_lock);
+-
+-	return 0;
+-
  out:
--	up_write(&kvm->slots_lock);
-+	mutex_unlock(&kvm->slots_lock);
  	return r;
  }
- 
-@@ -2626,7 +2626,7 @@ long kvm_arch_vm_ioctl(struct file *filp,
- 				   sizeof(struct kvm_pit_config)))
- 			goto out;
- 	create_pit:
--		down_write(&kvm->slots_lock);
-+		mutex_lock(&kvm->slots_lock);
- 		r = -EEXIST;
- 		if (kvm->arch.vpit)
- 			goto create_pit_unlock;
-@@ -2635,7 +2635,7 @@ long kvm_arch_vm_ioctl(struct file *filp,
- 		if (kvm->arch.vpit)
- 			r = 0;
- 	create_pit_unlock:
--		up_write(&kvm->slots_lock);
-+		mutex_unlock(&kvm->slots_lock);
- 		break;
- 	case KVM_IRQ_LINE_STATUS:
- 	case KVM_IRQ_LINE: {
 diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 0bb9aa2..bb0314e 100644
+index 93bd307..20941c0 100644
 --- a/include/linux/kvm_host.h
 +++ b/include/linux/kvm_host.h
-@@ -161,7 +161,7 @@ struct kvm_memslots {
- struct kvm {
- 	spinlock_t mmu_lock;
- 	spinlock_t requests_lock;
--	struct rw_semaphore slots_lock;
-+	struct mutex slots_lock;
- 	struct mm_struct *mm; /* userspace tied to this vm */
- 	struct kvm_memslots *memslots;
- 	struct srcu_struct srcu;
-diff --git a/virt/kvm/coalesced_mmio.c b/virt/kvm/coalesced_mmio.c
-index a736a93..5de6594 100644
---- a/virt/kvm/coalesced_mmio.c
-+++ b/virt/kvm/coalesced_mmio.c
-@@ -110,9 +110,9 @@ int kvm_coalesced_mmio_init(struct kvm *kvm)
- 	dev->kvm = kvm;
- 	kvm->coalesced_mmio_dev = dev;
- 
--	down_write(&kvm->slots_lock);
-+	mutex_lock(&kvm->slots_lock);
- 	ret = kvm_io_bus_register_dev(kvm, KVM_MMIO_BUS, &dev->dev);
--	up_write(&kvm->slots_lock);
-+	mutex_unlock(&kvm->slots_lock);
- 	if (ret < 0)
- 		goto out_free_dev;
- 
-@@ -140,16 +140,16 @@ int kvm_vm_ioctl_register_coalesced_mmio(struct kvm *kvm,
- 	if (dev == NULL)
- 		return -EINVAL;
- 
--	down_write(&kvm->slots_lock);
-+	mutex_lock(&kvm->slots_lock);
- 	if (dev->nb_zones >= KVM_COALESCED_MMIO_ZONE_MAX) {
--		up_write(&kvm->slots_lock);
-+		mutex_unlock(&kvm->slots_lock);
- 		return -ENOBUFS;
- 	}
- 
- 	dev->zone[dev->nb_zones] = *zone;
- 	dev->nb_zones++;
- 
--	up_write(&kvm->slots_lock);
-+	mutex_unlock(&kvm->slots_lock);
- 	return 0;
+@@ -266,6 +266,8 @@ void kvm_arch_commit_memory_region(struct kvm *kvm,
+ void kvm_disable_largepages(void);
+ void kvm_arch_flush_shadow(struct kvm *kvm);
+ gfn_t unalias_gfn(struct kvm *kvm, gfn_t gfn);
++gfn_t unalias_gfn_instantiation(struct kvm *kvm, gfn_t gfn);
++
+ struct page *gfn_to_page(struct kvm *kvm, gfn_t gfn);
+ unsigned long gfn_to_hva(struct kvm *kvm, gfn_t gfn);
+ void kvm_release_page_clean(struct page *page);
+@@ -539,6 +541,10 @@ static inline int mmu_notifier_retry(struct kvm_vcpu *vcpu, unsigned long mmu_se
  }
+ #endif
  
-@@ -163,7 +163,7 @@ int kvm_vm_ioctl_unregister_coalesced_mmio(struct kvm *kvm,
- 	if (dev == NULL)
- 		return -EINVAL;
++#ifndef KVM_ARCH_HAS_UNALIAS_INSTANTIATION
++#define unalias_gfn_instantiation unalias_gfn
++#endif
++
+ #ifdef CONFIG_HAVE_KVM_IRQCHIP
  
--	down_write(&kvm->slots_lock);
-+	mutex_lock(&kvm->slots_lock);
- 
- 	i = dev->nb_zones;
- 	while(i) {
-@@ -181,7 +181,7 @@ int kvm_vm_ioctl_unregister_coalesced_mmio(struct kvm *kvm,
- 		i--;
- 	}
- 
--	up_write(&kvm->slots_lock);
-+	mutex_unlock(&kvm->slots_lock);
- 
- 	return 0;
- }
-diff --git a/virt/kvm/eventfd.c b/virt/kvm/eventfd.c
-index 315a586..486c604 100644
---- a/virt/kvm/eventfd.c
-+++ b/virt/kvm/eventfd.c
-@@ -508,7 +508,7 @@ kvm_assign_ioeventfd(struct kvm *kvm, struct kvm_ioeventfd *args)
- 	else
- 		p->wildcard = true;
- 
--	down_write(&kvm->slots_lock);
-+	mutex_lock(&kvm->slots_lock);
- 
- 	/* Verify that there isnt a match already */
- 	if (ioeventfd_check_collision(kvm, p)) {
-@@ -524,12 +524,12 @@ kvm_assign_ioeventfd(struct kvm *kvm, struct kvm_ioeventfd *args)
- 
- 	list_add_tail(&p->list, &kvm->ioeventfds);
- 
--	up_write(&kvm->slots_lock);
-+	mutex_unlock(&kvm->slots_lock);
- 
- 	return 0;
- 
- unlock_fail:
--	up_write(&kvm->slots_lock);
-+	mutex_unlock(&kvm->slots_lock);
- 
- fail:
- 	kfree(p);
-@@ -551,7 +551,7 @@ kvm_deassign_ioeventfd(struct kvm *kvm, struct kvm_ioeventfd *args)
- 	if (IS_ERR(eventfd))
- 		return PTR_ERR(eventfd);
- 
--	down_write(&kvm->slots_lock);
-+	mutex_lock(&kvm->slots_lock);
- 
- 	list_for_each_entry_safe(p, tmp, &kvm->ioeventfds, list) {
- 		bool wildcard = !(args->flags & KVM_IOEVENTFD_FLAG_DATAMATCH);
-@@ -571,7 +571,7 @@ kvm_deassign_ioeventfd(struct kvm *kvm, struct kvm_ioeventfd *args)
- 		break;
- 	}
- 
--	up_write(&kvm->slots_lock);
-+	mutex_unlock(&kvm->slots_lock);
- 
- 	eventfd_ctx_put(eventfd);
- 
-diff --git a/virt/kvm/ioapic.c b/virt/kvm/ioapic.c
-index f326a6f..f01392f 100644
---- a/virt/kvm/ioapic.c
-+++ b/virt/kvm/ioapic.c
-@@ -372,9 +372,9 @@ int kvm_ioapic_init(struct kvm *kvm)
- 	kvm_ioapic_reset(ioapic);
- 	kvm_iodevice_init(&ioapic->dev, &ioapic_mmio_ops);
- 	ioapic->kvm = kvm;
--	down_write(&kvm->slots_lock);
-+	mutex_lock(&kvm->slots_lock);
- 	ret = kvm_io_bus_register_dev(kvm, KVM_MMIO_BUS, &ioapic->dev);
--	up_write(&kvm->slots_lock);
-+	mutex_unlock(&kvm->slots_lock);
- 	if (ret < 0)
- 		kfree(ioapic);
- 
+ #define KVM_MAX_IRQ_ROUTES 1024
 diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 659bc12..2b7cd6c 100644
+index 2bb24a8..c680f7b 100644
 --- a/virt/kvm/kvm_main.c
 +++ b/virt/kvm/kvm_main.c
-@@ -429,7 +429,7 @@ static struct kvm *kvm_create_vm(void)
- 	kvm_eventfd_init(kvm);
- 	mutex_init(&kvm->lock);
- 	mutex_init(&kvm->irq_lock);
--	init_rwsem(&kvm->slots_lock);
-+	mutex_init(&kvm->slots_lock);
- 	atomic_set(&kvm->users_count, 1);
- 	spin_lock(&kvm_lock);
- 	list_add(&kvm->vm_list, &vm_list);
-@@ -763,9 +763,9 @@ int kvm_set_memory_region(struct kvm *kvm,
- {
- 	int r;
+@@ -859,7 +859,7 @@ int kvm_is_visible_gfn(struct kvm *kvm, gfn_t gfn)
+ 	int i;
+ 	struct kvm_memslots *slots = rcu_dereference(kvm->memslots);
  
--	down_write(&kvm->slots_lock);
-+	mutex_lock(&kvm->slots_lock);
- 	r = __kvm_set_memory_region(kvm, mem, user_alloc);
--	up_write(&kvm->slots_lock);
-+	mutex_unlock(&kvm->slots_lock);
- 	return r;
- }
- EXPORT_SYMBOL_GPL(kvm_set_memory_region);
-@@ -1997,7 +1997,7 @@ int kvm_io_bus_read(struct kvm *kvm, enum kvm_bus bus_idx, gpa_t addr,
- 	return -EOPNOTSUPP;
- }
+-	gfn = unalias_gfn(kvm, gfn);
++	gfn = unalias_gfn_instantiation(kvm, gfn);
+ 	for (i = 0; i < KVM_MEMORY_SLOTS; ++i) {
+ 		struct kvm_memory_slot *memslot = &slots->memslots[i];
  
--/* Caller must have write lock on slots_lock. */
-+/* Caller must hold slots_lock. */
- int kvm_io_bus_register_dev(struct kvm *kvm, enum kvm_bus bus_idx,
- 			    struct kvm_io_device *dev)
+@@ -896,7 +896,7 @@ unsigned long gfn_to_hva(struct kvm *kvm, gfn_t gfn)
  {
-@@ -2019,7 +2019,7 @@ int kvm_io_bus_register_dev(struct kvm *kvm, enum kvm_bus bus_idx,
- 	return 0;
- }
+ 	struct kvm_memory_slot *slot;
  
--/* Caller must have write lock on slots_lock. */
-+/* Caller must hold slots_lock. */
- int kvm_io_bus_unregister_dev(struct kvm *kvm, enum kvm_bus bus_idx,
- 			      struct kvm_io_device *dev)
- {
+-	gfn = unalias_gfn(kvm, gfn);
++	gfn = unalias_gfn_instantiation(kvm, gfn);
+ 	slot = gfn_to_memslot_unaliased(kvm, gfn);
+ 	if (!slot || slot->flags & KVM_MEMSLOT_INVALID)
+ 		return bad_hva();
 -- 
 1.6.5.3
 
