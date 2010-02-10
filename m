@@ -1,18 +1,18 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754531Ab0BJJWZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 04:22:25 -0500
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:39186 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753781Ab0BJJWF (ORCPT
+	id S1754635Ab0BJJW2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 04:22:28 -0500
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:60128 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753592Ab0BJJWK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 04:22:05 -0500
+	Wed, 10 Feb 2010 04:22:10 -0500
 MIME-version: 1.0
 Content-transfer-encoding: 7BIT
 Content-type: TEXT/PLAIN
-Date: Wed, 10 Feb 2010 01:20:29 -0800
+Date: Wed, 10 Feb 2010 01:20:34 -0800
 From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 25/35] move round_up/down to kernel.h
+Subject: [PATCH 30/35] sparseirq: change irq_desc_ptrs to static
 In-reply-to: <1265793639-15071-1-git-send-email-yinghai@kernel.org>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
@@ -22,61 +22,88 @@ Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
        Christoph Lameter <cl@linux-foundation.org>,
        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
        Yinghai Lu <yinghai@kernel.org>
-Message-id: <1265793639-15071-26-git-send-email-yinghai@kernel.org>
+Message-id: <1265793639-15071-31-git-send-email-yinghai@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 References: <1265793639-15071-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-prepare to early_res moving up
+add replace_irq_desc()
+
+-v2: remove unneeded boundary check in replace_irq_desc
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 ---
- arch/x86/include/asm/proto.h |   10 ----------
- include/linux/kernel.h       |   10 ++++++++++
- 2 files changed, 10 insertions(+), 10 deletions(-)
+ kernel/irq/handle.c       |    7 ++++++-
+ kernel/irq/internals.h    |    6 +-----
+ kernel/irq/numa_migrate.c |    4 ++--
+ 3 files changed, 9 insertions(+), 8 deletions(-)
 
-diff --git a/arch/x86/include/asm/proto.h b/arch/x86/include/asm/proto.h
-index 4009f65..6f414ed 100644
---- a/arch/x86/include/asm/proto.h
-+++ b/arch/x86/include/asm/proto.h
-@@ -23,14 +23,4 @@ extern int reboot_force;
+diff --git a/kernel/irq/handle.c b/kernel/irq/handle.c
+index 0e823c0..266f798 100644
+--- a/kernel/irq/handle.c
++++ b/kernel/irq/handle.c
+@@ -127,7 +127,7 @@ static void init_one_irq_desc(int irq, struct irq_desc *desc, int node)
+  */
+ DEFINE_RAW_SPINLOCK(sparse_irq_lock);
  
- long do_arch_prctl(struct task_struct *task, int code, unsigned long addr);
+-struct irq_desc **irq_desc_ptrs __read_mostly;
++static struct irq_desc **irq_desc_ptrs __read_mostly;
  
--/*
-- * This looks more complex than it should be. But we need to
-- * get the type for the ~ right in round_down (it needs to be
-- * as wide as the result!), and we want to evaluate the macro
-- * arguments just once each.
-- */
--#define __round_mask(x,y) ((__typeof__(x))((y)-1))
--#define round_up(x,y) ((((x)-1) | __round_mask(x,y))+1)
--#define round_down(x,y) ((x) & ~__round_mask(x,y))
--
- #endif /* _ASM_X86_PROTO_H */
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index 1221d23..7f07074 100644
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -44,6 +44,16 @@ extern const char linux_proc_banner[];
+ static struct irq_desc irq_desc_legacy[NR_IRQS_LEGACY] __cacheline_aligned_in_smp = {
+ 	[0 ... NR_IRQS_LEGACY-1] = {
+@@ -192,6 +192,11 @@ struct irq_desc *irq_to_desc(unsigned int irq)
+ 	return NULL;
+ }
  
- #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]) + __must_be_array(arr))
- 
-+/*
-+ * This looks more complex than it should be. But we need to
-+ * get the type for the ~ right in round_down (it needs to be
-+ * as wide as the result!), and we want to evaluate the macro
-+ * arguments just once each.
-+ */
-+#define __round_mask(x, y) ((__typeof__(x))((y)-1))
-+#define round_up(x, y) ((((x)-1) | __round_mask(x, y))+1)
-+#define round_down(x, y) ((x) & ~__round_mask(x, y))
++void replace_irq_desc(unsigned int irq, struct irq_desc *desc)
++{
++	irq_desc_ptrs[irq] = desc;
++}
 +
- #define FIELD_SIZEOF(t, f) (sizeof(((t*)0)->f))
- #define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
- #define roundup(x, y) ((((x) + ((y) - 1)) / (y)) * (y))
+ struct irq_desc * __ref irq_to_desc_alloc_node(unsigned int irq, int node)
+ {
+ 	struct irq_desc *desc;
+diff --git a/kernel/irq/internals.h b/kernel/irq/internals.h
+index b2821f0..c63f3bc 100644
+--- a/kernel/irq/internals.h
++++ b/kernel/irq/internals.h
+@@ -21,11 +21,7 @@ extern void clear_kstat_irqs(struct irq_desc *desc);
+ extern raw_spinlock_t sparse_irq_lock;
+ 
+ #ifdef CONFIG_SPARSE_IRQ
+-/* irq_desc_ptrs allocated at boot time */
+-extern struct irq_desc **irq_desc_ptrs;
+-#else
+-/* irq_desc_ptrs is a fixed size array */
+-extern struct irq_desc *irq_desc_ptrs[NR_IRQS];
++void replace_irq_desc(unsigned int irq, struct irq_desc *desc);
+ #endif
+ 
+ #ifdef CONFIG_PROC_FS
+diff --git a/kernel/irq/numa_migrate.c b/kernel/irq/numa_migrate.c
+index 26bac9d..963559d 100644
+--- a/kernel/irq/numa_migrate.c
++++ b/kernel/irq/numa_migrate.c
+@@ -70,7 +70,7 @@ static struct irq_desc *__real_move_irq_desc(struct irq_desc *old_desc,
+ 	raw_spin_lock_irqsave(&sparse_irq_lock, flags);
+ 
+ 	/* We have to check it to avoid races with another CPU */
+-	desc = irq_desc_ptrs[irq];
++	desc = irq_to_desc(irq);
+ 
+ 	if (desc && old_desc != desc)
+ 		goto out_unlock;
+@@ -90,7 +90,7 @@ static struct irq_desc *__real_move_irq_desc(struct irq_desc *old_desc,
+ 		goto out_unlock;
+ 	}
+ 
+-	irq_desc_ptrs[irq] = desc;
++	replace_irq_desc(irq, desc);
+ 	raw_spin_unlock_irqrestore(&sparse_irq_lock, flags);
+ 
+ 	/* free the old one */
 -- 
 1.6.4.2
 
