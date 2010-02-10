@@ -1,18 +1,18 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754422Ab0BJJWX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 04:22:23 -0500
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:39190 "EHLO
+	id S1754358Ab0BJJWT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 04:22:19 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:39201 "EHLO
 	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753475Ab0BJJWG (ORCPT
+	with ESMTP id S1753560Ab0BJJWJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 04:22:06 -0500
+	Wed, 10 Feb 2010 04:22:09 -0500
 MIME-version: 1.0
 Content-transfer-encoding: 7BIT
 Content-type: TEXT/PLAIN
-Date: Wed, 10 Feb 2010 01:20:30 -0800
+Date: Wed, 10 Feb 2010 01:20:33 -0800
 From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 26/35] x86: add find_fw_memmap_area
+Subject: [PATCH 29/35] radix: move radix init early
 In-reply-to: <1265793639-15071-1-git-send-email-yinghai@kernel.org>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
@@ -22,110 +22,40 @@ Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
        Christoph Lameter <cl@linux-foundation.org>,
        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
        Yinghai Lu <yinghai@kernel.org>
-Message-id: <1265793639-15071-27-git-send-email-yinghai@kernel.org>
+Message-id: <1265793639-15071-30-git-send-email-yinghai@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 References: <1265793639-15071-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-so could move early_res up
+prepare to use it in early_irq_init()
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 ---
- arch/x86/include/asm/early_res.h |    1 +
- arch/x86/kernel/e820.c           |    4 ++++
- arch/x86/kernel/early_res.c      |   17 +++++++++++------
- 3 files changed, 16 insertions(+), 6 deletions(-)
+ init/main.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/include/asm/early_res.h b/arch/x86/include/asm/early_res.h
-index 5a4d2eb..9758f3d 100644
---- a/arch/x86/include/asm/early_res.h
-+++ b/arch/x86/include/asm/early_res.h
-@@ -12,6 +12,7 @@ u64 find_early_area(u64 ei_start, u64 ei_last, u64 start, u64 end,
- 			 u64 size, u64 align);
- u64 find_early_area_size(u64 ei_start, u64 ei_last, u64 start,
- 			 u64 *sizep, u64 align);
-+u64 find_fw_memmap_area(u64 start, u64 end, u64 size, u64 align);
- #include <linux/range.h>
- int get_free_all_memory_range(struct range **rangep, int nodeid);
- 
-diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
-index b4e512b..36918d8 100644
---- a/arch/x86/kernel/e820.c
-+++ b/arch/x86/kernel/e820.c
-@@ -748,6 +748,10 @@ u64 __init find_e820_area(u64 start, u64 end, u64 size, u64 align)
- 	return -1ULL;
- }
- 
-+u64 __init find_fw_memmap_area(u64 start, u64 end, u64 size, u64 align)
-+{
-+	return find_e820_area(start, end, size, align);
-+}
- /*
-  * Find next free range after *start
-  */
-diff --git a/arch/x86/kernel/early_res.c b/arch/x86/kernel/early_res.c
-index c8be692..e1d8be1 100644
---- a/arch/x86/kernel/early_res.c
-+++ b/arch/x86/kernel/early_res.c
-@@ -7,16 +7,14 @@
- #include <linux/bootmem.h>
- #include <linux/mm.h>
- 
--#include <asm/e820.h>
- #include <asm/early_res.h>
--#include <asm/proto.h>
- 
- /*
-  * Early reserved memory areas.
-  */
- /*
-  * need to make sure this one is bigger enough before
-- * find_e820_area could be used
-+ * find_fw_memmap_area could be used
-  */
- #define MAX_EARLY_RES_X 32
- 
-@@ -180,6 +178,13 @@ void __init reserve_early_overlap_ok(u64 start, u64 end, char *name)
- 	__reserve_early(start, end, name, 1);
- }
- 
-+u64 __init __weak find_fw_memmap_area(u64 start, u64 end, u64 size, u64 align)
-+{
-+	panic("should have find_fw_memmap_area defined with arch");
-+
-+	return -1ULL;
-+}
-+
- static void __init __check_and_double_early_res(u64 ex_start, u64 ex_end)
- {
- 	u64 start, end, size, mem;
-@@ -198,13 +203,13 @@ static void __init __check_and_double_early_res(u64 ex_start, u64 ex_end)
- 		start = early_res[0].end;
- 	end = ex_start;
- 	if (start + size < end)
--		mem = find_e820_area(start, end, size,
-+		mem = find_fw_memmap_area(start, end, size,
- 					 sizeof(struct early_res));
- 	if (mem == -1ULL) {
- 		start = ex_end;
- 		end = max_pfn_mapped << PAGE_SHIFT;
- 		if (start + size < end)
--			mem = find_e820_area(start, end, size,
-+			mem = find_fw_memmap_area(start, end, size,
- 						 sizeof(struct early_res));
+diff --git a/init/main.c b/init/main.c
+index 4cb47a1..8451878 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -584,6 +584,7 @@ asmlinkage void __init start_kernel(void)
+ 		local_irq_disable();
  	}
- 	if (mem == -1ULL)
-@@ -343,7 +348,7 @@ int __init get_free_all_memory_range(struct range **rangep, int nodeid)
- 		start = MAX_DMA32_PFN << PAGE_SHIFT;
- #endif
- 	end = max_pfn_mapped << PAGE_SHIFT;
--	mem = find_e820_area(start, end, size, sizeof(struct range));
-+	mem = find_fw_memmap_area(start, end, size, sizeof(struct range));
- 	if (mem == -1ULL)
- 		panic("can not find more space for range free");
- 
+ 	rcu_init();
++	radix_tree_init();
+ 	/* init some links before init_ISA_irqs() */
+ 	early_irq_init();
+ 	init_IRQ();
+@@ -657,7 +658,6 @@ asmlinkage void __init start_kernel(void)
+ 	proc_caches_init();
+ 	buffer_init();
+ 	key_init();
+-	radix_tree_init();
+ 	security_init();
+ 	vfs_caches_init(totalram_pages);
+ 	signals_init();
 -- 
 1.6.4.2
 
