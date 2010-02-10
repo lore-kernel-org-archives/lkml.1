@@ -1,80 +1,42 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755768Ab0BJUS7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 15:18:59 -0500
-Received: from e39.co.us.ibm.com ([32.97.110.160]:50342 "EHLO
-	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755327Ab0BJUS5 (ORCPT
+	id S1755850Ab0BJUUq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 15:20:46 -0500
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:42534 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755323Ab0BJUUo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 15:18:57 -0500
-Date: Wed, 10 Feb 2010 14:18:34 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, oleg@redhat.com,
-       linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com,
-       linux-security-module@vger.kernel.org
-Subject: Re: [PATCH] Update comment on find_task_by_pid_ns
-Message-ID: <20100210201834.GA23001@us.ibm.com>
-References: <alpine.LFD.2.00.0912102214180.3089@localhost.localdomain>
- <201002082130.JDC57339.OHOVJFQtFSLFMO@I-love.SAKURA.ne.jp>
- <20100208132101.GA7129@redhat.com>
- <alpine.LFD.2.00.1002081802510.2811@localhost.localdomain>
- <20100208171643.GA19230@redhat.com>
- <201002090642.EBE48414.HLJVFOQFSOFOMt@I-love.SAKURA.ne.jp>
- <20100209140818.43bb9770.akpm@linux-foundation.org>
- <20100210163033.GA12251@us.ibm.com>
- <20100210095710.c7b124f7.akpm@linux-foundation.org>
- <alpine.LFD.2.00.1002101938000.2811@localhost.localdomain>
+	Wed, 10 Feb 2010 15:20:44 -0500
+Date: Wed, 10 Feb 2010 15:19:54 -0500
+From: "John W. Linville" <linville@tuxdriver.com>
+To: David Miller <davem@davemloft.net>
+Cc: johannes@sipsolutions.net, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, mb@bu3sch.de
+Subject: Re: pull request: wireless-2.6 2010-02-10
+Message-ID: <20100210201953.GC3286@tuxdriver.com>
+References: <20100210185816.GB3286@tuxdriver.com> <20100210.110756.201335073.davem@davemloft.net> <1265829337.19075.0.camel@jlt3.sipsolutions.net> <20100210.113658.137273026.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.1002101938000.2811@localhost.localdomain>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20100210.113658.137273026.davem@davemloft.net>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Thomas Gleixner (tglx@linutronix.de):
-> On Wed, 10 Feb 2010, Andrew Morton wrote:
-> > On Wed, 10 Feb 2010 10:30:33 -0600 "Serge E. Hallyn" <serue@us.ibm.com> wrote:
-> > 
-> > > Quoting Andrew Morton (akpm@linux-foundation.org):
-> > > > On Tue, 9 Feb 2010 06:42:45 +0900
-> > > > Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp> wrote:
-> > > > 
-> > > > > OK. I updated description.
-> > > > > 
-> > > > > As of 2.6.32 , below users are missing rcu_read_lock().
-> > > > > 
-> > > > > Users missing rcu_read_lock() when calling find_task_by_vpid():
-> > > > > 
-> > > > >   SYSCALL_DEFINE3(ioprio_set) in fs/ioprio.c
-> > > > >   SYSCALL_DEFINE2(ioprio_get) in fs/ioprio.c
-> > > > >   cap_get_target_pid() in kernel/capability.c
-> > > > 
-> > > > Actually, cap_get_target_pid() uses rcu_read_lock() and doesn't take
-> > > > tasklist_lock.
-> > > 
-> > > Hmm - is that in -mm?  In my copy here it takes read_lock(&tasklist_lock)
-> > 
-> > yup.  It got changed in linux-next.
-> > 
-> > > And I'll admit I'm a bit confused as to the current state of things:
-> > > do I understand correctly that we now need to take both the tasklist_lock
-> > > and rcu_read_lock?  (Presumably only for read_lock()?)
-> > 
-> > Beats me.  We need to protect both the pid->task_struct lookup data
-> > structures (during the lookup) and protect the resulting task_struct
-> > while the caller is playing with it.  It's unclear whether
-> > rcu_read_lock() suffices for both purposes.
+On Wed, Feb 10, 2010 at 11:36:58AM -0800, David Miller wrote:
+> From: Johannes Berg <johannes@sipsolutions.net>
+> Date: Wed, 10 Feb 2010 20:15:37 +0100
 > 
-> The rcu_read_lock section is sufficient. task_struct can not go away
-> before the rcu_read_unlock()
+> > It was intentional -- that sdev doesn't even have an irq member, but
+> > nobody ever noticed because of the wrong ifdef.
+> 
+> Ok, then this needs to be explained in the commit message.
 
-But, more generally, it used to be the case that a spinlock (or
-rwlock) would imply an rcu read cycle, but now it no longer does,
-do I understand that right?
+OK...mind if I just revert the current version and ask Michael to
+resubmit with an appropriate changelog entry?
 
-thanks,
--serge
+John
+-- 
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
