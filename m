@@ -1,63 +1,65 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754820Ab0BJOD1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 09:03:27 -0500
-Received: from mail-ew0-f228.google.com ([209.85.219.228]:33917 "EHLO
-	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752211Ab0BJODZ (ORCPT
+	id S1754865Ab0BJOFL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 09:05:11 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:58304 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751649Ab0BJOFJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 09:03:25 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=ReQeTuvcDEYIVMmtxP3p2sNm9ObzcADihdzYgQVN9ApTv/vpJRkRYrJO/uMDJ9jb8g
-         UwW7nfCjv6S6pH4Y5RZRdqqII2e1b29/KAz4geVS+zOpsws1BYyJnfZzP03+UO+tSfG+
-         pJLqikvzeCTSOWBu/09fWZJJMdo5UNT75LNQw=
-Message-ID: <4B72BE49.70803@gmail.com>
-Date: Wed, 10 Feb 2010 15:10:17 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: Greg Ungerer <gerg@uclinux.org>, uclinux-dev@uclinux.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: m68knommu: duplicate _ramvec[vba+CPMVEC_RISCTIMER] assignment in
- init_IRQ()
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 10 Feb 2010 09:05:09 -0500
+X-Authority-Analysis: v=1.0 c=1 a=I-JJUczq-h8A:10 a=7U3hwN5JcxgA:10 a=I-GeybmLbXDaOxhVHy8A:9 a=M02sSpJTzzKKQGYdHxjfm6JRmEcA:4
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: Re: [PATCH 02/11] tracing: Introduce TRACE_EVENT_INJECT
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Paul Mackerras <paulus@samba.org>,
+       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
+       Li Zefan <lizf@cn.fujitsu.com>, Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Jens Axboe <jens.axboe@oracle.com>
+In-Reply-To: <20100210100440.GA5035@nowhere>
+References: <1265188475-23509-1-git-send-regression-fweisbec@gmail.com>
+	 <1265188475-23509-3-git-send-regression-fweisbec@gmail.com>
+	 <1265381266.24386.32.camel@gandalf.stny.rr.com>
+	 <1265381604.22001.682.camel@laptop>
+	 <1265382452.24386.38.camel@gandalf.stny.rr.com>
+	 <20100206122004.GF5062@nowhere> <1265462370.4561.12179.camel@frodo>
+	 <20100210100440.GA5035@nowhere>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Kihon Technologies Inc.
+Date: Wed, 10 Feb 2010 09:05:06 -0500
+Message-ID: <1265810706.24386.58.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, 2010-02-10 at 11:04 +0100, Frederic Weisbecker wrote:
 
-Looking at arch/m68knommu/platform/68360/ints.c I noted two things that
-stood out:
+> > We can add a register_event_injector later. For now, why not just add
+> > the TRACE_EVENT() and then hook to it in perf using the normal
+> > tracepoint mechanism.
+> > 
+> > You could add some macro around the trace_init_lock_class() call that
+> > would facilitate finding all the locks you need. This would probably be
+> > a bit more straight forward than to overload TRACE_EVENT() again.
+> 
+> 
+> 
+> I'm not sure what you mean by that.
 
-1) on line 110:
+Looking back at where trace_lock_class_init() was placed, you don't need
+a wrapper. But instead, why not just have perf hook directly into the
+trace_lock_class_init trace point, and do its injection directly.
+Instead of needing to add some hack to TRACE_EVENT()?
 
-_ramvec[vba+CPMVEC_RISCTIMER]   = inthandler;  /* reserved */
+-- Steve
 
-and 114:
 
-_ramvec[vba+CPMVEC_RISCTIMER]   = inthandler;  /* timer table */
-
-The same definitions are used, and in the first case the comment and
-definition do not correspond.
-
-2) while all other definitions are used like this:
-
-_ramvec[vba+CPMVEC_DEF2]   = inthandler;
-...
-_ramvec[vba+CPMVEC_DEF1]   = inthandler;
-
-This is not true for CPMVEC_RESERVED:
-
-_ramvec[vba+CPMVEC_RESERVED1]   = inthandler;   /* reserved */
-...
-_ramvec[vba+CPMVEC_RESERVED2]   = inthandler;  /* reserved */
-
-Is this a bug?
-
-Roel
