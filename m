@@ -1,43 +1,474 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755829Ab0BJRXS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 12:23:18 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:50375 "EHLO mx1.redhat.com"
+	id S1756008Ab0BJRYd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 12:24:33 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:56589 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755133Ab0BJRXL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 12:23:11 -0500
+	id S1755787Ab0BJRXP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Feb 2010 12:23:15 -0500
 From: Avi Kivity <avi@redhat.com>
 To: kvm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 03/40] KVM: MMU: Report spte not found in rmap before BUG()
-Date: Wed, 10 Feb 2010 19:22:32 +0200
-Message-Id: <1265822589-11155-4-git-send-email-avi@redhat.com>
+Subject: [PATCH 34/40] KVM: convert io_bus to SRCU
+Date: Wed, 10 Feb 2010 19:23:03 +0200
+Message-Id: <1265822589-11155-35-git-send-email-avi@redhat.com>
 In-Reply-To: <1265822589-11155-1-git-send-email-avi@redhat.com>
 References: <1265822589-11155-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In the past we've had errors of single-bit in the other two cases; the
-printk() may confirm it for the third case (many->many).
+From: Marcelo Tosatti <mtosatti@redhat.com>
 
-Signed-off-by: Avi Kivity <avi@redhat.com>
+Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
 ---
- arch/x86/kvm/mmu.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ arch/ia64/kvm/kvm-ia64.c  |    4 +-
+ arch/x86/kvm/i8254.c      |    6 +-
+ arch/x86/kvm/i8259.c      |    4 +-
+ arch/x86/kvm/x86.c        |   13 +++---
+ include/linux/kvm_host.h  |   27 ++++++------
+ virt/kvm/coalesced_mmio.c |    4 +-
+ virt/kvm/eventfd.c        |    8 ++--
+ virt/kvm/ioapic.c         |    4 +-
+ virt/kvm/kvm_main.c       |  106 ++++++++++++++++++++++++++------------------
+ 9 files changed, 101 insertions(+), 75 deletions(-)
 
-diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
-index 89a49fb..4f499d7 100644
---- a/arch/x86/kvm/mmu.c
-+++ b/arch/x86/kvm/mmu.c
-@@ -662,6 +662,7 @@ static void rmap_remove(struct kvm *kvm, u64 *spte)
- 			prev_desc = desc;
- 			desc = desc->more;
- 		}
-+		pr_err("rmap_remove: %p %llx many->many\n", spte, *spte);
- 		BUG();
- 	}
+diff --git a/arch/ia64/kvm/kvm-ia64.c b/arch/ia64/kvm/kvm-ia64.c
+index b2e4d16..d0ad538 100644
+--- a/arch/ia64/kvm/kvm-ia64.c
++++ b/arch/ia64/kvm/kvm-ia64.c
+@@ -241,10 +241,10 @@ static int handle_mmio(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
+ 	return 0;
+ mmio:
+ 	if (p->dir)
+-		r = kvm_io_bus_read(&vcpu->kvm->mmio_bus, p->addr,
++		r = kvm_io_bus_read(vcpu->kvm, KVM_MMIO_BUS, p->addr,
+ 				    p->size, &p->data);
+ 	else
+-		r = kvm_io_bus_write(&vcpu->kvm->mmio_bus, p->addr,
++		r = kvm_io_bus_write(vcpu->kvm, KVM_MMIO_BUS, p->addr,
+ 				     p->size, &p->data);
+ 	if (r)
+ 		printk(KERN_ERR"kvm: No iodevice found! addr:%lx\n", p->addr);
+diff --git a/arch/x86/kvm/i8254.c b/arch/x86/kvm/i8254.c
+index 296aba4..a7259e8 100644
+--- a/arch/x86/kvm/i8254.c
++++ b/arch/x86/kvm/i8254.c
+@@ -642,13 +642,13 @@ struct kvm_pit *kvm_create_pit(struct kvm *kvm, u32 flags)
+ 	kvm_register_irq_mask_notifier(kvm, 0, &pit->mask_notifier);
+ 
+ 	kvm_iodevice_init(&pit->dev, &pit_dev_ops);
+-	ret = __kvm_io_bus_register_dev(&kvm->pio_bus, &pit->dev);
++	ret = kvm_io_bus_register_dev(kvm, KVM_PIO_BUS, &pit->dev);
+ 	if (ret < 0)
+ 		goto fail;
+ 
+ 	if (flags & KVM_PIT_SPEAKER_DUMMY) {
+ 		kvm_iodevice_init(&pit->speaker_dev, &speaker_dev_ops);
+-		ret = __kvm_io_bus_register_dev(&kvm->pio_bus,
++		ret = kvm_io_bus_register_dev(kvm, KVM_PIO_BUS,
+ 						&pit->speaker_dev);
+ 		if (ret < 0)
+ 			goto fail_unregister;
+@@ -657,7 +657,7 @@ struct kvm_pit *kvm_create_pit(struct kvm *kvm, u32 flags)
+ 	return pit;
+ 
+ fail_unregister:
+-	__kvm_io_bus_unregister_dev(&kvm->pio_bus, &pit->dev);
++	kvm_io_bus_unregister_dev(kvm, KVM_PIO_BUS, &pit->dev);
+ 
+ fail:
+ 	if (pit->irq_source_id >= 0)
+diff --git a/arch/x86/kvm/i8259.c b/arch/x86/kvm/i8259.c
+index d057c0c..b7d145b 100644
+--- a/arch/x86/kvm/i8259.c
++++ b/arch/x86/kvm/i8259.c
+@@ -533,7 +533,9 @@ struct kvm_pic *kvm_create_pic(struct kvm *kvm)
+ 	 * Initialize PIO device
+ 	 */
+ 	kvm_iodevice_init(&s->dev, &picdev_ops);
+-	ret = kvm_io_bus_register_dev(kvm, &kvm->pio_bus, &s->dev);
++	down_write(&kvm->slots_lock);
++	ret = kvm_io_bus_register_dev(kvm, KVM_PIO_BUS, &s->dev);
++	up_write(&kvm->slots_lock);
+ 	if (ret < 0) {
+ 		kfree(s);
+ 		return NULL;
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 59f4da4..b9adeae 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -2852,7 +2852,7 @@ static int vcpu_mmio_write(struct kvm_vcpu *vcpu, gpa_t addr, int len,
+ 	    !kvm_iodevice_write(&vcpu->arch.apic->dev, addr, len, v))
+ 		return 0;
+ 
+-	return kvm_io_bus_write(&vcpu->kvm->mmio_bus, addr, len, v);
++	return kvm_io_bus_write(vcpu->kvm, KVM_MMIO_BUS, addr, len, v);
  }
+ 
+ static int vcpu_mmio_read(struct kvm_vcpu *vcpu, gpa_t addr, int len, void *v)
+@@ -2861,7 +2861,7 @@ static int vcpu_mmio_read(struct kvm_vcpu *vcpu, gpa_t addr, int len, void *v)
+ 	    !kvm_iodevice_read(&vcpu->arch.apic->dev, addr, len, v))
+ 		return 0;
+ 
+-	return kvm_io_bus_read(&vcpu->kvm->mmio_bus, addr, len, v);
++	return kvm_io_bus_read(vcpu->kvm, KVM_MMIO_BUS, addr, len, v);
+ }
+ 
+ static int kvm_read_guest_virt(gva_t addr, void *val, unsigned int bytes,
+@@ -3346,11 +3346,12 @@ static int kernel_pio(struct kvm_vcpu *vcpu, void *pd)
+ 	int r;
+ 
+ 	if (vcpu->arch.pio.in)
+-		r = kvm_io_bus_read(&vcpu->kvm->pio_bus, vcpu->arch.pio.port,
++		r = kvm_io_bus_read(vcpu->kvm, KVM_PIO_BUS, vcpu->arch.pio.port,
+ 				    vcpu->arch.pio.size, pd);
+ 	else
+-		r = kvm_io_bus_write(&vcpu->kvm->pio_bus, vcpu->arch.pio.port,
+-				     vcpu->arch.pio.size, pd);
++		r = kvm_io_bus_write(vcpu->kvm, KVM_PIO_BUS,
++				     vcpu->arch.pio.port, vcpu->arch.pio.size,
++				     pd);
+ 	return r;
+ }
+ 
+@@ -3361,7 +3362,7 @@ static int pio_string_write(struct kvm_vcpu *vcpu)
+ 	int i, r = 0;
+ 
+ 	for (i = 0; i < io->cur_count; i++) {
+-		if (kvm_io_bus_write(&vcpu->kvm->pio_bus,
++		if (kvm_io_bus_write(vcpu->kvm, KVM_PIO_BUS,
+ 				     io->port, io->size, pd)) {
+ 			r = -EOPNOTSUPP;
+ 			break;
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index 20941c0..5e9cb90 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -57,20 +57,20 @@ struct kvm_io_bus {
+ 	struct kvm_io_device *devs[NR_IOBUS_DEVS];
+ };
+ 
+-void kvm_io_bus_init(struct kvm_io_bus *bus);
+-void kvm_io_bus_destroy(struct kvm_io_bus *bus);
+-int kvm_io_bus_write(struct kvm_io_bus *bus, gpa_t addr, int len,
+-		     const void *val);
+-int kvm_io_bus_read(struct kvm_io_bus *bus, gpa_t addr, int len,
++enum kvm_bus {
++	KVM_MMIO_BUS,
++	KVM_PIO_BUS,
++	KVM_NR_BUSES
++};
++
++int kvm_io_bus_write(struct kvm *kvm, enum kvm_bus bus_idx, gpa_t addr,
++		     int len, const void *val);
++int kvm_io_bus_read(struct kvm *kvm, enum kvm_bus bus_idx, gpa_t addr, int len,
+ 		    void *val);
+-int __kvm_io_bus_register_dev(struct kvm_io_bus *bus,
+-			       struct kvm_io_device *dev);
+-int kvm_io_bus_register_dev(struct kvm *kvm, struct kvm_io_bus *bus,
++int kvm_io_bus_register_dev(struct kvm *kvm, enum kvm_bus bus_idx,
+ 			    struct kvm_io_device *dev);
+-void __kvm_io_bus_unregister_dev(struct kvm_io_bus *bus,
+-				 struct kvm_io_device *dev);
+-void kvm_io_bus_unregister_dev(struct kvm *kvm, struct kvm_io_bus *bus,
+-			       struct kvm_io_device *dev);
++int kvm_io_bus_unregister_dev(struct kvm *kvm, enum kvm_bus bus_idx,
++			      struct kvm_io_device *dev);
+ 
+ struct kvm_vcpu {
+ 	struct kvm *kvm;
+@@ -171,8 +171,7 @@ struct kvm {
+ 	atomic_t online_vcpus;
+ 	struct list_head vm_list;
+ 	struct mutex lock;
+-	struct kvm_io_bus mmio_bus;
+-	struct kvm_io_bus pio_bus;
++	struct kvm_io_bus *buses[KVM_NR_BUSES];
+ #ifdef CONFIG_HAVE_KVM_EVENTFD
+ 	struct {
+ 		spinlock_t        lock;
+diff --git a/virt/kvm/coalesced_mmio.c b/virt/kvm/coalesced_mmio.c
+index d68e6c6..a736a93 100644
+--- a/virt/kvm/coalesced_mmio.c
++++ b/virt/kvm/coalesced_mmio.c
+@@ -110,7 +110,9 @@ int kvm_coalesced_mmio_init(struct kvm *kvm)
+ 	dev->kvm = kvm;
+ 	kvm->coalesced_mmio_dev = dev;
+ 
+-	ret = kvm_io_bus_register_dev(kvm, &kvm->mmio_bus, &dev->dev);
++	down_write(&kvm->slots_lock);
++	ret = kvm_io_bus_register_dev(kvm, KVM_MMIO_BUS, &dev->dev);
++	up_write(&kvm->slots_lock);
+ 	if (ret < 0)
+ 		goto out_free_dev;
+ 
+diff --git a/virt/kvm/eventfd.c b/virt/kvm/eventfd.c
+index a9d3fc6..315a586 100644
+--- a/virt/kvm/eventfd.c
++++ b/virt/kvm/eventfd.c
+@@ -463,7 +463,7 @@ static int
+ kvm_assign_ioeventfd(struct kvm *kvm, struct kvm_ioeventfd *args)
+ {
+ 	int                       pio = args->flags & KVM_IOEVENTFD_FLAG_PIO;
+-	struct kvm_io_bus        *bus = pio ? &kvm->pio_bus : &kvm->mmio_bus;
++	enum kvm_bus              bus_idx = pio ? KVM_PIO_BUS : KVM_MMIO_BUS;
+ 	struct _ioeventfd        *p;
+ 	struct eventfd_ctx       *eventfd;
+ 	int                       ret;
+@@ -518,7 +518,7 @@ kvm_assign_ioeventfd(struct kvm *kvm, struct kvm_ioeventfd *args)
+ 
+ 	kvm_iodevice_init(&p->dev, &ioeventfd_ops);
+ 
+-	ret = __kvm_io_bus_register_dev(bus, &p->dev);
++	ret = kvm_io_bus_register_dev(kvm, bus_idx, &p->dev);
+ 	if (ret < 0)
+ 		goto unlock_fail;
+ 
+@@ -542,7 +542,7 @@ static int
+ kvm_deassign_ioeventfd(struct kvm *kvm, struct kvm_ioeventfd *args)
+ {
+ 	int                       pio = args->flags & KVM_IOEVENTFD_FLAG_PIO;
+-	struct kvm_io_bus        *bus = pio ? &kvm->pio_bus : &kvm->mmio_bus;
++	enum kvm_bus              bus_idx = pio ? KVM_PIO_BUS : KVM_MMIO_BUS;
+ 	struct _ioeventfd        *p, *tmp;
+ 	struct eventfd_ctx       *eventfd;
+ 	int                       ret = -ENOENT;
+@@ -565,7 +565,7 @@ kvm_deassign_ioeventfd(struct kvm *kvm, struct kvm_ioeventfd *args)
+ 		if (!p->wildcard && p->datamatch != args->datamatch)
+ 			continue;
+ 
+-		__kvm_io_bus_unregister_dev(bus, &p->dev);
++		kvm_io_bus_unregister_dev(kvm, bus_idx, &p->dev);
+ 		ioeventfd_release(p);
+ 		ret = 0;
+ 		break;
+diff --git a/virt/kvm/ioapic.c b/virt/kvm/ioapic.c
+index 38a2d20..f326a6f 100644
+--- a/virt/kvm/ioapic.c
++++ b/virt/kvm/ioapic.c
+@@ -372,7 +372,9 @@ int kvm_ioapic_init(struct kvm *kvm)
+ 	kvm_ioapic_reset(ioapic);
+ 	kvm_iodevice_init(&ioapic->dev, &ioapic_mmio_ops);
+ 	ioapic->kvm = kvm;
+-	ret = kvm_io_bus_register_dev(kvm, &kvm->mmio_bus, &ioapic->dev);
++	down_write(&kvm->slots_lock);
++	ret = kvm_io_bus_register_dev(kvm, KVM_MMIO_BUS, &ioapic->dev);
++	up_write(&kvm->slots_lock);
+ 	if (ret < 0)
+ 		kfree(ioapic);
+ 
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index c680f7b..659bc12 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -85,6 +85,8 @@ static long kvm_vcpu_ioctl(struct file *file, unsigned int ioctl,
+ static int hardware_enable_all(void);
+ static void hardware_disable_all(void);
+ 
++static void kvm_io_bus_destroy(struct kvm_io_bus *bus);
++
+ static bool kvm_rebooting;
+ 
+ static bool largepages_enabled = true;
+@@ -367,7 +369,7 @@ static int kvm_init_mmu_notifier(struct kvm *kvm)
+ 
+ static struct kvm *kvm_create_vm(void)
+ {
+-	int r = 0;
++	int r = 0, i;
+ 	struct kvm *kvm = kvm_arch_create_vm();
+ #ifdef KVM_COALESCED_MMIO_PAGE_OFFSET
+ 	struct page *page;
+@@ -391,6 +393,14 @@ static struct kvm *kvm_create_vm(void)
+ 		goto out_err;
+ 	if (init_srcu_struct(&kvm->srcu))
+ 		goto out_err;
++	for (i = 0; i < KVM_NR_BUSES; i++) {
++		kvm->buses[i] = kzalloc(sizeof(struct kvm_io_bus),
++					GFP_KERNEL);
++		if (!kvm->buses[i]) {
++			cleanup_srcu_struct(&kvm->srcu);
++			goto out_err;
++		}
++	}
+ 
+ #ifdef KVM_COALESCED_MMIO_PAGE_OFFSET
+ 	page = alloc_page(GFP_KERNEL | __GFP_ZERO);
+@@ -416,11 +426,9 @@ static struct kvm *kvm_create_vm(void)
+ 	atomic_inc(&kvm->mm->mm_count);
+ 	spin_lock_init(&kvm->mmu_lock);
+ 	spin_lock_init(&kvm->requests_lock);
+-	kvm_io_bus_init(&kvm->pio_bus);
+ 	kvm_eventfd_init(kvm);
+ 	mutex_init(&kvm->lock);
+ 	mutex_init(&kvm->irq_lock);
+-	kvm_io_bus_init(&kvm->mmio_bus);
+ 	init_rwsem(&kvm->slots_lock);
+ 	atomic_set(&kvm->users_count, 1);
+ 	spin_lock(&kvm_lock);
+@@ -435,6 +443,8 @@ out:
+ out_err:
+ 	hardware_disable_all();
+ out_err_nodisable:
++	for (i = 0; i < KVM_NR_BUSES; i++)
++		kfree(kvm->buses[i]);
+ 	kfree(kvm->memslots);
+ 	kfree(kvm);
+ 	return ERR_PTR(r);
+@@ -480,6 +490,7 @@ void kvm_free_physmem(struct kvm *kvm)
+ 
+ static void kvm_destroy_vm(struct kvm *kvm)
+ {
++	int i;
+ 	struct mm_struct *mm = kvm->mm;
+ 
+ 	kvm_arch_sync_events(kvm);
+@@ -487,8 +498,8 @@ static void kvm_destroy_vm(struct kvm *kvm)
+ 	list_del(&kvm->vm_list);
+ 	spin_unlock(&kvm_lock);
+ 	kvm_free_irq_routing(kvm);
+-	kvm_io_bus_destroy(&kvm->pio_bus);
+-	kvm_io_bus_destroy(&kvm->mmio_bus);
++	for (i = 0; i < KVM_NR_BUSES; i++)
++		kvm_io_bus_destroy(kvm->buses[i]);
+ 	kvm_coalesced_mmio_free(kvm);
+ #if defined(CONFIG_MMU_NOTIFIER) && defined(KVM_ARCH_WANT_MMU_NOTIFIER)
+ 	mmu_notifier_unregister(&kvm->mmu_notifier, kvm->mm);
+@@ -1949,12 +1960,7 @@ static struct notifier_block kvm_reboot_notifier = {
+ 	.priority = 0,
+ };
+ 
+-void kvm_io_bus_init(struct kvm_io_bus *bus)
+-{
+-	memset(bus, 0, sizeof(*bus));
+-}
+-
+-void kvm_io_bus_destroy(struct kvm_io_bus *bus)
++static void kvm_io_bus_destroy(struct kvm_io_bus *bus)
+ {
+ 	int i;
+ 
+@@ -1963,13 +1969,15 @@ void kvm_io_bus_destroy(struct kvm_io_bus *bus)
+ 
+ 		kvm_iodevice_destructor(pos);
+ 	}
++	kfree(bus);
+ }
+ 
+ /* kvm_io_bus_write - called under kvm->slots_lock */
+-int kvm_io_bus_write(struct kvm_io_bus *bus, gpa_t addr,
++int kvm_io_bus_write(struct kvm *kvm, enum kvm_bus bus_idx, gpa_t addr,
+ 		     int len, const void *val)
+ {
+ 	int i;
++	struct kvm_io_bus *bus = rcu_dereference(kvm->buses[bus_idx]);
+ 	for (i = 0; i < bus->dev_count; i++)
+ 		if (!kvm_iodevice_write(bus->devs[i], addr, len, val))
+ 			return 0;
+@@ -1977,59 +1985,71 @@ int kvm_io_bus_write(struct kvm_io_bus *bus, gpa_t addr,
+ }
+ 
+ /* kvm_io_bus_read - called under kvm->slots_lock */
+-int kvm_io_bus_read(struct kvm_io_bus *bus, gpa_t addr, int len, void *val)
++int kvm_io_bus_read(struct kvm *kvm, enum kvm_bus bus_idx, gpa_t addr,
++		    int len, void *val)
+ {
+ 	int i;
++	struct kvm_io_bus *bus = rcu_dereference(kvm->buses[bus_idx]);
++
+ 	for (i = 0; i < bus->dev_count; i++)
+ 		if (!kvm_iodevice_read(bus->devs[i], addr, len, val))
+ 			return 0;
+ 	return -EOPNOTSUPP;
+ }
+ 
+-int kvm_io_bus_register_dev(struct kvm *kvm, struct kvm_io_bus *bus,
+-			     struct kvm_io_device *dev)
++/* Caller must have write lock on slots_lock. */
++int kvm_io_bus_register_dev(struct kvm *kvm, enum kvm_bus bus_idx,
++			    struct kvm_io_device *dev)
+ {
+-	int ret;
+-
+-	down_write(&kvm->slots_lock);
+-	ret = __kvm_io_bus_register_dev(bus, dev);
+-	up_write(&kvm->slots_lock);
++	struct kvm_io_bus *new_bus, *bus;
+ 
+-	return ret;
+-}
+-
+-/* An unlocked version. Caller must have write lock on slots_lock. */
+-int __kvm_io_bus_register_dev(struct kvm_io_bus *bus,
+-			      struct kvm_io_device *dev)
+-{
++	bus = kvm->buses[bus_idx];
+ 	if (bus->dev_count > NR_IOBUS_DEVS-1)
+ 		return -ENOSPC;
+ 
+-	bus->devs[bus->dev_count++] = dev;
++	new_bus = kzalloc(sizeof(struct kvm_io_bus), GFP_KERNEL);
++	if (!new_bus)
++		return -ENOMEM;
++	memcpy(new_bus, bus, sizeof(struct kvm_io_bus));
++	new_bus->devs[new_bus->dev_count++] = dev;
++	rcu_assign_pointer(kvm->buses[bus_idx], new_bus);
++	synchronize_srcu_expedited(&kvm->srcu);
++	kfree(bus);
+ 
+ 	return 0;
+ }
+ 
+-void kvm_io_bus_unregister_dev(struct kvm *kvm,
+-			       struct kvm_io_bus *bus,
+-			       struct kvm_io_device *dev)
++/* Caller must have write lock on slots_lock. */
++int kvm_io_bus_unregister_dev(struct kvm *kvm, enum kvm_bus bus_idx,
++			      struct kvm_io_device *dev)
+ {
+-	down_write(&kvm->slots_lock);
+-	__kvm_io_bus_unregister_dev(bus, dev);
+-	up_write(&kvm->slots_lock);
+-}
++	int i, r;
++	struct kvm_io_bus *new_bus, *bus;
+ 
+-/* An unlocked version. Caller must have write lock on slots_lock. */
+-void __kvm_io_bus_unregister_dev(struct kvm_io_bus *bus,
+-				 struct kvm_io_device *dev)
+-{
+-	int i;
++	new_bus = kzalloc(sizeof(struct kvm_io_bus), GFP_KERNEL);
++	if (!new_bus)
++		return -ENOMEM;
+ 
+-	for (i = 0; i < bus->dev_count; i++)
+-		if (bus->devs[i] == dev) {
+-			bus->devs[i] = bus->devs[--bus->dev_count];
++	bus = kvm->buses[bus_idx];
++	memcpy(new_bus, bus, sizeof(struct kvm_io_bus));
++
++	r = -ENOENT;
++	for (i = 0; i < new_bus->dev_count; i++)
++		if (new_bus->devs[i] == dev) {
++			r = 0;
++			new_bus->devs[i] = new_bus->devs[--new_bus->dev_count];
+ 			break;
+ 		}
++
++	if (r) {
++		kfree(new_bus);
++		return r;
++	}
++
++	rcu_assign_pointer(kvm->buses[bus_idx], new_bus);
++	synchronize_srcu_expedited(&kvm->srcu);
++	kfree(bus);
++	return r;
+ }
+ 
+ static struct notifier_block kvm_cpu_notifier = {
 -- 
 1.6.5.3
 
