@@ -1,69 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755842Ab0BJUDF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 15:03:05 -0500
-Received: from rcsinet12.oracle.com ([148.87.113.124]:17321 "EHLO
-	rcsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755538Ab0BJUDA (ORCPT
+	id S1756058Ab0BJUDM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 15:03:12 -0500
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:43856 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755572Ab0BJUDH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 15:03:00 -0500
-Date: Wed, 10 Feb 2010 15:01:34 -0500
-From: Chris Mason <chris.mason@oracle.com>
-To: Jiri Slaby <jslaby@suse.cz>
-Cc: linux-kernel@vger.kernel.org, jirislaby@gmail.com,
-       linux-btrfs@vger.kernel.org
-Subject: Re: [PATCH 1/1] FS: btrfs, use helpers for rlimits
-Message-ID: <20100210200134.GK18175@think>
-Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
-	Jiri Slaby <jslaby@suse.cz>, linux-kernel@vger.kernel.org,
-	jirislaby@gmail.com, linux-btrfs@vger.kernel.org
-References: <1265832009-8070-1-git-send-email-jslaby@suse.cz>
+	Wed, 10 Feb 2010 15:03:07 -0500
+Authentication-Results: sj-iport-6.cisco.com; dkim=neutral (message not signed) header.i=none
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AvsEAMSfckurR7Hu/2dsb2JhbACaZXSnHZdnhFUE
+X-IronPort-AV: E=Sophos;i="4.49,446,1262563200"; 
+   d="scan'208";a="481222217"
+From: Roland Dreier <rdreier@cisco.com>
+To: torvalds@linux-foundation.org, akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, linux-rdma@vger.kernel.org
+Subject: [GIT PULL] please pull infiniband.git
+X-Message-Flag: Warning: May contain useful information
+Date: Wed, 10 Feb 2010 12:03:02 -0800
+Message-ID: <adak4ukhn9l.fsf@roland-alpha.cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1265832009-8070-1-git-send-email-jslaby@suse.cz>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Source-IP: acsmt353.oracle.com [141.146.40.153]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090201.4B7310DC.0080:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks, I have this queued up for .34
+Linus, please pull from
 
--chris
+    master.kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
 
-On Wed, Feb 10, 2010 at 09:00:09PM +0100, Jiri Slaby wrote:
-> Make sure compiler won't do weird things with limits. E.g. fetching
-> them twice may return 2 different values after writable limits are
-> implemented.
-> 
-> I.e. either use rlimit helpers added in
-> 3e10e716abf3c71bdb5d86b8f507f9e72236c9cd
-> or ACCESS_ONCE if not applicable.
-> 
-> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-> Cc: Chris Mason <chris.mason@oracle.com>
-> Cc: linux-btrfs@vger.kernel.org
-> ---
->  fs/btrfs/inode.c |    3 +--
->  1 files changed, 1 insertions(+), 2 deletions(-)
-> 
-> diff --git a/fs/btrfs/inode.c b/fs/btrfs/inode.c
-> index c41db6d..5aa0cef 100644
-> --- a/fs/btrfs/inode.c
-> +++ b/fs/btrfs/inode.c
-> @@ -3256,8 +3256,7 @@ static int btrfs_setattr_size(struct inode *inode, struct iattr *attr)
->  		return 0;
->  
->  	if (attr->ia_size > inode->i_size) {
-> -		unsigned long limit;
-> -		limit = current->signal->rlim[RLIMIT_FSIZE].rlim_cur;
-> +		unsigned long limit = rlimit(RLIMIT_FSIZE);
->  		if (attr->ia_size > inode->i_sb->s_maxbytes)
->  			return -EFBIG;
->  		if (limit != RLIM_INFINITY && attr->ia_size > limit) {
-> -- 
-> 1.6.6.1
-> 
+This tree is also available from kernel.org mirrors at:
+
+    git://git.kernel.org/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
+
+This will get one partial revert needed to fix a regression due to a
+behavior change introduced in 2.6.33-rc1 that breaks some existing apps:
+
+Sean Hefty (1):
+      RDMA/cm: Revert association of an RDMA device when binding to loopback
+
+ drivers/infiniband/core/cma.c |    4 +---
+ 1 files changed, 1 insertions(+), 3 deletions(-)
+
+
+diff --git a/drivers/infiniband/core/cma.c b/drivers/infiniband/core/cma.c
+index cc9b594..875e34e 100644
+--- a/drivers/infiniband/core/cma.c
++++ b/drivers/infiniband/core/cma.c
+@@ -2115,9 +2115,7 @@ int rdma_bind_addr(struct rdma_cm_id *id, struct sockaddr *addr)
+ 	if (ret)
+ 		goto err1;
+ 
+-	if (cma_loopback_addr(addr)) {
+-		ret = cma_bind_loopback(id_priv);
+-	} else if (!cma_zero_addr(addr)) {
++	if (!cma_any_addr(addr)) {
+ 		ret = rdma_translate_ip(addr, &id->route.addr.dev_addr);
+ 		if (ret)
+ 			goto err1;
+
+-- 
+Roland Dreier  <rolandd@cisco.com>
+For corporate legal information go to:
+http://www.cisco.com/web/about/doing_business/legal/cri/index.html
