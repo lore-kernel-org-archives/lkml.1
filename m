@@ -1,190 +1,220 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752922Ab0BJG0A (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 01:26:00 -0500
-Received: from e28smtp09.in.ibm.com ([122.248.162.9]:42075 "EHLO
-	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752175Ab0BJGZ7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 01:25:59 -0500
-Date: Wed, 10 Feb 2010 11:55:55 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Nikanth Karthikesan <knikanth@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH] Make vm_max_readahead configurable at run-time
-Message-ID: <20100210062555.GA2989@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <201002091659.27037.knikanth@suse.de>
+	id S1753553Ab0BJG2X (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 01:28:23 -0500
+Received: from hera.kernel.org ([140.211.167.34]:44428 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752685Ab0BJG2W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Feb 2010 01:28:22 -0500
+Date: Wed, 10 Feb 2010 06:27:44 GMT
+From: tip-bot for Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       yinghai@kernel.org, stable@kernel.org, suresh.b.siddha@intel.com,
+       tglx@linutronix.de, shaohui.zheng@intel.com
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       yinghai@kernel.org, stable@kernel.org, suresh.b.siddha@intel.com,
+       tglx@linutronix.de, shaohui.zheng@intel.com
+In-Reply-To: <1265767304.2833.19.camel@sbs-t61.sc.intel.com>
+References: <1265767304.2833.19.camel@sbs-t61.sc.intel.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/urgent] x86, apic: Don't use logical-flat mode when CPU hotplug may exceed 8 CPUs
+Message-ID: <tip-681ee44d40d7c93b42118320e4620d07d8704fd6@git.kernel.org>
+Git-Commit-ID: 681ee44d40d7c93b42118320e4620d07d8704fd6
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <201002091659.27037.knikanth@suse.de>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 10 Feb 2010 06:27:47 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Nikanth Karthikesan <knikanth@suse.de> [2010-02-09 16:59:26]:
+Commit-ID:  681ee44d40d7c93b42118320e4620d07d8704fd6
+Gitweb:     http://git.kernel.org/tip/681ee44d40d7c93b42118320e4620d07d8704fd6
+Author:     Suresh Siddha <suresh.b.siddha@intel.com>
+AuthorDate: Tue, 9 Feb 2010 18:01:44 -0800
+Committer:  H. Peter Anvin <hpa@zytor.com>
+CommitDate: Tue, 9 Feb 2010 20:51:11 -0800
 
-> Make vm_max_readahead configurable at run-time. Expose a sysctl knob
-> in procfs to change it. This would ensure that new disks added would
-> use this value as their default read_ahead_kb.
-> 
-> Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
->
+x86, apic: Don't use logical-flat mode when CPU hotplug may exceed 8 CPUs
 
-Could you help us understand how you use this? The patch is straight
-forward except some of the objections pointed out by Andrew, but the
-help text below should help the user understand the trade-offs of
-increasing or lowering the value.
+We need to fall back from logical-flat APIC mode to physical-flat mode
+when we have more than 8 CPUs.  However, in the presence of CPU
+hotplug(with bios listing not enabled but possible cpus as disabled cpus in
+MADT), we have to consider the number of possible CPUs rather than
+the number of current CPUs; otherwise we may cross the 8-CPU boundary
+when CPUs are added later.
+
+32bit apic code can use more cleanups (like the removal of vendor checks in
+32bit default_setup_apic_routing()) and more unifications with 64bit code.
+Yinghai has some patches in works already. This patch addresses the boot issue
+that is reported in the virtualization guest context.
+
+[ hpa: incorporated function annotation feedback from Yinghai Lu ]
+
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+LKML-Reference: <1265767304.2833.19.camel@sbs-t61.sc.intel.com>
+Acked-by: Shaohui Zheng <shaohui.zheng@intel.com>
+Reviewed-by: Yinghai Lu <yinghai@kernel.org>
+Cc: <stable@kernel.org>
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+---
+ arch/x86/kernel/acpi/boot.c     |    5 -----
+ arch/x86/kernel/apic/apic.c     |   17 -----------------
+ arch/x86/kernel/apic/probe_32.c |   29 +++++++++++++++++++++++++++--
+ arch/x86/kernel/apic/probe_64.c |    2 +-
+ arch/x86/kernel/mpparse.c       |    7 -------
+ arch/x86/kernel/smpboot.c       |    2 --
+ 6 files changed, 28 insertions(+), 34 deletions(-)
+
+diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+index 036d28a..0acbcdf 100644
+--- a/arch/x86/kernel/acpi/boot.c
++++ b/arch/x86/kernel/acpi/boot.c
+@@ -1185,9 +1185,6 @@ static void __init acpi_process_madt(void)
+ 		if (!error) {
+ 			acpi_lapic = 1;
  
-> ---
-> 
-> Index: linux-2.6/block/blk-core.c
-> ===================================================================
-> --- linux-2.6.orig/block/blk-core.c
-> +++ linux-2.6/block/blk-core.c
-> @@ -499,7 +499,7 @@ struct request_queue *blk_alloc_queue_no
->  	q->backing_dev_info.unplug_io_fn = blk_backing_dev_unplug;
->  	q->backing_dev_info.unplug_io_data = q;
->  	q->backing_dev_info.ra_pages =
-> -			(VM_MAX_READAHEAD * 1024) / PAGE_CACHE_SIZE;
-> +			(vm_max_readahead * 1024) / PAGE_CACHE_SIZE;
-
-Why not use (vm_max_readahead >> (PAGE_CACHE_SHIFT - 10))? While you are
-looking at it, might as well clean it up :) I am quite sure the
-compiler gets it right, but might as well be sure.
-
->  	q->backing_dev_info.state = 0;
->  	q->backing_dev_info.capabilities = BDI_CAP_MAP_COPY;
->  	q->backing_dev_info.name = "block";
-> Index: linux-2.6/fs/fuse/inode.c
-> ===================================================================
-> --- linux-2.6.orig/fs/fuse/inode.c
-> +++ linux-2.6/fs/fuse/inode.c
-> @@ -870,7 +870,7 @@ static int fuse_bdi_init(struct fuse_con
->  	int err;
-> 
->  	fc->bdi.name = "fuse";
-> -	fc->bdi.ra_pages = (VM_MAX_READAHEAD * 1024) / PAGE_CACHE_SIZE;
-> +	fc->bdi.ra_pages = (vm_max_readahead * 1024) / PAGE_CACHE_SIZE;
-
-Ditto
-
->  	fc->bdi.unplug_io_fn = default_unplug_io_fn;
->  	/* fuse does it's own writeback accounting */
->  	fc->bdi.capabilities = BDI_CAP_NO_ACCT_WB;
-> Index: linux-2.6/include/linux/mm.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/mm.h
-> +++ linux-2.6/include/linux/mm.h
-> @@ -1188,7 +1188,11 @@ int write_one_page(struct page *page, in
->  void task_dirty_inc(struct task_struct *tsk);
-> 
->  /* readahead.c */
-> -#define VM_MAX_READAHEAD	128	/* kbytes */
-> +#define INITIAL_VM_MAX_READAHEAD	128	/* kbytes */
-> +extern unsigned long vm_max_readahead;
-> +
-> +int sysctl_vm_max_readahead_handler(struct ctl_table *, int,
-> +					void __user *, size_t *, loff_t *);
-> 
->  int force_page_cache_readahead(struct address_space *mapping, struct file *filp,
->  			pgoff_t offset, unsigned long nr_to_read);
-> Index: linux-2.6/mm/backing-dev.c
-> ===================================================================
-> --- linux-2.6.orig/mm/backing-dev.c
-> +++ linux-2.6/mm/backing-dev.c
-> @@ -18,7 +18,7 @@ EXPORT_SYMBOL(default_unplug_io_fn);
-> 
->  struct backing_dev_info default_backing_dev_info = {
->  	.name		= "default",
-> -	.ra_pages	= VM_MAX_READAHEAD * 1024 / PAGE_CACHE_SIZE,
-> +	.ra_pages	= INITIAL_VM_MAX_READAHEAD * 1024 / PAGE_CACHE_SIZE,
->  	.state		= 0,
->  	.capabilities	= BDI_CAP_MAP_COPY,
->  	.unplug_io_fn	= default_unplug_io_fn,
-> Index: linux-2.6/mm/readahead.c
-> ===================================================================
-> --- linux-2.6.orig/mm/readahead.c
-> +++ linux-2.6/mm/readahead.c
-> @@ -17,6 +17,19 @@
->  #include <linux/pagevec.h>
->  #include <linux/pagemap.h>
-> 
-> +unsigned long vm_max_readahead = INITIAL_VM_MAX_READAHEAD;
-> +
-> +int sysctl_vm_max_readahead_handler(struct ctl_table *table, int write,
-> +		void __user *buffer, size_t *length, loff_t *ppos)
-> +{
-> +	proc_doulongvec_minmax(table, write, buffer, length, ppos);
-> +
-> +	default_backing_dev_info.ra_pages =
-> +			vm_max_readahead >> (PAGE_CACHE_SHIFT - 10);
-> +
-
-Aaah.. here you got it right, please be consistent and use the same
-thing everywhere.
-
-> +	return 0;
-> +}
-> +
->  /*
->   * Initialise a struct file's readahead state.  Assumes that the caller has
->   * memset *ra to zero.
-> Index: linux-2.6/kernel/sysctl.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/sysctl.c
-> +++ linux-2.6/kernel/sysctl.c
-> @@ -1273,7 +1273,13 @@ static struct ctl_table vm_table[] = {
->  		.extra2		= &one,
->  	},
->  #endif
-> -
-> +	{
-> +		.procname	= "max_readahead_kb",
-> +		.data		= &vm_max_readahead,
-> +		.maxlen		= sizeof(vm_max_readahead),
-> +		.mode		= 0644,
-> +		.proc_handler	= sysctl_vm_max_readahead_handler,
-> +	},
->  	{ }
->  };
-> 
-> Index: linux-2.6/Documentation/sysctl/vm.txt
-> ===================================================================
-> --- linux-2.6.orig/Documentation/sysctl/vm.txt
-> +++ linux-2.6/Documentation/sysctl/vm.txt
-> @@ -31,6 +31,7 @@ Currently, these files are in /proc/sys/
->  - laptop_mode
->  - legacy_va_layout
->  - lowmem_reserve_ratio
-> +- max_readahead_kb
->  - max_map_count
->  - memory_failure_early_kill
->  - memory_failure_recovery
-> @@ -263,6 +264,12 @@ The minimum value is 1 (1/1 -> 100%).
-> 
->  ==============================================================
-> 
-> +max_readahead_kb:
-> +
-> +This file contains the default maximum readahead that would be used.
-> +
-> +==============================================================
-> +
->  max_map_count:
-> 
->  This file contains the maximum number of memory map areas a process
-> 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
-
--- 
-	Three Cheers,
-	Balbir
+-#ifdef CONFIG_X86_BIGSMP
+-			generic_bigsmp_probe();
+-#endif
+ 			/*
+ 			 * Parse MADT IO-APIC entries
+ 			 */
+@@ -1197,8 +1194,6 @@ static void __init acpi_process_madt(void)
+ 				acpi_ioapic = 1;
+ 
+ 				smp_found_config = 1;
+-				if (apic->setup_apic_routing)
+-					apic->setup_apic_routing();
+ 			}
+ 		}
+ 		if (error == -EINVAL) {
+diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
+index 3987e44..dfca210 100644
+--- a/arch/x86/kernel/apic/apic.c
++++ b/arch/x86/kernel/apic/apic.c
+@@ -1641,9 +1641,7 @@ int __init APIC_init_uniprocessor(void)
+ #endif
+ 
+ 	enable_IR_x2apic();
+-#ifdef CONFIG_X86_64
+ 	default_setup_apic_routing();
+-#endif
+ 
+ 	verify_local_APIC();
+ 	connect_bsp_APIC();
+@@ -1891,21 +1889,6 @@ void __cpuinit generic_processor_info(int apicid, int version)
+ 	if (apicid > max_physical_apicid)
+ 		max_physical_apicid = apicid;
+ 
+-#ifdef CONFIG_X86_32
+-	if (num_processors > 8) {
+-		switch (boot_cpu_data.x86_vendor) {
+-		case X86_VENDOR_INTEL:
+-			if (!APIC_XAPIC(version)) {
+-				def_to_bigsmp = 0;
+-				break;
+-			}
+-			/* If P4 and above fall through */
+-		case X86_VENDOR_AMD:
+-			def_to_bigsmp = 1;
+-		}
+-	}
+-#endif
+-
+ #if defined(CONFIG_SMP) || defined(CONFIG_X86_64)
+ 	early_per_cpu(x86_cpu_to_apicid, cpu) = apicid;
+ 	early_per_cpu(x86_bios_cpu_apicid, cpu) = apicid;
+diff --git a/arch/x86/kernel/apic/probe_32.c b/arch/x86/kernel/apic/probe_32.c
+index 1a6559f..99d2fe0 100644
+--- a/arch/x86/kernel/apic/probe_32.c
++++ b/arch/x86/kernel/apic/probe_32.c
+@@ -52,7 +52,32 @@ static int __init print_ipi_mode(void)
+ }
+ late_initcall(print_ipi_mode);
+ 
+-void default_setup_apic_routing(void)
++void __init default_setup_apic_routing(void)
++{
++	int version = apic_version[boot_cpu_physical_apicid];
++
++	if (num_possible_cpus() > 8) {
++		switch (boot_cpu_data.x86_vendor) {
++		case X86_VENDOR_INTEL:
++			if (!APIC_XAPIC(version)) {
++				def_to_bigsmp = 0;
++				break;
++			}
++			/* If P4 and above fall through */
++		case X86_VENDOR_AMD:
++			def_to_bigsmp = 1;
++		}
++	}
++
++#ifdef CONFIG_X86_BIGSMP
++	generic_bigsmp_probe();
++#endif
++
++	if (apic->setup_apic_routing)
++		apic->setup_apic_routing();
++}
++
++static void setup_apic_flat_routing(void)
+ {
+ #ifdef CONFIG_X86_IO_APIC
+ 	printk(KERN_INFO
+@@ -103,7 +128,7 @@ struct apic apic_default = {
+ 	.init_apic_ldr			= default_init_apic_ldr,
+ 
+ 	.ioapic_phys_id_map		= default_ioapic_phys_id_map,
+-	.setup_apic_routing		= default_setup_apic_routing,
++	.setup_apic_routing		= setup_apic_flat_routing,
+ 	.multi_timer_check		= NULL,
+ 	.apicid_to_node			= default_apicid_to_node,
+ 	.cpu_to_logical_apicid		= default_cpu_to_logical_apicid,
+diff --git a/arch/x86/kernel/apic/probe_64.c b/arch/x86/kernel/apic/probe_64.c
+index 450fe20..83e9be4 100644
+--- a/arch/x86/kernel/apic/probe_64.c
++++ b/arch/x86/kernel/apic/probe_64.c
+@@ -67,7 +67,7 @@ void __init default_setup_apic_routing(void)
+ 	}
+ #endif
+ 
+-	if (apic == &apic_flat && num_processors > 8)
++	if (apic == &apic_flat && num_possible_cpus() > 8)
+ 			apic = &apic_physflat;
+ 
+ 	printk(KERN_INFO "Setting APIC routing to %s\n", apic->name);
+diff --git a/arch/x86/kernel/mpparse.c b/arch/x86/kernel/mpparse.c
+index 40b54ce..a2c1edd 100644
+--- a/arch/x86/kernel/mpparse.c
++++ b/arch/x86/kernel/mpparse.c
+@@ -359,13 +359,6 @@ static int __init smp_read_mpc(struct mpc_table *mpc, unsigned early)
+ 		x86_init.mpparse.mpc_record(1);
+ 	}
+ 
+-#ifdef CONFIG_X86_BIGSMP
+-	generic_bigsmp_probe();
+-#endif
+-
+-	if (apic->setup_apic_routing)
+-		apic->setup_apic_routing();
+-
+ 	if (!num_processors)
+ 		printk(KERN_ERR "MPTABLE: no processors registered!\n");
+ 	return num_processors;
+diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+index 678d0b8..b4e870c 100644
+--- a/arch/x86/kernel/smpboot.c
++++ b/arch/x86/kernel/smpboot.c
+@@ -1083,9 +1083,7 @@ void __init native_smp_prepare_cpus(unsigned int max_cpus)
+ 	set_cpu_sibling_map(0);
+ 
+ 	enable_IR_x2apic();
+-#ifdef CONFIG_X86_64
+ 	default_setup_apic_routing();
+-#endif
+ 
+ 	if (smp_sanity_check(max_cpus) < 0) {
+ 		printk(KERN_INFO "SMP disabled\n");
