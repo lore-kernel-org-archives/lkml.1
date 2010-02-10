@@ -1,94 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755914Ab0BJVlZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 16:41:25 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:43958 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754479Ab0BJVlX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 16:41:23 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Gary Hade <garyhade@us.ibm.com>
-Subject: Re: [PATCH 8/9] PCI / ACPI / PM: Platform support for PCI PME wake-up (rev. 7)
-Date: Wed, 10 Feb 2010 22:42:11 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.33-rc7-rjw; KDE/4.3.5; x86_64; ; )
-Cc: linux-pm@lists.linux-foundation.org, Linux PCI <linux-pci@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "Moore, Robert" <robert.moore@intel.com>,
-       Matthew Garrett <mjg@redhat.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>
-References: <201001101431.38630.rjw@sisk.pl> <201002101900.54478.rjw@sisk.pl> <20100210203852.GA17115@us.ibm.com>
-In-Reply-To: <20100210203852.GA17115@us.ibm.com>
+	id S1756501Ab0BJVo6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 16:44:58 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:47275 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751452Ab0BJVo5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Feb 2010 16:44:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=M4oz094IfRiZQMWkSxys84chhBwxAR6WjxBeT63tmxxkgJgaZcYG9DCzLshOLNrUTh
+         0758FZRyTwGkOzJdtNJvnrablICqtw3Pu0bDBdYSypqI+RHY0kxzyMdyBJazKMjMf1py
+         q2jH5ZSsotWwoKKluDZkmE9fLineGQyQeGaxU=
+Message-ID: <4B7328D2.8050002@gmail.com>
+Date: Wed, 10 Feb 2010 22:44:50 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.7) Gecko/20100111 SUSE/3.0.1-9.1 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Veaceslav Falico <vfalico@redhat.com>
+Subject: Re: [PATCH 1/1] kernel core: use helpers for rlimits fix
+References: <1265831948-7873-1-git-send-email-jslaby@suse.cz> <20100210121009.a48ed15c.akpm@linux-foundation.org>
+In-Reply-To: <20100210121009.a48ed15c.akpm@linux-foundation.org>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <201002102242.11088.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 10 February 2010, Gary Hade wrote:
-> On Wed, Feb 10, 2010 at 07:00:54PM +0100, Rafael J. Wysocki wrote:
-> > On Wednesday 10 February 2010, Gary Hade wrote:
-> > > On Wed, Feb 10, 2010 at 02:12:29AM +0100, Rafael J. Wysocki wrote:
-> > > > On Wednesday 10 February 2010, Rafael J. Wysocki wrote:
-> > > > > On Wednesday 10 February 2010, Gary Hade wrote:
-> > > > > > On Tue, Feb 09, 2010 at 12:58:39PM -0800, Gary Hade wrote:
-> > > > > ...
-> > > > > > > OK.  I already confirmed that the problem reproduces with your
-> > > > > > > patches applied.  I am now in the process of trying vanilla
-> > > > > > > 2.6.33-rc7.  If hot-add works with 2.6.33-rc7 I will give
-> > > > > > > your patch a try.
-> > > > > > 
-> > > > > > The hot-add worked fine with an unpatched 2.6.33-rc7.
-> > > > > 
-> > > > > Good.
-> > > > > 
-> > > > > > The new patch when added to the 2.6.33-rc7 tree that
-> > > > > > included the original patchset unfortunately did not
-> > > > > > correct the problem.
-> > > > > 
-> > > > > Bad.
-> > > > > 
-> > > > > Well, fortunately I have another one, but I haven't tested it myself yet except
-> > > > > for checking that it builds.  Hopefully it won't break things more.
-> > > > > 
-> > > > > The patch below applies on top of 2.6.33-rc7 with my PCI runtime PM patchset
-> > > > > applied.  Please test it and let me know the results.
-> > > > 
-> > > > Sorry, I sent a wrong version of the patch by mistake, it doesn't even build.
-> > > > The correct one is appended.
-> > > 
-> > > No problem.  I received this message before doing anything with
-> > > the previous one.
-> > > 
-> > > Sorry, both hot-add and hot-remove behaviors appear unchanged
-> > > with this patch.
-> > 
-> > Hmm, that's kind of strange.  I'm getting suspicious.
-> > 
-> > > I would like to dig into the code and help with the debugging
-> > > but I am swamped with other things right now.  However, feel 
-> > > free to continue using me for testing if you have other ideas
-> > > you want me to try.
-> > 
-> > Thanks, of course I have some ideas. :-)
-> > 
-> > First, please try to test 2.6.33-rc7 with patches [1/9] - [7/9] applied
-> > (ie. without the $subject patch and [9/9]).  Let's make sure we're debugging
-> > the right patch.
+On 02/10/2010 09:10 PM, Andrew Morton wrote:
+> static void posix_cpu_timers_init_group(struct signal_struct *sig)
+> {
+> 	unsigned long cpu_limit;
 > 
-> It does look like both the hot-add and hot-remove issues were
-> introduced by something in 1/9 through 7/9.  I started with a
-> clean 2.6.33-rc7 tree and applied only 1/9 through 7/9.  I still
-> see that lingering blinking amber LED with hot-remove and no
-> response from the driver during hot-add.
+> 	/* Thread group counters. */
+> 	thread_group_cputime_init(sig);
 > 
-> Now I suppose you want me to start reverting 1/9 through 7/9
-> in reverse order to find the culprit. :)
+> 	cpu_limit = ACCESS_ONCE(sig->rlim[RLIMIT_CPU].rlim_cur);
+> 	if (cpu_limit != RLIM_INFINITY) {
+> 		sig->cputime_expires.prof_exp = secs_to_cputime(cpu_limit);
+> 		sig->cputimer.running = 1;
+> 	}
 
-Actually, I think [6/9] is the offending one, so please try with [1/9] - [5/9]
-applied and if that works, please apply [6/9] and retest to confirm it's the
-culprit.
+FWIW ack.
 
-Rafael
+thanks,
+-- 
+js
