@@ -1,68 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754723Ab0BJNyy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 08:54:54 -0500
-Received: from mail-iw0-f185.google.com ([209.85.223.185]:61606 "EHLO
-	mail-iw0-f185.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751982Ab0BJNyw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 08:54:52 -0500
-Message-ID: <4B72BAB8.4090008@billgatliff.com>
-Date: Wed, 10 Feb 2010 07:55:04 -0600
-From: Bill Gatliff <bgat@billgatliff.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090707)
+	id S1754843Ab0BJN5k (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 08:57:40 -0500
+Received: from cantor.suse.de ([195.135.220.2]:59845 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751584Ab0BJN5i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Feb 2010 08:57:38 -0500
+Date: Wed, 10 Feb 2010 14:57:37 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Michael Poole <mdpoole@troilus.org>
+Cc: linux-input@vger.kernel.org, Marcel Holtmann <marcel@holtmann.org>,
+       linux-bluetooth@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/2] Provide a driver for the Apple Magic Mouse
+In-Reply-To: <87y6j2eeqv.fsf_-_@troilus.org>
+Message-ID: <alpine.LNX.2.00.1002101456490.30967@pobox.suse.cz>
+References: <alpine.LNX.2.00.1001291515560.356@pobox.suse.cz> <dd18b0c31002082322m4238a4a6m73fc30752ba30447@mail.gmail.com> <1265710460.2383.5685.camel@localhost.localdomain> <201002090736.55576.edt@aei.ca> <alpine.LNX.2.00.1002091339190.30967@pobox.suse.cz>
+ <87y6j2eeqv.fsf_-_@troilus.org>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-To: H Hartley Sweeten <hartleys@visionengravers.com>
-CC: linux-embedded@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PWM PATCH 1/7] API to consolidate PWM devices behind a common
- user and kernel interface
-References: <cover.1265748263.git.bgat@billgatliff.com> <b7afd475c3fce08f459bceff7814de57ffce7bd0.1265748264.git.bgat@billgatliff.com> <BD79186B4FD85F4B8E60E381CAEE190902153279@mi8nycmail19.Mi8.com>
-In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE190902153279@mi8nycmail19.Mi8.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H Hartley Sweeten wrote:
->> +int pwm_set_polarity(struct pwm_channel *p,
->> +		     int active_high)
->> +{
->> +	struct pwm_channel_config c = {
->> +		.config_mask = PWM_CONFIG_POLARITY,
->> +		.polarity = active_high,
->> +	};
->> +	return pwm_config(p, &c);
->> +}
->> +EXPORT_SYMBOL(pwm_set_polarity);
->>     
->
-> Has the 'polarity' logic been verified?
->
-> pwm_set_polarity takes an active high flag that is passed to pwm_config.
-> A write to the sysfs 'polarity' file passes the value directly to pwm_config.
-> A read from the sysfs 'polarity' file returns struct pwm_channel ->active_low.
->
-> Seems like a mis-match in logic.
->   
+On Tue, 9 Feb 2010, Michael Poole wrote:
 
-It was.  And on top of that, none of the drivers were reflecting their
-polarity in their pwm_channel structures.
+> I think this patch is ready for real review.  The Magic Mouse requires
+> that a driver send an unlock Report(Feature) command, similar to the
+> Wacom wireless tablet and Sixaxis controller quirks.  This turns on an
+> Input Report that isn't published in the input Report descriptor that
+> contains touch data (and usually overrides the normal motion and click
+> Report).
+> 
+> Because the mouse has only one switch and no scroll wheel, the driver
+> (under control of parameters) emulates a middle button and scroll wheel.
+> User space could also ignore and/or re-synthesize those events based on
+> the reported events.
+> 
+> The first patch exports hid_register_report() so the driver can turn on
+> the multitouch report.  The second patch adds the device ID and the
+> driver.  Some user-space tools to talk to the mouse directly (that is,
+> when it is not associated with the host's HIDP stack) are at
+> http://github.com/entrope/linux-magicmouse .
 
-I renamed the channel structure variable to active_high for consistency,
-and updated each of the drivers to set that value consistent with their
-actual polarities.
+I have applied the driver into apple_magic_mouse branch and merged this 
+branch into for-next, so it should appear in the upcoming linux-next.
 
-Very good catch.
-
-
-
-b.g.
+Thanks,
 
 -- 
-Bill Gatliff
-Embedded systems training and consulting
-http://billgatliff.com
-bgat@billgatliff.com
-
+Jiri Kosina
+SUSE Labs, Novell Inc.
