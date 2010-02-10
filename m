@@ -1,18 +1,18 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755612Ab0BJQcO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 11:32:14 -0500
-Received: from smtp-out.google.com ([216.239.44.51]:6238 "EHLO
+	id S1755689Ab0BJQcT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 11:32:19 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:7018 "EHLO
 	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755540Ab0BJQcM (ORCPT
+	with ESMTP id S1755608Ab0BJQcP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 11:32:12 -0500
+	Wed, 10 Feb 2010 11:32:15 -0500
 DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:message-id:user-agent:
-	mime-version:content-type:x-system-of-record;
-	b=xd5a8HBLRmULJ6/EXpvQQap0HpT5KJjzrmTgrkFEx/BxRdVz85NlFHtz/zIQ0qJU+
-	GB7PKzr+5+Ex9bi3pbh2Q==
-Date: Wed, 10 Feb 2010 08:32:03 -0800 (PST)
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=b6P67tdotD8xeqbqpqD7T5xBsbspaZfSRc8kTYbBA8NNN3NPriU5CUdMbCXtDQv+D
+	Vja77HXKWN5kETvnhacmg==
+Date: Wed, 10 Feb 2010 08:32:10 -0800 (PST)
 From: David Rientjes <rientjes@google.com>
 X-X-Sender: rientjes@chino.kir.corp.google.com
 To: Andrew Morton <akpm@linux-foundation.org>
@@ -21,8 +21,11 @@ cc: Rik van Riel <riel@redhat.com>,
        Nick Piggin <npiggin@suse.de>, Andrea Arcangeli <aarcange@redhat.com>,
        Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
        linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: [patch 0/7 -mm] oom killer rewrite
-Message-ID: <alpine.DEB.2.00.1002100224210.8001@chino.kir.corp.google.com>
+Subject: [patch 2/7 -mm] oom: sacrifice child with highest badness score for
+ parent
+In-Reply-To: <alpine.DEB.2.00.1002100224210.8001@chino.kir.corp.google.com>
+Message-ID: <alpine.DEB.2.00.1002100228240.8001@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.1002100224210.8001@chino.kir.corp.google.com>
 User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -31,41 +34,76 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patchset is a rewrite of the out of memory killer to address several
-issues that have been raised recently.  The most notable change is a
-complete rewrite of the badness heuristic that determines which task is
-killed; the goal was to make it as simple and predictable as possible
-while still addressing issues that plague the VM.
+When a task is chosen for oom kill, the oom killer first attempts to
+sacrifice a child not sharing its parent's memory instead.
+Unfortunately, this often kills in a seemingly random fashion based on
+the ordering of the selected task's child list.  Additionally, it is not
+guaranteed at all to free a large amount of memory that we need to
+prevent additional oom killing in the very near future.
 
-This patchset is based on mmotm-2010-02-05-15-06 because of the following
-dependencies:
+Instead, we now only attempt to sacrifice the worst child not sharing its
+parent's memory, if one exists.  The worst child is indicated with the
+highest badness() score.  This serves two advantages: we kill a
+memory-hogging task more often, and we allow the configurable
+/proc/pid/oom_adj value to be considered as a factor in which child to
+kill.
 
-	[patch 4/7] oom: badness heuristic rewrite:
-		mm-count-swap-usage.patch
+Reviewers may observe that the previous implementation would iterate
+through the children and attempt to kill each until one was successful
+and then the parent if none were found while the new code simply kills
+the most memory-hogging task or the parent.  Note that the only time
+oom_kill_task() fails, however, is when a child does not have an mm or
+has a /proc/pid/oom_adj of OOM_DISABLE.  badness() returns 0 for both
+cases, so the final oom_kill_task() will always succeed.
 
-	[patch 5/7] oom: replace sysctls with quick mode:
-		sysctl-clean-up-vm-related-variable-delcarations.patch
-
-To apply to mainline, download 2.6.33-rc7 and apply
-
-	mm-clean-up-mm_counter.patch
-	mm-avoid-false-sharing-of-mm_counter.patch
-	mm-avoid-false_sharing-of-mm_counter-checkpatch-fixes.patch
-	mm-count-swap-usage.patch
-	mm-count-swap-usage-checkpatch-fixes.patch
-	mm-introduce-dump_page-and-print-symbolic-flag-names.patch
-	sysctl-clean-up-vm-related-variable-declarations.patch
-	sysctl-clean-up-vm-related-variable-declarations-fix.patch
-
-from http://userweb.kernel.org/~akpm/mmotm/broken-out.tar.gz first.
+Signed-off-by: David Rientjes <rientjes@google.com>
 ---
- Documentation/filesystems/proc.txt |   78 ++++---
- Documentation/sysctl/vm.txt        |   51 ++---
- fs/proc/base.c                     |   13 +-
- include/linux/mempolicy.h          |   13 +-
- include/linux/oom.h                |   18 +-
- kernel/sysctl.c                    |   15 +-
- mm/mempolicy.c                     |   39 +++
- mm/oom_kill.c                      |  455 +++++++++++++++++++-----------------
- mm/page_alloc.c                    |    3 +
- 9 files changed, 383 insertions(+), 302 deletions(-)
+ mm/oom_kill.c |   23 +++++++++++++++++------
+ 1 files changed, 17 insertions(+), 6 deletions(-)
+
+diff --git a/mm/oom_kill.c b/mm/oom_kill.c
+--- a/mm/oom_kill.c
++++ b/mm/oom_kill.c
+@@ -432,7 +432,10 @@ static int oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
+ 			    unsigned long points, struct mem_cgroup *mem,
+ 			    const char *message)
+ {
++	struct task_struct *victim = p;
+ 	struct task_struct *c;
++	unsigned long victim_points = 0;
++	struct timespec uptime;
+ 
+ 	if (printk_ratelimit())
+ 		dump_header(p, gfp_mask, order, mem);
+@@ -446,17 +449,25 @@ static int oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
+ 		return 0;
+ 	}
+ 
+-	printk(KERN_ERR "%s: kill process %d (%s) score %li or a child\n",
+-					message, task_pid_nr(p), p->comm, points);
++	pr_err("%s: Kill process %d (%s) with score %lu or sacrifice child\n",
++		message, task_pid_nr(p), p->comm, points);
+ 
+-	/* Try to kill a child first */
++	/* Try to sacrifice the worst child first */
++	do_posix_clock_monotonic_gettime(&uptime);
+ 	list_for_each_entry(c, &p->children, sibling) {
++		unsigned long cpoints;
++
+ 		if (c->mm == p->mm)
+ 			continue;
+-		if (!oom_kill_task(c))
+-			return 0;
++
++		/* badness() returns 0 if the thread is unkillable */
++		cpoints = badness(c, uptime.tv_sec);
++		if (cpoints > victim_points) {
++			victim = c;
++			victim_points = cpoints;
++		}
+ 	}
+-	return oom_kill_task(p);
++	return oom_kill_task(victim);
+ }
+ 
+ #ifdef CONFIG_CGROUP_MEM_RES_CTLR
