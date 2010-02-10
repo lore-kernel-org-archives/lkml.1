@@ -1,130 +1,204 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754340Ab0BJNuo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 08:50:44 -0500
-Received: from mail-iw0-f185.google.com ([209.85.223.185]:58850 "EHLO
-	mail-iw0-f185.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752313Ab0BJNum (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 08:50:42 -0500
-X-Greylist: delayed 477 seconds by postgrey-1.27 at vger.kernel.org; Wed, 10 Feb 2010 08:50:42 EST
-Message-ID: <4B72B7E1.40907@billgatliff.com>
-Date: Wed, 10 Feb 2010 07:42:57 -0600
-From: Bill Gatliff <bgat@billgatliff.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090707)
+	id S1754444Ab0BJNvk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 08:51:40 -0500
+Received: from cantor.suse.de ([195.135.220.2]:59651 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753924Ab0BJNvj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Feb 2010 08:51:39 -0500
+From: Nikanth Karthikesan <knikanth@suse.de>
+Organization: suse.de
+To: Wu Fengguang <fengguang.wu@intel.com>
+Subject: Re: [PATCH v2] Make vm_max_readahead configurable at run-time
+Date: Wed, 10 Feb 2010 19:22:40 +0530
+User-Agent: KMail/1.12.2 (Linux/2.6.31.8-0.1-desktop; KDE/4.3.1; x86_64; ; )
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+References: <201002091659.27037.knikanth@suse.de> <201002101623.30302.knikanth@suse.de> <20100210110551.GA1323@localhost>
+In-Reply-To: <20100210110551.GA1323@localhost>
 MIME-Version: 1.0
-To: "Stanislav O. Bezzubtsev" <stas@lvk.cs.msu.su>
-CC: linux-embedded@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PWM PATCH 2/7] Emulates PWM hardware using a high-resolution
- timer and a GPIO pin
-References: <cover.1265748263.git.bgat@billgatliff.com> <b7afd475c3fce08f459bceff7814de57ffce7bd0.1265748264.git.bgat@billgatliff.com> <7178097a5a8af15f61656f11b6bef68b0da71498.1265748264.git.bgat@billgatliff.com> <8B7FF140-BE6E-4AD1-86BC-161488675DFB@lvk.cs.msu.su>
-In-Reply-To: <8B7FF140-BE6E-4AD1-86BC-161488675DFB@lvk.cs.msu.su>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <201002101922.40122.knikanth@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stanislav O. Bezzubtsev wrote:
->> +
->> +struct gpio_pwm {
->> +	struct pwm_device pwm;
->> +	struct hrtimer t;
->>     
->
-> Wouldn't a little bit longer name "timer" instead of simple "t" increase readability?
->   
+On Wednesday 10 February 2010 16:35:51 Wu Fengguang wrote:
+> Nikanth,
+> 
+> > Make vm_max_readahead configurable at run-time. Expose a sysctl knob
+> > in procfs to change it. This would ensure that new disks added would
+> > use this value as their default read_ahead_kb.
+> 
+> Do you have use case, or customer demand for it?
+> 
 
-Couldn't hurt.  Done.
+No body requested for it. But when doing some performance testing with 
+readahead_kb re-compiling would be a pain, and thought that having a 
+configurable default might be useful.
 
->> +static void
->> +gpio_pwm_work (struct work_struct *work)
->> +{
->> +	struct gpio_pwm *gp = container_of(work, struct gpio_pwm, work);
->> +
->> +	if (gp->active)
->> +		gpio_direction_output(gp->gpio, gp->polarity ? 1 : 0);
->> +	else
->> +		gpio_direction_output(gp->gpio, gp->polarity ? 0 : 1);
->>     
->
-> Maybe the following would be better:
-> gpio_direction_output(gp->gpio, gp->polarity ^ gp->active)
-> Instead of doing several comparisons.
->   
+> > Also filesystems which use default_backing_dev_info would also
+> > use this new value, even if they were already mounted.
+> >
+> > Currently xfs, btrfs, nilfs, raw, mtd use the default_backing_dev_info.
+> 
+> This sounds like bad interface, in that users will be confused by the
+> tricky details of "works for new devices" and "works for some fs".
+> 
+> One more tricky point is, btrfs/md/dm readahead size may not be
+> influenced if some of the component disks are hot added.
+> 
+> So this patch is only going to work for hot-plugged disks that
+> contains _standalone_ filesystem. Is this typical use case in servers?
+> 
 
-... except that I'm trying to guarantee that only the values '1' or '0'
-get sent to gpio_direction_output.  There's nothing in the spec that
-says other values are legal, although I'll admit that any nonzero value
-is unlikely to cause problems.  Should I be pedantic here?
+Yes, it would work only if the top-level disk is hot-plugged/created.
 
->> +
->> +	if (gp->active)
->> +		hrtimer_start(&gp->t,
->> +			      ktime_set(0, gp->pwm.channels[0].duty_ticks),
->> +			      HRTIMER_MODE_REL);
->> +	else
->> +		hrtimer_start(&gp->t,
->> +			      ktime_set(0,gp->pwm.channels[0].period_ticks
->> +					- gp->pwm.channels[0].duty_ticks),
->> +			      HRTIMER_MODE_REL);
->>     
->
-> if (gp->active)
-> 	t =  ktime_set(0, gp->pwm.channels[0].duty_ticks));
-> else
-> 	t = ktime_set(0, gp->pwm.channels[0].period_ticks - gp->pwm.channels[0].duty_ticks));
->
-> htimer_start(&gp->t, t, HRTIMER_MODE_REL);
->   
-
-Excellent.
+Thanks
+Nikanth
 
 
->> +
->> +	ret = pwm_register(&gp->pwm);
->> +	if (ret)
->> +		goto err_pwm_register;
->> +
->> +	return 0;
->> +
->> +err_pwm_register:
->>     
->
-> platform_set_drvdata(pdev, 0);
->   
-
-Good catch!
-
-
->> +static int __devexit
->> +gpio_pwm_remove(struct platform_device *pdev)
->> +{
->> +	struct gpio_pwm *gp = platform_get_drvdata(pdev);
->> +	int ret;
->> +
->> +	ret = pwm_unregister(&gp->pwm);
->> +	hrtimer_cancel(&gp->t);
->> +	cancel_work_sync(&gp->work);
->>     
->
-> platform_set_drvdata(pdev, 0);
->   
-
-Ditto.
-
-> And there are too much pr_debug & dev_dbg calls. Several of them are inside critical sections or in functions called from critical sections (inside spin_lock_irqsave - spin_lock_irqrestore block I mean). Don't think it is good.
->   
-
-Ok.  Now that the code is relatively mature, they're unnecessary anyway.
-
-
-b.g.
-
--- 
-Bill Gatliff
-Embedded systems training and consulting
-http://billgatliff.com
-bgat@billgatliff.com
-
+> Thanks,
+> Fengguang
+> 
+> > Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
+> >
+> > ---
+> >
+> > Index: linux-2.6/block/blk-core.c
+> > ===================================================================
+> > --- linux-2.6.orig/block/blk-core.c
+> > +++ linux-2.6/block/blk-core.c
+> > @@ -499,7 +499,7 @@ struct request_queue *blk_alloc_queue_no
+> >  	q->backing_dev_info.unplug_io_fn = blk_backing_dev_unplug;
+> >  	q->backing_dev_info.unplug_io_data = q;
+> >  	q->backing_dev_info.ra_pages =
+> > -			(VM_MAX_READAHEAD * 1024) / PAGE_CACHE_SIZE;
+> > +			(vm_max_readahead_kb * 1024) / PAGE_CACHE_SIZE;
+> >  	q->backing_dev_info.state = 0;
+> >  	q->backing_dev_info.capabilities = BDI_CAP_MAP_COPY;
+> >  	q->backing_dev_info.name = "block";
+> > Index: linux-2.6/fs/fuse/inode.c
+> > ===================================================================
+> > --- linux-2.6.orig/fs/fuse/inode.c
+> > +++ linux-2.6/fs/fuse/inode.c
+> > @@ -870,7 +870,7 @@ static int fuse_bdi_init(struct fuse_con
+> >  	int err;
+> >
+> >  	fc->bdi.name = "fuse";
+> > -	fc->bdi.ra_pages = (VM_MAX_READAHEAD * 1024) / PAGE_CACHE_SIZE;
+> > +	fc->bdi.ra_pages = (vm_max_readahead_kb * 1024) / PAGE_CACHE_SIZE;
+> >  	fc->bdi.unplug_io_fn = default_unplug_io_fn;
+> >  	/* fuse does it's own writeback accounting */
+> >  	fc->bdi.capabilities = BDI_CAP_NO_ACCT_WB;
+> > Index: linux-2.6/include/linux/mm.h
+> > ===================================================================
+> > --- linux-2.6.orig/include/linux/mm.h
+> > +++ linux-2.6/include/linux/mm.h
+> > @@ -1188,7 +1188,11 @@ int write_one_page(struct page *page, in
+> >  void task_dirty_inc(struct task_struct *tsk);
+> >
+> >  /* readahead.c */
+> > -#define VM_MAX_READAHEAD	128	/* kbytes */
+> > +#define INITIAL_VM_MAX_READAHEAD_KB	128
+> > +extern unsigned long vm_max_readahead_kb;
+> > +
+> > +int sysctl_vm_max_readahead_kb_handler(struct ctl_table *table, int
+> > write, +		void __user *buffer, size_t *length, loff_t *ppos);
+> >
+> >  int force_page_cache_readahead(struct address_space *mapping, struct
+> > file *filp, pgoff_t offset, unsigned long nr_to_read);
+> > Index: linux-2.6/mm/backing-dev.c
+> > ===================================================================
+> > --- linux-2.6.orig/mm/backing-dev.c
+> > +++ linux-2.6/mm/backing-dev.c
+> > @@ -18,7 +18,8 @@ EXPORT_SYMBOL(default_unplug_io_fn);
+> >
+> >  struct backing_dev_info default_backing_dev_info = {
+> >  	.name		= "default",
+> > -	.ra_pages	= VM_MAX_READAHEAD * 1024 / PAGE_CACHE_SIZE,
+> > +	.ra_pages	= INITIAL_VM_MAX_READAHEAD_KB
+> > +					>> (PAGE_CACHE_SHIFT - 10),
+> >  	.state		= 0,
+> >  	.capabilities	= BDI_CAP_MAP_COPY,
+> >  	.unplug_io_fn	= default_unplug_io_fn,
+> > Index: linux-2.6/mm/readahead.c
+> > ===================================================================
+> > --- linux-2.6.orig/mm/readahead.c
+> > +++ linux-2.6/mm/readahead.c
+> > @@ -17,6 +17,19 @@
+> >  #include <linux/pagevec.h>
+> >  #include <linux/pagemap.h>
+> >
+> > +unsigned long vm_max_readahead_kb = INITIAL_VM_MAX_READAHEAD_KB;
+> > +
+> > +int sysctl_vm_max_readahead_kb_handler(struct ctl_table *table, int
+> > write, +		void __user *buffer, size_t *length, loff_t *ppos)
+> > +{
+> > +	proc_doulongvec_minmax(table, write, buffer, length, ppos);
+> > +
+> > +	default_backing_dev_info.ra_pages =
+> > +			vm_max_readahead_kb >> (PAGE_CACHE_SHIFT - 10);
+> > +
+> > +	return 0;
+> > +}
+> > +
+> >  /*
+> >   * Initialise a struct file's readahead state.  Assumes that the caller
+> > has * memset *ra to zero.
+> > Index: linux-2.6/kernel/sysctl.c
+> > ===================================================================
+> > --- linux-2.6.orig/kernel/sysctl.c
+> > +++ linux-2.6/kernel/sysctl.c
+> > @@ -1273,7 +1273,13 @@ static struct ctl_table vm_table[] = {
+> >  		.extra2		= &one,
+> >  	},
+> >  #endif
+> > -
+> > +	{
+> > +		.procname	= "max_readahead_kb",
+> > +		.data		= &vm_max_readahead_kb,
+> > +		.maxlen		= sizeof(vm_max_readahead_kb),
+> > +		.mode		= 0644,
+> > +		.proc_handler	= sysctl_vm_max_readahead_kb_handler,
+> > +	},
+> >  	{ }
+> >  };
+> >
+> > Index: linux-2.6/Documentation/sysctl/vm.txt
+> > ===================================================================
+> > --- linux-2.6.orig/Documentation/sysctl/vm.txt
+> > +++ linux-2.6/Documentation/sysctl/vm.txt
+> > @@ -31,6 +31,7 @@ Currently, these files are in /proc/sys/
+> >  - laptop_mode
+> >  - legacy_va_layout
+> >  - lowmem_reserve_ratio
+> > +- max_readahead_kb
+> >  - max_map_count
+> >  - memory_failure_early_kill
+> >  - memory_failure_recovery
+> > @@ -263,6 +264,18 @@ The minimum value is 1 (1/1 -> 100%).
+> >
+> >  ==============================================================
+> >
+> > +max_readahead_kb:
+> > +
+> > +This file contains the default maximum readahead that would be
+> > +used, when new disks would be added to the system.
+> > +
+> > +Also filesystems which use default_backing_dev_info would also
+> > +use this new value, even if they were already mounted.
+> > +
+> > +xfs, btrfs, nilfs, raw, mtd use the default_backing_dev_info.
+> > +
+> > +==============================================================
+> > +
+> >  max_map_count:
+> >
+> >  This file contains the maximum number of memory map areas a process
+> 
