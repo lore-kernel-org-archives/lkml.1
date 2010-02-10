@@ -1,40 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751681Ab0BJHVQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 02:21:16 -0500
-Received: from relay.atmel.no ([80.232.32.139]:59090 "EHLO relay.atmel.no"
+	id S1752327Ab0BJH2c (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 02:28:32 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:44500 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751244Ab0BJHVP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 02:21:15 -0500
-Date: Wed, 10 Feb 2010 12:50:51 +0530
-From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: kernel@avr32linux.org, "Joachim Eastwood" <Joachim.Eastwood@jotron.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [GIT PULL] AVR32 fixes for 2.6.33
-Message-ID: <20100210125051.6e053769@hskinnemoen-d830>
-Organization: Atmel
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1751584Ab0BJH2b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Feb 2010 02:28:31 -0500
+Date: Wed, 10 Feb 2010 08:27:56 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Roland McGrath <roland@redhat.com>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>, Oleg Nesterov <oleg@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>, hjl.tools@gmail.com
+Subject: Re: [patch v2 0/4] updated ptrace/core-dump patches for supporting
+ xstate - V2
+Message-ID: <20100210072756.GD31351@elte.hu>
+References: <20100209201309.902050211@sbs-t61.sc.intel.com>
+ <20100210011232.71CA51C5@magilla.sf.frob.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100210011232.71CA51C5@magilla.sf.frob.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
 
-Please pull
+* Roland McGrath <roland@redhat.com> wrote:
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/hskinnemoen/avr32-2.6.git master
+> > Patches are on top of the -tip/master tree. First patch in the series 
+> > reverts the first version of the patch that went into the -tip tree.
+> 
+> AFAIK tip/x86/ptrace is just a temporary branch containing nothing but your 
+> patch.  So I imagine you don't need a reversion, Ingo et al will just put 
+> the new patches on a fresh replacement branch.
 
-to receive the following fixes for 2.6.33.
+Yeah - and the patches your review strikes we'll remove/fix as well. And you 
+can pick up the patches yourself as well into your tree, if you wish to. (or 
+pull it from us if we are done) We can push it too with your acks - your 
+call.
 
-Hans-Christian Egtvedt (1):
-      avr32: clean up memory allocation in at32_add_device_mci
+> I'll reply to each patch individually.
 
-Peter Huewe (1):
-      arch/avr32: Fix build failure for avr32 caused by typo
+Thanks!
 
- arch/avr32/mach-at32ap/at32ap700x.c |   15 +++++++++------
- 1 files changed, 9 insertions(+), 6 deletions(-)
+	Ingo
