@@ -1,43 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753403Ab0BJNrj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 08:47:39 -0500
-Received: from ey-out-2122.google.com ([74.125.78.27]:47528 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750933Ab0BJNrh (ORCPT
+	id S1754291Ab0BJNtY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 08:49:24 -0500
+Received: from mail-forward1.uio.no ([129.240.10.70]:35179 "EHLO
+	mail-forward1.uio.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753778Ab0BJNtW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 08:47:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=kW1mJlB5OzduYN7QIA008ZwDvbHijk2NNTfTsKnIdOmYr1NTQxd1acVJ/hF9UBCYws
-         fM6y/s/Ax9SJepspVKWQvl4j1dQcCBn91VXDeb5ULy0zfZKSNBRHo89FjdhjXUWDBR5O
-         uGg9ITtpvBuFuqv0qLCfehDf1VBDXkz45vGas=
+	Wed, 10 Feb 2010 08:49:22 -0500
+Message-ID: <4B72B95A.10402@simula.no>
+Date: Wed, 10 Feb 2010 14:49:14 +0100
+From: Andreas Petlund <apetlund@simula.no>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.9pre) Gecko/20100209 Shredder/3.0.2pre
 MIME-Version: 1.0
-In-Reply-To: <20100210092854.GA26727@Chamillionaire.breakpoint.cc>
-References: <1265764660-23178-1-git-send-email-richih.mailinglist@gmail.com>
-	 <20100210092854.GA26727@Chamillionaire.breakpoint.cc>
-Date: Wed, 10 Feb 2010 14:47:33 +0100
-Message-ID: <2d460de71002100547g481e6256nc061c07758f4f1ba@mail.gmail.com>
-Subject: Re: [PATCH 1/1] CRYPTO: Fix checkpatch errors & warnings in arc4.c
-From: Richard Hartmann <richih.mailinglist@gmail.com>
-To: Sebastian Andrzej Siewior <linux-crypto@ml.breakpoint.cc>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>,
-       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       linux-crypto@vger.kernel.org
+To: Eric Dumazet <eric.dumazet@gmail.com>
+CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       =?UTF-8?B?SWxwbyBK?= =?UTF-8?B?w6RydmluZW4=?= 
+	<ilpo.jarvinen@helsinki.fi>,
+       Arnd Hannemann <hannemann@nets.rwth-aachen.de>,
+       LKML <linux-kernel@vger.kernel.org>, shemminger@vyatta.com,
+       David Miller <davem@davemloft.net>, william.allen.simpson@gmail.com
+Subject: Re: [net-next PATCH v2 2/3] net: TCP thin linear timeouts
+References: <4B701EE2.1000006@simula.no> <1265697119.4236.99.camel@edumazet-laptop>
+In-Reply-To: <1265697119.4236.99.camel@edumazet-laptop>
 Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-UiO-Ratelimit-Test: rcpts/h 8 msgs/h 1 sum rcpts/h 13 sum msgs/h 1 total rcpts 770 max rcpts/h 37 ratelimit 0
+X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
+X-UiO-Scanned: 64125C9A56FF7648B3982E0FA987712B28F02FEB
+X-UiO-SPAM-Test: remote_host: 128.39.37.254 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 20 total 19169 max/h 66 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 10, 2010 at 10:28, Sebastian Andrzej Siewior
-<sebatian@breakpoint.cc> wrote:
+On 02/09/2010 07:31 AM, Eric Dumazet wrote:
+> Le lundi 08 février 2010 à 15:25 +0100, Andreas Petlund a écrit :
+>>  
+>> +	case TCP_THIN_LT:
+>> +		if (val)
+>> +			tp->thin_lt = 1;
+>> +		break;
+>> +
+> 
+> Why not allowing user to clear thin_lt ?
+> 
+> 
 
-> I've made this whitespace fixes and a few others while re-writting it
-> yesterday. So I've taken care of this allready.
+That is a very good point. I will fix that in the next iteration,
+as well as error handling for out of bounds values.
 
-OK. Thanks for getting back to me :)
-
-
-Richard
+Best regards,
+Andreas
