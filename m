@@ -1,36 +1,45 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753239Ab0BJItZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 03:49:25 -0500
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:39642 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752011Ab0BJItY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 03:49:24 -0500
-Date: Wed, 10 Feb 2010 17:49:19 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH v2 -mm 10/14] sh: use include/linux/pci-dma.h
-Message-ID: <20100210084919.GA907@linux-sh.org>
-References: <1265765687-14121-1-git-send-email-fujita.tomonori@lab.ntt.co.jp> <1265765687-14121-11-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+	id S1752411Ab0BJIwB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 03:52:01 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:62290 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750763Ab0BJIwA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Feb 2010 03:52:00 -0500
+Message-ID: <4B72738A.4070300@redhat.com>
+Date: Wed, 10 Feb 2010 10:51:22 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1265765687-14121-11-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: KVM list <kvm@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: [GIT PULL] KVM fixes for 2.6.33-rc7
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 10, 2010 at 10:34:43AM +0900, FUJITA Tomonori wrote:
-> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> Cc: Paul Mundt <lethal@linux-sh.org>
-> ---
->  arch/sh/Kconfig           |    3 +++
->  arch/sh/include/asm/pci.h |   19 +------------------
->  2 files changed, 4 insertions(+), 18 deletions(-)
-> 
-Looks ok to me.
+Linus, please pull from
 
-Acked-by: Paul Mundt <lethal@linux-sh.org>
+   git://git.kernel.org/pub/scm/virt/kvm/kvm.git kvm-updates/2.6.33
+
+To receive a suspend/resume kvmclock fix, and a memory corruption fix 
+involving the emulated PIT.
+
+Jason Wang (2):
+       Export the symbol of getboottime and mmonotonic_to_bootbased
+       kvmclock: count total_sleep_time when updating guest clock
+
+Marcelo Tosatti (1):
+       KVM: PIT: control word is write-only
+
+  arch/x86/kvm/i8254.c      |    3 +++
+  arch/x86/kvm/x86.c        |    7 +++----
+  kernel/time/timekeeping.c |    2 ++
+  3 files changed, 8 insertions(+), 4 deletions(-)
+
+-- 
+error compiling committee.c: too many arguments to function
+
