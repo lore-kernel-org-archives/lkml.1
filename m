@@ -1,167 +1,89 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755652Ab0BJJcN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 04:32:13 -0500
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:60021 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752778Ab0BJJVr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 04:21:47 -0500
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: TEXT/PLAIN
-Date: Wed, 10 Feb 2010 01:20:05 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 01/35] x86: fix sci on ioapic 1
-In-reply-to: <1265793639-15071-1-git-send-email-yinghai@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
+	id S1754316Ab0BJJkm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 04:40:42 -0500
+Received: from mail.up.ac.za ([137.215.6.44]:58079 "EHLO mail.up.ac.za"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753562Ab0BJJkk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Feb 2010 04:40:40 -0500
+X-Greylist: delayed 2448 seconds by postgrey-1.27 at vger.kernel.org; Wed, 10 Feb 2010 04:40:40 EST
+Message-ID: <4B727535.6060701@up.ac.za>
+Date: Wed, 10 Feb 2010 10:58:29 +0200
+From: Paul Schutte <paul@up.ac.za>
+User-Agent: Icedove 1.5.0.14eol (X11/20090105)
+MIME-Version: 1.0
+To: Goswin von Brederlow <goswin-v-b@web.de>
+CC: Tejun Heo <tj@kernel.org>, fuse-devel@lists.sourceforge.net,
+       Lars Wendler <polynomial-c@gentoo.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-       Yinghai Lu <yinghai@kernel.org>, stable@kernel.org
-Message-id: <1265793639-15071-2-git-send-email-yinghai@kernel.org>
-X-Mailer: git-send-email 1.6.4.2
-References: <1265793639-15071-1-git-send-email-yinghai@kernel.org>
+       Miklos Szeredi <mszeredi@suse.cz>, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [fuse-devel] [PATCH] FUSE/CUSE: implement direct mmap support
+References: <4B70FBE4.7050700@kernel.org> <87k4ulo5w2.fsf@frosties.localdomain>
+In-Reply-To: <87k4ulo5w2.fsf@frosties.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Renninger <trenn@suse.de> reported on IBM x3330
+Hi.
 
-booting a latest kernel on this machine results in:
+I am just sharing my thoughts on the matter.
 
-PCI: PCI BIOS revision 2.10 entry at 0xfd61c, last bus=1
-PCI: Using configuration type 1 for base access bio: create slab <bio-0> at 0
-ACPI: SCI (IRQ30) allocation failed
-ACPI Exception: AE_NOT_ACQUIRED, Unable to install System Control Interrupt handler (20090903/evevent-161)
-ACPI: Unable to start the ACPI Interpreter
+Maybe one can implement a separate "fuse sync" ioctl which can then be 
+called by a user space program say "fusersync" to sync all the fuse 
+filesystems you are allowed to.
 
-Later all kind of devices fail...
+I implemented sync to my filesystem by means of an extended attribute.
+I now do "setfattr -nsync /mountpoint" to get the syncing done.
 
-and bisect it down to this commit:
-commit b9c61b70075c87a8612624736faf4a2de5b1ed30
+This has the drawback that you can not easily put it in a script because 
+you need to know the mount point. I know one can write smart scripts to 
+figure out the mountpoint, but it would be nice if you can just say 
+"fusersync" and all the fuse filesystems that you are allowed to will 
+just sync.
 
-    x86/pci: update pirq_enable_irq() to setup io apic routing
+One can then maybe rename the system wide sync to say "sync.system" and 
+put a script in it's place which calls "fusersync;sync.system"
 
-it turns out we need to set irq routing for the sci on ioapic1 early.
+Hopefully this idea might be useful.
 
--v2: make it work without sparseirq too.
--v3: fix checkpatch.pl warning, and cc to stable
+Regards
+Paul
 
-Reported-by: Thomas Renninger <trenn@suse.de>
-Bisected-by: Thomas Renninger <trenn@suse.de>
-Tested-by: Thomas Renninger <trenn@suse.de>
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-Cc: stable@kernel.org
----
- arch/x86/include/asm/io_apic.h |    1 +
- arch/x86/kernel/acpi/boot.c    |    9 ++++++-
- arch/x86/kernel/apic/io_apic.c |   50 ++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 59 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/include/asm/io_apic.h b/arch/x86/include/asm/io_apic.h
-index 7c7c16c..5f61f6e 100644
---- a/arch/x86/include/asm/io_apic.h
-+++ b/arch/x86/include/asm/io_apic.h
-@@ -160,6 +160,7 @@ extern int io_apic_get_redir_entries(int ioapic);
- struct io_apic_irq_attr;
- extern int io_apic_set_pci_routing(struct device *dev, int irq,
- 		 struct io_apic_irq_attr *irq_attr);
-+void setup_IO_APIC_irq_extra(u32 gsi);
- extern int (*ioapic_renumber_irq)(int ioapic, int irq);
- extern void ioapic_init_mappings(void);
- extern void ioapic_insert_resources(void);
-diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index 0acbcdf..5c96b75 100644
---- a/arch/x86/kernel/acpi/boot.c
-+++ b/arch/x86/kernel/acpi/boot.c
-@@ -446,6 +446,12 @@ void __init acpi_pic_sci_set_trigger(unsigned int irq, u16 trigger)
- int acpi_gsi_to_irq(u32 gsi, unsigned int *irq)
- {
- 	*irq = gsi;
-+
-+#ifdef CONFIG_X86_IO_APIC
-+	if (acpi_irq_model == ACPI_IRQ_MODEL_IOAPIC)
-+		setup_IO_APIC_irq_extra(gsi);
-+#endif
-+
- 	return 0;
- }
- 
-@@ -473,7 +479,8 @@ int acpi_register_gsi(struct device *dev, u32 gsi, int trigger, int polarity)
- 		plat_gsi = mp_register_gsi(dev, gsi, trigger, polarity);
- 	}
- #endif
--	acpi_gsi_to_irq(plat_gsi, &irq);
-+	irq = plat_gsi;
-+
- 	return irq;
- }
- 
-diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-index 75ba3d0..ee2fba1 100644
---- a/arch/x86/kernel/apic/io_apic.c
-+++ b/arch/x86/kernel/apic/io_apic.c
-@@ -1541,6 +1541,56 @@ static void __init setup_IO_APIC_irqs(void)
- }
- 
- /*
-+ * for the gsit that is not in first ioapic
-+ * but could not use acpi_register_gsi()
-+ * like some special sci in IBM x3330
-+ */
-+void setup_IO_APIC_irq_extra(u32 gsi)
-+{
-+	int apic_id = 0, pin, idx, irq;
-+	int node = cpu_to_node(boot_cpu_id);
-+	struct irq_desc *desc;
-+	struct irq_cfg *cfg;
-+
-+	/*
-+	 * Convert 'gsi' to 'ioapic.pin'.
-+	 */
-+	apic_id = mp_find_ioapic(gsi);
-+	if (apic_id < 0)
-+		return;
-+
-+	pin = mp_find_ioapic_pin(apic_id, gsi);
-+	idx = find_irq_entry(apic_id, pin, mp_INT);
-+	if (idx == -1)
-+		return;
-+
-+	irq = pin_2_irq(idx, apic_id, pin);
-+#ifdef CONFIG_SPARSE_IRQ
-+	desc = irq_to_desc(irq);
-+	if (desc)
-+		return;
-+#endif
-+	desc = irq_to_desc_alloc_node(irq, node);
-+	if (!desc) {
-+		printk(KERN_INFO "can not get irq_desc for %d\n", irq);
-+		return;
-+	}
-+
-+	cfg = desc->chip_data;
-+	add_pin_to_irq_node(cfg, node, apic_id, pin);
-+
-+	if (test_bit(pin, mp_ioapic_routing[apic_id].pin_programmed)) {
-+		pr_debug("Pin %d-%d already programmed\n",
-+			 mp_ioapics[apic_id].apicid, pin);
-+		return;
-+	}
-+	set_bit(pin, mp_ioapic_routing[apic_id].pin_programmed);
-+
-+	setup_IO_APIC_irq(apic_id, pin, irq, desc,
-+			irq_trigger(idx), irq_polarity(idx));
-+}
-+
-+/*
-  * Set up the timer pin, possibly with the 8259A-master behind.
-  */
- static void __init setup_timer_IRQ0_pin(unsigned int apic_id, unsigned int pin,
--- 
-1.6.4.2
-
+Goswin von Brederlow wrote:
+> Tejun Heo <tj@kernel.org> writes:
+>
+>   
+>> Implement FUSE direct mmap support.  The server can redirect client
+>> mmap requests to any SHMLBA aligned offset in the custom address space
+>> attached to the fuse channel.  The address space is managed by the
+>> server using mmap/munmap(2).  The SHMLBA alignment requirement is
+>> necessary to avoid cache aliasing issues on archs with virtually
+>> indexed caches as FUSE direct mmaps are basically shared memory
+>> between clients and the server.
+>>
+>> The direct mmap address space is backed by pinned kernel pages which
+>> are allocated on the first fault either from a client or the server.
+>> If used carelessly, this can easily waste and drain memory.
+>> Currently, a server must have CAP_SYS_ADMIN to manage dmmap regions by
+>> mmapping and munmapping the channel fd.
+>>     
+>
+> Does that mean that for example in unionfs-fuse when a user wants to
+> mmap a file I can just mmap the actual underlying file from the real
+> filesystem and any read/write access would then shortcut fuse and go
+> directly to the real file?
+>
+> MfG
+>         Goswin
+>
+> ------------------------------------------------------------------------------
+> SOLARIS 10 is the OS for Data Centers - provides features such as DTrace,
+> Predictive Self Healing and Award Winning ZFS. Get Solaris 10 NOW
+> http://p.sf.net/sfu/solaris-dev2dev
+> _______________________________________________
+> fuse-devel mailing list
+> fuse-devel@lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/fuse-devel
+>   
