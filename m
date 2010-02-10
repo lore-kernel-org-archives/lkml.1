@@ -1,17 +1,17 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756207Ab0BJR37 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 12:29:59 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:1916 "EHLO mx1.redhat.com"
+	id S1756266Ab0BJRbi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 12:31:38 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:9639 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755474Ab0BJRXN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755371Ab0BJRXN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 10 Feb 2010 12:23:13 -0500
 From: Avi Kivity <avi@redhat.com>
 To: kvm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 11/40] KVM: Extended shared_msr_global to per CPU
-Date: Wed, 10 Feb 2010 19:22:40 +0200
-Message-Id: <1265822589-11155-12-git-send-email-avi@redhat.com>
+Subject: [PATCH 13/40] KVM: Add cpuid_update() callback to kvm_x86_ops
+Date: Wed, 10 Feb 2010 19:22:42 +0200
+Message-Id: <1265822589-11155-14-git-send-email-avi@redhat.com>
 In-Reply-To: <1265822589-11155-1-git-send-email-avi@redhat.com>
 References: <1265822589-11155-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -20,130 +20,109 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Sheng Yang <sheng@linux.intel.com>
 
-shared_msr_global saved host value of relevant MSRs, but it have an
-assumption that all MSRs it tracked shared the value across the different
-CPUs. It's not true with some MSRs, e.g. MSR_TSC_AUX.
+Sometime, we need to adjust some state in order to reflect guest CPUID
+setting, e.g. if we don't expose rdtscp to guest, we won't want to enable
+it on hardware. cpuid_update() is introduced for this purpose.
 
-Extend it to per CPU to provide the support of MSR_TSC_AUX, and more
-alike MSRs.
-
-Notice now the shared_msr_global still have one assumption: it can only deal
-with the MSRs that won't change in host after KVM module loaded.
+Also export kvm_find_cpuid_entry() for later use.
 
 Signed-off-by: Sheng Yang <sheng@linux.intel.com>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- arch/x86/kvm/x86.c |   55 +++++++++++++++++++++++++++++++--------------------
- 1 files changed, 33 insertions(+), 22 deletions(-)
+ arch/x86/include/asm/kvm_host.h |    1 +
+ arch/x86/kvm/svm.c              |    6 ++++++
+ arch/x86/kvm/vmx.c              |    6 ++++++
+ arch/x86/kvm/x86.c              |    3 +++
+ 4 files changed, 16 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index fd67f88..a2c8cf2 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -93,16 +93,16 @@ module_param_named(ignore_msrs, ignore_msrs, bool, S_IRUGO | S_IWUSR);
+diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
+index e9f4f12..7ff0ea3 100644
+--- a/arch/x86/include/asm/kvm_host.h
++++ b/arch/x86/include/asm/kvm_host.h
+@@ -459,6 +459,7 @@ struct kvm_x86_ops {
+ 	int (*hardware_setup)(void);               /* __init */
+ 	void (*hardware_unsetup)(void);            /* __exit */
+ 	bool (*cpu_has_accelerated_tpr)(void);
++	void (*cpuid_update)(struct kvm_vcpu *vcpu);
  
- struct kvm_shared_msrs_global {
- 	int nr;
--	struct kvm_shared_msr {
--		u32 msr;
--		u64 value;
--	} msrs[KVM_NR_SHARED_MSRS];
-+	u32 msrs[KVM_NR_SHARED_MSRS];
- };
- 
- struct kvm_shared_msrs {
- 	struct user_return_notifier urn;
- 	bool registered;
--	u64 current_value[KVM_NR_SHARED_MSRS];
-+	struct kvm_shared_msr_values {
-+		u64 host;
-+		u64 curr;
-+	} values[KVM_NR_SHARED_MSRS];
- };
- 
- static struct kvm_shared_msrs_global __read_mostly shared_msrs_global;
-@@ -147,53 +147,64 @@ struct kvm_stats_debugfs_item debugfs_entries[] = {
- static void kvm_on_user_return(struct user_return_notifier *urn)
- {
- 	unsigned slot;
--	struct kvm_shared_msr *global;
- 	struct kvm_shared_msrs *locals
- 		= container_of(urn, struct kvm_shared_msrs, urn);
-+	struct kvm_shared_msr_values *values;
- 
- 	for (slot = 0; slot < shared_msrs_global.nr; ++slot) {
--		global = &shared_msrs_global.msrs[slot];
--		if (global->value != locals->current_value[slot]) {
--			wrmsrl(global->msr, global->value);
--			locals->current_value[slot] = global->value;
-+		values = &locals->values[slot];
-+		if (values->host != values->curr) {
-+			wrmsrl(shared_msrs_global.msrs[slot], values->host);
-+			values->curr = values->host;
- 		}
- 	}
- 	locals->registered = false;
- 	user_return_notifier_unregister(urn);
+ 	/* Create, but do not attach this VCPU */
+ 	struct kvm_vcpu *(*vcpu_create)(struct kvm *kvm, unsigned id);
+diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
+index 1d9b338..41777e6 100644
+--- a/arch/x86/kvm/svm.c
++++ b/arch/x86/kvm/svm.c
+@@ -2852,6 +2852,10 @@ static u64 svm_get_mt_mask(struct kvm_vcpu *vcpu, gfn_t gfn, bool is_mmio)
+ 	return 0;
  }
  
--void kvm_define_shared_msr(unsigned slot, u32 msr)
-+static void shared_msr_update(unsigned slot, u32 msr)
- {
--	int cpu;
-+	struct kvm_shared_msrs *smsr;
- 	u64 value;
- 
-+	smsr = &__get_cpu_var(shared_msrs);
-+	/* only read, and nobody should modify it at this time,
-+	 * so don't need lock */
-+	if (slot >= shared_msrs_global.nr) {
-+		printk(KERN_ERR "kvm: invalid MSR slot!");
-+		return;
-+	}
-+	rdmsrl_safe(msr, &value);
-+	smsr->values[slot].host = value;
-+	smsr->values[slot].curr = value;
++static void svm_cpuid_update(struct kvm_vcpu *vcpu)
++{
 +}
 +
-+void kvm_define_shared_msr(unsigned slot, u32 msr)
+ static const struct trace_print_flags svm_exit_reasons_str[] = {
+ 	{ SVM_EXIT_READ_CR0,           		"read_cr0" },
+ 	{ SVM_EXIT_READ_CR3,	      		"read_cr3" },
+@@ -2976,6 +2980,8 @@ static struct kvm_x86_ops svm_x86_ops = {
+ 
+ 	.exit_reasons_str = svm_exit_reasons_str,
+ 	.gb_page_enable = svm_gb_page_enable,
++
++	.cpuid_update = svm_cpuid_update,
+ };
+ 
+ static int __init svm_init(void)
+diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
+index f8f2fdc..75e8931 100644
+--- a/arch/x86/kvm/vmx.c
++++ b/arch/x86/kvm/vmx.c
+@@ -3988,6 +3988,10 @@ static bool vmx_gb_page_enable(void)
+ 	return false;
+ }
+ 
++static void vmx_cpuid_update(struct kvm_vcpu *vcpu)
 +{
- 	if (slot >= shared_msrs_global.nr)
- 		shared_msrs_global.nr = slot + 1;
--	shared_msrs_global.msrs[slot].msr = msr;
--	rdmsrl_safe(msr, &value);
--	shared_msrs_global.msrs[slot].value = value;
--	for_each_online_cpu(cpu)
--		per_cpu(shared_msrs, cpu).current_value[slot] = value;
-+	shared_msrs_global.msrs[slot] = msr;
-+	/* we need ensured the shared_msr_global have been updated */
-+	smp_wmb();
++}
++
+ static struct kvm_x86_ops vmx_x86_ops = {
+ 	.cpu_has_kvm_support = cpu_has_kvm_support,
+ 	.disabled_by_bios = vmx_disabled_by_bios,
+@@ -4052,6 +4056,8 @@ static struct kvm_x86_ops vmx_x86_ops = {
+ 
+ 	.exit_reasons_str = vmx_exit_reasons_str,
+ 	.gb_page_enable = vmx_gb_page_enable,
++
++	.cpuid_update = vmx_cpuid_update,
+ };
+ 
+ static int __init vmx_init(void)
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index a2c8cf2..153f4a1 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -1575,6 +1575,7 @@ static int kvm_vcpu_ioctl_set_cpuid(struct kvm_vcpu *vcpu,
+ 	cpuid_fix_nx_cap(vcpu);
+ 	r = 0;
+ 	kvm_apic_set_version(vcpu);
++	kvm_x86_ops->cpuid_update(vcpu);
+ 
+ out_free:
+ 	vfree(cpuid_entries);
+@@ -1597,6 +1598,7 @@ static int kvm_vcpu_ioctl_set_cpuid2(struct kvm_vcpu *vcpu,
+ 		goto out;
+ 	vcpu->arch.cpuid_nent = cpuid->nent;
+ 	kvm_apic_set_version(vcpu);
++	kvm_x86_ops->cpuid_update(vcpu);
+ 	return 0;
+ 
+ out:
+@@ -3734,6 +3736,7 @@ struct kvm_cpuid_entry2 *kvm_find_cpuid_entry(struct kvm_vcpu *vcpu,
+ 	}
+ 	return best;
  }
- EXPORT_SYMBOL_GPL(kvm_define_shared_msr);
++EXPORT_SYMBOL_GPL(kvm_find_cpuid_entry);
  
- static void kvm_shared_msr_cpu_online(void)
+ int cpuid_maxphyaddr(struct kvm_vcpu *vcpu)
  {
- 	unsigned i;
--	struct kvm_shared_msrs *locals = &__get_cpu_var(shared_msrs);
- 
- 	for (i = 0; i < shared_msrs_global.nr; ++i)
--		locals->current_value[i] = shared_msrs_global.msrs[i].value;
-+		shared_msr_update(i, shared_msrs_global.msrs[i]);
- }
- 
- void kvm_set_shared_msr(unsigned slot, u64 value, u64 mask)
- {
- 	struct kvm_shared_msrs *smsr = &__get_cpu_var(shared_msrs);
- 
--	if (((value ^ smsr->current_value[slot]) & mask) == 0)
-+	if (((value ^ smsr->values[slot].curr) & mask) == 0)
- 		return;
--	smsr->current_value[slot] = value;
--	wrmsrl(shared_msrs_global.msrs[slot].msr, value);
-+	smsr->values[slot].curr = value;
-+	wrmsrl(shared_msrs_global.msrs[slot], value);
- 	if (!smsr->registered) {
- 		smsr->urn.on_user_return = kvm_on_user_return;
- 		user_return_notifier_register(&smsr->urn);
 -- 
 1.6.5.3
 
