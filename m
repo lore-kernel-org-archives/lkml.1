@@ -1,65 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754829Ab0BJDF6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 22:05:58 -0500
-Received: from smtp-out.google.com ([216.239.44.51]:35908 "EHLO
+	id S1754877Ab0BJDKU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 22:10:20 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:35772 "EHLO
 	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753004Ab0BJDF5 (ORCPT
+	with ESMTP id S1752247Ab0BJDKT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Feb 2010 22:05:57 -0500
+	Tue, 9 Feb 2010 22:10:19 -0500
 DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
 	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:content-id:x-system-of-record;
-	b=k/GH1VCNlKJALNUN9mk60V/wLgq0jxVc6j/1G44tB6MbrABpCuiaWUUNG+Lt50goZ
-	Kqxk1OW7kZAYnjVYG9nqQ==
-Date: Tue, 9 Feb 2010 19:05:48 -0800 (PST)
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=r7PUXzb+NgASvs47DNFAdA3jpjgUaQbKnprftXi6u0T6dlHpHyOM9BKbeCCQpdUMO
+	WUUFXo3iEAxCeuoAKxcyQ==
+Date: Tue, 9 Feb 2010 19:10:10 -0800 (PST)
 From: David Rientjes <rientjes@google.com>
 X-X-Sender: rientjes@chino.kir.corp.google.com
-To: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
-cc: Neil Brown <neilb@suse.de>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Tejun Heo <tj@kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sysfs: differentiate between locking links and
- non-links
-In-Reply-To: <2375c9f91002091756h132e81eava8575ffd4e3ad421@mail.gmail.com>
-Message-ID: <alpine.DEB.2.00.1002091858180.31159@chino.kir.corp.google.com>
-References: <19314.1869.847327.15190@notabene.brown> <alpine.DEB.2.00.1002091716580.13999@chino.kir.corp.google.com> <2375c9f91002091756h132e81eava8575ffd4e3ad421@mail.gmail.com>
+To: Oliver Neukum <oliver@neukum.org>
+cc: Jiri Kosina <jkosina@suse.cz>, Lubos Lunak <l.lunak@suse.cz>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Rik van Riel <riel@redhat.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Nick Piggin <npiggin@suse.de>
+Subject: Re: Improving OOM killer
+In-Reply-To: <201002050835.30550.oliver@neukum.org>
+Message-ID: <alpine.DEB.2.00.1002091906020.31159@chino.kir.corp.google.com>
+References: <201002012302.37380.l.lunak@suse.cz> <alpine.LNX.2.00.1002041044080.15395@pobox.suse.cz> <alpine.DEB.2.00.1002041335140.6071@chino.kir.corp.google.com> <201002050835.30550.oliver@neukum.org>
 User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="531381004-2060383346-1265770711=:31159"
-Content-ID: <alpine.DEB.2.00.1002091858380.31159@chino.kir.corp.google.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Fri, 5 Feb 2010, Oliver Neukum wrote:
 
---531381004-2060383346-1265770711=:31159
-Content-Type: TEXT/PLAIN; CHARSET=UTF-8
-Content-Transfer-Encoding: 8BIT
-Content-ID: <alpine.DEB.2.00.1002091858381.31159@chino.kir.corp.google.com>
-
-On Wed, 10 Feb 2010, Américo Wang wrote:
-
-> > What happens for hard links such as writing to
-> > /sys/devices/block/xxx/queue/scheduler to change an I/O scheduler which
-> > requires sd->dep_map and sd->parent->dep_map in sysfs_get_active_two() to
-> > pin both?  The call to kobject_del() invokes the destruction that also
-> > requires sd->dep_map in sysfs_deactivate() because of the s_active lockdep
-> > annotation.
-> >
+> > That's what we're trying to do, we can look at the shear number of 
+> > children that the parent has forked and check for it to be over a certain 
+> > "forkbombing threshold" (which, yes, can be tuned from userspace), the 
+> > uptime of those children, their resident set size, etc., to attempt to 
+> > find a sane heuristic that penalizes them.
 > 
-> This is not related with Neil's case at all.
-> 
-> The I/O scheduler switch case should be a bogus, I am working on
-> it. We have more similar cases of cpu hotplug. Trust me, I am working
-> on a fix to all of them, this is not as easy as you may think about.
+> Wouldn't it be saner to have a selection by user, so that users that
+> are over the overcommit limit are targeted?
 > 
 
-You should be able to reuse Neil's sysfs_dirent_init_lockdep(sd, type) to 
-seperate the lock classes for the sd getting pinned in 
-sysfs_get_active_two() from sysfs_deactivate(), although using subclasses 
-would probably be optimal since there is a clear parent -> child relationship.
---531381004-2060383346-1265770711=:31159--
+It's rather unnecessary for the forkbomb case because then it would 
+unfairly penalize any user that runs lots of tasks.  The forkbomb handling 
+code is really to prevent either user error, bugs in the application, or 
+maliciousness.  The goal isn't necessarily to kill anything that forks an 
+egregious amount of tasks (which is why we always prefer a child with a 
+seperate address space than a parent, anyway) but rather to try to make 
+sure the system is still usable and recoverable.
