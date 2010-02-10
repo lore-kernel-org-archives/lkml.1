@@ -1,326 +1,156 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754315Ab0BJPSA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 10:18:00 -0500
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:44015 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753147Ab0BJPR6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 10:17:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=lvxi2zHHd74g9hb9bLBj9OGqL4sp8f9gmTlgz3AHh/HjsQcezYnAk5IoDohVC/Y5Fr
-         ym9plC0I/sB42XBGeWdCtppYEQ+xyivJ8klVxOWtiugaZTXmdyY2gLbiqW0kYEQBUxnb
-         ednNCAkxT08njiu5PldDNvOp6NfQDADyUQ76E=
-Subject: Re: [PATCH 1/3] A device for zero-copy based on KVM virtio-net.
-From: Eric Dumazet <eric.dumazet@gmail.com>
-To: Xin Xiaohui <xiaohui.xin@intel.com>
-Cc: netdev@vger.kernel.org, kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, mst@redhat.com, jdike@c2.user-mode-linux.org,
-       Zhao Yu <yzhao81@gmail.com>
-In-Reply-To: <1265802540-6122-2-git-send-email-xiaohui.xin@intel.com>
-References: <1265802540-6122-1-git-send-email-xiaohui.xin@intel.com>
-	 <1265802540-6122-2-git-send-email-xiaohui.xin@intel.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 10 Feb 2010 16:17:51 +0100
-Message-ID: <1265815071.3047.96.camel@edumazet-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 8bit
+	id S1754865Ab0BJPSO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 10:18:14 -0500
+Received: from borg.medozas.de ([188.40.89.202]:54378 "EHLO borg.medozas.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754517Ab0BJPSL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Feb 2010 10:18:11 -0500
+Date: Wed, 10 Feb 2010 16:18:10 +0100 (CET)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: jens.axboe@oracle.com
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: kswapd continuously active
+In-Reply-To: <20100208140837.GN1025@kernel.dk>
+Message-ID: <alpine.LSU.2.01.1002101600480.14152@obet.zrqbmnf.qr>
+References: <20100208140837.GN1025@kernel.dk>
+User-Agent: Alpine 2.01 (LSU 1266 2009-07-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le mercredi 10 février 2010 à 19:48 +0800, Xin Xiaohui a écrit :
-> Add a device to utilize the vhost-net backend driver for
-> copy-less data transfer between guest FE and host NIC.
-> It pins the guest user space to the host memory and
-> provides proto_ops as sendmsg/recvmsg to vhost-net.
-> 
-> Signed-off-by: Xin Xiaohui <xiaohui.xin@intel.com>
-> Signed-off-by: Zhao Yu <yzhao81@gmail.com>
-> Sigend-off-by: Jeff Dike <jdike@c2.user-mode-linux.org>
+Hi,
 
 
-> +static int page_ctor_attach(struct mp_struct *mp)
-> +{
-> +	int rc;
-> +	struct page_ctor *ctor;
-> +	struct net_device *dev = mp->dev;
-> +
-> +	rcu_read_lock();
-> +	if (rcu_dereference(mp->ctor)) {
-> +		rcu_read_unlock();
-> +		return -EBUSY;
-> +	}
-> +	rcu_read_unlock();
-
-Strange read locking here, for an obvious writer role.
-What do you really want to do ?
-If writer are serialized by mp_mutex, you dont need this
-recu_read_lock()/rcu_read_unlock() stuff.
-
-> +
-> +	ctor = kzalloc(sizeof(*ctor), GFP_KERNEL);
-> +	if (!ctor)
-> +		return -ENOMEM;
-> +	rc = netdev_page_ctor_prep(dev, &ctor->ctor);
-> +	if (rc)
-> +		goto fail;
-> +
-> +	ctor->cache = kmem_cache_create("skb_page_info",
-> +			sizeof(struct page_info), 0,
-> +			SLAB_HWCACHE_ALIGN|SLAB_PANIC, NULL);
+the perf top -a dumps:
 
 
-SLAB_PANIC here means : crash whole system in case of error.
-This is not what you want in a driver.
+Light fs activity (/bin/rm old build roots)
+------------------------------------------------------------------------------
+   PerfTop:    4800 irqs/sec  kernel:94.1% [100000 cycles],  (all, 24 CPUs)
+------------------------------------------------------------------------------
+            12352.00 - 17.7% : __lock_acquire
+             4975.00 -  7.1% : lock_release_holdtime
+             4793.00 -  6.9% : lock_release
+             3586.00 -  5.1% : lock_acquired
+             3544.00 -  5.1% : stick_get_tick
+             2245.00 -  3.2% : sched_clock
+             1938.00 -  2.8% : sched_clock_cpu
+             1851.00 -  2.7% : lock_acquire
+             1800.00 -  2.6% : tl0_linux64
+             1475.00 -  2.1% : ext4_mark_iloc_dirty
+             1041.00 -  1.5% : fget_light
+             1035.00 -  1.5% : find_busiest_group
+              977.00 -  1.4% : getnstimeofday
+              939.00 -  1.3% : do_sys_poll
+              926.00 -  1.3% : perf_poll
 
-> +
-> +	if (!ctor->cache)
-> +		goto cache_fail;
-> +
-> +	INIT_LIST_HEAD(&ctor->readq);
-> +	spin_lock_init(&ctor->read_lock);
-> +
-> +	ctor->w_len = 0;
-> +	ctor->r_len = 0;
-> +
-> +	dev_hold(dev);
-> +	ctor->dev = dev;
-> +	ctor->ctor.ctor = page_ctor;
-> +	ctor->ctor.sock = &mp->socket;
-> +	atomic_set(&ctor->refcnt, 1);
-> +
-> +	rc = netdev_page_ctor_attach(dev, &ctor->ctor);
-> +	if (rc)
-> +		goto fail;
-> +
-> +	/* locked by mp_mutex */
-> +	rcu_assign_pointer(mp->ctor, ctor);
-> +
-> +	/* XXX:Need we do set_offload here ? */
-> +
-> +	return 0;
-> +
-> +fail:
-> +	kmem_cache_destroy(ctor->cache);
-> +cache_fail:
-> +	kfree(ctor);
-> +	dev_put(dev);
-> +
-> +	return rc;
-> +}
-> +
-> +
-> +static inline void get_page_ctor(struct page_ctor *ctor)
-> +{
-> +       atomic_inc(&ctor->refcnt);
-> +}
-> +
-> +static inline void put_page_ctor(struct page_ctor *ctor)
-> +{
-> +	if (atomic_dec_and_test(&ctor->refcnt))
-> +		kfree(ctor);
+(Starting real work - file creation etc - now)
 
-Are you sure a RCU grace period is not needed before freeing ?
+Calling sync a minute later when Dirty > 200MB in /proc/meminfo:
+------------------------------------------------------------------------------
+   PerfTop:   28822 irqs/sec  kernel:22.2% [100000 cycles],  (all, 24 CPUs)
+------------------------------------------------------------------------------
+             samples    pcnt   kernel function
+             _______   _____   _______________
 
+            22952.00 - 14.9% : __lock_acquire
+             9142.00 -  5.9% : lock_release_holdtime
+             8881.00 -  5.8% : stick_get_tick
+             8375.00 -  5.4% : lock_release
+             7401.00 -  4.8% : lock_acquired
+             5522.00 -  3.6% : tl0_linux64
+             4325.00 -  2.8% : sched_clock
+             3634.00 -  2.4% : ext4_rec_len_from_disk
+             3600.00 -  2.3% : sched_clock_cpu
+             3261.00 -  2.1% : lock_acquire
+             3012.00 -  2.0% : NGcopy_to_user
+             2988.00 -  1.9% : ext4_check_dir_entry
+             2909.00 -  1.9% : getnstimeofday
+             2010.00 -  1.3% : __delay
+             1915.00 -  1.2% : cpu_clock
 
-> +
-> +static int page_ctor_detach(struct mp_struct *mp)
-> +{
-> +	struct page_ctor *ctor;
-> +	struct page_info *info;
-> +	int i;
-> +
-> +	rcu_read_lock();
-> +	ctor = rcu_dereference(mp->ctor);
-> +	rcu_read_unlock();
+Stopping all write processes so that sync can complete:
 
-Strange locking again here
+------------------------------------------------------------------------------
+   PerfTop:    2679 irqs/sec  kernel:92.6% [100000 cycles],  (all, 24 CPUs)
+------------------------------------------------------------------------------
+             samples    pcnt   kernel function
+             _______   _____   _______________
 
+             6102.00 - 19.7% : __lock_acquire
+             2504.00 -  8.1% : lock_release_holdtime
+             2346.00 -  7.6% : lock_release
+             1685.00 -  5.5% : stick_get_tick
+             1532.00 -  5.0% : lock_acquired
+             1135.00 -  3.7% : sched_clock
+             1068.00 -  3.5% : find_busiest_group
+             1034.00 -  3.3% : sched_clock_cpu
+             1023.00 -  3.3% : tl0_linux64
+              832.00 -  2.7% : lock_acquire
+              658.00 -  2.1% : fget_light
+              656.00 -  2.1% : perf_poll
+              629.00 -  2.0% : journal_clean_one_cp_list
+              572.00 -  1.9% : find_next_bit
+              525.00 -  1.7% : getnstimeofday
+------------------------------------------------------------------------------
+   PerfTop:    3182 irqs/sec  kernel:90.5% [100000 cycles],  (all, 24 CPUs)
+------------------------------------------------------------------------------
+             samples    pcnt   kernel function
+             _______   _____   _______________
 
-> +
-> +	if (!ctor)
-> +		return -ENODEV;
-> +
-> +	while ((info = info_dequeue(ctor))) {
-> +		for (i = 0; i < info->pnum; i++)
-> +			if (info->pages[i])
-> +				put_page(info->pages[i]);
-> +		kmem_cache_free(ctor->cache, info);
-> +	}
-> +	kmem_cache_destroy(ctor->cache);
-> +	netdev_page_ctor_detach(ctor->dev);
-> +	dev_put(ctor->dev);
-> +
-> +	/* locked by mp_mutex */
-> +	rcu_assign_pointer(mp->ctor, NULL);
-> +	synchronize_rcu();
-> +
-> +	put_page_ctor(ctor);
-> +
-> +	return 0;
-> +}
-> +
-> +/* For small user space buffers transmit, we don't need to call
-> + * get_user_pages().
-> + */
-> +static struct page_info *alloc_small_page_info(struct page_ctor *ctor,
-> +		int total)
-> +{
-> +	struct page_info *info = kmem_cache_alloc(ctor->cache, GFP_KERNEL);
-kmem_cache_zalloc() ?
-> +
-> +	if (!info)
-> +		return NULL;
-> +	memset(info, 0, sizeof(struct page_info));
-> +	memset(info->pages, 0, sizeof(info->pages));
+             9076.00 - 19.9% : __lock_acquire
+             3702.00 -  8.1% : lock_release_holdtime
+             3420.00 -  7.5% : lock_release
+             2522.00 -  5.5% : stick_get_tick
+             2198.00 -  4.8% : lock_acquired
+             1700.00 -  3.7% : sched_clock
+             1539.00 -  3.4% : find_busiest_group
+             1507.00 -  3.3% : sched_clock_cpu
+             1402.00 -  3.1% : tl0_linux64
+             1277.00 -  2.8% : lock_acquire
+             1089.00 -  2.4% : journal_clean_one_cp_list
+             1085.00 -  2.4% : fget_light
+             1004.00 -  2.2% : perf_poll
+              860.00 -  1.9% : do_sys_poll
+              782.00 -  1.7% : find_next_bit
 
-redundant memset() whole structure already cleared one line above
-
-> +
-> +	info->header = 0;
-already cleared
-> +	info->total = total;
-> +	info->skb = NULL;
-already cleared 
-> 
-> +	info->user.dtor = page_dtor;
-> +	info->ctor = ctor;
-> +	info->flags = INFO_WRITE;
-> +	info->pnum = 0;
-already cleared 
-> 
-> +	return info;
-> +}
-> +
-> +/* The main function to transform the guest user space address
-> + * to host kernel address via get_user_pages(). Thus the hardware
-> + * can do DMA directly to the user space address.
-> + */
-> +static struct page_info *alloc_page_info(struct page_ctor *ctor,
-> +			struct iovec *iov, int count, struct frag *frags,
-> +			int npages, int total)
-> +{
-> +	int rc;
-> +	int i, j, n = 0;
-> +	int len;
-> +	unsigned long base;
-> +	struct page_info *info = kmem_cache_alloc(ctor->cache, GFP_KERNEL);
-kmem_cache_zalloc() ? 
-> 
-> +
-> +	if (!info)
-> +		return NULL;
-> +	memset(info, 0, sizeof(struct page_info));
-kmem_cache_zalloc() ?
-> +	memset(info->pages, 0, sizeof(info->pages));
-already cleared 
-> 
-> +
-> +	down_read(&current->mm->mmap_sem);
-> +	for (i = j = 0; i < count; i++) {
-> +		base = (unsigned long)iov[i].iov_base;
-> +		len = iov[i].iov_len;
-> +
-> +		if (!len)
-> +			continue;
-> +		n = ((base & ~PAGE_MASK) + len + ~PAGE_MASK) >> PAGE_SHIFT;
-> +
-> +		rc = get_user_pages(current, current->mm, base, n,
-> +				npages ? 1 : 0, 0, &info->pages[j], NULL);
-> +		if (rc != n) {
-> +			up_read(&current->mm->mmap_sem);
-> +			goto failed;
-> +		}
-> +
-> +		while (n--) {
-> +			frags[j].offset = base & ~PAGE_MASK;
-> +			frags[j].size = min_t(int, len,
-> +					PAGE_SIZE - frags[j].offset);
-> +			len -= frags[j].size;
-> +			base += frags[j].size;
-> +			j++;
-> +		}
-> +	}
-> +	up_read(&current->mm->mmap_sem);
-> +
-> +#ifdef CONFIG_HIGHMEM
-> +	if (npages && !(dev->features & NETIF_F_HIGHDMA)) {
-> +		for (i = 0; i < j; i++) {
-> +			if (PageHighMem(info->pages[i]))
-> +				goto failed;
-> +		}
-> +	}
-> +#endif
-> +
-> +	info->header = 0;
-> +	info->total = total;
-> +	info->skb = NULL;
-> +	info->user.dtor = page_dtor;
-> +	info->ctor = ctor;
-> +	info->pnum = j;
-> +
-> +	if (!npages)
-> +		info->flags = INFO_WRITE;
-> +	if (info->flags == INFO_READ) {
-> +		info->user.start = (u8 *)(((unsigned long)
-> +				(pfn_to_kaddr(page_to_pfn(info->pages[0]))) +
-> +				frags[0].offset) - NET_IP_ALIGN - NET_SKB_PAD);
-> +		info->user.size = iov[0].iov_len + NET_IP_ALIGN + NET_SKB_PAD;
-> +	}
-> +	return info;
-> +
-> +failed:
-> +	for (i = 0; i < j; i++)
-> +		put_page(info->pages[i]);
-> +
-> +	kmem_cache_free(ctor->cache, info);
-> +
-> +	return NULL;
-> +}
-> +
-> +struct page_ctor *mp_rcu_get_ctor(struct page_ctor *ctor)
-> +{
-> +	struct page_ctor *_ctor = NULL;
-> +
-> +	rcu_read_lock();
-> +	_ctor = rcu_dereference(ctor);
-> +	rcu_read_unlock();
-strange locking. After rcu_read_unlock() you have no guarantee _ctor
-points to something not freed.
-> +
-> +	if (!_ctor) {
-> +		DBG(KERN_INFO "Device %s cannot do mediate passthru.\n",
-> +				ctor->dev->name);
-> +		return NULL;
-> +	}
-> +	if (_ctor)
-redundant test
-> +		get_page_ctor(_ctor);
-> +	return _ctor;
-> +}
-> +
-
-I stopped my review at this point. Please check your RCU usages. It is
-not sufficient to hold rcu read lock just to fetch the pointer, you also
-must hold the lock while using the object itself, or get a reference on
-object before release RCU lock, to make sure object wont disappear under
-you...
-
-for example :
-
-rcu_read_lock();
-ptr = rcu_dereference(...);
-if (ptr)
-	atomic_inc(&ptr->refcnt);
-rcu_read_unlock();
+There's that journal_clean_one_cp_list thing ..
 
 
+I have a gut feeling that sys_sync just waits until all data has been
+flushed. That however won't fly, because there's always new dirty data
+arriving when the box is not idle.
+
+Of course I am not calling /bin/sync on purpose, but some software
+packages do; rrdtool for example has an autoconf runtime
+check for fsync(2), so it's inevitable that sync is called at some
+point by something.
 
 
+I also did
 
+# perf top -a -k vmlinux-... -p $(that pid of jbd2-sda6)
+------------------------------------------------------------------------------
+   PerfTop:     105 irqs/sec  kernel:100.0% [100000 cycles],  (target_pid: 574)
+------------------------------------------------------------------------------
+             samples    pcnt   kernel function
+             _______   _____   _______________
 
+               42.00 - 12.8% : journal_clean_one_cp_list
+               34.00 - 10.4% : __lock_acquire
+               33.00 - 10.1% : __jbd2_journal_clean_checkpoint_list
+               28.00 -  8.5% : find_busiest_group
+               20.00 -  6.1% : clear_bit
+               16.00 -  4.9% : lock_release
+               16.00 -  4.9% : stick_get_tick
+               14.00 -  4.3% : test_and_set_bit
+               13.00 -  4.0% : lock_release_holdtime
+               12.00 -  3.7% : lock_acquired
+                9.00 -  2.7% : find_next_bit
+                7.00 -  2.1% : lock_acquire
+                7.00 -  2.1% : jbd2_journal_write_revoke_records
+                6.00 -  1.8% : jbd2_journal_switch_revoke_table
+                6.00 -  1.8% : cpu_clock
