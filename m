@@ -1,213 +1,68 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756493Ab0BJTNE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 14:13:04 -0500
-Received: from www.tglx.de ([62.245.132.106]:48949 "EHLO www.tglx.de"
+	id S1755987Ab0BJTNA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 14:13:00 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:55569 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751031Ab0BJTM7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 14:12:59 -0500
-Date: Wed, 10 Feb 2010 20:12:42 +0100
-From: "Hans J. Koch" <hjk@linutronix.de>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Ben Nizette <bn@niasdigital.com>
-Subject: [PATCH] UIO: Remove SMX Cryptengine driver
-Message-ID: <20100210191241.GD2946@local>
+	id S1755741Ab0BJTM6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Feb 2010 14:12:58 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@redhat.com>
+X-Fcc: ~/Mail/linus
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>, hjl.tools@gmail.com
+Subject: Re: [patch v2 4/4] ptrace: Add support for generic
+	PTRACE_GETREGSET/PTRACE_SETREGSET
+In-Reply-To: Oleg Nesterov's message of  Wednesday, 10 February 2010 14:18:26 +0100 <20100210131826.GA21196@redhat.com>
+References: <20100209201309.902050211@sbs-t61.sc.intel.com>
+	<20100209202502.406177090@sbs-t61.sc.intel.com>
+	<20100210131826.GA21196@redhat.com>
+X-Shopping-List: (1) Indecent inundated protrusions
+   (2) Serious chain commendations
+   (3) Stagnant welt dogs
+   (4) Abrupt friction
+Message-Id: <20100210191240.DC9E4CC@magilla.sf.frob.com>
+Date: Wed, 10 Feb 2010 11:12:40 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ben Nizette, the author of this driver, told me in a private mail that this
-project has been cancelled. He suggested to remove the driver for now, and
-will come back with a new version should the hardware really exist.
-This patch completely removes the driver.
+> +static int ptrace_regset(struct task_struct *task, int req, unsigned int type,
+> +			struct iovec *uiov)
+			       	     ^__user
+> +{
+> +	const struct user_regset_view *view = task_user_regset_view(task);
+> +	const struct user_regset *regset = find_regset(view, type);
+> +	struct iovec kiov;
+> +
+> +	if (!regset)
+> +		return -EIO;
+> +
+> +	if (copy_from_user(&kiov, uiov, sizeof kiov))
+> +		return -EFAULT;
 
-Signed-off-by: Hans J. Koch <hjk@linutronix.de>
----
- drivers/uio/Kconfig   |   11 ---
- drivers/uio/Makefile  |    1 
- drivers/uio/uio_smx.c |  140 --------------------------------------------------
- 3 files changed, 152 deletions(-)
+Since it's just two words, most places handling struct iovec seem to just
+use two get_user() calls, which is probably more efficient.
 
-Index: linux-2.6.33-rc/drivers/uio/uio_smx.c
-===================================================================
---- linux-2.6.33-rc.orig/drivers/uio/uio_smx.c	2010-02-10 20:01:20.000000000 +0100
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,140 +0,0 @@
--/*
-- * UIO SMX Cryptengine driver.
-- *
-- * (C) 2008 Nias Digital P/L <bn@niasdigital.com>
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License version 2 as
-- * published by the Free Software Foundation.
-- *
-- */
--
--#include <linux/device.h>
--#include <linux/module.h>
--#include <linux/platform_device.h>
--#include <linux/uio_driver.h>
--#include <linux/io.h>
--
--#define DRV_NAME "smx-ce"
--#define DRV_VERSION "0.03"
--
--#define SMX_CSR  0x00000000
--#define SMX_EnD  0x00000001
--#define SMX_RUN  0x00000002
--#define SMX_DRDY 0x00000004
--#define SMX_ERR  0x00000008
--
--static irqreturn_t smx_handler(int irq, struct uio_info *dev_info)
--{
--	void __iomem *csr = dev_info->mem[0].internal_addr + SMX_CSR;
--
--	u32 status = ioread32(csr);
--
--	if (!(status & SMX_DRDY))
--		return IRQ_NONE;
--
--	/* Disable interrupt */
--	iowrite32(status & ~SMX_DRDY, csr);
--	return IRQ_HANDLED;
--}
--
--static int __devinit smx_ce_probe(struct platform_device *dev)
--{
--
--	int ret = -ENODEV;
--	struct uio_info *info;
--	struct resource *regs;
--
--	info = kzalloc(sizeof(struct uio_info), GFP_KERNEL);
--	if (!info)
--		return -ENOMEM;
--
--	regs = platform_get_resource(dev, IORESOURCE_MEM, 0);
--	if (!regs) {
--		dev_err(&dev->dev, "No memory resource specified\n");
--		goto out_free;
--	}
--
--	info->mem[0].addr = regs->start;
--	if (!info->mem[0].addr) {
--		dev_err(&dev->dev, "Invalid memory resource\n");
--		goto out_free;
--	}
--
--	info->mem[0].size = regs->end - regs->start + 1;
--	info->mem[0].internal_addr = ioremap(regs->start, info->mem[0].size);
--
--	if (!info->mem[0].internal_addr) {
--		dev_err(&dev->dev, "Can't remap memory address range\n");
--		goto out_free;
--	}
--
--	info->mem[0].memtype = UIO_MEM_PHYS;
--
--	info->name = "smx-ce";
--	info->version = "0.03";
--
--	info->irq = platform_get_irq(dev, 0);
--	if (info->irq < 0) {
--		ret = info->irq;
--		dev_err(&dev->dev, "No (or invalid) IRQ resource specified\n");
--		goto out_unmap;
--	}
--
--	info->irq_flags = IRQF_SHARED;
--	info->handler = smx_handler;
--
--	platform_set_drvdata(dev, info);
--
--	ret = uio_register_device(&dev->dev, info);
--
--	if (ret)
--		goto out_unmap;
--
--	return 0;
--
--out_unmap:
--	iounmap(info->mem[0].internal_addr);
--out_free:
--	kfree(info);
--
--	return ret;
--}
--
--static int __devexit smx_ce_remove(struct platform_device *dev)
--{
--	struct uio_info *info = platform_get_drvdata(dev);
--
--	uio_unregister_device(info);
--	platform_set_drvdata(dev, NULL);
--	iounmap(info->mem[0].internal_addr);
--
--	kfree(info);
--
--	return 0;
--}
--
--static struct platform_driver smx_ce_driver = {
--	.probe		= smx_ce_probe,
--	.remove		= __devexit_p(smx_ce_remove),
--	.driver		= {
--		.name	= DRV_NAME,
--		.owner	= THIS_MODULE,
--	},
--};
--
--static int __init smx_ce_init_module(void)
--{
--	return platform_driver_register(&smx_ce_driver);
--}
--module_init(smx_ce_init_module);
--
--static void __exit smx_ce_exit_module(void)
--{
--	platform_driver_unregister(&smx_ce_driver);
--}
--module_exit(smx_ce_exit_module);
--
--MODULE_LICENSE("GPL v2");
--MODULE_VERSION(DRV_VERSION);
--MODULE_AUTHOR("Ben Nizette <bn@niasdigital.com>");
-Index: linux-2.6.33-rc/drivers/uio/Kconfig
-===================================================================
---- linux-2.6.33-rc.orig/drivers/uio/Kconfig	2010-02-10 20:01:00.000000000 +0100
-+++ linux-2.6.33-rc/drivers/uio/Kconfig	2010-02-10 20:02:35.000000000 +0100
-@@ -44,17 +44,6 @@
- 
- 	  If you don't know what to do here, say N.
- 
--config UIO_SMX
--	tristate "SMX cryptengine UIO interface"
--	help
--	  Userspace IO interface to the Cryptography engine found on the
--	  Nias Digital SMX boards.  These will be available from Q4 2008
--	  from http://www.niasdigital.com.  The userspace part of this
--	  driver will be released under the GPL at the same time as the
--	  hardware and will be able to be downloaded from the same site.
--
--	  If you compile this as a module, it will be called uio_smx.
--
- config UIO_AEC
- 	tristate "AEC video timestamp device"
- 	depends on PCI
-Index: linux-2.6.33-rc/drivers/uio/Makefile
-===================================================================
---- linux-2.6.33-rc.orig/drivers/uio/Makefile	2010-02-10 20:01:06.000000000 +0100
-+++ linux-2.6.33-rc/drivers/uio/Makefile	2010-02-10 20:02:54.000000000 +0100
-@@ -2,7 +2,6 @@
- obj-$(CONFIG_UIO_CIF)	+= uio_cif.o
- obj-$(CONFIG_UIO_PDRV)	+= uio_pdrv.o
- obj-$(CONFIG_UIO_PDRV_GENIRQ)	+= uio_pdrv_genirq.o
--obj-$(CONFIG_UIO_SMX)	+= uio_smx.o
- obj-$(CONFIG_UIO_AEC)	+= uio_aec.o
- obj-$(CONFIG_UIO_SERCOS3)	+= uio_sercos3.o
- obj-$(CONFIG_UIO_PCI_GENERIC)	+= uio_pci_generic.o
+Also, here is where this function would need to be split in half for
+compat_ptrace_request() calls where it has to use struct compat_iovec.
+
+> +	// I am not sure. Afaics it is OK to pass the
+> +	// size which is less than n * size. If iov_len
+> +	// is bigger, we can silently truncate it, or
+> +	// even write the correct value back.
+
+Modifying iov_len to report how much we accessed seems good to me.  If we
+do that, we should certainly allow a larger size for get, so userland can
+just use a generic large buffer before even knowing the real size.  I'm not
+sure whether we should allow a smaller size, especially for set.  I could
+go either way.
+
+
+Thanks,
+Roland
