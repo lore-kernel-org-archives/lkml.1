@@ -1,54 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753737Ab0BJKYZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 05:24:25 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:47460 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752464Ab0BJKYX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 05:24:23 -0500
-Date: Wed, 10 Feb 2010 10:24:22 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Evgeniy Polyakov <zbr@ioremap.net>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [WTF] ... is going on with current->fs->{root,mnt} accesses in
- pohmelfs
-Message-ID: <20100210102422.GM30031@ZenIV.linux.org.uk>
-References: <20100210100428.GL30031@ZenIV.linux.org.uk>
- <20100210101246.GA3509@ioremap.net>
+	id S1753781Ab0BJKdD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 05:33:03 -0500
+Received: from hera.kernel.org ([140.211.167.34]:36437 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752204Ab0BJKdA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Feb 2010 05:33:00 -0500
+Message-ID: <4B728CFE.40208@kernel.org>
+Date: Wed, 10 Feb 2010 19:39:58 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100210101246.GA3509@ioremap.net>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: =?UTF-8?B?QW3DqXJpY28gV2FuZw==?= <xiyou.wangcong@gmail.com>,
+       Neil Brown <neilb@suse.de>, Greg Kroah-Hartman <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sysfs: differentiate between locking links and non-links
+References: <19314.1869.847327.15190@notabene.brown>	<2375c9f91002091808n713275dsc9ace8f51871364e@mail.gmail.com>	<4B7217CF.2080702@kernel.org> <m1vde57c11.fsf@fess.ebiederm.org>
+In-Reply-To: <m1vde57c11.fsf@fess.ebiederm.org>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 10 Feb 2010 10:32:54 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 10, 2010 at 01:12:46PM +0300, Evgeniy Polyakov wrote:
-> On Wed, Feb 10, 2010 at 10:04:28AM +0000, Al Viro (viro@ZenIV.linux.org.uk) wrote:
-> > a) pohmelfs_construct_path_string() will do interesting things if you
-> > call it while chrooted into jail and pohmelfs mounted deeper in that
-> > jail.  Try it.
+On 02/10/2010 05:03 PM, Eric W. Biederman wrote:
+> Tejun Heo <tj@kernel.org> writes:
 > 
-> Should it walk upto mountpoint?
-
-It will happily give you path from absolute root to root of chroot jail +
-path from fs root to your dentry.  Which is probably not what you want.
- 
-> > b) just why do we care about root of chroot jail in pohmelfs_path_length()?
-> > Not to mention anything else, current->fs->root/mnt may be changed under
-> > you if you share current->fs with another thread, but even aside of that,
-> > why does filesystem care about chroot of caller at all?
-> > 
-> > What's going on there?
+>> Hello,
+>>
+>> On 02/10/2010 11:08 AM, Américo Wang wrote:
+>>> This bug report is new for me. Recently we received lots of sysfs lockdep
+>>> warnings, I am working on a patch to fix all the bogus ones.
+>>>
+>>> However, this one is _not_ similar to the other cases, as you decribed.
+>>> This patch could fix the problem, but not a good fix, IMO. We need more
+>>> work in sysfs layer to fix this kind of things. I will take care of this.
+>>
+>> Can't we just give each s_active lock a separate class?  Would that be
+>> too costly?
 > 
-> It tries to construct a full path upto mountpoint. Effectively it should
-> do similar to non-exported dentry_path() things. There is a race between
-> getting buffer size and filling with the actual path, but we take care
-> about that by restarting if needed.
+> When I asked the question earlier I was told that that locking classes
+> require static storage.  Where would that static storage come from?
 
-To mountpoint or to fs root?  And what's going on with d_find_alias()?
-AFAICS, you are doing that for regular files as well as directories,
-and you do support link(2) in there, so dentry (and path) obtained from
-that will be random.
+Maybe I'm glossly misunderstanding it but wouldn't embedding struct
+lockdep_map into sysfs_node as in work_struct do the trick?
+
+Thanks.
+
+-- 
+tejun
