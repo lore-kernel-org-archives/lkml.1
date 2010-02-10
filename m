@@ -1,24 +1,30 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755456Ab0BJQOY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 11:14:24 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:42984 "EHLO
+	id S1755144Ab0BJQRe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 11:17:34 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:51253 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755171Ab0BJQOX (ORCPT
+	with ESMTP id S1753699Ab0BJQRd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 11:14:23 -0500
-Subject: Re: [PATCH]  perf_events: AMD event scheduling (v3)
+	Wed, 10 Feb 2010 11:17:33 -0500
+Subject: Re: [perfmon2] [PATCH] perf_events: AMD event scheduling (v3)
 From: Peter Zijlstra <peterz@infradead.org>
-To: Robert Richter <robert.richter@amd.com>
-Cc: eranian@google.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       paulus@samba.org, davem@davemloft.net, fweisbec@gmail.com,
-       perfmon2-devel@lists.sf.net, eranian@gmail.com
-In-Reply-To: <20100210160958.GK24679@erda.amd.com>
+To: Stephane Eranian <eranian@google.com>
+Cc: "Drongowski, Paul" <paul.drongowski@amd.com>, eranian@gmail.com,
+       perfmon2-devel@lists.sf.net, fweisbec@gmail.com,
+       linux-kernel@vger.kernel.org, paulus@samba.org, mingo@elte.hu,
+       davem@davemloft.net
+In-Reply-To: <bd4cb8901002100807y7b142f02ofb8cecb507ddf681@mail.gmail.com>
 References: <4b703957.0702d00a.6bf2.7b7d@mx.google.com>
-	 <1265803166.11509.286.camel@laptop>  <20100210160958.GK24679@erda.amd.com>
+	 <1265803166.11509.286.camel@laptop>
+	 <bd4cb8901002100504i8e716e8ob845f692e031726f@mail.gmail.com>
+	 <1265807830.11509.295.camel@laptop> <1265808501.11509.300.camel@laptop>
+	 <7c86c4471002100558s1a744ae7h6b3837c786e03704@mail.gmail.com>
+	 <6096959DEF5C9447A6BF80BDC7EB9EDC14913E8B@SBOSEXMB1.amd.com>
+	 <bd4cb8901002100807y7b142f02ofb8cecb507ddf681@mail.gmail.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 10 Feb 2010 17:14:01 +0100
-Message-ID: <1265818441.11509.305.camel@laptop>
+Date: Wed, 10 Feb 2010 17:17:17 +0100
+Message-ID: <1265818637.11509.309.camel@laptop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
@@ -26,39 +32,14 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-02-10 at 17:09 +0100, Robert Richter wrote:
-> On 10.02.10 12:59:26, Peter Zijlstra wrote:
-> > On Mon, 2010-02-08 at 17:17 +0200, Stephane Eranian wrote:
-> > >         This patch adds correct AMD Northbridge event scheduling.
-> > >         It must be applied on top tip-x86 + hw_perf_enable() fix.
-> > > 
-> > >         NB events are events measuring L3 cache, Hypertransport
-> > >         traffic. They are identified by an event code  >= 0xe0.
-> > >         They measure events on the Northbride which is shared
-> > >         by all cores on a package. NB events are counted on a
-> > >         shared set of counters. When a NB event is programmed
-> > >         in a counter, the data actually comes from a shared
-> > >         counter. Thus, access to those counters needs to be
-> > >         synchronized.
-> > > 
-> > >         We implement the synchronization such that no two cores
-> > >         can be measuring NB events using the same counters. Thus,
-> > >         we maintain a per-NB * allocation table. The available slot
-> > >         is propagated using the event_constraint structure.
-> > > 
-> > >         The 2nd version takes into account the changes on how
-> > >         constraints are stored by the scheduling code.
-> > > 
-> > >         The 3rd version fixes formatting issues, code readability
-> > >         and one bug in amd_put_event_constraints().
-> > > 
-> > >         Signed-off-by: Stephane Eranian <eranian@google.com>
-> > 
-> > OK, took this with the below merged in.
+On Wed, 2010-02-10 at 17:07 +0100, Stephane Eranian wrote:
 > 
-> Peter,
-> 
-> will this go to tip/perf/core? Or is there another tree?
+> static inline int amd_is_nb_event(struct hw_perf_event *hwc)
+> {
+>    return (hwc->config >> 5) & 0x7 == 0x7;
+> }
 
-Currently my quilt queue, should end up in tip/perf/core in a day or so.
+return (hwc->config & 0xe0) == 0xe0;
+
+Changed it, thanks guys!
 
