@@ -1,170 +1,86 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755241Ab0BJDnP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 22:43:15 -0500
-Received: from hera.kernel.org ([140.211.167.34]:33108 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753371Ab0BJDnN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Feb 2010 22:43:13 -0500
-Message-ID: <4B722B0C.4070604@kernel.org>
-Date: Tue, 09 Feb 2010 19:42:04 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	id S1755353Ab0BJDox (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 22:44:53 -0500
+Received: from mail-ww0-f46.google.com ([74.125.82.46]:61161 "EHLO
+	mail-ww0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755070Ab0BJDow (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Feb 2010 22:44:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=H45Q7HwWaJEy9KvNaRcaRWJG/dZk/QkWda/qLXKRnLJj7avQCUXT0wxNj7KIAZjbHY
+         AWcp0K0/QWhNBhF8bvQu/qINicGIsaEbYwc02BXO4k31KLyeRYBcgFwj/ZI3AqAmSXRw
+         tUQvvwfulKwxhrLrkfKPPfIwZg/DbMb/RBL7s=
 MIME-Version: 1.0
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-CC: "mingo@redhat.com" <mingo@redhat.com>, "hpa@zytor.com" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "stable@kernel.org" <stable@kernel.org>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "Zheng, Shaohui" <shaohui.zheng@intel.com>,
-       "linux-tip-commits@vger.kernel.org" 
-	<linux-tip-commits@vger.kernel.org>
-Subject: Re: [tip:x86/urgent] x86, apic: Don't use logical-flat mode when
- CPU hotplug may exceed 8 CPUs
-References: <20100118201256.672679042@sbs-t61.sc.intel.com>	 <tip-418f727639cfc8f03068aae09f473c493c759b9b@git.kernel.org>	 <4B71ADB3.5010303@kernel.org> <1265767304.2833.19.camel@sbs-t61.sc.intel.com>
-In-Reply-To: <1265767304.2833.19.camel@sbs-t61.sc.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Date: Wed, 10 Feb 2010 03:44:50 +0000
+Message-ID: <600adaf51002091944t25a36090s5cb002098c201fc6@mail.gmail.com>
+Subject: [RFC][PATCH] Allow change timing values to wait slow devices bring up 
+	before try register an interface to IP-Config
+From: Tiago Maluta <tiago.maluta@gmail.com>
+To: linux-net@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: multipart/mixed; boundary=0016e6d6444145911b047f36dbf4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/09/2010 06:01 PM, Suresh Siddha wrote:
-> On Tue, 2010-02-09 at 10:47 -0800, Yinghai Lu wrote:
->>>  #ifdef CONFIG_X86_32
->>> -	if (num_processors > 8) {
->>> +	if (num_possible_cpus() > 8) {
->>
->> for 32bit you can not use this function yet.
->> that only can be used after prefill_possible_map()
-> 
-> Yinghai, Agreed. How about the appended patch? I tested and it works.
-> Peter wants a small quick fix for this issue (to resolve the boot issue
-> reported in the virtualization guest context) so that we can queue it
-> for .33 and .32 kernels (as some distributions will be based on these
-> kernels).
-> 
-> Can you please Ack if it is ok?
-> 
-> thanks,
-> suresh
-> ---
-> 
-> From: Suresh Siddha <suresh.b.siddha@intel.com>
-> Subject: x86, apic: Don't use logical-flat mode when CPU hotplug may exceed 8 CPUs
-> 
-> We need to fall back from logical-flat APIC mode to physical-flat mode
-> when we have more than 8 CPUs.  However, in the presence of CPU
-> hotplug(with bios listing not enabled but possible cpus as disabled cpus in
-> MADT), we have to consider the number of possible CPUs rather than
-> the number of current CPUs; otherwise we may cross the 8-CPU boundary
-> when CPUs are added later.
-> 
-> 32bit apic code can use more cleanups (like the removal of vendor checks in
-> 32bit default_setup_apic_routing()) and more unifications with 64bit code.
-> Yinghai has some patches in works already. This patch addresses the boot issue
-> that is reported in the virtualization guest context.
-> 
-> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-> Acked-by: Shaohui Zheng <shaohui.zheng@intel.com>
-> Cc: <stable@kernel.org>
-> ---
-> 
-> diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-> index 036d28a..0acbcdf 100644
-> --- a/arch/x86/kernel/acpi/boot.c
-> +++ b/arch/x86/kernel/acpi/boot.c
-> @@ -1185,9 +1185,6 @@ static void __init acpi_process_madt(void)
->  		if (!error) {
->  			acpi_lapic = 1;
->  
-> -#ifdef CONFIG_X86_BIGSMP
-> -			generic_bigsmp_probe();
-> -#endif
->  			/*
->  			 * Parse MADT IO-APIC entries
->  			 */
-> @@ -1197,8 +1194,6 @@ static void __init acpi_process_madt(void)
->  				acpi_ioapic = 1;
->  
->  				smp_found_config = 1;
-> -				if (apic->setup_apic_routing)
-> -					apic->setup_apic_routing();
->  			}
->  		}
->  		if (error == -EINVAL) {
-> diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
-> index a85f216..6e29b2a 100644
-> --- a/arch/x86/kernel/apic/apic.c
-> +++ b/arch/x86/kernel/apic/apic.c
-> @@ -1641,9 +1641,7 @@ int __init APIC_init_uniprocessor(void)
->  #endif
->  
->  	enable_IR_x2apic();
-> -#ifdef CONFIG_X86_64
->  	default_setup_apic_routing();
-> -#endif
->  
->  	verify_local_APIC();
->  	connect_bsp_APIC();
-> @@ -1891,21 +1889,6 @@ void __cpuinit generic_processor_info(int apicid, int version)
->  	if (apicid > max_physical_apicid)
->  		max_physical_apicid = apicid;
->  
-> -#ifdef CONFIG_X86_32
-> -	if (num_processors > 8) {
-> -		switch (boot_cpu_data.x86_vendor) {
-> -		case X86_VENDOR_INTEL:
-> -			if (!APIC_XAPIC(version)) {
-> -				def_to_bigsmp = 0;
-> -				break;
-> -			}
-> -			/* If P4 and above fall through */
-> -		case X86_VENDOR_AMD:
-> -			def_to_bigsmp = 1;
-> -		}
-> -	}
-> -#endif
-> -
->  #if defined(CONFIG_SMP) || defined(CONFIG_X86_64)
->  	early_per_cpu(x86_cpu_to_apicid, cpu) = apicid;
->  	early_per_cpu(x86_bios_cpu_apicid, cpu) = apicid;
-> diff --git a/arch/x86/kernel/apic/probe_32.c b/arch/x86/kernel/apic/probe_32.c
-> index 1a6559f..88e78ae 100644
-> --- a/arch/x86/kernel/apic/probe_32.c
-> +++ b/arch/x86/kernel/apic/probe_32.c
-> @@ -54,6 +54,31 @@ late_initcall(print_ipi_mode);
->  
->  void default_setup_apic_routing(void)
+--0016e6d6444145911b047f36dbf4
+Content-Type: text/plain; charset=ISO-8859-1
 
-__init
+I had some problems with 'slow' net devices when ic_open_devs() try to
+search for interfaces before they are registered. The solution was
+change some timing values. I propose this patch to allow user change
+this on menuconfig.
 
->  {
-> +	int version = apic_version[boot_cpu_physical_apicid];
-> +
-> +	if (num_possible_cpus() > 8) {
-> +		switch (boot_cpu_data.x86_vendor) {
-> +		case X86_VENDOR_INTEL:
-> +			if (!APIC_XAPIC(version)) {
-> +				def_to_bigsmp = 0;
-> +				break;
-> +			}
-> +			/* If P4 and above fall through */
-> +		case X86_VENDOR_AMD:
-> +			def_to_bigsmp = 1;
-> +		}
-> +	}
-> +
-> +#ifdef CONFIG_X86_BIGSMP
-> +	generic_bigsmp_probe();
-> +#endif
-> +
-> +	if (apic->setup_apic_routing)
-> +		apic->setup_apic_routing();
-> +}
-> +
-> +void setup_apic_flat_routing(void)
+--tm
 
-static?
+--0016e6d6444145911b047f36dbf4
+Content-Type: application/octet-stream; 
+	name="0001-Allow-change-timing-values-to-wait-slow-devices-brin.patch"
+Content-Disposition: attachment; 
+	filename="0001-Allow-change-timing-values-to-wait-slow-devices-brin.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_g5hkkix80
 
-YH
+RnJvbSBlNDE0MDAwZWVkMWE5NTFiZjAzZjEyNWY1MzA3YmMxZWRmZmNlY2YxIE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpGcm9tOiBUaWFnbyBNYWx1dGEgPG1hbHV0YUB1bmlmZWkuZWR1LmJyPgpE
+YXRlOiBXZWQsIDEwIEZlYiAyMDEwIDAzOjM0OjQ5ICswMDAwClN1YmplY3Q6IFtSRkNdW1BBVENI
+XSBBbGxvdyBjaGFuZ2UgdGltaW5nIHZhbHVlcyB0byB3YWl0IHNsb3cgZGV2aWNlcyBicmluZyB1
+cCBiZWZvcmUgdHJ5IHJlZ2lzdGVyIGFuIGludGVyZmFjZQogdG8gSVAtQ29uZmlnICh1c2VkIG9u
+IHNvbWUgZHJpdmVycyB1c2luZyBNdWx0aS1wdXJwb3NlIFVTQiBOZXR3b3JraW5nIEZyYW1ld29y
+aykKCgpTaWduZWQtb2ZmLWJ5OiBUaWFnbyBNYWx1dGEgPG1hbHV0YUB1bmlmZWkuZWR1LmJyPgot
+LS0KIGRyaXZlcnMvbmV0L0tjb25maWcgfCAgIDE4ICsrKysrKysrKysrKysrKysrKwogbmV0L2lw
+djQvaXBjb25maWcuYyB8ICAgIDQgKystLQogMiBmaWxlcyBjaGFuZ2VkLCAyMCBpbnNlcnRpb25z
+KCspLCAyIGRlbGV0aW9ucygtKQoKZGlmZiAtLWdpdCBhL2RyaXZlcnMvbmV0L0tjb25maWcgYi9k
+cml2ZXJzL25ldC9LY29uZmlnCmluZGV4IGRkOWEwOWMuLjEyZmJlNGEgMTAwNjQ0Ci0tLSBhL2Ry
+aXZlcnMvbmV0L0tjb25maWcKKysrIGIvZHJpdmVycy9uZXQvS2NvbmZpZwpAQCAtMzgsNiArMzgs
+MjQgQEAgY29uZmlnIElGQgogCSAgJ2lmYjEnIGV0Yy4KIAkgIExvb2sgYXQgdGhlIGlwcm91dGUy
+IGRvY3VtZW50YXRpb24gZGlyZWN0b3J5IGZvciB1c2FnZSBldGMKIAorY29uZmlnIE5FVERFVklD
+RVNfREVMQVlfUFJFX09QRU4KKwlpbnQgIkRlZmluZSB0aGUgZGVsYXkgYmVmb3JlIG9wZW5pbmcg
+bmV0IGRldmljZXMgKG1zKSIKKwlkZXBlbmRzIG9uIE5FVERFVklDRVMKKwlkZWZhdWx0IDUwMAor
+CWhlbHAKKwkgICAgU29tZSBkZXZpY2VzIG1heSBub3Qgd29yayBwcm9wZXJseSBkdWUgdG8gYSBk
+ZWxheSBmcm9tIGhhcmR3YXJlIGJyaW5nCisJICAgIHRoZSBpbnRlcmZhY2UgdXAuIFRoaXMgdmFs
+dWUgYWRkIGEgZGVsYXksIGluIG1paWxsaXNlY29uZHMsIGJlZm9yZQorCSAgICBrZXJuZWwgc2Vh
+cmNoIGFuZCByZWdpc3RlciB0aGUgaW50ZXJmYWNlLiBEZWZhdWx0IHZhbHVlIGlzIDUwMG1zLgor
+Citjb25maWcgTkVUREVWSUNFU19ERUxBWV9QT1NUX09QRU4KKwlpbnQgIkRlZmluZSB0aGUgZGVs
+YXkgYWZ0ZXIgb3BlbmluZyBuZXQgZGV2aWNlcyAocykiCisJZGVwZW5kcyBvbiBORVRERVZJQ0VT
+CisJZGVmYXVsdCAxCisJaGVscAorCSAgICBTb21lIGRldmljZXMgbWF5IG5vdCB3b3JrIHByb3Bl
+cmx5IGR1ZSB0byBhIGRlbGF5IGZyb20gaGFyZHdhcmUgYnJpbmcKKwkgICAgdGhlIGludGVyZmFj
+ZSB1cC4gVGhpcyB2YWx1ZSBhZGQgYSBkZWxheSwgaW4gc2Vjb25kcywgYWZ0ZXIKKwkgICAga2Vy
+bmVsIHNlYXJjaCBhbmQgcmVnaXN0ZXIgdGhlIGludGVyZmFjZS4gRGVmYXVsdCB2YWx1ZSBpcyAx
+cy4KKwogY29uZmlnIERVTU1ZCiAJdHJpc3RhdGUgIkR1bW15IG5ldCBkcml2ZXIgc3VwcG9ydCIK
+IAktLS1oZWxwLS0tCmRpZmYgLS1naXQgYS9uZXQvaXB2NC9pcGNvbmZpZy5jIGIvbmV0L2lwdjQv
+aXBjb25maWcuYwppbmRleCAxMGE2YTYwLi4yNTMwMTI2IDEwMDY0NAotLS0gYS9uZXQvaXB2NC9p
+cGNvbmZpZy5jCisrKyBiL25ldC9pcHY0L2lwY29uZmlnLmMKQEAgLTg2LDggKzg2LDggQEAKICNl
+bmRpZgogCiAvKiBEZWZpbmUgdGhlIGZyaWVuZGx5IGRlbGF5IGJlZm9yZSBhbmQgYWZ0ZXIgb3Bl
+bmluZyBuZXQgZGV2aWNlcyAqLwotI2RlZmluZSBDT05GX1BSRV9PUEVOCQk1MDAJLyogQmVmb3Jl
+IG9wZW5pbmc6IDEvMiBzZWNvbmQgKi8KLSNkZWZpbmUgQ09ORl9QT1NUX09QRU4JCTEJLyogQWZ0
+ZXIgb3BlbmluZzogMSBzZWNvbmQgKi8KKyNkZWZpbmUgQ09ORl9QUkVfT1BFTgkJQ09ORklHX05F
+VERFVklDRVNfREVMQVlfUFJFX09QRU4JLyogQmVmb3JlIG9wZW5pbmcuIERlZmF1bHQgaXMgMS8y
+IHNlY29uZCAqLworI2RlZmluZSBDT05GX1BPU1RfT1BFTgkJQ09ORklHX05FVERFVklDRVNfREVM
+QVlfUE9TVF9PUEVOCS8qIEFmdGVyIG9wZW5pbmcuIERlZmF1bHQgaXMgMSBzZWNvbmQgKi8KIAog
+LyogRGVmaW5lIHRoZSB0aW1lb3V0IGZvciB3YWl0aW5nIGZvciBhIERIQ1AvQk9PVFAvUkFSUCBy
+ZXBseSAqLwogI2RlZmluZSBDT05GX09QRU5fUkVUUklFUyAJMgkvKiAoUmUpb3BlbiBkZXZpY2Vz
+IHR3aWNlICovCi0tIAoxLjYuNC4yCgo=
+--0016e6d6444145911b047f36dbf4--
