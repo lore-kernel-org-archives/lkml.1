@@ -1,79 +1,88 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754943Ab0BJKEw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 05:04:52 -0500
-Received: from mail-ew0-f228.google.com ([209.85.219.228]:51466 "EHLO
-	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754843Ab0BJKEu (ORCPT
+	id S1755051Ab0BJKF5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 05:05:57 -0500
+Received: from mail-fx0-f220.google.com ([209.85.220.220]:46920 "EHLO
+	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754267Ab0BJKFz convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 05:04:50 -0500
+	Wed, 10 Feb 2010 05:05:55 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=qJT1FhQr3htm8J63/g0KZPJUzLy2nti/aQRTckOlDkO8H/NwPx4gBAHBrecwZzHlwq
-         lg5p4xPyJ9Of1wmaKAeveqeaUYyLG94vsUL4qrdFLw6mFFfLeX2nGyIDA6tdZBqejij/
-         wR+wsOqk7zRq1x7nJo7SYoLqYZE5FpAF2EVqk=
-Date: Wed, 10 Feb 2010 11:04:43 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Paul Mackerras <paulus@samba.org>,
-       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
-       Li Zefan <lizf@cn.fujitsu.com>, Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH 02/11] tracing: Introduce TRACE_EVENT_INJECT
-Message-ID: <20100210100440.GA5035@nowhere>
-References: <1265188475-23509-1-git-send-regression-fweisbec@gmail.com> <1265188475-23509-3-git-send-regression-fweisbec@gmail.com> <1265381266.24386.32.camel@gandalf.stny.rr.com> <1265381604.22001.682.camel@laptop> <1265382452.24386.38.camel@gandalf.stny.rr.com> <20100206122004.GF5062@nowhere> <1265462370.4561.12179.camel@frodo>
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=Nf0BTT/+D8sWxI9gvW5xGlM/r3Vhb/bSuMhFlrw2rdptnaUuulSu43kguAMcOxFAJw
+         KTS5i6ziwmX8YCPdGKEei5oEk374aCrdD174P5D9vW3r8WGgET7WZbGPcoN8WWrnVsFV
+         kG8lZbzLd9uMC4nvENIJD5tscySP1IVs2IJ1Y=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1265462370.4561.12179.camel@frodo>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <4B71FACB.9040504@kernel.org>
+References: <1265743966-17065-1-git-send-email-yinghai@kernel.org>
+	 <1265743966-17065-29-git-send-email-yinghai@kernel.org>
+	 <20100209114916.ba38f57f.akpm@linux-foundation.org>
+	 <84144f021002091156q5cbf6adcj3c1d86b00a6e5285@mail.gmail.com>
+	 <4B71FACB.9040504@kernel.org>
+Date: Wed, 10 Feb 2010 12:05:53 +0200
+X-Google-Sender-Auth: ef04cfb65c926ee5
+Message-ID: <84144f021002100205v7968a342lb315296eccefb523@mail.gmail.com>
+Subject: Re: [PATCH 28/35] radix: move radix init early
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 06, 2010 at 08:19:30AM -0500, Steven Rostedt wrote:
-> On Sat, 2010-02-06 at 13:20 +0100, Frederic Weisbecker wrote:
-> 
-> > I agree with you that creating a new trace event macro is a bit
-> > insane. ftrace.h is already a nightmare. I just thought that
-> > having the injector set inside the same macro that the synchronous
-> > event is defined helped to make it clear about its nature: that
-> > it needs a secondary async catch up thing.
-> > 
-> > But a register_event_injector thing will work too, we probably
-> > better want that, given the maintainance pain otherwise.
-> 
-> We can add a register_event_injector later. For now, why not just add
-> the TRACE_EVENT() and then hook to it in perf using the normal
-> tracepoint mechanism.
-> 
-> You could add some macro around the trace_init_lock_class() call that
-> would facilitate finding all the locks you need. This would probably be
-> a bit more straight forward than to overload TRACE_EVENT() again.
+On Wed, Feb 10, 2010 at 2:16 AM, Yinghai Lu <yinghai@kernel.org> wrote:
+> On 02/09/2010 11:56 AM, Pekka Enberg wrote:
+>> On Tue, Feb 9, 2010 at 9:49 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
+>>> On Tue, 09 Feb 2010 11:32:39 -0800
+>>> Yinghai Lu <yinghai@kernel.org> wrote:
+>>>
+>>>> prepare to use it in early_irq_init()
+>>>>
+>>>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+>>>> ---
+>>>>  init/main.c |    2 +-
+>>>>  1 files changed, 1 insertions(+), 1 deletions(-)
+>>>>
+>>>> diff --git a/init/main.c b/init/main.c
+>>>> index 4cb47a1..8451878 100644
+>>>> --- a/init/main.c
+>>>> +++ b/init/main.c
+>>>> @@ -584,6 +584,7 @@ asmlinkage void __init start_kernel(void)
+>>>>               local_irq_disable();
+>>>>       }
+>>>>       rcu_init();
+>>>> +     radix_tree_init();
+>>>>       /* init some links before init_ISA_irqs() */
+>>>>       early_irq_init();
+>>>>       init_IRQ();
+>>>> @@ -657,7 +658,6 @@ asmlinkage void __init start_kernel(void)
+>>>>       proc_caches_init();
+>>>>       buffer_init();
+>>>>       key_init();
+>>>> -     radix_tree_init();
+>>>>       security_init();
+>>>>       vfs_caches_init(totalram_pages);
+>>>>       signals_init();
+>>>
+>>> Probably OK.  Note that radix_tree_init() uses slab, and it is now being
+>>> called before the kernel has run kmem_cache_init_late().  So please
+>>> ensure that this code was tested with CONFIG_SLAB=y.
+>>
+>> That should be fine but yeah, definitely needs to be tested.
+>
+> tested with x86 bit with CONFIG_SLAB=y, and it works.
 
-
-
-I'm not sure what you mean by that.
-
-
- 
-> > 
-> > I really would like to make something useful for everyone, could
-> > you tell me more about johill needs?
-> 
-> Well, basically he needed a way to cause polling to happen using an
-> event. From what I understood, the polling called the trace point. Just
-> enabling the trace point did nothing because the polling did not take
-> place. I thought about ways to enable this command when the trace point
-> was enabled. But in the end, it was specific to a driver and another
-> debugfs file seemed a better fit to initiate it.
-
-
-Ok, thanks.
-
+OK, great. Would be good to have some coverage on other architectures
+as well. PPC was one of the archs that blew up last time we changed
+init order.
