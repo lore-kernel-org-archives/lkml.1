@@ -1,68 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756252Ab0BJUev (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 15:34:51 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60831
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756173Ab0BJUes (ORCPT
+	id S1756293Ab0BJUhi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 15:37:38 -0500
+Received: from wolverine02.qualcomm.com ([199.106.114.251]:61548 "EHLO
+	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753403Ab0BJUhf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 15:34:48 -0500
-Date: Wed, 10 Feb 2010 12:35:03 -0800 (PST)
-Message-Id: <20100210.123503.129355851.davem@davemloft.net>
-To: linville@tuxdriver.com
-Cc: johannes@sipsolutions.net, linux-wireless@vger.kernel.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, mb@bu3sch.de
-Subject: Re: pull request: wireless-2.6 2010-02-10
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20100210203227.GD3286@tuxdriver.com>
-References: <20100210201953.GC3286@tuxdriver.com>
-	<20100210.122540.149553948.davem@davemloft.net>
-	<20100210203227.GD3286@tuxdriver.com>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 10 Feb 2010 15:37:35 -0500
+X-IronPort-AV: E=McAfee;i="5400,1158,5888"; a="33877069"
+From: adharmap@codeaurora.org
+To: linux-arm-kernel@lists.infradead.org
+Cc: linux-arm-msm@vger.kernel.org, Russell King <linux@arm.linux.org.uk>,
+       linux-kernel@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>,
+       Abhijeet Dharmapurikar <adharmap@quicinc.com>
+Subject: [RFC 0/2] fix dma_map_sg not to do barriers for each buffer
+Date: Wed, 10 Feb 2010 12:37:28 -0800
+Message-Id: <1265834250-29170-1-git-send-email-adharmap@codeaurora.org>
+X-Mailer: git-send-email 1.5.6.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "John W. Linville" <linville@tuxdriver.com>
-Date: Wed, 10 Feb 2010 15:32:28 -0500
+From: Abhijeet Dharmapurikar <adharmap@quicinc.com>
 
-> On Wed, Feb 10, 2010 at 12:25:40PM -0800, David Miller wrote:
->> From: "John W. Linville" <linville@tuxdriver.com>
->> Date: Wed, 10 Feb 2010 15:19:54 -0500
->> 
->> > On Wed, Feb 10, 2010 at 11:36:58AM -0800, David Miller wrote:
->> >> From: Johannes Berg <johannes@sipsolutions.net>
->> >> Date: Wed, 10 Feb 2010 20:15:37 +0100
->> >> 
->> >> > It was intentional -- that sdev doesn't even have an irq member, but
->> >> > nobody ever noticed because of the wrong ifdef.
->> >> 
->> >> Ok, then this needs to be explained in the commit message.
->> > 
->> > OK...mind if I just revert the current version and ask Michael to
->> > resubmit with an appropriate changelog entry?
->> 
->> Have you pulled this tree into others already?  Why not
->> just pop out the commit and fix it's commit message, then
->> reapply?
->> 
->> Having the revert commit in there is really stupid just for this.
-> 
-> I have it pulled into wireless-next-2.6 to fix a merge conflict (from
-> a latter commit).  It is also pulled into wireless-testing but that
-> is obviously less of an issue.
+Please refer to the post here
+http://lkml.org/lkml/2010/1/4/347
 
-Ok, forget this, I'll just pull it in as-is.
+These changes are to introduce barrierless dma_map_area and dma_unmap_area and
+use them to map the buffers in the scatterlist. For the last buffer, call
+the normal dma_map_area(aka with barriers) effectively executing the barrier
+at the end of the operation.
 
-But we have to have a better system to handle cases where I
-don't like a change you're asking me to pull in and I want
-changes made to it.
+Note that the barrierless operations are implemented for few arm
+architectures only and I would implement for others once these are okayed by the
+community.
 
-If you want to push stuff into wireless-next-2.6, get it into
-my tree first.  That way we can tidy things up before it
-propagates.
+Abhijeet Dharmapurikar (2):
+  dma: define barrierless versions of map and unmap area
+  dma: fix scatter-gather api to use barrierless map/unmap functions
 
-Thanks.
+ arch/arm/include/asm/cacheflush.h  |    9 +++
+ arch/arm/include/asm/dma-mapping.h |   82 +++++++++++++++++++++
+ arch/arm/mm/cache-v3.S             |    6 ++
+ arch/arm/mm/cache-v4.S             |    6 ++
+ arch/arm/mm/cache-v4wb.S           |   94 +++++++++++++++++-------
+ arch/arm/mm/cache-v4wt.S           |    6 ++
+ arch/arm/mm/cache-v6.S             |  139 +++++++++++++++++++++++++----------
+ arch/arm/mm/cache-v7.S             |  120 +++++++++++++++++++++++--------
+ arch/arm/mm/dma-mapping.c          |   55 +++++++++++++--
+ 9 files changed, 414 insertions(+), 103 deletions(-)
+
