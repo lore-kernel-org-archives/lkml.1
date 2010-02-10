@@ -1,102 +1,76 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754939Ab0BJPkK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 10:40:10 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:53229 "EHLO mx2.suse.de"
+	id S1755000Ab0BJPpQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 10:45:16 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:8720 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754245Ab0BJPkJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 10:40:09 -0500
-From: Thomas Renninger <trenn@suse.de>
-Organization: SUSE Products GmbH
-To: Haicheng Li <haicheng.li@linux.intel.com>
-Subject: Re: [PATCH] x86, acpi: map hotadded cpu to correct node.
-Date: Wed, 10 Feb 2010 16:40:01 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.32.1-0.0.14.f17927a-desktop; KDE/4.3.1; x86_64; ; )
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, Andi Kleen <andi@firstfloor.org>,
-       Suresh.b.siddha@intel.com, lenb@kernel.org,
-       "Zheng, Shaohui" <shaohui.zheng@intel.com>,
-       linux-kernel@vger.kernel.org, "Chen, Gong" <gong.chen@intel.com>,
-       "Lv, Jane" <jane.lv@intel.com>, "Li, Haicheng" <haicheng.li@intel.com>
-References: <C8EDE645B81E5141A8C6B2F73FD9265117C58A3504@shzsmsx501.ccr.corp.intel.com> <4B6AAA39.6000300@linux.intel.com> <4B6F7B66.5060404@linux.intel.com>
-In-Reply-To: <4B6F7B66.5060404@linux.intel.com>
+	id S1753306Ab0BJPpO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Feb 2010 10:45:14 -0500
+Date: Wed, 10 Feb 2010 16:43:33 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: Roland McGrath <roland@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>, hjl.tools@gmail.com
+Subject: Re: [patch v2 2/4] x86, ptrace: regset extensions to support xstate
+Message-ID: <20100210154333.GB26654@redhat.com>
+References: <20100209201309.902050211@sbs-t61.sc.intel.com> <20100209202502.216592031@sbs-t61.sc.intel.com> <20100210112822.GB4546@redhat.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201002101640.01997.trenn@suse.de>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100210112822.GB4546@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 08 February 2010 03:48:06 Haicheng Li wrote:
-> hello,
-> 
-> any comments on this patch? in fact, it's a straightforward bug fix: with existing
-> CPU hotadd code, new added CPUs won't be mapped to its own node. especially for hotadding
-> a new node with CPU and MEM, new added memories can be mapped to this new node, but new added
-> CPUs are always mapped to old nodes. This patch is to fix this obvious bug. thanks.
-> 
-I can confirm that this patch works as expected:
-Tested-by: Thomas Renninger <trenn@suse.de>
-
-While the cores previously showed up on the wrong, already existing
-node, they are now added to the correct one.
-
-Be aware that there seem to be other issues (Andi posted some
-slab memory hot plug fixes recently).
-
-Find one "nit pick" below:
-
-> -haicheng
-> 
-> Haicheng Li wrote:
-> > x86: map hotadded cpu to correct node.
-> > 
-> > When hotadd new cpu to system, if its affinitive node is online, should 
-> > map the cpu to its own node. otherwise, let kernel select one online 
-> > node for the new cpu later.
-> > 
-> > Signed-off-by: Haicheng Li <haicheng.li@linux.intel.com>
-> > ---
-> >  arch/x86/kernel/acpi/boot.c |   21 +++++++++++++++++++++
-> >  1 files changed, 21 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-> > index 67e929b..92a4861 100644
-> > --- a/arch/x86/kernel/acpi/boot.c
-> > +++ b/arch/x86/kernel/acpi/boot.c
-> > @@ -49,6 +49,7 @@ EXPORT_SYMBOL(acpi_disabled);
-> > 
-> >  #ifdef    CONFIG_X86_64
-> >  # include <asm/proto.h>
-> > +# include <asm/numa_64.h>
-> >  #endif                /* X86 */
-> > 
-> >  #define BAD_MADT_ENTRY(entry, end) (                        \
-> > @@ -482,6 +483,25 @@ int acpi_register_gsi(struct device *dev, u32 gsi, 
-> > int trigger, int polarity)
-> >   */
-> >  #ifdef CONFIG_ACPI_HOTPLUG_CPU
-> > 
-> > +static void acpi_map_cpu2node(acpi_handle handle, int cpu, int physid)
+On 02/10, Oleg Nesterov wrote:
+>
+> On 02/09, Suresh Siddha wrote:
+> >
+> > +int xstateregs_get(struct task_struct *target, const struct user_regset *regset,
+> > +		unsigned int pos, unsigned int count,
+> > +		void *kbuf, void __user *ubuf)
 > > +{
-> > +#ifdef CONFIG_ACPI_NUMA
-> > +    int nid;
+> > +	int ret;
+> > +	int size = regset->n * regset->size;
+> > +	struct xsave_hdr_struct *xsave_hdr =
+> > +				&target->thread.xstate->xsave.xsave_hdr;
 > > +
-> > +    nid = acpi_get_node(handle);
-> > +    if (!node_online(nid))
-if (nid == -1 || !node_online(nid))
-would avoid passing an invalid param to node_online(..)
-node_online() probably already can handle this...
-A maintainer eventually could fiddle this into the patch/line
-without the need of re-posting.
+> > +	if (!cpu_has_xsave)
+> > +		return -ENODEV;
+> > +
+> > +	ret = init_fpu(target);
+> > +	if (ret)
+> > +		return ret;
+> > +
+> > +	/*
+> > +	 * First copy the fxsave bytes 0..463
+> > +	 */
+> > +	ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
+> > +				  &target->thread.xstate->xsave, 0,
+> > +				  offsetof(struct i387_fxsave_struct,
+> > +					   sw_reserved));
+> > +	if (!ret)
+> > +		/*
+> > +		 * Copy the 48bytes defined by software
+> > +		 */
+> > +		ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
+> > +					  xstate_fx_sw_bytes,
+> > +					  offsetof(struct i387_fxsave_struct,
+> > +						   sw_reserved),
+> > +					  offsetof(struct xsave_struct,
+> > +						   xsave_hdr));
+>
+> Hmm. Suresh, could you confirm these offsetof's are correct?
+>
+> We are copying xstate_fx_sw_bytes array which is u64[6], but
+> start_pos == sizeof(i387_fxsave_struct) - padding ?
 
-I am not that familiar with numa node handling, but went the code and
-spec up and down a bit. Also assigning a node no. is rather straight
-forward, thus I can give this a:
-Reviewed-by: Thomas Renninger <trenn@suse.de>
+Sorry for noise. Now I see this should be correct, see another email I sent.
 
-Thanks,
+In fact, unless I missed something again, the 2nd and 3rd _copyout's could
+use pos as start_pos instead of offsetof(what_we_already_copied).
 
-   Thomas
+Oleg.
+
