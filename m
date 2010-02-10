@@ -1,96 +1,155 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756260Ab0BJSfk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 13:35:40 -0500
-Received: from mga01.intel.com ([192.55.52.88]:26656 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755080Ab0BJSfg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 13:35:36 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,445,1262592000"; 
-   d="scan'208";a="539597329"
-Date: Wed, 10 Feb 2010 10:35:31 -0800
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: lenb@kernel.org
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       alex.shi@intel.com, ming.m.lin@intel.com
-Subject: [PATCH] acpi: Be in TS_POLLING state during mwait based C-state entry
-Message-ID: <20100210183530.GA5426@linux-os.sc.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
+	id S1756333Ab0BJSiM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 13:38:12 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:7744 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755389Ab0BJSiJ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Feb 2010 13:38:09 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=caASFbOvCA4cWrMylw5+lRg7qt0cfYJBN8CJHAGJvrMq8RrdYsc+rZaNO6baf+Dgn
+	1LkkIl+jD5zb7mzIXcKFQ==
+MIME-Version: 1.0
+In-Reply-To: <20100210133556.GA21925@redhat.com>
+References: <20100208221632.A7D6F9B33B@bumblebee1.mtv.corp.google.com>
+	 <20100208143231.6d804590.akpm@linux-foundation.org>
+	 <20100209112700.GA4258@redhat.com> <20100210133556.GA21925@redhat.com>
+Date: Wed, 10 Feb 2010 10:38:05 -0800
+Message-ID: <4352991a1002101038s6a2e67d9mc373416c17de9e6a@mail.gmail.com>
+Subject: Re: Race in ptrace.
+From: Salman Qazi <sqazi@google.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: taviso@google.com, Roland Dreier <rolandd@cisco.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[+tavis]
 
-ACPI deep C-state entry had a long standing bug/missing feature, wherein we were sending
-resched IPIs when an idle CPU is in mwait based deep C-state. Only mwait based C1 was using
-the write to the monitored address to wake up mwait'ing CPU.
+Sorry for the delayed response.  I was out sick yesterday.  I have
+made a simpler version of tavis's test case:
 
-This patch changes the code to retain TS_POLLING bit if we are entering an mwait based
-deep C-state.
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <signal.h>
+#include <sched.h>
+#include <errno.h>
+#include <sys/ptrace.h>
+#include <assert.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
-The patch has been verified to reduce the number of resched IPIs in general and also
-improves the performance/power on workloads with low system utilization (i.e., when mwait based
-deep C-states are being used).
+int child_pid;
+int ant_pid;
 
-Reported-by: Lin Ming <ming.m.lin@intel.com>
-Tested-by: Alex Shi <alex.shi@intel.com>
+void child(void)
+{
+        ptrace(PTRACE_TRACEME, 0, NULL, NULL);
+        asm("int3");
+        while(1);
+}
 
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+void antagonist(void)
+{
+        while (1) {
+                kill(child_pid, SIGSTOP);
+                usleep(2);
+                kill(child_pid, SIGCONT);
+                usleep(2);
+        }
+}
 
----
- drivers/acpi/processor_idle.c |   28 ++++++++++++++++------------
- 1 files changed, 16 insertions(+), 12 deletions(-)
+int do_fork(void (*callback)(void))
+{
+        int pid;
+        pid = fork();
+        if (pid)
+                return pid;
+        callback();
 
-diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
-index 7c0441f..8abe91a 100644
---- a/drivers/acpi/processor_idle.c
-+++ b/drivers/acpi/processor_idle.c
-@@ -872,12 +872,14 @@ static int acpi_idle_enter_simple(struct cpuidle_device *dev,
- 		return(acpi_idle_enter_c1(dev, state));
- 
- 	local_irq_disable();
--	current_thread_info()->status &= ~TS_POLLING;
--	/*
--	 * TS_POLLING-cleared state must be visible before we test
--	 * NEED_RESCHED:
--	 */
--	smp_mb();
-+	if (cx->entry_method != ACPI_CSTATE_FFH) {
-+		current_thread_info()->status &= ~TS_POLLING;
-+		/*
-+		 * TS_POLLING-cleared state must be visible before we test
-+		 * NEED_RESCHED:
-+		 */
-+		smp_mb();
-+	}
- 
- 	if (unlikely(need_resched())) {
- 		current_thread_info()->status |= TS_POLLING;
-@@ -957,12 +959,14 @@ static int acpi_idle_enter_bm(struct cpuidle_device *dev,
- 	}
- 
- 	local_irq_disable();
--	current_thread_info()->status &= ~TS_POLLING;
--	/*
--	 * TS_POLLING-cleared state must be visible before we test
--	 * NEED_RESCHED:
--	 */
--	smp_mb();
-+	if (cx->entry_method != ACPI_CSTATE_FFH) {
-+		current_thread_info()->status &= ~TS_POLLING;
-+		/*
-+		 * TS_POLLING-cleared state must be visible before we test
-+		 * NEED_RESCHED:
-+		 */
-+		smp_mb();
-+	}
- 
- 	if (unlikely(need_resched())) {
- 		current_thread_info()->status |= TS_POLLING;
--- 
-1.6.0.6
+        exit(EXIT_SUCCESS);
+}
 
+int main(int argc, char **argv)
+{
+        int status;
+        assert((child_pid = do_fork(child)) > 0);
+        assert((ant_pid = do_fork(antagonist)) > 0);
+        waitpid(child_pid, &status, 0);
+        ptrace(PTRACE_SYSCALL, child_pid, NULL, NULL);
+        while(1) {
+                if (waitpid(child_pid, &status, 0) <= 0) {
+                        printf("Errno %d\n", errno);
+                        exit(EXIT_FAILURE);
+                }
+                if (WIFSTOPPED(status)) {
+                        printf("stopped: %d\n", WSTOPSIG(status));
+
+                        /* This should work, but sometimes it doesn't */
+                        if (ptrace(PTRACE_SYSCALL, child_pid,
+                                                NULL, WSTOPSIG(status)) < 0) {
+                                /* Oddly it works the second time! */
+                                assert (ptrace(PTRACE_SYSCALL,
+                                        child_pid, NULL, WSTOPSIG(status)) < 0);
+                        }
+                }
+        }
+}
+
+
+On Wed, Feb 10, 2010 at 5:35 AM, Oleg Nesterov <oleg@redhat.com> wrote:
+> On 02/09, Oleg Nesterov wrote:
+>>
+>> Salman Qazi wrote:
+>> >
+>> > A race in ptrace was pointed to us by a fellow Google engineer, Tavis
+>> > Ormandy.  The race involves interaction between a tracer, a tracee and
+>> > an antagonist.  The tracer is tracing the tracee with PTRACE_SYSCALL and
+>> > waits on the tracee.  In the mean time, an antagonist blasts the tracee
+>> > with SIGCONTs.
+>>
+>> Could you please explain how did observe this race? Do you have a
+>> test-case, or could you explain how we can reproduce it?
+>>
+>> Because,
+>>
+>> > It turns out that a SIGCONT wakes up the
+>> > tracee in kernel mode,
+>>
+>> SIGCONT must not wake up a TASK_TRACED task.
+>
+> In case I wasn't clear...
+>
+> --- a/kernel/signal.c
+> +++ b/kernel/signal.c
+> @@ -697,6 +697,10 @@ static int prepare_signal(int sig, struct task_struct *p, int from_ancestor_ns)
+>                 * and wake all threads.
+>                 */
+>                rm_from_queue(SIG_KERNEL_STOP_MASK, &signal->shared_pending);
+> +               if (p->ptrace & PT_PTRACED) {
+> +                       p->ptrace |= PT_WAKING;
+> +                       mb();
+> +               }
+>
+> Please note that we are going to do wake_up_state(state), and
+> this state can never have __TASK_TRACED bit set.
+>
+> And we can't change ->ptrace here, we can race with the tracer.
+>
+> There are other problems with this patch, but the main problem
+> is that I can't understand what this patch tries to fix.
+>
+> IOW, please provide more info ;)
+>
+> Oleg.
+>
+>
