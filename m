@@ -1,65 +1,80 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755425Ab0BJUSM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 15:18:12 -0500
-Received: from mail-yw0-f173.google.com ([209.85.211.173]:41867 "EHLO
-	mail-yw0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753911Ab0BJUSK convert rfc822-to-8bit (ORCPT
+	id S1755768Ab0BJUS7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 15:18:59 -0500
+Received: from e39.co.us.ibm.com ([32.97.110.160]:50342 "EHLO
+	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755327Ab0BJUS5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 15:18:10 -0500
+	Wed, 10 Feb 2010 15:18:57 -0500
+Date: Wed, 10 Feb 2010 14:18:34 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, oleg@redhat.com,
+       linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com,
+       linux-security-module@vger.kernel.org
+Subject: Re: [PATCH] Update comment on find_task_by_pid_ns
+Message-ID: <20100210201834.GA23001@us.ibm.com>
+References: <alpine.LFD.2.00.0912102214180.3089@localhost.localdomain>
+ <201002082130.JDC57339.OHOVJFQtFSLFMO@I-love.SAKURA.ne.jp>
+ <20100208132101.GA7129@redhat.com>
+ <alpine.LFD.2.00.1002081802510.2811@localhost.localdomain>
+ <20100208171643.GA19230@redhat.com>
+ <201002090642.EBE48414.HLJVFOQFSOFOMt@I-love.SAKURA.ne.jp>
+ <20100209140818.43bb9770.akpm@linux-foundation.org>
+ <20100210163033.GA12251@us.ibm.com>
+ <20100210095710.c7b124f7.akpm@linux-foundation.org>
+ <alpine.LFD.2.00.1002101938000.2811@localhost.localdomain>
 MIME-Version: 1.0
-In-Reply-To: <20100210160234.673f32d1.sfr@canb.auug.org.au>
-References: <20100210160234.673f32d1.sfr@canb.auug.org.au>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Wed, 10 Feb 2010 13:17:49 -0700
-X-Google-Sender-Auth: 290e4fe2a86285de
-Message-ID: <fa686aa41002101217x135452cfud3ff750899be852d@mail.gmail.com>
-Subject: Re: linux-next: manual merge of the devicetree tree with the m68k 
-	tree
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Finn Thain <fthain@telegraphics.com.au>,
-       Geert Uytterhoeven <geert@linux-m68k.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.1002101938000.2811@localhost.localdomain>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 9, 2010 at 10:02 PM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> Hi Grant,
->
-> Today's linux-next merge of the devicetree tree got a conflict in
-> drivers/serial/pmac_zilog.c between commit
-> f0ccf0f0269dfe53ec3f1c58fe130a47b908b907 ("pmac-zilog: cleanup") from
-> the m68k tree and commit71a157e8edca55198e808f8561dd49017a54ee34  ("of: add
-> 'of_' prefix to machine_is_compatible()") from the devicetree tree.
->
-> The first removes a space ... I fixed it up (see below) and can carry the
-> fix as necessary.  (Grant, you could get rid of this by removing the
-> space between the tabs on the line "baud = 57600;".  Not a big issue,
-> though.)
+Quoting Thomas Gleixner (tglx@linutronix.de):
+> On Wed, 10 Feb 2010, Andrew Morton wrote:
+> > On Wed, 10 Feb 2010 10:30:33 -0600 "Serge E. Hallyn" <serue@us.ibm.com> wrote:
+> > 
+> > > Quoting Andrew Morton (akpm@linux-foundation.org):
+> > > > On Tue, 9 Feb 2010 06:42:45 +0900
+> > > > Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp> wrote:
+> > > > 
+> > > > > OK. I updated description.
+> > > > > 
+> > > > > As of 2.6.32 , below users are missing rcu_read_lock().
+> > > > > 
+> > > > > Users missing rcu_read_lock() when calling find_task_by_vpid():
+> > > > > 
+> > > > >   SYSCALL_DEFINE3(ioprio_set) in fs/ioprio.c
+> > > > >   SYSCALL_DEFINE2(ioprio_get) in fs/ioprio.c
+> > > > >   cap_get_target_pid() in kernel/capability.c
+> > > > 
+> > > > Actually, cap_get_target_pid() uses rcu_read_lock() and doesn't take
+> > > > tasklist_lock.
+> > > 
+> > > Hmm - is that in -mm?  In my copy here it takes read_lock(&tasklist_lock)
+> > 
+> > yup.  It got changed in linux-next.
+> > 
+> > > And I'll admit I'm a bit confused as to the current state of things:
+> > > do I understand correctly that we now need to take both the tasklist_lock
+> > > and rcu_read_lock?  (Presumably only for read_lock()?)
+> > 
+> > Beats me.  We need to protect both the pid->task_struct lookup data
+> > structures (during the lookup) and protect the resulting task_struct
+> > while the caller is playing with it.  It's unclear whether
+> > rcu_read_lock() suffices for both purposes.
+> 
+> The rcu_read_lock section is sufficient. task_struct can not go away
+> before the rcu_read_unlock()
 
-Removing the space didn't help.  git still complains about a conflict
-on merge if I remove the space.  Probably because both branches show a
-diff on the same area against the common base.
+But, more generally, it used to be the case that a spinlock (or
+rwlock) would imply an rcu read cycle, but now it no longer does,
+do I understand that right?
 
-What should be done here?  Should I merge Geert's 68k tree into my
-next-devicetree branch?  Or is there a better way to prepare for the
-merge window?
-
-> Also, there is a further patch in the m68k tree
-> (89d58f83cfce675a2054975cc2598ba1979816c7 "pmac-zilog: add platform
-> driver") that adds a define for machine_is_compatible.  I fixed that as
-> below as well.  Hmmm, this file should really include linux/of_fdt.h for
-> the definition of of_machine_is_compatible(), shouldn't it?  And then
-> maybe we could have a non OF version of the prototype/define in
-> of_fdt.h?  Just an idea.
-
-That sounds reasonable.
-
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+thanks,
+-serge
