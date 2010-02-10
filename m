@@ -1,51 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754610Ab0BJKxU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 05:53:20 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:53371 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753908Ab0BJKxT (ORCPT
+	id S1754028Ab0BJLAO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 06:00:14 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:40041 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752760Ab0BJLAM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 05:53:19 -0500
-Subject: Re: [RFC perf,x86] P4 PMU early draft
-From: Peter Zijlstra <peterz@infradead.org>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Stephane Eranian <eranian@google.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Don Zickus <dzickus@redhat.com>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <aa79d98a1002100238v256ca6daw5e00c8b6d8dc4bb6@mail.gmail.com>
-References: <20100208184504.GB5130@lenovo> <20100209041739.GA11280@elte.hu>
-	 <20100209223909.GE5068@lenovo> <1265796732.11509.260.camel@laptop>
-	 <aa79d98a1002100238v256ca6daw5e00c8b6d8dc4bb6@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 10 Feb 2010 11:52:55 +0100
-Message-ID: <1265799175.11509.271.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 10 Feb 2010 06:00:12 -0500
+Date: Wed, 10 Feb 2010 11:00:11 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Evgeniy Polyakov <zbr@ioremap.net>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [WTF] ... is going on with current->fs->{root,mnt} accesses in
+ pohmelfs
+Message-ID: <20100210110011.GN30031@ZenIV.linux.org.uk>
+References: <20100210100428.GL30031@ZenIV.linux.org.uk>
+ <20100210101246.GA3509@ioremap.net>
+ <20100210102422.GM30031@ZenIV.linux.org.uk>
+ <20100210104515.GA6207@ioremap.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100210104515.GA6207@ioremap.net>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-02-10 at 13:38 +0300, Cyrill Gorcunov wrote:
-> > I'd try BUG_ON(cpu != smp_processor_id()) and scrap passing that cpu
-> > thing around.
-> >
+On Wed, Feb 10, 2010 at 01:45:15PM +0300, Evgeniy Polyakov wrote:
+
+> > To mountpoint or to fs root?  And what's going on with d_find_alias()?
 > 
-> no, i need cpu to find out if event has migrated from other thread and
-> then i switch
-> some thread dependant flags in hw::config (ie escr and cccr), or i
-> miss something and events in one cpu just can't migrate to another
-> cpu? 
+> To root if it happend to be under mountpoint.
 
-Well, if we validate that cpu == smp_processor_id() (looking at
-kernel/perf_event.c that does indeed seem true for
-hw_perf_group_sched_in() -- which suggests we should simply remove that
-cpu argument), and that cpu will stay constant throughout the whole
-callchain (it does, its a local variable), we can remove it and
-substitute smp_processor_id(), right?
+HUH?  How the hell can root of filesystem be under the mountpoint of
+that filesystem?  What are you talking about?
 
-As to migration of the event, its tied to a task, we're now installing
-the event for a task it wouldn't make sense to allow that to be
-preemptible.
+> > AFAICS, you are doing that for regular files as well as directories,
+> > and you do support link(2) in there, so dentry (and path) obtained from
+> > that will be random.
+> 
+> Not exactly random, but can change.
+> Links support is rather subtle because of that, yes.
+> 
+> Plan was to add external attribute or increase inode size to include
+> parent name, but when I coded that it was so messy in respect of
+> renames, that was dropped.
 
+Why not use the dentries you've been given by VFS?
