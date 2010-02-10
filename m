@@ -1,266 +1,136 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755154Ab0BJBab (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 20:30:31 -0500
-Received: from mail-vw0-f46.google.com ([209.85.212.46]:34045 "EHLO
-	mail-vw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755122Ab0BJBa3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Feb 2010 20:30:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=xEX9sygzjzlTwpj0Uvhvji0DmstS2pR/KJIuC3AJvdp97SAGjjG3sdp5dym1h795N1
-         T0u/uyHruWnVKU3hDZeMjN0UoHALi+Xd2I/mtkJ5+2SAtgwe6J2+LX7iHT0vboYHmR2F
-         SEZ9xBq6zmzo2FlWkR1bV32TLKlmgcq6bP0e0=
-From: Richard Hartmann <richih.mailinglist@gmail.com>
-To: linux-crypto@vger.kernel.org
-Cc: Richard Hartmann <richih.mailinglist@gmail.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/1] CRYPTO: Fix checkpatch errors & warnings in cast6.c
-Date: Wed, 10 Feb 2010 02:29:53 +0100
-Message-Id: <1265765394-24647-1-git-send-email-richih.mailinglist@gmail.com>
-X-Mailer: git-send-email 1.6.6.1
+	id S1755176Ab0BJBav (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 20:30:51 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:43250 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755166Ab0BJBas (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Feb 2010 20:30:48 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+X-Fcc: ~/Mail/linus
+Cc: Oleg Nesterov <oleg@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>, hjl.tools@gmail.com
+Subject: Re: [patch v2 2/4] x86, ptrace: regset extensions to support xstate
+In-Reply-To: Suresh Siddha's message of  Tuesday, 9 February 2010 12:13:11 -0800 <20100209202502.216592031@sbs-t61.sc.intel.com>
+References: <20100209201309.902050211@sbs-t61.sc.intel.com>
+	<20100209202502.216592031@sbs-t61.sc.intel.com>
+X-Shopping-List: (1) Grievous fruit beef
+   (2) Mythical characteristic import rodents
+   (3) Detrimental dandelion will-o'-the-wisps
+   (4) Aquatic stone tables
+   (5) Asymmetrical destroyer welts
+Message-Id: <20100210013031.208FB73D8@magilla.sf.frob.com>
+Date: Tue,  9 Feb 2010 17:30:31 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Add the xstate regset support which helps extend the kernel ptrace and the
+> core-dump interfaces to support AVX state etc.
+> 
+> This regset interface is designed to support all the future state that gets
+> supported using xsave/xrstor infrastructure.
 
-Signed-off-by: Richard Hartmann <richih.mailinglist@gmail.com>
----
- crypto/cast6.c |  122 ++++++++++++++++++++++++++++---------------------------
- 1 files changed, 62 insertions(+), 60 deletions(-)
+Looks good modulo cosmetic nits below.
 
-diff --git a/crypto/cast6.c b/crypto/cast6.c
-index 007d02b..e0c15a6 100644
---- a/crypto/cast6.c
-+++ b/crypto/cast6.c
-@@ -11,7 +11,7 @@
-  * under the terms of GNU General Public License as published by the Free
-  * Software Foundation; either version 2 of the License, or (at your option)
-  * any later version.
-- * 
-+ *
-  * You should have received a copy of the GNU General Public License
-  * along with this program; if not, write to the Free Software
-  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
-@@ -35,12 +35,12 @@ struct cast6_ctx {
- 	u8 Kr[12][4];
- };
- 
--#define F1(D,r,m)  (  (I = ((m) + (D))), (I=rol32(I,(r))),   \
--    (((s1[I >> 24] ^ s2[(I>>16)&0xff]) - s3[(I>>8)&0xff]) + s4[I&0xff]) )
--#define F2(D,r,m)  (  (I = ((m) ^ (D))), (I=rol32(I,(r))),   \
--    (((s1[I >> 24] - s2[(I>>16)&0xff]) + s3[(I>>8)&0xff]) ^ s4[I&0xff]) )
--#define F3(D,r,m)  (  (I = ((m) - (D))), (I=rol32(I,(r))),   \
--    (((s1[I >> 24] + s2[(I>>16)&0xff]) ^ s3[(I>>8)&0xff]) - s4[I&0xff]) )
-+#define F1(D, r, m)  ((I = ((m) + (D))), (I = rol32(I, (r))),   \
-+    (((s1[I >> 24] ^ s2[(I>>16)&0xff]) - s3[(I>>8)&0xff]) + s4[I&0xff]))
-+#define F2(D, r, m)  ((I = ((m) ^ (D))), (I = rol32(I, (r))),   \
-+    (((s1[I >> 24] - s2[(I>>16)&0xff]) + s3[(I>>8)&0xff]) ^ s4[I&0xff]))
-+#define F3(D, r, m)  ((I = ((m) - (D))), (I = rol32(I, (r))),   \
-+    (((s1[I >> 24] + s2[(I>>16)&0xff]) ^ s3[(I>>8)&0xff]) - s4[I&0xff]))
- 
- static const u32 s1[256] = {
- 	0x30fb40d4, 0x9fa0ff0b, 0x6beccd2f, 0x3f258c7a, 0x1e213f2f,
-@@ -312,7 +312,7 @@ static const u32 s4[256] = {
- 
- static const u32 Tm[24][8] = {
- 	{ 0x5a827999, 0xc95c653a, 0x383650db, 0xa7103c7c, 0x15ea281d,
--		0x84c413be, 0xf39dff5f, 0x6277eb00 } , 
-+		0x84c413be, 0xf39dff5f, 0x6277eb00 } ,
- 	{ 0xd151d6a1, 0x402bc242, 0xaf05ade3, 0x1ddf9984, 0x8cb98525,
- 		0xfb9370c6, 0x6a6d5c67, 0xd9474808 } ,
- 	{ 0x482133a9, 0xb6fb1f4a, 0x25d50aeb, 0x94aef68c, 0x0388e22d,
-@@ -369,7 +369,8 @@ static const u8 Tr[4][8] = {
- };
- 
- /* forward octave */
--static void W(u32 *key, unsigned int i) {
-+static void W(u32 *key, unsigned int i)
-+{
- 	u32 I;
- 	key[6] ^= F1(key[7], Tr[i % 4][0], Tm[i][0]);
- 	key[5] ^= F2(key[6], Tr[i % 4][1], Tm[i][1]);
-@@ -377,7 +378,7 @@ static void W(u32 *key, unsigned int i) {
- 	key[3] ^= F1(key[4], Tr[i % 4][3], Tm[i][3]);
- 	key[2] ^= F2(key[3], Tr[i % 4][4], Tm[i][4]);
- 	key[1] ^= F3(key[2], Tr[i % 4][5], Tm[i][5]);
--	key[0] ^= F1(key[1], Tr[i % 4][6], Tm[i][6]);	
-+	key[0] ^= F1(key[1], Tr[i % 4][6], Tm[i][6]);
- 	key[7] ^= F2(key[0], Tr[i % 4][7], Tm[i][7]);
- }
- 
-@@ -393,11 +394,11 @@ static int cast6_setkey(struct crypto_tfm *tfm, const u8 *in_key,
- 	if (key_len % 4 != 0) {
- 		*flags |= CRYPTO_TFM_RES_BAD_KEY_LEN;
- 		return -EINVAL;
--	}	
-+	}
-+
-+	memset(p_key, 0, 32);
-+	memcpy(p_key, in_key, key_len);
- 
--	memset (p_key, 0, 32);
--	memcpy (p_key, in_key, key_len);
--	
- 	key[0] = be32_to_cpu(p_key[0]);		/* A */
- 	key[1] = be32_to_cpu(p_key[1]);		/* B */
- 	key[2] = be32_to_cpu(p_key[2]);		/* C */
-@@ -406,18 +407,16 @@ static int cast6_setkey(struct crypto_tfm *tfm, const u8 *in_key,
- 	key[5] = be32_to_cpu(p_key[5]);		/* F */
- 	key[6] = be32_to_cpu(p_key[6]);		/* G */
- 	key[7] = be32_to_cpu(p_key[7]);		/* H */
--	
--
- 
- 	for (i = 0; i < 12; i++) {
--		W (key, 2 * i);
--		W (key, 2 * i + 1);
--		
-+		W(key, 2 * i);
-+		W(key, 2 * i + 1);
-+
- 		c->Kr[i][0] = key[0] & 0x1f;
- 		c->Kr[i][1] = key[2] & 0x1f;
- 		c->Kr[i][2] = key[4] & 0x1f;
- 		c->Kr[i][3] = key[6] & 0x1f;
--		
-+
- 		c->Km[i][0] = key[7];
- 		c->Km[i][1] = key[5];
- 		c->Km[i][2] = key[3];
-@@ -428,21 +427,23 @@ static int cast6_setkey(struct crypto_tfm *tfm, const u8 *in_key,
- }
- 
- /*forward quad round*/
--static void Q (u32 * block, u8 * Kr, u32 * Km) {
-+static void Q(u32 *block, u8 *Kr, u32 *Km)
-+{
- 	u32 I;
- 	block[2] ^= F1(block[3], Kr[0], Km[0]);
- 	block[1] ^= F2(block[2], Kr[1], Km[1]);
- 	block[0] ^= F3(block[1], Kr[2], Km[2]);
--	block[3] ^= F1(block[0], Kr[3], Km[3]);		
-+	block[3] ^= F1(block[0], Kr[3], Km[3]);
- }
- 
- /*reverse quad round*/
--static void QBAR (u32 * block, u8 * Kr, u32 * Km) {
-+static void QBAR(u32 *block, u8 *Kr, u32 *Km)
-+{
- 	u32 I;
--        block[3] ^= F1(block[0], Kr[3], Km[3]);
--        block[0] ^= F3(block[1], Kr[2], Km[2]);
--        block[1] ^= F2(block[2], Kr[1], Km[1]);
--        block[2] ^= F1(block[3], Kr[0], Km[0]);
-+	block[3] ^= F1(block[0], Kr[3], Km[3]);
-+	block[0] ^= F3(block[1], Kr[2], Km[2]);
-+	block[1] ^= F2(block[2], Kr[1], Km[1]);
-+	block[2] ^= F1(block[3], Kr[0], Km[0]);
- }
- 
- static void cast6_encrypt(struct crypto_tfm *tfm, u8 *outbuf, const u8 *inbuf)
-@@ -451,64 +452,65 @@ static void cast6_encrypt(struct crypto_tfm *tfm, u8 *outbuf, const u8 *inbuf)
- 	const __be32 *src = (const __be32 *)inbuf;
- 	__be32 *dst = (__be32 *)outbuf;
- 	u32 block[4];
--	u32 * Km; 
--	u8 * Kr;
-+	u32 *Km;
-+	u8 *Kr;
- 
- 	block[0] = be32_to_cpu(src[0]);
- 	block[1] = be32_to_cpu(src[1]);
- 	block[2] = be32_to_cpu(src[2]);
- 	block[3] = be32_to_cpu(src[3]);
- 
--	Km = c->Km[0]; Kr = c->Kr[0]; Q (block, Kr, Km);
--	Km = c->Km[1]; Kr = c->Kr[1]; Q (block, Kr, Km);
--	Km = c->Km[2]; Kr = c->Kr[2]; Q (block, Kr, Km);
--	Km = c->Km[3]; Kr = c->Kr[3]; Q (block, Kr, Km);
--	Km = c->Km[4]; Kr = c->Kr[4]; Q (block, Kr, Km);
--	Km = c->Km[5]; Kr = c->Kr[5]; Q (block, Kr, Km);
--	Km = c->Km[6]; Kr = c->Kr[6]; QBAR (block, Kr, Km);
--	Km = c->Km[7]; Kr = c->Kr[7]; QBAR (block, Kr, Km);
--	Km = c->Km[8]; Kr = c->Kr[8]; QBAR (block, Kr, Km);
--	Km = c->Km[9]; Kr = c->Kr[9]; QBAR (block, Kr, Km);
--	Km = c->Km[10]; Kr = c->Kr[10]; QBAR (block, Kr, Km);
--	Km = c->Km[11]; Kr = c->Kr[11]; QBAR (block, Kr, Km);
-+	Km = c->Km[0]; Kr = c->Kr[0]; Q(block, Kr, Km);
-+	Km = c->Km[1]; Kr = c->Kr[1]; Q(block, Kr, Km);
-+	Km = c->Km[2]; Kr = c->Kr[2]; Q(block, Kr, Km);
-+	Km = c->Km[3]; Kr = c->Kr[3]; Q(block, Kr, Km);
-+	Km = c->Km[4]; Kr = c->Kr[4]; Q(block, Kr, Km);
-+	Km = c->Km[5]; Kr = c->Kr[5]; Q(block, Kr, Km);
-+	Km = c->Km[6]; Kr = c->Kr[6]; QBAR(block, Kr, Km);
-+	Km = c->Km[7]; Kr = c->Kr[7]; QBAR(block, Kr, Km);
-+	Km = c->Km[8]; Kr = c->Kr[8]; QBAR(block, Kr, Km);
-+	Km = c->Km[9]; Kr = c->Kr[9]; QBAR(block, Kr, Km);
-+	Km = c->Km[10]; Kr = c->Kr[10]; QBAR(block, Kr, Km);
-+	Km = c->Km[11]; Kr = c->Kr[11]; QBAR(block, Kr, Km);
- 
- 	dst[0] = cpu_to_be32(block[0]);
- 	dst[1] = cpu_to_be32(block[1]);
- 	dst[2] = cpu_to_be32(block[2]);
- 	dst[3] = cpu_to_be32(block[3]);
--}	
-+}
- 
--static void cast6_decrypt(struct crypto_tfm *tfm, u8 *outbuf, const u8 *inbuf) {
--	struct cast6_ctx * c = crypto_tfm_ctx(tfm);
-+static void cast6_decrypt(struct crypto_tfm *tfm, u8 *outbuf, const u8 *inbuf)
-+{
-+	struct cast6_ctx *c = crypto_tfm_ctx(tfm);
- 	const __be32 *src = (const __be32 *)inbuf;
- 	__be32 *dst = (__be32 *)outbuf;
- 	u32 block[4];
--	u32 * Km; 
--	u8 * Kr;
-+	u32 *Km;
-+	u8 *Kr;
- 
- 	block[0] = be32_to_cpu(src[0]);
- 	block[1] = be32_to_cpu(src[1]);
- 	block[2] = be32_to_cpu(src[2]);
- 	block[3] = be32_to_cpu(src[3]);
- 
--	Km = c->Km[11]; Kr = c->Kr[11]; Q (block, Kr, Km);
--	Km = c->Km[10]; Kr = c->Kr[10]; Q (block, Kr, Km);
--	Km = c->Km[9]; Kr = c->Kr[9]; Q (block, Kr, Km);
--	Km = c->Km[8]; Kr = c->Kr[8]; Q (block, Kr, Km);
--	Km = c->Km[7]; Kr = c->Kr[7]; Q (block, Kr, Km);
--	Km = c->Km[6]; Kr = c->Kr[6]; Q (block, Kr, Km);
--	Km = c->Km[5]; Kr = c->Kr[5]; QBAR (block, Kr, Km);
--	Km = c->Km[4]; Kr = c->Kr[4]; QBAR (block, Kr, Km);
--	Km = c->Km[3]; Kr = c->Kr[3]; QBAR (block, Kr, Km);
--	Km = c->Km[2]; Kr = c->Kr[2]; QBAR (block, Kr, Km);
--	Km = c->Km[1]; Kr = c->Kr[1]; QBAR (block, Kr, Km);
--	Km = c->Km[0]; Kr = c->Kr[0]; QBAR (block, Kr, Km);
--	
-+	Km = c->Km[11]; Kr = c->Kr[11]; Q(block, Kr, Km);
-+	Km = c->Km[10]; Kr = c->Kr[10]; Q(block, Kr, Km);
-+	Km = c->Km[9]; Kr = c->Kr[9]; Q(block, Kr, Km);
-+	Km = c->Km[8]; Kr = c->Kr[8]; Q(block, Kr, Km);
-+	Km = c->Km[7]; Kr = c->Kr[7]; Q(block, Kr, Km);
-+	Km = c->Km[6]; Kr = c->Kr[6]; Q(block, Kr, Km);
-+	Km = c->Km[5]; Kr = c->Kr[5]; QBAR(block, Kr, Km);
-+	Km = c->Km[4]; Kr = c->Kr[4]; QBAR(block, Kr, Km);
-+	Km = c->Km[3]; Kr = c->Kr[3]; QBAR(block, Kr, Km);
-+	Km = c->Km[2]; Kr = c->Kr[2]; QBAR(block, Kr, Km);
-+	Km = c->Km[1]; Kr = c->Kr[1]; QBAR(block, Kr, Km);
-+	Km = c->Km[0]; Kr = c->Kr[0]; QBAR(block, Kr, Km);
-+
- 	dst[0] = cpu_to_be32(block[0]);
- 	dst[1] = cpu_to_be32(block[1]);
- 	dst[2] = cpu_to_be32(block[2]);
- 	dst[3] = cpu_to_be32(block[3]);
--}	
-+}
- 
- static struct crypto_alg alg = {
- 	.cra_name = "cast6",
--- 
-1.6.6.1
+> And hence the xsave memory layout available through this regset
+> interface uses SW usable bytes [464..511] to convey what state is represented
+> in the memory layout.
+> 
+> First 8 bytes of the sw_usable_bytes[464..467] will be set to OS enabled xstate
+> mask(which is same as the 64bit mask returned by the xgetbv's xCR0).
 
+I'd like to see some macros or struct or something in some user-visible
+header (ptrace-abi.h I guess?) that instruct userland where to find this
+software-defined word.  The rest of the layout and meaning is specified by
+the chip manuals and it's only a question of convenience if we want to help
+userland out with those bits.  But the use of the reserved-for-software
+area to store a bitmask (or whatever else Linux might put there in the
+future) is entirely a Linux invention that needs to be a clear and explicit
+part of this userland ABI format.
+
+> +/*
+> + * The xfpregs_active() routine is same as the fpregs_active() routine,
+
+s/xfpregs_active/xstateregs_active/
+s/is same/is the same/
+
+> @@ -204,8 +209,6 @@ int xfpregs_set(struct task_struct *targ
+>  	if (ret)
+>  		return ret;
+>  
+> -	set_stopped_child_used_math(target);
+> -
+
+You didn't mention this change in a comment or log entry.
+It looks like it's superfluous after init_fpu.  So this change
+is right, but AFAICT it belongs in an entirely separate patch
+and has nothing to do with xsave support.
+
+> +int xstateregs_get(struct task_struct *target, const struct user_regset *regset,
+> +		unsigned int pos, unsigned int count,
+> +		void *kbuf, void __user *ubuf)
+> +{
+> +	int ret;
+> +	int size = regset->n * regset->size;
+[...]
+> +		/*
+> +		 * Copy the rest of xstate memory layout
+> +		 */
+> +		ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
+> +					  xsave_hdr,
+> +					  offsetof(struct xsave_struct,
+> +						   xsave_hdr), size);
+
+This calculation is unnecessary (though it doesn't hurt); you can just use
+-1 here.  The arch user_regset.get and user_regset.set functions are not
+required to worry about bogus arguments.  Their callers are required to
+pass values that don't violate the .n, .size, and .align constraints in the
+user_regset.
+
+> +int xstateregs_set(struct task_struct *target, const struct user_regset *regset,
+> +		  unsigned int pos, unsigned int count,
+> +		  const void *kbuf, const void __user *ubuf)
+> +{
+> +	int ret;
+> +	int size = regset->n * regset->size;
+[...]
+> +	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
+> +				 &target->thread.xstate->xsave, 0, size);
+
+Same here.
+
+> +	[REGSET_XSTATE] = {
+> +		.core_note_type = NT_X86_XSTATE,
+> +		.size = sizeof(long), .align = sizeof(long),
+[...]
+> +	[REGSET_XSTATE] = {
+> +		.core_note_type = NT_X86_XSTATE,
+> +		.size = sizeof(u32), .align = sizeof(u32),
+
+Isn't the xsave format is really the same for 32-bit and 64-bit?
+All its components are naturally 64 bits or larger, right?
+
+If that's correct, I think it would be better to make the 32 and 64 version
+of the regset uniform with .size and .align being sizeof(u64).
+
+> +u64 xstate_fx_sw_bytes[6];
+> +void update_regset_xstate_info(unsigned int size, u64 xstate_mask)
+> +{
+> +#ifdef CONFIG_X86_64
+> +	x86_64_regsets[REGSET_XSTATE].n = size / sizeof(long);
+> +#endif
+> +#if defined CONFIG_X86_32 || defined CONFIG_IA32_EMULATION
+> +	x86_32_regsets[REGSET_XSTATE].n = size / sizeof(u32);
+> +#endif
+
+Just change these to / sizeof(u64) accordingly.
+
+
+Thanks,
+Roland
