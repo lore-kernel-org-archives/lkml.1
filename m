@@ -1,18 +1,18 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755759Ab0BJJcH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 04:32:07 -0500
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:60022 "EHLO
+	id S1755652Ab0BJJcN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 04:32:13 -0500
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:60021 "EHLO
 	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752877Ab0BJJVr (ORCPT
+	with ESMTP id S1752778Ab0BJJVr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 10 Feb 2010 04:21:47 -0500
 MIME-version: 1.0
 Content-transfer-encoding: 7BIT
 Content-type: TEXT/PLAIN
-Date: Wed, 10 Feb 2010 01:20:06 -0800
+Date: Wed, 10 Feb 2010 01:20:05 -0800
 From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 02/35] x86: keep chip_data in create_irq_nr and destroy_irq
+Subject: [PATCH 01/35] x86: fix sci on ioapic 1
 In-reply-to: <1265793639-15071-1-git-send-email-yinghai@kernel.org>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
@@ -21,224 +21,147 @@ To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
 Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
        Christoph Lameter <cl@linux-foundation.org>,
        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-       Brandon Phiilps <bphilips@suse.de>, Yinghai Lu <yinghai@kernel.org>,
-       stable@kernel.org
-Message-id: <1265793639-15071-3-git-send-email-yinghai@kernel.org>
+       Yinghai Lu <yinghai@kernel.org>, stable@kernel.org
+Message-id: <1265793639-15071-2-git-send-email-yinghai@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 References: <1265793639-15071-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Brandon Phiilps <bphilips@suse.de>
+Thomas Renninger <trenn@suse.de> reported on IBM x3330
 
-When two drivers are setting up MSI-X at the same time via
-pci_enable_msix() there is a race.  See this dmesg excerpt:
+booting a latest kernel on this machine results in:
 
-[   85.170610] ixgbe 0000:02:00.1: irq 97 for MSI/MSI-X
-[   85.170611]   alloc irq_desc for 99 on node -1
-[   85.170613] igb 0000:08:00.1: irq 98 for MSI/MSI-X
-[   85.170614]   alloc kstat_irqs on node -1
-[   85.170616] alloc irq_2_iommu on node -1
-[   85.170617]   alloc irq_desc for 100 on node -1
-[   85.170619]   alloc kstat_irqs on node -1
-[   85.170621] alloc irq_2_iommu on node -1
-[   85.170625] ixgbe 0000:02:00.1: irq 99 for MSI/MSI-X
-[   85.170626]   alloc irq_desc for 101 on node -1
-[   85.170628] igb 0000:08:00.1: irq 100 for MSI/MSI-X
-[   85.170630]   alloc kstat_irqs on node -1
-[   85.170631] alloc irq_2_iommu on node -1
-[   85.170635]   alloc irq_desc for 102 on node -1
-[   85.170636]   alloc kstat_irqs on node -1
-[   85.170639] alloc irq_2_iommu on node -1
-[   85.170646] BUG: unable to handle kernel NULL pointer dereference
-at 0000000000000088
+PCI: PCI BIOS revision 2.10 entry at 0xfd61c, last bus=1
+PCI: Using configuration type 1 for base access bio: create slab <bio-0> at 0
+ACPI: SCI (IRQ30) allocation failed
+ACPI Exception: AE_NOT_ACQUIRED, Unable to install System Control Interrupt handler (20090903/evevent-161)
+ACPI: Unable to start the ACPI Interpreter
 
-As you can see igb and ixgbe are both alternating on create_irq_nr()
-via pci_enable_msix() in their probe function.
+Later all kind of devices fail...
 
-ixgbe: While looping through irq_desc_ptrs[] via create_irq_nr() ixgbe
-choses irq_desc_ptrs[102] and exits the loop, drops vector_lock and
-calls dynamic_irq_init. Then it sets irq_desc_ptrs[102]->chip_data =
-NULL via dynamic_irq_init().
+and bisect it down to this commit:
+commit b9c61b70075c87a8612624736faf4a2de5b1ed30
 
-igb: Grabs the vector_lock now and starts looping over irq_desc_ptrs[]
-via create_irq_nr(). It gets to irq_desc_ptrs[102] and does this:
+    x86/pci: update pirq_enable_irq() to setup io apic routing
 
-	cfg_new = irq_desc_ptrs[102]->chip_data;
-	if (cfg_new->vector != 0)
-		continue;
+it turns out we need to set irq routing for the sci on ioapic1 early.
 
-This hits the NULL deref.
+-v2: make it work without sparseirq too.
+-v3: fix checkpatch.pl warning, and cc to stable
 
-Another possible race exists via pci_disable_msix() in a driver or in
-the number of error paths that call free_msi_irqs():
-
-destroy_irq()
-dynamic_irq_cleanup() which sets desc->chip_data = NULL
-...race window...
-desc->chip_data = cfg;
-
-Remove the save and restore code for cfg in create_irq_nr() and
-destroy_irq() and take the desc->lock when checking the irq_cfg.
-
-Reported-and-analyzed-by: Brandon Philips <bphilips@suse.de>
+Reported-by: Thomas Renninger <trenn@suse.de>
+Bisected-by: Thomas Renninger <trenn@suse.de>
+Tested-by: Thomas Renninger <trenn@suse.de>
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-Signed-off-by: Brandon Phiilps <bphilips@suse.de>
 Cc: stable@kernel.org
 ---
- arch/x86/kernel/apic/io_apic.c |   18 ++++----------
- include/linux/irq.h            |    2 +
- kernel/irq/chip.c              |   52 +++++++++++++++++++++++++++++++++-------
- 3 files changed, 50 insertions(+), 22 deletions(-)
+ arch/x86/include/asm/io_apic.h |    1 +
+ arch/x86/kernel/acpi/boot.c    |    9 ++++++-
+ arch/x86/kernel/apic/io_apic.c |   50 ++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 59 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-index ee2fba1..bd93444 100644
---- a/arch/x86/kernel/apic/io_apic.c
-+++ b/arch/x86/kernel/apic/io_apic.c
-@@ -3280,12 +3280,9 @@ unsigned int create_irq_nr(unsigned int irq_want, int node)
- 	}
- 	spin_unlock_irqrestore(&vector_lock, flags);
+diff --git a/arch/x86/include/asm/io_apic.h b/arch/x86/include/asm/io_apic.h
+index 7c7c16c..5f61f6e 100644
+--- a/arch/x86/include/asm/io_apic.h
++++ b/arch/x86/include/asm/io_apic.h
+@@ -160,6 +160,7 @@ extern int io_apic_get_redir_entries(int ioapic);
+ struct io_apic_irq_attr;
+ extern int io_apic_set_pci_routing(struct device *dev, int irq,
+ 		 struct io_apic_irq_attr *irq_attr);
++void setup_IO_APIC_irq_extra(u32 gsi);
+ extern int (*ioapic_renumber_irq)(int ioapic, int irq);
+ extern void ioapic_init_mappings(void);
+ extern void ioapic_insert_resources(void);
+diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+index 0acbcdf..5c96b75 100644
+--- a/arch/x86/kernel/acpi/boot.c
++++ b/arch/x86/kernel/acpi/boot.c
+@@ -446,6 +446,12 @@ void __init acpi_pic_sci_set_trigger(unsigned int irq, u16 trigger)
+ int acpi_gsi_to_irq(u32 gsi, unsigned int *irq)
+ {
+ 	*irq = gsi;
++
++#ifdef CONFIG_X86_IO_APIC
++	if (acpi_irq_model == ACPI_IRQ_MODEL_IOAPIC)
++		setup_IO_APIC_irq_extra(gsi);
++#endif
++
+ 	return 0;
+ }
  
--	if (irq > 0) {
--		dynamic_irq_init(irq);
--		/* restore it, in case dynamic_irq_init clear it */
--		if (desc_new)
--			desc_new->chip_data = cfg_new;
--	}
-+	if (irq > 0)
-+		dynamic_irq_init_keep_chip_data(irq);
+@@ -473,7 +479,8 @@ int acpi_register_gsi(struct device *dev, u32 gsi, int trigger, int polarity)
+ 		plat_gsi = mp_register_gsi(dev, gsi, trigger, polarity);
+ 	}
+ #endif
+-	acpi_gsi_to_irq(plat_gsi, &irq);
++	irq = plat_gsi;
 +
  	return irq;
  }
  
-@@ -3308,17 +3305,12 @@ void destroy_irq(unsigned int irq)
- {
- 	unsigned long flags;
- 	struct irq_cfg *cfg;
--	struct irq_desc *desc;
- 
--	/* store it, in case dynamic_irq_cleanup clear it */
--	desc = irq_to_desc(irq);
--	cfg = desc->chip_data;
--	dynamic_irq_cleanup(irq);
--	/* connect back irq_cfg */
--	desc->chip_data = cfg;
-+	dynamic_irq_cleanup_keep_chip_data(irq);
- 
- 	free_irte(irq);
- 	spin_lock_irqsave(&vector_lock, flags);
-+	cfg = irq_to_desc(irq)->chip_data;
- 	__clear_irq_vector(irq, cfg);
- 	spin_unlock_irqrestore(&vector_lock, flags);
- }
-diff --git a/include/linux/irq.h b/include/linux/irq.h
-index d13492d..707ab12 100644
---- a/include/linux/irq.h
-+++ b/include/linux/irq.h
-@@ -400,7 +400,9 @@ static inline int irq_has_action(unsigned int irq)
- 
- /* Dynamic irq helper functions */
- extern void dynamic_irq_init(unsigned int irq);
-+void dynamic_irq_init_keep_chip_data(unsigned int irq);
- extern void dynamic_irq_cleanup(unsigned int irq);
-+void dynamic_irq_cleanup_keep_chip_data(unsigned int irq);
- 
- /* Set/get chip/data for an IRQ: */
- extern int set_irq_chip(unsigned int irq, struct irq_chip *chip);
-diff --git a/kernel/irq/chip.c b/kernel/irq/chip.c
-index ecc3fa2..2fc42d3 100644
---- a/kernel/irq/chip.c
-+++ b/kernel/irq/chip.c
-@@ -18,11 +18,7 @@
- 
- #include "internals.h"
- 
--/**
-- *	dynamic_irq_init - initialize a dynamically allocated irq
-- *	@irq:	irq number to initialize
-- */
--void dynamic_irq_init(unsigned int irq)
-+static void dynamic_irq_init_x(unsigned int irq, bool keep_chip_data)
- {
- 	struct irq_desc *desc;
- 	unsigned long flags;
-@@ -41,7 +37,8 @@ void dynamic_irq_init(unsigned int irq)
- 	desc->depth = 1;
- 	desc->msi_desc = NULL;
- 	desc->handler_data = NULL;
--	desc->chip_data = NULL;
-+	if (!keep_chip_data)
-+		desc->chip_data = NULL;
- 	desc->action = NULL;
- 	desc->irq_count = 0;
- 	desc->irqs_unhandled = 0;
-@@ -55,10 +52,26 @@ void dynamic_irq_init(unsigned int irq)
+diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
+index 75ba3d0..ee2fba1 100644
+--- a/arch/x86/kernel/apic/io_apic.c
++++ b/arch/x86/kernel/apic/io_apic.c
+@@ -1541,6 +1541,56 @@ static void __init setup_IO_APIC_irqs(void)
  }
  
- /**
-- *	dynamic_irq_cleanup - cleanup a dynamically allocated irq
-+ *	dynamic_irq_init - initialize a dynamically allocated irq
-  *	@irq:	irq number to initialize
+ /*
++ * for the gsit that is not in first ioapic
++ * but could not use acpi_register_gsi()
++ * like some special sci in IBM x3330
++ */
++void setup_IO_APIC_irq_extra(u32 gsi)
++{
++	int apic_id = 0, pin, idx, irq;
++	int node = cpu_to_node(boot_cpu_id);
++	struct irq_desc *desc;
++	struct irq_cfg *cfg;
++
++	/*
++	 * Convert 'gsi' to 'ioapic.pin'.
++	 */
++	apic_id = mp_find_ioapic(gsi);
++	if (apic_id < 0)
++		return;
++
++	pin = mp_find_ioapic_pin(apic_id, gsi);
++	idx = find_irq_entry(apic_id, pin, mp_INT);
++	if (idx == -1)
++		return;
++
++	irq = pin_2_irq(idx, apic_id, pin);
++#ifdef CONFIG_SPARSE_IRQ
++	desc = irq_to_desc(irq);
++	if (desc)
++		return;
++#endif
++	desc = irq_to_desc_alloc_node(irq, node);
++	if (!desc) {
++		printk(KERN_INFO "can not get irq_desc for %d\n", irq);
++		return;
++	}
++
++	cfg = desc->chip_data;
++	add_pin_to_irq_node(cfg, node, apic_id, pin);
++
++	if (test_bit(pin, mp_ioapic_routing[apic_id].pin_programmed)) {
++		pr_debug("Pin %d-%d already programmed\n",
++			 mp_ioapics[apic_id].apicid, pin);
++		return;
++	}
++	set_bit(pin, mp_ioapic_routing[apic_id].pin_programmed);
++
++	setup_IO_APIC_irq(apic_id, pin, irq, desc,
++			irq_trigger(idx), irq_polarity(idx));
++}
++
++/*
+  * Set up the timer pin, possibly with the 8259A-master behind.
   */
--void dynamic_irq_cleanup(unsigned int irq)
-+void dynamic_irq_init(unsigned int irq)
-+{
-+	dynamic_irq_init_x(irq, false);
-+}
-+
-+/**
-+ *	dynamic_irq_init_keep_chip_data - initialize a dynamically allocated irq
-+ *	@irq:	irq number to initialize
-+ *
-+ * 	does not set irq_to_desc(irq)->chip_data to NULL
-+ */
-+void dynamic_irq_init_keep_chip_data(unsigned int irq)
-+{
-+	dynamic_irq_init_x(irq, true);
-+}
-+
-+static void dynamic_irq_cleanup_x(unsigned int irq, bool keep_chip_data)
- {
- 	struct irq_desc *desc = irq_to_desc(irq);
- 	unsigned long flags;
-@@ -77,7 +90,8 @@ void dynamic_irq_cleanup(unsigned int irq)
- 	}
- 	desc->msi_desc = NULL;
- 	desc->handler_data = NULL;
--	desc->chip_data = NULL;
-+	if (!keep_chip_data)
-+		desc->chip_data = NULL;
- 	desc->handle_irq = handle_bad_irq;
- 	desc->chip = &no_irq_chip;
- 	desc->name = NULL;
-@@ -85,6 +99,26 @@ void dynamic_irq_cleanup(unsigned int irq)
- 	raw_spin_unlock_irqrestore(&desc->lock, flags);
- }
- 
-+/**
-+ *	dynamic_irq_cleanup - cleanup a dynamically allocated irq
-+ *	@irq:	irq number to initialize
-+ */
-+void dynamic_irq_cleanup(unsigned int irq)
-+{
-+	dynamic_irq_cleanup_x(irq, false);
-+}
-+
-+/**
-+ *	dynamic_irq_cleanup_keep_chip_data - cleanup a dynamically allocated irq
-+ *	@irq:	irq number to initialize
-+ *
-+ * 	does not set irq_to_desc(irq)->chip_data to NULL
-+ */
-+void dynamic_irq_cleanup_keep_chip_data(unsigned int irq)
-+{
-+	dynamic_irq_cleanup_x(irq, true);
-+}
-+
- 
- /**
-  *	set_irq_chip - set the irq chip for an irq
+ static void __init setup_timer_IRQ0_pin(unsigned int apic_id, unsigned int pin,
 -- 
 1.6.4.2
 
