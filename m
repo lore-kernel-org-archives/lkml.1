@@ -1,72 +1,72 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752032Ab0BJGLJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 01:11:09 -0500
-Received: from krynn.se.axis.com ([193.13.178.10]:54212 "EHLO
-	krynn.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751141Ab0BJGLI convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 01:11:08 -0500
-From: Mikael Starvik <mikael.starvik@axis.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-CC: "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Date: Wed, 10 Feb 2010 07:10:33 +0100
-Subject: RE: [PATCH v2 -mm 13/14] cris: use include/linux/pci-dma.h
-Thread-Topic: [PATCH v2 -mm 13/14] cris: use include/linux/pci-dma.h
-Thread-Index: Acqp8xZzAqmtMZTOQEW3u19lHBnUdAAJI/kA
-Message-ID: <4BEA3FF3CAA35E408EA55C7BE2E61D0546A9437CFB@xmail3.se.axis.com>
-References: <1265765687-14121-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
- <1265765687-14121-14-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <1265765687-14121-14-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-Accept-Language: sv-SE
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: sv-SE
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	id S1752457Ab0BJGQW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 01:16:22 -0500
+Received: from mail.perches.com ([173.55.12.10]:1942 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751141Ab0BJGQU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Feb 2010 01:16:20 -0500
+Subject: Re: [PATCH] usbnet: convert dev(dbg|err|warn|info) macros to
+ usbnet_(dbg|err|warn|info)
+From: Joe Perches <joe@perches.com>
+To: David Brownell <david-b@pacbell.net>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-usb@vger.kernel.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Oliver Neukum <oliver@neukum.name>, Peter Korsgaard <jacmet@sunsite.dk>,
+       Steve Glendinning <steve.glendinning@smsc.com>
+In-Reply-To: <201002092153.22322.david-b@pacbell.net>
+References: <3d8577211d88cce1fb6f4c1b54c5aa413a1f325a.1265765892.git.joe@perches.com>
+	 <201002092153.22322.david-b@pacbell.net>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 09 Feb 2010 22:16:18 -0800
+Message-ID: <1265782578.20626.17.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sure, that is ok.
+On Tue, 2010-02-09 at 21:53 -0800, David Brownell wrote: 
+> On Tuesday 09 February 2010, Joe Perches wrote:
+> > These macros are too similar to the dev_<level> equivalents
+> > but take a usbnet * argument.
+> 
+> FYI the history behind that, as I recall, was that the names
+> were part of the effort to get rid of kernel 2.4 USB-specific
+> macros like err() and info(), or maybe uppercased versions of
+> them ... where the dev_err() style messaging wasn't so helpful,
+> since it didn't say which network device was involved.
 
-Signed-off-by: Mikael Starvik <starvik@axis.com>
+Maybe these usbnet_printk macros could use the proposed
+netdev_printk macros instead.
 
------Original Message-----
-From: FUJITA Tomonori [mailto:fujita.tomonori@lab.ntt.co.jp] 
-Sent: den 10 februari 2010 02:35
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org; fujita.tomonori@lab.ntt.co.jp; Mikael Starvik
-Subject: [PATCH v2 -mm 13/14] cris: use include/linux/pci-dma.h
+http://patchwork.ozlabs.org/patch/44955/
 
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: Mikael Starvik <starvik@axis.com>
----
- arch/cris/include/asm/pci.h |    8 +-------
- 1 files changed, 1 insertions(+), 7 deletions(-)
+Maybe:
 
-diff --git a/arch/cris/include/asm/pci.h b/arch/cris/include/asm/pci.h
-index 730ce40..43cfa0c 100644
---- a/arch/cris/include/asm/pci.h
-+++ b/arch/cris/include/asm/pci.h
-@@ -44,13 +44,7 @@ struct pci_dev;
-  */
- #define PCI_DMA_BUS_IS_PHYS	(1)
- 
--/* pci_unmap_{page,single} is a nop so... */
--#define DECLARE_PCI_UNMAP_ADDR(ADDR_NAME)
--#define DECLARE_PCI_UNMAP_LEN(LEN_NAME)
--#define pci_unmap_addr(PTR, ADDR_NAME)		(0)
--#define pci_unmap_addr_set(PTR, ADDR_NAME, VAL)	do { } while (0)
--#define pci_unmap_len(PTR, LEN_NAME)		(0)
--#define pci_unmap_len_set(PTR, LEN_NAME, VAL)	do { } while (0)
-+#include <linux/pci-dma.h>
- 
- #define HAVE_PCI_MMAP
- extern int pci_mmap_page_range(struct pci_dev *dev, struct vm_area_struct *vma,
--- 
-1.5.6.5
+#define usbnet_dbg(usbnet, fmt, arg...)		\
+	netdev_dbg((usbnet)->net, fmt, ##arg)
+#define usbnet_err(usbnet, fmt, arg...)		\
+	netdev_err((usbnet)->net, fmt, ##arg)
+#define usbnet_warn(usbnet, fmt, arg...)	\
+	netdev_err((usbnet)->net, fmt, ##arg)
+#define usbnet_info(usbnet, fmt, arg...)	\
+	netdev_info((usbnet)->net, fmt, ##arg)
+
+or just use netdev_printks directly.
+
+> Good point that this should be improved.
+
+I neglected to mention that to make the use
+style more like the rest of kernel source, this
+patch also changes the macro definitions by
+removing the \n added to the format and adds the
+trailing "\n" to the callers.
+
+Except for the first one. (oops)
+
+> Acked-by: David Brownell <dbrownell@users.sourceforge.net>
+> ... should merge via netdev.
+
 
