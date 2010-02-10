@@ -1,13 +1,13 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756339Ab0BJVJt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 16:09:49 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:42951 "EHLO mx1.redhat.com"
+	id S1756283Ab0BJVLO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 16:11:14 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:64384 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756020Ab0BJVJr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 16:09:47 -0500
-Message-ID: <4B73206C.8090108@redhat.com>
-Date: Wed, 10 Feb 2010 16:09:00 -0500
+	id S1751957Ab0BJVLN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Feb 2010 16:11:13 -0500
+Message-ID: <4B7320BF.2020800@redhat.com>
+Date: Wed, 10 Feb 2010 16:10:23 -0500
 From: Rik van Riel <riel@redhat.com>
 Organization: Red Hat, Inc
 User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Lightning/1.0pre Thunderbird/3.0
@@ -19,8 +19,8 @@ CC: David Rientjes <rientjes@google.com>,
        KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
        Nick Piggin <npiggin@suse.de>, Jiri Kosina <jkosina@suse.cz>
 Subject: Re: Improving OOM killer
-References: <201002012302.37380.l.lunak@suse.cz> <201002040858.33046.l.lunak@suse.cz> <alpine.DEB.2.00.1002041255080.6071@chino.kir.corp.google.com> <201002102154.39771.l.lunak@suse.cz>
-In-Reply-To: <201002102154.39771.l.lunak@suse.cz>
+References: <201002012302.37380.l.lunak@suse.cz> <4B6B4500.3010603@redhat.com> <alpine.DEB.2.00.1002041410300.16391@chino.kir.corp.google.com> <201002102154.43231.l.lunak@suse.cz>
+In-Reply-To: <201002102154.43231.l.lunak@suse.cz>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -29,18 +29,15 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 On 02/10/2010 03:54 PM, Lubos Lunak wrote:
 
->   Simply computing the cost of the whole children subtree (or a reasonable
-> approximation) avoids the need for any magic numbers and gives a much better
-> representation of how costly the subtree is, since, well, it is the cost
-> itself.
+>   Which however can mean that not killing this system daemon will be traded for
+> DoS-ing the whole system, if the daemon keeps spawning new children as soon
+> as the OOM killer frees up resources for them.
 
-That assumes you want to kill off that entire tree.
+Killing the system daemon *is* a DoS.
 
-You will not want to do that when a web server or
-database server runs out of memory, because the
-goal of the OOM killer is to allow the system to
-continue to run and be useful. This means keeping
-the services available...
+It would stop eg. the database or the web server, which is
+generally the main task of systems that run a database or
+a web server.
 
 -- 
 All rights reversed.
