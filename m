@@ -1,114 +1,45 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755146Ab0BJKM0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 05:12:26 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:37018 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752878Ab0BJKMZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 05:12:25 -0500
-Subject: Re: [RFC perf,x86] P4 PMU early draft
-From: Peter Zijlstra <peterz@infradead.org>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Stephane Eranian <eranian@google.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Don Zickus <dzickus@redhat.com>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20100209223909.GE5068@lenovo>
-References: <20100208184504.GB5130@lenovo> <20100209041739.GA11280@elte.hu>
-	 <20100209223909.GE5068@lenovo>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 10 Feb 2010 11:12:12 +0100
-Message-ID: <1265796732.11509.260.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	id S1755197Ab0BJKMt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 05:12:49 -0500
+Received: from tservice.net.ru ([195.178.208.66]:36052 "EHLO tservice.net.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753562Ab0BJKMr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Feb 2010 05:12:47 -0500
+Date: Wed, 10 Feb 2010 13:12:46 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [WTF] ... is going on with current->fs->{root,mnt} accesses in pohmelfs
+Message-ID: <20100210101246.GA3509@ioremap.net>
+References: <20100210100428.GL30031@ZenIV.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100210100428.GL30031@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-02-10 at 01:39 +0300, Cyrill Gorcunov wrote:
+On Wed, Feb 10, 2010 at 10:04:28AM +0000, Al Viro (viro@ZenIV.linux.org.uk) wrote:
+> a) pohmelfs_construct_path_string() will do interesting things if you
+> call it while chrooted into jail and pohmelfs mounted deeper in that
+> jail.  Try it.
 
+Should it walk upto mountpoint?
 
-> Index: linux-2.6.git/arch/x86/kernel/cpu/perf_event.c
-> =====================================================================
-> --- linux-2.6.git.orig/arch/x86/kernel/cpu/perf_event.c
-> +++ linux-2.6.git/arch/x86/kernel/cpu/perf_event.c
-> @@ -26,6 +26,7 @@
->  #include <linux/bitops.h>
->  
->  #include <asm/apic.h>
-> +#include <asm/perf_p4.h>
->  #include <asm/stacktrace.h>
->  #include <asm/nmi.h>
->  
-> @@ -140,6 +141,7 @@ struct x86_pmu {
->  	u64		max_period;
->  	u64		intel_ctrl;
->  	int		(*hw_config)(struct perf_event_attr *attr, struct hw_perf_event *hwc);
-> +	int		(*schedule_events)(struct cpu_hw_events *cpuc, int n, int *assign, int cpu);
->  	void		(*enable_bts)(u64 config);
->  	void		(*disable_bts)(void);
->  
+> b) just why do we care about root of chroot jail in pohmelfs_path_length()?
+> Not to mention anything else, current->fs->root/mnt may be changed under
+> you if you share current->fs with another thread, but even aside of that,
+> why does filesystem care about chroot of caller at all?
+> 
+> What's going on there?
 
-> +/*
-> + * This is the most important routine of Netburst PMU actually
-> + * and need a huge speedup!
-> + */
-> +static int p4_pmu_schedule_events(struct cpu_hw_events *cpuc, int n, int *assign, int cpu)
-> +{
+It tries to construct a full path upto mountpoint. Effectively it should
+do similar to non-exported dentry_path() things. There is a race between
+getting buffer size and filling with the actual path, but we take care
+about that by restarting if needed.
 
-> +}
-
-
-> -static int x86_schedule_events(struct cpu_hw_events *cpuc, int n, int *assign)
-> +/* we don't use cpu argument here at all */
-> +static int x86_schedule_events(struct cpu_hw_events *cpuc, int n, int *assign, int cpu)
->  {
->  	struct event_constraint *c, *constraints[X86_PMC_IDX_MAX];
->  	unsigned long used_mask[BITS_TO_LONGS(X86_PMC_IDX_MAX)];
-
-
-> @@ -1796,7 +2305,7 @@ static int x86_pmu_enable(struct perf_ev
->  	if (n < 0)
->  		return n;
->  
-> -	ret = x86_schedule_events(cpuc, n, assign);
-> +	ret = x86_pmu.schedule_events(cpuc, n, assign, 0);
->  	if (ret)
->  		return ret;
->  	/*
-
-This look like a bug, surely we can run on !cpu0.
-
-> @@ -2313,7 +2822,7 @@ int hw_perf_group_sched_in(struct perf_e
->  	if (n0 < 0)
->  		return n0;
->  
-> -	ret = x86_schedule_events(cpuc, n0, assign);
-> +	ret = x86_pmu.schedule_events(cpuc, n0, assign, cpu);
->  	if (ret)
->  		return ret;
->  
-
-I'd try BUG_ON(cpu != smp_processor_id()) and scrap passing that cpu
-thing around.
-
-> @@ -2700,6 +3232,7 @@ static int validate_group(struct perf_ev
->  {
->  	struct perf_event *leader = event->group_leader;
->  	struct cpu_hw_events *fake_cpuc;
-> +	int cpu = smp_processor_id();
->  	int ret, n;
->  
->  	ret = -ENOMEM;
-> @@ -2725,7 +3258,7 @@ static int validate_group(struct perf_ev
->  
->  	fake_cpuc->n_events = n;
->  
-> -	ret = x86_schedule_events(fake_cpuc, n, NULL);
-> +	ret = x86_pmu.schedule_events(fake_cpuc, n, NULL, cpu);
->  
->  out_free:
->  	kfree(fake_cpuc);
-
-
+-- 
+	Evgeniy Polyakov
