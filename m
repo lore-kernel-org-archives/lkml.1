@@ -1,120 +1,59 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756544Ab0BJXEo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 18:04:44 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:37858 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753306Ab0BJXEm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 18:04:42 -0500
-Date: Wed, 10 Feb 2010 15:04:38 -0800
-From: Gary Hade <garyhade@us.ibm.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Gary Hade <garyhade@us.ibm.com>, linux-pm@lists.linux-foundation.org,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "Moore, Robert" <robert.moore@intel.com>,
-       Matthew Garrett <mjg@redhat.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>
-Subject: Re: [PATCH 8/9] PCI / ACPI / PM: Platform support for PCI PME
-	wake-up (rev. 7)
-Message-ID: <20100210230438.GC17115@us.ibm.com>
-References: <201001101431.38630.rjw@sisk.pl> <201002102242.11088.rjw@sisk.pl> <20100210221305.GB17115@us.ibm.com> <201002102358.00359.rjw@sisk.pl>
+	id S1756365Ab0BJXKm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 18:10:42 -0500
+Received: from wolverine02.qualcomm.com ([199.106.114.251]:36473 "EHLO
+	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755900Ab0BJXKl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Feb 2010 18:10:41 -0500
+X-IronPort-AV: E=McAfee;i="5400,1158,5888"; a="33887760"
+Message-ID: <4B733CEE.9030105@codeaurora.org>
+Date: Wed, 10 Feb 2010 15:10:38 -0800
+From: Abhijeet Dharmapurikar <adharmap@codeaurora.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <201002102358.00359.rjw@sisk.pl>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+CC: Randy Dunlap <rdunlap@xenotime.net>, linux-arm-kernel@lists.infradead.org,
+       linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Catalin Marinas <catalin.marinas@arm.com>,
+       Abhijeet Dharmapurikar <adharmap@quicinc.com>
+Subject: Re: [RFC 0/2] fix dma_map_sg not to do barriers for each buffer
+References: <1265834250-29170-1-git-send-email-adharmap@codeaurora.org> <4B7324D3.1000509@xenotime.net> <20100210224030.GC30854@n2100.arm.linux.org.uk>
+In-Reply-To: <20100210224030.GC30854@n2100.arm.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 10, 2010 at 11:58:00PM +0100, Rafael J. Wysocki wrote:
-> On Wednesday 10 February 2010, Gary Hade wrote:
-> > On Wed, Feb 10, 2010 at 10:42:11PM +0100, Rafael J. Wysocki wrote:
-> > > On Wednesday 10 February 2010, Gary Hade wrote:
-> > > > On Wed, Feb 10, 2010 at 07:00:54PM +0100, Rafael J. Wysocki wrote:
-> > > > > On Wednesday 10 February 2010, Gary Hade wrote:
-> > > > > > On Wed, Feb 10, 2010 at 02:12:29AM +0100, Rafael J. Wysocki wrote:
-> > > > > > > On Wednesday 10 February 2010, Rafael J. Wysocki wrote:
-> > > > > > > > On Wednesday 10 February 2010, Gary Hade wrote:
-> > > > > > > > > On Tue, Feb 09, 2010 at 12:58:39PM -0800, Gary Hade wrote:
-> > > > > > > > ...
-> > > > > > > > > > OK.  I already confirmed that the problem reproduces with your
-> > > > > > > > > > patches applied.  I am now in the process of trying vanilla
-> > > > > > > > > > 2.6.33-rc7.  If hot-add works with 2.6.33-rc7 I will give
-> > > > > > > > > > your patch a try.
-> > > > > > > > > 
-> > > > > > > > > The hot-add worked fine with an unpatched 2.6.33-rc7.
-> > > > > > > > 
-> > > > > > > > Good.
-> > > > > > > > 
-> > > > > > > > > The new patch when added to the 2.6.33-rc7 tree that
-> > > > > > > > > included the original patchset unfortunately did not
-> > > > > > > > > correct the problem.
-> > > > > > > > 
-> > > > > > > > Bad.
-> > > > > > > > 
-> > > > > > > > Well, fortunately I have another one, but I haven't tested it myself yet except
-> > > > > > > > for checking that it builds.  Hopefully it won't break things more.
-> > > > > > > > 
-> > > > > > > > The patch below applies on top of 2.6.33-rc7 with my PCI runtime PM patchset
-> > > > > > > > applied.  Please test it and let me know the results.
-> > > > > > > 
-> > > > > > > Sorry, I sent a wrong version of the patch by mistake, it doesn't even build.
-> > > > > > > The correct one is appended.
-> > > > > > 
-> > > > > > No problem.  I received this message before doing anything with
-> > > > > > the previous one.
-> > > > > > 
-> > > > > > Sorry, both hot-add and hot-remove behaviors appear unchanged
-> > > > > > with this patch.
-> > > > > 
-> > > > > Hmm, that's kind of strange.  I'm getting suspicious.
-> > > > > 
-> > > > > > I would like to dig into the code and help with the debugging
-> > > > > > but I am swamped with other things right now.  However, feel 
-> > > > > > free to continue using me for testing if you have other ideas
-> > > > > > you want me to try.
-> > > > > 
-> > > > > Thanks, of course I have some ideas. :-)
-> > > > > 
-> > > > > First, please try to test 2.6.33-rc7 with patches [1/9] - [7/9] applied
-> > > > > (ie. without the $subject patch and [9/9]).  Let's make sure we're debugging
-> > > > > the right patch.
-> > > > 
-> > > > It does look like both the hot-add and hot-remove issues were
-> > > > introduced by something in 1/9 through 7/9.  I started with a
-> > > > clean 2.6.33-rc7 tree and applied only 1/9 through 7/9.  I still
-> > > > see that lingering blinking amber LED with hot-remove and no
-> > > > response from the driver during hot-add.
-> > > > 
-> > > > Now I suppose you want me to start reverting 1/9 through 7/9
-> > > > in reverse order to find the culprit. :)
-> > > 
-> > > Actually, I think [6/9] is the offending one, so please try with [1/9] - [5/9]
-> > > applied and if that works, please apply [6/9] and retest to confirm it's the
-> > > culprit.
-> > 
-> > Yes, 6/9 also appeared to be the most likely suspect to me and
-> > I was already doing what you asked except in the opposite order.
-> > With 1/9 through 6/9 both the hot-add and hot-remove issues still
-> > reproduced.  After removing 6/9 both issues disappeared.
+Russell King - ARM Linux wrote:
+> On Wed, Feb 10, 2010 at 01:27:47PM -0800, Randy Dunlap wrote:
+>> On 02/10/10 12:37, adharmap@codeaurora.org wrote:
+>>> From: Abhijeet Dharmapurikar <adharmap@quicinc.com>
+>>>
+>>> Please refer to the post here
+>>> http://lkml.org/lkml/2010/1/4/347
+>>>
+>>> These changes are to introduce barrierless dma_map_area and dma_unmap_area and
+>>> use them to map the buffers in the scatterlist. For the last buffer, call
+>>> the normal dma_map_area(aka with barriers) effectively executing the barrier
+>>> at the end of the operation.
+>>>
+>>> Note that the barrierless operations are implemented for few arm
+>>> architectures only and I would implement for others once these are okayed by the
+>>> community.
+>> So when you add these interfaces for other architectures, you will also
+>> update Documentation/DMA-API.txt,  right??
 > 
-> Thanks for verifying, I've already started to look for bugs in it.
+> Do we need barrier-less interfaces for anything other than the dma_*_sg
+> functions?
 
-Thanks!
+I think, dma_*_sg are the only ones that could benefit from barrier-less 
+interfaces.
 
-> 
-> What's your kernel command line, BTW?
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-arm-msm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-root=/dev/disk/by-id/scsi-35000c5000036ffcb-part7 ip=9.47.66.9:9.47.67.50:9.47.66.1:255.255.254.0 resume=/dev/disk/by-id/scsi-35000c50000370247-part3 crashkernel=256M-:128M console=tty0 console=ttyS0,115200 pci=use_crs pci=norom
-
-Gary
-
--- 
-Gary Hade
-System x Enablement
-IBM Linux Technology Center
-503-578-4503  IBM T/L: 775-4503
-garyhade@us.ibm.com
-http://www.ibm.com/linux/ltc
