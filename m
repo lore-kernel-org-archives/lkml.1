@@ -1,95 +1,87 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755395Ab0BJLaz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 06:30:55 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:40246 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755323Ab0BJLax (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 06:30:53 -0500
-Date: Wed, 10 Feb 2010 12:28:22 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Roland McGrath <roland@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>, hjl.tools@gmail.com
-Subject: Re: [patch v2 2/4] x86, ptrace: regset extensions to support xstate
-Message-ID: <20100210112822.GB4546@redhat.com>
-References: <20100209201309.902050211@sbs-t61.sc.intel.com> <20100209202502.216592031@sbs-t61.sc.intel.com>
+	id S1755348Ab0BJLbW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 06:31:22 -0500
+Received: from smtp-out.google.com ([216.239.44.51]:41082 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755323Ab0BJLbU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Feb 2010 06:31:20 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:date:message-id:subject:from:to:cc:
+	content-type:x-system-of-record;
+	b=yGKPAE7y1+vKv7ADKM0lcas3fq2wRFVdqhbXD9yUV83UYNEMqpP23hRLiXOvCsXmT
+	FM52NXpxseQYAHgkBhuBA==
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100209202502.216592031@sbs-t61.sc.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Date: Wed, 10 Feb 2010 12:31:16 +0100
+Message-ID: <bd4cb8901002100331id369b65lc944886f35067fb5@mail.gmail.com>
+Subject: [RFC] perf_events: how to add Intel LBR support
+From: Stephane Eranian <eranian@google.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, paulus@samba.org,
+       davem@davemloft.net, fweisbec@gmail.com, robert.richter@amd.com,
+       perfmon2-devel@lists.sf.net, eranian@gmail.com
+Content-Type: text/plain; charset=UTF-8
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/09, Suresh Siddha wrote:
->
-> +int xstateregs_get(struct task_struct *target, const struct user_regset *regset,
-> +		unsigned int pos, unsigned int count,
-> +		void *kbuf, void __user *ubuf)
-> +{
-> +	int ret;
-> +	int size = regset->n * regset->size;
-> +	struct xsave_hdr_struct *xsave_hdr =
-> +				&target->thread.xstate->xsave.xsave_hdr;
-> +
-> +	if (!cpu_has_xsave)
-> +		return -ENODEV;
-> +
-> +	ret = init_fpu(target);
-> +	if (ret)
-> +		return ret;
-> +
-> +	/*
-> +	 * First copy the fxsave bytes 0..463
-> +	 */
-> +	ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
-> +				  &target->thread.xstate->xsave, 0,
-> +				  offsetof(struct i387_fxsave_struct,
-> +					   sw_reserved));
-> +	if (!ret)
-> +		/*
-> +		 * Copy the 48bytes defined by software
-> +		 */
-> +		ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
-> +					  xstate_fx_sw_bytes,
-> +					  offsetof(struct i387_fxsave_struct,
-> +						   sw_reserved),
-> +					  offsetof(struct xsave_struct,
-> +						   xsave_hdr));
+hi,
 
-Hmm. Suresh, could you confirm these offsetof's are correct?
+Intel Last Branch Record (LBR) is a cyclic taken branch buffer hosted
+in registers. It is present in Core 2, Atom, and Nehalem processors. Each
+one adding some nice improvements over its predecessor.
 
-We are copying xstate_fx_sw_bytes array which is u64[6], but
-start_pos == sizeof(i387_fxsave_struct) - padding ?
+LBR is very useful to capture the path that leads to an event. Although
+the number of recorded branches is limited (4 on Core2 but 16 in Nehalem)
+it is very valuable information.
 
-While we are here. Perhaps it would be more symmetrical to do
+One nice feature of LBR, unlike BTS, is that it can be set to freeze on PMU
+interrupt. This is the way one can capture a path that leads to an event or
+more precisely to a PMU interrupt.
 
-	ret = user_regset_copyout();
-	if (ret)
-		return ret;
+I started looking into how to add LBR support to perf_events. We have LBR
+support in perfmon and it has proven very useful for some measurements.
 
-instead of "if (!ret)" which needs a tab, but this is up to you.
+The usage model is that you always couple LBR with sampling on an event.
+You want the LBR state dumped into the sample on overflow. When you resume,
+after an overflow, you clear LBR and you restart it.
 
-> +	if (!ret)
-> +		/*
-> +		 * Copy the rest of xstate memory layout
-> +		 */
-> +		ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
-> +					  xsave_hdr,
+One obvious implementation would be to add a new sample type such as
+PERF_SAMPLE_TAKEN_BRANCHES. That would generate a sample with
+a body containing an array of 4x2 up to 16x2 u64 addresses. Internally, the
+hw_perf_event_structure would have to store the LBR state so it could be
+saved and restored on context switch in per-thread mode.
 
-Another very minor nit, this is the only user of xsave_hdr, but this
-var was defined at the top. Perhaps it would be a bit more clean to
-have
+There is one problem with this approach. On Nehalem, the LBR can be configured
+to capture only certain types of branches + priv levels. That is about
+8 config bits
++ priv levels. Where do we pass those config options?
 
-	struct xsave_struct *xsave = target->thread.xstate->xsave;
+One solution would have to provide as many PERF_SAMPLE bits as the hardware
+OR provide some config field for it in perf_event_attr. All of this
+would have to
+remain very generic.
 
-and use it in 1st and 3rd copyout?
+An alternative approach is to define a new type of (pseudo)-event, e.g.,
+PERF_TYPE_HW_BRANCH and provide variations very much like this is
+done for the generic cache events. That event would be associated with a
+new fixed-purpose counter (similar to BTS). It would go through scheduling
+via a specific constraint (similar to BTS). The hw_perf_event structure
+would provide the storage area for dumping LBR state.
 
-Speaking about the first user_regset_copyout(), perhaps xsave->i387
-would be more clear than xsave?
+To sample on LBR with the event approach, the LBR event would have to
+be in the same event group. The sampling event would then simply add
+sample_type = PERF_SAMPLE_GROUP.
 
-Oleg.
+The second approach looks more extensible, flexible than the first one. But
+it runs into a major problem with the current perf_event API/ABI and
+implementation. The current assumption is that all events never return more
+than 64-bit worth of data. In the case of LBR, we would need to return way
+more than this.
 
+A long time ago, I mentioned LBR as a key feature to support but we never
+got to a solution as to how to support it with perf_events.
+
+What's you take on this?
