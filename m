@@ -1,54 +1,136 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753781Ab0BJKdD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 05:33:03 -0500
-Received: from hera.kernel.org ([140.211.167.34]:36437 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752204Ab0BJKdA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 05:33:00 -0500
-Message-ID: <4B728CFE.40208@kernel.org>
-Date: Wed, 10 Feb 2010 19:39:58 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	id S1754033Ab0BJKiO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 05:38:14 -0500
+Received: from qw-out-2122.google.com ([74.125.92.25]:48553 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753560Ab0BJKiL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Feb 2010 05:38:11 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=xUG9PfHmK2MKYjzc7svqIOlzUVZ0OzZc424lCm09+bPVhL1JACQg7tyN6m+CN6rMwh
+         MLZFizB4GwD+05s26GChnhHgCneAKqcUbv6Q6/nRxMmIHwt8priCbPT/Wx7B0G9Z2hJE
+         PfXP0rlcxE8rkIvS0ZDTfE9/ueCHsZibk1suI=
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: =?UTF-8?B?QW3DqXJpY28gV2FuZw==?= <xiyou.wangcong@gmail.com>,
-       Neil Brown <neilb@suse.de>, Greg Kroah-Hartman <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sysfs: differentiate between locking links and non-links
-References: <19314.1869.847327.15190@notabene.brown>	<2375c9f91002091808n713275dsc9ace8f51871364e@mail.gmail.com>	<4B7217CF.2080702@kernel.org> <m1vde57c11.fsf@fess.ebiederm.org>
-In-Reply-To: <m1vde57c11.fsf@fess.ebiederm.org>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 10 Feb 2010 10:32:54 +0000 (UTC)
+In-Reply-To: <1265796732.11509.260.camel@laptop>
+References: <20100208184504.GB5130@lenovo> <20100209041739.GA11280@elte.hu>
+	 <20100209223909.GE5068@lenovo> <1265796732.11509.260.camel@laptop>
+Date: Wed, 10 Feb 2010 13:38:10 +0300
+Message-ID: <aa79d98a1002100238v256ca6daw5e00c8b6d8dc4bb6@mail.gmail.com>
+Subject: Re: [RFC perf,x86] P4 PMU early draft
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Stephane Eranian <eranian@google.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Don Zickus <dzickus@redhat.com>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/10/2010 05:03 PM, Eric W. Biederman wrote:
-> Tejun Heo <tj@kernel.org> writes:
-> 
->> Hello,
+On 2/10/10, Peter Zijlstra <peterz@infradead.org> wrote:
+> On Wed, 2010-02-10 at 01:39 +0300, Cyrill Gorcunov wrote:
+>
+>
+>> Index: linux-2.6.git/arch/x86/kernel/cpu/perf_event.c
+>> =====================================================================
+>> --- linux-2.6.git.orig/arch/x86/kernel/cpu/perf_event.c
+>> +++ linux-2.6.git/arch/x86/kernel/cpu/perf_event.c
+>> @@ -26,6 +26,7 @@
+>>  #include <linux/bitops.h>
 >>
->> On 02/10/2010 11:08 AM, Américo Wang wrote:
->>> This bug report is new for me. Recently we received lots of sysfs lockdep
->>> warnings, I am working on a patch to fix all the bogus ones.
->>>
->>> However, this one is _not_ similar to the other cases, as you decribed.
->>> This patch could fix the problem, but not a good fix, IMO. We need more
->>> work in sysfs layer to fix this kind of things. I will take care of this.
+>>  #include <asm/apic.h>
+>> +#include <asm/perf_p4.h>
+>>  #include <asm/stacktrace.h>
+>>  #include <asm/nmi.h>
 >>
->> Can't we just give each s_active lock a separate class?  Would that be
->> too costly?
-> 
-> When I asked the question earlier I was told that that locking classes
-> require static storage.  Where would that static storage come from?
+>> @@ -140,6 +141,7 @@ struct x86_pmu {
+>>  	u64		max_period;
+>>  	u64		intel_ctrl;
+>>  	int		(*hw_config)(struct perf_event_attr *attr, struct hw_perf_event
+>> *hwc);
+>> +	int		(*schedule_events)(struct cpu_hw_events *cpuc, int n, int *assign,
+>> int cpu);
+>>  	void		(*enable_bts)(u64 config);
+>>  	void		(*disable_bts)(void);
+>>
+>
+>> +/*
+>> + * This is the most important routine of Netburst PMU actually
+>> + * and need a huge speedup!
+>> + */
+>> +static int p4_pmu_schedule_events(struct cpu_hw_events *cpuc, int n, int
+>> *assign, int cpu)
+>> +{
+>
+>> +}
+>
+>
+>> -static int x86_schedule_events(struct cpu_hw_events *cpuc, int n, int
+>> *assign)
+>> +/* we don't use cpu argument here at all */
+>> +static int x86_schedule_events(struct cpu_hw_events *cpuc, int n, int
+>> *assign, int cpu)
+>>  {
+>>  	struct event_constraint *c, *constraints[X86_PMC_IDX_MAX];
+>>  	unsigned long used_mask[BITS_TO_LONGS(X86_PMC_IDX_MAX)];
+>
+>
+>> @@ -1796,7 +2305,7 @@ static int x86_pmu_enable(struct perf_ev
+>>  	if (n < 0)
+>>  		return n;
+>>
+>> -	ret = x86_schedule_events(cpuc, n, assign);
+>> +	ret = x86_pmu.schedule_events(cpuc, n, assign, 0);
+>>  	if (ret)
+>>  		return ret;
+>>  	/*
+>
+> This look like a bug, surely we can run on !cpu0.
 
-Maybe I'm glossly misunderstanding it but wouldn't embedding struct
-lockdep_map into sysfs_node as in work_struct do the trick?
+Definitely! Thanks! It should be smp_processor_id()
 
-Thanks.
+>
+>> @@ -2313,7 +2822,7 @@ int hw_perf_group_sched_in(struct perf_e
+>>  	if (n0 < 0)
+>>  		return n0;
+>>
+>> -	ret = x86_schedule_events(cpuc, n0, assign);
+>> +	ret = x86_pmu.schedule_events(cpuc, n0, assign, cpu);
+>>  	if (ret)
+>>  		return ret;
+>>
+>
+> I'd try BUG_ON(cpu != smp_processor_id()) and scrap passing that cpu
+> thing around.
+>
 
--- 
-tejun
+no, i need cpu to find out if event has migrated from other thread and
+then i switch
+some thread dependant flags in hw::config (ie escr and cccr), or i
+miss something and events in one cpu just can't migrate to another
+cpu?
+
+>> @@ -2700,6 +3232,7 @@ static int validate_group(struct perf_ev
+>>  {
+>>  	struct perf_event *leader = event->group_leader;
+>>  	struct cpu_hw_events *fake_cpuc;
+>> +	int cpu = smp_processor_id();
+>>  	int ret, n;
+>>
+>>  	ret = -ENOMEM;
+>> @@ -2725,7 +3258,7 @@ static int validate_group(struct perf_ev
+>>
+>>  	fake_cpuc->n_events = n;
+>>
+>> -	ret = x86_schedule_events(fake_cpuc, n, NULL);
+>> +	ret = x86_pmu.schedule_events(fake_cpuc, n, NULL, cpu);
+>>
+>>  out_free:
+>>  	kfree(fake_cpuc);
+>
+>
+>
