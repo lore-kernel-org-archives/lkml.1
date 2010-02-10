@@ -1,62 +1,45 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756413Ab0BJSrp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 13:47:45 -0500
-Received: from claw.goop.org ([74.207.240.146]:50323 "EHLO claw.goop.org"
+	id S1756450Ab0BJS62 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 13:58:28 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:64590 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756381Ab0BJSro (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 13:47:44 -0500
-X-Greylist: delayed 579 seconds by postgrey-1.27 at vger.kernel.org; Wed, 10 Feb 2010 13:47:44 EST
-Message-ID: <4B72FD09.1020202@goop.org>
-Date: Wed, 10 Feb 2010 10:38:01 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Lightning/1.0b2pre Thunderbird/3.0.1
+	id S1756368Ab0BJS61 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Feb 2010 13:58:27 -0500
 MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@medozas.de>
-CC: Jeremy Fitzhardinge <jeremy@xensource.com>, virtualization@lists.osdl.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: Paravirt compile failure with gcc33
-References: <alpine.LSU.2.01.1002101909560.29808@obet.zrqbmnf.qr>
-In-Reply-To: <alpine.LSU.2.01.1002101909560.29808@obet.zrqbmnf.qr>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+X-Fcc: ~/Mail/linus
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>, Oleg Nesterov <oleg@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>, hjl.tools@gmail.com
+Subject: Re: [patch v2 0/4] updated ptrace/core-dump patches for supporting
+ xstate - V2
+In-Reply-To: Ingo Molnar's message of  Wednesday, 10 February 2010 08:27:56 +0100 <20100210072756.GD31351@elte.hu>
+References: <20100209201309.902050211@sbs-t61.sc.intel.com>
+	<20100210011232.71CA51C5@magilla.sf.frob.com>
+	<20100210072756.GD31351@elte.hu>
+X-Windows: never had it, never will.
+Message-Id: <20100210185815.4B4F9CC@magilla.sf.frob.com>
+Date: Wed, 10 Feb 2010 10:58:15 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/10/2010 10:13 AM, Jan Engelhardt wrote:
-> As I was compile-testing 2.6.33-rc with gcc-3.3,
-> binutils-2.19.51-10.26.4.x86_64, I observed a failure when
-> CONFIG_PARAVIRT is turned on:
->    
+> Yeah - and the patches your review strikes we'll remove/fix as well. And you 
+> can pick up the patches yourself as well into your tree, if you wish to. (or 
+> pull it from us if we are done) We can push it too with your acks - your 
+> call.
 
-Yeah, there's a gcc bug of some kind there, and its very hard to see how 
-to work around it.  When we last discussed this, I think we were close 
-to deciding to obsolete gcc 3.3.
+AFAIK there is no tree of mine that anyone habitually pulls from as part of
+a regular merge procedure.  Since the x86 patches have to go through your
+approval, and these ones are coming from someone else's postings (Suresh),
+I'm not sure how I would or should fit into the chain.  If you would like
+me to use a git branch for x86 things (ptrace things?  x86 ptrace things?)
+that have my ACK and I think should be merged, I'm glad to do that.
 
-HPA, do you remember?
 
-     J
-
->
-> [any file]
-> /home/jengelh/code/linux/arch/x86/include/asm/paravirt.h: In function
-> `rif_seq_stop':
-> /home/jengelh/code/linux/arch/x86/include/asm/paravirt.h:763: warning:
-> asm operand 5 probably doesn't match constraints
-> /home/jengelh/code/linux/arch/x86/include/asm/paravirt.h:858: warning:
-> asm operand 2 probably doesn't match constraints
-> /home/jengelh/code/linux/arch/x86/include/asm/paravirt.h:763: error:
-> impossible constraint in `asm'
-> /home/jengelh/code/linux/arch/x86/include/asm/paravirt.h:858: error:
-> impossible constraint in `asm'
->
-> Disabling either PARAVIRT or using GCC4.x works around this.
-> _______________________________________________
-> Virtualization mailing list
-> Virtualization@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/virtualization
->
->    
-
+Thanks,
+Roland
