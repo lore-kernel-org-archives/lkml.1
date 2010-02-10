@@ -1,54 +1,76 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756071Ab0BJU3f (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 15:29:35 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55378
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755892Ab0BJU3d (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 15:29:33 -0500
-Date: Wed, 10 Feb 2010 12:29:47 -0800 (PST)
-Message-Id: <20100210.122947.171052717.davem@davemloft.net>
-To: lizf@cn.fujitsu.com
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH 00/13] net: simplify seq_file code, revised
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20100210.113115.28754681.davem@davemloft.net>
-References: <4B712849.9040400@cn.fujitsu.com>
-	<20100210.113115.28754681.davem@davemloft.net>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	id S1756121Ab0BJUbA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 15:31:00 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:42427 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755493Ab0BJUa4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Feb 2010 15:30:56 -0500
+Date: Wed, 10 Feb 2010 12:30:50 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, oleg@redhat.com,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
+Subject: Re: [PATCH] Update comment on find_task_by_pid_ns
+Message-ID: <20100210203050.GJ6737@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <201002082130.JDC57339.OHOVJFQtFSLFMO@I-love.SAKURA.ne.jp> <20100208132101.GA7129@redhat.com> <alpine.LFD.2.00.1002081802510.2811@localhost.localdomain> <20100208171643.GA19230@redhat.com> <201002090642.EBE48414.HLJVFOQFSOFOMt@I-love.SAKURA.ne.jp> <20100209140818.43bb9770.akpm@linux-foundation.org> <20100210163033.GA12251@us.ibm.com> <20100210095710.c7b124f7.akpm@linux-foundation.org> <alpine.LFD.2.00.1002101938000.2811@localhost.localdomain> <20100210201834.GA23001@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100210201834.GA23001@us.ibm.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Miller <davem@davemloft.net>
-Date: Wed, 10 Feb 2010 11:31:15 -0800 (PST)
-
-> From: Li Zefan <lizf@cn.fujitsu.com>
-> Date: Tue, 09 Feb 2010 17:18:01 +0800
+On Wed, Feb 10, 2010 at 02:18:34PM -0600, Serge E. Hallyn wrote:
+> Quoting Thomas Gleixner (tglx@linutronix.de):
+> > On Wed, 10 Feb 2010, Andrew Morton wrote:
+> > > On Wed, 10 Feb 2010 10:30:33 -0600 "Serge E. Hallyn" <serue@us.ibm.com> wrote:
+> > > 
+> > > > Quoting Andrew Morton (akpm@linux-foundation.org):
+> > > > > On Tue, 9 Feb 2010 06:42:45 +0900
+> > > > > Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp> wrote:
+> > > > > 
+> > > > > > OK. I updated description.
+> > > > > > 
+> > > > > > As of 2.6.32 , below users are missing rcu_read_lock().
+> > > > > > 
+> > > > > > Users missing rcu_read_lock() when calling find_task_by_vpid():
+> > > > > > 
+> > > > > >   SYSCALL_DEFINE3(ioprio_set) in fs/ioprio.c
+> > > > > >   SYSCALL_DEFINE2(ioprio_get) in fs/ioprio.c
+> > > > > >   cap_get_target_pid() in kernel/capability.c
+> > > > > 
+> > > > > Actually, cap_get_target_pid() uses rcu_read_lock() and doesn't take
+> > > > > tasklist_lock.
+> > > > 
+> > > > Hmm - is that in -mm?  In my copy here it takes read_lock(&tasklist_lock)
+> > > 
+> > > yup.  It got changed in linux-next.
+> > > 
+> > > > And I'll admit I'm a bit confused as to the current state of things:
+> > > > do I understand correctly that we now need to take both the tasklist_lock
+> > > > and rcu_read_lock?  (Presumably only for read_lock()?)
+> > > 
+> > > Beats me.  We need to protect both the pid->task_struct lookup data
+> > > structures (during the lookup) and protect the resulting task_struct
+> > > while the caller is playing with it.  It's unclear whether
+> > > rcu_read_lock() suffices for both purposes.
+> > 
+> > The rcu_read_lock section is sufficient. task_struct can not go away
+> > before the rcu_read_unlock()
 > 
->> This patchset introduces seq_hlist_foo() helpers, and convert
->> net/* to seq_hlist_foo() and seq_list_foo().
->> 
->> Changelog:
->> 
->> - Add kerneldoc in patch 1/13
->> - Fix compile warning in patch 11/13
->> - Fix a bug in patch 12/13
-> 
-> All applied to net-next-2.6, thanks!
+> But, more generally, it used to be the case that a spinlock (or
+> rwlock) would imply an rcu read cycle, but now it no longer does,
+> do I understand that right?
 
-You did not build test your changes.
+You are correct, with CONFIG_PREEMPT_RCU, acquiring a lock does -not-
+imply an RCU read-side critical section.  And acquiring a lock does
+-not- imply any sort of RCU read-side critical section in -rt kernels
+in any case.
 
-net/irda/irlan/irlan_common.c:1156: error: 'struct irlan_cb' has no member named 'list'
-net/irda/irlan/irlan_common.c:1156: warning: type defaults to 'int' in declaration of '__mptr'
-net/irda/irlan/irlan_common.c:1156: error: 'struct irlan_cb' has no member named 'list'
-
-I'll fix this, but I will not next time.  Instead, I'll revert all of
-your changes and push it back to you.
-
-Thanks.
+							Thanx, Paul
