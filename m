@@ -1,151 +1,112 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755780Ab0BJRXP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 12:23:15 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:60385 "EHLO mx1.redhat.com"
+	id S1756099Ab0BJR0q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 12:26:46 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:1041 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754494Ab0BJRXL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 12:23:11 -0500
+	id S1755746Ab0BJRXO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Feb 2010 12:23:14 -0500
 From: Avi Kivity <avi@redhat.com>
 To: kvm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 01/40] KVM: x86: make double/triple fault promotion generic to all exceptions
-Date: Wed, 10 Feb 2010 19:22:30 +0200
-Message-Id: <1265822589-11155-2-git-send-email-avi@redhat.com>
+Subject: [PATCH 39/40] KVM: avoid taking ioapic mutex for non-ioapic EOIs
+Date: Wed, 10 Feb 2010 19:23:08 +0200
+Message-Id: <1265822589-11155-40-git-send-email-avi@redhat.com>
 In-Reply-To: <1265822589-11155-1-git-send-email-avi@redhat.com>
 References: <1265822589-11155-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Eddie Dong <eddie.dong@intel.com>
+When the guest acknowledges an interrupt, it sends an EOI message to the local
+apic, which broadcasts it to the ioapic.  To handle the EOI, we need to take
+the ioapic mutex.
 
-Move Double-Fault generation logic out of page fault
-exception generating function to cover more generic case.
+On large guests, this causes a lot of contention on this mutex.  Since large
+guests usually don't route interrupts via the ioapic (they use msi instead),
+this is completely unnecessary.
 
-Signed-off-by: Eddie Dong <eddie.dong@intel.com>
-Signed-off-by: Gleb Natapov <gleb@redhat.com>
+Avoid taking the mutex by introducing a handled_vectors bitmap.  Before taking
+the mutex, check if the ioapic was actually responsible for the acked vector.
+If not, we can return early.
+
+Signed-off-by: Avi Kivity <avi@redhat.com>
 Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
 ---
- arch/x86/kvm/x86.c |   89 +++++++++++++++++++++++++++++++++++----------------
- 1 files changed, 61 insertions(+), 28 deletions(-)
+ virt/kvm/ioapic.c |   19 +++++++++++++++++++
+ virt/kvm/ioapic.h |    1 +
+ 2 files changed, 20 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 1ddcad4..b503614 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -257,12 +257,68 @@ void kvm_set_apic_base(struct kvm_vcpu *vcpu, u64 data)
+diff --git a/virt/kvm/ioapic.c b/virt/kvm/ioapic.c
+index f01392f..a2edfd1 100644
+--- a/virt/kvm/ioapic.c
++++ b/virt/kvm/ioapic.c
+@@ -100,6 +100,19 @@ static int ioapic_service(struct kvm_ioapic *ioapic, unsigned int idx)
+ 	return injected;
  }
- EXPORT_SYMBOL_GPL(kvm_set_apic_base);
  
-+#define EXCPT_BENIGN		0
-+#define EXCPT_CONTRIBUTORY	1
-+#define EXCPT_PF		2
-+
-+static int exception_class(int vector)
++static void update_handled_vectors(struct kvm_ioapic *ioapic)
 +{
-+	switch (vector) {
-+	case PF_VECTOR:
-+		return EXCPT_PF;
-+	case DE_VECTOR:
-+	case TS_VECTOR:
-+	case NP_VECTOR:
-+	case SS_VECTOR:
-+	case GP_VECTOR:
-+		return EXCPT_CONTRIBUTORY;
-+	default:
-+		break;
-+	}
-+	return EXCPT_BENIGN;
++	DECLARE_BITMAP(handled_vectors, 256);
++	int i;
++
++	memset(handled_vectors, 0, sizeof(handled_vectors));
++	for (i = 0; i < IOAPIC_NUM_PINS; ++i)
++		__set_bit(ioapic->redirtbl[i].fields.vector, handled_vectors);
++	memcpy(ioapic->handled_vectors, handled_vectors,
++	       sizeof(handled_vectors));
++	smp_wmb();
 +}
 +
-+static void kvm_multiple_exception(struct kvm_vcpu *vcpu,
-+		unsigned nr, bool has_error, u32 error_code)
-+{
-+	u32 prev_nr;
-+	int class1, class2;
-+
-+	if (!vcpu->arch.exception.pending) {
-+	queue:
-+		vcpu->arch.exception.pending = true;
-+		vcpu->arch.exception.has_error_code = has_error;
-+		vcpu->arch.exception.nr = nr;
-+		vcpu->arch.exception.error_code = error_code;
+ static void ioapic_write_indirect(struct kvm_ioapic *ioapic, u32 val)
+ {
+ 	unsigned index;
+@@ -134,6 +147,7 @@ static void ioapic_write_indirect(struct kvm_ioapic *ioapic, u32 val)
+ 			e->bits |= (u32) val;
+ 			e->fields.remote_irr = 0;
+ 		}
++		update_handled_vectors(ioapic);
+ 		mask_after = e->fields.mask;
+ 		if (mask_before != mask_after)
+ 			kvm_fire_mask_notifiers(ioapic->kvm, index, mask_after);
+@@ -241,6 +255,9 @@ void kvm_ioapic_update_eoi(struct kvm *kvm, int vector, int trigger_mode)
+ {
+ 	struct kvm_ioapic *ioapic = kvm->arch.vioapic;
+ 
++	smp_rmb();
++	if (!test_bit(vector, ioapic->handled_vectors))
 +		return;
-+	}
-+
-+	/* to check exception */
-+	prev_nr = vcpu->arch.exception.nr;
-+	if (prev_nr == DF_VECTOR) {
-+		/* triple fault -> shutdown */
-+		set_bit(KVM_REQ_TRIPLE_FAULT, &vcpu->requests);
-+		return;
-+	}
-+	class1 = exception_class(prev_nr);
-+	class2 = exception_class(nr);
-+	if ((class1 == EXCPT_CONTRIBUTORY && class2 == EXCPT_CONTRIBUTORY)
-+		|| (class1 == EXCPT_PF && class2 != EXCPT_BENIGN)) {
-+		/* generate double fault per SDM Table 5-5 */
-+		vcpu->arch.exception.pending = true;
-+		vcpu->arch.exception.has_error_code = true;
-+		vcpu->arch.exception.nr = DF_VECTOR;
-+		vcpu->arch.exception.error_code = 0;
-+	} else
-+		/* replace previous exception with a new one in a hope
-+		   that instruction re-execution will regenerate lost
-+		   exception */
-+		goto queue;
-+}
-+
- void kvm_queue_exception(struct kvm_vcpu *vcpu, unsigned nr)
- {
--	WARN_ON(vcpu->arch.exception.pending);
--	vcpu->arch.exception.pending = true;
--	vcpu->arch.exception.has_error_code = false;
--	vcpu->arch.exception.nr = nr;
-+	kvm_multiple_exception(vcpu, nr, false, 0);
+ 	mutex_lock(&ioapic->lock);
+ 	__kvm_ioapic_update_eoi(ioapic, vector, trigger_mode);
+ 	mutex_unlock(&ioapic->lock);
+@@ -352,6 +369,7 @@ void kvm_ioapic_reset(struct kvm_ioapic *ioapic)
+ 	ioapic->ioregsel = 0;
+ 	ioapic->irr = 0;
+ 	ioapic->id = 0;
++	update_handled_vectors(ioapic);
  }
- EXPORT_SYMBOL_GPL(kvm_queue_exception);
  
-@@ -270,25 +326,6 @@ void kvm_inject_page_fault(struct kvm_vcpu *vcpu, unsigned long addr,
- 			   u32 error_code)
- {
- 	++vcpu->stat.pf_guest;
--
--	if (vcpu->arch.exception.pending) {
--		switch(vcpu->arch.exception.nr) {
--		case DF_VECTOR:
--			/* triple fault -> shutdown */
--			set_bit(KVM_REQ_TRIPLE_FAULT, &vcpu->requests);
--			return;
--		case PF_VECTOR:
--			vcpu->arch.exception.nr = DF_VECTOR;
--			vcpu->arch.exception.error_code = 0;
--			return;
--		default:
--			/* replace previous exception with a new one in a hope
--			   that instruction re-execution will regenerate lost
--			   exception */
--			vcpu->arch.exception.pending = false;
--			break;
--		}
--	}
- 	vcpu->arch.cr2 = addr;
- 	kvm_queue_exception_e(vcpu, PF_VECTOR, error_code);
+ static const struct kvm_io_device_ops ioapic_mmio_ops = {
+@@ -401,6 +419,7 @@ int kvm_set_ioapic(struct kvm *kvm, struct kvm_ioapic_state *state)
+ 
+ 	mutex_lock(&ioapic->lock);
+ 	memcpy(ioapic, state, sizeof(struct kvm_ioapic_state));
++	update_handled_vectors(ioapic);
+ 	mutex_unlock(&ioapic->lock);
+ 	return 0;
  }
-@@ -301,11 +338,7 @@ EXPORT_SYMBOL_GPL(kvm_inject_nmi);
+diff --git a/virt/kvm/ioapic.h b/virt/kvm/ioapic.h
+index 419c43b..a505ce9 100644
+--- a/virt/kvm/ioapic.h
++++ b/virt/kvm/ioapic.h
+@@ -46,6 +46,7 @@ struct kvm_ioapic {
+ 	struct kvm *kvm;
+ 	void (*ack_notifier)(void *opaque, int irq);
+ 	struct mutex lock;
++	DECLARE_BITMAP(handled_vectors, 256);
+ };
  
- void kvm_queue_exception_e(struct kvm_vcpu *vcpu, unsigned nr, u32 error_code)
- {
--	WARN_ON(vcpu->arch.exception.pending);
--	vcpu->arch.exception.pending = true;
--	vcpu->arch.exception.has_error_code = true;
--	vcpu->arch.exception.nr = nr;
--	vcpu->arch.exception.error_code = error_code;
-+	kvm_multiple_exception(vcpu, nr, true, error_code);
- }
- EXPORT_SYMBOL_GPL(kvm_queue_exception_e);
- 
+ #ifdef DEBUG
 -- 
 1.6.5.3
 
