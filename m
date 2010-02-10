@@ -1,18 +1,18 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754931Ab0BJJYc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 04:24:32 -0500
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:39210 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753984Ab0BJJWL (ORCPT
+	id S1754961Ab0BJJY4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 04:24:56 -0500
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:60095 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753739Ab0BJJWD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 04:22:11 -0500
+	Wed, 10 Feb 2010 04:22:03 -0500
 MIME-version: 1.0
 Content-transfer-encoding: 7BIT
 Content-type: TEXT/PLAIN
-Date: Wed, 10 Feb 2010 01:20:35 -0800
+Date: Wed, 10 Feb 2010 01:20:27 -0800
 From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 31/35] sparseirq: use radix_tree instead of ptrs array
+Subject: [PATCH 23/35] early_res: enhance check_and_double_early_res
 In-reply-to: <1265793639-15071-1-git-send-email-yinghai@kernel.org>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
@@ -22,128 +22,84 @@ Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
        Christoph Lameter <cl@linux-foundation.org>,
        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
        Yinghai Lu <yinghai@kernel.org>
-Message-id: <1265793639-15071-32-git-send-email-yinghai@kernel.org>
+Message-id: <1265793639-15071-24-git-send-email-yinghai@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 References: <1265793639-15071-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-use radix_tree irq_desc_tree instead of irq_desc_ptrs.
+to make it always try to start from low at first.
 
--v2: according to Eric and cyrill to use radix_tree_lookup_slot and radix_tree_replace_slot
+so make it more safe for early_memtest to reserve bad range.
+aka put new early_res to range that is already tested.
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 ---
- kernel/irq/handle.c |   49 +++++++++++++++++++++++++------------------------
- 1 files changed, 25 insertions(+), 24 deletions(-)
+ arch/x86/kernel/early_res.c |   27 ++++++++++++++++++++-------
+ 1 files changed, 20 insertions(+), 7 deletions(-)
 
-diff --git a/kernel/irq/handle.c b/kernel/irq/handle.c
-index 266f798..76d5a67 100644
---- a/kernel/irq/handle.c
-+++ b/kernel/irq/handle.c
-@@ -19,6 +19,7 @@
- #include <linux/kernel_stat.h>
- #include <linux/rculist.h>
- #include <linux/hash.h>
-+#include <linux/radix-tree.h>
- #include <trace/events/irq.h>
- 
- #include "internals.h"
-@@ -127,7 +128,26 @@ static void init_one_irq_desc(int irq, struct irq_desc *desc, int node)
-  */
- DEFINE_RAW_SPINLOCK(sparse_irq_lock);
- 
--static struct irq_desc **irq_desc_ptrs __read_mostly;
-+static RADIX_TREE(irq_desc_tree, GFP_ATOMIC);
-+
-+static void set_irq_desc(unsigned int irq, struct irq_desc *desc)
-+{
-+	radix_tree_insert(&irq_desc_tree, irq, desc);
-+}
-+
-+struct irq_desc *irq_to_desc(unsigned int irq)
-+{
-+	return radix_tree_lookup(&irq_desc_tree, irq);
-+}
-+
-+void replace_irq_desc(unsigned int irq, struct irq_desc *desc)
-+{
-+	void **ptr;
-+
-+	ptr = radix_tree_lookup_slot(&irq_desc_tree, irq);
-+	if (ptr)
-+		radix_tree_replace_slot(ptr, desc);
-+}
- 
- static struct irq_desc irq_desc_legacy[NR_IRQS_LEGACY] __cacheline_aligned_in_smp = {
- 	[0 ... NR_IRQS_LEGACY-1] = {
-@@ -159,9 +179,6 @@ int __init early_irq_init(void)
- 	legacy_count = ARRAY_SIZE(irq_desc_legacy);
- 	node = first_online_node;
- 
--	/* allocate irq_desc_ptrs array based on nr_irqs */
--	irq_desc_ptrs = kcalloc(nr_irqs, sizeof(void *), GFP_NOWAIT);
--
- 	/* allocate based on nr_cpu_ids */
- 	kstat_irqs_legacy = kzalloc_node(NR_IRQS_LEGACY * nr_cpu_ids *
- 					  sizeof(int), GFP_NOWAIT, node);
-@@ -175,28 +192,12 @@ int __init early_irq_init(void)
- 		lockdep_set_class(&desc[i].lock, &irq_desc_lock_class);
- 		alloc_desc_masks(&desc[i], node, true);
- 		init_desc_masks(&desc[i]);
--		irq_desc_ptrs[i] = desc + i;
-+		set_irq_desc(i, &desc[i]);
- 	}
- 
--	for (i = legacy_count; i < nr_irqs; i++)
--		irq_desc_ptrs[i] = NULL;
--
- 	return arch_early_irq_init();
+diff --git a/arch/x86/kernel/early_res.c b/arch/x86/kernel/early_res.c
+index d0a70cc..52804e9 100644
+--- a/arch/x86/kernel/early_res.c
++++ b/arch/x86/kernel/early_res.c
+@@ -180,9 +180,9 @@ void __init reserve_early_overlap_ok(u64 start, u64 end, char *name)
+ 	__reserve_early(start, end, name, 1);
  }
  
--struct irq_desc *irq_to_desc(unsigned int irq)
--{
--	if (irq_desc_ptrs && irq < nr_irqs)
--		return irq_desc_ptrs[irq];
--
--	return NULL;
--}
--
--void replace_irq_desc(unsigned int irq, struct irq_desc *desc)
--{
--	irq_desc_ptrs[irq] = desc;
--}
--
- struct irq_desc * __ref irq_to_desc_alloc_node(unsigned int irq, int node)
+-static void __init __check_and_double_early_res(u64 start)
++static void __init __check_and_double_early_res(u64 ex_start, u64 ex_end)
  {
- 	struct irq_desc *desc;
-@@ -208,14 +209,14 @@ struct irq_desc * __ref irq_to_desc_alloc_node(unsigned int irq, int node)
- 		return NULL;
- 	}
+-	u64 end, size, mem;
++	u64 start, end, size, mem;
+ 	struct early_res *new;
  
--	desc = irq_desc_ptrs[irq];
-+	desc = irq_to_desc(irq);
- 	if (desc)
- 		return desc;
+ 	/* do we have enough slots left ? */
+@@ -190,10 +190,23 @@ static void __init __check_and_double_early_res(u64 start)
+ 		return;
  
- 	raw_spin_lock_irqsave(&sparse_irq_lock, flags);
+ 	/* double it */
+-	end = max_pfn_mapped << PAGE_SHIFT;
++	mem = -1ULL;
+ 	size = sizeof(struct early_res) * max_early_res * 2;
+-	mem = find_e820_area(start, end, size, sizeof(struct early_res));
+-
++	if (early_res == early_res_x)
++		start = 0;
++	else
++		start = early_res[0].end;
++	end = ex_start;
++	if (start + size < end)
++		mem = find_e820_area(start, end, size,
++					 sizeof(struct early_res));
++	if (mem == -1ULL) {
++		start = ex_end;
++		end = max_pfn_mapped << PAGE_SHIFT;
++		if (start + size < end)
++			mem = find_e820_area(start, end, size,
++						 sizeof(struct early_res));
++	}
+ 	if (mem == -1ULL)
+ 		panic("can not find more space for early_res array");
  
- 	/* We have to check it to avoid races with another CPU */
--	desc = irq_desc_ptrs[irq];
-+	desc = irq_to_desc(irq);
- 	if (desc)
- 		goto out_unlock;
+@@ -235,7 +248,7 @@ void __init reserve_early(u64 start, u64 end, char *name)
+ 	if (start >= end)
+ 		return;
  
-@@ -228,7 +229,7 @@ struct irq_desc * __ref irq_to_desc_alloc_node(unsigned int irq, int node)
- 	}
- 	init_one_irq_desc(irq, desc, node);
+-	__check_and_double_early_res(end);
++	__check_and_double_early_res(start, end);
  
--	irq_desc_ptrs[irq] = desc;
-+	set_irq_desc(irq, desc);
+ 	drop_overlaps_that_are_ok(start, end);
+ 	__reserve_early(start, end, name, 0);
+@@ -248,7 +261,7 @@ void __init reserve_early_without_check(u64 start, u64 end, char *name)
+ 	if (start >= end)
+ 		return;
  
- out_unlock:
- 	raw_spin_unlock_irqrestore(&sparse_irq_lock, flags);
+-	__check_and_double_early_res(end);
++	__check_and_double_early_res(start, end);
+ 
+ 	r = &early_res[early_res_count];
+ 
 -- 
 1.6.4.2
 
