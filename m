@@ -1,62 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752851Ab0BJN2j (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 08:28:39 -0500
-Received: from casper.infradead.org ([85.118.1.10]:47974 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752084Ab0BJN2i (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 08:28:38 -0500
-Subject: Re: [PATCH] perf_events: AMD event scheduling (v3)
-From: Peter Zijlstra <peterz@infradead.org>
-To: Stephane Eranian <eranian@google.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, paulus@samba.org,
-       davem@davemloft.net, fweisbec@gmail.com, robert.richter@amd.com,
-       perfmon2-devel@lists.sf.net, eranian@gmail.com
-In-Reply-To: <1265807830.11509.295.camel@laptop>
-References: <4b703957.0702d00a.6bf2.7b7d@mx.google.com>
-	 <1265803166.11509.286.camel@laptop>
-	 <bd4cb8901002100504i8e716e8ob845f692e031726f@mail.gmail.com>
-	 <1265807830.11509.295.camel@laptop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 10 Feb 2010 14:28:21 +0100
-Message-ID: <1265808501.11509.300.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	id S1753239Ab0BJNaL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 08:30:11 -0500
+Received: from broadrack.ru ([195.178.208.66]:36346 "EHLO tservice.net.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750933Ab0BJNaJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Feb 2010 08:30:09 -0500
+Date: Wed, 10 Feb 2010 16:30:07 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [WTF] ... is going on with current->fs->{root,mnt} accesses in pohmelfs
+Message-ID: <20100210133007.GA17744@ioremap.net>
+References: <20100210100428.GL30031@ZenIV.linux.org.uk> <20100210101246.GA3509@ioremap.net> <20100210102422.GM30031@ZenIV.linux.org.uk> <20100210104515.GA6207@ioremap.net> <20100210110011.GN30031@ZenIV.linux.org.uk> <20100210111115.GA8376@ioremap.net> <20100210115938.GO30031@ZenIV.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100210115938.GO30031@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-02-10 at 14:17 +0100, Peter Zijlstra wrote:
-> On Wed, 2010-02-10 at 14:04 +0100, Stephane Eranian wrote:
+On Wed, Feb 10, 2010 at 11:59:39AM +0000, Al Viro (viro@ZenIV.linux.org.uk) wrote:
+> > Let me guess... Mmmm, it was in the yesterday newspaper, I remember.
+> > Maybe when we chroot somewhere. I meant not mounted fs root, but
+> > thread's root.
 > 
-> > > @@ -2268,7 +2268,7 @@ static inline int amd_is_nb_event(struct
-> > >        u64 val = hwc->config & K7_EVNTSEL_EVENT_MASK;
-> > >        /* event code : bits [35-32] | [7-0] */
-> > >        val = (val >> 24) | (val & 0xff);
-> > > -       return val >= 0x0e0;
-> > > +       return val >= 0xe00;
-> > >  }
-> > >
-> > I don't understand the change from 0xe0 to 0xe00.
-> > That's not the same thing at all.
-> > Event select is bits 0-7 + 32-35.
+> Why would a filesystem give a damn about the chroot of syscall originator
+> in the first place?
+
+That's the point - it is not needed.
+
+> > > Why not use the dentries you've been given by VFS?
+> > 
+> > At writeback we do not have parents, so must find a path somehow.
 > 
-> OK that appears to be my bad, because you extended K7_EVNTSEL_EVENT_MASK
-> with bit 35 I thought NB events all had bit 35 set.
-> 
-> But looking at the AMD docs it does indeed appear to start at 0xe0, and
-> there are no events with bit 35 set, only a few with bit 32.
-> 
-> I'll switch it back to 0xe0.
+> Most of the places do have those just fine and unlike the writeback,
+> rename et.al. really care which pathname is being dealt with...
 
-Fwiw, for the purpose of that function you might as well write:
+POHMELFS uses writeback cache also for metadata, so effectively most of
+such operations are also postponed. Later I turned that off though.
 
-static inline int amd_is_nb_event(struct hw_perf_event *hwc)
-{
-	return (hwc->config & K7_EVNTSEL_EVENT_MASK) > 0xe0;
-}
+> BTW, what prevents writeback vs. rename races?
 
-No need to move bits around higher than the value you compare against.
+There are proper locks for such operations.
 
+-- 
+	Evgeniy Polyakov
