@@ -1,48 +1,39 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753526Ab0BJTW6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 14:22:58 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:43509 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751965Ab0BJTW4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 14:22:56 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Luca Tettamanti <kronos.it@gmail.com>
-Subject: Re: [Bug #15195] kernel BUG at include/net/netns/generic.h:41, pfkey_create+0x36/0x18b [af_key]
-Date: Wed, 10 Feb 2010 20:23:34 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.33-rc7-rjw; KDE/4.3.5; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>
-References: <4Ht3jFrT7uE.A.JI.-nzbLB@chimera> <445R0ey9hAI.A.4VB.YozbLB@chimera> <68676e01002100759v37f79938p51f3aeb6c068d39a@mail.gmail.com>
-In-Reply-To: <68676e01002100759v37f79938p51f3aeb6c068d39a@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
+	id S1755828Ab0BJTbI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 14:31:08 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57857
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751007Ab0BJTbE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Feb 2010 14:31:04 -0500
+Date: Wed, 10 Feb 2010 11:31:15 -0800 (PST)
+Message-Id: <20100210.113115.28754681.davem@davemloft.net>
+To: lizf@cn.fujitsu.com
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH 00/13] net: simplify seq_file code, revised
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4B712849.9040400@cn.fujitsu.com>
+References: <4B712849.9040400@cn.fujitsu.com>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <201002102023.34292.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 10 February 2010, Luca Tettamanti wrote:
-> On Sun, Feb 7, 2010 at 11:28 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.32.  Please verify if it still should be listed and let the tracking team
-> > know (either way).
-> >
-> >
-> > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=15195
-> > Subject         : kernel BUG at include/net/netns/generic.h:41, pfkey_create+0x36/0x18b [af_key]
-> > Submitter       : Luca Tettamanti <kronos.it@gmail.com>
-> > Date            : 2010-01-30 13:23 (9 days old)
-> > References      : http://marc.info/?l=linux-netdev&m=126485785004775&w=4
-> > Handled-By      : Alexey Dobriyan <adobriyan@gmail.com>
-> > Patch           : http://patchwork.kernel.org/patch/75891/
+From: Li Zefan <lizf@cn.fujitsu.com>
+Date: Tue, 09 Feb 2010 17:18:01 +0800
+
+> This patchset introduces seq_hlist_foo() helpers, and convert
+> net/* to seq_hlist_foo() and seq_list_foo().
 > 
-> Fixed by commit 180211b841b5bf13ab10d19202adab3eb7749f6c
+> Changelog:
+> 
+> - Add kerneldoc in patch 1/13
+> - Fix compile warning in patch 11/13
+> - Fix a bug in patch 12/13
 
-Thanks, closing.
-
-Rafael
+All applied to net-next-2.6, thanks!
