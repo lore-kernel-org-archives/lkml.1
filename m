@@ -1,81 +1,63 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755719Ab0BJRsw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 12:48:52 -0500
-Received: from e33.co.us.ibm.com ([32.97.110.151]:44998 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755028Ab0BJRsu (ORCPT
+	id S1755632Ab0BJRvn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 12:51:43 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:52651 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753403Ab0BJRvl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 12:48:50 -0500
-Date: Wed, 10 Feb 2010 09:48:26 -0800
-From: Gary Hade <garyhade@us.ibm.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Gary Hade <garyhade@us.ibm.com>, linux-pm@lists.linux-foundation.org,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "Moore, Robert" <robert.moore@intel.com>,
-       Matthew Garrett <mjg@redhat.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>
-Subject: Re: [PATCH 8/9] PCI / ACPI / PM: Platform support for PCI PME
-	wake-up (rev. 7)
-Message-ID: <20100210174826.GB10093@us.ibm.com>
-References: <201001101431.38630.rjw@sisk.pl> <20100209233154.GC12564@us.ibm.com> <201002100207.51180.rjw@sisk.pl> <201002100212.29904.rjw@sisk.pl>
+	Wed, 10 Feb 2010 12:51:41 -0500
+To: Amerigo Wang <amwang@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Jens Axboe <jens.axboe@oracle.com>, Miles Lane <miles.lane@gmail.com>,
+       Larry Finger <Larry.Finger@lwfinger.net>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>, akpm@linux-foundation.org
+Subject: Re: [RFC Patch] sysfs: add marks for mutable sysfs files
+References: <20100210065754.3713.8997.sendpatchset@localhost.localdomain>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Wed, 10 Feb 2010 09:51:24 -0800
+In-Reply-To: <20100210065754.3713.8997.sendpatchset@localhost.localdomain> (Amerigo Wang's message of "Wed\, 10 Feb 2010 01\:54\:27 -0500")
+Message-ID: <m1aavh3roj.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <201002100212.29904.rjw@sisk.pl>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Scanned: No (on in01.mta.xmission.com); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 10, 2010 at 02:12:29AM +0100, Rafael J. Wysocki wrote:
-> On Wednesday 10 February 2010, Rafael J. Wysocki wrote:
-> > On Wednesday 10 February 2010, Gary Hade wrote:
-> > > On Tue, Feb 09, 2010 at 12:58:39PM -0800, Gary Hade wrote:
-> > ...
-> > > > OK.  I already confirmed that the problem reproduces with your
-> > > > patches applied.  I am now in the process of trying vanilla
-> > > > 2.6.33-rc7.  If hot-add works with 2.6.33-rc7 I will give
-> > > > your patch a try.
-> > > 
-> > > The hot-add worked fine with an unpatched 2.6.33-rc7.
-> > 
-> > Good.
-> > 
-> > > The new patch when added to the 2.6.33-rc7 tree that
-> > > included the original patchset unfortunately did not
-> > > correct the problem.
-> > 
-> > Bad.
-> > 
-> > Well, fortunately I have another one, but I haven't tested it myself yet except
-> > for checking that it builds.  Hopefully it won't break things more.
-> > 
-> > The patch below applies on top of 2.6.33-rc7 with my PCI runtime PM patchset
-> > applied.  Please test it and let me know the results.
-> 
-> Sorry, I sent a wrong version of the patch by mistake, it doesn't even build.
-> The correct one is appended.
+Amerigo Wang <amwang@redhat.com> writes:
 
-No problem.  I received this message before doing anything with
-the previous one.
+> NOTE: This patch is only a draft, not ready to be taken.
+>
+> This fixes all the s_active related bogus lockdep warnings that I received,
+> I already tested it, it works fine for cpu hotplug, I/O scheduler switch,
+> and suspend.
+>
+> This patch introduces sever sysfs/kobject interfaces to add mutable
+> sysfs files or kobjects, those files could be removed by the kernel
+> during some event, e.g. cpu hotplug. All of this kind of sysfs files
+> should use these API's, to avoid the deadlock warnings.
+>
+> I am still not sure if this is the best fix.
+>
+> Please comment.
 
-Sorry, both hot-add and hot-remove behaviors appear unchanged
-with this patch.
+mutable as you describe it happens to be the common case, and that
+class of files is not free from this class of problem.
 
-I would like to dig into the code and help with the debugging
-but I am swamped with other things right now.  However, feel 
-free to continue using me for testing if you have other ideas
-you want me to try.
+Your patch is actively wrong if it solves the i/o scheduler issue,
+as those files are in fact mutable by your definition, block devices
+are hot pluggable.
 
-Gary
+Having a special case for permanent sysfs files, that we refuse to
+delete would be reasonable, but it certainly does not cover
+everything.
 
--- 
-Gary Hade
-System x Enablement
-IBM Linux Technology Center
-503-578-4503  IBM T/L: 775-4503
-garyhade@us.ibm.com
-http://www.ibm.com/linux/ltc
-
+Eric
