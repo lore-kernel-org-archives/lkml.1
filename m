@@ -1,53 +1,36 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756562Ab0BJV32 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 16:29:28 -0500
-Received: from cantor.suse.de ([195.135.220.2]:48908 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751131Ab0BJV30 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 16:29:26 -0500
-From: Lubos Lunak <l.lunak@suse.cz>
-To: Rik van Riel <riel@redhat.com>
-Subject: Re: Improving OOM killer
-Date: Wed, 10 Feb 2010 22:29:24 +0100
-User-Agent: KMail/1.9.10
-Cc: David Rientjes <rientjes@google.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Nick Piggin <npiggin@suse.de>, Jiri Kosina <jkosina@suse.cz>
-References: <201002012302.37380.l.lunak@suse.cz> <201002102154.43231.l.lunak@suse.cz> <4B7320BF.2020800@redhat.com>
-In-Reply-To: <4B7320BF.2020800@redhat.com>
+	id S1756578Ab0BJV3o (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 16:29:44 -0500
+Received: from intermatrixgroup.ru ([195.178.208.66]:57085 "EHLO
+	tservice.net.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750844Ab0BJV3m (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Feb 2010 16:29:42 -0500
+Date: Thu, 11 Feb 2010 00:29:33 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [WTF] ... is going on with current->fs->{root,mnt} accesses in pohmelfs
+Message-ID: <20100210212933.GA19919@ioremap.net>
+References: <20100210100428.GL30031@ZenIV.linux.org.uk> <20100210101246.GA3509@ioremap.net> <20100210102422.GM30031@ZenIV.linux.org.uk> <20100210104515.GA6207@ioremap.net> <20100210110011.GN30031@ZenIV.linux.org.uk> <20100210111115.GA8376@ioremap.net> <20100210115938.GO30031@ZenIV.linux.org.uk> <20100210133007.GA17744@ioremap.net> <20100210210248.GP30031@ZenIV.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <201002102229.24448.l.lunak@suse.cz>
+In-Reply-To: <20100210210248.GP30031@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 10 of February 2010, Rik van Riel wrote:
-> On 02/10/2010 03:54 PM, Lubos Lunak wrote:
-> >   Which however can mean that not killing this system daemon will be
-> > traded for DoS-ing the whole system, if the daemon keeps spawning new
-> > children as soon as the OOM killer frees up resources for them.
->
-> Killing the system daemon *is* a DoS.
+On Wed, Feb 10, 2010 at 09:02:48PM +0000, Al Viro (viro@ZenIV.linux.org.uk) wrote:
+> Which would be... ?  E.g. between writepages() and rename().  What serializes
+> your write_inode_create() wrt renames?  IOW, how can the server decide that
+> data from writepages() should go to the same object regardless of the
+> rename?
 
- Maybe, but if there are two such system daemons on the machine, it's only 
-half of the other DoS. And since that system daemon has already been 
-identified as a forkbomb, it's probably already useless anyway and killing 
-the children won't save anything. In which realistic case a system daemon has 
-children that together cause OOM, yet can still be considered working after 
-you kill one or a limited number of those children?
-
-> It would stop eg. the database or the web server, which is
-> generally the main task of systems that run a database or
-> a web server.
+rename and some other metadata operations as well as write itself
+request remote lock (if not grabbed already), acknowledge forces writeback to old path.
 
 -- 
- Lubos Lunak
- openSUSE Boosters team, KDE developer
- l.lunak@suse.cz , l.lunak@kde.org
+	Evgeniy Polyakov
