@@ -1,108 +1,104 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756058Ab0BJR0y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 12:26:54 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:56323 "EHLO mx1.redhat.com"
+	id S1756067Ab0BJR0A (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 12:26:00 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:60014 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755664Ab0BJRXO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755751Ab0BJRXO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 10 Feb 2010 12:23:14 -0500
 From: Avi Kivity <avi@redhat.com>
 To: kvm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 29/40] KVM: introduce gfn_to_pfn_memslot
-Date: Wed, 10 Feb 2010 19:22:58 +0200
-Message-Id: <1265822589-11155-30-git-send-email-avi@redhat.com>
+Subject: [PATCH 38/40] KVM: Fill out ftrace exit reason strings
+Date: Wed, 10 Feb 2010 19:23:07 +0200
+Message-Id: <1265822589-11155-39-git-send-email-avi@redhat.com>
 In-Reply-To: <1265822589-11155-1-git-send-email-avi@redhat.com>
 References: <1265822589-11155-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Marcelo Tosatti <mtosatti@redhat.com>
+Some exit reasons missed their strings; fill out the table.
 
-Which takes a memslot pointer instead of using kvm->memslots.
-
-To be used by SRCU convertion later.
-
+Signed-off-by: Avi Kivity <avi@redhat.com>
 Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
 ---
- include/linux/kvm_host.h |    2 ++
- virt/kvm/kvm_main.c      |   33 +++++++++++++++++++++++++--------
- 2 files changed, 27 insertions(+), 8 deletions(-)
+ arch/x86/kvm/vmx.c |   58 +++++++++++++++++++++++++++++++++++-----------------
+ 1 files changed, 39 insertions(+), 19 deletions(-)
 
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 3c44687..f1f78de 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -273,6 +273,8 @@ void kvm_set_page_dirty(struct page *page);
- void kvm_set_page_accessed(struct page *page);
- 
- pfn_t gfn_to_pfn(struct kvm *kvm, gfn_t gfn);
-+pfn_t gfn_to_pfn_memslot(struct kvm *kvm,
-+			 struct kvm_memory_slot *slot, gfn_t gfn);
- void kvm_release_pfn_dirty(pfn_t);
- void kvm_release_pfn_clean(pfn_t pfn);
- void kvm_set_pfn_dirty(pfn_t pfn);
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index c9f6cfe..4e2321c 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -835,21 +835,14 @@ unsigned long gfn_to_hva(struct kvm *kvm, gfn_t gfn)
- }
- EXPORT_SYMBOL_GPL(gfn_to_hva);
- 
--pfn_t gfn_to_pfn(struct kvm *kvm, gfn_t gfn)
-+static pfn_t hva_to_pfn(struct kvm *kvm, unsigned long addr)
- {
- 	struct page *page[1];
--	unsigned long addr;
- 	int npages;
- 	pfn_t pfn;
- 
- 	might_sleep();
- 
--	addr = gfn_to_hva(kvm, gfn);
--	if (kvm_is_error_hva(addr)) {
--		get_page(bad_page);
--		return page_to_pfn(bad_page);
--	}
--
- 	npages = get_user_pages_fast(addr, 1, 1, page);
- 
- 	if (unlikely(npages != 1)) {
-@@ -874,8 +867,32 @@ pfn_t gfn_to_pfn(struct kvm *kvm, gfn_t gfn)
- 	return pfn;
+diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
+index f04e2ff..f4486f4 100644
+--- a/arch/x86/kvm/vmx.c
++++ b/arch/x86/kvm/vmx.c
+@@ -3993,29 +3993,49 @@ static u64 vmx_get_mt_mask(struct kvm_vcpu *vcpu, gfn_t gfn, bool is_mmio)
+ 	return ret;
  }
  
-+pfn_t gfn_to_pfn(struct kvm *kvm, gfn_t gfn)
-+{
-+	unsigned long addr;
++#define _ER(x) { EXIT_REASON_##x, #x }
 +
-+	addr = gfn_to_hva(kvm, gfn);
-+	if (kvm_is_error_hva(addr)) {
-+		get_page(bad_page);
-+		return page_to_pfn(bad_page);
-+	}
-+
-+	return hva_to_pfn(kvm, addr);
-+}
- EXPORT_SYMBOL_GPL(gfn_to_pfn);
+ static const struct trace_print_flags vmx_exit_reasons_str[] = {
+-	{ EXIT_REASON_EXCEPTION_NMI,           "exception" },
+-	{ EXIT_REASON_EXTERNAL_INTERRUPT,      "ext_irq" },
+-	{ EXIT_REASON_TRIPLE_FAULT,            "triple_fault" },
+-	{ EXIT_REASON_NMI_WINDOW,              "nmi_window" },
+-	{ EXIT_REASON_IO_INSTRUCTION,          "io_instruction" },
+-	{ EXIT_REASON_CR_ACCESS,               "cr_access" },
+-	{ EXIT_REASON_DR_ACCESS,               "dr_access" },
+-	{ EXIT_REASON_CPUID,                   "cpuid" },
+-	{ EXIT_REASON_MSR_READ,                "rdmsr" },
+-	{ EXIT_REASON_MSR_WRITE,               "wrmsr" },
+-	{ EXIT_REASON_PENDING_INTERRUPT,       "interrupt_window" },
+-	{ EXIT_REASON_HLT,                     "halt" },
+-	{ EXIT_REASON_INVLPG,                  "invlpg" },
+-	{ EXIT_REASON_VMCALL,                  "hypercall" },
+-	{ EXIT_REASON_TPR_BELOW_THRESHOLD,     "tpr_below_thres" },
+-	{ EXIT_REASON_APIC_ACCESS,             "apic_access" },
+-	{ EXIT_REASON_WBINVD,                  "wbinvd" },
+-	{ EXIT_REASON_TASK_SWITCH,             "task_switch" },
+-	{ EXIT_REASON_EPT_VIOLATION,           "ept_violation" },
++	_ER(EXCEPTION_NMI),
++	_ER(EXTERNAL_INTERRUPT),
++	_ER(TRIPLE_FAULT),
++	_ER(PENDING_INTERRUPT),
++	_ER(NMI_WINDOW),
++	_ER(TASK_SWITCH),
++	_ER(CPUID),
++	_ER(HLT),
++	_ER(INVLPG),
++	_ER(RDPMC),
++	_ER(RDTSC),
++	_ER(VMCALL),
++	_ER(VMCLEAR),
++	_ER(VMLAUNCH),
++	_ER(VMPTRLD),
++	_ER(VMPTRST),
++	_ER(VMREAD),
++	_ER(VMRESUME),
++	_ER(VMWRITE),
++	_ER(VMOFF),
++	_ER(VMON),
++	_ER(CR_ACCESS),
++	_ER(DR_ACCESS),
++	_ER(IO_INSTRUCTION),
++	_ER(MSR_READ),
++	_ER(MSR_WRITE),
++	_ER(MWAIT_INSTRUCTION),
++	_ER(MONITOR_INSTRUCTION),
++	_ER(PAUSE_INSTRUCTION),
++	_ER(MCE_DURING_VMENTRY),
++	_ER(TPR_BELOW_THRESHOLD),
++	_ER(APIC_ACCESS),
++	_ER(EPT_VIOLATION),
++	_ER(EPT_MISCONFIG),
++	_ER(WBINVD),
+ 	{ -1, NULL }
+ };
  
-+static unsigned long gfn_to_hva_memslot(struct kvm_memory_slot *slot, gfn_t gfn)
-+{
-+	return (slot->userspace_addr + (gfn - slot->base_gfn) * PAGE_SIZE);
-+}
++#undef _ER
 +
-+pfn_t gfn_to_pfn_memslot(struct kvm *kvm,
-+			 struct kvm_memory_slot *slot, gfn_t gfn)
-+{
-+	unsigned long addr = gfn_to_hva_memslot(slot, gfn);
-+	return hva_to_pfn(kvm, addr);
-+}
-+
- struct page *gfn_to_page(struct kvm *kvm, gfn_t gfn)
+ static bool vmx_gb_page_enable(void)
  {
- 	pfn_t pfn;
+ 	return false;
 -- 
 1.6.5.3
 
