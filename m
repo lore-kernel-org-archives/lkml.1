@@ -1,99 +1,78 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756335Ab0BJUjA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 15:39:00 -0500
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:55454 "EHLO e8.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756222Ab0BJUi6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 15:38:58 -0500
-Date: Wed, 10 Feb 2010 12:38:52 -0800
-From: Gary Hade <garyhade@us.ibm.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Gary Hade <garyhade@us.ibm.com>, linux-pm@lists.linux-foundation.org,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "Moore, Robert" <robert.moore@intel.com>,
-       Matthew Garrett <mjg@redhat.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>
-Subject: Re: [PATCH 8/9] PCI / ACPI / PM: Platform support for PCI PME
-	wake-up (rev. 7)
-Message-ID: <20100210203852.GA17115@us.ibm.com>
-References: <201001101431.38630.rjw@sisk.pl> <201002100212.29904.rjw@sisk.pl> <20100210174826.GB10093@us.ibm.com> <201002101900.54478.rjw@sisk.pl>
+	id S1756374Ab0BJUpi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 15:45:38 -0500
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:37124 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755863Ab0BJUph (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Feb 2010 15:45:37 -0500
+Date: Wed, 10 Feb 2010 15:37:35 -0500
+From: "John W. Linville" <linville@tuxdriver.com>
+To: David Miller <davem@davemloft.net>
+Cc: johannes@sipsolutions.net, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, mb@bu3sch.de
+Subject: Re: pull request: wireless-2.6 2010-02-10
+Message-ID: <20100210203734.GE3286@tuxdriver.com>
+References: <20100210201953.GC3286@tuxdriver.com> <20100210.122540.149553948.davem@davemloft.net> <20100210203227.GD3286@tuxdriver.com> <20100210.123503.129355851.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <201002101900.54478.rjw@sisk.pl>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20100210.123503.129355851.davem@davemloft.net>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 10, 2010 at 07:00:54PM +0100, Rafael J. Wysocki wrote:
-> On Wednesday 10 February 2010, Gary Hade wrote:
-> > On Wed, Feb 10, 2010 at 02:12:29AM +0100, Rafael J. Wysocki wrote:
-> > > On Wednesday 10 February 2010, Rafael J. Wysocki wrote:
-> > > > On Wednesday 10 February 2010, Gary Hade wrote:
-> > > > > On Tue, Feb 09, 2010 at 12:58:39PM -0800, Gary Hade wrote:
-> > > > ...
-> > > > > > OK.  I already confirmed that the problem reproduces with your
-> > > > > > patches applied.  I am now in the process of trying vanilla
-> > > > > > 2.6.33-rc7.  If hot-add works with 2.6.33-rc7 I will give
-> > > > > > your patch a try.
-> > > > > 
-> > > > > The hot-add worked fine with an unpatched 2.6.33-rc7.
-> > > > 
-> > > > Good.
-> > > > 
-> > > > > The new patch when added to the 2.6.33-rc7 tree that
-> > > > > included the original patchset unfortunately did not
-> > > > > correct the problem.
-> > > > 
-> > > > Bad.
-> > > > 
-> > > > Well, fortunately I have another one, but I haven't tested it myself yet except
-> > > > for checking that it builds.  Hopefully it won't break things more.
-> > > > 
-> > > > The patch below applies on top of 2.6.33-rc7 with my PCI runtime PM patchset
-> > > > applied.  Please test it and let me know the results.
-> > > 
-> > > Sorry, I sent a wrong version of the patch by mistake, it doesn't even build.
-> > > The correct one is appended.
+On Wed, Feb 10, 2010 at 12:35:03PM -0800, David Miller wrote:
+> From: "John W. Linville" <linville@tuxdriver.com>
+> Date: Wed, 10 Feb 2010 15:32:28 -0500
+> 
+> > On Wed, Feb 10, 2010 at 12:25:40PM -0800, David Miller wrote:
+> >> From: "John W. Linville" <linville@tuxdriver.com>
+> >> Date: Wed, 10 Feb 2010 15:19:54 -0500
+> >> 
+> >> > On Wed, Feb 10, 2010 at 11:36:58AM -0800, David Miller wrote:
+> >> >> From: Johannes Berg <johannes@sipsolutions.net>
+> >> >> Date: Wed, 10 Feb 2010 20:15:37 +0100
+> >> >> 
+> >> >> > It was intentional -- that sdev doesn't even have an irq member, but
+> >> >> > nobody ever noticed because of the wrong ifdef.
+> >> >> 
+> >> >> Ok, then this needs to be explained in the commit message.
+> >> > 
+> >> > OK...mind if I just revert the current version and ask Michael to
+> >> > resubmit with an appropriate changelog entry?
+> >> 
+> >> Have you pulled this tree into others already?  Why not
+> >> just pop out the commit and fix it's commit message, then
+> >> reapply?
+> >> 
+> >> Having the revert commit in there is really stupid just for this.
 > > 
-> > No problem.  I received this message before doing anything with
-> > the previous one.
-> > 
-> > Sorry, both hot-add and hot-remove behaviors appear unchanged
-> > with this patch.
+> > I have it pulled into wireless-next-2.6 to fix a merge conflict (from
+> > a latter commit).  It is also pulled into wireless-testing but that
+> > is obviously less of an issue.
 > 
-> Hmm, that's kind of strange.  I'm getting suspicious.
+> Ok, forget this, I'll just pull it in as-is.
+ 
+K, thx!
+
+> But we have to have a better system to handle cases where I
+> don't like a change you're asking me to pull in and I want
+> changes made to it.
 > 
-> > I would like to dig into the code and help with the debugging
-> > but I am swamped with other things right now.  However, feel 
-> > free to continue using me for testing if you have other ideas
-> > you want me to try.
-> 
-> Thanks, of course I have some ideas. :-)
-> 
-> First, please try to test 2.6.33-rc7 with patches [1/9] - [7/9] applied
-> (ie. without the $subject patch and [9/9]).  Let's make sure we're debugging
-> the right patch.
+> If you want to push stuff into wireless-next-2.6, get it into
+> my tree first.  That way we can tidy things up before it
+> propagates.
 
-It does look like both the hot-add and hot-remove issues were
-introduced by something in 1/9 through 7/9.  I started with a
-clean 2.6.33-rc7 tree and applied only 1/9 through 7/9.  I still
-see that lingering blinking amber LED with hot-remove and no
-response from the driver during hot-add.
+Yeah, I was trying to be proactive about the merge conflicts and
+avoid the emails about the conflicts in -next.  But I guess that
+isn't a huge deal anyway, so I'll be a bit more cautious in the future.
 
-Now I suppose you want me to start reverting 1/9 through 7/9
-in reverse order to find the culprit. :)
+Thanks!
 
-Gary
-
+John
 -- 
-Gary Hade
-System x Enablement
-IBM Linux Technology Center
-503-578-4503  IBM T/L: 775-4503
-garyhade@us.ibm.com
-http://www.ibm.com/linux/ltc
-
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
