@@ -1,153 +1,105 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756715Ab0BJWwy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 17:52:54 -0500
-Received: from va3ehsobe004.messaging.microsoft.com ([216.32.180.14]:51860
-	"EHLO VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754109Ab0BJWwx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 17:52:53 -0500
-X-SpamScore: -23
-X-BigFish: VPS-23(zzab9bh98dN936eM1fa4L9371Pzz1202hzzz2fh6bh61h)
-X-Spam-TCS-SCL: 0:0
-Message-ID: <4B7338BF.1070505@am.sony.com>
-Date: Wed, 10 Feb 2010 14:52:47 -0800
-From: Tim Bird <tim.bird@am.sony.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+	id S1756701Ab0BJW5g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 17:57:36 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:44186 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751640Ab0BJW5e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Feb 2010 17:57:34 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Gary Hade <garyhade@us.ibm.com>
+Subject: Re: [PATCH 8/9] PCI / ACPI / PM: Platform support for PCI PME wake-up (rev. 7)
+Date: Wed, 10 Feb 2010 23:58:00 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.33-rc7-rjw; KDE/4.3.5; x86_64; ; )
+Cc: linux-pm@lists.linux-foundation.org, Linux PCI <linux-pci@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "Moore, Robert" <robert.moore@intel.com>,
+       Matthew Garrett <mjg@redhat.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>
+References: <201001101431.38630.rjw@sisk.pl> <201002102242.11088.rjw@sisk.pl> <20100210221305.GB17115@us.ibm.com>
+In-Reply-To: <20100210221305.GB17115@us.ibm.com>
 MIME-Version: 1.0
-To: linux kernel <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <srostedt@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 1/1] ftrace - add support for tracing_thresh to function_graph
- tracer
-References: <4B733721.3030503@am.sony.com>
-In-Reply-To: <4B733721.3030503@am.sony.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-SEL-encryption-scan: scanned
-X-Reverse-DNS: mail8.fw-sd.sony.com
+Message-Id: <201002102358.00359.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/10/2010 02:45 PM, Tim Bird wrote:
-(a bunch of format_flowed garbage)
+On Wednesday 10 February 2010, Gary Hade wrote:
+> On Wed, Feb 10, 2010 at 10:42:11PM +0100, Rafael J. Wysocki wrote:
+> > On Wednesday 10 February 2010, Gary Hade wrote:
+> > > On Wed, Feb 10, 2010 at 07:00:54PM +0100, Rafael J. Wysocki wrote:
+> > > > On Wednesday 10 February 2010, Gary Hade wrote:
+> > > > > On Wed, Feb 10, 2010 at 02:12:29AM +0100, Rafael J. Wysocki wrote:
+> > > > > > On Wednesday 10 February 2010, Rafael J. Wysocki wrote:
+> > > > > > > On Wednesday 10 February 2010, Gary Hade wrote:
+> > > > > > > > On Tue, Feb 09, 2010 at 12:58:39PM -0800, Gary Hade wrote:
+> > > > > > > ...
+> > > > > > > > > OK.  I already confirmed that the problem reproduces with your
+> > > > > > > > > patches applied.  I am now in the process of trying vanilla
+> > > > > > > > > 2.6.33-rc7.  If hot-add works with 2.6.33-rc7 I will give
+> > > > > > > > > your patch a try.
+> > > > > > > > 
+> > > > > > > > The hot-add worked fine with an unpatched 2.6.33-rc7.
+> > > > > > > 
+> > > > > > > Good.
+> > > > > > > 
+> > > > > > > > The new patch when added to the 2.6.33-rc7 tree that
+> > > > > > > > included the original patchset unfortunately did not
+> > > > > > > > correct the problem.
+> > > > > > > 
+> > > > > > > Bad.
+> > > > > > > 
+> > > > > > > Well, fortunately I have another one, but I haven't tested it myself yet except
+> > > > > > > for checking that it builds.  Hopefully it won't break things more.
+> > > > > > > 
+> > > > > > > The patch below applies on top of 2.6.33-rc7 with my PCI runtime PM patchset
+> > > > > > > applied.  Please test it and let me know the results.
+> > > > > > 
+> > > > > > Sorry, I sent a wrong version of the patch by mistake, it doesn't even build.
+> > > > > > The correct one is appended.
+> > > > > 
+> > > > > No problem.  I received this message before doing anything with
+> > > > > the previous one.
+> > > > > 
+> > > > > Sorry, both hot-add and hot-remove behaviors appear unchanged
+> > > > > with this patch.
+> > > > 
+> > > > Hmm, that's kind of strange.  I'm getting suspicious.
+> > > > 
+> > > > > I would like to dig into the code and help with the debugging
+> > > > > but I am swamped with other things right now.  However, feel 
+> > > > > free to continue using me for testing if you have other ideas
+> > > > > you want me to try.
+> > > > 
+> > > > Thanks, of course I have some ideas. :-)
+> > > > 
+> > > > First, please try to test 2.6.33-rc7 with patches [1/9] - [7/9] applied
+> > > > (ie. without the $subject patch and [9/9]).  Let's make sure we're debugging
+> > > > the right patch.
+> > > 
+> > > It does look like both the hot-add and hot-remove issues were
+> > > introduced by something in 1/9 through 7/9.  I started with a
+> > > clean 2.6.33-rc7 tree and applied only 1/9 through 7/9.  I still
+> > > see that lingering blinking amber LED with hot-remove and no
+> > > response from the driver during hot-add.
+> > > 
+> > > Now I suppose you want me to start reverting 1/9 through 7/9
+> > > in reverse order to find the culprit. :)
+> > 
+> > Actually, I think [6/9] is the offending one, so please try with [1/9] - [5/9]
+> > applied and if that works, please apply [6/9] and retest to confirm it's the
+> > culprit.
+> 
+> Yes, 6/9 also appeared to be the most likely suspect to me and
+> I was already doing what you asked except in the opposite order.
+> With 1/9 through 6/9 both the hot-add and hot-remove issues still
+> reproduced.  After removing 6/9 both issues disappeared.
 
-Sorry - I updated my mail client and forgot to disable the format_flowed
-option.
+Thanks for verifying, I've already started to look for bugs in it.
 
-Here's the patch again, hopefully in better format this time.
+What's your kernel command line, BTW?
 
-This adds support for 'tracing_thresh' to the existing function_graph
-tracer.  When 'tracing_thresh' is in effect, function entry events are
-not stored - only function exits are stored.  This prevents filtered
-functions from filling up the log. An extra option is added to allow
-showing the function name with the exit event.  (Otherwise, all you
-get are closing braces.)
-
-Note that the 'funcgraph-exit' display option is valuable by itself,
-since it makes the output much more 'grep-able'.
-
-Signed-off-by: Tim Bird <tim.bird@am.sony.com>
---
- trace.c                 |    5 +++--
- trace_functions_graph.c |   20 +++++++++++++++++++-
- 2 files changed, 22 insertions(+), 3 deletions(-)
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 0df1b0f..aa39f8e 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -502,9 +502,10 @@ static ssize_t trace_seq_to_buffer(struct trace_seq *s, void *buf, size_t cnt)
- static arch_spinlock_t ftrace_max_lock =
- 	(arch_spinlock_t)__ARCH_SPIN_LOCK_UNLOCKED;
- 
-+unsigned long __read_mostly	tracing_thresh;
-+
- #ifdef CONFIG_TRACER_MAX_TRACE
- unsigned long __read_mostly	tracing_max_latency;
--unsigned long __read_mostly	tracing_thresh;
- 
- /*
-  * Copy the new maximum trace into the separate maximum-trace
-@@ -4176,10 +4177,10 @@ static __init int tracer_init_debugfs(void)
- #ifdef CONFIG_TRACER_MAX_TRACE
- 	trace_create_file("tracing_max_latency", 0644, d_tracer,
- 			&tracing_max_latency, &tracing_max_lat_fops);
-+#endif
- 
- 	trace_create_file("tracing_thresh", 0644, d_tracer,
- 			&tracing_thresh, &tracing_max_lat_fops);
--#endif
- 
- 	trace_create_file("README", 0444, d_tracer,
- 			NULL, &tracing_readme_fops);
-diff --git a/kernel/trace/trace_functions_graph.c b/kernel/trace/trace_functions_graph.c
-index b1342c5..e019e32 100644
---- a/kernel/trace/trace_functions_graph.c
-+++ b/kernel/trace/trace_functions_graph.c
-@@ -39,6 +39,7 @@ struct fgraph_data {
- #define TRACE_GRAPH_PRINT_PROC		0x8
- #define TRACE_GRAPH_PRINT_DURATION	0x10
- #define TRACE_GRAPH_PRINT_ABS_TIME	0X20
-+#define TRACE_GRAPH_PRINT_FUNC_EXIT	0X40
- 
- static struct tracer_opt trace_opts[] = {
- 	/* Display overruns? (for self-debug purpose) */
-@@ -53,6 +54,8 @@ static struct tracer_opt trace_opts[] = {
- 	{ TRACER_OPT(funcgraph-duration, TRACE_GRAPH_PRINT_DURATION) },
- 	/* Display absolute time of an entry */
- 	{ TRACER_OPT(funcgraph-abstime, TRACE_GRAPH_PRINT_ABS_TIME) },
-+	/* Display function name on exit, instead of just closing brace */
-+	{ TRACER_OPT(funcgraph-exit, TRACE_GRAPH_PRINT_FUNC_EXIT) },
- 	{ } /* Empty entry */
- };
- 
-@@ -202,6 +205,8 @@ static int __trace_graph_entry(struct trace_array *tr,
- 	return 1;
- }
- 
-+extern unsigned long __read_mostly tracing_thresh;
-+
- int trace_graph_entry(struct ftrace_graph_ent *trace)
- {
- 	struct trace_array *tr = graph_array;
-@@ -221,6 +226,10 @@ int trace_graph_entry(struct ftrace_graph_ent *trace)
- 	if (!ftrace_graph_addr(trace->func))
- 		return 0;
- 
-+	/* if tracing duration, only save function exits (omit function entries in log) */
-+	if (tracing_thresh)
-+		return 1;
-+
- 	local_irq_save(flags);
- 	cpu = raw_smp_processor_id();
- 	data = tr->data[cpu];
-@@ -254,6 +263,10 @@ static void __trace_graph_return(struct trace_array *tr,
- 	if (unlikely(__this_cpu_read(per_cpu_var(ftrace_cpu_disabled))))
- 		return;
- 
-+	if (tracing_thresh &&
-+		(trace->rettime - trace->calltime < tracing_thresh))
-+		return;
-+
- 	event = trace_buffer_lock_reserve(buffer, TRACE_GRAPH_RET,
- 					  sizeof(*entry), flags, pc);
- 	if (!event)
-@@ -891,7 +904,12 @@ print_graph_return(struct ftrace_graph_ret *trace, struct trace_seq *s,
- 			return TRACE_TYPE_PARTIAL_LINE;
- 	}
- 
--	ret = trace_seq_printf(s, "}\n");
-+	if (tracer_flags.val & TRACE_GRAPH_PRINT_FUNC_EXIT) {
-+		ret = trace_seq_printf(s, "%ps();\n", (void *)trace->func);
-+	} else {
-+		ret = trace_seq_printf(s, "}\n");
-+	}
-+
- 	if (!ret)
- 		return TRACE_TYPE_PARTIAL_LINE;
- 
-
-
-
-
+Rafael
