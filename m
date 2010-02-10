@@ -1,68 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755424Ab0BJCDk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 21:03:40 -0500
-Received: from mail-ww0-f46.google.com ([74.125.82.46]:52567 "EHLO
-	mail-ww0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755112Ab0BJCDj convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Feb 2010 21:03:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=f6CN3R5JkLCtL5HvSbcIo9Mxl90M0leOrTT89cAIiSIW7fhnBFhgHSEVWdox1H8Si4
-         VG7Kst/bRtImnbeflCdUjKiefDYL0Goza0ABh/18PEinFSk/UyXlnr3FG9UwS3UTH2QQ
-         AMu8KnVAUg+GOtQY9d2hLIE2syxkC+6VhSjdQ=
-MIME-Version: 1.0
-In-Reply-To: <20100210015257.942463E8@magilla.sf.frob.com>
-References: <20100209201309.902050211@sbs-t61.sc.intel.com>
-	 <20100209202502.406177090@sbs-t61.sc.intel.com>
-	 <20100210015257.942463E8@magilla.sf.frob.com>
-Date: Tue, 9 Feb 2010 18:03:33 -0800
-Message-ID: <6dc9ffc81002091803o5f5cc632sfd7fad0b41545a97@mail.gmail.com>
-Subject: Re: [patch v2 4/4] ptrace: Add support for generic 
-	PTRACE_GETREGSET/PTRACE_SETREGSET
-From: "H.J. Lu" <hjl.tools@gmail.com>
-To: Roland McGrath <roland@redhat.com>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>, Oleg Nesterov <oleg@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	id S1755446Ab0BJCD7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 21:03:59 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:41817 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755112Ab0BJCD4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Feb 2010 21:03:56 -0500
+Date: Wed, 10 Feb 2010 13:03:51 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Uwe =?UTF-8?B?S2xlaW5lLUvDtm5pZw==?= 
+	<u.kleine-koenig@pengutronix.de>,
+       Sascha Hauer <s.hauer@pengutronix.de>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: linux-next: manual merge of the sound tree with the i.MX tree
+Message-Id: <20100210130351.4b56f192.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0beta7 (GTK+ 2.18.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 9, 2010 at 5:52 PM, Roland McGrath <roland@redhat.com> wrote:
->> 'addr' parameter for the ptrace system call encode the REGSET type and
->> the buffer length. 'data' parameter points to the user buffer.
->>
->>       ptrace(PTRACE_GETREGSET/PTRACE_SETREGSET, pid,
->>              (NT_TYPE << 20) | buf_length, buf);
->
-> IMHO this bit swizzling is a non-starter.  The NT_* codes can use a full 32
-> bits.  NT_PRXFPREG uses 31 bits.  The comments about ignoring the high bits
-> for this as a special case just seem insane to me.  Pass a full 32 bit word
-> for NT_* and a full word for the buffer size.  What's so terrible about
-> just having an obvious and comprehensible API?
->
-> IMHO if you insist on an insane bit swizzling approach, you should mix the
-> buffer size bits into the request code, leaving the "addr" argument free
-> for the unmolested NT_* code.  There is just no earthly reason that we
-> should suddenly impose a new and arcane constraint on what NT_* values can
-> be, even if there is no particular reason for future values not to be small.
->
->> +int generic_ptrace_regset(struct task_struct *child, long request, long addr,
->> +                       long data);
->
-> There is no need for a global function for this.  It should all be static
-> in kernel/ptrace.c, called only by ptrace_request()/compat_ptrace_request().
->
+Hi Takashi,
 
-Won't it be called by ptrace emulation in utrace?
+Today's linux-next merge of the sound tree got a conflict in
+arch/arm/plat-mxc/Makefile between commit
+aae7019382896cf1075a93acc564e42601bc44a2 ("imx: only define deprecated
+symbols conditionally") from the i.MX tree and commit
+8380222ec9458d38a4e0cc3cb688ad7fff311df4 ("ASoC: Add a new imx-ssi sound
+driver") from the sound tree.
 
-
+Just overlapping additions.  I fixed it up (see below) and can carry the
+fix as necessary.
 -- 
-H.J.
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --cc arch/arm/plat-mxc/Makefile
+index 7322bca,6cee38d..0000000
+--- a/arch/arm/plat-mxc/Makefile
++++ b/arch/arm/plat-mxc/Makefile
+@@@ -14,6 -12,8 +14,10 @@@ obj-$(CONFIG_MXC_PWM)  += pwm.
+  obj-$(CONFIG_USB_EHCI_MXC) += ehci.o
+  obj-$(CONFIG_MXC_ULPI) += ulpi.o
+  obj-$(CONFIG_ARCH_MXC_AUDMUX_V1) += audmux-v1.o
+ +CFLAGS_audmux-v1.o = -DIMX_NEEDS_DEPRECATED_SYMBOLS
+  obj-$(CONFIG_ARCH_MXC_AUDMUX_V2) += audmux-v2.o
+ +CFLAGS_audmux-v2.o = -DIMX_NEEDS_DEPRECATED_SYMBOLS
++ ifdef CONFIG_SND_IMX_SOC
++ obj-y += ssi-fiq.o
++ obj-y += ssi-fiq-ksym.o
++ endif
