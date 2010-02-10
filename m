@@ -1,72 +1,89 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752851Ab0BJJJg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 04:09:36 -0500
-Received: from filtteri5.pp.htv.fi ([213.243.153.188]:48046 "EHLO
-	filtteri5.pp.htv.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751849Ab0BJJJe (ORCPT
+	id S1753179Ab0BJJVB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 04:21:01 -0500
+Received: from mtagate7.de.ibm.com ([195.212.17.167]:42237 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752657Ab0BJJU6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 04:09:34 -0500
-Date: Wed, 10 Feb 2010 11:09:27 +0200
-From: Alexander Shishkin <virtuoso@slind.org>
-To: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Anatolij Gustschin <agust@denx.de>,
-       Valentin Sitdikov <valentin.sitdikov@siemens.com>,
-       Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
-       vamos@i4.informatik.uni-erlangen.de,
-       Valentin Sitdikov <v.sitdikov@gmail.com>
-Subject: Re: [PATCH] obsolete config in kernel source (LWMON5)
-Message-ID: <20100210090927.GB14134@shisha.kicks-ass.net>
-References: <20100205134256.GB7077@faui49.informatik.uni-erlangen.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100205134256.GB7077@faui49.informatik.uni-erlangen.de>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Wed, 10 Feb 2010 04:20:58 -0500
+Date: Wed, 10 Feb 2010 10:20:55 +0100
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-s390 <linux-s390@vger.kernel.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: [GIT PULL] s390 patches for 2.6.33-rc7
+Message-ID: <20100210102055.6814488d@mschwide.boeblingen.de.ibm.com>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.7.5 (GTK+ 2.18.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 05, 2010 at 02:42:57 +0100, Christoph Egger wrote:
-> Hi all!
+Hi Linus,
 
-Hi,
+hopefully the last s390 update for 2.6.33.
+Please pull from 'for-linus' branch of
 
-(adding Valentin's actual address to the loop)
+	git://git390.marist.edu/pub/scm/linux-2.6.git for-linus
 
-> 	As part of the VAMOS[0] research project at the University of
-> Erlangen we're checking referential integrity between kernel KConfig
-> options and in-code Conditional blocks.
-> 
-> 	LWMON5 is a larger chunk from the kategory unreachable and
-> here for ever. Seems this board was either only available from
-> external trees or has been removed a long time ago. If you agree it
-> might be worth removing it.
-> 
-> 	Please keep me informed of this patch getting confirmed /
-> merged so we can keep track of it.
-> 
-> Regards
-> 
-> 	Christoph Egger
-> 
-> [0] http://vamos1.informatik.uni-erlangen.de/
-> 
-> ----
-> From 8334822cc79b4cf0b7f6844ebd952ebb24ee046f Mon Sep 17 00:00:00 2001
-> From: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
-> Date: Fri, 5 Feb 2010 13:49:13 +0100
-> Subject: [PATCH] Remove conditionalizing on LWMON5
-> 
-> There was some condigionalizing for the LWMON5 boards in kernel
-> source. However infrastructure for enabling this isn't here so
-> probably the special case code can go as well.
-> 
-> Signed-off-by: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
+to receive the following updates:
 
-Acked-by: Alexander Shishkin <virtuoso@slind.org>
+Heiko Carstens (1):
+      [S390] Fix struct _lowcore layout.
 
-Regards,
---
-Alex
+Jan Glauber (1):
+      [S390] qdio: prevent call trace if CHPID is offline
+
+Ursula Braun (1):
+      [S390] qdio: continue polling for buffer state ERROR
+
+ arch/s390/include/asm/lowcore.h |    4 ++--
+ drivers/s390/cio/qdio_main.c    |    4 +++-
+ 2 files changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/arch/s390/include/asm/lowcore.h b/arch/s390/include/asm/lowcore.h
+index f2ef4b6..c25dfac 100644
+--- a/arch/s390/include/asm/lowcore.h
++++ b/arch/s390/include/asm/lowcore.h
+@@ -293,12 +293,12 @@ struct _lowcore
+ 	__u64	clock_comparator;		/* 0x02d0 */
+ 	__u32	machine_flags;			/* 0x02d8 */
+ 	__u32	ftrace_func;			/* 0x02dc */
+-	__u8	pad_0x02f0[0x0300-0x02f0];	/* 0x02f0 */
++	__u8	pad_0x02e0[0x0300-0x02e0];	/* 0x02e0 */
+ 
+ 	/* Interrupt response block */
+ 	__u8	irb[64];			/* 0x0300 */
+ 
+-	__u8	pad_0x0400[0x0e00-0x0400];	/* 0x0400 */
++	__u8	pad_0x0340[0x0e00-0x0340];	/* 0x0340 */
+ 
+ 	/*
+ 	 * 0xe00 contains the address of the IPL Parameter Information
+diff --git a/drivers/s390/cio/qdio_main.c b/drivers/s390/cio/qdio_main.c
+index 999fe80..62b654a 100644
+--- a/drivers/s390/cio/qdio_main.c
++++ b/drivers/s390/cio/qdio_main.c
+@@ -531,7 +531,7 @@ static inline int qdio_inbound_q_done(struct qdio_q *q)
+ 	qdio_siga_sync_q(q);
+ 	get_buf_state(q, q->first_to_check, &state, 0);
+ 
+-	if (state == SLSB_P_INPUT_PRIMED)
++	if (state == SLSB_P_INPUT_PRIMED || state == SLSB_P_INPUT_ERROR)
+ 		/* more work coming */
+ 		return 0;
+ 
+@@ -960,6 +960,8 @@ void qdio_int_handler(struct ccw_device *cdev, unsigned long intparm,
+ 			qdio_handle_activate_check(cdev, intparm, cstat,
+ 						   dstat);
+ 		break;
++	case QDIO_IRQ_STATE_STOPPED:
++		break;
+ 	default:
+ 		WARN_ON(1);
+ 	}
