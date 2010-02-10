@@ -1,80 +1,85 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750868Ab0BJFCl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 00:02:41 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:56832 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750696Ab0BJFCk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 00:02:40 -0500
-Date: Wed, 10 Feb 2010 16:02:34 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Grant Likely <grant.likely@secretlab.ca>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Finn Thain <fthain@telegraphics.com.au>,
-       Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: linux-next: manual merge of the devicetree tree with the m68k tree
-Message-Id: <20100210160234.673f32d1.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta7 (GTK+ 2.18.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1751213Ab0BJFNB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 00:13:01 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:36698 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750732Ab0BJFM7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Feb 2010 00:12:59 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Helge Deller <deller@gmx.de>
+Subject: Re: [PATCH] Restrict initial stack space expansion to rlimit
+Cc: kosaki.motohiro@jp.fujitsu.com, Michael Neuling <mikey@neuling.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Americo Wang <xiyou.wangcong@gmail.com>,
+       Anton Blanchard <anton@samba.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alexander Viro <viro@zeniv.linux.org.uk>,
+       Oleg Nesterov <oleg@redhat.com>, James Morris <jmorris@namei.org>,
+       Ingo Molnar <mingo@elte.hu>, linux-fsdevel@vger.kernel.org,
+       stable@kernel.org, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Serge Hallyn <serue@us.ibm.com>,
+       Paul Mackerras <paulus@samba.org>, benh@kernel.crashing.org,
+       miltonm@bga.com, aeb@cwi.nl, linux-parisc@vger.kernel.org
+In-Reply-To: <4B71E13C.2050905@gmx.de>
+References: <10733.1265752289@neuling.org> <4B71E13C.2050905@gmx.de>
+Message-Id: <20100210141016.4D18.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Wed, 10 Feb 2010 14:12:51 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Grant,
+> On 02/09/2010 10:51 PM, Michael Neuling wrote:
+> >>> I'd still like someone with a CONFIG_STACK_GROWSUP arch to test/ACK it
+> >>> as well.
+> >>
+> >> There's only one CONFIG_GROWSUP arch - parisc.
+> >> Could someone please test it on parisc?
+> 
+> I did.
+> 
+> > How about doing:
+> >    'ulimit -s 15; ls'
+> > before and after the patch is applied.  Before it's applied, 'ls' should
+> > be killed.  After the patch is applied, 'ls' should no longer be killed.
+> >
+> > I'm suggesting a stack limit of 15KB since it's small enough to trigger
+> > 20*PAGE_SIZE.  Also 15KB not a multiple of PAGE_SIZE, which is a trickier
+> > case to handle correctly with this code.
+> >
+> > 4K pages on parisc should be fine to test with.
+> 
+> Mikey, thanks for the suggested test plan.
+> 
+> I'm not sure if your patch does it correct for parisc/stack-grows-up-case.
+> 
+> I tested your patch on  a 4k pages kernel:
+> root@c3000:~# uname -a
+> Linux c3000 2.6.33-rc7-32bit #221 Tue Feb 9 23:17:06 CET 2010 parisc GNU/Linux
+> 
+> Without your patch:
+> root@c3000:~# ulimit -s 15; ls
+> Killed
+> -> correct.
+> 
+> With your patch:
+> root@c3000:~# ulimit -s 15; ls
+> Killed
+> _or_:
+> root@c3000:~# ulimit -s 15; ls
+> Segmentation fault
+> -> ??
+> 
+> Any idea?
 
-Today's linux-next merge of the devicetree tree got a conflict in
-drivers/serial/pmac_zilog.c between commit
-f0ccf0f0269dfe53ec3f1c58fe130a47b908b907 ("pmac-zilog: cleanup") from
-the m68k tree and commit71a157e8edca55198e808f8561dd49017a54ee34  ("of: add
-'of_' prefix to machine_is_compatible()") from the devicetree tree.
+My x86_64 box also makes segmentation fault. I think "ulimit -s 15" is too small stack for ls.
+"ulimit -s 27; ls "  wroks perfectly fine.
 
-The first removes a space ... I fixed it up (see below) and can carry the
-fix as necessary.  (Grant, you could get rid of this by removing the
-space between the tabs on the line "baud = 57600;".  Not a big issue,
-though.)
 
-Also, there is a further patch in the m68k tree
-(89d58f83cfce675a2054975cc2598ba1979816c7 "pmac-zilog: add platform
-driver") that adds a define for machine_is_compatible.  I fixed that as
-below as well.  Hmmm, this file should really include linux/of_fdt.h for
-the definition of of_machine_is_compatible(), shouldn't it?  And then
-maybe we could have a non OF version of the prototype/define in
-of_fdt.h?  Just an idea.
 
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-diff --cc drivers/serial/pmac_zilog.c
-index 870b6a3,3e2ae48..0000000
---- a/drivers/serial/pmac_zilog.c
-+++ b/drivers/serial/pmac_zilog.c
-@@@ -70,10 -68,6 +70,10 @@@
-  #include <asm/pmac_feature.h>
-  #include <asm/dbdma.h>
-  #include <asm/macio.h>
- +#else
- +#include <linux/platform_device.h>
-- #define machine_is_compatible(x) (0)
-++#define of_machine_is_compatible(x) (0)
- +#endif
-  
-  #if defined (CONFIG_SERIAL_PMACZILOG_CONSOLE) && defined(CONFIG_MAGIC_SYSRQ)
-  #define SUPPORT_SYSRQ
-@@@ -2145,10 -2031,10 +2145,10 @@@ static int __init pmz_console_setup(str
-  	/*
-  	 * XServe's default to 57600 bps
-  	 */
-- 	if (machine_is_compatible("RackMac1,1")
-- 	    || machine_is_compatible("RackMac1,2")
-- 	    || machine_is_compatible("MacRISC4"))
-+ 	if (of_machine_is_compatible("RackMac1,1")
-+ 	    || of_machine_is_compatible("RackMac1,2")
-+ 	    || of_machine_is_compatible("MacRISC4"))
- -	 	baud = 57600;
- +		baud = 57600;
-  
-  	/*
-  	 * Check whether an invalid uart number has been specified, and
