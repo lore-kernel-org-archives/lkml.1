@@ -1,155 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756333Ab0BJSiM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 13:38:12 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:7744 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755389Ab0BJSiJ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 13:38:09 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=caASFbOvCA4cWrMylw5+lRg7qt0cfYJBN8CJHAGJvrMq8RrdYsc+rZaNO6baf+Dgn
-	1LkkIl+jD5zb7mzIXcKFQ==
+	id S1756362Ab0BJSlJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 13:41:09 -0500
+Received: from www.tglx.de ([62.245.132.106]:56360 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756346Ab0BJSlA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Feb 2010 13:41:00 -0500
+Date: Wed, 10 Feb 2010 19:39:22 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: "Serge E. Hallyn" <serue@us.ibm.com>,
+       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, oleg@redhat.com,
+       linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com,
+       linux-security-module@vger.kernel.org
+Subject: Re: [PATCH] Update comment on find_task_by_pid_ns
+In-Reply-To: <20100210095710.c7b124f7.akpm@linux-foundation.org>
+Message-ID: <alpine.LFD.2.00.1002101938000.2811@localhost.localdomain>
+References: <alpine.LFD.2.00.0912102214180.3089@localhost.localdomain> <201002082130.JDC57339.OHOVJFQtFSLFMO@I-love.SAKURA.ne.jp> <20100208132101.GA7129@redhat.com> <alpine.LFD.2.00.1002081802510.2811@localhost.localdomain> <20100208171643.GA19230@redhat.com>
+ <201002090642.EBE48414.HLJVFOQFSOFOMt@I-love.SAKURA.ne.jp> <20100209140818.43bb9770.akpm@linux-foundation.org> <20100210163033.GA12251@us.ibm.com> <20100210095710.c7b124f7.akpm@linux-foundation.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <20100210133556.GA21925@redhat.com>
-References: <20100208221632.A7D6F9B33B@bumblebee1.mtv.corp.google.com>
-	 <20100208143231.6d804590.akpm@linux-foundation.org>
-	 <20100209112700.GA4258@redhat.com> <20100210133556.GA21925@redhat.com>
-Date: Wed, 10 Feb 2010 10:38:05 -0800
-Message-ID: <4352991a1002101038s6a2e67d9mc373416c17de9e6a@mail.gmail.com>
-Subject: Re: Race in ptrace.
-From: Salman Qazi <sqazi@google.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: taviso@google.com, Roland Dreier <rolandd@cisco.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[+tavis]
+On Wed, 10 Feb 2010, Andrew Morton wrote:
+> On Wed, 10 Feb 2010 10:30:33 -0600 "Serge E. Hallyn" <serue@us.ibm.com> wrote:
+> 
+> > Quoting Andrew Morton (akpm@linux-foundation.org):
+> > > On Tue, 9 Feb 2010 06:42:45 +0900
+> > > Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp> wrote:
+> > > 
+> > > > OK. I updated description.
+> > > > 
+> > > > As of 2.6.32 , below users are missing rcu_read_lock().
+> > > > 
+> > > > Users missing rcu_read_lock() when calling find_task_by_vpid():
+> > > > 
+> > > >   SYSCALL_DEFINE3(ioprio_set) in fs/ioprio.c
+> > > >   SYSCALL_DEFINE2(ioprio_get) in fs/ioprio.c
+> > > >   cap_get_target_pid() in kernel/capability.c
+> > > 
+> > > Actually, cap_get_target_pid() uses rcu_read_lock() and doesn't take
+> > > tasklist_lock.
+> > 
+> > Hmm - is that in -mm?  In my copy here it takes read_lock(&tasklist_lock)
+> 
+> yup.  It got changed in linux-next.
+> 
+> > And I'll admit I'm a bit confused as to the current state of things:
+> > do I understand correctly that we now need to take both the tasklist_lock
+> > and rcu_read_lock?  (Presumably only for read_lock()?)
+> 
+> Beats me.  We need to protect both the pid->task_struct lookup data
+> structures (during the lookup) and protect the resulting task_struct
+> while the caller is playing with it.  It's unclear whether
+> rcu_read_lock() suffices for both purposes.
 
-Sorry for the delayed response.  I was out sick yesterday.  I have
-made a simpler version of tavis's test case:
+The rcu_read_lock section is sufficient. task_struct can not go away
+before the rcu_read_unlock()
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <signal.h>
-#include <sched.h>
-#include <errno.h>
-#include <sys/ptrace.h>
-#include <assert.h>
-#include <sys/types.h>
-#include <sys/wait.h>
+Thanks,
 
-int child_pid;
-int ant_pid;
-
-void child(void)
-{
-        ptrace(PTRACE_TRACEME, 0, NULL, NULL);
-        asm("int3");
-        while(1);
-}
-
-void antagonist(void)
-{
-        while (1) {
-                kill(child_pid, SIGSTOP);
-                usleep(2);
-                kill(child_pid, SIGCONT);
-                usleep(2);
-        }
-}
-
-int do_fork(void (*callback)(void))
-{
-        int pid;
-        pid = fork();
-        if (pid)
-                return pid;
-        callback();
-
-        exit(EXIT_SUCCESS);
-}
-
-int main(int argc, char **argv)
-{
-        int status;
-        assert((child_pid = do_fork(child)) > 0);
-        assert((ant_pid = do_fork(antagonist)) > 0);
-        waitpid(child_pid, &status, 0);
-        ptrace(PTRACE_SYSCALL, child_pid, NULL, NULL);
-        while(1) {
-                if (waitpid(child_pid, &status, 0) <= 0) {
-                        printf("Errno %d\n", errno);
-                        exit(EXIT_FAILURE);
-                }
-                if (WIFSTOPPED(status)) {
-                        printf("stopped: %d\n", WSTOPSIG(status));
-
-                        /* This should work, but sometimes it doesn't */
-                        if (ptrace(PTRACE_SYSCALL, child_pid,
-                                                NULL, WSTOPSIG(status)) < 0) {
-                                /* Oddly it works the second time! */
-                                assert (ptrace(PTRACE_SYSCALL,
-                                        child_pid, NULL, WSTOPSIG(status)) < 0);
-                        }
-                }
-        }
-}
-
-
-On Wed, Feb 10, 2010 at 5:35 AM, Oleg Nesterov <oleg@redhat.com> wrote:
-> On 02/09, Oleg Nesterov wrote:
->>
->> Salman Qazi wrote:
->> >
->> > A race in ptrace was pointed to us by a fellow Google engineer, Tavis
->> > Ormandy.  The race involves interaction between a tracer, a tracee and
->> > an antagonist.  The tracer is tracing the tracee with PTRACE_SYSCALL and
->> > waits on the tracee.  In the mean time, an antagonist blasts the tracee
->> > with SIGCONTs.
->>
->> Could you please explain how did observe this race? Do you have a
->> test-case, or could you explain how we can reproduce it?
->>
->> Because,
->>
->> > It turns out that a SIGCONT wakes up the
->> > tracee in kernel mode,
->>
->> SIGCONT must not wake up a TASK_TRACED task.
->
-> In case I wasn't clear...
->
-> --- a/kernel/signal.c
-> +++ b/kernel/signal.c
-> @@ -697,6 +697,10 @@ static int prepare_signal(int sig, struct task_struct *p, int from_ancestor_ns)
->                 * and wake all threads.
->                 */
->                rm_from_queue(SIG_KERNEL_STOP_MASK, &signal->shared_pending);
-> +               if (p->ptrace & PT_PTRACED) {
-> +                       p->ptrace |= PT_WAKING;
-> +                       mb();
-> +               }
->
-> Please note that we are going to do wake_up_state(state), and
-> this state can never have __TASK_TRACED bit set.
->
-> And we can't change ->ptrace here, we can race with the tracer.
->
-> There are other problems with this patch, but the main problem
-> is that I can't understand what this patch tries to fix.
->
-> IOW, please provide more info ;)
->
-> Oleg.
->
->
+	tglx
