@@ -1,120 +1,131 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755456Ab0BJJ2S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 04:28:18 -0500
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:39119 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753103Ab0BJJVs (ORCPT
+	id S1755577Ab0BJJ30 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 04:29:26 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:60970 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755437Ab0BJJ3T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 04:21:48 -0500
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: TEXT/PLAIN
-Date: Wed, 10 Feb 2010 01:20:11 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 07/35] x86/pci: add cap_resource
-In-reply-to: <1265793639-15071-1-git-send-email-yinghai@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-       Yinghai Lu <yinghai@kernel.org>
-Message-id: <1265793639-15071-8-git-send-email-yinghai@kernel.org>
-X-Mailer: git-send-email 1.6.4.2
-References: <1265793639-15071-1-git-send-email-yinghai@kernel.org>
+	Wed, 10 Feb 2010 04:29:19 -0500
+From: Joel Becker <joel.becker@oracle.com>
+To: ocfs2-devel@oss.oracle.com
+Cc: linux-kernel@vger.kernel.org, mfasheh@suse.com
+Subject: [PATCH 03/11] ocfs2_dlmfs: Move to its own directory
+Date: Wed, 10 Feb 2010 01:27:46 -0800
+Message-Id: <1265794074-19539-4-git-send-email-joel.becker@oracle.com>
+X-Mailer: git-send-email 1.5.6.5
+In-Reply-To: <1265794074-19539-1-git-send-email-joel.becker@oracle.com>
+References: <1265794074-19539-1-git-send-email-joel.becker@oracle.com>
+X-Source-IP: acsmt357.oracle.com [141.146.40.157]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090204.4B727C69.0089:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-prepare for 32bit pci root bus
+We're going to remove the tie between ocfs2_dlmfs and o2dlm.
+ocfs2_dlmfs doesn't belong in the fs/ocfs2/dlm directory anymore.  Here
+we move it to fs/ocfs2/dlmfs.
 
--v2: hpa said we should compare with (resource_size_t)~0
--v3: according to Linus to use MAX_RESOURCE instead.
-     also need need to put related patches together
--v4: according to Andrew, use min in cap_resource()
-
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-Acked-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+Signed-off-by: Joel Becker <joel.becker@oracle.com>
 ---
- arch/x86/pci/amd_bus.c  |    8 +++++---
- arch/x86/pci/bus_numa.c |    4 ++++
- include/linux/range.h   |    8 ++++++++
- 3 files changed, 17 insertions(+), 3 deletions(-)
+ fs/ocfs2/Makefile                  |    1 +
+ fs/ocfs2/dlm/Makefile              |    3 +--
+ fs/ocfs2/dlmfs/Makefile            |    5 +++++
+ fs/ocfs2/{dlm => dlmfs}/dlmfs.c    |    2 +-
+ fs/ocfs2/{dlm => dlmfs}/dlmfsver.c |    0
+ fs/ocfs2/{dlm => dlmfs}/dlmfsver.h |    0
+ fs/ocfs2/{dlm => dlmfs}/userdlm.c  |    2 +-
+ fs/ocfs2/{dlm => dlmfs}/userdlm.h  |    0
+ 8 files changed, 9 insertions(+), 4 deletions(-)
+ create mode 100644 fs/ocfs2/dlmfs/Makefile
+ rename fs/ocfs2/{dlm => dlmfs}/dlmfs.c (99%)
+ rename fs/ocfs2/{dlm => dlmfs}/dlmfsver.c (100%)
+ rename fs/ocfs2/{dlm => dlmfs}/dlmfsver.h (100%)
+ rename fs/ocfs2/{dlm => dlmfs}/userdlm.c (99%)
+ rename fs/ocfs2/{dlm => dlmfs}/userdlm.h (100%)
 
-diff --git a/arch/x86/pci/amd_bus.c b/arch/x86/pci/amd_bus.c
-index f06bb1b..f7e13b6 100644
---- a/arch/x86/pci/amd_bus.c
-+++ b/arch/x86/pci/amd_bus.c
-@@ -201,7 +201,7 @@ static int __init early_fill_mp_bus_info(void)
+diff --git a/fs/ocfs2/Makefile b/fs/ocfs2/Makefile
+index 600d2d2..791c088 100644
+--- a/fs/ocfs2/Makefile
++++ b/fs/ocfs2/Makefile
+@@ -46,6 +46,7 @@ ocfs2_stackglue-objs := stackglue.o
+ ocfs2_stack_o2cb-objs := stack_o2cb.o
+ ocfs2_stack_user-objs := stack_user.o
  
- 	memset(range, 0, sizeof(range));
- 	/* 0xfd00000000-0xffffffffff for HT */
--	range[0].end = (0xfdULL<<32) - 1;
-+	range[0].end = cap_resource((0xfdULL<<32) - 1);
++obj-$(CONFIG_OCFS2_FS) += dlmfs/
+ # cluster/ is always needed when OCFS2_FS for masklog support
+ obj-$(CONFIG_OCFS2_FS) += cluster/
+ obj-$(CONFIG_OCFS2_FS_O2CB) += dlm/
+diff --git a/fs/ocfs2/dlm/Makefile b/fs/ocfs2/dlm/Makefile
+index 1903613..dcebf0d 100644
+--- a/fs/ocfs2/dlm/Makefile
++++ b/fs/ocfs2/dlm/Makefile
+@@ -1,8 +1,7 @@
+ EXTRA_CFLAGS += -Ifs/ocfs2
  
- 	/* need to take out [0, TOM) for RAM*/
- 	address = MSR_K8_TOP_MEM1;
-@@ -286,7 +286,8 @@ static int __init early_fill_mp_bus_info(void)
- 			}
- 		}
+-obj-$(CONFIG_OCFS2_FS_O2CB) += ocfs2_dlm.o ocfs2_dlmfs.o
++obj-$(CONFIG_OCFS2_FS_O2CB) += ocfs2_dlm.o
  
--		update_res(info, start, end, IORESOURCE_MEM, 1);
-+		update_res(info, cap_resource(start), cap_resource(end),
-+				 IORESOURCE_MEM, 1);
- 		subtract_range(range, RANGE_NUM, start, end);
- 		printk(KERN_CONT "\n");
- 	}
-@@ -321,7 +322,8 @@ static int __init early_fill_mp_bus_info(void)
- 			if (!range[i].end)
- 				continue;
+ ocfs2_dlm-objs := dlmdomain.o dlmdebug.o dlmthread.o dlmrecovery.o \
+ 	dlmmaster.o dlmast.o dlmconvert.o dlmlock.o dlmunlock.o dlmver.o
  
--			update_res(info, range[i].start, range[i].end,
-+			update_res(info, cap_resource(range[i].start),
-+				   cap_resource(range[i].end),
- 				   IORESOURCE_MEM, 1);
- 		}
- 	}
-diff --git a/arch/x86/pci/bus_numa.c b/arch/x86/pci/bus_numa.c
-index 3411687..3510778 100644
---- a/arch/x86/pci/bus_numa.c
-+++ b/arch/x86/pci/bus_numa.c
-@@ -1,5 +1,6 @@
- #include <linux/init.h>
- #include <linux/pci.h>
-+#include <linux/range.h>
- 
- #include "bus_numa.h"
- 
-@@ -55,6 +56,9 @@ void __devinit update_res(struct pci_root_info *info, resource_size_t start,
- 	if (start > end)
- 		return;
- 
-+	if (start == MAX_RESOURCE)
-+		return;
+-ocfs2_dlmfs-objs := userdlm.o dlmfs.o dlmfsver.o
+diff --git a/fs/ocfs2/dlmfs/Makefile b/fs/ocfs2/dlmfs/Makefile
+new file mode 100644
+index 0000000..df69b48
+--- /dev/null
++++ b/fs/ocfs2/dlmfs/Makefile
+@@ -0,0 +1,5 @@
++EXTRA_CFLAGS += -Ifs/ocfs2
 +
- 	if (!merge)
- 		goto addit;
- 
-diff --git a/include/linux/range.h b/include/linux/range.h
-index 0789f14..bd184a5 100644
---- a/include/linux/range.h
-+++ b/include/linux/range.h
-@@ -19,4 +19,12 @@ int clean_sort_range(struct range *range, int az);
- 
- void sort_range(struct range *range, int nr_range);
- 
-+#define MAX_RESOURCE ((resource_size_t)~0)
-+static inline resource_size_t cap_resource(u64 val)
-+{
-+	if (val > MAX_RESOURCE)
-+		return MAX_RESOURCE;
++obj-$(CONFIG_OCFS2_FS) += ocfs2_dlmfs.o
 +
-+	return val;
-+}
- #endif
++ocfs2_dlmfs-objs := userdlm.o dlmfs.o dlmfsver.o
+diff --git a/fs/ocfs2/dlm/dlmfs.c b/fs/ocfs2/dlmfs/dlmfs.c
+similarity index 99%
+rename from fs/ocfs2/dlm/dlmfs.c
+rename to fs/ocfs2/dlmfs/dlmfs.c
+index ddf55da..e21ce0e 100644
+--- a/fs/ocfs2/dlm/dlmfs.c
++++ b/fs/ocfs2/dlmfs/dlmfs.c
+@@ -52,7 +52,7 @@
+ #include "cluster/heartbeat.h"
+ #include "cluster/tcp.h"
+ 
+-#include "dlmapi.h"
++#include "dlm/dlmapi.h"
+ 
+ #include "userdlm.h"
+ 
+diff --git a/fs/ocfs2/dlm/dlmfsver.c b/fs/ocfs2/dlmfs/dlmfsver.c
+similarity index 100%
+rename from fs/ocfs2/dlm/dlmfsver.c
+rename to fs/ocfs2/dlmfs/dlmfsver.c
+diff --git a/fs/ocfs2/dlm/dlmfsver.h b/fs/ocfs2/dlmfs/dlmfsver.h
+similarity index 100%
+rename from fs/ocfs2/dlm/dlmfsver.h
+rename to fs/ocfs2/dlmfs/dlmfsver.h
+diff --git a/fs/ocfs2/dlm/userdlm.c b/fs/ocfs2/dlmfs/userdlm.c
+similarity index 99%
+rename from fs/ocfs2/dlm/userdlm.c
+rename to fs/ocfs2/dlmfs/userdlm.c
+index 4cb1d3d..6adae70 100644
+--- a/fs/ocfs2/dlm/userdlm.c
++++ b/fs/ocfs2/dlmfs/userdlm.c
+@@ -39,7 +39,7 @@
+ #include "cluster/heartbeat.h"
+ #include "cluster/tcp.h"
+ 
+-#include "dlmapi.h"
++#include "dlm/dlmapi.h"
+ 
+ #include "userdlm.h"
+ 
+diff --git a/fs/ocfs2/dlm/userdlm.h b/fs/ocfs2/dlmfs/userdlm.h
+similarity index 100%
+rename from fs/ocfs2/dlm/userdlm.h
+rename to fs/ocfs2/dlmfs/userdlm.h
 -- 
-1.6.4.2
+1.6.6.1
 
