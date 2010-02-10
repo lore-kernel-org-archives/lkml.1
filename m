@@ -1,173 +1,153 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756652Ab0BJWtP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 17:49:15 -0500
-Received: from hera.kernel.org ([140.211.167.34]:56416 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754843Ab0BJWtN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 17:49:13 -0500
-Date: Wed, 10 Feb 2010 22:48:46 GMT
-From: tip-bot for Yinghai Lu <yinghai@kernel.org>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       yinghai@kernel.org, trenn@suse.de, tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       yinghai@kernel.org, tglx@linutronix.de, trenn@suse.de
-In-Reply-To: <1265793639-15071-2-git-send-email-yinghai@kernel.org>
-References: <1265793639-15071-2-git-send-email-yinghai@kernel.org>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/urgent] x86: Fix SCI on IOAPIC != 0
-Message-ID: <tip-18dce6ba5c8c6bd0f3ab4efa4cbdd698dab5c40a@git.kernel.org>
-Git-Commit-ID: 18dce6ba5c8c6bd0f3ab4efa4cbdd698dab5c40a
-X-Mailer: tip-git-log-daemon
+	id S1756715Ab0BJWwy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 17:52:54 -0500
+Received: from va3ehsobe004.messaging.microsoft.com ([216.32.180.14]:51860
+	"EHLO VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754109Ab0BJWwx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Feb 2010 17:52:53 -0500
+X-SpamScore: -23
+X-BigFish: VPS-23(zzab9bh98dN936eM1fa4L9371Pzz1202hzzz2fh6bh61h)
+X-Spam-TCS-SCL: 0:0
+Message-ID: <4B7338BF.1070505@am.sony.com>
+Date: Wed, 10 Feb 2010 14:52:47 -0800
+From: Tim Bird <tim.bird@am.sony.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 10 Feb 2010 22:48:49 +0000 (UTC)
+To: linux kernel <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <srostedt@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH 1/1] ftrace - add support for tracing_thresh to function_graph
+ tracer
+References: <4B733721.3030503@am.sony.com>
+In-Reply-To: <4B733721.3030503@am.sony.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+X-SEL-encryption-scan: scanned
+X-Reverse-DNS: mail8.fw-sd.sony.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  18dce6ba5c8c6bd0f3ab4efa4cbdd698dab5c40a
-Gitweb:     http://git.kernel.org/tip/18dce6ba5c8c6bd0f3ab4efa4cbdd698dab5c40a
-Author:     Yinghai Lu <yinghai@kernel.org>
-AuthorDate: Wed, 10 Feb 2010 01:20:05 -0800
-Committer:  H. Peter Anvin <hpa@zytor.com>
-CommitDate: Wed, 10 Feb 2010 13:47:39 -0800
+On 02/10/2010 02:45 PM, Tim Bird wrote:
+(a bunch of format_flowed garbage)
 
-x86: Fix SCI on IOAPIC != 0
+Sorry - I updated my mail client and forgot to disable the format_flowed
+option.
 
-Thomas Renninger <trenn@suse.de> reported on IBM x3330
+Here's the patch again, hopefully in better format this time.
 
-booting a latest kernel on this machine results in:
+This adds support for 'tracing_thresh' to the existing function_graph
+tracer.  When 'tracing_thresh' is in effect, function entry events are
+not stored - only function exits are stored.  This prevents filtered
+functions from filling up the log. An extra option is added to allow
+showing the function name with the exit event.  (Otherwise, all you
+get are closing braces.)
 
-PCI: PCI BIOS revision 2.10 entry at 0xfd61c, last bus=1
-PCI: Using configuration type 1 for base access bio: create slab <bio-0> at 0
-ACPI: SCI (IRQ30) allocation failed
-ACPI Exception: AE_NOT_ACQUIRED, Unable to install System Control Interrupt handler (20090903/evevent-161)
-ACPI: Unable to start the ACPI Interpreter
+Note that the 'funcgraph-exit' display option is valuable by itself,
+since it makes the output much more 'grep-able'.
 
-Later all kind of devices fail...
-
-and bisect it down to this commit:
-commit b9c61b70075c87a8612624736faf4a2de5b1ed30
-
-    x86/pci: update pirq_enable_irq() to setup io apic routing
-
-it turns out we need to set irq routing for the sci on ioapic1 early.
-
--v2: make it work without sparseirq too.
--v3: fix checkpatch.pl warning, and cc to stable
-
-Reported-by: Thomas Renninger <trenn@suse.de>
-Bisected-by: Thomas Renninger <trenn@suse.de>
-Tested-by: Thomas Renninger <trenn@suse.de>
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-LKML-Reference: <1265793639-15071-2-git-send-email-yinghai@kernel.org>
-Cc: stable@kernel.org
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
----
- arch/x86/include/asm/io_apic.h |    1 +
- arch/x86/kernel/acpi/boot.c    |    9 ++++++-
- arch/x86/kernel/apic/io_apic.c |   50 ++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 59 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/include/asm/io_apic.h b/arch/x86/include/asm/io_apic.h
-index 7c7c16c..5f61f6e 100644
---- a/arch/x86/include/asm/io_apic.h
-+++ b/arch/x86/include/asm/io_apic.h
-@@ -160,6 +160,7 @@ extern int io_apic_get_redir_entries(int ioapic);
- struct io_apic_irq_attr;
- extern int io_apic_set_pci_routing(struct device *dev, int irq,
- 		 struct io_apic_irq_attr *irq_attr);
-+void setup_IO_APIC_irq_extra(u32 gsi);
- extern int (*ioapic_renumber_irq)(int ioapic, int irq);
- extern void ioapic_init_mappings(void);
- extern void ioapic_insert_resources(void);
-diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index 0acbcdf..5c96b75 100644
---- a/arch/x86/kernel/acpi/boot.c
-+++ b/arch/x86/kernel/acpi/boot.c
-@@ -446,6 +446,12 @@ void __init acpi_pic_sci_set_trigger(unsigned int irq, u16 trigger)
- int acpi_gsi_to_irq(u32 gsi, unsigned int *irq)
- {
- 	*irq = gsi;
-+
-+#ifdef CONFIG_X86_IO_APIC
-+	if (acpi_irq_model == ACPI_IRQ_MODEL_IOAPIC)
-+		setup_IO_APIC_irq_extra(gsi);
-+#endif
-+
- 	return 0;
- }
+Signed-off-by: Tim Bird <tim.bird@am.sony.com>
+--
+ trace.c                 |    5 +++--
+ trace_functions_graph.c |   20 +++++++++++++++++++-
+ 2 files changed, 22 insertions(+), 3 deletions(-)
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index 0df1b0f..aa39f8e 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -502,9 +502,10 @@ static ssize_t trace_seq_to_buffer(struct trace_seq *s, void *buf, size_t cnt)
+ static arch_spinlock_t ftrace_max_lock =
+ 	(arch_spinlock_t)__ARCH_SPIN_LOCK_UNLOCKED;
  
-@@ -473,7 +479,8 @@ int acpi_register_gsi(struct device *dev, u32 gsi, int trigger, int polarity)
- 		plat_gsi = mp_register_gsi(dev, gsi, trigger, polarity);
- 	}
- #endif
--	acpi_gsi_to_irq(plat_gsi, &irq);
-+	irq = plat_gsi;
++unsigned long __read_mostly	tracing_thresh;
 +
- 	return irq;
- }
- 
-diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-index 53243ca..5e4cce2 100644
---- a/arch/x86/kernel/apic/io_apic.c
-+++ b/arch/x86/kernel/apic/io_apic.c
-@@ -1539,6 +1539,56 @@ static void __init setup_IO_APIC_irqs(void)
- }
+ #ifdef CONFIG_TRACER_MAX_TRACE
+ unsigned long __read_mostly	tracing_max_latency;
+-unsigned long __read_mostly	tracing_thresh;
  
  /*
-+ * for the gsit that is not in first ioapic
-+ * but could not use acpi_register_gsi()
-+ * like some special sci in IBM x3330
-+ */
-+void setup_IO_APIC_irq_extra(u32 gsi)
-+{
-+	int apic_id = 0, pin, idx, irq;
-+	int node = cpu_to_node(boot_cpu_id);
-+	struct irq_desc *desc;
-+	struct irq_cfg *cfg;
-+
-+	/*
-+	 * Convert 'gsi' to 'ioapic.pin'.
-+	 */
-+	apic_id = mp_find_ioapic(gsi);
-+	if (apic_id < 0)
-+		return;
-+
-+	pin = mp_find_ioapic_pin(apic_id, gsi);
-+	idx = find_irq_entry(apic_id, pin, mp_INT);
-+	if (idx == -1)
-+		return;
-+
-+	irq = pin_2_irq(idx, apic_id, pin);
-+#ifdef CONFIG_SPARSE_IRQ
-+	desc = irq_to_desc(irq);
-+	if (desc)
-+		return;
+  * Copy the new maximum trace into the separate maximum-trace
+@@ -4176,10 +4177,10 @@ static __init int tracer_init_debugfs(void)
+ #ifdef CONFIG_TRACER_MAX_TRACE
+ 	trace_create_file("tracing_max_latency", 0644, d_tracer,
+ 			&tracing_max_latency, &tracing_max_lat_fops);
 +#endif
-+	desc = irq_to_desc_alloc_node(irq, node);
-+	if (!desc) {
-+		printk(KERN_INFO "can not get irq_desc for %d\n", irq);
+ 
+ 	trace_create_file("tracing_thresh", 0644, d_tracer,
+ 			&tracing_thresh, &tracing_max_lat_fops);
+-#endif
+ 
+ 	trace_create_file("README", 0444, d_tracer,
+ 			NULL, &tracing_readme_fops);
+diff --git a/kernel/trace/trace_functions_graph.c b/kernel/trace/trace_functions_graph.c
+index b1342c5..e019e32 100644
+--- a/kernel/trace/trace_functions_graph.c
++++ b/kernel/trace/trace_functions_graph.c
+@@ -39,6 +39,7 @@ struct fgraph_data {
+ #define TRACE_GRAPH_PRINT_PROC		0x8
+ #define TRACE_GRAPH_PRINT_DURATION	0x10
+ #define TRACE_GRAPH_PRINT_ABS_TIME	0X20
++#define TRACE_GRAPH_PRINT_FUNC_EXIT	0X40
+ 
+ static struct tracer_opt trace_opts[] = {
+ 	/* Display overruns? (for self-debug purpose) */
+@@ -53,6 +54,8 @@ static struct tracer_opt trace_opts[] = {
+ 	{ TRACER_OPT(funcgraph-duration, TRACE_GRAPH_PRINT_DURATION) },
+ 	/* Display absolute time of an entry */
+ 	{ TRACER_OPT(funcgraph-abstime, TRACE_GRAPH_PRINT_ABS_TIME) },
++	/* Display function name on exit, instead of just closing brace */
++	{ TRACER_OPT(funcgraph-exit, TRACE_GRAPH_PRINT_FUNC_EXIT) },
+ 	{ } /* Empty entry */
+ };
+ 
+@@ -202,6 +205,8 @@ static int __trace_graph_entry(struct trace_array *tr,
+ 	return 1;
+ }
+ 
++extern unsigned long __read_mostly tracing_thresh;
++
+ int trace_graph_entry(struct ftrace_graph_ent *trace)
+ {
+ 	struct trace_array *tr = graph_array;
+@@ -221,6 +226,10 @@ int trace_graph_entry(struct ftrace_graph_ent *trace)
+ 	if (!ftrace_graph_addr(trace->func))
+ 		return 0;
+ 
++	/* if tracing duration, only save function exits (omit function entries in log) */
++	if (tracing_thresh)
++		return 1;
++
+ 	local_irq_save(flags);
+ 	cpu = raw_smp_processor_id();
+ 	data = tr->data[cpu];
+@@ -254,6 +263,10 @@ static void __trace_graph_return(struct trace_array *tr,
+ 	if (unlikely(__this_cpu_read(per_cpu_var(ftrace_cpu_disabled))))
+ 		return;
+ 
++	if (tracing_thresh &&
++		(trace->rettime - trace->calltime < tracing_thresh))
 +		return;
++
+ 	event = trace_buffer_lock_reserve(buffer, TRACE_GRAPH_RET,
+ 					  sizeof(*entry), flags, pc);
+ 	if (!event)
+@@ -891,7 +904,12 @@ print_graph_return(struct ftrace_graph_ret *trace, struct trace_seq *s,
+ 			return TRACE_TYPE_PARTIAL_LINE;
+ 	}
+ 
+-	ret = trace_seq_printf(s, "}\n");
++	if (tracer_flags.val & TRACE_GRAPH_PRINT_FUNC_EXIT) {
++		ret = trace_seq_printf(s, "%ps();\n", (void *)trace->func);
++	} else {
++		ret = trace_seq_printf(s, "}\n");
 +	}
 +
-+	cfg = desc->chip_data;
-+	add_pin_to_irq_node(cfg, node, apic_id, pin);
-+
-+	if (test_bit(pin, mp_ioapic_routing[apic_id].pin_programmed)) {
-+		pr_debug("Pin %d-%d already programmed\n",
-+			 mp_ioapics[apic_id].apicid, pin);
-+		return;
-+	}
-+	set_bit(pin, mp_ioapic_routing[apic_id].pin_programmed);
-+
-+	setup_IO_APIC_irq(apic_id, pin, irq, desc,
-+			irq_trigger(idx), irq_polarity(idx));
-+}
-+
-+/*
-  * Set up the timer pin, possibly with the 8259A-master behind.
-  */
- static void __init setup_timer_IRQ0_pin(unsigned int apic_id, unsigned int pin,
+ 	if (!ret)
+ 		return TRACE_TYPE_PARTIAL_LINE;
+ 
+
+
+
+
