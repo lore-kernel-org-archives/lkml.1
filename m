@@ -1,69 +1,60 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756693Ab0BJW1G (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 17:27:06 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:62631 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756657Ab0BJW1D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 17:27:03 -0500
-Message-ID: <4B73329F.4050406@redhat.com>
-Date: Wed, 10 Feb 2010 17:26:39 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
+	id S1756671Ab0BJWb5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 17:31:57 -0500
+Received: from smtp-out.google.com ([216.239.44.51]:5988 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755837Ab0BJWbz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Feb 2010 17:31:55 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=nf9pm8HxHfFyabgjDUy4DlYSwQGWTfiqWg0AdfYF3Mz+ZLbRfba6cqG8vYh3na+T/
+	u6sjVM4BHzBDlgU7CBOiw==
+Date: Wed, 10 Feb 2010 14:31:47 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Rik van Riel <riel@redhat.com>, Lubos Lunak <l.lunak@suse.cz>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Nick Piggin <npiggin@suse.de>, Jiri Kosina <jkosina@suse.cz>
+Subject: Re: Improving OOM killer
+In-Reply-To: <20100210221847.5d7bb3cb@lxorguk.ukuu.org.uk>
+Message-ID: <alpine.DEB.2.00.1002101427490.29718@chino.kir.corp.google.com>
+References: <201002012302.37380.l.lunak@suse.cz> <4B6B4500.3010603@redhat.com> <alpine.DEB.2.00.1002041410300.16391@chino.kir.corp.google.com> <201002102154.43231.l.lunak@suse.cz> <4B7320BF.2020800@redhat.com> <20100210221847.5d7bb3cb@lxorguk.ukuu.org.uk>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-CC: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] tracing/kprobes: fix probe parsing
-References: <20100210162346.GA6933@osiris.boeblingen.de.ibm.com>
-In-Reply-To: <20100210162346.GA6933@osiris.boeblingen.de.ibm.com>
-X-Enigmail-Version: 1.0.1
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Heiko Carstens wrote:
-> From: Heiko Carstens <heiko.carstens@de.ibm.com>
+On Wed, 10 Feb 2010, Alan Cox wrote:
+
+> One of the problems with picking on tasks that fork a lot is that
+> describes apache perfectly. So a high loaded apache will get shot over a
+> rapid memory eating cgi script.
 > 
-> Trying to add a probe like
+
+With my rewrite, the oom killer would not select apache but rather the 
+child with a seperate address space that is consuming the most amount of 
+allowed memory and only when a configurable number of such children (1000 
+by default) have not had any runtime.  My heuristic is only meant to 
+slightly penalize such tasks so that they can be distinguished from oom 
+kill from other parents with comparable memory usage.  Enforcing a strict 
+forkbomb policy is out of the scope of the oom killer, though, so no 
+attempt was made.
+
+> Any heuristic is going to be iffy - but that isn't IMHO a good one to
+> work from. If anything "who allocated lots of RAM recently" may be a
+> better guide but we don't keep stats for that.
 > 
-> echo p:myprobe 0x10000 > /sys/kernel/debug/tracing/kprobe_events
-> 
-> will fail since the wrong pointer is passed to strict_strtoul
-> when trying to convert the address to an unsigned long.
 
-Right, it's a bug! Thank you!
-
-
-> 
-> Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-
-Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
-
-> ---
->  kernel/trace/trace_kprobe.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> --- a/kernel/trace/trace_kprobe.c
-> +++ b/kernel/trace/trace_kprobe.c
-> @@ -689,7 +689,7 @@ static int create_trace_probe(int argc, 
->  			return -EINVAL;
->  		}
->  		/* an address specified */
-> -		ret = strict_strtoul(&argv[0][2], 0, (unsigned long *)&addr);
-> +		ret = strict_strtoul(&argv[1][0], 0, (unsigned long *)&addr);
->  		if (ret) {
->  			pr_info("Failed to parse address.\n");
->  			return ret;
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+That's what my heuristic basically does, if a parent is identified as a 
+forkbomb, then it is only penalized by averaging the memory consumption of 
+those children and then multiplying it by the same number of times the 
+configurable forkbomb threshold was reached.
