@@ -1,156 +1,105 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755538Ab0BJQ0O (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 11:26:14 -0500
-Received: from mtagate4.de.ibm.com ([195.212.17.164]:50358 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754818Ab0BJQ0M (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 11:26:12 -0500
-Date: Wed, 10 Feb 2010 17:26:10 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] s390: add pt_regs register and stack access API
-Message-ID: <20100210162610.GC6933@osiris.boeblingen.de.ibm.com>
+	id S1755573Ab0BJQa5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 11:30:57 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:49210 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755272Ab0BJQay (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Feb 2010 11:30:54 -0500
+Date: Wed, 10 Feb 2010 10:30:33 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, oleg@redhat.com,
+       tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       paulmck@linux.vnet.ibm.com, linux-security-module@vger.kernel.org
+Subject: Re: [PATCH] Update comment on find_task_by_pid_ns
+Message-ID: <20100210163033.GA12251@us.ibm.com>
+References: <alpine.LFD.2.00.0912102214180.3089@localhost.localdomain>
+ <201002082130.JDC57339.OHOVJFQtFSLFMO@I-love.SAKURA.ne.jp>
+ <20100208132101.GA7129@redhat.com>
+ <alpine.LFD.2.00.1002081802510.2811@localhost.localdomain>
+ <20100208171643.GA19230@redhat.com>
+ <201002090642.EBE48414.HLJVFOQFSOFOMt@I-love.SAKURA.ne.jp>
+ <20100209140818.43bb9770.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20100209140818.43bb9770.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
+Quoting Andrew Morton (akpm@linux-foundation.org):
+> On Tue, 9 Feb 2010 06:42:45 +0900
+> Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp> wrote:
+> 
+> > OK. I updated description.
+> > 
+> > As of 2.6.32 , below users are missing rcu_read_lock().
+> > 
+> > Users missing rcu_read_lock() when calling find_task_by_vpid():
+> > 
+> >   SYSCALL_DEFINE3(ioprio_set) in fs/ioprio.c
+> >   SYSCALL_DEFINE2(ioprio_get) in fs/ioprio.c
+> >   cap_get_target_pid() in kernel/capability.c
+> 
+> Actually, cap_get_target_pid() uses rcu_read_lock() and doesn't take
+> tasklist_lock.
 
-This API is needed for the kprobe-based event tracer.
+Hmm - is that in -mm?  In my copy here it takes read_lock(&tasklist_lock)
 
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
----
- arch/s390/Kconfig              |    1 
- arch/s390/include/asm/ptrace.h |   14 +++++++
- arch/s390/kernel/ptrace.c      |   76 +++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 90 insertions(+), 1 deletion(-)
+And I'll admit I'm a bit confused as to the current state of things:
+do I understand correctly that we now need to take both the tasklist_lock
+and rcu_read_lock?  (Presumably only for read_lock()?)
 
---- a/arch/s390/include/asm/ptrace.h
-+++ b/arch/s390/include/asm/ptrace.h
-@@ -492,13 +492,25 @@ struct user_regs_struct
- struct task_struct;
- extern void user_enable_single_step(struct task_struct *);
- extern void user_disable_single_step(struct task_struct *);
-+extern void show_regs(struct pt_regs * regs);
- 
- #define user_mode(regs) (((regs)->psw.mask & PSW_MASK_PSTATE) != 0)
- #define instruction_pointer(regs) ((regs)->psw.addr & PSW_ADDR_INSN)
- #define user_stack_pointer(regs)((regs)->gprs[15])
- #define regs_return_value(regs)((regs)->gprs[2])
- #define profile_pc(regs) instruction_pointer(regs)
--extern void show_regs(struct pt_regs * regs);
-+
-+int regs_query_register_offset(const char *name);
-+const char *regs_query_register_name(unsigned int offset);
-+unsigned long regs_get_argument_nth(struct pt_regs *regs, unsigned int n);
-+unsigned long regs_get_register(struct pt_regs *regs, unsigned int offset);
-+unsigned long regs_get_kernel_stack_nth(struct pt_regs *regs, unsigned int n);
-+
-+static inline unsigned long kernel_stack_pointer(struct pt_regs *regs)
-+{
-+	return regs->gprs[15] & PSW_ADDR_INSN;
-+}
-+
- #endif /* __KERNEL__ */
- #endif /* __ASSEMBLY__ */
- 
---- a/arch/s390/Kconfig
-+++ b/arch/s390/Kconfig
-@@ -87,6 +87,7 @@ config S390
- 	select HAVE_SYSCALL_TRACEPOINTS
- 	select HAVE_DYNAMIC_FTRACE
- 	select HAVE_FUNCTION_GRAPH_TRACER
-+	select HAVE_REGS_AND_STACK_ACCESS_API
- 	select HAVE_DEFAULT_NO_SPIN_MUTEXES
- 	select HAVE_OPROFILE
- 	select HAVE_KPROBES
---- a/arch/s390/kernel/ptrace.c
-+++ b/arch/s390/kernel/ptrace.c
-@@ -992,3 +992,79 @@ const struct user_regset_view *task_user
- #endif
- 	return &user_s390_view;
- }
-+
-+static const char *gpr_names[NUM_GPRS] = {
-+	"r0", "r1",  "r2",  "r3",  "r4",  "r5",  "r6",  "r7",
-+	"r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15",
-+};
-+
-+unsigned long regs_get_register(struct pt_regs *regs, unsigned int offset)
-+{
-+	if (offset >= NUM_GPRS)
-+		return 0;
-+	return regs->gprs[offset];
-+}
-+
-+int regs_query_register_offset(const char *name)
-+{
-+	unsigned long offset;
-+
-+	if (!name || *name != 'r')
-+		return -EINVAL;
-+	if (strict_strtoul(name + 1, 10, &offset))
-+		return -EINVAL;
-+	if (offset >= NUM_GPRS)
-+		return -EINVAL;
-+	return offset;
-+}
-+
-+const char *regs_query_register_name(unsigned int offset)
-+{
-+	if (offset >= NUM_GPRS)
-+		return NULL;
-+	return gpr_names[offset];
-+}
-+
-+static int regs_within_kernel_stack(struct pt_regs *regs, unsigned long addr)
-+{
-+	unsigned long ksp = kernel_stack_pointer(regs);
-+
-+	return (addr & ~(THREAD_SIZE - 1)) == (ksp & ~(THREAD_SIZE - 1));
-+}
-+
-+/**
-+ * regs_get_kernel_stack_nth() - get Nth entry of the stack
-+ * @regs:pt_regs which contains kernel stack pointer.
-+ * @n:stack entry number.
-+ *
-+ * regs_get_kernel_stack_nth() returns @n th entry of the kernel stack which
-+ * is specifined by @regs. If the @n th entry is NOT in the kernel stack,
-+ * this returns 0.
-+ */
-+unsigned long regs_get_kernel_stack_nth(struct pt_regs *regs, unsigned int n)
-+{
-+	unsigned long addr;
-+
-+	addr = kernel_stack_pointer(regs) + n * sizeof(long);
-+	if (!regs_within_kernel_stack(regs, addr))
-+		return 0;
-+	return *(unsigned long *)addr;
-+}
-+
-+/**
-+ * regs_get_argument_nth() - get Nth argument at function call
-+ * @regs:pt_regs which contains registers at function entry.
-+ * @n:argument number.
-+ *
-+ * regs_get_argument_nth() returns @n th argument of a function call.
-+ * Since usually the kernel stack will be changed right after function entry,
-+ * you must use this at function entry. If the @n th entry is NOT in the
-+ * kernel stack or pt_regs, this returns 0.
-+ */
-+unsigned long regs_get_argument_nth(struct pt_regs *regs, unsigned int n)
-+{
-+	if (n < 5)
-+		return regs->gprs[2 + n];
-+	n += STACK_FRAME_OVERHEAD / sizeof(long);
-+	return regs_get_kernel_stack_nth(regs, n - 5);
-+}
+> >   audit_prepare_user_tty() in kernel/audit.c
+> >   audit_receive_msg() in kernel/audit.c
+> >   check_clock() in kernel/posix-cpu-timers.c
+> >   posix_cpu_timer_create() in kernel/posix-cpu-timers.c
+> >   SYSCALL_DEFINE3(setpriority) in kernel/sys.c
+> >   SYSCALL_DEFINE2(getpriority) in kernel/sys.c
+> >   SYSCALL_DEFINE2(setpgid) in kernel/sys.c
+> >   SYSCALL_DEFINE1(sched_getscheduler) in kernel/sched.c
+> >   SYSCALL_DEFINE2(sched_getparam) in kernel/sched.c
+> >   sched_setaffinity() in kernel/sched.c
+> >   sched_getaffinity() in kernel/sched.c
+> >   SYSCALL_DEFINE2(sched_rr_get_interval) in kernel/sched.c
+> >   tomoyo_is_select_one() in security/tomoyo/common.c
+> >   tomoyo_read_pid() in security/tomoyo/common.c
+> >   SYSCALL_DEFINE6(move_pages) in mm/migrate.c
+> >   SYSCALL_DEFINE4(migrate_pages) in mm/mempolicy.c
+> >   find_process_by_pid() in arch/mips/kernel/mips-mt-fpaff.c
+> >   pfm_get_task() in arch/ia64/kernel/perfmon.c
+> >   cxn_pin_by_pid() in arch/frv/mm/mmu-context.c
+> > 
+> > Users missing rcu_read_lock() when calling find_task_by_pid_ns():
+> > 
+> >   rest_init() in init/main.c
+> >   getthread() in kernel/kgdb.c
+> >   mconsole_stack() in arch/um/drivers/mconsole_kern.c
+> > 
+> > What should we do? Adding rcu_read_lock()/rcu_read_unlock() to each
+> > callers? Or adding rcu_read_lock()/rcu_read_unlock() inside
+> > find_task_by_pid_ns()?
+> 
+> Putting rcu_read_lock() in the callee isn't a complete solution. 
+> Because the function would still be returning a task_struct* without
+> any locking held and without taking a reference against it.  So that
+> pointer is useless to the caller!
+> 
+> We could add a new function which looks up the task and then takes a
+> reference on it, insde suitable locks.  The caller would then use the
+> task_struct and then remember to call put_task_struct() to unpin it. 
+> This prevents the task_struct from getting freed while it's being
+> manipulated, but it doesn't prevent fields within it from being altered
+> - that's up to the caller to sort out.
+> 
+> One fix is to go through all those callsites and add the rcu_read_lock.
+> That kinda sucks.  Perhaps writing the new function which returns a
+> pinned task_struct is better?
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-security-module" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
