@@ -1,18 +1,18 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755547Ab0BJJ2Z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 04:28:25 -0500
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:60025 "EHLO
+	id S1755000Ab0BJJ2O (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 04:28:14 -0500
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:60035 "EHLO
 	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752911Ab0BJJVr (ORCPT
+	with ESMTP id S1753264Ab0BJJVs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 04:21:47 -0500
+	Wed, 10 Feb 2010 04:21:48 -0500
 MIME-version: 1.0
 Content-transfer-encoding: 7BIT
 Content-type: TEXT/PLAIN
-Date: Wed, 10 Feb 2010 01:20:09 -0800
+Date: Wed, 10 Feb 2010 01:20:12 -0800
 From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 05/35] x86/pci: amd one chain system to use pci read out res
+Subject: [PATCH 08/35] x86/pci: enable pci root res read out for 32bit too
 In-reply-to: <1265793639-15071-1-git-send-email-yinghai@kernel.org>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
@@ -22,96 +22,118 @@ Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
        Christoph Lameter <cl@linux-foundation.org>,
        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
        Yinghai Lu <yinghai@kernel.org>
-Message-id: <1265793639-15071-6-git-send-email-yinghai@kernel.org>
+Message-id: <1265793639-15071-9-git-send-email-yinghai@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 References: <1265793639-15071-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-found MSI amd k8 based laptops is hiding [0x70000000, 0x80000000) RAM from
-e820.
+should be good for 32bit too.
 
-enable amd one chain even for all.
-
--v2: use bool for found, according to Andrew
+-v3: cast res->start
+-v4: according to Linus, to use %pR instead of cast
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 Acked-by: Jesse Barnes <jbarnes@virtuousgeek.org>
 ---
- arch/x86/pci/amd_bus.c  |    7 ++++---
- arch/x86/pci/bus_numa.c |    5 -----
- arch/x86/pci/bus_numa.h |    1 -
- 3 files changed, 4 insertions(+), 9 deletions(-)
+ arch/x86/pci/Makefile   |    3 +--
+ arch/x86/pci/amd_bus.c  |   18 ++----------------
+ arch/x86/pci/bus_numa.h |    4 ++--
+ arch/x86/pci/i386.c     |    4 ----
+ 4 files changed, 5 insertions(+), 24 deletions(-)
 
+diff --git a/arch/x86/pci/Makefile b/arch/x86/pci/Makefile
+index 39fba37..0b7d3e9 100644
+--- a/arch/x86/pci/Makefile
++++ b/arch/x86/pci/Makefile
+@@ -14,8 +14,7 @@ obj-$(CONFIG_X86_VISWS)		+= visws.o
+ obj-$(CONFIG_X86_NUMAQ)		+= numaq_32.o
+ 
+ obj-y				+= common.o early.o
+-obj-y				+= amd_bus.o
+-obj-$(CONFIG_X86_64)		+= bus_numa.o
++obj-y				+= amd_bus.o bus_numa.o
+ 
+ ifeq ($(CONFIG_PCI_DEBUG),y)
+ EXTRA_CFLAGS += -DDEBUG
 diff --git a/arch/x86/pci/amd_bus.c b/arch/x86/pci/amd_bus.c
-index 2356ea1..ae50b8f 100644
+index f7e13b6..ea6072f 100644
 --- a/arch/x86/pci/amd_bus.c
 +++ b/arch/x86/pci/amd_bus.c
-@@ -87,11 +87,12 @@ static int __init early_fill_mp_bus_info(void)
- 	struct range range[RANGE_NUM];
- 	u64 val;
- 	u32 address;
-+	bool found;
+@@ -6,9 +6,7 @@
  
- 	if (!early_pci_allowed())
- 		return -1;
+ #include <asm/pci_x86.h>
  
--	found_all_numa_early = 0;
-+	found = false;
- 	for (i = 0; i < ARRAY_SIZE(pci_probes); i++) {
- 		u32 id;
- 		u16 device;
-@@ -105,12 +106,12 @@ static int __init early_fill_mp_bus_info(void)
- 		device = (id>>16) & 0xffff;
- 		if (pci_probes[i].vendor == vendor &&
- 		    pci_probes[i].device == device) {
--			found_all_numa_early = 1;
-+			found = true;
- 			break;
+-#ifdef CONFIG_X86_64
+ #include <asm/pci-direct.h>
+-#endif
+ 
+ #include "bus_numa.h"
+ 
+@@ -17,8 +15,6 @@
+  * also get peer root bus resource for io,mmio
+  */
+ 
+-#ifdef CONFIG_X86_64
+-
+ struct pci_hostbridge_probe {
+ 	u32 bus;
+ 	u32 slot;
+@@ -339,24 +335,14 @@ static int __init early_fill_mp_bus_info(void)
+ 		       info->bus_min, info->bus_max, info->node, info->link);
+ 		for (j = 0; j < res_num; j++) {
+ 			res = &info->res[j];
+-			printk(KERN_DEBUG "bus: %02x index %x %s: [%llx, %llx]\n",
+-			       busnum, j,
+-			       (res->flags & IORESOURCE_IO)?"io port":"mmio",
+-			       res->start, res->end);
++			printk(KERN_DEBUG "bus: %02x index %x %pR\n",
++				       busnum, j, res);
  		}
  	}
  
--	if (!found_all_numa_early)
-+	if (!found)
- 		return 0;
+ 	return 0;
+ }
  
- 	pci_root_num = 0;
-diff --git a/arch/x86/pci/bus_numa.c b/arch/x86/pci/bus_numa.c
-index 30f65ce..3411687 100644
---- a/arch/x86/pci/bus_numa.c
-+++ b/arch/x86/pci/bus_numa.c
-@@ -5,7 +5,6 @@
- 
- int pci_root_num;
- struct pci_root_info pci_root_info[PCI_ROOT_NR];
--int found_all_numa_early;
- 
- void x86_pci_root_bus_res_quirks(struct pci_bus *b)
- {
-@@ -21,10 +20,6 @@ void x86_pci_root_bus_res_quirks(struct pci_bus *b)
- 	if (!pci_root_num)
- 		return;
- 
--	/* for amd, if only one root bus, don't need to do anything */
--	if (pci_root_num < 2 && found_all_numa_early)
--		return;
+-#else  /* !CONFIG_X86_64 */
 -
- 	for (i = 0; i < pci_root_num; i++) {
- 		if (pci_root_info[i].bus_min == b->number)
- 			break;
+-static int __init early_fill_mp_bus_info(void) { return 0; }
+-
+-#endif /* !CONFIG_X86_64 */
+-
+-/* common 32/64 bit code */
+-
+ #define ENABLE_CF8_EXT_CFG      (1ULL << 46)
+ 
+ static void enable_pci_io_ecs(void *unused)
 diff --git a/arch/x86/pci/bus_numa.h b/arch/x86/pci/bus_numa.h
-index 374ecc5..f63e802 100644
+index f63e802..08d8e15 100644
 --- a/arch/x86/pci/bus_numa.h
 +++ b/arch/x86/pci/bus_numa.h
-@@ -20,7 +20,6 @@ struct pci_root_info {
- #define PCI_ROOT_NR 4
- extern int pci_root_num;
- extern struct pci_root_info pci_root_info[PCI_ROOT_NR];
--extern int found_all_numa_early;
+@@ -1,5 +1,5 @@
+-#ifdef CONFIG_X86_64
+-
++#ifndef __BUS_NUMA_H
++#define __BUS_NUMA_H
+ /*
+  * sub bus (transparent) will use entres from 3 to store extra from
+  * root, so need to make sure we have enough slot there, Should we
+diff --git a/arch/x86/pci/i386.c b/arch/x86/pci/i386.c
+index 5dc9e8c..f4e8481 100644
+--- a/arch/x86/pci/i386.c
++++ b/arch/x86/pci/i386.c
+@@ -257,10 +257,6 @@ void __init pcibios_resource_survey(void)
+  */
+ fs_initcall(pcibios_assign_resources);
  
- extern void update_res(struct pci_root_info *info, resource_size_t start,
- 		      resource_size_t end, unsigned long flags, int merge);
+-void __weak x86_pci_root_bus_res_quirks(struct pci_bus *b)
+-{
+-}
+-
+ /*
+  *  If we set up a device for bus mastering, we need to check the latency
+  *  timer as certain crappy BIOSes forget to set it properly.
 -- 
 1.6.4.2
 
