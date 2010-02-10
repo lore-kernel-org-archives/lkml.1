@@ -1,86 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756756Ab0BJXl1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 18:41:27 -0500
-Received: from a-pb-sasl-quonix.pobox.com ([208.72.237.25]:64829 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756734Ab0BJXlZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 18:41:25 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws; d=pobox.com; h=to:subject:from
-	:date:message-id:mime-version:content-type; q=dns; s=sasl; b=FNi
-	zhE+UEcWIaAVpw1L0GXEekeMixnJwYDAMmsMLzQ8aua7DC+EyJqqXG13BywzA/o4
-	Hsp8HAJtSNXdmJPAzjazmgJlOseKrx5hMMKr/CZPpJBDmYM1pgxp8V3DhKYTfbpU
-	JGJZIS8B17MJK/ujKJcoWS719EgNkW/Jun9JqYkE=
-To: git@vger.kernel.org
-Subject: [ANNOUNCE] Git 1.6.6.2
-From: Junio C Hamano <gitster@pobox.com>
-Date: Wed, 10 Feb 2010 15:41:11 -0800
-Message-ID: <7vvde4veug.fsf@alter.siamese.dyndns.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	id S1756758Ab0BJXlz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 18:41:55 -0500
+Received: from hera.kernel.org ([140.211.167.34]:40420 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755831Ab0BJXly (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Feb 2010 18:41:54 -0500
+Message-ID: <4B7344A4.1030607@kernel.org>
+Date: Thu, 11 Feb 2010 08:43:32 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Pobox-Relay-ID: C8C0FB22-169D-11DF-9E74-6AF7ED7EF46B-77302942!a-pb-sasl-quonix.pobox.com
+To: Miklos Szeredi <miklos@szeredi.hu>
+CC: mszeredi@suse.cz, linux-kernel@vger.kernel.org,
+       fuse-devel@lists.sourceforge.net, polynomial-c@gentoo.org,
+       akpm@linux-foundation.org
+Subject: Re: [fuse-devel] [PATCH] FUSE/CUSE: implement direct mmap support
+References: <4B70FBE4.7050700@kernel.org> <E1NerZ6-0007N6-UY@pomaz-ex.szeredi.hu> <4B7296DF.207@kernel.org> <E1NfAl6-0000o4-8Z@pomaz-ex.szeredi.hu> <4B729F07.8020704@kernel.org> <E1NfBTc-0000vk-59@pomaz-ex.szeredi.hu> <4B72A802.6040009@kernel.org> <E1NfE50-0001EK-Ao@pomaz-ex.szeredi.hu>
+In-Reply-To: <E1NfE50-0001EK-Ao@pomaz-ex.szeredi.hu>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 10 Feb 2010 23:40:59 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The latest maintenance release Git 1.6.6.2 is available at the
-usual places:
+Hello,
 
-  http://www.kernel.org/pub/software/scm/git/
+On 02/11/2010 12:02 AM, Miklos Szeredi wrote:
+>> Yeah, sure.  FUSE server is free to give them separate regions.  The
+>> only restriction is the SHMLBA alignment which is pretty easy to
+>> adhere to.
+> 
+> What I really meant was: does it ever happen that mapping a *single
+> open file* of a chardev twice will result in two different maps?
+> Or will the maps be only different if it was a different open of the
+> device?
 
-  git-1.6.6.2.tar.{gz,bz2}			(source tarball)
-  git-htmldocs-1.6.6.2.tar.{gz,bz2}		(preformatted docs)
-  git-manpages-1.6.6.2.tar.{gz,bz2}		(preformatted docs)
+I don't know if there is one but ->mmap() implementation is definitely
+allowed to do that.
 
-The RPM binary packages for a few architectures are found in:
+> If there's a pattern there, we might make the sharing/non-sharing
+> automated, and greatly simplify the interface.
 
-  RPMS/$arch/git-*-1.6.6.2-1.fc11.$arch.rpm	(RPM)
+Isn't the interface pretty simple as it is?  If we want to make it
+easier for API users by imposing limits, I think the correct layer to
+do that would be at the library level.
 
-Git v1.6.6.2 Release Notes
-==========================
+Thanks.
 
-Fixes since v1.6.6.1
---------------------
-
- * recursive merge didn't correctly diagnose its own programming errors,
-   and instead caused the caller to segfault.
-
- * The new "smart http" aware clients probed the web servers to see if
-   they support smart http, but did not fall back to dumb http transport
-   correctly with some servers.
-
- * Time based reflog syntax e.g. "@{yesterday}" didn't diagnose a misspelled
-   time specification and instead assumed "@{now}".
-
- * "git archive HEAD -- no-such-directory" produced an empty archive
-   without complaining.
-
- * "git blame -L start,end -- file" misbehaved when given a start that is
-   larger than the number of lines in the file.
-
- * "git checkout -m" didn't correctly call custom merge backend supplied
-   by the end user.
-
- * "git config -f <file>" misbehaved when run from a subdirectory.
-
- * "git cvsserver" didn't like having regex metacharacters (e.g. '+') in
-   CVSROOT environment.
-
- * "git fast-import" did not correctly handle large blobs that may
-   bust the pack size limit.
-
- * "git gui" is supposed to work even when launched from inside a .git
-   directory.
-
- * "git gui" misbehaved when applying a hunk that ends with deletion.
-
- * "git imap-send" did not honor imap.preformattedHTML as documented.
-
- * "git log" family incorrectly showed the commit notes unconditionally by
-   mistake, which was especially irritating when running "git log --oneline".
-
- * "git status" shouldn't require an write access to the repository.
-
-Other minor documentation updates are included.
+-- 
+tejun
