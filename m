@@ -1,98 +1,157 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755510Ab0BJJ2W (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 04:28:22 -0500
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:60024 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753001Ab0BJJVr (ORCPT
+	id S1755627Ab0BJJ3w (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 04:29:52 -0500
+Received: from acsinet11.oracle.com ([141.146.126.233]:31327 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755574Ab0BJJ3Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 04:21:47 -0500
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: TEXT/PLAIN
-Date: Wed, 10 Feb 2010 01:20:08 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 04/35] x86/pci: use resource_size_t in update_res
-In-reply-to: <1265793639-15071-1-git-send-email-yinghai@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-       Yinghai Lu <yinghai@kernel.org>
-Message-id: <1265793639-15071-5-git-send-email-yinghai@kernel.org>
-X-Mailer: git-send-email 1.6.4.2
-References: <1265793639-15071-1-git-send-email-yinghai@kernel.org>
+	Wed, 10 Feb 2010 04:29:25 -0500
+From: Joel Becker <joel.becker@oracle.com>
+To: ocfs2-devel@oss.oracle.com
+Cc: linux-kernel@vger.kernel.org, mfasheh@suse.com
+Subject: [PATCH 06/11] ocfs2: Hang the locking proto on the cluster conn and use it in asts.
+Date: Wed, 10 Feb 2010 01:27:49 -0800
+Message-Id: <1265794074-19539-7-git-send-email-joel.becker@oracle.com>
+X-Mailer: git-send-email 1.5.6.5
+In-Reply-To: <1265794074-19539-1-git-send-email-joel.becker@oracle.com>
+References: <1265794074-19539-1-git-send-email-joel.becker@oracle.com>
+X-Source-IP: acsmt357.oracle.com [141.146.40.157]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090206.4B727C71.0049:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-prepare to enable 32bit intel and amd bus
+With the ocfs2_cluster_connection hanging off of the ocfs2_dlm_lksb, we
+have access to it in the ast and bast wrapper functions.  Attach the
+ocfs2_locking_protocol to the conn.
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-Acked-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+Now, instead of refering to a static variable for ast/bast pointers, the
+wrappers can look at the connection.  This means different connections
+can have different ast/bast pointers, and it reduces the need for the
+static pointer.
+
+Signed-off-by: Joel Becker <joel.becker@oracle.com>
 ---
- arch/x86/pci/bus_numa.c |   16 ++++++++--------
- arch/x86/pci/bus_numa.h |    4 ++--
- 2 files changed, 10 insertions(+), 10 deletions(-)
+ fs/ocfs2/stack_o2cb.c |   15 ++++-----------
+ fs/ocfs2/stack_user.c |   10 +++-------
+ fs/ocfs2/stackglue.c  |    1 +
+ fs/ocfs2/stackglue.h  |    1 +
+ 4 files changed, 9 insertions(+), 18 deletions(-)
 
-diff --git a/arch/x86/pci/bus_numa.c b/arch/x86/pci/bus_numa.c
-index f939d60..30f65ce 100644
---- a/arch/x86/pci/bus_numa.c
-+++ b/arch/x86/pci/bus_numa.c
-@@ -51,8 +51,8 @@ void x86_pci_root_bus_res_quirks(struct pci_bus *b)
- 	}
+diff --git a/fs/ocfs2/stack_o2cb.c b/fs/ocfs2/stack_o2cb.c
+index 41e6bad..abf696a 100644
+--- a/fs/ocfs2/stack_o2cb.c
++++ b/fs/ocfs2/stack_o2cb.c
+@@ -163,28 +163,21 @@ static void o2dlm_lock_ast_wrapper(void *astarg)
+ {
+ 	struct ocfs2_dlm_lksb *lksb = astarg;
+ 
+-	BUG_ON(o2cb_stack.sp_proto == NULL);
+-
+-	o2cb_stack.sp_proto->lp_lock_ast(lksb);
++	lksb->lksb_conn->cc_proto->lp_lock_ast(lksb);
  }
  
--void __devinit update_res(struct pci_root_info *info, size_t start,
--			      size_t end, unsigned long flags, int merge)
-+void __devinit update_res(struct pci_root_info *info, resource_size_t start,
-+			  resource_size_t end, unsigned long flags, int merge)
+ static void o2dlm_blocking_ast_wrapper(void *astarg, int level)
  {
- 	int i;
- 	struct resource *res;
-@@ -65,20 +65,20 @@ void __devinit update_res(struct pci_root_info *info, size_t start,
+ 	struct ocfs2_dlm_lksb *lksb = astarg;
  
- 	/* try to merge it with old one */
- 	for (i = 0; i < info->res_num; i++) {
--		size_t final_start, final_end;
--		size_t common_start, common_end;
-+		resource_size_t final_start, final_end;
-+		resource_size_t common_start, common_end;
+-	BUG_ON(o2cb_stack.sp_proto == NULL);
+-
+-	o2cb_stack.sp_proto->lp_blocking_ast(lksb, level);
++	lksb->lksb_conn->cc_proto->lp_blocking_ast(lksb, level);
+ }
  
- 		res = &info->res[i];
- 		if (res->flags != flags)
- 			continue;
+ static void o2dlm_unlock_ast_wrapper(void *astarg, enum dlm_status status)
+ {
+ 	struct ocfs2_dlm_lksb *lksb = astarg;
+-
+ 	int error = dlm_status_to_errno(status);
  
--		common_start = max((size_t)res->start, start);
--		common_end = min((size_t)res->end, end);
-+		common_start = max(res->start, start);
-+		common_end = min(res->end, end);
- 		if (common_start > common_end + 1)
- 			continue;
+-	BUG_ON(o2cb_stack.sp_proto == NULL);
+-
+ 	/*
+ 	 * In o2dlm, you can get both the lock_ast() for the lock being
+ 	 * granted and the unlock_ast() for the CANCEL failing.  A
+@@ -199,7 +192,7 @@ static void o2dlm_unlock_ast_wrapper(void *astarg, enum dlm_status status)
+ 	if (status == DLM_CANCELGRANT)
+ 		return;
  
--		final_start = min((size_t)res->start, start);
--		final_end = max((size_t)res->end, end);
-+		final_start = min(res->start, start);
-+		final_end = max(res->end, end);
+-	o2cb_stack.sp_proto->lp_unlock_ast(lksb, error);
++	lksb->lksb_conn->cc_proto->lp_unlock_ast(lksb, error);
+ }
  
- 		res->start = final_start;
- 		res->end = final_end;
-diff --git a/arch/x86/pci/bus_numa.h b/arch/x86/pci/bus_numa.h
-index adbc23f..374ecc5 100644
---- a/arch/x86/pci/bus_numa.h
-+++ b/arch/x86/pci/bus_numa.h
-@@ -22,6 +22,6 @@ extern int pci_root_num;
- extern struct pci_root_info pci_root_info[PCI_ROOT_NR];
- extern int found_all_numa_early;
+ static int o2cb_dlm_lock(struct ocfs2_cluster_connection *conn,
+@@ -284,7 +277,7 @@ static int o2cb_cluster_connect(struct ocfs2_cluster_connection *conn)
+ 	struct dlm_protocol_version dlm_version;
  
--extern void update_res(struct pci_root_info *info, size_t start,
--			      size_t end, unsigned long flags, int merge);
-+extern void update_res(struct pci_root_info *info, resource_size_t start,
-+		      resource_size_t end, unsigned long flags, int merge);
- #endif
+ 	BUG_ON(conn == NULL);
+-	BUG_ON(o2cb_stack.sp_proto == NULL);
++	BUG_ON(conn->cc_proto == NULL);
+ 
+ 	/* for now we only have one cluster/node, make sure we see it
+ 	 * in the heartbeat universe */
+diff --git a/fs/ocfs2/stack_user.c b/fs/ocfs2/stack_user.c
+index 31276ba..b4cf616 100644
+--- a/fs/ocfs2/stack_user.c
++++ b/fs/ocfs2/stack_user.c
+@@ -668,8 +668,6 @@ static void fsdlm_lock_ast_wrapper(void *astarg)
+ 	struct ocfs2_dlm_lksb *lksb = astarg;
+ 	int status = lksb->lksb_fsdlm.sb_status;
+ 
+-	BUG_ON(ocfs2_user_plugin.sp_proto == NULL);
+-
+ 	/*
+ 	 * For now we're punting on the issue of other non-standard errors
+ 	 * where we can't tell if the unlock_ast or lock_ast should be called.
+@@ -681,18 +679,16 @@ static void fsdlm_lock_ast_wrapper(void *astarg)
+ 	 */
+ 
+ 	if (status == -DLM_EUNLOCK || status == -DLM_ECANCEL)
+-		ocfs2_user_plugin.sp_proto->lp_unlock_ast(lksb, 0);
++		lksb->lksb_conn->cc_proto->lp_unlock_ast(lksb, 0);
+ 	else
+-		ocfs2_user_plugin.sp_proto->lp_lock_ast(lksb);
++		lksb->lksb_conn->cc_proto->lp_lock_ast(lksb);
+ }
+ 
+ static void fsdlm_blocking_ast_wrapper(void *astarg, int level)
+ {
+ 	struct ocfs2_dlm_lksb *lksb = astarg;
+ 
+-	BUG_ON(ocfs2_user_plugin.sp_proto == NULL);
+-
+-	ocfs2_user_plugin.sp_proto->lp_blocking_ast(lksb, level);
++	lksb->lksb_conn->cc_proto->lp_blocking_ast(lksb, level);
+ }
+ 
+ static int user_dlm_lock(struct ocfs2_cluster_connection *conn,
+diff --git a/fs/ocfs2/stackglue.c b/fs/ocfs2/stackglue.c
+index 8ef9a57..010ecab 100644
+--- a/fs/ocfs2/stackglue.c
++++ b/fs/ocfs2/stackglue.c
+@@ -343,6 +343,7 @@ int ocfs2_cluster_connect(const char *stack_name,
+ 	new_conn->cc_recovery_handler = recovery_handler;
+ 	new_conn->cc_recovery_data = recovery_data;
+ 
++	new_conn->cc_proto = lproto;
+ 	/* Start the new connection at our maximum compatibility level */
+ 	new_conn->cc_version = lproto->lp_max_version;
+ 
+diff --git a/fs/ocfs2/stackglue.h b/fs/ocfs2/stackglue.h
+index bb32926..cf8bac2 100644
+--- a/fs/ocfs2/stackglue.h
++++ b/fs/ocfs2/stackglue.h
+@@ -100,6 +100,7 @@ struct ocfs2_cluster_connection {
+ 	char cc_name[GROUP_NAME_MAX];
+ 	int cc_namelen;
+ 	struct ocfs2_protocol_version cc_version;
++	struct ocfs2_locking_protocol *cc_proto;
+ 	void (*cc_recovery_handler)(int node_num, void *recovery_data);
+ 	void *cc_recovery_data;
+ 	void *cc_lockspace;
 -- 
-1.6.4.2
+1.6.6.1
 
