@@ -1,45 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752411Ab0BJIwB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 03:52:01 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:62290 "EHLO mx1.redhat.com"
+	id S1753013Ab0BJIy1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 03:54:27 -0500
+Received: from palm.sejo.be ([86.39.155.213]:46836 "EHLO palm.sejo.be"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750763Ab0BJIwA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 03:52:00 -0500
-Message-ID: <4B72738A.4070300@redhat.com>
-Date: Wed, 10 Feb 2010 10:51:22 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: KVM list <kvm@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [GIT PULL] KVM fixes for 2.6.33-rc7
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1751417Ab0BJIy0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Feb 2010 03:54:26 -0500
+From: Jochen Maes <jochen.maes@sejo.be>
+To: apw@canonical.com
+Cc: akpm@linux-foundation.org, dwalker@fifo99.com,
+       linux-kernel@vger.kernel.org, Jochen Maes <jochen.maes@sejo.be>
+Subject: [PATCH 2/2] scripts: Remove the 80 line limit check
+Date: Wed, 10 Feb 2010 09:55:31 +0100
+Message-Id: <1265792131-15835-1-git-send-email-jochen.maes@sejo.be>
+X-Mailer: git-send-email 1.6.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from
+As lately the 80 line limit is not really enforced anymore I think it's
+cleaner not to do che checks in the checkpatch. It gives extra output
+that is ignored anyway.
 
-   git://git.kernel.org/pub/scm/virt/kvm/kvm.git kvm-updates/2.6.33
+Signed-off-by: Jochen Maes <jochen.maes@sejo.be>
+---
+ scripts/checkpatch.pl |    9 ---------
+ 1 files changed, 0 insertions(+), 9 deletions(-)
 
-To receive a suspend/resume kvmclock fix, and a memory corruption fix 
-involving the emulated PIT.
-
-Jason Wang (2):
-       Export the symbol of getboottime and mmonotonic_to_bootbased
-       kvmclock: count total_sleep_time when updating guest clock
-
-Marcelo Tosatti (1):
-       KVM: PIT: control word is write-only
-
-  arch/x86/kvm/i8254.c      |    3 +++
-  arch/x86/kvm/x86.c        |    7 +++----
-  kernel/time/timekeeping.c |    2 ++
-  3 files changed, 8 insertions(+), 4 deletions(-)
-
+diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
+index 3257d3d..c91ad29 100755
+--- a/scripts/checkpatch.pl
++++ b/scripts/checkpatch.pl
+@@ -1374,15 +1374,6 @@ sub process {
+ # check we are in a valid source file if not then ignore this hunk
+ 		next if ($realfile !~ /\.(h|c|s|S|pl|sh)$/);
+ 
+-#80 column limit
+-		if ($line =~ /^\+/ && $prevrawline !~ /\/\*\*/ &&
+-		    $rawline !~ /^.\s*\*\s*\@$Ident\s/ &&
+-		    $line !~ /^\+\s*printk\s*\(\s*(?:KERN_\S+\s*)?"[X\t]*"\s*(?:,|\)\s*;)\s*$/ &&
+-		    $length > 80)
+-		{
+-			WARN("line over 80 characters\n" . $herecurr);
+-		}
+-
+ # check for adding lines without a newline.
+ 		if ($line =~ /^\+/ && defined $lines[$linenr] && $lines[$linenr] =~ /^\\ No newline at end of file/) {
+ 			WARN("adding a line without newline at end of file\n" . $herecurr);
 -- 
-error compiling committee.c: too many arguments to function
+1.6.6
 
