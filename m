@@ -1,40 +1,69 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754931Ab0BJBNI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 20:13:08 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:41889 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752525Ab0BJBNE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Feb 2010 20:13:04 -0500
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-X-Fcc: ~/Mail/linus
-Cc: Oleg Nesterov <oleg@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>, hjl.tools@gmail.com
-Subject: Re: [patch v2 0/4] updated ptrace/core-dump patches for supporting xstate - V2
-In-Reply-To: Suresh Siddha's message of  Tuesday, 9 February 2010 12:13:09 -0800 <20100209201309.902050211@sbs-t61.sc.intel.com>
-References: <20100209201309.902050211@sbs-t61.sc.intel.com>
-X-Windows: the problem for your problem.
-Message-Id: <20100210011232.71CA51C5@magilla.sf.frob.com>
-Date: Tue,  9 Feb 2010 17:12:32 -0800 (PST)
+	id S1754946Ab0BJBS3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 20:18:29 -0500
+Received: from mail-fx0-f220.google.com ([209.85.220.220]:44859 "EHLO
+	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754300Ab0BJBS1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Feb 2010 20:18:27 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=AbnvFUk+p0B6pWGinExMHNrPqJLF7pner37JZLq5Mjz0h7jdfjtiX5d8eyKtL23mUH
+         cL7i/2Q7YojehYGgq+wTMyTtm/ylZLqLJMzyW/dEwQH0Bhkz14eVN7WCwsSRgizG+Yje
+         kxNsyRTUNd/PoPEuEhOR2elUpfbNQVdkkOdGE=
+From: richih.mailinglist@gmail.com
+To: richih.mailinglist@gmail.com
+Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       linux-crypto@vger.kernel.org
+Subject: [PATCH 1/1] CRYPTO: Fix checkpatch errors & warnings in arc4.c
+Date: Wed, 10 Feb 2010 02:17:39 +0100
+Message-Id: <1265764660-23178-1-git-send-email-richih.mailinglist@gmail.com>
+X-Mailer: git-send-email 1.6.6.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Patches are on top of the -tip/master tree.
-> First patch in the series reverts the first version of the patch that went into
-> the -tip tree.
-
-AFAIK tip/x86/ptrace is just a temporary branch containing nothing but your
-patch.  So I imagine you don't need a reversion, Ingo et al will just put
-the new patches on a fresh replacement branch.
-
-I'll reply to each patch individually.
+From: Richard Hartmann <richih.mailinglist@gmail.com>
 
 
-Thanks,
-Roland
+Signed-off-by: Richard Hartmann <richih.mailinglist@gmail.com>
+---
+ crypto/arc4.c |    9 ++++-----
+ 1 files changed, 4 insertions(+), 5 deletions(-)
+
+diff --git a/crypto/arc4.c b/crypto/arc4.c
+index 8be47e1..8a61fa2 100644
+--- a/crypto/arc4.c
++++ b/crypto/arc4.c
+@@ -1,4 +1,4 @@
+-/* 
++/*
+  * Cryptographic API
+  *
+  * ARC4 Cipher Algorithm
+@@ -33,16 +33,15 @@ static int arc4_set_key(struct crypto_tfm *tfm, const u8 *in_key,
+ 	ctx->x = 1;
+ 	ctx->y = 0;
+ 
+-	for(i = 0; i < 256; i++)
++	for (i = 0; i < 256; i++)
+ 		ctx->S[i] = i;
+ 
+-	for(i = 0; i < 256; i++)
+-	{
++	for (i = 0; i < 256; i++) {
+ 		u8 a = ctx->S[i];
+ 		j = (j + in_key[k] + a) & 0xff;
+ 		ctx->S[i] = ctx->S[j];
+ 		ctx->S[j] = a;
+-		if(++k >= key_len)
++		if (++k >= key_len)
+ 			k = 0;
+ 	}
+ 
+-- 
+1.6.6.1
+
