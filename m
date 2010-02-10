@@ -1,52 +1,42 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755805Ab0BJVCu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 16:02:50 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:37640 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751639Ab0BJVCt (ORCPT
+	id S1756140Ab0BJVF6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 16:05:58 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59528
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755987Ab0BJVF5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 16:02:49 -0500
-Date: Wed, 10 Feb 2010 21:02:48 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Evgeniy Polyakov <zbr@ioremap.net>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [WTF] ... is going on with current->fs->{root,mnt} accesses in
- pohmelfs
-Message-ID: <20100210210248.GP30031@ZenIV.linux.org.uk>
-References: <20100210100428.GL30031@ZenIV.linux.org.uk>
- <20100210101246.GA3509@ioremap.net>
- <20100210102422.GM30031@ZenIV.linux.org.uk>
- <20100210104515.GA6207@ioremap.net>
- <20100210110011.GN30031@ZenIV.linux.org.uk>
- <20100210111115.GA8376@ioremap.net>
- <20100210115938.GO30031@ZenIV.linux.org.uk>
- <20100210133007.GA17744@ioremap.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100210133007.GA17744@ioremap.net>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+	Wed, 10 Feb 2010 16:05:57 -0500
+Date: Wed, 10 Feb 2010 13:06:10 -0800 (PST)
+Message-Id: <20100210.130610.132690227.davem@davemloft.net>
+To: amit.kucheria@canonical.com
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       s.hauer@pengutronix.de, gerg@uclinux.org,
+       u.kleine-koenig@pengutronix.de, amit.kucheria@verdurent.com
+Subject: Re: [PATCH 0/3] net: fec fixes
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <cover.1265396105.git.amit.kucheria@canonical.com>
+References: <cover.1265396105.git.amit.kucheria@canonical.com>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 10, 2010 at 04:30:07PM +0300, Evgeniy Polyakov wrote:
-> > > > Why not use the dentries you've been given by VFS?
-> > > 
-> > > At writeback we do not have parents, so must find a path somehow.
-> > 
-> > Most of the places do have those just fine and unlike the writeback,
-> > rename et.al. really care which pathname is being dealt with...
-> 
-> POHMELFS uses writeback cache also for metadata, so effectively most of
-> such operations are also postponed. Later I turned that off though.
-> 
-> > BTW, what prevents writeback vs. rename races?
-> 
-> There are proper locks for such operations.
+From: Amit Kucheria <amit.kucheria@canonical.com>
+Date: Fri,  5 Feb 2010 10:56:19 -0800
 
-Which would be... ?  E.g. between writepages() and rename().  What serializes
-your write_inode_create() wrt renames?  IOW, how can the server decide that
-data from writepages() should go to the same object regardless of the
-rename?
+> Some fixes to the fec driver to get it to work on the Freescale i.MX5 SoC
+> platform
+> 
+> Amit Kucheria (2):
+>   fec: Add LAN8700 phy support
+>   fec: Add ARCH_MX5 as a dependency
+> 
+> Rob Herring (1):
+>   fec: fix uninitialized rx buffer usage
+
+All applied to net-next-2.6, thanks.
+
