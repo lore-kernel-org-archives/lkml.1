@@ -1,58 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753997Ab0BJPHX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 10:07:23 -0500
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:57938 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753010Ab0BJPHW (ORCPT
+	id S1753746Ab0BJPPO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 10:15:14 -0500
+Received: from moutng.kundenserver.de ([212.227.17.9]:65330 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752315Ab0BJPPM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 10:07:22 -0500
-X-Sasl-enc: nGKx1DQf1nGkQjV5ZMDjQcZZyAkWf00qZuB4DGkmWN5Z 1265814441
-Message-ID: <4B72CBA6.2040605@imap.cc>
-Date: Wed, 10 Feb 2010 16:07:18 +0100
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; de; rv:1.9.1.7) Gecko/20100104 SeaMonkey/2.0.2
+	Wed, 10 Feb 2010 10:15:12 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH, regression] compat_ioctl: ignore RAID_VERSION ioctl
+Date: Wed, 10 Feb 2010 16:14:04 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>, NeilBrown <neilb@suse.de>
 MIME-Version: 1.0
-To: Jan Kiszka <jan.kiszka@web.de>
-CC: David Miller <davem@davemloft.net>, Karsten Keil <isdn@linux-pingi.de>,
-       linux-kernel@vger.kernel.org, i4ldeveloper@listserv.isdn4linux.de,
-       isdn4linux@listserv.isdn4linux.de, netdev@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Marcel Holtmann <marcel@holtmann.org>
-Subject: Re: [PATCH v2 00/41] CAPI: Major rework, tons of bug fixes
-References: <cover.1265659933.git.jan.kiszka@web.de>
-In-Reply-To: <cover.1265659933.git.jan.kiszka@web.de>
-X-Enigmail-Version: 1.0.1
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 8bit
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002101614.04387.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+XgQbEid4btcjo+iCj+vrgSwg2zhQtNO7c0kG
+ YF4/ASOioict+elIPT2hRPjYQ+jTeq2IQAI26bPhXb/3FB9W9l
+ hyyxWDWx/XSWiPTh6YzSQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+md ioctls are now handled by the md driver itself, but mdadm
+may call RAID_VERSION on other devices as well. Mark the command
+as IGNORE_IOCTL so this fails silently rather than printing
+an annoying message.
 
-Am 2010-02-08 21:12 schrieb Jan Kiszka:
-> Here is the second take of my CAPI rework. I tried to address all
-> feedback on v1 [...] 
-> I kept my capifs fixes though this thing should die in the future. The
-> work is done, and people may still use it due to their distro
-> configuration (and the hard-wired loading by capiinit - needs fixing).
+Reported-by: "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ fs/compat_ioctl.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-Great work. Many thanks for going through that effort!
+diff --git a/fs/compat_ioctl.c b/fs/compat_ioctl.c
+index c5c45de..b6f23b2 100644
+--- a/fs/compat_ioctl.c
++++ b/fs/compat_ioctl.c
+@@ -1038,6 +1038,8 @@ COMPATIBLE_IOCTL(FIOQSIZE)
+ #ifdef CONFIG_BLOCK
+ /* loop */
+ IGNORE_IOCTL(LOOP_CLR_FD)
++/* md calls this on random blockdevs */
++IGNORE_IOCTL(RAID_VERSION)
+ /* SG stuff */
+ COMPATIBLE_IOCTL(SG_SET_TIMEOUT)
+ COMPATIBLE_IOCTL(SG_GET_TIMEOUT)
+-- 
+1.6.3.3
 
-T.
-
-- -- 
-Tilman Schmidt                    E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Ungeöffnet mindestens haltbar bis: (siehe Rückseite)
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.12 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAktyy6YACgkQQ3+did9BuFvj7QCeO+qncLR2yGECEadwnWcVDo8Q
-piEAnj6ZzuZ4z68SmzI20YVV6AQN9LE9
-=m+sN
------END PGP SIGNATURE-----
