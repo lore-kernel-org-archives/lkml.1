@@ -1,30 +1,23 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755997Ab0BJT7M (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 14:59:12 -0500
-Received: from smtp.mujha-vel.cz ([81.30.225.246]:46173 "EHLO
+	id S1756037Ab0BJUAP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 15:00:15 -0500
+Received: from smtp.mujha-vel.cz ([81.30.225.246]:46283 "EHLO
 	smtp.mujha-vel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751452Ab0BJT7K (ORCPT
+	with ESMTP id S1751452Ab0BJUAL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 14:59:10 -0500
+	Wed, 10 Feb 2010 15:00:11 -0500
 From: Jiri Slaby <jslaby@suse.cz>
-To: akpm@linux-foundation.org
+To: chris.mason@oracle.com
 Cc: linux-kernel@vger.kernel.org, jirislaby@gmail.com,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH 1/1] kernel core: use helpers for rlimits fix
-Date: Wed, 10 Feb 2010 20:59:08 +0100
-Message-Id: <1265831948-7873-1-git-send-email-jslaby@suse.cz>
+       linux-btrfs@vger.kernel.org
+Subject: [PATCH 1/1] FS: btrfs, use helpers for rlimits
+Date: Wed, 10 Feb 2010 21:00:09 +0100
+Message-Id: <1265832009-8070-1-git-send-email-jslaby@suse.cz>
 X-Mailer: git-send-email 1.6.6.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-
-This is unmerged part of
-kernel-core-use-helpers-for-rlimits.patch
-
-Please amend.
-
---
 
 Make sure compiler won't do weird things with limits. E.g. fetching
 them twice may return 2 different values after writable limits are
@@ -35,34 +28,26 @@ I.e. either use rlimit helpers added in
 or ACCESS_ONCE if not applicable.
 
 Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Chris Mason <chris.mason@oracle.com>
+Cc: linux-btrfs@vger.kernel.org
 ---
- kernel/fork.c |    8 +++++---
- 1 files changed, 5 insertions(+), 3 deletions(-)
+ fs/btrfs/inode.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-diff --git a/kernel/fork.c b/kernel/fork.c
-index 11a84db..13ec487 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -828,12 +828,14 @@ void __cleanup_sighand(struct sighand_struct *sighand)
-  */
- static void posix_cpu_timers_init_group(struct signal_struct *sig)
- {
-+	unsigned long cpu_limit;
-+
- 	/* Thread group counters. */
- 	thread_group_cputime_init(sig);
+diff --git a/fs/btrfs/inode.c b/fs/btrfs/inode.c
+index c41db6d..5aa0cef 100644
+--- a/fs/btrfs/inode.c
++++ b/fs/btrfs/inode.c
+@@ -3256,8 +3256,7 @@ static int btrfs_setattr_size(struct inode *inode, struct iattr *attr)
+ 		return 0;
  
--	if (sig->rlim[RLIMIT_CPU].rlim_cur != RLIM_INFINITY) {
--		sig->cputime_expires.prof_exp =
--			secs_to_cputime(sig->rlim[RLIMIT_CPU].rlim_cur);
-+	cpu_limit = ACCESS_ONCE(sig->rlim[RLIMIT_CPU].rlim_cur);
-+	if (cpu_limit != RLIM_INFINITY) {
-+		sig->cputime_expires.prof_exp = secs_to_cputime(cpu_limit);
- 		sig->cputimer.running = 1;
- 	}
- 
+ 	if (attr->ia_size > inode->i_size) {
+-		unsigned long limit;
+-		limit = current->signal->rlim[RLIMIT_FSIZE].rlim_cur;
++		unsigned long limit = rlimit(RLIMIT_FSIZE);
+ 		if (attr->ia_size > inode->i_sb->s_maxbytes)
+ 			return -EFBIG;
+ 		if (limit != RLIM_INFINITY && attr->ia_size > limit) {
 -- 
 1.6.6.1
 
