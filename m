@@ -1,45 +1,70 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755197Ab0BJKMt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 05:12:49 -0500
-Received: from tservice.net.ru ([195.178.208.66]:36052 "EHLO tservice.net.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753562Ab0BJKMr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 05:12:47 -0500
-Date: Wed, 10 Feb 2010 13:12:46 +0300
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [WTF] ... is going on with current->fs->{root,mnt} accesses in pohmelfs
-Message-ID: <20100210101246.GA3509@ioremap.net>
-References: <20100210100428.GL30031@ZenIV.linux.org.uk>
+	id S1753450Ab0BJKR1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 05:17:27 -0500
+Received: from mail-ew0-f228.google.com ([209.85.219.228]:33303 "EHLO
+	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752322Ab0BJKR0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Feb 2010 05:17:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=fmDBXOxAW58tVmHo+h/gzUFxRL+gSVwVBj91DSPifFx5unv2cwTikAcVWfOTTezRyi
+         mGBdRqdqMW09zFzK3pa9NVV3+vsj6t21Rpp3PUbzol12w2orHDuyxuJAkdLi8wqaMdOD
+         gMUBHCVlUettF2n8eauwIKjX4RxsQsAjf3JWU=
+Date: Wed, 10 Feb 2010 11:17:07 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Lai Jiangshan <laijs@cn.fujitsu.com>,
+       paulmck@linux.vnet.ibm.com, LKML <linux-kernel@vger.kernel.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Paul Mackerras <paulus@samba.org>,
+       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
+       Li Zefan <lizf@cn.fujitsu.com>, Masami Hiramatsu <mhiramat@redhat.com>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH 10/11] tracing/perf: Fix lock events recursions in the
+	fast path
+Message-ID: <20100210101703.GB5035@nowhere>
+References: <20100205104937.GB29515@elte.hu> <1265371808.22001.502.camel@laptop> <1265371973.22001.508.camel@laptop> <1265374915.22001.562.camel@laptop> <20100206111209.GC5062@nowhere> <1265455442.30057.499.camel@laptop> <20100206114046.GD5062@nowhere> <1265465867.30057.507.camel@laptop> <20100206161052.GB5060@nowhere> <1265535955.12224.17.camel@laptop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100210100428.GL30031@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <1265535955.12224.17.camel@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 10, 2010 at 10:04:28AM +0000, Al Viro (viro@ZenIV.linux.org.uk) wrote:
-> a) pohmelfs_construct_path_string() will do interesting things if you
-> call it while chrooted into jail and pohmelfs mounted deeper in that
-> jail.  Try it.
-
-Should it walk upto mountpoint?
-
-> b) just why do we care about root of chroot jail in pohmelfs_path_length()?
-> Not to mention anything else, current->fs->root/mnt may be changed under
-> you if you share current->fs with another thread, but even aside of that,
-> why does filesystem care about chroot of caller at all?
+On Sun, Feb 07, 2010 at 10:45:55AM +0100, Peter Zijlstra wrote:
+> On Sat, 2010-02-06 at 17:10 +0100, Frederic Weisbecker wrote:
+> > 
+> > > > Looks pretty what I'm looking for. Except that it still continues
+> > > > to fill and keep track of the locks held by the current thread,
+> > > > namely the copies in curr->held_locks.
+> > > 
+> > > Which is exactly what you need for that lock hierarchy recording you
+> > > wanted :-)
+> > 
+> > 
+> > Well, the lock hierarchy should probably be retrieved from the traces,
+> > using state machines.
+> > Otherwise we would need yet other lock events for that, which is going
+> > to add even more overhead.
 > 
-> What's going on there?
+> 
+> Right, well you could look at adding a mode that also strips out the
+> held_lock tracing, but since you really need the register class stuff to
+> re-generate the class mapping, avoiding the held_lock tracing doesn't
+> look like it's going to save you much, its all thread local storage.
 
-It tries to construct a full path upto mountpoint. Effectively it should
-do similar to non-exported dentry_path() things. There is a race between
-getting buffer size and filling with the actual path, but we take care
-about that by restarting if needed.
 
--- 
-	Evgeniy Polyakov
+But if we draw a tree based representation (per-instances or per-class)
+from perf lock, we'll already need to get the locking scenarios from
+post processing, which induce the dependencies.
+
+I don't think it will help much.
+
+Thanks.
+
