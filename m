@@ -1,70 +1,110 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753450Ab0BJKR1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 05:17:27 -0500
-Received: from mail-ew0-f228.google.com ([209.85.219.228]:33303 "EHLO
-	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752322Ab0BJKR0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 05:17:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=fmDBXOxAW58tVmHo+h/gzUFxRL+gSVwVBj91DSPifFx5unv2cwTikAcVWfOTTezRyi
-         mGBdRqdqMW09zFzK3pa9NVV3+vsj6t21Rpp3PUbzol12w2orHDuyxuJAkdLi8wqaMdOD
-         gMUBHCVlUettF2n8eauwIKjX4RxsQsAjf3JWU=
-Date: Wed, 10 Feb 2010 11:17:07 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Lai Jiangshan <laijs@cn.fujitsu.com>,
-       paulmck@linux.vnet.ibm.com, LKML <linux-kernel@vger.kernel.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Paul Mackerras <paulus@samba.org>,
-       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
-       Li Zefan <lizf@cn.fujitsu.com>, Masami Hiramatsu <mhiramat@redhat.com>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH 10/11] tracing/perf: Fix lock events recursions in the
-	fast path
-Message-ID: <20100210101703.GB5035@nowhere>
-References: <20100205104937.GB29515@elte.hu> <1265371808.22001.502.camel@laptop> <1265371973.22001.508.camel@laptop> <1265374915.22001.562.camel@laptop> <20100206111209.GC5062@nowhere> <1265455442.30057.499.camel@laptop> <20100206114046.GD5062@nowhere> <1265465867.30057.507.camel@laptop> <20100206161052.GB5060@nowhere> <1265535955.12224.17.camel@laptop>
+	id S1753566Ab0BJKU0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 05:20:26 -0500
+Received: from smtp.citrix.com ([66.165.176.89]:46466 "EHLO SMTP.CITRIX.COM"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752322Ab0BJKUY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Feb 2010 05:20:24 -0500
+X-IronPort-AV: E=Sophos;i="4.49,442,1262581200"; 
+   d="scan'208";a="7134673"
+Subject: RE: [Xen-devel] Re: [PATCH 5/7] xen: Make event channel work with
+ PV featured HVM
+From: Ian Campbell <Ian.Campbell@citrix.com>
+To: "Nakajima, Jun" <jun.nakajima@intel.com>
+CC: Sheng Yang <sheng@linux.intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       xen-devel <xen-devel@lists.xensource.com>,
+       Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>,
+       Keir Fraser <Keir.Fraser@eu.citrix.com>
+In-Reply-To: <54B2EB610B7F1340BB6A0D4CA04A4F1012BABE0E@orsmsx505.amr.corp.intel.com>
+References: <1265616354-7384-1-git-send-email-sheng@linux.intel.com>
+	 <1265616354-7384-6-git-send-email-sheng@linux.intel.com>
+	 <1265716376.24394.32669.camel@zakaz.uk.xensource.com>
+	 <201002092046.53222.sheng@linux.intel.com>
+	 <1265724124.24394.33084.camel@zakaz.uk.xensource.com>
+	 <54B2EB610B7F1340BB6A0D4CA04A4F1012BABE0E@orsmsx505.amr.corp.intel.com>
+Content-Type: text/plain; charset="UTF-8"
+Organization: Citrix Systems, Inc.
+Date: Wed, 10 Feb 2010 10:20:20 +0000
+Message-ID: <1265797220.24394.36806.camel@zakaz.uk.xensource.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1265535955.12224.17.camel@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Mailer: Evolution 2.28.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 07, 2010 at 10:45:55AM +0100, Peter Zijlstra wrote:
-> On Sat, 2010-02-06 at 17:10 +0100, Frederic Weisbecker wrote:
-> > 
-> > > > Looks pretty what I'm looking for. Except that it still continues
-> > > > to fill and keep track of the locks held by the current thread,
-> > > > namely the copies in curr->held_locks.
-> > > 
-> > > Which is exactly what you need for that lock hierarchy recording you
-> > > wanted :-)
-> > 
-> > 
-> > Well, the lock hierarchy should probably be retrieved from the traces,
-> > using state machines.
-> > Otherwise we would need yet other lock events for that, which is going
-> > to add even more overhead.
+On Wed, 2010-02-10 at 03:16 +0000, Nakajima, Jun wrote:
+> Ian Campbell wrote on Tue, 9 Feb 2010 at 06:02:04:
 > 
+> > On Tue, 2010-02-09 at 12:46 +0000, Sheng Yang wrote:
+> >> On Tuesday 09 February 2010 19:52:56 Ian Campbell wrote:
+> >>> On Mon, 2010-02-08 at 08:05 +0000, Sheng Yang wrote:
+> >>>> +       if (xen_hvm_pv_evtchn_enabled()) {
+> >>>> +               if (enable_hvm_pv(HVM_PV_EVTCHN))
+> >>>> +                       return -EINVAL;
+> >>>> +[...]
+> >>>> +               callback_via =
+> >>>> HVM_CALLBACK_VECTOR(X86_PLATFORM_IPI_VECTOR); +
+> >>>> set_callback_via(callback_via);
+> >>>> +
+> >>>> +               x86_platform_ipi_callback =
+> > do_hvm_pv_evtchn_intr;
+> >>> 
+> >>> Why this indirection via X86_PLATFORM_IPI_VECTOR?
+> >>> 
+> >>> Apart from that why not use CALLBACKOP_register subop
+> >>> CALLBACKTYPE_event pointing to xen_hypervisor_callback the same as a
+> >>> full PV guest?
+> >>> 
+> >>> This would remove all the evtchn related code from HVMOP_enable_pv
+> >>> which I think should be eventually unnecessary as an independent
+> >>> hypercall since all HVM guests should simply be PV capable by default
+> >>> -- the hypervisor only needs to track if the guest has made use of
+> >>> specific PV functionality, not the umbrella "is PV" state.
+> >>  The reason is the bounce frame buffer implemented by PV guest to
+> >> inject a event is too complex here... Basically you need to setup a
+> >> stack like hardware would do, and return to the certain guest CS:IP to
+> >> handle this. And you need to take care of every case, e.g. guest in the
+> >> ring0 or ring3, guest in the interrupt context or not, and the
+> >> recursion of the handler, and so on.
+> > 
+> > The code for all this already exists on both the hypervisor and guest
+> > side in order to support PV guests, would it not just be a case of
+> > wiring it up for this case as well?
 > 
-> Right, well you could look at adding a mode that also strips out the
-> held_lock tracing, but since you really need the register class stuff to
-> re-generate the class mapping, avoiding the held_lock tracing doesn't
-> look like it's going to save you much, its all thread local storage.
+> The code is not so useful for HVM guests. The current PV code uses the
+> ring transition which maintains the processor state in the stack, to
+> switch between the hypervisor and the guest, but HVM VM entry/exit
+> does not use the stack at all. To implement an asynchronous event,
+> i.e. callback handler for HVM, the simplest (and reliable) way is to
+> use the architectural event (i.e. IDT-based). Otherwise, we need to
+> modify various VMCS/VMCB fields (e.g. selectors, segments, stacks,
+> etc.) depending on where the last VM happened using the OS-specific
+> knowledge.
 
+RIP and RSP are taken from the stack just prior to vmentry (by the code
+in vmx/entry.S) but you are right that CS/SS etc are not handled in this
+way which would be make things more complicated, probably not worth it.
 
-But if we draw a tree based representation (per-instances or per-class)
-from perf lock, we'll already need to get the locking scenarios from
-post processing, which induce the dependencies.
+> Having said that, the interface and implementation are different. I
+> think we can use the same/similar code that registers the callback
+> handler, by hiding such HVM-specific code from the common code path. 
 
-I don't think it will help much.
+Yes, I think that would be an improvement.
 
-Thanks.
+Even better would be if we could use the same entry point into the
+kernel in both PV and HVM cases, with only the injection method on the
+hypervisor side differing. AFAIK xen_hypervisor_callback expects a stack
+frame very like a hardware exception so perhaps this works out? IOW can
+we reference xen_hypervisor_callback directly in the IDT?
+
+BTW I not sure we should be repurposing x86_platform_ipi in this way
+(maybe this goes away with the above changes), I think it should be fine
+to simply pick another free vector < 255 (perhaps even dynamically)?
+There were objections on LKML to a patch which did a similar thing last
+month (thread: Add "handle page fault" PV helper).
+
+Ian.
 
