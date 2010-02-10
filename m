@@ -1,58 +1,46 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754796Ab0BJAnK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 19:43:10 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:21451 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754369Ab0BJAnG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Feb 2010 19:43:06 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=JEYf8tVFbLCRFX8vv4COWtfGHUBHiIaPR8ORYuSilMtU5cIRKk8gSt3kGfCjnWWfo7
-         jRH2GlbsLVSregfs9VZJximO2BJMdi1LNe036VKigxmq+Ud+FH28AC3t8N26hX7SZQiJ
-         sKCSbHI1h5UqSJdxXqGIZOSTZv6RAhgX+6f4c=
-From: Richard Hartmann <richih.mailinglist@gmail.com>
-To: linux-crypto@vger.kernel.org
-Cc: Richard Hartmann <richih.mailinglist@gmail.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       "David S. Miller" <davem@davemloft.net>,
-       Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/1] CRYPTO: Fix checkpatch errors in aead.c
-Date: Wed, 10 Feb 2010 01:42:27 +0100
-Message-Id: <1265762548-21458-1-git-send-email-richih.mailinglist@gmail.com>
-X-Mailer: git-send-email 1.6.6.1
+	id S1753434Ab0BJAps (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 19:45:48 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:38451 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751672Ab0BJApp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Feb 2010 19:45:45 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Bill Davidsen <davidsen@tmr.com>
+Subject: Re: 2.6.33-rc6 crashes on resume
+Date: Wed, 10 Feb 2010 01:46:19 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.33-rc7-rjw; KDE/4.3.5; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <4B70982F.8090208@roadwarrior3.tmr.com> <201002090009.50118.rjw@sisk.pl> <4B71EBD8.8070406@tmr.com>
+In-Reply-To: <4B71EBD8.8070406@tmr.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002100146.19955.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wednesday 10 February 2010, Bill Davidsen wrote:
+> Rafael J. Wysocki wrote:
+> > On Tuesday 09 February 2010, Bill Davidsen wrote:
+> >> Pretty simple to reproduce, boot, suspend, press shift
+> >>
+> >> Acer Aspire 1681, Celeron, 2.6.33-rc6. Trace and config attached.
+> > 
+> > I guess 2.6.32 didn't crash?
+> > 
+> Wasn't testing. 2.6.32.5 didn't crash, later Fedora kernels kill the touchpad, I 
+> can dig up the old bugzilla if you can't find it.
 
-Signed-off-by: Richard Hartmann <richih.mailinglist@gmail.com>
----
- crypto/aead.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+Well, so it seems something during the 2.6.33 merge window broke things for
+you.
 
-diff --git a/crypto/aead.c b/crypto/aead.c
-index 0a55da7..6729e8f 100644
---- a/crypto/aead.c
-+++ b/crypto/aead.c
-@@ -1,13 +1,13 @@
- /*
-  * AEAD: Authenticated Encryption with Associated Data
-- * 
-+ *
-  * This file provides API support for AEAD algorithms.
-  *
-  * Copyright (c) 2007 Herbert Xu <herbert@gondor.apana.org.au>
-  *
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms of the GNU General Public License as published by the Free
-- * Software Foundation; either version 2 of the License, or (at your option) 
-+ * Software Foundation; either version 2 of the License, or (at your option)
-  * any later version.
-  *
-  */
--- 
-1.6.6.1
+Unfortunately there have been quite a few resume regressions of all sorts in
+this cycle, so bisecting that might be difficult.  That said, bisection would
+probably be the fastest way of debugging this issue.
 
+Rafael
