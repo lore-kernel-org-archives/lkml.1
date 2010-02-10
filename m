@@ -1,126 +1,108 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755842Ab0BJRXT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 12:23:19 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:33486 "EHLO mx1.redhat.com"
+	id S1755960Ab0BJRYZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 12:24:25 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:53438 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755114Ab0BJRXL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 12:23:11 -0500
+	id S1755790Ab0BJRXP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Feb 2010 12:23:15 -0500
 From: Avi Kivity <avi@redhat.com>
 To: kvm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 00/40] KVM updates for the 2.6.34 merge window (batch 1/4)
-Date: Wed, 10 Feb 2010 19:22:29 +0200
-Message-Id: <1265822589-11155-1-git-send-email-avi@redhat.com>
+Subject: [PATCH 30/40] KVM: use gfn_to_pfn_memslot in kvm_iommu_map_pages
+Date: Wed, 10 Feb 2010 19:22:59 +0200
+Message-Id: <1265822589-11155-31-git-send-email-avi@redhat.com>
+In-Reply-To: <1265822589-11155-1-git-send-email-avi@redhat.com>
+References: <1265822589-11155-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the first of four batches of patches for the 2.6.34 merge window.  KVM
-changes for this cycle include:
+From: Marcelo Tosatti <mtosatti@redhat.com>
 
- - rdtscp support
- - powerpc server-class updates
- - much improved large-guest scaling (now up to 64 vcpus)
- - improved guest fpu handling
- - initial Hyper-V emulation
- - better swapping with EPT
- - 1GB pages on Intel
- - x86 emulator fixes
+So its possible to iommu map a memslot before making it visible to
+kvm.
 
-as well as the usual assortment of random fixes and improvements.
+Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
+---
+ include/linux/kvm_host.h |    3 +--
+ virt/kvm/iommu.c         |   13 ++++++-------
+ virt/kvm/kvm_main.c      |    2 +-
+ 3 files changed, 8 insertions(+), 10 deletions(-)
 
-Alexander Graf (5):
-  KVM: powerpc: Move vector to irqprio resolving to separate function
-  KVM: powerpc: Improve DEC handling
-  KVM: powerpc: Remove AGGRESSIVE_DEC
-  KVM: powerpc: Change maintainer
-  KVM: PPC: Fix typo in rebolting code
-
-Avi Kivity (14):
-  KVM: MMU: Report spte not found in rmap before BUG()
-  KVM: VMX: Move some cr[04] related constants to vmx.c
-  KVM: Add accessor for reading cr4 (or some bits of cr4)
-  KVM: VMX: Make guest cr4 mask more conservative
-  KVM: VMX: When using ept, allow the guest to own cr4.pge
-  KVM: VMX: Fold ept_update_paging_mode_cr4() into its caller
-  KVM: Disentangle mmu notifiers and coalesced_mmio registration
-  KVM: Add include guards for coalesced_mmio.h
-  KVM: Remove ifdefs from mmu notifier initialization
-  KVM: Add KVM_MMIO kconfig item
-  KVM: Simplify coalesced mmio initialization
-  KVM: Bump maximum vcpu count to 64
-  KVM: Fill out ftrace exit reason strings
-  KVM: avoid taking ioapic mutex for non-ioapic EOIs
-
-Eddie Dong (1):
-  KVM: x86: make double/triple fault promotion generic to all
-    exceptions
-
-Joerg Roedel (1):
-  KVM: SVM: Adjust tsc_offset only if tsc_unstable
-
-Marcelo Tosatti (12):
-  KVM: x86: raise TSS exception for NULL CS and SS segments
-  KVM: modify memslots layout in struct kvm
-  KVM: modify alias layout in x86s struct kvm_arch
-  KVM: split kvm_arch_set_memory_region into prepare and commit
-  KVM: introduce gfn_to_pfn_memslot
-  KVM: use gfn_to_pfn_memslot in kvm_iommu_map_pages
-  KVM: introduce kvm->srcu and convert kvm_set_memory_region to SRCU
-    update
-  KVM: use SRCU for dirty log
-  KVM: x86: switch kvm_set_memory_alias to SRCU update
-  KVM: convert io_bus to SRCU
-  KVM: switch vcpu context to use SRCU
-  KVM: convert slots_lock to a mutex
-
-Sheng Yang (6):
-  KVM: VMX: Trap and invalid MWAIT/MONITOR instruction
-  KVM: VMX: Remove redundant variable
-  KVM: Extended shared_msr_global to per CPU
-  x86: Raise vsyscall priority on hotplug notifier chain
-  KVM: Add cpuid_update() callback to kvm_x86_ops
-  KVM: VMX: Add instruction rdtscp support for guest
-
-Wu Fengguang (1):
-  KVM: trivial document fixes
-
- Documentation/kvm/api.txt          |   12 +-
- MAINTAINERS                        |    2 +-
- arch/ia64/kvm/Kconfig              |    1 +
- arch/ia64/kvm/kvm-ia64.c           |   47 +++--
- arch/powerpc/include/asm/kvm_ppc.h |    1 +
- arch/powerpc/kvm/Kconfig           |    1 +
- arch/powerpc/kvm/book3s.c          |   51 +++--
- arch/powerpc/kvm/book3s_64_slb.S   |    2 +-
- arch/powerpc/kvm/booke.c           |    5 +
- arch/powerpc/kvm/emulate.c         |    3 +
- arch/powerpc/kvm/powerpc.c         |   18 ++-
- arch/s390/kvm/kvm-s390.c           |   25 ++-
- arch/s390/kvm/kvm-s390.h           |   10 +-
- arch/x86/include/asm/kvm_host.h    |   30 ++--
- arch/x86/include/asm/vmx.h         |    2 +
- arch/x86/kernel/vsyscall_64.c      |    3 +-
- arch/x86/kvm/Kconfig               |    1 +
- arch/x86/kvm/i8254.c               |    8 +-
- arch/x86/kvm/i8259.c               |    4 +-
- arch/x86/kvm/kvm_cache_regs.h      |   12 +
- arch/x86/kvm/mmu.c                 |   39 ++--
- arch/x86/kvm/mmu.h                 |    5 +-
- arch/x86/kvm/svm.c                 |   31 ++-
- arch/x86/kvm/vmx.c                 |  210 ++++++++++++++-----
- arch/x86/kvm/x86.c                 |  424 ++++++++++++++++++++++++------------
- include/linux/kvm.h                |    2 +-
- include/linux/kvm_host.h           |   66 ++++---
- virt/kvm/Kconfig                   |    3 +
- virt/kvm/assigned-dev.c            |    8 +-
- virt/kvm/coalesced_mmio.c          |   39 +++-
- virt/kvm/coalesced_mmio.h          |   15 ++
- virt/kvm/eventfd.c                 |   18 +-
- virt/kvm/ioapic.c                  |   23 ++-
- virt/kvm/ioapic.h                  |    1 +
- virt/kvm/iommu.c                   |   27 ++-
- virt/kvm/kvm_main.c                |  357 ++++++++++++++++++++----------
- 36 files changed, 1023 insertions(+), 483 deletions(-)
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index f1f78de..9af2403 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -440,8 +440,7 @@ void kvm_free_irq_source_id(struct kvm *kvm, int irq_source_id);
+ #define KVM_IOMMU_CACHE_COHERENCY	0x1
+ 
+ #ifdef CONFIG_IOMMU_API
+-int kvm_iommu_map_pages(struct kvm *kvm, gfn_t base_gfn,
+-			unsigned long npages);
++int kvm_iommu_map_pages(struct kvm *kvm, struct kvm_memory_slot *slot);
+ int kvm_iommu_map_guest(struct kvm *kvm);
+ int kvm_iommu_unmap_guest(struct kvm *kvm);
+ int kvm_assign_device(struct kvm *kvm,
+diff --git a/virt/kvm/iommu.c b/virt/kvm/iommu.c
+index bc697a6..cf567d8 100644
+--- a/virt/kvm/iommu.c
++++ b/virt/kvm/iommu.c
+@@ -32,10 +32,10 @@ static int kvm_iommu_unmap_memslots(struct kvm *kvm);
+ static void kvm_iommu_put_pages(struct kvm *kvm,
+ 				gfn_t base_gfn, unsigned long npages);
+ 
+-int kvm_iommu_map_pages(struct kvm *kvm,
+-			gfn_t base_gfn, unsigned long npages)
++int kvm_iommu_map_pages(struct kvm *kvm, struct kvm_memory_slot *slot)
+ {
+-	gfn_t gfn = base_gfn;
++	gfn_t gfn = slot->base_gfn;
++	unsigned long npages = slot->npages;
+ 	pfn_t pfn;
+ 	int i, r = 0;
+ 	struct iommu_domain *domain = kvm->arch.iommu_domain;
+@@ -54,7 +54,7 @@ int kvm_iommu_map_pages(struct kvm *kvm,
+ 		if (iommu_iova_to_phys(domain, gfn_to_gpa(gfn)))
+ 			continue;
+ 
+-		pfn = gfn_to_pfn(kvm, gfn);
++		pfn = gfn_to_pfn_memslot(kvm, slot, gfn);
+ 		r = iommu_map_range(domain,
+ 				    gfn_to_gpa(gfn),
+ 				    pfn_to_hpa(pfn),
+@@ -69,7 +69,7 @@ int kvm_iommu_map_pages(struct kvm *kvm,
+ 	return 0;
+ 
+ unmap_pages:
+-	kvm_iommu_put_pages(kvm, base_gfn, i);
++	kvm_iommu_put_pages(kvm, slot->base_gfn, i);
+ 	return r;
+ }
+ 
+@@ -81,8 +81,7 @@ static int kvm_iommu_map_memslots(struct kvm *kvm)
+ 	slots = kvm->memslots;
+ 
+ 	for (i = 0; i < slots->nmemslots; i++) {
+-		r = kvm_iommu_map_pages(kvm, slots->memslots[i].base_gfn,
+-					slots->memslots[i].npages);
++		r = kvm_iommu_map_pages(kvm, &slots->memslots[i]);
+ 		if (r)
+ 			break;
+ 	}
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index 4e2321c..87d296d 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -684,7 +684,7 @@ skip_lpage:
+ 	spin_unlock(&kvm->mmu_lock);
+ #ifdef CONFIG_DMAR
+ 	/* map the pages in iommu page table */
+-	r = kvm_iommu_map_pages(kvm, base_gfn, npages);
++	r = kvm_iommu_map_pages(kvm, memslot);
+ 	if (r)
+ 		goto out;
+ #endif
+-- 
+1.6.5.3
 
