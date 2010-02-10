@@ -1,57 +1,59 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756440Ab0BJVUV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 16:20:21 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:41280 "EHLO mail.zytor.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755569Ab0BJVUT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 16:20:19 -0500
-Message-ID: <4B7322E3.8090407@zytor.com>
-Date: Wed, 10 Feb 2010 13:19:31 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-Subject: Re: [PATCH 09/35] x86: print out for RAM buffer
-References: <1265743966-17065-1-git-send-email-yinghai@kernel.org>	<1265743966-17065-10-git-send-email-yinghai@kernel.org> <20100209115213.dc85e4a5.akpm@linux-foundation.org>
-In-Reply-To: <20100209115213.dc85e4a5.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1756401Ab0BJVVu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 16:21:50 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57728
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755849Ab0BJVVr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Feb 2010 16:21:47 -0500
+Date: Wed, 10 Feb 2010 13:22:01 -0800 (PST)
+Message-Id: <20100210.132201.21689811.davem@davemloft.net>
+To: maximlevitsky@gmail.com
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       maxim-levitsky@gmail.com
+Subject: Re: [PATCH 2/6] DMFE: move pci ID definitions into pci_ids.h and
+ clean up the code
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20100210.131849.237007566.davem@davemloft.net>
+References: <1265487542-4447-1-git-send-email-maximlevitsky@gmail.com>
+	<1265487542-4447-3-git-send-email-maximlevitsky@gmail.com>
+	<20100210.131849.237007566.davem@davemloft.net>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/09/2010 11:52 AM, Andrew Morton wrote:
->>
->> diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
->> index a966b75..dfb1689 100644
->> --- a/arch/x86/kernel/e820.c
->> +++ b/arch/x86/kernel/e820.c
->> @@ -1429,6 +1429,9 @@ void __init e820_reserve_resources_late(void)
->>  			end = MAX_RESOURCE_SIZE;
->>  		if (start >= end)
->>  			continue;
->> +		printk(KERN_DEBUG "reserve RAM buffer: %016Lx - %016Lx ",
->> +			       (unsigned long long) start,
->> +			       (unsigned long long) end);
->>  		reserve_region_with_split(&iomem_resource, start, end,
->>  					  "RAM buffer");
->>  	}
+From: David Miller <davem@davemloft.net>
+Date: Wed, 10 Feb 2010 13:18:49 -0800 (PST)
+
+> From: Maxim Levitsky <maximlevitsky@gmail.com>
+> Date: Sat,  6 Feb 2010 22:18:58 +0200
 > 
-> The typecasts for printing u64's are unneeded within x86 code.  In fact
-> I think they're now unneeded on all architectures.
+>> Signed-off-by: Maxim Levitsky <maxim-levitsky@gmail.com>
 > 
+> We don't add new definitions to pci_ids.h that will only
+> be used in a single driver.
+> 
+> Instead, we just use the raw constants (if it's only referenced once,
+> say in the PCI ID table for the driver) or using local definitions
+> (if used multiple times in the driver).
 
-... not to mention that the proper printf format for long long is "ll".
- "L" is used for long double, although a lot of implementations treat
-"L" and "ll" the same.
+BTW, the rest of your patch set is likely to not apply
+correctly after you fix this patch up.  So at a minimum
+you'll need to resubmit this whole set after fixing
+patch #2.
 
-And yes, it's a nitpick.
+In fact I would recommend that you seperate the bug
+fixes from all of the massive cleanups.
 
-	-hpa
+Get the bug fixes, especially the PCI READ MULTIPLE
+disable one, into net-2.6
+
+Then afterwards you can do all of the cleanups against
+net-next-2.6 when the bug fixes propagate there.
+
+Thank you!
