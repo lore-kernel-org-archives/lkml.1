@@ -1,109 +1,144 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755664Ab0BJJaN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 04:30:13 -0500
-Received: from rcsinet12.oracle.com ([148.87.113.124]:21269 "EHLO
+	id S1755720Ab0BJJbX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 04:31:23 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:21199 "EHLO
 	rcsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755321Ab0BJJ3X (ORCPT
+	with ESMTP id S1755537Ab0BJJ3U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 04:29:23 -0500
+	Wed, 10 Feb 2010 04:29:20 -0500
 From: Joel Becker <joel.becker@oracle.com>
 To: ocfs2-devel@oss.oracle.com
 Cc: linux-kernel@vger.kernel.org, mfasheh@suse.com
-Subject: [PATCH 02/11] ocfs2_dlmfs: Use poll() to signify BASTs.
-Date: Wed, 10 Feb 2010 01:27:45 -0800
-Message-Id: <1265794074-19539-3-git-send-email-joel.becker@oracle.com>
+Subject: [PATCH 11/11] ocfs2_dlmfs: Enable the use of user cluster stacks.
+Date: Wed, 10 Feb 2010 01:27:54 -0800
+Message-Id: <1265794074-19539-12-git-send-email-joel.becker@oracle.com>
 X-Mailer: git-send-email 1.5.6.5
 In-Reply-To: <1265794074-19539-1-git-send-email-joel.becker@oracle.com>
 References: <1265794074-19539-1-git-send-email-joel.becker@oracle.com>
 X-Source-IP: acsmt357.oracle.com [141.146.40.157]
 X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090208.4B727C6E.001B:SCFMA4539814,ss=1,fgs=0
+X-CT-RefId: str=0001.0A090206.4B727C6B.0014:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-o2dlm's userspace filesystem is an easy way to use the DLM from
-userspace.  It is intentionally simple. For example, it does not allow
-for asynchronous behavior or lock conversion.  This is intentional to
-keep the interface simple.
+Unlike ocfs2, dlmfs has no permanent storage.  It can't store off a
+cluster stack it is supposed to be using.  So it can't specify the stack
+name in ocfs2_cluster_connect().
 
-Because there is no asynchronous notification, there is no way for a
-process holding a lock to know another node needs the lock.  This is the
-number one complaint of ocfs2_dlmfs users.  Turns out, we can solve this
-very easily.  We add poll() support to ocfs2_dlmfs.  When a BAST is
-received, the lock's file descriptor will receive POLLIN.
+Instead, we create ocfs2_cluster_connect_agnostic(), which simply uses
+the stack that is currently enabled.  This is find for dlmfs, which will
+rely on the stack initialization.
 
-This is trivial to implement.  Userdlm already has an appropriate
-waitqueue, and the lock knows when it is blocked.
-
-We add the "bast" capability to tell userspace this is available.
-
-Signed-off-by: Joel Becker <joel.becker@oracle.com>
-Acked-by: Mark Fasheh <mfasheh@suse.com>
+We add the "stackglue" capability to dlmfs's capability list.  This lets
+userspace know dlmfs can be used with all cluster stacks.
 
 Signed-off-by: Joel Becker <joel.becker@oracle.com>
 ---
- fs/ocfs2/dlm/dlmfs.c |   24 +++++++++++++++++++++++-
- 1 files changed, 23 insertions(+), 1 deletions(-)
+ fs/ocfs2/dlmfs/dlmfs.c      |    2 +-
+ fs/ocfs2/dlmfs/userdlm.c    |    8 ++++----
+ fs/ocfs2/ocfs2_lockingver.h |    2 ++
+ fs/ocfs2/stackglue.c        |   18 ++++++++++++++++++
+ fs/ocfs2/stackglue.h        |   11 +++++++++++
+ 5 files changed, 36 insertions(+), 5 deletions(-)
 
-diff --git a/fs/ocfs2/dlm/dlmfs.c b/fs/ocfs2/dlm/dlmfs.c
-index 77d0df4..ddf55da 100644
---- a/fs/ocfs2/dlm/dlmfs.c
-+++ b/fs/ocfs2/dlm/dlmfs.c
-@@ -43,6 +43,7 @@
- #include <linux/init.h>
- #include <linux/string.h>
- #include <linux/backing-dev.h>
-+#include <linux/poll.h>
- 
- #include <asm/uaccess.h>
- 
-@@ -98,8 +99,12 @@ static const struct dlm_protocol_version user_locking_protocol = {
-  * The ABI features are local to this machine's dlmfs mount.  This is
-  * distinct from the locking protocol, which is concerned with inter-node
-  * interaction.
-+ *
-+ * Capabilities:
-+ * - bast	: POLLIN against the file descriptor of a held lock
-+ *		  signifies a bast fired on the lock.
+diff --git a/fs/ocfs2/dlmfs/dlmfs.c b/fs/ocfs2/dlmfs/dlmfs.c
+index 8697366..1b0de15 100644
+--- a/fs/ocfs2/dlmfs/dlmfs.c
++++ b/fs/ocfs2/dlmfs/dlmfs.c
+@@ -87,7 +87,7 @@ struct workqueue_struct *user_dlm_worker;
+  * - bast	: POLLIN against the file descriptor of a held lock
+  *		  signifies a bast fired on the lock.
   */
--#define DLMFS_CAPABILITIES ""
-+#define DLMFS_CAPABILITIES "bast"
+-#define DLMFS_CAPABILITIES "bast"
++#define DLMFS_CAPABILITIES "bast stackglue"
  extern int param_set_dlmfs_capabilities(const char *val,
  					struct kernel_param *kp)
  {
-@@ -215,6 +220,22 @@ static int dlmfs_file_release(struct inode *inode,
- 	return 0;
- }
+diff --git a/fs/ocfs2/dlmfs/userdlm.c b/fs/ocfs2/dlmfs/userdlm.c
+index c1b6a56..2858ee6 100644
+--- a/fs/ocfs2/dlmfs/userdlm.c
++++ b/fs/ocfs2/dlmfs/userdlm.c
+@@ -666,10 +666,10 @@ struct ocfs2_cluster_connection *user_dlm_register(struct qstr *name)
+ 	int rc;
+ 	struct ocfs2_cluster_connection *conn;
  
-+static unsigned int dlmfs_file_poll(struct file *file, poll_table *wait)
+-	rc = ocfs2_cluster_connect("o2cb", name->name, name->len,
+-				   &user_dlm_lproto,
+-				   user_dlm_recovery_handler_noop,
+-				   NULL, &conn);
++	rc = ocfs2_cluster_connect_agnostic(name->name, name->len,
++					    &user_dlm_lproto,
++					    user_dlm_recovery_handler_noop,
++					    NULL, &conn);
+ 	if (rc)
+ 		mlog_errno(rc);
+ 
+diff --git a/fs/ocfs2/ocfs2_lockingver.h b/fs/ocfs2/ocfs2_lockingver.h
+index 82d5eea..2e45c8d 100644
+--- a/fs/ocfs2/ocfs2_lockingver.h
++++ b/fs/ocfs2/ocfs2_lockingver.h
+@@ -23,6 +23,8 @@
+ /*
+  * The protocol version for ocfs2 cluster locking.  See dlmglue.c for
+  * more details.
++ *
++ * 1.0 - Initial locking version from ocfs2 1.4.
+  */
+ #define OCFS2_LOCKING_PROTOCOL_MAJOR 1
+ #define OCFS2_LOCKING_PROTOCOL_MINOR 0
+diff --git a/fs/ocfs2/stackglue.c b/fs/ocfs2/stackglue.c
+index 31db2e8..39abf89 100644
+--- a/fs/ocfs2/stackglue.c
++++ b/fs/ocfs2/stackglue.c
+@@ -373,6 +373,24 @@ out:
+ }
+ EXPORT_SYMBOL_GPL(ocfs2_cluster_connect);
+ 
++/* The caller will ensure all nodes have the same cluster stack */
++int ocfs2_cluster_connect_agnostic(const char *group,
++				   int grouplen,
++				   struct ocfs2_locking_protocol *lproto,
++				   void (*recovery_handler)(int node_num,
++							    void *recovery_data),
++				   void *recovery_data,
++				   struct ocfs2_cluster_connection **conn)
 +{
-+	int event = 0;
-+	struct inode *inode = file->f_path.dentry->d_inode;
-+	struct dlmfs_inode_private *ip = DLMFS_I(inode);
++	char *stack_name = NULL;
 +
-+	poll_wait(file, &ip->ip_lockres.l_event, wait);
-+
-+	spin_lock(&ip->ip_lockres.l_lock);
-+	if (ip->ip_lockres.l_flags & USER_LOCK_BLOCKED)
-+		event = POLLIN | POLLRDNORM;
-+	spin_unlock(&ip->ip_lockres.l_lock);
-+
-+	return event;
++	if (cluster_stack_name[0])
++		stack_name = cluster_stack_name;
++	return ocfs2_cluster_connect(stack_name, group, grouplen, lproto,
++				     recovery_handler, recovery_data, conn);
 +}
++EXPORT_SYMBOL_GPL(ocfs2_cluster_connect_agnostic);
 +
- static ssize_t dlmfs_file_read(struct file *filp,
- 			       char __user *buf,
- 			       size_t count,
-@@ -585,6 +606,7 @@ static int dlmfs_fill_super(struct super_block * sb,
- static const struct file_operations dlmfs_file_operations = {
- 	.open		= dlmfs_file_open,
- 	.release	= dlmfs_file_release,
-+	.poll		= dlmfs_file_poll,
- 	.read		= dlmfs_file_read,
- 	.write		= dlmfs_file_write,
- };
+ /* If hangup_pending is 0, the stack driver will be dropped */
+ int ocfs2_cluster_disconnect(struct ocfs2_cluster_connection *conn,
+ 			     int hangup_pending)
+diff --git a/fs/ocfs2/stackglue.h b/fs/ocfs2/stackglue.h
+index b1981ba..8ce7398 100644
+--- a/fs/ocfs2/stackglue.h
++++ b/fs/ocfs2/stackglue.h
+@@ -246,6 +246,17 @@ int ocfs2_cluster_connect(const char *stack_name,
+ 						   void *recovery_data),
+ 			  void *recovery_data,
+ 			  struct ocfs2_cluster_connection **conn);
++/*
++ * Used by callers that don't store their stack name.  They must ensure
++ * all nodes have the same stack.
++ */
++int ocfs2_cluster_connect_agnostic(const char *group,
++				   int grouplen,
++				   struct ocfs2_locking_protocol *lproto,
++				   void (*recovery_handler)(int node_num,
++							    void *recovery_data),
++				   void *recovery_data,
++				   struct ocfs2_cluster_connection **conn);
+ int ocfs2_cluster_disconnect(struct ocfs2_cluster_connection *conn,
+ 			     int hangup_pending);
+ void ocfs2_cluster_hangup(const char *group, int grouplen);
 -- 
 1.6.6.1
 
