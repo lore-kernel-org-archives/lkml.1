@@ -1,82 +1,120 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756158Ab0BJR2f (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 12:28:35 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:16643 "EHLO mx1.redhat.com"
+	id S1756065Ab0BJR1p (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 12:27:45 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:54857 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755572Ab0BJRXO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755741Ab0BJRXO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 10 Feb 2010 12:23:14 -0500
 From: Avi Kivity <avi@redhat.com>
 To: kvm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 25/40] KVM: trivial document fixes
-Date: Wed, 10 Feb 2010 19:22:54 +0200
-Message-Id: <1265822589-11155-26-git-send-email-avi@redhat.com>
+Subject: [PATCH 27/40] KVM: modify alias layout in x86s struct kvm_arch
+Date: Wed, 10 Feb 2010 19:22:56 +0200
+Message-Id: <1265822589-11155-28-git-send-email-avi@redhat.com>
 In-Reply-To: <1265822589-11155-1-git-send-email-avi@redhat.com>
 References: <1265822589-11155-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Wu Fengguang <fengguang.wu@intel.com>
+From: Marcelo Tosatti <mtosatti@redhat.com>
 
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+Have a pointer to an allocated region inside x86's kvm_arch.
+
 Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
 ---
- Documentation/kvm/api.txt |   12 ++++++------
- 1 files changed, 6 insertions(+), 6 deletions(-)
+ arch/x86/include/asm/kvm_host.h |    8 ++++++--
+ arch/x86/kvm/x86.c              |   21 ++++++++++++++++-----
+ 2 files changed, 22 insertions(+), 7 deletions(-)
 
-diff --git a/Documentation/kvm/api.txt b/Documentation/kvm/api.txt
-index 2811e45..c6416a3 100644
---- a/Documentation/kvm/api.txt
-+++ b/Documentation/kvm/api.txt
-@@ -23,12 +23,12 @@ of a virtual machine.  The ioctls belong to three classes
-    Only run vcpu ioctls from the same thread that was used to create the
-    vcpu.
+diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
+index fe4df46..7cdcb3d 100644
+--- a/arch/x86/include/asm/kvm_host.h
++++ b/arch/x86/include/asm/kvm_host.h
+@@ -370,9 +370,13 @@ struct kvm_mem_alias {
+ 	gfn_t target_gfn;
+ };
  
--2. File descritpors
-+2. File descriptors
+-struct kvm_arch{
+-	int naliases;
++struct kvm_mem_aliases {
+ 	struct kvm_mem_alias aliases[KVM_ALIAS_SLOTS];
++	int naliases;
++};
++
++struct kvm_arch {
++	struct kvm_mem_aliases *aliases;
  
- The kvm API is centered around file descriptors.  An initial
- open("/dev/kvm") obtains a handle to the kvm subsystem; this handle
- can be used to issue system ioctls.  A KVM_CREATE_VM ioctl on this
--handle will create a VM file descripror which can be used to issue VM
-+handle will create a VM file descriptor which can be used to issue VM
- ioctls.  A KVM_CREATE_VCPU ioctl on a VM fd will create a virtual cpu
- and return a file descriptor pointing to it.  Finally, ioctls on a vcpu
- fd can be used to control the vcpu, including the important task of
-@@ -643,7 +643,7 @@ Type: vm ioctl
- Parameters: struct kvm_clock_data (in)
- Returns: 0 on success, -1 on error
+ 	unsigned int n_free_mmu_pages;
+ 	unsigned int n_requested_mmu_pages;
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index f8e2712..6a3593f 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -2228,9 +2228,10 @@ gfn_t unalias_gfn(struct kvm *kvm, gfn_t gfn)
+ {
+ 	int i;
+ 	struct kvm_mem_alias *alias;
++	struct kvm_mem_aliases *aliases = kvm->arch.aliases;
  
--Sets the current timestamp of kvmclock to the valued specific in its parameter.
-+Sets the current timestamp of kvmclock to the value specified in its parameter.
- In conjunction with KVM_GET_CLOCK, it is used to ensure monotonicity on scenarios
- such as migration.
+-	for (i = 0; i < kvm->arch.naliases; ++i) {
+-		alias = &kvm->arch.aliases[i];
++	for (i = 0; i < aliases->naliases; ++i) {
++		alias = &aliases->aliases[i];
+ 		if (gfn >= alias->base_gfn
+ 		    && gfn < alias->base_gfn + alias->npages)
+ 			return alias->target_gfn + gfn - alias->base_gfn;
+@@ -2248,6 +2249,7 @@ static int kvm_vm_ioctl_set_memory_alias(struct kvm *kvm,
+ {
+ 	int r, n;
+ 	struct kvm_mem_alias *p;
++	struct kvm_mem_aliases *aliases;
  
-@@ -795,11 +795,11 @@ Unused.
- 			__u64 data_offset; /* relative to kvm_run start */
- 		} io;
+ 	r = -EINVAL;
+ 	/* General sanity checks */
+@@ -2267,15 +2269,17 @@ static int kvm_vm_ioctl_set_memory_alias(struct kvm *kvm,
+ 	down_write(&kvm->slots_lock);
+ 	spin_lock(&kvm->mmu_lock);
  
--If exit_reason is KVM_EXIT_IO_IN or KVM_EXIT_IO_OUT, then the vcpu has
-+If exit_reason is KVM_EXIT_IO, then the vcpu has
- executed a port I/O instruction which could not be satisfied by kvm.
- data_offset describes where the data is located (KVM_EXIT_IO_OUT) or
- where kvm expects application code to place the data for the next
--KVM_RUN invocation (KVM_EXIT_IO_IN).  Data format is a patcked array.
-+KVM_RUN invocation (KVM_EXIT_IO_IN).  Data format is a packed array.
+-	p = &kvm->arch.aliases[alias->slot];
++	aliases = kvm->arch.aliases;
++
++	p = &aliases->aliases[alias->slot];
+ 	p->base_gfn = alias->guest_phys_addr >> PAGE_SHIFT;
+ 	p->npages = alias->memory_size >> PAGE_SHIFT;
+ 	p->target_gfn = alias->target_phys_addr >> PAGE_SHIFT;
  
- 		struct {
- 			struct kvm_debug_exit_arch arch;
-@@ -815,7 +815,7 @@ Unused.
- 			__u8  is_write;
- 		} mmio;
+ 	for (n = KVM_ALIAS_SLOTS; n > 0; --n)
+-		if (kvm->arch.aliases[n - 1].npages)
++		if (aliases->aliases[n - 1].npages)
+ 			break;
+-	kvm->arch.naliases = n;
++	aliases->naliases = n;
  
--If exit_reason is KVM_EXIT_MMIO or KVM_EXIT_IO_OUT, then the vcpu has
-+If exit_reason is KVM_EXIT_MMIO, then the vcpu has
- executed a memory-mapped I/O instruction which could not be satisfied
- by kvm.  The 'data' member contains the written data if 'is_write' is
- true, and should be filled by application code otherwise.
+ 	spin_unlock(&kvm->mmu_lock);
+ 	kvm_mmu_zap_all(kvm);
+@@ -5159,6 +5163,12 @@ struct  kvm *kvm_arch_create_vm(void)
+ 	if (!kvm)
+ 		return ERR_PTR(-ENOMEM);
+ 
++	kvm->arch.aliases = kzalloc(sizeof(struct kvm_mem_aliases), GFP_KERNEL);
++	if (!kvm->arch.aliases) {
++		kfree(kvm);
++		return ERR_PTR(-ENOMEM);
++	}
++
+ 	INIT_LIST_HEAD(&kvm->arch.active_mmu_pages);
+ 	INIT_LIST_HEAD(&kvm->arch.assigned_dev_head);
+ 
+@@ -5215,6 +5225,7 @@ void kvm_arch_destroy_vm(struct kvm *kvm)
+ 		put_page(kvm->arch.apic_access_page);
+ 	if (kvm->arch.ept_identity_pagetable)
+ 		put_page(kvm->arch.ept_identity_pagetable);
++	kfree(kvm->arch.aliases);
+ 	kfree(kvm);
+ }
+ 
 -- 
 1.6.5.3
 
