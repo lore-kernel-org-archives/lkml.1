@@ -1,68 +1,76 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755407Ab0BJBjf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 20:39:35 -0500
-Received: from sh.osrg.net ([192.16.179.4]:54825 "EHLO sh.osrg.net"
+	id S1755385Ab0BJBjc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 20:39:32 -0500
+Received: from sh.osrg.net ([192.16.179.4]:54820 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755350Ab0BJBja (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Feb 2010 20:39:30 -0500
+	id S1755303Ab0BJBjZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Feb 2010 20:39:25 -0500
 From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, fujita.tomonori@lab.ntt.co.jp,
-       Ralf Baechle <ralf@linux-mips.org>
-Subject: [PATCH v2 -mm 07/14] mips: use include/linux/pci-dma.h
-Date: Wed, 10 Feb 2010 10:34:40 +0900
-Message-Id: <1265765687-14121-8-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH v2 -mm 09/14] powerpc: use include/linux/pci-dma.h
+Date: Wed, 10 Feb 2010 10:34:42 +0900
+Message-Id: <1265765687-14121-10-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 X-Mailer: git-send-email 1.5.6.5
 In-Reply-To: <1265765687-14121-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 References: <1265765687-14121-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 10 Feb 2010 10:38:48 +0900 (JST)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 10 Feb 2010 10:38:49 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: Ralf Baechle <ralf@linux-mips.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/mips/Kconfig           |    4 ++--
- arch/mips/include/asm/pci.h |   22 +---------------------
- 2 files changed, 3 insertions(+), 23 deletions(-)
+ arch/powerpc/Kconfig           |    3 +++
+ arch/powerpc/include/asm/pci.h |   32 +-------------------------------
+ 2 files changed, 4 insertions(+), 31 deletions(-)
 
-diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
-index 591ca0c..29e8692 100644
---- a/arch/mips/Kconfig
-+++ b/arch/mips/Kconfig
-@@ -812,9 +812,9 @@ config DMA_COHERENT
- 
- config DMA_NONCOHERENT
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 181dd84..c816a2c 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -645,6 +645,9 @@ config ZONE_DMA
  	bool
--	select DMA_NEED_PCI_MAP_STATE
-+	select NEED_DMA_MAP_STATE
+ 	default y
  
--config DMA_NEED_PCI_MAP_STATE
 +config NEED_DMA_MAP_STATE
++	def_bool (PPC64 || NOT_COHERENT_CACHE)
++
+ config GENERIC_ISA_DMA
  	bool
+ 	depends on PPC64 || POWER4 || 6xx && !CPM2
+diff --git a/arch/powerpc/include/asm/pci.h b/arch/powerpc/include/asm/pci.h
+index b5ea626..4a9991b 100644
+--- a/arch/powerpc/include/asm/pci.h
++++ b/arch/powerpc/include/asm/pci.h
+@@ -141,37 +141,7 @@ extern int pci_mmap_legacy_page_range(struct pci_bus *bus,
  
- config SYS_HAS_EARLY_PRINTK
-diff --git a/arch/mips/include/asm/pci.h b/arch/mips/include/asm/pci.h
-index 5ebf825..9b196f8 100644
---- a/arch/mips/include/asm/pci.h
-+++ b/arch/mips/include/asm/pci.h
-@@ -102,27 +102,7 @@ struct pci_dev;
-  */
- extern unsigned int PCI_DMA_BUS_IS_PHYS;
+ #define HAVE_PCI_LEGACY	1
  
--#ifdef CONFIG_DMA_NEED_PCI_MAP_STATE
+-#if defined(CONFIG_PPC64) || defined(CONFIG_NOT_COHERENT_CACHE)
+-/*
+- * For 64-bit kernels, pci_unmap_{single,page} is not a nop.
+- * For 32-bit non-coherent kernels, pci_dma_sync_single_for_cpu() and
+- * so on are not nops.
+- * and thus...
+- */
+-#define DECLARE_PCI_UNMAP_ADDR(ADDR_NAME)	\
+-	dma_addr_t ADDR_NAME;
+-#define DECLARE_PCI_UNMAP_LEN(LEN_NAME)		\
+-	__u32 LEN_NAME;
+-#define pci_unmap_addr(PTR, ADDR_NAME)			\
+-	((PTR)->ADDR_NAME)
+-#define pci_unmap_addr_set(PTR, ADDR_NAME, VAL)		\
+-	(((PTR)->ADDR_NAME) = (VAL))
+-#define pci_unmap_len(PTR, LEN_NAME)			\
+-	((PTR)->LEN_NAME)
+-#define pci_unmap_len_set(PTR, LEN_NAME, VAL)		\
+-	(((PTR)->LEN_NAME) = (VAL))
 -
--/* pci_unmap_{single,page} is not a nop, thus... */
--#define DECLARE_PCI_UNMAP_ADDR(ADDR_NAME)	dma_addr_t ADDR_NAME;
--#define DECLARE_PCI_UNMAP_LEN(LEN_NAME)		__u32 LEN_NAME;
--#define pci_unmap_addr(PTR, ADDR_NAME)		((PTR)->ADDR_NAME)
--#define pci_unmap_addr_set(PTR, ADDR_NAME, VAL)	(((PTR)->ADDR_NAME) = (VAL))
--#define pci_unmap_len(PTR, LEN_NAME)		((PTR)->LEN_NAME)
--#define pci_unmap_len_set(PTR, LEN_NAME, VAL)	(((PTR)->LEN_NAME) = (VAL))
--
--#else /* CONFIG_DMA_NEED_PCI_MAP_STATE  */
+-#else /* 32-bit && coherent */
 -
 -/* pci_unmap_{page,single} is a nop so... */
 -#define DECLARE_PCI_UNMAP_ADDR(ADDR_NAME)
@@ -72,11 +80,11 @@ index 5ebf825..9b196f8 100644
 -#define pci_unmap_len(PTR, LEN_NAME)		(0)
 -#define pci_unmap_len_set(PTR, LEN_NAME, VAL)	do { } while (0)
 -
--#endif /* CONFIG_DMA_NEED_PCI_MAP_STATE  */
+-#endif /* CONFIG_PPC64 || CONFIG_NOT_COHERENT_CACHE */
 +#include <linux/pci-dma.h>
  
- #ifdef CONFIG_PCI
- static inline void pci_dma_burst_advice(struct pci_dev *pdev,
+ #ifdef CONFIG_PPC64
+ 
 -- 
 1.5.6.5
 
