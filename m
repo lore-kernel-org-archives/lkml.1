@@ -1,58 +1,126 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754291Ab0BJDTN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Feb 2010 22:19:13 -0500
-Received: from smtp-out.google.com ([216.239.44.51]:41236 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751499Ab0BJDTL (ORCPT
+	id S1754515Ab0BJDVr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Feb 2010 22:21:47 -0500
+Received: from mail-iw0-f201.google.com ([209.85.223.201]:44652 "EHLO
+	mail-iw0-f201.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751499Ab0BJDVq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Feb 2010 22:19:11 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=jwPP3+w61SVm+2s0EXlGesWXNbDQaypjhGB589Tbh6ACONHB9Z6yitUKd3M2kry3A
-	hzL+y2+dbTylmjr0HUnpw==
-Date: Tue, 9 Feb 2010 19:19:04 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
-cc: Neil Brown <neilb@suse.de>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Tejun Heo <tj@kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sysfs: differentiate between locking links and
- non-links
-In-Reply-To: <2375c9f91002091914l6738a06eq5cba5f5fbf08976a@mail.gmail.com>
-Message-ID: <alpine.DEB.2.00.1002091917230.31159@chino.kir.corp.google.com>
-References: <19314.1869.847327.15190@notabene.brown> <alpine.DEB.2.00.1002091716580.13999@chino.kir.corp.google.com> <2375c9f91002091756h132e81eava8575ffd4e3ad421@mail.gmail.com> <alpine.DEB.2.00.1002091858180.31159@chino.kir.corp.google.com>
- <2375c9f91002091914l6738a06eq5cba5f5fbf08976a@mail.gmail.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 9 Feb 2010 22:21:46 -0500
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="531381004-991885737-1265771945=:31159"
-X-System-Of-Record: true
+Date: Wed, 10 Feb 2010 13:21:45 +1000
+Message-ID: <1d3f23371002091921m7f47a1fbt1cf7fd2ef0a927fa@mail.gmail.com>
+Subject: PPC: Possible bug in prom_parse.c:of_irq_map_raw?
+From: John Williams <john.williams@petalogix.com>
+To: Linux Kernel list <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+       Grant Likely <grant.likely@secretlab.ca>,
+       Michal Simek <michal.simek@petalogix.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Hi,
 
---531381004-991885737-1265771945=:31159
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Perhaps this is my misunderstanding, but I'm looking at the bit of
+code in of_irq_map_raw() that iterates the interrupt-map DTS node,
+which I am seeing to behave strangely when handling the interrupt-map
+property on a PCI bridge node.
 
-On Wed, 10 Feb 2010, Américo Wang wrote:
+Early in the function, we get the #address-cells value from the node -
+in this case the PCI bridge, and store it in local var addrsize:
 
-> > You should be able to reuse Neil's sysfs_dirent_init_lockdep(sd, type) to
-> > seperate the lock classes for the sd getting pinned in
-> > sysfs_get_active_two() from sysfs_deactivate(), although using subclasses
-> > would probably be optimal since there is a clear parent -> child relationship.
-> 
-> Yeah, basically, my fix is also adding a separate lockdep class, but
-> at a different
-> level. I will send the fix as soon as I finish it.
-> 
+        /* Look for this #address-cells. We have to implement the old linux
+         * trick of looking for the parent here as some device-trees rely on it
+         */
+        old = of_node_get(ipar);
+        do {
+                tmp = of_get_property(old, "#address-cells", NULL);
+                tnode = of_get_parent(old);
+                of_node_put(old);
+                old = tnode;
+        } while(old && tmp == NULL);
+        of_node_put(old);
+        old = NULL;
+        addrsize = (tmp == NULL) ? 2 : *tmp;
 
-They shouldn't be entirely seperate classes for your "mutable" cases since 
-there will always be a parent -> child relationship, they should be 
-subclasses under the same lockclass at a SINGLE_DEPTH_NESTING level.
---531381004-991885737-1265771945=:31159--
+        DBG(" -> addrsize=%d\n", addrsize);
+
+
+Later, once we've found the interrupt-map and are iterating over it
+attempting to match on PCI device addresses, there is this little
+fragment:
+
+                        /* Get the interrupt parent */
+                        if (of_irq_workarounds & OF_IMAP_NO_PHANDLE)
+                                newpar = of_node_get(of_irq_dflt_pic);
+                        else
+                                newpar =
+of_find_node_by_phandle((phandle)*imap);
+                        imap++;
+                        --imaplen;
+
+                        /* Check if not found */
+                        if (newpar == NULL) {
+                                DBG(" -> imap parent not found !\n");
+                                goto fail;
+                        }
+
+                        /* Get #interrupt-cells and #address-cells of new
+                         * parent
+                         */
+                        tmp = of_get_property(newpar, "#interrupt-cells", NULL);
+                        if (tmp == NULL) {
+                                DBG(" -> parent lacks #interrupt-cells !\n");
+                                goto fail;
+                        }
+                        newintsize = *tmp;
+                        tmp = of_get_property(newpar, "#address-cells", NULL);
+                        newaddrsize = (tmp == NULL) ? 0 : *tmp;
+
+Finally, later in the loop we update addrsize=newaddrsize
+
+As I read this code, and the behaviour I'm seeing, is that if the
+interrupt controller parent device doesn't have an #address-cells
+entry, then this get_property will return fail, therefore setting
+newaddrsize  to zero.  This then means that subsequent match attempts
+when iterating the interrupt-map always fail, because the match length
+(addrsize) is 0.
+
+Maybe I'm missing something here, but shouldn't this last bit of code
+instead be:
+
+                        tmp = of_get_property(newpar, "#address-cells", NULL);
+                        newaddrsize = (tmp == NULL) ? addrsize : *tmp;
+
+ ^^^^^^^^^
+?
+
+In other words, if the parent node has an #address-cells value, then
+use it, otherwise stick to the #address-cells value we picked up for
+the actual node in question (ie the PCI bridge).
+
+The way this is manifesting itself in the system I'm looking at is
+that only the PCI device matching the first entry in the PCI bridge
+interrupt-map property is correctly matching. For PCI devices that
+require more than one pass through the interrupt-map loop, addrsize
+goes to zero and no further match is possible.
+
+I might be able to hack around this in the device-tree by setting
+#address-cells=<3> in the interrupt controller node, but that doesn't
+smell right either - it's only true for PCI devices for a start,
+whereas this controller handles interrupts from many sources on the
+32-bit PLB bus as well.  I looked at the ML510 DTS in boot/dts and
+it's not doing anything like this.
+
+As a footnote, I'm actually doing this in MicroBlaze whose PCI
+infrastructure is not yet in mainline, however we copied this bit of
+code directly from PPC and the logic is the same.
+
+Thanks,
+
+John
+-- 
+John Williams
+PetaLogix - Linux Solutions for a Reconfigurable World
+w: www.petalogix.com  p: +61-7-30090663  f: +61-7-30090663
