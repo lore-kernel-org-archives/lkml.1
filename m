@@ -1,106 +1,65 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756520Ab0BJV1V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 16:27:21 -0500
-Received: from mail-iw0-f185.google.com ([209.85.223.185]:35898 "EHLO
-	mail-iw0-f185.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750844Ab0BJV1T (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 16:27:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type;
-        b=B9joeT3ZXEBKvRqLv7JaXckcIo/WSbbIBc/Xx2wNgmoGxSGJ3UMrIvksK0OqtDVoIJ
-         HRwcI9z+c3KuLmAh+F2qHLj3u0+8Um62uFMVAIM6jjRVkcouZud5yJC8BWvx5C1gr1SN
-         evAE6XeqmDMKIft+iOD1p2jQ0fCTH0/tCVjb0=
-Message-ID: <4B7324B4.8000708@gmail.com>
-Date: Wed, 10 Feb 2010 16:27:16 -0500
-From: William Allen Simpson <william.allen.simpson@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	id S1756553Ab0BJV1u (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 16:27:50 -0500
+Received: from xenotime.net ([72.52.64.118]:46021 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751131Ab0BJV1s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Feb 2010 16:27:48 -0500
+Message-ID: <4B7324D3.1000509@xenotime.net>
+Date: Wed, 10 Feb 2010 13:27:47 -0800
+From: Randy Dunlap <rdunlap@xenotime.net>
+Organization: YPO4
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
 MIME-Version: 1.0
-To: Linux Kernel Developers <linux-kernel@vger.kernel.org>,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>
-CC: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH v3 5/6] TCPCT part 2e: accept SYNACK data
-References: <4B731D61.2080603@gmail.com>
-In-Reply-To: <4B731D61.2080603@gmail.com>
-Content-Type: multipart/mixed;
- boundary="------------090304020106010703010205"
+To: adharmap@codeaurora.org
+CC: linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org,
+       Russell King <linux@arm.linux.org.uk>, linux-kernel@vger.kernel.org,
+       Catalin Marinas <catalin.marinas@arm.com>,
+       Abhijeet Dharmapurikar <adharmap@quicinc.com>
+Subject: Re: [RFC 0/2] fix dma_map_sg not to do barriers for each buffer
+References: <1265834250-29170-1-git-send-email-adharmap@codeaurora.org>
+In-Reply-To: <1265834250-29170-1-git-send-email-adharmap@codeaurora.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------090304020106010703010205
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+On 02/10/10 12:37, adharmap@codeaurora.org wrote:
+> From: Abhijeet Dharmapurikar <adharmap@quicinc.com>
+> 
+> Please refer to the post here
+> http://lkml.org/lkml/2010/1/4/347
+> 
+> These changes are to introduce barrierless dma_map_area and dma_unmap_area and
+> use them to map the buffers in the scatterlist. For the last buffer, call
+> the normal dma_map_area(aka with barriers) effectively executing the barrier
+> at the end of the operation.
+> 
+> Note that the barrierless operations are implemented for few arm
+> architectures only and I would implement for others once these are okayed by the
+> community.
 
-When accompanied by cookie option, Initiator (client) queues incoming
-SYNACK transaction data.
+So when you add these interfaces for other architectures, you will also
+update Documentation/DMA-API.txt,  right??
 
-This is a straightforward re-implementation of an earlier (year-old)
-patch that no longer applies cleanly, with permission of the original
-author (Adam Langley).  The patch was previously reviewed:
 
-    http://thread.gmane.org/gmane.linux.network/102586
+> Abhijeet Dharmapurikar (2):
+>   dma: define barrierless versions of map and unmap area
+>   dma: fix scatter-gather api to use barrierless map/unmap functions
+> 
+>  arch/arm/include/asm/cacheflush.h  |    9 +++
+>  arch/arm/include/asm/dma-mapping.h |   82 +++++++++++++++++++++
+>  arch/arm/mm/cache-v3.S             |    6 ++
+>  arch/arm/mm/cache-v4.S             |    6 ++
+>  arch/arm/mm/cache-v4wb.S           |   94 +++++++++++++++++-------
+>  arch/arm/mm/cache-v4wt.S           |    6 ++
+>  arch/arm/mm/cache-v6.S             |  139 +++++++++++++++++++++++++----------
+>  arch/arm/mm/cache-v7.S             |  120 +++++++++++++++++++++++--------
+>  arch/arm/mm/dma-mapping.c          |   55 +++++++++++++--
+>  9 files changed, 414 insertions(+), 103 deletions(-)
 
-This function will also be used in subsequent patches that implement
-additional features.
 
-Requires:
-   TCPCT part 1g: Responder Cookie => Initiator
-   net: tcp_header_len_th and tcp_option_len_th
-
-Signed-off-by: William.Allen.Simpson@gmail.com
----
-  net/ipv4/tcp_input.c |   26 +++++++++++++++++++++++++-
-  1 files changed, 25 insertions(+), 1 deletions(-)
-
---------------090304020106010703010205
-Content-Type: text/plain; x-mac-type="54455854"; x-mac-creator="0";
- name="TCPCT+2e3+2.6.33-rc7.patch"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="TCPCT+2e3+2.6.33-rc7.patch"
-
-ZGlmZiAtLWdpdCBhL25ldC9pcHY0L3RjcF9pbnB1dC5jIGIvbmV0L2lwdjQvdGNwX2lucHV0
-LmMKaW5kZXggOGUwZjZhZS4uMTY1MDQwZSAxMDA2NDQKLS0tIGEvbmV0L2lwdjQvdGNwX2lu
-cHV0LmMKKysrIGIvbmV0L2lwdjQvdGNwX2lucHV0LmMKQEAgLTUzOTUsNiArNTM5NSwxMiBA
-QCBkaXNjYXJkOgogCXJldHVybiAwOwogfQogCisvKgorICogUmV0dXJuczoKKyAqCSsxIG9u
-IHJlc2V0LAorICoJMCBzdWNjZXNzIGFuZC9vciBTWU5BQ0sgZGF0YSwKKyAqCS0xIG9uIGRp
-c2NhcmQuCisgKi8KIHN0YXRpYyBpbnQgdGNwX3Jjdl9zeW5zZW50X3N0YXRlX3Byb2Nlc3Mo
-c3RydWN0IHNvY2sgKnNrLCBzdHJ1Y3Qgc2tfYnVmZiAqc2tiLAogCQkJCQkgc3RydWN0IHRj
-cGhkciAqdGgpCiB7CkBAIC01NDAzLDYgKzU0MDksNyBAQCBzdGF0aWMgaW50IHRjcF9yY3Zf
-c3luc2VudF9zdGF0ZV9wcm9jZXNzKHN0cnVjdCBzb2NrICpzaywgc3RydWN0IHNrX2J1ZmYg
-KnNrYiwKIAlzdHJ1Y3QgdGNwX3NvY2sgKnRwID0gdGNwX3NrKHNrKTsKIAlzdHJ1Y3QgdGNw
-X2Nvb2tpZV92YWx1ZXMgKmN2cCA9IHRwLT5jb29raWVfdmFsdWVzOwogCWludCBzYXZlZF9j
-bGFtcCA9IHRwLT5yeF9vcHQubXNzX2NsYW1wOworCWludCBxdWV1ZWQgPSAwOwogCiAJdGNw
-X3BhcnNlX29wdGlvbnMoc2tiLCAmdHAtPnJ4X29wdCwgJmhhc2hfbG9jYXRpb24sIDApOwog
-CkBAIC01NTA5LDYgKzU1MTYsNyBAQCBzdGF0aWMgaW50IHRjcF9yY3Zfc3luc2VudF9zdGF0
-ZV9wcm9jZXNzKHN0cnVjdCBzb2NrICpzaywgc3RydWN0IHNrX2J1ZmYgKnNrYiwKIAkJCQkJ
-LSBUQ1BPTEVOX0NPT0tJRV9CQVNFOwogCQkJaW50IGNvb2tpZV9wYWlyX3NpemUgPSBjb29r
-aWVfc2l6ZQogCQkJCQkgICAgICsgY3ZwLT5jb29raWVfZGVzaXJlZDsKKwkJCWludCB0Y3Bf
-aGVhZGVyX2xlbiA9IHRjcF9oZWFkZXJfbGVuX3RoKHRoKTsKIAogCQkJLyogQSBjb29raWUg
-ZXh0ZW5zaW9uIG9wdGlvbiB3YXMgc2VudCBhbmQgcmV0dXJuZWQuCiAJCQkgKiBOb3RlIHRo
-YXQgZWFjaCBpbmNvbWluZyBTWU5BQ0sgcmVwbGFjZXMgdGhlCkBAIC01NTI0LDYgKzU1MzIs
-MTkgQEAgc3RhdGljIGludCB0Y3BfcmN2X3N5bnNlbnRfc3RhdGVfcHJvY2VzcyhzdHJ1Y3Qg
-c29jayAqc2ssIHN0cnVjdCBza19idWZmICpza2IsCiAJCQkJICAgICAgIGhhc2hfbG9jYXRp
-b24sIGNvb2tpZV9zaXplKTsKIAkJCQljdnAtPmNvb2tpZV9wYWlyX3NpemUgPSBjb29raWVf
-cGFpcl9zaXplOwogCQkJfQorCisJCQlxdWV1ZWQgPSBza2ItPmxlbiAtIHRjcF9oZWFkZXJf
-bGVuOworCQkJaWYgKHF1ZXVlZCA+IDApIHsKKwkJCQkvKiBRdWV1ZSBpbmNvbWluZyB0cmFu
-c2FjdGlvbiBkYXRhLiAqLworCQkJCV9fc2tiX3B1bGwoc2tiLCB0Y3BfaGVhZGVyX2xlbik7
-CisJCQkJX19za2JfcXVldWVfdGFpbCgmc2stPnNrX3JlY2VpdmVfcXVldWUsIHNrYik7CisJ
-CQkJc2tiX3NldF9vd25lcl9yKHNrYiwgc2spOworCQkJCXNrLT5za19kYXRhX3JlYWR5KHNr
-LCAwKTsKKwkJCQljdnAtPnNfZGF0YV9pbiA9IDE7IC8qIHRydWUgKi8KKwkJCQl0cC0+cmN2
-X254dCA9IFRDUF9TS0JfQ0Ioc2tiKS0+ZW5kX3NlcTsKKwkJCQl0cC0+cmN2X3d1cCA9IFRD
-UF9TS0JfQ0Ioc2tiKS0+ZW5kX3NlcTsKKwkJCQl0cC0+Y29waWVkX3NlcSA9IFRDUF9TS0Jf
-Q0Ioc2tiKS0+c2VxICsgMTsKKwkJCX0KIAkJfQogCiAJCXNtcF9tYigpOwpAQCAtNTU3Nywx
-MSArNTU5OCwxNCBAQCBzdGF0aWMgaW50IHRjcF9yY3Zfc3luc2VudF9zdGF0ZV9wcm9jZXNz
-KHN0cnVjdCBzb2NrICpzaywgc3RydWN0IHNrX2J1ZmYgKnNrYiwKIAkJCQkJCSAgVENQX0RF
-TEFDS19NQVgsIFRDUF9SVE9fTUFYKTsKIAogZGlzY2FyZDoKLQkJCV9fa2ZyZWVfc2tiKHNr
-Yik7CisJCQlpZiAocXVldWVkIDw9IDApCisJCQkJX19rZnJlZV9za2Ioc2tiKTsKIAkJCXJl
-dHVybiAwOwogCQl9IGVsc2UgewogCQkJdGNwX3NlbmRfYWNrKHNrKTsKIAkJfQorCQlpZiAo
-cXVldWVkID4gMCkKKwkJCXJldHVybiAwOwogCQlyZXR1cm4gLTE7CiAJfQogCi0tIAoxLjYu
-My4zCgo=
---------------090304020106010703010205--
+-- 
+~Randy
