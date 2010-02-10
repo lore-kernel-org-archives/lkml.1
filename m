@@ -1,59 +1,150 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756440Ab0BJUx2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 15:53:28 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:48011 "EHLO mx1.redhat.com"
+	id S1756475Ab0BJUys (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 15:54:48 -0500
+Received: from cantor.suse.de ([195.135.220.2]:47464 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756121Ab0BJUx0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 15:53:26 -0500
-Message-ID: <4B731CA6.3030304@redhat.com>
-Date: Wed, 10 Feb 2010 15:52:54 -0500
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Lightning/1.0pre Thunderbird/3.0
-MIME-Version: 1.0
+	id S1756167Ab0BJUyo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Feb 2010 15:54:44 -0500
+From: Lubos Lunak <l.lunak@suse.cz>
 To: David Rientjes <rientjes@google.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Nick Piggin <npiggin@suse.de>, Andrea Arcangeli <aarcange@redhat.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch 2/7 -mm] oom: sacrifice child with highest badness score
- for parent
-References: <alpine.DEB.2.00.1002100224210.8001@chino.kir.corp.google.com> <alpine.DEB.2.00.1002100228240.8001@chino.kir.corp.google.com>
-In-Reply-To: <alpine.DEB.2.00.1002100228240.8001@chino.kir.corp.google.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Subject: Re: Improving OOM killer
+Date: Wed, 10 Feb 2010 21:54:39 +0100
+User-Agent: KMail/1.9.10
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>, Rik van Riel <riel@redhat.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Nick Piggin <npiggin@suse.de>, Jiri Kosina <jkosina@suse.cz>
+References: <201002012302.37380.l.lunak@suse.cz> <201002040858.33046.l.lunak@suse.cz> <alpine.DEB.2.00.1002041255080.6071@chino.kir.corp.google.com>
+In-Reply-To: <alpine.DEB.2.00.1002041255080.6071@chino.kir.corp.google.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <201002102154.39771.l.lunak@suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/10/2010 11:32 AM, David Rientjes wrote:
-> When a task is chosen for oom kill, the oom killer first attempts to
-> sacrifice a child not sharing its parent's memory instead.
-> Unfortunately, this often kills in a seemingly random fashion based on
-> the ordering of the selected task's child list.  Additionally, it is not
-> guaranteed at all to free a large amount of memory that we need to
-> prevent additional oom killing in the very near future.
+On Thursday 04 of February 2010, David Rientjes wrote:
+> On Thu, 4 Feb 2010, Lubos Lunak wrote:
+> >  I think before finding out the answer it should be first figured out
+> > what the question is :). Besides the vague "forkbomb" description I still
+> > don't know what realistic scenarios this is supposed to handle. IMO
+> > trying to cover intentional abuse is a lost fight, so I think the purpose
+> > of this code should be just to handle cases when there's a mistake
+> > leading to relatively fast spawning of children of a specific parent
+> > that'll lead to OOM.
 >
-> Instead, we now only attempt to sacrifice the worst child not sharing its
-> parent's memory, if one exists.  The worst child is indicated with the
-> highest badness() score.  This serves two advantages: we kill a
-> memory-hogging task more often, and we allow the configurable
-> /proc/pid/oom_adj value to be considered as a factor in which child to
-> kill.
->
-> Reviewers may observe that the previous implementation would iterate
-> through the children and attempt to kill each until one was successful
-> and then the parent if none were found while the new code simply kills
-> the most memory-hogging task or the parent.  Note that the only time
-> oom_kill_task() fails, however, is when a child does not have an mm or
-> has a /proc/pid/oom_adj of OOM_DISABLE.  badness() returns 0 for both
-> cases, so the final oom_kill_task() will always succeed.
->
-> Signed-off-by: David Rientjes<rientjes@google.com>
+> Yes, forkbombs are not always malicious, they can be the result of buggy
+> code and there's no other kernel mechanism that will hold them off so that
+> the machine is still usable.  If a task forks and execve's thousands of
+> threads on your 2GB desktop machine either because its malicious, its a
+> bug, or a the user made a mistake, that's going to be detrimental
+> depending on the nature of what was executed especially to your
+> interactivity :)  Keep in mind that the forking parent such as a job
+> scheduler or terminal and all of its individual children may have very
+> small rss and swap statistics, even though cumulatively its a problem.
 
-Acked-by: Rik van Riel <riel@redhat.com>
+ Which is why I suggested summing up the memory of the parent and its 
+children.
+
+> > The shape of
+> > the children subtree doesn't matter, it can be either a parent with many
+> > direct children, or children being created recursively, I think any case
+> > is possible here. A realistic example would be e.g. by mistake
+> > typing 'make -j22' instead of 'make -j2' and overloading the machine by
+> > too many g++ instances. That would be actually a non-trivial tree of
+> > children, with recursive make and sh processes in it.
+>
+> We can't address recursive forkbombing in the oom killer with any
+> efficiency, but luckily those cases aren't very common.
+
+ Right, I've never run a recursive make that brought my machine to its knees. 
+Oh, wait.
+
+ And why exactly is iterating over 1st level children efficient enough and 
+doing that recursively is not? I don't find it significantly more expensive 
+and badness() is hardly a bottleneck anyway.
+
+> >  A good way to detect this would be checking in badness() if the process
+> > has any children with relatively low CPU and real time values (let's say
+> > something less than a minute). If yes, the badness score should also
+> > account for all these children, recursively. I'm not sure about the exact
+> > formula, just summing up the memory usage like it is done now does not
+> > fit your 0-1000 score idea, and it's also wrong because it doesn't take
+> > sharing of memory into consideration (e.g. a KDE app with several
+> > kdelibs-based children could achieve a massive score here because of
+> > extensive sharing, even though the actual memory usage increase caused by
+> > them could be insignificant). I don't know kernel internals, so I don't
+> > know how feasible it would be, but one naive idea would be to simply
+> > count how big portion of the total memory all these considered processes
+> > occupy.
+>
+> badness() can't be called recursively on children,
+> the simple metrics like you mentioned: cpu time, for example.
+
+ I didn't mean calling badness() recursively, just computing total memory 
+usage of the parent and all the children together (and trying not to count 
+shared parts more than once). If doing that accurately is too expensive, 
+summing rss+swap for the parent and using only unshared memory for the 
+children seems reasonably close to it and pretty cheap (surely if the code 
+can find out rss+swap for each child it can equally easily find out how much 
+of it is unshared?). With the assumption that the shared memory will be 
+hopefully reasonably accounted in the parent's memory usage and thus only 
+unshared portions for children are needed, this appears to be much more 
+precise than trying to sum up rss for all like your proposal does.
+
+> >  This indeed would not handle the case when a tree of processes would
+> > slowly leak, for example there being a bug in Apache and all the forked
+> > children of the master process leaking memory equally, but none of the
+> > single children leaking enough to score more than a single unrelated
+> > innocent process. Here I question how realistic such scenario actually
+> > would be, and mainly the actual possibility of detecting such case. I do
+> > not see how code could distinguish this from the case of using Konsole or
+> > XTerm to launch a number of unrelated KDE/X applications each of which
+> > would occupy a considerable amount of memory. Here clearly killing the
+> > Konsole/XTerm and all the spawned applications with it is incorrect, so
+> > with no obvious offender the OOM killer would simply have to pick
+> > something.
+>
+> The memory consumption of these children were not considered in my rough
+> draft, it was simply a counter of how many first-generation children each
+> task has.
+
+ Why exactly do you think only 1st generation children matter? Look again at 
+the process tree posted by me and you'll see it solves nothing there. I still 
+fail to see why counting also all other generations should be considered 
+anything more than a negligible penalty for something that's not a bottleneck 
+at all.
+
+> When Konsole forks a very large number of tasks, is it 
+> unreasonable to bias it with a penalty of perhaps 10% of RAM?
+
+ It appears unresonable to penalize it with a random magic number.
+
+> Or should 
+> we take the lowest rss size of those children, multiply it by the number
+> of children, and penalize it after it reaches a certain threshold (500?
+> 1000?) as the "cost of running the parent"?
+
+ And another magic number. And again it doesn't solve my initial problem, 
+where the number of processes taking part in the OOM situation is counted 
+only in tens.
+
+ Simply computing the cost of the whole children subtree (or a reasonable 
+approximation) avoids the need for any magic numbers and gives a much better 
+representation of how costly the subtree is, since, well, it is the cost 
+itself.
+
+> This heavily biases parents 
+> that have forked a very large number of small threads that would be
+> directly killed whereas the large, memory-hog children are killed
+> themselves based on their own badness() heuristic.
 
 -- 
-All rights reversed.
+ Lubos Lunak
+ openSUSE Boosters team, KDE developer
+ l.lunak@suse.cz , l.lunak@kde.org
