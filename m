@@ -1,70 +1,136 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757250Ab0BKVMQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 16:12:16 -0500
-Received: from lnx500.hrz.tu-darmstadt.de ([130.83.156.225]:34934 "EHLO
-	lnx500.hrz.tu-darmstadt.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757236Ab0BKVMM (ORCPT
+	id S1757254Ab0BKVMy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 16:12:54 -0500
+Received: from acsinet11.oracle.com ([141.146.126.233]:53852 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757052Ab0BKVMw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 16:12:12 -0500
-From: ST <st@iss.tu-darmstadt.de>
-To: Robert Hancock <hancockrwd@gmail.com>
-Subject: Re: 2.6.33-rc7 problems
-Date: Thu, 11 Feb 2010 22:11:51 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.33-rc7-00025-g08c4f1b; KDE/4.3.4; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org
-References: <201002092306.07449.st@iss.tu-darmstadt.de> <4B7354D9.50909@gmail.com>
-In-Reply-To: <4B7354D9.50909@gmail.com>
+	Thu, 11 Feb 2010 16:12:52 -0500
+Message-ID: <4B7472A4.8000807@oracle.com>
+Date: Thu, 11 Feb 2010 13:12:04 -0800
+From: Sunil Mushran <sunil.mushran@oracle.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Message-Id: <201002112211.51177.st@iss.tu-darmstadt.de>
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Joel Becker <joel.becker@oracle.com>
+CC: ocfs2-devel@oss.oracle.com, mfasheh@suse.com, linux-kernel@vger.kernel.org
+Subject: Re: [Ocfs2-devel] [PATCH 03/11] ocfs2_dlmfs: Move to its own directory
+References: <1265794074-19539-1-git-send-email-joel.becker@oracle.com> <1265794074-19539-4-git-send-email-joel.becker@oracle.com>
+In-Reply-To: <1265794074-19539-4-git-send-email-joel.becker@oracle.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-X-PMX-TU: seen v0.99a by 5.5.9.388399, Antispam-Engine: 2.7.2.376379, Antispam-Data: 2010.2.11.205722
-X-PMX-SPAMCHECK: outgoing mail
+X-Source-IP: acsmt354.oracle.com [141.146.40.154]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A0B0203.4B7472CF.0114:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Robert 
+Acked-by: Sunil Mushran <sunil.mushran@oracle.com>
 
-Thanks for your reply. 
-> Well, the card reader apparently reports medium not present.. is there
-> anything in there? how is it not working?
-Well thats exactly the problem since there is a CF Card plugged into the 
-reader. 
-I  just checked with Fedora 12 and 2.6.31. The output there looks
-like this (and i am 100% sure its not an HW error. Since i plugged out the
-USB plug not the CF card an use the same USB port while dualbooting):
-usb 1-4.3: SerialNumber: 058F63646476
-usb 1-4.3: configuration #1 chosen from 1 choice
-scsi9 : SCSI emulation for USB Mass Storage devices
-usb-storage: device found at 7
-usb-storage: waiting for device to settle before scanning
-generic-usb: probe of 0003:058F:6364.0004 failed with error -22
-usb-storage: device scan complete
-scsi 9:0:0:0: Direct-Access     Generic- SD/MMC           1.00 PQ: 0 ANSI: 0
-scsi 9:0:0:1: Direct-Access     Generic- Compact Flash    1.01 PQ: 0 ANSI: 0
-scsi 9:0:0:2: Direct-Access     Generic- SM/xD-Picture    1.02 PQ: 0 ANSI: 0
-scsi 9:0:0:3: Direct-Access     Generic- MS/MS-Pro        1.03 PQ: 0 ANSI: 0 
-CCS
-sd 9:0:0:0: Attached scsi generic sg3 type 0
-sd 9:0:0:1: Attached scsi generic sg4 type 0
-sd 9:0:0:2: Attached scsi generic sg5 type 0
-sd 9:0:0:3: Attached scsi generic sg6 type 0
-sd 9:0:0:3: [sdf] Attached SCSI removable disk
-sd 9:0:0:1: [sdd] 15858864 512-byte logical blocks: (8.11 GB/7.56 GiB)
+Joel Becker wrote:
+> We're going to remove the tie between ocfs2_dlmfs and o2dlm.
+> ocfs2_dlmfs doesn't belong in the fs/ocfs2/dlm directory anymore.  Here
+> we move it to fs/ocfs2/dlmfs.
+>
+> Signed-off-by: Joel Becker <joel.becker@oracle.com>
+> ---
+>  fs/ocfs2/Makefile                  |    1 +
+>  fs/ocfs2/dlm/Makefile              |    3 +--
+>  fs/ocfs2/dlmfs/Makefile            |    5 +++++
+>  fs/ocfs2/{dlm => dlmfs}/dlmfs.c    |    2 +-
+>  fs/ocfs2/{dlm => dlmfs}/dlmfsver.c |    0
+>  fs/ocfs2/{dlm => dlmfs}/dlmfsver.h |    0
+>  fs/ocfs2/{dlm => dlmfs}/userdlm.c  |    2 +-
+>  fs/ocfs2/{dlm => dlmfs}/userdlm.h  |    0
+>  8 files changed, 9 insertions(+), 4 deletions(-)
+>  create mode 100644 fs/ocfs2/dlmfs/Makefile
+>  rename fs/ocfs2/{dlm => dlmfs}/dlmfs.c (99%)
+>  rename fs/ocfs2/{dlm => dlmfs}/dlmfsver.c (100%)
+>  rename fs/ocfs2/{dlm => dlmfs}/dlmfsver.h (100%)
+>  rename fs/ocfs2/{dlm => dlmfs}/userdlm.c (99%)
+>  rename fs/ocfs2/{dlm => dlmfs}/userdlm.h (100%)
+>
+> diff --git a/fs/ocfs2/Makefile b/fs/ocfs2/Makefile
+> index 600d2d2..791c088 100644
+> --- a/fs/ocfs2/Makefile
+> +++ b/fs/ocfs2/Makefile
+> @@ -46,6 +46,7 @@ ocfs2_stackglue-objs := stackglue.o
+>  ocfs2_stack_o2cb-objs := stack_o2cb.o
+>  ocfs2_stack_user-objs := stack_user.o
+>  
+> +obj-$(CONFIG_OCFS2_FS) += dlmfs/
+>  # cluster/ is always needed when OCFS2_FS for masklog support
+>  obj-$(CONFIG_OCFS2_FS) += cluster/
+>  obj-$(CONFIG_OCFS2_FS_O2CB) += dlm/
+> diff --git a/fs/ocfs2/dlm/Makefile b/fs/ocfs2/dlm/Makefile
+> index 1903613..dcebf0d 100644
+> --- a/fs/ocfs2/dlm/Makefile
+> +++ b/fs/ocfs2/dlm/Makefile
+> @@ -1,8 +1,7 @@
+>  EXTRA_CFLAGS += -Ifs/ocfs2
+>  
+> -obj-$(CONFIG_OCFS2_FS_O2CB) += ocfs2_dlm.o ocfs2_dlmfs.o
+> +obj-$(CONFIG_OCFS2_FS_O2CB) += ocfs2_dlm.o
+>  
+>  ocfs2_dlm-objs := dlmdomain.o dlmdebug.o dlmthread.o dlmrecovery.o \
+>  	dlmmaster.o dlmast.o dlmconvert.o dlmlock.o dlmunlock.o dlmver.o
+>  
+> -ocfs2_dlmfs-objs := userdlm.o dlmfs.o dlmfsver.o
+> diff --git a/fs/ocfs2/dlmfs/Makefile b/fs/ocfs2/dlmfs/Makefile
+> new file mode 100644
+> index 0000000..df69b48
+> --- /dev/null
+> +++ b/fs/ocfs2/dlmfs/Makefile
+> @@ -0,0 +1,5 @@
+> +EXTRA_CFLAGS += -Ifs/ocfs2
+> +
+> +obj-$(CONFIG_OCFS2_FS) += ocfs2_dlmfs.o
+> +
+> +ocfs2_dlmfs-objs := userdlm.o dlmfs.o dlmfsver.o
+> diff --git a/fs/ocfs2/dlm/dlmfs.c b/fs/ocfs2/dlmfs/dlmfs.c
+> similarity index 99%
+> rename from fs/ocfs2/dlm/dlmfs.c
+> rename to fs/ocfs2/dlmfs/dlmfs.c
+> index ddf55da..e21ce0e 100644
+> --- a/fs/ocfs2/dlm/dlmfs.c
+> +++ b/fs/ocfs2/dlmfs/dlmfs.c
+> @@ -52,7 +52,7 @@
+>  #include "cluster/heartbeat.h"
+>  #include "cluster/tcp.h"
+>  
+> -#include "dlmapi.h"
+> +#include "dlm/dlmapi.h"
+>  
+>  #include "userdlm.h"
+>  
+> diff --git a/fs/ocfs2/dlm/dlmfsver.c b/fs/ocfs2/dlmfs/dlmfsver.c
+> similarity index 100%
+> rename from fs/ocfs2/dlm/dlmfsver.c
+> rename to fs/ocfs2/dlmfs/dlmfsver.c
+> diff --git a/fs/ocfs2/dlm/dlmfsver.h b/fs/ocfs2/dlmfs/dlmfsver.h
+> similarity index 100%
+> rename from fs/ocfs2/dlm/dlmfsver.h
+> rename to fs/ocfs2/dlmfs/dlmfsver.h
+> diff --git a/fs/ocfs2/dlm/userdlm.c b/fs/ocfs2/dlmfs/userdlm.c
+> similarity index 99%
+> rename from fs/ocfs2/dlm/userdlm.c
+> rename to fs/ocfs2/dlmfs/userdlm.c
+> index 4cb1d3d..6adae70 100644
+> --- a/fs/ocfs2/dlm/userdlm.c
+> +++ b/fs/ocfs2/dlmfs/userdlm.c
+> @@ -39,7 +39,7 @@
+>  #include "cluster/heartbeat.h"
+>  #include "cluster/tcp.h"
+>  
+> -#include "dlmapi.h"
+> +#include "dlm/dlmapi.h"
+>  
+>  #include "userdlm.h"
+>  
+> diff --git a/fs/ocfs2/dlm/userdlm.h b/fs/ocfs2/dlmfs/userdlm.h
+> similarity index 100%
+> rename from fs/ocfs2/dlm/userdlm.h
+> rename to fs/ocfs2/dlmfs/userdlm.h
+>   
 
-With my config it stops with :
-scsi 8:0:0:0: Direct-Access     Generic- SD/MMC           1.00 PQ: 0 ANSI: 0
-
-So either some CF Card stuff is missing (old ata stuff needed?) or there is
-some other SCSI stuff going on i don't understand... 
-Since the device scan with my strange config never completes it never has any 
-devices to offer...
-
-I also checked with 2.6.32 with my config. Same bad result, so i guess it is 
-not a regression.
-
-Best regards
-ST
