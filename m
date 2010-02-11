@@ -1,161 +1,48 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754207Ab0BKMII (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 07:08:08 -0500
-Received: from mail-forward2.uio.no ([129.240.10.71]:56309 "EHLO
-	mail-forward2.uio.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753898Ab0BKMIF (ORCPT
+	id S1753666Ab0BKMRM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 07:17:12 -0500
+Received: from server.megacceso.com ([195.77.201.4]:56882 "EHLO
+	server.megacceso.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751529Ab0BKMRJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 07:08:05 -0500
-Message-ID: <4B73F31F.9000204@simula.no>
-Date: Thu, 11 Feb 2010 13:07:59 +0100
-From: Andreas Petlund <apetlund@simula.no>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.9pre) Gecko/20100209 Shredder/3.0.2pre
+	Thu, 11 Feb 2010 07:17:09 -0500
+Message-ID: <45419.81.199.113.109.1265885663.squirrel@www.megacceso.com>
+Date: Thu, 11 Feb 2010 11:54:23 +0100 (CET)
+Subject: 
+From: "McRae Shelton" <info@mshelton.co.uk>
+Reply-To: mshelton1254@gmail.com
+User-Agent: SquirrelMail/1.4.4
 MIME-Version: 1.0
-To: "netdev@vger.kernel.org" <netdev@vger.kernel.org>
-CC: =?ISO-8859-1?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
-       Eric Dumazet <eric.dumazet@gmail.com>,
-       Arnd Hannemann <hannemann@nets.rwth-aachen.de>,
-       LKML <linux-kernel@vger.kernel.org>, shemminger@vyatta.com,
-       David Miller <davem@davemloft.net>, william.allen.simpson@gmail.com,
-       damian@tvk.rwth-aachen.de
-Subject: [net-next PATCH v3 3/3] net: TCP thin dupack
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-UiO-Ratelimit-Test: rcpts/h 37 msgs/h 5 sum rcpts/h 43 sum msgs/h 5 total rcpts 807 max rcpts/h 37 ratelimit 0
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: 828F0F476A8F967B20E399FC623D9124CED403F0
-X-UiO-SPAM-Test: remote_host: 128.39.37.254 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 8 total 19384 max/h 66 blacklist 0 greylist 0 ratelimit 0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+To: undisclosed-recipients:;
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Major changes:
-      -Possible to disable mechanisms by socket option
-      -Socket option value boundary check
 
 
-Signed-off-by: Andreas Petlund <apetlund@simula.no>
----
- include/linux/sysctl.h     |    1 +
- include/linux/tcp.h        |    4 +++-
- include/net/tcp.h          |    1 +
- net/ipv4/sysctl_net_ipv4.c |    7 +++++++
- net/ipv4/tcp.c             |    7 +++++++
- net/ipv4/tcp_input.c       |   11 +++++++++++
- 6 files changed, 30 insertions(+), 1 deletions(-)
 
-diff --git a/include/linux/sysctl.h b/include/linux/sysctl.h
-index d840d75..ded3f20 100644
---- a/include/linux/sysctl.h
-+++ b/include/linux/sysctl.h
-@@ -426,6 +426,7 @@ enum
- 	NET_TCP_MAX_SSTHRESH=124,
- 	NET_TCP_FRTO_RESPONSE=125,
- 	NET_TCP_FORCE_THIN_LINEAR_TIMEOUTS=126,
-+	NET_TCP_FORCE_THIN_LINEAR_DUPACK=127,
- };
- 
- enum {
-diff --git a/include/linux/tcp.h b/include/linux/tcp.h
-index 67da706..c30ed17 100644
---- a/include/linux/tcp.h
-+++ b/include/linux/tcp.h
-@@ -104,6 +104,7 @@ enum {
- #define TCP_MD5SIG		14	/* TCP MD5 Signature (RFC2385) */
- #define TCP_COOKIE_TRANSACTIONS	15	/* TCP Cookie Transactions */
- #define TCP_THIN_LT             16      /* Use linear timeouts for thin streams*/
-+#define TCP_THIN_DUPACK         17      /* Fast retrans. after 1 dupack */
- 
- /* for TCP_INFO socket option */
- #define TCPI_OPT_TIMESTAMPS	1
-@@ -343,7 +344,8 @@ struct tcp_sock {
- 	u8	frto_counter;	/* Number of new acks after RTO */
- 	u8	nonagle;	/* Disable Nagle algorithm?             */
- 	u8      thin_lt     : 1,/* Use linear timeouts for thin streams */
--		thin_undef  : 7;
-+		thin_dupack : 1,/* Fast retransmit on first dupack      */
-+		thin_undef  : 6;
- 
- /* RTT measurement */
- 	u32	srtt;		/* smoothed round trip time << 3	*/
-diff --git a/include/net/tcp.h b/include/net/tcp.h
-index bc5856a..af1253c 100644
---- a/include/net/tcp.h
-+++ b/include/net/tcp.h
-@@ -245,6 +245,7 @@ extern int sysctl_tcp_slow_start_after_idle;
- extern int sysctl_tcp_max_ssthresh;
- extern int sysctl_tcp_cookie_size;
- extern int sysctl_tcp_force_thin_linear_timeouts;
-+extern int sysctl_tcp_force_thin_dupack;
- 
- extern atomic_t tcp_memory_allocated;
- extern struct percpu_counter tcp_sockets_allocated;
-diff --git a/net/ipv4/sysctl_net_ipv4.c b/net/ipv4/sysctl_net_ipv4.c
-index cb2ed35..b097a58 100644
---- a/net/ipv4/sysctl_net_ipv4.c
-+++ b/net/ipv4/sysctl_net_ipv4.c
-@@ -582,6 +582,13 @@ static struct ctl_table ipv4_table[] = {
- 		.mode           = 0644,
- 		.proc_handler   = proc_dointvec
- 	},
-+        {
-+		.procname       = "tcp_force_thin_dupack",
-+		.data           = &sysctl_tcp_force_thin_dupack,
-+		.maxlen         = sizeof(int),
-+		.mode           = 0644,
-+		.proc_handler   = proc_dointvec
-+	},
- 	{
- 		.procname	= "udp_mem",
- 		.data		= &sysctl_udp_mem,
-diff --git a/net/ipv4/tcp.c b/net/ipv4/tcp.c
-index ce9aeb0..6d7cb9c 100644
---- a/net/ipv4/tcp.c
-+++ b/net/ipv4/tcp.c
-@@ -2236,6 +2236,13 @@ static int do_tcp_setsockopt(struct sock *sk, int level,
- 			tp->thin_lt = val;
- 		break;
- 
-+	case TCP_THIN_DUPACK:
-+		if (val < 0 || val > 1)
-+			err = -EINVAL;
-+		else
-+			tp->thin_dupack = val;
-+		break;
-+
- 	case TCP_CORK:
- 		/* When set indicates to always queue non-full frames.
- 		 * Later the user clears this option and we transmit
-diff --git a/net/ipv4/tcp_input.c b/net/ipv4/tcp_input.c
-index 28e0296..c5a73ab 100644
---- a/net/ipv4/tcp_input.c
-+++ b/net/ipv4/tcp_input.c
-@@ -89,6 +89,8 @@ int sysctl_tcp_frto __read_mostly = 2;
- int sysctl_tcp_frto_response __read_mostly;
- int sysctl_tcp_nometrics_save __read_mostly;
- 
-+int sysctl_tcp_force_thin_dupack __read_mostly;
-+
- int sysctl_tcp_moderate_rcvbuf __read_mostly = 1;
- int sysctl_tcp_abc __read_mostly;
- 
-@@ -2447,6 +2449,15 @@ static int tcp_time_to_recover(struct sock *sk)
- 		return 1;
- 	}
- 
-+	/* If a thin stream is detected, retransmit after first
-+	 * received dupack. Employ only if SACK is supported in order
-+	 * to avoid possible corner-case series of spurious retransmissions
-+	 * Use only if there are no unsent data. */
-+	if ((tp->thin_dupack || sysctl_tcp_force_thin_dupack) &&
-+	    tcp_stream_is_thin(tp) && tcp_dupack_heuristics(tp) > 1 &&
-+	    tcp_is_sack(tp) && sk->sk_send_head == NULL)
-+		return 1;
-+
- 	return 0;
- }
- 
--- 
-1.6.3.3
+We wish to notify you again that you were listed as a beneficiary to the
+total sum of $7,500,000.00 Dollars in the intent of the deceased.We
+contacted you because you bear the surname which is now withheld and
+therefore can present you as the beneficiary to the inheritance since 
+there is no written will. Our legal services aim to provide our private
+clients
+ with a complete service. We are happy to prepare Wills, set-up and
+administer  Trusts, carry out the Administration Of Estates and prepare
+and administer
+Powers Of Attorney.
+
+All the papers will be processed in your acceptance. In your acceptance 
+of this deal, we request that you kindly forward to us your letter of 
+acceptance, your current telephone and fax numbers and a forwarding
+address to  enable us file necessary documents at our high court probate
+division for the  release of this sum of money in your favour.Do send your
+response to my alternative email which is :Email:mshelton1254@gmail.com
+
+Yours faithfully,
+McRae Shelton
+
 
