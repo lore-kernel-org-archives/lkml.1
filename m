@@ -1,100 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757099Ab0BKUly (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 15:41:54 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:24840 "EHLO
-	rcsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757044Ab0BKUlx (ORCPT
+	id S1757035Ab0BKUov (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 15:44:51 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:53526 "EHLO
+	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756920Ab0BKUot (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 15:41:53 -0500
-Message-ID: <4B746B75.8010801@oracle.com>
-Date: Thu, 11 Feb 2010 12:41:25 -0800
-From: Sunil Mushran <sunil.mushran@oracle.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Thu, 11 Feb 2010 15:44:49 -0500
+Date: Thu, 11 Feb 2010 20:44:41 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Soeren Sonnenburg <sonne@debian.org>
+Cc: nicolas@boichat.ch, felipe_alfaro@linuxmail.org,
+       Julien BLACHE <jb@jblache.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Brightness control for MacBook Pro - Nvidia 9400
+Message-ID: <20100211204441.GA5956@srcf.ucam.org>
+References: <1265920725.7103.7.camel@no>
 MIME-Version: 1.0
-To: Joel Becker <joel.becker@oracle.com>
-CC: ocfs2-devel@oss.oracle.com, mfasheh@suse.com, linux-kernel@vger.kernel.org
-Subject: Re: [Ocfs2-devel] [PATCH 01/11] ocfs2_dlmfs: Add capabilities parameter.
-References: <1265794074-19539-1-git-send-email-joel.becker@oracle.com> <1265794074-19539-2-git-send-email-joel.becker@oracle.com>
-In-Reply-To: <1265794074-19539-2-git-send-email-joel.becker@oracle.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt353.oracle.com [141.146.40.153]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A0B0209.4B746B8B.005D:SCFMA4539814,ss=1,fgs=0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1265920725.7103.7.camel@no>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
+X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Sunil Mushran <sunil.mushran@oracle.com>
+On Thu, Feb 11, 2010 at 09:38:45PM +0100, Soeren Sonnenburg wrote:
+> Dear all,
+> 
+> I am booting a MacBookPro5,3 using elilo and efifb. Now I'd like to use
+> pommed to control display brightness (which won't work). Digging around
+> in mbp_nvidia_bl.c I figured out that tries to control the geforce 9600M
+> instead of the currently active geforece 9400m
 
+So, first of all, use nouveau instead. But moving on...
 
-Joel Becker wrote:
-> Over time, dlmfs has added some features that were not part of the
-> initial ABI.  Unfortunately, some of these features are not detectable
-> via standard usage.  For example, Linux's default poll always returns
-> POLLIN, so there is no way for a caller of poll(2) to know when dlmfs
-> added poll support.  Instead, we provide this list of new capabilities.
->
-> Capabilities is a read-only attribute.  We do it as a module parameter
-> so we can discover it whether dlmfs is built in, loaded, or even not
-> loaded (via modinfo).
->
-> The ABI features are local to this machine's dlmfs mount.  This is
-> distinct from the locking protocol, which is concerned with inter-node
-> interaction.
->
-> Signed-off-by: Joel Becker <joel.becker@oracle.com>
-> ---
->  fs/ocfs2/dlm/dlmfs.c |   36 ++++++++++++++++++++++++++++++++++++
->  1 files changed, 36 insertions(+), 0 deletions(-)
->
-> diff --git a/fs/ocfs2/dlm/dlmfs.c b/fs/ocfs2/dlm/dlmfs.c
-> index 02bf178..77d0df4 100644
-> --- a/fs/ocfs2/dlm/dlmfs.c
-> +++ b/fs/ocfs2/dlm/dlmfs.c
-> @@ -81,6 +81,42 @@ static const struct dlm_protocol_version user_locking_protocol = {
->  	.pv_minor = OCFS2_LOCKING_PROTOCOL_MINOR,
->  };
->  
-> +
-> +/*
-> + * These are the ABI capabilities of dlmfs.
-> + *
-> + * Over time, dlmfs has added some features that were not part of the
-> + * initial ABI.  Unfortunately, some of these features are not detectable
-> + * via standard usage.  For example, Linux's default poll always returns
-> + * POLLIN, so there is no way for a caller of poll(2) to know when dlmfs
-> + * added poll support.  Instead, we provide this list of new capabilities.
-> + *
-> + * Capabilities is a read-only attribute.  We do it as a module parameter
-> + * so we can discover it whether dlmfs is built in, loaded, or even not
-> + * loaded.
-> + *
-> + * The ABI features are local to this machine's dlmfs mount.  This is
-> + * distinct from the locking protocol, which is concerned with inter-node
-> + * interaction.
-> + */
-> +#define DLMFS_CAPABILITIES ""
-> +extern int param_set_dlmfs_capabilities(const char *val,
-> +					struct kernel_param *kp)
-> +{
-> +	printk(KERN_ERR "%s: readonly parameter\n", kp->name);
-> +	return -EINVAL;
-> +}
-> +static int param_get_dlmfs_capabilities(char *buffer,
-> +					struct kernel_param *kp)
-> +{
-> +	return strlcpy(buffer, DLMFS_CAPABILITIES,
-> +		       strlen(DLMFS_CAPABILITIES) + 1);
-> +}
-> +module_param_call(capabilities, param_set_dlmfs_capabilities,
-> +		  param_get_dlmfs_capabilities, NULL, 0444);
-> +MODULE_PARM_DESC(capabilities, DLMFS_CAPABILITIES);
-> +
-> +
->  /*
->   * decodes a set of open flags into a valid lock level and a set of flags.
->   * returns < 0 if we have invalid flags
->   
+> 02:00.0 VGA compatible controller: nVidia Corporation G96 [GeForce 9600M GT] (rev a1)
+> 03:00.0 VGA compatible controller: nVidia Corporation C79 [GeForce 9400M] (rev b1)
+> 
+> Does anyone have an idea which bytes to tweak to change brightness
+> levels for the 9400? Seems like 0x52f does not work - at least
+> setpci -s 03:00.0 0x52f.B=10 fails...
 
+Those are mmio registers, not PCI config ones. You won't be able to 
+change them with setpci.
+
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
