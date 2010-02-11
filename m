@@ -1,90 +1,82 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756758Ab0BKSt6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 13:49:58 -0500
-Received: from mail-yw0-f189.google.com ([209.85.211.189]:41415 "EHLO
-	mail-yw0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755894Ab0BKSt5 convert rfc822-to-8bit (ORCPT
+	id S1756785Ab0BKSzW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 13:55:22 -0500
+Received: from zrtps0kp.nortel.com ([47.140.192.56]:48313 "EHLO
+	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756059Ab0BKSzV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 13:49:57 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=vKvtpkSENTkyBt/DCBoA+8RKN0TMXwEhAO8UspkWo1Bvp+Fl+ZfaCHcVaM+mMeqOkz
-         ElKf/XBIiAJem4nRg5+uBL79bmHhitzgXduGcEYcWeOViIoqvNW+3gHuM2INRNWu8VA2
-         ptkJk1UZGoUH3EMEPikYjlMGnmru9X2oySPjM=
+	Thu, 11 Feb 2010 13:55:21 -0500
+Message-ID: <4B74524D.8080804@nortel.com>
+Date: Thu, 11 Feb 2010 12:54:05 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
 MIME-Version: 1.0
-In-Reply-To: <1265765687-14121-4-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-References: <1265765687-14121-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-	 <1265765687-14121-4-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-Date: Thu, 11 Feb 2010 13:49:55 -0500
-Message-ID: <b4198de61002111049xcd506f2yb2f8f30e3d568c78@mail.gmail.com>
-Subject: Re: [PATCH v2 -mm 03/14] alpha: use include/linux/pci-dma.h
-From: Matt Turner <mattst88@gmail.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       Richard Henderson <rth@twiddle.net>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+To: Minchan Kim <minchan.kim@gmail.com>
+CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org, Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: tracking memory usage/leak in "inactive" field in /proc/meminfo?
+References: <4B71927D.6030607@nortel.com>	 <20100210093140.12D9.A69D9226@jp.fujitsu.com>	 <4B72E74C.9040001@nortel.com> <28c262361002101645g3fd08cc7t6a72d27b1f94db62@mail.gmail.com>
+In-Reply-To: <28c262361002101645g3fd08cc7t6a72d27b1f94db62@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 11 Feb 2010 18:55:13.0955 (UTC) FILETIME=[BE727730:01CAAB4B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 9, 2010 at 8:34 PM, FUJITA Tomonori
-<fujita.tomonori@lab.ntt.co.jp> wrote:
-> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> Cc: Richard Henderson <rth@twiddle.net>
-> Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-> Cc: Matt Turner <mattst88@gmail.com>
-> ---
->  arch/alpha/Kconfig           |    3 +++
->  arch/alpha/include/asm/pci.h |   14 +-------------
->  2 files changed, 4 insertions(+), 13 deletions(-)
->
-> diff --git a/arch/alpha/Kconfig b/arch/alpha/Kconfig
-> index bd7261e..759f49d 100644
-> --- a/arch/alpha/Kconfig
-> +++ b/arch/alpha/Kconfig
-> @@ -58,6 +58,9 @@ config ZONE_DMA
->        bool
->        default y
->
-> +config NEED_DMA_MAP_STATE
-> +       def_bool y
-> +
->  config GENERIC_ISA_DMA
->        bool
->        default y
-> diff --git a/arch/alpha/include/asm/pci.h b/arch/alpha/include/asm/pci.h
-> index dd8dcab..4765946 100644
-> --- a/arch/alpha/include/asm/pci.h
-> +++ b/arch/alpha/include/asm/pci.h
-> @@ -119,19 +119,7 @@ pci_dma_mapping_error(struct pci_dev *pdev, dma_addr_t dma_addr)
->  extern void pci_unmap_single(struct pci_dev *, dma_addr_t, size_t, int);
->  extern void pci_unmap_page(struct pci_dev *, dma_addr_t, size_t, int);
->
-> -/* pci_unmap_{single,page} is not a nop, thus... */
-> -#define DECLARE_PCI_UNMAP_ADDR(ADDR_NAME)      \
-> -       dma_addr_t ADDR_NAME;
-> -#define DECLARE_PCI_UNMAP_LEN(LEN_NAME)                \
-> -       __u32 LEN_NAME;
-> -#define pci_unmap_addr(PTR, ADDR_NAME)                 \
-> -       ((PTR)->ADDR_NAME)
-> -#define pci_unmap_addr_set(PTR, ADDR_NAME, VAL)                \
-> -       (((PTR)->ADDR_NAME) = (VAL))
-> -#define pci_unmap_len(PTR, LEN_NAME)                   \
-> -       ((PTR)->LEN_NAME)
-> -#define pci_unmap_len_set(PTR, LEN_NAME, VAL)          \
-> -       (((PTR)->LEN_NAME) = (VAL))
-> +#include <linux/pci-dma.h>
->
->  /* Map a set of buffers described by scatterlist in streaming mode for
->    PCI DMA.  This is the scatter-gather version of the above
-> --
-> 1.5.6.5
->
->
+On 02/10/2010 06:45 PM, Minchan Kim wrote:
+> On Thu, Feb 11, 2010 at 2:05 AM, Chris Friesen <cfriesen@nortel.com> wrote:
 
-Acked-by: Matt Turner <mattst88@gmail.com>
+>> In those spreadsheets I notice that
+>> memfree+active+inactive+slab+pagetables is basically a constant.
+>> However, if I don't use active+inactive then I can't make the numbers
+>> add up.  And the difference between active+inactive and
+>> buffers+cached+anonpages+dirty+mapped+pagetables+vmallocused grows
+>> almost monotonically.
+> 
+> Such comparison is not right. That's because code pages of program account
+> with cached and mapped but they account just one in lru list(active +
+> inactive).
+> Also, if you use mmap on any file, above is applied.
+
+That just makes the comparison even worse...it means that there is more
+memory in active/inactive that isn't accounted for in any other category
+in /proc/meminfo.
+
+
+> I can't find any clue with your attachment.
+> You said you used kernel with some modification and non-vanilla drivers.
+> So I suspect that. Maybe kernel memory leak?
+
+Possibly.  Or it could be a use case issue, I know there have been
+memory leaks fixed since 2.6.27. :)
+
+> Now kernel don't account kernel memory allocations except SLAB.
+
+I don't think that's entirely accurate.  I think cached, buffers,
+pagetables, vmallocUsed are all kernel allocations.  Granted, they're
+generally on behalf of userspace.
+
+I've discovered that the generic page allocator (alloc_page, etc.) is
+not tracked at all in /proc/meminfo.  I seem to see the memory increase
+in the page cache (that is, active/inactive), so that would seem to rule
+out most direct allocations.
+
+> I think this patch can help you find the kernel memory leak.
+> (It isn't merged with mainline by somewhy but it is useful to you :)
+> 
+> http://marc.info/?l=linux-mm&m=123782029809850&w=2
+
+I have a modified version of that which I picked up as part of the
+kmemleak backport.  However, it doesn't help unless I can narrow down
+*which* pages I should care about.
+
+I tried using kmemleak directly, but it didn't find anything.  I've also
+tried checking for inactive pages which haven't been written to in 10
+minutes, and haven't had much luck there either.  But active/inactive
+keeps growing, and I don't know why.
+
+Chris
