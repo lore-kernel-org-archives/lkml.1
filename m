@@ -1,48 +1,61 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755750Ab0BKDqL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 22:46:11 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:16487 "EHLO mx1.redhat.com"
+	id S1755776Ab0BKEJ2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 23:09:28 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:46991 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752327Ab0BKDqG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 22:46:06 -0500
+	id S1753328Ab0BKEJ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Feb 2010 23:09:27 -0500
+From: Nikanth Karthikesan <knikanth@suse.de>
+Organization: suse.de
+To: Jan Kara <jack@suse.cz>
+Subject: Re: CFQ slower than NOOP with pgbench
+Date: Thu, 11 Feb 2010 09:40:33 +0530
+User-Agent: KMail/1.12.2 (Linux/2.6.31.8-0.1-desktop; KDE/4.3.1; x86_64; ; )
+Cc: LKML <linux-kernel@vger.kernel.org>, jens.axboe@oracle.com,
+       jmoyer@redhat.com
+References: <20100210223255.GC3367@quack.suse.cz>
+In-Reply-To: <20100210223255.GC3367@quack.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-X-Fcc: ~/Mail/linus
-Cc: Ingo Molnar <mingo@elte.hu>, Suresh Siddha <suresh.b.siddha@intel.com>,
-       Oleg Nesterov <oleg@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>, hjl.tools@gmail.com
-Subject: Re: [patch v2 0/4] updated ptrace/core-dump patches for supporting
- xstate - V2
-In-Reply-To: H. Peter Anvin's message of  Wednesday, 10 February 2010 18:18:07 -0800 <4B7368DF.60907@zytor.com>
-References: <20100209201309.902050211@sbs-t61.sc.intel.com>
-	<20100210011232.71CA51C5@magilla.sf.frob.com>
-	<20100210072756.GD31351@elte.hu>
-	<20100210185815.4B4F9CC@magilla.sf.frob.com>
-	<4B7368DF.60907@zytor.com>
-X-Antipastobozoticataclysm: When George Bush projectile vomits antipasto on the Japanese.
-Message-Id: <20100211034553.A657CD14@magilla.sf.frob.com>
-Date: Wed, 10 Feb 2010 19:45:53 -0800 (PST)
+Message-Id: <201002110940.33303.knikanth@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> We're happy to carry the patches as long as it's okay with you.  We were
-> mostly wondering if you preferred any other kind of workflow.
+On Thursday 11 February 2010 04:02:55 Jan Kara wrote:
+>   Hi,
+> 
+>   I was playing with a pgbench benchmark - it runs a series of operations
+> on top of PostgreSQL database. I was using:
+>   pgbench -c 8 -t 2000 pgbench
+> which runs 8 threads and each thread does 2000 transactions over the
+> database. The funny thing is that the benchmark does ~70 tps (transactions
+> per second) with CFQ and ~90 tps with a NOOP io scheduler. This is with
+> 2.6.32 kernel.
+>   The load on the IO subsystem basically looks like lots of random reads
+> interleaved with occasional short synchronous sequential writes (the
+> database does write immediately followed by fdatasync) to the database
+> logs. I was pondering for quite some time why CFQ is slower and I've tried
+> tuning it in various ways without success. What I found is that with NOOP
+> scheduler, the fdatasync is like 20-times faster on average than with CFQ.
+> Looking at the block traces (available on request) this is usually because
+> when fdatasync is called, it takes time before the timeslice of the process
+> doing the sync comes (other processes are using their timeslices for reads)
+> and writes are dispatched... The question is: Can we do something about
+> that? Because I'm currently out of ideas except for hacks like "run this
+> queue immediately if it's fsync" or such...
 
-When I write patches myself, I always use git, so it is always easy and
-most convenient for me to have my own branches pulled directly just to
-save on 'git rebase' churn later.
+I guess, noop would be hurting those reads which is also a synchronous 
+operation like fsync. But it doesn't seem to have a huge negative impact on 
+the pgbench. Is it because reads are random in this benchmark and delaying 
+them might even help by getting new requests for sectors in between two random 
+reads? If that is the case, I dont think fsync should be given higher priority 
+than reads based on this benchmark.
 
-As to a regular workflow of using a well-known branch of mine, I think it
-makes sense for me to maintain a branch if there is an area where things
-are presumptively merged just on my approval and I'm the one who has to be
-lobbied to revert them.  I have not heretofore acquired the sensation that
-this was the case with any given area of code.
+Can you make the blktrace available?
 
-
-Thanks,
-Roland
+Thanks
+Nikanth
