@@ -1,51 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757136Ab0BKVj2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 16:39:28 -0500
-Received: from cantor.suse.de ([195.135.220.2]:34762 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757112Ab0BKVjY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 16:39:24 -0500
-Date: Thu, 11 Feb 2010 13:38:16 -0800
-From: Greg KH <gregkh@suse.de>
-To: Hank Janssen <hjanssen@microsoft.com>
-Cc: "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-       "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>,
-       Haiyang Zhang <haiyangz@microsoft.com>
-Subject: Re: [PATCH 2/2] Staging: hv: General maintenance of TODO file
-Message-ID: <20100211213816.GB29557@suse.de>
-References: <8AFC7968D54FB448A30D8F38F259C56212E881A9@TK5EX14MBXC118.redmond.corp.microsoft.com>
- <8AFC7968D54FB448A30D8F38F259C56212E88291@TK5EX14MBXC118.redmond.corp.microsoft.com>
+	id S1757112Ab0BKVmG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 16:42:06 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:45750 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756977Ab0BKVmB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 16:42:01 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=Zu8Y2NofxhIxPO1JlC/3FvXqhMrT7OWjsRhhUzIpyZ9Lygqek+Zl5fg2KOQ/cMeba
+	ZG6zH0bcLQzLedlAYw+yQ==
+Date: Thu, 11 Feb 2010 13:41:53 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Andi Kleen <andi@firstfloor.org>
+cc: penberg@cs.helsinki.fi, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       haicheng.li@intel.com
+Subject: Re: [PATCH] [1/4] SLAB: Handle node-not-up case in fallback_alloc()
+ v2
+In-Reply-To: <20100211205401.002CFB1978@basil.firstfloor.org>
+Message-ID: <alpine.DEB.2.00.1002111338090.8809@chino.kir.corp.google.com>
+References: <20100211953.850854588@firstfloor.org> <20100211205401.002CFB1978@basil.firstfloor.org>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8AFC7968D54FB448A30D8F38F259C56212E88291@TK5EX14MBXC118.redmond.corp.microsoft.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 11, 2010 at 09:32:31PM +0000, Hank Janssen wrote:
+On Thu, 11 Feb 2010, Andi Kleen wrote:
+
+> When fallback_alloc() runs the node of the CPU might not be initialized yet.
+> Handle this case by allocating in another node.
 > 
-> Removed two line;
-> 	Audit block driver
-> 	Audit scsi driver
-> They were added by us as part of the original code
-> Submission to make sure these drivers kept on working
-> Correctly with all the patches that came in from the 
-> Community. 
+> v2: Try to allocate from all nodes (David Rientjes)
+> 
 
-Um, no, those things still need to be done.
+You don't need to specifically address the cpuset restriction in 
+fallback_alloc() since kmem_getpages() will return NULL whenever a zone is 
+tried from an unallowed node, I just thought it was a faster optimization 
+considering you (i) would operate over a nodemask and not the entire 
+zonelist, (ii) it would avoid the zone_to_nid() for all zones since you 
+already did a zonelist iteration in this function, and (iii) it wouldn't 
+needlessly call kmem_getpages() for unallowed nodes.
 
-> Added a new line to fix mostly insane camelcase naming
-> We are working on that right now, but it will take a bit
-> Due to the pervasive usage of it.
+> Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
-That's fine, but it fits under the general "fix coding style issues".
+That said, I don't want to see this fix go unmerged since you already 
+declined to make that optimization once:
 
-Hm, that isn't spelled out, but it is implicit, I doubt this really
-needs to be documented in the file, it's just common knowledge :)
-
-thanks,
-
-greg k-h
+Acked-by: David Rientjes <rientjes@google.com>
