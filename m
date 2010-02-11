@@ -1,42 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757217Ab0BKVpl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 16:45:41 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:47464 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757108Ab0BKVpi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 16:45:38 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=Zwj3Gt7CV2bo2Ejj5oLXRaXHEqdwuaUvfbfuVVNjqJcKqSxJk9tQ4j9pIFFfOCli6
-	bZ7fdOFS/XKt8OYYEKDhA==
-Date: Thu, 11 Feb 2010 13:45:32 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Andi Kleen <andi@firstfloor.org>
-cc: penberg@cs.helsinki.fi, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       haicheng.li@intel.com
-Subject: Re: [PATCH] [4/4] SLAB: Fix node add timer race in cache_reap
-In-Reply-To: <20100211205404.085FEB1978@basil.firstfloor.org>
-Message-ID: <alpine.DEB.2.00.1002111345210.8809@chino.kir.corp.google.com>
-References: <20100211953.850854588@firstfloor.org> <20100211205404.085FEB1978@basil.firstfloor.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	id S1757204Ab0BKVtr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 16:49:47 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:1972 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757129Ab0BKVtp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 16:49:45 -0500
+Message-ID: <4B747B6F.1090209@redhat.com>
+Date: Thu, 11 Feb 2010 16:49:35 -0500
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Lightning/1.0pre Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: "Luck, Tony" <tony.luck@intel.com>,
+       Linux kernel Mailing List <linux-kernel@vger.kernel.org>,
+       shak <dshaks@redhat.com>
+Subject: Re: [PATCH -mm] change anon_vma linking to fix multi-process server
+ scalability issue
+References: <20100128002000.2bf5e365@annuminas.surriel.com> <20100211130422.f262be71.akpm@linux-foundation.org>
+In-Reply-To: <20100211130422.f262be71.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 11 Feb 2010, Andi Kleen wrote:
+On 02/11/2010 04:04 PM, Andrew Morton wrote:
+> On Thu, 28 Jan 2010 00:20:00 -0500
+> Rik van Riel<riel@redhat.com>  wrote:
+>
+>> The old anon_vma code can lead to scalability issues with heavily
+>> forking workloads.  Specifically, each anon_vma will be shared
+>> between the parent process and all its child processes.
 
-> 
-> cache_reap can run before the node is set up and then reference a NULL 
-> l3 list. Check for this explicitely and just continue. The node
-> will be eventually set up.
-> 
-> Signed-off-by: Andi Kleen <ak@linux.intel.com>
+Some test results:
 
-Acked-by: David Rientjes <rientjes@google.com>
+Without the anon_vma changes, when AIM7 hits around 9.7k
+users (on a test box with 16GB RAM and not quite enough IO),
+the system ends up running >99% in system time, with every
+CPU on the same anon_vma lock in the pageout code.
+
+With these changes, AIM7 hits the cross-over point around
+29.7k users.  This happens with ~99% IO wait time, there
+never seems to be any spike in system time.  The anon_vma
+lock contention appears to be resolved.
+
+-- 
+All rights reversed.
