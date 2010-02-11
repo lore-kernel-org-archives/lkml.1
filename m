@@ -1,51 +1,60 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755928Ab0BKQFI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 11:05:08 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:60607 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755183Ab0BKQFF (ORCPT
+	id S1756106Ab0BKQHa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 11:07:30 -0500
+Received: from mail-fx0-f215.google.com ([209.85.220.215]:37983 "EHLO
+	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755272Ab0BKQH2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 11:05:05 -0500
-To: Greg KH <gregkh@suse.de>
-Cc: Jean Delvare <khali@linux-fr.org>, LKML <linux-kernel@vger.kernel.org>,
-       Tejun Heo <tj@kernel.org>, Serge Hallyn <serue@us.ibm.com>
-Subject: Re: [PATCH] sysfs: sysfs_sd_setattr set iattrs unconditionally
-References: <20100120131602.12aa48f7@hyperion.delvare>
-	<m1ocko6fkx.fsf@fess.ebiederm.org>
-	<20100120160008.7d59688b@hyperion.delvare>
-	<20100122041913.GC4302@suse.de>
-	<20100203091138.1ababf5e@hyperion.delvare>
-	<20100203142218.GA27676@suse.de> <m1hbpxlbhn.fsf_-_@fess.ebiederm.org>
-	<m1tytn23ee.fsf@fess.ebiederm.org> <20100211155204.GB24191@suse.de>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Thu, 11 Feb 2010 08:05:00 -0800
-In-Reply-To: <20100211155204.GB24191@suse.de> (Greg KH's message of "Thu\, 11 Feb 2010 07\:52\:04 -0800")
-Message-ID: <m1ljez21xv.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Scanned: No (on in01.mta.xmission.com); SAEximRunCond expanded to false
+	Thu, 11 Feb 2010 11:07:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=LJJH1lEA5DXMKNKGuiBmhyV2aOSZgAYXZUMKviqQtlD4dBObUifz3fsCdpHDKgtYr/
+         Lm5MyqDDpQ5d50J4bdUJSOUFNcCrD9kuMLbjG6D6jDlX2QGMVI6uCtcX4NXE5fiqPZob
+         kYueYKK+wdqiQ5qVCQOrDx5WJbL+DCte6yjJo=
+Subject: Re: [PATCH] backlight: l4f00242t03: Fix module licence absence.
+From: Alberto Panizzo <maramaopercheseimorto@gmail.com>
+To: Richard Purdie <rpurdie@rpsys.net>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1264590602.2463.47.camel@realization>
+References: <20100119150836.bb975e4b.sfr@canb.auug.org.au>
+	 <1263889757.3121.10.camel@realization>
+	 <1263889850.3121.12.camel@realization>
+	 <1264590602.2463.47.camel@realization>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 11 Feb 2010 17:07:18 +0100
+Message-ID: <1265904438.2512.6.camel@realization>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH <gregkh@suse.de> writes:
+Signed-off-by: Alberto Panizzo <maramaopercheseimorto@gmail.com>
+---
 
-> On Thu, Feb 11, 2010 at 07:33:29AM -0800, Eric W. Biederman wrote:
->> 
->> Greg I think this patch has slipped through the cracks.
->> Do I need to resend this regression fix or send it directly to Linus?
->> 
->> chmod and friends have been broken on sysfs since 2.6.32...
->
-> Sorry, I was travelling last week, it's still in my queue, I'll get it
-> to Linus soon.
+Richard, can you pick this for "for-mm" branch of backlight tree?
+in previous mail I explain my mistake..
+Thanks.
 
-That is a better excuse than my nasty cold.  Thanks for taking care of
-this.
 
-Eric
+ drivers/video/backlight/l4f00242t03.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/video/backlight/l4f00242t03.c b/drivers/video/backlight/l4f00242t03.c
+index 42d061e..74abd69 100644
+--- a/drivers/video/backlight/l4f00242t03.c
++++ b/drivers/video/backlight/l4f00242t03.c
+@@ -254,3 +254,4 @@ module_exit(l4f00242t03_exit);
+ 
+ MODULE_AUTHOR("Alberto Panizzo <maramaopercheseimorto@gmail.com>");
+ MODULE_DESCRIPTION("EPSON L4F00242T03 LCD");
++MODULE_LICENSE("GPL v2");
+-- 
+1.6.3.3
+
+
