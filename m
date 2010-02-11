@@ -1,40 +1,218 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756968Ab0BKUA7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 15:00:59 -0500
-Received: from mga14.intel.com ([143.182.124.37]:45654 "EHLO mga14.intel.com"
+	id S1756954Ab0BKUA6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 15:00:58 -0500
+Received: from mga11.intel.com ([192.55.52.93]:55453 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756853Ab0BKUA4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756631Ab0BKUA4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 11 Feb 2010 15:00:56 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.49,454,1262592000"; 
-   d="scan'208";a="243125998"
-Message-Id: <20100211195058.071883111@sbs-t61.sc.intel.com>
+   d="scan'208";a="539988036"
+Message-Id: <20100211195614.886724710@sbs-t61.sc.intel.com>
 User-Agent: quilt/0.47-1
-Date: Thu, 11 Feb 2010 11:50:58 -0800
+Date: Thu, 11 Feb 2010 11:51:00 -0800
 From: Suresh Siddha <suresh.b.siddha@intel.com>
 To: Roland McGrath <roland@redhat.com>, Oleg Nesterov <oleg@redhat.com>,
        "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
        Thomas Gleixner <tglx@linutronix.de>
 Cc: LKML <linux-kernel@vger.kernel.org>, hjl.tools@gmail.com,
        peter.lachner@intel.com, suresh.b.siddha@intel.com
-Subject: [patch v3 0/2] updated ptrace/core-dump patches for supporting xstate - v3
+Subject: [patch v3 2/2] ptrace: Add support for generic PTRACE_GETREGSET/PTRACE_SETREGSET
+References: <20100211195058.071883111@sbs-t61.sc.intel.com>
+Content-Disposition: inline; filename=ptrace_support_for_xstate.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Changes from v2:
-a. Embrace the iov interface for PTRACE_GETREGSET/PTRACE_SETREGSET
-b. fixes and coding style changes based on Roland and Oleg's feedback.
+Generic support for PTRACE_GETREGSET/PTRACE_SETREGSET commands which
+export the regsets supported by each architecture using the correponding
+NT_* types. These NT_* types are already part of the userland ABI, used
+in representing the architecture specific register sets as different NOTES
+in an ELF core file.
 
-Changes from v1:
-a. Split the patch into multiple patches.
-b. Fix some bugs and coding style changes based on Roland's feedback.
-c. Add generic PTRACE_GETREGSET/PTRACE_SETREGSET commands through which we can
-   export the architecture specific regsets using the corresponding
-   NT_* codes that userland is already aware of. The "xstate" regset is exported
-   only using this interface.
+'addr' parameter for the ptrace system call encode the REGSET type (using
+the corresppnding NT_* type) and the 'data' parameter points to the
+struct iovec having the user buffer and the length of that buffer.
 
-thanks,
-suresh
+	struct iovec iov = { buf, len};
+	ret = ptrace(PTRACE_GETREGSET/PTRACE_SETREGSET, pid, NT_XXX_TYPE, &iov);
+
+On successful completion, iov.len will be updated by the kernel specifying
+how much the kernel has written/read to/from the user's iov.buf.
+
+x86 extended state registers are primarily exported using this interface.
+
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+Acked-by: Hongjiu Lu <hjl.tools@gmail.com>
+---
+ include/linux/elf.h    |    6 ++-
+ include/linux/ptrace.h |   15 ++++++++
+ kernel/ptrace.c        |   88 +++++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 108 insertions(+), 1 deletion(-)
+
+Index: tip/include/linux/ptrace.h
+===================================================================
+--- tip.orig/include/linux/ptrace.h
++++ tip/include/linux/ptrace.h
+@@ -27,6 +27,21 @@
+ #define PTRACE_GETSIGINFO	0x4202
+ #define PTRACE_SETSIGINFO	0x4203
+ 
++/*
++ * Generic ptrace interface that exports the architecture specific regsets
++ * using the corresponding NT_* types (which are also used in the core dump).
++ *
++ * This interface usage is as follows:
++ * 	struct iovec iov = { buf, len};
++ *
++ * 	ret = ptrace(PTRACE_GETREGSET/PTRACE_SETREGSET, pid, NT_XXX_TYPE, &iov);
++ *
++ * On the successful completion, iov.len will be updated by the kernel,
++ * specifying how much the kernel has written/read to/from the user's iov.buf.
++ */
++#define PTRACE_GETREGSET	0x4204
++#define PTRACE_SETREGSET	0x4205
++
+ /* options set using PTRACE_SETOPTIONS */
+ #define PTRACE_O_TRACESYSGOOD	0x00000001
+ #define PTRACE_O_TRACEFORK	0x00000002
+Index: tip/kernel/ptrace.c
+===================================================================
+--- tip.orig/kernel/ptrace.c
++++ tip/kernel/ptrace.c
+@@ -22,6 +22,7 @@
+ #include <linux/pid_namespace.h>
+ #include <linux/syscalls.h>
+ #include <linux/uaccess.h>
++#include <linux/regset.h>
+ 
+ 
+ /*
+@@ -511,6 +512,47 @@ static int ptrace_resume(struct task_str
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_HAVE_ARCH_TRACEHOOK
++
++static const struct user_regset *
++find_regset(const struct user_regset_view *view, unsigned int type)
++{
++	const struct user_regset *regset;
++	int n;
++
++	for (n = 0; n < view->n; ++n) {
++		regset = view->regsets + n;
++		if (regset->core_note_type == type)
++			return regset;
++	}
++
++	return NULL;
++}
++
++static int ptrace_regset(struct task_struct *task, int req, unsigned int type,
++			 struct iovec *kiov)
++{
++	const struct user_regset_view *view = task_user_regset_view(task);
++	const struct user_regset *regset = find_regset(view, type);
++	int regset_no;
++
++	if (!regset || (kiov->iov_len % regset->size) != 0)
++		return -EIO;
++
++	regset_no = regset - view->regsets;
++	kiov->iov_len = min(kiov->iov_len,
++			    (__kernel_size_t) (regset->n * regset->size));
++
++	if (req == PTRACE_GETREGSET)
++		return copy_regset_to_user(task, view, regset_no, 0,
++					   kiov->iov_len, kiov->iov_base);
++	else
++		return copy_regset_from_user(task, view, regset_no, 0,
++					     kiov->iov_len, kiov->iov_base);
++}
++
++#endif
++
+ int ptrace_request(struct task_struct *child, long request,
+ 		   long addr, long data)
+ {
+@@ -573,6 +615,26 @@ int ptrace_request(struct task_struct *c
+ 			return 0;
+ 		return ptrace_resume(child, request, SIGKILL);
+ 
++#ifdef CONFIG_HAVE_ARCH_TRACEHOOK
++	case PTRACE_GETREGSET:
++	case PTRACE_SETREGSET:
++	{
++		struct iovec kiov;
++		struct iovec __user *uiov = (struct iovec __user *) data;
++
++		if (!access_ok(VERIFY_WRITE, uiov, sizeof(*uiov)))
++			return -EFAULT;
++
++		if (__get_user(kiov.iov_base, &uiov->iov_base) ||
++		    __get_user(kiov.iov_len, &uiov->iov_len))
++			return -EFAULT;
++
++		ret = ptrace_regset(child, request, addr, &kiov);
++		if (!ret)
++			ret = __put_user(kiov.iov_len, &uiov->iov_len);
++		break;
++	}
++#endif
+ 	default:
+ 		break;
+ 	}
+@@ -711,6 +773,32 @@ int compat_ptrace_request(struct task_st
+ 		else
+ 			ret = ptrace_setsiginfo(child, &siginfo);
+ 		break;
++#ifdef CONFIG_HAVE_ARCH_TRACEHOOK
++	case PTRACE_GETREGSET:
++	case PTRACE_SETREGSET:
++	{
++		struct iovec kiov;
++		struct compat_iovec __user *uiov =
++			(struct compat_iovec __user *) datap;
++		compat_uptr_t ptr;
++		compat_size_t len;
++
++		if (!access_ok(VERIFY_WRITE, uiov, sizeof(*uiov)))
++			return -EFAULT;
++
++		if (__get_user(ptr, &uiov->iov_base) ||
++		    __get_user(len, &uiov->iov_len))
++			return -EFAULT;
++
++		kiov.iov_base = compat_ptr(ptr);
++		kiov.iov_len = len;
++
++		ret = ptrace_regset(child, request, addr, &kiov);
++		if (!ret)
++			ret = __put_user(kiov.iov_len, &uiov->iov_len);
++		break;
++	}
++#endif
+ 
+ 	default:
+ 		ret = ptrace_request(child, request, addr, data);
+Index: tip/include/linux/elf.h
+===================================================================
+--- tip.orig/include/linux/elf.h
++++ tip/include/linux/elf.h
+@@ -349,7 +349,11 @@ typedef struct elf64_shdr {
+ #define ELF_OSABI ELFOSABI_NONE
+ #endif
+ 
+-/* Notes used in ET_CORE */
++/*
++ * Notes used in ET_CORE. Architectures export some of the arch register sets
++ * using the corresponding note types via the PTRACE_GETREGSET and
++ * PTRACE_SETREGSET requests.
++ */
+ #define NT_PRSTATUS	1
+ #define NT_PRFPREG	2
+ #define NT_PRPSINFO	3
+
 
