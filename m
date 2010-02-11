@@ -1,145 +1,86 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756477Ab0BKQcV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 11:32:21 -0500
-Received: from smtp-out.google.com ([216.239.44.51]:51761 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756380Ab0BKQcU convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 11:32:20 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=ooa/rgE8GJKuJKwFOE6GXxVk4rfEWRkl596Ka1SgNscRCcVX72bwUDEXFWZOSwkZQ
-	s7XeE+aL+1SbTR8Ztl0CQ==
+	id S1756514Ab0BKQdt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 11:33:49 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:57967 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752982Ab0BKQdr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 11:33:47 -0500
+Message-ID: <4B743149.4000707@redhat.com>
+Date: Thu, 11 Feb 2010 17:33:13 +0100
+From: Michael Stefaniuc <mstefani@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
 MIME-Version: 1.0
-In-Reply-To: <20100211125607.GA5086@redhat.com>
-References: <20100208221632.A7D6F9B33B@bumblebee1.mtv.corp.google.com>
-	 <20100208143231.6d804590.akpm@linux-foundation.org>
-	 <20100209112700.GA4258@redhat.com> <20100210133556.GA21925@redhat.com>
-	 <4352991a1002101038s6a2e67d9mc373416c17de9e6a@mail.gmail.com>
-	 <20100211125607.GA5086@redhat.com>
-Date: Thu, 11 Feb 2010 08:32:14 -0800
-Message-ID: <4352991a1002110832j1a4e6680scf4aa7effeb83a75@mail.gmail.com>
-Subject: Re: Race in ptrace.
-From: Salman Qazi <sqazi@google.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: taviso@google.com, Roland Dreier <rolandd@cisco.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+To: "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Alan Stern <stern@rowland.harvard.edu>
+CC: linux-kernel@vger.kernel.org, Maneesh Soni <maneesh@linux.vnet.ibm.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Alexandre Julliard <julliard@winehq.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Maciej Rutecki <maciej.rutecki@gmail.com>
+Subject: Regression in ptrace (Wine) starting with 2.6.33-rc1
+X-Enigmail-Version: 0.96.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 11, 2010 at 4:56 AM, Oleg Nesterov <oleg@redhat.com> wrote:
-> On 02/10, Salman Qazi wrote:
->>
->> I have
->> made a simpler version of tavis's test case:
->
-> Thanks, now I see what you mean.
->
-> But this all is correct, you can't expect PTRACE_SYSCALL can succeed
-> is the tracee is running, it must be stopped or traced.
->
-> The tracee is running because it was TASK_STOPPED and antagonist()
-> sends SIGCONT.
->
-> The tracee was TASK_STOPPED because the tracer passes sig = SIGSTOP
-> via ptrace(PTRACE_SYSCALL, WSTOPSIG(status).
->
-> Where do you see the bug?
+Hello!
 
-Shouldn't ptrace(PTRACE_SYSCALL, WSTOPSIG(status)...), cause any
-future signals to the child be intercepted by the parent?
+2.6.33-rc1 broke ptrace for Wine, specifically the setting of the debug
+registers. This is visible in the Wine ntdll exception tests failing on
+2.6.33-rcX while they work just fine in 2.6.32.
 
->
-> OK, let me simplify the test-case even more:
->
->        int main(void)
->        {
->                int stat, ret;
->                int pid = fork();
->
->                if (!pid) {
->                        ptrace(PTRACE_TRACEME, 0, NULL, NULL);
->                        for (;;)
->                                ;
->                }
->
->                sleep(1);       // wait for PTRACE_TRACEME
->                kill(pid, SIGSTOP);
->
->                // the child reports SIGSTOP, it is TASK_TRACED
->                assert(pid == wait(&stat) && WIFSTOPPED(stat));
->
->                // the tracee should stop, we pass sig = SIGSTOP
->                assert(ptrace(PTRACE_SYSCALL, pid, 0, WSTOPSIG(stat)) == 0);
->
->                // the child reports the group stop, it is TASK_STOPPED
->                assert(pid == wait(&stat) && WIFSTOPPED(stat));
->
->                // the tracee is STOPPED as requested, not TRACED,
->                // SIGCONT wakes it up
->                kill(pid, SIGCONT);
+A regression test resulted in:
+72f674d203cd230426437cdcf7dd6f681dad8b0d is the first bad commit
+commit 72f674d203cd230426437cdcf7dd6f681dad8b0d
+Author: K.Prasad <prasad@linux.vnet.ibm.com>
+Date:   Mon Jun 1 23:45:48 2009 +0530
 
-                   According to the man page, any signals to the
-process are supposed to be intercepted by the parent and that is how
-one is supposed to be able to control which signals make it to the
-child.  I am not sure if it makes any difference if the signal
-originates at the parent.  But in our test case, it doesn't.   So, why
-doesn't the parent get a notification first?
+    hw-breakpoints: modify Ptrace routines to access breakpoint registers
 
->
->                // now the tracee is _running_, and PTRACE_SYSCALL must fail
->                ret = ptrace(PTRACE_SYSCALL, pid, 0, WSTOPSIG(stat));
->                printf("should fail: ret=%d %m\n", ret);
->
->                return 0;
->        }
->
-> PTRACE_SYSCALL fails, and this is absolutely correct.
->
-> Now, let's look at your test-case
->
->> int main(int argc, char **argv)
->> {
->>         int status;
->>         assert((child_pid = do_fork(child)) > 0);
->>         assert((ant_pid = do_fork(antagonist)) > 0);
->>         waitpid(child_pid, &status, 0);
->>         ptrace(PTRACE_SYSCALL, child_pid, NULL, NULL);
->>         while(1) {
->>                 if (waitpid(child_pid, &status, 0) <= 0) {
->>                         printf("Errno %d\n", errno);
->>                         exit(EXIT_FAILURE);
->>                 }
->>                 if (WIFSTOPPED(status)) {
->
-> WSTOPSIG() should be either SIGCONT or SIGSTOP
->
->>                         printf("stopped: %d\n", WSTOPSIG(status));
->>
->>                         /* This should work, but sometimes it doesn't */
->>                         if (ptrace(PTRACE_SYSCALL, child_pid,
->>                                                 NULL, WSTOPSIG(status)) < 0) {
->
-> This should not work if the tracee reported the group stop (not the
-> fact it dequeued SIGSTOP) and antagonist() sends SIGCONT in between.
->
->>                                 /* Oddly it works the second time! */
->>                                 assert (ptrace(PTRACE_SYSCALL,
->>                                         child_pid, NULL, WSTOPSIG(status)) < 0);
->
-> Of couse, it _can_ work the second time, antagonist() sends a signal
-> (SIGCONT or SIGSTOP), the tracee dequeues the signal, and stops to
-> report this signal.
->
-> See?
->
-> Oleg.
->
->
+    This patch modifies the ptrace code to use the new wrapper routines
+around
+the
+    debug/breakpoint registers.
+
+    [ Impact: adapt x86 ptrace to the new breakpoint Api ]
+
+    Original-patch-by: Alan Stern <stern@rowland.harvard.edu>
+    Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
+    Signed-off-by: Maneesh Soni <maneesh@linux.vnet.ibm.com>
+    Reviewed-by: Alan Stern <stern@rowland.harvard.edu>
+    Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+
+:040000 040000 f72ff4760c3fa1dffcd72494e77bee2c76039505
+b60d5fe2088ff635568e800d5759a0b373b5e439 M      arch
+
+
+The first ntdll exception test in test_exceptions()
+http://source.winehq.org/git/wine.git/?a=blob;f=dlls/ntdll/tests/exception.c;h=9149b6961764dec31a0af5cd3b93ab3072703dbb;hb=312e4f6b235a468f8bf764101a5b97cf34dd4143#l594
+  run_exception_test(dreg_handler, NULL, &segfault_code,
+sizeof(segfault_code),
+0);
+produces (make exception.ok) the output:
+  err:seh:setup_exception_record stack overflow 932 bytes in thread 0009 eip
+7bc3c97f esp 00240f8c stack 0x240000-0x241000-0x340000
+The stack overflow is detected by the ntdll internal function
+setup_exception_record()
+http://source.winehq.org/git/wine.git/?a=blob;f=dlls/ntdll/signal_i386.c;h=4eccb61954c43d75144575411313d59405decfc3;hb=312e4f6b235a468f8bf764101a5b97cf34dd4143#l1495
+which aborts the thread.
+The problem happens on both i386 (Intel Atom CPU) as well as on x86_64
+(Intel Q9450); the stack overflow bytes differ though but are always the
+same for each box.
+
+All the ntdll exception tests run just fine with 2.6.32 and older
+kernels. For a summary of the ntdll exception tests please see
+http://test.winehq.org/data/tests/ntdll:exception.html in the Wine
+column.
+
+I have opened also http://bugzilla.kernel.org/show_bug.cgi?id=15273 for
+this.
+
+thanks
+bye
+    michael
