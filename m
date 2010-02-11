@@ -1,1036 +1,879 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757179Ab0BKWTA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 17:19:00 -0500
-Received: from mail.gmx.net ([213.165.64.20]:36166 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1756599Ab0BKWS7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 17:18:59 -0500
-X-Authenticated: #2387525
-X-Provags-ID: V01U2FsdGVkX18npQ4jbwonMbFgKZ8jmKiV+wE0v8SgI4o0nfBQCH
-	8MHBzpndoHHtj7
-Message-ID: <4B748249.1040100@gmx.de>
-Date: Thu, 11 Feb 2010 23:18:49 +0100
-From: Axel Uhl <axel.uhl@gmx.de>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	id S1757258Ab0BKWUp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 17:20:45 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:50158 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756599Ab0BKWUn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 17:20:43 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Gary Hade <garyhade@us.ibm.com>
+Subject: Re: [PATCH 8/9] PCI / ACPI / PM: Platform support for PCI PME wake-up (rev. 7)
+Date: Thu, 11 Feb 2010 23:21:13 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.33-rc7-rjw; KDE/4.3.5; x86_64; ; )
+Cc: linux-pm@lists.linux-foundation.org, Linux PCI <linux-pci@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "Moore, Robert" <robert.moore@intel.com>,
+       Matthew Garrett <mjg@redhat.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>
+References: <201001101431.38630.rjw@sisk.pl> <201002112132.02255.rjw@sisk.pl> <20100211215604.GA10298@us.ibm.com>
+In-Reply-To: <20100211215604.GA10298@us.ibm.com>
 MIME-Version: 1.0
-To: maciej.rutecki@gmail.com
-CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Kernel Bug in ATA or SMART area
-References: <4B72941A.7060704@gmx.de> <201002112121.22399.maciej.rutecki@gmail.com>
-In-Reply-To: <201002112121.22399.maciej.rutecki@gmail.com>
-Content-Type: multipart/signed; protocol="application/x-pkcs7-signature"; micalg=sha1; boundary="------------ms010907020008060601030906"
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.47999999999999998
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002112321.13922.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a cryptographically signed message in MIME format.
+On Thursday 11 February 2010, Gary Hade wrote:
+> On Thu, Feb 11, 2010 at 09:32:02PM +0100, Rafael J. Wysocki wrote:
+> > On Thursday 11 February 2010, Gary Hade wrote:
+> > > On Thu, Feb 11, 2010 at 02:27:17PM +0100, Rafael J. Wysocki wrote:
+> > > > On Thursday 11 February 2010, Gary Hade wrote:
+> > > > > On Thu, Feb 11, 2010 at 01:56:54AM +0100, Rafael J. Wysocki wrote:
+> > > > > > On Thursday 11 February 2010, Rafael J. Wysocki wrote:
+> > > > > > > On Thursday 11 February 2010, Gary Hade wrote:
+> > > > > > > > On Wed, Feb 10, 2010 at 11:58:00PM +0100, Rafael J. Wysocki wrote:
+> > > > > > > > > On Wednesday 10 February 2010, Gary Hade wrote:
+> > > > > > > ...
+> > > > > > > > > > Yes, 6/9 also appeared to be the most likely suspect to me and
+> > > > > > > > > > I was already doing what you asked except in the opposite order.
+> > > > > > > > > > With 1/9 through 6/9 both the hot-add and hot-remove issues still
+> > > > > > > > > > reproduced.  After removing 6/9 both issues disappeared.
+> > > > > > > > > 
+> > > > > > > > > Thanks for verifying, I've already started to look for bugs in it.
+> > > > > > > > 
+> > > > > > > > Thanks!
+> > > > > > > > 
+> > > > > > > > > 
+> > > > > > > > > What's your kernel command line, BTW?
+> > > > > > > > 
+> > > > > > > > root=/dev/disk/by-id/scsi-35000c5000036ffcb-part7 ip=9.47.66.9:9.47.67.50:9.47.66.1:255.255.254.0 resume=/dev/disk/by-id/scsi-35000c50000370247-part3 crashkernel=256M-:128M console=tty0 console=ttyS0,115200 pci=use_crs pci=norom
+> > > > > > > 
+> > > > > > > Thanks.  We found a bug in the patch, but it would require you to use a
+> > > > > > > specific command line switch to trigger, which you don't use.
+> > > > > > > 
+> > > > > > > I'll let you know if I have anything to test.
+> > > > > > 
+> > > > > > OK, please try the patch below on top of [1-6/9].
+> > > > > 
+> > > > > Sorry, it didn't help.  The hot-add and hot-remove behaviors
+> > > > > still look the same.
+> > > > 
+> > > > Thanks for testing.
+> > > > 
+> > > > Well, this time I found another real bug, which is that we should add
+> > > > gpe_block->block_base_number to the GPE index within the block in order to
+> > > > compute the GPE number.  If there are GPE devices other than the FADT ones in
+> > > > your system, that may explain the symptoms.
+> > > > 
+> > > > Please try the patch below (on top of [1-6/9]).  In case it doesn't help, please
+> > > > look for "Failed to ebable GPE" messages in dmesg and let me know if there are
+> > > > any.
+> > > 
+> > > That one worked!  It corrected both the blinking amber LED
+> > > after hot-remove and acpiphp's failure to see the hot-add event.
+> > 
+> > Great!
+> > 
+> > > Now when you have patch(es) ready for Jesse's linux-next branch
+> > 
+> > Well, not quite.  I had to rework them in the meantime. ;-)
+> > 
+> > > I can get back to my original mission of checking out Bjorn's
+> > > _CRS enablement changes.
+> > 
+> > May I still ask you to test something?
+> 
+> Oh, I guess so. :)
+> 
+> > 
+> > In case I can, please try the appended patch on top of [1-3/6].  It is a
+> > replacement for [4-6/9] with the last fix included.
+> 
+> I just tried it and it seemed to work fine.
 
---------------ms010907020008060601030906
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
+Great, thanks!
 
-I had the same problem on a 2.6.28.
+I have one more testing request if you don't mind, but I'd like to make sure
+the PCI runtime PM patches won't break the PCI hotplug again.
 
-Best,
--- Axel
+Please apply [7/9] (ACPI / PM: Add more run-time wake-up field) on top of the
+just tested patch and apply the appended patch on top of that.  Then, please
+check if the PCI hotplug still works.
 
-Maciej Rutecki wrote:
-> (CCs added)
->=20
-> Is older kernels work fine?
->=20
-> Dnia =C5=9Broda, 10 lutego 2010 o 12:10:18 Axel Uhl napisa=C5=82(a):
->> I get intermittent kernel exceptions, probably related to an issue wit=
-h
->> the ATA or SMART code in the kernel / modules. I have a cron job that
->> every so many hours captures the disk temperatures. I "hdparm -y" my
->> disks when they are not used. It seems that when the cron job runs tha=
-t
->> spins up the disks to access their temperature using smartctl, if duri=
-ng
->> this time certain other interactions happen, the kernel raises an
->>  exception.
->>
->> The smartctl command I'm using is:
->>
->> 	/usr/sbin/smartctl -a $devfull >/var/local/snmp/smart-$dev.TMP
->>
->> Here is one such exception from the syslog:
->>
->> Feb 10 06:57:01 homemp3 /USR/SBIN/CRON[18271]: (root) CMD
->> (/etc/snmp/local-snmp-cronjob-spinup)
->> Feb 10 06:57:06 homemp3 vdr: [3293] connect from 127.0.0.1, port 59975=
- -
->> accepted
->> Feb 10 06:57:06 homemp3 vdr: [3293] closing SVDRP connection
->> Feb 10 06:57:09 homemp3 kernel: ata5.00: exception Emask 0x0 SAct 0x0
->> SErr 0x0 action 0x6 frozen
->> Feb 10 06:57:09 homemp3 kernel: ata5.00: failed command: SMART
->> Feb 10 06:57:09 homemp3 kernel: ata5.00: cmd
->> b0/da:00:00:4f:c2/00:00:00:00:00/00
->>   tag 0
->> Feb 10 06:57:09 homemp3 kernel:          res
->> 40/00:01:00:00:00/00:00:00:00:00/00
->>   Emask 0x4 (timeout)
->> Feb 10 06:57:09 homemp3 kernel: ata5.00: status: { DRDY }
->> Feb 10 06:57:10 homemp3 kernel: irq 10: nobody cared (try booting with=
+Rafael
 
->> the "irqpoll" option)
->> Feb 10 06:57:10 homemp3 kernel: Pid: 17050, comm: hadam3p_um_6.14 Not
->> tainted 2.6.32.7 #1
->> Feb 10 06:57:10 homemp3 kernel: Call Trace:
->> Feb 10 06:57:10 homemp3 kernel:  [<c128a221>] ? printk+0x18/0x1a
->> Feb 10 06:57:10 homemp3 kernel:  [<c103aaf8>] __report_bad_irq+0x27/0x=
-85
->> Feb 10 06:57:10 homemp3 kernel:  [<c103ac9e>] note_interrupt+0x148/0x1=
-86
->> Feb 10 06:57:10 homemp3 kernel:  [<c103b292>] handle_level_irq+0x86/0x=
-b1
->> Feb 10 06:57:10 homemp3 kernel:  [<c1004722>] handle_irq+0x1a/0x28
->> Feb 10 06:57:10 homemp3 kernel:  [<c100434c>] do_IRQ+0x33/0x80
->> Feb 10 06:57:10 homemp3 kernel:  [<c11d73fb>] ? pdc_interrupt+0x150/0x=
-3a5
->> Feb 10 06:57:10 homemp3 kernel:  [<c1003229>] common_interrupt+0x29/0x=
-30
->> Feb 10 06:57:10 homemp3 kernel:  [<c101cd72>] ? __do_softirq+0x33/0xec=
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
+Subject: PCI / ACPI / PM: Platform support for PCI PME wake-up (rev. 8)
 
->> Feb 10 06:57:10 homemp3 kernel:  [<c1039e00>] ? handle_IRQ_event+0x31/=
-0xc1
->> Feb 10 06:57:10 homemp3 kernel:  [<c101ce55>] do_softirq+0x2a/0x2f
->> Feb 10 06:57:10 homemp3 kernel:  [<c101cf34>] irq_exit+0x2a/0x2f
->> Feb 10 06:57:10 homemp3 kernel:  [<c1004355>] do_IRQ+0x3c/0x80
->> Feb 10 06:57:10 homemp3 kernel:  [<c1003b81>] ?
->> do_device_not_available+0x0/0x48
->> Feb 10 06:57:10 homemp3 kernel:  [<c1003229>] common_interrupt+0x29/0x=
-30
->> Feb 10 06:57:10 homemp3 kernel: handlers:
->> Feb 10 06:57:10 homemp3 kernel: [<c11d72ab>] (pdc_interrupt+0x0/0x3a5)=
+Although the majority of PCI devices can generate PMEs that in
+principle may be used to wake up devices suspended at run time,
+platform support is generally necessary to convert PMEs into wake-up
+events that can be delivered to the kernel.  If ACPI is used for this
+purpose, a PME generated by a PCI device will trigger the ACPI GPE
+associated with the device to generate an ACPI wake-up event that we
+can set up a handler for, provided that everything is configured
+correctly.
 
->> Feb 10 06:57:10 homemp3 kernel: [<c11d3504>] (ata_sff_interrupt+0x0/0x=
-c4)
->> Feb 10 06:57:10 homemp3 kernel: [<f83a6767>] (azx_interrupt+0x0/0x11b
->> [snd_hda_intel])
->> Feb 10 06:57:10 homemp3 kernel: [<f8106471>] (usb_hcd_irq+0x0/0x5e
->> [usbcore])
->> Feb 10 06:57:10 homemp3 kernel: [<f8062bf9>] (e1000_intr+0x0/0xf2 [e10=
-00])
->> Feb 10 06:57:10 homemp3 kernel: Disabling IRQ #10
->> Feb 10 06:57:10 homemp3 kernel: ata5: soft resetting link
->> Feb 10 06:57:11 homemp3 kernel: ata5.00: configured for UDMA/133
->> Feb 10 06:57:11 homemp3 kernel: ata5: EH complete
->>
->>
->> I suppose the hadam3p_um_6.14 command is part of my BOINC installation=
-,
->> doing a climate simulation. However, the problem has also occurred wit=
-h
->> this program not running.
->>
->> Here's the output of scripts/ver_linux:
->>
->> If some fields are empty or look unusual you may have an old version.
->> Compare to the current minimal requirements in Documentation/Changes.
->>
->> Linux homemp3 2.6.32.7 #1 Sat Feb 6 10:50:05 CET 2010 i686 GNU/Linux
->>
->> Gnu C                  4.3.2
->> Gnu make               3.81
->> binutils               2.18.0.20080103
->> util-linux             2.13.1.1
->> mount                  2.13.1.1
->> module-init-tools      found
->> Linux C Library        2.7
->> Dynamic linker (ldd)   2.7
->> Procps                 3.2.7
->> Console-tools          0.2.3
->> Sh-utils               6.10
->> udev                   125
->> Modules Loaded         ipv6 bsd_comp usb_storage ppp_deflate
->> zlib_deflate ppp_ge
->> neric slhc w83627hf hwmon_vid hwmon i2c_dev saa7134_alsa
->> snd_hda_codec_realtek tuner_simple tuner_types mt352 snd_hda_intel
->> saa7134_dvb snd_hda_codec videobuf_dvb snd_pcm_oss snd_mixer_oss
->> dvb_core snd_pcm snd_seq_oss snd_seq_midi snd_rawmidi snd_seq_midi_eve=
-nt
->> 8250_pnp snd_seq 8250 serial_core snd_timer snd_seq_device
->>   saa7134 ehci_hcd ir_common snd v4l2_common videodev v4l1_compat
->> soundcore snd_page_alloc videobuf_dma_sg videobuf_core tveeprom usbcor=
-e
->> via_rhine i2c_core e1000
->>
->>
->> As a result of the exception, the system becomes very unresponsive. An=
-y
->> sort of I/O seems to have very poor response time. Ping times in the
->> gigabit network suddenly take several tens of milliseconds. It seems
->> this may have to do with the IRQ10 being somehow affected, but I'm not=
+Unfortunately, the subset of PCI devices that have GPEs associated
+with them is quite limited and the other devices have to rely on
+the GPEs associated with their upstream bridges and, possibly, the
+root bridge to generate ACPI wake-up events in response to PMEs from
+them.  Moreover, ACPI-based PCI hotplug also uses ACPI notify
+handlers that in general may conflict with the PM notify handlers,
+unless this issue is specifically taken care of.
 
->>  sure.
->>
->> /proc/version:
->>
->> Linux version 2.6.32.7 (root@homemp3) (gcc version 4.3.2 (Debian
->> 4.3.2-1.1) ) #1 Sat Feb 6 10:50:05 CET 2010
->>
->> /proc/cpuinfo:
->>
->> processor       : 0
->> vendor_id       : GenuineIntel
->> cpu family      : 15
->> model           : 4
->> model name      : Intel(R) Celeron(R) CPU 2.80GHz
->> stepping        : 9
->> cpu MHz         : 2799.930
->> cache size      : 256 KB
->> fdiv_bug        : no
->> hlt_bug         : no
->> f00f_bug        : no
->> coma_bug        : no
->> fpu             : yes
->> fpu_exception   : yes
->> cpuid level     : 5
->> wp              : yes
->> flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge=
+Add ACPI platform support for PCI PME wake-up:
+o Add a framework making is possible to use ACPI system notify
+  handlers for both PM and hotplug at the same time and to take the
+  wake-up GPE sharing into account.
+o Add new PCI platform callback ->run_wake() to struct
+  pci_platform_pm_ops allowing us to enable/disable the platform to
+  generate wake-up events for given device.  Implemet this callback
+  for the ACPI platform.
+o Define ACPI wake-up handlers for PCI devices and PCI buses and make
+  the PCI-ACPI binding code register wake-up notifiers for devices
+  associated with wake-up GPEs.
+o Add function pci_dev_run_wake() which can be used by PCI drivers to
+  check if given device is capable of generating wake-up events at
+  run time.
 
->> mca cmovpat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe lm
->> constant_tsc pebs bts pni dtes64 monitor ds_cpl tm2 cid cx16 xtpr lahf=
-_lm
->> bogomips        : 5623.13
->> clflush size    : 64
->> cache_alignment : 128
->> address sizes   : 36 bits physical, 48 bits virtual
->> power management:
->>
->>
->> Output of lcpsi -vvv:
->>
->> 00:00.0 Host bridge: VIA Technologies, Inc. PT880 Ultra/PT894 Host Bri=
-dge
->>          Subsystem: ASRock Incorporation Device 0308
->>          Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
->> ParErr- Step
->> ping- SERR+ FastB2B- DisINTx-
->>          Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=3Dmedium
->>
->>  >TAbort- <TAbort
->>
->> - <MAbort+ >SERR- <PERR+ INTx-
->>          Latency: 8, Cache Line Size: 32 bytes
->>          Region 0: Memory at f8000000 (32-bit, prefetchable) [size=3D6=
-4M]
->>          Capabilities: [80] AGP version 3.5
->>                  Status: RQ=3D32 Iso- ArqSz=3D0 Cal=3D0 SBA+ ITACoh- G=
-ART64-
->> HTrans- 64
->> bit- FW- AGP3- Rate=3Dx1,x2,x4
->>                  Command: RQ=3D1 ArqSz=3D0 Cal=3D0 SBA- AGP- GART64- 6=
-4bit-
->> FW- Rate=3D<n
->> one>
->>          Capabilities: [50] Power Management version 2
->>                  Flags: PMEClk- DSI- D1- D2- AuxCurrent=3D0mA
->> PME(D0-,D1-,D2-,D3hot
->> -,D3cold-)
->>                  Status: D0 PME-Enable- DSel=3D0 DScale=3D0 PME-
->>          Kernel driver in use: agpgart-via
->>
->> 00:00.1 Host bridge: VIA Technologies, Inc. PT894 Host Bridge
->>          Subsystem: ASRock Incorporation Device 1308
->>          Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
->> ParErr- Step
->> ping- SERR- FastB2B- DisINTx-
->>          Status: Cap- 66MHz- UDF- FastB2B- ParErr- DEVSEL=3Dmedium
->>
->>  >TAbort- <TAbort
->>
->> - <MAbort- >SERR- <PERR- INTx-
->>          Latency: 0, Cache Line Size: 32 bytes
->>
->> 00:00.2 Host bridge: VIA Technologies, Inc. PT894 Host Bridge
->>          Subsystem: ASRock Incorporation Device 2308
->>          Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
->> ParErr- Step
->> ping- SERR- FastB2B- DisINTx-
->>          Status: Cap- 66MHz- UDF- FastB2B- ParErr- DEVSEL=3Dmedium
->>
->>  >TAbort- <TAbort
->>
->> - <MAbort- >SERR- <PERR- INTx-
->>          Latency: 0, Cache Line Size: 32 bytes
->>
->> 00:00.3 Host bridge: VIA Technologies, Inc. PT890 Host Bridge
->>          Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
->> ParErr- Step
->> ping- SERR- FastB2B- DisINTx-
->>          Status: Cap- 66MHz- UDF- FastB2B- ParErr- DEVSEL=3Dmedium
->>
->>  >TAbort- <TAbort
->>
->> - <MAbort- >SERR- <PERR- INTx-
->>          Latency: 0
->>
->> 00:00.4 Host bridge: VIA Technologies, Inc. PT894 Host Bridge
->>          Subsystem: ASRock Incorporation Device 4308
->>          Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
->> ParErr- Step
->> ping- SERR- FastB2B- DisINTx-
->>          Status: Cap- 66MHz- UDF- FastB2B- ParErr- DEVSEL=3Dmedium
->>
->>  >TAbort- <TAbort
->>
->> - <MAbort- >SERR- <PERR- INTx-
->>          Latency: 0, Cache Line Size: 32 bytes
->>
->> 00:00.5 PIC: VIA Technologies, Inc. PT894 I/O APIC Interrupt Controlle=
-r
->> (prog-if
->>   20 [IO(X)-APIC])
->>          Subsystem: ASRock Incorporation Device 5308
->>          Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
->> ParErr- Step
->> ping- SERR- FastB2B- DisINTx-
->>          Status: Cap- 66MHz- UDF- FastB2B- ParErr- DEVSEL=3Dfast >TAbo=
-rt-
->> <TAbort-
->> <MAbort- >SERR- <PERR- INTx-
->>          Latency: 0, Cache Line Size: 32 bytes
->>
->> 00:00.7 Host bridge: VIA Technologies, Inc. PT894 Host Bridge
->>          Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
->> ParErr- Step
->> ping- SERR- FastB2B- DisINTx-
->>          Status: Cap- 66MHz- UDF- FastB2B- ParErr- DEVSEL=3Dmedium
->>
->>  >TAbort- <TAbort
->>
->> - <MAbort- >SERR- <PERR- INTx-
->>          Latency: 0, Cache Line Size: 32 bytes
->>
->> 00:01.0 PCI bridge: VIA Technologies, Inc. VT8237/VX700 PCI Bridge
->> (prog-if 00 [
->> Normal decode])
->>          Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
->> ParErr- Step
->> ping- SERR- FastB2B- DisINTx-
->>          Status: Cap+ 66MHz+ UDF- FastB2B- ParErr- DEVSEL=3Dmedium
->>
->>  >TAbort- <TAbort
->>
->> - <MAbort- >SERR- <PERR- INTx-
->>          Latency: 0
->>          Bus: primary=3D00, secondary=3D01, subordinate=3D01, sec-late=
-ncy=3D0
->>          I/O behind bridge: 0000f000-00000fff
->>          Memory behind bridge: fc700000-fe7fffff
->>          Prefetchable memory behind bridge: cff00000-dfefffff
->>          Secondary status: 66MHz+ FastB2B- ParErr- DEVSEL=3Dmedium
->>
->>  >TAbort- <TAbort
->>
->> - <MAbort- <SERR- <PERR-
->>          BridgeCtl: Parity+ SERR+ NoISA- VGA+ MAbort- >Reset- FastB2B-=
+Developed in cooperation with Matthew Garrett <mjg@redhat.com>.
 
->>                  PriDiscTmr- SecDiscTmr- DiscTmrStat- DiscTmrSERREn-
->>          Capabilities: [70] Power Management version 2
->>                  Flags: PMEClk- DSI- D1- D2- AuxCurrent=3D0mA
->> PME(D0-,D1-,D2-,D3hot
->> -,D3cold-)
->>                  Status: D0 PME-Enable- DSel=3D0 DScale=3D0 PME-
->>
->> 00:02.0 PCI bridge: VIA Technologies, Inc. PT890 PCI to PCI Bridge
->> Controller (p
->> rog-if 00 [Normal decode])
->>          Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
->> ParErr- Step
->> ping- SERR+ FastB2B- DisINTx-
->>          Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=3Dfast >TAbo=
-rt-
->> <TAbort-
->> <MAbort- >SERR- <PERR- INTx-
->>          Latency: 0, Cache Line Size: 32 bytes
->>          Bus: primary=3D00, secondary=3D02, subordinate=3D02, sec-late=
-ncy=3D0
->>          I/O behind bridge: 00001000-00001fff
->>          Memory behind bridge: fe800000-fe8fffff
->>          Prefetchable memory behind bridge: 40000000-401fffff
->>          Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=3Dfast >TAbo=
-rt-
->> <TAbort-
->> <MAbort- <SERR- <PERR-
->>          BridgeCtl: Parity+ SERR+ NoISA+ VGA- MAbort- >Reset- FastB2B-=
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/acpi/internal.h            |    2 
+ drivers/acpi/pci_bind.c            |   14 +
+ drivers/acpi/pci_root.c            |    8 
+ drivers/pci/hotplug/acpiphp_glue.c |   23 --
+ drivers/pci/pci-acpi.c             |  351 +++++++++++++++++++++++++++++++++++++
+ drivers/pci/pci.c                  |   67 +++++++
+ drivers/pci/pci.h                  |    7 
+ include/acpi/acpi_bus.h            |    3 
+ include/linux/pci-acpi.h           |   10 +
+ include/linux/pci.h                |    1 
+ 10 files changed, 469 insertions(+), 17 deletions(-)
 
->>                  PriDiscTmr- SecDiscTmr- DiscTmrStat- DiscTmrSERREn-
->>          Capabilities: [40] Express (v1) Root Port (Slot+), MSI 00
->>                  DevCap: MaxPayload 256 bytes, PhantFunc 0, Latency L0=
-s
->> <64ns, L1
->>   unlimited
->>                          ExtTag- RBE- FLReset-
->>                  DevCtl: Report errors: Correctable- Non-Fatal- Fatal-=
-
->> Unsupporte
->> d-
->>                          RlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop-
->>                          MaxPayload 128 bytes, MaxReadReq 128 bytes
->>                  DevSta: CorrErr- UncorrErr- FatalErr- UnsuppReq-
->> AuxPwr+ TransPe
->> nd-
->>                  LnkCap: Port #0, Speed 2.5GT/s, Width x4, ASPM L0s L1=
-,
->> Latency L
->> 0 <64ns, L1 <1us
->>                          ClockPM- Suprise- LLActRep+ BwNot-
->>                  LnkCtl: ASPM Disabled; RCB 64 bytes Disabled- Retrain=
--
->> CommClk-
->>                          ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt=
--
->>                  LnkSta: Speed 2.5GT/s, Width x0, TrErr- Train- SlotCl=
-k-
->> DLActive
->> - BWMgmt- ABWMgmt-
->>                  SltCap: AttnBtn- PwrCtrl- MRL- AttnInd- PwrInd-
->> HotPlug+ Surpise
->> +
->>                          Slot # 10, PowerLimit 75.000000; Interlock-
->> NoCompl-
->>                  SltCtl: Enable: AttnBtn- PwrFlt- MRL- PresDet- CmdCpl=
-t-
->> HPIrq- L
->> inkChg-
->>                          Control: AttnInd Unknown, PwrInd Unknown,
->> Power- Interlo
->> ck-
->>                  SltSta: Status: AttnBtn- PowerFlt- MRL- CmdCplt-
->> PresDet- Interl
->> ock-
->>                          Changed: MRL- PresDet- LinkState-
->>                  RootCtl: ErrCorrectable- ErrNon-Fatal- ErrFatal-
->> PMEIntEna- CRSV
->> isible-
->>                  RootCap: CRSVisible-
->>                  RootSta: PME ReqID 0000, PMEStatus- PMEPending-
->>          Capabilities: [68] Power Management version 2
->>                  Flags: PMEClk- DSI+ D1- D2- AuxCurrent=3D0mA
->> PME(D0+,D1-,D2-,D3hot
->> +,D3cold+)
->>                  Status: D0 PME-Enable- DSel=3D0 DScale=3D0 PME-
->>          Capabilities: [70] Message Signalled Interrupts: Mask+ 64bit+=
-
->> Queue=3D0/0
->> Enable-
->>                  Address: 0000000000000000  Data: 0000
->>                  Masking: 00000000  Pending: 00000000
->>          Capabilities: [100] Advanced Error Reporting <?>
->>          Capabilities: [140] Virtual Channel <?>
->>
->> 00:09.0 Ethernet controller: Intel Corporation 82541PI Gigabit Etherne=
-t
->> Controll
->> er (rev 05)
->>          Subsystem: Intel Corporation PRO/1000 GT Desktop Adapter
->>          Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop-
->> ParErr- Step
->> ping- SERR+ FastB2B- DisINTx-
->>          Status: Cap+ 66MHz+ UDF- FastB2B- ParErr- DEVSEL=3Dmedium
->>
->>  >TAbort- <TAbort
->>
->> - <MAbort- >SERR- <PERR- INTx-
->>          Latency: 32 (63750ns min), Cache Line Size: 32 bytes
->>          Interrupt: pin A routed to IRQ 10
->>          Region 0: Memory at feba0000 (32-bit, non-prefetchable)
->>  [size=3D128K] Region 1: Memory at feb80000 (32-bit, non-prefetchable)=
-
->>  [size=3D128K] Region 2: I/O ports at cc00 [size=3D64]
->>          Expansion ROM at feb60000 [disabled] [size=3D128K]
->>          Capabilities: [dc] Power Management version 2
->>                  Flags: PMEClk- DSI+ D1- D2- AuxCurrent=3D0mA
->> PME(D0+,D1-,D2-,D3hot
->> +,D3cold+)
->>                  Status: D0 PME-Enable- DSel=3D0 DScale=3D1 PME-
->>          Capabilities: [e4] PCI-X non-bridge device
->>                  Command: DPERE- ERO+ RBC=3D512 OST=3D1
->>                  Status: Dev=3D00:00.0 64bit- 133MHz- SCD- USC- DC=3Ds=
-imple
->> DMMRBC=3D20
->> 48 DMOST=3D1 DMCRS=3D8 RSCEM- 266MHz- 533MHz-
->>          Kernel driver in use: e1000
->>          Kernel modules: e1000
->>
->> 00:0a.0 Mass storage controller: Promise Technology, Inc. PDC40718 (SA=
-TA
->> 300 TX4
->> ) (rev 02)
->>          Subsystem: Promise Technology, Inc. PDC40718 (SATA 300 TX4)
->>          Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop-
->> ParErr- Step
->> ping- SERR+ FastB2B- DisINTx-
->>          Status: Cap+ 66MHz+ UDF- FastB2B- ParErr- DEVSEL=3Dmedium
->>
->>  >TAbort- <TAbort
->>
->> - <MAbort- >SERR- <PERR- INTx-
->>          Latency: 72 (1000ns min, 4500ns max), Cache Line Size: 4 byte=
-s
->>          Interrupt: pin A routed to IRQ 10
->>          Region 0: I/O ports at d400 [size=3D128]
->>          Region 2: I/O ports at c800 [size=3D256]
->>          Region 3: Memory at febfe000 (32-bit, non-prefetchable) [size=
-=3D4K]
->>          Region 4: Memory at febc0000 (32-bit, non-prefetchable)
->>  [size=3D128K] Expansion ROM at febe0000 [disabled] [size=3D32K]
->>          Capabilities: [60] Power Management version 2
->>                  Flags: PMEClk- DSI+ D1+ D2- AuxCurrent=3D0mA
->> PME(D0-,D1-,D2-,D3hot
->> -,D3cold-)
->>                  Status: D0 PME-Enable- DSel=3D0 DScale=3D0 PME-
->>          Kernel driver in use: sata_promise
->>
->> 00:0c.0 Multimedia controller: Philips Semiconductors
->> SAA7131/SAA7133/SAA7135 Vi
->> deo Broadcast Decoder (rev d1)
->>          Subsystem: Avermedia Technologies Inc Device 2c05
->>          Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
->> ParErr- Step
->> ping- SERR+ FastB2B- DisINTx-
->>          Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=3Dmedium
->>
->>  >TAbort- <TAbort
->>
->> - <MAbort- >SERR- <PERR- INTx-
->>          Latency: 32
->>          Interrupt: pin A routed to IRQ 11
->>          Region 0: Memory at febff000 (32-bit, non-prefetchable) [size=
-=3D2K]
->>          Capabilities: [40] Power Management version 2
->>                  Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=3D0mA
->> PME(D0-,D1-,D2-,D3hot
->> -,D3cold-)
->>                  Status: D0 PME-Enable- DSel=3D0 DScale=3D0 PME-
->>          Kernel driver in use: saa7134
->>          Kernel modules: saa7134
->>
->> 00:0f.0 IDE interface: VIA Technologies, Inc. VT8237A SATA 2-Port
->> Controller (re
->> v 80) (prog-if 8f [Master SecP SecO PriP PriO])
->>          Subsystem: ASRock Incorporation Device 0591
->>          Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
->> ParErr- Step
->> ping- SERR- FastB2B- DisINTx-
->>          Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=3Dmedium
->>
->>  >TAbort- <TAbort
->>
->> - <MAbort- >SERR- <PERR- INTx-
->>          Latency: 32
->>          Interrupt: pin B routed to IRQ 10
->>          Region 0: I/O ports at e000 [size=3D8]
->>          Region 1: I/O ports at dc00 [size=3D4]
->>          Region 2: I/O ports at d880 [size=3D8]
->>          Region 3: I/O ports at d800 [size=3D4]
->>          Region 4: I/O ports at d480 [size=3D16]
->>          Region 5: I/O ports at d000 [size=3D256]
->>          Capabilities: [c0] Power Management version 2
->>                  Flags: PMEClk- DSI- D1- D2- AuxCurrent=3D0mA
->> PME(D0-,D1-,D2-,D3hot
->> -,D3cold-)
->>                  Status: D0 PME-Enable- DSel=3D0 DScale=3D0 PME-
->>          Kernel driver in use: sata_via
->>
->> 00:0f.1 IDE interface: VIA Technologies, Inc.
->> VT82C586A/B/VT82C686/A/B/VT823x/A/
->> C PIPC Bus Master IDE (rev 07) (prog-if 8a [Master SecP PriP])
->>          Subsystem: ASRock Incorporation K7VT2/K7VT6 motherboard
->>          Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop-
->> ParErr- Step
->> ping- SERR- FastB2B- DisINTx-
->>          Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=3Dmedium
->>
->>  >TAbort- <TAbort
->>
->> - <MAbort- >SERR- <PERR- INTx-
->>          Latency: 32
->>          Region 0: [virtual] Memory at 000001f0 (32-bit,
->> non-prefetchable) [disab
->> led] [size=3D8]
->>          Region 1: [virtual] Memory at 000003f0 (type 3,
->> non-prefetchable) [disab
->> led] [size=3D1]
->>          Region 2: [virtual] Memory at 00000170 (32-bit,
->> non-prefetchable) [disab
->> led] [size=3D8]
->>          Region 3: [virtual] Memory at 00000370 (type 3,
->> non-prefetchable) [disab
->> led] [size=3D1]
->>          Region 4: I/O ports at fc00 [size=3D16]
->>          Capabilities: [c0] Power Management version 2
->>                  Flags: PMEClk- DSI- D1- D2- AuxCurrent=3D0mA
->> PME(D0-,D1-,D2-,D3hot
->> -,D3cold-)
->>                  Status: D0 PME-Enable- DSel=3D0 DScale=3D0 PME-
->>          Kernel driver in use: VIA_IDE
->>
->> 00:10.0 USB Controller: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1
->> Controller
->>   (rev a0) (prog-if 00 [UHCI])
->>          Subsystem: ASRock Incorporation K7VT6
->>          Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop-
->> ParErr- Step
->> ping- SERR- FastB2B- DisINTx-
->>          Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=3Dmedium
->>
->>  >TAbort- <TAbort
->>
->> - <MAbort- >SERR- <PERR- INTx-
->>          Latency: 32, Cache Line Size: 32 bytes
->>          Interrupt: pin A routed to IRQ 11
->>          Region 4: I/O ports at e080 [size=3D32]
->>          Capabilities: [80] Power Management version 2
->>                  Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=3D375mA
->> PME(D0+,D1+,D2+,D3h
->> ot+,D3cold+)
->>                  Status: D0 PME-Enable- DSel=3D0 DScale=3D0 PME-
->>
->> 00:10.1 USB Controller: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1
->> Controller
->>   (rev a0) (prog-if 00 [UHCI])
->>          Subsystem: ASRock Incorporation K7VT6
->>          Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop-
->> ParErr- Step
->> ping- SERR- FastB2B- DisINTx-
->>          Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=3Dmedium
->>
->>  >TAbort- <TAbort
->>
->> - <MAbort- >SERR- <PERR- INTx-
->>          Latency: 32, Cache Line Size: 32 bytes
->>          Interrupt: pin B routed to IRQ 10
->>          Region 4: I/O ports at e400 [size=3D32]
->>          Capabilities: [80] Power Management version 2
->>                  Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=3D375mA
->> PME(D0+,D1+,D2+,D3h
->> ot+,D3cold+)
->>                  Status: D0 PME-Enable- DSel=3D0 DScale=3D0 PME-
->>
->> 00:10.2 USB Controller: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1
->> Controller
->>   (rev a0) (prog-if 00 [UHCI])
->>          Subsystem: ASRock Incorporation K7VT6
->>          Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop-
->> ParErr- Step
->> ping- SERR- FastB2B- DisINTx-
->>          Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=3Dmedium
->>
->>  >TAbort- <TAbort
->>
->> - <MAbort- >SERR- <PERR- INTx-
->>          Latency: 32, Cache Line Size: 32 bytes
->>          Interrupt: pin C routed to IRQ 10
->>          Region 4: I/O ports at e480 [size=3D32]
->>          Capabilities: [80] Power Management version 2
->>                  Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=3D375mA
->> PME(D0+,D1+,D2+,D3h
->> ot+,D3cold+)
->>                  Status: D0 PME-Enable- DSel=3D0 DScale=3D0 PME-
->>
->> 00:10.3 USB Controller: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1
->> Controller
->>   (rev a0) (prog-if 00 [UHCI])
->>          Subsystem: ASRock Incorporation K7VT6
->>          Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop-
->> ParErr- Step
->> ping- SERR- FastB2B- DisINTx-
->>          Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=3Dmedium
->>
->>  >TAbort- <TAbort
->>
->> - <MAbort- >SERR- <PERR- INTx-
->>          Latency: 32, Cache Line Size: 32 bytes
->>          Interrupt: pin D routed to IRQ 10
->>          Region 4: I/O ports at ec00 [size=3D32]
->>          Capabilities: [80] Power Management version 2
->>                  Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=3D375mA
->> PME(D0+,D1+,D2+,D3h
->> ot+,D3cold+)
->>                  Status: D0 PME-Enable- DSel=3D0 DScale=3D0 PME-
->>
->> 00:10.4 USB Controller: VIA Technologies, Inc. USB 2.0 (rev 86) (prog-=
-if
->> 20 [EHC
->> I])
->>          Subsystem: ASRock Incorporation K7VT6 motherboard
->>          Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop-
->> ParErr- Step
->> ping- SERR- FastB2B- DisINTx-
->>          Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=3Dmedium
->>
->>  >TAbort- <TAbort
->>
->> - <MAbort- >SERR- <PERR- INTx-
->>          Latency: 32, Cache Line Size: 128 bytes
->>          Interrupt: pin C routed to IRQ 10
->>          Region 0: Memory at febff800 (32-bit, non-prefetchable) [size=
-=3D256]
->>          Capabilities: [80] Power Management version 2
->>                  Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=3D375mA
->> PME(D0+,D1+,D2+,D3h
->> ot+,D3cold+)
->>                  Status: D0 PME-Enable- DSel=3D0 DScale=3D0 PME-
->>          Kernel driver in use: ehci_hcd
->>          Kernel modules: ehci-hcd
->>
->> 00:11.0 ISA bridge: VIA Technologies, Inc. VT8237A PCI to ISA Bridge
->>          Subsystem: ASRock Incorporation Device 3337
->>          Control: I/O+ Mem+ BusMaster- SpecCycle- MemWINV- VGASnoop-
->> ParErr- Step
->> ping- SERR- FastB2B- DisINTx-
->>          Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=3Dmedium
->>
->>  >TAbort- <TAbort
->>
->> - <MAbort- >SERR- <PERR- INTx-
->>          Capabilities: [c0] Power Management version 2
->>                  Flags: PMEClk- DSI- D1- D2- AuxCurrent=3D0mA
->> PME(D0-,D1-,D2-,D3hot
->> -,D3cold-)
->>                  Status: D0 PME-Enable- DSel=3D0 DScale=3D0 PME-
->>
->> 00:11.7 Host bridge: VIA Technologies, Inc. VT8251 Ultra VLINK Control=
-ler
->>          Subsystem: VIA Technologies, Inc. Device 337e
->>          Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
->> ParErr- Step
->> ping- SERR+ FastB2B- DisINTx-
->>          Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=3Dmedium
->>
->>  >TAbort- <TAbort
->>
->> - <MAbort+ >SERR- <PERR+ INTx-
->>          Latency: 32
->>          Capabilities: [58] HyperTransport: Interrupt Discovery and
->> Configuration
->>
->>
->> 00:12.0 Ethernet controller: VIA Technologies, Inc. VT6102 [Rhine-II]
->> (rev 7c)
->>          Subsystem: ASRock Incorporation K7VT6 motherboard
->>          Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop-
->> ParErr- Step
->> ping- SERR+ FastB2B- DisINTx-
->>          Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=3Dmedium
->>
->>  >TAbort- <TAbort
->>
->> - <MAbort- >SERR- <PERR- INTx-
->>          Latency: 32 (750ns min, 2000ns max), Cache Line Size: 32 byte=
-s
->>          Interrupt: pin A routed to IRQ 11
->>          Region 0: I/O ports at e800 [size=3D256]
->>          Region 1: Memory at febffc00 (32-bit, non-prefetchable) [size=
-=3D256]
->>          Capabilities: [40] Power Management version 2
->>                  Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=3D0mA
->> PME(D0+,D1+,D2+,D3hot
->> +,D3cold+)
->>                  Status: D0 PME-Enable- DSel=3D0 DScale=3D0 PME-
->>          Kernel driver in use: via-rhine
->>          Kernel modules: via-rhine
->>
->> 00:13.0 Host bridge: VIA Technologies, Inc. VT8237A Host Bridge
->>          Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
->> ParErr- Step
->> ping- SERR+ FastB2B- DisINTx-
->>          Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=3Dfast >TAbo=
-rt-
->> <TAbort-
->> <MAbort+ >SERR- <PERR- INTx-
->>          Latency: 0
->>          Capabilities: [60] HyperTransport: MSI Mapping Enable- Fixed+=
-
->>
->> 01:00.0 VGA compatible controller: nVidia Corporation NV11DDR [GeForce=
-2
->> MX200] (
->> rev b2) (prog-if 00 [VGA controller])
->>          Subsystem: ABIT Computer Corp. Device 6107
->>          Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
->> ParErr- Step
->> ping- SERR- FastB2B- DisINTx-
->>          Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=3Dmedium
->>
->>  >TAbort- <TAbort
->>
->> - <MAbort- >SERR- <PERR- INTx-
->>          Latency: 32 (1250ns min, 250ns max)
->>          Interrupt: pin A routed to IRQ 11
->>          Region 0: Memory at fd000000 (32-bit, non-prefetchable) [size=
-=3D16M]
->>          Region 1: Memory at d0000000 (32-bit, prefetchable) [size=3D1=
-28M]
->>          Expansion ROM at fe7f0000 [disabled] [size=3D64K]
->>          Capabilities: [60] Power Management version 2
->>                  Flags: PMEClk- DSI- D1- D2- AuxCurrent=3D0mA
->> PME(D0-,D1-,D2-,D3hot
->> -,D3cold-)
->>                  Status: D0 PME-Enable- DSel=3D0 DScale=3D0 PME-
->>          Capabilities: [44] AGP version 2.0
->>                  Status: RQ=3D32 Iso- ArqSz=3D0 Cal=3D0 SBA- ITACoh- G=
-ART64-
->> HTrans- 64
->> bit- FW+ AGP3- Rate=3Dx1,x2,x4
->>                  Command: RQ=3D1 ArqSz=3D0 Cal=3D0 SBA- AGP- GART64- 6=
-4bit-
->> FW- Rate=3D<n
->> one>
->>          Kernel modules: nvidiafb
->>
->> 80:01.0 Audio device: VIA Technologies, Inc. VT1708/A [Azalia HDAC] (V=
-IA
->> High De
->> finition Audio Controller) (rev 10)
->>          Subsystem: ASRock Incorporation Device 0888
->>          Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
->> ParErr- Step
->> ping- SERR- FastB2B- DisINTx-
->>          Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=3Dfast >TAbo=
-rt-
->> <TAbort-
->> <MAbort- >SERR- <PERR- INTx-
->>          Latency: 0, Cache Line Size: 32 bytes
->>          Interrupt: pin A routed to IRQ 10
->>          Region 0: Memory at fe9fc000 (64-bit, non-prefetchable) [size=
-=3D16K]
->>          Capabilities: [50] Power Management version 2
->>                  Flags: PMEClk- DSI- D1- D2- AuxCurrent=3D55mA
->> PME(D0+,D1-,D2-,D3ho
->> t+,D3cold+)
->>                  Status: D0 PME-Enable- DSel=3D0 DScale=3D0 PME-
->>          Capabilities: [60] Message Signalled Interrupts: Mask- 64bit+=
-
->> Queue=3D0/0
->> Enable-
->>                  Address: 0000000000000000  Data: 0000
->>          Capabilities: [70] Express (v1) Root Complex Integrated
->> Endpoint, MSI 00
->>
->>                  DevCap: MaxPayload 128 bytes, PhantFunc 0, Latency L0=
-s
->> <64ns, L1
->>   <1us
->>                          ExtTag- RBE- FLReset-
->>                  DevCtl: Report errors: Correctable- Non-Fatal- Fatal-=
-
->> Unsupporte
->> d-
->>                          RlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop-
->>                          MaxPayload 128 bytes, MaxReadReq 128 bytes
->>                  DevSta: CorrErr- UncorrErr- FatalErr- UnsuppReq-
->> AuxPwr+ TransPe
->> nd+
->>                  LnkCap: Port #0, Speed unknown, Width x0, ASPM unknow=
-n,
->> Latency
->> L0 <64ns, L1 <1us
->>                          ClockPM- Suprise- LLActRep- BwNot-
->>                  LnkCtl: ASPM Disabled; Disabled- Retrain- CommClk-
->>                          ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt=
--
->>                  LnkSta: Speed unknown, Width x0, TrErr- Train- SlotCl=
-k-
->> DLActive
->> - BWMgmt- ABWMgmt-
->>          Capabilities: [100] #1106
->>          Kernel driver in use: HDA Intel
->>          Kernel modules: snd-hda-intel
->>
->>
->> /proc/ioports:
->>
->> 0000-001f : dma1
->> 0020-0021 : pic1
->> 0040-0043 : timer0
->> 0050-0053 : timer1
->> 0060-0060 : keyboard
->> 0064-0064 : keyboard
->> 0070-0077 : rtc
->> 0080-008f : dma page reg
->> 00a0-00a1 : pic2
->> 00c0-00df : dma2
->> 00f0-00ff : fpu
->> 0170-0177 : 0000:00:0f.1
->>    0170-0177 : via82cxxx
->> 01f0-01f7 : 0000:00:0f.1
->>    01f0-01f7 : via82cxxx
->> 0295-0296 : w83627hf
->>    0295-0296 : pnp 00:09
->>      0295-0296 : w83627hf
->> 02f8-02ff : serial
->> 0376-0376 : 0000:00:0f.1
->>    0376-0376 : via82cxxx
->> 03c0-03df : vga+
->> 03e0-03e7 : pnp 00:09
->> 03f2-03f2 : floppy
->> 03f4-03f5 : floppy
->> 03f6-03f6 : 0000:00:0f.1
->>    03f6-03f6 : via82cxxx
->> 03f7-03f7 : floppy
->> 03f8-03ff : serial
->> 0400-041f : pnp 00:09
->> 04d0-04d1 : pnp 00:09
->> 0800-087f : pnp 00:09
->>    0800-0803 : ACPI PM1a_EVT_BLK
->>    0804-0805 : ACPI PM1a_CNT_BLK
->>    0808-080b : ACPI PM_TMR
->>    0810-0815 : ACPI CPU throttle
->>    0820-0823 : ACPI GPE0_BLK
->> 0cf8-0cff : PCI conf1
->> 1000-1fff : PCI Bus 0000:02
->> c800-c8ff : 0000:00:0a.0
->> cc00-cc3f : 0000:00:09.0
->>    cc00-cc3f : e1000
->> d000-d0ff : 0000:00:0f.0
->>    d000-d0ff : sata_via
->> d400-d47f : 0000:00:0a.0
->> d480-d48f : 0000:00:0f.0
->>    d480-d48f : sata_via
->> d800-d803 : 0000:00:0f.0
->>    d800-d803 : sata_via
->> d880-d887 : 0000:00:0f.0
->>    d880-d887 : sata_via
->> dc00-dc03 : 0000:00:0f.0
->>    dc00-dc03 : sata_via
->> e000-e007 : 0000:00:0f.0
->>    e000-e007 : sata_via
->> e080-e09f : 0000:00:10.0
->> e400-e41f : 0000:00:10.1
->> e480-e49f : 0000:00:10.2
->> e800-e8ff : 0000:00:12.0
->>    e800-e8ff : via-rhine
->> ec00-ec1f : 0000:00:10.3
->> fc00-fc0f : 0000:00:0f.1
->>    fc00-fc0f : via82cxxx
->>
->> /proc/iomem:
->>
->> 00000000-0000ffff : reserved
->> 00010000-0009fbff : System RAM
->> 0009fc00-0009ffff : reserved
->> 000a0000-000bffff : Video RAM area
->> 000c0000-000cc7ff : Video ROM
->> 000cc800-000d17ff : Adapter ROM
->> 000d1800-000d27ff : Adapter ROM
->> 000e6000-000fffff : reserved
->>    000f0000-000fffff : System ROM
->> 00100000-3ffaffff : System RAM
->>    01000000-0128c677 : Kernel code
->>    0128c678-0138f533 : Kernel data
->>    013e0000-014131ff : Kernel bss
->> 3ffb0000-3ffbffff : ACPI Tables
->> 3ffc0000-3ffeffff : ACPI Non-volatile Storage
->> 3fff0000-3fffffff : reserved
->> 40000000-401fffff : PCI Bus 0000:02
->> cff00000-dfefffff : PCI Bus 0000:01
->>    d0000000-d7ffffff : 0000:01:00.0
->> e0000000-efffffff : PCI MMCONFIG 0 [00-ff]
->>    e0000000-efffffff : pnp 00:0e
->> f8000000-fbffffff : 0000:00:00.0
->> fc700000-fe7fffff : PCI Bus 0000:01
->>    fd000000-fdffffff : 0000:01:00.0
->>    fe7f0000-fe7fffff : 0000:01:00.0
->> fe800000-fe8fffff : PCI Bus 0000:02
->> fe9fc000-fe9fffff : 0000:80:01.0
->>    fe9fc000-fe9fffff : pnp 00:09
->>      fe9fc000-fe9fffff : ICH HD audio
->> feb60000-feb7ffff : 0000:00:09.0
->> feb80000-feb9ffff : 0000:00:09.0
->>    feb80000-feb9ffff : e1000
->> feba0000-febbffff : 0000:00:09.0
->>    feba0000-febbffff : e1000
->> febc0000-febdffff : 0000:00:0a.0
->> febe0000-febe7fff : 0000:00:0a.0
->> febfe000-febfefff : 0000:00:0a.0
->>    febfe000-febfefff : sata_promise
->> febff000-febff7ff : 0000:00:0c.0
->>    febff000-febff7ff : saa7133[0]
->> febff800-febff8ff : 0000:00:10.4
->>    febff800-febff8ff : ehci_hcd
->> febffc00-febffcff : 0000:00:12.0
->>    febffc00-febffcff : via-rhine
->> fec00000-fec00fff : pnp 00:0a
->> fee00000-fee00fff : reserved
->>    fee00000-fee00fff : pnp 00:0a
->> ff780000-ffffffff : reserved
->>    ffb80000-ffbfffff : pnp 00:09
->>    fff80000-ffffffff : pnp 00:0f
->>
->> /proc/scsi/scsi:
->>
->> Host: scsi0 Channel: 00 Id: 00 Lun: 00
->>    Vendor: ATA      Model: ST31500341AS     Rev: CC1H
->>    Type:   Direct-Access                    ANSI  SCSI revision: 05
->> Host: scsi4 Channel: 00 Id: 00 Lun: 00
->>    Vendor: ATA      Model: ST3500630AS      Rev: 3.AA
->>    Type:   Direct-Access                    ANSI  SCSI revision: 05
->>
->>
->>
->> Thanks for any hints and best regards,
->> -- Axel
->>
->=20
-
---=20
-Find Security Certificate at http://www.axel-uhl.de/cgi-bin/cacert.cgi
-
-
---------------ms010907020008060601030906
-Content-Type: application/x-pkcs7-signature; name="smime.p7s"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="smime.p7s"
-Content-Description: S/MIME Cryptographic Signature
-
-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
-DYOxjF2DqlTm2vnwAAAAAAAA
---------------ms010907020008060601030906--
+Index: linux-2.6/drivers/pci/pci.h
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci.h
++++ linux-2.6/drivers/pci/pci.h
+@@ -35,6 +35,10 @@ int pci_probe_reset_function(struct pci_
+  *
+  * @sleep_wake: enables/disables the system wake up capability of given device
+  *
++ * @run_wake: enables/disables the platform to generate run-time wake-up events
++ *		for given device (the device's wake-up capability has to be
++ *		enabled by @sleep_wake for this feature to work)
++ *
+  * If given platform is generally capable of power managing PCI devices, all of
+  * these callbacks are mandatory.
+  */
+@@ -44,12 +48,15 @@ struct pci_platform_pm_ops {
+ 	pci_power_t (*choose_state)(struct pci_dev *dev);
+ 	bool (*can_wakeup)(struct pci_dev *dev);
+ 	int (*sleep_wake)(struct pci_dev *dev, bool enable);
++	int (*run_wake)(struct pci_dev *dev, bool enable);
+ };
+ 
+ extern int pci_set_platform_pm(struct pci_platform_pm_ops *ops);
+ extern void pci_update_current_state(struct pci_dev *dev, pci_power_t state);
+ extern void pci_disable_enabled_device(struct pci_dev *dev);
+ extern bool pci_check_pme_status(struct pci_dev *dev);
++extern int __pci_pme_wakeup(struct pci_dev *dev, void *ign);
++extern void pci_pme_wakeup_bus(struct pci_bus *bus);
+ extern void pci_pm_init(struct pci_dev *dev);
+ extern void platform_pci_wakeup_init(struct pci_dev *dev);
+ extern void pci_allocate_cap_save_buffers(struct pci_dev *dev);
+Index: linux-2.6/drivers/pci/pci-acpi.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci-acpi.c
++++ linux-2.6/drivers/pci/pci-acpi.c
+@@ -16,8 +16,284 @@
+ #include <acpi/acpi_bus.h>
+ 
+ #include <linux/pci-acpi.h>
++#include <linux/pm_runtime.h>
+ #include "pci.h"
+ 
++static DEFINE_MUTEX(pci_acpi_notify_mtx);
++static LIST_HEAD(pci_acpi_notify_list);
++
++struct pci_acpi_notify_object
++{
++	struct list_head entry;
++	acpi_handle handle;
++	acpi_notify_handler hp_cb;
++	void *hp_data;
++	struct pci_bus *pci_bus;
++	struct pci_dev *pci_dev;
++};
++
++/**
++ * pci_acpi_event_fn - Universal system notification handler.
++ * @handle: ACPI handle of a device the notification is for.
++ * @event: Type of the signaled event.
++ * @context: Pointer to the notify object associated with the handle.
++ *
++ * Use @handle to obtain the address of the ACPI device object the event is
++ * signaled for.  If this is a wake-up event, execute the appropriate PME
++ * handler for the bus or device represented by it (or both, if @dev is a
++ * bridge).  If this is not a wake-up event, execute the hotplug notify handler
++ * for @handle.
++ */
++static void pci_acpi_event_fn(acpi_handle handle, u32 event, void *context)
++{
++	struct pci_acpi_notify_object *notify_obj = context;
++
++	if (!notify_obj)
++		return;
++
++	mutex_lock(&pci_acpi_notify_mtx);
++
++	if (event == ACPI_NOTIFY_DEVICE_WAKE) {
++		if (notify_obj->pci_bus) {
++			pci_pme_wakeup_bus(notify_obj->pci_bus);
++		}
++		if (notify_obj->pci_dev) {
++			pci_check_pme_status(notify_obj->pci_dev);
++			pm_request_resume(&notify_obj->pci_dev->dev);
++		}
++	} else if (notify_obj->hp_cb) {
++		notify_obj->hp_cb(handle, event, notify_obj->hp_data);
++	}
++
++	mutex_unlock(&pci_acpi_notify_mtx);
++}
++
++/**
++ * add_notify_obj - Create a new notify object for given ACPI handle.
++ * @handle: ACPI handle to create the notify object for.
++ */
++static struct pci_acpi_notify_object *add_notify_obj(acpi_handle handle)
++{
++	struct pci_acpi_notify_object *notify_obj;
++
++	notify_obj = kzalloc(sizeof(*notify_obj), GFP_KERNEL);
++	if (!notify_obj)
++		return NULL;
++
++	notify_obj->handle = handle;
++	return notify_obj;
++}
++
++/**
++ * pci_acpi_add_hp_notifier - Register a hotplug notifier for given device.
++ * @handle: ACPI handle to register the notifier for.
++ * @handler: Callback to execute for hotplug events related to @handle.
++ * @context: Pointer to the context data to pass to @handler.
++ *
++ * Find the notify object associated with @handle or create one if not found.
++ * Return error code if the notify object already contains a valid pointer to
++ * a hotplug handler or add @handler and @context to the notify object.
++ */
++acpi_status pci_acpi_add_hp_notifier(acpi_handle handle,
++				     acpi_notify_handler handler, void *context)
++{
++	struct pci_acpi_notify_object *notify_obj;
++	acpi_status status = AE_OK;
++
++	if (!handle)
++		return AE_BAD_PARAMETER;
++
++	mutex_lock(&pci_acpi_notify_mtx);
++
++	list_for_each_entry(notify_obj, &pci_acpi_notify_list, entry)
++		if (notify_obj->handle == handle) {
++			if (notify_obj->hp_cb) {
++				status = AE_ALREADY_EXISTS;
++				goto out;
++			} else {
++				goto add;
++			}
++		}
++
++	notify_obj = add_notify_obj(handle);
++	if (!notify_obj) {
++		status = AE_NO_MEMORY;
++		goto out;
++	}
++
++	status = acpi_install_notify_handler(handle, ACPI_SYSTEM_NOTIFY,
++						pci_acpi_event_fn, notify_obj);
++	if (ACPI_FAILURE(status)) {
++		kfree(notify_obj);
++		goto out;
++	}
++
++	list_add_tail(&notify_obj->entry, &pci_acpi_notify_list);
++
++ add:
++	notify_obj->hp_cb = handler;
++	notify_obj->hp_data = context;
++
++ out:
++	mutex_unlock(&pci_acpi_notify_mtx);
++
++	return status;
++}
++EXPORT_SYMBOL_GPL(pci_acpi_add_hp_notifier);
++
++/**
++ * pci_acpi_remove_hp_notifier - Unregister a hotplug notifier for given device.
++ * @handle: ACPI handle of the device to unregister the notifier for.
++ * @handler: Callback executed for hotplug events related to @handle.
++ *
++ * Find the notify object corresponding to @handle and remove the pointers to
++ * the hotplug handler and data from it.  Return error code if the notify object
++ * is not found.
++ */
++acpi_status pci_acpi_remove_hp_notifier(acpi_handle handle,
++					acpi_notify_handler handler)
++{
++	struct pci_acpi_notify_object *notify_obj;
++	acpi_status status = AE_NOT_FOUND;
++
++	if (!handle)
++		return AE_BAD_PARAMETER;
++
++	mutex_lock(&pci_acpi_notify_mtx);
++
++	list_for_each_entry(notify_obj, &pci_acpi_notify_list, entry)
++		if (notify_obj->handle == handle)
++			goto remove;
++
++	goto out;
++
++ remove:
++	notify_obj->hp_data = NULL;
++	notify_obj->hp_cb = NULL;
++
++	if (notify_obj->pci_bus || notify_obj->pci_dev) {
++		status = AE_OK;
++		goto out;
++	}
++
++	status = acpi_remove_notify_handler(handle, ACPI_SYSTEM_NOTIFY,
++						pci_acpi_event_fn);
++	list_del(&notify_obj->entry);
++	kfree(notify_obj);
++
++ out:
++	mutex_unlock(&pci_acpi_notify_mtx);
++	return status;
++}
++EXPORT_SYMBOL_GPL(pci_acpi_remove_hp_notifier);
++
++/**
++ * pci_acpi_add_pm_notifier - Register PM notifier for given device.
++ * @dev: ACPI device to add the notifier for.
++ * @pci_dev: PCI device to check for the PME status if an event is signaled.
++ * @pci_bus: PCI bus to walk (checking PME status) if an event is signaled.
++ *
++ * Use @dev to find the notify object corresponding to its handle or create a
++ * new one if not found.  Return error code if the notify object already
++ * contains a valid pointer to a PCI device or bus object.  Otherwise, add
++ * @pci_dev and @pci_bus to the notify object, as the device whose PME status
++ * should be checked whenever a PM event is signaled for @dev and the bus to
++ * walk checking the PME status of all devices on it whenever a PM event is
++ * signaled for @dev, respectively.
++ *
++ * NOTE: @dev need not be a run-wake or wake-up device to be a valid source of
++ * PM wake-up events.  For example, wake-up events may be generated for bridges
++ * if one of the devices below the bridge is signaling PME, even if the bridge
++ * itself doesn't have a wake-up GPE associated with it.
++ */
++acpi_status pci_acpi_add_pm_notifier(struct acpi_device *dev,
++				     struct pci_dev *pci_dev,
++				     struct pci_bus *pci_bus)
++{
++	struct pci_acpi_notify_object *notify_obj;
++	acpi_handle handle = dev->handle;
++	acpi_status status = AE_OK;
++
++	if (!handle)
++		return AE_BAD_PARAMETER;
++
++	mutex_lock(&pci_acpi_notify_mtx);
++
++	list_for_each_entry(notify_obj, &pci_acpi_notify_list, entry)
++		if (notify_obj->handle == handle) {
++			if (notify_obj->pci_dev || notify_obj->pci_bus) {
++				status = AE_ALREADY_EXISTS;
++				goto out;
++			} else {
++				goto add;
++			}
++		}
++
++	notify_obj = add_notify_obj(handle);
++	if (!notify_obj) {
++		status = AE_NO_MEMORY;
++		goto out;
++	}
++
++	status = acpi_install_notify_handler(handle, ACPI_SYSTEM_NOTIFY,
++						pci_acpi_event_fn, notify_obj);
++	if (ACPI_FAILURE(status)) {
++		kfree(notify_obj);
++		goto out;
++	}
++
++	list_add_tail(&notify_obj->entry, &pci_acpi_notify_list);
++
++ add:
++	notify_obj->pci_dev = pci_dev;
++	notify_obj->pci_bus = pci_bus;
++
++ out:
++	mutex_unlock(&pci_acpi_notify_mtx);
++	return status;
++}
++
++/**
++ * pci_acpi_remove_pm_notifier - Unregister PM notifier for given device.
++ * @dev: ACPI device to remove the notifier from.
++ *
++ * Find the notify object for @dev and clear its @pci_dev and @pci_bus
++ * fields.  If the notify data object is not necessary any more after that,
++ * remove it altogether.
++ */
++acpi_status pci_acpi_remove_pm_notifier(struct acpi_device *dev)
++{
++	struct pci_acpi_notify_object *notify_obj;
++	acpi_handle handle = dev->handle;
++	acpi_status status = AE_NOT_FOUND;
++
++	mutex_lock(&pci_acpi_notify_mtx);
++
++	list_for_each_entry(notify_obj, &pci_acpi_notify_list, entry)
++		if (notify_obj->handle == handle)
++			goto remove;
++
++	goto out;
++
++ remove:
++	notify_obj->pci_dev = NULL;
++	notify_obj->pci_bus = NULL;
++
++	if (notify_obj->hp_cb) {
++		status = AE_OK;
++		goto out;
++	}
++
++	status = acpi_remove_notify_handler(dev->handle, ACPI_SYSTEM_NOTIFY,
++						pci_acpi_event_fn);
++	list_del(&notify_obj->entry);
++	kfree(notify_obj);
++
++ out:
++	mutex_unlock(&pci_acpi_notify_mtx);
++	return status;
++}
++
+ /*
+  * _SxD returns the D-state with the highest power
+  * (lowest D-state number) supported in the S-state "x".
+@@ -131,12 +407,87 @@ static int acpi_pci_sleep_wake(struct pc
+ 	return 0;
+ }
+ 
++/**
++ * acpi_dev_run_wake - Enable/disable wake-up for given device.
++ * @phys_dev: Device to enable/disable the platform to wake-up the system for.
++ * @enable: Whether enable or disable the wake-up functionality.
++ *
++ * Find the ACPI device object corresponding to @pci_dev and try to
++ * enable/disable the GPE associated with it.
++ */
++static int acpi_dev_run_wake(struct device *phys_dev, bool enable)
++{
++	struct acpi_device *dev;
++	acpi_handle handle;
++	int error = -ENODEV;
++
++	if (!device_run_wake(phys_dev))
++		return -EINVAL;
++
++	handle = DEVICE_ACPI_HANDLE(phys_dev);
++	if (!handle || ACPI_FAILURE(acpi_bus_get_device(handle, &dev))) {
++		dev_dbg(phys_dev, "ACPI handle has no context in %s!\n",
++			__func__);
++		return -ENODEV;
++	}
++
++	if (enable) {
++		if (!dev->wakeup.run_wake_count++) {
++			acpi_enable_wakeup_device_power(dev, ACPI_STATE_S0);
++			acpi_enable_gpe(dev->wakeup.gpe_device,
++					dev->wakeup.gpe_number,
++					ACPI_GPE_TYPE_RUNTIME);
++		}
++	} else if (dev->wakeup.run_wake_count > 0) {
++		if (!--dev->wakeup.run_wake_count) {
++			acpi_disable_gpe(dev->wakeup.gpe_device,
++					dev->wakeup.gpe_number,
++					ACPI_GPE_TYPE_RUNTIME);
++			acpi_disable_wakeup_device_power(dev);
++		}
++	} else {
++		error = -EALREADY;
++	}
++
++	return error;
++}
++
++static void acpi_pci_propagate_run_wake(struct pci_bus *bus, bool enable)
++{
++	while (bus->parent) {
++		struct pci_dev *bridge = bus->self;
++
++		if (bridge->pme_interrupt)
++			return;
++		if (!acpi_dev_run_wake(&bridge->dev, enable))
++			return;
++		bus = bus->parent;
++	}
++
++	/* We have reached the root bus. */
++	if (bus->bridge)
++		acpi_dev_run_wake(bus->bridge, enable);
++}
++
++static int acpi_pci_run_wake(struct pci_dev *dev, bool enable)
++{
++	if (dev->pme_interrupt)
++		return 0;
++
++	if (!acpi_dev_run_wake(&dev->dev, enable))
++		return 0;
++
++	acpi_pci_propagate_run_wake(dev->bus, enable);
++	return 0;
++}
++
+ static struct pci_platform_pm_ops acpi_pci_platform_pm = {
+ 	.is_manageable = acpi_pci_power_manageable,
+ 	.set_state = acpi_pci_set_power_state,
+ 	.choose_state = acpi_pci_choose_state,
+ 	.can_wakeup = acpi_pci_can_wakeup,
+ 	.sleep_wake = acpi_pci_sleep_wake,
++	.run_wake = acpi_pci_run_wake,
+ };
+ 
+ /* ACPI bus type */
+Index: linux-2.6/drivers/pci/pci.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci.c
++++ linux-2.6/drivers/pci/pci.c
+@@ -20,6 +20,7 @@
+ #include <linux/pm_wakeup.h>
+ #include <linux/interrupt.h>
+ #include <linux/device.h>
++#include <linux/pm_runtime.h>
+ #include <asm/setup.h>
+ #include "pci.h"
+ 
+@@ -462,6 +463,12 @@ static inline int platform_pci_sleep_wak
+ 			pci_platform_pm->sleep_wake(dev, enable) : -ENODEV;
+ }
+ 
++static inline int platform_pci_run_wake(struct pci_dev *dev, bool enable)
++{
++	return pci_platform_pm ?
++			pci_platform_pm->run_wake(dev, enable) : -ENODEV;
++}
++
+ /**
+  * pci_raw_set_power_state - Use PCI PM registers to set the power state of
+  *                           given PCI device
+@@ -1230,6 +1237,31 @@ bool pci_check_pme_status(struct pci_dev
+ }
+ 
+ /**
++ * pci_pme_wakeup - Wake up a PCI device if its PME Status bit is set.
++ * @dev: Device to handle.
++ * @ign: Ignored.
++ *
++ * Check if @dev has generated PME and queue a resume request for it in that
++ * case.
++ */
++static int pci_pme_wakeup(struct pci_dev *dev, void *ign)
++{
++	if (pci_check_pme_status(dev))
++		pm_request_resume(&dev->dev);
++	return 0;
++}
++
++/**
++ * pci_pme_wakeup_bus - Walk given bus and wake up devices on it, if necessary.
++ * @bus: Top bus of the subtree to walk.
++ */
++void pci_pme_wakeup_bus(struct pci_bus *bus)
++{
++	if (bus)
++		pci_walk_bus(bus, pci_pme_wakeup, NULL);
++}
++
++/**
+  * pci_pme_capable - check the capability of PCI device to generate PME#
+  * @dev: PCI device to handle.
+  * @state: PCI state from which device will issue PME#.
+@@ -1434,6 +1466,41 @@ int pci_back_from_sleep(struct pci_dev *
+ }
+ 
+ /**
++ * pci_dev_run_wake - Check if device can generate run-time wake-up events.
++ * @dev: Device to check.
++ *
++ * Return true if the device itself is cabable of generating wake-up events
++ * (through the platform or using the native PCIe PME) or if the device supports
++ * PME and one of its upstream bridges can generate wake-up events.
++ */
++bool pci_dev_run_wake(struct pci_dev *dev)
++{
++	struct pci_bus *bus = dev->bus;
++
++	if (device_run_wake(&dev->dev))
++		return true;
++
++	if (!dev->pme_support)
++		return false;
++
++	while (bus->parent) {
++		struct pci_dev *bridge = bus->self;
++
++		if (device_run_wake(&bridge->dev))
++			return true;
++
++		bus = bus->parent;
++	}
++
++	/* We have reached the root bus. */
++	if (bus->bridge)
++		return device_run_wake(bus->bridge);
++
++	return false;
++}
++EXPORT_SYMBOL_GPL(pci_dev_run_wake);
++
++/**
+  * pci_pm_init - Initialize PM functions of given PCI device
+  * @dev: PCI device to handle.
+  */
+Index: linux-2.6/include/linux/pci-acpi.h
+===================================================================
+--- linux-2.6.orig/include/linux/pci-acpi.h
++++ linux-2.6/include/linux/pci-acpi.h
+@@ -11,6 +11,16 @@
+ #include <linux/acpi.h>
+ 
+ #ifdef CONFIG_ACPI
++extern acpi_status pci_acpi_add_hp_notifier(acpi_handle handle,
++					     acpi_notify_handler handler,
++					     void *context);
++extern acpi_status pci_acpi_remove_hp_notifier(acpi_handle handle,
++					       acpi_notify_handler handler);
++extern acpi_status pci_acpi_add_pm_notifier(struct acpi_device *dev,
++					     struct pci_dev *pci_dev,
++					     struct pci_bus *pci_bus);
++extern acpi_status pci_acpi_remove_pm_notifier(struct acpi_device *dev);
++
+ static inline acpi_handle acpi_find_root_bridge_handle(struct pci_dev *pdev)
+ {
+ 	struct pci_bus *pbus = pdev->bus;
+Index: linux-2.6/drivers/acpi/pci_bind.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/pci_bind.c
++++ linux-2.6/drivers/acpi/pci_bind.c
+@@ -26,7 +26,9 @@
+ #include <linux/kernel.h>
+ #include <linux/types.h>
+ #include <linux/pci.h>
++#include <linux/pci-acpi.h>
+ #include <linux/acpi.h>
++#include <linux/pm_runtime.h>
+ #include <acpi/acpi_bus.h>
+ #include <acpi/acpi_drivers.h>
+ 
+@@ -38,7 +40,13 @@ static int acpi_pci_unbind(struct acpi_d
+ 	struct pci_dev *dev;
+ 
+ 	dev = acpi_get_pci_dev(device->handle);
+-	if (!dev || !dev->subordinate)
++	if (!dev)
++		goto out;
++
++	device_set_run_wake(&dev->dev, false);
++	pci_acpi_remove_pm_notifier(device);
++
++	if (!dev->subordinate)
+ 		goto out;
+ 
+ 	acpi_pci_irq_del_prt(dev->subordinate);
+@@ -62,6 +70,10 @@ static int acpi_pci_bind(struct acpi_dev
+ 	if (!dev)
+ 		return 0;
+ 
++	pci_acpi_add_pm_notifier(device, dev, dev->subordinate);
++	if (device->wakeup.flags.run_wake)
++		device_set_run_wake(&dev->dev, true);
++
+ 	/*
+ 	 * Install the 'bind' function to facilitate callbacks for
+ 	 * children of the P2P bridge.
+Index: linux-2.6/drivers/pci/hotplug/acpiphp_glue.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/hotplug/acpiphp_glue.c
++++ linux-2.6/drivers/pci/hotplug/acpiphp_glue.c
+@@ -236,8 +236,7 @@ register_slot(acpi_handle handle, u32 lv
+ 
+ 	/* install notify handler */
+ 	if (!(newfunc->flags & FUNC_HAS_DCK)) {
+-		status = acpi_install_notify_handler(handle,
+-					     ACPI_SYSTEM_NOTIFY,
++		status = pci_acpi_add_hp_notifier(handle,
+ 					     handle_hotplug_event_func,
+ 					     newfunc);
+ 
+@@ -288,14 +287,12 @@ static void init_bridge_misc(struct acpi
+ 	/* install notify handler */
+ 	if (bridge->type != BRIDGE_TYPE_HOST) {
+ 		if ((bridge->flags & BRIDGE_HAS_EJ0) && bridge->func) {
+-			status = acpi_remove_notify_handler(bridge->func->handle,
+-						ACPI_SYSTEM_NOTIFY,
++			status = pci_acpi_remove_hp_notifier(bridge->func->handle,
+ 						handle_hotplug_event_func);
+ 			if (ACPI_FAILURE(status))
+ 				err("failed to remove notify handler\n");
+ 		}
+-		status = acpi_install_notify_handler(bridge->handle,
+-					     ACPI_SYSTEM_NOTIFY,
++		status = pci_acpi_add_hp_notifier(bridge->handle,
+ 					     handle_hotplug_event_bridge,
+ 					     bridge);
+ 
+@@ -505,15 +502,14 @@ static void cleanup_bridge(struct acpiph
+ 	acpi_status status;
+ 	acpi_handle handle = bridge->handle;
+ 
+-	status = acpi_remove_notify_handler(handle, ACPI_SYSTEM_NOTIFY,
++	status = pci_acpi_remove_hp_notifier(handle,
+ 					    handle_hotplug_event_bridge);
+ 	if (ACPI_FAILURE(status))
+ 		err("failed to remove notify handler\n");
+ 
+ 	if ((bridge->type != BRIDGE_TYPE_HOST) &&
+ 	    ((bridge->flags & BRIDGE_HAS_EJ0) && bridge->func)) {
+-		status = acpi_install_notify_handler(bridge->func->handle,
+-						ACPI_SYSTEM_NOTIFY,
++		status = pci_acpi_add_hp_notifier(bridge->func->handle,
+ 						handle_hotplug_event_func,
+ 						bridge->func);
+ 		if (ACPI_FAILURE(status))
+@@ -529,8 +525,7 @@ static void cleanup_bridge(struct acpiph
+ 				unregister_dock_notifier(&func->nb);
+ 			}
+ 			if (!(func->flags & FUNC_HAS_DCK)) {
+-				status = acpi_remove_notify_handler(func->handle,
+-						ACPI_SYSTEM_NOTIFY,
++				status = pci_acpi_remove_hp_notifier(func->handle,
+ 						handle_hotplug_event_func);
+ 				if (ACPI_FAILURE(status))
+ 					err("failed to remove notify handler\n");
+@@ -592,7 +587,7 @@ static void remove_bridge(acpi_handle ha
+ 	if (bridge)
+ 		cleanup_bridge(bridge);
+ 	else
+-		acpi_remove_notify_handler(handle, ACPI_SYSTEM_NOTIFY,
++		pci_acpi_remove_hp_notifier(handle,
+ 					   handle_hotplug_event_bridge);
+ }
+ 
+@@ -1278,8 +1273,8 @@ find_root_bridges(acpi_handle handle, u3
+ 	int *count = (int *)context;
+ 
+ 	if (acpi_is_root_bridge(handle)) {
+-		acpi_install_notify_handler(handle, ACPI_SYSTEM_NOTIFY,
+-				handle_hotplug_event_bridge, NULL);
++		pci_acpi_add_hp_notifier(handle,
++					handle_hotplug_event_bridge, NULL);
+ 			(*count)++;
+ 	}
+ 	return AE_OK ;
+Index: linux-2.6/include/linux/pci.h
+===================================================================
+--- linux-2.6.orig/include/linux/pci.h
++++ linux-2.6/include/linux/pci.h
+@@ -756,6 +756,7 @@ int pci_wake_from_d3(struct pci_dev *dev
+ pci_power_t pci_target_state(struct pci_dev *dev);
+ int pci_prepare_to_sleep(struct pci_dev *dev);
+ int pci_back_from_sleep(struct pci_dev *dev);
++bool pci_dev_run_wake(struct pci_dev *dev);
+ 
+ /* For use by arch with custom probe code */
+ void set_pcie_port_type(struct pci_dev *pdev);
+Index: linux-2.6/include/acpi/acpi_bus.h
+===================================================================
+--- linux-2.6.orig/include/acpi/acpi_bus.h
++++ linux-2.6/include/acpi/acpi_bus.h
+@@ -388,6 +388,9 @@ acpi_handle acpi_get_pci_rootbridge_hand
+ struct acpi_pci_root *acpi_pci_find_root(acpi_handle handle);
+ #define DEVICE_ACPI_HANDLE(dev) ((acpi_handle)((dev)->archdata.acpi_handle))
+ 
++int acpi_enable_wakeup_device_power(struct acpi_device *dev, int state);
++int acpi_disable_wakeup_device_power(struct acpi_device *dev);
++
+ #ifdef CONFIG_PM_SLEEP
+ int acpi_pm_device_sleep_state(struct device *, int *);
+ int acpi_pm_device_sleep_wake(struct device *, bool);
+Index: linux-2.6/drivers/acpi/pci_root.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/pci_root.c
++++ linux-2.6/drivers/acpi/pci_root.c
+@@ -30,6 +30,7 @@
+ #include <linux/proc_fs.h>
+ #include <linux/spinlock.h>
+ #include <linux/pm.h>
++#include <linux/pm_runtime.h>
+ #include <linux/pci.h>
+ #include <linux/pci-acpi.h>
+ #include <linux/acpi.h>
+@@ -528,6 +529,10 @@ static int __devinit acpi_pci_root_add(s
+ 	if (flags != base_flags)
+ 		acpi_pci_osc_support(root, flags);
+ 
++	pci_acpi_add_pm_notifier(device, NULL, root->bus);
++	if (device->wakeup.flags.run_wake)
++		device_set_run_wake(root->bus->bridge, true);
++
+ 	return 0;
+ 
+ end:
+@@ -549,6 +554,9 @@ static int acpi_pci_root_remove(struct a
+ {
+ 	struct acpi_pci_root *root = acpi_driver_data(device);
+ 
++	device_set_run_wake(root->bus->bridge, false);
++	pci_acpi_remove_pm_notifier(device);
++
+ 	kfree(root);
+ 	return 0;
+ }
+Index: linux-2.6/drivers/acpi/internal.h
+===================================================================
+--- linux-2.6.orig/drivers/acpi/internal.h
++++ linux-2.6/drivers/acpi/internal.h
+@@ -36,8 +36,6 @@ static inline int acpi_debug_init(void) 
+ int acpi_power_init(void);
+ int acpi_device_sleep_wake(struct acpi_device *dev,
+                            int enable, int sleep_state, int dev_state);
+-int acpi_enable_wakeup_device_power(struct acpi_device *dev, int sleep_state);
+-int acpi_disable_wakeup_device_power(struct acpi_device *dev);
+ int acpi_power_get_inferred_state(struct acpi_device *device);
+ int acpi_power_transition(struct acpi_device *device, int state);
+ extern int acpi_power_nocheck;
