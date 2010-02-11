@@ -1,72 +1,42 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753396Ab0BKMET (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 07:04:19 -0500
-Received: from wine.ocn.ne.jp ([122.1.235.145]:54446 "EHLO smtp.wine.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753293Ab0BKMEQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 07:04:16 -0500
-To: oleg@redhat.com, tglx@linutronix.de
-Cc: linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com,
-       dipankar@in.ibm.com, mingo@elte.hu, peterz@infradead.org,
-       viro@zeniv.linux.org.uk, jmorris@namei.org, dhowells@redhat.com,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       linux-security-module@vger.kernel.org
-Subject: [PATCH] sys: Fix missing rcu protection for sys_getpriority.
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-References: <20091210001308.247025548@linutronix.de>
-	<20091210004703.029784964@linutronix.de>
-	<20091210142036.GA8226@redhat.com>
-In-Reply-To: <20091210142036.GA8226@redhat.com>
-Message-Id: <201002112104.BAG73411.LFHFSVQtOOMOJF@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.51 PL2]
-X-Accept-Language: ja,en,zh
-Date: Thu, 11 Feb 2010 21:04:14 +0900
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1753437Ab0BKMHN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 07:07:13 -0500
+Received: from mail-forward1.uio.no ([129.240.10.70]:54746 "EHLO
+	mail-forward1.uio.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753163Ab0BKMHL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 07:07:11 -0500
+Message-ID: <4B73F2E9.3080306@simula.no>
+Date: Thu, 11 Feb 2010 13:07:05 +0100
+From: Andreas Petlund <apetlund@simula.no>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.9pre) Gecko/20100209 Shredder/3.0.2pre
+MIME-Version: 1.0
+To: "netdev@vger.kernel.org" <netdev@vger.kernel.org>
+CC: =?ISO-8859-1?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
+       Eric Dumazet <eric.dumazet@gmail.com>,
+       Arnd Hannemann <hannemann@nets.rwth-aachen.de>,
+       LKML <linux-kernel@vger.kernel.org>, shemminger@vyatta.com,
+       David Miller <davem@davemloft.net>, william.allen.simpson@gmail.com,
+       damian@tvk.rwth-aachen.de
+Subject: [net-next PATCH v3 0/3] net: TCP thin-stream latency-improving modifications
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-UiO-Ratelimit-Test: rcpts/h 10 msgs/h 2 sum rcpts/h 16 sum msgs/h 2 total rcpts 780 max rcpts/h 37 ratelimit 0
+X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
+X-UiO-Scanned: E26737164670922A8F8AC62C3D7C4EDAF7470439
+X-UiO-SPAM-Test: remote_host: 128.39.37.254 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 5 total 19381 max/h 66 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov wrote:
-> This also fixes another bug here. find_task_by_vpid() is not safe
-> without rcu_read_lock(). I do not mean it is not safe to use the
-> result, just find_pid_ns() by itself is not safe.
-> 
-> Usually tasklist gives enough protection, but if copy_process() fails
-> it calls free_pid() lockless and does call_rcu(delayed_put_pid().
-> This means, without rcu lock find_pid_ns() can't scan the hash table
-> safely.
+This is a series of patches enabling non-intrusive, dynamically triggered modifications that improve retransmission latencies for thin streams.
 
-This bug for sys_setpriority() was fixed, but not fixed for sys_getpriority().
-Why not to add it as well?
---------------------
-[PATCH] sys: Fix missing rcu protection for sys_setpriority.
+The patches have been modified according to the feedback from the last round of discussions.
 
-find_task_by_vpid() is not safe without rcu_read_lock().
-2.6.33-rc7 got RCU protection for sys_setpriority() but missed it for
-sys_getpriority().
+Major changes:
+      -Possible to disable mechanisms by socket option
+      -Socket option value boundary check
 
-Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
----
- kernel/sys.c |    2 ++
- 1 file changed, 2 insertions(+)
-
---- linux-2.6.33-rc7.orig/kernel/sys.c
-+++ linux-2.6.33-rc7/kernel/sys.c
-@@ -222,6 +222,7 @@ SYSCALL_DEFINE2(getpriority, int, which,
- 	if (which > PRIO_USER || which < PRIO_PROCESS)
- 		return -EINVAL;
- 
-+	rcu_read_lock();
- 	read_lock(&tasklist_lock);
- 	switch (which) {
- 		case PRIO_PROCESS:
-@@ -267,6 +268,7 @@ SYSCALL_DEFINE2(getpriority, int, which,
- 	}
- out_unlock:
- 	read_unlock(&tasklist_lock);
-+	rcu_read_unlock();
- 
- 	return retval;
- }
+Cheers,
+Andreas Petlund
