@@ -1,63 +1,57 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757096Ab0BKU5s (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 15:57:48 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:36936 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756944Ab0BKU5r (ORCPT
+	id S1757181Ab0BKU6J (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 15:58:09 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:38265 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757033Ab0BKU6H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 15:57:47 -0500
-Date: Thu, 11 Feb 2010 21:57:45 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Greg KH <gregkh@suse.de>, Kay Sievers <kay.sievers@suse.de>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: oops in uevent_helper [was: mmotm 2010-01-13-12-17 uploaded]
-Message-ID: <20100211205745.GA18202@basil.fritz.box>
-References: <201001132042.o0DKgaSR027272@imap1.linux-foundation.org> <4B50C2FA.4020100@gmail.com> <4B50FC78.9010107@gmail.com> <20100122155237.e93a1c55.akpm@linux-foundation.org> <4B730EE3.4080405@gmail.com>
+	Thu, 11 Feb 2010 15:58:07 -0500
+Date: Thu, 11 Feb 2010 21:58:01 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Bill Gatliff <bgat@billgatliff.com>
+Cc: linux-embedded@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PWM PATCH 2/5] Emulates PWM hardware using a high-resolution
+ timer and a GPIO pin
+Message-ID: <20100211205801.GA29159@elf.ucw.cz>
+References: <cover.1265094517.git.bgat@billgatliff.com>
+ <2d73f9b2fd175fd3e482920baebcd3028206f02e.1265094517.git.bgat@billgatliff.com>
+ <20100211200702.GB1487@ucw.cz>
+ <4B746A02.9060306@billgatliff.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4B730EE3.4080405@gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <4B746A02.9060306@billgatliff.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 10, 2010 at 08:54:11PM +0100, Jiri Slaby wrote:
-> On 01/23/2010 12:52 AM, Andrew Morton wrote:
-> > On Sat, 16 Jan 2010 00:38:32 +0100
-> > Jiri Slaby <jirislaby@gmail.com> wrote:
-> > 
-> >> (fixed subject)
-> >>
-> >> On 01/15/2010 08:33 PM, Jiri Slaby wrote:
-> >>> On 01/13/2010 09:17 PM, akpm@linux-foundation.org wrote:
-> >>>> The mm-of-the-moment snapshot 2010-01-13-12-17 has been uploaded to
-> >>>
-> >>> Hi, it crashes on my machine while booting up. It is a regression
-> >>> against 2010-01-06-14-34. Doesn't it ring a bell by a chance?
-> >>
-> >> Well, memcpying to something like this:
-> >> char *uevent_helper = CONFIG_UEVENT_HELPER_PATH;
-> >> doesn't sound like a good idea :).
-> >>
-> >> And it's racy with sysctl path anyway.
-> >>
-> >> Looks like added by:
-> >> sysctl-convert-hotplug-helper-string-to-proc_rcu_string.patch
+On Thu 2010-02-11 14:35:14, Bill Gatliff wrote:
+> Pavel Machek wrote:
+> >> +static void
+> >> +gpio_pwm_work (struct work_struct *work)
+> >> +{
+> >> +	struct gpio_pwm *gp = container_of(work, struct gpio_pwm, work);
+> >> +
+> >> +	if (gp->active)
+> >> +		gpio_direction_output(gp->gpio, gp->polarity ? 1 : 0);
+> >> +	else
+> >> +		gpio_direction_output(gp->gpio, gp->polarity ? 0 : 1);
+> >> +}
+> >>     
+> >
+> > ...polarity ^ active ?
+> >   
 > 
-> Ping Andi.
+> ... except that if polarity and/or active are >1, I don't send the
+> values 1 or 0 to gpio_direction_output.  I don't know if the API is
+> specifically intended to accept nonzero values that are greater than 1.
 
-Sorry, busy with other stuff right now. There was at least one
-other unsolved problem in this patch series. I'll try to look
-at it on the weekend.
-
-Andrew, it's ok for me if you just drop the series for now;
-I'll resubmit.
-
--Andi
+!polarity ^ !active ? :-).
+									Pavel
 
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
