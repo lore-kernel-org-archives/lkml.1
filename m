@@ -1,97 +1,139 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756097Ab0BKRNH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 12:13:07 -0500
-Received: from exprod6og106.obsmtp.com ([64.18.1.191]:40131 "HELO
-	exprod6og106.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750804Ab0BKRNF convert rfc822-to-8bit (ORCPT
+	id S1756425Ab0BKROw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 12:14:52 -0500
+Received: from gv-out-0910.google.com ([216.239.58.184]:44691 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750830Ab0BKROu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 12:13:05 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 11 Feb 2010 12:14:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=f7Hl5gZVfca9wwKRyJ/aDV5vPlaAZcjvOvlG3dE7RtCF0VON1NTfSvIA+uU/ZzWkwG
+         htzsvkNaoBA5NqYSqWo11vWzrtjA93GbjKEEndK0FoCryQU0CU3W/a43ExX6w8WiFoYr
+         +lxW6GdZW88RasUGAR3FaecoxylLthXZYRpVM=
+Date: Thu, 11 Feb 2010 18:15:13 +0100
+From: "Carlos R. Mafra" <crmafra2@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Alexander Lam <lambchop468@gmail.com>, linux-kernel@vger.kernel.org,
+       Yinghai Lu <yinghai@kernel.org>
+Subject: Re: mtrr cleanup not doing anything on 2.6.33-rc7
+Message-ID: <20100211171513.GA6700@Pilar.aei.mpg.de>
+References: <dfb03c971002101202i37f4a243jc6bfb44bc853cb5d@mail.gmail.com>
+ <dfb03c971002101748i39d7de0bw83634c40f058de0f@mail.gmail.com>
+ <20100211101013.GA4892@Pilar.aei.mpg.de>
+ <4B741ABB.2000600@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: [Q] i2c-taos-evm bus driver
-Date: Thu, 11 Feb 2010 12:12:51 -0500
-Message-ID: <BD79186B4FD85F4B8E60E381CAEE190902153420@mi8nycmail19.Mi8.com>
-In-Reply-To: <20100209214252.2a01f010@hyperion.delvare>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [Q] i2c-taos-evm bus driver
-Thread-Index: AcqpyHVS3SRdILySQjex3bSl9D+LkABc53kg
-References: <BD79186B4FD85F4B8E60E381CAEE190902152F0E@mi8nycmail19.Mi8.com><20100209091639.5b6e39a5@hyperion.delvare><BD79186B4FD85F4B8E60E381CAEE190902152FBE@mi8nycmail19.Mi8.com> <20100209214252.2a01f010@hyperion.delvare>
-From: "H Hartley Sweeten" <hartleys@visionengravers.com>
-To: "Jean Delvare" <khali@linux-fr.org>
-Cc: <linux-kernel@vger.kernel.org>, "Linux I2C" <linux-i2c@vger.kernel.org>,
-       "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-X-OriginalArrivalTime: 11 Feb 2010 17:12:59.0401 (UTC) FILETIME=[75F7CF90:01CAAB3D]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B741ABB.2000600@zytor.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, February 09, 2010 1:43 PM, Jean Delvare wrote:
-> Hi Hartley,
+On Do 11.Feb'10 at  6:56:59 -0800, H. Peter Anvin wrote:
+> On 02/11/2010 02:10 AM, Carlos R. Mafra wrote:
+> > [Add people in that commit to Cc: list, just in case]
+> > 
+> > On Mi 10.Feb'10 at 20:48:49 -0500, Alexander Lam wrote:
+> >> On Wed, Feb 10, 2010 at 3:02 PM, Alexander Lam <lambchop468@gmail.com> wrote:
+> >>>
+> >>> My kernel config has the following:
+> >>> CONFIG_MTRR=y
+> >>> CONFIG_MTRR_SANITIZER=y
+> >>> CONFIG_MTRR_SANITIZER_ENABLE_DEFAULT=1
+> >>> CONFIG_MTRR_SANITIZER_SPARE_REG_NR_DEFAULT=1
+> >>>
+> >>> With previous kernels, dmesg would show that the sanitizer was indeed
+> >>> cleaning up the mtrrs [1]
+> >>>
+> >>> but now, with 2.6.33-rc7 there is no indication that this is occuring,
+> >>
+> >> For those who run across this later,
+> >>
+> >> Found out that commit 508d85c2c6bc8cba53d2a54d9a306ad64a0a80bf,
+> >>    x86: When cleaning MTRRs, do not fold WP into UC
+> >>
+> >> causes mtrr cleanup not to run on my machine.
+> >>
+> >> Probably not worth fixing because the i915 error message is harmless.
+> >> --
+> 
+> You're not stating what your MTRR setup looks like, and hence if there
+> is anything to clean up.
 
-Hello.
+I am not sure if I am being an intruder here, but I also should
+have quoted Alexander's first email:
 
-> On Tue, 9 Feb 2010 11:38:37 -0500, H Hartley Sweeten wrote:
->> On Tuesday, February 09, 2010 1:17 AM, Jean Delvare wrote:
->>> No, it works reasonably fine. I was using it myself no later than one
->>> month ago. Out of curiosity, with which exact evaluation module do you
->>> plan to use it?
->> 
->> I'm not actually...
->> 
->> I am trying to figure out how a serio driver actually gets "hooked" to a
->> serial port.  The i2c-taos-evm driver looked simple enough to play with
->> in order to figure it out.  I was trying to follow the Documentation in
->> order to use it and ran into the issue below.
->
-> OK... but please keep in mind that you won't be able to use this driver
-> without supported hardware. The driver will not bind to the serial port
-> if it doesn't detect a supported device.
+Hi all,
 
-That's what I am trying to figure out.
+Please CC: me when replying.
 
-Now that I know the baud rate and port setting from your patch to inputattach.c
-I was just going to dummy something up to one of my serial ports.  I really
-don't need the i2c-taos-evm driver to "work" I just want to figure out how
-the serio connection is made.
+My kernel config has the following:
+CONFIG_MTRR=y
+CONFIG_MTRR_SANITIZER=y
+CONFIG_MTRR_SANITIZER_ENABLE_DEFAULT=1
+CONFIG_MTRR_SANITIZER_SPARE_REG_NR_DEFAULT=1
 
-It still seems strange to me that a user space application is needed to connect
-two kernel drivers together.  Actually three if you include the serio "bridge".
-I assume the actual connection between the drivers is something like this:
+With previous kernels, dmesg would show that the sanitizer was indeed
+cleaning up the mtrrs [1]
 
-	some_tty_driver <--> serio <--> i2c-taos-evm
+but now, with 2.6.33-rc7 there is no indication that this is occuring,
+and the intel i915 driver complains:
+   [    0.613419] i915 0000:00:02.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+   [    0.614577] i915 0000:00:02.0: setting latency timer to 64
+   [    0.625446] mtrr: no more MTRRs available
+   [    0.625529] [drm] MTRR allocation failed.  Graphics performance
+may suffer.
 
->> (...)
->> Do you know if there is a way to make the connection in kernel?
+What has changed and what do I need to do to make the mtrr sanitation
+work again?
 
-> I suppose this is possible from a pure code perspective, but I can't
-> see why one would want to do that. The kernel has no idea what is
-> connected to the serial ports: devices on the serial port can't be
-> reliably nor safely probed. This is why we rely on user-space to
-> declare which device is connected to which port, based on the
-> assumption that the user knows what he or she is doing.
+[1]: dmesg from previous kernels:
+[    0.000000] MTRR default type: uncachable
+[    0.000000] MTRR fixed ranges enabled:
+[    0.000000]   00000-9FFFF write-back
+[    0.000000]   A0000-BFFFF uncachable
+[    0.000000]   C0000-C7FFF write-protect
+[    0.000000]   C8000-EFFFF uncachable
+[    0.000000]   F0000-FFFFF write-protect
+[    0.000000] MTRR variable ranges enabled:
+[    0.000000]   0 base 0FFFE0000 mask 0FFFE0000 write-protect
+[    0.000000]   1 base 0FFFC0000 mask 0FFFE0000 uncachable
+[    0.000000]   2 base 000000000 mask 0E0000000 write-back
+[    0.000000]   3 base 020000000 mask 0E0000000 write-back
+[    0.000000]   4 base 03F800000 mask 0FF800000 uncachable
+[    0.000000]   5 base 03F600000 mask 0FFE00000 uncachable
+[    0.000000]   6 base 03F500000 mask 0FFF00000 uncachable
+[    0.000000]   7 base 000000000 mask 0FFFE0000 uncachable
+[    0.000000] x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
+[    0.000000] original variable MTRRs
+[    0.000000] reg 0, base: 4194176KB, range: 128KB, type WP
+[    0.000000] reg 1, base: 4194048KB, range: 128KB, type UC
+[    0.000000] reg 2, base: 0GB, range: 512MB, type WB
+[    0.000000] reg 3, base: 512MB, range: 512MB, type WB
+[    0.000000] reg 4, base: 1016MB, range: 8MB, type UC
+[    0.000000] reg 5, base: 1014MB, range: 2MB, type UC
+[    0.000000] reg 6, base: 1013MB, range: 1MB, type UC
+[    0.000000] reg 7, base: 0GB, range: 128KB, type UC
+[    0.000000] WARNING: BIOS bug: VAR MTRR 7 contains strange UC entry
+under 1M, check with your system vendor!
+[    0.000000] total RAM coverred: 1013M
+[    0.000000] Found optimal setting for mtrr clean up
+[    0.000000]  gran_size: 64K  chunk_size: 16M         num_reg: 4
+ lose cover RAM: 0G
+[    0.000000] New variable MTRRs
+[    0.000000] reg 0, base: 0GB, range: 1GB, type WB
+[    0.000000] reg 1, base: 1013MB, range: 1MB, type UC
+[    0.000000] reg 2, base: 1014MB, range: 2MB, type UC
+[    0.000000] reg 3, base: 1016MB, range: 8MB, type UC
+[    0.000000] x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
 
-My intention is to do this in an embedded system.  The serial port
-I am using will always be connected to the target device.  I am just
-Trying to figure out a way to make the kernel driver connection.
 
->> Also, do you know if there is any information on the serio stuff
->> available anywhere?  Other than just reading the kernel source I
->> have not been able to locate anything.
->
-> I seem to remember I hit the exact same problem back when I wrote the
-> i2c-taos-evm driver. I ended up reading the source code of other serial
-> device drivers and used them as an example. It was enough to get things
-> to work, but I won't claim I understood all of serio... just enough to
-> do what I needed back then.
->
-> Maybe Dmitry Torokhov (Cc'd) will be more helpful than me.
+Thanks,
+-- 
+Alexander Lam
 
-Hopefully... There seems to be a real lack of information available.
-
-Thanks for the reply,
-Hartley
