@@ -1,232 +1,102 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757471Ab0BKXTh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 18:19:37 -0500
-Received: from hera.kernel.org ([140.211.167.34]:47627 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755775Ab0BKXTf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 18:19:35 -0500
-Date: Thu, 11 Feb 2010 23:19:04 GMT
-From: tip-bot for Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       roland@redhat.com, suresh.b.siddha@intel.com, tglx@linutronix.de,
-       hjl.tools@gmail.com
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       roland@redhat.com, suresh.b.siddha@intel.com, tglx@linutronix.de,
-       hjl.tools@gmail.com
-In-Reply-To: <20100211195614.886724710@sbs-t61.sc.intel.com>
-References: <20100211195614.886724710@sbs-t61.sc.intel.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/ptrace] ptrace: Add support for generic PTRACE_GETREGSET/PTRACE_SETREGSET
-Message-ID: <tip-2225a122ae26d542bdce523d9d87a4a7ba10e07b@git.kernel.org>
-Git-Commit-ID: 2225a122ae26d542bdce523d9d87a4a7ba10e07b
-X-Mailer: tip-git-log-daemon
+	id S1757476Ab0BKXUH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 18:20:07 -0500
+Received: from out02.mta.xmission.com ([166.70.13.232]:54713 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755775Ab0BKXUE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 18:20:04 -0500
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>,
+       "Tejun Heo <tj@kernel.org> Neil Brown" <neilb@suse.de>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 2/4] sysfs: Only take active references on attributes.
+References: <19314.1869.847327.15190@notabene.brown>
+	<2375c9f91002091808n713275dsc9ace8f51871364e@mail.gmail.com>
+	<4B7217CF.2080702@kernel.org> <m1vde57c11.fsf@fess.ebiederm.org>
+	<4B728CFE.40208@kernel.org> <m1sk992bji.fsf@fess.ebiederm.org>
+	<20100210230544.GA678@suse.de> <m1ocjwwob1.fsf@fess.ebiederm.org>
+	<4B73671E.2050105@kernel.org> <m1bpfvxt67.fsf_-_@fess.ebiederm.org>
+	<m14olnxt3s.fsf_-_@fess.ebiederm.org>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Thu, 11 Feb 2010 15:20:00 -0800
+In-Reply-To: <m14olnxt3s.fsf_-_@fess.ebiederm.org> (Eric W. Biederman's message of "Thu\, 11 Feb 2010 15\:14\:47 -0800")
+Message-ID: <m1ljezwean.fsf_-_@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 11 Feb 2010 23:19:07 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  2225a122ae26d542bdce523d9d87a4a7ba10e07b
-Gitweb:     http://git.kernel.org/tip/2225a122ae26d542bdce523d9d87a4a7ba10e07b
-Author:     Suresh Siddha <suresh.b.siddha@intel.com>
-AuthorDate: Thu, 11 Feb 2010 11:51:00 -0800
-Committer:  H. Peter Anvin <hpa@zytor.com>
-CommitDate: Thu, 11 Feb 2010 15:08:33 -0800
 
-ptrace: Add support for generic PTRACE_GETREGSET/PTRACE_SETREGSET
+If we exclude directories and symlinks from the set of sysfs
+dirents where we need active references we are left with
+sysfs attributes (binary or not).
 
-Generic support for PTRACE_GETREGSET/PTRACE_SETREGSET commands which
-export the regsets supported by each architecture using the correponding
-NT_* types. These NT_* types are already part of the userland ABI, used
-in representing the architecture specific register sets as different NOTES
-in an ELF core file.
+- Tweak sysfs_deactivate to only do something on attributes
+- Move lockdep initialization into sysfs_file_add_mode to
+  limit it to just attributes.
 
-'addr' parameter for the ptrace system call encode the REGSET type (using
-the corresppnding NT_* type) and the 'data' parameter points to the
-struct iovec having the user buffer and the length of that buffer.
-
-	struct iovec iov = { buf, len};
-	ret = ptrace(PTRACE_GETREGSET/PTRACE_SETREGSET, pid, NT_XXX_TYPE, &iov);
-
-On successful completion, iov.len will be updated by the kernel specifying
-how much the kernel has written/read to/from the user's iov.buf.
-
-x86 extended state registers are primarily exported using this interface.
-
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-LKML-Reference: <20100211195614.886724710@sbs-t61.sc.intel.com>
-Acked-by: Hongjiu Lu <hjl.tools@gmail.com>
-Cc: Roland McGrath <roland@redhat.com>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- include/linux/elf.h    |    6 +++-
- include/linux/ptrace.h |   15 ++++++++
- kernel/ptrace.c        |   88 ++++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 108 insertions(+), 1 deletions(-)
+ fs/sysfs/dir.c   |    5 ++++-
+ fs/sysfs/file.c  |    1 +
+ fs/sysfs/sysfs.h |    1 +
+ 3 files changed, 6 insertions(+), 1 deletions(-)
 
-diff --git a/include/linux/elf.h b/include/linux/elf.h
-index a8c4af0..d8e6e61 100644
---- a/include/linux/elf.h
-+++ b/include/linux/elf.h
-@@ -349,7 +349,11 @@ typedef struct elf64_shdr {
- #define ELF_OSABI ELFOSABI_NONE
- #endif
+diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
+index 1bdc42f..481fdec 100644
+--- a/fs/sysfs/dir.c
++++ b/fs/sysfs/dir.c
+@@ -156,6 +156,10 @@ static void sysfs_deactivate(struct sysfs_dirent *sd)
+ 	int v;
  
--/* Notes used in ET_CORE */
-+/*
-+ * Notes used in ET_CORE. Architectures export some of the arch register sets
-+ * using the corresponding note types via the PTRACE_GETREGSET and
-+ * PTRACE_SETREGSET requests.
-+ */
- #define NT_PRSTATUS	1
- #define NT_PRFPREG	2
- #define NT_PRPSINFO	3
-diff --git a/include/linux/ptrace.h b/include/linux/ptrace.h
-index 56f2d63..dbfa821 100644
---- a/include/linux/ptrace.h
-+++ b/include/linux/ptrace.h
-@@ -27,6 +27,21 @@
- #define PTRACE_GETSIGINFO	0x4202
- #define PTRACE_SETSIGINFO	0x4203
+ 	BUG_ON(sd->s_sibling || !(sd->s_flags & SYSFS_FLAG_REMOVED));
++
++	if (!(sysfs_type(sd) & SYSFS_ACTIVE_REF))
++		return;
++
+ 	sd->s_sibling = (void *)&wait;
  
-+/*
-+ * Generic ptrace interface that exports the architecture specific regsets
-+ * using the corresponding NT_* types (which are also used in the core dump).
-+ *
-+ * This interface usage is as follows:
-+ *	struct iovec iov = { buf, len};
-+ *
-+ *	ret = ptrace(PTRACE_GETREGSET/PTRACE_SETREGSET, pid, NT_XXX_TYPE, &iov);
-+ *
-+ * On the successful completion, iov.len will be updated by the kernel,
-+ * specifying how much the kernel has written/read to/from the user's iov.buf.
-+ */
-+#define PTRACE_GETREGSET	0x4204
-+#define PTRACE_SETREGSET	0x4205
-+
- /* options set using PTRACE_SETOPTIONS */
- #define PTRACE_O_TRACESYSGOOD	0x00000001
- #define PTRACE_O_TRACEFORK	0x00000002
-diff --git a/kernel/ptrace.c b/kernel/ptrace.c
-index 23bd09c..13b4554 100644
---- a/kernel/ptrace.c
-+++ b/kernel/ptrace.c
-@@ -22,6 +22,7 @@
- #include <linux/pid_namespace.h>
- #include <linux/syscalls.h>
- #include <linux/uaccess.h>
-+#include <linux/regset.h>
+ 	rwsem_acquire(&sd->dep_map, 0, 0, _RET_IP_);
+@@ -315,7 +319,6 @@ struct sysfs_dirent *sysfs_new_dirent(const char *name, umode_t mode, int type)
  
+ 	atomic_set(&sd->s_count, 1);
+ 	atomic_set(&sd->s_active, 0);
+-	sysfs_dirent_init_lockdep(sd);
  
- /*
-@@ -511,6 +512,47 @@ static int ptrace_resume(struct task_struct *child, long request, long data)
- 	return 0;
- }
+ 	sd->s_name = name;
+ 	sd->s_mode = mode;
+diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
+index 8d6bd65..8eaae5d 100644
+--- a/fs/sysfs/file.c
++++ b/fs/sysfs/file.c
+@@ -509,6 +509,7 @@ int sysfs_add_file_mode(struct sysfs_dirent *dir_sd,
+ 	if (!sd)
+ 		return -ENOMEM;
+ 	sd->s_attr.attr = (void *)attr;
++	sysfs_dirent_init_lockdep(sd);
  
-+#ifdef CONFIG_HAVE_ARCH_TRACEHOOK
-+
-+static const struct user_regset *
-+find_regset(const struct user_regset_view *view, unsigned int type)
-+{
-+	const struct user_regset *regset;
-+	int n;
-+
-+	for (n = 0; n < view->n; ++n) {
-+		regset = view->regsets + n;
-+		if (regset->core_note_type == type)
-+			return regset;
-+	}
-+
-+	return NULL;
-+}
-+
-+static int ptrace_regset(struct task_struct *task, int req, unsigned int type,
-+			 struct iovec *kiov)
-+{
-+	const struct user_regset_view *view = task_user_regset_view(task);
-+	const struct user_regset *regset = find_regset(view, type);
-+	int regset_no;
-+
-+	if (!regset || (kiov->iov_len % regset->size) != 0)
-+		return -EIO;
-+
-+	regset_no = regset - view->regsets;
-+	kiov->iov_len = min(kiov->iov_len,
-+			    (__kernel_size_t) (regset->n * regset->size));
-+
-+	if (req == PTRACE_GETREGSET)
-+		return copy_regset_to_user(task, view, regset_no, 0,
-+					   kiov->iov_len, kiov->iov_base);
-+	else
-+		return copy_regset_from_user(task, view, regset_no, 0,
-+					     kiov->iov_len, kiov->iov_base);
-+}
-+
-+#endif
-+
- int ptrace_request(struct task_struct *child, long request,
- 		   long addr, long data)
- {
-@@ -573,6 +615,26 @@ int ptrace_request(struct task_struct *child, long request,
- 			return 0;
- 		return ptrace_resume(child, request, SIGKILL);
+ 	sysfs_addrm_start(&acxt, dir_sd);
+ 	rc = sysfs_add_one(&acxt, sd);
+diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
+index bb7723c..7db6884 100644
+--- a/fs/sysfs/sysfs.h
++++ b/fs/sysfs/sysfs.h
+@@ -79,6 +79,7 @@ struct sysfs_dirent {
+ #define SYSFS_KOBJ_BIN_ATTR		0x0004
+ #define SYSFS_KOBJ_LINK			0x0008
+ #define SYSFS_COPY_NAME			(SYSFS_DIR | SYSFS_KOBJ_LINK)
++#define SYSFS_ACTIVE_REF		(SYSFS_KOBJ_ATTR | SYSFS_KOBJ_BIN_ATTR)
  
-+#ifdef CONFIG_HAVE_ARCH_TRACEHOOK
-+	case PTRACE_GETREGSET:
-+	case PTRACE_SETREGSET:
-+	{
-+		struct iovec kiov;
-+		struct iovec __user *uiov = (struct iovec __user *) data;
-+
-+		if (!access_ok(VERIFY_WRITE, uiov, sizeof(*uiov)))
-+			return -EFAULT;
-+
-+		if (__get_user(kiov.iov_base, &uiov->iov_base) ||
-+		    __get_user(kiov.iov_len, &uiov->iov_len))
-+			return -EFAULT;
-+
-+		ret = ptrace_regset(child, request, addr, &kiov);
-+		if (!ret)
-+			ret = __put_user(kiov.iov_len, &uiov->iov_len);
-+		break;
-+	}
-+#endif
- 	default:
- 		break;
- 	}
-@@ -711,6 +773,32 @@ int compat_ptrace_request(struct task_struct *child, compat_long_t request,
- 		else
- 			ret = ptrace_setsiginfo(child, &siginfo);
- 		break;
-+#ifdef CONFIG_HAVE_ARCH_TRACEHOOK
-+	case PTRACE_GETREGSET:
-+	case PTRACE_SETREGSET:
-+	{
-+		struct iovec kiov;
-+		struct compat_iovec __user *uiov =
-+			(struct compat_iovec __user *) datap;
-+		compat_uptr_t ptr;
-+		compat_size_t len;
-+
-+		if (!access_ok(VERIFY_WRITE, uiov, sizeof(*uiov)))
-+			return -EFAULT;
-+
-+		if (__get_user(ptr, &uiov->iov_base) ||
-+		    __get_user(len, &uiov->iov_len))
-+			return -EFAULT;
-+
-+		kiov.iov_base = compat_ptr(ptr);
-+		kiov.iov_len = len;
-+
-+		ret = ptrace_regset(child, request, addr, &kiov);
-+		if (!ret)
-+			ret = __put_user(kiov.iov_len, &uiov->iov_len);
-+		break;
-+	}
-+#endif
- 
- 	default:
- 		ret = ptrace_request(child, request, addr, data);
+ #define SYSFS_FLAG_MASK			~SYSFS_TYPE_MASK
+ #define SYSFS_FLAG_REMOVED		0x0200
+-- 
+1.6.5.2.143.g8cc62
+
