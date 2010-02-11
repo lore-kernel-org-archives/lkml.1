@@ -1,72 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756028Ab0BKOkL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 09:40:11 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:56055 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755877Ab0BKOkJ (ORCPT
+	id S1756013Ab0BKOto (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 09:49:44 -0500
+Received: from mail-ew0-f228.google.com ([209.85.219.228]:60250 "EHLO
+	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751832Ab0BKOtn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 09:40:09 -0500
-To: Tejun Heo <tj@kernel.org>
-CC: miklos@szeredi.hu, mszeredi@suse.cz, linux-kernel@vger.kernel.org,
-       fuse-devel@lists.sourceforge.net, polynomial-c@gentoo.org,
-       akpm@linux-foundation.org
-In-reply-to: <4B740CFB.7060409@kernel.org> (message from Tejun Heo on Thu, 11
-	Feb 2010 22:58:19 +0900)
-Subject: Re: [fuse-devel] [PATCH] FUSE/CUSE: implement direct mmap support
-References: <4B70FBE4.7050700@kernel.org> <E1NerZ6-0007N6-UY@pomaz-ex.szeredi.hu> <4B7296DF.207@kernel.org> <E1NfAl6-0000o4-8Z@pomaz-ex.szeredi.hu> <4B729F07.8020704@kernel.org> <E1NfBTc-0000vk-59@pomaz-ex.szeredi.hu> <4B72A802.6040009@kernel.org> <E1NfE50-0001EK-Ao@pomaz-ex.szeredi.hu> <4B7344A4.1030607@kernel.org> <E1NfVOi-0002l9-5l@pomaz-ex.szeredi.hu> <4B73EE68.4070004@kernel.org> <E1NfYFm-00034C-Pd@pomaz-ex.szeredi.hu> <4B73FE96.2080707@kernel.org> <E1NfYfb-00039p-Uh@pomaz-ex.szeredi.hu> <4B74065D.2000707@kernel.org> <E1NfZHO-0003FY-8E@pomaz-ex.szeredi.hu> <4B740CFB.7060409@kernel.org>
-Message-Id: <E1NfaD3-0003MQ-Du@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 11 Feb 2010 15:40:01 +0100
+	Thu, 11 Feb 2010 09:49:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Fmjuzr9LasG7WulU9RFDiRZD7lzGyqQ7LnwS9Be9owbzVqq/qwvM9Bqu5e3b25qSs2
+         ngmLqtz17AbGNc3UL9Sxd8FNOZVq8MBB0X/UebwVyO8PSuJbXflsLsO+n4ibQYnEpG5o
+         kOo/9POqQpN64fc/c8yiBwJWdGgSziHG9Ikf0=
+Date: Thu, 11 Feb 2010 15:49:37 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       "K. Prasad" <prasad@linux.vnet.ibm.com>,
+       Maneesh Soni <maneesh@in.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Martin <schwidefsky@de.ibm.com>
+Subject: Re: [GIT PULL] hw-breakpoint fix
+Message-ID: <20100211144924.GA4915@nowhere>
+References: <1265248014-7338-1-git-send-regression-fweisbec@gmail.com> <4B73E60B.1000104@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B73E60B.1000104@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 11 Feb 2010, Tejun Heo wrote:
-> >> There are three offsets.
-> >>
-> >> a) the offset a client requested
-> >>
-> >> b) the offset into dmmap AS, a client mmap region is mapped to.  This
-> >>    could be different from a) by multiple of SHMLBA / PAGE_SIZE.
-> > 
-> > No, it could be different from a) by an arbitrary value.
-> 
-> Then, sharing those pages would cause aliasing issues.
+On Thu, Feb 11, 2010 at 04:42:11PM +0530, Mahesh Jagannath Salgaonkar wrote:
+> Hi Ingo,
+>
+> Will this patch be pushed in to Linux tree? This patch contains ABI  
+> chnage w.r.t hardware breakpoint info layout and needs to go in .33
+>
+> Thanks,
+> -Mahesh.
 
-You said a few mails up:
 
-  "There are device mmap() implementations which simply ignore @offset
-   because offsetting doesn't make any sense at all"
+It is in the tip:perf/urgent branch, which means Ingo will likely send
+a pull request soon with this patch inside.
 
-Which means a) doesn't necessarily matter, so it's not something that
-determines aliasing issues.
+Thanks.
 
-> >> c) the offset into dmmap AS, a server mmap region is mapped to, where
-> >>    collection of these mmaps define the dmmap AS.
-> >>
-> >> The offsets used in b) and c) are the same offsets.
-> > 
-> > Why are they the same?
-> 
-> I meant they point into the same space.  If they're the same value,
-> they point to the same page.
-
-I'm beginning to undestand what you mean by "dmmap AS".
-
-The thing is, I'm still not sure if or how this kind of mmap makes
-sense outside of the CUSE context.  Which makes designing the API
-difficult.
-
-So, for now maybe it's best to go with your implementation, fix issues
-with the offsets and make it CUSE only for the moment.
-
-The alternative is for me to start implementing a coherent distributed
-filesystem, so I can see what the actual requirements for a direct
-mmap would be.  That would be fun, but it would
-
-  a) delay direct mmap for CUSE by an unknown amount of time
-  b) delay everything else that I have in the pipeline ;)
-
-Thanks,
-Miklos
