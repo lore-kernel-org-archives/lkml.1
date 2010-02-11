@@ -1,55 +1,72 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755988Ab0BKOjS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 09:39:18 -0500
-Received: from www.tglx.de ([62.245.132.106]:44561 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755877Ab0BKOjQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 09:39:16 -0500
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: "Greg Kroah-Hartman" <gregkh@suse.de>,
-       "Michael S. Tsirkin" <mst@redhat.com>,
-       "Hans J. Koch" <hjk@linutronix.de>
-Subject: [PATCH] UIO: Review of drivers/uio/Kconfig
-From: John Ogness <john.ogness@linutronix.de>
-References: <20100209232347.GG3229@local>
-Date: Thu, 11 Feb 2010 15:38:53 +0100
-In-Reply-To: <20100209232347.GG3229@local> (Hans J. Koch's message of "Wed\, 10 Feb 2010 00\:23\:47 +0100")
-Message-ID: <80vde3rg5e.fsf@merkur.tec.linutronix.de>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1756028Ab0BKOkL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 09:40:11 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:56055 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755877Ab0BKOkJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 09:40:09 -0500
+To: Tejun Heo <tj@kernel.org>
+CC: miklos@szeredi.hu, mszeredi@suse.cz, linux-kernel@vger.kernel.org,
+       fuse-devel@lists.sourceforge.net, polynomial-c@gentoo.org,
+       akpm@linux-foundation.org
+In-reply-to: <4B740CFB.7060409@kernel.org> (message from Tejun Heo on Thu, 11
+	Feb 2010 22:58:19 +0900)
+Subject: Re: [fuse-devel] [PATCH] FUSE/CUSE: implement direct mmap support
+References: <4B70FBE4.7050700@kernel.org> <E1NerZ6-0007N6-UY@pomaz-ex.szeredi.hu> <4B7296DF.207@kernel.org> <E1NfAl6-0000o4-8Z@pomaz-ex.szeredi.hu> <4B729F07.8020704@kernel.org> <E1NfBTc-0000vk-59@pomaz-ex.szeredi.hu> <4B72A802.6040009@kernel.org> <E1NfE50-0001EK-Ao@pomaz-ex.szeredi.hu> <4B7344A4.1030607@kernel.org> <E1NfVOi-0002l9-5l@pomaz-ex.szeredi.hu> <4B73EE68.4070004@kernel.org> <E1NfYFm-00034C-Pd@pomaz-ex.szeredi.hu> <4B73FE96.2080707@kernel.org> <E1NfYfb-00039p-Uh@pomaz-ex.szeredi.hu> <4B74065D.2000707@kernel.org> <E1NfZHO-0003FY-8E@pomaz-ex.szeredi.hu> <4B740CFB.7060409@kernel.org>
+Message-Id: <E1NfaD3-0003MQ-Du@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 11 Feb 2010 15:40:01 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Two trivial fixes for the Userspace IO Kconfig file:
-1) uio_sercos3 is a PCI driver, so let it depend on PCI.
-2) "default n" under UIO_PCI_GENERIC is luxury since it is already the default.
+On Thu, 11 Feb 2010, Tejun Heo wrote:
+> >> There are three offsets.
+> >>
+> >> a) the offset a client requested
+> >>
+> >> b) the offset into dmmap AS, a client mmap region is mapped to.  This
+> >>    could be different from a) by multiple of SHMLBA / PAGE_SIZE.
+> > 
+> > No, it could be different from a) by an arbitrary value.
+> 
+> Then, sharing those pages would cause aliasing issues.
 
-Acked-by: John Ogness <john.ogness@linutronix.de>
-Signed-off-by: Hans J. Koch <hjk@linutronix.de>
----
- drivers/uio/Kconfig |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+You said a few mails up:
 
-Index: linux-2.6.33-rc/drivers/uio/Kconfig
-===================================================================
---- linux-2.6.33-rc.orig/drivers/uio/Kconfig	2010-02-10 00:07:18.000000000 +0100
-+++ linux-2.6.33-rc/drivers/uio/Kconfig	2010-02-10 00:08:10.000000000 +0100
-@@ -74,6 +74,7 @@
- 
- config UIO_SERCOS3
- 	tristate "Automata Sercos III PCI card driver"
-+	depends on PCI
- 	help
- 	  Userspace I/O interface for the Sercos III PCI card from
- 	  Automata GmbH. The userspace part of this driver will be
-@@ -87,7 +88,6 @@
- config UIO_PCI_GENERIC
- 	tristate "Generic driver for PCI 2.3 and PCI Express cards"
- 	depends on PCI
--	default n
- 	help
- 	  Generic driver that you can bind, dynamically, to any
- 	  PCI 2.3 compliant and PCI Express card. It is useful,
+  "There are device mmap() implementations which simply ignore @offset
+   because offsetting doesn't make any sense at all"
+
+Which means a) doesn't necessarily matter, so it's not something that
+determines aliasing issues.
+
+> >> c) the offset into dmmap AS, a server mmap region is mapped to, where
+> >>    collection of these mmaps define the dmmap AS.
+> >>
+> >> The offsets used in b) and c) are the same offsets.
+> > 
+> > Why are they the same?
+> 
+> I meant they point into the same space.  If they're the same value,
+> they point to the same page.
+
+I'm beginning to undestand what you mean by "dmmap AS".
+
+The thing is, I'm still not sure if or how this kind of mmap makes
+sense outside of the CUSE context.  Which makes designing the API
+difficult.
+
+So, for now maybe it's best to go with your implementation, fix issues
+with the offsets and make it CUSE only for the moment.
+
+The alternative is for me to start implementing a coherent distributed
+filesystem, so I can see what the actual requirements for a direct
+mmap would be.  That would be fun, but it would
+
+  a) delay direct mmap for CUSE by an unknown amount of time
+  b) delay everything else that I have in the pipeline ;)
+
+Thanks,
+Miklos
