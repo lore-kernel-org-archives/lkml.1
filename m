@@ -1,53 +1,59 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752049Ab0BKCpe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 21:45:34 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:63084 "EHLO
-	rcsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750819Ab0BKCpc (ORCPT
+	id S1753942Ab0BKCs3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 21:48:29 -0500
+Received: from smtpauth.net4india.com ([202.71.129.41]:33806 "EHLO
+	smtpauth.net4india.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751390Ab0BKCs1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 21:45:32 -0500
-Message-ID: <4B736ED5.5060205@oracle.com>
-Date: Wed, 10 Feb 2010 18:43:33 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+	Wed, 10 Feb 2010 21:48:27 -0500
+Message-ID: <4B736FD3.2000707@xenontk.org>
+Date: Thu, 11 Feb 2010 08:17:47 +0530
+From: David John <davidjon@xenontk.org>
+Reply-To: davidjon@xenontk.org
+User-Agent: Mozilla/5.0 (X11; X; Linux x86_64; rv:1.9.1.7) Gecko/20100120 Thunderbird/3.0.1
 MIME-Version: 1.0
-To: akpm@linux-foundation.org
-CC: linux-kernel@vger.kernel.org, Mocean Laboratories <info@mocean-labs.com>
-Subject: Re: mmotm 2010-02-10-16-17 uploaded (timberdale)
-References: <201002110043.o1B0hKxW008835@imap1.linux-foundation.org>
-In-Reply-To: <201002110043.o1B0hKxW008835@imap1.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Luiz Augusto von Dentz <luiz.dentz@gmail.com>,
+       Marcel Holtmann <marcel@holtmann.org>
+Subject: Re: [Bug #15127] Bluetooth: sleeping function called from invalid
+ context
+References: <2uzMDuY-7_O.A.M1G.7X1bLB@chimera> <iuJeop2ribM.A.DgH.XY1bLB@chimera>
+In-Reply-To: <iuJeop2ribM.A.DgH.XY1bLB@chimera>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt355.oracle.com [141.146.40.155]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090201.4B736F3F.00DA:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/10/10 16:17, akpm@linux-foundation.org wrote:
-> The mm-of-the-moment snapshot 2010-02-10-16-17 has been uploaded to
+On 02/08/2010 05:58 AM, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of regressions introduced between 2.6.31 and 2.6.32.
 > 
->    http://userweb.kernel.org/~akpm/mmotm/
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.31 and 2.6.32.  Please verify if it still should
+> be listed and let the tracking team know (either way).
 > 
-> and will soon be available at
 > 
->    git://zen-kernel.org/kernel/mmotm.git
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15127
+> Subject		: Bluetooth: sleeping function called from invalid context
+> Submitter	: David John <davidjon@xenontk.org>
+> Date		: 2010-01-12 9:19 (27 days old)
+> First-Bad-Commit: http://git.kernel.org/git/linus/9e726b17422bade75fba94e625cd35fd1353e682
+> References	: http://marc.info/?l=linux-kernel&m=126328727021949&w=4
+> Handled-By	: Marcel Holtmann <marcel@holtmann.org>
+> Patch		: http://patchwork.kernel.org/patch/76019/
 > 
-> It contains the following patches against 2.6.33-rc7:
+> 
+> 
 
+Hi Rafael,
 
-When CONFIG_GPIOLIB is not enabled:
+This bug is now fixed by the upstream commit 485f1e ("Bluetooth: Fix
+sleeping function in RFCOMM within invalid context") and can be closed.
 
-  CC      drivers/mfd/timberdale.o
-In file included from mmotm-2010-0210-1617/drivers/mfd/timberdale.c:37:
-mmotm-2010-0210-1617/include/linux/spi/max7301.h:14: error: field 'chip' has incomplete type
-make[3]: *** [drivers/mfd/timberdale.o] Error 1
-
-
-Build error observed on i386 and on x86_64.
-
--- 
-~Randy
+Thanks,
+David.
