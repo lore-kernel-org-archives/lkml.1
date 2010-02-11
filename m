@@ -1,65 +1,102 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756855Ab0BKS54 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 13:57:56 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:14200 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756835Ab0BKS5y (ORCPT
+	id S1756601Ab0BKTB6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 14:01:58 -0500
+Received: from buzzloop.caiaq.de ([212.112.241.133]:34506 "EHLO
+	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753336Ab0BKTB5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 13:57:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Mxx3GoJI3ZdYd1wL2K7L0+K0003ucqTJGYN3zDPX244rsHVEyHTJCENnfgfrR6ZY2A
-         BhevRSd19OAhOc6hw7ax4oOBZbaI6LLqy5uXn4g/jNW70UB/F9jztnZZqvK8Abd38Rgs
-         qfKlGraSroCXQlsDOQDscrB2XOwv5uA7hspBA=
-Date: Thu, 11 Feb 2010 19:57:48 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Paul Mackerras <paulus@samba.org>,
-       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
-       Li Zefan <lizf@cn.fujitsu.com>, Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH 02/11] tracing: Introduce TRACE_EVENT_INJECT
-Message-ID: <20100211185744.GD4915@nowhere>
-References: <1265188475-23509-1-git-send-regression-fweisbec@gmail.com> <1265188475-23509-3-git-send-regression-fweisbec@gmail.com> <1265381266.24386.32.camel@gandalf.stny.rr.com> <1265381604.22001.682.camel@laptop> <1265382452.24386.38.camel@gandalf.stny.rr.com> <20100206122004.GF5062@nowhere> <1265462370.4561.12179.camel@frodo> <20100210100440.GA5035@nowhere> <1265810706.24386.58.camel@gandalf.stny.rr.com>
+	Thu, 11 Feb 2010 14:01:57 -0500
+Date: Thu, 11 Feb 2010 20:01:52 +0100
+From: Daniel Mack <daniel@caiaq.de>
+To: Samu Onkalo <samu.p.onkalo@nokia.com>
+Cc: eric.piel@tremplin-utc.net, pavel@ucw.cz, lm-sensors@lm-sensors.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/6] lis3lv02d: Power management, click and threshold
+ interrupts
+Message-ID: <20100211190152.GD28972@buzzloop.caiaq.de>
+References: <1265271848-26559-1-git-send-email-samu.p.onkalo@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1265810706.24386.58.camel@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1265271848-26559-1-git-send-email-samu.p.onkalo@nokia.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 10, 2010 at 09:05:06AM -0500, Steven Rostedt wrote:
-> On Wed, 2010-02-10 at 11:04 +0100, Frederic Weisbecker wrote:
+On Thu, Feb 04, 2010 at 10:24:02AM +0200, Samu Onkalo wrote:
+> Lis3 accelerometer chip family changes for power management,
+> click and threshold event handling.
 > 
-> > > We can add a register_event_injector later. For now, why not just add
-> > > the TRACE_EVENT() and then hook to it in perf using the normal
-> > > tracepoint mechanism.
-> > > 
-> > > You could add some macro around the trace_init_lock_class() call that
-> > > would facilitate finding all the locks you need. This would probably be
-> > > a bit more straight forward than to overload TRACE_EVENT() again.
-> > 
-> > 
-> > 
-> > I'm not sure what you mean by that.
+> Patch set adds interrupt handlers for click/tap events and threshold
+> based events. Actual configuration which events are enabled
+> is done via platform data. All the features cannot be used in parallel.
+> Interrupts are implemented only for 8 bit device, since I'm not familiar
+> with other devices and I don't have suitable testing environment.
+
+I tested that with an PXA3xx based board featuring a 8bit sensor, and at
+least I cannot see any regression :)
+
+You can take this as an
+
+Tested-by: Daniel Mack <daniel@caiaq.de>
+
+
+Thanks,
+Daniel
+
+
+> Changes:
 > 
-> Looking back at where trace_lock_class_init() was placed, you don't need
-> a wrapper. But instead, why not just have perf hook directly into the
-> trace_lock_class_init trace point, and do its injection directly.
-> Instead of needing to add some hack to TRACE_EVENT()?
-
-
-We could. But we expect further events may need such catch-up by
-injection system. And ftrace will also need to perform this injection.
-
-That's why I think something more generic would be more reasonable.
-
+>   lis3: Add missing constants for 8bit device
+> This is quite clear. Some click feature related register definitions
+> were missing.
+> 
+>   lis3: Separate configuration function for 8 bit device
+> Move platformdata based configurations for 8 bit device to
+> separate function to keep common part little bit more readable.
+> 
+>   lis3: Introduce platform data for second ff / wu unit
+> 8 bit device has two freefall / wakeup detection blocks. Add possibility
+> to configure also the second unit. Change hipass filter configuration
+> to platform data. Change is compatible with existing platform data.
+> 
+>   lis3: Power control for the chip
+> This kind of feature has been in the driver earlier. It was removed
+> because saving was so small in laptop environment. However, in smaller
+> devices, even a small saving need to be implemented. When driver detects
+> that no-one is really interested about the acceleration, chip is powered down.
+> Input device, freefall device and sysfs are controlling this. By default,
+> chip is powered on to keep functionality similar to current implementation.
+> 
+>   lis3: Add skeletons for interrupt handlers
+> Interrupt handlers are added in two patches to keep changes cleaner.
+> This first patch adds two dummy threaded interrupt handlers for 8 bit device. 
+> 
+>   lis3: Interrupt handlers for 8bit wakeup and click events
+> This patch adds content to dummy handlers. Depending on the chip configuration,
+> either click or ff/wu handling is called. For click event, BTN input event is
+> sent separately for each axes. For threshold event, coordinates are updated
+> immediatelly to input device. This allows input device to be used either in
+> polled mode and / or interrupt driven mode. Polling can stopped from userspace
+> by via input device sysfs.
+> 
+> Patch set applies to 2.6.33-RC6 tree.
+> Tested with 2.6.32 environment for omap3
+> 
+> Samu Onkalo (6):
+>   lis3: Add missing constants for 8bit device
+>   lis3: Separate configuration function for 8 bit device
+>   lis3: Introduce platform data for second ff / wu unit
+>   lis3: Power control for the chip
+>   lis3: Add skeletons for interrupt handlers
+>   lis3: Interrupt handlers for 8bit wakeup and click events
+> 
+>  drivers/hwmon/lis3lv02d.c     |  308 +++++++++++++++++++++++++++++++++--------
+>  drivers/hwmon/lis3lv02d.h     |   12 ++
+>  drivers/hwmon/lis3lv02d_i2c.c |    8 +-
+>  drivers/hwmon/lis3lv02d_spi.c |   12 +-
+>  include/linux/lis3lv02d.h     |   12 ++
+>  5 files changed, 287 insertions(+), 65 deletions(-)
+> 
