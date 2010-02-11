@@ -1,84 +1,232 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752301Ab0BKHlp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 02:41:45 -0500
-Received: from mga09.intel.com ([134.134.136.24]:33188 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751890Ab0BKHln convert rfc822-to-8bit (ORCPT
+	id S1752252Ab0BKIBw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 03:01:52 -0500
+Received: from ey-out-2122.google.com ([74.125.78.24]:54269 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751300Ab0BKIBu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 02:41:43 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,450,1262592000"; 
-   d="scan'208";a="491568637"
-From: "Xin, Xiaohui" <xiaohui.xin@intel.com>
-To: Arnd Bergmann <arnd@arndb.de>
-CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "mingo@elte.hu" <mingo@elte.hu>, "mst@redhat.com" <mst@redhat.com>,
-       "jdike@c2.user-mode-linux.org" <jdike@c2.user-mode-linux.org>
-Date: Thu, 11 Feb 2010 15:40:08 +0800
-Subject: RE: [PATCH 0/3] Provide a zero-copy method on KVM virtio-net.
-Thread-Topic: [PATCH 0/3] Provide a zero-copy method on KVM virtio-net.
-Thread-Index: AcqqVqLdI8DojazvQRiFmBFfis0PWQAlPoEw
-Message-ID: <97F6D3BD476C464182C1B7BABF0B0AF5C11F641A@shzsmsx502.ccr.corp.intel.com>
-References: <1265802540-6122-1-git-send-email-xiaohui.xin@intel.com>
- <201002101440.05063.arnd@arndb.de>
-In-Reply-To: <201002101440.05063.arnd@arndb.de>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Thu, 11 Feb 2010 03:01:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=A3rv8MJnF+740RpJ+PInOMUnnX019rRPKVmFM1iIv8JNeYc+aSGALQhA/WgjbTR0O+
+         1jHyrMZasu3Nz3SWYQrO4XlzUpX0HIFcyroEvYzj4BYbYiqvCbtEiWYl1fOjdc5a9mwP
+         6ganS14Xr0pV7uAIygajrBTQ9t6Yb1d8lp7mU=
+Message-ID: <4B73B96A.9040006@gmail.com>
+Date: Thu, 11 Feb 2010 09:01:46 +0100
+From: Sebastien Alaiwan <sebastien.alaiwan@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
 MIME-Version: 1.0
+To: Clemens Ladisch <clemens@ladisch.de>
+CC: linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org,
+       Takashi Iwai <tiwai@suse.de>
+Subject: Re: [PATCH][ALSA] usbmidi support for Access Music synths.
+References: <4B726306.8070506@gmail.com> <4B7274BA.3040801@ladisch.de>
+In-Reply-To: <4B7274BA.3040801@ladisch.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>On Wednesday 10 February 2010, Xin Xiaohui wrote:
-> >The idea is simple, just to pin the guest VM user space and then
-> >let host NIC driver has the chance to directly DMA to it. 
-> >The patches are based on vhost-net backend driver. We add a device
-> >which provides proto_ops as sendmsg/recvmsg to vhost-net to
-> >send/recv directly to/from the NIC driver. KVM guest who use the
-> >vhost-net backend may bind any ethX interface in the host side to
-> >get copyless data transfer thru guest virtio-net frontend.
->> 
->> We provide multiple submits and asynchronous notifiicaton to 
-> >vhost-net too.
+Clemens Ladisch wrote:
+> Sebastien Alaiwan wrote:
+>> here's a patch that adds MIDI support through USB for one of the
+>> Access Music synths, the VirusTI. 
+> 
+> Thanks!
+> 
+> Please run the checkpatch script on your patch.
 
->This does a lot of things that I had planned for macvtap. It's
->great to hear that you have made this much progress.
->
->However, I'd hope that we could combine this with the macvtap driver,
->which would give us zero-copy transfer capability both with and
->without vhost, as well as (tx at least) when using multiple guests
->on a macvlan setup.
+Done!
+I did not know such a tool did exist, thank you for pointing this out. Is there
+a document I could read about such rules of thumb?
 
-You mean the zero-copy can work with macvtap driver without vhost.
-May you give me some detailed info about your macvtap driver and the
-relationship between vhost and macvtap to make me have a clear picture then?
+>> +			endpoints[i].in_cables = 0x0003;
+>> +		}
+>> +		if (endpoints[i].out_ep) {
+>> +			printk("Creating two out cables for output EP 0x%.2X\n", endpoints[i].out_ep);
+>> +			endpoints[i].out_cables = 0x0003;
+>> +		}
+>> +	}
+>> +	return err;
+>> +}
+> 
+> Does this device use more than one endpoint per direction?  If not, this
+> could be done with QUIRK_MIDI_FIXED_ENDPOINT.
 
->For transmit, it should be fairly straightforward to hook up
->your zero-copy method and the vhost-net interface into the
->macvtap driver.
->
->You have simplified the receiv path significantly by assuming
->that the entire netdev can receive into a single guest, right?
+There's only one endpoint per direction, but there are two cables per endpoint:
+endpoint 0x05, cable 0 : physical MIDI output port of the device.
+endpoint 0x05, cable 1 : synth (output: send note-on, etc...)
+endpoint 0x85, cable 0 : physical MIDI input port of the device.
+endpoint 0x85, cable 1 : synth (input: recv sysex, controller changes)
 
-Yes.
+Please correct me if I'm wrong, but it seems QUIRK_MIDI_FIXED_ENDPOINT would not
+do the job, otherwise where do I signal the number of cables?
 
->I'm assuming that the idea is to allow VMDq adapters to simply
->show up as separate adapters and have the driver handle this
->in a hardware specific way.
+Here's an updated patch below.
 
-Does the VMDq driver do so now?
+Regards,
+Sebastien Alaiwan
 
->My plan for this was to instead move support for VMDq into the
->macvlan driver so we can transparently use VMDq on hardware where
->available, including zero-copy receives, but fall back to software
->operation on non-VMDq hardware.
 
-	Arnd
+-------------
+Signed-off-by: Sebastien Alaiwan <sebastien.alaiwan@gmail.com>
+diff --git a/sound/usb/usbaudio.c b/sound/usb/usbaudio.c
+index 9edef46..0e54e93 100644
+--- a/sound/usb/usbaudio.c
++++ b/sound/usb/usbaudio.c
+@@ -3327,6 +3327,29 @@ static int snd_usb_cm6206_boot_quirk(struct usb_device *dev)
+ }
+ 
+ /*
++ * This call will put the synth in "USB send" mode, i.e it will send MIDI
++ * messages through USB (this is disabled at startup). The synth will aknowledge
++ * by sending a sysex on endpoint 0x85 and by displaying a USB sign on its LCD.
++ * Values here are chosen based on sniffing USB traffic under Windows.
++ */
++static int snd_usb_accessmusic_boot_quirk(struct usb_device *dev)
++{
++	int err, actual_length;
++	u8 seq[] = { 0x4e, 0x73, 0x52, 0x01 }; /* "midi send" enable */
++
++	void *buf = kmemdup(seq, ARRAY_SIZE(seq), GFP_KERNEL);
++	if (!buf)
++		return -ENOMEM;
++	err = usb_interrupt_msg(dev, usb_sndintpipe(dev, 0x05), buf,
++			ARRAY_SIZE(seq), &actual_length, 1000);
++	kfree(buf);
++	if (err < 0)
++		return err;
++
++	return 0;
++}
++
++/*
+  * Setup quirks
+  */
+ #define AUDIOPHILE_SET			0x01 /* if set, parse device_setup */
+@@ -3403,6 +3426,7 @@ static int snd_usb_create_quirk(struct snd_usb_audio *chip,
+ 		[QUIRK_MIDI_FASTLANE] = create_any_midi_quirk,
+ 		[QUIRK_MIDI_EMAGIC] = create_any_midi_quirk,
+ 		[QUIRK_MIDI_CME] = create_any_midi_quirk,
++		[QUIRK_MIDI_ACCESSMUSIC] = create_any_midi_quirk,
+ 		[QUIRK_AUDIO_STANDARD_INTERFACE] = create_standard_audio_quirk,
+ 		[QUIRK_AUDIO_FIXED_ENDPOINT] = create_fixed_stream_quirk,
+ 		[QUIRK_AUDIO_EDIROL_UA1000] = create_ua1000_quirk,
+@@ -3624,6 +3648,12 @@ static void *snd_usb_audio_probe(struct usb_device *dev,
+ 			goto __err_val;
+ 	}
+ 
++	/* Access Music VirusTI Desktop */
++	if (id == USB_ID(0x133e, 0x0815)) {
++		if (snd_usb_accessmusic_boot_quirk(dev) < 0)
++			goto __err_val;
++	}
++
+ 	/*
+ 	 * found a config.  now register to ALSA
+ 	 */
+diff --git a/sound/usb/usbaudio.h b/sound/usb/usbaudio.h
+index 40ba811..b69b5bf 100644
+--- a/sound/usb/usbaudio.h
++++ b/sound/usb/usbaudio.h
+@@ -156,6 +156,7 @@ enum quirk_type {
+ 	QUIRK_MIDI_EMAGIC,
+ 	QUIRK_MIDI_CME,
+ 	QUIRK_MIDI_US122L,
++	QUIRK_MIDI_ACCESSMUSIC,
+ 	QUIRK_AUDIO_STANDARD_INTERFACE,
+ 	QUIRK_AUDIO_FIXED_ENDPOINT,
+ 	QUIRK_AUDIO_EDIROL_UA1000,
+diff --git a/sound/usb/usbmidi.c b/sound/usb/usbmidi.c
+index 6e89b83..6e48606 100644
+--- a/sound/usb/usbmidi.c
++++ b/sound/usb/usbmidi.c
+@@ -1407,6 +1407,9 @@ static struct port_info {
+ 	EXTERNAL_PORT(0x086a, 0x0001, 8, "%s Broadcast"),
+ 	EXTERNAL_PORT(0x086a, 0x0002, 8, "%s Broadcast"),
+ 	EXTERNAL_PORT(0x086a, 0x0003, 4, "%s Broadcast"),
++	/* Access Music Virus TI */
++	EXTERNAL_PORT(0x133e, 0x0815, 0, "%s MIDI"),
++	CONTROL_PORT(0x133e, 0x0815, 1, "%s Control"),
+ };
+ 
+ static struct port_info *find_port_info(struct snd_usb_midi* umidi, int number)
+@@ -1724,6 +1727,32 @@ static int snd_usbmidi_detect_per_port_endpoints(struct snd_usb_midi* umidi,
+ }
+ 
+ /*
++ * Detects the endpoints for Access Music Virus TI
++ */
++static int snd_usbmidi_detect_two_cables_per_endpoint(
++    struct snd_usb_midi *umidi,
++    struct snd_usb_midi_endpoint_info *endpoints)
++{
++	int err, i;
++
++	err = snd_usbmidi_detect_endpoints(umidi, endpoints,
++			MIDI_MAX_ENDPOINTS);
++	for (i = 0; i < MIDI_MAX_ENDPOINTS; ++i) {
++		if (endpoints[i].in_ep) {
++			snd_printdd("Creating 2 cables for input EP 0x%.2X\n",
++					endpoints[i].in_ep);
++			endpoints[i].in_cables = 0x0003;
++		}
++		if (endpoints[i].out_ep) {
++			snd_printdd("Creating 2 cables for output EP 0x%.2X\n",
++					endpoints[i].out_ep);
++			endpoints[i].out_cables = 0x0003;
++		}
++	}
++	return err;
++}
++
++/*
+  * Detects the endpoints and ports of Yamaha devices.
+  */
+ static int snd_usbmidi_detect_yamaha(struct snd_usb_midi* umidi,
+@@ -2002,6 +2031,10 @@ int snd_usbmidi_create(struct snd_card *card,
+ 		umidi->usb_protocol_ops = &snd_usbmidi_cme_ops;
+ 		err = snd_usbmidi_detect_per_port_endpoints(umidi, endpoints);
+ 		break;
++	case QUIRK_MIDI_ACCESSMUSIC:
++		err = snd_usbmidi_detect_two_cables_per_endpoint(umidi,
++				endpoints);
++		break;
+ 	default:
+ 		snd_printd(KERN_ERR "invalid quirk type %d\n", quirk->type);
+ 		err = -ENXIO;
+diff --git a/sound/usb/usbquirks.h b/sound/usb/usbquirks.h
+index a892bda..759f824 100644
+--- a/sound/usb/usbquirks.h
++++ b/sound/usb/usbquirks.h
+@@ -2073,6 +2073,26 @@ YAMAHA_DEVICE(0x7010, "UB99"),
+ 	}
+ },
+ 
++/* Access Music devices */
++{
++	/* VirusTI Desktop */
++	USB_DEVICE_VENDOR_SPEC(0x133e, 0x0815),
++	.driver_info = (unsigned long) &(const struct snd_usb_audio_quirk) {
++		.ifnum = QUIRK_ANY_INTERFACE,
++		.type = QUIRK_COMPOSITE,
++		.data = &(const struct snd_usb_audio_quirk[]) {
++			{
++				/* "Virus TI MIDI" and "Virus TI Synth" */
++				.ifnum = 3,
++				.type = QUIRK_MIDI_ACCESSMUSIC,
++			},
++			{
++				.ifnum = -1
++			}
++		}
++	}
++},
++
+ /* */
+ {
+ 	/* aka. Serato Scratch Live DJ Box */
