@@ -1,103 +1,112 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757128Ab0BKWPm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 17:15:42 -0500
-Received: from mailc.microsoft.com ([131.107.115.214]:44442 "EHLO
-	smtp.microsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756706Ab0BKWPk convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 17:15:40 -0500
-From: Hank Janssen <hjanssen@microsoft.com>
-To: Greg KH <gregkh@suse.de>
-CC: "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-       "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>,
-       Haiyang Zhang <haiyangz@microsoft.com>
-Subject: RE: [PATCH 1/2] Staging: hv: Add proper versioning to HV drivers
-Thread-Topic: [PATCH 1/2] Staging: hv: Add proper versioning to HV drivers
-Thread-Index: AQHKq2HENZ6t0wcb1kW/75fbKuFcg5HB8/2A//+AowA=
-Date: Thu, 11 Feb 2010 22:15:08 +0000
-Message-ID: <8AFC7968D54FB448A30D8F38F259C56212E8831E@TK5EX14MBXC118.redmond.corp.microsoft.com>
-References: <8AFC7968D54FB448A30D8F38F259C56212E88287@TK5EX14MBXC118.redmond.corp.microsoft.com>
- <20100211213651.GA29557@suse.de>
-In-Reply-To: <20100211213651.GA29557@suse.de>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	id S1757221Ab0BKWQP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 17:16:15 -0500
+Received: from mail.gmx.net ([213.165.64.20]:40568 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1756937Ab0BKWQO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 17:16:14 -0500
+X-Authenticated: #1045983
+X-Provags-ID: V01U2FsdGVkX18ccPNVxmkcYEJU1L17eJlPimJB/OH7bt3HFCxEOP
+	GhOLOX1NdzaaEl
+Message-ID: <4B7481A6.7080300@gmx.de>
+Date: Thu, 11 Feb 2010 23:16:06 +0100
+From: Helge Deller <deller@gmx.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Lightning/1.0b2pre Thunderbird/3.0.1
 MIME-Version: 1.0
+To: Michael Neuling <mikey@neuling.org>
+CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Americo Wang <xiyou.wangcong@gmail.com>,
+       Anton Blanchard <anton@samba.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alexander Viro <viro@zeniv.linux.org.uk>,
+       Oleg Nesterov <oleg@redhat.com>, James Morris <jmorris@namei.org>,
+       Ingo Molnar <mingo@elte.hu>, linux-fsdevel@vger.kernel.org,
+       stable@kernel.org, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Serge Hallyn <serue@us.ibm.com>,
+       Paul Mackerras <paulus@samba.org>, benh@kernel.crashing.org,
+       miltonm@bga.com, aeb@cwi.nl, linux-parisc@vger.kernel.org
+Subject: Re: [PATCH] Restrict initial stack space expansion to rlimit
+References: <10733.1265752289@neuling.org> <4B71E13C.2050905@gmx.de> <20100210141016.4D18.A69D9226@jp.fujitsu.com> <17323.1265779867@neuling.org>
+In-Reply-To: <17323.1265779867@neuling.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.46999999999999997
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>  
->> -static const char VersionDate[] = __DATE__;
->> -static const char VersionTime[] = __TIME__;
->> -static const char VersionDesc[] = "Version 2.0";
->> +static const char hv_build_date[] = __DATE__;
->> +static const char hv_build_time[] = __TIME__;
+On 02/10/2010 06:31 AM, Michael Neuling wrote:
+> In message<20100210141016.4D18.A69D9226@jp.fujitsu.com>  you wrote:
+>>> On 02/09/2010 10:51 PM, Michael Neuling wrote:
+>>>>>> I'd still like someone with a CONFIG_STACK_GROWSUP arch to test/ACK it
+>>>>>> as well.
+>>>>>
+>>>>> There's only one CONFIG_GROWSUP arch - parisc.
+>>>>> Could someone please test it on parisc?
+>>>
+>>> I did.
+>>>
+>>>> How about doing:
+>>>>     'ulimit -s 15; ls'
+>>>> before and after the patch is applied.  Before it's applied, 'ls' should
+>>>> be killed.  After the patch is applied, 'ls' should no longer be killed.
+>>>>
+>>>> I'm suggesting a stack limit of 15KB since it's small enough to trigger
+>>>> 20*PAGE_SIZE.  Also 15KB not a multiple of PAGE_SIZE, which is a trickier
+>>>> case to handle correctly with this code.
+>>>>
+>>>> 4K pages on parisc should be fine to test with.
+>>>
+>>> Mikey, thanks for the suggested test plan.
+>>>
+>>> I'm not sure if your patch does it correct for parisc/stack-grows-up-case.
+>>>
+>>> I tested your patch on  a 4k pages kernel:
+>>> root@c3000:~# uname -a
+>>> Linux c3000 2.6.33-rc7-32bit #221 Tue Feb 9 23:17:06 CET 2010 parisc GNU/Li
+> nux
+>>>
+>>> Without your patch:
+>>> root@c3000:~# ulimit -s 15; ls
+>>> Killed
+>>> ->  correct.
+>>>
+>>> With your patch:
+>>> root@c3000:~# ulimit -s 15; ls
+>>> Killed
+>>> _or_:
+>>> root@c3000:~# ulimit -s 15; ls
+>>> Segmentation fault
+>>> ->  ??
+>>>
+>>> Any idea?
+>>
+>> My x86_64 box also makes segmentation fault. I think "ulimit -s 15" is too sm
+> all stack for ls.
+>> "ulimit -s 27; ls "  wroks perfectly fine.
 >
->This should not be needed at all, as it make absolutely no sense.
-
-You know, you are actually right. This is leftover from when the drivers
-Where standalone (before we submitted them to mainline) when customers
-Build the drivers on site themselves. It helped them to know when they
-Build it.
-
->> +/*
->> + * We use the same version numbering for all Hyper-V modules.
->> + */
->> +#define HV_DRV_VERSION           "3.0.0"
+> Arrh.  I asked Helge offline earlier to check what use to work on parisc
+> on 2.6.31.
 >
->Is this really needed?  Now that the code is in the kernel tree,
->shouldn't you be tracking this based on kernel release version (like 90%
->of the drivers are tracked), or is there some requirement for a version
->number?
->
->And what decides when this number is changed?  What does it "mean"?
->What is it tracking?
+> I guess PPC has a nice clean non-bloated ABI :-D
 
-The definition of the versioning for us is as follows;
+Hi Mikey,
 
-Field	Description	Resolution
-1	Major Number 	Changes for these scenarios;
-				1.	When a new version of Windows Hyper-V 
-					is released.
-				2.	A Major change has occurred in the 
-					Linux IC's. 
-				(For example the merge for the first time 
-				into the kernel) Every time the Major Number 
-				changes, the Minor Number and Revision number 
-				are reset to 0.
-2	Minor Number	Changes when new functionality is added 
-				to the Linux IC's that is not a bug fix. 
-				If new functionality is added to the IC's 
-				that is in effect also a bug fix (in the case 
-				of SMP). The new functionality will override 
-				the need for changing the Revision number. 
-				Every time the Minor Number changes, the 
-				Revision number will be reset to 0.
-				For example, The current version is on;
-						3.0.4
-				And SMP is added, which fixes a problem as 
-				well. The new versioning will become;
-						3.1.0
-3	Revision		Every time a bug fix or code change is 
-				done that is not a Minor or Major number 
-				change, this field increases by 1.
+I tested again, and it works for me with "ulimit -s 27" as well (on a 4k, 32bit kernel).
+Still, I'm not 100%  sure if your patch is correct.
+Anyway, it seems to work.
 
-We have had issues in the past trying to piece together what customers
-Where running.
+But what makes me wonder is, why EXTRA_STACK_VM_PAGES is defined in pages at all.
+You wrote in your patch description:
+> This bug means that when limiting the stack to less the 20*PAGE_SIZE (eg.
+> 80K on 4K pages or 'ulimit -s 79') all processes will be killed before
+> they start.  This is particularly bad with 64K pages, where a ulimit below
+> 1280K will kill every process.
 
-The importance of the versioning numbering like this will go away over
-Time once we have the code cleaned up and have additional functionality
-In a staged manner. For now we are still trying to catch up.
+Wouldn't it make sense to define and use EXTRA_STACK_VM_SIZE instead (e.g. as 20*4096 = 80k)?
+This extra stack reservation should IMHO be independend of the actual kernel page size.
 
-Would you like me to re-roll the patch to remove the DATE/TIME stuff
-And add the explanation for versioning as comments to the code?
-
-Thanks,
-
-Hank.
-
+Helge
