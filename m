@@ -1,39 +1,39 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751541Ab0BKKVi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 05:21:38 -0500
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:54163 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750857Ab0BKKVh convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 05:21:37 -0500
+	id S1751757Ab0BKKYH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 05:24:07 -0500
+Received: from compulab.co.il ([67.18.134.219]:58069 "EHLO compulab.co.il"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751237Ab0BKKYF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 05:24:05 -0500
+Message-ID: <4B73DAEE.5080400@compulab.co.il>
+Date: Thu, 11 Feb 2010 12:24:46 +0200
+From: Denis Turischev <denis@compulab.co.il>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-In-Reply-To: <2375c9f91002050154m1d179ea7v91c8253b41fc63eb@mail.gmail.com>
-References: <20100202120457.GA19605@omega> <20100203153101.GC4177@hack> 
-	<20100203174947.GA13943@tango.0pointer.de> <2375c9f91002050154m1d179ea7v91c8253b41fc63eb@mail.gmail.com>
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Thu, 11 Feb 2010 11:21:19 +0100
-Message-ID: <ac3eb2511002110221r61c7e5f4ieb21181197e6434@mail.gmail.com>
-Subject: Re: [PATCH] exit: PR_SET_ANCHOR for marking processes as reapers for 
-	child processes
-To: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
-Cc: Lennart Poettering <mzxreary@0pointer.de>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: LKML <linux-kernel@vger.kernel.org>
+CC: Samuel Ortiz <sameo@linux.intel.com>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Jean Delvare <khali@linux-fr.org>, linux-i2c@vger.kernel.org
+Subject: [PATCH 0/3] Add Intel SCH GPIO driver
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-ACL-Warn: {
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - compulab.site5.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - compulab.co.il
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 5, 2010 at 10:54, Américo Wang <xiyou.wangcong@gmail.com> wrote:
->> Also, on a side note: code that checks if its parent process died most
->> likely should rewritten to use PR_DEATHSIG or something like that
->> anyway, so that it is notified about the parent dying instead of
->> polling for it manually.
->>
->
-> I agree, but this is not a reason for you to break the compatiblity.
-
-Any substantial comments instead?
-
-Thanks,
-Kay
+LPC bridge controller of Intel SCH contains several functions.
+Currently, LPC bridge controller PCI device is claimed by SMBus driver
+thus disabling ability to have an additional driver for the LPC bridge
+PCI device. This patch series introduces and MFD driver that creates
+platform_device for both SMBus and GPIO controller, converts  SMBus
+driver to platform_driver and adds the driver for GPIO controller
