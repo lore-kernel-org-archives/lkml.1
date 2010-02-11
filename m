@@ -1,82 +1,45 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756785Ab0BKSzW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 13:55:22 -0500
-Received: from zrtps0kp.nortel.com ([47.140.192.56]:48313 "EHLO
-	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756059Ab0BKSzV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 13:55:21 -0500
-Message-ID: <4B74524D.8080804@nortel.com>
-Date: Thu, 11 Feb 2010 12:54:05 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
+	id S1756800Ab0BKS5c (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 13:57:32 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:6697 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756463Ab0BKS53 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 13:57:29 -0500
+Date: Thu, 11 Feb 2010 19:55:30 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Salman Qazi <sqazi@google.com>
+Cc: taviso@google.com, Roland Dreier <rolandd@cisco.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: Race in ptrace.
+Message-ID: <20100211185530.GA22055@redhat.com>
+References: <20100208221632.A7D6F9B33B@bumblebee1.mtv.corp.google.com> <20100208143231.6d804590.akpm@linux-foundation.org> <20100209112700.GA4258@redhat.com> <20100210133556.GA21925@redhat.com> <4352991a1002101038s6a2e67d9mc373416c17de9e6a@mail.gmail.com> <20100211125607.GA5086@redhat.com> <4352991a1002110832j1a4e6680scf4aa7effeb83a75@mail.gmail.com> <20100211165059.GA16053@redhat.com> <4352991a1002111043l35f1c1b5mcd9ad4c76f6351a7@mail.gmail.com>
 MIME-Version: 1.0
-To: Minchan Kim <minchan.kim@gmail.com>
-CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org, Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: tracking memory usage/leak in "inactive" field in /proc/meminfo?
-References: <4B71927D.6030607@nortel.com>	 <20100210093140.12D9.A69D9226@jp.fujitsu.com>	 <4B72E74C.9040001@nortel.com> <28c262361002101645g3fd08cc7t6a72d27b1f94db62@mail.gmail.com>
-In-Reply-To: <28c262361002101645g3fd08cc7t6a72d27b1f94db62@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 11 Feb 2010 18:55:13.0955 (UTC) FILETIME=[BE727730:01CAAB4B]
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4352991a1002111043l35f1c1b5mcd9ad4c76f6351a7@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/10/2010 06:45 PM, Minchan Kim wrote:
-> On Thu, Feb 11, 2010 at 2:05 AM, Chris Friesen <cfriesen@nortel.com> wrote:
+On 02/11, Salman Qazi wrote:
+>
+> >> >                // the tracee is STOPPED as requested, not TRACED,
+> >> >                // SIGCONT wakes it up
+> >> >                kill(pid, SIGCONT);
+>
+> I am still missing something.  There's probably a gap in my
+> understanding, so let's try to clarify it.  The last "kill" call,
+> sends a SIGCONT.  But, shouldn't this SIGCONT be intercepted by the
+> tracer before the tracee sees it?
 
->> In those spreadsheets I notice that
->> memfree+active+inactive+slab+pagetables is basically a constant.
->> However, if I don't use active+inactive then I can't make the numbers
->> add up.  And the difference between active+inactive and
->> buffers+cached+anonpages+dirty+mapped+pagetables+vmallocused grows
->> almost monotonically.
-> 
-> Such comparison is not right. That's because code pages of program account
-> with cached and mapped but they account just one in lru list(active +
-> inactive).
-> Also, if you use mmap on any file, above is applied.
+No. The tracee resumes (again: because it was STOPPED, not TRACED),
+dequeues SIGCONT, reports the signal and stops in TASK_TRACED,
+see ptrace_signal(). Meanwhile, until it calls ptrace_stop(), it is
+TASK_RUNNING and ptrace() fails.
 
-That just makes the comparison even worse...it means that there is more
-memory in active/inactive that isn't accounted for in any other category
-in /proc/meminfo.
+Oleg.
 
-
-> I can't find any clue with your attachment.
-> You said you used kernel with some modification and non-vanilla drivers.
-> So I suspect that. Maybe kernel memory leak?
-
-Possibly.  Or it could be a use case issue, I know there have been
-memory leaks fixed since 2.6.27. :)
-
-> Now kernel don't account kernel memory allocations except SLAB.
-
-I don't think that's entirely accurate.  I think cached, buffers,
-pagetables, vmallocUsed are all kernel allocations.  Granted, they're
-generally on behalf of userspace.
-
-I've discovered that the generic page allocator (alloc_page, etc.) is
-not tracked at all in /proc/meminfo.  I seem to see the memory increase
-in the page cache (that is, active/inactive), so that would seem to rule
-out most direct allocations.
-
-> I think this patch can help you find the kernel memory leak.
-> (It isn't merged with mainline by somewhy but it is useful to you :)
-> 
-> http://marc.info/?l=linux-mm&m=123782029809850&w=2
-
-I have a modified version of that which I picked up as part of the
-kmemleak backport.  However, it doesn't help unless I can narrow down
-*which* pages I should care about.
-
-I tried using kmemleak directly, but it didn't find anything.  I've also
-tried checking for inactive pages which haven't been written to in 10
-minutes, and haven't had much luck there either.  But active/inactive
-keeps growing, and I don't know why.
-
-Chris
