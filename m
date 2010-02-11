@@ -1,53 +1,45 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756013Ab0BKOto (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 09:49:44 -0500
-Received: from mail-ew0-f228.google.com ([209.85.219.228]:60250 "EHLO
-	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751832Ab0BKOtn (ORCPT
+	id S1756089Ab0BKOv0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 09:51:26 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:36994 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755924Ab0BKOvZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 09:49:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Fmjuzr9LasG7WulU9RFDiRZD7lzGyqQ7LnwS9Be9owbzVqq/qwvM9Bqu5e3b25qSs2
-         ngmLqtz17AbGNc3UL9Sxd8FNOZVq8MBB0X/UebwVyO8PSuJbXflsLsO+n4ibQYnEpG5o
-         kOo/9POqQpN64fc/c8yiBwJWdGgSziHG9Ikf0=
-Date: Thu, 11 Feb 2010 15:49:37 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       "K. Prasad" <prasad@linux.vnet.ibm.com>,
-       Maneesh Soni <maneesh@in.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Martin <schwidefsky@de.ibm.com>
-Subject: Re: [GIT PULL] hw-breakpoint fix
-Message-ID: <20100211144924.GA4915@nowhere>
-References: <1265248014-7338-1-git-send-regression-fweisbec@gmail.com> <4B73E60B.1000104@linux.vnet.ibm.com>
+	Thu, 11 Feb 2010 09:51:25 -0500
+Date: Thu, 11 Feb 2010 09:51:23 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernl.org, xfs@oss.sgi.com,
+       Alan Piszcz <ap@solarrain.com>
+Subject: Re: 2.6.32.3 x86_64 - XFS hangs, all I/O to D-state bug (again)
+Message-ID: <20100211145123.GA13114@infradead.org>
+References: <alpine.DEB.2.00.1002110903080.25392@p34.internal.lan>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4B73E60B.1000104@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <alpine.DEB.2.00.1002110903080.25392@p34.internal.lan>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 11, 2010 at 04:42:11PM +0530, Mahesh Jagannath Salgaonkar wrote:
-> Hi Ingo,
->
-> Will this patch be pushed in to Linux tree? This patch contains ABI  
-> chnage w.r.t hardware breakpoint info layout and needs to go in .33
->
-> Thanks,
-> -Mahesh.
+Can you check if this still happens with the patch below?
 
 
-It is in the tip:perf/urgent branch, which means Ingo will likely send
-a pull request soon with this patch inside.
-
-Thanks.
-
+Index: linux-2.6/fs/xfs/linux-2.6/xfs_buf.c
+===================================================================
+--- linux-2.6.orig/fs/xfs/linux-2.6/xfs_buf.c	2010-02-11 15:47:49.677253958 +0100
++++ linux-2.6/fs/xfs/linux-2.6/xfs_buf.c	2010-02-11 15:48:03.630005040 +0100
+@@ -1158,8 +1158,7 @@ _xfs_buf_ioapply(
+ 		bp->b_flags &= ~_XBF_RUN_QUEUES;
+ 		rw = (bp->b_flags & XBF_WRITE) ? WRITE_META : READ_META;
+ 	} else {
+-		rw = (bp->b_flags & XBF_WRITE) ? WRITE :
+-		     (bp->b_flags & XBF_READ_AHEAD) ? READA : READ;
++		rw = (bp->b_flags & XBF_WRITE) ? WRITE : READ;
+ 	}
+ 
+ 	/* Special code path for reading a sub page size buffer in --
