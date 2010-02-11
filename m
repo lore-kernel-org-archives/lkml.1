@@ -1,84 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757157Ab0BKWV3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 17:21:29 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:45279 "EHLO
-	rcsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756944Ab0BKWV2 (ORCPT
+	id S1757290Ab0BKWWx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 17:22:53 -0500
+Received: from smtp.microsoft.com ([131.107.115.214]:50593 "EHLO
+	smtp.microsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756976Ab0BKWWw convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 17:21:28 -0500
-Message-ID: <4B74824C.7050700@oracle.com>
-Date: Thu, 11 Feb 2010 14:18:52 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+	Thu, 11 Feb 2010 17:22:52 -0500
+From: Hank Janssen <hjanssen@microsoft.com>
+To: Greg KH <gregkh@suse.de>
+CC: "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+       "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>,
+       Haiyang Zhang <haiyangz@microsoft.com>
+Subject: RE: [PATCH 2/2] Staging: hv: General maintenance of TODO file
+Thread-Topic: [PATCH 2/2] Staging: hv: General maintenance of TODO file
+Thread-Index: AQHKq2HFt5YrdyjaOk+txGcH5EzUM5HB9GIA//+EmxA=
+Date: Thu, 11 Feb 2010 22:22:19 +0000
+Message-ID: <8AFC7968D54FB448A30D8F38F259C56212E88346@TK5EX14MBXC118.redmond.corp.microsoft.com>
+References: <8AFC7968D54FB448A30D8F38F259C56212E881A9@TK5EX14MBXC118.redmond.corp.microsoft.com>
+ <8AFC7968D54FB448A30D8F38F259C56212E88291@TK5EX14MBXC118.redmond.corp.microsoft.com>
+ <20100211213816.GB29557@suse.de>
+In-Reply-To: <20100211213816.GB29557@suse.de>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, Mocean Laboratories <info@mocean-labs.com>,
-       Juergen Beisert <j.beisert@pengutronix.de>,
-       Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>,
-       Samuel Ortiz <sameo@linux.intel.com>
-Subject: Re: mmotm 2010-02-10-16-17 uploaded (timberdale)
-References: <201002110043.o1B0hKxW008835@imap1.linux-foundation.org>	<4B736ED5.5060205@oracle.com> <20100211140117.455dbbff.akpm@linux-foundation.org>
-In-Reply-To: <20100211140117.455dbbff.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt355.oracle.com [141.146.40.155]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090208.4B7482B6.008C:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/11/10 14:01, Andrew Morton wrote:
-> On Wed, 10 Feb 2010 18:43:33 -0800
-> Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> 
->> On 02/10/10 16:17, akpm@linux-foundation.org wrote:
->>> The mm-of-the-moment snapshot 2010-02-10-16-17 has been uploaded to
->>>
->>>    http://userweb.kernel.org/~akpm/mmotm/
->>>
->>> and will soon be available at
->>>
->>>    git://zen-kernel.org/kernel/mmotm.git
->>>
->>> It contains the following patches against 2.6.33-rc7:
->>
->>
->> When CONFIG_GPIOLIB is not enabled:
->>
->>   CC      drivers/mfd/timberdale.o
->> In file included from mmotm-2010-0210-1617/drivers/mfd/timberdale.c:37:
->> mmotm-2010-0210-1617/include/linux/spi/max7301.h:14: error: field 'chip' has incomplete type
->> make[3]: *** [drivers/mfd/timberdale.o] Error 1
->>
->>
->> Build error observed on i386 and on x86_64.
->>
-> 
-> Bug is in mainline too, I think.
-> 
-> Something like this?
+>> 
+>> Removed two line;
+>> 	Audit block driver
+>> 	Audit scsi driver
+>> They were added by us as part of the original code
+>> Submission to make sure these drivers kept on working
+>> Correctly with all the patches that came in from the 
+>> Community. 
+>
+>Um, no, those things still need to be done.
 
-Nope, that does not affect the building of the timberdale (see $subject) driver.
-It still has the same error with this patch applied.
+What additional things are expected? We solved the original 
+reason we added the lines, so I want to make sure we do 
+additional work as is expected. We are going through general 
+code cleanup, and the TODO file now. 
 
+>> Added a new line to fix mostly insane camelcase naming
+>> We are working on that right now, but it will take a bit
+>> Due to the pervasive usage of it.
+>
+>That's fine, but it fits under the general "fix coding style issues".
+>
+>Hm, that isn't spelled out, but it is implicit, I doubt this really
+>needs to be documented in the file, it's just common knowledge :)
 
-> --- a/drivers/gpio/Kconfig~drivers-gpio-max7301c-depends-on-gpiolib
-> +++ a/drivers/gpio/Kconfig
-> @@ -92,7 +92,7 @@ comment "I2C GPIO expanders:"
->  
->  config GPIO_MAX7300
->  	tristate "Maxim MAX7300 GPIO expander"
-> -	depends on I2C
-> +	depends on I2C && GPIOLIB
->  	select GPIO_MAX730X
->  	help
->  	  GPIO driver for Maxim MAX7301 I2C-based GPIO expander.
-> _
-> 
+Want me to add a proper line item for that? Or drop this patch
+completely for the time being?
 
+Thanks,
 
--- 
-~Randy
+Hank.
+
