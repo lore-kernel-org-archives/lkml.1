@@ -1,141 +1,57 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757464Ab0BKXHA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 18:07:00 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:53315 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757197Ab0BKXGc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 18:06:32 -0500
-From: Jan Kara <jack@suse.cz>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, npiggin@suse.de,
-       fengguang.wu@intel.com, Jan Kara <jack@suse.cz>
-Subject: [PATCH 1/3] radix-tree: Implement function radix_tree_gang_tag_if_tagged
-Date: Fri, 12 Feb 2010 00:06:22 +0100
-Message-Id: <1265929584-5080-2-git-send-email-jack@suse.cz>
-X-Mailer: git-send-email 1.6.4.2
-In-Reply-To: <1265929584-5080-1-git-send-email-jack@suse.cz>
-References: <1265929584-5080-1-git-send-email-jack@suse.cz>
+	id S1757363Ab0BKXKc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 18:10:32 -0500
+Received: from na3sys009aog114.obsmtp.com ([74.125.149.211]:51741 "HELO
+	na3sys009aog114.obsmtp.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757197Ab0BKXKa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 18:10:30 -0500
+From: Michael Poole <mdpoole@troilus.org>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org,
+       Marcel Holtmann <marcel@holtmann.org>, linux-bluetooth@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] hid-magicmouse: Coding style and probe failure fixes.
+References: <87y6j2eeqv.fsf_-_@troilus.org> <87pr4eeemz.fsf_-_@troilus.org>
+	<20100210182024.GA29610@core.coreip.homeip.net>
+	<873a18e3qu.fsf_-_@troilus.org>
+	<alpine.LNX.2.00.1002111124030.30967@pobox.suse.cz>
+Date: Thu, 11 Feb 2010 18:10:25 -0500
+In-Reply-To: <alpine.LNX.2.00.1002111124030.30967@pobox.suse.cz> (Jiri
+	Kosina's message of "Thu, 11 Feb 2010 11:26:22 +0100 (CET)")
+Message-ID: <87r5orcqse.fsf@troilus.org>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Implement function for setting one tag if another tag is set
-for each item in given range.
+Jiri Kosina writes:
 
-Signed-off-by: Jan Kara <jack@suse.cz>
----
- include/linux/radix-tree.h |    3 ++
- lib/radix-tree.c           |   82 ++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 85 insertions(+), 0 deletions(-)
+> On Thu, 11 Feb 2010, Michael Poole wrote:
+>
+>> I haven't had a chance to run-test these changes yet -- hid/for-next
+>> causes corrupt X display on my laptop, whereas v2.6.33-rc6 and -rc7 are
+>> fine; 
+>
+> That's indeed quite strange. I'd be curious to see the result of the 
+> bisection, thanks a lot for doing this.
 
-diff --git a/include/linux/radix-tree.h b/include/linux/radix-tree.h
-index c5da749..41fa087 100644
---- a/include/linux/radix-tree.h
-+++ b/include/linux/radix-tree.h
-@@ -185,6 +185,9 @@ unsigned int
- radix_tree_gang_lookup_tag_slot(struct radix_tree_root *root, void ***results,
- 		unsigned long first_index, unsigned int max_items,
- 		unsigned int tag);
-+unsigned long radix_tree_gang_tag_if_tagged(struct radix_tree_root *root,
-+		unsigned long first_index, unsigned long last_index,
-+		unsigned int fromtag, unsigned int totag);
- int radix_tree_tagged(struct radix_tree_root *root, unsigned int tag);
- 
- static inline void radix_tree_preload_end(void)
-diff --git a/lib/radix-tree.c b/lib/radix-tree.c
-index 92cdd99..d821a17 100644
---- a/lib/radix-tree.c
-+++ b/lib/radix-tree.c
-@@ -610,6 +610,88 @@ int radix_tree_tag_get(struct radix_tree_root *root,
- EXPORT_SYMBOL(radix_tree_tag_get);
- 
- /**
-+ * radix_tree_gang_tag_if_tagged - for each item in given range set given
-+ *				   tag if item has another tag set
-+ * @root:		radix tree root
-+ * @first_index:	starting index of a range to scan
-+ * @last_index:		last index of a range to scan
-+ * @iftag: 		tag index to test
-+ * @settag:		tag index to set if tested tag is set
-+ *
-+ * This function scans range of radix tree from first_index to last_index.
-+ * For each item in the range if iftag is set, the function sets also
-+ * settag.
-+ *
-+ * The function returns number of leaves where the tag was set.
-+ */
-+unsigned long radix_tree_gang_tag_if_tagged(struct radix_tree_root *root,
-+                unsigned long first_index, unsigned long last_index,
-+                unsigned int iftag, unsigned int settag)
-+{
-+	unsigned int height = root->height, shift;
-+	unsigned long tagged = 0, index = first_index;
-+	struct radix_tree_node *open_slots[height], *slot;
-+
-+	last_index = min(last_index, radix_tree_maxindex(height));
-+	if (first_index > last_index)
-+		return 0;
-+	if (!root_tag_get(root, iftag))
-+		return 0;
-+	if (height == 0) {
-+		root_tag_set(root, settag);
-+		return 1;
-+	}
-+
-+	shift = (height - 1) * RADIX_TREE_MAP_SHIFT;
-+	slot = radix_tree_indirect_to_ptr(root->rnode);
-+
-+	for (;;) {
-+		int offset;
-+
-+		offset = (index >> shift) & RADIX_TREE_MAP_MASK;
-+		if (!slot->slots[offset])
-+			goto next;
-+		if (!tag_get(slot, iftag, offset))
-+			goto next;
-+		tag_set(slot, settag, offset);
-+		if (height == 1) {
-+			tagged++;
-+			goto next;
-+		}
-+		/* Go down one level */
-+		height--;
-+		shift -= RADIX_TREE_MAP_SHIFT;
-+		open_slots[height] = slot;
-+		slot = slot->slots[offset];
-+		continue;
-+next:
-+		/* Go to next item at level determined by 'shift' */
-+		index = ((index >> shift) + 1) << shift;
-+		if (index > last_index)
-+			break;
-+		while (((index >> shift) & RADIX_TREE_MAP_MASK) == 0) {
-+			/*
-+			 * We've fully scanned this node. Go up. Because
-+			 * last_index is guaranteed to be in the tree, what
-+			 * we do below cannot wander astray.
-+			 */
-+			slot = open_slots[height];
-+			height++;
-+			shift += RADIX_TREE_MAP_SHIFT;
-+		}
-+	}
-+	/*
-+	 * The iftag must have been set somewhere because otherwise
-+	 * we would return immediated at the beginning of the function
-+	 */
-+	root_tag_set(root, settag);
-+
-+	return tagged;
-+}
-+EXPORT_SYMBOL(radix_tree_gang_tag_if_tagged);
-+
-+
-+/**
-  *	radix_tree_next_hole    -    find the next hole (not-present entry)
-  *	@root:		tree root
-  *	@index:		index key
--- 
-1.6.4.2
+The problem was introduced by 859ddf0 and reverted in 6f14a66 (both only
+touching lib/idr.c).  You just happened to merge from master during an
+unfortunate window :)
 
+Cherry-picking the revert (6f14a66) on top of commit 093657 (details
+shown below for reference) yields a working kernel with a working Magic
+Mouse driver.  I expect that merging the rest of master would also work.
+
+commit 09365737da8b3af76abd9d811d435d3ce379903a
+Merge: 1b97e37 71b38bd
+Author: Jiri Kosina <jkosina@suse.cz>
+Date:   Thu Feb 11 11:22:52 2010 +0100
+
+    Merge branch 'apple_magic_mouse' into for-next
+
+Michael Poole
