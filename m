@@ -1,13 +1,13 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752538Ab0BKK1U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 05:27:20 -0500
-Received: from compulab.co.il ([67.18.134.219]:58102 "EHLO compulab.co.il"
+	id S1752697Ab0BKK2N (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 05:28:13 -0500
+Received: from compulab.co.il ([67.18.134.219]:58112 "EHLO compulab.co.il"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751315Ab0BKK1S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 05:27:18 -0500
-Message-ID: <4B73DBB2.7020601@compulab.co.il>
-Date: Thu, 11 Feb 2010 12:28:02 +0200
+	id S1751315Ab0BKK2I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 05:28:08 -0500
+Message-ID: <4B73DBE9.2030307@compulab.co.il>
+Date: Thu, 11 Feb 2010 12:28:57 +0200
 From: Denis Turischev <denis@compulab.co.il>
 User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
@@ -15,7 +15,7 @@ To: LKML <linux-kernel@vger.kernel.org>
 CC: Samuel Ortiz <sameo@linux.intel.com>,
        David Brownell <dbrownell@users.sourceforge.net>,
        Jean Delvare <khali@linux-fr.org>, linux-i2c@vger.kernel.org
-Subject: [PATCH 2/3] i2c: convert i2c-isch to platform_device
+Subject: [PATCH 3/3] gpio: add Intel SCH GPIO controller driver
 References: <4B73DAEE.5080400@compulab.co.il>
 In-Reply-To: <4B73DAEE.5080400@compulab.co.il>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
@@ -35,156 +35,326 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Denis Turischev <denis@compulab.co.il>
 
-diff -Nru linux-2.6.33-rc7.orig/drivers/i2c/busses/i2c-isch.c linux-2.6.33-rc7/drivers/i2c/busses/i2c-isch.c
---- linux-2.6.33-rc7.orig/drivers/i2c/busses/i2c-isch.c	2010-02-07 00:17:12.000000000 +0200
-+++ linux-2.6.33-rc7/drivers/i2c/busses/i2c-isch.c	2010-02-10 15:45:23.000000000 +0200
-@@ -27,7 +27,7 @@
-  */
+diff -Nru linux-2.6.33-rc7.orig/drivers/gpio/Kconfig linux-2.6.33-rc7/drivers/gpio/Kconfig
+--- linux-2.6.33-rc7.orig/drivers/gpio/Kconfig	2010-02-07 00:17:12.000000000 +0200
++++ linux-2.6.33-rc7/drivers/gpio/Kconfig	2010-02-10 15:15:49.000000000 +0200
+@@ -85,6 +85,22 @@
+  	help
+  	  Say yes here to support the NEC VR4100 series General-purpose I/O Uint
 
-  #include <linux/module.h>
--#include <linux/pci.h>
++config GPIO_SCH
++	tristate "Intel SCH GPIO"
++	depends on GPIOLIB
++	select LPC_SCH
++	help
++	  Say yes here to support GPIO interface on Intel Poulsbo SCH.
++	  The Intel SCH contains a total of 14 GPIO pins. Ten GPIOs are
++	  powered by the core power rail and are turned off during sleep
++	  modes (S3 and higher). The remaining four GPIOs are powered by
++	  the Intel SCH suspend power supply. These GPIOs remain
++	  active during S3. The suspend powered GPIOs can be used to wake the
++	  system from the Suspend-to-RAM state.
++
++	  This driver can also be built as a module. If so, the module
++	  will be called sch-gpio.
++
+  comment "I2C GPIO expanders:"
+
+  config GPIO_MAX732X
+diff -Nru linux-2.6.33-rc7.orig/drivers/gpio/Makefile linux-2.6.33-rc7/drivers/gpio/Makefile
+--- linux-2.6.33-rc7.orig/drivers/gpio/Makefile	2010-02-07 00:17:12.000000000 +0200
++++ linux-2.6.33-rc7/drivers/gpio/Makefile	2010-02-10 15:15:49.000000000 +0200
+@@ -22,3 +22,4 @@
+  obj-$(CONFIG_GPIO_BT8XX)	+= bt8xxgpio.o
+  obj-$(CONFIG_GPIO_VR41XX)	+= vr41xx_giu.o
+  obj-$(CONFIG_GPIO_WM831X)	+= wm831x-gpio.o
++obj-$(CONFIG_GPIO_SCH)		+= sch_gpio.o
+diff -Nru linux-2.6.33-rc7.orig/drivers/gpio/sch_gpio.c linux-2.6.33-rc7/drivers/gpio/sch_gpio.c
+--- linux-2.6.33-rc7.orig/drivers/gpio/sch_gpio.c	1970-01-01 02:00:00.000000000 +0200
++++ linux-2.6.33-rc7/drivers/gpio/sch_gpio.c	2010-02-10 15:44:20.000000000 +0200
+@@ -0,0 +1,285 @@
++/*
++ *  sch_gpio.c - GPIO interface for Intel Poulsbo SCH
++ *
++ *  Copyright (c) 2010 CompuLab Ltd
++ *  Author: Denis Turischev <denis@compulab.co.il>
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License 2 as published
++ *  by the Free Software Foundation.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; see the file COPYING.  If not, write to
++ *  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
++ */
++
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/io.h>
++#include <linux/errno.h>
++#include <linux/acpi.h>
 +#include <linux/platform_device.h>
-  #include <linux/kernel.h>
-  #include <linux/delay.h>
-  #include <linux/stddef.h>
-@@ -46,12 +46,6 @@
-  #define SMBHSTDAT1	(7 + sch_smba)
-  #define SMBBLKDAT	(0x20 + sch_smba)
-
--/* count for request_region */
--#define SMBIOSIZE	64
--
--/* PCI Address Constants */
--#define SMBBA_SCH	0x40
--
-  /* Other settings */
-  #define MAX_TIMEOUT	500
-
-@@ -63,7 +57,6 @@
-  #define SCH_BLOCK_DATA		0x05
-
-  static unsigned short sch_smba;
--static struct pci_driver sch_driver;
-  static struct i2c_adapter sch_adapter;
-
-  /*
-@@ -256,37 +249,26 @@
-  	.algo		= &smbus_algorithm,
-  };
-
--static struct pci_device_id sch_ids[] = {
--	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_SCH_LPC) },
--	{ 0, }
--};
--
--MODULE_DEVICE_TABLE(pci, sch_ids);
--
--static int __devinit sch_probe(struct pci_dev *dev,
--				const struct pci_device_id *id)
-+static int __devinit smbus_sch_probe(struct platform_device *dev)
-  {
++
++#include <linux/gpio.h>
++
++static DEFINE_SPINLOCK(gpio_lock);
++
++#define CGEN	(0x00)
++#define CGIO	(0x04)
++#define CGLV	(0x08)
++
++#define RGEN	(0x20)
++#define RGIO	(0x24)
++#define RGLV	(0x28)
++
++static unsigned short gpio_ba;
++
++static int sch_gpio_core_direction_in(struct gpio_chip *gc, unsigned  gpio_num)
++{
++	u8 curr_dirs;
++	unsigned short offset, bit;
++
++	spin_lock(&gpio_lock);
++
++	offset = CGIO + gpio_num / 8;
++	bit = gpio_num % 8;
++
++	curr_dirs = inb(gpio_ba + offset);
++
++	if (!(curr_dirs & (1 << bit)))
++		outb(curr_dirs | (1 << bit), gpio_ba + offset);
++
++	spin_unlock(&gpio_lock);
++	return 0;
++}
++
++static int sch_gpio_core_get(struct gpio_chip *gc, unsigned gpio_num)
++{
++	int res;
++	unsigned short offset, bit;
++
++	offset = CGLV + gpio_num / 8;
++	bit = gpio_num % 8;
++
++	res = !!(inb(gpio_ba + offset) & (1 << bit));
++	return res;
++}
++
++static void sch_gpio_core_set(struct gpio_chip *gc, unsigned gpio_num, int val)
++{
++	u8 curr_vals;
++	unsigned short offset, bit;
++
++	spin_lock(&gpio_lock);
++
++	offset = CGLV + gpio_num / 8;
++	bit = gpio_num % 8;
++
++	curr_vals = inb(gpio_ba + offset);
++
++	if (val)
++		outb(curr_vals | (1 << bit), gpio_ba + offset);
++	else
++		outb((curr_vals & ~(1 << bit)), gpio_ba + offset);
++	spin_unlock(&gpio_lock);
++}
++
++static int sch_gpio_core_direction_out(struct gpio_chip *gc,
++					unsigned gpio_num, int val)
++{
++	u8 curr_dirs;
++	unsigned short offset, bit;
++
++	sch_gpio_core_set(gc, gpio_num, val);
++
++	spin_lock(&gpio_lock);
++
++	offset = CGIO + gpio_num / 8;
++	bit = gpio_num % 8;
++
++	curr_dirs = inb(gpio_ba + offset);
++	if (curr_dirs & (1 << bit))
++		outb(curr_dirs & ~(1 << bit), gpio_ba + offset);
++
++	spin_unlock(&gpio_lock);
++	return 0;
++}
++
++static struct gpio_chip sch_gpio_core = {
++	.label			= "sch_gpio_core",
++	.owner			= THIS_MODULE,
++	.direction_input	= sch_gpio_core_direction_in,
++	.get			= sch_gpio_core_get,
++	.direction_output	= sch_gpio_core_direction_out,
++	.set			= sch_gpio_core_set,
++};
++
++static int sch_gpio_resume_direction_in(struct gpio_chip *gc,
++					unsigned gpio_num)
++{
++	u8 curr_dirs;
++
++	spin_lock(&gpio_lock);
++
++	curr_dirs = inb(gpio_ba + RGIO);
++
++	if (!(curr_dirs & (1 << gpio_num)))
++		outb(curr_dirs | (1 << gpio_num) , gpio_ba + RGIO);
++
++	spin_unlock(&gpio_lock);
++	return 0;
++}
++
++static int sch_gpio_resume_get(struct gpio_chip *gc, unsigned gpio_num)
++{
++	return !!(inb(gpio_ba + RGLV) & (1 << gpio_num));
++}
++
++static void sch_gpio_resume_set(struct gpio_chip *gc,
++				unsigned gpio_num, int val)
++{
++	u8 curr_vals;
++
++	spin_lock(&gpio_lock);
++
++	curr_vals = inb(gpio_ba + RGLV);
++
++	if (val)
++		outb(curr_vals | (1 << gpio_num), gpio_ba + RGLV);
++	else
++		outb((curr_vals & ~(1 << gpio_num)), gpio_ba + RGLV);
++
++	spin_unlock(&gpio_lock);
++}
++
++static int sch_gpio_resume_direction_out(struct gpio_chip *gc,
++					unsigned gpio_num, int val)
++{
++	u8 curr_dirs;
++
++	sch_gpio_resume_set(gc, gpio_num, val);
++
++	spin_lock(&gpio_lock);
++
++	curr_dirs = inb(gpio_ba + RGIO);
++	if (curr_dirs & (1 << gpio_num))
++		outb(curr_dirs & ~(1 << gpio_num), gpio_ba + RGIO);
++
++	spin_unlock(&gpio_lock);
++	return 0;
++}
++
++static struct gpio_chip sch_gpio_resume = {
++	.label			= "sch_gpio_resume",
++	.owner			= THIS_MODULE,
++	.direction_input	= sch_gpio_resume_direction_in,
++	.get			= sch_gpio_resume_get,
++	.direction_output	= sch_gpio_resume_direction_out,
++	.set			= sch_gpio_resume_set,
++};
++
++static int __devinit sch_gpio_probe(struct platform_device *pdev)
++{
 +	struct resource *res;
-  	int retval;
--	unsigned int smba;
-
--	pci_read_config_dword(dev, SMBBA_SCH, &smba);
--	if (!(smba & (1 << 31))) {
--		dev_err(&dev->dev, "SMBus I/O space disabled!\n");
--		return -ENODEV;
--	}
-+	res = platform_get_resource(dev, IORESOURCE_IO, 0);
++	int err;
++
++	res = platform_get_resource(pdev, IORESOURCE_IO, 0);
 +	if (!res)
 +		return -EBUSY;
-
--	sch_smba = (unsigned short)smba;
--	if (sch_smba == 0) {
--		dev_err(&dev->dev, "SMBus base address uninitialized!\n");
-+	if (acpi_check_region(res->start, resource_size(res), dev->name))
-  		return -ENODEV;
--	}
--	if (acpi_check_region(sch_smba, SMBIOSIZE, sch_driver.name))
--		return -ENODEV;
--	if (!request_region(sch_smba, SMBIOSIZE, sch_driver.name)) {
 +
-+	if (!request_region(res->start, resource_size(res), dev->name)) {
-  		dev_err(&dev->dev, "SMBus region 0x%x already in use!\n",
-  			sch_smba);
-  		return -EBUSY;
-  	}
++	if (acpi_check_region(res->start, resource_size(res), pdev->name))
++		return -ENODEV;
 +
-+	sch_smba = res->start;
++	if (!request_region(res->start, resource_size(res), pdev->name))
++		return -EBUSY;
 +
-  	dev_dbg(&dev->dev, "SMBA = 0x%X\n", sch_smba);
-
-  	/* set up the sysfs linkage to our parent device */
-@@ -298,37 +280,43 @@
-  	retval = i2c_add_adapter(&sch_adapter);
-  	if (retval) {
-  		dev_err(&dev->dev, "Couldn't register adapter!\n");
--		release_region(sch_smba, SMBIOSIZE);
-+		release_region(res->start, resource_size(res));
-  		sch_smba = 0;
-  	}
-
-  	return retval;
-  }
-
--static void __devexit sch_remove(struct pci_dev *dev)
-+static int __devexit smbus_sch_remove(struct platform_device *pdev)
-  {
-+	struct resource *res;
-  	if (sch_smba) {
-  		i2c_del_adapter(&sch_adapter);
--		release_region(sch_smba, SMBIOSIZE);
-+		res = platform_get_resource(pdev, IORESOURCE_IO, 0);
-+		release_region(res->start, resource_size(res));
-  		sch_smba = 0;
-  	}
++	gpio_ba = res->start;
++
++	sch_gpio_core.base = 0;
++	sch_gpio_core.ngpio = 10;
++	sch_gpio_core.dev = &pdev->dev;
++
++	sch_gpio_resume.base = 10;
++	sch_gpio_resume.ngpio = 4;
++	sch_gpio_resume.dev = &pdev->dev;
++
++	err = gpiochip_add(&sch_gpio_core);
++	if (err < 0)
++		goto err_sch_gpio_core;
++
++	err = gpiochip_add(&sch_gpio_resume);
++	if (err < 0)
++		goto err_sch_gpio_resume;
++
++	/*
++	 * GPIO[6:0] enabled by default
++	 * GPIO7 is configured by the CMC as SLPIOVR
++	 * Enable GPIO[9:8] core powered gpios explicitly
++	 */
++	outb(0x3, gpio_ba + CGEN + 1);
++	/*
++	 * SUS_GPIO[2:0] enabled by default
++	 * Enable SUS_GPIO3 resume powered gpio explicitly
++	 */
++	outb(0x8, gpio_ba + RGEN);
 +
 +	return 0;
-  }
-
--static struct pci_driver sch_driver = {
--	.name		= "isch_smbus",
--	.id_table	= sch_ids,
--	.probe		= sch_probe,
--	.remove		= __devexit_p(sch_remove),
-+static struct platform_driver smbus_sch_driver = {
++
++err_sch_gpio_resume:
++	gpiochip_remove(&sch_gpio_core);
++
++err_sch_gpio_core:
++	release_region(res->start, resource_size(res));
++	gpio_ba = 0;
++
++	return err;
++}
++
++static int __devexit sch_gpio_remove(struct platform_device *pdev)
++{
++	struct resource *res;
++	if (gpio_ba) {
++		gpiochip_remove(&sch_gpio_core);
++		gpiochip_remove(&sch_gpio_resume);
++
++		res = platform_get_resource(pdev, IORESOURCE_IO, 0);
++
++		release_region(res->start, resource_size(res));
++		gpio_ba = 0;
++	}
++
++	return 0;
++}
++
++static struct platform_driver sch_gpio_driver = {
 +	.driver = {
-+		.name = "isch_smbus",
++		.name = "sch_gpio",
 +		.owner = THIS_MODULE,
 +	},
-+	.probe		= smbus_sch_probe,
-+	.remove		= __devexit_p(smbus_sch_remove),
-  };
-
-  static int __init i2c_sch_init(void)
-  {
--	return pci_register_driver(&sch_driver);
-+	return platform_driver_register(&smbus_sch_driver);
-  }
-
-  static void __exit i2c_sch_exit(void)
-  {
--	pci_unregister_driver(&sch_driver);
-+	platform_driver_unregister(&smbus_sch_driver);
-  }
-
-  MODULE_AUTHOR("Jacob Pan <jacob.jun.pan@intel.com>");
-@@ -337,3 +325,4 @@
-
-  module_init(i2c_sch_init);
-  module_exit(i2c_sch_exit);
-+MODULE_ALIAS("platform:isch_smbus");
-diff -Nru linux-2.6.33-rc7.orig/drivers/i2c/busses/Kconfig linux-2.6.33-rc7/drivers/i2c/busses/Kconfig
---- linux-2.6.33-rc7.orig/drivers/i2c/busses/Kconfig	2010-02-07 00:17:12.000000000 +0200
-+++ linux-2.6.33-rc7/drivers/i2c/busses/Kconfig	2010-02-10 15:23:12.000000000 +0200
-@@ -104,7 +104,7 @@
-
-  config I2C_ISCH
-  	tristate "Intel SCH SMBus 1.0"
--	depends on PCI
-+	select LPC_SCH
-  	help
-  	  Say Y here if you want to use SMBus controller on the Intel SCH
-  	  based systems.
++	.probe		= sch_gpio_probe,
++	.remove		= __devexit_p(sch_gpio_remove),
++};
++
++static int __init sch_gpio_init(void)
++{
++	return platform_driver_register(&sch_gpio_driver);
++}
++
++static void __exit sch_gpio_exit(void)
++{
++	platform_driver_unregister(&sch_gpio_driver);
++}
++
++module_init(sch_gpio_init);
++module_exit(sch_gpio_exit);
++
++MODULE_AUTHOR("Denis Turischev <denis@compulab.co.il>");
++MODULE_DESCRIPTION("GPIO interface for Intel Poulsbo SCH");
++MODULE_LICENSE("GPL");
++MODULE_ALIAS("platform:sch_gpio");
