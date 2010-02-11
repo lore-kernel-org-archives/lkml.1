@@ -1,121 +1,107 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754687Ab0BKM47 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 07:56:59 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:19739 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754018Ab0BKM45 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 07:56:57 -0500
-Date: Thu, 11 Feb 2010 13:56:07 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Salman Qazi <sqazi@google.com>
-Cc: taviso@google.com, Roland Dreier <rolandd@cisco.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: Race in ptrace.
-Message-ID: <20100211125607.GA5086@redhat.com>
-References: <20100208221632.A7D6F9B33B@bumblebee1.mtv.corp.google.com> <20100208143231.6d804590.akpm@linux-foundation.org> <20100209112700.GA4258@redhat.com> <20100210133556.GA21925@redhat.com> <4352991a1002101038s6a2e67d9mc373416c17de9e6a@mail.gmail.com>
+	id S1754801Ab0BKM7i (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 07:59:38 -0500
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:58065 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753293Ab0BKM7g (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 07:59:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:from:to:cc:subject:references:date:in-reply-to:message-id
+         :user-agent:mime-version:content-type;
+        b=SOu3yUzlNP2DNOO5pMdCyO1uKkI1uk7c6Rrl/CYxxVCGfhAPhPxx9w4oJ2ExM6+0Js
+         D2NYSkS2yFxWWQV9DI5fT2qV3ZIe2dBuyK5xE7DtL+iu+Ce26C1mx+06ttZSi+si+y0u
+         HrPWCa6VJ/0aXeBZK9bqUwLLli4OCtb7o2sok=
+From: Dmitry Monakhov <dmonakhov@openvz.org>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com
+Subject: Re: [PATCH 1/4] block: implement compatible DISCARD support
+References: <1265885625-21608-1-git-send-email-dmonakhov@openvz.org>
+	<20100211122154.GA12417@infradead.org>
+Date: Thu, 11 Feb 2010 15:59:31 +0300
+In-Reply-To: <20100211122154.GA12417@infradead.org> (Christoph Hellwig's
+	message of "Thu, 11 Feb 2010 07:21:54 -0500")
+Message-ID: <87d40cq66k.fsf@openvz.org>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4352991a1002101038s6a2e67d9mc373416c17de9e6a@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/10, Salman Qazi wrote:
+Christoph Hellwig <hch@infradead.org> writes:
+
+> On Thu, Feb 11, 2010 at 01:53:45PM +0300, Dmitry Monakhov wrote:
+>> Currently there are no many discs has native TRIM (aka) discard
+>> feature support. But in fact this is good feature. We can easily
+>> simlulate it for devices which has not native support.
+>> In compat mode discard dequest transforms in to simple zerofiled
+>> write request.
+>> In fact currently blkdev_issue_discard function implemented
+>> incorrectly.
+>> 1) Whait flags not optimal we dont have to wait for each bio in flight.
 >
-> I have
-> made a simpler version of tavis's test case:
-
-Thanks, now I see what you mean.
-
-But this all is correct, you can't expect PTRACE_SYSCALL can succeed
-is the tracee is running, it must be stopped or traced.
-
-The tracee is running because it was TASK_STOPPED and antagonist()
-sends SIGCONT.
-
-The tracee was TASK_STOPPED because the tracer passes sig = SIGSTOP
-via ptrace(PTRACE_SYSCALL, WSTOPSIG(status).
-
-Where do you see the bug?
-
-OK, let me simplify the test-case even more:
-
-	int main(void)
-	{
-		int stat, ret;
-		int pid = fork();
-
-		if (!pid) {
-			ptrace(PTRACE_TRACEME, 0, NULL, NULL);
-			for (;;)
-				;
-		}
-
-		sleep(1);	// wait for PTRACE_TRACEME
-		kill(pid, SIGSTOP);
-
-		// the child reports SIGSTOP, it is TASK_TRACED
-		assert(pid == wait(&stat) && WIFSTOPPED(stat));
-
-		// the tracee should stop, we pass sig = SIGSTOP
-		assert(ptrace(PTRACE_SYSCALL, pid, 0, WSTOPSIG(stat)) == 0);
-
-		// the child reports the group stop, it is TASK_STOPPED
-		assert(pid == wait(&stat) && WIFSTOPPED(stat));
-
-		// the tracee is STOPPED as requested, not TRACED,
-		// SIGCONT wakes it up
-		kill(pid, SIGCONT);
-
-		// now the tracee is _running_, and PTRACE_SYSCALL must fail
-		ret = ptrace(PTRACE_SYSCALL, pid, 0, WSTOPSIG(stat));
-		printf("should fail: ret=%d %m\n", ret);
-
-		return 0;
-	}
-
-PTRACE_SYSCALL fails, and this is absolutely correct.
-
-Now, let's look at your test-case
-
-> int main(int argc, char **argv)
-> {
->         int status;
->         assert((child_pid = do_fork(child)) > 0);
->         assert((ant_pid = do_fork(antagonist)) > 0);
->         waitpid(child_pid, &status, 0);
->         ptrace(PTRACE_SYSCALL, child_pid, NULL, NULL);
->         while(1) {
->                 if (waitpid(child_pid, &status, 0) <= 0) {
->                         printf("Errno %d\n", errno);
->                         exit(EXIT_FAILURE);
->                 }
->                 if (WIFSTOPPED(status)) {
-
-WSTOPSIG() should be either SIGCONT or SIGSTOP
-
->                         printf("stopped: %d\n", WSTOPSIG(status));
+> Indeed.
 >
->                         /* This should work, but sometimes it doesn't */
->                         if (ptrace(PTRACE_SYSCALL, child_pid,
->                                                 NULL, WSTOPSIG(status)) < 0) {
+>> 2) Not wait by default. Which makes it fairly useless.
+>
+> Not sure what you mean with that.  We do not need to wait for the
+> discard request for the "online" type of use - the barrier flag
+> means we can't re-order I/O before and after the request so there
+> is no reason to wait - it stays in the places where it needs to be
+> in the I/O stream.
+I mean that it is impossible to know was it really successful or not.
+We may just replace this function with this following function.
+const char* make_me_hapy()
+{
+   return "you are happy already.";
+}
 
-This should not work if the tracee reported the group stop (not the
-fact it dequeued SIGSTOP) and antagonist() sends SIGCONT in between.
+AFAIK Currently there is no any generic block interface which send
+io requests without ability to check the result. 
+The question is should it be sync or async it is not easy to design
+simple async interface so let's use sync by default
+BTW: That's why blkdev_issue_barrier has to wait by default. 
+>
+>> 3) Send each bio with barrier flag(if requested). Which result in
+>>    bad performance. In fact caller just want to make shure that full
+>>    request is completed and ordered against other requests.
+>
+> Yes, we need to ensure ordering only against reordering with other
+> requests.  Your patch only issues a cache flush, which means that
+> we miss the queue drain before submitting the discard bios
+Yes you right from theoretical point of view. But practically
+It is hard to imagine that some one send something like this:
+read_bio(sectcor,..)
+discard_bio(sector,..BARRIER)
+But off course you right, I'll add ability to pass pre_flush
+barrier in next patch version.
+>
+>> 5) It use allocated_page instead of ZERO_PAGE.
+>
+> That's incorrect - both the scsi WRITE SAME and ATA UNMAP
+> implementations write to the payload. 
+WOW. What for?
+> I have some plans to change that
+> an get rid of the payload entirely, but I need to get back to the
+> discard work and look at it in more detail.
 
->                                 /* Oddly it works the second time! */
->                                 assert (ptrace(PTRACE_SYSCALL,
->                                         child_pid, NULL, WSTOPSIG(status)) < 0);
-
-Of couse, it _can_ work the second time, antagonist() sends a signal
-(SIGCONT or SIGSTOP), the tracee dequeues the signal, and stops to
-report this signal.
-
-See?
-
-Oleg.
-
+>
+>> This patch introduce generic blkdev_issue_zeroout() function which also
+>> may be used for native discard request support, in this case zero payload
+>> simply ignored.
+>
+> Which is a bit different from fixing efficiency issues in discard, I'd
+> prefer that to be split into a separate patch, especially as there might
+> be quite a bit of discussion on the zeroout behaviour.
+Seems that you also right here. At list it is not obvious how we should
+send compat_discard bios WRITE,WRITE_SYNC or WRITE_SYNC_PLUG?
+But blkdev_issue_zeroout() interface allow all this flags.
+let's wait a bit and i'll redesign the patchset correspondingly
+>
+> Note that a discard is not actually required to zero out data it
+> has discarded, it's an optional feature in the command sets. 
+Yes, i know. But zero payload will be used only by compat mode.
+We assumes that default compat mode zero data on descard.
