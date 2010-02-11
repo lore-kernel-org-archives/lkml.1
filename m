@@ -1,73 +1,73 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757423Ab0BKXML (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 18:12:11 -0500
-Received: from mailc.microsoft.com ([131.107.115.214]:15022 "EHLO
-	smtp.microsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757197Ab0BKXMI convert rfc822-to-8bit (ORCPT
+	id S1757449Ab0BKXMg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 18:12:36 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51271 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757197Ab0BKXMe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 18:12:08 -0500
-From: Hank Janssen <hjanssen@microsoft.com>
-To: Greg KH <gregkh@suse.de>
-CC: "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-       "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>,
-       Haiyang Zhang <haiyangz@microsoft.com>
-Subject: RE: [PATCH 1/2] Staging: hv: Add proper versioning to HV drivers
-Thread-Topic: [PATCH 1/2] Staging: hv: Add proper versioning to HV drivers
-Thread-Index: AQHKq2HENZ6t0wcb1kW/75fbKuFcg5HB8/2A//+AowCAAI1mgP//hFWg
-Date: Thu, 11 Feb 2010 23:11:26 +0000
-Message-ID: <8AFC7968D54FB448A30D8F38F259C56212E88403@TK5EX14MBXC118.redmond.corp.microsoft.com>
-References: <8AFC7968D54FB448A30D8F38F259C56212E88287@TK5EX14MBXC118.redmond.corp.microsoft.com>
- <20100211213651.GA29557@suse.de>
- <8AFC7968D54FB448A30D8F38F259C56212E8831E@TK5EX14MBXC118.redmond.corp.microsoft.com>
- <20100211222705.GA30430@suse.de>
-In-Reply-To: <20100211222705.GA30430@suse.de>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	Thu, 11 Feb 2010 18:12:34 -0500
+Date: Thu, 11 Feb 2010 15:11:35 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Rientjes <rientjes@google.com>
+Cc: Rik van Riel <riel@redhat.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Nick Piggin <npiggin@suse.de>, Andrea Arcangeli <aarcange@redhat.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch 4/7 -mm] oom: badness heuristic rewrite
+Message-Id: <20100211151135.91586cd1.akpm@linux-foundation.org>
+In-Reply-To: <alpine.DEB.2.00.1002111437060.21107@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.1002100224210.8001@chino.kir.corp.google.com>
+	<alpine.DEB.2.00.1002100228540.8001@chino.kir.corp.google.com>
+	<4B73833D.5070008@redhat.com>
+	<alpine.DEB.2.00.1002102332200.22152@chino.kir.corp.google.com>
+	<20100211134343.4886499c.akpm@linux-foundation.org>
+	<alpine.DEB.2.00.1002111346050.8809@chino.kir.corp.google.com>
+	<20100211143105.dea3861a.akpm@linux-foundation.org>
+	<alpine.DEB.2.00.1002111437060.21107@chino.kir.corp.google.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 11 Feb 2010 14:42:39 -0800 (PST)
+David Rientjes <rientjes@google.com> wrote:
 
+> On Thu, 11 Feb 2010, Andrew Morton wrote:
+> 
+> > > Sigh, this is going to require the amount of system memory to be 
+> > > partitioned into OOM_ADJUST_MAX, 15, chunks and that's going to be the 
+> > > granularity at which we'll be able to either bias or discount memory usage 
+> > > of individual tasks by: instead of being able to do this with 0.1% 
+> > > granularity we'll now be limited to 100 / 15, or ~7%.  That's ~9GB on my 
+> > > 128GB system just because this was originally a bitshift.  The upside is 
+> > > that it's now linear and not exponential.
+> > 
+> > Can you add newly-named knobs (rather than modifying the existing
+> > ones), deprecate the old ones and then massage writes to the old ones
+> > so that they talk into the new framework?
+> > 
+> 
+> That's what I was thinking, add /proc/pid/oom_score_adj that is just added 
+> into the badness score (and is then exported with /proc/pid/oom_score) 
+> like this patch did with oom_adj and then scale it into oom_adj units for 
+> that tunable.  A write to either oom_adj or oom_score_adj would change the 
+> other,
 
->In short I would strongly advise against doing this, unless you are
->willing to attempt to keep this up to date, and in reality, just ignore
->the number as it means nothing.
->
->This is also especially relevant given that Linux drivers are tightly
->tied to the kernel version they are running on, as APIs change
->constantly over time.  You can not just take one version of a driver on
->one release, and drop it in another kernel version, without usually
->changing something.  That change then "invalidates" the version number
->scheme :)
->
->Does this make sense?
+How ugly is all this?
 
-Absolutely, Trying to satisfy internal requests do not always line up to 
-external standards in the Linux Kernel. I agree with pretty much all you
-said. I think we have come up with something that we all can live with. 
+> the same thing I did for /proc/sys/vm/dirty_{bytes,ratio} and
+> /proc/sys/vm/dirty_background_{bytes,ratio} which I guess we have to 
+> support forever since the predecessors are part of the ABI and there's no 
+> way to deprecate them since they'll never be removed for that reason.
 
->> Would you like me to re-roll the patch to remove the DATE/TIME stuff
->> And add the explanation for versioning as comments to the code?
->
->Yes, please do, and possibly drop the "minor" number, otherwise I am
->going to have fun incrementing it with every single code change I do to
->the drivers.  That would be what, version 264 or something by now?  :)
+Ah, OK, I was trying to remember where we did that ;)
 
-I think it should be even higher than that :)  But it was never intended to be
-used by anybody other than MS devs submitting code. 
-
-I just submitted a new patch taking into account all that you requested.
-
-As always, thanks for your help!
-
-thanks,
-
-Hank.
-
+There _are_ things we can do though.  Detect a write to the old file and
+emit a WARN_ON_ONCE("you suck").  Wait a year, turn it into
+WARN_ON("you really suck").  Wait a year, then remove it.
 
