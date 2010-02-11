@@ -1,95 +1,98 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756754Ab0BKAMA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 19:12:00 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:26529 "EHLO mx1.redhat.com"
+	id S1756788Ab0BKAYy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 19:24:54 -0500
+Received: from borg.medozas.de ([188.40.89.202]:45815 "EHLO borg.medozas.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755805Ab0BKAL7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 19:11:59 -0500
-Message-ID: <4B734B37.4000903@redhat.com>
-Date: Wed, 10 Feb 2010 19:11:35 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
+	id S1756436Ab0BKAYw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Feb 2010 19:24:52 -0500
+Date: Thu, 11 Feb 2010 01:24:49 +0100 (CET)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+cc: Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: tools/perf: libraries must come after objects
+Message-ID: <alpine.LSU.2.01.1002110124030.13770@obet.zrqbmnf.qr>
+User-Agent: Alpine 2.01 (LSU 1266 2009-07-14)
 MIME-Version: 1.0
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-CC: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] tracing/kprobes: make Kconfig dependencies generic
-References: <20100210162517.GB6933@osiris.boeblingen.de.ibm.com>
-In-Reply-To: <20100210162517.GB6933@osiris.boeblingen.de.ibm.com>
-X-Enigmail-Version: 1.0.1
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Heiko Carstens wrote:
-> From: Heiko Carstens <heiko.carstens@de.ibm.com>
-> 
-> KPROBES_EVENT actually depends on the regs and stack access API (b1cf540f)
-> and not on x86.
-> So introduce a new config option which architectures can select if they
-> have the API implemented and switch x86.
+parent b4bdd73ce865213a5653dc424873e8da37e858cc (v2.6.32.7)
+commit 588424af1a51fa41ea4811200889d6a03219c6fd
+Author: Jan Engelhardt <jengelh@medozas.de>
+Date:   Thu Feb 11 01:20:54 2010 +0100
 
-Looks good to me:) Thanks!
+tools/perf: libraries must come after objects
 
-Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
+Link order matters, especially now since distributions are
+using -Wl,--as-needed.
 
-> 
-> Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-> ---
->  arch/Kconfig         |    3 +++
->  arch/x86/Kconfig     |    1 +
->  kernel/trace/Kconfig |    2 +-
->  3 files changed, 5 insertions(+), 1 deletion(-)
-> 
-> --- a/arch/Kconfig
-> +++ b/arch/Kconfig
-> @@ -121,6 +121,9 @@ config HAVE_DMA_ATTRS
->  config USE_GENERIC_SMP_HELPERS
->  	bool
->  
-> +config HAVE_REGS_AND_STACK_ACCESS_API
-> +	bool
-> +
->  config HAVE_CLK
->  	bool
->  	help
-> --- a/arch/x86/Kconfig
-> +++ b/arch/x86/Kconfig
-> @@ -45,6 +45,7 @@ config X86
->  	select HAVE_GENERIC_DMA_COHERENT if X86_32
->  	select HAVE_EFFICIENT_UNALIGNED_ACCESS
->  	select USER_STACKTRACE_SUPPORT
-> +	select HAVE_REGS_AND_STACK_ACCESS_API
->  	select HAVE_DMA_API_DEBUG
->  	select HAVE_KERNEL_GZIP
->  	select HAVE_KERNEL_BZIP2
-> --- a/kernel/trace/Kconfig
-> +++ b/kernel/trace/Kconfig
-> @@ -449,7 +449,7 @@ config BLK_DEV_IO_TRACE
->  
->  config KPROBE_EVENT
->  	depends on KPROBES
-> -	depends on X86
-> +	depends on HAVE_REGS_AND_STACK_ACCESS_API
->  	bool "Enable kprobes-based dynamic events"
->  	select TRACING
->  	default y
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Signed-off-by: Jan Engelhardt <jengelh@medozas.de>
+---
+ tools/perf/Makefile |   16 ++++++++--------
+ 1 files changed, 8 insertions(+), 8 deletions(-)
 
+diff --git a/tools/perf/Makefile b/tools/perf/Makefile
+index 7e190d5..9c688cd 100644
+--- a/tools/perf/Makefile
++++ b/tools/perf/Makefile
+@@ -201,7 +201,7 @@ EXTRA_WARNINGS := $(EXTRA_WARNINGS) -Wstrict-prototypes
+ EXTRA_WARNINGS := $(EXTRA_WARNINGS) -Wdeclaration-after-statement
+ 
+ CFLAGS = $(MBITS) -ggdb3 -Wall -Wextra -std=gnu99 -Werror -O6 -fstack-protector-all -D_FORTIFY_SOURCE=2 $(EXTRA_WARNINGS)
+-LDFLAGS = -lpthread -lrt -lelf -lm
++LDLIBS = -lpthread -lrt -lelf -lm
+ ALL_CFLAGS = $(CFLAGS)
+ ALL_LDFLAGS = $(LDFLAGS)
+ STRIP ?= strip
+@@ -421,8 +421,8 @@ ifeq ($(uname_S),Darwin)
+ 	PTHREAD_LIBS =
+ endif
+ 
+-ifeq ($(shell sh -c "(echo '\#include <libelf.h>'; echo 'int main(void) { Elf * elf = elf_begin(0, ELF_C_READ, 0); return (long)elf; }') | $(CC) -x c - $(ALL_CFLAGS) -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -o /dev/null $(ALL_LDFLAGS) > /dev/null 2>&1 && echo y"), y)
+-	ifneq ($(shell sh -c "(echo '\#include <libelf.h>'; echo 'int main(void) { Elf * elf = elf_begin(0, ELF_C_READ_MMAP, 0); return (long)elf; }') | $(CC) -x c - $(ALL_CFLAGS) -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -o /dev/null $(ALL_LDFLAGS) > /dev/null 2>&1 && echo y"), y)
++ifeq ($(shell sh -c "(echo '\#include <libelf.h>'; echo 'int main(void) { Elf * elf = elf_begin(0, ELF_C_READ, 0); return (long)elf; }') | $(CC) -x c - $(ALL_CFLAGS) -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -o /dev/null $(LDFLAGS) $(LDLIBS) > /dev/null 2>&1 && echo y"), y)
++	ifneq ($(shell sh -c "(echo '\#include <libelf.h>'; echo 'int main(void) { Elf * elf = elf_begin(0, ELF_C_READ_MMAP, 0); return (long)elf; }') | $(CC) -x c - $(ALL_CFLAGS) -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -o /dev/null $(LDFLAGS) $(LDLIBS) > /dev/null 2>&1 && echo y"), y)
+ 		BASIC_CFLAGS += -DLIBELF_NO_MMAP
+ 	endif
+ else
+@@ -432,20 +432,20 @@ endif
+ ifdef NO_DEMANGLE
+ 	BASIC_CFLAGS += -DNO_DEMANGLE
+ else
+-	has_bfd := $(shell sh -c "(echo '\#include <bfd.h>'; echo 'int main(void) { bfd_demangle(0, 0, 0); return 0; }') | $(CC) -x c - $(ALL_CFLAGS) -o /dev/null $(ALL_LDFLAGS) -lbfd > /dev/null 2>&1 && echo y")
++	has_bfd := $(shell sh -c "(echo '\#include <bfd.h>'; echo 'int main(void) { bfd_demangle(0, 0, 0); return 0; }') | $(CC) -x c - $(ALL_CFLAGS) -o /dev/null $(LDFLAGS) $(LDLIBS) -lbfd > /dev/null 2>&1 && echo y")
+ 
+ 	ifeq ($(has_bfd),y)
+ 		EXTLIBS += -lbfd
+ 	else
+-		has_bfd_iberty := $(shell sh -c "(echo '\#include <bfd.h>'; echo 'int main(void) { bfd_demangle(0, 0, 0); return 0; }') | $(CC) -x c - $(ALL_CFLAGS) -o /dev/null $(ALL_LDFLAGS) -lbfd -liberty > /dev/null 2>&1 && echo y")
++		has_bfd_iberty := $(shell sh -c "(echo '\#include <bfd.h>'; echo 'int main(void) { bfd_demangle(0, 0, 0); return 0; }') | $(CC) -x c - $(ALL_CFLAGS) -o /dev/null $(LDFLAGS) $(LDLIBS) -lbfd -liberty > /dev/null 2>&1 && echo y")
+ 		ifeq ($(has_bfd_iberty),y)
+ 			EXTLIBS += -lbfd -liberty
+ 		else
+-			has_bfd_iberty_z := $(shell sh -c "(echo '\#include <bfd.h>'; echo 'int main(void) { bfd_demangle(0, 0, 0); return 0; }') | $(CC) -x c - $(ALL_CFLAGS) -o /dev/null $(ALL_LDFLAGS) -lbfd -liberty -lz > /dev/null 2>&1 && echo y")
++			has_bfd_iberty_z := $(shell sh -c "(echo '\#include <bfd.h>'; echo 'int main(void) { bfd_demangle(0, 0, 0); return 0; }') | $(CC) -x c - $(ALL_CFLAGS) -o /dev/null $(LDFLAGS) $(LDLIBS) -lbfd -liberty -lz > /dev/null 2>&1 && echo y")
+ 			ifeq ($(has_bfd_iberty_z),y)
+ 				EXTLIBS += -lbfd -liberty -lz
+ 			else
+-				has_cplus_demangle := $(shell sh -c "(echo 'extern char *cplus_demangle(const char *, int);'; echo 'int main(void) { cplus_demangle(0, 0); return 0; }') | $(CC) -x c - $(ALL_CFLAGS) -o /dev/null $(ALL_LDFLAGS) -liberty > /dev/null 2>&1 && echo y")
++				has_cplus_demangle := $(shell sh -c "(echo 'extern char *cplus_demangle(const char *, int);'; echo 'int main(void) { cplus_demangle(0, 0); return 0; }') | $(CC) -x c - $(ALL_CFLAGS) -o /dev/null $(LDFLAGS) $(LDLIBS) -liberty > /dev/null 2>&1 && echo y")
+ 				ifeq ($(has_cplus_demangle),y)
+ 					EXTLIBS += -liberty
+ 					BASIC_CFLAGS += -DHAVE_CPLUS_DEMANGLE
+@@ -677,7 +677,7 @@ prefix_SQ = $(subst ','\'',$(prefix))
+ SHELL_PATH_SQ = $(subst ','\'',$(SHELL_PATH))
+ PERL_PATH_SQ = $(subst ','\'',$(PERL_PATH))
+ 
+-LIBS = $(PERFLIBS) $(EXTLIBS)
++LIBS = $(PERFLIBS) $(LDLIBS) $(EXTLIBS)
+ 
+ BASIC_CFLAGS += -DSHA1_HEADER='$(SHA1_HEADER_SQ)' \
+ 	$(COMPAT_CFLAGS)
 -- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
+# Created with git-export-patch
 
