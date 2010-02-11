@@ -1,87 +1,174 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752015Ab0BKKpc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 05:45:32 -0500
-Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:38687 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750885Ab0BKKpa (ORCPT
+	id S1752811Ab0BKKwx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 05:52:53 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:48008 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752296Ab0BKKwu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 05:45:30 -0500
-Subject: Re: [RFC 0/2] fix dma_map_sg not to do barriers for each buffer
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: adharmap@codeaurora.org, linux-arm-kernel@lists.infradead.org,
-       linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Abhijeet Dharmapurikar <adharmap@quicinc.com>
-In-Reply-To: <20100210212156.GB30854@n2100.arm.linux.org.uk>
-References: <20100210212156.GB30854@n2100.arm.linux.org.uk>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Thu, 11 Feb 2010 10:45:01 +0000
-Message-Id: <1265885102.3389.34.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 11 Feb 2010 10:45:05.0740 (UTC) FILETIME=[45C8F8C0:01CAAB07]
+	Thu, 11 Feb 2010 05:52:50 -0500
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: rtc-linux@googlegroups.com
+Cc: Paul Gortmaker <p_gortmaker@yahoo.com>,
+       Alessandro Zummo <a.zummo@towertech.it>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH RESEND] rtc/hctosys: only claim the RTC provided the system time if it did
+Date: Thu, 11 Feb 2010 11:52:29 +0100
+Message-Id: <1265885549-23920-1-git-send-email-u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 1.6.6
+In-Reply-To: <1265663419-10165-1-git-send-email-u.kleine-koenig@pengutronix.de>
+References: <1265663419-10165-1-git-send-email-u.kleine-koenig@pengutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-02-10 at 21:21 +0000, Russell King - ARM Linux wrote:
-> On Wed, Feb 10, 2010 at 12:37:28PM -0800, adharmap@codeaurora.org wrote:
-> > From: Abhijeet Dharmapurikar <adharmap@quicinc.com>
-> >
-> > Please refer to the post here
-> > http://lkml.org/lkml/2010/1/4/347
-> >
-> > These changes are to introduce barrierless dma_map_area and dma_unmap_area and
-> > use them to map the buffers in the scatterlist. For the last buffer, call
-> > the normal dma_map_area(aka with barriers) effectively executing the barrier
-> > at the end of the operation.
-> 
-> What if we make dma_map_area and dma_unmap_area both be barrier-less,
-> and instead have a separate dma_barrier method - eg, something like the
-> attached?
+Moreover change error handling in rtc_hctosys() to use goto and so
+reduce the indention level.
 
-I was just writing the reply when I noticed yours :). Yes, that's a
-better approach.
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+---
+Hello,
 
-> diff --git a/arch/arm/include/asm/cacheflush.h b/arch/arm/include/asm/cacheflush.h
-> index e290885..5928e78 100644
-> --- a/arch/arm/include/asm/cacheflush.h
-> +++ b/arch/arm/include/asm/cacheflush.h
-> @@ -200,6 +200,7 @@ struct cpu_cache_fns {
-> 
->         void (*dma_map_area)(const void *, size_t, int);
->         void (*dma_unmap_area)(const void *, size_t, int);
-> +       void (*dma_barrier)(void);
+this time the patch is complete.
 
-Alternatively we could use the dsb() macro. I don't think we need more
-than this and we would not (well, not easily) compile ARMv5 and ARMv6 in
-the same kernel.
+What do you think about it?
 
-Anyway, an additional branch and return would probably be negligible
-compared to the cache flushing operation.
+Best regards
+Uwe
 
-> @@ -345,6 +347,7 @@ static inline dma_addr_t dma_map_single(struct device *dev, void *cpu_addr,
->         BUG_ON(!valid_dma_direction(dir));
-> 
->         __dma_single_cpu_to_dev(cpu_addr, size, dir);
-> +       __dma_barrier(dir);
-> 
->         return virt_to_dma(dev, cpu_addr);
->  }
+ drivers/rtc/hctosys.c   |   59 +++++++++++++++++++++++++++--------------------
+ drivers/rtc/rtc-sysfs.c |    5 ++-
+ include/linux/rtc.h     |    6 ++++
+ 3 files changed, 43 insertions(+), 27 deletions(-)
 
-The ___dma_single_cpu_to_dev() covers both inner and outer caches but I
-haven't seen it touched by this patch (nor the other you posted). When
-you clean the L1 cache, you need to make sure that there is a barrier
-(DSB) so that it completes before cleaning the L2, otherwise you clean
-the L2 but data keeps coming from L1.
-
-For the *_sg functions, you either use barrier between L1 and L2 for
-each page or you do the for_each_sg() loop twice, once for L1 and
-another for L2.
-
+diff --git a/drivers/rtc/hctosys.c b/drivers/rtc/hctosys.c
+index 33c0e98..bc90b09 100644
+--- a/drivers/rtc/hctosys.c
++++ b/drivers/rtc/hctosys.c
+@@ -22,48 +22,57 @@
+  * the best guess is to add 0.5s.
+  */
+ 
++int rtc_hctosys_ret = -ENODEV;
++
+ static int __init rtc_hctosys(void)
+ {
+-	int err;
++	int err = -ENODEV;
+ 	struct rtc_time tm;
++	struct timespec tv = {
++		.tv_nsec = NSEC_PER_SEC >> 1,
++	};
+ 	struct rtc_device *rtc = rtc_class_open(CONFIG_RTC_HCTOSYS_DEVICE);
+ 
+ 	if (rtc == NULL) {
+-		printk("%s: unable to open rtc device (%s)\n",
++		pr_err("%s: unable to open rtc device (%s)\n",
+ 			__FILE__, CONFIG_RTC_HCTOSYS_DEVICE);
+-		return -ENODEV;
++		goto err_open;
+ 	}
+ 
+ 	err = rtc_read_time(rtc, &tm);
+-	if (err == 0) {
+-		err = rtc_valid_tm(&tm);
+-		if (err == 0) {
+-			struct timespec tv;
++	if (err) {
++		dev_err(rtc->dev.parent,
++			"hctosys: unable to read the hardware clock\n");
++		goto err_read;
+ 
+-			tv.tv_nsec = NSEC_PER_SEC >> 1;
++	}
+ 
+-			rtc_tm_to_time(&tm, &tv.tv_sec);
++	err = rtc_valid_tm(&tm);
++	if (err) {
++		dev_err(rtc->dev.parent,
++			"hctosys: invalid date/time\n");
++		goto err_invalid;
++	}
+ 
+-			do_settimeofday(&tv);
++	rtc_tm_to_time(&tm, &tv.tv_sec);
+ 
+-			dev_info(rtc->dev.parent,
+-				"setting system clock to "
+-				"%d-%02d-%02d %02d:%02d:%02d UTC (%u)\n",
+-				tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
+-				tm.tm_hour, tm.tm_min, tm.tm_sec,
+-				(unsigned int) tv.tv_sec);
+-		}
+-		else
+-			dev_err(rtc->dev.parent,
+-				"hctosys: invalid date/time\n");
+-	}
+-	else
+-		dev_err(rtc->dev.parent,
+-			"hctosys: unable to read the hardware clock\n");
++	do_settimeofday(&tv);
+ 
++	dev_info(rtc->dev.parent,
++		"setting system clock to "
++		"%d-%02d-%02d %02d:%02d:%02d UTC (%u)\n",
++		tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
++		tm.tm_hour, tm.tm_min, tm.tm_sec,
++		(unsigned int) tv.tv_sec);
++
++err_invalid:
++err_read:
+ 	rtc_class_close(rtc);
+ 
+-	return 0;
++err_open:
++	rtc_hctosys_ret = err;
++
++	return err;
+ }
+ 
+ late_initcall(rtc_hctosys);
+diff --git a/drivers/rtc/rtc-sysfs.c b/drivers/rtc/rtc-sysfs.c
+index 7dd23a6..380083c 100644
+--- a/drivers/rtc/rtc-sysfs.c
++++ b/drivers/rtc/rtc-sysfs.c
+@@ -107,8 +107,9 @@ rtc_sysfs_show_hctosys(struct device *dev, struct device_attribute *attr,
+ 		char *buf)
+ {
+ #ifdef CONFIG_RTC_HCTOSYS_DEVICE
+-	if (strcmp(dev_name(&to_rtc_device(dev)->dev),
+-		   CONFIG_RTC_HCTOSYS_DEVICE) == 0)
++	if (rtc_hctosys_ret == 0 &&
++			strcmp(dev_name(&to_rtc_device(dev)->dev),
++				CONFIG_RTC_HCTOSYS_DEVICE) == 0)
+ 		return sprintf(buf, "1\n");
+ 	else
+ #endif
+diff --git a/include/linux/rtc.h b/include/linux/rtc.h
+index 60f88a7..14dbc83 100644
+--- a/include/linux/rtc.h
++++ b/include/linux/rtc.h
+@@ -238,6 +238,12 @@ static inline bool is_leap_year(unsigned int year)
+ 	return (!(year % 4) && (year % 100)) || !(year % 400);
+ }
+ 
++#ifdef CONFIG_RTC_HCTOSYS
++extern int rtc_hctosys_ret;
++#else
++#define rtc_hctosys_ret -ENODEV
++#endif
++
+ #endif /* __KERNEL__ */
+ 
+ #endif /* _LINUX_RTC_H_ */
 -- 
-Catalin
+1.6.6
 
