@@ -1,218 +1,256 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756954Ab0BKUA6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 15:00:58 -0500
-Received: from mga11.intel.com ([192.55.52.93]:55453 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756631Ab0BKUA4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 15:00:56 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,454,1262592000"; 
-   d="scan'208";a="539988036"
-Message-Id: <20100211195614.886724710@sbs-t61.sc.intel.com>
-User-Agent: quilt/0.47-1
-Date: Thu, 11 Feb 2010 11:51:00 -0800
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-To: Roland McGrath <roland@redhat.com>, Oleg Nesterov <oleg@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, hjl.tools@gmail.com,
-       peter.lachner@intel.com, suresh.b.siddha@intel.com
-Subject: [patch v3 2/2] ptrace: Add support for generic PTRACE_GETREGSET/PTRACE_SETREGSET
-References: <20100211195058.071883111@sbs-t61.sc.intel.com>
-Content-Disposition: inline; filename=ptrace_support_for_xstate.patch
+	id S1756994Ab0BKUBq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 15:01:46 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:47372 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756897Ab0BKUBo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 15:01:44 -0500
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Liam Girdwood <lrg@slimlogic.co.uk>
+Cc: Mike Rapoport <mike@compulab.co.il>, Grazvydas Ignotas <notasas@gmail.com>,
+       linux-kernel@vger.kernel.org,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: [PATCH] regulator: Provide optional dummy regulator for consumers
+Date: Thu, 11 Feb 2010 20:01:39 +0000
+Message-Id: <1265918499-9583-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-Mailer: git-send-email 1.6.6.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Generic support for PTRACE_GETREGSET/PTRACE_SETREGSET commands which
-export the regsets supported by each architecture using the correponding
-NT_* types. These NT_* types are already part of the userland ABI, used
-in representing the architecture specific register sets as different NOTES
-in an ELF core file.
+In order to ease transitions with drivers are boards start using regulators
+provide an option to cause all regulator_get() calls to succeed, with a
+dummy always on regulator being supplied where one has not been configured.
+A warning is printed whenever the dummy regulator is used to aid system
+development.
 
-'addr' parameter for the ptrace system call encode the REGSET type (using
-the corresppnding NT_* type) and the 'data' parameter points to the
-struct iovec having the user buffer and the length of that buffer.
+This regulator does not implement any regulator operations but will allow
+simple consumers which only do enable() and disable() calls to run. It
+is kept separate from the fixed voltage regulator to avoid Kconfig
+confusion on the part of users when it is extended to allow boards to
+explicitly use the dummy regulator to simplify cases where the majority
+of supplies are from fixed regulators without software control.
 
-	struct iovec iov = { buf, len};
-	ret = ptrace(PTRACE_GETREGSET/PTRACE_SETREGSET, pid, NT_XXX_TYPE, &iov);
+This option is currently only effective for systems which do not specify
+full constriants. If required an override could also be provided to allow
+these systems to use the dummy regulator, though it is likely that
+unconfigured supplies on such systems will lead to error due to
+regulators being powered down more aggressively when not in use.
 
-On successful completion, iov.len will be updated by the kernel specifying
-how much the kernel has written/read to/from the user's iov.buf.
-
-x86 extended state registers are primarily exported using this interface.
-
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-Acked-by: Hongjiu Lu <hjl.tools@gmail.com>
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
 ---
- include/linux/elf.h    |    6 ++-
- include/linux/ptrace.h |   15 ++++++++
- kernel/ptrace.c        |   88 +++++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 108 insertions(+), 1 deletion(-)
+ drivers/regulator/Kconfig  |   11 +++++++
+ drivers/regulator/Makefile |    1 +
+ drivers/regulator/core.c   |   27 ++++++++++++++++-
+ drivers/regulator/dummy.c  |   71 ++++++++++++++++++++++++++++++++++++++++++++
+ drivers/regulator/dummy.h  |   31 +++++++++++++++++++
+ 5 files changed, 140 insertions(+), 1 deletions(-)
+ create mode 100644 drivers/regulator/dummy.c
+ create mode 100644 drivers/regulator/dummy.h
 
-Index: tip/include/linux/ptrace.h
-===================================================================
---- tip.orig/include/linux/ptrace.h
-+++ tip/include/linux/ptrace.h
-@@ -27,6 +27,21 @@
- #define PTRACE_GETSIGINFO	0x4202
- #define PTRACE_SETSIGINFO	0x4203
+diff --git a/drivers/regulator/Kconfig b/drivers/regulator/Kconfig
+index 3c07169..834b484 100644
+--- a/drivers/regulator/Kconfig
++++ b/drivers/regulator/Kconfig
+@@ -27,6 +27,17 @@ config REGULATOR_DEBUG
+ 	help
+ 	  Say yes here to enable debugging support.
  
-+/*
-+ * Generic ptrace interface that exports the architecture specific regsets
-+ * using the corresponding NT_* types (which are also used in the core dump).
-+ *
-+ * This interface usage is as follows:
-+ * 	struct iovec iov = { buf, len};
-+ *
-+ * 	ret = ptrace(PTRACE_GETREGSET/PTRACE_SETREGSET, pid, NT_XXX_TYPE, &iov);
-+ *
-+ * On the successful completion, iov.len will be updated by the kernel,
-+ * specifying how much the kernel has written/read to/from the user's iov.buf.
-+ */
-+#define PTRACE_GETREGSET	0x4204
-+#define PTRACE_SETREGSET	0x4205
++config REGULATOR_DUMMY
++	bool "Provide a dummy regulator if regulator lookups fail"
++	help
++	  If this option is enabled then when a regulator lookup fails
++	  and the board has not specified that it has provided full
++	  constraints then the regulator core will provide an always
++	  enabled dummy regulator will be provided, allowing consumer
++	  drivers to continue.
 +
- /* options set using PTRACE_SETOPTIONS */
- #define PTRACE_O_TRACESYSGOOD	0x00000001
- #define PTRACE_O_TRACEFORK	0x00000002
-Index: tip/kernel/ptrace.c
-===================================================================
---- tip.orig/kernel/ptrace.c
-+++ tip/kernel/ptrace.c
-@@ -22,6 +22,7 @@
- #include <linux/pid_namespace.h>
- #include <linux/syscalls.h>
- #include <linux/uaccess.h>
-+#include <linux/regset.h>
++	  A warning will be generated when this substitution is done.
++
+ config REGULATOR_FIXED_VOLTAGE
+ 	tristate "Fixed voltage regulator support"
+ 	help
+diff --git a/drivers/regulator/Makefile b/drivers/regulator/Makefile
+index 7c59bcb..e845b66 100644
+--- a/drivers/regulator/Makefile
++++ b/drivers/regulator/Makefile
+@@ -9,6 +9,7 @@ obj-$(CONFIG_REGULATOR_VIRTUAL_CONSUMER) += virtual.o
+ obj-$(CONFIG_REGULATOR_USERSPACE_CONSUMER) += userspace-consumer.o
  
+ obj-$(CONFIG_REGULATOR_BQ24022) += bq24022.o
++obj-$(CONFIG_REGULATOR_DUMMY) += dummy.o
+ obj-$(CONFIG_REGULATOR_LP3971) += lp3971.o
+ obj-$(CONFIG_REGULATOR_MAX1586) += max1586.o
+ obj-$(CONFIG_REGULATOR_TWL4030) += twl-regulator.o
+diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
+index 75a26f7..c7bbe30 100644
+--- a/drivers/regulator/core.c
++++ b/drivers/regulator/core.c
+@@ -24,6 +24,8 @@
+ #include <linux/regulator/driver.h>
+ #include <linux/regulator/machine.h>
  
- /*
-@@ -511,6 +512,47 @@ static int ptrace_resume(struct task_str
- 	return 0;
++#include "dummy.h"
++
+ #define REGULATOR_VERSION "0.5"
+ 
+ static DEFINE_MUTEX(regulator_list_mutex);
+@@ -1123,6 +1125,22 @@ static struct regulator *_regulator_get(struct device *dev, const char *id,
+ 			goto found;
+ 		}
+ 	}
++
++#ifdef CONFIG_REGULATOR_DUMMY
++	if (!devname)
++		devname = "deviceless";
++
++	/* If the board didn't flag that it was fully constrained then
++	 * substitute in a dummy regulator so consumers can continue.
++	 */
++	if (!has_full_constraints) {
++		pr_warning("%s supply %s not found, using dummy regulator\n",
++			   devname, id);
++		rdev = dummy_regulator_rdev;
++		goto found;
++	}
++#endif
++
+ 	mutex_unlock(&regulator_list_mutex);
+ 	return regulator;
+ 
+@@ -2483,8 +2501,15 @@ EXPORT_SYMBOL_GPL(regulator_get_init_drvdata);
+ 
+ static int __init regulator_init(void)
+ {
++	int ret;
++
+ 	printk(KERN_INFO "regulator: core version %s\n", REGULATOR_VERSION);
+-	return class_register(&regulator_class);
++
++	ret = class_register(&regulator_class);
++
++	regulator_dummy_init();
++
++	return ret;
  }
  
-+#ifdef CONFIG_HAVE_ARCH_TRACEHOOK
-+
-+static const struct user_regset *
-+find_regset(const struct user_regset_view *view, unsigned int type)
-+{
-+	const struct user_regset *regset;
-+	int n;
-+
-+	for (n = 0; n < view->n; ++n) {
-+		regset = view->regsets + n;
-+		if (regset->core_note_type == type)
-+			return regset;
-+	}
-+
-+	return NULL;
-+}
-+
-+static int ptrace_regset(struct task_struct *task, int req, unsigned int type,
-+			 struct iovec *kiov)
-+{
-+	const struct user_regset_view *view = task_user_regset_view(task);
-+	const struct user_regset *regset = find_regset(view, type);
-+	int regset_no;
-+
-+	if (!regset || (kiov->iov_len % regset->size) != 0)
-+		return -EIO;
-+
-+	regset_no = regset - view->regsets;
-+	kiov->iov_len = min(kiov->iov_len,
-+			    (__kernel_size_t) (regset->n * regset->size));
-+
-+	if (req == PTRACE_GETREGSET)
-+		return copy_regset_to_user(task, view, regset_no, 0,
-+					   kiov->iov_len, kiov->iov_base);
-+	else
-+		return copy_regset_from_user(task, view, regset_no, 0,
-+					     kiov->iov_len, kiov->iov_base);
-+}
-+
-+#endif
-+
- int ptrace_request(struct task_struct *child, long request,
- 		   long addr, long data)
- {
-@@ -573,6 +615,26 @@ int ptrace_request(struct task_struct *c
- 			return 0;
- 		return ptrace_resume(child, request, SIGKILL);
- 
-+#ifdef CONFIG_HAVE_ARCH_TRACEHOOK
-+	case PTRACE_GETREGSET:
-+	case PTRACE_SETREGSET:
-+	{
-+		struct iovec kiov;
-+		struct iovec __user *uiov = (struct iovec __user *) data;
-+
-+		if (!access_ok(VERIFY_WRITE, uiov, sizeof(*uiov)))
-+			return -EFAULT;
-+
-+		if (__get_user(kiov.iov_base, &uiov->iov_base) ||
-+		    __get_user(kiov.iov_len, &uiov->iov_len))
-+			return -EFAULT;
-+
-+		ret = ptrace_regset(child, request, addr, &kiov);
-+		if (!ret)
-+			ret = __put_user(kiov.iov_len, &uiov->iov_len);
-+		break;
-+	}
-+#endif
- 	default:
- 		break;
- 	}
-@@ -711,6 +773,32 @@ int compat_ptrace_request(struct task_st
- 		else
- 			ret = ptrace_setsiginfo(child, &siginfo);
- 		break;
-+#ifdef CONFIG_HAVE_ARCH_TRACEHOOK
-+	case PTRACE_GETREGSET:
-+	case PTRACE_SETREGSET:
-+	{
-+		struct iovec kiov;
-+		struct compat_iovec __user *uiov =
-+			(struct compat_iovec __user *) datap;
-+		compat_uptr_t ptr;
-+		compat_size_t len;
-+
-+		if (!access_ok(VERIFY_WRITE, uiov, sizeof(*uiov)))
-+			return -EFAULT;
-+
-+		if (__get_user(ptr, &uiov->iov_base) ||
-+		    __get_user(len, &uiov->iov_len))
-+			return -EFAULT;
-+
-+		kiov.iov_base = compat_ptr(ptr);
-+		kiov.iov_len = len;
-+
-+		ret = ptrace_regset(child, request, addr, &kiov);
-+		if (!ret)
-+			ret = __put_user(kiov.iov_len, &uiov->iov_len);
-+		break;
-+	}
-+#endif
- 
- 	default:
- 		ret = ptrace_request(child, request, addr, data);
-Index: tip/include/linux/elf.h
-===================================================================
---- tip.orig/include/linux/elf.h
-+++ tip/include/linux/elf.h
-@@ -349,7 +349,11 @@ typedef struct elf64_shdr {
- #define ELF_OSABI ELFOSABI_NONE
- #endif
- 
--/* Notes used in ET_CORE */
+ /* init early to allow our consumers to complete system booting */
+diff --git a/drivers/regulator/dummy.c b/drivers/regulator/dummy.c
+new file mode 100644
+index 0000000..a41c733
+--- /dev/null
++++ b/drivers/regulator/dummy.c
+@@ -0,0 +1,71 @@
 +/*
-+ * Notes used in ET_CORE. Architectures export some of the arch register sets
-+ * using the corresponding note types via the PTRACE_GETREGSET and
-+ * PTRACE_SETREGSET requests.
++ * dummy.c
++ *
++ * Copyright 2010 Wolfson Microelectronics PLC.
++ *
++ * Author: Mark Brown <broonie@opensource.wolfsonmicro.com>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of the
++ * License, or (at your option) any later version.
++ *
++ * This is useful for systems with mixed controllable and
++ * non-controllable regulators, as well as for allowing testing on
++ * systems with no controllable regulators.
 + */
- #define NT_PRSTATUS	1
- #define NT_PRFPREG	2
- #define NT_PRPSINFO	3
-
++
++#include <linux/err.h>
++#include <linux/platform_device.h>
++#include <linux/regulator/driver.h>
++#include <linux/regulator/machine.h>
++
++#include "dummy.h"
++
++struct regulator_dev *dummy_regulator_rdev;
++
++static struct regulator_init_data dummy_initdata;
++
++static struct regulator_ops dummy_ops;
++
++static struct regulator_desc dummy_desc = {
++	.name = "dummy",
++	.id = -1,
++	.type = REGULATOR_VOLTAGE,
++	.owner = THIS_MODULE,
++	.ops = &dummy_ops,
++};
++
++static struct platform_device *dummy_pdev;
++
++void __init regulator_dummy_init(void)
++{
++	int ret;
++
++	dummy_pdev = platform_device_alloc("reg-dummy", -1);
++	if (!dummy_pdev) {
++		pr_err("Failed to allocate dummy regulator device\n");
++		return -ENODEV;
++	}
++
++	ret = platform_device_add(dummy_pdev);
++	if (ret != 0) {
++		pr_err("Failed to register dummy regulator device: %d\n", ret);
++		goto err;
++	}
++
++	dummy_regulator_rdev = regulator_register(&dummy_desc, NULL,
++						  &dummy_initdata, NULL);
++	if (IS_ERR(dummy_regulator_rdev)) {
++		ret = PTR_ERR(dummy_regulator_rdev);
++		pr_err("Failed to register regulator: %d\n", ret);
++		platform_device_unregister(dummy_pdev);
++		return ret;
++	}
++
++	return 0;
++
++err:
++	platform_device_put(dummy_pdev);
++	return ret;
++}
+diff --git a/drivers/regulator/dummy.h b/drivers/regulator/dummy.h
+new file mode 100644
+index 0000000..3921c0e
+--- /dev/null
++++ b/drivers/regulator/dummy.h
+@@ -0,0 +1,31 @@
++/*
++ * dummy.h
++ *
++ * Copyright 2010 Wolfson Microelectronics PLC.
++ *
++ * Author: Mark Brown <broonie@opensource.wolfsonmicro.com>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of the
++ * License, or (at your option) any later version.
++ *
++ * This is useful for systems with mixed controllable and
++ * non-controllable regulators, as well as for allowing testing on
++ * systems with no controllable regulators.
++ */
++
++#ifndef _DUMMY_H
++#define _DUMMY_H
++
++struct regulator_dev;
++
++extern struct regulator_dev *dummy_regulator_rdev;
++
++#ifdef CONFIG_REGULATOR_DUMMY
++void __init regulator_dummy_init(void);
++#else
++static inline void regulator_dummy_init(void) { }
++#endif
++
++#endif
+-- 
+1.6.6.1
 
