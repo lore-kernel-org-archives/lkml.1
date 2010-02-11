@@ -1,133 +1,72 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753213Ab0BKJuo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 04:50:44 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:54900 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752381Ab0BKJum convert rfc822-to-8bit (ORCPT
+	id S1753293Ab0BKJvy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 04:51:54 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:38349 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753222Ab0BKJvw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 04:50:42 -0500
-From: Lubos Lunak <l.lunak@suse.cz>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: Improving OOM killer
-Date: Thu, 11 Feb 2010 10:50:36 +0100
-User-Agent: KMail/1.9.10
-Cc: Rik van Riel <riel@redhat.com>, David Rientjes <rientjes@google.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Nick Piggin <npiggin@suse.de>, Jiri Kosina <jkosina@suse.cz>
-References: <201002012302.37380.l.lunak@suse.cz> <4B7320BF.2020800@redhat.com> <20100210221847.5d7bb3cb@lxorguk.ukuu.org.uk>
-In-Reply-To: <20100210221847.5d7bb3cb@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Content-Disposition: inline
-Message-Id: <201002111050.36709.l.lunak@suse.cz>
+	Thu, 11 Feb 2010 04:51:52 -0500
+To: Tejun Heo <tj@kernel.org>
+CC: miklos@szeredi.hu, mszeredi@suse.cz, linux-kernel@vger.kernel.org,
+       fuse-devel@lists.sourceforge.net, polynomial-c@gentoo.org,
+       akpm@linux-foundation.org
+In-reply-to: <E1NfVOi-0002l9-5l@pomaz-ex.szeredi.hu> (message from Miklos
+	Szeredi on Thu, 11 Feb 2010 10:31:44 +0100)
+Subject: Re: [fuse-devel] [PATCH] FUSE/CUSE: implement direct mmap support
+References: <4B70FBE4.7050700@kernel.org> <E1NerZ6-0007N6-UY@pomaz-ex.szeredi.hu> <4B7296DF.207@kernel.org> <E1NfAl6-0000o4-8Z@pomaz-ex.szeredi.hu> <4B729F07.8020704@kernel.org> <E1NfBTc-0000vk-59@pomaz-ex.szeredi.hu> <4B72A802.6040009@kernel.org> <E1NfE50-0001EK-Ao@pomaz-ex.szeredi.hu> <4B7344A4.1030607@kernel.org> <E1NfVOi-0002l9-5l@pomaz-ex.szeredi.hu>
+Message-Id: <E1NfVho-0002nJ-V2@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 11 Feb 2010 10:51:28 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 10 of February 2010, Alan Cox wrote:
-> > Killing the system daemon *is* a DoS.
-> >
-> > It would stop eg. the database or the web server, which is
-> > generally the main task of systems that run a database or
-> > a web server.
->
-> One of the problems with picking on tasks that fork a lot is that
-> describes apache perfectly. So a high loaded apache will get shot over a
-> rapid memory eating cgi script.
+On Thu, 11 Feb 2010, Miklos Szeredi wrote:
+> On one hand it's simple, on the other it has pretty weird limitations,
+> considering that server side mmap shouldn't be mandatory.  But of
+> course if server side mmap isn't used, then the SHMLBA limitation is
+> not necessary anymore so the implementation could choose an arbitrary
+> "offset".
+> 
+> My biggest gripe with the kernel API is that we shouldn't be calling
+> that thing in fuse_mmap_out an offset at all, because it's not and
+> it's confusing (like making you set vma->vm_pgoff to that value, which
+> is bogus).  Adding a separate "page_id" or whatever would make me
+> happy.
 
- It will not. If it's only a single cgi script, that that child should be 
-selected by badness(), not the parent.
+And even a page_id is superfluous, since all we want is differentiate
+between possibly separate maps for the same file and don't care about
+individual pages.
 
- I personally consider the logic of trying to find the offender using 
-badness() and then killing its child instead to be flawed. Already badness() 
-itself should select what to kill and that should be killed. If it's a single 
-process that is the offender, it should be killed. If badness() decides it is 
-a whole subtree responsible for the situation, then the top of it needs to be 
-killed, otherwise the reason for the problem will remain.
+And even differentiating between maps on the same file is only ever
+possible for char devs, normal files will only ever have a single map.
 
- I expect the current logic of trying to kill children first is based on the 
-system daemon logic, but if e.g. Apache master process itself causes OOM, 
-then the kernel itself has to way to find out if it's an important process 
-that should be protected or if it's some random process causing a forkbomb. 
->From the kernel point's of view, if the Apache master process caused the 
-problem, the the problem should be solved there. If the reason for the 
-problem was actually e.g. a temporary high load on the server, then Apache is 
-probably misconfigured, and if it really should stay running no matter what, 
-then I guess that's the case to use oom_adj. But otherwise, from OOM killer's 
-point of view, that is where the problem was.
+So instead of "page_id" it could just be a "map_id", which will be
+zero for normal maps, and whatever for /dev/fuse maps.
 
- Of course, the algorithm used in badness() should be careful not to propagate 
-the excessive memory usage in that case to the innocent parent. This problem 
-existed in the current code until it was fixed by the "/2" recently, and at 
-least my current proposal actually suffers from it too. But I envision 
-something like this could handle it nicely (pseudocode):
+> And if the server wants to mmap /dev/fuse then it can do that and send
+> the result in "dev_offset", to make it clear that it's a different
+> offset from the one the client used on the mmap.  And it can even use
+> that value as page_id, if it wants to or it can use a different
+> page_id.
 
-int oom_children_memory_usage(task)
-    {
-    // Memory shared with the parent should not be counted again.
-    // Since it's expensive to find that out exactly, just assume
-    // that the amount of shared memory that is not shared with the parent
-    // is insignificant.
-    total = unshared_rss(task)+unshared_swap(task);
-    foreach_child(child,task)
-        total += oom_children_memory_usage(child);
-    return total;
-    }
-int badness(task)
-    {
-    int total_memory = 0;
-    ...
-    int max_child_memory = 0; // memory used by that child
-    int max_child_memory_2 = 0; // the 2nd most memory used by a child
-    foreach_child(child,task)
-        {
-        if(sharing_the_same_memory(child,task))
-            continue;
-        if( real_time(child) > 1minute )
-            continue; // running long, not a forkbomb
-        int memory = oom_children_memory_usage(task);
-        total_memory += memory;
-        if( memory > max_child_memory )
-            {
-            max_child_memory_2 = max_child_memory;
-            max_child_memory = memory;
-            }
-        else if( memory > max_child_memory_2 )
-            max_child_memory_2 = memory;
-        }
-    if( max_child_memory_2 != 0 ) // there were at least two children
-        {
-        if( max_child_memory > max_child_memory_2 / 2 )
-            {
-// There is only a single child that contributes the majority of memory
-// used by all children. Do not add it to the total, so that if that process
-// is the biggest offender, the killer picks it instead of this parent.
-            total_memory -= max_child_memory;
-            }
-        }
-    ...
-    }
+And there's a weakness in the current server side mmap interface, for
+example:
 
- The logic is simply that a process is responsible for its children only if 
-their cost is similar. If one of them stands out, it is responsible for 
-itself and the parent is not. This is intentionally not done recursively in 
-oom_children_memory_usage() to cover also the case when e.g. parallel make 
-runs too many processes wrapped by shell, in that case making any of those 
-shell instances responsible for its child doesn't help anything, but making 
-make responsible for all of them helps.
+ 1) user mmaps region 3-5 (in page index)
+      server maps this region at 3-5
 
- Alternatively, if somebody has a good use case where first going after a 
-child may make sense, then it perhaps would help to 
-add 'oom_recently_killed_children' to each task, and increasing it whenever a 
-child is killed instead of the responsible parent. As soon as the value 
-within a reasonably short time is higher than let's say 5, then apparently 
-killing children does not help and the mastermind has to go.
+ 2) user mmaps region 1-7
+     server can't tell kernel that it wants to reuse region 3-5 but
+     wants to create two other regions
 
--- 
- Lubos Lunak
- openSUSE Boosters team, KDE developer
- l.lunak@suse.cz , l.lunak@kde.org
+What happens in that case?
+
+On the other hand if the map_id is separate from the dev_offset, then
+the server can map the second region as one map and the kernel can
+connect it up with the right pages based on the map_id returned in the
+MMAP reply.
+
+Thanks,
+Miklos
