@@ -1,28 +1,28 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755822Ab0BKOdq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 09:33:46 -0500
-Received: from va3ehsobe002.messaging.microsoft.com ([216.32.180.12]:40828
-	"EHLO VA3EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755735Ab0BKOdo (ORCPT
+	id S1755900Ab0BKOd4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 09:33:56 -0500
+Received: from va3ehsobe005.messaging.microsoft.com ([216.32.180.15]:21167
+	"EHLO VA3EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755740Ab0BKOdp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 09:33:44 -0500
-X-SpamScore: 15
-X-BigFish: VPS15(z1857rzab9bh936eMab78ozz1202hzzz32i6bh87h43j61h)
+	Thu, 11 Feb 2010 09:33:45 -0500
+X-SpamScore: -2
+X-BigFish: VPS-2(zzab9bh936eMzz1202hzzz32i6bh87h43j61h)
 X-Spam-TCS-SCL: 0:0
 X-FB-DOMAIN-IP-MATCH: fail
-X-WSS-ID: 0KXOLRK-01-0UH-02
+X-WSS-ID: 0KXOLRO-01-0UK-02
 X-M-MSG: 
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 CC: Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 2/7] x86/amd-iommu: Introduce iommu_update_domain_tlb function
-Date: Thu, 11 Feb 2010 15:33:12 +0100
-Message-ID: <1265898797-32183-3-git-send-email-joerg.roedel@amd.com>
+Subject: [PATCH 3/7] x86/amd-iommu: Move dte udpate flag into flush_info structure
+Date: Thu, 11 Feb 2010 15:33:13 +0100
+Message-ID: <1265898797-32183-4-git-send-email-joerg.roedel@amd.com>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <1265898797-32183-1-git-send-email-joerg.roedel@amd.com>
 References: <1265898797-32183-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 11 Feb 2010 14:33:21.0478 (UTC) FILETIME=[2914BE60:01CAAB27]
+X-OriginalArrivalTime: 11 Feb 2010 14:33:21.0540 (UTC) FILETIME=[291E3440:01CAAB27]
 MIME-Version: 1.0
 Content-Type: text/plain
 X-Reverse-DNS: unknown
@@ -30,112 +30,116 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch introduces a function which only flushes the
-necessary parts of the IO/TLB for a domain using size aware
-flushing commands.
+This patch moves the flag to indicate a DTE flush is needed
+to the new flush_info structure. It also renames the
+update_domain function to iommu_update_domain_dte to match
+the name with iommu_update_domain_tlb nomenclature.
 
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- arch/x86/kernel/amd_iommu.c |   51 +++++++++++++++++++++++++++---------------
- 1 files changed, 33 insertions(+), 18 deletions(-)
+ arch/x86/include/asm/amd_iommu_types.h |    2 +-
+ arch/x86/kernel/amd_iommu.c            |   22 +++++++++++-----------
+ 2 files changed, 12 insertions(+), 12 deletions(-)
 
+diff --git a/arch/x86/include/asm/amd_iommu_types.h b/arch/x86/include/asm/amd_iommu_types.h
+index 30c4410..529180f 100644
+--- a/arch/x86/include/asm/amd_iommu_types.h
++++ b/arch/x86/include/asm/amd_iommu_types.h
+@@ -234,6 +234,7 @@ extern bool amd_iommu_np_cache;
+  * needs to be flushed on the IOMMU hardware.
+  */
+ struct flush_info {
++	bool dte;
+ 	bool tlb;
+ 	u64 start;
+ 	u64 end;
+@@ -251,7 +252,6 @@ struct protection_domain {
+ 	int mode;		/* paging mode (0-6 levels) */
+ 	u64 *pt_root;		/* page table root pointer */
+ 	unsigned long flags;	/* flags to find out type of domain */
+-	bool updated;		/* complete domain flush required */
+ 	unsigned dev_cnt;	/* devices assigned to this domain */
+ 	unsigned dev_iommu[MAX_IOMMUS]; /* per-IOMMU reference count */
+ 	struct flush_info flush;
 diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
-index fcb85e8..9318512 100644
+index 9318512..02ab775 100644
 --- a/arch/x86/kernel/amd_iommu.c
 +++ b/arch/x86/kernel/amd_iommu.c
-@@ -617,24 +617,35 @@ static void __iommu_flush_pages(struct protection_domain *domain,
- 	return;
+@@ -58,7 +58,7 @@ struct iommu_cmd {
+ };
+ 
+ static void reset_iommu_command_buffer(struct amd_iommu *iommu);
+-static void update_domain(struct protection_domain *domain);
++static void iommu_update_domain_dte(struct protection_domain *domain);
+ 
+ /****************************************************************************
+  *
+@@ -745,9 +745,9 @@ static bool increase_address_space(struct protection_domain *domain,
+ 
+ 	*pte             = PM_LEVEL_PDE(domain->mode,
+ 					virt_to_phys(domain->pt_root));
+-	domain->pt_root  = pte;
+-	domain->mode    += 1;
+-	domain->updated  = true;
++	domain->pt_root    = pte;
++	domain->mode      += 1;
++	domain->flush.dte  = true;
+ 
+ 	return true;
  }
+@@ -856,7 +856,7 @@ static int iommu_map_page(struct protection_domain *dom,
  
--static void iommu_flush_pages(struct protection_domain *domain,
--			     u64 address, size_t size)
--{
--	__iommu_flush_pages(domain, address, size, 0);
--}
--
--/* Flush the whole IO/TLB for a given protection domain */
--static void iommu_flush_tlb(struct protection_domain *domain)
--{
--	__iommu_flush_pages(domain, 0, CMD_INV_IOMMU_ALL_PAGES_ADDRESS, 0);
--}
--
- /* Flush the whole IO/TLB for a given protection domain - including PDE */
- static void iommu_flush_tlb_pde(struct protection_domain *domain)
- {
- 	__iommu_flush_pages(domain, 0, CMD_INV_IOMMU_ALL_PAGES_ADDRESS, 1);
- }
+ 	*pte = __pte;
  
-+/* Flush a range of pages in the domain */
-+static void iommu_update_domain_tlb(struct protection_domain *domain, bool pde)
-+{
-+	u64 address, mask;
-+	int i, order;
-+
-+	if (!domain->flush.tlb)
-+		return;
-+
-+	order   = get_order(domain->flush.end - domain->flush.start);
-+	mask    = (0x1000ULL << order) - 1;
-+	address = ((domain->flush.start & ~mask) | (mask >> 1)) & ~0xfffULL;
-+
-+	for (i = 0; i < amd_iommus_present; ++i) {
-+		if (!domain->dev_iommu[i])
-+			continue;
-+
-+		iommu_queue_inv_iommu_pages(amd_iommus[i], address,
-+					    domain->id, pde, (order != 0));
-+	}
-+
-+	domain->flush.tlb = false;
-+}
+-	update_domain(dom);
++	iommu_update_domain_dte(dom);
  
- /*
-  * This function flushes the DTEs for all devices in domain
-@@ -1865,11 +1876,11 @@ retry:
- 	if (unlikely(amd_iommu_np_cache))
- 		update_flush_info_tlb(&dma_dom->domain, start, size);
- 
--	if (unlikely(dma_dom->need_flush && !amd_iommu_unmap_flush)) {
--		iommu_flush_tlb(&dma_dom->domain);
-+	if (unlikely((dma_dom->need_flush && !amd_iommu_unmap_flush)) ||
-+		      amd_iommu_np_cache) {
-+		iommu_update_domain_tlb(&dma_dom->domain, false);
- 		dma_dom->need_flush = false;
--	} else if (unlikely(amd_iommu_np_cache))
--		iommu_flush_pages(&dma_dom->domain, address, size);
-+	}
- 
- out:
- 	return address;
-@@ -1918,7 +1929,7 @@ static void __unmap_single(struct dma_ops_domain *dma_dom,
- 	dma_ops_free_addresses(dma_dom, dma_addr, pages);
- 
- 	if (amd_iommu_unmap_flush || dma_dom->need_flush) {
--		iommu_flush_pages(&dma_dom->domain, dma_addr, size);
-+		iommu_update_domain_tlb(&dma_dom->domain, false);
- 		dma_dom->need_flush = false;
- 	}
- }
-@@ -2486,6 +2497,9 @@ static int amd_iommu_map_range(struct iommu_domain *dom,
- 	if (unlikely(amd_iommu_np_cache))
- 		update_flush_info_tlb(domain, iova, iova + size);
- 
-+	iommu_update_domain_tlb(domain, true);
-+	iommu_flush_complete(domain);
-+
  	return 0;
  }
+@@ -1072,12 +1072,12 @@ static int alloc_new_range(struct dma_ops_domain *dma_dom,
+ 		dma_ops_reserve_addresses(dma_dom, i << PAGE_SHIFT, 1);
+ 	}
  
-@@ -2505,7 +2519,8 @@ static void amd_iommu_unmap_range(struct iommu_domain *dom,
+-	update_domain(&dma_dom->domain);
++	iommu_update_domain_dte(&dma_dom->domain);
  
- 	update_flush_info_tlb(domain, iova, iova + size);
+ 	return 0;
  
--	iommu_flush_tlb_pde(domain);
-+	iommu_update_domain_tlb(domain, true);
-+	iommu_flush_complete(domain);
+ out_free:
+-	update_domain(&dma_dom->domain);
++	iommu_update_domain_dte(&dma_dom->domain);
+ 
+ 	free_page((unsigned long)dma_dom->aperture[index]->bitmap);
+ 
+@@ -1708,16 +1708,16 @@ static void update_device_table(struct protection_domain *domain)
+ 	}
  }
  
- static phys_addr_t amd_iommu_iova_to_phys(struct iommu_domain *dom,
+-static void update_domain(struct protection_domain *domain)
++static void iommu_update_domain_dte(struct protection_domain *domain)
+ {
+-	if (!domain->updated)
++	if (!domain->flush.dte)
+ 		return;
+ 
+ 	update_device_table(domain);
+ 	iommu_flush_domain_devices(domain);
+ 	iommu_flush_tlb_pde(domain);
+ 
+-	domain->updated = false;
++	domain->flush.dte = false;
+ }
+ 
+ /*
+@@ -1741,7 +1741,7 @@ static u64* dma_ops_get_pte(struct dma_ops_domain *dom,
+ 	} else
+ 		pte += PM_LEVEL_INDEX(0, address);
+ 
+-	update_domain(&dom->domain);
++	iommu_update_domain_dte(&dom->domain);
+ 
+ 	return pte;
+ }
 -- 
 1.6.6
 
