@@ -1,55 +1,57 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754343Ab0BKOEm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 09:04:42 -0500
-Received: from poutre.nerim.net ([62.4.16.124]:52319 "EHLO poutre.nerim.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751931Ab0BKOEk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 09:04:40 -0500
-Date: Thu, 11 Feb 2010 15:04:36 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Jiri Kosina <trivial@kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@linux.intel.com>
-Subject: devres/irq: Fix cross-referencing comments
-Message-ID: <20100211150436.1f86e060@hyperion.delvare>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1754673Ab0BKOGu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 09:06:50 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:51758 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752966Ab0BKOGt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 09:06:49 -0500
+Date: Thu, 11 Feb 2010 09:06:48 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Dmitry Monakhov <dmonakhov@openvz.org>
+Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH 1/4] block: implement compatible DISCARD support
+Message-ID: <20100211140648.GA13756@infradead.org>
+References: <1265885625-21608-1-git-send-email-dmonakhov@openvz.org> <20100211122154.GA12417@infradead.org> <87d40cq66k.fsf@openvz.org> <20100211130945.GA7644@infradead.org> <87tytnga3a.fsf@openvz.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87tytnga3a.fsf@openvz.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix the reference (in comment) from devm_request_irq to devm_free_irq
-and back.
+On Thu, Feb 11, 2010 at 04:45:13PM +0300, Dmitry Monakhov wrote:
+> >> The question is should it be sync or async it is not easy to design
+> >> simple async interface so let's use sync by default
+> >> BTW: That's why blkdev_issue_barrier has to wait by default. 
+> In fact wait is the only interface for issue_barrier.
+> > This is going to kill performance.
+> But it may be reasonable to allow caller to choose would it
+> wait and work fair, or to cheat in a name of performance.
 
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
----
- kernel/irq/devres.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+It's not a cheat.  The discard is a _hint_ to the hardware that it
+can reclaim space.  Think become a bit different when we start relying
+on the zeroing behaviour for hardware that supports it, but so far
+we don't.  And given that out of two TRIM capable devices I have one
+does not reliably zero the trimmed regions I'm not sure it's a good
+idea to rely on that yet, either.
 
---- linux-2.6.33-rc7.orig/kernel/irq/devres.c	2009-06-10 05:05:27.000000000 +0200
-+++ linux-2.6.33-rc7/kernel/irq/devres.c	2010-02-11 14:53:35.000000000 +0100
-@@ -42,7 +42,7 @@ static int devm_irq_match(struct device
-  *	automatically freed on driver detach.
-  *
-  *	If an IRQ allocated with this function needs to be freed
-- *	separately, dev_free_irq() must be used.
-+ *	separately, devm_free_irq() must be used.
-  */
- int devm_request_threaded_irq(struct device *dev, unsigned int irq,
- 			      irq_handler_t handler, irq_handler_t thread_fn,
-@@ -81,7 +81,7 @@ EXPORT_SYMBOL(devm_request_threaded_irq)
-  *	Except for the extra @dev argument, this function takes the
-  *	same arguments and performs the same function as free_irq().
-  *	This function instead of free_irq() should be used to manually
-- *	free IRQs allocated with dev_request_irq().
-+ *	free IRQs allocated with devm_request_irq().
-  */
- void devm_free_irq(struct device *dev, unsigned int irq, void *dev_id)
- {
+> libata-scsi.c: ata_scsi_write_same_xlat
+>                   ata_set_lba_range_entries
+> It's was not obvious from the first glance. But it is the way how it
+> works for now. But seems what we still optimize things a bit
+> 1) alloc page with GFP_HIGHUSER (because x86 arch still used)
 
+I'm not sure it's worth over-optimization this.
 
--- 
-Jean Delvare
+> 2) Share page between eight bios.
+
+If we introduce the common completion handler for a batch of bios as
+your patch does we can do that.
+
