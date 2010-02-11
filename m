@@ -1,107 +1,57 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756591Ab0BKQqr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 11:46:47 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:55109 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755507Ab0BKQqp (ORCPT
+	id S1756634Ab0BKQwR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 11:52:17 -0500
+Received: from mail-ew0-f228.google.com ([209.85.219.228]:51610 "EHLO
+	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756462Ab0BKQwQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 11:46:45 -0500
-Date: Thu, 11 Feb 2010 08:44:30 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Greg KH <gregkh@suse.de>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Scott Smedley <ss@aao.gov.au>
-Subject: Re: linux-next: Tree for December 19 (staging/dt3155)
-Message-Id: <20100211084430.5fd5afbb.randy.dunlap@oracle.com>
-In-Reply-To: <20091219044747.GB14503@suse.de>
-References: <20091219110457.d6c5de1f.sfr@canb.auug.org.au>
-	<20091218191037.d6b4727b.randy.dunlap@oracle.com>
-	<20091219044747.GB14503@suse.de>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
+	Thu, 11 Feb 2010 11:52:16 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=B7cUSyW1ot1wVhbvAozXUO4h8esefbiRYpO6Y6X0aib9RpzBFICTqD9SRxOyKx4jbn
+         rrnTwbnt7zrjNYgwU9P20wVNHb8jEOfSxcRDJE3U7oZLZlWFlpqjjdqybTx4l6aLrreb
+         W9LG7FAEps/7d3xZZiWEj9pHIpVOI6WgOj+3c=
+Date: Thu, 11 Feb 2010 18:56:42 +0200
+From: Jarkko Nikula <jhnikula@gmail.com>
+To: Liam Girdwood <lrg@slimlogic.co.uk>
+Cc: Thomas Weber <weber@corscience.de>, broonie@opensource.wolfsonmicro.com,
+       perex@perex.cz, tiwai@suse.de, jkrzyszt@tis.icnet.pl,
+       anuj.aggarwal@ti.com, x0052729@ti.com, peter.ujfalusi@nokia.com,
+       tony@atomide.com, jy0922.shim@samsung.com, linux-omap@vger.kernel.org,
+       alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org
+Subject: Re: [RESEND][PATCHv2 3/4] Add ASoC support for Devkit8000
+Message-Id: <20100211185642.34eb234e.jhnikula@gmail.com>
+In-Reply-To: <1265901628.3179.14.camel@odin>
+References: <1265901239-31285-1-git-send-email-weber@corscience.de>
+	<1265901628.3179.14.camel@odin>
+X-Mailer: Sylpheed 3.0.0beta4 (GTK+ 2.18.6; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt353.oracle.com [141.146.40.153]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090209.4B74345A.0178:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Dec 2009 20:47:47 -0800 Greg KH wrote:
+On Thu, 11 Feb 2010 15:20:28 +0000
+Liam Girdwood <lrg@slimlogic.co.uk> wrote:
 
-> On Fri, Dec 18, 2009 at 07:10:37PM -0800, Randy Dunlap wrote:
-> > On Sat, 19 Dec 2009 11:04:57 +1100 Stephen Rothwell wrote:
+> On Thu, 2010-02-11 at 16:13 +0100, Thomas Weber wrote:
+> > This patch expands the omap3beagle sound soc for the
+> > beagle board clone DevKit8000.
 > > 
-> > > Hi all,
-> > > 
-> > > I said:
-> > > > News:  there will be no linux-next releases until at least Dec 24 and,
-> > > > more likely, Dec 29.  Have a Merry Christmas and take a break.  :-)
-> > > 
-> > > Well, I decided I had time for one more so it will be based in -rc1).
-> > > 
-> > > This one has not had the build testing *between* merges, but has had all
-> > > the normal build testing at the end.  Since the latter testing showed no
-> > > problems, this just means that there may be more unbisectable points in
-> > > the tree (but that is unlikely).
-> > 
-> > 
-> > When CONFIG_DT3155=y (i.e., not a loadable module):
+> > Signed-off-by: Thomas Weber <weber@corscience.de>
 > 
-> Ick, I'll change that to 'M' now, it shouldn't be built in just yet for
-> the reasons you found.
+> Acked-by: Liam Girdwood <lrg@slimlogic.co.uk>
 > 
-> I don't think the code has ever been built as 'y' as you just found out.
+Acked-by: Jarkko Nikula <jhnikula@gmail.com>
 
-Greg,
-Did you get around to making any of these changes?
-
-
-> > (a)
-> > drivers/staging/dt3155/dt3155_drv.c:967: error: implicit declaration of function 'pci_find_device'
-> > drivers/staging/dt3155/dt3155_drv.c:1151: error: implicit declaration of function 'request_irq'
-> > drivers/staging/dt3155/dt3155_drv.c:1152: error: 'IRQF_SHARED' undeclared (first use in this function)
-> > drivers/staging/dt3155/dt3155_drv.c:1152: error: 'IRQF_DISABLED' undeclared (first use in this function)
-> > drivers/staging/dt3155/dt3155_drv.c:1195: error: implicit declaration of function 'free_irq'
-> > 
-> > 
-> > #ifdef MODULE
-> > #include <linux/interrupt.h>
-> > 
-> > linux/interrupt.h is needed for DT3155=y, not just when DT3155=m.
-> > 
-> > Oh, and this config has:  # CONFIG_PCI_LEGACY is not set
-> > which accounts for pci_find_device() being unknown.
-> > If that is required (as it is currently, even though this function is
-> > deprecated), it can be expressed in the driver's Kconfig file:
-> > 	depends on PCI_LEGACY
-> >
-> 
-> I'll fix this up to just not need this anymore, as it should be fixed.
-> 
-> > (b) when compiling goes further:
-> > 
-> > drivers/staging/dt3155/dt3155_drv.c:571: warning: format '%x' expects type 'unsigned int', but argument 2 has type 'long unsigned int'
-> > drivers/staging/dt3155/dt3155_drv.c:571: warning: format '%x' expects type 'unsigned int', but argument 3 has type 'long unsigned int'
-> > drivers/staging/dt3155/dt3155_drv.c:657: warning: format '%x' expects type 'unsigned int', but argument 2 has type 'long unsigned int'
-> > drivers/staging/dt3155/dt3155_drv.c:657: warning: format '%x' expects type 'unsigned int', but argument 3 has type 'long unsigned int'
-> > 
-> > 
-> > 
-> > General:
-> > 
-> > #ifndef CONFIG_PCI
-> > #error  "DT3155 :  Kernel PCI support not enabled (DT3155 drive requires PCI)"
-> > #endif
-> > 
-> > That should be handled via Kconfig, not in a .c file.
-> > Ah, it is done in Kconfig, so those lines above (in .c file) can be deleted.
-> 
-> Yes, lots of stuff in the .c file can be deleted :)
+Note, this is safe to push even if this goes to mainline before the
+basic board file and arch/arm/mach-omap2/Kconfig change from linux-omap.
+The machine type and so machine_is_devkit8000() are already there.
 
 
----
-~Randy
+-- 
+Jarkko
