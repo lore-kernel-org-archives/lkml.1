@@ -1,54 +1,76 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757063Ab0BKVhp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 16:37:45 -0500
-Received: from waste.org ([173.11.57.241]:35577 "EHLO waste.org"
+	id S1757098Ab0BKVjW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 16:39:22 -0500
+Received: from cantor.suse.de ([195.135.220.2]:34757 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756773Ab0BKVhn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 16:37:43 -0500
-Subject: Re: [PATCH 03/11] readahead: bump up the default readahead size
-From: Matt Mackall <mpm@selenic.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Clemens Ladisch <clemens@ladisch.de>,
-       Olivier Galibert <galibert@pobox.com>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Paul Gortmaker <paul.gortmaker@windriver.com>,
-       David Woodhouse <dwmw2@infradead.org>, linux-embedded@vger.kernel.org
-In-Reply-To: <20100208134634.GA3024@localhost>
-References: <20100207041013.891441102@intel.com>
-	 <20100207041043.147345346@intel.com> <4B6FBB3F.4010701@linux.vnet.ibm.com>
-	 <20100208134634.GA3024@localhost>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 11 Feb 2010 15:37:34 -0600
-Message-ID: <1265924254.15603.79.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	id S1756944Ab0BKVjV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 16:39:21 -0500
+Date: Thu, 11 Feb 2010 13:36:51 -0800
+From: Greg KH <gregkh@suse.de>
+To: Hank Janssen <hjanssen@microsoft.com>
+Cc: "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+       "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>,
+       Haiyang Zhang <haiyangz@microsoft.com>
+Subject: Re: [PATCH 1/2] Staging: hv: Add proper versioning to HV drivers
+Message-ID: <20100211213651.GA29557@suse.de>
+References: <8AFC7968D54FB448A30D8F38F259C56212E88287@TK5EX14MBXC118.redmond.corp.microsoft.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <8AFC7968D54FB448A30D8F38F259C56212E88287@TK5EX14MBXC118.redmond.corp.microsoft.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-02-08 at 21:46 +0800, Wu Fengguang wrote:
-> Chris,
+On Thu, Feb 11, 2010 at 09:32:29PM +0000, Hank Janssen wrote:
 > 
-> Firstly inform the linux-embedded maintainers :)
+> Provide proper versioning information for all HV drivers.
 > 
-> I think it's a good suggestion to add a config option
-> (CONFIG_READAHEAD_SIZE). Will update the patch..
+> 
+> Cc: Greg Kroah-Hartman         <gregkh@suse.de>
+> Signed-off-by: Hank Janssen    <hjanssen@microsoft.com>
+> Signed-off-by: Haiyang Zhang   <haiyang@microsoft.com>
+> 
+> 
+>  drivers/staging/hv/VersionInfo.h |   11 ++++++++---
+>  drivers/staging/hv/Vmbus.c       |    8 ++++----
+>  drivers/staging/hv/blkvsc_drv.c  |    2 ++
+>  drivers/staging/hv/netvsc_drv.c  |    5 +++--
+>  drivers/staging/hv/storvsc_drv.c |    2 ++
+>  drivers/staging/hv/vmbus_drv.c   |    2 ++
+>  6 files changed, 21 insertions(+), 9 deletions(-)
+> 
+> diff --git a/drivers/staging/hv/VersionInfo.h b/drivers/staging/hv/VersionInfo.h
+> index 9c3641d..e729b9e 100644
+> --- a/drivers/staging/hv/VersionInfo.h
+> +++ b/drivers/staging/hv/VersionInfo.h
+> @@ -24,8 +24,13 @@
+>  #ifndef __HV_VERSION_INFO
+>  #define __HV_VERSION_INFO
+>  
+> -static const char VersionDate[] = __DATE__;
+> -static const char VersionTime[] = __TIME__;
+> -static const char VersionDesc[] = "Version 2.0";
+> +static const char hv_build_date[] = __DATE__;
+> +static const char hv_build_time[] = __TIME__;
 
-I don't have a strong opinion here beyond the nagging feeling that we
-should be using a per-bdev scaling window scheme rather than something
-static.
+This should not be needed at all, as it make absolutely no sense.
 
--- 
-http://selenic.com : development and support for Mercurial and Linux
+> +/*
+> + * We use the same version numbering for all Hyper-V modules.
+> + */
+> +#define HV_DRV_VERSION           "3.0.0"
 
+Is this really needed?  Now that the code is in the kernel tree,
+shouldn't you be tracking this based on kernel release version (like 90%
+of the drivers are tracked), or is there some requirement for a version
+number?
 
+And what decides when this number is changed?  What does it "mean"?
+What is it tracking?
+
+thanks,
+
+greg k-h
