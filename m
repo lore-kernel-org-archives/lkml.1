@@ -1,136 +1,79 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757254Ab0BKVMy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 16:12:54 -0500
-Received: from acsinet11.oracle.com ([141.146.126.233]:53852 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757052Ab0BKVMw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 16:12:52 -0500
-Message-ID: <4B7472A4.8000807@oracle.com>
-Date: Thu, 11 Feb 2010 13:12:04 -0800
-From: Sunil Mushran <sunil.mushran@oracle.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	id S1757241Ab0BKVRB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 16:17:01 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:16713 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757111Ab0BKVQ7 (ORCPT
+	<rfc822;<linux-kernel@vger.kernel.org>>);
+	Thu, 11 Feb 2010 16:16:59 -0500
+Date: Thu, 11 Feb 2010 15:56:40 -0500
+From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+To: linux-kernel@vger.kernel.org
+Cc: viaum@sheridanc.on.ca
+Subject: [viaum@sheridanc.on.ca: 2.6.33-rc7 (baremetal) fails to restart
+	Intel i7 860 with P55 chipset.]
+Message-ID: <20100211205640.GB7729@phenom.dumpdata.com>
 MIME-Version: 1.0
-To: Joel Becker <joel.becker@oracle.com>
-CC: ocfs2-devel@oss.oracle.com, mfasheh@suse.com, linux-kernel@vger.kernel.org
-Subject: Re: [Ocfs2-devel] [PATCH 03/11] ocfs2_dlmfs: Move to its own directory
-References: <1265794074-19539-1-git-send-email-joel.becker@oracle.com> <1265794074-19539-4-git-send-email-joel.becker@oracle.com>
-In-Reply-To: <1265794074-19539-4-git-send-email-joel.becker@oracle.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt354.oracle.com [141.146.40.154]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-Source-IP: acsmt355.oracle.com [141.146.40.155]
 X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A0B0203.4B7472CF.0114:SCFMA4539814,ss=1,fgs=0
+X-CT-RefId: str=0001.0A090201.4B7473C2.00F5:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Acked-by: Sunil Mushran <sunil.mushran@oracle.com>
+Has anybody seen similar issues with their above mentioned motherboard?
 
-Joel Becker wrote:
-> We're going to remove the tie between ocfs2_dlmfs and o2dlm.
-> ocfs2_dlmfs doesn't belong in the fs/ocfs2/dlm directory anymore.  Here
-> we move it to fs/ocfs2/dlmfs.
->
-> Signed-off-by: Joel Becker <joel.becker@oracle.com>
-> ---
->  fs/ocfs2/Makefile                  |    1 +
->  fs/ocfs2/dlm/Makefile              |    3 +--
->  fs/ocfs2/dlmfs/Makefile            |    5 +++++
->  fs/ocfs2/{dlm => dlmfs}/dlmfs.c    |    2 +-
->  fs/ocfs2/{dlm => dlmfs}/dlmfsver.c |    0
->  fs/ocfs2/{dlm => dlmfs}/dlmfsver.h |    0
->  fs/ocfs2/{dlm => dlmfs}/userdlm.c  |    2 +-
->  fs/ocfs2/{dlm => dlmfs}/userdlm.h  |    0
->  8 files changed, 9 insertions(+), 4 deletions(-)
->  create mode 100644 fs/ocfs2/dlmfs/Makefile
->  rename fs/ocfs2/{dlm => dlmfs}/dlmfs.c (99%)
->  rename fs/ocfs2/{dlm => dlmfs}/dlmfsver.c (100%)
->  rename fs/ocfs2/{dlm => dlmfs}/dlmfsver.h (100%)
->  rename fs/ocfs2/{dlm => dlmfs}/userdlm.c (99%)
->  rename fs/ocfs2/{dlm => dlmfs}/userdlm.h (100%)
->
-> diff --git a/fs/ocfs2/Makefile b/fs/ocfs2/Makefile
-> index 600d2d2..791c088 100644
-> --- a/fs/ocfs2/Makefile
-> +++ b/fs/ocfs2/Makefile
-> @@ -46,6 +46,7 @@ ocfs2_stackglue-objs := stackglue.o
->  ocfs2_stack_o2cb-objs := stack_o2cb.o
->  ocfs2_stack_user-objs := stack_user.o
->  
-> +obj-$(CONFIG_OCFS2_FS) += dlmfs/
->  # cluster/ is always needed when OCFS2_FS for masklog support
->  obj-$(CONFIG_OCFS2_FS) += cluster/
->  obj-$(CONFIG_OCFS2_FS_O2CB) += dlm/
-> diff --git a/fs/ocfs2/dlm/Makefile b/fs/ocfs2/dlm/Makefile
-> index 1903613..dcebf0d 100644
-> --- a/fs/ocfs2/dlm/Makefile
-> +++ b/fs/ocfs2/dlm/Makefile
-> @@ -1,8 +1,7 @@
->  EXTRA_CFLAGS += -Ifs/ocfs2
->  
-> -obj-$(CONFIG_OCFS2_FS_O2CB) += ocfs2_dlm.o ocfs2_dlmfs.o
-> +obj-$(CONFIG_OCFS2_FS_O2CB) += ocfs2_dlm.o
->  
->  ocfs2_dlm-objs := dlmdomain.o dlmdebug.o dlmthread.o dlmrecovery.o \
->  	dlmmaster.o dlmast.o dlmconvert.o dlmlock.o dlmunlock.o dlmver.o
->  
-> -ocfs2_dlmfs-objs := userdlm.o dlmfs.o dlmfsver.o
-> diff --git a/fs/ocfs2/dlmfs/Makefile b/fs/ocfs2/dlmfs/Makefile
-> new file mode 100644
-> index 0000000..df69b48
-> --- /dev/null
-> +++ b/fs/ocfs2/dlmfs/Makefile
-> @@ -0,0 +1,5 @@
-> +EXTRA_CFLAGS += -Ifs/ocfs2
-> +
-> +obj-$(CONFIG_OCFS2_FS) += ocfs2_dlmfs.o
-> +
-> +ocfs2_dlmfs-objs := userdlm.o dlmfs.o dlmfsver.o
-> diff --git a/fs/ocfs2/dlm/dlmfs.c b/fs/ocfs2/dlmfs/dlmfs.c
-> similarity index 99%
-> rename from fs/ocfs2/dlm/dlmfs.c
-> rename to fs/ocfs2/dlmfs/dlmfs.c
-> index ddf55da..e21ce0e 100644
-> --- a/fs/ocfs2/dlm/dlmfs.c
-> +++ b/fs/ocfs2/dlmfs/dlmfs.c
-> @@ -52,7 +52,7 @@
->  #include "cluster/heartbeat.h"
->  #include "cluster/tcp.h"
->  
-> -#include "dlmapi.h"
-> +#include "dlm/dlmapi.h"
->  
->  #include "userdlm.h"
->  
-> diff --git a/fs/ocfs2/dlm/dlmfsver.c b/fs/ocfs2/dlmfs/dlmfsver.c
-> similarity index 100%
-> rename from fs/ocfs2/dlm/dlmfsver.c
-> rename to fs/ocfs2/dlmfs/dlmfsver.c
-> diff --git a/fs/ocfs2/dlm/dlmfsver.h b/fs/ocfs2/dlmfs/dlmfsver.h
-> similarity index 100%
-> rename from fs/ocfs2/dlm/dlmfsver.h
-> rename to fs/ocfs2/dlmfs/dlmfsver.h
-> diff --git a/fs/ocfs2/dlm/userdlm.c b/fs/ocfs2/dlmfs/userdlm.c
-> similarity index 99%
-> rename from fs/ocfs2/dlm/userdlm.c
-> rename to fs/ocfs2/dlmfs/userdlm.c
-> index 4cb1d3d..6adae70 100644
-> --- a/fs/ocfs2/dlm/userdlm.c
-> +++ b/fs/ocfs2/dlmfs/userdlm.c
-> @@ -39,7 +39,7 @@
->  #include "cluster/heartbeat.h"
->  #include "cluster/tcp.h"
->  
-> -#include "dlmapi.h"
-> +#include "dlm/dlmapi.h"
->  
->  #include "userdlm.h"
->  
-> diff --git a/fs/ocfs2/dlm/userdlm.h b/fs/ocfs2/dlmfs/userdlm.h
-> similarity index 100%
-> rename from fs/ocfs2/dlm/userdlm.h
-> rename to fs/ocfs2/dlmfs/userdlm.h
->   
+The user has tried the 2.6.32.8 (no work), 2.6.33-rc7(no work), and
+2.6.26-2(Debian - works).
+
+I've asked him to pass in different reboot= arguments but no luck. Are
+there any outstanding issues in regards to reboot that are known to the
+community?
+
+Thanks.
+
+P.S.
+Here is what the user said:
+> > 2.6.32.8http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.32.8.tar.bz2
+> > I will download the tarball and compile it ASAP.
+> > 
+> > **EDIT**
+> > 
+> > This kernel does the same hang. The good news is this might just be an issue with my hardware right? The bad news is I am not sure on what to try next. Has anyone got any suggestions?
+> > 
+> 
+> Try the latest one. 2.6.33-rc<soimething> IT might have a fix for this.
+
+OK. I will download that tarball and compile it ASAP.
+
+http://www.kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.33-rc7.tar.bz2
+
+
+
+**EDIT**
+
+
+
+Same story as the last, reboot still hangs even with the newest kernel available.
+Again the oddest thing is how the Debian 2.6.26-2-amd64 kernel reboots fine. Is
+it possible that Linux does not yet support my style motherboard? Is it Debian
+Lenny? Is there an issue with my /etc/inittab
+
+
+
+# What to do when CTRL-ALT-DEL is pressed.
+
+ca:12345:ctrlaltdel:/sbin/shutdown -t1 -a -r now
+
+
+
+
+
+If anyone else is running a similar hardware setup, what kernel are you using,
+what kernel arguments do you pass at bootup, and does your Linux hang on
+reboot?
 
