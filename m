@@ -1,59 +1,87 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751848Ab0BKKiz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 05:38:55 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:47414 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750885Ab0BKKix (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 05:38:53 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: davidjon@xenontk.org
-Subject: Re: [Bug #15127] Bluetooth: sleeping function called from invalid context
-Date: Thu, 11 Feb 2010 11:39:28 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.33-rc7-rjw; KDE/4.3.5; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Luiz Augusto von Dentz <luiz.dentz@gmail.com>,
-       Marcel Holtmann <marcel@holtmann.org>
-References: <2uzMDuY-7_O.A.M1G.7X1bLB@chimera> <iuJeop2ribM.A.DgH.XY1bLB@chimera> <4B736FD3.2000707@xenontk.org>
-In-Reply-To: <4B736FD3.2000707@xenontk.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
+	id S1752015Ab0BKKpc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 05:45:32 -0500
+Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:38687 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750885Ab0BKKpa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 05:45:30 -0500
+Subject: Re: [RFC 0/2] fix dma_map_sg not to do barriers for each buffer
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: adharmap@codeaurora.org, linux-arm-kernel@lists.infradead.org,
+       linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Abhijeet Dharmapurikar <adharmap@quicinc.com>
+In-Reply-To: <20100210212156.GB30854@n2100.arm.linux.org.uk>
+References: <20100210212156.GB30854@n2100.arm.linux.org.uk>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Thu, 11 Feb 2010 10:45:01 +0000
+Message-Id: <1265885102.3389.34.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Message-Id: <201002111139.28365.rjw@sisk.pl>
+X-OriginalArrivalTime: 11 Feb 2010 10:45:05.0740 (UTC) FILETIME=[45C8F8C0:01CAAB07]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 11 February 2010, David John wrote:
-> On 02/08/2010 05:58 AM, Rafael J. Wysocki wrote:
-> > This message has been generated automatically as a part of a report
-> > of regressions introduced between 2.6.31 and 2.6.32.
-> > 
-> > The following bug entry is on the current list of known regressions
-> > introduced between 2.6.31 and 2.6.32.  Please verify if it still should
-> > be listed and let the tracking team know (either way).
-> > 
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15127
-> > Subject		: Bluetooth: sleeping function called from invalid context
-> > Submitter	: David John <davidjon@xenontk.org>
-> > Date		: 2010-01-12 9:19 (27 days old)
-> > First-Bad-Commit: http://git.kernel.org/git/linus/9e726b17422bade75fba94e625cd35fd1353e682
-> > References	: http://marc.info/?l=linux-kernel&m=126328727021949&w=4
-> > Handled-By	: Marcel Holtmann <marcel@holtmann.org>
-> > Patch		: http://patchwork.kernel.org/patch/76019/
-> > 
-> > 
-> > 
+On Wed, 2010-02-10 at 21:21 +0000, Russell King - ARM Linux wrote:
+> On Wed, Feb 10, 2010 at 12:37:28PM -0800, adharmap@codeaurora.org wrote:
+> > From: Abhijeet Dharmapurikar <adharmap@quicinc.com>
+> >
+> > Please refer to the post here
+> > http://lkml.org/lkml/2010/1/4/347
+> >
+> > These changes are to introduce barrierless dma_map_area and dma_unmap_area and
+> > use them to map the buffers in the scatterlist. For the last buffer, call
+> > the normal dma_map_area(aka with barriers) effectively executing the barrier
+> > at the end of the operation.
 > 
-> Hi Rafael,
+> What if we make dma_map_area and dma_unmap_area both be barrier-less,
+> and instead have a separate dma_barrier method - eg, something like the
+> attached?
+
+I was just writing the reply when I noticed yours :). Yes, that's a
+better approach.
+
+> diff --git a/arch/arm/include/asm/cacheflush.h b/arch/arm/include/asm/cacheflush.h
+> index e290885..5928e78 100644
+> --- a/arch/arm/include/asm/cacheflush.h
+> +++ b/arch/arm/include/asm/cacheflush.h
+> @@ -200,6 +200,7 @@ struct cpu_cache_fns {
 > 
-> This bug is now fixed by the upstream commit 485f1e ("Bluetooth: Fix
-> sleeping function in RFCOMM within invalid context") and can be closed.
+>         void (*dma_map_area)(const void *, size_t, int);
+>         void (*dma_unmap_area)(const void *, size_t, int);
+> +       void (*dma_barrier)(void);
 
-Thanks, closing.
+Alternatively we could use the dsb() macro. I don't think we need more
+than this and we would not (well, not easily) compile ARMv5 and ARMv6 in
+the same kernel.
 
-Rafael
+Anyway, an additional branch and return would probably be negligible
+compared to the cache flushing operation.
+
+> @@ -345,6 +347,7 @@ static inline dma_addr_t dma_map_single(struct device *dev, void *cpu_addr,
+>         BUG_ON(!valid_dma_direction(dir));
+> 
+>         __dma_single_cpu_to_dev(cpu_addr, size, dir);
+> +       __dma_barrier(dir);
+> 
+>         return virt_to_dma(dev, cpu_addr);
+>  }
+
+The ___dma_single_cpu_to_dev() covers both inner and outer caches but I
+haven't seen it touched by this patch (nor the other you posted). When
+you clean the L1 cache, you need to make sure that there is a barrier
+(DSB) so that it completes before cleaning the L2, otherwise you clean
+the L2 but data keeps coming from L1.
+
+For the *_sg functions, you either use barrier between L1 and L2 for
+each page or you do the for_each_sg() loop twice, once for L1 and
+another for L2.
+
+-- 
+Catalin
+
