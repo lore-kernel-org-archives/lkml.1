@@ -1,56 +1,139 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756889Ab0BKTiX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 14:38:23 -0500
-Received: from s15228384.onlinehome-server.info ([87.106.30.177]:59402 "EHLO
-	mail.x86-64.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755894Ab0BKTiW (ORCPT
+	id S1756842Ab0BKTju (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 14:39:50 -0500
+Received: from mail-ew0-f228.google.com ([209.85.219.228]:35896 "EHLO
+	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756119Ab0BKTjs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 14:38:22 -0500
-Date: Thu, 11 Feb 2010 20:38:46 +0100
-From: Borislav Petkov <bp@amd64.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Doug Thompson <norsk5@yahoo.com>
-Subject: [GIT PULL] amd64_edac cosmetic fix for 2.6.33-rc8
-Message-ID: <20100211193846.GG19779@aftab>
+	Thu, 11 Feb 2010 14:39:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=ktlBamL4iS5xwee+oLaMp9i3tg3+RVjZ8sSxS8oepOBGuEy7ueAYAAiPEASZ3Pr83D
+         Fe+rjX2TzsDeC54u3uJHkUJjewbLOHFrGogwh1z2svdmYjhvExSlw600ZrS0jokXoyDO
+         9N7vVlt9fMFruz9iqf2piTMjgPSN9UnHpx2w0=
+Message-ID: <4B745D00.5060201@gmail.com>
+Date: Thu, 11 Feb 2010 20:39:44 +0100
+From: Sebastien Alaiwan <sebastien.alaiwan@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Organization: Advanced Micro Devices =?iso-8859-1?Q?GmbH?=
-	=?iso-8859-1?Q?=2C_Karl-Hammerschmidt-Str=2E_34=2C_85609_Dornach_bei_M=FC?=
-	=?iso-8859-1?Q?nchen=2C_Gesch=E4ftsf=FChrer=3A_Thomas_M=2E_McCoy=2C_Giuli?=
-	=?iso-8859-1?Q?ano_Meroni=2C_Andrew_Bowd=2C_Sitz=3A_Dornach=2C_Gemeinde_A?=
-	=?iso-8859-1?Q?schheim=2C_Landkreis_M=FCnchen=2C_Registergericht_M=FCnche?=
-	=?iso-8859-1?Q?n=2C?= HRB Nr. 43632
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Clemens Ladisch <clemens@ladisch.de>
+CC: linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org,
+       Takashi Iwai <tiwai@suse.de>
+Subject: Re: [PATCH][ALSA] usbmidi support for Access Music synths.
+References: <4B726306.8070506@gmail.com> <4B7274BA.3040801@ladisch.de> <4B73B96A.9040006@gmail.com> <4B73C3EC.2040606@ladisch.de>
+In-Reply-To: <4B73C3EC.2040606@ladisch.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+Hello,
 
-please pull the following small fix.
+Thanks for your advice!
 
-Thanks.
+Clemens Ladisch wrote:
+> For only one interface, you don't need to use QUIRK_COMPOSITE; see the
+> entry for the UM-880.
 
-The following changes since commit e28cab42f384745c8a947a9ccd51e4aae52f5d51:
-  Linus Torvalds (1):
-        Merge branch 'i2c-for-linus' of git://git.kernel.org/.../jdelvare/staging
+I've replaced the QUIRK_COMPOSITE by a QUIRK_MIDI_FIXED_ENDPOINT, the module also probes (and fails) the USB interface 4 (I don't know what this interface is for on this device) which results in the printing of an error in the kernel log. How can I inform the snd-usb-audio driver that the USB interface 4 should be left alone?
 
-are available in the git repository at:
+Please find an updated (and shrinked!) patch below.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/bp/bp.git for-linus
+Signed-off-by: Sebastien Alaiwan <sebastien.alaiwan@gmail.com>
+---
+diff --git a/sound/usb/usbaudio.c b/sound/usb/usbaudio.c
+index 9edef46..aaf8f7c 100644
+--- a/sound/usb/usbaudio.c
++++ b/sound/usb/usbaudio.c
+@@ -3327,6 +3327,31 @@ static int snd_usb_cm6206_boot_quirk(struct usb_device *dev)
+ }
+ 
+ /*
++ * This call will put the synth in "USB send" mode, i.e it will send MIDI
++ * messages through USB (this is disabled at startup). The synth will aknowledge
++ * by sending a sysex on endpoint 0x85 and by displaying a USB sign on its LCD.
++ * Values here are chosen based on sniffing USB traffic under Windows.
++ */
++static int snd_usb_accessmusic_boot_quirk(struct usb_device *dev)
++{
++	int err, actual_length;
++
++	/* "midi send" enable */
++	static const u8 seq[] = { 0x4e, 0x73, 0x52, 0x01 };
++
++	void *buf = kmemdup(seq, ARRAY_SIZE(seq), GFP_KERNEL);
++	if (!buf)
++		return -ENOMEM;
++	err = usb_interrupt_msg(dev, usb_sndintpipe(dev, 0x05), buf,
++			ARRAY_SIZE(seq), &actual_length, 1000);
++	kfree(buf);
++	if (err < 0)
++		return err;
++
++	return 0;
++}
++
++/*
+  * Setup quirks
+  */
+ #define AUDIOPHILE_SET			0x01 /* if set, parse device_setup */
+@@ -3624,6 +3649,12 @@ static void *snd_usb_audio_probe(struct usb_device *dev,
+ 			goto __err_val;
+ 	}
+ 
++	/* Access Music VirusTI Desktop */
++	if (id == USB_ID(0x133e, 0x0815)) {
++		if (snd_usb_accessmusic_boot_quirk(dev) < 0)
++			goto __err_val;
++	}
++
+ 	/*
+ 	 * found a config.  now register to ALSA
+ 	 */
+diff --git a/sound/usb/usbmidi.c b/sound/usb/usbmidi.c
+index 6e89b83..8f5bc1e 100644
+--- a/sound/usb/usbmidi.c
++++ b/sound/usb/usbmidi.c
+@@ -1407,6 +1407,12 @@ static struct port_info {
+ 	EXTERNAL_PORT(0x086a, 0x0001, 8, "%s Broadcast"),
+ 	EXTERNAL_PORT(0x086a, 0x0002, 8, "%s Broadcast"),
+ 	EXTERNAL_PORT(0x086a, 0x0003, 4, "%s Broadcast"),
++	/* Access Music Virus TI */
++	EXTERNAL_PORT(0x133e, 0x0815, 0, "%s MIDI"),
++	PORT_INFO(0x133e, 0x0815, 1, "%s Synth", 0,
++		SNDRV_SEQ_PORT_TYPE_MIDI_GENERIC |
++		SNDRV_SEQ_PORT_TYPE_HARDWARE |
++		SNDRV_SEQ_PORT_TYPE_SYNTHESIZER),
+ };
+ 
+ static struct port_info *find_port_info(struct snd_usb_midi* umidi, int number)
+diff --git a/sound/usb/usbquirks.h b/sound/usb/usbquirks.h
+index a892bda..853788d 100644
+--- a/sound/usb/usbquirks.h
++++ b/sound/usb/usbquirks.h
+@@ -2073,6 +2073,20 @@ YAMAHA_DEVICE(0x7010, "UB99"),
+ 	}
+ },
+ 
++/* Access Music devices */
++{
++	/* VirusTI Desktop */
++	USB_DEVICE_VENDOR_SPEC(0x133e, 0x0815),
++	.driver_info = (unsigned long) &(const struct snd_usb_audio_quirk) {
++		.ifnum = 3,
++		.type = QUIRK_MIDI_FIXED_ENDPOINT,
++		.data = &(const struct snd_usb_midi_endpoint_info) {
++			.out_cables = 0x0003,
++			.in_cables  = 0x0003
++		}
++	}
++},
++
+ /* */
+ {
+ 	/* aka. Serato Scratch Live DJ Box */
 
-Borislav Petkov (1):
-      amd64_edac: Do not falsely trigger kerneloops
-
- drivers/edac/amd64_edac.c |   15 ++++++++-------
- 1 files changed, 8 insertions(+), 7 deletions(-)
-
--- 
-Regards/Gruss,
-Boris.
-
---
-Advanced Micro Devices, Inc.
-Operating Systems Research Center
