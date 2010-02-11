@@ -1,13 +1,13 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755839Ab0BKELV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 23:11:21 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:47695 "EHLO mx1.redhat.com"
+	id S1755851Ab0BKENc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 23:13:32 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:13484 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753328Ab0BKELU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 23:11:20 -0500
-Message-ID: <4B73833D.5070008@redhat.com>
-Date: Wed, 10 Feb 2010 23:10:37 -0500
+	id S1753328Ab0BKENb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Feb 2010 23:13:31 -0500
+Message-ID: <4B7383D5.2080904@redhat.com>
+Date: Wed, 10 Feb 2010 23:13:09 -0500
 From: Rik van Riel <riel@redhat.com>
 Organization: Red Hat, Inc
 User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Lightning/1.0pre Thunderbird/3.0
@@ -18,9 +18,9 @@ CC: Andrew Morton <akpm@linux-foundation.org>,
        Nick Piggin <npiggin@suse.de>, Andrea Arcangeli <aarcange@redhat.com>,
        Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
        linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch 4/7 -mm] oom: badness heuristic rewrite
-References: <alpine.DEB.2.00.1002100224210.8001@chino.kir.corp.google.com> <alpine.DEB.2.00.1002100228540.8001@chino.kir.corp.google.com>
-In-Reply-To: <alpine.DEB.2.00.1002100228540.8001@chino.kir.corp.google.com>
+Subject: Re: [patch 6/7 -mm] oom: avoid oom killer for lowmem allocations
+References: <alpine.DEB.2.00.1002100224210.8001@chino.kir.corp.google.com> <alpine.DEB.2.00.1002100229410.8001@chino.kir.corp.google.com>
+In-Reply-To: <alpine.DEB.2.00.1002100229410.8001@chino.kir.corp.google.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -29,21 +29,23 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 On 02/10/2010 11:32 AM, David Rientjes wrote:
 
-> OOM_ADJUST_MIN and OOM_ADJUST_MAX have been exported to userspace since
-> 2006 via include/linux/oom.h.  This alters their values from -16 to -1000
-> and from +15 to +1000, respectively.
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -1914,6 +1914,9 @@ rebalance:
+>   	 * running out of options and have to consider going OOM
+>   	 */
+>   	if (!did_some_progress) {
+> +		/* The oom killer won't necessarily free lowmem */
+> +		if (high_zoneidx<  ZONE_NORMAL)
+> +			goto nopage;
+>   		if ((gfp_mask&  __GFP_FS)&&  !(gfp_mask&  __GFP_NORETRY)) {
+>   			if (oom_killer_disabled)
+>   				goto nopage;
 
-That seems like a bad idea.  Google may have the luxury of
-being able to recompile all its in-house applications, but
-this will not be true for many other users of /proc/<pid>/oom_adj
+Are there architectures that only have one memory zone?
 
-> +/*
-> + * Tasks that fork a very large number of children with seperate address spaces
-> + * may be the result of a bug, user error, or a malicious application.  The oom
-> + * killer assesses a penalty equaling
-
-It could also be the result of the system getting many client
-connections - think of overloaded mail, web or database servers.
+s390 or one of the other virtualized-only architectures perhaps?
 
 -- 
 All rights reversed.
