@@ -1,56 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757482Ab0BKXjA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 18:39:00 -0500
-Received: from cantor.suse.de ([195.135.220.2]:37566 "EHLO mx1.suse.de"
+	id S1757494Ab0BKXjF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 18:39:05 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:54183 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757301Ab0BKXi5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 18:38:57 -0500
-Date: Thu, 11 Feb 2010 15:36:12 -0800
+	id S1757301Ab0BKXjA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 18:39:00 -0500
+Date: Thu, 11 Feb 2010 15:38:12 -0800
 From: Greg KH <gregkh@suse.de>
-To: Hank Janssen <hjanssen@microsoft.com>
-Cc: "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-       "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>,
-       Haiyang Zhang <haiyangz@microsoft.com>
-Subject: Re: [PATCH 1/1] Staging: hv: Add proper versioning to HV
- drivers-Corrected.
-Message-ID: <20100211233612.GB10315@suse.de>
-References: <8AFC7968D54FB448A30D8F38F259C56212E883CB@TK5EX14MBXC118.redmond.corp.microsoft.com>
+To: Bastian Blank <waldi@debian.org>, linux-kernel@vger.kernel.org,
+       stable@kernel.org, stable-review@kernel.org,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk,
+       Stefan Haberland <stefan.haberland@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [11/74] [S390] dasd: fix possible NULL pointer errors
+Message-ID: <20100211233812.GC10315@suse.de>
+References: <20100204171850.GA16539@kroah.com>
+ <20100204171452.915396715@linux.site>
+ <20100211231547.GA20925@wavehammer.waldi.eu.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <8AFC7968D54FB448A30D8F38F259C56212E883CB@TK5EX14MBXC118.redmond.corp.microsoft.com>
+In-Reply-To: <20100211231547.GA20925@wavehammer.waldi.eu.org>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Minor nits below:
-
-On Thu, Feb 11, 2010 at 11:02:42PM +0000, Hank Janssen wrote:
+On Fri, Feb 12, 2010 at 12:15:47AM +0100, Bastian Blank wrote:
+> On Thu, Feb 04, 2010 at 09:11:42AM -0800, Greg KH wrote:
+> > 2.6.32-stable review patch.  If anyone has any objections, please let us know.
 > 
-> Provide proper versioning information for all HV drivers.
-> With removal of build time/date/and Minor number as requested
-> By Greg KH
-> 
-> Cc: Greg Kroah-Hartman         <gregkh@suse.de>
-> Signed-off-by: Hank Janssen    <hjanssen@microsoft.com>
-> Signed-off-by: Haiyang Zhang   <haiyang@microsoft.com>
+> Hmm, are such patches not sent to the arch list, linux-s390 in this
+> case?
 
-Don't line up the <email@domain>, just put only one space, there are a
-few hundred thousand examples to look at for the correct formatting :)
+I copy the people on the original patch, and the linux-kernel list.  To
+dig out all of the different subsystem mailing lists would be a solution
+for a way to use the get_maintainer.pl script in some automated fashion
+that I have not figured out.
 
-> 
->  drivers/staging/hv/VersionInfo.h |   22 +++++++++++++++++++---
+Patches to quilt or git-format-email to do this are gladly accepted :)
 
-You forgot a "---" between the signed-off-by and the diffstat.  If you
-use either git or quilt, it will get this correct automagically.  That
-infers you used something else, which is quite scary.  What are you
-using instead to create patches?
+> Anyway, it breaks without b8ed5dd54895647c2690575aad6f07748c2c618a:
+> | drivers/s390/block/dasd.c: In function 'dasd_handle_killed_request':
+> | drivers/s390/block/dasd.c:1008: error: implicit declaration of function 'DBF_EVENT_DEVID'
 
-Don't worry, I can edit this by hand when I apply it, and will do so in
-a few days when I get to my "to-apply" queue, but in the future, please
-don't do this.
+Yeah, I saw that after the fact.  I'll queue this up for the next
+-stable release, thanks, I hadn't dug into what the real solution for
+this was.
 
 thanks,
 
