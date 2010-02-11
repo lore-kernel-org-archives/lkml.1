@@ -1,58 +1,121 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754708Ab0BKMvT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 07:51:19 -0500
-Received: from mail001.aei.ca ([206.123.6.130]:44055 "EHLO mail001.aei.ca"
+	id S1754687Ab0BKM47 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 07:56:59 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:19739 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752252Ab0BKMvS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 07:51:18 -0500
-From: Ed Tomlinson <edt@aei.ca>
-To: Michael Poole <mdpoole@troilus.org>
-Subject: Re: [PATCH 2/2] Add a device driver for the Apple Magic Mouse (2.6.32.8)
-Date: Thu, 11 Feb 2010 07:51:14 -0500
-User-Agent: KMail/1.12.4 (Linux/2.6.32.8-crc; KDE/4.3.5; x86_64; ; )
-Cc: Jiri Kosina <jkosina@suse.cz>, linux-input@vger.kernel.org,
-       Marcel Holtmann <marcel@holtmann.org>, linux-bluetooth@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <alpine.LNX.2.00.1001291515560.356@pobox.suse.cz> <201002102205.58967.edt@aei.ca> <878wb0e9w2.fsf@troilus.org>
-In-Reply-To: <878wb0e9w2.fsf@troilus.org>
+	id S1754018Ab0BKM45 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 07:56:57 -0500
+Date: Thu, 11 Feb 2010 13:56:07 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Salman Qazi <sqazi@google.com>
+Cc: taviso@google.com, Roland Dreier <rolandd@cisco.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: Race in ptrace.
+Message-ID: <20100211125607.GA5086@redhat.com>
+References: <20100208221632.A7D6F9B33B@bumblebee1.mtv.corp.google.com> <20100208143231.6d804590.akpm@linux-foundation.org> <20100209112700.GA4258@redhat.com> <20100210133556.GA21925@redhat.com> <4352991a1002101038s6a2e67d9mc373416c17de9e6a@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201002110751.14813.edt@aei.ca>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4352991a1002101038s6a2e67d9mc373416c17de9e6a@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 10 February 2010 22:20:13 Michael Poole wrote:
-> Ed Tomlinson writes:
-> 
-> > Hi,
-> >
-> > When I apply this to head, I get:
-> >
-> > drivers/hid/hid-magicmouse.c: In function 'magicmouse_probe':                                                         
-> > drivers/hid/hid-magicmouse.c:393: error: too many arguments to function 'hdev->hid_output_raw_report'                 
-> > drivers/hid/hid-magicmouse.c:400: error: too many arguments to function 'hdev->hid_output_raw_report'                 
-> >
-> > I only need the second patch - the first seems to be in tree.
-> >
-> > Any ideas as to what I am missing?
-> >
-> > TIA
-> > Ed
-> 
-> You're missing the patch that makes hid_output_raw_report() more generic.
-> It is in the HID tree[1] as commit d4bfa033.
-> 
-> [1]- http://git.kernel.org/?p=linux/kernel/git/jikos/hid.git
+On 02/10, Salman Qazi wrote:
+>
+> I have
+> made a simpler version of tavis's test case:
 
-Ok.  With this I have a patchset that applies to 2.6.32.8.  If anyone wants it
-just email.  
+Thanks, now I see what you mean.
 
-Of course, Michael's cleanups came just after I booted with the new kernel.  I'll
-apply it and update & post my changes that allow both x and y scrolling and almost 
-work for a few multitouch gestures.
+But this all is correct, you can't expect PTRACE_SYSCALL can succeed
+is the tracee is running, it must be stopped or traced.
 
-Ed
+The tracee is running because it was TASK_STOPPED and antagonist()
+sends SIGCONT.
+
+The tracee was TASK_STOPPED because the tracer passes sig = SIGSTOP
+via ptrace(PTRACE_SYSCALL, WSTOPSIG(status).
+
+Where do you see the bug?
+
+OK, let me simplify the test-case even more:
+
+	int main(void)
+	{
+		int stat, ret;
+		int pid = fork();
+
+		if (!pid) {
+			ptrace(PTRACE_TRACEME, 0, NULL, NULL);
+			for (;;)
+				;
+		}
+
+		sleep(1);	// wait for PTRACE_TRACEME
+		kill(pid, SIGSTOP);
+
+		// the child reports SIGSTOP, it is TASK_TRACED
+		assert(pid == wait(&stat) && WIFSTOPPED(stat));
+
+		// the tracee should stop, we pass sig = SIGSTOP
+		assert(ptrace(PTRACE_SYSCALL, pid, 0, WSTOPSIG(stat)) == 0);
+
+		// the child reports the group stop, it is TASK_STOPPED
+		assert(pid == wait(&stat) && WIFSTOPPED(stat));
+
+		// the tracee is STOPPED as requested, not TRACED,
+		// SIGCONT wakes it up
+		kill(pid, SIGCONT);
+
+		// now the tracee is _running_, and PTRACE_SYSCALL must fail
+		ret = ptrace(PTRACE_SYSCALL, pid, 0, WSTOPSIG(stat));
+		printf("should fail: ret=%d %m\n", ret);
+
+		return 0;
+	}
+
+PTRACE_SYSCALL fails, and this is absolutely correct.
+
+Now, let's look at your test-case
+
+> int main(int argc, char **argv)
+> {
+>         int status;
+>         assert((child_pid = do_fork(child)) > 0);
+>         assert((ant_pid = do_fork(antagonist)) > 0);
+>         waitpid(child_pid, &status, 0);
+>         ptrace(PTRACE_SYSCALL, child_pid, NULL, NULL);
+>         while(1) {
+>                 if (waitpid(child_pid, &status, 0) <= 0) {
+>                         printf("Errno %d\n", errno);
+>                         exit(EXIT_FAILURE);
+>                 }
+>                 if (WIFSTOPPED(status)) {
+
+WSTOPSIG() should be either SIGCONT or SIGSTOP
+
+>                         printf("stopped: %d\n", WSTOPSIG(status));
+>
+>                         /* This should work, but sometimes it doesn't */
+>                         if (ptrace(PTRACE_SYSCALL, child_pid,
+>                                                 NULL, WSTOPSIG(status)) < 0) {
+
+This should not work if the tracee reported the group stop (not the
+fact it dequeued SIGSTOP) and antagonist() sends SIGCONT in between.
+
+>                                 /* Oddly it works the second time! */
+>                                 assert (ptrace(PTRACE_SYSCALL,
+>                                         child_pid, NULL, WSTOPSIG(status)) < 0);
+
+Of couse, it _can_ work the second time, antagonist() sends a signal
+(SIGCONT or SIGSTOP), the tracee dequeues the signal, and stops to
+report this signal.
+
+See?
+
+Oleg.
+
