@@ -1,88 +1,173 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755064Ab0BKOc0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 09:32:26 -0500
-Received: from mail.gmx.net ([213.165.64.20]:36060 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753559Ab0BKOcZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 09:32:25 -0500
-X-Authenticated: #1587495
-X-Provags-ID: V01U2FsdGVkX1+ZA0sxzaGZewfA9NvxewBa3Dxo/Sxd3XO+WgudbD
-	7154sPOpKsHaxK
-From: "Stefan Lippers-Hollmann" <s.L-H@gmx.de>
-To: Tejun Heo <tj@kernel.org>
-Subject: Re: patch idr-fix-a-critical-misallocation-bug.patch added to 2.6.32-stable tree
-Date: Thu, 11 Feb 2010 15:32:11 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.33-rc7-sidux-686; KDE/4.3.4; i686; ; )
-Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Eric Paris <eparis@redhat.com>, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, stable@kernel.org
-References: <12651725962428@site> <201002041641.21063.s.L-H@gmx.de> <4B73C50B.5040303@kernel.org>
-In-Reply-To: <4B73C50B.5040303@kernel.org>
+	id S1755553Ab0BKOdj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 09:33:39 -0500
+Received: from va3ehsobe005.messaging.microsoft.com ([216.32.180.15]:20700
+	"EHLO VA3EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751832Ab0BKOdh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 09:33:37 -0500
+X-SpamScore: 6
+X-BigFish: VPS6(za62pzab9bh936eMzz1202hzzz32i6bh87h43j62h)
+X-Spam-TCS-SCL: 1:0
+X-FB-DOMAIN-IP-MATCH: fail
+X-WSS-ID: 0KXOLRP-01-0UM-02
+X-M-MSG: 
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+CC: Joerg Roedel <joerg.roedel@amd.com>
+Subject: [PATCH 4/7] x86/amd-iommu: Move functions to get rid of forward declarations
+Date: Thu, 11 Feb 2010 15:33:14 +0100
+Message-ID: <1265898797-32183-5-git-send-email-joerg.roedel@amd.com>
+X-Mailer: git-send-email 1.6.6
+In-Reply-To: <1265898797-32183-1-git-send-email-joerg.roedel@amd.com>
+References: <1265898797-32183-1-git-send-email-joerg.roedel@amd.com>
+X-OriginalArrivalTime: 11 Feb 2010 14:33:21.0572 (UTC) FILETIME=[29231640:01CAAB27]
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201002111532.14218.s.L-H@gmx.de>
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.51000000000000001
+Content-Type: text/plain
+X-Reverse-DNS: unknown
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+This patch moves some functions in amd_iommu.c to get rid of
+the iommu_update_domain_dte forward declaration.
 
-On Thursday 11 February 2010, Tejun Heo wrote:
-> Hello,
-> 
-> Can you please test the following patch on top of the current
-> mainline?
-> 
-> Thanks.
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+---
+ arch/x86/kernel/amd_iommu.c |   90 +++++++++++++++++++++----------------------
+ 1 files changed, 44 insertions(+), 46 deletions(-)
 
-This works fine for me on 2.6.33-rc7-git5 plus your patch:
-
-KMS enabled:
-ii  xserver-xorg-video-intel 2:2.9.1-2          X.Org X server -- Intel i8xx, i9xx display driver
-- 00:02.0 VGA compatible controller [0300]: Intel Corporation 82945G/GZ Integrated Graphics Controller [8086:2772] (rev 02)
-  00:02.0 VGA compatible controller [0300]: Intel Corporation Mobile 945GME Express Integrated Graphics Controller [8086:27ae] (rev 03)
-
-KMS enabled:
-ii  xserver-xorg-video-radeon 1:6.12.4-3         X.Org X server -- ATI Radeon display driver
-- 01:00.0 VGA compatible controller [0300]: ATI Technologies Inc RV630 [Radeon HD 2600 Series] [1002:9589]
-  01:00.1 Audio device [0403]: ATI Technologies Inc RV630/M76 audio device [Radeon HD 2600 Series] [1002:aa08]
-- 05:00.0 VGA compatible controller [0300]: ATI Technologies Inc RV370 5B60 [Radeon X300 (PCIE)] [1002:5b60]
-  05:00.1 Display controller [0380]: ATI Technologies Inc RV370 [Radeon X300SE] [1002:5b70]
-- 01:00.0 VGA compatible controller [0300]: ATI Technologies Inc RV350 [Mobility Radeon 9600 M10] [1002:4e50]
-- 01:00.0 VGA compatible controller [0300]: ATI Technologies Inc RV280 [Radeon 9200 PRO] [1002:5960] (rev 01)
-  01:00.1 Display controller [0380]: ATI Technologies Inc RV280 [Radeon 9200 PRO] (Secondary) [1002:5940] (rev 01)
-
-no KMS available (Debian unstable has no matching xserver-xorg-video-nouveau
-yet):
-ii  xserver-xorg-video-nv 1:2.1.15-1         X.Org X server -- NV display driver
-- 01:00.0 VGA compatible controller [0300]: nVidia Corporation NV11 [GeForce2 MX/MX 400] [10de:0110] (rev a1)
-
-Tested-by: Stefan Lippers-Hollmann <s.l-h@gmx.de>
-
-Thank you a lot
-	Stefan Lippers-Hollmann
-
+diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
+index 02ab775..bda00f0 100644
+--- a/arch/x86/kernel/amd_iommu.c
++++ b/arch/x86/kernel/amd_iommu.c
+@@ -58,7 +58,6 @@ struct iommu_cmd {
+ };
+ 
+ static void reset_iommu_command_buffer(struct amd_iommu *iommu);
+-static void iommu_update_domain_dte(struct protection_domain *domain);
+ 
+ /****************************************************************************
+  *
+@@ -90,6 +89,38 @@ static void update_flush_info_tlb(struct protection_domain *domain,
+ 		domain->flush.end   = max(end  , domain->flush.end);
+ 	}
+ }
++static void set_dte_entry(u16 devid, struct protection_domain *domain)
++{
++	u64 pte_root = virt_to_phys(domain->pt_root);
++
++	pte_root |= (domain->mode & DEV_ENTRY_MODE_MASK)
++		    << DEV_ENTRY_MODE_SHIFT;
++	pte_root |= IOMMU_PTE_IR | IOMMU_PTE_IW | IOMMU_PTE_P | IOMMU_PTE_TV;
++
++	amd_iommu_dev_table[devid].data[2] = domain->id;
++	amd_iommu_dev_table[devid].data[1] = upper_32_bits(pte_root);
++	amd_iommu_dev_table[devid].data[0] = lower_32_bits(pte_root);
++}
++
++static void clear_dte_entry(u16 devid)
++{
++	/* remove entry from the device table seen by the hardware */
++	amd_iommu_dev_table[devid].data[0] = IOMMU_PTE_P | IOMMU_PTE_TV;
++	amd_iommu_dev_table[devid].data[1] = 0;
++	amd_iommu_dev_table[devid].data[2] = 0;
++
++	amd_iommu_apply_erratum_63(devid);
++}
++
++static void update_device_table(struct protection_domain *domain)
++{
++	struct iommu_dev_data *dev_data;
++
++	list_for_each_entry(dev_data, &domain->dev_list, list) {
++		u16 devid = get_device_id(dev_data->dev);
++		set_dte_entry(devid, domain);
++	}
++}
+ 
+ /*
+  * In this function the list of preallocated protection domains is traversed to
+@@ -718,6 +749,18 @@ static void reset_iommu_command_buffer(struct amd_iommu *iommu)
+ 	iommu->reset_in_progress = false;
+ }
+ 
++static void iommu_update_domain_dte(struct protection_domain *domain)
++{
++	if (!domain->flush.dte)
++		return;
++
++	update_device_table(domain);
++	iommu_flush_domain_devices(domain);
++	iommu_flush_tlb_pde(domain);
++
++	domain->flush.dte = false;
++}
++
+ /****************************************************************************
+  *
+  * The functions below are used the create the page table mappings for
+@@ -1366,29 +1409,6 @@ static bool dma_ops_domain(struct protection_domain *domain)
+ 	return domain->flags & PD_DMA_OPS_MASK;
+ }
+ 
+-static void set_dte_entry(u16 devid, struct protection_domain *domain)
+-{
+-	u64 pte_root = virt_to_phys(domain->pt_root);
+-
+-	pte_root |= (domain->mode & DEV_ENTRY_MODE_MASK)
+-		    << DEV_ENTRY_MODE_SHIFT;
+-	pte_root |= IOMMU_PTE_IR | IOMMU_PTE_IW | IOMMU_PTE_P | IOMMU_PTE_TV;
+-
+-	amd_iommu_dev_table[devid].data[2] = domain->id;
+-	amd_iommu_dev_table[devid].data[1] = upper_32_bits(pte_root);
+-	amd_iommu_dev_table[devid].data[0] = lower_32_bits(pte_root);
+-}
+-
+-static void clear_dte_entry(u16 devid)
+-{
+-	/* remove entry from the device table seen by the hardware */
+-	amd_iommu_dev_table[devid].data[0] = IOMMU_PTE_P | IOMMU_PTE_TV;
+-	amd_iommu_dev_table[devid].data[1] = 0;
+-	amd_iommu_dev_table[devid].data[2] = 0;
+-
+-	amd_iommu_apply_erratum_63(devid);
+-}
+-
+ static void do_attach(struct device *dev, struct protection_domain *domain)
+ {
+ 	struct iommu_dev_data *dev_data;
+@@ -1698,28 +1718,6 @@ static struct protection_domain *get_domain(struct device *dev)
+ 	return &dma_dom->domain;
+ }
+ 
+-static void update_device_table(struct protection_domain *domain)
+-{
+-	struct iommu_dev_data *dev_data;
+-
+-	list_for_each_entry(dev_data, &domain->dev_list, list) {
+-		u16 devid = get_device_id(dev_data->dev);
+-		set_dte_entry(devid, domain);
+-	}
+-}
+-
+-static void iommu_update_domain_dte(struct protection_domain *domain)
+-{
+-	if (!domain->flush.dte)
+-		return;
+-
+-	update_device_table(domain);
+-	iommu_flush_domain_devices(domain);
+-	iommu_flush_tlb_pde(domain);
+-
+-	domain->flush.dte = false;
+-}
+-
+ /*
+  * This function fetches the PTE for a given address in the aperture
+  */
 -- 
-> diff --git a/lib/idr.c b/lib/idr.c
-> index 1cac726..0dc7822 100644
-> --- a/lib/idr.c
-> +++ b/lib/idr.c
-> @@ -156,10 +156,12 @@ static int sub_alloc(struct idr *idp, int *starting_id, struct idr_layer **pa)
->  			id = (id | ((1 << (IDR_BITS * l)) - 1)) + 1;
->  
->  			/* if already at the top layer, we need to grow */
-> -			if (!(p = pa[l])) {
-> +			if (id >= 1 << (idp->layers * IDR_BITS)) {
->  				*starting_id = id;
->  				return IDR_NEED_TO_GROW;
->  			}
-> +			p = pa[l];
-> +			BUG_ON(!p);
->  
->  			/* If we need to go up one layer, continue the
->  			 * loop; otherwise, restart from the top.
+1.6.6
+
+
