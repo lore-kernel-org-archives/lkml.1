@@ -1,57 +1,105 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757496Ab0BKXre (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 18:47:34 -0500
-Received: from maila.microsoft.com ([131.107.115.212]:53283 "EHLO
-	smtp.microsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757340Ab0BKXrd convert rfc822-to-8bit (ORCPT
+	id S1757418Ab0BKXy1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 18:54:27 -0500
+Received: from mail-yw0-f189.google.com ([209.85.211.189]:36441 "EHLO
+	mail-yw0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757340Ab0BKXyZ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 18:47:33 -0500
-From: Hank Janssen <hjanssen@microsoft.com>
-To: Greg KH <gregkh@suse.de>, Paul Mackerras <paulus@samba.org>
-CC: "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-       "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>,
-       Haiyang Zhang <haiyangz@microsoft.com>
-Subject: RE: [PATCH 2/2] Staging: hv: General maintenance of TODO file
-Thread-Topic: [PATCH 2/2] Staging: hv: General maintenance of TODO file
-Thread-Index: AQHKq2HFt5YrdyjaOk+txGcH5EzUM5HB9GIAgAAcsACAAANAAP//fTag
-Date: Thu, 11 Feb 2010 23:46:48 +0000
-Message-ID: <8AFC7968D54FB448A30D8F38F259C56212E8847D@TK5EX14MBXC118.redmond.corp.microsoft.com>
-References: <8AFC7968D54FB448A30D8F38F259C56212E881A9@TK5EX14MBXC118.redmond.corp.microsoft.com>
- <8AFC7968D54FB448A30D8F38F259C56212E88291@TK5EX14MBXC118.redmond.corp.microsoft.com>
- <20100211213816.GB29557@suse.de>
- <20100211232056.GA13769@brick.ozlabs.ibm.com>
- <20100211233234.GA10315@suse.de>
-In-Reply-To: <20100211233234.GA10315@suse.de>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Thu, 11 Feb 2010 18:54:25 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=T1mS4cXJM97/m7UOK3a4VveBVIMbqCF83+vzrEOZckQlNqHkKZeFtksxbqHisudypO
+         y8pPusEttRWbeJ204rxOxXpGqDxjuaStwYdwC0A2VNSNK+ICIhFEM94Sp/W3GY+OB2XK
+         s+7kQL778d2bz7DWQGtNsqZAyyXx/XhyVabaI=
 MIME-Version: 1.0
+In-Reply-To: <20100211204653.34BB3900@magilla.sf.frob.com>
+References: <20100202185907.GE3630@lst.de> <1265881389-26925-2-git-send-email-vapier@gentoo.org> 
+	<20100211204653.34BB3900@magilla.sf.frob.com>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Thu, 11 Feb 2010 18:54:04 -0500
+Message-ID: <8bd0f97a1002111554ib69bd48rc3c5f4af65058281@mail.gmail.com>
+Subject: Re: [PATCH 1/2] Blackfin: initial tracehook support
+To: Roland McGrath <roland@redhat.com>
+Cc: Christoph Hellwig <hch@lst.de>, oleg@redhat.com,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> On a side note, when this becomes mainstream, could you give it a more
->> descriptive name than just "hv"?  "Hv" already means at least two
->> possible things to me -- "hypervisor" or "high volume" -- neither of
->> which appear to be what this code is about.
+On Thu, Feb 11, 2010 at 15:46, Roland McGrath wrote:
+>>  config BLACKFIN
+>>       def_bool y
+>>       select HAVE_ARCH_KGDB
+>> +     select HAVE_ARCH_TRACEHOOK
 >
->"hyperv" should be sufficient, right?
+> Don't define this until you have all its constituents as listed in the
+> arch/Kconfig comment.  I don't see user_regset support.
+
+where is user_regset actually used ?  i only see it in fs/binfmt_elf.c
+and core dumps, neither of which work on nommu systems (or at least on
+Blackfin systems).
+
+>> +static inline void
+>> +syscall_get_arguments(struct task_struct *task, struct pt_regs *regs,
+>> +                      unsigned int i, unsigned int n, unsigned long *args)
+>> +{
+>> +     /* wtf is "i" ? */
+>> +     BUG_ON(i);
 >
->thanks,
+> i is the starting number.  args[0] gets the i'th argument,
+> args[n - 1] gets the i+n-1'th argument.
+
+i dont see anyone calling syscall_get_arguments() with i!=0, and a few
+other arches are doing the BUG_ON(i) thing too.
+
+but should be easy to implement this with memory walking code ...
+
+>> +asmlinkage void syscall_trace_leave(struct pt_regs *regs)
+>> +{
+>> +     if (test_thread_flag(TIF_SYSCALL_TRACE))
+>> +             tracehook_report_syscall_exit(regs, 0);
+>>  }
 >
->greg k-h
+> Is it in fact true that single-step reports still come normally after a
+> syscall instruction?
 
-I was thinking of using that, but would that confuse it with hypervisor
-which is more of a general term?  If the consensus is that it would not than
-I am in favor of changing it to hyperv.
+this is unchanged from the previous Blackfin behavior, and it's how
+most arches behaved in 2.6.32.  but looking in latest mainline, it
+seems people are changing to:
+if (test_thread_flag(TIF_SINGLESTEP) || test_thread_flag(TIF_SYSCALL_TRACE))
+    tracehook_report_syscall_exit(regs, 0);
 
-ms_hyperv would make it to long?
+so changing Blackfin too should be straightforward i guess
 
-Thanks,
+>> @@ -213,7 +213,7 @@
+>>        */
+>>       if (regs->syscfg & TRACE_BITS) {
+>>               regs->syscfg &= ~TRACE_BITS;
+>> -             ptrace_notify(SIGTRAP);
+>> +             tracehook_signal_handler(sig, info, ka, regs, 1);
+>>       }
+>
+> This call should be made unconditionally, and it should be made after the
+> signal mask changes have been made (i.e. at the end of handle_signal).  I
+> think it's wrong to clear the single-step flag here.  Instead, pass
+> (regs->syscfg & TRACE_BITS) as the last argument.
+>
+> With ptrace, it makes no difference one way or the other because it will
+> always either explicitly clear or explicitly set single-step before it
+> resumes.  But in future, it will matter.
 
-Hank.
+sounds like this issue is unrelated to tracehook and how we've been
+doing signal/ptrace stuff has always been a little broken ...
 
+i'll move it to how most arches seem to do it -- in do_signal after a
+successful call to handle_signal and after clearing
+TIF_RESTORE_SIGMASK.
+
+thanks for the review
+-mike
