@@ -1,43 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756383Ab0BKPI2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 10:08:28 -0500
-Received: from kandzendo.ru ([195.178.208.66]:51297 "EHLO tservice.net.ru"
+	id S1756369Ab0BKPKl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 10:10:41 -0500
+Received: from mojo.mkp.net ([70.38.64.14]:51762 "EHLO mojo.mkp.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756307Ab0BKPIZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 10:08:25 -0500
-Date: Thu, 11 Feb 2010 18:08:05 +0300
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [WTF] ... is going on with current->fs->{root,mnt} accesses in pohmelfs
-Message-ID: <20100211150805.GA18705@ioremap.net>
-References: <20100210101246.GA3509@ioremap.net> <20100210102422.GM30031@ZenIV.linux.org.uk> <20100210104515.GA6207@ioremap.net> <20100210110011.GN30031@ZenIV.linux.org.uk> <20100210111115.GA8376@ioremap.net> <20100210115938.GO30031@ZenIV.linux.org.uk> <20100210133007.GA17744@ioremap.net> <20100210210248.GP30031@ZenIV.linux.org.uk> <20100210212933.GA19919@ioremap.net> <20100211030253.GQ30031@ZenIV.linux.org.uk>
+	id S1755840Ab0BKPKk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 10:10:40 -0500
+X-Greylist: delayed 1835 seconds by postgrey-1.27 at vger.kernel.org; Thu, 11 Feb 2010 10:10:40 EST
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Dmitry Monakhov <dmonakhov@openvz.org>, linux-kernel@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH 1/4] block: implement compatible DISCARD support
+From: "Martin K. Petersen" <mkp@mkp.net>
+References: <1265885625-21608-1-git-send-email-dmonakhov@openvz.org>
+	<20100211122154.GA12417@infradead.org>
+Date: Thu, 11 Feb 2010 09:40:05 -0500
+In-Reply-To: <20100211122154.GA12417@infradead.org> (Christoph Hellwig's
+	message of "Thu, 11 Feb 2010 07:21:54 -0500")
+Message-ID: <yq1eikrzvi2.fsf@sermon.lab.mkp.net>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100211030253.GQ30031@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 11, 2010 at 03:02:54AM +0000, Al Viro (viro@ZenIV.linux.org.uk) wrote:
-> Um.  You do realize that d_move() happens with none of your locks held,
-> right?  It's done in vfs_rename_{other,dir}() and the only thing held
-> is s_vfs_rename_sem and i_mutex on parents.  How could your code in
-> writeback be able to distinguish
+>>>>> "Christoph" == Christoph Hellwig <hch@infradead.org> writes:
+>> 5) It use allocated_page instead of ZERO_PAGE.
 
-No, it happens with my lock held. It is not a lock, but kind of
-IO delegation, i.e. it is not dropped when rename or other protected
-operation completed. Instead another client sends request to grab it and
-server asks current holder to drop cache, perform writeback or whatever
-else is needed.
+Christoph> That's incorrect - both the scsi WRITE SAME and ATA UNMAP
+Christoph> implementations write to the payload.  I have some plans to
+Christoph> change that an get rid of the payload entirely, but I need to
+Christoph> get back to the discard work and look at it in more detail.
 
-It can be a problem though if d_move() is called outside of path
-protected by the VFS dir operations like rename/created/unlink and so
-on, i.e. on behalf of some entity in the kernel which decides to move
-dentries on itself. In this case POHMELFS is not protected.
+I've been away for a couple of weeks (got back yesterday).  Just a heads
+up that I've been working on block layer support for WRITE SAME as well
+as a discard revamp the last little while.  I'll try to post those
+patches today or tomorrow.
+
+Just to give you an idea: I distinguish between discarding, clearing,
+and filling a block range.
+
+blkdev_issue_clear() is used for explicitly zeroing a region.  If the
+target supports RZAT/TPRZ, discard will be used instead of zero filling.
+
+blkdev_issue_discard() is for trimming without caring about what's left
+in the blocks.  And blkdev_issue_fill() can be used to do a write same
+pass on a range (for bulk initializing RAID blocks, for instance).
 
 -- 
-	Evgeniy Polyakov
+Martin K. Petersen	Oracle Linux Engineering
+
