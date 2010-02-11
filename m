@@ -1,179 +1,83 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753002Ab0BKLoJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 06:44:09 -0500
-Received: from cantor.suse.de ([195.135.220.2]:41240 "EHLO mx1.suse.de"
+	id S1751757Ab0BKLry (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 06:47:54 -0500
+Received: from hera.kernel.org ([140.211.167.34]:56794 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751791Ab0BKLoG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 06:44:06 -0500
-From: Nikanth Karthikesan <knikanth@suse.de>
-Organization: suse.de
-To: Wu Fengguang <fengguang.wu@intel.com>
-Subject: Re: [PATCH v2] Make VM_MAX_READAHEAD a kernel parameter
-Date: Thu, 11 Feb 2010 17:15:03 +0530
-User-Agent: KMail/1.12.2 (Linux/2.6.31.8-0.1-desktop; KDE/4.3.1; x86_64; ; )
-Cc: Ankit Jain <radical@gmail.com>, Andrew Morton <akpm@linux-foundation.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-References: <201002091659.27037.knikanth@suse.de> <201002111546.35036.knikanth@suse.de> <d24465cb1002110315x4af18888na55aa8d61478e094@mail.gmail.com>
-In-Reply-To: <d24465cb1002110315x4af18888na55aa8d61478e094@mail.gmail.com>
+	id S1750830Ab0BKLrw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 06:47:52 -0500
+Message-ID: <4B73F006.7090706@kernel.org>
+Date: Thu, 11 Feb 2010 20:54:46 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Miklos Szeredi <miklos@szeredi.hu>
+CC: mszeredi@suse.cz, linux-kernel@vger.kernel.org,
+       fuse-devel@lists.sourceforge.net, polynomial-c@gentoo.org,
+       akpm@linux-foundation.org
+Subject: Re: [fuse-devel] [PATCH] FUSE/CUSE: implement direct mmap support
+References: <4B70FBE4.7050700@kernel.org> <E1NerZ6-0007N6-UY@pomaz-ex.szeredi.hu> <4B7296DF.207@kernel.org> <E1NfAl6-0000o4-8Z@pomaz-ex.szeredi.hu> <4B729F07.8020704@kernel.org> <E1NfBTc-0000vk-59@pomaz-ex.szeredi.hu> <4B72A802.6040009@kernel.org> <E1NfE50-0001EK-Ao@pomaz-ex.szeredi.hu> <4B7344A4.1030607@kernel.org> <E1NfVOi-0002l9-5l@pomaz-ex.szeredi.hu> <E1NfVho-0002nJ-V2@pomaz-ex.szeredi.hu>
+In-Reply-To: <E1NfVho-0002nJ-V2@pomaz-ex.szeredi.hu>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <201002111715.04411.knikanth@suse.de>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 11 Feb 2010 11:47:31 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 11 February 2010 16:45:24 Ankit Jain wrote:
-> > +static int __init readahead(char *str)
-> > +{
-> > +       if (!str)
-> > +               return -EINVAL;
-> > +       vm_max_readahead_kb = memparse(str, &str) / 1024ULL;
+Hello,
+
+On 02/11/2010 06:51 PM, Miklos Szeredi wrote:
+> And even a page_id is superfluous, since all we want is differentiate
+> between possibly separate maps for the same file and don't care about
+> individual pages.
 > 
-> Just wondering, shouldn't you check whether the str had a valid value
-> [memparse (str, &next); next > str ..] and if it didn't, then use the
-> DEFAULT_VM_MAX_READAHEAD ? Otherwise, incase of a invalid
-> value, the readahead value will become zero.
+> And even differentiating between maps on the same file is only ever
+> possible for char devs, normal files will only ever have a single map.
 > 
+> So instead of "page_id" it could just be a "map_id", which will be
+> zero for normal maps, and whatever for /dev/fuse maps.
 
-Thanks for the review. Here is the fixed patch that checks whether all of the
-parameters value is consumed.
+Well, not exactly.  There are device mmap() implementations which
+simply ignore @offset because offsetting doesn't make any sense at
+all.  ossp mmap is actually done that way.  I really don't think it
+would be wise to impose such restriction at the kernel API level.  For
+highlevel interface, dealing with separate regions could be fine tho.
 
-Thanks
-Nikanth
+>> And if the server wants to mmap /dev/fuse then it can do that and send
+>> the result in "dev_offset", to make it clear that it's a different
+>> offset from the one the client used on the mmap.  And it can even use
+>> that value as page_id, if it wants to or it can use a different
+>> page_id.
+> 
+> And there's a weakness in the current server side mmap interface, for
+> example:
+> 
+>  1) user mmaps region 3-5 (in page index)
+>       server maps this region at 3-5
+> 
+>  2) user mmaps region 1-7
+>      server can't tell kernel that it wants to reuse region 3-5 but
+>      wants to create two other regions
+> 
+> What happens in that case?
 
-From: Nikanth Karthikesan <knikanth@suse.de>
+If the server wants the two regions to be separate, it can map it to
+say 5-11 and returnt he offset of 5.  If it wants them to be shared,
+it will have to mmap 1-2 and 6-7 and return offset of 1.  But, the
+server should really know better than growing the area this way.  If
+this type of expansion ever becomes problem, we can implement
+expendable mmap on the server side (ie. don't require VM_DONT_EXPAND).
 
-Add new kernel parameter "readahead", which would be used instead of the
-value of VM_MAX_READAHEAD. If the parameter is not specified, the default
-of 128kb would be used.
+> On the other hand if the map_id is separate from the dev_offset, then
+> the server can map the second region as one map and the kernel can
+> connect it up with the right pages based on the map_id returned in the
+> MMAP reply.
 
-Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
+How is this not possible in the current implementation?
 
----
+Thanks.
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 736d456..354e6f1 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -2148,6 +2148,8 @@ and is between 256 and 4096 characters. It is defined in the file
- 			Format: <reboot_mode>[,<reboot_mode2>[,...]]
- 			See arch/*/kernel/reboot.c or arch/*/kernel/process.c
- 
-+	readahead=	Default readahead value for block devices.
-+
- 	relax_domain_level=
- 			[KNL, SMP] Set scheduler's default relax_domain_level.
- 			See Documentation/cgroups/cpusets.txt.
-diff --git a/block/blk-core.c b/block/blk-core.c
-index 718897e..02ed748 100644
---- a/block/blk-core.c
-+++ b/block/blk-core.c
-@@ -499,7 +499,7 @@ struct request_queue *blk_alloc_queue_node(gfp_t gfp_mask, int node_id)
- 	q->backing_dev_info.unplug_io_fn = blk_backing_dev_unplug;
- 	q->backing_dev_info.unplug_io_data = q;
- 	q->backing_dev_info.ra_pages =
--			(VM_MAX_READAHEAD * 1024) / PAGE_CACHE_SIZE;
-+			(vm_max_readahead_kb * 1024) / PAGE_CACHE_SIZE;
- 	q->backing_dev_info.state = 0;
- 	q->backing_dev_info.capabilities = BDI_CAP_MAP_COPY;
- 	q->backing_dev_info.name = "block";
-diff --git a/fs/fuse/inode.c b/fs/fuse/inode.c
-index 1a822ce..a593578 100644
---- a/fs/fuse/inode.c
-+++ b/fs/fuse/inode.c
-@@ -870,7 +870,7 @@ static int fuse_bdi_init(struct fuse_conn *fc, struct super_block *sb)
- 	int err;
- 
- 	fc->bdi.name = "fuse";
--	fc->bdi.ra_pages = (VM_MAX_READAHEAD * 1024) / PAGE_CACHE_SIZE;
-+	fc->bdi.ra_pages = (vm_max_readahead_kb * 1024) / PAGE_CACHE_SIZE;
- 	fc->bdi.unplug_io_fn = default_unplug_io_fn;
- 	/* fuse does it's own writeback accounting */
- 	fc->bdi.capabilities = BDI_CAP_NO_ACCT_WB;
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 60c467b..17825d7 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -1188,9 +1188,11 @@ int write_one_page(struct page *page, int wait);
- void task_dirty_inc(struct task_struct *tsk);
- 
- /* readahead.c */
--#define VM_MAX_READAHEAD	128	/* kbytes */
-+#define DEFAULT_VM_MAX_READAHEAD       128     /* kbytes */
- #define VM_MIN_READAHEAD	16	/* kbytes (includes current page) */
- 
-+extern unsigned long vm_max_readahead_kb;
-+
- int force_page_cache_readahead(struct address_space *mapping, struct file *filp,
- 			pgoff_t offset, unsigned long nr_to_read);
- 
-diff --git a/init/main.c b/init/main.c
-index 4cb47a1..6c451d2 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -70,6 +70,7 @@
- #include <linux/sfi.h>
- #include <linux/shmem_fs.h>
- #include <trace/boot.h>
-+#include <linux/backing-dev.h>
- 
- #include <asm/io.h>
- #include <asm/bugs.h>
-@@ -249,6 +250,24 @@ static int __init loglevel(char *str)
- 
- early_param("loglevel", loglevel);
- 
-+static int __init readahead(char *str)
-+{
-+	unsigned long readahead_kb;
-+
-+	if (!str)
-+		return -EINVAL;
-+	readahead_kb = memparse(str, &str) / 1024ULL;
-+	if (*str != '\0')
-+		return -EINVAL;
-+
-+	vm_max_readahead_kb = readahead_kb;
-+	default_backing_dev_info.ra_pages = vm_max_readahead_kb
-+						* 1024 / PAGE_CACHE_SIZE;
-+	return 0;
-+}
-+
-+early_param("readahead", readahead);
-+
- /*
-  * Unknown boot options get handed to init, unless they look like
-  * unused parameters (modprobe will find them in /proc/cmdline).
-diff --git a/mm/backing-dev.c b/mm/backing-dev.c
-index 0e8ca03..e33ff34 100644
---- a/mm/backing-dev.c
-+++ b/mm/backing-dev.c
-@@ -18,7 +18,7 @@ EXPORT_SYMBOL(default_unplug_io_fn);
- 
- struct backing_dev_info default_backing_dev_info = {
- 	.name		= "default",
--	.ra_pages	= VM_MAX_READAHEAD * 1024 / PAGE_CACHE_SIZE,
-+	.ra_pages	= DEFAULT_VM_MAX_READAHEAD * 1024 / PAGE_CACHE_SIZE,
- 	.state		= 0,
- 	.capabilities	= BDI_CAP_MAP_COPY,
- 	.unplug_io_fn	= default_unplug_io_fn,
-diff --git a/mm/readahead.c b/mm/readahead.c
-index 033bc13..516f8da 100644
---- a/mm/readahead.c
-+++ b/mm/readahead.c
-@@ -17,6 +17,8 @@
- #include <linux/pagevec.h>
- #include <linux/pagemap.h>
- 
-+unsigned long vm_max_readahead_kb = DEFAULT_VM_MAX_READAHEAD;
-+
- /*
-  * Initialise a struct file's readahead state.  Assumes that the caller has
-  * memset *ra to zero.
+-- 
+tejun
