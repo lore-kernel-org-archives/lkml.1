@@ -1,143 +1,51 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755917Ab0BKCN0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 21:13:26 -0500
-Received: from ixro-out-rtc.ixiacom.com ([92.87.192.98]:28567 "EHLO
-	ixro-ex1.ixiacom.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751641Ab0BKCMt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 21:12:49 -0500
-From: Octavian Purdila <opurdila@ixiacom.com>
-To: David Miller <davem@davemloft.net>
-Cc: Octavian Purdila <opurdila@ixiacom.com>, netdev@vget.kernel.org,
-       linux-kernel@vger.kernel.org, WANG Cong <amwang@redhat.com>,
-       Neil Horman <nhorman@tuxdriver.com>,
-       Eric Dumazet <eric.dumazet@gmail.com>
-Subject: [net-next PATCH v3 2/3] sysctl: add proc_dobitmap
-Date: Thu, 11 Feb 2010 04:09:19 +0200
-Message-Id: <1265854160-11763-3-git-send-email-opurdila@ixiacom.com>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1265854160-11763-1-git-send-email-opurdila@ixiacom.com>
-References: <1265854160-11763-1-git-send-email-opurdila@ixiacom.com>
-X-OriginalArrivalTime: 11 Feb 2010 02:12:47.0475 (UTC) FILETIME=[B459F430:01CAAABF]
+	id S1752443Ab0BKCRl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 21:17:41 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:40227 "EHLO mail.zytor.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750819Ab0BKCRk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Feb 2010 21:17:40 -0500
+Message-ID: <4B73689F.5090407@zytor.com>
+Date: Wed, 10 Feb 2010 18:17:03 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+MIME-Version: 1.0
+To: Roland McGrath <roland@redhat.com>
+CC: Oleg Nesterov <oleg@redhat.com>, Suresh Siddha <suresh.b.siddha@intel.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>, hjl.tools@gmail.com
+Subject: Re: [patch v2 4/4] ptrace: Add support for generic	PTRACE_GETREGSET/PTRACE_SETREGSET
+References: <20100209201309.902050211@sbs-t61.sc.intel.com>	<20100209202502.406177090@sbs-t61.sc.intel.com>	<20100210131826.GA21196@redhat.com> <20100210191240.DC9E4CC@magilla.sf.frob.com>
+In-Reply-To: <20100210191240.DC9E4CC@magilla.sf.frob.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The new function can be used to update bitmaps via /proc. Bits can be
-set by writing positive values in the file and cleared by writing
-negative values (e.g. 0 2 will set bits 1 and 3, -0 -2 will clear
-them). Reading will show only the set bits.
+On 02/10/2010 11:12 AM, Roland McGrath wrote:
+> 
+> Since it's just two words, most places handling struct iovec seem to just
+> use two get_user() calls, which is probably more efficient.
+> 
+> Also, here is where this function would need to be split in half for
+> compat_ptrace_request() calls where it has to use struct compat_iovec.
+> 
+>> +	// I am not sure. Afaics it is OK to pass the
+>> +	// size which is less than n * size. If iov_len
+>> +	// is bigger, we can silently truncate it, or
+>> +	// even write the correct value back.
+> 
+> Modifying iov_len to report how much we accessed seems good to me.  If we
+> do that, we should certainly allow a larger size for get, so userland can
+> just use a generic large buffer before even knowing the real size.  I'm not
+> sure whether we should allow a smaller size, especially for set.  I could
+> go either way.
+> 
 
-Signed-off-by: Octavian Purdila <opurdila@ixiacom.com>
-Cc: WANG Cong <amwang@redhat.com>
-Cc: Neil Horman <nhorman@tuxdriver.com>
-Cc: Eric Dumazet <eric.dumazet@gmail.com>
----
- include/linux/sysctl.h |    2 +
- kernel/sysctl.c        |   76 ++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 78 insertions(+), 0 deletions(-)
+Allowing a larger size for get seems very sane.  Allowing a smaller size
+would be ok iff we make sure we handle corner cases right (i.e. a
+partially overwritten subregister.)
 
-diff --git a/include/linux/sysctl.h b/include/linux/sysctl.h
-index 9f236cd..ba89bf2 100644
---- a/include/linux/sysctl.h
-+++ b/include/linux/sysctl.h
-@@ -985,6 +985,8 @@ extern int proc_doulongvec_minmax(struct ctl_table *, int,
- 				  void __user *, size_t *, loff_t *);
- extern int proc_doulongvec_ms_jiffies_minmax(struct ctl_table *table, int,
- 				      void __user *, size_t *, loff_t *);
-+extern int proc_dobitmap(struct ctl_table *, int,
-+			 void __user *, size_t *, loff_t *);
- 
- /*
-  * Register a set of sysctl names by calling register_sysctl_table
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index b0f9618..b8959f4 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -2596,6 +2596,82 @@ static int proc_do_cad_pid(struct ctl_table *table, int write,
- 	return 0;
- }
- 
-+/**
-+ * proc_dobitmap - read/write from/to a bitmap
-+ * @table: the sysctl table
-+ * @write: %TRUE if this is a write to the sysctl file
-+ * @buffer: the user buffer
-+ * @lenp: the size of the user buffer
-+ * @ppos: file position
-+ * @ppos: the current position in the file
-+ *
-+ * The bitmap is stored at table->data and the bitmap length (in bits)
-+ * in table->maxlen. Reading from the proc file will show the set bits.
-+ * Writing positive values sets the bits, negative values clears them
-+ * (e.g. 0 2 sets the first and 3rd bit, -0 -2 clears them).
-+ *
-+ * Returns 0 on success.
-+ */
-+int proc_dobitmap(struct ctl_table *table, int write,
-+		  void __user *_buffer, size_t *lenp, loff_t *ppos)
-+{
-+	bool first = 1;
-+	unsigned long *bitmap = (unsigned long *) table->data;
-+	unsigned long bitmap_len = table->maxlen;
-+	int left = *lenp, err = 0;
-+	char __user *buffer = (char __user *) _buffer;
-+
-+	if (!bitmap_len || !left || (*ppos && !write)) {
-+		*lenp = 0;
-+		return 0;
-+	}
-+
-+	if (write) {
-+		while (left) {
-+			unsigned long val;
-+			bool neg;
-+
-+			err = proc_get_next_ulong(&buffer, &left, &val, &neg);
-+			if (err)
-+				break;
-+			if (val >= bitmap_len) {
-+				err = -EINVAL;
-+				break;
-+			}
-+			if (neg)
-+				clear_bit(val, bitmap);
-+			else
-+				set_bit(val, bitmap);
-+			first = 0;
-+		}
-+		if (!err)
-+			err = proc_skip_wspace(&buffer, &left);
-+	} else {
-+		unsigned long bit = 0;
-+
-+		while (left) {
-+			bit = find_next_bit(bitmap, bitmap_len, bit);
-+			if (bit >= bitmap_len)
-+				break;
-+			err = proc_put_ulong(&buffer, &left, bit, 0, first);
-+			if (err)
-+				break;
-+			first = 0; bit++;
-+		}
-+		if (!err)
-+			err = proc_put_newline(&buffer, &left);
-+	}
-+
-+	if (first && write && !err)
-+		err = -EINVAL;
-+	if (err == -EFAULT /* do we really need to check for -EFAULT? */ ||
-+	    (write && first))
-+		return err ? : -EINVAL;
-+	*lenp -= left;
-+	*ppos += *lenp;
-+	return 0;
-+}
-+
- #else /* CONFIG_PROC_FS */
- 
- int proc_dostring(struct ctl_table *table, int write,
--- 
-1.5.6.5
-
+	-hpa
