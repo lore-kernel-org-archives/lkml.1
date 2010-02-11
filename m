@@ -1,90 +1,65 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756719Ab0BKTFV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 14:05:21 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:22622 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756537Ab0BKTFU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 14:05:20 -0500
-Message-ID: <4B7454C7.9020600@redhat.com>
-Date: Thu, 11 Feb 2010 14:04:39 -0500
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Lightning/1.0pre Thunderbird/3.0
+	id S1756778Ab0BKTIb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 14:08:31 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:28318 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756463Ab0BKTI3 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 14:08:29 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=tfLlyj59fUufwDXaqWW3wVlp2pWpZL2nwX3dToKCeJgdDFqP5WPwE5bxhwUwkHlPr
+	91fdi1lhff+D2V59jup0g==
 MIME-Version: 1.0
-To: Chris Friesen <cfriesen@nortel.com>
-CC: Minchan Kim <minchan.kim@gmail.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org, Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: tracking memory usage/leak in "inactive" field in /proc/meminfo?
-References: <4B71927D.6030607@nortel.com>	 <20100210093140.12D9.A69D9226@jp.fujitsu.com>	 <4B72E74C.9040001@nortel.com> <28c262361002101645g3fd08cc7t6a72d27b1f94db62@mail.gmail.com> <4B74524D.8080804@nortel.com>
-In-Reply-To: <4B74524D.8080804@nortel.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20100211185530.GA22055@redhat.com>
+References: <20100208221632.A7D6F9B33B@bumblebee1.mtv.corp.google.com>
+	 <20100208143231.6d804590.akpm@linux-foundation.org>
+	 <20100209112700.GA4258@redhat.com> <20100210133556.GA21925@redhat.com>
+	 <4352991a1002101038s6a2e67d9mc373416c17de9e6a@mail.gmail.com>
+	 <20100211125607.GA5086@redhat.com>
+	 <4352991a1002110832j1a4e6680scf4aa7effeb83a75@mail.gmail.com>
+	 <20100211165059.GA16053@redhat.com>
+	 <4352991a1002111043l35f1c1b5mcd9ad4c76f6351a7@mail.gmail.com>
+	 <20100211185530.GA22055@redhat.com>
+Date: Thu, 11 Feb 2010 11:08:24 -0800
+Message-ID: <4352991a1002111108n2be5f432i9484d2e8869daaa9@mail.gmail.com>
+Subject: Re: Race in ptrace.
+From: Salman Qazi <sqazi@google.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: taviso@google.com, Roland Dreier <rolandd@cisco.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/11/2010 01:54 PM, Chris Friesen wrote:
-> On 02/10/2010 06:45 PM, Minchan Kim wrote:
->> On Thu, Feb 11, 2010 at 2:05 AM, Chris Friesen<cfriesen@nortel.com>  wrote:
->
->>> In those spreadsheets I notice that
->>> memfree+active+inactive+slab+pagetables is basically a constant.
->>> However, if I don't use active+inactive then I can't make the numbers
->>> add up.  And the difference between active+inactive and
->>> buffers+cached+anonpages+dirty+mapped+pagetables+vmallocused grows
->>> almost monotonically.
+I understand what it does.  But, why is it the right thing to do?
+>From the user's perspective, why should the task become untraced if we
+use ptrace to deliver the signal?  Doesn't this make it impossible to
+intercept and control which signals are sent to a traced task?
+
+On Thu, Feb 11, 2010 at 10:55 AM, Oleg Nesterov <oleg@redhat.com> wrote:
+> On 02/11, Salman Qazi wrote:
 >>
->> Such comparison is not right. That's because code pages of program account
->> with cached and mapped but they account just one in lru list(active +
->> inactive).
->> Also, if you use mmap on any file, above is applied.
->
-> That just makes the comparison even worse...it means that there is more
-> memory in active/inactive that isn't accounted for in any other category
-> in /proc/meminfo.
-
-Which does not happen in the standard 2.6.27 kernel.
-
-Are you leaking memory in your driver?
-
->
->> I can't find any clue with your attachment.
->> You said you used kernel with some modification and non-vanilla drivers.
->> So I suspect that. Maybe kernel memory leak?
->
-> Possibly.  Or it could be a use case issue, I know there have been
-> memory leaks fixed since 2.6.27. :)
->
->> Now kernel don't account kernel memory allocations except SLAB.
->
-> I don't think that's entirely accurate.  I think cached, buffers,
-> pagetables, vmallocUsed are all kernel allocations.  Granted, they're
-> generally on behalf of userspace.
->
-> I've discovered that the generic page allocator (alloc_page, etc.) is
-> not tracked at all in /proc/meminfo.  I seem to see the memory increase
-> in the page cache (that is, active/inactive), so that would seem to rule
-> out most direct allocations.
->
->> I think this patch can help you find the kernel memory leak.
->> (It isn't merged with mainline by somewhy but it is useful to you :)
+>> >> >                // the tracee is STOPPED as requested, not TRACED,
+>> >> >                // SIGCONT wakes it up
+>> >> >                kill(pid, SIGCONT);
 >>
->> http://marc.info/?l=linux-mm&m=123782029809850&w=2
+>> I am still missing something.  There's probably a gap in my
+>> understanding, so let's try to clarify it.  The last "kill" call,
+>> sends a SIGCONT.  But, shouldn't this SIGCONT be intercepted by the
+>> tracer before the tracee sees it?
 >
-> I have a modified version of that which I picked up as part of the
-> kmemleak backport.  However, it doesn't help unless I can narrow down
-> *which* pages I should care about.
+> No. The tracee resumes (again: because it was STOPPED, not TRACED),
+> dequeues SIGCONT, reports the signal and stops in TASK_TRACED,
+> see ptrace_signal(). Meanwhile, until it calls ptrace_stop(), it is
+> TASK_RUNNING and ptrace() fails.
 >
-> I tried using kmemleak directly, but it didn't find anything.  I've also
-> tried checking for inactive pages which haven't been written to in 10
-> minutes, and haven't had much luck there either.  But active/inactive
-> keeps growing, and I don't know why.
+> Oleg.
 >
-> Chris
-
-
--- 
-All rights reversed.
+>
