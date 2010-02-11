@@ -1,52 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755565Ab0BKDUU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 22:20:20 -0500
-Received: from na3sys009aog114.obsmtp.com ([74.125.149.211]:60732 "HELO
-	na3sys009aog114.obsmtp.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753328Ab0BKDUR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 22:20:17 -0500
-From: Michael Poole <mdpoole@troilus.org>
-To: Ed Tomlinson <edt@aei.ca>
-Cc: Jiri Kosina <jkosina@suse.cz>, linux-input@vger.kernel.org,
-       Marcel Holtmann <marcel@holtmann.org>, linux-bluetooth@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] Add a device driver for the Apple Magic Mouse.
-References: <alpine.LNX.2.00.1001291515560.356@pobox.suse.cz>
-	<87y6j2eeqv.fsf_-_@troilus.org> <87pr4eeemz.fsf_-_@troilus.org>
-	<201002102205.58967.edt@aei.ca>
-Date: Wed, 10 Feb 2010 22:20:13 -0500
-In-Reply-To: <201002102205.58967.edt@aei.ca> (Ed Tomlinson's message of "Wed,
-	10 Feb 2010 22:05:58 -0500")
-Message-ID: <878wb0e9w2.fsf@troilus.org>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
+	id S1755114Ab0BKDbA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 22:31:00 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:32309 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751754Ab0BKDa6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Feb 2010 22:30:58 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+X-Fcc: ~/Mail/linus
+Cc: Oleg Nesterov <oleg@redhat.com>, Suresh Siddha <suresh.b.siddha@intel.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>, hjl.tools@gmail.com
+Subject: Re: [patch v2 4/4] ptrace: Add support for generic	PTRACE_GETREGSET/PTRACE_SETREGSET
+In-Reply-To: H. Peter Anvin's message of  Wednesday, 10 February 2010 18:17:03 -0800 <4B73689F.5090407@zytor.com>
+References: <20100209201309.902050211@sbs-t61.sc.intel.com>
+	<20100209202502.406177090@sbs-t61.sc.intel.com>
+	<20100210131826.GA21196@redhat.com>
+	<20100210191240.DC9E4CC@magilla.sf.frob.com>
+	<4B73689F.5090407@zytor.com>
+X-Shopping-List: (1) Scientific rooster lotion
+   (2) Charismatic hiders
+   (3) Autonomous hair
+   (4) Lunatic admonishers
+Message-Id: <20100211033040.01F02D14@magilla.sf.frob.com>
+Date: Wed, 10 Feb 2010 19:30:40 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ed Tomlinson writes:
+> Allowing a larger size for get seems very sane.  Allowing a smaller size
+> would be ok iff we make sure we handle corner cases right (i.e. a
+> partially overwritten subregister.)
 
-> Hi,
->
-> When I apply this to head, I get:
->
-> drivers/hid/hid-magicmouse.c: In function 'magicmouse_probe':                                                         
-> drivers/hid/hid-magicmouse.c:393: error: too many arguments to function 'hdev->hid_output_raw_report'                 
-> drivers/hid/hid-magicmouse.c:400: error: too many arguments to function 'hdev->hid_output_raw_report'                 
->
-> I only need the second patch - the first seems to be in tree.
->
-> Any ideas as to what I am missing?
->
-> TIA
-> Ed
+It should enforce the static constraints of the user_regset, which include
+a starting position that's 0 % .align (if we had non-zero starting position
+in the request) and a size that's 0 % .size.  The arch code sets those and
+then is not obliged to handle requests outside those constraints.  It's
+already documented that the arch code is obliged to handle any partial
+regset access that meets them.
 
-You're missing the patch that makes hid_output_raw_report() more generic.
-It is in the HID tree[1] as commit d4bfa033.
+The usual thing is to set .size and .align to the size of a register.
+This is exactly so that the arch code does not need to add gratuitous
+corner case complications such as "partially overwritten subregister".
 
-[1]- http://git.kernel.org/?p=linux/kernel/git/jikos/hid.git
 
-Michael Poole
+Thanks,
+Roland
