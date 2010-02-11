@@ -1,137 +1,137 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755886Ab0BKOeZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 09:34:25 -0500
-Received: from s15228384.onlinehome-server.info ([87.106.30.177]:59748 "EHLO
-	mail.x86-64.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755755Ab0BKOeV (ORCPT
+	id S1755966Ab0BKOeh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 09:34:37 -0500
+Received: from va3ehsobe001.messaging.microsoft.com ([216.32.180.11]:44870
+	"EHLO VA3EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751726Ab0BKOdj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 09:34:21 -0500
-Date: Thu, 11 Feb 2010 15:34:43 +0100
-From: Borislav Petkov <bp@amd64.org>
-To: Doug Thompson <norsk5@yahoo.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org,
-       edac-devel <bluesmoke-devel@lists.sourceforge.net>
-Subject: Re: Fw: [Bug 15238] Oops on startup: Kernel failure: EDAC amd64:
- WARNING: ECC is disabled by BIOS
-Message-ID: <20100211143443.GB32589@aftab>
-References: <879731.55036.qm@web50101.mail.re2.yahoo.com>
+	Thu, 11 Feb 2010 09:33:39 -0500
+X-SpamScore: -2
+X-BigFish: VPS-2(zzab9bh936eMzz1202hzzz32i6bh87h43j61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-DOMAIN-IP-MATCH: fail
+X-WSS-ID: 0KXOLRO-01-0UL-02
+X-M-MSG: 
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+CC: Joerg Roedel <joerg.roedel@amd.com>
+Subject: [PATCH 1/7] x86/amd-iommu: Add flush_info to protection domains
+Date: Thu, 11 Feb 2010 15:33:11 +0100
+Message-ID: <1265898797-32183-2-git-send-email-joerg.roedel@amd.com>
+X-Mailer: git-send-email 1.6.6
+In-Reply-To: <1265898797-32183-1-git-send-email-joerg.roedel@amd.com>
+References: <1265898797-32183-1-git-send-email-joerg.roedel@amd.com>
+X-OriginalArrivalTime: 11 Feb 2010 14:33:21.0525 (UTC) FILETIME=[291BEA50:01CAAB27]
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <879731.55036.qm@web50101.mail.re2.yahoo.com>
-Organization: Advanced Micro Devices =?iso-8859-1?Q?GmbH?=
-	=?iso-8859-1?Q?=2C_Karl-Hammerschmidt-Str=2E_34=2C_85609_Dornach_bei_M=FC?=
-	=?iso-8859-1?Q?nchen=2C_Gesch=E4ftsf=FChrer=3A_Thomas_M=2E_McCoy=2C_Giuli?=
-	=?iso-8859-1?Q?ano_Meroni=2C_Andrew_Bowd=2C_Sitz=3A_Dornach=2C_Gemeinde_A?=
-	=?iso-8859-1?Q?schheim=2C_Landkreis_M=FCnchen=2C_Registergericht_M=FCnche?=
-	=?iso-8859-1?Q?n=2C?= HRB Nr. 43632
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: text/plain
+X-Reverse-DNS: unknown
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+This patch adds a new sub-struct to protection domains which
+is used to keep information about what parts of the domain
+needs to be flushed on the hardware side.
 
-On Wed, Feb 10, 2010 at 09:53:03AM -0800, Doug Thompson wrote:
-> boris, can you look at this as well.
-> 
-> I think changing WARNING to a NOTICE in the log output would stop the oops parsing code from thinking this an OOPS event, when it is not
-> 
-> doug t
-> 
-> 
-> --- On Mon, 2/8/10, bugzilla-daemon@bugzilla.kernel.org <bugzilla-daemon@bugzilla.kernel.org> wrote:
-> 
-> > From: bugzilla-daemon@bugzilla.kernel.org <bugzilla-daemon@bugzilla.kernel.org>
-> > Subject: [Bug 15238] Oops on startup: Kernel failure: EDAC amd64: WARNING: ECC is disabled by BIOS
-> > To: dougthompson@xmission.com
-> > Date: Monday, February 8, 2010, 2:42 PM
-> > http://bugzilla.kernel.org/show_bug.cgi?id=15238
-> > 
-> > 
-> > Andrew Morton <akpm@linux-foundation.org>
-> > changed:
-> > 
-> >            What 
-> >   |Removed           
-> >          |Added
-> > ----------------------------------------------------------------------------
-> >          AssignedTo|akpm@linux-foundation.org   |dougthompson@xmission.com
-> > 
-> > 
-> > 
-> > 
-> > --- Comment #1 from Andrew Morton <akpm@linux-foundation.org> 
-> > 2010-02-08 21:42:40 ---
-> > Doug, could you please take a look at this one?
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+---
+ arch/x86/include/asm/amd_iommu_types.h |   11 +++++++++++
+ arch/x86/kernel/amd_iommu.c            |   23 +++++++++++++++++++++++
+ 2 files changed, 34 insertions(+), 0 deletions(-)
 
-How about something like the following? If everyone is ok with that
-I'll send it to Linus and stable later since it is trivial enough:
-
-dmesg:
-
-EDAC amd64: ECC disabled in the BIOS or no ECC capability, module will not load.
- Either enable ECC checking or force module loading by setting 'ecc_enable_override'.
- (Note that use of the override may cause unknown side effects.)
-
-patch:
-
-diff --git a/drivers/edac/amd64_edac.c b/drivers/edac/amd64_edac.c
-index 000dc67..3391e67 100644
---- a/drivers/edac/amd64_edac.c
-+++ b/drivers/edac/amd64_edac.c
-@@ -2658,10 +2658,11 @@ static void amd64_restore_ecc_error_reporting(struct amd64_pvt *pvt)
-  * the memory system completely. A command line option allows to force-enable
-  * hardware ECC later in amd64_enable_ecc_error_reporting().
+diff --git a/arch/x86/include/asm/amd_iommu_types.h b/arch/x86/include/asm/amd_iommu_types.h
+index ba19ad4..30c4410 100644
+--- a/arch/x86/include/asm/amd_iommu_types.h
++++ b/arch/x86/include/asm/amd_iommu_types.h
+@@ -230,6 +230,16 @@ extern bool amd_iommu_np_cache;
+ #define APERTURE_PAGE_INDEX(a)	(((a) >> 21) & 0x3fULL)
+ 
+ /*
++ * This struct holds information about the parts of a protection domain that
++ * needs to be flushed on the IOMMU hardware.
++ */
++struct flush_info {
++	bool tlb;
++	u64 start;
++	u64 end;
++};
++
++/*
+  * This structure contains generic data for  IOMMU protection domains
+  * independent of their use.
   */
--static const char *ecc_warning =
--	"WARNING: ECC is disabled by BIOS. Module will NOT be loaded.\n"
--	" Either Enable ECC in the BIOS, or set 'ecc_enable_override'.\n"
--	" Also, use of the override can cause unknown side effects.\n";
-+static const char *ecc_msg =
-+	"ECC disabled in the BIOS or no ECC capability, module will not load.\n"
-+	" Either enable ECC checking or force module loading by setting "
-+	"'ecc_enable_override'.\n"
-+	" (Note that use of the override may cause unknown side effects.)\n";
+@@ -244,6 +254,7 @@ struct protection_domain {
+ 	bool updated;		/* complete domain flush required */
+ 	unsigned dev_cnt;	/* devices assigned to this domain */
+ 	unsigned dev_iommu[MAX_IOMMUS]; /* per-IOMMU reference count */
++	struct flush_info flush;
+ 	void *priv;		/* private data */
  
- static int amd64_check_ecc_enabled(struct amd64_pvt *pvt)
- {
-@@ -2673,7 +2674,7 @@ static int amd64_check_ecc_enabled(struct amd64_pvt *pvt)
+ };
+diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
+index adb0ba0..fcb85e8 100644
+--- a/arch/x86/kernel/amd_iommu.c
++++ b/arch/x86/kernel/amd_iommu.c
+@@ -78,6 +78,19 @@ static struct iommu_dev_data *get_dev_data(struct device *dev)
+ 	return dev->archdata.iommu;
+ }
  
- 	ecc_enabled = !!(value & K8_NBCFG_ECC_ENABLE);
- 	if (!ecc_enabled)
--		amd64_printk(KERN_WARNING, "This node reports that Memory ECC "
-+		amd64_printk(KERN_NOTICE, "This node reports that Memory ECC "
- 			     "is currently disabled, set F3x%x[22] (%s).\n",
- 			     K8_NBCFG, pci_name(pvt->misc_f3_ctl));
- 	else
-@@ -2681,13 +2682,13 @@ static int amd64_check_ecc_enabled(struct amd64_pvt *pvt)
++static void update_flush_info_tlb(struct protection_domain *domain,
++				  u64 start, u64 end)
++{
++	if (!domain->flush.tlb) {
++		domain->flush.tlb   = true;
++		domain->flush.start = start;
++		domain->flush.end   = end;
++	} else {
++		domain->flush.start = min(start, domain->flush.start);
++		domain->flush.end   = max(end  , domain->flush.end);
++	}
++}
++
+ /*
+  * In this function the list of preallocated protection domains is traversed to
+  * find the domain for a specific device
+@@ -1849,6 +1862,9 @@ retry:
  
- 	nb_mce_en = amd64_nb_mce_bank_enabled_on_node(pvt->mc_node_id);
- 	if (!nb_mce_en)
--		amd64_printk(KERN_WARNING, "NB MCE bank disabled, set MSR "
-+		amd64_printk(KERN_NOTICE, "NB MCE bank disabled, set MSR "
- 			     "0x%08x[4] on node %d to enable.\n",
- 			     MSR_IA32_MCG_CTL, pvt->mc_node_id);
+ 	ADD_STATS_COUNTER(alloced_io_mem, size);
  
- 	if (!ecc_enabled || !nb_mce_en) {
- 		if (!ecc_enable_override) {
--			amd64_printk(KERN_WARNING, "%s", ecc_warning);
-+			amd64_printk(KERN_NOTICE, "%s", ecc_msg);
- 			return -ENODEV;
- 		}
- 		ecc_enable_override = 0;
---
-
-Thanks.
-
++	if (unlikely(amd_iommu_np_cache))
++		update_flush_info_tlb(&dma_dom->domain, start, size);
++
+ 	if (unlikely(dma_dom->need_flush && !amd_iommu_unmap_flush)) {
+ 		iommu_flush_tlb(&dma_dom->domain);
+ 		dma_dom->need_flush = false;
+@@ -1895,6 +1911,8 @@ static void __unmap_single(struct dma_ops_domain *dma_dom,
+ 		start += PAGE_SIZE;
+ 	}
+ 
++	update_flush_info_tlb(&dma_dom->domain, dma_addr, size);
++
+ 	SUB_STATS_COUNTER(alloced_io_mem, size);
+ 
+ 	dma_ops_free_addresses(dma_dom, dma_addr, pages);
+@@ -2465,6 +2483,9 @@ static int amd_iommu_map_range(struct iommu_domain *dom,
+ 		paddr += PAGE_SIZE;
+ 	}
+ 
++	if (unlikely(amd_iommu_np_cache))
++		update_flush_info_tlb(domain, iova, iova + size);
++
+ 	return 0;
+ }
+ 
+@@ -2482,6 +2503,8 @@ static void amd_iommu_unmap_range(struct iommu_domain *dom,
+ 		iova  += PAGE_SIZE;
+ 	}
+ 
++	update_flush_info_tlb(domain, iova, iova + size);
++
+ 	iommu_flush_tlb_pde(domain);
+ }
+ 
 -- 
-Regards/Gruss,
-Boris.
+1.6.6
 
---
-Advanced Micro Devices, Inc.
-Operating Systems Research Center
+
