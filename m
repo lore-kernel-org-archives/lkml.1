@@ -1,61 +1,78 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757488Ab0BKXb3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 18:31:29 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:28117 "EHLO
-	rcsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757481Ab0BKXbZ (ORCPT
+	id S1757454Ab0BKXbW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 18:31:22 -0500
+Received: from smtp-out.google.com ([216.239.44.51]:11517 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755775Ab0BKXbT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 18:31:25 -0500
-Message-ID: <4B749306.4050509@oracle.com>
-Date: Thu, 11 Feb 2010 15:30:14 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
-MIME-Version: 1.0
+	Thu, 11 Feb 2010 18:31:19 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=tVJnkgGpkYSCaKwwOj6pO0hy+E4V1D0I7BOQtnGMtwhaUtZduFJwMLC161bqu6f82
+	wFhyJk2dz4unyK9PW1XBA==
+Date: Thu, 11 Feb 2010 15:31:14 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
 To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, Mocean Laboratories <info@mocean-labs.com>,
-       Juergen Beisert <j.beisert@pengutronix.de>,
-       Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>,
-       Samuel Ortiz <sameo@linux.intel.com>
-Subject: [PATCH -mmotm] timberdale: fix mfd build
-References: <201002110043.o1B0hKxW008835@imap1.linux-foundation.org>	<4B736ED5.5060205@oracle.com>	<20100211140117.455dbbff.akpm@linux-foundation.org>	<4B74824C.7050700@oracle.com> <20100211143646.f357c9ee.akpm@linux-foundation.org>
-In-Reply-To: <20100211143646.f357c9ee.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt355.oracle.com [141.146.40.155]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090209.4B749327.0190:SCFMA4539814,ss=1,fgs=0
+cc: Rik van Riel <riel@redhat.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Nick Piggin <npiggin@suse.de>, Andrea Arcangeli <aarcange@redhat.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch 4/7 -mm] oom: badness heuristic rewrite
+In-Reply-To: <20100211151135.91586cd1.akpm@linux-foundation.org>
+Message-ID: <alpine.DEB.2.00.1002111524470.4438@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.1002100224210.8001@chino.kir.corp.google.com> <alpine.DEB.2.00.1002100228540.8001@chino.kir.corp.google.com> <4B73833D.5070008@redhat.com> <alpine.DEB.2.00.1002102332200.22152@chino.kir.corp.google.com>
+ <20100211134343.4886499c.akpm@linux-foundation.org> <alpine.DEB.2.00.1002111346050.8809@chino.kir.corp.google.com> <20100211143105.dea3861a.akpm@linux-foundation.org> <alpine.DEB.2.00.1002111437060.21107@chino.kir.corp.google.com>
+ <20100211151135.91586cd1.akpm@linux-foundation.org>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> This?
+On Thu, 11 Feb 2010, Andrew Morton wrote:
 
-Nope, still has the same error.
-Use this one instead.  It builds now.
+> > > > Sigh, this is going to require the amount of system memory to be 
+> > > > partitioned into OOM_ADJUST_MAX, 15, chunks and that's going to be the 
+> > > > granularity at which we'll be able to either bias or discount memory usage 
+> > > > of individual tasks by: instead of being able to do this with 0.1% 
+> > > > granularity we'll now be limited to 100 / 15, or ~7%.  That's ~9GB on my 
+> > > > 128GB system just because this was originally a bitshift.  The upside is 
+> > > > that it's now linear and not exponential.
+> > > 
+> > > Can you add newly-named knobs (rather than modifying the existing
+> > > ones), deprecate the old ones and then massage writes to the old ones
+> > > so that they talk into the new framework?
+> > > 
+> > 
+> > That's what I was thinking, add /proc/pid/oom_score_adj that is just added 
+> > into the badness score (and is then exported with /proc/pid/oom_score) 
+> > like this patch did with oom_adj and then scale it into oom_adj units for 
+> > that tunable.  A write to either oom_adj or oom_score_adj would change the 
+> > other,
+> 
+> How ugly is all this?
+> 
 
----
-From: Randy Dunlap <randy.dunlap@oracle.com>
+The advantages outweigh the disadvantages, users need to be able to 
+specify how much memory vital tasks should be able to use compared to 
+others without getting penalized and that needs to be done as a fraction 
+of available memory.  I wanted to avoid it originally by not having to 
+introduce another tunable, but I understand the need for a stable ABI and 
+backwards compatability.  The way /proc/pid/oom_adj currently works as a 
+bitshift on the badness score is nearly impossible to tune correctly so  
+change in scoring is inevitable.  Luckily, users who tune either can 
+ignore the other until such time as oom_adj can be removed.
 
-Fix mfd/timberdale build error -- add depends GPIOLIB.
+> There _are_ things we can do though.  Detect a write to the old file and
+> emit a WARN_ON_ONCE("you suck").  Wait a year, turn it into
+> WARN_ON("you really suck").  Wait a year, then remove it.
+> 
 
-include/linux/spi/max7301.h:14: error: field 'chip' has incomplete type
-build-r7353.out:make[3]: *** [drivers/mfd/timberdale.o] Error 1
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- drivers/mfd/Kconfig |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- mmotm-2010-0210-1617.orig/drivers/mfd/Kconfig
-+++ mmotm-2010-0210-1617/drivers/mfd/Kconfig
-@@ -382,7 +382,7 @@ config AB4500_CORE
- config MFD_TIMBERDALE
- 	tristate "Support for the Timberdale FPGA"
- 	select MFD_CORE
--	depends on PCI
-+	depends on PCI && GPIOLIB
- 	---help---
- 	This is the core driver for the timberdale FPGA. This device is a
- 	multifunction device which exposes numerous platform devices.
+Ok, I'll use WARN_ON_ONCE() to let the user know of the deprecation and 
+then add an entry to Documentation/feature-removal-schedule.txt.
