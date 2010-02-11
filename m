@@ -1,65 +1,75 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757094Ab0BKUpJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 15:45:09 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35502
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757066Ab0BKUpF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 15:45:05 -0500
-Date: Thu, 11 Feb 2010 12:45:19 -0800 (PST)
-Message-Id: <20100211.124519.19952041.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-Cc: akpm@linux-foundation.org, sparclinux@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT]: Sparc
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20100210.100447.183398767.davem@davemloft.net>
-References: <20100210.100447.183398767.davem@davemloft.net>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	id S1757104Ab0BKUrl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 15:47:41 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:11761 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757058Ab0BKUrj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 15:47:39 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Mike Frysinger <vapier@gentoo.org>
+X-Fcc: ~/Mail/linus
+Cc: Christoph Hellwig <hch@lst.de>, oleg@redhat.com,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org
+Subject: Re: [PATCH 1/2] Blackfin: initial tracehook support
+In-Reply-To: Mike Frysinger's message of  Thursday, 11 February 2010 04:43:08 -0500 <1265881389-26925-2-git-send-email-vapier@gentoo.org>
+References: <20100202185907.GE3630@lst.de>
+	<1265881389-26925-2-git-send-email-vapier@gentoo.org>
+Emacs: more than just a Lisp interpreter, a text editor as well!
+Message-Id: <20100211204653.34BB3900@magilla.sf.frob.com>
+Date: Thu, 11 Feb 2010 12:46:53 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Miller <davem@davemloft.net>
-Date: Wed, 10 Feb 2010 10:04:47 -0800 (PST)
+>  config BLACKFIN
+>  	def_bool y
+>  	select HAVE_ARCH_KGDB
+> +	select HAVE_ARCH_TRACEHOOK
 
-> 
-> Please pull to get this user stack alignment bug fix.
-> 
-> Thanks!
-> 
-> The following changes since commit be8cde8b24c9dca1e54598690115eee5b1476519:
->   Linus Torvalds (1):
->         Merge git://git.kernel.org/.../jejb/scsi-rc-fixes-2.6
-> 
-> are available in the git repository at:
-> 
->   master.kernel.org:/pub/scm/linux/kernel/git/davem/sparc-2.6.git master
+Don't define this until you have all its constituents as listed in the
+arch/Kconfig comment.  I don't see user_regset support.
 
-Linus, if you've pulled please pull again since I just had to fix a thinko
-in this change.
+> +static inline void
+> +syscall_get_arguments(struct task_struct *task, struct pt_regs *regs,
+> +                      unsigned int i, unsigned int n, unsigned long *args)
+> +{
+> +	/* wtf is "i" ? */
+> +	BUG_ON(i);
 
-Thanks!
+i is the starting number.  args[0] gets the i'th argument,
+args[n - 1] gets the i+n-1'th argument.
 
-The following changes since commit be8cde8b24c9dca1e54598690115eee5b1476519:
-  Linus Torvalds (1):
-        Merge git://git.kernel.org/.../jejb/scsi-rc-fixes-2.6
+> +asmlinkage void syscall_trace_leave(struct pt_regs *regs)
+> +{
+> +	if (test_thread_flag(TIF_SYSCALL_TRACE))
+> +		tracehook_report_syscall_exit(regs, 0);
+>  }
 
-are available in the git repository at:
+Is it in fact true that single-step reports still come normally after a
+syscall instruction?
 
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/sparc-2.6.git master
+> @@ -213,7 +213,7 @@ setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t * info,
+>  	 */
+>  	if (regs->syscfg & TRACE_BITS) {
+>  		regs->syscfg &= ~TRACE_BITS;
+> -		ptrace_notify(SIGTRAP);
+> +		tracehook_signal_handler(sig, info, ka, regs, 1);
+>  	}
 
-David S. Miller (2):
-      sparc: Align clone and signal stacks to 16 bytes.
-      sparc32: Fix thinko in previous change.
+This call should be made unconditionally, and it should be made after the
+signal mask changes have been made (i.e. at the end of handle_signal).  I
+think it's wrong to clear the single-step flag here.  Instead, pass
+(regs->syscfg & TRACE_BITS) as the last argument.
 
- arch/sparc/kernel/process_32.c |    2 +-
- arch/sparc/kernel/process_64.c |    8 ++++----
- arch/sparc/kernel/signal32.c   |   10 ++++++----
- arch/sparc/kernel/signal_32.c  |    6 ++++--
- arch/sparc/kernel/signal_64.c  |    8 +++++---
- 5 files changed, 20 insertions(+), 14 deletions(-)
+With ptrace, it makes no difference one way or the other because it will
+always either explicitly clear or explicitly set single-step before it
+resumes.  But in future, it will matter.
+
+
+Thanks,
+Roland
