@@ -1,40 +1,72 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757044Ab0BKWBp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 17:01:45 -0500
-Received: from khc.piap.pl ([195.187.100.11]:49894 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756186Ab0BKWBn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 17:01:43 -0500
-From: Krzysztof Halasa <khc@pm.waw.pl>
-To: Richard Hartmann <richih.mailinglist@gmail.com>
-Cc: Randy Dunlap <rdunlap@xenotime.net>, linux-crypto@vger.kernel.org,
-       Andy Whitcroft <apw@canonical.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Walker <dwalker@fifo99.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] SCRIPTS: s/should/must/ for all ERRORs
-References: <1265762465-21114-1-git-send-email-richih.mailinglist@gmail.com>
-	<20100210084908.ad315b9b.rdunlap@xenotime.net>
-	<2d460de71002100959j49c25e37n11a8870454251d84@mail.gmail.com>
-Date: Thu, 11 Feb 2010 23:01:19 +0100
-In-Reply-To: <2d460de71002100959j49c25e37n11a8870454251d84@mail.gmail.com>
-	(Richard Hartmann's message of "Wed, 10 Feb 2010 18:59:11 +0100")
-Message-ID: <m3y6izl9e8.fsf@intrepid.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1757025Ab0BKWCN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 17:02:13 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42188 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756744Ab0BKWCM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 17:02:12 -0500
+Date: Thu, 11 Feb 2010 14:01:17 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: linux-kernel@vger.kernel.org, Mocean Laboratories <info@mocean-labs.com>,
+       Juergen Beisert <j.beisert@pengutronix.de>,
+       Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>,
+       Samuel Ortiz <sameo@linux.intel.com>
+Subject: Re: mmotm 2010-02-10-16-17 uploaded (timberdale)
+Message-Id: <20100211140117.455dbbff.akpm@linux-foundation.org>
+In-Reply-To: <4B736ED5.5060205@oracle.com>
+References: <201002110043.o1B0hKxW008835@imap1.linux-foundation.org>
+	<4B736ED5.5060205@oracle.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Richard Hartmann <richih.mailinglist@gmail.com> writes:
+On Wed, 10 Feb 2010 18:43:33 -0800
+Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
-> Personally, I feel that warnings are suggestions and errors are hard
-> limits,
+> On 02/10/10 16:17, akpm@linux-foundation.org wrote:
+> > The mm-of-the-moment snapshot 2010-02-10-16-17 has been uploaded to
+> > 
+> >    http://userweb.kernel.org/~akpm/mmotm/
+> > 
+> > and will soon be available at
+> > 
+> >    git://zen-kernel.org/kernel/mmotm.git
+> > 
+> > It contains the following patches against 2.6.33-rc7:
+> 
+> 
+> When CONFIG_GPIOLIB is not enabled:
+> 
+>   CC      drivers/mfd/timberdale.o
+> In file included from mmotm-2010-0210-1617/drivers/mfd/timberdale.c:37:
+> mmotm-2010-0210-1617/include/linux/spi/max7301.h:14: error: field 'chip' has incomplete type
+> make[3]: *** [drivers/mfd/timberdale.o] Error 1
+> 
+> 
+> Build error observed on i386 and on x86_64.
+> 
 
-This is technically impossible - humans are much smarter than the simple
-checkpatch script and still every one of us was proven wrong, many times.
+Bug is in mainline too, I think.
 
-These hard limits are not that necessary, though - a fair dose of
-flexibility and common sense is an advantage.
--- 
-Krzysztof Halasa
+Something like this?
+
+--- a/drivers/gpio/Kconfig~drivers-gpio-max7301c-depends-on-gpiolib
++++ a/drivers/gpio/Kconfig
+@@ -92,7 +92,7 @@ comment "I2C GPIO expanders:"
+ 
+ config GPIO_MAX7300
+ 	tristate "Maxim MAX7300 GPIO expander"
+-	depends on I2C
++	depends on I2C && GPIOLIB
+ 	select GPIO_MAX730X
+ 	help
+ 	  GPIO driver for Maxim MAX7301 I2C-based GPIO expander.
+_
+
