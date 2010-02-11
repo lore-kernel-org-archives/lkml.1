@@ -1,75 +1,43 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751323Ab0BKEcf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Feb 2010 23:32:35 -0500
-Received: from mail.gmx.net ([213.165.64.20]:39266 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750792Ab0BKEcd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Feb 2010 23:32:33 -0500
-X-Authenticated: #476490
-X-Provags-ID: V01U2FsdGVkX188moFDClc87tJqU/gbYRL48B5qJKVBc/HEcZavu7
-	ifBMekKPT/+3Us
-From: Oliver Endriss <o.endriss@gmx.de>
-Organization: ESCAPE GmbH EDV-Loesungen
-To: Jiri Slaby <jslaby@suse.cz>
-Subject: Re: [PATCH 1/1] DVB: ngene, fix memset parameters
-Date: Thu, 11 Feb 2010 05:20:50 +0100
-User-Agent: KMail/1.9.6
-Cc: mchehab@redhat.com, linux-media@vger.kernel.org,
-       linux-kernel@vger.kernel.org, jirislaby@gmail.com,
-       Matthias Benesch <twoof7@freenet.de>,
-       Ralph Metzler <rjkm@metzlerbros.de>
-References: <1265844762-17730-1-git-send-email-jslaby@suse.cz>
-In-Reply-To: <1265844762-17730-1-git-send-email-jslaby@suse.cz>
+	id S1751346Ab0BKEqN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Feb 2010 23:46:13 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:50686 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750804Ab0BKEqL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Feb 2010 23:46:11 -0500
+Date: Thu, 11 Feb 2010 15:46:04 +1100
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Richard Hartmann <richih.mailinglist@gmail.com>
+Cc: linux-crypto@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] CRYPTO: Fix checkpatch errors & warnings in
+	cipher.c
+Message-ID: <20100211044604.GA12146@gondor.apana.org.au>
+References: <1265765446-24958-1-git-send-email-richih.mailinglist@gmail.com> <2d460de71002091821h7b6e99b0gb8f134355f64c65a@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <201002110520.55301@orion.escape-edv.de>
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.51000000000000001
+In-Reply-To: <2d460de71002091821h7b6e99b0gb8f134355f64c65a@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Slaby wrote:
-> Switch second and third memset parameter to stamp the length buffer bytes
-> by 0xff's, not 255 bytes by low 8 bits of Length.
+On Wed, Feb 10, 2010 at 03:21:26AM +0100, Richard Hartmann wrote:
+> Obviously, this should have been named
 > 
-> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-> Cc: Matthias Benesch <twoof7@freenet.de>
-> Cc: Ralph Metzler <rjkm@metzlerbros.de>
-> Cc: Oliver Endriss <o.endriss@gmx.de>
-> Cc: Mauro Carvalho Chehab <mchehab@redhat.com>
-> ---
->  drivers/media/dvb/ngene/ngene-core.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+> CRYPTO: Fix checkpatch errors & warnings in compress.c
 > 
-> diff --git a/drivers/media/dvb/ngene/ngene-core.c b/drivers/media/dvb/ngene/ngene-core.c
-> index cb5982e..0150dfe 100644
-> --- a/drivers/media/dvb/ngene/ngene-core.c
-> +++ b/drivers/media/dvb/ngene/ngene-core.c
-> @@ -564,7 +564,7 @@ static void FillTSBuffer(void *Buffer, int Length, u32 Flags)
->  {
->  	u32 *ptr = Buffer;
->  
-> -	memset(Buffer, Length, 0xff);
-> +	memset(Buffer, 0xff, Length);
->  	while (Length > 0) {
->  		if (Flags & DF_SWAP32)
->  			*ptr = 0x471FFF10;
-> -- 
-> 1.6.6.1
+> Should I re-send the patch or is it less noise & hassle if I just leave
+> it this way?
 
-Acked-by: Oliver Endriss <o.endriss@gmx.de>
+You don't have to resend it.
 
-CU
-Oliver
-
+Thanks,
 -- 
-----------------------------------------------------------------
-VDR Remote Plugin 0.4.0: http://www.escape-edv.de/endriss/vdr/
-4 MByte Mod: http://www.escape-edv.de/endriss/dvb-mem-mod/
-Full-TS Mod: http://www.escape-edv.de/endriss/dvb-full-ts-mod/
-----------------------------------------------------------------
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
