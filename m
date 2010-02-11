@@ -1,217 +1,117 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750952Ab0BKFNw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 00:13:52 -0500
-Received: from mga02.intel.com ([134.134.136.20]:18150 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750767Ab0BKFNv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 00:13:51 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,449,1262592000"; 
-   d="scan'208";a="491537002"
-Date: Thu, 11 Feb 2010 13:13:41 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Nikanth Karthikesan <knikanth@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2] Make vm_max_readahead configurable at run-time
-Message-ID: <20100211051341.GA13967@localhost>
-References: <201002091659.27037.knikanth@suse.de> <201002101623.30302.knikanth@suse.de> <20100210110551.GA1323@localhost> <201002101922.40122.knikanth@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <201002101922.40122.knikanth@suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1750857Ab0BKFRr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 00:17:47 -0500
+Received: from lennier.cc.vt.edu ([198.82.162.213]:40945 "EHLO
+	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750816Ab0BKFRp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 00:17:45 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: mmotm 2010-02-10 - lockdep whinge in ACPI code
+In-Reply-To: Your message of "Wed, 10 Feb 2010 16:17:41 PST."
+             <201002110043.o1B0hKxW008835@imap1.linux-foundation.org>
+From: Valdis.Kletnieks@vt.edu
+References: <201002110043.o1B0hKxW008835@imap1.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1265865104_4122P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Thu, 11 Feb 2010 00:11:44 -0500
+Message-ID: <5114.1265865104@localhost>
+X-Mirapoint-Received-SPF: 128.173.34.103 localhost Valdis.Kletnieks@vt.edu 2 pass
+X-Mirapoint-IP-Reputation: reputation=neutral-1,
+	source=Fixed,
+	refid=n/a,
+	actions=MAILHURDLE SPF TAG
+X-Junkmail-Info: (45) HELO_LOCALHOST
+X-Junkmail-Status: score=45/50, host=zidane.cc.vt.edu
+X-Junkmail-SD-Raw: score=unknown,
+	refid=str=0001.0A020205.4B739191.0194,ss=1,fgs=0,
+	ip=0.0.0.0,
+	so=2009-09-22 00:05:22,
+	dmn=2009-09-10 00:05:08,
+	mode=multiengine
+X-Junkmail-IWF: false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 10, 2010 at 09:52:40PM +0800, Nikanth Karthikesan wrote:
-> On Wednesday 10 February 2010 16:35:51 Wu Fengguang wrote:
-> > Nikanth,
-> > 
-> > > Make vm_max_readahead configurable at run-time. Expose a sysctl knob
-> > > in procfs to change it. This would ensure that new disks added would
-> > > use this value as their default read_ahead_kb.
-> > 
-> > Do you have use case, or customer demand for it?
-> > 
+--==_Exmh_1265865104_4122P
+Content-Type: text/plain; charset=us-ascii
+
+On Wed, 10 Feb 2010 16:17:41 PST, akpm@linux-foundation.org said:
+> The mm-of-the-moment snapshot 2010-02-10-16-17 has been uploaded to
 > 
-> No body requested for it. But when doing some performance testing with 
-> readahead_kb re-compiling would be a pain, and thought that having a 
-> configurable default might be useful.
+>    http://userweb.kernel.org/~akpm/mmotm/
 
-I wonder why you need to recompile kernel in the tests.
-There are three interfaces to change readahead size in runtime:
+Seen at boot:
 
-        blockdev --setra 1024 /dev/sda
-        echo 512 > /sys/block/*/queue/read_ahead_kb
-        echo 512 > /sys/devices/virtual/bdi/*/read_ahead_kb
+[    0.207242] ACPI: (supports S0 S5)
+[    0.207257] ACPI: Using IOAPIC for interrupt routing
+[    0.335315] 
+[    0.335316] =============================================
+[    0.335483] [ INFO: possible recursive locking detected ]
+[    0.335572] 2.6.33-rc7-mmotm0210 #1
+[    0.335658] ---------------------------------------------
+[    0.335746] swapper/1 is trying to acquire lock:
+[    0.335834]  (&dev->mutex){+.+...}, at: [<ffffffff812eb521>] __driver_attach+0x47/0x80
+[    0.335999] 
+[    0.335999] but task is already holding lock:
+[    0.335999]  (&dev->mutex){+.+...}, at: [<ffffffff812eb513>] __driver_attach+0x39/0x80
+[    0.335999] 
+[    0.335999] other info that might help us debug this:
+[    0.335999] 1 lock held by swapper/1:
+[    0.335999]  #0:  (&dev->mutex){+.+...}, at: [<ffffffff812eb513>] __driver_attach+0x39/0x80
+[    0.335999] 
+[    0.335999] stack backtrace:
+[    0.335999] Pid: 1, comm: swapper Not tainted 2.6.33-rc7-mmotm0210 #1
+[    0.335999] Call Trace:
+[    0.335999]  [<ffffffff81063b47>] __lock_acquire+0xc77/0xcee
+[    0.335999]  [<ffffffff81061fad>] ? mark_lock+0x2d/0x22c
+[    0.335999]  [<ffffffff812eb521>] ? __driver_attach+0x47/0x80
+[    0.335999]  [<ffffffff81063c89>] lock_acquire+0xcb/0xe8
+[    0.335999]  [<ffffffff812eb521>] ? __driver_attach+0x47/0x80
+[    0.335999]  [<ffffffff810621fe>] ? mark_held_locks+0x52/0x70
+[    0.335999]  [<ffffffff81568c9d>] __mutex_lock_common+0x5c/0x5aa
+[    0.335999]  [<ffffffff812eb521>] ? __driver_attach+0x47/0x80
+[    0.335999]  [<ffffffff815583f8>] ? klist_next+0x24/0xd7
+[    0.335999]  [<ffffffff812eb521>] ? __driver_attach+0x47/0x80
+[    0.335999]  [<ffffffff812eb4da>] ? __driver_attach+0x0/0x80
+[    0.335999]  [<ffffffff81569291>] mutex_lock_nested+0x34/0x39
+[    0.335999]  [<ffffffff812eb521>] __driver_attach+0x47/0x80
+[    0.335999]  [<ffffffff812eb4da>] ? __driver_attach+0x0/0x80
+[    0.335999]  [<ffffffff812eb4da>] ? __driver_attach+0x0/0x80
+[    0.335999]  [<ffffffff812eaa43>] bus_for_each_dev+0x54/0x89
+[    0.335999]  [<ffffffff812eb28a>] driver_attach+0x19/0x1b
+[    0.335999]  [<ffffffff812eaed5>] bus_add_driver+0xb4/0x203
+[    0.335999]  [<ffffffff812eb833>] driver_register+0xb8/0x129
+[    0.335999]  [<ffffffff81231604>] acpi_bus_register_driver+0x3e/0x40
+[    0.335999]  [<ffffffff81b45094>] acpi_ec_init+0x37/0x55
+[    0.335999]  [<ffffffff81b44ef1>] acpi_init+0x115/0x12a
+[    0.335999]  [<ffffffff81b44ddc>] ? acpi_init+0x0/0x12a
+[    0.335999]  [<ffffffff810001ef>] do_one_initcall+0x59/0x14e
+[    0.335999]  [<ffffffff81b26655>] kernel_init+0x14d/0x1a3
+[    0.335999]  [<ffffffff81003354>] kernel_thread_helper+0x4/0x10
+[    0.335999]  [<ffffffff8156b0c0>] ? restore_args+0x0/0x30
+[    0.335999]  [<ffffffff81b26508>] ? kernel_init+0x0/0x1a3
+[    0.335999]  [<ffffffff81003350>] ? kernel_thread_helper+0x0/0x10
+[    0.340036] ACPI: EC: GPE = 0x11, I/O: command/status = 0x934, data = 0x930
 
-> > > Also filesystems which use default_backing_dev_info would also
-> > > use this new value, even if they were already mounted.
-> > >
-> > > Currently xfs, btrfs, nilfs, raw, mtd use the default_backing_dev_info.
-> > 
-> > This sounds like bad interface, in that users will be confused by the
-> > tricky details of "works for new devices" and "works for some fs".
-> > 
-> > One more tricky point is, btrfs/md/dm readahead size may not be
-> > influenced if some of the component disks are hot added.
-> > 
-> > So this patch is only going to work for hot-plugged disks that
-> > contains _standalone_ filesystem. Is this typical use case in servers?
-> > 
-> 
-> Yes, it would work only if the top-level disk is hot-plugged/created.
- 
-Or maybe what you really want is a kernel parameter for setting the
-default readahead size at boot time?
 
-In another thread, Christian Ehrhardt recommended to add a config
-option for it. If you like it, I can also do the kernel parameter
-by the way.
+--==_Exmh_1265865104_4122P
+Content-Type: application/pgp-signature
 
-Thanks,
-Fengguang
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
-> > > Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
-> > >
-> > > ---
-> > >
-> > > Index: linux-2.6/block/blk-core.c
-> > > ===================================================================
-> > > --- linux-2.6.orig/block/blk-core.c
-> > > +++ linux-2.6/block/blk-core.c
-> > > @@ -499,7 +499,7 @@ struct request_queue *blk_alloc_queue_no
-> > >  	q->backing_dev_info.unplug_io_fn = blk_backing_dev_unplug;
-> > >  	q->backing_dev_info.unplug_io_data = q;
-> > >  	q->backing_dev_info.ra_pages =
-> > > -			(VM_MAX_READAHEAD * 1024) / PAGE_CACHE_SIZE;
-> > > +			(vm_max_readahead_kb * 1024) / PAGE_CACHE_SIZE;
-> > >  	q->backing_dev_info.state = 0;
-> > >  	q->backing_dev_info.capabilities = BDI_CAP_MAP_COPY;
-> > >  	q->backing_dev_info.name = "block";
-> > > Index: linux-2.6/fs/fuse/inode.c
-> > > ===================================================================
-> > > --- linux-2.6.orig/fs/fuse/inode.c
-> > > +++ linux-2.6/fs/fuse/inode.c
-> > > @@ -870,7 +870,7 @@ static int fuse_bdi_init(struct fuse_con
-> > >  	int err;
-> > >
-> > >  	fc->bdi.name = "fuse";
-> > > -	fc->bdi.ra_pages = (VM_MAX_READAHEAD * 1024) / PAGE_CACHE_SIZE;
-> > > +	fc->bdi.ra_pages = (vm_max_readahead_kb * 1024) / PAGE_CACHE_SIZE;
-> > >  	fc->bdi.unplug_io_fn = default_unplug_io_fn;
-> > >  	/* fuse does it's own writeback accounting */
-> > >  	fc->bdi.capabilities = BDI_CAP_NO_ACCT_WB;
-> > > Index: linux-2.6/include/linux/mm.h
-> > > ===================================================================
-> > > --- linux-2.6.orig/include/linux/mm.h
-> > > +++ linux-2.6/include/linux/mm.h
-> > > @@ -1188,7 +1188,11 @@ int write_one_page(struct page *page, in
-> > >  void task_dirty_inc(struct task_struct *tsk);
-> > >
-> > >  /* readahead.c */
-> > > -#define VM_MAX_READAHEAD	128	/* kbytes */
-> > > +#define INITIAL_VM_MAX_READAHEAD_KB	128
-> > > +extern unsigned long vm_max_readahead_kb;
-> > > +
-> > > +int sysctl_vm_max_readahead_kb_handler(struct ctl_table *table, int
-> > > write, +		void __user *buffer, size_t *length, loff_t *ppos);
-> > >
-> > >  int force_page_cache_readahead(struct address_space *mapping, struct
-> > > file *filp, pgoff_t offset, unsigned long nr_to_read);
-> > > Index: linux-2.6/mm/backing-dev.c
-> > > ===================================================================
-> > > --- linux-2.6.orig/mm/backing-dev.c
-> > > +++ linux-2.6/mm/backing-dev.c
-> > > @@ -18,7 +18,8 @@ EXPORT_SYMBOL(default_unplug_io_fn);
-> > >
-> > >  struct backing_dev_info default_backing_dev_info = {
-> > >  	.name		= "default",
-> > > -	.ra_pages	= VM_MAX_READAHEAD * 1024 / PAGE_CACHE_SIZE,
-> > > +	.ra_pages	= INITIAL_VM_MAX_READAHEAD_KB
-> > > +					>> (PAGE_CACHE_SHIFT - 10),
-> > >  	.state		= 0,
-> > >  	.capabilities	= BDI_CAP_MAP_COPY,
-> > >  	.unplug_io_fn	= default_unplug_io_fn,
-> > > Index: linux-2.6/mm/readahead.c
-> > > ===================================================================
-> > > --- linux-2.6.orig/mm/readahead.c
-> > > +++ linux-2.6/mm/readahead.c
-> > > @@ -17,6 +17,19 @@
-> > >  #include <linux/pagevec.h>
-> > >  #include <linux/pagemap.h>
-> > >
-> > > +unsigned long vm_max_readahead_kb = INITIAL_VM_MAX_READAHEAD_KB;
-> > > +
-> > > +int sysctl_vm_max_readahead_kb_handler(struct ctl_table *table, int
-> > > write, +		void __user *buffer, size_t *length, loff_t *ppos)
-> > > +{
-> > > +	proc_doulongvec_minmax(table, write, buffer, length, ppos);
-> > > +
-> > > +	default_backing_dev_info.ra_pages =
-> > > +			vm_max_readahead_kb >> (PAGE_CACHE_SHIFT - 10);
-> > > +
-> > > +	return 0;
-> > > +}
-> > > +
-> > >  /*
-> > >   * Initialise a struct file's readahead state.  Assumes that the caller
-> > > has * memset *ra to zero.
-> > > Index: linux-2.6/kernel/sysctl.c
-> > > ===================================================================
-> > > --- linux-2.6.orig/kernel/sysctl.c
-> > > +++ linux-2.6/kernel/sysctl.c
-> > > @@ -1273,7 +1273,13 @@ static struct ctl_table vm_table[] = {
-> > >  		.extra2		= &one,
-> > >  	},
-> > >  #endif
-> > > -
-> > > +	{
-> > > +		.procname	= "max_readahead_kb",
-> > > +		.data		= &vm_max_readahead_kb,
-> > > +		.maxlen		= sizeof(vm_max_readahead_kb),
-> > > +		.mode		= 0644,
-> > > +		.proc_handler	= sysctl_vm_max_readahead_kb_handler,
-> > > +	},
-> > >  	{ }
-> > >  };
-> > >
-> > > Index: linux-2.6/Documentation/sysctl/vm.txt
-> > > ===================================================================
-> > > --- linux-2.6.orig/Documentation/sysctl/vm.txt
-> > > +++ linux-2.6/Documentation/sysctl/vm.txt
-> > > @@ -31,6 +31,7 @@ Currently, these files are in /proc/sys/
-> > >  - laptop_mode
-> > >  - legacy_va_layout
-> > >  - lowmem_reserve_ratio
-> > > +- max_readahead_kb
-> > >  - max_map_count
-> > >  - memory_failure_early_kill
-> > >  - memory_failure_recovery
-> > > @@ -263,6 +264,18 @@ The minimum value is 1 (1/1 -> 100%).
-> > >
-> > >  ==============================================================
-> > >
-> > > +max_readahead_kb:
-> > > +
-> > > +This file contains the default maximum readahead that would be
-> > > +used, when new disks would be added to the system.
-> > > +
-> > > +Also filesystems which use default_backing_dev_info would also
-> > > +use this new value, even if they were already mounted.
-> > > +
-> > > +xfs, btrfs, nilfs, raw, mtd use the default_backing_dev_info.
-> > > +
-> > > +==============================================================
-> > > +
-> > >  max_map_count:
-> > >
-> > >  This file contains the maximum number of memory map areas a process
-> > 
+iD8DBQFLc5GQcC3lWbTT17ARAgfUAJ0arz7hP5Y6PhK7tmeLPeGxVs/dngCg+NrC
+heiTBP5hzYV1kYVBetaP+0c=
+=wPEo
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1265865104_4122P--
+
