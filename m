@@ -1,47 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756910Ab0BKTbb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 14:31:31 -0500
-Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:54078 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756843Ab0BKTba (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 14:31:30 -0500
-Date: Thu, 11 Feb 2010 20:31:28 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
+	id S1756889Ab0BKTiX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 14:38:23 -0500
+Received: from s15228384.onlinehome-server.info ([87.106.30.177]:59402 "EHLO
+	mail.x86-64.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755894Ab0BKTiW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 14:38:22 -0500
+Date: Thu, 11 Feb 2010 20:38:46 +0100
+From: Borislav Petkov <bp@amd64.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [GIT PULL] final two block patches for 2.6.33
-Message-ID: <20100211193128.GV1025@kernel.dk>
+Cc: LKML <linux-kernel@vger.kernel.org>, Doug Thompson <norsk5@yahoo.com>
+Subject: [GIT PULL] amd64_edac cosmetic fix for 2.6.33-rc8
+Message-ID: <20100211193846.GG19779@aftab>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+Organization: Advanced Micro Devices =?iso-8859-1?Q?GmbH?=
+	=?iso-8859-1?Q?=2C_Karl-Hammerschmidt-Str=2E_34=2C_85609_Dornach_bei_M=FC?=
+	=?iso-8859-1?Q?nchen=2C_Gesch=E4ftsf=FChrer=3A_Thomas_M=2E_McCoy=2C_Giuli?=
+	=?iso-8859-1?Q?ano_Meroni=2C_Andrew_Bowd=2C_Sitz=3A_Dornach=2C_Gemeinde_A?=
+	=?iso-8859-1?Q?schheim=2C_Landkreis_M=FCnchen=2C_Registergericht_M=FCnche?=
+	=?iso-8859-1?Q?n=2C?= HRB Nr. 43632
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi Linus,
 
-Two things:
+please pull the following small fix.
 
-- Fix an oops in cciss
-- Fix for a CFQ performance regression. This is a little larger than I
-  would have liked, but it's well tested and also well reviewed by
-  several people involved.
+Thanks.
 
-So please pull.
+The following changes since commit e28cab42f384745c8a947a9ccd51e4aae52f5d51:
+  Linus Torvalds (1):
+        Merge branch 'i2c-for-linus' of git://git.kernel.org/.../jdelvare/staging
 
-  git://git.kernel.dk/linux-2.6-block.git for-linus
+are available in the git repository at:
 
-Shaohua Li (1):
-      cfq-iosched: split seeky coop queues after one slice
+  git://git.kernel.org/pub/scm/linux/kernel/git/bp/bp.git for-linus
 
-Stephen M. Cameron (1):
-      cciss: Make cciss_seq_show handle holes in the h->drv[] array
+Borislav Petkov (1):
+      amd64_edac: Do not falsely trigger kerneloops
 
- block/cfq-iosched.c   |   49 ++++++++++++++++---------------------------------
- drivers/block/cciss.c |    3 +++
- 2 files changed, 19 insertions(+), 33 deletions(-)
+ drivers/edac/amd64_edac.c |   15 ++++++++-------
+ 1 files changed, 8 insertions(+), 7 deletions(-)
 
 -- 
-Jens Axboe
+Regards/Gruss,
+Boris.
 
+--
+Advanced Micro Devices, Inc.
+Operating Systems Research Center
