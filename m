@@ -1,63 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756858Ab0BKTON (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 14:14:13 -0500
-Received: from cs-studio.ru ([195.178.208.66]:49606 "EHLO tservice.net.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756795Ab0BKTOL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 14:14:11 -0500
-Date: Thu, 11 Feb 2010 22:13:50 +0300
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [WTF] ... is going on with current->fs->{root,mnt} accesses in pohmelfs
-Message-ID: <20100211191350.GA32369@ioremap.net>
-References: <20100210104515.GA6207@ioremap.net> <20100210110011.GN30031@ZenIV.linux.org.uk> <20100210111115.GA8376@ioremap.net> <20100210115938.GO30031@ZenIV.linux.org.uk> <20100210133007.GA17744@ioremap.net> <20100210210248.GP30031@ZenIV.linux.org.uk> <20100210212933.GA19919@ioremap.net> <20100211030253.GQ30031@ZenIV.linux.org.uk> <20100211150805.GA18705@ioremap.net> <20100211171018.GR30031@ZenIV.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100211171018.GR30031@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S1756850Ab0BKTUz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 14:20:55 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:51083 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756706Ab0BKTUy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 14:20:54 -0500
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Liam Girdwood <lrg@slimlogic.co.uk>
+Cc: linux-kernel@vger.kernel.org,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>, stable@kernel.org
+Subject: [PATCH 2.6.33] regulator: Fix display of null constraints for regulators
+Date: Thu, 11 Feb 2010 19:20:48 +0000
+Message-Id: <1265916048-9596-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-Mailer: git-send-email 1.6.6.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 11, 2010 at 05:10:18PM +0000, Al Viro (viro@ZenIV.linux.org.uk) wrote:
-> > No, it happens with my lock held. It is not a lock, but kind of
-> > IO delegation, i.e. it is not dropped when rename or other protected
-> > operation completed. Instead another client sends request to grab it and
-> > server asks current holder to drop cache, perform writeback or whatever
-> > else is needed.
-> 
-> And should such a request come between return from ->rename() and call
-> of d_move() that follows it?
+If the regulator constraints are empty and there is no voltage
+reported then nothing will be added to the text displayed for the
+constraints, leading to random stack data being printed. This is
+unlikely to happen for practical regulators since most will at
+least report a voltage but should still be fixed.
 
-We mark inode dirty (including parent) and it has to be written back thus
-there will be no ack until writeback completed, which in turn messes
-with i_mutex, so will be postponed until rename and d_move() completed.
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: stable@kernel.org
+---
 
-> > It can be a problem though if d_move() is called outside of path
-> > protected by the VFS dir operations like rename/created/unlink and so
-> > on, i.e. on behalf of some entity in the kernel which decides to move
-> > dentries on itself. In this case POHMELFS is not protected.
-> 
-> Not an issue; there's no such fs-independent callers.
-> 
-> Fundamentally, how do you deal with MOESI when the mapping from strings you
-> are using as object IDs to actual objects can change as the result of
-> operations?  What's more, operation on one object can change that mapping
-> for a huge number of other objects (rename() close to fs root changing
-> pathnames of all files anywhere in the subtree being moved).
+Not super critical for 2.6.33 but at least worth considering.
 
-MOESI is actually a crap in a clustered filesystem. It does not scale
-well since number of messages grows exponentially with nodes and
-interconnects. Plus without PAXOS it does not provide needed redundancy
-level.
+ drivers/regulator/core.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Basic idea currently is to delegate every operation and ask server if it
-is allowed or not. Thus server-side locking must be serialized to that
-level. I believe that i_mutex is enough there - its the only lock used
-actually except in some helpers like d_path().
-
+diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
+index 0bbf8e2..ce877e8 100644
+--- a/drivers/regulator/core.c
++++ b/drivers/regulator/core.c
+@@ -664,7 +664,7 @@ static int suspend_prepare(struct regulator_dev *rdev, suspend_state_t state)
+ static void print_constraints(struct regulator_dev *rdev)
+ {
+ 	struct regulation_constraints *constraints = rdev->constraints;
+-	char buf[80];
++	char buf[80] = "";
+ 	int count = 0;
+ 	int ret;
+ 
 -- 
-	Evgeniy Polyakov
+1.6.6.1
+
