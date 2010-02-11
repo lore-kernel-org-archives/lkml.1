@@ -1,75 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757323Ab0BKWbv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 17:31:51 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51592 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757278Ab0BKWbu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 17:31:50 -0500
-Date: Thu, 11 Feb 2010 14:31:05 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Rientjes <rientjes@google.com>
-Cc: Rik van Riel <riel@redhat.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Nick Piggin <npiggin@suse.de>, Andrea Arcangeli <aarcange@redhat.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch 4/7 -mm] oom: badness heuristic rewrite
-Message-Id: <20100211143105.dea3861a.akpm@linux-foundation.org>
-In-Reply-To: <alpine.DEB.2.00.1002111346050.8809@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.1002100224210.8001@chino.kir.corp.google.com>
-	<alpine.DEB.2.00.1002100228540.8001@chino.kir.corp.google.com>
-	<4B73833D.5070008@redhat.com>
-	<alpine.DEB.2.00.1002102332200.22152@chino.kir.corp.google.com>
-	<20100211134343.4886499c.akpm@linux-foundation.org>
-	<alpine.DEB.2.00.1002111346050.8809@chino.kir.corp.google.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1757330Ab0BKWc0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 17:32:26 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:35799 "EHLO mail.zytor.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757263Ab0BKWcY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 17:32:24 -0500
+Message-ID: <4B74832B.6050303@kernel.org>
+Date: Thu, 11 Feb 2010 14:22:35 -0800
+From: "H. Peter Anvin" <hpa@kernel.org>
+Organization: Linux Kernel Organization, Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
+MIME-Version: 1.0
+To: Pavel Machek <pavel@ucw.cz>
+CC: "J.H." <warthog9@kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>,
+       mirrors@kernel.org, users@kernel.org,
+       "FTPAdmin Kernel.org" <ftpadmin@kernel.org>, lasse.collin@tukaani.org
+Subject: Re: [kernel.org users] XZ Migration discussion
+References: <4B744E13.8040004@kernel.org> <20100211205129.GA26105@elf.ucw.cz>
+In-Reply-To: <20100211205129.GA26105@elf.ucw.cz>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 11 Feb 2010 13:51:36 -0800 (PST)
-David Rientjes <rientjes@google.com> wrote:
-
-> On Thu, 11 Feb 2010, Andrew Morton wrote:
+On 02/11/2010 12:51 PM, Pavel Machek wrote:
+> Hi!
 > 
-> > > Changing any value that may have a tendency to be hardcoded elsewhere is 
-> > > always controversial, but I think the nature of /proc/pid/oom_adj allows 
-> > > us to do so for two specific reasons:
-> > > 
-> > >  - hardcoded values tend not the fall within a range, they tend to either
-> > >    always prefer a certain task for oom kill first or disable oom killing
-> > >    entirely.  The current implementation uses this as a bitshift on a
-> > >    seemingly unpredictable and unscientific heuristic that is very 
-> > >    difficult to predict at runtime.  This means that fewer and fewer
-> > >    applications would hardcode a value of '8', for example, because its 
-> > >    semantics depends entirely on RAM capacity of the system to begin with
-> > >    since badness() scores are only useful when used in comparison with
-> > >    other tasks.
-> > 
-> > You'd be amazed what dumb things applications do.  Get thee to
-> > http://google.com/codesearch?hl=en&lr=&q=[^a-z]oom_adj[^a-z]&sbtn=Search
-> > and start reading.  All 641 matches ;)
-> > 
-> > Here's one which which writes -16:
-> > http://google.com/codesearch/p?hl=en#eN5TNOm7KtI/trunk/wlan/vendor/asus/eeepc/init.rc&q=[^a-z]oom_adj[^a-z]&sa=N&cd=70&ct=rc
-> > 
-> > Let's not change the ABI please.
-> > 
+>> Option 1)
+>>
+>> Leave gz as the master, and migrate bz2 to xz.  This will happen in
+>> stages obviously. with bz2 ultimately being phased out.
+>>
+>> 	Migration option 1)
+>>
+>> 		All new content would be provided in .bz2 and .xz with
+>> 		an ultimate date set that the .bz2 files would stop
+>> 		being generated with new content.  This would leave all
+>> 		existing content alone and it would not be a migration
+>> 		of the current .bz2 files to xz
 > 
-> Sigh, this is going to require the amount of system memory to be 
-> partitioned into OOM_ADJUST_MAX, 15, chunks and that's going to be the 
-> granularity at which we'll be able to either bias or discount memory usage 
-> of individual tasks by: instead of being able to do this with 0.1% 
-> granularity we'll now be limited to 100 / 15, or ~7%.  That's ~9GB on my 
-> 128GB system just because this was originally a bitshift.  The upside is 
-> that it's now linear and not exponential.
+> I believe this is cleanest. gzip has performance advantages, and old
+> files suddenly disappearing would be just weird.
+> 
 
-Can you add newly-named knobs (rather than modifying the existing
-ones), deprecate the old ones and then massage writes to the old ones
-so that they talk into the new framework?
+It would also be "just weird" to:
 
+a) require that the end user knows the particular compression format
+used by a particular legacy file.
+b) having to have the mirror system deal with a mix of .bz2 and .xz files.
+
+	-hpa
