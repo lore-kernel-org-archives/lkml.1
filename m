@@ -1,83 +1,92 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757146Ab0BKUvo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 15:51:44 -0500
-Received: from mail-iw0-f195.google.com ([209.85.223.195]:43288 "EHLO
-	mail-iw0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757128Ab0BKUvl (ORCPT
+	id S1757207Ab0BKUyP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 15:54:15 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:36920 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757115Ab0BKUyG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 15:51:41 -0500
-Message-ID: <4B746DEC.7080602@billgatliff.com>
-Date: Thu, 11 Feb 2010 14:51:56 -0600
-From: Bill Gatliff <bgat@billgatliff.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090707)
-MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: linux-embedded@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PWM PATCH 1/5] API to consolidate PWM devices behind a common
- user and kernel interface
-References: <cover.1265094517.git.bgat@billgatliff.com> <c5873aa7c5d20254a9e54fc1ff179345b77c16b5.1265094517.git.bgat@billgatliff.com> <20100211200456.GA1487@ucw.cz>
-In-Reply-To: <20100211200456.GA1487@ucw.cz>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 11 Feb 2010 15:54:06 -0500
+From: Andi Kleen <andi@firstfloor.org>
+References: <20100211953.850854588@firstfloor.org>
+In-Reply-To: <20100211953.850854588@firstfloor.org>
+To: penberg@cs.helsinki.fi, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       haicheng.li@intel.com, rientjes@google.com
+Subject: [PATCH] [2/4] SLAB: Separate node initialization into separate function
+Message-Id: <20100211205402.02E7EB1978@basil.firstfloor.org>
+Date: Thu, 11 Feb 2010 21:54:02 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> Exactly; if your hw can be damaged by software, it was misdesigned.
->
-> Is the paragraph #1 really neccessary?
->   
 
-It provides a little background on the subject matter.  I don't think
-it's mandatory, but I don't see the harm in keeping it.  I think it
-improves the document overall from an editorial perspective, however.
+No functional changes.
 
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
->> +pwm_free() -- Marks a PWM channel as no longer in use.  The PWM device
->> +is stopped before it is released by the API.
->>     
->
-> free is normally used for something else. Rename to open/close?
->   
+---
+ mm/slab.c |   34 +++++++++++++++++++++-------------
+ 1 file changed, 21 insertions(+), 13 deletions(-)
 
-... or request/release?
-
->> +pwm_start(), pwm_stop() -- Turns the PWM signal on and off.  Except
->> +where stated otherwise by a driver author, signals are stopped at the
->> +end of the current period, at which time the output is set to its
->> +inactive state.
->>     
->
-> What does it mean to stop a signal? What is the difference between 0%
-> duty cycle and stop() ?
->   
-
-Depends on the hardware.  For a true PWM peripheral, a 0% duty cycle
-might still have the base peripheral clock for the device running. 
-Whereas a pwm_stop() signal could be used to turn off the clock to the
-peripheral.
-
-> Is polarity realy required? Can't driver just replace duty with
-> 100%-duty
-
-Actually, yes in some cases.  Users can always do the 100%-duty math,
-but some hardware asserts a specific output state when you stop the
-peripheral that's potentially different from 0% duty.  Also, some
-hardware begins the PWM cycle with the output high, while others do with
-the output low.  It isn't necessarily the case that the user cares, but
-I was thinking that having the API allow for different polarity might
-prevent some applications having to optionally do the %duty vs.
-100-%duty conversion themselves.
-
-
-b.g.
-
--- 
-Bill Gatliff
-Embedded systems training and consulting
-http://billgatliff.com
-bgat@billgatliff.com
-
+Index: linux-2.6.32-memhotadd/mm/slab.c
+===================================================================
+--- linux-2.6.32-memhotadd.orig/mm/slab.c
++++ linux-2.6.32-memhotadd/mm/slab.c
+@@ -1158,19 +1158,9 @@ free_array_cache:
+ 	}
+ }
+ 
+-static int __cpuinit cpuup_prepare(long cpu)
++static int slab_node_prepare(int node)
+ {
+ 	struct kmem_cache *cachep;
+-	struct kmem_list3 *l3 = NULL;
+-	int node = cpu_to_node(cpu);
+-	const int memsize = sizeof(struct kmem_list3);
+-
+-	/*
+-	 * We need to do this right in the beginning since
+-	 * alloc_arraycache's are going to use this list.
+-	 * kmalloc_node allows us to add the slab to the right
+-	 * kmem_list3 and not this cpu's kmem_list3
+-	 */
+ 
+ 	list_for_each_entry(cachep, &cache_chain, next) {
+ 		/*
+@@ -1179,9 +1169,10 @@ static int __cpuinit cpuup_prepare(long
+ 		 * node has not already allocated this
+ 		 */
+ 		if (!cachep->nodelists[node]) {
+-			l3 = kmalloc_node(memsize, GFP_KERNEL, node);
++			struct kmem_list3 *l3;
++			l3 = kmalloc_node(sizeof(struct kmem_list3), GFP_KERNEL, node);
+ 			if (!l3)
+-				goto bad;
++				return -1;
+ 			kmem_list3_init(l3);
+ 			l3->next_reap = jiffies + REAPTIMEOUT_LIST3 +
+ 			    ((unsigned long)cachep) % REAPTIMEOUT_LIST3;
+@@ -1200,6 +1191,23 @@ static int __cpuinit cpuup_prepare(long
+ 			cachep->batchcount + cachep->num;
+ 		spin_unlock_irq(&cachep->nodelists[node]->list_lock);
+ 	}
++	return 0;
++}
++
++static int __cpuinit cpuup_prepare(long cpu)
++{
++	struct kmem_cache *cachep;
++	struct kmem_list3 *l3 = NULL;
++	int node = cpu_to_node(cpu);
++
++	/*
++	 * We need to do this right in the beginning since
++	 * alloc_arraycache's are going to use this list.
++	 * kmalloc_node allows us to add the slab to the right
++	 * kmem_list3 and not this cpu's kmem_list3
++	 */
++	if (slab_node_prepare(node) < 0)
++		goto bad;
+ 
+ 	/*
+ 	 * Now we can go ahead with allocating the shared arrays and
