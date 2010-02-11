@@ -1,57 +1,67 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754673Ab0BKOGu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 09:06:50 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:51758 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752966Ab0BKOGt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 09:06:49 -0500
-Date: Thu, 11 Feb 2010 09:06:48 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: Dmitry Monakhov <dmonakhov@openvz.org>
-Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       jens.axboe@oracle.com
-Subject: Re: [PATCH 1/4] block: implement compatible DISCARD support
-Message-ID: <20100211140648.GA13756@infradead.org>
-References: <1265885625-21608-1-git-send-email-dmonakhov@openvz.org> <20100211122154.GA12417@infradead.org> <87d40cq66k.fsf@openvz.org> <20100211130945.GA7644@infradead.org> <87tytnga3a.fsf@openvz.org>
+	id S1754960Ab0BKOJ0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 09:09:26 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:23070 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753025Ab0BKOJZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 09:09:25 -0500
+Message-ID: <4B740F7A.5020702@redhat.com>
+Date: Thu, 11 Feb 2010 09:08:58 -0500
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Lightning/1.0pre Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87tytnga3a.fsf@openvz.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+To: David Rientjes <rientjes@google.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Nick Piggin <npiggin@suse.de>, Andrea Arcangeli <aarcange@redhat.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch 6/7 -mm] oom: avoid oom killer for lowmem allocations
+References: <alpine.DEB.2.00.1002100224210.8001@chino.kir.corp.google.com> <alpine.DEB.2.00.1002100229410.8001@chino.kir.corp.google.com> <4B7383D5.2080904@redhat.com> <alpine.DEB.2.00.1002102359460.22152@chino.kir.corp.google.com>
+In-Reply-To: <alpine.DEB.2.00.1002102359460.22152@chino.kir.corp.google.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 11, 2010 at 04:45:13PM +0300, Dmitry Monakhov wrote:
-> >> The question is should it be sync or async it is not easy to design
-> >> simple async interface so let's use sync by default
-> >> BTW: That's why blkdev_issue_barrier has to wait by default. 
-> In fact wait is the only interface for issue_barrier.
-> > This is going to kill performance.
-> But it may be reasonable to allow caller to choose would it
-> wait and work fair, or to cheat in a name of performance.
+On 02/11/2010 04:19 AM, David Rientjes wrote:
+> On Wed, 10 Feb 2010, Rik van Riel wrote:
+>
+>>> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+>>> --- a/mm/page_alloc.c
+>>> +++ b/mm/page_alloc.c
+>>> @@ -1914,6 +1914,9 @@ rebalance:
+>>>    	 * running out of options and have to consider going OOM
+>>>    	 */
+>>>    	if (!did_some_progress) {
+>>> +		/* The oom killer won't necessarily free lowmem */
+>>> +		if (high_zoneidx<   ZONE_NORMAL)
+>>> +			goto nopage;
+>>>    		if ((gfp_mask&   __GFP_FS)&&   !(gfp_mask&   __GFP_NORETRY)) {
+>>>    			if (oom_killer_disabled)
+>>>    				goto nopage;
+>>
+>> Are there architectures that only have one memory zone?
+>>
+>
+> It actually ends up not to matter because of how gfp_zone() is implemented
+> (and you can do it with mem= on architectures with larger ZONE_DMA zones
+> such as ia64).  ZONE_NORMAL is always guaranteed to be defined regardless
+> of architecture or configuration because it's the default zone for memory
+> allocation unless specified by a bit in GFP_ZONEMASK, it doesn't matter
+> whether it actually has memory or not.  high_zoneidx in this case is just
+> gfp_zone(gfp_flags) which always defaults to ZONE_NORMAL when one of the
+> GFP_ZONEMASK bits is not set.  Thus, the only way to for the conditional
+> in this patch to be true is when __GFP_DMA, or __GFP_DMA32 for x86_64, is
+> passed to the page allocator and CONFIG_ZONE_DMA or CONFIG_ZONE_DMA32 is
+> enabled, respectively.
 
-It's not a cheat.  The discard is a _hint_ to the hardware that it
-can reclaim space.  Think become a bit different when we start relying
-on the zeroing behaviour for hardware that supports it, but so far
-we don't.  And given that out of two TRIM capable devices I have one
-does not reliably zero the trimmed regions I'm not sure it's a good
-idea to rely on that yet, either.
+Fair enough.
 
-> libata-scsi.c: ata_scsi_write_same_xlat
->                   ata_set_lba_range_entries
-> It's was not obvious from the first glance. But it is the way how it
-> works for now. But seems what we still optimize things a bit
-> 1) alloc page with GFP_HIGHUSER (because x86 arch still used)
+Acked-by: Rik van Riel <riel@redhat.com>
 
-I'm not sure it's worth over-optimization this.
-
-> 2) Share page between eight bios.
-
-If we introduce the common completion handler for a batch of bios as
-your patch does we can do that.
-
+-- 
+All rights reversed.
