@@ -1,43 +1,48 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757037Ab0BKUHN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 15:07:13 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:50694 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756919Ab0BKUHK (ORCPT
+	id S1756991Ab0BKUIR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 15:08:17 -0500
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:63831 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756537Ab0BKUIP convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 15:07:10 -0500
-Date: Thu, 11 Feb 2010 21:07:02 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Bill Gatliff <bgat@billgatliff.com>
-Cc: linux-embedded@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PWM PATCH 2/5] Emulates PWM hardware using a high-resolution
-	timer and a GPIO pin
-Message-ID: <20100211200702.GB1487@ucw.cz>
-References: <cover.1265094517.git.bgat@billgatliff.com> <2d73f9b2fd175fd3e482920baebcd3028206f02e.1265094517.git.bgat@billgatliff.com>
+	Thu, 11 Feb 2010 15:08:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:reply-to:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding:message-id;
+        b=jBCPw751LWKJL6v/mNawBK0XVgbW6QaI4Z00OieJmDXLPeI/muABPXiG2WsOSGpqe4
+         xaYT/sVfMUEFiS3fkcaCzZPGnNM3Hk5l8S7euJdds3I4mrkUjDJB4R4t1izwPSejj4lx
+         1VdCP55a7HPxctga09zF8jDbe0wli95iHGLYg=
+From: Maciej Rutecki <maciej.rutecki@gmail.com>
+Reply-To: maciej.rutecki@gmail.com
+To: Tao Ma <tao.ma@oracle.com>
+Subject: Re: lockdep warning for iscsi in 2.6.33-rc6
+Date: Thu, 11 Feb 2010 21:08:11 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.33-rc7; KDE/4.3.4; i686; ; )
+Cc: linux-kernel@vger.kernel.org
+References: <4B7107CF.3060703@oracle.com>
+In-Reply-To: <4B7107CF.3060703@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2d73f9b2fd175fd3e482920baebcd3028206f02e.1265094517.git.bgat@billgatliff.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <201002112108.11657.maciej.rutecki@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Dnia wtorek, 9 lutego 2010 o 07:59:27 Tao Ma napisał(a):
+> Hi Mike,
+> 	I meet with a lockdep warning for iscsi in 2.6.33-rc6.
+> the lockdep is attached.
+> 
+> Regards,
+> Tao
+> 
 
-> +static void
-> +gpio_pwm_work (struct work_struct *work)
-> +{
-> +	struct gpio_pwm *gp = container_of(work, struct gpio_pwm, work);
-> +
-> +	if (gp->active)
-> +		gpio_direction_output(gp->gpio, gp->polarity ? 1 : 0);
-> +	else
-> +		gpio_direction_output(gp->gpio, gp->polarity ? 0 : 1);
-> +}
-
-...polarity ^ active ?
-
+I created a Bugzilla entry at http://bugzilla.kernel.org/show_bug.cgi?id=15278
+for Your bug report, please add Your address to the CC list in there, thanks!
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Maciej Rutecki
+http://www.maciek.unixy.pl
