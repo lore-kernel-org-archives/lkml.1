@@ -1,62 +1,91 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756818Ab0BKS2n (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 13:28:43 -0500
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:61181 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755894Ab0BKS2m (ORCPT
+	id S1756790Ab0BKS3e (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 13:29:34 -0500
+Received: from e32.co.us.ibm.com ([32.97.110.150]:51381 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755311Ab0BKS3b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 13:28:42 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=bohTbccd+fxiy6R3G9EXk2RK44G770WEPATY60LM4j9sJLepvzy9UlbffEqwwIfJRY
-         v8qdhEFoV1f+Fd6qY/Fbf1igh2py+sYtGFX/XqtHRc2kJ7f3gkoQv45BWF9hoofFi+z1
-         Zfh3vvwiyRFODESMORry+oXCjY0IPo6rdI3f0=
-Date: Thu, 11 Feb 2010 10:28:30 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Richard Purdie <rpurdie@rpsys.net>, Bob Rodgers <Robert_Rodgers@dell.com>,
-       "lenb@kernel.org" <lenb@kernel.org>,
-       Linux-kernel <linux-kernel@vger.kernel.org>,
-       Louis Davis <Louis_Davis@dell.com>, Jim Dailey <Jim_Dailey@dell.com>,
-       Michael Brown <Michael_E_Brown@dell.com>,
-       Mario Limonciello <Mario_Limonciello@dell.com>,
-       Matt Domsch <Matt_Domsch@dell.com>, Dan Carpenter <error27@gmail.com>
-Subject: Re: [PATCH] Add Dell Business Class Netbook LED driver
-Message-ID: <20100211182829.GA26659@core.coreip.homeip.net>
-References: <4B7078E2.50407@dell.com>
- <1265911154.4689.11.camel@rex>
- <20100211180518.GB26117@core.coreip.homeip.net>
- <20100211180715.GA2147@srcf.ucam.org>
+	Thu, 11 Feb 2010 13:29:31 -0500
+Date: Thu, 11 Feb 2010 10:29:10 -0800
+From: Gary Hade <garyhade@us.ibm.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Gary Hade <garyhade@us.ibm.com>, linux-pm@lists.linux-foundation.org,
+       Linux PCI <linux-pci@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "Moore, Robert" <robert.moore@intel.com>,
+       Matthew Garrett <mjg@redhat.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: Re: [PATCH 8/9] PCI / ACPI / PM: Platform support for PCI PME
+	wake-up (rev. 7)
+Message-ID: <20100211182910.GA9766@us.ibm.com>
+References: <201001101431.38630.rjw@sisk.pl> <201002110156.54617.rjw@sisk.pl> <20100211020706.GA28372@us.ibm.com> <201002111427.17275.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100211180715.GA2147@srcf.ucam.org>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+In-Reply-To: <201002111427.17275.rjw@sisk.pl>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 11, 2010 at 06:07:15PM +0000, Matthew Garrett wrote:
-> On Thu, Feb 11, 2010 at 10:05:19AM -0800, Dmitry Torokhov wrote:
+On Thu, Feb 11, 2010 at 02:27:17PM +0100, Rafael J. Wysocki wrote:
+> On Thursday 11 February 2010, Gary Hade wrote:
+> > On Thu, Feb 11, 2010 at 01:56:54AM +0100, Rafael J. Wysocki wrote:
+> > > On Thursday 11 February 2010, Rafael J. Wysocki wrote:
+> > > > On Thursday 11 February 2010, Gary Hade wrote:
+> > > > > On Wed, Feb 10, 2010 at 11:58:00PM +0100, Rafael J. Wysocki wrote:
+> > > > > > On Wednesday 10 February 2010, Gary Hade wrote:
+> > > > ...
+> > > > > > > Yes, 6/9 also appeared to be the most likely suspect to me and
+> > > > > > > I was already doing what you asked except in the opposite order.
+> > > > > > > With 1/9 through 6/9 both the hot-add and hot-remove issues still
+> > > > > > > reproduced.  After removing 6/9 both issues disappeared.
+> > > > > > 
+> > > > > > Thanks for verifying, I've already started to look for bugs in it.
+> > > > > 
+> > > > > Thanks!
+> > > > > 
+> > > > > > 
+> > > > > > What's your kernel command line, BTW?
+> > > > > 
+> > > > > root=/dev/disk/by-id/scsi-35000c5000036ffcb-part7 ip=9.47.66.9:9.47.67.50:9.47.66.1:255.255.254.0 resume=/dev/disk/by-id/scsi-35000c50000370247-part3 crashkernel=256M-:128M console=tty0 console=ttyS0,115200 pci=use_crs pci=norom
+> > > > 
+> > > > Thanks.  We found a bug in the patch, but it would require you to use a
+> > > > specific command line switch to trigger, which you don't use.
+> > > > 
+> > > > I'll let you know if I have anything to test.
+> > > 
+> > > OK, please try the patch below on top of [1-6/9].
+> > 
+> > Sorry, it didn't help.  The hot-add and hot-remove behaviors
+> > still look the same.
 > 
-> > Or stuck it in dell-wmi.c...
+> Thanks for testing.
 > 
-> I'd prefer not to put it in dell-wmi. There's no logical association 
-> between it and the rest of the code there, so it'd just be overhead on 
-> the majority of systems. With the exception of cases where the event and 
-> functional interfaces are different GUIDs, I'd prefer a one GUID per 
-> driver model.
+> Well, this time I found another real bug, which is that we should add
+> gpe_block->block_base_number to the GPE index within the block in order to
+> compute the GPE number.  If there are GPE devices other than the FADT ones in
+> your system, that may explain the symptoms.
 > 
+> Please try the patch below (on top of [1-6/9]).  In case it doesn't help, please
+> look for "Failed to ebable GPE" messages in dmesg and let me know if there are
+> any.
 
-This is an opposite direction form the rest of the platform drivers
-which tend to combine functionality on per-vendor basis in one driver.
+That one worked!  It corrected both the blinking amber LED
+after hot-remove and acpiphp's failure to see the hot-add event.
 
-I'd say that in this case with this LED driver overhead on DELL systems
-not supportinfg it is miniscule. The benefit is that all vendor-specific
-sub-devices are children of one parent platform device.
+Now when you have patch(es) ready for Jesse's linux-next branch
+I can get back to my original mission of checking out Bjorn's
+_CRS enablement changes.
+
+Gary
 
 -- 
-Dmitry
+Gary Hade
+System x Enablement
+IBM Linux Technology Center
+503-578-4503  IBM T/L: 775-4503
+garyhade@us.ibm.com
+http://www.ibm.com/linux/ltc
+
