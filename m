@@ -1,102 +1,98 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755742Ab0BKWeu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 17:34:50 -0500
-Received: from cantor.suse.de ([195.135.220.2]:35961 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757327Ab0BKWet (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 17:34:49 -0500
-Date: Thu, 11 Feb 2010 14:32:35 -0800
-From: Greg KH <gregkh@suse.de>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Neil Brown <neilb@suse.de>, Tejun Heo <tj@kernel.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sysfs: differentiate  between locking links and
- non-links
-Message-ID: <20100211223235.GC30430@suse.de>
-References: <19314.1869.847327.15190@notabene.brown>
- <20100210230625.GB678@suse.de>
- <m1fx57zbyl.fsf@fess.ebiederm.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1fx57zbyl.fsf@fess.ebiederm.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	id S1756992Ab0BKWih (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 17:38:37 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36714 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756154Ab0BKWig (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 17:38:36 -0500
+Date: Thu, 11 Feb 2010 14:36:46 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: linux-kernel@vger.kernel.org, Mocean Laboratories <info@mocean-labs.com>,
+       Juergen Beisert <j.beisert@pengutronix.de>,
+       Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>,
+       Samuel Ortiz <sameo@linux.intel.com>
+Subject: Re: mmotm 2010-02-10-16-17 uploaded (timberdale)
+Message-Id: <20100211143646.f357c9ee.akpm@linux-foundation.org>
+In-Reply-To: <4B74824C.7050700@oracle.com>
+References: <201002110043.o1B0hKxW008835@imap1.linux-foundation.org>
+	<4B736ED5.5060205@oracle.com>
+	<20100211140117.455dbbff.akpm@linux-foundation.org>
+	<4B74824C.7050700@oracle.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 11, 2010 at 01:42:10PM -0800, Eric W. Biederman wrote:
-> Greg KH <gregkh@suse.de> writes:
+On Thu, 11 Feb 2010 14:18:52 -0800
+Randy Dunlap <randy.dunlap@oracle.com> wrote:
+
+> On 02/11/10 14:01, Andrew Morton wrote:
+> > On Wed, 10 Feb 2010 18:43:33 -0800
+> > Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> > 
+> >> On 02/10/10 16:17, akpm@linux-foundation.org wrote:
+> >>> The mm-of-the-moment snapshot 2010-02-10-16-17 has been uploaded to
+> >>>
+> >>>    http://userweb.kernel.org/~akpm/mmotm/
+> >>>
+> >>> and will soon be available at
+> >>>
+> >>>    git://zen-kernel.org/kernel/mmotm.git
+> >>>
+> >>> It contains the following patches against 2.6.33-rc7:
+> >>
+> >>
+> >> When CONFIG_GPIOLIB is not enabled:
+> >>
+> >>   CC      drivers/mfd/timberdale.o
+> >> In file included from mmotm-2010-0210-1617/drivers/mfd/timberdale.c:37:
+> >> mmotm-2010-0210-1617/include/linux/spi/max7301.h:14: error: field 'chip' has incomplete type
+> >> make[3]: *** [drivers/mfd/timberdale.o] Error 1
+> >>
+> >>
+> >> Build error observed on i386 and on x86_64.
+> >>
+> > 
+> > Bug is in mainline too, I think.
+> > 
+> > Something like this?
 > 
-> > On Wed, Feb 10, 2010 at 12:09:33PM +1100, Neil Brown wrote:
-> >> 
-> >> Hi,
-> >>  I've just spent a while sorting out some lockdep complaints triggered
-> >>  by the recent addition of the "s_active" lockdep annotation in sysfs
-> >>   (commit 846f99749ab68bbc7f75c74fec305de675b1a1bf)
-> >> 
-> >>  Some of them are genuine and I have submitted a fix for those.
-> >>  Some are, I think, debatable and I get to that is a minute.  I've
-> >>  submitted a fix for them anyway.
-> >>  But some are to my mind clearly bogus and I'm hoping that can be
-> >>  fixed by the change below (or similar).
-> >>  The 'bogus' ones are triggered by writing to a sysfs attribute file
-> >>  for which the handler tries to delete a symlink from sysfs.
-> >>  This appears to be a recursion on s_active as s_active is held while
-> >>  the handler runs and is again needed to effect the delete.  However
-> >>  as the thing being deleted is a symlink, it is very clearly a
-> >>  different object to the thing triggering the delete, so there is no
-> >>  real loop.
-> >> 
-> >>  The following patch splits the lockdep context in two - one for
-> >>  symlink and one for everything else.  This removes the apparent loop.
-> >>  (An example report can be seen in
-> >>      http://bugzilla.kernel.org/show_bug.cgi?id=15142).
-> >> 
-> >>  The "debatable" dependency loops happen when writing to one attribute
-> >>  causes a different attribute to be deleted.  In my (md) case this can
-> >>  actually cause a deadlock as both the attributes take the same lock
-> >>  while the handler is running.  This is because deleting the attribute
-> >>  will block until the all accesses of that attribute have completed (I
-> >>  think).
-> >>  However it should be possible to delete a name from sysfs while there
-> >>  are still accesses pending (it works for normal files!!).  So if
-> >>  sysfs could be changed to simply unlink the file and leave deletion to
-> >>  happen when the refcount become zero it would certainly make my life
-> >>  a lot easier, and allow the removal of some ugly code from md.c.
-> >>  I don't know sysfs well enough to suggest a patch though.
-> >> 
-> >> Thanks,
-> >> NeilBrown
-> >> 
-> >> 
-> >> 
-> >> commit 2e502cfe444b68f6ef6b8b2abe83b6112564095b
-> >> Author: NeilBrown <neilb@suse.de>
-> >> Date:   Wed Feb 10 09:43:45 2010 +1100
-> >> 
-> >>     sysfs: differentiate  between locking links and non-links for sysfs
-> >>     
-> >>     symlinks and non-symlink is sysfs are very different.
-> >>     A symlink can never be locked (active) while an attribute
-> >>     modification routine is running.  So removing symlink from an
-> >>     attribute 'store' routine should be permitted without any lockdep
-> >>     warnings.
-> >>     
-> >>     So split the lockdep context for 's_active' in two, one for symlinks
-> >>     and other for everything else.
-> >>     
-> >>     Signed-off-by: NeilBrown <neilb@suse.de>
-> >
-> > Nice patch, I'll queue it up for .34.
+> Nope, that does not affect the building of the timberdale (see $subject) driver.
+> It still has the same error with this patch applied.
+
+Yeah, I patched the wrong record.
+
 > 
-> Note the patch does not compile with lockdep disabled.
+> > --- a/drivers/gpio/Kconfig~drivers-gpio-max7301c-depends-on-gpiolib
+> > +++ a/drivers/gpio/Kconfig
+> > @@ -92,7 +92,7 @@ comment "I2C GPIO expanders:"
+> >  
+> >  config GPIO_MAX7300
+> >  	tristate "Maxim MAX7300 GPIO expander"
+> > -	depends on I2C
+> > +	depends on I2C && GPIOLIB
+> >  	select GPIO_MAX730X
+> >  	help
+> >  	  GPIO driver for Maxim MAX7301 I2C-based GPIO expander.
 
-Ugh, why not?
+This?
 
-Neil, care to fix this up?
+--- a/drivers/gpio/Kconfig~drivers-gpio-max7301c-depends-on-gpiolib
++++ a/drivers/gpio/Kconfig
+@@ -256,7 +256,7 @@ comment "SPI GPIO expanders:"
+ 
+ config GPIO_MAX7301
+ 	tristate "Maxim MAX7301 GPIO expander"
+-	depends on SPI_MASTER
++	depends on SPI_MASTER && GPIO_LIB
+ 	select GPIO_MAX730X
+ 	help
+ 	  GPIO driver for Maxim MAX7301 SPI-based GPIO expander.
+_
 
-thanks,
-
-greg k-h
