@@ -1,267 +1,346 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751529Ab0BKFdI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 00:33:08 -0500
-Received: from na3sys009aog101.obsmtp.com ([74.125.149.67]:40741 "HELO
-	na3sys009aog101.obsmtp.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750832Ab0BKFdG (ORCPT
+	id S1751674Ab0BKFeW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 00:34:22 -0500
+Received: from mga01.intel.com ([192.55.52.88]:50251 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751161Ab0BKFeU convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 00:33:06 -0500
-From: Michael Poole <mdpoole@troilus.org>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Jiri Kosina <jkosina@suse.cz>
-Cc: linux-input@vger.kernel.org, Marcel Holtmann <marcel@holtmann.org>,
-       linux-bluetooth@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] hid-magicmouse: Coding style and probe failure fixes.
-References: <87y6j2eeqv.fsf_-_@troilus.org> <87pr4eeemz.fsf_-_@troilus.org>
-	<20100210182024.GA29610@core.coreip.homeip.net>
-Date: Thu, 11 Feb 2010 00:32:57 -0500
-In-Reply-To: <20100210182024.GA29610@core.coreip.homeip.net> (Dmitry
-	Torokhov's message of "Wed, 10 Feb 2010 10:20:24 -0800")
-Message-ID: <873a18e3qu.fsf_-_@troilus.org>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
+	Thu, 11 Feb 2010 00:34:20 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,449,1262592000"; 
+   d="scan'208";a="539768335"
+From: "Xin, Xiaohui" <xiaohui.xin@intel.com>
+To: Eric Dumazet <eric.dumazet@gmail.com>
+CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "mingo@elte.hu" <mingo@elte.hu>, "mst@redhat.com" <mst@redhat.com>,
+       "jdike@c2.user-mode-linux.org" <jdike@c2.user-mode-linux.org>,
+       Zhao Yu <yzhao81@gmail.com>
+Date: Thu, 11 Feb 2010 13:33:37 +0800
+Subject: RE: [PATCH 1/3] A device for zero-copy based on KVM virtio-net.
+Thread-Topic: [PATCH 1/3] A device for zero-copy based on KVM virtio-net.
+Thread-Index: AcqqZDw29uYVtgapQ3G8/12D1FXRrQAdz2Pg
+Message-ID: <97F6D3BD476C464182C1B7BABF0B0AF5C11F6393@shzsmsx502.ccr.corp.intel.com>
+References: <1265802540-6122-1-git-send-email-xiaohui.xin@intel.com>
+	 <1265802540-6122-2-git-send-email-xiaohui.xin@intel.com>
+ <1265815071.3047.96.camel@edumazet-laptop>
+In-Reply-To: <1265815071.3047.96.camel@edumazet-laptop>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 04b395dbbd1ad2b836188e6f125940ae8fac6925 Mon Sep 17 00:00:00 2001
+Eric,
+Thanks. I will look into that. But don't stop there. 
+Please comments more. :-)
 
-As suggested by Dmitry Torokhov on 10 Feb: Use proper values
-to initialize bool configuration variables, tabs rather than
-spaces, no braces for one-line else clause, __set_bit() when
-the operation doesn't have to be atomic, input_set_abs_params()
-rather than writing the fields directly, and call hid_hw_stop()
-when appropriate to handle failures in the probe.
+Thanks
+Xiaohui
 
-Signed-off-by: Michael Poole <mdpoole@troilus.org>
----
-Dmitry and Jiri,
+-----Original Message-----
+From: Eric Dumazet [mailto:eric.dumazet@gmail.com] 
+Sent: Wednesday, February 10, 2010 11:18 PM
+To: Xin, Xiaohui
+Cc: netdev@vger.kernel.org; kvm@vger.kernel.org; linux-kernel@vger.kernel.org; mingo@elte.hu; mst@redhat.com; jdike@c2.user-mode-linux.org; Zhao Yu
+Subject: Re: [PATCH 1/3] A device for zero-copy based on KVM virtio-net.
 
-I haven't had a chance to run-test these changes yet -- hid/for-next
-causes corrupt X display on my laptop, whereas v2.6.33-rc6 and -rc7 are
-fine; I'm still bisecting to figure out the cause -- but this patch is
-not complicated.  (It does compile.)
+Le mercredi 10 février 2010 à 19:48 +0800, Xin Xiaohui a écrit :
+> Add a device to utilize the vhost-net backend driver for
+> copy-less data transfer between guest FE and host NIC.
+> It pins the guest user space to the host memory and
+> provides proto_ops as sendmsg/recvmsg to vhost-net.
+> 
+> Signed-off-by: Xin Xiaohui <xiaohui.xin@intel.com>
+> Signed-off-by: Zhao Yu <yzhao81@gmail.com>
+> Sigend-off-by: Jeff Dike <jdike@c2.user-mode-linux.org>
 
-I left the buffers for hdev->hid_output_raw_report() on the stack
-because the Bluetooth HIDP code memcpy's the contents into a freshly
-allocated skb.
 
-Michael
+> +static int page_ctor_attach(struct mp_struct *mp)
+> +{
+> +	int rc;
+> +	struct page_ctor *ctor;
+> +	struct net_device *dev = mp->dev;
+> +
+> +	rcu_read_lock();
+> +	if (rcu_dereference(mp->ctor)) {
+> +		rcu_read_unlock();
+> +		return -EBUSY;
+> +	}
+> +	rcu_read_unlock();
 
- drivers/hid/hid-magicmouse.c |  100 +++++++++++++++++-------------------------
- 1 files changed, 40 insertions(+), 60 deletions(-)
+Strange read locking here, for an obvious writer role.
+What do you really want to do ?
+If writer are serialized by mp_mutex, you dont need this
+recu_read_lock()/rcu_read_unlock() stuff.
 
-diff --git a/drivers/hid/hid-magicmouse.c b/drivers/hid/hid-magicmouse.c
-index f94b3e4..4a3a94f 100644
---- a/drivers/hid/hid-magicmouse.c
-+++ b/drivers/hid/hid-magicmouse.c
-@@ -18,22 +18,22 @@
- 
- #include "hid-ids.h"
- 
--static bool emulate_3button = 1;
-+static bool emulate_3button = true;
- module_param(emulate_3button, bool, 0644);
- MODULE_PARM_DESC(emulate_3button, "Emulate a middle button");
- 
- static int middle_button_start = -350;
- static int middle_button_stop = +350;
- 
--static bool emulate_scroll_wheel = 1;
-+static bool emulate_scroll_wheel = true;
- module_param(emulate_scroll_wheel, bool, 0644);
- MODULE_PARM_DESC(emulate_scroll_wheel, "Emulate a scroll wheel");
- 
--static bool report_touches = 1;
-+static bool report_touches = true;
- module_param(report_touches, bool, 0644);
- MODULE_PARM_DESC(report_touches, "Emit touch records (otherwise, only use them for emulation)");
- 
--static bool report_undeciphered = 0;
-+static bool report_undeciphered;
- module_param(report_undeciphered, bool, 0644);
- MODULE_PARM_DESC(report_undeciphered, "Report undeciphered multi-touch state field using a MSC_RAW event");
- 
-@@ -108,9 +108,9 @@ static int magicmouse_firm_touch(struct magicmouse_sc *msc)
- 
- static void magicmouse_emit_buttons(struct magicmouse_sc *msc, int state)
- {
--        int last_state = test_bit(BTN_LEFT, msc->input->key) << 0 |
--                test_bit(BTN_RIGHT, msc->input->key) << 1 |
--                test_bit(BTN_MIDDLE, msc->input->key) << 2;
-+	int last_state = test_bit(BTN_LEFT, msc->input->key) << 0 |
-+		test_bit(BTN_RIGHT, msc->input->key) << 1 |
-+		test_bit(BTN_MIDDLE, msc->input->key) << 2;
- 
- 	if (emulate_3button) {
- 		int id;
-@@ -177,7 +177,7 @@ static void magicmouse_emit_touch(struct magicmouse_sc *msc, int raw_id, u8 *tda
- 		switch (tdata[7] & TOUCH_STATE_MASK) {
- 		case TOUCH_STATE_START:
- 			msc->touches[id].scroll_y = y;
--                        msc->scroll_accel = min_t(int, msc->scroll_accel + 1,
-+			msc->scroll_accel = min_t(int, msc->scroll_accel + 1,
- 						ARRAY_SIZE(accel_profile) - 1);
- 			break;
- 		case TOUCH_STATE_DRAG:
-@@ -193,7 +193,7 @@ static void magicmouse_emit_touch(struct magicmouse_sc *msc, int raw_id, u8 *tda
- 
- 	/* Generate the input events for this touch. */
- 	if (report_touches) {
--                int orientation = (misc >> 10) - 32;
-+		int orientation = (misc >> 10) - 32;
- 
- 		input_report_abs(input, ABS_MT_TRACKING_ID, id);
- 		input_report_abs(input, ABS_MT_TOUCH_MAJOR, tdata[3]);
-@@ -202,9 +202,8 @@ static void magicmouse_emit_touch(struct magicmouse_sc *msc, int raw_id, u8 *tda
- 		input_report_abs(input, ABS_MT_POSITION_X, x);
- 		input_report_abs(input, ABS_MT_POSITION_Y, y);
- 
--		if (report_undeciphered) {
-+		if (report_undeciphered)
- 			input_event(input, EV_MSC, MSC_RAW, tdata[7]);
--		}
- 
- 		input_mt_sync(input);
- 	}
-@@ -291,62 +290,41 @@ static void magicmouse_setup_input(struct input_dev *input, struct hid_device *h
- 	input->id.version = hdev->version;
- 	input->dev.parent = hdev->dev.parent;
- 
--	set_bit(EV_KEY, input->evbit);
--	set_bit(BTN_LEFT, input->keybit);
--	set_bit(BTN_RIGHT, input->keybit);
-+	__set_bit(EV_KEY, input->evbit);
-+	__set_bit(BTN_LEFT, input->keybit);
-+	__set_bit(BTN_RIGHT, input->keybit);
- 	if (emulate_3button)
--		set_bit(BTN_MIDDLE, input->keybit);
--	set_bit(BTN_TOOL_FINGER, input->keybit);
-+		__set_bit(BTN_MIDDLE, input->keybit);
-+	__set_bit(BTN_TOOL_FINGER, input->keybit);
- 
--	set_bit(EV_REL, input->evbit);
--	set_bit(REL_X, input->relbit);
--	set_bit(REL_Y, input->relbit);
-+	__set_bit(EV_REL, input->evbit);
-+	__set_bit(REL_X, input->relbit);
-+	__set_bit(REL_Y, input->relbit);
- 	if (emulate_scroll_wheel)
--		set_bit(REL_WHEEL, input->relbit);
-+		__set_bit(REL_WHEEL, input->relbit);
- 
- 	if (report_touches) {
--		set_bit(EV_ABS, input->evbit);
--
--		set_bit(ABS_MT_TRACKING_ID, input->absbit);
--		input->absmin[ABS_MT_TRACKING_ID] = 0;
--		input->absmax[ABS_MT_TRACKING_ID] = 15;
--		input->absfuzz[ABS_MT_TRACKING_ID] = 0;
--
--		set_bit(ABS_MT_TOUCH_MAJOR, input->absbit);
--		input->absmin[ABS_MT_TOUCH_MAJOR] = 0;
--		input->absmax[ABS_MT_TOUCH_MAJOR] = 255;
--		input->absfuzz[ABS_MT_TOUCH_MAJOR] = 4;
--
--		set_bit(ABS_MT_TOUCH_MINOR, input->absbit);
--		input->absmin[ABS_MT_TOUCH_MINOR] = 0;
--		input->absmax[ABS_MT_TOUCH_MINOR] = 255;
--		input->absfuzz[ABS_MT_TOUCH_MINOR] = 4;
--
--		set_bit(ABS_MT_ORIENTATION, input->absbit);
--		input->absmin[ABS_MT_ORIENTATION] = -32;
--		input->absmax[ABS_MT_ORIENTATION] = 31;
--		input->absfuzz[ABS_MT_ORIENTATION] = 1;
--
--		set_bit(ABS_MT_POSITION_X, input->absbit);
--		input->absmin[ABS_MT_POSITION_X] = -1100;
--		input->absmax[ABS_MT_POSITION_X] = 1358;
--		input->absfuzz[ABS_MT_POSITION_X] = 4;
--
-+		__set_bit(EV_ABS, input->evbit);
-+
-+		input_set_abs_params(input, ABS_MT_TRACKING_ID, 0, 15, 0, 0);
-+		input_set_abs_params(input, ABS_MT_TOUCH_MAJOR, 0, 255, 4, 0);
-+		input_set_abs_params(input, ABS_MT_TOUCH_MINOR, 0, 255, 4, 0);
-+		input_set_abs_params(input, ABS_MT_ORIENTATION, -32, 31, 1, 0);
-+		input_set_abs_params(input, ABS_MT_POSITION_X, -1100, 1358,
-+				4, 0);
- 		/* Note: Touch Y position from the device is inverted relative
- 		 * to how pointer motion is reported (and relative to how USB
- 		 * HID recommends the coordinates work).  This driver keeps
- 		 * the origin at the same position, and just uses the additive
- 		 * inverse of the reported Y.
- 		 */
--		set_bit(ABS_MT_POSITION_Y, input->absbit);
--		input->absmin[ABS_MT_POSITION_Y] = -1589;
--		input->absmax[ABS_MT_POSITION_Y] = 2047;
--		input->absfuzz[ABS_MT_POSITION_Y] = 4;
-+		input_set_abs_params(input, ABS_MT_POSITION_Y, -1589, 2047,
-+				4, 0);
- 	}
- 
- 	if (report_undeciphered) {
--		set_bit(EV_MSC, input->evbit);
--		set_bit(MSC_RAW, input->mscbit);
-+		__set_bit(EV_MSC, input->evbit);
-+		__set_bit(MSC_RAW, input->mscbit);
- 	}
- }
- 
-@@ -385,7 +363,7 @@ static int magicmouse_probe(struct hid_device *hdev,
- 	if (!report) {
- 		dev_err(&hdev->dev, "unable to register touch report\n");
- 		ret = -ENOMEM;
--		goto err_free;
-+		goto err_stop_hw;
- 	}
- 	report->size = 6;
- 
-@@ -394,35 +372,37 @@ static int magicmouse_probe(struct hid_device *hdev,
- 	if (ret != sizeof(feature_1)) {
- 		dev_err(&hdev->dev, "unable to request touch data (1:%d)\n",
- 				ret);
--		goto err_free;
-+		goto err_stop_hw;
- 	}
- 	ret = hdev->hid_output_raw_report(hdev, feature_2,
- 			sizeof(feature_2), HID_FEATURE_REPORT);
- 	if (ret != sizeof(feature_2)) {
- 		dev_err(&hdev->dev, "unable to request touch data (2:%d)\n",
- 				ret);
--		goto err_free;
-+		goto err_stop_hw;
- 	}
- 
- 	input = input_allocate_device();
- 	if (!input) {
- 		dev_err(&hdev->dev, "can't alloc input device\n");
- 		ret = -ENOMEM;
--		goto err_free;
-+		goto err_stop_hw;
- 	}
- 	magicmouse_setup_input(input, hdev);
- 
- 	ret = input_register_device(input);
- 	if (ret) {
- 		dev_err(&hdev->dev, "input device registration failed\n");
--		goto err_both;
-+		goto err_input;
- 	}
- 	msc->input = input;
- 
- 	return 0;
-- err_both:
-+err_input:
- 	input_free_device(input);
-- err_free:
-+err_stop_hw:
-+	hid_hw_stop(hdev);
-+err_free:
- 	kfree(msc);
- 	return ret;
- }
--- 
-1.6.5.6
+> +
+> +	ctor = kzalloc(sizeof(*ctor), GFP_KERNEL);
+> +	if (!ctor)
+> +		return -ENOMEM;
+> +	rc = netdev_page_ctor_prep(dev, &ctor->ctor);
+> +	if (rc)
+> +		goto fail;
+> +
+> +	ctor->cache = kmem_cache_create("skb_page_info",
+> +			sizeof(struct page_info), 0,
+> +			SLAB_HWCACHE_ALIGN|SLAB_PANIC, NULL);
+
+
+SLAB_PANIC here means : crash whole system in case of error.
+This is not what you want in a driver.
+
+> +
+> +	if (!ctor->cache)
+> +		goto cache_fail;
+> +
+> +	INIT_LIST_HEAD(&ctor->readq);
+> +	spin_lock_init(&ctor->read_lock);
+> +
+> +	ctor->w_len = 0;
+> +	ctor->r_len = 0;
+> +
+> +	dev_hold(dev);
+> +	ctor->dev = dev;
+> +	ctor->ctor.ctor = page_ctor;
+> +	ctor->ctor.sock = &mp->socket;
+> +	atomic_set(&ctor->refcnt, 1);
+> +
+> +	rc = netdev_page_ctor_attach(dev, &ctor->ctor);
+> +	if (rc)
+> +		goto fail;
+> +
+> +	/* locked by mp_mutex */
+> +	rcu_assign_pointer(mp->ctor, ctor);
+> +
+> +	/* XXX:Need we do set_offload here ? */
+> +
+> +	return 0;
+> +
+> +fail:
+> +	kmem_cache_destroy(ctor->cache);
+> +cache_fail:
+> +	kfree(ctor);
+> +	dev_put(dev);
+> +
+> +	return rc;
+> +}
+> +
+> +
+> +static inline void get_page_ctor(struct page_ctor *ctor)
+> +{
+> +       atomic_inc(&ctor->refcnt);
+> +}
+> +
+> +static inline void put_page_ctor(struct page_ctor *ctor)
+> +{
+> +	if (atomic_dec_and_test(&ctor->refcnt))
+> +		kfree(ctor);
+
+Are you sure a RCU grace period is not needed before freeing ?
+
+
+> +
+> +static int page_ctor_detach(struct mp_struct *mp)
+> +{
+> +	struct page_ctor *ctor;
+> +	struct page_info *info;
+> +	int i;
+> +
+> +	rcu_read_lock();
+> +	ctor = rcu_dereference(mp->ctor);
+> +	rcu_read_unlock();
+
+Strange locking again here
+
+
+> +
+> +	if (!ctor)
+> +		return -ENODEV;
+> +
+> +	while ((info = info_dequeue(ctor))) {
+> +		for (i = 0; i < info->pnum; i++)
+> +			if (info->pages[i])
+> +				put_page(info->pages[i]);
+> +		kmem_cache_free(ctor->cache, info);
+> +	}
+> +	kmem_cache_destroy(ctor->cache);
+> +	netdev_page_ctor_detach(ctor->dev);
+> +	dev_put(ctor->dev);
+> +
+> +	/* locked by mp_mutex */
+> +	rcu_assign_pointer(mp->ctor, NULL);
+> +	synchronize_rcu();
+> +
+> +	put_page_ctor(ctor);
+> +
+> +	return 0;
+> +}
+> +
+> +/* For small user space buffers transmit, we don't need to call
+> + * get_user_pages().
+> + */
+> +static struct page_info *alloc_small_page_info(struct page_ctor *ctor,
+> +		int total)
+> +{
+> +	struct page_info *info = kmem_cache_alloc(ctor->cache, GFP_KERNEL);
+kmem_cache_zalloc() ?
+> +
+> +	if (!info)
+> +		return NULL;
+> +	memset(info, 0, sizeof(struct page_info));
+> +	memset(info->pages, 0, sizeof(info->pages));
+
+redundant memset() whole structure already cleared one line above
+
+> +
+> +	info->header = 0;
+already cleared
+> +	info->total = total;
+> +	info->skb = NULL;
+already cleared 
+> 
+> +	info->user.dtor = page_dtor;
+> +	info->ctor = ctor;
+> +	info->flags = INFO_WRITE;
+> +	info->pnum = 0;
+already cleared 
+> 
+> +	return info;
+> +}
+> +
+> +/* The main function to transform the guest user space address
+> + * to host kernel address via get_user_pages(). Thus the hardware
+> + * can do DMA directly to the user space address.
+> + */
+> +static struct page_info *alloc_page_info(struct page_ctor *ctor,
+> +			struct iovec *iov, int count, struct frag *frags,
+> +			int npages, int total)
+> +{
+> +	int rc;
+> +	int i, j, n = 0;
+> +	int len;
+> +	unsigned long base;
+> +	struct page_info *info = kmem_cache_alloc(ctor->cache, GFP_KERNEL);
+kmem_cache_zalloc() ? 
+> 
+> +
+> +	if (!info)
+> +		return NULL;
+> +	memset(info, 0, sizeof(struct page_info));
+kmem_cache_zalloc() ?
+> +	memset(info->pages, 0, sizeof(info->pages));
+already cleared 
+> 
+> +
+> +	down_read(&current->mm->mmap_sem);
+> +	for (i = j = 0; i < count; i++) {
+> +		base = (unsigned long)iov[i].iov_base;
+> +		len = iov[i].iov_len;
+> +
+> +		if (!len)
+> +			continue;
+> +		n = ((base & ~PAGE_MASK) + len + ~PAGE_MASK) >> PAGE_SHIFT;
+> +
+> +		rc = get_user_pages(current, current->mm, base, n,
+> +				npages ? 1 : 0, 0, &info->pages[j], NULL);
+> +		if (rc != n) {
+> +			up_read(&current->mm->mmap_sem);
+> +			goto failed;
+> +		}
+> +
+> +		while (n--) {
+> +			frags[j].offset = base & ~PAGE_MASK;
+> +			frags[j].size = min_t(int, len,
+> +					PAGE_SIZE - frags[j].offset);
+> +			len -= frags[j].size;
+> +			base += frags[j].size;
+> +			j++;
+> +		}
+> +	}
+> +	up_read(&current->mm->mmap_sem);
+> +
+> +#ifdef CONFIG_HIGHMEM
+> +	if (npages && !(dev->features & NETIF_F_HIGHDMA)) {
+> +		for (i = 0; i < j; i++) {
+> +			if (PageHighMem(info->pages[i]))
+> +				goto failed;
+> +		}
+> +	}
+> +#endif
+> +
+> +	info->header = 0;
+> +	info->total = total;
+> +	info->skb = NULL;
+> +	info->user.dtor = page_dtor;
+> +	info->ctor = ctor;
+> +	info->pnum = j;
+> +
+> +	if (!npages)
+> +		info->flags = INFO_WRITE;
+> +	if (info->flags == INFO_READ) {
+> +		info->user.start = (u8 *)(((unsigned long)
+> +				(pfn_to_kaddr(page_to_pfn(info->pages[0]))) +
+> +				frags[0].offset) - NET_IP_ALIGN - NET_SKB_PAD);
+> +		info->user.size = iov[0].iov_len + NET_IP_ALIGN + NET_SKB_PAD;
+> +	}
+> +	return info;
+> +
+> +failed:
+> +	for (i = 0; i < j; i++)
+> +		put_page(info->pages[i]);
+> +
+> +	kmem_cache_free(ctor->cache, info);
+> +
+> +	return NULL;
+> +}
+> +
+> +struct page_ctor *mp_rcu_get_ctor(struct page_ctor *ctor)
+> +{
+> +	struct page_ctor *_ctor = NULL;
+> +
+> +	rcu_read_lock();
+> +	_ctor = rcu_dereference(ctor);
+> +	rcu_read_unlock();
+strange locking. After rcu_read_unlock() you have no guarantee _ctor
+points to something not freed.
+> +
+> +	if (!_ctor) {
+> +		DBG(KERN_INFO "Device %s cannot do mediate passthru.\n",
+> +				ctor->dev->name);
+> +		return NULL;
+> +	}
+> +	if (_ctor)
+redundant test
+> +		get_page_ctor(_ctor);
+> +	return _ctor;
+> +}
+> +
+
+I stopped my review at this point. Please check your RCU usages. It is
+not sufficient to hold rcu read lock just to fetch the pointer, you also
+must hold the lock while using the object itself, or get a reference on
+object before release RCU lock, to make sure object wont disappear under
+you...
+
+for example :
+
+rcu_read_lock();
+ptr = rcu_dereference(...);
+if (ptr)
+	atomic_inc(&ptr->refcnt);
+rcu_read_unlock();
+
+
+
+
+
 
