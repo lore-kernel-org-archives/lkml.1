@@ -1,84 +1,93 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751431Ab0BKNOL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 08:14:11 -0500
-Received: from cantor.suse.de ([195.135.220.2]:44608 "EHLO mx1.suse.de"
+	id S1751641Ab0BKNXR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 08:23:17 -0500
+Received: from hera.kernel.org ([140.211.167.34]:47654 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750804Ab0BKNOK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 08:14:10 -0500
-Date: Thu, 11 Feb 2010 14:14:17 +0100
-From: Jan Kara <jack@suse.cz>
-To: Nikanth Karthikesan <knikanth@suse.de>
-Cc: Jan Kara <jack@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
-       jens.axboe@oracle.com, jmoyer@redhat.com
-Subject: Re: CFQ slower than NOOP with pgbench
-Message-ID: <20100211131416.GA3242@quack.suse.cz>
-References: <20100210223255.GC3367@quack.suse.cz>
- <201002110940.33303.knikanth@suse.de>
+	id S1750830Ab0BKNXQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 08:23:16 -0500
+Message-ID: <4B74065D.2000707@kernel.org>
+Date: Thu, 11 Feb 2010 22:30:05 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <201002110940.33303.knikanth@suse.de>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Miklos Szeredi <miklos@szeredi.hu>
+CC: mszeredi@suse.cz, linux-kernel@vger.kernel.org,
+       fuse-devel@lists.sourceforge.net, polynomial-c@gentoo.org,
+       akpm@linux-foundation.org
+Subject: Re: [fuse-devel] [PATCH] FUSE/CUSE: implement direct mmap support
+References: <4B70FBE4.7050700@kernel.org> <E1NerZ6-0007N6-UY@pomaz-ex.szeredi.hu> <4B7296DF.207@kernel.org> <E1NfAl6-0000o4-8Z@pomaz-ex.szeredi.hu> <4B729F07.8020704@kernel.org> <E1NfBTc-0000vk-59@pomaz-ex.szeredi.hu> <4B72A802.6040009@kernel.org> <E1NfE50-0001EK-Ao@pomaz-ex.szeredi.hu> <4B7344A4.1030607@kernel.org> <E1NfVOi-0002l9-5l@pomaz-ex.szeredi.hu> <4B73EE68.4070004@kernel.org> <E1NfYFm-00034C-Pd@pomaz-ex.szeredi.hu> <4B73FE96.2080707@kernel.org> <E1NfYfb-00039p-Uh@pomaz-ex.szeredi.hu>
+In-Reply-To: <E1NfYfb-00039p-Uh@pomaz-ex.szeredi.hu>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 11 Feb 2010 13:22:49 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 11-02-10 09:40:33, Nikanth Karthikesan wrote:
-> On Thursday 11 February 2010 04:02:55 Jan Kara wrote:
-> >   Hi,
-> > 
-> >   I was playing with a pgbench benchmark - it runs a series of operations
-> > on top of PostgreSQL database. I was using:
-> >   pgbench -c 8 -t 2000 pgbench
-> > which runs 8 threads and each thread does 2000 transactions over the
-> > database. The funny thing is that the benchmark does ~70 tps (transactions
-> > per second) with CFQ and ~90 tps with a NOOP io scheduler. This is with
-> > 2.6.32 kernel.
-> >   The load on the IO subsystem basically looks like lots of random reads
-> > interleaved with occasional short synchronous sequential writes (the
-> > database does write immediately followed by fdatasync) to the database
-> > logs. I was pondering for quite some time why CFQ is slower and I've tried
-> > tuning it in various ways without success. What I found is that with NOOP
-> > scheduler, the fdatasync is like 20-times faster on average than with CFQ.
-> > Looking at the block traces (available on request) this is usually because
-> > when fdatasync is called, it takes time before the timeslice of the process
-> > doing the sync comes (other processes are using their timeslices for reads)
-> > and writes are dispatched... The question is: Can we do something about
-> > that? Because I'm currently out of ideas except for hacks like "run this
-> > queue immediately if it's fsync" or such...
+Hello,
+
+On 02/11/2010 10:01 PM, Miklos Szeredi wrote:
+>> That's the requirement coming from allowing the server to determine
+>> how these mmaps are served, not from the fact that the management is
+>> done via server side mmaps or the server maps those regions into its
+>> process address space.  No matter how you do it, if you want to mix
+>> and match client mmap requests, the SHMLBA alignment will be visible.
 > 
-> I guess, noop would be hurting those reads which is also a synchronous 
-> operation like fsync. But it doesn't seem to have a huge negative impact on 
-> the pgbench. Is it because reads are random in this benchmark and delaying 
-> them might even help by getting new requests for sectors in between two random 
-> reads? If that is the case, I dont think fsync should be given higher priority 
-> than reads based on this benchmark.
+> Can you give an example?
+
+Hmmm... I don't have any specific example.  osspd is the only real
+thing which uses it and it serves each mmap request with a separate
+region.  Oh... the fmmap example program serves the same region to
+mmap requests coming from the same UID, so it does both sharing and
+putting maps apart.
+
+>> I suppose you're talking about not allowing offsets to be adjusted at
+>> all but I don't think that's a restriction we would want to have at
+>> the kernel API level because offset might encode different things for
+>> device mmaps.
 > 
-> Can you make the blktrace available?
-  OK, traces are available from:
-http://beta.suse.com/private/jack/pgbench-cfq-noop/pgbench-blktrace.tar.gz
+> Possibly.  But there's some confusion about offsets again.  This
+> offset is not the same as the one currently returned in fuse_mmap_out.
 
-  I've tried also two tests: I've run the database with LD_PRELOAD so that
-fdatasync does
-a) nothing
-b) calls sync_file_range(fd, 0, LLONG_MAX, SYNC_FILE_RANGE_WRITE)
-c) calls posix_fadvise(fd, 0, LLONG_MAX, POSIX_FADV_DONTNEED)
-   - it does filemap_flush() which was my main aim..
+This offset is the offset client requests.
 
-  The results (CFQ as a IO scheduler) are interesting. In a) the performance
-was slightly higher than with NOOP scheduler and fully functional fdatasync.
-Not surprising - we spend only like 2 s (out of ~200) in fdatasync with NOOP
-scheduler.
-  In b) the performance was only about 2% better than with full fdatasync
-(with NOOP scheduler, it's ~20% better). Looking at the strace
-output, it seems sync_file_range() takes as long as fdatasync() took -
-probably because we are waiting for PageWriteback or lock_page.
-  In c) the performance was ~11% better - fadvise calls seem to be quite
-quick - comparable times between CFQ and NOOP. So higher latency of fdatasync
-seems to be at least part of a problem...
+> And neither is the SHMLBA alignment requirement so clear:
+> 
+> You say, that ossp ignores the client mmap offset.  So basically it
+> resets the offset to zero, whatever it was, no?  That sounds fine, but
+> then you are adjusting the offset by something not necessarily a
+> multiple of SHMLBA.
 
-								Honza
+Yeap and that would be a bug.  It will probably have to do % SHMLBA on
+the offset.  I don't think all OSS drivers would be caring about these
+stuff anyway.  Most of them work on only x86 where SHMLBA == PAGE_SIZE.
+
+> So there are different offsets:
+> 
+>  a) vma->vm_pgoff (which may mean anything, but usually means b)
+
+Yeap, vma->vm_pgoff can be any value and doesn't really matter.  The
+only visible difference would be the /proc listing, right?  Setting
+this to the requested offset is trivial.
+
+>  b) the offset at which the pages of the mapping are located
+>  c) the offset at which the server side mmap is located
+
+There are three offsets.
+
+a) the offset a client requested
+
+b) the offset into dmmap AS, a client mmap region is mapped to.  This
+   could be different from a) by multiple of SHMLBA / PAGE_SIZE.
+
+c) the offset into dmmap AS, a server mmap region is mapped to, where
+   collection of these mmaps define the dmmap AS.
+
+The offsets used in b) and c) are the same offsets.
+
+Thanks.
+
 -- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+tejun
