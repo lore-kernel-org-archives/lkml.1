@@ -1,63 +1,155 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753948Ab0BKKJp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 05:09:45 -0500
-Received: from mail-fx0-f220.google.com ([209.85.220.220]:62055 "EHLO
-	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753512Ab0BKKJn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 05:09:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=ZE9quNpVFD4JdMfI21ajNjPXngBastSC88pjwcKFC1n5YCoqyw30PWp2xZRKM9CM3l
-         ZACGafzyoyDsAzuvyTXLNImwVpNQpINU3EJzyIrOr9HmneDQSe3u6eSUGyCV9/1luDcn
-         AkMatmkCNYgU+wcKxqUzu/I/n/1nmtBgpsfAk=
-Date: Thu, 11 Feb 2010 11:10:13 +0100
-From: "Carlos R. Mafra" <crmafra2@gmail.com>
-To: Alexander Lam <lambchop468@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yinghai@kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: mtrr cleanup not doing anything on 2.6.33-rc7
-Message-ID: <20100211101013.GA4892@Pilar.aei.mpg.de>
-References: <dfb03c971002101202i37f4a243jc6bfb44bc853cb5d@mail.gmail.com>
- <dfb03c971002101748i39d7de0bw83634c40f058de0f@mail.gmail.com>
+	id S1751358Ab0BKKPd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 05:15:33 -0500
+Received: from cantor.suse.de ([195.135.220.2]:38592 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751015Ab0BKKPb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 05:15:31 -0500
+From: Nikanth Karthikesan <knikanth@suse.de>
+Organization: suse.de
+To: Wu Fengguang <fengguang.wu@intel.com>
+Subject: [PATCH v2] Make VM_MAX_READAHEAD a kernel parameter
+Date: Thu, 11 Feb 2010 15:46:34 +0530
+User-Agent: KMail/1.12.2 (Linux/2.6.31.8-0.1-desktop; KDE/4.3.1; x86_64; ; )
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+References: <201002091659.27037.knikanth@suse.de> <20100211051341.GA13967@localhost> <201002111304.54742.knikanth@suse.de>
+In-Reply-To: <201002111304.54742.knikanth@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <dfb03c971002101748i39d7de0bw83634c40f058de0f@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002111546.35036.knikanth@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Add people in that commit to Cc: list, just in case]
+[Changes since v1: Added null check for parameter without value]
 
-On Mi 10.Feb'10 at 20:48:49 -0500, Alexander Lam wrote:
-> On Wed, Feb 10, 2010 at 3:02 PM, Alexander Lam <lambchop468@gmail.com> wrote:
-> >
-> > My kernel config has the following:
-> > CONFIG_MTRR=y
-> > CONFIG_MTRR_SANITIZER=y
-> > CONFIG_MTRR_SANITIZER_ENABLE_DEFAULT=1
-> > CONFIG_MTRR_SANITIZER_SPARE_REG_NR_DEFAULT=1
-> >
-> > With previous kernels, dmesg would show that the sanitizer was indeed
-> > cleaning up the mtrrs [1]
-> >
-> > but now, with 2.6.33-rc7 there is no indication that this is occuring,
-> 
-> For those who run across this later,
-> 
-> Found out that commit 508d85c2c6bc8cba53d2a54d9a306ad64a0a80bf,
->    x86: When cleaning MTRRs, do not fold WP into UC
-> 
-> causes mtrr cleanup not to run on my machine.
-> 
-> Probably not worth fixing because the i915 error message is harmless.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+From: Nikanth Karthikesan <knikanth@suse.de>
+
+Add new kernel parameter "readahead", which would be used
+as the value of VM_MAX_READAHEAD.
+
+Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
+
+---
+
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 736d456..354e6f1 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -2148,6 +2148,8 @@ and is between 256 and 4096 characters. It is defined in the file
+ 			Format: <reboot_mode>[,<reboot_mode2>[,...]]
+ 			See arch/*/kernel/reboot.c or arch/*/kernel/process.c
+ 
++	readahead=	Default readahead value for block devices.
++
+ 	relax_domain_level=
+ 			[KNL, SMP] Set scheduler's default relax_domain_level.
+ 			See Documentation/cgroups/cpusets.txt.
+diff --git a/block/blk-core.c b/block/blk-core.c
+index 718897e..02ed748 100644
+--- a/block/blk-core.c
++++ b/block/blk-core.c
+@@ -499,7 +499,7 @@ struct request_queue *blk_alloc_queue_node(gfp_t gfp_mask, int node_id)
+ 	q->backing_dev_info.unplug_io_fn = blk_backing_dev_unplug;
+ 	q->backing_dev_info.unplug_io_data = q;
+ 	q->backing_dev_info.ra_pages =
+-			(VM_MAX_READAHEAD * 1024) / PAGE_CACHE_SIZE;
++			(vm_max_readahead_kb * 1024) / PAGE_CACHE_SIZE;
+ 	q->backing_dev_info.state = 0;
+ 	q->backing_dev_info.capabilities = BDI_CAP_MAP_COPY;
+ 	q->backing_dev_info.name = "block";
+diff --git a/fs/fuse/inode.c b/fs/fuse/inode.c
+index 1a822ce..a593578 100644
+--- a/fs/fuse/inode.c
++++ b/fs/fuse/inode.c
+@@ -870,7 +870,7 @@ static int fuse_bdi_init(struct fuse_conn *fc, struct super_block *sb)
+ 	int err;
+ 
+ 	fc->bdi.name = "fuse";
+-	fc->bdi.ra_pages = (VM_MAX_READAHEAD * 1024) / PAGE_CACHE_SIZE;
++	fc->bdi.ra_pages = (vm_max_readahead_kb * 1024) / PAGE_CACHE_SIZE;
+ 	fc->bdi.unplug_io_fn = default_unplug_io_fn;
+ 	/* fuse does it's own writeback accounting */
+ 	fc->bdi.capabilities = BDI_CAP_NO_ACCT_WB;
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 60c467b..17825d7 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -1188,9 +1188,11 @@ int write_one_page(struct page *page, int wait);
+ void task_dirty_inc(struct task_struct *tsk);
+ 
+ /* readahead.c */
+-#define VM_MAX_READAHEAD	128	/* kbytes */
++#define DEFAULT_VM_MAX_READAHEAD       128     /* kbytes */
+ #define VM_MIN_READAHEAD	16	/* kbytes (includes current page) */
+ 
++extern unsigned long vm_max_readahead_kb;
++
+ int force_page_cache_readahead(struct address_space *mapping, struct file *filp,
+ 			pgoff_t offset, unsigned long nr_to_read);
+ 
+diff --git a/init/main.c b/init/main.c
+index 4cb47a1..a801358 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -70,6 +70,7 @@
+ #include <linux/sfi.h>
+ #include <linux/shmem_fs.h>
+ #include <trace/boot.h>
++#include <linux/backing-dev.h>
+ 
+ #include <asm/io.h>
+ #include <asm/bugs.h>
+@@ -249,6 +250,18 @@ static int __init loglevel(char *str)
+ 
+ early_param("loglevel", loglevel);
+ 
++static int __init readahead(char *str)
++{
++	if (!str)
++		return -EINVAL;
++	vm_max_readahead_kb = memparse(str, &str) / 1024ULL;
++	default_backing_dev_info.ra_pages = vm_max_readahead_kb
++						* 1024 / PAGE_CACHE_SIZE;
++	return 0;
++}
++
++early_param("readahead", readahead);
++
+ /*
+  * Unknown boot options get handed to init, unless they look like
+  * unused parameters (modprobe will find them in /proc/cmdline).
+diff --git a/mm/backing-dev.c b/mm/backing-dev.c
+index 0e8ca03..e33ff34 100644
+--- a/mm/backing-dev.c
++++ b/mm/backing-dev.c
+@@ -18,7 +18,7 @@ EXPORT_SYMBOL(default_unplug_io_fn);
+ 
+ struct backing_dev_info default_backing_dev_info = {
+ 	.name		= "default",
+-	.ra_pages	= VM_MAX_READAHEAD * 1024 / PAGE_CACHE_SIZE,
++	.ra_pages	= DEFAULT_VM_MAX_READAHEAD * 1024 / PAGE_CACHE_SIZE,
+ 	.state		= 0,
+ 	.capabilities	= BDI_CAP_MAP_COPY,
+ 	.unplug_io_fn	= default_unplug_io_fn,
+diff --git a/mm/readahead.c b/mm/readahead.c
+index 033bc13..516f8da 100644
+--- a/mm/readahead.c
++++ b/mm/readahead.c
+@@ -17,6 +17,8 @@
+ #include <linux/pagevec.h>
+ #include <linux/pagemap.h>
+ 
++unsigned long vm_max_readahead_kb = DEFAULT_VM_MAX_READAHEAD;
++
+ /*
+  * Initialise a struct file's readahead state.  Assumes that the caller has
+  * memset *ra to zero.
