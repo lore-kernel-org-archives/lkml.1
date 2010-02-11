@@ -1,93 +1,75 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751641Ab0BKNXR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 08:23:17 -0500
-Received: from hera.kernel.org ([140.211.167.34]:47654 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750830Ab0BKNXQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 08:23:16 -0500
-Message-ID: <4B74065D.2000707@kernel.org>
-Date: Thu, 11 Feb 2010 22:30:05 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	id S1752252Ab0BKNZL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 08:25:11 -0500
+Received: from moutng.kundenserver.de ([212.227.126.187]:62462 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751107Ab0BKNZJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 08:25:09 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: "Xin, Xiaohui" <xiaohui.xin@intel.com>
+Subject: Re: [PATCH 0/3] Provide a zero-copy method on KVM virtio-net.
+Date: Thu, 11 Feb 2010 14:25:01 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
+Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "mingo@elte.hu" <mingo@elte.hu>, "mst@redhat.com" <mst@redhat.com>,
+       "jdike@c2.user-mode-linux.org" <jdike@c2.user-mode-linux.org>
+References: <1265802540-6122-1-git-send-email-xiaohui.xin@intel.com> <201002101440.05063.arnd@arndb.de> <97F6D3BD476C464182C1B7BABF0B0AF5C11F641A@shzsmsx502.ccr.corp.intel.com>
+In-Reply-To: <97F6D3BD476C464182C1B7BABF0B0AF5C11F641A@shzsmsx502.ccr.corp.intel.com>
 MIME-Version: 1.0
-To: Miklos Szeredi <miklos@szeredi.hu>
-CC: mszeredi@suse.cz, linux-kernel@vger.kernel.org,
-       fuse-devel@lists.sourceforge.net, polynomial-c@gentoo.org,
-       akpm@linux-foundation.org
-Subject: Re: [fuse-devel] [PATCH] FUSE/CUSE: implement direct mmap support
-References: <4B70FBE4.7050700@kernel.org> <E1NerZ6-0007N6-UY@pomaz-ex.szeredi.hu> <4B7296DF.207@kernel.org> <E1NfAl6-0000o4-8Z@pomaz-ex.szeredi.hu> <4B729F07.8020704@kernel.org> <E1NfBTc-0000vk-59@pomaz-ex.szeredi.hu> <4B72A802.6040009@kernel.org> <E1NfE50-0001EK-Ao@pomaz-ex.szeredi.hu> <4B7344A4.1030607@kernel.org> <E1NfVOi-0002l9-5l@pomaz-ex.szeredi.hu> <4B73EE68.4070004@kernel.org> <E1NfYFm-00034C-Pd@pomaz-ex.szeredi.hu> <4B73FE96.2080707@kernel.org> <E1NfYfb-00039p-Uh@pomaz-ex.szeredi.hu>
-In-Reply-To: <E1NfYfb-00039p-Uh@pomaz-ex.szeredi.hu>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 11 Feb 2010 13:22:49 +0000 (UTC)
+Message-Id: <201002111425.01720.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/UijXaQaBR/9XVQwMxN7Yc72P9iOsfsZT3BE7
+ xZZ/f1bnDWmL8oyEDEUsK7siUv/vpvo3EhQQ6EME06/AIE2xDZ
+ Jky1cMuB81vNyK2uCKfcw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-On 02/11/2010 10:01 PM, Miklos Szeredi wrote:
->> That's the requirement coming from allowing the server to determine
->> how these mmaps are served, not from the fact that the management is
->> done via server side mmaps or the server maps those regions into its
->> process address space.  No matter how you do it, if you want to mix
->> and match client mmap requests, the SHMLBA alignment will be visible.
+On Thursday 11 February 2010, Xin, Xiaohui wrote:
+> >This does a lot of things that I had planned for macvtap. It's
+> >great to hear that you have made this much progress.
+> >
+> >However, I'd hope that we could combine this with the macvtap driver,
+> >which would give us zero-copy transfer capability both with and
+> >without vhost, as well as (tx at least) when using multiple guests
+> >on a macvlan setup.
 > 
-> Can you give an example?
+> You mean the zero-copy can work with macvtap driver without vhost.
+> May you give me some detailed info about your macvtap driver and the
+> relationship between vhost and macvtap to make me have a clear picture then?
 
-Hmmm... I don't have any specific example.  osspd is the only real
-thing which uses it and it serves each mmap request with a separate
-region.  Oh... the fmmap example program serves the same region to
-mmap requests coming from the same UID, so it does both sharing and
-putting maps apart.
+macvtap provides a user interface that is largely compatible with
+the tun/tap driver, and can be used in place of that from qemu.
+Vhost-net currently interfaces with tun/tap, but not yet with macvtap,
+which is easy enough to add and already on my list.
 
->> I suppose you're talking about not allowing offsets to be adjusted at
->> all but I don't think that's a restriction we would want to have at
->> the kernel API level because offset might encode different things for
->> device mmaps.
+The underlying code is macvlan, which is a driver that virtualizes
+network adapters in software, giving you multiple net_device instances
+for a real NIC, each of them with their own MAC address.
+
+In order to do zero-copy transmit with macvtap, the idea is to
+add a nonblocking version of the aio_write() function that works
+a lot like your transmit function.
+
+For receive, the hardware does not currently know which guest
+is supposed to get any frame coming in from the outside. Adding
+zero-copy receive requires interaction with the device driver
+and hardware capabilities to separate traffic by inbound MAC
+address into separate buffers per VM.
+
+> >I'm assuming that the idea is to allow VMDq adapters to simply
+> >show up as separate adapters and have the driver handle this
+> >in a hardware specific way.
 > 
-> Possibly.  But there's some confusion about offsets again.  This
-> offset is not the same as the one currently returned in fuse_mmap_out.
+> Does the VMDq driver do so now?
 
-This offset is the offset client requests.
+I don't think anyone has published a VMDq capable driver so far.
+I was just assuming that you were working on one.
 
-> And neither is the SHMLBA alignment requirement so clear:
-> 
-> You say, that ossp ignores the client mmap offset.  So basically it
-> resets the offset to zero, whatever it was, no?  That sounds fine, but
-> then you are adjusting the offset by something not necessarily a
-> multiple of SHMLBA.
-
-Yeap and that would be a bug.  It will probably have to do % SHMLBA on
-the offset.  I don't think all OSS drivers would be caring about these
-stuff anyway.  Most of them work on only x86 where SHMLBA == PAGE_SIZE.
-
-> So there are different offsets:
-> 
->  a) vma->vm_pgoff (which may mean anything, but usually means b)
-
-Yeap, vma->vm_pgoff can be any value and doesn't really matter.  The
-only visible difference would be the /proc listing, right?  Setting
-this to the requested offset is trivial.
-
->  b) the offset at which the pages of the mapping are located
->  c) the offset at which the server side mmap is located
-
-There are three offsets.
-
-a) the offset a client requested
-
-b) the offset into dmmap AS, a client mmap region is mapped to.  This
-   could be different from a) by multiple of SHMLBA / PAGE_SIZE.
-
-c) the offset into dmmap AS, a server mmap region is mapped to, where
-   collection of these mmaps define the dmmap AS.
-
-The offsets used in b) and c) are the same offsets.
-
-Thanks.
-
--- 
-tejun
+	Arnd
