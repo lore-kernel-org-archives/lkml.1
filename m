@@ -1,78 +1,43 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751375Ab0BKFWI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 00:22:08 -0500
-Received: from xenotime.net ([72.52.64.118]:35658 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750935Ab0BKFWF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 00:22:05 -0500
-Date: Wed, 10 Feb 2010 21:22:00 -0800
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: Richard Hartmann <richih.mailinglist@gmail.com>
-Cc: linux-crypto@vger.kernel.org, Andy Whitcroft <apw@canonical.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Walker <dwalker@fifo99.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] SCRIPTS: s/should/must/ for all ERRORs
-Message-Id: <20100210212200.1e83b7c5.rdunlap@xenotime.net>
-In-Reply-To: <2d460de71002100959j49c25e37n11a8870454251d84@mail.gmail.com>
-References: <1265762465-21114-1-git-send-email-richih.mailinglist@gmail.com>
-	<20100210084908.ad315b9b.rdunlap@xenotime.net>
-	<2d460de71002100959j49c25e37n11a8870454251d84@mail.gmail.com>
-Organization: YPO4
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1751431Ab0BKFW6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 00:22:58 -0500
+Received: from mga01.intel.com ([192.55.52.88]:57172 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751161Ab0BKFW5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 00:22:57 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,449,1262592000"; 
+   d="scan'208";a="539766076"
+Date: Thu, 11 Feb 2010 13:22:47 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Nikanth Karthikesan <knikanth@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH] Remove unused macro, VM_MIN_READAHEAD.
+Message-ID: <20100211052247.GA15392@localhost>
+References: <201002091659.19988.knikanth@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <201002091659.19988.knikanth@suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 10 Feb 2010 18:59:11 +0100 Richard Hartmann wrote:
+Hi Nikanth,
 
-> PS: As I am new to the whole concept of touching the large scary kernel
-> let me use this opportunity to ask if I should expect answers on the
-> other patch emails or if they are just merged zsh-style: Silently and
-> you will notice what went through when you pull a few days later.
+On Tue, Feb 09, 2010 at 04:59:19PM +0530, Nikanth Karthikesan wrote:
+> Remove unused macro, VM_MIN_READAHEAD.
 
-OK, since nobody else has tried to answer this, I'll give it a shot.
+NAK, sorry.
 
-It happens many different ways in linux-kernel land, mostly depending on
-who is doing the merging, and it's really up to the subsystem or driver
-maintainer.
+I'm using VM_MIN_READAHEAD in this patchset:
 
-If Andrew Morton merges a patch into his mmotm patchset, you'll get an email
-confirmation of it, but this just means that it's in the mmotm patches for
-testing, not necessarily for merging into the mainline kernel tree.
+        http://lkml.org/lkml/2010/2/2/232
 
-If you send a networking patch and David S. Miller merges it, you will get
-both an acknowledgement of that and you can see the patch's status at
-http://patchwork.ozlabs.org/project/netdev/list/
+So please don't drop it.
 
-Same for multimedia driver patches, but view their status at
-http://patchwork.kernel.org/project/linux-media/list/
-
-I don't recall if Andy Whitcroft acks checkpatch patches or not, but
-you should note that checkpatch is not his highest priority job
-(but I'm not trying to speak for him).
-
-If you send patches for the staging or USB or stable pr serial/tty trees,
-GregKH will usually ack them when they are merged.
-
-If you send patches for ATA drivers, Jeff Garzik will usually ack them when
-they are merged.
-
-If you send patches for the SCSI drivers/subsystem, good luck, the SCSI
-mailing list is the best place to find out their status.
-
-If you send patches for parts of Documentation/ that are obviously not
-cared for by someone else, I'll try to get to them, but that's not my
-highest priority either.  I will ack them if/when I merge them.
-
-I guess if it's not clear to you or anyone else, most Linux maintainers
-also have other jobs that they usually need to do...
-
-HTH.  If you have specific questions, ask away, or maybe Andy can tell us
-about checkpatch patches.
-
----
-~Randy
+Thanks,
+Fengguang
