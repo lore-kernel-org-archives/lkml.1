@@ -1,83 +1,306 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751757Ab0BKLry (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 06:47:54 -0500
-Received: from hera.kernel.org ([140.211.167.34]:56794 "EHLO hera.kernel.org"
+	id S1752811Ab0BKMAK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 07:00:10 -0500
+Received: from mail.2ka.mipt.ru ([194.85.80.4]:34357 "EHLO mail.2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750830Ab0BKLrw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 06:47:52 -0500
-Message-ID: <4B73F006.7090706@kernel.org>
-Date: Thu, 11 Feb 2010 20:54:46 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
-MIME-Version: 1.0
-To: Miklos Szeredi <miklos@szeredi.hu>
-CC: mszeredi@suse.cz, linux-kernel@vger.kernel.org,
-       fuse-devel@lists.sourceforge.net, polynomial-c@gentoo.org,
-       akpm@linux-foundation.org
-Subject: Re: [fuse-devel] [PATCH] FUSE/CUSE: implement direct mmap support
-References: <4B70FBE4.7050700@kernel.org> <E1NerZ6-0007N6-UY@pomaz-ex.szeredi.hu> <4B7296DF.207@kernel.org> <E1NfAl6-0000o4-8Z@pomaz-ex.szeredi.hu> <4B729F07.8020704@kernel.org> <E1NfBTc-0000vk-59@pomaz-ex.szeredi.hu> <4B72A802.6040009@kernel.org> <E1NfE50-0001EK-Ao@pomaz-ex.szeredi.hu> <4B7344A4.1030607@kernel.org> <E1NfVOi-0002l9-5l@pomaz-ex.szeredi.hu> <E1NfVho-0002nJ-V2@pomaz-ex.szeredi.hu>
-In-Reply-To: <E1NfVho-0002nJ-V2@pomaz-ex.szeredi.hu>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 11 Feb 2010 11:47:31 +0000 (UTC)
+	id S1751699Ab0BKMAI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 07:00:08 -0500
+Content-transfer-encoding: 7BIT
+From: Dmitry Monakhov <dmonakhov@openvz.org>
+To: linux-kernel@vger.kernel.org
+Cc: jens.axboe@oracle.com, Dmitry Monakhov <dmonakhov@openvz.org>
+Subject: [PATCH 1/4] block: implement compatible DISCARD support
+Date: Thu, 11 Feb 2010 13:53:45 +0300
+Message-id: <1265885625-21608-1-git-send-email-dmonakhov@openvz.org>
+X-Mailer: git-send-email 1.6.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Currently there are no many discs has native TRIM (aka) discard
+feature support. But in fact this is good feature. We can easily
+simlulate it for devices which has not native support.
+In compat mode discard dequest transforms in to simple zerofiled
+write request.
+In fact currently blkdev_issue_discard function implemented
+incorrectly.
+1) Whait flags not optimal we dont have to wait for each bio in flight.
+2) Not wait by default. Which makes it fairly useless.
+3) Send each bio with barrier flag(if requested). Which result in
+   bad performance. In fact caller just want to make shure that full
+   request is completed and ordered against other requests.
+5) It use allocated_page instead of ZERO_PAGE.
 
-On 02/11/2010 06:51 PM, Miklos Szeredi wrote:
-> And even a page_id is superfluous, since all we want is differentiate
-> between possibly separate maps for the same file and don't care about
-> individual pages.
-> 
-> And even differentiating between maps on the same file is only ever
-> possible for char devs, normal files will only ever have a single map.
-> 
-> So instead of "page_id" it could just be a "map_id", which will be
-> zero for normal maps, and whatever for /dev/fuse maps.
+This patch introduce generic blkdev_issue_zeroout() function which also
+may be used for native discard request support, in this case zero payload
+simply ignored.
 
-Well, not exactly.  There are device mmap() implementations which
-simply ignore @offset because offsetting doesn't make any sense at
-all.  ossp mmap is actually done that way.  I really don't think it
-would be wise to impose such restriction at the kernel API level.  For
-highlevel interface, dealing with separate regions could be fine tho.
+Signed-off-by: Dmitry Monakhov <dmonakhov@openvz.org>
+---
+ block/blk-barrier.c    |  190 +++++++++++++++++++++++++++++-------------------
+ block/ioctl.c          |    3 +-
+ include/linux/blkdev.h |    6 +-
+ 3 files changed, 121 insertions(+), 78 deletions(-)
 
->> And if the server wants to mmap /dev/fuse then it can do that and send
->> the result in "dev_offset", to make it clear that it's a different
->> offset from the one the client used on the mmap.  And it can even use
->> that value as page_id, if it wants to or it can use a different
->> page_id.
-> 
-> And there's a weakness in the current server side mmap interface, for
-> example:
-> 
->  1) user mmaps region 3-5 (in page index)
->       server maps this region at 3-5
-> 
->  2) user mmaps region 1-7
->      server can't tell kernel that it wants to reuse region 3-5 but
->      wants to create two other regions
-> 
-> What happens in that case?
-
-If the server wants the two regions to be separate, it can map it to
-say 5-11 and returnt he offset of 5.  If it wants them to be shared,
-it will have to mmap 1-2 and 6-7 and return offset of 1.  But, the
-server should really know better than growing the area this way.  If
-this type of expansion ever becomes problem, we can implement
-expendable mmap on the server side (ie. don't require VM_DONT_EXPAND).
-
-> On the other hand if the map_id is separate from the dev_offset, then
-> the server can map the second region as one map and the kernel can
-> connect it up with the right pages based on the map_id returned in the
-> MMAP reply.
-
-How is this not possible in the current implementation?
-
-Thanks.
-
+diff --git a/block/blk-barrier.c b/block/blk-barrier.c
+index 8618d89..5894a38 100644
+--- a/block/blk-barrier.c
++++ b/block/blk-barrier.c
+@@ -340,106 +340,148 @@ int blkdev_issue_flush(struct block_device *bdev, sector_t *error_sector)
+ }
+ EXPORT_SYMBOL(blkdev_issue_flush);
+ 
+-static void blkdev_discard_end_io(struct bio *bio, int err)
++struct bio_batch
+ {
++	atomic_t done;
++	unsigned long flags;
++	struct completion *wait;
++};
++
++static void bio_batch_end_io(struct bio *bio, int err)
++{
++	struct bio_batch *bb = bio->bi_private;
+ 	if (err) {
+ 		if (err == -EOPNOTSUPP)
+-			set_bit(BIO_EOPNOTSUPP, &bio->bi_flags);
+-		clear_bit(BIO_UPTODATE, &bio->bi_flags);
++			set_bit(BIO_EOPNOTSUPP, &bb->flags);
++		else
++			clear_bit(BIO_UPTODATE, &bb->flags);
+ 	}
+-
+-	if (bio->bi_private)
+-		complete(bio->bi_private);
+-	__free_page(bio_page(bio));
+-
++	atomic_inc(&bb->done);
++	complete(bb->wait);
+ 	bio_put(bio);
+ }
+ 
+ /**
+- * blkdev_issue_discard - queue a discard
+- * @bdev:	blockdev to issue discard for
++ * blkdev_issue_zeroout generate number of zero filed write bios
++ * @bdev:	blockdev to issue
+  * @sector:	start sector
+  * @nr_sects:	number of sectors to discard
+  * @gfp_mask:	memory allocation flags (for bio_alloc)
+- * @flags:	DISCARD_FL_* flags to control behaviour
++ * @rw:		RW flags
+  *
+  * Description:
+- *    Issue a discard request for the sectors in question.
++ *  Generate and issue number of bios with zerofiled pages.
++ *  Send barrier at the end if requested. This guarantie that. All bios
++ *  submitted before the barrier will be completed before the barrier.
++ *  Empty barrier allow us to avoid post queue flush.
+  */
+-int blkdev_issue_discard(struct block_device *bdev, sector_t sector,
+-		sector_t nr_sects, gfp_t gfp_mask, int flags)
++
++int blkdev_issue_zeroout(struct block_device *bdev, sector_t sector,
++		sector_t nr_sects, sector_t max_sects, gfp_t mask, int rw)
+ {
+-	DECLARE_COMPLETION_ONSTACK(wait);
+-	struct request_queue *q = bdev_get_queue(bdev);
+-	int type = flags & DISCARD_FL_BARRIER ?
+-		DISCARD_BARRIER : DISCARD_NOBARRIER;
+-	struct bio *bio;
+-	struct page *page;
+ 	int ret = 0;
++	struct bio *bio;
++	struct bio_batch bb;
++	unsigned int sz, issued = 0;
++	DECLARE_COMPLETION_ONSTACK(wait);
++	unsigned int do_barrier = rw | (1 << BIO_RW_BARRIER);
++	rw &= ~(1 << BIO_RW_BARRIER);
++	BUG_ON(!(rw | (1 << BIO_RW)));
+ 
+-	if (!q)
+-		return -ENXIO;
+-
+-	if (!blk_queue_discard(q))
+-		return -EOPNOTSUPP;
+-
+-	while (nr_sects && !ret) {
+-		unsigned int sector_size = q->limits.logical_block_size;
+-		unsigned int max_discard_sectors =
+-			min(q->limits.max_discard_sectors, UINT_MAX >> 9);
++	atomic_set(&bb.done, 0);
++	bb.flags = 1 << BIO_UPTODATE;
++	bb.wait = &wait;
+ 
+-		bio = bio_alloc(gfp_mask, 1);
++submit:
++	while (nr_sects != 0) {
++		bio = bio_alloc(mask, min(nr_sects, (sector_t)BIO_MAX_PAGES));
+ 		if (!bio)
+-			goto out;
+-		bio->bi_sector = sector;
+-		bio->bi_end_io = blkdev_discard_end_io;
+-		bio->bi_bdev = bdev;
+-		if (flags & DISCARD_FL_WAIT)
+-			bio->bi_private = &wait;
+-
+-		/*
+-		 * Add a zeroed one-sector payload as that's what
+-		 * our current implementations need.  If we'll ever need
+-		 * more the interface will need revisiting.
+-		 */
+-		page = alloc_page(gfp_mask | __GFP_ZERO);
+-		if (!page)
+-			goto out_free_bio;
+-		if (bio_add_pc_page(q, bio, page, sector_size, 0) < sector_size)
+-			goto out_free_page;
++			break;
+ 
++		bio->bi_sector = sector;
++		bio->bi_bdev   = bdev;
++		bio->bi_private = &bb;
++		bio->bi_end_io = bio_batch_end_io;
++
++		while(nr_sects != 0) {
++			sz = min(PAGE_SIZE >> 9 , nr_sects);
++			if (max_sects - bio_sectors(bio) < sz)
++				sz = max_sects - bio_sectors(bio);
++			if (sz == 0)
++				/* bio has maximum size possible */
++				break;
++			ret = bio_add_page(bio, ZERO_PAGE(0), sz << 9, 0);
++			nr_sects -= ret >> 9;
++			sector += ret >> 9;
++			if (ret != sz)
++				break;
++		}
++		issued++;
++		submit_bio(rw, bio);
++	}
++	if (nr_sects == 0) {
+ 		/*
+-		 * And override the bio size - the way discard works we
+-		 * touch many more blocks on disk than the actual payload
+-		 * length.
++		 * We have issued all data. Send final barrier if necessery.
+ 		 */
+-		if (nr_sects > max_discard_sectors) {
+-			bio->bi_size = max_discard_sectors << 9;
+-			nr_sects -= max_discard_sectors;
+-			sector += max_discard_sectors;
+-		} else {
+-			bio->bi_size = nr_sects << 9;
+-			nr_sects = 0;
+-		}
++		if (do_barrier)
++			ret = blkdev_issue_flush(bdev, NULL);
++	}
++	/* Wait for submitted bios and then continue */
++	while (issued != atomic_read(&bb.done))
++		wait_for_completion(&wait);
+ 
+-		bio_get(bio);
+-		submit_bio(type, bio);
++	if (!test_bit(BIO_UPTODATE, &bb.flags))
++		/* One of bios in the batch was completed with error.*/
++		ret = -EIO;
+ 
+-		if (flags & DISCARD_FL_WAIT)
+-			wait_for_completion(&wait);
++	if (ret)
++		goto out;
+ 
+-		if (bio_flagged(bio, BIO_EOPNOTSUPP))
+-			ret = -EOPNOTSUPP;
+-		else if (!bio_flagged(bio, BIO_UPTODATE))
+-			ret = -EIO;
+-		bio_put(bio);
++	if (test_bit(BIO_EOPNOTSUPP, &bb.flags)) {
++		ret = -EOPNOTSUPP;
++		goto out;
+ 	}
+-	return ret;
+-out_free_page:
+-	__free_page(page);
+-out_free_bio:
+-	bio_put(bio);
++	if (nr_sects != 0)
++		goto submit;
+ out:
+-	return -ENOMEM;
++	return ret;
++}
++EXPORT_SYMBOL(blkdev_issue_zeroout);
++
++/**
++ * blkdev_issue_discard - queue a discard
++ * @bdev:	blockdev to issue discard for
++ * @sector:	start sector
++ * @nr_sects:	number of sectors to discard
++ * @gfp_mask:	memory allocation flags (for bio_alloc)
++ * @flags:	DISCARD_FL_* flags to control behaviour
++ *
++ * Description:
++ *    Issue a discard request for the sectors in question.
++ */
++int blkdev_issue_discard(struct block_device *bdev, sector_t sector,
++		sector_t nr_sects, gfp_t gfp_mask, int flags)
++{
++	int type = flags & DISCARD_FL_BARRIER ?
++		DISCARD_BARRIER : DISCARD_NOBARRIER;
++	struct request_queue *q = bdev_get_queue(bdev);
++	unsigned int max_size;
++
++	if (!blk_queue_discard(q) && !(flags & DISCARD_FL_BARRIER))
++		return -EOPNOTSUPP;
++	/*
++	 * Generate request with zeroed payload.
++	 * If device has native discard support it simply ignore this payload.
++	 * In case of compat mode this request will be sent as a simple
++	 * write request.
++	 */
++	if (!blk_queue_discard(q)) {
++		type &= ~(1 << BIO_RW_DISCARD);
++		max_size = UINT_MAX >> 9;
++	} else {
++		max_size = min(q->limits.max_discard_sectors, UINT_MAX >> 9);
++	}
++	return blkdev_issue_zeroout(bdev, sector, nr_sects, max_size,
++				gfp_mask, type);
+ }
+ EXPORT_SYMBOL(blkdev_issue_discard);
+diff --git a/block/ioctl.c b/block/ioctl.c
+index be48ea5..384b71c 100644
+--- a/block/ioctl.c
++++ b/block/ioctl.c
+@@ -124,8 +124,7 @@ static int blk_ioctl_discard(struct block_device *bdev, uint64_t start,
+ 
+ 	if (start + len > (bdev->bd_inode->i_size >> 9))
+ 		return -EINVAL;
+-	return blkdev_issue_discard(bdev, start, len, GFP_KERNEL,
+-				    DISCARD_FL_WAIT);
++	return blkdev_issue_discard(bdev, start, len, GFP_KERNEL, 0);
+ }
+ 
+ static int put_ushort(unsigned long arg, unsigned short val)
+diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
+index ffb13ad..c762c9f 100644
+--- a/include/linux/blkdev.h
++++ b/include/linux/blkdev.h
+@@ -997,8 +997,10 @@ static inline struct request *blk_map_queue_find_tag(struct blk_queue_tag *bqt,
+ }
+ 
+ extern int blkdev_issue_flush(struct block_device *, sector_t *);
+-#define DISCARD_FL_WAIT		0x01	/* wait for completion */
+-#define DISCARD_FL_BARRIER	0x02	/* issue DISCARD_BARRIER request */
++#define DISCARD_FL_BARRIER	0x01	/* issue DISCARD_BARRIER request */
++#define DISCARD_FL_COMPAT	0x02	/* allow discard compat request mode */
++extern int blkdev_issue_zeroout(struct block_device *bdev, sector_t sector,
++		sector_t nr_sects, sector_t max_sects, gfp_t mask, int rw);
+ extern int blkdev_issue_discard(struct block_device *, sector_t sector,
+ 		sector_t nr_sects, gfp_t, int flags);
+ 
 -- 
-tejun
+1.6.6
+
