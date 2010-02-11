@@ -1,207 +1,84 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752094Ab0BKHd5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 02:33:57 -0500
-Received: from cantor.suse.de ([195.135.220.2]:33868 "EHLO mx1.suse.de"
+	id S1752301Ab0BKHlp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 02:41:45 -0500
+Received: from mga09.intel.com ([134.134.136.24]:33188 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751650Ab0BKHd4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 02:33:56 -0500
-From: Nikanth Karthikesan <knikanth@suse.de>
-Organization: suse.de
-To: Wu Fengguang <fengguang.wu@intel.com>
-Subject: Re: [PATCH v2] Make vm_max_readahead configurable at run-time
-Date: Thu, 11 Feb 2010 13:04:54 +0530
-User-Agent: KMail/1.12.2 (Linux/2.6.31.8-0.1-desktop; KDE/4.3.1; x86_64; ; )
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
+	id S1751890Ab0BKHln convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 02:41:43 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,450,1262592000"; 
+   d="scan'208";a="491568637"
+From: "Xin, Xiaohui" <xiaohui.xin@intel.com>
+To: Arnd Bergmann <arnd@arndb.de>
+CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-References: <201002091659.27037.knikanth@suse.de> <201002101922.40122.knikanth@suse.de> <20100211051341.GA13967@localhost>
-In-Reply-To: <20100211051341.GA13967@localhost>
+       "mingo@elte.hu" <mingo@elte.hu>, "mst@redhat.com" <mst@redhat.com>,
+       "jdike@c2.user-mode-linux.org" <jdike@c2.user-mode-linux.org>
+Date: Thu, 11 Feb 2010 15:40:08 +0800
+Subject: RE: [PATCH 0/3] Provide a zero-copy method on KVM virtio-net.
+Thread-Topic: [PATCH 0/3] Provide a zero-copy method on KVM virtio-net.
+Thread-Index: AcqqVqLdI8DojazvQRiFmBFfis0PWQAlPoEw
+Message-ID: <97F6D3BD476C464182C1B7BABF0B0AF5C11F641A@shzsmsx502.ccr.corp.intel.com>
+References: <1265802540-6122-1-git-send-email-xiaohui.xin@intel.com>
+ <201002101440.05063.arnd@arndb.de>
+In-Reply-To: <201002101440.05063.arnd@arndb.de>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201002111304.54742.knikanth@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 11 February 2010 10:43:41 Wu Fengguang wrote:
-> On Wed, Feb 10, 2010 at 09:52:40PM +0800, Nikanth Karthikesan wrote:
-> > On Wednesday 10 February 2010 16:35:51 Wu Fengguang wrote:
-> > > Nikanth,
-> > >
-> > > > Make vm_max_readahead configurable at run-time. Expose a sysctl knob
-> > > > in procfs to change it. This would ensure that new disks added would
-> > > > use this value as their default read_ahead_kb.
-> > >
-> > > Do you have use case, or customer demand for it?
-> >
-> > No body requested for it. But when doing some performance testing with
-> > readahead_kb re-compiling would be a pain, and thought that having a
-> > configurable default might be useful.
-> 
-> I wonder why you need to recompile kernel in the tests.
-> There are three interfaces to change readahead size in runtime:
-> 
->         blockdev --setra 1024 /dev/sda
->         echo 512 > /sys/block/*/queue/read_ahead_kb
->         echo 512 > /sys/devices/virtual/bdi/*/read_ahead_kb
-> 
+>>On Wednesday 10 February 2010, Xin Xiaohui wrote:
+> >The idea is simple, just to pin the guest VM user space and then
+> >let host NIC driver has the chance to directly DMA to it. 
+> >The patches are based on vhost-net backend driver. We add a device
+> >which provides proto_ops as sendmsg/recvmsg to vhost-net to
+> >send/recv directly to/from the NIC driver. KVM guest who use the
+> >vhost-net backend may bind any ethX interface in the host side to
+> >get copyless data transfer thru guest virtio-net frontend.
+>> 
+>> We provide multiple submits and asynchronous notifiicaton to 
+> >vhost-net too.
 
-Right, I did use that. But thought that a global tunable would be better. :-)
+>This does a lot of things that I had planned for macvtap. It's
+>great to hear that you have made this much progress.
+>
+>However, I'd hope that we could combine this with the macvtap driver,
+>which would give us zero-copy transfer capability both with and
+>without vhost, as well as (tx at least) when using multiple guests
+>on a macvlan setup.
 
-> > > > Also filesystems which use default_backing_dev_info would also
-> > > > use this new value, even if they were already mounted.
-> > > >
-> > > > Currently xfs, btrfs, nilfs, raw, mtd use the
-> > > > default_backing_dev_info.
-> > >
-> > > This sounds like bad interface, in that users will be confused by the
-> > > tricky details of "works for new devices" and "works for some fs".
-> > >
-> > > One more tricky point is, btrfs/md/dm readahead size may not be
-> > > influenced if some of the component disks are hot added.
-> > >
-> > > So this patch is only going to work for hot-plugged disks that
-> > > contains _standalone_ filesystem. Is this typical use case in servers?
-> >
-> > Yes, it would work only if the top-level disk is hot-plugged/created.
-> 
-> Or maybe what you really want is a kernel parameter for setting the
-> default readahead size at boot time?
-> 
-> In another thread, Christian Ehrhardt recommended to add a config
-> option for it. If you like it, I can also do the kernel parameter
-> by the way.
-> 
+You mean the zero-copy can work with macvtap driver without vhost.
+May you give me some detailed info about your macvtap driver and the
+relationship between vhost and macvtap to make me have a clear picture then?
 
-Kernel parameter seems to be the right way to go. Does the attached patch look
-good?
+>For transmit, it should be fairly straightforward to hook up
+>your zero-copy method and the vhost-net interface into the
+>macvtap driver.
+>
+>You have simplified the receiv path significantly by assuming
+>that the entire netdev can receive into a single guest, right?
 
-Thanks
-Nikanth
+Yes.
 
-From: Nikanth Karthikesan <knikanth@suse.de>
+>I'm assuming that the idea is to allow VMDq adapters to simply
+>show up as separate adapters and have the driver handle this
+>in a hardware specific way.
 
-Add new kernel parameter "readahead", which would be used
-as the value of VM_MAX_READAHEAD.
+Does the VMDq driver do so now?
 
-Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
+>My plan for this was to instead move support for VMDq into the
+>macvlan driver so we can transparently use VMDq on hardware where
+>available, including zero-copy receives, but fall back to software
+>operation on non-VMDq hardware.
 
----
-
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 736d456..354e6f1 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -2148,6 +2148,8 @@ and is between 256 and 4096 characters. It is defined in the file
- 			Format: <reboot_mode>[,<reboot_mode2>[,...]]
- 			See arch/*/kernel/reboot.c or arch/*/kernel/process.c
- 
-+	readahead=	Default readahead value for block devices.
-+
- 	relax_domain_level=
- 			[KNL, SMP] Set scheduler's default relax_domain_level.
- 			See Documentation/cgroups/cpusets.txt.
-diff --git a/block/blk-core.c b/block/blk-core.c
-index 718897e..02ed748 100644
---- a/block/blk-core.c
-+++ b/block/blk-core.c
-@@ -499,7 +499,7 @@ struct request_queue *blk_alloc_queue_node(gfp_t gfp_mask, int node_id)
- 	q->backing_dev_info.unplug_io_fn = blk_backing_dev_unplug;
- 	q->backing_dev_info.unplug_io_data = q;
- 	q->backing_dev_info.ra_pages =
--			(VM_MAX_READAHEAD * 1024) / PAGE_CACHE_SIZE;
-+			(vm_max_readahead_kb * 1024) / PAGE_CACHE_SIZE;
- 	q->backing_dev_info.state = 0;
- 	q->backing_dev_info.capabilities = BDI_CAP_MAP_COPY;
- 	q->backing_dev_info.name = "block";
-diff --git a/fs/fuse/inode.c b/fs/fuse/inode.c
-index 1a822ce..a593578 100644
---- a/fs/fuse/inode.c
-+++ b/fs/fuse/inode.c
-@@ -870,7 +870,7 @@ static int fuse_bdi_init(struct fuse_conn *fc, struct super_block *sb)
- 	int err;
- 
- 	fc->bdi.name = "fuse";
--	fc->bdi.ra_pages = (VM_MAX_READAHEAD * 1024) / PAGE_CACHE_SIZE;
-+	fc->bdi.ra_pages = (vm_max_readahead_kb * 1024) / PAGE_CACHE_SIZE;
- 	fc->bdi.unplug_io_fn = default_unplug_io_fn;
- 	/* fuse does it's own writeback accounting */
- 	fc->bdi.capabilities = BDI_CAP_NO_ACCT_WB;
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 60c467b..17825d7 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -1188,9 +1188,11 @@ int write_one_page(struct page *page, int wait);
- void task_dirty_inc(struct task_struct *tsk);
- 
- /* readahead.c */
--#define VM_MAX_READAHEAD	128	/* kbytes */
-+#define DEFAULT_VM_MAX_READAHEAD       128     /* kbytes */
- #define VM_MIN_READAHEAD	16	/* kbytes (includes current page) */
- 
-+extern unsigned long vm_max_readahead_kb;
-+
- int force_page_cache_readahead(struct address_space *mapping, struct file *filp,
- 			pgoff_t offset, unsigned long nr_to_read);
- 
-diff --git a/init/main.c b/init/main.c
-index 4cb47a1..7d5230a 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -70,6 +70,7 @@
- #include <linux/sfi.h>
- #include <linux/shmem_fs.h>
- #include <trace/boot.h>
-+#include <linux/backing-dev.h>
- 
- #include <asm/io.h>
- #include <asm/bugs.h>
-@@ -249,6 +250,16 @@ static int __init loglevel(char *str)
- 
- early_param("loglevel", loglevel);
- 
-+static int __init readahead(char *str)
-+{
-+	vm_max_readahead_kb = memparse(str, &str) / 1024ULL;
-+	default_backing_dev_info.ra_pages = vm_max_readahead_kb
-+						* 1024 / PAGE_CACHE_SIZE;
-+	return 0;
-+}
-+
-+early_param("readahead", readahead);
-+
- /*
-  * Unknown boot options get handed to init, unless they look like
-  * unused parameters (modprobe will find them in /proc/cmdline).
-diff --git a/mm/backing-dev.c b/mm/backing-dev.c
-index 0e8ca03..e33ff34 100644
---- a/mm/backing-dev.c
-+++ b/mm/backing-dev.c
-@@ -18,7 +18,7 @@ EXPORT_SYMBOL(default_unplug_io_fn);
- 
- struct backing_dev_info default_backing_dev_info = {
- 	.name		= "default",
--	.ra_pages	= VM_MAX_READAHEAD * 1024 / PAGE_CACHE_SIZE,
-+	.ra_pages	= DEFAULT_VM_MAX_READAHEAD * 1024 / PAGE_CACHE_SIZE,
- 	.state		= 0,
- 	.capabilities	= BDI_CAP_MAP_COPY,
- 	.unplug_io_fn	= default_unplug_io_fn,
-diff --git a/mm/readahead.c b/mm/readahead.c
-index 033bc13..516f8da 100644
---- a/mm/readahead.c
-+++ b/mm/readahead.c
-@@ -17,6 +17,8 @@
- #include <linux/pagevec.h>
- #include <linux/pagemap.h>
- 
-+unsigned long vm_max_readahead_kb = DEFAULT_VM_MAX_READAHEAD;
-+
- /*
-  * Initialise a struct file's readahead state.  Assumes that the caller has
-  * memset *ra to zero.
+	Arnd
