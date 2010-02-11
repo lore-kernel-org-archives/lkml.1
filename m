@@ -1,59 +1,58 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754641Ab0BKMu2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 07:50:28 -0500
-Received: from hera.kernel.org ([140.211.167.34]:33971 "EHLO hera.kernel.org"
+	id S1754708Ab0BKMvT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 07:51:19 -0500
+Received: from mail001.aei.ca ([206.123.6.130]:44055 "EHLO mail001.aei.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754195Ab0BKMu0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 07:50:26 -0500
-Message-ID: <4B73FE96.2080707@kernel.org>
-Date: Thu, 11 Feb 2010 21:56:54 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	id S1752252Ab0BKMvS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 07:51:18 -0500
+From: Ed Tomlinson <edt@aei.ca>
+To: Michael Poole <mdpoole@troilus.org>
+Subject: Re: [PATCH 2/2] Add a device driver for the Apple Magic Mouse (2.6.32.8)
+Date: Thu, 11 Feb 2010 07:51:14 -0500
+User-Agent: KMail/1.12.4 (Linux/2.6.32.8-crc; KDE/4.3.5; x86_64; ; )
+Cc: Jiri Kosina <jkosina@suse.cz>, linux-input@vger.kernel.org,
+       Marcel Holtmann <marcel@holtmann.org>, linux-bluetooth@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <alpine.LNX.2.00.1001291515560.356@pobox.suse.cz> <201002102205.58967.edt@aei.ca> <878wb0e9w2.fsf@troilus.org>
+In-Reply-To: <878wb0e9w2.fsf@troilus.org>
 MIME-Version: 1.0
-To: Miklos Szeredi <miklos@szeredi.hu>
-CC: mszeredi@suse.cz, linux-kernel@vger.kernel.org,
-       fuse-devel@lists.sourceforge.net, polynomial-c@gentoo.org,
-       akpm@linux-foundation.org
-Subject: Re: [fuse-devel] [PATCH] FUSE/CUSE: implement direct mmap support
-References: <4B70FBE4.7050700@kernel.org> <E1NerZ6-0007N6-UY@pomaz-ex.szeredi.hu> <4B7296DF.207@kernel.org> <E1NfAl6-0000o4-8Z@pomaz-ex.szeredi.hu> <4B729F07.8020704@kernel.org> <E1NfBTc-0000vk-59@pomaz-ex.szeredi.hu> <4B72A802.6040009@kernel.org> <E1NfE50-0001EK-Ao@pomaz-ex.szeredi.hu> <4B7344A4.1030607@kernel.org> <E1NfVOi-0002l9-5l@pomaz-ex.szeredi.hu> <4B73EE68.4070004@kernel.org> <E1NfYFm-00034C-Pd@pomaz-ex.szeredi.hu>
-In-Reply-To: <E1NfYFm-00034C-Pd@pomaz-ex.szeredi.hu>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 11 Feb 2010 12:49:38 +0000 (UTC)
+Message-Id: <201002110751.14813.edt@aei.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-On 02/11/2010 09:34 PM, Miklos Szeredi wrote:
-> On Thu, 11 Feb 2010, Tejun Heo wrote:
->> It's not like it's something completely foreign.  It's a limitation
->> which can also be found in shared memory and the server side mmap
->> doesn't really have much to do with it.  It's also necessary to avoid
->> aliasing issues among clients.
+On Wednesday 10 February 2010 22:20:13 Michael Poole wrote:
+> Ed Tomlinson writes:
 > 
-> What aliasing issues among clients?  That's a job for the arch
-> dependent part of mmap.  And as you said, there's not a lot the driver
-> can do (except play with ->vm_pgoff) to influence the address
-> selection.
->
-> And playing with ->vm_pgoff is *not* a valid thing to do for the
-> client, at least not on "normal" mmaps.
+> > Hi,
+> >
+> > When I apply this to head, I get:
+> >
+> > drivers/hid/hid-magicmouse.c: In function 'magicmouse_probe':                                                         
+> > drivers/hid/hid-magicmouse.c:393: error: too many arguments to function 'hdev->hid_output_raw_report'                 
+> > drivers/hid/hid-magicmouse.c:400: error: too many arguments to function 'hdev->hid_output_raw_report'                 
+> >
+> > I only need the second patch - the first seems to be in tree.
+> >
+> > Any ideas as to what I am missing?
+> >
+> > TIA
+> > Ed
+> 
+> You're missing the patch that makes hid_output_raw_report() more generic.
+> It is in the HID tree[1] as commit d4bfa033.
+> 
+> [1]- http://git.kernel.org/?p=linux/kernel/git/jikos/hid.git
 
-That's the requirement coming from allowing the server to determine
-how these mmaps are served, not from the fact that the management is
-done via server side mmaps or the server maps those regions into its
-process address space.  No matter how you do it, if you want to mix
-and match client mmap requests, the SHMLBA alignment will be visible.
-I suppose you're talking about not allowing offsets to be adjusted at
-all but I don't think that's a restriction we would want to have at
-the kernel API level because offset might encode different things for
-device mmaps.
+Ok.  With this I have a patchset that applies to 2.6.32.8.  If anyone wants it
+just email.  
 
-Thanks.
+Of course, Michael's cleanups came just after I booted with the new kernel.  I'll
+apply it and update & post my changes that allow both x and y scrolling and almost 
+work for a few multitouch gestures.
 
--- 
-tejun
+Ed
