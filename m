@@ -1,76 +1,58 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757212Ab0BKVAn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 16:00:43 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:35751 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757062Ab0BKVAl (ORCPT
+	id S1757178Ab0BKVCL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 16:02:11 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:23674 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756799Ab0BKVCJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 16:00:41 -0500
-Date: Thu, 11 Feb 2010 22:00:33 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Bill Gatliff <bgat@billgatliff.com>
-Cc: linux-embedded@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PWM PATCH 1/5] API to consolidate PWM devices behind a common
- user and kernel interface
-Message-ID: <20100211210033.GB29159@elf.ucw.cz>
-References: <cover.1265094517.git.bgat@billgatliff.com>
- <c5873aa7c5d20254a9e54fc1ff179345b77c16b5.1265094517.git.bgat@billgatliff.com>
- <20100211200456.GA1487@ucw.cz>
- <4B746DEC.7080602@billgatliff.com>
+	Thu, 11 Feb 2010 16:02:09 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=CI68IReqrDBY1rSO0NsKaD9QBEvLjlj4sjHOLXQrtqt/WvKzt+EMLRGwaVuZ6QIo/
+	ftMuLmXFSLbY2JN7LUMzg==
+Date: Thu, 11 Feb 2010 13:01:56 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Nick Bowler <nbowler@elliptictech.com>
+cc: Rik van Riel <riel@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Nick Piggin <npiggin@suse.de>, Andrea Arcangeli <aarcange@redhat.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch 4/7 -mm] oom: badness heuristic rewrite
+In-Reply-To: <20100211150712.GA13140@emergent.ellipticsemi.com>
+Message-ID: <alpine.DEB.2.00.1002111257300.1461@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.1002100224210.8001@chino.kir.corp.google.com> <alpine.DEB.2.00.1002100228540.8001@chino.kir.corp.google.com> <4B73833D.5070008@redhat.com> <alpine.DEB.2.00.1002102332200.22152@chino.kir.corp.google.com>
+ <20100211150712.GA13140@emergent.ellipticsemi.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B746DEC.7080602@billgatliff.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 11 Feb 2010, Nick Bowler wrote:
 
-> >> +pwm_free() -- Marks a PWM channel as no longer in use.  The PWM device
-> >> +is stopped before it is released by the API.
-> >>     
-> >
-> > free is normally used for something else. Rename to open/close?
-
-> ... or request/release?
-
-Works for me.
-
-> >> +pwm_start(), pwm_stop() -- Turns the PWM signal on and off.  Except
-> >> +where stated otherwise by a driver author, signals are stopped at the
-> >> +end of the current period, at which time the output is set to its
-> >> +inactive state.
-> >>     
-> >
-> > What does it mean to stop a signal? What is the difference between 0%
-> > duty cycle and stop() ?
-> >   
+> > As mentioned in the changelog, we've exported these minimum and maximum 
+> > values via a kernel header file since at least 2006.  At what point do we 
+> > assume they are going to be used and not hardcoded into applications?  
+> > That was certainly the intention when making them user visible.
 > 
-> Depends on the hardware.  For a true PWM peripheral, a 0% duty cycle
-> might still have the base peripheral clock for the device running. 
-> Whereas a pwm_stop() signal could be used to turn off the clock to the
-> peripheral.
-
-If it is just powersaving... I'd do it automatically when 0% duty is
-selected...? Or is that infeasible due to latency...?
-
-> > Is polarity realy required? Can't driver just replace duty with
-> > 100%-duty
+> The thing is, even when the macros are used, their values are hardcoded
+> into programs once the code is run through a compiler.  That's why it's
+> called an ABI.
 > 
-> Actually, yes in some cases.  Users can always do the 100%-duty math,
-> but some hardware asserts a specific output state when you stop the
-> peripheral that's potentially different from 0% duty.  Also, some
-> hardware begins the PWM cycle with the output high, while others do with
-> the output low.  It isn't necessarily the case that the user cares, but
-> I was thinking that having the API allow for different polarity might
-> prevent some applications having to optionally do the %duty vs.
-> 100-%duty conversion themselves.
 
-Ok, ok, but this should go into the docs.
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Right, that's the second point that I listed: since the semantics of the 
+tunable have radically changed from the bitshift to an actual unit 
+(proportion of available memory), those applications need to change how 
+they use oom_adj anyway.  The bitshift simply isn't extendable with any 
+sane heuristic that is predictable or works with any reasonable amount of 
+granularity, so this change seems inevitable in the long term.
+
+We may be forced to abandon /proc/pid/oom_adj itself and introduce the 
+tunable with a different name: oom_score_adj, for example, to make it 
+clear that it's a different entity.
