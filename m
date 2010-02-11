@@ -1,251 +1,100 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754568Ab0BKONd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 09:13:33 -0500
-Received: from lucidpixels.com ([75.144.35.66]:46292 "EHLO lucidpixels.com"
+	id S1755131Ab0BKOUb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 09:20:31 -0500
+Received: from comal.ext.ti.com ([198.47.26.152]:53207 "EHLO comal.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752381Ab0BKONb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 09:13:31 -0500
-Date: Thu, 11 Feb 2010 09:13:31 -0500 (EST)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, xfs@oss.sgi.com,
-       Alan Piszcz <ap@solarrain.com>
-Subject: Re: 2.6.32.3 x86_64 - XFS hangs, all I/O to D-state bug (again)
-In-Reply-To: <alpine.DEB.2.00.1002110903080.25392@p34.internal.lan>
-Message-ID: <alpine.DEB.2.00.1002110912120.25392@p34.internal.lan>
-References: <alpine.DEB.2.00.1002110903080.25392@p34.internal.lan>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	id S1754640Ab0BKOUa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 09:20:30 -0500
+Message-ID: <35697.192.168.10.89.1265898023.squirrel@dbdmail.itg.ti.com>
+Date: Thu, 11 Feb 2010 19:50:23 +0530 (IST)
+Subject: [PATCH] OMAP: Fix for bus width which improves SD card's 
+     peformance.
+From: "kishore kadiyala" <kishore.kadiyala@ti.com>
+To: linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: jarkko.lavinen@nokia.com, madhu.cr@ti.com
+User-Agent: SquirrelMail/1.4.3a
+X-Mailer: SquirrelMail/1.4.3a
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: multipart/mixed;boundary="----=_20100211195023_58080"
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The errors in the e-mail had bad formatting, please see the following: 
-http://home.comcast.net/~jpiszcz/20100211/crash.txt
+------=_20100211195023_58080
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 
-In addition, the linux-raid list had a typo in it, fixed.
+This patch improves low speeds for SD cards.
+OMAP-MMC controller's can support maximum bus width of '8'.
+when bus width is mentioned as "8" in controller data,the SD
+stack will check whether bus width is "4" and if not it will
+set bus width to "1" and there by degrading peformance.
+This patch fixes the issue and improves the performance of
+SD cards.
 
-On Thu, 11 Feb 2010, Justin Piszcz wrote:
+Signed-off-by: Kishore Kadiyala <kishore.kadiyala@ti.com>
+---
+ Here are my experiment numbers, on a Class 6 SDHC card:
+ Read peformance is increased by 220%
+ Write Performance is increased by 52%
 
-> Hello,
->
-> While tarring and compressing (bzip2) a lot of files, the following error
-> occurred, note the output is not clean because this was taken from 
-> netconsole.
->
-> When this occurs, the host cannot be rebooted with reboot/proceses cannot
-> be killed and the box locks up.  There are no apparent hardware issues.
->
-> Before, asterisk would trigger this bug, since asterisk no longer runs on 
-> this host, it ran for ~2-3 months without any problems, until now.
->
-> Please cc me as I am not on the lists, thanks.
->
-> Is this a md raid issue or XFS? From the trace it appears to be an XFS bug?
->
-> Feb 11 07:38:14 l1 [   20.270270] e100: eth1 NIC Link is Up 100 Mbps Full 
-> Duplex Feb 11 07:47:54 l1 [  600.432165] INFO: task scp:4871 blocked for more 
-> than 120 seconds. Feb 11 07:47:54 l1 [  600.432177] "echo 0 > 
-> /proc/sys/kernel/hung_task_timeout_secs" disables this message. Feb 11 
-> 07:47:54 l1 [  600.432182] scp           D
-> Feb 11 07:47:54 l1  ffff8801eee6f14c Feb 11 07:47:54 l1     0  4871   4870 
-> 0x00000000 Feb 11 07:47:54 l1 [  600.432188]  ffff880220c87950
-> Feb 11 07:47:54 l1  0000000000000082
-> Feb 11 07:47:54 l1  0000000000200200
-> Feb 11 07:47:54 l1  ffff88023eb71400
-> Feb 11 07:47:54 l1 Feb 11 07:47:54 l1 [  600.432196]  000000000000c928
-> Feb 11 07:47:54 l1  ffff8801f7a55fd8
-> Feb 11 07:47:54 l1  ffff880205fc6150
-> Feb 11 07:47:54 l1  ffff880205fc63c8
-> Feb 11 07:47:54 l1 Feb 11 07:47:54 l1 [  600.432203]  0000000000001000
-> Feb 11 07:47:54 l1  ffffffff8108d02a
-> Feb 11 07:47:54 l1  ffff8801eee6f0c0
-> Feb 11 07:47:54 l1  ffff880205fc63c8
-> Feb 11 07:47:54 l1 Feb 11 07:47:54 l1 [  600.432209] Call Trace: Feb 11 
-> 07:47:54 l1 [  600.432230]  [<ffffffff8108d02a>] ? 
-> generic_file_buffered_write+0x1aa/0x290 Feb 11 07:47:54 l1 [  600.432236] 
-> [<ffffffff8145f02d>] ? __down_write_nested+0x7d/0xb0 Feb 11 07:47:54 l1 [ 
-> 600.432242]  [<ffffffff8120387d>] ? xfs_write+0x23d/0x950 Feb 11 07:47:54 l1 
-> [  600.432250]  [<ffffffff810ba913>] ? do_sync_write+0xe3/0x130 Feb 11 
-> 07:47:54 l1 [  600.432260]  [<ffffffff8106dd90>] ? 
-> autoremove_wake_function+0x0/0x30 Feb 11 07:47:54 l1 [  600.432266] 
-> [<ffffffff810e9654>] ? fsnotify+0x4/0x1a0 Feb 11 07:47:54 l1 [  600.432271] 
-> [<ffffffff8102f78e>] ? common_interrupt+0xe/0x13 Feb 11 07:47:54 l1 [ 
-> 600.432276]  [<ffffffff810bb45b>] ? vfs_write+0xcb/0x180 Feb 11 07:47:54 l1 [ 
-> 600.432280]  [<ffffffff810bb613>] ? sys_write+0x53/0xa0 Feb 11 07:47:54 l1 [ 
-> 600.432285]  [<ffffffff8102eeeb>] ? system_call_fastpath+0x16/0x1b Feb 11 
-> 07:47:54 l1 [  600.432291] INFO: task flush-9:3:4874 blocked for more than 
-> 120 seconds. Feb 11 07:47:54 l1 [  600.432294] "echo 0 > 
-> /proc/sys/kernel/hung_task_timeout_secs" disables this message. Feb 11 
-> 07:47:54 l1 [  600.432297] flush-9:3     D
-> Feb 11 07:47:54 l1  ffff88021948d750 Feb 11 07:47:54 l1     0  4874      2 
-> 0x00000000 Feb 11 07:47:54 l1 [  600.432309]  ffff88023fa3c8c0
-> Feb 11 07:47:54 l1  0000000000000046
-> Feb 11 07:47:54 l1  000000001948d750
-> Feb 11 07:47:54 l1  ffffffff8163d788
-> Feb 11 07:47:54 l1 Feb 11 07:47:54 l1 [  600.432323]  000000000000c928
-> Feb 11 07:47:54 l1  ffff8801f79fbfd8
-> Feb 11 07:47:54 l1  ffff88021948d750
-> Feb 11 07:47:54 l1  ffff88021948d9c8
-> Feb 11 07:47:54 l1 Feb 11 07:47:54 l1 [  600.432329]  000000013f467bb0
-> Feb 11 07:47:54 l1  ffffffff8108c183
-> Feb 11 07:47:54 l1  0000000000000000
-> Feb 11 07:47:54 l1  ffff88021948d9c8
-> Feb 11 07:47:54 l1 Feb 11 07:47:54 l1 [  600.432337] Call Trace: Feb 11 
-> 07:47:54 l1 [  600.432341]  [<ffffffff8108c183>] ? find_lock_page+0x23/0x80 
-> Feb 11 07:47:54 l1 [  600.432344]  [<ffffffff8108cbb1>] ? 
-> find_or_create_page+0x41/0xc0 Feb 11 07:47:54 l1 [  600.432349] 
-> [<ffffffff8145dbc5>] ? schedule_timeout+0x195/0x1f0 Feb 11 07:47:54 l1 [ 
-> 600.432352]  [<ffffffff8145ea81>] ? __down+0x61/0xa0 Feb 11 07:47:54 l1 [ 
-> 600.432356]  [<ffffffff81072046>] ? down+0x46/0x50 Feb 11 07:47:54 l1 [ 
-> 600.432360]  [<ffffffff811ff4a4>] ? _xfs_buf_find+0x134/0x220 Feb 11 07:47:54 
-> l1 [  600.432363]  [<ffffffff811ff5fe>] ? xfs_buf_get_flags+0x6e/0x190 Feb 11 
-> 07:47:54 l1 [  600.432366]  [<ffffffff811ff732>] ? 
-> xfs_buf_read_flags+0x12/0xa0 Feb 11 07:47:54 l1 [  600.432371] 
-> [<ffffffff811f5226>] ? xfs_trans_read_buf+0x1f6/0x350 Feb 11 07:47:54 l1 [ 
-> 600.432377]  [<ffffffff811b0268>] ? xfs_read_agf+0x68/0x190 Feb 11 07:47:54 
-> l1 [  600.432380]  [<ffffffff811b03c0>] ? xfs_alloc_read_agf+0x30/0xd0 Feb 11 
-> 07:47:54 l1 [  600.432383]  [<ffffffff811b2519>] ? 
-> xfs_alloc_fix_freelist+0x379/0x450 Feb 11 07:47:54 l1 [  600.432388] 
-> [<ffffffff811ddfe5>] ? xfs_iext_remove+0x35/0x80 Feb 11 07:47:54 l1 [ 
-> 600.432393]  [<ffffffff811bd83f>] ? 
-> xfs_bmap_add_extent_delay_real+0x5ef/0x11a0 Feb 11 07:47:54 l1 [  600.432396] 
-> [<ffffffff811f4e73>] ? xfs_trans_log_buf+0x63/0xa0 Feb 11 07:47:54 l1 [ 
-> 600.432401]  [<ffffffff811e7410>] ? xlog_state_get_iclog_space+0x60/0x2c0 Feb 
-> 11 07:47:54 l1 [  600.432404]  [<ffffffff8145f087>] ? __down_read+0x17/0xae 
-> Feb 11 07:47:54 l1 [  600.432408]  [<ffffffff811b29c0>] ? 
-> xfs_alloc_vextent+0x310/0x4b0 Feb 11 07:47:54 l1 [  600.432412] 
-> [<ffffffff811bf148>] ? xfs_bmap_btalloc+0x598/0xa40 Feb 11 07:47:54 l1 [ 
-> 600.432417]  [<ffffffff811c19a2>] ? xfs_bmapi+0x9e2/0x11a0 Feb 11 07:47:54 l1 
-> [  600.432422]  [<ffffffff811f3d4f>] ? xfs_trans_reserve+0x9f/0x210 Feb 11 
-> 07:47:54 l1 [  600.432425]  [<ffffffff811e2efe>] ? 
-> xfs_iomap_write_allocate+0x23e/0x3b0 Feb 11 07:47:54 l1 [  600.432429] 
-> [<ffffffff811e3aa0>] ? xfs_iomap+0x2c0/0x300 Feb 11 07:47:54 l1 [ 
-> 600.432433]  [<ffffffff811fb875>] ? xfs_map_blocks+0x25/0x30 Feb 11 07:47:54 
-> l1 [  600.432437]  [<ffffffff811fc9a4>] ? xfs_page_state_convert+0x414/0x6c0 
-> Feb 11 07:47:54 l1 [  600.432443]  [<ffffffff81224463>] ? 
-> radix_tree_gang_lookup_tag_slot+0xc3/0xf0 Feb 11 07:47:54 l1 [  600.432447] 
-> [<ffffffff811fcf57>] ? xfs_vm_writepage+0x77/0x130 Feb 11 07:47:54 l1 [ 
-> 600.432453]  [<ffffffff8109249a>] ? __writepage+0xa/0x40 Feb 11 07:47:54 l1 [ 
-> 600.432456]  [<ffffffff81092c6f>] ? write_cache_pages+0x1df/0x3c0 Feb 11 
-> 07:47:54 l1 [  600.432459]  [<ffffffff81092490>] ? __writepage+0x0/0x40 Feb 
-> 11 07:47:54 l1 [  600.432464]  [<ffffffff810d9092>] ? 
-> writeback_single_inode+0xd2/0x390 Feb 11 07:47:54 l1 [  600.432468] 
-> [<ffffffff810d9f3f>] ? writeback_inodes_wb+0x3ff/0x5e0 Feb 11 07:47:54 l1 [ 
-> 600.432473]  [<ffffffff810da23e>] ? wb_writeback+0x11e/0x1f0 Feb 11 07:47:54 
-> l1 [  600.432479]  [<ffffffff810630ee>] ? try_to_del_timer_sync+0x5e/0x90 Feb 
-> 11 07:47:54 l1 [  600.432484]  [<ffffffff810da56b>] ? 
-> wb_do_writeback+0x17b/0x180 Feb 11 07:47:54 l1 [  600.432487] 
-> [<ffffffff810da5cd>] ? bdi_writeback_task+0x5d/0xa0 Feb 11 07:47:54 l1 [ 
-> 600.432492]  [<ffffffff8109e900>] ? bdi_start_fn+0x0/0xf0 Feb 11 07:47:54 l1 
-> [  600.432496]  [<ffffffff8109e97e>] ? bdi_start_fn+0x7e/0xf0 Feb 11 07:47:54 
-> l1 [  600.432499]  [<ffffffff8109e900>] ? bdi_start_fn+0x0/0xf0 Feb 11 
-> 07:47:54 l1 [  600.432503]  [<ffffffff8106dab6>] ? kthread+0x96/0xa0 Feb 11 
-> 07:47:54 l1 [  600.432508]  [<ffffffff8102fdfa>] ? child_rip+0xa/0x20 Feb 11 
-> 07:47:54 l1 [  600.432513]  [<ffffffff8106da20>] ? kthread+0x0/0xa0 Feb 11 
-> 07:47:54 l1 [  600.432517]  [<ffffffff8102fdf0>] ? child_rip+0x0/0x20 Feb 11 
-> 07:49:54 l1 [  720.432171] INFO: task scp:4871 blocked for more than 120 
-> seconds. Feb 11 07:49:54 l1 [  720.432187] "echo 0 > 
-> /proc/sys/kernel/hung_task_timeout_secs" disables this message. Feb 11 
-> 07:49:54 l1 [  720.432192] scp           D
-> Feb 11 07:49:54 l1  ffff8801eee6f14c Feb 11 07:49:54 l1     0  4871   4870 
-> 0x00000000 Feb 11 07:49:54 l1 [  720.432198]  ffff880220c87950
-> Feb 11 07:49:54 l1  0000000000000082
-> Feb 11 07:49:54 l1  0000000000200200
-> Feb 11 07:49:54 l1  ffff88023eb71400
-> Feb 11 07:49:54 l1 Feb 11 07:49:54 l1 [  720.432206]  000000000000c928
-> Feb 11 07:49:54 l1  ffff8801f7a55fd8
-> Feb 11 07:49:54 l1  ffff880205fc6150
-> Feb 11 07:49:54 l1  ffff880205fc63c8
-> Feb 11 07:49:54 l1 Feb 11 07:49:54 l1 [  720.432217]  0000000000001000
-> Feb 11 07:49:54 l1  ffffffff8108d02a
-> Feb 11 07:49:54 l1  ffff8801eee6f0c0
-> Feb 11 07:49:54 l1  ffff880205fc63c8
-> Feb 11 07:49:54 l1 Feb 11 07:49:54 l1 [  720.432224] Call Trace: Feb 11 
-> 07:49:54 l1 [  720.432238]  [<ffffffff8108d02a>] ? 
-> generic_file_buffered_write+0x1aa/0x290 Feb 11 07:49:54 l1 [  720.432243] 
-> [<ffffffff8145f02d>] ? __down_write_nested+0x7d/0xb0 Feb 11 07:49:54 l1 [ 
-> 720.432249]  [<ffffffff8120387d>] ? xfs_write+0x23d/0x950 Feb 11 07:49:54 l1 
-> [  720.432254]  [<ffffffff810ba913>] ? do_sync_write+0xe3/0x130 Feb 11 
-> 07:49:54 l1 [  720.432259]  [<ffffffff8106dd90>] ? 
-> autoremove_wake_function+0x0/0x30 Feb 11 07:49:54 l1 [  720.432265] 
-> [<ffffffff810e9654>] ? fsnotify+0x4/0x1a0 Feb 11 07:49:54 l1 [  720.432270] 
-> [<ffffffff8102f78e>] ? common_interrupt+0xe/0x13 Feb 11 07:49:54 l1 [ 
-> 720.432275]  [<ffffffff810bb45b>] ? vfs_write+0xcb/0x180 Feb 11 07:49:54 l1 [ 
-> 720.432280]  [<ffffffff810bb613>] ? sys_write+0x53/0xa0 Feb 11 07:49:54 l1 [ 
-> 720.432285]  [<ffffffff8102eeeb>] ? system_call_fastpath+0x16/0x1b Feb 11 
-> 07:49:54 l1 [  720.432291] INFO: task flush-9:3:4874 blocked for more than 
-> 120 seconds. Feb 11 07:49:54 l1 [  720.432295] "echo 0 > 
-> /proc/sys/kernel/hung_task_timeout_secs" disables this message. Feb 11 
-> 07:49:54 l1 [  720.432298] flush-9:3     D
-> Feb 11 07:49:54 l1  ffff88021948d750 Feb 11 07:49:54 l1     0  4874      2 
-> 0x00000000 Feb 11 07:49:54 l1 [  720.432306]  ffff88023fa3c8c0
-> Feb 11 07:49:54 l1  0000000000000046
-> Feb 11 07:49:54 l1  000000001948d750
-> Feb 11 07:49:54 l1  ffffffff8163d788
-> Feb 11 07:49:54 l1 Feb 11 07:49:54 l1 [  720.432322]  000000000000c928
-> Feb 11 07:49:54 l1  ffff8801f79fbfd8
-> Feb 11 07:49:54 l1  ffff88021948d750
-> Feb 11 07:49:54 l1  ffff88021948d9c8
-> Feb 11 07:49:54 l1 Feb 11 07:49:54 l1 [  720.432329]  000000013f467bb0
-> Feb 11 07:49:54 l1  ffffffff8108c183
-> Feb 11 07:49:54 l1  0000000000000000
-> Feb 11 07:49:54 l1  ffff88021948d9c8
-> Feb 11 07:49:54 l1 Feb 11 07:49:54 l1 [  720.432336] Call Trace: Feb 11 
-> 07:49:54 l1 [  720.432340]  [<ffffffff8108c183>] ? find_lock_page+0x23/0x80 
-> Feb 11 07:49:54 l1 [  720.432343]  [<ffffffff8108cbb1>] ? 
-> find_or_create_page+0x41/0xc0 Feb 11 07:49:54 l1 [  720.432348] 
-> [<ffffffff8145dbc5>] ? schedule_timeout+0x195/0x1f0 Feb 11 07:49:54 l1 [ 
-> 720.432351]  [<ffffffff8145ea81>] ? __down+0x61/0xa0 Feb 11 07:49:54 l1 [ 
-> 720.432356]  [<ffffffff81072046>] ? down+0x46/0x50 Feb 11 07:49:54 l1 [ 
-> 720.432361]  [<ffffffff811ff4a4>] ? _xfs_buf_find+0x134/0x220 Feb 11 07:49:54 
-> l1 [  720.432365]  [<ffffffff811ff5fe>] ? xfs_buf_get_flags+0x6e/0x190 Feb 11 
-> 07:49:54 l1 [  720.432368]  [<ffffffff811ff732>] ? 
-> xfs_buf_read_flags+0x12/0xa0 Feb 11 07:49:54 l1 [  720.432373] 
-> [<ffffffff811f5226>] ? xfs_trans_read_buf+0x1f6/0x350 Feb 11 07:49:54 l1 [ 
-> 720.432378]  [<ffffffff811b0268>] ? xfs_read_agf+0x68/0x190 Feb 11 07:49:54 
-> l1 [  720.432382]  [<ffffffff811b03c0>] ? xfs_alloc_read_agf+0x30/0xd0 Feb 11 
-> 07:49:54 l1 [  720.432386]  [<ffffffff811b2519>] ? 
-> xfs_alloc_fix_freelist+0x379/0x450 Feb 11 07:49:54 l1 [  720.432391] 
-> [<ffffffff811ddfe5>] ? xfs_iext_remove+0x35/0x80 Feb 11 07:49:54 l1 [ 
-> 720.432396]  [<ffffffff811bd83f>] ? 
-> xfs_bmap_add_extent_delay_real+0x5ef/0x11a0 Feb 11 07:49:54 l1 [  720.432399] 
-> [<ffffffff811f4e73>] ? xfs_trans_log_buf+0x63/0xa0 Feb 11 07:49:54 l1 [ 
-> 720.432404]  [<ffffffff811e7410>] ? xlog_state_get_iclog_space+0x60/0x2c0 Feb 
-> 11 07:49:54 l1 [  720.432410]  [<ffffffff8145f087>] ? __down_read+0x17/0xae 
-> Feb 11 07:49:54 l1 [  720.432415]  [<ffffffff811b29c0>] ? 
-> xfs_alloc_vextent+0x310/0x4b0 Feb 11 07:49:54 l1 [  720.432420] 
-> [<ffffffff811bf148>] ? xfs_bmap_btalloc+0x598/0xa40 Feb 11 07:49:54 l1 [ 
-> 720.432426]  [<ffffffff811c19a2>] ? xfs_bmapi+0x9e2/0x11a0 Feb 11 07:49:54 l1 
-> [  720.432430]  [<ffffffff811f3d4f>] ? xfs_trans_reserve+0x9f/0x210 Feb 11 
-> 07:49:54 l1 [  720.432434]  [<ffffffff811e2efe>] ? 
-> xfs_iomap_write_allocate+0x23e/0x3b0 Feb 11 07:49:54 l1 [  720.432437] 
-> [<ffffffff811e3aa0>] ? xfs_iomap+0x2c0/0x300 Feb 11 07:49:54 l1 [ 
-> 720.432441]  [<ffffffff811fb875>] ? xfs_map_blocks+0x25/0x30 Feb 11 07:49:54 
-> l1 [  720.432445]  [<ffffffff811fc9a4>] ? xfs_page_state_convert+0x414/0x6c0 
-> Feb 11 07:49:54 l1 [  720.432451]  [<ffffffff81224463>] ? 
-> radix_tree_gang_lookup_tag_slot+0xc3/0xf0 Feb 11 07:49:54 l1 [  720.432455] 
-> [<ffffffff811fcf57>] ? xfs_vm_writepage+0x77/0x130 Feb 11 07:49:54 l1 [ 
-> 720.432459]  [<ffffffff8109249a>] ? __writepage+0xa/0x40 Feb 11 07:49:54 l1 [ 
-> 720.432462]  [<ffffffff81092c6f>] ? write_cache_pages+0x1df/0x3c0 Feb 11 
-> 07:49:54 l1 [  720.432466]  [<ffffffff81092490>] ? __writepage+0x0/0x40 Feb 
-> 11 07:49:54 l1 [  720.432472]  [<ffffffff810d9092>] ? 
-> writeback_single_inode+0xd2/0x390 Feb 11 07:49:54 l1 [  720.432476] 
-> [<ffffffff810d9f3f>] ? writeback_inodes_wb+0x3ff/0x5e0 Feb 11 07:49:54 l1 [ 
-> 720.432480]  [<ffffffff810da23e>] ? wb_writeback+0x11e/0x1f0 Feb 11 07:49:54 
-> l1 [  720.432485]  [<ffffffff810630ee>] ? try_to_del_timer_sync+0x5e/0x90 Feb 
-> 11 07:49:54 l1 [  720.432489]  [<ffffffff810da56b>] ? 
-> wb_do_writeback+0x17b/0x180 Feb 11 07:49:54 l1 [  720.432493] 
-> [<ffffffff810da5cd>] ? bdi_writeback_task+0x5d/0xa0 Feb 11 07:49:54 l1 [ 
-> 720.432497]  [<ffffffff8109e900>] ? bdi_start_fn+0x0/0xf0 Feb 11 07:49:54 l1 
-> [  720.432500]  [<ffffffff8109e97e>] ? bdi_start_fn+0x7e/0xf0 Feb 11 07:49:54 
-> l1 [  720.432503]  [<ffffffff8109e900>] ? bdi_start_fn+0x0/0xf0 Feb 11 
-> 07:49:54 l1 [  720.432506]  [<ffffffff8106dab6>] ? kthread+0x96/0xa0 Feb 11 
-> 07:49:54 l1 [  720.432511]  [<ffffffff8102fdfa>] ? child_rip+0xa/0x20 Feb 11 
-> 07:49:54 l1 [  720.432515]  [<ffffffff8106da20>] ? kthread+0x0/0xa0 Feb 11 
-> 07:49:54 l1 [  720.432519]  [<ffffffff8102fdf0>] ? child_rip+0x0/0x20
->
-> Justin.
->
->
+ drivers/mmc/host/omap_hsmmc.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/mmc/host/omap_hsmmc.c b/drivers/mmc/host/omap_hsmmc.c
+index 83f0aff..8c97c22 100644
+--- a/drivers/mmc/host/omap_hsmmc.c
++++ b/drivers/mmc/host/omap_hsmmc.c
+@@ -2092,7 +2092,7 @@ static int __init omap_hsmmc_probe(struct platform_device
+*pdev)
+ 		     MMC_CAP_WAIT_WHILE_BUSY;
+
+ 	if (mmc_slot(host).wires >= 8)
+-		mmc->caps |= MMC_CAP_8_BIT_DATA;
++		mmc->caps |= (MMC_CAP_8_BIT_DATA | MMC_CAP_4_BIT_DATA);
+ 	else if (mmc_slot(host).wires >= 4)
+ 		mmc->caps |= MMC_CAP_4_BIT_DATA;
+
+-- 
+1.6.3.3
+
+------=_20100211195023_58080
+Content-Type: application/octet-stream;
+      name=
+     "0001-Fix-for-bus-width-which-optimizes-SD-card-s-peforman.patch"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+      filename=
+     "0001-Fix-for-bus-width-which-optimizes-SD-card-s-peforman.patch"
+
+RnJvbSAzNGIwMDg3MjUzMGU2MDY2NzhmODYwNzJkNDZkOGNhODliZWFhMTliIE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpGcm9tOiBLaXNob3JlIEthZGl5YWxhIDxraXNob3JlLmthZGl5YWxhQHRp
+LmNvbT4KRGF0ZTogVGh1LCAxMSBGZWIgMjAxMCAxNjo0MjoyMyArMDUzMApTdWJqZWN0OiBbUEFU
+Q0hdIEZpeCBmb3IgYnVzIHdpZHRoIHdoaWNoIGltcHJvdmVzIFNEIGNhcmQncyBwZWZvcm1hbmNl
+LgoKVGhpcyBwYXRjaCBpbXByb3ZlcyBsb3cgc3BlZWRzIGZvciBTRCBjYXJkcy4KT01BUC1NTUMg
+Y29udHJvbGxlcidzIGNhbiBzdXBwb3J0IG1heGltdW0gYnVzIHdpZHRoIG9mICc4Jy4Kd2hlbiBi
+dXMgd2lkdGggaXMgbWVudGlvbmVkIGFzICI4IiBpbiBjb250cm9sbGVyIGRhdGEsdGhlIFNECnN0
+YWNrIHdpbGwgY2hlY2sgd2hldGhlciBidXMgd2lkdGggaXMgIjQiIGFuZCBpZiBub3QgaXQgd2ls
+bApzZXQgYnVzIHdpZHRoIHRvICIxIiBhbmQgdGhlcmUgYnkgZGVncmFkaW5nIHBlZm9ybWFuY2Uu
+ClRoaXMgcGF0Y2ggZml4ZXMgdGhlIGlzc3VlIGFuZCBpbXByb3ZlcyB0aGUgcGVyZm9ybWFuY2Ug
+b2YKU0QgY2FyZHMuCgpTaWduZWQtb2ZmLWJ5OiBLaXNob3JlIEthZGl5YWxhIDxraXNob3JlLmth
+ZGl5YWxhQHRpLmNvbT4KLS0tCiBIZXJlIGFyZSBteSBleHBlcmltZW50IG51bWJlcnMsIG9uIGEg
+Q2xhc3MgNiBTREhDIGNhcmQ6CiBSZWFkIHBlZm9ybWFuY2UgaXMgaW5jcmVhc2VkIGJ5IDIyMCUK
+IFdyaXRlIFBlcmZvcm1hbmNlIGlzIGluY3JlYXNlZCBieSA1MiUKCQkKIGRyaXZlcnMvbW1jL2hv
+c3Qvb21hcF9oc21tYy5jIHwgICAgMiArLQogMSBmaWxlcyBjaGFuZ2VkLCAxIGluc2VydGlvbnMo
+KyksIDEgZGVsZXRpb25zKC0pCgpkaWZmIC0tZ2l0IGEvZHJpdmVycy9tbWMvaG9zdC9vbWFwX2hz
+bW1jLmMgYi9kcml2ZXJzL21tYy9ob3N0L29tYXBfaHNtbWMuYwppbmRleCA4M2YwYWZmLi44Yzk3
+YzIyIDEwMDY0NAotLS0gYS9kcml2ZXJzL21tYy9ob3N0L29tYXBfaHNtbWMuYworKysgYi9kcml2
+ZXJzL21tYy9ob3N0L29tYXBfaHNtbWMuYwpAQCAtMjA5Miw3ICsyMDkyLDcgQEAgc3RhdGljIGlu
+dCBfX2luaXQgb21hcF9oc21tY19wcm9iZShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2KQog
+CQkgICAgIE1NQ19DQVBfV0FJVF9XSElMRV9CVVNZOwogCiAJaWYgKG1tY19zbG90KGhvc3QpLndp
+cmVzID49IDgpCi0JCW1tYy0+Y2FwcyB8PSBNTUNfQ0FQXzhfQklUX0RBVEE7CisJCW1tYy0+Y2Fw
+cyB8PSAoTU1DX0NBUF84X0JJVF9EQVRBIHwgTU1DX0NBUF80X0JJVF9EQVRBKTsKIAllbHNlIGlm
+IChtbWNfc2xvdChob3N0KS53aXJlcyA+PSA0KQogCQltbWMtPmNhcHMgfD0gTU1DX0NBUF80X0JJ
+VF9EQVRBOwogCi0tIAoxLjYuMy4zCgo=
+------=_20100211195023_58080--
+
+
