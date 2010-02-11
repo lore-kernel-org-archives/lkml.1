@@ -1,73 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757449Ab0BKXMg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 18:12:36 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51271 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757197Ab0BKXMe (ORCPT
+	id S1757368Ab0BKXN0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 18:13:26 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:34856 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751690Ab0BKXNZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 18:12:34 -0500
-Date: Thu, 11 Feb 2010 15:11:35 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Rientjes <rientjes@google.com>
-Cc: Rik van Riel <riel@redhat.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Nick Piggin <npiggin@suse.de>, Andrea Arcangeli <aarcange@redhat.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch 4/7 -mm] oom: badness heuristic rewrite
-Message-Id: <20100211151135.91586cd1.akpm@linux-foundation.org>
-In-Reply-To: <alpine.DEB.2.00.1002111437060.21107@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.1002100224210.8001@chino.kir.corp.google.com>
-	<alpine.DEB.2.00.1002100228540.8001@chino.kir.corp.google.com>
-	<4B73833D.5070008@redhat.com>
-	<alpine.DEB.2.00.1002102332200.22152@chino.kir.corp.google.com>
-	<20100211134343.4886499c.akpm@linux-foundation.org>
-	<alpine.DEB.2.00.1002111346050.8809@chino.kir.corp.google.com>
-	<20100211143105.dea3861a.akpm@linux-foundation.org>
-	<alpine.DEB.2.00.1002111437060.21107@chino.kir.corp.google.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 11 Feb 2010 18:13:25 -0500
+To: Tejun Heo <tj@kernel.org>
+Cc: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>,
+       "Tejun Heo <tj@kernel.org> Neil Brown" <neilb@suse.de>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 0/4] Better sysfs lockdep
+References: <19314.1869.847327.15190@notabene.brown>
+	<2375c9f91002091808n713275dsc9ace8f51871364e@mail.gmail.com>
+	<4B7217CF.2080702@kernel.org> <m1vde57c11.fsf@fess.ebiederm.org>
+	<4B728CFE.40208@kernel.org> <m1sk992bji.fsf@fess.ebiederm.org>
+	<20100210230544.GA678@suse.de> <m1ocjwwob1.fsf@fess.ebiederm.org>
+	<4B73671E.2050105@kernel.org>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Thu, 11 Feb 2010 15:13:20 -0800
+In-Reply-To: <4B73671E.2050105@kernel.org> (Tejun Heo's message of "Thu\, 11 Feb 2010 11\:10\:38 +0900")
+Message-ID: <m1bpfvxt67.fsf_-_@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 11 Feb 2010 14:42:39 -0800 (PST)
-David Rientjes <rientjes@google.com> wrote:
 
-> On Thu, 11 Feb 2010, Andrew Morton wrote:
-> 
-> > > Sigh, this is going to require the amount of system memory to be 
-> > > partitioned into OOM_ADJUST_MAX, 15, chunks and that's going to be the 
-> > > granularity at which we'll be able to either bias or discount memory usage 
-> > > of individual tasks by: instead of being able to do this with 0.1% 
-> > > granularity we'll now be limited to 100 / 15, or ~7%.  That's ~9GB on my 
-> > > 128GB system just because this was originally a bitshift.  The upside is 
-> > > that it's now linear and not exponential.
-> > 
-> > Can you add newly-named knobs (rather than modifying the existing
-> > ones), deprecate the old ones and then massage writes to the old ones
-> > so that they talk into the new framework?
-> > 
-> 
-> That's what I was thinking, add /proc/pid/oom_score_adj that is just added 
-> into the badness score (and is then exported with /proc/pid/oom_score) 
-> like this patch did with oom_adj and then scale it into oom_adj units for 
-> that tunable.  A write to either oom_adj or oom_score_adj would change the 
-> other,
+It turns out that it is pretty simple to rework the lockdep support
+to give each sysfs attribute it's own lockdep class, which should
+kill the annoying false positives we have been seeing lately.
 
-How ugly is all this?
+The one caveat is that it requires dynamically allocated sysfs
+attributes to be explicitly initialized.  Luckily it is brainless
+trivial whack-a-mole and took maybe 15 minutes to find all of the
+dynamically allocates sysfs attributes on my test machine, because
+the errors show up when the attributes are registered with sysfs,
+and all of the fixes are one-liners.
 
-> the same thing I did for /proc/sys/vm/dirty_{bytes,ratio} and
-> /proc/sys/vm/dirty_background_{bytes,ratio} which I guess we have to 
-> support forever since the predecessors are part of the ABI and there's no 
-> way to deprecate them since they'll never be removed for that reason.
+Hopefully with this we can head back to fixing the real issues.
 
-Ah, OK, I was trying to remember where we did that ;)
-
-There _are_ things we can do though.  Detect a write to the old file and
-emit a WARN_ON_ONCE("you suck").  Wait a year, turn it into
-WARN_ON("you really suck").  Wait a year, then remove it.
-
+Eric
