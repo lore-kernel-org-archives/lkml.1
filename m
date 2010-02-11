@@ -1,28 +1,28 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755553Ab0BKOdj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 09:33:39 -0500
-Received: from va3ehsobe005.messaging.microsoft.com ([216.32.180.15]:20700
-	"EHLO VA3EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751832Ab0BKOdh (ORCPT
+	id S1755719Ab0BKOdn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 09:33:43 -0500
+Received: from va3ehsobe002.messaging.microsoft.com ([216.32.180.12]:40639
+	"EHLO VA3EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751832Ab0BKOdk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 09:33:37 -0500
-X-SpamScore: 6
-X-BigFish: VPS6(za62pzab9bh936eMzz1202hzzz32i6bh87h43j62h)
-X-Spam-TCS-SCL: 1:0
+	Thu, 11 Feb 2010 09:33:40 -0500
+X-SpamScore: -2
+X-BigFish: VPS-2(zzab9bh936eMzz1202hzzz32i87h6bh43j61h)
+X-Spam-TCS-SCL: 0:0
 X-FB-DOMAIN-IP-MATCH: fail
-X-WSS-ID: 0KXOLRP-01-0UM-02
+X-WSS-ID: 0KXOLRT-01-0UP-02
 X-M-MSG: 
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 CC: Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 4/7] x86/amd-iommu: Move functions to get rid of forward declarations
-Date: Thu, 11 Feb 2010 15:33:14 +0100
-Message-ID: <1265898797-32183-5-git-send-email-joerg.roedel@amd.com>
+Subject: [PATCH 6/7] x86/amd-iommu: Introduce iommu_update_dma_ops_domain()
+Date: Thu, 11 Feb 2010 15:33:16 +0100
+Message-ID: <1265898797-32183-7-git-send-email-joerg.roedel@amd.com>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <1265898797-32183-1-git-send-email-joerg.roedel@amd.com>
 References: <1265898797-32183-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 11 Feb 2010 14:33:21.0572 (UTC) FILETIME=[29231640:01CAAB27]
+X-OriginalArrivalTime: 11 Feb 2010 14:33:21.0759 (UTC) FILETIME=[293F9EF0:01CAAB27]
 MIME-Version: 1.0
 Content-Type: text/plain
 X-Reverse-DNS: unknown
@@ -30,143 +30,148 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch moves some functions in amd_iommu.c to get rid of
-the iommu_update_domain_dte forward declaration.
+This new functions does the same for dma_ops domains as
+iommu_update_domain for other domains. For dma_ops domains
+we can't use iommu_update_domain because we need to care
+about lazy tlb flushing.
 
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- arch/x86/kernel/amd_iommu.c |   90 +++++++++++++++++++++----------------------
- 1 files changed, 44 insertions(+), 46 deletions(-)
+ arch/x86/kernel/amd_iommu.c |   45 ++++++++++++++++++++----------------------
+ 1 files changed, 21 insertions(+), 24 deletions(-)
 
 diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
-index 02ab775..bda00f0 100644
+index 4063f55..a645756 100644
 --- a/arch/x86/kernel/amd_iommu.c
 +++ b/arch/x86/kernel/amd_iommu.c
-@@ -58,7 +58,6 @@ struct iommu_cmd {
- };
- 
- static void reset_iommu_command_buffer(struct amd_iommu *iommu);
--static void iommu_update_domain_dte(struct protection_domain *domain);
- 
- /****************************************************************************
-  *
-@@ -90,6 +89,38 @@ static void update_flush_info_tlb(struct protection_domain *domain,
- 		domain->flush.end   = max(end  , domain->flush.end);
- 	}
+@@ -768,6 +768,18 @@ static void iommu_update_domain(struct protection_domain *domain)
+ 	iommu_flush_complete(domain);
  }
-+static void set_dte_entry(u16 devid, struct protection_domain *domain)
+ 
++static void iommu_update_dma_ops_domain(struct dma_ops_domain *dma_dom)
 +{
-+	u64 pte_root = virt_to_phys(domain->pt_root);
++	iommu_update_domain_dte(&dma_dom->domain);
 +
-+	pte_root |= (domain->mode & DEV_ENTRY_MODE_MASK)
-+		    << DEV_ENTRY_MODE_SHIFT;
-+	pte_root |= IOMMU_PTE_IR | IOMMU_PTE_IW | IOMMU_PTE_P | IOMMU_PTE_TV;
-+
-+	amd_iommu_dev_table[devid].data[2] = domain->id;
-+	amd_iommu_dev_table[devid].data[1] = upper_32_bits(pte_root);
-+	amd_iommu_dev_table[devid].data[0] = lower_32_bits(pte_root);
-+}
-+
-+static void clear_dte_entry(u16 devid)
-+{
-+	/* remove entry from the device table seen by the hardware */
-+	amd_iommu_dev_table[devid].data[0] = IOMMU_PTE_P | IOMMU_PTE_TV;
-+	amd_iommu_dev_table[devid].data[1] = 0;
-+	amd_iommu_dev_table[devid].data[2] = 0;
-+
-+	amd_iommu_apply_erratum_63(devid);
-+}
-+
-+static void update_device_table(struct protection_domain *domain)
-+{
-+	struct iommu_dev_data *dev_data;
-+
-+	list_for_each_entry(dev_data, &domain->dev_list, list) {
-+		u16 devid = get_device_id(dev_data->dev);
-+		set_dte_entry(devid, domain);
++	if (dma_dom->need_flush) {
++		iommu_update_domain_tlb(&dma_dom->domain, false);
++		dma_dom->need_flush = false;
 +	}
-+}
- 
- /*
-  * In this function the list of preallocated protection domains is traversed to
-@@ -718,6 +749,18 @@ static void reset_iommu_command_buffer(struct amd_iommu *iommu)
- 	iommu->reset_in_progress = false;
- }
- 
-+static void iommu_update_domain_dte(struct protection_domain *domain)
-+{
-+	if (!domain->flush.dte)
-+		return;
 +
-+	update_device_table(domain);
-+	iommu_flush_domain_devices(domain);
-+	iommu_flush_tlb_pde(domain);
-+
-+	domain->flush.dte = false;
++	iommu_flush_complete(&dma_dom->domain);
 +}
 +
  /****************************************************************************
   *
   * The functions below are used the create the page table mappings for
-@@ -1366,29 +1409,6 @@ static bool dma_ops_domain(struct protection_domain *domain)
- 	return domain->flags & PD_DMA_OPS_MASK;
+@@ -1120,12 +1132,9 @@ static int alloc_new_range(struct dma_ops_domain *dma_dom,
+ 		dma_ops_reserve_addresses(dma_dom, i << PAGE_SHIFT, 1);
+ 	}
+ 
+-	iommu_update_domain_dte(&dma_dom->domain);
+-
+ 	return 0;
+ 
+ out_free:
+-	iommu_update_domain_dte(&dma_dom->domain);
+ 
+ 	free_page((unsigned long)dma_dom->aperture[index]->bitmap);
+ 
+@@ -1744,8 +1753,6 @@ static u64* dma_ops_get_pte(struct dma_ops_domain *dom,
+ 	} else
+ 		pte += PM_LEVEL_INDEX(0, address);
+ 
+-	iommu_update_domain_dte(&dom->domain);
+-
+ 	return pte;
  }
  
--static void set_dte_entry(u16 devid, struct protection_domain *domain)
--{
--	u64 pte_root = virt_to_phys(domain->pt_root);
--
--	pte_root |= (domain->mode & DEV_ENTRY_MODE_MASK)
--		    << DEV_ENTRY_MODE_SHIFT;
--	pte_root |= IOMMU_PTE_IR | IOMMU_PTE_IW | IOMMU_PTE_P | IOMMU_PTE_TV;
--
--	amd_iommu_dev_table[devid].data[2] = domain->id;
--	amd_iommu_dev_table[devid].data[1] = upper_32_bits(pte_root);
--	amd_iommu_dev_table[devid].data[0] = lower_32_bits(pte_root);
--}
--
--static void clear_dte_entry(u16 devid)
--{
--	/* remove entry from the device table seen by the hardware */
--	amd_iommu_dev_table[devid].data[0] = IOMMU_PTE_P | IOMMU_PTE_TV;
--	amd_iommu_dev_table[devid].data[1] = 0;
--	amd_iommu_dev_table[devid].data[2] = 0;
--
--	amd_iommu_apply_erratum_63(devid);
--}
--
- static void do_attach(struct device *dev, struct protection_domain *domain)
- {
- 	struct iommu_dev_data *dev_data;
-@@ -1698,28 +1718,6 @@ static struct protection_domain *get_domain(struct device *dev)
- 	return &dma_dom->domain;
- }
+@@ -1876,15 +1883,10 @@ retry:
  
--static void update_device_table(struct protection_domain *domain)
--{
--	struct iommu_dev_data *dev_data;
--
--	list_for_each_entry(dev_data, &domain->dev_list, list) {
--		u16 devid = get_device_id(dev_data->dev);
--		set_dte_entry(devid, domain);
+ 	ADD_STATS_COUNTER(alloced_io_mem, size);
+ 
+-	if (unlikely(amd_iommu_np_cache))
++	if (unlikely(amd_iommu_np_cache ||
++		     (dma_dom->need_flush && !amd_iommu_unmap_flush)))
+ 		update_flush_info_tlb(&dma_dom->domain, start, size);
+ 
+-	if (unlikely((dma_dom->need_flush && !amd_iommu_unmap_flush)) ||
+-		      amd_iommu_np_cache) {
+-		iommu_update_domain_tlb(&dma_dom->domain, false);
+-		dma_dom->need_flush = false;
 -	}
--}
 -
--static void iommu_update_domain_dte(struct protection_domain *domain)
--{
--	if (!domain->flush.dte)
--		return;
+ out:
+ 	return address;
+ 
+@@ -1930,11 +1932,6 @@ static void __unmap_single(struct dma_ops_domain *dma_dom,
+ 	SUB_STATS_COUNTER(alloced_io_mem, size);
+ 
+ 	dma_ops_free_addresses(dma_dom, dma_addr, pages);
 -
--	update_device_table(domain);
--	iommu_flush_domain_devices(domain);
--	iommu_flush_tlb_pde(domain);
--
--	domain->flush.dte = false;
--}
--
+-	if (amd_iommu_unmap_flush || dma_dom->need_flush) {
+-		iommu_update_domain_tlb(&dma_dom->domain, false);
+-		dma_dom->need_flush = false;
+-	}
+ }
+ 
  /*
-  * This function fetches the PTE for a given address in the aperture
-  */
+@@ -1968,7 +1965,7 @@ static dma_addr_t map_page(struct device *dev, struct page *page,
+ 	if (addr == DMA_ERROR_CODE)
+ 		goto out;
+ 
+-	iommu_flush_complete(domain);
++	iommu_update_dma_ops_domain(domain->priv);
+ 
+ out:
+ 	spin_unlock_irqrestore(&domain->lock, flags);
+@@ -1995,7 +1992,7 @@ static void unmap_page(struct device *dev, dma_addr_t dma_addr, size_t size,
+ 
+ 	__unmap_single(domain->priv, dma_addr, size, dir);
+ 
+-	iommu_flush_complete(domain);
++	iommu_update_dma_ops_domain(domain->priv);
+ 
+ 	spin_unlock_irqrestore(&domain->lock, flags);
+ }
+@@ -2060,9 +2057,9 @@ static int map_sg(struct device *dev, struct scatterlist *sglist,
+ 			goto unmap;
+ 	}
+ 
+-	iommu_flush_complete(domain);
+-
+ out:
++	iommu_update_dma_ops_domain(domain->priv);
++
+ 	spin_unlock_irqrestore(&domain->lock, flags);
+ 
+ 	return mapped_elems;
+@@ -2106,7 +2103,7 @@ static void unmap_sg(struct device *dev, struct scatterlist *sglist,
+ 		s->dma_address = s->dma_length = 0;
+ 	}
+ 
+-	iommu_flush_complete(domain);
++	iommu_update_dma_ops_domain(domain->priv);
+ 
+ 	spin_unlock_irqrestore(&domain->lock, flags);
+ }
+@@ -2156,7 +2153,7 @@ static void *alloc_coherent(struct device *dev, size_t size,
+ 		goto out_free;
+ 	}
+ 
+-	iommu_flush_complete(domain);
++	iommu_update_dma_ops_domain(domain->priv);
+ 
+ 	spin_unlock_irqrestore(&domain->lock, flags);
+ 
+@@ -2188,7 +2185,7 @@ static void free_coherent(struct device *dev, size_t size,
+ 
+ 	__unmap_single(domain->priv, dma_addr, size, DMA_BIDIRECTIONAL);
+ 
+-	iommu_flush_complete(domain);
++	iommu_update_dma_ops_domain(domain->priv);
+ 
+ 	spin_unlock_irqrestore(&domain->lock, flags);
+ 
 -- 
 1.6.6
 
