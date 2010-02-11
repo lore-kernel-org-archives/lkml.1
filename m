@@ -1,38 +1,61 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757392Ab0BKX01 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 18:26:27 -0500
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:55229 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756901Ab0BKX0Z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 18:26:25 -0500
-Date: Fri, 12 Feb 2010 08:26:16 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Mike Frysinger <vapier@gentoo.org>
-Cc: Roland McGrath <roland@redhat.com>, Oleg Nesterov <oleg@redhat.com>,
-       David Howells <dhowells@redhat.com>,
-       uclinux-dist-devel@blackfin.uclinux.org, linux-kernel@vger.kernel.org,
-       linux-sh@vger.kernel.org
-Subject: Re: [PATCH] ptrace: unify FDPIC implementations
-Message-ID: <20100211232616.GC907@linux-sh.org>
-References: <1265880960-26676-1-git-send-email-vapier@gentoo.org>
+	id S1757395Ab0BKXbR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 18:31:17 -0500
+Received: from mail.blast.com ([96.10.7.96]:34587 "EHLO mail.blast.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755775Ab0BKXbP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 18:31:15 -0500
+X-Greylist: delayed 327 seconds by postgrey-1.27 at vger.kernel.org; Thu, 11 Feb 2010 18:31:15 EST
+Message-ID: <3203.78.138.3.237.1265916214.squirrel@isp.emji.net>
+Date: Thu, 11 Feb 2010 14:23:34 -0500 (EST)
+Subject: 
+From: "SIR FRANCIS LOAN FIMR PLC" <sirfrancisloanfirm201011@w.cn>
+Reply-To: sirfrancisloanfirm20101@hotm4il.com
+User-Agent: SquirrelMail/1.4.4-1.FC3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1265880960-26676-1-git-send-email-vapier@gentoo.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
+To: undisclosed-recipients:;
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 11, 2010 at 04:36:00AM -0500, Mike Frysinger wrote:
-> The Blackfin/FRV/SuperH guys all have the same exact FDPIC ptrace code in
-> their arch handlers (since they were probably copied & pasted).  Since
-> these ptrace interfaces are an arch independent aspect of the FDPIC code,
-> unify them in the common ptrace code so new FDPIC ports don't need to copy
-> and paste this fundamental stuff yet again.
-> 
-> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 
-Acked-by: Paul Mundt  <lethal@linux-sh.org>
+
+
+Are you searching for a Genuine loan? at an affordable interest rate ?
+processed within 4 to 6 working days,Are you tired of Seeking Loans and
+Mortgages,have you Been Turneddownconstantly By your banks and Other
+Financial Institutions.We Offer LOANS ranging from $3,000.00 Min. to
+$10,000,000.00 Max. at3%interest rate per annun. LOANS for developing
+business a competitive edge/business expansion. We are certified,
+trustworthy, reliable,efficient,Fastand dynamic. and a co-operate
+financier for real estate any  kinds of business financing, we giveout
+long term loan for five to fifty years maximum.
+We offer the following kinds of loans and many more;
+* Personal Loans ( Unsecured Loan)
+* Business Loans ( Unsecured Loan)
+* Consolidation Loan
+* Combination Loan
+* Home Improvemen
+Any interested persons should fill the form below and send it to our email
+down below.
+Email: sirfrancisloanfirm20101@hotm4il.com
+Name:........
+Country:.......
+Address:......
+Phone number:.............
+Current place of work:.......
+Loan amount needed:.......
+Loan duration:...........
+Monthly income:.......
+Occupation....................
+Email address:........
+Sex.....
+Thanks,
+SIR FRANCIS
+SIR FRANCIS LOAN FIRM PLC
+ You response should be send to this email . sirfrancisloanfirm201011@9.cn
