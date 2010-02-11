@@ -1,55 +1,67 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757433Ab0BKXnb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 18:43:31 -0500
-Received: from cantor.suse.de ([195.135.220.2]:37661 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757297Ab0BKXn3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 18:43:29 -0500
-Date: Thu, 11 Feb 2010 15:43:10 -0800
-From: Greg KH <gregkh@suse.de>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
-       "Tejun Heo <tj@kernel.org> Neil Brown" <neilb@suse.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/4] Better sysfs lockdep
-Message-ID: <20100211234310.GB10498@suse.de>
-References: <19314.1869.847327.15190@notabene.brown>
- <2375c9f91002091808n713275dsc9ace8f51871364e@mail.gmail.com>
- <4B7217CF.2080702@kernel.org>
- <m1vde57c11.fsf@fess.ebiederm.org>
- <4B728CFE.40208@kernel.org>
- <m1sk992bji.fsf@fess.ebiederm.org>
- <20100210230544.GA678@suse.de>
- <m1ocjwwob1.fsf@fess.ebiederm.org>
- <4B73671E.2050105@kernel.org>
- <m1r5orweee.fsf_-_@fess.ebiederm.org>
+	id S1757480Ab0BKXo3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 18:44:29 -0500
+Received: from mail2.shareable.org ([80.68.89.115]:54147 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757297Ab0BKXo2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 18:44:28 -0500
+Date: Thu, 11 Feb 2010 23:42:49 +0000
+From: Jamie Lokier <jamie@shareable.org>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Wu Fengguang <fengguang.wu@intel.com>,
+       Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Clemens Ladisch <clemens@ladisch.de>,
+       Olivier Galibert <galibert@pobox.com>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Paul Gortmaker <paul.gortmaker@windriver.com>,
+       David Woodhouse <dwmw2@infradead.org>, linux-embedded@vger.kernel.org
+Subject: Re: [PATCH 03/11] readahead: bump up the default readahead size
+Message-ID: <20100211234249.GE407@shareable.org>
+References: <20100207041013.891441102@intel.com> <20100207041043.147345346@intel.com> <4B6FBB3F.4010701@linux.vnet.ibm.com> <20100208134634.GA3024@localhost> <1265924254.15603.79.camel@calx>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m1r5orweee.fsf_-_@fess.ebiederm.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <1265924254.15603.79.camel@calx>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 11, 2010 at 03:17:45PM -0800, Eric W. Biederman wrote:
+Matt Mackall wrote:
+> On Mon, 2010-02-08 at 21:46 +0800, Wu Fengguang wrote:
+> > Chris,
+> > 
+> > Firstly inform the linux-embedded maintainers :)
+> > 
+> > I think it's a good suggestion to add a config option
+> > (CONFIG_READAHEAD_SIZE). Will update the patch..
 > 
-> It turns out that it is pretty simple to rework the lockdep support
-> to give each sysfs attribute it's own lockdep class, which should
-> kill the annoying false positives we have been seeing lately.
-> 
-> The one caveat is that it requires dynamically allocated sysfs
-> attributes to be explicitly initialized.  Luckily it is brainless
-> trivial whack-a-mole and took maybe 15 minutes to find all of the
-> dynamically allocates sysfs attributes on my test machine, because
-> the errors show up when the attributes are registered with sysfs,
-> and all of the fixes are one-liners.
-> 
-> Hopefully with this we can head back to fixing the real issues.
+> I don't have a strong opinion here beyond the nagging feeling that we
+> should be using a per-bdev scaling window scheme rather than something
+> static.
 
-Nice job, I'll queue this up for -next
+I agree with both.  100Mb/s isn't typical on little devices, even if a
+fast ATA disk is attached.  I've got something here where the ATA
+interface itself (on a SoC) gets about 10MB/s max when doing nothing
+else, or 4MB/s when talking to the network at the same time.
+It's not a modern design, but you know, it's junk we try to use :-)
 
-thanks,
+It sounds like a calculation based on throughput and seek time or IOP
+rate, and maybe clamped if memory is small, would be good.
 
-greg k-h
+Is the window size something that could be meaningfully adjusted
+according to live measurements?
+
+-- Jamie
+
+
+
