@@ -1,64 +1,102 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752511Ab0BKIpf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 03:45:35 -0500
-Received: from hera.kernel.org ([140.211.167.34]:55799 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751777Ab0BKIpe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 03:45:34 -0500
-Message-ID: <4B73C535.7020405@kernel.org>
-Date: Thu, 11 Feb 2010 17:52:05 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	id S1752615Ab0BKIqk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 03:46:40 -0500
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:49305 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752287Ab0BKIqi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 03:46:38 -0500
+X-Sasl-enc: +ngHCfg1TQ6rZXMiau1WvKCWbFCv5yjBR+tj+uZRiTnw 1265877997
+Message-ID: <4B73C3EC.2040606@ladisch.de>
+Date: Thu, 11 Feb 2010 09:46:36 +0100
+From: Clemens Ladisch <clemens@ladisch.de>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, dri-devel@lists.sourceforge.net,
-       Dave Airlie <airlied@gmail.com>, Greg KH <greg@kroah.com>,
-       Eric Paris <eparis@redhat.com>
-Subject: Re: [PATCH 2.6.33-rc6] idr: revert misallocation bug fix
-References: <4B6A8C01.5020403@kernel.org> <1265317104.11442.29.camel@nimitz>
-In-Reply-To: <1265317104.11442.29.camel@nimitz>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Sebastien Alaiwan <sebastien.alaiwan@gmail.com>
+CC: linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org,
+       Takashi Iwai <tiwai@suse.de>
+Subject: Re: [PATCH][ALSA] usbmidi support for Access Music synths.
+References: <4B726306.8070506@gmail.com> <4B7274BA.3040801@ladisch.de> <4B73B96A.9040006@gmail.com>
+In-Reply-To: <4B73B96A.9040006@gmail.com>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 11 Feb 2010 08:45:00 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-On 02/05/2010 05:58 AM, Dave Hansen wrote:
-> Bah.  I just ran into and bisected the X startup problem. :)
+Sebastien Alaiwan wrote:
+> Clemens Ladisch wrote:
+>> Please run the checkpatch script on your patch.
 > 
-> Let me know when you have a proper fix.  I can test on my machine for
-> you.
+> Done!
+> I did not know such a tool did exist, thank you for pointing this out. Is there
+> a document I could read about such rules of thumb?
 
-Can you please test the following against the current mainline?
+Documentation/CodingStyle
+Documentation/SubmitChecklist
+Documentation/SubmittingDrivers
+Documentation/SubmittingPatches
 
-Thanks.
+>> Does this device use more than one endpoint per direction?  If not, this
+>> could be done with QUIRK_MIDI_FIXED_ENDPOINT.
+> 
+> There's only one endpoint per direction, but there are two cables per endpoint:
+> endpoint 0x05, cable 0 : physical MIDI output port of the device.
+> endpoint 0x05, cable 1 : synth (output: send note-on, etc...)
+> endpoint 0x85, cable 0 : physical MIDI input port of the device.
+> endpoint 0x85, cable 1 : synth (input: recv sysex, controller changes)
+> 
+> Please correct me if I'm wrong, but it seems QUIRK_MIDI_FIXED_ENDPOINT would not
+> do the job, otherwise where do I signal the number of cables?
 
-diff --git a/lib/idr.c b/lib/idr.c
-index 1cac726..0dc7822 100644
---- a/lib/idr.c
-+++ b/lib/idr.c
-@@ -156,10 +156,12 @@ static int sub_alloc(struct idr *idp, int *starting_id, struct idr_layer **pa)
- 			id = (id | ((1 << (IDR_BITS * l)) - 1)) + 1;
- 
- 			/* if already at the top layer, we need to grow */
--			if (!(p = pa[l])) {
-+			if (id >= 1 << (idp->layers * IDR_BITS)) {
- 				*starting_id = id;
- 				return IDR_NEED_TO_GROW;
- 			}
-+			p = pa[l];
-+			BUG_ON(!p);
- 
- 			/* If we need to go up one layer, continue the
- 			 * loop; otherwise, restart from the top.
+With the bits in the out/in_cables fields.
+
+> +	u8 seq[] = { 0x4e, 0x73, 0x52, 0x01 }; /* "midi send" enable */
+
+This should be static const.
+
+> @@ -1407,6 +1407,9 @@ static struct port_info {
+>  	EXTERNAL_PORT(0x086a, 0x0001, 8, "%s Broadcast"),
+>  	EXTERNAL_PORT(0x086a, 0x0002, 8, "%s Broadcast"),
+>  	EXTERNAL_PORT(0x086a, 0x0003, 4, "%s Broadcast"),
+> +	/* Access Music Virus TI */
+> +	EXTERNAL_PORT(0x133e, 0x0815, 0, "%s MIDI"),
+> +	CONTROL_PORT(0x133e, 0x0815, 1, "%s Control"),
+
+According to your description, this is not a control port but should be
+called "Synth".  There is no helper macro for a generic MIDI port; use
+something like this:
+
+PORT_INFO(0x133e, 0x0815, 1, "%s Synth", numberofvoices,
+          SNDRV_SEQ_PORT_TYPE_MIDI_GENERIC |
+          SNDRV_SEQ_PORT_TYPE_MIDI_GM |
+          SNDRV_SEQ_PORT_TYPE_HARDWARE |
+          SNDRV_SEQ_PORT_TYPE_SYNTHESIZER),
+
+and add flags for any other supported MIDI standards.
+
+> +	/* VirusTI Desktop */
+> +	USB_DEVICE_VENDOR_SPEC(0x133e, 0x0815),
+> +	.driver_info = (unsigned long) &(const struct snd_usb_audio_quirk) {
+> +		.ifnum = QUIRK_ANY_INTERFACE,
+> +		.type = QUIRK_COMPOSITE,
+> +		.data = &(const struct snd_usb_audio_quirk[]) {
+> +			{
+> +				/* "Virus TI MIDI" and "Virus TI Synth" */
+> +				.ifnum = 3,
+> +				.type = QUIRK_MIDI_ACCESSMUSIC,
+> +			},
+> +			{
+> +				.ifnum = -1
+> +			}
+> +		}
+> +	}
+> +},
+
+For only one interface, you don't need to use QUIRK_COMPOSITE; see the
+entry for the UM-880.
 
 
--- 
-tejun
+Regards,
+Clemens
