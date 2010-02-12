@@ -1,107 +1,196 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757170Ab0BLDpy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 22:45:54 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:17827 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752246Ab0BLDpw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 22:45:52 -0500
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-X-Fcc: ~/Mail/linus
-Cc: Oleg Nesterov <oleg@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>, hjl.tools@gmail.com,
-       peter.lachner@intel.com
-Subject: Re: [patch v3 1/2] x86, ptrace: regset extensions to support xstate
-In-Reply-To: Suresh Siddha's message of  Thursday, 11 February 2010 11:50:59 -0800 <20100211195614.802495327@sbs-t61.sc.intel.com>
-References: <20100211195058.071883111@sbs-t61.sc.intel.com>
-	<20100211195614.802495327@sbs-t61.sc.intel.com>
-X-Shopping-List: (1) Rancorous subservient detergents
-   (2) Periodical devotions
-   (3) Infectious friction
-Message-Id: <20100212034520.0FABFC821@magilla.sf.frob.com>
-Date: Thu, 11 Feb 2010 19:45:20 -0800 (PST)
+	id S1757546Ab0BLDwY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 22:52:24 -0500
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:51343 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753340Ab0BLDwW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 22:52:22 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=lBNnzfYYhCViV6DUDMHaS6pLxAm+yMS8VGeZF+pNMNdhf+kL0c5jl5ZbtN5y4XzBmK
+         dIrNVOfsZfszIGxfmIROi2l3rfiePh/Ms1nI4LFfGyB7SNFLRVkW15t8ESFmeOFoHF5T
+         i/vdmPqtTJ/DUo96B6OVwgkIwczqzXewRJggY=
+Subject: Re: [net-next PATCH v3 2/3] net: TCP thin linear timeouts
+From: Eric Dumazet <eric.dumazet@gmail.com>
+To: Andreas Petlund <apetlund@simula.no>
+Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       Ilpo =?ISO-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
+       Arnd Hannemann <hannemann@nets.rwth-aachen.de>,
+       LKML <linux-kernel@vger.kernel.org>, shemminger@vyatta.com,
+       David Miller <davem@davemloft.net>, william.allen.simpson@gmail.com,
+       damian@tvk.rwth-aachen.de
+In-Reply-To: <4B73F30D.6040205@simula.no>
+References: <4B73F30D.6040205@simula.no>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 12 Feb 2010 04:52:13 +0100
+Message-ID: <1265946733.2891.10.camel@edumazet-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +	/*
-> +	 * First copy the fxsave bytes 0..463.
-> +	 */
-> +	ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
-> +				  &target->thread.xstate->xsave, 0,
-> +				  offsetof(struct user_xstateregs,
-> +					   i387.xstate_fx_sw));
-> +	if (ret)
-> +		return ret;
+Le jeudi 11 février 2010 à 13:07 +0100, Andreas Petlund a écrit :
+> Major changes:
+>       -Possible to disable mechanisms by socket option
+>       -Socket option value boundary check
+> 
+> 
+> Signed-off-by: Andreas Petlund <apetlund@simula.no>
+> ---
+>  include/linux/sysctl.h     |    1 +
+>  include/linux/tcp.h        |    3 +++
+>  include/net/tcp.h          |    4 ++++
+>  net/ipv4/sysctl_net_ipv4.c |    7 +++++++
+>  net/ipv4/tcp.c             |    7 +++++++
+>  net/ipv4/tcp_timer.c       |   19 ++++++++++++++++++-
+>  6 files changed, 40 insertions(+), 1 deletions(-)
+> 
+> diff --git a/include/linux/sysctl.h b/include/linux/sysctl.h
+> index 9f236cd..d840d75 100644
+> --- a/include/linux/sysctl.h
+> +++ b/include/linux/sysctl.h
+> @@ -425,6 +425,7 @@ enum
+>  	NET_TCP_ALLOWED_CONG_CONTROL=123,
+>  	NET_TCP_MAX_SSTHRESH=124,
+>  	NET_TCP_FRTO_RESPONSE=125,
+> +	NET_TCP_FORCE_THIN_LINEAR_TIMEOUTS=126,
+>  };
+>  
+>  enum {
+> diff --git a/include/linux/tcp.h b/include/linux/tcp.h
+> index 7fee8a4..67da706 100644
+> --- a/include/linux/tcp.h
+> +++ b/include/linux/tcp.h
+> @@ -103,6 +103,7 @@ enum {
+>  #define TCP_CONGESTION		13	/* Congestion control algorithm */
+>  #define TCP_MD5SIG		14	/* TCP MD5 Signature (RFC2385) */
+>  #define TCP_COOKIE_TRANSACTIONS	15	/* TCP Cookie Transactions */
+> +#define TCP_THIN_LT             16      /* Use linear timeouts for thin streams*/
+>  
+>  /* for TCP_INFO socket option */
+>  #define TCPI_OPT_TIMESTAMPS	1
+> @@ -341,6 +342,8 @@ struct tcp_sock {
+>  	u16	advmss;		/* Advertised MSS			*/
+>  	u8	frto_counter;	/* Number of new acks after RTO */
+>  	u8	nonagle;	/* Disable Nagle algorithm?             */
+> +	u8      thin_lt     : 1,/* Use linear timeouts for thin streams */
+> +		thin_undef  : 7;
+>  
+>  /* RTT measurement */
+>  	u32	srtt;		/* smoothed round trip time << 3	*/
+> diff --git a/include/net/tcp.h b/include/net/tcp.h
+> index e5e2056..bc5856a 100644
+> --- a/include/net/tcp.h
+> +++ b/include/net/tcp.h
+> @@ -196,6 +196,9 @@ extern void tcp_time_wait(struct sock *sk, int state, int timeo);
+>  #define TCP_NAGLE_CORK		2	/* Socket is corked	    */
+>  #define TCP_NAGLE_PUSH		4	/* Cork is overridden for already queued data */
+>  
+> +/* TCP thin-stream limits */
+> +#define TCP_THIN_LT_RETRIES     6       /* After 6 linear retries, do exp. backoff */
 > +
-> +	/*
-> +	 * Copy the 48bytes defined by software.
-> +	 */
-> +	ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
-> +				  xstate_fx_sw_bytes,
-> +				  offsetof(struct user_xstateregs,
-> +					   i387.xstate_fx_sw),
-> +				  offsetof(struct user_xstateregs,
-> +					   xsave_hdr));
-> +	if (ret)
-> +		return ret;
+>  extern struct inet_timewait_death_row tcp_death_row;
+>  
+>  /* sysctl variables for tcp */
+> @@ -241,6 +244,7 @@ extern int sysctl_tcp_workaround_signed_windows;
+>  extern int sysctl_tcp_slow_start_after_idle;
+>  extern int sysctl_tcp_max_ssthresh;
+>  extern int sysctl_tcp_cookie_size;
+> +extern int sysctl_tcp_force_thin_linear_timeouts;
+>  
+>  extern atomic_t tcp_memory_allocated;
+>  extern struct percpu_counter tcp_sockets_allocated;
+> diff --git a/net/ipv4/sysctl_net_ipv4.c b/net/ipv4/sysctl_net_ipv4.c
+> index 7e3712c..cb2ed35 100644
+> --- a/net/ipv4/sysctl_net_ipv4.c
+> +++ b/net/ipv4/sysctl_net_ipv4.c
+> @@ -576,6 +576,13 @@ static struct ctl_table ipv4_table[] = {
+>  		.proc_handler	= proc_dointvec
+>  	},
+>  	{
+> +		.procname       = "tcp_force_thin_linear_timeouts",
+> +		.data           = &sysctl_tcp_force_thin_linear_timeouts,
+> +		.maxlen         = sizeof(int),
+> +		.mode           = 0644,
+> +		.proc_handler   = proc_dointvec
+> +	},
+> +	{
+>  		.procname	= "udp_mem",
+>  		.data		= &sysctl_udp_mem,
+>  		.maxlen		= sizeof(sysctl_udp_mem),
+> diff --git a/net/ipv4/tcp.c b/net/ipv4/tcp.c
+> index d5d69ea..ce9aeb0 100644
+> --- a/net/ipv4/tcp.c
+> +++ b/net/ipv4/tcp.c
+> @@ -2229,6 +2229,13 @@ static int do_tcp_setsockopt(struct sock *sk, int level,
+>  		}
+>  		break;
+>  
+> +	case TCP_THIN_LT:
+> +		if (val < 0 || val > 1)
+> +			err = -EINVAL;
+> +		else
+> +			tp->thin_lt = val;
+> +		break;
 > +
-> +	/*
-> +	 * Copy the rest of xstate memory layout.
-> +	 */
-> +	ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
-> +				  &target->thread.xstate->xsave.xsave_hdr,
-> +				  offsetof(struct user_xstateregs,
-> +					   xsave_hdr), -1);
-> +	return ret;
+>  	case TCP_CORK:
+>  		/* When set indicates to always queue non-full frames.
+>  		 * Later the user clears this option and we transmit
+> diff --git a/net/ipv4/tcp_timer.c b/net/ipv4/tcp_timer.c
+> index de7d1bf..a682479 100644
+> --- a/net/ipv4/tcp_timer.c
+> +++ b/net/ipv4/tcp_timer.c
+> @@ -29,6 +29,7 @@ int sysctl_tcp_keepalive_intvl __read_mostly = TCP_KEEPALIVE_INTVL;
+>  int sysctl_tcp_retries1 __read_mostly = TCP_RETR1;
+>  int sysctl_tcp_retries2 __read_mostly = TCP_RETR2;
+>  int sysctl_tcp_orphan_retries __read_mostly;
+> +int sysctl_tcp_force_thin_linear_timeouts __read_mostly;
+>  
+>  static void tcp_write_timer(unsigned long);
+>  static void tcp_delack_timer(unsigned long);
+> @@ -415,7 +416,23 @@ void tcp_retransmit_timer(struct sock *sk)
+>  	icsk->icsk_retransmits++;
+>  
+>  out_reset_timer:
+> -	icsk->icsk_rto = min(icsk->icsk_rto << 1, TCP_RTO_MAX);
+> +	/* If stream is thin, use linear timeouts. Since 'icsk_backoff' is
+> +	 * used to reset timer, set to 0. Recalculate 'icsk_rto' as this
+> +	 * might be increased if the stream oscillates between thin and thick,
+> +	 * thus the old value might already be too high compared to the value
+> +	 * set by 'tcp_set_rto' in tcp_input.c which resets the rto without
+> +	 * backoff. Limit to TCP_THIN_LT_RETRIES before initiating exponential
+> +	 * backoff behaviour to avoid continue hammering linear-timeout
+> +	 * retransmissions into a black hole*/
+> +	if ((tp->thin_lt || sysctl_tcp_force_thin_linear_timeouts) &&
+> +	    tcp_stream_is_thin(sk) && sk->sk_state == TCP_ESTABLISHED &&
+> +	    icsk->icsk_retransmits <= TCP_THIN_LT_RETRIES) {
+> +		icsk->icsk_backoff = 0;
+> +		icsk->icsk_rto = min(__tcp_set_rto(tp), TCP_RTO_MAX);
+> +	} else {
+> +		/* Use normal (exponential) backoff */
+> +		icsk->icsk_rto = min(icsk->icsk_rto << 1, TCP_RTO_MAX);
+> +	}
+>  	inet_csk_reset_xmit_timer(sk, ICSK_TIME_RETRANS, icsk->icsk_rto, TCP_RTO_MAX);
+>  	if (retransmits_timed_out(sk, sysctl_tcp_retries1 + 1))
+>  		__sk_dst_reset(sk);
 
-I don't know why this didn't occur to me before.  Is there a reason not to
-just copy xstate_fx_sw_bytes into the thread.xstate buffer?  You could just
-do it right here, or in the places that really touch thread.xstate contents.
+Hi Anreas
 
-Then the trivial single user_regset_copyout() call would be all you need
-here, and that seems simpler.  IMHO it's enough simpler that even if you
-pay the 6-words memcpy every time here, it's worth it.
+Could you include a section in Documentation/networking/ip-sysctl.txt
+about tcp_force_thin_linear_timeouts setting ?
 
-If you don't want to do that, that's fine too.  
-The code looks correct as it is.
+Also, you should provide some documentation to be included in man pages
+(man 7 tcp), to Michael Kerrisk ( <mtk.manpages@gmail.com> ), both for
+tcp_force_thin_linear_timeouts and TCP_THIN_LT
 
-> --- tip.orig/arch/x86/include/asm/user.h
-> +++ tip/arch/x86/include/asm/user.h
-
-I don't have any special opinions about the placement, naming, etc. of
-these asm/user.h bits (just that there be some symbolic form of the ABI
-somewhere).  But perhaps folks want to think about it a bit more before we
-bake it into the source API.
-
-These definitions duplicate the asm/processor.h ones used inside the kernel.
-IMHO these should be consolidated so asm/processor.h refers to the public types.
-
-I'm not sure whether 'struct user_*' names make most sense for these or not.
-They are processor-defined layouts.
-
-> +struct user_ymmh_regs {
-> +	/* 16 * 16 bytes for each YMMH-reg */
-> +	__u32 ymmh_space[64];
-> +};
-
-This is the high half of %ymmN registers, where %xmmN is the low half.
-Right?  Though of course documented in the chip manuals, it is rather
-nonobvious that %ymmN are split this way in the storage, so I think it
-merits a comment here saying so explicitly.
+(Same applies for patch 3/3 and tcp_force_thin_dupack /
+TCP_THIN_DUPACK )
 
 
-On these cosmetic issues I leave it up to you and the x86 maintainers.
-I don't have strong opinions.  But I wanted to air what had occurred to me.
 
-Modulo any cosmetic changes you want to make, this patch has my ACK
-contingent on Oleg's ACK.
-
-
-Thanks,
-Roland
