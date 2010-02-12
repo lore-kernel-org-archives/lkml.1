@@ -1,255 +1,227 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932094Ab0BLXFu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 18:05:50 -0500
-Received: from mail-ew0-f228.google.com ([209.85.219.228]:36820 "EHLO
-	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756223Ab0BLXFs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 18:05:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=BPGd3CHqeXAtkoi8ikNKIyBybBCFoodfHwM8ZNiusRGuhAx/403KvWWhqYqoHA5IuW
-         eVOjYan7kwL9FrvKH3P52b1yEYuEQF+MKcro/IEnngleOTG3JtLv7OIcFdpClc67xBvo
-         EhMk+BchIH4vX7JL2ClIpRRWMbB3Z/1Id43OQ=
-From: Graham M Howe <gman.1352@googlemail.com>
-To: gregkh@suse.de, wfp5p@virginia.edu
-Cc: devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] Staging: comedi: fix bracing and 80 character stylein ni_at_a2150.c This is a patch to the ni_at_a2150.c file to fix up bracing and 80 character warnings  found by the checkpatch.pl tool Signed-off-by: Graham M Howe <gman.1352@googlemail.com>
-Date: Fri, 12 Feb 2010 23:05:37 +0000
-Message-Id: <1266015937-3532-1-git-send-email-user@graham-eeepc>
-X-Mailer: git-send-email 1.6.3.3
+	id S932134Ab0BLXGA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 18:06:00 -0500
+Received: from xenotime.net ([72.52.64.118]:57322 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755964Ab0BLXF5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Feb 2010 18:05:57 -0500
+Message-ID: <4B75DED3.1070407@xenotime.net>
+Date: Fri, 12 Feb 2010 15:05:55 -0800
+From: Randy Dunlap <rdunlap@xenotime.net>
+Organization: YPO4
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+MIME-Version: 1.0
+To: Jason Wessel <jason.wessel@windriver.com>
+CC: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
+       mingo@elte.hu
+Subject: Re: [PATCH 6/7] kgdb,docs: Update the kgdb docs to include kms
+References: <1266014188-29505-1-git-send-email-jason.wessel@windriver.com> <1266014188-29505-7-git-send-email-jason.wessel@windriver.com>
+In-Reply-To: <1266014188-29505-7-git-send-email-jason.wessel@windriver.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: root <root@graham-eeepc.(none)>
+On 02/12/10 14:36, Jason Wessel wrote:
+> Update the kgdb docs to include information about kernel mode setting support.
+> 
+> Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
+> ---
+>  Documentation/DocBook/kgdb.tmpl     |   82 +++++++++++++++++++++++++++++++----
+>  Documentation/kernel-parameters.txt |    9 +++-
+>  2 files changed, 79 insertions(+), 12 deletions(-)
+> 
+> diff --git a/Documentation/DocBook/kgdb.tmpl b/Documentation/DocBook/kgdb.tmpl
+> index cc81879..498267b 100644
+> --- a/Documentation/DocBook/kgdb.tmpl
+> +++ b/Documentation/DocBook/kgdb.tmpl
+> @@ -200,12 +200,29 @@
+>     only make use of <constant>kgdbwait</constant> and early debugging
+>     if you build kgdboc into the kernel as a builtins.
+>     </para>
+> +   <para>Optionally you can elect to activate kms (Kernel Mode
+> +   Setting) integration.  When you use kms with kgdboc and you have a
+> +   video driver that has atomic mode setting hooks, it is possible to
+> +   enter the debugger on the graphics console.  When the kernel
+> +   execution is resumed, the graphics previous graphics mode will get
 
----
- drivers/staging/comedi/drivers/ni_at_a2150.c |   78 ++++++++++++++------------
- 1 files changed, 43 insertions(+), 35 deletions(-)
+                   drop first  "graphics" above ...        mode will be
 
-diff --git a/drivers/staging/comedi/drivers/ni_at_a2150.c b/drivers/staging/comedi/drivers/ni_at_a2150.c
-index dd75dfb..4828e9d 100644
---- a/drivers/staging/comedi/drivers/ni_at_a2150.c
-+++ b/drivers/staging/comedi/drivers/ni_at_a2150.c
-@@ -86,8 +86,10 @@ TRIG_WAKE_EOS
- #define   CLOCK_SELECT_BITS(x)		(((x) & 0x3) << 3)
- #define   CLOCK_DIVISOR_BITS(x)		(((x) & 0x3) << 5)
- #define   CLOCK_MASK		(0xf << 3)
--#define   ENABLE0_BIT		0x80	/*  enable (don't internally ground) channels 0 and 1 */
--#define   ENABLE1_BIT		0x100	/*  enable (don't internally ground) channels 2 and 3 */
-+/*  enable (don't internally ground) channels 0 and 1 */
-+#define   ENABLE0_BIT		0x80
-+/*  enable (don't internally ground) channels 2 and 3 */
-+#define   ENABLE1_BIT		0x100
- #define   AC0_BIT		0x200	/*  ac couple channels 0,1 */
- #define   AC1_BIT		0x400	/*  ac couple channels 2,3 */
- #define   APD_BIT		0x800	/*  analog power down */
-@@ -99,26 +101,29 @@ TRIG_WAKE_EOS
- #define FIFO_START_REG		0x6	/*  software start aquistion trigger */
- #define FIFO_RESET_REG		0x8	/*  clears fifo + fifo flags */
- #define FIFO_DATA_REG		0xa	/*  read data */
--#define DMA_TC_CLEAR_REG		0xe	/*  clear dma terminal count interrupt */
-+#define DMA_TC_CLEAR_REG	0xe	/* clear dma terminal count interrupt*/
- #define STATUS_REG		0x12	/*  read only */
- #define   FNE_BIT		0x1	/*  fifo not empty */
- #define   OVFL_BIT		0x8	/*  fifo overflow */
- #define   EDAQ_BIT		0x10	/*  end of aquisition interrupt */
- #define   DCAL_BIT		0x20	/*  offset calibration in progress */
- #define   INTR_BIT		0x40	/*  interrupt has occured */
--#define   DMA_TC_BIT		0x80	/*  dma terminal count interrupt has occured */
-+#define   DMA_TC_BIT		0x80	/*  dma terminal count interrupt
-+							has occured */
- #define   ID_BITS(x)	(((x) >> 8) & 0x3)
- #define IRQ_DMA_CNTRL_REG		0x12	/*  write only */
- #define   DMA_CHAN_BITS(x)		((x) & 0x7)	/*  sets dma channel */
- #define   DMA_EN_BIT		0x8	/*  enables dma */
--#define   IRQ_LVL_BITS(x)		(((x) & 0xf) << 4)	/*  sets irq level */
-+#define   IRQ_LVL_BITS(x)		(((x) & 0xf) << 4) /*  sets irq level*/
- #define   FIFO_INTR_EN_BIT		0x100	/*  enable fifo interrupts */
- #define   FIFO_INTR_FHF_BIT		0x200	/*  interrupt fifo half full */
--#define   DMA_INTR_EN_BIT 		0x800	/*  enable interrupt on dma terminal count */
-+#define   DMA_INTR_EN_BIT 		0x800	/*  enable interrupt on dma
-+							terminal count */
- #define   DMA_DEM_EN_BIT	0x1000	/*  enables demand mode dma */
- #define I8253_BASE_REG		0x14
- #define I8253_MODE_REG		0x17
--#define   HW_COUNT_DISABLE		0x30	/*  disable hardware counting of conversions */
-+#define   HW_COUNT_DISABLE	0x30	/*  disable hardware counting of
-+							conversions */
+> +   restored.  This integration can serve as a useful tool to aid in
+> +   dianosing crashes or doing analysis of memory with kdb while
 
- struct a2150_board {
- 	const char *name;
-@@ -158,8 +163,8 @@ static const struct a2150_board a2150_boards[] = {
- #define thisboard ((const struct a2150_board *)dev->board_ptr)
+      diagnosing
 
- struct a2150_private {
--
--	volatile unsigned int count;	/* number of data points left to be taken */
-+	/* number of data points left to be taken */
-+	volatile unsigned int count;
- 	unsigned int dma;	/*  dma channel */
- 	s16 *dma_buffer;	/*  dma buffer */
- 	unsigned int dma_transfer_size;	/*  size in bytes of dma transfers */
-@@ -336,16 +341,16 @@ static int a2150_attach(struct comedi_device *dev, struct comedi_devconfig *it)
+> +   allowing the full graphics console applications to run.
+> +   </para>
+>     <sect2 id="kgdbocArgs">
+>     <title>kgdboc arguments</title>
+> -   <para>Usage: <constant>kgdboc=[kbd][[,]serial_device][,baud]</constant></para>
+> -   <para>You can configure kgdboc to use the keyboard, and or a serial device
+> -   depending on if you are using kdb and or kgdb, in one of the
+> -   following scenarios.
+> +   <para>Usage: <constant>kgdboc=[kms][[,]kbd][[,]serial_device][,baud]</constant></para>
+> +   <para>Abreviations:
+> +   <itemizedlist>
+> +   <listitem><para>kms = Kernel Mode Setting</para></listitem>
+> +   <listitem><para>kbd = Keyboard</para></listitem>
+> +   </itemizedlist>
+> +   </para>
+> +   <para>You can configure kgdboc to use the keyboard, and or a serial
+> +   device depending on if you are using kdb and or kgdb, in one of the
+> +   following scenarios.  The order listed above must be observed if
+> +   you use any of the optional configurations together.  Using kms +
+> +   only gdb is generally not a usful combination.
 
- 	printk("comedi%d: %s: io 0x%lx", dev->minor, driver_a2150.driver_name,
- 	       iobase);
--	if (irq) {
-+	if (irq)
- 		printk(", irq %u", irq);
--	} else {
-+	 else
- 		printk(", no irq");
--	}
--	if (dma) {
-+
-+	if (dma)
- 		printk(", dma %u", dma);
--	} else {
-+	 else
- 		printk(", no dma");
--	}
-+
- 	printk("\n");
+                                  useful
 
- 	/* allocate and initialize dev->private */
-@@ -527,7 +532,8 @@ static int a2150_ai_cmdtest(struct comedi_device *dev,
- 	if (err)
- 		return 1;
+>     <orderedlist>
+>     <listitem><para>kdb and kgdb over only a serial port</para>
+>     <para><constant>kgdboc=&lt;serial_device&gt;[,baud]</constant></para>
+> @@ -218,6 +235,12 @@
+>     <listitem><para>kdb with a keyboard</para>
+>     <para><constant>kgdboc=kbd</constant></para>
+>     </listitem>
+> +   <listitem><para>kdb with kernel modesetting</para>
+> +   <para><constant>kgdboc=kms,kbd</constant></para>
+> +   </listitem>
+> +   <listitem><para>kdb with kernel modesetting and kgdb over a serial port</para>
+> +   <para><constant>kgdboc=kbd,kbd,ttyS0,115200</constant></para>
+> +   </listitem>
+>     </orderedlist>
+>     </para>
+>     <para>You can configure kgdboc via sysfs or a module or kernel boot line
+> @@ -613,6 +636,8 @@ Task Addr       Pid   Parent [*] cpu State Thread     Command
+>        <listitem><para>The logic to perform safe memory reads and writes to memory while using the debugger</para></listitem>
+>        <listitem><para>A full implementation for software breakpoints unless overridden by the arch</para></listitem>
+>        <listitem><para>The API to invoke either the kdb or kgdb frontend to the debug core.</para></listitem>
+> +      <listitem><para>The structures and call back API for atomic kernel mode setting.</para>
 
--	/* step 2: make sure trigger sources are unique and mutually compatible */
-+	/* step 2: make sure trigger sources are unique
-+				and mutually compatible */
+                                            callback
 
- 	if (cmd->start_src != TRIG_NOW && cmd->start_src != TRIG_EXT)
- 		err++;
-@@ -590,13 +596,13 @@ static int a2150_ai_cmdtest(struct comedi_device *dev,
- 		for (i = 1; i < cmd->chanlist_len; i++) {
- 			if (CR_CHAN(cmd->chanlist[i]) != (startChan + i)) {
- 				comedi_error(dev,
--					     "entries in chanlist must be consecutive channels, counting upwards\n");
-+       "entries in chanlist must be consecutive channels, counting upwards\n");
- 				err++;
- 			}
- 		}
- 		if (cmd->chanlist_len == 2 && CR_CHAN(cmd->chanlist[0]) == 1) {
- 			comedi_error(dev,
--				     "length 2 chanlist must be channels 0,1 or channels 2,3");
-+		"length 2 chanlist must be channels 0,1 or channels 2,3");
- 			err++;
- 		}
- 		if (cmd->chanlist_len == 3) {
-@@ -607,7 +613,7 @@ static int a2150_ai_cmdtest(struct comedi_device *dev,
- 		if (CR_AREF(cmd->chanlist[0]) != CR_AREF(cmd->chanlist[1]) ||
- 		    CR_AREF(cmd->chanlist[2]) != CR_AREF(cmd->chanlist[3])) {
- 			comedi_error(dev,
--				     "channels 0/1 and 2/3 must have the same analog reference");
-+		vvv"channels 0/1 and 2/3 must have the same analog reference");
- 			err++;
- 		}
- 	}
-@@ -628,12 +634,12 @@ static int a2150_ai_cmd(struct comedi_device *dev, struct comedi_subdevice *s)
+> +      <para>NOTE: kgdboc is where the kms callbacks are invoked.</para></listitem>
+>        </itemizedlist>
+>        </para>
+>        </listitem>
+> @@ -721,6 +746,8 @@ Task Addr       Pid   Parent [*] cpu State Thread     Command
+>    </sect1>
+>    <sect1 id="kgdbocDesign">
+>    <title>kgdboc internals</title>
+> +  <sect2>
+> +  <title>kgdboc and uarts</title>
+>    <para>
+>    The kgdboc driver is actually a very thin driver that relies on the
+>    underlying low level to the hardware driver having "polling hooks"
+> @@ -729,10 +756,7 @@ Task Addr       Pid   Parent [*] cpu State Thread     Command
+>    low level uart hook for doing polled mode reading and writing of a
 
- 	if (!dev->irq || !devpriv->dma) {
- 		comedi_error(dev,
--			     " irq and dma required, cannot do hardware conversions");
-+		 " irq and dma required, cannot do hardware conversions");
- 		return -1;
- 	}
- 	if (cmd->flags & TRIG_RT) {
- 		comedi_error(dev,
--			     " dma incompatible with hard real-time interrupt (TRIG_RT), aborting");
-+	" dma incompatible with hard real-time interrupt (TRIG_RT), aborting");
- 		return -1;
- 	}
- 	/*  clear fifo and reset triggering circuitry */
-@@ -712,16 +718,17 @@ static int a2150_ai_cmd(struct comedi_device *dev, struct comedi_subdevice *s)
- 	if (cmd->start_src == TRIG_EXT) {
- 		trigger_bits |= HW_TRIG_EN;
- 	} else if (cmd->start_src == TRIG_OTHER) {
--		/*  XXX add support for level/slope start trigger using TRIG_OTHER */
-+		/*  XXX add support for level/slope start trigger using
-+							TRIG_OTHER */
- 		comedi_error(dev, "you shouldn't see this?");
- 	}
- 	/*  send trigger config bits */
- 	outw(trigger_bits, dev->iobase + TRIGGER_REG);
+     I prefer UART, but, oh well.
 
- 	/*  start aquisition for soft trigger */
--	if (cmd->start_src == TRIG_NOW) {
-+	if (cmd->start_src == TRIG_NOW)
- 		outw(0, dev->iobase + FIFO_START_REG);
--	}
-+
- #ifdef A2150_DEBUG
- 	ni_dump_regs(dev);
- #endif
-@@ -760,7 +767,8 @@ static int a2150_ai_rinsn(struct comedi_device *dev, struct comedi_subdevice *s,
- 	/*  start aquisition for soft trigger */
- 	outw(0, dev->iobase + FIFO_START_REG);
+>    single character while in an atomic context.  When kgdb makes an I/O
+>    request to the debugger, kgdboc invokes a call back in the serial
+> -  core which in turn uses the call back in the uart driver.  It is
 
--	/* there is a 35.6 sample delay for data to get through the antialias filter */
-+	/* there is a 35.6 sample delay for data to get through the
-+						antialias filter */
- 	for (n = 0; n < filter_delay; n++) {
- 		for (i = 0; i < timeout; i++) {
- 			if (inw(dev->iobase + STATUS_REG) & FNE_BIT)
-@@ -801,8 +809,8 @@ static int a2150_ai_rinsn(struct comedi_device *dev, struct comedi_subdevice *s,
- 	return n;
- }
+                                 callback in the UART
 
--/* sets bits in devpriv->clock_bits to nearest approximation of requested period,
-- * adjusts requested period to actual timing. */
-+/* sets bits in devpriv->clock_bits to nearest approximation of requested
-+period, adjusts requested period to actual timing. */
- static int a2150_get_timing(struct comedi_device *dev, unsigned int *period,
- 			    int flags)
- {
-@@ -848,11 +856,11 @@ static int a2150_get_timing(struct comedi_device *dev, unsigned int *period,
- 	case TRIG_ROUND_NEAREST:
- 	default:
- 		/*  if least upper bound is better approximation */
--		if (lub - *period < *period - glb) {
-+		if (lub - *period < *period - glb)
- 			*period = lub;
--		} else {
-+		else
- 			*period = glb;
--		}
-+
- 		break;
- 	case TRIG_ROUND_UP:
- 		*period = lub;
-@@ -860,7 +868,7 @@ static int a2150_get_timing(struct comedi_device *dev, unsigned int *period,
- 	case TRIG_ROUND_DOWN:
- 		*period = glb;
- 		break;
--	}
-+
+> -  certainly possible to extend kgdboc to work with non-uart based
 
- 	/*  set clock bits for config register appropriately */
- 	devpriv->config_bits &= ~CLOCK_MASK;
-@@ -891,13 +899,13 @@ static int a2150_set_chanlist(struct comedi_device *dev,
- 		devpriv->config_bits |= CHANNEL_BITS(0x4 | start_channel);
- 		break;
- 	case 2:
--		if (start_channel == 0) {
-+		if (start_channel == 0)
- 			devpriv->config_bits |= CHANNEL_BITS(0x2);
--		} else if (start_channel == 2) {
-+		else if (start_channel == 2)
- 			devpriv->config_bits |= CHANNEL_BITS(0x3);
--		} else {
-+		else
- 			return -1;
--		}
-+
- 		break;
- 	case 4:
- 		devpriv->config_bits |= CHANNEL_BITS(0x1);
---
-1.6.3.3
+                                                      non-UART-based
 
+> -  consoles in the future.
+> -  </para>
+> +  core which in turn uses the call back in the uart driver.</para>
+
+                                 callback
+
+>    <para>
+>    When using kgdboc with a uart, the uart driver must implement two callbacks in the <constant>struct uart_ops</constant>. Example from drivers/8250.c:<programlisting>
+>  #ifdef CONFIG_CONSOLE_POLL
+> @@ -746,9 +770,49 @@ Task Addr       Pid   Parent [*] cpu State Thread     Command
+>    that they can be called from an atomic context and have to restore
+>    the state of the uart chip on return such that the system can return
+>    to normal when the debugger detaches.  You need to be very careful
+> -  with any kind of lock you consider, because failing here is most
+> +  with any kind of lock you consider, because failing here is most likely
+>    going to mean pressing the reset button.
+>    </para>
+> +  </sect2>
+> +  <sect2 id="kgdbocKbd">
+> +  <title>kgdboc and keyboards</title>
+> +  <para>The kgdboc driver contains logic to configure communications
+> +  with an attached keyboard.  The keyboard infrastructure is only
+> +  compiled into the kernel when CONFIG_KDB_KEYBOARD=y is set in the
+> +  kernel configuration.</para>
+> +  <para>The core polled keyboard driver driver for PS/2 type keyboards
+> +  is in drivers/char/kdb_keyboard.c.  This driver is hooked into the
+> +  debug core when kgdboc populates the callback in the arrary
+
+                                                          array
+
+> +  called <constant>kdb_poll_funcs[]</constant>.  The
+> +  kdb_get_kbd_char() is the top level function which polls hardware
+
+                               top-level
+
+> +  for single character input.
+> +  </para>
+> +  </sect2>
+> +  <sect2 id="kgdbocKms">
+> +  <title>kgdboc and kms</title>
+> +  <para>The kgdboc driver contains logic to request the grpahics
+
+                                                           graphics
+
+> +  display to switch to a text context if you are using
+> +  kgdboc=kms,... and you have a video driver which has a framebuffer
+> +  console and atomic kernel mode setting support.  Every time kernel
+> +  debugger is entered it calls kgdboc_pre_exp_handler() which in turn
+> +  calls dbg_kms_ops->activate_console().  On resuming kernel
+> +  execution, the kernel debugger calls kgdboc_post_exp_handler() which
+> +  in turn calls dbg_kms_ops->restore_console().</para>
+> +  <para>Any video driver that wants to be compatible with the kernel
+> +  debugger and the atomic kms callbacks must implement the
+> +  mode_set_base_atomic operation.  The following is an example from
+> +  drivers/gpu/drm/i915/intel_display.c:
+> +  <informalexample>
+> +  <programlisting>
+> +static const struct drm_crtc_helper_funcs intel_helper_funcs = {
+> +[...]
+> +        .mode_set_base_atomic = intel_pipe_set_base_atomic,
+> +[...]
+> +};
+> +  </programlisting>
+> +  </informalexample>
+> +  </para>
+> +  </sect2>
+>    </sect1>
+>    </chapter>
+>    <chapter id="credits">
+> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+> index af8b8e8..b340445 100644
+> --- a/Documentation/kernel-parameters.txt
+> +++ b/Documentation/kernel-parameters.txt
+> @@ -1106,9 +1106,12 @@ and is between 256 and 4096 characters. It is defined in the file
+>  	kgdboc=		[KGDB,HW] kgdb over consoles.
+>  			Requires a tty driver that supports console polling,
+>  			or a supported polling keyboard driver (non-usb).
+> -			Serial only format: <serial_device>[,baud]
+> -			keyboard only format: kbd
+> -			keyboard and serial format: kbd,<serial_device>[,baud]
+> +			 Serial only format: <serial_device>[,baud]
+> +			 keyboard only format: kbd
+> +			 keyboard and serial format: kbd,<serial_device>[,baud]
+> +			Optional Kernal mode setting:
+
+                                 Kernel
+
+> +			 kms, kbd format: kms,kbd
+> +			 kms, kbd and serial format: kms,kbd,<ser_dev>[,baud]
+>  
+>  	kgdbwait	[KGDB] Stop kernel execution and enter the
+>  			kernel debugger at the earliest opportunity if
+
+
+-- 
+~Randy
