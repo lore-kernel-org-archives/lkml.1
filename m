@@ -1,84 +1,120 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757746Ab0BLEM2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 23:12:28 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:35108 "EHLO smtps.tip.net.au"
+	id S1757771Ab0BLENe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 23:13:34 -0500
+Received: from cantor.suse.de ([195.135.220.2]:42819 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757630Ab0BLEM1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 23:12:27 -0500
-Date: Fri, 12 Feb 2010 15:12:23 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Adam Buchbinder <adam.buchbinder@gmail.com>,
-       Alex Deucher <alexdeucher@gmail.com>, Dave Airlie <airlied@linux.ie>
-Subject: linux-next: manual merge of the trivial tree with the drm tree
-Message-Id: <20100212151223.21746bc7.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta7 (GTK+ 2.18.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1757630Ab0BLENc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 23:13:32 -0500
+Date: Thu, 11 Feb 2010 20:11:31 -0800
+From: Greg KH <gregkh@suse.de>
+To: Andy Walls <awalls@radix.net>
+Cc: Devin Heitmueller <dheitmueller@kernellabs.com>,
+       Kay Sievers <kay.sievers@vrfy.org>,
+       Richard Lemieux <rlemieu@cooptel.qc.ca>, linux-media@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Driver crash on kernel 2.6.32.7. Interaction between cx8800
+	(DVB-S) and USB HVR Hauppauge 950q
+Message-ID: <20100212041131.GA29697@suse.de>
+References: <4B70E7DB.7060101@cooptel.qc.ca> <1265768091.3064.109.camel@palomino.walls.org> <4B722266.4070805@cooptel.qc.ca> <829197381002091912h5391129dpbf075485ab011936@mail.gmail.com> <1265816096.4019.65.camel@palomino.walls.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1265816096.4019.65.camel@palomino.walls.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jiri,
+On Wed, Feb 10, 2010 at 10:34:56AM -0500, Andy Walls wrote:
+> On Tue, 2010-02-09 at 22:12 -0500, Devin Heitmueller wrote:
+> > On Tue, Feb 9, 2010 at 10:05 PM, Richard Lemieux <rlemieu@cooptel.qc.ca> wrote:
+> > > Andy,
+> > >
+> > > This is a great answer!  Thanks very much.  When I get into this situation
+> > > again
+> > > I will know what to look for.
+> > >
+> > > A possible reason why I got into this problem in the first place is that I
+> > > tried
+> > > many combinations of parameters with mplayer and azap in order to learn how
+> > > to use the USB tuner in both the ATSC and the NTSC mode.  I will look back
+> > > in the terminal history to see if I can find anything.
+> > 
+> > I think the key to figuring out the bug at this point is you finding a
+> > sequence where you can reliably reproduce the oops.  If we have that,
+> > then I can start giving you some code to try which we can see if it
+> > addresses the problem.
+> > 
+> > For example, I would start by giving you a fix which results in us not
+> > calling the firmware release if the request_firmware() call failed,
+> > but it wouldn't be much help if you could not definitively tell me if
+> > the problem is fixed.
+> 
+> 
+> For the oops analysis here:
+> 
+> http://article.gmane.org/gmane.linux.drivers.video-input-infrastructure/15954
+> 
+> 
+> I will also note that the file scope "fw_lock" mutex is rather
+> inconsistently used in
+> linux/drivers/base/fw_class.c:firmware_loading_store().  (I guess for
+> not wanting to consume the timeout interval with sleeping?)
+> 
+> The mutex protects "case 1:", but all other cases appear to be only
+> protected by atomic status bit checks that can fall through to
+> fw_load_abort() which complete()'s the fw_priv->completion.
+> 
+> Also not that in the _request_firmware() this sequence is the only place
+> a once good "fw_priv->fw" pointer is set to NULL:
+> 
+>         mutex_lock(&fw_lock);
+>         if (!fw_priv->fw->size || test_bit(FW_STATUS_ABORT, &fw_priv->status)) {
+>                 retval = -ENOENT;
+>                 release_firmware(fw_priv->fw);
+>                 *firmware_p = NULL;
+>         }
+>         fw_priv->fw = NULL;     <--------------- The only place it is set to NULL
+>         mutex_unlock(&fw_lock);
+> 
+> 
+> So if the timeout timer fires at nearly the same time as udev coming in
+> and say "I'm done loading" without holding the mutex, one can run into
+> the Ooops.  Not only that, I think the above code can leak memory under
+> some circumstances when the "if" clause is not satisfied.
+> 
+> I think this really is a firmware_class.c issue.  I think the "just
+> right" firmware loading timeouts and the particular computer system
+> responsiveness, make this Ooops possible.  However, I'm amazed that a
+> single person has tripped it more than once.
+> 
+> Revising the locking in linux/drivers/base/firmware_class.c should fix
+> the problem.
+> 
+> I don't believe this comment in the code now:
+> 
+> /* fw_lock could be moved to 'struct firmware_priv' but since it is just
+>  * guarding for corner cases a global lock should be OK */
+> static DEFINE_MUTEX(fw_lock);
+> 
+> struct firmware_priv {
+>         char *fw_id;
+> 	...
+> 
+> And since "f_priv" is dynamically created and destroyed by
+> request_firmware() I see no harm in 
+> 
+> 1. moving the mutex into struct firmware_priv
+> 2. just always just grabbing an almost never contended mutex
+> 3. getting rid of the file scope fw_lock.
+> 
+> except grabbing a mutex() while the timeout timer is running during
+> loading, means one *could* sleep for a while consuming the timeout
+> interval.
 
-Today's linux-next merge of the trivial tree got a conflict in
-drivers/gpu/drm/radeon/atombios.h between commit
-e97bd974448ce90f8e4720499d84580bcd6a2f7a ("drm/radeon/kms: update
-atombios.h to latest upstream") from the drm tree and commit
-c9404c9c392d557a4687c4cbda022b03cb787ce9 ("Fix misspelling of "should"
-and "shouldn't" in comments") from the trivial tree.
+That sounds reasonable to me, care to make up a patch for this?
 
-I fixed it up (see below) and can carry the fix as necessary.
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+thanks,
 
-diff --cc drivers/gpu/drm/radeon/atombios.h
-index 6732b5d,2a88029..0000000
---- a/drivers/gpu/drm/radeon/atombios.h
-+++ b/drivers/gpu/drm/radeon/atombios.h
-@@@ -2781,26 -2264,22 +2781,26 @@@ typedef struct _ATOM_LVDS_INFO_V1
-  
-  #define ATOM_LVDS_INFO_LAST  ATOM_LVDS_INFO_V12
-  
- -typedef struct _ATOM_PATCH_RECORD_MODE {
- -	UCHAR ucRecordType;
- -	USHORT usHDisp;
- -	USHORT usVDisp;
- -} ATOM_PATCH_RECORD_MODE;
- +typedef struct  _ATOM_PATCH_RECORD_MODE
- +{
- +  UCHAR     ucRecordType;
- +  USHORT    usHDisp;
- +  USHORT    usVDisp;
- +}ATOM_PATCH_RECORD_MODE;
-  
- -typedef struct _ATOM_LCD_RTS_RECORD {
- -	UCHAR ucRecordType;
- -	UCHAR ucRTSValue;
- -} ATOM_LCD_RTS_RECORD;
- +typedef struct  _ATOM_LCD_RTS_RECORD
- +{
- +  UCHAR     ucRecordType;
- +  UCHAR     ucRTSValue;
- +}ATOM_LCD_RTS_RECORD;
-  
-- //!! If the record below exits, it shoud always be the first record for easy use in command table!!! 
- -/* !! If the record below exits, it should always be the first record for easy use in command table!!! */
- -typedef struct _ATOM_LCD_MODE_CONTROL_CAP {
- -	UCHAR ucRecordType;
- -	USHORT usLCDCap;
- -} ATOM_LCD_MODE_CONTROL_CAP;
-++//!! If the record below exits, it should always be the first record for easy use in command table!!! 
- +// The record below is only used when LVDS_Info is present. From ATOM_LVDS_INFO_V12, use ucLCDPanel_SpecialHandlingCap instead.
- +typedef struct  _ATOM_LCD_MODE_CONTROL_CAP
- +{
- +  UCHAR     ucRecordType;
- +  USHORT    usLCDCap;
- +}ATOM_LCD_MODE_CONTROL_CAP;
-  
-  #define LCD_MODE_CAP_BL_OFF                   1
-  #define LCD_MODE_CAP_CRTC_OFF                 2
+greg k-h
