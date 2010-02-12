@@ -1,66 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757052Ab0BLPZO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 10:25:14 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:27187 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755633Ab0BLPZH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 10:25:07 -0500
-Date: Fri, 12 Feb 2010 16:24:04 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: Roland McGrath <roland@redhat.com>, Christoph Hellwig <hch@lst.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org
-Subject: Re: [PATCH 1/2] Blackfin: initial tracehook support
-Message-ID: <20100212152404.GA9410@redhat.com>
-References: <20100202185907.GE3630@lst.de> <1265881389-26925-2-git-send-email-vapier@gentoo.org> <20100211204653.34BB3900@magilla.sf.frob.com> <8bd0f97a1002111554ib69bd48rc3c5f4af65058281@mail.gmail.com> <20100212032406.BE645C81B@magilla.sf.frob.com> <8bd0f97a1002112033m5805d4eco3add4d5625e71e9@mail.gmail.com>
+	id S1757063Ab0BLP0d (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 10:26:33 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54953 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756927Ab0BLP0b (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Feb 2010 10:26:31 -0500
+Date: Fri, 12 Feb 2010 07:21:37 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Jean Delvare <khali@linux-fr.org>
+cc: "J.H." <warthog9@kernel.org>, "FTPAdmin Kernel.org" <ftpadmin@kernel.org>,
+       users@kernel.org, lasse.collin@tukaani.org,
+       linux-kernel <linux-kernel@vger.kernel.org>, mirrors@kernel.org
+Subject: Re: [kernel.org users] XZ Migration discussion
+In-Reply-To: <20100212150137.648dca7c@hyperion.delvare>
+Message-ID: <alpine.LFD.2.00.1002120714320.7792@localhost.localdomain>
+References: <4B744E13.8040004@kernel.org> <20100212150137.648dca7c@hyperion.delvare>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <8bd0f97a1002112033m5805d4eco3add4d5625e71e9@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/11, Mike Frysinger wrote:
->
-> On Thu, Feb 11, 2010 at 22:24, Roland McGrath wrote:
->
-> > On some machines, single-step into a syscall instruction is no different
-> > from other user instructions, so the normal SIGTRAP will come afterwards
-> > anyway.
-> >
-> > On other machines, entering the kernel for the syscall instruction defeats
-> > the normal user-mode effects of single-step being enabled.  In that event,
-> > you want to call tracehook_report_syscall_exit() if single-step is enabled.
-> > You must pass a nonzero second argument if your arch code is not going to
-> > generate the normal SIGTRAP associated with having single-stepped into the
-> > syscall instruction.
->
-> so tracehook_report_syscall_exit() checking TIF_SINGLESTEP only makes
-> sense when the arch doesnt support hardware single stepping in user
-> mode ?  the Blackfin processor does support hardware single stepping
-> (and we utilize it in Linux).
 
-I'd like to know the answer too ;)
 
-But, even if x86 supports hardware single stepping, it does check
-TIF_SINGLESTEP and pass it to tracehook_report_syscall_exit(step).
+On Fri, 12 Feb 2010, Jean Delvare wrote:
+> 
+> Maybe that's just me, but my main concern is neither download times nor
+> decompression times. My main concern is the access time to directory
+> indexes when browsing the kernel archive, because there are 5 entries
+> for every patch or tarball: .bz2, .bz2.sign, .gz, .gz.sign and .sign.
+> This is horribly slow.
 
-Consider PTRACE_SINGLESTEP which follows the syscall-entry stop.
-The tracee gets the trap before return to user-mode. Otherwise,
-if we just return with X86_EFLAGS_TF, it gets the trap after the
-next instruction after syscall insn. But I don't know whether
-blackfin should follow this logic.
+This was actually the main reason for me personally to ask about just 
+dropping support for .gz files - not because I care deeply about how much 
+disk space kernel.org wastes, but because the long directory listings make 
+it slower for me to mentally index the directory.
 
-> also, in reading the kerneldocs for tracehook_report_syscall_exit(),
-> it says "an attempted system call".  should system calls greater than
-> NR_syscall (-ENOSYS) also get traced ?
+> 1* Keep a single compression format. This saves almost 40% of the
+> files.
+> 
+> 2* Move one of the compression formats somewhere else, so that it
+> doesn't get in the way but is still available if needed.
+> 
+> 3* Create a new subdirectory for every 2.6.x kernel, and move all the
+> related files there.
 
-I'd say yes, but let's wait for Roland's reply.
+I did 3* for the testing kernels (exactly because the directory listing 
+got to be unreadable), and you just complained about it ;)
 
-Oleg.
+Of course, your complaint was that the subdirectory wasn't done 
+immediately, and that the old files get moved to their own subdirectory 
+later as a "archival" thing.
 
+I just didn't want to change the location for the latest kernel.
+
+> 4* Get rid of the LATEST-IS-* files. This is a small count, won't save
+> much, but these files seem totally useless to me these days.
+
+Yeah, they also end up continually being stale.
+
+			Linus
