@@ -1,54 +1,59 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756707Ab0BLXHv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 18:07:51 -0500
-Received: from 1wt.eu ([62.212.114.60]:56348 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755371Ab0BLXHs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 18:07:48 -0500
-Date: Sat, 13 Feb 2010 00:07:02 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: "J.H." <warthog9@kernel.org>, lasse.collin@tukaani.org, mirrors@kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "FTPAdmin Kernel.org" <ftpadmin@kernel.org>, users@kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [kernel.org users] XZ Migration discussion
-Message-ID: <20100212230702.GA10266@1wt.eu>
-References: <4B744E13.8040004@kernel.org> <20100212150137.648dca7c@hyperion.delvare> <alpine.LFD.2.00.1002120714320.7792@localhost.localdomain> <4B75A5DC.3060803@kernel.org> <20100212202357.6363d5af@hyperion.delvare>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100212202357.6363d5af@hyperion.delvare>
-User-Agent: Mutt/1.5.11
+	id S1753649Ab0BLXLh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 18:11:37 -0500
+Received: from va3ehsobe003.messaging.microsoft.com ([216.32.180.13]:46044
+	"EHLO VA3EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751568Ab0BLXLf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Feb 2010 18:11:35 -0500
+X-SpamScore: -30
+X-BigFish: VPS-30(zz1432R98dN936eM9371Pa022Izz1202hzzz2fh6bh61h)
+X-Spam-TCS-SCL: 0:0
+Message-ID: <4B75E023.8060501@am.sony.com>
+Date: Fri, 12 Feb 2010 15:11:31 -0800
+From: Tim Bird <tim.bird@am.sony.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+MIME-Version: 1.0
+To: Larry Finger <Larry.Finger@lwfinger.net>
+CC: Bernhard Schiffner <bernhard@schiffner-limbach.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [mmiotrace] Make timestamps as printk() does.
+References: <201002072205.26665.bernhard@schiffner-limbach.de> <4B75D752.1010904@lwfinger.net>
+In-Reply-To: <4B75D752.1010904@lwfinger.net>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+X-SEL-encryption-scan: scanned
+X-Reverse-DNS: mail8.fw-sd.sony.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 12, 2010 at 08:23:57PM +0100, Jean Delvare wrote:
-> > It's probably worth keeping things like the .gz files around, if nothing
-> > else for older distros, systems, etc that don't have xz yet (since it's
-> > still relatively new)
+On 02/12/2010 02:33 PM, Larry Finger wrote:
+> On 02/07/2010 03:05 PM, Bernhard Schiffner wrote:
+>> Hallo,
+>>
+>> this little patch makes a simple "sort -m" on output gotten from dmesg and  
+>> mmiotrace possible.
+>> It's a real help at least for me.
+>>
+>> Bernhard
+>> (CC me please, I'am not on this list.)
 > 
-> Hardly a good reason IMHO. xz can be installed on these systems. When
-> we switched to git, nobody had it and it did not stop us.
+> NACK. This sort of transformation is best left to local tools.
 
-I don't agree, it's different. Git is only used by developers, and even
-not all of them. Sources are a reference. Anyone can download them to
-look for anything. Switching to a specific format which really is not
-common at all on older distros nor on any system looks a bit like
-proprietary encoding eventhough it's not the case. But it's a way to
-tell people that if they want the sources in clear text form, they
-first have to find a tool capable of decompressing them. Gzip is well
-defined as a standard, it's even described in an RFC and is present
-on almost any system (unix or not) now. Any student who wants to take
-a look at the kernel will have access to gunzip, even from an old
-Solaris 8 workstation or a Windows XP desktop PC. XZ if far from
-being there, and the student will not necessarily be able to install
-it. And Peter raised some valid points about the hardware requirements
-to run such tools ; I'm not sure the guys running Linux on their old
-Sparc-2 would like XZ only a lot.
+The tools can be much easier to maintain and use,
+if there's consistency in the output format from
+the kernel.  There are already tools which read and
+process the printk timestamp format (with time in
+[sec.usec] format at the beginning of the line).
+One is scripts/show-delta.
 
-Regards,
-Willy
+ -- Tim
+
+=============================
+Tim Bird
+Architecture Group Chair, CE Linux Forum
+Senior Staff Engineer, Sony Corporation of America
+=============================
 
