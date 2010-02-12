@@ -1,62 +1,78 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753851Ab0BLJ5S (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 04:57:18 -0500
-Received: from smtp.nokia.com ([192.100.122.233]:27387 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750969Ab0BLJ5P (ORCPT
+	id S1754011Ab0BLJ6V (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 04:58:21 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:53113 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750969Ab0BLJ6S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 04:57:15 -0500
-From: <samu.p.onkalo@nokia.com>
-To: <eric.piel@tremplin-utc.net>
-CC: <linux-kernel@vger.kernel.org>, <daniel@caiaq.de>, <pavel@ucw.cz>,
-       <lm-sensors@lm-sensors.org>
-Date: Fri, 12 Feb 2010 10:56:14 +0100
-Subject: RE: [lm-sensors] [PATCH 0/6] lis3lv02d: Power management, click and
- threshold interrupts
-Thread-Topic: [lm-sensors] [PATCH 0/6] lis3lv02d: Power management, click
- and threshold interrupts
-Thread-Index: AcqrTuM0ukF7T2ozT7uBVntUlwsFtgAW9WsAAAepOQA=
-Message-ID: <62697B07E9803846BC582181BD6FB6B82661C50472@NOK-EUMSG-02.mgdnok.nokia.com>
-References: <1265271848-26559-1-git-send-email-samu.p.onkalo@nokia.com>
-	<4B7457D0.4080507@tremplin-utc.net>
- <62697B07E9803846BC582181BD6FB6B82661C5029E@NOK-EUMSG-02.mgdnok.nokia.com>
-In-Reply-To: <62697B07E9803846BC582181BD6FB6B82661C5029E@NOK-EUMSG-02.mgdnok.nokia.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="utf-8"
+	Fri, 12 Feb 2010 04:58:18 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=nI3xDZB6xeA3RGw3/9iWy6bCvhbgRvod8mO83eUkh2iTD2jbP/NClWxRQ5M/599JZ
+	ppub5VUfRlPeuP509BJ0w==
+Date: Fri, 12 Feb 2010 01:58:10 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
+       Nick Piggin <npiggin@suse.de>, Andrea Arcangeli <aarcange@redhat.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch 5/7 -mm] oom: replace sysctls with quick mode
+In-Reply-To: <20100212092634.60a76cf9.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.1002120150380.22883@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.1002100224210.8001@chino.kir.corp.google.com> <alpine.DEB.2.00.1002100229250.8001@chino.kir.corp.google.com> <20100212092634.60a76cf9.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-X-OriginalArrivalTime: 12 Feb 2010 09:56:23.0517 (UTC) FILETIME=[A26AE0D0:01CAABC9]
-X-Nokia-AV: Clean
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id o1C9vvmE004639
 
+On Fri, 12 Feb 2010, KAMEZAWA Hiroyuki wrote:
 
->>Hello,
->>Sorry, I haven't had time to fully review the patches. Nevertheless,
->>I've tested them on my HP laptop with a 12bit device, and can confirm
->>it's all fine.
->>
->>The only hiccup is in patch 6: it declares the joystick with 3 buttons,
->>although on this hardware it's impossible to have this feature. So, it
->>would be nice if input_set_capability() could be conditionned.
->
->I'll add configuration option to platform data or do you prefer some
->other
->way to enable this?
->
+> > Two VM sysctls, oom dump_tasks and oom_kill_allocating_task, were
+> > implemented for very large systems to avoid excessively long tasklist
+> > scans.  The former suppresses helpful diagnostic messages that are
+> > emitted for each thread group leader that are candidates for oom kill
+> > including their pid, uid, vm size, rss, oom_adj value, and name; this
+> > information is very helpful to users in understanding why a particular
+> > task was chosen for kill over others.  The latter simply kills current,
+> > the task triggering the oom condition, instead of iterating through the
+> > tasklist looking for the worst offender.
+> > 
+> > Both of these sysctls are combined into one for use on the aforementioned
+> > large systems: oom_kill_quick.  This disables the now-default
+> > oom_dump_tasks and kills current whenever the oom killer is called.
+> > 
+> > The oom killer rewrite is the perfect opportunity to combine both sysctls
+> > into one instead of carrying around the others for years to come for
+> > nothing else than legacy purposes.
+> > 
+> > Signed-off-by: David Rientjes <rientjes@google.com>
+> 
+> seems reasonable..but how old these APIs are ? Replacement is ok ?
+> 
 
-You obviously meant that enable those only for 8 bit device, since
-12 bit doesn't have click detection. I can do that.
+I'm not concerned about /proc/sys/vm/oom_dump_tasks because it was 
+disabled by default and is now enabled by default (unless the user sets 
+this new /proc/sys/vm/oom_kill_quick).  So existing users of 
+oom_dump_tasks will just have their write fail but identical behavior as 
+before.
 
--Samu
+/proc/sys/vm/oom_kill_allocating_task is different since it now requires 
+enabling /proc/sys/vm/oom_kill_quick, but I think there are such few users 
+(SGI originally requested it a couple years ago when we started scanning 
+the tasklist for CONSTRAINT_CPUSET in 2.6.24) and the side-effect of not 
+enabling it is minimal, it's just a long delay at oom kill time because 
+they must scan the tasklist.  Therefore, I don't see it as a major problem 
+that will cause large disruptions, instead I see it as a great opportunity 
+to get rid of one more sysctl without taking away functionality.
 
+> Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
 
-
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+Thanks!
