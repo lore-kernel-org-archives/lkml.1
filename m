@@ -1,84 +1,57 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757713Ab0BLA4G (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 19:56:06 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:58279 "EHLO smtp.gentoo.org"
+	id S1757745Ab0BLA5E (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 19:57:04 -0500
+Received: from hera.kernel.org ([140.211.167.34]:34901 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753351Ab0BLA4C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 19:56:02 -0500
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: David Miller <davem@davemloft.net>
-Subject: Re: parsic/sh/sparc tracehook breakage when tracing signals
-Date: Thu, 11 Feb 2010 19:56:03 -0500
-User-Agent: KMail/1.12.4 (Linux/2.6.32.6; KDE/4.3.4; x86_64; ; )
-Cc: linux-sh@vger.kernel.org, linux-parisc@vger.kernel.org,
-       sparclinux@vger.kernel.org, roland@redhat.com,
-       linux-kernel@vger.kernel.org
-References: <201002111910.50596.vapier@gentoo.org> <20100211.163950.206150918.davem@davemloft.net>
-In-Reply-To: <20100211.163950.206150918.davem@davemloft.net>
+	id S1757509Ab0BLA5A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 19:57:00 -0500
+Message-ID: <4B74A7F3.9000001@kernel.org>
+Date: Fri, 12 Feb 2010 09:59:31 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart4114757.S9cX2Y7Bec";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Greg KH <gregkh@suse.de>,
+       =?ISO-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>,
+       Neil Brown <neilb@suse.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sysfs: differentiate between locking links and non-links
+References: <19314.1869.847327.15190@notabene.brown>	<2375c9f91002091808n713275dsc9ace8f51871364e@mail.gmail.com>	<4B7217CF.2080702@kernel.org> <m1vde57c11.fsf@fess.ebiederm.org>	<4B728CFE.40208@kernel.org> <m1sk992bji.fsf@fess.ebiederm.org>	<20100210230544.GA678@suse.de> <m1ocjwwob1.fsf@fess.ebiederm.org>	<4B73671E.2050105@kernel.org> <m1mxzfzlv3.fsf@fess.ebiederm.org>
+In-Reply-To: <m1mxzfzlv3.fsf@fess.ebiederm.org>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <201002111956.06261.vapier@gentoo.org>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Fri, 12 Feb 2010 00:56:55 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart4114757.S9cX2Y7Bec
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Hello, Eric.
 
-On Thursday 11 February 2010 19:39:50 David Miller wrote:
-> From: Mike Frysinger <vapier@gentoo.org>
-> > when i ported the Blackfin code to the tracehook framework, i copied a
-> > latent bug from the sparc port.  trying to trace another process while
-> > handling signals no longer worked (and subsequently broke some of the g=
-db
-> > tests).
->=20
-> What you seem to be missing is that on Sparc TIF_SINGLESTEP will never
-> be set, because it does not support hardware single step.
->=20
-> This thread flag is not even defined on that platform.
+On 02/12/2010 03:08 AM, Eric W. Biederman wrote:
+> I have been playing with it and so far the code doesn't seem too bad. I have
+> however come across another misfeature of sysfs.  sysfs_get_active_two appears
+> to be unnecessary overkill.
+>
+> The purpose of the active references are to allows us to block when
+> removing sysfs entries that have custom methods so we don't remove
+> modules or those custom methods don't remove access data structures
+> after the files have been removed.  Further sysfs_remove_dir remove
+> all elements in the directory before removing the directory itself, so
+> there is no chance we will remove a directory with active children.
+> 
+> Tejun do you know of any other reason we want sysfs_get_active_two?
+> 
+> If not I think we can make active references apply exclusively to
+> attributes.
 
-my point is that these arches never call ptrace_notify(SIGTRAP) from their=
-=20
-signal handlers.  maybe the arch is unable to due to some port/hardware=20
-limitation and this is currently the expected behavior.
+Yeah, it's necessary for something which I can't remember from the top
+of my head ATM.  It maybe has something to do with attributes not
+holding reference to the owning module while the parent kobj does.
+I'll dig in but IIRC it's not there just for fun.  Is it difficult to
+do the lockdep annotation without removing get_active_two?
 
-dont get me wrong ... i dont particularly care if your arch has a bug in it=
-=20
-here.  my arch did have a bug and on the off chance that others did too, i=
-=20
-thought i'd drop an e-mail to people.  if your arch is in the "limited"=20
-category, feel free to ignore this.
-=2Dmike
+Thanks.
 
---nextPart4114757.S9cX2Y7Bec
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.14 (GNU/Linux)
-
-iQIcBAABAgAGBQJLdKcmAAoJEEFjO5/oN/WBjKgQAOF1OJjSLt8BGQgePEJJ4RAJ
-LNVK3XSi4kOKIAfa3eSz3XAxrwx7Q+D9o+tSrAlAPp/1qx06G1cq5CV33/NQEIn1
-IWkSiCgVDBEGv03u5TNNy3MgEkspHzZumTxzBrJByGRpGpXXktdXadJWsqUoJEwM
-vOlzyo3Ep9Hvcx53y/SQk/E/V86j4KHXiIMl86xSLFV1WtCtdEo5XzO15jbEYVWo
-P/Lc90rSCG3PZEaxLwIrUNJIXjt+MNKQEO4HXTJhRhhYhcjorBrqOk9JUKzjwQx4
-u1cxgM2lo1ND64QvRvHCpI2WxdB0cdl0fuAUnr7ERhRpuOCSUpeLYtQzFXPc0So+
-LOq7gJbm0PixwfNLaB2e4a7jWBLoPQjJdQ8t8DA05qo8Y3DS16Ga45c3qhVG5+Cu
-uR9xEHZEvkhz7An/vGRxneLaC/v48GAFE9Igwsx/Dt5mIz9v6Z194SyRP3wyxgIi
-7JpKqxieoE5zKTSwZUKxwQeSroHtpIOq2PvI9viE+AsjD8iSqvOVaXzDL7Mm0MNR
-dHyUJc4kbKD06IwKdGkEilB40Y0pGT+RJdLvLws2J1YriTYiOf6Q9cUPXHxAwMBG
-11x2j9nTBJuvrQYetnEUVqas8gffehMdfk4v1GhtbCTUBvl40zdJukKeDfe0J/l1
-HVpvdlobV13+Co98VVg3
-=MqHy
------END PGP SIGNATURE-----
-
---nextPart4114757.S9cX2Y7Bec--
+-- 
+tejun
