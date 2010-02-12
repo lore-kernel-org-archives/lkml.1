@@ -1,111 +1,102 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754777Ab0BLSP1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 13:15:27 -0500
-Received: from mail-ew0-f228.google.com ([209.85.219.228]:46757 "EHLO
-	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752092Ab0BLSPZ (ORCPT
+	id S1756383Ab0BLSUe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 13:20:34 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50578 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755452Ab0BLSUd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 13:15:25 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=CFdm7EgYxxyAW2ntWC8iI7L5eM6CBMmszkp7FoZgoIrfGX1qMBkPkByzHlx03Pp8se
-         DKJXWylHjYjQb8BGUu9RaUNG8B6gIDce3g5RtPNt80gWkxxYWCAB2yT/l5h2TgJ+mVaU
-         DzHjPP3emDFnlthoqjUo6oN/CG6G2g1dYvfMs=
-Date: Fri, 12 Feb 2010 19:15:10 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Michael Stefaniuc <mstefani@redhat.com>
-Cc: "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org,
-       Maneesh Soni <maneesh@linux.vnet.ibm.com>,
-       Alexandre Julliard <julliard@winehq.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>
-Subject: Re: Regression in ptrace (Wine) starting with 2.6.33-rc1
-Message-ID: <20100212181502.GB5475@nowhere>
-References: <4B743149.4000707@redhat.com> <20100211182224.GC4915@nowhere> <4B745F5C.5050001@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B745F5C.5050001@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 12 Feb 2010 13:20:33 -0500
+Date: Fri, 12 Feb 2010 10:19:57 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jeff Mahoney <jeffm@suse.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: [PATCH] delayacct: align to 8 byte boundary on 64-bit systems
+Message-Id: <20100212101957.9f4a4a3a.akpm@linux-foundation.org>
+In-Reply-To: <4B75865B.8000307@suse.com>
+References: <4B75865B.8000307@suse.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 11, 2010 at 08:49:48PM +0100, Michael Stefaniuc wrote:
-> On 02/11/2010 07:22 PM, Frederic Weisbecker wrote:
->> On Thu, Feb 11, 2010 at 05:33:13PM +0100, Michael Stefaniuc wrote:
->>> 2.6.33-rc1 broke ptrace for Wine, specifically the setting of the debug
->>> registers. This is visible in the Wine ntdll exception tests failing on
->>> 2.6.33-rcX while they work just fine in 2.6.32.
->>>
->>> A regression test resulted in:
->>> 72f674d203cd230426437cdcf7dd6f681dad8b0d is the first bad commit
->>> commit 72f674d203cd230426437cdcf7dd6f681dad8b0d
->>> Author: K.Prasad<prasad@linux.vnet.ibm.com>
->>> Date:   Mon Jun 1 23:45:48 2009 +0530
->>>
->>>      hw-breakpoints: modify Ptrace routines to access breakpoint registers
->>>
->>>      This patch modifies the ptrace code to use the new wrapper routines
->>> around
->>> the
->>>      debug/breakpoint registers.
->>>
->>>      [ Impact: adapt x86 ptrace to the new breakpoint Api ]
->>>
->>>      Original-patch-by: Alan Stern<stern@rowland.harvard.edu>
->>>      Signed-off-by: K.Prasad<prasad@linux.vnet.ibm.com>
->>>      Signed-off-by: Maneesh Soni<maneesh@linux.vnet.ibm.com>
->>>      Reviewed-by: Alan Stern<stern@rowland.harvard.edu>
->>>      Signed-off-by: Frederic Weisbecker<fweisbec@gmail.com>
->>>
->>> :040000 040000 f72ff4760c3fa1dffcd72494e77bee2c76039505
->>> b60d5fe2088ff635568e800d5759a0b373b5e439 M      arch
->>>
->>>
->
->>> I have opened also http://bugzilla.kernel.org/show_bug.cgi?id=15273 for
->>> this.
->
->> Thanks a lot for your report. Is there an easy way to reproduce
->> this?
-> Yes, the bug is 100% reproducible. Even the "stack overflow" bytes are
-> always constant on my two boxes: 932 bytes on my Atom and 1588 bytes on
-> my Q9450 with a x86_64 kernel.
->
-> Either grab wine-1.1.38 from
-> http://sourceforge.net/projects/wine/files/Source/ or from git
->   git clone git://source.winehq.org/git/wine.git
-> configure
-> make
-> cd dlls/ntdll/tests/
-> make exception.ok
->
-> If you build on an x86_64 machine you'll need a pretty complete 32bit
-> setup too, but configure will let you know. If configure doesn't errors
-> out but produces warnings, those can be safely ignored. It means the
-> dependencies are optional and those aren't needed to reproduce this bug.
+On Fri, 12 Feb 2010 11:48:27 -0500
+Jeff Mahoney <jeffm@suse.com> wrote:
 
+>  prepare_reply sets up an skb for the response. If I understand it correctly,
+>  the payload contains:
+> 
+>  +--------------------------------+
+>  | genlmsghdr - 4 bytes           |
+>  +--------------------------------+
+>  | NLA header - 4 bytes           | /* Aggregate header */
+>  +-+------------------------------+
+>  | | NLA header - 4 bytes         | /* PID header */
+>  | +------------------------------+
+>  | | pid/tgid   - 4 bytes         |
 
+So we put another four zero bytes in here and add four to the "PID header".
 
-Ok, I'm going to test it.
+>  | +------------------------------+
+>  | | NLA header - 4 bytes         | /* stats header */
+>  | + -----------------------------+ <- oops. aligned on 4 byte boundary
+>  | | struct taskstats - 328 bytes |
+>  +-+------------------------------+
+> 
+>  The start of the taskstats struct must be 8 byte aligned on IA64 (and other
+>  systems with 8 byte alignment rules for 64-bit types) or runtime alignment
+>  warnings will be issued.
+> 
+>  This patch pads the pid/tgid field out to sizeof(long), which forces
+>  the alignment of taskstats. The getdelays userspace code is ok with this
+>  since it assumes 32-bit pid/tgid and then honors that header's length field.
+> 
+>  An array is used to avoid exposing kernel memory contents to userspace in the
+>  response.
+> 
+> Signed-off-by: Jeff Mahoney <jeffm@suse.com>
+> ---
+>  kernel/taskstats.c |    8 +++++++-
+>  1 file changed, 7 insertions(+), 1 deletion(-)
+> 
+> --- a/kernel/taskstats.c
+> +++ b/kernel/taskstats.c
+> @@ -362,6 +362,12 @@ static struct taskstats *mk_reply(struct
+>  	struct nlattr *na, *ret;
+>  	int aggr;
+>  
+> +	/* If we don't pad, we end up with alignment on a 4 byte boundary.
+> +	 * This causes lots of runtime warnings on systems requiring 8 byte
+> +	 * alignment */
+> +	u32 pids[2] = { pid, 0 };
+> +	int pid_size = ALIGN(sizeof(pid), sizeof(long));
+> +
+>  	aggr = (type == TASKSTATS_TYPE_PID)
+>  			? TASKSTATS_TYPE_AGGR_PID
+>  			: TASKSTATS_TYPE_AGGR_TGID;
+> @@ -369,7 +375,7 @@ static struct taskstats *mk_reply(struct
+>  	na = nla_nest_start(skb, aggr);
+>  	if (!na)
+>  		goto err;
+> -	if (nla_put(skb, type, sizeof(pid), &pid) < 0)
+> +	if (nla_put(skb, type, pid_size, pids) < 0)
+>  		goto err;
+>  	ret = nla_reserve(skb, TASKSTATS_TYPE_STATS, sizeof(struct taskstats));
+>  	if (!ret)
 
+So any code which assumes that the pid/tgid field is four bytes long
+will break.  Code which takes that length from the netlink message
+header will work OK.
 
+32-bit architectures are unaltered.
 
+Seems safe enough.  We'd be safer still if we didn't do this on 64-bit
+architectures which don't need it.  ie: x86_64.  But if we do that we
+add a risk that people will develop shoddy code which works on x86_64
+and doesn't work on ia64.
 
-> Oh, there might be an other regression in ptrace too; introduced by a
-> previous patch in this series. While bisecting i had a later test fail,
-> something along the lines of "expected 4 exceptions got 0", but the
-> tests completed. Now the stack corruption mask everything else in the
-> tests; e.g. comment out the first test and one of the next tests will go
-> into an infinite loop printing 3 Wine errors over and over again.
-
-
-Ok, will look at this too.
-
-Thanks.
-
+hmm.
