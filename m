@@ -1,57 +1,140 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757745Ab0BLA5E (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 19:57:04 -0500
-Received: from hera.kernel.org ([140.211.167.34]:34901 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757509Ab0BLA5A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 19:57:00 -0500
-Message-ID: <4B74A7F3.9000001@kernel.org>
-Date: Fri, 12 Feb 2010 09:59:31 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	id S1757522Ab0BLBDs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 20:03:48 -0500
+Received: from SpacedOut.fries.net ([67.64.210.234]:44438 "EHLO
+	SpacedOut.fries.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756543Ab0BLBDr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 20:03:47 -0500
+X-Greylist: delayed 867 seconds by postgrey-1.27 at vger.kernel.org; Thu, 11 Feb 2010 20:03:47 EST
+Date: Thu, 11 Feb 2010 18:49:10 -0600
+From: David Fries <david@fries.net>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Oliver Neukum <oliver@neukum.org>, USB list <linux-usb@vger.kernel.org>,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: usbhid control queue full, due to stuck control request
+Message-ID: <20100212004910.GD22311@spacedout.fries.net>
+References: <20100206172051.GA22311@spacedout.fries.net> <201002081256.01614.oliver@neukum.org> <20100209023508.GB22311@spacedout.fries.net> <20100211010450.GC22311@spacedout.fries.net> <alpine.LRH.2.00.1002111617290.16183@twin.jikos.cz>
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Greg KH <gregkh@suse.de>,
-       =?ISO-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>,
-       Neil Brown <neilb@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sysfs: differentiate between locking links and non-links
-References: <19314.1869.847327.15190@notabene.brown>	<2375c9f91002091808n713275dsc9ace8f51871364e@mail.gmail.com>	<4B7217CF.2080702@kernel.org> <m1vde57c11.fsf@fess.ebiederm.org>	<4B728CFE.40208@kernel.org> <m1sk992bji.fsf@fess.ebiederm.org>	<20100210230544.GA678@suse.de> <m1ocjwwob1.fsf@fess.ebiederm.org>	<4B73671E.2050105@kernel.org> <m1mxzfzlv3.fsf@fess.ebiederm.org>
-In-Reply-To: <m1mxzfzlv3.fsf@fess.ebiederm.org>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Fri, 12 Feb 2010 00:56:55 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LRH.2.00.1002111617290.16183@twin.jikos.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Greylist: Sender is SPF-compliant, not delayed by milter-greylist-3.0 (SpacedOut.fries.net [127.0.0.1]); Thu, 11 Feb 2010 18:49:12 -0600 (CST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Eric.
+From: Oliver Neukum <oliver@neukum.org>
 
-On 02/12/2010 03:08 AM, Eric W. Biederman wrote:
-> I have been playing with it and so far the code doesn't seem too bad. I have
-> however come across another misfeature of sysfs.  sysfs_get_active_two appears
-> to be unnecessary overkill.
->
-> The purpose of the active references are to allows us to block when
-> removing sysfs entries that have custom methods so we don't remove
-> modules or those custom methods don't remove access data structures
-> after the files have been removed.  Further sysfs_remove_dir remove
-> all elements in the directory before removing the directory itself, so
-> there is no chance we will remove a directory with active children.
-> 
-> Tejun do you know of any other reason we want sysfs_get_active_two?
-> 
-> If not I think we can make active references apply exclusively to
-> attributes.
+Some devices do not react to a control request (seen on APC UPS's)
+resulting in a slow stream of messages,
+"generic-usb ... control queue full".
+Therefore request need a timeout.
 
-Yeah, it's necessary for something which I can't remember from the top
-of my head ATM.  It maybe has something to do with attributes not
-holding reference to the owning module while the parent kobj does.
-I'll dig in but IIRC it's not there just for fun.  Is it difficult to
-do the lockdep annotation without removing get_active_two?
+Signed-off-by: Oliver Neukum <oliver@neukum.org>
+Duplicated the change from last_out to last_ctrl and verified.
+Signed-off-by: David Fries <david@fries.net>
+---
 
-Thanks.
+Oliver Neukum, this is based on your patch, do you agree with the
+changes?
 
+One possible problem with this fix is it drops the stalled URB
+transfer.  That might pose a problem for one shot messages, possibly
+hid_ctrl and hid_irq_out could resubmit the same urb when -ECONNRESET
+is received, assuming the message content wasn't the reason it
+timedout in the first place.
+David Fries <david@fries.net>
+
+ drivers/hid/usbhid/hid-core.c |   28 ++++++++++++++++++++++++++--
+ drivers/hid/usbhid/usbhid.h   |    2 ++
+ 2 files changed, 28 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/hid/usbhid/hid-core.c b/drivers/hid/usbhid/hid-core.c
+index 3c1fcb7..076a29a 100644
+--- a/drivers/hid/usbhid/hid-core.c
++++ b/drivers/hid/usbhid/hid-core.c
+@@ -318,6 +318,7 @@ static int hid_submit_out(struct hid_device *hid)
+ 			err_hid("usb_submit_urb(out) failed");
+ 			return -1;
+ 		}
++		usbhid->last_out = jiffies;
+ 	} else {
+ 		/*
+ 		 * queue work to wake up the device.
+@@ -379,6 +380,7 @@ static int hid_submit_ctrl(struct hid_device *hid)
+ 			err_hid("usb_submit_urb(ctrl) failed");
+ 			return -1;
+ 		}
++		usbhid->last_ctrl = jiffies;
+ 	} else {
+ 		/*
+ 		 * queue work to wake up the device.
+@@ -513,9 +515,20 @@ void __usbhid_submit_report(struct hid_device *hid, struct hid_report *report, u
+ 		usbhid->out[usbhid->outhead].report = report;
+ 		usbhid->outhead = head;
+ 
+-		if (!test_and_set_bit(HID_OUT_RUNNING, &usbhid->iofl))
++		if (!test_and_set_bit(HID_OUT_RUNNING, &usbhid->iofl)) {
+ 			if (hid_submit_out(hid))
+ 				clear_bit(HID_OUT_RUNNING, &usbhid->iofl);
++		} else {
++			/*
++			 * the queue is known to run
++			 * but an earlier request may be stuck
++			 * we may need to time out
++			 * no race because this is called under
++			 * spinlock
++			 */
++			if (time_after(jiffies, usbhid->last_out + HZ * 5))
++				usb_unlink_urb(usbhid->urbout);
++		}
+ 		return;
+ 	}
+ 
+@@ -536,9 +549,20 @@ void __usbhid_submit_report(struct hid_device *hid, struct hid_report *report, u
+ 	usbhid->ctrl[usbhid->ctrlhead].dir = dir;
+ 	usbhid->ctrlhead = head;
+ 
+-	if (!test_and_set_bit(HID_CTRL_RUNNING, &usbhid->iofl))
++	if (!test_and_set_bit(HID_CTRL_RUNNING, &usbhid->iofl)) {
+ 		if (hid_submit_ctrl(hid))
+ 			clear_bit(HID_CTRL_RUNNING, &usbhid->iofl);
++	} else {
++		/*
++		 * the queue is known to run
++		 * but an earlier request may be stuck
++		 * we may need to time out
++		 * no race because this is called under
++		 * spinlock
++		 */
++		if (time_after(jiffies, usbhid->last_ctrl + HZ * 5))
++			usb_unlink_urb(usbhid->urbctrl);
++	}
+ }
+ 
+ void usbhid_submit_report(struct hid_device *hid, struct hid_report *report, unsigned char dir)
+diff --git a/drivers/hid/usbhid/usbhid.h b/drivers/hid/usbhid/usbhid.h
+index 08f505c..ec20400 100644
+--- a/drivers/hid/usbhid/usbhid.h
++++ b/drivers/hid/usbhid/usbhid.h
+@@ -80,12 +80,14 @@ struct usbhid_device {
+ 	unsigned char ctrlhead, ctrltail;                               /* Control fifo head & tail */
+ 	char *ctrlbuf;                                                  /* Control buffer */
+ 	dma_addr_t ctrlbuf_dma;                                         /* Control buffer dma */
++	unsigned long last_ctrl;						/* record of last output for timeouts */
+ 
+ 	struct urb *urbout;                                             /* Output URB */
+ 	struct hid_output_fifo out[HID_CONTROL_FIFO_SIZE];              /* Output pipe fifo */
+ 	unsigned char outhead, outtail;                                 /* Output pipe fifo head & tail */
+ 	char *outbuf;                                                   /* Output buffer */
+ 	dma_addr_t outbuf_dma;                                          /* Output buffer dma */
++	unsigned long last_out;							/* record of last output for timeouts */
+ 
+ 	spinlock_t lock;						/* fifo spinlock */
+ 	unsigned long iofl;                                             /* I/O flags (CTRL_RUNNING, OUT_RUNNING) */
 -- 
-tejun
+1.5.6.5
+
