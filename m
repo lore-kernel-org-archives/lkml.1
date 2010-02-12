@@ -1,78 +1,60 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757488Ab0BLRkM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 12:40:12 -0500
-Received: from waste.org ([173.11.57.241]:47945 "EHLO waste.org"
+	id S1757511Ab0BLRqs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 12:46:48 -0500
+Received: from sabe.cs.wisc.edu ([128.105.6.20]:57461 "EHLO sabe.cs.wisc.edu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755059Ab0BLRkJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 12:40:09 -0500
-Subject: Re: [PATCH 03/11] readahead: bump up the default readahead size
-From: Matt Mackall <mpm@selenic.com>
-To: Jamie Lokier <jamie@shareable.org>
-Cc: Wu Fengguang <fengguang.wu@intel.com>,
-       Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Clemens Ladisch <clemens@ladisch.de>,
-       Olivier Galibert <galibert@pobox.com>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Paul Gortmaker <paul.gortmaker@windriver.com>,
-       David Woodhouse <dwmw2@infradead.org>, linux-embedded@vger.kernel.org
-In-Reply-To: <20100211234249.GE407@shareable.org>
-References: <20100207041013.891441102@intel.com>
-	 <20100207041043.147345346@intel.com> <4B6FBB3F.4010701@linux.vnet.ibm.com>
-	 <20100208134634.GA3024@localhost> <1265924254.15603.79.camel@calx>
-	 <20100211234249.GE407@shareable.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 11 Feb 2010 18:04:31 -0600
-Message-ID: <1265933071.15603.129.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	id S1755059Ab0BLRqr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Feb 2010 12:46:47 -0500
+Message-ID: <4B7593F4.2050102@cs.wisc.edu>
+Date: Fri, 12 Feb 2010 11:46:28 -0600
+From: Mike Christie <michaelc@cs.wisc.edu>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+MIME-Version: 1.0
+To: Tomohiro Kusumi <kusumi.tomohiro@jp.fujitsu.com>
+CC: linux-scsi@vger.kernel.org, James.Bottomley@suse.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] scsi_transport_fc: handle transient error on multipath
+ environment
+References: <4B750CB7.4030805@jp.fujitsu.com>
+In-Reply-To: <4B750CB7.4030805@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-02-11 at 23:42 +0000, Jamie Lokier wrote:
-> Matt Mackall wrote:
-> > On Mon, 2010-02-08 at 21:46 +0800, Wu Fengguang wrote:
-> > > Chris,
-> > > 
-> > > Firstly inform the linux-embedded maintainers :)
-> > > 
-> > > I think it's a good suggestion to add a config option
-> > > (CONFIG_READAHEAD_SIZE). Will update the patch..
-> > 
-> > I don't have a strong opinion here beyond the nagging feeling that we
-> > should be using a per-bdev scaling window scheme rather than something
-> > static.
+On 02/12/2010 02:09 AM, Tomohiro Kusumi wrote:
+> @@ -1953,6 +1987,13 @@
+>   {
+>   	struct fc_rport *rport = starget_to_rport(scsi_target(scmd->device));
 > 
-> I agree with both.  100Mb/s isn't typical on little devices, even if a
-> fast ATA disk is attached.  I've got something here where the ATA
-> interface itself (on a SoC) gets about 10MB/s max when doing nothing
-> else, or 4MB/s when talking to the network at the same time.
-> It's not a modern design, but you know, it's junk we try to use :-)
-> 
-> It sounds like a calculation based on throughput and seek time or IOP
-> rate, and maybe clamped if memory is small, would be good.
-> 
-> Is the window size something that could be meaningfully adjusted
-> according to live measurements?
+> +	if (rport->recover_transient_error) {
+> +		fc_queue_work(scmd->device->host,&rport->rport_te_work);
+> +		scmd->result = ((scmd->result&  0xFF00FFFF) |
+> +				(DID_TRANSPORT_DISRUPTED<<  16));
+> +		return BLK_EH_HANDLED;
+> +	}
+> +
+>   	if (rport->port_state == FC_PORTSTATE_BLOCKED)
+>   		return BLK_EH_RESET_TIMER;
 
-I think so. You've basically got a few different things you want to
-balance: throughput, latency, and memory pressure. Successful readaheads
-expand the window, as do empty request queues, while long request queues
-and memory reclaim events collapse it. With any luck, we'll then
-automatically do the right thing with fast/slow devices on big/small
-boxes with varying load. And, like TCP, we don't need to 'know' anything
-about the hardware, except to watch what happens when we use it.
+- For the link down case you mentioned, would we see that the rport is
+blocked here then we would return RESET_TIMER. If the fast_io_fail tmo
+is set, then that would fail io quickly upwards (the fast io fail timo
+would probably fire before the cmd even timed out).
 
--- 
-http://selenic.com : development and support for Mercurial and Linux
+What transport problems are you seeing where the rport is not blocked
+and the scsi cmd timer fires? Would it be mostly buggy switches or
+something like that?
 
+- Maybe you want to instead hook something into the dm-mutlipath's
+request (no more bios like in 2004 :)). Can you set a timer on that
+level of request. If that times out then, dm-multipath could do
+something like call blk_abort_queue.
 
+I think the problem with blk_abort_queue might be that it stops all IO
+to the entire host where you probably just want to work on the remote
+port/path. For that you could call something like
+recover_transient_error. Maybe it could just be a call to
+terminate_rport_io from a workqueue though.
