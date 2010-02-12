@@ -1,53 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754774Ab0BLOey (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 09:34:54 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:49095 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751432Ab0BLOex (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 09:34:53 -0500
-Subject: [GIT PULL] regulator fixes for 2.6.33
-From: Liam Girdwood <lrg@slimlogic.co.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 12 Feb 2010 14:34:48 +0000
-Message-ID: <1265985288.3231.14.camel@odin>
+	id S1756252Ab0BLOf2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 09:35:28 -0500
+Received: from bamako.nerim.net ([62.4.17.28]:63392 "EHLO bamako.nerim.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753500Ab0BLOf1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Feb 2010 09:35:27 -0500
+Date: Fri, 12 Feb 2010 15:35:22 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: "H. Peter Anvin" <hpa@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Pavel Machek <pavel@ucw.cz>, mirrors@kernel.org, lasse.collin@tukaani.org,
+       linux-kernel <linux-kernel@vger.kernel.org>, users@kernel.org,
+       "FTPAdmin Kernel.org" <ftpadmin@kernel.org>
+Subject: Re: [kernel.org users] XZ Migration discussion
+Message-ID: <20100212153522.39203cfa@hyperion.delvare>
+In-Reply-To: <4B74832B.6050303@kernel.org>
+References: <4B744E13.8040004@kernel.org>
+	<20100211205129.GA26105@elf.ucw.cz>
+	<4B74832B.6050303@kernel.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Thu, 11 Feb 2010 14:22:35 -0800, H. Peter Anvin wrote:
+> It would also be "just weird" to:
+> 
+> a) require that the end user knows the particular compression format
+> used by a particular legacy file.
 
-Please pull the following two regulator fixes for 2.6.33
+While we're here... I think it is weird that the testing files for the
+latest kernel are in testing/ directly, while the older ones have their
+own subdirectory. I have a script which is greatly confused by this,
+and I can imagine that other tools (for example ketchup) appreciate
+this inconsistency moderately too. It is probably not ideal for mirrors
+either... I don't know if the mirroring system is smart enough to deal
+with file moves? If not then it generates useless traffic.
 
-Thanks
+So I would like to propose that testing files are placed directly in
+their final location. This would be both more consistent and easier
+for everyone.
 
-Liam
-
----
-
-The following changes since commit 676ad585531e965416fd958747894541dabcec96:
-  Linus Torvalds (1):
-        Merge branch 'for-linus' of git://git.kernel.org/.../bp/bp
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/lrg/voltage-2.6.git for-linus
-
-Mark Brown (1):
-      regulator: Fix display of null constraints for regulators
-
-Roel Kluin (1):
-      regulator/lp3971: vol_map out of bounds in lp3971_{ldo,dcdc}_set_voltage()
-
- drivers/regulator/core.c   |    2 +-
- drivers/regulator/lp3971.c |    4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
-
-
+Thanks,
+-- 
+Jean Delvare
