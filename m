@@ -1,25 +1,25 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757760Ab0BLVKp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 16:10:45 -0500
-Received: from mail-fx0-f220.google.com ([209.85.220.220]:34882 "EHLO
-	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757563Ab0BLVKn (ORCPT
+	id S1757858Ab0BLVK4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 16:10:56 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:41298 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757823Ab0BLVKy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 16:10:43 -0500
+	Fri, 12 Feb 2010 16:10:54 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=googlemail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:x-mailer:mime-version
          :content-type:content-transfer-encoding;
-        b=MXF0zsFjRm7usbtHUYdDUMTJjbBXU20MVGU7ZaFKZkiwGNT/NOK7KMJMKxyGyLGG7F
-         U+k6ZO4wXE1wMzp7vGKlILflIFZsXLOggfTkG/+NNHqS8qm4qviX6NMi57+SMxlHm6Po
-         kiJyu8s18XUKmbokZ502QK3xKakZTjQYYYNyQ=
-Date: Fri, 12 Feb 2010 22:10:39 +0100
+        b=t27LAisvrkLQwKaZW14NrOujylzZt+7OR/9kc4IPDG5JPVbWEEUEM3ZjmkhS0BkNBs
+         fSht1Pn1UUPPQbQl5gSnNChAeIzzVlndcWd+Z1xbGPbpYpI6MsmU4DzOnS4foSECYaq9
+         6tHAsTzrolDWFRELao1+F2lJKLIiH+my9zCKE=
+Date: Fri, 12 Feb 2010 22:10:50 +0100
 From: Joris Dolderer <vorstadtkind@googlemail.com>
 To: linux-kernel@vger.kernel.org
 Cc: eparis@redhat.com
-Subject: [PATCH 2/3] dnotify: patches for tree-watching fsnotify interface
-Message-ID: <20100212221039.13b81c8f@icecube>
+Subject: [PATCH 3/3] inotify: tree-watching support
+Message-ID: <20100212221050.756e4254@icecube>
 X-Mailer: Claws Mail 3.7.5 (GTK+ 2.18.6; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -28,36 +28,97 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Modify dnotify for the new tree-watching fsnotify interface: check
-whether an event came from a child or a far descent.
-Modify fsnotify_recalc_inode_mask call.
+Add tree-watching support to inotify.
 
+In userspace, you have to add an IN_TREE flag to the mask.
 Signed-off-by: Joris Dolderer <vorstadtkind@googlemail.com>
 ---
-diff --git a/fs/notify/dnotify/dnotify.c b/fs/notify/dnotify/dnotify.c
-index 7e54e52..6ef23cf 100644
---- a/fs/notify/dnotify/dnotify.c
-+++ b/fs/notify/dnotify/dnotify.c
-@@ -71,7 +71,7 @@ static void dnotify_recalc_inode_mask(struct
-fsnotify_mark_entry *entry) return;
+diff --git a/fs/notify/inotify/inotify_fsnotify.c
+b/fs/notify/inotify/inotify_fsnotify.c index 1afb0a1..d42a8cd 100644
+--- a/fs/notify/inotify/inotify_fsnotify.c
++++ b/fs/notify/inotify/inotify_fsnotify.c
+@@ -89,6 +89,7 @@ static bool inotify_should_send_event(struct
+fsnotify_group *group, struct inode {
+ 	struct fsnotify_mark_entry *entry;
+ 	bool send;
++	__u32 test_mask;
  
- 	if (entry->inode)
--		fsnotify_recalc_inode_mask(entry->inode);
-+		fsnotify_recalc_inode_mask(entry->inode, false);
+ 	spin_lock(&inode->i_lock);
+ 	entry = fsnotify_find_mark_entry(group, inode);
+@@ -96,8 +97,9 @@ static bool inotify_should_send_event(struct
+fsnotify_group *group, struct inode if (!entry)
+ 		return false;
+ 
+-	mask = (mask & ~FS_EVENT_ON_CHILD);
+-	send = (entry->mask & mask);
++	test_mask = mask & ~FS_EVENT_ON_TREE;
++	send = entry->mask & test_mask;
++	send = send && ((mask & FS_EVENT_ON_TREE) ? ((entry->mask &
+mask) & FS_EVENT_ON_TREE) : true); 
+ 	/* find took a reference */
+ 	fsnotify_put_mark(entry);
+diff --git a/fs/notify/inotify/inotify_user.c
+b/fs/notify/inotify/inotify_user.c index a94e8bd..575bbf8 100644
+--- a/fs/notify/inotify/inotify_user.c
++++ b/fs/notify/inotify/inotify_user.c
+@@ -11,6 +11,8 @@
+  * Copyright (C) 2009 Eric Paris <Red Hat Inc>
+  * inotify was largely rewriten to make use of the fsnotify
+infrastructure *
++ * Tree-watching support (C) 2010 Joris Dolderer
+<vorstadtkind@googlemail.com>
++ *
+  * This program is free software; you can redistribute it and/or
+modify it
+  * under the terms of the GNU General Public License as published by
+the
+  * Free Software Foundation; either version 2, or (at your option) any
+@@ -100,12 +102,15 @@ static inline __u32 inotify_arg_to_mask(u32 arg)
+ {
+ 	__u32 mask;
+ 
+-	/* everything should accept their own ignored and cares about
+children */
+-	mask = (FS_IN_IGNORED | FS_EVENT_ON_CHILD);
++	/* everything should accept their own ignored*/
++	mask = FS_IN_IGNORED;
+ 
+ 	/* mask off the flags used to open the fd */
+ 	mask |= (arg & (IN_ALL_EVENTS | IN_ONESHOT));
+ 
++	/* care about children or descents */
++	mask |= (arg & IN_TREE) ? FS_EVENT_ON_DESCENT :
+FS_EVENT_ON_CHILD; +
+ 	return mask;
  }
  
- /*
-@@ -91,7 +91,12 @@ static int dnotify_handle_event(struct
-fsnotify_group *group, struct dnotify_struct *dn;
- 	struct dnotify_struct **prev;
- 	struct fown_struct *fown;
--	__u32 test_mask = event->mask & ~FS_EVENT_ON_CHILD;
-+	__u32 test_mask;
-+
-+	if (event->mask & FS_EVENT_ON_DESCENT)
-+		return 0;
-+
-+	test_mask = event->mask & ~FS_EVENT_ON_CHILD;
- 
- 	to_tell = event->to_tell;
- 
+@@ -505,7 +510,7 @@ static int inotify_update_existing_watch(struct
+fsnotify_group *group, 
+ 		/* update the inode with this new entry */
+ 		if (dropped || do_inode)
+-			fsnotify_recalc_inode_mask(inode);
++			fsnotify_recalc_inode_mask(inode, (old_mask ^
+new_mask) & IN_TREE); 
+ 		/* update the group mask with the new mask */
+ 		if (dropped || do_group)
+diff --git a/include/linux/inotify.h b/include/linux/inotify.h
+index 37ea289..b5bef0b 100644
+--- a/include/linux/inotify.h
++++ b/include/linux/inotify.h
+@@ -49,12 +49,12 @@ struct inotify_event {
+ #define IN_MOVE			(IN_MOVED_FROM |
+IN_MOVED_TO) /* moves */ 
+ /* special flags */
++#define IN_TREE			0x00800000	/* watch the
+whole directory tree */ #define IN_ONLYDIR
+0x01000000	/* only watch the path if it is a directory */
+#define IN_DONT_FOLLOW		0x02000000	/* don't follow
+a sym link */ #define IN_MASK_ADD		0x20000000	/*
+add to the mask of an already existing watch */ #define
+IN_ISDIR		0x40000000	/* event occurred against dir
+*/ #define IN_ONESHOT		0x80000000	/* only send
+event once */ - /*
+  * All of the events - we build the list by hand so that we can add
+flags in
+  * the future and not break backward compatibility.  Apps will get
+only the
