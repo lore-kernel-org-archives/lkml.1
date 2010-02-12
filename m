@@ -1,77 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757507Ab0BLRNu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 12:13:50 -0500
-Received: from gabe.freedesktop.org ([131.252.210.177]:45819 "EHLO
-	gabe.freedesktop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757310Ab0BLRNt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 12:13:49 -0500
-From: Eric Anholt <eric@anholt.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [git pull] drm-intel fixes for 2.6.33-rc7
-Date: Fri, 12 Feb 2010 09:14:12 -0800
-Message-ID: <87hbpmjs0r.fsf@pollan.anholt.net>
+	id S1757344Ab0BLRVe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 12:21:34 -0500
+Received: from sabe.cs.wisc.edu ([128.105.6.20]:48242 "EHLO sabe.cs.wisc.edu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756218Ab0BLRVc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Feb 2010 12:21:32 -0500
+Message-ID: <4B758E09.9030708@cs.wisc.edu>
+Date: Fri, 12 Feb 2010 11:21:13 -0600
+From: Mike Christie <michaelc@cs.wisc.edu>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
-	micalg=pgp-sha1; protocol="application/pgp-signature"
+To: open-iscsi@googlegroups.com
+CC: Tao Ma <tao.ma@oracle.com>, linux-kernel@vger.kernel.org
+Subject: Re: lockdep warning for iscsi in 2.6.33-rc6
+References: <4B7107CF.3060703@oracle.com> <4B71B7D9.9040501@cs.wisc.edu> <4B7200DC.60103@oracle.com>
+In-Reply-To: <4B7200DC.60103@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---=-=-=
+On 02/09/2010 06:42 PM, Tao Ma wrote:
+> Hi Mike,
+>
+> Mike Christie wrote:
+>> On 02/09/2010 12:59 AM, Tao Ma wrote:
+>>> Hi Mike,
+>>> I meet with a lockdep warning for iscsi in 2.6.33-rc6.
+>>> the lockdep is attached.
+>>>
+>>
+>> If the lockdep output is saying that there is a problem with the iscsi
+>> host taking its mutex then the scsi host mutex, I think that might be
+>> a mistake in the lockdep detection. We always take the iscsi host
+>> mutex then take the scsi host mutex.
+>>
+>> Could it get confused if we are scanning two hosts at the same time?
+>> If it is just looking at if a lock is being taken then it would look
+>> like host1 has its ihost->mutex and then took its shost->mutex, but
+>> then host2 could start to get scanned at the same time, and it is
+>> going to take its ihost->mutex. It would then look like we are trying
+>> to grab a ihost->mutex while holding a shost->mutex. However, the
+>> mutexs are not global and they are different instances of the mutex
+>> because each host has its own.
+> If these 2 mutexes are grabed in the same order(in your description,
+> ihost->mutex first and then shost->mutex), there would be no problem.
 
-The following changes since commit e28cab42f384745c8a947a9ccd51e4aae52f5d51:
-  Linus Torvalds (1):
-        Merge branch 'i2c-for-linus' of git://git.kernel.org/.../jdelvare/staging
+I checked the code and we are taking the locks in the proper order, but 
+I did some more testing and I do not think it was detecting what I 
+thought above.
 
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/anholt/drm-intel for-linus
-
-These are all regression fixes.
-
-Chris Wilson (1):
-      drm/i915: Increase fb alignment to 64k
-
-Daniel Vetter (1):
-      drm/i915: Update write_domains on active list after flush.
-
-Jesse Barnes (3):
-      drm/i915: handle FBC and self-refresh better
-      drm/i915: untangle page flip completion
-      drm/i915: hold ref on flip object until it completes
-
-Owain Ainsworth (1):
-      drm/i915: Correctly return -ENOMEM on allocation failure in cmdbuf ioctls.
-
-Rafael J. Wysocki (1):
-      drm/i915: Fix crash while aborting hibernation
-
-Zhenyu Wang (3):
-      drm/i915: Rework DPLL calculation parameters for Ironlake
-      drm/i915: fix flip done interrupt on Ironlake
-      drm/i915: fix pipe source image setting in flip command
-
- drivers/gpu/drm/i915/i915_dma.c      |    4 +-
- drivers/gpu/drm/i915/i915_drv.c      |  168 ++++++++++++++---------
- drivers/gpu/drm/i915/i915_drv.h      |   11 ++
- drivers/gpu/drm/i915/i915_gem.c      |   27 +++-
- drivers/gpu/drm/i915/i915_irq.c      |   16 +-
- drivers/gpu/drm/i915/i915_reg.h      |    1 +
- drivers/gpu/drm/i915/intel_display.c |  245 +++++++++++++++++++++++++--------
- drivers/gpu/drm/i915/intel_fb.c      |    2 +-
- 8 files changed, 332 insertions(+), 142 deletions(-)
-
---=-=-=
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkt1jGQACgkQHUdvYGzw6vc1eQCfUK7bwdZRpBfYVbZpvKYbsdMY
-nvUAoIvomJKnGXXX3B2GxeUyb025e+ry
-=nHyZ
------END PGP SIGNATURE-----
---=-=-=--
+I just did a login with one iscsi session and got the lockdep warning. 
+So I will do some more digging into what is going on.
