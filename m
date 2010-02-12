@@ -1,136 +1,81 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756919Ab0BLOBv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 09:01:51 -0500
-Received: from poutre.nerim.net ([62.4.16.124]:61787 "EHLO poutre.nerim.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756869Ab0BLOBo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 09:01:44 -0500
-Date: Fri, 12 Feb 2010 15:01:37 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: "J.H." <warthog9@kernel.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, mirrors@kernel.org,
-       users@kernel.org, "FTPAdmin Kernel.org" <ftpadmin@kernel.org>,
-       lasse.collin@tukaani.org
-Subject: Re: [kernel.org users] XZ Migration discussion
-Message-ID: <20100212150137.648dca7c@hyperion.delvare>
-In-Reply-To: <4B744E13.8040004@kernel.org>
-References: <4B744E13.8040004@kernel.org>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+	id S1756836Ab0BLOD3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 09:03:29 -0500
+Received: from he.sipsolutions.net ([78.46.109.217]:58616 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756175Ab0BLOD1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Feb 2010 09:03:27 -0500
+Subject: Re: [PATCH] nl80211: does not allow NEW_STATION and DEL_STATION
+ for mesh
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+Cc: linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Simon Raffeiner <sturmflut@lieberbiber.de>,
+       Andrey Yurovsky <andrey@cozybit.com>,
+       Javier Cardona <javier@cozybit.com>
+In-Reply-To: <20100212135535.GA1123@holoscopio.com>
+References: <1265978241-1601-1-git-send-email-cascardo@holoscopio.com>
+	 <1265978993.15701.0.camel@jlt3.sipsolutions.net>
+	 <20100212135535.GA1123@holoscopio.com>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-yTlN8a5gyYBjmZyr+faU"
+Date: Fri, 12 Feb 2010 15:03:24 +0100
+Message-ID: <1265983404.18938.0.camel@jlt3.sipsolutions.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.29.3.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 11 Feb 2010 10:36:03 -0800, J.H. wrote:
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
-> 
-> Hey Everyone,
-> 
-> So as the subject states this is more a centralized discussion on
-> migration plans to using and providing xz for content on kernel.org.
-> Currently we provide gz and bz2, with gz acting as the original content
-> and kernel.org itself generating the resulting bz2 files.  There are a
-> couple of possible proposals and wanted to toss them out there, and get
-> feedback from everyone: the kernel community, the mirrors of kernel.org
-> and the direct users of kernel.org.
 
-Don't you have download statistics available? If we knew which
-compression format is preferred, an by which margin, it would help make
-an educated decision.
+--=-yTlN8a5gyYBjmZyr+faU
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-> ========================================================================
-> 
-> Option 1)
-> 
-> Leave gz as the master, and migrate bz2 to xz.  This will happen in
-> stages obviously. with bz2 ultimately being phased out.
-> 
-> 	Migration option 1)
-> 
-> 		All new content would be provided in .bz2 and .xz with
-> 		an ultimate date set that the .bz2 files would stop
-> 		being generated with new content.  This would leave all
-> 		existing content alone and it would not be a migration
-> 		of the current .bz2 files to xz
-> 
-> 	Migration option 2)
-> 
-> 		At some point there would be a mass conversion of all
-> 		existing content to include .bz2 and .xz.  These would
-> 		be run in parallel for a time period until it was
-> 		determined that .bz2 was no longer needed and it would
-> 		be removed from the servers leaving .gz and .xz
-> 
-> Option 2)
-> 
-> Convert the master data from gz to bz2 and use xz as the new file
-> format.  This has the downside of causing more tool churn as it means
-> the kernel developers will have to eventually convert from gz to bz2,
-> which means for a time there will be nag e-mails if you upload gz
-> instead of bz2 and such.  It would also mean that we (kernel.org) would
-> need to be able to support .gz and .bz2 as master data for a time.
-> 
-> Migration options are identical to Option 1 more or less, with either
-> just new content getting converted, or all content getting converted.
-> 
-> ========================================================================
-> 
-> I'm personally leaning towards option 1, though personally don't really
-> have a preference on the migration options, as both obviously offer
-> different advantages, and again this e-mail is more to spur on the
-> discussion and come to some general consensus across all of the groups
-> concerned before moving forward with a more specific plan.
-> 
-> So I'm inviting discussion, questions and comments on this so we know
-> which way to ultimately go.
+On Fri, 2010-02-12 at 11:55 -0200, Thadeu Lima de Souza Cascardo wrote:
 
-Maybe that's just me, but my main concern is neither download times nor
-decompression times. My main concern is the access time to directory
-indexes when browsing the kernel archive, because there are 5 entries
-for every patch or tarball: .bz2, .bz2.sign, .gz, .gz.sign and .sign.
-This is horribly slow. The main directory for 2.6 kernels has an index
-weighting over 300 kB raw, turning into a ~600 kB document when
-HTML-ized. Just fetching it takes 3 seconds and then my browser takes a
-long time to format it. There are 3881 entries in that directory today,
-and it keeps growing!
+> Sorry. This code has obviously given me an oops. I did it in a hurry
+> and
+> thought that was a good optimization to get out as early as possible
+> in
+> the case the device was not in AP mode.
 
-So, once we have settled for a compression strategy, I think it would
-be the right time to discuss the directory structure. With the advent
-of the stable branches and the new development model - which pretty
-much implies that we'll live with main version 2.6 forever - the file
-count is much higher than it used to me.
+Which device, at that point :)
 
-I can think of several ways to improve the situation here, some of
-which could be combined.
+> I have fixed it, but I would like to do a more thorough test now to
+> make
+> up for my mistake.
+>=20
+> So, is there any test tool around? I am playing with iw code to do
+> these tests. Any recommendations for the values of listen interval and
+> the acceptable values for supported rates and aid?
 
-1* Keep a single compression format. This saves almost 40% of the
-files.
+I guess just using hostapd and connecting to it once would be a good
+test for that code path, but the rest _looked_ fine to me.
 
-2* Move one of the compression formats somewhere else, so that it
-doesn't get in the way but is still available if needed.
+johannes
 
-3* Create a new subdirectory for every 2.6.x kernel, and move all the
-related files there. This would shrink the main index drastically, and
-each subdirectory would have a reasonable size (except maybe 2.6.16 and
-2.6.27.) Oddly enough this has been done for the files under testing/
-already, so I am curious why we don't do it for the release files (and
-the testing/incr/ files, while we're at it.)
+--=-yTlN8a5gyYBjmZyr+faU
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
-4* Get rid of the LATEST-IS-* files. This is a small count, won't save
-much, but these files seem totally useless to me these days. Depending
-on what you want exactly, there are many versions which can be
-considered the latest, and there are better ways to know which they are
-(for example http://www.eu.kernel.org/kdist/finger_banner ). And these
-files tend to get stuck so you can't rely on them anyway.
+-----BEGIN PGP SIGNATURE-----
 
-I wouldn't worry too much about breaking the current locations. Just
-give some time for software authors (ketchup comes to mind) to update
-their code and it shouldn't be a big problem.
+iQIcBAABAgAGBQJLdV+pAAoJEODzc/N7+QmarAkQAJTofwuvGcauTKEs1UD8xWvg
+v3boQBJAY4cnjAf9uSlf9aEn7YxjBxvJ7pbfadtC9Ai+K1mIVSpWV4LY5cM6f026
+YcId9Affd7zykS2/0JtZ2fV0KAG06y0HjfjkJElOADfTwirqK1lOpUhUrCGA/lgY
+8kimWnjGrSONLWwB6T5XmOEp9GqVKM0FnB9M1Koknia7BtpeNC1JajcLsUlY+WPw
+svEHZQIlrZPKuP0oRwRSd2rW3DOGF9k0JNe1V3XAYPpfsMGQpAvgAfHcud8H4XTG
+wfP2pA6Mxh4Tt6JGRyCxS2t3/o7oYFrrkpTQE5mgfTzMaG3ZNxNjEIU5dYr+cvOk
+wo+mPUcLcjgcQtjbycFimf9CGuNyoBh8+aEC4fqRdek4oMfTaO2/3XBvFCGr9i/k
+uOPq330wiLI2DE2iPtBbnZ/lefQz+8dX6SzgTORjAKm/KpBcZ5MSsN2yMiealutH
+E3dVmfg/cZc8Gt/3/kb3sQQ1Y7mNUpQ7GbbTd5CL8C2mreQ2Omz1DNV73yZ81qHk
+L2Pg6nnblem49YGXnFD0RTqDAmyEVcEJ9NBXvKRlVA8sdF3/qVOZFZ26Hxsx7Q6k
+qSsqFAIqbq3j0tj8TWxIB01lO4YQIizukgzp3Hn5GhUSt8S2L+8qlJhUKcIYznoP
+NwFpsY71A6/EMgQhdj0V
+=jwGV
+-----END PGP SIGNATURE-----
 
-Thanks,
--- 
-Jean Delvare
+--=-yTlN8a5gyYBjmZyr+faU--
+
