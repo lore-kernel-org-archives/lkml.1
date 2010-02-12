@@ -1,91 +1,105 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752811Ab0BLMt7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 07:49:59 -0500
-Received: from he.sipsolutions.net ([78.46.109.217]:35222 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751088Ab0BLMt5 (ORCPT
+	id S1753062Ab0BLMvj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 07:51:39 -0500
+Received: from mail.infogears.com ([69.51.90.143]:44858 "EHLO
+	mail.infogears.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751088Ab0BLMvi convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 07:49:57 -0500
-Subject: Re: [PATCH] nl80211: does not allow NEW_STATION and DEL_STATION
- for mesh
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-Cc: linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Simon Raffeiner <sturmflut@lieberbiber.de>,
-       Andrey Yurovsky <andrey@cozybit.com>,
-       Javier Cardona <javier@cozybit.com>
-In-Reply-To: <1265978241-1601-1-git-send-email-cascardo@holoscopio.com>
-References: <1265978241-1601-1-git-send-email-cascardo@holoscopio.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-3wVqaaHbXD/05HssIm7p"
-Date: Fri, 12 Feb 2010 13:49:53 +0100
-Message-ID: <1265978993.15701.0.camel@jlt3.sipsolutions.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.29.3.2 
+	Fri, 12 Feb 2010 07:51:38 -0500
+Content-Type: text/plain; charset=us-ascii
+Mime-Version: 1.0 (Apple Message framework v1077)
+Subject: Re: OOPS BUG at fs/ext4/inode.c:1853
+From: Rusty Conover <rconover@infogears.com>
+In-Reply-To: <D4C80345-358A-4065-9591-2B25F1E5C71E@infogears.com>
+Date: Fri, 12 Feb 2010 07:51:34 -0500
+Content-Transfer-Encoding: 8BIT
+Message-Id: <472BEE5F-AAA3-49F3-8D78-77D4A1A5873A@infogears.com>
+References: <7897FA4C-4600-4872-A003-BBB6B099785D@infogears.com> <20100203025422.GC16384@thunk.org> <D4C80345-358A-4065-9591-2B25F1E5C71E@infogears.com>
+To: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+X-Mailer: Apple Mail (2.1077)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-3wVqaaHbXD/05HssIm7p
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+>> On Tue, Feb 02, 2010 at 08:25:44PM -0500, Rusty Conover wrote:
+>>> Hi,
+>>> 
+>>> Here is a kernel oops using the latest fedora 12 kernel.  Machine is
+>>> a Intel(R) Xeon(R) CPU E5430 @ 2.66GHz, running in 32bit mode,
+>>> normal SATA disks.  Filesystem was created in fedora 10, and machine
+>>> upgraded via yum to Fedora 12.  Is reproducible using "stress-1.0.2"
+>>> from http://weather.ou.edu/~apw/projects/stress/
+>> 
+>> Thanks for the bug report!
+> 
 
-On Fri, 2010-02-12 at 10:37 -0200, Thadeu Lima de Souza Cascardo wrote:
-> As discussed in linux-wireless mailint list, adding and removing
-> stations for mesh topologies is not necessary. Since doing it triggers
-> bugs, the sugestion was to simply disable it.
->=20
-> Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-> Cc: Johannes Berg <johannes@sipsolutions.net>
-> Cc: Simon Raffeiner <sturmflut@lieberbiber.de>
-> Cc: Andrey Yurovsky <andrey@cozybit.com>
-> Cc: Javier Cardona <javier@cozybit.com>
-> ---
->  net/wireless/nl80211.c |   47
-> +++++++++++------------------------------------
->  1 files changed, 11 insertions(+), 36 deletions(-)
->=20
-> diff --git a/net/wireless/nl80211.c b/net/wireless/nl80211.c
-> index 5b79ecf..176b8fe 100644
-> --- a/net/wireless/nl80211.c
-> +++ b/net/wireless/nl80211.c
-> @@ -2001,6 +2001,10 @@ static int nl80211_new_station(struct sk_buff
-> *skb, struct genl_info *info)
-> =20
->  	memset(&params, 0, sizeof(params));
-> =20
-> +	if (dev->ieee80211_ptr->iftype !=3D NL80211_IFTYPE_AP &&
-> +	    dev->ieee80211_ptr->iftype !=3D NL80211_IFTYPE_AP_VLAN)
-> +		return -EINVAL;
-> +
->  	if (!info->attrs[NL80211_ATTR_MAC])
->  		return -EINVAL;
 
-You clearly didn't ever try this code.
+Hi All,
 
-johannes
+We did a full raid resync, with e2fsck and was still able to get another OOPS after about a week of running "stress".
 
---=-3wVqaaHbXD/05HssIm7p
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+Unfortunately this report didn't get everything, but hopefully its still helpful.
 
------BEGIN PGP SIGNATURE-----
+The kernel version is the same as Fedora 12 hasn't yet released an update.
 
-iQIcBAABAgAGBQJLdU5tAAoJEODzc/N7+QmaqgEP/Am0ArPMTyGOmH8vEv5n/p2S
-eXFyHL389BgbiLvfgrmdBiY6lqTU8vaMlUD0gCJlPurPOMTgPMdQeRPD004KDjj4
-0mmf7zHMZh+4cVTY+Uip5DBhUlzIIXGTZSTmB5nSxbU9I452LFcp59Szc9L/rIk6
-ilWzhvtJf/bgzGngal3DM21RtU/CBZtRoa97Smw+8tGBRLWeIJ9Rm4uie73DD2Nn
-rUk9+8gvZN7WSjzSDv0lVbw+6WjovsBPeUvlMiaMaVh9XUIN0isiq+q6wthAdBEe
-m/1M0izbyyc5vQLXrfrj5mXO4huz206J3tDMHFfcEuSPaeRL9xFr8tJhTMduVIBs
-yrsLXtKjBNOWiknO5372l771AGdj4+yRRFlfjOyR6Spum/tVI9iF/k6puFX5xBaB
-0MCCcQMBntfCOWEi7mRKoUdcoguZiSykNbsSx5Vf+VgIqWhpCjbiTFQ1ym2xsmzh
-01G7JBjXR7gz4qyguK+lLCihfzpWcEA05XTTJ7DQggQ7plBv5YunjL9SSP06tAMh
-zupnl3FwXvnYzhz+uyL+wmXuiGfb7jGgLEKziredg8YK+fQPlnca52ewFLDvPqr+
-9N7iD8V0tfsFRpH5/bZ5VY6rSjvnCXpsg62bwv5RewWcKG8axZ1nM5RIibtXOHCV
-8+g4O9H9ILHwH1YfSfr4
-=0dmA
------END PGP SIGNATURE-----
+Thanks,
 
---=-3wVqaaHbXD/05HssIm7p--
+Rusty
+
+
+------------[ cut here ]------------ 
+invalid opcode: 0000 [#1] SMP 
+last sysfs file: /sys/devices/pci0000:00/0000:00:1f.3/i2c-adapter/i2c-0/0-002f/beep_enable 
+Process stress (pid: 15814, ti=e8a16000 task=e99a0cc0 task.ti=e8a16000) 
+Stack: 
+Call Trace: 
+ESI: 00000000 EDI: f0bef6a0 EBP: e8a17c90 ESP: e8a17c58 
+DS: 007b ES: 007b FS: 00d8 GS: 00e0 SS: 0068 
+Process stress (pid: 15814, ti=e8a16000 task=e99a0cc0 task.ti=e8a16000) 
+Stack: 
+d5d747c0 d5d747c0 f6796c00 ffff0000 ffffffff 00000000 f0bef8dc f0bef6a0 
+<0> 00000000 f0bef728 00000000 00018904 00000000 c8df8280 e8a17ce0 c04e4b1a 
+<0> d5d747c0 00000001 e8a17cd4 d5d747c0 f0bef728 00001000 00000000 00000000 
+Call Trace: 
+[<c04e4b1a>] ? __block_prepare_write+0x11b/0x26d 
+[<c04e4de0>] ? block_write_begin+0x73/0xd8 
+[<c0527986>] ? ext4_da_get_block_prep+0x0/0x246 
+[<c049bc1f>] ? add_to_page_cache_lru+0x4f/0x58 
+[<c05276d1>] ? ext4_da_write_begin+0x1c8/0x252 
+[<c0527986>] ? ext4_da_get_block_prep+0x0/0x246 
+[<c049c497>] ? generic_file_buffered_write+0xd4/0x263 
+[<c049ca64>] ? __generic_file_aio_write_nolock+0x258/0x289 
+[<c049cd5e>] ? generic_file_aio_write+0x5f/0xb0 
+[<c051f809>] ? ext4_file_write+0xa3/0x11a 
+[<c04c8ae1>] ? do_sync_write+0xae/0xe9 
+[<c056f065>] ? file_has_perm+0x89/0xa3 
+[<c0450db9>] ? autoremove_wake_function+0x0/0x34 
+[<c056f355>] ? selinux_file_permission+0x49/0x4d 
+[<c056867f>] ? security_file_permission+0x14/0x16 
+[<c04c8ca2>] ? rw_verify_area+0x9d/0xc0 
+[<c04c8a33>] ? do_sync_write+0x0/0xe9 
+[<c04c907c>] ? vfs_write+0x85/0xe4 
+[<c04cf7ee>] ? path_put+0x1a/0x1d 
+[<c04c9179>] ? sys_write+0x40/0x62 
+[<c0408fbb>] ? sysenter_do_call+0x12/0x28 
+Code: 00 89 45 e0 8b 45 e0 e8 45 34 25 00 8b 4d e4 8b 45 ec 8b 91 2c 02 00 00 42 e8 7 
+ d0 73 04 <0f> 0b eb fe 29 d0 89 45 dc 8b 45 e0 f0 fe 00 8b 55 ec 31 f6 8b  
+EIP: [<c0527a75>] ext4_da_get_block_prep+0xef/0x246 SS:ESP 0068:e8a17c58 
+---[ end trace 7449c5aa814e4d05 ]---
+
+--
+Rusty Conover
+rconover@infogears.com
+InfoGears Inc / GearBuyer.com / FootwearBuyer.com / BabyGearBuyer.com
+http://www.gearbuyer.com
+http://www.footwearbuyer.com
+http://www.babygearbuyer.com
+
+
+
+
+
+
 
