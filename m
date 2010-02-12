@@ -1,122 +1,72 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756979Ab0BLSyk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 13:54:40 -0500
-Received: from casper.infradead.org ([85.118.1.10]:51418 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756719Ab0BLSyj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 13:54:39 -0500
-Date: Fri, 12 Feb 2010 16:53:58 -0200
-From: Arnaldo Carvalho de Melo <acme@infradead.org>
-To: Kirill Smelkov <kirr@landau.phys.spbu.ru>
-Cc: mingo@redhat.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
-       hpa@zytor.com, efault@gmx.de, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:perf/core] perf top: Fix annotate for userspace
-Message-ID: <20100212185358.GD8589@ghostprotocols.net>
-References: <1265550376-12665-1-git-send-email-acme@infradead.org> <tip-ee11b90b12eb1ec25e1044bac861e90bfd19ec9e@git.kernel.org> <20100212162059.GA30041@landau.phys.spbu.ru>
+	id S1757063Ab0BLSym (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 13:54:42 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:60321 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756991Ab0BLSyl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Feb 2010 13:54:41 -0500
+Date: Fri, 12 Feb 2010 10:47:56 -0800
+From: Greg KH <gregkh@suse.de>
+To: Hank Janssen <hjanssen@microsoft.com>
+Cc: "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+       "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>,
+       Haiyang Zhang <haiyangz@microsoft.com>
+Subject: Re: [PATCH 1/1] Staging: hv: Add proper versioning to HV
+ drivers-Corrected.
+Message-ID: <20100212184756.GA14751@suse.de>
+References: <8AFC7968D54FB448A30D8F38F259C56212E883CB@TK5EX14MBXC118.redmond.corp.microsoft.com>
+ <20100211233612.GB10315@suse.de>
+ <8AFC7968D54FB448A30D8F38F259C56212E88B0F@TK5EX14MBXC118.redmond.corp.microsoft.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100212162059.GA30041@landau.phys.spbu.ru>
-X-Url: http://acmel.wordpress.com
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <8AFC7968D54FB448A30D8F38F259C56212E88B0F@TK5EX14MBXC118.redmond.corp.microsoft.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Fri, Feb 12, 2010 at 07:20:59PM +0300, Kirill Smelkov escreveu:
-> On Sun, Feb 07, 2010 at 04:33:40PM +0000, tip-bot for Kirill Smelkov wrote:
-> > Commit-ID:  ee11b90b12eb1ec25e1044bac861e90bfd19ec9e
-> > Gitweb:     http://git.kernel.org/tip/ee11b90b12eb1ec25e1044bac861e90bfd19ec9e
-> > Author:     Kirill Smelkov <kirr@landau.phys.spbu.ru>
-> > AuthorDate: Sun, 7 Feb 2010 11:46:15 -0200
-> > Committer:  Ingo Molnar <mingo@elte.hu>
-> > CommitDate: Sun, 7 Feb 2010 17:30:20 +0100
+On Fri, Feb 12, 2010 at 05:55:34PM +0000, Hank Janssen wrote:
+> 
+> > >
+> > >  drivers/staging/hv/VersionInfo.h |   22 +++++++++++++++++++---
 > > 
-> > perf top: Fix annotate for userspace
+> > You forgot a "---" between the signed-off-by and the diffstat.  If you
+> > use either git or quilt, it will get this correct automagically.  That
+> > infers you used something else, which is quite scary.  What are you
+> > using instead to create patches?
+> > 
+> > Don't worry, I can edit this by hand when I apply it, and will do so in
+> > a few days when I get to my "to-apply" queue, but in the future, please
+> > don't do this.
+> > 
+> > thanks,
+> > 
+> > greg k-h
 > 
-> [...]
+> This must have been the result of a cut/paste error on my side.
 > 
-> Arnaldo, Ingo, thanks for finally applying it
-> 
->   ( though shouldn't, AuthorDate be ``Fri,  8 Jan 2010 15:23:08 +0300'',
->     just like in my post for this patch
->     http://marc.info/?l=linux-kernel&m=126295508002536&w=2 ?)
-> 
-> ----
-> 
-> Also, could you please apply one last cosmetic patch from my original
-> series
-> 
-> http://marc.info/?l=linux-kernel&m=126295502702502&w=2
-> 
-> 
-> That would logically complete my holiday journey to perf land.
-> 
-> 
-> For convenience I'm providing this one last patch here (applies to
-> tip/master cleanly).
+> I use the following command for my diff   'git diff -M -u --stat'
 
-Ingo, you may take this one now or wait till my next series, your
-choice,
+What's wrong with 'git format-patch'?
 
-Acked-by: Arnaldo Carvalho de Melo <acme@redhat.com>
- 
-> Thanks beforehand,
-> Kirill
-> 
-> 
-> From: Kirill Smelkov <kirr@landau.phys.spbu.ru>
-> Subject: [PATCH 2/6] perf top: align help text on keys
-> Date: Fri,  8 Jan 2010 15:23:05 +0300
-> 
-> Mapped keys:
->         [d]     display refresh delay.                  (2)
->         [e]     display entries (lines).                (46)
->         [f]     profile display filter (count).         (5)
->         [F]     annotate display filter (percent).      (5%)
->         [s]     annotate symbol.                        (NULL)
->         [S]     stop annotation.
->         [K]     hide kernel_symbols symbols.            (no)
->         [U]     hide user symbols.                      (no)
->         [z]     toggle sample zeroing.                  (0)
->         [qQ]    quit.
-> 
-> instead of
-> 
-> Mapped keys:
->         [d]     display refresh delay.                  (2)
->         [e]     display entries (lines).                (46)
->         [f]     profile display filter (count).         (5)
->         [F]     annotate display filter (percent).      (5%)
->         [s]     annotate symbol.                        (NULL)
->         [S]     stop annotation.
->         [K]     hide kernel_symbols symbols.                    (no)
->         [U]     hide user symbols.                      (no)
->         [z]     toggle sample zeroing.                  (0)
->         [qQ]    quit.
-> 
-> Signed-off-by: Kirill Smelkov <kirr@landau.phys.spbu.ru>
-> ---
->  tools/perf/builtin-top.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/tools/perf/builtin-top.c b/tools/perf/builtin-top.c
-> index 9c7de93..9dc8070 100644
-> --- a/tools/perf/builtin-top.c
-> +++ b/tools/perf/builtin-top.c
-> @@ -704,7 +704,7 @@ static void print_mapped_keys(void)
->  		fprintf(stdout, "\t[w]     toggle display weighted/count[E]r. \t(%d)\n", display_weighted ? 1 : 0);
->  
->  	fprintf(stdout,
-> -		"\t[K]     hide kernel_symbols symbols.             \t(%s)\n",
-> +		"\t[K]     hide kernel_symbols symbols.     \t(%s)\n",
->  		hide_kernel_symbols ? "yes" : "no");
->  	fprintf(stdout,
->  		"\t[U]     hide user symbols.               \t(%s)\n",
-> -- 
-> 1.6.6.79.gd514e.dirty
+You are creating a "raw" diff, which is fine, but you then need to
+include the rest of the comments.  If you commit the patch to a branch,
+with the comments in them, then you can just automatically create the
+patches in correct format.
+
+> Btw, it was my understanding that the -M flag allows tracking of renamed 
+> files as well as part of the diff output. (git mv) But my diff command 
+> does not report on those.  Am I doing something wrong?
+
+You aren't renaming anything :)
+
+Also, don't do that for patches you send through emails, quilt can not
+handle them properly, which is what I require for the patches sent to
+me.  When I queue them up to Linus, git properly figures out renames and
+the like, so you don't need to worry about that.
+
+thanks,
+
+greg k-h
