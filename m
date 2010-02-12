@@ -1,69 +1,164 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757858Ab0BLWjj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 17:39:39 -0500
-Received: from mail.windriver.com ([147.11.1.11]:44554 "EHLO
+	id S932197Ab0BLWjU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 17:39:20 -0500
+Received: from mail.windriver.com ([147.11.1.11]:44128 "EHLO
 	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755813Ab0BLWjf (ORCPT
+	with ESMTP id S1757664Ab0BLWge (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 17:39:35 -0500
+	Fri, 12 Feb 2010 17:36:34 -0500
 From: Jason Wessel <jason.wessel@windriver.com>
 To: linux-kernel@vger.kernel.org
-Cc: kgdb-bugreport@lists.sourceforge.net, mingo@elte.hu
-Subject: [PATCH 0/7] kms + kgdb & kdb proposed merge for 2.6.34
-Date: Fri, 12 Feb 2010 16:36:21 -0600
-Message-Id: <1266014188-29505-1-git-send-email-jason.wessel@windriver.com>
+Cc: kgdb-bugreport@lists.sourceforge.net, mingo@elte.hu,
+       Jason Wessel <jason.wessel@windriver.com>
+Subject: [PATCH 13/28] kgdb: gdb "monitor" -> kdb passthrough
+Date: Fri, 12 Feb 2010 16:35:28 -0600
+Message-Id: <1266014143-29444-14-git-send-email-jason.wessel@windriver.com>
 X-Mailer: git-send-email 1.6.4.rc1
-X-OriginalArrivalTime: 12 Feb 2010 22:39:22.0924 (UTC) FILETIME=[391206C0:01CAAC34]
+In-Reply-To: <1266014143-29444-1-git-send-email-jason.wessel@windriver.com>
+References: <1266014143-29444-1-git-send-email-jason.wessel@windriver.com>
+X-OriginalArrivalTime: 12 Feb 2010 22:36:14.0973 (UTC) FILETIME=[C90AFAD0:01CAAC33]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patch set 2 of 3 - The kdb / kgdb merge
+One of the driving forces behind integrating another front end (kdb)
+to the debug core is to allow front end commands to be accessible via
+gdb's monitor command.  It is true that you could write gdb macros to
+get certain data, but you may want to just use gdb to access the
+commands that are available in the kdb front end.
 
-This patch set stacks on top of the kgdb / kdb patches and focuses on
-further extending kdb to accommodate atomic kernel mode setting (kms).
+This patch implements the Rcmd gdb stub packet.  In gdb you access
+this with the "monitor" command.  For instance you could type "monitor
+help", "monitor lsmod" or "monitor ps A" etc...
 
-At the moment only the Intel i915 class video devices are supported,
-but the API is generic and would allow for other kms based drivers to
-enable atomic mode setting.
+There is no error checking or command restrictions on what you can and
+cannot access at this point.  Doing something like trying to set
+breakpoints with the monitor command is going to cause nothing but
+problems.  Perhaps in the future only the commands that are actually
+known to work with the gdb monitor command will be available.
 
-The final patch in the series would be omitted from any pull request
-as it is still a work in progress, showing the remaining points that do
-not have a safe mechanism to work atomically to change the display
-context in order to view the kernel debugger shell.  At least it
-provides a nice proof of concept.
-
-You can find the development branch for this here:
-
-http://git.kernel.org/?p=linux/kernel/git/jwessel/linux-2.6-kgdb.git;a=shortlog;h=kms-merge
-
-Thanks,
-Jason.
-
+Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
 ---
-Jason Wessel (6):
-      kgdboc,debug_core: Add call backs to allow kernel mode switching
-      kms,kdb: Force unblank a console device
-      i915: when kgdb is active display compression should be off
-      drm_fb_helper: Preserve capability to use atomic kms
-      kgdb,docs: Update the kgdb docs to include kms
-      RFC,HACK,EXPERIMENTAL,drm,i915 - atomic mutex HACKS
+ kernel/debug/debug_core.c      |    2 +-
+ kernel/debug/debug_core.h      |    2 ++
+ kernel/debug/gdbstub.c         |   22 ++++++++++++++++++++++
+ kernel/debug/kdb/kdb_io.c      |   13 +++++++++----
+ kernel/debug/kdb/kdb_private.h |    1 -
+ 5 files changed, 34 insertions(+), 6 deletions(-)
 
-Jesse Barnes (1):
-      drm: add KGDB/KDB support Add support for KDB entry/exit.
+diff --git a/kernel/debug/debug_core.c b/kernel/debug/debug_core.c
+index 5bd2670..dbf81aa 100644
+--- a/kernel/debug/debug_core.c
++++ b/kernel/debug/debug_core.c
+@@ -82,7 +82,7 @@ static int kgdb_use_con;
+ int dbg_switch_cpu;
+ 
+ /* Use kdb or gdbserver mode */
+-static int dbg_kdb_mode = 1;
++int dbg_kdb_mode = 1;
+ 
+ static int __init opt_kgdb_con(char *str)
+ {
+diff --git a/kernel/debug/debug_core.h b/kernel/debug/debug_core.h
+index a7051fa..888cc4e 100644
+--- a/kernel/debug/debug_core.h
++++ b/kernel/debug/debug_core.h
+@@ -66,9 +66,11 @@ extern void gdbstub_msg_write(const char *s, int len);
+ 
+ /* gdbstub functions used for kdb <-> gdbstub transition */
+ extern int gdbstub_state(struct kgdb_state *ks, char *cmd);
++extern int dbg_kdb_mode;
+ 
+ #ifdef CONFIG_KGDB_KDB
+ extern int kdb_stub(struct kgdb_state *ks);
++extern int kdb_parse(const char *cmdstr);
+ #else /* ! CONFIG_KGDB_KDB */
+ static inline int kdb_stub(struct kgdb_state *ks)
+ {
+diff --git a/kernel/debug/gdbstub.c b/kernel/debug/gdbstub.c
+index 6965b5c..cee2c0e 100644
+--- a/kernel/debug/gdbstub.c
++++ b/kernel/debug/gdbstub.c
+@@ -201,6 +201,9 @@ void gdbstub_msg_write(const char *s, int len)
+ 	int wcount;
+ 	int i;
+ 
++	if (len == 0)
++		len = strlen(s);
++
+ 	/* 'O'utput */
+ 	gdbmsgbuf[0] = 'O';
+ 
+@@ -690,6 +693,25 @@ static void gdb_cmd_query(struct kgdb_state *ks)
+ 			kgdb_mem2hex(tmpstr, remcom_out_buffer, strlen(tmpstr));
+ 		}
+ 		break;
++#ifdef CONFIG_KGDB_KDB
++	case 'R':
++		if (strncmp(remcom_in_buffer, "qRcmd,", 6) == 0) {
++			int len = strlen(remcom_in_buffer + 6);
++
++			if ((len % 2) != 0) {
++				strcpy(remcom_out_buffer, "E01");
++				break;
++			}
++			kgdb_hex2mem(remcom_in_buffer + 6,
++				     remcom_out_buffer, len);
++			len = len / 2;
++			remcom_out_buffer[len++] = 0;
++
++			kdb_parse(remcom_out_buffer);
++			strcpy(remcom_out_buffer, "OK");
++		}
++		break;
++#endif
+ 	}
+ }
+ 
+diff --git a/kernel/debug/kdb/kdb_io.c b/kernel/debug/kdb/kdb_io.c
+index 9e3cec7..8339b29 100644
+--- a/kernel/debug/kdb/kdb_io.c
++++ b/kernel/debug/kdb/kdb_io.c
+@@ -21,6 +21,7 @@
+ #include <linux/smp.h>
+ #include <linux/nmi.h>
+ #include <linux/delay.h>
++#include <linux/kgdb.h>
+ #include <linux/kdb.h>
+ #include <linux/kallsyms.h>
+ #include "kdb_private.h"
+@@ -669,10 +670,14 @@ kdb_printit:
+ 	 * Write to all consoles.
+ 	 */
+ 	retlen = strlen(kdb_buffer);
+-	while (c) {
+-		c->write(c, kdb_buffer, retlen);
+-		touch_nmi_watchdog();
+-		c = c->next;
++	if (!dbg_kdb_mode && kgdb_connected) {
++		gdbstub_msg_write(kdb_buffer, retlen);
++	} else {
++		while (c) {
++			c->write(c, kdb_buffer, retlen);
++			touch_nmi_watchdog();
++			c = c->next;
++		}
+ 	}
+ 	if (logging) {
+ 		saved_loglevel = console_loglevel;
+diff --git a/kernel/debug/kdb/kdb_private.h b/kernel/debug/kdb/kdb_private.h
+index 5183b69..42af29b 100644
+--- a/kernel/debug/kdb/kdb_private.h
++++ b/kernel/debug/kdb/kdb_private.h
+@@ -254,7 +254,6 @@ extern unsigned long kdb_task_state(const struct task_struct *p,
+ 				    unsigned long mask);
+ extern void kdb_ps_suppressed(void);
+ extern void kdb_ps1(const struct task_struct *p);
+-extern int kdb_parse(const char *cmdstr);
+ extern void kdb_print_nameval(const char *name, unsigned long val);
+ extern void kdb_send_sig_info(struct task_struct *p, struct siginfo *info);
+ extern void kdb_meminfo_proc_show(void);
+-- 
+1.6.4.rc1
 
- Documentation/DocBook/kgdb.tmpl      |   82 ++++++++++++++++++++++---
- Documentation/kernel-parameters.txt  |    9 ++-
- drivers/gpu/drm/drm_fb_helper.c      |   93 +++++++++++++++++++++++++--
- drivers/gpu/drm/i915/intel_display.c |  114 ++++++++++++++++++++++++++++++++--
- drivers/serial/kgdboc.c              |   27 ++++++++
- drivers/video/console/fbcon.c        |    7 ++
- include/drm/drm_crtc_helper.h        |    2 +
- include/drm/drm_fb_helper.h          |    4 +
- include/linux/kgdb.h                 |   38 +++++++++++
- kernel/debug/Makefile                |    1 +
- kernel/debug/debug_core.c            |   23 +++++++
- kernel/debug/kms_hooks.c             |   62 ++++++++++++++++++
- 12 files changed, 438 insertions(+), 24 deletions(-)
- create mode 100644 kernel/debug/kms_hooks.c
