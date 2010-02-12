@@ -1,79 +1,257 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754146Ab0BLKJ3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 05:09:29 -0500
-Received: from mail.bitdefender.com ([91.199.104.2]:50808 "EHLO
-	mail.bitdefender.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752725Ab0BLKJ1 (ORCPT
+	id S1754254Ab0BLKSP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 05:18:15 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:44912 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753224Ab0BLKSN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 05:09:27 -0500
-X-Greylist: delayed 398 seconds by postgrey-1.27 at vger.kernel.org; Fri, 12 Feb 2010 05:09:26 EST
-From: Mihai =?utf-8?q?Don=C8=9Bu?= <mihai.dontu@gmail.com>
-Organization: Home
-To: "Justin P. Mattock" <justinmattock@gmail.com>
-Subject: Re: [PATCH] Add an Apple iMac9,1 DMI entry to reboot.c so the machine reboot's properly.
-Date: Fri, 12 Feb 2010 12:02:43 +0200
-Cc: "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "Ingo Molnar" <mingo@elte.hu>
-References: <1265484976-13414-1-git-send-email-justinmattock@gmail.com> <4B717980.2030802@gmail.com> <4B751C1A.5020404@gmail.com>
-In-Reply-To: <4B751C1A.5020404@gmail.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Message-Id: <201002121202.44822.mihai.dontu@gmail.com>
-X-BitDefender-Spam: No (0)
-X-BitDefender-SpamStamp: v1, build 2.8.84.85629, bayes score: 500(0),
- pbayes score: 241(0), neunet score: 0(0), flags:
- [NN_S_ENDS_IN_FULLSTOP_BGU; NN_VALID_REPLY;
- NN_LEGIT_SQARE_BRACKETS_SUBJ], SQMD:
- 55ff9da7d25736148733fa1581feb253.fuzzy.fzrbl.org, total: 0(775)
-X-BitDefender-Scanner: Clean, Agent: BitDefender qmail 3.1.0 on
- elfie.dsd.hq, sigver: 7.30341
+	Fri, 12 Feb 2010 05:18:13 -0500
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Liam Girdwood <lrg@slimlogic.co.uk>
+Cc: Mike Rapoport <mike@compulab.co.il>, Grazvydas Ignotas <notasas@gmail.com>,
+       linux-kernel@vger.kernel.org,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: [PATCH] regulator: Provide optional dummy regulator for consumers
+Date: Fri, 12 Feb 2010 10:18:08 +0000
+Message-Id: <1265969888-16946-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-Mailer: git-send-email 1.6.6.1
+In-Reply-To: <1265918499-9583-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+References: <1265918499-9583-1-git-send-email-broonie@opensource.wolfsonmicro.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 12 February 2010 11:15:06 Justin P. Mattock wrote:
-> On 02/09/10 07:04, Justin P. Mattock wrote:
-> > Whats the status if this patch?
-> > 
-> > > On the iMac9,1 sudo /sbin/reboot results in
-> > > a black screen. Adding this DMI entry gets the
-> > > machine to reboot cleanly as it should.
-> > > 
-> > > 
-> > > Signed-off-by: Justin P. Mattock<justinmattock@gmail.com>
-> > > ---
-> > > arch/x86/kernel/reboot.c | 8 ++++++++
-> > > 1 files changed, 8 insertions(+), 0 deletions(-)
-> > > 
-> > > diff --git a/arch/x86/kernel/reboot.c b/arch/x86/kernel/reboot.c
-> > > index 704bddc..2de6645 100644
-> > > --- a/arch/x86/kernel/reboot.c
-> > > +++ b/arch/x86/kernel/reboot.c
-> > > @@ -461,6 +461,14 @@ static struct dmi_system_id __initdata
-> > > pci_reboot_dmi_table[] = {
-> > > DMI_MATCH(DMI_PRODUCT_NAME, "Macmini3,1"),
-> > > },
-> > > },
-> > > + { /* Handle problems with rebooting on Apple iMac9,1 */
-> > > + .callback = set_pci_reboot,
-> > > + .ident = "Apple iMac9,1",
-> > > + .matches = {
-> > > + DMI_MATCH(DMI_SYS_VENDOR, "Apple Inc."),
-> > > + DMI_MATCH(DMI_PRODUCT_NAME, "iMac9,1"),
-> > > + },
-> > > + },
-> > > { }
-> > > };
-> 
-> so what do I have todo file a bugreport against this
-> to get a response from you people?
+In order to ease transitions with drivers are boards start using regulators
+provide an option to cause all regulator_get() calls to succeed, with a
+dummy always on regulator being supplied where one has not been configured.
+A warning is printed whenever the dummy regulator is used to aid system
+development.
 
-Looking at Linus' git tree, it would seem that Ingo Molnar is the "entry 
-point" for the patches in arch/x86/kernel/reboot.c. Maybe you should try CC-
-ing him?
+This regulator does not implement any regulator operations but will allow
+simple consumers which only do enable() and disable() calls to run. It
+is kept separate from the fixed voltage regulator to avoid Kconfig
+confusion on the part of users when it is extended to allow boards to
+explicitly use the dummy regulator to simplify cases where the majority
+of supplies are from fixed regulators without software control.
 
+This option is currently only effective for systems which do not specify
+full constriants. If required an override could also be provided to allow
+these systems to use the dummy regulator, though it is likely that
+unconfigured supplies on such systems will lead to error due to
+regulators being powered down more aggressively when not in use.
+
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+---
+
+And if we remember that git doesn't overwrite the patch file before
+sending...
+
+ drivers/regulator/Kconfig  |   11 +++++++
+ drivers/regulator/Makefile |    1 +
+ drivers/regulator/core.c   |   27 +++++++++++++++++-
+ drivers/regulator/dummy.c  |   66 ++++++++++++++++++++++++++++++++++++++++++++
+ drivers/regulator/dummy.h  |   31 ++++++++++++++++++++
+ 5 files changed, 135 insertions(+), 1 deletions(-)
+ create mode 100644 drivers/regulator/dummy.c
+ create mode 100644 drivers/regulator/dummy.h
+
+diff --git a/drivers/regulator/Kconfig b/drivers/regulator/Kconfig
+index 3c07169..834b484 100644
+--- a/drivers/regulator/Kconfig
++++ b/drivers/regulator/Kconfig
+@@ -27,6 +27,17 @@ config REGULATOR_DEBUG
+ 	help
+ 	  Say yes here to enable debugging support.
+ 
++config REGULATOR_DUMMY
++	bool "Provide a dummy regulator if regulator lookups fail"
++	help
++	  If this option is enabled then when a regulator lookup fails
++	  and the board has not specified that it has provided full
++	  constraints then the regulator core will provide an always
++	  enabled dummy regulator will be provided, allowing consumer
++	  drivers to continue.
++
++	  A warning will be generated when this substitution is done.
++
+ config REGULATOR_FIXED_VOLTAGE
+ 	tristate "Fixed voltage regulator support"
+ 	help
+diff --git a/drivers/regulator/Makefile b/drivers/regulator/Makefile
+index 7c59bcb..e845b66 100644
+--- a/drivers/regulator/Makefile
++++ b/drivers/regulator/Makefile
+@@ -9,6 +9,7 @@ obj-$(CONFIG_REGULATOR_VIRTUAL_CONSUMER) += virtual.o
+ obj-$(CONFIG_REGULATOR_USERSPACE_CONSUMER) += userspace-consumer.o
+ 
+ obj-$(CONFIG_REGULATOR_BQ24022) += bq24022.o
++obj-$(CONFIG_REGULATOR_DUMMY) += dummy.o
+ obj-$(CONFIG_REGULATOR_LP3971) += lp3971.o
+ obj-$(CONFIG_REGULATOR_MAX1586) += max1586.o
+ obj-$(CONFIG_REGULATOR_TWL4030) += twl-regulator.o
+diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
+index 75a26f7..c7bbe30 100644
+--- a/drivers/regulator/core.c
++++ b/drivers/regulator/core.c
+@@ -24,6 +24,8 @@
+ #include <linux/regulator/driver.h>
+ #include <linux/regulator/machine.h>
+ 
++#include "dummy.h"
++
+ #define REGULATOR_VERSION "0.5"
+ 
+ static DEFINE_MUTEX(regulator_list_mutex);
+@@ -1123,6 +1125,22 @@ static struct regulator *_regulator_get(struct device *dev, const char *id,
+ 			goto found;
+ 		}
+ 	}
++
++#ifdef CONFIG_REGULATOR_DUMMY
++	if (!devname)
++		devname = "deviceless";
++
++	/* If the board didn't flag that it was fully constrained then
++	 * substitute in a dummy regulator so consumers can continue.
++	 */
++	if (!has_full_constraints) {
++		pr_warning("%s supply %s not found, using dummy regulator\n",
++			   devname, id);
++		rdev = dummy_regulator_rdev;
++		goto found;
++	}
++#endif
++
+ 	mutex_unlock(&regulator_list_mutex);
+ 	return regulator;
+ 
+@@ -2483,8 +2501,15 @@ EXPORT_SYMBOL_GPL(regulator_get_init_drvdata);
+ 
+ static int __init regulator_init(void)
+ {
++	int ret;
++
+ 	printk(KERN_INFO "regulator: core version %s\n", REGULATOR_VERSION);
+-	return class_register(&regulator_class);
++
++	ret = class_register(&regulator_class);
++
++	regulator_dummy_init();
++
++	return ret;
+ }
+ 
+ /* init early to allow our consumers to complete system booting */
+diff --git a/drivers/regulator/dummy.c b/drivers/regulator/dummy.c
+new file mode 100644
+index 0000000..c7410bd
+--- /dev/null
++++ b/drivers/regulator/dummy.c
+@@ -0,0 +1,66 @@
++/*
++ * dummy.c
++ *
++ * Copyright 2010 Wolfson Microelectronics PLC.
++ *
++ * Author: Mark Brown <broonie@opensource.wolfsonmicro.com>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of the
++ * License, or (at your option) any later version.
++ *
++ * This is useful for systems with mixed controllable and
++ * non-controllable regulators, as well as for allowing testing on
++ * systems with no controllable regulators.
++ */
++
++#include <linux/err.h>
++#include <linux/platform_device.h>
++#include <linux/regulator/driver.h>
++#include <linux/regulator/machine.h>
++
++#include "dummy.h"
++
++struct regulator_dev *dummy_regulator_rdev;
++
++static struct regulator_init_data dummy_initdata;
++
++static struct regulator_ops dummy_ops;
++
++static struct regulator_desc dummy_desc = {
++	.name = "dummy",
++	.id = -1,
++	.type = REGULATOR_VOLTAGE,
++	.owner = THIS_MODULE,
++	.ops = &dummy_ops,
++};
++
++static struct platform_device *dummy_pdev;
++
++void __init regulator_dummy_init(void)
++{
++	int ret;
++
++	dummy_pdev = platform_device_alloc("reg-dummy", -1);
++	if (!dummy_pdev) {
++		pr_err("Failed to allocate dummy regulator device\n");
++		return;
++	}
++
++	ret = platform_device_add(dummy_pdev);
++	if (ret != 0) {
++		pr_err("Failed to register dummy regulator device: %d\n", ret);
++		platform_device_put(dummy_pdev);
++		return;
++	}
++
++	dummy_regulator_rdev = regulator_register(&dummy_desc, NULL,
++						  &dummy_initdata, NULL);
++	if (IS_ERR(dummy_regulator_rdev)) {
++		ret = PTR_ERR(dummy_regulator_rdev);
++		pr_err("Failed to register regulator: %d\n", ret);
++		platform_device_unregister(dummy_pdev);
++		return;
++	}
++}
+diff --git a/drivers/regulator/dummy.h b/drivers/regulator/dummy.h
+new file mode 100644
+index 0000000..3921c0e
+--- /dev/null
++++ b/drivers/regulator/dummy.h
+@@ -0,0 +1,31 @@
++/*
++ * dummy.h
++ *
++ * Copyright 2010 Wolfson Microelectronics PLC.
++ *
++ * Author: Mark Brown <broonie@opensource.wolfsonmicro.com>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of the
++ * License, or (at your option) any later version.
++ *
++ * This is useful for systems with mixed controllable and
++ * non-controllable regulators, as well as for allowing testing on
++ * systems with no controllable regulators.
++ */
++
++#ifndef _DUMMY_H
++#define _DUMMY_H
++
++struct regulator_dev;
++
++extern struct regulator_dev *dummy_regulator_rdev;
++
++#ifdef CONFIG_REGULATOR_DUMMY
++void __init regulator_dummy_init(void);
++#else
++static inline void regulator_dummy_init(void) { }
++#endif
++
++#endif
 -- 
-Mihai Donțu
+1.6.6.1
+
