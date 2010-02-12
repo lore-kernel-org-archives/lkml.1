@@ -1,37 +1,48 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756015Ab0BLLcy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 06:32:54 -0500
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:43006 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755168Ab0BLLcx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 06:32:53 -0500
-Date: Fri, 12 Feb 2010 11:32:51 +0000
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Roel Kluin <roel.kluin@gmail.com>
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] regulator/lp3971: vol_map out of bounds in
- lp3971_{ldo,dcdc}_set_voltage()
-Message-ID: <20100212113250.GA19122@rakim.wolfsonmicro.main>
-References: <4B753BCD.8060100@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B753BCD.8060100@gmail.com>
-X-Cookie: Inspired by a true story.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	id S1755168Ab0BLLeo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 06:34:44 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:24663 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751003Ab0BLLem (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Feb 2010 06:34:42 -0500
+Subject: GFS2: Pull request (fixes)
+From: Steven Whitehouse <swhiteho@redhat.com>
+To: torvalds@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
+Content-Type: text/plain; charset="UTF-8"
+Organization: Red Hat UK Ltd
+Date: Fri, 12 Feb 2010 11:37:54 +0000
+Message-ID: <1265974674.2508.2.camel@localhost>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 12, 2010 at 12:30:21PM +0100, Roel Kluin wrote:
-> After `for (val = LDO_VOL_MIN_IDX; val <= LDO_VOL_MAX_IDX; val++)', if no break
-> occurs, val reaches LDO_VOL_MIN_IDX + 1, which is out of bounds for
-> ldo45_voltage_map[] and ldo123_voltage_map[].
-> 
-> Similarly BUCK_TARGET_VOL_MAX_IDX + 1 is out of bounds for buck_voltage_map[].
+Hi,
 
-Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Please consider pulling the following changes,
+
+Steve.
+
+-----------------------------------------------------------------------------
+The following changes since commit 676ad585531e965416fd958747894541dabcec96:
+  Linus Torvalds (1):
+        Merge branch 'for-linus' of git://git.kernel.org/.../bp/bp
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/steve/gfs2-2.6-fixes.git master
+
+Abhijith Das (1):
+      GFS2: Fix error code
+
+Steven Whitehouse (1):
+      GFS2: Fix bmap allocation corner-case bug
+
+ fs/gfs2/bmap.c       |    2 +-
+ fs/gfs2/ops_fstype.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+
