@@ -1,80 +1,59 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757736Ab0BLEwg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 23:52:36 -0500
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:51892 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756035Ab0BLEwd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 23:52:33 -0500
-Message-ID: <4B74DE40.5030401@ce.jp.nec.com>
-Date: Fri, 12 Feb 2010 13:51:12 +0900
-From: "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@zeniv.linux.org.uk>
-CC: Valdis.Kletnieks@vt.edu, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, linux-s390@vger.kernel.org,
-       linux-next@vger.kernel.org, Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: Re: mmotm 2010-02-10 - BUG at fs/dcache.c:677!
-References: <201002110043.o1B0hKxW008835@imap1.linux-foundation.org>	<8576.1265942657@localhost> <20100211191427.6ff9aec6.akpm@linux-foundation.org>
-In-Reply-To: <20100211191427.6ff9aec6.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S1757782Ab0BLE6J (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 23:58:09 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:55999 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756082Ab0BLE6E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 23:58:04 -0500
+Date: Fri, 12 Feb 2010 15:57:50 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: linux-next: build warning after merge of the suspend tree
+Message-Id: <20100212155750.3f95932f.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0beta7 (GTK+ 2.18.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__12_Feb_2010_15_57_50_+1100_WLXxre/DfG3jPG9R"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(02/12/10 12:14), Andrew Morton wrote:
-> On Thu, 11 Feb 2010 21:44:17 -0500 Valdis.Kletnieks@vt.edu wrote:
-> 
->> On Wed, 10 Feb 2010 16:17:41 PST, akpm@linux-foundation.org said:
->>> The mm-of-the-moment snapshot 2010-02-10-16-17 has been uploaded to
->>>
->>>    http://userweb.kernel.org/~akpm/mmotm/
->>
->> Hit this at shutdown. ext4 filesystems.  Brought it up to single-user
->> mode, then 'shutdown -h now'.
->>
->> [   58.311786] ------------[ cut here ]------------
->> [   58.312261] kernel BUG at fs/dcache.c:677!
-...
+--Signature=_Fri__12_Feb_2010_15_57_50_+1100_WLXxre/DfG3jPG9R
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Yeah, Sachin reported that against linux-next too (I think - need to
-> check the exact line numbers):
-> http://permalink.gmane.org/gmane.linux.file-systems/38148
-> 
-> It seems to have been met with shrugs thus far.
+Hi Rafael,
 
-According to the Sachin's report:
-> While running hackbench against today's next-20100208 (9056d31..)
-> on a s390 box, came across following BUG.
-...
-> Did not observe this with next-20100205. Also there doesn't seem to be
-> any patches applied to this code after the last release. So not
-> sure what could have caused this. Corresponding code is :
+After merging the suspend tree, today's linux-next build (powerpc
+ppc64_defconfig) produced this warning:
 
-So the bug seems introduced between next-20100205 and next-20100208.
+drivers/usb/core/hcd-pci.c:153: warning: return type defaults to 'int'
+drivers/usb/core/hcd-pci.c: In function 'clear_hs_companion':
+drivers/usb/core/hcd-pci.c:153: warning: control reaches end of non-void fu=
+nction
 
-Isn't this change missing the equivalent of "dput(old)"?
+Introduced by commit 708efd3eb95d318442da39ad6e5c01d5c9b85dbf ("USB:
+implement non-tree resume ordering constraints for PCI host controllers").
 
-In patch-v2.6.33-rc7-next-20100208:
-> diff --git a/fs/namei.c b/fs/namei.c
-> index 94a5e60..a056dad 100644
-> --- a/fs/namei.c
-> +++ b/fs/namei.c
-> @@ -689,33 +689,17 @@ static __always_inline void follow_dotdot(struct nameidata *nd)
-...
-> -               spin_lock(&dcache_lock);
->                 if (nd->path.dentry != nd->path.mnt->mnt_root) {
-> -                       nd->path.dentry = dget(nd->path.dentry->d_parent);
-> -                       spin_unlock(&dcache_lock);
-> -                       dput(old);
-> +                       /* rare case of legitimate dget_parent()... */
-> +                       nd->path.dentry = dget_parent(nd->path.dentry);
->                         break;
->                 }
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
--- 
-Jun'ichi Nomura, NEC Corporation
+--Signature=_Fri__12_Feb_2010_15_57_50_+1100_WLXxre/DfG3jPG9R
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkt0384ACgkQjjKRsyhoI8x4VwCfbAYSgWHtfNivNnlj/E3UlPVl
+KGQAoKlD6R8Rf/lncJ7OvmHWyo1uFqid
+=Q2B7
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__12_Feb_2010_15_57_50_+1100_WLXxre/DfG3jPG9R--
