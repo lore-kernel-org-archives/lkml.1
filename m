@@ -1,85 +1,106 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757642Ab0BLWoQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 17:44:16 -0500
-Received: from mail.windriver.com ([147.11.1.11]:45173 "EHLO
+	id S1757953Ab0BLWo3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 17:44:29 -0500
+Received: from mail.windriver.com ([147.11.1.11]:45151 "EHLO
 	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757927Ab0BLWn3 (ORCPT
+	with ESMTP id S1757946Ab0BLWnZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 17:43:29 -0500
+	Fri, 12 Feb 2010 17:43:25 -0500
 From: Jason Wessel <jason.wessel@windriver.com>
 To: linux-kernel@vger.kernel.org
 Cc: kgdb-bugreport@lists.sourceforge.net, mingo@elte.hu,
+       Jan Kiszka <jan.kiszka@web.de>,
        Jason Wessel <jason.wessel@windriver.com>
-Subject: [PATCH 5/8] kgdboc: Add ekgdboc for early use of the kernel debugger
-Date: Fri, 12 Feb 2010 16:39:26 -0600
-Message-Id: <1266014369-29547-6-git-send-email-jason.wessel@windriver.com>
+Subject: [PATCH 1/8] x86, kgdb: early trap init for early debug
+Date: Fri, 12 Feb 2010 16:39:22 -0600
+Message-Id: <1266014369-29547-2-git-send-email-jason.wessel@windriver.com>
 X-Mailer: git-send-email 1.6.4.rc1
 In-Reply-To: <1266014369-29547-1-git-send-email-jason.wessel@windriver.com>
 References: <1266014369-29547-1-git-send-email-jason.wessel@windriver.com>
-X-OriginalArrivalTime: 12 Feb 2010 22:43:10.0702 (UTC) FILETIME=[C0D630E0:01CAAC34]
+X-OriginalArrivalTime: 12 Feb 2010 22:43:06.0687 (UTC) FILETIME=[BE718CF0:01CAAC34]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The ekgdboc= differs from kgdboc= in that you can begin debuggin as
-soon as the exceptions are setup and the kgdb I/O driver is available,
-instead of waiting until the tty subsystem is available.
+From: Jan Kiszka <jan.kiszka@web.de>
 
-CC: kgdb-bugreport@lists.sourceforge.net
+Allow the x86 arch to have early exception processing for the purpose
+of debugging via the kgdb.
+
+Signed-off-by: Jan Kiszka <jan.kiszka@web.de>
 Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
 ---
- Documentation/kernel-parameters.txt |    6 ++++++
- drivers/serial/kgdboc.c             |   19 +++++++++++++++++++
- 2 files changed, 25 insertions(+), 0 deletions(-)
+ arch/x86/include/asm/processor.h |    2 ++
+ arch/x86/kernel/setup.c          |    1 +
+ arch/x86/kernel/traps.c          |   14 ++++++++++----
+ 3 files changed, 13 insertions(+), 4 deletions(-)
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index b340445..5227565 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -699,6 +699,12 @@ and is between 256 and 4096 characters. It is defined in the file
- 			The VGA output is eventually overwritten by the real
- 			console.
+diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
+index fc801ba..1a14ca6 100644
+--- a/arch/x86/include/asm/processor.h
++++ b/arch/x86/include/asm/processor.h
+@@ -791,6 +791,8 @@ static inline void wbinvd_halt(void)
+ extern void enable_sep_cpu(void);
+ extern int sysenter_setup(void);
  
-+	ekgdboc=	[X86,KGDB] Allow early kernel console debugging
-+			ekgdboc=kbd
++extern void early_trap_init(void);
 +
-+			This is desgined to be used in conjunction with
-+			the boot argument: earlyprintk=vga
-+
- 	eata=		[HW,SCSI]
+ /* Defined in head.S */
+ extern struct desc_ptr		early_gdt_descr;
  
- 	edd=		[EDD]
-diff --git a/drivers/serial/kgdboc.c b/drivers/serial/kgdboc.c
-index 246b7c3..91ca95a 100644
---- a/drivers/serial/kgdboc.c
-+++ b/drivers/serial/kgdboc.c
-@@ -263,6 +263,25 @@ static struct kgdb_io kgdboc_io_ops = {
- 	.post_exception		= kgdboc_post_exp_handler,
- };
+diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+index 5d9e40c..63fff98 100644
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -695,6 +695,7 @@ void __init setup_arch(char **cmdline_p)
+ 	/* VMI may relocate the fixmap; do this before touching ioremap area */
+ 	vmi_init();
  
-+#ifdef CONFIG_KGDB_SERIAL_CONSOLE
-+/* This is only available if kgdboc is a built in for early debugging */
-+int __init kgdboc_early_init(char *opt)
++	early_trap_init();
+ 	early_cpu_init();
+ 	early_ioremap_init();
+ 
+diff --git a/arch/x86/kernel/traps.c b/arch/x86/kernel/traps.c
+index 6ae2122..22468df 100644
+--- a/arch/x86/kernel/traps.c
++++ b/arch/x86/kernel/traps.c
+@@ -882,6 +882,16 @@ dotraplinkage void do_iret_error(struct pt_regs *regs, long error_code)
+ }
+ #endif
+ 
++/* Set of traps needed for early debugging. */
++void __init early_trap_init(void)
 +{
-+	/* save the first character of the config string because the
-+	 * init routine can destroy it.
-+	 */
-+	char save_ch;
-+
-+	kgdboc_option_setup(opt);
-+	save_ch = config[0];
-+	init_kgdboc();
-+	config[0] = save_ch;
-+	return 0;
++	set_intr_gate_ist(1, &debug, DEBUG_STACK);
++	/* int3 can be called from all */
++	set_system_intr_gate_ist(3, &int3, DEBUG_STACK);
++	set_intr_gate(14, &page_fault);
++	load_idt(&idt_descr);
 +}
 +
-+early_param("ekgdboc", kgdboc_early_init);
-+#endif /* CONFIG_KGDB_SERIAL_CONSOLE */
-+
- module_init(init_kgdboc);
- module_exit(cleanup_kgdboc);
- module_param_call(kgdboc, param_set_kgdboc_var, param_get_string, &kps, 0644);
+ void __init trap_init(void)
+ {
+ 	int i;
+@@ -895,10 +905,7 @@ void __init trap_init(void)
+ #endif
+ 
+ 	set_intr_gate(0, &divide_error);
+-	set_intr_gate_ist(1, &debug, DEBUG_STACK);
+ 	set_intr_gate_ist(2, &nmi, NMI_STACK);
+-	/* int3 can be called from all */
+-	set_system_intr_gate_ist(3, &int3, DEBUG_STACK);
+ 	/* int4 can be called from all */
+ 	set_system_intr_gate(4, &overflow);
+ 	set_intr_gate(5, &bounds);
+@@ -914,7 +921,6 @@ void __init trap_init(void)
+ 	set_intr_gate(11, &segment_not_present);
+ 	set_intr_gate_ist(12, &stack_segment, STACKFAULT_STACK);
+ 	set_intr_gate(13, &general_protection);
+-	set_intr_gate(14, &page_fault);
+ 	set_intr_gate(15, &spurious_interrupt_bug);
+ 	set_intr_gate(16, &coprocessor_error);
+ 	set_intr_gate(17, &alignment_check);
 -- 
 1.6.4.rc1
 
