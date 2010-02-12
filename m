@@ -1,75 +1,38 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757015Ab0BLTkH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 14:40:07 -0500
-Received: from mail-pz0-f197.google.com ([209.85.222.197]:63736 "EHLO
-	mail-pz0-f197.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756579Ab0BLTkE convert rfc822-to-8bit (ORCPT
+	id S1757371Ab0BLTmt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 14:42:49 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34976 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757185Ab0BLTmq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 14:40:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=T/rUNti4cP1QOpr3D9a7VMPrn3fth6VS7TK3ClfYLFiHneoAffLHapFgm8XdjYSKGG
-         IMYkemDF5lL+EdNnZHU4PB+tdTYERdamA+p1YM93M4J/4tS9UolulvutfU4tqlr5NZOY
-         isFyksuw9rA3JfhqA3U6/btb+UIZgQ/3MZ66k=
-MIME-Version: 1.0
-In-Reply-To: <20100212184756.GA14751@suse.de>
-References: <8AFC7968D54FB448A30D8F38F259C56212E883CB@TK5EX14MBXC118.redmond.corp.microsoft.com> 
-	<20100211233612.GB10315@suse.de> <8AFC7968D54FB448A30D8F38F259C56212E88B0F@TK5EX14MBXC118.redmond.corp.microsoft.com> 
-	<20100212184756.GA14751@suse.de>
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Date: Fri, 12 Feb 2010 11:39:44 -0800
-Message-ID: <43e72e891002121139y4bb4fbc2mdfc99f3b7ad6ebef@mail.gmail.com>
-Subject: Re: [PATCH 1/1] Staging: hv: Add proper versioning to HV 
-	drivers-Corrected.
-To: Greg KH <gregkh@suse.de>
-Cc: Hank Janssen <hjanssen@microsoft.com>,
-       "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>,
-       Haiyang Zhang <haiyangz@microsoft.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Fri, 12 Feb 2010 14:42:46 -0500
+Date: Fri, 12 Feb 2010 11:39:55 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jan Kara <jack@suse.cz>
+Cc: LKML <linux-kernel@vger.kernel.org>, npiggin@suse.de,
+       fengguang.wu@intel.com
+Subject: Re: [PATCH 2/3] mm: Implement writeback livelock avoidance using
+ page tagging
+Message-Id: <20100212113955.4c023130.akpm@linux-foundation.org>
+In-Reply-To: <1265929584-5080-3-git-send-email-jack@suse.cz>
+References: <1265929584-5080-1-git-send-email-jack@suse.cz>
+	<1265929584-5080-3-git-send-email-jack@suse.cz>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 12, 2010 at 10:47 AM, Greg KH <gregkh@suse.de> wrote:
-> On Fri, Feb 12, 2010 at 05:55:34PM +0000, Hank Janssen wrote:
->>
->> > >
->> > >  drivers/staging/hv/VersionInfo.h |   22 +++++++++++++++++++---
->> >
->> > You forgot a "---" between the signed-off-by and the diffstat.  If you
->> > use either git or quilt, it will get this correct automagically.  That
->> > infers you used something else, which is quite scary.  What are you
->> > using instead to create patches?
->> >
->> > Don't worry, I can edit this by hand when I apply it, and will do so in
->> > a few days when I get to my "to-apply" queue, but in the future, please
->> > don't do this.
->> >
->> > thanks,
->> >
->> > greg k-h
->>
->> This must have been the result of a cut/paste error on my side.
->>
->> I use the following command for my diff   'git diff -M -u --stat'
->
-> What's wrong with 'git format-patch'?
->
-> You are creating a "raw" diff, which is fine, but you then need to
-> include the rest of the comments.  If you commit the patch to a branch,
-> with the comments in them, then you can just automatically create the
-> patches in correct format.
+On Fri, 12 Feb 2010 00:06:23 +0100
+Jan Kara <jack@suse.cz> wrote:
 
-In case this helps:
+> The idea is simple: Tag all pages that should be written back
+> with a special tag (TOWRITE) in the radix tree. This can be done
+> rather quickly and thus livelocks should not happen in practice.
+> Then we start doing the hard work of locking pages and sending
+> them to disk only for those pages that have TOWRITE tag set.
 
-http://wireless.kernel.org/en/developers/Documentation/git-guide
-
-Toward s the end there is a git format-patch blurb and explains how to
-set up your e-mail client with ssmpt.
-
-  Luis
+Adding a second pass across all the pages sounds expensive?
