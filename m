@@ -1,11 +1,11 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756812Ab0BLMD0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 07:03:26 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:55589 "EHLO gir.skynet.ie"
+	id S1756883Ab0BLMDk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 07:03:40 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:55556 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756192Ab0BLMBF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 07:01:05 -0500
+	id S1752468Ab0BLMBD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Feb 2010 07:01:03 -0500
 From: Mel Gorman <mel@csn.ul.ie>
 To: Andrea Arcangeli <aarcange@redhat.com>
 Cc: Christoph Lameter <cl@linux-foundation.org>, Adam Litke <agl@us.ibm.com>,
@@ -13,9 +13,9 @@ Cc: Christoph Lameter <cl@linux-foundation.org>, Adam Litke <agl@us.ibm.com>,
        KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
        Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org
-Subject: [PATCH 06/12] Add /proc trigger for memory compaction
-Date: Fri, 12 Feb 2010 12:00:53 +0000
-Message-Id: <1265976059-7459-7-git-send-email-mel@csn.ul.ie>
+Subject: [PATCH 04/12] Export fragmentation index via /proc/pagetypeinfo
+Date: Fri, 12 Feb 2010 12:00:51 +0000
+Message-Id: <1265976059-7459-5-git-send-email-mel@csn.ul.ie>
 X-Mailer: git-send-email 1.6.5
 In-Reply-To: <1265976059-7459-1-git-send-email-mel@csn.ul.ie>
 References: <1265976059-7459-1-git-send-email-mel@csn.ul.ie>
@@ -23,173 +23,140 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds a proc file /proc/sys/vm/compact_memory. When an arbitrary
-value is written to the file, all zones are compacted. The expected user
-of such a trigger is a job scheduler that prepares the system before the
-target application runs.
+Fragmentation index is a value that makes sense when an allocation of a
+given size would fail. The index indicates whether an allocation failure is
+due to a lack of memory (values towards 0) or due to external fragmentation
+(value towards 1).  For the most part, the huge page size will be the size
+of interest but not necessarily so it is exported on a per-order and per-zone
+basis via /proc/pagetypeinfo.
+
+The index is normally calculated as a value between 0 and 1 which is
+obviously unsuitable within the kernel. Instead, the first three decimal
+places are used as a value between 0 and 1000 for an integer approximation.
 
 Signed-off-by: Mel Gorman <mel@csn.ul.ie>
 ---
- Documentation/sysctl/vm.txt |   11 ++++++++
- include/linux/compaction.h  |    5 +++
- kernel/sysctl.c             |   11 ++++++++
- mm/compaction.c             |   60 +++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 87 insertions(+), 0 deletions(-)
+ Documentation/filesystems/proc.txt |   11 ++++++
+ mm/vmstat.c                        |   63 ++++++++++++++++++++++++++++++++++++
+ 2 files changed, 74 insertions(+), 0 deletions(-)
 
-diff --git a/Documentation/sysctl/vm.txt b/Documentation/sysctl/vm.txt
-index fc5790d..92b5b00 100644
---- a/Documentation/sysctl/vm.txt
-+++ b/Documentation/sysctl/vm.txt
-@@ -19,6 +19,7 @@ files can be found in mm/swap.c.
- Currently, these files are in /proc/sys/vm:
+diff --git a/Documentation/filesystems/proc.txt b/Documentation/filesystems/proc.txt
+index 0968a81..06bf53c 100644
+--- a/Documentation/filesystems/proc.txt
++++ b/Documentation/filesystems/proc.txt
+@@ -618,6 +618,10 @@ Unusable free space index at order
+ Node    0, zone      DMA                         0      0      0      2      6     18     34     67     99    227    485
+ Node    0, zone    DMA32                         0      0      1      2      4      7     10     17     23     31     34
  
- - block_dump
-+- compact_memory
- - dirty_background_bytes
- - dirty_background_ratio
- - dirty_bytes
-@@ -64,6 +65,16 @@ information on block I/O debugging is in Documentation/laptops/laptop-mode.txt.
- 
- ==============================================================
- 
-+compact_memory
++Fragmentation index at order
++Node    0, zone      DMA                        -1     -1     -1     -1     -1     -1     -1     -1     -1     -1     -1
++Node    0, zone    DMA32                        -1     -1     -1     -1     -1     -1     -1     -1     -1     -1     -1
 +
-+Available only when CONFIG_COMPACTION is set. When an arbitrary value
-+is written to the file, all zones are compacted such that free memory
-+is available in contiguous blocks where possible. This can be important
-+for example in the allocation of huge pages although processes will also
-+directly compact memory as required.
+ Number of blocks type     Unmovable  Reclaimable      Movable      Reserve      Isolate
+ Node 0, zone      DMA            2            0            5            1            0
+ Node 0, zone    DMA32           41            6          967            2            0
+@@ -639,6 +643,13 @@ value between 0 and 1000. The higher the value, the more of free memory is
+ unusable and by implication, the worse the external fragmentation is. The
+ percentage of unusable free memory can be found by dividing this value by 10.
+ 
++The fragmentation index, is only meaningful if an allocation would fail and
++indicates what the failure is due to. A value of -1 such as in the example
++states that the allocation would succeed. If it would fail, the value is
++between 0 and 1000. A value tending towards 0 implies the allocation failed
++due to a lack of memory. A value tending towards 1000 implies it failed
++due to external fragmentation.
 +
-+==============================================================
-+
- dirty_background_bytes
- 
- Contains the amount of dirty memory at which the pdflush background writeback
-diff --git a/include/linux/compaction.h b/include/linux/compaction.h
-index 6201371..facaa3d 100644
---- a/include/linux/compaction.h
-+++ b/include/linux/compaction.h
-@@ -5,4 +5,9 @@
- #define COMPACT_INCOMPLETE	0
- #define COMPACT_COMPLETE	1
- 
-+#ifdef CONFIG_COMPACTION
-+extern int sysctl_compaction_handler(struct ctl_table *table, int write,
-+			void __user *buffer, size_t *length, loff_t *ppos);
-+#endif /* CONFIG_COMPACTION */
-+
- #endif /* _LINUX_COMPACTION_H */
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 8a68b24..a02c816 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -50,6 +50,7 @@
- #include <linux/ftrace.h>
- #include <linux/slow-work.h>
- #include <linux/perf_event.h>
-+#include <linux/compaction.h>
- 
- #include <asm/uaccess.h>
- #include <asm/processor.h>
-@@ -80,6 +81,7 @@ extern int pid_max;
- extern int min_free_kbytes;
- extern int pid_max_min, pid_max_max;
- extern int sysctl_drop_caches;
-+extern int sysctl_compact_memory;
- extern int percpu_pagelist_fraction;
- extern int compat_log;
- extern int latencytop_enabled;
-@@ -1109,6 +1111,15 @@ static struct ctl_table vm_table[] = {
- 		.mode		= 0644,
- 		.proc_handler	= drop_caches_sysctl_handler,
- 	},
-+#ifdef CONFIG_COMPACTION
-+	{
-+		.procname	= "compact_memory",
-+		.data		= &sysctl_compact_memory,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0200,
-+		.proc_handler	= sysctl_compaction_handler,
-+	},
-+#endif /* CONFIG_COMPACTION */
- 	{
- 		.procname	= "min_free_kbytes",
- 		.data		= &min_free_kbytes,
-diff --git a/mm/compaction.c b/mm/compaction.c
-index 51ec864..c0b9dc9 100644
---- a/mm/compaction.c
-+++ b/mm/compaction.c
-@@ -11,6 +11,7 @@
- #include <linux/migrate.h>
- #include <linux/compaction.h>
- #include <linux/mm_inline.h>
-+#include <linux/sysctl.h>
- #include "internal.h"
- 
- /*
-@@ -339,3 +340,62 @@ static int compact_zone(struct zone *zone, struct compact_control *cc)
- 	return ret;
+ If min_free_kbytes has been tuned correctly (recommendations made by hugeadm
+ from libhugetlbfs http://sourceforge.net/projects/libhugetlbfs/), one can
+ make an estimate of the likely number of huge pages that can be allocated
+diff --git a/mm/vmstat.c b/mm/vmstat.c
+index d05d610..e2d0cc1 100644
+--- a/mm/vmstat.c
++++ b/mm/vmstat.c
+@@ -494,6 +494,35 @@ static void fill_contig_page_info(struct zone *zone,
  }
  
-+/* Compact all zones within a node */
-+static int compact_node(int nid)
+ /*
++ * A fragmentation index only makes sense if an allocation of a requested
++ * size would fail. If that is true, the fragmentation index indicates
++ * whether external fragmentation or a lack of memory was the problem.
++ * The value can be used to determine if page reclaim or compaction
++ * should be used
++ */
++int fragmentation_index(struct zone *zone,
++				unsigned int order,
++				struct contig_page_info *info)
 +{
-+	int zoneid;
-+	pg_data_t *pgdat;
-+	struct zone *zone;
++	unsigned long requested = 1UL << order;
 +
-+	if (nid < 0 || nid > nr_node_ids || !node_online(nid))
-+		return -EINVAL;
-+	pgdat = NODE_DATA(nid);
++	if (!info->free_blocks_total)
++		return 0;
 +
-+	/* Flush pending updates to the LRU lists */
-+	lru_add_drain_all();
++	/* Fragmentation index only makes sense when a request would fail */
++	if (info->free_blocks_suitable)
++		return -1;
 +
-+	for (zoneid = 0; zoneid < MAX_NR_ZONES; zoneid++) {
-+		struct compact_control cc;
++	/*
++	 * Index is between 0 and 1 so return within 3 decimal places
++	 *
++	 * 0 => allocation would fail due to lack of memory
++	 * 1 => allocation would fail due to fragmentation
++	 */
++	return 1000 - ( (1000+(info->free_pages * 1000 / requested)) / info->free_blocks_total);
++}
 +
-+		zone = &pgdat->node_zones[zoneid];
-+		if (!populated_zone(zone))
-+			continue;
++/*
+  * Return an index indicating how much of the available free memory is
+  * unusable for an allocation of the requested size.
+  */
+@@ -516,6 +545,39 @@ static int unusable_free_index(struct zone *zone,
+ 
+ }
+ 
++static void pagetypeinfo_showfragmentation_print(struct seq_file *m,
++					pg_data_t *pgdat, struct zone *zone)
++{
++	unsigned int order;
 +
-+		cc.nr_freepages = 0;
-+		cc.nr_migratepages = 0;
-+		cc.zone = zone;
-+		INIT_LIST_HEAD(&cc.freepages);
-+		INIT_LIST_HEAD(&cc.migratepages);
++	/* Alloc on stack as interrupts are disabled for zone walk */
++	struct contig_page_info info;
 +
-+		compact_zone(zone, &cc);
-+
-+		VM_BUG_ON(!list_empty(&cc.freepages));
-+		VM_BUG_ON(!list_empty(&cc.migratepages));
++	seq_printf(m, "Node %4d, zone %8s %19s",
++				pgdat->node_id,
++				zone->name, " ");
++	for (order = 0; order < MAX_ORDER; ++order) {
++		fill_contig_page_info(zone, order, &info);
++		seq_printf(m, "%6d ", fragmentation_index(zone, order, &info));
 +	}
 +
++	seq_putc(m, '\n');
++}
++
++/*
++ * Display fragmentation index for orders that allocations would fail for
++ * XXX: Could be a lot more efficient, but it's not a critical path
++ */
++static int pagetypeinfo_showfragmentation(struct seq_file *m, void *arg)
++{
++	pg_data_t *pgdat = (pg_data_t *)arg;
++
++	seq_printf(m, "\nFragmentation index at order\n");
++	walk_zones_in_node(m, pgdat, pagetypeinfo_showfragmentation_print);
++
 +	return 0;
 +}
 +
-+/* Compact all nodes in the system */
-+static int compact_nodes(void)
-+{
-+	int nid;
-+
-+	for_each_online_node(nid)
-+		compact_node(nid);
-+
-+	return COMPACT_COMPLETE;
-+}
-+
-+/* The written value is actually unused, all memory is compacted */
-+int sysctl_compact_memory;
-+
-+/* This is the entry point for compacting all nodes via /proc/sys/vm */
-+int sysctl_compaction_handler(struct ctl_table *table, int write,
-+			void __user *buffer, size_t *length, loff_t *ppos)
-+{
-+	if (write)
-+		return compact_nodes();
-+
-+	return 0;
-+}
+ static void pagetypeinfo_showunusable_print(struct seq_file *m,
+ 					pg_data_t *pgdat, struct zone *zone)
+ {
+@@ -657,6 +719,7 @@ static int pagetypeinfo_show(struct seq_file *m, void *arg)
+ 	seq_putc(m, '\n');
+ 	pagetypeinfo_showfree(m, pgdat);
+ 	pagetypeinfo_showunusable(m, pgdat);
++	pagetypeinfo_showfragmentation(m, pgdat);
+ 	pagetypeinfo_showblockcount(m, pgdat);
+ 
+ 	return 0;
 -- 
 1.6.5
 
