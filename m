@@ -1,160 +1,127 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755059Ab0BLMio (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 07:38:44 -0500
-Received: from mtagate5.de.ibm.com ([195.212.17.165]:37183 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751323Ab0BLMin (ORCPT
+	id S1755898Ab0BLMnN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 07:43:13 -0500
+Received: from liberdade.minaslivre.org ([72.232.254.139]:60004 "EHLO
+	liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752670Ab0BLMnL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 07:38:43 -0500
-Date: Fri, 12 Feb 2010 13:38:40 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] s390: add pt_regs register and stack access API
-Message-ID: <20100212123840.GB27548@osiris.boeblingen.de.ibm.com>
-References: <20100210162610.GC6933@osiris.boeblingen.de.ibm.com>
- <4B73691A.8080100@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B73691A.8080100@redhat.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Fri, 12 Feb 2010 07:43:11 -0500
+From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+To: linux-wireless@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org,
+       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Simon Raffeiner <sturmflut@lieberbiber.de>,
+       Andrey Yurovsky <andrey@cozybit.com>,
+       Javier Cardona <javier@cozybit.com>
+Subject: [PATCH] nl80211: does not allow NEW_STATION and DEL_STATION for mesh
+Date: Fri, 12 Feb 2010 10:37:21 -0200
+Message-Id: <1265978241-1601-1-git-send-email-cascardo@holoscopio.com>
+X-Mailer: git-send-email 1.6.6.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 10, 2010 at 09:19:06PM -0500, Masami Hiramatsu wrote:
-> > +int regs_query_register_offset(const char *name);
-> > +const char *regs_query_register_name(unsigned int offset);
-> > +unsigned long regs_get_argument_nth(struct pt_regs *regs, unsigned int n);
-> 
-> Hmm, the latest kprobe-tracer on -tip/master doesn't support
-> regs_get_argument_nth() anymore, because the function ABI
-> strongly depends on each function interface, compile option
-> etc. So I removed it (14640106f243a3b29944d7198569090fa6546f2d
-> and aa5add93e92019018e905146f8c3d3f8e3c08300).
-> 
-> Yeah, those patches are still on -tip tree. Since I'm working on
-> -tip/master for kprobe-tracer etc., please work on -tip tree.
+As discussed in linux-wireless mailint list, adding and removing
+stations for mesh topologies is not necessary. Since doing it triggers
+bugs, the sugestion was to simply disable it.
 
-Ok, here is an updated patch without regs_get_argument_nth:
-
-Subject: [PATCH] s390: add pt_regs register and stack access API
-
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-
-This API is needed for the kprobe-based event tracer.
-
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+Cc: Johannes Berg <johannes@sipsolutions.net>
+Cc: Simon Raffeiner <sturmflut@lieberbiber.de>
+Cc: Andrey Yurovsky <andrey@cozybit.com>
+Cc: Javier Cardona <javier@cozybit.com>
 ---
- arch/s390/Kconfig              |    1 
- arch/s390/include/asm/ptrace.h |   13 ++++++++-
- arch/s390/kernel/ptrace.c      |   58 +++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 71 insertions(+), 1 deletion(-)
+ net/wireless/nl80211.c |   47 +++++++++++------------------------------------
+ 1 files changed, 11 insertions(+), 36 deletions(-)
 
---- a/arch/s390/include/asm/ptrace.h
-+++ b/arch/s390/include/asm/ptrace.h
-@@ -492,13 +492,24 @@ struct user_regs_struct
- struct task_struct;
- extern void user_enable_single_step(struct task_struct *);
- extern void user_disable_single_step(struct task_struct *);
-+extern void show_regs(struct pt_regs * regs);
+diff --git a/net/wireless/nl80211.c b/net/wireless/nl80211.c
+index 5b79ecf..176b8fe 100644
+--- a/net/wireless/nl80211.c
++++ b/net/wireless/nl80211.c
+@@ -2001,6 +2001,10 @@ static int nl80211_new_station(struct sk_buff *skb, struct genl_info *info)
  
- #define user_mode(regs) (((regs)->psw.mask & PSW_MASK_PSTATE) != 0)
- #define instruction_pointer(regs) ((regs)->psw.addr & PSW_ADDR_INSN)
- #define user_stack_pointer(regs)((regs)->gprs[15])
- #define regs_return_value(regs)((regs)->gprs[2])
- #define profile_pc(regs) instruction_pointer(regs)
--extern void show_regs(struct pt_regs * regs);
-+
-+int regs_query_register_offset(const char *name);
-+const char *regs_query_register_name(unsigned int offset);
-+unsigned long regs_get_register(struct pt_regs *regs, unsigned int offset);
-+unsigned long regs_get_kernel_stack_nth(struct pt_regs *regs, unsigned int n);
-+
-+static inline unsigned long kernel_stack_pointer(struct pt_regs *regs)
-+{
-+	return regs->gprs[15] & PSW_ADDR_INSN;
-+}
-+
- #endif /* __KERNEL__ */
- #endif /* __ASSEMBLY__ */
+ 	memset(&params, 0, sizeof(params));
  
---- a/arch/s390/Kconfig
-+++ b/arch/s390/Kconfig
-@@ -90,6 +90,7 @@ config S390
- 	select HAVE_SYSCALL_TRACEPOINTS
- 	select HAVE_DYNAMIC_FTRACE
- 	select HAVE_FUNCTION_GRAPH_TRACER
-+	select HAVE_REGS_AND_STACK_ACCESS_API
- 	select HAVE_DEFAULT_NO_SPIN_MUTEXES
- 	select HAVE_OPROFILE
- 	select HAVE_KPROBES
---- a/arch/s390/kernel/ptrace.c
-+++ b/arch/s390/kernel/ptrace.c
-@@ -992,3 +992,61 @@ const struct user_regset_view *task_user
- #endif
- 	return &user_s390_view;
- }
-+
-+static const char *gpr_names[NUM_GPRS] = {
-+	"r0", "r1",  "r2",  "r3",  "r4",  "r5",  "r6",  "r7",
-+	"r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15",
-+};
-+
-+unsigned long regs_get_register(struct pt_regs *regs, unsigned int offset)
-+{
-+	if (offset >= NUM_GPRS)
-+		return 0;
-+	return regs->gprs[offset];
-+}
-+
-+int regs_query_register_offset(const char *name)
-+{
-+	unsigned long offset;
-+
-+	if (!name || *name != 'r')
++	if (dev->ieee80211_ptr->iftype != NL80211_IFTYPE_AP &&
++	    dev->ieee80211_ptr->iftype != NL80211_IFTYPE_AP_VLAN)
 +		return -EINVAL;
-+	if (strict_strtoul(name + 1, 10, &offset))
++
+ 	if (!info->attrs[NL80211_ATTR_MAC])
+ 		return -EINVAL;
+ 
+@@ -2010,6 +2014,9 @@ static int nl80211_new_station(struct sk_buff *skb, struct genl_info *info)
+ 	if (!info->attrs[NL80211_ATTR_STA_SUPPORTED_RATES])
+ 		return -EINVAL;
+ 
++	if (!info->attrs[NL80211_ATTR_STA_AID])
 +		return -EINVAL;
-+	if (offset >= NUM_GPRS)
++
+ 	mac_addr = nla_data(info->attrs[NL80211_ATTR_MAC]);
+ 	params.supported_rates =
+ 		nla_data(info->attrs[NL80211_ATTR_STA_SUPPORTED_RATES]);
+@@ -2018,11 +2025,9 @@ static int nl80211_new_station(struct sk_buff *skb, struct genl_info *info)
+ 	params.listen_interval =
+ 		nla_get_u16(info->attrs[NL80211_ATTR_STA_LISTEN_INTERVAL]);
+ 
+-	if (info->attrs[NL80211_ATTR_STA_AID]) {
+-		params.aid = nla_get_u16(info->attrs[NL80211_ATTR_STA_AID]);
+-		if (!params.aid || params.aid > IEEE80211_MAX_AID)
+-			return -EINVAL;
+-	}
++	params.aid = nla_get_u16(info->attrs[NL80211_ATTR_STA_AID]);
++	if (!params.aid || params.aid > IEEE80211_MAX_AID)
 +		return -EINVAL;
-+	return offset;
-+}
-+
-+const char *regs_query_register_name(unsigned int offset)
-+{
-+	if (offset >= NUM_GPRS)
-+		return NULL;
-+	return gpr_names[offset];
-+}
-+
-+static int regs_within_kernel_stack(struct pt_regs *regs, unsigned long addr)
-+{
-+	unsigned long ksp = kernel_stack_pointer(regs);
-+
-+	return (addr & ~(THREAD_SIZE - 1)) == (ksp & ~(THREAD_SIZE - 1));
-+}
-+
-+/**
-+ * regs_get_kernel_stack_nth() - get Nth entry of the stack
-+ * @regs:pt_regs which contains kernel stack pointer.
-+ * @n:stack entry number.
-+ *
-+ * regs_get_kernel_stack_nth() returns @n th entry of the kernel stack which
-+ * is specifined by @regs. If the @n th entry is NOT in the kernel stack,
-+ * this returns 0.
-+ */
-+unsigned long regs_get_kernel_stack_nth(struct pt_regs *regs, unsigned int n)
-+{
-+	unsigned long addr;
-+
-+	addr = kernel_stack_pointer(regs) + n * sizeof(long);
-+	if (!regs_within_kernel_stack(regs, addr))
-+		return 0;
-+	return *(unsigned long *)addr;
-+}
+ 
+ 	if (info->attrs[NL80211_ATTR_HT_CAPABILITY])
+ 		params.ht_capa =
+@@ -2044,35 +2049,6 @@ static int nl80211_new_station(struct sk_buff *skb, struct genl_info *info)
+ 	/* validate settings */
+ 	err = 0;
+ 
+-	switch (dev->ieee80211_ptr->iftype) {
+-	case NL80211_IFTYPE_AP:
+-	case NL80211_IFTYPE_AP_VLAN:
+-		/* all ok but must have AID */
+-		if (!params.aid)
+-			err = -EINVAL;
+-		break;
+-	case NL80211_IFTYPE_MESH_POINT:
+-		/* disallow things mesh doesn't support */
+-		if (params.vlan)
+-			err = -EINVAL;
+-		if (params.aid)
+-			err = -EINVAL;
+-		if (params.ht_capa)
+-			err = -EINVAL;
+-		if (params.listen_interval >= 0)
+-			err = -EINVAL;
+-		if (params.supported_rates)
+-			err = -EINVAL;
+-		if (params.sta_flags_mask)
+-			err = -EINVAL;
+-		break;
+-	default:
+-		err = -EINVAL;
+-	}
+-
+-	if (err)
+-		goto out;
+-
+ 	if (!rdev->ops->add_station) {
+ 		err = -EOPNOTSUPP;
+ 		goto out;
+@@ -2113,8 +2089,7 @@ static int nl80211_del_station(struct sk_buff *skb, struct genl_info *info)
+ 		goto out_rtnl;
+ 
+ 	if (dev->ieee80211_ptr->iftype != NL80211_IFTYPE_AP &&
+-	    dev->ieee80211_ptr->iftype != NL80211_IFTYPE_AP_VLAN &&
+-	    dev->ieee80211_ptr->iftype != NL80211_IFTYPE_MESH_POINT) {
++	    dev->ieee80211_ptr->iftype != NL80211_IFTYPE_AP_VLAN) {
+ 		err = -EINVAL;
+ 		goto out;
+ 	}
+-- 
+1.6.6.1
+
