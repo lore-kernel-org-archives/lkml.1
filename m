@@ -1,94 +1,423 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755996Ab0BLXoA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 18:44:00 -0500
-Received: from mail.windriver.com ([147.11.1.11]:53931 "EHLO
-	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753285Ab0BLXn7 (ORCPT
+	id S1756802Ab0BLX6k (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 18:58:40 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:30748 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755850Ab0BLX6i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 18:43:59 -0500
-Message-ID: <4B75E7AB.4060102@windriver.com>
-Date: Fri, 12 Feb 2010 17:43:39 -0600
-From: Jason Wessel <jason.wessel@windriver.com>
+	Fri, 12 Feb 2010 18:58:38 -0500
+Message-ID: <4B75EAD9.7010805@oracle.com>
+Date: Fri, 12 Feb 2010 15:57:13 -0800
+From: Sunil Mushran <sunil.mushran@oracle.com>
 User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
-       mingo@elte.hu
-Subject: Re: [PATCH 26/28] kdb,panic,debug_core: Allow the debug core to receive
- a panic before smp_send_stop()
-References: <1266014143-29444-1-git-send-email-jason.wessel@windriver.com>	<1266014143-29444-27-git-send-email-jason.wessel@windriver.com> <20100212150027.f875bbde.akpm@linux-foundation.org>
-In-Reply-To: <20100212150027.f875bbde.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Joel Becker <joel.becker@oracle.com>
+CC: ocfs2-devel@oss.oracle.com, mfasheh@suse.com, linux-kernel@vger.kernel.org
+Subject: Re: [Ocfs2-devel] [PATCH 05/11] ocfs2: Attach the connection to the
+ lksb
+References: <1265794074-19539-1-git-send-email-joel.becker@oracle.com> <1265794074-19539-6-git-send-email-joel.becker@oracle.com>
+In-Reply-To: <1265794074-19539-6-git-send-email-joel.becker@oracle.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 12 Feb 2010 23:43:26.0875 (UTC) FILETIME=[2C3E66B0:01CAAC3D]
+X-Source-IP: acsmt355.oracle.com [141.146.40.155]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090205.4B75EB29.0057:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Fri, 12 Feb 2010 16:35:41 -0600 Jason Wessel <jason.wessel@windriver.com> wrote:
+Acked-by: Sunil Mushran <sunil.mushran@oracle.com>
+
+Joel Becker wrote:
+> We're going to want it in the ast functions, so we convert union
+> ocfs2_dlm_lksb to struct ocfs2_dlm_lksb and let it carry the connection.
 >
+> Signed-off-by: Joel Becker <joel.becker@oracle.com>
+> ---
+>  fs/ocfs2/dlmglue.c    |    8 ++++----
+>  fs/ocfs2/ocfs2.h      |    2 +-
+>  fs/ocfs2/stack_o2cb.c |   18 +++++++++---------
+>  fs/ocfs2/stack_user.c |   16 ++++++++--------
+>  fs/ocfs2/stackglue.c  |   17 +++++++++++------
+>  fs/ocfs2/stackglue.h  |   42 +++++++++++++++++++++++-------------------
+>  6 files changed, 56 insertions(+), 47 deletions(-)
+>
+> diff --git a/fs/ocfs2/dlmglue.c b/fs/ocfs2/dlmglue.c
+> index 28df5f7..4cb3ac2 100644
+> --- a/fs/ocfs2/dlmglue.c
+> +++ b/fs/ocfs2/dlmglue.c
+> @@ -297,7 +297,7 @@ static inline int ocfs2_is_inode_lock(struct ocfs2_lock_res *lockres)
+>  		lockres->l_type == OCFS2_LOCK_TYPE_OPEN;
+>  }
+>  
+> -static inline struct ocfs2_lock_res *ocfs2_lksb_to_lock_res(union ocfs2_dlm_lksb *lksb)
+> +static inline struct ocfs2_lock_res *ocfs2_lksb_to_lock_res(struct ocfs2_dlm_lksb *lksb)
+>  {
+>  	return container_of(lksb, struct ocfs2_lock_res, l_lksb);
+>  }
+> @@ -1037,7 +1037,7 @@ static unsigned int lockres_set_pending(struct ocfs2_lock_res *lockres)
+>  }
+>  
+>  
+> -static void ocfs2_blocking_ast(union ocfs2_dlm_lksb *lksb, int level)
+> +static void ocfs2_blocking_ast(struct ocfs2_dlm_lksb *lksb, int level)
+>  {
+>  	struct ocfs2_lock_res *lockres = ocfs2_lksb_to_lock_res(lksb);
+>  	struct ocfs2_super *osb = ocfs2_get_lockres_osb(lockres);
+> @@ -1068,7 +1068,7 @@ static void ocfs2_blocking_ast(union ocfs2_dlm_lksb *lksb, int level)
+>  	ocfs2_wake_downconvert_thread(osb);
+>  }
+>  
+> -static void ocfs2_locking_ast(union ocfs2_dlm_lksb *lksb)
+> +static void ocfs2_locking_ast(struct ocfs2_dlm_lksb *lksb)
+>  {
+>  	struct ocfs2_lock_res *lockres = ocfs2_lksb_to_lock_res(lksb);
+>  	struct ocfs2_super *osb = ocfs2_get_lockres_osb(lockres);
+> @@ -3026,7 +3026,7 @@ void ocfs2_dlm_shutdown(struct ocfs2_super *osb,
+>  	mlog_exit_void();
+>  }
+>  
+> -static void ocfs2_unlock_ast(union ocfs2_dlm_lksb *lksb, int error)
+> +static void ocfs2_unlock_ast(struct ocfs2_dlm_lksb *lksb, int error)
+>  {
+>  	struct ocfs2_lock_res *lockres = ocfs2_lksb_to_lock_res(lksb);
+>  	unsigned long flags;
+> diff --git a/fs/ocfs2/ocfs2.h b/fs/ocfs2/ocfs2.h
+> index 9362eea..5413f6c 100644
+> --- a/fs/ocfs2/ocfs2.h
+> +++ b/fs/ocfs2/ocfs2.h
+> @@ -155,7 +155,7 @@ struct ocfs2_lock_res {
+>  	int                      l_level;
+>  	unsigned int             l_ro_holders;
+>  	unsigned int             l_ex_holders;
+> -	union ocfs2_dlm_lksb     l_lksb;
+> +	struct ocfs2_dlm_lksb    l_lksb;
+>  
+>  	/* used from AST/BAST funcs. */
+>  	enum ocfs2_ast_action    l_action;
+> diff --git a/fs/ocfs2/stack_o2cb.c b/fs/ocfs2/stack_o2cb.c
+> index e26a789..41e6bad 100644
+> --- a/fs/ocfs2/stack_o2cb.c
+> +++ b/fs/ocfs2/stack_o2cb.c
+> @@ -161,7 +161,7 @@ static int dlm_status_to_errno(enum dlm_status status)
+>  
+>  static void o2dlm_lock_ast_wrapper(void *astarg)
+>  {
+> -	union ocfs2_dlm_lksb *lksb = astarg;
+> +	struct ocfs2_dlm_lksb *lksb = astarg;
+>  
+>  	BUG_ON(o2cb_stack.sp_proto == NULL);
+>  
+> @@ -170,7 +170,7 @@ static void o2dlm_lock_ast_wrapper(void *astarg)
+>  
+>  static void o2dlm_blocking_ast_wrapper(void *astarg, int level)
+>  {
+> -	union ocfs2_dlm_lksb *lksb = astarg;
+> +	struct ocfs2_dlm_lksb *lksb = astarg;
+>  
+>  	BUG_ON(o2cb_stack.sp_proto == NULL);
+>  
+> @@ -179,7 +179,7 @@ static void o2dlm_blocking_ast_wrapper(void *astarg, int level)
+>  
+>  static void o2dlm_unlock_ast_wrapper(void *astarg, enum dlm_status status)
+>  {
+> -	union ocfs2_dlm_lksb *lksb = astarg;
+> +	struct ocfs2_dlm_lksb *lksb = astarg;
+>  
+>  	int error = dlm_status_to_errno(status);
+>  
+> @@ -204,7 +204,7 @@ static void o2dlm_unlock_ast_wrapper(void *astarg, enum dlm_status status)
+>  
+>  static int o2cb_dlm_lock(struct ocfs2_cluster_connection *conn,
+>  			 int mode,
+> -			 union ocfs2_dlm_lksb *lksb,
+> +			 struct ocfs2_dlm_lksb *lksb,
+>  			 u32 flags,
+>  			 void *name,
+>  			 unsigned int namelen)
+> @@ -223,7 +223,7 @@ static int o2cb_dlm_lock(struct ocfs2_cluster_connection *conn,
+>  }
+>  
+>  static int o2cb_dlm_unlock(struct ocfs2_cluster_connection *conn,
+> -			   union ocfs2_dlm_lksb *lksb,
+> +			   struct ocfs2_dlm_lksb *lksb,
+>  			   u32 flags)
+>  {
+>  	enum dlm_status status;
+> @@ -236,7 +236,7 @@ static int o2cb_dlm_unlock(struct ocfs2_cluster_connection *conn,
+>  	return ret;
+>  }
+>  
+> -static int o2cb_dlm_lock_status(union ocfs2_dlm_lksb *lksb)
+> +static int o2cb_dlm_lock_status(struct ocfs2_dlm_lksb *lksb)
+>  {
+>  	return dlm_status_to_errno(lksb->lksb_o2dlm.status);
+>  }
+> @@ -246,17 +246,17 @@ static int o2cb_dlm_lock_status(union ocfs2_dlm_lksb *lksb)
+>   * contents, it will zero out the LVB.  Thus the caller can always trust
+>   * the contents.
+>   */
+> -static int o2cb_dlm_lvb_valid(union ocfs2_dlm_lksb *lksb)
+> +static int o2cb_dlm_lvb_valid(struct ocfs2_dlm_lksb *lksb)
+>  {
+>  	return 1;
+>  }
+>  
+> -static void *o2cb_dlm_lvb(union ocfs2_dlm_lksb *lksb)
+> +static void *o2cb_dlm_lvb(struct ocfs2_dlm_lksb *lksb)
+>  {
+>  	return (void *)(lksb->lksb_o2dlm.lvb);
+>  }
+>  
+> -static void o2cb_dump_lksb(union ocfs2_dlm_lksb *lksb)
+> +static void o2cb_dump_lksb(struct ocfs2_dlm_lksb *lksb)
+>  {
+>  	dlm_print_one_lock(lksb->lksb_o2dlm.lockid);
+>  }
+> diff --git a/fs/ocfs2/stack_user.c b/fs/ocfs2/stack_user.c
+> index 129b931..31276ba 100644
+> --- a/fs/ocfs2/stack_user.c
+> +++ b/fs/ocfs2/stack_user.c
+> @@ -665,7 +665,7 @@ static void ocfs2_control_exit(void)
+>  
+>  static void fsdlm_lock_ast_wrapper(void *astarg)
+>  {
+> -	union ocfs2_dlm_lksb *lksb = astarg;
+> +	struct ocfs2_dlm_lksb *lksb = astarg;
+>  	int status = lksb->lksb_fsdlm.sb_status;
+>  
+>  	BUG_ON(ocfs2_user_plugin.sp_proto == NULL);
+> @@ -688,7 +688,7 @@ static void fsdlm_lock_ast_wrapper(void *astarg)
+>  
+>  static void fsdlm_blocking_ast_wrapper(void *astarg, int level)
+>  {
+> -	union ocfs2_dlm_lksb *lksb = astarg;
+> +	struct ocfs2_dlm_lksb *lksb = astarg;
+>  
+>  	BUG_ON(ocfs2_user_plugin.sp_proto == NULL);
+>  
+> @@ -697,7 +697,7 @@ static void fsdlm_blocking_ast_wrapper(void *astarg, int level)
+>  
+>  static int user_dlm_lock(struct ocfs2_cluster_connection *conn,
+>  			 int mode,
+> -			 union ocfs2_dlm_lksb *lksb,
+> +			 struct ocfs2_dlm_lksb *lksb,
+>  			 u32 flags,
+>  			 void *name,
+>  			 unsigned int namelen)
+> @@ -716,7 +716,7 @@ static int user_dlm_lock(struct ocfs2_cluster_connection *conn,
+>  }
+>  
+>  static int user_dlm_unlock(struct ocfs2_cluster_connection *conn,
+> -			   union ocfs2_dlm_lksb *lksb,
+> +			   struct ocfs2_dlm_lksb *lksb,
+>  			   u32 flags)
+>  {
+>  	int ret;
+> @@ -726,19 +726,19 @@ static int user_dlm_unlock(struct ocfs2_cluster_connection *conn,
+>  	return ret;
+>  }
+>  
+> -static int user_dlm_lock_status(union ocfs2_dlm_lksb *lksb)
+> +static int user_dlm_lock_status(struct ocfs2_dlm_lksb *lksb)
+>  {
+>  	return lksb->lksb_fsdlm.sb_status;
+>  }
+>  
+> -static int user_dlm_lvb_valid(union ocfs2_dlm_lksb *lksb)
+> +static int user_dlm_lvb_valid(struct ocfs2_dlm_lksb *lksb)
+>  {
+>  	int invalid = lksb->lksb_fsdlm.sb_flags & DLM_SBF_VALNOTVALID;
+>  
+>  	return !invalid;
+>  }
+>  
+> -static void *user_dlm_lvb(union ocfs2_dlm_lksb *lksb)
+> +static void *user_dlm_lvb(struct ocfs2_dlm_lksb *lksb)
+>  {
+>  	if (!lksb->lksb_fsdlm.sb_lvbptr)
+>  		lksb->lksb_fsdlm.sb_lvbptr = (char *)lksb +
+> @@ -746,7 +746,7 @@ static void *user_dlm_lvb(union ocfs2_dlm_lksb *lksb)
+>  	return (void *)(lksb->lksb_fsdlm.sb_lvbptr);
+>  }
+>  
+> -static void user_dlm_dump_lksb(union ocfs2_dlm_lksb *lksb)
+> +static void user_dlm_dump_lksb(struct ocfs2_dlm_lksb *lksb)
+>  {
+>  }
+>  
+> diff --git a/fs/ocfs2/stackglue.c b/fs/ocfs2/stackglue.c
+> index 3500d98..8ef9a57 100644
+> --- a/fs/ocfs2/stackglue.c
+> +++ b/fs/ocfs2/stackglue.c
+> @@ -240,47 +240,52 @@ EXPORT_SYMBOL_GPL(ocfs2_stack_glue_set_locking_protocol);
+>   */
+>  int ocfs2_dlm_lock(struct ocfs2_cluster_connection *conn,
+>  		   int mode,
+> -		   union ocfs2_dlm_lksb *lksb,
+> +		   struct ocfs2_dlm_lksb *lksb,
+>  		   u32 flags,
+>  		   void *name,
+>  		   unsigned int namelen)
+>  {
+>  	BUG_ON(lproto == NULL);
+>  
+> +	if (!lksb->lksb_conn)
+> +		lksb->lksb_conn = conn;
+> +	else
+> +		BUG_ON(lksb->lksb_conn != conn);
+>  	return active_stack->sp_ops->dlm_lock(conn, mode, lksb, flags,
+>  					      name, namelen);
+>  }
+>  EXPORT_SYMBOL_GPL(ocfs2_dlm_lock);
+>  
+>  int ocfs2_dlm_unlock(struct ocfs2_cluster_connection *conn,
+> -		     union ocfs2_dlm_lksb *lksb,
+> +		     struct ocfs2_dlm_lksb *lksb,
+>  		     u32 flags)
+>  {
+>  	BUG_ON(lproto == NULL);
+> +	BUG_ON(lksb->lksb_conn == NULL);
+>  
+>  	return active_stack->sp_ops->dlm_unlock(conn, lksb, flags);
+>  }
+>  EXPORT_SYMBOL_GPL(ocfs2_dlm_unlock);
+>  
+> -int ocfs2_dlm_lock_status(union ocfs2_dlm_lksb *lksb)
+> +int ocfs2_dlm_lock_status(struct ocfs2_dlm_lksb *lksb)
+>  {
+>  	return active_stack->sp_ops->lock_status(lksb);
+>  }
+>  EXPORT_SYMBOL_GPL(ocfs2_dlm_lock_status);
+>  
+> -int ocfs2_dlm_lvb_valid(union ocfs2_dlm_lksb *lksb)
+> +int ocfs2_dlm_lvb_valid(struct ocfs2_dlm_lksb *lksb)
+>  {
+>  	return active_stack->sp_ops->lvb_valid(lksb);
+>  }
+>  EXPORT_SYMBOL_GPL(ocfs2_dlm_lvb_valid);
+>  
+> -void *ocfs2_dlm_lvb(union ocfs2_dlm_lksb *lksb)
+> +void *ocfs2_dlm_lvb(struct ocfs2_dlm_lksb *lksb)
+>  {
+>  	return active_stack->sp_ops->lock_lvb(lksb);
+>  }
+>  EXPORT_SYMBOL_GPL(ocfs2_dlm_lvb);
+>  
+> -void ocfs2_dlm_dump_lksb(union ocfs2_dlm_lksb *lksb)
+> +void ocfs2_dlm_dump_lksb(struct ocfs2_dlm_lksb *lksb)
+>  {
+>  	active_stack->sp_ops->dump_lksb(lksb);
+>  }
+> diff --git a/fs/ocfs2/stackglue.h b/fs/ocfs2/stackglue.h
+> index d699117..bb32926 100644
+> --- a/fs/ocfs2/stackglue.h
+> +++ b/fs/ocfs2/stackglue.h
+> @@ -70,10 +70,14 @@ struct fsdlm_lksb_plus_lvb {
+>   * size of the union is known.  Lock status structures are embedded in
+>   * ocfs2 inodes.
+>   */
+> -union ocfs2_dlm_lksb {
+> -	struct dlm_lockstatus lksb_o2dlm;
+> -	struct dlm_lksb lksb_fsdlm;
+> -	struct fsdlm_lksb_plus_lvb padding;
+> +struct ocfs2_cluster_connection;
+> +struct ocfs2_dlm_lksb {
+> +	 union {
+> +		 struct dlm_lockstatus lksb_o2dlm;
+> +		 struct dlm_lksb lksb_fsdlm;
+> +		 struct fsdlm_lksb_plus_lvb padding;
+> +	 };
+> +	 struct ocfs2_cluster_connection *lksb_conn;
+>  };
+>  
+>  /*
+> @@ -81,9 +85,9 @@ union ocfs2_dlm_lksb {
+>   */
+>  struct ocfs2_locking_protocol {
+>  	struct ocfs2_protocol_version lp_max_version;
+> -	void (*lp_lock_ast)(union ocfs2_dlm_lksb *lksb);
+> -	void (*lp_blocking_ast)(union ocfs2_dlm_lksb *lksb, int level);
+> -	void (*lp_unlock_ast)(union ocfs2_dlm_lksb *lksb, int error);
+> +	void (*lp_lock_ast)(struct ocfs2_dlm_lksb *lksb);
+> +	void (*lp_blocking_ast)(struct ocfs2_dlm_lksb *lksb, int level);
+> +	void (*lp_unlock_ast)(struct ocfs2_dlm_lksb *lksb, int error);
+>  };
+>  
+>  
+> @@ -161,7 +165,7 @@ struct ocfs2_stack_operations {
+>  	 */
+>  	int (*dlm_lock)(struct ocfs2_cluster_connection *conn,
+>  			int mode,
+> -			union ocfs2_dlm_lksb *lksb,
+> +			struct ocfs2_dlm_lksb *lksb,
+>  			u32 flags,
+>  			void *name,
+>  			unsigned int namelen);
+> @@ -176,7 +180,7 @@ struct ocfs2_stack_operations {
+>  	 * function.  The caller can use this to find their object.
+>  	 */
+>  	int (*dlm_unlock)(struct ocfs2_cluster_connection *conn,
+> -			  union ocfs2_dlm_lksb *lksb,
+> +			  struct ocfs2_dlm_lksb *lksb,
+>  			  u32 flags);
+>  
+>  	/*
+> @@ -185,17 +189,17 @@ struct ocfs2_stack_operations {
+>  	 * callback pulls out the stack-specific lksb, converts the status
+>  	 * to a proper errno, and returns it.
+>  	 */
+> -	int (*lock_status)(union ocfs2_dlm_lksb *lksb);
+> +	int (*lock_status)(struct ocfs2_dlm_lksb *lksb);
+>  
+>  	/*
+>  	 * Return non-zero if the LVB is valid.
+>  	 */
+> -	int (*lvb_valid)(union ocfs2_dlm_lksb *lksb);
+> +	int (*lvb_valid)(struct ocfs2_dlm_lksb *lksb);
+>  
+>  	/*
+>  	 * Pull the lvb pointer off of the stack-specific lksb.
+>  	 */
+> -	void *(*lock_lvb)(union ocfs2_dlm_lksb *lksb);
+> +	void *(*lock_lvb)(struct ocfs2_dlm_lksb *lksb);
+>  
+>  	/*
+>  	 * Cluster-aware posix locks
+> @@ -212,7 +216,7 @@ struct ocfs2_stack_operations {
+>  	 * This is an optoinal debugging hook.  If provided, the
+>  	 * stack can dump debugging information about this lock.
+>  	 */
+> -	void (*dump_lksb)(union ocfs2_dlm_lksb *lksb);
+> +	void (*dump_lksb)(struct ocfs2_dlm_lksb *lksb);
+>  };
+>  
+>  /*
+> @@ -248,18 +252,18 @@ int ocfs2_cluster_this_node(unsigned int *node);
+>  struct ocfs2_lock_res;
+>  int ocfs2_dlm_lock(struct ocfs2_cluster_connection *conn,
+>  		   int mode,
+> -		   union ocfs2_dlm_lksb *lksb,
+> +		   struct ocfs2_dlm_lksb *lksb,
+>  		   u32 flags,
+>  		   void *name,
+>  		   unsigned int namelen);
+>  int ocfs2_dlm_unlock(struct ocfs2_cluster_connection *conn,
+> -		     union ocfs2_dlm_lksb *lksb,
+> +		     struct ocfs2_dlm_lksb *lksb,
+>  		     u32 flags);
+>  
+> -int ocfs2_dlm_lock_status(union ocfs2_dlm_lksb *lksb);
+> -int ocfs2_dlm_lvb_valid(union ocfs2_dlm_lksb *lksb);
+> -void *ocfs2_dlm_lvb(union ocfs2_dlm_lksb *lksb);
+> -void ocfs2_dlm_dump_lksb(union ocfs2_dlm_lksb *lksb);
+> +int ocfs2_dlm_lock_status(struct ocfs2_dlm_lksb *lksb);
+> +int ocfs2_dlm_lvb_valid(struct ocfs2_dlm_lksb *lksb);
+> +void *ocfs2_dlm_lvb(struct ocfs2_dlm_lksb *lksb);
+> +void ocfs2_dlm_dump_lksb(struct ocfs2_dlm_lksb *lksb);
+>  
+>  int ocfs2_stack_supports_plocks(void);
+>  int ocfs2_plock(struct ocfs2_cluster_connection *conn, u64 ino,
 >   
->> It is highly desirable to trap into kdb on panic,
->>     
->
-> s/kdb/kgdb/
->
-> But is it necessary to do it in-kernel?  Why not just put a
-> breakpoint at panic(), add that to your .gdbinit?
->
->   
 
-If you don't mind consuming a breakpoint that is ok.  Certainly there is
-also the possibility of making this configurable as well.
-
-For now I will omit this patch from any kind of future pull request
-while we hash out what makes sense.
-
->> diff --git a/kernel/panic.c b/kernel/panic.c
->> index c787333..428d15b 100644
->> --- a/kernel/panic.c
->> +++ b/kernel/panic.c
->> @@ -66,10 +66,13 @@ NORET_TYPE void panic(const char * fmt, ...)
->>  	 */
->>  	preempt_disable();
->>  
->> -	bust_spinlocks(1);
->>  	va_start(args, fmt);
->>  	vsnprintf(buf, sizeof(buf), fmt, args);
->>  	va_end(args);
->> +
->> +	atomic_notifier_call_chain(&panic_notifier_list, 0, buf);
->> +
->> +	bust_spinlocks(1);
->>  	printk(KERN_EMERG "Kernel panic - not syncing: %s\n",buf);
->>  #ifdef CONFIG_DEBUG_BUGVERBOSE
->>  	dump_stack();
->> @@ -91,8 +94,6 @@ NORET_TYPE void panic(const char * fmt, ...)
->>  	 */
->>  	smp_send_stop();
->>  
->> -	atomic_notifier_call_chain(&panic_notifier_list, 0, buf);
->> -
->>  	bust_spinlocks(0);
->>  
->>  	if (!panic_blink)
->>     
->
-> So the notifier call now happens before all the printks and the kexec
-> and kmsg_dump handling.  What effect does this have upon the code which
-> implements kexec and kmsg_dump?
->
->   
-
-I certainly don't want to break kexec or alter any behavior, does that
-mean kgdb / kdb should hook the kexec for notification?
-
-I think ideally it is a end user's preference as to if they want in via
-kexec or the kernel debugger.  Calling the smp_send_stop() prior to the
-notifier was a death sentence for the kernel debugger. 
-
-Perhaps I can move the notifier before smp_send_stop()?
-
-Jason.
