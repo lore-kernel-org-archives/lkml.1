@@ -1,52 +1,68 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757563Ab0BLUZh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 15:25:37 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:45811 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751382Ab0BLUZg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 15:25:36 -0500
-Date: Fri, 12 Feb 2010 13:25:34 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Jean Delvare <khali@linux-fr.org>, lasse.collin@tukaani.org,
-       mirrors@kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       "FTPAdmin Kernel.org" <ftpadmin@kernel.org>, users@kernel.org
-Subject: Re: [kernel.org users] XZ Migration discussion
-Message-ID: <20100212202534.GH11239@parisc-linux.org>
-References: <4B744E13.8040004@kernel.org> <20100212150137.648dca7c@hyperion.delvare> <4B75A5FE.8020408@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B75A5FE.8020408@zytor.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1757580Ab0BLU15 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 15:27:57 -0500
+Received: from smtp.witbe.net ([81.88.96.48]:43449 "EHLO smtp.witbe.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755089Ab0BLU14 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Feb 2010 15:27:56 -0500
+Date: Fri, 12 Feb 2010 21:26:32 +0100
+From: Paul Rolland (=?UTF-8?B?44Od44O844Or44O744Ot44Op44Oz?=) 
+	<rol@witbe.net>
+To: Thomas Backlund <tmb@mandriva.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, rol@witbe.net
+Subject: Re: Linux 2.6.33-rc8
+Message-ID: <20100212212632.53cbdc46@tux.DEF.witbe.net>
+In-Reply-To: <4B75B5D8.5080602@mandriva.org>
+References: <alpine.LFD.2.00.1002121142100.3922@localhost.localdomain>
+	<4B75B5D8.5080602@mandriva.org>
+Organization: Witbe.net
+X-Mailer: Claws Mail 3.7.5 (GTK+ 2.16.6; x86_64-unknown-linux-gnu)
+X-Ncc-RegId: fr.witbe
+X-Face: +^rP^g;Vjb!M*"%3$mF6xWU{DwwAx)W=b_<WXQMv}Rk8,fQ)?Wnk0NK/+m,;eWci?+;=I}d^:]I+)D+|r'vxjYjp.?o-8Va|&sD*-GVKn>}?Y)|*X<5cv@M`1P{\:)p9_:$=)(NY2`%AcypV*]z>YIyy5yY"9PUoV5@)*(W:S5e-48Ct7Wu6CkkO[=KB"ox,_2B/FwY&hr/E1H&<9IbOCx6NrBa"}FLA)UIvHg`9%NC\LfYB3ia]
+Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwBAMAAAClLOS0AAAAFVBMVEWsjH1VRjFydFciEg3a1tJxUEM6OCB1zdsDAAACcElEQVQ4jV2Tu3LcMAxFEY7SG/KQNYlY2685Zi1rmF5kQteBNcL/f0JAacfZDUscARePK9itY3Q4Qu5vplJKIFsrvI0t7Ii/8/nmQsERtgJpHAtiGW4ggylOAwhXTxPi0xfIcxDrZIc3qhMGD/kfKdwBExZrAf6l5PeC/Al7cAGfAGD+AgvL5yckcsxegVmG+QZRPgnYXnFUMAC8DLd6QZhAxj6dRo6vT/JNkmZQmPyDtoroMkD2VlaVgHsw2QrCAf1jPM+ou2Ju1j/G8+xINfZT+zGDPDjr7H/xnKewgi6SO4D7zloYoRDafSoogmirP0t9YIOJnN2ibDEKK6zDoSEjTIFXDcYYkwizoO/AjkATm3g+JVsSXPOCZIHwj7uBo2Bi97RMOoflJ4n3b3dvS2kVXDQupjvAk7zvaMEJlu0OJDFy4SsCusRbL95jRynY0LIA/rpyxCMkJ1ie+bWoEy+MG7pzDE3k8Z2C1a5eUdxmi0adGi2mdVjyUr2uvamrW9EeuLTCY84/AUjBj40LtqYbbM23vqolA2mpj5g03gparH45DqBgmsBK2hU0x662+QQLVYJLitxTnHB7yf0es4rraS/xqKW/hF1zPg9lOijpmtIBVrWKOQ6oTSkQjh3YtnarHQc0RrtS1XjtbQnScPrLeNKM6iS+6Qz6e9mVoPvaHHPU6eP5aKu1Ifd2QQvp6EA1bLaP3VREwewXY73xgLppBR2tg4LFg9lXzegHQlusWuxwogLCaswJ+qunQ2cyfuziX6B1p0E26nQazR3Qn2jQarRXVVZT9zP3uB5FV6pNjQG+u03ugbalEsEXqo7/AjAH60VpvOMvAAAAAElFTkSuQmCC
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 12, 2010 at 11:03:26AM -0800, H. Peter Anvin wrote:
-> > 3* Create a new subdirectory for every 2.6.x kernel, and move all the
-> > related files there. This would shrink the main index drastically, and
-> > each subdirectory would have a reasonable size (except maybe 2.6.16 and
-> > 2.6.27.) Oddly enough this has been done for the files under testing/
-> > already, so I am curious why we don't do it for the release files (and
-> > the testing/incr/ files, while we're at it.)
-> 
-> Well, part of the reason why is that we're functionally "stuck" on 2.6;
-> a prefix which really has lost all meaning.
-> 
-> It might open up the question if we shouldn't just do a Solaris and drop
-> the leading 2 (so the next kernel would be 6.33) or call the kernel
-> after that 3.0 instead of 2.6.34, and then 3.1 instead of 2.6.35.
+Hello,
 
-Damn, we forgot to have that fight at Kernel Summit last year.
+On Fri, 12 Feb 2010 22:11:04 +0200
+Thomas Backlund <tmb@mandriva.org> wrote:
 
-I'm in favour of the 3.0 / 3.1 / 3.2 with stable@ being responsible for
-3.0.1, 3.0.2, 3.1.1, etc.
+> 12.02.2010 21:49, Linus Torvalds skrev:
+> >
+> > I think this is going to be the last -rc of the series, so please do
+> > test it out. A number of regressions should be fixed, and while the
+> > regression list doesn't make me _happy_, we didn't have the kind of
+> > nasty things that went on before -rc7 and made me worried.
+> >
+> Has the mirroring broken down ?
 
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+-ECANTDOWNLOAD
+
++1 from France using ftp.kernel.org :
+ftp> dir linux-2.6.33-rc7*
+227 Entering Passive Mode (199,6,1,164,158,19).
+150 Here comes the directory listing.
+-rw-rw-r--    1 536      536      66191954 Feb 06 22:27 linux-2.6.33-rc7.tar.bz2
+-rw-rw-r--    1 536      536           248 Feb 06 22:27 linux-2.6.33-rc7.tar.bz2.sign
+-rw-rw-r--    1 536      536      84523618 Feb 06 22:27 linux-2.6.33-rc7.tar.gz
+-rw-rw-r--    1 536      536           248 Feb 06 22:27 linux-2.6.33-rc7.tar.gz.sign
+-rw-rw-r--    1 536      536           248 Feb 06 22:27 linux-2.6.33-rc7.tar.sign
+226 Directory send OK.
+ftp> dir linux-2.6.33-rc8*
+227 Entering Passive Mode (199,6,1,164,203,16).
+150 Here comes the directory listing.
+226 Directory send OK.
+ftp> quit
+
+and www.kernel.org doesn't contain reference to -rc8 yet.
+
+Paul
+
+
+
