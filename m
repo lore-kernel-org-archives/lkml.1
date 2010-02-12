@@ -1,18 +1,18 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757398Ab0BLTKk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 14:10:40 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:48324 "EHLO
+	id S1757441Ab0BLTKl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 14:10:41 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:39177 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757037Ab0BLTKi (ORCPT
+	with ESMTP id S1757130Ab0BLTKj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 14:10:38 -0500
-X-Authority-Analysis: v=1.0 c=1 a=QEzcV-ImEyYA:10 a=meVymXHHAAAA:8 a=MfOiGYneL4kA26P_FgwA:9 a=buI_vU1kSSCRVHUnUVyMfj7e5-sA:4 a=jeBq3FmKZ4MA:10
+	Fri, 12 Feb 2010 14:10:39 -0500
+X-Authority-Analysis: v=1.0 c=1 a=evUlCkV8MkoA:10 a=G84pBB-zaXpDWVkEYcwA:9 a=WlydrxPbYKLWdOvIlkkTOu8rhX8A:4 a=YQDlljpXE8zri9AN:21 a=BBr-RQy023Hu6V0u:21
 X-Cloudmark-Score: 0
 X-Originating-IP: 74.67.89.75
-Message-Id: <20100212191037.283998401@goodmis.org>
+Message-Id: <20100212190907.954438555@goodmis.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 12 Feb 2010 14:09:09 -0500
+Date: Fri, 12 Feb 2010 14:09:07 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
@@ -22,44 +22,31 @@ Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Mathieu Desnoyers <compudj@krystal.dyndns.org>,
        Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
        Christoph Hellwig <hch@lst.de>, Wu Fengguang <fengguang.wu@intel.com>
-Subject: [PATCH 2/2][RFC] tracing: Add extract out softirq names used by irq trace events
-References: <20100212190907.954438555@goodmis.org>
-Content-Disposition: inline; filename=irq-events.patch
+Subject: [PATCH 0/2][RFC] tracing: Showing symbols for TRACE_EVENT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The irq trace events that map the softirq vectors to strings
-shows up in the format files as names. To allow binary parsers to
-be able to convert these names to their actual numbers, this patch
-extracts those enums.
+[Re-sending since my first try was missing a '>' from Frederic's
+ email address, and it screwed up quilt mail ]
 
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+The __print_symbolic() macro is used by TRACE_EVENT TP_printk to convert
+numbers into symbols. But if those numbers are defined as ENUMS, it works
+fine for ftrace trace output, but a parser reading the binary trace
+will not know how to translate the enum into a number.
 
----
- include/trace/events/irq.h |   11 +++++++++++
- 1 file changed, 11 insertions(+)
+The first patch creates a EXTRACT_TRACE_SYMBOL(sym) macro that
+a <events>.h file can add to extract out all the enums that it uses
+in TRACE_EVENTs. These symbols will then appear in the event_symbols
+file in the events/ directory.
 
-Index: linux-trace.git/include/trace/events/irq.h
-===================================================================
---- linux-trace.git.orig/include/trace/events/irq.h	2010-02-12 13:29:44.000000000 -0500
-+++ linux-trace.git/include/trace/events/irq.h	2010-02-12 13:33:20.000000000 -0500
-@@ -7,6 +7,17 @@
- #include <linux/tracepoint.h>
- #include <linux/interrupt.h>
- 
-+EXTRACT_TRACE_SYMBOL(HI_SOFTIRQ);
-+EXTRACT_TRACE_SYMBOL(TIMER_SOFTIRQ);
-+EXTRACT_TRACE_SYMBOL(NET_TX_SOFTIRQ);
-+EXTRACT_TRACE_SYMBOL(NET_RX_SOFTIRQ);
-+EXTRACT_TRACE_SYMBOL(BLOCK_SOFTIRQ);
-+EXTRACT_TRACE_SYMBOL(BLOCK_IOPOLL_SOFTIRQ);
-+EXTRACT_TRACE_SYMBOL(TASKLET_SOFTIRQ);
-+EXTRACT_TRACE_SYMBOL(SCHED_SOFTIRQ);
-+EXTRACT_TRACE_SYMBOL(HRTIMER_SOFTIRQ);
-+EXTRACT_TRACE_SYMBOL(RCU_SOFTIRQ);
-+
- #define softirq_name(sirq) { sirq##_SOFTIRQ, #sirq }
- #define show_softirq_name(val)				\
- 	__print_symbolic(val,				\
+The second patch converts softirq symbols in include/trace/events/irq.h
+
+This is an RFC patch set. I want to get your feedback before I push
+this out of my git repo.
+
+Thanks,
+
+-- Steve
+
 
