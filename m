@@ -1,79 +1,122 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756444Ab0BLSmZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 13:42:25 -0500
-Received: from mail-fx0-f220.google.com ([209.85.220.220]:55190 "EHLO
-	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752811Ab0BLSmX (ORCPT
+	id S1756979Ab0BLSyk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 13:54:40 -0500
+Received: from casper.infradead.org ([85.118.1.10]:51418 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756719Ab0BLSyj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 13:42:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=RPHCdcBwNdgchkjAvoaCdC3LP9fU9LI3VBfL0wtz9Z0U5xI+SvkmoQ98bS8E1itq79
-         1YccErU7leqTdB+GCYzTHDffs4PjJNC2dqL95ewqG0YDw6yuSnqziiOrqH7i4jSzjgCB
-         cftCMJJNChJxqYLbgsdcwcD3nTv3jCbI1Lnoc=
-Subject: [PATCH 2.6.32.7] ext4: number of blocks for fiemap
-From: Leonard Michlmayr <leonard.michlmayr@gmail.com>
-To: linux-ext4@vger.kernel.org
-Cc: surbhi.palande@canonical.com, linux-kernel@vger.kernel.org,
-       474597@bugs.launchpad.net
-In-Reply-To: <4B701793.9010005@canonical.com>
-References: <1257360161.22057.16.camel@michlmayr>
-	 <372739E0-41AD-4DEC-9187-1396BE5894BD@sun.com>
-	 <1257371050.13852.28.camel@michlmayr>  <4B701793.9010005@canonical.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 12 Feb 2010 19:42:16 +0100
-Message-ID: <1266000136.4310.36.camel@michlmayr>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 12 Feb 2010 13:54:39 -0500
+Date: Fri, 12 Feb 2010 16:53:58 -0200
+From: Arnaldo Carvalho de Melo <acme@infradead.org>
+To: Kirill Smelkov <kirr@landau.phys.spbu.ru>
+Cc: mingo@redhat.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       hpa@zytor.com, efault@gmx.de, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:perf/core] perf top: Fix annotate for userspace
+Message-ID: <20100212185358.GD8589@ghostprotocols.net>
+References: <1265550376-12665-1-git-send-email-acme@infradead.org> <tip-ee11b90b12eb1ec25e1044bac861e90bfd19ec9e@git.kernel.org> <20100212162059.GA30041@landau.phys.spbu.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100212162059.GA30041@landau.phys.spbu.ru>
+X-Url: http://acmel.wordpress.com
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Problem:
-fs/ext4/extents.c:ext4_fiemap rounds the length of the requested range
-down to blocksize. This is not the true number of blocks that cover the
-requested region. This problem is especially impressive if the user
-requests only the first byte of a file: not a single extent will be
-reported.
+Em Fri, Feb 12, 2010 at 07:20:59PM +0300, Kirill Smelkov escreveu:
+> On Sun, Feb 07, 2010 at 04:33:40PM +0000, tip-bot for Kirill Smelkov wrote:
+> > Commit-ID:  ee11b90b12eb1ec25e1044bac861e90bfd19ec9e
+> > Gitweb:     http://git.kernel.org/tip/ee11b90b12eb1ec25e1044bac861e90bfd19ec9e
+> > Author:     Kirill Smelkov <kirr@landau.phys.spbu.ru>
+> > AuthorDate: Sun, 7 Feb 2010 11:46:15 -0200
+> > Committer:  Ingo Molnar <mingo@elte.hu>
+> > CommitDate: Sun, 7 Feb 2010 17:30:20 +0100
+> > 
+> > perf top: Fix annotate for userspace
+> 
+> [...]
+> 
+> Arnaldo, Ingo, thanks for finally applying it
+> 
+>   ( though shouldn't, AuthorDate be ``Fri,  8 Jan 2010 15:23:08 +0300'',
+>     just like in my post for this patch
+>     http://marc.info/?l=linux-kernel&m=126295508002536&w=2 ?)
+> 
+> ----
+> 
+> Also, could you please apply one last cosmetic patch from my original
+> series
+> 
+> http://marc.info/?l=linux-kernel&m=126295502702502&w=2
+> 
+> 
+> That would logically complete my holiday journey to perf land.
+> 
+> 
+> For convenience I'm providing this one last patch here (applies to
+> tip/master cleanly).
 
-Solution:
-Calculate the last byte of the region and round to blocksize. Then get
-the number of blocks by subtracting last_blk - start_blk and adding 1
-for the first block. (The variable last_blk is introduced just for
-easier reading.) This patch will fix this.
+Ingo, you may take this one now or wait till my next series, your
+choice,
 
-I already suggested this patch some time ago, this is the same patch for
-a more recent kernel version.
-
-Signed-off-by: Leonard Michlmayr <leonard.michlmayr@gmail.com>
-
-diff -rup linux-2.6.32.7/fs/ext4/extents.c linux-2.6.32.7-lm/fs/ext4/extents.c
---- linux-2.6.32.7/fs/ext4/extents.c	2010-01-29 00:06:20.000000000 +0100
-+++ linux-2.6.32.7-lm/fs/ext4/extents.c	2010-02-11 21:26:40.000000000 +0100
-@@ -3711,6 +3711,7 @@ int ext4_fiemap(struct inode *inode, str
- 		__u64 start, __u64 len)
- {
- 	ext4_lblk_t start_blk;
-+	ext4_lblk_t last_blk;
- 	ext4_lblk_t len_blks;
- 	int error = 0;
+Acked-by: Arnaldo Carvalho de Melo <acme@redhat.com>
  
-@@ -3726,7 +3727,9 @@ int ext4_fiemap(struct inode *inode, str
- 		error = ext4_xattr_fiemap(inode, fieinfo);
- 	} else {
- 		start_blk = start >> inode->i_sb->s_blocksize_bits;
--		len_blks = len >> inode->i_sb->s_blocksize_bits;
-+		/* the last byte in the range is (start + len - 1) */
-+		last_blk = (start + len - 1) >> inode->i_sb->s_blocksize_bits;
-+		len_blks = last_blk - start_blk + 1;
- 
- 		/*
- 		 * Walk the extent tree gathering extent information.
-
-
-
-
+> Thanks beforehand,
+> Kirill
+> 
+> 
+> From: Kirill Smelkov <kirr@landau.phys.spbu.ru>
+> Subject: [PATCH 2/6] perf top: align help text on keys
+> Date: Fri,  8 Jan 2010 15:23:05 +0300
+> 
+> Mapped keys:
+>         [d]     display refresh delay.                  (2)
+>         [e]     display entries (lines).                (46)
+>         [f]     profile display filter (count).         (5)
+>         [F]     annotate display filter (percent).      (5%)
+>         [s]     annotate symbol.                        (NULL)
+>         [S]     stop annotation.
+>         [K]     hide kernel_symbols symbols.            (no)
+>         [U]     hide user symbols.                      (no)
+>         [z]     toggle sample zeroing.                  (0)
+>         [qQ]    quit.
+> 
+> instead of
+> 
+> Mapped keys:
+>         [d]     display refresh delay.                  (2)
+>         [e]     display entries (lines).                (46)
+>         [f]     profile display filter (count).         (5)
+>         [F]     annotate display filter (percent).      (5%)
+>         [s]     annotate symbol.                        (NULL)
+>         [S]     stop annotation.
+>         [K]     hide kernel_symbols symbols.                    (no)
+>         [U]     hide user symbols.                      (no)
+>         [z]     toggle sample zeroing.                  (0)
+>         [qQ]    quit.
+> 
+> Signed-off-by: Kirill Smelkov <kirr@landau.phys.spbu.ru>
+> ---
+>  tools/perf/builtin-top.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/tools/perf/builtin-top.c b/tools/perf/builtin-top.c
+> index 9c7de93..9dc8070 100644
+> --- a/tools/perf/builtin-top.c
+> +++ b/tools/perf/builtin-top.c
+> @@ -704,7 +704,7 @@ static void print_mapped_keys(void)
+>  		fprintf(stdout, "\t[w]     toggle display weighted/count[E]r. \t(%d)\n", display_weighted ? 1 : 0);
+>  
+>  	fprintf(stdout,
+> -		"\t[K]     hide kernel_symbols symbols.             \t(%s)\n",
+> +		"\t[K]     hide kernel_symbols symbols.     \t(%s)\n",
+>  		hide_kernel_symbols ? "yes" : "no");
+>  	fprintf(stdout,
+>  		"\t[U]     hide user symbols.               \t(%s)\n",
+> -- 
+> 1.6.6.79.gd514e.dirty
