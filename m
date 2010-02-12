@@ -1,36 +1,80 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757738Ab0BLElq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 23:41:46 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:39756 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756035Ab0BLElo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 23:41:44 -0500
-Date: Fri, 12 Feb 2010 04:41:30 +0000 (GMT)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-cc: Jiri Kosina <jkosina@suse.cz>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Adam Buchbinder <adam.buchbinder@gmail.com>,
-       Alex Deucher <alexdeucher@gmail.com>
-Subject: Re: linux-next: manual merge of the trivial tree with the drm tree
-In-Reply-To: <20100212151223.21746bc7.sfr@canb.auug.org.au>
-Message-ID: <alpine.DEB.2.00.1002120440510.26950@skynet.skynet.ie>
-References: <20100212151223.21746bc7.sfr@canb.auug.org.au>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	id S1757736Ab0BLEwg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 23:52:36 -0500
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:51892 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756035Ab0BLEwd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 23:52:33 -0500
+Message-ID: <4B74DE40.5030401@ce.jp.nec.com>
+Date: Fri, 12 Feb 2010 13:51:12 +0900
+From: "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@zeniv.linux.org.uk>
+CC: Valdis.Kletnieks@vt.edu, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, linux-s390@vger.kernel.org,
+       linux-next@vger.kernel.org, Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: Re: mmotm 2010-02-10 - BUG at fs/dcache.c:677!
+References: <201002110043.o1B0hKxW008835@imap1.linux-foundation.org>	<8576.1265942657@localhost> <20100211191427.6ff9aec6.akpm@linux-foundation.org>
+In-Reply-To: <20100211191427.6ff9aec6.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+(02/12/10 12:14), Andrew Morton wrote:
+> On Thu, 11 Feb 2010 21:44:17 -0500 Valdis.Kletnieks@vt.edu wrote:
+> 
+>> On Wed, 10 Feb 2010 16:17:41 PST, akpm@linux-foundation.org said:
+>>> The mm-of-the-moment snapshot 2010-02-10-16-17 has been uploaded to
+>>>
+>>>    http://userweb.kernel.org/~akpm/mmotm/
+>>
+>> Hit this at shutdown. ext4 filesystems.  Brought it up to single-user
+>> mode, then 'shutdown -h now'.
+>>
+>> [   58.311786] ------------[ cut here ]------------
+>> [   58.312261] kernel BUG at fs/dcache.c:677!
+...
 
-> Hi Jiri,
+> Yeah, Sachin reported that against linux-next too (I think - need to
+> check the exact line numbers):
+> http://permalink.gmane.org/gmane.linux.file-systems/38148
+> 
+> It seems to have been met with shrugs thus far.
 
-Can we drop any cleanups to atombios.h?
+According to the Sachin's report:
+> While running hackbench against today's next-20100208 (9056d31..)
+> on a s390 box, came across following BUG.
+...
+> Did not observe this with next-20100205. Also there doesn't seem to be
+> any patches applied to this code after the last release. So not
+> sure what could have caused this. Corresponding code is :
 
-This file comes from AMD and we normally drop it into place, so they just 
-get overwritten next time.
+So the bug seems introduced between next-20100205 and next-20100208.
 
-Dave.
+Isn't this change missing the equivalent of "dput(old)"?
+
+In patch-v2.6.33-rc7-next-20100208:
+> diff --git a/fs/namei.c b/fs/namei.c
+> index 94a5e60..a056dad 100644
+> --- a/fs/namei.c
+> +++ b/fs/namei.c
+> @@ -689,33 +689,17 @@ static __always_inline void follow_dotdot(struct nameidata *nd)
+...
+> -               spin_lock(&dcache_lock);
+>                 if (nd->path.dentry != nd->path.mnt->mnt_root) {
+> -                       nd->path.dentry = dget(nd->path.dentry->d_parent);
+> -                       spin_unlock(&dcache_lock);
+> -                       dput(old);
+> +                       /* rare case of legitimate dget_parent()... */
+> +                       nd->path.dentry = dget_parent(nd->path.dentry);
+>                         break;
+>                 }
+
+-- 
+Jun'ichi Nomura, NEC Corporation
