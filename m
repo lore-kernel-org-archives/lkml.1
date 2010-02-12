@@ -1,68 +1,51 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757875Ab0BLCpG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 21:45:06 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:39945 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757817Ab0BLCpE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 21:45:04 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Fri, 12 Feb 2010 11:41:33 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Minchan Kim <minchan.kim@gmail.com>
-Cc: "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>, stable@kernel.org,
-       rientjes@google.com,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [BUGFIX][PATCH] memcg: fix oom killing a child process in an 
- other cgroup
-Message-Id: <20100212114133.57bb1141.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <28c262361002111839t291b8ac2xdb9b89b354a115e0@mail.gmail.com>
-References: <20100212105318.caf37133.kamezawa.hiroyu@jp.fujitsu.com>
-	<28c262361002111839t291b8ac2xdb9b89b354a115e0@mail.gmail.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1757871Ab0BLDCN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 22:02:13 -0500
+Received: from ozlabs.org ([203.10.76.45]:57890 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757850Ab0BLDCL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 22:02:11 -0500
+Date: Fri, 12 Feb 2010 14:02:05 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, fweisbec@gmail.com,
+       Dave Wootton <dwootton@us.ibm.com>
+Subject: Why is PERF_FORMAT_GROUP incompatible with inherited events?
+Message-ID: <20100212030205.GE13769@brick.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 12 Feb 2010 11:39:35 +0900
-Minchan Kim <minchan.kim@gmail.com> wrote:
+We currently have this code in perf_event_alloc() in kernel/perf_event.c:
 
-> On Fri, Feb 12, 2010 at 10:53 AM, KAMEZAWA Hiroyuki
-> <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > This patch itself is againt mmotm-Feb10 but can be applied to 2.6.32.8
-> > without problem.
-> >
-> > ==
-> > From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> >
-> > Now, oom-killer is memcg aware and it finds the worst process from
-> > processes under memcg(s) in oom. Then, it kills victim's child at first.
-> > It may kill a child in other cgroup and may not be any help for recovery.
-> > And it will break the assumption users have...
-> >
-> > This patch fixes it.
-> >
-> > CC: stable@kernel.org
-> > CC: Minchan Kim <minchan.kim@gmail.com>
-> > CC: Balbir Singh <balbir@linux.vnet.ibm.com>
-> > CC: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-> > Acked-by: David Rientjes <rientjes@google.com>
-> > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> Reviewed-by: Minchan Kim <minchan.kim@gmail.com>
-> 
-> Sorry for noise, Kame.
-> 
-No problem. You give me a chance to consider other problems/dirtiness of codes.
-I continue review to make memcg cleaer.
+	/*
+	 * we currently do not support PERF_FORMAT_GROUP on inherited events
+	 */
+	if (attr->inherit && (attr->read_format & PERF_FORMAT_GROUP))
+		goto done;
 
-Thanks,
--Kame
+plus there is a comment "XXX PERF_FORMAT_GROUP vs inherited events
+seems difficult" next to perf_output_read_group() (but there isn't a
+similar comment on perf_read_hw()).
 
+First, what is the difficulty referred to here?
+
+Secondly, if the difficulty is just to do with the intersection of
+sampling counters, inheritance, and group readout (as seems to be the
+case), could we please allow group readout on ordinary counting
+(non-sampling) counters?  That is, change the test above to something
+like:
+
+	if (attr->inherit && attr->sample_period &&
+	    (attr->read_format & PERF_FORMAT_GROUP))
+		goto done;
+
+Any objections to that change?  If it's OK, could we get it into .33
+and .32-stable?
+
+Paul.
