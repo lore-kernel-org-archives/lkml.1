@@ -1,87 +1,59 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757088Ab0BLV72 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 16:59:28 -0500
-Received: from poutre.nerim.net ([62.4.16.124]:61280 "EHLO poutre.nerim.net"
+	id S1755937Ab0BLWLs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 17:11:48 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:36702 "EHLO mail.zytor.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755677Ab0BLV70 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 16:59:26 -0500
-Date: Fri, 12 Feb 2010 22:59:23 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Phillip Lougher <phillip@lougher.demon.co.uk>
-Cc: "J.H." <warthog9@kernel.org>, "FTPAdmin Kernel.org" <ftpadmin@kernel.org>,
-       users@kernel.org, lasse.collin@tukaani.org,
-       linux-kernel <linux-kernel@vger.kernel.org>, mirrors@kernel.org
-Subject: Re: [kernel.org users] XZ Migration discussion
-Message-ID: <20100212225923.36a67112@hyperion.delvare>
-In-Reply-To: <4B75B2A6.5080006@lougher.demon.co.uk>
-References: <4B744E13.8040004@kernel.org>
-	<20100212150137.648dca7c@hyperion.delvare>
-	<4B75A5CF.70308@lougher.demon.co.uk>
-	<20100212203209.0cb8afc3@hyperion.delvare>
-	<4B75B2A6.5080006@lougher.demon.co.uk>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1755016Ab0BLWLr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Feb 2010 17:11:47 -0500
+Message-ID: <4B75D1F9.5070501@zytor.com>
+Date: Fri, 12 Feb 2010 14:11:05 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+MIME-Version: 1.0
+To: "Sleddens, J.P.G." <j.p.g.sleddens@hro.nl>
+CC: "FTPAdmin Kernel.org" <ftpadmin@kernel.org>, mirrors@kernel.org,
+       users@kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [kernel.org mirrors] [kernel.org users] XZ Migration	discussion
+References: <4B744E13.8040004@kernel.org>	<20100212150137.648dca7c@hyperion.delvare> <4B75A5FE.8020408@zytor.com> <4B75C8CB.DBDA.0014.0@hro.nl>
+In-Reply-To: <4B75C8CB.DBDA.0014.0@hro.nl>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 12 Feb 2010 19:57:26 +0000, Phillip Lougher wrote:
-> Jean Delvare wrote:
-> > On Fri, 12 Feb 2010 19:02:39 +0000, Phillip Lougher wrote:
-> >> 5* Archive all the older 2.6.x files and move them into a separate
-> >>     directory (e.g. v2.6-pre20).  Moving all the pre 2.6.20 files
-> >>     saves 42% of the file listing.
-> >>
-> >> This seems an obvious solution, what am I missing?
-> > 
-> > This is confusing, inconsistent and unstable. Confusing because 2.6-pre
-> > referred so far to the releases immediately preceding 2.6.0.
+On 02/12/2010 12:31 PM, Sleddens, J.P.G. wrote:
+>>>> On 12-2-2010 at 20:03, "H. Peter Anvin" <hpa@zytor.com> wrote:
+>> On 02/12/2010 06:01 AM, Jean Delvare wrote:
+>>> 3* Create a new subdirectory for every 2.6.x kernel, and move all the
+>>> related files there. This would shrink the main index drastically, and
+>>> each subdirectory would have a reasonable size (except maybe 2.6.16 and
+>>> 2.6.27.) Oddly enough this has been done for the files under testing/
+>>> already, so I am curious why we don't do it for the release files (and
+>>> the testing/incr/ files, while we're at it.)
+>>
+>> Well, part of the reason why is that we're functionally "stuck" on 2.6;
+>> a prefix which really has lost all meaning.
+>>
+>> It might open up the question if we shouldn't just do a Solaris and drop
+>> the leading 2 (so the next kernel would be 6.33) or call the kernel
+>> after that 3.0 instead of 2.6.34, and then 3.1 instead of 2.6.35.
 > 
-> I didn't say "2.6-pre", anyway it could be called something different,
-> like 'older-releases'.
+> I remember the whole LKML discussion about this a few years back:
+> http://lkml.org/lkml/2008/10/15/377 
 > 
-> > Inconsistent because it requires the downloader to have preliminary
-> > knowledge about what the break point is. Unstable because, while you
-> > consider pre20 to qualify as "old" today, in 5 years you will want
-> > pre30 to qualify as "old" instead, meaning that tools such as ketchup
-> > would have to be updated once again.
-> 
-> You yourself said "I wouldn't worry too much about breaking the current locations.
-> Just give some time for software authors (ketchup comes to mind) to update
-> their code and it shouldn't be a big problem."
+> The whole year.version   or year/month versioning Greg HK proposed
+> made a lot of sense to me.  It would also solve our problem with the 2.6
+> directory just growing and growing as the year versioning would make a
+> natural hierarchy which keeps going no matter what.
 
-Yes, I did say that, and I can repeat it if needed. There's a big
-difference between breaking an old scheme which used to be valid and
-happens to no longer be, and designing a new scheme where breakages are
-bound to happen by design. Even if technically that's the same
-breakage, its reception by the affected users will be very different,
-because in the latter case you have no excuse.
+Note also that every time this conversation happens it starts to pull
+away in different directions, and as a result nothing happens.
 
-> The major advantage with my suggestion is for the majority of users/tools
-> interested in "recent" kernels, nothing changes at all.
+I'm going to stick my foot in it and state the following: I think
+incremental numbers work well, and everyone are used to them.  It
+doesn't seem to be the major issue with the current scheme; the issue
+with the current scheme is that we have one or two levels too much.
 
-Prove it. Many people out there are still working on older trees. I am
-working on 2.6.5 and 2.6.16 kernels on a weekly basis. If ketchup or
-other tools break for these trees only and not more recent ones, that
-won't help me at all, I will still have to update them.
-
-> Your suggestions break everything for everyone.
-
-This doesn't make me happy, but at least it is consistent and durable.
-When you change something for everyone, it has the advantage that the
-solutions are general, come quickly and are widely documented. Using
-quirks to limit the effects is a burden for the future, and may not
-even help that much in practice.
-
-> > I think we want to come up with a directory structure which won't change
-> > in the future.
-> 
-> I think trying to do that is utterly futile.
-
-You didn't have to join this discussion in the first place.
-
--- 
-Jean Delvare
+	-hpa
