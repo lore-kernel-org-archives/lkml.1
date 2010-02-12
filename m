@@ -1,42 +1,107 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756753Ab0BLMBZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 07:01:25 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:45466 "EHLO mx2.suse.de"
+	id S1756545Ab0BLMBI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 07:01:08 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:55531 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756701Ab0BLMBV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 07:01:21 -0500
-Date: Fri, 12 Feb 2010 13:01:20 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: David Fries <david@fries.net>, USB list <linux-usb@vger.kernel.org>,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: usbhid control queue full, due to stuck control request
-In-Reply-To: <201002121259.08146.oliver@neukum.org>
-Message-ID: <alpine.LNX.2.00.1002121301110.30967@pobox.suse.cz>
-References: <20100206172051.GA22311@spacedout.fries.net> <201002120835.36908.oliver@neukum.org> <alpine.LNX.2.00.1002121256500.30967@pobox.suse.cz> <201002121259.08146.oliver@neukum.org>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1751726Ab0BLMBB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Feb 2010 07:01:01 -0500
+From: Mel Gorman <mel@csn.ul.ie>
+To: Andrea Arcangeli <aarcange@redhat.com>
+Cc: Christoph Lameter <cl@linux-foundation.org>, Adam Litke <agl@us.ibm.com>,
+       Avi Kivity <avi@redhat.com>, David Rientjes <rientjes@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: [PATCH 01/12] mm: Document /proc/pagetypeinfo
+Date: Fri, 12 Feb 2010 12:00:48 +0000
+Message-Id: <1265976059-7459-2-git-send-email-mel@csn.ul.ie>
+X-Mailer: git-send-email 1.6.5
+In-Reply-To: <1265976059-7459-1-git-send-email-mel@csn.ul.ie>
+References: <1265976059-7459-1-git-send-email-mel@csn.ul.ie>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 12 Feb 2010, Oliver Neukum wrote:
+The memory compaction patches add details to pagetypeinfo that are not
+obvious and need to be documented. In preparation for this, document
+what is already in /proc/pagetypeinfo.
 
-> > > > Oliver Neukum, this is based on your patch, do you agree with the
-> > > > changes?
-> > > 
-> > > I do agree.
-> > 
-> > Thanks a lot guys for tracking this down and fixing it. I have applied the 
-> > patch.
-> 
-> This being a fix for broken hardware it should go into stable, too.
-> Would you forward it?
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+---
+ Documentation/filesystems/proc.txt |   45 +++++++++++++++++++++++++++++++++++-
+ 1 files changed, 44 insertions(+), 1 deletions(-)
 
-Yes, will take care of that.
-
+diff --git a/Documentation/filesystems/proc.txt b/Documentation/filesystems/proc.txt
+index 0d07513..1829dfb 100644
+--- a/Documentation/filesystems/proc.txt
++++ b/Documentation/filesystems/proc.txt
+@@ -430,6 +430,7 @@ Table 1-5: Kernel info in /proc
+  modules     List of loaded modules                            
+  mounts      Mounted filesystems                               
+  net         Networking info (see text)                        
++ pagetypeinfo Additional page allocator information (see text)  (2.5)
+  partitions  Table of partitions known to the system           
+  pci	     Deprecated info of PCI bus (new way -> /proc/bus/pci/,
+              decoupled by lspci					(2.4)
+@@ -584,7 +585,7 @@ Node 0, zone      DMA      0      4      5      4      4      3 ...
+ Node 0, zone   Normal      1      0      0      1    101      8 ...
+ Node 0, zone  HighMem      2      0      0      1      1      0 ...
+ 
+-Memory fragmentation is a problem under some workloads, and buddyinfo is a 
++External fragmentation is a problem under some workloads, and buddyinfo is a
+ useful tool for helping diagnose these problems.  Buddyinfo will give you a 
+ clue as to how big an area you can safely allocate, or why a previous
+ allocation failed.
+@@ -594,6 +595,48 @@ available.  In this case, there are 0 chunks of 2^0*PAGE_SIZE available in
+ ZONE_DMA, 4 chunks of 2^1*PAGE_SIZE in ZONE_DMA, 101 chunks of 2^4*PAGE_SIZE 
+ available in ZONE_NORMAL, etc... 
+ 
++More information relevant to external fragmentation can be found in
++pagetypeinfo.
++
++> cat /proc/pagetypeinfo
++Page block order: 9
++Pages per block:  512
++
++Free pages count per migrate type at order       0      1      2      3      4      5      6      7      8      9     10
++Node    0, zone      DMA, type    Unmovable      0      0      0      1      1      1      1      1      1      1      0
++Node    0, zone      DMA, type  Reclaimable      0      0      0      0      0      0      0      0      0      0      0
++Node    0, zone      DMA, type      Movable      1      1      2      1      2      1      1      0      1      0      2
++Node    0, zone      DMA, type      Reserve      0      0      0      0      0      0      0      0      0      1      0
++Node    0, zone      DMA, type      Isolate      0      0      0      0      0      0      0      0      0      0      0
++Node    0, zone    DMA32, type    Unmovable    103     54     77      1      1      1     11      8      7      1      9
++Node    0, zone    DMA32, type  Reclaimable      0      0      2      1      0      0      0      0      1      0      0
++Node    0, zone    DMA32, type      Movable    169    152    113     91     77     54     39     13      6      1    452
++Node    0, zone    DMA32, type      Reserve      1      2      2      2      2      0      1      1      1      1      0
++Node    0, zone    DMA32, type      Isolate      0      0      0      0      0      0      0      0      0      0      0
++
++Number of blocks type     Unmovable  Reclaimable      Movable      Reserve      Isolate
++Node 0, zone      DMA            2            0            5            1            0
++Node 0, zone    DMA32           41            6          967            2            0
++
++Fragmentation avoidance in the kernel works by grouping pages of different
++migrate types into the same contiguous regions of memory called page blocks.
++A page block is typically the size of the default hugepage size e.g. 2MB on
++X86-64. By keeping pages grouped based on their ability to move, the kernel
++can reclaim pages within a page block to satisfy a high-order allocation.
++
++The pagetypinfo begins with information on the size of a page block. It
++then gives the same type of information as buddyinfo except broken down
++by migrate-type and finishes with details on how many page blocks of each
++type exist.
++
++If min_free_kbytes has been tuned correctly (recommendations made by hugeadm
++from libhugetlbfs http://sourceforge.net/projects/libhugetlbfs/), one can
++make an estimate of the likely number of huge pages that can be allocated
++at a given point in time. All the "Movable" blocks should be allocatable
++unless memory has been mlock()'d. Some of the Reclaimable blocks should
++also be allocatable although a lot of filesystem metadata may have to be
++reclaimed to achieve this.
++
+ ..............................................................................
+ 
+ meminfo:
 -- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+1.6.5
+
