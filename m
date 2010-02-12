@@ -1,46 +1,71 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756098Ab0BLWd5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 17:33:57 -0500
-Received: from mail-yx0-f196.google.com ([209.85.210.196]:58330 "EHLO
-	mail-yx0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754581Ab0BLWd4 (ORCPT
+	id S932092Ab0BLWgc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 17:36:32 -0500
+Received: from mail.windriver.com ([147.11.1.11]:44084 "EHLO
+	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756062Ab0BLWgZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 17:33:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=fr+VVNLU/lNq6X6ZqnodseM6echU3tzusSq51JqLFhHQqa6rJ5jnhFWmVXf5lmudZw
-         3mRunHGTGb2aEJindaDkIDmCYmhxBR3QidNniM2U0Rl+zBXg4FyCrzr6DzJhaw60moSD
-         sgxx+a4Y+FHBzAfgbmqOhJ+wvl1/idQ/TrbSw=
-Message-ID: <4B75D752.1010904@lwfinger.net>
-Date: Fri, 12 Feb 2010 16:33:54 -0600
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100111 SUSE/3.0.1-1.1 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: Bernhard Schiffner <bernhard@schiffner-limbach.de>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [mmiotrace] Make timestamps as printk() does.
-References: <201002072205.26665.bernhard@schiffner-limbach.de>
-In-Reply-To: <201002072205.26665.bernhard@schiffner-limbach.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 12 Feb 2010 17:36:25 -0500
+From: Jason Wessel <jason.wessel@windriver.com>
+To: linux-kernel@vger.kernel.org
+Cc: kgdb-bugreport@lists.sourceforge.net, mingo@elte.hu,
+       Jason Wessel <jason.wessel@windriver.com>
+Subject: [PATCH 04/28] kgdb,sparc: Add in kgdb_arch_set_pc for sparc
+Date: Fri, 12 Feb 2010 16:35:19 -0600
+Message-Id: <1266014143-29444-5-git-send-email-jason.wessel@windriver.com>
+X-Mailer: git-send-email 1.6.4.rc1
+In-Reply-To: <1266014143-29444-1-git-send-email-jason.wessel@windriver.com>
+References: <1266014143-29444-1-git-send-email-jason.wessel@windriver.com>
+X-OriginalArrivalTime: 12 Feb 2010 22:36:06.0364 (UTC) FILETIME=[C3E959C0:01CAAC33]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/07/2010 03:05 PM, Bernhard Schiffner wrote:
-> Hallo,
-> 
-> this little patch makes a simple "sort -m" on output gotten from dmesg and  
-> mmiotrace possible.
-> It's a real help at least for me.
-> 
-> Bernhard
-> (CC me please, I'am not on this list.)
+The new debug core api requires all architectures that use to debug
+core to implement a function to set the program counter.
 
-NACK. This sort of transformation is best left to local tools.
+Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
+Acked-by: David S. Miller <davem@davemloft.net>
+---
+ arch/sparc/kernel/kgdb_32.c |    6 ++++++
+ arch/sparc/kernel/kgdb_64.c |    6 ++++++
+ 2 files changed, 12 insertions(+), 0 deletions(-)
 
-Larry
+diff --git a/arch/sparc/kernel/kgdb_32.c b/arch/sparc/kernel/kgdb_32.c
+index 04df4ed..539243b 100644
+--- a/arch/sparc/kernel/kgdb_32.c
++++ b/arch/sparc/kernel/kgdb_32.c
+@@ -158,6 +158,12 @@ void kgdb_arch_exit(void)
+ {
+ }
+ 
++void kgdb_arch_set_pc(struct pt_regs *regs, unsigned long ip)
++{
++	regs->pc = ip;
++	regs->npc = regs->pc + 4;
++}
++
+ struct kgdb_arch arch_kgdb_ops = {
+ 	/* Breakpoint instruction: ta 0x7d */
+ 	.gdb_bpt_instr		= { 0x91, 0xd0, 0x20, 0x7d },
+diff --git a/arch/sparc/kernel/kgdb_64.c b/arch/sparc/kernel/kgdb_64.c
+index f5a0fd4..9bf387b 100644
+--- a/arch/sparc/kernel/kgdb_64.c
++++ b/arch/sparc/kernel/kgdb_64.c
+@@ -180,6 +180,12 @@ void kgdb_arch_exit(void)
+ {
+ }
+ 
++void kgdb_arch_set_pc(struct pt_regs *regs, unsigned long ip)
++{
++	regs->tpc = ip;
++	regs->tnpc = regs->tpc + 4;
++}
++
+ struct kgdb_arch arch_kgdb_ops = {
+ 	/* Breakpoint instruction: ta 0x72 */
+ 	.gdb_bpt_instr		= { 0x91, 0xd0, 0x20, 0x72 },
+-- 
+1.6.4.rc1
 
