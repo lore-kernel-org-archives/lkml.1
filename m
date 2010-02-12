@@ -1,49 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757112Ab0BLQAr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 11:00:47 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:41515 "EHLO mx1.redhat.com"
+	id S1756710Ab0BLQLz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 11:11:55 -0500
+Received: from bamako.nerim.net ([62.4.17.28]:57258 "EHLO bamako.nerim.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757031Ab0BLQAq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 11:00:46 -0500
-Date: Fri, 12 Feb 2010 16:59:55 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Roland McGrath <roland@redhat.com>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>, hjl.tools@gmail.com,
-       peter.lachner@intel.com
-Subject: Re: [patch v3 2/2] ptrace: Add support for generic
-	PTRACE_GETREGSET/PTRACE_SETREGSET
-Message-ID: <20100212155955.GA16870@redhat.com>
-References: <20100211195058.071883111@sbs-t61.sc.intel.com> <20100211195614.886724710@sbs-t61.sc.intel.com> <20100212035606.119B3C821@magilla.sf.frob.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100212035606.119B3C821@magilla.sf.frob.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1756243Ab0BLQLy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Feb 2010 11:11:54 -0500
+Date: Fri, 12 Feb 2010 17:11:49 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: rostedt@goodmis.org
+Cc: "J.H." <warthog9@kernel.org>, "FTPAdmin Kernel.org" <ftpadmin@kernel.org>,
+       users@kernel.org, lasse.collin@tukaani.org,
+       linux-kernel <linux-kernel@vger.kernel.org>, mirrors@kernel.org
+Subject: Re: [kernel.org users] XZ Migration discussion
+Message-ID: <20100212171149.5c9f78d2@hyperion.delvare>
+In-Reply-To: <1265988318.24271.30.camel@gandalf.stny.rr.com>
+References: <4B744E13.8040004@kernel.org>
+	<20100212150137.648dca7c@hyperion.delvare>
+	<1265988318.24271.30.camel@gandalf.stny.rr.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/11, Roland McGrath wrote:
->
-> > +static int ptrace_regset(struct task_struct *task, int req, unsigned int type,
-> > +			 struct iovec *kiov)
-> > +{
-> > +	const struct user_regset_view *view = task_user_regset_view(task);
-> > +	const struct user_regset *regset = find_regset(view, type);
-> > +	int regset_no;
-> > +
-> > +	if (!regset || (kiov->iov_len % regset->size) != 0)
-> > +		return -EIO;
->
-> My inclination would be to diagnose these more specifically.
+On Fri, 12 Feb 2010 10:25:18 -0500, Steven Rostedt wrote:
+> On Fri, 2010-02-12 at 15:01 +0100, Jean Delvare wrote:
+> 
+> > I wouldn't worry too much about breaking the current locations. Just
+> > give some time for software authors (ketchup comes to mind) to update
+> > their code and it shouldn't be a big problem.
+> 
+> As the new maintainer of ketchup:
+> 
+> git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/ketchup.git
+> 
+> I could write a fix for the new format real quick. My concern is that
+> users of ketchup may not see this update for a long time.
 
-Agreed.
+What would you consider a reasonable turnaround time? 3 month? 6 month?
+More?
 
-Otherwise I think the patch is fine.
+We could make a decision now, you update ketchup immediately, and the
+actual change happens at the specified date in the future.
 
-Oleg.
-
+-- 
+Jean Delvare
