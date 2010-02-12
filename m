@@ -1,51 +1,83 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757282Ab0BLQoy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 11:44:54 -0500
-Received: from bamako.nerim.net ([62.4.17.28]:59777 "EHLO bamako.nerim.net"
+	id S1757246Ab0BLQsd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 11:48:33 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:56729 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756936Ab0BLQow (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 11:44:52 -0500
-Date: Fri, 12 Feb 2010 17:44:50 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: rostedt@goodmis.org
-Cc: lasse.collin@tukaani.org, mirrors@kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "FTPAdmin Kernel.org" <ftpadmin@kernel.org>, users@kernel.org
-Subject: Re: [kernel.org users] XZ Migration discussion
-Message-ID: <20100212174450.4239f3a6@hyperion.delvare>
-In-Reply-To: <1265992239.24271.38.camel@gandalf.stny.rr.com>
-References: <4B744E13.8040004@kernel.org>
-	<20100212150137.648dca7c@hyperion.delvare>
-	<1265988318.24271.30.camel@gandalf.stny.rr.com>
-	<20100212171149.5c9f78d2@hyperion.delvare>
-	<1265992239.24271.38.camel@gandalf.stny.rr.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1756930Ab0BLQsb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Feb 2010 11:48:31 -0500
+Message-ID: <4B75865B.8000307@suse.com>
+Date: Fri, 12 Feb 2010 11:48:27 -0500
+From: Jeff Mahoney <jeffm@suse.com>
+Organization: SUSE Labs, Novell, Inc
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100111 SUSE/3.0.1-1.1 Thunderbird/3.0.1
+MIME-Version: 1.0
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] delayacct: align to 8 byte boundary on 64-bit systems
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 12 Feb 2010 11:30:39 -0500, Steven Rostedt wrote:
-> On Fri, 2010-02-12 at 17:11 +0100, Jean Delvare wrote:
-> 
-> > What would you consider a reasonable turnaround time? 3 month? 6 month?
-> > More?
-> > 
-> > We could make a decision now, you update ketchup immediately, and the
-> > actual change happens at the specified date in the future.
-> > 
-> 
-> Usually users don't update ketchup until it breaks ;)
-> 
-> But sure, 3 months probably would be fine. Then Matt Mackall will start
-> getting emails about it not working, and he will forward them to me.
-> Where I can then point them to the new repository.
+ prepare_reply sets up an skb for the response. If I understand it correctly,
+ the payload contains:
 
-You can probably anticipate this a bit by warning the maintainers of
-the ketchup package in openSUSE, Fedora etc.
+ +--------------------------------+
+ | genlmsghdr - 4 bytes           |
+ +--------------------------------+
+ | NLA header - 4 bytes           | /* Aggregate header */
+ +-+------------------------------+
+ | | NLA header - 4 bytes         | /* PID header */
+ | +------------------------------+
+ | | pid/tgid   - 4 bytes         |
+ | +------------------------------+
+ | | NLA header - 4 bytes         | /* stats header */
+ | + -----------------------------+ <- oops. aligned on 4 byte boundary
+ | | struct taskstats - 328 bytes |
+ +-+------------------------------+
 
+ The start of the taskstats struct must be 8 byte aligned on IA64 (and other
+ systems with 8 byte alignment rules for 64-bit types) or runtime alignment
+ warnings will be issued.
+
+ This patch pads the pid/tgid field out to sizeof(long), which forces
+ the alignment of taskstats. The getdelays userspace code is ok with this
+ since it assumes 32-bit pid/tgid and then honors that header's length field.
+
+ An array is used to avoid exposing kernel memory contents to userspace in the
+ response.
+
+Signed-off-by: Jeff Mahoney <jeffm@suse.com>
+---
+ kernel/taskstats.c |    8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+--- a/kernel/taskstats.c
++++ b/kernel/taskstats.c
+@@ -362,6 +362,12 @@ static struct taskstats *mk_reply(struct
+ 	struct nlattr *na, *ret;
+ 	int aggr;
+ 
++	/* If we don't pad, we end up with alignment on a 4 byte boundary.
++	 * This causes lots of runtime warnings on systems requiring 8 byte
++	 * alignment */
++	u32 pids[2] = { pid, 0 };
++	int pid_size = ALIGN(sizeof(pid), sizeof(long));
++
+ 	aggr = (type == TASKSTATS_TYPE_PID)
+ 			? TASKSTATS_TYPE_AGGR_PID
+ 			: TASKSTATS_TYPE_AGGR_TGID;
+@@ -369,7 +375,7 @@ static struct taskstats *mk_reply(struct
+ 	na = nla_nest_start(skb, aggr);
+ 	if (!na)
+ 		goto err;
+-	if (nla_put(skb, type, sizeof(pid), &pid) < 0)
++	if (nla_put(skb, type, pid_size, pids) < 0)
+ 		goto err;
+ 	ret = nla_reserve(skb, TASKSTATS_TYPE_STATS, sizeof(struct taskstats));
+ 	if (!ret)
 -- 
-Jean Delvare
+Jeff Mahoney
+SUSE Labs
