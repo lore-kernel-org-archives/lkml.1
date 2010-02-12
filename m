@@ -1,83 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757246Ab0BLQsd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 11:48:33 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:56729 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756930Ab0BLQsb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 11:48:31 -0500
-Message-ID: <4B75865B.8000307@suse.com>
-Date: Fri, 12 Feb 2010 11:48:27 -0500
-From: Jeff Mahoney <jeffm@suse.com>
-Organization: SUSE Labs, Novell, Inc
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100111 SUSE/3.0.1-1.1 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] delayacct: align to 8 byte boundary on 64-bit systems
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1757287Ab0BLQtd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 11:49:33 -0500
+Received: from ms01.sssup.it ([193.205.80.99]:36320 "EHLO sssup.it"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756930Ab0BLQtc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Feb 2010 11:49:32 -0500
+Subject: sched: Make the rt throtting disabled tunable valid globally
+From: Dhaval Giani <dhaval@retis.sssup.it>
+To: a.p.zijlstra@chello.nl, mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 12 Feb 2010 17:49:29 +0100
+Message-ID: <1265993369.1938.1.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- prepare_reply sets up an skb for the response. If I understand it correctly,
- the payload contains:
 
- +--------------------------------+
- | genlmsghdr - 4 bytes           |
- +--------------------------------+
- | NLA header - 4 bytes           | /* Aggregate header */
- +-+------------------------------+
- | | NLA header - 4 bytes         | /* PID header */
- | +------------------------------+
- | | pid/tgid   - 4 bytes         |
- | +------------------------------+
- | | NLA header - 4 bytes         | /* stats header */
- | + -----------------------------+ <- oops. aligned on 4 byte boundary
- | | struct taskstats - 328 bytes |
- +-+------------------------------+
+On setting /proc/sys/kernel/sched_rt_runtime_us to -1, the intended
+behavior is that rt-group throttling is disabled throughout. This
+could be confirmed by trying to launch a real time task in a cgroup
+which had zero rt runtime allotted to it.
 
- The start of the taskstats struct must be 8 byte aligned on IA64 (and other
- systems with 8 byte alignment rules for 64-bit types) or runtime alignment
- warnings will be issued.
+This though was not happening when one tried to move a rt task into
+a rt cgroup which had zero rt runtime. Ensure that this
+tunable is honoured globally.
 
- This patch pads the pid/tgid field out to sizeof(long), which forces
- the alignment of taskstats. The getdelays userspace code is ok with this
- since it assumes 32-bit pid/tgid and then honors that header's length field.
+Signed-off-by: Dhaval Giani <dhaval.giani@gmail.com>
 
- An array is used to avoid exposing kernel memory contents to userspace in the
- response.
-
-Signed-off-by: Jeff Mahoney <jeffm@suse.com>
 ---
- kernel/taskstats.c |    8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ kernel/sched.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
---- a/kernel/taskstats.c
-+++ b/kernel/taskstats.c
-@@ -362,6 +362,12 @@ static struct taskstats *mk_reply(struct
- 	struct nlattr *na, *ret;
- 	int aggr;
+Index: master/kernel/sched.c
+===================================================================
+--- master.orig/kernel/sched.c
++++ master/kernel/sched.c
+@@ -8542,7 +8542,8 @@ static int sched_rt_global_constraints(v
+ int sched_rt_can_attach(struct task_group *tg, struct task_struct *tsk)
+ {
+ 	/* Don't accept realtime tasks when there is no way for them to run */
+-	if (rt_task(tsk) && tg->rt_bandwidth.rt_runtime == 0)
++	if (rt_task(tsk) && rt_bandwidth_enabled() &&
++				tg->rt_bandwidth.rt_runtime == 0)
+ 		return 0;
  
-+	/* If we don't pad, we end up with alignment on a 4 byte boundary.
-+	 * This causes lots of runtime warnings on systems requiring 8 byte
-+	 * alignment */
-+	u32 pids[2] = { pid, 0 };
-+	int pid_size = ALIGN(sizeof(pid), sizeof(long));
-+
- 	aggr = (type == TASKSTATS_TYPE_PID)
- 			? TASKSTATS_TYPE_AGGR_PID
- 			: TASKSTATS_TYPE_AGGR_TGID;
-@@ -369,7 +375,7 @@ static struct taskstats *mk_reply(struct
- 	na = nla_nest_start(skb, aggr);
- 	if (!na)
- 		goto err;
--	if (nla_put(skb, type, sizeof(pid), &pid) < 0)
-+	if (nla_put(skb, type, pid_size, pids) < 0)
- 		goto err;
- 	ret = nla_reserve(skb, TASKSTATS_TYPE_STATS, sizeof(struct taskstats));
- 	if (!ret)
--- 
-Jeff Mahoney
-SUSE Labs
+ 	return 1;
+
+
