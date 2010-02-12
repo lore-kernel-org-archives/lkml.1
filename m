@@ -1,64 +1,85 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757299Ab0BLQwG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 11:52:06 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37768 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757063Ab0BLQwE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 11:52:04 -0500
-Date: Fri, 12 Feb 2010 08:51:29 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Takashi Iwai <tiwai@suse.de>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [GIT PULL] sound fixes
-In-Reply-To: <s5hocjulb8f.wl%tiwai@suse.de>
-Message-ID: <alpine.LFD.2.00.1002120848550.7792@localhost.localdomain>
-References: <s5hocjulb8f.wl%tiwai@suse.de>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1757305Ab0BLQz5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 11:55:57 -0500
+Received: from nn7.de ([85.214.94.156]:44827 "EHLO nn7.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757063Ab0BLQzz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Feb 2010 11:55:55 -0500
+Subject: Re: Brightness control for MacBook Pro - Nvidia 9400
+From: Soeren Sonnenburg <sonne@debian.org>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Julien BLACHE <jb@jblache.org>, nicolas@boichat.ch,
+       felipe_alfaro@linuxmail.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20100212164412.GA21279@srcf.ucam.org>
+References: <1265920725.7103.7.camel@no>
+	 <878wayk8hn.fsf@sonic.technologeek.org>
+	 <20100212141457.GA18714@srcf.ucam.org>
+	 <87zl3eto99.fsf@sonic.technologeek.org>
+	 <20100212162810.GA20998@srcf.ucam.org> <1265992937.3485.34.camel@no>
+	 <20100212164412.GA21279@srcf.ucam.org>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-G8rvj5Hhg0h2wh5e3C/O"
+Date: Fri, 12 Feb 2010 17:55:56 +0100
+Message-ID: <1265993756.3485.35.camel@no>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+--=-G8rvj5Hhg0h2wh5e3C/O
+Content-Type: text/plain; charset="ISO-8859-15"
+Content-Transfer-Encoding: quoted-printable
 
-On Fri, 12 Feb 2010, Takashi Iwai wrote:
-> 
-> Jody Bruchon (1):
->       ALSA: hda-intel: Avoid divide by zero crash
+On Fri, 2010-02-12 at 16:44 +0000, Matthew Garrett wrote:
+> On Fri, Feb 12, 2010 at 05:42:17PM +0100, Soeren Sonnenburg wrote:
+> > On Fri, 2010-02-12 at 16:28 +0000, Matthew Garrett wrote:
+> > > On Fri, Feb 12, 2010 at 05:25:22PM +0100, Julien BLACHE wrote:
+> > >=20
+> > > > Is it exposed to userspace in any way? Or, better yet, could we hav=
+e an
+> > > > MBP backlight driver which would hide all of this from userspace?
+> > >=20
+> > > Sure, in nouveau.
+> >=20
+> > OK, great convinced. Any suggestions on where to add printk's to figure
+> > out the cause of the hang? The only thing I noticed was the fans turnin=
+g
+> > on so the machine is either stuck in a busy loop or ???
+>=20
+> Best bet is probably to file a bug on bugs.freedesktop.org - I'm afraid=20
+> I'm not too hot on the GPU bringup side of the driver.
 
-I pulled, but I really think it should look more like:
+OK, it is here
+http://bugs.freedesktop.org/show_bug.cgi?id=3D26546
 
-> 
-> ---
->  sound/pci/hda/hda_intel.c |    6 ++++++
->  1 files changed, 6 insertions(+), 0 deletions(-)
-> 
-> diff --git a/sound/pci/hda/hda_intel.c b/sound/pci/hda/hda_intel.c
-> index b8faa6d..e767c3f 100644
-> --- a/sound/pci/hda/hda_intel.c
-> +++ b/sound/pci/hda/hda_intel.c
-> @@ -1893,6 +1893,12 @@ static int azx_position_ok(struct azx *chip, struct azx_dev *azx_dev)
->  
->  	if (!bdl_pos_adj[chip->dev_index])
->  		return 1; /* no delayed ack */
-> +	if (azx_dev->period_bytes == 0) {
-> +		printk(KERN_WARNING
-> +		       "hda-intel: Divide by zero was avoided "
-> +		       "in azx_dev->period_bytes.\n");
-> +		return 0;
-> +	}
+Soeren
+--=20
+For the one fact about the future of which we can be certain is that it
+will be utterly fantastic. -- Arthur C. Clarke, 1962
 
-	if (WARN_ONCE(!azx_dev->period_bytes, "hda-intel: zero azx_dev->period_bytes")
-		return 0;
+--=-G8rvj5Hhg0h2wh5e3C/O
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
-or something. It really doesn't want to warn multiple times, and by using 
-a WARN_ONCE() it will also get picked up by kerneloops etc.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-Or if that zero period_bytes is normal under certain circumstances, then 
-there shouldn't be a printout at all.
+iQIcBAABAgAGBQJLdYgcAAoJEH82z1Wqh6p3hHoQAMyFvl8YHXQgqe8tvqHCtSAy
+bT9Hd3c/CX3lhXboErdU0p4nENWEGkDOQOgiP1V3p4Xaigw4xALHsxYprcigB+FB
+DHc9C6PHgOqDIcxbQDaxFbvoQ4SLUL2nb9Y+o59aL4nD6oDQFIAgNCRA29yHhivz
+jzkvSdixMbafabS1MaL2s17av6107kS29gBKcBK4qvoXqSUR65Ad1EtNCDvabzFQ
+9kItwmPr5Ly4TGNseGFFUpeTCAxcxPvHXKB4xp8stTRiRHkWdSfoUjHTJ5QGCKGz
+FmrJiXM+igSHxHhBlIhGKUkPc1IvQ0M3KFl0cb18H9Fc4Ztci0HlcTGPBUIZXMge
+2MHoQiMAq6nBjQ9VAcUSUqzhAwB9goX5X31t4PeHLGQI13VWtmJeBjsd930xmLhS
+9+yQXYrDdJZjYRnxgsa/Ixb9fv4CKiPoIcF8rToKofizvbvzql2SfwIZKYCQQFLd
+XqMMG5JXUDTVaQtoWWLb/LTU5YPgRFJ/I2+XnYBWNWW7bGxVSRlQntEBR3Mm1Zpp
+gYJU8MnqBAHWtZx64w+NgVxDHwk406SAOIDOhSFnWBd/N/R7hdE/j2JDrMpEnLGZ
+xKQeQt5Ur2QV8VTLXxuAS1CHdH2p8A1Fd7iZglLFJ0rzyhs4u/ZCVoi/fBfNNdI6
+5TEBSCbTMUMH5Q3zyxtP
+=jBs0
+-----END PGP SIGNATURE-----
 
-		Linus
+--=-G8rvj5Hhg0h2wh5e3C/O--
