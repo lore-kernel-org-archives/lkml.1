@@ -1,11 +1,11 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757556Ab0BLABP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 19:01:15 -0500
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:49570 "EHLO e9.ny.us.ibm.com"
+	id S1757553Ab0BLACR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 19:02:17 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:47936 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757503Ab0BLABG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 19:01:06 -0500
+	id S1757348Ab0BLABL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 19:01:11 -0500
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
@@ -13,11 +13,10 @@ Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
        josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
        tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
        Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Alexander Viro <viro@zeniv.linux.org.uk>
-Subject: [PATCH tip/core/rcu 07/13] vfs: apply lockdep-based checking to rcu_dereference() uses
-Date: Thu, 11 Feb 2010 16:00:33 -0800
-Message-Id: <1265932839-25899-7-git-send-email-paulmck@linux.vnet.ibm.com>
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: [PATCH tip/core/rcu 08/13] radix-tree: disable RCU lockdep checking in radix tree
+Date: Thu, 11 Feb 2010 16:00:34 -0800
+Message-Id: <1265932839-25899-8-git-send-email-paulmck@linux.vnet.ibm.com>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <20100212000016.GA25781@linux.vnet.ibm.com>
 References: <20100212000016.GA25781@linux.vnet.ibm.com>
@@ -25,88 +24,127 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add lockdep-ified RCU primitives to alloc_fd(), files_fdtable() and
-fcheck_files().
+Because the radix tree is used with many different locking designs, we
+cannot do any effective checking without changing the radix-tree APIs.
+It might make sense to do this later, but only if the RCU lockdep checking
+proves itself sufficiently valuable.
 
-Cc: Alexander Viro <viro@zeniv.linux.org.uk>
 Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 ---
- fs/file.c               |    2 +-
- fs/proc/array.c         |    2 ++
- fs/proc/base.c          |    6 +++++-
- include/linux/fdtable.h |    8 ++++++--
- 4 files changed, 14 insertions(+), 4 deletions(-)
+ lib/radix-tree.c |   24 ++++++++++++------------
+ 1 files changed, 12 insertions(+), 12 deletions(-)
 
-diff --git a/fs/file.c b/fs/file.c
-index 87e1290..38039af 100644
---- a/fs/file.c
-+++ b/fs/file.c
-@@ -478,7 +478,7 @@ repeat:
- 	error = fd;
- #if 1
- 	/* Sanity check */
--	if (rcu_dereference(fdt->fd[fd]) != NULL) {
-+	if (rcu_dereference_raw(fdt->fd[fd]) != NULL) {
- 		printk(KERN_WARNING "alloc_fd: slot %d not NULL!\n", fd);
- 		rcu_assign_pointer(fdt->fd[fd], NULL);
+diff --git a/lib/radix-tree.c b/lib/radix-tree.c
+index 92cdd99..6b9670d 100644
+--- a/lib/radix-tree.c
++++ b/lib/radix-tree.c
+@@ -364,7 +364,7 @@ static void *radix_tree_lookup_element(struct radix_tree_root *root,
+ 	unsigned int height, shift;
+ 	struct radix_tree_node *node, **slot;
+ 
+-	node = rcu_dereference(root->rnode);
++	node = rcu_dereference_raw(root->rnode);
+ 	if (node == NULL)
+ 		return NULL;
+ 
+@@ -384,7 +384,7 @@ static void *radix_tree_lookup_element(struct radix_tree_root *root,
+ 	do {
+ 		slot = (struct radix_tree_node **)
+ 			(node->slots + ((index>>shift) & RADIX_TREE_MAP_MASK));
+-		node = rcu_dereference(*slot);
++		node = rcu_dereference_raw(*slot);
+ 		if (node == NULL)
+ 			return NULL;
+ 
+@@ -568,7 +568,7 @@ int radix_tree_tag_get(struct radix_tree_root *root,
+ 	if (!root_tag_get(root, tag))
+ 		return 0;
+ 
+-	node = rcu_dereference(root->rnode);
++	node = rcu_dereference_raw(root->rnode);
+ 	if (node == NULL)
+ 		return 0;
+ 
+@@ -602,7 +602,7 @@ int radix_tree_tag_get(struct radix_tree_root *root,
+ 			BUG_ON(ret && saw_unset_tag);
+ 			return !!ret;
+ 		}
+-		node = rcu_dereference(node->slots[offset]);
++		node = rcu_dereference_raw(node->slots[offset]);
+ 		shift -= RADIX_TREE_MAP_SHIFT;
+ 		height--;
  	}
-diff --git a/fs/proc/array.c b/fs/proc/array.c
-index 13b5d07..18e20fe 100644
---- a/fs/proc/array.c
-+++ b/fs/proc/array.c
-@@ -270,7 +270,9 @@ static inline void task_sig(struct seq_file *m, struct task_struct *p)
- 		blocked = p->blocked;
- 		collect_sigign_sigcatch(p, &ignored, &caught);
- 		num_threads = atomic_read(&p->signal->count);
-+		rcu_read_lock();  /* FIXME: is this correct? */
- 		qsize = atomic_read(&__task_cred(p)->user->sigpending);
-+		rcu_read_unlock();
- 		qlim = p->signal->rlim[RLIMIT_SIGPENDING].rlim_cur;
- 		unlock_task_sighand(p, &flags);
+@@ -711,7 +711,7 @@ __lookup(struct radix_tree_node *slot, void ***results, unsigned long index,
+ 		}
+ 
+ 		shift -= RADIX_TREE_MAP_SHIFT;
+-		slot = rcu_dereference(slot->slots[i]);
++		slot = rcu_dereference_raw(slot->slots[i]);
+ 		if (slot == NULL)
+ 			goto out;
  	}
-diff --git a/fs/proc/base.c b/fs/proc/base.c
-index 18d5cc6..db19ca8 100644
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -1095,8 +1095,12 @@ static ssize_t proc_loginuid_write(struct file * file, const char __user * buf,
- 	if (!capable(CAP_AUDIT_CONTROL))
- 		return -EPERM;
+@@ -758,7 +758,7 @@ radix_tree_gang_lookup(struct radix_tree_root *root, void **results,
+ 	unsigned long cur_index = first_index;
+ 	unsigned int ret;
  
--	if (current != pid_task(proc_pid(inode), PIDTYPE_PID))
-+	rcu_read_lock();
-+	if (current != pid_task(proc_pid(inode), PIDTYPE_PID)) {
-+		rcu_read_unlock();
- 		return -EPERM;
-+	}
-+	rcu_read_unlock();
+-	node = rcu_dereference(root->rnode);
++	node = rcu_dereference_raw(root->rnode);
+ 	if (!node)
+ 		return 0;
  
- 	if (count >= PAGE_SIZE)
- 		count = PAGE_SIZE - 1;
-diff --git a/include/linux/fdtable.h b/include/linux/fdtable.h
-index a2ec74b..144412f 100644
---- a/include/linux/fdtable.h
-+++ b/include/linux/fdtable.h
-@@ -57,7 +57,11 @@ struct files_struct {
- 	struct file * fd_array[NR_OPEN_DEFAULT];
- };
+@@ -787,7 +787,7 @@ radix_tree_gang_lookup(struct radix_tree_root *root, void **results,
+ 			slot = *(((void ***)results)[ret + i]);
+ 			if (!slot)
+ 				continue;
+-			results[ret + nr_found] = rcu_dereference(slot);
++			results[ret + nr_found] = rcu_dereference_raw(slot);
+ 			nr_found++;
+ 		}
+ 		ret += nr_found;
+@@ -826,7 +826,7 @@ radix_tree_gang_lookup_slot(struct radix_tree_root *root, void ***results,
+ 	unsigned long cur_index = first_index;
+ 	unsigned int ret;
  
--#define files_fdtable(files) (rcu_dereference((files)->fdt))
-+#define files_fdtable(files) \
-+	(rcu_dereference_check((files)->fdt, \
-+			       rcu_read_lock_held() || \
-+			       lockdep_is_held(&(files)->file_lock) || \
-+			       atomic_read(&files->count) == 1))
+-	node = rcu_dereference(root->rnode);
++	node = rcu_dereference_raw(root->rnode);
+ 	if (!node)
+ 		return 0;
  
- struct file_operations;
- struct vfsmount;
-@@ -78,7 +82,7 @@ static inline struct file * fcheck_files(struct files_struct *files, unsigned in
- 	struct fdtable *fdt = files_fdtable(files);
+@@ -915,7 +915,7 @@ __lookup_tag(struct radix_tree_node *slot, void ***results, unsigned long index,
+ 			}
+ 		}
+ 		shift -= RADIX_TREE_MAP_SHIFT;
+-		slot = rcu_dereference(slot->slots[i]);
++		slot = rcu_dereference_raw(slot->slots[i]);
+ 		if (slot == NULL)
+ 			break;
+ 	}
+@@ -951,7 +951,7 @@ radix_tree_gang_lookup_tag(struct radix_tree_root *root, void **results,
+ 	if (!root_tag_get(root, tag))
+ 		return 0;
  
- 	if (fd < fdt->max_fds)
--		file = rcu_dereference(fdt->fd[fd]);
-+		file = rcu_dereference_check(fdt->fd[fd], rcu_read_lock_held() || lockdep_is_held(&files->file_lock) || atomic_read(&files->count) == 1);
- 	return file;
- }
+-	node = rcu_dereference(root->rnode);
++	node = rcu_dereference_raw(root->rnode);
+ 	if (!node)
+ 		return 0;
+ 
+@@ -980,7 +980,7 @@ radix_tree_gang_lookup_tag(struct radix_tree_root *root, void **results,
+ 			slot = *(((void ***)results)[ret + i]);
+ 			if (!slot)
+ 				continue;
+-			results[ret + nr_found] = rcu_dereference(slot);
++			results[ret + nr_found] = rcu_dereference_raw(slot);
+ 			nr_found++;
+ 		}
+ 		ret += nr_found;
+@@ -1020,7 +1020,7 @@ radix_tree_gang_lookup_tag_slot(struct radix_tree_root *root, void ***results,
+ 	if (!root_tag_get(root, tag))
+ 		return 0;
+ 
+-	node = rcu_dereference(root->rnode);
++	node = rcu_dereference_raw(root->rnode);
+ 	if (!node)
+ 		return 0;
  
 -- 
 1.6.6
