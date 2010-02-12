@@ -1,102 +1,74 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756383Ab0BLSUe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 13:20:34 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50578 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755452Ab0BLSUd (ORCPT
+	id S1756525Ab0BLSgU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 13:36:20 -0500
+Received: from lennier.cc.vt.edu ([198.82.162.213]:34898 "EHLO
+	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754666Ab0BLSgT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 13:20:33 -0500
-Date: Fri, 12 Feb 2010 10:19:57 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jeff Mahoney <jeffm@suse.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: [PATCH] delayacct: align to 8 byte boundary on 64-bit systems
-Message-Id: <20100212101957.9f4a4a3a.akpm@linux-foundation.org>
-In-Reply-To: <4B75865B.8000307@suse.com>
-References: <4B75865B.8000307@suse.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+	Fri, 12 Feb 2010 13:36:19 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Andrea Arcangeli <aarcange@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Adam Litke <agl@us.ibm.com>, Avi Kivity <avi@redhat.com>,
+       David Rientjes <rientjes@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 06/12] Add /proc trigger for memory compaction
+In-Reply-To: Your message of "Fri, 12 Feb 2010 12:00:53 GMT."
+             <1265976059-7459-7-git-send-email-mel@csn.ul.ie>
+From: Valdis.Kletnieks@vt.edu
+References: <1265976059-7459-1-git-send-email-mel@csn.ul.ie>
+            <1265976059-7459-7-git-send-email-mel@csn.ul.ie>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: multipart/signed; boundary="==_Exmh_1265999680_4070P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Fri, 12 Feb 2010 13:34:40 -0500
+Message-ID: <7691.1265999680@localhost>
+X-Mirapoint-Received-SPF: 128.173.14.107 localhost Valdis.Kletnieks@vt.edu 2 pass
+X-Mirapoint-IP-Reputation: reputation=neutral-1,
+	source=Fixed,
+	refid=n/a,
+	actions=MAILHURDLE SPF TAG
+X-Junkmail-Info: (45) HELO_LOCALHOST
+X-Junkmail-Status: score=45/50, host=vivi.cc.vt.edu
+X-Junkmail-SD-Raw: score=unknown,
+	refid=str=0001.0A020203.4B759F41.00E1,ss=1,fgs=0,
+	ip=0.0.0.0,
+	so=2009-09-22 00:05:22,
+	dmn=2009-09-10 00:05:08,
+	mode=multiengine
+X-Junkmail-IWF: false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 12 Feb 2010 11:48:27 -0500
-Jeff Mahoney <jeffm@suse.com> wrote:
+--==_Exmh_1265999680_4070P
+Content-Type: text/plain; charset=us-ascii
 
->  prepare_reply sets up an skb for the response. If I understand it correctly,
->  the payload contains:
-> 
->  +--------------------------------+
->  | genlmsghdr - 4 bytes           |
->  +--------------------------------+
->  | NLA header - 4 bytes           | /* Aggregate header */
->  +-+------------------------------+
->  | | NLA header - 4 bytes         | /* PID header */
->  | +------------------------------+
->  | | pid/tgid   - 4 bytes         |
+On Fri, 12 Feb 2010 12:00:53 GMT, Mel Gorman said:
+> This patch adds a proc file /proc/sys/vm/compact_memory. When an arbitrary
+> value is written to the file, all zones are compacted. The expected user
+> of such a trigger is a job scheduler that prepares the system before the
+> target application runs.
 
-So we put another four zero bytes in here and add four to the "PID header".
+Argh. A global trigger in /proc, and a per-node trigger in /sys too.  Can we
+get by with just one or the other?  Should the /proc one live in /sys too?
 
->  | +------------------------------+
->  | | NLA header - 4 bytes         | /* stats header */
->  | + -----------------------------+ <- oops. aligned on 4 byte boundary
->  | | struct taskstats - 328 bytes |
->  +-+------------------------------+
-> 
->  The start of the taskstats struct must be 8 byte aligned on IA64 (and other
->  systems with 8 byte alignment rules for 64-bit types) or runtime alignment
->  warnings will be issued.
-> 
->  This patch pads the pid/tgid field out to sizeof(long), which forces
->  the alignment of taskstats. The getdelays userspace code is ok with this
->  since it assumes 32-bit pid/tgid and then honors that header's length field.
-> 
->  An array is used to avoid exposing kernel memory contents to userspace in the
->  response.
-> 
-> Signed-off-by: Jeff Mahoney <jeffm@suse.com>
-> ---
->  kernel/taskstats.c |    8 +++++++-
->  1 file changed, 7 insertions(+), 1 deletion(-)
-> 
-> --- a/kernel/taskstats.c
-> +++ b/kernel/taskstats.c
-> @@ -362,6 +362,12 @@ static struct taskstats *mk_reply(struct
->  	struct nlattr *na, *ret;
->  	int aggr;
->  
-> +	/* If we don't pad, we end up with alignment on a 4 byte boundary.
-> +	 * This causes lots of runtime warnings on systems requiring 8 byte
-> +	 * alignment */
-> +	u32 pids[2] = { pid, 0 };
-> +	int pid_size = ALIGN(sizeof(pid), sizeof(long));
-> +
->  	aggr = (type == TASKSTATS_TYPE_PID)
->  			? TASKSTATS_TYPE_AGGR_PID
->  			: TASKSTATS_TYPE_AGGR_TGID;
-> @@ -369,7 +375,7 @@ static struct taskstats *mk_reply(struct
->  	na = nla_nest_start(skb, aggr);
->  	if (!na)
->  		goto err;
-> -	if (nla_put(skb, type, sizeof(pid), &pid) < 0)
-> +	if (nla_put(skb, type, pid_size, pids) < 0)
->  		goto err;
->  	ret = nla_reserve(skb, TASKSTATS_TYPE_STATS, sizeof(struct taskstats));
->  	if (!ret)
 
-So any code which assumes that the pid/tgid field is four bytes long
-will break.  Code which takes that length from the netlink message
-header will work OK.
+--==_Exmh_1265999680_4070P
+Content-Type: application/pgp-signature
 
-32-bit architectures are unaltered.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
-Seems safe enough.  We'd be safer still if we didn't do this on 64-bit
-architectures which don't need it.  ie: x86_64.  But if we do that we
-add a risk that people will develop shoddy code which works on x86_64
-and doesn't work on ia64.
+iD8DBQFLdZ9AcC3lWbTT17ARAuqMAJ9zE7Mlw+qy2dVG4qMLTgAviVaRlgCfTdBT
+MFUCALw++Nh/mf9587aU584=
+=J6gQ
+-----END PGP SIGNATURE-----
 
-hmm.
+--==_Exmh_1265999680_4070P--
+
