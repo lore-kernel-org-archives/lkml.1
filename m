@@ -1,242 +1,303 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757934Ab0BLWnR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 17:43:17 -0500
-Received: from mail.windriver.com ([147.11.1.11]:44107 "EHLO
+	id S1756627Ab0BLWnn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 17:43:43 -0500
+Received: from mail.windriver.com ([147.11.1.11]:45188 "EHLO
 	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756045Ab0BLWg3 (ORCPT
+	with ESMTP id S1757621Ab0BLWng (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 17:36:29 -0500
+	Fri, 12 Feb 2010 17:43:36 -0500
 From: Jason Wessel <jason.wessel@windriver.com>
 To: linux-kernel@vger.kernel.org
 Cc: kgdb-bugreport@lists.sourceforge.net, mingo@elte.hu,
-       Jason Wessel <jason.wessel@windriver.com>, linux-serial@vger.kernel.org
-Subject: [PATCH 10/28] kgdb,8250,pl011: Return immediately from console poll
-Date: Fri, 12 Feb 2010 16:35:25 -0600
-Message-Id: <1266014143-29444-11-git-send-email-jason.wessel@windriver.com>
+       Jason Wessel <jason.wessel@windriver.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Eric Biederman <ebiederm@xmission.com>,
+       Yinghai Lu <yhlu.kernel@gmail.com>, linux-usb@vger.kernel.org
+Subject: [PATCH 8/8] echi-dbgp: Add kernel debugger support for the usb debug port
+Date: Fri, 12 Feb 2010 16:39:29 -0600
+Message-Id: <1266014369-29547-9-git-send-email-jason.wessel@windriver.com>
 X-Mailer: git-send-email 1.6.4.rc1
-In-Reply-To: <1266014143-29444-1-git-send-email-jason.wessel@windriver.com>
-References: <1266014143-29444-1-git-send-email-jason.wessel@windriver.com>
-X-OriginalArrivalTime: 12 Feb 2010 22:36:12.0427 (UTC) FILETIME=[C7867DB0:01CAAC33]
+In-Reply-To: <1266014369-29547-1-git-send-email-jason.wessel@windriver.com>
+References: <1266014369-29547-1-git-send-email-jason.wessel@windriver.com>
+X-OriginalArrivalTime: 12 Feb 2010 22:43:14.0031 (UTC) FILETIME=[C2D227F0:01CAAC34]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The design of kdb required that every device that can provide input to
-kdb have a polling routine that exits immediately if there is no
-character available.
+This patch adds the capability to use the usb debug port with the
+kernel debugger.  It is also still possible to use this functionality
+with or without the earlyprintk=dbgpX.  It is possible to use the
+kgdbwait boot argument to debug very early in the kernel start up code.
 
-This is required in order to get the page scrolling mechanism working,
-it is also a reasonable requirement for future kgdb I/O drivers
-because that allows for the possibility of multiple input channels.
+There are two ways to use this driver extension with a kernel boot argument.
 
-NO_POLL_CHAR will be the return code to the polling routine when ever
-there is no character available.  There are several other console
-polling drivers which can be modified, but for the prototype only the
-8250 and pl011 driver have been changed to make use of this.
+1) kgdbdbgp=#   -- Where # is the number of the usb debug controller
 
-CC: linux-serial@vger.kernel.org
+   You must use sysrq-g to break into the kernel debugger on another
+   connection type other than the dbgp.
+
+2) kgdbdbgp=#debugControlNum#,#Seconds#
+
+   In this mode, the usb debug port is polled every #Seconds# for
+   character input.  It is possible to use gdb or press control-c to
+   break into the kernel debugger.
+
+>From the implementation perspective there are 3 high level changes.
+
+1) Allow variable retries for the the hardware via dbgp_bulk_read().
+
+   The amount of retries for the dbgp_bulk_read() needed to be
+   variable instead of fixed.  We do not want to poll at all when the
+   kernel is operating in interrupt driven mode.  The polling only
+   occurs if the kernel was booted when specifying some number of
+   seconds via the kgdbdbgp boot argument (IE kgdbdbgp=0,1).  In this
+   case the loop count is reduced to 1 so as introduce the smallest
+   amount of latency as possible.
+
+2) Save the bulk IN endpoint address for use by the kgdb code.
+
+3) The addition of the kgdb interface code.
+
+   This consisted of adding in a character read function for the dbgp
+   as well as a polling thread to allow the dbgp to interrupt the
+   kernel execution.  The rest is the typical kgdb I/O api.
+
+CC: Greg Kroah-Hartman <gregkh@suse.de>
+CC: Eric Biederman <ebiederm@xmission.com>
+CC: Yinghai Lu <yhlu.kernel@gmail.com>
+CC: linux-usb@vger.kernel.org
 Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
 ---
- drivers/serial/8250.c           |    4 ++--
- drivers/serial/amba-pl011.c     |    6 +++---
- include/linux/kdb.h             |    1 +
- include/linux/serial_core.h     |    1 +
- kernel/debug/debug_core.c       |    2 ++
- kernel/debug/gdbstub.c          |   37 +++++++++++++++++++++++++++++++------
- kernel/debug/kdb/kdb_debugger.c |   10 ++++++++++
- 7 files changed, 50 insertions(+), 11 deletions(-)
+ Documentation/kernel-parameters.txt |   11 +++
+ drivers/usb/early/ehci-dbgp.c       |  120 ++++++++++++++++++++++++++++++++---
+ 2 files changed, 122 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
-index c3e37c8..a488c60 100644
---- a/drivers/serial/8250.c
-+++ b/drivers/serial/8250.c
-@@ -1895,8 +1895,8 @@ static int serial8250_get_poll_char(struct uart_port *port)
- 	struct uart_8250_port *up = (struct uart_8250_port *)port;
- 	unsigned char lsr = serial_inp(up, UART_LSR);
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 5227565..b740955 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -1109,6 +1109,17 @@ and is between 256 and 4096 characters. It is defined in the file
+ 			use the HighMem zone if it exists, and the Normal
+ 			zone if it does not.
  
--	while (!(lsr & UART_LSR_DR))
--		lsr = serial_inp(up, UART_LSR);
-+	if (!(lsr & UART_LSR_DR))
-+		return NO_POLL_CHAR;
- 
- 	return serial_inp(up, UART_RX);
- }
-diff --git a/drivers/serial/amba-pl011.c b/drivers/serial/amba-pl011.c
-index ef7adc8..b411115 100644
---- a/drivers/serial/amba-pl011.c
-+++ b/drivers/serial/amba-pl011.c
-@@ -335,9 +335,9 @@ static int pl010_get_poll_char(struct uart_port *port)
- 	struct uart_amba_port *uap = (struct uart_amba_port *)port;
- 	unsigned int status;
- 
--	do {
--		status = readw(uap->port.membase + UART01x_FR);
--	} while (status & UART01x_FR_RXFE);
-+	status = readw(uap->port.membase + UART01x_FR);
-+	if (status & UART01x_FR_RXFE)
-+		return NO_POLL_CHAR;
- 
- 	return readw(uap->port.membase + UART01x_DR);
- }
-diff --git a/include/linux/kdb.h b/include/linux/kdb.h
-index b3ac39a..f44aa5f 100644
---- a/include/linux/kdb.h
-+++ b/include/linux/kdb.h
-@@ -19,6 +19,7 @@
- #include <asm/atomic.h>
- 
- #define KDB_POLL_FUNC_MAX	5
-+extern int kdb_poll_idx;
- 
- /*
-  * kdb_initial_cpu is initialized to -1, and is set to the cpu
-diff --git a/include/linux/serial_core.h b/include/linux/serial_core.h
-index 8c3dd36..d40db83 100644
---- a/include/linux/serial_core.h
-+++ b/include/linux/serial_core.h
-@@ -246,6 +246,7 @@ struct uart_ops {
- #endif
- };
- 
-+#define NO_POLL_CHAR		0x00ff0000
- #define UART_CONFIG_TYPE	(1 << 0)
- #define UART_CONFIG_IRQ		(1 << 1)
- 
-diff --git a/kernel/debug/debug_core.c b/kernel/debug/debug_core.c
-index 2e01595..5bd2670 100644
---- a/kernel/debug/debug_core.c
-+++ b/kernel/debug/debug_core.c
-@@ -874,6 +874,8 @@ EXPORT_SYMBOL_GPL(kgdb_unregister_io_module);
- int dbg_io_get_char(void)
- {
- 	int ret = dbg_io_ops->read_char();
-+	if (ret == NO_POLL_CHAR)
-+		return -1;
- 	if (!dbg_kdb_mode)
- 		return ret;
- 	if (ret == 127)
-diff --git a/kernel/debug/gdbstub.c b/kernel/debug/gdbstub.c
-index 195ffbd..6965b5c 100644
---- a/kernel/debug/gdbstub.c
-+++ b/kernel/debug/gdbstub.c
-@@ -30,6 +30,7 @@
- 
- #include <linux/kernel.h>
- #include <linux/kgdb.h>
-+#include <linux/kdb.h>
- #include <linux/reboot.h>
- #include <linux/uaccess.h>
- #include <asm/cacheflush.h>
-@@ -62,6 +63,30 @@ static int hex(char ch)
- 	return -1;
- }
- 
-+#ifdef CONFIG_KGDB_KDB
-+static int gdbstub_read_wait(void)
-+{
-+	int ret = -1;
-+	int i;
++	kgdbdbgp=	[KGDB,HW] kgdb over EHCI usb debug port.
++			Format: <Controller#>[,poll interval]
++			The controller # is the number of the ehci usb debug
++			port as it is probed via PCI.  The poll interval is
++			optional and is the number seconds in between
++			each poll cycle to the debug port in case you need
++			the functionality for interrupting the kernel with
++			gdb or control-c on the dbgp connection.  When
++			not using this parameter you use sysrq-g to break into
++			the kernel debugger.
 +
-+	/* poll any additional I/O interfaces that are defined */
-+	while (ret < 0)
-+		for (i = 0; kdb_poll_funcs[i] != NULL; i++) {
-+			ret = kdb_poll_funcs[i]();
-+			if (ret > 0)
-+				break;
-+		}
-+	return ret;
-+}
+ 	kgdboc=		[KGDB,HW] kgdb over consoles.
+ 			Requires a tty driver that supports console polling,
+ 			or a supported polling keyboard driver (non-usb).
+diff --git a/drivers/usb/early/ehci-dbgp.c b/drivers/usb/early/ehci-dbgp.c
+index 6e98a36..94ecdbc 100644
+--- a/drivers/usb/early/ehci-dbgp.c
++++ b/drivers/usb/early/ehci-dbgp.c
+@@ -19,6 +19,9 @@
+ #include <linux/usb/ch9.h>
+ #include <linux/usb/ehci_def.h>
+ #include <linux/delay.h>
++#include <linux/serial_core.h>
++#include <linux/kgdb.h>
++#include <linux/kthread.h>
+ #include <asm/io.h>
+ #include <asm/pci-direct.h>
+ #include <asm/fixmap.h>
+@@ -55,6 +58,7 @@ static struct ehci_regs __iomem *ehci_regs;
+ static struct ehci_dbg_port __iomem *ehci_debug;
+ static int dbgp_not_safe; /* Cannot use debug device during ehci reset */
+ static unsigned int dbgp_endpoint_out;
++static unsigned int dbgp_endpoint_in;
+ 
+ struct ehci_dev {
+ 	u32 bus;
+@@ -91,6 +95,13 @@ static inline u32 dbgp_len_update(u32 x, u32 len)
+ 	return (x & ~0x0f) | (len & 0x0f);
+ }
+ 
++#ifdef CONFIG_KGDB
++static struct kgdb_io kgdbdbgp_io_ops;
++#define dbgp_kgdb_mode (dbg_io_ops == &kgdbdbgp_io_ops)
 +#else
-+static int gdbstub_read_wait(void)
-+{
-+	int ret = dbg_io_ops->read_char();
-+	while (ret == NO_POLL_CHAR)
-+		ret = dbg_io_ops->read_char();
-+	return ret;
-+}
++#define dbgp_kgdb_mode (0)
 +#endif
- /* scan for the sequence $<data>#<checksum> */
- static void get_packet(char *buffer)
- {
-@@ -75,7 +100,7 @@ static void get_packet(char *buffer)
- 		 * Spin and wait around for the start character, ignore all
- 		 * other characters:
- 		 */
--		while ((ch = (dbg_io_ops->read_char())) != '$')
-+		while ((ch = (gdbstub_read_wait())) != '$')
- 			/* nothing */;
- 
- 		kgdb_connected = 1;
-@@ -88,7 +113,7 @@ static void get_packet(char *buffer)
- 		 * now, read until a # or end of buffer is found:
- 		 */
- 		while (count < (BUFMAX - 1)) {
--			ch = dbg_io_ops->read_char();
-+			ch = gdbstub_read_wait();
- 			if (ch == '#')
- 				break;
- 			checksum = checksum + ch;
-@@ -98,8 +123,8 @@ static void get_packet(char *buffer)
- 		buffer[count] = 0;
- 
- 		if (ch == '#') {
--			xmitcsum = hex(dbg_io_ops->read_char()) << 4;
--			xmitcsum += hex(dbg_io_ops->read_char());
-+			xmitcsum = hex(gdbstub_read_wait()) << 4;
-+			xmitcsum += hex(gdbstub_read_wait());
- 
- 			if (checksum != xmitcsum)
- 				/* failed checksum */
-@@ -144,10 +169,10 @@ static void put_packet(char *buffer)
- 			dbg_io_ops->flush();
- 
- 		/* Now see what we get in reply. */
--		ch = dbg_io_ops->read_char();
-+		ch = gdbstub_read_wait();
- 
- 		if (ch == 3)
--			ch = dbg_io_ops->read_char();
-+			ch = gdbstub_read_wait();
- 
- 		/* If we get an ACK, we are done. */
- 		if (ch == '+')
-diff --git a/kernel/debug/kdb/kdb_debugger.c b/kernel/debug/kdb/kdb_debugger.c
-index f024c0c..bf6e827 100644
---- a/kernel/debug/kdb/kdb_debugger.c
-+++ b/kernel/debug/kdb/kdb_debugger.c
-@@ -20,7 +20,15 @@
- get_char_func kdb_poll_funcs[] = {
- 	dbg_io_get_char,
- 	NULL,
-+	NULL,
-+	NULL,
-+	NULL,
-+	NULL,
- };
-+EXPORT_SYMBOL_GPL(kdb_poll_funcs);
 +
-+int kdb_poll_idx = 1;
-+EXPORT_SYMBOL_GPL(kdb_poll_idx);
+ /*
+  * USB Packet IDs (PIDs)
+  */
+@@ -182,11 +193,10 @@ static void dbgp_breath(void)
+ 	/* Sleep to give the debug port a chance to breathe */
+ }
  
- int kdb_stub(struct kgdb_state *ks)
+-static int dbgp_wait_until_done(unsigned ctrl)
++static int dbgp_wait_until_done(unsigned ctrl, int loop)
  {
-@@ -85,6 +93,7 @@ int kdb_stub(struct kgdb_state *ks)
- 	kdb_bp_remove();
- 	KDB_STATE_CLEAR(DOING_SS);
- 	KDB_STATE_CLEAR(DOING_SSB);
-+	KDB_STATE_SET(PAGER);
- 	/* zero out any offline cpu data */
- 	for_each_present_cpu(i) {
- 		if (!cpu_online(i)) {
-@@ -112,6 +121,7 @@ int kdb_stub(struct kgdb_state *ks)
- 	kdb_initial_cpu = -1;
- 	kdb_current_task = NULL;
- 	kdb_current_regs = NULL;
-+	KDB_STATE_CLEAR(PAGER);
- 	kdbnearsym_cleanup();
- 	if (error == KDB_CMD_KGDB) {
- 		if (KDB_STATE(DOING_KGDB) || KDB_STATE(DOING_KGDB2)) {
+ 	u32 pids, lpid;
+ 	int ret;
+-	int loop = DBGP_LOOPS;
+ 
+ retry:
+ 	writel(ctrl | DBGP_GO, &ehci_debug->control);
+@@ -276,13 +286,13 @@ static int dbgp_bulk_write(unsigned devnum, unsigned endpoint,
+ 	dbgp_set_data(bytes, size);
+ 	writel(addr, &ehci_debug->address);
+ 	writel(pids, &ehci_debug->pids);
+-	ret = dbgp_wait_until_done(ctrl);
++	ret = dbgp_wait_until_done(ctrl, DBGP_LOOPS);
+ 
+ 	return ret;
+ }
+ 
+ static int dbgp_bulk_read(unsigned devnum, unsigned endpoint, void *data,
+-				 int size)
++			  int size, int loops)
+ {
+ 	u32 pids, addr, ctrl;
+ 	int ret;
+@@ -302,7 +312,7 @@ static int dbgp_bulk_read(unsigned devnum, unsigned endpoint, void *data,
+ 
+ 	writel(addr, &ehci_debug->address);
+ 	writel(pids, &ehci_debug->pids);
+-	ret = dbgp_wait_until_done(ctrl);
++	ret = dbgp_wait_until_done(ctrl, loops);
+ 	if (ret < 0)
+ 		return ret;
+ 
+@@ -343,12 +353,12 @@ static int dbgp_control_msg(unsigned devnum, int requesttype,
+ 	dbgp_set_data(&req, sizeof(req));
+ 	writel(addr, &ehci_debug->address);
+ 	writel(pids, &ehci_debug->pids);
+-	ret = dbgp_wait_until_done(ctrl);
++	ret = dbgp_wait_until_done(ctrl, DBGP_LOOPS);
+ 	if (ret < 0)
+ 		return ret;
+ 
+ 	/* Read the result */
+-	return dbgp_bulk_read(devnum, 0, data, size);
++	return dbgp_bulk_read(devnum, 0, data, size, DBGP_LOOPS);
+ }
+ 
+ /* Find a PCI capability */
+@@ -559,6 +569,7 @@ try_again:
+ 		goto err;
+ 	}
+ 	dbgp_endpoint_out = dbgp_desc.bDebugOutEndpoint;
++	dbgp_endpoint_in = dbgp_desc.bDebugInEndpoint;
+ 
+ 	/* Move the device to 127 if it isn't already there */
+ 	if (devnum != USB_DEBUG_DEVNUM) {
+@@ -968,8 +979,9 @@ int dbgp_reset_prep(void)
+ 	if (!ehci_debug)
+ 		return 0;
+ 
+-	if (early_dbgp_console.index != -1 &&
+-		!(early_dbgp_console.flags & CON_BOOT))
++	if ((early_dbgp_console.index != -1 &&
++	     !(early_dbgp_console.flags & CON_BOOT)) ||
++	    dbgp_kgdb_mode)
+ 		return 1;
+ 	/* This means the console is not initialized, or should get
+ 	 * shutdown so as to allow for reuse of the usb device, which
+@@ -982,3 +994,93 @@ int dbgp_reset_prep(void)
+ 	return 0;
+ }
+ EXPORT_SYMBOL_GPL(dbgp_reset_prep);
++
++#ifdef CONFIG_KGDB
++
++static char kgdbdbgp_buf[DBGP_MAX_PACKET];
++static int kgdbdbgp_buf_sz;
++static int kgdbdbgp_buf_idx;
++static int kgdbdbgp_loop_cnt = DBGP_LOOPS;
++
++static int kgdbdbgp_read_char(void)
++{
++	int ret;
++
++	if (kgdbdbgp_buf_idx < kgdbdbgp_buf_sz) {
++		char ch = kgdbdbgp_buf[kgdbdbgp_buf_idx++];
++		return ch;
++	}
++
++	ret = dbgp_bulk_read(USB_DEBUG_DEVNUM, dbgp_endpoint_in,
++			     &kgdbdbgp_buf, DBGP_MAX_PACKET,
++			     kgdbdbgp_loop_cnt);
++	if (ret <= 0)
++		return NO_POLL_CHAR;
++	kgdbdbgp_buf_sz = ret;
++	kgdbdbgp_buf_idx = 1;
++	return kgdbdbgp_buf[0];
++}
++
++static void kgdbdbgp_write_char(u8 chr)
++{
++	early_dbgp_write(NULL, &chr, 1);
++}
++
++static struct kgdb_io kgdbdbgp_io_ops = {
++	.name = "kgdbdbgp",
++	.read_char = kgdbdbgp_read_char,
++	.write_char = kgdbdbgp_write_char,
++};
++
++static int kgdbdbgp_wait_time;
++
++static int __init kgdbdbgp_parse_config(char *str)
++{
++	char *ptr;
++
++	if (!ehci_debug) {
++		if (early_dbgp_init(str))
++			return -1;
++	}
++	ptr = strchr(str, ',');
++	if (ptr) {
++		ptr++;
++		kgdbdbgp_wait_time = simple_strtoul(ptr, &ptr, 10);
++	}
++	kgdb_register_io_module(&kgdbdbgp_io_ops);
++	kgdbdbgp_io_ops.is_console = early_dbgp_console.index != -1;
++
++	return 0;
++}
++early_param("kgdbdbgp", kgdbdbgp_parse_config);
++
++static int kgdbdbgp_reader_thread(void *ptr)
++{
++	int ret;
++
++	while (readl(&ehci_debug->control) & DBGP_ENABLED) {
++		kgdbdbgp_loop_cnt = 1;
++		ret = kgdbdbgp_read_char();
++		kgdbdbgp_loop_cnt = DBGP_LOOPS;
++		if (ret != NO_POLL_CHAR) {
++			if (ret == 0x3 || ret == '$') {
++				if (ret == '$')
++					kgdbdbgp_buf_idx--;
++				kgdb_breakpoint();
++			}
++			continue;
++		}
++		schedule_timeout_interruptible(kgdbdbgp_wait_time * HZ);
++	}
++	return 0;
++}
++
++static int __init kgdbdbgp_start_thread(void)
++{
++	if (dbgp_kgdb_mode && kgdbdbgp_wait_time)
++		kthread_run(kgdbdbgp_reader_thread, NULL, "%s", "dbgp");
++
++	return 0;
++}
++module_init(kgdbdbgp_start_thread);
++#endif /* CONFIG_KGDB */
 -- 
 1.6.4.rc1
 
