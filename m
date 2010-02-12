@@ -1,227 +1,44 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932134Ab0BLXGA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 18:06:00 -0500
-Received: from xenotime.net ([72.52.64.118]:57322 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755964Ab0BLXF5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 18:05:57 -0500
-Message-ID: <4B75DED3.1070407@xenotime.net>
-Date: Fri, 12 Feb 2010 15:05:55 -0800
-From: Randy Dunlap <rdunlap@xenotime.net>
-Organization: YPO4
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+	id S1755174Ab0BLXHq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 18:07:46 -0500
+Received: from smtp-out003.kontent.com ([81.88.40.217]:43135 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750797Ab0BLXHp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Feb 2010 18:07:45 -0500
+From: Oliver Neukum <oliver@neukum.org>
+To: Graham M Howe <gman.1352@googlemail.com>
+Subject: Re: [PATCH 2/2] Staging: comedi: fix bracing and 80 character stylein ni_at_a2150.c This is a patch to the ni_at_a2150.c file to fix up bracing and 80 character warnings  found by the checkpatch.pl tool Signed-off-by: Graham M Howe <gman.1352@googlemail.com>
+Date: Sat, 13 Feb 2010 00:07:38 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.33-rc6-0.1-default; KDE/4.3.1; x86_64; ; )
+Cc: gregkh@suse.de, wfp5p@virginia.edu, devel@driverdev.osuosl.org,
+       linux-kernel@vger.kernel.org
+References: <1266015937-3532-1-git-send-email-user@graham-eeepc>
+In-Reply-To: <1266015937-3532-1-git-send-email-user@graham-eeepc>
 MIME-Version: 1.0
-To: Jason Wessel <jason.wessel@windriver.com>
-CC: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
-       mingo@elte.hu
-Subject: Re: [PATCH 6/7] kgdb,docs: Update the kgdb docs to include kms
-References: <1266014188-29505-1-git-send-email-jason.wessel@windriver.com> <1266014188-29505-7-git-send-email-jason.wessel@windriver.com>
-In-Reply-To: <1266014188-29505-7-git-send-email-jason.wessel@windriver.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Message-Id: <201002130007.38863.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/12/10 14:36, Jason Wessel wrote:
-> Update the kgdb docs to include information about kernel mode setting support.
-> 
-> Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
-> ---
->  Documentation/DocBook/kgdb.tmpl     |   82 +++++++++++++++++++++++++++++++----
->  Documentation/kernel-parameters.txt |    9 +++-
->  2 files changed, 79 insertions(+), 12 deletions(-)
-> 
-> diff --git a/Documentation/DocBook/kgdb.tmpl b/Documentation/DocBook/kgdb.tmpl
-> index cc81879..498267b 100644
-> --- a/Documentation/DocBook/kgdb.tmpl
-> +++ b/Documentation/DocBook/kgdb.tmpl
-> @@ -200,12 +200,29 @@
->     only make use of <constant>kgdbwait</constant> and early debugging
->     if you build kgdboc into the kernel as a builtins.
->     </para>
-> +   <para>Optionally you can elect to activate kms (Kernel Mode
-> +   Setting) integration.  When you use kms with kgdboc and you have a
-> +   video driver that has atomic mode setting hooks, it is possible to
-> +   enter the debugger on the graphics console.  When the kernel
-> +   execution is resumed, the graphics previous graphics mode will get
+Am Samstag, 13. Februar 2010 00:05:37 schrieb Graham M Howe:
+> --- a/drivers/staging/comedi/drivers/ni_at_a2150.c
+> +++ b/drivers/staging/comedi/drivers/ni_at_a2150.c
+> @@ -86,8 +86,10 @@ TRIG_WAKE_EOS
+>  #define   CLOCK_SELECT_BITS(x)         (((x) & 0x3) << 3)
+>  #define   CLOCK_DIVISOR_BITS(x)                (((x) & 0x3) << 5)
+>  #define   CLOCK_MASK           (0xf << 3)
+> -#define   ENABLE0_BIT          0x80    /*  enable (don't internally ground) channels 0 and 1 */
+> -#define   ENABLE1_BIT          0x100   /*  enable (don't internally ground) channels 2 and 3 */
+> +/*  enable (don't internally ground) channels 0 and 1 */
+> +#define   ENABLE0_BIT          0x80
+> +/*  enable (don't internally ground) channels 2 and 3 */
 
-                   drop first  "graphics" above ...        mode will be
+Does this really improve readability?
 
-> +   restored.  This integration can serve as a useful tool to aid in
-> +   dianosing crashes or doing analysis of memory with kdb while
-
-      diagnosing
-
-> +   allowing the full graphics console applications to run.
-> +   </para>
->     <sect2 id="kgdbocArgs">
->     <title>kgdboc arguments</title>
-> -   <para>Usage: <constant>kgdboc=[kbd][[,]serial_device][,baud]</constant></para>
-> -   <para>You can configure kgdboc to use the keyboard, and or a serial device
-> -   depending on if you are using kdb and or kgdb, in one of the
-> -   following scenarios.
-> +   <para>Usage: <constant>kgdboc=[kms][[,]kbd][[,]serial_device][,baud]</constant></para>
-> +   <para>Abreviations:
-> +   <itemizedlist>
-> +   <listitem><para>kms = Kernel Mode Setting</para></listitem>
-> +   <listitem><para>kbd = Keyboard</para></listitem>
-> +   </itemizedlist>
-> +   </para>
-> +   <para>You can configure kgdboc to use the keyboard, and or a serial
-> +   device depending on if you are using kdb and or kgdb, in one of the
-> +   following scenarios.  The order listed above must be observed if
-> +   you use any of the optional configurations together.  Using kms +
-> +   only gdb is generally not a usful combination.
-
-                                  useful
-
->     <orderedlist>
->     <listitem><para>kdb and kgdb over only a serial port</para>
->     <para><constant>kgdboc=&lt;serial_device&gt;[,baud]</constant></para>
-> @@ -218,6 +235,12 @@
->     <listitem><para>kdb with a keyboard</para>
->     <para><constant>kgdboc=kbd</constant></para>
->     </listitem>
-> +   <listitem><para>kdb with kernel modesetting</para>
-> +   <para><constant>kgdboc=kms,kbd</constant></para>
-> +   </listitem>
-> +   <listitem><para>kdb with kernel modesetting and kgdb over a serial port</para>
-> +   <para><constant>kgdboc=kbd,kbd,ttyS0,115200</constant></para>
-> +   </listitem>
->     </orderedlist>
->     </para>
->     <para>You can configure kgdboc via sysfs or a module or kernel boot line
-> @@ -613,6 +636,8 @@ Task Addr       Pid   Parent [*] cpu State Thread     Command
->        <listitem><para>The logic to perform safe memory reads and writes to memory while using the debugger</para></listitem>
->        <listitem><para>A full implementation for software breakpoints unless overridden by the arch</para></listitem>
->        <listitem><para>The API to invoke either the kdb or kgdb frontend to the debug core.</para></listitem>
-> +      <listitem><para>The structures and call back API for atomic kernel mode setting.</para>
-
-                                            callback
-
-> +      <para>NOTE: kgdboc is where the kms callbacks are invoked.</para></listitem>
->        </itemizedlist>
->        </para>
->        </listitem>
-> @@ -721,6 +746,8 @@ Task Addr       Pid   Parent [*] cpu State Thread     Command
->    </sect1>
->    <sect1 id="kgdbocDesign">
->    <title>kgdboc internals</title>
-> +  <sect2>
-> +  <title>kgdboc and uarts</title>
->    <para>
->    The kgdboc driver is actually a very thin driver that relies on the
->    underlying low level to the hardware driver having "polling hooks"
-> @@ -729,10 +756,7 @@ Task Addr       Pid   Parent [*] cpu State Thread     Command
->    low level uart hook for doing polled mode reading and writing of a
-
-     I prefer UART, but, oh well.
-
->    single character while in an atomic context.  When kgdb makes an I/O
->    request to the debugger, kgdboc invokes a call back in the serial
-> -  core which in turn uses the call back in the uart driver.  It is
-
-                                 callback in the UART
-
-> -  certainly possible to extend kgdboc to work with non-uart based
-
-                                                      non-UART-based
-
-> -  consoles in the future.
-> -  </para>
-> +  core which in turn uses the call back in the uart driver.</para>
-
-                                 callback
-
->    <para>
->    When using kgdboc with a uart, the uart driver must implement two callbacks in the <constant>struct uart_ops</constant>. Example from drivers/8250.c:<programlisting>
->  #ifdef CONFIG_CONSOLE_POLL
-> @@ -746,9 +770,49 @@ Task Addr       Pid   Parent [*] cpu State Thread     Command
->    that they can be called from an atomic context and have to restore
->    the state of the uart chip on return such that the system can return
->    to normal when the debugger detaches.  You need to be very careful
-> -  with any kind of lock you consider, because failing here is most
-> +  with any kind of lock you consider, because failing here is most likely
->    going to mean pressing the reset button.
->    </para>
-> +  </sect2>
-> +  <sect2 id="kgdbocKbd">
-> +  <title>kgdboc and keyboards</title>
-> +  <para>The kgdboc driver contains logic to configure communications
-> +  with an attached keyboard.  The keyboard infrastructure is only
-> +  compiled into the kernel when CONFIG_KDB_KEYBOARD=y is set in the
-> +  kernel configuration.</para>
-> +  <para>The core polled keyboard driver driver for PS/2 type keyboards
-> +  is in drivers/char/kdb_keyboard.c.  This driver is hooked into the
-> +  debug core when kgdboc populates the callback in the arrary
-
-                                                          array
-
-> +  called <constant>kdb_poll_funcs[]</constant>.  The
-> +  kdb_get_kbd_char() is the top level function which polls hardware
-
-                               top-level
-
-> +  for single character input.
-> +  </para>
-> +  </sect2>
-> +  <sect2 id="kgdbocKms">
-> +  <title>kgdboc and kms</title>
-> +  <para>The kgdboc driver contains logic to request the grpahics
-
-                                                           graphics
-
-> +  display to switch to a text context if you are using
-> +  kgdboc=kms,... and you have a video driver which has a framebuffer
-> +  console and atomic kernel mode setting support.  Every time kernel
-> +  debugger is entered it calls kgdboc_pre_exp_handler() which in turn
-> +  calls dbg_kms_ops->activate_console().  On resuming kernel
-> +  execution, the kernel debugger calls kgdboc_post_exp_handler() which
-> +  in turn calls dbg_kms_ops->restore_console().</para>
-> +  <para>Any video driver that wants to be compatible with the kernel
-> +  debugger and the atomic kms callbacks must implement the
-> +  mode_set_base_atomic operation.  The following is an example from
-> +  drivers/gpu/drm/i915/intel_display.c:
-> +  <informalexample>
-> +  <programlisting>
-> +static const struct drm_crtc_helper_funcs intel_helper_funcs = {
-> +[...]
-> +        .mode_set_base_atomic = intel_pipe_set_base_atomic,
-> +[...]
-> +};
-> +  </programlisting>
-> +  </informalexample>
-> +  </para>
-> +  </sect2>
->    </sect1>
->    </chapter>
->    <chapter id="credits">
-> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-> index af8b8e8..b340445 100644
-> --- a/Documentation/kernel-parameters.txt
-> +++ b/Documentation/kernel-parameters.txt
-> @@ -1106,9 +1106,12 @@ and is between 256 and 4096 characters. It is defined in the file
->  	kgdboc=		[KGDB,HW] kgdb over consoles.
->  			Requires a tty driver that supports console polling,
->  			or a supported polling keyboard driver (non-usb).
-> -			Serial only format: <serial_device>[,baud]
-> -			keyboard only format: kbd
-> -			keyboard and serial format: kbd,<serial_device>[,baud]
-> +			 Serial only format: <serial_device>[,baud]
-> +			 keyboard only format: kbd
-> +			 keyboard and serial format: kbd,<serial_device>[,baud]
-> +			Optional Kernal mode setting:
-
-                                 Kernel
-
-> +			 kms, kbd format: kms,kbd
-> +			 kms, kbd and serial format: kms,kbd,<ser_dev>[,baud]
->  
->  	kgdbwait	[KGDB] Stop kernel execution and enter the
->  			kernel debugger at the earliest opportunity if
-
-
--- 
-~Randy
+	Regards
+		Oliver
