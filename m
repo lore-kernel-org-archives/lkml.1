@@ -1,10 +1,10 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757610Ab0BLADQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 19:03:16 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:39392 "EHLO e1.ny.us.ibm.com"
+	id S1757623Ab0BLADT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 19:03:19 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:52824 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757519Ab0BLABI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1757518Ab0BLABI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 11 Feb 2010 19:01:08 -0500
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
@@ -14,9 +14,9 @@ Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
        tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
        Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
        "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: [PATCH tip/core/rcu 06/13] sched: use lockdep-based checking on rcu_dereference()
-Date: Thu, 11 Feb 2010 16:00:32 -0800
-Message-Id: <1265932839-25899-6-git-send-email-paulmck@linux.vnet.ibm.com>
+Subject: [PATCH tip/core/rcu 13/13] rcu: accelerate grace period if last non-dynticked CPU
+Date: Thu, 11 Feb 2010 16:00:39 -0800
+Message-Id: <1265932839-25899-13-git-send-email-paulmck@linux.vnet.ibm.com>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <20100212000016.GA25781@linux.vnet.ibm.com>
 References: <20100212000016.GA25781@linux.vnet.ibm.com>
@@ -24,242 +24,186 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Update the rcu_dereference() usages to take advantage of the new
-lockdep-based checking.
+Currently, rcu_needs_cpu() simply checks whether the current CPU has
+an outstanding RCU callback, which means that the last CPU to go into
+dyntick-idle mode might wait a few ticks for the relevant grace periods
+to complete.  However, if all the other CPUs are in dyntick-idle mode,
+and if this CPU is in a quiescent state (which it is for RCU-bh and
+RCU-sched any time that we are considering going into dyntick-idle mode),
+then the grace period is instantly complete.
+
+This patch therefore repeatedly invokes the RCU grace-period machinery
+in order to force any needed grace periods to complete quickly.  It does
+so a limited number of times in order to prevent starvation by an RCU
+callback function that might pass itself to call_rcu().
+
+However, if any CPU other than the current one is not in dyntick-idle
+mode, fall back to simply checking (with fix to bug noted by Lai
+Jiangshan).  Also, take advantage of last grace-period forcing, the
+opportunity to do so noted by Steve Rostedt.  And apply simplified #ifdef
+condition suggested by Frederic Weisbecker.
 
 Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 ---
- include/linux/cgroup.h |    5 ++++-
- include/linux/cred.h   |    2 +-
- init/main.c            |    2 ++
- kernel/cgroup.c        |   12 ++++++++++++
- kernel/exit.c          |   14 +++++++++++---
- kernel/fork.c          |    1 +
- kernel/notifier.c      |    6 +++---
- kernel/pid.c           |    2 +-
- kernel/sched.c         |   11 ++++++++---
- 9 files changed, 43 insertions(+), 12 deletions(-)
+ include/linux/cpumask.h |   14 +++++++++
+ init/Kconfig            |   16 +++++++++++
+ kernel/rcutree.c        |    5 +--
+ kernel/rcutree_plugin.h |   69 +++++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 101 insertions(+), 3 deletions(-)
 
-diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
-index 0008dee..c9bbcb2 100644
---- a/include/linux/cgroup.h
-+++ b/include/linux/cgroup.h
-@@ -28,6 +28,7 @@ struct css_id;
- extern int cgroup_init_early(void);
- extern int cgroup_init(void);
- extern void cgroup_lock(void);
-+extern int cgroup_lock_is_held(void);
- extern bool cgroup_lock_live_group(struct cgroup *cgrp);
- extern void cgroup_unlock(void);
- extern void cgroup_fork(struct task_struct *p);
-@@ -486,7 +487,9 @@ static inline struct cgroup_subsys_state *cgroup_subsys_state(
- static inline struct cgroup_subsys_state *task_subsys_state(
- 	struct task_struct *task, int subsys_id)
- {
--	return rcu_dereference(task->cgroups->subsys[subsys_id]);
-+	return rcu_dereference_check(task->cgroups->subsys[subsys_id],
-+				     rcu_read_lock_held() ||
-+				     cgroup_lock_is_held());
- }
+diff --git a/include/linux/cpumask.h b/include/linux/cpumask.h
+index d77b547..dbcee76 100644
+--- a/include/linux/cpumask.h
++++ b/include/linux/cpumask.h
+@@ -143,6 +143,8 @@ static inline unsigned int cpumask_any_but(const struct cpumask *mask,
  
- static inline struct cgroup* task_cgroup(struct task_struct *task,
-diff --git a/include/linux/cred.h b/include/linux/cred.h
-index 4e3387a..4db09f8 100644
---- a/include/linux/cred.h
-+++ b/include/linux/cred.h
-@@ -280,7 +280,7 @@ static inline void put_cred(const struct cred *_cred)
-  * task or by holding tasklist_lock to prevent it from being unlinked.
-  */
- #define __task_cred(task) \
--	((const struct cred *)(rcu_dereference((task)->real_cred)))
-+	((const struct cred *)(rcu_dereference_check((task)->real_cred, rcu_read_lock_held() || lockdep_is_held(&tasklist_lock))))
+ #define for_each_cpu(cpu, mask)			\
+ 	for ((cpu) = 0; (cpu) < 1; (cpu)++, (void)mask)
++#define for_each_cpu_not(cpu, mask)		\
++	for ((cpu) = 0; (cpu) < 1; (cpu)++, (void)mask)
+ #define for_each_cpu_and(cpu, mask, and)	\
+ 	for ((cpu) = 0; (cpu) < 1; (cpu)++, (void)mask, (void)and)
+ #else
+@@ -203,6 +205,18 @@ int cpumask_any_but(const struct cpumask *mask, unsigned int cpu);
+ 		(cpu) < nr_cpu_ids;)
  
  /**
-  * get_task_cred - Get another task's objective credentials
-diff --git a/init/main.c b/init/main.c
-index dac44a9..ea6280c 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -416,7 +416,9 @@ static noinline void __init_refok rest_init(void)
- 	kernel_thread(kernel_init, NULL, CLONE_FS | CLONE_SIGHAND);
- 	numa_default_policy();
- 	pid = kernel_thread(kthreadd, NULL, CLONE_FS | CLONE_FILES);
-+	rcu_read_lock();
- 	kthreadd_task = find_task_by_pid_ns(pid, &init_pid_ns);
-+	rcu_read_unlock();
- 	unlock_kernel();
- 
- 	/*
-diff --git a/kernel/cgroup.c b/kernel/cgroup.c
-index 1fbcc74..1b1373c 100644
---- a/kernel/cgroup.c
-+++ b/kernel/cgroup.c
-@@ -166,6 +166,18 @@ static DEFINE_SPINLOCK(hierarchy_id_lock);
-  */
- static int need_forkexit_callback __read_mostly;
- 
-+#ifdef CONFIG_PROVE_LOCKING
-+int cgroup_lock_is_held(void)
-+{
-+	return lockdep_is_held(&cgroup_mutex);
-+}
-+#else /* #ifdef CONFIG_PROVE_LOCKING */
-+int cgroup_lock_is_held(void)
-+{
-+	return mutex_is_locked(&cgroup_mutex);
-+}
-+#endif /* #else #ifdef CONFIG_PROVE_LOCKING */
++ * for_each_cpu_not - iterate over every cpu in a complemented mask
++ * @cpu: the (optionally unsigned) integer iterator
++ * @mask: the cpumask pointer
++ *
++ * After the loop, cpu is >= nr_cpu_ids.
++ */
++#define for_each_cpu_not(cpu, mask)				\
++	for ((cpu) = -1;					\
++		(cpu) = cpumask_next_zero((cpu), (mask)),	\
++		(cpu) < nr_cpu_ids;)
 +
- /* convenient tests for these bits */
- inline int cgroup_is_removed(const struct cgroup *cgrp)
- {
-diff --git a/kernel/exit.c b/kernel/exit.c
-index 546774a..45ed043 100644
---- a/kernel/exit.c
-+++ b/kernel/exit.c
-@@ -85,7 +85,9 @@ static void __exit_signal(struct task_struct *tsk)
- 	BUG_ON(!sig);
- 	BUG_ON(!atomic_read(&sig->count));
++/**
+  * for_each_cpu_and - iterate over every cpu in both masks
+  * @cpu: the (optionally unsigned) integer iterator
+  * @mask: the first cpumask pointer
+diff --git a/init/Kconfig b/init/Kconfig
+index d95ca7c..42bf914 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -396,6 +396,22 @@ config RCU_FANOUT_EXACT
  
--	sighand = rcu_dereference(tsk->sighand);
-+	sighand = rcu_dereference_check(tsk->sighand,
-+					rcu_read_lock_held() ||
-+					lockdep_is_held(&tasklist_lock));
- 	spin_lock(&sighand->siglock);
+ 	  Say N if unsure.
  
- 	posix_cpu_timers_exit(tsk);
-@@ -170,8 +172,10 @@ void release_task(struct task_struct * p)
- repeat:
- 	tracehook_prepare_release_task(p);
- 	/* don't need to get the RCU readlock here - the process is dead and
--	 * can't be modifying its own credentials */
-+	 * can't be modifying its own credentials. But shut RCU-lockdep up */
-+	rcu_read_lock();
- 	atomic_dec(&__task_cred(p)->user->processes);
-+	rcu_read_unlock();
- 
- 	proc_flush_task(p);
- 
-@@ -473,9 +477,11 @@ static void close_files(struct files_struct * files)
- 	/*
- 	 * It is safe to dereference the fd table without RCU or
- 	 * ->file_lock because this is the last reference to the
--	 * files structure.
-+	 * files structure.  But use RCU to shut RCU-lockdep up.
- 	 */
-+	rcu_read_lock();
- 	fdt = files_fdtable(files);
-+	rcu_read_unlock();
- 	for (;;) {
- 		unsigned long set;
- 		i = j * __NFDBITS;
-@@ -521,10 +527,12 @@ void put_files_struct(struct files_struct *files)
- 		 * at the end of the RCU grace period. Otherwise,
- 		 * you can free files immediately.
- 		 */
-+		rcu_read_lock();
- 		fdt = files_fdtable(files);
- 		if (fdt != &files->fdtab)
- 			kmem_cache_free(files_cachep, files);
- 		free_fdtable(fdt);
-+		rcu_read_unlock();
- 	}
- }
- 
-diff --git a/kernel/fork.c b/kernel/fork.c
-index 5b2959b..e01ec3e 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -86,6 +86,7 @@ int max_threads;		/* tunable limit on nr_threads */
- DEFINE_PER_CPU(unsigned long, process_counts) = 0;
- 
- __cacheline_aligned DEFINE_RWLOCK(tasklist_lock);  /* outer */
-+EXPORT_SYMBOL_GPL(tasklist_lock);
- 
- int nr_processes(void)
- {
-diff --git a/kernel/notifier.c b/kernel/notifier.c
-index acd24e7..2488ba7 100644
---- a/kernel/notifier.c
-+++ b/kernel/notifier.c
-@@ -78,10 +78,10 @@ static int __kprobes notifier_call_chain(struct notifier_block **nl,
- 	int ret = NOTIFY_DONE;
- 	struct notifier_block *nb, *next_nb;
- 
--	nb = rcu_dereference(*nl);
-+	nb = rcu_dereference_raw(*nl);
- 
- 	while (nb && nr_to_call) {
--		next_nb = rcu_dereference(nb->next);
-+		next_nb = rcu_dereference_raw(nb->next);
- 
- #ifdef CONFIG_DEBUG_NOTIFIERS
- 		if (unlikely(!func_ptr_is_kernel_text(nb->notifier_call))) {
-@@ -309,7 +309,7 @@ int __blocking_notifier_call_chain(struct blocking_notifier_head *nh,
- 	 * racy then it does not matter what the result of the test
- 	 * is, we re-check the list after having taken the lock anyway:
- 	 */
--	if (rcu_dereference(nh->head)) {
-+	if (rcu_dereference_raw(nh->head)) {
- 		down_read(&nh->rwsem);
- 		ret = notifier_call_chain(&nh->head, val, v, nr_to_call,
- 					nr_calls);
-diff --git a/kernel/pid.c b/kernel/pid.c
-index 2e17c9c..b08e697 100644
---- a/kernel/pid.c
-+++ b/kernel/pid.c
-@@ -367,7 +367,7 @@ struct task_struct *pid_task(struct pid *pid, enum pid_type type)
- 	struct task_struct *result = NULL;
- 	if (pid) {
- 		struct hlist_node *first;
--		first = rcu_dereference(pid->tasks[type].first);
-+		first = rcu_dereference_check(pid->tasks[type].first, rcu_read_lock_held() || lockdep_is_held(&tasklist_lock));
- 		if (first)
- 			result = hlist_entry(first, struct task_struct, pids[(type)].node);
- 	}
-diff --git a/kernel/sched.c b/kernel/sched.c
-index c535cc4..ad419d9 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -645,6 +645,11 @@ static inline int cpu_of(struct rq *rq)
- #endif
- }
- 
-+#define for_each_domain_rd(p) \
-+	rcu_dereference_check((p), \
-+			      rcu_read_lock_sched_held() || \
-+			      lockdep_is_held(&sched_domains_mutex))
++config RCU_FAST_NO_HZ
++	bool "Accelerate last non-dyntick-idle CPU's grace periods"
++	depends on TREE_RCU && NO_HZ && SMP
++	default n
++	help
++	  This option causes RCU to attempt to accelerate grace periods
++	  in order to allow the final CPU to enter dynticks-idle state
++	  more quickly.  On the other hand, this option increases the
++	  overhead of the dynticks-idle checking, particularly on systems
++	  with large numbers of CPUs.
 +
++	  Say Y if energy efficiency is critically important, particularly
++	  	if you have relatively few CPUs.
++
++	  Say N if you are unsure.
++
+ config TREE_RCU_TRACE
+ 	def_bool RCU_TRACE && ( TREE_RCU || TREE_PREEMPT_RCU )
+ 	select DEBUG_FS
+diff --git a/kernel/rcutree.c b/kernel/rcutree.c
+index 099a255..29d88c0 100644
+--- a/kernel/rcutree.c
++++ b/kernel/rcutree.c
+@@ -1550,10 +1550,9 @@ static int rcu_pending(int cpu)
  /*
-  * The domain tree (rq->sd) is protected by RCU's quiescent state transition.
-  * See detach_destroy_domains: synchronize_sched for details.
-@@ -653,7 +658,7 @@ static inline int cpu_of(struct rq *rq)
-  * preempt-disabled sections.
+  * Check to see if any future RCU-related work will need to be done
+  * by the current CPU, even if none need be done immediately, returning
+- * 1 if so.  This function is part of the RCU implementation; it is -not-
+- * an exported member of the RCU API.
++ * 1 if so.
   */
- #define for_each_domain(cpu, __sd) \
--	for (__sd = rcu_dereference(cpu_rq(cpu)->sd); __sd; __sd = __sd->parent)
-+	for (__sd = for_each_domain_rd(cpu_rq(cpu)->sd); __sd; __sd = __sd->parent)
- 
- #define cpu_rq(cpu)		(&per_cpu(runqueues, (cpu)))
- #define this_rq()		(&__get_cpu_var(runqueues))
-@@ -1531,7 +1536,7 @@ static unsigned long target_load(int cpu, int type)
- 
- static struct sched_group *group_of(int cpu)
+-int rcu_needs_cpu(int cpu)
++static int rcu_needs_cpu_quick_check(int cpu)
  {
--	struct sched_domain *sd = rcu_dereference(cpu_rq(cpu)->sd);
-+	struct sched_domain *sd = rcu_dereference_sched(cpu_rq(cpu)->sd);
- 
- 	if (!sd)
- 		return NULL;
-@@ -4877,7 +4882,7 @@ static void run_rebalance_domains(struct softirq_action *h)
- 
- static inline int on_null_domain(int cpu)
- {
--	return !rcu_dereference(cpu_rq(cpu)->sd);
-+	return !rcu_dereference_sched(cpu_rq(cpu)->sd);
+ 	/* RCU callbacks either ready or pending? */
+ 	return per_cpu(rcu_sched_data, cpu).nxtlist ||
+diff --git a/kernel/rcutree_plugin.h b/kernel/rcutree_plugin.h
+index e77cdf3..a825666 100644
+--- a/kernel/rcutree_plugin.h
++++ b/kernel/rcutree_plugin.h
+@@ -906,3 +906,72 @@ static void __init __rcu_init_preempt(void)
  }
  
- /*
+ #endif /* #else #ifdef CONFIG_TREE_PREEMPT_RCU */
++
++#if !defined(CONFIG_RCU_FAST_NO_HZ)
++
++/*
++ * Check to see if any future RCU-related work will need to be done
++ * by the current CPU, even if none need be done immediately, returning
++ * 1 if so.  This function is part of the RCU implementation; it is -not-
++ * an exported member of the RCU API.
++ *
++ * Because we have preemptible RCU, just check whether this CPU needs
++ * any flavor of RCU.  Do not chew up lots of CPU cycles with preemption
++ * disabled in a most-likely vain attempt to cause RCU not to need this CPU.
++ */
++int rcu_needs_cpu(int cpu)
++{
++	return rcu_needs_cpu_quick_check(cpu);
++}
++
++#else /* #if !defined(CONFIG_RCU_FAST_NO_HZ) */
++
++#define RCU_NEEDS_CPU_FLUSHES 5
++
++/*
++ * Check to see if any future RCU-related work will need to be done
++ * by the current CPU, even if none need be done immediately, returning
++ * 1 if so.  This function is part of the RCU implementation; it is -not-
++ * an exported member of the RCU API.
++ *
++ * Because we are not supporting preemptible RCU, attempt to accelerate
++ * any current grace periods so that RCU no longer needs this CPU, but
++ * only if all other CPUs are already in dynticks-idle mode.  This will
++ * allow the CPU cores to be powered down immediately, as opposed to after
++ * waiting many milliseconds for grace periods to elapse.
++ */
++int rcu_needs_cpu(int cpu)
++{
++	int c = 1;
++	int i;
++	int thatcpu;
++
++	/* Don't bother unless we are the last non-dyntick-idle CPU. */
++	for_each_cpu_not(thatcpu, nohz_cpu_mask)
++		if (thatcpu != cpu)
++			return rcu_needs_cpu_quick_check(cpu);
++
++	/* Try to push remaining RCU-sched and RCU-bh callbacks through. */
++	for (i = 0; i < RCU_NEEDS_CPU_FLUSHES && c; i++) {
++		c = 0;
++		if (per_cpu(rcu_sched_data, cpu).nxtlist) {
++			rcu_sched_qs(cpu);
++			force_quiescent_state(&rcu_sched_state, 0);
++			__rcu_process_callbacks(&rcu_sched_state,
++						&per_cpu(rcu_sched_data, cpu));
++			c = !!per_cpu(rcu_sched_data, cpu).nxtlist;
++		}
++		if (per_cpu(rcu_bh_data, cpu).nxtlist) {
++			rcu_bh_qs(cpu);
++			force_quiescent_state(&rcu_bh_state, 0);
++			__rcu_process_callbacks(&rcu_bh_state,
++						&per_cpu(rcu_bh_data, cpu));
++			c = !!per_cpu(rcu_bh_data, cpu).nxtlist;
++		}
++	}
++
++	/* If RCU callbacks are still pending, RCU still needs this CPU. */
++	return c;
++}
++
++#endif /* #else #if !defined(CONFIG_RCU_FAST_NO_HZ) */
 -- 
 1.6.6
 
