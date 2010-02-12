@@ -1,519 +1,193 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757832Ab0BLWmP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 17:42:15 -0500
-Received: from mail.windriver.com ([147.11.1.11]:44120 "EHLO
+	id S1757982Ab0BLWnr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 17:43:47 -0500
+Received: from mail.windriver.com ([147.11.1.11]:45184 "EHLO
 	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932096Ab0BLWgd (ORCPT
+	with ESMTP id S1757955Ab0BLWnd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 17:36:33 -0500
+	Fri, 12 Feb 2010 17:43:33 -0500
 From: Jason Wessel <jason.wessel@windriver.com>
 To: linux-kernel@vger.kernel.org
 Cc: kgdb-bugreport@lists.sourceforge.net, mingo@elte.hu,
-       Jason Wessel <jason.wessel@windriver.com>
-Subject: [PATCH 09/28] kgdb: core changes to support kdb
-Date: Fri, 12 Feb 2010 16:35:24 -0600
-Message-Id: <1266014143-29444-10-git-send-email-jason.wessel@windriver.com>
+       Jason Wessel <jason.wessel@windriver.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Eric Biederman <ebiederm@xmission.com>,
+       Yinghai Lu <yhlu.kernel@gmail.com>, linux-usb@vger.kernel.org
+Subject: [PATCH 7/8] ehci-dbgp: split PID register updates for IN and OUT pipes
+Date: Fri, 12 Feb 2010 16:39:28 -0600
+Message-Id: <1266014369-29547-8-git-send-email-jason.wessel@windriver.com>
 X-Mailer: git-send-email 1.6.4.rc1
-In-Reply-To: <1266014143-29444-1-git-send-email-jason.wessel@windriver.com>
-References: <1266014143-29444-1-git-send-email-jason.wessel@windriver.com>
-X-OriginalArrivalTime: 12 Feb 2010 22:36:11.0395 (UTC) FILETIME=[C6E90530:01CAAC33]
+In-Reply-To: <1266014369-29547-1-git-send-email-jason.wessel@windriver.com>
+References: <1266014369-29547-1-git-send-email-jason.wessel@windriver.com>
+X-OriginalArrivalTime: 12 Feb 2010 22:43:12.0921 (UTC) FILETIME=[C228C890:01CAAC34]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-These are the minimum changes to the kgdb core in order to enable an
-API to connect a new front end (kdb) to the debug core.
+This patch addresses two problems:
 
-This patch introduces the dbg_kdb_mode variable controls where the
-user level I/O is routed.  It will be routed to the gdbstub (kgdb) or
-to the kdb front end which is a simple shell available over the kgdboc
-connection.
+1) Bulk reads should always use the DATA0 for the pid, and the write
+   PID should toggle between DATA0 and DATA1.  The fix is using
+   dbgp_pid_write_update() and dbgp_pid_read_update().
 
-You can switch back and forth between kdb or the gdb stub mode of
-operation dynamically.  From gdb stub mode you can blindly type
-"$3#33", or from the kdb mode you can enter "kgdb" to switch to the
-gdb stub.
+2) The delay loop for waiting for a transaction was not long enough to
+   always complete the initial handshake inside dbgp_wait_until_done().
+   After the initial handshake the maximum delay length is never reached.
 
-The logic in the debug core depends on kdb to look for the typical gdb
-connection sequences and return immediately with KGDB_PASS_EVENT if a
-gdb serial command sequence is detected.  That should allow a
-reasonably seamless transition between kdb -> gdb without leaving the
-kernel exception state.  The two gdb serial queries that kdb is
-responsible for detecting are the "?" and "qSupported" packets.
+The combined result of these two changes allows for the removal of the
+forced resynchronization where a bulk write was issued with a dummy
+data payload only to get the device to start accepting data writes
+again.
 
-CC: Ingo Molnar <mingo@elte.hu>
+CC: Greg Kroah-Hartman <gregkh@suse.de>
+CC: Eric Biederman <ebiederm@xmission.com>
+CC: Yinghai Lu <yhlu.kernel@gmail.com>
+CC: linux-usb@vger.kernel.org
 Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
 ---
- arch/arm/kernel/kgdb.c     |    5 ++
- arch/mips/kernel/kgdb.c    |    5 ++
- arch/powerpc/kernel/kgdb.c |    5 ++
- arch/x86/kernel/kgdb.c     |    5 ++
- include/linux/kgdb.h       |   11 ++++-
- kernel/debug/debug_core.c  |  104 +++++++++++++++++++++++++++++++++++++-------
- kernel/debug/debug_core.h  |   24 ++++++++++
- kernel/debug/gdbstub.c     |   36 +++++++++++++++
- lib/Kconfig.kgdb           |    6 +++
- 9 files changed, 183 insertions(+), 18 deletions(-)
+ drivers/usb/early/ehci-dbgp.c |   68 +++++++++++++++++------------------------
+ 1 files changed, 28 insertions(+), 40 deletions(-)
 
-diff --git a/arch/arm/kernel/kgdb.c b/arch/arm/kernel/kgdb.c
-index ba8ccfe..bb17e9b 100644
---- a/arch/arm/kernel/kgdb.c
-+++ b/arch/arm/kernel/kgdb.c
-@@ -97,6 +97,11 @@ sleeping_thread_to_gdb_regs(unsigned long *gdb_regs, struct task_struct *task)
- 	gdb_regs[_CPSR]		= thread_regs->ARM_cpsr;
- }
+diff --git a/drivers/usb/early/ehci-dbgp.c b/drivers/usb/early/ehci-dbgp.c
+index 2958a12..6e98a36 100644
+--- a/drivers/usb/early/ehci-dbgp.c
++++ b/drivers/usb/early/ehci-dbgp.c
+@@ -66,8 +66,6 @@ static struct ehci_dev ehci_dev;
  
-+void kgdb_arch_set_pc(struct pt_regs *regs, unsigned long pc)
-+{
-+	regs->ARM_pc = pc;
-+}
-+
- static int compiled_break;
+ #define USB_DEBUG_DEVNUM 127
  
- int kgdb_arch_handle_exception(int exception_vector, int signo,
-diff --git a/arch/mips/kernel/kgdb.c b/arch/mips/kernel/kgdb.c
-index 50c9bb8..6ed4c83 100644
---- a/arch/mips/kernel/kgdb.c
-+++ b/arch/mips/kernel/kgdb.c
-@@ -180,6 +180,11 @@ void sleeping_thread_to_gdb_regs(unsigned long *gdb_regs, struct task_struct *p)
- 	*(ptr++) = regs->cp0_epc;
- }
- 
-+void kgdb_arch_set_pc(struct pt_regs *regs, unsigned long pc)
-+{
-+	regs->cp0_epc = pc;
-+}
-+
- /*
-  * Calls linux_debug_hook before the kernel dies. If KGDB is enabled,
-  * then try to fall into the debugger
-diff --git a/arch/powerpc/kernel/kgdb.c b/arch/powerpc/kernel/kgdb.c
-index b6bd1ea..7aafcc5 100644
---- a/arch/powerpc/kernel/kgdb.c
-+++ b/arch/powerpc/kernel/kgdb.c
-@@ -309,6 +309,11 @@ void gdb_regs_to_pt_regs(unsigned long *gdb_regs, struct pt_regs *regs)
- 	       (unsigned long)(((void *)gdb_regs) + NUMREGBYTES));
- }
- 
-+void kgdb_arch_set_pc(struct pt_regs *regs, unsigned long pc)
-+{
-+	regs->nip = pc;
-+}
-+
- /*
-  * This function does PowerPC specific procesing for interfacing to gdb.
-  */
-diff --git a/arch/x86/kernel/kgdb.c b/arch/x86/kernel/kgdb.c
-index bfba601..c7a20d7 100644
---- a/arch/x86/kernel/kgdb.c
-+++ b/arch/x86/kernel/kgdb.c
-@@ -690,6 +690,11 @@ unsigned long kgdb_arch_pc(int exception, struct pt_regs *regs)
- 	return instruction_pointer(regs);
- }
- 
-+void kgdb_arch_set_pc(struct pt_regs *regs, unsigned long ip)
-+{
-+	regs->ip = ip;
-+}
-+
- struct kgdb_arch arch_kgdb_ops = {
- 	/* Breakpoint instruction: */
- 	.gdb_bpt_instr		= { 0xcc },
-diff --git a/include/linux/kgdb.h b/include/linux/kgdb.h
-index 4830142..5b37df0 100644
---- a/include/linux/kgdb.h
-+++ b/include/linux/kgdb.h
-@@ -16,10 +16,12 @@
- #include <linux/serial_8250.h>
- #include <linux/linkage.h>
- #include <linux/init.h>
+-#define DBGP_DATA_TOGGLE	0x8800
 -
- #include <asm/atomic.h>
-+#ifdef CONFIG_HAVE_ARCH_KGDB
- #include <asm/kgdb.h>
-+#endif
+ #ifdef DBGP_DEBUG
+ #define dbgp_printk printk
+ static void dbgp_ehci_status(char *str)
+@@ -88,11 +86,6 @@ static inline void dbgp_ehci_status(char *str) { }
+ static inline void dbgp_printk(const char *fmt, ...) { }
+ #endif
  
-+#ifdef CONFIG_KGDB
- struct pt_regs;
- 
- /**
-@@ -262,6 +264,7 @@ extern struct kgdb_arch		arch_kgdb_ops;
- 
- extern unsigned long __weak kgdb_arch_pc(int exception, struct pt_regs *regs);
- 
-+extern void kgdb_arch_set_pc(struct pt_regs *regs, unsigned long pc);
- extern int kgdb_register_io_module(struct kgdb_io *local_kgdb_io_ops);
- extern void kgdb_unregister_io_module(struct kgdb_io *local_kgdb_io_ops);
- extern struct kgdb_io *dbg_io_ops;
-@@ -279,5 +282,9 @@ extern int kgdb_nmicallback(int cpu, void *regs);
- 
- extern int			kgdb_single_step;
- extern atomic_t			kgdb_active;
+-static inline u32 dbgp_pid_update(u32 x, u32 tok)
+-{
+-	return ((x ^ DBGP_DATA_TOGGLE) & 0xffff00) | (tok & 0xff);
+-}
 -
-+#define in_dbg_master() \
-+	(raw_smp_processor_id() == atomic_read(&kgdb_active))
-+#else /* ! CONFIG_KGDB */
-+#define in_dbg_master() (0)
-+#endif /* ! CONFIG_KGDB */
- #endif /* _KGDB_H_ */
-diff --git a/kernel/debug/debug_core.c b/kernel/debug/debug_core.c
-index 91286e8..2e01595 100644
---- a/kernel/debug/debug_core.c
-+++ b/kernel/debug/debug_core.c
-@@ -43,6 +43,7 @@
- #include <linux/sysrq.h>
- #include <linux/init.h>
- #include <linux/kgdb.h>
-+#include <linux/kdb.h>
- #include <linux/pid.h>
- #include <linux/smp.h>
- #include <linux/mm.h>
-@@ -77,6 +78,11 @@ static DEFINE_SPINLOCK(kgdb_registration_lock);
- static int kgdb_con_registered;
- /* determine if kgdb console output should be used */
- static int kgdb_use_con;
-+/* Next cpu to become the master debug core */
-+int dbg_switch_cpu;
+ static inline u32 dbgp_len_update(u32 x, u32 len)
+ {
+ 	return (x & ~0x0f) | (len & 0x0f);
+@@ -136,6 +129,19 @@ static inline u32 dbgp_len_update(u32 x, u32 len)
+ 
+ #define DBGP_MAX_PACKET		8
+ #define DBGP_TIMEOUT		(250 * 1000)
++#define DBGP_LOOPS		1000
 +
-+/* Use kdb or gdbserver mode */
-+static int dbg_kdb_mode = 1;
- 
- static int __init opt_kgdb_con(char *str)
- {
-@@ -100,6 +106,7 @@ static struct kgdb_bkpt		kgdb_break[KGDB_MAX_BREAKPOINTS] = {
-  * The CPU# of the active CPU, or -1 if none:
-  */
- atomic_t			kgdb_active = ATOMIC_INIT(-1);
-+EXPORT_SYMBOL_GPL(kgdb_active);
- 
- /*
-  * We use NR_CPUs not PERCPU, in case kgdb is used to debug early
-@@ -301,7 +308,7 @@ int dbg_set_sw_break(unsigned long addr)
- 	return 0;
- }
- 
--static int kgdb_deactivate_sw_breakpoints(void)
-+int dbg_deactivate_sw_breakpoints(void)
- {
- 	unsigned long addr;
- 	int error;
-@@ -395,8 +402,14 @@ static int kgdb_io_ready(int print_wait)
- 		return 1;
- 	if (atomic_read(&kgdb_setting_breakpoint))
- 		return 1;
--	if (print_wait)
-+	if (print_wait) {
-+#ifdef CONFIG_KGDB_KDB
-+		if (!dbg_kdb_mode)
-+			printk(KERN_CRIT "KGDB: waiting... or $3#33 for KDB\n");
-+#else
- 		printk(KERN_CRIT "KGDB: Waiting for remote debugger\n");
-+#endif
-+	}
- 	return 1;
- }
- 
-@@ -410,7 +423,7 @@ static int kgdb_reenter_check(struct kgdb_state *ks)
- 	/* Panic on recursive debugger calls: */
- 	exception_level++;
- 	addr = kgdb_arch_pc(ks->ex_vector, ks->linux_regs);
--	kgdb_deactivate_sw_breakpoints();
-+	dbg_deactivate_sw_breakpoints();
- 
- 	/*
- 	 * If the break point removed ok at the place exception
-@@ -443,11 +456,24 @@ static int kgdb_reenter_check(struct kgdb_state *ks)
- 	return 1;
- }
- 
-+static void dbg_cpu_switch(int cpu, int next_cpu)
++static inline u32 dbgp_pid_write_update(u32 x, u32 tok)
 +{
-+	/* Mark the cpu we are switching away from as a slave when it
-+	 * holds the kgdb_active token.  This must be done so that the
-+	 * that all the cpus wait in for the debug core will not enter
-+	 * again as the master. */
-+	if (cpu == atomic_read(&kgdb_active)) {
-+		kgdb_info[cpu].exception_state |= DCPU_IS_SLAVE;
-+		kgdb_info[cpu].exception_state &= ~DCPU_WANT_MASTER;
-+	}
-+	kgdb_info[next_cpu].exception_state |= DCPU_NEXT_MASTER;
++	static int data0 = USB_PID_DATA1;
++	data0 ^= USB_PID_DATA_TOGGLE;
++	return (x & 0xffff0000) | (data0 << 8) | (tok & 0xff);
 +}
 +
- static int kgdb_cpu_enter(struct kgdb_state *ks, struct pt_regs *regs)
++static inline u32 dbgp_pid_read_update(u32 x, u32 tok)
++{
++	return (x & 0xffff0000) | (USB_PID_DATA0 << 8) | (tok & 0xff);
++}
+ 
+ static int dbgp_wait_until_complete(void)
  {
- 	unsigned long flags;
- 	int sstep_tries = 100;
--	int error = 0;
-+	int error;
- 	int i, cpu;
- acquirelock:
- 	/*
-@@ -459,6 +485,8 @@ acquirelock:
- 	cpu = ks->cpu;
- 	kgdb_info[cpu].debuggerinfo = regs;
- 	kgdb_info[cpu].task = current;
-+	kgdb_info[cpu].ret_state = 0;
-+	kgdb_info[cpu].irq_depth = hardirq_count() >> HARDIRQ_SHIFT;
- 	/*
- 	 * Make sure the above info reaches the primary CPU before
- 	 * our cpu_in_kgdb[] flag setting does:
-@@ -471,7 +499,11 @@ acquirelock:
- 	 * master cpu and acquire the kgdb_active lock:
- 	 */
- 	while (1) {
--		if (kgdb_info[cpu].exception_state & DCPU_WANT_MASTER) {
-+cpu_loop:
-+		if (kgdb_info[cpu].exception_state & DCPU_NEXT_MASTER) {
-+			kgdb_info[cpu].exception_state &= ~DCPU_NEXT_MASTER;
-+			goto cpu_master_loop;
-+		} else if (kgdb_info[cpu].exception_state & DCPU_WANT_MASTER) {
- 			if (atomic_cmpxchg(&kgdb_active, -1, cpu) == cpu)
- 				break;
- 		} else if (kgdb_info[cpu].exception_state & DCPU_IS_SLAVE) {
-@@ -511,7 +543,7 @@ return_normal:
- 	}
+@@ -180,7 +186,7 @@ static int dbgp_wait_until_done(unsigned ctrl)
+ {
+ 	u32 pids, lpid;
+ 	int ret;
+-	int loop = 3;
++	int loop = DBGP_LOOPS;
  
- 	if (!kgdb_io_ready(1)) {
--		error = 1;
-+		kgdb_info[cpu].ret_state = 1;
- 		goto kgdb_restore; /* No I/O connection, resume the system */
- 	}
- 
-@@ -555,13 +587,31 @@ return_normal:
- 	 * in the debugger and all secondary CPUs are quiescent
- 	 */
- 	kgdb_post_primary_code(ks->linux_regs, ks->ex_vector, ks->err_code);
--	kgdb_deactivate_sw_breakpoints();
-+	dbg_deactivate_sw_breakpoints();
- 	kgdb_single_step = 0;
- 	kgdb_contthread = current;
- 	exception_level = 0;
- 
--	/* Talk to debugger with gdbserial protocol */
--	error = gdb_serial_stub(ks);
-+	while (1) {
-+cpu_master_loop:
-+		if (dbg_kdb_mode) {
-+			kgdb_connected = 1;
-+			error = kdb_stub(ks);
-+		} else {
-+			error = gdb_serial_stub(ks);
-+		}
-+
-+		if (error == DBG_PASS_EVENT) {
-+			dbg_kdb_mode = !dbg_kdb_mode;
-+			kgdb_connected = 0;
-+		} else if (error == DBG_SWITCH_CPU_EVENT) {
-+			dbg_cpu_switch(cpu, dbg_switch_cpu);
-+			goto cpu_loop;
-+		} else {
-+			kgdb_info[cpu].ret_state = error;
-+			break;
-+		}
-+	}
- 
- 	/* Call the I/O driver's post_exception routine */
- 	if (dbg_io_ops->post_exception)
-@@ -573,11 +623,15 @@ return_normal:
- 		for (i = NR_CPUS-1; i >= 0; i--)
- 			atomic_set(&passive_cpu_wait[i], 0);
- 		/*
--		 * Wait till all the CPUs have quit
--		 * from the debugger.
-+		 * Wait till all the CPUs have quit from the debugger,
-+		 * but allow a CPU that hit an exception and is
-+		 * waiting to become the master to remain in the debug
-+		 * core.
+ retry:
+ 	writel(ctrl | DBGP_GO, &ehci_debug->control);
+@@ -197,6 +203,8 @@ retry:
  		 */
- 		for_each_online_cpu(i) {
--			while (atomic_read(&cpu_in_kgdb[i]))
-+			while (atomic_read(&cpu_in_kgdb[i]) &&
-+			       !(kgdb_info[i].exception_state &
-+				 DCPU_WANT_MASTER))
- 				cpu_relax();
- 		}
+ 		if (ret == -DBGP_TIMEOUT && !dbgp_not_safe)
+ 			dbgp_not_safe = 1;
++		if (ret == -DBGP_ERR_BAD && --loop > 0)
++			goto retry;
+ 		return ret;
  	}
-@@ -596,7 +650,7 @@ kgdb_restore:
- 	clocksource_touch_watchdog();
- 	local_irq_restore(flags);
  
--	return error;
-+	return kgdb_info[cpu].ret_state;
+@@ -245,12 +253,20 @@ static inline void dbgp_get_data(void *buf, int size)
+ 		bytes[i] = (hi >> (8*(i - 4))) & 0xff;
  }
  
- /*
-@@ -625,7 +679,8 @@ kgdb_handle_exception(int evector, int signo, int ecode, struct pt_regs *regs)
- 		return 0; /* Ouch, double exception ! */
- 	kgdb_info[ks->cpu].exception_state |= DCPU_WANT_MASTER;
- 	ret = kgdb_cpu_enter(ks, regs);
--	kgdb_info[ks->cpu].exception_state &= ~DCPU_WANT_MASTER;
-+	kgdb_info[ks->cpu].exception_state &= ~(DCPU_WANT_MASTER |
-+						DCPU_IS_SLAVE);
+-static int dbgp_out(u32 addr, const char *bytes, int size)
++static int dbgp_bulk_write(unsigned devnum, unsigned endpoint,
++			 const char *bytes, int size)
+ {
++	int ret;
++	u32 addr;
+ 	u32 pids, ctrl;
+ 
++	if (size > DBGP_MAX_PACKET)
++		return -1;
++
++	addr = DBGP_EPADDR(devnum, endpoint);
++
+ 	pids = readl(&ehci_debug->pids);
+-	pids = dbgp_pid_update(pids, USB_PID_OUT);
++	pids = dbgp_pid_write_update(pids, USB_PID_OUT);
+ 
+ 	ctrl = readl(&ehci_debug->control);
+ 	ctrl = dbgp_len_update(ctrl, size);
+@@ -260,34 +276,7 @@ static int dbgp_out(u32 addr, const char *bytes, int size)
+ 	dbgp_set_data(bytes, size);
+ 	writel(addr, &ehci_debug->address);
+ 	writel(pids, &ehci_debug->pids);
+-	return dbgp_wait_until_done(ctrl);
+-}
+-
+-static int dbgp_bulk_write(unsigned devnum, unsigned endpoint,
+-			 const char *bytes, int size)
+-{
+-	int ret;
+-	int loops = 5;
+-	u32 addr;
+-	if (size > DBGP_MAX_PACKET)
+-		return -1;
+-
+-	addr = DBGP_EPADDR(devnum, endpoint);
+-try_again:
+-	if (loops--) {
+-		ret = dbgp_out(addr, bytes, size);
+-		if (ret == -DBGP_ERR_BAD) {
+-			int try_loops = 3;
+-			do {
+-				/* Emit a dummy packet to re-sync communication
+-				 * with the debug device */
+-				if (dbgp_out(addr, "12345678", 8) >= 0) {
+-					udelay(2);
+-					goto try_again;
+-				}
+-			} while (try_loops--);
+-		}
+-	}
++	ret = dbgp_wait_until_done(ctrl);
+ 
  	return ret;
  }
+@@ -304,7 +293,7 @@ static int dbgp_bulk_read(unsigned devnum, unsigned endpoint, void *data,
+ 	addr = DBGP_EPADDR(devnum, endpoint);
  
-@@ -658,7 +713,7 @@ static void kgdb_console_write(struct console *co, const char *s,
+ 	pids = readl(&ehci_debug->pids);
+-	pids = dbgp_pid_update(pids, USB_PID_IN);
++	pids = dbgp_pid_read_update(pids, USB_PID_IN);
  
- 	/* If we're debugging, or KGDB has not connected, don't try
- 	 * and print. */
--	if (!kgdb_connected || atomic_read(&kgdb_active) != -1)
-+	if (!kgdb_connected || atomic_read(&kgdb_active) != -1 || dbg_kdb_mode)
- 		return;
- 
- 	local_irq_save(flags);
-@@ -680,8 +735,14 @@ static void sysrq_handle_dbg(int key, struct tty_struct *tty)
- 		printk(KERN_CRIT "ERROR: No KGDB I/O module available\n");
- 		return;
- 	}
--	if (!kgdb_connected)
-+	if (!kgdb_connected) {
-+#ifdef CONFIG_KGDB_KDB
-+		if (!dbg_kdb_mode)
-+			printk(KERN_CRIT "KGDB or $3#33 for KDB\n");
-+#else
- 		printk(KERN_CRIT "Entering KGDB\n");
-+#endif
-+	}
- 
- 	kgdb_breakpoint();
+ 	ctrl = readl(&ehci_debug->control);
+ 	ctrl = dbgp_len_update(ctrl, size);
+@@ -362,7 +351,6 @@ static int dbgp_control_msg(unsigned devnum, int requesttype,
+ 	return dbgp_bulk_read(devnum, 0, data, size);
  }
-@@ -810,6 +871,16 @@ void kgdb_unregister_io_module(struct kgdb_io *old_dbg_io_ops)
- }
- EXPORT_SYMBOL_GPL(kgdb_unregister_io_module);
  
-+int dbg_io_get_char(void)
-+{
-+	int ret = dbg_io_ops->read_char();
-+	if (!dbg_kdb_mode)
-+		return ret;
-+	if (ret == 127)
-+		return 8;
-+	return ret;
-+}
-+
- /**
-  * kgdb_breakpoint - generate breakpoint exception
-  *
-@@ -832,6 +903,7 @@ static int __init opt_kgdb_wait(char *str)
+-
+ /* Find a PCI capability */
+ static u32 __init find_cap(u32 num, u32 slot, u32 func, int cap)
  {
- 	kgdb_break_asap = 1;
- 
-+	kdb_init(KDB_INIT_EARLY);
- 	if (kgdb_io_module_registered)
- 		kgdb_initial_breakpoint();
- 
-diff --git a/kernel/debug/debug_core.h b/kernel/debug/debug_core.h
-index 9825c5e..a7051fa 100644
---- a/kernel/debug/debug_core.h
-+++ b/kernel/debug/debug_core.h
-@@ -38,6 +38,8 @@ struct debuggerinfo_struct {
- 	void			*debuggerinfo;
- 	struct task_struct	*task;
- 	int exception_state;
-+	int ret_state;
-+	int irq_depth;
- };
- 
- extern struct debuggerinfo_struct kgdb_info[];
-@@ -47,9 +49,31 @@ extern int dbg_remove_all_break(void);
- extern int dbg_set_sw_break(unsigned long addr);
- extern int dbg_remove_sw_break(unsigned long addr);
- extern int dbg_activate_sw_breakpoints(void);
-+extern int dbg_deactivate_sw_breakpoints(void);
-+
-+/* polled character access to i/o module */
-+extern int dbg_io_get_char(void);
-+
-+/* stub return value for switching between the gdbstub and kdb */
-+#define DBG_PASS_EVENT -12345
-+/* Switch from one cpu to another */
-+#define DBG_SWITCH_CPU_EVENT -123456
-+extern int dbg_switch_cpu;
- 
- /* gdbstub interface functions */
- extern int gdb_serial_stub(struct kgdb_state *ks);
- extern void gdbstub_msg_write(const char *s, int len);
- 
-+/* gdbstub functions used for kdb <-> gdbstub transition */
-+extern int gdbstub_state(struct kgdb_state *ks, char *cmd);
-+
-+#ifdef CONFIG_KGDB_KDB
-+extern int kdb_stub(struct kgdb_state *ks);
-+#else /* ! CONFIG_KGDB_KDB */
-+static inline int kdb_stub(struct kgdb_state *ks)
-+{
-+	return DBG_PASS_EVENT;
-+}
-+#endif /* CONFIG_KGDB_KDB */
-+
- #endif /* _DEBUG_CORE_H_ */
-diff --git a/kernel/debug/gdbstub.c b/kernel/debug/gdbstub.c
-index ab29bce..195ffbd 100644
---- a/kernel/debug/gdbstub.c
-+++ b/kernel/debug/gdbstub.c
-@@ -892,6 +892,13 @@ int gdb_serial_stub(struct kgdb_state *ks)
- 		case 'Z': /* Break point set */
- 			gdb_cmd_break(ks);
- 			break;
-+#ifdef CONFIG_KGDB_KDB
-+		case '3': /* Escape into back into kdb */
-+			if (remcom_in_buffer[1] == '\0') {
-+				gdb_cmd_detachkill(ks);
-+				return DBG_PASS_EVENT;
-+			}
-+#endif
- 		case 'C': /* Exception passing */
- 			tmp = gdb_cmd_exception_pass(ks);
- 			if (tmp > 0)
-@@ -937,3 +944,32 @@ kgdb_exit:
- 		error = 1;
- 	return error;
- }
-+
-+int gdbstub_state(struct kgdb_state *ks, char *cmd)
-+{
-+	int error;
-+
-+	switch (cmd[0]) {
-+	case 'e':
-+		error = kgdb_arch_handle_exception(ks->ex_vector,
-+						   ks->signo,
-+						   ks->err_code,
-+						   remcom_in_buffer,
-+						   remcom_out_buffer,
-+						   ks->linux_regs);
-+		return error;
-+	case 's':
-+	case 'c':
-+		strcpy(remcom_in_buffer, cmd);
-+		return 0;
-+	case '?':
-+		gdb_cmd_status(ks);
-+		break;
-+	case '\0':
-+		strcpy(remcom_out_buffer, "");
-+		break;
-+	}
-+	dbg_io_ops->write_char('+');
-+	put_packet(remcom_out_buffer);
-+	return 0;
-+}
-diff --git a/lib/Kconfig.kgdb b/lib/Kconfig.kgdb
-index 9b5d1d7..02b46de 100644
---- a/lib/Kconfig.kgdb
-+++ b/lib/Kconfig.kgdb
-@@ -57,4 +57,10 @@ config KGDB_TESTS_BOOT_STRING
- 	  information about other strings you could use beyond the
- 	  default of V1F100.
- 
-+config KGDB_KDB
-+	bool "KGDB_KDB: include kdb frontend for kgdb"
-+	default n
-+	help
-+	  KDB frontend for kernel
-+
- endif # KGDB
 -- 
 1.6.4.rc1
 
