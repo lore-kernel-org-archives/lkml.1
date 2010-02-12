@@ -1,50 +1,65 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757389Ab0BLTE3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 14:04:29 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:37938 "EHLO mail.zytor.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757023Ab0BLTE1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 14:04:27 -0500
-Message-ID: <4B75A5FE.8020408@zytor.com>
-Date: Fri, 12 Feb 2010 11:03:26 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: Jean Delvare <khali@linux-fr.org>
-CC: "J.H." <warthog9@kernel.org>, "FTPAdmin Kernel.org" <ftpadmin@kernel.org>,
-       users@kernel.org, lasse.collin@tukaani.org,
-       linux-kernel <linux-kernel@vger.kernel.org>, mirrors@kernel.org
-Subject: Re: [kernel.org users] XZ Migration discussion
-References: <4B744E13.8040004@kernel.org> <20100212150137.648dca7c@hyperion.delvare>
-In-Reply-To: <20100212150137.648dca7c@hyperion.delvare>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S1757398Ab0BLTKk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 14:10:40 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:48324 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757037Ab0BLTKi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Feb 2010 14:10:38 -0500
+X-Authority-Analysis: v=1.0 c=1 a=QEzcV-ImEyYA:10 a=meVymXHHAAAA:8 a=MfOiGYneL4kA26P_FgwA:9 a=buI_vU1kSSCRVHUnUVyMfj7e5-sA:4 a=jeBq3FmKZ4MA:10
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Message-Id: <20100212191037.283998401@goodmis.org>
+User-Agent: quilt/0.48-1
+Date: Fri, 12 Feb 2010 14:09:09 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Christoph Hellwig <hch@lst.de>, Wu Fengguang <fengguang.wu@intel.com>
+Subject: [PATCH 2/2][RFC] tracing: Add extract out softirq names used by irq trace events
+References: <20100212190907.954438555@goodmis.org>
+Content-Disposition: inline; filename=irq-events.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/12/2010 06:01 AM, Jean Delvare wrote:
-> 1* Keep a single compression format. This saves almost 40% of the
-> files.
-> 
-> 2* Move one of the compression formats somewhere else, so that it
-> doesn't get in the way but is still available if needed.
+The irq trace events that map the softirq vectors to strings
+shows up in the format files as names. To allow binary parsers to
+be able to convert these names to their actual numbers, this patch
+extracts those enums.
 
-Neither of these are feasible, sorry.
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 
-> 3* Create a new subdirectory for every 2.6.x kernel, and move all the
-> related files there. This would shrink the main index drastically, and
-> each subdirectory would have a reasonable size (except maybe 2.6.16 and
-> 2.6.27.) Oddly enough this has been done for the files under testing/
-> already, so I am curious why we don't do it for the release files (and
-> the testing/incr/ files, while we're at it.)
+---
+ include/trace/events/irq.h |   11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-Well, part of the reason why is that we're functionally "stuck" on 2.6;
-a prefix which really has lost all meaning.
+Index: linux-trace.git/include/trace/events/irq.h
+===================================================================
+--- linux-trace.git.orig/include/trace/events/irq.h	2010-02-12 13:29:44.000000000 -0500
++++ linux-trace.git/include/trace/events/irq.h	2010-02-12 13:33:20.000000000 -0500
+@@ -7,6 +7,17 @@
+ #include <linux/tracepoint.h>
+ #include <linux/interrupt.h>
+ 
++EXTRACT_TRACE_SYMBOL(HI_SOFTIRQ);
++EXTRACT_TRACE_SYMBOL(TIMER_SOFTIRQ);
++EXTRACT_TRACE_SYMBOL(NET_TX_SOFTIRQ);
++EXTRACT_TRACE_SYMBOL(NET_RX_SOFTIRQ);
++EXTRACT_TRACE_SYMBOL(BLOCK_SOFTIRQ);
++EXTRACT_TRACE_SYMBOL(BLOCK_IOPOLL_SOFTIRQ);
++EXTRACT_TRACE_SYMBOL(TASKLET_SOFTIRQ);
++EXTRACT_TRACE_SYMBOL(SCHED_SOFTIRQ);
++EXTRACT_TRACE_SYMBOL(HRTIMER_SOFTIRQ);
++EXTRACT_TRACE_SYMBOL(RCU_SOFTIRQ);
++
+ #define softirq_name(sirq) { sirq##_SOFTIRQ, #sirq }
+ #define show_softirq_name(val)				\
+ 	__print_symbolic(val,				\
 
-It might open up the question if we shouldn't just do a Solaris and drop
-the leading 2 (so the next kernel would be 6.33) or call the kernel
-after that 3.0 instead of 2.6.34, and then 3.1 instead of 2.6.35.
-
-	-hpa
