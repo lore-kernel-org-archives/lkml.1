@@ -1,60 +1,80 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755707Ab0BLVyy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 16:54:54 -0500
-Received: from kroah.org ([198.145.64.141]:48431 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755607Ab0BLVyw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 16:54:52 -0500
-Date: Fri, 12 Feb 2010 13:54:03 -0800
-From: Greg KH <greg@kroah.com>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, lasse.collin@tukaani.org,
-       linux-kernel <linux-kernel@vger.kernel.org>, mirrors@kernel.org,
-       users@kernel.org, "FTPAdmin Kernel.org" <ftpadmin@kernel.org>,
-       Jean Delvare <khali@linux-fr.org>
-Subject: Re: [kernel.org users] XZ Migration discussion
-Message-ID: <20100212215403.GA29469@kroah.com>
-References: <4B744E13.8040004@kernel.org>
- <20100212150137.648dca7c@hyperion.delvare>
- <4B75A5FE.8020408@zytor.com>
- <20100212202534.GH11239@parisc-linux.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100212202534.GH11239@parisc-linux.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	id S1755950Ab0BLV46 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 16:56:58 -0500
+Received: from mail-fx0-f220.google.com ([209.85.220.220]:56655 "EHLO
+	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755548Ab0BLV45 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Feb 2010 16:56:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=tedjloAYqQ9j+QmmKPYWE7cip6F7Yq7mLSNDGXv4b6ULjS9Ejw5J7GhVhzmZDwKjoM
+         HvS3QqgAjGM2P4B2+b6O/Q1gKR+WNgi9bFlnve8YBGt+UOXhfzGd+aB5T9TXgqY25lS/
+         /fjONv5qjmusS4XnPWjC2wphh7WykLmGR196g=
+From: Grazvydas Ignotas <notasas@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Anton Vorontsov <avorontsov@ru.mvista.com>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Rodolfo Giometti <giometti@linux.it>,
+       Grazvydas Ignotas <notasas@gmail.com>
+Subject: [PATCH 1/4] power_supply: bq27x00: remove double endian swap
+Date: Fri, 12 Feb 2010 23:56:46 +0200
+Message-Id: <1266011806-31747-1-git-send-email-notasas@gmail.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 12, 2010 at 01:25:34PM -0700, Matthew Wilcox wrote:
-> On Fri, Feb 12, 2010 at 11:03:26AM -0800, H. Peter Anvin wrote:
-> > > 3* Create a new subdirectory for every 2.6.x kernel, and move all the
-> > > related files there. This would shrink the main index drastically, and
-> > > each subdirectory would have a reasonable size (except maybe 2.6.16 and
-> > > 2.6.27.) Oddly enough this has been done for the files under testing/
-> > > already, so I am curious why we don't do it for the release files (and
-> > > the testing/incr/ files, while we're at it.)
-> > 
-> > Well, part of the reason why is that we're functionally "stuck" on 2.6;
-> > a prefix which really has lost all meaning.
-> > 
-> > It might open up the question if we shouldn't just do a Solaris and drop
-> > the leading 2 (so the next kernel would be 6.33) or call the kernel
-> > after that 3.0 instead of 2.6.34, and then 3.1 instead of 2.6.35.
-> 
-> Damn, we forgot to have that fight at Kernel Summit last year.
+The bq27x00 registers are little endian, so just read them as such
+and don't do double endian swap on LE machines.
 
-No one wanted to take it on :(
+This also gets rid of strange looking shift that was done after
+reading 8bit register because endian swap in bq27x00_read() was
+messing it up.
 
-> I'm in favour of the 3.0 / 3.1 / 3.2 with stable@ being responsible for
-> 3.0.1, 3.0.2, 3.1.1, etc.
+Signed-off-by: Grazvydas Ignotas <notasas@gmail.com>
+---
+ drivers/power/bq27x00_battery.c |   11 +++--------
+ 1 files changed, 3 insertions(+), 8 deletions(-)
 
-I'm in favor of almost _anything_ new, the current numbering scheme
-drives me crazy, but then, I'm the one having to deal with it more than
-anyone these days...
+diff --git a/drivers/power/bq27x00_battery.c b/drivers/power/bq27x00_battery.c
+index 62bb981..537915c 100644
+--- a/drivers/power/bq27x00_battery.c
++++ b/drivers/power/bq27x00_battery.c
+@@ -74,12 +74,7 @@ static enum power_supply_property bq27x00_battery_props[] = {
+ static int bq27x00_read(u8 reg, int *rt_value, int b_single,
+ 			struct bq27x00_device_info *di)
+ {
+-	int ret;
+-
+-	ret = di->bus->read(reg, rt_value, b_single, di);
+-	*rt_value = be16_to_cpu(*rt_value);
+-
+-	return ret;
++	return di->bus->read(reg, rt_value, b_single, di);
+ }
+ 
+ /*
+@@ -161,7 +156,7 @@ static int bq27x00_battery_rsoc(struct bq27x00_device_info *di)
+ 		return ret;
+ 	}
+ 
+-	return rsoc >> 8;
++	return rsoc;
+ }
+ 
+ #define to_bq27x00_device_info(x) container_of((x), \
+@@ -238,7 +233,7 @@ static int bq27200_read(u8 reg, int *rt_value, int b_single,
+ 		err = i2c_transfer(client->adapter, msg, 1);
+ 		if (err >= 0) {
+ 			if (!b_single)
+-				*rt_value = get_unaligned_be16(data);
++				*rt_value = get_unaligned_le16(data);
+ 			else
+ 				*rt_value = data[0];
+ 
+-- 
+1.6.3.3
 
-thanks,
-
-greg k-h
