@@ -1,701 +1,235 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753548Ab0BLIG7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 03:06:59 -0500
-Received: from www84.your-server.de ([213.133.104.84]:55923 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752839Ab0BLIG5 (ORCPT
+	id S1753911Ab0BLIIA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 03:08:00 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:53063 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752849Ab0BLIH6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 03:06:57 -0500
-Subject: Re: [PATCH 4/4] add example files to the kernel sample directory
-From: Stefani Seibold <stefani@seibold.net>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
-       "Ira W. Snyder" <iws@ovro.caltech.edu>
-In-Reply-To: <1265961158.32651.9.camel@wall-e>
-References: <1265961158.32651.9.camel@wall-e>
-Content-Type: text/plain; charset="ISO-8859-15"
-Date: Fri, 12 Feb 2010 09:07:00 +0100
-Message-ID: <1265962020.32651.22.camel@wall-e>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
+	Fri, 12 Feb 2010 03:07:58 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Message-ID: <4B750CB7.4030805@jp.fujitsu.com>
+Date: Fri, 12 Feb 2010 17:09:27 +0900
+From: Tomohiro Kusumi <kusumi.tomohiro@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+MIME-Version: 1.0
+To: linux-scsi@vger.kernel.org, michaelc@cs.wisc.edu, James.Bottomley@suse.de
+CC: linux-kernel@vger.kernel.org, kusumi.tomohiro@jp.fujitsu.com
+Subject: [PATCH] scsi_transport_fc: handle transient error on multipath environment
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch add four examples to the kernel sample directory.
+Hi
 
-It shows how to handle:
-- a byte stream fifo
-- a integer type fifo
-- a dynamic record sized fifo
-- the fifo DMA functions
+We've been working on SCSI-FC for enterprise system using MD/DMMP.
+In enterprise system, response time from disk is important factor,
+thus it is important for multipathd to quickly discard current path and
+failover to secondary RAID disk if any problem with disk I/O is detected.
+In order to switch to alternative path as quick as possible, multipathd
+should quickly recognize phenomenon such as fibre channel link down,
+no response from disk, etc.
 
-Signed-off-by: Stefani Seibold <stefani@seibold.net>
+In the past, we've posted a patch that reduces response time from disk,
+although it was a trial patch since there wasn't good framework to
+implement those features. We did it in block layer and that wasn't
+a good choice I guess.
+http://marc.info/?l=linux-kernel&m=109598324018681&w=2
+
+But in the recent SCSI driver, transport layer for each lower level
+interface is getting bigger and better which I think is a good platform
+to implement them. As far as I know, Mr. Mike Christie has already been
+working on fast io fail timeout feature for fibre channel transport layer,
+and that enables userland multipathd quickly guess that the path is down
+when fibre channel linkdown occured on LLD like lpfc. This patch is a
+simple additional feature to what Mike has been working on.
+
+This is what I'm trying to do.
+1. If SCSI command had timed out, I assume it's time to failover to the
+   secondary disk without error recovery. Let's call it transient error.
+2. Schedule fc_rport_recover_transient_error from fc_timed_out using work
+   queue if the feature is enabled. Also, make fc_timed_out return
+   BLK_EH_HANDLED so as not to wake up error handler kernel thread.
+3. That workqueue calls transport template function recover_transient_error
+   if LLD implements it. Otherwise, it simply calls fc_remote_port_delete
+   and delete fibre channel remote port that corresponds to the SCSI target
+   device that caused transient error.
+4. Once fc_remote_port_delete is called, it removes the remote port and
+   take care of existing and incoming I/O just like when fibre channel
+   linkdown occured.
+5. If fast io fail timeout is enabled, multipathd can quickly recognize
+   disk I/O problem and make dm-mpath driver failover to secondary disk.
+   Even if fast io fail timeout is disabled, multipathd can recognize it
+   anyway after dev loss timeout expired.
+
+In the current SCSI mid layer driver, SCSI command timeout wakes up error
+handler kernel thread which takes quite long time depending on the imple-
+mentation of LLD. Although waking up SCSI error handler is right thing to
+do in most cases, I think it is not suitable for multipath environment
+with requirement of quick response. Enabling recover_transient_feature
+might help those who don't want recovery operation, but just quick failover.
+
+
+Thanks,
+Tomohiro Kusumi
+
+
+
+Signed-off-by: Tomohiro Kusumi <kusumi.tomohiro@jp.fujitsu.com>
 ---
- Kconfig                    |   10 ++
- Makefile                   |    2 
- kfifo/Makefile             |    1 
- kfifo/bytestream-example.c |  163 +++++++++++++++++++++++++++++++++++++++++++
- kfifo/dma-example.c        |  115 ++++++++++++++++++++++++++++++
- kfifo/inttype-example.c    |  157 ++++++++++++++++++++++++++++++++++++++++++
- kfifo/record-example.c     |  167 +++++++++++++++++++++++++++++++++++++++++++++
- 7 files changed, 614 insertions(+), 1 deletion(-)
 
-diff -u -N -r -p linux-2.6.33-rc7.orig/samples/Kconfig linux-2.6.33-rc7.new/samples/Kconfig
---- linux-2.6.33-rc7.orig/samples/Kconfig	2010-02-11 17:05:58.178434640 +0100
-+++ linux-2.6.33-rc7.new/samples/Kconfig	2010-02-12 08:31:54.092732092 +0100
-@@ -44,4 +44,14 @@ config SAMPLE_HW_BREAKPOINT
- 	help
- 	  This builds kernel hardware breakpoint example modules.
+diff -aNur linux-2.6.33-rc7.org/drivers/scsi/scsi_transport_fc.c linux-2.6.33-rc7/drivers/scsi/scsi_transport_fc.c
+--- linux-2.6.33-rc7.org/drivers/scsi/scsi_transport_fc.c	2010-02-07 07:17:12.000000000 +0900
++++ linux-2.6.33-rc7/drivers/scsi/scsi_transport_fc.c	2010-02-12 15:16:05.985439982 +0900
+@@ -284,13 +284,14 @@
+ static void fc_timeout_deleted_rport(struct work_struct *work);
+ static void fc_timeout_fail_rport_io(struct work_struct *work);
+ static void fc_scsi_scan_rport(struct work_struct *work);
++static void fc_rport_recover_transient_error(struct work_struct *work);
  
-+config SAMPLE_KFIFO
-+	tristate "Build kfifo examples -- loadable modules only"
-+	depends on m
-+	help
-+	  This config option will allow you to build a number of
-+	  different kfifo sample modules showing how to use the
-+	  generic kfifo API.
-+
-+	  If in doubt, say "N" here.
-+
- endif # SAMPLES
-diff -u -N -r -p linux-2.6.33-rc7.orig/samples/kfifo/bytestream-example.c linux-2.6.33-rc7.new/samples/kfifo/bytestream-example.c
---- linux-2.6.33-rc7.orig/samples/kfifo/bytestream-example.c	1970-01-01 01:00:00.000000000 +0100
-+++ linux-2.6.33-rc7.new/samples/kfifo/bytestream-example.c	2010-02-12 08:32:18.250874734 +0100
-@@ -0,0 +1,163 @@
-+/*
-+ * Sample kfifo byte stream implementation
-+ *
-+ * Copyright (C) 2010 Stefani Seibold <stefani@seibold.net>
-+ *
-+ * Released under the GPL version 2 only.
-+ *
-+ */
-+
-+#include <linux/init.h>
-+#include <linux/module.h>
-+#include <linux/proc_fs.h>
-+#include <linux/mutex.h>
-+#include <linux/kfifo.h>
-+
-+/*
-+ * This module shows how to create a byte stream fifo.
-+ */
-+
-+/* fifo size in elements (bytes) */
-+#define FIFO_SIZE	32
-+
-+/* name of the proc entry */
-+#define	PROC_FIFO	"bytestream-fifo"
-+
-+/* lock for procfs read access */
-+static DEFINE_MUTEX(read_lock);
-+
-+/* lock for procfs write access */
-+static DEFINE_MUTEX(write_lock);
-+
-+/*
-+ * define DYNAMIC in this example for a dynamically allocated fifo.
-+ *
-+ * Otherwise the fifo storage will be a part of the fifo structure.
-+ */
-+#if 0
-+#define DYNAMIC
-+#endif
-+
-+#ifdef DYNAMIC
-+static struct kfifo test;
-+#else
-+static DECLARE_KFIFO(test, unsigned char, FIFO_SIZE);
-+#endif
-+
-+static int __init testfunc(void)
-+{
-+	unsigned char	buf[6];
-+	unsigned char	i;
-+	unsigned int	ret;
-+
-+	printk(KERN_INFO "byte stream fifo test start\n");
-+
-+	/* put string into the fifo */
-+	kfifo_in(&test, "hello", 5);
-+
-+	/* put values into the fifo */
-+	for (i = 0; i != 10; i++)
-+		kfifo_put(&test, &i);
-+
-+	/* show the number of used elements */
-+	printk(KERN_INFO "fifo len: %u\n", kfifo_len(&test));
-+
-+	/* get max of 5 bytes from the fifo */
-+	i = kfifo_out(&test, buf, 5);
-+	printk(KERN_INFO "buf: %.*s\n", i, buf);
-+
-+	/* get max of 2 elements from the fifo */
-+	ret = kfifo_out(&test, buf, 2);
-+	printk(KERN_INFO "ret: %d\n", ret);
-+	/* and put it back to the end of the fifo */
-+	ret = kfifo_in(&test, buf, ret);
-+	printk(KERN_INFO "ret: %d\n", ret);
-+
-+	/* put values into the fifo until is full */
-+	for (i = 20; kfifo_put(&test, &i); i++)
-+		;
-+
-+	printk(KERN_INFO "queue len: %u\n", kfifo_len(&test));
-+
-+	/* print out all values in the fifo */
-+	while (kfifo_get(&test, &i))
-+		printk("%d ", i);
-+	printk("\n");
-+
-+	return 0;
-+}
-+
-+static ssize_t fifo_write(struct file *file, const char __user *buf,
-+						size_t count, loff_t *ppos)
-+{
-+	int ret;
-+	unsigned int copied;
-+
-+	if (mutex_lock_interruptible(&write_lock))
-+		return -ERESTARTSYS;
-+
-+	ret = kfifo_from_user(&test, buf, count, &copied);
-+
-+	mutex_unlock(&write_lock);
-+
-+	return ret ? ret : copied;
-+}
-+
-+static ssize_t fifo_read(struct file *file, char __user *buf,
-+						size_t count, loff_t *ppos)
-+{
-+	int ret;
-+	unsigned int copied;
-+
-+	if (mutex_lock_interruptible(&read_lock))
-+		return -ERESTARTSYS;
-+
-+	ret = kfifo_to_user(&test, buf, count, &copied);
-+
-+	mutex_unlock(&read_lock);
-+
-+	return ret ? ret : copied;
-+}
-+
-+static const struct file_operations fifo_fops = {
-+	.owner		= THIS_MODULE,
-+	.read		= fifo_read,
-+	.write		= fifo_write,
-+};
-+
-+static int __init example_init(void)
-+{
-+#ifdef DYNAMIC
-+	int ret;
-+
-+	ret = kfifo_alloc(&test, FIFO_SIZE, GFP_KERNEL);
-+	if (ret) {
-+		printk(KERN_ERR "error kfifo_alloc\n");
-+		return ret;
-+	}
-+#else
-+	INIT_KFIFO(test);
-+#endif
-+	testfunc();
-+
-+	if (proc_create(PROC_FIFO, 0, NULL, &fifo_fops) == NULL) {
-+#ifdef DYNAMIC
-+		kfifo_free(&test);
-+#endif
-+		return -ENOMEM;
-+	}
-+	return 0;
-+}
-+
-+static void __exit example_exit(void)
-+{
-+	remove_proc_entry(PROC_FIFO, NULL);
-+#ifdef DYNAMIC
-+	kfifo_free(&test);
-+#endif
-+}
-+
-+module_init(example_init);
-+module_exit(example_exit);
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Stefani Seibold <stefani@seibold.net>");
-Dateien linux-2.6.33-rc7.orig/samples/kfifo/.bytestream-example.c.swp und linux-2.6.33-rc7.new/samples/kfifo/.bytestream-example.c.swp sind verschieden.
-diff -u -N -r -p linux-2.6.33-rc7.orig/samples/kfifo/dma-example.c linux-2.6.33-rc7.new/samples/kfifo/dma-example.c
---- linux-2.6.33-rc7.orig/samples/kfifo/dma-example.c	1970-01-01 01:00:00.000000000 +0100
-+++ linux-2.6.33-rc7.new/samples/kfifo/dma-example.c	2010-02-12 08:32:18.252420182 +0100
-@@ -0,0 +1,115 @@
-+/*
-+ * Sample fifo dma implementation
-+ *
-+ * Copyright (C) 2010 Stefani Seibold <stefani@seibold.net>
-+ *
-+ * Released under the GPL version 2 only.
-+ *
-+ */
-+
-+#include <linux/init.h>
-+#include <linux/module.h>
-+#include <linux/kfifo.h>
-+
-+/*
-+ * This module shows how to handle fifo dma operations.
-+ */
-+
-+/* fifo size in elements (bytes) */
-+#define FIFO_SIZE	32
-+
-+static struct kfifo fifo;
-+
-+static int __init example_init(void)
-+{
-+	int 			i;
-+	unsigned int 		ret;
-+	struct scatterlist	sg[10];
-+
-+	printk(KERN_INFO "DMA fifo test start\n");
-+
-+	if (kfifo_alloc(&fifo, FIFO_SIZE, GFP_KERNEL)) {
-+		printk(KERN_ERR "error kfifo_alloc\n");
-+		return 1;
-+	}
-+
-+	printk(KERN_INFO "queue size: %u\n", kfifo_size(&fifo));
-+
-+	kfifo_in(&fifo, "test", 4);
-+
-+	for (i = 0; i != 9; i++)
-+		kfifo_put(&fifo, &i);
-+
-+	/* kick away first byte */
-+	ret = kfifo_get(&fifo, &i);
-+
-+	printk(KERN_INFO "queue len: %u\n", kfifo_len(&fifo));
-+
-+	ret = kfifo_dma_in_prepare(&fifo, sg, ARRAY_SIZE(sg), FIFO_SIZE);
-+	printk(KERN_INFO "DMA sgl entries: %d\n", ret);
-+
-+	/* if 0 was returned, fifo is full and no sgl was created */
-+	if (ret) {
-+		printk(KERN_INFO "scatterlist for receive:\n");
-+		for (i = 0; i < ARRAY_SIZE(sg); i++) {
-+			printk(KERN_INFO
-+			"sg[%d] -> "
-+			"page_link 0x%.8lx offset 0x%.8x length 0x%.8x\n",
-+				i, sg[i].page_link, sg[i].offset, sg[i].length);
-+
-+			if (sg_is_last(&sg[i]))
-+				break;
-+		}
-+
-+		/* but here your code to setup and exectute the dma operation */
-+		/* ... */
-+
-+		/* example: zero bytes received */
-+		ret = 0;
-+
-+		/* finish the dma operation and update the received data */
-+		kfifo_dma_in_finish(&fifo, ret);
-+	}
-+
-+	ret = kfifo_dma_out_prepare(&fifo, sg, ARRAY_SIZE(sg), 8);
-+	printk(KERN_INFO "DMA sgl entries: %d\n", ret);
-+
-+	/* if 0 was returned, no data was available and no sgl was created */
-+	if (ret) {
-+		printk(KERN_INFO "scatterlist for transmit:\n");
-+		for (i = 0; i < ARRAY_SIZE(sg); i++) {
-+			printk(KERN_INFO
-+			"sg[%d] -> "
-+			"page_link 0x%.8lx offset 0x%.8x length 0x%.8x\n",
-+				i, sg[i].page_link, sg[i].offset, sg[i].length);
-+
-+			if (sg_is_last(&sg[i]))
-+				break;
-+		}
-+
-+		/* but here your code to setup and exectute the dma operation */
-+		/* ... */
-+
-+		/* example: 5 bytes transmitted */
-+		ret = 5;
-+
-+		/* finish the dma operation and update the transmitted data */
-+		kfifo_dma_out_finish(&fifo, ret);
-+	}
-+
-+	printk(KERN_INFO "queue len: %u\n", kfifo_len(&fifo));
-+
-+	return 0;
-+}
-+
-+static void __exit example_exit(void)
-+{
-+#ifdef DYNAMIC
-+	kfifo_free(&test);
-+#endif
-+}
-+
-+module_init(example_init);
-+module_exit(example_exit);
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Stefani Seibold <stefani@seibold.net>");
-diff -u -N -r -p linux-2.6.33-rc7.orig/samples/kfifo/inttype-example.c linux-2.6.33-rc7.new/samples/kfifo/inttype-example.c
---- linux-2.6.33-rc7.orig/samples/kfifo/inttype-example.c	1970-01-01 01:00:00.000000000 +0100
-+++ linux-2.6.33-rc7.new/samples/kfifo/inttype-example.c	2010-02-12 08:32:18.252420182 +0100
-@@ -0,0 +1,157 @@
-+/*
-+ * Sample kfifo int type implementation
-+ *
-+ * Copyright (C) 2010 Stefani Seibold <stefani@seibold.net>
-+ *
-+ * Released under the GPL version 2 only.
-+ *
-+ */
-+
-+#include <linux/init.h>
-+#include <linux/module.h>
-+#include <linux/proc_fs.h>
-+#include <linux/mutex.h>
-+#include <linux/kfifo.h>
-+
-+/*
-+ * This module shows how to create a int type fifo.
-+ */
-+
-+/* fifo size in elements (ints) */
-+#define FIFO_SIZE	32
-+
-+/* name of the proc entry */
-+#define	PROC_FIFO	"int-fifo"
-+
-+/* lock for procfs read access */
-+static DEFINE_MUTEX(read_lock);
-+
-+/* lock for procfs write access */
-+static DEFINE_MUTEX(write_lock);
-+
-+/*
-+ * define DYNAMIC in this example for a dynamically allocated fifo.
-+ *
-+ * Otherwise the fifo storage will be a part of the fifo structure.
-+ */
-+#if 0
-+#define DYNAMIC
-+#endif
-+
-+#ifdef DYNAMIC
-+static DECLARE_KFIFO_PTR(test, int);
-+#else
-+static DEFINE_KFIFO(test, int, FIFO_SIZE);
-+#endif
-+
-+static int __init testfunc(void)
-+{
-+	int		buf[6];
-+	int		i;
-+	unsigned int	ret;
-+
-+	printk(KERN_INFO "int fifo test start\n");
-+
-+	/* put values into the fifo */
-+	for (i = 0; i != 10; i++)
-+		kfifo_put(&test, &i);
-+
-+	/* show the number of used elements */
-+	printk(KERN_INFO "fifo len: %u\n", kfifo_len(&test));
-+
-+	/* get max of 2 elements from the fifo */
-+	ret = kfifo_out(&test, buf, 2);
-+	printk(KERN_INFO "ret: %d\n", ret);
-+	/* and put it back to the end of the fifo */
-+	ret = kfifo_in(&test, buf, ret);
-+	printk(KERN_INFO "ret: %d\n", ret);
-+
-+	for (i = 20; i != 30; i++)
-+		kfifo_put(&test, &i);
-+
-+	printk(KERN_INFO "queue len: %u\n", kfifo_len(&test));
-+
-+	/* show the first value without removing from the fifo */
-+	if (kfifo_peek(&test, &i))
-+		printk(KERN_INFO "%d\n", i);
-+
-+	/* print out all values in the fifo */
-+	while (kfifo_get(&test, &i))
-+		printk("%d ", i);
-+	printk("\n");
-+
-+	return 0;
-+}
-+
-+static ssize_t fifo_write(struct file *file, const char __user *buf,
-+						size_t count, loff_t *ppos)
-+{
-+	int ret;
-+	unsigned int copied;
-+
-+	if (mutex_lock_interruptible(&write_lock))
-+		return -ERESTARTSYS;
-+
-+	ret = kfifo_from_user(&test, buf, count, &copied);
-+
-+	mutex_unlock(&write_lock);
-+
-+	return ret ? ret : copied;
-+}
-+
-+static ssize_t fifo_read(struct file *file, char __user *buf,
-+						size_t count, loff_t *ppos)
-+{
-+	int ret;
-+	unsigned int copied;
-+
-+	if (mutex_lock_interruptible(&read_lock))
-+		return -ERESTARTSYS;
-+
-+	ret = kfifo_to_user(&test, buf, count, &copied);
-+
-+	mutex_unlock(&read_lock);
-+
-+	return ret ? ret : copied;
-+}
-+
-+static const struct file_operations fifo_fops = {
-+	.owner		= THIS_MODULE,
-+	.read		= fifo_read,
-+	.write		= fifo_write,
-+};
-+
-+static int __init example_init(void)
-+{
-+#ifdef DYNAMIC
-+	int ret;
-+
-+	ret = kfifo_alloc(&test, FIFO_SIZE, GFP_KERNEL);
-+	if (ret) {
-+		printk(KERN_ERR "error kfifo_alloc\n");
-+		return ret;
-+	}
-+#endif
-+	testfunc();
-+
-+	if (proc_create(PROC_FIFO, 0, NULL, &fifo_fops) == NULL) {
-+#ifdef DYNAMIC
-+		kfifo_free(&test);
-+#endif
-+		return -ENOMEM;
-+	}
-+	return 0;
-+}
-+
-+static void __exit example_exit(void)
-+{
-+	remove_proc_entry(PROC_FIFO, NULL);
-+#ifdef DYNAMIC
-+	kfifo_free(&test);
-+#endif
-+}
-+
-+module_init(example_init);
-+module_exit(example_exit);
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Stefani Seibold <stefani@seibold.net>");
-diff -u -N -r -p linux-2.6.33-rc7.orig/samples/kfifo/Makefile linux-2.6.33-rc7.new/samples/kfifo/Makefile
---- linux-2.6.33-rc7.orig/samples/kfifo/Makefile	1970-01-01 01:00:00.000000000 +0100
-+++ linux-2.6.33-rc7.new/samples/kfifo/Makefile	2010-02-12 08:31:54.107750622 +0100
-@@ -0,0 +1 @@
-+obj-$(CONFIG_SAMPLE_KFIFO) += bytestream-example.o dma-example.o inttype-example.o record-example.o
-diff -u -N -r -p linux-2.6.33-rc7.orig/samples/kfifo/record-example.c linux-2.6.33-rc7.new/samples/kfifo/record-example.c
---- linux-2.6.33-rc7.orig/samples/kfifo/record-example.c	1970-01-01 01:00:00.000000000 +0100
-+++ linux-2.6.33-rc7.new/samples/kfifo/record-example.c	2010-02-12 08:32:18.252420182 +0100
-@@ -0,0 +1,167 @@
-+/*
-+ * Sample dynamic sized record fifo implementation
-+ *
-+ * Copyright (C) 2010 Stefani Seibold <stefani@seibold.net>
-+ *
-+ * Released under the GPL version 2 only.
-+ *
-+ */
-+
-+#include <linux/init.h>
-+#include <linux/module.h>
-+#include <linux/proc_fs.h>
-+#include <linux/mutex.h>
-+#include <linux/kfifo.h>
-+
-+/*
-+ * This module shows how to create a variable sized record fifo.
-+ */
-+
-+/* fifo size in elements (bytes) */
-+#define FIFO_SIZE	128
-+
-+/* name of the proc entry */
-+#define	PROC_FIFO	"record-fifo"
-+
-+/* lock for procfs read access */
-+static DEFINE_MUTEX(read_lock);
-+
-+/* lock for procfs write access */
-+static DEFINE_MUTEX(write_lock);
-+
-+/*
-+ * define DYNAMIC in this example for a dynamically allocated fifo.
-+ *
-+ * Otherwise the fifo storage will be a part of the fifo structure.
-+ */
-+#if 0
-+#define DYNAMIC
-+#endif
-+
-+/*
-+ * struct kfifo_rec_ptr_1 and  STRUCT_KFIFO_REC_1 can handle records of a
-+ * length between 0 and 255 bytes.
-+ *
-+ * struct kfifo_rec_ptr_2 and  STRUCT_KFIFO_REC_2 can handle records of a
-+ * length between 0 and 65535 bytes.
-+ */
-+
-+#ifdef DYNAMIC
-+struct kfifo_rec_ptr_1 test;
-+
-+#else
-+typedef STRUCT_KFIFO_REC_1(FIFO_SIZE) mytest;
-+
-+static mytest test;
-+#endif
-+
-+static int __init testfunc(void)
-+{
-+	char		buf[100];
-+	unsigned int	i;
-+	unsigned int	ret;
-+	struct { unsigned char buf[6]; } hello = { "hello" };
-+
-+	printk(KERN_INFO "record fifo test start\n");
-+
-+	kfifo_in(&test, &hello, sizeof(hello));
-+
-+	/* show the size of the next record in the fifo */
-+	printk(KERN_INFO "fifo peek len: %u\n", kfifo_peek_len(&test));
-+
-+	/* put in variable length data */
-+	for (i = 0; i < 10; i++) {
-+		memset(buf, 'a' + i, i + 1);
-+		kfifo_in(&test, buf, i + 1);
-+	}
-+
-+	printk(KERN_INFO "fifo len: %u\n", kfifo_len(&test));
-+
-+	/* show the first record without removing from the fifo */
-+	ret = kfifo_out_peek(&test, buf, sizeof(buf));
-+	if (ret)
-+		printk(KERN_INFO "%.*s\n", ret, buf);
-+
-+	/* print out all records in the fifo */
-+	while (!kfifo_is_empty(&test)) {
-+		ret = kfifo_out(&test, buf, sizeof(buf));
-+		printk(KERN_INFO "%.*s\n", ret, buf);
-+	}
-+
-+	return 0;
-+}
-+
-+static ssize_t fifo_write(struct file *file, const char __user *buf,
-+						size_t count, loff_t *ppos)
-+{
-+	int ret;
-+	unsigned int copied;
-+
-+	if (mutex_lock_interruptible(&write_lock))
-+		return -ERESTARTSYS;
-+
-+	ret = kfifo_from_user(&test, buf, count, &copied);
-+
-+	mutex_unlock(&write_lock);
-+
-+	return ret ? ret : copied;
-+}
-+
-+static ssize_t fifo_read(struct file *file, char __user *buf,
-+						size_t count, loff_t *ppos)
-+{
-+	int ret;
-+	unsigned int copied;
-+
-+	if (mutex_lock_interruptible(&read_lock))
-+		return -ERESTARTSYS;
-+
-+	ret = kfifo_to_user(&test, buf, count, &copied);
-+
-+	mutex_unlock(&read_lock);
-+
-+	return ret ? ret : copied;
-+}
-+
-+static const struct file_operations fifo_fops = {
-+	.owner		= THIS_MODULE,
-+	.read		= fifo_read,
-+	.write		= fifo_write,
-+};
-+
-+static int __init example_init(void)
-+{
-+#ifdef DYNAMIC
-+	int ret;
-+
-+	ret = kfifo_alloc(&test, FIFO_SIZE, GFP_KERNEL);
-+	if (ret) {
-+		printk(KERN_ERR "error kfifo_alloc\n");
-+		return ret;
-+	}
-+#else
-+	INIT_KFIFO(test);
-+#endif
-+	testfunc();
-+
-+	if (proc_create(PROC_FIFO, 0, NULL, &fifo_fops) == NULL) {
-+#ifdef DYNAMIC
-+		kfifo_free(&test);
-+#endif
-+		return -ENOMEM;
-+	}
-+	return 0;
-+}
-+
-+static void __exit example_exit(void)
-+{
-+	remove_proc_entry(PROC_FIFO, NULL);
-+#ifdef DYNAMIC
-+	kfifo_free(&test);
-+#endif
-+}
-+
-+module_init(example_init);
-+module_exit(example_exit);
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Stefani Seibold <stefani@seibold.net>");
-diff -u -N -r -p linux-2.6.33-rc7.orig/samples/Makefile linux-2.6.33-rc7.new/samples/Makefile
---- linux-2.6.33-rc7.orig/samples/Makefile	2010-02-11 17:05:58.178434640 +0100
-+++ linux-2.6.33-rc7.new/samples/Makefile	2010-02-12 08:31:54.107750622 +0100
-@@ -1,4 +1,4 @@
- # Makefile for Linux samples code
+ /*
+  * Attribute counts pre object type...
+  * Increase these values if you add attributes
+  */
+ #define FC_STARGET_NUM_ATTRS 	3
+-#define FC_RPORT_NUM_ATTRS	10
++#define FC_RPORT_NUM_ATTRS	11
+ #define FC_VPORT_NUM_ATTRS	9
+ #define FC_HOST_NUM_ATTRS	22
  
- obj-$(CONFIG_SAMPLES)	+= kobject/ kprobes/ tracepoints/ trace_events/ \
--			   hw_breakpoint/
-+			   hw_breakpoint/ kfifo/
-
-
+@@ -935,6 +936,39 @@
+ static FC_DEVICE_ATTR(rport, fast_io_fail_tmo, S_IRUGO | S_IWUSR,
+ 	show_fc_rport_fast_io_fail_tmo, store_fc_rport_fast_io_fail_tmo);
+ 
++/*
++ * recover_transient_error attribute
++ */
++static ssize_t
++show_fc_rport_recover_transient_error (struct device *dev,
++				struct device_attribute *attr, char *buf)
++{
++	struct fc_rport *rport = transport_class_to_rport(dev);
++	return snprintf(buf, 20, "%d\n", rport->recover_transient_error);
++}
++
++static ssize_t
++store_fc_rport_recover_transient_error(struct device *dev,
++				struct device_attribute *attr, const char *buf,
++				size_t count)
++{
++	int val;
++	char *cp;
++	struct fc_rport *rport = transport_class_to_rport(dev);
++
++	if ((rport->port_state == FC_PORTSTATE_BLOCKED) ||
++	    (rport->port_state == FC_PORTSTATE_DELETED) ||
++	    (rport->port_state == FC_PORTSTATE_NOTPRESENT))
++		return -EBUSY;
++	val = simple_strtoul(buf, &cp, 0);
++	if ((*cp && (*cp != '\n')) || val < 0 || val > 1)
++		return -EINVAL;
++	rport->recover_transient_error = val;
++	return count;
++}
++static FC_DEVICE_ATTR(rport, recover_transient_error, S_IRUGO | S_IWUSR,
++	show_fc_rport_recover_transient_error,
++	store_fc_rport_recover_transient_error);
+ 
+ /*
+  * FC SCSI Target Attribute Management
+@@ -1953,6 +1987,13 @@
+ {
+ 	struct fc_rport *rport = starget_to_rport(scsi_target(scmd->device));
+ 
++	if (rport->recover_transient_error) {
++		fc_queue_work(scmd->device->host, &rport->rport_te_work);
++		scmd->result = ((scmd->result & 0xFF00FFFF) |
++				(DID_TRANSPORT_DISRUPTED << 16));
++		return BLK_EH_HANDLED;
++	}
++
+ 	if (rport->port_state == FC_PORTSTATE_BLOCKED)
+ 		return BLK_EH_RESET_TIMER;
+ 
+@@ -2156,6 +2197,7 @@
+ 	SETUP_PRIVATE_RPORT_ATTRIBUTE_RD(port_state);
+ 	SETUP_PRIVATE_RPORT_ATTRIBUTE_RD(scsi_target_id);
+ 	SETUP_PRIVATE_RPORT_ATTRIBUTE_RW(fast_io_fail_tmo);
++	SETUP_PRIVATE_RPORT_ATTRIBUTE_RW(recover_transient_error);
+ 
+ 	BUG_ON(count > FC_RPORT_NUM_ATTRS);
+ 
+@@ -2506,6 +2548,7 @@
+ 	INIT_WORK(&rport->scan_work, fc_scsi_scan_rport);
+ 	INIT_WORK(&rport->stgt_delete_work, fc_starget_delete);
+ 	INIT_WORK(&rport->rport_delete_work, fc_rport_final_delete);
++	INIT_WORK(&rport->rport_te_work, fc_rport_recover_transient_error);
+ 
+ 	spin_lock_irqsave(shost->host_lock, flags);
+ 
+@@ -3157,6 +3200,36 @@
+ }
+ 
+ /**
++ * fc_rport_recover_transient_error - Transient error recovery handler
++ * @work:	contained by rport that corresponds to SCSI device to
++ * recover from transient error.
++ *
++ * Description: This routine is used when transient error
++ * (such as no response from disk) is detected. If FC LLD does not have
++ * implementation of recover_transient_error this routine simply deletes
++ * that port just like when FC linkdown is detected. In multipath envir-
++ * onment, if fast io fail timeout is enabled, multipathd can quickly
++ * guess that there is a problem with disk I/O and try to deactivate
++ * current path.
++ */
++static void
++fc_rport_recover_transient_error(struct work_struct *work)
++{
++	struct fc_rport *rport =
++		container_of(work, struct fc_rport, rport_te_work);
++	struct Scsi_Host *shost = rport_to_shost(rport);
++	struct fc_internal *i = to_fc_internal(shost->transportt);
++
++	if (rport->port_state == FC_PORTSTATE_BLOCKED)
++		return;
++
++	if (i->f->recover_transient_error)
++		i->f->recover_transient_error(rport);
++	else
++		fc_remote_port_delete(rport);
++}
++
++/**
+  * fc_block_scsi_eh - Block SCSI eh thread for blocked fc_rport
+  * @cmnd: SCSI command that scsi_eh is trying to recover
+  *
+diff -aNur linux-2.6.33-rc7.org/include/scsi/scsi_transport_fc.h linux-2.6.33-rc7/include/scsi/scsi_transport_fc.h
+--- linux-2.6.33-rc7.org/include/scsi/scsi_transport_fc.h	2010-02-07 07:17:12.000000000 +0900
++++ linux-2.6.33-rc7/include/scsi/scsi_transport_fc.h	2010-02-11 22:28:38.988369450 +0900
+@@ -336,6 +336,7 @@
+ 	enum fc_port_state port_state;	/* Will only be ONLINE or UNKNOWN */
+ 	u32 scsi_target_id;
+ 	u32 fast_io_fail_tmo;
++	int recover_transient_error;
+ 
+ 	/* exported data */
+ 	void *dd_data;			/* Used for driver-specific storage */
+@@ -351,6 +352,7 @@
+  	struct delayed_work fail_io_work;
+  	struct work_struct stgt_delete_work;
+ 	struct work_struct rport_delete_work;
++	struct work_struct rport_te_work;
+ 	struct request_queue *rqst_q;	/* bsg support */
+ } __attribute__((aligned(sizeof(unsigned long))));
+ 
+@@ -648,6 +650,7 @@
+ 
+ 	void    (*dev_loss_tmo_callbk)(struct fc_rport *);
+ 	void	(*terminate_rport_io)(struct fc_rport *);
++	void	(*recover_transient_error)(struct fc_rport *);
+ 
+ 	void	(*set_vport_symbolic_name)(struct fc_vport *);
+ 	int  	(*vport_create)(struct fc_vport *, bool);
