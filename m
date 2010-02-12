@@ -1,120 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757534Ab0BLUUb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 15:20:31 -0500
-Received: from waste.org ([173.11.57.241]:51892 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751382Ab0BLUU3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 15:20:29 -0500
-Subject: Re: [PATCH 03/11] readahead: bump up the default readahead size
-From: Matt Mackall <mpm@selenic.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Jamie Lokier <jamie@shareable.org>,
-       Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Clemens Ladisch <clemens@ladisch.de>,
-       Olivier Galibert <galibert@pobox.com>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Paul Gortmaker <paul.gortmaker@windriver.com>,
-       David Woodhouse <dwmw2@infradead.org>,
-       "linux-embedded@vger.kernel.org" <linux-embedded@vger.kernel.org>
-In-Reply-To: <20100212135949.GA22686@localhost>
-References: <20100207041013.891441102@intel.com>
-	 <20100207041043.147345346@intel.com> <4B6FBB3F.4010701@linux.vnet.ibm.com>
-	 <20100208134634.GA3024@localhost> <1265924254.15603.79.camel@calx>
-	 <20100211234249.GE407@shareable.org>  <20100212135949.GA22686@localhost>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 12 Feb 2010 14:20:23 -0600
-Message-ID: <1266006023.15603.661.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	id S1757563Ab0BLUZh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 15:25:37 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:45811 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751382Ab0BLUZg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Feb 2010 15:25:36 -0500
+Date: Fri, 12 Feb 2010 13:25:34 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Jean Delvare <khali@linux-fr.org>, lasse.collin@tukaani.org,
+       mirrors@kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       "FTPAdmin Kernel.org" <ftpadmin@kernel.org>, users@kernel.org
+Subject: Re: [kernel.org users] XZ Migration discussion
+Message-ID: <20100212202534.GH11239@parisc-linux.org>
+References: <4B744E13.8040004@kernel.org> <20100212150137.648dca7c@hyperion.delvare> <4B75A5FE.8020408@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B75A5FE.8020408@zytor.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-02-12 at 21:59 +0800, Wu Fengguang wrote:
-> On Fri, Feb 12, 2010 at 07:42:49AM +0800, Jamie Lokier wrote:
-> > Matt Mackall wrote:
-> > > On Mon, 2010-02-08 at 21:46 +0800, Wu Fengguang wrote:
-> > > > Chris,
-> > > > 
-> > > > Firstly inform the linux-embedded maintainers :)
-> > > > 
-> > > > I think it's a good suggestion to add a config option
-> > > > (CONFIG_READAHEAD_SIZE). Will update the patch..
-> > > 
-> > > I don't have a strong opinion here beyond the nagging feeling that we
-> > > should be using a per-bdev scaling window scheme rather than something
-> > > static.
+On Fri, Feb 12, 2010 at 11:03:26AM -0800, H. Peter Anvin wrote:
+> > 3* Create a new subdirectory for every 2.6.x kernel, and move all the
+> > related files there. This would shrink the main index drastically, and
+> > each subdirectory would have a reasonable size (except maybe 2.6.16 and
+> > 2.6.27.) Oddly enough this has been done for the files under testing/
+> > already, so I am curious why we don't do it for the release files (and
+> > the testing/incr/ files, while we're at it.)
 > 
-> It's good to do dynamic scaling -- in fact this patchset has code to do
-> - scale down readahead size (per-bdev) for small devices
+> Well, part of the reason why is that we're functionally "stuck" on 2.6;
+> a prefix which really has lost all meaning.
+> 
+> It might open up the question if we shouldn't just do a Solaris and drop
+> the leading 2 (so the next kernel would be 6.33) or call the kernel
+> after that 3.0 instead of 2.6.34, and then 3.1 instead of 2.6.35.
 
-I'm not sure device size is a great metric. It's only weakly correlated
-with the things we actually care about: memory pressure (small devices
-are often attached to systems with small and therefore full memory) and
-latency (small devices are often old and slow and attached to slow
-CPUs). I think we should instead use hints about latency (large request
-queues) and memory pressure (reclaim passes) directly.
+Damn, we forgot to have that fight at Kernel Summit last year.
 
-> - scale down readahead size (per-stream) to thrashing threshold
-
-Yeah, I'm happy to call that part orthogonal to this discussion.
-
-> At the same time, I'd prefer
-> - to _only_ do scale down (below the default size) for low end
-> - and have a uniform default readahead size for the mainstream
-
-I don't think that's important, given that we're dynamically fiddling
-with related things.
-
-> IMHO scaling up automatically
-> - would be risky
-
-What, explicitly, are the risks? If we bound the window with memory
-pressure and latency, I don't think it can get too far out of hand.
-There are also some other bounds in here: we have other limits on how
-big I/O requests can be.
-
-I'm happy to worry about only scaling down for now, but it's only a
-matter of time before we have to bump the number up again.
-We've got an IOPS range from < 1 (mp3 player with power-saving
-spin-down) to > 1M (high-end SSD). And the one that needs the most
-readahead is the former! 
-
-> I would guess most embedded systems put executables on MTD devices
-> (anyone to confirm this?).
-
-It's hard to generalize here. Even on flash devices, interleaving with
-writes can result in high latencies that make it behave more like
-spinning media, but there's no way to generalize about what the write
-mix is going to be.
-
->  And I wonder if MTDs have general
-> characteristics that are suitable for smaller readahead/readaround
-> size (the two sizes are bundled for simplicity)?
-
-Perhaps, but the trend is definitely towards larger blocks here.
-
-> We could add new adjustments based on throughput (estimation is the
-> problem) and memory size.
-
-Note that throughput is not enough information here. More interesting is
-the "bandwidth delay product" of the I/O path. If latency (of the whole
-I/O stack) is zero, it's basically always better to read on demand. But
-if every request takes 100ms whether it's for 4k or 4M (see optical
-media), then you might want to consider reading 4M every time. And
-latency is of course generally not independent of usage pattern. Which
-is why I think TCP-like feedback scaling is the right approach.
+I'm in favour of the 3.0 / 3.1 / 3.2 with stable@ being responsible for
+3.0.1, 3.0.2, 3.1.1, etc.
 
 -- 
-http://selenic.com : development and support for Mercurial and Linux
-
-
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
