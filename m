@@ -1,90 +1,49 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757044Ab0BLPW5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 10:22:57 -0500
-Received: from smtp.nokia.com ([192.100.105.134]:58810 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756981Ab0BLPWz (ORCPT
+	id S1757093Ab0BLPZY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 10:25:24 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:61268 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757059Ab0BLPZV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 10:22:55 -0500
-Subject: Re: [RESEND][PATCHv2 4/4] OMAP: DSS2: Add Innolux 7" display for
- DEVKIT8000
-From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-To: ext Jaya Kumar <jayakumar.lkml@gmail.com>
-Cc: Thomas Weber <swirl@gmx.li>, Thomas Weber <weber@corscience.de>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <45a44e481002112155u68c806beg9fe0a3a122d09d25@mail.gmail.com>
-References: <1265917278-22011-1-git-send-email-swirl@gmx.li>
-	 <45a44e481002112155u68c806beg9fe0a3a122d09d25@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Organization: Nokia
-Date: Fri, 12 Feb 2010 17:25:43 +0200
-Message-ID: <1265988343.2433.312.camel@tubuntu.research.nokia.com>
+	Fri, 12 Feb 2010 10:25:21 -0500
+X-Authority-Analysis: v=1.0 c=1 a=uTOmaDeAZlAA:10 a=7U3hwN5JcxgA:10 a=VwQbUJbxAAAA:8 a=nuhponIAdsgpKU-lRAUA:9 a=7n3OVfoBkePgbsD1qPUVTZKn_i4A:4
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: Re: [kernel.org users] XZ Migration discussion
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Jean Delvare <khali@linux-fr.org>
+Cc: "J.H." <warthog9@kernel.org>, "FTPAdmin Kernel.org" <ftpadmin@kernel.org>,
+       users@kernel.org, lasse.collin@tukaani.org,
+       linux-kernel <linux-kernel@vger.kernel.org>, mirrors@kernel.org
+In-Reply-To: <20100212150137.648dca7c@hyperion.delvare>
+References: <4B744E13.8040004@kernel.org>
+	 <20100212150137.648dca7c@hyperion.delvare>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Kihon Technologies Inc.
+Date: Fri, 12 Feb 2010 10:25:18 -0500
+Message-ID: <1265988318.24271.30.camel@gandalf.stny.rr.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 12 Feb 2010 15:22:45.0395 (UTC) FILETIME=[3A205630:01CAABF7]
-X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-02-12 at 06:55 +0100, ext Jaya Kumar wrote:
-> On Fri, Feb 12, 2010 at 3:41 AM, Thomas Weber <swirl@gmx.li> wrote:
+On Fri, 2010-02-12 at 15:01 +0100, Jean Delvare wrote:
 
-[snip]
+> I wouldn't worry too much about breaking the current locations. Just
+> give some time for software authors (ketchup comes to mind) to update
+> their code and it shouldn't be a big problem.
 
-> > +
-> > +static struct omap_video_timings innolux_at_timings = {
-> > +       .x_res          = 800,
-> > +       .y_res          = 480,
-> > +
-> > +       .pixel_clock    = 40000,
-> > +
-> > +       .hsw            = 48,
-> > +       .hfp            = 1,
-> > +       .hbp            = 1,
-> > +
-> > +       .vsw            = 3,
-> > +       .vfp            = 12,
-> > +       .vbp            = 25,
-> > +};
-> > +
-> > +static int innolux_at_panel_probe(struct omap_dss_device *dssdev)
-> > +{
-> > +       dssdev->panel.config = OMAP_DSS_LCD_TFT | OMAP_DSS_LCD_IVS |
-> > +               OMAP_DSS_LCD_IHS;
-> > +       dssdev->panel.acb = 0x28;
-> > +       dssdev->panel.timings = innolux_at_timings;
-> > +
-> > +       return 0;
-> > +}
-> > +
-> 
-> Hi Thomas, Tomi,
-> 
-> Just curious, does this patch imply that code like this needs to be
-> written for every single LCD type and resolution that can be connected
-> to omap2? Maybe there is a better way, like a common table of timings
-> and values that can be selected with a module option or even
-> autodetected.
+As the new maintainer of ketchup:
 
-Yes, it is true that currently you need to write these for every LCD. I
-have been thinking this issue, and I think we can make a common driver. 
+git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/ketchup.git
 
-However, it's not just selecting timings, as LCDs can have also other
-characteristics than just the video timings. For example, some may have
-power on/off line, some reset enable/disable, some need 50ms after
-reset, some 80ms after reset etc.
+I could write a fix for the new format real quick. My concern is that
+users of ketchup may not see this update for a long time.
 
-But if we manage to get a sane set of those settings into the table, we
-could perhaps cover most of the "dummy" LCDs with it.
-
-This change doesn't probably need any changes to the DSS core, only for
-the panel driver. Any takers for this task? =) 
-
- Tomi
+-- Steve
 
 
