@@ -1,46 +1,51 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755324Ab0BLLWd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 06:22:33 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:3350 "EHLO mx1.redhat.com"
+	id S1755900Ab0BLLWu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 06:22:50 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:25882 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754343Ab0BLLWb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 06:22:31 -0500
+	id S1755037Ab0BLLWc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Feb 2010 06:22:32 -0500
 From: Steven Whitehouse <swhiteho@redhat.com>
 To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
-Cc: Abhijith Das <adas@redhat.com>, Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH 1/2] GFS2: Fix error code
-Date: Fri, 12 Feb 2010 11:13:20 +0000
-Message-Id: <1265973201-3142-2-git-send-email-swhiteho@redhat.com>
-In-Reply-To: <1265973201-3142-1-git-send-email-swhiteho@redhat.com>
+Cc: Steven Whitehouse <swhiteho@redhat.com>
+Subject: [PATCH 2/2] GFS2: Fix bmap allocation corner-case bug
+Date: Fri, 12 Feb 2010 11:13:21 +0000
+Message-Id: <1265973201-3142-3-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <1265973201-3142-2-git-send-email-swhiteho@redhat.com>
 References: <1265973201-3142-1-git-send-email-swhiteho@redhat.com>
+ <1265973201-3142-2-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Abhijith Das <adas@redhat.com>
+This patch solves a corner case during allocation which occurs if both
+metadata (indirect) and data blocks are required but there is an
+obstacle in the filesystem (e.g. a resource group header or another
+allocated block) such that when the allocation is requested only
+enough blocks for the metadata are returned.
 
-We need this one-liner to signal the mount helper of the 'insufficient journals' condition.
+By changing the exit condition of this loop, we ensure that a
+minimum of one data block will always be returned.
 
-Signed-off-by: Abhijith Das <adas@redhat.com>
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 ---
- fs/gfs2/ops_fstype.c |    2 +-
+ fs/gfs2/bmap.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/fs/gfs2/ops_fstype.c b/fs/gfs2/ops_fstype.c
-index 8a102f7..a86ed63 100644
---- a/fs/gfs2/ops_fstype.c
-+++ b/fs/gfs2/ops_fstype.c
-@@ -725,7 +725,7 @@ static int init_journal(struct gfs2_sbd *sdp, int undo)
- 		goto fail;
- 	}
+diff --git a/fs/gfs2/bmap.c b/fs/gfs2/bmap.c
+index 6d47379..583e823 100644
+--- a/fs/gfs2/bmap.c
++++ b/fs/gfs2/bmap.c
+@@ -541,7 +541,7 @@ static int gfs2_bmap_alloc(struct inode *inode, const sector_t lblock,
+ 				*ptr++ = cpu_to_be64(bn++);
+ 			break;
+ 		}
+-	} while (state != ALLOC_DATA);
++	} while ((state != ALLOC_DATA) || !dblock);
  
--	error = -EINVAL;
-+	error = -EUSERS;
- 	if (!gfs2_jindex_size(sdp)) {
- 		fs_err(sdp, "no journals!\n");
- 		goto fail_jindex;
+ 	ip->i_height = height;
+ 	gfs2_add_inode_blocks(&ip->i_inode, alloced);
 -- 
 1.6.2.5
 
