@@ -1,140 +1,112 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756545Ab0BLN4l (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 08:56:41 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:44620 "EHLO mx1.redhat.com"
+	id S1756501Ab0BLOAK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 09:00:10 -0500
+Received: from mga02.intel.com ([134.134.136.20]:59005 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756355Ab0BLN4i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 08:56:38 -0500
-From: Mark Wielaard <mjw@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: Mark Wielaard <mjw@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: [PATCH] Fix some kernel/time.c checkpatch.pl style issues.
-Date: Fri, 12 Feb 2010 14:55:20 +0100
-Message-Id: <1265982920-9786-1-git-send-email-mjw@redhat.com>
+	id S1754564Ab0BLOAH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Feb 2010 09:00:07 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,460,1262592000"; 
+   d="scan'208";a="491980210"
+Date: Fri, 12 Feb 2010 21:59:49 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Jamie Lokier <jamie@shareable.org>
+Cc: Matt Mackall <mpm@selenic.com>,
+       Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Clemens Ladisch <clemens@ladisch.de>,
+       Olivier Galibert <galibert@pobox.com>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Paul Gortmaker <paul.gortmaker@windriver.com>,
+       David Woodhouse <dwmw2@infradead.org>,
+       "linux-embedded@vger.kernel.org" <linux-embedded@vger.kernel.org>
+Subject: Re: [PATCH 03/11] readahead: bump up the default readahead size
+Message-ID: <20100212135949.GA22686@localhost>
+References: <20100207041013.891441102@intel.com> <20100207041043.147345346@intel.com> <4B6FBB3F.4010701@linux.vnet.ibm.com> <20100208134634.GA3024@localhost> <1265924254.15603.79.camel@calx> <20100211234249.GE407@shareable.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100211234249.GE407@shareable.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix some EXPORT_SYMBOL, spaces required after comma, open parenthesis,
-inline placement and tab usage style issues pointed out by checkpatch.pl.
+On Fri, Feb 12, 2010 at 07:42:49AM +0800, Jamie Lokier wrote:
+> Matt Mackall wrote:
+> > On Mon, 2010-02-08 at 21:46 +0800, Wu Fengguang wrote:
+> > > Chris,
+> > > 
+> > > Firstly inform the linux-embedded maintainers :)
+> > > 
+> > > I think it's a good suggestion to add a config option
+> > > (CONFIG_READAHEAD_SIZE). Will update the patch..
+> > 
+> > I don't have a strong opinion here beyond the nagging feeling that we
+> > should be using a per-bdev scaling window scheme rather than something
+> > static.
 
-Signed-off-by: Mark Wielaard <mjw@redhat.com>
----
- kernel/time.c |   27 ++++++++++++---------------
- 1 files changed, 12 insertions(+), 15 deletions(-)
+It's good to do dynamic scaling -- in fact this patchset has code to do
+- scale down readahead size (per-bdev) for small devices
+- scale down readahead size (per-stream) to thrashing threshold
 
-diff --git a/kernel/time.c b/kernel/time.c
-index 8047980..28d9b36 100644
---- a/kernel/time.c
-+++ b/kernel/time.c
-@@ -49,7 +49,6 @@
-  * programs who obtain this value by using gettimeofday.
-  */
- struct timezone sys_tz;
--
- EXPORT_SYMBOL(sys_tz);
- 
- #ifdef __ARCH_WANT_SYS_TIME
-@@ -65,7 +64,7 @@ SYSCALL_DEFINE1(time, time_t __user *, tloc)
- 	time_t i = get_seconds();
- 
- 	if (tloc) {
--		if (put_user(i,tloc))
-+		if (put_user(i, tloc))
- 			return -EFAULT;
- 	}
- 	force_successful_syscall_return();
-@@ -174,8 +173,7 @@ int do_sys_settimeofday(struct timespec *tv, struct timezone *tz)
- 				warp_clock();
- 		}
- 	}
--	if (tv)
--	{
-+	if (tv) {
- 		/* SMP safe, again the code in arch/foo/time.c should
- 		 * globally block out interrupts when it runs.
- 		 */
-@@ -214,7 +212,7 @@ SYSCALL_DEFINE1(adjtimex, struct timex __user *, txc_p)
- 	 * structure. But bear in mind that the structures
- 	 * may change
- 	 */
--	if(copy_from_user(&txc, txc_p, sizeof(struct timex)))
-+	if (copy_from_user(&txc, txc_p, sizeof(struct timex)))
- 		return -EFAULT;
- 	ret = do_adjtimex(&txc);
- 	return copy_to_user(txc_p, &txc, sizeof(struct timex)) ? -EFAULT : ret;
-@@ -240,7 +238,7 @@ EXPORT_SYMBOL(current_fs_time);
-  * Avoid unnecessary multiplications/divisions in the
-  * two most common HZ cases:
-  */
--unsigned int inline jiffies_to_msecs(const unsigned long j)
-+inline unsigned int jiffies_to_msecs(const unsigned long j)
- {
- #if HZ <= MSEC_PER_SEC && !(MSEC_PER_SEC % HZ)
- 	return (MSEC_PER_SEC / HZ) * j;
-@@ -256,7 +254,7 @@ unsigned int inline jiffies_to_msecs(const unsigned long j)
- }
- EXPORT_SYMBOL(jiffies_to_msecs);
- 
--unsigned int inline jiffies_to_usecs(const unsigned long j)
-+inline unsigned int jiffies_to_usecs(const unsigned long j)
- {
- #if HZ <= USEC_PER_SEC && !(USEC_PER_SEC % HZ)
- 	return (USEC_PER_SEC / HZ) * j;
-@@ -353,7 +351,6 @@ mktime(const unsigned int year0, const unsigned int mon0,
- 	  )*60 + min /* now have minutes */
- 	)*60 + sec; /* finally seconds */
- }
--
- EXPORT_SYMBOL(mktime);
- 
- /**
-@@ -523,7 +520,7 @@ timespec_to_jiffies(const struct timespec *value)
- 	unsigned long sec = value->tv_sec;
- 	long nsec = value->tv_nsec + TICK_NSEC - 1;
- 
--	if (sec >= MAX_SEC_IN_JIFFIES){
-+	if (sec >= MAX_SEC_IN_JIFFIES) {
- 		sec = MAX_SEC_IN_JIFFIES;
- 		nsec = 0;
- 	}
-@@ -566,7 +563,7 @@ timeval_to_jiffies(const struct timeval *value)
- 	unsigned long sec = value->tv_sec;
- 	long usec = value->tv_usec;
- 
--	if (sec >= MAX_SEC_IN_JIFFIES){
-+	if (sec >= MAX_SEC_IN_JIFFIES) {
- 		sec = MAX_SEC_IN_JIFFIES;
- 		usec = 0;
- 	}
-@@ -609,7 +606,7 @@ EXPORT_SYMBOL(jiffies_to_clock_t);
- 
- unsigned long clock_t_to_jiffies(unsigned long x)
- {
--#if (HZ % USER_HZ)==0
-+#if (HZ % USER_HZ) == 0
- 	if (x >= ~0UL / (HZ / USER_HZ))
- 		return ~0UL;
- 	return x * (HZ / USER_HZ);
-@@ -654,10 +651,10 @@ u64 nsec_to_clock_t(u64 x)
- 	return div_u64(x * USER_HZ / 512, NSEC_PER_SEC / 512);
- #else
- 	/*
--         * max relative error 5.7e-8 (1.8s per year) for USER_HZ <= 1024,
--         * overflow after 64.99 years.
--         * exact for HZ=60, 72, 90, 120, 144, 180, 300, 600, 900, ...
--         */
-+	 * max relative error 5.7e-8 (1.8s per year) for USER_HZ <= 1024,
-+	 * overflow after 64.99 years.
-+	 * exact for HZ=60, 72, 90, 120, 144, 180, 300, 600, 900, ...
-+	 */
- 	return div_u64(x * 9, (9ull * NSEC_PER_SEC + (USER_HZ / 2)) / USER_HZ);
- #endif
- }
--- 
-1.6.6
+At the same time, I'd prefer
+- to _only_ do scale down (below the default size) for low end
+- and have a uniform default readahead size for the mainstream
 
+IMHO scaling up automatically
+- would be risky
+- hurts to build one common expectation on Linux behavior
+  (not only developers, but also admins will run into the question:
+  "what on earth is the readahead size?")
+- and still not likely to please the high end guys ;)
+
+> I agree with both.  100Mb/s isn't typical on little devices, even if a
+> fast ATA disk is attached.  I've got something here where the ATA
+> interface itself (on a SoC) gets about 10MB/s max when doing nothing
+> else, or 4MB/s when talking to the network at the same time.
+> It's not a modern design, but you know, it's junk we try to use :-)
+
+Good to know this. I guess the same situation for some USB-capable
+wireless routers -- they typically don't have powerful hardware to
+exert the full 100MB/s disk speed.
+
+> It sounds like a calculation based on throughput and seek time or IOP
+> rate, and maybe clamped if memory is small, would be good.
+> 
+> Is the window size something that could be meaningfully adjusted
+> according to live measurements?
+
+We currently have live adjustment for
+- small devices
+- thrashed read streams
+
+We could add new adjustments based on throughput (estimation is the
+problem) and memory size.
+
+Note that it does not really hurt to have big _readahead_ size on low
+throughput or small memory conditions, because it's merely _max_
+readahead size, the actual readahead size scales up step-by-step, and
+scales down if thrashed, and the sequential readahead hit ratio is
+pretty high (so no memory/bandwidth is wasted).
+
+What may hurt is to have big mmap _readaround_ size. The larger
+readaround size, the more readaround miss ratio (but still not
+disastrous), hence more memory pages and bandwidth wasted. It's not a
+big problem for mainstream, however embedded systems may be more
+sensitive.
+
+I would guess most embedded systems put executables on MTD devices
+(anyone to confirm this?). And I wonder if MTDs have general
+characteristics that are suitable for smaller readahead/readaround
+size (the two sizes are bundled for simplicity)?
+
+Thanks,
+Fengguang
