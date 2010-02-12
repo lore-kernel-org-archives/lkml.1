@@ -1,62 +1,110 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757473Ab0BLRA3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 12:00:29 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:37331 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757398Ab0BLRAX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 12:00:23 -0500
-Date: Fri, 12 Feb 2010 11:59:20 -0500
-From: Don Zickus <dzickus@redhat.com>
-To: Stephane Eranian <eranian@google.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>,
-       mingo@elte.hu, Paul Mackerras <paulus@samba.org>,
-       Robert Richter <robert.richter@amd.com>
-Subject: Re: [PATCH 0/3 v2] new nmi_watchdog using perf events
-Message-ID: <20100212165920.GB3062@redhat.com>
-References: <bd4cb8901002120812n7da16b6k29dd9b950ac68f25@mail.gmail.com>
+	id S1757455Ab0BLRA0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 12:00:26 -0500
+Received: from g4t0017.houston.hp.com ([15.201.24.20]:22469 "EHLO
+	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757428Ab0BLRAT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Feb 2010 12:00:19 -0500
+Subject: [PATCH v3 6/7] PCI: break out primary/secondary/subordinate for
+	readability
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Tony Luck <tony.luck@intel.com>,
+       linux-acpi@vger.kernel.org, linux-pci@vger.kernel.org,
+       Peter Haight <peterh@sapros.com>, Gary Hade <garyhade@us.ibm.com>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       linux-am33-list@redhat.com, Yinghai Lu <yinghai@kernel.org>,
+       linux-alpha@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Larry Finger <Larry.Finger@lwfinger.net>
+Date: Fri, 12 Feb 2010 10:00:17 -0700
+Message-ID: <20100212170017.19522.97245.stgit@bob.kio>
+In-Reply-To: <20100212165532.19522.47240.stgit@bob.kio>
+References: <20100212165532.19522.47240.stgit@bob.kio>
+User-Agent: StGit/0.15
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <bd4cb8901002120812n7da16b6k29dd9b950ac68f25@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 12, 2010 at 05:12:38PM +0100, Stephane Eranian wrote:
-> Don,
-> 
-> How is this new NMI watchdog code going to work when you also have OProfile
-> enabled in your kernel?
-> 
-> Today, perf_event disables the NMI watchdog while there is at least one event.
-> By releasing the PMU registers, it also allows for Oprofile to work.
-> 
-> But now with this new NMI watchdog code, perf_event never releases the PMU.
-> Thus, I suspect Oprofile will not work anymore, unless the NMI watchdog is
-> explicitly disabled. Up until now OProfile could co-exist with the NMI watchdog.
 
-You are right.  Originally when I read the code I thought perf_event just
-grabbed all the PMUs in reserve_pmc_init().  But I see that only happens
-when someone actually creates a PERF_TYPE_HARDWARE event, which the new
-nmi watchdog does.  Those PMUs only get released when the event is
-destroyed which my new code only does when the cpu disappears.
+No functional change; just add names for the primary/secondary/subordinate
+bus numbers read from config space rather than repeatedly masking/shifting.
 
-So yeah, I have effectively blocked oprofile from working.  I can change
-my code such that when you disable the nmi_watchdog, you can release the
-PMUs and let oprofile work.
+Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+---
 
-But then I am curious, considering that perf and oprofile do the same
-thing, how much longer do we let competing subsystems control the same
-hardware?  I thought the point of the perf_event subsystem was to have a
-proper framework on top of the PMUs such that anyone who wants to use it
-just registers themselves, which is what the new nmi_watchdog is doing.
+ drivers/pci/probe.c |   24 ++++++++++++++----------
+ 1 files changed, 14 insertions(+), 10 deletions(-)
 
-I can add code that allows oprofile and the new nmi watchdog to coexist,
-but things get a little ugly to maintain.  Just wondering what the
-gameplan is here?
 
-Cheers,
-Don
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index dacdeae..04e7e97 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -671,16 +671,20 @@ int __devinit pci_scan_bridge(struct pci_bus *bus, struct pci_dev *dev, int max,
+ 	int is_cardbus = (dev->hdr_type == PCI_HEADER_TYPE_CARDBUS);
+ 	u32 buses, i, j = 0;
+ 	u16 bctl;
++	u8 primary, secondary, subordinate;
+ 	int broken = 0;
+ 
+ 	pci_read_config_dword(dev, PCI_PRIMARY_BUS, &buses);
++	primary = buses & 0xFF;
++	secondary = (buses >> 8) & 0xFF;
++	subordinate = (buses >> 16) & 0xFF;
+ 
+-	dev_dbg(&dev->dev, "scanning behind bridge, config %06x, pass %d\n",
+-		buses & 0xffffff, pass);
++	dev_dbg(&dev->dev, "scanning [bus %02x-%02x] behind bridge, pass %d\n",
++		secondary, subordinate, pass);
+ 
+ 	/* Check if setup is sensible at all */
+ 	if (!pass &&
+-	    ((buses & 0xff) != bus->number || ((buses >> 8) & 0xff) <= bus->number)) {
++	    (primary != bus->number || secondary <= bus->number)) {
+ 		dev_dbg(&dev->dev, "bus configuration invalid, reconfiguring\n");
+ 		broken = 1;
+ 	}
+@@ -691,15 +695,15 @@ int __devinit pci_scan_bridge(struct pci_bus *bus, struct pci_dev *dev, int max,
+ 	pci_write_config_word(dev, PCI_BRIDGE_CONTROL,
+ 			      bctl & ~PCI_BRIDGE_CTL_MASTER_ABORT);
+ 
+-	if ((buses & 0xffff00) && !pcibios_assign_all_busses() && !is_cardbus && !broken) {
+-		unsigned int cmax, busnr;
++	if ((secondary || subordinate) && !pcibios_assign_all_busses() &&
++	    !is_cardbus && !broken) {
++		unsigned int cmax;
+ 		/*
+ 		 * Bus already configured by firmware, process it in the first
+ 		 * pass and just note the configuration.
+ 		 */
+ 		if (pass)
+ 			goto out;
+-		busnr = (buses >> 8) & 0xFF;
+ 
+ 		/*
+ 		 * If we already got to this bus through a different bridge,
+@@ -708,13 +712,13 @@ int __devinit pci_scan_bridge(struct pci_bus *bus, struct pci_dev *dev, int max,
+ 		 * However, we continue to descend down the hierarchy and
+ 		 * scan remaining child buses.
+ 		 */
+-		child = pci_find_bus(pci_domain_nr(bus), busnr);
++		child = pci_find_bus(pci_domain_nr(bus), secondary);
+ 		if (!child) {
+-			child = pci_add_new_bus(bus, dev, busnr);
++			child = pci_add_new_bus(bus, dev, secondary);
+ 			if (!child)
+ 				goto out;
+-			child->primary = buses & 0xFF;
+-			child->subordinate = (buses >> 16) & 0xFF;
++			child->primary = primary;
++			child->subordinate = subordinate;
+ 			child->bridge_ctl = bctl;
+ 		}
+ 
 
