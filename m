@@ -1,72 +1,65 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753948Ab0BLKrw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 05:47:52 -0500
-Received: from mail-iw0-f201.google.com ([209.85.223.201]:34728 "EHLO
-	mail-iw0-f201.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750776Ab0BLKrv (ORCPT
+	id S1754207Ab0BLKtx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 05:49:53 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:45099 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750931Ab0BLKtv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 05:47:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=vPPzEwnSbK8oGdc8W3MyaBckTYhrz49Bzr95+jyS+IAN6eOBbybP7OyMLIRSqPX5mD
-         ZojYypddJqkdnw2mmYPlTC1Q11Qy4rXDJHfzcEANkxLN4gNBBjP1iGGZLdysgMTAEIPZ
-         PTfS8d752NHHRhi0RtbIro8VNSKVcaakjxWKs=
-Message-ID: <4B75323E.3060103@gmail.com>
-Date: Fri, 12 Feb 2010 02:49:34 -0800
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091114 Lightning/1.0pre Thunderbird/3.0b4
+	Fri, 12 Feb 2010 05:49:51 -0500
+Date: Fri, 12 Feb 2010 11:49:47 +0100
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: linux-arm-kernel@lists.infradead.org
+Cc: Russell King <linux@arm.linux.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] ARM: ixp2000: fix type of ixp2000_timer_interrupt
+Message-ID: <20100212104947.GB6590@pengutronix.de>
+References: <1264280500-22878-1-git-send-email-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
-To: linux-kernel <linux-kernel@vger.kernel.org>
-CC: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] Add an Apple iMac9,1 DMI entry to reboot.c so the machine
- reboot's properly.
-References: <1265484976-13414-1-git-send-email-justinmattock@gmail.com> <4B717980.2030802@gmail.com>
-In-Reply-To: <4B717980.2030802@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1264280500-22878-1-git-send-email-u.kleine-koenig@pengutronix.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/09/10 07:04, Justin P. Mattock wrote:
-> Whats the status if this patch?
->
->> On the iMac9,1 sudo /sbin/reboot results in
->> a black screen. Adding this DMI entry gets the
->> machine to reboot cleanly as it should.
->>
->>
->> Signed-off-by: Justin P. Mattock<justinmattock@gmail.com>
->> ---
->> arch/x86/kernel/reboot.c | 8 ++++++++
->> 1 files changed, 8 insertions(+), 0 deletions(-)
->>
->> diff --git a/arch/x86/kernel/reboot.c b/arch/x86/kernel/reboot.c
->> index 704bddc..2de6645 100644
->> --- a/arch/x86/kernel/reboot.c
->> +++ b/arch/x86/kernel/reboot.c
->> @@ -461,6 +461,14 @@ static struct dmi_system_id __initdata
->> pci_reboot_dmi_table[] = {
->> DMI_MATCH(DMI_PRODUCT_NAME, "Macmini3,1"),
->> },
->> },
->> + { /* Handle problems with rebooting on Apple iMac9,1 */
->> + .callback = set_pci_reboot,
->> + .ident = "Apple iMac9,1",
->> + .matches = {
->> + DMI_MATCH(DMI_SYS_VENDOR, "Apple Inc."),
->> + DMI_MATCH(DMI_PRODUCT_NAME, "iMac9,1"),
->> + },
->> + },
->> { }
->> };
->>
->
+Hi Russell,
 
-Hello Ingo.. this fixes a reboot issue
-with the apple iMac9,1 machines.
+On Sat, Jan 23, 2010 at 10:01:39PM +0100, Uwe Kleine-König wrote:
+> This fixes a build warning for 2.6.33-rc5:
+> 
+> 	arch/arm/mach-ixp2000/core.c:217: warning: initialization from incompatible pointer type
+> 
+> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+> ---
+>  arch/arm/mach-ixp2000/core.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/arm/mach-ixp2000/core.c b/arch/arm/mach-ixp2000/core.c
+> index babb225..e24e3d0 100644
+> --- a/arch/arm/mach-ixp2000/core.c
+> +++ b/arch/arm/mach-ixp2000/core.c
+> @@ -197,7 +197,7 @@ unsigned long ixp2000_gettimeoffset (void)
+>  	return offset / ticks_per_usec;
+>  }
+>  
+> -static int ixp2000_timer_interrupt(int irq, void *dev_id)
+> +static irqreturn_t ixp2000_timer_interrupt(int irq, void *dev_id)
+>  {
+>  	/* clear timer 1 */
+>  	ixp2000_reg_wrb(IXP2000_T1_CLR, 1);
+what do you think about this patch?  It's (IMHO) trivial and fixes a
+long standing build warning.
 
-Justin P. Mattock
+Best regards
+Uwe
+
+-- 
+Pengutronix e.K.                           | Uwe Kleine-König            |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
