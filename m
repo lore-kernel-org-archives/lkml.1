@@ -1,61 +1,701 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753272Ab0BLIEL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 03:04:11 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:44308 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752579Ab0BLIEJ (ORCPT
+	id S1753548Ab0BLIG7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 03:06:59 -0500
+Received: from www84.your-server.de ([213.133.104.84]:55923 "EHLO
+	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752839Ab0BLIG5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 03:04:09 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: "Chris Friesen" <cfriesen@nortel.com>
-Subject: Re: tracking memory usage/leak in "inactive" field in /proc/meminfo?
-Cc: kosaki.motohiro@jp.fujitsu.com, Minchan Kim <minchan.kim@gmail.com>,
-       Rik van Riel <riel@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org, Balbir Singh <balbir@linux.vnet.ibm.com>
-In-Reply-To: <4B7504D2.1040903@nortel.com>
-References: <28c262361002111838q7db763feh851a9bea4fdd9096@mail.gmail.com> <4B7504D2.1040903@nortel.com>
-Message-Id: <20100212170248.73B8.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Fri, 12 Feb 2010 03:06:57 -0500
+Subject: Re: [PATCH 4/4] add example files to the kernel sample directory
+From: Stefani Seibold <stefani@seibold.net>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, Greg Kroah-Hartman <gregkh@suse.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
+       "Ira W. Snyder" <iws@ovro.caltech.edu>
+In-Reply-To: <1265961158.32651.9.camel@wall-e>
+References: <1265961158.32651.9.camel@wall-e>
+Content-Type: text/plain; charset="ISO-8859-15"
+Date: Fri, 12 Feb 2010 09:07:00 +0100
+Message-ID: <1265962020.32651.22.camel@wall-e>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Fri, 12 Feb 2010 17:04:06 +0900 (JST)
+X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->   backtrace:
->     [<ffffffff8061c162>] kmemleak_alloc_page+0x1eb/0x380
->     [<ffffffff80276ae8>] __pagevec_lru_add_active+0xb6/0x104
->     [<ffffffff80276b85>] lru_cache_add_active+0x4f/0x53
->     [<ffffffff8027d182>] do_wp_page+0x355/0x6f6
->     [<ffffffff8027eef1>] handle_mm_fault+0x62b/0x77c
->     [<ffffffff80632557>] do_page_fault+0x3c7/0xba0
->     [<ffffffff8062fb79>] error_exit+0x0/0x51
->     [<ffffffffffffffff>] 0xffffffffffffffff
-> 
-> and
-> 
->   backtrace:
->     [<ffffffff8061c162>] kmemleak_alloc_page+0x1eb/0x380
->     [<ffffffff80276ae8>] __pagevec_lru_add_active+0xb6/0x104
->     [<ffffffff80276b85>] lru_cache_add_active+0x4f/0x53
->     [<ffffffff8027eddc>] handle_mm_fault+0x516/0x77c
->     [<ffffffff8027f180>] get_user_pages+0x13e/0x462
->     [<ffffffff802a2f65>] get_arg_page+0x6a/0xca
->     [<ffffffff802a30bf>] copy_strings+0xfa/0x1d4
->     [<ffffffff802a31c7>] copy_strings_kernel+0x2e/0x43
->     [<ffffffff802d33fb>] compat_do_execve+0x1fa/0x2fd
->     [<ffffffff8021e405>] sys32_execve+0x44/0x62
->     [<ffffffff8021def5>] ia32_ptregs_common+0x25/0x50
->     [<ffffffffffffffff>] 0xffffffffffffffff
-> 
-> I'll dig into them further, but do either of these look like known issues?
+This patch add four examples to the kernel sample directory.
 
-no known issue.
-AFAIK, 2.6.27 - 2.6.33 don't have such problem.
+It shows how to handle:
+- a byte stream fifo
+- a integer type fifo
+- a dynamic record sized fifo
+- the fifo DMA functions
+
+Signed-off-by: Stefani Seibold <stefani@seibold.net>
+---
+ Kconfig                    |   10 ++
+ Makefile                   |    2 
+ kfifo/Makefile             |    1 
+ kfifo/bytestream-example.c |  163 +++++++++++++++++++++++++++++++++++++++++++
+ kfifo/dma-example.c        |  115 ++++++++++++++++++++++++++++++
+ kfifo/inttype-example.c    |  157 ++++++++++++++++++++++++++++++++++++++++++
+ kfifo/record-example.c     |  167 +++++++++++++++++++++++++++++++++++++++++++++
+ 7 files changed, 614 insertions(+), 1 deletion(-)
+
+diff -u -N -r -p linux-2.6.33-rc7.orig/samples/Kconfig linux-2.6.33-rc7.new/samples/Kconfig
+--- linux-2.6.33-rc7.orig/samples/Kconfig	2010-02-11 17:05:58.178434640 +0100
++++ linux-2.6.33-rc7.new/samples/Kconfig	2010-02-12 08:31:54.092732092 +0100
+@@ -44,4 +44,14 @@ config SAMPLE_HW_BREAKPOINT
+ 	help
+ 	  This builds kernel hardware breakpoint example modules.
+ 
++config SAMPLE_KFIFO
++	tristate "Build kfifo examples -- loadable modules only"
++	depends on m
++	help
++	  This config option will allow you to build a number of
++	  different kfifo sample modules showing how to use the
++	  generic kfifo API.
++
++	  If in doubt, say "N" here.
++
+ endif # SAMPLES
+diff -u -N -r -p linux-2.6.33-rc7.orig/samples/kfifo/bytestream-example.c linux-2.6.33-rc7.new/samples/kfifo/bytestream-example.c
+--- linux-2.6.33-rc7.orig/samples/kfifo/bytestream-example.c	1970-01-01 01:00:00.000000000 +0100
++++ linux-2.6.33-rc7.new/samples/kfifo/bytestream-example.c	2010-02-12 08:32:18.250874734 +0100
+@@ -0,0 +1,163 @@
++/*
++ * Sample kfifo byte stream implementation
++ *
++ * Copyright (C) 2010 Stefani Seibold <stefani@seibold.net>
++ *
++ * Released under the GPL version 2 only.
++ *
++ */
++
++#include <linux/init.h>
++#include <linux/module.h>
++#include <linux/proc_fs.h>
++#include <linux/mutex.h>
++#include <linux/kfifo.h>
++
++/*
++ * This module shows how to create a byte stream fifo.
++ */
++
++/* fifo size in elements (bytes) */
++#define FIFO_SIZE	32
++
++/* name of the proc entry */
++#define	PROC_FIFO	"bytestream-fifo"
++
++/* lock for procfs read access */
++static DEFINE_MUTEX(read_lock);
++
++/* lock for procfs write access */
++static DEFINE_MUTEX(write_lock);
++
++/*
++ * define DYNAMIC in this example for a dynamically allocated fifo.
++ *
++ * Otherwise the fifo storage will be a part of the fifo structure.
++ */
++#if 0
++#define DYNAMIC
++#endif
++
++#ifdef DYNAMIC
++static struct kfifo test;
++#else
++static DECLARE_KFIFO(test, unsigned char, FIFO_SIZE);
++#endif
++
++static int __init testfunc(void)
++{
++	unsigned char	buf[6];
++	unsigned char	i;
++	unsigned int	ret;
++
++	printk(KERN_INFO "byte stream fifo test start\n");
++
++	/* put string into the fifo */
++	kfifo_in(&test, "hello", 5);
++
++	/* put values into the fifo */
++	for (i = 0; i != 10; i++)
++		kfifo_put(&test, &i);
++
++	/* show the number of used elements */
++	printk(KERN_INFO "fifo len: %u\n", kfifo_len(&test));
++
++	/* get max of 5 bytes from the fifo */
++	i = kfifo_out(&test, buf, 5);
++	printk(KERN_INFO "buf: %.*s\n", i, buf);
++
++	/* get max of 2 elements from the fifo */
++	ret = kfifo_out(&test, buf, 2);
++	printk(KERN_INFO "ret: %d\n", ret);
++	/* and put it back to the end of the fifo */
++	ret = kfifo_in(&test, buf, ret);
++	printk(KERN_INFO "ret: %d\n", ret);
++
++	/* put values into the fifo until is full */
++	for (i = 20; kfifo_put(&test, &i); i++)
++		;
++
++	printk(KERN_INFO "queue len: %u\n", kfifo_len(&test));
++
++	/* print out all values in the fifo */
++	while (kfifo_get(&test, &i))
++		printk("%d ", i);
++	printk("\n");
++
++	return 0;
++}
++
++static ssize_t fifo_write(struct file *file, const char __user *buf,
++						size_t count, loff_t *ppos)
++{
++	int ret;
++	unsigned int copied;
++
++	if (mutex_lock_interruptible(&write_lock))
++		return -ERESTARTSYS;
++
++	ret = kfifo_from_user(&test, buf, count, &copied);
++
++	mutex_unlock(&write_lock);
++
++	return ret ? ret : copied;
++}
++
++static ssize_t fifo_read(struct file *file, char __user *buf,
++						size_t count, loff_t *ppos)
++{
++	int ret;
++	unsigned int copied;
++
++	if (mutex_lock_interruptible(&read_lock))
++		return -ERESTARTSYS;
++
++	ret = kfifo_to_user(&test, buf, count, &copied);
++
++	mutex_unlock(&read_lock);
++
++	return ret ? ret : copied;
++}
++
++static const struct file_operations fifo_fops = {
++	.owner		= THIS_MODULE,
++	.read		= fifo_read,
++	.write		= fifo_write,
++};
++
++static int __init example_init(void)
++{
++#ifdef DYNAMIC
++	int ret;
++
++	ret = kfifo_alloc(&test, FIFO_SIZE, GFP_KERNEL);
++	if (ret) {
++		printk(KERN_ERR "error kfifo_alloc\n");
++		return ret;
++	}
++#else
++	INIT_KFIFO(test);
++#endif
++	testfunc();
++
++	if (proc_create(PROC_FIFO, 0, NULL, &fifo_fops) == NULL) {
++#ifdef DYNAMIC
++		kfifo_free(&test);
++#endif
++		return -ENOMEM;
++	}
++	return 0;
++}
++
++static void __exit example_exit(void)
++{
++	remove_proc_entry(PROC_FIFO, NULL);
++#ifdef DYNAMIC
++	kfifo_free(&test);
++#endif
++}
++
++module_init(example_init);
++module_exit(example_exit);
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Stefani Seibold <stefani@seibold.net>");
+Dateien linux-2.6.33-rc7.orig/samples/kfifo/.bytestream-example.c.swp und linux-2.6.33-rc7.new/samples/kfifo/.bytestream-example.c.swp sind verschieden.
+diff -u -N -r -p linux-2.6.33-rc7.orig/samples/kfifo/dma-example.c linux-2.6.33-rc7.new/samples/kfifo/dma-example.c
+--- linux-2.6.33-rc7.orig/samples/kfifo/dma-example.c	1970-01-01 01:00:00.000000000 +0100
++++ linux-2.6.33-rc7.new/samples/kfifo/dma-example.c	2010-02-12 08:32:18.252420182 +0100
+@@ -0,0 +1,115 @@
++/*
++ * Sample fifo dma implementation
++ *
++ * Copyright (C) 2010 Stefani Seibold <stefani@seibold.net>
++ *
++ * Released under the GPL version 2 only.
++ *
++ */
++
++#include <linux/init.h>
++#include <linux/module.h>
++#include <linux/kfifo.h>
++
++/*
++ * This module shows how to handle fifo dma operations.
++ */
++
++/* fifo size in elements (bytes) */
++#define FIFO_SIZE	32
++
++static struct kfifo fifo;
++
++static int __init example_init(void)
++{
++	int 			i;
++	unsigned int 		ret;
++	struct scatterlist	sg[10];
++
++	printk(KERN_INFO "DMA fifo test start\n");
++
++	if (kfifo_alloc(&fifo, FIFO_SIZE, GFP_KERNEL)) {
++		printk(KERN_ERR "error kfifo_alloc\n");
++		return 1;
++	}
++
++	printk(KERN_INFO "queue size: %u\n", kfifo_size(&fifo));
++
++	kfifo_in(&fifo, "test", 4);
++
++	for (i = 0; i != 9; i++)
++		kfifo_put(&fifo, &i);
++
++	/* kick away first byte */
++	ret = kfifo_get(&fifo, &i);
++
++	printk(KERN_INFO "queue len: %u\n", kfifo_len(&fifo));
++
++	ret = kfifo_dma_in_prepare(&fifo, sg, ARRAY_SIZE(sg), FIFO_SIZE);
++	printk(KERN_INFO "DMA sgl entries: %d\n", ret);
++
++	/* if 0 was returned, fifo is full and no sgl was created */
++	if (ret) {
++		printk(KERN_INFO "scatterlist for receive:\n");
++		for (i = 0; i < ARRAY_SIZE(sg); i++) {
++			printk(KERN_INFO
++			"sg[%d] -> "
++			"page_link 0x%.8lx offset 0x%.8x length 0x%.8x\n",
++				i, sg[i].page_link, sg[i].offset, sg[i].length);
++
++			if (sg_is_last(&sg[i]))
++				break;
++		}
++
++		/* but here your code to setup and exectute the dma operation */
++		/* ... */
++
++		/* example: zero bytes received */
++		ret = 0;
++
++		/* finish the dma operation and update the received data */
++		kfifo_dma_in_finish(&fifo, ret);
++	}
++
++	ret = kfifo_dma_out_prepare(&fifo, sg, ARRAY_SIZE(sg), 8);
++	printk(KERN_INFO "DMA sgl entries: %d\n", ret);
++
++	/* if 0 was returned, no data was available and no sgl was created */
++	if (ret) {
++		printk(KERN_INFO "scatterlist for transmit:\n");
++		for (i = 0; i < ARRAY_SIZE(sg); i++) {
++			printk(KERN_INFO
++			"sg[%d] -> "
++			"page_link 0x%.8lx offset 0x%.8x length 0x%.8x\n",
++				i, sg[i].page_link, sg[i].offset, sg[i].length);
++
++			if (sg_is_last(&sg[i]))
++				break;
++		}
++
++		/* but here your code to setup and exectute the dma operation */
++		/* ... */
++
++		/* example: 5 bytes transmitted */
++		ret = 5;
++
++		/* finish the dma operation and update the transmitted data */
++		kfifo_dma_out_finish(&fifo, ret);
++	}
++
++	printk(KERN_INFO "queue len: %u\n", kfifo_len(&fifo));
++
++	return 0;
++}
++
++static void __exit example_exit(void)
++{
++#ifdef DYNAMIC
++	kfifo_free(&test);
++#endif
++}
++
++module_init(example_init);
++module_exit(example_exit);
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Stefani Seibold <stefani@seibold.net>");
+diff -u -N -r -p linux-2.6.33-rc7.orig/samples/kfifo/inttype-example.c linux-2.6.33-rc7.new/samples/kfifo/inttype-example.c
+--- linux-2.6.33-rc7.orig/samples/kfifo/inttype-example.c	1970-01-01 01:00:00.000000000 +0100
++++ linux-2.6.33-rc7.new/samples/kfifo/inttype-example.c	2010-02-12 08:32:18.252420182 +0100
+@@ -0,0 +1,157 @@
++/*
++ * Sample kfifo int type implementation
++ *
++ * Copyright (C) 2010 Stefani Seibold <stefani@seibold.net>
++ *
++ * Released under the GPL version 2 only.
++ *
++ */
++
++#include <linux/init.h>
++#include <linux/module.h>
++#include <linux/proc_fs.h>
++#include <linux/mutex.h>
++#include <linux/kfifo.h>
++
++/*
++ * This module shows how to create a int type fifo.
++ */
++
++/* fifo size in elements (ints) */
++#define FIFO_SIZE	32
++
++/* name of the proc entry */
++#define	PROC_FIFO	"int-fifo"
++
++/* lock for procfs read access */
++static DEFINE_MUTEX(read_lock);
++
++/* lock for procfs write access */
++static DEFINE_MUTEX(write_lock);
++
++/*
++ * define DYNAMIC in this example for a dynamically allocated fifo.
++ *
++ * Otherwise the fifo storage will be a part of the fifo structure.
++ */
++#if 0
++#define DYNAMIC
++#endif
++
++#ifdef DYNAMIC
++static DECLARE_KFIFO_PTR(test, int);
++#else
++static DEFINE_KFIFO(test, int, FIFO_SIZE);
++#endif
++
++static int __init testfunc(void)
++{
++	int		buf[6];
++	int		i;
++	unsigned int	ret;
++
++	printk(KERN_INFO "int fifo test start\n");
++
++	/* put values into the fifo */
++	for (i = 0; i != 10; i++)
++		kfifo_put(&test, &i);
++
++	/* show the number of used elements */
++	printk(KERN_INFO "fifo len: %u\n", kfifo_len(&test));
++
++	/* get max of 2 elements from the fifo */
++	ret = kfifo_out(&test, buf, 2);
++	printk(KERN_INFO "ret: %d\n", ret);
++	/* and put it back to the end of the fifo */
++	ret = kfifo_in(&test, buf, ret);
++	printk(KERN_INFO "ret: %d\n", ret);
++
++	for (i = 20; i != 30; i++)
++		kfifo_put(&test, &i);
++
++	printk(KERN_INFO "queue len: %u\n", kfifo_len(&test));
++
++	/* show the first value without removing from the fifo */
++	if (kfifo_peek(&test, &i))
++		printk(KERN_INFO "%d\n", i);
++
++	/* print out all values in the fifo */
++	while (kfifo_get(&test, &i))
++		printk("%d ", i);
++	printk("\n");
++
++	return 0;
++}
++
++static ssize_t fifo_write(struct file *file, const char __user *buf,
++						size_t count, loff_t *ppos)
++{
++	int ret;
++	unsigned int copied;
++
++	if (mutex_lock_interruptible(&write_lock))
++		return -ERESTARTSYS;
++
++	ret = kfifo_from_user(&test, buf, count, &copied);
++
++	mutex_unlock(&write_lock);
++
++	return ret ? ret : copied;
++}
++
++static ssize_t fifo_read(struct file *file, char __user *buf,
++						size_t count, loff_t *ppos)
++{
++	int ret;
++	unsigned int copied;
++
++	if (mutex_lock_interruptible(&read_lock))
++		return -ERESTARTSYS;
++
++	ret = kfifo_to_user(&test, buf, count, &copied);
++
++	mutex_unlock(&read_lock);
++
++	return ret ? ret : copied;
++}
++
++static const struct file_operations fifo_fops = {
++	.owner		= THIS_MODULE,
++	.read		= fifo_read,
++	.write		= fifo_write,
++};
++
++static int __init example_init(void)
++{
++#ifdef DYNAMIC
++	int ret;
++
++	ret = kfifo_alloc(&test, FIFO_SIZE, GFP_KERNEL);
++	if (ret) {
++		printk(KERN_ERR "error kfifo_alloc\n");
++		return ret;
++	}
++#endif
++	testfunc();
++
++	if (proc_create(PROC_FIFO, 0, NULL, &fifo_fops) == NULL) {
++#ifdef DYNAMIC
++		kfifo_free(&test);
++#endif
++		return -ENOMEM;
++	}
++	return 0;
++}
++
++static void __exit example_exit(void)
++{
++	remove_proc_entry(PROC_FIFO, NULL);
++#ifdef DYNAMIC
++	kfifo_free(&test);
++#endif
++}
++
++module_init(example_init);
++module_exit(example_exit);
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Stefani Seibold <stefani@seibold.net>");
+diff -u -N -r -p linux-2.6.33-rc7.orig/samples/kfifo/Makefile linux-2.6.33-rc7.new/samples/kfifo/Makefile
+--- linux-2.6.33-rc7.orig/samples/kfifo/Makefile	1970-01-01 01:00:00.000000000 +0100
++++ linux-2.6.33-rc7.new/samples/kfifo/Makefile	2010-02-12 08:31:54.107750622 +0100
+@@ -0,0 +1 @@
++obj-$(CONFIG_SAMPLE_KFIFO) += bytestream-example.o dma-example.o inttype-example.o record-example.o
+diff -u -N -r -p linux-2.6.33-rc7.orig/samples/kfifo/record-example.c linux-2.6.33-rc7.new/samples/kfifo/record-example.c
+--- linux-2.6.33-rc7.orig/samples/kfifo/record-example.c	1970-01-01 01:00:00.000000000 +0100
++++ linux-2.6.33-rc7.new/samples/kfifo/record-example.c	2010-02-12 08:32:18.252420182 +0100
+@@ -0,0 +1,167 @@
++/*
++ * Sample dynamic sized record fifo implementation
++ *
++ * Copyright (C) 2010 Stefani Seibold <stefani@seibold.net>
++ *
++ * Released under the GPL version 2 only.
++ *
++ */
++
++#include <linux/init.h>
++#include <linux/module.h>
++#include <linux/proc_fs.h>
++#include <linux/mutex.h>
++#include <linux/kfifo.h>
++
++/*
++ * This module shows how to create a variable sized record fifo.
++ */
++
++/* fifo size in elements (bytes) */
++#define FIFO_SIZE	128
++
++/* name of the proc entry */
++#define	PROC_FIFO	"record-fifo"
++
++/* lock for procfs read access */
++static DEFINE_MUTEX(read_lock);
++
++/* lock for procfs write access */
++static DEFINE_MUTEX(write_lock);
++
++/*
++ * define DYNAMIC in this example for a dynamically allocated fifo.
++ *
++ * Otherwise the fifo storage will be a part of the fifo structure.
++ */
++#if 0
++#define DYNAMIC
++#endif
++
++/*
++ * struct kfifo_rec_ptr_1 and  STRUCT_KFIFO_REC_1 can handle records of a
++ * length between 0 and 255 bytes.
++ *
++ * struct kfifo_rec_ptr_2 and  STRUCT_KFIFO_REC_2 can handle records of a
++ * length between 0 and 65535 bytes.
++ */
++
++#ifdef DYNAMIC
++struct kfifo_rec_ptr_1 test;
++
++#else
++typedef STRUCT_KFIFO_REC_1(FIFO_SIZE) mytest;
++
++static mytest test;
++#endif
++
++static int __init testfunc(void)
++{
++	char		buf[100];
++	unsigned int	i;
++	unsigned int	ret;
++	struct { unsigned char buf[6]; } hello = { "hello" };
++
++	printk(KERN_INFO "record fifo test start\n");
++
++	kfifo_in(&test, &hello, sizeof(hello));
++
++	/* show the size of the next record in the fifo */
++	printk(KERN_INFO "fifo peek len: %u\n", kfifo_peek_len(&test));
++
++	/* put in variable length data */
++	for (i = 0; i < 10; i++) {
++		memset(buf, 'a' + i, i + 1);
++		kfifo_in(&test, buf, i + 1);
++	}
++
++	printk(KERN_INFO "fifo len: %u\n", kfifo_len(&test));
++
++	/* show the first record without removing from the fifo */
++	ret = kfifo_out_peek(&test, buf, sizeof(buf));
++	if (ret)
++		printk(KERN_INFO "%.*s\n", ret, buf);
++
++	/* print out all records in the fifo */
++	while (!kfifo_is_empty(&test)) {
++		ret = kfifo_out(&test, buf, sizeof(buf));
++		printk(KERN_INFO "%.*s\n", ret, buf);
++	}
++
++	return 0;
++}
++
++static ssize_t fifo_write(struct file *file, const char __user *buf,
++						size_t count, loff_t *ppos)
++{
++	int ret;
++	unsigned int copied;
++
++	if (mutex_lock_interruptible(&write_lock))
++		return -ERESTARTSYS;
++
++	ret = kfifo_from_user(&test, buf, count, &copied);
++
++	mutex_unlock(&write_lock);
++
++	return ret ? ret : copied;
++}
++
++static ssize_t fifo_read(struct file *file, char __user *buf,
++						size_t count, loff_t *ppos)
++{
++	int ret;
++	unsigned int copied;
++
++	if (mutex_lock_interruptible(&read_lock))
++		return -ERESTARTSYS;
++
++	ret = kfifo_to_user(&test, buf, count, &copied);
++
++	mutex_unlock(&read_lock);
++
++	return ret ? ret : copied;
++}
++
++static const struct file_operations fifo_fops = {
++	.owner		= THIS_MODULE,
++	.read		= fifo_read,
++	.write		= fifo_write,
++};
++
++static int __init example_init(void)
++{
++#ifdef DYNAMIC
++	int ret;
++
++	ret = kfifo_alloc(&test, FIFO_SIZE, GFP_KERNEL);
++	if (ret) {
++		printk(KERN_ERR "error kfifo_alloc\n");
++		return ret;
++	}
++#else
++	INIT_KFIFO(test);
++#endif
++	testfunc();
++
++	if (proc_create(PROC_FIFO, 0, NULL, &fifo_fops) == NULL) {
++#ifdef DYNAMIC
++		kfifo_free(&test);
++#endif
++		return -ENOMEM;
++	}
++	return 0;
++}
++
++static void __exit example_exit(void)
++{
++	remove_proc_entry(PROC_FIFO, NULL);
++#ifdef DYNAMIC
++	kfifo_free(&test);
++#endif
++}
++
++module_init(example_init);
++module_exit(example_exit);
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Stefani Seibold <stefani@seibold.net>");
+diff -u -N -r -p linux-2.6.33-rc7.orig/samples/Makefile linux-2.6.33-rc7.new/samples/Makefile
+--- linux-2.6.33-rc7.orig/samples/Makefile	2010-02-11 17:05:58.178434640 +0100
++++ linux-2.6.33-rc7.new/samples/Makefile	2010-02-12 08:31:54.107750622 +0100
+@@ -1,4 +1,4 @@
+ # Makefile for Linux samples code
+ 
+ obj-$(CONFIG_SAMPLES)	+= kobject/ kprobes/ tracepoints/ trace_events/ \
+-			   hw_breakpoint/
++			   hw_breakpoint/ kfifo/
 
 
