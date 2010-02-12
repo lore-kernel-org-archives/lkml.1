@@ -1,80 +1,84 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751676Ab0BLItF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 03:49:05 -0500
-Received: from mail-iw0-f201.google.com ([209.85.223.201]:59219 "EHLO
-	mail-iw0-f201.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750828Ab0BLItB (ORCPT
+	id S1751752Ab0BLIwp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 03:52:45 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:59948 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750883Ab0BLIwn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 03:49:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=SgDxi/vpI8XYd5wKUyaIte8D9vwa6Pm9qTeOhHcI9LIEJKdMDY0zeHQBiiz/X8iT7A
-         9hDJ46zUAoYh08TdHdMMSorsyAJsQwsI1RUnaM1zlkMZF78Kj/wHbbA2fxu7KOU4CMdh
-         Y5o47raMwALUG0dpFrOHWYKuj3X6Fb0nlwL9o=
-Message-ID: <4B751664.8060603@gmail.com>
-Date: Fri, 12 Feb 2010 00:50:44 -0800
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091114 Lightning/1.0pre Thunderbird/3.0b4
+	Fri, 12 Feb 2010 03:52:43 -0500
+Date: Fri, 12 Feb 2010 09:52:31 +0100
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Alessandro Zummo <a.zummo@towertech.it>, rtc-linux@googlegroups.com,
+       Paul Gortmaker <p_gortmaker@yahoo.com>, linux-kernel@vger.kernel.org
+Subject: Re: [rtc-linux] [PATCH RESEND] rtc/hctosys: only claim the RTC
+	provided  the system time if it did
+Message-ID: <20100212085231.GA21947@pengutronix.de>
+References: <1265663419-10165-1-git-send-email-u.kleine-koenig@pengutronix.de> <1265885549-23920-1-git-send-email-u.kleine-koenig@pengutronix.de> <20100211115700.12853990@linux.lan.towertech.it> <20100211144240.8fbec55e.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Alberto Panizzo <maramaopercheseimorto@gmail.com>
-CC: Tomasz Chmielewski <mangoo@wpkg.org>, linux-kernel@vger.kernel.org
-Subject: Re: core i7: hang at Booting processor 5 APIC 0x3 ip 0x6000
-References: <4B687649.5070204@wpkg.org> <4B687EFF.8000202@gmail.com>	 <4B687F77.5020409@wpkg.org>  <4B6885FA.80509@gmail.com> <1265963139.2484.3.camel@realization>
-In-Reply-To: <1265963139.2484.3.camel@realization>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20100211144240.8fbec55e.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/12/10 00:25, Alberto Panizzo wrote:
-> On mar, 2010-02-02 at 12:07 -0800, Justin P. Mattock wrote:
->> On 02/02/10 11:39, Tomasz Chmielewski wrote:
->>> On 02.02.2010 20:37, Justin P. Mattock wrote:
->>>> apologize for top posting(didn't want to cut dmesg), can this be
->>>> reproduced easily?
->>>> if so are you able to bisect this?
->>>
->>> I can reproduce it every week or so, with several reboots daily.
->>>
->>> Sometimes I can reboot for a few hours in a row, and it boots up
->>> correctly each time.
->>>
->>> So I doubt it's easily bisectable.
->>>
->>>
->>
->> shoot!! you can probably go with the bisect
->> but probably wont hear from you until a month or so(given this takes a
->> week to reproduce).
->> I've been hitting some odd thing here similar to what
->> you have,(stuck during boot right at the CPU*) but probably every
->> two/three months.
->> (from what I've read it seems some cpupowermgmnt.kext thing getting
->> mixed up over here(iMac));
->>
->> Justin P. Mattock
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->
-> Hi all! In this discussion I can say that Ubuntu kernel 2.6.31-17-generic
-> Boots well on my DELL studio 1557 (core i7 powered).
->
+Hello Andrew,
 
-lovely...
-but what about 2.6.33*(hot off of the press thing).
-anyways I've notice something similar
-to what you where reporting i.g.
-changed over to lilo, and have been hitting some
-CPU stuck-age crap during boot hard to
-get anything though(will look into when I get a chance).
+On Thu, Feb 11, 2010 at 02:42:40PM -0800, Andrew Morton wrote:
+> On Thu, 11 Feb 2010 11:57:00 +0100
+> Alessandro Zummo <a.zummo@towertech.it> wrote:
+> 
+> > On Thu, 11 Feb 2010 11:52:29 +0100
+> > Uwe Kleine-K__nig <u.kleine-koenig@pengutronix.de> wrote:
+> > 
+> > 
+> > > Signed-off-by: Uwe Kleine-K__nig <u.kleine-koenig@pengutronix.de>
+> > > ---
+> > > Hello,
+> > > 
+> > > this time the patch is complete.
+> > > 
+> > > What do you think about it?
+> 
+> I do dislike having to trawl through the patch trying to work out what
+> the changelog forgot to tell me.
+> 
+> What problem is being fixed here?
+> 
+> What is the user-observable manifestation of that problem?
+> 
+> How does the patch fix it?
+> 
+> Stuff like that!
+What do you think about:
 
-regards,
+---->8----
+rtc/hctosys: only claim the RTC provided the system time if it did
 
-Justin P. Mattock
+Without this patch /sys/class/rtc/$CONFIG_RTC_HCTOSYS_DEVICE/hctosys
+contains a 1 (meaning "This rtc was used to initialize the system
+clock") even if reading the time at bootup failed.
+
+Moreover change error handling in rtc_hctosys() to use goto and so
+reduce the indention level.
+---->8----
+
+> >  looks nice but I'll have to give a deeper look.
+> >  will probably queue for the next merge window
+> 
+> I merged it with a "needs Alessandro ack" note-to-self.
+fine, thanks
+Uwe
+
+-- 
+Pengutronix e.K.                           | Uwe Kleine-König            |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
