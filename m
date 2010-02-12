@@ -1,86 +1,93 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755672Ab0BLVt6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 16:49:58 -0500
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:56751 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755501Ab0BLVt4 (ORCPT
+	id S1755555Ab0BLVvN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 16:51:13 -0500
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:37849 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757522Ab0BLVvK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 16:49:56 -0500
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: text/plain; CHARSET=US-ASCII; delsp=yes; format=flowed
-Date: Fri, 12 Feb 2010 14:49:40 -0700
-From: Andreas Dilger <adilger@sun.com>
-Subject: Re: [PATCH 2.6.32.7] ext4: number of blocks for fiemap
-In-reply-to: <1266000136.4310.36.camel@michlmayr>
-To: Leonard Michlmayr <leonard.michlmayr@gmail.com>
-Cc: ext4 development <linux-ext4@vger.kernel.org>,
-       surbhi.palande@canonical.com,
-       "linux-kernel@vger.kernel.org Mailinglist" 
-	<linux-kernel@vger.kernel.org>,
-       474597@bugs.launchpad.net
-Message-id: <4D0CB743-94B6-49AB-B838-BCDD2EC8C3ED@sun.com>
-X-Mailer: Apple Mail (2.936)
-References: <1257360161.22057.16.camel@michlmayr>
- <372739E0-41AD-4DEC-9187-1396BE5894BD@sun.com>
- <1257371050.13852.28.camel@michlmayr> <4B701793.9010005@canonical.com>
- <1266000136.4310.36.camel@michlmayr>
+	Fri, 12 Feb 2010 16:51:10 -0500
+Date: Fri, 12 Feb 2010 16:45:50 -0500
+From: "John W. Linville" <linville@tuxdriver.com>
+To: davem@davemloft.net
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: pull request: wireless-2.6 2010-02-12
+Message-ID: <20100212214550.GB16783@tuxdriver.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2010-02-12, at 11:42, Leonard Michlmayr wrote:
-> fs/ext4/extents.c:ext4_fiemap rounds the length of the requested range
-> down to blocksize. This is not the true number of blocks that cover  
-> the
-> requested region. This problem is especially impressive if the user
-> requests only the first byte of a file: not a single extent will be
-> reported.
->
-> Solution:
-> Calculate the last byte of the region and round to blocksize. Then get
-> the number of blocks by subtracting last_blk - start_blk and adding 1
-> for the first block. (The variable last_blk is introduced just for
-> easier reading.) This patch will fix this.
->
-> I already suggested this patch some time ago, this is the same patch  
-> for
-> a more recent kernel version.
->
-> Signed-off-by: Leonard Michlmayr <leonard.michlmayr@gmail.com>
->
-> diff -rup linux-2.6.32.7/fs/ext4/extents.c linux-2.6.32.7-lm/fs/ext4/ 
-> extents.c
-> --- linux-2.6.32.7/fs/ext4/extents.c	2010-01-29 00:06:20.000000000  
-> +0100
-> +++ linux-2.6.32.7-lm/fs/ext4/extents.c	2010-02-11  
-> 21:26:40.000000000 +0100
-> @@ -3711,6 +3711,7 @@ int ext4_fiemap(struct inode *inode, str
-> 		__u64 start, __u64 len)
-> {
-> 	ext4_lblk_t start_blk;
-> +	ext4_lblk_t last_blk;
-> 	ext4_lblk_t len_blks;
-> 	int error = 0;
->
-> @@ -3726,7 +3727,9 @@ int ext4_fiemap(struct inode *inode, str
-> 		error = ext4_xattr_fiemap(inode, fieinfo);
-> 	} else {
-> 		start_blk = start >> inode->i_sb->s_blocksize_bits;
-> -		len_blks = len >> inode->i_sb->s_blocksize_bits;
-> +		/* the last byte in the range is (start + len - 1) */
-> +		last_blk = (start + len - 1) >> inode->i_sb->s_blocksize_bits;
-> +		len_blks = last_blk - start_blk + 1;
+Dave,
 
+Here are a couple of stragglers for 2.6.33.  One purports to fix a
+crash, the other avoids processing of uninitialized data when using
+devices with rate control in hardware.
 
-If "last_blk" is only used in this one place, please put the  
-declaration inside the scope of the "else" clause.  Looks fine  
-otherwise.
+The latter patch will cause a merge issue in linux-next.  I'll be happy
+to resolve that in wireless-next-2.6 once this merge request is
+resolved.
 
-Cheers, Andreas
---
-Andreas Dilger
-Sr. Staff Engineer, Lustre Group
-Sun Microsystems of Canada, Inc.
+Please let me know if there are problems!
 
+Thanks,
+
+John
+
+---
+
+The following changes since commit 044c18c9f51a2b92b310e28bb121e55451b088dd:
+  David S. Miller (1):
+        Merge branch 'master' of git://git.kernel.org/.../linville/wireless-2.6
+
+are available in the git repository at:
+
+  ssh://master.kernel.org/pub/scm/linux/kernel/git/linville/wireless-2.6.git master
+
+Juuso Oikarinen (1):
+      mac80211: fix handling of null-rate control in rate_control_get_rate
+
+Shanyu Zhao (1):
+      iwlwifi: fix AMSDU Rx after paged Rx patch
+
+ drivers/net/wireless/iwlwifi/iwl-rx.c |    5 ++++-
+ net/mac80211/rate.c                   |    3 +++
+ 2 files changed, 7 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/net/wireless/iwlwifi/iwl-rx.c b/drivers/net/wireless/iwlwifi/iwl-rx.c
+index 6f36b6e..2dbce85 100644
+--- a/drivers/net/wireless/iwlwifi/iwl-rx.c
++++ b/drivers/net/wireless/iwlwifi/iwl-rx.c
+@@ -928,7 +928,10 @@ static void iwl_pass_packet_to_mac80211(struct iwl_priv *priv,
+ 	if (ieee80211_is_mgmt(fc) ||
+ 	    ieee80211_has_protected(fc) ||
+ 	    ieee80211_has_morefrags(fc) ||
+-	    le16_to_cpu(hdr->seq_ctrl) & IEEE80211_SCTL_FRAG)
++	    le16_to_cpu(hdr->seq_ctrl) & IEEE80211_SCTL_FRAG ||
++	    (ieee80211_is_data_qos(fc) &&
++	     *ieee80211_get_qos_ctl(hdr) &
++	     IEEE80211_QOS_CONTROL_A_MSDU_PRESENT))
+ 		ret = skb_linearize(skb);
+ 	else
+ 		ret = __pskb_pull_tail(skb, min_t(u16, IWL_LINK_HDR_MAX, len)) ?
+diff --git a/net/mac80211/rate.c b/net/mac80211/rate.c
+index b9007f8..12a2bff 100644
+--- a/net/mac80211/rate.c
++++ b/net/mac80211/rate.c
+@@ -245,6 +245,9 @@ void rate_control_get_rate(struct ieee80211_sub_if_data *sdata,
+ 		info->control.rates[i].count = 1;
+ 	}
+ 
++	if (sdata->local->hw.flags & IEEE80211_HW_HAS_RATE_CONTROL)
++		return;
++
+ 	if (sta && sdata->force_unicast_rateidx > -1) {
+ 		info->control.rates[0].idx = sdata->force_unicast_rateidx;
+ 	} else {
+-- 
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
