@@ -1,52 +1,42 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755547Ab0BLLYm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 06:24:42 -0500
-Received: from ix.technologeek.org ([213.41.157.215]:34342 "EHLO
-	sonic.technologeek.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755059Ab0BLLYk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 06:24:40 -0500
-X-Greylist: delayed 369 seconds by postgrey-1.27 at vger.kernel.org; Fri, 12 Feb 2010 06:24:40 EST
-From: Julien BLACHE <jb@jblache.org>
-To: Soeren Sonnenburg <sonne@debian.org>
-Cc: mjg@redhat.com, nicolas@boichat.ch, felipe_alfaro@linuxmail.org,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Brightness control for MacBook Pro - Nvidia 9400
-References: <1265920725.7103.7.camel@no>
-Date: Fri, 12 Feb 2010 12:18:28 +0100
-In-Reply-To: <1265920725.7103.7.camel@no> (Soeren Sonnenburg's message of
-	"Thu, 11 Feb 2010 21:38:45 +0100")
-Message-ID: <878wayk8hn.fsf@sonic.technologeek.org>
-User-Agent: Gnus/5.110009 (No Gnus v0.9) XEmacs/21.4.22 (linux)
+	id S1756121Ab0BLLcL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 06:32:11 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:53259 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755966Ab0BLLcF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Feb 2010 06:32:05 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: linux-next: build warning after merge of the suspend tree
+Date: Fri, 12 Feb 2010 12:32:45 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.33-rc7-rjw; KDE/4.3.5; x86_64; ; )
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Alan Stern <stern@rowland.harvard.edu>
+References: <20100212155750.3f95932f.sfr@canb.auug.org.au>
+In-Reply-To: <20100212155750.3f95932f.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002121232.45343.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Soeren Sonnenburg <sonne@debian.org> wrote:
+On Friday 12 February 2010, Stephen Rothwell wrote:
+> Hi Rafael,
+> 
+> After merging the suspend tree, today's linux-next build (powerpc
+> ppc64_defconfig) produced this warning:
+> 
+> drivers/usb/core/hcd-pci.c:153: warning: return type defaults to 'int'
+> drivers/usb/core/hcd-pci.c: In function 'clear_hs_companion':
+> drivers/usb/core/hcd-pci.c:153: warning: control reaches end of non-void function
+> 
+> Introduced by commit 708efd3eb95d318442da39ad6e5c01d5c9b85dbf ("USB:
+> implement non-tree resume ordering constraints for PCI host controllers").
 
-Hi,
+Ah, missing "void", sorry about that.  Should be fixed now.
 
-> I am booting a MacBookPro5,3 using elilo and efifb. Now I'd like to use
-> pommed to control display brightness (which won't work). Digging around
-> in mbp_nvidia_bl.c I figured out that tries to control the geforce 9600M
-> instead of the currently active geforece 9400m
-
-If you know how one can determine which GPU is active, let me know. I
-don't have this information at the moment.
-
-> Does anyone have an idea which bytes to tweak to change brightness
-> levels for the 9400? Seems like 0x52f does not work - at least
-> setpci -s 03:00.0 0x52f.B=10 fails...
-
-I'm not sure this method actually works without the legacy BIOS. IIRC
-that method was determined by reverse engineering the Windows drivers,
-which means the legacy BIOS was in use.
-
-JB.
-
--- 
-Julien BLACHE                                   <http://www.jblache.org> 
-<jb@jblache.org>                                  GPG KeyID 0xF5D65169
+Rafael
