@@ -1,66 +1,90 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756993Ab0BLPWS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 10:22:18 -0500
-Received: from smtp.nokia.com ([192.100.122.233]:49328 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756869Ab0BLPWQ (ORCPT
+	id S1757044Ab0BLPW5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 10:22:57 -0500
+Received: from smtp.nokia.com ([192.100.105.134]:58810 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756981Ab0BLPWz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 10:22:16 -0500
-Subject: Re: [PATCHv2] MTD: Add UBI reboot notifier
-From: Artem Bityutskiy <dedekind1@gmail.com>
-Reply-To: dedekind1@gmail.com
-To: Norbert van Bolhuis <nvbolhuis@aimvalley.nl>
-Cc: Kevin Cernekee <kpc.mtd@gmail.com>, linux-mtd@lists.infradead.org,
-       dwmw2@infradead.org, linux-kernel@vger.kernel.org
-In-Reply-To: <4B755B72.9060805@aimvalley.nl>
-References: <1244550775.5847.385.camel@localhost.localdomain>
-	 <f5be75d5abc1acd236bedf36c55a860e@localhost>
-	 <1265980392.29027.12.camel@localhost>  <4B755B72.9060805@aimvalley.nl>
+	Fri, 12 Feb 2010 10:22:55 -0500
+Subject: Re: [RESEND][PATCHv2 4/4] OMAP: DSS2: Add Innolux 7" display for
+ DEVKIT8000
+From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
+To: ext Jaya Kumar <jayakumar.lkml@gmail.com>
+Cc: Thomas Weber <swirl@gmx.li>, Thomas Weber <weber@corscience.de>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <45a44e481002112155u68c806beg9fe0a3a122d09d25@mail.gmail.com>
+References: <1265917278-22011-1-git-send-email-swirl@gmx.li>
+	 <45a44e481002112155u68c806beg9fe0a3a122d09d25@mail.gmail.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 12 Feb 2010 17:21:00 +0200
-Message-ID: <1265988060.30922.35.camel@localhost>
+Organization: Nokia
+Date: Fri, 12 Feb 2010 17:25:43 +0200
+Message-ID: <1265988343.2433.312.camel@tubuntu.research.nokia.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 12 Feb 2010 15:21:43.0755 (UTC) FILETIME=[1562D1B0:01CAABF7]
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 12 Feb 2010 15:22:45.0395 (UTC) FILETIME=[3A205630:01CAABF7]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-02-12 at 14:45 +0100, Norbert van Bolhuis wrote:
-> Artem Bityutskiy wrote:
-> > FYI, I do not like this patch, because it is not solving the problem, it
-> > just makes the problem less likely. I.e., you are still screwed if you
-> > reboot while some other task is doing erasure. Indeed, the background
-> > thread is not the only task which may do erases.
-> > 
-> > I'm not going to revert this patch, but wanted to let you know that I
-> > think it was my mistake to push it.
-> > 
+On Fri, 2010-02-12 at 06:55 +0100, ext Jaya Kumar wrote:
+> On Fri, Feb 12, 2010 at 3:41 AM, Thomas Weber <swirl@gmx.li> wrote:
+
+[snip]
+
+> > +
+> > +static struct omap_video_timings innolux_at_timings = {
+> > +       .x_res          = 800,
+> > +       .y_res          = 480,
+> > +
+> > +       .pixel_clock    = 40000,
+> > +
+> > +       .hsw            = 48,
+> > +       .hfp            = 1,
+> > +       .hbp            = 1,
+> > +
+> > +       .vsw            = 3,
+> > +       .vfp            = 12,
+> > +       .vbp            = 25,
+> > +};
+> > +
+> > +static int innolux_at_panel_probe(struct omap_dss_device *dssdev)
+> > +{
+> > +       dssdev->panel.config = OMAP_DSS_LCD_TFT | OMAP_DSS_LCD_IVS |
+> > +               OMAP_DSS_LCD_IHS;
+> > +       dssdev->panel.acb = 0x28;
+> > +       dssdev->panel.timings = innolux_at_timings;
+> > +
+> > +       return 0;
+> > +}
+> > +
 > 
-> so, how to solve this properly ?
+> Hi Thomas, Tomi,
 > 
-> probably the only way is the reboot notifier of the MTD chip driver
-> (for NOR flash only cmdset_0001 has one).
+> Just curious, does this patch imply that code like this needs to be
+> written for every single LCD type and resolution that can be connected
+> to omap2? Maybe there is a better way, like a common table of timings
+> and values that can be selected with a module option or even
+> autodetected.
 
-Well. UBI itself does not have problems with half-erased eraseblocks. As
-the comment to the patch says, this is for a strange platform where the
-boot loader panics when it encounters a half-erased EB.
+Yes, it is true that currently you need to write these for every LCD. I
+have been thinking this issue, and I think we can make a common driver. 
 
-So the most proper fix is to fix the boot-loader. Remember, a power cut
-can introduce half-erased EBs, and you cannot address this in SW.
+However, it's not just selecting timings, as LCDs can have also other
+characteristics than just the video timings. For example, some may have
+power on/off line, some reset enable/disable, some need 50ms after
+reset, some 80ms after reset etc.
 
-For clean reboots, you would need to have a reboot notifier in the MTD
-lever, not in UBI. This notifier should:
+But if we manage to get a sane set of those settings into the table, we
+could perhaps cover most of the "dummy" LCDs with it.
 
-1. Finish the current erase operation.
-2. Prevent further erase operations.
+This change doesn't probably need any changes to the DSS core, only for
+the panel driver. Any takers for this task? =) 
 
-The UBI patch is not a good solution.
+ Tomi
 
--- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
 
