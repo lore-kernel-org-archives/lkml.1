@@ -1,64 +1,74 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757441Ab0BLRzi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 12:55:38 -0500
-Received: from maila.microsoft.com ([131.107.115.212]:41435 "EHLO
-	smtp.microsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757344Ab0BLRzh convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 12:55:37 -0500
-From: Hank Janssen <hjanssen@microsoft.com>
-To: Greg KH <gregkh@suse.de>
-CC: "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-       "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>,
-       Haiyang Zhang <haiyangz@microsoft.com>
-Subject: RE: [PATCH 1/1] Staging: hv: Add proper versioning to HV
- drivers-Corrected.
-Thread-Topic: [PATCH 1/1] Staging: hv: Add proper versioning to HV
- drivers-Corrected.
-Thread-Index: AQHKq25lALDhh7OqjU+sP1lX9F83gpHCFTwAgAClhTA=
-Date: Fri, 12 Feb 2010 17:55:34 +0000
-Message-ID: <8AFC7968D54FB448A30D8F38F259C56212E88B0F@TK5EX14MBXC118.redmond.corp.microsoft.com>
-References: <8AFC7968D54FB448A30D8F38F259C56212E883CB@TK5EX14MBXC118.redmond.corp.microsoft.com>
- <20100211233612.GB10315@suse.de>
-In-Reply-To: <20100211233612.GB10315@suse.de>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	id S1752838Ab0BLSDx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 13:03:53 -0500
+Received: from sabe.cs.wisc.edu ([128.105.6.20]:37914 "EHLO sabe.cs.wisc.edu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751006Ab0BLSDv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Feb 2010 13:03:51 -0500
+Message-ID: <4B7597F4.6070403@cs.wisc.edu>
+Date: Fri, 12 Feb 2010 12:03:32 -0600
+From: Mike Christie <michaelc@cs.wisc.edu>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
+To: Tomohiro Kusumi <kusumi.tomohiro@jp.fujitsu.com>
+CC: linux-scsi@vger.kernel.org, James.Bottomley@suse.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] scsi_transport_fc: handle transient error on multipath
+ environment
+References: <4B750CB7.4030805@jp.fujitsu.com> <4B7593F4.2050102@cs.wisc.edu>
+In-Reply-To: <4B7593F4.2050102@cs.wisc.edu>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 02/12/2010 11:46 AM, Mike Christie wrote:
+> - Maybe you want to instead hook something into the dm-mutlipath's
+> request (no more bios like in 2004 :)). Can you set a timer on that
+> level of request. If that times out then, dm-multipath could do
+> something like call blk_abort_queue.
 
-> >
-> >  drivers/staging/hv/VersionInfo.h |   22 +++++++++++++++++++---
+Some more detail. I was thinking maybe you could stack the timeout
+handlers like is done for request_fn handlers or maybe the scsi cmd
+would use the upper layer's timer somehow. Not sure... but at the least
+I think we would not want both a scsi request and dm request timers
+running at the same time.
+
+Then for the error handling and timeout handling, most FC drivers have a
+terminate_rport_io which works without having to block the entire host.
+Those drivers could implement a newer eh where instead of firing the
+code in scsi_error.c when a cmd times out, it would run
+terminate_rport_io from some workqueue.
+
+new dm request timed out()
+	-> scsi_timed_out
+		-> fc_timed_out()
+			{
+				run new eh from workqueue();
+			}
+
+
+new_eh()
+	/* no new cmds should be started until we figure out what is going on */
+	block rport()
+	/* releases cmds upwards so they can run while we try to figure out
+what is going on */
+	terminate_rport_io()
+	/* check if devices are ok */
+	send_tur()
+	if (tur failed)
+		start old scsi_error.c code to unjam us.
+	else
+		/* everything looks ok so let IO run to this path again */
+		unblock rport()
+
+
 > 
-> You forgot a "---" between the signed-off-by and the diffstat.  If you
-> use either git or quilt, it will get this correct automagically.  That
-> infers you used something else, which is quite scary.  What are you
-> using instead to create patches?
-> 
-> Don't worry, I can edit this by hand when I apply it, and will do so in
-> a few days when I get to my "to-apply" queue, but in the future, please
-> don't do this.
-> 
-> thanks,
-> 
-> greg k-h
-
-This must have been the result of a cut/paste error on my side.
-
-I use the following command for my diff   'git diff -M -u --stat'
-
-Btw, it was my understanding that the -M flag allows tracking of renamed 
-files as well as part of the diff output. (git mv) But my diff command 
-does not report on those.  Am I doing something wrong?
-
-Thanks,
-
-Hank.
+> I think the problem with blk_abort_queue might be that it stops all IO
+> to the entire host where you probably just want to work on the remote
+> port/path. For that you could call something like
+> recover_transient_error. Maybe it could just be a call to
+> terminate_rport_io from a workqueue though.
 
