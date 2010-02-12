@@ -1,85 +1,101 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757305Ab0BLQz5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 11:55:57 -0500
-Received: from nn7.de ([85.214.94.156]:44827 "EHLO nn7.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757063Ab0BLQzz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 11:55:55 -0500
-Subject: Re: Brightness control for MacBook Pro - Nvidia 9400
-From: Soeren Sonnenburg <sonne@debian.org>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Julien BLACHE <jb@jblache.org>, nicolas@boichat.ch,
-       felipe_alfaro@linuxmail.org,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20100212164412.GA21279@srcf.ucam.org>
-References: <1265920725.7103.7.camel@no>
-	 <878wayk8hn.fsf@sonic.technologeek.org>
-	 <20100212141457.GA18714@srcf.ucam.org>
-	 <87zl3eto99.fsf@sonic.technologeek.org>
-	 <20100212162810.GA20998@srcf.ucam.org> <1265992937.3485.34.camel@no>
-	 <20100212164412.GA21279@srcf.ucam.org>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-G8rvj5Hhg0h2wh5e3C/O"
-Date: Fri, 12 Feb 2010 17:55:56 +0100
-Message-ID: <1265993756.3485.35.camel@no>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
+	id S1757330Ab0BLQ7w (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 11:59:52 -0500
+Received: from g4t0017.houston.hp.com ([15.201.24.20]:22110 "EHLO
+	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757063Ab0BLQ7t (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Feb 2010 11:59:49 -0500
+Subject: [PATCH v3 0/7] PCI: try "pci=use_crs" again
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Tony Luck <tony.luck@intel.com>,
+       linux-acpi@vger.kernel.org, linux-pci@vger.kernel.org,
+       Peter Haight <peterh@sapros.com>, Gary Hade <garyhade@us.ibm.com>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       linux-am33-list@redhat.com, Yinghai Lu <yinghai@kernel.org>,
+       linux-alpha@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Larry Finger <Larry.Finger@lwfinger.net>
+Date: Fri, 12 Feb 2010 09:59:46 -0700
+Message-ID: <20100212165532.19522.47240.stgit@bob.kio>
+User-Agent: StGit/0.15
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Historically, Linux has assumed a single PCI host bridge, with that bridge
+claiming all the address space left after RAM and legacy devices are taken out.
 
---=-G8rvj5Hhg0h2wh5e3C/O
-Content-Type: text/plain; charset="ISO-8859-15"
-Content-Transfer-Encoding: quoted-printable
+If the system contains multiple host bridges, we can no longer operate under
+that assumption.  We have to know what parts of the address space are claimed
+by each bridge so that when we assign resources to a PCI device, we take them
+from a range claimed by the upstream host bridge.
 
-On Fri, 2010-02-12 at 16:44 +0000, Matthew Garrett wrote:
-> On Fri, Feb 12, 2010 at 05:42:17PM +0100, Soeren Sonnenburg wrote:
-> > On Fri, 2010-02-12 at 16:28 +0000, Matthew Garrett wrote:
-> > > On Fri, Feb 12, 2010 at 05:25:22PM +0100, Julien BLACHE wrote:
-> > >=20
-> > > > Is it exposed to userspace in any way? Or, better yet, could we hav=
-e an
-> > > > MBP backlight driver which would hide all of this from userspace?
-> > >=20
-> > > Sure, in nouveau.
-> >=20
-> > OK, great convinced. Any suggestions on where to add printk's to figure
-> > out the cause of the hang? The only thing I noticed was the fans turnin=
-g
-> > on so the machine is either stuck in a busy loop or ???
->=20
-> Best bet is probably to file a bug on bugs.freedesktop.org - I'm afraid=20
-> I'm not too hot on the GPU bringup side of the driver.
+On x86 and ia64, we use ACPI to enumerate all the PCI host bridges in the
+system, and part of the host bridge description is the "_CRS" (current resource
+settings" property, which lists the address space used by the bridge.  On x86,
+we currently ignore most of the _CRS information.  This patch series changes
+this, so we will use _CRS to learn about the host bridge windows.
 
-OK, it is here
-http://bugs.freedesktop.org/show_bug.cgi?id=3D26546
+Since most x86 machines with multiple host bridges are relatively new, this
+series only turns this on for machines with BIOS dates of 2008 or newer.
 
-Soeren
---=20
-For the one fact about the future of which we can be certain is that it
-will be utterly fantastic. -- Arthur C. Clarke, 1962
+Changes from v2 to v3:
+    - Fix alpha, powerpc, and mn10300 references to pci_bus resource table
+    - Turn on "pci=use_crs" for 2008 and newer, not 2010 and newer
+    - Remove Toshiba A355 quirk (BIOS date is 2009, so automatically included)
+    - Remove IBM x3850 and x3950 quirks (BIOS dates in 2008, so automatically
+      included)
+    - Leave IBM x3800 quirk (pre-2008 BIOS)
+    - Use "bool" for pci_use_crs (new to me, but I see akpm suggesting it)
+    - Reorder so the important patches are first
 
---=-G8rvj5Hhg0h2wh5e3C/O
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+Changes from v1 to v2:
+    - Rebase to be6e9f7853e
+    - Add patch to clean up "disabled window" printk
+    - Add bugzilla reference comment in use_crs DMI quirk
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+---
 
-iQIcBAABAgAGBQJLdYgcAAoJEH82z1Wqh6p3hHoQAMyFvl8YHXQgqe8tvqHCtSAy
-bT9Hd3c/CX3lhXboErdU0p4nENWEGkDOQOgiP1V3p4Xaigw4xALHsxYprcigB+FB
-DHc9C6PHgOqDIcxbQDaxFbvoQ4SLUL2nb9Y+o59aL4nD6oDQFIAgNCRA29yHhivz
-jzkvSdixMbafabS1MaL2s17av6107kS29gBKcBK4qvoXqSUR65Ad1EtNCDvabzFQ
-9kItwmPr5Ly4TGNseGFFUpeTCAxcxPvHXKB4xp8stTRiRHkWdSfoUjHTJ5QGCKGz
-FmrJiXM+igSHxHhBlIhGKUkPc1IvQ0M3KFl0cb18H9Fc4Ztci0HlcTGPBUIZXMge
-2MHoQiMAq6nBjQ9VAcUSUqzhAwB9goX5X31t4PeHLGQI13VWtmJeBjsd930xmLhS
-9+yQXYrDdJZjYRnxgsa/Ixb9fv4CKiPoIcF8rToKofizvbvzql2SfwIZKYCQQFLd
-XqMMG5JXUDTVaQtoWWLb/LTU5YPgRFJ/I2+XnYBWNWW7bGxVSRlQntEBR3Mm1Zpp
-gYJU8MnqBAHWtZx64w+NgVxDHwk406SAOIDOhSFnWBd/N/R7hdE/j2JDrMpEnLGZ
-xKQeQt5Ur2QV8VTLXxuAS1CHdH2p8A1Fd7iZglLFJ0rzyhs4u/ZCVoi/fBfNNdI6
-5TEBSCbTMUMH5Q3zyxtP
-=jBs0
------END PGP SIGNATURE-----
+Bjorn Helgaas (7):
+      PCI: split up pci_read_bridge_bases()
+      PCI: read bridge windows before filling in subtractive decode resources
+      PCI: replace bus resource table with a list
+      x86/PCI: use host bridge _CRS info by default on 2008 and newer machines
+      PCI: make disabled window printk style match the enabled ones
+      PCI: break out primary/secondary/subordinate for readability
+      PCI: reference bridge window resources explicitly
 
---=-G8rvj5Hhg0h2wh5e3C/O--
+
+ Documentation/kernel-parameters.txt  |    8 +-
+ arch/alpha/kernel/pci.c              |    5 +
+ arch/ia64/include/asm/acpi.h         |    1 
+ arch/ia64/pci/pci.c                  |   20 ++--
+ arch/mn10300/unit-asb2305/pci.c      |    7 +
+ arch/powerpc/kernel/pci-common.c     |   26 +++--
+ arch/powerpc/kernel/pci_64.c         |   18 ++--
+ arch/powerpc/kernel/pci_of_scan.c    |   12 ++
+ arch/powerpc/platforms/fsl_uli1575.c |   15 ++-
+ arch/x86/include/asm/pci_x86.h       |    1 
+ arch/x86/pci/acpi.c                  |   82 ++++++++++-------
+ arch/x86/pci/bus_numa.c              |    9 +-
+ arch/x86/pci/bus_numa.h              |    3 -
+ arch/x86/pci/common.c                |    3 +
+ drivers/acpi/pci_root.c              |    1 
+ drivers/eisa/pci_eisa.c              |    4 -
+ drivers/pci/bus.c                    |   50 ++++++++++
+ drivers/pci/hotplug/shpchp_sysfs.c   |   15 ++-
+ drivers/pci/pci.c                    |    6 +
+ drivers/pci/probe.c                  |  108 +++++++++++++++-------
+ drivers/pci/quirks.c                 |    4 -
+ drivers/pci/setup-bus.c              |  168 +++++++++++++++++-----------------
+ drivers/pcmcia/rsrc_nonstatic.c      |    7 +
+ drivers/pcmcia/yenta_socket.c        |   46 +++++----
+ include/acpi/acpi_drivers.h          |    1 
+ include/linux/pci.h                  |   27 ++++-
+ 26 files changed, 401 insertions(+), 246 deletions(-)
