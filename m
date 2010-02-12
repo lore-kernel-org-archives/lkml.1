@@ -1,72 +1,134 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757601Ab0BLABb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 19:01:31 -0500
-Received: from va3ehsobe003.messaging.microsoft.com ([216.32.180.13]:53379
-	"EHLO VA3EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1757501Ab0BLAB2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 19:01:28 -0500
-X-SpamScore: -34
-X-BigFish: VPS-34(zzab9bh1432R98dN936eM1521M9371Pzz1202hzzz2fh6bh61h)
-X-Spam-TCS-SCL: 0:0
-Message-ID: <4B749A42.2080703@am.sony.com>
-Date: Thu, 11 Feb 2010 16:01:06 -0800
-From: Tim Bird <tim.bird@am.sony.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: Steven Rostedt <srostedt@redhat.com>
-CC: linux kernel <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 1/1] ftrace - add support for tracing_thresh to function_graph
- tracer
-References: <4B733721.3030503@am.sony.com>  <4B7338BF.1070505@am.sony.com> <1265929831.2737.340.camel@localhost.localdomain>
-In-Reply-To: <1265929831.2737.340.camel@localhost.localdomain>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-X-Reverse-DNS: mail7.fw-bc.sony.com
+	id S1757568Ab0BLABR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 19:01:17 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:47919 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757504Ab0BLABH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 19:01:07 -0500
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
+       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
+       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: [PATCH tip/core/rcu 02/13] rcu: add lockdep-enabled variants of rcu_dereference()
+Date: Thu, 11 Feb 2010 16:00:28 -0800
+Message-Id: <1265932839-25899-2-git-send-email-paulmck@linux.vnet.ibm.com>
+X-Mailer: git-send-email 1.6.6
+In-Reply-To: <20100212000016.GA25781@linux.vnet.ibm.com>
+References: <20100212000016.GA25781@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/11/2010 03:10 PM, Steven Rostedt wrote:
-> On Wed, 2010-02-10 at 14:52 -0800, Tim Bird wrote:
->>  static struct tracer_opt trace_opts[] = {
->>  	/* Display overruns? (for self-debug purpose) */
->> @@ -53,6 +54,8 @@ static struct tracer_opt trace_opts[] = {
->>  	{ TRACER_OPT(funcgraph-duration, TRACE_GRAPH_PRINT_DURATION) },
->>  	/* Display absolute time of an entry */
->>  	{ TRACER_OPT(funcgraph-abstime, TRACE_GRAPH_PRINT_ABS_TIME) },
->> +	/* Display function name on exit, instead of just closing brace */
->> +	{ TRACER_OPT(funcgraph-exit, TRACE_GRAPH_PRINT_FUNC_EXIT) },
->>  	{ } /* Empty entry */
-> 
-> I wonder if this should be enabled on start up of the function graph
-> tracer if the threshold is set?
-> 
-> Otherwise people will wonder WTF?
+Make rcu_dereference() check for being in an RCU read-side critical
+section, and create rcu_dereference_bh(), rcu_dereference_sched(), and
+srcu_dereference() to check for the other flavors of RCU.  Also create
+rcu_dereference_raw() to avoid checking, and make rcu_dereference_check()
+use rcu_dereference_raw().
 
-Indeed.  I'm not sure exactly how to do this.
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+---
+ include/linux/rcupdate.h |   41 ++++++++++++++++++++++++++++++++++-------
+ include/linux/srcu.h     |    8 ++++++++
+ 2 files changed, 42 insertions(+), 7 deletions(-)
 
-Would it be better to set the option when current_tracer
-is set with 'function_graph', and tracing_thresh is non-zero?
-Or should I set the option when tracing_thresh is set to
-non-zero, and the current_trace is set to 'function_graph'?
-
-Or both?
-
-It wouldn't automatically reset to nofuncgraph-exit
-unless I also put some magic in for that.  I'm
-pretty sure that disabling it automatically would
-lead to unobvious behaviour for the user.
-
-I'll look into how to access the options
-from those two points, and see what looks feasible.
- -- Tim
-
-=============================
-Tim Bird
-Architecture Group Chair, CE Linux Forum
-Senior Staff Engineer, Sony Corporation of America
-=============================
+diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
+index e3d37ef..839d296 100644
+--- a/include/linux/rcupdate.h
++++ b/include/linux/rcupdate.h
+@@ -184,12 +184,12 @@ static inline int rcu_read_lock_sched_held(void)
+ 	({ \
+ 		if (debug_locks) \
+ 			WARN_ON_ONCE(!(c)); \
+-		rcu_dereference(p); \
++		rcu_dereference_raw(p); \
+ 	})
+ 
+ #else /* #ifdef CONFIG_PROVE_RCU */
+ 
+-#define rcu_dereference_check(p, c)	rcu_dereference(p)
++#define rcu_dereference_check(p, c)	rcu_dereference_raw(p)
+ 
+ #endif /* #else #ifdef CONFIG_PROVE_RCU */
+ 
+@@ -325,22 +325,49 @@ static inline notrace void rcu_read_unlock_sched_notrace(void)
+ 
+ 
+ /**
+- * rcu_dereference - fetch an RCU-protected pointer in an
+- * RCU read-side critical section.  This pointer may later
+- * be safely dereferenced.
++ * rcu_dereference_raw - fetch an RCU-protected pointer
++ *
++ * The caller must be within some flavor of RCU read-side critical
++ * section, or must be otherwise preventing the pointer from changing,
++ * for example, by holding an appropriate lock.  This pointer may later
++ * be safely dereferenced.  It is the caller's responsibility to have
++ * done the right thing, as this primitive does no checking of any kind.
+  *
+  * Inserts memory barriers on architectures that require them
+  * (currently only the Alpha), and, more importantly, documents
+  * exactly which pointers are protected by RCU.
+  */
+-
+-#define rcu_dereference(p)     ({ \
++#define rcu_dereference_raw(p)	({ \
+ 				typeof(p) _________p1 = ACCESS_ONCE(p); \
+ 				smp_read_barrier_depends(); \
+ 				(_________p1); \
+ 				})
+ 
+ /**
++ * rcu_dereference - fetch an RCU-protected pointer, checking for RCU
++ *
++ * Makes rcu_dereference_check() do the dirty work.
++ */
++#define rcu_dereference(p) \
++	rcu_dereference_check(p, rcu_read_lock_held())
++
++/**
++ * rcu_dereference_bh - fetch an RCU-protected pointer, checking for RCU-bh
++ *
++ * Makes rcu_dereference_check() do the dirty work.
++ */
++#define rcu_dereference_bh(p) \
++		rcu_dereference_check(p, rcu_read_lock_bh_held())
++
++/**
++ * rcu_dereference_sched - fetch RCU-protected pointer, checking for RCU-sched
++ *
++ * Makes rcu_dereference_check() do the dirty work.
++ */
++#define rcu_dereference_sched(p) \
++		rcu_dereference_check(p, rcu_read_lock_sched_held())
++
++/**
+  * rcu_assign_pointer - assign (publicize) a pointer to a newly
+  * initialized structure that will be dereferenced by RCU read-side
+  * critical sections.  Returns the value assigned.
+diff --git a/include/linux/srcu.h b/include/linux/srcu.h
+index adbe167..3084f80 100644
+--- a/include/linux/srcu.h
++++ b/include/linux/srcu.h
+@@ -106,6 +106,14 @@ static inline int srcu_read_lock_held(struct srcu_struct *sp)
+ #endif /* #else #ifdef CONFIG_DEBUG_LOCK_ALLOC */
+ 
+ /**
++ * srcu_dereference - fetch SRCU-protected pointer with checking
++ *
++ * Makes rcu_dereference_check() do the dirty work.
++ */
++#define srcu_dereference(p, sp) \
++		rcu_dereference_check(p, srcu_read_lock_held(sp))
++
++/**
+  * srcu_read_lock - register a new reader for an SRCU-protected structure.
+  * @sp: srcu_struct in which to register the new reader.
+  *
+-- 
+1.6.6
 
