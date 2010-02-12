@@ -1,24 +1,24 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757511Ab0BLT3r (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 14:29:47 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54331 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757421Ab0BLT3q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 14:29:46 -0500
-Date: Fri, 12 Feb 2010 11:29:12 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jeff Mahoney <jeffm@suse.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: [PATCH] delayacct: align to 8 byte boundary on 64-bit systems
-Message-Id: <20100212112912.be58b670.akpm@linux-foundation.org>
-In-Reply-To: <4B75A9F7.4030607@suse.com>
-References: <4B75865B.8000307@suse.com>
-	<20100212101957.9f4a4a3a.akpm@linux-foundation.org>
-	<4B75A9F7.4030607@suse.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+	id S1757534Ab0BLTcO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 14:32:14 -0500
+Received: from bamako.nerim.net ([62.4.17.28]:54959 "EHLO bamako.nerim.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757488Ab0BLTcM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Feb 2010 14:32:12 -0500
+Date: Fri, 12 Feb 2010 20:32:09 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Phillip Lougher <phillip@lougher.demon.co.uk>
+Cc: "J.H." <warthog9@kernel.org>, "FTPAdmin Kernel.org" <ftpadmin@kernel.org>,
+       users@kernel.org, lasse.collin@tukaani.org,
+       linux-kernel <linux-kernel@vger.kernel.org>, mirrors@kernel.org
+Subject: Re: [kernel.org users] XZ Migration discussion
+Message-ID: <20100212203209.0cb8afc3@hyperion.delvare>
+In-Reply-To: <4B75A5CF.70308@lougher.demon.co.uk>
+References: <4B744E13.8040004@kernel.org>
+	<20100212150137.648dca7c@hyperion.delvare>
+	<4B75A5CF.70308@lougher.demon.co.uk>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -26,16 +26,23 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 12 Feb 2010 14:20:23 -0500
-Jeff Mahoney <jeffm@suse.com> wrote:
-
-> > Seems safe enough.  We'd be safer still if we didn't do this on 64-bit
-> > architectures which don't need it.  ie: x86_64.  But if we do that we
-> > add a risk that people will develop shoddy code which works on x86_64
-> > and doesn't work on ia64.
+On Fri, 12 Feb 2010 19:02:39 +0000, Phillip Lougher wrote:
+> 5* Archive all the older 2.6.x files and move them into a separate
+>     directory (e.g. v2.6-pre20).  Moving all the pre 2.6.20 files
+>     saves 42% of the file listing.
 > 
-> Is there a way to do that without needlessly complicating things? I
-> didn't see any existing infrastructure to do that.
+> This seems an obvious solution, what am I missing?
 
-ifdefs?  I don't think it's worth doing, really.  Probably anyone who
-wrote an application for this copied the getdelays.c code anyway.
+This is confusing, inconsistent and unstable. Confusing because 2.6-pre
+referred so far to the releases immediately preceding 2.6.0.
+Inconsistent because it requires the downloader to have preliminary
+knowledge about what the break point is. Unstable because, while you
+consider pre20 to qualify as "old" today, in 5 years you will want
+pre30 to qualify as "old" instead, meaning that tools such as ketchup
+would have to be updated once again.
+
+I think we want to come up with a directory structure which won't change
+in the future.
+
+-- 
+Jean Delvare
