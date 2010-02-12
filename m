@@ -1,87 +1,42 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755324Ab0BLOWq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 09:22:46 -0500
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:48363 "EHLO e9.ny.us.ibm.com"
+	id S1755094Ab0BLO2x (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 09:28:53 -0500
+Received: from mika.eatserver.nl ([195.20.9.75]:54373 "EHLO mika.eatserver.nl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752239Ab0BLOWn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 09:22:43 -0500
-Date: Fri, 12 Feb 2010 08:22:39 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Cc: oleg@redhat.com, tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       paulmck@linux.vnet.ibm.com, dipankar@in.ibm.com, mingo@elte.hu,
-       peterz@infradead.org, viro@zeniv.linux.org.uk, jmorris@namei.org,
-       dhowells@redhat.com, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, linux-security-module@vger.kernel.org
-Subject: Re: [PATCH] sys: Fix missing rcu protection for sys_getpriority.
-Message-ID: <20100212142239.GA9653@us.ibm.com>
-References: <20091210001308.247025548@linutronix.de>
- <20091210004703.029784964@linutronix.de>
- <20091210142036.GA8226@redhat.com>
- <201002112104.BAG73411.LFHFSVQtOOMOJF@I-love.SAKURA.ne.jp>
+	id S1752369Ab0BLO2v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Feb 2010 09:28:51 -0500
+X-Greylist: delayed 2594 seconds by postgrey-1.27 at vger.kernel.org; Fri, 12 Feb 2010 09:28:51 EST
+X-Spam-CTCH-RefID: 
+Message-ID: <4B755B72.9060805@aimvalley.nl>
+Date: Fri, 12 Feb 2010 14:45:22 +0100
+From: Norbert van Bolhuis <nvbolhuis@aimvalley.nl>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <201002112104.BAG73411.LFHFSVQtOOMOJF@I-love.SAKURA.ne.jp>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: dedekind1@gmail.com
+CC: Kevin Cernekee <kpc.mtd@gmail.com>, linux-mtd@lists.infradead.org,
+       dwmw2@infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCHv2] MTD: Add UBI reboot notifier
+References: <1244550775.5847.385.camel@localhost.localdomain>	<f5be75d5abc1acd236bedf36c55a860e@localhost> <1265980392.29027.12.camel@localhost>
+In-Reply-To: <1265980392.29027.12.camel@localhost>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Tetsuo Handa (penguin-kernel@I-love.SAKURA.ne.jp):
-> Oleg Nesterov wrote:
-> > This also fixes another bug here. find_task_by_vpid() is not safe
-> > without rcu_read_lock(). I do not mean it is not safe to use the
-> > result, just find_pid_ns() by itself is not safe.
-> > 
-> > Usually tasklist gives enough protection, but if copy_process() fails
-> > it calls free_pid() lockless and does call_rcu(delayed_put_pid().
-> > This means, without rcu lock find_pid_ns() can't scan the hash table
-> > safely.
+Artem Bityutskiy wrote:
+> FYI, I do not like this patch, because it is not solving the problem, it
+> just makes the problem less likely. I.e., you are still screwed if you
+> reboot while some other task is doing erasure. Indeed, the background
+> thread is not the only task which may do erases.
 > 
-> This bug for sys_setpriority() was fixed, but not fixed for sys_getpriority().
-> Why not to add it as well?
-> --------------------
-> [PATCH] sys: Fix missing rcu protection for sys_setpriority.
+> I'm not going to revert this patch, but wanted to let you know that I
+> think it was my mistake to push it.
 > 
-> find_task_by_vpid() is not safe without rcu_read_lock().
-> 2.6.33-rc7 got RCU protection for sys_setpriority() but missed it for
-> sys_getpriority().
-> 
-> Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 
-Would be needed indeed but I don't have a copy of linux-next handy -
-if this isn't changed there yet then
+so, how to solve this properly ?
 
-Acked-by: Serge Hallyn <serue@us.ibm.com>
+probably the only way is the reboot notifier of the MTD chip driver
+(for NOR flash only cmdset_0001 has one).
 
-thanks,
--serge
-
-> ---
->  kernel/sys.c |    2 ++
->  1 file changed, 2 insertions(+)
-> 
-> --- linux-2.6.33-rc7.orig/kernel/sys.c
-> +++ linux-2.6.33-rc7/kernel/sys.c
-> @@ -222,6 +222,7 @@ SYSCALL_DEFINE2(getpriority, int, which,
->  	if (which > PRIO_USER || which < PRIO_PROCESS)
->  		return -EINVAL;
-> 
-> +	rcu_read_lock();
->  	read_lock(&tasklist_lock);
->  	switch (which) {
->  		case PRIO_PROCESS:
-> @@ -267,6 +268,7 @@ SYSCALL_DEFINE2(getpriority, int, which,
->  	}
->  out_unlock:
->  	read_unlock(&tasklist_lock);
-> +	rcu_read_unlock();
-> 
->  	return retval;
->  }
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-security-module" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
