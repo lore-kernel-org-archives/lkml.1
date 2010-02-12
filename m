@@ -1,66 +1,64 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757658Ab0BLAZJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 19:25:09 -0500
-Received: from fisica.ufpr.br ([200.17.209.129]:37674 "EHLO fisica.ufpr.br"
+	id S1757667Ab0BLA1B (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 19:27:01 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:51672 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757348Ab0BLAZH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 19:25:07 -0500
-X-Greylist: delayed 607 seconds by postgrey-1.27 at vger.kernel.org; Thu, 11 Feb 2010 19:25:07 EST
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1757523Ab0BLA1A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 19:27:00 -0500
+Subject: Re: [PATCH 1/1] ftrace - add support for tracing_thresh to
+ function_graph tracer
+From: Steven Rostedt <srostedt@redhat.com>
+To: Tim Bird <tim.bird@am.sony.com>
+Cc: linux kernel <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+In-Reply-To: <4B749A42.2080703@am.sony.com>
+References: <4B733721.3030503@am.sony.com>  <4B7338BF.1070505@am.sony.com>
+	 <1265929831.2737.340.camel@localhost.localdomain>
+	 <4B749A42.2080703@am.sony.com>
+Content-Type: text/plain
+Organization: Red Hat
+Date: Thu, 11 Feb 2010 19:26:55 -0500
+Message-Id: <1265934415.2737.344.camel@localhost.localdomain>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Message-ID: <19316.40321.624092.859225@fisica.ufpr.br>
-Date: Thu, 11 Feb 2010 22:14:57 -0200
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: "J.H." <warthog9@kernel.org>, "FTPAdmin Kernel.org" <ftpadmin@kernel.org>,
-       users@kernel.org, lasse.collin@tukaani.org,
-       linux-kernel <linux-kernel@vger.kernel.org>, mirrors@kernel.org
-Subject: Re: [kernel.org mirrors] XZ Migration discussion
-In-Reply-To: <4B745EFD.9030805@zytor.com>
-References: <4B744E13.8040004@kernel.org>
-	<4B745EFD.9030805@zytor.com>
-X-Mailer: VM 8.0.13 under 23.1.1 (i486-pc-linux-gnu)
-From: carlos@fisica.ufpr.br (Carlos Carvalho)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin (hpa@zytor.com) wrote on 11 February 2010 11:48:
- >On 02/11/2010 10:36 AM, J.H. wrote:
- >> 
- >> Option 1)
- >> 
- >> Leave gz as the master, and migrate bz2 to xz.  This will happen in
- >> stages obviously. with bz2 ultimately being phased out.
- >> 
- >> 	Migration option 1)
- >> 
- >> 		All new content would be provided in .bz2 and .xz with
- >> 		an ultimate date set that the .bz2 files would stop
- >> 		being generated with new content.  This would leave all
- >> 		existing content alone and it would not be a migration
- >> 		of the current .bz2 files to xz
- >> 
- >> 	Migration option 2)
- >> 
- >> 		At some point there would be a mass conversion of all
- >> 		existing content to include .bz2 and .xz.  These would
- >> 		be run in parallel for a time period until it was
- >> 		determined that .bz2 was no longer needed and it would
- >> 		be removed from the servers leaving .gz and .xz
- >> Option 2)
- >> 
- >> Convert the master data from gz to bz2 and use xz as the new file
- >> format.  This has the downside of causing more tool churn as it means
- >> the kernel developers will have to eventually convert from gz to bz2,
- >> which means for a time there will be nag e-mails if you upload gz
- >> instead of bz2 and such.  It would also mean that we (kernel.org) would
- >> need to be able to support .gz and .bz2 as master data for a time.
- >> 
- >> Migration options are identical to Option 1 more or less, with either
- >> just new content getting converted, or all content getting converted.
- >
- >My personal recommendation would be for Option 1, Migration option 2.
+On Thu, 2010-02-11 at 16:01 -0800, Tim Bird wrote:
+> On 02/11/2010 03:10 PM, Steven Rostedt wrote:
+> > On Wed, 2010-02-10 at 14:52 -0800, Tim Bird wrote:
+> >>  static struct tracer_opt trace_opts[] = {
+> >>  	/* Display overruns? (for self-debug purpose) */
+> >> @@ -53,6 +54,8 @@ static struct tracer_opt trace_opts[] = {
+> >>  	{ TRACER_OPT(funcgraph-duration, TRACE_GRAPH_PRINT_DURATION) },
+> >>  	/* Display absolute time of an entry */
+> >>  	{ TRACER_OPT(funcgraph-abstime, TRACE_GRAPH_PRINT_ABS_TIME) },
+> >> +	/* Display function name on exit, instead of just closing brace */
+> >> +	{ TRACER_OPT(funcgraph-exit, TRACE_GRAPH_PRINT_FUNC_EXIT) },
+> >>  	{ } /* Empty entry */
+> > 
+> > I wonder if this should be enabled on start up of the function graph
+> > tracer if the threshold is set?
+> > 
+> > Otherwise people will wonder WTF?
+> 
+> Indeed.  I'm not sure exactly how to do this.
+> 
+> Would it be better to set the option when current_tracer
+> is set with 'function_graph', and tracing_thresh is non-zero?
 
-Agreed (speaking for the ftp.br.kernel.org mirror).
+The above is the only one I would do. If tracing_thresh is non-zero when
+the function_graph tracer is set, on the start up code in the function
+tracer (graph_trace_init).
+
+Just enable the option if trace_thresh is set. If you enable function
+graph tracer and have the trace_thresh set, then this type of tracing
+starts immediately. It also keeps the code nicely in the
+trace_function_graph.c file, and does not need to touch the setting of
+tracing_thresh.
+
+-- Steve
+
+
