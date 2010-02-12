@@ -1,100 +1,101 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757060Ab0BLQSn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 11:18:43 -0500
-Received: from mga10.intel.com ([192.55.52.92]:26743 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753151Ab0BLQSm (ORCPT
+	id S1757131Ab0BLQTK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 11:19:10 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:48872 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753151Ab0BLQTI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 11:18:42 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,462,1262592000"; 
-   d="scan'208";a="540258653"
-Date: Fri, 12 Feb 2010 17:19:59 +0100
-From: Samuel Ortiz <sameo@linux.intel.com>
-To: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
-Cc: Balaji T K <balajitk@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>,
-       Rajendra Nayak <rnayak@ti.com>,
-       Kevin Hilman <khilman@deeprootsystems.com>,
-       linux-kernel@vger.kernel.org, vamos@i4.informatik.uni-erlangen.de
-Subject: Re: [PATCH] typo in kernel source (INPUT_TWL4030_PWBUTTON) (resend)
-Message-ID: <20100212161951.GB2906@sortiz.org>
-References: <20100212151946.GA2502@faui49.informatik.uni-erlangen.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100212151946.GA2502@faui49.informatik.uni-erlangen.de>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Fri, 12 Feb 2010 11:19:08 -0500
+X-Authority-Analysis: v=1.0 c=1 a=he6NB3zS91kA:10 a=W6fNSXVXEzn_cn_DNbQA:9 a=rlGTnkk32pC9KNL_t7fJxyKYF-MA:4
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: Re: [PATCH 08/11] readahead: add tracing event
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       linux-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20100202153317.365099890@intel.com>
+References: <20100202152835.683907822@intel.com>
+	 <20100202153317.365099890@intel.com>
+Content-Type: text/plain; charset="ISO-8859-15"
+Date: Fri, 12 Feb 2010 11:19:05 -0500
+Message-ID: <1265991545.24271.36.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Christoph,
+On Tue, 2010-02-02 at 23:28 +0800, Wu Fengguang wrote:
+> plain text document attachment (readahead-tracer.patch)
+> Example output:
 
-On Fri, Feb 12, 2010 at 04:19:46PM +0100, Christoph Egger wrote:
-> Hi all!
-> 
-> 	Accoring to my mail-log and a quick look at the mfd tree this
-> patch seems to have been lost. I guess it just has been missed among
-> other stuff or is anything wrong with it?
-I applied this patch yesterday, to my for-next branch.
+> +	TP_printk("readahead-%s(dev=%d:%d, ino=%lu, "
+> +		  "req=%lu+%lu, ra=%lu+%d-%d, async=%d) = %d",
+> +			ra_pattern_names[__entry->pattern],
 
-Cheers,
-Samuel.
+The above totally breaks any parsing by tools. We have already have a
+way to map values to strings with __print_symbolic():
 
+		__print_symbolic(__entry->pattern,
+			{ RA_PATTERN_INITIAL, "initial" },
+			{ RA_PATTERN_SUBSEQUENT, "subsequent"},
+			{ RA_PATTERN_CONTEXT, "context"},
+			{ RA_PATTERN_THRASH, "thrash"},
+			{ RA_PATTERN_MMAP_AROUND, "around"},
+			{ RA_PATTERN_FADVISE, "fadvise" },
+			{ RA_PATTERN_RANDOM, "random"},
+			{ RA_PATTERN_ALL, "all" }),
 
-> ----
-> 	As part of the VAMOS[0] research project at the University of
-> Erlangen we're checking referential integrity between kernel KConfig
-> options and in-code Conditional blocks.
-> 
-> 	While working on this we detected a spelling error in
-> drivers/mfd/twl-core.c which can be corrected using the attached
-> patch.
-> 
-> 	Please keep me informed of this patch getting confirmed /
-> merged so we can keep track of it.
-> 
-> Regards
-> 
-> 	Christoph Egger
-> 
-> [0] http://vamos1.informatik.uni-erlangen.de/
-> 
-> ----
-> From 83cadb82b627f35333742d1585c2f63e40e76ef4 Mon Sep 17 00:00:00 2001
-> From: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
-> Date: Wed, 13 Jan 2010 10:56:27 +0100
-> Subject: [PATCH] Correct spelling for config INPUT_TWL4030_PWRBUTTON
-> 
-> While the non-module variant of the TWL4030 Powerbutton is querried
-> with INPUT_TWL4030_PWRBUTTON, the _MODULE variant misses the R and is
-> checking therefor INPUT_TWL4030_PWBUTTON which won't work as there's
-> nosuch option in kconfig
-> 
-> Signed-off-by: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
-> ---
->  drivers/mfd/twl-core.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/mfd/twl-core.c b/drivers/mfd/twl-core.c
-> index 2a76065..aeaeac4 100644
-> --- a/drivers/mfd/twl-core.c
-> +++ b/drivers/mfd/twl-core.c
-> @@ -129,7 +129,7 @@
->  #define TWL_NUM_SLAVES		4
+see include/trace/irq.h for another example.
+
+-- Steve
+
+> +			MAJOR(__entry->dev),
+> +			MINOR(__entry->dev),
+> +			__entry->ino,
+> +			__entry->offset,
+> +			__entry->req_size,
+> +			__entry->start,
+> +			__entry->size,
+> +			__entry->async_size,
+> +			__entry->start > __entry->offset,
+> +			__entry->actual)
+> +);
+> +
+> +#endif /* _TRACE_READAHEAD_H */
+> +
+> +/* This part must be outside protection */
+> +#include <trace/define_trace.h>
+> --- linux.orig/mm/readahead.c	2010-02-01 21:55:43.000000000 +0800
+> +++ linux/mm/readahead.c	2010-02-01 21:57:25.000000000 +0800
+> @@ -19,11 +19,25 @@
+>  #include <linux/pagevec.h>
+>  #include <linux/pagemap.h>
 >  
->  #if defined(CONFIG_INPUT_TWL4030_PWRBUTTON) \
-> -	|| defined(CONFIG_INPUT_TWL4030_PWBUTTON_MODULE)
-> +	|| defined(CONFIG_INPUT_TWL4030_PWRBUTTON_MODULE)
->  #define twl_has_pwrbutton()	true
->  #else
->  #define twl_has_pwrbutton()	false
-> -- 
-> 1.6.3.3
-> 
-> 
+> +#define CREATE_TRACE_POINTS
+> +#include <trace/events/readahead.h>
+> +
+>  /*
+>   * Set async size to 1/# of the thrashing threshold.
+>   */
+>  #define READAHEAD_ASYNC_RATIO	8
+>  
+> +const char * const ra_pattern_names[] = {
+> +	[RA_PATTERN_INITIAL]		= "initial",
+> +	[RA_PATTERN_SUBSEQUENT]		= "subsequent",
+> +	[RA_PATTERN_CONTEXT]		= "context",
+> +	[RA_PATTERN_THRASH]		= "thrash",
+> +	[RA_PATTERN_MMAP_AROUND]	= "around",
+> +	[RA_PATTERN_FADVISE]		= "fadvise",
+> +	[RA_PATTERN_RANDOM]		= "random",
+> +	[RA_PATTERN_ALL]		= "all",
+> +};
+> +
 
--- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
+
