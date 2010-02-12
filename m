@@ -1,84 +1,94 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751752Ab0BLIwp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 03:52:45 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:59948 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750883Ab0BLIwn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 03:52:43 -0500
-Date: Fri, 12 Feb 2010 09:52:31 +0100
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Alessandro Zummo <a.zummo@towertech.it>, rtc-linux@googlegroups.com,
-       Paul Gortmaker <p_gortmaker@yahoo.com>, linux-kernel@vger.kernel.org
-Subject: Re: [rtc-linux] [PATCH RESEND] rtc/hctosys: only claim the RTC
-	provided  the system time if it did
-Message-ID: <20100212085231.GA21947@pengutronix.de>
-References: <1265663419-10165-1-git-send-email-u.kleine-koenig@pengutronix.de> <1265885549-23920-1-git-send-email-u.kleine-koenig@pengutronix.de> <20100211115700.12853990@linux.lan.towertech.it> <20100211144240.8fbec55e.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20100211144240.8fbec55e.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+	id S1751932Ab0BLJCV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 04:02:21 -0500
+Received: from ozlabs.org ([203.10.76.45]:56228 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750931Ab0BLJCT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Feb 2010 04:02:19 -0500
+From: Michael Neuling <mikey@neuling.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, Helge Deller <deller@gmx.de>,
+       Americo Wang <xiyou.wangcong@gmail.com>,
+       Anton Blanchard <anton@samba.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Create initial stack independent of PAGE_SIZE
+In-reply-to: <20100212161305.73B2.A69D9226@jp.fujitsu.com>
+References: <20100209132529.bfc455b7.akpm@linux-foundation.org> <31586.1265953455@neuling.org> <20100212161305.73B2.A69D9226@jp.fujitsu.com>
+Comments: In-reply-to KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+   message dated "Fri, 12 Feb 2010 16:20:40 +0900."
+X-Mailer: MH-E 8.2; nmh 1.3; GNU Emacs 23.1.1
+Date: Fri, 12 Feb 2010 20:02:16 +1100
+Message-ID: <2593.1265965336@neuling.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Andrew,
-
-On Thu, Feb 11, 2010 at 02:42:40PM -0800, Andrew Morton wrote:
-> On Thu, 11 Feb 2010 11:57:00 +0100
-> Alessandro Zummo <a.zummo@towertech.it> wrote:
+In message <20100212161305.73B2.A69D9226@jp.fujitsu.com> you wrote:
+> > Currently we create the initial stack based on the PAGE_SIZE.  This is
+> > unnecessary.  
 > 
-> > On Thu, 11 Feb 2010 11:52:29 +0100
-> > Uwe Kleine-K__nig <u.kleine-koenig@pengutronix.de> wrote:
+> I don't think this is enough explanation. In past mail, you described
+> why page size dependency is harmful. I hope you add it into the patch
+> description.
+
+I don't think it's harmful, it's just irrelevant.  Stack size is
+independent of page size.  
+
+> IOW, we don't need to change the unnecessary-but-non-harmful behavior.
+> 
 > > 
+> > This creates this initial stack independent of the PAGE_SIZE.
 > > 
-> > > Signed-off-by: Uwe Kleine-K__nig <u.kleine-koenig@pengutronix.de>
-> > > ---
-> > > Hello,
-> > > 
-> > > this time the patch is complete.
-> > > 
-> > > What do you think about it?
+> > It also bumps up the number of 4k pages allocated from 20 to 32, to
+> > align with 64K page systems.
 > 
-> I do dislike having to trawl through the patch trying to work out what
-> the changelog forgot to tell me.
-> 
-> What problem is being fixed here?
-> 
-> What is the user-observable manifestation of that problem?
-> 
-> How does the patch fix it?
-> 
-> Stuff like that!
-What do you think about:
+> Why do we need page-aligning? Do you mean this code doesn't works on
+> 128K (or more larger) page systems?
 
----->8----
-rtc/hctosys: only claim the RTC provided the system time if it did
+If the "random" setting is not a common multiple of the 4k and 64k
+pages, they will end up getting aligned differently, hence causing what
+we are trying to avoid in the first place with this patch.
 
-Without this patch /sys/class/rtc/$CONFIG_RTC_HCTOSYS_DEVICE/hctosys
-contains a 1 (meaning "This rtc was used to initialize the system
-clock") even if reading the time at bootup failed.
+I should probably add this as a comment in the code comment?
 
-Moreover change error handling in rtc_hctosys() to use goto and so
-reduce the indention level.
----->8----
+Mikey
 
-> >  looks nice but I'll have to give a deeper look.
-> >  will probably queue for the next merge window
 > 
-> I merged it with a "needs Alessandro ack" note-to-self.
-fine, thanks
-Uwe
-
--- 
-Pengutronix e.K.                           | Uwe Kleine-König            |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+> 
+> > 
+> > Signed-off-by: Michael Neuling <mikey@neuling.org>
+> > ---
+> > This is the second half of my original patch. This can be targeted for
+> > 2.6.34 as it's just a cleanup.
+> > 
+> > Tested on PPC64 with 4k and 64k pages.
+> > 
+> >  fs/exec.c |    4 +---
+> >  1 file changed, 1 insertion(+), 3 deletions(-)
+> > 
+> > Index: linux-2.6-ozlabs/fs/exec.c
+> > ===================================================================
+> > --- linux-2.6-ozlabs.orig/fs/exec.c
+> > +++ linux-2.6-ozlabs/fs/exec.c
+> > @@ -554,8 +554,6 @@ static int shift_arg_pages(struct vm_are
+> >  	return 0;
+> >  }
+> >  
+> > -#define EXTRA_STACK_VM_PAGES	20	/* random */
+> > -
+> >  /*
+> >   * Finalizes the stack vm_area_struct. The flags and permissions are updat
+ed,
+> >   * the stack is optionally relocated, and some extra space is added.
+> > @@ -630,7 +628,7 @@ int setup_arg_pages(struct linux_binprm 
+> >  			goto out_unlock;
+> >  	}
+> >  
+> > -	stack_expand = EXTRA_STACK_VM_PAGES * PAGE_SIZE;
+> > +	stack_expand = 131072UL; /* randomly 32*4k (or 2*64k) pages */
+> >  	stack_size = vma->vm_end - vma->vm_start;
+> >  	/*
+> >  	 * Align this down to a page boundary as expand_stack
+> 
+> 
+> 
