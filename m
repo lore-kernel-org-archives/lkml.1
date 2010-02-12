@@ -1,22 +1,19 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757713Ab0BLVCy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 16:02:54 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:28664 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751382Ab0BLVCv (ORCPT
+	id S1757751Ab0BLVCz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 16:02:55 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:43229 "EHLO
+	rcsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755607Ab0BLVCv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 12 Feb 2010 16:02:51 -0500
-Date: Fri, 12 Feb 2010 13:02:29 -0800
+Date: Fri, 12 Feb 2010 13:02:23 -0800
 From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Huang Shijie <shijie8@gmail.com>, Kang Yong <kangyong@telegent.com>,
-       Zhang Xiaobing <xbzhang@telegent.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>, linville@tuxdriver.com
 Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       linux-media@vger.kernel.org
-Subject: [PATCH -next] media/video/tlg2300: fix build when CONFIG_PM=n
-Message-Id: <20100212130229.222d3777.randy.dunlap@oracle.com>
+       linux-wireless@vger.kernel.org
+Subject: [PATCH -next] wireless: airo_cs build fixes
+Message-Id: <20100212130223.ac3ac46b.randy.dunlap@oracle.com>
 In-Reply-To: <20100212181304.a7bd9a63.sfr@canb.auug.org.au>
 References: <20100212181304.a7bd9a63.sfr@canb.auug.org.au>
 Organization: Oracle Linux Eng.
@@ -26,83 +23,52 @@ Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 X-Source-IP: acsmt354.oracle.com [141.146.40.154]
 X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090202.4B75C1E8.0198:SCFMA4539814,ss=1,fgs=0
+X-CT-RefId: str=0001.0A090201.4B75C1ED.00E7:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Randy Dunlap <randy.dunlap@oracle.com>
 
-When CONFIG_PM is not enabled, tlg2300 has build errors,
-so handle that case, mostly via stubs.
+When WEXT_PRIV is not enabled, airo_cs has build errors.
+It needs to include net/iw_handler.h and it should select
+WEXT_PRIV, like the airo driver does.
 
-drivers/media/video/tlg2300/pd-alsa.c:237: error: 'struct poseidon' has no member named 'msg'
-drivers/media/video/tlg2300/pd-main.c:412: error: implicit declaration of function 'find_old_poseidon'
-drivers/media/video/tlg2300/pd-main.c:418: error: implicit declaration of function 'set_map_flags'
-drivers/media/video/tlg2300/pd-main.c:462: error: implicit declaration of function 'get_pd'
+drivers/net/wireless/airo.c:7655: error: unknown field 'num_private' specified in initializer
+drivers/net/wireless/airo.c:7655: warning: initialization makes pointer from integer without a cast
+drivers/net/wireless/airo.c:7656: error: unknown field 'num_private_args' specified in initializer
+drivers/net/wireless/airo.c:7656: warning: excess elements in struct initializer
+drivers/net/wireless/airo.c:7656: warning: (near initialization for 'airo_handler_def')
+drivers/net/wireless/airo.c:7658: error: unknown field 'private' specified in initializer
+drivers/net/wireless/airo.c:7658: warning: initialization makes integer from pointer without a cast
+drivers/net/wireless/airo.c:7658: error: initializer element is not computable at load time
+drivers/net/wireless/airo.c:7658: error: (near initialization for 'airo_handler_def.num_standard')
+drivers/net/wireless/airo.c:7659: error: unknown field 'private_args' specified in initializer
+drivers/net/wireless/airo.c:7659: warning: initialization from incompatible pointer type
 
 Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: 	Huang Shijie <shijie8@gmail.com>
-Cc: 	Kang Yong <kangyong@telegent.com>
-Cc: 	Zhang Xiaobing <xbzhang@telegent.com>
 ---
- drivers/media/video/tlg2300/pd-common.h |    4 ++++
- drivers/media/video/tlg2300/pd-main.c   |   19 ++++++++++++++-----
- 2 files changed, 18 insertions(+), 5 deletions(-)
+ drivers/net/wireless/Kconfig |    1 +
+ drivers/net/wireless/airo.c  |    1 +
+ 2 files changed, 2 insertions(+)
 
---- linux-next-20100212.orig/drivers/media/video/tlg2300/pd-common.h
-+++ linux-next-20100212/drivers/media/video/tlg2300/pd-common.h
-@@ -254,7 +254,11 @@ void destroy_video_device(struct video_d
- extern int debug_mode;
- void set_debug_mode(struct video_device *vfd, int debug_mode);
+--- linux-next-20100212.orig/drivers/net/wireless/airo.c
++++ linux-next-20100212/drivers/net/wireless/airo.c
+@@ -51,6 +51,7 @@
+ #include <linux/freezer.h>
  
-+#ifdef CONFIG_PM
- #define in_hibernation(pd) (pd->msg.event == PM_EVENT_FREEZE)
-+#else
-+#define in_hibernation(pd) (0)
-+#endif
- #define get_pm_count(p) (atomic_read(&(p)->interface->pm_usage_cnt))
+ #include <linux/ieee80211.h>
++#include <net/iw_handler.h>
  
- #define log(a, ...) printk(KERN_DEBUG "\t[ %s : %.3d ] "a"\n", \
---- linux-next-20100212.orig/drivers/media/video/tlg2300/pd-main.c
-+++ linux-next-20100212/drivers/media/video/tlg2300/pd-main.c
-@@ -255,6 +255,11 @@ out:
- 	return ret;
- }
+ #include "airo.h"
  
-+static inline struct poseidon *get_pd(struct usb_interface *intf)
-+{
-+	return usb_get_intfdata(intf);
-+}
-+
- #ifdef CONFIG_PM
- /* one-to-one map : poseidon{} <----> usb_device{}'s port */
- static inline void set_map_flags(struct poseidon *pd, struct usb_device *udev)
-@@ -303,11 +308,6 @@ static inline int is_working(struct pose
- 	return get_pm_count(pd) > 0;
- }
- 
--static inline struct poseidon *get_pd(struct usb_interface *intf)
--{
--	return usb_get_intfdata(intf);
--}
--
- static int poseidon_suspend(struct usb_interface *intf, pm_message_t msg)
- {
- 	struct poseidon *pd = get_pd(intf);
-@@ -366,6 +366,15 @@ static void hibernation_resume(struct wo
- 	if (pd->pm_resume)
- 		pd->pm_resume(pd);
- }
-+#else /* CONFIG_PM is not enabled: */
-+static inline struct poseidon *find_old_poseidon(struct usb_device *udev)
-+{
-+	return NULL;
-+}
-+
-+static inline void set_map_flags(struct poseidon *pd, struct usb_device *udev)
-+{
-+}
- #endif
- 
- static bool check_firmware(struct usb_device *udev, int *down_firmware)
+--- linux-next-20100212.orig/drivers/net/wireless/Kconfig
++++ linux-next-20100212/drivers/net/wireless/Kconfig
+@@ -112,6 +112,7 @@ config AIRO_CS
+ 	depends on PCMCIA && (BROKEN || !M32R)
+ 	select WIRELESS_EXT
+ 	select WEXT_SPY
++	select WEXT_PRIV
+ 	select CRYPTO
+ 	select CRYPTO_AES
+ 	---help---
