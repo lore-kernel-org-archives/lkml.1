@@ -1,87 +1,138 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756325Ab0BLOgw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 09:36:52 -0500
-Received: from e36.co.us.ibm.com ([32.97.110.154]:60989 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753500Ab0BLOgu (ORCPT
+	id S1756494Ab0BLOlS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 09:41:18 -0500
+Received: from liberdade.minaslivre.org ([72.232.254.139]:60175 "EHLO
+	liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753473Ab0BLOlR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 09:36:50 -0500
-Date: Fri, 12 Feb 2010 08:36:23 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Tejun Heo <tj@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Greg KH <gregkh@suse.de>,
-       Eric Paris <eparis@redhat.com>, lkml <linux-kernel@vger.kernel.org>,
-       Xiaotian Feng <xtfeng@gmail.com>, Dave Hansen <dave@linux.vnet.ibm.com>
-Subject: Re: [PATCH] idr: fix a critical misallocation bug, take#2
-Message-ID: <20100212143623.GA10256@us.ibm.com>
-References: <4B750037.5020608@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B750037.5020608@kernel.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Fri, 12 Feb 2010 09:41:17 -0500
+From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+To: linux-wireless@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org,
+       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Simon Raffeiner <sturmflut@lieberbiber.de>,
+       Andrey Yurovsky <andrey@cozybit.com>,
+       Javier Cardona <javier@cozybit.com>
+Subject: [PATCH v2] nl80211: does not allow NEW_STATION and DEL_STATION for mesh
+Date: Fri, 12 Feb 2010 12:34:50 -0200
+Message-Id: <1265985290-1516-1-git-send-email-cascardo@holoscopio.com>
+X-Mailer: git-send-email 1.6.6.1
+In-Reply-To: <1265978241-1601-1-git-send-email-cascardo@holoscopio.com>
+References: <1265978241-1601-1-git-send-email-cascardo@holoscopio.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Tejun Heo (tj@kernel.org):
-> This is retry of reverted 859ddf09743a8cc680af33f7259ccd0fd36bfe9d
-> which contained two bugs.
-> 
-> * pa[idp->layers] should be cleared even if it's not used by
->   sub_alloc() because it's used by mark idr_mark_full().
-> 
-> * The original condition check also assigned pa[l] to p which the new
->   code didn't do thus leaving p pointing at the wrong layer.
-> 
-> Both problems have been fixed and the idr code has received good
-> amount testing using userland testing setup where simple bitmap
-> allocator is run parallel to verify the result of idr allocation.
-> 
-> The bug this patch fixes is caused by sub_alloc() optimization path
-> bypassing out-of-room condition check and restarting allocation loop
-> with starting value higher than maximum allowed value.  For detailed
-> description, please read commit message of 859ddf09.
-> 
-> Signed-off-by: Tejun Heo <tj@kernel.org>
-> Based-on-patch-from: Eric Paris <eparis@redhat.com>
-> Reported-by: Eric Paris <eparis@redhat.com>
-> Tested-by: Stefan Lippers-Hollmann <s.l-h@gmx.de>
+As discussed in linux-wireless mailing list, adding and removing
+stations for mesh topologies is not necessary. Since doing it triggers
+bugs, the sugestion was to simply disable it.
 
-Full LTP still running, but this passes semget05 which is what
-crashed the last version.  So that's
+Tested using a custom iw command "station new". Works only after using
+hostapd. "station del" command also works.
 
-Tested-by: Serge Hallyn <serue@us.ibm.com>
+Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+Cc: Johannes Berg <johannes@sipsolutions.net>
+Cc: Simon Raffeiner <sturmflut@lieberbiber.de>
+Cc: Andrey Yurovsky <andrey@cozybit.com>
+Cc: Javier Cardona <javier@cozybit.com>
+---
 
-> ---
-> Heh... Embarrassingly, it turns out Eric's original patch is correct
-> and all I did was adding two mistakes. :-) I'm pretty sure this is the
-> correct fix and have tested it quite extensively.  But, given the
-> fragility of this thing, Andrew, can you please put it in your tree
-> and push it after 2.6.33 merge window opens?  Greg, please don't put
-> this into -stable until at least 2.6.33-rc2 seems okay.
-> 
-> Thank you.
-> 
->  lib/idr.c |    4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
-> 
-> diff --git a/lib/idr.c b/lib/idr.c
-> index 1cac726..0dc7822 100644
-> --- a/lib/idr.c
-> +++ b/lib/idr.c
-> @@ -156,10 +156,12 @@ static int sub_alloc(struct idr *idp, int *starting_id, struct idr_layer **pa)
->  			id = (id | ((1 << (IDR_BITS * l)) - 1)) + 1;
-> 
->  			/* if already at the top layer, we need to grow */
-> -			if (!(p = pa[l])) {
-> +			if (id >= 1 << (idp->layers * IDR_BITS)) {
->  				*starting_id = id;
->  				return IDR_NEED_TO_GROW;
->  			}
-> +			p = pa[l];
-> +			BUG_ON(!p);
-> 
->  			/* If we need to go up one layer, continue the
->  			 * loop; otherwise, restart from the top.
+Should be fixed now! Sorry for all the noise.
+
+---
+ net/wireless/nl80211.c |   49 ++++++++++++-----------------------------------
+ 1 files changed, 13 insertions(+), 36 deletions(-)
+
+diff --git a/net/wireless/nl80211.c b/net/wireless/nl80211.c
+index 5b79ecf..a95ab9e 100644
+--- a/net/wireless/nl80211.c
++++ b/net/wireless/nl80211.c
+@@ -2010,6 +2010,9 @@ static int nl80211_new_station(struct sk_buff *skb, struct genl_info *info)
+ 	if (!info->attrs[NL80211_ATTR_STA_SUPPORTED_RATES])
+ 		return -EINVAL;
+ 
++	if (!info->attrs[NL80211_ATTR_STA_AID])
++		return -EINVAL;
++
+ 	mac_addr = nla_data(info->attrs[NL80211_ATTR_MAC]);
+ 	params.supported_rates =
+ 		nla_data(info->attrs[NL80211_ATTR_STA_SUPPORTED_RATES]);
+@@ -2018,11 +2021,9 @@ static int nl80211_new_station(struct sk_buff *skb, struct genl_info *info)
+ 	params.listen_interval =
+ 		nla_get_u16(info->attrs[NL80211_ATTR_STA_LISTEN_INTERVAL]);
+ 
+-	if (info->attrs[NL80211_ATTR_STA_AID]) {
+-		params.aid = nla_get_u16(info->attrs[NL80211_ATTR_STA_AID]);
+-		if (!params.aid || params.aid > IEEE80211_MAX_AID)
+-			return -EINVAL;
+-	}
++	params.aid = nla_get_u16(info->attrs[NL80211_ATTR_STA_AID]);
++	if (!params.aid || params.aid > IEEE80211_MAX_AID)
++		return -EINVAL;
+ 
+ 	if (info->attrs[NL80211_ATTR_HT_CAPABILITY])
+ 		params.ht_capa =
+@@ -2037,6 +2038,12 @@ static int nl80211_new_station(struct sk_buff *skb, struct genl_info *info)
+ 	if (err)
+ 		goto out_rtnl;
+ 
++	if (dev->ieee80211_ptr->iftype != NL80211_IFTYPE_AP &&
++	    dev->ieee80211_ptr->iftype != NL80211_IFTYPE_AP_VLAN) {
++		err = -EINVAL;
++		goto out;
++	}
++
+ 	err = get_vlan(info, rdev, &params.vlan);
+ 	if (err)
+ 		goto out;
+@@ -2044,35 +2051,6 @@ static int nl80211_new_station(struct sk_buff *skb, struct genl_info *info)
+ 	/* validate settings */
+ 	err = 0;
+ 
+-	switch (dev->ieee80211_ptr->iftype) {
+-	case NL80211_IFTYPE_AP:
+-	case NL80211_IFTYPE_AP_VLAN:
+-		/* all ok but must have AID */
+-		if (!params.aid)
+-			err = -EINVAL;
+-		break;
+-	case NL80211_IFTYPE_MESH_POINT:
+-		/* disallow things mesh doesn't support */
+-		if (params.vlan)
+-			err = -EINVAL;
+-		if (params.aid)
+-			err = -EINVAL;
+-		if (params.ht_capa)
+-			err = -EINVAL;
+-		if (params.listen_interval >= 0)
+-			err = -EINVAL;
+-		if (params.supported_rates)
+-			err = -EINVAL;
+-		if (params.sta_flags_mask)
+-			err = -EINVAL;
+-		break;
+-	default:
+-		err = -EINVAL;
+-	}
+-
+-	if (err)
+-		goto out;
+-
+ 	if (!rdev->ops->add_station) {
+ 		err = -EOPNOTSUPP;
+ 		goto out;
+@@ -2113,8 +2091,7 @@ static int nl80211_del_station(struct sk_buff *skb, struct genl_info *info)
+ 		goto out_rtnl;
+ 
+ 	if (dev->ieee80211_ptr->iftype != NL80211_IFTYPE_AP &&
+-	    dev->ieee80211_ptr->iftype != NL80211_IFTYPE_AP_VLAN &&
+-	    dev->ieee80211_ptr->iftype != NL80211_IFTYPE_MESH_POINT) {
++	    dev->ieee80211_ptr->iftype != NL80211_IFTYPE_AP_VLAN) {
+ 		err = -EINVAL;
+ 		goto out;
+ 	}
+-- 
+1.6.6.1
+
