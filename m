@@ -1,116 +1,115 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757470Ab0BLTU3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 14:20:29 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:60968 "EHLO mx2.suse.de"
+	id S1757475Ab0BLTYB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 14:24:01 -0500
+Received: from bamako.nerim.net ([62.4.17.28]:54951 "EHLO bamako.nerim.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757310Ab0BLTU2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 14:20:28 -0500
-Message-ID: <4B75A9F7.4030607@suse.com>
-Date: Fri, 12 Feb 2010 14:20:23 -0500
-From: Jeff Mahoney <jeffm@suse.com>
-Organization: SUSE Labs, Novell, Inc
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100111 SUSE/3.0.1-1.1 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: [PATCH] delayacct: align to 8 byte boundary on 64-bit systems
-References: <4B75865B.8000307@suse.com> <20100212101957.9f4a4a3a.akpm@linux-foundation.org>
-In-Reply-To: <20100212101957.9f4a4a3a.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1754777Ab0BLTYA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Feb 2010 14:24:00 -0500
+Date: Fri, 12 Feb 2010 20:23:57 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: "J.H." <warthog9@kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "FTPAdmin Kernel.org" <ftpadmin@kernel.org>, users@kernel.org,
+       lasse.collin@tukaani.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       mirrors@kernel.org
+Subject: Re: [kernel.org users] XZ Migration discussion
+Message-ID: <20100212202357.6363d5af@hyperion.delvare>
+In-Reply-To: <4B75A5DC.3060803@kernel.org>
+References: <4B744E13.8040004@kernel.org>
+	<20100212150137.648dca7c@hyperion.delvare>
+	<alpine.LFD.2.00.1002120714320.7792@localhost.localdomain>
+	<4B75A5DC.3060803@kernel.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/12/2010 01:19 PM, Andrew Morton wrote:
-> On Fri, 12 Feb 2010 11:48:27 -0500
-> Jeff Mahoney <jeffm@suse.com> wrote:
+On Fri, 12 Feb 2010 11:02:52 -0800, J.H. wrote:
+> On 02/12/2010 07:21 AM, Linus Torvalds wrote:
+> > 
+> > 
+> > On Fri, 12 Feb 2010, Jean Delvare wrote:
+> >>
+> >> Maybe that's just me, but my main concern is neither download times nor
+> >> decompression times. My main concern is the access time to directory
+> >> indexes when browsing the kernel archive, because there are 5 entries
+> >> for every patch or tarball: .bz2, .bz2.sign, .gz, .gz.sign and .sign.
+> >> This is horribly slow.
+> > 
+> > This was actually the main reason for me personally to ask about just 
+> > dropping support for .gz files - not because I care deeply about how much 
+> > disk space kernel.org wastes, but because the long directory listings make 
+> > it slower for me to mentally index the directory.
 > 
->>  prepare_reply sets up an skb for the response. If I understand it correctly,
->>  the payload contains:
->>
->>  +--------------------------------+
->>  | genlmsghdr - 4 bytes           |
->>  +--------------------------------+
->>  | NLA header - 4 bytes           | /* Aggregate header */
->>  +-+------------------------------+
->>  | | NLA header - 4 bytes         | /* PID header */
->>  | +------------------------------+
->>  | | pid/tgid   - 4 bytes         |
-> 
-> So we put another four zero bytes in here and add four to the "PID header".
-> 
->>  | +------------------------------+
->>  | | NLA header - 4 bytes         | /* stats header */
->>  | + -----------------------------+ <- oops. aligned on 4 byte boundary
->>  | | struct taskstats - 328 bytes |
->>  +-+------------------------------+
->>
->>  The start of the taskstats struct must be 8 byte aligned on IA64 (and other
->>  systems with 8 byte alignment rules for 64-bit types) or runtime alignment
->>  warnings will be issued.
->>
->>  This patch pads the pid/tgid field out to sizeof(long), which forces
->>  the alignment of taskstats. The getdelays userspace code is ok with this
->>  since it assumes 32-bit pid/tgid and then honors that header's length field.
->>
->>  An array is used to avoid exposing kernel memory contents to userspace in the
->>  response.
->>
->> Signed-off-by: Jeff Mahoney <jeffm@suse.com>
->> ---
->>  kernel/taskstats.c |    8 +++++++-
->>  1 file changed, 7 insertions(+), 1 deletion(-)
->>
->> --- a/kernel/taskstats.c
->> +++ b/kernel/taskstats.c
->> @@ -362,6 +362,12 @@ static struct taskstats *mk_reply(struct
->>  	struct nlattr *na, *ret;
->>  	int aggr;
->>  
->> +	/* If we don't pad, we end up with alignment on a 4 byte boundary.
->> +	 * This causes lots of runtime warnings on systems requiring 8 byte
->> +	 * alignment */
->> +	u32 pids[2] = { pid, 0 };
->> +	int pid_size = ALIGN(sizeof(pid), sizeof(long));
->> +
->>  	aggr = (type == TASKSTATS_TYPE_PID)
->>  			? TASKSTATS_TYPE_AGGR_PID
->>  			: TASKSTATS_TYPE_AGGR_TGID;
->> @@ -369,7 +375,7 @@ static struct taskstats *mk_reply(struct
->>  	na = nla_nest_start(skb, aggr);
->>  	if (!na)
->>  		goto err;
->> -	if (nla_put(skb, type, sizeof(pid), &pid) < 0)
->> +	if (nla_put(skb, type, pid_size, pids) < 0)
->>  		goto err;
->>  	ret = nla_reserve(skb, TASKSTATS_TYPE_STATS, sizeof(struct taskstats));
->>  	if (!ret)
-> 
-> So any code which assumes that the pid/tgid field is four bytes long
-> will break.  Code which takes that length from the netlink message
-> header will work OK.
-> 
-> 32-bit architectures are unaltered.
-> 
-> Seems safe enough.  We'd be safer still if we didn't do this on 64-bit
-> architectures which don't need it.  ie: x86_64.  But if we do that we
-> add a risk that people will develop shoddy code which works on x86_64
-> and doesn't work on ia64.
+> It's probably worth keeping things like the .gz files around, if nothing
+> else for older distros, systems, etc that don't have xz yet (since it's
+> still relatively new)
 
-Is there a way to do that without needlessly complicating things? I
-didn't see any existing infrastructure to do that.
+Hardly a good reason IMHO. xz can be installed on these systems. When
+we switched to git, nobody had it and it did not stop us.
 
-Another option was to put an empty attribute in with a garbage type,
-which would add a 4 byte header - but even the getdelays code included
-with the kernel can't deal with that.
+> 
+> Breaking things out into directories or such might be the easiest way
+> with that
+> 
+> v2.6/
+> v2.6/2.6.23
 
-It's ugly all the way around.
+Yes.
 
--Jeff
+> v2.6/2.6.32.6
+
+I'd rather group all 2.6.32.* files together, so that the main index is
+as small as possible. We're adding one indirection step, so it should
+be fast.
+
+> 
+> etc
+> 
+> Would clean up the v2.6 directory a lot.
+
+> >> (...)
+> >> 4* Get rid of the LATEST-IS-* files. This is a small count, won't save
+> >> much, but these files seem totally useless to me these days.
+> > 
+> > Yeah, they also end up continually being stale.
+> 
+> Only thoughts there are that there seem to be a lot of automated
+> processes that rely on LATEST-IS-*.
+
+Care to give details? Given how often the old files get stuck, I am
+surprised any process can really rely on them. And I also can't really
+think of any automated process that would care.
+
+>  Personally I'd rather see them snag
+> the RSS feed and figure out what they want from there, but that may not
+> be completely feasible.
+
+There's RSS, there's a mailing list and there's a web page. Certainly
+one of these 3 methods would work.
+
+>  It also gives a quick indication as to what's
+> latest in the directory
+
+Sorting by time works just as well.
+
+> and a quick search on the page usually gets me
+> what I'm looking for when I do it.
+
+What's your workflow? I normally go to the download directory after
+either reading the kernel.org main page or some post on the announce
+mailing list. So I already know which version I am looking for. Having
+to search for "LATEST-IS" and then again for the version doesn't look
+terribly efficient.
+
+If we really want a helper to locate the latest version, I'd rather
+have a "latest" symbolic link pointing to the most recent v2.6.x
+subdirectory. Or maybe two, "latest-stable" and "latest-devel". Can be
+discussed...
 
 -- 
-Jeff Mahoney
-SUSE Labs
+Jean Delvare
