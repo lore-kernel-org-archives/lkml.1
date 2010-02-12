@@ -1,101 +1,115 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757131Ab0BLQTK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 11:19:10 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:48872 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753151Ab0BLQTI (ORCPT
+	id S1757165Ab0BLQVH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 11:21:07 -0500
+Received: from landau.phys.spbu.ru ([195.19.235.38]:45201 "EHLO
+	landau.phys.spbu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757140Ab0BLQVE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 11:19:08 -0500
-X-Authority-Analysis: v=1.0 c=1 a=he6NB3zS91kA:10 a=W6fNSXVXEzn_cn_DNbQA:9 a=rlGTnkk32pC9KNL_t7fJxyKYF-MA:4
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Subject: Re: [PATCH 08/11] readahead: add tracing event
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       linux-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20100202153317.365099890@intel.com>
-References: <20100202152835.683907822@intel.com>
-	 <20100202153317.365099890@intel.com>
-Content-Type: text/plain; charset="ISO-8859-15"
-Date: Fri, 12 Feb 2010 11:19:05 -0500
-Message-ID: <1265991545.24271.36.camel@gandalf.stny.rr.com>
+	Fri, 12 Feb 2010 11:21:04 -0500
+Date: Fri, 12 Feb 2010 19:20:59 +0300
+From: Kirill Smelkov <kirr@landau.phys.spbu.ru>
+To: acme@redhat.com, mingo@redhat.com, mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, efault@gmx.de,
+       tglx@linutronix.de, linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:perf/core] perf top: Fix annotate for userspace
+Message-ID: <20100212162059.GA30041@landau.phys.spbu.ru>
+References: <1265550376-12665-1-git-send-email-acme@infradead.org> <tip-ee11b90b12eb1ec25e1044bac861e90bfd19ec9e@git.kernel.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <tip-ee11b90b12eb1ec25e1044bac861e90bfd19ec9e@git.kernel.org>
+Organization: St.Petersburg State University
+User-Agent: Mutt/1.5.6i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-02-02 at 23:28 +0800, Wu Fengguang wrote:
-> plain text document attachment (readahead-tracer.patch)
-> Example output:
+On Sun, Feb 07, 2010 at 04:33:40PM +0000, tip-bot for Kirill Smelkov wrote:
+> Commit-ID:  ee11b90b12eb1ec25e1044bac861e90bfd19ec9e
+> Gitweb:     http://git.kernel.org/tip/ee11b90b12eb1ec25e1044bac861e90bfd19ec9e
+> Author:     Kirill Smelkov <kirr@landau.phys.spbu.ru>
+> AuthorDate: Sun, 7 Feb 2010 11:46:15 -0200
+> Committer:  Ingo Molnar <mingo@elte.hu>
+> CommitDate: Sun, 7 Feb 2010 17:30:20 +0100
+> 
+> perf top: Fix annotate for userspace
 
-> +	TP_printk("readahead-%s(dev=%d:%d, ino=%lu, "
-> +		  "req=%lu+%lu, ra=%lu+%d-%d, async=%d) = %d",
-> +			ra_pattern_names[__entry->pattern],
+[...]
 
-The above totally breaks any parsing by tools. We have already have a
-way to map values to strings with __print_symbolic():
+Arnaldo, Ingo, thanks for finally applying it
 
-		__print_symbolic(__entry->pattern,
-			{ RA_PATTERN_INITIAL, "initial" },
-			{ RA_PATTERN_SUBSEQUENT, "subsequent"},
-			{ RA_PATTERN_CONTEXT, "context"},
-			{ RA_PATTERN_THRASH, "thrash"},
-			{ RA_PATTERN_MMAP_AROUND, "around"},
-			{ RA_PATTERN_FADVISE, "fadvise" },
-			{ RA_PATTERN_RANDOM, "random"},
-			{ RA_PATTERN_ALL, "all" }),
+  ( though shouldn't, AuthorDate be ``Fri,  8 Jan 2010 15:23:08 +0300'',
+    just like in my post for this patch
+    http://marc.info/?l=linux-kernel&m=126295508002536&w=2 ?)
 
-see include/trace/irq.h for another example.
+----
 
--- Steve
+Also, could you please apply one last cosmetic patch from my original
+series
 
-> +			MAJOR(__entry->dev),
-> +			MINOR(__entry->dev),
-> +			__entry->ino,
-> +			__entry->offset,
-> +			__entry->req_size,
-> +			__entry->start,
-> +			__entry->size,
-> +			__entry->async_size,
-> +			__entry->start > __entry->offset,
-> +			__entry->actual)
-> +);
-> +
-> +#endif /* _TRACE_READAHEAD_H */
-> +
-> +/* This part must be outside protection */
-> +#include <trace/define_trace.h>
-> --- linux.orig/mm/readahead.c	2010-02-01 21:55:43.000000000 +0800
-> +++ linux/mm/readahead.c	2010-02-01 21:57:25.000000000 +0800
-> @@ -19,11 +19,25 @@
->  #include <linux/pagevec.h>
->  #include <linux/pagemap.h>
->  
-> +#define CREATE_TRACE_POINTS
-> +#include <trace/events/readahead.h>
-> +
->  /*
->   * Set async size to 1/# of the thrashing threshold.
->   */
->  #define READAHEAD_ASYNC_RATIO	8
->  
-> +const char * const ra_pattern_names[] = {
-> +	[RA_PATTERN_INITIAL]		= "initial",
-> +	[RA_PATTERN_SUBSEQUENT]		= "subsequent",
-> +	[RA_PATTERN_CONTEXT]		= "context",
-> +	[RA_PATTERN_THRASH]		= "thrash",
-> +	[RA_PATTERN_MMAP_AROUND]	= "around",
-> +	[RA_PATTERN_FADVISE]		= "fadvise",
-> +	[RA_PATTERN_RANDOM]		= "random",
-> +	[RA_PATTERN_ALL]		= "all",
-> +};
-> +
+http://marc.info/?l=linux-kernel&m=126295502702502&w=2
 
+
+That would logically complete my holiday journey to perf land.
+
+
+For convenience I'm providing this one last patch here (applies to
+tip/master cleanly).
+
+
+Thanks beforehand,
+Kirill
+
+
+From: Kirill Smelkov <kirr@landau.phys.spbu.ru>
+Subject: [PATCH 2/6] perf top: align help text on keys
+Date: Fri,  8 Jan 2010 15:23:05 +0300
+
+Mapped keys:
+        [d]     display refresh delay.                  (2)
+        [e]     display entries (lines).                (46)
+        [f]     profile display filter (count).         (5)
+        [F]     annotate display filter (percent).      (5%)
+        [s]     annotate symbol.                        (NULL)
+        [S]     stop annotation.
+        [K]     hide kernel_symbols symbols.            (no)
+        [U]     hide user symbols.                      (no)
+        [z]     toggle sample zeroing.                  (0)
+        [qQ]    quit.
+
+instead of
+
+Mapped keys:
+        [d]     display refresh delay.                  (2)
+        [e]     display entries (lines).                (46)
+        [f]     profile display filter (count).         (5)
+        [F]     annotate display filter (percent).      (5%)
+        [s]     annotate symbol.                        (NULL)
+        [S]     stop annotation.
+        [K]     hide kernel_symbols symbols.                    (no)
+        [U]     hide user symbols.                      (no)
+        [z]     toggle sample zeroing.                  (0)
+        [qQ]    quit.
+
+Signed-off-by: Kirill Smelkov <kirr@landau.phys.spbu.ru>
+---
+ tools/perf/builtin-top.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/tools/perf/builtin-top.c b/tools/perf/builtin-top.c
+index 9c7de93..9dc8070 100644
+--- a/tools/perf/builtin-top.c
++++ b/tools/perf/builtin-top.c
+@@ -704,7 +704,7 @@ static void print_mapped_keys(void)
+ 		fprintf(stdout, "\t[w]     toggle display weighted/count[E]r. \t(%d)\n", display_weighted ? 1 : 0);
+ 
+ 	fprintf(stdout,
+-		"\t[K]     hide kernel_symbols symbols.             \t(%s)\n",
++		"\t[K]     hide kernel_symbols symbols.     \t(%s)\n",
+ 		hide_kernel_symbols ? "yes" : "no");
+ 	fprintf(stdout,
+ 		"\t[U]     hide user symbols.               \t(%s)\n",
+-- 
+1.6.6.79.gd514e.dirty
 
