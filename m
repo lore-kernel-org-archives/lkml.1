@@ -1,11 +1,11 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757565Ab0BLACc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 19:02:32 -0500
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:45325 "EHLO e7.ny.us.ibm.com"
+	id S1757575Ab0BLACm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 19:02:42 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:39402 "EHLO e1.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757532Ab0BLABL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 19:01:11 -0500
+	id S1757530Ab0BLABK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 19:01:10 -0500
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
@@ -14,9 +14,9 @@ Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
        tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
        Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
        "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: [PATCH tip/core/rcu 10/13] security: apply lockdep-based checking to rcu_dereference() uses
-Date: Thu, 11 Feb 2010 16:00:36 -0800
-Message-Id: <1265932839-25899-10-git-send-email-paulmck@linux.vnet.ibm.com>
+Subject: [PATCH tip/core/rcu 04/13] rcu: disable lockdep checking in RCU list-traversal primitives
+Date: Thu, 11 Feb 2010 16:00:30 -0800
+Message-Id: <1265932839-25899-4-git-send-email-paulmck@linux.vnet.ibm.com>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <20100212000016.GA25781@linux.vnet.ibm.com>
 References: <20100212000016.GA25781@linux.vnet.ibm.com>
@@ -24,45 +24,86 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Apply lockdep-ified RCU primitives to key_gc_keyring() and
-keyring_destroy().
+The theory is that use of bare rcu_dereference() is more prone to error
+than use of the RCU list-traversal primitives.  Therefore, disable lockdep
+RCU read-side critical-section checking in these primitives for the time
+being.  Once all of the rcu_dereference() uses have been dealt with, it
+may be time to re-enable lockdep checking for the RCU list-traversal
+primitives.
 
-Cc: David Howells <dhowells@redhat.com>
 Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 ---
- security/keys/gc.c      |    3 ++-
- security/keys/keyring.c |    4 +++-
- 2 files changed, 5 insertions(+), 2 deletions(-)
+ include/linux/rculist.h       |   14 +++++++-------
+ include/linux/rculist_nulls.h |    4 ++--
+ 2 files changed, 9 insertions(+), 9 deletions(-)
 
-diff --git a/security/keys/gc.c b/security/keys/gc.c
-index 4770be3..1990231 100644
---- a/security/keys/gc.c
-+++ b/security/keys/gc.c
-@@ -77,7 +77,8 @@ static bool key_gc_keyring(struct key *keyring, time_t limit)
- 		goto dont_gc;
+diff --git a/include/linux/rculist.h b/include/linux/rculist.h
+index 1bf0f70..779d707 100644
+--- a/include/linux/rculist.h
++++ b/include/linux/rculist.h
+@@ -208,7 +208,7 @@ static inline void list_splice_init_rcu(struct list_head *list,
+  * primitives such as list_add_rcu() as long as it's guarded by rcu_read_lock().
+  */
+ #define list_entry_rcu(ptr, type, member) \
+-	container_of(rcu_dereference(ptr), type, member)
++	container_of(rcu_dereference_raw(ptr), type, member)
  
- 	/* scan the keyring looking for dead keys */
--	klist = rcu_dereference(keyring->payload.subscriptions);
-+	klist = rcu_dereference_check(keyring->payload.subscriptions,
-+				      lockdep_is_held(&key_serial_lock));
- 	if (!klist)
- 		goto dont_gc;
+ /**
+  * list_first_entry_rcu - get the first element from a list
+@@ -225,9 +225,9 @@ static inline void list_splice_init_rcu(struct list_head *list,
+ 	list_entry_rcu((ptr)->next, type, member)
  
-diff --git a/security/keys/keyring.c b/security/keys/keyring.c
-index 8ec0274..e814d21 100644
---- a/security/keys/keyring.c
-+++ b/security/keys/keyring.c
-@@ -151,7 +151,9 @@ static void keyring_destroy(struct key *keyring)
- 		write_unlock(&keyring_name_lock);
- 	}
+ #define __list_for_each_rcu(pos, head) \
+-	for (pos = rcu_dereference((head)->next); \
++	for (pos = rcu_dereference_raw((head)->next); \
+ 		pos != (head); \
+-		pos = rcu_dereference(pos->next))
++		pos = rcu_dereference_raw(pos->next))
  
--	klist = rcu_dereference(keyring->payload.subscriptions);
-+	klist = rcu_dereference_check(keyring->payload.subscriptions,
-+				      rcu_read_lock_held() ||
-+				      atomic_read(&keyring->usage) == 0);
- 	if (klist) {
- 		for (loop = klist->nkeys - 1; loop >= 0; loop--)
- 			key_put(klist->keys[loop]);
+ /**
+  * list_for_each_entry_rcu	-	iterate over rcu list of given type
+@@ -257,9 +257,9 @@ static inline void list_splice_init_rcu(struct list_head *list,
+  * as long as the traversal is guarded by rcu_read_lock().
+  */
+ #define list_for_each_continue_rcu(pos, head) \
+-	for ((pos) = rcu_dereference((pos)->next); \
++	for ((pos) = rcu_dereference_raw((pos)->next); \
+ 		prefetch((pos)->next), (pos) != (head); \
+-		(pos) = rcu_dereference((pos)->next))
++		(pos) = rcu_dereference_raw((pos)->next))
+ 
+ /**
+  * list_for_each_entry_continue_rcu - continue iteration over list of given type
+@@ -418,10 +418,10 @@ static inline void hlist_add_after_rcu(struct hlist_node *prev,
+  * as long as the traversal is guarded by rcu_read_lock().
+  */
+ #define hlist_for_each_entry_rcu(tpos, pos, head, member)		 \
+-	for (pos = rcu_dereference((head)->first);			 \
++	for (pos = rcu_dereference_raw((head)->first);			 \
+ 		pos && ({ prefetch(pos->next); 1; }) &&			 \
+ 		({ tpos = hlist_entry(pos, typeof(*tpos), member); 1; }); \
+-		pos = rcu_dereference(pos->next))
++		pos = rcu_dereference_raw(pos->next))
+ 
+ #endif	/* __KERNEL__ */
+ #endif
+diff --git a/include/linux/rculist_nulls.h b/include/linux/rculist_nulls.h
+index 589a409..b70ffe5 100644
+--- a/include/linux/rculist_nulls.h
++++ b/include/linux/rculist_nulls.h
+@@ -101,10 +101,10 @@ static inline void hlist_nulls_add_head_rcu(struct hlist_nulls_node *n,
+  *
+  */
+ #define hlist_nulls_for_each_entry_rcu(tpos, pos, head, member) \
+-	for (pos = rcu_dereference((head)->first);			 \
++	for (pos = rcu_dereference_raw((head)->first);			 \
+ 		(!is_a_nulls(pos)) &&			\
+ 		({ tpos = hlist_nulls_entry(pos, typeof(*tpos), member); 1; }); \
+-		pos = rcu_dereference(pos->next))
++		pos = rcu_dereference_raw(pos->next))
+ 
+ #endif
+ #endif
 -- 
 1.6.6
 
