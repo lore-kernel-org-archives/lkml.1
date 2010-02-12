@@ -1,193 +1,600 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932175Ab0BLWig (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 17:38:36 -0500
-Received: from mail.windriver.com ([147.11.1.11]:44163 "EHLO
+	id S932210Ab0BLWjZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 17:39:25 -0500
+Received: from mail.windriver.com ([147.11.1.11]:44127 "EHLO
 	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757812Ab0BLWgq (ORCPT
+	with ESMTP id S1757663Ab0BLWge (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 17:36:46 -0500
+	Fri, 12 Feb 2010 17:36:34 -0500
 From: Jason Wessel <jason.wessel@windriver.com>
 To: linux-kernel@vger.kernel.org
 Cc: kgdb-bugreport@lists.sourceforge.net, mingo@elte.hu,
        Jason Wessel <jason.wessel@windriver.com>,
-       Ralf Baechle <ralf@linux-mips.org>
-Subject: [PATCH 19/28] mips,kgdb: kdb low level trap catch and stack trace
-Date: Fri, 12 Feb 2010 16:35:34 -0600
-Message-Id: <1266014143-29444-20-git-send-email-jason.wessel@windriver.com>
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: [PATCH 14/28] kgdboc,keyboard: Keyboard driver for kdb with kgdb
+Date: Fri, 12 Feb 2010 16:35:29 -0600
+Message-Id: <1266014143-29444-15-git-send-email-jason.wessel@windriver.com>
 X-Mailer: git-send-email 1.6.4.rc1
 In-Reply-To: <1266014143-29444-1-git-send-email-jason.wessel@windriver.com>
 References: <1266014143-29444-1-git-send-email-jason.wessel@windriver.com>
-X-OriginalArrivalTime: 12 Feb 2010 22:36:20.0723 (UTC) FILETIME=[CC785C30:01CAAC33]
+X-OriginalArrivalTime: 12 Feb 2010 22:36:15.0973 (UTC) FILETIME=[C9A39150:01CAAC33]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The only way the debugger can handle a trap in inside rcu_lock,
-notify_die, or atomic_notifier_call_chain without a recursive fault is
-to have a low level "first opportunity handler" do_trap_or_bp() handler.
+This patch adds in the kdb PS/2 keyboard driver.  This was mostly a
+direct port from the original kdb where I cleaned up the code against
+checkpatch.pl and added the glue to stitch it into kgdb.
 
-Generally this will be something the vast majority of folks will not
-need, but for those who need it, it is added as a kernel .config
-option called KGDB_LOW_LEVEL_TRAP.
+This patch also enables early kdb debug via kgdbwait and the keyboard.
 
-Also added was a die notification for oops such that kdb can catch an
-oops for analysis.
+All the access to configure kdb using either a serial console or the
+keyboard is done via kgdboc.
 
-There appeared to be no obvious way to pass the struct pt_regs from
-the original exception back to the stack back tracer, so a special
-case was added to show_stack() for when kdb is active because you
-generally desire to generally look at the back trace of the original
-exception.
+If you want to use only the keyboard and want to break in early you
+would add to your kernel command arguments:
 
-CC: Ralf Baechle <ralf@linux-mips.org>
+    kgdboc=kbd kgdbwait
+
+If you wanted serial and or the keyboard access you could use:
+
+    kgdboc=kbd,ttyS0
+
+You can also configure kgdboc as a kernel module or at run time with
+the sysfs where you can activate and deactivate kgdb.
+
+Turn it on:
+    echo kbd,ttyS0 > /sys/module/kgdboc/parameters/kgdboc
+
+Turn it off:
+    echo "" > /sys/module/kgdboc/parameters/kgdboc
+
+CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
 ---
- arch/mips/include/asm/kgdb.h   |    2 ++
- arch/mips/kernel/kgdb.c        |   22 +++++++++++++++++++++-
- arch/mips/kernel/traps.c       |   13 +++++++++++++
- include/linux/kdb.h            |    3 +++
- kernel/debug/kdb/kdb_private.h |    1 -
- lib/Kconfig.kgdb               |    2 +-
- 6 files changed, 40 insertions(+), 3 deletions(-)
+ Documentation/kernel-parameters.txt |    8 +-
+ drivers/char/Makefile               |    1 +
+ drivers/char/kdb_keyboard.c         |  204 +++++++++++++++++++++++++++++++++++
+ drivers/char/kdb_keyboard.h         |  143 ++++++++++++++++++++++++
+ drivers/serial/kgdboc.c             |   61 +++++++++--
+ lib/Kconfig.kgdb                    |    7 ++
+ 6 files changed, 414 insertions(+), 10 deletions(-)
+ create mode 100644 drivers/char/kdb_keyboard.c
+ create mode 100644 drivers/char/kdb_keyboard.h
 
-diff --git a/arch/mips/include/asm/kgdb.h b/arch/mips/include/asm/kgdb.h
-index 48223b0..19002d6 100644
---- a/arch/mips/include/asm/kgdb.h
-+++ b/arch/mips/include/asm/kgdb.h
-@@ -38,6 +38,8 @@ extern int kgdb_early_setup;
- extern void *saved_vectors[32];
- extern void handle_exception(struct pt_regs *regs);
- extern void breakinst(void);
-+extern int kgdb_ll_trap(int cmd, const char *str,
-+			struct pt_regs *regs, long err, int trap, int sig);
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 736d456..f3be1e6 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -1103,9 +1103,11 @@ and is between 256 and 4096 characters. It is defined in the file
+ 			zone if it does not.
  
- #endif				/* __KERNEL__ */
+ 	kgdboc=		[HW] kgdb over consoles.
+-			Requires a tty driver that supports console polling.
+-			(only serial supported for now)
+-			Format: <serial_device>[,baud]
++			Requires a tty driver that supports console polling,
++			or a supported polling keyboard driver (non-usb).
++			Serial only format: <serial_device>[,baud]
++			keyboard only format: kbd
++			keyboard and serial format: kbd,<serial_device>[,baud]
  
-diff --git a/arch/mips/kernel/kgdb.c b/arch/mips/kernel/kgdb.c
-index 6ed4c83..9b78ff6 100644
---- a/arch/mips/kernel/kgdb.c
-+++ b/arch/mips/kernel/kgdb.c
-@@ -203,7 +203,7 @@ static int kgdb_mips_notify(struct notifier_block *self, unsigned long cmd,
- 	if (atomic_read(&kgdb_active) != -1)
- 		kgdb_nmicallback(smp_processor_id(), regs);
- 
--	if (kgdb_handle_exception(trap, compute_signal(trap), 0, regs))
-+	if (kgdb_handle_exception(trap, compute_signal(trap), cmd, regs))
- 		return NOTIFY_DONE;
- 
- 	if (atomic_read(&kgdb_setting_breakpoint))
-@@ -217,6 +217,26 @@ static int kgdb_mips_notify(struct notifier_block *self, unsigned long cmd,
- 	return NOTIFY_STOP;
- }
- 
-+#ifdef CONFIG_KGDB_LOW_LEVEL_TRAP
-+int kgdb_ll_trap(int cmd, const char *str,
-+		 struct pt_regs *regs, long err, int trap, int sig)
-+{
-+	struct die_args args = {
-+		.regs	= regs,
-+		.str	= str,
-+		.err	= err,
-+		.trapnr	= trap,
-+		.signr	= sig,
+ 	kmac=		[MIPS] korina ethernet MAC address.
+ 			Configure the RouterBoard 532 series on-chip
+diff --git a/drivers/char/Makefile b/drivers/char/Makefile
+index f957edf..dbc579e 100644
+--- a/drivers/char/Makefile
++++ b/drivers/char/Makefile
+@@ -13,6 +13,7 @@ obj-$(CONFIG_LEGACY_PTYS)	+= pty.o
+ obj-$(CONFIG_UNIX98_PTYS)	+= pty.o
+ obj-y				+= misc.o
+ obj-$(CONFIG_VT)		+= vt_ioctl.o vc_screen.o selection.o keyboard.o
++obj-$(CONFIG_KDB_KEYBOARD)	+= kdb_keyboard.o
+ obj-$(CONFIG_BFIN_JTAG_COMM)	+= bfin_jtag_comm.o
+ obj-$(CONFIG_CONSOLE_TRANSLATIONS) += consolemap.o consolemap_deftbl.o
+ obj-$(CONFIG_HW_CONSOLE)	+= vt.o defkeymap.o
+diff --git a/drivers/char/kdb_keyboard.c b/drivers/char/kdb_keyboard.c
+new file mode 100644
+index 0000000..95aa102
+--- /dev/null
++++ b/drivers/char/kdb_keyboard.c
+@@ -0,0 +1,204 @@
++/*
++ * Kernel Debugger Architecture Dependent Console I/O handler
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License.
++ *
++ * Copyright (c) 1999-2006 Silicon Graphics, Inc.  All Rights Reserved.
++ * Copyright (c) 2009 Wind River Systems, Inc.  All Rights Reserved.
++ */
 +
-+	};
-+
-+	if (!kgdb_io_module_registered)
-+		return NOTIFY_DONE;
-+
-+	return kgdb_mips_notify(NULL, cmd, &args);
-+}
-+#endif /* CONFIG_KGDB_LOW_LEVEL_TRAP */
-+
- static struct notifier_block kgdb_notifier = {
- 	.notifier_call = kgdb_mips_notify,
- };
-diff --git a/arch/mips/kernel/traps.c b/arch/mips/kernel/traps.c
-index 31b204b..241b0d1 100644
---- a/arch/mips/kernel/traps.c
-+++ b/arch/mips/kernel/traps.c
-@@ -26,6 +26,7 @@
- #include <linux/kgdb.h>
- #include <linux/kdebug.h>
- #include <linux/notifier.h>
 +#include <linux/kdb.h>
- 
- #include <asm/bootinfo.h>
- #include <asm/branch.h>
-@@ -184,6 +185,11 @@ void show_stack(struct task_struct *task, unsigned long *sp)
- 			regs.regs[29] = task->thread.reg29;
- 			regs.regs[31] = 0;
- 			regs.cp0_epc = task->thread.reg31;
-+#ifdef CONFIG_KGDB_KDB
-+		} else if (atomic_read(&kgdb_active) != -1 &&
-+			   kdb_current_regs) {
-+			memcpy(&regs, kdb_current_regs, sizeof(regs));
-+#endif /* CONFIG_KGDB_KDB */
- 		} else {
- 			prepare_frametrace(&regs);
- 		}
-@@ -358,6 +364,8 @@ void __noreturn die(const char * str, const struct pt_regs * regs)
- 	unsigned long dvpret = dvpe();
- #endif /* CONFIG_MIPS_MT_SMTC */
- 
-+	notify_die(DIE_OOPS, str, (struct pt_regs *)regs, SIGSEGV, 0, 0);
++#include <linux/keyboard.h>
++#include <linux/ctype.h>
++#include <linux/module.h>
++#include <linux/io.h>
++#include "kdb_keyboard.h"
 +
- 	console_verbose();
- 	spin_lock_irq(&die_lock);
- 	bust_spinlocks(1);
-@@ -698,6 +706,11 @@ static void do_trap_or_bp(struct pt_regs *regs, unsigned int code,
- 	siginfo_t info;
- 	char b[40];
- 
-+#ifdef CONFIG_KGDB_LOW_LEVEL_TRAP
-+	if (kgdb_ll_trap(DIE_TRAP, str, regs, code, 0, 0) == NOTIFY_STOP)
-+		return;
-+#endif /* CONFIG_KGDB_LOW_LEVEL_TRAP */
 +
- 	if (notify_die(DIE_TRAP, str, regs, code, 0, 0) == NOTIFY_STOP)
- 		return;
++static int kbd_exists;
++
++/*
++ * Check if the keyboard controller has a keypress for us.
++ * Some parts (Enter Release, LED change) are still blocking polled here,
++ * but hopefully they are all short.
++ */
++int kdb_get_kbd_char(void)
++{
++	int scancode, scanstatus;
++	static int shift_lock;	/* CAPS LOCK state (0-off, 1-on) */
++	static int shift_key;	/* Shift next keypress */
++	static int ctrl_key;
++	u_short keychar;
++
++	if (KDB_FLAG(NO_I8042) || KDB_FLAG(NO_VT_CONSOLE) ||
++	    (inb(KBD_STATUS_REG) == 0xff && inb(KBD_DATA_REG) == 0xff)) {
++		kbd_exists = 0;
++		return -1;
++	}
++	kbd_exists = 1;
++
++	if ((inb(KBD_STATUS_REG) & KBD_STAT_OBF) == 0)
++		return -1;
++
++	/*
++	 * Fetch the scancode
++	 */
++	scancode = inb(KBD_DATA_REG);
++	scanstatus = inb(KBD_STATUS_REG);
++
++	/*
++	 * Ignore mouse events.
++	 */
++	if (scanstatus & KBD_STAT_MOUSE_OBF)
++		return -1;
++
++	/*
++	 * Ignore release, trigger on make
++	 * (except for shift keys, where we want to
++	 *  keep the shift state so long as the key is
++	 *  held down).
++	 */
++
++	if (((scancode&0x7f) == 0x2a) || ((scancode&0x7f) == 0x36)) {
++		/*
++		 * Next key may use shift table
++		 */
++		if ((scancode & 0x80) == 0)
++			shift_key = 1;
++		else
++			shift_key = 0;
++		return -1;
++	}
++
++	if ((scancode&0x7f) == 0x1d) {
++		/*
++		 * Left ctrl key
++		 */
++		if ((scancode & 0x80) == 0)
++			ctrl_key = 1;
++		else
++			ctrl_key = 0;
++		return -1;
++	}
++
++	if ((scancode & 0x80) != 0)
++		return -1;
++
++	scancode &= 0x7f;
++
++	/*
++	 * Translate scancode
++	 */
++
++	if (scancode == 0x3a) {
++		/*
++		 * Toggle caps lock
++		 */
++		shift_lock ^= 1;
++
++#ifdef	KDB_BLINK_LED
++		kdb_toggleled(0x4);
++#endif
++		return -1;
++	}
++
++	if (scancode == 0x0e) {
++		/*
++		 * Backspace
++		 */
++		return 8;
++	}
++
++	/* Special Key */
++	switch (scancode) {
++	case 0xF: /* Tab */
++		return 9;
++	case 0x53: /* Del */
++		return 4;
++	case 0x47: /* Home */
++		return 1;
++	case 0x4F: /* End */
++		return 5;
++	case 0x4B: /* Left */
++		return 2;
++	case 0x48: /* Up */
++		return 16;
++	case 0x50: /* Down */
++		return 14;
++	case 0x4D: /* Right */
++		return 6;
++	}
++
++	if (scancode == 0xe0)
++		return -1;
++
++	/*
++	 * For Japanese 86/106 keyboards
++	 * 	See comment in drivers/char/pc_keyb.c.
++	 * 	- Masahiro Adegawa
++	 */
++	if (scancode == 0x73)
++		scancode = 0x59;
++	else if (scancode == 0x7d)
++		scancode = 0x7c;
++
++	if (!shift_lock && !shift_key && !ctrl_key) {
++		keychar = plain_map[scancode];
++	} else if ((shift_lock || shift_key) && key_maps[1]) {
++		keychar = key_maps[1][scancode];
++	} else if (ctrl_key && key_maps[4]) {
++		keychar = key_maps[4][scancode];
++	} else {
++		keychar = 0x0020;
++		kdb_printf("Unknown state/scancode (%d)\n", scancode);
++	}
++	keychar &= 0x0fff;
++	if (keychar == '\t')
++		keychar = ' ';
++	switch (KTYP(keychar)) {
++	case KT_LETTER:
++	case KT_LATIN:
++		if (isprint(keychar))
++			break;		/* printable characters */
++		/* drop through */
++	case KT_SPEC:
++		if (keychar == K_ENTER)
++			break;
++		/* drop through */
++	default:
++		return -1;	/* ignore unprintables */
++	}
++
++	if ((scancode & 0x7f) == 0x1c) {
++		/*
++		 * enter key.  All done.  Absorb the release scancode.
++		 */
++		while ((inb(KBD_STATUS_REG) & KBD_STAT_OBF) == 0)
++			;
++
++		/*
++		 * Fetch the scancode
++		 */
++		scancode = inb(KBD_DATA_REG);
++		scanstatus = inb(KBD_STATUS_REG);
++
++		while (scanstatus & KBD_STAT_MOUSE_OBF) {
++			scancode = inb(KBD_DATA_REG);
++			scanstatus = inb(KBD_STATUS_REG);
++		}
++
++		if (scancode != 0x9c) {
++			/*
++			 * Wasn't an enter-release,  why not?
++			 */
++			kdb_printf("kdb: expected enter got 0x%x status 0x%x\n",
++			       scancode, scanstatus);
++		}
++
++		return 13;
++	}
++
++	return keychar & 0xff;
++}
++EXPORT_SYMBOL_GPL(kdb_get_kbd_char);
+diff --git a/drivers/char/kdb_keyboard.h b/drivers/char/kdb_keyboard.h
+new file mode 100644
+index 0000000..5541668
+--- /dev/null
++++ b/drivers/char/kdb_keyboard.h
+@@ -0,0 +1,143 @@
++/*
++ *	include/linux/pc_keyb.h
++ *
++ *	PC Keyboard And Keyboard Controller
++ *
++ *	(c) 1997 Martin Mares <mj@atrey.karlin.mff.cuni.cz>
++ */
++
++/*
++ *	Configuration Switches
++ */
++
++#undef	KBD_REPORT_ERR			/* Report keyboard errors */
++#define	KBD_REPORT_UNKN			/* Report unknown scan codes */
++#define	KBD_REPORT_TIMEOUTS		/* Report keyboard timeouts */
++#undef	KBD_IS_FOCUS_9000		/* We have the brain-damaged
++					 * FOCUS-9000 keyboard */
++#undef	INITIALIZE_MOUSE		/* Define if your PS/2 mouse
++					 * needs initialization. */
++
++#define KBD_INIT_TIMEOUT 1000		/* Timeout in ms for initializing the
++					 * keyboard */
++#define KBC_TIMEOUT 250			/* Timeout in ms for sending
++					 * to keyboard controller */
++#define KBD_TIMEOUT 1000		/* Timeout in ms for keyboard
++					 * command acknowledge */
++
++/*
++ *	Internal variables of the driver
++ */
++
++extern unsigned char pckbd_read_mask;
++extern unsigned char aux_device_present;
++
++/*
++ *	Keyboard Controller Registers on normal PCs.
++ */
++
++#define KBD_STATUS_REG		0x64	/* Status register (R) */
++#define KBD_CNTL_REG		0x64	/* Controller command register (W) */
++#define KBD_DATA_REG		0x60	/* Keyboard data register (R/W) */
++
++/*
++ *	Keyboard Controller Commands
++ */
++
++#define KBD_CCMD_READ_MODE	0x20	/* Read mode bits */
++#define KBD_CCMD_WRITE_MODE	0x60	/* Write mode bits */
++#define KBD_CCMD_GET_VERSION	0xA1	/* Get controller version */
++#define KBD_CCMD_MOUSE_DISABLE	0xA7	/* Disable mouse interface */
++#define KBD_CCMD_MOUSE_ENABLE	0xA8	/* Enable mouse interface */
++#define KBD_CCMD_TEST_MOUSE	0xA9	/* Mouse interface test */
++#define KBD_CCMD_SELF_TEST	0xAA	/* Controller self test */
++#define KBD_CCMD_KBD_TEST	0xAB	/* Keyboard interface test */
++#define KBD_CCMD_KBD_DISABLE	0xAD	/* Keyboard interface disable */
++#define KBD_CCMD_KBD_ENABLE	0xAE	/* Keyboard interface enable */
++#define KBD_CCMD_WRITE_AUX_OBUF	0xD3    /* Write to output buffer as if
++					   initiated by the auxiliary device */
++#define KBD_CCMD_WRITE_MOUSE	0xD4	/* Write the following byte to
++					 * the mouse */
++
++/*
++ *	Keyboard Commands
++ */
++
++#define KBD_CMD_SET_LEDS	0xED	/* Set keyboard leds */
++#define KBD_CMD_SET_RATE	0xF3	/* Set typematic rate */
++#define KBD_CMD_ENABLE		0xF4	/* Enable scanning */
++#define KBD_CMD_DISABLE		0xF5	/* Disable scanning */
++#define KBD_CMD_RESET		0xFF	/* Reset */
++
++/*
++ *	Keyboard Replies
++ */
++
++#define KBD_REPLY_POR		0xAA	/* Power on reset */
++#define KBD_REPLY_ACK		0xFA	/* Command ACK */
++#define KBD_REPLY_RESEND	0xFE	/* Command NACK, send the cmd again */
++
++/*
++ *	Status Register Bits
++ */
++
++#define KBD_STAT_OBF 		0x01	/* Keyboard output buffer full */
++#define KBD_STAT_IBF 		0x02	/* Keyboard input buffer full */
++#define KBD_STAT_SELFTEST	0x04	/* Self test successful */
++#define KBD_STAT_CMD		0x08	/* Last write was a command
++					 * write (0=data) */
++#define KBD_STAT_UNLOCKED	0x10	/* Zero if keyboard locked */
++#define KBD_STAT_MOUSE_OBF	0x20	/* Mouse output buffer full */
++#define KBD_STAT_GTO 		0x40	/* General receive/xmit timeout */
++#define KBD_STAT_PERR 		0x80	/* Parity error */
++
++#define AUX_STAT_OBF (KBD_STAT_OBF | KBD_STAT_MOUSE_OBF)
++
++/*
++ *	Controller Mode Register Bits
++ */
++
++#define KBD_MODE_KBD_INT	0x01	/* Keyboard data generate IRQ1 */
++#define KBD_MODE_MOUSE_INT	0x02	/* Mouse data generate IRQ12 */
++#define KBD_MODE_SYS 		0x04	/* The system flag (?) */
++#define KBD_MODE_NO_KEYLOCK	0x08	/* The keylock doesn't affect
++					 * the keyboard if set */
++#define KBD_MODE_DISABLE_KBD	0x10	/* Disable keyboard interface */
++#define KBD_MODE_DISABLE_MOUSE	0x20	/* Disable mouse interface */
++#define KBD_MODE_KCC 		0x40	/* Scan code conversion to PC format */
++#define KBD_MODE_RFU		0x80
++
++/*
++ *	Mouse Commands
++ */
++
++#define AUX_SET_RES		0xE8	/* Set resolution */
++#define AUX_SET_SCALE11		0xE6	/* Set 1:1 scaling */
++#define AUX_SET_SCALE21		0xE7	/* Set 2:1 scaling */
++#define AUX_GET_SCALE		0xE9	/* Get scaling factor */
++#define AUX_SET_STREAM		0xEA	/* Set stream mode */
++#define AUX_SET_SAMPLE		0xF3	/* Set sample rate */
++#define AUX_ENABLE_DEV		0xF4	/* Enable aux device */
++#define AUX_DISABLE_DEV		0xF5	/* Disable aux device */
++#define AUX_RESET		0xFF	/* Reset aux device */
++#define AUX_ACK			0xFA	/* Command byte ACK. */
++
++#define AUX_BUF_SIZE		2048	/* This might be better divisible by
++					   three to make overruns stay in sync
++					   but then the read function would need
++					   a lock etc - ick */
++
++struct aux_queue {
++	unsigned long head;
++	unsigned long tail;
++	wait_queue_head_t proc_list;
++	struct fasync_struct *fasync;
++	unsigned char buf[AUX_BUF_SIZE];
++};
++
++
++/* How to access the keyboard macros on this platform.  */
++#define kbd_read_input() inb(KBD_DATA_REG)
++#define kbd_read_status() inb(KBD_STATUS_REG)
++#define kbd_write_output(val) outb(val, KBD_DATA_REG)
++#define kbd_write_command(val) outb(val, KBD_CNTL_REG)
+diff --git a/drivers/serial/kgdboc.c b/drivers/serial/kgdboc.c
+index eadc1ab..ecef6e1 100644
+--- a/drivers/serial/kgdboc.c
++++ b/drivers/serial/kgdboc.c
+@@ -14,6 +14,7 @@
+ #include <linux/kernel.h>
+ #include <linux/ctype.h>
+ #include <linux/kgdb.h>
++#include <linux/kdb.h>
+ #include <linux/tty.h>
  
-diff --git a/include/linux/kdb.h b/include/linux/kdb.h
-index f44aa5f..d72fa39 100644
---- a/include/linux/kdb.h
-+++ b/include/linux/kdb.h
-@@ -99,6 +99,9 @@ int kdb_process_cpu(const struct task_struct *p)
- 	return cpu;
+ #define MAX_CONFIG_LEN		40
+@@ -32,6 +33,40 @@ static struct kparam_string kps = {
+ static struct tty_driver	*kgdb_tty_driver;
+ static int			kgdb_tty_line;
+ 
++#ifdef CONFIG_KDB_KEYBOARD
++static int kgdboc_register_kbd(char **cptr)
++{
++	if (strncmp(*cptr, "kbd", 3) == 0) {
++		if (kdb_poll_idx < KDB_POLL_FUNC_MAX) {
++			kdb_poll_funcs[kdb_poll_idx] = kdb_get_kbd_char;
++			kdb_poll_idx++;
++			if (cptr[0][3] == ',')
++				*cptr += 4;
++			else
++				return 1;
++		}
++	}
++	return 0;
++}
++
++static void kgdboc_unregister_kbd(void)
++{
++	int i;
++
++	for (i = 0; i < kdb_poll_idx; i++) {
++		if (kdb_poll_funcs[i] == kdb_get_kbd_char) {
++			kdb_poll_idx--;
++			kdb_poll_funcs[i] = kdb_poll_funcs[kdb_poll_idx];
++			kdb_poll_funcs[kdb_poll_idx] = NULL;
++			i--;
++		}
++	}
++}
++#else /* ! CONFIG_KDB_KEYBOARD */
++#define kgdboc_register_kbd(x) 0
++#define kgdboc_unregister_kbd()
++#endif /* ! CONFIG_KDB_KEYBOARD */
++
+ static int kgdboc_option_setup(char *opt)
+ {
+ 	if (strlen(opt) > MAX_CONFIG_LEN) {
+@@ -45,25 +80,38 @@ static int kgdboc_option_setup(char *opt)
+ 
+ __setup("kgdboc=", kgdboc_option_setup);
+ 
++static void cleanup_kgdboc(void)
++{
++	kgdboc_unregister_kbd();
++	if (configured == 1)
++		kgdb_unregister_io_module(&kgdboc_io_ops);
++}
++
+ static int configure_kgdboc(void)
+ {
+ 	struct tty_driver *p;
+ 	int tty_line = 0;
+ 	int err;
++	char *cptr = config;
+ 
+ 	err = kgdboc_option_setup(config);
+ 	if (err || !strlen(config) || isspace(config[0]))
+ 		goto noconfig;
+ 
+ 	err = -ENODEV;
++	kgdb_tty_driver = NULL;
++
++	if (kgdboc_register_kbd(&cptr))
++		goto do_register;
+ 
+-	p = tty_find_polling_driver(config, &tty_line);
++	p = tty_find_polling_driver(cptr, &tty_line);
+ 	if (!p)
+ 		goto noconfig;
+ 
+ 	kgdb_tty_driver = p;
+ 	kgdb_tty_line = tty_line;
+ 
++do_register:
+ 	err = kgdb_register_io_module(&kgdboc_io_ops);
+ 	if (err)
+ 		goto noconfig;
+@@ -75,6 +123,7 @@ static int configure_kgdboc(void)
+ noconfig:
+ 	config[0] = 0;
+ 	configured = 0;
++	cleanup_kgdboc();
+ 
+ 	return err;
+ }
+@@ -88,20 +137,18 @@ static int __init init_kgdboc(void)
+ 	return configure_kgdboc();
  }
  
-+/* kdb access to register set for stack dumping */
-+extern struct pt_regs *kdb_current_regs;
-+
- #else /* ! CONFIG_KGDB_KDB */
- #define kdb_printf(...)
- #define kdb_init(x)
-diff --git a/kernel/debug/kdb/kdb_private.h b/kernel/debug/kdb/kdb_private.h
-index 42af29b..546066e 100644
---- a/kernel/debug/kdb/kdb_private.h
-+++ b/kernel/debug/kdb/kdb_private.h
-@@ -288,7 +288,6 @@ extern void debug_kusage(void);
+-static void cleanup_kgdboc(void)
+-{
+-	if (configured == 1)
+-		kgdb_unregister_io_module(&kgdboc_io_ops);
+-}
+-
+ static int kgdboc_get_char(void)
+ {
++	if (!kgdb_tty_driver)
++		return -1;
+ 	return kgdb_tty_driver->ops->poll_get_char(kgdb_tty_driver,
+ 						kgdb_tty_line);
+ }
  
- extern void kdb_set_current_task(struct task_struct *);
- extern struct task_struct *kdb_current_task;
--extern struct pt_regs *kdb_current_regs;
- #ifdef CONFIG_MODULES
- extern struct list_head *kdb_modules;
- #endif /* CONFIG_MODULES */
+ static void kgdboc_put_char(u8 chr)
+ {
++	if (!kgdb_tty_driver)
++		return;
+ 	kgdb_tty_driver->ops->poll_put_char(kgdb_tty_driver,
+ 					kgdb_tty_line, chr);
+ }
 diff --git a/lib/Kconfig.kgdb b/lib/Kconfig.kgdb
-index 2b1601b..14b61f4 100644
+index 02b46de..0fb633c 100644
 --- a/lib/Kconfig.kgdb
 +++ b/lib/Kconfig.kgdb
-@@ -59,7 +59,7 @@ config KGDB_TESTS_BOOT_STRING
+@@ -63,4 +63,11 @@ config KGDB_KDB
+ 	help
+ 	  KDB frontend for kernel
  
- config KGDB_LOW_LEVEL_TRAP
-        bool "KGDB: Allow debugging with traps in notifiers"
--       depends on X86 || PPC
-+       depends on X86 || PPC || MIPS
-        default n
-        help
-          This will add an extra call back to kgdb for the breakpoint
++config KDB_KEYBOARD
++	bool "KGDB_KDB: keyboard as input device"
++	depends on VT && KGDB_KDB
++	default y
++	help
++	  KDB can use a PS/2 type keyboard for an input device
++
+ endif # KGDB
 -- 
 1.6.4.rc1
 
