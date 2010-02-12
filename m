@@ -1,34 +1,70 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757891Ab0BLW5V (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 17:57:21 -0500
-Received: from mail.openrapids.net ([64.15.138.104]:35736 "EHLO
-	blackscsi.openrapids.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751963Ab0BLW5U (ORCPT
+	id S1757914Ab0BLXBm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 18:01:42 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43596 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756133Ab0BLXBk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 17:57:20 -0500
-Date: Fri, 12 Feb 2010 17:57:17 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-To: ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org
-Cc: Jon Bernard <jbernard@debian.org>, pierre-marc.fournier@polymtl.ca
-Subject: [RELEASE] Userspace RCU 0.4.1
-Message-ID: <20100212225717.GA30581@Krystal>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Editor: vi
-X-Info: http://www.efficios.com
-X-Operating-System: Linux/2.6.26-2-686 (i686)
-X-Uptime: 17:55:15 up 21 days,  1:32,  3 users,  load average: 0.48, 0.38,
-	0.31
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 12 Feb 2010 18:01:40 -0500
+Date: Fri, 12 Feb 2010 15:00:27 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jason Wessel <jason.wessel@windriver.com>
+Cc: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
+       mingo@elte.hu
+Subject: Re: [PATCH 26/28] kdb,panic,debug_core: Allow the debug core to
+ receive a panic before smp_send_stop()
+Message-Id: <20100212150027.f875bbde.akpm@linux-foundation.org>
+In-Reply-To: <1266014143-29444-27-git-send-email-jason.wessel@windriver.com>
+References: <1266014143-29444-1-git-send-email-jason.wessel@windriver.com>
+	<1266014143-29444-27-git-send-email-jason.wessel@windriver.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Fri, 12 Feb 2010 16:35:41 -0600 Jason Wessel <jason.wessel@windriver.com> wrote:
 
-liburcu 0.4.1 contains a compilation fix for s390. Thanks to Jon Bernard and
-Debian for their thorough testing.
+> It is highly desirable to trap into kdb on panic,
 
-Mathieu
+s/kdb/kgdb/
+
+But is it necessary to do it in-kernel?  Why not just put a
+breakpoint at panic(), add that to your .gdbinit?
+
+> diff --git a/kernel/panic.c b/kernel/panic.c
+> index c787333..428d15b 100644
+> --- a/kernel/panic.c
+> +++ b/kernel/panic.c
+> @@ -66,10 +66,13 @@ NORET_TYPE void panic(const char * fmt, ...)
+>  	 */
+>  	preempt_disable();
+>  
+> -	bust_spinlocks(1);
+>  	va_start(args, fmt);
+>  	vsnprintf(buf, sizeof(buf), fmt, args);
+>  	va_end(args);
+> +
+> +	atomic_notifier_call_chain(&panic_notifier_list, 0, buf);
+> +
+> +	bust_spinlocks(1);
+>  	printk(KERN_EMERG "Kernel panic - not syncing: %s\n",buf);
+>  #ifdef CONFIG_DEBUG_BUGVERBOSE
+>  	dump_stack();
+> @@ -91,8 +94,6 @@ NORET_TYPE void panic(const char * fmt, ...)
+>  	 */
+>  	smp_send_stop();
+>  
+> -	atomic_notifier_call_chain(&panic_notifier_list, 0, buf);
+> -
+>  	bust_spinlocks(0);
+>  
+>  	if (!panic_blink)
+
+So the notifier call now happens before all the printks and the kexec
+and kmsg_dump handling.  What effect does this have upon the code which
+implements kexec and kmsg_dump?
+
