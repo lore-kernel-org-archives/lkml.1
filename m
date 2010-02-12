@@ -1,11 +1,11 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757568Ab0BLABR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 19:01:17 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:47919 "EHLO e6.ny.us.ibm.com"
+	id S1757543Ab0BLABM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 19:01:12 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:39379 "EHLO e1.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757504Ab0BLABH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 19:01:07 -0500
+	id S1757409Ab0BLABG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Feb 2010 19:01:06 -0500
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
@@ -14,9 +14,9 @@ Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
        tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
        Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
        "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: [PATCH tip/core/rcu 02/13] rcu: add lockdep-enabled variants of rcu_dereference()
-Date: Thu, 11 Feb 2010 16:00:28 -0800
-Message-Id: <1265932839-25899-2-git-send-email-paulmck@linux.vnet.ibm.com>
+Subject: [PATCH tip/core/rcu 03/13] rcu: integrate rcu_dereference_check() message into lockdep
+Date: Thu, 11 Feb 2010 16:00:29 -0800
+Message-Id: <1265932839-25899-3-git-send-email-paulmck@linux.vnet.ibm.com>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <20100212000016.GA25781@linux.vnet.ibm.com>
 References: <20100212000016.GA25781@linux.vnet.ibm.com>
@@ -24,111 +24,70 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make rcu_dereference() check for being in an RCU read-side critical
-section, and create rcu_dereference_bh(), rcu_dereference_sched(), and
-srcu_dereference() to check for the other flavors of RCU.  Also create
-rcu_dereference_raw() to avoid checking, and make rcu_dereference_check()
-use rcu_dereference_raw().
+Make rcu_dereference_check() print the list of held locks in addition
+to the stack dump to ease debugging.
 
 Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 ---
- include/linux/rcupdate.h |   41 ++++++++++++++++++++++++++++++++++-------
- include/linux/srcu.h     |    8 ++++++++
- 2 files changed, 42 insertions(+), 7 deletions(-)
+ include/linux/lockdep.h  |    4 ++++
+ include/linux/rcupdate.h |    4 ++--
+ kernel/lockdep.c         |   18 ++++++++++++++++++
+ 3 files changed, 24 insertions(+), 2 deletions(-)
 
+diff --git a/include/linux/lockdep.h b/include/linux/lockdep.h
+index 9ccf0e2..10206a8 100644
+--- a/include/linux/lockdep.h
++++ b/include/linux/lockdep.h
+@@ -534,4 +534,8 @@ do {									\
+ # define might_lock_read(lock) do { } while (0)
+ #endif
+ 
++#ifdef CONFIG_PROVE_RCU
++extern void lockdep_rcu_dereference(const char *file, const int line);
++#endif
++
+ #endif /* __LINUX_LOCKDEP_H */
 diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
-index e3d37ef..839d296 100644
+index 839d296..1a4de31 100644
 --- a/include/linux/rcupdate.h
 +++ b/include/linux/rcupdate.h
-@@ -184,12 +184,12 @@ static inline int rcu_read_lock_sched_held(void)
+@@ -182,8 +182,8 @@ static inline int rcu_read_lock_sched_held(void)
+  */
+ #define rcu_dereference_check(p, c) \
  	({ \
- 		if (debug_locks) \
- 			WARN_ON_ONCE(!(c)); \
--		rcu_dereference(p); \
-+		rcu_dereference_raw(p); \
+-		if (debug_locks) \
+-			WARN_ON_ONCE(!(c)); \
++		if (debug_locks && !(c)) \
++			lockdep_rcu_dereference(__FILE__, __LINE__); \
+ 		rcu_dereference_raw(p); \
  	})
  
- #else /* #ifdef CONFIG_PROVE_RCU */
- 
--#define rcu_dereference_check(p, c)	rcu_dereference(p)
-+#define rcu_dereference_check(p, c)	rcu_dereference_raw(p)
- 
- #endif /* #else #ifdef CONFIG_PROVE_RCU */
- 
-@@ -325,22 +325,49 @@ static inline notrace void rcu_read_unlock_sched_notrace(void)
- 
- 
- /**
-- * rcu_dereference - fetch an RCU-protected pointer in an
-- * RCU read-side critical section.  This pointer may later
-- * be safely dereferenced.
-+ * rcu_dereference_raw - fetch an RCU-protected pointer
-+ *
-+ * The caller must be within some flavor of RCU read-side critical
-+ * section, or must be otherwise preventing the pointer from changing,
-+ * for example, by holding an appropriate lock.  This pointer may later
-+ * be safely dereferenced.  It is the caller's responsibility to have
-+ * done the right thing, as this primitive does no checking of any kind.
-  *
-  * Inserts memory barriers on architectures that require them
-  * (currently only the Alpha), and, more importantly, documents
-  * exactly which pointers are protected by RCU.
-  */
--
--#define rcu_dereference(p)     ({ \
-+#define rcu_dereference_raw(p)	({ \
- 				typeof(p) _________p1 = ACCESS_ONCE(p); \
- 				smp_read_barrier_depends(); \
- 				(_________p1); \
- 				})
- 
- /**
-+ * rcu_dereference - fetch an RCU-protected pointer, checking for RCU
-+ *
-+ * Makes rcu_dereference_check() do the dirty work.
-+ */
-+#define rcu_dereference(p) \
-+	rcu_dereference_check(p, rcu_read_lock_held())
+diff --git a/kernel/lockdep.c b/kernel/lockdep.c
+index 5feaddc..a44c1b2 100644
+--- a/kernel/lockdep.c
++++ b/kernel/lockdep.c
+@@ -3809,3 +3809,21 @@ void lockdep_sys_exit(void)
+ 		lockdep_print_held_locks(curr);
+ 	}
+ }
 +
-+/**
-+ * rcu_dereference_bh - fetch an RCU-protected pointer, checking for RCU-bh
-+ *
-+ * Makes rcu_dereference_check() do the dirty work.
-+ */
-+#define rcu_dereference_bh(p) \
-+		rcu_dereference_check(p, rcu_read_lock_bh_held())
++void lockdep_rcu_dereference(const char *file, const int line)
++{
++	struct task_struct *curr = current;
 +
-+/**
-+ * rcu_dereference_sched - fetch RCU-protected pointer, checking for RCU-sched
-+ *
-+ * Makes rcu_dereference_check() do the dirty work.
-+ */
-+#define rcu_dereference_sched(p) \
-+		rcu_dereference_check(p, rcu_read_lock_sched_held())
-+
-+/**
-  * rcu_assign_pointer - assign (publicize) a pointer to a newly
-  * initialized structure that will be dereferenced by RCU read-side
-  * critical sections.  Returns the value assigned.
-diff --git a/include/linux/srcu.h b/include/linux/srcu.h
-index adbe167..3084f80 100644
---- a/include/linux/srcu.h
-+++ b/include/linux/srcu.h
-@@ -106,6 +106,14 @@ static inline int srcu_read_lock_held(struct srcu_struct *sp)
- #endif /* #else #ifdef CONFIG_DEBUG_LOCK_ALLOC */
- 
- /**
-+ * srcu_dereference - fetch SRCU-protected pointer with checking
-+ *
-+ * Makes rcu_dereference_check() do the dirty work.
-+ */
-+#define srcu_dereference(p, sp) \
-+		rcu_dereference_check(p, srcu_read_lock_held(sp))
-+
-+/**
-  * srcu_read_lock - register a new reader for an SRCU-protected structure.
-  * @sp: srcu_struct in which to register the new reader.
-  *
++	if (!debug_locks_off())
++		return;
++	printk("\n==============================================\n");
++	printk(  "[ BUG: Unsafe rcu_dereference_check() usage! ]\n");
++	printk(  "----------------------------------------------\n");
++	printk("%s:%d invoked rcu_dereference_check() without protection!\n",
++			file, line);
++	printk("\nother info that might help us debug this:\n\n");
++	lockdep_print_held_locks(curr);
++	printk("\nstack backtrace:\n");
++	dump_stack();
++}
++EXPORT_SYMBOL_GPL(lockdep_rcu_dereference);
 -- 
 1.6.6
 
