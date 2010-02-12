@@ -1,162 +1,86 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756883Ab0BLMDk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 07:03:40 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:55556 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752468Ab0BLMBD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 07:01:03 -0500
-From: Mel Gorman <mel@csn.ul.ie>
-To: Andrea Arcangeli <aarcange@redhat.com>
-Cc: Christoph Lameter <cl@linux-foundation.org>, Adam Litke <agl@us.ibm.com>,
-       Avi Kivity <avi@redhat.com>, David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: [PATCH 04/12] Export fragmentation index via /proc/pagetypeinfo
-Date: Fri, 12 Feb 2010 12:00:51 +0000
-Message-Id: <1265976059-7459-5-git-send-email-mel@csn.ul.ie>
-X-Mailer: git-send-email 1.6.5
-In-Reply-To: <1265976059-7459-1-git-send-email-mel@csn.ul.ie>
-References: <1265976059-7459-1-git-send-email-mel@csn.ul.ie>
+	id S1756317Ab0BLMKK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 07:10:10 -0500
+Received: from outbound-mail04.westnet.com.au ([203.10.1.245]:24969 "EHLO
+	outbound-mail04.westnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751431Ab0BLMKI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Feb 2010 07:10:08 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApEBAOfTdEt8lZlU/2dsb2JhbAAH2jIChFYE
+X-IronPort-AV: E=Sophos;i="4.49,460,1262534400"; 
+   d="scan'208";a="19929826"
+Message-ID: <4B75451A.5050600@snapgear.com>
+Date: Fri, 12 Feb 2010 22:10:02 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
+MIME-Version: 1.0
+To: Roel Kluin <roel.kluin@gmail.com>
+CC: uclinux-dev@uclinux.org, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: m68knommu: duplicate _ramvec[vba+CPMVEC_RISCTIMER] assignment
+ in init_IRQ()
+References: <4B72BE49.70803@gmail.com>
+In-Reply-To: <4B72BE49.70803@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fragmentation index is a value that makes sense when an allocation of a
-given size would fail. The index indicates whether an allocation failure is
-due to a lack of memory (values towards 0) or due to external fragmentation
-(value towards 1).  For the most part, the huge page size will be the size
-of interest but not necessarily so it is exported on a per-order and per-zone
-basis via /proc/pagetypeinfo.
+Hi Roel,
 
-The index is normally calculated as a value between 0 and 1 which is
-obviously unsuitable within the kernel. Instead, the first three decimal
-places are used as a value between 0 and 1000 for an integer approximation.
+On 02/11/2010 12:10 AM, Roel Kluin wrote:
+> Looking at arch/m68knommu/platform/68360/ints.c I noted two things that
+> stood out:
+>
+> 1) on line 110:
+>
+> _ramvec[vba+CPMVEC_RISCTIMER]   = inthandler;  /* reserved */
+>
+> and 114:
+>
+> _ramvec[vba+CPMVEC_RISCTIMER]   = inthandler;  /* timer table */
+>
+> The same definitions are used, and in the first case the comment and
+> definition do not correspond.
 
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
----
- Documentation/filesystems/proc.txt |   11 ++++++
- mm/vmstat.c                        |   63 ++++++++++++++++++++++++++++++++++++
- 2 files changed, 74 insertions(+), 0 deletions(-)
+Yes, that does look odd. I am not intimately familiar with the 68360,
+but looking at the underlying vector numbers I would say that the
+entry with the "reserved" comment is superfluous, and should be removed.
 
-diff --git a/Documentation/filesystems/proc.txt b/Documentation/filesystems/proc.txt
-index 0968a81..06bf53c 100644
---- a/Documentation/filesystems/proc.txt
-+++ b/Documentation/filesystems/proc.txt
-@@ -618,6 +618,10 @@ Unusable free space index at order
- Node    0, zone      DMA                         0      0      0      2      6     18     34     67     99    227    485
- Node    0, zone    DMA32                         0      0      1      2      4      7     10     17     23     31     34
- 
-+Fragmentation index at order
-+Node    0, zone      DMA                        -1     -1     -1     -1     -1     -1     -1     -1     -1     -1     -1
-+Node    0, zone    DMA32                        -1     -1     -1     -1     -1     -1     -1     -1     -1     -1     -1
-+
- Number of blocks type     Unmovable  Reclaimable      Movable      Reserve      Isolate
- Node 0, zone      DMA            2            0            5            1            0
- Node 0, zone    DMA32           41            6          967            2            0
-@@ -639,6 +643,13 @@ value between 0 and 1000. The higher the value, the more of free memory is
- unusable and by implication, the worse the external fragmentation is. The
- percentage of unusable free memory can be found by dividing this value by 10.
- 
-+The fragmentation index, is only meaningful if an allocation would fail and
-+indicates what the failure is due to. A value of -1 such as in the example
-+states that the allocation would succeed. If it would fail, the value is
-+between 0 and 1000. A value tending towards 0 implies the allocation failed
-+due to a lack of memory. A value tending towards 1000 implies it failed
-+due to external fragmentation.
-+
- If min_free_kbytes has been tuned correctly (recommendations made by hugeadm
- from libhugetlbfs http://sourceforge.net/projects/libhugetlbfs/), one can
- make an estimate of the likely number of huge pages that can be allocated
-diff --git a/mm/vmstat.c b/mm/vmstat.c
-index d05d610..e2d0cc1 100644
---- a/mm/vmstat.c
-+++ b/mm/vmstat.c
-@@ -494,6 +494,35 @@ static void fill_contig_page_info(struct zone *zone,
- }
- 
- /*
-+ * A fragmentation index only makes sense if an allocation of a requested
-+ * size would fail. If that is true, the fragmentation index indicates
-+ * whether external fragmentation or a lack of memory was the problem.
-+ * The value can be used to determine if page reclaim or compaction
-+ * should be used
-+ */
-+int fragmentation_index(struct zone *zone,
-+				unsigned int order,
-+				struct contig_page_info *info)
-+{
-+	unsigned long requested = 1UL << order;
-+
-+	if (!info->free_blocks_total)
-+		return 0;
-+
-+	/* Fragmentation index only makes sense when a request would fail */
-+	if (info->free_blocks_suitable)
-+		return -1;
-+
-+	/*
-+	 * Index is between 0 and 1 so return within 3 decimal places
-+	 *
-+	 * 0 => allocation would fail due to lack of memory
-+	 * 1 => allocation would fail due to fragmentation
-+	 */
-+	return 1000 - ( (1000+(info->free_pages * 1000 / requested)) / info->free_blocks_total);
-+}
-+
-+/*
-  * Return an index indicating how much of the available free memory is
-  * unusable for an allocation of the requested size.
-  */
-@@ -516,6 +545,39 @@ static int unusable_free_index(struct zone *zone,
- 
- }
- 
-+static void pagetypeinfo_showfragmentation_print(struct seq_file *m,
-+					pg_data_t *pgdat, struct zone *zone)
-+{
-+	unsigned int order;
-+
-+	/* Alloc on stack as interrupts are disabled for zone walk */
-+	struct contig_page_info info;
-+
-+	seq_printf(m, "Node %4d, zone %8s %19s",
-+				pgdat->node_id,
-+				zone->name, " ");
-+	for (order = 0; order < MAX_ORDER; ++order) {
-+		fill_contig_page_info(zone, order, &info);
-+		seq_printf(m, "%6d ", fragmentation_index(zone, order, &info));
-+	}
-+
-+	seq_putc(m, '\n');
-+}
-+
-+/*
-+ * Display fragmentation index for orders that allocations would fail for
-+ * XXX: Could be a lot more efficient, but it's not a critical path
-+ */
-+static int pagetypeinfo_showfragmentation(struct seq_file *m, void *arg)
-+{
-+	pg_data_t *pgdat = (pg_data_t *)arg;
-+
-+	seq_printf(m, "\nFragmentation index at order\n");
-+	walk_zones_in_node(m, pgdat, pagetypeinfo_showfragmentation_print);
-+
-+	return 0;
-+}
-+
- static void pagetypeinfo_showunusable_print(struct seq_file *m,
- 					pg_data_t *pgdat, struct zone *zone)
- {
-@@ -657,6 +719,7 @@ static int pagetypeinfo_show(struct seq_file *m, void *arg)
- 	seq_putc(m, '\n');
- 	pagetypeinfo_showfree(m, pgdat);
- 	pagetypeinfo_showunusable(m, pgdat);
-+	pagetypeinfo_showfragmentation(m, pgdat);
- 	pagetypeinfo_showblockcount(m, pgdat);
- 
- 	return 0;
--- 
-1.6.5
+(That code has been that way as far back as I could see,
+certainly into 2.4 kernels).
 
+
+> 2) while all other definitions are used like this:
+>
+> _ramvec[vba+CPMVEC_DEF2]   = inthandler;
+> ...
+> _ramvec[vba+CPMVEC_DEF1]   = inthandler;
+>
+> This is not true for CPMVEC_RESERVED:
+>
+> _ramvec[vba+CPMVEC_RESERVED1]   = inthandler;   /* reserved */
+> ...
+> _ramvec[vba+CPMVEC_RESERVED2]   = inthandler;  /* reserved */
+>
+> Is this a bug?
+
+I am not sure I follow. Is it the ascending/descending numerical
+ordering that you are worried about?
+
+I don't know why the original author ordered the assignments
+in the opposite order of the definitions, but I don't see it
+making any difference here. So I don't see a bug.
+
+Regards
+Greg
+
+
+------------------------------------------------------------------------
+Greg Ungerer  --  Principal Engineer        EMAIL:     gerg@snapgear.com
+SnapGear Group, McAfee                      PHONE:       +61 7 3435 2888
+8 Gardner Close,                            FAX:         +61 7 3891 3630
+Milton, QLD, 4064, Australia                WEB: http://www.SnapGear.com
