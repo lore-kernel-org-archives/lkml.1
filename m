@@ -1,215 +1,443 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757676Ab0BLAaH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 19:30:07 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:52527 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757348Ab0BLAaE (ORCPT
+	id S1757688Ab0BLAdf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 19:33:35 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:44913 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757411Ab0BLAdd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 19:30:04 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Fri, 12 Feb 2010 09:26:34 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: David Rientjes <rientjes@google.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
-       Nick Piggin <npiggin@suse.de>, Andrea Arcangeli <aarcange@redhat.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch 5/7 -mm] oom: replace sysctls with quick mode
-Message-Id: <20100212092634.60a76cf9.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <alpine.DEB.2.00.1002100229250.8001@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.1002100224210.8001@chino.kir.corp.google.com>
-	<alpine.DEB.2.00.1002100229250.8001@chino.kir.corp.google.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 11 Feb 2010 19:33:33 -0500
+From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+To: davem@davemloft.net, netdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, espy@canonical.com, ken.wu@atheros.com,
+       graham.richards@atheros.com, scott.tan@atheros.com, mcgrof@gmail.com,
+       chris.snook@gmail.com, "Luis R. Rodriguez" <lrodriguez@atheros.com>
+Subject: [PATCH] atl1c: Add support for Atheros AR8152 and AR8152
+Date: Thu, 11 Feb 2010 19:33:32 -0500
+Message-Id: <1265934812-14157-1-git-send-email-lrodriguez@atheros.com>
+X-Mailer: git-send-email 1.6.2.rc1.3.g81d3f
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 10 Feb 2010 08:32:17 -0800 (PST)
-David Rientjes <rientjes@google.com> wrote:
+AR8151 is a Gigabit Ethernet device. AR8152 devices are
+Fast Ethernet devices, there are two revisions, a 1.0
+and a 2.0 revision.
 
-> Two VM sysctls, oom dump_tasks and oom_kill_allocating_task, were
-> implemented for very large systems to avoid excessively long tasklist
-> scans.  The former suppresses helpful diagnostic messages that are
-> emitted for each thread group leader that are candidates for oom kill
-> including their pid, uid, vm size, rss, oom_adj value, and name; this
-> information is very helpful to users in understanding why a particular
-> task was chosen for kill over others.  The latter simply kills current,
-> the task triggering the oom condition, instead of iterating through the
-> tasklist looking for the worst offender.
-> 
-> Both of these sysctls are combined into one for use on the aforementioned
-> large systems: oom_kill_quick.  This disables the now-default
-> oom_dump_tasks and kills current whenever the oom killer is called.
-> 
-> The oom killer rewrite is the perfect opportunity to combine both sysctls
-> into one instead of carrying around the others for years to come for
-> nothing else than legacy purposes.
-> 
-> Signed-off-by: David Rientjes <rientjes@google.com>
+This has been tested against these devices:
 
-seems reasonable..but how old these APIs are ? Replacement is ok ?
+Driver	Model-name	vendor:device	Type
+atl1c 	AR8131		1969:1063	Gigabit Ethernet
+atl1c	AR8132		1969:1062	Fast Ethernet
+atl1c	AR8151(v1.0)	1969:1073	Gigabit Ethernet
+atl1c	AR8152(v1.1)	1969:2060	Fast Ethernet
 
-Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+This device has no hardware available yet so it goes untested,
+but it should work:
 
+atl1c	AR8152(v2.0)	1969:2062	Fast Ethernet
 
-> ---
->  Documentation/sysctl/vm.txt |   44 +++++-------------------------------------
->  include/linux/oom.h         |    3 +-
->  kernel/sysctl.c             |   13 ++---------
->  mm/oom_kill.c               |    9 +++----
->  4 files changed, 14 insertions(+), 55 deletions(-)
-> 
-> diff --git a/Documentation/sysctl/vm.txt b/Documentation/sysctl/vm.txt
-> --- a/Documentation/sysctl/vm.txt
-> +++ b/Documentation/sysctl/vm.txt
-> @@ -43,9 +43,8 @@ Currently, these files are in /proc/sys/vm:
->  - nr_pdflush_threads
->  - nr_trim_pages         (only if CONFIG_MMU=n)
->  - numa_zonelist_order
-> -- oom_dump_tasks
->  - oom_forkbomb_thres
-> -- oom_kill_allocating_task
-> +- oom_kill_quick
->  - overcommit_memory
->  - overcommit_ratio
->  - page-cluster
-> @@ -470,27 +469,6 @@ this is causing problems for your system/application.
->  
->  ==============================================================
->  
-> -oom_dump_tasks
-> -
-> -Enables a system-wide task dump (excluding kernel threads) to be
-> -produced when the kernel performs an OOM-killing and includes such
-> -information as pid, uid, tgid, vm size, rss, cpu, oom_adj score, and
-> -name.  This is helpful to determine why the OOM killer was invoked
-> -and to identify the rogue task that caused it.
-> -
-> -If this is set to zero, this information is suppressed.  On very
-> -large systems with thousands of tasks it may not be feasible to dump
-> -the memory state information for each one.  Such systems should not
-> -be forced to incur a performance penalty in OOM conditions when the
-> -information may not be desired.
-> -
-> -If this is set to non-zero, this information is shown whenever the
-> -OOM killer actually kills a memory-hogging task.
-> -
-> -The default value is 0.
-> -
-> -==============================================================
-> -
->  oom_forkbomb_thres
->  
->  This value defines how many children with a seperate address space a specific
-> @@ -511,22 +489,12 @@ The default value is 1000.
->  
->  ==============================================================
->  
-> -oom_kill_allocating_task
-> -
-> -This enables or disables killing the OOM-triggering task in
-> -out-of-memory situations.
-> -
-> -If this is set to zero, the OOM killer will scan through the entire
-> -tasklist and select a task based on heuristics to kill.  This normally
-> -selects a rogue memory-hogging task that frees up a large amount of
-> -memory when killed.
-> -
-> -If this is set to non-zero, the OOM killer simply kills the task that
-> -triggered the out-of-memory condition.  This avoids the expensive
-> -tasklist scan.
-> +oom_kill_quick
->  
-> -If panic_on_oom is selected, it takes precedence over whatever value
-> -is used in oom_kill_allocating_task.
-> +When enabled, this will always kill the task that triggered the oom killer, i.e.
-> +the task that attempted to allocate memory that could not be found.  It also
-> +suppresses the tasklist dump to the kernel log whenever the oom killer is
-> +called.  Typically set on systems with an extremely large number of tasks.
->  
->  The default value is 0.
->  
-> diff --git a/include/linux/oom.h b/include/linux/oom.h
-> --- a/include/linux/oom.h
-> +++ b/include/linux/oom.h
-> @@ -51,8 +51,7 @@ static inline void oom_killer_enable(void)
->  }
->  /* for sysctl */
->  extern int sysctl_panic_on_oom;
-> -extern int sysctl_oom_kill_allocating_task;
-> -extern int sysctl_oom_dump_tasks;
-> +extern int sysctl_oom_kill_quick;
->  extern int sysctl_oom_forkbomb_thres;
->  
->  #endif /* __KERNEL__*/
-> diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-> --- a/kernel/sysctl.c
-> +++ b/kernel/sysctl.c
-> @@ -949,16 +949,9 @@ static struct ctl_table vm_table[] = {
->  		.proc_handler	= proc_dointvec,
->  	},
->  	{
-> -		.procname	= "oom_kill_allocating_task",
-> -		.data		= &sysctl_oom_kill_allocating_task,
-> -		.maxlen		= sizeof(sysctl_oom_kill_allocating_task),
-> -		.mode		= 0644,
-> -		.proc_handler	= proc_dointvec,
-> -	},
-> -	{
-> -		.procname	= "oom_dump_tasks",
-> -		.data		= &sysctl_oom_dump_tasks,
-> -		.maxlen		= sizeof(sysctl_oom_dump_tasks),
-> +		.procname	= "oom_kill_quick",
-> +		.data		= &sysctl_oom_kill_quick,
-> +		.maxlen		= sizeof(sysctl_oom_kill_quick),
->  		.mode		= 0644,
->  		.proc_handler	= proc_dointvec,
->  	},
-> diff --git a/mm/oom_kill.c b/mm/oom_kill.c
-> --- a/mm/oom_kill.c
-> +++ b/mm/oom_kill.c
-> @@ -32,9 +32,8 @@
->  #include <linux/security.h>
->  
->  int sysctl_panic_on_oom;
-> -int sysctl_oom_kill_allocating_task;
-> -int sysctl_oom_dump_tasks;
->  int sysctl_oom_forkbomb_thres = DEFAULT_OOM_FORKBOMB_THRES;
-> +int sysctl_oom_kill_quick;
->  static DEFINE_SPINLOCK(zone_scan_lock);
->  
->  /*
-> @@ -397,7 +396,7 @@ static void dump_header(struct task_struct *p, gfp_t gfp_mask, int order,
->  	dump_stack();
->  	mem_cgroup_print_oom_info(mem, p);
->  	show_mem();
-> -	if (sysctl_oom_dump_tasks)
-> +	if (!sysctl_oom_kill_quick)
->  		dump_tasks(mem);
->  }
->  
-> @@ -604,9 +603,9 @@ static void __out_of_memory(gfp_t gfp_mask, int order, unsigned long totalpages,
->  	struct task_struct *p;
->  	unsigned int points;
->  
-> -	if (sysctl_oom_kill_allocating_task)
-> +	if (sysctl_oom_kill_quick)
->  		if (!oom_kill_process(current, gfp_mask, order, 0, totalpages,
-> -			NULL, "Out of memory (oom_kill_allocating_task)"))
-> +			NULL, "Out of memory (quick mode)"))
->  			return;
->  retry:
->  	/*
-> 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
-> 
+Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
+---
+
+If you are a distribution looking to just suck this patch
+into your tree you can wget this:
+
+http://kernel.org/pub/linux/kernel/people/mcgrof/ethernet/AR8152-AR8152.patch
+
+ drivers/net/atl1c/atl1c.h         |   11 +++-
+ drivers/net/atl1c/atl1c_ethtool.c |    2 +-
+ drivers/net/atl1c/atl1c_hw.c      |   83 +++++++++++++++++++++++----
+ drivers/net/atl1c/atl1c_hw.h      |    5 ++
+ drivers/net/atl1c/atl1c_main.c    |  115 +++++++++++++++++++++++++++++++++---
+ 5 files changed, 191 insertions(+), 25 deletions(-)
+
+diff --git a/drivers/net/atl1c/atl1c.h b/drivers/net/atl1c/atl1c.h
+index efe5435..84ae905 100644
+--- a/drivers/net/atl1c/atl1c.h
++++ b/drivers/net/atl1c/atl1c.h
+@@ -313,6 +313,9 @@ enum atl1c_rss_type {
+ enum atl1c_nic_type {
+ 	athr_l1c = 0,
+ 	athr_l2c = 1,
++	athr_l2c_b,
++	athr_l2c_b2,
++	athr_l1d,
+ };
+ 
+ enum atl1c_trans_queue {
+@@ -426,8 +429,12 @@ struct atl1c_hw {
+ #define ATL1C_ASPM_L1_SUPPORT		0x0100
+ #define ATL1C_ASPM_CTRL_MON		0x0200
+ #define ATL1C_HIB_DISABLE		0x0400
+-#define ATL1C_LINK_CAP_1000M		0x0800
+-#define ATL1C_FPGA_VERSION		0x8000
++#define ATL1C_APS_MODE_ENABLE           0x0800
++#define ATL1C_LINK_EXT_SYNC             0x1000
++#define ATL1C_CLK_GATING_EN             0x2000
++#define ATL1C_FPGA_VERSION              0x8000
++	u16 link_cap_flags;
++#define ATL1C_LINK_CAP_1000M		0x0001
+ 	u16 cmb_tpd;
+ 	u16 cmb_rrd;
+ 	u16 cmb_rx_timer; /* 2us resolution */
+diff --git a/drivers/net/atl1c/atl1c_ethtool.c b/drivers/net/atl1c/atl1c_ethtool.c
+index 9b1e0ea..61a0f2f 100644
+--- a/drivers/net/atl1c/atl1c_ethtool.c
++++ b/drivers/net/atl1c/atl1c_ethtool.c
+@@ -37,7 +37,7 @@ static int atl1c_get_settings(struct net_device *netdev,
+ 			   SUPPORTED_100baseT_Full |
+ 			   SUPPORTED_Autoneg       |
+ 			   SUPPORTED_TP);
+-	if (hw->ctrl_flags & ATL1C_LINK_CAP_1000M)
++	if (hw->link_cap_flags & ATL1C_LINK_CAP_1000M)
+ 		ecmd->supported |= SUPPORTED_1000baseT_Full;
+ 
+ 	ecmd->advertising = ADVERTISED_TP;
+diff --git a/drivers/net/atl1c/atl1c_hw.c b/drivers/net/atl1c/atl1c_hw.c
+index 3e69b94..f1389d6 100644
+--- a/drivers/net/atl1c/atl1c_hw.c
++++ b/drivers/net/atl1c/atl1c_hw.c
+@@ -70,17 +70,39 @@ static int atl1c_get_permanent_address(struct atl1c_hw *hw)
+ 	u32 otp_ctrl_data;
+ 	u32 twsi_ctrl_data;
+ 	u8  eth_addr[ETH_ALEN];
++	u16 phy_data;
++	bool raise_vol = false;
+ 
+ 	/* init */
+ 	addr[0] = addr[1] = 0;
+ 	AT_READ_REG(hw, REG_OTP_CTRL, &otp_ctrl_data);
+ 	if (atl1c_check_eeprom_exist(hw)) {
+-		/* Enable OTP CLK */
+-		if (!(otp_ctrl_data & OTP_CTRL_CLK_EN)) {
+-			otp_ctrl_data |= OTP_CTRL_CLK_EN;
+-			AT_WRITE_REG(hw, REG_OTP_CTRL, otp_ctrl_data);
+-			AT_WRITE_FLUSH(hw);
+-			msleep(1);
++		if (hw->nic_type == athr_l1c || hw->nic_type == athr_l2c_b) {
++			/* Enable OTP CLK */
++			if (!(otp_ctrl_data & OTP_CTRL_CLK_EN)) {
++				otp_ctrl_data |= OTP_CTRL_CLK_EN;
++				AT_WRITE_REG(hw, REG_OTP_CTRL, otp_ctrl_data);
++				AT_WRITE_FLUSH(hw);
++				msleep(1);
++			}
++		}
++
++		if (hw->nic_type == athr_l2c_b ||
++		    hw->nic_type == athr_l2c_b2 ||
++		    hw->nic_type == athr_l1d) {
++			atl1c_write_phy_reg(hw, MII_DBG_ADDR, 0x00);
++			if (atl1c_read_phy_reg(hw, MII_DBG_DATA, &phy_data))
++				goto out;
++			phy_data &= 0xFF7F;
++			atl1c_write_phy_reg(hw, MII_DBG_DATA, phy_data);
++
++			atl1c_write_phy_reg(hw, MII_DBG_ADDR, 0x3B);
++			if (atl1c_read_phy_reg(hw, MII_DBG_DATA, &phy_data))
++				goto out;
++			phy_data |= 0x8;
++			atl1c_write_phy_reg(hw, MII_DBG_DATA, phy_data);
++			udelay(20);
++			raise_vol = true;
+ 		}
+ 
+ 		AT_READ_REG(hw, REG_TWSI_CTRL, &twsi_ctrl_data);
+@@ -96,11 +118,31 @@ static int atl1c_get_permanent_address(struct atl1c_hw *hw)
+ 			return -1;
+ 	}
+ 	/* Disable OTP_CLK */
+-	if (otp_ctrl_data & OTP_CTRL_CLK_EN) {
+-		otp_ctrl_data &= ~OTP_CTRL_CLK_EN;
+-		AT_WRITE_REG(hw, REG_OTP_CTRL, otp_ctrl_data);
+-		AT_WRITE_FLUSH(hw);
+-		msleep(1);
++	if ((hw->nic_type == athr_l1c || hw->nic_type == athr_l2c)) {
++		if (otp_ctrl_data & OTP_CTRL_CLK_EN) {
++			otp_ctrl_data &= ~OTP_CTRL_CLK_EN;
++			AT_WRITE_REG(hw, REG_OTP_CTRL, otp_ctrl_data);
++			AT_WRITE_FLUSH(hw);
++			msleep(1);
++		}
++	}
++	if (raise_vol) {
++		if (hw->nic_type == athr_l2c_b ||
++		    hw->nic_type == athr_l2c_b2 ||
++		    hw->nic_type == athr_l1d) {
++			atl1c_write_phy_reg(hw, MII_DBG_ADDR, 0x00);
++			if (atl1c_read_phy_reg(hw, MII_DBG_DATA, &phy_data))
++				goto out;
++			phy_data |= 0x80;
++			atl1c_write_phy_reg(hw, MII_DBG_DATA, phy_data);
++
++			atl1c_write_phy_reg(hw, MII_DBG_ADDR, 0x3B);
++			if (atl1c_read_phy_reg(hw, MII_DBG_DATA, &phy_data))
++				goto out;
++			phy_data &= 0xFFF7;
++			atl1c_write_phy_reg(hw, MII_DBG_DATA, phy_data);
++			udelay(20);
++		}
+ 	}
+ 
+ 	/* maybe MAC-address is from BIOS */
+@@ -114,6 +156,7 @@ static int atl1c_get_permanent_address(struct atl1c_hw *hw)
+ 		return 0;
+ 	}
+ 
++out:
+ 	return -1;
+ }
+ 
+@@ -307,7 +350,7 @@ static int atl1c_phy_setup_adv(struct atl1c_hw *hw)
+ 		mii_adv_data |= ADVERTISE_10HALF  | ADVERTISE_10FULL |
+ 				ADVERTISE_100HALF | ADVERTISE_100FULL;
+ 
+-	if (hw->ctrl_flags & ATL1C_LINK_CAP_1000M) {
++	if (hw->link_cap_flags & ATL1C_LINK_CAP_1000M) {
+ 		if (hw->autoneg_advertised & ADVERTISED_1000baseT_Half)
+ 			mii_giga_ctrl_data |= ADVERTISE_1000HALF;
+ 		if (hw->autoneg_advertised & ADVERTISED_1000baseT_Full)
+@@ -389,6 +432,7 @@ int atl1c_phy_reset(struct atl1c_hw *hw)
+ {
+ 	struct atl1c_adapter *adapter = hw->adapter;
+ 	struct pci_dev *pdev = adapter->pdev;
++	u16 phy_data;
+ 	u32 phy_ctrl_data = GPHY_CTRL_DEFAULT;
+ 	u32 mii_ier_data = IER_LINK_UP | IER_LINK_DOWN;
+ 	int err;
+@@ -404,6 +448,21 @@ int atl1c_phy_reset(struct atl1c_hw *hw)
+ 	AT_WRITE_FLUSH(hw);
+ 	msleep(10);
+ 
++	if (hw->nic_type == athr_l2c_b) {
++		atl1c_write_phy_reg(hw, MII_DBG_ADDR, 0x0A);
++		atl1c_read_phy_reg(hw, MII_DBG_DATA, &phy_data);
++		atl1c_write_phy_reg(hw, MII_DBG_DATA, phy_data & 0xDFFF);
++	}
++
++	if (hw->nic_type == athr_l2c_b ||
++	    hw->nic_type == athr_l2c_b2 ||
++	    hw->nic_type == athr_l1d) {
++		atl1c_write_phy_reg(hw, MII_DBG_ADDR, 0x3B);
++		atl1c_read_phy_reg(hw, MII_DBG_DATA, &phy_data);
++		atl1c_write_phy_reg(hw, MII_DBG_DATA, phy_data & 0xFFF7);
++		msleep(20);
++	}
++
+ 	/*Enable PHY LinkChange Interrupt */
+ 	err = atl1c_write_phy_reg(hw, MII_IER, mii_ier_data);
+ 	if (err) {
+diff --git a/drivers/net/atl1c/atl1c_hw.h b/drivers/net/atl1c/atl1c_hw.h
+index c2c738d..1eeb3ed 100644
+--- a/drivers/net/atl1c/atl1c_hw.h
++++ b/drivers/net/atl1c/atl1c_hw.h
+@@ -57,6 +57,7 @@ int atl1c_restart_autoneg(struct atl1c_hw *hw);
+ #define REG_LINK_CTRL			0x68
+ #define LINK_CTRL_L0S_EN		0x01
+ #define LINK_CTRL_L1_EN			0x02
++#define LINK_CTRL_EXT_SYNC		0x80
+ 
+ #define REG_VPD_CAP			0x6C
+ #define VPD_CAP_ID_MASK                 0xff
+@@ -156,6 +157,8 @@ int atl1c_restart_autoneg(struct atl1c_hw *hw);
+ #define PM_CTRL_PM_REQ_TIMER_SHIFT	20
+ #define PM_CTRL_LCKDET_TIMER_MASK	0x3F
+ #define PM_CTRL_LCKDET_TIMER_SHIFT	24
++#define PM_CTRL_EN_BUFS_RX_L0S		0x10000000
++#define PM_CTRL_SA_DLY_EN		0x20000000
+ #define PM_CTRL_MAC_ASPM_CHK		0x40000000
+ #define PM_CTRL_HOTRST			0x80000000
+ 
+@@ -314,6 +317,8 @@ int atl1c_restart_autoneg(struct atl1c_hw *hw);
+ #define MAC_CTRL_BC_EN              	0x4000000
+ #define MAC_CTRL_DBG                	0x8000000
+ #define MAC_CTRL_SINGLE_PAUSE_EN	0x10000000
++#define MAC_CTRL_HASH_ALG_CRC32		0x20000000
++#define MAC_CTRL_SPEED_MODE_SW		0x40000000
+ 
+ /* MAC IPG/IFG Control Register  */
+ #define REG_MAC_IPG_IFG             	0x1484
+diff --git a/drivers/net/atl1c/atl1c_main.c b/drivers/net/atl1c/atl1c_main.c
+index 2f4be59..1fd2f3e 100644
+--- a/drivers/net/atl1c/atl1c_main.c
++++ b/drivers/net/atl1c/atl1c_main.c
+@@ -21,11 +21,18 @@
+ 
+ #include "atl1c.h"
+ 
+-#define ATL1C_DRV_VERSION "1.0.0.1-NAPI"
++#define ATL1C_DRV_VERSION "1.0.0.2-NAPI"
+ char atl1c_driver_name[] = "atl1c";
+ char atl1c_driver_version[] = ATL1C_DRV_VERSION;
+ #define PCI_DEVICE_ID_ATTANSIC_L2C      0x1062
+ #define PCI_DEVICE_ID_ATTANSIC_L1C      0x1063
++#define PCI_DEVICE_ID_ATHEROS_L2C_B	0x2060 /* AR8152 v1.1 Fast 10/100 */
++#define PCI_DEVICE_ID_ATHEROS_L2C_B2	0x2062 /* AR8152 v2.0 Fast 10/100 */
++#define PCI_DEVICE_ID_ATHEROS_L1D	0x1073 /* AR8151 v1.0 Gigabit 1000 */
++
++#define L2CB_V10			0xc0
++#define L2CB_V11			0xc1
++
+ /*
+  * atl1c_pci_tbl - PCI Device ID Table
+  *
+@@ -38,6 +45,9 @@ char atl1c_driver_version[] = ATL1C_DRV_VERSION;
+ static struct pci_device_id atl1c_pci_tbl[] = {
+ 	{PCI_DEVICE(PCI_VENDOR_ID_ATTANSIC, PCI_DEVICE_ID_ATTANSIC_L1C)},
+ 	{PCI_DEVICE(PCI_VENDOR_ID_ATTANSIC, PCI_DEVICE_ID_ATTANSIC_L2C)},
++	{PCI_DEVICE(PCI_VENDOR_ID_ATTANSIC, PCI_DEVICE_ID_ATHEROS_L2C_B)},
++	{PCI_DEVICE(PCI_VENDOR_ID_ATTANSIC, PCI_DEVICE_ID_ATHEROS_L2C_B2)},
++	{PCI_DEVICE(PCI_VENDOR_ID_ATTANSIC, PCI_DEVICE_ID_ATHEROS_L1D)},
+ 	/* required last entry */
+ 	{ 0 }
+ };
+@@ -593,11 +603,18 @@ static void atl1c_set_mac_type(struct atl1c_hw *hw)
+ 	case PCI_DEVICE_ID_ATTANSIC_L2C:
+ 		hw->nic_type = athr_l2c;
+ 		break;
+-
+ 	case PCI_DEVICE_ID_ATTANSIC_L1C:
+ 		hw->nic_type = athr_l1c;
+ 		break;
+-
++	case PCI_DEVICE_ID_ATHEROS_L2C_B:
++		hw->nic_type = athr_l2c_b;
++		break;
++	case PCI_DEVICE_ID_ATHEROS_L2C_B2:
++		hw->nic_type = athr_l2c_b2;
++		break;
++	case PCI_DEVICE_ID_ATHEROS_L1D:
++		hw->nic_type = athr_l1d;
++		break;
+ 	default:
+ 		break;
+ 	}
+@@ -620,10 +637,13 @@ static int atl1c_setup_mac_funcs(struct atl1c_hw *hw)
+ 		hw->ctrl_flags |= ATL1C_ASPM_L0S_SUPPORT;
+ 	if (link_ctrl_data & LINK_CTRL_L1_EN)
+ 		hw->ctrl_flags |= ATL1C_ASPM_L1_SUPPORT;
++	if (link_ctrl_data & LINK_CTRL_EXT_SYNC)
++		hw->ctrl_flags |= ATL1C_LINK_EXT_SYNC;
+ 
+-	if (hw->nic_type == athr_l1c) {
++	if (hw->nic_type == athr_l1c ||
++	    hw->nic_type == athr_l1d) {
+ 		hw->ctrl_flags |= ATL1C_ASPM_CTRL_MON;
+-		hw->ctrl_flags |= ATL1C_LINK_CAP_1000M;
++		hw->link_cap_flags |= ATL1C_LINK_CAP_1000M;
+ 	}
+ 	return 0;
+ }
+@@ -1234,21 +1254,92 @@ static void atl1c_disable_l0s_l1(struct atl1c_hw *hw)
+ static void atl1c_set_aspm(struct atl1c_hw *hw, bool linkup)
+ {
+ 	u32 pm_ctrl_data;
++	u32 link_ctrl_data;
+ 
+ 	AT_READ_REG(hw, REG_PM_CTRL, &pm_ctrl_data);
+-
++	AT_READ_REG(hw, REG_LINK_CTRL, &link_ctrl_data);
+ 	pm_ctrl_data &= ~PM_CTRL_SERDES_PD_EX_L1;
++
+ 	pm_ctrl_data &=  ~(PM_CTRL_L1_ENTRY_TIMER_MASK <<
+ 			PM_CTRL_L1_ENTRY_TIMER_SHIFT);
++	pm_ctrl_data &= ~(PM_CTRL_LCKDET_TIMER_MASK <<
++			  PM_CTRL_LCKDET_TIMER_SHIFT);
+ 
+ 	pm_ctrl_data |= PM_CTRL_MAC_ASPM_CHK;
++	pm_ctrl_data &= ~PM_CTRL_ASPM_L1_EN;
++	pm_ctrl_data |= PM_CTRL_RBER_EN;
++	pm_ctrl_data |= PM_CTRL_SDES_EN;
++
++	if (hw->nic_type == athr_l2c_b ||
++	    hw->nic_type == athr_l1d ||
++	    hw->nic_type == athr_l2c_b2) {
++		link_ctrl_data &= ~LINK_CTRL_EXT_SYNC;
++		if (!(hw->ctrl_flags & ATL1C_APS_MODE_ENABLE)) {
++			if (hw->nic_type == athr_l2c_b &&
++			    hw->revision_id == L2CB_V10)
++				link_ctrl_data |= LINK_CTRL_EXT_SYNC;
++		}
++
++		AT_WRITE_REG(hw, REG_LINK_CTRL, link_ctrl_data);
++
++		pm_ctrl_data |= PM_CTRL_PCIE_RECV;
++		pm_ctrl_data |= AT_ASPM_L1_TIMER << PM_CTRL_PM_REQ_TIMER_SHIFT;
++		pm_ctrl_data &= ~PM_CTRL_EN_BUFS_RX_L0S;
++		pm_ctrl_data &= ~PM_CTRL_SA_DLY_EN;
++		pm_ctrl_data &= ~PM_CTRL_HOTRST;
++		pm_ctrl_data |= 1 << PM_CTRL_L1_ENTRY_TIMER_SHIFT;
++		pm_ctrl_data |= PM_CTRL_SERDES_PD_EX_L1;
++	}
+ 
+ 	if (linkup) {
+-		pm_ctrl_data |= PM_CTRL_SERDES_PLL_L1_EN;
+-		pm_ctrl_data &= ~PM_CTRL_CLK_SWH_L1;
++		pm_ctrl_data &= ~PM_CTRL_ASPM_L1_EN;
++		pm_ctrl_data &= ~PM_CTRL_ASPM_L0S_EN;
++		if (hw->ctrl_flags & ATL1C_ASPM_L1_SUPPORT)
++			pm_ctrl_data |= PM_CTRL_ASPM_L1_EN;
++		if (hw->ctrl_flags & ATL1C_ASPM_L0S_SUPPORT)
++			pm_ctrl_data |= PM_CTRL_ASPM_L0S_EN;
++
++		if (hw->nic_type == athr_l2c_b ||
++		    hw->nic_type == athr_l1d ||
++		    hw->nic_type == athr_l2c_b2) {
++			if (hw->nic_type == athr_l2c_b)
++				if (!(hw->ctrl_flags & ATL1C_APS_MODE_ENABLE))
++					pm_ctrl_data &= PM_CTRL_ASPM_L0S_EN;
++			pm_ctrl_data &= ~PM_CTRL_SERDES_L1_EN;
++			pm_ctrl_data &= ~PM_CTRL_SERDES_PLL_L1_EN;
++			pm_ctrl_data &= ~PM_CTRL_SERDES_BUDS_RX_L1_EN;
++			pm_ctrl_data |= PM_CTRL_CLK_SWH_L1;
++			if (hw->adapter->link_speed == SPEED_100 ||
++			    hw->adapter->link_speed == SPEED_1000) {
++				pm_ctrl_data &=
++					~(PM_CTRL_L1_ENTRY_TIMER_MASK <<
++					  PM_CTRL_L1_ENTRY_TIMER_SHIFT);
++				if (hw->nic_type == athr_l1d)
++					pm_ctrl_data |= 0xF <<
++						PM_CTRL_L1_ENTRY_TIMER_SHIFT;
++				else
++					pm_ctrl_data |= 7 <<
++						PM_CTRL_L1_ENTRY_TIMER_SHIFT;
++			}
++		} else {
++			pm_ctrl_data |= PM_CTRL_SERDES_L1_EN;
++			pm_ctrl_data |= PM_CTRL_SERDES_PLL_L1_EN;
++			pm_ctrl_data |= PM_CTRL_SERDES_BUDS_RX_L1_EN;
++			pm_ctrl_data &= ~PM_CTRL_CLK_SWH_L1;
++			pm_ctrl_data &= ~PM_CTRL_ASPM_L0S_EN;
++			pm_ctrl_data &= ~PM_CTRL_ASPM_L1_EN;
++		}
++		atl1c_write_phy_reg(hw, MII_DBG_ADDR, 0x29);
++		if (hw->adapter->link_speed == SPEED_10)
++			if (hw->nic_type == athr_l1d)
++				atl1c_write_phy_reg(hw, MII_DBG_ADDR, 0xB69D);
++			else
++				atl1c_write_phy_reg(hw, MII_DBG_DATA, 0xB6DD);
++		else if (hw->adapter->link_speed == SPEED_100)
++			atl1c_write_phy_reg(hw, MII_DBG_DATA, 0xB2DD);
++		else
++			atl1c_write_phy_reg(hw, MII_DBG_DATA, 0x96DD);
+ 
+-		pm_ctrl_data |= PM_CTRL_SERDES_BUDS_RX_L1_EN;
+-		pm_ctrl_data |= PM_CTRL_SERDES_L1_EN;
+ 	} else {
+ 		pm_ctrl_data &= ~PM_CTRL_SERDES_BUDS_RX_L1_EN;
+ 		pm_ctrl_data &= ~PM_CTRL_SERDES_L1_EN;
+@@ -1302,6 +1393,10 @@ static void atl1c_setup_mac_ctrl(struct atl1c_adapter *adapter)
+ 		mac_ctrl_data |= MAC_CTRL_MC_ALL_EN;
+ 
+ 	mac_ctrl_data |= MAC_CTRL_SINGLE_PAUSE_EN;
++	if (hw->nic_type == athr_l1d || hw->nic_type == athr_l2c_b2) {
++		mac_ctrl_data |= MAC_CTRL_SPEED_MODE_SW;
++		mac_ctrl_data |= MAC_CTRL_HASH_ALG_CRC32;
++	}
+ 	AT_WRITE_REG(hw, REG_MAC_CTRL, mac_ctrl_data);
+ }
+ 
+-- 
+1.6.3.3
 
