@@ -1,82 +1,106 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756234Ab0BLBVG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Feb 2010 20:21:06 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:55283 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755847Ab0BLBVB (ORCPT
+	id S1756545Ab0BLBcM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Feb 2010 20:32:12 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:55554 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753340Ab0BLBcK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Feb 2010 20:21:01 -0500
-To: Tejun Heo <tj@kernel.org>
-Cc: Greg KH <gregkh@suse.de>,
-       =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>,
-       Neil Brown <neilb@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sysfs: differentiate between locking links and non-links
-References: <19314.1869.847327.15190@notabene.brown>
-	<2375c9f91002091808n713275dsc9ace8f51871364e@mail.gmail.com>
-	<4B7217CF.2080702@kernel.org> <m1vde57c11.fsf@fess.ebiederm.org>
-	<4B728CFE.40208@kernel.org> <m1sk992bji.fsf@fess.ebiederm.org>
-	<20100210230544.GA678@suse.de> <m1ocjwwob1.fsf@fess.ebiederm.org>
-	<4B73671E.2050105@kernel.org> <m1mxzfzlv3.fsf@fess.ebiederm.org>
-	<4B74A7F3.9000001@kernel.org>
-From: ebiederm@xmission.com (Eric W. Biederman)
-In-Reply-To: <4B74A7F3.9000001@kernel.org> (Tejun Heo's message of "Fri\, 12 Feb 2010 09\:59\:31 +0900")
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-Date: Thu, 11 Feb 2010 17:20:57 -0800
-Message-ID: <m1r5oruu4m.fsf@fess.ebiederm.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); SAEximRunCond expanded to false
+	Thu, 11 Feb 2010 20:32:10 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Fri, 12 Feb 2010 10:28:41 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: David Rientjes <rientjes@google.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
+       Nick Piggin <npiggin@suse.de>, Andrea Arcangeli <aarcange@redhat.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch 6/7 -mm] oom: avoid oom killer for lowmem allocations
+Message-Id: <20100212102841.fa148baf.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <alpine.DEB.2.00.1002100229410.8001@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.1002100224210.8001@chino.kir.corp.google.com>
+	<alpine.DEB.2.00.1002100229410.8001@chino.kir.corp.google.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo <tj@kernel.org> writes:
+On Wed, 10 Feb 2010 08:32:21 -0800 (PST)
+David Rientjes <rientjes@google.com> wrote:
 
-> Hello, Eric.
->
-> On 02/12/2010 03:08 AM, Eric W. Biederman wrote:
->> I have been playing with it and so far the code doesn't seem too bad. I have
->> however come across another misfeature of sysfs.  sysfs_get_active_two appears
->> to be unnecessary overkill.
->>
->> The purpose of the active references are to allows us to block when
->> removing sysfs entries that have custom methods so we don't remove
->> modules or those custom methods don't remove access data structures
->> after the files have been removed.  Further sysfs_remove_dir remove
->> all elements in the directory before removing the directory itself, so
->> there is no chance we will remove a directory with active children.
->> 
->> Tejun do you know of any other reason we want sysfs_get_active_two?
->> 
->> If not I think we can make active references apply exclusively to
->> attributes.
->
-> Yeah, it's necessary for something which I can't remember from the top
-> of my head ATM.  It maybe has something to do with attributes not
-> holding reference to the owning module while the parent kobj does.
-> I'll dig in but IIRC it's not there just for fun.  Is it difficult to
-> do the lockdep annotation without removing get_active_two?
+> If memory has been depleted in lowmem zones even with the protection
+> afforded to it by /proc/sys/vm/lowmem_reserve_ratio, it is unlikely that
+> killing current users will help.  The memory is either reclaimable (or
+> migratable) already, in which case we should not invoke the oom killer at
+> all, or it is pinned by an application for I/O.  Killing such an
+> application may leave the hardware in an unspecified state and there is
+> no guarantee that it will be able to make a timely exit.
+> 
+> Lowmem allocations are now failed in oom conditions so that the task can
+> perhaps recover or try again later.  Killing current is an unnecessary
+> result for simply making a GFP_DMA or GFP_DMA32 page allocation and no
+> lowmem allocations use the now-deprecated __GFP_NOFAIL bit so retrying is
+> unnecessary.
+> 
+> Previously, the heuristic provided some protection for those tasks with 
+> CAP_SYS_RAWIO, but this is no longer necessary since we will not be
+> killing tasks for the purposes of ISA allocations.
+> 
+> Signed-off-by: David Rientjes <rientjes@google.com>
 
-Probably double the code and testing, plus.  I could not figure out
-where to stash a lock_class_key for directories.  So it certainly would
-be a pain to keep get_active_two just because.
+>From viewpoint of panic-on-oom lover, this patch seems to cause regression.
+please do this check after sysctl_panic_on_oom == 2 test.
+I think it's easy. So, temporary Nack to this patch itself.
 
-If you can figure out what the value of an active reference on a directory
-is we can keep them.
 
-My reasoning is that we effectively get an active reference on directories
-for free because we have to delete the children before we can delete a
-directory.
+And I think calling notifier is not very bad in the situation.
+==
+void out_of_memory()
+ ..snip..
+  blocking_notifier_call_chain(&oom_notify_list, 0, &freed);
 
-I do know we have to go up to the directory to get the kobject.  So
-from that perspective it makes sense.
 
-It would not surprise me if there was a reason that is now gone
-that required the active references on directories.  sysfs has gone through
-a lot of cleanups since that code was added.
+So,
 
-Eric
+        if (sysctl_panic_on_oom == 2) {
+                dump_header(NULL, gfp_mask, order, NULL);
+                panic("out of memory. Compulsory panic_on_oom is selected.\n");
+        }
+
+	if (gfp_zone(gfp_mask) < ZONE_NORMAL) /* oom-kill is useless if lowmem is exhausted. */
+		return;
+
+is better. I think.
+
+Thanks,
+-Kame
+
+
+> ---
+>  mm/page_alloc.c |    3 +++
+>  1 files changed, 3 insertions(+), 0 deletions(-)
+> 
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -1914,6 +1914,9 @@ rebalance:
+>  	 * running out of options and have to consider going OOM
+>  	 */
+>  	if (!did_some_progress) {
+> +		/* The oom killer won't necessarily free lowmem */
+> +		if (high_zoneidx < ZONE_NORMAL)
+> +			goto nopage;
+>  		if ((gfp_mask & __GFP_FS) && !(gfp_mask & __GFP_NORETRY)) {
+>  			if (oom_killer_disabled)
+>  				goto nopage;
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+
