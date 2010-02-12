@@ -1,60 +1,57 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757136Ab0BLRtX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 12:49:23 -0500
-Received: from hera.kernel.org ([140.211.167.34]:49934 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756494Ab0BLRtV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 12:49:21 -0500
-Message-ID: <4B759635.1080908@kernel.org>
-Date: Sat, 13 Feb 2010 02:56:05 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	id S1757273Ab0BLRvf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 12:51:35 -0500
+Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:46404 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755971Ab0BLRve convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Feb 2010 12:51:34 -0500
+To: Minchan Kim <minchan.kim@gmail.com>
+Cc: Chris Friesen <cfriesen@nortel.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org, Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: tracking memory usage/leak in "inactive" field in /proc/meminfo?
+References: <4B71927D.6030607@nortel.com>
+	<20100210093140.12D9.A69D9226@jp.fujitsu.com>
+	<4B72E74C.9040001@nortel.com>
+	<28c262361002101645g3fd08cc7t6a72d27b1f94db62@mail.gmail.com>
+	<4B74524D.8080804@nortel.com>
+	<28c262361002111838q7db763feh851a9bea4fdd9096@mail.gmail.com>
+From: Catalin Marinas <catalin.marinas@arm.com>
+Date: Fri, 12 Feb 2010 17:50:31 +0000
+In-Reply-To: <28c262361002111838q7db763feh851a9bea4fdd9096@mail.gmail.com> (Minchan Kim's message of "Fri\, 12 Feb 2010 11\:38\:12 +0900")
+Message-ID: <tnxk4ui9wd4.fsf@pc1117.cambridge.arm.com>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-To: Miklos Szeredi <miklos@szeredi.hu>
-CC: mszeredi@suse.cz, linux-kernel@vger.kernel.org,
-       fuse-devel@lists.sourceforge.net, polynomial-c@gentoo.org,
-       akpm@linux-foundation.org
-Subject: Re: [fuse-devel] [PATCH] FUSE/CUSE: implement direct mmap support
-References: <4B70FBE4.7050700@kernel.org> <E1NerZ6-0007N6-UY@pomaz-ex.szeredi.hu> <4B7296DF.207@kernel.org> <E1NfAl6-0000o4-8Z@pomaz-ex.szeredi.hu> <4B729F07.8020704@kernel.org> <E1NfBTc-0000vk-59@pomaz-ex.szeredi.hu> <4B72A802.6040009@kernel.org> <E1NfE50-0001EK-Ao@pomaz-ex.szeredi.hu> <4B7344A4.1030607@kernel.org> <E1NfVOi-0002l9-5l@pomaz-ex.szeredi.hu> <4B73EE68.4070004@kernel.org> <E1NfYFm-00034C-Pd@pomaz-ex.szeredi.hu> <4B73FE96.2080707@kernel.org> <E1NfYfb-00039p-Uh@pomaz-ex.szeredi.hu> <4B74065D.2000707@kernel.org> <E1NfZHO-0003FY-8E@pomaz-ex.szeredi.hu> <4B740CFB.7060409@kernel.org> <E1NfaD3-0003MQ-Du@pomaz-ex.szeredi.hu> <4B749BDF.8000807@kernel.org> <E1NfsEw-0005AW-Nl@pomaz-ex.szeredi.hu> <4B7558C1.2060405@kernel.org> <E1NfvxX-0005UA-8P@pomaz-ex.szeredi.hu>
-In-Reply-To: <E1NfvxX-0005UA-8P@pomaz-ex.szeredi.hu>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Fri, 12 Feb 2010 17:48:34 +0000 (UTC)
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 12 Feb 2010 17:50:34.0142 (UTC) FILETIME=[E04FBBE0:01CAAC0B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-On 02/12/2010 10:53 PM, Miklos Szeredi wrote:
-> That dev_offset value is used as an offset into the server side mmap
-> address space.  And yes, vma->vm_pgoff and dev_offset should be SHMLBA
-> multiples apart.
-
-Alright.
-
-> But don't call that _adjustment_.  That's totally confusing, these are
-> *two* *different* *offsets*.
-
-At this point, we're completely in the realm of the babel tower.
-Unless we define all the terms explicitly, I don't think using or not
-using a single word would make much difference.  Working with FUSE
-gets a bit confusing regarding which term means what but with
-multiple process address spaces and the dmmap address space and all
-the offsets, it's getting pretty ridiculous.
-
-> There's an alignment requirement but that's all.  If they are the
-> same that is pure coincidence.
+Minchan Kim <minchan.kim@gmail.com> wrote:
+> On Fri, Feb 12, 2010 at 3:54 AM, Chris Friesen <cfriesen@nortel.com> wrote:
+>> I have a modified version of that which I picked up as part of the
+>> kmemleak backport.  However, it doesn't help unless I can narrow down
+>> *which* pages I should care about.
 >
-> And dev_offset (which points into the dmmap address space) is only
-> required if the filesystem/CUSE driver needs server side mmap.
+> kmemleak doesn't support page allocator and ioremap.
+> Above URL patch just can tell who requests page which is using(ie, not
+> free) now.
 
-Hmmm... w/o the dev_offset how would the server designate which area
-to use for the client?
+The ioremap can be easily tracked by kmemleak (it is on my to-do list
+but haven't managed to do it yet). That's not far from vmalloc.
 
-Thanks.
+The page allocator is a bit more difficult since it's used by the slab
+allocator as well and it may lead to some recursive calls into
+kmemleak. I'll have a think.
+
+Anyway, you can leak memory without this being detected by kmemleak -
+just add the allocated objects to a list and never remove them.
 
 -- 
-tejun
+Catalin
