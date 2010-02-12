@@ -1,57 +1,115 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757528Ab0BLUmo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 15:42:44 -0500
-Received: from smtp1.hro.nl ([145.24.129.3]:36714 "EHLO smtp1.hro.nl"
+	id S1757549Ab0BLUpo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 15:45:44 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:14026 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757217Ab0BLUmn convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 15:42:43 -0500
-X-Greylist: delayed 634 seconds by postgrey-1.27 at vger.kernel.org; Fri, 12 Feb 2010 15:42:43 EST
-Message-Id: <4B75C8CB.DBDA.0014.0@hro.nl>
-X-Mailer: Novell GroupWise Internet Agent 7.0.3 
-Date: Fri, 12 Feb 2010 21:31:58 +0100
-From: "Sleddens, J.P.G." <j.p.g.sleddens@hro.nl>
-To: "FTPAdmin Kernel.org" <ftpadmin@kernel.org>, <mirrors@kernel.org>,
-       <users@kernel.org>, "linux-kernel" <linux-kernel@vger.kernel.org>
-Subject: Re: [kernel.org mirrors] [kernel.org users] XZ Migration
-	discussion
-References: <4B744E13.8040004@kernel.org>
- <20100212150137.648dca7c@hyperion.delvare> <4B75A5FE.8020408@zytor.com>
-In-Reply-To: <4B75A5FE.8020408@zytor.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	id S1753905Ab0BLUpm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Feb 2010 15:45:42 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Mike Frysinger <vapier.adi@gmail.com>
+X-Fcc: ~/Mail/linus
+Cc: Christoph Hellwig <hch@lst.de>, oleg@redhat.com,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org
+Subject: Re: [PATCH 1/2] Blackfin: initial tracehook support
+In-Reply-To: Mike Frysinger's message of  Thursday, 11 February 2010 23:33:20 -0500 <8bd0f97a1002112033m5805d4eco3add4d5625e71e9@mail.gmail.com>
+References: <20100202185907.GE3630@lst.de>
+	<1265881389-26925-2-git-send-email-vapier@gentoo.org>
+	<20100211204653.34BB3900@magilla.sf.frob.com>
+	<8bd0f97a1002111554ib69bd48rc3c5f4af65058281@mail.gmail.com>
+	<20100212032406.BE645C81B@magilla.sf.frob.com>
+	<8bd0f97a1002112033m5805d4eco3add4d5625e71e9@mail.gmail.com>
+Emacs: no job too big... no job.
+Message-Id: <20100212204427.5F75CA18@magilla.sf.frob.com>
+Date: Fri, 12 Feb 2010 12:44:27 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> On 12-2-2010 at 20:03, "H. Peter Anvin" <hpa@zytor.com> wrote:
-> On 02/12/2010 06:01 AM, Jean Delvare wrote:
->> 3* Create a new subdirectory for every 2.6.x kernel, and move all the
->> related files there. This would shrink the main index drastically, and
->> each subdirectory would have a reasonable size (except maybe 2.6.16 and
->> 2.6.27.) Oddly enough this has been done for the files under testing/
->> already, so I am curious why we don't do it for the release files (and
->> the testing/incr/ files, while we're at it.)
-> 
-> Well, part of the reason why is that we're functionally "stuck" on 2.6;
-> a prefix which really has lost all meaning.
-> 
-> It might open up the question if we shouldn't just do a Solaris and drop
-> the leading 2 (so the next kernel would be 6.33) or call the kernel
-> after that 3.0 instead of 2.6.34, and then 3.1 instead of 2.6.35.
+> cant say we've had anything to do with this ;).  nor does Blackfin
+> support coredumps on FDPIC ELF (and FLAT has never supported
+> coredumps), and i'm pretty sure we havent looked at anything in gdb
+> along these lines.  no one has ever asked, so we've never looked.
 
-I remember the whole LKML discussion about this a few years back:
-http://lkml.org/lkml/2008/10/15/377 
+Ok.
 
-The whole year.version   or year/month versioning Greg HK proposed
-made a lot of sense to me.  It would also solve our problem with the 2.6
-directory just growing and growing as the year versioning would make a
-natural hierarchy which keeps going no matter what.
+> i dont have a problem with implementing user_regsets ... my point was
+> more that if there's no code using these interfaces, then i could slap
+> together a whole lot of crap and never know if it's correct since i
+> cant test it.  Blackfin doesnt currently implement
+> PTRACE_{G,S}ETREGSET, so even with that patch i dont think i have any
+> (straight forward) test vectors.
 
---
-Jeffry Sleddens
-Rotterdam University
+The point of PTRACE_{G,S}ETREGSET is that no arch code implements them.
+The generic ptrace code does.  The patch for that is in tip/master (I think).
+
+Moreover, the usual cleanup is to make your arch_ptrace() use
+copy_regset_from_user() and copy_regset_to_user() to implement existing
+calls ike PTRACE_GETREGS.  That way, existing ptrace users (strace, gdb)
+become tests of the user_regset paths (some of them).
+
+> i missed the passing of TIF_SINGLESTEP in as the second arg.  i
+> thought you were taking issue with the if(...) portions.
+
+I was trying to explain how you apply your arch knowledge to decide what is
+exactly right for your arch code.
+
+> the way we do it on Blackfin atm is that syscall_trace_{enter,leave}
+> are only called when TIF_SYSCALL_TRACE is set (in the low level
+> assembly), so any checking of thread_flags here is pointless.  i guess
+> the low level code needs updating to check a mask so that we can add
+> TIF_SYSCALL_TRACEPOINT easier.
+
+What happens today when PTRACE_SINGLESTEP is used with the PC sitting at a
+syscall instruction?  If that gets a single-step report (SIGTRAP) after the
+syscall is done, with the PC sitting at the instruction immediately
+following the syscall instruction, then you are already doing the right
+thing.  On some other machines, making that happen involves arch assembly
+code making sure it gets to its syscall_trace_leave() for this case.
+
+> so tracehook_report_syscall_exit() checking TIF_SINGLESTEP only makes
+> sense when the arch doesnt support hardware single stepping in user
+> mode ?  the Blackfin processor does support hardware single stepping
+> (and we utilize it in Linux).
+
+No, that is not what I said at all.  It is necessary if and only if the way
+that the hardware single-step interacts with the syscall entry/exit paths
+on your machine means that the completion of the user-mode syscall
+instruction does not result in a single-step trap like any other single
+user-mode instruction would.  This is the case on machines such as x86 and
+powerpc (I don't know others in detail).  There, the hardware single-step
+feature works such that the real hardware trap either comes in kernel mode
+right at syscall entry, or doesn't come at all.  Hence, the arch code has
+to notice when single-step was enabled at syscall entry time and simulate
+the hardware trap before returning to user mode.
+
+> also, in reading the kerneldocs for tracehook_report_syscall_exit(),
+> it says "an attempted system call".  should system calls greater than
+> NR_syscall (-ENOSYS) also get traced ?  we dont currently do this on
+> the Blackfin port, but going by `strace` differences between my
+> desktop and the board, i guess the answer is "the Blackfin code is
+> currently broken".
+
+Yes.  It's any syscall attempt.  Inside tracehook_report_syscall_entry(),
+all the registers can be changed (via user_regset, i.e. ptrace) so that
+what starts as an entry with a bogus syscall number becomes an entry with a
+different syscall number and/or arguments.  So you can't decide before
+tracehook_report_syscall_entry() whether it is "real" or not.  For every
+tracehook_report_syscall_entry() call, there must be a corresponding
+tracehook_report_syscall_exit() call (unless TIF_SYSCALL_TRACE was cleared
+in the interim).  At that exit point, the registers can again be changed.
+
+For example, an "expected" use (that some things do today via ptrace) is to
+catch the entry, abort the syscall by changing the syscall number register
+to something bogus like -1, resume so it diagnoses -ENOSYS and gets to
+syscall exit, then catch the exit and reset the return value registers to
+pretend some particular syscall results happened.
+
+
+Thanks,
+Roland
 
