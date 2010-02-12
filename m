@@ -1,64 +1,71 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751434Ab0BLITF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 03:19:05 -0500
-Received: from ozlabs.org ([203.10.76.45]:35153 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750805Ab0BLITE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 03:19:04 -0500
-Date: Fri, 12 Feb 2010 19:17:24 +1100
-From: Anton Blanchard <anton@samba.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
-       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: perf annotate SEGVs
-Message-ID: <20100212081724.GA13355@kryten>
-References: <20100212052427.GK3399@kryten>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100212052427.GK3399@kryten>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	id S1751932Ab0BLIZq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 03:25:46 -0500
+Received: from mail-fx0-f215.google.com ([209.85.220.215]:56433 "EHLO
+	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750805Ab0BLIZp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Feb 2010 03:25:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=SxbHnfgpYTHs9PtUhFnWuqzgRkO3GkRk+G+NOR1gUUfQO1UNM1x8LmzKnlDlptH1h3
+         K9HYLwKi5Anwi8cSe4nJvNCwZsyZ5kHAq0g7iUUThZfWbQLi3DI/wtA3aXLfI/wA90rp
+         resS1NaekbcoRZSTobXyKMQILvuuVw166+8Zo=
+Subject: Re: core i7: hang at Booting processor 5 APIC 0x3 ip 0x6000
+From: Alberto Panizzo <maramaopercheseimorto@gmail.com>
+To: "Justin P. Mattock" <justinmattock@gmail.com>
+Cc: Tomasz Chmielewski <mangoo@wpkg.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <4B6885FA.80509@gmail.com>
+References: <4B687649.5070204@wpkg.org> <4B687EFF.8000202@gmail.com>
+	 <4B687F77.5020409@wpkg.org>  <4B6885FA.80509@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 12 Feb 2010 09:25:39 +0100
+Message-ID: <1265963139.2484.3.camel@realization>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On mar, 2010-02-02 at 12:07 -0800, Justin P. Mattock wrote:
+> On 02/02/10 11:39, Tomasz Chmielewski wrote:
+> > On 02.02.2010 20:37, Justin P. Mattock wrote:
+> >> apologize for top posting(didn't want to cut dmesg), can this be
+> >> reproduced easily?
+> >> if so are you able to bisect this?
+> >
+> > I can reproduce it every week or so, with several reboots daily.
+> >
+> > Sometimes I can reboot for a few hours in a row, and it boots up
+> > correctly each time.
+> >
+> > So I doubt it's easily bisectable.
+> >
+> >
+> 
+> shoot!! you can probably go with the bisect
+> but probably wont hear from you until a month or so(given this takes a 
+> week to reproduce).
+> I've been hitting some odd thing here similar to what
+> you have,(stuck during boot right at the CPU*) but probably every 
+> two/three months.
+> (from what I've read it seems some cpupowermgmnt.kext thing getting 
+> mixed up over here(iMac));
+> 
+> Justin P. Mattock
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-Hi,
+Hi all! In this discussion I can say that Ubuntu kernel 2.6.31-17-generic
+Boots well on my DELL studio 1557 (core i7 powered).
 
-I think I understand a problem in perf annotate where I see random corruption
-(rb tree issues, glibc malloc failures etc).
+-- 
+Alberto!
 
-The issue happens with zero length symbols, in this particular case they
-are kernel functions written entirely in assembly, eg .copy_4K_page,
-.__copy_tofrom_user and .memcpy:
-
-   Num:    Value          Size Type    Bind   Vis      Ndx Name
- 63516: c00000000004a774   212 FUNC    GLOBAL DEFAULT    1 .devm_ioremap_prot
- 69095: c00000000004a848     0 FUNC    GLOBAL DEFAULT    1 .copy_4K_page
- 62002: c00000000004aa00     0 FUNC    GLOBAL DEFAULT    1 .__copy_tofrom_user
- 50576: c00000000004b000     0 FUNC    GLOBAL DEFAULT    1 .memcpy
- 69557: c00000000004b278   176 FUNC    GLOBAL DEFAULT    1 .copy_in_user
- 51841: c00000000004b328   144 FUNC    GLOBAL DEFAULT    1 .copy_to_user
-
-In symbol_filter we look at the length of each symbol:
-
-static int symbol_filter(struct map *map __used, struct symb
-...
-                const int size = (sizeof(*priv->hist) +
-                                 (sym->end - sym->start) * sizeof(u64));
- 
-And since start == end we create 0 bytes of space for the ip[] array.
-
-Later on in hist_hit we then start indexing off this array:
-
-       h->ip[offset]++;
-
-Which then corrupts whatever is next in memory. With large assembly functions
-we corrupt a lot :)
-
-How should we fix this? Do we need to do a first pass through our symbols
-to fixup ->end before allocating the ->ip[] arrays?
-
-Anton
