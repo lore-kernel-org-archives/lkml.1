@@ -1,96 +1,63 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757925Ab0BLWq7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 17:46:59 -0500
-Received: from mail.windriver.com ([147.11.1.11]:45606 "EHLO
-	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753466Ab0BLWqy (ORCPT
+	id S1755905Ab0BLWzg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 17:55:36 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53615 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751403Ab0BLWzf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 17:46:54 -0500
-From: Jason Wessel <jason.wessel@windriver.com>
-To: linux-kernel@vger.kernel.org
-Cc: kgdb-bugreport@lists.sourceforge.net, mingo@elte.hu,
-       Jason Wessel <jason.wessel@windriver.com>, x86@kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH 4/8] x86,early dr regs,kgdb: Allow kernel debugger early dr register access
-Date: Fri, 12 Feb 2010 16:39:25 -0600
-Message-Id: <1266014369-29547-5-git-send-email-jason.wessel@windriver.com>
-X-Mailer: git-send-email 1.6.4.rc1
-In-Reply-To: <1266014369-29547-1-git-send-email-jason.wessel@windriver.com>
-References: <1266014369-29547-1-git-send-email-jason.wessel@windriver.com>
-X-OriginalArrivalTime: 12 Feb 2010 22:43:09.0781 (UTC) FILETIME=[C049A850:01CAAC34]
+	Fri, 12 Feb 2010 17:55:35 -0500
+Date: Fri, 12 Feb 2010 14:54:40 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jason Wessel <jason.wessel@windriver.com>
+Cc: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
+       mingo@elte.hu, Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [PATCH 22/28] printk,kdb: capture printk() when in kdb shell
+Message-Id: <20100212145440.7f0c68d0.akpm@linux-foundation.org>
+In-Reply-To: <1266014143-29444-23-git-send-email-jason.wessel@windriver.com>
+References: <1266014143-29444-1-git-send-email-jason.wessel@windriver.com>
+	<1266014143-29444-23-git-send-email-jason.wessel@windriver.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If the kernel debugger was configured, attached and started with
-kgdbwait, the hardware breakpoint registers should get restored by the
-kgdb code which is managing the dr registers.
+On Fri, 12 Feb 2010 16:35:37 -0600 Jason Wessel <jason.wessel@windriver.com> wrote:
 
-CC: x86@kernel.org
-CC: Thomas Gleixner <tglx@linutronix.de>
-CC: Ingo Molnar <mingo@redhat.com>
-CC: H. Peter Anvin <hpa@zytor.com>
-Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
----
- arch/x86/kernel/cpu/common.c |   29 +++++++++++++++++------------
- 1 files changed, 17 insertions(+), 12 deletions(-)
+> @@ -609,6 +610,14 @@ asmlinkage int printk(const char *fmt, ...)
+>  	va_list args;
+>  	int r;
+>  
+> +#ifdef CONFIG_KGDB_KDB
+> +	if (unlikely(kdb_trap_printk)) {
+> +		va_start(args, fmt);
+> +		r = vkdb_printf(fmt, args);
+> +		va_end(args);
+> +		return r;
+> +	}
+> +#endif
+>  	va_start(args, fmt);
+>  	r = vprintk(fmt, args);
+>  	va_end(args);
 
-diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
-index 4868e4a..712c1eb 100644
---- a/arch/x86/kernel/cpu/common.c
-+++ b/arch/x86/kernel/cpu/common.c
-@@ -1084,6 +1084,20 @@ static void clear_all_debug_regs(void)
- 	}
- }
+this?
+
+--- a/kernel/printk.c~a
++++ a/kernel/printk.c
+@@ -594,7 +594,11 @@ asmlinkage int printk(const char *fmt, .
+ 	int r;
  
-+#ifdef CONFIG_KGDB
-+/*
-+ * Restore debug regs if using kgdbwait and you have a kernel debugger
-+ * connection established.
-+ */
-+static void dbg_restore_debug_regs(void)
-+{
-+	if (unlikely(kgdb_connected && arch_kgdb_ops.correct_hw_break))
-+		arch_kgdb_ops.correct_hw_break();
-+}
-+#else /* ! CONFIG_KGDB */
-+#define dbg_restore_debug_regs()
-+#endif /* ! CONFIG_KGDB */
-+
- /*
-  * cpu_init() initializes state that is per-CPU. Some data is already
-  * initialized (naturally) in the bootstrap process, such as the GDT
-@@ -1174,18 +1188,8 @@ void __cpuinit cpu_init(void)
- 	load_TR_desc();
- 	load_LDT(&init_mm.context);
+ 	va_start(args, fmt);
++#ifdef CONFIG_KGDB_KDB
++	r = vkdb_printf(fmt, args);
++#else
+ 	r = vprintk(fmt, args);
++#endif
+ 	va_end(args);
  
--#ifdef CONFIG_KGDB
--	/*
--	 * If the kgdb is connected no debug regs should be altered.  This
--	 * is only applicable when KGDB and a KGDB I/O module are built
--	 * into the kernel and you are using early debugging with
--	 * kgdbwait. KGDB will control the kernel HW breakpoint registers.
--	 */
--	if (kgdb_connected && arch_kgdb_ops.correct_hw_break)
--		arch_kgdb_ops.correct_hw_break();
--	else
--#endif
--		clear_all_debug_regs();
-+	clear_all_debug_regs();
-+	dbg_restore_debug_regs();
- 
- 	fpu_init();
- 
-@@ -1239,6 +1243,7 @@ void __cpuinit cpu_init(void)
- #endif
- 
- 	clear_all_debug_regs();
-+	dbg_restore_debug_regs();
- 
- 	/*
- 	 * Force FPU initialization:
--- 
-1.6.4.rc1
+ 	return r;
+_
 
