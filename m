@@ -1,101 +1,136 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756870Ab0BLOB3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 09:01:29 -0500
-Received: from liberdade.minaslivre.org ([72.232.254.139]:39592 "EHLO
-	liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756650Ab0BLOBQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 09:01:16 -0500
-Date: Fri, 12 Feb 2010 11:55:36 -0200
-From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Simon Raffeiner <sturmflut@lieberbiber.de>,
-       Andrey Yurovsky <andrey@cozybit.com>,
-       Javier Cardona <javier@cozybit.com>
-Subject: Re: [PATCH] nl80211: does not allow NEW_STATION and DEL_STATION
- for mesh
-Message-ID: <20100212135535.GA1123@holoscopio.com>
-References: <1265978241-1601-1-git-send-email-cascardo@holoscopio.com>
- <1265978993.15701.0.camel@jlt3.sipsolutions.net>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="45Z9DzgjV8m4Oswq"
-Content-Disposition: inline
-In-Reply-To: <1265978993.15701.0.camel@jlt3.sipsolutions.net>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	id S1756919Ab0BLOBv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 09:01:51 -0500
+Received: from poutre.nerim.net ([62.4.16.124]:61787 "EHLO poutre.nerim.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756869Ab0BLOBo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Feb 2010 09:01:44 -0500
+Date: Fri, 12 Feb 2010 15:01:37 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: "J.H." <warthog9@kernel.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, mirrors@kernel.org,
+       users@kernel.org, "FTPAdmin Kernel.org" <ftpadmin@kernel.org>,
+       lasse.collin@tukaani.org
+Subject: Re: [kernel.org users] XZ Migration discussion
+Message-ID: <20100212150137.648dca7c@hyperion.delvare>
+In-Reply-To: <4B744E13.8040004@kernel.org>
+References: <4B744E13.8040004@kernel.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 11 Feb 2010 10:36:03 -0800, J.H. wrote:
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
+> 
+> Hey Everyone,
+> 
+> So as the subject states this is more a centralized discussion on
+> migration plans to using and providing xz for content on kernel.org.
+> Currently we provide gz and bz2, with gz acting as the original content
+> and kernel.org itself generating the resulting bz2 files.  There are a
+> couple of possible proposals and wanted to toss them out there, and get
+> feedback from everyone: the kernel community, the mirrors of kernel.org
+> and the direct users of kernel.org.
 
---45Z9DzgjV8m4Oswq
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Don't you have download statistics available? If we knew which
+compression format is preferred, an by which margin, it would help make
+an educated decision.
 
-On Fri, Feb 12, 2010 at 01:49:53PM +0100, Johannes Berg wrote:
-> On Fri, 2010-02-12 at 10:37 -0200, Thadeu Lima de Souza Cascardo wrote:
-> > As discussed in linux-wireless mailint list, adding and removing
-> > stations for mesh topologies is not necessary. Since doing it triggers
-> > bugs, the sugestion was to simply disable it.
-> >=20
-> > Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-> > Cc: Johannes Berg <johannes@sipsolutions.net>
-> > Cc: Simon Raffeiner <sturmflut@lieberbiber.de>
-> > Cc: Andrey Yurovsky <andrey@cozybit.com>
-> > Cc: Javier Cardona <javier@cozybit.com>
-> > ---
-> >  net/wireless/nl80211.c |   47
-> > +++++++++++------------------------------------
-> >  1 files changed, 11 insertions(+), 36 deletions(-)
-> >=20
-> > diff --git a/net/wireless/nl80211.c b/net/wireless/nl80211.c
-> > index 5b79ecf..176b8fe 100644
-> > --- a/net/wireless/nl80211.c
-> > +++ b/net/wireless/nl80211.c
-> > @@ -2001,6 +2001,10 @@ static int nl80211_new_station(struct sk_buff
-> > *skb, struct genl_info *info)
-> > =20
-> >  	memset(&params, 0, sizeof(params));
-> > =20
-> > +	if (dev->ieee80211_ptr->iftype !=3D NL80211_IFTYPE_AP &&
-> > +	    dev->ieee80211_ptr->iftype !=3D NL80211_IFTYPE_AP_VLAN)
-> > +		return -EINVAL;
-> > +
-> >  	if (!info->attrs[NL80211_ATTR_MAC])
-> >  		return -EINVAL;
->=20
-> You clearly didn't ever try this code.
->=20
-> johannes
+> ========================================================================
+> 
+> Option 1)
+> 
+> Leave gz as the master, and migrate bz2 to xz.  This will happen in
+> stages obviously. with bz2 ultimately being phased out.
+> 
+> 	Migration option 1)
+> 
+> 		All new content would be provided in .bz2 and .xz with
+> 		an ultimate date set that the .bz2 files would stop
+> 		being generated with new content.  This would leave all
+> 		existing content alone and it would not be a migration
+> 		of the current .bz2 files to xz
+> 
+> 	Migration option 2)
+> 
+> 		At some point there would be a mass conversion of all
+> 		existing content to include .bz2 and .xz.  These would
+> 		be run in parallel for a time period until it was
+> 		determined that .bz2 was no longer needed and it would
+> 		be removed from the servers leaving .gz and .xz
+> 
+> Option 2)
+> 
+> Convert the master data from gz to bz2 and use xz as the new file
+> format.  This has the downside of causing more tool churn as it means
+> the kernel developers will have to eventually convert from gz to bz2,
+> which means for a time there will be nag e-mails if you upload gz
+> instead of bz2 and such.  It would also mean that we (kernel.org) would
+> need to be able to support .gz and .bz2 as master data for a time.
+> 
+> Migration options are identical to Option 1 more or less, with either
+> just new content getting converted, or all content getting converted.
+> 
+> ========================================================================
+> 
+> I'm personally leaning towards option 1, though personally don't really
+> have a preference on the migration options, as both obviously offer
+> different advantages, and again this e-mail is more to spur on the
+> discussion and come to some general consensus across all of the groups
+> concerned before moving forward with a more specific plan.
+> 
+> So I'm inviting discussion, questions and comments on this so we know
+> which way to ultimately go.
 
-Sorry. This code has obviously given me an oops. I did it in a hurry and
-thought that was a good optimization to get out as early as possible in
-the case the device was not in AP mode.
+Maybe that's just me, but my main concern is neither download times nor
+decompression times. My main concern is the access time to directory
+indexes when browsing the kernel archive, because there are 5 entries
+for every patch or tarball: .bz2, .bz2.sign, .gz, .gz.sign and .sign.
+This is horribly slow. The main directory for 2.6 kernels has an index
+weighting over 300 kB raw, turning into a ~600 kB document when
+HTML-ized. Just fetching it takes 3 seconds and then my browser takes a
+long time to format it. There are 3881 entries in that directory today,
+and it keeps growing!
 
-I have fixed it, but I would like to do a more thorough test now to make
-up for my mistake.
+So, once we have settled for a compression strategy, I think it would
+be the right time to discuss the directory structure. With the advent
+of the stable branches and the new development model - which pretty
+much implies that we'll live with main version 2.6 forever - the file
+count is much higher than it used to me.
 
-So, is there any test tool around? I am playing with iw code to do
-these tests. Any recommendations for the values of listen interval and
-the acceptable values for supported rates and aid?
+I can think of several ways to improve the situation here, some of
+which could be combined.
 
-Regards,
-Cascardo.
+1* Keep a single compression format. This saves almost 40% of the
+files.
 
---45Z9DzgjV8m4Oswq
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+2* Move one of the compression formats somewhere else, so that it
+doesn't get in the way but is still available if needed.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+3* Create a new subdirectory for every 2.6.x kernel, and move all the
+related files there. This would shrink the main index drastically, and
+each subdirectory would have a reasonable size (except maybe 2.6.16 and
+2.6.27.) Oddly enough this has been done for the files under testing/
+already, so I am curious why we don't do it for the release files (and
+the testing/incr/ files, while we're at it.)
 
-iEYEARECAAYFAkt1XdcACgkQyTpryRcqtS3MZgCgh2U6J+8r7ZzPBR0Y1+d6lpAg
-JJYAn3S8wpVAqkYZNLnOA0Xs2cp7sIoW
-=9QTc
------END PGP SIGNATURE-----
+4* Get rid of the LATEST-IS-* files. This is a small count, won't save
+much, but these files seem totally useless to me these days. Depending
+on what you want exactly, there are many versions which can be
+considered the latest, and there are better ways to know which they are
+(for example http://www.eu.kernel.org/kdist/finger_banner ). And these
+files tend to get stuck so you can't rely on them anyway.
 
---45Z9DzgjV8m4Oswq--
+I wouldn't worry too much about breaking the current locations. Just
+give some time for software authors (ketchup comes to mind) to update
+their code and it shouldn't be a big problem.
+
+Thanks,
+-- 
+Jean Delvare
