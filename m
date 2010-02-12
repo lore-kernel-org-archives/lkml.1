@@ -1,86 +1,81 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754666Ab0BLMAI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 07:00:08 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:59326 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751206Ab0BLMAF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 07:00:05 -0500
-Date: Fri, 12 Feb 2010 09:59:47 -0200
-From: Arnaldo Carvalho de Melo <acme@infradead.org>
-To: Anton Blanchard <anton@samba.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
-       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: perf annotate SEGVs
-Message-ID: <20100212115947.GC8589@ghostprotocols.net>
-References: <20100212052427.GK3399@kryten> <20100212081724.GA13355@kryten>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100212081724.GA13355@kryten>
-X-Url: http://acmel.wordpress.com
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	id S1756601Ab0BLMBK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 07:01:10 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:55542 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752213Ab0BLMBB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Feb 2010 07:01:01 -0500
+From: Mel Gorman <mel@csn.ul.ie>
+To: Andrea Arcangeli <aarcange@redhat.com>
+Cc: Christoph Lameter <cl@linux-foundation.org>, Adam Litke <agl@us.ibm.com>,
+       Avi Kivity <avi@redhat.com>, David Rientjes <rientjes@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: [PATCH 02/12] Allow CONFIG_MIGRATION to be set without CONFIG_NUMA or memory hot-remove
+Date: Fri, 12 Feb 2010 12:00:49 +0000
+Message-Id: <1265976059-7459-3-git-send-email-mel@csn.ul.ie>
+X-Mailer: git-send-email 1.6.5
+In-Reply-To: <1265976059-7459-1-git-send-email-mel@csn.ul.ie>
+References: <1265976059-7459-1-git-send-email-mel@csn.ul.ie>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Fri, Feb 12, 2010 at 07:17:24PM +1100, Anton Blanchard escreveu:
-> I think I understand a problem in perf annotate where I see random corruption
-> (rb tree issues, glibc malloc failures etc).
-> 
-> The issue happens with zero length symbols, in this particular case they
-> are kernel functions written entirely in assembly, eg .copy_4K_page,
-> .__copy_tofrom_user and .memcpy:
-> 
->    Num:    Value          Size Type    Bind   Vis      Ndx Name
->  63516: c00000000004a774   212 FUNC    GLOBAL DEFAULT    1 .devm_ioremap_prot
->  69095: c00000000004a848     0 FUNC    GLOBAL DEFAULT    1 .copy_4K_page
->  62002: c00000000004aa00     0 FUNC    GLOBAL DEFAULT    1 .__copy_tofrom_user
->  50576: c00000000004b000     0 FUNC    GLOBAL DEFAULT    1 .memcpy
->  69557: c00000000004b278   176 FUNC    GLOBAL DEFAULT    1 .copy_in_user
->  51841: c00000000004b328   144 FUNC    GLOBAL DEFAULT    1 .copy_to_user
-> 
-> In symbol_filter we look at the length of each symbol:
-> 
-> static int symbol_filter(struct map *map __used, struct symb
-> ...
->                 const int size = (sizeof(*priv->hist) +
->                                  (sym->end - sym->start) * sizeof(u64));
->  
-> And since start == end we create 0 bytes of space for the ip[] array.
-> 
-> Later on in hist_hit we then start indexing off this array:
-> 
->        h->ip[offset]++;
-> 
-> Which then corrupts whatever is next in memory. With large assembly functions
-> we corrupt a lot :)
-> 
-> How should we fix this? Do we need to do a first pass through our symbols
-> to fixup ->end before allocating the ->ip[] arrays?
+CONFIG_MIGRATION currently depends on CONFIG_NUMA or on the architecture
+being able to hot-remove memory. The main users of page migration such as
+sys_move_pages(), sys_migrate_pages() and cpuset process migration are
+only beneficial on NUMA so it makes sense.
 
-We have already symbols__fixup_end() for doing that:
+As memory compaction will operate within a zone and is useful on both NUMA
+and non-NUMA systems, this patch allows CONFIG_MIGRATION to be set if the
+user selects CONFIG_COMPACTION as an option.
 
-        /*
-         * For misannotated, zeroed, ASM function sizes.
-         */
-        if (nr > 0) {
-                symbols__fixup_end(&self->symbols[map->type]);
-                if (kmap) {
-                        /*
-                         * We need to fixup this here too because we create new
-                         * maps here, for things like vsyscall sections.
-                         */
-                        __map_groups__fixup_end(kmap->kmaps, map->type);
-                }
-        }
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
+---
+ mm/Kconfig |   20 ++++++++++++++++----
+ 1 files changed, 16 insertions(+), 4 deletions(-)
 
-but, as you show, there are code paths that don't reach this part...
+diff --git a/mm/Kconfig b/mm/Kconfig
+index 17b8947..b1c2781 100644
+--- a/mm/Kconfig
++++ b/mm/Kconfig
+@@ -168,17 +168,29 @@ config SPLIT_PTLOCK_CPUS
+ 	default "4"
+ 
+ #
++# support for memory compaction
++config COMPACTION
++	bool "Allow for memory compaction"
++	def_bool y
++	select MIGRATION
++	depends on EXPERIMENTAL && HUGETLBFS
++	help
++	  Allows the compaction of memory for the allocation of huge pages.
++
++#
+ # support for page migration
+ #
+ config MIGRATION
+ 	bool "Page migration"
+ 	def_bool y
+-	depends on NUMA || ARCH_ENABLE_MEMORY_HOTREMOVE
++	depends on NUMA || ARCH_ENABLE_MEMORY_HOTREMOVE || COMPACTION
+ 	help
+ 	  Allows the migration of the physical location of pages of processes
+-	  while the virtual addresses are not changed. This is useful for
+-	  example on NUMA systems to put pages nearer to the processors accessing
+-	  the page.
++	  while the virtual addresses are not changed. This is useful in
++	  two situations. The first is on NUMA systems to put pages nearer
++	  to the processors accessing. The second is when allocating huge
++	  pages as migration can relocate pages to satisfy a huge page
++	  allocation instead of reclaiming.
+ 
+ config PHYS_ADDR_T_64BIT
+ 	def_bool 64BIT || ARCH_PHYS_ADDR_T_64BIT
+-- 
+1.6.5
 
-Investigating.
-
-- Arnaldo
