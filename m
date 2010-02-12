@@ -1,51 +1,75 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757430Ab0BLTeT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 14:34:19 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:33218 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753062Ab0BLTeS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 14:34:18 -0500
-Message-ID: <4B75AD35.3080207@suse.com>
-Date: Fri, 12 Feb 2010 14:34:13 -0500
-From: Jeff Mahoney <jeffm@suse.com>
-Organization: SUSE Labs, Novell, Inc
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100111 SUSE/3.0.1-1.1 Thunderbird/3.0.1
+	id S1757015Ab0BLTkH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 14:40:07 -0500
+Received: from mail-pz0-f197.google.com ([209.85.222.197]:63736 "EHLO
+	mail-pz0-f197.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756579Ab0BLTkE convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Feb 2010 14:40:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=T/rUNti4cP1QOpr3D9a7VMPrn3fth6VS7TK3ClfYLFiHneoAffLHapFgm8XdjYSKGG
+         IMYkemDF5lL+EdNnZHU4PB+tdTYERdamA+p1YM93M4J/4tS9UolulvutfU4tqlr5NZOY
+         isFyksuw9rA3JfhqA3U6/btb+UIZgQ/3MZ66k=
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: [PATCH] delayacct: align to 8 byte boundary on 64-bit systems
-References: <4B75865B.8000307@suse.com>	<20100212101957.9f4a4a3a.akpm@linux-foundation.org>	<4B75A9F7.4030607@suse.com> <20100212112912.be58b670.akpm@linux-foundation.org>
-In-Reply-To: <20100212112912.be58b670.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20100212184756.GA14751@suse.de>
+References: <8AFC7968D54FB448A30D8F38F259C56212E883CB@TK5EX14MBXC118.redmond.corp.microsoft.com> 
+	<20100211233612.GB10315@suse.de> <8AFC7968D54FB448A30D8F38F259C56212E88B0F@TK5EX14MBXC118.redmond.corp.microsoft.com> 
+	<20100212184756.GA14751@suse.de>
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Date: Fri, 12 Feb 2010 11:39:44 -0800
+Message-ID: <43e72e891002121139y4bb4fbc2mdfc99f3b7ad6ebef@mail.gmail.com>
+Subject: Re: [PATCH 1/1] Staging: hv: Add proper versioning to HV 
+	drivers-Corrected.
+To: Greg KH <gregkh@suse.de>
+Cc: Hank Janssen <hjanssen@microsoft.com>,
+       "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>,
+       Haiyang Zhang <haiyangz@microsoft.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/12/2010 02:29 PM, Andrew Morton wrote:
-> On Fri, 12 Feb 2010 14:20:23 -0500
-> Jeff Mahoney <jeffm@suse.com> wrote:
-> 
->>> Seems safe enough.  We'd be safer still if we didn't do this on 64-bit
->>> architectures which don't need it.  ie: x86_64.  But if we do that we
->>> add a risk that people will develop shoddy code which works on x86_64
->>> and doesn't work on ia64.
+On Fri, Feb 12, 2010 at 10:47 AM, Greg KH <gregkh@suse.de> wrote:
+> On Fri, Feb 12, 2010 at 05:55:34PM +0000, Hank Janssen wrote:
 >>
->> Is there a way to do that without needlessly complicating things? I
->> didn't see any existing infrastructure to do that.
-> 
-> ifdefs?  I don't think it's worth doing, really.  Probably anyone who
-> wrote an application for this copied the getdelays.c code anyway.
+>> > >
+>> > >  drivers/staging/hv/VersionInfo.h |   22 +++++++++++++++++++---
+>> >
+>> > You forgot a "---" between the signed-off-by and the diffstat.  If you
+>> > use either git or quilt, it will get this correct automagically.  That
+>> > infers you used something else, which is quite scary.  What are you
+>> > using instead to create patches?
+>> >
+>> > Don't worry, I can edit this by hand when I apply it, and will do so in
+>> > a few days when I get to my "to-apply" queue, but in the future, please
+>> > don't do this.
+>> >
+>> > thanks,
+>> >
+>> > greg k-h
+>>
+>> This must have been the result of a cut/paste error on my side.
+>>
+>> I use the following command for my diff   'git diff -M -u --stat'
+>
+> What's wrong with 'git format-patch'?
+>
+> You are creating a "raw" diff, which is fine, but you then need to
+> include the rest of the comments.  If you commit the patch to a branch,
+> with the comments in them, then you can just automatically create the
+> patches in correct format.
 
-Yeah I didn't want to get into #if defined(LIST OF ARCHES) for this. I
-was hoping for a way to get the alignment rules for the arch. In the
-absence of that, this is good enough. You're probably right about people
-just lifting the getdelays.c code.
+In case this helps:
 
--Jeff
+http://wireless.kernel.org/en/developers/Documentation/git-guide
 
--- 
-Jeff Mahoney
-SUSE Labs
+Toward s the end there is a git format-patch blurb and explains how to
+set up your e-mail client with ssmpt.
+
+  Luis
