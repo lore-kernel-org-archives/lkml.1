@@ -1,39 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757221Ab0BLQ2S (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 11:28:18 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:43885 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757104Ab0BLQ2R (ORCPT
+	id S1757204Ab0BLQan (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 11:30:43 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:47592 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756528Ab0BLQam (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 11:28:17 -0500
-Date: Fri, 12 Feb 2010 16:28:10 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Julien BLACHE <jb@jblache.org>
-Cc: Soeren Sonnenburg <sonne@debian.org>, nicolas@boichat.ch,
-       felipe_alfaro@linuxmail.org,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Brightness control for MacBook Pro - Nvidia 9400
-Message-ID: <20100212162810.GA20998@srcf.ucam.org>
-References: <1265920725.7103.7.camel@no> <878wayk8hn.fsf@sonic.technologeek.org> <20100212141457.GA18714@srcf.ucam.org> <87zl3eto99.fsf@sonic.technologeek.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87zl3eto99.fsf@sonic.technologeek.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
+	Fri, 12 Feb 2010 11:30:42 -0500
+X-Authority-Analysis: v=1.0 c=1 a=uTOmaDeAZlAA:10 a=7U3hwN5JcxgA:10 a=aAamoVld-443F8sU1p0A:9 a=HgNhwNo1bhxPHLr5qM0A:7 a=KlUSV5-pwiJF8aMqgC7uYG2fn7sA:4
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: Re: [kernel.org users] XZ Migration discussion
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Jean Delvare <khali@linux-fr.org>
+Cc: "J.H." <warthog9@kernel.org>, "FTPAdmin Kernel.org" <ftpadmin@kernel.org>,
+       users@kernel.org, lasse.collin@tukaani.org,
+       linux-kernel <linux-kernel@vger.kernel.org>, mirrors@kernel.org
+In-Reply-To: <20100212171149.5c9f78d2@hyperion.delvare>
+References: <4B744E13.8040004@kernel.org>
+	 <20100212150137.648dca7c@hyperion.delvare>
+	 <1265988318.24271.30.camel@gandalf.stny.rr.com>
+	 <20100212171149.5c9f78d2@hyperion.delvare>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Kihon Technologies Inc.
+Date: Fri, 12 Feb 2010 11:30:39 -0500
+Message-ID: <1265992239.24271.38.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 12, 2010 at 05:25:22PM +0100, Julien BLACHE wrote:
+On Fri, 2010-02-12 at 17:11 +0100, Jean Delvare wrote:
 
-> Is it exposed to userspace in any way? Or, better yet, could we have an
-> MBP backlight driver which would hide all of this from userspace?
+> What would you consider a reasonable turnaround time? 3 month? 6 month?
+> More?
+> 
+> We could make a decision now, you update ketchup immediately, and the
+> actual change happens at the specified date in the future.
+> 
 
-Sure, in nouveau.
+Usually users don't update ketchup until it breaks ;)
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+But sure, 3 months probably would be fine. Then Matt Mackall will start
+getting emails about it not working, and he will forward them to me.
+Where I can then point them to the new repository.
+
+-- Steve
+
+
