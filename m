@@ -1,74 +1,111 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752838Ab0BLSDx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 13:03:53 -0500
-Received: from sabe.cs.wisc.edu ([128.105.6.20]:37914 "EHLO sabe.cs.wisc.edu"
+	id S1754056Ab0BLSGl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 13:06:41 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:24757 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751006Ab0BLSDv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 13:03:51 -0500
-Message-ID: <4B7597F4.6070403@cs.wisc.edu>
-Date: Fri, 12 Feb 2010 12:03:32 -0600
-From: Mike Christie <michaelc@cs.wisc.edu>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: Tomohiro Kusumi <kusumi.tomohiro@jp.fujitsu.com>
-CC: linux-scsi@vger.kernel.org, James.Bottomley@suse.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] scsi_transport_fc: handle transient error on multipath
- environment
-References: <4B750CB7.4030805@jp.fujitsu.com> <4B7593F4.2050102@cs.wisc.edu>
-In-Reply-To: <4B7593F4.2050102@cs.wisc.edu>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+	id S1752049Ab0BLSGj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Feb 2010 13:06:39 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <1263776272-382-36-git-send-email-tj@kernel.org>
+References: <1263776272-382-36-git-send-email-tj@kernel.org> <1263776272-382-1-git-send-email-tj@kernel.org>
+To: Tejun Heo <tj@kernel.org>
+Cc: dhowells@redhat.com, torvalds@linux-foundation.org, mingo@elte.hu,
+       peterz@infradead.org, awalls@radix.net, linux-kernel@vger.kernel.org,
+       jeff@garzik.org, akpm@linux-foundation.org, jens.axboe@oracle.com,
+       rusty@rustcorp.com.au, cl@linux-foundation.org, arjan@linux.intel.com,
+       avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org
+Subject: Re: [PATCH 35/40] fscache: convert object to use workqueue instead of slow-work
+Date: Fri, 12 Feb 2010 18:03:29 +0000
+Message-ID: <24913.1265997809@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/12/2010 11:46 AM, Mike Christie wrote:
-> - Maybe you want to instead hook something into the dm-mutlipath's
-> request (no more bios like in 2004 :)). Can you set a timer on that
-> level of request. If that times out then, dm-multipath could do
-> something like call blk_abort_queue.
+Tejun Heo <tj@kernel.org> wrote:
 
-Some more detail. I was thinking maybe you could stack the timeout
-handlers like is done for request_fn handlers or maybe the scsi cmd
-would use the upper layer's timer somehow. Not sure... but at the least
-I think we would not want both a scsi request and dm request timers
-running at the same time.
+>  		/* otherwise we sleep until either the object we're waiting for
+> -		 * is done, or the slow-work facility wants the thread back to
+> -		 * do other work */
+> +		 * is done */
+>  		wq = bit_waitqueue(&xobject->flags, CACHEFILES_OBJECT_ACTIVE);
+>  		init_wait(&wait);
+> -		requeue = false;
+>  		do {
+>  			prepare_to_wait(wq, &wait, TASK_UNINTERRUPTIBLE);
+>  			if (!test_bit(CACHEFILES_OBJECT_ACTIVE, &xobject->flags))
+>  				break;
+> -			requeue = slow_work_sleep_till_thread_needed(
+> -				&object->fscache.work, &timeout);
+> -		} while (timeout > 0 && !requeue);
+> +			timeout = schedule_timeout(timeout);
+> +		} while (timeout > 0);
+>  		finish_wait(wq, &wait);
 
-Then for the error handling and timeout handling, most FC drivers have a
-terminate_rport_io which works without having to block the entire host.
-Those drivers could implement a newer eh where instead of firing the
-code in scsi_error.c when a cmd times out, it would run
-terminate_rport_io from some workqueue.
+Okay, how do you stop the workqueue from having all its threads blocking on
+pending work?  The reason the code you've removed interacts with the slow work
+facility in this way is that there can be a dependency whereby an executing
+work item depends on something that is queued.  This code allows the thread to
+be given back to the pool and processing deferred.
 
-new dm request timed out()
-	-> scsi_timed_out
-		-> fc_timed_out()
-			{
-				run new eh from workqueue();
-			}
+Note that just creating more threads isn't a good answer - that can run you out
+of resources instead.
 
+> +	ret = -ENOMEM;
+> +	fscache_object_wq =
+> +		__create_workqueue("fscache_object", WQ_SINGLE_CPU, 99);
+> +	if (!fscache_object_wq)
+> +		goto error_object_wq;
+> +
 
-new_eh()
-	/* no new cmds should be started until we figure out what is going on */
-	block rport()
-	/* releases cmds upwards so they can run while we try to figure out
-what is going on */
-	terminate_rport_io()
-	/* check if devices are ok */
-	send_tur()
-	if (tur failed)
-		start old scsi_error.c code to unjam us.
-	else
-		/* everything looks ok so let IO run to this path again */
-		unblock rport()
+What does fscache_object_wq being WQ_SINGLE_CPU imply?  Does that mean there
+can only be one CPU processing object state changes?  I'm not sure that's a
+good idea - something like a tar command can create thousands of objects, all
+of which will start undergoing state changes.
 
+Why did you do this?  Is it because cmwq does _not_ prevent reentrance to
+executing work items?  I take it that's why you can get away with this:
 
-> 
-> I think the problem with blk_abort_queue might be that it stops all IO
-> to the entire host where you probably just want to work on the remote
-> port/path. For that you could call something like
-> recover_transient_error. Maybe it could just be a call to
-> terminate_rport_io from a workqueue though.
+	-	slow_work_enqueue(&object->work);
+	+	if (fscache_get_object(object) >= 0)
+	+		if (!queue_work(fscache_object_wq, &object->work))
+	+			fscache_put_object(object);
 
+One of the reasons I _don't_ want to use the old workqueue facility is that it
+doesn't manage reentrancy.  That can end up tying up multiple threads for one
+long-duration work item.
+
+>  	seq_printf(m,
+> -		   "%8x %8x %s %5u %3u %3u %3u %2u %5u %2lx %2lx %1lx %1lx | ",
+> +		   "%8x %8x %s %5u %3u %3u %3u %2u %5u %2lx %2lx %1lx | ",
+
+You've got to alter the printed header lines too and the documentation.
+
+Note that it would still be useful to know whether an object was queued for
+work or being executed.
+
+> -
+> -/*
+> - * describe an object for slow-work debugging
+> - */
+> -#ifdef CONFIG_SLOW_WORK_PROC
+> -static void fscache_object_slow_work_desc(struct slow_work *work,
+> -					  struct seq_file *m)
+> -{
+> -	struct fscache_object *object =
+> -		container_of(work, struct fscache_object, work);
+> -
+> -	seq_printf(m, "FSC: OBJ%x: %s",
+> -		   object->debug_id,
+> -		   fscache_object_states_short[object->state]);
+> -}
+> -#endif
+
+Please provide this facility as part of cmwq - it's been really useful, and I'd
+rather not dispense with it.
+
+David
