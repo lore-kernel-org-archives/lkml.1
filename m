@@ -1,82 +1,90 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756965Ab0BMNp0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Feb 2010 08:45:26 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:8612 "EHLO
+	id S1756753Ab0BMNtE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Feb 2010 08:49:04 -0500
+Received: from fg-out-1718.google.com ([72.14.220.152]:17159 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755701Ab0BMNpW (ORCPT
+	with ESMTP id S1754798Ab0BMNtA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Feb 2010 08:45:22 -0500
+	Sat, 13 Feb 2010 08:49:00 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:message-id:content-type:content-transfer-encoding;
-        b=yEaa1Mi41FO5Q/jG5PwzE+L/4Kza1PL8F7aIk4JkllOn/urtFDegNXAwuUV375OAfd
-         oMNheScHQfQmavT0kPrQ/G98jcqmUimqmI13RfAQf6cwF/+6q69qsuLO8rWaSrZONN3j
-         jeT/N0KoAK5cLTYlhQjjUUPArP7uabvw/JewM=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-ide@vger.kernel.org
-Subject: Re: [PATCH 2/3] pata_pdc202xx_old: fix UDMA mode for PDC2026x chipsets
-Date: Sat, 13 Feb 2010 14:44:58 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31.12-0.1-desktop; KDE/4.3.1; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, Russell King <rmk@arm.linux.org.uk>
-References: <20100213133538.11564.94218.sendpatchset@localhost> <20100213133559.11564.54028.sendpatchset@localhost>
-In-Reply-To: <20100213133559.11564.54028.sendpatchset@localhost>
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=kZY3Ooqy8mVo71OOQQv8WP7spzcJbEau+IRA0rIDJJA+Ie/VhhzbknzuIIxMFqFPO1
+         i4+H3JO9VBnAU6xKTv1jxzDcMbDrawtOt6KUk3cELroD0dd7MIgvWqbAzgzvwu4nY8/E
+         3gOmVmLLV7sS/pncab0xmf+/oNqCn6hbLT9KA=
 MIME-Version: 1.0
-Message-Id: <201002131444.58139.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <10B19BD9-34B8-4E0E-9737-09141A37BD00@opensource.wolfsonmicro.com>
+References: <1265918499-9583-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+	 <1265969888-16946-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+	 <6ed0b2681002121501m32995aaekd3ce2f4fabd91050@mail.gmail.com>
+	 <10B19BD9-34B8-4E0E-9737-09141A37BD00@opensource.wolfsonmicro.com>
+Date: Sat, 13 Feb 2010 15:48:59 +0200
+Message-ID: <6ed0b2681002130548y3258db78o168697eb2512ba94@mail.gmail.com>
+Subject: Re: [PATCH] regulator: Provide optional dummy regulator for consumers
+From: Grazvydas Ignotas <notasas@gmail.com>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Liam Girdwood <lrg@slimlogic.co.uk>, Mike Rapoport <mike@compulab.co.il>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 13 February 2010 02:35:59 pm Bartlomiej Zolnierkiewicz wrote:
-> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Subject: [PATCH] pata_pdc202xx_old: fix UDMA mode for PDC2026x chipsets
-> 
-> PDC2026x chipsets need the same treatment as PDC20246 one.
-> 
-> This is completely untested but will hopefully fix UDMA issues
-> that people have been reporting against pata_pdc202xx_old for
-> the last couple of years.
-> 
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> ---
->  drivers/ata/pata_pdc202xx_old.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> Index: b/drivers/ata/pata_pdc202xx_old.c
-> ===================================================================
-> --- a/drivers/ata/pata_pdc202xx_old.c
-> +++ b/drivers/ata/pata_pdc202xx_old.c
-> @@ -26,7 +26,7 @@
->  
->  #include "pata_pdc202xx_old.h"
->  
-> -static void pdc20246_exec_command(struct ata_port *ap,
-> +static void pdc202xx_exec_command(struct ata_port *ap,
->  				  const struct ata_taskfile *tf)
->  {
->  	DPRINTK("ata%u: cmd 0x%X\n", ap->print_id, tf->command);
-> @@ -181,7 +181,7 @@ static struct ata_port_operations pdc202
->  	.set_piomode		= pdc202xx_set_piomode,
->  	.set_dmamode		= pdc202xx_set_dmamode,
->  
-> -	.sff_exec_command	= pdc20246_exec_command,
-> +	.sff_exec_command	= pdc202xx_exec_command,
->  };
->  
->  static struct ata_port_operations pdc2026x_port_ops = {
+On Sat, Feb 13, 2010 at 1:26 AM, Mark Brown
+<broonie@opensource.wolfsonmicro.com> wrote:
+> On 12 Feb 2010, at 23:01, Grazvydas Ignotas <notasas@gmail.com> wrote:
+>
+>> On Fri, Feb 12, 2010 at 12:18 PM, Mark Brown
+>> <broonie@opensource.wolfsonmicro.com> wrote:
+>>>
+>>> In order to ease transitions with drivers are boards start using
+>>> regulators
+>>> provide an option to cause all regulator_get() calls to succeed, with a
+>>> dummy always on regulator being supplied where one has not been
+>>> configured.
+>>> A warning is printed whenever the dummy regulator is used to aid system
+>>> development.
+>>>
+>>> This regulator does not implement any regulator operations but will allow
+>>> simple consumers which only do enable() and disable() calls to run. It
+>>> is kept separate from the fixed voltage regulator to avoid Kconfig
+>>> confusion on the part of users when it is extended to allow boards to
+>>> explicitly use the dummy regulator to simplify cases where the majority
+>>> of supplies are from fixed regulators without software control.
+>>>
+>>> This option is currently only effective for systems which do not specify
+>>> full constriants. If required an override could also be provided to allow
+>>> these systems to use the dummy regulator, though it is likely that
+>>> unconfigured supplies on such systems will lead to error due to
+>>> regulators being powered down more aggressively when not in use.
+>>>
+>>> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+>>> ---
+>>>
+>>
+>> hm, tried intentionally nuking regulator setup on my board to test
+>> dummy and drivers started failing on regulator_enable() with -1
+>> (EPERM?). Looks like dummy doesn't have constraints defined, so not
+>> much use of this if _enable() is failing anyway.
+>
+> Hrmpf. That was working for me - are you running the latest regulator code?
+> There was a bug where it was requiring CHANGE_STATUS even if the regulator
+> is always on, which isn't sensible since there is no possibility of actually
+> changing the status. It should now only be checking for permission to change
+> status if it would actually do so. There was also a patch yesterday to make
+> regulators that don't define an is_enabled() report as enabled.
 
-the missing chunk :)
+Oh, it appears I was missing those patches (they were not in last
+linux-lest yet), now everything works as expected, thanks.
 
-@@ -195,6 +195,8 @@
- 	.dev_config		= pdc2026x_dev_config,
- 
- 	.port_start		= pdc2026x_port_start,
-+
-+	.sff_exec_command	= pdc202xx_exec_command,
- };
- 
- static int pdc202xx_init_one(struct pci_dev *dev, const struct pci_device_id *id)
+>
+>> BTW, drivers/mmc/host/omap_hsmmc.c has quite a lot of logic related to
+>> vcc_aux being available or not (vcc_aux is typically used to power
+>> some MMC pins and is unused on devices with SD cards, like pandora). I
+>> wonder if it may cause some functionality change there.
+>
+> Yeah, quite possibly. This sort of stuff is one of the reasons it's much
+> nicer to specify full constraints where possible; it allows drivers that can
+> have missing supplies to handle that.
