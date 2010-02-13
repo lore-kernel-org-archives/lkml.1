@@ -1,72 +1,68 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751795Ab0BMG6W (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Feb 2010 01:58:22 -0500
-Received: from clegg.madduck.net ([193.242.105.96]:47414 "EHLO
-	clegg.madduck.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751665Ab0BMG6V (ORCPT
+	id S1751913Ab0BMHLn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Feb 2010 02:11:43 -0500
+Received: from smtp-out003.kontent.com ([81.88.40.217]:58474 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751258Ab0BMHLl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Feb 2010 01:58:21 -0500
-X-Greylist: delayed 637 seconds by postgrey-1.27 at vger.kernel.org; Sat, 13 Feb 2010 01:58:21 EST
-Date: Sat, 13 Feb 2010 19:42:47 +1300
-From: martin f krafft <madduck@madduck.net>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Linux mdadm superblock question.
-Message-ID: <20100213064247.GA19295@lapse.rw.madduck.net>
-Mail-Followup-To: Justin Piszcz <jpiszcz@lucidpixels.com>,
-	linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <alpine.DEB.2.00.1002111758350.12031@p34.internal.lan>
+	Sat, 13 Feb 2010 02:11:41 -0500
+From: Oliver Neukum <oliver@neukum.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [REGRESSION] "USB: use kfifo to buffer usb-generic serial writes" causes gobi_loader to hang
+Date: Sat, 13 Feb 2010 08:11:36 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.33-rc6-0.1-default; KDE/4.3.1; x86_64; ; )
+Cc: Anssi Hannula <anssi.hannula@iki.fi>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, dvomlehn@cisco.com,
+       gregkh@suse.de, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.44L0.1002122148050.13658-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.1002122148050.13658-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-ripemd160;
-	protocol="application/pgp-signature"; boundary="pWyiEgJYm5f9v55/"
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.1002111758350.12031@p34.internal.lan>
-X-Motto: Keep the good times rollin'
-X-OS: Debian GNU/Linux squeeze/sid kernel 2.6.32-1-686 i686
-X-Spamtrap: madduck.bogus@madduck.net
-X-Subliminal-Message: debian/rules!
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002130811.36525.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Am Samstag, 13. Februar 2010 03:50:04 schrieb Alan Stern:
+> On Sat, 13 Feb 2010, Anssi Hannula wrote:
+> 
+> > On 05.02.2010 23:59, Oliver Neukum wrote:
+> > > Am Freitag, 5. Februar 2010 20:58:17 schrieb Matthew Garrett:
+> > >> drivers/usb/serial/usb-serial.c: usb_serial_port_work - port 0
+> > >> drivers/usb/serial/usb-serial.c: serial_write - port 0, 2048 byte(s)
+> > >> drivers/usb/serial/generic.c: usb_serial_generic_write - port 0, 2048 bytes
+> > >> drivers/usb/serial/generic.c: usb_serial_generic_write - put 512 bytes into fifo
+> > >> drivers/usb/serial/usb-serial.c: serial_write - port 0, 1536 byte(s)
+> > >> drivers/usb/serial/generic.c: usb_serial_generic_write - port 0, 1536 bytes
+> > >> drivers/usb/serial/generic.c: usb_serial_generic_write - put 0 bytes into fifo
+> > >> drivers/usb/serial/generic.c: usb_serial_generic_write - FIFO is full
+> > > 
+> > > OK, could you also get an usbmon trace? This would allow a determination
+> > > whether the submitted URB doesn't finish for some reason, or whether
+> > > no URB is submitted, possibly because a wakeup is missed.
+> > 
+> > I'm also affected by this regression. Here's an usbmon trace of
+> > gobi_loader hanging:
+> > http://stuff.onse.fi/gobi2000/gobi-regression.mon.log
+> 
+> That's odd.  The log shows the final bulk-OUT transfer was cancelled 
+> after less than 1 ms.  Is there a timeout value somewhere that is too 
+> small by a factor of 1000?
 
---pWyiEgJYm5f9v55/
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Neither qcserial nor usb-serial implement timeouts.
+Is it possible that this is caused by user space closing the handle
+causing usb-serial::port_release() to call kill_traffic()?
 
-also sprach Justin Piszcz <jpiszcz@lucidpixels.com> [2010.02.12.1200 +1300]:
-> I may be converting a host to ext4 and was curious, is 0.90 still the
-> only superblock version for mdadm/raid-1 that you can boot from
-> without having to create an initrd/etc?
->=20
-> Are there any benefits to using a superblock > 0.90 for a raid-1 boot
-> volume < 2TB?
+Anssi, going by your log the last write is quite short and begins
+with 342d3030 39202020 20202020 20202020 801d9b80 02000000 3512dcfe 44313032.
+Does this match with the last part of the firmware you are transfering?
+Could you put an "mdelay(500);" at the beginning of usb-serial::port_release()
+and retest?
 
-FYI: http://bugs.debian.org/492897
+	Regards
+		Oliver
 
---=20
-martin | http://madduck.net/ | http://two.sentenc.es/
-=20
-it may look like i'm just sitting here doing nothing.
-but i'm really actively waiting
-for all my problems to go away.
-=20
-spamtraps: madduck.bogus@madduck.net
 
---pWyiEgJYm5f9v55/
-Content-Type: application/pgp-signature; name="digital_signature_gpg.asc"
-Content-Description: Digital signature (see http://martin-krafft.net/gpg/)
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEAREDAAYFAkt2SeAACgkQIgvIgzMMSnVdAgCfYgHkLwo6exYLXgNH9jPgf+hg
-h2QAoKZFzpPVcN3QzMTziV0KaLiaYDYM
-=eJA3
------END PGP SIGNATURE-----
-
---pWyiEgJYm5f9v55/--
