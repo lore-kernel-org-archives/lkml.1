@@ -1,45 +1,61 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758001Ab0BMTyN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Feb 2010 14:54:13 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:48029 "EHLO mail.zytor.com"
+	id S1758025Ab0BMT6P (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Feb 2010 14:58:15 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:52933 "EHLO mail.zytor.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757944Ab0BMTyK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Feb 2010 14:54:10 -0500
-Message-ID: <4B7702FE.7060407@zytor.com>
-Date: Sat, 13 Feb 2010 11:52:30 -0800
+	id S1757904Ab0BMT6N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Feb 2010 14:58:13 -0500
+Message-ID: <4B77044B.1020609@zytor.com>
+Date: Sat, 13 Feb 2010 11:58:03 -0800
 From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
 MIME-Version: 1.0
-To: Joe Perches <joe@perches.com>
-CC: Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-Subject: Re: [PATCH 25/35] move round_up/down to kernel.h
-References: <1265793639-15071-1-git-send-email-yinghai@kernel.org>	 <1265793639-15071-26-git-send-email-yinghai@kernel.org> <1266086980.16721.837.camel@Joe-Laptop.home>
-In-Reply-To: <1266086980.16721.837.camel@Joe-Laptop.home>
+To: Michael Evans <mjevans1983@gmail.com>
+CC: Justin Piszcz <jpiszcz@lucidpixels.com>, linux-raid@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Linux mdadm superblock question.
+References: <alpine.DEB.2.00.1002111758350.12031@p34.internal.lan> <4877c76c1002111752h23e14f7aibe58a89181e6f493@mail.gmail.com>
+In-Reply-To: <4877c76c1002111752h23e14f7aibe58a89181e6f493@mail.gmail.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/13/2010 10:49 AM, Joe Perches wrote:
+On 02/11/2010 05:52 PM, Michael Evans wrote:
+> On Thu, Feb 11, 2010 at 3:00 PM, Justin Piszcz <jpiszcz@lucidpixels.com> wrote:
+>> Hi,
+>>
+>> I may be converting a host to ext4 and was curious, is 0.90 still the only
+>> superblock version for mdadm/raid-1 that you can boot from without having to
+>> create an initrd/etc?
+>>
+>> Are there any benefits to using a superblock > 0.90 for a raid-1 boot volume
+>> < 2TB?
+>>
+>> Justin.
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-raid" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>
 > 
-> Having both roundup and round_up in kernel.h is a 
-> near guarantee for a future incorrect use.
-> 
-> Can't you use a different name for this?
-> 
+> You need the superblock at the end of the partition:  If you read the
+> manual that is clearly either version 0.90 OR 1.0 (NOT 1.1 and also
+> NOT 1.2; those use the same superblock layout but different
+> locations).
 
-Welcome to last week's discussion.
+0.9 has the *serious* problem that it is hard to distinguish a whole-volume
 
-Both of these names already exist -- yes, a rename is probably in order
-but it should be a separate patchset.
+However, apparently mdadm recently switched to a 1.1 default.  I
+strongly urge Neil to change that to either 1.0 and 1.2, as I have
+started to get complaints from users that they have made RAID volumes
+with newer mdadm which apparently default to 1.1, and then want to boot
+from them (without playing MBR games like Grub does.)  I have to tell
+them that they have to regenerate their disks -- the superblock occupies
+the boot sector and there is nothing I can do about it.  It's the same
+pathology XFS has.
 
 	-hpa
 
