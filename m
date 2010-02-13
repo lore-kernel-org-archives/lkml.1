@@ -1,118 +1,76 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756805Ab0BMIFr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Feb 2010 03:05:47 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:23788 "EHLO mx1.redhat.com"
+	id S1756243Ab0BMIEf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Feb 2010 03:04:35 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:22806 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752596Ab0BMICF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752633Ab0BMICF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 13 Feb 2010 03:02:05 -0500
 From: Avi Kivity <avi@redhat.com>
 To: kvm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 26/39] KVM: SVM: Selective cr0 intercept
-Date: Sat, 13 Feb 2010 10:01:46 +0200
-Message-Id: <1266048119-14325-27-git-send-email-avi@redhat.com>
+Subject: [PATCH 38/39] KVM: Implement NotifyLongSpinWait HYPER-V hypercall
+Date: Sat, 13 Feb 2010 10:01:58 +0200
+Message-Id: <1266048119-14325-39-git-send-email-avi@redhat.com>
 In-Reply-To: <1266048119-14325-1-git-send-email-avi@redhat.com>
 References: <1266048119-14325-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If two conditions apply:
- - no bits outside TS and EM differ between the host and guest cr0
- - the fpu is active
+From: Gleb Natapov <gleb@redhat.com>
 
-then we can activate the selective cr0 write intercept and drop the
-unconditional cr0 read and write intercept, and allow the guest to run
-with the host fpu state.  This reduces cr0 exits due to guest fpu management
-while the guest fpu is loaded.
+Windows issues this hypercall after guest was spinning on a spinlock
+for too many iterations.
 
-Acked-by: Joerg Roedel <joerg.roedel@amd.com>
+Signed-off-by: Gleb Natapov <gleb@redhat.com>
+Signed-off-by: Vadim Rozenfeld <vrozenfe@redhat.com>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- arch/x86/kvm/svm.c |   32 ++++++++++++++++++++++++++------
- 1 files changed, 26 insertions(+), 6 deletions(-)
+ arch/x86/kvm/x86.c  |   10 +++++++++-
+ include/linux/kvm.h |    1 +
+ 2 files changed, 10 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
-index 27273ed..83c7ab1 100644
---- a/arch/x86/kvm/svm.c
-+++ b/arch/x86/kvm/svm.c
-@@ -571,6 +571,7 @@ static void init_vmcb(struct vcpu_svm *svm)
- 	control->intercept = 	(1ULL << INTERCEPT_INTR) |
- 				(1ULL << INTERCEPT_NMI) |
- 				(1ULL << INTERCEPT_SMI) |
-+				(1ULL << INTERCEPT_SELECTIVE_CR0) |
- 				(1ULL << INTERCEPT_CPUID) |
- 				(1ULL << INTERCEPT_INVD) |
- 				(1ULL << INTERCEPT_HLT) |
-@@ -963,6 +964,27 @@ static void svm_decache_cr4_guest_bits(struct kvm_vcpu *vcpu)
- {
- }
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 552be51..9f72a44 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -1564,6 +1564,7 @@ int kvm_dev_ioctl_check_extension(long ext)
+ 	case KVM_CAP_VCPU_EVENTS:
+ 	case KVM_CAP_HYPERV:
+ 	case KVM_CAP_HYPERV_VAPIC:
++	case KVM_CAP_HYPERV_SPIN:
+ 		r = 1;
+ 		break;
+ 	case KVM_CAP_COALESCED_MMIO:
+@@ -3827,7 +3828,14 @@ int kvm_hv_hypercall(struct kvm_vcpu *vcpu)
  
-+static void update_cr0_intercept(struct vcpu_svm *svm)
-+{
-+	ulong gcr0 = svm->vcpu.arch.cr0;
-+	u64 *hcr0 = &svm->vmcb->save.cr0;
-+
-+	if (!svm->vcpu.fpu_active)
-+		*hcr0 |= SVM_CR0_SELECTIVE_MASK;
-+	else
-+		*hcr0 = (*hcr0 & ~SVM_CR0_SELECTIVE_MASK)
-+			| (gcr0 & SVM_CR0_SELECTIVE_MASK);
-+
-+
-+	if (gcr0 == *hcr0 && svm->vcpu.fpu_active) {
-+		svm->vmcb->control.intercept_cr_read &= ~INTERCEPT_CR0_MASK;
-+		svm->vmcb->control.intercept_cr_write &= ~INTERCEPT_CR0_MASK;
-+	} else {
-+		svm->vmcb->control.intercept_cr_read |= INTERCEPT_CR0_MASK;
-+		svm->vmcb->control.intercept_cr_write |= INTERCEPT_CR0_MASK;
+ 	trace_kvm_hv_hypercall(code, fast, rep_cnt, rep_idx, ingpa, outgpa);
+ 
+-	res = HV_STATUS_INVALID_HYPERCALL_CODE;
++	switch (code) {
++	case HV_X64_HV_NOTIFY_LONG_SPIN_WAIT:
++		kvm_vcpu_on_spin(vcpu);
++		break;
++	default:
++		res = HV_STATUS_INVALID_HYPERCALL_CODE;
++		break;
 +	}
-+}
-+
- static void svm_set_cr0(struct kvm_vcpu *vcpu, unsigned long cr0)
- {
- 	struct vcpu_svm *svm = to_svm(vcpu);
-@@ -994,6 +1016,7 @@ static void svm_set_cr0(struct kvm_vcpu *vcpu, unsigned long cr0)
- 	 */
- 	cr0 &= ~(X86_CR0_CD | X86_CR0_NW);
- 	svm->vmcb->save.cr0 = cr0;
-+	update_cr0_intercept(svm);
- }
  
- static void svm_set_cr4(struct kvm_vcpu *vcpu, unsigned long cr4)
-@@ -1239,11 +1262,8 @@ static int ud_interception(struct vcpu_svm *svm)
- static int nm_interception(struct vcpu_svm *svm)
- {
- 	svm->vmcb->control.intercept_exceptions &= ~(1 << NM_VECTOR);
--	if (!kvm_read_cr0_bits(&svm->vcpu, X86_CR0_TS))
--		svm->vmcb->save.cr0 &= ~X86_CR0_TS;
--	else
--		svm->vmcb->save.cr0 |= X86_CR0_TS;
- 	svm->vcpu.fpu_active = 1;
-+	update_cr0_intercept(svm);
+ 	ret = res | (((u64)rep_done & 0xfff) << 32);
+ 	if (longmode) {
+diff --git a/include/linux/kvm.h b/include/linux/kvm.h
+index 5ce6173..4c4937e 100644
+--- a/include/linux/kvm.h
++++ b/include/linux/kvm.h
+@@ -499,6 +499,7 @@ struct kvm_ioeventfd {
+ #define KVM_CAP_PPC_SEGSTATE 43
+ #define KVM_CAP_HYPERV 44
+ #define KVM_CAP_HYPERV_VAPIC 45
++#define KVM_CAP_HYPERV_SPIN 46
  
- 	return 1;
- }
-@@ -2296,7 +2316,7 @@ static int (*svm_exit_handlers[])(struct vcpu_svm *svm) = {
- 	[SVM_EXIT_READ_CR3]           		= emulate_on_interception,
- 	[SVM_EXIT_READ_CR4]           		= emulate_on_interception,
- 	[SVM_EXIT_READ_CR8]           		= emulate_on_interception,
--	/* for now: */
-+	[SVM_EXIT_CR0_SEL_WRITE]		= emulate_on_interception,
- 	[SVM_EXIT_WRITE_CR0]          		= emulate_on_interception,
- 	[SVM_EXIT_WRITE_CR3]          		= emulate_on_interception,
- 	[SVM_EXIT_WRITE_CR4]          		= emulate_on_interception,
-@@ -2914,8 +2934,8 @@ static void svm_fpu_deactivate(struct kvm_vcpu *vcpu)
- 		return;
- 	}
+ #ifdef KVM_CAP_IRQ_ROUTING
  
-+	update_cr0_intercept(svm);
- 	svm->vmcb->control.intercept_exceptions |= 1 << NM_VECTOR;
--	svm->vmcb->save.cr0 |= X86_CR0_TS;
- }
- 
- static struct kvm_x86_ops svm_x86_ops = {
 -- 
 1.6.5.3
 
