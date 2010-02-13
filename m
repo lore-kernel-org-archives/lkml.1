@@ -1,61 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754008Ab0BMCtb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 21:49:31 -0500
-Received: from sh.osrg.net ([192.16.179.4]:37880 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751382Ab0BMCt3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 21:49:29 -0500
-Date: Sat, 13 Feb 2010 11:49:09 +0900
-To: akpm@linux-foundation.org
-Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
-       James.Bottomley@suse.de, davem@davemloft.net, jbarnes@virtuousgeek.org,
-       arnd@arndb.de
-Subject: Re: [PATCH -mm] dma-mapping.h: add the dma_unmap state API
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20100212115157.02124608.akpm@linux-foundation.org>
-References: <20100212145601W.fujita.tomonori@lab.ntt.co.jp>
-	<20100212115157.02124608.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20100213114842D.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Sat, 13 Feb 2010 11:49:11 +0900 (JST)
+	id S1755563Ab0BMCuI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 21:50:08 -0500
+Received: from netrider.rowland.org ([192.131.102.5]:57963 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752129Ab0BMCuG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Feb 2010 21:50:06 -0500
+Date: Fri, 12 Feb 2010 21:50:04 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Anssi Hannula <anssi.hannula@iki.fi>
+cc: Oliver Neukum <oliver@neukum.org>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       <dvomlehn@cisco.com>, <gregkh@suse.de>, <linux-usb@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: [REGRESSION] "USB: use kfifo to buffer usb-generic serial writes"
+ causes gobi_loader to hang
+In-Reply-To: <4B7609BD.7010009@iki.fi>
+Message-ID: <Pine.LNX.4.44L0.1002122148050.13658-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 12 Feb 2010 11:51:57 -0800
-Andrew Morton <akpm@linux-foundation.org> wrote:
+On Sat, 13 Feb 2010, Anssi Hannula wrote:
 
-> > -#ifdef CONFIG_NEED_DMA_MAP_STATE
-> > -#define DECLARE_PCI_UNMAP_ADDR(ADDR_NAME)        dma_addr_t ADDR_NAME;
-> > -#define DECLARE_PCI_UNMAP_LEN(LEN_NAME)          __u32 LEN_NAME;
+> On 05.02.2010 23:59, Oliver Neukum wrote:
+> > Am Freitag, 5. Februar 2010 20:58:17 schrieb Matthew Garrett:
+> >> drivers/usb/serial/usb-serial.c: usb_serial_port_work - port 0
+> >> drivers/usb/serial/usb-serial.c: serial_write - port 0, 2048 byte(s)
+> >> drivers/usb/serial/generic.c: usb_serial_generic_write - port 0, 2048 bytes
+> >> drivers/usb/serial/generic.c: usb_serial_generic_write - put 512 bytes into fifo
+> >> drivers/usb/serial/usb-serial.c: serial_write - port 0, 1536 byte(s)
+> >> drivers/usb/serial/generic.c: usb_serial_generic_write - port 0, 1536 bytes
+> >> drivers/usb/serial/generic.c: usb_serial_generic_write - put 0 bytes into fifo
+> >> drivers/usb/serial/generic.c: usb_serial_generic_write - FIFO is full
+> > 
+> > OK, could you also get an usbmon trace? This would allow a determination
+> > whether the submitted URB doesn't finish for some reason, or whether
+> > no URB is submitted, possibly because a wakeup is missed.
 > 
-> But we already screwed up the semicolon thing.  If you grep the tree you'll
-> see that about half of the users of this macro added their own semicolon:
+> I'm also affected by this regression. Here's an usbmon trace of
+> gobi_loader hanging:
+> http://stuff.onse.fi/gobi2000/gobi-regression.mon.log
 
-Yeah, I know. PCI-DMA-mapping.txt says:
+That's odd.  The log shows the final bulk-OUT transfer was cancelled 
+after less than 1 ms.  Is there a timeout value somewhere that is too 
+small by a factor of 1000?
 
-NOTE: DO NOT put a semicolon at the end of the DECLARE_*() macro.
+Alan Stern
 
-
-But there are some other DECLARE_ macros that don't have the
-semicolons so users could be easily confused.
-
-#define DEFINE_DMA_MAP_ADDR(ADDR_NAME) dma_addr_t ADDR_NAME
-
-looks better?
-
-
-> ./drivers/net/cxgb3/sge.c:              DECLARE_PCI_UNMAP_ADDR(addr);
-> ./drivers/net/skge.h:   DECLARE_PCI_UNMAP_ADDR(mapaddr);
-> ./drivers/net/qla3xxx.h:         DECLARE_PCI_UNMAP_ADDR(mapaddr);
-> ./drivers/net/qla3xxx.h:         DECLARE_PCI_UNMAP_ADDR(mapaddr);
-> ./drivers/net/tg3.h:    DECLARE_PCI_UNMAP_ADDR(mapping)
-> 
-> 
-> Perhaps someone will clean all that up sometime.
-
-I plan to replace these PCI API with the new generic API so I can take
-care of them together.
