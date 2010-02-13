@@ -1,140 +1,254 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751871Ab0BMBTQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 20:19:16 -0500
-Received: from mail1.radix.net ([207.192.128.31]:44632 "EHLO mail1.radix.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750907Ab0BMBTO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 20:19:14 -0500
-Subject: Re: Driver crash on kernel 2.6.32.7. Interaction between cx8800
- (DVB-S) and USB HVR Hauppauge 950q
-From: Andy Walls <awalls@radix.net>
-To: Greg KH <gregkh@suse.de>
-Cc: Devin Heitmueller <dheitmueller@kernellabs.com>,
-       Kay Sievers <kay.sievers@vrfy.org>,
-       Richard Lemieux <rlemieu@cooptel.qc.ca>, linux-media@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20100212041131.GA29697@suse.de>
-References: <4B70E7DB.7060101@cooptel.qc.ca>
-	 <1265768091.3064.109.camel@palomino.walls.org>
-	 <4B722266.4070805@cooptel.qc.ca>
-	 <829197381002091912h5391129dpbf075485ab011936@mail.gmail.com>
-	 <1265816096.4019.65.camel@palomino.walls.org>
-	 <20100212041131.GA29697@suse.de>
-Content-Type: text/plain
-Date: Fri, 12 Feb 2010 20:18:57 -0500
-Message-Id: <1266023937.3062.17.camel@palomino.walls.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
-Content-Transfer-Encoding: 7bit
+	id S1752173Ab0BMBYS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 20:24:18 -0500
+Received: from a-pb-sasl-quonix.pobox.com ([208.72.237.25]:51538 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750907Ab0BMBYQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Feb 2010 20:24:16 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws; d=pobox.com; h=to:subject:from
+	:date:message-id:mime-version:content-type; q=dns; s=sasl; b=k8O
+	jtitKZrdN0xqCaU8VPeHXu+SPuVNmSp0d/pMFhTSXshh1o4RbFjEu3ukBeT1LUjm
+	dYvwEys0KWIJN7c5lsf3n1p7rG53iz9/6UnLi9lw/HOdERaQTbCpMWIJNkqXSE0W
+	rKJLT+HfVeakcnD+KWkuZQ2o6xY0Mleievx6PapI=
+To: git@vger.kernel.org
+Subject: [ANNOUNCE] Git 1.7.0
+From: Junio C Hamano <gitster@pobox.com>
+Date: Fri, 12 Feb 2010 17:24:02 -0800
+Message-ID: <7vljey6i8d.fsf@alter.siamese.dyndns.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Pobox-Relay-ID: 7CB35F2A-183E-11DF-BE04-6AF7ED7EF46B-77302942!a-pb-sasl-quonix.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-02-11 at 20:11 -0800, Greg KH wrote:
-> On Wed, Feb 10, 2010 at 10:34:56AM -0500, Andy Walls wrote:
-> > On Tue, 2010-02-09 at 22:12 -0500, Devin Heitmueller wrote:
-> > > On Tue, Feb 9, 2010 at 10:05 PM, Richard Lemieux <rlemieu@cooptel.qc.ca> wrote:
-> > > > Andy,
-> > > >
-> > > > This is a great answer!  Thanks very much.  When I get into this situation
-> > > > again
-> > > > I will know what to look for.
-> > > >
-> > > > A possible reason why I got into this problem in the first place is that I
-> > > > tried
-> > > > many combinations of parameters with mplayer and azap in order to learn how
-> > > > to use the USB tuner in both the ATSC and the NTSC mode.  I will look back
-> > > > in the terminal history to see if I can find anything.
-> > > 
-> > > I think the key to figuring out the bug at this point is you finding a
-> > > sequence where you can reliably reproduce the oops.  If we have that,
-> > > then I can start giving you some code to try which we can see if it
-> > > addresses the problem.
-> > > 
-> > > For example, I would start by giving you a fix which results in us not
-> > > calling the firmware release if the request_firmware() call failed,
-> > > but it wouldn't be much help if you could not definitively tell me if
-> > > the problem is fixed.
-> > 
-> > 
-> > For the oops analysis here:
-> > 
-> > http://article.gmane.org/gmane.linux.drivers.video-input-infrastructure/15954
-> > 
-> > 
-> > I will also note that the file scope "fw_lock" mutex is rather
-> > inconsistently used in
-> > linux/drivers/base/fw_class.c:firmware_loading_store().  (I guess for
-> > not wanting to consume the timeout interval with sleeping?)
-> > 
-> > The mutex protects "case 1:", but all other cases appear to be only
-> > protected by atomic status bit checks that can fall through to
-> > fw_load_abort() which complete()'s the fw_priv->completion.
-> > 
-> > Also not that in the _request_firmware() this sequence is the only place
-> > a once good "fw_priv->fw" pointer is set to NULL:
-> > 
-> >         mutex_lock(&fw_lock);
-> >         if (!fw_priv->fw->size || test_bit(FW_STATUS_ABORT, &fw_priv->status)) {
-> >                 retval = -ENOENT;
-> >                 release_firmware(fw_priv->fw);
-> >                 *firmware_p = NULL;
-> >         }
-> >         fw_priv->fw = NULL;     <--------------- The only place it is set to NULL
-> >         mutex_unlock(&fw_lock);
-> > 
-> > 
-> > So if the timeout timer fires at nearly the same time as udev coming in
-> > and say "I'm done loading" without holding the mutex, one can run into
-> > the Ooops.  Not only that, I think the above code can leak memory under
-> > some circumstances when the "if" clause is not satisfied.
-> > 
-> > I think this really is a firmware_class.c issue.  I think the "just
-> > right" firmware loading timeouts and the particular computer system
-> > responsiveness, make this Ooops possible.  However, I'm amazed that a
-> > single person has tripped it more than once.
-> > 
-> > Revising the locking in linux/drivers/base/firmware_class.c should fix
-> > the problem.
-> > 
-> > I don't believe this comment in the code now:
-> > 
-> > /* fw_lock could be moved to 'struct firmware_priv' but since it is just
-> >  * guarding for corner cases a global lock should be OK */
-> > static DEFINE_MUTEX(fw_lock);
-> > 
-> > struct firmware_priv {
-> >         char *fw_id;
-> > 	...
-> > 
-> > And since "f_priv" is dynamically created and destroyed by
-> > request_firmware() I see no harm in 
-> > 
-> > 1. moving the mutex into struct firmware_priv
-> > 2. just always just grabbing an almost never contended mutex
-> > 3. getting rid of the file scope fw_lock.
-> > 
-> > except grabbing a mutex() while the timeout timer is running during
-> > loading, means one *could* sleep for a while consuming the timeout
-> > interval.
-> 
-> That sounds reasonable to me, care to make up a patch for this?
+The latest feature release Git 1.7.0 is available at the usual
+places:
 
-Yes.  But it will take me a while.  I don't have a git tree, because I
-don't have high bandwidth internet yet.  (The cable company's been
-delayed in laying cable to my home due to repeated snowstorms.)
+  http://www.kernel.org/pub/software/scm/git/
 
-I just didn't want the problem to fall through the cracks.  I'll submit
-something to bugzilla for now.  If a user complains of this rare Ooops
-when loading firmware, the current workaround is to lengthen the timeout
-via sysfs.
+  git-1.7.0.tar.{gz,bz2}			(source tarball)
+  git-htmldocs-1.7.0.tar.{gz,bz2}		(preformatted docs)
+  git-manpages-1.7.0.tar.{gz,bz2}		(preformatted docs)
 
-Regards,
-Andy
+The RPM binary packages for a few architectures are found in:
 
-> thanks,
-> 
-> greg k-h
+  RPMS/$arch/git-*-1.7.0-1.fc11.$arch.rpm	(RPM)
 
+Git v1.7.0 Release Notes
+========================
 
+Notes on behaviour change
+-------------------------
+
+ * "git push" into a branch that is currently checked out (i.e. pointed at by
+   HEAD in a repository that is not bare) is refused by default.
+
+   Similarly, "git push $there :$killed" to delete the branch $killed
+   in a remote repository $there, when $killed branch is the current
+   branch pointed at by its HEAD, will be refused by default.
+
+   Setting the configuration variables receive.denyCurrentBranch and
+   receive.denyDeleteCurrent to 'ignore' in the receiving repository
+   can be used to override these safety features.
+
+ * "git send-email" does not make deep threads by default when sending a
+   patch series with more than two messages.  All messages will be sent
+   as a reply to the first message, i.e. cover letter.
+
+   It has been possible already to configure send-email to send "shallow thread"
+   by setting sendemail.chainreplyto configuration variable to false.  The
+   only thing this release does is to change the default when you haven't
+   configured that variable.
+
+ * "git status" is not "git commit --dry-run" anymore.  This change does
+   not affect you if you run the command without argument.
+
+ * "git diff" traditionally treated various "ignore whitespace" options
+   only as a way to filter the patch output.  "git diff --exit-code -b"
+   exited with non-zero status even if all changes were about changing the
+   amount of whitespace and nothing else;  and "git diff -b" showed the
+   "diff --git" header line for such a change without patch text.
+
+   In this release, the "ignore whitespaces" options affect the semantics
+   of the diff operation.  A change that does not affect anything but
+   whitespaces is reported with zero exit status when run with
+   --exit-code, and there is no "diff --git" header for such a change.
+
+ * External diff and textconv helpers are now executed using the shell.
+   This makes them consistent with other programs executed by git, and
+   allows you to pass command-line parameters to the helpers. Any helper
+   paths containing spaces or other metacharacters now need to be
+   shell-quoted.  The affected helpers are GIT_EXTERNAL_DIFF in the
+   environment, and diff.*.command and diff.*.textconv in the config
+   file.
+
+ * The --max-pack-size argument to 'git repack', 'git pack-objects', and
+   'git fast-import' was assuming the provided size to be expressed in MiB,
+   unlike the corresponding config variable and other similar options accepting
+   a size value.  It is now expecting a size expressed in bytes, with a possible
+   unit suffix of 'k', 'm', or 'g'.
+
+Updates since v1.6.6
+--------------------
+
+(subsystems)
+
+ * "git fast-import" updates; adds "option" and "feature" to detect the
+   mismatch between fast-import and the frontends that produce the input
+   stream.
+
+ * "git svn" support of subversion "merge tickets" and miscellaneous fixes.
+
+ * "gitk" and "git gui" translation updates.
+
+ * "gitweb" updates (code clean-up, load checking etc.)
+
+(portability)
+
+ * Some more MSVC portability patches for msysgit port.
+
+ * Minimum Pthreads emulation for msysgit port.
+
+(performance)
+
+ * More performance improvement patches for msysgit port.
+
+(usability, bells and whistles)
+
+ * More commands learned "--quiet" and "--[no-]progress" options.
+
+ * Various commands given by the end user (e.g. diff.type.textconv,
+   and GIT_EDITOR) can be specified with command line arguments.  E.g. it
+   is now possible to say "[diff "utf8doc"] textconv = nkf -w".
+
+ * "sparse checkout" feature allows only part of the work tree to be
+   checked out.
+
+ * HTTP transfer can use authentication scheme other than basic
+   (i.e./e.g. digest).
+
+ * Switching from a version of superproject that used to have a submodule
+   to another version of superproject that no longer has it did not remove
+   the submodule directory when it should (namely, when you are not
+   interested in the submodule at all and didn't clone/checkout).
+
+ * A new attribute conflict-marker-size can be used to change the size of
+   the conflict markers from the default 7; this is useful when tracked
+   contents (e.g. git-merge documentation) have strings that resemble the
+   conflict markers.
+
+ * A new syntax "<branch>@{upstream}" can be used on the command line to
+   substitute the name of the "upstream" of the branch.  Missing branch
+   defaults to the current branch, so "git fetch && git merge @{upstream}"
+   will be equivalent to "git pull".
+
+ * "git am --resolved" has a synonym "git am --continue".
+
+ * "git branch --set-upstream" can be used to update the (surprise!) upstream,
+   i.e. where the branch is supposed to pull and merge from (or rebase onto).
+
+ * "git checkout A...B" is a way to detach HEAD at the merge base between
+   A and B.
+
+ * "git checkout -m path" to reset the work tree file back into the
+   conflicted state works even when you already ran "git add path" and
+   resolved the conflicts.
+
+ * "git commit --date='<date>'" can be used to override the author date
+   just like "git commit --author='<name> <email>'" can be used to
+   override the author identity.
+
+ * "git commit --no-status" can be used to omit the listing of the index
+   and the work tree status in the editor used to prepare the log message.
+
+ * "git commit" warns a bit more aggressively until you configure user.email,
+   whose default value almost always is not (and fundamentally cannot be)
+   what you want.
+
+ * "git difftool" has been extended to make it easier to integrate it
+   with gitk.
+
+ * "git fetch --all" can now be used in place of "git remote update".
+
+ * "git grep" does not rely on external grep anymore.  It can use more than
+   one thread to accelerate the operation.
+
+ * "git grep" learned "--quiet" option.
+
+ * "git log" and friends learned "--glob=heads/*" syntax that is a more
+   flexible way to complement "--branches/--tags/--remotes".
+
+ * "git merge" learned to pass options specific to strategy-backends.  E.g.
+
+    - "git merge -Xsubtree=path/to/directory" can be used to tell the subtree
+      strategy how much to shift the trees explicitly.
+
+    - "git merge -Xtheirs" can be used to auto-merge as much as possible,
+      while discarding your own changes and taking merged version in
+      conflicted regions.
+
+ * "git push" learned "git push origin --delete branch", a syntactic sugar
+   for "git push origin :branch".
+
+ * "git push" learned "git push --set-upstream origin forker:forkee" that
+   lets you configure your "forker" branch to later pull from "forkee"
+   branch at "origin".
+
+ * "git rebase --onto A...B" means the history is replayed on top of the
+   merge base between A and B.
+
+ * "git rebase -i" learned new action "fixup" that squashes the change
+   but does not affect existing log message.
+
+ * "git rebase -i" also learned --autosquash option that is useful
+   together with the new "fixup" action.
+
+ * "git remote" learned set-url subcommand that updates (surprise!) url
+   for an existing remote nickname.
+
+ * "git rerere" learned "forget path" subcommand.  Together with "git
+   checkout -m path" it will be useful when you recorded a wrong
+   resolution.
+
+ * Use of "git reset --merge" has become easier when resetting away a
+   conflicted mess left in the work tree.
+
+ * "git rerere" had rerere.autoupdate configuration but there was no way
+   to countermand it from the command line; --no-rerere-autoupdate option
+   given to "merge", "revert", etc. fixes this.
+
+ * "git status" learned "-s(hort)" output format.
+
+(developers)
+
+ * The infrastructure to build foreign SCM interface has been updated.
+
+ * Many more commands are now built-in.
+
+ * THREADED_DELTA_SEARCH is no more.  If you build with threads, delta
+   compression will always take advantage of it.
+
+Fixes since v1.6.6
+------------------
+
+All of the fixes in v1.6.6.X maintenance series are included in this
+release, unless otherwise noted.
+
+ * "git branch -d branch" used to refuse deleting the branch even when
+   the branch is fully merged to its upstream branch if it is not merged
+   to the current branch.  It now deletes it in such a case.
+
+ * "fiter-branch" command incorrectly said --prune-empty and --filter-commit
+   were incompatible; the latter should be read as --commit-filter.
+
+ * When using "git status" or asking "git diff" to compare the work tree
+   with something, they used to consider that a checked-out submodule with
+   uncommitted changes is not modified; this could cause people to forget
+   committing these changes in the submodule before committing in the
+   superproject. They now consider such a change as a modification and
+   "git diff" will append a "-dirty" to the work tree side when generating
+   patch output or when used with the --submodule option.
