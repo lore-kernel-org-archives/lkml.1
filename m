@@ -1,102 +1,72 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753045Ab0BMLLP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Feb 2010 06:11:15 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:60739 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752432Ab0BMLLO (ORCPT
+	id S1753183Ab0BMLWJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Feb 2010 06:22:09 -0500
+Received: from he.sipsolutions.net ([78.46.109.217]:59190 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752722Ab0BMLWH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Feb 2010 06:11:14 -0500
-X-Authority-Analysis: v=1.0 c=1 a=EPSL5sjMBdAA:10 a=7U3hwN5JcxgA:10 a=meVymXHHAAAA:8 a=Vd06avjZsPwgv1jucm8A:9 a=gBS89OFOsOo6KZ7pKjDxRgtakqAA:4 a=jeBq3FmKZ4MA:10
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Subject: Re: [PATCH 2/2][RFC] tracing: Add extract out softirq names used
- by irq trace events
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Christoph Hellwig <hch@lst.de>, Wu Fengguang <fengguang.wu@intel.com>
-In-Reply-To: <1266057549.557.59605.camel@twins>
-References: <20100212190907.954438555@goodmis.org>
-	 <20100212191037.283998401@goodmis.org>  <1266057549.557.59605.camel@twins>
-Content-Type: text/plain; charset="ISO-8859-15"
-Organization: Kihon Technologies Inc.
-Date: Sat, 13 Feb 2010 06:11:09 -0500
-Message-ID: <1266059470.24271.116.camel@gandalf.stny.rr.com>
+	Sat, 13 Feb 2010 06:22:07 -0500
+Subject: Re: [PATCH][trace-cmd] parse-events: Make input buffer const char *
+From: Johannes Berg <johannes@sipsolutions.net>
+To: rostedt@goodmis.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1266022384.24271.106.camel@gandalf.stny.rr.com>
+References: <1266022384.24271.106.camel@gandalf.stny.rr.com>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-oc9EBnRsR/9KUHXwg4n7"
+Date: Sat, 13 Feb 2010 12:22:01 +0100
+Message-ID: <1266060121.3753.3.camel@jlt3.sipsolutions.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.29.3.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2010-02-13 at 11:39 +0100, Peter Zijlstra wrote:
-> On Fri, 2010-02-12 at 14:09 -0500, Steven Rostedt wrote:
-> > plain text document attachment (irq-events.patch)
-> > The irq trace events that map the softirq vectors to strings
-> > shows up in the format files as names. To allow binary parsers to
-> > be able to convert these names to their actual numbers, this patch
-> > extracts those enums.
-> > 
-> > Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-> > 
-> > ---
-> >  include/trace/events/irq.h |   11 +++++++++++
-> >  1 file changed, 11 insertions(+)
-> > 
-> > Index: linux-trace.git/include/trace/events/irq.h
-> > ===================================================================
-> > --- linux-trace.git.orig/include/trace/events/irq.h	2010-02-12 13:29:44.000000000 -0500
-> > +++ linux-trace.git/include/trace/events/irq.h	2010-02-12 13:33:20.000000000 -0500
-> > @@ -7,6 +7,17 @@
-> >  #include <linux/tracepoint.h>
-> >  #include <linux/interrupt.h>
-> >  
-> > +EXTRACT_TRACE_SYMBOL(HI_SOFTIRQ);
-> > +EXTRACT_TRACE_SYMBOL(TIMER_SOFTIRQ);
-> > +EXTRACT_TRACE_SYMBOL(NET_TX_SOFTIRQ);
-> > +EXTRACT_TRACE_SYMBOL(NET_RX_SOFTIRQ);
-> > +EXTRACT_TRACE_SYMBOL(BLOCK_SOFTIRQ);
-> > +EXTRACT_TRACE_SYMBOL(BLOCK_IOPOLL_SOFTIRQ);
-> > +EXTRACT_TRACE_SYMBOL(TASKLET_SOFTIRQ);
-> > +EXTRACT_TRACE_SYMBOL(SCHED_SOFTIRQ);
-> > +EXTRACT_TRACE_SYMBOL(HRTIMER_SOFTIRQ);
-> > +EXTRACT_TRACE_SYMBOL(RCU_SOFTIRQ);
-> > +
-> 
-> Still sucks you have to explicitly iterate them all, and far away from
-> the actual definition site too, its just asking to get out of whack with
-> reality.
 
-We don't care about adding them near the definition site. We care about
-what is used. In this same file we have:
+--=-oc9EBnRsR/9KUHXwg4n7
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-#define softirq_name(sirq) { sirq##_SOFTIRQ, #sirq }
-#define show_softirq_name(val)                          \
-        __print_symbolic(val,                           \
-                         softirq_name(HI),              \
-                         softirq_name(TIMER),           \
-                         softirq_name(NET_TX),          \
-                         softirq_name(NET_RX),          \
-                         softirq_name(BLOCK),           \
-                         softirq_name(BLOCK_IOPOLL),    \
-                         softirq_name(TASKLET),         \
-                         softirq_name(SCHED),           \
-                         softirq_name(HRTIMER),         \
-                         softirq_name(RCU))
+On Fri, 2010-02-12 at 19:53 -0500, Steven Rostedt wrote:
 
-Which uses the variables. If another softirq name is added, the
-TRACE_EVENT already misses it. That's not the point of the EXTRACT
-macro. The point is, if a TRACE_EVENT uses a name that is not a macro,
-this gives a way for it to display that value.
+> I just wanted you to see a recent change I made. It touches your work
+> around you added for the older kernels that did not convert your macro
+> to a string. I'm sending this to you to make sure that it still works
+> for your liking.
 
--- Steve
+Heh, that means I'd have to test it? :)
 
+> Also, I think I see a bug in the original code (and I kept) where you
+> added a \ to %s. Perhaps its not a bug, but is it really needed? We
+> don't process this code through any printf formatting.
 
+Looks like a typo.
+
+Patch _looks_ good otherwise, I'll give it a try when I find a file or
+get one from a user.
+
+johannes
+
+--=-oc9EBnRsR/9KUHXwg4n7
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAABAgAGBQJLdotTAAoJEODzc/N7+Qma2i4P/2fqfOk0dz9Vn3oHpYwlalyH
+J/mpN6UMg5b+MPli2d9qKKNDgmv9xXqSi5bcovmBxx3Rpsn5uzygzk3grM0rX4O/
+PyH0Z8FWRd9n6nMV3R+2uPTDqkSb950p5eHBn3U5EpZX43aOXbDWl3JEna6ut0ON
+9GJ/3/nwdL9zmiBggLvFI+Dabyc2d+ef9RQ8yLRRjwzUJLT3yprUMDzzi/+g1r2M
+d4QVP02z1QKMEHl09/5W7l0dccWGqoA7GvuE9pV5QpBIoh30feFZzIBvX7D036Xt
+ckQJKgLgOV2SzsC/QiixmO2c3/Ky6P71odoTUvWeUEKdqZjrxRS9ipjvO+OcdxzX
+bu7bTc8NzuRgXtug2lk8/coyYB5ydCAWuzbMZFjbvhYtdzdcd6tyxg1OuN+xFNLJ
+L7zvj9s1PISsxBWKraPIw1L9LzrboxxaLG8P5AJAwq1Inv9bRapV9iZDUym2zuCH
+8ncLS0mNkRtCEt7FDWM95CtPoL1h98ZhMs6E0FGqFdRimk9DYhStKXoPv7BxnBms
+dDzTimKuvGT8GGRAWROGfgmgDX4hagMaDkbKJD5AZVt6xfkMgcOha4GA1WKlIfs2
+qJhGHVolVecud6e+nxWgOgLrBRgcwI7uCBB0wSWfwHNBD/JP9BXOZAobY29/rdGx
+bevO92LqB3NX8nWz+0hf
+=YxBR
+-----END PGP SIGNATURE-----
+
+--=-oc9EBnRsR/9KUHXwg4n7--
 
