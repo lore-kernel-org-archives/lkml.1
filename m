@@ -1,53 +1,72 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758063Ab0BMWgL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Feb 2010 17:36:11 -0500
-Received: from lon1-post-3.mail.demon.net ([195.173.77.150]:39764 "EHLO
-	lon1-post-3.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750851Ab0BMWgK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Feb 2010 17:36:10 -0500
-Message-ID: <4B7729B5.4040609@lougher.demon.co.uk>
-Date: Sat, 13 Feb 2010 22:37:41 +0000
-From: Phillip Lougher <phillip@lougher.demon.co.uk>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	id S1758089Ab0BMWiP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Feb 2010 17:38:15 -0500
+Received: from hera.kernel.org ([140.211.167.34]:34027 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750851Ab0BMWiO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Feb 2010 17:38:14 -0500
+Message-ID: <4B772969.303@kernel.org>
+Date: Sat, 13 Feb 2010 14:36:25 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-To: Jean Delvare <khali@linux-fr.org>
-CC: "FTPAdmin Kernel.org" <ftpadmin@kernel.org>, users@kernel.org,
-       lasse.collin@tukaani.org, mirrors@kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [kernel.org users] XZ Migration discussion
-References: <4B744E13.8040004@kernel.org>	<20100212150137.648dca7c@hyperion.delvare>	<4B75A5CF.70308@lougher.demon.co.uk>	<20100212203209.0cb8afc3@hyperion.delvare>	<4B75B2A6.5080006@lougher.demon.co.uk>	<20100212225923.36a67112@hyperion.delvare>	<4B75E6C7.5030106@lougher.demon.co.uk> <20100213083115.5cf8d4a4@hyperion.delvare>
-In-Reply-To: <20100213083115.5cf8d4a4@hyperion.delvare>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>, linux-kernel@vger.kernel.org,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH  0/8] tip related: radix tree for spareseirq and logical
+ flat clean up
+References: <1266029390-30907-1-git-send-email-yinghai@kernel.org>	<m1zl3dre9e.fsf@fess.ebiederm.org> <4B7676BB.8030608@kernel.org> <m16361pbja.fsf@fess.ebiederm.org>
+In-Reply-To: <m16361pbja.fsf@fess.ebiederm.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jean Delvare wrote:
-> On Fri, 12 Feb 2010 23:39:51 +0000, Phillip Lougher wrote:
->> Jean Delvare wrote:
->>> Prove it. Many people out there are still working on older trees. I am
->>> working on 2.6.5 and 2.6.16 kernels on a weekly basis. If ketchup or
->>> other tools break for these trees only and not more recent ones, that
->>> won't help me at all, I will still have to update them.
->> Why are you still working on 2.6.5 and 2.6.16 kernels on a weekly
->> basis?
-> 
-> Because I am doing support for enterprise customers who are using
-> distributions based on these kernel versions. These are SLE 9 and SLE
-> 10, to name them, but RHEL supporters are in the same situation. And
-> I've heard embedded developers report many times that they had to stick
-> to older 2.6.x kernels too for various reasons. Not everyone is using a
-> recent 2.6.x kernel, which makes it hard to draw a line between what
-> should be considered old ones and what should be considered new ones.
-> 
+On 02/13/2010 04:26 AM, Eric W. Biederman wrote:
 
-Embedded and enterprise distro users are usually stuck on ancient kernels that
-were downloaded from kernel.org and patched *years ago*.  The reason they're
-stuck on them is due to local modifications, and so they're not going to be
-downloading ancient vanilla kernels from kernel.org now.
+>> Index: linux-2.6/arch/x86/kernel/irqinit.c
+>> ===================================================================
+>> --- linux-2.6.orig/arch/x86/kernel/irqinit.c
+>> +++ linux-2.6/arch/x86/kernel/irqinit.c
+>> @@ -83,16 +83,14 @@ static struct irqaction irq2 = {
+>>  	.name = "cascade",
+>>  };
+>>  
+>> -DEFINE_PER_CPU(vector_irq_t, vector_irq) = {
+>> -	[0 ... NR_VECTORS - 1] = -1,
+>> -};
+>> +DEFINE_PER_CPU(vector_desc_t, vector_desc);
+>>  
+>>  int vector_used_by_percpu_irq(unsigned int vector)
+>>  {
+>>  	int cpu;
+>>  
+>>  	for_each_online_cpu(cpu) {
+>> -		if (per_cpu(vector_irq, cpu)[vector] != -1)
+>> +		if (per_cpu(vector_desc, cpu)[vector] != NULL)
+>>  			return 1;
+>>  	}
+>>  
+>> @@ -139,7 +137,7 @@ void __init init_IRQ(void)
+>>  	 * irq's migrate etc.
+>>  	 */
+>>  	for (i = 0; i < nr_legacy_irqs; i++)
+>> -		per_cpu(vector_irq, 0)[IRQ0_VECTOR + i] = i;
+>> +		per_cpu(vector_desc, 0)[IRQ0_VECTOR + i] = irq_to_desc(i);
+> 
+> I am not familiar with this hunk (it must be in the x86 tree).
+> Are you certain we have allocated the legacy irq desc here?
 
-Phillip
+yes.
+
+early_irq_init() is called before init_IRQ in start_kernel()
+
+it will have irq_desc for legacy ready.
+
+YH
 
