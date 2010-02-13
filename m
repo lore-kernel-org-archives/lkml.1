@@ -1,86 +1,96 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932075Ab0BMX1c (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Feb 2010 18:27:32 -0500
-Received: from mail-ew0-f228.google.com ([209.85.219.228]:47823 "EHLO
-	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752803Ab0BMX1b (ORCPT
+	id S1758131Ab0BMXbk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Feb 2010 18:31:40 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:37972 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758016Ab0BMXbj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Feb 2010 18:27:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=FHTHa/CKHe7paxPOhBRHjNslTUgjLTV+PCHhzdYeHa0T8yYBNhSrklVU21u9VqsgDB
-         +09Wjtjc1FS8RtV5/t+YysFFnY5r4wi/3Dn87y649ylpQowNM9AoEhoyNnfe7p5lQ1Y1
-         aL2lG23CHzcdeYaiFnjaxl8Z/NH03P+jww6yQ=
-Message-ID: <4B773560.2060800@arm.com>
-Date: Sat, 13 Feb 2010 23:27:28 +0000
-From: Catalin Marinas <catalin.marinas@arm.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Sat, 13 Feb 2010 18:31:39 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4B7735A7.1050305@s5r6.in-berlin.de>
+Date: Sun, 14 Feb 2010 00:28:39 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.23) Gecko/20100102 SeaMonkey/1.1.18
 MIME-Version: 1.0
-To: Rabin Vincent <rabin@rab.in>
-CC: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Ingo Molnar <mingo@redhat.com>,
-       Abhishek Sagar <sagar.abhishek@gmail.com>,
-       =?ISO-8859-1?Q?Uwe_Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-Subject: Re: [PATCH 06/10] ARM: ftrace: add Thumb-2 support
-References: <1266090518-31120-1-git-send-email-rabin@rab.in> <1266090518-31120-7-git-send-email-rabin@rab.in>
-In-Reply-To: <1266090518-31120-7-git-send-email-rabin@rab.in>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Jean Delvare <khali@linux-fr.org>
+CC: Pavel Machek <pavel@ucw.cz>, "J.H." <warthog9@kernel.org>,
+       "FTPAdmin Kernel.org" <ftpadmin@kernel.org>, users@kernel.org,
+       lasse.collin@tukaani.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       mirrors@kernel.org
+Subject: Re: [kernel.org users] XZ Migration discussion
+References: <4B744E13.8040004@kernel.org>	<20100211205129.GA26105@elf.ucw.cz> <20100213181008.479509f5@hyperion.delvare>
+In-Reply-To: <20100213181008.479509f5@hyperion.delvare>
+X-Enigmail-Version: 0.96.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rabin Vincent wrote:
-> Fix the mcount routines to build and run on a kernel built with the
-> Thumb-2 instruction set.
+Jean Delvare wrote:
+> For my testing, I have been using the slowest machine I still have
+> available here: a Pentium 166 MMX, with 64 MB of memory and a slow hard
+> disk drive. I've been writing down the duration of each task it took to
+> boot kernel 2.6.27.45 on this machine. I did this for both .gz and .bz2
+> formats.
 > 
-> Cc: Catalin Marinas <catalin.marinas@arm.com>
-> Signed-off-by: Rabin Vincent <rabin@rab.in>
-> ---
->  arch/arm/kernel/entry-common.S |    8 +++++---
->  1 files changed, 5 insertions(+), 3 deletions(-)
+> Raw results are as follow (format=min:s):
 > 
-> diff --git a/arch/arm/kernel/entry-common.S b/arch/arm/kernel/entry-common.S
-> index 42eb166..cd2a574 100644
-> --- a/arch/arm/kernel/entry-common.S
-> +++ b/arch/arm/kernel/entry-common.S
-> @@ -156,7 +156,8 @@ ENTRY(__gnu_mcount_nc)
->  	stmdb	sp!, {r0-r3, lr}
->  	ldr	r0, =ftrace_trace_function
->  	ldr	r2, [r0]
-> -	adr	r0, ftrace_stub
-> + THUMB(	orr	r2, r2, #1		)
-> +	adr	r0, BSYM(ftrace_stub)
->  	cmp	r0, r2
+> downloading linux-2.6.27.tar.bz2	  5:01
+> downloading patch-2.6.27.45.bz2		  0:02
+> unpacking linux-2.6.27.tar.bz2		  7:28
+> applying patch-2.6.27.45.bz2		  1:21
+> ----------------------------------------------
+> total for bz2				 13:52
+> 
+> downloading linux-2.6.27.tar.gz		  6:23
+> downloading patch-2.6.27.45.gz		  0:02
+> unpacking linux-2.6.27.tar.gz		  3:20
+> applying patch-2.6.27.45.gz		  1:10
+> ----------------------------------------------
+> total for gz				 10:55
+> 
+> So the gz option is unsurprisingly faster, setting up the source tree
+> takes almost 3 minutes less (-21%).
 
-Does this code not give the correct result if not modified?
+If the download link had been slower than about 75 kB/s, the bz2 option
+would have been faster even on this old machine.
 
->  	bne	gnu_trace
->  	ldmia	sp!, {r0-r3, ip, lr}
-> @@ -166,8 +167,9 @@ gnu_trace:
->  	ldr	r1, [sp, #20]			@ lr of instrumented routine
->  	mov	r0, lr
->  	sub	r0, r0, #MCOUNT_INSN_SIZE
-> -	mov	lr, pc
-> -	mov	pc, r2
-> + ARM(	mov	lr, pc			)
-> + ARM(	mov	pc, r2			)
-> + THUMB(	blx	r2			)
->  	ldmia	sp!, {r0-r3, ip, lr}
->  	mov	pc, ip
->  ENDPROC(__gnu_mcount_nc)
+With xz, download would be faster than bz2 and decompression would be
+somewhere between bz2 and gz --- at least on machines without notable
+memory constraints.  xz's decompressor is more memory hungry than
+bzip2's one as far as I understand their manual pages.  But at the
+default xz compressor setting of -6, the decompressor will still use
+just 10 MB and should therefore not cause even your 64 MB machine to
+swap all the time during decompression.
 
-As above, what does this need modifying? "mov pc, r2" wouldn't change 
-the mode to ARM even if the value in r2 is even. It may need THUMB(nop) 
-after this instruction.
+> Then the (common) build and installation times:
+> 
+> building				117:26
+> installing modules			  0:12
+> ----------------------------------------------
+> total					117:38
+> 
+> This is a customized kernel, as small as I could do, with almost no
+> features and the minimal set of drivers. As you can see, the build time
+> is one order of magnitude greater than the tree setup time. Comparing
+> the total times from download to install between bz2 and gz:
+> 
+> bz2: 13:52 + 117:38 = 131:30
+> gz:  10:55 + 117:38 = 128:33
+> 
+> Compared to bz2, gz saves... 2% on the overall time. As a conclusion, I
+> think we can plain discard the argument "I need .gz because my machine
+> is slow" from now on. It simply doesn't hold.
 
-I could of course miss something as I haven't actually tried this code.
-
+Yep, whether the target machine is meant to compile the kernel or to be
+used to browse the source code (with a bare minimum of comfort), the
+hardware resources required for either task mean that there isn't such a
+great difference between gz, bz2, xz WRT resource requirements at the
+receivers, except that xz goes easiest on network bandwidth and disk
+utilization.
 -- 
-Catalin
+Stefan Richter
+-=====-==-=- --=- -==-=
+http://arcgraph.de/sr/
