@@ -1,58 +1,74 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757964Ab0BMTol (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Feb 2010 14:44:41 -0500
-Received: from stargate.chelsio.com ([67.207.112.58]:1687 "EHLO
-	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757945Ab0BMToi (ORCPT
+	id S1757915Ab0BMTsM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Feb 2010 14:48:12 -0500
+Received: from mail-yw0-f179.google.com ([209.85.211.179]:46150 "EHLO
+	mail-yw0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753905Ab0BMTsJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Feb 2010 14:44:38 -0500
-From: Divy Le Ray <divy@chelsio.com>
-Subject: [PATCH net-next-2.6 2/2] cxgb3: fix link flap
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       swise@opengridcomputing.com
-Date: Sat, 13 Feb 2010 11:44:35 -0800
-Message-ID: <20100213194435.27297.79287.stgit@speedy5.asicdesigners.com>
-In-Reply-To: <20100213194429.27297.99280.stgit@speedy5.asicdesigners.com>
-References: <20100213194429.27297.99280.stgit@speedy5.asicdesigners.com>
-User-Agent: StGIT/0.14.2
+	Sat, 13 Feb 2010 14:48:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:from:to:cc:subject:date:message-id:x-mailer:mime-version
+         :content-type:content-transfer-encoding;
+        b=T1tG9lGCv8nwtWcx1uNy/hA1KYHgeoF1BFGW7psULK3g+2cqFoO/2Ami+NbW0/fpL0
+         oR7XhOj5aaiqgGmdDt+z9p11KydWViWby2P1KTZ96elWbIRoYzV96yAROCFd5srRMkhu
+         DNYQZ9uEeNEnw+kez8Ri8x9GDX+uXAqt3Fgd4=
+From: Rabin Vincent <rabin@rab.in>
+To: linux-kernel@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org, Rabin Vincent <rabin@rab.in>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Ingo Molnar <mingo@redhat.com>,
+       Abhishek Sagar <sagar.abhishek@gmail.com>,
+       =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+Subject: [PATCH 00/10] ARM: ftrace: cleanups, Thumb-2, and dynamic ftrace
+Date: Sun, 14 Feb 2010 01:18:28 +0530
+Message-Id: <1266090518-31120-1-git-send-email-rabin@rab.in>
+X-Mailer: git-send-email 1.6.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Divy Le Ray <divy@chelsio.com>
+This series contains fixes and improvements to the ARM ftrace support.  It adds
+Thumb-2 support and re-implements the dynamic ftrace support.
 
-The driver is expected to report that the link is up
-when the phy Rx signal is established and the mac
-has not detected a link fault.
-The code is however broken, the driver does not check the link fault
-status when the phy link status changes.
-The link fault status being checked within a short period of time,
-it leads to link up/link down events.
+"ftrace: allow building without frame pointers" and "ftrace: pass KBUILD_CFLAGS
+to record_mcount.pl" are non-ARM-specific ftrace patches which are required to
+support the ARM functionality.
 
-Signed-off-by: Divy Le Ray <divy@chelsio.com>
----
+Cleanups / docs:
 
- drivers/net/cxgb3/t3_hw.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+  ARM: ftrace: clean up mcount assembly indentation
+  ARM: ftrace: document mcount formats
 
+Thumb-2:
 
-diff --git a/drivers/net/cxgb3/t3_hw.c b/drivers/net/cxgb3/t3_hw.c
-index 032cfe0..3ab9f51 100644
---- a/drivers/net/cxgb3/t3_hw.c
-+++ b/drivers/net/cxgb3/t3_hw.c
-@@ -1262,7 +1262,8 @@ void t3_link_changed(struct adapter *adapter, int port_id)
- 		lc->fc = fc;
- 	}
- 
--	t3_os_link_changed(adapter, port_id, link_ok, speed, duplex, fc);
-+	t3_os_link_changed(adapter, port_id, link_ok && !pi->link_fault,
-+			   speed, duplex, fc);
- }
- 
- void t3_link_fault(struct adapter *adapter, int port_id)
+  ftrace: allow building without frame pointers
+  ARM: ftrace: allow building without frame pointers
+  ARM: ftrace: add ENDPROC annotations
+  ARM: ftrace: add Thumb-2 support
+
+Dynamic ftrace:
+
+  ftrace: pass KBUILD_CFLAGS to record_mcount.pl
+  ARM: ftrace: fix and update dynamic ftrace
+  ARM: ftrace: add Thumb-2 support to dynamic ftrace
+  ARM: ftrace: enable dynamic ftrace
+
+ Makefile                       |    3 +
+ arch/arm/Kconfig               |    2 +
+ arch/arm/Kconfig.debug         |    5 +
+ arch/arm/include/asm/ftrace.h  |   23 +++++-
+ arch/arm/kernel/armksyms.c     |    2 +
+ arch/arm/kernel/entry-common.S |  167 ++++++++++++++++++++++++-----------
+ arch/arm/kernel/ftrace.c       |  188 +++++++++++++++++++++++++++++----------
+ kernel/trace/Kconfig           |    2 +-
+ scripts/Makefile.build         |    3 +-
+ scripts/recordmcount.pl        |    2 +
+ 10 files changed, 295 insertions(+), 102 deletions(-)
 
