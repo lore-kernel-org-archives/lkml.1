@@ -1,15 +1,15 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755634Ab0BMBkq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 20:40:46 -0500
-Received: from mga11.intel.com ([192.55.52.93]:38332 "EHLO mga11.intel.com"
+	id S1755794Ab0BMBku (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 20:40:50 -0500
+Received: from mga11.intel.com ([192.55.52.93]:10815 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755059Ab0BMBkg convert rfc822-to-8bit (ORCPT
+	id S1751206Ab0BMBkr convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 20:40:36 -0500
+	Fri, 12 Feb 2010 20:40:47 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.49,464,1262592000"; 
-   d="scan'208,223";a="772528598"
+   d="scan'208,223";a="540400418"
 From: "Pan, Jacob jun" <jacob.jun.pan@intel.com>
 To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
@@ -17,11 +17,11 @@ CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "Barnes, Jesse" <jesse.barnes@intel.com>,
        "Du, Alek" <alek.du@intel.com>, "Tang, Feng" <feng.tang@intel.com>,
        "H. Peter Anvin" <hpa@linux.intel.com>
-Date: Fri, 12 Feb 2010 17:40:34 -0800
-Subject: [PATCH 9/9] x86/apic: remove ioapic_disable_legacy
-Thread-Topic: [PATCH 9/9] x86/apic: remove ioapic_disable_legacy
-Thread-Index: AcqsTYkMZbB4yndrSeePEB93tdCxqQ==
-Message-ID: <43F901BD926A4E43B106BF17856F07559FB80D05@orsmsx508.amr.corp.intel.com>
+Date: Fri, 12 Feb 2010 17:40:44 -0800
+Subject: [PATCH 1/8] x86/ioapic: early enable ioapic for timer irq
+Thread-Topic: [PATCH 1/8] x86/ioapic: early enable ioapic for timer irq
+Thread-Index: AcqsTY7qLqyZJo/iRKSQn4w1/I1Haw==
+Message-ID: <43F901BD926A4E43B106BF17856F07559FB80D07@orsmsx508.amr.corp.intel.com>
 Accept-Language: en-US
 Content-Language: en-US
 X-MS-Has-Attach: 
@@ -34,67 +34,64 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From e25ea443d81dc037e6a1da33e23bc04b976b70da Mon Sep 17 00:00:00 2001
+>From 3b1bd027b207d3771c92becbcaa05e1597c571ad Mon Sep 17 00:00:00 2001
 From: Jacob Pan <jacob.jun.pan@intel.com>
-Date: Fri, 5 Feb 2010 04:06:56 -0800
-Subject: [PATCH 9/9] x86/apic: remove ioapic_disable_legacy
+Date: Wed, 23 Sep 2009 07:20:23 -0700
+Subject: [PATCH 1/8] x86/ioapic: early enable ioapic for timer irq
+
+Moorestown platform needs apic ready early for the system timer irq
+which is delievered via ioapic. should not impact other platforms.
+
+in longer term, once ioapic setup is moved before late time init, we will not
+need this patch to do early apic enabling
 
 Signed-off-by: Jacob Pan <jacob.jun.pan@intel.com>
 ---
- arch/x86/include/asm/io_apic.h |    2 --
- arch/x86/kernel/apic/io_apic.c |   12 ++++++------
- 2 files changed, 6 insertions(+), 8 deletions(-)
+ arch/x86/include/asm/io_apic.h |    1 +
+ arch/x86/kernel/apic/io_apic.c |   21 +++++++++++++++++++++
+ 2 files changed, 22 insertions(+), 0 deletions(-)
 
 diff --git a/arch/x86/include/asm/io_apic.h b/arch/x86/include/asm/io_apic.h
-index 7c7c16c..84fdd51 100644
+index 84fdd51..f1f45bc 100644
 --- a/arch/x86/include/asm/io_apic.h
 +++ b/arch/x86/include/asm/io_apic.h
-@@ -143,8 +143,6 @@ extern int noioapicreroute;
- /* 1 if the timer IRQ uses the '8259A Virtual Wire' mode */
- extern int timer_through_8259;
+@@ -186,6 +186,7 @@ extern struct mp_ioapic_gsi  mp_gsi_routing[];
+ int mp_find_ioapic(int gsi);
+ int mp_find_ioapic_pin(int ioapic, int gsi);
+ void __init mp_register_ioapic(int id, u32 address, u32 gsi_base);
++extern void __init pre_init_apic_IRQ0(void);
  
--extern void io_apic_disable_legacy(void);
--
- /*
-  * If we use the IO-APIC for IRQ routing, disable automatic
-  * assignment of PCI IRQ's.
+ #else  /* !CONFIG_X86_IO_APIC */
+ 
 diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-index 1704cd8..5a7aab2 100644
+index 5a7aab2..bdb3646 100644
 --- a/arch/x86/kernel/apic/io_apic.c
 +++ b/arch/x86/kernel/apic/io_apic.c
-@@ -95,7 +95,7 @@ struct mpc_intsrc mp_irqs[MAX_IRQ_SOURCES];
- int mp_irq_entries;
+@@ -4250,3 +4250,24 @@ void __init mp_register_ioapic(int id, u32 address, u32 gsi_base)
  
- /* GSI interrupts */
--static int nr_irqs_gsi = NR_IRQS_LEGACY;
-+int nr_irqs_gsi = NR_IRQS_LEGACY;
- 
- #if defined (CONFIG_MCA) || defined (CONFIG_EISA)
- int mp_bus_id_to_type[MAX_MP_BUSSES];
-@@ -143,11 +143,6 @@ static struct irq_cfg irq_cfgx[NR_IRQS_LEGACY];
- static struct irq_cfg irq_cfgx[NR_IRQS];
- #endif
- 
--void __init io_apic_disable_legacy(void)
--{
--	nr_irqs_gsi = 0;
--}
--
- int __init arch_early_irq_init(void)
- {
- 	struct irq_cfg *cfg;
-@@ -156,6 +151,11 @@ int __init arch_early_irq_init(void)
- 	int node;
- 	int i;
- 
-+	if (!legacy_pic->nr_legacy_irqs) {
-+		nr_irqs_gsi = 0;
-+		io_apic_irqs = ~0UL;
-+	}
+ 	nr_ioapics++;
+ }
 +
- 	cfg = irq_cfgx;
- 	count = ARRAY_SIZE(irq_cfgx);
- 	node= cpu_to_node(boot_cpu_id);
++/* Enable IOAPIC early just for system timer */
++void __init pre_init_apic_IRQ0(void)
++{
++	struct irq_cfg *cfg;
++	struct irq_desc *desc;
++
++	printk(KERN_INFO "Early APIC setup for system timer0\n");
++#ifndef CONFIG_SMP
++	phys_cpu_present_map = physid_mask_of_physid(boot_cpu_physical_apicid);
++#endif
++	desc = irq_to_desc_alloc_node(0, 0);
++
++	setup_local_APIC();
++
++	cfg = irq_cfg(0);
++	add_pin_to_irq_node(cfg, 0, 0, 0);
++	set_irq_chip_and_handler_name(0, &ioapic_chip, handle_edge_irq, "edge");
++
++	setup_IO_APIC_irq(0, 0, 0, desc, 0, 0);
++}
 -- 
 1.6.5.3
 
