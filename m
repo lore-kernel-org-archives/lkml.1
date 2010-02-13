@@ -1,18 +1,18 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755816Ab0BMNDr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Feb 2010 08:03:47 -0500
+	id S1756094Ab0BMNDy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Feb 2010 08:03:54 -0500
 Received: from mail-fx0-f227.google.com ([209.85.220.227]:44747 "EHLO
 	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754758Ab0BMNDd (ORCPT
+	with ESMTP id S1755766Ab0BMNDr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Feb 2010 08:03:33 -0500
+	Sat, 13 Feb 2010 08:03:47 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=CYm1x3c+kDjEyahlyuc6m6t1OMLapr3ZXK2OGHzSHzJjsO3GwYmaUWBvl5IGZ3uh9l
-         pedv+WoMhGVbA1WTMj+3RZT0SXxaiNb9/GqiliP5Xeq5Pjajk9RZ46umtkIJHxt6QKyn
-         H4OG7RRl2WyqIwZ4QKHObDJBSiymQ9ySNqa6U=
+        b=fswK0u+Mysb0jQwgI6+ZOlimAkSTTg/7sukGytkZWchQdMhUBlynnyaNoNyG3bF5eL
+         H0vscUF+w6XU+j681DDwBLzlNXXvklQmvtPp1eCD6O5K2Ptb1ZNr4rdxoHky2fEQs8ay
+         +qJd91pXOw/gvMcunJvssBnEh3054kpKI6WAg=
 From: Maxim Levitsky <maximlevitsky@gmail.com>
 To: David Woodhouse <dwmw2@infradead.org>
 Cc: Artem Bityutskiy <dedekind1@gmail.com>,
@@ -23,9 +23,9 @@ Cc: Artem Bityutskiy <dedekind1@gmail.com>,
        "stanley.miao" <stanley.miao@windriver.com>,
        Vitaly Wool <vitalywool@gmail.com>,
        Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: [PATCH 04/14] MTD: call the remove notifiers before assuming it is in use
-Date: Sat, 13 Feb 2010 15:03:03 +0200
-Message-Id: <1266066193-17625-5-git-send-email-maximlevitsky@gmail.com>
+Subject: [PATCH 09/14] MTD: nand: make reads using MTD_OOB_RAW affect only ECC validation
+Date: Sat, 13 Feb 2010 15:03:08 +0200
+Message-Id: <1266066193-17625-10-git-send-email-maximlevitsky@gmail.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1266066193-17625-1-git-send-email-maximlevitsky@gmail.com>
 References: <1266066193-17625-1-git-send-email-maximlevitsky@gmail.com>
@@ -33,64 +33,108 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now that mtd block common layer is prepared for proper hotplug support,
-enable it here
+This changes the behavier of MTD_OOB_RAW. It used to read both OOB and data
+to the data buffer, however you would still need to specify the dummy oob buffer.
 
-Now all users of the mtd device have a chance to put the mtd device
-when they are notified to do so, and they have to do so to make hotplug work.
+This is only used in one place, but makes it hard to read data+oob without ECC
+test, thus I removed that behavier, and fixed the user.
+
+Now MTD_OOB_RAW behaves just like MTD_OOB_PLACE, but doesn't do ECC validation
 
 Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
 ---
- drivers/mtd/mtdcore.c |   21 +++++++++++----------
- 1 files changed, 11 insertions(+), 10 deletions(-)
+ drivers/mtd/nand/nand_base.c |   19 +++++++------------
+ drivers/mtd/nand/nand_bbt.c  |   26 ++++++++++++++++++++++----
+ include/linux/mtd/mtd.h      |    4 +---
+ 3 files changed, 30 insertions(+), 19 deletions(-)
 
-diff --git a/drivers/mtd/mtdcore.c b/drivers/mtd/mtdcore.c
-index 3bdb7e8..0e86208 100644
---- a/drivers/mtd/mtdcore.c
-+++ b/drivers/mtd/mtdcore.c
-@@ -341,31 +341,32 @@ int add_mtd_device(struct mtd_info *mtd)
- int del_mtd_device (struct mtd_info *mtd)
+diff --git a/drivers/mtd/nand/nand_base.c b/drivers/mtd/nand/nand_base.c
+index 2ff9c02..c393df3 100644
+--- a/drivers/mtd/nand/nand_base.c
++++ b/drivers/mtd/nand/nand_base.c
+@@ -1283,18 +1283,13 @@ static int nand_do_read_ops(struct mtd_info *mtd, loff_t from,
+ 
+ 			if (unlikely(oob)) {
+ 
+-				/* Raw mode does data:oob:data:oob */
+-				if (ops->mode != MTD_OOB_RAW) {
+-					int toread = min(oobreadlen,
+-								max_oobsize);
+-					if (toread) {
+-						oob = nand_transfer_oob(chip,
+-							oob, ops, toread);
+-						oobreadlen -= toread;
+-					}
+-				} else
+-					buf = nand_transfer_oob(chip,
+-						buf, ops, mtd->oobsize);
++				int toread = min(oobreadlen, max_oobsize);
++
++				if (toread) {
++					oob = nand_transfer_oob(chip,
++						oob, ops, toread);
++					oobreadlen -= toread;
++				}
+ 			}
+ 
+ 			if (!(chip->options & NAND_NO_READRDY)) {
+diff --git a/drivers/mtd/nand/nand_bbt.c b/drivers/mtd/nand/nand_bbt.c
+index 55c23e5..387c45c 100644
+--- a/drivers/mtd/nand/nand_bbt.c
++++ b/drivers/mtd/nand/nand_bbt.c
+@@ -237,15 +237,33 @@ static int scan_read_raw(struct mtd_info *mtd, uint8_t *buf, loff_t offs,
+ 			 size_t len)
  {
- 	int ret;
-+	struct mtd_notifier *not;
+ 	struct mtd_oob_ops ops;
++	int res;
  
- 	mutex_lock(&mtd_table_mutex);
+ 	ops.mode = MTD_OOB_RAW;
+ 	ops.ooboffs = 0;
+ 	ops.ooblen = mtd->oobsize;
+-	ops.oobbuf = buf;
+-	ops.datbuf = buf;
+-	ops.len = len;
  
- 	if (mtd_table[mtd->index] != mtd) {
- 		ret = -ENODEV;
--	} else if (mtd->usecount) {
-+		goto out_error;
+-	return mtd->read_oob(mtd, offs, &ops);
++
++	while (len > 0) {
++		if (len <= mtd->writesize) {
++			ops.oobbuf = buf + len;
++			ops.datbuf = buf;
++			ops.len = len;
++			return mtd->read_oob(mtd, offs, &ops);
++		} else {
++			ops.oobbuf = buf + mtd->writesize;
++			ops.datbuf = buf;
++			ops.len = mtd->writesize;
++			res = mtd->read_oob(mtd, offs, &ops);
++
++			if (res)
++				return res;
++		}
++
++		buf += mtd->oobsize + mtd->writesize;
++		len -= mtd->writesize;
 +	}
-+
-+	/* No need to get a refcount on the module containing
-+		the notifier, since we hold the mtd_table_mutex */
-+	list_for_each_entry(not, &mtd_notifiers, list)
-+		not->remove(mtd);
-+
-+	if (mtd->usecount) {
- 		printk(KERN_NOTICE "Removing MTD device #%d (%s) with use count %d\n",
- 		       mtd->index, mtd->name, mtd->usecount);
- 		ret = -EBUSY;
- 	} else {
--		struct mtd_notifier *not;
--
- 		device_unregister(&mtd->dev);
--
--		/* No need to get a refcount on the module containing
--		   the notifier, since we hold the mtd_table_mutex */
--		list_for_each_entry(not, &mtd_notifiers, list)
--			not->remove(mtd);
--
- 		mtd_table[mtd->index] = NULL;
--
- 		module_put(THIS_MODULE);
- 		ret = 0;
- 	}
- 
-+out_error:
- 	mutex_unlock(&mtd_table_mutex);
- 	return ret;
++	return 0;
  }
+ 
+ /*
+diff --git a/include/linux/mtd/mtd.h b/include/linux/mtd/mtd.h
+index 662d747..84bb375 100644
+--- a/include/linux/mtd/mtd.h
++++ b/include/linux/mtd/mtd.h
+@@ -61,9 +61,7 @@ struct mtd_erase_region_info {
+  * MTD_OOB_PLACE:	oob data are placed at the given offset
+  * MTD_OOB_AUTO:	oob data are automatically placed at the free areas
+  *			which are defined by the ecclayout
+- * MTD_OOB_RAW:		mode to read raw data+oob in one chunk. The oob data
+- *			is inserted into the data. Thats a raw image of the
+- *			flash contents.
++ * MTD_OOB_RAW:		mode to read oob and data without doing ECC checking
+  */
+ typedef enum {
+ 	MTD_OOB_PLACE,
 -- 
 1.6.3.3
 
