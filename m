@@ -1,68 +1,38 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757371Ab0BMSkK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Feb 2010 13:40:10 -0500
-Received: from e23smtp07.au.ibm.com ([202.81.31.140]:58639 "EHLO
-	e23smtp07.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752195Ab0BMSkI (ORCPT
+	id S1757736Ab0BMSkl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Feb 2010 13:40:41 -0500
+Received: from moutng.kundenserver.de ([212.227.17.10]:59218 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752195Ab0BMSki (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Feb 2010 13:40:08 -0500
-Date: Sun, 14 Feb 2010 00:09:59 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>, Ingo Molnar <mingo@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>, "Ma, Ling" <ling.ma@intel.com>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       "ego@in.ibm.com" <ego@in.ibm.com>
-Subject: Re: change in sched cpu_power causing regressions with SCHED_MC
-Message-ID: <20100213183959.GE5882@dirshya.in.ibm.com>
-Reply-To: svaidy@linux.vnet.ibm.com
-References: <1266023662.2808.118.camel@sbs-t61.sc.intel.com>
- <1266024679.2808.153.camel@sbs-t61.sc.intel.com>
- <1266057388.557.59599.camel@twins>
+	Sat, 13 Feb 2010 13:40:38 -0500
+Message-ID: <4B76F225.1090209@forouher.de>
+Date: Sat, 13 Feb 2010 19:40:37 +0100
+From: Dariush Forouher <dariush@forouher.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20100109 Icedove/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <1266057388.557.59599.camel@twins>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Robert Hancock <hancockrwd@gmail.com>
+CC: linux-kernel@vger.kernel.org, linux-acpi <linux-acpi@vger.kernel.org>
+Subject: Re: ACPI/ata regression with hotplugging the dvd drive
+References: <4B76D3E7.6000904@forouher.de> <4B76EE70.1060605@gmail.com>
+In-Reply-To: <4B76EE70.1060605@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1/91lDNGHXf2GqwCRb/mDtzRZg/9Y7mTgWjs0r
+ zzXaz6QS8tTZmukk3DedbN3ozdm0+MW8Alpwydd7LaW0oIX1P/
+ QXAf+jhmbTUvYclOAVZZw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Peter Zijlstra <peterz@infradead.org> [2010-02-13 11:36:28]:
+On 13.02.2010 19:24, Robert Hancock wrote:
 
-> On Fri, 2010-02-12 at 17:31 -0800, Suresh Siddha wrote:
-> > 
-> > We have one more problem that Yanmin and Ling Ma reported. On a dual
-> > socket quad-core platforms (for example platforms based on NHM-EP), we
-> > are seeing scenarios where one socket is completely busy (with all the 4
-> > cores running with 4 tasks) and another socket is completely idle.
-> > 
-> > This causes performance issues as those 4 tasks share the memory
-> > controller, last-level cache bandwidth etc. Also we won't be taking
-> > advantage of turbo-mode as much as we like. We will have all these
-> > benefits if we move two of those tasks to the other socket. Now both the
-> > sockets can potentially go to turbo etc and improve performance.
-> > 
-> > In short, your recent change (shown below) broke this behavior. In the
-> > kernel summit you mentioned you made this change with out affecting the
-> > behavior of SMT/MC. And my testing immediately after kernel-summit also
-> > didn't show the problem (perhaps my test didn't hit this specific
-> > change). But apparently we are having performance issues with this patch
-> > (Ling Ma's bisect pointed to this patch). I will look more detailed into
-> > this after the long weekend (to see if we can catch this scenario in
-> > fix_small_imbalance() etc). But wanted to give you a quick heads up.
-> > Thanks.
-> 
-> Right, so the behaviour we want should be provided by SD_PREFER_SIBLING,
-> it provides the capacity==1 thing the cpu_power games used to provide.
-> 
-> Not saying it's not broken, but that's where the we should be looking to
-> fix it.
+> This lockdep error in dmesg looks suspicious. Does this match the point 
+> where the DVD drive was inserted?
 
-Yes, making SD_PREFER_SIBLING work as expected will help spread tasks
-at all sched_domain levels and will integrate well with powersavings
-balance where we want to negate the effect.
+Yes, it does. Looking back through the logs, it appears sporadically since at
+least 2.6.32, always when inserting the drive.
 
---Vaidy
-
+regards
+Dariush
