@@ -1,17 +1,17 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757585Ab0BMIJm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Feb 2010 03:09:42 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:55964 "EHLO mx1.redhat.com"
+	id S1757600Ab0BMIJr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Feb 2010 03:09:47 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:65260 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752332Ab0BMICD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752323Ab0BMICD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 13 Feb 2010 03:02:03 -0500
 From: Avi Kivity <avi@redhat.com>
 To: kvm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 07/39] KVM: PPC: Add helpers for CR, XER
-Date: Sat, 13 Feb 2010 10:01:27 +0200
-Message-Id: <1266048119-14325-8-git-send-email-avi@redhat.com>
+Subject: [PATCH 14/39] KVM: PPC: Pass program interrupt flags to the guest
+Date: Sat, 13 Feb 2010 10:01:34 +0200
+Message-Id: <1266048119-14325-15-git-send-email-avi@redhat.com>
 In-Reply-To: <1266048119-14325-1-git-send-email-avi@redhat.com>
 References: <1266048119-14325-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -20,157 +20,48 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Alexander Graf <agraf@suse.de>
 
-We now have helpers for the GPRs, so let's also add some for CR and XER.
-
-Having them in the PACA simplifies code a lot, as we don't need to care
-about where to store CC or not to overflow any integers.
+When we need to reinject a program interrupt into the guest, we also need to
+reinject the corresponding flags into the guest.
 
 Signed-off-by: Alexander Graf <agraf@suse.de>
+Reported-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- arch/powerpc/include/asm/kvm_ppc.h |   40 ++++++++++++++++++++++++++++++++++++
- arch/powerpc/kvm/44x_tlb.c         |    6 +++-
- arch/powerpc/kvm/book3s.c          |    8 +++---
- arch/powerpc/kvm/booke.c           |    8 +++---
- 4 files changed, 52 insertions(+), 10 deletions(-)
+ arch/powerpc/kvm/book3s.c |    7 +++++--
+ 1 files changed, 5 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
-index ba01b9c..d60b2f0 100644
---- a/arch/powerpc/include/asm/kvm_ppc.h
-+++ b/arch/powerpc/include/asm/kvm_ppc.h
-@@ -108,6 +108,26 @@ static inline ulong kvmppc_get_gpr(struct kvm_vcpu *vcpu, int num)
- 	return vcpu->arch.gpr[num];
- }
- 
-+static inline void kvmppc_set_cr(struct kvm_vcpu *vcpu, u32 val)
-+{
-+	vcpu->arch.cr = val;
-+}
-+
-+static inline u32 kvmppc_get_cr(struct kvm_vcpu *vcpu)
-+{
-+	return vcpu->arch.cr;
-+}
-+
-+static inline void kvmppc_set_xer(struct kvm_vcpu *vcpu, u32 val)
-+{
-+	vcpu->arch.xer = val;
-+}
-+
-+static inline u32 kvmppc_get_xer(struct kvm_vcpu *vcpu)
-+{
-+	return vcpu->arch.xer;
-+}
-+
- #else
- 
- static inline void kvmppc_set_gpr(struct kvm_vcpu *vcpu, int num, ulong val)
-@@ -120,6 +140,26 @@ static inline ulong kvmppc_get_gpr(struct kvm_vcpu *vcpu, int num)
- 	return vcpu->arch.gpr[num];
- }
- 
-+static inline void kvmppc_set_cr(struct kvm_vcpu *vcpu, u32 val)
-+{
-+	vcpu->arch.cr = val;
-+}
-+
-+static inline u32 kvmppc_get_cr(struct kvm_vcpu *vcpu)
-+{
-+	return vcpu->arch.cr;
-+}
-+
-+static inline void kvmppc_set_xer(struct kvm_vcpu *vcpu, u32 val)
-+{
-+	vcpu->arch.xer = val;
-+}
-+
-+static inline u32 kvmppc_get_xer(struct kvm_vcpu *vcpu)
-+{
-+	return vcpu->arch.xer;
-+}
-+
- #endif
- 
- #endif /* __POWERPC_KVM_PPC_H__ */
-diff --git a/arch/powerpc/kvm/44x_tlb.c b/arch/powerpc/kvm/44x_tlb.c
-index 8b37736..2570fcc 100644
---- a/arch/powerpc/kvm/44x_tlb.c
-+++ b/arch/powerpc/kvm/44x_tlb.c
-@@ -506,10 +506,12 @@ int kvmppc_44x_emul_tlbsx(struct kvm_vcpu *vcpu, u8 rt, u8 ra, u8 rb, u8 rc)
- 
- 	gtlb_index = kvmppc_44x_tlb_index(vcpu, ea, pid, as);
- 	if (rc) {
-+		u32 cr = kvmppc_get_cr(vcpu);
-+
- 		if (gtlb_index < 0)
--			vcpu->arch.cr &= ~0x20000000;
-+			kvmppc_set_cr(vcpu, cr & ~0x20000000);
- 		else
--			vcpu->arch.cr |= 0x20000000;
-+			kvmppc_set_cr(vcpu, cr | 0x20000000);
- 	}
- 	kvmppc_set_gpr(vcpu, rt, gtlb_index);
- 
 diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
-index 574b24f..09ba8db 100644
+index 66b5924..02861fd 100644
 --- a/arch/powerpc/kvm/book3s.c
 +++ b/arch/powerpc/kvm/book3s.c
-@@ -717,10 +717,10 @@ int kvm_arch_vcpu_ioctl_get_regs(struct kvm_vcpu *vcpu, struct kvm_regs *regs)
- 	int i;
+@@ -633,6 +633,9 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 	case BOOK3S_INTERRUPT_PROGRAM:
+ 	{
+ 		enum emulation_result er;
++		ulong flags;
++
++		flags = (vcpu->arch.shadow_msr & 0x1f0000ull);
  
- 	regs->pc = vcpu->arch.pc;
--	regs->cr = vcpu->arch.cr;
-+	regs->cr = kvmppc_get_cr(vcpu);
- 	regs->ctr = vcpu->arch.ctr;
- 	regs->lr = vcpu->arch.lr;
--	regs->xer = vcpu->arch.xer;
-+	regs->xer = kvmppc_get_xer(vcpu);
- 	regs->msr = vcpu->arch.msr;
- 	regs->srr0 = vcpu->arch.srr0;
- 	regs->srr1 = vcpu->arch.srr1;
-@@ -744,10 +744,10 @@ int kvm_arch_vcpu_ioctl_set_regs(struct kvm_vcpu *vcpu, struct kvm_regs *regs)
- 	int i;
- 
- 	vcpu->arch.pc = regs->pc;
--	vcpu->arch.cr = regs->cr;
-+	kvmppc_set_cr(vcpu, regs->cr);
- 	vcpu->arch.ctr = regs->ctr;
- 	vcpu->arch.lr = regs->lr;
--	vcpu->arch.xer = regs->xer;
-+	kvmppc_set_xer(vcpu, regs->xer);
- 	kvmppc_set_msr(vcpu, regs->msr);
- 	vcpu->arch.srr0 = regs->srr0;
- 	vcpu->arch.srr1 = regs->srr1;
-diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
-index 49af80e..338baf9 100644
---- a/arch/powerpc/kvm/booke.c
-+++ b/arch/powerpc/kvm/booke.c
-@@ -449,10 +449,10 @@ int kvm_arch_vcpu_ioctl_get_regs(struct kvm_vcpu *vcpu, struct kvm_regs *regs)
- 	int i;
- 
- 	regs->pc = vcpu->arch.pc;
--	regs->cr = vcpu->arch.cr;
-+	regs->cr = kvmppc_get_cr(vcpu);
- 	regs->ctr = vcpu->arch.ctr;
- 	regs->lr = vcpu->arch.lr;
--	regs->xer = vcpu->arch.xer;
-+	regs->xer = kvmppc_get_xer(vcpu);
- 	regs->msr = vcpu->arch.msr;
- 	regs->srr0 = vcpu->arch.srr0;
- 	regs->srr1 = vcpu->arch.srr1;
-@@ -476,10 +476,10 @@ int kvm_arch_vcpu_ioctl_set_regs(struct kvm_vcpu *vcpu, struct kvm_regs *regs)
- 	int i;
- 
- 	vcpu->arch.pc = regs->pc;
--	vcpu->arch.cr = regs->cr;
-+	kvmppc_set_cr(vcpu, regs->cr);
- 	vcpu->arch.ctr = regs->ctr;
- 	vcpu->arch.lr = regs->lr;
--	vcpu->arch.xer = regs->xer;
-+	kvmppc_set_xer(vcpu, regs->xer);
- 	kvmppc_set_msr(vcpu, regs->msr);
- 	vcpu->arch.srr0 = regs->srr0;
- 	vcpu->arch.srr1 = regs->srr1;
+ 		if (vcpu->arch.msr & MSR_PR) {
+ #ifdef EXIT_DEBUG
+@@ -640,7 +643,7 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ #endif
+ 			if ((vcpu->arch.last_inst & 0xff0007ff) !=
+ 			    (INS_DCBZ & 0xfffffff7)) {
+-				kvmppc_book3s_queue_irqprio(vcpu, exit_nr);
++				kvmppc_core_queue_program(vcpu, flags);
+ 				r = RESUME_GUEST;
+ 				break;
+ 			}
+@@ -655,7 +658,7 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 		case EMULATE_FAIL:
+ 			printk(KERN_CRIT "%s: emulation at %lx failed (%08x)\n",
+ 			       __func__, vcpu->arch.pc, vcpu->arch.last_inst);
+-			kvmppc_book3s_queue_irqprio(vcpu, exit_nr);
++			kvmppc_core_queue_program(vcpu, flags);
+ 			r = RESUME_GUEST;
+ 			break;
+ 		default:
 -- 
 1.6.5.3
 
