@@ -1,97 +1,467 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754847Ab0BMNGh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Feb 2010 08:06:37 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:23345 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754798Ab0BMNDe (ORCPT
+	id S1754008Ab0BMNaI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Feb 2010 08:30:08 -0500
+Received: from e23smtp01.au.ibm.com ([202.81.31.143]:51440 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751673Ab0BMNaC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Feb 2010 08:03:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=AZaK59UznQgw8OWmu5d3lFyV/en8Grpc36eTMtBbdCfBh2iuWWuAuU+8jF1GA7tWDj
-         Dfoc8gu4iwLbv8dscXxuH2XB1qLrjxd/5v2lCkIdZeK0E4THCYPanIf1p2p47sv/N4dD
-         aH3sVs6HPoD+nzm0oP6qKaFNeEktadMhtgbL0=
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Artem Bityutskiy <dedekind1@gmail.com>,
-       linux-mtd <linux-mtd@lists.infradead.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Alex Dubov <oakad@yahoo.com>, joern <joern@logfs.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "stanley.miao" <stanley.miao@windriver.com>,
-       Vitaly Wool <vitalywool@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: [PATCH 05/14] blktrans: allow FTL drivers to export sysfs attributes
-Date: Sat, 13 Feb 2010 15:03:04 +0200
-Message-Id: <1266066193-17625-6-git-send-email-maximlevitsky@gmail.com>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1266066193-17625-1-git-send-email-maximlevitsky@gmail.com>
-References: <1266066193-17625-1-git-send-email-maximlevitsky@gmail.com>
+	Sat, 13 Feb 2010 08:30:02 -0500
+Date: Sat, 13 Feb 2010 18:59:52 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Chris Frost <frost@cs.ucla.edu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Keiichi KII <k-keiichi@bx.jp.nec.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jason Baron <jbaron@redhat.com>,
+       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "lwoodman@redhat.com" <lwoodman@redhat.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       Tom Zanussi <tzanussi@gmail.com>, "riel@redhat.com" <riel@redhat.com>,
+       Munehiro Ikeda <m-ikeda@ds.jp.nec.com>,
+       Atsushi Tsuji <a-tsuji@bk.jp.nec.com>
+Subject: Re: [RFC PATCH -tip 0/2 v3] pagecache tracepoints proposal
+Message-ID: <20100213132952.GG11364@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <4B6B7FBF.9090005@bx.jp.nec.com>
+ <20100205072858.GC9320@elte.hu>
+ <20100208155450.GA17055@localhost>
+ <20100209162101.GA12840@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20100209162101.GA12840@localhost>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds an ability to export sysfs attributes below
-the block disk device.
+* Wu Fengguang <fengguang.wu@intel.com> [2010-02-10 00:21:01]:
 
-This can be used to pass the udev an information about the FTL
-and could include the vendor, serial, version, etc...
+> > Here is a scratch patch to exercise the "object collections" idea :)
+> > 
+> > Interestingly, the pagecache walk is pretty fast, while copying out the trace
+> > data takes more time:
+> > 
+> >         # time (echo / > walk-fs)
+> >         (; echo / > walk-fs; )  0.01s user 0.11s system 82% cpu 0.145 total
+> > 
+> >         # time wc /debug/tracing/trace
+> >         4570 45893 551282 /debug/tracing/trace
+> >         wc /debug/tracing/trace  0.75s user 0.55s system 88% cpu 1.470 total
+> 
+> Ah got it: it takes much time to "print" the raw trace data.
+> 
+> > TODO:
+> > 
+> > correctness
+> > - show file path name
+> >   XXX: can trace_seq_path() be called directly inside TRACE_EVENT()?
+> 
+> OK, finished with the file name with d_path(). I choose not to mangle
+> the possible '\n' in file names, and simply show "?" for such files,
+> for the sake of speed.
+> 
+> Thanks,
+> Fengguang
+> ---
+> tracing: pagecache object collections
+> 
+> This dumps
+> - all cached files of a mounted fs  (the inode-cache)
+> - all cached pages of a cached file (the page-cache)
+> 
+> Usage and Sample output:
+> 
+> # echo /dev > /debug/tracing/objects/mm/pages/walk-fs
+> # tail /debug/tracing/trace
+>              zsh-2528  [000] 10429.172470: dump_inode: ino=889 size=0 cached=0 age=442 dirty=0 dev=0:18 file=/dev/console
+>              zsh-2528  [000] 10429.172472: dump_inode: ino=888 size=0 cached=0 age=442 dirty=7 dev=0:18 file=/dev/null
+>              zsh-2528  [000] 10429.172474: dump_inode: ino=887 size=40 cached=0 age=442 dirty=0 dev=0:18 file=/dev/shm
+>              zsh-2528  [000] 10429.172477: dump_inode: ino=886 size=40 cached=0 age=442 dirty=0 dev=0:18 file=/dev/pts
+>              zsh-2528  [000] 10429.172479: dump_inode: ino=885 size=11 cached=0 age=442 dirty=0 dev=0:18 file=/dev/core
+>              zsh-2528  [000] 10429.172481: dump_inode: ino=884 size=15 cached=0 age=442 dirty=0 dev=0:18 file=/dev/stderr
+>              zsh-2528  [000] 10429.172483: dump_inode: ino=883 size=15 cached=0 age=442 dirty=0 dev=0:18 file=/dev/stdout
+>              zsh-2528  [000] 10429.172486: dump_inode: ino=882 size=15 cached=0 age=442 dirty=0 dev=0:18 file=/dev/stdin
+>              zsh-2528  [000] 10429.172488: dump_inode: ino=881 size=13 cached=0 age=442 dirty=0 dev=0:18 file=/dev/fd
+>              zsh-2528  [000] 10429.172491: dump_inode: ino=872 size=13360 cached=0 age=442 dirty=0 dev=0:18 file=/dev
+> 
+> Here "age" is either age from inode create time, or from last dirty time.
+>
 
-Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
----
- drivers/mtd/mtd_blkdevs.c    |    9 +++++++++
- include/linux/mtd/blktrans.h |    2 ++
- 2 files changed, 11 insertions(+), 0 deletions(-)
+It would be nice to see mapped/unmapped information as well.
+ 
+> TODO:
+> 
+> correctness
+> - reliably prevent ring buffer overflow,
+>   by replacing cond_resched() with some wait function
+>   (eg. wait until 2+ pages are free in ring buffer)
+> - use stable_page_flags() in recent kernel
+> 
+> output style
+> - use plain tracing output format (no fancy TASK-PID/.../FUNCTION fields)
+> - clear ring buffer before dumping the objects?
+> - output format: key=value pairs ==> header + tabbed values?
+> - add filtering options if necessary
+> 
+> CC: Ingo Molnar <mingo@elte.hu>
+> CC: Chris Frost <frost@cs.ucla.edu>
+> CC: Steven Rostedt <rostedt@goodmis.org>
+> CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> CC: Frederic Weisbecker <fweisbec@gmail.com>
+> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> ---
+>  fs/inode.c                |    2 
+>  include/trace/events/mm.h |   70 ++++++++++++
+>  kernel/trace/trace_mm.c   |  204 ++++++++++++++++++++++++++++++++++++
+>  3 files changed, 275 insertions(+), 1 deletion(-)
+> 
+> --- linux-mm.orig/include/trace/events/mm.h	2010-02-08 23:19:09.000000000 +0800
+> +++ linux-mm/include/trace/events/mm.h	2010-02-09 23:39:03.000000000 +0800
+> @@ -2,6 +2,7 @@
+>  #define _TRACE_MM_H
+> 
+>  #include <linux/tracepoint.h>
+> +#include <linux/pagemap.h>
+>  #include <linux/mm.h>
+> 
+>  #undef TRACE_SYSTEM
+> @@ -42,6 +43,75 @@ TRACE_EVENT(dump_pages,
+>  		  __entry->mapcount, __entry->index)
+>  );
+> 
+> +TRACE_EVENT(dump_pagecache_range,
+> +
+> +	TP_PROTO(struct page *page, unsigned long len),
+> +
+> +	TP_ARGS(page, len),
+> +
+> +	TP_STRUCT__entry(
+> +		__field(	unsigned long,	index		)
+> +		__field(	unsigned long,	len		)
+> +		__field(	unsigned long,	flags		)
+> +		__field(	unsigned int,	count		)
+> +		__field(	unsigned int,	mapcount	)
+> +	),
+> +
+> +	TP_fast_assign(
+> +		__entry->index		= page->index;
+> +		__entry->len		= len;
+> +		__entry->flags		= page->flags;
+> +		__entry->count		= atomic_read(&page->_count);
+> +		__entry->mapcount	= page_mapcount(page);
+> +	),
+> +
+> +	TP_printk("index=%lu len=%lu flags=%lx count=%u mapcount=%u",
+> +		  __entry->index,
+> +		  __entry->len,
+> +		  __entry->flags,
+> +		  __entry->count,
+> +		  __entry->mapcount)
+> +);
+> +
+> +TRACE_EVENT(dump_inode,
+> +
+> +	TP_PROTO(struct inode *inode, char *name, int len),
+> +
+> +	TP_ARGS(inode, name, len),
+> +
+> +	TP_STRUCT__entry(
+> +		__field(	unsigned long,	ino		)
+> +		__field(	loff_t,		size		)
+> +		__field(	unsigned long,	nrpages		)
+> +		__field(	unsigned long,	age		)
+> +		__field(	unsigned long,	state		)
+> +		__field(	dev_t,		dev		)
+> +		__dynamic_array(char,		file,	len	)
+> +	),
+> +
+> +	TP_fast_assign(
+> +		__entry->ino		= inode->i_ino;
+> +		__entry->size		= i_size_read(inode);
+> +		__entry->nrpages	= inode->i_mapping->nrpages;
+> +		__entry->age		= jiffies - inode->dirtied_when;
+> +		__entry->state		= inode->i_state;
+> +		__entry->dev		= inode->i_sb->s_dev;
+> +		memcpy(__get_str(file), name, len);
+> +	),
+> +
+> +	TP_printk("ino=%lu size=%llu cached=%lu age=%lu dirty=%lu "
+> +		  "dev=%u:%u file=%s",
+> +		  __entry->ino,
+> +		  __entry->size,
+> +		  __entry->nrpages << PAGE_CACHE_SHIFT,
+> +		  __entry->age / HZ,
+> +		  __entry->state & I_DIRTY,
+> +		  MAJOR(__entry->dev),
+> +		  MINOR(__entry->dev),
+> +		  strchr(__get_str(file), '\n') ? "?" : __get_str(file))
+> +);
+> +
+> +
+>  #endif /*  _TRACE_MM_H */
+> 
+>  /* This part must be outside protection */
+> --- linux-mm.orig/kernel/trace/trace_mm.c	2010-02-08 23:19:09.000000000 +0800
+> +++ linux-mm/kernel/trace/trace_mm.c	2010-02-10 00:04:47.000000000 +0800
+> @@ -9,6 +9,9 @@
+>  #include <linux/bootmem.h>
+>  #include <linux/debugfs.h>
+>  #include <linux/uaccess.h>
+> +#include <linux/pagevec.h>
+> +#include <linux/writeback.h>
+> +#include <linux/file.h>
+> 
+>  #include "trace_output.h"
+> 
+> @@ -95,6 +98,201 @@ static const struct file_operations trac
+>  	.write		= trace_mm_dump_range_write,
+>  };
+> 
+> +static unsigned long page_flags(struct page* page)
+> +{
+> +	return page->flags & ((1 << NR_PAGEFLAGS) - 1);
+> +}
+> +
+> +static int pages_similiar(struct page* page0, struct page* page)
+> +{
+> +	if (page_count(page0) != page_count(page))
+> +		return 0;
+> +
+> +	if (page_mapcount(page0) != page_mapcount(page))
+> +		return 0;
+> +
+> +	if (page_flags(page0) != page_flags(page))
+> +		return 0;
+> +
+> +	return 1;
+> +}
+> +
 
-diff --git a/drivers/mtd/mtd_blkdevs.c b/drivers/mtd/mtd_blkdevs.c
-index 1bc9c76..6850091 100644
---- a/drivers/mtd/mtd_blkdevs.c
-+++ b/drivers/mtd/mtd_blkdevs.c
-@@ -359,6 +359,11 @@ int add_mtd_blktrans_dev(struct mtd_blktrans_dev *new)
+OK, so pages_similar() is used to identify a range of pages in the
+cache?
+
+> +#define BATCH_LINES	100
+> +static void dump_pagecache(struct address_space *mapping)
+> +{
+> +	int i;
+> +	int lines = 0;
+> +	pgoff_t len = 0;
+> +	struct pagevec pvec;
+> +	struct page *page;
+> +	struct page *page0 = NULL;
+> +	unsigned long start = 0;
+> +
+> +	for (;;) {
+> +		pagevec_init(&pvec, 0);
+> +		pvec.nr = radix_tree_gang_lookup(&mapping->page_tree,
+> +				(void **)pvec.pages, start + len, PAGEVEC_SIZE);
+
+Is radix_tree_gang_lookup synchronized somewhere? Don't we need to
+call it under RCU or a lock (mapping) ?
+
+> +
+> +		if (pvec.nr == 0) {
+> +			if (len)
+> +				trace_dump_pagecache_range(page0, len);
+> +			break;
+> +		}
+> +
+> +		if (!page0)
+> +			page0 = pvec.pages[0];
+> +
+> +		for (i = 0; i < pvec.nr; i++) {
+> +			page = pvec.pages[i];
+> +
+> +			if (page->index == start + len &&
+> +					pages_similiar(page0, page))
+> +				len++;
+> +			else {
+> +				trace_dump_pagecache_range(page0, len);
+> +				page0 = page;
+> +				start = page->index;
+> +				len = 1;
+> +				if (++lines > BATCH_LINES) {
+> +					lines = 0;
+> +					cond_resched();
+> +				}
+> +			}
+> +		}
+> +	}
+> +}
+> +
+> +static void dump_inode(struct inode *inode,
+> +		       char *name_buf,
+> +		       struct vfsmount *mnt)
+> +{
+> +	struct path path = {
+> +		.mnt = mnt,
+> +		.dentry = d_find_alias(inode)
+> +	};
+> +	char *name;
+> +	int len;
+> +
+> +	if (!path.dentry) {
+> +		trace_dump_inode(inode, "?", 2);
+> +		return;
+> +	}
+> +
+> +	name = d_path(&path, name_buf, PAGE_SIZE);
+> +	if (IS_ERR(name)) {
+> +		name = "?";
+> +		len = 2;
+> +	} else
+> +		len = PAGE_SIZE + name_buf - name;
+> +
+> +	trace_dump_inode(inode, name, len);
+> +
+> +	if (path.dentry)
+> +		dput(path.dentry);
+> +}
+> +
+> +static void dump_fs_pagecache(struct super_block *sb, struct vfsmount *mnt)
+> +{
+> +	struct inode *inode;
+> +	struct inode *prev_inode = NULL;
+> +	char *name_buf;
+> +
+> +	name_buf = (char *)__get_free_page(GFP_TEMPORARY);
+> +	if (!name_buf)
+> +		return;
+> +
+> +	down_read(&sb->s_umount);
+> +	if (!sb->s_root)
+> +		goto out;
+> +
+> +	spin_lock(&inode_lock);
+> +	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
+> +		if (inode->i_state & (I_FREEING|I_CLEAR|I_WILL_FREE|I_NEW))
+> +			continue;
+> +		__iget(inode);
+> +		spin_unlock(&inode_lock);
+> +		dump_inode(inode, name_buf, mnt);
+> +		if (inode->i_mapping->nrpages)
+> +			dump_pagecache(inode->i_mapping);
+> +		iput(prev_inode);
+> +		prev_inode = inode;
+> +		cond_resched();
+> +		spin_lock(&inode_lock);
+> +	}
+> +	spin_unlock(&inode_lock);
+> +	iput(prev_inode);
+> +out:
+> +	up_read(&sb->s_umount);
+> +	free_page((unsigned long)name_buf);
+> +}
+> +
+> +static ssize_t
+> +trace_pagecache_write(struct file *filp, const char __user *ubuf, size_t count,
+> +		      loff_t *ppos)
+> +{
+> +	struct file *file = NULL;
+> +	char *name;
+> +	int err = 0;
+> +
+
+Can't we use the trace_parser here?
+
+> +	if (count <= 1)
+> +		return -EINVAL;
+> +	if (count > PATH_MAX + 1)
+> +		return -ENAMETOOLONG;
+> +
+> +	name = kmalloc(count+1, GFP_KERNEL);
+> +	if (!name)
+> +		return -ENOMEM;
+> +
+> +	if (copy_from_user(name, ubuf, count)) {
+> +		err = -EFAULT;
+> +		goto out;
+> +	}
+> +
+> +	/* strip the newline added by `echo` */
+> +	if (name[count-1] != '\n')
+> +		return -EINVAL;
+
+Doesn't sound correct, what happens if we use echo -n?
+
+> +	name[count-1] = '\0';
+> +
+> +	file = filp_open(name, O_RDONLY|O_LARGEFILE, 0);
+> +	if (IS_ERR(file)) {
+> +		err = PTR_ERR(file);
+> +		file = NULL;
+> +		goto out;
+> +	}
+> +
+> +	if (tracing_update_buffers() < 0) {
+> +		err = -ENOMEM;
+> +		goto out;
+> +	}
+> +	if (trace_set_clr_event("mm", "dump_pagecache_range", 1)) {
+> +		err = -EINVAL;
+> +		goto out;
+> +	}
+> +	if (trace_set_clr_event("mm", "dump_inode", 1)) {
+> +		err = -EINVAL;
+> +		goto out;
+> +	}
+> +
+> +	if (filp->f_path.dentry->d_inode->i_private) {
+> +		dump_fs_pagecache(file->f_path.dentry->d_sb, file->f_path.mnt);
+> +	} else {
+> +		dump_pagecache(file->f_mapping);
+> +	}
+> +
+> +out:
+> +	if (file)
+> +		fput(file);
+> +	kfree(name);
+> +
+> +	return err ? err : count;
+> +}
+> +
+> +static const struct file_operations trace_pagecache_fops = {
+> +	.open		= tracing_open_generic,
+> +	.read		= trace_mm_dump_range_read,
+> +	.write		= trace_pagecache_write,
+> +};
+> +
+>  /* move this into trace_objects.c when that file is created */
+>  static struct dentry *trace_objects_dir(void)
+>  {
+> @@ -167,6 +365,12 @@ static __init int trace_objects_mm_init(
+>  	trace_create_file("dump_range", 0600, d_pages, NULL,
+>  			  &trace_mm_fops);
+> 
+> +	trace_create_file("walk-file", 0600, d_pages, NULL,
+> +			  &trace_pagecache_fops);
+> +
+> +	trace_create_file("walk-fs", 0600, d_pages, (void *)1,
+> +			  &trace_pagecache_fops);
+> +
+>  	return 0;
+>  }
+>  fs_initcall(trace_objects_mm_init);
+> --- linux-mm.orig/fs/inode.c	2010-02-08 23:19:12.000000000 +0800
+> +++ linux-mm/fs/inode.c	2010-02-08 23:19:22.000000000 +0800
+> @@ -149,7 +149,7 @@ struct inode *inode_init_always(struct s
+>  	inode->i_bdev = NULL;
+>  	inode->i_cdev = NULL;
+>  	inode->i_rdev = 0;
+> -	inode->dirtied_when = 0;
+> +	inode->dirtied_when = jiffies;
+>
+
+Hmmm... Is the inode really dirtied when initialized? I know the
+change is for tracing, but the code when read is confusing.
  
- 	add_disk(gd);
- 
-+	if (new->disk_attributes)
-+		sysfs_create_group(&disk_to_dev(gd)->kobj,
-+					new->disk_attributes);
-+
-+
- 	return 0;
- error4:
- 	module_put(tr->owner);
-@@ -387,6 +392,10 @@ int del_mtd_blktrans_dev(struct mtd_blktrans_dev *old)
- 	/* Stop new requests to arrive */
- 	del_gendisk(old->disk);
- 
-+	if (old->disk_attributes)
-+		sysfs_remove_group(&disk_to_dev(old->disk)->kobj,
-+						old->disk_attributes);
-+
- 	/* Stop the thread */
- 	kthread_stop(old->thread);
- 
-diff --git a/include/linux/mtd/blktrans.h b/include/linux/mtd/blktrans.h
-index d89b8fb..b481ccd 100644
---- a/include/linux/mtd/blktrans.h
-+++ b/include/linux/mtd/blktrans.h
-@@ -10,6 +10,7 @@
- 
- #include <linux/mutex.h>
- #include <linux/kref.h>
-+#include <linux/sysfs.h>
- 
- struct hd_geometry;
- struct mtd_info;
-@@ -28,6 +29,7 @@ struct mtd_blktrans_dev {
- 	int open;
- 	struct kref ref;
- 	struct gendisk *disk;
-+	struct attribute_group *disk_attributes;
- 	struct task_struct *thread;
- 	struct request_queue *rq;
- 	spinlock_t queue_lock;
+
 -- 
-1.6.3.3
-
+	Three Cheers,
+	Balbir
