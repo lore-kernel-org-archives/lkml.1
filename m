@@ -1,18 +1,18 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756057Ab0BMCuo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 21:50:44 -0500
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:64077 "EHLO
+	id S1755921Ab0BMCun (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 21:50:43 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:64083 "EHLO
 	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752725Ab0BMCuk (ORCPT
+	with ESMTP id S1754894Ab0BMCuk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 12 Feb 2010 21:50:40 -0500
 MIME-version: 1.0
 Content-transfer-encoding: 7BIT
 Content-type: TEXT/PLAIN
-Date: Fri, 12 Feb 2010 18:49:43 -0800
+Date: Fri, 12 Feb 2010 18:49:47 -0800
 From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 1/8] irq: remove not need bootmem code
+Subject: [PATCH 5/8] x86: remove arch_probe_nr_irqs
 In-reply-to: <1266029390-30907-1-git-send-email-yinghai@kernel.org>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
@@ -20,59 +20,53 @@ To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
 Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
        Eric Biederman <ebiederm@xmission.com>, linux-kernel@vger.kernel.org,
        Yinghai Lu <yinghai@kernel.org>
-Message-id: <1266029390-30907-2-git-send-email-yinghai@kernel.org>
+Message-id: <1266029390-30907-6-git-send-email-yinghai@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 References: <1266029390-30907-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-mem_init is moved early already.
+so keep nr_irqs == NR_IRQS
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 ---
- kernel/irq/handle.c |   14 +++-----------
- 1 files changed, 3 insertions(+), 11 deletions(-)
+ arch/x86/kernel/apic/io_apic.c |   22 ----------------------
+ 1 files changed, 0 insertions(+), 22 deletions(-)
 
-diff --git a/kernel/irq/handle.c b/kernel/irq/handle.c
-index 814940e..0e823c0 100644
---- a/kernel/irq/handle.c
-+++ b/kernel/irq/handle.c
-@@ -19,7 +19,6 @@
- #include <linux/kernel_stat.h>
- #include <linux/rculist.h>
- #include <linux/hash.h>
--#include <linux/bootmem.h>
- #include <trace/events/irq.h>
+diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
+index bd93444..1c68189 100644
+--- a/arch/x86/kernel/apic/io_apic.c
++++ b/arch/x86/kernel/apic/io_apic.c
+@@ -3878,28 +3878,6 @@ void __init probe_nr_irqs_gsi(void)
+ 	printk(KERN_DEBUG "nr_irqs_gsi: %d\n", nr_irqs_gsi);
+ }
  
- #include "internals.h"
-@@ -87,12 +86,8 @@ void __ref init_kstat_irqs(struct irq_desc *desc, int node, int nr)
+-#ifdef CONFIG_SPARSE_IRQ
+-int __init arch_probe_nr_irqs(void)
+-{
+-	int nr;
+-
+-	if (nr_irqs > (NR_VECTORS * nr_cpu_ids))
+-		nr_irqs = NR_VECTORS * nr_cpu_ids;
+-
+-	nr = nr_irqs_gsi + 8 * nr_cpu_ids;
+-#if defined(CONFIG_PCI_MSI) || defined(CONFIG_HT_IRQ)
+-	/*
+-	 * for MSI and HT dyn irq
+-	 */
+-	nr += nr_irqs_gsi * 64;
+-#endif
+-	if (nr < nr_irqs)
+-		nr_irqs = nr;
+-
+-	return 0;
+-}
+-#endif
+-
+ static int __io_apic_set_pci_routing(struct device *dev, int irq,
+ 				struct io_apic_irq_attr *irq_attr)
  {
- 	void *ptr;
- 
--	if (slab_is_available())
--		ptr = kzalloc_node(nr * sizeof(*desc->kstat_irqs),
--				   GFP_ATOMIC, node);
--	else
--		ptr = alloc_bootmem_node(NODE_DATA(node),
--				nr * sizeof(*desc->kstat_irqs));
-+	ptr = kzalloc_node(nr * sizeof(*desc->kstat_irqs),
-+			   GFP_ATOMIC, node);
- 
- 	/*
- 	 * don't overwite if can not get new one
-@@ -219,10 +214,7 @@ struct irq_desc * __ref irq_to_desc_alloc_node(unsigned int irq, int node)
- 	if (desc)
- 		goto out_unlock;
- 
--	if (slab_is_available())
--		desc = kzalloc_node(sizeof(*desc), GFP_ATOMIC, node);
--	else
--		desc = alloc_bootmem_node(NODE_DATA(node), sizeof(*desc));
-+	desc = kzalloc_node(sizeof(*desc), GFP_ATOMIC, node);
- 
- 	printk(KERN_DEBUG "  alloc irq_desc for %d on node %d\n", irq, node);
- 	if (!desc) {
 -- 
 1.6.4.2
 
