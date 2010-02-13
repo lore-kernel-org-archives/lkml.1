@@ -1,205 +1,100 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758061Ab0BMUgW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Feb 2010 15:36:22 -0500
-Received: from e23smtp06.au.ibm.com ([202.81.31.148]:47045 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757913Ab0BMUgV (ORCPT
+	id S1758043Ab0BMUhv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Feb 2010 15:37:51 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:55127 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753773Ab0BMUhu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Feb 2010 15:36:21 -0500
-Date: Sun, 14 Feb 2010 02:06:11 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>, "Ma, Ling" <ling.ma@intel.com>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>, ego@in.ibm.com
-Subject: Re: [patch] sched: fix SMT scheduler regression in
- find_busiest_queue()
-Message-ID: <20100213203611.GJ5882@dirshya.in.ibm.com>
-Reply-To: svaidy@linux.vnet.ibm.com
-References: <1266023662.2808.118.camel@sbs-t61.sc.intel.com>
- <20100213182748.GB5882@dirshya.in.ibm.com>
- <20100213202552.GI5882@dirshya.in.ibm.com>
+	Sat, 13 Feb 2010 15:37:50 -0500
+Date: Sat, 13 Feb 2010 21:37:48 +0100
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: Rabin Vincent <rabin@rab.in>
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Ingo Molnar <mingo@redhat.com>,
+       Abhishek Sagar <sagar.abhishek@gmail.com>
+Subject: Re: [PATCH 02/10] ARM: ftrace: document mcount formats
+Message-ID: <20100213203748.GC16528@pengutronix.de>
+References: <1266090518-31120-1-git-send-email-rabin@rab.in> <1266090518-31120-3-git-send-email-rabin@rab.in>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20100213202552.GI5882@dirshya.in.ibm.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1266090518-31120-3-git-send-email-rabin@rab.in>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> [2010-02-14 01:55:52]:
+Hello,
 
-> * Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> [2010-02-13 23:57:48]:
+On Sun, Feb 14, 2010 at 01:18:30AM +0530, Rabin Vincent wrote:
+> Add a comment describing the mcount variants and how the callsites look
+> like.
 > 
-> > * Suresh Siddha <suresh.b.siddha@intel.com> [2010-02-12 17:14:22]:
-> > 
-> > > PeterZ/Ingo,
-> > > 
-> > > Ling Ma and Yanmin reported this SMT scheduler regression which lead to
-> > > the condition where both the SMT threads on a core are busy while the
-> > > other cores in the same socket are completely idle, causing major
-> > > performance regression. I have appended a fix for this. This is
-> > > relatively low risk fix and if you agree with both the fix and
-> > > risk-assessment, can we please push this to Linus so that we can address
-> > > this in 2.6.33.
-> > 
-> > Hi Suresh,
-> > 
-> > I have been looking at this issue in order to make
-> > sched_smt_powersavings work.  In my simple tests I find that the
-> > default behavior is to have one task per core first since the total
-> > cpu power of the core will be 1178 (589*2) that is not sufficient to
-> > keep two tasks balanced in the group.
-> > 
-> > In the scenario that you have described, even though the group has
-> > been identified as busiest, the find_busiest_queue() will return null
-> > since wl will be 1780 {load(1024)*SCHED_LOAD_SCALE/power(589)} leading
-> > to wl being greater than imbalance.
-> > 
-> > The fix that you have posted will solve the problem described.
-> > However we need to make sched_smt_powersavings also work by increasing
-> > the group capacity and allowing two tasks to run in a core.
-> > 
-> > As Peter mentioned, SD_PREFER_SIBLING flag is meant to spread the work
-> > across group at any sched domain so that the solution will work for
-> > pre-Nehalem quad cores also.  But it still needs some work to get it
-> > right.  Please refer to my earlier bug report at:
-> > 
-> > http://lkml.org/lkml/2010/2/8/80
-> > 
-> > The solution you have posted will not work for non-HT quad cores where
-> > we want the tasks to be spread across cache domains for best
-> > performance though not a severe performance regression as in the case
-> > of Nehalem.
-> > 
-> > I will test your solution in different scenarios and post updates.
+> Signed-off-by: Rabin Vincent <rabin@rab.in>
+> ---
+>  arch/arm/kernel/entry-common.S |   32 ++++++++++++++++++++++++++++++++
+>  1 files changed, 32 insertions(+), 0 deletions(-)
 > 
-> I have tested this patch on Nehalem and it provides the desired result
-> when sched_smt/mc_powersavings=0.  One task per core is placed before
-> using sibling threads.  However the core usage is mostly balanced across
-> different packages but not always.  Incorrect consolidation to SMT
-> threads when free cores are available does not happen once this fix is
-> applied.
+> diff --git a/arch/arm/kernel/entry-common.S b/arch/arm/kernel/entry-common.S
+> index 0b042bd..d412d7c 100644
+> --- a/arch/arm/kernel/entry-common.S
+> +++ b/arch/arm/kernel/entry-common.S
+> @@ -92,6 +92,38 @@ ENDPROC(ret_from_fork)
+>  #define CALL(x) .long x
 >  
-> > Thanks,
-> > Vaidy
-> > 
-> >  
-> > > thanks,
-> > > suresh
-> > > ---
-> > > 
-> > > From: Suresh Siddha <suresh.b.siddha@intel.com>
-> > > Subject: sched: fix SMT scheduler regression in find_busiest_queue()
-> > > 
-> > > Fix a SMT scheduler performance regression that is leading to a scenario
-> > > where SMT threads in one core are completely idle while both the SMT threads
-> > > in another core (on the same socket) are busy.
-> > > 
-> > > This is caused by this commit (with the problematic code highlighted)
-> > > 
-> > >    commit bdb94aa5dbd8b55e75f5a50b61312fe589e2c2d1
-> > >    Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > >    Date:   Tue Sep 1 10:34:38 2009 +0200
-> > > 
-> > >    sched: Try to deal with low capacity
-> > > 
-> > >    @@ -4203,15 +4223,18 @@ find_busiest_queue()
-> > >    ...
-> > > 	for_each_cpu(i, sched_group_cpus(group)) {
-> > >    +	unsigned long power = power_of(i);
-> > > 
-> > >    ...
-> > > 
-> > >    -	wl = weighted_cpuload(i);
-> > >    +	wl = weighted_cpuload(i) * SCHED_LOAD_SCALE;
-> > >    +	wl /= power;
-> > > 
-> > >    -	if (rq->nr_running == 1 && wl > imbalance)
-> > >    +	if (capacity && rq->nr_running == 1 && wl > imbalance)
-> > > 		continue;
-> > > 
-> > > On a SMT system, power of the HT logical cpu will be 589 and
-> > > the scheduler load imbalance (for scenarios like the one mentioned above)
-> > > can be approximately 1024 (SCHED_LOAD_SCALE). The above change of scaling
-> > > the weighted load with the power will result in "wl > imbalance" and
-> > > ultimately resulting in find_busiest_queue() return NULL, causing
-> > > load_balance() to think that the load is well balanced. But infact
-> > > one of the tasks can be moved to the idle core for optimal performance.
-> > > 
-> > > We don't need to use the weighted load (wl) scaled by the cpu power to
-> > > compare with  imabalance. In that condition, we already know there is only a
-> > > single task "rq->nr_running == 1" and the comparison between imbalance,
-> > > wl is to make sure that we select the correct priority thread which matches
-> > > imbalance. So we really need to compare the imabalnce with the original
-> > > weighted load of the cpu and not the scaled load.
-> > > 
-> > > But in other conditions where we want the most hammered(busiest) cpu, we can
-> > > use scaled load to ensure that we consider the cpu power in addition to the
-> > > actual load on that cpu, so that we can move the load away from the
-> > > guy that is getting most hammered with respect to the actual capacity,
-> > > as compared with the rest of the cpu's in that busiest group.
-> > > 
-> > > Fix it.
-> > > 
-> > > Reported-by: Ma Ling <ling.ma@intel.com>
-> > > Initial-Analysis-by: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
-> > > Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-> 
-> Acked-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-> 
-> > > Cc: stable@kernel.org [2.6.32.x]
-> > > ---
-> > > 
-> > > diff --git a/kernel/sched.c b/kernel/sched.c
-> > > index 3a8fb30..bef5369 100644
-> > > --- a/kernel/sched.c
-> > > +++ b/kernel/sched.c
-> > > @@ -4119,12 +4119,23 @@ find_busiest_queue(struct sched_group *group, enum cpu_idle_type idle,
-> > >  			continue;
-> > > 
-> > >  		rq = cpu_rq(i);
-> > > -		wl = weighted_cpuload(i) * SCHED_LOAD_SCALE;
-> > > -		wl /= power;
-> > > +		wl = weighted_cpuload(i);
-> > > 
-> > > +		/*
-> > > +		 * When comparing with imbalance, use weighted_cpuload()
-> > > +		 * which is not scaled with the cpu power.
-> > > +		 */
-> > >  		if (capacity && rq->nr_running == 1 && wl > imbalance)
-> > >  			continue;
-> > > 
-> > > +		/*
-> > > + 		 * For the load comparisons with the other cpu's, consider
-> > > + 		 * the weighted_cpuload() scaled with the cpu power, so that
-> > > + 		 * the load can be moved away from the cpu that is potentially
-> > > + 		 * running at a lower capacity.
-> > > + 		 */
-> > > +		wl = (wl * SCHED_LOAD_SCALE) / power;
-> > > +
-> > >  		if (wl > max_load) {
-> > >  			max_load = wl;
-> > >  			busiest = rq;
-> > > 
-> > >
+>  #ifdef CONFIG_FUNCTION_TRACER
+> +/*
+> + * When compiling with -pg, gcc inserts a call to the mcount routine at the
+> + * start of every function.  In mcount, apart from the function's address (in
+> + * lr), we need to get hold of the function's caller's address.
+> + *
+> + * Older GCCs (pre-4.4) inserted a call to a routine called mcount like this:
+> + *
+> + *	bl	mcount
+> + *
+> + * These versions have the limitation that in order for the mcount routine to
+> + * be able to determine the function's caller's address, an APCS-style frame
+> + * pointer (which is set up with something like the code below) is required.
+> + *
+> + *	mov     ip, sp
+> + *	push    {fp, ip, lr, pc}
+> + *	sub     fp, ip, #4
+> + *
+> + * With EABI, these frame pointers are not available unless -mapcs-frame is
+> + * specified, and if building as Thumb-2, not even then.
+> + *
+> + * Newer GCCs (4.4+) solve this problem by introducing a new version of mcount,
+> + * with call sites like:
+> + *
+> + *	push	{lr}
+> + *	bl	__gnu_mcount_nc
+> + *
+> + * With these compilers, frame pointers are not necessary.
+> + *
+> + * With both the mcount types, we need to restore the original lr before
+> + * returning.  In the __gnu_mcount_nc, version we're allowed to clobber ip.
+> + * No other registers should be clobbered.
+> + */
+Very nice.
 
-In addition to the above fix, for sched_smt_powersavings to work, the
-group capacity of the core (mc level) should be made 2 in
-update_sg_lb_stats() by changing the DIV_ROUND_CLOSEST to
-DIV_RPUND_UP()
+Maybe make the last two sentences:
 
-	sgs->group_capacity =
-		DIV_ROUND_UP(group->cpu_power, SCHED_LOAD_SCALE);
+In the __gnu_mcount_nc case the ip register is clobbered which is OK as
+the calling convention for ARM allow clobbering this value for
+subroutines and it doesn't contain parameters.
 
-Ideally we can change this to DIV_ROUND_UP and let SD_PREFER_SIBLING
-flag to force capacity to 1.  Need to see if there are any side
-effects of setting SD_PREFER_SIBLING at SIBLING level sched domain
-based on sched_smt_powersavings flag.
+Best regards
+Uwe
 
-Will post a patch after more tests.
-
---Vaidy
-
+-- 
+Pengutronix e.K.                           | Uwe Kleine-König            |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
