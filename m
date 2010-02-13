@@ -1,69 +1,64 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752445Ab0BMKjA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Feb 2010 05:39:00 -0500
-Received: from casper.infradead.org ([85.118.1.10]:57192 "EHLO
+	id S1752678Ab0BMKl4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Feb 2010 05:41:56 -0500
+Received: from casper.infradead.org ([85.118.1.10]:57204 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751558Ab0BMKi6 convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1751789Ab0BMKly convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Feb 2010 05:38:58 -0500
-Subject: Re: [PATCH 2/2][RFC] tracing: Add extract out softirq names used
- by irq trace events
+	Sat, 13 Feb 2010 05:41:54 -0500
+Subject: Re: change in sched cpu_power causing regressions with SCHED_MC
 From: Peter Zijlstra <peterz@infradead.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Christoph Hellwig <hch@lst.de>, Wu Fengguang <fengguang.wu@intel.com>
-In-Reply-To: <20100212191037.283998401@goodmis.org>
-References: <20100212190907.954438555@goodmis.org>
-	 <20100212191037.283998401@goodmis.org>
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: Ingo Molnar <mingo@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
+       "Ma, Ling" <ling.ma@intel.com>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       "ego@in.ibm.com" <ego@in.ibm.com>,
+       "svaidy@linux.vnet.ibm.com" <svaidy@linux.vnet.ibm.com>
+In-Reply-To: <1266057388.557.59599.camel@twins>
+References: <1266023662.2808.118.camel@sbs-t61.sc.intel.com>
+	 <1266024679.2808.153.camel@sbs-t61.sc.intel.com>
+	 <1266057388.557.59599.camel@twins>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8BIT
-Date: Sat, 13 Feb 2010 11:39:09 +0100
-Message-ID: <1266057549.557.59605.camel@twins>
+Date: Sat, 13 Feb 2010 11:42:04 +0100
+Message-ID: <1266057724.557.59610.camel@twins>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-02-12 at 14:09 -0500, Steven Rostedt wrote:
-> plain text document attachment (irq-events.patch)
-> The irq trace events that map the softirq vectors to strings
-> shows up in the format files as names. To allow binary parsers to
-> be able to convert these names to their actual numbers, this patch
-> extracts those enums.
+On Sat, 2010-02-13 at 11:36 +0100, Peter Zijlstra wrote:
+> On Fri, 2010-02-12 at 17:31 -0800, Suresh Siddha wrote:
+> > 
+> > We have one more problem that Yanmin and Ling Ma reported. On a dual
+> > socket quad-core platforms (for example platforms based on NHM-EP), we
+> > are seeing scenarios where one socket is completely busy (with all the 4
+> > cores running with 4 tasks) and another socket is completely idle.
+> > 
+> > This causes performance issues as those 4 tasks share the memory
+> > controller, last-level cache bandwidth etc. Also we won't be taking
+> > advantage of turbo-mode as much as we like. We will have all these
+> > benefits if we move two of those tasks to the other socket. Now both the
+> > sockets can potentially go to turbo etc and improve performance.
+> > 
+> > In short, your recent change (shown below) broke this behavior. In the
+> > kernel summit you mentioned you made this change with out affecting the
+> > behavior of SMT/MC. And my testing immediately after kernel-summit also
+> > didn't show the problem (perhaps my test didn't hit this specific
+> > change). But apparently we are having performance issues with this patch
+> > (Ling Ma's bisect pointed to this patch). I will look more detailed into
+> > this after the long weekend (to see if we can catch this scenario in
+> > fix_small_imbalance() etc). But wanted to give you a quick heads up.
+> > Thanks.
 > 
-> Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+> Right, so the behaviour we want should be provided by SD_PREFER_SIBLING,
+> it provides the capacity==1 thing the cpu_power games used to provide.
 > 
-> ---
->  include/trace/events/irq.h |   11 +++++++++++
->  1 file changed, 11 insertions(+)
-> 
-> Index: linux-trace.git/include/trace/events/irq.h
-> ===================================================================
-> --- linux-trace.git.orig/include/trace/events/irq.h	2010-02-12 13:29:44.000000000 -0500
-> +++ linux-trace.git/include/trace/events/irq.h	2010-02-12 13:33:20.000000000 -0500
-> @@ -7,6 +7,17 @@
->  #include <linux/tracepoint.h>
->  #include <linux/interrupt.h>
->  
-> +EXTRACT_TRACE_SYMBOL(HI_SOFTIRQ);
-> +EXTRACT_TRACE_SYMBOL(TIMER_SOFTIRQ);
-> +EXTRACT_TRACE_SYMBOL(NET_TX_SOFTIRQ);
-> +EXTRACT_TRACE_SYMBOL(NET_RX_SOFTIRQ);
-> +EXTRACT_TRACE_SYMBOL(BLOCK_SOFTIRQ);
-> +EXTRACT_TRACE_SYMBOL(BLOCK_IOPOLL_SOFTIRQ);
-> +EXTRACT_TRACE_SYMBOL(TASKLET_SOFTIRQ);
-> +EXTRACT_TRACE_SYMBOL(SCHED_SOFTIRQ);
-> +EXTRACT_TRACE_SYMBOL(HRTIMER_SOFTIRQ);
-> +EXTRACT_TRACE_SYMBOL(RCU_SOFTIRQ);
-> +
+> Not saying it's not broken, but that's where the we should be looking to
+> fix it.
 
-Still sucks you have to explicitly iterate them all, and far away from
-the actual definition site too, its just asking to get out of whack with
-reality.
+
+BTW, do you think its possible to automate such test cases and put them
+in a test-suite?
