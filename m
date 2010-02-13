@@ -1,277 +1,58 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752524Ab0BMKfT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Feb 2010 05:35:19 -0500
-Received: from moutng.kundenserver.de ([212.227.126.187]:51611 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751926Ab0BMKfQ (ORCPT
+	id S1752611Ab0BMKgN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Feb 2010 05:36:13 -0500
+Received: from casper.infradead.org ([85.118.1.10]:44305 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751789Ab0BMKgL convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Feb 2010 05:35:16 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: netdev@vger.kernel.org
-Subject: [PATCH 2/2] net/macvtap: add vhost support
-Date: Sat, 13 Feb 2010 11:35:08 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.33-rc5-g68699f3; KDE/4.3.2; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, Ed Swierk <eswierk@aristanetworks.com>,
-       Patrick McHardy <kaber@trash.net>, Sridhar Samudrala <sri@us.ibm.com>,
-       qemu-devel@nongnu.org, "Michael S. Tsirkin" <mst@redhat.com>
-References: <201002131133.43028.arnd@arndb.de>
-In-Reply-To: <201002131133.43028.arnd@arndb.de>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201002131135.08477.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX187Tvyz33RlECQK9ADgxu7ZP5CejqZ26fpyb5S
- EkZJDuAHLzBajE+XvkHqCkuB99G3vCt5YXlduKe2LUK2zHc69C
- NiTTpZ+vliVPQx4NbDAng==
+	Sat, 13 Feb 2010 05:36:11 -0500
+Subject: Re: change in sched cpu_power causing regressions with SCHED_MC
+From: Peter Zijlstra <peterz@infradead.org>
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: Ingo Molnar <mingo@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
+       "Ma, Ling" <ling.ma@intel.com>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       "ego@in.ibm.com" <ego@in.ibm.com>,
+       "svaidy@linux.vnet.ibm.com" <svaidy@linux.vnet.ibm.com>
+In-Reply-To: <1266024679.2808.153.camel@sbs-t61.sc.intel.com>
+References: <1266023662.2808.118.camel@sbs-t61.sc.intel.com>
+	 <1266024679.2808.153.camel@sbs-t61.sc.intel.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+Date: Sat, 13 Feb 2010 11:36:28 +0100
+Message-ID: <1266057388.557.59599.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds support for passing a macvtap file descriptor into
-vhost-net, much like we already do for tun/tap.
+On Fri, 2010-02-12 at 17:31 -0800, Suresh Siddha wrote:
+> 
+> We have one more problem that Yanmin and Ling Ma reported. On a dual
+> socket quad-core platforms (for example platforms based on NHM-EP), we
+> are seeing scenarios where one socket is completely busy (with all the 4
+> cores running with 4 tasks) and another socket is completely idle.
+> 
+> This causes performance issues as those 4 tasks share the memory
+> controller, last-level cache bandwidth etc. Also we won't be taking
+> advantage of turbo-mode as much as we like. We will have all these
+> benefits if we move two of those tasks to the other socket. Now both the
+> sockets can potentially go to turbo etc and improve performance.
+> 
+> In short, your recent change (shown below) broke this behavior. In the
+> kernel summit you mentioned you made this change with out affecting the
+> behavior of SMT/MC. And my testing immediately after kernel-summit also
+> didn't show the problem (perhaps my test didn't hit this specific
+> change). But apparently we are having performance issues with this patch
+> (Ling Ma's bisect pointed to this patch). I will look more detailed into
+> this after the long weekend (to see if we can catch this scenario in
+> fix_small_imbalance() etc). But wanted to give you a quick heads up.
+> Thanks.
 
-Most of the new code is taken from the respective patch
-in the tun driver and may get consolidated in the future.
+Right, so the behaviour we want should be provided by SD_PREFER_SIBLING,
+it provides the capacity==1 thing the cpu_power games used to provide.
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
----
- drivers/net/macvtap.c      |   98 ++++++++++++++++++++++++++++++++++---------
- drivers/vhost/net.c        |    8 +++-
- include/linux/if_macvlan.h |   13 ++++++
- 3 files changed, 96 insertions(+), 23 deletions(-)
-
-diff --git a/drivers/net/macvtap.c b/drivers/net/macvtap.c
-index 7050997..e354501 100644
---- a/drivers/net/macvtap.c
-+++ b/drivers/net/macvtap.c
-@@ -58,6 +58,8 @@ static unsigned int macvtap_major;
- static struct class *macvtap_class;
- static struct cdev macvtap_cdev;
- 
-+static const struct proto_ops macvtap_socket_ops;
-+
- /*
-  * RCU usage:
-  * The macvtap_queue and the macvlan_dev are loosely coupled, the
-@@ -176,7 +178,7 @@ static int macvtap_forward(struct net_device *dev, struct sk_buff *skb)
- 		return -ENOLINK;
- 
- 	skb_queue_tail(&q->sk.sk_receive_queue, skb);
--	wake_up(q->sk.sk_sleep);
-+	wake_up_interruptible_poll(q->sk.sk_sleep, POLLIN | POLLRDNORM | POLLRDBAND);
- 	return 0;
- }
- 
-@@ -242,7 +244,7 @@ static void macvtap_sock_write_space(struct sock *sk)
- 		return;
- 
- 	if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
--		wake_up_interruptible_sync(sk->sk_sleep);
-+		wake_up_interruptible_poll(sk->sk_sleep, POLLOUT | POLLWRNORM | POLLWRBAND);
- }
- 
- static int macvtap_open(struct inode *inode, struct file *file)
-@@ -270,6 +272,8 @@ static int macvtap_open(struct inode *inode, struct file *file)
- 	init_waitqueue_head(&q->sock.wait);
- 	q->sock.type = SOCK_RAW;
- 	q->sock.state = SS_CONNECTED;
-+	q->sock.file = file;
-+	q->sock.ops = &macvtap_socket_ops;
- 	sock_init_data(&q->sock, &q->sk);
- 	q->sk.sk_write_space = macvtap_sock_write_space;
- 
-@@ -387,32 +391,20 @@ static ssize_t macvtap_put_user(struct macvtap_queue *q,
- 
- 	rcu_read_lock_bh();
- 	vlan = rcu_dereference(q->vlan);
--	macvlan_count_rx(vlan, len, ret == 0, 0);
-+	if (vlan)
-+		macvlan_count_rx(vlan, len, ret == 0, 0);
- 	rcu_read_unlock_bh();
- 
- 	return ret ? ret : len;
- }
- 
--static ssize_t macvtap_aio_read(struct kiocb *iocb, const struct iovec *iv,
--				unsigned long count, loff_t pos)
-+static ssize_t macvtap_do_read(struct macvtap_queue *q, struct kiocb *iocb,
-+			       const struct iovec *iv, unsigned long len,
-+			       int noblock)
- {
--	struct file *file = iocb->ki_filp;
--	struct macvtap_queue *q = file->private_data;
--
- 	DECLARE_WAITQUEUE(wait, current);
- 	struct sk_buff *skb;
--	ssize_t len, ret = 0;
--
--	if (!q) {
--		ret = -ENOLINK;
--		goto out;
--	}
--
--	len = iov_length(iv, count);
--	if (len < 0) {
--		ret = -EINVAL;
--		goto out;
--	}
-+	ssize_t ret = 0;
- 
- 	add_wait_queue(q->sk.sk_sleep, &wait);
- 	while (len) {
-@@ -421,7 +413,7 @@ static ssize_t macvtap_aio_read(struct kiocb *iocb, const struct iovec *iv,
- 		/* Read frames from the queue */
- 		skb = skb_dequeue(&q->sk.sk_receive_queue);
- 		if (!skb) {
--			if (file->f_flags & O_NONBLOCK) {
-+			if (noblock) {
- 				ret = -EAGAIN;
- 				break;
- 			}
-@@ -440,7 +432,24 @@ static ssize_t macvtap_aio_read(struct kiocb *iocb, const struct iovec *iv,
- 
- 	current->state = TASK_RUNNING;
- 	remove_wait_queue(q->sk.sk_sleep, &wait);
-+	return ret;
-+}
-+
-+static ssize_t macvtap_aio_read(struct kiocb *iocb, const struct iovec *iv,
-+				unsigned long count, loff_t pos)
-+{
-+	struct file *file = iocb->ki_filp;
-+	struct macvtap_queue *q = file->private_data;
-+	ssize_t len, ret = 0;
- 
-+	len = iov_length(iv, count);
-+	if (len < 0) {
-+		ret = -EINVAL;
-+		goto out;
-+	}
-+
-+	ret = macvtap_do_read(q, iocb, iv, len, file->f_flags & O_NONBLOCK);
-+	ret = min_t(ssize_t, ret, len); /* XXX copied from tun.c. Why? */
- out:
- 	return ret;
- }
-@@ -538,6 +547,53 @@ static const struct file_operations macvtap_fops = {
- #endif
- };
- 
-+static int macvtap_sendmsg(struct kiocb *iocb, struct socket *sock,
-+			   struct msghdr *m, size_t total_len)
-+{
-+	struct macvtap_queue *q = container_of(sock, struct macvtap_queue, sock);
-+	return macvtap_get_user(q, m->msg_iov, total_len,
-+			    m->msg_flags & MSG_DONTWAIT);
-+}
-+
-+static int macvtap_recvmsg(struct kiocb *iocb, struct socket *sock,
-+			   struct msghdr *m, size_t total_len,
-+			   int flags)
-+{
-+	struct macvtap_queue *q = container_of(sock, struct macvtap_queue, sock);
-+	int ret;
-+	if (flags & ~(MSG_DONTWAIT|MSG_TRUNC))
-+		return -EINVAL;
-+	ret = macvtap_do_read(q, iocb, m->msg_iov, total_len,
-+			  flags & MSG_DONTWAIT);
-+	if (ret > total_len) {
-+		m->msg_flags |= MSG_TRUNC;
-+		ret = flags & MSG_TRUNC ? ret : total_len;
-+	}
-+	return ret;
-+}
-+
-+/* Ops structure to mimic raw sockets with tun */
-+static const struct proto_ops macvtap_socket_ops = {
-+	.sendmsg = macvtap_sendmsg,
-+	.recvmsg = macvtap_recvmsg,
-+};
-+
-+/* Get an underlying socket object from tun file.  Returns error unless file is
-+ * attached to a device.  The returned object works like a packet socket, it
-+ * can be used for sock_sendmsg/sock_recvmsg.  The caller is responsible for
-+ * holding a reference to the file for as long as the socket is in use. */
-+struct socket *macvtap_get_socket(struct file *file)
-+{
-+	struct macvtap_queue *q;
-+	if (file->f_op != &macvtap_fops)
-+		return ERR_PTR(-EINVAL);
-+	q = file->private_data;
-+	if (!q)
-+		return ERR_PTR(-EBADFD);
-+	return &q->sock;
-+}
-+EXPORT_SYMBOL_GPL(macvtap_get_socket);
-+
- static int macvtap_init(void)
- {
- 	int err;
-diff --git a/drivers/vhost/net.c b/drivers/vhost/net.c
-index 4c89283..91a324c 100644
---- a/drivers/vhost/net.c
-+++ b/drivers/vhost/net.c
-@@ -22,6 +22,7 @@
- #include <linux/if_packet.h>
- #include <linux/if_arp.h>
- #include <linux/if_tun.h>
-+#include <linux/if_macvlan.h>
- 
- #include <net/sock.h>
- 
-@@ -452,13 +453,16 @@ err:
- 	return ERR_PTR(r);
- }
- 
--static struct socket *get_tun_socket(int fd)
-+static struct socket *get_tap_socket(int fd)
- {
- 	struct file *file = fget(fd);
- 	struct socket *sock;
- 	if (!file)
- 		return ERR_PTR(-EBADF);
- 	sock = tun_get_socket(file);
-+	if (!IS_ERR(sock))
-+		return sock;
-+	sock = macvtap_get_socket(file);
- 	if (IS_ERR(sock))
- 		fput(file);
- 	return sock;
-@@ -473,7 +477,7 @@ static struct socket *get_socket(int fd)
- 	sock = get_raw_socket(fd);
- 	if (!IS_ERR(sock))
- 		return sock;
--	sock = get_tun_socket(fd);
-+	sock = get_tap_socket(fd);
- 	if (!IS_ERR(sock))
- 		return sock;
- 	return ERR_PTR(-ENOTSOCK);
-diff --git a/include/linux/if_macvlan.h b/include/linux/if_macvlan.h
-index 51f1512..7d7f1e3 100644
---- a/include/linux/if_macvlan.h
-+++ b/include/linux/if_macvlan.h
-@@ -7,6 +7,19 @@
- #include <linux/netlink.h>
- #include <net/netlink.h>
- 
-+#if defined(CONFIG_MACVTAP) || defined(CONFIG_MACVTAP_MODULE)
-+struct socket *macvtap_get_socket(struct file *);
-+#else
-+#include <linux/err.h>
-+#include <linux/errno.h>
-+struct file;
-+struct socket;
-+static inline struct socket *macvtap_get_socket(struct file *f)
-+{
-+	return ERR_PTR(-EINVAL);
-+}
-+#endif /* CONFIG_MACVTAP */
-+
- struct macvlan_port;
- struct macvtap_queue;
- 
--- 
-1.6.3.3
-
+Not saying it's not broken, but that's where the we should be looking to
+fix it.
