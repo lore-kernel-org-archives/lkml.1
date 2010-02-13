@@ -1,86 +1,138 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752727Ab0BMB1Y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 20:27:24 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:49626 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751432Ab0BMB1V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 20:27:21 -0500
-Date: Fri, 12 Feb 2010 17:27:11 -0800
-From: Gary Hade <garyhade@us.ibm.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Gary Hade <garyhade@us.ibm.com>, linux-pm@lists.linux-foundation.org,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "Moore, Robert" <robert.moore@intel.com>,
-       Matthew Garrett <mjg@redhat.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>
-Subject: Re: [PATCH 8/9] PCI / ACPI / PM: Platform support for PCI PME
-	wake-up (rev. 7)
-Message-ID: <20100213012711.GA18009@us.ibm.com>
-References: <201001101431.38630.rjw@sisk.pl> <20100212015508.GD10298@us.ibm.com> <201002121219.36350.rjw@sisk.pl> <201002130120.29385.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <201002130120.29385.rjw@sisk.pl>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	id S1752864Ab0BMBdZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 20:33:25 -0500
+Received: from mga02.intel.com ([134.134.136.20]:30850 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752249Ab0BMBdY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Feb 2010 20:33:24 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,464,1262592000"; 
+   d="scan'208";a="595624850"
+Subject: change in sched cpu_power causing regressions with SCHED_MC
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
+       "Ma, Ling" <ling.ma@intel.com>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       "ego@in.ibm.com" <ego@in.ibm.com>,
+       "svaidy@linux.vnet.ibm.com" <svaidy@linux.vnet.ibm.com>
+In-Reply-To: <1266023662.2808.118.camel@sbs-t61.sc.intel.com>
+References: <1266023662.2808.118.camel@sbs-t61.sc.intel.com>
+Content-Type: text/plain
+Organization: Intel Corp
+Date: Fri, 12 Feb 2010 17:31:19 -0800
+Message-Id: <1266024679.2808.153.camel@sbs-t61.sc.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 13, 2010 at 01:20:29AM +0100, Rafael J. Wysocki wrote:
-> On Friday 12 February 2010, Rafael J. Wysocki wrote:
-> > On Friday 12 February 2010, Gary Hade wrote:
-> ... 
-> > > There seems to be a problem.
-> > > 
-> > > The first time I booted I was able to successfully hot-remove
-> > > a PCIe card and then successfully hot-add it to a different slot.
-> > > When I tried to hot-remove a PCI-X card that was also present
-> > > during boot I saw that lingering blinking amber LED issue.
-> > > 
-> > > After rebooting I tried the same thing but this time I did
-> > > not see the lingering blinking amber LED after removing the
-> > > PCI-X card but I did see it when removing the PCIe card.
-> > > I then tried to hot-add the PCIe card to a different slot
-> > > and noticed the below messages.
-> > > 
-> > > I don't think I will be able to try to characterize this
-> > > better or test any more patches until Monday.  
-> > 
-> > OK, thanks for testing.
-> > 
-> > It seems we have a deadlock on pci_acpi_notify_mtx, but I'm yet to understand
-> > the exact mechanism of it.
-> 
-> In fact there are two problems in there.  First, the bridge event notification
-> calls handle_bridge_insertion() which attempts to install a PM notifier for
-> the bridge and that deadlocks, because it tries to acquire the mutex
-> recursively.  Second, apparently, init_bridge_misc() may be called in the
-> notification code path and it attempts to unregister the notifier and register
-> it again, which can't be done with pci_acpi_notify_mtx held.
-> 
-> I guess there are similar problems on the hot remove notification path.
-> 
-> Anyway, I have a new version of the patch and I'm going to test it a bit
-> over the weekend.  Unfortunately, I don't have hardware with PCI hotplug
-> capability, so I'll send you the new patch for testing on Monday, if you don't
-> mind.
+Peterz,
 
-I don't mind.  Although I am concerned that my acpiphp only
-testing on our IBM System x boxes may not be sufficient to
-assure that PCI hotplug will work well on other PCI hotplug
-capable systems.  I hope that others will also do some early
-testing of this code.
+We have one more problem that Yanmin and Ling Ma reported. On a dual
+socket quad-core platforms (for example platforms based on NHM-EP), we
+are seeing scenarios where one socket is completely busy (with all the 4
+cores running with 4 tasks) and another socket is completely idle.
 
-Gary
+This causes performance issues as those 4 tasks share the memory
+controller, last-level cache bandwidth etc. Also we won't be taking
+advantage of turbo-mode as much as we like. We will have all these
+benefits if we move two of those tasks to the other socket. Now both the
+sockets can potentially go to turbo etc and improve performance.
 
--- 
-Gary Hade
-System x Enablement
-IBM Linux Technology Center
-503-578-4503  IBM T/L: 775-4503
-garyhade@us.ibm.com
-http://www.ibm.com/linux/ltc
+In short, your recent change (shown below) broke this behavior. In the
+kernel summit you mentioned you made this change with out affecting the
+behavior of SMT/MC. And my testing immediately after kernel-summit also
+didn't show the problem (perhaps my test didn't hit this specific
+change). But apparently we are having performance issues with this patch
+(Ling Ma's bisect pointed to this patch). I will look more detailed into
+this after the long weekend (to see if we can catch this scenario in
+fix_small_imbalance() etc). But wanted to give you a quick heads up.
+Thanks.
+
+commit f93e65c186ab3c05ce2068733ca10e34fd00125e
+Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Date:   Tue Sep 1 10:34:32 2009 +0200
+
+    sched: Restore __cpu_power to a straight sum of power
+    
+    cpu_power is supposed to be a representation of the process
+    capacity of the cpu, not a value to randomly tweak in order to
+    affect placement.
+    
+    Remove the placement hacks.
+    
+    Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+    Tested-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+    Acked-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+    Acked-by: Gautham R Shenoy <ego@in.ibm.com>
+    Cc: Balbir Singh <balbir@in.ibm.com>
+    LKML-Reference: <20090901083825.810860576@chello.nl>
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index da1edc8..584a122 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -8464,15 +8464,13 @@ static void free_sched_groups(const struct cpumask *cpu_map,
+  * there are asymmetries in the topology. If there are asymmetries, group
+  * having more cpu_power will pickup more load compared to the group having
+  * less cpu_power.
+- *
+- * cpu_power will be a multiple of SCHED_LOAD_SCALE. This multiple represents
+- * the maximum number of tasks a group can handle in the presence of other idle
+- * or lightly loaded groups in the same sched domain.
+  */
+ static void init_sched_groups_power(int cpu, struct sched_domain *sd)
+ {
+ 	struct sched_domain *child;
+ 	struct sched_group *group;
++	long power;
++	int weight;
+ 
+ 	WARN_ON(!sd || !sd->groups);
+ 
+@@ -8483,22 +8481,20 @@ static void init_sched_groups_power(int cpu, struct sched_domain *sd)
+ 
+ 	sd->groups->__cpu_power = 0;
+ 
+-	/*
+-	 * For perf policy, if the groups in child domain share resources
+-	 * (for example cores sharing some portions of the cache hierarchy
+-	 * or SMT), then set this domain groups cpu_power such that each group
+-	 * can handle only one task, when there are other idle groups in the
+-	 * same sched domain.
+-	 */
+-	if (!child || (!(sd->flags & SD_POWERSAVINGS_BALANCE) &&
+-		       (child->flags &
+-			(SD_SHARE_CPUPOWER | SD_SHARE_PKG_RESOURCES)))) {
+-		sg_inc_cpu_power(sd->groups, SCHED_LOAD_SCALE);
++	if (!child) {
++		power = SCHED_LOAD_SCALE;
++		weight = cpumask_weight(sched_domain_span(sd));
++		/*
++		 * SMT siblings share the power of a single core.
++		 */
++		if ((sd->flags & SD_SHARE_CPUPOWER) && weight > 1)
++			power /= weight;
++		sg_inc_cpu_power(sd->groups, power);
+ 		return;
+ 	}
+ 
+ 	/*
+-	 * add cpu_power of each child group to this groups cpu_power
++	 * Add cpu_power of each child group to this groups cpu_power.
+ 	 */
+ 	group = child->groups;
+ 	do {
+
+
+
+
+
+
 
