@@ -1,106 +1,118 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755127Ab0BMIEa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Feb 2010 03:04:30 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:31861 "EHLO mx1.redhat.com"
+	id S1756805Ab0BMIFr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Feb 2010 03:05:47 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:23788 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752684Ab0BMICF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752596Ab0BMICF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 13 Feb 2010 03:02:05 -0500
 From: Avi Kivity <avi@redhat.com>
 To: kvm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 34/39] KVM: PPC: Move Shadow MSR calculation to function
-Date: Sat, 13 Feb 2010 10:01:54 +0200
-Message-Id: <1266048119-14325-35-git-send-email-avi@redhat.com>
+Subject: [PATCH 26/39] KVM: SVM: Selective cr0 intercept
+Date: Sat, 13 Feb 2010 10:01:46 +0200
+Message-Id: <1266048119-14325-27-git-send-email-avi@redhat.com>
 In-Reply-To: <1266048119-14325-1-git-send-email-avi@redhat.com>
 References: <1266048119-14325-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alexander Graf <agraf@suse.de>
+If two conditions apply:
+ - no bits outside TS and EM differ between the host and guest cr0
+ - the fpu is active
 
-We keep a copy of the MSR around that we use when we go into the guest context.
+then we can activate the selective cr0 write intercept and drop the
+unconditional cr0 read and write intercept, and allow the guest to run
+with the host fpu state.  This reduces cr0 exits due to guest fpu management
+while the guest fpu is loaded.
 
-That copy is basically the normal process MSR flags OR some allowed guest
-specified MSR flags. We also AND the external providers into this, so we get
-traps on FPU usage when we haven't activated it on the host yet.
-
-Currently this calculation is part of the set_msr function that we use whenever
-we set the guest MSR value. With the external providers, we also have the case
-that we don't modify the guest's MSR, but only want to update the shadow MSR.
-
-So let's move the shadow MSR parts to a separate function that we then use
-whenever we only need to update it. That way we don't accidently kvm_vcpu_block
-within a preempt notifier context.
-
-Signed-off-by: Alexander Graf <agraf@suse.de>
+Acked-by: Joerg Roedel <joerg.roedel@amd.com>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- arch/powerpc/kvm/book3s.c |   27 +++++++++++++++++++++------
- 1 files changed, 21 insertions(+), 6 deletions(-)
+ arch/x86/kvm/svm.c |   32 ++++++++++++++++++++++++++------
+ 1 files changed, 26 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
-index 58f5200..9a271f0 100644
---- a/arch/powerpc/kvm/book3s.c
-+++ b/arch/powerpc/kvm/book3s.c
-@@ -94,6 +94,23 @@ static u32 kvmppc_get_dec(struct kvm_vcpu *vcpu)
+diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
+index 27273ed..83c7ab1 100644
+--- a/arch/x86/kvm/svm.c
++++ b/arch/x86/kvm/svm.c
+@@ -571,6 +571,7 @@ static void init_vmcb(struct vcpu_svm *svm)
+ 	control->intercept = 	(1ULL << INTERCEPT_INTR) |
+ 				(1ULL << INTERCEPT_NMI) |
+ 				(1ULL << INTERCEPT_SMI) |
++				(1ULL << INTERCEPT_SELECTIVE_CR0) |
+ 				(1ULL << INTERCEPT_CPUID) |
+ 				(1ULL << INTERCEPT_INVD) |
+ 				(1ULL << INTERCEPT_HLT) |
+@@ -963,6 +964,27 @@ static void svm_decache_cr4_guest_bits(struct kvm_vcpu *vcpu)
+ {
  }
- #endif
  
-+static void kvmppc_recalc_shadow_msr(struct kvm_vcpu *vcpu)
++static void update_cr0_intercept(struct vcpu_svm *svm)
 +{
-+	vcpu->arch.shadow_msr = vcpu->arch.msr;
-+	/* Guest MSR values */
-+	vcpu->arch.shadow_msr &= MSR_FE0 | MSR_FE1 | MSR_SF | MSR_SE |
-+				 MSR_BE | MSR_DE;
-+	/* Process MSR values */
-+	vcpu->arch.shadow_msr |= MSR_ME | MSR_RI | MSR_IR | MSR_DR | MSR_PR |
-+				 MSR_EE;
-+	/* External providers the guest reserved */
-+	vcpu->arch.shadow_msr |= (vcpu->arch.msr & vcpu->arch.guest_owned_ext);
-+	/* 64-bit Process MSR values */
-+#ifdef CONFIG_PPC_BOOK3S_64
-+	vcpu->arch.shadow_msr |= MSR_ISF | MSR_HV;
-+#endif
++	ulong gcr0 = svm->vcpu.arch.cr0;
++	u64 *hcr0 = &svm->vmcb->save.cr0;
++
++	if (!svm->vcpu.fpu_active)
++		*hcr0 |= SVM_CR0_SELECTIVE_MASK;
++	else
++		*hcr0 = (*hcr0 & ~SVM_CR0_SELECTIVE_MASK)
++			| (gcr0 & SVM_CR0_SELECTIVE_MASK);
++
++
++	if (gcr0 == *hcr0 && svm->vcpu.fpu_active) {
++		svm->vmcb->control.intercept_cr_read &= ~INTERCEPT_CR0_MASK;
++		svm->vmcb->control.intercept_cr_write &= ~INTERCEPT_CR0_MASK;
++	} else {
++		svm->vmcb->control.intercept_cr_read |= INTERCEPT_CR0_MASK;
++		svm->vmcb->control.intercept_cr_write |= INTERCEPT_CR0_MASK;
++	}
 +}
 +
- void kvmppc_set_msr(struct kvm_vcpu *vcpu, u64 msr)
+ static void svm_set_cr0(struct kvm_vcpu *vcpu, unsigned long cr0)
  {
- 	ulong old_msr = vcpu->arch.msr;
-@@ -101,12 +118,10 @@ void kvmppc_set_msr(struct kvm_vcpu *vcpu, u64 msr)
- #ifdef EXIT_DEBUG
- 	printk(KERN_INFO "KVM: Set MSR to 0x%llx\n", msr);
- #endif
-+
- 	msr &= to_book3s(vcpu)->msr_mask;
- 	vcpu->arch.msr = msr;
--	vcpu->arch.shadow_msr = msr | MSR_USER32;
--	vcpu->arch.shadow_msr &= (MSR_FE0 | MSR_USER64 | MSR_SE | MSR_BE |
--				  MSR_DE | MSR_FE1);
--	vcpu->arch.shadow_msr |= (msr & vcpu->arch.guest_owned_ext);
-+	kvmppc_recalc_shadow_msr(vcpu);
- 
- 	if (msr & (MSR_WE|MSR_POW)) {
- 		if (!vcpu->arch.pending_exceptions) {
-@@ -610,7 +625,7 @@ static void kvmppc_giveup_ext(struct kvm_vcpu *vcpu, ulong msr)
- 
- 	vcpu->arch.guest_owned_ext &= ~msr;
- 	current->thread.regs->msr &= ~msr;
--	kvmppc_set_msr(vcpu, vcpu->arch.msr);
-+	kvmppc_recalc_shadow_msr(vcpu);
+ 	struct vcpu_svm *svm = to_svm(vcpu);
+@@ -994,6 +1016,7 @@ static void svm_set_cr0(struct kvm_vcpu *vcpu, unsigned long cr0)
+ 	 */
+ 	cr0 &= ~(X86_CR0_CD | X86_CR0_NW);
+ 	svm->vmcb->save.cr0 = cr0;
++	update_cr0_intercept(svm);
  }
  
- /* Handle external providers (FPU, Altivec, VSX) */
-@@ -664,7 +679,7 @@ static int kvmppc_handle_ext(struct kvm_vcpu *vcpu, unsigned int exit_nr,
+ static void svm_set_cr4(struct kvm_vcpu *vcpu, unsigned long cr4)
+@@ -1239,11 +1262,8 @@ static int ud_interception(struct vcpu_svm *svm)
+ static int nm_interception(struct vcpu_svm *svm)
+ {
+ 	svm->vmcb->control.intercept_exceptions &= ~(1 << NM_VECTOR);
+-	if (!kvm_read_cr0_bits(&svm->vcpu, X86_CR0_TS))
+-		svm->vmcb->save.cr0 &= ~X86_CR0_TS;
+-	else
+-		svm->vmcb->save.cr0 |= X86_CR0_TS;
+ 	svm->vcpu.fpu_active = 1;
++	update_cr0_intercept(svm);
  
- 	vcpu->arch.guest_owned_ext |= msr;
- 
--	kvmppc_set_msr(vcpu, vcpu->arch.msr);
-+	kvmppc_recalc_shadow_msr(vcpu);
- 
- 	return RESUME_GUEST;
+ 	return 1;
  }
+@@ -2296,7 +2316,7 @@ static int (*svm_exit_handlers[])(struct vcpu_svm *svm) = {
+ 	[SVM_EXIT_READ_CR3]           		= emulate_on_interception,
+ 	[SVM_EXIT_READ_CR4]           		= emulate_on_interception,
+ 	[SVM_EXIT_READ_CR8]           		= emulate_on_interception,
+-	/* for now: */
++	[SVM_EXIT_CR0_SEL_WRITE]		= emulate_on_interception,
+ 	[SVM_EXIT_WRITE_CR0]          		= emulate_on_interception,
+ 	[SVM_EXIT_WRITE_CR3]          		= emulate_on_interception,
+ 	[SVM_EXIT_WRITE_CR4]          		= emulate_on_interception,
+@@ -2914,8 +2934,8 @@ static void svm_fpu_deactivate(struct kvm_vcpu *vcpu)
+ 		return;
+ 	}
+ 
++	update_cr0_intercept(svm);
+ 	svm->vmcb->control.intercept_exceptions |= 1 << NM_VECTOR;
+-	svm->vmcb->save.cr0 |= X86_CR0_TS;
+ }
+ 
+ static struct kvm_x86_ops svm_x86_ops = {
 -- 
 1.6.5.3
 
