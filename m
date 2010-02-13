@@ -1,64 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757918Ab0BMTmo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Feb 2010 14:42:44 -0500
-Received: from xenotime.net ([72.52.64.118]:39936 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1757104Ab0BMTmm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Feb 2010 14:42:42 -0500
-Message-ID: <4B7700B0.1030402@xenotime.net>
-Date: Sat, 13 Feb 2010 11:42:40 -0800
-From: Randy Dunlap <rdunlap@xenotime.net>
-Organization: YPO4
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+	id S1757942Ab0BMTof (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Feb 2010 14:44:35 -0500
+Received: from stargate.chelsio.com ([67.207.112.58]:2326 "EHLO
+	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753905Ab0BMTod (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Feb 2010 14:44:33 -0500
+From: Divy Le Ray <divy@chelsio.com>
+Subject: [PATCH net-next-2.6 1/2] cxgb3: FIx VLAN over Jumbo frames
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       swise@opengridcomputing.com
+Date: Sat, 13 Feb 2010 11:44:30 -0800
+Message-ID: <20100213194429.27297.99280.stgit@speedy5.asicdesigners.com>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-To: Jason Wessel <jason.wessel@windriver.com>
-CC: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
-       mingo@elte.hu
-Subject: Re: [PATCH 15/28] kgdb,docs: Update the kgdb docs to include kdb
-References: <1266014143-29444-1-git-send-email-jason.wessel@windriver.com> <1266014143-29444-16-git-send-email-jason.wessel@windriver.com>
-In-Reply-To: <1266014143-29444-16-git-send-email-jason.wessel@windriver.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/12/10 14:35, Jason Wessel wrote:
-> Update the kgdb docs to reflect the new directory structure and API.
-> 
-> Merge in the kdb shell information.
-> 
-> Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
-> ---
+From: Divy Le Ray <divy@chelsio.com>
 
-> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-> index f3be1e6..af8b8e8 100644
-> --- a/Documentation/kernel-parameters.txt
-> +++ b/Documentation/kernel-parameters.txt
-> @@ -1102,13 +1103,17 @@ and is between 256 and 4096 characters. It is defined in the file
->  			use the HighMem zone if it exists, and the Normal
->  			zone if it does not.
->  
-> -	kgdboc=		[HW] kgdb over consoles.
-> +	kgdboc=		[KGDB,HW] kgdb over consoles.
->  			Requires a tty driver that supports console polling,
->  			or a supported polling keyboard driver (non-usb).
->  			Serial only format: <serial_device>[,baud]
->  			keyboard only format: kbd
->  			keyboard and serial format: kbd,<serial_device>[,baud]
->  
-> +	kgdbwait	[KGDB] Stop kernel execution and enter the
-> +			kernel debugger at the earliest opportunity if
-> +			kgdb was configured on as a boot argument.
+The mac is expected to auto-inflate the Maximum Frame size for VLAN
+tagged frames. It however does not work with jumbo frames.
+Work around the bug adding 4 to the Maximum Frame for MTUs
+greater than 1536.
 
-What does "kgdb was configured on as a boot argument" mean?
+Signed-off-by: Divy Le Ray <divy@chelsio.com>
+---
 
-> +
->  	kmac=		[MIPS] korina ethernet MAC address.
->  			Configure the RouterBoard 532 series on-chip
->  			Ethernet adapter MAC address.
+ drivers/net/cxgb3/xgmac.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
 
--- 
-~Randy
+diff --git a/drivers/net/cxgb3/xgmac.c b/drivers/net/cxgb3/xgmac.c
+index 0109ee4..0c08de5 100644
+--- a/drivers/net/cxgb3/xgmac.c
++++ b/drivers/net/cxgb3/xgmac.c
+@@ -353,6 +353,9 @@ int t3_mac_set_mtu(struct cmac *mac, unsigned int mtu)
+ 	 * packet size register includes header, but not FCS.
+ 	 */
+ 	mtu += 14;
++	if (mtu > 1536)
++		mtu += 4;
++
+ 	if (mtu > MAX_FRAME_SIZE - 4)
+ 		return -EINVAL;
+ 	t3_write_reg(adap, A_XGM_RX_MAX_PKT_SIZE + mac->offset, mtu);
+
