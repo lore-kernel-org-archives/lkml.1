@@ -1,124 +1,90 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753785Ab0BMSQw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Feb 2010 13:16:52 -0500
-Received: from mta5.srv.hcvlny.cv.net ([167.206.4.200]:40571 "EHLO
-	mta5.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751571Ab0BMSQv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Feb 2010 13:16:51 -0500
-Date: Sat, 13 Feb 2010 13:16:35 -0500
-From: Michael Breuer <mbreuer@majjas.com>
-Subject: Re: Hung task - sync - 2.6.33-rc7  w/md6 multicore rebuild in process
-In-reply-to: <4B76D87E.3050107@majjas.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Message-id: <4B76EC83.5050401@majjas.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7BIT
-References: <4B76D87E.3050107@majjas.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.7)
- Gecko/20100111 Lightning/1.0b2pre Thunderbird/3.0.1
+	id S1754641Ab0BMSTc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Feb 2010 13:19:32 -0500
+Received: from mga11.intel.com ([192.55.52.93]:2754 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752002Ab0BMSTb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Feb 2010 13:19:31 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,468,1262592000"; 
+   d="scan'208";a="772664023"
+Subject: Re: do_IRQ: 0.165 No irq handler for vector (irq -1)
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
+To: Torsten Kaiser <just.for.lkml@googlemail.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Tejun Heo <tj@kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Robert Hancock <hancockrwd@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Yinghai Lu <yhlu.kernel@gmail.com>
+In-Reply-To: <64bb37e1002130125r7013832brc9b3b695daaf6f91@mail.gmail.com>
+References: <64bb37e1001310502p3d74bdf5ve56f63d3e8d2fd39@mail.gmail.com>
+	 <4B679042.2010008@kernel.org> <m1r5p4grvg.fsf@fess.ebiederm.org>
+	 <1265136022.2793.33.camel@sbs-t61.sc.intel.com>
+	 <64bb37e1002021156s6e8e3ba7p6192e15bc431eb87@mail.gmail.com>
+	 <64bb37e1002130125r7013832brc9b3b695daaf6f91@mail.gmail.com>
+Content-Type: text/plain
+Organization: Intel Corp
+Date: Sat, 13 Feb 2010 10:18:27 -0800
+Message-Id: <1266085107.2677.37.camel@sbs-t61>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/13/2010 11:51 AM, Michael Breuer wrote:
-> Scenario:
->
-> 1. raid6 (software - 6 1Tb sata drives) doing a resync (multi core 
-> enabled)
-> 2. rebuilding kernel (rc8)
-> 3. system became sluggish - top & vmstat showed all 12Gb ram used - 
-> albeit 10g of fs cache. It seemed as though relcaim of fs cache became 
-> really slow once there were no more "free" pages.
-> vmstat <after hung task reported - don't have from before>
-> procs -----------memory---------- ---swap-- -----io---- --system-- 
-> -----cpu-----
->    r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us 
-> sy id wa st
->    0  1    808 112476 347592 9556952    0    0    39   388  158  189  
-> 1 18 77  4  0
-> 4. Worrying a bit about the looming instability, I typed, "sync."
-> 5. sync took a long time, and was reported by the kernel as a hung 
-> task (repeatedly) - see below.
-> 6. entering additional sync commands also hang (unsuprising, but 
-> figured I'd try as non-root).
-> 7. The running sync (pid 11975) cannot be killed.
-> 8. echo 1 > drop_caches does clear the fs cache. System behaves better 
-> after this (but sync is still hung).
->
-> config attached.
->
-> Running with sky2 dma patches (in rc8) and increased the audit name 
-> space to avoid the flood of name space maxed warnings.
->
-> My current plan is to let the raid rebuild complete and then reboot 
-> (to rc8 if the bits made it to disk)... maybe with a backup of 
-> recently changed files to an external system.
->
-> Feb 13 10:54:13 mail kernel: INFO: task sync:11975 blocked for more 
-> than 120 seconds.
-> Feb 13 10:54:13 mail kernel: "echo 0 > 
-> /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-> Feb 13 10:54:13 mail kernel: sync          D 0000000000000002     0 
-> 11975   6433 0x00000000
-> Feb 13 10:54:13 mail kernel: ffff8801c45f3da8 0000000000000082 
-> ffff8800282f5948 ffff8800282f5920
-> Feb 13 10:54:13 mail kernel: ffff88032f785d78 ffff88032f785d40 
-> 000000030c37a771 0000000000000282
-> Feb 13 10:54:13 mail kernel: ffff8801c45f3fd8 000000000000f888 
-> ffff88032ca00000 ffff8801c61c9750
-> Feb 13 10:54:13 mail kernel: Call Trace:
-> Feb 13 10:54:13 mail kernel: [<ffffffff81154730>] ? 
-> bdi_sched_wait+0x0/0x20
-> Feb 13 10:54:13 mail kernel: [<ffffffff8115473e>] bdi_sched_wait+0xe/0x20
-> Feb 13 10:54:13 mail kernel: [<ffffffff81537b4f>] __wait_on_bit+0x5f/0x90
-> Feb 13 10:54:13 mail kernel: [<ffffffff81154730>] ? 
-> bdi_sched_wait+0x0/0x20
-> Feb 13 10:54:13 mail kernel: [<ffffffff81537bf8>] 
-> out_of_line_wait_on_bit+0x78/0x90
-> Feb 13 10:54:13 mail kernel: [<ffffffff81078650>] ? 
-> wake_bit_function+0x0/0x50
-> Feb 13 10:54:13 mail kernel: [<ffffffff8104ac55>] ? 
-> wake_up_process+0x15/0x20
-> Feb 13 10:54:13 mail kernel: [<ffffffff81155daf>] 
-> bdi_sync_writeback+0x6f/0x80
-> Feb 13 10:54:13 mail kernel: [<ffffffff81155de2>] 
-> sync_inodes_sb+0x22/0x100
-> Feb 13 10:54:13 mail kernel: [<ffffffff81159902>] 
-> __sync_filesystem+0x82/0x90
-> Feb 13 10:54:13 mail kernel: [<ffffffff81159a04>] 
-> sync_filesystems+0xf4/0x120
-> Feb 13 10:54:13 mail kernel: [<ffffffff81159a91>] sys_sync+0x21/0x40
-> Feb 13 10:54:13 mail kernel: [<ffffffff8100b0f2>] 
-> system_call_fastpath+0x16/0x1b
->
-> <this repeats every 120 seconds - all the same traceback>
->
->
->
->
-Note: this cleared after about 90 minutes - sync eventually completed. 
-I'm thinking that with multicore enabled the resync is able to starve 
-out normal system activities that weren't starved w/o multicore.
+On Sat, 2010-02-13 at 02:25 -0700, Torsten Kaiser wrote:
+> Ping?
+> 
+> I reported this problem one day after -rc1 was out and it's still
+> there in -rc8, the probably last -rc for 2.6.33.
+> (I also reported it against -rc2, -rc3, -rc4 and -rc6)
+> 
+> Apart from the patches related to the SiI register HOST_CTRL_MSIACK
+> (that did not fix the problem) I have the feeling, that I'm not one
+> step further to any fix.
+> 
+> Is this a bug in the MSI-enable code in sata_sil24?
+> Is this a bug in the MSI code in libata?
+> Is this a bug in the IRQ system?
+> Is this a bug in the x86 apic code?
 
-raid speed_limit_min was originally set to 5000 - reported speed was 
-between 15k and 30k. I did play around with speed_limit_min, but didn't 
-seen any noticeable result. Max was never reached. Fwiw, without 
-multicore, I saw slightly lower reported speeds, however time to rebuild 
-was significantly faster with multicore enabled. I'm guessing that the 
-reported speed is either wrong, or it's an instantaneous number that is 
-affected by the act of typing "cat /proc/mdstat"
+There are primarily two issues you reported.
 
-I also believe from what I saw that inordinate system resources are 
-being consumed when file system cache needs to be reclaimed to satisfy 
-memory allocation requests... at least while a resync is under way. As 
-manual dropping of the cache is painless, I'm guessing that too much 
-time is being spent looking for pages to reclaim on demand. Perhaps this 
-is function of the amount of physical RAM (I've got 12G and 10G was fs 
-cache).
+One is the spurious interrupt issue (for which you see "no irq handler
+for vector messages). From your experimental results you verified that
+this problem doesn't happen in physical apic mode. This shows that there
+is some problem with the way this HW subsystem (involving sata_sil24)
+handles logical mode. Most likely some bug either in the sata_sil24 or
+in the platform paths (bridges etc) handling the sata_sil24 interrupts
+(as you say, other devices work fine with MSI on this platform).
 
-I can't recreate the hang with available free pages.
+And the second problem is the sata timeouts (which happen irrespective
+of the above spurious interrupts). It looks like interrupts are dropped
+(which might be the reason why your ERR count -- apic error count --
+increases). 
 
+Based on your experimental results, we can say that it is not the bug
+with x86 apic code and irq subsystem.
+
+> Is this a hardware bug in the SiI 3132?
+> Is this a hardware bug in the MCP55?
+> Is this a fatal bug or does it just need the right quirk?
+> 
+> What should I do now?
+> Keep posting that it's still broken at each -rc?
+> Open a bug at bugzilla.kernel.org? Against what subsytem?
+> Should I just not use the sata_sil.msi=1 commandline? 
+
+You should n't use that command line as your experiments showed that
+sata_sil msi mode is clearly broken on this platform and perhaps report
+the issue to the HW vendor (you should include in that report, the
+spurious vector 165 that you see in logical mode and also the apic error
+you see -- you can enable debug to see the error message that gets
+printed in smp_error_interrupt() for this --)
+
+thanks,
+suresh
 
