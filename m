@@ -1,116 +1,113 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757417Ab0BMIIi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Feb 2010 03:08:38 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:52002 "EHLO mx1.redhat.com"
+	id S1757398Ab0BMIHs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Feb 2010 03:07:48 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:8290 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752432Ab0BMICE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752449Ab0BMICE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 13 Feb 2010 03:02:04 -0500
 From: Avi Kivity <avi@redhat.com>
 To: kvm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 19/39] KVM: VMX: Allow the guest to own some cr0 bits
-Date: Sat, 13 Feb 2010 10:01:39 +0200
-Message-Id: <1266048119-14325-20-git-send-email-avi@redhat.com>
+Subject: [PATCH 30/39] KVM: PPC: Add helper functions to call real mode loaders
+Date: Sat, 13 Feb 2010 10:01:50 +0200
+Message-Id: <1266048119-14325-31-git-send-email-avi@redhat.com>
 In-Reply-To: <1266048119-14325-1-git-send-email-avi@redhat.com>
 References: <1266048119-14325-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We will use this later to give the guest ownership of cr0.ts.
+From: Alexander Graf <agraf@suse.de>
 
+Linux contains quite some bits of code to load FPU, Altivec and VSX lazily for
+a task. It calls those bits in real mode, coming from an interrupt handler.
+
+For KVM we better reuse those, so let's wrap a bit of trampoline magic around
+them and then we can call them from normal module code.
+
+Signed-off-by: Alexander Graf <agraf@suse.de>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- arch/x86/include/asm/kvm_host.h |    2 ++
- arch/x86/kvm/kvm_cache_regs.h   |    2 ++
- arch/x86/kvm/svm.c              |    5 +++++
- arch/x86/kvm/vmx.c              |    9 +++++++++
- 4 files changed, 18 insertions(+), 0 deletions(-)
+ arch/powerpc/include/asm/kvm_book3s.h   |    3 ++
+ arch/powerpc/kvm/book3s_64_exports.c    |    7 ++++++
+ arch/powerpc/kvm/book3s_64_rmhandlers.S |   34 +++++++++++++++++++++++++++++++
+ 3 files changed, 44 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-index a4de557..693046a 100644
---- a/arch/x86/include/asm/kvm_host.h
-+++ b/arch/x86/include/asm/kvm_host.h
-@@ -269,6 +269,7 @@ struct kvm_vcpu_arch {
- 	u32 regs_dirty;
+diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
+index c7db69f..e1b441c 100644
+--- a/arch/powerpc/include/asm/kvm_book3s.h
++++ b/arch/powerpc/include/asm/kvm_book3s.h
+@@ -124,6 +124,9 @@ extern void kvmppc_set_bat(struct kvm_vcpu *vcpu, struct kvmppc_bat *bat,
+ extern u32 kvmppc_trampoline_lowmem;
+ extern u32 kvmppc_trampoline_enter;
+ extern void kvmppc_rmcall(ulong srr0, ulong srr1);
++extern void kvmppc_load_up_fpu(void);
++extern void kvmppc_load_up_altivec(void);
++extern void kvmppc_load_up_vsx(void);
  
- 	unsigned long cr0;
-+	unsigned long cr0_guest_owned_bits;
- 	unsigned long cr2;
- 	unsigned long cr3;
- 	unsigned long cr4;
-@@ -489,6 +490,7 @@ struct kvm_x86_ops {
- 	void (*set_segment)(struct kvm_vcpu *vcpu,
- 			    struct kvm_segment *var, int seg);
- 	void (*get_cs_db_l_bits)(struct kvm_vcpu *vcpu, int *db, int *l);
-+	void (*decache_cr0_guest_bits)(struct kvm_vcpu *vcpu);
- 	void (*decache_cr4_guest_bits)(struct kvm_vcpu *vcpu);
- 	void (*set_cr0)(struct kvm_vcpu *vcpu, unsigned long cr0);
- 	void (*set_cr3)(struct kvm_vcpu *vcpu, unsigned long cr3);
-diff --git a/arch/x86/kvm/kvm_cache_regs.h b/arch/x86/kvm/kvm_cache_regs.h
-index f468597..6b419a3 100644
---- a/arch/x86/kvm/kvm_cache_regs.h
-+++ b/arch/x86/kvm/kvm_cache_regs.h
-@@ -40,6 +40,8 @@ static inline u64 kvm_pdptr_read(struct kvm_vcpu *vcpu, int index)
- 
- static inline ulong kvm_read_cr0_bits(struct kvm_vcpu *vcpu, ulong mask)
+ static inline struct kvmppc_vcpu_book3s *to_book3s(struct kvm_vcpu *vcpu)
  {
-+	if (mask & vcpu->arch.cr0_guest_owned_bits)
-+		kvm_x86_ops->decache_cr0_guest_bits(vcpu);
- 	return vcpu->arch.cr0 & mask;
- }
+diff --git a/arch/powerpc/kvm/book3s_64_exports.c b/arch/powerpc/kvm/book3s_64_exports.c
+index 99b0712..1dd5a1d 100644
+--- a/arch/powerpc/kvm/book3s_64_exports.c
++++ b/arch/powerpc/kvm/book3s_64_exports.c
+@@ -23,3 +23,10 @@
+ EXPORT_SYMBOL_GPL(kvmppc_trampoline_enter);
+ EXPORT_SYMBOL_GPL(kvmppc_trampoline_lowmem);
+ EXPORT_SYMBOL_GPL(kvmppc_rmcall);
++EXPORT_SYMBOL_GPL(kvmppc_load_up_fpu);
++#ifdef CONFIG_ALTIVEC
++EXPORT_SYMBOL_GPL(kvmppc_load_up_altivec);
++#endif
++#ifdef CONFIG_VSX
++EXPORT_SYMBOL_GPL(kvmppc_load_up_vsx);
++#endif
+diff --git a/arch/powerpc/kvm/book3s_64_rmhandlers.S b/arch/powerpc/kvm/book3s_64_rmhandlers.S
+index e7091c9..c83c60a 100644
+--- a/arch/powerpc/kvm/book3s_64_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_64_rmhandlers.S
+@@ -158,6 +158,40 @@ _GLOBAL(kvmppc_rmcall)
+ 	mtsrr1	r4
+ 	RFI
  
-diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
-index d3246ce..3899c2d 100644
---- a/arch/x86/kvm/svm.c
-+++ b/arch/x86/kvm/svm.c
-@@ -956,6 +956,10 @@ static void svm_set_gdt(struct kvm_vcpu *vcpu, struct descriptor_table *dt)
- 	svm->vmcb->save.gdtr.base = dt->base ;
- }
- 
-+static void svm_decache_cr0_guest_bits(struct kvm_vcpu *vcpu)
-+{
-+}
++/*
++ * Activate current's external feature (FPU/Altivec/VSX)
++ */
++#define define_load_up(what) 				\
++							\
++_GLOBAL(kvmppc_load_up_ ## what);			\
++	subi	r1, r1, INT_FRAME_SIZE;			\
++	mflr	r3;					\
++	std	r3, _LINK(r1);				\
++	mfmsr	r4;					\
++	std	r31, GPR3(r1);				\
++	mr	r31, r4;				\
++	li	r5, MSR_DR;				\
++	oris	r5, r5, MSR_EE@h;			\
++	andc	r4, r4, r5;				\
++	mtmsr	r4;					\
++							\
++	bl	.load_up_ ## what;			\
++							\
++	mtmsr	r31;					\
++	ld	r3, _LINK(r1);				\
++	ld	r31, GPR3(r1);				\
++	addi	r1, r1, INT_FRAME_SIZE;			\
++	mtlr	r3;					\
++	blr
 +
- static void svm_decache_cr4_guest_bits(struct kvm_vcpu *vcpu)
- {
- }
-@@ -2948,6 +2952,7 @@ static struct kvm_x86_ops svm_x86_ops = {
- 	.set_segment = svm_set_segment,
- 	.get_cpl = svm_get_cpl,
- 	.get_cs_db_l_bits = kvm_get_cs_db_l_bits,
-+	.decache_cr0_guest_bits = svm_decache_cr0_guest_bits,
- 	.decache_cr4_guest_bits = svm_decache_cr4_guest_bits,
- 	.set_cr0 = svm_set_cr0,
- 	.set_cr3 = svm_set_cr3,
-diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
-index 4c7177c..dbcdb55 100644
---- a/arch/x86/kvm/vmx.c
-+++ b/arch/x86/kvm/vmx.c
-@@ -1653,6 +1653,14 @@ static void vmx_flush_tlb(struct kvm_vcpu *vcpu)
- 		ept_sync_context(construct_eptp(vcpu->arch.mmu.root_hpa));
- }
- 
-+static void vmx_decache_cr0_guest_bits(struct kvm_vcpu *vcpu)
-+{
-+	ulong cr0_guest_owned_bits = vcpu->arch.cr0_guest_owned_bits;
++define_load_up(fpu)
++#ifdef CONFIG_ALTIVEC
++define_load_up(altivec)
++#endif
++#ifdef CONFIG_VSX
++define_load_up(vsx)
++#endif
 +
-+	vcpu->arch.cr0 &= ~cr0_guest_owned_bits;
-+	vcpu->arch.cr0 |= vmcs_readl(GUEST_CR0) & cr0_guest_owned_bits;
-+}
-+
- static void vmx_decache_cr4_guest_bits(struct kvm_vcpu *vcpu)
- {
- 	ulong cr4_guest_owned_bits = vcpu->arch.cr4_guest_owned_bits;
-@@ -4106,6 +4114,7 @@ static struct kvm_x86_ops vmx_x86_ops = {
- 	.set_segment = vmx_set_segment,
- 	.get_cpl = vmx_get_cpl,
- 	.get_cs_db_l_bits = vmx_get_cs_db_l_bits,
-+	.decache_cr0_guest_bits = vmx_decache_cr0_guest_bits,
- 	.decache_cr4_guest_bits = vmx_decache_cr4_guest_bits,
- 	.set_cr0 = vmx_set_cr0,
- 	.set_cr3 = vmx_set_cr3,
+ .global kvmppc_trampoline_lowmem
+ kvmppc_trampoline_lowmem:
+ 	.long kvmppc_handler_lowmem_trampoline - _stext
 -- 
 1.6.5.3
 
