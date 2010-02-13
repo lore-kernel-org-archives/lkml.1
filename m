@@ -1,94 +1,49 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751973Ab0BMHNJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Feb 2010 02:13:09 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:29525 "EHLO mx1.redhat.com"
+	id S1752033Ab0BMHUQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Feb 2010 02:20:16 -0500
+Received: from bamako.nerim.net ([62.4.17.28]:57139 "EHLO bamako.nerim.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751740Ab0BMHNH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Feb 2010 02:13:07 -0500
-From: Avi Kivity <avi@redhat.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] x86-64, rwsem: Avoid store forwarding hazzard in __downgrade_write
-Date: Sat, 13 Feb 2010 09:13:03 +0200
-Message-Id: <1266045183-9563-1-git-send-email-avi@redhat.com>
+	id S1751816Ab0BMHUN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Feb 2010 02:20:13 -0500
+Date: Sat, 13 Feb 2010 08:20:10 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+Cc: "lasse.collin@tukaani.org" <lasse.collin@tukaani.org>,
+       Phillip Lougher <phillip@lougher.demon.co.uk>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "mirrors@kernel.org" <mirrors@kernel.org>,
+       "users@kernel.org" <users@kernel.org>,
+       "FTPAdmin Kernel.org" <ftpadmin@kernel.org>
+Subject: Re: [kernel.org users] XZ Migration discussion
+Message-ID: <20100213082010.53388b1d@hyperion.delvare>
+In-Reply-To: <20100212223547.GN5186@tux>
+References: <4B744E13.8040004@kernel.org>
+	<20100212150137.648dca7c@hyperion.delvare>
+	<4B75A5CF.70308@lougher.demon.co.uk>
+	<20100212203209.0cb8afc3@hyperion.delvare>
+	<4B75B2A6.5080006@lougher.demon.co.uk>
+	<20100212225923.36a67112@hyperion.delvare>
+	<20100212223547.GN5186@tux>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The Intel Architecture Optimization Reference Manual states that a short
-load that follows a long store to the same object will suffer a store
-forwading penalty, particularly if the two accesses use different addresses.
-Trivially, a long load that follows a short store will also suffer a penalty.
+On Fri, 12 Feb 2010 14:35:47 -0800, Luis R. Rodriguez wrote:
+> On Fri, Feb 12, 2010 at 01:59:23PM -0800, Jean Delvare wrote:
+> > Prove it. Many people out there are still working on older trees. I am
+> > working on 2.6.5 and 2.6.16 kernels on a weekly basis.
+> 
+> I have to ask, I've read about the reasons why people still using 2.4 [1],
+> why are you using 2.5? Same thing?
+> 
+> /me gets popcorn
 
-__downgrade_write() in rwsem incurs both penalties:  the increment operation
-will not be able to reuse a recently-loaded rwsem value, and its result will
-not be reused by any recently-following rwsem operation.
+Maybe try getting glasses instead? ;)
 
-A comment in the code states that this is because 64-bit immediates are
-special and expensive; but while they are slightly special (only a single
-instruction allows them), they aren't expensive: a test shows that two loops,
-one loading a 32-bit immediate and one loading a 64-bit immediate, both take
-1.5 cycles per iteration.
-
-Fix this by changing __downgrade_write to use the same add instruction on
-i386 and on x86_64, so that it uses the same operand size as all the other
-rwsem functions.
-
-Signed-off-by: Avi Kivity <avi@redhat.com>
----
- arch/x86/include/asm/rwsem.h |   30 ++++++++++--------------------
- 1 files changed, 10 insertions(+), 20 deletions(-)
-
-diff --git a/arch/x86/include/asm/rwsem.h b/arch/x86/include/asm/rwsem.h
-index 10204a2..d018361 100644
---- a/arch/x86/include/asm/rwsem.h
-+++ b/arch/x86/include/asm/rwsem.h
-@@ -232,34 +232,24 @@ static inline void __up_write(struct rw_semaphore *sem)
-  */
- static inline void __downgrade_write(struct rw_semaphore *sem)
- {
--#ifdef CONFIG_X86_64
--# if RWSEM_WAITING_BIAS != -0x100000000
--#  error "This code assumes RWSEM_WAITING_BIAS == -2^32"
--# endif
--
--	/* 64-bit immediates are special and expensive, and not needed here */
--	asm volatile("# beginning __downgrade_write\n\t"
--		     LOCK_PREFIX "incl 4(%1)\n\t"
--		     /* transitions 0xZZZZZZZZ00000001 -> 0xYYYYYYYY00000001 */
--		     "  jns       1f\n\t"
--		     "  call call_rwsem_downgrade_wake\n"
--		     "1:\n\t"
--		     "# ending __downgrade_write\n"
--		     : "+m" (sem->count)
--		     : "a" (sem)
--		     : "memory", "cc");
--#else
- 	asm volatile("# beginning __downgrade_write\n\t"
- 		     LOCK_PREFIX _ASM_ADD "%2,(%1)\n\t"
--		     /* transitions 0xZZZZ0001 -> 0xYYYY0001 */
-+		     /*
-+		      * transitions 0xZZZZ0001 -> 0xYYYY0001 (i386)
-+		      *     0xZZZZZZZZ00000001 -> 0xYYYYYYYY00000001 (x86_64)
-+		      */
- 		     "  jns       1f\n\t"
- 		     "  call call_rwsem_downgrade_wake\n"
- 		     "1:\n\t"
- 		     "# ending __downgrade_write\n"
- 		     : "+m" (sem->count)
--		     : "a" (sem), "i" (-RWSEM_WAITING_BIAS)
--		     : "memory", "cc");
-+		     : "a" (sem),
-+#ifndef CONFIG_X86_64
-+		       "i" (-RWSEM_WAITING_BIAS)
-+#else
-+		       "r" (-RWSEM_WAITING_BIAS)
- #endif
-+		     : "memory", "cc");
- }
- 
- /*
 -- 
-1.6.5.3
-
+Jean Delvare
