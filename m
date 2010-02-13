@@ -1,15 +1,15 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754073Ab0BMBkS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 20:40:18 -0500
-Received: from mga02.intel.com ([134.134.136.20]:28881 "EHLO mga02.intel.com"
+	id S1756410Ab0BMBnp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 20:43:45 -0500
+Received: from mga01.intel.com ([192.55.52.88]:22628 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753293Ab0BMBkJ convert rfc822-to-8bit (ORCPT
+	id S1753905Ab0BMBkS convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 20:40:09 -0500
+	Fri, 12 Feb 2010 20:40:18 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.49,464,1262592000"; 
-   d="scan'208,223";a="492151429"
+   d="scan'208,223";a="540400352"
 From: "Pan, Jacob jun" <jacob.jun.pan@intel.com>
 To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
@@ -17,11 +17,11 @@ CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "Barnes, Jesse" <jesse.barnes@intel.com>,
        "Du, Alek" <alek.du@intel.com>, "Tang, Feng" <feng.tang@intel.com>,
        "H. Peter Anvin" <hpa@linux.intel.com>
-Date: Fri, 12 Feb 2010 17:40:07 -0800
-Subject: [PATCH 1/9] PCI: add pci_bus_find_ext_capability
-Thread-Topic: [PATCH 1/9] PCI: add pci_bus_find_ext_capability
-Thread-Index: AcqsTXkRRcGrjgzeQDGiNKM6vj7cOA==
-Message-ID: <43F901BD926A4E43B106BF17856F07559FB80CFD@orsmsx508.amr.corp.intel.com>
+Date: Fri, 12 Feb 2010 17:40:16 -0800
+Subject: [PATCH 4/9] x86: Add pcibios_fixup_irqs to x86_init
+Thread-Topic: [PATCH 4/9] x86: Add pcibios_fixup_irqs to x86_init
+Thread-Index: AcqsTX43WpVTkAHzRfWgDEsOuvju7w==
+Message-ID: <43F901BD926A4E43B106BF17856F07559FB80D00@orsmsx508.amr.corp.intel.com>
 Accept-Language: en-US
 Content-Language: en-US
 X-MS-Has-Attach: 
@@ -34,88 +34,105 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 84aabace8ffe48c4f01721b9bc56c6ecd8e673a6 Mon Sep 17 00:00:00 2001
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-Date: Wed, 15 Jul 2009 13:13:00 -0700
-Subject: [PATCH 1/9] PCI: add pci_bus_find_ext_capability
+>From 592606bef750654a2b7746bf3b35809d096ae1dd Mon Sep 17 00:00:00 2001
+From: Thomas Gleixner <tglx@linutronix.de>
+Date: Sat, 29 Aug 2009 17:51:26 +0200
+Subject: [PATCH 4/9] x86: Add pcibios_fixup_irqs to x86_init
 
-For use by code that needs to walk extended capability lists before
-pci_dev structures are set up.
+Platforms like Moorestown want to override the pcibios_fixup_irqs
+default function. Add it to x86_init.pci
 
-Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Acked-by: Jesse Barnes <jbarnes@virtuousgeek.org>
 Signed-off-by: Jacob Pan <jacob.jun.pan@intel.com>
 ---
- drivers/pci/pci.c   |   43 +++++++++++++++++++++++++++++++++++++++++++
- include/linux/pci.h |    2 ++
- 2 files changed, 45 insertions(+), 0 deletions(-)
+ arch/x86/include/asm/pci_x86.h  |    3 +++
+ arch/x86/include/asm/x86_init.h |    2 ++
+ arch/x86/kernel/x86_init.c      |    2 ++
+ arch/x86/pci/irq.c              |    4 ++--
+ 4 files changed, 9 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index 315fea4..aad62af 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -297,6 +297,49 @@ int pci_find_ext_capability(struct pci_dev *dev, int cap)
- }
- EXPORT_SYMBOL_GPL(pci_find_ext_capability);
+diff --git a/arch/x86/include/asm/pci_x86.h b/arch/x86/include/asm/pci_x86.h
+index 46511c5..6e69edf 100644
+--- a/arch/x86/include/asm/pci_x86.h
++++ b/arch/x86/include/asm/pci_x86.h
+@@ -113,6 +113,7 @@ extern int __init pci_acpi_init(void);
+ extern void __init pcibios_irq_init(void);
+ extern int __init pcibios_init(void);
+ extern int pci_legacy_init(void);
++extern void pcibios_fixup_irqs(void);
  
-+/**
-+ * pci_bus_find_ext_capability - find an extended capability
-+ * @bus:   the PCI bus to query
-+ * @devfn: PCI device to query
-+ * @cap:   capability code
-+ *
-+ * Like pci_find_ext_capability() but works for pci devices that do not have a
-+ * pci_dev structure set up yet.
-+ *
-+ * Returns the address of the requested capability structure within the
-+ * device's PCI configuration space or 0 in case the device does not
-+ * support it.
-+ */
-+int pci_bus_find_ext_capability(struct pci_bus *bus, unsigned int devfn,
-+				int cap)
-+{
-+	u32 header;
-+	int ttl;
-+	int pos = PCI_CFG_SPACE_SIZE;
-+
-+	/* minimum 8 bytes per capability */
-+	ttl = (PCI_CFG_SPACE_EXP_SIZE - PCI_CFG_SPACE_SIZE) / 8;
-+
-+	if (!pci_bus_read_config_dword(bus, devfn, pos, &header))
-+		return 0;
-+	if (header == 0xffffffff || header == 0)
-+		return 0;
-+
-+	while (ttl-- > 0) {
-+		if (PCI_EXT_CAP_ID(header) == cap)
-+			return pos;
-+
-+		pos = PCI_EXT_CAP_NEXT(header);
-+		if (pos < PCI_CFG_SPACE_SIZE)
-+			break;
-+
-+		if (!pci_bus_read_config_dword(bus, devfn, pos, &header))
-+			break;
-+	}
-+
-+	return 0;
-+}
-+
- static int __pci_find_next_ht_cap(struct pci_dev *dev, int pos, int ht_cap)
+ /* pci-mmconfig.c */
+ 
+@@ -188,7 +189,9 @@ static inline void mmio_config_writel(void __iomem *pos, u32 val)
+ #  define x86_default_pci_init		pci_legacy_init
+ # endif
+ # define x86_default_pci_init_irq	pcibios_irq_init
++# define x86_default_pci_fixup_irqs	pcibios_fixup_irqs
+ #else
+ # define x86_default_pci_init		NULL
+ # define x86_default_pci_init_irq	NULL
++# define x86_default_pci_fixup_irqs	NULL
+ #endif
+diff --git a/arch/x86/include/asm/x86_init.h b/arch/x86/include/asm/x86_init.h
+index 34f61cd..8ef56f2 100644
+--- a/arch/x86/include/asm/x86_init.h
++++ b/arch/x86/include/asm/x86_init.h
+@@ -102,10 +102,12 @@ struct x86_init_iommu {
+   * struct x86_init_pci - platform specific pci init functions
+  * @init:			platform specific pci init
+  * @init_irq:			platform specific pci irq init
++ * @fixup_irqs:			platform specific pci irq fixup
+  */
+ struct x86_init_pci {
+ 	int (*init)(void);
+ 	void (*init_irq)(void);
++	void (*fixup_irqs)(void);
+ };
+ 
+ /**
+diff --git a/arch/x86/kernel/x86_init.c b/arch/x86/kernel/x86_init.c
+index 203f26f..1817cd7 100644
+--- a/arch/x86/kernel/x86_init.c
++++ b/arch/x86/kernel/x86_init.c
+@@ -4,6 +4,7 @@
+  *  For licencing details see kernel-base/COPYING
+  */
+ #include <linux/init.h>
++#include <linux/ioport.h>
+ 
+ #include <asm/bios_ebda.h>
+ #include <asm/paravirt.h>
+@@ -75,6 +76,7 @@ struct x86_init_ops x86_init __initdata = {
+ 	.pci = {
+ 		.init			= x86_default_pci_init,
+ 		.init_irq		= x86_default_pci_init_irq,
++		.fixup_irqs		= x86_default_pci_fixup_irqs,
+ 	},
+ };
+ 
+diff --git a/arch/x86/pci/irq.c b/arch/x86/pci/irq.c
+index 0f40ff2..a60deb6 100644
+--- a/arch/x86/pci/irq.c
++++ b/arch/x86/pci/irq.c
+@@ -1016,7 +1016,7 @@ static int pcibios_lookup_irq(struct pci_dev *dev, int assign)
+ 	return 1;
+ }
+ 
+-static void __init pcibios_fixup_irqs(void)
++void __init pcibios_fixup_irqs(void)
  {
- 	int rc, ttl = PCI_FIND_CAP_TTL;
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index c1968f4..65f8a8f 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -631,6 +631,8 @@ enum pci_lost_interrupt_reason pci_lost_interrupt(struct pci_dev *dev);
- int pci_find_capability(struct pci_dev *dev, int cap);
- int pci_find_next_capability(struct pci_dev *dev, u8 pos, int cap);
- int pci_find_ext_capability(struct pci_dev *dev, int cap);
-+int pci_bus_find_ext_capability(struct pci_bus *bus, unsigned int devfn,
-+				int cap);
- int pci_find_ht_capability(struct pci_dev *dev, int ht_cap);
- int pci_find_next_ht_capability(struct pci_dev *dev, int pos, int ht_cap);
- struct pci_bus *pci_find_next_bus(const struct pci_bus *from);
+ 	struct pci_dev *dev = NULL;
+ 	u8 pin;
+@@ -1142,7 +1142,7 @@ void __init pcibios_irq_init(void)
+ 			pirq_table = NULL;
+ 	}
+ 
+-	pcibios_fixup_irqs();
++	x86_init.pci.fixup_irqs();
+ 
+ 	if (io_apic_assign_pci_irqs && pci_routeirq) {
+ 		struct pci_dev *dev = NULL;
 -- 
 1.6.5.3
 
