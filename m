@@ -1,65 +1,69 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758025Ab0BMT6P (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Feb 2010 14:58:15 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:52933 "EHLO mail.zytor.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757904Ab0BMT6N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Feb 2010 14:58:13 -0500
-Message-ID: <4B77044B.1020609@zytor.com>
-Date: Sat, 13 Feb 2010 11:58:03 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
+	id S1757983Ab0BMUC6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Feb 2010 15:02:58 -0500
+Received: from lnx503.hrz.tu-darmstadt.de ([130.83.156.232]:42956 "EHLO
+	lnx503.hrz.tu-darmstadt.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757897Ab0BMUC4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Feb 2010 15:02:56 -0500
+From: ST <st@iss.tu-darmstadt.de>
+To: Robert Hancock <hancockrwd@gmail.com>
+Subject: PATCH was Re: 2.6.33-rc7 problems
+Date: Sat, 13 Feb 2010 21:02:22 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.33-rc7-00117-ge28cab4; KDE/4.3.4; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org
+References: <201002092306.07449.st@iss.tu-darmstadt.de> <201002130018.42576.st@iss.tu-darmstadt.de> <51f3faa71002121714y5a5127c2r7f59165c8096f0ee@mail.gmail.com>
+In-Reply-To: <51f3faa71002121714y5a5127c2r7f59165c8096f0ee@mail.gmail.com>
 MIME-Version: 1.0
-To: Michael Evans <mjevans1983@gmail.com>
-CC: Justin Piszcz <jpiszcz@lucidpixels.com>, linux-raid@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Linux mdadm superblock question.
-References: <alpine.DEB.2.00.1002111758350.12031@p34.internal.lan> <4877c76c1002111752h23e14f7aibe58a89181e6f493@mail.gmail.com>
-In-Reply-To: <4877c76c1002111752h23e14f7aibe58a89181e6f493@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <201002132102.22177.st@iss.tu-darmstadt.de>
+X-PMX-TU: seen v0.99a by 5.5.9.388399, Antispam-Engine: 2.7.2.376379, Antispam-Data: 2010.2.13.194827
+X-PMX-SPAMCHECK: outgoing mail
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/11/2010 05:52 PM, Michael Evans wrote:
-> On Thu, Feb 11, 2010 at 3:00 PM, Justin Piszcz <jpiszcz@lucidpixels.com> wrote:
->> Hi,
->>
->> I may be converting a host to ext4 and was curious, is 0.90 still the only
->> superblock version for mdadm/raid-1 that you can boot from without having to
->> create an initrd/etc?
->>
->> Are there any benefits to using a superblock > 0.90 for a raid-1 boot volume
->> < 2TB?
->>
->> Justin.
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-raid" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>
-> 
-> You need the superblock at the end of the partition:  If you read the
-> manual that is clearly either version 0.90 OR 1.0 (NOT 1.1 and also
-> NOT 1.2; those use the same superblock layout but different
-> locations).
+Hi Robert and lkml
+> Do you have CONFIG_SCSI_MULTI_LUN=y set in your kernel configuration?
+Ah, hit the nail right on the head. Thank you very much! So if you happen to 
+be close to Darmstadt: I owe you a drink just drop me a mail.
 
-0.9 has the *serious* problem that it is hard to distinguish a whole-volume
+To spare others this torment not to be able to configure their on kernel (well 
+at least partially) please change the defconfig to have CONFIG_SCSI_MULTI_LUN
+enabled. Given the low price of these usb multi card readers this is quite a 
+common use case?
 
-However, apparently mdadm recently switched to a 1.1 default.  I
-strongly urge Neil to change that to either 1.0 and 1.2, as I have
-started to get complaints from users that they have made RAID volumes
-with newer mdadm which apparently default to 1.1, and then want to boot
-from them (without playing MBR games like Grub does.)  I have to tell
-them that they have to regenerate their disks -- the superblock occupies
-the boot sector and there is nothing I can do about it.  It's the same
-pathology XFS has.
+Best regards
+ST
 
-	-hpa
+Signed-off-by:  ST  <st@iss.tu-darmstadt.de>
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+diff --git a/arch/x86/configs/i386_defconfig b/arch/x86/configs/i386_defconfig
+index d28fad1..053e8bf 100644
+--- a/arch/x86/configs/i386_defconfig
++++ b/arch/x86/configs/i386_defconfig
+@@ -847,7 +847,7 @@ CONFIG_CHR_DEV_SG=y
+ #
+ # Some SCSI devices (e.g. CD jukebox) support multiple LUNs
+ #
+-# CONFIG_SCSI_MULTI_LUN is not set
++CONFIG_SCSI_MULTI_LUN=y
+ CONFIG_SCSI_CONSTANTS=y
+ # CONFIG_SCSI_LOGGING is not set
+ # CONFIG_SCSI_SCAN_ASYNC is not set
+diff --git a/arch/x86/configs/x86_64_defconfig b/arch/x86/configs/x86_64_defconfig
+index 6c86acd..3f64c27 100644
+--- a/arch/x86/configs/x86_64_defconfig
++++ b/arch/x86/configs/x86_64_defconfig
+@@ -842,7 +842,7 @@ CONFIG_CHR_DEV_SG=y
+ #
+ # Some SCSI devices (e.g. CD jukebox) support multiple LUNs
+ #
+-# CONFIG_SCSI_MULTI_LUN is not set
++CONFIG_SCSI_MULTI_LUN=y
+ CONFIG_SCSI_CONSTANTS=y
+ # CONFIG_SCSI_LOGGING is not set
+ # CONFIG_SCSI_SCAN_ASYNC is not set
