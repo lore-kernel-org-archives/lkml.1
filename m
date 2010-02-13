@@ -1,56 +1,45 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758170Ab0BMXup (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Feb 2010 18:50:45 -0500
-Received: from lon1-post-1.mail.demon.net ([195.173.77.148]:56550 "EHLO
-	lon1-post-1.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758065Ab0BMXuo (ORCPT
+	id S932083Ab0BMXvk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Feb 2010 18:51:40 -0500
+Received: from kirsty.vergenet.net ([202.4.237.240]:42223 "EHLO
+	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758065Ab0BMXvi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Feb 2010 18:50:44 -0500
-Message-ID: <4B773B31.1020802@lougher.demon.co.uk>
-Date: Sat, 13 Feb 2010 23:52:17 +0000
-From: Phillip Lougher <phillip@lougher.demon.co.uk>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Sat, 13 Feb 2010 18:51:38 -0500
+Date: Sun, 14 Feb 2010 10:51:36 +1100
+From: Simon Horman <horms@verge.net.au>
+To: Mohan Reddy <mohanreddykv@gmail.com>
+Cc: wensong@linux-vs.org, linux-kernel@vger.kernel.org,
+       lvs-devel@vger.kernel.org, ja@ssi.bg, kvmrdy@gmail.com
+Subject: Re: SCTP Trasport Loadbalancing Support for IPVS
+Message-ID: <20100213235136.GF16999@verge.net.au>
+References: <20100212122301.GA4376@mohan-laptop>
 MIME-Version: 1.0
-To: Jean Delvare <khali@linux-fr.org>
-CC: Pavel Machek <pavel@ucw.cz>, lasse.collin@tukaani.org, mirrors@kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "FTPAdmin Kernel.org" <ftpadmin@kernel.org>, users@kernel.org
-Subject: Re: [kernel.org users] XZ Migration discussion
-References: <4B744E13.8040004@kernel.org> <20100211205129.GA26105@elf.ucw.cz> <20100213181008.479509f5@hyperion.delvare>
-In-Reply-To: <20100213181008.479509f5@hyperion.delvare>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100212122301.GA4376@mohan-laptop>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jean Delvare wrote:
-
+On Fri, Feb 12, 2010 at 05:53:04PM +0530, Mohan Reddy wrote:
+> Hi Simon&Wensong,
 > 
-> Compared to bz2, gz saves... 2% on the overall time. As a conclusion, I
-> think we can plain discard the argument "I need .gz because my machine
-> is slow" from now on. It simply doesn't hold.
+> Please some review this code and let me know your comments. I am re-posting this
+> as there is no response from any one. You are welcome for any type of comments.
 > 
+> This patch enhances IPVS to load balance SCTP transport protocol packets. This
+> is done based on the SCTP rfc 4960. All possible control chunks have been 
+> taken care. The state machine used in this code looks some what lengthy. I
+> tried to make the state machine easy to understand. 
+> 
+> This patch is against nf-next.2.6 tree.
 
-I agree, but, IMHO the main argument for keeping .gz is cross-platform
-availability and wide language support, not hardware limitations.  Doing
-a quick google brings up .gz interfaces for every language you can think
-of (C, Java, Perl, Python, TCL etc.), not to mention complete separate
-implementations in Java and Pascal (not just wrappers on top of the zlib
-library), and probably more.
+Hi Mohan,
 
-With xz you have just one C/C++ implementation with a single library with
-an undocumented API for C/C++ programmers.
-
-It may be a slight stretch of the imagination, but with with .gz you can
-conceive programmers writing programs to download a .gz from kernel.org and
-decompressing/searching it, in almost any language of choice.  With the JAVA
-implementation .gz is genuinely cross platform and you don't need glibc/
-C++ compilers, just a Java VM.  Contrast with xz, where if the xz utility
-isn't available, or doesn't do what you want, you're stuck with programming
-in C/C++ with all the baggage that entails.
-
-Phillip
-
+sorry for not reviewing your earlier posting.
+I've been insanely busy over the past few weeks.
+I will try to make time in the next few days.
 
