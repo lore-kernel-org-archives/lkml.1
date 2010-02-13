@@ -1,15 +1,15 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756435Ab0BMBmQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 20:42:16 -0500
-Received: from mga02.intel.com ([134.134.136.20]:15764 "EHLO mga02.intel.com"
+	id S1755518Ab0BMBkj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 20:40:39 -0500
+Received: from mga14.intel.com ([143.182.124.37]:27915 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755652Ab0BMBkt convert rfc822-to-8bit (ORCPT
+	id S1753224Ab0BMBke convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 20:40:49 -0500
+	Fri, 12 Feb 2010 20:40:34 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.49,464,1262592000"; 
-   d="scan'208,223";a="492151500"
+   d="scan'208,223";a="243650639"
 From: "Pan, Jacob jun" <jacob.jun.pan@intel.com>
 To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
@@ -17,11 +17,11 @@ CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "Barnes, Jesse" <jesse.barnes@intel.com>,
        "Du, Alek" <alek.du@intel.com>, "Tang, Feng" <feng.tang@intel.com>,
        "H. Peter Anvin" <hpa@linux.intel.com>
-Date: Fri, 12 Feb 2010 17:40:46 -0800
-Subject: [PATCH 2/8] x86/PCI: Moorestown PCI support
-Thread-Topic: [PATCH 2/8] x86/PCI: Moorestown PCI support
-Thread-Index: AcqsTZBZSiKO9HKJTUunIdDx+e/i/g==
-Message-ID: <43F901BD926A4E43B106BF17856F07559FB80D08@orsmsx508.amr.corp.intel.com>
+Date: Fri, 12 Feb 2010 17:40:31 -0800
+Subject: [PATCH 8/9] x86/pic: make use of legacy_pic abstraction
+Thread-Topic: [PATCH 8/9] x86/pic: make use of legacy_pic abstraction
+Thread-Index: AcqsTYcVFKDPoWMqT/i2fpe1/wlE4w==
+Message-ID: <43F901BD926A4E43B106BF17856F07559FB80D04@orsmsx508.amr.corp.intel.com>
 Accept-Language: en-US
 Content-Language: en-US
 X-MS-Has-Attach: 
@@ -34,324 +34,516 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 3fef940c3264c94d532795f71918b139f45aaf33 Mon Sep 17 00:00:00 2001
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-Date: Thu, 4 Feb 2010 10:59:27 -0800
-Subject: [PATCH 2/8] x86/PCI: Moorestown PCI support
+>From c1cc15c6d0249adfb13ad7ead684c9f2685fb753 Mon Sep 17 00:00:00 2001
+From: Jacob Pan <jacob.jun.pan@intel.com>
+Date: Mon, 9 Nov 2009 11:27:04 -0800
+Subject: [PATCH 8/9] x86/pic: make use of legacy_pic abstraction
 
-The Moorestown platform only has a few devices that actually support
-PCI config cycles.  The rest of the devices use an in-RAM MCFG space
-for the purposes of device enumeration and initialization.
+this patch replaces legacy pic related global variable and functions with the
+new legacy_pic abstraction.
 
-There are a few uglies in the fake support, like BAR sizes that aren't
-a power of two, sizing detection, and writes to the real devices, but
-other than that it's pretty straightforward.
-
-Another way to think of this is not really as PCI at all, but just a
-table in RAM describing which devices are present, their capabilities
-and their offsets in MMIO space.  This could have been done with a
-special new firmware table on this platform, but given that we do have
-some real PCI devices too, simply describing things in an MCFG type
-space was pretty simple.
-
-Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
 Signed-off-by: Jacob Pan <jacob.jun.pan@intel.com>
 ---
- arch/x86/pci/Makefile    |    2 +-
- arch/x86/pci/mrst.c      |  258 ++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/pci_regs.h |    1 +
- 3 files changed, 260 insertions(+), 1 deletions(-)
- create mode 100644 arch/x86/pci/mrst.c
+ arch/x86/include/asm/hw_irq.h  |    7 -----
+ arch/x86/include/asm/i8259.h   |    8 -----
+ arch/x86/kernel/apic/apic.c    |    8 +++---
+ arch/x86/kernel/apic/io_apic.c |   57 +++++++++++++++++++---------------------
+ arch/x86/kernel/apic/nmi.c     |    2 +-
+ arch/x86/kernel/i8259.c        |   21 ++++++++++-----
+ arch/x86/kernel/irqinit.c      |    2 +-
+ arch/x86/kernel/smpboot.c      |    5 ++-
+ arch/x86/kernel/visws_quirks.c |   14 ++++++---
+ 9 files changed, 59 insertions(+), 65 deletions(-)
 
-diff --git a/arch/x86/pci/Makefile b/arch/x86/pci/Makefile
-index 39fba37..4753ebc 100644
---- a/arch/x86/pci/Makefile
-+++ b/arch/x86/pci/Makefile
-@@ -13,7 +13,7 @@ obj-$(CONFIG_X86_VISWS)		+= visws.o
- 
- obj-$(CONFIG_X86_NUMAQ)		+= numaq_32.o
- 
--obj-y				+= common.o early.o
-+obj-y				+= common.o early.o mrst.o
- obj-y				+= amd_bus.o
- obj-$(CONFIG_X86_64)		+= bus_numa.o
- 
-diff --git a/arch/x86/pci/mrst.c b/arch/x86/pci/mrst.c
-new file mode 100644
-index 0000000..4fac179
---- /dev/null
-+++ b/arch/x86/pci/mrst.c
-@@ -0,0 +1,258 @@
-+/*
-+ * Moorestown PCI support
-+ *   Copyright (c) 2008 Intel Corporation
-+ *     Jesse Barnes <jesse.barnes@intel.com>
-+ *
-+ * Moorestown has an interesting PCI implementation:
-+ *   - configuration space is memory mapped (as defined by MCFG)
-+ *   - Lincroft devices also have a real, type 1 configuration space
-+ *   - Early Lincroft silicon has a type 1 access bug that will cause
-+ *     a hang if non-existent devices are accessed
-+ *   - some devices have the "fixed BAR" capability, which means
-+ *     they can't be relocated or modified; check for that during
-+ *     BAR sizing
-+ *
-+ * So, we use the MCFG space for all reads and writes, but also send
-+ * Lincroft writes to type 1 space.  But only read/write if the device
-+ * actually exists, otherwise return all 1s for reads and bit bucket
-+ * the writes.
-+ */
+diff --git a/arch/x86/include/asm/hw_irq.h b/arch/x86/include/asm/hw_irq.h
+index eeac829..a929c9e 100644
+--- a/arch/x86/include/asm/hw_irq.h
++++ b/arch/x86/include/asm/hw_irq.h
+@@ -53,13 +53,6 @@ extern void threshold_interrupt(void);
+ extern void call_function_interrupt(void);
+ extern void call_function_single_interrupt(void);
+
+-/* PIC specific functions */
+-extern void disable_8259A_irq(unsigned int irq);
+-extern void enable_8259A_irq(unsigned int irq);
+-extern int i8259A_irq_pending(unsigned int irq);
+-extern void make_8259A_irq(unsigned int irq);
+-extern void init_8259A(int aeoi);
+-
+ /* IOAPIC */
+ #define IO_APIC_IRQ(x) (((x) >= NR_IRQS_LEGACY) || ((1<<(x)) & io_apic_irqs))
+ extern unsigned long io_apic_irqs;
+diff --git a/arch/x86/include/asm/i8259.h b/arch/x86/include/asm/i8259.h
+index e8a3e05..2832bab 100644
+--- a/arch/x86/include/asm/i8259.h
++++ b/arch/x86/include/asm/i8259.h
+@@ -26,11 +26,6 @@ extern unsigned int cached_irq_mask;
+
+ extern spinlock_t i8259A_lock;
+
+-extern void init_8259A(int auto_eoi);
+-extern void enable_8259A_irq(unsigned int irq);
+-extern void disable_8259A_irq(unsigned int irq);
+-extern unsigned int startup_8259A_irq(unsigned int irq);
+-
+ /* the PIC may need a careful delay on some platforms, hence specific calls */
+ static inline unsigned char inb_pic(unsigned int port)
+ {
+@@ -70,7 +65,4 @@ struct legacy_pic {
+ extern struct legacy_pic *legacy_pic;
+ extern struct legacy_pic null_legacy_pic;
+
+-extern void mask_8259A(void);
+-extern void unmask_8259A(void);
+-
+ #endif /* _ASM_X86_I8259_H */
+diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
+index 3987e44..f271b62 100644
+--- a/arch/x86/kernel/apic/apic.c
++++ b/arch/x86/kernel/apic/apic.c
+@@ -1390,7 +1390,7 @@ void __init enable_IR_x2apic(void)
+        }
+
+        local_irq_save(flags);
+-       mask_8259A();
++       legacy_pic->mask_all();
+        mask_IO_APIC_setup(ioapic_entries);
+
+        if (dmar_table_init_ret)
+@@ -1422,7 +1422,7 @@ void __init enable_IR_x2apic(void)
+ nox2apic:
+        if (!ret) /* IR enabling failed */
+                restore_IO_APIC_setup(ioapic_entries);
+-       unmask_8259A();
++       legacy_pic->restore_mask();
+        local_irq_restore(flags);
+
+ out:
+@@ -2035,7 +2035,7 @@ static int lapic_resume(struct sys_device *dev)
+                }
+
+                mask_IO_APIC_setup(ioapic_entries);
+-               mask_8259A();
++               legacy_pic->mask_all();
+        }
+
+        if (x2apic_mode)
+@@ -2079,7 +2079,7 @@ static int lapic_resume(struct sys_device *dev)
+
+        if (intr_remapping_enabled) {
+                reenable_intr_remapping(x2apic_mode);
+-               unmask_8259A();
++               legacy_pic->restore_mask();
+                restore_IO_APIC_setup(ioapic_entries);
+                free_ioapic_entries(ioapic_entries);
+        }
+diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
+index 75265ab..1704cd8 100644
+--- a/arch/x86/kernel/apic/io_apic.c
++++ b/arch/x86/kernel/apic/io_apic.c
+@@ -94,8 +94,6 @@ struct mpc_intsrc mp_irqs[MAX_IRQ_SOURCES];
+ /* # of MP IRQ source entries */
+ int mp_irq_entries;
+
+-/* Number of legacy interrupts */
+-static int nr_legacy_irqs __read_mostly = NR_IRQS_LEGACY;
+ /* GSI interrupts */
+ static int nr_irqs_gsi = NR_IRQS_LEGACY;
+
+@@ -147,7 +145,6 @@ static struct irq_cfg irq_cfgx[NR_IRQS];
+
+ void __init io_apic_disable_legacy(void)
+ {
+-       nr_legacy_irqs = 0;
+        nr_irqs_gsi = 0;
+ }
+
+@@ -164,13 +161,13 @@ int __init arch_early_irq_init(void)
+        node= cpu_to_node(boot_cpu_id);
+
+        for (i = 0; i < count; i++) {
+-               if (i < nr_legacy_irqs)
++               if (i < legacy_pic->nr_legacy_irqs)
+                        cfg[i].vector = IRQ0_VECTOR + i;
+                desc = irq_to_desc(i);
+                desc->chip_data = &cfg[i];
+                zalloc_cpumask_var_node(&cfg[i].domain, GFP_NOWAIT, node);
+                zalloc_cpumask_var_node(&cfg[i].old_domain, GFP_NOWAIT, node);
+-               if (i < nr_legacy_irqs)
++               if (i < legacy_pic->nr_legacy_irqs)
+                        cpumask_setall(cfg[i].domain);
+        }
+
+@@ -850,7 +847,7 @@ static int __init find_isa_irq_apic(int irq, int type)
+  */
+ static int EISA_ELCR(unsigned int irq)
+ {
+-       if (irq < nr_legacy_irqs) {
++       if (irq < legacy_pic->nr_legacy_irqs) {
+                unsigned int port = 0x4d0 + (irq >> 3);
+                return (inb(port) >> (irq & 7)) & 1;
+        }
+@@ -1446,8 +1443,8 @@ static void setup_IO_APIC_irq(int apic_id, int pin, unsigned int irq, struct irq
+        }
+
+        ioapic_register_intr(irq, desc, trigger);
+-       if (irq < nr_legacy_irqs)
+-               disable_8259A_irq(irq);
++       if (irq < legacy_pic->nr_legacy_irqs)
++               legacy_pic->chip->mask(irq);
+
+        ioapic_write_entry(apic_id, pin, entry);
+ }
+@@ -1810,7 +1807,7 @@ __apicdebuginit(void) print_PIC(void)
+        unsigned int v;
+        unsigned long flags;
+
+-       if (!nr_legacy_irqs)
++       if (!legacy_pic->nr_legacy_irqs)
+                return;
+
+        printk(KERN_DEBUG "\nprinting PIC contents\n");
+@@ -1894,7 +1891,7 @@ void __init enable_IO_APIC(void)
+                nr_ioapic_registers[apic] = reg_01.bits.entries+1;
+        }
+
+-       if (!nr_legacy_irqs)
++       if (!legacy_pic->nr_legacy_irqs)
+                return;
+
+        for(apic = 0; apic < nr_ioapics; apic++) {
+@@ -1951,7 +1948,7 @@ void disable_IO_APIC(void)
+         */
+        clear_IO_APIC();
+
+-       if (!nr_legacy_irqs)
++       if (!legacy_pic->nr_legacy_irqs)
+                return;
+
+        /*
+@@ -2184,9 +2181,9 @@ static unsigned int startup_ioapic_irq(unsigned int irq)
+        struct irq_cfg *cfg;
+
+        spin_lock_irqsave(&ioapic_lock, flags);
+-       if (irq < nr_legacy_irqs) {
+-               disable_8259A_irq(irq);
+-               if (i8259A_irq_pending(irq))
++       if (irq < legacy_pic->nr_legacy_irqs) {
++               legacy_pic->chip->mask(irq);
++               if (legacy_pic->irq_pending(irq))
+                        was_pending = 1;
+        }
+        cfg = irq_cfg(irq);
+@@ -2719,8 +2716,8 @@ static inline void init_IO_APIC_traps(void)
+                         * so default to an old-fashioned 8259
+                         * interrupt if we can..
+                         */
+-                       if (irq < nr_legacy_irqs)
+-                               make_8259A_irq(irq);
++                       if (irq < legacy_pic->nr_legacy_irqs)
++                               legacy_pic->make_irq(irq);
+                        else
+                                /* Strange. Oh, well.. */
+                                desc->chip = &no_irq_chip;
+@@ -2877,7 +2874,7 @@ static inline void __init check_timer(void)
+        /*
+         * get/set the timer IRQ vector:
+         */
+-       disable_8259A_irq(0);
++       legacy_pic->chip->mask(0);
+        assign_irq_vector(0, cfg, apic->target_cpus());
+
+        /*
+@@ -2890,7 +2887,7 @@ static inline void __init check_timer(void)
+         * automatically.
+         */
+        apic_write(APIC_LVT0, APIC_LVT_MASKED | APIC_DM_EXTINT);
+-       init_8259A(1);
++       legacy_pic->init(1);
+ #ifdef CONFIG_X86_32
+        {
+                unsigned int ver;
+@@ -2949,7 +2946,7 @@ static inline void __init check_timer(void)
+                if (timer_irq_works()) {
+                        if (nmi_watchdog == NMI_IO_APIC) {
+                                setup_nmi();
+-                               enable_8259A_irq(0);
++                               legacy_pic->chip->unmask(0);
+                        }
+                        if (disable_timer_pin_1 > 0)
+                                clear_IO_APIC_pin(0, pin1);
+@@ -2972,14 +2969,14 @@ static inline void __init check_timer(void)
+                 */
+                replace_pin_at_irq_node(cfg, node, apic1, pin1, apic2, pin2);
+                setup_timer_IRQ0_pin(apic2, pin2, cfg->vector);
+-               enable_8259A_irq(0);
++               legacy_pic->chip->unmask(0);
+                if (timer_irq_works()) {
+                        apic_printk(APIC_QUIET, KERN_INFO "....... works.\n");
+                        timer_through_8259 = 1;
+                        if (nmi_watchdog == NMI_IO_APIC) {
+-                               disable_8259A_irq(0);
++                               legacy_pic->chip->mask(0);
+                                setup_nmi();
+-                               enable_8259A_irq(0);
++                               legacy_pic->chip->unmask(0);
+                        }
+                        goto out;
+                }
+@@ -2987,7 +2984,7 @@ static inline void __init check_timer(void)
+                 * Cleanup, just in case ...
+                 */
+                local_irq_disable();
+-               disable_8259A_irq(0);
++               legacy_pic->chip->mask(0);
+                clear_IO_APIC_pin(apic2, pin2);
+                apic_printk(APIC_QUIET, KERN_INFO "....... failed.\n");
+        }
+@@ -3006,22 +3003,22 @@ static inline void __init check_timer(void)
+
+        lapic_register_intr(0, desc);
+        apic_write(APIC_LVT0, APIC_DM_FIXED | cfg->vector);     /* Fixed mode */
+-       enable_8259A_irq(0);
++       legacy_pic->chip->unmask(0);
+
+        if (timer_irq_works()) {
+                apic_printk(APIC_QUIET, KERN_INFO "..... works.\n");
+                goto out;
+        }
+        local_irq_disable();
+-       disable_8259A_irq(0);
++       legacy_pic->chip->mask(0);
+        apic_write(APIC_LVT0, APIC_LVT_MASKED | APIC_DM_FIXED | cfg->vector);
+        apic_printk(APIC_QUIET, KERN_INFO "..... failed.\n");
+
+        apic_printk(APIC_QUIET, KERN_INFO
+                    "...trying to set up timer as ExtINT IRQ...\n");
+
+-       init_8259A(0);
+-       make_8259A_irq(0);
++       legacy_pic->init(0);
++       legacy_pic->make_irq(0);
+        apic_write(APIC_LVT0, APIC_DM_EXTINT);
+
+        unlock_ExtINT_logic();
+@@ -3063,7 +3060,7 @@ void __init setup_IO_APIC(void)
+        /*
+         * calling enable_IO_APIC() is moved to setup_local_APIC for BP
+         */
+-       io_apic_irqs = nr_legacy_irqs ? ~PIC_IRQS : ~0UL;
++       io_apic_irqs = legacy_pic->nr_legacy_irqs ? ~PIC_IRQS : ~0UL;
+
+        apic_printk(APIC_VERBOSE, "ENABLING IO-APIC IRQs\n");
+        /*
+@@ -3074,7 +3071,7 @@ void __init setup_IO_APIC(void)
+        sync_Arb_IDs();
+        setup_IO_APIC_irqs();
+        init_IO_APIC_traps();
+-       if (nr_legacy_irqs)
++       if (legacy_pic->nr_legacy_irqs)
+                check_timer();
+ }
+
+@@ -3875,7 +3872,7 @@ static int __io_apic_set_pci_routing(struct device *dev, int irq,
+        /*
+         * IRQs < 16 are already in the irq_2_pin[] map
+         */
+-       if (irq >= nr_legacy_irqs) {
++       if (irq >= legacy_pic->nr_legacy_irqs) {
+                cfg = desc->chip_data;
+                if (add_pin_to_irq_node_nopanic(cfg, node, ioapic, pin)) {
+                        printk(KERN_INFO "can not add pin %d for irq %d\n",
+diff --git a/arch/x86/kernel/apic/nmi.c b/arch/x86/kernel/apic/nmi.c
+index 0159a69..3817739 100644
+--- a/arch/x86/kernel/apic/nmi.c
++++ b/arch/x86/kernel/apic/nmi.c
+@@ -177,7 +177,7 @@ int __init check_nmi_watchdog(void)
+ error:
+        if (nmi_watchdog == NMI_IO_APIC) {
+                if (!timer_through_8259)
+-                       disable_8259A_irq(0);
++                       legacy_pic->chip->mask(0);
+                on_each_cpu(__acpi_nmi_disable, NULL, 1);
+        }
+
+diff --git a/arch/x86/kernel/i8259.c b/arch/x86/kernel/i8259.c
+index b80987c..1c790e7 100644
+--- a/arch/x86/kernel/i8259.c
++++ b/arch/x86/kernel/i8259.c
+@@ -34,6 +34,12 @@
+ static int i8259A_auto_eoi;
+ DEFINE_SPINLOCK(i8259A_lock);
+ static void mask_and_ack_8259A(unsigned int);
++static void mask_8259A(void);
++static void unmask_8259A(void);
++static void disable_8259A_irq(unsigned int irq);
++static void enable_8259A_irq(unsigned int irq);
++static void init_8259A(int auto_eoi);
++static int i8259A_irq_pending(unsigned int irq);
+
+ struct irq_chip i8259A_chip = {
+        .name           = "XT-PIC",
+@@ -63,7 +69,7 @@ unsigned int cached_irq_mask = 0xffff;
+  */
+ unsigned long io_apic_irqs;
+
+-void disable_8259A_irq(unsigned int irq)
++static void disable_8259A_irq(unsigned int irq)
+ {
+        unsigned int mask = 1 << irq;
+        unsigned long flags;
+@@ -77,7 +83,7 @@ void disable_8259A_irq(unsigned int irq)
+        spin_unlock_irqrestore(&i8259A_lock, flags);
+ }
+
+-void enable_8259A_irq(unsigned int irq)
++static void enable_8259A_irq(unsigned int irq)
+ {
+        unsigned int mask = ~(1 << irq);
+        unsigned long flags;
+@@ -91,7 +97,7 @@ void enable_8259A_irq(unsigned int irq)
+        spin_unlock_irqrestore(&i8259A_lock, flags);
+ }
+
+-int i8259A_irq_pending(unsigned int irq)
++static int i8259A_irq_pending(unsigned int irq)
+ {
+        unsigned int mask = 1<<irq;
+        unsigned long flags;
+@@ -107,7 +113,7 @@ int i8259A_irq_pending(unsigned int irq)
+        return ret;
+ }
+
+-void make_8259A_irq(unsigned int irq)
++static void make_8259A_irq(unsigned int irq)
+ {
+        disable_irq_nosync(irq);
+        io_apic_irqs &= ~(1<<irq);
+@@ -281,7 +287,7 @@ static int __init i8259A_init_sysfs(void)
+
+ device_initcall(i8259A_init_sysfs);
+
+-void mask_8259A(void)
++static void mask_8259A(void)
+ {
+        unsigned long flags;
+
+@@ -293,7 +299,7 @@ void mask_8259A(void)
+        spin_unlock_irqrestore(&i8259A_lock, flags);
+ }
+
+-void unmask_8259A(void)
++static void unmask_8259A(void)
+ {
+        unsigned long flags;
+
+@@ -305,7 +311,7 @@ void unmask_8259A(void)
+        spin_unlock_irqrestore(&i8259A_lock, flags);
+ }
+
+-void init_8259A(int auto_eoi)
++static void init_8259A(int auto_eoi)
+ {
+        unsigned long flags;
+
+@@ -358,6 +364,7 @@ void init_8259A(int auto_eoi)
+
+        spin_unlock_irqrestore(&i8259A_lock, flags);
+ }
 +
-+#include <linux/sched.h>
-+#include <linux/pci.h>
-+#include <linux/ioport.h>
-+#include <linux/init.h>
-+#include <linux/dmi.h>
-+
-+#include <asm/acpi.h>
-+#include <asm/segment.h>
-+#include <asm/io.h>
-+#include <asm/smp.h>
-+#include <asm/pci_x86.h>
-+#include <asm/hw_irq.h>
-+
-+#define PCIE_CAP_OFFSET	0x100
-+
-+/* Fixed BAR fields */
-+#define PCIE_VNDR_CAP_ID_FIXED_BAR 0x00	/* Fixed BAR (TBD) */
-+#define PCI_FIXED_BAR_0_SIZE	0x04
-+#define PCI_FIXED_BAR_1_SIZE	0x08
-+#define PCI_FIXED_BAR_2_SIZE	0x0c
-+#define PCI_FIXED_BAR_3_SIZE	0x10
-+#define PCI_FIXED_BAR_4_SIZE	0x14
-+#define PCI_FIXED_BAR_5_SIZE	0x1c
-+
-+/**
-+ * fixed_bar_cap - return the offset of the fixed BAR cap if found
-+ * @bus: PCI bus
-+ * @devfn: device in question
-+ *
-+ * Look for the fixed BAR cap on @bus and @devfn, returning its offset
-+ * if found or 0 otherwise.
-+ */
-+static int fixed_bar_cap(struct pci_bus *bus, unsigned int devfn)
+ /*
+  * make i8259 a driver so that we can select pic functions at run time. the goal
+  * is to make x86 binary compatible among pc compatible and non-pc compatible
+diff --git a/arch/x86/kernel/irqinit.c b/arch/x86/kernel/irqinit.c
+index d593222..89b9510 100644
+--- a/arch/x86/kernel/irqinit.c
++++ b/arch/x86/kernel/irqinit.c
+@@ -123,7 +123,7 @@ void __init init_ISA_irqs(void)
+ #if defined(CONFIG_X86_64) || defined(CONFIG_X86_LOCAL_APIC)
+        init_bsp_APIC();
+ #endif
+-       init_8259A(0);
++       legacy_pic->init(0);
+
+        /*
+         * 16 old-style INTA-cycle interrupts:
+diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+index 56ce974..ddd8ab1 100644
+--- a/arch/x86/kernel/smpboot.c
++++ b/arch/x86/kernel/smpboot.c
+@@ -68,6 +68,7 @@
+ #include <linux/mc146818rtc.h>
+
+ #include <asm/smpboot_hooks.h>
++#include <asm/i8259.h>
+
+ #ifdef CONFIG_X86_32
+ u8 apicid_2_node[MAX_APICID];
+@@ -287,9 +288,9 @@ notrace static void __cpuinit start_secondary(void *unused)
+        check_tsc_sync_target();
+
+        if (nmi_watchdog == NMI_IO_APIC) {
+-               disable_8259A_irq(0);
++               legacy_pic->chip->mask(0);
+                enable_NMI_through_LVT0();
+-               enable_8259A_irq(0);
++               legacy_pic->chip->unmask(0);
+        }
+
+ #ifdef CONFIG_X86_32
+diff --git a/arch/x86/kernel/visws_quirks.c b/arch/x86/kernel/visws_quirks.c
+index b48ef6c..f067e95 100644
+--- a/arch/x86/kernel/visws_quirks.c
++++ b/arch/x86/kernel/visws_quirks.c
+@@ -505,7 +505,7 @@ static struct irq_chip cobalt_irq_type = {
+  */
+ static unsigned int startup_piix4_master_irq(unsigned int irq)
+ {
+-       init_8259A(0);
++       legacy_pic->init(0);
+
+        return startup_cobalt_irq(irq);
+ }
+@@ -529,9 +529,6 @@ static struct irq_chip piix4_master_irq_type = {
+
+ static struct irq_chip piix4_virtual_irq_type = {
+        .name =         "PIIX4-virtual",
+-       .shutdown =     disable_8259A_irq,
+-       .enable =       enable_8259A_irq,
+-       .disable =      disable_8259A_irq,
+ };
+
+
+@@ -606,7 +603,7 @@ static irqreturn_t piix4_master_intr(int irq, void *dev_id)
+                handle_IRQ_event(realirq, desc->action);
+
+        if (!(desc->status & IRQ_DISABLED))
+-               enable_8259A_irq(realirq);
++               legacy_pic->chip->unmask(realirq);
+
+        return IRQ_HANDLED;
+
+@@ -625,6 +622,12 @@ static struct irqaction cascade_action = {
+        .name =         "cascade",
+ };
+
++static inline void set_piix4_virtual_irq_type(void)
 +{
-+	int pos;
-+	u32 pcie_cap = 0, cap_data;
-+
-+	pos = PCIE_CAP_OFFSET;
-+	while (pos) {
-+		if (raw_pci_ext_ops->read(pci_domain_nr(bus), bus->number,
-+					  devfn, pos, 4, &pcie_cap))
-+			return 0;
-+
-+		if (pcie_cap == 0xffffffff)
-+			return 0;
-+
-+		if (PCI_EXT_CAP_ID(pcie_cap) == PCI_EXT_CAP_ID_VNDR) {
-+			raw_pci_ext_ops->read(pci_domain_nr(bus), bus->number,
-+					      devfn, pos + 4, 4, &cap_data);
-+			if ((cap_data & 0xffff) == PCIE_VNDR_CAP_ID_FIXED_BAR)
-+				return pos;
-+		}
-+
-+		pos = pcie_cap >> 20;
-+	}
-+
-+	return 0;
++       piix4_virtual_irq_type.shutdown = i8259A_chip.mask;
++       piix4_virtual_irq_type.enable = i8259A_chip.unmask;
++       piix4_virtual_irq_type.disable = i8259A_chip.mask;
 +}
-+
-+static int pci_device_update_fixed(struct pci_bus *bus, unsigned int devfn,
-+				   int reg, int len, u32 val, int offset)
-+{
-+	u32 size;
-+	unsigned int domain, busnum;
-+	int bar = (reg - PCI_BASE_ADDRESS_0) >> 2;
-+
-+	domain = pci_domain_nr(bus);
-+	busnum = bus->number;
-+
-+	if (val == ~0 && len == 4) {
-+		unsigned long decode;
-+
-+		raw_pci_ext_ops->read(domain, busnum, devfn,
-+			       offset + 8 + (bar * 4), 4, &size);
-+
-+		/* Turn the size into a decode pattern for the sizing code */
-+		if (size) {
-+			decode = size - 1;
-+			decode |= decode >> 1;
-+			decode |= decode >> 2;
-+			decode |= decode >> 4;
-+			decode |= decode >> 8;
-+			decode |= decode >> 16;
-+			decode++;
-+			decode = ~(decode - 1);
-+		} else {
-+			decode = ~0;
-+		}
-+
-+		/*
-+		 * If val is all ones, the core code is trying to size the reg,
-+		 * so update the mmconfig space with the real size.
-+		 *
-+		 * Note: this assumes the fixed size we got is a power of two.
-+		 */
-+		return raw_pci_ext_ops->write(domain, busnum, devfn, reg, 4,
-+				       decode);
-+	}
-+
-+	/* This is some other kind of BAR write, so just do it. */
-+	return raw_pci_ext_ops->write(domain, busnum, devfn, reg, len, val);
-+}
-+
-+/**
-+ * type1_access_ok - check whether to use type 1
-+ * @bus: bus number
-+ * @devfn: device & function in question
-+ *
-+ * If the bus is on a Lincroft chip and it exists, or is not on a Lincroft at
-+ * all, the we can go ahead with any reads & writes.  If it's on a Lincroft,
-+ * but doesn't exist, avoid the access altogether to keep the chip from
-+ * hanging.
-+ */
-+static bool type1_access_ok(unsigned int bus, unsigned int devfn, int reg)
-+{
-+	/* This is a workaround for A0 LNC bug where PCI status register does
-+	 * not have new CAP bit set. can not be written by SW either.
-+	 *
-+	 * PCI header type in real LNC indicates a single function device, this
-+	 * will prevent probing other devices under the same function in PCI
-+	 * shim. Therefore, use the header type in shim instead.
-+	 */
-+	if (reg >= 0x100 || reg == PCI_STATUS || reg == PCI_HEADER_TYPE)
-+		return 0;
-+	if (bus == 0 && (devfn == PCI_DEVFN(2, 0) || devfn == PCI_DEVFN(0, 0)))
-+		return 1;
-+	return 0; /* langwell on others */
-+}
-+
-+static int pci_read(struct pci_bus *bus, unsigned int devfn, int where,
-+		    int size, u32 *value)
-+{
-+	if (type1_access_ok(bus->number, devfn, where))
-+		return pci_direct_conf1.read(pci_domain_nr(bus), bus->number,
-+					devfn, where, size, value);
-+	return raw_pci_ext_ops->read(pci_domain_nr(bus), bus->number,
-+			      devfn, where, size, value);
-+}
-+
-+static int pci_write(struct pci_bus *bus, unsigned int devfn, int where,
-+		     int size, u32 value)
-+{
-+	int offset;
-+
-+	/* On MRST, there is no PCI ROM BAR, this will cause a subsequent read
-+	 * to ROM BAR return 0 then being ignored.
-+	 */
-+	if (where == PCI_ROM_ADDRESS)
-+		return 0;
-+
-+	/*
-+	 * Devices with fixed BARs need special handling:
-+	 *   - BAR sizing code will save, write ~0, read size, restore
-+	 *   - so writes to fixed BARs need special handling
-+	 *   - other writes to fixed BAR devices should go through mmconfig
-+	 */
-+	offset = fixed_bar_cap(bus, devfn);
-+	if (offset &&
-+	    (where >= PCI_BASE_ADDRESS_0 && where <= PCI_BASE_ADDRESS_5)) {
-+		return pci_device_update_fixed(bus, devfn, where, size, value,
-+					       offset);
-+	}
-+
-+	/*
-+	 * On Moorestown update both real & mmconfig space
-+	 * Note: early Lincroft silicon can't handle type 1 accesses to
-+	 *       non-existent devices, so just eat the write in that case.
-+	 */
-+	if (type1_access_ok(bus->number, devfn, where))
-+		return pci_direct_conf1.write(pci_domain_nr(bus), bus->number,
-+					      devfn, where, size, value);
-+	return raw_pci_ext_ops->write(pci_domain_nr(bus), bus->number, devfn,
-+			       where, size, value);
-+}
-+
-+static int mrst_pci_irq_enable(struct pci_dev *dev)
-+{
-+	u8 pin;
-+	struct io_apic_irq_attr irq_attr;
-+
-+	pci_read_config_byte(dev, PCI_INTERRUPT_PIN, &pin);
-+
-+	/* MRST only have IOAPIC, the PCI irq lines are 1:1 mapped to
-+	 * IOAPIC RTE entries, so we just enable RTE for the device.
-+	 */
-+	irq_attr.ioapic = mp_find_ioapic(dev->irq);
-+	irq_attr.ioapic_pin = dev->irq;
-+	irq_attr.trigger = 1; /* level */
-+	irq_attr.polarity = 1; /* active low */
-+	io_apic_set_pci_routing(&dev->dev, dev->irq, &irq_attr);
-+
-+	return 0;
-+}
-+
-+struct pci_ops pci_mrst_ops = {
-+	.read = pci_read,
-+	.write = pci_write,
-+};
-+
-+/**
-+ * pci_mrst_init - installs pci_mrst_ops
-+ *
-+ * Moorestown has an interesting PCI implementation (see above).
-+ * Called when the early platform detection installs it.
-+ */
-+int __init pci_mrst_init(void)
-+{
-+	printk(KERN_INFO "Moorestown platform detected, using MRST PCI ops\n");
-+	pci_mmcfg_late_init();
-+	pcibios_enable_irq = mrst_pci_irq_enable;
-+	pci_root_ops = pci_mrst_ops;
-+	/* Continue with standard init */
-+	return 1;
-+}
-+
-+/*
-+ * Langwell devices reside at fixed offsets, don't try to move them.
-+ */
-+static void __devinit pci_fixed_bar_fixup(struct pci_dev *dev)
-+{
-+	unsigned long offset;
-+	u32 size;
-+	int i;
-+
-+	/* Fixup the BAR sizes for fixed BAR devices and make them unmoveable */
-+	offset = fixed_bar_cap(dev->bus, dev->devfn);
-+	if (!offset || PCI_DEVFN(2, 0) == dev->devfn ||
-+	    PCI_DEVFN(2, 2) == dev->devfn)
-+		return;
-+
-+	for (i = 0; i < PCI_ROM_RESOURCE; i++) {
-+		pci_read_config_dword(dev, offset + 8 + (i * 4), &size);
-+		dev->resource[i].end = dev->resource[i].start + size - 1;
-+		dev->resource[i].flags |= IORESOURCE_PCI_FIXED;
-+	}
-+}
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, PCI_ANY_ID, pci_fixed_bar_fixup);
-+
-diff --git a/include/linux/pci_regs.h b/include/linux/pci_regs.h
-index 9f2ad0a..c8f3029 100644
---- a/include/linux/pci_regs.h
-+++ b/include/linux/pci_regs.h
-@@ -507,6 +507,7 @@
- #define PCI_EXT_CAP_ID_VC	2
- #define PCI_EXT_CAP_ID_DSN	3
- #define PCI_EXT_CAP_ID_PWR	4
-+#define PCI_EXT_CAP_ID_VNDR	11
- #define PCI_EXT_CAP_ID_ACS	13
- #define PCI_EXT_CAP_ID_ARI	14
- #define PCI_EXT_CAP_ID_ATS	15
--- 
+
+ void init_VISWS_APIC_irqs(void)
+ {
+@@ -650,6 +653,7 @@ void init_VISWS_APIC_irqs(void)
+                        desc->chip = &piix4_master_irq_type;
+                }
+                else if (i < CO_IRQ_APIC0) {
++                       set_piix4_virtual_irq_type();
+                        desc->chip = &piix4_virtual_irq_type;
+                }
+                else if (IS_CO_APIC(i)) {
+--
 1.6.5.3
 
