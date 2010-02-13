@@ -1,75 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758154Ab0BMXCQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Feb 2010 18:02:16 -0500
-Received: from mail-yx0-f196.google.com ([209.85.210.196]:62147 "EHLO
-	mail-yx0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752527Ab0BMXCO (ORCPT
+	id S1758225Ab0BMXOz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Feb 2010 18:14:55 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:58261 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752949Ab0BMXOy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Feb 2010 18:02:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=PzBA3s4RdWrcLGNWj8wMQ/CwsH361wVScvGdCQZaGKCJijaCIF03oeDrNoLuRv7LkS
-         KyGdhukUGWTeAFfdFiHSO82g7PVqZgL300JQjpKkif/AEG2t8GCnwAg/uxtwBIVlWn3H
-         KkNv5zstJDomIMc6JO/EPAF7+0Pro5473QqB4=
-Message-ID: <4B772F74.1030509@garzik.org>
-Date: Sat, 13 Feb 2010 18:02:12 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
+	Sat, 13 Feb 2010 18:14:54 -0500
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>, linux-kernel@vger.kernel.org,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH  0/8] tip related: radix tree for spareseirq and logical flat clean up
+References: <1266029390-30907-1-git-send-email-yinghai@kernel.org>
+	<m1zl3dre9e.fsf@fess.ebiederm.org> <4B7676BB.8030608@kernel.org>
+	<m1ljexpcjp.fsf@fess.ebiederm.org> <4B772A54.1000000@kernel.org>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Sat, 13 Feb 2010 15:14:45 -0800
+In-Reply-To: <4B772A54.1000000@kernel.org> (Yinghai Lu's message of "Sat\, 13 Feb 2010 14\:40\:20 -0800")
+Message-ID: <m16360ohi2.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-To: Robert Hancock <hancockrwd@gmail.com>
-CC: linux-kernel <linux-kernel@vger.kernel.org>,
-       ide <linux-ide@vger.kernel.org>, Mike Cui <cuicui@gmail.com>,
-       Peer Chen <pchen@nvidia.com>, Allen Martin <AMartin@nvidia.com>
-Subject: Re: [PATCH] ahci: disable FPDMA auto-activate optimization on NVIDIA
- 	AHCI
-References: <4B5FC213.1060601@gmail.com> <4B772BE2.30108@garzik.org> <51f3faa71002131453m4dd2b82cgd8b874866146da60@mail.gmail.com>
-In-Reply-To: <51f3faa71002131453m4dd2b82cgd8b874866146da60@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Scanned: No (on in01.mta.xmission.com); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/13/2010 05:53 PM, Robert Hancock wrote:
-> On Sat, Feb 13, 2010 at 4:46 PM, Jeff Garzik<jeff@garzik.org>  wrote:
->> On 01/26/2010 11:33 PM, Robert Hancock wrote:
->>>
->>> Mike Cui reported that his system with an NVIDIA MCP79 (aka MCP7A) chipset
->>> stopped working with 2.6.32. The problem appears to be that 2.6.32 now
->>> enables
->>> the FPDMA auto-activate optimization in the ahci driver. The drive works
->>> fine
->>> with this enabled on an Intel AHCI so this appears to be a chipset bug.
->>> Since MCP79 is a fairly recent NVIDIA chipset and we don't have any info
->>> on
->>> whether any other NVIDIA chipsets have this issue, disable FPDMA AA
->>> optimization
->>> on all NVIDIA AHCI controllers for now.
->>>
->>> Should address http://bugzilla.kernel.org/show_bug.cgi?id=14922
->>>
->>> Signed-off-by: Robert Hancock<hancockrwd@gmail.com>
->>>
->>> ---
->>>
->>> Mike, can you test this out and make sure this resolves the problem for
->>> you?
->>
->> Sigh...   we never did hear back from Mike or NVIDIA on this one, did we?
->>   I've been watching for a response, and haven't seen one to date.
+Yinghai Lu <yinghai@kernel.org> writes:
+
+> On 02/13/2010 04:04 AM, Eric W. Biederman wrote:
+>>>  
+>>>  #ifdef CONFIG_X86_LOCAL_APIC
+>>> Index: linux-2.6/arch/x86/lguest/boot.c
+>>> ===================================================================
+>>> --- linux-2.6.orig/arch/x86/lguest/boot.c
+>>> +++ linux-2.6/arch/x86/lguest/boot.c
+>>> @@ -819,7 +819,7 @@ static void __init lguest_init_IRQ(void)
+>>>  
+>>>  	for (i = FIRST_EXTERNAL_VECTOR; i < NR_VECTORS; i++) {
+>>>  		/* Some systems map "vectors" to interrupts weirdly.  Not us! */
+>>> -		__get_cpu_var(vector_irq)[i] = i - FIRST_EXTERNAL_VECTOR;
+>>> +		__get_cpu_var(vector_desc)[i] = irq_to_desc(i - FIRST_EXTERNAL_VECTOR);
+>>>  		if (i != SYSCALL_VECTOR)
+>>>  			set_intr_gate(i, interrupt[i - FIRST_EXTERNAL_VECTOR]);
+>>>  	}
+>> 
+>> YH It appears that irq_to_desc_alloc_node has not been called yet
+>> so the setting of vector_desc needs to move to lguest_setup_irq.
 >
-> No, I haven't seen a response. It's pretty apparent it should fix the
-> problem based on earlier testing, but it would be nice to find out for
-> sure which chipsets this affects.
+> lguest is using sparseirq?
 
-Yep, that's my main concern...  being overly aggressive and zapping it 
-on all NVIDIA chipsets, even future ones.
+Apparently.  The last commit in that region of code moved some of the
+work (irq_to_desc_alloc_node) into lguest_setup_irq because kmalloc
+would not work that early.
 
-	Jeff
+Certainly the long term direction is to figure out how to enable
+sparseirq unconditionally on x86.
 
-
-
-
+Eric
