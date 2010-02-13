@@ -1,18 +1,18 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756243Ab0BMNF1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Feb 2010 08:05:27 -0500
-Received: from mail-fx0-f227.google.com ([209.85.220.227]:49010 "EHLO
+	id S1755354Ab0BMNDj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Feb 2010 08:03:39 -0500
+Received: from mail-fx0-f227.google.com ([209.85.220.227]:44747 "EHLO
 	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755634Ab0BMNDo (ORCPT
+	with ESMTP id S1752180Ab0BMND1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Feb 2010 08:03:44 -0500
+	Sat, 13 Feb 2010 08:03:27 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=Q8C1czqzn7grQ7dOMCzghlpSp7TFKynQJNW7VRI3jv4TZjHYsryrUvvKQBSmscA/wm
-         pQNcNzcQu5QgLX2QsCrArM1eYE9YGDOG9xTWh0jdy/7Xku99SwguHAIbGR8jkewjHeBd
-         f9rFC5mI36fstJAH9f5XwUHaNVyylpKHPGyXw=
+        b=SwLvZd7wGi938Us455bGUvilIQmR9vHxQnqFnZVi8RZ1LuBAxNVs9J30lV2a7pYzyh
+         IXfkfUip9qbyoWUnpoFTyTCcKR1TKZvlHCNsYfWd2sHiiVRm6JizbQGnBz3ahj0QYIWk
+         cEAVrhFtYP1WYDrkbxLMLc4kYnhq8Q4eWERlM=
 From: Maxim Levitsky <maximlevitsky@gmail.com>
 To: David Woodhouse <dwmw2@infradead.org>
 Cc: Artem Bityutskiy <dedekind1@gmail.com>,
@@ -23,9 +23,9 @@ Cc: Artem Bityutskiy <dedekind1@gmail.com>,
        "stanley.miao" <stanley.miao@windriver.com>,
        Vitaly Wool <vitalywool@gmail.com>,
        Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: [PATCH 08/14] MTD: nand: cleanup the nand_do_write_ops
-Date: Sat, 13 Feb 2010 15:03:07 +0200
-Message-Id: <1266066193-17625-9-git-send-email-maximlevitsky@gmail.com>
+Subject: [PATCH 01/14] MTD: create unlocked versions of {get,put}_mtd_device Use these only if you know that you already hold mtd_table_mutex
+Date: Sat, 13 Feb 2010 15:03:00 +0200
+Message-Id: <1266066193-17625-2-git-send-email-maximlevitsky@gmail.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1266066193-17625-1-git-send-email-maximlevitsky@gmail.com>
 References: <1266066193-17625-1-git-send-email-maximlevitsky@gmail.com>
@@ -33,82 +33,120 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-nand_do_write_ops have broken in regard to writing several pages,
- each with its own oob.
-
-Although nand_do_write_ops intends to allow such mode, it fails do do so
-Probably this was never tested.
-
-Also add missing checks for attemts to write at illegal offsets.
-
 Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
 ---
- drivers/mtd/nand/nand_base.c |   24 +++++++++++++++++-------
- 1 files changed, 17 insertions(+), 7 deletions(-)
+ drivers/mtd/mtdcore.c   |   60 ++++++++++++++++++++++++++++++----------------
+ include/linux/mtd/mtd.h |    3 +-
+ 2 files changed, 41 insertions(+), 22 deletions(-)
 
-diff --git a/drivers/mtd/nand/nand_base.c b/drivers/mtd/nand/nand_base.c
-index 53c1e04..2ff9c02 100644
---- a/drivers/mtd/nand/nand_base.c
-+++ b/drivers/mtd/nand/nand_base.c
-@@ -1881,11 +1881,9 @@ static int nand_write_page(struct mtd_info *mtd, struct nand_chip *chip,
-  * @oob:	oob data buffer
-  * @ops:	oob ops structure
-  */
--static uint8_t *nand_fill_oob(struct nand_chip *chip, uint8_t *oob,
--				  struct mtd_oob_ops *ops)
-+static uint8_t *nand_fill_oob(struct nand_chip *chip, uint8_t *oob, size_t len,
-+						struct mtd_oob_ops *ops)
- {
--	size_t len = ops->ooblen;
+diff --git a/drivers/mtd/mtdcore.c b/drivers/mtd/mtdcore.c
+index c356c0a..3bdb7e8 100644
+--- a/drivers/mtd/mtdcore.c
++++ b/drivers/mtd/mtdcore.c
+@@ -453,27 +453,38 @@ struct mtd_info *get_mtd_device(struct mtd_info *mtd, int num)
+ 			ret = NULL;
+ 	}
+ 
+-	if (!ret)
+-		goto out_unlock;
 -
- 	switch(ops->mode) {
+-	if (!try_module_get(ret->owner))
+-		goto out_unlock;
+-
+-	if (ret->get_device) {
+-		err = ret->get_device(ret);
+-		if (err)
+-			goto out_put;
++	if (!ret) {
++		ret = ERR_PTR(err);
++		goto out;
+ 	}
  
- 	case MTD_OOB_PLACE:
-@@ -1940,6 +1938,11 @@ static int nand_do_write_ops(struct mtd_info *mtd, loff_t to,
- 	int chipnr, realpage, page, blockmask, column;
- 	struct nand_chip *chip = mtd->priv;
- 	uint32_t writelen = ops->len;
-+
-+	uint32_t oobwritelen = ops->ooblen;
-+	uint32_t oobmaxlen = ops->mode == MTD_OOB_AUTO ?
-+				mtd->oobavail : mtd->oobsize;
-+
- 	uint8_t *oob = ops->oobbuf;
- 	uint8_t *buf = ops->datbuf;
- 	int ret, subpage;
-@@ -1981,6 +1984,10 @@ static int nand_do_write_ops(struct mtd_info *mtd, loff_t to,
- 	if (likely(!oob))
- 		memset(chip->oob_poi, 0xff, mtd->oobsize);
+-	ret->usecount++;
++	err = __get_mtd_device(ret);
++	if (err)
++		ret = ERR_PTR(err);
++out:
+ 	mutex_unlock(&mtd_table_mutex);
+ 	return ret;
++}
  
-+	/* Don't allow multipage oob writes with offset */
-+	if (ops->ooboffs && (ops->ooboffs + ops->ooblen > oobmaxlen))
-+		return -EINVAL;
+-out_put:
+-	module_put(ret->owner);
+-out_unlock:
+-	mutex_unlock(&mtd_table_mutex);
+-	return ERR_PTR(err);
 +
- 	while(1) {
- 		int bytes = mtd->writesize;
- 		int cached = writelen > bytes && page != blockmask;
-@@ -1996,8 +2003,11 @@ static int nand_do_write_ops(struct mtd_info *mtd, loff_t to,
- 			wbuf = chip->buffers->databuf;
- 		}
- 
--		if (unlikely(oob))
--			oob = nand_fill_oob(chip, oob, ops);
-+		if (unlikely(oob)) {
-+			size_t len = min(oobwritelen, oobmaxlen);
-+			oob = nand_fill_oob(chip, oob, len, ops);
-+			oobwritelen -= len;
++int __get_mtd_device(struct mtd_info *mtd)
++{
++	int err;
++
++	if (!try_module_get(mtd->owner))
++		return -ENODEV;
++
++	if (mtd->get_device) {
++
++		err = mtd->get_device(mtd);
++
++		if (err) {
++			module_put(mtd->owner);
++			return err;
 +		}
++	}
++	mtd->usecount++;
++	return 0;
+ }
  
- 		ret = chip->write_page(mtd, chip, wbuf, page, cached,
- 				       (ops->mode == MTD_OOB_RAW));
-@@ -2171,7 +2181,7 @@ static int nand_do_write_oob(struct mtd_info *mtd, loff_t to,
- 		chip->pagebuf = -1;
+ /**
+@@ -524,14 +535,19 @@ out_unlock:
  
- 	memset(chip->oob_poi, 0xff, mtd->oobsize);
--	nand_fill_oob(chip, ops->oobbuf, ops);
-+	nand_fill_oob(chip, ops->oobbuf, ops->ooblen, ops);
- 	status = chip->ecc.write_oob(mtd, chip, page & chip->pagemask);
- 	memset(chip->oob_poi, 0xff, mtd->oobsize);
+ void put_mtd_device(struct mtd_info *mtd)
+ {
+-	int c;
+-
+ 	mutex_lock(&mtd_table_mutex);
+-	c = --mtd->usecount;
++	__put_mtd_device(mtd);
++	mutex_unlock(&mtd_table_mutex);
++
++}
++
++void __put_mtd_device(struct mtd_info *mtd)
++{
++	--mtd->usecount;
++	BUG_ON(mtd->usecount < 0);
++
+ 	if (mtd->put_device)
+ 		mtd->put_device(mtd);
+-	mutex_unlock(&mtd_table_mutex);
+-	BUG_ON(c < 0);
+ 
+ 	module_put(mtd->owner);
+ }
+@@ -569,7 +585,9 @@ EXPORT_SYMBOL_GPL(add_mtd_device);
+ EXPORT_SYMBOL_GPL(del_mtd_device);
+ EXPORT_SYMBOL_GPL(get_mtd_device);
+ EXPORT_SYMBOL_GPL(get_mtd_device_nm);
++EXPORT_SYMBOL_GPL(__get_mtd_device);
+ EXPORT_SYMBOL_GPL(put_mtd_device);
++EXPORT_SYMBOL_GPL(__put_mtd_device);
+ EXPORT_SYMBOL_GPL(register_mtd_user);
+ EXPORT_SYMBOL_GPL(unregister_mtd_user);
+ EXPORT_SYMBOL_GPL(default_mtd_writev);
+diff --git a/include/linux/mtd/mtd.h b/include/linux/mtd/mtd.h
+index 0f32a9b..662d747 100644
+--- a/include/linux/mtd/mtd.h
++++ b/include/linux/mtd/mtd.h
+@@ -290,8 +290,9 @@ extern int add_mtd_device(struct mtd_info *mtd);
+ extern int del_mtd_device (struct mtd_info *mtd);
+ 
+ extern struct mtd_info *get_mtd_device(struct mtd_info *mtd, int num);
++extern int __get_mtd_device(struct mtd_info *mtd);
++extern void __put_mtd_device(struct mtd_info *mtd);
+ extern struct mtd_info *get_mtd_device_nm(const char *name);
+-
+ extern void put_mtd_device(struct mtd_info *mtd);
+ 
  
 -- 
 1.6.3.3
