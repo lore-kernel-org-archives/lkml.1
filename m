@@ -1,134 +1,140 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751506Ab0BMBPg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 20:15:36 -0500
-Received: from mga02.intel.com ([134.134.136.20]:7366 "EHLO mga02.intel.com"
+	id S1751871Ab0BMBTQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 20:19:16 -0500
+Received: from mail1.radix.net ([207.192.128.31]:44632 "EHLO mail1.radix.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750776Ab0BMBPf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 20:15:35 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,464,1262592000"; 
-   d="scan'208";a="492148334"
-Subject: [patch] sched: fix SMT scheduler regression in find_busiest_queue()
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
-To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, "Ma, Ling" <ling.ma@intel.com>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>, ego@in.ibm.com,
-       svaidy@linux.vnet.ibm.com
+	id S1750907Ab0BMBTO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 12 Feb 2010 20:19:14 -0500
+Subject: Re: Driver crash on kernel 2.6.32.7. Interaction between cx8800
+ (DVB-S) and USB HVR Hauppauge 950q
+From: Andy Walls <awalls@radix.net>
+To: Greg KH <gregkh@suse.de>
+Cc: Devin Heitmueller <dheitmueller@kernellabs.com>,
+       Kay Sievers <kay.sievers@vrfy.org>,
+       Richard Lemieux <rlemieu@cooptel.qc.ca>, linux-media@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20100212041131.GA29697@suse.de>
+References: <4B70E7DB.7060101@cooptel.qc.ca>
+	 <1265768091.3064.109.camel@palomino.walls.org>
+	 <4B722266.4070805@cooptel.qc.ca>
+	 <829197381002091912h5391129dpbf075485ab011936@mail.gmail.com>
+	 <1265816096.4019.65.camel@palomino.walls.org>
+	 <20100212041131.GA29697@suse.de>
 Content-Type: text/plain
-Organization: Intel Corp
-Date: Fri, 12 Feb 2010 17:14:22 -0800
-Message-Id: <1266023662.2808.118.camel@sbs-t61.sc.intel.com>
+Date: Fri, 12 Feb 2010 20:18:57 -0500
+Message-Id: <1266023937.3062.17.camel@palomino.walls.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-PeterZ/Ingo,
+On Thu, 2010-02-11 at 20:11 -0800, Greg KH wrote:
+> On Wed, Feb 10, 2010 at 10:34:56AM -0500, Andy Walls wrote:
+> > On Tue, 2010-02-09 at 22:12 -0500, Devin Heitmueller wrote:
+> > > On Tue, Feb 9, 2010 at 10:05 PM, Richard Lemieux <rlemieu@cooptel.qc.ca> wrote:
+> > > > Andy,
+> > > >
+> > > > This is a great answer!  Thanks very much.  When I get into this situation
+> > > > again
+> > > > I will know what to look for.
+> > > >
+> > > > A possible reason why I got into this problem in the first place is that I
+> > > > tried
+> > > > many combinations of parameters with mplayer and azap in order to learn how
+> > > > to use the USB tuner in both the ATSC and the NTSC mode.  I will look back
+> > > > in the terminal history to see if I can find anything.
+> > > 
+> > > I think the key to figuring out the bug at this point is you finding a
+> > > sequence where you can reliably reproduce the oops.  If we have that,
+> > > then I can start giving you some code to try which we can see if it
+> > > addresses the problem.
+> > > 
+> > > For example, I would start by giving you a fix which results in us not
+> > > calling the firmware release if the request_firmware() call failed,
+> > > but it wouldn't be much help if you could not definitively tell me if
+> > > the problem is fixed.
+> > 
+> > 
+> > For the oops analysis here:
+> > 
+> > http://article.gmane.org/gmane.linux.drivers.video-input-infrastructure/15954
+> > 
+> > 
+> > I will also note that the file scope "fw_lock" mutex is rather
+> > inconsistently used in
+> > linux/drivers/base/fw_class.c:firmware_loading_store().  (I guess for
+> > not wanting to consume the timeout interval with sleeping?)
+> > 
+> > The mutex protects "case 1:", but all other cases appear to be only
+> > protected by atomic status bit checks that can fall through to
+> > fw_load_abort() which complete()'s the fw_priv->completion.
+> > 
+> > Also not that in the _request_firmware() this sequence is the only place
+> > a once good "fw_priv->fw" pointer is set to NULL:
+> > 
+> >         mutex_lock(&fw_lock);
+> >         if (!fw_priv->fw->size || test_bit(FW_STATUS_ABORT, &fw_priv->status)) {
+> >                 retval = -ENOENT;
+> >                 release_firmware(fw_priv->fw);
+> >                 *firmware_p = NULL;
+> >         }
+> >         fw_priv->fw = NULL;     <--------------- The only place it is set to NULL
+> >         mutex_unlock(&fw_lock);
+> > 
+> > 
+> > So if the timeout timer fires at nearly the same time as udev coming in
+> > and say "I'm done loading" without holding the mutex, one can run into
+> > the Ooops.  Not only that, I think the above code can leak memory under
+> > some circumstances when the "if" clause is not satisfied.
+> > 
+> > I think this really is a firmware_class.c issue.  I think the "just
+> > right" firmware loading timeouts and the particular computer system
+> > responsiveness, make this Ooops possible.  However, I'm amazed that a
+> > single person has tripped it more than once.
+> > 
+> > Revising the locking in linux/drivers/base/firmware_class.c should fix
+> > the problem.
+> > 
+> > I don't believe this comment in the code now:
+> > 
+> > /* fw_lock could be moved to 'struct firmware_priv' but since it is just
+> >  * guarding for corner cases a global lock should be OK */
+> > static DEFINE_MUTEX(fw_lock);
+> > 
+> > struct firmware_priv {
+> >         char *fw_id;
+> > 	...
+> > 
+> > And since "f_priv" is dynamically created and destroyed by
+> > request_firmware() I see no harm in 
+> > 
+> > 1. moving the mutex into struct firmware_priv
+> > 2. just always just grabbing an almost never contended mutex
+> > 3. getting rid of the file scope fw_lock.
+> > 
+> > except grabbing a mutex() while the timeout timer is running during
+> > loading, means one *could* sleep for a while consuming the timeout
+> > interval.
+> 
+> That sounds reasonable to me, care to make up a patch for this?
 
-Ling Ma and Yanmin reported this SMT scheduler regression which lead to
-the condition where both the SMT threads on a core are busy while the
-other cores in the same socket are completely idle, causing major
-performance regression. I have appended a fix for this. This is
-relatively low risk fix and if you agree with both the fix and
-risk-assessment, can we please push this to Linus so that we can address
-this in 2.6.33.
+Yes.  But it will take me a while.  I don't have a git tree, because I
+don't have high bandwidth internet yet.  (The cable company's been
+delayed in laying cable to my home due to repeated snowstorms.)
 
-thanks,
-suresh
----
+I just didn't want the problem to fall through the cracks.  I'll submit
+something to bugzilla for now.  If a user complains of this rare Ooops
+when loading firmware, the current workaround is to lengthen the timeout
+via sysfs.
 
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: sched: fix SMT scheduler regression in find_busiest_queue()
+Regards,
+Andy
 
-Fix a SMT scheduler performance regression that is leading to a scenario
-where SMT threads in one core are completely idle while both the SMT threads
-in another core (on the same socket) are busy.
-
-This is caused by this commit (with the problematic code highlighted)
-
-   commit bdb94aa5dbd8b55e75f5a50b61312fe589e2c2d1
-   Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
-   Date:   Tue Sep 1 10:34:38 2009 +0200
-
-   sched: Try to deal with low capacity
-
-   @@ -4203,15 +4223,18 @@ find_busiest_queue()
-   ...
-	for_each_cpu(i, sched_group_cpus(group)) {
-   +	unsigned long power = power_of(i);
-
-   ...
-
-   -	wl = weighted_cpuload(i);
-   +	wl = weighted_cpuload(i) * SCHED_LOAD_SCALE;
-   +	wl /= power;
-
-   -	if (rq->nr_running == 1 && wl > imbalance)
-   +	if (capacity && rq->nr_running == 1 && wl > imbalance)
-		continue;
-
-On a SMT system, power of the HT logical cpu will be 589 and
-the scheduler load imbalance (for scenarios like the one mentioned above)
-can be approximately 1024 (SCHED_LOAD_SCALE). The above change of scaling
-the weighted load with the power will result in "wl > imbalance" and
-ultimately resulting in find_busiest_queue() return NULL, causing
-load_balance() to think that the load is well balanced. But infact
-one of the tasks can be moved to the idle core for optimal performance.
-
-We don't need to use the weighted load (wl) scaled by the cpu power to
-compare with  imabalance. In that condition, we already know there is only a
-single task "rq->nr_running == 1" and the comparison between imbalance,
-wl is to make sure that we select the correct priority thread which matches
-imbalance. So we really need to compare the imabalnce with the original
-weighted load of the cpu and not the scaled load.
-
-But in other conditions where we want the most hammered(busiest) cpu, we can
-use scaled load to ensure that we consider the cpu power in addition to the
-actual load on that cpu, so that we can move the load away from the
-guy that is getting most hammered with respect to the actual capacity,
-as compared with the rest of the cpu's in that busiest group.
-
-Fix it.
-
-Reported-by: Ma Ling <ling.ma@intel.com>
-Initial-Analysis-by: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: stable@kernel.org [2.6.32.x]
----
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 3a8fb30..bef5369 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -4119,12 +4119,23 @@ find_busiest_queue(struct sched_group *group, enum cpu_idle_type idle,
- 			continue;
- 
- 		rq = cpu_rq(i);
--		wl = weighted_cpuload(i) * SCHED_LOAD_SCALE;
--		wl /= power;
-+		wl = weighted_cpuload(i);
- 
-+		/*
-+		 * When comparing with imbalance, use weighted_cpuload()
-+		 * which is not scaled with the cpu power.
-+		 */
- 		if (capacity && rq->nr_running == 1 && wl > imbalance)
- 			continue;
- 
-+		/*
-+ 		 * For the load comparisons with the other cpu's, consider
-+ 		 * the weighted_cpuload() scaled with the cpu power, so that
-+ 		 * the load can be moved away from the cpu that is potentially
-+ 		 * running at a lower capacity.
-+ 		 */
-+		wl = (wl * SCHED_LOAD_SCALE) / power;
-+
- 		if (wl > max_load) {
- 			max_load = wl;
- 			busiest = rq;
+> thanks,
+> 
+> greg k-h
 
 
