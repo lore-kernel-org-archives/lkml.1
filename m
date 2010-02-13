@@ -1,67 +1,113 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751492Ab0BMGUO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Feb 2010 01:20:14 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:54507 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750982Ab0BMGUM (ORCPT
+	id S1751438Ab0BMG3O (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Feb 2010 01:29:14 -0500
+Received: from e28smtp06.in.ibm.com ([122.248.162.6]:46722 "EHLO
+	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750939Ab0BMG3M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Feb 2010 01:20:12 -0500
-Date: Sat, 13 Feb 2010 07:20:04 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Willy Tarreau <w@1wt.eu>
-Cc: Jean Delvare <khali@linux-fr.org>, lasse.collin@tukaani.org,
-       linux-kernel <linux-kernel@vger.kernel.org>, mirrors@kernel.org,
-       users@kernel.org, "FTPAdmin Kernel.org" <ftpadmin@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [kernel.org users] XZ Migration discussion
-Message-ID: <20100213062004.GA22848@elf.ucw.cz>
-References: <4B744E13.8040004@kernel.org>
- <20100212150137.648dca7c@hyperion.delvare>
- <alpine.LFD.2.00.1002120714320.7792@localhost.localdomain>
- <4B75A5DC.3060803@kernel.org>
- <20100212202357.6363d5af@hyperion.delvare>
- <20100212230702.GA10266@1wt.eu>
+	Sat, 13 Feb 2010 01:29:12 -0500
+Date: Sat, 13 Feb 2010 11:59:05 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Chris Friesen <cfriesen@nortel.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org
+Subject: Re: tracking memory usage/leak in "inactive" field in /proc/meminfo?
+Message-ID: <20100213062905.GF11364@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <4B71927D.6030607@nortel.com>
+ <20100210093140.12D9.A69D9226@jp.fujitsu.com>
+ <4B72E74C.9040001@nortel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20100212230702.GA10266@1wt.eu>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <4B72E74C.9040001@nortel.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+* Chris Friesen <cfriesen@nortel.com> [2010-02-10 11:05:16]:
 
-> > > It's probably worth keeping things like the .gz files around, if nothing
-> > > else for older distros, systems, etc that don't have xz yet (since it's
-> > > still relatively new)
-> > 
-> > Hardly a good reason IMHO. xz can be installed on these systems. When
-> > we switched to git, nobody had it and it did not stop us.
+> On 02/09/2010 06:32 PM, KOSAKI Motohiro wrote:
 > 
-> I don't agree, it's different. Git is only used by developers, and even
-> not all of them. Sources are a reference. Anyone can download them to
-> look for anything. Switching to a specific format which really is not
-> common at all on older distros nor on any system looks a bit like
-> proprietary encoding eventhough it's not the case. But it's a way to
-> tell people that if they want the sources in clear text form, they
-> first have to find a tool capable of decompressing them. Gzip is well
-> defined as a standard, it's even described in an RFC and is present
-> on almost any system (unix or not) now. Any student who wants to take
-> a look at the kernel will have access to gunzip, even from an old
-> Solaris 8 workstation or a Windows XP desktop PC. XZ if far from
-> being there, and the student will not necessarily be able to install
-> it. And Peter raised some valid points about the hardware requirements
-> to run such tools ; I'm not sure the guys running Linux on their old
-> Sparc-2 would like XZ only a lot.
+> > can you please post your /proc/meminfo?
+> 
+> 
+> On 02/09/2010 09:50 PM, Balbir Singh wrote:
+> > Do you have swap enabled? Can you help with the OOM killed dmesg log?
+> > Does the situation get better after OOM killing.
+> 
+> 
+> On 02/09/2010 10:09 PM, KOSAKI Motohiro wrote:
+> 
+> > Chris, 2.6.27 is a bit old. plese test it on latest kernel. and please
+> don't use
+> > any proprietary drivers.
+> 
+> 
+> Thanks for the replies.
+> 
+> Swap is enabled in the kernel, but there is no swap configured.  ipcs
+> shows little consumption there.
 
-It is not just student on old workstation. I'm trying to keep Linux
-working on spitz PDA and kohjinsha subnotebook. Especially zaurus has
-about power of old sparc two... otoh it runs 4 hours on cellphone
-battery.
-									Pavel
+OK, I did not find the OOM kill output, dmesg. Is the OOM killer doing
+the right thing? If it kills the process we suspect is leaking memory,
+then it is working correctly :) If the leak is in kernel space, we
+need to examine the changes more closely.
+
+> 
+> The test load relies on a number of kernel modifications, making it
+> difficult to use newer kernels. (This is an embedded system.)  There are
+> no closed-source drivers loaded, though there are some that are not in
+> vanilla kernels.  I haven't yet tried to reproduce the problem with a
+> minimal load--I've been more focused on trying to understand what's
+> going on in the code first.  It's on my list to try though.
+> 
+
+kernel modifications that we are unaware of make the problem harder to
+debug, since we have no way of knowing if they are the source of the
+problem.
+
+> Here are some /proc/meminfo outputs from a test run where we
+> artificially chewed most of the free memory to try and force the oom
+> killer to fire sooner (otherwise it takes days for the problem to trigger).
+> 
+> It's spaced with tabs so I'm not sure if it'll stay aligned.  The first
+> row is the sample number.  All the HugePages entries were 0.  The
+> DirectMap entries were constant. SwapTotal/SwapFree/SwapCached were 0,
+> as were Writeback/NFS_Unstable/Bounce/WritebackTmp.
+> 
+> Samples were taken 10 minutes apart.  Between samples 49 and 50 the
+> oom-killer fired.
+> 
+> 		13		49		50
+> MemTotal	4042848		4042848		4042848
+> MemFree		113512		52668		69536
+> Buffers		20		24		76
+> Cached		1285588		1287456		1295128
+> Active		2883224		3369440		2850172
+> Inactive	913756		487944		990152
+> Dirty		36		216		252
+> AnonPages	2274756		2305448		2279216
+> Mapped		10804		12772		15760
+> Slab		62324		62568		63608
+> SReclaimable	24092		23912		24848
+> SUnreclaim	38232		38656		38760
+> PageTables	11960		12144		11848
+> CommitLimit	2021424		2021424		2021424
+> Committed_AS	12666508	12745200	7700484
+
+Comitted_AS shows a large change, does the process that gets killed
+use a lot of virtual memory (total_vm)? Please see my first question
+as well. Can you try to set
+
+vm.overcommit_memory=2
+
+and run the tests to see if you still get OOM killed.
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+	Three Cheers,
+	Balbir
