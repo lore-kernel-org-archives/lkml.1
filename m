@@ -1,38 +1,74 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757949Ab0BMWoP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Feb 2010 17:44:15 -0500
-Received: from mail-yw0-f179.google.com ([209.85.211.179]:56777 "EHLO
-	mail-yw0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751543Ab0BMWoN (ORCPT
+	id S1758106Ab0BMWqK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Feb 2010 17:46:10 -0500
+Received: from esgaroth.petrovitsch.at ([78.47.184.11]:33492 "EHLO
+	esgaroth.petrovitsch.priv.at" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757999Ab0BMWqH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Feb 2010 17:44:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=j2pGeCAICfn8QjQMye0ZK8eq09+IMX9vMgSF4Wnm226gSlL7glEznhTxh5JrbFBWLp
-         xpdSNzSeWFvMomtGLb+X7JP0zcQpmjGyloRgCGvt4MkvEgCPwGzpN7sNo3ms1OJa5tHe
-         nap37sDyeOKTZdfP0dubwqs8G5wXi1g3/bZPU=
-Message-ID: <4B772B3A.6030202@garzik.org>
-Date: Sat, 13 Feb 2010 17:44:10 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Russell King <rmk@arm.linux.org.uk>
-Subject: Re: [PATCH 2/3] pata_pdc202xx_old: fix UDMA mode for PDC2026x chipsets
-References: <20100213133538.11564.94218.sendpatchset@localhost> <20100213133559.11564.54028.sendpatchset@localhost> <201002131444.58139.bzolnier@gmail.com>
-In-Reply-To: <201002131444.58139.bzolnier@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sat, 13 Feb 2010 17:46:07 -0500
+X-DKIM: Sendmail DKIM Filter v2.8.3 unknown-host o1DMdXhk032078
+Subject: Re: [kernel] Re: [kernel.org users] XZ Migration discussion
+From: Bernd Petrovitsch <bernd@petrovitsch.priv.at>
+To: "Mr. James W. Laferriere" <babydr@baby-dragons.com>
+Cc: Avi Kivity <avi@redhat.com>, Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Jean Delvare <khali@linux-fr.org>, Willy Tarreau <w@1wt.eu>,
+       lasse.collin@tukaani.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       mirrors@kernel.org, users@kernel.org,
+       "FTPAdmin Kernel.org" <ftpadmin@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <alpine.LNX.2.01.1002131233450.30803@filesrv1.baby-dragons.com>
+References: <4B744E13.8040004@kernel.org>
+	 <20100212150137.648dca7c@hyperion.delvare>
+	 <alpine.LFD.2.00.1002120714320.7792@localhost.localdomain>
+	 <4B75A5DC.3060803@kernel.org> <20100212202357.6363d5af@hyperion.delvare>
+	 <20100212230702.GA10266@1wt.eu> <20100213091748.276821e1@hyperion.delvare>
+	 <4B767810.5020707@s5r6.in-berlin.de> <4B767C67.7060701@redhat.com>
+	 <alpine.LNX.2.01.1002131233450.30803@filesrv1.baby-dragons.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 13 Feb 2010 23:39:33 +0100
+Message-ID: <1266100773.23181.8.camel@thorin>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
+Content-Transfer-Encoding: 8bit
+X-DCC-CTc-dcc1-Metrics: esgaroth.petrovitsch.priv.at; whitelist
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/13/2010 08:44 AM, Bartlomiej Zolnierkiewicz wrote:
-> .sff_exec_command	= pdc202xx_exec_command,
+On Sam, 2010-02-13 at 12:37 -0900, Mr. James W. Laferriere wrote:
+> On Sat, 13 Feb 2010, Avi Kivity wrote:
+[...]
+> > Can you even unpack a kernel tree on Windows?  There are some files (e.g. 
+Given a sane filesystem, yes. If (the) native filesystem(s) are sane, is
+more a flamebait than anything else.
 
-applied patch #2 + this missing chunk
+> > net/ipv4/netfilter/ipt_{ecn,ECN}.c) which conflict on a case-preserving 
+> > filesystem.
+>  	What filesystem version are you talking about ?
+All of NTFS (and basically FAT*). Are there are different versions? If
+yes, how do I tell?
+
+>  	ntfs as of recent windows is not case insensitive .
+It *is* case insensitive (as it compares filesystem names
+case-insensitive on the equivalent of an open() syscall).
+
+>  	What do you mean by , "a case-preserving filesystem" ?
+Apart from "please google that, thank you": The filesystem (driver))
+preserves the case of a filename if you create it (TTBOMK). But it
+ignores the case of the filename for other file operations like open(),
+stat(), etc.
+
+>  	Now whether or not the tools available are case insensitive is another 
+> matter .
+ACK. But if you have a case-insensitive or case-preserving filesystem,
+the tools can´t really do that much.
+And given the "understanding" of the monopolist (as such) in that area,
+most of the "tools" are actually inherent part of the OS (and not just
+another 3rd party app). SCNR ....
+
+	Bernd
+-- 
+Bernd Petrovitsch                  Email : bernd@petrovitsch.priv.at
+                     LUGA : http://www.luga.at
 
