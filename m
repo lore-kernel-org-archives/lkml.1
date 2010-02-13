@@ -1,73 +1,80 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756981Ab0BMERR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 12 Feb 2010 23:17:17 -0500
-Received: from out01.mta.xmission.com ([166.70.13.231]:39038 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753293Ab0BMERQ (ORCPT
+	id S1755129Ab0BMEjz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 12 Feb 2010 23:39:55 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52054 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752445Ab0BMEjy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 12 Feb 2010 23:17:16 -0500
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Suresh Siddha <suresh.b.siddha@intel.com>, linux-kernel@vger.kernel.org,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH  0/8] tip related: radix tree for spareseirq and logical flat clean up
-References: <1266029390-30907-1-git-send-email-yinghai@kernel.org>
-	<m1zl3dre9e.fsf@fess.ebiederm.org> <4B762137.4050604@zytor.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Fri, 12 Feb 2010 20:17:05 -0800
-In-Reply-To: <4B762137.4050604@zytor.com> (H. Peter Anvin's message of "Fri\, 12 Feb 2010 19\:49\:11 -0800")
-Message-ID: <m1k4uhrcqm.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); SAEximRunCond expanded to false
+	Fri, 12 Feb 2010 23:39:54 -0500
+Date: Fri, 12 Feb 2010 20:39:22 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jason Wessel <jason.wessel@windriver.com>
+Cc: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
+       mingo@elte.hu, Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [PATCH 22/28] printk,kdb: capture printk() when in kdb shell
+Message-Id: <20100212203922.d8fef332.akpm@linux-foundation.org>
+In-Reply-To: <4B75E236.7060108@windriver.com>
+References: <1266014143-29444-1-git-send-email-jason.wessel@windriver.com>
+	<1266014143-29444-23-git-send-email-jason.wessel@windriver.com>
+	<20100212145440.7f0c68d0.akpm@linux-foundation.org>
+	<4B75E236.7060108@windriver.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"H. Peter Anvin" <hpa@zytor.com> writes:
+On Fri, 12 Feb 2010 17:20:22 -0600 Jason Wessel <jason.wessel@windriver.com> wrote:
 
-> On 02/12/2010 07:44 PM, Eric W. Biederman wrote:
->> 
->> Thanks for keeping this work alive.
->> 
->
-> Indeed.  I am hoping to put this in tip tomorrow or so.
->
->> I just skimmed through do_IRQ and I happened to notice that
->> we have an unnecessary inefficiency that using a radix tree for
->> irq_to_desc will magnify.
->> 
->> handle_irq should take an struct irq_desc * instead of a unsigned int irq.
->> 
->> and the per cpu vector_irq array should become a per cpu vector_desc array.
->> 
->> As soon as irq_to_desc is more than &irq_desc[irq] this saves us work
->> and cache line misses  at the cost of a simple code cleanup.
->
-> Good catch.  I haven't looked through the details yet, but I presume
-> this can be done on top of this changeset?
+> Andrew Morton wrote:
+> > On Fri, 12 Feb 2010 16:35:37 -0600 Jason Wessel <jason.wessel@windriver.com> wrote:
+> >
+> >   
+> >> @@ -609,6 +610,14 @@ asmlinkage int printk(const char *fmt, ...)
+> >>  	va_list args;
+> >>  	int r;
+> >>  
+> >> +#ifdef CONFIG_KGDB_KDB
+> >> +	if (unlikely(kdb_trap_printk)) {
+> >> +		va_start(args, fmt);
+> >> +		r = vkdb_printf(fmt, args);
+> >> +		va_end(args);
+> >> +		return r;
+> >> +	}
+> >> +#endif
+> >>  	va_start(args, fmt);
+> >>  	r = vprintk(fmt, args);
+> >>  	va_end(args);
+> >>     
+> >
+> > this?
+> >
+> > --- a/kernel/printk.c~a
+> > +++ a/kernel/printk.c
+> > @@ -594,7 +594,11 @@ asmlinkage int printk(const char *fmt, .
+> >  	int r;
+> >  
+> >  	va_start(args, fmt);
+> > +#ifdef CONFIG_KGDB_KDB
+> > +	r = vkdb_printf(fmt, args);
+> > +#else
+> >  	r = vprintk(fmt, args);
+> > +#endif
+> >  	va_end(args);
+> >  
+> >  	return r;
+> > _
+> >   
+> 
+> If you feel that would be cleaner, I can make that change, but I would
+> also have to call vprintk() from vkdb_printf when ever kdb_trap_printk
+> is not set.  Do I understand your recommendation correctly?
+> 
 
-Codewise the changes should be completely independent.
+err, no, I must have been in a drunken stupor.  Was trying to find
+a way to avoid the code duplication.
 
 
-
-Probably the trickiest bit is that drivers/xen/events.c calls handle_irq
-and makes handle_irq on ia64 a wrapper for __do_IRQ.
-
-Jeremy is there any good reason why drivers/xen/events.c does not just do:
-
-desc = irq_to_desc(irq);
-if (desc)
-	generic_handle_irq_desc(irq, desc);
-
-And instead introduces a weird one-off xen specific multi-arch function?
-
-
-Eric
