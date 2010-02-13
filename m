@@ -1,397 +1,158 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757891Ab0BMTSh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Feb 2010 14:18:37 -0500
-Received: from mail001.aei.ca ([206.123.6.130]:40665 "EHLO mail001.aei.ca"
+	id S1757911Ab0BMT3j (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Feb 2010 14:29:39 -0500
+Received: from mail001.aei.ca ([206.123.6.130]:40736 "EHLO mail001.aei.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757722Ab0BMTSf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Feb 2010 14:18:35 -0500
+	id S1757879Ab0BMT3h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Feb 2010 14:29:37 -0500
 From: Ed Tomlinson <edt@aei.ca>
-To: linux-kernel@vger.kernel.org
-Subject: Re: [LOCKDEP] 33-rc8 Running aplay with pulse as the default
-Date: Sat, 13 Feb 2010 14:18:26 -0500
+To: Jiri Kosina <jkosina@suse.cz>
+Subject: Re: [PATCH 0/2] Provide a driver for the Apple Magic Mouse - opps
+Date: Sat, 13 Feb 2010 14:29:29 -0500
 User-Agent: KMail/1.13.0 (Linux/2.6.32.8-crc; KDE/4.4.0; x86_64; ; )
-Cc: alsa-devel@alsa-project.org
-References: <alpine.LFD.2.00.1002121142100.3922@localhost.localdomain> <201002131217.10579.edt@aei.ca>
-In-Reply-To: <201002131217.10579.edt@aei.ca>
+Cc: Michael Poole <mdpoole@troilus.org>, linux-input@vger.kernel.org,
+       Marcel Holtmann <marcel@holtmann.org>, linux-bluetooth@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <alpine.LNX.2.00.1001291515560.356@pobox.suse.cz> <87y6j2eeqv.fsf_-_@troilus.org> <alpine.LNX.2.00.1002101456490.30967@pobox.suse.cz>
+In-Reply-To: <alpine.LNX.2.00.1002101456490.30967@pobox.suse.cz>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="iso-8859-2"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201002131418.26931.edt@aei.ca>
+Message-Id: <201002131429.29671.edt@aei.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 13 February 2010 12:17:10 Ed Tomlinson wrote:
+On Wednesday 10 February 2010 08:57:37 Jiri Kosina wrote:
+> On Tue, 9 Feb 2010, Michael Poole wrote:
+> 
+> > I think this patch is ready for real review.  The Magic Mouse requires
+> > that a driver send an unlock Report(Feature) command, similar to the
+> > Wacom wireless tablet and Sixaxis controller quirks.  This turns on an
+> > Input Report that isn't published in the input Report descriptor that
+> > contains touch data (and usually overrides the normal motion and click
+> > Report).
+> > 
+> > Because the mouse has only one switch and no scroll wheel, the driver
+> > (under control of parameters) emulates a middle button and scroll wheel.
+> > User space could also ignore and/or re-synthesize those events based on
+> > the reported events.
+> > 
+> > The first patch exports hid_register_report() so the driver can turn on
+> > the multitouch report.  The second patch adds the device ID and the
+> > driver.  Some user-space tools to talk to the mouse directly (that is,
+> > when it is not associated with the host's HIDP stack) are at
+> > http://github.com/entrope/linux-magicmouse .
+> 
+> I have applied the driver into apple_magic_mouse branch and merged this 
+> branch into for-next, so it should appear in the upcoming linux-next.
 
-Looks like can also trigger an opps that force me to reboot.  I tried
-su - <id>
-pulseaudio -D
+This driver (or the hid changes) can triggers an opps.  What I did was start X.  Turn on the magic mouse.  It connected on input7&8.  
+Then I powered it off and on.  This time it conneced on input9&10.  Then I exited X and got the opps.  Note my X does not hotplug 
+the magic mouse.  I've also included a trace of the udev events that generated the log below (if there was a remove after X stopped 
+it would not be included).  To my eyes it looks like we leak an input device (there is not a remove event for input8).
 
-and got the following lockdep traceback followed by an opps
+[ 5955.908380] input: Apple Wireless Mouse as /devices/pci0000:00/0000:00:13.2/usb7/7-4/7-4.4/7-4.4:1.0/bluetooth/hci0/hci0:41/input7
+[ 5955.921165] magicmouse 0005:05AC:030D.0004: input,hidraw3: BLUETOOTH HID v0.84 Mouse [Apple Wireless Mouse] on 00:0A:3A:55:07:5A
+[ 5955.934120] input: Apple Wireless Mouse as /devices/pci0000:00/0000:00:13.2/usb7/7-4/7-4.4/7-4.4:1.0/bluetooth/hci0/hci0:41/input8
+[ 6180.899332] input: Apple Wireless Mouse as /devices/pci0000:00/0000:00:13.2/usb7/7-4/7-4.4/7-4.4:1.0/bluetooth/hci0/hci0:41/input9
+[ 6180.911914] magicmouse 0005:05AC:030D.0005: input,hidraw3: BLUETOOTH HID v0.84 Mouse [Apple Wireless Mouse] on 00:0A:3A:55:07:5A
+[ 6180.923988] input: Apple Wireless Mouse as /devices/pci0000:00/0000:00:13.2/usb7/7-4/7-4.4/7-4.4:1.0/bluetooth/hci0/hci0:41/input10
+[ 6391.991295] BUG: unable to handle kernel NULL pointer dereference at 0000000000000010
+[ 6391.995818] IP: [<ffffffffa05a604f>] magicmouse_input_open+0x1f/0x30 [hid_magicmouse]
+[ 6392.009801] PGD 16c3b6067 PUD 16b139067 PMD 0 
+[ 6392.009801] Oops: 0000 [#1] PREEMPT SMP 
+[ 6392.009801] last sysfs file: /sys/devices/pci0000:00/0000:00:18.3/temp1_input
+[ 6392.009801] CPU 1 
+[ 6392.009801] Pid: 2763, comm: gpm Not tainted 2.6.33-rc8-crc #106 M3A78-T/System Product Name
+[ 6392.064520] RIP: 0010:[<ffffffffa05a604f>]  [<ffffffffa05a604f>] magicmouse_input_open+0x1f/0x30 [hid_magicmouse]
+[ 6392.064520] RSP: 0018:ffff88016c2ddba8  EFLAGS: 00010282
+[ 6392.064520] RAX: ffff88016dd90000 RBX: ffff88016bc9b000 RCX: 0000000000000001
+[ 6392.107009] RDX: 0000000000000000 RSI: 0000000000000000 RDI: ffff88016dd90000
+[ 6392.107009] RBP: ffff88016c2ddba8 R08: 2222222222222222 R09: 2222222222222222
+[ 6392.107009] R10: 0000000000000000 R11: 0000000000000001 R12: ffff880133b5a810
+[ 6392.107009] R13: ffff88016bc9b820 R14: ffff88016dd60150 R15: ffff88016dd600a8
+[ 6392.107009] FS:  00007f5ee305b700(0000) GS:ffff880028280000(0000) knlGS:0000000000000000
+[ 6392.107009] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+[ 6392.107009] CR2: 0000000000000010 CR3: 000000016c3b7000 CR4: 00000000000006e0
+[ 6392.107009] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+[ 6392.107009] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+[ 6392.107009] Process gpm (pid: 2763, threadinfo ffff88016c2dc000, task ffff88016dde0000)
+[ 6392.107009] Stack:
+[ 6392.107009]  ffff88016c2ddbe8 ffffffff814010e9 ffff88016dd60150 ffff88016dd600a8
+[ 6392.107009] <0> ffff88016c2ddbe8 ffff880133b5a800 ffff880133b5a8d8 0000000000000000
+[ 6392.107009] <0> ffff88016c2ddc18 ffffffff81404236 ffff88016c2ddc18 ffff880133b5a800
+[ 6392.107009] Call Trace:
+[ 6392.107009]  [<ffffffff814010e9>] input_open_device+0x89/0xb0
+[ 6392.107009]  [<ffffffff81404236>] mousedev_open_device+0x76/0x100
+[ 6392.107009]  [<ffffffff814042a9>] mousedev_open_device+0xe9/0x100
+[ 6392.107009]  [<ffffffff8140523f>] mousedev_open+0x19f/0x260
+[ 6392.107009]  [<ffffffff814bc243>] ? _lock_kernel+0x143/0x1e0
+[ 6392.107009]  [<ffffffff81402ba7>] input_open_file+0x227/0x410
+[ 6392.107009]  [<ffffffff814bf981>] ? sub_preempt_count+0x51/0x60
+[ 6392.107009]  [<ffffffff8112384d>] chrdev_open+0x17d/0x320
+[ 6392.107009]  [<ffffffff814bbb7c>] ? _raw_spin_unlock+0x5c/0x70
+[ 6392.107009]  [<ffffffff8111d358>] __dentry_open+0x1a8/0x400
+[ 6392.107009]  [<ffffffff811236d0>] ? chrdev_open+0x0/0x320
+[ 6392.107009]  [<ffffffff8111d6b4>] nameidata_to_filp+0x54/0x70
+[ 6392.107009]  [<ffffffff8112e7f1>] do_filp_open+0x841/0xc00
+[ 6392.107009]  [<ffffffff814bf981>] ? sub_preempt_count+0x51/0x60
+[ 6392.107009]  [<ffffffff814bbb7c>] ? _raw_spin_unlock+0x5c/0x70
+[ 6392.107009]  [<ffffffff81002b0c>] ? sysret_check+0x27/0x62
+[ 6392.107009]  [<ffffffff8111e954>] do_sys_open+0xa4/0x180
+[ 6392.107009]  [<ffffffff8111ea70>] sys_open+0x20/0x30
+[ 6392.107009]  [<ffffffff81002adb>] system_call_fastpath+0x16/0x1b
+[ 6392.107009] Code: 66 66 66 2e 0f 1f 84 00 00 00 00 00 55 48 89 e5 0f 1f 44 00 00 48 81 c7 a0 08 00 00 e8 3b f0 de e0 48 8b 90 38 1b 00 00 48 89 c7 <ff> 52 10 c9 c3 66 66 66 2e 0f 1f 84 00 00 00 00 00 55 48 89 e5 
+[ 6392.107009] RIP  [<ffffffffa05a604f>] magicmouse_input_open+0x1f/0x30 [hid_magicmouse]
+[ 6392.107009]  RSP <ffff88016c2ddba8>
+[ 6392.107009] CR2: 0000000000000010
+[ 6392.107321] ---[ end trace c83e80c68826df09 ]---
 
-This is grover.unknown_domain (Linux x86_64 2.6.33-rc8-crc) 13:53:37
+grover ~ # udevadm monitor
+monitor will print the received events for:
+UDEV - the event which udev sends out after rule processing
+KERNEL - the kernel uevent
 
-grover login: [   87.254950] 
-[   87.254952] =======================================================
-[   87.255252] [ INFO: possible circular locking dependency detected ]
-[   87.255252] 2.6.33-rc8-crc #106
-[   87.255252] -------------------------------------------------------
-[   87.255252] pulseaudio/2800 is trying to acquire lock:
-[   87.255252]  (&dev->lock){+.+.+.}, at: [<ffffffffa027d7f1>] snd_em28xx_capture_open+0x61/0x190 [em28xx_alsa]
-[   87.336024] 
-[   87.336024] but task is already holding lock:
-[   87.336024]  (&pcm->open_mutex){+.+.+.}, at: [<ffffffffa00ffcd2>] snd_pcm_open+0x182/0x450 [snd_pcm]
-[   87.336024] 
-[   87.336024] which lock already depends on the new lock.
-[   87.336024] 
-[   87.336024] 
-[   87.336024] the existing dependency chain (in reverse order) is:
-[   87.336024] 
-[   87.336024] -> #3 (&pcm->open_mutex){+.+.+.}:
-[   87.336024]        [<ffffffff81083215>] __lock_acquire+0xfc5/0x1550
-[   87.336024]        [<ffffffff8108383c>] lock_acquire+0x9c/0x140
-[   87.336024]        [<ffffffff814b96c1>] __mutex_lock_common+0x61/0x610
-[   87.336024]        [<ffffffff814b9d53>] mutex_lock_nested+0x43/0x50
-[   87.336024]        [<ffffffffa00fbd32>] snd_pcm_release+0x42/0xb0 [snd_pcm]
-[   87.336024]        [<ffffffff8112115d>] __fput+0x15d/0x290
-[   87.336024]        [<ffffffff811212ad>] fput+0x1d/0x30
-[   87.336024]        [<ffffffff810fe001>] remove_vma+0x51/0x80
-[   87.336024]        [<ffffffff810ffa1d>] do_munmap+0x2fd/0x390
-[   87.336024]        [<ffffffff810ffb06>] sys_munmap+0x56/0x80
-[   87.336024]        [<ffffffff81002adb>] system_call_fastpath+0x16/0x1b
-[   87.336024] 
-[   87.336024] -> #2 (&mm->mmap_sem){++++++}:
-[   87.336024]        [<ffffffff81083215>] __lock_acquire+0xfc5/0x1550
-[   87.336024]        [<ffffffff8108383c>] lock_acquire+0x9c/0x140
-[   87.336024]        [<ffffffff810f62c7>] might_fault+0xa7/0xd0
-[   87.336024]        [<ffffffff8113102b>] filldir+0x7b/0xe0
-[   87.336024]        [<ffffffff8118aa21>] sysfs_readdir+0xf1/0x1b0
-[   87.336024]        [<ffffffff81131268>] vfs_readdir+0xb8/0xe0
-[   87.336024]        [<ffffffff8113144d>] sys_getdents+0xad/0x110
-[   87.336024]        [<ffffffff81002adb>] system_call_fastpath+0x16/0x1b
-[   87.336024] 
-[   87.336024] -> #1 (sysfs_mutex){+.+.+.}:
-[   87.336024]        [<ffffffff81083215>] __lock_acquire+0xfc5/0x1550
-[   87.336024]        [<ffffffff8108383c>] lock_acquire+0x9c/0x140
-[   87.336024]        [<ffffffff814b96c1>] __mutex_lock_common+0x61/0x610
-[   87.336024]        [<ffffffff814b9d53>] mutex_lock_nested+0x43/0x50
-[   87.336024]        [<ffffffff8118b082>] sysfs_addrm_start+0x22/0x30
-[   87.336024]        [<ffffffff8118bc58>] create_dir+0x58/0xb0
-[   87.336024]        [<ffffffff8118bd0a>] sysfs_create_dir+0x5a/0x70
-[   87.336024]        [<ffffffff8123ebbd>] kobject_add_internal+0xbd/0x1f0
-[   87.336024]        [<ffffffff8123ee08>] kobject_add_varg+0x38/0x60
-[   87.336024]        [<ffffffff8123eee4>] kobject_add+0x44/0x70
-[   87.336024]        [<ffffffff81392510>] device_add+0xb0/0x5e0
-[   87.336024]        [<ffffffff81392a5e>] device_register+0x1e/0x30
-[   87.336024]        [<ffffffff8140a50d>] i2c_register_adapter+0x12d/0x250
-[   87.336024]        [<ffffffff8140a7f1>] i2c_add_adapter+0xb1/0xd0
-[   87.336024]        [<ffffffffa0207ba4>] em28xx_i2c_register+0x104/0x520 [em28xx]
-[   87.336024]        [<ffffffffa0209daa>] em28xx_usb_probe+0x68a/0xb90 [em28xx]
-[   87.336024]        [<ffffffff813eb4ab>] usb_probe_interface+0xeb/0x1b0
-[   87.336024]        [<ffffffff81395546>] driver_probe_device+0xc6/0x1d0
-[   87.336024]        [<ffffffff813956eb>] __driver_attach+0x9b/0xa0
-[   87.336024]        [<ffffffff8139492c>] bus_for_each_dev+0x6c/0xa0
-[   87.336024]        [<ffffffff8139535e>] driver_attach+0x1e/0x20
-[   87.336024]        [<ffffffff81394c11>] bus_add_driver+0xe1/0x280
-[   87.336024]        [<ffffffff81395a58>] driver_register+0x98/0x140
-[   87.336024]        [<ffffffff813ea06c>] usb_register_driver+0xdc/0x1a0
-[   87.336024]        [<ffffffffa021e023>] 0xffffffffa021e023
-[   87.336024]        [<ffffffff810001dc>] do_one_initcall+0x3c/0x1d0
-[   87.336024]        [<ffffffff81092d75>] sys_init_module+0xe5/0x250
-[   87.336024]        [<ffffffff81002adb>] system_call_fastpath+0x16/0x1b
-[   87.336024] 
-[   87.336024] -> #0 (&dev->lock){+.+.+.}:
-[   87.336024]        [<ffffffff81083668>] __lock_acquire+0x1418/0x1550
-[   87.336024]        [<ffffffff8108383c>] lock_acquire+0x9c/0x140
-[   87.336024]        [<ffffffff814b96c1>] __mutex_lock_common+0x61/0x610
-[   87.336024]        [<ffffffff814b9d53>] mutex_lock_nested+0x43/0x50
-[   87.336024]        [<ffffffffa027d7f1>] snd_em28xx_capture_open+0x61/0x190 [em28xx_alsa]
-[   87.336024]        [<ffffffffa00fbdee>] snd_pcm_open_substream+0x4e/0x90 [snd_pcm]
-[   87.336024]        [<ffffffffa00ffce9>] snd_pcm_open+0x199/0x450 [snd_pcm]
-[   87.336024]        [<ffffffffa00fffd4>] snd_pcm_capture_open+0x34/0x40 [snd_pcm]
-[   87.336024]        [<ffffffffa00da778>] snd_open+0x198/0x4e0 [snd]
-[   87.336024]        [<ffffffff8112384d>] chrdev_open+0x17d/0x320
-[   87.336024]        [<ffffffff8111d358>] __dentry_open+0x1a8/0x400
-[   87.336024]        [<ffffffff8111d6b4>] nameidata_to_filp+0x54/0x70
-[   87.336024]        [<ffffffff8112e7f1>] do_filp_open+0x841/0xc00
-[   87.336024]        [<ffffffff8111e954>] do_sys_open+0xa4/0x180
-[   87.336024]        [<ffffffff8111ea70>] sys_open+0x20/0x30
-[   87.336024]        [<ffffffff81002adb>] system_call_fastpath+0x16/0x1b
-[   87.336024] 
-[   87.336024] other info that might help us debug this:
-[   87.336024] 
-[   87.336024] 1 lock held by pulseaudio/2800:
-[   87.336024]  #0:  (&pcm->open_mutex){+.+.+.}, at: [<ffffffffa00ffcd2>] snd_pcm_open+0x182/0x450 [snd_pcm]
-[   87.336024] 
-[   87.336024] stack backtrace:
-[   87.336024] Pid: 2800, comm: pulseaudio Not tainted 2.6.33-rc8-crc #106
-[   87.336024] Call Trace:
-[   87.336024]  [<ffffffff81080fd9>] print_circular_bug+0xe9/0xf0
-[   87.336024]  [<ffffffff81083668>] __lock_acquire+0x1418/0x1550
-[   87.336024]  [<ffffffff81081dc8>] ? debug_check_no_locks_freed+0xc8/0x150
-[   87.336024]  [<ffffffff8108383c>] lock_acquire+0x9c/0x140
-[   87.336024]  [<ffffffffa027d7f1>] ? snd_em28xx_capture_open+0x61/0x190 [em28xx_alsa]
-[   87.336024]  [<ffffffff814b96c1>] __mutex_lock_common+0x61/0x610
-[   87.336024]  [<ffffffffa027d7f1>] ? snd_em28xx_capture_open+0x61/0x190 [em28xx_alsa]
-[   87.336024]  [<ffffffffa027d7f1>] ? snd_em28xx_capture_open+0x61/0x190 [em28xx_alsa]
-[   87.336024]  [<ffffffffa00fac70>] ? snd_pcm_hw_rule_muldivk+0x0/0xa0 [snd_pcm]
-[   87.336024]  [<ffffffff8107fd54>] ? lockdep_init_map+0x44/0x130
-[   87.336024]  [<ffffffff814b9d53>] mutex_lock_nested+0x43/0x50
-[   87.336024]  [<ffffffffa027d7f1>] snd_em28xx_capture_open+0x61/0x190 [em28xx_alsa]
-[   87.336024]  [<ffffffffa00fbdee>] snd_pcm_open_substream+0x4e/0x90 [snd_pcm]
-[   87.336024]  [<ffffffffa00ffce9>] snd_pcm_open+0x199/0x450 [snd_pcm]
-[   87.336024]  [<ffffffff81081cfd>] ? trace_hardirqs_on+0xd/0x10
-[   87.336024]  [<ffffffff810434f0>] ? default_wake_function+0x0/0x20
-[   87.336024]  [<ffffffff814b965e>] ? mutex_unlock+0xe/0x10
-[   87.336024]  [<ffffffffa00fffd4>] snd_pcm_capture_open+0x34/0x40 [snd_pcm]
-[   87.336024]  [<ffffffffa00da778>] snd_open+0x198/0x4e0 [snd]
-[   87.336024]  [<ffffffff8112384d>] chrdev_open+0x17d/0x320
-[   87.336024]  [<ffffffff8111d358>] __dentry_open+0x1a8/0x400
-[   87.336024]  [<ffffffff811236d0>] ? chrdev_open+0x0/0x320
-[   87.336024]  [<ffffffff8111d6b4>] nameidata_to_filp+0x54/0x70
-[   87.336024]  [<ffffffff8112e7f1>] do_filp_open+0x841/0xc00
-[   87.336024]  [<ffffffff814bf981>] ? sub_preempt_count+0x51/0x60
-[   87.336024]  [<ffffffff814bbb7c>] ? _raw_spin_unlock+0x5c/0x70
-[   87.336024]  [<ffffffff8111e954>] do_sys_open+0xa4/0x180
-[   87.336024]  [<ffffffff8111ea70>] sys_open+0x20/0x30
-[   87.336024]  [<ffffffff81002adb>] system_call_fastpath+0x16/0x1b
-[   89.153381] hda-intel: IRQ timing workaround is activated for card #0. Suggest a bigger bdl_pos_adj.
-[   89.402672] BUG: unable to handle kernel NULL pointer dereference at (null)
-[   89.403537] IP: [<ffffffff8104dfe6>] do_wait+0x1e6/0x2e0
-[   89.403537] PGD 16c019067 PUD 16c01a067 PMD 0 
-[   89.403537] Oops: 0000 [#1] PREEMPT SMP 
-[   89.403537] last sysfs file: /sys/devices/pci0000:00/0000:00:14.2/sound/card0/uevent
-[   89.403537] CPU 1 
-[   89.403537] Pid: 2813, comm: console-kit-dae Not tainted 2.6.33-rc8-crc #106 M3A78-T/System Product Name
-[   89.403537] RIP: 0010:[<ffffffff8104dfe6>]  [<ffffffff8104dfe6>] do_wait+0x1e6/0x2e0
-[   89.403537] RSP: 0018:ffff88016dfcfe88  EFLAGS: 00010293
-[   89.403537] RAX: ffff88016d29c318 RBX: fffffffffffffcf8 RCX: ffff88016b77d800
-[   89.403537] RDX: 0000000000000000 RSI: 0000000000000000 RDI: ffffffff81a7f4c8
-[   89.403537] RBP: ffff88016dfcfee8 R08: 0000000000000002 R09: 0000000000000000
-[   89.403537] R10: 0000000000000000 R11: 0000000000000246 R12: ffff88016dfcff08
-[   89.403537] R13: ffff88016d29c020 R14: ffff88016bd38000 R15: ffff88016bd38000
-[   89.403537] FS:  00007f7fd4a7b700(0000) GS:ffff880028280000(0000) knlGS:0000000000000000
-[   89.403537] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-[   89.403537] CR2: 0000000000000000 CR3: 000000016b12e000 CR4: 00000000000006e0
-[   89.403537] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-[   89.600024] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-[   89.600024] Process console-kit-dae (pid: 2813, threadinfo ffff88016dfce000, task ffff88016bd38000)
-[   89.600024] Stack:
-[   89.600024]  ffff88016bd38000 ffff88016bd38000 ffff88016dfcff30 ffff88016d29c318
-[   89.600024] <0> ffff88016dfcfee8 0000000000000000 ffffffff81069880 00007fff88aaff4c
-[   89.600024] <0> ffff88016b77d880 0000000000000000 000000000061ea60 00007fff88aaff9c
-[   89.600024] Call Trace:
-[   89.600024]  [<ffffffff81069880>] ? find_get_pid+0x0/0x80
-[   89.600024]  [<ffffffff8104e169>] sys_wait4+0x89/0xf0
-[   89.600024]  [<ffffffff8104b650>] ? child_wait_callback+0x0/0x80
-[   89.600024]  [<ffffffff81002adb>] system_call_fastpath+0x16/0x1b
-[   89.600024] Code: eb 29 0f 1f 00 48 89 da be 01 00 00 00 4c 89 e7 e8 f0 f1 ff ff 85 c0 0f 85 d0 00 00 00 48 8b 9b 08 03 00 00 48 81 eb 08 03 00 00 <48> 8b 83 08 03 00 00 0f 18 08 48 8d 83 08 03 00 00 48 39 45 b8 
-[   89.600024] RIP  [<ffffffff8104dfe6>] do_wait+0x1e6/0x2e0
-[   89.600024]  RSP <ffff88016dfcfe88>
-[   89.600024] CR2: 0000000000000000
-[   89.600489] ---[ end trace 3efd4205cd3392b3 ]---
-[   89.600492] note: console-kit-dae[2813] exited with preempt_count 1
+KERNEL[1266085238.085802] add      /devices/pci0000:00/0000:00:13.2/usb7/7-4/7-4.4/7-4.4:1.0/bluetooth/hci0/hci0:41 (bluetooth)
+UDEV  [1266085238.113475] add      /devices/pci0000:00/0000:00:13.2/usb7/7-4/7-4.4/7-4.4:1.0/bluetooth/hci0/hci0:41 (bluetooth)
+KERNEL[1266085238.412016] add      /module/hidp (module)
+UDEV  [1266085238.412247] add      /module/hidp (module)
+KERNEL[1266085238.418193] add      /bus/hid/drivers/generic-bluetooth (drivers)
+UDEV  [1266085238.418365] add      /bus/hid/drivers/generic-bluetooth (drivers)
+KERNEL[1266085238.418507] add      /devices/pci0000:00/0000:00:13.2/usb7/7-4/7-4.4/7-4.4:1.0/bluetooth/hci0/hci0:41/0005:05AC:030D.0004 (hid)
+KERNEL[1266085238.460711] add      /module/hid_magicmouse (module)
+UDEV  [1266085238.460906] add      /module/hid_magicmouse (module)
+KERNEL[1266085238.460977] add      /devices/pci0000:00/0000:00:13.2/usb7/7-4/7-4.4/7-4.4:1.0/bluetooth/hci0/hci0:41/input7 (input)
+UDEV  [1266085238.462772] add      /devices/pci0000:00/0000:00:13.2/usb7/7-4/7-4.4/7-4.4:1.0/bluetooth/hci0/hci0:41/input7 (input)
+KERNEL[1266085238.473232] add      /devices/pci0000:00/0000:00:13.2/usb7/7-4/7-4.4/7-4.4:1.0/bluetooth/hci0/hci0:41/input7/mouse1 (input)
+KERNEL[1266085238.473323] add      /devices/pci0000:00/0000:00:13.2/usb7/7-4/7-4.4/7-4.4:1.0/bluetooth/hci0/hci0:41/input7/event7 (input)
+KERNEL[1266085238.473662] add      /devices/pci0000:00/0000:00:13.2/usb7/7-4/7-4.4/7-4.4:1.0/bluetooth/hci0/hci0:41/0005:05AC:030D.0004/hidraw/hidraw3 (hidraw)
+UDEV  [1266085238.479691] add      /devices/pci0000:00/0000:00:13.2/usb7/7-4/7-4.4/7-4.4:1.0/bluetooth/hci0/hci0:41/input7/event7 (input)
+KERNEL[1266085238.486090] add      /devices/pci0000:00/0000:00:13.2/usb7/7-4/7-4.4/7-4.4:1.0/bluetooth/hci0/hci0:41/input8 (input)
+UDEV  [1266085238.488291] add      /devices/pci0000:00/0000:00:13.2/usb7/7-4/7-4.4/7-4.4:1.0/bluetooth/hci0/hci0:41/input7/mouse1 (input)
+UDEV  [1266085238.493195] add      /devices/pci0000:00/0000:00:13.2/usb7/7-4/7-4.4/7-4.4:1.0/bluetooth/hci0/hci0:41/input8 (input)
+KERNEL[1266085238.498954] add      /devices/pci0000:00/0000:00:13.2/usb7/7-4/7-4.4/7-4.4:1.0/bluetooth/hci0/hci0:41/input8/mouse2 (input)
+KERNEL[1266085238.499066] add      /devices/pci0000:00/0000:00:13.2/usb7/7-4/7-4.4/7-4.4:1.0/bluetooth/hci0/hci0:41/input8/event8 (input)
+KERNEL[1266085238.499154] add      /bus/hid/drivers/magicmouse (drivers)
+UDEV  [1266085238.499624] add      /devices/pci0000:00/0000:00:13.2/usb7/7-4/7-4.4/7-4.4:1.0/bluetooth/hci0/hci0:41/0005:05AC:030D.0004 (hid)
+UDEV  [1266085238.501108] add      /devices/pci0000:00/0000:00:13.2/usb7/7-4/7-4.4/7-4.4:1.0/bluetooth/hci0/hci0:41/0005:05AC:030D.0004/hidraw/hidraw3 (hidraw)
+UDEV  [1266085238.501311] add      /bus/hid/drivers/magicmouse (drivers)
+UDEV  [1266085238.509221] add      /devices/pci0000:00/0000:00:13.2/usb7/7-4/7-4.4/7-4.4:1.0/bluetooth/hci0/hci0:41/input8/event8 (input)
+UDEV  [1266085238.511459] add      /devices/pci0000:00/0000:00:13.2/usb7/7-4/7-4.4/7-4.4:1.0/bluetooth/hci0/hci0:41/input8/mouse2 (input)
+KERNEL[1266085311.467279] remove   /devices/pci0000:00/0000:00:13.2/usb7/7-4/7-4.4/7-4.4:1.0/bluetooth/hci0/hci0:41/input7/mouse1 (input)
+UDEV  [1266085311.468189] remove   /devices/pci0000:00/0000:00:13.2/usb7/7-4/7-4.4/7-4.4:1.0/bluetooth/hci0/hci0:41/input7/mouse1 (input)
+KERNEL[1266085311.471961] remove   /devices/pci0000:00/0000:00:13.2/usb7/7-4/7-4.4/7-4.4:1.0/bluetooth/hci0/hci0:41/input7/event7 (input)
+UDEV  [1266085311.472632] remove   /devices/pci0000:00/0000:00:13.2/usb7/7-4/7-4.4/7-4.4:1.0/bluetooth/hci0/hci0:41/input7/event7 (input)
+KERNEL[1266085311.475921] remove   /devices/pci0000:00/0000:00:13.2/usb7/7-4/7-4.4/7-4.4:1.0/bluetooth/hci0/hci0:41/input7 (input)
+KERNEL[1266085311.475985] remove   /devices/pci0000:00/0000:00:13.2/usb7/7-4/7-4.4/7-4.4:1.0/bluetooth/hci0/hci0:41/0005:05AC:030D.0004/hidraw/hidraw3 (hidraw)
+KERNEL[1266085311.476153] remove   /devices/pci0000:00/0000:00:13.2/usb7/7-4/7-4.4/7-4.4:1.0/bluetooth/hci0/hci0:41/0005:05AC:030D.0004 (hid)
+KERNEL[1266085311.476214] remove   /devices/pci0000:00/0000:00:13.2/usb7/7-4/7-4.4/7-4.4:1.0/bluetooth/hci0/hci0:41 (bluetooth)
+UDEV  [1266085311.476397] remove   /devices/pci0000:00/0000:00:13.2/usb7/7-4/7-4.4/7-4.4:1.0/bluetooth/hci0/hci0:41/input7 (input)
+UDEV  [1266085311.476734] remove   /devices/pci0000:00/0000:00:13.2/usb7/7-4/7-4.4/7-4.4:1.0/bluetooth/hci0/hci0:41/0005:05AC:030D.0004/hidraw/hidraw3 (hidraw)
+UDEV  [1266085311.477000] remove   /devices/pci0000:00/0000:00:13.2/usb7/7-4/7-4.4/7-4.4:1.0/bluetooth/hci0/hci0:41/0005:05AC:030D.0004 (hid)
+UDEV  [1266085311.503056] remove   /devices/pci0000:00/0000:00:13.2/usb7/7-4/7-4.4/7-4.4:1.0/bluetooth/hci0/hci0:41 (bluetooth)
 
-> Hi,
-> 
-> Inorder to get skype working with linux I have the following in .asoundrc for my normal userid.
-> 
-> ---
-> pcm.pulse {
->     type pulse
-> }
-> 
-> ctl.pulse {
->     type pulse
-> }
-> 
-> pcm.!default {
->     type pulse
-> }
-> ctl.!default {
->     type pulse
-> ---
-> 
-> Try #1
-> Starting as root if I do:
-> su - <id>
-> aplay sound.wav
-> <traceback inlined below>
-> aplay sound.wav 
-> (silence)
-> killall pulseaudio
-> aplay sound.wav
-> (works as expected now going thru pulseaudio)
-> 
-> Try #2
-> Starting as root if I do:
-> aplay sound.wav
-> (works as expected using alsa alone)
-> su - <id>
-> aplay sound.wav
-> <another lockdep traceback>
-> aplay sound.wav
-> (works as expected now going thru pulseaudio)
-> 
-> With .32 there were no tracebacks (lockdep was enabled) and try #1 would work where I now get silence.
-> 
-> Ideas?
-> Ed Tomlinson
-> 
-> aplay -l
-> **** List of PLAYBACK Hardware Devices ****
-> card 0: SB [HDA ATI SB], device 0: ALC1200 Analog [ALC1200 Analog]
->   Subdevices: 0/1
->   Subdevice #0: subdevice #0
-> card 0: SB [HDA ATI SB], device 1: ALC1200 Digital [ALC1200 Digital]
->   Subdevices: 1/1
->   Subdevice #0: subdevice #0
-> card 1: HDMI [HDA ATI HDMI], device 3: ATI HDMI [ATI HDMI]
->   Subdevices: 1/1
->   Subdevice #0: subdevice #0
-> 
-> "ALC1200 Analog" is what has speakers connected
-> 
-> The em28xx in the traceback is an input source from a usb hdtv dongle.
-> 
-> pavucontrol setup has been verified.
-> 
-> [   91.070620]                                                                                                                               
-> [   91.070621] =======================================================                                                                       
-> [   91.071378] [ INFO: possible circular locking dependency detected ]                                                                       
-> [   91.071378] 2.6.33-rc8-crc #106                                                                                                           
-> [   91.071378] -------------------------------------------------------                                                                       
-> [   91.071378] pulseaudio/2717 is trying to acquire lock:                                                                                    
-> [   91.071378]  (&dev->lock){+.+.+.}, at: [<ffffffffa02797f1>] snd_em28xx_capture_open+0x61/0x190 [em28xx_alsa]                              
-> [   91.071378]                                                                                                                               
-> [   91.071378] but task is already holding lock:                                                                                             
-> [   91.071378]  (&pcm->open_mutex){+.+.+.}, at: [<ffffffffa010ecd2>] snd_pcm_open+0x182/0x450 [snd_pcm]                                      
-> [   91.071378]                                                                                                                               
-> [   91.071378] which lock already depends on the new lock.                                                                                   
-> [   91.071378]                                                                                                                               
-> [   91.071378]                                                                                                                               
-> [   91.071378] the existing dependency chain (in reverse order) is:                                                                          
-> [   91.071378]                                                                                                                               
-> [   91.071378] -> #3 (&pcm->open_mutex){+.+.+.}:                                                                                             
-> [   91.071378]        [<ffffffff81083215>] __lock_acquire+0xfc5/0x1550                                                                       
-> [   91.071378]        [<ffffffff8108383c>] lock_acquire+0x9c/0x140                                                                           
-> [   91.071378]        [<ffffffff814b96c1>] __mutex_lock_common+0x61/0x610                                                                    
-> [   91.071378]        [<ffffffff814b9d53>] mutex_lock_nested+0x43/0x50                                                                       
-> [   91.071378]        [<ffffffffa010ad32>] snd_pcm_release+0x42/0xb0 [snd_pcm]                                                               
-> [   91.071378]        [<ffffffff8112115d>] __fput+0x15d/0x290                                                                                
-> [   91.071378]        [<ffffffff811212ad>] fput+0x1d/0x30                                                                                    
-> [   91.071378]        [<ffffffff810fe001>] remove_vma+0x51/0x80                                                                              
-> [   91.071378]        [<ffffffff810ffa1d>] do_munmap+0x2fd/0x390                                                                             
-> [   91.071378]        [<ffffffff810ffb06>] sys_munmap+0x56/0x80                                                                              
-> [   91.071378]        [<ffffffff81002adb>] system_call_fastpath+0x16/0x1b                                                                    
-> [   91.071378]                                                                                                                               
-> [   91.071378] -> #2 (&mm->mmap_sem){++++++}:                                                                                                
-> [   91.071378]        [<ffffffff81083215>] __lock_acquire+0xfc5/0x1550                                                                       
-> [   91.071378]        [<ffffffff8108383c>] lock_acquire+0x9c/0x140                                                                           
-> [   91.071378]        [<ffffffff810f62c7>] might_fault+0xa7/0xd0                                                                             
-> [   91.071378]        [<ffffffff8113102b>] filldir+0x7b/0xe0                                                                                 
-> [   91.071378]        [<ffffffff8118aa21>] sysfs_readdir+0xf1/0x1b0                                                                          
-> [   91.071378]        [<ffffffff81131268>] vfs_readdir+0xb8/0xe0                                                                             
-> [   91.071378]        [<ffffffff8113144d>] sys_getdents+0xad/0x110                                                                           
-> [   91.071378]        [<ffffffff81002adb>] system_call_fastpath+0x16/0x1b                                                                    
-> [   91.071378]                                                                                                                               
-> [   91.071378] -> #1 (sysfs_mutex){+.+.+.}:                                                                                                  
-> [   91.071378]        [<ffffffff81083215>] __lock_acquire+0xfc5/0x1550                                                                       
-> [   91.071378]        [<ffffffff8108383c>] lock_acquire+0x9c/0x140                                                                           
-> [   91.071378]        [<ffffffff814b96c1>] __mutex_lock_common+0x61/0x610                                                                    
-> [   91.071378]        [<ffffffff814b9d53>] mutex_lock_nested+0x43/0x50                                                                       
-> [   91.071378]        [<ffffffff8118b082>] sysfs_addrm_start+0x22/0x30                                                                       
-> [   91.071378]        [<ffffffff8118bc58>] create_dir+0x58/0xb0                                                                              
-> [   91.514885]        [<ffffffff8118bd0a>] sysfs_create_dir+0x5a/0x70                                                                        
-> [   91.514885]        [<ffffffff8123ebbd>] kobject_add_internal+0xbd/0x1f0                                                                   
-> [   91.514885]        [<ffffffff8123ee08>] kobject_add_varg+0x38/0x60                                                                        
-> [   91.514885]        [<ffffffff8123eee4>] kobject_add+0x44/0x70                                                                             
-> [   91.514885]        [<ffffffff81392510>] device_add+0xb0/0x5e0                                                                             
-> [   91.514885]        [<ffffffff81392a5e>] device_register+0x1e/0x30                                                                         
-> [   91.514885]        [<ffffffff8140a50d>] i2c_register_adapter+0x12d/0x250                                                                  
-> [   91.514885]        [<ffffffff8140a7f1>] i2c_add_adapter+0xb1/0xd0                                                                         
-> [   91.514885]        [<ffffffffa0231ba4>] em28xx_i2c_register+0x104/0x520 [em28xx]                                                          
-> [   91.514885]        [<ffffffffa0233daa>] em28xx_usb_probe+0x68a/0xb90 [em28xx]                                                             
-> [   91.514885]        [<ffffffff813eb4ab>] usb_probe_interface+0xeb/0x1b0                                                                    
-> [   91.514885]        [<ffffffff81395546>] driver_probe_device+0xc6/0x1d0                                                                    
-> [   91.514885]        [<ffffffff813956eb>] __driver_attach+0x9b/0xa0                                                                         
-> [   91.514885]        [<ffffffff8139492c>] bus_for_each_dev+0x6c/0xa0                                                                        
-> [   91.514885]        [<ffffffff8139535e>] driver_attach+0x1e/0x20                                                                           
-> [   91.514885]        [<ffffffff81394c11>] bus_add_driver+0xe1/0x280                                                                         
-> [   91.514885]        [<ffffffff81395a58>] driver_register+0x98/0x140                                                                        
-> [   91.514885]        [<ffffffff813ea06c>] usb_register_driver+0xdc/0x1a0                                                                    
-> [   91.514885]        [<ffffffffa0248023>] 0xffffffffa0248023                                                                                
-> [   91.514885]        [<ffffffff810001dc>] do_one_initcall+0x3c/0x1d0                                                                        
-> [   91.514885]        [<ffffffff81092d75>] sys_init_module+0xe5/0x250                                                                        
-> [   91.514885]        [<ffffffff81002adb>] system_call_fastpath+0x16/0x1b                                                                    
-> [   91.514885]                                                                                                                               
-> [   91.514885] -> #0 (&dev->lock){+.+.+.}:                                                                                                   
-> [   91.514885]        [<ffffffff81083668>] __lock_acquire+0x1418/0x1550                                                                      
-> [   91.514885]        [<ffffffff8108383c>] lock_acquire+0x9c/0x140                                                                           
-> [   91.514885]        [<ffffffff814b96c1>] __mutex_lock_common+0x61/0x610                                                                    
-> [   91.514885]        [<ffffffff814b9d53>] mutex_lock_nested+0x43/0x50
-> [   91.514885]        [<ffffffffa02797f1>] snd_em28xx_capture_open+0x61/0x190 [em28xx_alsa]
-> [   91.514885]        [<ffffffffa010adee>] snd_pcm_open_substream+0x4e/0x90 [snd_pcm]
-> [   91.514885]        [<ffffffffa010ece9>] snd_pcm_open+0x199/0x450 [snd_pcm]
-> [   91.514885]        [<ffffffffa010efd4>] snd_pcm_capture_open+0x34/0x40 [snd_pcm]
-> [   91.514885]        [<ffffffffa00c5778>] snd_open+0x198/0x4e0 [snd]
-> [   91.514885]        [<ffffffff8112384d>] chrdev_open+0x17d/0x320
-> [   91.514885]        [<ffffffff8111d358>] __dentry_open+0x1a8/0x400
-> [   91.514885]        [<ffffffff8111d6b4>] nameidata_to_filp+0x54/0x70
-> [   91.514885]        [<ffffffff8112e7f1>] do_filp_open+0x841/0xc00
-> [   91.514885]        [<ffffffff8111e954>] do_sys_open+0xa4/0x180
-> [   91.514885]        [<ffffffff8111ea70>] sys_open+0x20/0x30
-> [   91.514885]        [<ffffffff81002adb>] system_call_fastpath+0x16/0x1b
-> [   91.514885]
-> [   91.514885] other info that might help us debug this:
-> [   91.514885]
-> [   91.514885] 1 lock held by pulseaudio/2717:
-> [   91.514885]  #0:  (&pcm->open_mutex){+.+.+.}, at: [<ffffffffa010ecd2>] snd_pcm_open+0x182/0x450 [snd_pcm]
-> [   91.514885]
-> [   91.514885] stack backtrace:
-> [   91.514885] Pid: 2717, comm: pulseaudio Not tainted 2.6.33-rc8-crc #106
-> [   91.514885] Call Trace:
-> [   91.514885]  [<ffffffff81080fd9>] print_circular_bug+0xe9/0xf0
-> [   91.514885]  [<ffffffff81083668>] __lock_acquire+0x1418/0x1550
-> [   91.514885]  [<ffffffff81081dc8>] ? debug_check_no_locks_freed+0xc8/0x150
-> [   91.514885]  [<ffffffff8108383c>] lock_acquire+0x9c/0x140
-> [   91.514885]  [<ffffffffa02797f1>] ? snd_em28xx_capture_open+0x61/0x190 [em28xx_alsa]
-> [   91.514885]  [<ffffffff814b96c1>] __mutex_lock_common+0x61/0x610
-> [   91.514885]  [<ffffffffa02797f1>] ? snd_em28xx_capture_open+0x61/0x190 [em28xx_alsa]
-> [   91.514885]  [<ffffffffa02797f1>] ? snd_em28xx_capture_open+0x61/0x190 [em28xx_alsa]
-> [   91.514885]  [<ffffffffa0109c70>] ? snd_pcm_hw_rule_muldivk+0x0/0xa0 [snd_pcm]
-> [   91.514885]  [<ffffffff8107fd54>] ? lockdep_init_map+0x44/0x130
-> [   91.514885]  [<ffffffff814b9d53>] mutex_lock_nested+0x43/0x50
-> [   91.514885]  [<ffffffffa02797f1>] snd_em28xx_capture_open+0x61/0x190 [em28xx_alsa]
-> [   91.514885]  [<ffffffffa010adee>] snd_pcm_open_substream+0x4e/0x90 [snd_pcm]
-> [   91.514885]  [<ffffffffa010ece9>] snd_pcm_open+0x199/0x450 [snd_pcm]
-> [   91.514885]  [<ffffffff81081cfd>] ? trace_hardirqs_on+0xd/0x10
-> [   91.514885]  [<ffffffff810434f0>] ? default_wake_function+0x0/0x20
-> [   91.514885]  [<ffffffff814b965e>] ? mutex_unlock+0xe/0x10
-> [   91.514885]  [<ffffffffa010efd4>] snd_pcm_capture_open+0x34/0x40 [snd_pcm]
-> [   91.514885]  [<ffffffffa00c5778>] snd_open+0x198/0x4e0 [snd]
-> [   91.514885]  [<ffffffff8112384d>] chrdev_open+0x17d/0x320
-> [   91.514885]  [<ffffffff8111d358>] __dentry_open+0x1a8/0x400
-> [   91.514885]  [<ffffffff811236d0>] ? chrdev_open+0x0/0x320
-> [   91.514885]  [<ffffffff8111d6b4>] nameidata_to_filp+0x54/0x70
-> [   91.514885]  [<ffffffff8112e7f1>] do_filp_open+0x841/0xc00
-> [   91.514885]  [<ffffffff814bf981>] ? sub_preempt_count+0x51/0x60
-> [   91.514885]  [<ffffffff814bbb7c>] ? _raw_spin_unlock+0x5c/0x70
-> [   91.514885]  [<ffffffff8111e954>] do_sys_open+0xa4/0x180
-> [   91.514885]  [<ffffffff8111ea70>] sys_open+0x20/0x30
-> [   91.514885]  [<ffffffff81002adb>] system_call_fastpath+0x16/0x1b
-> [   92.643423] hda-intel: IRQ timing workaround is activated for card #0. Suggest a bigger bdl_pos_adj.
-> 
-> 
-> 
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
+Ideas?
+Ed Tomlinson
