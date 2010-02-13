@@ -1,146 +1,91 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757468Ab0BMSeK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Feb 2010 13:34:10 -0500
-Received: from e23smtp01.au.ibm.com ([202.81.31.143]:39578 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754175Ab0BMSeF (ORCPT
+	id S1757658Ab0BMSgm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Feb 2010 13:36:42 -0500
+Received: from ppp-157-177.adsl.restena.lu ([158.64.157.177]:48439 "EHLO
+	bonbons.gotdns.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754175Ab0BMSgk convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Feb 2010 13:34:05 -0500
-Date: Sun, 14 Feb 2010 00:03:56 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>, "Ma, Ling" <ling.ma@intel.com>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       "ego@in.ibm.com" <ego@in.ibm.com>
-Subject: Re: change in sched cpu_power causing regressions with SCHED_MC
-Message-ID: <20100213183356.GC5882@dirshya.in.ibm.com>
-Reply-To: svaidy@linux.vnet.ibm.com
-References: <1266023662.2808.118.camel@sbs-t61.sc.intel.com>
- <1266024679.2808.153.camel@sbs-t61.sc.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <1266024679.2808.153.camel@sbs-t61.sc.intel.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Sat, 13 Feb 2010 13:36:40 -0500
+Date: Sat, 13 Feb 2010 19:36:09 +0100
+From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Jiri Kosina <jkosina@suse.cz>, Oliver Neukum <oliver@neukum.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Marcel Holtmann <marcel@holtmann.org>,
+       H Hartley Sweeten <hsweeten@visionengravers.com>,
+       <linux-usb@vger.kernel.org>, <linux-input@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: S2R resume crash in 2.6.33-rc7 - NULL pointer dereference in
+ dev_get_drvdata() for usbhid
+Message-ID: <20100213193609.3337b3f0@neptune.home>
+In-Reply-To: <Pine.LNX.4.44L0.1002131238580.23844-100000@netrider.rowland.org>
+References: <20100213135720.603e5f64@neptune.home>
+	<Pine.LNX.4.44L0.1002131238580.23844-100000@netrider.rowland.org>
+X-Mailer: Claws Mail 3.7.5 (GTK+ 2.16.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Suresh Siddha <suresh.b.siddha@intel.com> [2010-02-12 17:31:19]:
+On Sat, 13 February 2010 Alan Stern <stern@rowland.harvard.edu> wrote:
+>
+> On Sat, 13 Feb 2010, Bruno [UTF-8] Prémont wrote:
+> 
+> > On Mon, 08 February 2010 Alan Stern <stern@rowland.harvard.edu>
+> > wrote:
+> > > Clearly something is setting usbhid->intf to NULL.  But I don't
+> > > see any code that would do it.  You may have to resort to putting
+> > > printk() statements at various strategic places to find out where
+> > > it happens. You could start with the beginnings and ends of
+> > > hid_suspend, hid_resume, and hid_reset_resume.  Maybe also
+> > > usbhid_disconnect(), just in case.
+> > 
+> > I did add a few printk()s and WARN_ON()s to get a better idea of
+> > why/when usbhid->intf is NULL and it is already since probe time of
+> > the second interface anounced by the USB keyboard (hid.debug=1):
+> 
+> ...
+> 
+> > This lets me guess that hid_add_device() is doing something wrong
+> > here when report parsing fails... (as that one is the only one which
+> > could be doing the initialization of usbhid which does work for the
+> > first interface announced by my keyboard)
+> 
+> I don't know about doing anything wrong...  However it does appear
+> that in this case the interface is registered on the HID bus but
+> doesn't get bound to a driver.  Jiri will know whether or not that's
+> the desired outcome.
+> 
+> On the other hand, I don't think there would be anything wrong with 
+> moving the
+> 
+> 	usbhid->intf = intf;
+> 	usbhid->ifnum = interface->desc.bInterfaceNumber;
+> 
+> lines from usbhid_start() to usbhid_probe(), just before the call to
+> hid_add_device().  It should fix the bug, and those lines do belong in
+> the probe routine.  Jiri, any problems with doing this?
 
-> Peterz,
-> 
-> We have one more problem that Yanmin and Ling Ma reported. On a dual
-> socket quad-core platforms (for example platforms based on NHM-EP), we
-> are seeing scenarios where one socket is completely busy (with all the 4
-> cores running with 4 tasks) and another socket is completely idle.
-> 
-> This causes performance issues as those 4 tasks share the memory
-> controller, last-level cache bandwidth etc. Also we won't be taking
-> advantage of turbo-mode as much as we like. We will have all these
-> benefits if we move two of those tasks to the other socket. Now both the
-> sockets can potentially go to turbo etc and improve performance.
-> 
-> In short, your recent change (shown below) broke this behavior. In the
-> kernel summit you mentioned you made this change with out affecting the
-> behavior of SMT/MC. And my testing immediately after kernel-summit also
-> didn't show the problem (perhaps my test didn't hit this specific
-> change). But apparently we are having performance issues with this patch
-> (Ling Ma's bisect pointed to this patch). I will look more detailed into
-> this after the long weekend (to see if we can catch this scenario in
-> fix_small_imbalance() etc). But wanted to give you a quick heads up.
-> Thanks.
-> 
-> commit f93e65c186ab3c05ce2068733ca10e34fd00125e
-> Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Date:   Tue Sep 1 10:34:32 2009 +0200
-> 
->     sched: Restore __cpu_power to a straight sum of power
->     
->     cpu_power is supposed to be a representation of the process
->     capacity of the cpu, not a value to randomly tweak in order to
->     affect placement.
->     
->     Remove the placement hacks.
->     
->     Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
->     Tested-by: Andreas Herrmann <andreas.herrmann3@amd.com>
->     Acked-by: Andreas Herrmann <andreas.herrmann3@amd.com>
->     Acked-by: Gautham R Shenoy <ego@in.ibm.com>
->     Cc: Balbir Singh <balbir@in.ibm.com>
->     LKML-Reference: <20090901083825.810860576@chello.nl>
->     Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> 
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index da1edc8..584a122 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -8464,15 +8464,13 @@ static void free_sched_groups(const struct cpumask *cpu_map,
->   * there are asymmetries in the topology. If there are asymmetries, group
->   * having more cpu_power will pickup more load compared to the group having
->   * less cpu_power.
-> - *
-> - * cpu_power will be a multiple of SCHED_LOAD_SCALE. This multiple represents
-> - * the maximum number of tasks a group can handle in the presence of other idle
-> - * or lightly loaded groups in the same sched domain.
->   */
->  static void init_sched_groups_power(int cpu, struct sched_domain *sd)
->  {
->  	struct sched_domain *child;
->  	struct sched_group *group;
-> +	long power;
-> +	int weight;
-> 
->  	WARN_ON(!sd || !sd->groups);
-> 
-> @@ -8483,22 +8481,20 @@ static void init_sched_groups_power(int cpu, struct sched_domain *sd)
-> 
->  	sd->groups->__cpu_power = 0;
-> 
-> -	/*
-> -	 * For perf policy, if the groups in child domain share resources
-> -	 * (for example cores sharing some portions of the cache hierarchy
-> -	 * or SMT), then set this domain groups cpu_power such that each group
-> -	 * can handle only one task, when there are other idle groups in the
-> -	 * same sched domain.
-> -	 */
-> -	if (!child || (!(sd->flags & SD_POWERSAVINGS_BALANCE) &&
-> -		       (child->flags &
-> -			(SD_SHARE_CPUPOWER | SD_SHARE_PKG_RESOURCES)))) {
-> -		sg_inc_cpu_power(sd->groups, SCHED_LOAD_SCALE);
-> +	if (!child) {
-> +		power = SCHED_LOAD_SCALE;
-> +		weight = cpumask_weight(sched_domain_span(sd));
-> +		/*
-> +		 * SMT siblings share the power of a single core.
-> +		 */
-> +		if ((sd->flags & SD_SHARE_CPUPOWER) && weight > 1)
-> +			power /= weight;
-> +		sg_inc_cpu_power(sd->groups, power);
->  		return;
->  	}
-> 
->  	/*
-> -	 * add cpu_power of each child group to this groups cpu_power
-> +	 * Add cpu_power of each child group to this groups cpu_power.
->  	 */
->  	group = child->groups;
->  	do {
-> 
+With the below patch (which is only half of the move work) I don't
+get crashes anymore. Though I wonder if other initialization steps
+(like the spin_lock_init() right before setting usbhid->intf) would
+need to be moved as well.
 
-I have hit the same problem in older non-HT quad cores also.
-(http://lkml.org/lkml/2010/2/8/80)
+Bruno
 
-The following condition in find_busiest_group()
-	sds.max_load <= sds.busiest_load_per_task
-
-	treats unequally loaded groups as balanced as longs they are below
-	capacity.
-        
-        We need to change the above condition before we hit the
-        fix_small_imbalance() step.
-        
---Vaidy
-         
+diff --git a/drivers/hid/usbhid/hid-core.c b/drivers/hid/usbhid/hid-core.c
+index e2997a8..690ca75 100644
+--- a/drivers/hid/usbhid/hid-core.c
++++ b/drivers/hid/usbhid/hid-core.c
+@@ -1154,6 +1154,8 @@ static int usbhid_probe(struct usb_interface *intf, const struct usb_device_id *
+ 
+ 	hid->driver_data = usbhid;
+ 	usbhid->hid = hid;
++	usbhid->intf = intf;
++	usbhid->ifnum = interface->desc.bInterfaceNumber;
+ 
+ 	ret = hid_add_device(hid);
+ 	if (ret) {
