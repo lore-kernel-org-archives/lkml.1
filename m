@@ -1,54 +1,42 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757033Ab0BMNyw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Feb 2010 08:54:52 -0500
-Received: from mail-bw0-f216.google.com ([209.85.218.216]:61319 "EHLO
-	mail-bw0-f216.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756112Ab0BMNyv convert rfc822-to-8bit (ORCPT
+	id S1757140Ab0BMOSh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Feb 2010 09:18:37 -0500
+Received: from fg-out-1718.google.com ([72.14.220.157]:42068 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755341Ab0BMOSg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Feb 2010 08:54:51 -0500
-X-Greylist: delayed 387 seconds by postgrey-1.27 at vger.kernel.org; Sat, 13 Feb 2010 08:54:51 EST
+	Sat, 13 Feb 2010 09:18:36 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=deAR/trR//27RLp0F7xTQXFKKCVMLn3oMGCu/KFUi+qcTNwffGB1X49gWgBrd/Erqw
-         08uH5WMTPPpRNF/m83un48unPpBwUB80XcUZ0Z57o8foyzCsC69ZsJY5Qvz8jsRmx4tK
-         jydxBaFhiQ2DTaNpDqy5XBXn35fwmzJd9rcJ0=
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=ZQoRFf3Ud7Cl697O8kFJlVmGwLna+Rhiv6xsyo9ZPm2Fy1s2Mb9lt2ZNA4Vew9ebjM
+         vjuGgF9ND7M1I/YbPdh4K9S/UovEhcc/zO0/B7Iwib9WEEKtbtlZRrnpFdAI/w6zd9l5
+         O9FDlndxr5NJYVzMsxtvwRNBDK9uYAd/sMi4k=
+Message-ID: <4B76B341.7010801@gmail.com>
+Date: Sat, 13 Feb 2010 15:12:17 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.7) Gecko/20100111 SUSE/3.0.1-9.3 Thunderbird/3.0.1
 MIME-Version: 1.0
-In-Reply-To: <dc6d3181002122148v6451ebffka164de288738485d@mail.gmail.com>
-References: <dc6d3181002122148v6451ebffka164de288738485d@mail.gmail.com>
-Date: Sat, 13 Feb 2010 14:48:22 +0100
-Message-ID: <63386a3d1002130548y7c839072y85097a9bcdf66cad@mail.gmail.com>
-Subject: Re: [spi-devel-general] SPI-ADC
-From: Linus Walleij <linus.ml.walleij@gmail.com>
-To: arjun rath <rath.arjun@gmail.com>
-Cc: spi-devel-general@lists.sourceforge.net,
-       linux kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: Gordon Mitchell <gordon@dumgoyne.me.uk>
+CC: gregkh@suse.de, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Staging: rtl8187se: Apply kernel coding style to source
+ file r8180_93cx6.c This is a patch to the r8180_93cx6.c source file to correct
+ all kernel coding style errors and warnings flagged by checkpatch.pl Signed-off-by:
+ Gordon Mitchell <gordon@dumgoyne.me.uk>
+References: <1266062646-6584-1-git-send-email-gordon@dumgoyne.me.uk>
+In-Reply-To: <1266062646-6584-1-git-send-email-gordon@dumgoyne.me.uk>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2010/2/13 arjun rath <rath.arjun@gmail.com>:
+Seems like something mangled headers, so that the changelog ended up in
+Subject.
 
-> can anybody share how to start a spi based ADC linux driver.I am having a
-> MAXIM 1242 ADC chip.
-
-The ḱernel does not contain any generic ADC subsystem abstraction (I
-think it would be good if it did), instead most drivers using ADC have
-their ADC portions stored inside a driver for something else, e.g.
-drivers/hwmon for ADCs used in temperature monitoring, or
-drivers/power for ADCs used in monitoring of currents and voltages
-for power supplies/batteries.
-
-This is a bit bad for driving a generic ADC like this using spidev and,
-even if it was to be accessed from userspace only, having it under
-drivers/spi is rather counterintuitive, what happens when the next ADC
-using I2C turns up? drivers/i2c/chips?
-
-I would suggest creating subsystem drivers/adc if you have time and
-energy, other ideas?
-
-Linus Walleij
+-- 
+js
