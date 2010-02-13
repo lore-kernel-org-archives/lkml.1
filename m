@@ -1,42 +1,80 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757140Ab0BMOSh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Feb 2010 09:18:37 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:42068 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755341Ab0BMOSg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Feb 2010 09:18:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=ZQoRFf3Ud7Cl697O8kFJlVmGwLna+Rhiv6xsyo9ZPm2Fy1s2Mb9lt2ZNA4Vew9ebjM
-         vjuGgF9ND7M1I/YbPdh4K9S/UovEhcc/zO0/B7Iwib9WEEKtbtlZRrnpFdAI/w6zd9l5
-         O9FDlndxr5NJYVzMsxtvwRNBDK9uYAd/sMi4k=
-Message-ID: <4B76B341.7010801@gmail.com>
-Date: Sat, 13 Feb 2010 15:12:17 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.7) Gecko/20100111 SUSE/3.0.1-9.3 Thunderbird/3.0.1
+	id S1756057Ab0BMOfj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Feb 2010 09:35:39 -0500
+Received: from mga14.intel.com ([143.182.124.37]:28551 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752420Ab0BMOfi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Feb 2010 09:35:38 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,467,1262592000"; 
+   d="scan'208";a="243776707"
+From: "Mahalingam, Nithish" <nithish.mahalingam@intel.com>
+To: "avorontsov@ru.mvista.com" <avorontsov@ru.mvista.com>
+CC: "dwmw2@infradead.org" <dwmw2@infradead.org>, "cbou@mail.ru" <cbou@mail.ru>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Sat, 13 Feb 2010 20:05:29 +0530
+Subject: RE: [RFC] [PATCH] Adding Intel Moorestown PMIC Battery Driver
+Thread-Topic: [RFC] [PATCH] Adding Intel Moorestown PMIC Battery Driver
+Thread-Index: AcqTBaK4bYz2aSiiTmGEOPxTBgXXDAC0Z3PgBbY/smA=
+Message-ID: <175E0F9A9EFCEA46A65F5552BB057298046D05F9A2@bgsmsx502.gar.corp.intel.com>
+References: <175E0F9A9EFCEA46A65F5552BB0572980445D2BE30@bgsmsx502.gar.corp.intel.com>
+ <20100111213242.GA3985@oksana.dev.rtsoft.ru>
+ <175E0F9A9EFCEA46A65F5552BB0572980445DB31FB@bgsmsx502.gar.corp.intel.com>
+In-Reply-To: <175E0F9A9EFCEA46A65F5552BB0572980445DB31FB@bgsmsx502.gar.corp.intel.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-To: Gordon Mitchell <gordon@dumgoyne.me.uk>
-CC: gregkh@suse.de, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Staging: rtl8187se: Apply kernel coding style to source
- file r8180_93cx6.c This is a patch to the r8180_93cx6.c source file to correct
- all kernel coding style errors and warnings flagged by checkpatch.pl Signed-off-by:
- Gordon Mitchell <gordon@dumgoyne.me.uk>
-References: <1266062646-6584-1-git-send-email-gordon@dumgoyne.me.uk>
-In-Reply-To: <1266062646-6584-1-git-send-email-gordon@dumgoyne.me.uk>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id o1DEaPmE015746
 
-Seems like something mangled headers, so that the changelog ended up in
-Subject.
+Hi Anton,
 
--- 
-js
+First of all apologize for not sticking to my word to get back with
+the patch as promised. Got tied up with some important work and could
+not spend time on this patch.
+
+I have started making changes today and will be testing it out after
+the weekend. Will post the patch for review by mid next week for sure.
+
+OK now to a question I had while working on the patch:
+
+>>> +       schedule_work(&pbi->handler);
+>> 
+>> I think you can use threaded irq for this.
+>> 
+>> See documentation for request_threaded_irq() in kernel/irq/manage.c.
+>> And as an example of usage see drivers/mfd/wm8350-irq.c.
+> 
+> Haa that is useful information... completely missed to read about this 
+> feature. Will modify the code to make use of threaded IRQ.
+
+I have a very peculiar case - My hardware muxes 8 different types of 
+battery interrupts as one before forwarding it. I do the interrupt 
+de-muxing in the driver to find its real source; because I do this I 
+had used workqueue to make sure I do not keep the battery interrupt 
+source disabled for a long time and won't potential miss a battery 
+interrupt.
+I was reading the request_threaded_irq code and found that only 
+when the threaded function returns interrupt should be re-enabled 
+(as it is suggested in the APIs function comment). Now if I do this, 
+won't I potential miss a interrupt?
+
+Also I failed to understand what exact scenario request_threaded_irq 
+is useful over having a workqueue spawned inside a interrupt handler? 
+Is it only when you want to hold the interrupt EOI until the threaded  
+function returns?
+
+Please shout back if I am making some stupid assumptions here.
+
+Regards,
+Nithish Mahalingam
+
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
