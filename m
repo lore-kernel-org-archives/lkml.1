@@ -1,36 +1,40 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754439Ab0BMILo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Feb 2010 03:11:44 -0500
-Received: from wine.ocn.ne.jp ([122.1.235.145]:49547 "EHLO smtp.wine.ocn.ne.jp"
+	id S1754791Ab0BMIRQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Feb 2010 03:17:16 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:45289 "EHLO mail.zytor.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752757Ab0BMILl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Feb 2010 03:11:41 -0500
-To: linux-kernel@vger.kernel.org
-Subject: [linux-2.6 linux-next] Can't "git pull"
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Message-Id: <201002131711.EDB82658.FVOtJFMOSHOFLQ@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.51 PL2]
-X-Accept-Language: ja,en,zh
-Date: Sat, 13 Feb 2010 17:11:38 +0900
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1751908Ab0BMIRO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Feb 2010 03:17:14 -0500
+Message-ID: <4B765FFA.1020505@zytor.com>
+Date: Sat, 13 Feb 2010 00:16:58 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
+MIME-Version: 1.0
+To: Avi Kivity <avi@redhat.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86-64, rwsem: Avoid store forwarding hazzard in __downgrade_write
+References: <1266045183-9563-1-git-send-email-avi@redhat.com>
+In-Reply-To: <1266045183-9563-1-git-send-email-avi@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On 02/12/2010 11:13 PM, Avi Kivity wrote:
+> +#ifndef CONFIG_X86_64
+> +		       "i" (-RWSEM_WAITING_BIAS)
+> +#else
+> +		       "r" (-RWSEM_WAITING_BIAS)
+>  #endif
+> +		     : "memory", "cc");
 
-I can't "git pull" for linux-2.6 and linux-next tree.
-Other trees seems to be OK.
-Is this temporary problem?
+Using an "er" constraint here should work on both architectures.
 
-$ cd ~/linux-2.6/
-$ git pull origin master
-fatal: http://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git/info/refs not found: did you run git update-server-info on the server?
-$ cd ~/linux-next/
-$ git pull origin master
-fatal: http://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/info/refs not found: did you run git update-server-info on the server?
-$ for i in 204.152.191.40 130.239.17.7 149.20.20.136 199.6.1.166; do curl http://$i/pub/scm/linux/kernel/git/torvalds/linux-2.6.git/info/refs; done
-$ for i in 204.152.191.40 130.239.17.7 149.20.20.136 199.6.1.166; do curl http://$i/pub/scm/linux/kernel/git/next/linux-next.git/info/refs; done
-$
+	-hpa
+
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
