@@ -1,64 +1,89 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753051Ab0BMICL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Feb 2010 03:02:11 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:35789 "EHLO mx1.redhat.com"
+	id S1754641Ab0BMICn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Feb 2010 03:02:43 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:32484 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752116Ab0BMICB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Feb 2010 03:02:01 -0500
+	id S1752257Ab0BMICD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Feb 2010 03:02:03 -0500
 From: Avi Kivity <avi@redhat.com>
 To: kvm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 02/39] KVM: x86: Moving PT_*_LEVEL to mmu.h
-Date: Sat, 13 Feb 2010 10:01:22 +0200
-Message-Id: <1266048119-14325-3-git-send-email-avi@redhat.com>
+Subject: [PATCH 10/39] KVM: PPC: Get rid of unnecessary RFI
+Date: Sat, 13 Feb 2010 10:01:30 +0200
+Message-Id: <1266048119-14325-11-git-send-email-avi@redhat.com>
 In-Reply-To: <1266048119-14325-1-git-send-email-avi@redhat.com>
 References: <1266048119-14325-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sheng Yang <sheng@linux.intel.com>
+From: Alexander Graf <agraf@suse.de>
 
-We can use them in x86.c and vmx.c now...
+Using an RFI in IR=1 is dangerous. We need to set two SRRs and then do an RFI
+without getting interrupted at all, because every interrupt could potentially
+overwrite the SRR values.
 
-Signed-off-by: Sheng Yang <sheng@linux.intel.com>
-Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
+Fortunately, we don't need to RFI in at least this particular case of the code,
+so we can just replace it with an mtmsr and b.
+
+Signed-off-by: Alexander Graf <agraf@suse.de>
+Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- arch/x86/kvm/mmu.c |    4 ----
- arch/x86/kvm/mmu.h |    4 ++++
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ arch/powerpc/kvm/book3s_64_interrupts.S |   22 +++++++++++-----------
+ 1 files changed, 11 insertions(+), 11 deletions(-)
 
-diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
-index 25aabd0..12ccf14 100644
---- a/arch/x86/kvm/mmu.c
-+++ b/arch/x86/kvm/mmu.c
-@@ -143,10 +143,6 @@ module_param(oos_shadow, bool, 0644);
- #define PFERR_RSVD_MASK (1U << 3)
- #define PFERR_FETCH_MASK (1U << 4)
+diff --git a/arch/powerpc/kvm/book3s_64_interrupts.S b/arch/powerpc/kvm/book3s_64_interrupts.S
+index 66e3b11..3c0ba55 100644
+--- a/arch/powerpc/kvm/book3s_64_interrupts.S
++++ b/arch/powerpc/kvm/book3s_64_interrupts.S
+@@ -221,15 +221,8 @@ no_dcbz32_off:
+ 	mflr	r5
+ 	std	r5, VCPU_LR(r7)
  
--#define PT_PDPE_LEVEL 3
--#define PT_DIRECTORY_LEVEL 2
--#define PT_PAGE_TABLE_LEVEL 1
+-	/* XXX convert to safe function call */
 -
- #define RMAP_EXT 4
+ 	/* Restore host msr -> SRR1 */
+ 	ld	r6, VCPU_HOST_MSR(r7)
+-	mtsrr1	r6
+-
+-	/* Restore host IP -> SRR0 */
+-	ld	r5, VCPU_HOST_RETIP(r7)
+-	mtsrr0	r5
  
- #define ACC_EXEC_MASK    1
-diff --git a/arch/x86/kvm/mmu.h b/arch/x86/kvm/mmu.h
-index 4567d80..ff58342 100644
---- a/arch/x86/kvm/mmu.h
-+++ b/arch/x86/kvm/mmu.h
-@@ -38,6 +38,10 @@
- #define PT32_ROOT_LEVEL 2
- #define PT32E_ROOT_LEVEL 3
+ 	/*
+ 	 * For some interrupts, we need to call the real Linux
+@@ -246,8 +239,9 @@ no_dcbz32_off:
+ 	cmpwi	r12, BOOK3S_INTERRUPT_DECREMENTER
+ 	beq	call_linux_handler
  
-+#define PT_PDPE_LEVEL 3
-+#define PT_DIRECTORY_LEVEL 2
-+#define PT_PAGE_TABLE_LEVEL 1
+-	/* Back to Interruptable Mode! (goto kvm_return_point) */
+-	RFI
++	/* Back to EE=1 */
++	mtmsr	r6
++	b	kvm_return_point
+ 
+ call_linux_handler:
+ 
+@@ -260,10 +254,16 @@ call_linux_handler:
+ 	 * interrupt handler!
+ 	 *
+ 	 * R3 still contains the exit code,
+-	 * R6 VCPU_HOST_RETIP and
+-	 * R7 VCPU_HOST_MSR
++	 * R5 VCPU_HOST_RETIP and
++	 * R6 VCPU_HOST_MSR
+ 	 */
+ 
++	/* Restore host IP -> SRR0 */
++	ld	r5, VCPU_HOST_RETIP(r7)
 +
- int kvm_mmu_get_spte_hierarchy(struct kvm_vcpu *vcpu, u64 addr, u64 sptes[4]);
++	/* XXX Better move to a safe function?
++	 *     What if we get an HTAB flush in between mtsrr0 and mtsrr1? */
++
+ 	mtlr	r12
  
- static inline void kvm_mmu_free_some_pages(struct kvm_vcpu *vcpu)
+ 	ld	r4, VCPU_TRAMPOLINE_LOWMEM(r7)
 -- 
 1.6.5.3
 
