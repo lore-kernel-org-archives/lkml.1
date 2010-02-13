@@ -1,77 +1,41 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758031Ab0BMUt0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Feb 2010 15:49:26 -0500
-Received: from mail.lang.hm ([64.81.33.126]:37370 "EHLO bifrost.lang.hm"
+	id S1758067Ab0BMU5Z (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Feb 2010 15:57:25 -0500
+Received: from sirius.lasnet.de ([78.47.116.19]:37936 "EHLO sirius.lasnet.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751009Ab0BMUtY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Feb 2010 15:49:24 -0500
-Date: Sat, 13 Feb 2010 12:49:13 -0800 (PST)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-cc: "H. Peter Anvin" <hpa@zytor.com>, Michael Evans <mjevans1983@gmail.com>,
-       linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Linux mdadm superblock question.
-In-Reply-To: <alpine.DEB.2.00.1002131507260.31103@p34.internal.lan>
-Message-ID: <alpine.DEB.2.00.1002131248390.4721@asgard.lang.hm>
-References: <alpine.DEB.2.00.1002111758350.12031@p34.internal.lan> <4877c76c1002111752h23e14f7aibe58a89181e6f493@mail.gmail.com> <4B77044B.1020609@zytor.com> <alpine.DEB.2.00.1002131507260.31103@p34.internal.lan>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	id S1758009Ab0BMU5Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 13 Feb 2010 15:57:24 -0500
+X-Greylist: delayed 1236 seconds by postgrey-1.27 at vger.kernel.org; Sat, 13 Feb 2010 15:57:24 EST
+Date: Sat, 13 Feb 2010 21:36:29 +0100
+From: Stefan Schmidt <stefan@datenfreihafen.org>
+To: Graham M Howe <gman.1352@googlemail.com>
+Cc: gregkh@suse.de, wfp5p@virginia.edu, devel@driverdev.osuosl.org,
+       linux-kernel@vger.kernel.org
+Message-ID: <20100213203629.GB25523@excalibur.local>
+References: <1266092503-5115-1-git-send-email-user@graham-eeepc>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1266092503-5115-1-git-send-email-user@graham-eeepc>
+X-Mailer: Mutt http://www.mutt.org/
+X-KeyID: 0xDDF51665
+X-Website: http://www.datenfreihafen.org/
+User-Agent: Mutt/1.5.20 (2009-06-14)
+Subject: Re: [PATCH 3/3] Staging: comedi: bracing fix to ni_atmio.c This is
+ a patch to ni_atmio.c file to fix up bracing style problems found by
+ checkpatch.pl tool Signed-off-by: Graham M Howe <gman.1352@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 13 Feb 2010, Justin Piszcz wrote:
+Hello.
 
-> On Sat, 13 Feb 2010, H. Peter Anvin wrote:
->
->> On 02/11/2010 05:52 PM, Michael Evans wrote:
->>> On Thu, Feb 11, 2010 at 3:00 PM, Justin Piszcz <jpiszcz@lucidpixels.com> 
->>> wrote:
->>>> Hi,
->>>> 
->>>> I may be converting a host to ext4 and was curious, is 0.90 still the 
->>>> only
->>>> superblock version for mdadm/raid-1 that you can boot from without having 
->>>> to
->>>> create an initrd/etc?
->>>> 
->>>> Are there any benefits to using a superblock > 0.90 for a raid-1 boot 
->>>> volume
->>>> < 2TB?
->>>> 
->>>> Justin.
->>>> --
->>>> To unsubscribe from this list: send the line "unsubscribe linux-raid" in
->>>> the body of a message to majordomo@vger.kernel.org
->>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>>> 
->>> 
->>> You need the superblock at the end of the partition:  If you read the
->>> manual that is clearly either version 0.90 OR 1.0 (NOT 1.1 and also
->>> NOT 1.2; those use the same superblock layout but different
->>> locations).
->> 
->> 0.9 has the *serious* problem that it is hard to distinguish a whole-volume
->> 
->> However, apparently mdadm recently switched to a 1.1 default.  I
->> strongly urge Neil to change that to either 1.0 and 1.2, as I have
->> started to get complaints from users that they have made RAID volumes
->> with newer mdadm which apparently default to 1.1, and then want to boot
->> from them (without playing MBR games like Grub does.)  I have to tell
->> them that they have to regenerate their disks -- the superblock occupies
->> the boot sector and there is nothing I can do about it.  It's the same
->> pathology XFS has.
->>
->> 	-hpa
->> 
->
-> My original question was does the newer superblock do anything special or 
-> offer new features *BESIDES* the quicker resync?
+On Sat, 2010-02-13 at 20:21, Graham M Howe wrote:
+> From: root <root@graham-eeepc.(none)>
 
-the older superblocks have limits on the number of devices that can be 
-part of the raid set.
+Please configure a proper name and email address to people can reach you. You
+also need to add a Signed-Off-By.
 
-David Lang
+regards
+Stefan Schmidt
