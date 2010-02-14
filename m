@@ -1,21 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758272Ab0BNKMS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 05:12:18 -0500
-Received: from casper.infradead.org ([85.118.1.10]:60653 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753958Ab0BNKMQ (ORCPT
+	id S1758388Ab0BNKMu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 05:12:50 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:48317 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758361Ab0BNKMl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Feb 2010 05:12:16 -0500
-Subject: [PATCH] perf_events: Fix FORK events
+	Sun, 14 Feb 2010 05:12:41 -0500
+Subject: Re: rcu_dereference() without protection in select_task_rq_fair()
 From: Peter Zijlstra <peterz@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Anton Blanchard <anton@samba.org>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       LKML <linux-kernel@vger.kernel.org>
+To: paulmck@linux.vnet.ibm.com
+Cc: peterz@infradead.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20100211165246.GA8329@linux.vnet.ibm.com>
+References: <20100211165246.GA8329@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 14 Feb 2010 11:12:04 +0100
-Message-ID: <1266142324.5273.411.camel@laptop>
+Date: Sun, 14 Feb 2010 11:12:38 +0100
+Message-ID: <1266142358.5273.420.camel@laptop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.2 
 Content-Transfer-Encoding: 7bit
@@ -23,81 +23,63 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo, could you stick this in perf/urgent, this needs to make .33
+On Thu, 2010-02-11 at 08:52 -0800, Paul E. McKenney wrote:
+> Hello, Peter,
+> 
+> My lockdep-ified RCU complains about the for_each_domain() in
+> select_task_rq_fair(), see below for the lockdep complaint.  I added
+> rcu_dereference_check() annotations as follows:
+> 
+> #define for_each_domain_rd(p) \
+>         rcu_dereference_check((p), \
+>                               rcu_read_lock_sched_held() || \
+>                               lockdep_is_held(&sched_domains_mutex))
+> 
+> #define for_each_domain(cpu, __sd) \
+>         for (__sd = for_each_domain_rd(cpu_rq(cpu)->sd); __sd; __sd = __sd->parent)
+> 
+> In other words, I believe (perhaps incorrectly) that for_each_domain()
+> can be called either within an RCU-sched read-side critical section or
+> with sched_domains_mutex held.  Lockdep claims that no locks of any
+> kind, RCU or otherwise, were held.  I considered the possibility that
+> this was an initialization-time thing, but the code traverses CPU
+> structures rather than task structures.
+> 
+> One other possibility is that this is safe due to the fact that we are
+> booting up, before the second CPU has come online.  Are you relying on
+> this?
+> 
+> For reference, here is the definition of rcu_read_lock_sched_held():
+> 
+> static inline int rcu_read_lock_sched_held(void)
+> {
+>         int lockdep_opinion = 0;
+> 
+>         if (debug_locks)
+>                 lockdep_opinion = lock_is_held(&rcu_sched_lock_map);
+>         return lockdep_opinion || preempt_count() != 0;
+> }
+> 
+> Help? 
 
----
-Commit 22e19085 ("Honour event state for aux stream data") introduced a
-bug where we would drop FORK events.
+We use synchronize_sched() and preempt_disable() for the sched domain
+stuff. The comment above for_each_domain():
 
-The thing is that we deliver FORK events to the child process' event,
-which at that time will be PERF_EVENT_STATE_INACTIVE because the child
-won't be scheduled in (we're in the middle of fork).
+/*
+ * The domain tree (rq->sd) is protected by RCU's quiescent state transition.
+ * See detach_destroy_domains: synchronize_sched for details.
+ *
+ * The domain tree of any CPU may only be accessed from within
+ * preempt-disabled sections.
+ */
+#define for_each_domain(cpu, __sd) \
+        for (__sd = rcu_dereference(cpu_rq(cpu)->sd); __sd; __sd = __sd->parent)
 
-Solve this twice, change the event state filter to exclude only disabled
-(STATE_OFF) or worse, and deliver FORK events to the current (parent).
+explains this usage, also see detach_destroy_domains().
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- kernel/perf_event.c |   11 +++++------
- 1 files changed, 5 insertions(+), 6 deletions(-)
-
-diff --git a/kernel/perf_event.c b/kernel/perf_event.c
-index d27746b..57d6297 100644
---- a/kernel/perf_event.c
-+++ b/kernel/perf_event.c
-@@ -3259,8 +3259,6 @@ static void perf_event_task_output(struct perf_event *event,
- 	task_event->event_id.tid = perf_event_tid(event, task);
- 	task_event->event_id.ptid = perf_event_tid(event, current);
- 
--	task_event->event_id.time = perf_clock();
--
- 	perf_output_put(&handle, task_event->event_id);
- 
- 	perf_output_end(&handle);
-@@ -3268,7 +3266,7 @@ static void perf_event_task_output(struct perf_event *event,
- 
- static int perf_event_task_match(struct perf_event *event)
- {
--	if (event->state != PERF_EVENT_STATE_ACTIVE)
-+	if (event->state < PERF_EVENT_STATE_INACTIVE)
- 		return 0;
- 
- 	if (event->cpu != -1 && event->cpu != smp_processor_id())
-@@ -3300,7 +3298,7 @@ static void perf_event_task_event(struct perf_task_event *task_event)
- 	cpuctx = &get_cpu_var(perf_cpu_context);
- 	perf_event_task_ctx(&cpuctx->ctx, task_event);
- 	if (!ctx)
--		ctx = rcu_dereference(task_event->task->perf_event_ctxp);
-+		ctx = rcu_dereference(current->perf_event_ctxp);
- 	if (ctx)
- 		perf_event_task_ctx(ctx, task_event);
- 	put_cpu_var(perf_cpu_context);
-@@ -3331,6 +3329,7 @@ static void perf_event_task(struct task_struct *task,
- 			/* .ppid */
- 			/* .tid  */
- 			/* .ptid */
-+			.time = perf_clock(),
- 		},
- 	};
- 
-@@ -3380,7 +3379,7 @@ static void perf_event_comm_output(struct perf_event *event,
- 
- static int perf_event_comm_match(struct perf_event *event)
- {
--	if (event->state != PERF_EVENT_STATE_ACTIVE)
-+	if (event->state < PERF_EVENT_STATE_INACTIVE)
- 		return 0;
- 
- 	if (event->cpu != -1 && event->cpu != smp_processor_id())
-@@ -3500,7 +3499,7 @@ static void perf_event_mmap_output(struct perf_event *event,
- static int perf_event_mmap_match(struct perf_event *event,
- 				   struct perf_mmap_event *mmap_event)
- {
--	if (event->state != PERF_EVENT_STATE_ACTIVE)
-+	if (event->state < PERF_EVENT_STATE_INACTIVE)
- 		return 0;
- 
- 	if (event->cpu != -1 && event->cpu != smp_processor_id())
-
+So one thing you can do is add (preempt_count() & ~PREEMPT_ACTIVE) to
+the rcu_read_lock_sched_held() function to catch all those cases that
+rely on preemption without having to add annotations to everything that
+disables preemption.
 
 
