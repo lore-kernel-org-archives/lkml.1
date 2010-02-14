@@ -1,75 +1,148 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753962Ab0BNIua (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 03:50:30 -0500
-Received: from mail-bw0-f216.google.com ([209.85.218.216]:62655 "EHLO
-	mail-bw0-f216.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752544Ab0BNIu1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Feb 2010 03:50:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=KZRhJ2Z3ghZinXrBfLgKqU0+q8n0PKueP3CggZnpkv07jvgHsWnDjw5iEK2N1ee1XP
-         n4oGs81Pfakg3ptq4vB/dFg1RXEJop3zwZQSsTy3tmZqS0j0xS4x49F4dVeBL0Vi/Aog
-         SgLsLv8PtYaeBGLYdXUK9JNo73MOoD9kBrN6c=
-Subject: Re: [PATCH tip/core/rcu 05/13] net: add checking to
- rcu_dereference()  primitives
-From: Eric Dumazet <eric.dumazet@gmail.com>
-To: =?UTF-8?Q?Micha=C5=82_Miros=C5=82aw?= <mirqus@gmail.com>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com, akpm@linux-foundation.org,
-       mathieu.desnoyers@polymtl.ca, josh@joshtriplett.org, dvhltc@us.ibm.com,
-       niv@us.ibm.com, tglx@linutronix.de, peterz@infradead.org,
-       rostedt@goodmis.org, Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
-       David Miller <davem@davemloft.net>, netdev <netdev@vger.kernel.org>
-In-Reply-To: <e2d7436a1002140034h74617164p1a5dc90df3587095@mail.gmail.com>
-References: <20100212000016.GA25781@linux.vnet.ibm.com>
-	 <1265932839-25899-5-git-send-email-paulmck@linux.vnet.ibm.com>
-	 <1265948152.2891.25.camel@edumazet-laptop>
-	 <e2d7436a1002140034h74617164p1a5dc90df3587095@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 14 Feb 2010 09:50:15 +0100
-Message-ID: <1266137415.2939.11.camel@edumazet-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 8bit
+	id S1753978Ab0BNJGx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 04:06:53 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:37047 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753622Ab0BNJGt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Feb 2010 04:06:49 -0500
+Date: Sun, 14 Feb 2010 10:06:26 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>
+Subject: [GIT PULL] perf fixes
+Message-ID: <20100214090626.GA25137@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le dimanche 14 février 2010 à 09:34 +0100, Michał Mirosław a écrit :
-> 2010/2/12 Eric Dumazet <eric.dumazet@gmail.com>:
-> > Le jeudi 11 février 2010 à 16:00 -0800, Paul E. McKenney a écrit :
-> [...]
-> >> @@ -1654,12 +1654,12 @@ static struct dn_route *dn_rt_cache_get_first(struct seq_file *seq)
-> >>
-> >>       for(s->bucket = dn_rt_hash_mask; s->bucket >= 0; --s->bucket) {
-> >>               rcu_read_lock_bh();
-> >> -             rt = dn_rt_hash_table[s->bucket].chain;
-> >> +             rt = rcu_dereference_bh(dn_rt_hash_table[s->bucket].chain);
-> >>               if (rt)
-> >>                       break;
-> >>               rcu_read_unlock_bh();
-> >>       }
-> >> -     return rcu_dereference(rt);
-> >> +     return rt;
-> >>  }
-> 
-> Isn't there a bug? Looks like data pointed to by rt should be
-> protected by RCU, but the rcu_read_lock is withdrawn before access.
-> 
+Linus,
 
-Not really a bug, since we exit from dn_rt_cache_get_first() with
-rcu_read_lock_bh()
+Please pull the latest perf-fixes-for-linus git tree from:
 
-We call the unlock only if NULL is returned, and rcu_dereference(NULL)
-can be done in any context.
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git perf-fixes-for-linus
 
-Paul had to move the rcu_dereference() so that no lockdep warning
-triggers for rcu_dereference(NULL), its more a cleanup than a bug fix.
+ Thanks,
+
+	Ingo
+
+------------------>
+Anton Blanchard (1):
+      perf: Fix hypervisor sample reporting
+
+Kirill Smelkov (1):
+      perf top: Fix help text alignment
+
+Mahesh Salgaonkar (1):
+      perf: Make bp_len type to u64 generic across the arch
 
 
+ include/linux/hw_breakpoint.h |    2 +-
+ include/linux/perf_event.h    |    6 ++----
+ kernel/hw_breakpoint.c        |    2 +-
+ kernel/perf_event.c           |    2 +-
+ tools/perf/builtin-top.c      |    2 +-
+ tools/perf/util/event.c       |    4 ++--
+ 6 files changed, 8 insertions(+), 10 deletions(-)
 
+diff --git a/include/linux/hw_breakpoint.h b/include/linux/hw_breakpoint.h
+index 070ba06..5977b72 100644
+--- a/include/linux/hw_breakpoint.h
++++ b/include/linux/hw_breakpoint.h
+@@ -44,7 +44,7 @@ static inline int hw_breakpoint_type(struct perf_event *bp)
+ 	return bp->attr.bp_type;
+ }
+ 
+-static inline int hw_breakpoint_len(struct perf_event *bp)
++static inline unsigned long hw_breakpoint_len(struct perf_event *bp)
+ {
+ 	return bp->attr.bp_len;
+ }
+diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
+index 8fa7187..a177698 100644
+--- a/include/linux/perf_event.h
++++ b/include/linux/perf_event.h
+@@ -211,11 +211,9 @@ struct perf_event_attr {
+ 		__u32		wakeup_watermark; /* bytes before wakeup   */
+ 	};
+ 
+-	__u32			__reserved_2;
+-
+-	__u64			bp_addr;
+ 	__u32			bp_type;
+-	__u32			bp_len;
++	__u64			bp_addr;
++	__u64			bp_len;
+ };
+ 
+ /*
+diff --git a/kernel/hw_breakpoint.c b/kernel/hw_breakpoint.c
+index 8a5c7d5..967e661 100644
+--- a/kernel/hw_breakpoint.c
++++ b/kernel/hw_breakpoint.c
+@@ -360,8 +360,8 @@ EXPORT_SYMBOL_GPL(register_user_hw_breakpoint);
+ int modify_user_hw_breakpoint(struct perf_event *bp, struct perf_event_attr *attr)
+ {
+ 	u64 old_addr = bp->attr.bp_addr;
++	u64 old_len = bp->attr.bp_len;
+ 	int old_type = bp->attr.bp_type;
+-	int old_len = bp->attr.bp_len;
+ 	int err = 0;
+ 
+ 	perf_event_disable(bp);
+diff --git a/kernel/perf_event.c b/kernel/perf_event.c
+index d27746b..2b19297 100644
+--- a/kernel/perf_event.c
++++ b/kernel/perf_event.c
+@@ -4580,7 +4580,7 @@ static int perf_copy_attr(struct perf_event_attr __user *uattr,
+ 	if (attr->type >= PERF_TYPE_MAX)
+ 		return -EINVAL;
+ 
+-	if (attr->__reserved_1 || attr->__reserved_2)
++	if (attr->__reserved_1)
+ 		return -EINVAL;
+ 
+ 	if (attr->sample_type & ~(PERF_SAMPLE_MAX-1))
+diff --git a/tools/perf/builtin-top.c b/tools/perf/builtin-top.c
+index ddc584b..4b91d8c 100644
+--- a/tools/perf/builtin-top.c
++++ b/tools/perf/builtin-top.c
+@@ -705,7 +705,7 @@ static void print_mapped_keys(void)
+ 		fprintf(stdout, "\t[w]     toggle display weighted/count[E]r. \t(%d)\n", display_weighted ? 1 : 0);
+ 
+ 	fprintf(stdout,
+-		"\t[K]     hide kernel_symbols symbols.             \t(%s)\n",
++		"\t[K]     hide kernel_symbols symbols.     \t(%s)\n",
+ 		hide_kernel_symbols ? "yes" : "no");
+ 	fprintf(stdout,
+ 		"\t[U]     hide user symbols.               \t(%s)\n",
+diff --git a/tools/perf/util/event.c b/tools/perf/util/event.c
+index bb0fd6d..8a9e6ba 100644
+--- a/tools/perf/util/event.c
++++ b/tools/perf/util/event.c
+@@ -295,10 +295,10 @@ void thread__find_addr_location(struct thread *self,
+ 	al->thread = self;
+ 	al->addr = addr;
+ 
+-	if (cpumode & PERF_RECORD_MISC_KERNEL) {
++	if (cpumode == PERF_RECORD_MISC_KERNEL) {
+ 		al->level = 'k';
+ 		mg = &session->kmaps;
+-	} else if (cpumode & PERF_RECORD_MISC_USER)
++	} else if (cpumode == PERF_RECORD_MISC_USER)
+ 		al->level = '.';
+ 	else {
+ 		al->level = 'H';
