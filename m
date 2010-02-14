@@ -1,44 +1,70 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755458Ab0BNLy1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 06:54:27 -0500
-Received: from tossu.ebaana.net ([62.121.33.10]:4120 "EHLO tossu.ebaana.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754097Ab0BNLy0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Feb 2010 06:54:26 -0500
-From: Lasse Collin <lasse.collin@tukaani.org>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: [kernel.org users] XZ Migration discussion
-Date: Sun, 14 Feb 2010 11:56:21 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.30-ARCH; KDE/4.3.1; i686; ; )
-Cc: Pavel Machek <pavel@ucw.cz>, Willy Tarreau <w@1wt.eu>,
-       Jean Delvare <khali@linux-fr.org>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>, mirrors@kernel.org,
-       users@kernel.org, "FTPAdmin Kernel.org" <ftpadmin@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <4B744E13.8040004@kernel.org> <4B767989.1010200@s5r6.in-berlin.de> <4B767D34.2080909@s5r6.in-berlin.de>
-In-Reply-To: <4B767D34.2080909@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
+	id S1758432Ab0BNMGH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 07:06:07 -0500
+Received: from mail-px0-f184.google.com ([209.85.216.184]:40337 "EHLO
+	mail-px0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751955Ab0BNMGE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Feb 2010 07:06:04 -0500
+X-Greylist: delayed 345 seconds by postgrey-1.27 at vger.kernel.org; Sun, 14 Feb 2010 07:06:04 EST
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:content-type:date:message-id:mime-version:x-mailer
+         :content-transfer-encoding;
+        b=n0ibcMi1f4Z5pjs8NMspjVfAv6eyTrLqadHivgxaD0qoqz6Uxz8loN7O+GR82I6OZf
+         uKHiBIFWnfijAYjsP3Qk6qa70bLdmmfkPHoNyfdICnq+RZ0UpLx68kc5BIsgRAtnIqrj
+         9kEFyJ2W3RN/why2+FnSz6ntdexu5m4qSeXxM=
+Subject: [PATCH 1/2] X25: Fix x25_create errors for bad protocol and ENOBUFS
+From: Andrew Hendry <andrew.hendry@gmail.com>
+To: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 14 Feb 2010 23:00:11 +1100
+Message-ID: <1266148811.4731.43.camel@ibex>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-Message-Id: <201002141156.21576.lasse.collin@tukaani.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2010-02-13 Stefan Richter wrote:
-> PS:  It boils down to CPU time requirements.  For small memory
-> systems, there is the XZ Embedded decompressor.
+alloc_socket failures should return -ENOBUFS
+a bad protocol should return -EINVAL
 
-XZ Embedded saves only code size. If the file was compressed with 
-settings that make the decompressor require e.g. 65 MiB RAM (xz -9), 
-using XZ Embedded won't help you.
+Signed-off-by: Andrew Hendry <andrew.hendry@gmail.com>
 
-XZ Embedded is also very limited. It cannot decompress all .xz files. It 
-should still be quite useful, since on some architectures it can 
-compress the kernel image better than the current LZMA support in the 
-kernel, and the API should be nice to use e.g. by Squashfs.
-
+---
+diff --git a/net/x25/af_x25.c b/net/x25/af_x25.c
+index e3219e4..6c7104e 100644
+--- a/net/x25/af_x25.c
++++ b/net/x25/af_x25.c
+@@ -512,15 +512,20 @@ static int x25_create(struct net *net, struct socket *sock, int protocol,
+ {
+ 	struct sock *sk;
+ 	struct x25_sock *x25;
+-	int rc = -ESOCKTNOSUPPORT;
++	int rc = -EAFNOSUPPORT;
+ 
+ 	if (!net_eq(net, &init_net))
+-		return -EAFNOSUPPORT;
++		goto out;
++
++	rc = -ESOCKTNOSUPPORT;
++	if (sock->type != SOCK_SEQPACKET)
++		goto out;
+ 
+-	if (sock->type != SOCK_SEQPACKET || protocol)
++	rc = -EINVAL;
++	if (protocol)
+ 		goto out;
+ 
+-	rc = -ENOMEM;
++	rc = -ENOBUFS;
+ 	if ((sk = x25_alloc_socket(net)) == NULL)
+ 		goto out;
+ 
 -- 
-Lasse Collin  |  IRC: Larhzu @ IRCnet & Freenode
+1.6.3.3
+
+
+
