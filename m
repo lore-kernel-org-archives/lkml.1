@@ -1,22 +1,26 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753409Ab0BNX3x (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 18:29:53 -0500
-Received: from gate.crashing.org ([63.228.1.57]:39929 "EHLO gate.crashing.org"
+	id S1753489Ab0BNXe4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 18:34:56 -0500
+Received: from gate.crashing.org ([63.228.1.57]:34411 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751865Ab0BNX3w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Feb 2010 18:29:52 -0500
-Subject: Re: [PATCH 18/28] powerpc,kgdb: Introduce low level trap catching
+	id S1752882Ab0BNXez (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Feb 2010 18:34:55 -0500
+Subject: Re: [PATCH -mm 3/7] pci: convert pci_set_dma_mask to call
+ dma_set_mask
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jason Wessel <jason.wessel@windriver.com>
-Cc: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
-       mingo@elte.hu, Paul Mackerras <paulus@samba.org>
-In-Reply-To: <1266014143-29444-19-git-send-email-jason.wessel@windriver.com>
-References: <1266014143-29444-1-git-send-email-jason.wessel@windriver.com>
-	 <1266014143-29444-19-git-send-email-jason.wessel@windriver.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       James Bottomley <James.Bottomley@suse.de>,
+       "David S. Miller" <davem@davemloft.net>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Russell King <linux@arm.linux.org.uk>
+In-Reply-To: <1265967212-9126-4-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+References: <1265967212-9126-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+	 <1265967212-9126-4-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 15 Feb 2010 10:29:27 +1100
-Message-ID: <1266190167.16346.70.camel@pasglop>
+Date: Mon, 15 Feb 2010 10:33:41 +1100
+Message-ID: <1266190421.16346.71.camel@pasglop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
@@ -24,77 +28,50 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-02-12 at 16:35 -0600, Jason Wessel wrote:
+On Fri, 2010-02-12 at 18:33 +0900, FUJITA Tomonori wrote:
+> This changes pci_set_dma_mask to call the generic DMA API,
+> dma_set_mask.
+> 
+> pci_set_dma_mask (in drivers/pci/pci.c) does the same things that
+> dma_set_mask does on all the architectures that use pci_set_dma_mask;
+> calls dma_supprted and sets dev->dma_mask. So we safely change
+> pci_set_dma_mask to simply call dma_set_mask.
+> 
+> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> Cc: James Bottomley <James.Bottomley@suse.de>
+> Cc: David S. Miller <davem@davemloft.net>
+> Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
 
-> @@ -115,7 +116,9 @@ void kgdb_roundup_cpus(unsigned long flags)
->  /* KGDB functions to use existing PowerPC64 hooks. */
->  static int kgdb_debugger(struct pt_regs *regs)
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+> Cc: Russell King <linux@arm.linux.org.uk>
+> ---
+>  drivers/pci/pci.c |   10 ++++------
+>  1 files changed, 4 insertions(+), 6 deletions(-)
+> 
+> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> index 315fea4..5c881e9 100644
+> --- a/drivers/pci/pci.c
+> +++ b/drivers/pci/pci.c
+> @@ -2121,15 +2121,13 @@ void pci_msi_off(struct pci_dev *dev)
+>  int
+>  pci_set_dma_mask(struct pci_dev *dev, u64 mask)
 >  {
-> -	return kgdb_handle_exception(0, computeSignal(TRAP(regs)), 0, regs);
-> +	if (kgdb_handle_exception(1, computeSignal(TRAP(regs)), DIE_OOPS, regs))
-> +		return 0;
-> +	return 1;
+> -	if (!pci_dma_supported(dev, mask))
+> -		return -EIO;
+> -
+> -	dev->dma_mask = mask;
+> +	int ret = dma_set_mask(&dev->dev, mask);
+> +	if (ret)
+> +		return ret;
+>  	dev_dbg(&dev->dev, "using %dbit DMA mask\n", fls64(mask));
+> -
+>  	return 0;
 >  }
-
-I'm no fan of logic inversions like that but I suppose you are trying to
-fit into existing hooks. However, I'd rather then do:
-
-	return !kgdb...
-
-
->  static int kgdb_handle_breakpoint(struct pt_regs *regs)
-> @@ -123,7 +126,7 @@ static int kgdb_handle_breakpoint(struct pt_regs *regs)
->  	if (user_mode(regs))
->  		return 0;
->  
-> -	if (kgdb_handle_exception(0, SIGTRAP, 0, regs) != 0)
-> +	if (kgdb_handle_exception(1, SIGTRAP, 0, regs) != 0)
->  		return 0;
->  
->  	if (*(u32 *) (regs->nip) == *(u32 *) (&arch_kgdb_ops.gdb_bpt_instr))
-> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-> index d069ff8..379104a 100644
-> --- a/arch/powerpc/kernel/traps.c
-> +++ b/arch/powerpc/kernel/traps.c
-> @@ -809,12 +809,19 @@ void __kprobes program_check_exception(struct pt_regs *regs)
->  		return;
->  	}
->  	if (reason & REASON_TRAP) {
+> -    
 > +
-> +#ifdef CONFIG_KGDB_LOW_LEVEL_TRAP
-> +		if (debugger_bpt(regs))
-> +			return;
-> +#endif /* CONFIG_KGDB_LOW_LEVEL_TRAP */
->  		/* trap exception */
->  		if (notify_die(DIE_BPT, "breakpoint", regs, 5, 5, SIGTRAP)
->  				== NOTIFY_STOP)
->  			return;
-> +#ifndef CONFIG_KGDB_LOW_LEVEL_TRAP
->  		if (debugger_bpt(regs))
->  			return;
-> +#endif /* ! CONFIG_KGDB_LOW_LEVEL_TRAP */
->  
->  		if (!(regs->msr & MSR_PR) &&  /* not user-mode */
->  		    report_bug(regs->nip, regs) == BUG_TRAP_TYPE_WARN) {
-> diff --git a/lib/Kconfig.kgdb b/lib/Kconfig.kgdb
-> index 0a0e049..2b1601b 100644
-> --- a/lib/Kconfig.kgdb
-> +++ b/lib/Kconfig.kgdb
-> @@ -59,7 +59,7 @@ config KGDB_TESTS_BOOT_STRING
->  
->  config KGDB_LOW_LEVEL_TRAP
->         bool "KGDB: Allow debugging with traps in notifiers"
-> -       depends on X86
-> +       depends on X86 || PPC
->         default n
->         help
->           This will add an extra call back to kgdb for the breakpoint
-
-No firm objection, but it -is- a bit ugly... Should we just
-unconditionally move the debugger_bpt() early on with a comment about
-why we do so ? Is there any drawback you can think of ?
-
-Cheers,
-Ben.
+>  int
+>  pci_set_consistent_dma_mask(struct pci_dev *dev, u64 mask)
+>  {
 
 
