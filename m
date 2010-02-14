@@ -1,72 +1,78 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753268Ab0BNUcV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 15:32:21 -0500
-Received: from hera.kernel.org ([140.211.167.34]:43504 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753168Ab0BNUcT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Feb 2010 15:32:19 -0500
-Message-ID: <4B785D85.3000408@kernel.org>
-Date: Sun, 14 Feb 2010 12:31:01 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	id S1753264Ab0BNU3M (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 15:29:12 -0500
+Received: from smtp-out2.blueyonder.co.uk ([195.188.213.5]:51526 "EHLO
+	smtp-out2.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753068Ab0BNU3J (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Feb 2010 15:29:09 -0500
+Message-ID: <4B785D0D.3070804@blueyonder.co.uk>
+Date: Sun, 14 Feb 2010 20:29:01 +0000
+From: Sid Boyce <sboyce@blueyonder.co.uk>
+Reply-To: sboyce@blueyonder.co.uk
+Organization: blueyonder.co.uk
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-GB; rv:1.9.1.7) Gecko/20100111 SUSE/3.0.1-1.3 Thunderbird/3.0.1 ThunderBrowse/3.2.7
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-Subject: Re: [PATCH 16/35] x86: make 64 bit use early_res instead of bootmem
- before slab
-References: <1265793639-15071-1-git-send-email-yinghai@kernel.org>	<1265793639-15071-17-git-send-email-yinghai@kernel.org> <20100215010833.15f9e09a.sfr@canb.auug.org.au>
-In-Reply-To: <20100215010833.15f9e09a.sfr@canb.auug.org.au>
+To: Takashi Iwai <tiwai@suse.de>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [Bug #15144] HDA Intel Audio hang on boot
+References: <vZZJKzCUn4G.A.CPB.F7hZLB@chimera>	<d3IDKWHT5gE.A.MEC.a7hZLB@chimera>	<4B6635F1.8060909@blueyonder.co.uk> <s5h3a1lh2wr.wl%tiwai@suse.de>
+In-Reply-To: <s5h3a1lh2wr.wl%tiwai@suse.de>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-please check
+On 01/02/10 06:43, Takashi Iwai wrote:
+> At Mon, 01 Feb 2010 02:01:21 +0000,
+> Sid Boyce wrote:
+>>
+>> On 01/02/10 00:22, Rafael J. Wysocki wrote:
+>>> This message has been generated automatically as a part of a report
+>>> of recent regressions.
+>>>
+>>> The following bug entry is on the current list of known regressions
+>>> from 2.6.32.  Please verify if it still should be listed and let me know
+>>> (either way).
+>>>
+>>>
+>>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15144
+>>> Subject		: HDA Intel Audio hang on boot
+>>> Submitter	: Sid Boyce <sboyce@blueyonder.co.uk>
+>>> Date		: 2010-01-15 1:24 (17 days old)
+>>> References	: http://marc.info/?l=linux-kernel&m=126351866722507&w=4
+>>>
+>>>
+>>>
+>>
+>> Still not fixed in 2.6.33-rc6. Takashi wrote that the fix was scheduled
+>> for 2.6.33-rc6, but it did not appear.
+> 
+> It just slipped from rc6 due to my busy load.
+> The pull request was sent yesterday.
+> 
+> 
+> Takashi
+> 
 
-Subject: [PATCH] x86: nobootmem fix compiling on power pc
+Up to 2.6.33-rc8 still needs the work around in
+/etc/modprobe.d/50-sound.conf, so the kernel blacklist fix does not work.
 
-Stephen Rothwell reported: on powerpc
+# less /etc/modprobe.d/50-sound.conf
 
-x86: make 64 bit use early_res instead of bootmem before slab
+options slots=snd-hda-intel
+# 9LTX.vLXC8EvZgR7:MCP55 High Definition Audio
+alias snd-card-0 snd-hda-intel
+options snd-hda-intel enable_msi=0
+Regards
+Sid.
+-- 
+Sid Boyce ... Hamradio License G3VBV, Licensed Private Pilot
+Emeritus IBM/Amdahl Mainframes and Sun/Fujitsu Servers Tech Support
+Specialist, Cricket Coach
+Microsoft Windows Free Zone - Linux used for all Computing Tasks
 
-cause
-
-mm/page_alloc.c:3468: error: implicit declaration of function 'find_early_area'
-mm/page_alloc.c:3483: error: implicit declaration of function 'reserve_early_without_check'
-
-actually the function is only needed for no_bootmem
-
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-
----
- mm/page_alloc.c |    2 ++
- 1 file changed, 2 insertions(+)
-
-Index: linux-2.6/mm/page_alloc.c
-===================================================================
---- linux-2.6.orig/mm/page_alloc.c
-+++ linux-2.6/mm/page_alloc.c
-@@ -3456,6 +3456,7 @@ int __init add_from_early_node_map(struc
- 	return nr_range;
- }
- 
-+#ifdef CONFIG_NO_BOOTMEM
- void * __init __alloc_memory_core_early(int nid, u64 size, u64 align,
- 					u64 goal, u64 limit)
- {
-@@ -3492,6 +3493,7 @@ void * __init __alloc_memory_core_early(
- 
- 	return NULL;
- }
-+#endif
- 
- 
- void __init work_with_active_regions(int nid, work_fn_t work_fn, void *data)
