@@ -1,43 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752905Ab0BNTQR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 14:16:17 -0500
-Received: from hole.yuiop.co.uk ([89.145.97.62]:52614 "EHLO mail.yuiop.co.uk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752844Ab0BNTQP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Feb 2010 14:16:15 -0500
-X-Greylist: delayed 1361 seconds by postgrey-1.27 at vger.kernel.org; Sun, 14 Feb 2010 14:16:15 EST
-Message-ID: <4B7846B2.1030303@anonymous.org.uk>
-Date: Sun, 14 Feb 2010 18:53:38 +0000
-From: John Robinson <john.robinson@anonymous.org.uk>
-Organization: None; Disorganization: Total
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.8.1.23) Gecko/20090812 Lightning/0.9 Thunderbird/2.0.0.23 Mnenhy/0.7.6.666
-MIME-Version: 1.0
-To: Volker Armin Hemmann <volkerarmin@googlemail.com>
-CC: Michael Evans <mjevans1983@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org
+	id S1752899Ab0BNTeN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 14:34:13 -0500
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:44781 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751396Ab0BNTeL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Feb 2010 14:34:11 -0500
+X-Sasl-enc: t2G3ZwlWeG+QgKgquabboKOdmdzSD9fWL0cVbfkxlFsK 1266176049
+Date: Sun, 14 Feb 2010 17:34:06 -0200
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Michael Evans <mjevans1983@gmail.com>
+Cc: Volker Armin Hemmann <volkerarmin@googlemail.com>,
+       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
 Subject: Re: Linux mdadm superblock question.
-References: <201002140251.59668.volkerarmin@googlemail.com> <4877c76c1002132002s20d942c3i7cee5418cdcf369c@mail.gmail.com> <201002141940.35716.volkerarmin@googlemail.com>
-In-Reply-To: <201002141940.35716.volkerarmin@googlemail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Message-ID: <20100214193406.GA15722@khazad-dum.debian.net>
+References: <201002140251.59668.volkerarmin@googlemail.com>
+ <4877c76c1002132002s20d942c3i7cee5418cdcf369c@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4877c76c1002132002s20d942c3i7cee5418cdcf369c@mail.gmail.com>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+ 1CDB 0FE3
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 14/02/2010 18:40, Volker Armin Hemmann wrote:
-> On Sonntag 14 Februar 2010, you wrote:
-> 
->> In other words, 'auto-detection' for 1.x format devices is using an
->> initrd/initramfs.
-> 
-> which makes 1.x format useless for everybody who does not want to deal with 
-> initrd/initramfs.
+On Sat, 13 Feb 2010, Michael Evans wrote:
+> I remember hearing that 1.x had /no/ plans for kernel level
+> auto-detection ever.  That can be accomplished in early-userspace
+> leaving the code in the kernel much less complex, and therefore far
+> more reliable.
 
-True, but afaik every distro uses an initrd/initramfs and bundles tools 
-making it easy to manage and customise them, so what's the problem?
+Yes, it is far more reliable kernel side, if only because it doesn't do
+anything.
 
-Cheers,
+But the userspace reliability is _not_ good.  initrds are a source of
+problems the moment things start to go wrong, and that's when they are not
+the problem themselves.
 
-John.
+And the end result is a system that needs manual intervention to get its
+root filesystem back.
 
+In my experience, every time we moved critical codepaths to userspace, we
+ended up decreasing the *overall* system reliability.
+
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
