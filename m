@@ -1,134 +1,63 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753362Ab0BNUyn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 15:54:43 -0500
-Received: from mail-ew0-f228.google.com ([209.85.219.228]:32956 "EHLO
-	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753001Ab0BNUyl convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Feb 2010 15:54:41 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=PPkKBVPl2Lhyv+F6e6onQgUJTOrp3XAn1WnM2FQad22dC9Ydz94CYyfjNKDJNWNmRz
-         +ti3W+5slB8JKdYwiJElRa956nNM5AIJ99jvixnfxtl/k9KrrMaRLVS77I47xisabiaF
-         uI9i36fybPeQZodIO6zE5X+yQc82U6h6mkUrw=
+	id S1753073Ab0BNVGQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 16:06:16 -0500
+Received: from mail.lang.hm ([64.81.33.126]:59820 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751543Ab0BNVGP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Feb 2010 16:06:15 -0500
+Date: Sun, 14 Feb 2010 13:04:45 -0800 (PST)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+cc: Pavel Machek <pavel@ucw.cz>, Jean Delvare <khali@linux-fr.org>,
+       Willy Tarreau <w@1wt.eu>, mirrors@kernel.org, lasse.collin@tukaani.org,
+       linux-kernel <linux-kernel@vger.kernel.org>, users@kernel.org,
+       "FTPAdmin Kernel.org" <ftpadmin@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [kernel.org users] XZ Migration discussion
+In-Reply-To: <4B784378.8070309@s5r6.in-berlin.de>
+Message-ID: <alpine.DEB.2.00.1002141302210.5135@asgard.lang.hm>
+References: <4B744E13.8040004@kernel.org> <20100212150137.648dca7c@hyperion.delvare> <alpine.LFD.2.00.1002120714320.7792@localhost.localdomain> <4B75A5DC.3060803@kernel.org> <20100212202357.6363d5af@hyperion.delvare> <20100212230702.GA10266@1wt.eu>
+ <20100213091748.276821e1@hyperion.delvare> <20100214170724.GE1578@ucw.cz> <4B784378.8070309@s5r6.in-berlin.de>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <aca0ce8b1002140657l4f767635ob9b1611e4da2540b@mail.gmail.com>
-References: <520f0cf11002110911t3f125649v73062e9851e2cfb3@mail.gmail.com>
-	 <520f0cf11002140510w5c57d196n12f8036ea6085c52@mail.gmail.com>
-	 <aca0ce8b1002140657l4f767635ob9b1611e4da2540b@mail.gmail.com>
-Date: Sun, 14 Feb 2010 15:54:40 -0500
-X-Google-Sender-Auth: 063ca841af67e574
-Message-ID: <520f0cf11002141254y3f4536a9ta968dbaefbff58f7@mail.gmail.com>
-Subject: Re: [BUG]: Possibe recursive locking detected in sysfs
-From: John Kacur <jkacur@redhat.com>
-To: Eric Biederman <ebiederm@aristanetworks.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Tejun Heo <tj@kernel.org>, Serge Hallyn <serue@us.ibm.com>,
-       "David P. Quigley" <dpquigl@tycho.nsa.gov>,
-       James Morris <jmorris@namei.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 14, 2010 at 9:57 AM, Eric Biederman
-<ebiederm@aristanetworks.com> wrote:
-> On Sun, Feb 14, 2010 at 5:10 AM, John Kacur <jkacur@redhat.com> wrote:
->> On Thu, Feb 11, 2010 at 12:11 PM, John Kacur <jkacur@redhat.com> wrote:
->>> I'm not sure if this one has already been reported. - thanks.
->>>
->>> Feb 11 07:24:15 localhost kernel: [ INFO: possible recursive locking detected ]
->>> Feb 11 07:24:15 localhost kernel: 2.6.33-rc7 #1
->>> Feb 11 07:24:15 localhost kernel: ---------------------------------------------
->>> Feb 11 07:24:15 localhost kernel: 94cpufreq/2933 is trying to acquire lock:
->>> Feb 11 07:24:15 localhost kernel: (s_active){++++.+}, at:
->>> [<ffffffff81157408>] sysfs_hash_and_remove+0x53/0x6a
->>> Feb 11 07:24:15 localhost kernel:
->>> Feb 11 07:24:15 localhost kernel: but task is already holding lock:
->>> Feb 11 07:24:15 localhost kernel: (s_active){++++.+}, at:
->>> [<ffffffff81159530>] sysfs_get_active_two+0x24/0x48
->>> Feb 11 07:24:15 localhost kernel:
->>> Feb 11 07:24:15 localhost kernel: other info that might help us debug this:
->>> Feb 11 07:24:15 localhost kernel: 4 locks held by 94cpufreq/2933:
->>> Feb 11 07:24:15 localhost kernel: #0:  (&buffer->mutex){+.+.+.}, at:
->>> [<ffffffff81157dbd>] sysfs_write_file+0x3e/0x12b
->>> Feb 11 07:24:15 localhost kernel: #1:  (s_active){++++.+}, at:
->>> [<ffffffff81159530>] sysfs_get_active_two+0x24/0x48
->>> Feb 11 07:24:15 localhost kernel: #2:  (s_active){++++.+}, at:
->>> [<ffffffff8115953d>] sysfs_get_active_two+0x31/0x48
->>> Feb 11 07:24:15 localhost kernel: #3:  (dbs_mutex){+.+.+.}, at:
->>> [<ffffffffa04bcdb3>] cpufreq_governor_dbs+0x29b/0x348
->>> [cpufreq_ondemand]
->>> Feb 11 07:24:15 localhost kernel:
->>> Feb 11 07:24:15 localhost kernel: stack backtrace:
->>> Feb 11 07:24:15 localhost kernel: Pid: 2933, comm: 94cpufreq Not
->>> tainted 2.6.33-rc7 #1
->>> Feb 11 07:24:15 localhost kernel: Call Trace:
->>> Feb 11 07:24:15 localhost kernel: [<ffffffff81071f53>]
->>> __lock_acquire+0xcf6/0xd8b
->>> Feb 11 07:24:15 localhost kernel: [<ffffffff81070914>] ?
->>> debug_check_no_locks_freed+0x120/0x12f
->>> Feb 11 07:24:15 localhost kernel: [<ffffffff8107020e>] ?
->>> trace_hardirqs_on_caller+0x11f/0x14a
->>> Feb 11 07:24:15 localhost kernel: [<ffffffff810720c0>] lock_acquire+0xd8/0xf5
->>> Feb 11 07:24:15 localhost kernel: [<ffffffff81157408>] ?
->>> sysfs_hash_and_remove+0x53/0x6a
->>> Feb 11 07:24:15 localhost kernel: [<ffffffff81159231>]
->>> sysfs_addrm_finish+0xe1/0x175
->>> Feb 11 07:24:15 localhost kernel: [<ffffffff81157408>] ?
->>> sysfs_hash_and_remove+0x53/0x6a
->>> Feb 11 07:24:15 localhost kernel: [<ffffffff8137b1b5>] ?
->>> sub_preempt_count+0xa3/0xb6
->>> Feb 11 07:24:15 localhost kernel: [<ffffffff81157408>]
->>> sysfs_hash_and_remove+0x53/0x6a
->>> Feb 11 07:24:15 localhost kernel: [<ffffffff8115a59d>]
->>> sysfs_remove_group+0x91/0xc9
->>> Feb 11 07:24:15 localhost kernel: [<ffffffffa04bcdc6>]
->>> cpufreq_governor_dbs+0x2ae/0x348 [cpufreq_ondemand]
->>> Feb 11 07:24:15 localhost kernel: [<ffffffff8137b1b5>] ?
->>> sub_preempt_count+0xa3/0xb6
->>> Feb 11 07:24:15 localhost kernel: [<ffffffff812ab9cc>]
->>> __cpufreq_governor+0x89/0xc7
->>> Feb 11 07:24:15 localhost kernel: [<ffffffff812ac7b9>]
->>> __cpufreq_set_policy+0x18e/0x22a
->>> Feb 11 07:24:15 localhost kernel: [<ffffffff812accd6>]
->>> store_scaling_governor+0x199/0x1ed
->>> Feb 11 07:24:15 localhost kernel: [<ffffffff812ad50d>] ? handle_update+0x0/0x39
->>> Feb 11 07:24:15 localhost kernel: [<ffffffff8137685d>] ? down_write+0x76/0x7e
->>> Feb 11 07:24:15 localhost kernel: [<ffffffff812ac607>] store+0x67/0x8b
->>> Feb 11 07:24:15 localhost kernel: [<ffffffff81157e75>]
->>> sysfs_write_file+0xf6/0x12b
->>> Feb 11 07:24:15 localhost kernel: [<ffffffff811003c9>] vfs_write+0xb0/0x10a
->>> Feb 11 07:24:15 localhost kernel: [<ffffffff811004f1>] sys_write+0x4c/0x75
->>> Feb 11 07:24:15 localhost kernel: [<ffffffff81002d9b>]
->>> system_call_fastpath+0x16/0x1b
->>>
+On Sun, 14 Feb 2010, Stefan Richter wrote:
+
+> Pavel Machek wrote:
+> [Jean Delvare wrote]
+>>> I have an old, slow machine here which I am going to use to perform
+>>> some real world testing, and I'll post the results when I'm done. But I
+>>> suspect that building a kernel on this machine, even a small one with
+>>> just the drivers it needs, will take much longer than unpacking the
+>>> sources. So anyone worrying about performance would rather rely on
+>>> cross-compilation, and in turn can afford whatever decompression tool
+>>> is needed.
 >>
->> This is still present in 2.6.33-rc8.
->> I can trigger it every time. I have T500 laptop, the trick is to boot
->> it up without plugging it in, so it is working on battery power, and
->> then to shut the lid.
->> first you get the message from above, and then it does a few more
->> things before it freezes and I have to hard reboot it.
->> The above problem does not occur if I have the laptop plugged into the wall.
+>> On zaurus, kernel compilation takes 4 hours. (I.e. "one night"). So
+>> that one is ... well ... done overnight.
 >>
->> Here is the 2.6.33-rc8 version of above. If anyone has further
->> suggestions for debugging, pls let me know.
->> I've cced the folks that get_maintainer.pl reports for
->> fs/sysfs/inode.c and fs/sysfs/dir.c
+>> Untar is something I normally wait for, since you need to run
+>> (interactive) oldconfig after that.
 >
-> We have a real hang and a possibly spurious lockdep report.
-> Could you try my latest patches that I sent to gregkh to clear up the sysfs
-> lockdep reports?   I don't expect it will fix your issue but it will
-> at least give
-> us a better idea of where to look.
->
-> Eric
->
-Sure, are you referring to the patch-set that begins with
-"[PATCH 1/6] sysfs: Serialize updates to the vfs inode"?
+> If the download takes m minutes and unpacking and unarchiving tar.gz
+> takes another n minutes, what difference does it make for this workflow
+> when instead m + p minutes are spent for download + unpacking and
+> unarchiving tar.bz2 or tar.xz?
+
+The difference is that the user is waiting for the n or m minutes, but 
+goes off and does something else for the p minutes.
+
+So it doesn't really matter if the compile takes 1 hour or 6 hours. As 
+Pavel noted, this is done overnight and it doesn't matter if it gets done 
+at 2am or 6am.
+
+But the uncompression has a user waiting for it (to do the config step), 
+so here it makes a big difference if it takes 6 minutes ot 8 minutes.
+
+David Lang
