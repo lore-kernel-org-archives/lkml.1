@@ -1,52 +1,127 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754836Ab0BNJHY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 04:07:24 -0500
-Received: from bamako.nerim.net ([62.4.17.28]:55179 "EHLO bamako.nerim.net"
+	id S1755156Ab0BNJJY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 04:09:24 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37902 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753622Ab0BNJHT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Feb 2010 04:07:19 -0500
-Date: Sun, 14 Feb 2010 10:07:16 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: mirrors@kernel.org, lasse.collin@tukaani.org,
-       linux-kernel <linux-kernel@vger.kernel.org>, users@kernel.org,
-       "FTPAdmin Kernel.org" <ftpadmin@kernel.org>,
-       Pavel Machek <pavel@ucw.cz>
-Subject: Re: [kernel.org users] XZ Migration discussion
-Message-ID: <20100214100716.18d9dfe5@hyperion.delvare>
-In-Reply-To: <4B7735A7.1050305@s5r6.in-berlin.de>
-References: <4B744E13.8040004@kernel.org>
-	<20100211205129.GA26105@elf.ucw.cz>
-	<20100213181008.479509f5@hyperion.delvare>
-	<4B7735A7.1050305@s5r6.in-berlin.de>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1752764Ab0BNJJW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Feb 2010 04:09:22 -0500
+Date: Sun, 14 Feb 2010 10:09:13 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [GIT PULL] tracing fixes
+Message-ID: <20100214090913.GA26388@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 14 Feb 2010 00:28:39 +0100, Stefan Richter wrote:
-> Jean Delvare wrote:
-> > So the gz option is unsurprisingly faster, setting up the source tree
-> > takes almost 3 minutes less (-21%).
-> 
-> If the download link had been slower than about 75 kB/s, the bz2 option
-> would have been faster even on this old machine.
-> 
-> With xz, download would be faster than bz2 and decompression would be
-> somewhere between bz2 and gz --- at least on machines without notable
-> memory constraints.  xz's decompressor is more memory hungry than
-> bzip2's one as far as I understand their manual pages.  But at the
-> default xz compressor setting of -6, the decompressor will still use
-> just 10 MB and should therefore not cause even your 64 MB machine to
-> swap all the time during decompression.
+Linus,
 
-Note that, if memory consumption is really a concern on either end, we
-could use xz -5, which still achieves much better compression than bz2
-but doesn't require more memory for decompression.
+Please pull the latest tracing-fixes-for-linus git tree from:
 
--- 
-Jean Delvare
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git tracing-fixes-for-linus
+
+ Thanks,
+
+	Ingo
+
+------------------>
+Heiko Carstens (1):
+      tracing/kprobes: Fix probe parsing
+
+Lai Jiangshan (1):
+      tracing: Fix circular dead lock in stack trace
+
+
+ kernel/trace/trace_kprobe.c |    2 +-
+ kernel/trace/trace_stack.c  |   24 ++++++++++++++++++++++++
+ 2 files changed, 25 insertions(+), 1 deletions(-)
+
+diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
+index 6ea90c0..50b1b82 100644
+--- a/kernel/trace/trace_kprobe.c
++++ b/kernel/trace/trace_kprobe.c
+@@ -689,7 +689,7 @@ static int create_trace_probe(int argc, char **argv)
+ 			return -EINVAL;
+ 		}
+ 		/* an address specified */
+-		ret = strict_strtoul(&argv[0][2], 0, (unsigned long *)&addr);
++		ret = strict_strtoul(&argv[1][0], 0, (unsigned long *)&addr);
+ 		if (ret) {
+ 			pr_info("Failed to parse address.\n");
+ 			return ret;
+diff --git a/kernel/trace/trace_stack.c b/kernel/trace/trace_stack.c
+index 678a512..f4bc9b2 100644
+--- a/kernel/trace/trace_stack.c
++++ b/kernel/trace/trace_stack.c
+@@ -157,6 +157,7 @@ stack_max_size_write(struct file *filp, const char __user *ubuf,
+ 	unsigned long val, flags;
+ 	char buf[64];
+ 	int ret;
++	int cpu;
+ 
+ 	if (count >= sizeof(buf))
+ 		return -EINVAL;
+@@ -171,9 +172,20 @@ stack_max_size_write(struct file *filp, const char __user *ubuf,
+ 		return ret;
+ 
+ 	local_irq_save(flags);
++
++	/*
++	 * In case we trace inside arch_spin_lock() or after (NMI),
++	 * we will cause circular lock, so we also need to increase
++	 * the percpu trace_active here.
++	 */
++	cpu = smp_processor_id();
++	per_cpu(trace_active, cpu)++;
++
+ 	arch_spin_lock(&max_stack_lock);
+ 	*ptr = val;
+ 	arch_spin_unlock(&max_stack_lock);
++
++	per_cpu(trace_active, cpu)--;
+ 	local_irq_restore(flags);
+ 
+ 	return count;
+@@ -206,7 +218,13 @@ t_next(struct seq_file *m, void *v, loff_t *pos)
+ 
+ static void *t_start(struct seq_file *m, loff_t *pos)
+ {
++	int cpu;
++
+ 	local_irq_disable();
++
++	cpu = smp_processor_id();
++	per_cpu(trace_active, cpu)++;
++
+ 	arch_spin_lock(&max_stack_lock);
+ 
+ 	if (*pos == 0)
+@@ -217,7 +235,13 @@ static void *t_start(struct seq_file *m, loff_t *pos)
+ 
+ static void t_stop(struct seq_file *m, void *p)
+ {
++	int cpu;
++
+ 	arch_spin_unlock(&max_stack_lock);
++
++	cpu = smp_processor_id();
++	per_cpu(trace_active, cpu)--;
++
+ 	local_irq_enable();
+ }
+ 
