@@ -1,75 +1,90 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758554Ab0BNOIn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 09:08:43 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:35227 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758447Ab0BNOIl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Feb 2010 09:08:41 -0500
-Date: Mon, 15 Feb 2010 01:08:33 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-Subject: Re: [PATCH 16/35] x86: make 64 bit use early_res instead of bootmem
- before slab
-Message-Id: <20100215010833.15f9e09a.sfr@canb.auug.org.au>
-In-Reply-To: <1265793639-15071-17-git-send-email-yinghai@kernel.org>
-References: <1265793639-15071-1-git-send-email-yinghai@kernel.org>
-	<1265793639-15071-17-git-send-email-yinghai@kernel.org>
-X-Mailer: Sylpheed 3.0.0beta7 (GTK+ 2.18.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__15_Feb_2010_01_08_33_+1100_4sz+AF0+GHnrriwD"
+	id S1758568Ab0BNOIv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 09:08:51 -0500
+Received: from mail-fx0-f227.google.com ([209.85.220.227]:51804 "EHLO
+	mail-fx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758447Ab0BNOIq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Feb 2010 09:08:46 -0500
+Message-ID: <4B780350.2080400@monstr.eu>
+Date: Sun, 14 Feb 2010 15:06:08 +0100
+From: Michal Simek <monstr@monstr.eu>
+Reply-To: monstr@monstr.eu
+User-Agent: Thunderbird 2.0.0.22 (X11/20090625)
+MIME-Version: 1.0
+To: Grant Likely <grant.likely@secretlab.ca>
+CC: sfr@canb.auug.org.au, benh@kernel.crashing.org, jeremy.kerr@canonical.com,
+       davem@davemloft.net, microblaze-uclinux@itee.uq.edu.au,
+       linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
+       devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/9] Random OF cleanups and merges
+References: <20100213154838.4767.83881.stgit@angua>
+In-Reply-To: <20100213154838.4767.83881.stgit@angua>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__15_Feb_2010_01_08_33_+1100_4sz+AF0+GHnrriwD
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Grant Likely wrote:
+> Here's another batch of cleanup patches from my test-devicetree branch.
+> A number of cleanups, corrections and minor merges of common code.
+> Also a patch from Jeremy to make the flat tree work on architectures
+> without LMB (arm).
+> 
+> Once I've collected acks on these, I'll move them over to my
+> next-devicetree branch on git://git.secretlab.ca/git/linux-2.6
 
-Hi,
+All changes look ok. Please add them to linux-next which I am testing. I 
+don't expect any problem with it but anywya if any problems arise, I 
+will let you know.
 
-On Wed, 10 Feb 2010 01:20:20 -0800 Yinghai Lu <yinghai@kernel.org> wrote:
->
-> finally we can use early_res to replace bootmem for x86_64 now.
->=20
-> still can use CONFIG_NO_BOOTMEM to enable it or not
->=20
-> -v2: fix 32bit compiling about MAX_DMA32_PFN
->=20
-> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+I don't want to reply every email as Ben that's why one my big ACK
+for that 9 patches.
 
-=46rom a powerpc pseries_defconfig build (and others configs) of tip/master
-(9d4a5dc3080c811f36bf8175f2de1f9a6f84b176 "Merge branch 'perf/urgent'"):
+Acked-by: Michal Simek <monstr@monstr.eu>
 
-mm/page_alloc.c:3468: error: implicit declaration of function 'find_early_a=
-rea'
-mm/page_alloc.c:3483: error: implicit declaration of function 'reserve_earl=
-y_without_check'
+> 
+> Cheers,
+> g.
+> 
+> ---
+> 
+> Grant Likely (6):
+>       of: remove undefined request_OF_resource & release_OF_resource
+>       of/sparc: Remove sparc-local declaration of allnodes and devtree_lock
+>       of: move definition of of_chosen into common code.
+>       of: remove unused extern reference to devtree_lock
+>       of: put default string compare and #a/s-cell values into common header
+>       of: Remove old and misplaced function declarations
+> 
+> Jeremy Kerr (3):
+>       of/flattree: Don't assume HAVE_LMB
+>       of: protect linux/of.h with CONFIG_OF
+>       proc_devtree: fix THIS_MODULE without module.h
+> 
+> 
+>  arch/microblaze/include/asm/prom.h |   15 ---------------
+>  arch/microblaze/kernel/prom.c      |    8 +++++---
+>  arch/powerpc/include/asm/prom.h    |   14 --------------
+>  arch/powerpc/kernel/prom.c         |   10 +++++-----
+>  arch/sparc/kernel/prom.h           |    3 ---
+>  drivers/of/base.c                  |    1 +
+>  drivers/of/fdt.c                   |    9 ++++++---
+>  fs/proc/proc_devtree.c             |    1 +
+>  include/linux/of.h                 |   27 +++++++++++++++++++++++++++
+>  include/linux/of_fdt.h             |   11 +----------
+>  10 files changed, 46 insertions(+), 53 deletions(-)
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
 
---Signature=_Mon__15_Feb_2010_01_08_33_+1100_4sz+AF0+GHnrriwD
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkt4A+EACgkQjjKRsyhoI8x5KwCfXj33V4J0ZWF+jiypWY02CjMg
-2SkAnj8R63fyrTXKb+DoZtL1tmTzYt9K
-=qhlz
------END PGP SIGNATURE-----
-
---Signature=_Mon__15_Feb_2010_01_08_33_+1100_4sz+AF0+GHnrriwD--
+-- 
+Michal Simek, Ing. (M.Eng)
+w: www.monstr.eu p: +42-0-721842854
+Maintainer of Linux kernel 2.6 Microblaze Linux - http://www.monstr.eu/fdt/
+Microblaze U-BOOT custodian
