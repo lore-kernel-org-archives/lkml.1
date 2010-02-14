@@ -1,15 +1,15 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753675Ab0BOAD1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 19:03:27 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:60593 "EHLO ogre.sisk.pl"
+	id S1754391Ab0BOABb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 19:01:31 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:60636 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753975Ab0BNX5u convert rfc822-to-8bit (ORCPT
+	id S1754132Ab0BNX6c convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Feb 2010 18:57:50 -0500
+	Sun, 14 Feb 2010 18:58:32 -0500
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
        Maciej Rutecki <maciej.rutecki@gmail.com>,
-       "Bart Van Assche" <bart.vanassche@gmail.com>
+       "Hugh Dickins" <hugh.dickins@tiscali.co.uk>
 References: <Z5cmiqDComP.A.gyF.OiIeLB@chimera>
 In-Reply-To: <Z5cmiqDComP.A.gyF.OiIeLB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -17,10 +17,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <4un6Gst5rKB.A.FwH.TjIeLB@chimera>
-Subject: [Bug #15177] Asynchronous writes up to 30% slower than in previous kernel versions
+Message-ID: <4un6Gst5rKB.A.bdH.CjIeLB@chimera>
+Subject: [Bug #15202] lockdep warning during elevator_switch
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Mon, 15 Feb 2010 00:38:31 +0100 (CET)
+Date: Mon, 15 Feb 2010 00:38:32 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -33,9 +33,10 @@ from 2.6.32.  Please verify if it still should be listed and let the tracking te
 know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15177
-Subject		: Asynchronous writes up to 30% slower than in previous kernel versions
-Submitter	: Bart Van Assche <bart.vanassche@gmail.com>
-Date		: 2010-01-30 16:38 (16 days old)
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15202
+Subject		: lockdep warning during elevator_switch
+Submitter	: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Date		: 2010-01-31 23:55 (15 days old)
+References	: http://marc.info/?l=linux-kernel&m=126498212613051&w=4
 
 
