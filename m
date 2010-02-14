@@ -1,119 +1,186 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758523Ab0BNMoA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 07:44:00 -0500
-Received: from poutre.nerim.net ([62.4.16.124]:65043 "EHLO poutre.nerim.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754127Ab0BNMn7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Feb 2010 07:43:59 -0500
-Date: Sun, 14 Feb 2010 13:43:55 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Willy Tarreau <w@1wt.eu>
-Cc: Phillip Lougher <phillip@lougher.demon.co.uk>, mirrors@kernel.org,
-       lasse.collin@tukaani.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       users@kernel.org, "FTPAdmin Kernel.org" <ftpadmin@kernel.org>,
-       Pavel Machek <pavel@ucw.cz>
-Subject: Re: [kernel.org users] XZ Migration discussion
-Message-ID: <20100214134355.056d95ab@hyperion.delvare>
-In-Reply-To: <20100214094940.GB17999@1wt.eu>
-References: <4B744E13.8040004@kernel.org>
-	<20100211205129.GA26105@elf.ucw.cz>
-	<20100213181008.479509f5@hyperion.delvare>
-	<4B773B31.1020802@lougher.demon.co.uk>
-	<20100214102308.1d1d6fff@hyperion.delvare>
-	<20100214094940.GB17999@1wt.eu>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1754390Ab0BNNKT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 08:10:19 -0500
+Received: from mail-ew0-f228.google.com ([209.85.219.228]:52517 "EHLO
+	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754281Ab0BNNKQ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Feb 2010 08:10:16 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=hWHc9aj5zriHADdznKgbw0gwQ2q0mAdGXhWstQxN+2TjtXFEXBskmeT3Jd4e8e4FOL
+         ghyecxaIdeX5a+h8DtsYjfBNTZ1euEmdGMjeM9MhaLAZCvavCxwvTTynjVmFJdlSo42Q
+         jPKDi8gKnosHcozCEFmQh/G+E+GDHXE6LGVK0=
+MIME-Version: 1.0
+In-Reply-To: <520f0cf11002110911t3f125649v73062e9851e2cfb3@mail.gmail.com>
+References: <520f0cf11002110911t3f125649v73062e9851e2cfb3@mail.gmail.com>
+Date: Sun, 14 Feb 2010 08:10:14 -0500
+X-Google-Sender-Auth: 0fcdfd8f05173414
+Message-ID: <520f0cf11002140510w5c57d196n12f8036ea6085c52@mail.gmail.com>
+Subject: Re: [BUG]: Possibe recursive locking detected in sysfs
+From: John Kacur <jkacur@redhat.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>,
+       Tejun Heo <tj@kernel.org>, Serge Hallyn <serue@us.ibm.com>,
+       "David P. Quigley" <dpquigl@tycho.nsa.gov>,
+       James Morris <jmorris@namei.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Salut Willy,
+On Thu, Feb 11, 2010 at 12:11 PM, John Kacur <jkacur@redhat.com> wrote:
+> I'm not sure if this one has already been reported. - thanks.
+>
+> Feb 11 07:24:15 localhost kernel: [ INFO: possible recursive locking detected ]
+> Feb 11 07:24:15 localhost kernel: 2.6.33-rc7 #1
+> Feb 11 07:24:15 localhost kernel: ---------------------------------------------
+> Feb 11 07:24:15 localhost kernel: 94cpufreq/2933 is trying to acquire lock:
+> Feb 11 07:24:15 localhost kernel: (s_active){++++.+}, at:
+> [<ffffffff81157408>] sysfs_hash_and_remove+0x53/0x6a
+> Feb 11 07:24:15 localhost kernel:
+> Feb 11 07:24:15 localhost kernel: but task is already holding lock:
+> Feb 11 07:24:15 localhost kernel: (s_active){++++.+}, at:
+> [<ffffffff81159530>] sysfs_get_active_two+0x24/0x48
+> Feb 11 07:24:15 localhost kernel:
+> Feb 11 07:24:15 localhost kernel: other info that might help us debug this:
+> Feb 11 07:24:15 localhost kernel: 4 locks held by 94cpufreq/2933:
+> Feb 11 07:24:15 localhost kernel: #0:  (&buffer->mutex){+.+.+.}, at:
+> [<ffffffff81157dbd>] sysfs_write_file+0x3e/0x12b
+> Feb 11 07:24:15 localhost kernel: #1:  (s_active){++++.+}, at:
+> [<ffffffff81159530>] sysfs_get_active_two+0x24/0x48
+> Feb 11 07:24:15 localhost kernel: #2:  (s_active){++++.+}, at:
+> [<ffffffff8115953d>] sysfs_get_active_two+0x31/0x48
+> Feb 11 07:24:15 localhost kernel: #3:  (dbs_mutex){+.+.+.}, at:
+> [<ffffffffa04bcdb3>] cpufreq_governor_dbs+0x29b/0x348
+> [cpufreq_ondemand]
+> Feb 11 07:24:15 localhost kernel:
+> Feb 11 07:24:15 localhost kernel: stack backtrace:
+> Feb 11 07:24:15 localhost kernel: Pid: 2933, comm: 94cpufreq Not
+> tainted 2.6.33-rc7 #1
+> Feb 11 07:24:15 localhost kernel: Call Trace:
+> Feb 11 07:24:15 localhost kernel: [<ffffffff81071f53>]
+> __lock_acquire+0xcf6/0xd8b
+> Feb 11 07:24:15 localhost kernel: [<ffffffff81070914>] ?
+> debug_check_no_locks_freed+0x120/0x12f
+> Feb 11 07:24:15 localhost kernel: [<ffffffff8107020e>] ?
+> trace_hardirqs_on_caller+0x11f/0x14a
+> Feb 11 07:24:15 localhost kernel: [<ffffffff810720c0>] lock_acquire+0xd8/0xf5
+> Feb 11 07:24:15 localhost kernel: [<ffffffff81157408>] ?
+> sysfs_hash_and_remove+0x53/0x6a
+> Feb 11 07:24:15 localhost kernel: [<ffffffff81159231>]
+> sysfs_addrm_finish+0xe1/0x175
+> Feb 11 07:24:15 localhost kernel: [<ffffffff81157408>] ?
+> sysfs_hash_and_remove+0x53/0x6a
+> Feb 11 07:24:15 localhost kernel: [<ffffffff8137b1b5>] ?
+> sub_preempt_count+0xa3/0xb6
+> Feb 11 07:24:15 localhost kernel: [<ffffffff81157408>]
+> sysfs_hash_and_remove+0x53/0x6a
+> Feb 11 07:24:15 localhost kernel: [<ffffffff8115a59d>]
+> sysfs_remove_group+0x91/0xc9
+> Feb 11 07:24:15 localhost kernel: [<ffffffffa04bcdc6>]
+> cpufreq_governor_dbs+0x2ae/0x348 [cpufreq_ondemand]
+> Feb 11 07:24:15 localhost kernel: [<ffffffff8137b1b5>] ?
+> sub_preempt_count+0xa3/0xb6
+> Feb 11 07:24:15 localhost kernel: [<ffffffff812ab9cc>]
+> __cpufreq_governor+0x89/0xc7
+> Feb 11 07:24:15 localhost kernel: [<ffffffff812ac7b9>]
+> __cpufreq_set_policy+0x18e/0x22a
+> Feb 11 07:24:15 localhost kernel: [<ffffffff812accd6>]
+> store_scaling_governor+0x199/0x1ed
+> Feb 11 07:24:15 localhost kernel: [<ffffffff812ad50d>] ? handle_update+0x0/0x39
+> Feb 11 07:24:15 localhost kernel: [<ffffffff8137685d>] ? down_write+0x76/0x7e
+> Feb 11 07:24:15 localhost kernel: [<ffffffff812ac607>] store+0x67/0x8b
+> Feb 11 07:24:15 localhost kernel: [<ffffffff81157e75>]
+> sysfs_write_file+0xf6/0x12b
+> Feb 11 07:24:15 localhost kernel: [<ffffffff811003c9>] vfs_write+0xb0/0x10a
+> Feb 11 07:24:15 localhost kernel: [<ffffffff811004f1>] sys_write+0x4c/0x75
+> Feb 11 07:24:15 localhost kernel: [<ffffffff81002d9b>]
+> system_call_fastpath+0x16/0x1b
+>
 
-On Sun, 14 Feb 2010 10:49:40 +0100, Willy Tarreau wrote:
-> On Sun, Feb 14, 2010 at 10:23:08AM +0100, Jean Delvare wrote:
-> > I am not claiming that gzip is dead. It is very useful and it is there
-> > to stay for the years to come, no doubt about that. What I'm saying is
-> > that it isn't the best choice for large files to be downloaded from a
-> > remote server.
-> 
-> Well, I personally like to be able to simply run "less patch-2.6.27.45.gz"
-> and have it transparently uncompressed and dumped on my terminal. It
-> doesn't do that on bz2. We could find multiple examples.
+This is still present in 2.6.33-rc8.
+I can trigger it every time. I have T500 laptop, the trick is to boot
+it up without plugging it in, so it is working on battery power, and
+then to shut the lid.
+first you get the message from above, and then it does a few more
+things before it freezes and I have to hard reboot it.
+The above problem does not occur if I have the laptop plugged into the wall.
 
-This only underlines what I just wrote: the purpose of gzip is
-different from the purpose of bzip2 or lzma. Transparent decompression
-makes sense for the former but little for the latter two. But this
-doesn't mean everyone must make all their files available in .gz format.
-Not every file, and not everyone, needs transparent decompression. It
-makes sense on patch files, but not on tarballs. You have the need, but
-I don't. Furthermore, the fact that your local usage of patch files is
-more convenient if they come in .gz format doesn't imply that this is
-the format in which you have to download them. You are free to repack
-files after downloading them. This can even be easily automated.
+Here is the 2.6.33-rc8 version of above. If anyone has further
+suggestions for debugging, pls let me know.
+I've cced the folks that get_maintainer.pl reports for
+fs/sysfs/inode.c and fs/sysfs/dir.c
 
-hpa seems to be very reluctant to the idea, but one thing I had in mind
-was that patches could be in .gz format and tarballs in .xz, for
-example. Having to stick to a common strategy for all the files seems
-suboptimal, given their different natures and uses.
-
-(And for completeness: on my distribution, the bzip2 package comes with
-a little helper script named bzless, which does exactly what you want
-for bzip2-compressed patches. But I wouldn't recommend using it...)
-
-> Another thing comes to mind, because I've been beaten by this in the
-> past. People working in enterprises where the internet access passes
-> via mandatory proxies coupled with anti-virus can often download many
-> things but not binaries that can't be analysed. At this time, I could
-> only download tar.gz but not .bz2. And please don't tell me I have to
-> go to the admin to tell him to change his proxy's configuration, you
-> can't do that when you work as a consultant for a 20000 persons group
-> where products are selected after 6-12 months of testing and managed
-> by different people from those who qualify them.
-
-I've been working in such environments in the past, so I see what you
-mean. And I do not disagree that the format in which projects make
-their files available can be more or less convenient in such
-situations. For example, I remember being deeply annoyed by projects
-not releasing tarballs, because I simply couldn't access CVS
-repositories.
-
-That being said, I also don't think that you can put all the burden of
-bad company policies on the shoulder of open source software providers.
-If someone worked in a company where even .gz compressed files can't be
-downloaded, we wouldn't ask kernel.org to provide uncompressed files on
-top of .gz and .bz2, would we? There is a trade-off to be found between
-flexibility of access and disk and network usage.
-
-It should be possible to retrieve the kernel sources using git over
-HTTP these days anyway, right? Or are firewalls frequently blocking
-this as well?
-
-> In my opinion, .xz is a very good option to replace .bz2 as it will
-> bring advantages without downsides. But .gz should stay as it has
-> been available from day 1, at least for all people who may have
-> trouble with .xz for whatever reason. If it has not been a problem
-> for the last 16 years, I don't see why it would suddenly become one.
-
-People have been using Windows for the last 16 years, it has not been a
-problem, so I don't see why it would suddenly become one. Let's stop
-working on an alternative. That way we don't have to decide which
-compression format to use! Problem solved ;)
-
-Seriously: things can become a problem over time even if they were not
-one initially, and needs may evolve as well. The Linux kernel releases
-have grown very big compared to the early days, and we release more
-often, and new compression technologies exist and are getting widely
-adopted. You don't have to stand in front of the wall to declare that
-there's a problem. Just improving the user experience is worth the
-change sometimes.
-
-That being all said, I don't fundamentally disagree with you: just
-replacing .bz2 with .xz would be fine with me. Really, my main concern
-is the file count in directory v2.6/, much more than the compression
-formats being used.
-
--- 
-Jean Delvare
+Feb 14 07:35:49 localhost kernel: =============================================
+Feb 14 07:35:49 localhost kernel: [ INFO: possible recursive locking detected ]
+Feb 14 07:35:49 localhost kernel: 2.6.33-rc8 #1
+Feb 14 07:35:49 localhost kernel: ---------------------------------------------
+Feb 14 07:35:49 localhost kernel: 94cpufreq/2914 is trying to acquire lock:
+Feb 14 07:35:49 localhost kernel: (s_active){++++.+}, at:
+[<ffffffff81157478>] sysfs_hash_and_remove+0x53/0x6a
+Feb 14 07:35:49 localhost kernel:
+Feb 14 07:35:49 localhost kernel: but task is already holding lock:
+Feb 14 07:35:49 localhost kernel: (s_active){++++.+}, at:
+[<ffffffff811595a0>] sysfs_get_active_two+0x24/0x48
+Feb 14 07:35:49 localhost kernel:
+Feb 14 07:35:49 localhost kernel: other info that might help us debug this:
+Feb 14 07:35:49 localhost kernel: 4 locks held by 94cpufreq/2914:
+Feb 14 07:35:49 localhost kernel: #0:  (&buffer->mutex){+.+.+.}, at:
+[<ffffffff81157e2d>] sysfs_write_file+0x3e/0x12b
+Feb 14 07:35:49 localhost kernel: #1:  (s_active){++++.+}, at:
+[<ffffffff811595a0>] sysfs_get_active_two+0x24/0x48
+Feb 14 07:35:49 localhost kernel: #2:  (s_active){++++.+}, at:
+[<ffffffff811595ad>] sysfs_get_active_two+0x31/0x48
+Feb 14 07:35:49 localhost kernel: #3:  (dbs_mutex){+.+.+.}, at:
+[<ffffffffa04c0dbe>] cpufreq_governor_dbs+0x29b/0x345
+[cpufreq_ondemand]
+Feb 14 07:35:49 localhost kernel:
+Feb 14 07:35:49 localhost kernel: stack backtrace:
+Feb 14 07:35:49 localhost kernel: Pid: 2914, comm: 94cpufreq Not
+tainted 2.6.33-rc8 #1
+Feb 14 07:35:49 localhost kernel: Call Trace:
+Feb 14 07:35:49 localhost kernel: [<ffffffff81071f53>]
+__lock_acquire+0xcf6/0xd8b
+Feb 14 07:35:49 localhost kernel: [<ffffffff81070914>] ?
+debug_check_no_locks_freed+0x120/0x12f
+Feb 14 07:35:49 localhost kernel: [<ffffffff8107020e>] ?
+trace_hardirqs_on_caller+0x11f/0x14a
+Feb 14 07:35:49 localhost kernel: [<ffffffff810720c0>] lock_acquire+0xd8/0xf5
+Feb 14 07:35:49 localhost kernel: [<ffffffff81157478>] ?
+sysfs_hash_and_remove+0x53/0x6a
+Feb 14 07:35:49 localhost kernel: [<ffffffff811592a1>]
+sysfs_addrm_finish+0xe1/0x175
+Feb 14 07:35:49 localhost kernel: [<ffffffff81157478>] ?
+sysfs_hash_and_remove+0x53/0x6a
+Feb 14 07:35:49 localhost kernel: [<ffffffff8137b335>] ?
+sub_preempt_count+0xa3/0xb6
+Feb 14 07:35:49 localhost kernel: [<ffffffff81157478>]
+sysfs_hash_and_remove+0x53/0x6a
+Feb 14 07:35:49 localhost kernel: [<ffffffff8115a60d>]
+sysfs_remove_group+0x91/0xc9
+Feb 14 07:35:49 localhost kernel: [<ffffffffa04c0dd1>]
+cpufreq_governor_dbs+0x2ae/0x345 [cpufreq_ondemand]
+Feb 14 07:35:49 localhost kernel: [<ffffffff8137b335>] ?
+sub_preempt_count+0xa3/0xb6
+Feb 14 07:35:49 localhost kernel: [<ffffffff812aba60>]
+__cpufreq_governor+0x89/0xc7
+Feb 14 07:35:49 localhost kernel: [<ffffffff812ac84d>]
+__cpufreq_set_policy+0x18e/0x22a
+Feb 14 07:35:49 localhost kernel: [<ffffffff812acd6a>]
+store_scaling_governor+0x199/0x1ed
+Feb 14 07:35:49 localhost kernel: [<ffffffff812ad5a1>] ? handle_update+0x0/0x39
+Feb 14 07:35:49 localhost kernel: [<ffffffff813769ad>] ? down_write+0x76/0x7e
+Feb 14 07:35:49 localhost kernel: [<ffffffff812ac69b>] store+0x67/0x8b
+Feb 14 07:35:49 localhost kernel: [<ffffffff81157ee5>]
+sysfs_write_file+0xf6/0x12b
+Feb 14 07:35:49 localhost kernel: [<ffffffff811003c9>] vfs_write+0xb0/0x10a
+Feb 14 07:35:49 localhost kernel: [<ffffffff811004f1>] sys_write+0x4c/0x75
+Feb 14 07:35:49 localhost kernel: [<ffffffff81002d9b>]
+system_call_fastpath+0x16/0x1b
