@@ -1,15 +1,18 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754365Ab0BOALp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 19:11:45 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:60823 "EHLO ogre.sisk.pl"
+	id S1754592Ab0BOAL4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 19:11:56 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:60834 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752380Ab0BOALX convert rfc822-to-8bit (ORCPT
+	id S1754439Ab0BOALv convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Feb 2010 19:11:23 -0500
+	Sun, 14 Feb 2010 19:11:51 -0500
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
        Maciej Rutecki <maciej.rutecki@gmail.com>,
-       "Duncan" <1i5t5.duncan@cox.net>, "Greg Kroah-Hartman" <gregkh@suse.de>
+       "Gautham R Shenoy" <ego@in.ibm.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "Mike Galbraith" <efault@gmx.de>,
+       "Peter Zijlstra" <peterz@infradead.org>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
 References: <fQEllunEdO.A.-LB.HyIeLB@chimera>
 In-Reply-To: <fQEllunEdO.A.-LB.HyIeLB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -17,10 +20,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <Xv2rBFCTXTH.A.wmE.v1IeLB@chimera>
-Subject: [Bug #14442] resume after hibernate: /dev/sdb drops and returns as /dev/sde
+Message-ID: <Xv2rBFCTXTH.A.AXE.M1IeLB@chimera>
+Subject: [Bug #14621] specjbb2005 and aim7 regression with 2.6.32-rc kernels
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Mon, 15 Feb 2010 00:52:41 +0100 (CET)
+Date: Mon, 15 Feb 2010 00:52:42 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -33,9 +36,10 @@ introduced between 2.6.31 and 2.6.32.  Please verify if it still should
 be listed and let the tracking team know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14442
-Subject		: resume after hibernate: /dev/sdb drops and returns as /dev/sde
-Submitter	: Duncan <1i5t5.duncan@cox.net>
-Date		: 2009-10-20 01:52 (118 days old)
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14621
+Subject		: specjbb2005 and aim7 regression with 2.6.32-rc kernels
+Submitter	: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
+Date		: 2009-11-06 7:38 (101 days old)
+References	: http://marc.info/?l=linux-kernel&m=125749310413174&w=4
 
 
