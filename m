@@ -1,16 +1,14 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754147Ab0BNX6d (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 18:58:33 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:60626 "EHLO ogre.sisk.pl"
+	id S1754413Ab0BNX7a (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 18:59:30 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:60700 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753645Ab0BNX6a convert rfc822-to-8bit (ORCPT
+	id S1754324Ab0BNX7R convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Feb 2010 18:58:30 -0500
+	Sun, 14 Feb 2010 18:59:17 -0500
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>,
-       "Christian Friedemann" <dawn2k@gmail.com>,
-       "Li Peng" <peng.li@linux.intel.com>
+       Maciej Rutecki <maciej.rutecki@gmail.com>, "Tao Ma" <tao.ma@oracle.com>
 References: <Z5cmiqDComP.A.gyF.OiIeLB@chimera>
 In-Reply-To: <Z5cmiqDComP.A.gyF.OiIeLB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -18,10 +16,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <4un6Gst5rKB.A.fYH.BjIeLB@chimera>
-Subject: [Bug #15207] Pineview - only cursor on black screen visible, "GPU hung" in dmesg
+Message-ID: <4un6Gst5rKB.A.hhG.iiIeLB@chimera>
+Subject: [Bug #15278] lockdep warning for iscsi in 2.6.33-rc6
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Mon, 15 Feb 2010 00:38:33 +0100 (CET)
+Date: Mon, 15 Feb 2010 00:38:36 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -34,9 +32,11 @@ from 2.6.32.  Please verify if it still should be listed and let the tracking te
 know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15207
-Subject		: Pineview - only cursor on black screen visible, "GPU hung" in dmesg
-Submitter	: Christian Friedemann <dawn2k@gmail.com>
-Date		: 2010-02-01 20:15 (14 days old)
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15278
+Subject		: lockdep warning for iscsi in 2.6.33-rc6
+Submitter	: Tao Ma <tao.ma@oracle.com>
+Date		: 2010-02-09 6:59 (6 days old)
+Message-ID	: <4B7107CF.3060703@oracle.com>
+References	: http://marc.info/?l=linux-kernel&m=126569884330200&w=2
 
 
