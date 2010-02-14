@@ -1,77 +1,69 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751670Ab0BNPw0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 10:52:26 -0500
-Received: from mail-gx0-f224.google.com ([209.85.217.224]:63320 "EHLO
-	mail-gx0-f224.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751420Ab0BNPwZ (ORCPT
+	id S1751758Ab0BNPww (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 10:52:52 -0500
+Received: from mail-ew0-f228.google.com ([209.85.219.228]:61717 "EHLO
+	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751664Ab0BNPwu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Feb 2010 10:52:25 -0500
+	Sun, 14 Feb 2010 10:52:50 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=sender:date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=tvTS2DldhNiLyHTZutnWO9jrlNJ/Iw8tEwY2AJFYVoz2q9nSnm6w/2yxGcE9lLY2/P
-         Shl8/iPXwUw2zJaf5mwlppYjZMsK23CNqZG4byZ8D7aO42uukqGL6mK1xMX2P1iPVzxC
-         GFk0Snmp3vz072isr0txLOLV8zcMngM1t8MEs=
-Date: Sun, 14 Feb 2010 21:23:27 +0530
-From: Rabin Vincent <rabin@rab.in>
-To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Ingo Molnar <mingo@redhat.com>,
-       Abhishek Sagar <sagar.abhishek@gmail.com>
-Subject: Re: [PATCH 08/10] ARM: ftrace: fix and update dynamic ftrace
-Message-ID: <20100214155326.GA2842@debian>
-References: <1266090518-31120-1-git-send-email-rabin@rab.in>
- <1266090518-31120-9-git-send-email-rabin@rab.in>
- <20100214110840.GA21357@pengutronix.de>
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=eBxcyMyFNLUJVnlOw0r4+inMFvuo/gs+Bd4IiwTwcygjxPrjxgBhllMY3OWYJ9n2oQ
+         LR5i2meI58jpTudMbv/yBQa/WDMxjrX6fNCis78GU51tOb8UuTxe0IMacc0WtWpJwgel
+         sVc73fbzLpnZfuCUPiUHuSf00HrWw0AV7Gq9s=
+Message-ID: <4B781E05.9040502@gmail.com>
+Date: Sun, 14 Feb 2010 17:00:05 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20100214110840.GA21357@pengutronix.de>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: paul@pwsan.com, Andrew Morton <akpm@linux-foundation.org>,
+       linux-omap@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] OMAP: Dereference of NULL autodep in _autodep_lookup()
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 14, 2010 at 12:08:40PM +0100, Uwe Kleine-König wrote:
-> > diff --git a/arch/arm/include/asm/ftrace.h b/arch/arm/include/asm/ftrace.h
-> > index 103f7ee..4a56a2e 100644
-> > --- a/arch/arm/include/asm/ftrace.h
-> > +++ b/arch/arm/include/asm/ftrace.h
-> > @@ -2,12 +2,29 @@
-> >  #define _ASM_ARM_FTRACE
-> >  
-> >  #ifdef CONFIG_FUNCTION_TRACER
-> > -#define MCOUNT_ADDR		((long)(mcount))
-> > +#define MCOUNT_ADDR		((unsigned long)(__gnu_mcount_nc))
-> hhmm, does this work with both the old and the new mcount function?
+Don't dereference autodep when it's NULL. In _autodep_lookup() an
+ERR_PTR(-ENOENT) is assigned to autodep->pwrdm.ptr if pwrdm_lookup() fails.
 
-Yes, MCOUNT_ADDR is not used by the generic ftrace code directly, but is
-instead only passed to our arch specific functions.  We determine the
-right mcount address to use there:
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
 
-> +#define OLD_MCOUNT_ADDR	((unsigned long) mcount)
-[..]
-> +static unsigned long adjust_address(struct dyn_ftrace *rec, unsigned long addr)
-> +{
-> +	if (!rec->arch.old_mcount)
-> +		return addr;
-> +
-> +	if (addr == MCOUNT_ADDR)
-> +		addr = OLD_MCOUNT_ADDR;
-> +	else if (addr == FTRACE_ADDR)
-> +		addr = OLD_FTRACE_ADDR;
-> +
-> +	return addr;
-> +}
+Alternatively we could do:
 
-I changed MCOUNT_ADDR from mcount to __gnu_mcount_nc because we always
-build __gnu_mcount_nc in, but don't build mcount when using Thumb-2.
+-		for (autodep = autodeps; autodep->pwrdm.ptr; autodep++)
++		for (autodep = autodeps; !IS_ERR(autodep->pwrdm.ptr); autodep++)
 
-Rabin
+...but considering how _clkdm_add_autodeps() traverses trough the autodeps it
+appears that we want to ignore failures. Correct?
+
+Roel
+
+diff --git a/arch/arm/mach-omap2/clockdomain.c b/arch/arm/mach-omap2/clockdomain.c
+index dd285f0..8f359c1 100644
+--- a/arch/arm/mach-omap2/clockdomain.c
++++ b/arch/arm/mach-omap2/clockdomain.c
+@@ -64,9 +64,6 @@ static void _autodep_lookup(struct clkdm_pwrdm_autodep *autodep)
+ {
+ 	struct powerdomain *pwrdm;
+ 
+-	if (!autodep)
+-		return;
+-
+ 	if (!omap_chip_is(autodep->omap_chip))
+ 		return;
+ 
+@@ -211,7 +208,7 @@ void clkdm_init(struct clockdomain **clkdms,
+ 
+ 	autodeps = init_autodeps;
+ 	if (autodeps)
+-		for (autodep = autodeps; autodep->pwrdm.ptr; autodep++)
++		for (autodep = autodeps; autodep; autodep++)
+ 			_autodep_lookup(autodep);
+ }
+ 
