@@ -1,45 +1,103 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758314Ab0BNJ4N (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 04:56:13 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:39886 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752081Ab0BNJ4M (ORCPT
+	id S1758272Ab0BNKMS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 05:12:18 -0500
+Received: from casper.infradead.org ([85.118.1.10]:60653 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753958Ab0BNKMQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Feb 2010 04:56:12 -0500
-Date: Sun, 14 Feb 2010 10:56:07 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Phillip Lougher <phillip@lougher.demon.co.uk>
-Cc: Jean Delvare <khali@linux-fr.org>, lasse.collin@tukaani.org,
-       linux-kernel <linux-kernel@vger.kernel.org>, mirrors@kernel.org,
-       users@kernel.org, "FTPAdmin Kernel.org" <ftpadmin@kernel.org>,
-       Pavel Machek <pavel@ucw.cz>
-Subject: Re: [kernel.org users] XZ Migration discussion
-Message-ID: <20100214095607.GB21783@one.firstfloor.org>
-References: <4B744E13.8040004@kernel.org> <20100211205129.GA26105@elf.ucw.cz> <20100213181008.479509f5@hyperion.delvare> <4B773B31.1020802@lougher.demon.co.uk>
+	Sun, 14 Feb 2010 05:12:16 -0500
+Subject: [PATCH] perf_events: Fix FORK events
+From: Peter Zijlstra <peterz@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Anton Blanchard <anton@samba.org>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 14 Feb 2010 11:12:04 +0100
+Message-ID: <1266142324.5273.411.camel@laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B773B31.1020802@lougher.demon.co.uk>
-User-Agent: Mutt/1.4.2.2i
+X-Mailer: Evolution 2.28.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> With xz you have just one C/C++ implementation with a single library with
-> an undocumented API for C/C++ programmers.
+Ingo, could you stick this in perf/urgent, this needs to make .33
 
-... which is not even widely deployed. I did a quick survey and none of 
-my systems (none of which terrible old and not particularly embedded) 
-have it installed and for most them there's only "lzma-utils" in the 
-distribution package repositories which I understand is not compatible.
+---
+Commit 22e19085 ("Honour event state for aux stream data") introduced a
+bug where we would drop FORK events.
 
-I would basically need to download the source by hand and install
-it like back in the bad old "unix with all useful commands missing"
-HP-UX/Solaris/etc. days.
+The thing is that we deliver FORK events to the child process' event,
+which at that time will be PERF_EVENT_STATE_INACTIVE because the child
+won't be scheduled in (we're in the middle of fork).
 
-Please keep .gz and better .bz2
+Solve this twice, change the event state filter to exclude only disabled
+(STATE_OFF) or worse, and deliver FORK events to the current (parent).
 
--Andi
--- 
-ak@linux.intel.com -- Speaking for myself only.
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ kernel/perf_event.c |   11 +++++------
+ 1 files changed, 5 insertions(+), 6 deletions(-)
+
+diff --git a/kernel/perf_event.c b/kernel/perf_event.c
+index d27746b..57d6297 100644
+--- a/kernel/perf_event.c
++++ b/kernel/perf_event.c
+@@ -3259,8 +3259,6 @@ static void perf_event_task_output(struct perf_event *event,
+ 	task_event->event_id.tid = perf_event_tid(event, task);
+ 	task_event->event_id.ptid = perf_event_tid(event, current);
+ 
+-	task_event->event_id.time = perf_clock();
+-
+ 	perf_output_put(&handle, task_event->event_id);
+ 
+ 	perf_output_end(&handle);
+@@ -3268,7 +3266,7 @@ static void perf_event_task_output(struct perf_event *event,
+ 
+ static int perf_event_task_match(struct perf_event *event)
+ {
+-	if (event->state != PERF_EVENT_STATE_ACTIVE)
++	if (event->state < PERF_EVENT_STATE_INACTIVE)
+ 		return 0;
+ 
+ 	if (event->cpu != -1 && event->cpu != smp_processor_id())
+@@ -3300,7 +3298,7 @@ static void perf_event_task_event(struct perf_task_event *task_event)
+ 	cpuctx = &get_cpu_var(perf_cpu_context);
+ 	perf_event_task_ctx(&cpuctx->ctx, task_event);
+ 	if (!ctx)
+-		ctx = rcu_dereference(task_event->task->perf_event_ctxp);
++		ctx = rcu_dereference(current->perf_event_ctxp);
+ 	if (ctx)
+ 		perf_event_task_ctx(ctx, task_event);
+ 	put_cpu_var(perf_cpu_context);
+@@ -3331,6 +3329,7 @@ static void perf_event_task(struct task_struct *task,
+ 			/* .ppid */
+ 			/* .tid  */
+ 			/* .ptid */
++			.time = perf_clock(),
+ 		},
+ 	};
+ 
+@@ -3380,7 +3379,7 @@ static void perf_event_comm_output(struct perf_event *event,
+ 
+ static int perf_event_comm_match(struct perf_event *event)
+ {
+-	if (event->state != PERF_EVENT_STATE_ACTIVE)
++	if (event->state < PERF_EVENT_STATE_INACTIVE)
+ 		return 0;
+ 
+ 	if (event->cpu != -1 && event->cpu != smp_processor_id())
+@@ -3500,7 +3499,7 @@ static void perf_event_mmap_output(struct perf_event *event,
+ static int perf_event_mmap_match(struct perf_event *event,
+ 				   struct perf_mmap_event *mmap_event)
+ {
+-	if (event->state != PERF_EVENT_STATE_ACTIVE)
++	if (event->state < PERF_EVENT_STATE_INACTIVE)
+ 		return 0;
+ 
+ 	if (event->cpu != -1 && event->cpu != smp_processor_id())
+
+
+
