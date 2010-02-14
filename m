@@ -1,162 +1,70 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753342Ab0BNUr5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 15:47:57 -0500
-Received: from hera.kernel.org ([140.211.167.34]:45517 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752734Ab0BNUrz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Feb 2010 15:47:55 -0500
-Message-ID: <4B786110.9020806@kernel.org>
-Date: Sun, 14 Feb 2010 12:46:08 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
-MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
+	id S1753319Ab0BNUvk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 15:51:40 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:57221 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752734Ab0BNUvj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Feb 2010 15:51:39 -0500
+Date: Sun, 14 Feb 2010 21:51:17 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Jean Delvare <khali@linux-fr.org>, lasse.collin@tukaani.org,
+       linux-kernel <linux-kernel@vger.kernel.org>, mirrors@kernel.org,
+       users@kernel.org, "FTPAdmin Kernel.org" <ftpadmin@kernel.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-Subject: Re: [PATCH 27/35] core: move early_res
-References: <1265793639-15071-1-git-send-email-yinghai@kernel.org>	<1265793639-15071-28-git-send-email-yinghai@kernel.org> <20100215011615.e3d35121.sfr@canb.auug.org.au>
-In-Reply-To: <20100215011615.e3d35121.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+       Willy Tarreau <w@1wt.eu>
+Subject: Re: [kernel.org users] XZ Migration discussion
+Message-ID: <20100214205117.GE2453@elf.ucw.cz>
+References: <4B744E13.8040004@kernel.org>
+ <20100212150137.648dca7c@hyperion.delvare>
+ <alpine.LFD.2.00.1002120714320.7792@localhost.localdomain>
+ <4B75A5DC.3060803@kernel.org>
+ <20100212202357.6363d5af@hyperion.delvare>
+ <20100212230702.GA10266@1wt.eu>
+ <20100213091748.276821e1@hyperion.delvare>
+ <4B767810.5020707@s5r6.in-berlin.de>
+ <20100214171327.GF1578@ucw.cz>
+ <4B7833FD.2010107@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B7833FD.2010107@s5r6.in-berlin.de>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/14/2010 06:16 AM, Stephen Rothwell wrote:
-> Hi,
+On Sun 2010-02-14 18:33:49, Stefan Richter wrote:
+> Pavel Machek wrote:
+> > On Sat 2010-02-13 10:59:44, Stefan Richter wrote:
+> >> As a side note:  7zip, a very popular and Free archiving tool for
+> >> Windows, supports xz since its version 9 which is currently available as
+> >> a beta.  So, WRT the need to get an extra unarchiver, xz is just as
+> >> accessible to Windows users as gz is.
+> > 
+> > Wow, what a stretch.
+> > 
+> > There's about milion tools supporting gz for Windows, and many of them
+> > are out of beta...
 > 
-> On Wed, 10 Feb 2010 01:20:31 -0800 Yinghai Lu <yinghai@kernel.org> wrote:
->>
->> from arch/x86 to kernel/
->>
->> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
->> ---
->>  arch/x86/include/asm/e820.h      |    2 +-
->>  arch/x86/include/asm/early_res.h |   21 --
->>  arch/x86/kernel/Makefile         |    2 +-
->>  arch/x86/kernel/e820.c           |    1 -
->>  arch/x86/kernel/early_res.c      |  523 --------------------------------------
->>  include/linux/early_res.h        |   21 ++
->>  kernel/Makefile                  |    2 +-
->>  kernel/early_res.c               |  522 +++++++++++++++++++++++++++++++++++++
->>  8 files changed, 546 insertions(+), 548 deletions(-)
->>  delete mode 100644 arch/x86/include/asm/early_res.h
->>  delete mode 100644 arch/x86/kernel/early_res.c
->>  create mode 100644 include/linux/early_res.h
->>  create mode 100644 kernel/early_res.c
-> 
-> From a powerpc pseries_defconfig build (and other configs) of tip/master
-> (9d4a5dc3080c811f36bf8175f2de1f9a6f84b176 "Merge branch 'perf/urgent'"):
-> 
-> kernel/early_res.c:209: error: 'max_pfn_mapped' undeclared (first use in this function)
-> 
-> max_pfn_mapped is only defined for x86.
-> 
+> And roughly half of this million archiving/ compression tools use 7zip's
+> backend library, which is just one way of getting xz support in a
+> Windows application.  Besides, what one project calls beta is called
+> dot-zero release elsewhere. :-)  Seriously, getting xz support on
+> Windows is just as easy or as difficult as getting gz support.
 
+Sorry, but I just don't think that's true. No more windows systems
+here. On android, gzip is supported, xzip is not. Debian machine
+supports both, but gzip was preinstalled and I had to pull xzip. (This
+does not help either:
 
-please check
+root@amd:~# apt-cache search xzip
+xzip - Interpreter of Infocom-format story-files
 
-Subject: [PATCH -v2] x86: fix cross-arch compiling
-
-Ingo found:
-lots of cross-arch build failures in latest -tip:
-
-/home/mingo/tip/kernel/early_res.c: In function '__check_and_double_early_res':
-/home/mingo/tip/kernel/early_res.c:209: error: 'max_pfn_mapped' undeclared (first use in this function)
-/home/mingo/tip/kernel/early_res.c:209: error: (Each undeclared identifier is reported only once
-/home/mingo/tip/kernel/early_res.c:209: error: for each function it appears in.)
-make[2]: *** [kernel/early_res.o] Error 1
-
-max_pfn_mapped only defined in x86...
-
-so add get_max_mapped function...
-
--v2: use that in get_free_all_memory_range() too
-
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-
----
- arch/x86/kernel/e820.c    |    9 +++++++++
- include/linux/early_res.h |    1 +
- kernel/early_res.c        |   13 ++++++++++---
- 3 files changed, 20 insertions(+), 3 deletions(-)
-
-Index: linux-2.6/arch/x86/kernel/e820.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/e820.c
-+++ linux-2.6/arch/x86/kernel/e820.c
-@@ -752,6 +752,15 @@ u64 __init find_fw_memmap_area(u64 start
- {
- 	return find_e820_area(start, end, size, align);
- }
-+
-+u64 __init get_max_mapped(void)
-+{
-+	u64 end = max_pfn_mapped;
-+
-+	end <<= PAGE_SHIFT;
-+
-+	return end;
-+}
- /*
-  * Find next free range after *start
-  */
-Index: linux-2.6/include/linux/early_res.h
-===================================================================
---- linux-2.6.orig/include/linux/early_res.h
-+++ linux-2.6/include/linux/early_res.h
-@@ -13,6 +13,7 @@ u64 find_early_area(u64 ei_start, u64 ei
- u64 find_early_area_size(u64 ei_start, u64 ei_last, u64 start,
- 			 u64 *sizep, u64 align);
- u64 find_fw_memmap_area(u64 start, u64 end, u64 size, u64 align);
-+u64 get_max_mapped(void);
- #include <linux/range.h>
- int get_free_all_memory_range(struct range **rangep, int nodeid);
- 
-Index: linux-2.6/kernel/early_res.c
-===================================================================
---- linux-2.6.orig/kernel/early_res.c
-+++ linux-2.6/kernel/early_res.c
-@@ -184,6 +184,13 @@ u64 __init __weak find_fw_memmap_area(u6
- 	return -1ULL;
- }
- 
-+u64 __init __weak get_max_mapped(void)
-+{
-+	panic("should have get_max_mapped defined with arch");
-+
-+	return -1ULL;
-+}
-+
- static void __init __check_and_double_early_res(u64 ex_start, u64 ex_end)
- {
- 	u64 start, end, size, mem;
-@@ -206,7 +213,7 @@ static void __init __check_and_double_ea
- 					 sizeof(struct early_res));
- 	if (mem == -1ULL) {
- 		start = ex_end;
--		end = max_pfn_mapped << PAGE_SHIFT;
-+		end = get_max_mapped();
- 		if (start + size < end)
- 			mem = find_fw_memmap_area(start, end, size,
- 						 sizeof(struct early_res));
-@@ -342,11 +349,11 @@ int __init get_free_all_memory_range(str
- 	count *= 2;
- 
- 	size = sizeof(struct range) * count;
-+	end = get_max_mapped();
- #ifdef MAX_DMA32_PFN
--	if (max_pfn_mapped > MAX_DMA32_PFN)
-+	if (end > (MAX_DMA32_PFN << PAGE_SHIFT))
- 		start = MAX_DMA32_PFN << PAGE_SHIFT;
- #endif
--	end = max_pfn_mapped << PAGE_SHIFT;
- 	mem = find_fw_memmap_area(start, end, size, sizeof(struct range));
- 	if (mem == -1ULL)
- 		panic("can not find more space for range free");
+)									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
