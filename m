@@ -1,86 +1,102 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750960Ab0BNOQX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 09:16:23 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:33778 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750738Ab0BNOQW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Feb 2010 09:16:22 -0500
-Date: Mon, 15 Feb 2010 01:16:15 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-Subject: Re: [PATCH 27/35] core: move early_res
-Message-Id: <20100215011615.e3d35121.sfr@canb.auug.org.au>
-In-Reply-To: <1265793639-15071-28-git-send-email-yinghai@kernel.org>
-References: <1265793639-15071-1-git-send-email-yinghai@kernel.org>
-	<1265793639-15071-28-git-send-email-yinghai@kernel.org>
-X-Mailer: Sylpheed 3.0.0beta7 (GTK+ 2.18.6; i486-pc-linux-gnu)
+	id S1751162Ab0BNORm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 09:17:42 -0500
+Received: from shadbolt.e.decadent.org.uk ([88.96.1.126]:49844 "EHLO
+	shadbolt.e.decadent.org.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750806Ab0BNORk convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Feb 2010 09:17:40 -0500
+From: Ben Hutchings <ben@decadent.org.uk>
+To: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+Date: Sun, 14 Feb 2010 14:17:35 +0000
+Message-ID: <1266157055.10567.13.camel@localhost>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__15_Feb_2010_01_16_15_+1100_YR7rgOPpgVHw1OaF"
+X-Mailer: Evolution 2.28.2 
+X-SA-Exim-Connect-IP: 192.168.4.185
+X-SA-Exim-Mail-From: ben@decadent.org.uk
+Subject: [PATCH 1/5] lib: Fix first line of kernel-doc for a few functions
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
+X-SA-Exim-Scanned: Yes (on shadbolt.decadent.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__15_Feb_2010_01_16_15_+1100_YR7rgOPpgVHw1OaF
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The function name must be followed by a space, hypen, space, and a
+short description.
 
-Hi,
+Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
+---
+ include/linux/list.h |    6 +++---
+ lib/bitmap.c         |    6 +++---
+ 2 files changed, 6 insertions(+), 6 deletions(-)
 
-On Wed, 10 Feb 2010 01:20:31 -0800 Yinghai Lu <yinghai@kernel.org> wrote:
->
-> from arch/x86 to kernel/
->=20
-> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> ---
->  arch/x86/include/asm/e820.h      |    2 +-
->  arch/x86/include/asm/early_res.h |   21 --
->  arch/x86/kernel/Makefile         |    2 +-
->  arch/x86/kernel/e820.c           |    1 -
->  arch/x86/kernel/early_res.c      |  523 --------------------------------=
-------
->  include/linux/early_res.h        |   21 ++
->  kernel/Makefile                  |    2 +-
->  kernel/early_res.c               |  522 ++++++++++++++++++++++++++++++++=
-+++++
->  8 files changed, 546 insertions(+), 548 deletions(-)
->  delete mode 100644 arch/x86/include/asm/early_res.h
->  delete mode 100644 arch/x86/kernel/early_res.c
->  create mode 100644 include/linux/early_res.h
->  create mode 100644 kernel/early_res.c
+diff --git a/include/linux/list.h b/include/linux/list.h
+index 5d9c655..8392884 100644
+--- a/include/linux/list.h
++++ b/include/linux/list.h
+@@ -498,7 +498,7 @@ static inline void list_splice_tail_init(struct list_head *list,
+ 	     pos = n, n = list_entry(n->member.next, typeof(*n), member))
+ 
+ /**
+- * list_for_each_entry_safe_continue
++ * list_for_each_entry_safe_continue - continue list iteration safe against removal
+  * @pos:	the type * to use as a loop cursor.
+  * @n:		another type * to use as temporary storage
+  * @head:	the head for your list.
+@@ -514,7 +514,7 @@ static inline void list_splice_tail_init(struct list_head *list,
+ 	     pos = n, n = list_entry(n->member.next, typeof(*n), member))
+ 
+ /**
+- * list_for_each_entry_safe_from
++ * list_for_each_entry_safe_from - iterate over list from current point safe against removal
+  * @pos:	the type * to use as a loop cursor.
+  * @n:		another type * to use as temporary storage
+  * @head:	the head for your list.
+@@ -529,7 +529,7 @@ static inline void list_splice_tail_init(struct list_head *list,
+ 	     pos = n, n = list_entry(n->member.next, typeof(*n), member))
+ 
+ /**
+- * list_for_each_entry_safe_reverse
++ * list_for_each_entry_safe_reverse - iterate backwards over list safe against removal
+  * @pos:	the type * to use as a loop cursor.
+  * @n:		another type * to use as temporary storage
+  * @head:	the head for your list.
+diff --git a/lib/bitmap.c b/lib/bitmap.c
+index 11bf497..61998c5 100644
+--- a/lib/bitmap.c
++++ b/lib/bitmap.c
+@@ -487,7 +487,7 @@ int __bitmap_parse(const char *buf, unsigned int buflen,
+ EXPORT_SYMBOL(__bitmap_parse);
+ 
+ /**
+- * bitmap_parse_user()
++ * bitmap_parse_user - convert an ASCII hex string in a user buffer into a bitmap
+  *
+  * @ubuf: pointer to user buffer containing string.
+  * @ulen: buffer size in bytes.  If string is smaller than this
+@@ -619,7 +619,7 @@ int bitmap_parselist(const char *bp, unsigned long *maskp, int nmaskbits)
+ EXPORT_SYMBOL(bitmap_parselist);
+ 
+ /**
+- * bitmap_pos_to_ord(buf, pos, bits)
++ * bitmap_pos_to_ord - find ordinal of set bit at given position in bitmap
+  *	@buf: pointer to a bitmap
+  *	@pos: a bit position in @buf (0 <= @pos < @bits)
+  *	@bits: number of valid bit positions in @buf
+@@ -655,7 +655,7 @@ static int bitmap_pos_to_ord(const unsigned long *buf, int pos, int bits)
+ }
+ 
+ /**
+- * bitmap_ord_to_pos(buf, ord, bits)
++ * bitmap_ord_to_pos - find position of n-th set bit in bitmap
+  *	@buf: pointer to bitmap
+  *	@ord: ordinal bit position (n-th set bit, n >= 0)
+  *	@bits: number of valid bit positions in @buf
+-- 
+1.6.6.2
 
-=46rom a powerpc pseries_defconfig build (and other configs) of tip/master
-(9d4a5dc3080c811f36bf8175f2de1f9a6f84b176 "Merge branch 'perf/urgent'"):
 
-kernel/early_res.c:209: error: 'max_pfn_mapped' undeclared (first use in th=
-is function)
 
-max_pfn_mapped is only defined for x86.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__15_Feb_2010_01_16_15_+1100_YR7rgOPpgVHw1OaF
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkt4Ba8ACgkQjjKRsyhoI8zcjACfWMAw6ggwF7tERcVbF2vcgY/x
-iScAoJ55Ig3N1nnzzGxypy+7Lw6383vc
-=Pmpb
------END PGP SIGNATURE-----
-
---Signature=_Mon__15_Feb_2010_01_16_15_+1100_YR7rgOPpgVHw1OaF--
