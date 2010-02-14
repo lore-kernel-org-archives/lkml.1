@@ -1,107 +1,132 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754197Ab0BNG0l (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 01:26:41 -0500
-Received: from mail-iw0-f201.google.com ([209.85.223.201]:33097 "EHLO
-	mail-iw0-f201.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752938Ab0BNG0j (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Feb 2010 01:26:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type;
-        b=q/x5g5uODFrqijPYzcZ+qH3rhP8aDtspJ5Esd6xKBtc4kqrqwfqUBOIDHZRM9Uv8TM
-         0xM67sQPSqEdWodRpwS5pji7skmmYc70Y2znxoH/FfzdPjSdZL7TemfZMGLcse6Z4Ja8
-         YH2YVdp3py+RuHzrXk67KBRvbAwbLaeZcc7CE=
-Message-ID: <4B77979B.70907@gmail.com>
-Date: Sun, 14 Feb 2010 01:26:35 -0500
-From: William Allen Simpson <william.allen.simpson@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
-MIME-Version: 1.0
-To: Linux Kernel Developers <linux-kernel@vger.kernel.org>,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>
-Subject: [PATCH v3 5/7] TCPCT part 2e: accept SYNACK data
-References: <4B7791CF.9030201@gmail.com>
-In-Reply-To: <4B7791CF.9030201@gmail.com>
-Content-Type: multipart/mixed;
- boundary="------------050609060007070707020605"
+	id S1754288Ab0BNGcz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 01:32:55 -0500
+Received: from gate.crashing.org ([63.228.1.57]:54075 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752222Ab0BNGcx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Feb 2010 01:32:53 -0500
+Subject: Re: [PATCH 7/9] of: move definition of of_chosen into common code.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+Cc: monstr@monstr.eu, sfr@canb.auug.org.au, jeremy.kerr@canonical.com,
+       davem@davemloft.net, microblaze-uclinux@itee.uq.edu.au,
+       linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
+       devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20100213160303.4767.36411.stgit@angua>
+References: <20100213154838.4767.83881.stgit@angua>
+	 <20100213160303.4767.36411.stgit@angua>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 14 Feb 2010 17:12:40 +1100
+Message-ID: <1266127960.16346.64.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------050609060007070707020605
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+On Sat, 2010-02-13 at 09:03 -0700, Grant Likely wrote:
+> Rather than defining of_chosen in each arch, it can be defined for all
+> in driver/of/base.c
+> 
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 
-When accompanied by cookie option, Initiator (client) queues incoming
-SYNACK transaction data.
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-This is a straightforward re-implementation of an earlier (year-old)
-patch that no longer applies cleanly, with permission of the original
-author (Adam Langley).  The patch was previously reviewed:
+> ---
+> 
+>  arch/microblaze/include/asm/prom.h |    2 --
+>  arch/microblaze/kernel/prom.c      |    3 ---
+>  arch/powerpc/include/asm/prom.h    |    2 --
+>  arch/powerpc/kernel/prom.c         |    3 ---
+>  drivers/of/base.c                  |    1 +
+>  include/linux/of.h                 |    1 +
+>  6 files changed, 2 insertions(+), 10 deletions(-)
+> 
+> diff --git a/arch/microblaze/include/asm/prom.h b/arch/microblaze/include/asm/prom.h
+> index 8b1ebd3..aa1a437 100644
+> --- a/arch/microblaze/include/asm/prom.h
+> +++ b/arch/microblaze/include/asm/prom.h
+> @@ -26,8 +26,6 @@
+>  #include <asm/irq.h>
+>  #include <asm/atomic.h>
+>  
+> -extern struct device_node *of_chosen;
+> -
+>  #define HAVE_ARCH_DEVTREE_FIXUPS
+>  
+>  /* Other Prototypes */
+> diff --git a/arch/microblaze/kernel/prom.c b/arch/microblaze/kernel/prom.c
+> index a7dcaf0..a15ef6d 100644
+> --- a/arch/microblaze/kernel/prom.c
+> +++ b/arch/microblaze/kernel/prom.c
+> @@ -42,9 +42,6 @@
+>  #include <asm/sections.h>
+>  #include <asm/pci-bridge.h>
+>  
+> -/* export that to outside world */
+> -struct device_node *of_chosen;
+> -
+>  void __init early_init_dt_scan_chosen_arch(unsigned long node)
+>  {
+>  	/* No Microblaze specific code here */
+> diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
+> index 4a5070e..7f9a50a 100644
+> --- a/arch/powerpc/include/asm/prom.h
+> +++ b/arch/powerpc/include/asm/prom.h
+> @@ -23,8 +23,6 @@
+>  #include <asm/irq.h>
+>  #include <asm/atomic.h>
+>  
+> -extern struct device_node *of_chosen;
+> -
+>  #define HAVE_ARCH_DEVTREE_FIXUPS
+>  
+>  #ifdef CONFIG_PPC32
+> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+> index 4869c93..43238b2 100644
+> --- a/arch/powerpc/kernel/prom.c
+> +++ b/arch/powerpc/kernel/prom.c
+> @@ -67,9 +67,6 @@ int __initdata iommu_force_on;
+>  unsigned long tce_alloc_start, tce_alloc_end;
+>  #endif
+>  
+> -/* export that to outside world */
+> -struct device_node *of_chosen;
+> -
+>  static int __init early_parse_mem(char *p)
+>  {
+>  	if (!p)
+> diff --git a/drivers/of/base.c b/drivers/of/base.c
+> index 873479a..cb96888 100644
+> --- a/drivers/of/base.c
+> +++ b/drivers/of/base.c
+> @@ -23,6 +23,7 @@
+>  #include <linux/proc_fs.h>
+>  
+>  struct device_node *allnodes;
+> +struct device_node *of_chosen;
+>  
+>  /* use when traversing tree through the allnext, child, sibling,
+>   * or parent members of struct device_node.
+> diff --git a/include/linux/of.h b/include/linux/of.h
+> index 5cd2840..d34cc5d 100644
+> --- a/include/linux/of.h
+> +++ b/include/linux/of.h
+> @@ -66,6 +66,7 @@ struct device_node {
+>  
+>  /* Pointer for first entry in chain of all nodes. */
+>  extern struct device_node *allnodes;
+> +extern struct device_node *of_chosen;
+>  
+>  static inline int of_node_check_flag(struct device_node *n, unsigned long flag)
+>  {
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-    http://thread.gmane.org/gmane.linux.network/102586
 
-This function will also be used in subsequent patches that implement
-additional features.
-
-Requires:
-   TCPCT part 1g: Responder Cookie => Initiator
-   net: tcp_header_len_th and tcp_option_len_th
-
-Signed-off-by: William.Allen.Simpson@gmail.com
----
-  net/ipv4/tcp_input.c |   26 +++++++++++++++++++++++++-
-  1 files changed, 25 insertions(+), 1 deletions(-)
-
---------------050609060007070707020605
-Content-Type: text/plain; x-mac-type="54455854"; x-mac-creator="0";
- name="TCPCT+2e3+2.6.33-rc8.patch"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="TCPCT+2e3+2.6.33-rc8.patch"
-
-ZGlmZiAtLWdpdCBhL25ldC9pcHY0L3RjcF9pbnB1dC5jIGIvbmV0L2lwdjQvdGNwX2lucHV0
-LmMKaW5kZXggOGUwZjZhZS4uMTY1MDQwZSAxMDA2NDQKLS0tIGEvbmV0L2lwdjQvdGNwX2lu
-cHV0LmMKKysrIGIvbmV0L2lwdjQvdGNwX2lucHV0LmMKQEAgLTUzOTUsNiArNTM5NSwxMiBA
-QCBkaXNjYXJkOgogCXJldHVybiAwOwogfQogCisvKgorICogUmV0dXJuczoKKyAqCSsxIG9u
-IHJlc2V0LAorICoJMCBzdWNjZXNzIGFuZC9vciBTWU5BQ0sgZGF0YSwKKyAqCS0xIG9uIGRp
-c2NhcmQuCisgKi8KIHN0YXRpYyBpbnQgdGNwX3Jjdl9zeW5zZW50X3N0YXRlX3Byb2Nlc3Mo
-c3RydWN0IHNvY2sgKnNrLCBzdHJ1Y3Qgc2tfYnVmZiAqc2tiLAogCQkJCQkgc3RydWN0IHRj
-cGhkciAqdGgpCiB7CkBAIC01NDAzLDYgKzU0MDksNyBAQCBzdGF0aWMgaW50IHRjcF9yY3Zf
-c3luc2VudF9zdGF0ZV9wcm9jZXNzKHN0cnVjdCBzb2NrICpzaywgc3RydWN0IHNrX2J1ZmYg
-KnNrYiwKIAlzdHJ1Y3QgdGNwX3NvY2sgKnRwID0gdGNwX3NrKHNrKTsKIAlzdHJ1Y3QgdGNw
-X2Nvb2tpZV92YWx1ZXMgKmN2cCA9IHRwLT5jb29raWVfdmFsdWVzOwogCWludCBzYXZlZF9j
-bGFtcCA9IHRwLT5yeF9vcHQubXNzX2NsYW1wOworCWludCBxdWV1ZWQgPSAwOwogCiAJdGNw
-X3BhcnNlX29wdGlvbnMoc2tiLCAmdHAtPnJ4X29wdCwgJmhhc2hfbG9jYXRpb24sIDApOwog
-CkBAIC01NTA5LDYgKzU1MTYsNyBAQCBzdGF0aWMgaW50IHRjcF9yY3Zfc3luc2VudF9zdGF0
-ZV9wcm9jZXNzKHN0cnVjdCBzb2NrICpzaywgc3RydWN0IHNrX2J1ZmYgKnNrYiwKIAkJCQkJ
-LSBUQ1BPTEVOX0NPT0tJRV9CQVNFOwogCQkJaW50IGNvb2tpZV9wYWlyX3NpemUgPSBjb29r
-aWVfc2l6ZQogCQkJCQkgICAgICsgY3ZwLT5jb29raWVfZGVzaXJlZDsKKwkJCWludCB0Y3Bf
-aGVhZGVyX2xlbiA9IHRjcF9oZWFkZXJfbGVuX3RoKHRoKTsKIAogCQkJLyogQSBjb29raWUg
-ZXh0ZW5zaW9uIG9wdGlvbiB3YXMgc2VudCBhbmQgcmV0dXJuZWQuCiAJCQkgKiBOb3RlIHRo
-YXQgZWFjaCBpbmNvbWluZyBTWU5BQ0sgcmVwbGFjZXMgdGhlCkBAIC01NTI0LDYgKzU1MzIs
-MTkgQEAgc3RhdGljIGludCB0Y3BfcmN2X3N5bnNlbnRfc3RhdGVfcHJvY2VzcyhzdHJ1Y3Qg
-c29jayAqc2ssIHN0cnVjdCBza19idWZmICpza2IsCiAJCQkJICAgICAgIGhhc2hfbG9jYXRp
-b24sIGNvb2tpZV9zaXplKTsKIAkJCQljdnAtPmNvb2tpZV9wYWlyX3NpemUgPSBjb29raWVf
-cGFpcl9zaXplOwogCQkJfQorCisJCQlxdWV1ZWQgPSBza2ItPmxlbiAtIHRjcF9oZWFkZXJf
-bGVuOworCQkJaWYgKHF1ZXVlZCA+IDApIHsKKwkJCQkvKiBRdWV1ZSBpbmNvbWluZyB0cmFu
-c2FjdGlvbiBkYXRhLiAqLworCQkJCV9fc2tiX3B1bGwoc2tiLCB0Y3BfaGVhZGVyX2xlbik7
-CisJCQkJX19za2JfcXVldWVfdGFpbCgmc2stPnNrX3JlY2VpdmVfcXVldWUsIHNrYik7CisJ
-CQkJc2tiX3NldF9vd25lcl9yKHNrYiwgc2spOworCQkJCXNrLT5za19kYXRhX3JlYWR5KHNr
-LCAwKTsKKwkJCQljdnAtPnNfZGF0YV9pbiA9IDE7IC8qIHRydWUgKi8KKwkJCQl0cC0+cmN2
-X254dCA9IFRDUF9TS0JfQ0Ioc2tiKS0+ZW5kX3NlcTsKKwkJCQl0cC0+cmN2X3d1cCA9IFRD
-UF9TS0JfQ0Ioc2tiKS0+ZW5kX3NlcTsKKwkJCQl0cC0+Y29waWVkX3NlcSA9IFRDUF9TS0Jf
-Q0Ioc2tiKS0+c2VxICsgMTsKKwkJCX0KIAkJfQogCiAJCXNtcF9tYigpOwpAQCAtNTU3Nywx
-MSArNTU5OCwxNCBAQCBzdGF0aWMgaW50IHRjcF9yY3Zfc3luc2VudF9zdGF0ZV9wcm9jZXNz
-KHN0cnVjdCBzb2NrICpzaywgc3RydWN0IHNrX2J1ZmYgKnNrYiwKIAkJCQkJCSAgVENQX0RF
-TEFDS19NQVgsIFRDUF9SVE9fTUFYKTsKIAogZGlzY2FyZDoKLQkJCV9fa2ZyZWVfc2tiKHNr
-Yik7CisJCQlpZiAocXVldWVkIDw9IDApCisJCQkJX19rZnJlZV9za2Ioc2tiKTsKIAkJCXJl
-dHVybiAwOwogCQl9IGVsc2UgewogCQkJdGNwX3NlbmRfYWNrKHNrKTsKIAkJfQorCQlpZiAo
-cXVldWVkID4gMCkKKwkJCXJldHVybiAwOwogCQlyZXR1cm4gLTE7CiAJfQogCi0tIAoxLjYu
-My4zCgo=
---------------050609060007070707020605--
