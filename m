@@ -1,17 +1,16 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754930Ab0BOASG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 19:18:06 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:60895 "EHLO ogre.sisk.pl"
+	id S1755269Ab0BOASp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 19:18:45 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:60887 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754697Ab0BOAMf convert rfc822-to-8bit (ORCPT
+	id S1754670Ab0BOAMf convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 14 Feb 2010 19:12:35 -0500
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
        Maciej Rutecki <maciej.rutecki@gmail.com>,
-       "Feng Tang" <feng.tang@intel.com>, "Len Brown" <len.brown@intel.com>,
-       "Lorenzo Buzzi" <flinco@libero.it>,
-       "Matthew Garrett" <mjg59@srcf.ucam.org>
+       "Jeff Garzik" <jeff@garzik.org>, "Mike Cui" <cuicui@gmail.com>,
+       "Robert Hancock" <hancockrwd@gmail.com>
 References: <fQEllunEdO.A.-LB.HyIeLB@chimera>
 In-Reply-To: <fQEllunEdO.A.-LB.HyIeLB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,10 +18,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <Xv2rBFCTXTH.A.VfD.mzIeLB@chimera>
-Subject: [Bug #14886] Asus P2B-DS not detected as SMP moterboard
+Message-ID: <Xv2rBFCTXTH.A.59C.RzIeLB@chimera>
+Subject: [Bug #14922] 2.6.32 seemed to have broken nVidia MCP7A sata controller
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Mon, 15 Feb 2010 00:52:44 +0100 (CET)
+Date: Mon, 15 Feb 2010 00:52:46 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,12 +34,12 @@ introduced between 2.6.31 and 2.6.32.  Please verify if it still should
 be listed and let the tracking team know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14886
-Subject		: Asus P2B-DS not detected as SMP moterboard
-Submitter	: Lorenzo Buzzi <flinco@libero.it>
-Date		: 2009-12-27 17:20 (50 days old)
-First-Bad-Commit: http://git.kernel.org/git/linus/e5b8fc6ac158f65598f58dba2c0d52ba3b412f52
-Handled-By	: Matthew Garrett <mjg59@srcf.ucam.org>
-Patch		: http://patchwork.kernel.org/patch/76089/
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14922
+Subject		: 2.6.32 seemed to have broken nVidia MCP7A sata controller
+Submitter	: Mike Cui <cuicui@gmail.com>
+Date		: 2009-12-19 6:13 (58 days old)
+References	: http://marc.info/?l=linux-ide&m=126120323407742&w=4
+Handled-By	: Jeff Garzik <jeff@garzik.org>
+		  Robert Hancock <hancockrwd@gmail.com>
 
 
