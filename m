@@ -1,23 +1,27 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758359Ab0BNKMd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 05:12:33 -0500
-Received: from casper.infradead.org ([85.118.1.10]:60669 "EHLO
+	id S1758411Ab0BNKNA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 05:13:00 -0500
+Received: from casper.infradead.org ([85.118.1.10]:60696 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758329Ab0BNKMZ (ORCPT
+	with ESMTP id S1758379Ab0BNKMt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Feb 2010 05:12:25 -0500
-Subject: Re: Why is PERF_FORMAT_GROUP incompatible with inherited events?
+	Sun, 14 Feb 2010 05:12:49 -0500
+Subject: Re: [PATCH tip/core/rcu 06/13] sched: use lockdep-based checking
+ on rcu_dereference()
 From: Peter Zijlstra <peterz@infradead.org>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, fweisbec@gmail.com,
-       Dave Wootton <dwootton@us.ibm.com>
-In-Reply-To: <20100212030205.GE13769@brick.ozlabs.ibm.com>
-References: <20100212030205.GE13769@brick.ozlabs.ibm.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
+       dipankar@in.ibm.com, akpm@linux-foundation.org,
+       mathieu.desnoyers@polymtl.ca, josh@joshtriplett.org, dvhltc@us.ibm.com,
+       niv@us.ibm.com, tglx@linutronix.de, peterz@infradead.org,
+       rostedt@goodmis.org, Valdis.Kletnieks@vt.edu, dhowells@redhat.com
+In-Reply-To: <1265932839-25899-6-git-send-email-paulmck@linux.vnet.ibm.com>
+References: <20100212000016.GA25781@linux.vnet.ibm.com>
+	 <1265932839-25899-6-git-send-email-paulmck@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 14 Feb 2010 11:12:17 +0100
-Message-ID: <1266142337.5273.417.camel@laptop>
+Date: Sun, 14 Feb 2010 11:12:12 +0100
+Message-ID: <1266142332.5273.415.camel@laptop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.2 
 Content-Transfer-Encoding: 7bit
@@ -25,39 +29,29 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-02-12 at 14:02 +1100, Paul Mackerras wrote:
-> We currently have this code in perf_event_alloc() in kernel/perf_event.c:
-> 
-> 	/*
-> 	 * we currently do not support PERF_FORMAT_GROUP on inherited events
-> 	 */
-> 	if (attr->inherit && (attr->read_format & PERF_FORMAT_GROUP))
-> 		goto done;
-> 
-> plus there is a comment "XXX PERF_FORMAT_GROUP vs inherited events
-> seems difficult" next to perf_output_read_group() (but there isn't a
-> similar comment on perf_read_hw()).
-> 
-> First, what is the difficulty referred to here?
+On Thu, 2010-02-11 at 16:00 -0800, Paul E. McKenney wrote:
+> +               first = rcu_dereference_check(pid->tasks[type].first, rcu_read_lock_held() || lockdep_is_held(&tasklist_lock));
+>                 if (first)
+>                         result = hlist_entry(first, struct task_struct, pids[(type)].node);
+>         }
 
-IIRC its the fact that we have to go collect the count delta from all
-the child counters, which can be quite a lot of work depending on the
-number of cpus and children around.
+I've seen that particular combination a few times in this patch, would
+it make sense to create rcu_dereference_task()?
 
-> Secondly, if the difficulty is just to do with the intersection of
-> sampling counters, inheritance, and group readout (as seems to be the
-> case), could we please allow group readout on ordinary counting
-> (non-sampling) counters?  That is, change the test above to something
-> like:
-> 
-> 	if (attr->inherit && attr->sample_period &&
-> 	    (attr->read_format & PERF_FORMAT_GROUP))
-> 		goto done;
-> 
-> Any objections to that change?  If it's OK, could we get it into .33
-> and .32-stable?
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index c535cc4..ad419d9 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -645,6 +645,11 @@ static inline int cpu_of(struct rq *rq)
+>  #endif
+>  }
+>  
+> +#define for_each_domain_rd(p) \
+> +       rcu_dereference_check((p), \
+> +                             rcu_read_lock_sched_held() || \
+> +                             lockdep_is_held(&sched_domains_mutex))
+> + 
 
-Yeah, that's still broken, you can't do a read without collecting all
-the child counts.
+Would rcu_dereference_rd() not be a better name?
 
 
