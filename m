@@ -1,18 +1,15 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754602Ab0BOAD3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 19:03:29 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:60567 "EHLO ogre.sisk.pl"
+	id S1753675Ab0BOAD1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 19:03:27 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:60593 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753196Ab0BNX5M convert rfc822-to-8bit (ORCPT
+	id S1753975Ab0BNX5u convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Feb 2010 18:57:12 -0500
+	Sun, 14 Feb 2010 18:57:50 -0500
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
        Maciej Rutecki <maciej.rutecki@gmail.com>,
-       "Christian Casteyde" <casteyde.christian@free.fr>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Tejun Heo" <tj@kernel.org>
+       "Bart Van Assche" <bart.vanassche@gmail.com>
 References: <Z5cmiqDComP.A.gyF.OiIeLB@chimera>
 In-Reply-To: <Z5cmiqDComP.A.gyF.OiIeLB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -20,10 +17,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <4un6Gst5rKB.A.Im.WkIeLB@chimera>
-Subject: [Bug #14999] possible circular locking dependency detected in rfkill at suspend
+Message-ID: <4un6Gst5rKB.A.FwH.TjIeLB@chimera>
+Subject: [Bug #15177] Asynchronous writes up to 30% slower than in previous kernel versions
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Mon, 15 Feb 2010 00:38:29 +0100 (CET)
+Date: Mon, 15 Feb 2010 00:38:31 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -36,9 +33,9 @@ from 2.6.32.  Please verify if it still should be listed and let the tracking te
 know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14999
-Subject		: possible circular locking dependency detected in rfkill at suspend
-Submitter	: Christian Casteyde <casteyde.christian@free.fr>
-Date		: 2010-01-06 21:52 (40 days old)
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15177
+Subject		: Asynchronous writes up to 30% slower than in previous kernel versions
+Submitter	: Bart Van Assche <bart.vanassche@gmail.com>
+Date		: 2010-01-30 16:38 (16 days old)
 
 
