@@ -1,117 +1,63 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753299Ab0BNUlk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 15:41:40 -0500
-Received: from mail-ew0-f228.google.com ([209.85.219.228]:53316 "EHLO
-	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753108Ab0BNUli (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Feb 2010 15:41:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=GPZGSGmXnLrrvK27yHQS4/ssOPLcooeLAx9yJFZbelV6tmuzYYkNZKnSvINqTU++iu
-         rYCShEIvVd1dMJ26zplp+66G3ZKM1fkeKGJPAraiqIKFFO5u75KOeifKRLCOpxnqaj9E
-         hBQBgfe6eu+Rk7CNVy978PO/yEaQsMhKmgOPM=
-Date: Sun, 14 Feb 2010 21:41:32 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Michael Stefaniuc <mstefani@redhat.com>
-Cc: prasad@linux.vnet.ibm.com, Alan Stern <stern@rowland.harvard.edu>,
-       linux-kernel@vger.kernel.org, Maneesh Soni <maneesh@linux.vnet.ibm.com>,
-       Alexandre Julliard <julliard@winehq.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>
-Subject: Re: Regression in ptrace (Wine) starting with 2.6.33-rc1
-Message-ID: <20100214204130.GD5479@nowhere>
-References: <4B743149.4000707@redhat.com> <20100211182224.GC4915@nowhere> <4B745F5C.5050001@redhat.com> <20100213173323.GB3778@in.ibm.com> <4B7719AC.6040901@redhat.com> <20100214171535.GA5065@nowhere> <4B785952.8020706@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B785952.8020706@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1753314Ab0BNUrd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 15:47:33 -0500
+Received: from mx2.isti.cnr.it ([194.119.192.4]:1552 "EHLO mx2.isti.cnr.it"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752734Ab0BNUrb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Feb 2010 15:47:31 -0500
+Date: Sun, 14 Feb 2010 21:47:16 +0100
+From: Asdo <asdo@shiftmail.org>
+Subject: Re: Linux mdadm superblock question.
+In-reply-to: <20100214193406.GA15722@khazad-dum.debian.net>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Michael Evans <mjevans1983@gmail.com>,
+       Volker Armin Hemmann <volkerarmin@googlemail.com>,
+       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
+Message-id: <4B786154.8090103@shiftmail.org>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+X-INSM-ip-source: 151.81.210.150 Auth Done
+References: <201002140251.59668.volkerarmin@googlemail.com>
+ <4877c76c1002132002s20d942c3i7cee5418cdcf369c@mail.gmail.com>
+ <20100214193406.GA15722@khazad-dum.debian.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 14, 2010 at 09:13:06PM +0100, Michael Stefaniuc wrote:
-> Although Wine will map address 0x0 for DOS programs that isn't the  
-> reason for those tests. Wine has to support games that come with  
-> pointless copy protection schemes that employ that technique.
-
-
-Ah, which kind of protection?
-
-
-
-> Cool, thanks!
-> Any chance to get that fix into 2.6.33?
-
-
-Yeah.
-
-Could you please test the following patch on top of
-2.6.33-rc9 ?
-I'm trying to build wine but it fails because my libx11 is
-incorrect for the linking (probably because I don't have a x86-32
-version of libx11.so):
-
-diff --git a/arch/x86/kernel/hw_breakpoint.c b/arch/x86/kernel/hw_breakpoint.c
-index 05d5fec..bb6006e 100644
---- a/arch/x86/kernel/hw_breakpoint.c
-+++ b/arch/x86/kernel/hw_breakpoint.c
-@@ -212,25 +212,6 @@ static int arch_check_va_in_kernelspace(unsigned long va, u8 hbp_len)
- 	return (va >= TASK_SIZE) && ((va + len - 1) >= TASK_SIZE);
- }
- 
--/*
-- * Store a breakpoint's encoded address, length, and type.
-- */
--static int arch_store_info(struct perf_event *bp)
--{
--	struct arch_hw_breakpoint *info = counter_arch_bp(bp);
--	/*
--	 * For kernel-addresses, either the address or symbol name can be
--	 * specified.
--	 */
--	if (info->name)
--		info->address = (unsigned long)
--				kallsyms_lookup_name(info->name);
--	if (info->address)
--		return 0;
--
--	return -EINVAL;
--}
--
- int arch_bp_generic_fields(int x86_len, int x86_type,
- 			   int *gen_len, int *gen_type)
- {
-@@ -362,10 +343,13 @@ int arch_validate_hwbkpt_settings(struct perf_event *bp,
- 		return ret;
- 	}
- 
--	ret = arch_store_info(bp);
--
--	if (ret < 0)
--		return ret;
-+	/*
-+	 * For kernel-addresses, either the address or symbol name can be
-+	 * specified.
-+	 */
-+	if (info->name)
-+		info->address = (unsigned long)
-+				kallsyms_lookup_name(info->name);
- 	/*
- 	 * Check that the low-order bits of the address are appropriate
- 	 * for the alignment implied by len.
-
-
-
-> I cannot test that as the corresponding test is directly affected by  
-> this ABI change.
-
-
-Sure, let's fix the first problem to begin.
-
-Thanks!
-
+Henrique de Moraes Holschuh wrote:
+> On Sat, 13 Feb 2010, Michael Evans wrote:
+>   
+>> I remember hearing that 1.x had /no/ plans for kernel level
+>> auto-detection ever.  That can be accomplished in early-userspace
+>> leaving the code in the kernel much less complex, and therefore far
+>> more reliable.
+>>     
+>
+> Yes, it is far more reliable kernel side, if only because it doesn't do
+> anything.
+>
+> But the userspace reliability is _not_ good.  initrds are a source of
+> problems the moment things start to go wrong, and that's when they are not
+> the problem themselves.
+>
+> And the end result is a system that needs manual intervention to get its
+> root filesystem back.
+>
+> In my experience, every time we moved critical codepaths to userspace, we
+> ended up decreasing the *overall* system reliability.
+>   
+I don't see it like this.
+You have the same chance to screw up the system by making mistakes in 
+the files in /etc, in the networking config, the firewall, the server 
+applications...
+(note: I speak for Debian/Ubuntu, redhat's initramfs I think is more messy.)
+1.x autodetection worked great for me in initramfs. Basically you only 
+need /etc/mdadm/mdadm.conf copied to initramfs (via update-initramfs), 
+the rest is done by Debian/Ubuntu standard initramfs procedure.
+Also consider 1.x allows to choose which arrays are autoassembled 
+(hostname written in the array name equal to hostname in the machine or 
+specified in mdadm.conf): this is more precise than 0.9 which 
+autoassembles all, I think.
