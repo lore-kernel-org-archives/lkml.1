@@ -1,45 +1,44 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752683Ab0BNSfM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 13:35:12 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:33911 "EHLO mail.zytor.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752250Ab0BNSfK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Feb 2010 13:35:10 -0500
-Message-ID: <4B78421C.9060700@zytor.com>
-Date: Sun, 14 Feb 2010 10:34:04 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+	id S1752706Ab0BNSkn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 13:40:43 -0500
+Received: from fg-out-1718.google.com ([72.14.220.159]:24660 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752413Ab0BNSkl convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Feb 2010 13:40:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding:message-id;
+        b=umksr3XjkmbQjnw/3aJiT1rVTsQr5Gbkm5LQKAcEH/WOVxepI3xStY/fQWlY8PsKsc
+         9yiq9SxeLYU5TOUP+b3iOkkxef6E/+v+kZWEVBzva2S8MN5wSoXa81QGj5AVrB4id7/+
+         g6eTpe4nD9KcltIy8S5qOQkA/aEv0IVPlEJhM=
+From: Volker Armin Hemmann <volkerarmin@googlemail.com>
+To: Michael Evans <mjevans1983@gmail.com>
+Subject: Re: Linux mdadm superblock question.
+Date: Sun, 14 Feb 2010 19:40:35 +0100
+User-Agent: KMail/1.13.0 (Linux/2.6.31.12r4; KDE/4.4.0; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
+References: <201002140251.59668.volkerarmin@googlemail.com> <4877c76c1002132002s20d942c3i7cee5418cdcf369c@mail.gmail.com>
+In-Reply-To: <4877c76c1002132002s20d942c3i7cee5418cdcf369c@mail.gmail.com>
 MIME-Version: 1.0
-To: Harald Arnesen <harald@skogtun.org>
-CC: Matthew Wilcox <matthew@wil.cx>, Jean Delvare <khali@linux-fr.org>,
-       lasse.collin@tukaani.org, mirrors@kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "FTPAdmin Kernel.org" <ftpadmin@kernel.org>, users@kernel.org
-Subject: Re: [kernel.org users] XZ Migration discussion
-References: <4B744E13.8040004@kernel.org>	<20100212150137.648dca7c@hyperion.delvare>	<4B75A5FE.8020408@zytor.com> <20100212202534.GH11239@parisc-linux.org> <87k4ufeutr.fsf@basilikum.skogtun.org>
-In-Reply-To: <87k4ufeutr.fsf@basilikum.skogtun.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <201002141940.35716.volkerarmin@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/14/2010 06:49 AM, Harald Arnesen wrote:
->>
->> I'm in favour of the 3.0 / 3.1 / 3.2 with stable@ being responsible for
->> 3.0.1, 3.0.2, 3.1.1, etc.
+On Sonntag 14 Februar 2010, you wrote:
+
 > 
-> Like I suggested in October 2008, but it would have been more natural at
-> that time:
-> 
-> <http://marc.info/?l=linux-kernel&m=122418454113793&w=2>
+> In other words, 'auto-detection' for 1.x format devices is using an
+> initrd/initramfs.
 
-You and several other people.
+which makes 1.x format useless for everybody who does not want to deal with 
+initrd/initramfs.
 
-	-hpa
-
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+Glück Auf,
+Volker
