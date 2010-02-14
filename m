@@ -1,74 +1,99 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758261Ab0BNA2y (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 13 Feb 2010 19:28:54 -0500
-Received: from e37.co.us.ibm.com ([32.97.110.158]:42926 "EHLO
-	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758230Ab0BNA2Q (ORCPT
+	id S932115Ab0BNAaU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 13 Feb 2010 19:30:20 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:33927 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751464Ab0BNAaS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 13 Feb 2010 19:28:16 -0500
-From: Matt Helsley <matthltc@us.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: Matt Helsley <matthltc@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Davide Libenzi <davidel@xmailserver.org>
-Subject: [RFC][PATCH 2/4] anon_inode fcntl() checks: report failure for fcntl(F_SETFL) on timerfd
-Date: Sat, 13 Feb 2010 16:27:45 -0800
-Message-Id: <83f4033d9d33d5f775401f58acdfa39657fd3e39.1266107200.git.matthltc@us.ibm.com>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <69d9c93fe958497f69102bea7c32cd048160b978.1266107200.git.matthltc@us.ibm.com>
-References: <1266107267-5920-1-git-send-email-matthltc@us.ibm.com>
- <69d9c93fe958497f69102bea7c32cd048160b978.1266107200.git.matthltc@us.ibm.com>
-In-Reply-To: <69d9c93fe958497f69102bea7c32cd048160b978.1266107200.git.matthltc@us.ibm.com>
-References: <69d9c93fe958497f69102bea7c32cd048160b978.1266107200.git.matthltc@us.ibm.com>
+	Sat, 13 Feb 2010 19:30:18 -0500
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>, linux-kernel@vger.kernel.org,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH  0/8] tip related: radix tree for spareseirq and logical flat clean up
+References: <1266029390-30907-1-git-send-email-yinghai@kernel.org>
+	<m1zl3dre9e.fsf@fess.ebiederm.org> <4B7676BB.8030608@kernel.org>
+	<m1ljexpcjp.fsf@fess.ebiederm.org> <4B772A54.1000000@kernel.org>
+	<m16360ohi2.fsf@fess.ebiederm.org> <4B773CEB.9010609@kernel.org>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Sat, 13 Feb 2010 16:30:07 -0800
+In-Reply-To: <4B773CEB.9010609@kernel.org> (Yinghai Lu's message of "Sat\, 13 Feb 2010 15\:59\:39 -0800")
+Message-ID: <m1sk94mzg0.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Scanned: No (on in01.mta.xmission.com); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Report failure when userspace attempts to set unsupported flags
-on timerfd files with fcntl().
+Yinghai Lu <yinghai@kernel.org> writes:
+>
+> Subject: [PATCH] x86: use vector_desc instead of vector_irq
+>
+> Eric pointed out that radix tree version of irq_to_desc will magnify delay on the path
+> of handle_irq.
+> use vector_desc to reduce the calling of irq_to_desc.
+>
+> next step: need to change all ack, mask, umask, eoi for all irq_chip to take irq_desc
+>
+> -v2: irq should be unsigned in 32bit handle_irq according to Eric
+>      also reset vector_desc for lguest in setup_irq
+>
+> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+>
+> Index: linux-2.6/arch/x86/kernel/irq_32.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/kernel/irq_32.c
+> +++ linux-2.6/arch/x86/kernel/irq_32.c
+> @@ -76,7 +76,7 @@ static void call_on_stack(void *func, vo
+>  }
+>  
+>  static inline int
+> -execute_on_irq_stack(int overflow, struct irq_desc *desc, int irq)
+> +execute_on_irq_stack(int overflow, struct irq_desc *desc)
+>  {
+>  	union irq_ctx *curctx, *irqctx;
+>  	u32 *isp, arg1, arg2;
+> @@ -189,24 +189,22 @@ asmlinkage void do_softirq(void)
 
-Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Davide Libenzi <davidel@xmailserver.org>
----
- fs/timerfd.c |   16 ++++++++++++----
- 1 files changed, 12 insertions(+), 4 deletions(-)
+This looks like it will fail to build here.
+Don't you need to update the assembly to use desc->irq instead
+of the now removed irq parameter?
 
-diff --git a/fs/timerfd.c b/fs/timerfd.c
-index 1bfc95a..198a564 100644
---- a/fs/timerfd.c
-+++ b/fs/timerfd.c
-@@ -156,7 +156,19 @@ static ssize_t timerfd_read(struct file *file, char __user *buf, size_t count,
- 	return res;
- }
- 
-+static int timerfd_check_flags(int flags)
-+{
-+	/* Check the TFD_* constants for consistency.  */
-+	BUILD_BUG_ON(TFD_CLOEXEC != O_CLOEXEC);
-+	BUILD_BUG_ON(TFD_NONBLOCK != O_NONBLOCK);
-+
-+	if (flags & ~(TFD_CLOEXEC | TFD_NONBLOCK))
-+		return -EINVAL;
-+	return 0;
-+}
-+
- static const struct file_operations timerfd_fops = {
-+	.check_flags    = timerfd_check_flags,
- 	.release	= timerfd_release,
- 	.poll		= timerfd_poll,
- 	.read		= timerfd_read,
-@@ -182,10 +194,6 @@ SYSCALL_DEFINE2(timerfd_create, int, clockid, int, flags)
- 	int ufd;
- 	struct timerfd_ctx *ctx;
- 
--	/* Check the TFD_* constants for consistency.  */
--	BUILD_BUG_ON(TFD_CLOEXEC != O_CLOEXEC);
--	BUILD_BUG_ON(TFD_NONBLOCK != O_NONBLOCK);
--
- 	if ((flags & ~TFD_CREATE_FLAGS) ||
- 	    (clockid != CLOCK_MONOTONIC &&
- 	     clockid != CLOCK_REALTIME))
--- 
-1.6.3.3
+>  
+>  #else
+>  static inline int
+> -execute_on_irq_stack(int overflow, struct irq_desc *desc, int irq) { return 0; }
+> +execute_on_irq_stack(int overflow, struct irq_desc *desc) { return 0; }
+>  #endif
+>  
+> -bool handle_irq(unsigned irq, struct pt_regs *regs)
+> +bool handle_irq(struct irq_desc *desc, struct pt_regs *regs)
+>  {
+> -	struct irq_desc *desc;
+>  	int overflow;
+>  
+>  	overflow = check_stack_overflow();
+>  
+> -	desc = irq_to_desc(irq);
+>  	if (unlikely(!desc))
+>  		return false;
+>  
+> -	if (!execute_on_irq_stack(overflow, desc, irq)) {
+> +	if (!execute_on_irq_stack(overflow, desc)) {
+>  		if (unlikely(overflow))
+>  			print_stack_overflow();
+> -		desc->handle_irq(irq, desc);
+> +		desc->handle_irq(desc->irq, desc);
+>  	}
+>  
+>  	return true;
 
+Eric
