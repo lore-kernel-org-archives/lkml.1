@@ -1,15 +1,15 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754899Ab0BOAN1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 19:13:27 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:60936 "EHLO ogre.sisk.pl"
+	id S1755197Ab0BOARA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 19:17:00 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:60939 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754195Ab0BOANR convert rfc822-to-8bit (ORCPT
+	id S1754843Ab0BOANT convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Feb 2010 19:13:17 -0500
+	Sun, 14 Feb 2010 19:13:19 -0500
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
        Maciej Rutecki <maciej.rutecki@gmail.com>,
-       "Marc Haber" <mh+linux-kernel@zugschlus.de>
+       "Alexey Kuznetsov" <ak@axet.ru>
 References: <fQEllunEdO.A.-LB.HyIeLB@chimera>
 In-Reply-To: <fQEllunEdO.A.-LB.HyIeLB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -17,10 +17,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <Xv2rBFCTXTH.A.FYC.0yIeLB@chimera>
-Subject: [Bug #15042] socket(PF_INET6 hangs when ipv6 not yet initialized
+Message-ID: <Xv2rBFCTXTH.A.x2B.jyIeLB@chimera>
+Subject: [Bug #15156] 2.6.32.6 hang at boot with ati x1600
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Mon, 15 Feb 2010 00:52:48 +0100 (CET)
+Date: Mon, 15 Feb 2010 00:52:50 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -33,10 +33,9 @@ introduced between 2.6.31 and 2.6.32.  Please verify if it still should
 be listed and let the tracking team know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15042
-Subject		: socket(PF_INET6 hangs when ipv6 not yet initialized
-Submitter	: Marc Haber <mh+linux-kernel@zugschlus.de>
-Date		: 2010-01-10 14:28 (36 days old)
-References	: http://marc.info/?l=linux-kernel&m=126313553029280&w=4
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15156
+Subject		: 2.6.32.6 hang at boot with ati x1600
+Submitter	: Alexey Kuznetsov <ak@axet.ru>
+Date		: 2010-01-28 05:02 (18 days old)
 
 
