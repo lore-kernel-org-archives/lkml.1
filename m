@@ -1,21 +1,23 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758388Ab0BNKMu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 05:12:50 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:48317 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758361Ab0BNKMl (ORCPT
+	id S1758359Ab0BNKMd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 05:12:33 -0500
+Received: from casper.infradead.org ([85.118.1.10]:60669 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758329Ab0BNKMZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Feb 2010 05:12:41 -0500
-Subject: Re: rcu_dereference() without protection in select_task_rq_fair()
+	Sun, 14 Feb 2010 05:12:25 -0500
+Subject: Re: Why is PERF_FORMAT_GROUP incompatible with inherited events?
 From: Peter Zijlstra <peterz@infradead.org>
-To: paulmck@linux.vnet.ibm.com
-Cc: peterz@infradead.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20100211165246.GA8329@linux.vnet.ibm.com>
-References: <20100211165246.GA8329@linux.vnet.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, fweisbec@gmail.com,
+       Dave Wootton <dwootton@us.ibm.com>
+In-Reply-To: <20100212030205.GE13769@brick.ozlabs.ibm.com>
+References: <20100212030205.GE13769@brick.ozlabs.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 14 Feb 2010 11:12:38 +0100
-Message-ID: <1266142358.5273.420.camel@laptop>
+Date: Sun, 14 Feb 2010 11:12:17 +0100
+Message-ID: <1266142337.5273.417.camel@laptop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.2 
 Content-Transfer-Encoding: 7bit
@@ -23,63 +25,39 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-02-11 at 08:52 -0800, Paul E. McKenney wrote:
-> Hello, Peter,
+On Fri, 2010-02-12 at 14:02 +1100, Paul Mackerras wrote:
+> We currently have this code in perf_event_alloc() in kernel/perf_event.c:
 > 
-> My lockdep-ified RCU complains about the for_each_domain() in
-> select_task_rq_fair(), see below for the lockdep complaint.  I added
-> rcu_dereference_check() annotations as follows:
+> 	/*
+> 	 * we currently do not support PERF_FORMAT_GROUP on inherited events
+> 	 */
+> 	if (attr->inherit && (attr->read_format & PERF_FORMAT_GROUP))
+> 		goto done;
 > 
-> #define for_each_domain_rd(p) \
->         rcu_dereference_check((p), \
->                               rcu_read_lock_sched_held() || \
->                               lockdep_is_held(&sched_domains_mutex))
+> plus there is a comment "XXX PERF_FORMAT_GROUP vs inherited events
+> seems difficult" next to perf_output_read_group() (but there isn't a
+> similar comment on perf_read_hw()).
 > 
-> #define for_each_domain(cpu, __sd) \
->         for (__sd = for_each_domain_rd(cpu_rq(cpu)->sd); __sd; __sd = __sd->parent)
-> 
-> In other words, I believe (perhaps incorrectly) that for_each_domain()
-> can be called either within an RCU-sched read-side critical section or
-> with sched_domains_mutex held.  Lockdep claims that no locks of any
-> kind, RCU or otherwise, were held.  I considered the possibility that
-> this was an initialization-time thing, but the code traverses CPU
-> structures rather than task structures.
-> 
-> One other possibility is that this is safe due to the fact that we are
-> booting up, before the second CPU has come online.  Are you relying on
-> this?
-> 
-> For reference, here is the definition of rcu_read_lock_sched_held():
-> 
-> static inline int rcu_read_lock_sched_held(void)
-> {
->         int lockdep_opinion = 0;
-> 
->         if (debug_locks)
->                 lockdep_opinion = lock_is_held(&rcu_sched_lock_map);
->         return lockdep_opinion || preempt_count() != 0;
-> }
-> 
-> Help? 
+> First, what is the difficulty referred to here?
 
-We use synchronize_sched() and preempt_disable() for the sched domain
-stuff. The comment above for_each_domain():
+IIRC its the fact that we have to go collect the count delta from all
+the child counters, which can be quite a lot of work depending on the
+number of cpus and children around.
 
-/*
- * The domain tree (rq->sd) is protected by RCU's quiescent state transition.
- * See detach_destroy_domains: synchronize_sched for details.
- *
- * The domain tree of any CPU may only be accessed from within
- * preempt-disabled sections.
- */
-#define for_each_domain(cpu, __sd) \
-        for (__sd = rcu_dereference(cpu_rq(cpu)->sd); __sd; __sd = __sd->parent)
+> Secondly, if the difficulty is just to do with the intersection of
+> sampling counters, inheritance, and group readout (as seems to be the
+> case), could we please allow group readout on ordinary counting
+> (non-sampling) counters?  That is, change the test above to something
+> like:
+> 
+> 	if (attr->inherit && attr->sample_period &&
+> 	    (attr->read_format & PERF_FORMAT_GROUP))
+> 		goto done;
+> 
+> Any objections to that change?  If it's OK, could we get it into .33
+> and .32-stable?
 
-explains this usage, also see detach_destroy_domains().
-
-So one thing you can do is add (preempt_count() & ~PREEMPT_ACTIVE) to
-the rcu_read_lock_sched_held() function to catch all those cases that
-rely on preemption without having to add annotations to everything that
-disables preemption.
+Yeah, that's still broken, you can't do a read without collecting all
+the child counts.
 
 
