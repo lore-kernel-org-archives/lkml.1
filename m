@@ -1,37 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751529Ab0BNVuM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 16:50:12 -0500
-Received: from mail-pz0-f197.google.com ([209.85.222.197]:36868 "EHLO
-	mail-pz0-f197.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751382Ab0BNVuL (ORCPT
+	id S1751633Ab0BNWAO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 17:00:14 -0500
+Received: from relay02.digicable.hu ([92.249.128.188]:45773 "EHLO
+	relay02.digicable.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750738Ab0BNWAM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Feb 2010 16:50:11 -0500
+	Sun, 14 Feb 2010 17:00:12 -0500
+Date: Sun, 14 Feb 2010 22:16:27 +0100
+From: Gabor Gombas <gombasg@digikabel.hu>
+To: John Robinson <john.robinson@anonymous.org.uk>
+Cc: Volker Armin Hemmann <volkerarmin@googlemail.com>,
+       Michael Evans <mjevans1983@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org
+Subject: Re: Linux mdadm superblock question.
+Message-ID: <20100214211627.GA15313@twister.home>
+Mail-Followup-To: John Robinson <john.robinson@anonymous.org.uk>,
+	Volker Armin Hemmann <volkerarmin@googlemail.com>,
+	Michael Evans <mjevans1983@gmail.com>, linux-kernel@vger.kernel.org,
+	linux-raid@vger.kernel.org
+References: <201002140251.59668.volkerarmin@googlemail.com>
+ <4877c76c1002132002s20d942c3i7cee5418cdcf369c@mail.gmail.com>
+ <201002141940.35716.volkerarmin@googlemail.com>
+ <4B7846B2.1030303@anonymous.org.uk>
 MIME-Version: 1.0
-In-Reply-To: <520f0cf11002141254y3f4536a9ta968dbaefbff58f7@mail.gmail.com>
-References: <520f0cf11002110911t3f125649v73062e9851e2cfb3@mail.gmail.com>
-	 <520f0cf11002140510w5c57d196n12f8036ea6085c52@mail.gmail.com>
-	 <aca0ce8b1002140657l4f767635ob9b1611e4da2540b@mail.gmail.com>
-	 <520f0cf11002141254y3f4536a9ta968dbaefbff58f7@mail.gmail.com>
-Date: Sun, 14 Feb 2010 13:50:10 -0800
-Message-ID: <aca0ce8b1002141350o16fcfe6bn658c0ca546b38da0@mail.gmail.com>
-Subject: Re: [BUG]: Possibe recursive locking detected in sysfs
-From: Eric Biederman <ebiederm@aristanetworks.com>
-To: John Kacur <jkacur@redhat.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Tejun Heo <tj@kernel.org>, Serge Hallyn <serue@us.ibm.com>,
-       "David P. Quigley" <dpquigl@tycho.nsa.gov>,
-       James Morris <jmorris@namei.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B7846B2.1030303@anonymous.org.uk>
+X-Copyright: Forwarding or publishing without permission is prohibited.
+X-Original: 94.21.92.161
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Sure, are you referring to the patch-set that begins with
-> "[PATCH 1/6] sysfs: Serialize updates to the vfs inode"?
+On Sun, Feb 14, 2010 at 06:53:38PM +0000, John Robinson wrote:
 
-Sorry no.
+> True, but afaik every distro uses an initrd/initramfs and bundles
+> tools making it easy to manage and customise them, so what's the
+> problem?
 
-http://lkml.org/lkml/2010/2/11/329
+Distro provided initramfs generators have a bad habit assuming you
+patch/build your kernel like the distro does. If you want to use a
+vanilla kernel with different things built in/built as modules/not built
+at all, then you can get nasty surprises, and debugging can be rather
+painful.
 
-Eric
+My current view is if you use a distro kernel, then you should also use
+an initramfs (in fact you do not have a choice). But if you want to
+build your own kernel, then you should get rid of the initramfs.
+
+Gabor
