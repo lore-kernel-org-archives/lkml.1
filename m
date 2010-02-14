@@ -1,104 +1,140 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752394Ab0BNRhb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 12:37:31 -0500
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:34734 "EHLO e7.ny.us.ibm.com"
+	id S1752469Ab0BNRpk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 12:45:40 -0500
+Received: from gwu.lbox.cz ([62.245.111.132]:58647 "EHLO gwu.lbox.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752048Ab0BNRha (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Feb 2010 12:37:30 -0500
-Date: Sun, 14 Feb 2010 09:37:30 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com, akpm@linux-foundation.org,
-       mathieu.desnoyers@polymtl.ca, josh@joshtriplett.org, dvhltc@us.ibm.com,
-       niv@us.ibm.com, tglx@linutronix.de, rostedt@goodmis.org,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
-       Alexander Viro <viro@zeniv.linux.org.uk>
-Subject: Re: [PATCH tip/core/rcu 07/13] vfs: apply lockdep-based checking
-	to rcu_dereference() uses
-Message-ID: <20100214173730.GM7084@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20100212000016.GA25781@linux.vnet.ibm.com> <1265932839-25899-7-git-send-email-paulmck@linux.vnet.ibm.com> <1266142330.5273.414.camel@laptop>
+	id S1752265Ab0BNRph (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Feb 2010 12:45:37 -0500
+Date: Sun, 14 Feb 2010 18:45:13 +0100
+From: Nikola Ciprich <extmaillist@linuxbox.cz>
+To: Linux kernel list <linux-kernel@vger.kernel.org>
+Cc: nikola.ciprich@linuxbox.cz
+Subject: reading /proc/ioports causes OOPS
+Message-ID: <20100214174513.GA4466@nik-comp.linuxbox.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1266142330.5273.414.camel@laptop>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-Milter-Copy-Status: O
+X-Antivirus: on proxybox by Kaspersky antivirus, engine 5.5.10, data 3278091 records(14-02-2010)
+X-Spam-Score: N/A (trusted relay)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 14, 2010 at 11:12:10AM +0100, Peter Zijlstra wrote:
-> On Thu, 2010-02-11 at 16:00 -0800, Paul E. McKenney wrote:
-> > 
-> > -#define files_fdtable(files) (rcu_dereference((files)->fdt))
-> > +#define files_fdtable(files) \
-> > +       (rcu_dereference_check((files)->fdt, \
-> > +                              rcu_read_lock_held() || \
-> > +                              lockdep_is_held(&(files)->file_lock) ||
-> > \
-> > +                              atomic_read(&files->count) == 1))
-> >  
-> >  struct file_operations;
-> >  struct vfsmount;
-> > @@ -78,7 +82,7 @@ static inline struct file * fcheck_files(struct files_struct *files, unsigned in
-> >         struct fdtable *fdt = files_fdtable(files);
-> >  
-> >         if (fd < fdt->max_fds)
-> > -               file = rcu_dereference(fdt->fd[fd]);
-> > +               file = rcu_dereference_check(fdt->fd[fd], rcu_read_lock_held() || lockdep_is_held(&files->file_lock) || atomic_read(&files->count) == 1);
-> >         return file; 
-> 
-> I'm almost thinking you can do something smart here and not replicate
-> that condition :-)
+Hello,
+on one of our servers, trying to read /proc/ioports
+causes OOPS/BUG and application which is trying to access
+the file is killed. I'm seeing this using recent 2.6.32 kernels,
+not sure how about older/newer ones - it's production machine, so
+my testing possibilities are somehow limited...
+But I can plan some tests/reboots/whatever should it be needed.
+I can't reproduce it on any other machine, so my guess is it
+might be related to some hardware contained...
+The problem doesn't really worry me that much, but it certainly
+would be nice to fix the bug. I'll gladly provide any help I can,
+if somebody would like to have a look at it.
+Thanks a lot in advance
+nik
 
-;-)
+here's the backtrace:
 
-How about like the following?  If this is agreeable, I will re-send the
-patch stack with this included.
+[339712.773057] BUG: unable to handle kernel paging request at ffffffffa0127b75
+[339712.775660] IP: [<ffffffff811c19ee>] strnlen+0xe/0x40
+[339712.775660] PGD 1003067 PUD 1007063 PMD 41fa73067 PTE 0
+[339712.775660] Oops: 0000 [#11] PREEMPT SMP 
+[339712.775660] last sysfs file: /sys/module/drbd/parameters/cn_idx
+[339712.775660] CPU 6 
+[339712.775660] Modules linked in: tun bitrev ocfs2 jbd2 ocfs2_dlmfs ocfs2_stack_o2cb ocfs2_dlm ocfs2_nodemanager drbd crc32 cn ocfs2_stackglue dlm configfs ipmi_si ipmi_devintf ipmi_msghandler ipt_REJECT xt_multiport xt_comment xt_tcpudp nf_conntrack_ipv4 nf_defrag_ipv4 xt_state nf_conntrack iptable_filter ip_tables x_tables netconsole nfs lockd nfs_acl auth_rpcgss sunrpc 8021q bridge stp llc bonding ipv6 dm_mirror dm_region_hash dm_log dm_mod video backlight output sbs sbshc fan battery ac kvm_intel kvm piix pata_acpi ide_pci_generic ide_core ppdev parport_pc joydev ata_piix parport rng_core i2c_i801 i2c_core usbhid pcspkr iTCO_wdt ata_generic container i5k_amb hwmon i5000_edac edac_core shpchp sg pci_hotplug ioatdma e1000e dca thermal thermal_sys button aic94xx libsas scsi_transport_sas ahci libata sd_mod scsi_mod crc_t10dif raid1 ext3 jbd uhci_hcd ohci_hcd ehci_hcd [last unloaded: freq_table]
+[339712.865216] Pid: 19335, comm: cat Tainted: G      D    2.6.32lb.07 #1 X7DB8
+[339712.865216] RIP: 0010:[<ffffffff811c19ee>]  [<ffffffff811c19ee>] strnlen+0xe/0x40
+[339712.911762] RSP: 0018:ffff880011313c38  EFLAGS: 00010297
+[339712.917882] RAX: ffffffff8147e4c9 RBX: 0000000000000000 RCX: 0000000000000000
+[339712.925284] RDX: fffffffffffffffe RSI: ffffffffffffffff RDI: ffffffffa0127b75
+[339712.932514] RBP: ffff880011313c38 R08: 0000000000000004 R09: 0000000000000020
+[339712.940522] R10: 0000000000000010 R11: 0000000000000004 R12: ffffffffa0127b75
+[339712.949011] R13: ffff88041b2fc302 R14: ffff88041b2fd000 R15: 00000000ffffffff
+[339712.956511] FS:  00007f08fb2af6e0(0000) GS:ffff880028380000(0000) knlGS:0000000000000000
+[339712.965408] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+[339712.971820] CR2: ffffffffa0127b75 CR3: 000000029e47f000 CR4: 00000000000026e0
+[339712.979619] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+[339712.987189] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+[339712.995131] Process cat (pid: 19335, threadinfo ffff880011312000, task ffff88041ad22720)
+[339713.003480] Stack:
+[339713.005007]  ffff880011313c78 ffffffff811c381f 00000000000000c0 ffffffff81462361
+[339713.014176] <0> 0000000000000002 ffff88041b2fc302 ffff880011313d28 ffff88041b2fd000
+[339713.022471] <0> ffff880011313d18 ffffffff811c4552 0000000000000004 0000000affffffff
+[339713.031420] Call Trace:
+[339713.033793]  [<ffffffff811c381f>] string+0x3f/0xd0
+[339713.039516]  [<ffffffff811c4552>] vsnprintf+0x242/0x580
+[339713.045010]  [<ffffffff811328ce>] seq_printf+0x7e/0xc0
+[339713.051123]  [<ffffffff8105818e>] ? r_start+0x2e/0x70
+[339713.056559]  [<ffffffff813440d1>] ? _read_lock+0x41/0x50
+[339713.061799]  [<ffffffff8105818e>] ? r_start+0x2e/0x70
+[339713.068159]  [<ffffffff81058077>] r_show+0x77/0x80
+[339713.073411]  [<ffffffff81132ea0>] ? seq_read+0x0/0x3c0
+[339713.077678]  [<ffffffff8113310b>] seq_read+0x26b/0x3c0
+[339713.084514]  [<ffffffff81132ea0>] ? seq_read+0x0/0x3c0
+[339713.089988]  [<ffffffff8116ba8a>] proc_reg_read+0x7a/0xb0
+[339713.096139]  [<ffffffff81115f44>] vfs_read+0xc4/0x190
+[339713.101251]  [<ffffffff81116420>] sys_read+0x50/0x90
+[339713.106250]  [<ffffffff8100b2eb>] system_call_fastpath+0x16/0x1b
+[339713.112511] Code: 4c 01 e0 38 10 74 0b 48 83 e8 01 49 39 c4 76 f3 31 c0 5b 41 5c c9 c3 66 0f 1f 44 00 00 48 8d 56 ff 55 48 83 fa ff 48 89 e5 74 27 <80> 3f 00 74 22 48 89 f8 eb 0a 80 38 00 0f 1f 44 00 00 74 0e 48 
+[339713.137012] RIP  [<ffffffff811c19ee>] strnlen+0xe/0x40
+[339713.142628]  RSP <ffff880011313c38>
+[339713.146871] CR2: ffffffffa0127b75
+[339713.150889] ---[ end trace 52fad5e07083cdb4 ]---
+[339713.154872] note: cat[19335] exited with preempt_count 1
+[339713.162238] BUG: scheduling while atomic: cat/19335/0x10000002
+[339713.168842] INFO: lockdep is turned off.
+[339713.173278] Modules linked in: ...
+[339713.264599] Pid: 19335, comm: cat Tainted: G      D    2.6.32lb.07 #1
+[339713.271579] Call Trace:
+[339713.274364]  [<ffffffff8107e875>] ? __debug_show_held_locks+0x25/0x30
+[339713.281325]  [<ffffffff81041225>] __schedule_bug+0x65/0x70
+[339713.287316]  [<ffffffff81340f95>] thread_return+0x6e8/0x823
+[339713.293399]  [<ffffffff81043a93>] __cond_resched+0x13/0x30
+[339713.299403]  [<ffffffff81341148>] _cond_resched+0x28/0x30
+[339713.305316]  [<ffffffff810ee76b>] unmap_vmas+0x93b/0x9d0
+[339713.311048]  [<ffffffff810f369e>] exit_mmap+0xde/0x190
+[339713.316663]  [<ffffffff8104d544>] mmput+0x54/0x110
+[339713.321950]  [<ffffffff810525f2>] exit_mm+0x102/0x130
+[339713.327427]  [<ffffffff81053d3d>] do_exit+0x18d/0x7d0
+[339713.332959]  [<ffffffff8100f917>] oops_end+0xa7/0xb0
+[339713.338417]  [<ffffffff8102dd3a>] no_context+0x15a/0x250
+[339713.344180]  [<ffffffff8102dfcb>] __bad_area_nosemaphore+0xdb/0x1c0
+[339713.350933]  [<ffffffff8102e14e>] bad_area_nosemaphore+0xe/0x10
+[339713.357352]  [<ffffffff8102e471>] do_page_fault+0xb1/0x2e0
+[339713.363307]  [<ffffffff813444ef>] page_fault+0x1f/0x30
+[339713.368957]  [<ffffffff811c19ee>] ? strnlen+0xe/0x40
+[339713.374504]  [<ffffffff811c381f>] string+0x3f/0xd0
+[339713.379777]  [<ffffffff811c4552>] vsnprintf+0x242/0x580
+[339713.385527]  [<ffffffff811328ce>] seq_printf+0x7e/0xc0
+[339713.391146]  [<ffffffff8105818e>] ? r_start+0x2e/0x70
+[339713.396689]  [<ffffffff813440d1>] ? _read_lock+0x41/0x50
+[339713.402514]  [<ffffffff8105818e>] ? r_start+0x2e/0x70
+[339713.408053]  [<ffffffff81058077>] r_show+0x77/0x80
+[339713.413306]  [<ffffffff81132ea0>] ? seq_read+0x0/0x3c0
+[339713.418871]  [<ffffffff8113310b>] seq_read+0x26b/0x3c0
+[339713.424474]  [<ffffffff81132ea0>] ? seq_read+0x0/0x3c0
+[339713.430102]  [<ffffffff8116ba8a>] proc_reg_read+0x7a/0xb0
+[339713.435986]  [<ffffffff81115f44>] vfs_read+0xc4/0x190
+[339713.443127]  [<ffffffff81116420>] sys_read+0x50/0x90
+[339713.448527]  [<ffffffff8100b2eb>] system_call_fastpath+0x16/0x1b
 
-							Thanx, Paul
+-- 
+-------------------------------------
+Nikola CIPRICH
+LinuxBox.cz, s.r.o.
+28. rijna 168, 709 01 Ostrava
 
-------------------------------------------------------------------------
+tel.:   +420 596 603 142
+fax:    +420 596 621 273
+mobil:  +420 777 093 799
 
-vfs: abstract rcu_dereference_check for files-fdtable use
+www.linuxbox.cz
 
-Create an rcu_dereference_check_fdtable() that encapsulates the
-rcu_dereference_check() condition for fcheck_files() use.  This has
-the beneficial side-effect of getting rid of a very long line.
-
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
----
-
-diff --git a/include/linux/fdtable.h b/include/linux/fdtable.h
-index 144412f..013dc52 100644
---- a/include/linux/fdtable.h
-+++ b/include/linux/fdtable.h
-@@ -57,11 +57,14 @@ struct files_struct {
- 	struct file * fd_array[NR_OPEN_DEFAULT];
- };
- 
--#define files_fdtable(files) \
--	(rcu_dereference_check((files)->fdt, \
-+#define rcu_dereference_check_fdtable(files, fdtfd) \
-+	(rcu_dereference_check((fdtfd), \
- 			       rcu_read_lock_held() || \
- 			       lockdep_is_held(&(files)->file_lock) || \
--			       atomic_read(&files->count) == 1))
-+			       atomic_read(&(files)->count) == 1))
-+
-+#define files_fdtable(files) \
-+		(rcu_dereference_check_fdtable((files), (files)->fdt))
- 
- struct file_operations;
- struct vfsmount;
-@@ -82,7 +85,7 @@ static inline struct file * fcheck_files(struct files_struct *files, unsigned in
- 	struct fdtable *fdt = files_fdtable(files);
- 
- 	if (fd < fdt->max_fds)
--		file = rcu_dereference_check(fdt->fd[fd], rcu_read_lock_held() || lockdep_is_held(&files->file_lock) || atomic_read(&files->count) == 1);
-+		file = rcu_dereference_check_fdtable(files, fdt->fd[fd]);
- 	return file;
- }
- 
+mobil servis: +420 737 238 656
+email servis: servis@linuxbox.cz
+-------------------------------------
