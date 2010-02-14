@@ -1,127 +1,96 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755156Ab0BNJJY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 04:09:24 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37902 "EHLO mx2.mail.elte.hu"
+	id S1753937Ab0BNJNl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 04:13:41 -0500
+Received: from hera.kernel.org ([140.211.167.34]:33572 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752764Ab0BNJJW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Feb 2010 04:09:22 -0500
-Date: Sun, 14 Feb 2010 10:09:13 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [GIT PULL] tracing fixes
-Message-ID: <20100214090913.GA26388@elte.hu>
+	id S1752764Ab0BNJNi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Feb 2010 04:13:38 -0500
+Date: Sun, 14 Feb 2010 09:12:42 GMT
+From: tip-bot for Don Zickus <dzickus@redhat.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       tglx@linutronix.de, mingo@elte.hu, dzickus@redhat.com
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, dzickus@redhat.com, mingo@elte.hu
+In-Reply-To: <1266013161-31197-1-git-send-email-dzickus@redhat.com>
+References: <1266013161-31197-1-git-send-email-dzickus@redhat.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perf/nmi] nmi_watchdog: Use a boolean config flag for compiling
+Message-ID: <tip-c3128fb6ad39b0edda6675d20585a64846cf89ea@git.kernel.org>
+Git-Commit-ID: c3128fb6ad39b0edda6675d20585a64846cf89ea
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Sun, 14 Feb 2010 09:12:45 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+Commit-ID:  c3128fb6ad39b0edda6675d20585a64846cf89ea
+Gitweb:     http://git.kernel.org/tip/c3128fb6ad39b0edda6675d20585a64846cf89ea
+Author:     Don Zickus <dzickus@redhat.com>
+AuthorDate: Fri, 12 Feb 2010 17:19:18 -0500
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Sun, 14 Feb 2010 09:19:43 +0100
 
-Please pull the latest tracing-fixes-for-linus git tree from:
+nmi_watchdog: Use a boolean config flag for compiling
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git tracing-fixes-for-linus
+Determines if an arch has setup arch specific perf_events and
+nmi_watchdog code.  This should restrict compiles to only those
+arches ready.
 
- Thanks,
+Signed-off-by: Don Zickus <dzickus@redhat.com>
+Cc: peterz@infradead.org
+Cc: gorcunov@gmail.com
+Cc: aris@redhat.com
+LKML-Reference: <1266013161-31197-1-git-send-email-dzickus@redhat.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/Kconfig  |    1 +
+ init/Kconfig      |    5 +++++
+ lib/Kconfig.debug |    3 +--
+ 3 files changed, 7 insertions(+), 2 deletions(-)
 
-	Ingo
-
------------------->
-Heiko Carstens (1):
-      tracing/kprobes: Fix probe parsing
-
-Lai Jiangshan (1):
-      tracing: Fix circular dead lock in stack trace
-
-
- kernel/trace/trace_kprobe.c |    2 +-
- kernel/trace/trace_stack.c  |   24 ++++++++++++++++++++++++
- 2 files changed, 25 insertions(+), 1 deletions(-)
-
-diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
-index 6ea90c0..50b1b82 100644
---- a/kernel/trace/trace_kprobe.c
-+++ b/kernel/trace/trace_kprobe.c
-@@ -689,7 +689,7 @@ static int create_trace_probe(int argc, char **argv)
- 			return -EINVAL;
- 		}
- 		/* an address specified */
--		ret = strict_strtoul(&argv[0][2], 0, (unsigned long *)&addr);
-+		ret = strict_strtoul(&argv[1][0], 0, (unsigned long *)&addr);
- 		if (ret) {
- 			pr_info("Failed to parse address.\n");
- 			return ret;
-diff --git a/kernel/trace/trace_stack.c b/kernel/trace/trace_stack.c
-index 678a512..f4bc9b2 100644
---- a/kernel/trace/trace_stack.c
-+++ b/kernel/trace/trace_stack.c
-@@ -157,6 +157,7 @@ stack_max_size_write(struct file *filp, const char __user *ubuf,
- 	unsigned long val, flags;
- 	char buf[64];
- 	int ret;
-+	int cpu;
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index cbcbfde..4f9685f 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -52,6 +52,7 @@ config X86
+ 	select HAVE_KERNEL_LZO
+ 	select HAVE_HW_BREAKPOINT
+ 	select PERF_EVENTS
++	select PERF_EVENTS_NMI
+ 	select ANON_INODES
+ 	select HAVE_ARCH_KMEMCHECK
+ 	select HAVE_USER_RETURN_NOTIFIER
+diff --git a/init/Kconfig b/init/Kconfig
+index ada4844..7331a16 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -946,6 +946,11 @@ config PERF_USE_VMALLOC
+ 	help
+ 	  See tools/perf/design.txt for details
  
- 	if (count >= sizeof(buf))
- 		return -EINVAL;
-@@ -171,9 +172,20 @@ stack_max_size_write(struct file *filp, const char __user *ubuf,
- 		return ret;
++config PERF_EVENTS_NMI
++	bool
++	help
++	  Arch has support for nmi_watchdog
++
+ menu "Kernel Performance Events And Counters"
  
- 	local_irq_save(flags);
-+
-+	/*
-+	 * In case we trace inside arch_spin_lock() or after (NMI),
-+	 * we will cause circular lock, so we also need to increase
-+	 * the percpu trace_active here.
-+	 */
-+	cpu = smp_processor_id();
-+	per_cpu(trace_active, cpu)++;
-+
- 	arch_spin_lock(&max_stack_lock);
- 	*ptr = val;
- 	arch_spin_unlock(&max_stack_lock);
-+
-+	per_cpu(trace_active, cpu)--;
- 	local_irq_restore(flags);
+ config PERF_EVENTS
+diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+index acef882..01a4d85 100644
+--- a/lib/Kconfig.debug
++++ b/lib/Kconfig.debug
+@@ -172,8 +172,7 @@ config DETECT_SOFTLOCKUP
  
- 	return count;
-@@ -206,7 +218,13 @@ t_next(struct seq_file *m, void *v, loff_t *pos)
- 
- static void *t_start(struct seq_file *m, loff_t *pos)
- {
-+	int cpu;
-+
- 	local_irq_disable();
-+
-+	cpu = smp_processor_id();
-+	per_cpu(trace_active, cpu)++;
-+
- 	arch_spin_lock(&max_stack_lock);
- 
- 	if (*pos == 0)
-@@ -217,7 +235,13 @@ static void *t_start(struct seq_file *m, loff_t *pos)
- 
- static void t_stop(struct seq_file *m, void *p)
- {
-+	int cpu;
-+
- 	arch_spin_unlock(&max_stack_lock);
-+
-+	cpu = smp_processor_id();
-+	per_cpu(trace_active, cpu)--;
-+
- 	local_irq_enable();
- }
- 
+ config NMI_WATCHDOG
+ 	bool "Detect Hard Lockups with an NMI Watchdog"
+-	depends on DEBUG_KERNEL && PERF_EVENTS
+-	depends on X86
++	depends on DEBUG_KERNEL && PERF_EVENTS && PERF_EVENTS_NMI
+ 	default y
+ 	help
+ 	  Say Y here to enable the kernel to use the NMI as a watchdog
