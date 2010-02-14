@@ -1,188 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751129Ab0BNO5k (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 09:57:40 -0500
-Received: from mail-pz0-f197.google.com ([209.85.222.197]:34603 "EHLO
-	mail-pz0-f197.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750860Ab0BNO5i convert rfc822-to-8bit (ORCPT
+	id S1751455Ab0BNPcU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 10:32:20 -0500
+Received: from mail-bw0-f216.google.com ([209.85.218.216]:33461 "EHLO
+	mail-bw0-f216.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751332Ab0BNPcT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Feb 2010 09:57:38 -0500
+	Sun, 14 Feb 2010 10:32:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=YHkcW5bkTqx/8wkbI5jVv/tSe0IQSYPdksEvx08GFCwYpPo3I2YqhqLz0WRxm/lJlW
+         Bl2wzw58civItZ+8KrGkpfxcwYRQq9usFIRO/S65H/h3JdwIw8VXKBQeH0QoN5UcAg3R
+         ummn8yI4QcWmEFdxXqn/2zTD6a11aL8SwoMmw=
 MIME-Version: 1.0
-In-Reply-To: <520f0cf11002140510w5c57d196n12f8036ea6085c52@mail.gmail.com>
-References: <520f0cf11002110911t3f125649v73062e9851e2cfb3@mail.gmail.com>
-	 <520f0cf11002140510w5c57d196n12f8036ea6085c52@mail.gmail.com>
-Date: Sun, 14 Feb 2010 06:57:37 -0800
-Message-ID: <aca0ce8b1002140657l4f767635ob9b1611e4da2540b@mail.gmail.com>
-Subject: Re: [BUG]: Possibe recursive locking detected in sysfs
-From: Eric Biederman <ebiederm@aristanetworks.com>
-To: John Kacur <jkacur@redhat.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Tejun Heo <tj@kernel.org>, Serge Hallyn <serue@us.ibm.com>,
-       "David P. Quigley" <dpquigl@tycho.nsa.gov>,
-       James Morris <jmorris@namei.org>
+Date: Sun, 14 Feb 2010 17:32:17 +0200
+Message-ID: <912ec82a1002140732g946e9b1id8b56d7df7517480@mail.gmail.com>
+Subject: understanding DMA cache maint
+From: Neshama Parhoti <pneshama@gmail.com>
+To: linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 14, 2010 at 5:10 AM, John Kacur <jkacur@redhat.com> wrote:
-> On Thu, Feb 11, 2010 at 12:11 PM, John Kacur <jkacur@redhat.com> wrote:
->> I'm not sure if this one has already been reported. - thanks.
->>
->> Feb 11 07:24:15 localhost kernel: [ INFO: possible recursive locking detected ]
->> Feb 11 07:24:15 localhost kernel: 2.6.33-rc7 #1
->> Feb 11 07:24:15 localhost kernel: ---------------------------------------------
->> Feb 11 07:24:15 localhost kernel: 94cpufreq/2933 is trying to acquire lock:
->> Feb 11 07:24:15 localhost kernel: (s_active){++++.+}, at:
->> [<ffffffff81157408>] sysfs_hash_and_remove+0x53/0x6a
->> Feb 11 07:24:15 localhost kernel:
->> Feb 11 07:24:15 localhost kernel: but task is already holding lock:
->> Feb 11 07:24:15 localhost kernel: (s_active){++++.+}, at:
->> [<ffffffff81159530>] sysfs_get_active_two+0x24/0x48
->> Feb 11 07:24:15 localhost kernel:
->> Feb 11 07:24:15 localhost kernel: other info that might help us debug this:
->> Feb 11 07:24:15 localhost kernel: 4 locks held by 94cpufreq/2933:
->> Feb 11 07:24:15 localhost kernel: #0:  (&buffer->mutex){+.+.+.}, at:
->> [<ffffffff81157dbd>] sysfs_write_file+0x3e/0x12b
->> Feb 11 07:24:15 localhost kernel: #1:  (s_active){++++.+}, at:
->> [<ffffffff81159530>] sysfs_get_active_two+0x24/0x48
->> Feb 11 07:24:15 localhost kernel: #2:  (s_active){++++.+}, at:
->> [<ffffffff8115953d>] sysfs_get_active_two+0x31/0x48
->> Feb 11 07:24:15 localhost kernel: #3:  (dbs_mutex){+.+.+.}, at:
->> [<ffffffffa04bcdb3>] cpufreq_governor_dbs+0x29b/0x348
->> [cpufreq_ondemand]
->> Feb 11 07:24:15 localhost kernel:
->> Feb 11 07:24:15 localhost kernel: stack backtrace:
->> Feb 11 07:24:15 localhost kernel: Pid: 2933, comm: 94cpufreq Not
->> tainted 2.6.33-rc7 #1
->> Feb 11 07:24:15 localhost kernel: Call Trace:
->> Feb 11 07:24:15 localhost kernel: [<ffffffff81071f53>]
->> __lock_acquire+0xcf6/0xd8b
->> Feb 11 07:24:15 localhost kernel: [<ffffffff81070914>] ?
->> debug_check_no_locks_freed+0x120/0x12f
->> Feb 11 07:24:15 localhost kernel: [<ffffffff8107020e>] ?
->> trace_hardirqs_on_caller+0x11f/0x14a
->> Feb 11 07:24:15 localhost kernel: [<ffffffff810720c0>] lock_acquire+0xd8/0xf5
->> Feb 11 07:24:15 localhost kernel: [<ffffffff81157408>] ?
->> sysfs_hash_and_remove+0x53/0x6a
->> Feb 11 07:24:15 localhost kernel: [<ffffffff81159231>]
->> sysfs_addrm_finish+0xe1/0x175
->> Feb 11 07:24:15 localhost kernel: [<ffffffff81157408>] ?
->> sysfs_hash_and_remove+0x53/0x6a
->> Feb 11 07:24:15 localhost kernel: [<ffffffff8137b1b5>] ?
->> sub_preempt_count+0xa3/0xb6
->> Feb 11 07:24:15 localhost kernel: [<ffffffff81157408>]
->> sysfs_hash_and_remove+0x53/0x6a
->> Feb 11 07:24:15 localhost kernel: [<ffffffff8115a59d>]
->> sysfs_remove_group+0x91/0xc9
->> Feb 11 07:24:15 localhost kernel: [<ffffffffa04bcdc6>]
->> cpufreq_governor_dbs+0x2ae/0x348 [cpufreq_ondemand]
->> Feb 11 07:24:15 localhost kernel: [<ffffffff8137b1b5>] ?
->> sub_preempt_count+0xa3/0xb6
->> Feb 11 07:24:15 localhost kernel: [<ffffffff812ab9cc>]
->> __cpufreq_governor+0x89/0xc7
->> Feb 11 07:24:15 localhost kernel: [<ffffffff812ac7b9>]
->> __cpufreq_set_policy+0x18e/0x22a
->> Feb 11 07:24:15 localhost kernel: [<ffffffff812accd6>]
->> store_scaling_governor+0x199/0x1ed
->> Feb 11 07:24:15 localhost kernel: [<ffffffff812ad50d>] ? handle_update+0x0/0x39
->> Feb 11 07:24:15 localhost kernel: [<ffffffff8137685d>] ? down_write+0x76/0x7e
->> Feb 11 07:24:15 localhost kernel: [<ffffffff812ac607>] store+0x67/0x8b
->> Feb 11 07:24:15 localhost kernel: [<ffffffff81157e75>]
->> sysfs_write_file+0xf6/0x12b
->> Feb 11 07:24:15 localhost kernel: [<ffffffff811003c9>] vfs_write+0xb0/0x10a
->> Feb 11 07:24:15 localhost kernel: [<ffffffff811004f1>] sys_write+0x4c/0x75
->> Feb 11 07:24:15 localhost kernel: [<ffffffff81002d9b>]
->> system_call_fastpath+0x16/0x1b
->>
->
-> This is still present in 2.6.33-rc8.
-> I can trigger it every time. I have T500 laptop, the trick is to boot
-> it up without plugging it in, so it is working on battery power, and
-> then to shut the lid.
-> first you get the message from above, and then it does a few more
-> things before it freezes and I have to hard reboot it.
-> The above problem does not occur if I have the laptop plugged into the wall.
->
-> Here is the 2.6.33-rc8 version of above. If anyone has further
-> suggestions for debugging, pls let me know.
-> I've cced the folks that get_maintainer.pl reports for
-> fs/sysfs/inode.c and fs/sysfs/dir.c
+in the following function,
+what's the different between the inner_op (dmac_*) and outer_op (outer_*) ?
+why do we need two functions to do the cache operation ?
+isn't this an action on the cache hardware itself ? are there 2
+hardwares involved ?
 
-We have a real hang and a possibly spurious lockdep report.
-Could you try my latest patches that I sent to gregkh to clear up the sysfs
-lockdep reports?   I don't expect it will fix your issue but it will
-at least give
-us a better idea of where to look.
-
-Eric
+void dma_cache_maint(const void *start, size_t size, int direction)
+{
+   ...
+	switch (direction) {
+	case DMA_FROM_DEVICE:		/* invalidate only */
+		inner_op = dmac_inv_range;
+		outer_op = outer_inv_range;
+		break;
+	case DMA_TO_DEVICE:		/* writeback only */
+		inner_op = dmac_clean_range;
+		outer_op = outer_clean_range;
+		break;
+	case DMA_BIDIRECTIONAL:		/* writeback and invalidate */
+		inner_op = dmac_flush_range;
+		outer_op = outer_flush_range;
 
 
-> Feb 14 07:35:49 localhost kernel: =============================================
-> Feb 14 07:35:49 localhost kernel: [ INFO: possible recursive locking detected ]
-> Feb 14 07:35:49 localhost kernel: 2.6.33-rc8 #1
-> Feb 14 07:35:49 localhost kernel: ---------------------------------------------
-> Feb 14 07:35:49 localhost kernel: 94cpufreq/2914 is trying to acquire lock:
-> Feb 14 07:35:49 localhost kernel: (s_active){++++.+}, at:
-> [<ffffffff81157478>] sysfs_hash_and_remove+0x53/0x6a
-> Feb 14 07:35:49 localhost kernel:
-> Feb 14 07:35:49 localhost kernel: but task is already holding lock:
-> Feb 14 07:35:49 localhost kernel: (s_active){++++.+}, at:
-> [<ffffffff811595a0>] sysfs_get_active_two+0x24/0x48
-> Feb 14 07:35:49 localhost kernel:
-> Feb 14 07:35:49 localhost kernel: other info that might help us debug this:
-> Feb 14 07:35:49 localhost kernel: 4 locks held by 94cpufreq/2914:
-> Feb 14 07:35:49 localhost kernel: #0:  (&buffer->mutex){+.+.+.}, at:
-> [<ffffffff81157e2d>] sysfs_write_file+0x3e/0x12b
-> Feb 14 07:35:49 localhost kernel: #1:  (s_active){++++.+}, at:
-> [<ffffffff811595a0>] sysfs_get_active_two+0x24/0x48
-> Feb 14 07:35:49 localhost kernel: #2:  (s_active){++++.+}, at:
-> [<ffffffff811595ad>] sysfs_get_active_two+0x31/0x48
-> Feb 14 07:35:49 localhost kernel: #3:  (dbs_mutex){+.+.+.}, at:
-> [<ffffffffa04c0dbe>] cpufreq_governor_dbs+0x29b/0x345
-> [cpufreq_ondemand]
-> Feb 14 07:35:49 localhost kernel:
-> Feb 14 07:35:49 localhost kernel: stack backtrace:
-> Feb 14 07:35:49 localhost kernel: Pid: 2914, comm: 94cpufreq Not
-> tainted 2.6.33-rc8 #1
-> Feb 14 07:35:49 localhost kernel: Call Trace:
-> Feb 14 07:35:49 localhost kernel: [<ffffffff81071f53>]
-> __lock_acquire+0xcf6/0xd8b
-> Feb 14 07:35:49 localhost kernel: [<ffffffff81070914>] ?
-> debug_check_no_locks_freed+0x120/0x12f
-> Feb 14 07:35:49 localhost kernel: [<ffffffff8107020e>] ?
-> trace_hardirqs_on_caller+0x11f/0x14a
-> Feb 14 07:35:49 localhost kernel: [<ffffffff810720c0>] lock_acquire+0xd8/0xf5
-> Feb 14 07:35:49 localhost kernel: [<ffffffff81157478>] ?
-> sysfs_hash_and_remove+0x53/0x6a
-> Feb 14 07:35:49 localhost kernel: [<ffffffff811592a1>]
-> sysfs_addrm_finish+0xe1/0x175
-> Feb 14 07:35:49 localhost kernel: [<ffffffff81157478>] ?
-> sysfs_hash_and_remove+0x53/0x6a
-> Feb 14 07:35:49 localhost kernel: [<ffffffff8137b335>] ?
-> sub_preempt_count+0xa3/0xb6
-> Feb 14 07:35:49 localhost kernel: [<ffffffff81157478>]
-> sysfs_hash_and_remove+0x53/0x6a
-> Feb 14 07:35:49 localhost kernel: [<ffffffff8115a60d>]
-> sysfs_remove_group+0x91/0xc9
-> Feb 14 07:35:49 localhost kernel: [<ffffffffa04c0dd1>]
-> cpufreq_governor_dbs+0x2ae/0x345 [cpufreq_ondemand]
-> Feb 14 07:35:49 localhost kernel: [<ffffffff8137b335>] ?
-> sub_preempt_count+0xa3/0xb6
-> Feb 14 07:35:49 localhost kernel: [<ffffffff812aba60>]
-> __cpufreq_governor+0x89/0xc7
-> Feb 14 07:35:49 localhost kernel: [<ffffffff812ac84d>]
-> __cpufreq_set_policy+0x18e/0x22a
-> Feb 14 07:35:49 localhost kernel: [<ffffffff812acd6a>]
-> store_scaling_governor+0x199/0x1ed
-> Feb 14 07:35:49 localhost kernel: [<ffffffff812ad5a1>] ? handle_update+0x0/0x39
-> Feb 14 07:35:49 localhost kernel: [<ffffffff813769ad>] ? down_write+0x76/0x7e
-> Feb 14 07:35:49 localhost kernel: [<ffffffff812ac69b>] store+0x67/0x8b
-> Feb 14 07:35:49 localhost kernel: [<ffffffff81157ee5>]
-> sysfs_write_file+0xf6/0x12b
-> Feb 14 07:35:49 localhost kernel: [<ffffffff811003c9>] vfs_write+0xb0/0x10a
-> Feb 14 07:35:49 localhost kernel: [<ffffffff811004f1>] sys_write+0x4c/0x75
-> Feb 14 07:35:49 localhost kernel: [<ffffffff81002d9b>]
-> system_call_fastpath+0x16/0x1b
->
+thank you!
