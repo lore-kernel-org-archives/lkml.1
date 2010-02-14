@@ -1,63 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753428Ab0BNV2U (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 16:28:20 -0500
-Received: from relay02.digicable.hu ([92.249.128.188]:33199 "EHLO
-	relay02.digicable.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753021Ab0BNV2S (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Feb 2010 16:28:18 -0500
-X-Greylist: delayed 704 seconds by postgrey-1.27 at vger.kernel.org; Sun, 14 Feb 2010 16:28:17 EST
-Date: Sun, 14 Feb 2010 22:28:11 +0100
-From: Gabor Gombas <gombasg@digikabel.hu>
-To: Asdo <asdo@shiftmail.org>
-Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Michael Evans <mjevans1983@gmail.com>,
-       Volker Armin Hemmann <volkerarmin@googlemail.com>,
-       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
-Subject: Re: Linux mdadm superblock question.
-Message-ID: <20100214212811.GB15313@twister.home>
-Mail-Followup-To: Asdo <asdo@shiftmail.org>,
-	Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-	Michael Evans <mjevans1983@gmail.com>,
-	Volker Armin Hemmann <volkerarmin@googlemail.com>,
-	linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
-References: <201002140251.59668.volkerarmin@googlemail.com>
- <4877c76c1002132002s20d942c3i7cee5418cdcf369c@mail.gmail.com>
- <20100214193406.GA15722@khazad-dum.debian.net>
- <4B786154.8090103@shiftmail.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B786154.8090103@shiftmail.org>
-X-Copyright: Forwarding or publishing without permission is prohibited.
-X-Original: 94.21.92.161
+	id S1753474Ab0BNVcP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 16:32:15 -0500
+Received: from bamako.nerim.net ([62.4.17.28]:55086 "EHLO bamako.nerim.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753414Ab0BNVcO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Feb 2010 16:32:14 -0500
+Date: Sun, 14 Feb 2010 22:32:10 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: david@lang.hm
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, Pavel Machek <pavel@ucw.cz>,
+       Willy Tarreau <w@1wt.eu>, mirrors@kernel.org, lasse.collin@tukaani.org,
+       linux-kernel <linux-kernel@vger.kernel.org>, users@kernel.org,
+       "FTPAdmin Kernel.org" <ftpadmin@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [kernel.org users] XZ Migration discussion
+Message-ID: <20100214223210.7dd94012@hyperion.delvare>
+In-Reply-To: <alpine.DEB.2.00.1002141302210.5135@asgard.lang.hm>
+References: <4B744E13.8040004@kernel.org>
+	<20100212150137.648dca7c@hyperion.delvare>
+	<alpine.LFD.2.00.1002120714320.7792@localhost.localdomain>
+	<4B75A5DC.3060803@kernel.org>
+	<20100212202357.6363d5af@hyperion.delvare>
+	<20100212230702.GA10266@1wt.eu>
+	<20100213091748.276821e1@hyperion.delvare>
+	<20100214170724.GE1578@ucw.cz>
+	<4B784378.8070309@s5r6.in-berlin.de>
+	<alpine.DEB.2.00.1002141302210.5135@asgard.lang.hm>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 14, 2010 at 09:47:16PM +0100, Asdo wrote:
+On Sun, 14 Feb 2010 13:04:45 -0800 (PST), david@lang.hm wrote:
+> On Sun, 14 Feb 2010, Stefan Richter wrote:
+> 
+> > Pavel Machek wrote:
+> >> On zaurus, kernel compilation takes 4 hours. (I.e. "one night"). So
+> >> that one is ... well ... done overnight.
+> >>
+> >> Untar is something I normally wait for, since you need to run
+> >> (interactive) oldconfig after that.
+> >
+> > If the download takes m minutes and unpacking and unarchiving tar.gz
+> > takes another n minutes, what difference does it make for this workflow
+> > when instead m + p minutes are spent for download + unpacking and
+> > unarchiving tar.bz2 or tar.xz?
+> 
+> The difference is that the user is waiting for the n or m minutes, but 
+> goes off and does something else for the p minutes.
+> 
+> So it doesn't really matter if the compile takes 1 hour or 6 hours. As 
+> Pavel noted, this is done overnight and it doesn't matter if it gets done 
+> at 2am or 6am.
+> 
+> But the uncompression has a user waiting for it (to do the config step), 
+> so here it makes a big difference if it takes 6 minutes ot 8 minutes.
 
-> 1.x autodetection worked great for me in initramfs. Basically you
-> only need /etc/mdadm/mdadm.conf copied to initramfs (via
-> update-initramfs),
+You totally missed Stefan's point. Read again.
 
-There is no autodetection with 1.1. Once you have mdadm.conf you have
-pretty hard rules about what to look for and how to assemble it - ie.
-there is not much left to "auto" detect. Real autodetection would mean
-there is _no_ such information available, and you figure out everything
-by just looking at the devices you find.
-
-> initramfs procedure.
-> Also consider 1.x allows to choose which arrays are autoassembled
-> (hostname written in the array name equal to hostname in the machine
-> or specified in mdadm.conf): this is more precise than 0.9 which
-> autoassembles all, I think.
-
-And also causes much more pain when you install machines on an internal
-network where it gets a random name (in fact all new machines get the
-same temporary name), then it is moved to its real location and
-reconfigured with its real name. And you wonder why your arrays aren't
-assembled any more...
-
-Gabor
+-- 
+Jean Delvare
