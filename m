@@ -1,95 +1,81 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755942Ab0BNJPk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 04:15:40 -0500
-Received: from hera.kernel.org ([140.211.167.34]:33687 "EHLO hera.kernel.org"
+	id S1756491Ab0BNJXS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 04:23:18 -0500
+Received: from poutre.nerim.net ([62.4.16.124]:51240 "EHLO poutre.nerim.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753380Ab0BNJPh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Feb 2010 04:15:37 -0500
-Date: Sun, 14 Feb 2010 09:13:53 GMT
-From: tip-bot for Kirill Smelkov <kirr@landau.phys.spbu.ru>
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, acme@redhat.com,
-       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl,
-       kirr@landau.phys.spbu.ru, efault@gmx.de, fweisbec@gmail.com,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, fweisbec@gmail.com,
-       kirr@landau.phys.spbu.ru, a.p.zijlstra@chello.nl, efault@gmx.de,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20100212162059.GA30041@landau.phys.spbu.ru>
-References: <20100212162059.GA30041@landau.phys.spbu.ru>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/urgent] perf top: Fix help text alignment
-Message-ID: <tip-1a72cfa6856e7d58e049c42c6e6a789669478479@git.kernel.org>
-Git-Commit-ID: 1a72cfa6856e7d58e049c42c6e6a789669478479
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Sun, 14 Feb 2010 09:13:58 +0000 (UTC)
+	id S1753886Ab0BNJXL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Feb 2010 04:23:11 -0500
+Date: Sun, 14 Feb 2010 10:23:08 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Phillip Lougher <phillip@lougher.demon.co.uk>
+Cc: lasse.collin@tukaani.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       mirrors@kernel.org, users@kernel.org,
+       "FTPAdmin Kernel.org" <ftpadmin@kernel.org>,
+       Pavel Machek <pavel@ucw.cz>
+Subject: Re: [kernel.org users] XZ Migration discussion
+Message-ID: <20100214102308.1d1d6fff@hyperion.delvare>
+In-Reply-To: <4B773B31.1020802@lougher.demon.co.uk>
+References: <4B744E13.8040004@kernel.org>
+	<20100211205129.GA26105@elf.ucw.cz>
+	<20100213181008.479509f5@hyperion.delvare>
+	<4B773B31.1020802@lougher.demon.co.uk>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  1a72cfa6856e7d58e049c42c6e6a789669478479
-Gitweb:     http://git.kernel.org/tip/1a72cfa6856e7d58e049c42c6e6a789669478479
-Author:     Kirill Smelkov <kirr@landau.phys.spbu.ru>
-AuthorDate: Fri, 12 Feb 2010 19:20:59 +0300
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sun, 14 Feb 2010 09:46:02 +0100
+On Sat, 13 Feb 2010 23:52:17 +0000, Phillip Lougher wrote:
+> Jean Delvare wrote:
+> 
+> > 
+> > Compared to bz2, gz saves... 2% on the overall time. As a conclusion, I
+> > think we can plain discard the argument "I need .gz because my machine
+> > is slow" from now on. It simply doesn't hold.
+> > 
+> 
+> I agree, but, IMHO the main argument for keeping .gz is cross-platform
+> availability and wide language support, not hardware limitations.  Doing
+> a quick google brings up .gz interfaces for every language you can think
+> of (C, Java, Perl, Python, TCL etc.), not to mention complete separate
+> implementations in Java and Pascal (not just wrappers on top of the zlib
+> library), and probably more.
+> 
+> With xz you have just one C/C++ implementation with a single library with
+> an undocumented API for C/C++ programmers.
 
-perf top: Fix help text alignment
+This can probably be easily explained. gz is very fast decompressing so
+it is a very good choice for transparent decompression of files which
+must be accessible fast but aren't used frequently. Manual pages or
+printer drivers come to mind. bz2 and lzma, OTOH, are meant for longer
+term archiving. Their compression ratio benefit is only worth it for
+larger files that you don't access that frequently.
 
-Print this:
+I am not claiming that gzip is dead. It is very useful and it is there
+to stay for the years to come, no doubt about that. What I'm saying is
+that it isn't the best choice for large files to be downloaded from a
+remote server.
 
-Mapped keys:
-        [d]     display refresh delay.                  (2)
-        [e]     display entries (lines).                (46)
-        [f]     profile display filter (count).         (5)
-        [F]     annotate display filter (percent).      (5%)
-        [s]     annotate symbol.                        (NULL)
-        [S]     stop annotation.
-        [K]     hide kernel_symbols symbols.            (no)
-        [U]     hide user symbols.                      (no)
-        [z]     toggle sample zeroing.                  (0)
-        [qQ]    quit.
+> It may be a slight stretch of the imagination, but with with .gz you can
+> conceive programmers writing programs to download a .gz from kernel.org and
+> decompressing/searching it, in almost any language of choice.  With the JAVA
+> implementation .gz is genuinely cross platform and you don't need glibc/
+> C++ compilers, just a Java VM.  Contrast with xz, where if the xz utility
+> isn't available, or doesn't do what you want, you're stuck with programming
+> in C/C++ with all the baggage that entails.
 
-instead of:
+Honestly, I don't think we care at all when it comes to the kernel.org
+files. Accessing individual files inside a compressed kernel tarball
+without first expanding it entirely would be horribly slow and
+unpractical, no matter which compression format was used. I can't think
+of any case where you won't unpack the tarball first, and for this task
+an external tool will do just fine.
 
-Mapped keys:
-        [d]     display refresh delay.                  (2)
-        [e]     display entries (lines).                (46)
-        [f]     profile display filter (count).         (5)
-        [F]     annotate display filter (percent).      (5%)
-        [s]     annotate symbol.                        (NULL)
-        [S]     stop annotation.
-        [K]     hide kernel_symbols symbols.                    (no)
-        [U]     hide user symbols.                      (no)
-        [z]     toggle sample zeroing.                  (0)
-        [qQ]    quit.
+And, once again, there are several public instances of gitweb and LXR
+available if you only want to browse the code.
 
-Signed-off-by: Kirill Smelkov <kirr@landau.phys.spbu.ru>
-Acked-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-LKML-Reference: <20100212162059.GA30041@landau.phys.spbu.ru>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- tools/perf/builtin-top.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/tools/perf/builtin-top.c b/tools/perf/builtin-top.c
-index ddc584b..4b91d8c 100644
---- a/tools/perf/builtin-top.c
-+++ b/tools/perf/builtin-top.c
-@@ -705,7 +705,7 @@ static void print_mapped_keys(void)
- 		fprintf(stdout, "\t[w]     toggle display weighted/count[E]r. \t(%d)\n", display_weighted ? 1 : 0);
- 
- 	fprintf(stdout,
--		"\t[K]     hide kernel_symbols symbols.             \t(%s)\n",
-+		"\t[K]     hide kernel_symbols symbols.     \t(%s)\n",
- 		hide_kernel_symbols ? "yes" : "no");
- 	fprintf(stdout,
- 		"\t[U]     hide user symbols.               \t(%s)\n",
+-- 
+Jean Delvare
