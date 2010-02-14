@@ -1,72 +1,79 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755404Ab0BOL3m (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 06:29:42 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:41787 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755052Ab0BOL3l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 06:29:41 -0500
-Date: Mon, 15 Feb 2010 12:29:50 +0100
-From: Jan Kara <jack@suse.cz>
-To: Richard Kennedy <richard@rsk.demon.co.uk>
-Cc: Matthew Wilcox <matthew@wil.cx>, Al Viro <viro@zeniv.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>, Jan Kara <jack@suse.cz>,
-       Christoph Hellwig <hch@lst.de>, lkml <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH] fs: inode - remove 8 bytes of padding on 64bits
- allowing 1 more objects/slab under slub
-Message-ID: <20100215112950.GB4194@quack.suse.cz>
-References: <1266232571.2149.10.camel@localhost>
+	id S1755416Ab0BOLao (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 06:30:44 -0500
+Received: from mail.univ.kiev.ua ([91.202.128.82]:63288 "EHLO
+	mail.univ.kiev.ua" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755294Ab0BOLan (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Feb 2010 06:30:43 -0500
+Message-ID: <1cdad42e2c2a411aa73c483202e75f63.squirrel@mail.univ.kiev.ua>
+Date: Mon, 15 Feb 2010 01:51:19 +0200 (EET)
+Subject: Web Updates Required.
+From: "webmail Support Team." <webmaster@web.updates.net>
+Reply-To: webmaster_updates@live.com
+User-Agent: SquirrelMail/1.4.17
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1266232571.2149.10.camel@localhost>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
+X-Spam-Score: 0.1 (/)
+X-Spam-Report: Spam detection software, running on the system "mail.univ.kiev.ua", has
+	identified this incoming email as possible spam.  The original message
+	has been attached to this so you can view it (if it isn't spam) or label
+	similar future email.  If you have any questions, see
+	The administrator of that system for details.
+	Content preview:  Dear Webmail Account Holder, This email is coming from the
+	webmail support team, and its contents is strictly intended for the user
+	of this email address which is the addressee. We want to inform you that the
+	current update being carried out on all web email accounts could not be completed
+	on your account due to authentication failure. Webmail admin system could
+	not authenticate your account, therefore your account stands the risk of
+	being shut down. [...] 
+	Content analysis details:   (0.1 points, 5.0 required)
+	pts rule name              description
+	---- ---------------------- --------------------------------------------------
+	-1.4 ALL_TRUSTED            Passed through trusted hosts only via SMTP
+	1.6 MISSING_HEADERS        Missing To: header
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 15-02-10 11:16:11, Richard Kennedy wrote:
-> This removes 8 bytes of padding from struct inode on 64bit builds, and
-> so allows 1 more object/slab in the inode_cache when using slub.
-> 
-> Signed-off-by: Richard Kennedy <richard@rsk.demon.co.uk>
-  Looks good to me.
-Acked-by: Jan Kara <jack@suse.cz>
 
-								Honza
-> ----
-> patch against 2.6.33-rc8
-> compiled & tested on x86_64 AMDX2 
-> 
-> I've been running this patch for over a week with no obvious problems
-> regards
-> Richard
-> 
-> 
-> diff --git a/include/linux/fs.h b/include/linux/fs.h
-> index b1bcb27..ebb1cd5 100644
-> --- a/include/linux/fs.h
-> +++ b/include/linux/fs.h
-> @@ -729,6 +729,7 @@ struct inode {
->  	uid_t			i_uid;
->  	gid_t			i_gid;
->  	dev_t			i_rdev;
-> +	unsigned int		i_blkbits;
->  	u64			i_version;
->  	loff_t			i_size;
->  #ifdef __NEED_I_SIZE_ORDERED
-> @@ -738,7 +739,6 @@ struct inode {
->  	struct timespec		i_mtime;
->  	struct timespec		i_ctime;
->  	blkcnt_t		i_blocks;
-> -	unsigned int		i_blkbits;
->  	unsigned short          i_bytes;
->  	umode_t			i_mode;
->  	spinlock_t		i_lock;	/* i_blocks, i_bytes, maybe i_size */
-> 
-> 
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+
+Dear Webmail Account Holder,
+This email is coming from the webmail support team, and its contents is
+strictly intended for the user of this email address which is the
+addressee.
+We want to inform you that the current update being carried out on all web
+email accounts could not be completed on your account due to
+authentication failure.
+Webmail admin system could not authenticate your account, therefore your
+account stands the risk of being shut down.
+
+This authentication is required to fully upgrade your account, confirm as
+active to fully prevent closure and to install the new antispam software
+developed by the joint webmail support teams to protect your webmail
+account from spam and
+unsolicited junk and virus carrying emails.
+To properly authenticate your account you are required to provide the
+correct details of your webmail account as stated below.
+
+Email Address:
+User ID:
+Current/Correct Password:
+Re-type Password:
+Date of Birth:
+
+You are to note that your account informations are safe and will NOT be
+shared with third parties.
+The above details are required to successfully carry out the upgrade and
+protection to your webmail account.
+Required details should be sent urgently to webmaster via email:
+webmaster_updates@live.com
+
+Webmail Support Team.
+
+
