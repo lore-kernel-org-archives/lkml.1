@@ -1,59 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752375Ab0BNRca (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 12:32:30 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:25788 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752256Ab0BNRc2 (ORCPT
+	id S1752330Ab0BNRfj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 12:35:39 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:41299 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751957Ab0BNRfi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Feb 2010 12:32:28 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=Ex1C4bDSORFJEMoHrtrarlfzNixAmTxSCc8AqaPAUPaQLoFQSigPhKK26kn/WTyBCX
-         seegkOhe0jvgDhxLCp/eTW+1mDc8boZEt/999hbMnW/3+0AsVcDsUFPnosZRq84fczHi
-         nIOMLqnPtZ4jSBrNblzVTxaBkBKb+eC66bsuI=
-Message-ID: <4B7833A4.90905@gmail.com>
-Date: Sun, 14 Feb 2010 18:32:20 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.7) Gecko/20100111 SUSE/3.0.1-9.3 Thunderbird/3.0.1
+	Sun, 14 Feb 2010 12:35:38 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4B7833FD.2010107@s5r6.in-berlin.de>
+Date: Sun, 14 Feb 2010 18:33:49 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.23) Gecko/20100102 SeaMonkey/1.1.18
 MIME-Version: 1.0
-To: Neil Horman <nhorman@tuxdriver.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       Greg KH <gregkh@suse.de>, Kay Sievers <kay.sievers@suse.de>
-Subject: Re: oops in uevent_helper [was: mmotm 2010-01-13-12-17 uploaded]
-References: <201001132042.o0DKgaSR027272@imap1.linux-foundation.org> <4B50C2FA.4020100@gmail.com> <4B50FC78.9010107@gmail.com> <20100122155237.e93a1c55.akpm@linux-foundation.org> <4B730EE3.4080405@gmail.com> <20100211205745.GA18202@basil.fritz.box> <20100211142513.b1fd6e7a.akpm@linux-foundation.org> <20100212052126.GA21783@one.firstfloor.org> <20100211212708.aa5bec1f.akpm@linux-foundation.org> <20100212170624.GB27303@hmsreliant.think-freely.org>
-In-Reply-To: <20100212170624.GB27303@hmsreliant.think-freely.org>
-X-Enigmail-Version: 1.0
+To: Pavel Machek <pavel@ucw.cz>
+CC: Jean Delvare <khali@linux-fr.org>, lasse.collin@tukaani.org,
+       linux-kernel <linux-kernel@vger.kernel.org>, mirrors@kernel.org,
+       users@kernel.org, "FTPAdmin Kernel.org" <ftpadmin@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Willy Tarreau <w@1wt.eu>
+Subject: Re: [kernel.org users] XZ Migration discussion
+References: <4B744E13.8040004@kernel.org> <20100212150137.648dca7c@hyperion.delvare> <alpine.LFD.2.00.1002120714320.7792@localhost.localdomain> <4B75A5DC.3060803@kernel.org> <20100212202357.6363d5af@hyperion.delvare> <20100212230702.GA10266@1wt.eu> <20100213091748.276821e1@hyperion.delvare> <4B767810.5020707@s5r6.in-berlin.de> <20100214171327.GF1578@ucw.cz>
+In-Reply-To: <20100214171327.GF1578@ucw.cz>
+X-Enigmail-Version: 0.96.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/12/2010 06:06 PM, Neil Horman wrote:
-> Fix up remaining references to uevent_helper to play nice with Andi's
-> uevent_helper/rcu changes.
+Pavel Machek wrote:
+> On Sat 2010-02-13 10:59:44, Stefan Richter wrote:
+>> As a side note:  7zip, a very popular and Free archiving tool for
+>> Windows, supports xz since its version 9 which is currently available as
+>> a beta.  So, WRT the need to get an extra unarchiver, xz is just as
+>> accessible to Windows users as gz is.
 > 
-> Some changes were made recently which modified uevent_helper to be an rcu
-> protected pointer, rather than a static char array.  This has led to a few
-> missed points in which the sysfs path still assumed that:
-> 1) the uevent_helper symbol could still be accessed safely without
-> rcu_dereference
-> 2) that the sysfs path could copy data to that pointer safely.
+> Wow, what a stretch.
 > 
-> I've fixed this by chaging the sysfs path so that it duplicates the string on
-> uevent_helper_store, and freeing it (only if it doesn't point to the
-> CONFIG_DEFAULT_UEVENT_HELPER string), in a call_rcu post-quiescent point.  I've
-> also fixed up the remaining references to the uevent_helper pointers to use
-> rcu_dereference.
-> 
-> Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+> There's about milion tools supporting gz for Windows, and many of them
+> are out of beta...
 
-Tested-by: Jiri Slaby <jirislaby@gmail.com>
-
+And roughly half of this million archiving/ compression tools use 7zip's
+backend library, which is just one way of getting xz support in a
+Windows application.  Besides, what one project calls beta is called
+dot-zero release elsewhere. :-)  Seriously, getting xz support on
+Windows is just as easy or as difficult as getting gz support.
 -- 
-js
+Stefan Richter
+-=====-==-=- --=- -===-
+http://arcgraph.de/sr/
