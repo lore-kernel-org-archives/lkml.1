@@ -1,26 +1,26 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758432Ab0BNMGH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 07:06:07 -0500
-Received: from mail-px0-f184.google.com ([209.85.216.184]:40337 "EHLO
-	mail-px0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751955Ab0BNMGE (ORCPT
+	id S1758478Ab0BNMGy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 07:06:54 -0500
+Received: from mail-pz0-f197.google.com ([209.85.222.197]:47912 "EHLO
+	mail-pz0-f197.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754372Ab0BNMGw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Feb 2010 07:06:04 -0500
-X-Greylist: delayed 345 seconds by postgrey-1.27 at vger.kernel.org; Sun, 14 Feb 2010 07:06:04 EST
+	Sun, 14 Feb 2010 07:06:52 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:content-type:date:message-id:mime-version:x-mailer
          :content-transfer-encoding;
-        b=n0ibcMi1f4Z5pjs8NMspjVfAv6eyTrLqadHivgxaD0qoqz6Uxz8loN7O+GR82I6OZf
-         uKHiBIFWnfijAYjsP3Qk6qa70bLdmmfkPHoNyfdICnq+RZ0UpLx68kc5BIsgRAtnIqrj
-         9kEFyJ2W3RN/why2+FnSz6ntdexu5m4qSeXxM=
-Subject: [PATCH 1/2] X25: Fix x25_create errors for bad protocol and ENOBUFS
+        b=wALddAVbFSbS2XXjUjzIwiC5ry5T52lQ1f15Awy+MsouZ2m9AwgwUQ9XRb+Vn9h6g/
+         ODo4KWMadHpSblYkOBDjxKxnszLbNsaA6lRHr5o2PGO2gT66zp5YKhV7svkeBFLKitpQ
+         6T8zpGfRPdo6MhZGGukZHnKKzK2IcCWAKsW4g=
+Subject: [PATCH 2/2] X25: Dont let x25_bind use addresses containing
+ characters
 From: Andrew Hendry <andrew.hendry@gmail.com>
 To: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 14 Feb 2010 23:00:11 +1100
-Message-ID: <1266148811.4731.43.camel@ibex>
+Date: Sun, 14 Feb 2010 23:00:45 +1100
+Message-ID: <1266148845.4731.45.camel@ibex>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
@@ -28,41 +28,48 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-alloc_socket failures should return -ENOBUFS
-a bad protocol should return -EINVAL
+Addresses should be all digits.
+Stops x25_bind using addresses containing characters.
 
 Signed-off-by: Andrew Hendry <andrew.hendry@gmail.com>
 
 ---
 diff --git a/net/x25/af_x25.c b/net/x25/af_x25.c
-index e3219e4..6c7104e 100644
+index 6c7104e..8cc7583 100644
 --- a/net/x25/af_x25.c
 +++ b/net/x25/af_x25.c
-@@ -512,15 +512,20 @@ static int x25_create(struct net *net, struct socket *sock, int protocol,
+@@ -55,6 +55,7 @@
+ #include <linux/notifier.h>
+ #include <linux/init.h>
+ #include <linux/compat.h>
++#include <linux/ctype.h>
+ 
+ #include <net/x25.h>
+ #include <net/compat.h>
+@@ -648,7 +649,7 @@ static int x25_bind(struct socket *sock, struct sockaddr *uaddr, int addr_len)
  {
- 	struct sock *sk;
- 	struct x25_sock *x25;
--	int rc = -ESOCKTNOSUPPORT;
-+	int rc = -EAFNOSUPPORT;
+ 	struct sock *sk = sock->sk;
+ 	struct sockaddr_x25 *addr = (struct sockaddr_x25 *)uaddr;
+-	int rc = 0;
++	int len, i, rc = 0;
  
- 	if (!net_eq(net, &init_net))
--		return -EAFNOSUPPORT;
-+		goto out;
+ 	lock_kernel();
+ 	if (!sock_flag(sk, SOCK_ZAPPED) ||
+@@ -658,6 +659,14 @@ static int x25_bind(struct socket *sock, struct sockaddr *uaddr, int addr_len)
+ 		goto out;
+ 	}
+ 
++	len = strlen(addr->sx25_addr.x25_addr);
++	for (i = 0; i < len; i++) {
++		if (!isdigit(addr->sx25_addr.x25_addr[i])) {
++			rc = -EINVAL;
++			goto out;
++		}
++	}
 +
-+	rc = -ESOCKTNOSUPPORT;
-+	if (sock->type != SOCK_SEQPACKET)
-+		goto out;
- 
--	if (sock->type != SOCK_SEQPACKET || protocol)
-+	rc = -EINVAL;
-+	if (protocol)
- 		goto out;
- 
--	rc = -ENOMEM;
-+	rc = -ENOBUFS;
- 	if ((sk = x25_alloc_socket(net)) == NULL)
- 		goto out;
- 
+ 	x25_sk(sk)->source_addr = addr->sx25_addr;
+ 	x25_insert_socket(sk);
+ 	sock_reset_flag(sk, SOCK_ZAPPED);
 -- 
 1.6.3.3
 
