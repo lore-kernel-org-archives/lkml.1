@@ -1,79 +1,71 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752193Ab0BNRJ0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 12:09:26 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49865 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751583Ab0BNRJY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Feb 2010 12:09:24 -0500
-Date: Sun, 14 Feb 2010 18:08:58 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-Subject: Re: [PATCH 27/35] core: move early_res
-Message-ID: <20100214170858.GA29006@elte.hu>
-References: <1265793639-15071-1-git-send-email-yinghai@kernel.org>
- <1265793639-15071-28-git-send-email-yinghai@kernel.org>
- <20100215011615.e3d35121.sfr@canb.auug.org.au>
+	id S1752168Ab0BNRLl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 12:11:41 -0500
+Received: from 128-177-27-249.ip.openhosting.com ([128.177.27.249]:55544 "EHLO
+	jmalinen.user.openhosting.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752090Ab0BNRLj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Feb 2010 12:11:39 -0500
+X-Greylist: delayed 1865 seconds by postgrey-1.27 at vger.kernel.org; Sun, 14 Feb 2010 12:11:39 EST
+Date: Sun, 14 Feb 2010 18:40:23 +0200
+From: Jouni Malinen <j@w1.fi>
+To: Michael Neuling <mikey@neuling.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: 2.6.33-rc8 breaks UML with Restrict initial stack space expansion
+ to rlimit
+Message-ID: <20100214164023.GA2726@jm.kir.nu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100215011615.e3d35121.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+It looks like the commit 803bf5ec259941936262d10ecc84511b76a20921
+(fs/exec.c: restrict initial stack space expansion to rlimit) broke my
+user mode Linux setup by somehow preventing system setup from running
+properly (or killing some processes that try to mount things, etc.).
+This commit turned up as the reason based on git bisect and reverting it
+fixes my UML test setup (Ubuntu 9.10 on both host and in UML and AMD64
+arch for both). I have no idea what exactly would be the main cause for
+this issue, but this looks like a somewhat unfortunately timed
+regression in 2.6.33-rc8.
 
-* Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+The failed run shows like this (with current linux-2.6.git):
 
-> Hi,
-> 
-> On Wed, 10 Feb 2010 01:20:31 -0800 Yinghai Lu <yinghai@kernel.org> wrote:
-> >
-> > from arch/x86 to kernel/
-> > 
-> > Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> > ---
-> >  arch/x86/include/asm/e820.h      |    2 +-
-> >  arch/x86/include/asm/early_res.h |   21 --
-> >  arch/x86/kernel/Makefile         |    2 +-
-> >  arch/x86/kernel/e820.c           |    1 -
-> >  arch/x86/kernel/early_res.c      |  523 --------------------------------------
-> >  include/linux/early_res.h        |   21 ++
-> >  kernel/Makefile                  |    2 +-
-> >  kernel/early_res.c               |  522 +++++++++++++++++++++++++++++++++++++
-> >  8 files changed, 546 insertions(+), 548 deletions(-)
-> >  delete mode 100644 arch/x86/include/asm/early_res.h
-> >  delete mode 100644 arch/x86/kernel/early_res.c
-> >  create mode 100644 include/linux/early_res.h
-> >  create mode 100644 kernel/early_res.c
-> 
-> From a powerpc pseries_defconfig build (and other configs) of tip/master
-> (9d4a5dc3080c811f36bf8175f2de1f9a6f84b176 "Merge branch 'perf/urgent'"):
-> 
-> kernel/early_res.c:209: error: 'max_pfn_mapped' undeclared (first use in this function)
-> 
-> max_pfn_mapped is only defined for x86.
+...
+EXT3-fs (ubda): mounted filesystem with writeback data mode
+VFS: Mounted root (ext3 filesystem) readonly on device 98:0.
+IRQ 3/console-write: IRQF_DISABLED is not guaranteed on shared IRQs
+IRQ 2/console: IRQF_DISABLED is not guaranteed on shared IRQs
+IRQ 10/winch: IRQF_DISABLED is not guaranteed on shared IRQs
+IRQ 10/winch: IRQF_DISABLED is not guaranteed on shared IRQs
+mountall: mount /sys/kernel/debug [218] killed by KILL signal
+mountall: Filesystem could not be mounted: /sys/kernel/debug
+mountall: mount /dev [219] killed by KILL signal
+mountall: Filesystem could not be mounted: /dev
+mountall: mount /tmp [220] killed by KILL signal
+mountall: Filesystem could not be mounted: /tmp
+mountall: mount /var/lock [222] killed by KILL signal
+mountall: Filesystem could not be mounted: /var/lock
+...
 
-FYI, i already found this and reported it to Yinghai earlier today.
 
-Btw.,are you doing these cross-build tests yourself, or are you relaying the 
-kisskb automation notifications?
+With 803bf5ec reverted, UML comes up and the output looks like this:
 
-Thanks,
+...
+EXT3-fs (ubda): mounted filesystem with writeback data mode
+VFS: Mounted root (ext3 filesystem) readonly on device 98:0.
+IRQ 3/console-write: IRQF_DISABLED is not guaranteed on shared IRQs
+IRQ 2/console: IRQF_DISABLED is not guaranteed on shared IRQs
+IRQ 10/winch: IRQF_DISABLED is not guaranteed on shared IRQs
+IRQ 10/winch: IRQF_DISABLED is not guaranteed on shared IRQs
+init: procps main process (226) terminated with status 255
+fsck from util-linux-ng 2.16
+...
 
-	Ingo
+-- 
+Jouni Malinen                                            PGP id EFC895FA
