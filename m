@@ -1,16 +1,17 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754922Ab0BOANa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 19:13:30 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:60927 "EHLO ogre.sisk.pl"
+	id S1754822Ab0BOANF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 19:13:05 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:60897 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753958Ab0BOANO convert rfc822-to-8bit (ORCPT
+	id S1754761Ab0BOAMh convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Feb 2010 19:13:14 -0500
+	Sun, 14 Feb 2010 19:12:37 -0500
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>,
-       "Arjan van de Ven" <arjan@infradead.org>,
-       "Dimitrios Apostolou" <jimis@gmx.net>
+       Maciej Rutecki <maciej.rutecki@gmail.com>, "al" <al@dizzy.pdmi.ras.ru>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Christian Casteyde" <casteyde.christian@free.fr>,
+       "Vegard Nossum" <vegard.nossum@gmail.com>
 References: <fQEllunEdO.A.-LB.HyIeLB@chimera>
 In-Reply-To: <fQEllunEdO.A.-LB.HyIeLB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -18,10 +19,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <Xv2rBFCTXTH.A.VfC.1yIeLB@chimera>
-Subject: [Bug #15040] High cpu temperature with 2.6.32 - bisected to cpuidle menu update
+Message-ID: <Xv2rBFCTXTH.A.JuC.FzIeLB@chimera>
+Subject: [Bug #14998] Caught 32-bit read from uninitialized memory in acpi_system_read_event -- 2.6.31 regression
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Mon, 15 Feb 2010 00:52:48 +0100 (CET)
+Date: Mon, 15 Feb 2010 00:52:47 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -34,12 +35,10 @@ introduced between 2.6.31 and 2.6.32.  Please verify if it still should
 be listed and let the tracking team know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15040
-Subject		: High cpu temperature with 2.6.32 - bisected to cpuidle menu update
-Submitter	: Dimitrios Apostolou <jimis@gmx.net>
-Date		: 2010-01-06 17:39 (40 days old)
-References	: http://marc.info/?l=linux-kernel&m=126279952723036&w=4
-Handled-By	: Arjan van de Ven <arjan@infradead.org>
-Patch		: http://patchwork.kernel.org/patch/71962/
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14998
+Subject		: Caught 32-bit read from uninitialized memory in acpi_system_read_event -- 2.6.31 regression
+Submitter	: Christian Casteyde <casteyde.christian@free.fr>
+Date		: 2010-01-06 21:40 (40 days old)
+First-Bad-Commit: http://git.kernel.org/git/linus/eca6f534e61919b28fb21aafbd1c2983deae75be
 
 
