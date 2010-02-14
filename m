@@ -1,15 +1,15 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755149Ab0BOAPi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 19:15:38 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:60991 "EHLO ogre.sisk.pl"
+	id S1754884Ab0BOANZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 19:13:25 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:60939 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755031Ab0BOAN6 convert rfc822-to-8bit (ORCPT
+	id S1754230Ab0BOANR convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Feb 2010 19:13:58 -0500
+	Sun, 14 Feb 2010 19:13:17 -0500
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
        Maciej Rutecki <maciej.rutecki@gmail.com>,
-       "Werner Lemberg" <wl@gnu.org>
+       "Jithin Emmanuel" <jithin1987@gmail.com>
 References: <fQEllunEdO.A.-LB.HyIeLB@chimera>
 In-Reply-To: <fQEllunEdO.A.-LB.HyIeLB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -17,10 +17,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <Xv2rBFCTXTH.A.80B.fyIeLB@chimera>
-Subject: [Bug #15158] oops related to i915_gem_object_save_bit_17_swizzle
+Message-ID: <Xv2rBFCTXTH.A.FjC.6yIeLB@chimera>
+Subject: [Bug #15015] blank screen at random times in laptop when sitting idle
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Mon, 15 Feb 2010 00:52:51 +0100 (CET)
+Date: Mon, 15 Feb 2010 00:52:47 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -33,9 +33,9 @@ introduced between 2.6.31 and 2.6.32.  Please verify if it still should
 be listed and let the tracking team know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15158
-Subject		: oops related to i915_gem_object_save_bit_17_swizzle
-Submitter	: Werner Lemberg <wl@gnu.org>
-Date		: 2010-01-28 08:26 (18 days old)
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15015
+Subject		: blank screen at random times in laptop when sitting idle
+Submitter	: Jithin Emmanuel <jithin1987@gmail.com>
+Date		: 2010-01-09 16:48 (37 days old)
 
 
