@@ -1,66 +1,92 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751718Ab0BNOVU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 09:21:20 -0500
-Received: from shadbolt.e.decadent.org.uk ([88.96.1.126]:42609 "EHLO
-	shadbolt.e.decadent.org.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751255Ab0BNOVS convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Feb 2010 09:21:18 -0500
-From: Ben Hutchings <ben@decadent.org.uk>
-To: Eric Moore <Eric.Moore@lsi.com>
-Cc: linux-scsi@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1266157055.10567.13.camel@localhost>
-References: <1266157055.10567.13.camel@localhost>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-Date: Sun, 14 Feb 2010 14:21:11 +0000
-Message-ID: <1266157271.10567.17.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-X-SA-Exim-Connect-IP: 192.168.4.185
-X-SA-Exim-Mail-From: ben@decadent.org.uk
-Subject: [PATCH 5/5] mptscsih: Fix first line of kernel-doc for a few
- functions
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
-X-SA-Exim-Scanned: Yes (on shadbolt.decadent.org.uk)
+	id S1751850Ab0BNOWw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 09:22:52 -0500
+Received: from mail001.aei.ca ([206.123.6.130]:51208 "EHLO mail001.aei.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751480Ab0BNOWu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Feb 2010 09:22:50 -0500
+From: Ed Tomlinson <edt@aei.ca>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH 0/2] Provide a driver for the Apple Magic Mouse - opps
+Date: Sun, 14 Feb 2010 09:22:41 -0500
+User-Agent: KMail/1.13.0 (Linux/2.6.32.8-crc; KDE/4.4.0; x86_64; ; )
+Cc: Jiri Kosina <jkosina@suse.cz>, Michael Poole <mdpoole@troilus.org>,
+       linux-input@vger.kernel.org, Marcel Holtmann <marcel@holtmann.org>,
+       linux-bluetooth@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <alpine.LNX.2.00.1001291515560.356@pobox.suse.cz> <201002131429.29671.edt@aei.ca> <20100214080344.GA4423@core.coreip.homeip.net>
+In-Reply-To: <20100214080344.GA4423@core.coreip.homeip.net>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002140922.42014.edt@aei.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The function name must be followed by a space, hypen, space, and a
-short description.
+On Sunday 14 February 2010 03:03:44 Dmitry Torokhov wrote:
+> On Sat, Feb 13, 2010 at 02:29:29PM -0500, Ed Tomlinson wrote:
+> > On Wednesday 10 February 2010 08:57:37 Jiri Kosina wrote:
+> > > On Tue, 9 Feb 2010, Michael Poole wrote:
+> > > 
+> > > > I think this patch is ready for real review.  The Magic Mouse requires
+> > > > that a driver send an unlock Report(Feature) command, similar to the
+> > > > Wacom wireless tablet and Sixaxis controller quirks.  This turns on an
+> > > > Input Report that isn't published in the input Report descriptor that
+> > > > contains touch data (and usually overrides the normal motion and click
+> > > > Report).
+> > > > 
+> > > > Because the mouse has only one switch and no scroll wheel, the driver
+> > > > (under control of parameters) emulates a middle button and scroll wheel.
+> > > > User space could also ignore and/or re-synthesize those events based on
+> > > > the reported events.
+> > > > 
+> > > > The first patch exports hid_register_report() so the driver can turn on
+> > > > the multitouch report.  The second patch adds the device ID and the
+> > > > driver.  Some user-space tools to talk to the mouse directly (that is,
+> > > > when it is not associated with the host's HIDP stack) are at
+> > > > http://github.com/entrope/linux-magicmouse .
+> > > 
+> > > I have applied the driver into apple_magic_mouse branch and merged this 
+> > > branch into for-next, so it should appear in the upcoming linux-next.
+> > 
+> 
+> > This driver (or the hid changes) can triggers an opps.  What I did was
+> > start X.  Turn on the magic mouse.  It connected on input7&8.  Then I
+> > powered it off and on.  This time it conneced on input9&10.  Then I
+> > exited X and got the opps.  Note my X does not hotplug the magic
+> > mouse.  I've also included a trace of the udev events that generated
+> > the log below (if there was a remove after X stopped it would not be
+> > included).  To my eyes it looks like we leak an input device (there is
+> > not a remove event for input8).
+> >
+> 
+> Indeed, we seem to be missing call to input_unregister_device() in
+> magicmouse_remove().
 
-Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
----
- drivers/message/fusion/mptscsih.c |    6 ++----
- 1 files changed, 2 insertions(+), 4 deletions(-)
+How does this look?  With this udevadm shows input8 being removed and
+there is no more opps.
 
-diff --git a/drivers/message/fusion/mptscsih.c b/drivers/message/fusion/mptscsih.c
-index 4a7d1af..53516ed 100644
---- a/drivers/message/fusion/mptscsih.c
-+++ b/drivers/message/fusion/mptscsih.c
-@@ -2560,9 +2560,7 @@ mptscsih_getclear_scsi_lookup(MPT_ADAPTER *ioc, int i)
+----
+diff --git a/drivers/hid/hid-magicmouse.c b/drivers/hid/hid-magicmouse.c
+index f94b3e4..71a8669 100644
+--- a/drivers/hid/hid-magicmouse.c
++++ b/drivers/hid/hid-magicmouse.c
+@@ -429,8 +429,11 @@ static int magicmouse_probe(struct hid_device *hdev,
+ 
+ static void magicmouse_remove(struct hid_device *hdev)
+ {
++	struct magicmouse_sc *msc;
++	msc = hid_get_drvdata(hdev);
++	input_unregister_device(msc->input);
+ 	hid_hw_stop(hdev);
+-	kfree(hid_get_drvdata(hdev));
++	kfree(msc);
  }
  
- /**
-- * mptscsih_set_scsi_lookup
-- *
-- * writes a scmd entry into the ScsiLookup[] array list
-+ * mptscsih_set_scsi_lookup - write a scmd entry into the ScsiLookup[] array list
-  *
-  * @ioc: Pointer to MPT_ADAPTER structure
-  * @i: index into the array
-@@ -2725,7 +2723,7 @@ mptscsih_scandv_complete(MPT_ADAPTER *ioc, MPT_FRAME_HDR *req,
- 
+ static const struct hid_device_id magic_mice[] = {
+----
 
- /**
-- *	mptscsih_get_completion_code -
-+ *	mptscsih_get_completion_code - get completion code from MPT request
-  *	@ioc: Pointer to MPT_ADAPTER structure
-  *	@req: Pointer to original MPT request frame
-  *	@reply: Pointer to MPT reply frame (NULL if TurboReply)
--- 
-1.6.6.2
-
-
+Thanks
+Ed
