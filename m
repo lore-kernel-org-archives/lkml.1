@@ -1,84 +1,43 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752934Ab0BNTIL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 14:08:11 -0500
-Received: from poutre.nerim.net ([62.4.16.124]:60382 "EHLO poutre.nerim.net"
+	id S1752905Ab0BNTQR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 14:16:17 -0500
+Received: from hole.yuiop.co.uk ([89.145.97.62]:52614 "EHLO mail.yuiop.co.uk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752897Ab0BNTIH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Feb 2010 14:08:07 -0500
-Date: Sun, 14 Feb 2010 20:08:03 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: mirrors@kernel.org, lasse.collin@tukaani.org,
-       linux-kernel <linux-kernel@vger.kernel.org>, users@kernel.org,
-       "FTPAdmin Kernel.org" <ftpadmin@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Willy Tarreau <w@1wt.eu>
-Subject: Re: [kernel.org users] XZ Migration discussion
-Message-ID: <20100214200803.4b2348ce@hyperion.delvare>
-In-Reply-To: <20100214170724.GE1578@ucw.cz>
-References: <4B744E13.8040004@kernel.org>
-	<20100212150137.648dca7c@hyperion.delvare>
-	<alpine.LFD.2.00.1002120714320.7792@localhost.localdomain>
-	<4B75A5DC.3060803@kernel.org>
-	<20100212202357.6363d5af@hyperion.delvare>
-	<20100212230702.GA10266@1wt.eu>
-	<20100213091748.276821e1@hyperion.delvare>
-	<20100214170724.GE1578@ucw.cz>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1752844Ab0BNTQP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Feb 2010 14:16:15 -0500
+X-Greylist: delayed 1361 seconds by postgrey-1.27 at vger.kernel.org; Sun, 14 Feb 2010 14:16:15 EST
+Message-ID: <4B7846B2.1030303@anonymous.org.uk>
+Date: Sun, 14 Feb 2010 18:53:38 +0000
+From: John Robinson <john.robinson@anonymous.org.uk>
+Organization: None; Disorganization: Total
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.8.1.23) Gecko/20090812 Lightning/0.9 Thunderbird/2.0.0.23 Mnenhy/0.7.6.666
+MIME-Version: 1.0
+To: Volker Armin Hemmann <volkerarmin@googlemail.com>
+CC: Michael Evans <mjevans1983@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org
+Subject: Re: Linux mdadm superblock question.
+References: <201002140251.59668.volkerarmin@googlemail.com> <4877c76c1002132002s20d942c3i7cee5418cdcf369c@mail.gmail.com> <201002141940.35716.volkerarmin@googlemail.com>
+In-Reply-To: <201002141940.35716.volkerarmin@googlemail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 14 Feb 2010 18:07:24 +0100, Pavel Machek wrote:
-> Hi!
+On 14/02/2010 18:40, Volker Armin Hemmann wrote:
+> On Sonntag 14 Februar 2010, you wrote:
 > 
-> > As a matter of fact, I am advocating the use of xz while I don't have
-> > it installed on most of my machines. I really don't see this as a
-> > blocker.
+>> In other words, 'auto-detection' for 1.x format devices is using an
+>> initrd/initramfs.
 > 
-> Eh?
-> 
-> Making many people around the world install uncommon tool is not
-> something that should be done lightly.
+> which makes 1.x format useless for everybody who does not want to deal with 
+> initrd/initramfs.
 
-It's pretty obvious that xz will become popular quickly, at least on
-Linux and BSD systems, much like bz2 is today. I'm not asking people to
-start using ClearCase ;) xz will supersede bz2, it's only a matter of
-time. I see no problem in being one of the early adopters.
+True, but afaik every distro uses an initrd/initramfs and bundles tools 
+making it easy to manage and customise them, so what's the problem?
 
-> > I have an old, slow machine here which I am going to use to perform
-> > some real world testing, and I'll post the results when I'm done. But I
-> > suspect that building a kernel on this machine, even a small one with
-> > just the drivers it needs, will take much longer than unpacking the
-> > sources. So anyone worrying about performance would rather rely on
-> > cross-compilation, and in turn can afford whatever decompression tool
-> > is needed.
-> 
-> On zaurus, kernel compilation takes 4 hours. (I.e. "one night"). So
-> that one is ... well ... done overnight.
+Cheers,
 
-Out of curiosity, if it takes that long, why don't you use a
-cross-compiler?
+John.
 
-> Untar is something I normally wait for, since you need to run
-> (interactive) oldconfig after that.
-
-You'll have to wait, no matter what compression format you use (and
-even if you don't compress the tarball). Judging by the duration of the
-build on your machine, I'd estimate the decompression time to 7 minutes
-for gz vs. 15 minutes for bz2 maybe? I doubt you sit in front of the
-machine for 7 minutes waiting for tar.gz to decompress, right? So I
-fail to see what difference it makes. You'll just do something else for
-15 minutes instead of doing something else for 7 minutes.
-
-Anyway, as I have been saying several times already, nothing prevents
-you from repacking tarballs to gz before uploading it to your slow
-system if such is your desire. I can understand the portability
-argument, but the decompression time, no way.
-
--- 
-Jean Delvare
