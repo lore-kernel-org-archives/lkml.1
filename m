@@ -1,60 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752735Ab0BNSk5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 13:40:57 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:42877 "EHLO mail.zytor.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752526Ab0BNSkz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Feb 2010 13:40:55 -0500
-Message-ID: <4B7842C0.20701@zytor.com>
-Date: Sun, 14 Feb 2010 10:36:48 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+	id S1752732Ab0BNSl6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 13:41:58 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:41602 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752413Ab0BNSl4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Feb 2010 13:41:56 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4B784378.8070309@s5r6.in-berlin.de>
+Date: Sun, 14 Feb 2010 19:39:52 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.23) Gecko/20100102 SeaMonkey/1.1.18
 MIME-Version: 1.0
-To: Borislav Petkov <petkovbb@googlemail.com>,
-       Peter Zijlstra <peterz@infradead.org>, Borislav Petkov <bp@amd64.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>, Jamie Lokier <jamie@shareable.org>,
-       Roland Dreier <rdreier@cisco.com>, Al Viro <viro@ZenIV.linux.org.uk>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Brian Gerst <brgerst@gmail.com>
-Subject: Re: [PATCH 2/5] bitops: compile time optimization for hweight_long(CONSTANT)
-References: <1265299457.22001.72.camel@laptop> <20100205121139.GA9044@aftab> <4B6C93A2.1090302@zytor.com> <20100206093659.GA28326@aftab> <4B6E1DA3.50204@zytor.com> <20100208092845.GB12618@a1.tnic> <4B6FDAED.9060204@zytor.com> <20100208095945.GA14740@a1.tnic> <20100211172424.GB19779@aftab> <1266142343.5273.419.camel@laptop> <20100214112447.GA8353@liondog.tnic>
-In-Reply-To: <20100214112447.GA8353@liondog.tnic>
-Content-Type: text/plain; charset=UTF-8
+To: Pavel Machek <pavel@ucw.cz>
+CC: Jean Delvare <khali@linux-fr.org>, Willy Tarreau <w@1wt.eu>,
+       mirrors@kernel.org, lasse.collin@tukaani.org,
+       linux-kernel <linux-kernel@vger.kernel.org>, users@kernel.org,
+       "FTPAdmin Kernel.org" <ftpadmin@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [kernel.org users] XZ Migration discussion
+References: <4B744E13.8040004@kernel.org> <20100212150137.648dca7c@hyperion.delvare> <alpine.LFD.2.00.1002120714320.7792@localhost.localdomain> <4B75A5DC.3060803@kernel.org> <20100212202357.6363d5af@hyperion.delvare> <20100212230702.GA10266@1wt.eu> <20100213091748.276821e1@hyperion.delvare> <20100214170724.GE1578@ucw.cz>
+In-Reply-To: <20100214170724.GE1578@ucw.cz>
+X-Enigmail-Version: 0.96.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/14/2010 03:24 AM, Borislav Petkov wrote:
+Pavel Machek wrote:
+[Jean Delvare wrote]
+>> I have an old, slow machine here which I am going to use to perform
+>> some real world testing, and I'll post the results when I'm done. But I
+>> suspect that building a kernel on this machine, even a small one with
+>> just the drivers it needs, will take much longer than unpacking the
+>> sources. So anyone worrying about performance would rather rely on
+>> cross-compilation, and in turn can afford whatever decompression tool
+>> is needed.
 > 
-> __const_hweightN - for at compile time known constants as arguments
-> __arch_hweightN - arch possibly has an optimized hweight version
-> __sw_hweightN - fall back when nothing else is there, aka the functions in
-> lib/hweight.c
+> On zaurus, kernel compilation takes 4 hours. (I.e. "one night"). So
+> that one is ... well ... done overnight.
 > 
-> Now, in the x86 case, when the compiler can't know that the argument is
-> a constant, we call the __arch_hweightN versions. The alternative does
-> call the __sw_hweightN version in case the CPU doesn't support popcnt.
-> In this case, we need to build __sw_hweightN with -fcall-saved* for gcc
-> to be able to take care of the regs clobbered ny __sw_hweightN.
-> 
-> So, if I understand you correctly, your suggestion might work, we
-> simply need to rename the lib/hweight.c versions to __sw_hweightN
-> and have <asm-generic/bitops/arch_hweight.h> have __arch_hweightN ->
-> __sw_hweightN wrappers in the default case, all arches which have an
-> optimized version will provide it in their respective bitops header...
-> 
+> Untar is something I normally wait for, since you need to run
+> (interactive) oldconfig after that.
 
-I'm not entirely sure what you're asking; if what you're asking what to
-name an x86-specific fallback function, it presumably should be
-__arch_sw_hweightN (i.e. __arch prefix with a modifier.)
-
-	-hpa
-
+If the download takes m minutes and unpacking and unarchiving tar.gz
+takes another n minutes, what difference does it make for this workflow
+when instead m + p minutes are spent for download + unpacking and
+unarchiving tar.bz2 or tar.xz?
 -- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+Stefan Richter
+-=====-==-=- --=- -===-
+http://arcgraph.de/sr/
