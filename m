@@ -1,15 +1,18 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754450Ab0BOAAL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 19:00:11 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:60685 "EHLO ogre.sisk.pl"
+	id S1754397Ab0BNX72 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 18:59:28 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:60691 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754300Ab0BNX7O convert rfc822-to-8bit (ORCPT
+	id S1754313Ab0BNX7P convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Feb 2010 18:59:14 -0500
+	Sun, 14 Feb 2010 18:59:15 -0500
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
        Maciej Rutecki <maciej.rutecki@gmail.com>,
-       "David Ronis" <ronis@ronispc.chem.mcgill.ca>
+       "Andrew Morton" <akpm@linux-foundation.org>, "Jouni Malinen" <j@w1.fi>,
+       "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Michael Neuling" <mikey@neuling.org>
 References: <Z5cmiqDComP.A.gyF.OiIeLB@chimera>
 In-Reply-To: <Z5cmiqDComP.A.gyF.OiIeLB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -17,8 +20,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <4un6Gst5rKB.A.xRG.ZiIeLB@chimera>
-Subject: [Bug #15305] Dell video dies when booting
+Message-ID: <4un6Gst5rKB.A.u_F.UiIeLB@chimera>
+Subject: [Bug #15308] 2.6.33-rc8 breaks UML with Restrict initial stack space expansion to rlimit
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Mon, 15 Feb 2010 00:38:37 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -33,11 +36,13 @@ from 2.6.32.  Please verify if it still should be listed and let the tracking te
 know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15305
-Subject		: Dell video dies when booting
-Submitter	: David Ronis <ronis@ronispc.chem.mcgill.ca>
-Date		: 2010-02-14 1:07 (1 days old)
-Message-ID	: <1266109622.11290.10.camel@montroll.chem.mcgill.ca>
-References	: http://marc.info/?l=linux-kernel&m=126611098225127&w=4
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15308
+Subject		: 2.6.33-rc8 breaks UML with Restrict initial stack space expansion to rlimit
+Submitter	: Jouni Malinen <j@w1.fi>
+Date		: 2010-02-14 16:40 (1 days old)
+First-Bad-Commit: http://git.kernel.org/git/linus/803bf5ec259941936262d10ecc84511b76a20921
+Message-ID	: <20100214164023.GA2726@jm.kir.nu>
+References	: http://marc.info/?l=linux-kernel&m=126616751807902&w=4
+Handled-By	: Michael Neuling <mikey@neuling.org>
 
 
