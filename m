@@ -1,77 +1,43 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753025Ab0BNTqE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 14:46:04 -0500
-Received: from www.tglx.de ([62.245.132.106]:33842 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752982Ab0BNTp7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Feb 2010 14:45:59 -0500
-Date: Sun, 14 Feb 2010 20:45:32 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: LKML <linux-kernel@vger.kernel.org>
-cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>
-Subject: sched: Fix wake up race with rt_mutex_setprio()
-Message-ID: <alpine.LFD.2.00.1002142036260.2811@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1752980Ab0BNTt4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 14:49:56 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39398
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752358Ab0BNTty (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Feb 2010 14:49:54 -0500
+Date: Sun, 14 Feb 2010 11:50:07 -0800 (PST)
+Message-Id: <20100214.115007.94112348.davem@davemloft.net>
+To: grant.likely@secretlab.ca
+Cc: monstr@monstr.eu, sfr@canb.auug.org.au, benh@kernel.crashing.org,
+       jeremy.kerr@canonical.com, microblaze-uclinux@itee.uq.edu.au,
+       linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
+       devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 8/9] of/sparc: Remove sparc-local declaration of
+ allnodes and devtree_lock
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20100213160309.4767.94443.stgit@angua>
+References: <20100213154838.4767.83881.stgit@angua>
+	<20100213160309.4767.94443.stgit@angua>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-rt_mutex_setprio() can race with try_to_wake_up():
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Sat, 13 Feb 2010 09:03:09 -0700
 
-CPU 0                           CPU 1
-try_to_wake_up(p)
-  task_rq_lock(p)	
-  p->state = TASK_WAKING;
-  task_rq_unlock()              rt_mutex_setprio(p)
-                                task_rq_lock(p)	<- succeeds (old CPU)
-  newcpu = select_task_rq(p)	
-  set_task_cpu(p)
+> Both allnodes and devtree_lock are defined in common code.  The
+> extern declaration should be in the common header too so that the
+> compiler can type check.  allnodes is already in of.h, but
+> devtree_lock should be declared there too.
+> 
+> This patch removes the SPARC declarations and uses decls in of.h instead.
+> 
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 
-  task_rq_lock(p) <- succeeds (new CPU)
-
-  activate_task(p)              change sched_class(p)
-
-That way we end up with the task enqueued in the wrong sched class.
-
-Solve this by waiting for p->state != TASK_WAKING in rt_mutex_setprio().
-
-Debugged and tested in the preempt-rt tree.
-
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
----
- kernel/sched.c |   18 ++++++++++++++++++
- 1 file changed, 18 insertions(+)
-
-Index: linux-2.6/kernel/sched.c
-===================================================================
---- linux-2.6.orig/kernel/sched.c
-+++ linux-2.6/kernel/sched.c
-@@ -6058,7 +6058,25 @@ void rt_mutex_setprio(struct task_struct
- 
- 	BUG_ON(prio < 0 || prio > MAX_PRIO);
- 
-+again:
- 	rq = task_rq_lock(p, &flags);
-+
-+	/*
-+	 * Prevent a nasty race with ttwu(). ttwu() sets the task
-+	 * state to WAKING and drops the runqueue lock. So we can
-+	 * acquire the runqueue lock while ttwu() migrates the
-+	 * task. We need to wait until ttwu() set the target cpu and
-+	 * enqueued the task on whatever CPU it decided to select.
-+	 * Otherwise ttwu() might enqueue with the old class on
-+	 * another cpu while we are changing the class on the previous
-+	 * cpu.
-+	 */
-+	if (unlikely(p->state == TASK_WAKING)) {
-+		task_rq_unlock(rq, &flags);
-+		cpu_relax();
-+		goto again;
-+	}
-+
- 	update_rq_clock(rq);
- 
- 	oldprio = p->prio;
+Acked-by: David S. Miller <davem@davemloft.net>
