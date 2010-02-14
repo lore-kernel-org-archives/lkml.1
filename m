@@ -1,85 +1,61 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752048Ab0BNWDl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 17:03:41 -0500
-Received: from ozlabs.org ([203.10.76.45]:41580 "EHLO ozlabs.org"
+	id S1752296Ab0BNWRa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 17:17:30 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:54923 "EHLO mail.zytor.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751417Ab0BNWDk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Feb 2010 17:03:40 -0500
-From: Michael Neuling <mikey@neuling.org>
-To: Jouni Malinen <j@w1.fi>
-cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.33-rc8 breaks UML with Restrict initial stack space expansion to rlimit
-In-reply-to: <20100214164023.GA2726@jm.kir.nu>
-References: <20100214164023.GA2726@jm.kir.nu>
-Comments: In-reply-to Jouni Malinen <j@w1.fi>
-   message dated "Sun, 14 Feb 2010 18:40:23 +0200."
-X-Mailer: MH-E 8.2; nmh 1.3; GNU Emacs 23.1.1
-Date: Mon, 15 Feb 2010 09:03:39 +1100
-Message-ID: <9296.1266185019@neuling.org>
+	id S1752031Ab0BNWR2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Feb 2010 17:17:28 -0500
+Message-ID: <4B78758C.2090808@zytor.com>
+Date: Sun, 14 Feb 2010 14:13:32 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+MIME-Version: 1.0
+To: Borislav Petkov <petkovbb@googlemail.com>,
+       Peter Zijlstra <peterz@infradead.org>, Borislav Petkov <bp@amd64.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>, Jamie Lokier <jamie@shareable.org>,
+       Roland Dreier <rdreier@cisco.com>, Al Viro <viro@ZenIV.linux.org.uk>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Brian Gerst <brgerst@gmail.com>
+Subject: Re: [PATCH 2/5] bitops: compile time optimization for hweight_long(CONSTANT)
+References: <4B6C93A2.1090302@zytor.com> <20100206093659.GA28326@aftab> <4B6E1DA3.50204@zytor.com> <20100208092845.GB12618@a1.tnic> <4B6FDAED.9060204@zytor.com> <20100208095945.GA14740@a1.tnic> <20100211172424.GB19779@aftab> <1266142343.5273.419.camel@laptop> <20100214112447.GA8353@liondog.tnic> <4B7842C0.20701@zytor.com> <20100214202841.GA25110@liondog.tnic>
+In-Reply-To: <20100214202841.GA25110@liondog.tnic>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-In message <20100214164023.GA2726@jm.kir.nu> you wrote:
-> It looks like the commit 803bf5ec259941936262d10ecc84511b76a20921
-> (fs/exec.c: restrict initial stack space expansion to rlimit) broke my
-> user mode Linux setup by somehow preventing system setup from running
-> properly (or killing some processes that try to mount things, etc.).
-> This commit turned up as the reason based on git bisect and reverting it
-> fixes my UML test setup (Ubuntu 9.10 on both host and in UML and AMD64
-> arch for both). I have no idea what exactly would be the main cause for
-> this issue, but this looks like a somewhat unfortunately timed
-> regression in 2.6.33-rc8.
+On 02/14/2010 12:28 PM, Borislav Petkov wrote:
 > 
-> The failed run shows like this (with current linux-2.6.git):
+> Hmm, basically, what PeterZ suggested is that I drop one indirection
+> under __arch_hweightN, which would make x86-specific fallback functions
+> superfluous.
 > 
-> ...
-> EXT3-fs (ubda): mounted filesystem with writeback data mode
-> VFS: Mounted root (ext3 filesystem) readonly on device 98:0.
-> IRQ 3/console-write: IRQF_DISABLED is not guaranteed on shared IRQs
-> IRQ 2/console: IRQF_DISABLED is not guaranteed on shared IRQs
-> IRQ 10/winch: IRQF_DISABLED is not guaranteed on shared IRQs
-> IRQ 10/winch: IRQF_DISABLED is not guaranteed on shared IRQs
-> mountall: mount /sys/kernel/debug [218] killed by KILL signal
-> mountall: Filesystem could not be mounted: /sys/kernel/debug
-> mountall: mount /dev [219] killed by KILL signal
-> mountall: Filesystem could not be mounted: /dev
-> mountall: mount /tmp [220] killed by KILL signal
-> mountall: Filesystem could not be mounted: /tmp
-> mountall: mount /var/lock [222] killed by KILL signal
-> mountall: Filesystem could not be mounted: /var/lock
-> ...
+> IOW, what we have so far is:
 > 
+> #define hweightN(w) (__builtin_constant_p(w) ? __const_hweightN(w) : __arch_hweightN(w))
 > 
-> With 803bf5ec reverted, UML comes up and the output looks like this:
+> and have <asm-generic/bitops/arch_hweight.h> provide __arch_hweightN()
+> -> __sw_hweightN wrappers per default, where the __sw_hweightN are the
+> lib/hweight.c generic versions.
 > 
-> ...
-> EXT3-fs (ubda): mounted filesystem with writeback data mode
-> VFS: Mounted root (ext3 filesystem) readonly on device 98:0.
-> IRQ 3/console-write: IRQF_DISABLED is not guaranteed on shared IRQs
-> IRQ 2/console: IRQF_DISABLED is not guaranteed on shared IRQs
-> IRQ 10/winch: IRQF_DISABLED is not guaranteed on shared IRQs
-> IRQ 10/winch: IRQF_DISABLED is not guaranteed on shared IRQs
-> init: procps main process (226) terminated with status 255
-> fsck from util-linux-ng 2.16
-> ...
+> On architectures/CPUs which provide popcnt in
+> hardware, we create __arch_hweightN implementations in
+> <arch/[:ARCH_NAME:]/include/asm/bitops.h> overriding the
+> <asm-generic/bitops/arch_hweight.h> versions by simply not including
+> that last header.
+> 
+> Is that agreeable?
+> 
 
-Crud, the "killed" is definitely something this patch could cause.
+That makes sense... after all, that's a pretty typical use of asm-generic.
 
-I'm not familiar with UML.  Is this the guest and the host booting rc8,
-or just the host?  Does UML use stack protection at all?
+	-hpa
 
-Can you try booting the guest to init=/bin/sh and try running some tests
-to see what you can set 'ulimit -s' to and still be able to run a simple
-command like '/bin/ls'?
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
-Mikey
-
-> 
-> -- 
-> Jouni Malinen                                            PGP id EFC895FA
-> 
