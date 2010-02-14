@@ -1,91 +1,119 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752286Ab0BNRP4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 12:15:56 -0500
-Received: from ey-out-2122.google.com ([74.125.78.24]:6966 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752149Ab0BNRPy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Feb 2010 12:15:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=tTOES3RqOAjkxGKKr1gcs37CAfjNBoufzEWmjniqEnj6VhPDWegojHQlQtPt0T9+UU
-         3Aw/VYLg8SAxmTHhm9cPfx9FdncFI4yk4Kt+VOnvVocvSwpHiJkL/oDx4kwzlmZI7W5F
-         2aDWF68J2R7snQm+aCxk6nIY44yNYVax9LRZQ=
-Date: Sun, 14 Feb 2010 18:15:49 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Michael Stefaniuc <mstefani@redhat.com>
-Cc: prasad@linux.vnet.ibm.com, Alan Stern <stern@rowland.harvard.edu>,
-       linux-kernel@vger.kernel.org, Maneesh Soni <maneesh@linux.vnet.ibm.com>,
-       Alexandre Julliard <julliard@winehq.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>
-Subject: Re: Regression in ptrace (Wine) starting with 2.6.33-rc1
-Message-ID: <20100214171535.GA5065@nowhere>
-References: <4B743149.4000707@redhat.com> <20100211182224.GC4915@nowhere> <4B745F5C.5050001@redhat.com> <20100213173323.GB3778@in.ibm.com> <4B7719AC.6040901@redhat.com>
+	id S1752341Ab0BNRQe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 12:16:34 -0500
+Received: from hera.kernel.org ([140.211.167.34]:33376 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752200Ab0BNRQc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Feb 2010 12:16:32 -0500
+Date: Sun, 14 Feb 2010 17:15:42 GMT
+From: tip-bot for Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, anton@samba.org, hpa@zytor.com,
+       mingo@redhat.com, a.p.zijlstra@chello.nl, acme@ghostprotocols.net,
+       peterz@infradead.org, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, anton@samba.org,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       peterz@infradead.org, acme@ghostprotocols.net, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <1266142324.5273.411.camel@laptop>
+References: <1266142324.5273.411.camel@laptop>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perf/urgent] perf_events: Fix FORK events
+Message-ID: <tip-6f93d0a7c83772997b81c30d6f519a9a5dbab6a9@git.kernel.org>
+Git-Commit-ID: 6f93d0a7c83772997b81c30d6f519a9a5dbab6a9
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <4B7719AC.6040901@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Sun, 14 Feb 2010 17:15:46 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 13, 2010 at 10:29:16PM +0100, Michael Stefaniuc wrote:
-> Results 2.6.33-rcX:
-> -------------------
-> ptrace(PTRACE_ATTACH, 18036, 0, 0)      = 0
-> ptrace(PTRACE_POKEUSER, 18036, offsetof(struct user, u_debugreg),  
-> 0x42424242) = 0
-> ptrace(PTRACE_POKEUSER, 18036, offsetof(struct user, u_debugreg) + 4, 0) = 0
-> ptrace(PTRACE_POKEUSER, 18036, offsetof(struct user, u_debugreg) + 8, 0) = 0
-> ptrace(PTRACE_POKEUSER, 18036, offsetof(struct user, u_debugreg) + 12,  
-> 0) = 0
-> ptrace(PTRACE_POKEUSER, 18036, offsetof(struct user, u_debugreg) + 24,  
-> 0) = 0
-> ptrace(PTRACE_POKEUSER, 18036, offsetof(struct user, u_debugreg) + 28,  
-> 0x155) = -1 EINVAL (Invalid argument)
->
-> Results 2.6.32:
-> ---------------
-> trace(PTRACE_ATTACH, 3077, 0, 0)       = 0
-> ptrace(PTRACE_POKEUSER, 3077, offsetof(struct user, u_debugreg),  
-> 0x42424242) = 0
-> ptrace(PTRACE_POKEUSER, 3077, offsetof(struct user, u_debugreg) + 4, 0) = 0
-> ptrace(PTRACE_POKEUSER, 3077, offsetof(struct user, u_debugreg) + 8, 0) = 0
-> ptrace(PTRACE_POKEUSER, 3077, offsetof(struct user, u_debugreg) + 12, 0) = 0
-> ptrace(PTRACE_POKEUSER, 3077, offsetof(struct user, u_debugreg) + 24, 0) = 0
-> ptrace(PTRACE_POKEUSER, 3077, offsetof(struct user, u_debugreg) + 28,  
-> 0x155) = 0
+Commit-ID:  6f93d0a7c83772997b81c30d6f519a9a5dbab6a9
+Gitweb:     http://git.kernel.org/tip/6f93d0a7c83772997b81c30d6f519a9a5dbab6a9
+Author:     Peter Zijlstra <peterz@infradead.org>
+AuthorDate: Sun, 14 Feb 2010 11:12:04 +0100
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Sun, 14 Feb 2010 18:10:39 +0100
 
+perf_events: Fix FORK events
 
-I see... So this is setting breakpoints on the address 0. The new code
-rejects such breakpoints, but the previous one was accepting it.
+Commit 22e19085 ("Honour event state for aux stream data")
+introduced a bug where we would drop FORK events.
 
-The point of allowing breakpoints in NULL is discutable. It's not a bug,
-neither is it a security hole I think (because if the ptrace breakpoint
-triggers from the kernel, it's ignored), it's just pointless, unless
-userland map things in 0.
+The thing is that we deliver FORK events to the child process'
+event, which at that time will be PERF_EVENT_STATE_INACTIVE
+because the child won't be scheduled in (we're in the middle of
+fork).
 
-But it's too late to debate this. If the previous code accepted it,
-it's an ABI, and we have broken it.
+Solve this twice, change the event state filter to exclude only
+disabled (STATE_OFF) or worse, and deliver FORK events to the
+current (parent).
 
-I'm preparing a fix.
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Anton Blanchard <anton@samba.org>
+Cc: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+LKML-Reference: <1266142324.5273.411.camel@laptop>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ kernel/perf_event.c |   11 +++++------
+ 1 files changed, 5 insertions(+), 6 deletions(-)
 
-
-
-> So it looks like something in the setting of DR7 is broken or at least
-> changed behavior. The function in Wine that does those calls is
-> set_thread_context() from server/ptrace.c .
->
-> I'll try to see if I can reproduce the other regression; as it is hidden  
-> at the moment by this regression.
-
-
-Ok.
-
-Thanks.
-
+diff --git a/kernel/perf_event.c b/kernel/perf_event.c
+index 2b19297..2ae7409 100644
+--- a/kernel/perf_event.c
++++ b/kernel/perf_event.c
+@@ -3259,8 +3259,6 @@ static void perf_event_task_output(struct perf_event *event,
+ 	task_event->event_id.tid = perf_event_tid(event, task);
+ 	task_event->event_id.ptid = perf_event_tid(event, current);
+ 
+-	task_event->event_id.time = perf_clock();
+-
+ 	perf_output_put(&handle, task_event->event_id);
+ 
+ 	perf_output_end(&handle);
+@@ -3268,7 +3266,7 @@ static void perf_event_task_output(struct perf_event *event,
+ 
+ static int perf_event_task_match(struct perf_event *event)
+ {
+-	if (event->state != PERF_EVENT_STATE_ACTIVE)
++	if (event->state < PERF_EVENT_STATE_INACTIVE)
+ 		return 0;
+ 
+ 	if (event->cpu != -1 && event->cpu != smp_processor_id())
+@@ -3300,7 +3298,7 @@ static void perf_event_task_event(struct perf_task_event *task_event)
+ 	cpuctx = &get_cpu_var(perf_cpu_context);
+ 	perf_event_task_ctx(&cpuctx->ctx, task_event);
+ 	if (!ctx)
+-		ctx = rcu_dereference(task_event->task->perf_event_ctxp);
++		ctx = rcu_dereference(current->perf_event_ctxp);
+ 	if (ctx)
+ 		perf_event_task_ctx(ctx, task_event);
+ 	put_cpu_var(perf_cpu_context);
+@@ -3331,6 +3329,7 @@ static void perf_event_task(struct task_struct *task,
+ 			/* .ppid */
+ 			/* .tid  */
+ 			/* .ptid */
++			.time = perf_clock(),
+ 		},
+ 	};
+ 
+@@ -3380,7 +3379,7 @@ static void perf_event_comm_output(struct perf_event *event,
+ 
+ static int perf_event_comm_match(struct perf_event *event)
+ {
+-	if (event->state != PERF_EVENT_STATE_ACTIVE)
++	if (event->state < PERF_EVENT_STATE_INACTIVE)
+ 		return 0;
+ 
+ 	if (event->cpu != -1 && event->cpu != smp_processor_id())
+@@ -3500,7 +3499,7 @@ static void perf_event_mmap_output(struct perf_event *event,
+ static int perf_event_mmap_match(struct perf_event *event,
+ 				   struct perf_mmap_event *mmap_event)
+ {
+-	if (event->state != PERF_EVENT_STATE_ACTIVE)
++	if (event->state < PERF_EVENT_STATE_INACTIVE)
+ 		return 0;
+ 
+ 	if (event->cpu != -1 && event->cpu != smp_processor_id())
