@@ -1,108 +1,135 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756602Ab0BOWYs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 17:24:48 -0500
-Received: from mail-fx0-f215.google.com ([209.85.220.215]:52457 "EHLO
-	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756520Ab0BOWYp (ORCPT
+	id S1756618Ab0BOW3u (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 17:29:50 -0500
+Received: from casper.infradead.org ([85.118.1.10]:36025 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755244Ab0BOW3s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 17:24:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=SrU45HGhaa9ML+1owRKLUbZeDOKWHIL/H5NIqkkjlZEXg/TLKFatGexbUNsNo8VDW4
-         wO0+PM+M26V2QCxHGrIRKabvnDfvQPct+o5Pn3uUOMbQj3pfjuFC29fcAb+xf3Le/3je
-         vos11VJNVM0CTzaN3ukB5mRgLNkANdh5jBPPA=
-Date: Mon, 15 Feb 2010 23:22:40 +0100
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: nouveau@lists.freedesktop.org
-Cc: Dan Carpenter <error27@gmail.com>, kernel-janitors@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] drm/nouveau: fix nouveau_i2c_find bounds checking
-Message-ID: <20100215222240.GB2823@joi.lan>
-References: <20100215124046.GB18821@bicker>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100215124046.GB18821@bicker>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Mon, 15 Feb 2010 17:29:48 -0500
+Subject: Re: [patch] sched: fix SMT scheduler regression in
+ find_busiest_queue()
+From: Peter Zijlstra <peterz@infradead.org>
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       "Ma, Ling" <ling.ma@intel.com>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>, ego@in.ibm.com,
+       svaidy@linux.vnet.ibm.com
+In-Reply-To: <1266023662.2808.118.camel@sbs-t61.sc.intel.com>
+References: <1266023662.2808.118.camel@sbs-t61.sc.intel.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 15 Feb 2010 23:29:33 +0100
+Message-ID: <1266272973.3650.101.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 15, 2010 at 03:40:56PM +0300, Dan Carpenter wrote:
-> This is the results from:
->     make C=1 CHECK="/path/to/smatch -p=kernel" bzImage modules | tee warns.txt
->     grep -w overflow warns.txt | uniq -f 3 | tee err-list
-> 
-> I hacked on the buffer overflow check last weekend and these are the 
-> results.  It has way more false positives than the other bug lists 
-> I've posted, but it's still kinda neat.
-> 
-> It works like this:
-> 
-> lib/zlib_inflate/inftrees.c
->    112      for (min = 1; min <= MAXBITS; min++)
->    113          if (count[min] != 0) break;
->    114      if (root < min) root = min;
-> smatch thinks "min" can be MAXBITS here.
-> 
-> One bad thing is that if you have code like:
->         if (foo == 42)
-> 		frob();
-> Smatch thinks that "foo" can be 43 after the if statement.
-> 
-> The format is:
-> file.c +<line> function(<lines into function>) warning 'array_name' <array size> <= <offset>
-> 
-> regards,
-> dan carpenter
-> 
-> Previous bug lists:
-> * Putting too much data on the stack
->   http://lkml.indiana.edu/hypermail/linux/kernel/1002.1/01252.html
-> 
-> * Assigning negative values to unsigned variables
->   http://lkml.indiana.edu/hypermail/linux/kernel/1001.3/01222.html
-> 
-> * Doing dma on the stack
->   http://lkml.indiana.edu/hypermail/linux/kernel/1001.3/01231.html
-> 
-> * Dereferencing variables before verifying they are not null
->   http://lkml.indiana.edu/hypermail/linux/kernel/1001.3/01980.html
-> 
-> (...)
-> drivers/gpu/drm/nouveau/nouveau_i2c.c +262 nouveau_i2c_find(9) error: buffer overflow 'bios->bdcb.dcb.i2c' 16 <= 16
-> drivers/gpu/drm/nouveau/nouveau_i2c.c +263 nouveau_i2c_find(10) warn: buffer overflow 'bios->bdcb.dcb.i2c' 16 <= 16
-> drivers/gpu/drm/nouveau/nouveau_i2c.c +267 nouveau_i2c_find(14) error: buffer overflow 'bios->bdcb.dcb.i2c' 16 <= 16
-> (...)
+On Fri, 2010-02-12 at 17:14 -0800, Suresh Siddha wrote:
 
+> From: Suresh Siddha <suresh.b.siddha@intel.com>
+> Subject: sched: fix SMT scheduler regression in find_busiest_queue()
+> 
+> Fix a SMT scheduler performance regression that is leading to a scenario
+> where SMT threads in one core are completely idle while both the SMT threads
+> in another core (on the same socket) are busy.
+> 
+> This is caused by this commit (with the problematic code highlighted)
+> 
+>    commit bdb94aa5dbd8b55e75f5a50b61312fe589e2c2d1
+>    Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
+>    Date:   Tue Sep 1 10:34:38 2009 +0200
+> 
+>    sched: Try to deal with low capacity
+> 
+>    @@ -4203,15 +4223,18 @@ find_busiest_queue()
+>    ...
+> 	for_each_cpu(i, sched_group_cpus(group)) {
+>    +	unsigned long power = power_of(i);
+> 
+>    ...
+> 
+>    -	wl = weighted_cpuload(i);
+>    +	wl = weighted_cpuload(i) * SCHED_LOAD_SCALE;
+>    +	wl /= power;
+> 
+>    -	if (rq->nr_running == 1 && wl > imbalance)
+>    +	if (capacity && rq->nr_running == 1 && wl > imbalance)
+> 		continue;
+> 
+> On a SMT system, power of the HT logical cpu will be 589 and
+> the scheduler load imbalance (for scenarios like the one mentioned above)
+> can be approximately 1024 (SCHED_LOAD_SCALE). The above change of scaling
+> the weighted load with the power will result in "wl > imbalance" and
+> ultimately resulting in find_busiest_queue() return NULL, causing
+> load_balance() to think that the load is well balanced. But infact
+> one of the tasks can be moved to the idle core for optimal performance.
+> 
+> We don't need to use the weighted load (wl) scaled by the cpu power to
+> compare with  imabalance. In that condition, we already know there is only a
+> single task "rq->nr_running == 1" and the comparison between imbalance,
+> wl is to make sure that we select the correct priority thread which matches
+> imbalance. So we really need to compare the imabalnce with the original
+> weighted load of the cpu and not the scaled load.
+> 
+> But in other conditions where we want the most hammered(busiest) cpu, we can
+> use scaled load to ensure that we consider the cpu power in addition to the
+> actual load on that cpu, so that we can move the load away from the
+> guy that is getting most hammered with respect to the actual capacity,
+> as compared with the rest of the cpu's in that busiest group.
+> 
+> Fix it.
+> 
+> Reported-by: Ma Ling <ling.ma@intel.com>
+> Initial-Analysis-by: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
+> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+> Cc: stable@kernel.org [2.6.32.x]
 
----
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-Subject: [PATCH] drm/nouveau: fix nouveau_i2c_find bounds checking
+A reproduction case would have been nice, I've been playing with busy
+loops and plotting the cpus on paper, but I didn't manage to reproduce.
 
-Reported-by: Dan Carpenter <error27@gmail.com>
-Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
----
- drivers/gpu/drm/nouveau/nouveau_i2c.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Still, I went through the logic and it seems to make sense, so:
 
-diff --git a/drivers/gpu/drm/nouveau/nouveau_i2c.c b/drivers/gpu/drm/nouveau/nouveau_i2c.c
-index 70e994d..f0162c4 100644
---- a/drivers/gpu/drm/nouveau/nouveau_i2c.c
-+++ b/drivers/gpu/drm/nouveau/nouveau_i2c.c
-@@ -256,7 +256,7 @@ nouveau_i2c_find(struct drm_device *dev, int index)
- 	struct drm_nouveau_private *dev_priv = dev->dev_private;
- 	struct nvbios *bios = &dev_priv->VBIOS;
- 
--	if (index > DCB_MAX_NUM_I2C_ENTRIES)
-+	if (index >= DCB_MAX_NUM_I2C_ENTRIES)
- 		return NULL;
- 
- 	if (!bios->bdcb.dcb.i2c[index].chan) {
--- 
-1.6.6.1
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+
+Ingo, sed -e 's/sched\.c/sched_fair.c/g', makes it apply to tip/master
+and should provide means of solving the rebase/merge conflict.
+
+> ---
+> 
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index 3a8fb30..bef5369 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -4119,12 +4119,23 @@ find_busiest_queue(struct sched_group *group, enum cpu_idle_type idle,
+>  			continue;
+>  
+>  		rq = cpu_rq(i);
+> -		wl = weighted_cpuload(i) * SCHED_LOAD_SCALE;
+> -		wl /= power;
+> +		wl = weighted_cpuload(i);
+>  
+> +		/*
+> +		 * When comparing with imbalance, use weighted_cpuload()
+> +		 * which is not scaled with the cpu power.
+> +		 */
+>  		if (capacity && rq->nr_running == 1 && wl > imbalance)
+>  			continue;
+>  
+> +		/*
+> + 		 * For the load comparisons with the other cpu's, consider
+> + 		 * the weighted_cpuload() scaled with the cpu power, so that
+> + 		 * the load can be moved away from the cpu that is potentially
+> + 		 * running at a lower capacity.
+> + 		 */
+> +		wl = (wl * SCHED_LOAD_SCALE) / power;
+> +
+>  		if (wl > max_load) {
+>  			max_load = wl;
+>  			busiest = rq;
+> 
+> 
 
 
