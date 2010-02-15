@@ -1,115 +1,49 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755321Ab0BOHZS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 02:25:18 -0500
-Received: from mail-pz0-f197.google.com ([209.85.222.197]:41750 "EHLO
-	mail-pz0-f197.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755187Ab0BOHZQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 02:25:16 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=v7dGsN7A7/cvw4YZz7+32Up20HtLWs2FJcbdp79/4pg1kysqH7X/QdKehij8gUKTHZ
-         0n8u9otk8GvtkfMjQYdGV0WMZQQI5L95YaEy16BnDHfKIWYSao6G+B5aRJQQu+jjtFgo
-         nh8HlODrEmCsXueg7tNbNZ3ZoppsRVG2S3WWU=
-Date: Mon, 15 Feb 2010 15:27:45 +0800
-From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>,
-       =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>,
-       "Tejun Heo <tj@kernel.org> Neil Brown" <neilb@suse.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/4] sysfs: Only take active references on attributes.
-Message-ID: <20100215072745.GC12076@hack.private>
-References: <4B7217CF.2080702@kernel.org> <m1vde57c11.fsf@fess.ebiederm.org> <4B728CFE.40208@kernel.org> <m1sk992bji.fsf@fess.ebiederm.org> <20100210230544.GA678@suse.de> <m1ocjwwob1.fsf@fess.ebiederm.org> <4B73671E.2050105@kernel.org> <m1bpfvxt67.fsf_-_@fess.ebiederm.org> <m14olnxt3s.fsf_-_@fess.ebiederm.org> <m1ljezwean.fsf_-_@fess.ebiederm.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1ljezwean.fsf_-_@fess.ebiederm.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	id S1755330Ab0BOH0B (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 02:26:01 -0500
+Received: from sh.osrg.net ([192.16.179.4]:59664 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754537Ab0BOHZ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Feb 2010 02:25:59 -0500
+Date: Mon, 15 Feb 2010 16:25:14 +0900
+To: Larry.Finger@lwfinger.net
+Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, mb@bu3sch.de, davem@davemloft.net,
+       stefano.brivio@polimi.it, akpm@linux-foundation.org
+Subject: Re: [PATCH -mm] ssb: open-code dma_alloc_coherent
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <4B78EE6A.3010207@lwfinger.net>
+References: <20100215142111R.fujita.tomonori@lab.ntt.co.jp>
+	<4B78EE6A.3010207@lwfinger.net>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20100215162426V.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Mon, 15 Feb 2010 16:25:15 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 11, 2010 at 03:20:00PM -0800, Eric W. Biederman wrote:
->
->If we exclude directories and symlinks from the set of sysfs
->dirents where we need active references we are left with
->sysfs attributes (binary or not).
->
->- Tweak sysfs_deactivate to only do something on attributes
->- Move lockdep initialization into sysfs_file_add_mode to
->  limit it to just attributes.
+On Mon, 15 Feb 2010 00:49:14 -0600
+Larry Finger <Larry.Finger@lwfinger.net> wrote:
 
-Why?
+> On 02/14/2010 11:21 PM, FUJITA Tomonori wrote:
+> > This patch is against -mm since it depends on the DMA API changes in
+> > -mm.
+> 
+> Are the patches that implement these DMA API changes available for testing? I
+> don't keep an -mm tree.
 
-If I read your patch correctly, s_active will be useless
-for non-attributes sysfs entries? For sysfs dir, maybe,
-since it can only be removed by sysfs_remove_dir(),
-but not sure about sysfs symlinks...
+All the patches are in -mm and I've just uploaded the patches against
+2.6.33-rc8:
+
+git://git.kernel.org/pub/scm/linux/kernel/git/tomo/linux-2.6-misc.git pending
+
+The ssb patch depends on the latest eight patches in the tree:
+
+http://marc.info/?l=linux-kernel&m=126596737604808&w=2
 
 
->
->Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
->---
-> fs/sysfs/dir.c   |    5 ++++-
-> fs/sysfs/file.c  |    1 +
-> fs/sysfs/sysfs.h |    1 +
-> 3 files changed, 6 insertions(+), 1 deletions(-)
->
->diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
->index 1bdc42f..481fdec 100644
->--- a/fs/sysfs/dir.c
->+++ b/fs/sysfs/dir.c
->@@ -156,6 +156,10 @@ static void sysfs_deactivate(struct sysfs_dirent *sd)
-> 	int v;
-> 
-> 	BUG_ON(sd->s_sibling || !(sd->s_flags & SYSFS_FLAG_REMOVED));
->+
->+	if (!(sysfs_type(sd) & SYSFS_ACTIVE_REF))
->+		return;
->+
-> 	sd->s_sibling = (void *)&wait;
-> 
-> 	rwsem_acquire(&sd->dep_map, 0, 0, _RET_IP_);
->@@ -315,7 +319,6 @@ struct sysfs_dirent *sysfs_new_dirent(const char *name, umode_t mode, int type)
-> 
-> 	atomic_set(&sd->s_count, 1);
-> 	atomic_set(&sd->s_active, 0);
->-	sysfs_dirent_init_lockdep(sd);
-> 
-> 	sd->s_name = name;
-> 	sd->s_mode = mode;
->diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
->index 8d6bd65..8eaae5d 100644
->--- a/fs/sysfs/file.c
->+++ b/fs/sysfs/file.c
->@@ -509,6 +509,7 @@ int sysfs_add_file_mode(struct sysfs_dirent *dir_sd,
-> 	if (!sd)
-> 		return -ENOMEM;
-> 	sd->s_attr.attr = (void *)attr;
->+	sysfs_dirent_init_lockdep(sd);
-> 
-> 	sysfs_addrm_start(&acxt, dir_sd);
-> 	rc = sysfs_add_one(&acxt, sd);
->diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
->index bb7723c..7db6884 100644
->--- a/fs/sysfs/sysfs.h
->+++ b/fs/sysfs/sysfs.h
->@@ -79,6 +79,7 @@ struct sysfs_dirent {
-> #define SYSFS_KOBJ_BIN_ATTR		0x0004
-> #define SYSFS_KOBJ_LINK			0x0008
-> #define SYSFS_COPY_NAME			(SYSFS_DIR | SYSFS_KOBJ_LINK)
->+#define SYSFS_ACTIVE_REF		(SYSFS_KOBJ_ATTR | SYSFS_KOBJ_BIN_ATTR)
-> 
-> #define SYSFS_FLAG_MASK			~SYSFS_TYPE_MASK
-> #define SYSFS_FLAG_REMOVED		0x0200
->-- 
->1.6.5.2.143.g8cc62
->
 
--- 
-Live like a child, think like the god.
- 
+Thanks!
