@@ -1,57 +1,75 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755336Ab0BOKW2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 05:22:28 -0500
-Received: from cantor.suse.de ([195.135.220.2]:52030 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754640Ab0BOKW0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 05:22:26 -0500
-Date: Mon, 15 Feb 2010 21:22:21 +1100
-From: Nick Piggin <npiggin@suse.de>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: penberg@cs.helsinki.fi, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       haicheng.li@intel.com, rientjes@google.com
-Subject: Re: [PATCH] [1/4] SLAB: Handle node-not-up case in
- fallback_alloc() v2
-Message-ID: <20100215102221.GL5723@laptop>
-References: <20100211953.850854588@firstfloor.org>
- <20100211205401.002CFB1978@basil.firstfloor.org>
- <20100215060400.GG5723@laptop>
- <20100215100712.GC21783@one.firstfloor.org>
+	id S1753693Ab0BOKab (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 05:30:31 -0500
+Received: from mail-pw0-f46.google.com ([209.85.160.46]:64809 "EHLO
+	mail-pw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752380Ab0BOKa3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Feb 2010 05:30:29 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=lpiJeAHFCqrBBdugpt9r1nOd/Ux/I3uuD2pb09MZz14HXTz7bR4/6HdsjOV82BkmHf
+         SV10dMLw+pWTZA/FzcpDsv5xSm1oE21n+wY5DLIhmmgNybW9q5QvzgqUTRZEU8l0I6hz
+         RS8DbIK/yyobILIUWnGPvOlYxZejFMdxcqyug=
+Date: Mon, 15 Feb 2010 18:33:00 +0800
+From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+To: Eric Biederman <ebiederm@aristanetworks.com>
+Cc: John Kacur <jkacur@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Tejun Heo <tj@kernel.org>,
+       Serge Hallyn <serue@us.ibm.com>,
+       "David P. Quigley" <dpquigl@tycho.nsa.gov>,
+       James Morris <jmorris@namei.org>
+Subject: Re: [BUG]: Possibe recursive locking detected in sysfs
+Message-ID: <20100215103300.GI12076@hack.private>
+References: <520f0cf11002110911t3f125649v73062e9851e2cfb3@mail.gmail.com> <520f0cf11002140510w5c57d196n12f8036ea6085c52@mail.gmail.com> <aca0ce8b1002140657l4f767635ob9b1611e4da2540b@mail.gmail.com> <520f0cf11002141254y3f4536a9ta968dbaefbff58f7@mail.gmail.com> <aca0ce8b1002141350o16fcfe6bn658c0ca546b38da0@mail.gmail.com> <520f0cf11002141822i7c77c58cl2e00305ca6890f90@mail.gmail.com> <aca0ce8b1002150156sdccf9fel42a11e2fc43437e5@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100215100712.GC21783@one.firstfloor.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <aca0ce8b1002150156sdccf9fel42a11e2fc43437e5@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 15, 2010 at 11:07:12AM +0100, Andi Kleen wrote:
-> > This is a better way to go anyway because it really is a proper
-> > "fallback" alloc. I think that possibly used to work (ie. kmem_getpages
-> > would be able to pass -1 for the node there) but got broken along the
-> > line.
-> 
-> Thanks for the review.
-> 
-> I should add there's still one open problem: in some cases 
-> the oom killer kicks in on hotadd. Still working on that one.
-> 
-> In general hotadd was mighty bitrotted :/
+On Mon, Feb 15, 2010 at 01:56:45AM -0800, Eric Biederman wrote:
+>On Sun, Feb 14, 2010 at 6:22 PM, John Kacur <jkacur@redhat.com> wrote:
+>> On Sun, Feb 14, 2010 at 4:50 PM, Eric Biederman
+>> <ebiederm@aristanetworks.com> wrote:
+>>>> Sure, are you referring to the patch-set that begins with
+>>>> "[PATCH 1/6] sysfs: Serialize updates to the vfs inode"?
+>>>
+>>> Sorry no.
+>>>
+>>> http://lkml.org/lkml/2010/2/11/329
+>>>
+>>
+>> I applied your patch, and yes, it removed the possible recursive
+>> locking detected message, but everything still froze.
+>> I don't think I really have any good info from the crash to report.
+>> Your patch seems to have added the symptom of a huge number of
+>> BUG: key ffff880126269e40 not in .data!
+>> BUG: key ffff880136fc03f0 not in .data!
+>
+>Those are from dynamic sysfs entries that I have not yet annoted
+>with sysfs_attr_init, and are generally harmless.  If you happen
+>to see the first one.  I would appreciate having the backtrace so I
+>can see about fixing it.
+>
+>With respect to your problem the important point is that lockdep does
+>not throw a warning and disable itself.  Can you verify that?
+>
+>Assuming that lockdep has not complained and disabled itself than
+>my patches are successful at disabling the sysfs lockdep false positives
+>(except those BUG: key ... not in .data messages). and the lockdep
+>warnings are just a coincidence in your case.
+>
+>I believe the cause of your hang is somewhere else entirely.  Perhaps
+>a driver regression.
+>
 
-Yes, that doesn't surprise me. I'm sure you can handle it, but send
-some traces if you have problems.
+Right, we got a real deadlock here:
 
- 
-> > Although it's not such a hot path to begin with, care to put a branch
-> > annotation there?
-> 
-> pointer == NULL is already default unlikely in gcc
-> 
-> /* Pointers are usually not NULL.  */
-> DEF_PREDICTOR (PRED_POINTER, "pointer", HITRATE (85), 0)
-> DEF_PREDICTOR (PRED_TREE_POINTER, "pointer (on trees)", HITRATE (85), 0)
-
-Well I still prefer to annotate it. I think builtin expect is 99%.
-
+http://lkml.org/lkml/2010/1/28/320
