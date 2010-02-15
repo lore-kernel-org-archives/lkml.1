@@ -1,57 +1,58 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932159Ab0BOVTI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 16:19:08 -0500
-Received: from smtp2.it.da.ut.ee ([193.40.5.67]:57260 "EHLO smtp2.it.da.ut.ee"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932089Ab0BOVTG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 16:19:06 -0500
-Date: Mon, 15 Feb 2010 23:19:05 +0200 (EET)
-From: Meelis Roos <mroos@linux.ee>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.33-rc8 regression: irq11: nobody cared, during yenta
- registration
-In-Reply-To: <201002152048.59832.rjw@sisk.pl>
-Message-ID: <alpine.SOC.1.00.1002152315580.12096@math.ut.ee>
-References: <alpine.SOC.1.00.1002141720120.679@math.ut.ee> <201002150018.21417.rjw@sisk.pl> <alpine.SOC.1.00.1002150743540.21314@math.ut.ee> <201002152048.59832.rjw@sisk.pl>
-User-Agent: Alpine 1.00 (SOC 882 2007-12-20)
+	id S932178Ab0BOVYR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 16:24:17 -0500
+Received: from mail-iw0-f185.google.com ([209.85.223.185]:37694 "EHLO
+	mail-iw0-f185.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932143Ab0BOVYP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Feb 2010 16:24:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=s9i6jZN3l1ijVJBxw0e0IDbHyo+QPGXrO3QOylGXvYKfX2ITxVilLEa7+lcQOTtqZn
+         yXTQ9OhBW118tTGK9+jUsFOrDwoe6wM+FoQWRmbnxWl+GO4OZuPgozw5lZ47Xb/4PeZm
+         1ZWVsDXHvAmuLn0Uq/emWhanDC2G1/1BHy7aM=
+Message-ID: <4B79BB7C.6020507@gmail.com>
+Date: Mon, 15 Feb 2010 16:24:12 -0500
+From: William Allen Simpson <william.allen.simpson@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andi Kleen <andi@firstfloor.org>
+CC: Linux Kernel Developers <linux-kernel@vger.kernel.org>,
+       Linux Kernel Network Developers <netdev@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [PATCH v4 4/7] tcp: input header length, prediction, and timestamp
+ bugs
+References: <4B793CAA.2030902@gmail.com> <4B793E8F.30208@gmail.com> <20100215151055.GG21783@one.firstfloor.org> <4B799A86.8040303@gmail.com> <20100215191548.GH21783@one.firstfloor.org>
+In-Reply-To: <20100215191548.GH21783@one.firstfloor.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > I have created the Bugzilla entry at http://bugzilla.kernel.org/show_bug.cgi?id=15307
-> > > for your report.
-> > > 
-> > > Peter, Ingo, did we do anything to the interrupt handling between .33-rc5 and .33-rc8?
-> > 
-> > I just retested it and the problem appears even in -rc5 (missed it 
-> > before). Come to think of it, I only tested -rc5 out of dock before.
-> > 
-> > With dock, the problem is there in 2.6.33-rc4-00399-g24bc734.
-> > 
-> > Without dock, even -rc8 is OK, so it only happens docked.
-> > 
-> > Will try to bisect but this takes time because I'm rarely near that 
-> > computer.
+Andi Kleen wrote:
+> On Mon, Feb 15, 2010 at 02:03:34PM -0500, William Allen Simpson wrote:
+>> Andi Kleen wrote:
+>>> Is this a bug fix? 
+>>>
+>> Yes.  One of many, all inter-related.
+>>
+> It's useful to distingush bug fixes from cleanups from optimizations etc.
+> ...
 
-It's even worse - or my memory is, actually.
+The bug fixes depend on the cleanups.
+  * 1/7 has the new functions.
+  * 2/7 has bug fixes that require the new functions.
+  * 3/7 fixes (and optimizes) the incoming code path, so that
+  * 4/7 can fix the bugs.
+  * 5/7 is needed to test the code from part 1.
+  * 6/7 is the cleanup of parsing (also fixes some bugs introduced by
+    davem's patch in December), so that
+  * 7/7 can fix the bugs.
 
-With dock, both 2.6.32 and 2.6.31 exhibit the problem, so it's not a 
-recent regression - but the bugzilla entry still holds.
-
-In fact, googling tells that I reported the issue back in 2006 together 
-with a USB problem that I thought was related, and that has been fixed 
-meanwhile:
-
-http://lkml.indiana.edu/hypermail/linux/kernel/0607.2/1331.html
-
-Strange that I haven't noticed it meanwhile.
-
--- 
-Meelis Roos (mroos@linux.ee)
+I originally tried submitting these as separate individual pairs of
+patches (in November, December, January), but nobody paid any attention.
