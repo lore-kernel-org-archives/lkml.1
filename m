@@ -1,63 +1,48 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755060Ab0BOLQR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 06:16:17 -0500
-Received: from anchor-post-1.mail.demon.net ([195.173.77.132]:64848 "EHLO
-	anchor-post-1.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753986Ab0BOLQQ (ORCPT
+	id S1755256Ab0BOLRG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 06:17:06 -0500
+Received: from mail-ew0-f228.google.com ([209.85.219.228]:33226 "EHLO
+	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754955Ab0BOLRB convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 06:16:16 -0500
-Subject: [PATCH] fs: inode - remove 8 bytes of padding on 64bits allowing 1
- more objects/slab under slub
-From: Richard Kennedy <richard@rsk.demon.co.uk>
-To: Matthew Wilcox <matthew@wil.cx>, Al Viro <viro@zeniv.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>, Jan Kara <jack@suse.cz>,
-       Christoph Hellwig <hch@lst.de>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 15 Feb 2010 11:16:11 +0000
-Message-ID: <1266232571.2149.10.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
-Content-Transfer-Encoding: 7bit
+	Mon, 15 Feb 2010 06:17:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:mime-version:content-type:from:in-reply-to:date:cc
+         :content-transfer-encoding:message-id:references:to:x-mailer;
+        b=q8klRlEenmpfjpL+ILd1JX63nk9rrXpW7qMc5lCLnrRsmJO3ZshKyK7ZqRazOooxl2
+         tEErZBsC1vKWAyjoyXgjzinngbEhoy4vVLoDF73kmQpyORpEJ4ULcPRezNnC32uKIJUG
+         gZuwC5li1EFueYZqCFuJO1O+qJsbHYgjXaKYE=
+Subject: Re: 2.6.31 and OOM killer = bug?
+Mime-Version: 1.0 (Apple Message framework v1077)
+Content-Type: text/plain; charset=us-ascii
+From: Anton Starikov <ant.starikov@gmail.com>
+In-Reply-To: <20100215101917.15552a51.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Mon, 15 Feb 2010 12:16:57 +0100
+Cc: linux-kernel@vger.kernel.org, "linux-mm@kvack.org" <linux-mm@kvack.org>
+Content-Transfer-Encoding: 8BIT
+Message-Id: <548A11C6-8C8C-45EF-92E7-72C3DF47F9FD@gmail.com>
+References: <E0975165-4185-47A9-A15F-B46774A5F6DA@gmail.com> <20100215101917.15552a51.kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+X-Mailer: Apple Mail (2.1077)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This removes 8 bytes of padding from struct inode on 64bit builds, and
-so allows 1 more object/slab in the inode_cache when using slub.
 
-Signed-off-by: Richard Kennedy <richard@rsk.demon.co.uk>
-----
-patch against 2.6.33-rc8
-compiled & tested on x86_64 AMDX2 
-
-I've been running this patch for over a week with no obvious problems
-regards
-Richard
+On Feb 15, 2010, at 2:19 AM, KAMEZAWA Hiroyuki wrote:
+> At first, what is the version of kernel you are comparing with ? 2.6.22?(If OpenSuse10)
+> If so, many changes since that..
 
 
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index b1bcb27..ebb1cd5 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -729,6 +729,7 @@ struct inode {
- 	uid_t			i_uid;
- 	gid_t			i_gid;
- 	dev_t			i_rdev;
-+	unsigned int		i_blkbits;
- 	u64			i_version;
- 	loff_t			i_size;
- #ifdef __NEED_I_SIZE_ORDERED
-@@ -738,7 +739,6 @@ struct inode {
- 	struct timespec		i_mtime;
- 	struct timespec		i_ctime;
- 	blkcnt_t		i_blocks;
--	unsigned int		i_blkbits;
- 	unsigned short          i_bytes;
- 	umode_t			i_mode;
- 	spinlock_t		i_lock;	/* i_blocks, i_bytes, maybe i_size */
+Latest kernel version where OOM killer worked as it should in our setup was 2.6.29.
 
+> Anyway, I think it's not appreciated to depend on OOM-Kill on swapless-system.
+> I recommend you to use cgroup "memory" to encapsulate your apps (but please check
+> the performance regression can be seen or not..)
 
+OK, I will check it.
+
+Thanks, 
+Anton.
