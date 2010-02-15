@@ -1,215 +1,63 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755382Ab0BOIJ6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 03:09:58 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:37230 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755356Ab0BOIJ5 (ORCPT
+	id S1755389Ab0BOIM4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 03:12:56 -0500
+Received: from mail-px0-f191.google.com ([209.85.216.191]:46489 "EHLO
+	mail-px0-f191.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754699Ab0BOIMy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 03:09:57 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: David Rientjes <rientjes@google.com>
-Subject: Re: [patch 5/7 -mm] oom: replace sysctls with quick mode
-Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Nick Piggin <npiggin@suse.de>, Andrea Arcangeli <aarcange@redhat.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-In-Reply-To: <alpine.DEB.2.00.1002100229250.8001@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.1002100224210.8001@chino.kir.corp.google.com> <alpine.DEB.2.00.1002100229250.8001@chino.kir.corp.google.com>
-Message-Id: <20100215170634.729E.A69D9226@jp.fujitsu.com>
+	Mon, 15 Feb 2010 03:12:54 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=Q2SGG+yhyBcoseD30szwhVIsUx6ehVHyG2kPEAk1F0EH1deexvjeT2MqdhRMBcG+NE
+         x1bSCpqeroFnGdJ5fofkbUp4tb9AtgEacGEQfrFH1nHXCLVa6num8Zr492UTBqwXZ7wD
+         9H9deDITqwdw8esa5HqfXG+/jcYZLKCMaIxR0=
+Date: Mon, 15 Feb 2010 16:15:27 +0800
+From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+To: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       "Tejun Heo <tj@kernel.org> Neil Brown" <neilb@suse.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/4] sysfs: Only take active references on attributes.
+Message-ID: <20100215081527.GD12076@hack.private>
+References: <m1vde57c11.fsf@fess.ebiederm.org> <4B728CFE.40208@kernel.org> <m1sk992bji.fsf@fess.ebiederm.org> <20100210230544.GA678@suse.de> <m1ocjwwob1.fsf@fess.ebiederm.org> <4B73671E.2050105@kernel.org> <m1bpfvxt67.fsf_-_@fess.ebiederm.org> <m14olnxt3s.fsf_-_@fess.ebiederm.org> <m1ljezwean.fsf_-_@fess.ebiederm.org> <20100215072745.GC12076@hack.private>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Mon, 15 Feb 2010 17:09:52 +0900 (JST)
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20100215072745.GC12076@hack.private>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Two VM sysctls, oom dump_tasks and oom_kill_allocating_task, were
-> implemented for very large systems to avoid excessively long tasklist
-> scans.  The former suppresses helpful diagnostic messages that are
-> emitted for each thread group leader that are candidates for oom kill
-> including their pid, uid, vm size, rss, oom_adj value, and name; this
-> information is very helpful to users in understanding why a particular
-> task was chosen for kill over others.  The latter simply kills current,
-> the task triggering the oom condition, instead of iterating through the
-> tasklist looking for the worst offender.
-> 
-> Both of these sysctls are combined into one for use on the aforementioned
-> large systems: oom_kill_quick.  This disables the now-default
-> oom_dump_tasks and kills current whenever the oom killer is called.
-> 
-> The oom killer rewrite is the perfect opportunity to combine both sysctls
-> into one instead of carrying around the others for years to come for
-> nothing else than legacy purposes.
+On Mon, Feb 15, 2010 at 03:27:45PM +0800, Américo Wang wrote:
+>On Thu, Feb 11, 2010 at 03:20:00PM -0800, Eric W. Biederman wrote:
+>>
+>>If we exclude directories and symlinks from the set of sysfs
+>>dirents where we need active references we are left with
+>>sysfs attributes (binary or not).
+>>
+>>- Tweak sysfs_deactivate to only do something on attributes
+>>- Move lockdep initialization into sysfs_file_add_mode to
+>>  limit it to just attributes.
+>
+>Why?
+>
+>If I read your patch correctly, s_active will be useless
+>for non-attributes sysfs entries? For sysfs dir, maybe,
+>since it can only be removed by sysfs_remove_dir(),
+>but not sure about sysfs symlinks...
+>
 
-"_quick" is always bad sysctl name. instead, turnning oom_dump_tasks on
-by default is better.
+For sysfs dir's, opening it will not get s_active,
+since it doesn't have .open member. But it does
+put s_active when removing it. This seems buggy?
 
-plus, this patch makes unnecessary compatibility issue.
-
-
-
-> 
-> Signed-off-by: David Rientjes <rientjes@google.com>
-> ---
->  Documentation/sysctl/vm.txt |   44 +++++-------------------------------------
->  include/linux/oom.h         |    3 +-
->  kernel/sysctl.c             |   13 ++---------
->  mm/oom_kill.c               |    9 +++----
->  4 files changed, 14 insertions(+), 55 deletions(-)
-> 
-> diff --git a/Documentation/sysctl/vm.txt b/Documentation/sysctl/vm.txt
-> --- a/Documentation/sysctl/vm.txt
-> +++ b/Documentation/sysctl/vm.txt
-> @@ -43,9 +43,8 @@ Currently, these files are in /proc/sys/vm:
->  - nr_pdflush_threads
->  - nr_trim_pages         (only if CONFIG_MMU=n)
->  - numa_zonelist_order
-> -- oom_dump_tasks
->  - oom_forkbomb_thres
-> -- oom_kill_allocating_task
-> +- oom_kill_quick
->  - overcommit_memory
->  - overcommit_ratio
->  - page-cluster
-> @@ -470,27 +469,6 @@ this is causing problems for your system/application.
->  
->  ==============================================================
->  
-> -oom_dump_tasks
-> -
-> -Enables a system-wide task dump (excluding kernel threads) to be
-> -produced when the kernel performs an OOM-killing and includes such
-> -information as pid, uid, tgid, vm size, rss, cpu, oom_adj score, and
-> -name.  This is helpful to determine why the OOM killer was invoked
-> -and to identify the rogue task that caused it.
-> -
-> -If this is set to zero, this information is suppressed.  On very
-> -large systems with thousands of tasks it may not be feasible to dump
-> -the memory state information for each one.  Such systems should not
-> -be forced to incur a performance penalty in OOM conditions when the
-> -information may not be desired.
-> -
-> -If this is set to non-zero, this information is shown whenever the
-> -OOM killer actually kills a memory-hogging task.
-> -
-> -The default value is 0.
-> -
-> -==============================================================
-> -
->  oom_forkbomb_thres
->  
->  This value defines how many children with a seperate address space a specific
-> @@ -511,22 +489,12 @@ The default value is 1000.
->  
->  ==============================================================
->  
-> -oom_kill_allocating_task
-> -
-> -This enables or disables killing the OOM-triggering task in
-> -out-of-memory situations.
-> -
-> -If this is set to zero, the OOM killer will scan through the entire
-> -tasklist and select a task based on heuristics to kill.  This normally
-> -selects a rogue memory-hogging task that frees up a large amount of
-> -memory when killed.
-> -
-> -If this is set to non-zero, the OOM killer simply kills the task that
-> -triggered the out-of-memory condition.  This avoids the expensive
-> -tasklist scan.
-> +oom_kill_quick
->  
-> -If panic_on_oom is selected, it takes precedence over whatever value
-> -is used in oom_kill_allocating_task.
-> +When enabled, this will always kill the task that triggered the oom killer, i.e.
-> +the task that attempted to allocate memory that could not be found.  It also
-> +suppresses the tasklist dump to the kernel log whenever the oom killer is
-> +called.  Typically set on systems with an extremely large number of tasks.
->  
->  The default value is 0.
->  
-> diff --git a/include/linux/oom.h b/include/linux/oom.h
-> --- a/include/linux/oom.h
-> +++ b/include/linux/oom.h
-> @@ -51,8 +51,7 @@ static inline void oom_killer_enable(void)
->  }
->  /* for sysctl */
->  extern int sysctl_panic_on_oom;
-> -extern int sysctl_oom_kill_allocating_task;
-> -extern int sysctl_oom_dump_tasks;
-> +extern int sysctl_oom_kill_quick;
->  extern int sysctl_oom_forkbomb_thres;
->  
->  #endif /* __KERNEL__*/
-> diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-> --- a/kernel/sysctl.c
-> +++ b/kernel/sysctl.c
-> @@ -949,16 +949,9 @@ static struct ctl_table vm_table[] = {
->  		.proc_handler	= proc_dointvec,
->  	},
->  	{
-> -		.procname	= "oom_kill_allocating_task",
-> -		.data		= &sysctl_oom_kill_allocating_task,
-> -		.maxlen		= sizeof(sysctl_oom_kill_allocating_task),
-> -		.mode		= 0644,
-> -		.proc_handler	= proc_dointvec,
-> -	},
-> -	{
-> -		.procname	= "oom_dump_tasks",
-> -		.data		= &sysctl_oom_dump_tasks,
-> -		.maxlen		= sizeof(sysctl_oom_dump_tasks),
-> +		.procname	= "oom_kill_quick",
-> +		.data		= &sysctl_oom_kill_quick,
-> +		.maxlen		= sizeof(sysctl_oom_kill_quick),
->  		.mode		= 0644,
->  		.proc_handler	= proc_dointvec,
->  	},
-> diff --git a/mm/oom_kill.c b/mm/oom_kill.c
-> --- a/mm/oom_kill.c
-> +++ b/mm/oom_kill.c
-> @@ -32,9 +32,8 @@
->  #include <linux/security.h>
->  
->  int sysctl_panic_on_oom;
-> -int sysctl_oom_kill_allocating_task;
-> -int sysctl_oom_dump_tasks;
->  int sysctl_oom_forkbomb_thres = DEFAULT_OOM_FORKBOMB_THRES;
-> +int sysctl_oom_kill_quick;
->  static DEFINE_SPINLOCK(zone_scan_lock);
->  
->  /*
-> @@ -397,7 +396,7 @@ static void dump_header(struct task_struct *p, gfp_t gfp_mask, int order,
->  	dump_stack();
->  	mem_cgroup_print_oom_info(mem, p);
->  	show_mem();
-> -	if (sysctl_oom_dump_tasks)
-> +	if (!sysctl_oom_kill_quick)
->  		dump_tasks(mem);
->  }
->  
-> @@ -604,9 +603,9 @@ static void __out_of_memory(gfp_t gfp_mask, int order, unsigned long totalpages,
->  	struct task_struct *p;
->  	unsigned int points;
->  
-> -	if (sysctl_oom_kill_allocating_task)
-> +	if (sysctl_oom_kill_quick)
->  		if (!oom_kill_process(current, gfp_mask, order, 0, totalpages,
-> -			NULL, "Out of memory (oom_kill_allocating_task)"))
-> +			NULL, "Out of memory (quick mode)"))
->  			return;
->  retry:
->  	/*
-> 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
-
-
+For symlinks, it seems sysfs totally ignores s_active,
+thus is safe for this patch.
 
