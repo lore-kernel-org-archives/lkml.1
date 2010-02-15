@@ -1,135 +1,43 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756618Ab0BOW3u (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 17:29:50 -0500
-Received: from casper.infradead.org ([85.118.1.10]:36025 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755244Ab0BOW3s (ORCPT
+	id S1756639Ab0BOWaP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 17:30:15 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51297 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756609Ab0BOWaM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 17:29:48 -0500
-Subject: Re: [patch] sched: fix SMT scheduler regression in
- find_busiest_queue()
-From: Peter Zijlstra <peterz@infradead.org>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       "Ma, Ling" <ling.ma@intel.com>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>, ego@in.ibm.com,
-       svaidy@linux.vnet.ibm.com
-In-Reply-To: <1266023662.2808.118.camel@sbs-t61.sc.intel.com>
-References: <1266023662.2808.118.camel@sbs-t61.sc.intel.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 15 Feb 2010 23:29:33 +0100
-Message-ID: <1266272973.3650.101.camel@laptop>
+	Mon, 15 Feb 2010 17:30:12 -0500
+Date: Mon, 15 Feb 2010 22:28:45 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: David Rientjes <rientjes@google.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Nick Piggin <npiggin@suse.de>, Andrea Arcangeli <aarcange@redhat.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch -mm 6/9 v2] oom: deprecate oom_adj tunable
+Message-ID: <20100215222845.0b0f2781@lxorguk.ukuu.org.uk>
+In-Reply-To: <alpine.DEB.2.00.1002151418560.26927@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.1002151416470.26927@chino.kir.corp.google.com>
+	<alpine.DEB.2.00.1002151418560.26927@chino.kir.corp.google.com>
+X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.6; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-02-12 at 17:14 -0800, Suresh Siddha wrote:
+On Mon, 15 Feb 2010 14:20:16 -0800 (PST)
+David Rientjes <rientjes@google.com> wrote:
 
-> From: Suresh Siddha <suresh.b.siddha@intel.com>
-> Subject: sched: fix SMT scheduler regression in find_busiest_queue()
-> 
-> Fix a SMT scheduler performance regression that is leading to a scenario
-> where SMT threads in one core are completely idle while both the SMT threads
-> in another core (on the same socket) are busy.
-> 
-> This is caused by this commit (with the problematic code highlighted)
-> 
->    commit bdb94aa5dbd8b55e75f5a50b61312fe589e2c2d1
->    Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
->    Date:   Tue Sep 1 10:34:38 2009 +0200
-> 
->    sched: Try to deal with low capacity
-> 
->    @@ -4203,15 +4223,18 @@ find_busiest_queue()
->    ...
-> 	for_each_cpu(i, sched_group_cpus(group)) {
->    +	unsigned long power = power_of(i);
-> 
->    ...
-> 
->    -	wl = weighted_cpuload(i);
->    +	wl = weighted_cpuload(i) * SCHED_LOAD_SCALE;
->    +	wl /= power;
-> 
->    -	if (rq->nr_running == 1 && wl > imbalance)
->    +	if (capacity && rq->nr_running == 1 && wl > imbalance)
-> 		continue;
-> 
-> On a SMT system, power of the HT logical cpu will be 589 and
-> the scheduler load imbalance (for scenarios like the one mentioned above)
-> can be approximately 1024 (SCHED_LOAD_SCALE). The above change of scaling
-> the weighted load with the power will result in "wl > imbalance" and
-> ultimately resulting in find_busiest_queue() return NULL, causing
-> load_balance() to think that the load is well balanced. But infact
-> one of the tasks can be moved to the idle core for optimal performance.
-> 
-> We don't need to use the weighted load (wl) scaled by the cpu power to
-> compare with  imabalance. In that condition, we already know there is only a
-> single task "rq->nr_running == 1" and the comparison between imbalance,
-> wl is to make sure that we select the correct priority thread which matches
-> imbalance. So we really need to compare the imabalnce with the original
-> weighted load of the cpu and not the scaled load.
-> 
-> But in other conditions where we want the most hammered(busiest) cpu, we can
-> use scaled load to ensure that we consider the cpu power in addition to the
-> actual load on that cpu, so that we can move the load away from the
-> guy that is getting most hammered with respect to the actual capacity,
-> as compared with the rest of the cpu's in that busiest group.
-> 
-> Fix it.
-> 
-> Reported-by: Ma Ling <ling.ma@intel.com>
-> Initial-Analysis-by: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
-> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-> Cc: stable@kernel.org [2.6.32.x]
+> /proc/pid/oom_adj is now deprecated so that that it may eventually be
+> removed.  The target date for removal is December 2011.
 
-A reproduction case would have been nice, I've been playing with busy
-loops and plotting the cpus on paper, but I didn't manage to reproduce.
+There are systems that rely on this feature. It's ABI, its sacred. We are
+committed to it and it has users. That doesn't really detract from the
+good/bad of the rest of the proposal, it's just one step we can't quite
+make.
 
-Still, I went through the logic and it seems to make sense, so:
-
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-
-Ingo, sed -e 's/sched\.c/sched_fair.c/g', makes it apply to tip/master
-and should provide means of solving the rebase/merge conflict.
-
-> ---
-> 
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index 3a8fb30..bef5369 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -4119,12 +4119,23 @@ find_busiest_queue(struct sched_group *group, enum cpu_idle_type idle,
->  			continue;
->  
->  		rq = cpu_rq(i);
-> -		wl = weighted_cpuload(i) * SCHED_LOAD_SCALE;
-> -		wl /= power;
-> +		wl = weighted_cpuload(i);
->  
-> +		/*
-> +		 * When comparing with imbalance, use weighted_cpuload()
-> +		 * which is not scaled with the cpu power.
-> +		 */
->  		if (capacity && rq->nr_running == 1 && wl > imbalance)
->  			continue;
->  
-> +		/*
-> + 		 * For the load comparisons with the other cpu's, consider
-> + 		 * the weighted_cpuload() scaled with the cpu power, so that
-> + 		 * the load can be moved away from the cpu that is potentially
-> + 		 * running at a lower capacity.
-> + 		 */
-> +		wl = (wl * SCHED_LOAD_SCALE) / power;
-> +
->  		if (wl > max_load) {
->  			max_load = wl;
->  			busiest = rq;
-> 
-> 
-
-
+Alan
