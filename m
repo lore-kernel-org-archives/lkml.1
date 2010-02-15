@@ -1,51 +1,91 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756335Ab0BOTsX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 14:48:23 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:36143 "EHLO ogre.sisk.pl"
+	id S1756327Ab0BOTuJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 14:50:09 -0500
+Received: from thunk.org ([69.25.196.29]:46657 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756299Ab0BOTsV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 14:48:21 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Meelis Roos <mroos@linux.ee>
-Subject: Re: 2.6.33-rc8 regression: irq11: nobody cared, during yenta registration
-Date: Mon, 15 Feb 2010 20:48:59 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.33-rc8-rjw; KDE/4.3.5; x86_64; ; )
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>
-References: <alpine.SOC.1.00.1002141720120.679@math.ut.ee> <201002150018.21417.rjw@sisk.pl> <alpine.SOC.1.00.1002150743540.21314@math.ut.ee>
-In-Reply-To: <alpine.SOC.1.00.1002150743540.21314@math.ut.ee>
+	id S1756287Ab0BOTuG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Feb 2010 14:50:06 -0500
+Date: Mon, 15 Feb 2010 14:50:01 -0500
+From: tytso@mit.edu
+To: Leonard Michlmayr <leonard.michlmayr@gmail.com>
+Cc: Andreas Dilger <adilger@sun.com>,
+       ext4 development <linux-ext4@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org Mailinglist" 
+	<linux-kernel@vger.kernel.org>,
+       474597@bugs.launchpad.net
+Subject: Re: [PATCH 2.6.32.7] ext4: number of blocks for fiemap
+Message-ID: <20100215195001.GN5337@thunk.org>
+Mail-Followup-To: tytso@mit.edu,
+	Leonard Michlmayr <leonard.michlmayr@gmail.com>,
+	Andreas Dilger <adilger@sun.com>,
+	ext4 development <linux-ext4@vger.kernel.org>,
+	"linux-kernel@vger.kernel.org Mailinglist" <linux-kernel@vger.kernel.org>,
+	474597@bugs.launchpad.net
+References: <1257360161.22057.16.camel@michlmayr>
+ <372739E0-41AD-4DEC-9187-1396BE5894BD@sun.com>
+ <1257371050.13852.28.camel@michlmayr>
+ <4B701793.9010005@canonical.com>
+ <1266000136.4310.36.camel@michlmayr>
+ <4D0CB743-94B6-49AB-B838-BCDD2EC8C3ED@sun.com>
+ <1266016801.27587.13.camel@michlmayr>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201002152048.59832.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1266016801.27587.13.camel@michlmayr>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 15 February 2010, Meelis Roos wrote:
-> > > Just tried 2.6.33-rcx8 on my laptop (Thinkpad X20 in a dock) that was 
-> > > last running 2.6.33-rc5 without problems. Gor irq11: nobody carec like 
-> > > below. Seems to be repeatabale. lspci also below.
-> > 
-> > I have created the Bugzilla entry at http://bugzilla.kernel.org/show_bug.cgi?id=15307
-> > for your report.
-> > 
-> > Peter, Ingo, did we do anything to the interrupt handling between .33-rc5 and .33-rc8?
-> 
-> I just retested it and the problem appears even in -rc5 (missed it 
-> before). Come to think of it, I only tested -rc5 out of dock before.
-> 
-> With dock, the problem is there in 2.6.33-rc4-00399-g24bc734.
-> 
-> Without dock, even -rc8 is OK, so it only happens docked.
-> 
-> Will try to bisect but this takes time because I'm rarely near that 
-> computer.
+Sorry for the delay in attending to this patch.  This is what I've
+added to the ext4 patch queue.
 
-OK, thanks for the update.
+						- Ted
 
-Rafael
+commit 7f9aeb212e41ea20f61061d51ad11ee2449853f1
+Author: Theodore Ts'o <tytso@mit.edu>
+Date:   Mon Feb 15 14:48:32 2010 -0500
+
+    ext4: correctly calculate number of blocks for fiemap
+    
+    ext4_fiemap() rounds the length of the requested range down to
+    blocksize, which is is not the true number of blocks that cover the
+    requested region.  This problem is especially impressive if the user
+    requests only the first byte of a file: not a single extent will be
+    reported.
+    
+    We fix this by calculating the last block of the region and then
+    subtract to find the number of blocks in the extents.
+    
+    Signed-off-by: Leonard Michlmayr <leonard.michlmayr@gmail.com>
+    Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+
+diff --git a/fs/ext4/extents.c b/fs/ext4/extents.c
+index bd80891..bc9860f 100644
+--- a/fs/ext4/extents.c
++++ b/fs/ext4/extents.c
+@@ -3768,7 +3768,6 @@ int ext4_fiemap(struct inode *inode, struct fiemap_extent_info *fieinfo,
+ 		__u64 start, __u64 len)
+ {
+ 	ext4_lblk_t start_blk;
+-	ext4_lblk_t len_blks;
+ 	int error = 0;
+ 
+ 	/* fallback to generic here if not in extents fmt */
+@@ -3782,8 +3781,11 @@ int ext4_fiemap(struct inode *inode, struct fiemap_extent_info *fieinfo,
+ 	if (fieinfo->fi_flags & FIEMAP_FLAG_XATTR) {
+ 		error = ext4_xattr_fiemap(inode, fieinfo);
+ 	} else {
++		ext4_lblk_t last_blk, len_blks;
++
+ 		start_blk = start >> inode->i_sb->s_blocksize_bits;
+-		len_blks = len >> inode->i_sb->s_blocksize_bits;
++		last_blk = (start + len - 1) >> inode->i_sb->s_blocksize_bits;
++		len_blks = last_blk - start_blk + 1;
+ 
+ 		/*
+ 		 * Walk the extent tree gathering extent information.
