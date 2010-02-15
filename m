@@ -1,63 +1,86 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756708Ab0BOX50 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 18:57:26 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:59978 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756158Ab0BOX5Y (ORCPT
+	id S1756724Ab0BPAAl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 19:00:41 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:53460 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756460Ab0BPAAk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 18:57:24 -0500
-Date: Mon, 15 Feb 2010 23:57:16 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: David Chinner <david@fromorbit.com>, xfs-masters@oss.sgi.com,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: Rebase v. merge (Was: Re: linux-next: manual merge of the xfs
- tree with the vfs tree)
-Message-ID: <20100215235716.GY30031@ZenIV.linux.org.uk>
-References: <20100215122740.87c6cb5f.sfr@canb.auug.org.au>
- <20100215034417.GV30031@ZenIV.linux.org.uk>
- <20100216101626.0549dee8.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100216101626.0549dee8.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+	Mon, 15 Feb 2010 19:00:40 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Tue, 16 Feb 2010 08:57:06 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: David Rientjes <rientjes@google.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
+       Nick Piggin <npiggin@suse.de>, Andrea Arcangeli <aarcange@redhat.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch -mm 8/9 v2] oom: avoid oom killer for lowmem allocations
+Message-Id: <20100216085706.c7af93e1.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <alpine.DEB.2.00.1002151419260.26927@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.1002151416470.26927@chino.kir.corp.google.com>
+	<alpine.DEB.2.00.1002151419260.26927@chino.kir.corp.google.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 16, 2010 at 10:16:26AM +1100, Stephen Rothwell wrote:
-> Hi Al,
+On Mon, 15 Feb 2010 14:20:21 -0800 (PST)
+David Rientjes <rientjes@google.com> wrote:
+
+> If memory has been depleted in lowmem zones even with the protection
+> afforded to it by /proc/sys/vm/lowmem_reserve_ratio, it is unlikely that
+> killing current users will help.  The memory is either reclaimable (or
+> migratable) already, in which case we should not invoke the oom killer at
+> all, or it is pinned by an application for I/O.  Killing such an
+> application may leave the hardware in an unspecified state and there is
+> no guarantee that it will be able to make a timely exit.
 > 
-> On Mon, 15 Feb 2010 03:44:17 +0000 Al Viro <viro@ZenIV.linux.org.uk> wrote:
-> >
-> > Actually, I'd cheerfully rebased that sucker (to e.g. write_inode2); it has
-> > grown a trivial conflict with mainline after one of gfs2 merges and it's
-> > annoying to fix it up after each for-next rebase.
-> > 
-> > So I'd rather put a rebased variant and switched the for-next to using that,
-> > if people who'd pulled it already are OK with that.
+> Lowmem allocations are now failed in oom conditions so that the task can
+> perhaps recover or try again later.  Killing current is an unnecessary
+> result for simply making a GFP_DMA or GFP_DMA32 page allocation and no
+> lowmem allocations use the now-deprecated __GFP_NOFAIL bit so retrying is
+> unnecessary.
 > 
-> Just out of interest, is there some reason you didn't just merge Linus'
-> tree (or the subset that caused the conflict) into the write-inode
-> branch.  That would have meant that you still had a nonrebasing branch
-> that others could use.  Now anyone who has merged your write_inode branch
-> needs to rebuild their trees using you new write-rebase2 branch or risk
-> causing conflicts in linux-next or Linus' tree when their tree's are
-> merged.
+> Previously, the heuristic provided some protection for those tasks with 
+> CAP_SYS_RAWIO, but this is no longer necessary since we will not be
+> killing tasks for the purposes of ISA allocations.
+> 
+> high_zoneidx is gfp_zone(gfp_flags), meaning that ZONE_NORMAL will be the
+> default for all allocations that are not __GFP_DMA, __GFP_DMA32,
+> __GFP_HIGHMEM, and __GFP_MOVABLE on kernels configured to support those
+> flags.  Testing for high_zoneidx being less than ZONE_NORMAL will only
+> return true for allocations that have either __GFP_DMA or __GFP_DMA32.
+> 
+> Acked-by: Rik van Riel <riel@redhat.com>
+> Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> Signed-off-by: David Rientjes <rientjes@google.com>
+> ---
+>  mm/page_alloc.c |    3 +++
+>  1 files changed, 3 insertions(+), 0 deletions(-)
+> 
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -1914,6 +1914,9 @@ rebalance:
+>  	 * running out of options and have to consider going OOM
+>  	 */
+>  	if (!did_some_progress) {
+> +		/* The oom killer won't necessarily free lowmem */
+> +		if (high_zoneidx < ZONE_NORMAL)
+> +			goto nopage;
+>  		if ((gfp_mask & __GFP_FS) && !(gfp_mask & __GFP_NORETRY)) {
+>  			if (oom_killer_disabled)
+>  				goto nopage;
 
-Branch in question still doesn't exist; that was a question, not a description
-of what I've already done.  I guess I can do what you describe, but...  Yuck.
-Multiple merges from mainline can create one hell of a mess down the road.
-I had to deal with results of exactly that when dwmw2 had dumped the audit
-tree into my lap and it had been a huge mess that took quite a while to
-untangle ;-/
+WARN_ON((high_zoneidx < ZONE_NORMAL) && (gfp_mask & __GFP_NOFAIL))
+plz.
 
-The same goes for modifications hidden in merge commit, BTW.  I know that
-Linus seems to be OK with that kind of thing, but... every time I run into
-that is when some change is not to be found in git log -p ;-/
+Thanks,
+-Kame
 
-Oh, well...  I'll probably do that merge of mainline back into write_inode
-and try hard to avoid anything similar in the next cycles.
