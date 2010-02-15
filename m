@@ -1,84 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932198Ab0BOVZQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 16:25:16 -0500
-Received: from hera.kernel.org ([140.211.167.34]:49193 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932148Ab0BOVZN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 16:25:13 -0500
-Date: Mon, 15 Feb 2010 21:24:42 GMT
-From: tip-bot for Borislav Petkov <borislav.petkov@amd.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       tglx@linutronix.de, borislav.petkov@amd.com
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, borislav.petkov@amd.com
-In-Reply-To: <1266234236-24749-1-git-send-email-bp@amd64.org>
-References: <1266234236-24749-1-git-send-email-bp@amd64.org>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/cpu] x86, cacheinfo: Remove NUMA dependency, fix for D1 Isntanbul
-Message-ID: <tip-472bf751b56324f8c96d97ada3c9dcdc8b2ec4f7@git.kernel.org>
-Git-Commit-ID: 472bf751b56324f8c96d97ada3c9dcdc8b2ec4f7
-X-Mailer: tip-git-log-daemon
+	id S932190Ab0BOV2L (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 16:28:11 -0500
+Received: from vitalin.sorra.shikadi.net ([64.71.152.201]:46040 "EHLO
+	vitalin.sorra.shikadi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932154Ab0BOV2J (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Feb 2010 16:28:09 -0500
+Message-ID: <4B79BC66.9090408@shikadi.net>
+Date: Tue, 16 Feb 2010 07:28:06 +1000
+From: Adam Nielsen <a.nielsen@shikadi.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-GB; rv:1.8.1.23) Gecko/20091130 Thunderbird/2.0.0.23 Mnenhy/0.7.5.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Mon, 15 Feb 2010 21:24:45 +0000 (UTC)
+To: =?UTF-8?B?QW3DqXJpY28gV2FuZw==?= <xiyou.wangcong@gmail.com>
+CC: LKML Mailinglist <linux-kernel@vger.kernel.org>
+Subject: Re: UML error - apps killed 50% of the time
+References: <4B78EF9C.6040801@shikadi.net> <20100215090053.GG12076@hack.private> <4B79122A.9070102@shikadi.net> <20100215122732.GM12076@hack.private>
+In-Reply-To: <20100215122732.GM12076@hack.private>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  472bf751b56324f8c96d97ada3c9dcdc8b2ec4f7
-Gitweb:     http://git.kernel.org/tip/472bf751b56324f8c96d97ada3c9dcdc8b2ec4f7
-Author:     Borislav Petkov <borislav.petkov@amd.com>
-AuthorDate: Mon, 15 Feb 2010 12:43:56 +0100
-Committer:  H. Peter Anvin <hpa@zytor.com>
-CommitDate: Mon, 15 Feb 2010 12:32:48 -0800
+> So what are the errors now? Could you please provide your boot log?
 
-x86, cacheinfo: Remove NUMA dependency, fix for D1 Isntanbul
+Just more random tasks being killed:
 
-The show/store_cache_disable routines depend unnecessarily on NUMA's
-cpu_to_node and the disabling of cache indices breaks when !CONFIG_NUMA.
-Remove that dependency by using a helper which returns always the
-correct node id.
+  * Calculating module dependencies .../sbin/modules-update: line 73:   967 
+Broken pipe             sed -ne 1p "${x}"
+        968 Killed                  | egrep -q "^${HEADER}"
+  * Mounting local filesystems ... [ ok ]
+/etc/init.d/localmount: line 9:   982 Killed                  modprobe usbcore 
+ >&/dev/null
+  * Cleaning /tmp directory ... [ ok ]
+/sbin/depscan.sh: line 21:  1055 Killed                  mkdir -p -m 0755 
+"${svcdir}/${x}" 2>/dev/null
+  *  Could not create needed directory '/var/lib/init.d/snapshot'!
+INIT: Entering runlevel: 3
+/lib/rcscripts/sh/rc-services.sh: line 35:  1096 Killed 
+/sbin/depscan.sh -u
 
-While at it, enable L3 Cache Index disable on revD1 Istanbuls which
-sport the feature too.
+  * Error running '/sbin/depscan.sh'!
+  * Please correct any problems above.
+/sbin/functions.sh: line 184:  1098 Killed                  /usr/bin/logger -p 
+"${pri}" -t "${tag}" -- "$*"
 
-Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
-LKML-Reference: <1266234236-24749-1-git-send-email-bp@amd64.org>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
----
- arch/x86/kernel/cpu/intel_cacheinfo.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/arch/x86/kernel/cpu/intel_cacheinfo.c b/arch/x86/kernel/cpu/intel_cacheinfo.c
-index 589b705..be5f5c2 100644
---- a/arch/x86/kernel/cpu/intel_cacheinfo.c
-+++ b/arch/x86/kernel/cpu/intel_cacheinfo.c
-@@ -327,7 +327,7 @@ amd_check_l3_disable(int index, struct _cpuid4_info_regs *this_leaf)
- 
- 	/* see errata #382 and #388 */
- 	if ((boot_cpu_data.x86 == 0x10) &&
--	    ((boot_cpu_data.x86_model < 0x9) ||
-+	    ((boot_cpu_data.x86_model < 0x8) ||
- 	     (boot_cpu_data.x86_mask  < 0x1)))
- 		return;
- 
-@@ -744,7 +744,7 @@ static ssize_t show_cache_disable(struct _cpuid4_info *this_leaf, char *buf,
- 				  unsigned int index)
- {
- 	int cpu = cpumask_first(to_cpumask(this_leaf->shared_cpu_map));
--	int node = cpu_to_node(cpu);
-+	int node = amd_get_nb_id(cpu);
- 	struct pci_dev *dev = node_to_k8_nb_misc(node);
- 	unsigned int reg = 0;
- 
-@@ -771,7 +771,7 @@ static ssize_t store_cache_disable(struct _cpuid4_info *this_leaf,
- 	const char *buf, size_t count, unsigned int index)
- {
- 	int cpu = cpumask_first(to_cpumask(this_leaf->shared_cpu_map));
--	int node = cpu_to_node(cpu);
-+	int node = amd_get_nb_id(cpu);
- 	struct pci_dev *dev = node_to_k8_nb_misc(node);
- 	unsigned long val = 0;
- 
+Cheers,
+Adam.
