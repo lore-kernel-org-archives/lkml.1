@@ -1,79 +1,58 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755416Ab0BOLao (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 06:30:44 -0500
-Received: from mail.univ.kiev.ua ([91.202.128.82]:63288 "EHLO
-	mail.univ.kiev.ua" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755294Ab0BOLan (ORCPT
+	id S1755433Ab0BOLe6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 06:34:58 -0500
+Received: from mail-pw0-f46.google.com ([209.85.160.46]:54541 "EHLO
+	mail-pw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755422Ab0BOLe5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 06:30:43 -0500
-Message-ID: <1cdad42e2c2a411aa73c483202e75f63.squirrel@mail.univ.kiev.ua>
-Date: Mon, 15 Feb 2010 01:51:19 +0200 (EET)
-Subject: Web Updates Required.
-From: "webmail Support Team." <webmaster@web.updates.net>
-Reply-To: webmaster_updates@live.com
-User-Agent: SquirrelMail/1.4.17
+	Mon, 15 Feb 2010 06:34:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=EZU/7VdXTEj2yLcdemrin4GTWWDlRC8RNJ41jOlhJ3MVruMElzcvMSVd/jTE99Z50h
+         N4GDLWKiRBMlokalPI0MhTF5/w0Y3bUsbs6yqqDK2YYgJ4DStM4a9U4od7BZjbVbC7oI
+         LMQ6xKKZaFrmgjJD2wZ5VOWrkeyjwM61Fbxbw=
+Date: Mon, 15 Feb 2010 19:37:30 +0800
+From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+To: Adam Nielsen <a.nielsen@shikadi.net>
+Cc: LKML Mailinglist <linux-kernel@vger.kernel.org>
+Subject: Re: UML broken - runaway loop modprobe binfmt-464c
+Message-ID: <20100215113730.GL12076@hack.private>
+References: <4B78EE15.9020407@shikadi.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
-X-Spam-Score: 0.1 (/)
-X-Spam-Report: Spam detection software, running on the system "mail.univ.kiev.ua", has
-	identified this incoming email as possible spam.  The original message
-	has been attached to this so you can view it (if it isn't spam) or label
-	similar future email.  If you have any questions, see
-	The administrator of that system for details.
-	Content preview:  Dear Webmail Account Holder, This email is coming from the
-	webmail support team, and its contents is strictly intended for the user
-	of this email address which is the addressee. We want to inform you that the
-	current update being carried out on all web email accounts could not be completed
-	on your account due to authentication failure. Webmail admin system could
-	not authenticate your account, therefore your account stands the risk of
-	being shut down. [...] 
-	Content analysis details:   (0.1 points, 5.0 required)
-	pts rule name              description
-	---- ---------------------- --------------------------------------------------
-	-1.4 ALL_TRUSTED            Passed through trusted hosts only via SMTP
-	1.6 MISSING_HEADERS        Missing To: header
-To: unlisted-recipients:; (no To-header on input)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B78EE15.9020407@shikadi.net>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Feb 15, 2010 at 04:47:49PM +1000, Adam Nielsen wrote:
+> Hi all,
+>
+> I've been forced to upgrade an old machine running a couple of UML VMs, 
+> but I can't for the life of me figure out how to make them work on the 
+> new machine.
+>
+> I've compiled the latest kernel from kernel.org with ARCH=um and when I 
+> run it says this a few times and then stops:
+>
+> request_module: runaway loop modprobe binfmt-464c
+>
+> From Google it appears the cause of this is when you run a 64-bit system 
+> with a 32-bit kernel, but I'm running a 64-bit kernel with a 32-bit 
+> system.  I vaguely recall something about IA32 emulation in the normal 
+> kernel build, but I can't see anything like that in the UML kernel 
+> config.
+>
+> Does anyone know what might fix this?
+>
 
+So you are using 32-bit modprobe binary and 64-bit kernel?
 
-Dear Webmail Account Holder,
-This email is coming from the webmail support team, and its contents is
-strictly intended for the user of this email address which is the
-addressee.
-We want to inform you that the current update being carried out on all web
-email accounts could not be completed on your account due to
-authentication failure.
-Webmail admin system could not authenticate your account, therefore your
-account stands the risk of being shut down.
-
-This authentication is required to fully upgrade your account, confirm as
-active to fully prevent closure and to install the new antispam software
-developed by the joint webmail support teams to protect your webmail
-account from spam and
-unsolicited junk and virus carrying emails.
-To properly authenticate your account you are required to provide the
-correct details of your webmail account as stated below.
-
-Email Address:
-User ID:
-Current/Correct Password:
-Re-type Password:
-Date of Birth:
-
-You are to note that your account informations are safe and will NOT be
-shared with third parties.
-The above details are required to successfully carry out the upgrade and
-protection to your webmail account.
-Required details should be sent urgently to webmaster via email:
-webmaster_updates@live.com
-
-Webmail Support Team.
-
+This will not work, since kernel binfmt_elf module checks
+if e_machine is EM_X86_64.
 
