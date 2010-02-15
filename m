@@ -1,108 +1,108 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751957Ab0BOMex (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 07:34:53 -0500
-Received: from mail-iw0-f185.google.com ([209.85.223.185]:57992 "EHLO
-	mail-iw0-f185.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750774Ab0BOMew (ORCPT
+	id S1752136Ab0BOMfr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 07:35:47 -0500
+Received: from e28smtp05.in.ibm.com ([122.248.162.5]:56515 "EHLO
+	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750774Ab0BOMfp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 07:34:52 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type;
-        b=nCHvmckcjfiDcGTmqrqn2AX1gbYUnhSpmZnT3d6QdZoNzW4Wfn5Ay1GYYoUfM+kvL9
-         Ht0ExH/DOJIZcc3xXUrbiVeAsGGYSBY6q0QmKHBVugQ7PzGSsd2VRvs8RK+mwygkCGhj
-         3mJkFhgWYmye24WiVufPcZKFBquP6F2yuSTls=
-Message-ID: <4B793F67.8090301@gmail.com>
-Date: Mon, 15 Feb 2010 07:34:47 -0500
-From: William Allen Simpson <william.allen.simpson@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	Mon, 15 Feb 2010 07:35:45 -0500
+Date: Mon, 15 Feb 2010 18:05:38 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>, Ingo Molnar <mingo@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>, "Ma, Ling" <ling.ma@intel.com>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>, ego@in.ibm.com
+Subject: Re: [patch] sched: fix SMT scheduler regression in
+ find_busiest_queue()
+Message-ID: <20100215123538.GE8006@dirshya.in.ibm.com>
+Reply-To: svaidy@linux.vnet.ibm.com
+References: <1266023662.2808.118.camel@sbs-t61.sc.intel.com>
+ <20100213182748.GB5882@dirshya.in.ibm.com>
+ <20100213202552.GI5882@dirshya.in.ibm.com>
+ <20100213203611.GJ5882@dirshya.in.ibm.com>
+ <1266142318.5273.407.camel@laptop>
 MIME-Version: 1.0
-To: Linux Kernel Developers <linux-kernel@vger.kernel.org>
-CC: Linux Kernel Network Developers <netdev@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>
-Subject: [PATCH v3 5/7] TCPCT part 2e: accept SYNACK data
-References: <4B793CAA.2030902@gmail.com>
-In-Reply-To: <4B793CAA.2030902@gmail.com>
-Content-Type: multipart/mixed;
- boundary="------------030000020701070809010103"
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <1266142318.5273.407.camel@laptop>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------030000020701070809010103
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+* Peter Zijlstra <peterz@infradead.org> [2010-02-14 11:11:58]:
 
-When accompanied by cookie option, Initiator (client) queues incoming
-SYNACK transaction data.
+> On Sun, 2010-02-14 at 02:06 +0530, Vaidyanathan Srinivasan wrote:
+> > > > > @@ -4119,12 +4119,23 @@ find_busiest_queue(struct sched_group *group, enum cpu_idle_type idle,
+> > > > >                   continue;
+> > > > > 
+> > > > >           rq = cpu_rq(i);
+> > > > > -         wl = weighted_cpuload(i) * SCHED_LOAD_SCALE;
+> > > > > -         wl /= power;
+> > > > > +         wl = weighted_cpuload(i);
+> > > > > 
+> > > > > +         /*
+> > > > > +          * When comparing with imbalance, use weighted_cpuload()
+> > > > > +          * which is not scaled with the cpu power.
+> > > > > +          */
+> > > > >           if (capacity && rq->nr_running == 1 && wl > imbalance)
+> > > > >                   continue;
+> > > > > 
+> > > > > +         /*
+> > > > > +          * For the load comparisons with the other cpu's, consider
+> > > > > +          * the weighted_cpuload() scaled with the cpu power, so that
+> > > > > +          * the load can be moved away from the cpu that is potentially
+> > > > > +          * running at a lower capacity.
+> > > > > +          */
+> > > > > +         wl = (wl * SCHED_LOAD_SCALE) / power;
+> > > > > +
+> > > > >           if (wl > max_load) {
+> > > > >                   max_load = wl;
+> > > > >                   busiest = rq;
+> > > > > 
+> > > > >
+> > 
+> > In addition to the above fix, for sched_smt_powersavings to work, the
+> > group capacity of the core (mc level) should be made 2 in
+> > update_sg_lb_stats() by changing the DIV_ROUND_CLOSEST to
+> > DIV_RPUND_UP()
+> > 
+> >         sgs->group_capacity =
+> >                 DIV_ROUND_UP(group->cpu_power, SCHED_LOAD_SCALE);
+> > 
+> > Ideally we can change this to DIV_ROUND_UP and let SD_PREFER_SIBLING
+> > flag to force capacity to 1.  Need to see if there are any side
+> > effects of setting SD_PREFER_SIBLING at SIBLING level sched domain
+> > based on sched_smt_powersavings flag. 
+> 
+> OK, so while I think that Suresh' patch can make sense (haven't had time
+> to think it through), the above really sounds wrong. Things should not
+> rely on the cpu_power value like that.
 
-This is a straightforward re-implementation of an earlier (year-old)
-patch that no longer applies cleanly, with permission of the original
-author (Adam Langley).  The patch was previously reviewed:
+Hi Peter,
 
-    http://thread.gmane.org/gmane.linux.network/102586
+The reason rounding is a problem is because threads have fractional
+cpu_power and we lose some power in DIV_ROUND_CLOSEST().  At MC level
+a group has 2*589=1178 and group_capacity will be 1 always if
+DIV_ROUND_CLOSEST() is used irrespective of the SD_PREFER_SIBLING
+flag.
 
-This function will also be used in subsequent patches that implement
-additional features.
+We are reducing group capacity here to 1 even though we have 2 sibling
+threads in the group.  In the sched_smt_powassavings>0 case, the
+group_capacity should be 2 to allow task consolidation to this group
+while leaving other groups completely idle.
 
-Requires:
-   TCPCT part 1g: Responder Cookie => Initiator
-   net: tcp_header_len_th and tcp_option_len_th
+DIV_ROUND_UP(group->cpu_power, SCHED_LOAD_SCALE) will ensure any spare
+capacity is rounded up and counted.  
 
-Signed-off-by: William.Allen.Simpson@gmail.com
----
-  net/ipv4/tcp_input.c |   26 +++++++++++++++++++++++++-
-  1 files changed, 25 insertions(+), 1 deletions(-)
+While, if SD_REFER_SIBLING is set, 
 
+update_sd_lb_stats():
+        if (prefer_sibling)
+		sgs.group_capacity = min(sgs.group_capacity, 1UL);
 
---------------030000020701070809010103
-Content-Type: text/plain; x-mac-type="54455854"; x-mac-creator="0";
- name="TCPCT+2e3+2.6.33-rc8.patch"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="TCPCT+2e3+2.6.33-rc8.patch"
+will ensure the group_capacity is 1 and allows spreading of tasks.                
 
-ZGlmZiAtLWdpdCBhL25ldC9pcHY0L3RjcF9pbnB1dC5jIGIvbmV0L2lwdjQvdGNwX2lucHV0
-LmMKaW5kZXggOGUwZjZhZS4uMTY1MDQwZSAxMDA2NDQKLS0tIGEvbmV0L2lwdjQvdGNwX2lu
-cHV0LmMKKysrIGIvbmV0L2lwdjQvdGNwX2lucHV0LmMKQEAgLTUzOTUsNiArNTM5NSwxMiBA
-QCBkaXNjYXJkOgogCXJldHVybiAwOwogfQogCisvKgorICogUmV0dXJuczoKKyAqCSsxIG9u
-IHJlc2V0LAorICoJMCBzdWNjZXNzIGFuZC9vciBTWU5BQ0sgZGF0YSwKKyAqCS0xIG9uIGRp
-c2NhcmQuCisgKi8KIHN0YXRpYyBpbnQgdGNwX3Jjdl9zeW5zZW50X3N0YXRlX3Byb2Nlc3Mo
-c3RydWN0IHNvY2sgKnNrLCBzdHJ1Y3Qgc2tfYnVmZiAqc2tiLAogCQkJCQkgc3RydWN0IHRj
-cGhkciAqdGgpCiB7CkBAIC01NDAzLDYgKzU0MDksNyBAQCBzdGF0aWMgaW50IHRjcF9yY3Zf
-c3luc2VudF9zdGF0ZV9wcm9jZXNzKHN0cnVjdCBzb2NrICpzaywgc3RydWN0IHNrX2J1ZmYg
-KnNrYiwKIAlzdHJ1Y3QgdGNwX3NvY2sgKnRwID0gdGNwX3NrKHNrKTsKIAlzdHJ1Y3QgdGNw
-X2Nvb2tpZV92YWx1ZXMgKmN2cCA9IHRwLT5jb29raWVfdmFsdWVzOwogCWludCBzYXZlZF9j
-bGFtcCA9IHRwLT5yeF9vcHQubXNzX2NsYW1wOworCWludCBxdWV1ZWQgPSAwOwogCiAJdGNw
-X3BhcnNlX29wdGlvbnMoc2tiLCAmdHAtPnJ4X29wdCwgJmhhc2hfbG9jYXRpb24sIDApOwog
-CkBAIC01NTA5LDYgKzU1MTYsNyBAQCBzdGF0aWMgaW50IHRjcF9yY3Zfc3luc2VudF9zdGF0
-ZV9wcm9jZXNzKHN0cnVjdCBzb2NrICpzaywgc3RydWN0IHNrX2J1ZmYgKnNrYiwKIAkJCQkJ
-LSBUQ1BPTEVOX0NPT0tJRV9CQVNFOwogCQkJaW50IGNvb2tpZV9wYWlyX3NpemUgPSBjb29r
-aWVfc2l6ZQogCQkJCQkgICAgICsgY3ZwLT5jb29raWVfZGVzaXJlZDsKKwkJCWludCB0Y3Bf
-aGVhZGVyX2xlbiA9IHRjcF9oZWFkZXJfbGVuX3RoKHRoKTsKIAogCQkJLyogQSBjb29raWUg
-ZXh0ZW5zaW9uIG9wdGlvbiB3YXMgc2VudCBhbmQgcmV0dXJuZWQuCiAJCQkgKiBOb3RlIHRo
-YXQgZWFjaCBpbmNvbWluZyBTWU5BQ0sgcmVwbGFjZXMgdGhlCkBAIC01NTI0LDYgKzU1MzIs
-MTkgQEAgc3RhdGljIGludCB0Y3BfcmN2X3N5bnNlbnRfc3RhdGVfcHJvY2VzcyhzdHJ1Y3Qg
-c29jayAqc2ssIHN0cnVjdCBza19idWZmICpza2IsCiAJCQkJICAgICAgIGhhc2hfbG9jYXRp
-b24sIGNvb2tpZV9zaXplKTsKIAkJCQljdnAtPmNvb2tpZV9wYWlyX3NpemUgPSBjb29raWVf
-cGFpcl9zaXplOwogCQkJfQorCisJCQlxdWV1ZWQgPSBza2ItPmxlbiAtIHRjcF9oZWFkZXJf
-bGVuOworCQkJaWYgKHF1ZXVlZCA+IDApIHsKKwkJCQkvKiBRdWV1ZSBpbmNvbWluZyB0cmFu
-c2FjdGlvbiBkYXRhLiAqLworCQkJCV9fc2tiX3B1bGwoc2tiLCB0Y3BfaGVhZGVyX2xlbik7
-CisJCQkJX19za2JfcXVldWVfdGFpbCgmc2stPnNrX3JlY2VpdmVfcXVldWUsIHNrYik7CisJ
-CQkJc2tiX3NldF9vd25lcl9yKHNrYiwgc2spOworCQkJCXNrLT5za19kYXRhX3JlYWR5KHNr
-LCAwKTsKKwkJCQljdnAtPnNfZGF0YV9pbiA9IDE7IC8qIHRydWUgKi8KKwkJCQl0cC0+cmN2
-X254dCA9IFRDUF9TS0JfQ0Ioc2tiKS0+ZW5kX3NlcTsKKwkJCQl0cC0+cmN2X3d1cCA9IFRD
-UF9TS0JfQ0Ioc2tiKS0+ZW5kX3NlcTsKKwkJCQl0cC0+Y29waWVkX3NlcSA9IFRDUF9TS0Jf
-Q0Ioc2tiKS0+c2VxICsgMTsKKwkJCX0KIAkJfQogCiAJCXNtcF9tYigpOwpAQCAtNTU3Nywx
-MSArNTU5OCwxNCBAQCBzdGF0aWMgaW50IHRjcF9yY3Zfc3luc2VudF9zdGF0ZV9wcm9jZXNz
-KHN0cnVjdCBzb2NrICpzaywgc3RydWN0IHNrX2J1ZmYgKnNrYiwKIAkJCQkJCSAgVENQX0RF
-TEFDS19NQVgsIFRDUF9SVE9fTUFYKTsKIAogZGlzY2FyZDoKLQkJCV9fa2ZyZWVfc2tiKHNr
-Yik7CisJCQlpZiAocXVldWVkIDw9IDApCisJCQkJX19rZnJlZV9za2Ioc2tiKTsKIAkJCXJl
-dHVybiAwOwogCQl9IGVsc2UgewogCQkJdGNwX3NlbmRfYWNrKHNrKTsKIAkJfQorCQlpZiAo
-cXVldWVkID4gMCkKKwkJCXJldHVybiAwOwogCQlyZXR1cm4gLTE7CiAJfQogCi0tIAoxLjYu
-My4zCgo=
---------------030000020701070809010103--
+--Vaidy
+
