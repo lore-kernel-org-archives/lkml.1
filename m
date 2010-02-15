@@ -1,18 +1,18 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932325Ab0BOWVd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 17:21:33 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:44921 "EHLO
+	id S932343Ab0BOWUm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 17:20:42 -0500
+Received: from smtp-out.google.com ([216.239.44.51]:24624 "EHLO
 	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932297Ab0BOWUW (ORCPT
+	with ESMTP id S932320Ab0BOWU2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 17:20:22 -0500
+	Mon, 15 Feb 2010 17:20:28 -0500
 DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
 	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
 	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=S3i4Awq46KFKtd8aS6GrAFd/BQ+wmkRFTGtXhojiFIVW0Hd3yJOTqb8W/7vokRZsp
-	/SCe4OPyaIphdt493rUQw==
-Date: Mon, 15 Feb 2010 14:20:16 -0800 (PST)
+	b=KeAxaXF7e2CsJRWKAglvH0izwG6Dlr3vvxXzpQdecF5IOrXa0MiIb9WWO78FPcGcN
+	xb6OsDAD0sEHU0bvcS39w==
+Date: Mon, 15 Feb 2010 14:20:24 -0800 (PST)
 From: David Rientjes <rientjes@google.com>
 X-X-Sender: rientjes@chino.kir.corp.google.com
 To: Andrew Morton <akpm@linux-foundation.org>
@@ -22,9 +22,9 @@ cc: Rik van Riel <riel@redhat.com>,
        Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
        KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
        linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: [patch -mm 6/9 v2] oom: deprecate oom_adj tunable
+Subject: [patch -mm 9/9 v2] oom: remove unnecessary code and cleanup
 In-Reply-To: <alpine.DEB.2.00.1002151416470.26927@chino.kir.corp.google.com>
-Message-ID: <alpine.DEB.2.00.1002151418560.26927@chino.kir.corp.google.com>
+Message-ID: <alpine.DEB.2.00.1002151419400.26927@chino.kir.corp.google.com>
 References: <alpine.DEB.2.00.1002151416470.26927@chino.kir.corp.google.com>
 User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
@@ -34,102 +34,118 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-/proc/pid/oom_adj is now deprecated so that that it may eventually be
-removed.  The target date for removal is December 2011.
+Remove the redundancy in __oom_kill_task() since:
 
-A warning will be printed to the kernel log if a task attempts to use
-this interface.  Future warning will be suppressed until the kernel is
-rebooted to prevent spamming the kernel log.
+ - init can never be passed to this function: it will never be PF_EXITING
+   or selectable from select_bad_process(), and
 
+ - it will never be passed a task from oom_kill_task() without an ->mm
+   and we're unconcerned about detachment from exiting tasks, there's no
+   reason to protect them against SIGKILL or access to memory reserves.
+
+Also moves the kernel log message to a higher level since the verbosity
+is not always emitted here; we need not print an error message if an
+exiting task is given a longer timeslice.
+
+Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 Signed-off-by: David Rientjes <rientjes@google.com>
 ---
- Documentation/feature-removal-schedule.txt |   30 ++++++++++++++++++++++++++++
- Documentation/filesystems/proc.txt         |    3 ++
- fs/proc/base.c                             |    8 +++++++
- include/linux/oom.h                        |    3 ++
- 4 files changed, 44 insertions(+), 0 deletions(-)
+ mm/oom_kill.c |   64 ++++++++++++++------------------------------------------
+ 1 files changed, 16 insertions(+), 48 deletions(-)
 
-diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
---- a/Documentation/feature-removal-schedule.txt
-+++ b/Documentation/feature-removal-schedule.txt
-@@ -168,6 +168,36 @@ Who:	Eric Biederman <ebiederm@xmission.com>
+diff --git a/mm/oom_kill.c b/mm/oom_kill.c
+--- a/mm/oom_kill.c
++++ b/mm/oom_kill.c
+@@ -405,67 +405,35 @@ static void dump_header(struct task_struct *p, gfp_t gfp_mask, int order,
+ 		dump_tasks(mem);
+ }
  
- ---------------------------
+-#define K(x) ((x) << (PAGE_SHIFT-10))
+-
+ /*
+- * Send SIGKILL to the selected  process irrespective of  CAP_SYS_RAW_IO
+- * flag though it's unlikely that  we select a process with CAP_SYS_RAW_IO
+- * set.
++ * Give the oom killed task high priority and access to memory reserves so that
++ * it may quickly exit and free its memory.
+  */
+-static void __oom_kill_task(struct task_struct *p, int verbose)
++static void __oom_kill_task(struct task_struct *p)
+ {
+-	if (is_global_init(p)) {
+-		WARN_ON(1);
+-		printk(KERN_WARNING "tried to kill init!\n");
+-		return;
+-	}
+-
+-	task_lock(p);
+-	if (!p->mm) {
+-		WARN_ON(1);
+-		printk(KERN_WARNING "tried to kill an mm-less task %d (%s)!\n",
+-			task_pid_nr(p), p->comm);
+-		task_unlock(p);
+-		return;
+-	}
+-
+-	if (verbose)
+-		printk(KERN_ERR "Killed process %d (%s) "
+-		       "vsz:%lukB, anon-rss:%lukB, file-rss:%lukB\n",
+-		       task_pid_nr(p), p->comm,
+-		       K(p->mm->total_vm),
+-		       K(get_mm_counter(p->mm, MM_ANONPAGES)),
+-		       K(get_mm_counter(p->mm, MM_FILEPAGES)));
+-	task_unlock(p);
+-
+-	/*
+-	 * We give our sacrificial lamb high priority and access to
+-	 * all the memory it needs. That way it should be able to
+-	 * exit() and clear out its resources quickly...
+-	 */
+ 	p->rt.time_slice = HZ;
+ 	set_tsk_thread_flag(p, TIF_MEMDIE);
+-
+ 	force_sig(SIGKILL, p);
+ }
  
-+What:	/proc/<pid>/oom_adj
-+When:	December 2011
-+Why:	/proc/<pid>/oom_adj allows userspace to influence the oom killer's
-+	badness heuristic used to determine which task to kill when the kernel
-+	is out of memory.
-+
-+	The badness heuristic has since been rewritten since the introduction of
-+	this tunable such that its meaning is deprecated.  The value was
-+	implemented as a bitshift on a score generated by the badness()
-+	function that did not have any precise units of measure.  With the
-+	rewrite, the score is given as a proportion of available memory to the
-+	task allocating pages, so using a bitshift which grows the score
-+	exponentially is, thus, impossible to tune with fine granularity.
-+
-+	A much more powerful interface, /proc/<pid>/oom_score_adj, was
-+	introduced with the oom killer rewrite that allows users to increase or
-+	decrease the badness() score linearly.  This interface will replace
-+	/proc/<pid>/oom_adj.
-+
-+	See Documentation/filesystems/proc.txt for information on how to use the
-+	new tunable.
-+
-+	A warning will be emitted to the kernel log if an application uses this
-+	deprecated interface.  After it is printed once, future warning will be
-+	suppressed until the kernel is rebooted.
-+
-+Who:	David Rientjes <rientjes@google.com>
-+
-+---------------------------
-+
- What:	remove EXPORT_SYMBOL(kernel_thread)
- When:	August 2006
- Files:	arch/*/kernel/*_ksyms.c
-diff --git a/Documentation/filesystems/proc.txt b/Documentation/filesystems/proc.txt
---- a/Documentation/filesystems/proc.txt
-+++ b/Documentation/filesystems/proc.txt
-@@ -1247,6 +1247,9 @@ scaled linearly with /proc/<pid>/oom_score_adj.
- Writing to /proc/<pid>/oom_score_adj or /proc/<pid>/oom_adj will change the
- other with its scaled value.
++#define K(x) ((x) << (PAGE_SHIFT-10))
+ static int oom_kill_task(struct task_struct *p)
+ {
+-	/* WARNING: mm may not be dereferenced since we did not obtain its
+-	 * value from get_task_mm(p).  This is OK since all we need to do is
+-	 * compare mm to q->mm below.
+-	 *
+-	 * Furthermore, even if mm contains a non-NULL value, p->mm may
+-	 * change to NULL at any time since we do not hold task_lock(p).
+-	 * However, this is of no concern to us.
+-	 */
+-	if (!p->mm || p->signal->oom_score_adj == OOM_SCORE_ADJ_MIN)
++	task_lock(p);
++	if (!p->mm || p->signal->oom_score_adj == OOM_SCORE_ADJ_MIN) {
++		task_unlock(p);
+ 		return 1;
++	}
++	pr_err("Killed process %d (%s) total-vm:%lukB, anon-rss:%lukB, file-rss:%lukB\n",
++		task_pid_nr(p), p->comm, K(p->mm->total_vm),
++	       K(get_mm_counter(p->mm, MM_ANONPAGES)),
++	       K(get_mm_counter(p->mm, MM_FILEPAGES)));
++	task_unlock(p);
  
-+NOTICE: /proc/<pid>/oom_adj is deprecated and will be removed, please see
-+Documentation/feature-removal-schedule.txt.
-+
- Caveat: when a parent task is selected, the oom killer will sacrifice any first
- generation children with seperate address spaces instead, if possible.  This
- avoids servers and important system daemons from being killed and loses the
-diff --git a/fs/proc/base.c b/fs/proc/base.c
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -1157,6 +1157,14 @@ static ssize_t oom_adjust_write(struct file *file, const char __user *buf,
- 		return -EACCES;
+-	__oom_kill_task(p, 1);
+-
++	__oom_kill_task(p);
+ 	return 0;
+ }
++#undef K
+ 
+ static int oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
+ 			    unsigned int points, unsigned long totalpages,
+@@ -484,7 +452,7 @@ static int oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
+ 	 * its children or threads, just set TIF_MEMDIE so it can die quickly
+ 	 */
+ 	if (p->flags & PF_EXITING) {
+-		__oom_kill_task(p, 0);
++		__oom_kill_task(p);
+ 		return 0;
  	}
  
-+	/*
-+	 * Warn that /proc/pid/oom_adj is deprecated, see
-+	 * Documentation/feature-removal-schedule.txt.
-+	 */
-+	printk_once(KERN_WARNING "%s (%d): /proc/%d/oom_adj is deprecated, "
-+			"please use /proc/%d/oom_score_adj instead.\n",
-+			current->comm, task_pid_nr(current),
-+			task_pid_nr(task), task_pid_nr(task));
- 	task->signal->oom_adj = oom_adjust;
- 	/*
- 	 * Scale /proc/pid/oom_score_adj appropriately ensuring that a maximum
-diff --git a/include/linux/oom.h b/include/linux/oom.h
---- a/include/linux/oom.h
-+++ b/include/linux/oom.h
-@@ -2,6 +2,9 @@
- #define __INCLUDE_LINUX_OOM_H
- 
- /*
-+ * /proc/<pid>/oom_adj is deprecated, see
-+ * Documentation/feature-removal-schedule.txt.
-+ *
-  * /proc/<pid>/oom_adj set to -17 protects from the oom-killer
-  */
- #define OOM_DISABLE (-17)
