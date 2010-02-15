@@ -1,18 +1,18 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932275Ab0BOWUQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 17:20:16 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:44852 "EHLO
+	id S932331Ab0BOWUj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 17:20:39 -0500
+Received: from smtp-out.google.com ([216.239.44.51]:24630 "EHLO
 	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756445Ab0BOWUJ (ORCPT
+	with ESMTP id S932323Ab0BOWUa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 17:20:09 -0500
+	Mon, 15 Feb 2010 17:20:30 -0500
 DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
 	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
 	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=HpDNgETdobPPVA7a1SXfIyoWZXhx2XUSB+rgCMVdN+aIeLn6iGOX8Zmg1ItFILCln
-	fk8C8OnAmlFiinpsQasFw==
-Date: Mon, 15 Feb 2010 14:20:03 -0800 (PST)
+	b=g6eFv8nhllIVCdwrsWgHKxVMnk6XU3gEyCs5qVLZm6swXdq48q08gwMy0UDV/QZS4
+	ep+MAPDp2AkzlYpxeOaHw==
+Date: Mon, 15 Feb 2010 14:20:18 -0800 (PST)
 From: David Rientjes <rientjes@google.com>
 X-X-Sender: rientjes@chino.kir.corp.google.com
 To: Andrew Morton <akpm@linux-foundation.org>
@@ -22,10 +22,9 @@ cc: Rik van Riel <riel@redhat.com>,
        Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
        KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
        linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: [patch -mm 2/9 v2] oom: sacrifice child with highest badness score
- for parent
+Subject: [patch -mm 7/9 v2] oom: replace sysctls with quick mode
 In-Reply-To: <alpine.DEB.2.00.1002151416470.26927@chino.kir.corp.google.com>
-Message-ID: <alpine.DEB.2.00.1002151417480.26927@chino.kir.corp.google.com>
+Message-ID: <alpine.DEB.2.00.1002151419120.26927@chino.kir.corp.google.com>
 References: <alpine.DEB.2.00.1002151416470.26927@chino.kir.corp.google.com>
 User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
@@ -35,80 +34,171 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When a task is chosen for oom kill, the oom killer first attempts to
-sacrifice a child not sharing its parent's memory instead.
-Unfortunately, this often kills in a seemingly random fashion based on
-the ordering of the selected task's child list.  Additionally, it is not
-guaranteed at all to free a large amount of memory that we need to
-prevent additional oom killing in the very near future.
+Two VM sysctls, oom dump_tasks and oom_kill_allocating_task, were
+implemented for very large systems to avoid excessively long tasklist
+scans.  The former suppresses helpful diagnostic messages that are
+emitted for each thread group leader that are candidates for oom kill
+including their pid, uid, vm size, rss, oom_adj value, and name; this
+information is very helpful to users in understanding why a particular
+task was chosen for kill over others.  The latter simply kills current,
+the task triggering the oom condition, instead of iterating through the
+tasklist looking for the worst offender.
 
-Instead, we now only attempt to sacrifice the worst child not sharing its
-parent's memory, if one exists.  The worst child is indicated with the
-highest badness() score.  This serves two advantages: we kill a
-memory-hogging task more often, and we allow the configurable
-/proc/pid/oom_adj value to be considered as a factor in which child to
-kill.
+Both of these sysctls are combined into one for use on the aforementioned
+large systems: oom_kill_quick.  This disables the now-default
+oom_dump_tasks and kills current whenever the oom killer is called.
 
-Reviewers may observe that the previous implementation would iterate
-through the children and attempt to kill each until one was successful
-and then the parent if none were found while the new code simply kills
-the most memory-hogging task or the parent.  Note that the only time
-oom_kill_task() fails, however, is when a child does not have an mm or
-has a /proc/pid/oom_adj of OOM_DISABLE.  badness() returns 0 for both
-cases, so the final oom_kill_task() will always succeed.
+The oom killer rewrite is the perfect opportunity to combine both sysctls
+into one instead of carrying around the others for years to come for
+nothing else than legacy purposes.
 
-Acked-by: Rik van Riel <riel@redhat.com>
 Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Reviewed-by: Minchan Kim <minchan.kim@gmail.com>
-Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 Signed-off-by: David Rientjes <rientjes@google.com>
 ---
- mm/oom_kill.c |   23 +++++++++++++++++------
- 1 files changed, 17 insertions(+), 6 deletions(-)
+ Documentation/sysctl/vm.txt |   44 +++++-------------------------------------
+ include/linux/oom.h         |    3 +-
+ kernel/sysctl.c             |   13 ++---------
+ mm/oom_kill.c               |    9 +++----
+ 4 files changed, 14 insertions(+), 55 deletions(-)
 
+diff --git a/Documentation/sysctl/vm.txt b/Documentation/sysctl/vm.txt
+--- a/Documentation/sysctl/vm.txt
++++ b/Documentation/sysctl/vm.txt
+@@ -43,9 +43,8 @@ Currently, these files are in /proc/sys/vm:
+ - nr_pdflush_threads
+ - nr_trim_pages         (only if CONFIG_MMU=n)
+ - numa_zonelist_order
+-- oom_dump_tasks
+ - oom_forkbomb_thres
+-- oom_kill_allocating_task
++- oom_kill_quick
+ - overcommit_memory
+ - overcommit_ratio
+ - page-cluster
+@@ -470,27 +469,6 @@ this is causing problems for your system/application.
+ 
+ ==============================================================
+ 
+-oom_dump_tasks
+-
+-Enables a system-wide task dump (excluding kernel threads) to be
+-produced when the kernel performs an OOM-killing and includes such
+-information as pid, uid, tgid, vm size, rss, cpu, oom_adj score, and
+-name.  This is helpful to determine why the OOM killer was invoked
+-and to identify the rogue task that caused it.
+-
+-If this is set to zero, this information is suppressed.  On very
+-large systems with thousands of tasks it may not be feasible to dump
+-the memory state information for each one.  Such systems should not
+-be forced to incur a performance penalty in OOM conditions when the
+-information may not be desired.
+-
+-If this is set to non-zero, this information is shown whenever the
+-OOM killer actually kills a memory-hogging task.
+-
+-The default value is 0.
+-
+-==============================================================
+-
+ oom_forkbomb_thres
+ 
+ This value defines how many children with a seperate address space a specific
+@@ -511,22 +489,12 @@ The default value is 1000.
+ 
+ ==============================================================
+ 
+-oom_kill_allocating_task
+-
+-This enables or disables killing the OOM-triggering task in
+-out-of-memory situations.
+-
+-If this is set to zero, the OOM killer will scan through the entire
+-tasklist and select a task based on heuristics to kill.  This normally
+-selects a rogue memory-hogging task that frees up a large amount of
+-memory when killed.
+-
+-If this is set to non-zero, the OOM killer simply kills the task that
+-triggered the out-of-memory condition.  This avoids the expensive
+-tasklist scan.
++oom_kill_quick
+ 
+-If panic_on_oom is selected, it takes precedence over whatever value
+-is used in oom_kill_allocating_task.
++When enabled, this will always kill the task that triggered the oom killer, i.e.
++the task that attempted to allocate memory that could not be found.  It also
++suppresses the tasklist dump to the kernel log whenever the oom killer is
++called.  Typically set on systems with an extremely large number of tasks.
+ 
+ The default value is 0.
+ 
+diff --git a/include/linux/oom.h b/include/linux/oom.h
+--- a/include/linux/oom.h
++++ b/include/linux/oom.h
+@@ -63,8 +63,7 @@ static inline void oom_killer_enable(void)
+ }
+ /* for sysctl */
+ extern int sysctl_panic_on_oom;
+-extern int sysctl_oom_kill_allocating_task;
+-extern int sysctl_oom_dump_tasks;
++extern int sysctl_oom_kill_quick;
+ extern int sysctl_oom_forkbomb_thres;
+ 
+ #endif /* __KERNEL__*/
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -941,16 +941,9 @@ static struct ctl_table vm_table[] = {
+ 		.proc_handler	= proc_dointvec,
+ 	},
+ 	{
+-		.procname	= "oom_kill_allocating_task",
+-		.data		= &sysctl_oom_kill_allocating_task,
+-		.maxlen		= sizeof(sysctl_oom_kill_allocating_task),
+-		.mode		= 0644,
+-		.proc_handler	= proc_dointvec,
+-	},
+-	{
+-		.procname	= "oom_dump_tasks",
+-		.data		= &sysctl_oom_dump_tasks,
+-		.maxlen		= sizeof(sysctl_oom_dump_tasks),
++		.procname	= "oom_kill_quick",
++		.data		= &sysctl_oom_kill_quick,
++		.maxlen		= sizeof(sysctl_oom_kill_quick),
+ 		.mode		= 0644,
+ 		.proc_handler	= proc_dointvec,
+ 	},
 diff --git a/mm/oom_kill.c b/mm/oom_kill.c
 --- a/mm/oom_kill.c
 +++ b/mm/oom_kill.c
-@@ -432,7 +432,10 @@ static int oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
- 			    unsigned long points, struct mem_cgroup *mem,
- 			    const char *message)
- {
-+	struct task_struct *victim = p;
- 	struct task_struct *c;
-+	unsigned long victim_points = 0;
-+	struct timespec uptime;
+@@ -32,9 +32,8 @@
+ #include <linux/security.h>
  
- 	if (printk_ratelimit())
- 		dump_header(p, gfp_mask, order, mem);
-@@ -446,17 +449,25 @@ static int oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
- 		return 0;
- 	}
+ int sysctl_panic_on_oom;
+-int sysctl_oom_kill_allocating_task;
+-int sysctl_oom_dump_tasks;
+ int sysctl_oom_forkbomb_thres = DEFAULT_OOM_FORKBOMB_THRES;
++int sysctl_oom_kill_quick;
+ static DEFINE_SPINLOCK(zone_scan_lock);
  
--	printk(KERN_ERR "%s: kill process %d (%s) score %li or a child\n",
--					message, task_pid_nr(p), p->comm, points);
-+	pr_err("%s: Kill process %d (%s) with score %lu or sacrifice child\n",
-+		message, task_pid_nr(p), p->comm, points);
- 
--	/* Try to kill a child first */
-+	/* Try to sacrifice the worst child first */
-+	do_posix_clock_monotonic_gettime(&uptime);
- 	list_for_each_entry(c, &p->children, sibling) {
-+		unsigned long cpoints;
-+
- 		if (c->mm == p->mm)
- 			continue;
--		if (!oom_kill_task(c))
--			return 0;
-+
-+		/* badness() returns 0 if the thread is unkillable */
-+		cpoints = badness(c, uptime.tv_sec);
-+		if (cpoints > victim_points) {
-+			victim = c;
-+			victim_points = cpoints;
-+		}
- 	}
--	return oom_kill_task(p);
-+	return oom_kill_task(victim);
+ /*
+@@ -402,7 +401,7 @@ static void dump_header(struct task_struct *p, gfp_t gfp_mask, int order,
+ 	dump_stack();
+ 	mem_cgroup_print_oom_info(mem, p);
+ 	show_mem();
+-	if (sysctl_oom_dump_tasks)
++	if (!sysctl_oom_kill_quick)
+ 		dump_tasks(mem);
  }
  
- #ifdef CONFIG_CGROUP_MEM_RES_CTLR
+@@ -609,9 +608,9 @@ static void __out_of_memory(gfp_t gfp_mask, int order, unsigned long totalpages,
+ 	struct task_struct *p;
+ 	unsigned int points;
+ 
+-	if (sysctl_oom_kill_allocating_task)
++	if (sysctl_oom_kill_quick)
+ 		if (!oom_kill_process(current, gfp_mask, order, 0, totalpages,
+-			NULL, "Out of memory (oom_kill_allocating_task)"))
++			NULL, "Out of memory (quick mode)"))
+ 			return;
+ retry:
+ 	/*
