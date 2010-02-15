@@ -1,81 +1,51 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754410Ab0BOGvL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 01:51:11 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44961
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754035Ab0BOGvI (ORCPT
+	id S1754567Ab0BOGyO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 01:54:14 -0500
+Received: from mail-ew0-f228.google.com ([209.85.219.228]:41759 "EHLO
+	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752662Ab0BOGyN convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 01:51:08 -0500
-Date: Sun, 14 Feb 2010 22:51:17 -0800 (PST)
-Message-Id: <20100214.225117.242995108.davem@davemloft.net>
-To: sfr@canb.auug.org.au
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jpirko@redhat.com
-Subject: Re: linux-next: build warning after merge of the net tree
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20100215143257.7af33452.sfr@canb.auug.org.au>
-References: <20100215143257.7af33452.sfr@canb.auug.org.au>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 15 Feb 2010 01:54:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=bcNo4Iw84+JyOY/q6pMWlNE6wAzyG+mcjD5SRBQ1SV7hz/r8/yKxui2ZltQRk3661a
+         I5sraTksonmR+uMlHHToObBb1RjRNsglctI3flLyjiuMe6MWAz43hwRRwBHedqUE5+tO
+         cB+cfKTkAAbKm40MB2Cm5phfzYWKfTqQcOm/o=
+MIME-Version: 1.0
+In-Reply-To: <Xv2rBFCTXTH.A.DTC.vyIeLB@chimera>
+References: <fQEllunEdO.A.-LB.HyIeLB@chimera>
+	 <Xv2rBFCTXTH.A.DTC.vyIeLB@chimera>
+Date: Mon, 15 Feb 2010 07:54:11 +0100
+Message-ID: <b170af451002142254w5c6656eegdee2431b0146d3f8@mail.gmail.com>
+Subject: Re: [Bug #15096] Resume lock up -- bisected, commit 
+	3a1151e3f124fd1a2c54b8153f510f1a7c715369
+From: =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Len Brown <len.brown@intel.com>,
+       Stefan Bader <stefan.bader@canonical.com>,
+       Zhang Rui <rui.zhang@intel.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Mon, 15 Feb 2010 14:32:57 +1100
+2010/2/15 Rafael J. Wysocki <rjw@sisk.pl>:
+> This message has been generated automatically as a part of a report
+> of regressions introduced between 2.6.31 and 2.6.32.
+>
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.31 and 2.6.32.  Please verify if it still should
+> be listed and let the tracking team know (either way).
 
-> After merging the net tree, today's linux-next build (x86_64 allmodconfig)
-> produced this warning:
-> 
-> net/mac80211/iface.c: In function 'ieee80211_stop':
-> net/mac80211/iface.c:416: warning: passing argument 4 of '__dev_addr_unsync' makes pointer from integer without a cast
-> include/linux/netdevice.h:1967: note: expected 'int *' but argument is of type 'int'
-> 
-> Introduced by commit 4cd24eaf0c6ee7f0242e34ee77ec899f255e66b5 ("net: use
-> netdev_mc_count and netdev_mc_empty when appropriate").
+It should be, there is one testing request I didn't make yet. I'll do
+this soon, after my today's study final exam.
 
-I'll fix this like so:
-
-mac80211: Fix error introduced in netdev_mc_count() changes.
-
-Commit 4cd24eaf0c6ee7f0242e34ee77ec899f255e66b5
-("net: use netdev_mc_count and netdev_mc_empty when appropriate")
-added this hunk to net/mac80211/iface.c:
-
- 	__dev_addr_unsync(&local->mc_list, &local->mc_count,
--			  &dev->mc_list, &dev->mc_count);
-+			  &dev->mc_list, dev->mc_count);
-
-which is definitely not correct, introduced a warning (reported
-by Stephen Rothwell):
-
-net/mac80211/iface.c: In function 'ieee80211_stop':
-net/mac80211/iface.c:416: warning: passing argument 4 of '__dev_addr_unsync' makes pointer from integer without a cast
-include/linux/netdevice.h:1967: note: expected 'int *' but argument is of type 'int'
-
-and is thus reverted here.
-
-Signed-off-by: David S. Miller <davem@davemloft.net>
----
- net/mac80211/iface.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/net/mac80211/iface.c b/net/mac80211/iface.c
-index f943f5f..09fff46 100644
---- a/net/mac80211/iface.c
-+++ b/net/mac80211/iface.c
-@@ -413,7 +413,7 @@ static int ieee80211_stop(struct net_device *dev)
- 	netif_addr_lock_bh(dev);
- 	spin_lock_bh(&local->filter_lock);
- 	__dev_addr_unsync(&local->mc_list, &local->mc_count,
--			  &dev->mc_list, dev->mc_count);
-+			  &dev->mc_list, &dev->mc_count);
- 	spin_unlock_bh(&local->filter_lock);
- 	netif_addr_unlock_bh(dev);
- 
 -- 
-1.6.6.1
-
+Rafał
