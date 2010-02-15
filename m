@@ -1,51 +1,47 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754406Ab0BOJUg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 04:20:36 -0500
-Received: from moutng.kundenserver.de ([212.227.126.186]:56795 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753510Ab0BOJUe (ORCPT
+	id S1754479Ab0BOJVv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 04:21:51 -0500
+Received: from vitalin.sorra.shikadi.net ([64.71.152.201]:56756 "EHLO
+	vitalin.sorra.shikadi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754180Ab0BOJVu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 04:20:34 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: "Michael S. Tsirkin" <mst@redhat.com>
-Subject: Re: [PATCH 2/2] net/macvtap: add vhost suppor
-Date: Mon, 15 Feb 2010 10:20:30 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.33-rc5; KDE/4.3.2; x86_64; ; )
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Ed Swierk <eswierk@aristanetworks.com>,
-       Patrick McHardy <kaber@trash.net>, Sridhar Samudrala <sri@us.ibm.com>,
-       qemu-devel@nongnu.org
-References: <201002131133.43028.arnd@arndb.de> <201002131135.08477.arnd@arndb.de> <20100214132732.GB31180@redhat.com>
-In-Reply-To: <20100214132732.GB31180@redhat.com>
+	Mon, 15 Feb 2010 04:21:50 -0500
+Message-ID: <4B79122A.9070102@shikadi.net>
+Date: Mon, 15 Feb 2010 19:21:46 +1000
+From: Adam Nielsen <a.nielsen@shikadi.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-GB; rv:1.8.1.23) Gecko/20091130 Thunderbird/2.0.0.23 Mnenhy/0.7.5.0
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: =?UTF-8?B?QW3DqXJpY28gV2FuZw==?= <xiyou.wangcong@gmail.com>
+CC: LKML Mailinglist <linux-kernel@vger.kernel.org>
+Subject: Re: UML error - apps killed 50% of the time
+References: <4B78EF9C.6040801@shikadi.net> <20100215090053.GG12076@hack.private>
+In-Reply-To: <20100215090053.GG12076@hack.private>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <201002151020.30127.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/MrxHm/5cnnxuo8twyLJnbvLyzHxFvjuS15iV
- fChatEDhOEFV3wQL3zI+O7sw81oGYWt7njGb1VBzxTHc0ue7mS
- Szm26+Ax/aIQnMFM/LWAg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 14 February 2010, Michael S. Tsirkin wrote:
-> > @@ -473,7 +477,7 @@ static struct socket *get_socket(int fd)
-> >       sock = get_raw_socket(fd);
-> >       if (!IS_ERR(sock))
-> >               return sock;
-> > -     sock = get_tun_socket(fd);
-> > +     sock = get_tap_socket(fd);
-> >       if (!IS_ERR(sock))
-> >               return sock;
-> >       return ERR_PTR(-ENOTSOCK);
-> 
-> This will also need a dependency on macvtap in Kconfig.
-> See how it's done for tun.
+>> $ ls
+>> Killed
+>> $ ls
+>> Killed
+>>
+>> vmlinux[6300] general protection eip:b7ea5124 esp:1785bdfc error:0
+>>
+>> Why doesn't UML work any more?
+>
+> http://patchwork.kernel.org/patch/79358/
+>
+> Does this patch help?
 
-Ok, I'll add that.
+Sort of - ls doesn't get killed any more and I can get about half way through 
+the boot process before things start getting killed (as opposed to them 
+getting killed right away.)
+
+Whatever this patch does, if it could do it twice as much then my problem 
+would be solved ;-)
 
 Thanks,
-
-	Arnd
+Adam.
