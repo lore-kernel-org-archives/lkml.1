@@ -1,73 +1,86 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932209Ab0BOVfm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 16:35:42 -0500
-Received: from mail-out.m-online.net ([212.18.0.9]:34926 "EHLO
-	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932167Ab0BOVfk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 16:35:40 -0500
-X-Auth-Info: eEHh3zVUkCmZ4zC/xkrVfpZc3CwiFJBxKFaIL8pblms=
-From: Anatolij Gustschin <agust@denx.de>
-To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Anatolij Gustschin <agust@denx.de>,
-       Dan Williams <dan.j.williams@intel.com>,
-       Maciej Sosnowski <maciej.sosnowski@intel.com>
-Subject: [PATCH] dmatest: correct raid6 PQ test
-Date: Mon, 15 Feb 2010 22:35:23 +0100
-Message-Id: <1266269723-556-1-git-send-email-agust@denx.de>
-X-Mailer: git-send-email 1.6.3.3
+	id S932222Ab0BOVmP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 16:42:15 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:36636 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932184Ab0BOVmN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Feb 2010 16:42:13 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Gary Hade <garyhade@us.ibm.com>
+Subject: Re: [PATCH 8/9] PCI / ACPI / PM: Platform support for PCI PME wake-up (rev. 7)
+Date: Mon, 15 Feb 2010 22:42:48 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.33-rc8-rjw; KDE/4.3.5; x86_64; ; )
+Cc: linux-pm@lists.linux-foundation.org, Linux PCI <linux-pci@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "Moore, Robert" <robert.moore@intel.com>,
+       Matthew Garrett <mjg@redhat.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+References: <201001101431.38630.rjw@sisk.pl> <201002141451.17888.rjw@sisk.pl> <20100215192252.GA11074@us.ibm.com>
+In-Reply-To: <20100215192252.GA11074@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002152242.48303.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The number of PQ sources specified by module parameter "pq_sources"
-is always forced odd to fit into dmatest's destination verificaton
-scheme. But number of PQ sources and coefficients as passed to the
-driver's prep_dma_pq() is not adjusted accordingly.
+On Monday 15 February 2010, Gary Hade wrote:
+> On Sun, Feb 14, 2010 at 02:51:17PM +0100, Rafael J. Wysocki wrote:
+> > On Saturday 13 February 2010, Gary Hade wrote:
+> > > On Sat, Feb 13, 2010 at 01:20:29AM +0100, Rafael J. Wysocki wrote:
+> > > > On Friday 12 February 2010, Rafael J. Wysocki wrote:
+> > > > > On Friday 12 February 2010, Gary Hade wrote:
+> > ...
+> > > > In fact there are two problems in there.  First, the bridge event notification
+> > > > calls handle_bridge_insertion() which attempts to install a PM notifier for
+> > > > the bridge and that deadlocks, because it tries to acquire the mutex
+> > > > recursively.  Second, apparently, init_bridge_misc() may be called in the
+> > > > notification code path and it attempts to unregister the notifier and register
+> > > > it again, which can't be done with pci_acpi_notify_mtx held.
+> > > > 
+> > > > I guess there are similar problems on the hot remove notification path.
+> > > > 
+> > > > Anyway, I have a new version of the patch and I'm going to test it a bit
+> > > > over the weekend.  Unfortunately, I don't have hardware with PCI hotplug
+> > > > capability, so I'll send you the new patch for testing on Monday, if you don't
+> > > > mind.
+> > > 
+> > > I don't mind.
+> > 
+> > Thanks!
+> > 
+> > > Although I am concerned that my acpiphp only
+> > > testing on our IBM System x boxes may not be sufficient to
+> > > assure that PCI hotplug will work well on other PCI hotplug
+> > > capable systems.  I hope that others will also do some early
+> > > testing of this code.
+> > 
+> > The code that you've been testing is not very hardware-dependent.  It only
+> > matters whether or not the hardware is capable of PCI hotplugging
+> > (ACPI-based), so your testing should be sufficient.
+> 
+> Perhaps the tester-dependent aspect should also be considered. :)
+> 
+> > 
+> > In fact I have two patches to test.  The first one is an ACPI CA patch that
+> > allows us to use more than one system notify handler per device (below).
+> > Please test it on top of [1-3/9] with the replacement for [4-6/9] I sent
+> > you earlier (http://patchwork.kernel.org/patch/78814/) and (updated) [7/9].
+> 
+> This seemed to work OK.  I did not see any of the previously
+> reported issues during hot-remove and hot-add.
+> 
+> > 
+> > If this works, please apply the patch from
+> > http://git.kernel.org/?p=linux/kernel/git/rafael/suspend-2.6.git;a=patch;h=d42c8b334bafe3a15f2dd43e395dafefe58dc588
+> > on top of the appended one and see if things still work correctly.
+> 
+> Results still looked good after adding this patch.
 
-Fix it now to get correct PQ testing results in the case passed
-"pq_sources" parameter is even.
+Thanks a lot for testing, it looks like the issues have been resolved, then.
 
-Signed-off-by: Anatolij Gustschin <agust@denx.de>
-Cc: Dan Williams <dan.j.williams@intel.com>
-Cc: Maciej Sosnowski <maciej.sosnowski@intel.com>
----
- drivers/dma/dmatest.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/dma/dmatest.c b/drivers/dma/dmatest.c
-index 948d563..9ae3d11 100644
---- a/drivers/dma/dmatest.c
-+++ b/drivers/dma/dmatest.c
-@@ -237,7 +237,7 @@ static int dmatest_func(void *data)
- 	dma_cookie_t		cookie;
- 	enum dma_status		status;
- 	enum dma_ctrl_flags 	flags;
--	u8			pq_coefs[pq_sources];
-+	u8			pq_coefs[pq_sources + 1];
- 	int			ret;
- 	int			src_cnt;
- 	int			dst_cnt;
-@@ -257,7 +257,7 @@ static int dmatest_func(void *data)
- 	} else if (thread->type == DMA_PQ) {
- 		src_cnt = pq_sources | 1; /* force odd to ensure dst = src */
- 		dst_cnt = 2;
--		for (i = 0; i < pq_sources; i++)
-+		for (i = 0; i < src_cnt; i++)
- 			pq_coefs[i] = 1;
- 	} else
- 		goto err_srcs;
-@@ -355,7 +355,7 @@ static int dmatest_func(void *data)
- 			for (i = 0; i < dst_cnt; i++)
- 				dma_pq[i] = dma_dsts[i] + dst_off;
- 			tx = dev->device_prep_dma_pq(chan, dma_pq, dma_srcs,
--						     pq_sources, pq_coefs,
-+						     src_cnt, pq_coefs,
- 						     len, flags);
- 		}
- 
--- 
-1.6.3.3
-
+Rafael
