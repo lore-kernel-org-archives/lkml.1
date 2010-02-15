@@ -1,45 +1,76 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754946Ab0BOLEA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 06:04:00 -0500
-Received: from bu3sch.de ([62.75.166.246]:42075 "EHLO vs166246.vserver.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754246Ab0BOLD7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 06:03:59 -0500
-From: Michael Buesch <mb@bu3sch.de>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: Re: [PATCH -mm] ssb: open-code dma_alloc_coherent
-Date: Mon, 15 Feb 2010 12:03:41 +0100
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, davem@davemloft.net,
-       stefano.brivio@polimi.it, Larry.Finger@lwfinger.net,
-       akpm@linux-foundation.org
-References: <20100215142111R.fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20100215142111R.fujita.tomonori@lab.ntt.co.jp>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	id S1755090Ab0BOLJt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 06:09:49 -0500
+Received: from mailout2.zih.tu-dresden.de ([141.30.67.73]:39667 "EHLO
+	mailout2.zih.tu-dresden.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752260Ab0BOLJr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Feb 2010 06:09:47 -0500
+X-Greylist: delayed 1519 seconds by postgrey-1.27 at vger.kernel.org; Mon, 15 Feb 2010 06:09:47 EST
+Subject: Tracing power_end on kernel 2.6.32.8
+From: Robert =?ISO-8859-1?Q?Sch=F6ne?= <robert.schoene@tu-dresden.de>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Li Zefan <lizf@cn.fujitsu.com>,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 15 Feb 2010 11:44:15 +0100
+Message-ID: <1266230655.4844.14.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <201002151203.42805.mb@bu3sch.de>
+X-TUD-Virus-Scanned: mailout2.zih.tu-dresden.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 15 February 2010 06:21:58 FUJITA Tomonori wrote:
-> This patch is against -mm since it depends on the DMA API changes in
+Hi,
+I have a question regarding the event "power/power_end".
+For the standard linux kernel (2.6.32.8), it's just not reported -
+neither for the /sys/kernel/debug/tracing nor for the sys_perf_open
+approach.
 
-I appreciate your efforts to remove bus-specific APIs.
-However, always keep in mind that a SSB bus might be running on a system
-where there's no PCI bus at all.
-In the past we used the generic dma_... API for DMA operations on all
-SSB devices. This worked 99.9% of the time. _But_ it broke in really obscure
-cases where the architecture implementations _slightly_ differed between
-the generic dma and the pci variants.
+System:
+	Intel Core 2 Quad,
+	Kernel 2.6.32.8,
+	for sys_perf_open:always using sampling counters,
+	(Kernel 2.6.33-rcX should show the same behavior)
 
-So, I'm all for it. But simply keep in mind that this has to run on lots of
-architectures (i386, x86_64, ppc, MIPS, probably more) and it has to run on
-machines without a PCI bus (where SSB is the main system bus).
+After finding "my" c-state procedure in arch/x86/kernel/process.c
+(which was "static void mwait_idle(void)" btw), I added a
+trace_power_end call on the correct line:
+...
+		else
+			local_irq_enable();
+	} else
+...
+->
+...
+		else
+			local_irq_enable();
+		trace_power_end(0);
+	} else
+...
+Now the event was reported on /sys/kernel/debug/tracing, but still not
+for sys_perf_open.
+
+Then I had the idea, that trace_power_end's argument should be the same
+as the 2nd argument of the previous power_start.
+
+That worked.
+
+However, things to be done are: add trace_power_end's to some
+process.c's procedures.
+
+
+Bye Robert
 
 -- 
-Greetings, Michael.
+Robert Schoene
+Technische Universitaet Dresden
+Zentrum fuer Informationsdienste und Hochleistungsrechnen
+01062 Dresden
+
+Tel.: (0351) 463-42483, Fax: (0351) 463-37773
+E-Mail: Robert.Schoene@tu-dresden.de
+
