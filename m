@@ -1,105 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755222Ab0BOKEp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 05:04:45 -0500
-Received: from mail-ew0-f228.google.com ([209.85.219.228]:47488 "EHLO
-	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754556Ab0BOKEn (ORCPT
+	id S1755065Ab0BOKEI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 05:04:08 -0500
+Received: from mail-pz0-f197.google.com ([209.85.222.197]:48651 "EHLO
+	mail-pz0-f197.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754334Ab0BOKEG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 05:04:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=dVbYsAfBgmpI3UQ90O4qcC8Ez1+B5UKtK9fT3OFIynxCkUQBHijNgxvmZ+9LIjyq2X
-         z2F1VHAhT+7+D3u+BaPvcJfwTpwPNFOZJBXBU/toBuyrfaYbK2wLGpaqLFZ/fvgsd4nU
-         BM0FjQFrhUjDne2QFj9iz+eZxexLITUWCSglU=
-From: Graham M Howe <gman.1352@googlemail.com>
-To: gregkh@suse.de, wfp5p@virginia.edu
-Cc: devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org,
-       Graham M Howe <gman.1352@googlemail.com>
-Subject: [PATCH 4/4] Staging: comedi: fix brace and 80 character coding style issue in ni_daq_700.c
-Date: Mon, 15 Feb 2010 10:04:26 +0000
-Message-Id: <1266228266-2558-1-git-send-email-gman.1352@googlemail.com>
-X-Mailer: git-send-email 1.6.3.3
+	Mon, 15 Feb 2010 05:04:06 -0500
+MIME-Version: 1.0
+In-Reply-To: <520f0cf11002141822i7c77c58cl2e00305ca6890f90@mail.gmail.com>
+References: <520f0cf11002110911t3f125649v73062e9851e2cfb3@mail.gmail.com>
+	 <520f0cf11002140510w5c57d196n12f8036ea6085c52@mail.gmail.com>
+	 <aca0ce8b1002140657l4f767635ob9b1611e4da2540b@mail.gmail.com>
+	 <520f0cf11002141254y3f4536a9ta968dbaefbff58f7@mail.gmail.com>
+	 <aca0ce8b1002141350o16fcfe6bn658c0ca546b38da0@mail.gmail.com>
+	 <520f0cf11002141822i7c77c58cl2e00305ca6890f90@mail.gmail.com>
+Date: Mon, 15 Feb 2010 01:56:45 -0800
+Message-ID: <aca0ce8b1002150156sdccf9fel42a11e2fc43437e5@mail.gmail.com>
+Subject: Re: [BUG]: Possibe recursive locking detected in sysfs
+From: Eric Biederman <ebiederm@aristanetworks.com>
+To: John Kacur <jkacur@redhat.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>,
+       Tejun Heo <tj@kernel.org>, Serge Hallyn <serue@us.ibm.com>,
+       "David P. Quigley" <dpquigl@tycho.nsa.gov>,
+       James Morris <jmorris@namei.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: root <root@graham-eeepc.(none)>
+On Sun, Feb 14, 2010 at 6:22 PM, John Kacur <jkacur@redhat.com> wrote:
+> On Sun, Feb 14, 2010 at 4:50 PM, Eric Biederman
+> <ebiederm@aristanetworks.com> wrote:
+>>> Sure, are you referring to the patch-set that begins with
+>>> "[PATCH 1/6] sysfs: Serialize updates to the vfs inode"?
+>>
+>> Sorry no.
+>>
+>> http://lkml.org/lkml/2010/2/11/329
+>>
+>
+> I applied your patch, and yes, it removed the possible recursive
+> locking detected message, but everything still froze.
+> I don't think I really have any good info from the crash to report.
+> Your patch seems to have added the symptom of a huge number of
+> BUG: key ffff880126269e40 not in .data!
+> BUG: key ffff880136fc03f0 not in .data!
 
-This is a patch to the ni_daq_700.c file that fixes up brace and 80 character warnings
-found by the checkpatch.pl tool
+Those are from dynamic sysfs entries that I have not yet annoted
+with sysfs_attr_init, and are generally harmless.  If you happen
+to see the first one.  I would appreciate having the backtrace so I
+can see about fixing it.
 
-Signed-off-by: Graham M Howe <gman.1352@googlemail.com>
----
- drivers/staging/comedi/drivers/ni_daq_700.c |   24 ++++++++++++------------
- 1 files changed, 12 insertions(+), 12 deletions(-)
+With respect to your problem the important point is that lockdep does
+not throw a warning and disable itself.  Can you verify that?
 
-diff --git a/drivers/staging/comedi/drivers/ni_daq_700.c b/drivers/staging/comedi/drivers/ni_daq_700.c
-index ef5e118..c9b0395 100644
---- a/drivers/staging/comedi/drivers/ni_daq_700.c
-+++ b/drivers/staging/comedi/drivers/ni_daq_700.c
-@@ -76,13 +76,15 @@ struct dio700_board {
- static const struct dio700_board dio700_boards[] = {
- 	{
- 	 .name = "daqcard-700",
--	 .device_id = 0x4743,	/*  0x10b is manufacturer id, 0x4743 is device id */
-+	  /*  0x10b is manufacturer id, 0x4743 is device id */
-+	 .device_id = 0x4743,
- 	 .bustype = pcmcia_bustype,
- 	 .have_dio = 1,
- 	 },
- 	{
- 	 .name = "ni_daq_700",
--	 .device_id = 0x4743,	/*  0x10b is manufacturer id, 0x4743 is device id */
-+	  /*  0x10b is manufacturer id, 0x4743 is device id */
-+	 .device_id = 0x4743,
- 	 .bustype = pcmcia_bustype,
- 	 .have_dio = 1,
- 	 },
-@@ -309,11 +311,11 @@ int subdev_700_init(struct comedi_device *dev, struct comedi_subdevice *s,
- 		return -ENOMEM;
+Assuming that lockdep has not complained and disabled itself than
+my patches are successful at disabling the sysfs lockdep false positives
+(except those BUG: key ... not in .data messages). and the lockdep
+warnings are just a coincidence in your case.
 
- 	CALLBACK_ARG = arg;
--	if (cb == NULL) {
-+	if (cb == NULL)
- 		CALLBACK_FUNC = subdev_700_cb;
--	} else {
-+	 else
- 		CALLBACK_FUNC = cb;
--	}
-+
- 	s->insn_bits = subdev_700_insn;
- 	s->insn_config = subdev_700_insn_config;
+I believe the cause of your hang is somewhere else entirely.  Perhaps
+a driver regression.
 
-@@ -345,12 +347,10 @@ int subdev_700_init_irq(struct comedi_device *dev, struct comedi_subdevice *s,
-
- void subdev_700_cleanup(struct comedi_device *dev, struct comedi_subdevice *s)
- {
--	if (s->private) {
--		if (subdevpriv->have_irq) {
--		}
-+	if (s->private)
-+		if (subdevpriv->have_irq)
-
--		kfree(s->private);
--	}
-+			kfree(s->private);
- }
-
- EXPORT_SYMBOL(subdev_700_init);
-@@ -390,9 +390,9 @@ static int dio700_attach(struct comedi_device *dev, struct comedi_devconfig *it)
- 	printk("comedi%d: ni_daq_700: %s, io 0x%lx", dev->minor,
- 	       thisboard->name, iobase);
- #ifdef incomplete
--	if (irq) {
-+	if (irq)
- 		printk(", irq %u", irq);
--	}
-+
- #endif
-
- 	printk("\n");
---
-1.6.3.3
-
+Eric
