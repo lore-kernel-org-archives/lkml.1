@@ -1,67 +1,36 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752926Ab0BOGdS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 01:33:18 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:27657 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751957Ab0BOGdR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 01:33:17 -0500
-Message-ID: <4B78EB39.9020008@redhat.com>
-Date: Mon, 15 Feb 2010 14:35:37 +0800
-From: Cong Wang <amwang@redhat.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20091001)
-MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Jens Axboe <jens.axboe@oracle.com>, Miles Lane <miles.lane@gmail.com>,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>, akpm@linux-foundation.org
-Subject: Re: [RFC Patch] sysfs: add marks for mutable sysfs files
-References: <20100210065754.3713.8997.sendpatchset@localhost.localdomain> <m1aavh3roj.fsf@fess.ebiederm.org>
-In-Reply-To: <m1aavh3roj.fsf@fess.ebiederm.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1753684Ab0BOGfr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 01:35:47 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34682
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752332Ab0BOGfq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Feb 2010 01:35:46 -0500
+Date: Sun, 14 Feb 2010 22:36:01 -0800 (PST)
+Message-Id: <20100214.223601.10215200.davem@davemloft.net>
+To: ben@decadent.org.uk
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/5] net: Fix first line of kernel-doc for a few
+ functions
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1266157154.10567.15.camel@localhost>
+References: <1266157055.10567.13.camel@localhost>
+	<1266157154.10567.15.camel@localhost>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Amerigo Wang <amwang@redhat.com> writes:
-> 
->> NOTE: This patch is only a draft, not ready to be taken.
->>
->> This fixes all the s_active related bogus lockdep warnings that I received,
->> I already tested it, it works fine for cpu hotplug, I/O scheduler switch,
->> and suspend.
->>
->> This patch introduces sever sysfs/kobject interfaces to add mutable
->> sysfs files or kobjects, those files could be removed by the kernel
->> during some event, e.g. cpu hotplug. All of this kind of sysfs files
->> should use these API's, to avoid the deadlock warnings.
->>
->> I am still not sure if this is the best fix.
->>
->> Please comment.
-> 
-> mutable as you describe it happens to be the common case, and that
-> class of files is not free from this class of problem.
-> 
-> Your patch is actively wrong if it solves the i/o scheduler issue,
-> as those files are in fact mutable by your definition, block devices
-> are hot pluggable.
-> 
-> Having a special case for permanent sysfs files, that we refuse to
-> delete would be reasonable, but it certainly does not cover
-> everything.
-> 
+From: Ben Hutchings <ben@decadent.org.uk>
+Date: Sun, 14 Feb 2010 14:19:14 +0000
 
-(Sorry for the delay, we are having Chinese new year here.)
+> The function name must be followed by a space, hypen, space, and a
+> short description.
+> 
+> Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
 
-Oh, yes, I just worried that if my patch is aggressive.
-I saw your patch, will have a review now.
-
-Thank you!
-
+Looks good, applied to net-next-2.6, thanks Ben.
