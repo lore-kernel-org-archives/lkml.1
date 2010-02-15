@@ -1,99 +1,47 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756499Ab0BOU1A (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 15:27:00 -0500
-Received: from nwd2mail11.analog.com ([137.71.25.57]:11497 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756485Ab0BOU06 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 15:26:58 -0500
-X-IronPort-AV: E=Sophos;i="4.49,479,1262581200"; 
-   d="scan'208";a="12920261"
-From: Robin Getz <rgetz@blackfin.uclinux.org>
-Organization: Analog Devices, Inc.
-To: Jonathan Cameron <jic23@cam.ac.uk>
-Subject: Re: [RFC] Staging: IIO: New ABI V2
-Date: Mon, 15 Feb 2010 15:26:53 -0500
-User-Agent: KMail/1.9.5
-CC: LKML <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Kay Sievers <kay.sievers@vrfy.org>, Dmitry Torokhov <dtor@mail.ru>,
-       "Hennerich, Michael" <Michael.Hennerich@analog.com>,
-       Manuel Stahl <manuel.stahl@iis.fraunhofer.de>,
-       "Frysinger, Michael" <Michael.Frysinger@analog.com>,
-       "Trisal, Kalhan" <kalhan.trisal@intel.com>,
-       "Zhang, Xing Z" <xing.z.zhang@intel.com>,
-       Ira Snyder <iws@ovro.caltech.edu>, Jean Delvare <khali@linux-fr.org>,
-       Samu Onkalo <samu.p.onkalo@nokia.com>,
-       Stefani Seibold <stefani@seibold.net>
-References: <4B6C619C.3000302@cam.ac.uk>
-In-Reply-To: <4B6C619C.3000302@cam.ac.uk>
+	id S1756514Ab0BOU2H (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 15:28:07 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:45729 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756485Ab0BOU2D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Feb 2010 15:28:03 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-ID: <201002151526.53539.rgetz@blackfin.uclinux.org>
+From: Roland McGrath <roland@redhat.com>
+To: Mike Frysinger <vapier@gentoo.org>
+X-Fcc: ~/Mail/linus
+Cc: Oleg Nesterov <oleg@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] tracehook: add some self tests
+In-Reply-To: Mike Frysinger's message of  Monday, 15 February 2010 01:15:53 -0500 <1266214553-29476-1-git-send-email-vapier@gentoo.org>
+References: <1266214553-29476-1-git-send-email-vapier@gentoo.org>
+X-Antipastobozoticataclysm: Bariumenemanilow
+Message-Id: <20100215202800.5192E1AD@magilla.sf.frob.com>
+Date: Mon, 15 Feb 2010 12:28:00 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 5 Feb 2010 13:21, Jonathan Cameron pondered:
-> Dear All,
-> 
-> Here is another iteration of the ABI spec for IIO with changes made
-> in response to http://lkml.org/lkml/2010/1/20/195 and
-> http://marc.info/?l=lm-sensors&m=126496271320649&w=2 along with a few
-> other general tidy ups.
-> 
-> If there are no major issues raised, we may begin working on the move 
-> to this ABI shortly on the basis any minor changes can always get
-> cleaned up before those patches merge.  I'll also be doing a formal
-> version of this file for in kernel documentation once things are
-> fairly stable with all of the information not relevant to this
-> discussion. 
-> 
-> Changes since v1:
-> 
-> * iio is now a bus with directory changes resulting in this document.
-> * moved to in0_raw etc for voltage sensors to avoid confusion with
->   a completely different ABI from hwmon.  Jean made the point that
->   we shouldn't take this to far, but as things currently stand there
->   is no disadvantage in this name change. 
-> * dropped freefall event for now. More discussions need to be had on this
->   and in a straight IIO world we normally won't care about this one anyway.
-> * 'device' naming changed for the various subsidiary devices so as make
->   the interconnections more obvious.  I haven't tried implementing this
->   yet, but I think the small amount of pain involved is worth it for
->   increased clarity. The only exception is triggers where the connections
->   are not specified as a given trigger may not have and IIO device
->   associated with it.  Anyone suggest a scheme for this? (see about 10
->   lines below to clarify what I mean here!) 
-> * As conversion of the max1363 driver over to a consistent scan_element
->   interface will mean that these will only apply to the ring buffer
->   (rather than direct capture), scan_elements is moved into the ring
->   buffer device directory.
-> * Switch ring for simply buffer as it might be a fifo or other buffer
->   form instead. 
-> 
-> At times I may have suppressed links that would be created by the tree of
-> devices. In the flat base directory a given driver can now create the
-> following: 
-> 
-> device[n]
-> device[n]:ring
-> device[n]:ring:access
-> device[n]:ring:event
-> device[n]:event[m]
-> trigger[o]
-> 
+This is something of a misnomer, since asm/syscall.h is the only thing you
+are testing.  
 
-What exists today still requires a copy_[to|from]_user when using the ring 
-buffer (and then another cache_flush if you are dma'ing things). These seems 
-pretty expensive and will consume extra cycles that will limit throughput.
+As Oleg pointed out, not all arch definitions can be used without a proper
+task_struct argument.  Only ia64 actually needs the task as part of the
+actual register access.  But several others (including x86) look at the
+task to decide whether to use the 32-bit or 64-bit interpretation of the
+register values.
 
-Any thoughts to a mmaped interface directly to the IIO ring buffer, so the 
-system could avoid some of the above overhead? (This is what we had to do for 
-some other drivers - which were able to handle a 40 MSample/second data 
-processed by userspace for a soft radio).
+I'd make the more general point that this sort of "synthetic" test does not
+seem very useful.  At best, it can test the asm/syscall.h code for being
+internally consistent--but that doesn't test whether it's really correct.
+IMHO this is not worth having unless it's an "empirical" test.  What I mean
+by that is one that really uses the asm/syscall.h calls as specified, and
+in the context specified.  So, you'd have to fork a user process and use
+ptrace on it to get it stopped at a syscall entry.  Then you can fetch the
+arguments, modify them, and look at the arguments it actually passes in to
+the syscall.
 
-?
 
+Thanks,
+Roland
