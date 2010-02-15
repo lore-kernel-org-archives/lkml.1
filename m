@@ -1,40 +1,178 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753365Ab0BONI1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 08:08:27 -0500
-Received: from smtp-out003.kontent.com ([81.88.40.217]:46337 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750868Ab0BONIZ (ORCPT
+	id S1753259Ab0BONWE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 08:22:04 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:50562 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751034Ab0BONWA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 08:08:25 -0500
-From: Oliver Neukum <oliver@neukum.org>
-To: Anssi Hannula <anssi.hannula@iki.fi>
-Subject: Re: [REGRESSION] "USB: use kfifo to buffer usb-generic serial writes" causes gobi_loader to hang
-Date: Mon, 15 Feb 2010 14:08:27 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.33-rc6-0.1-default; KDE/4.3.1; x86_64; ; )
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, dvomlehn@cisco.com,
-       gregkh@suse.de, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <Pine.LNX.4.44L0.1002122148050.13658-100000@netrider.rowland.org> <201002131535.42116.anssi.hannula@iki.fi> <201002132101.55079.anssi.hannula@iki.fi>
-In-Reply-To: <201002132101.55079.anssi.hannula@iki.fi>
+	Mon, 15 Feb 2010 08:22:00 -0500
+Date: Mon, 15 Feb 2010 15:21:58 +0200 (EET)
+From: "=?ISO-8859-15?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@wel-95.cs.helsinki.fi
+To: sbs <gexlie@gmail.com>
+cc: Netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Panic at tcp_xmit_retransmit_queue
+In-Reply-To: <alpine.DEB.2.00.1002031258160.7063@wel-95.cs.helsinki.fi>
+Message-ID: <alpine.DEB.2.00.1002151520250.7063@wel-95.cs.helsinki.fi>
+References: <53cc795f1001190813m377c6c91l16b2dc04f63049e7@mail.gmail.com> <53cc795f1002010645w54b98b51s3dbdea18e5eb73f2@mail.gmail.com> <alpine.DEB.2.00.1002031258160.7063@wel-95.cs.helsinki.fi>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201002151408.27146.oliver@neukum.org>
+Content-Type: MULTIPART/MIXED; BOUNDARY="8323329-1736692170-1266240118=:7063"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Samstag, 13. Februar 2010 20:01:54 schrieb Anssi Hannula:
-> > I'll get back to this later today, including testing with mdelay in
-> > port_release with the extra sleep calls in gobi_loader.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+--8323329-1736692170-1266240118=:7063
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
+
+On Wed, 3 Feb 2010, Ilpo Järvinen wrote:
+
+> On Mon, 1 Feb 2010, sbs wrote:
 > 
-> port_release is only called when the serial device is removed, so this has no 
-> effect here.
+> > actually removing netconsole from kernel didnt help.
+> > i found many guys with the same problem but with different hardware
+> > configurations here:
+> > 
+> > freez in TCP stack :
+> > http://bugzilla.kernel.org/show_bug.cgi?id=14470
+> > 
+> > is there someone who can investigate it?
+> > 
+> > 
+> > On Tue, Jan 19, 2010 at 7:13 PM, sbs <gexlie@gmail.com> wrote:
+> > > We are hiting kernel panics on servers with nVidia MCP55 NICs once a day;
+> > > it appears usualy under a high network trafic ( around 10000Mbit/s) but
+> > > it is not a rule, it has happened even on low trafic.
+> > >
+> > > Servers are used as nginx+static content
+> > > On 2 equal servers this panic happens aprox 2 times a day depending on
+> > > network load. Machine completly freezes till the netconsole reboots.
+> > >
+> > > Kernel: 2.6.32.3
+> > >
+> > > what can it be? whats wrong with tcp_xmit_retransmit_queue() function ?
+> > > can anyone explain or fix?
+> 
+> You might want to try with to debug patch below. It might even make the 
+> box to survive the event (if I got it coded right).
 
-But something must kill your last URB.
-You are not using autosuspend are you? Can load usbserial with "debug=1"?
+Here should be a better version of the debug patch, hopefully the infinite 
+looping is now gone.
 
-	Regards
-		Oliver
+-- 
+ i.
+
+diff --git a/net/ipv4/tcp_output.c b/net/ipv4/tcp_output.c
+index 383ce23..4672a30 100644
+--- a/net/ipv4/tcp_output.c
++++ b/net/ipv4/tcp_output.c
+@@ -2186,6 +2186,42 @@ static int tcp_can_forward_retransmit(struct sock *sk)
+ 	return 1;
+ }
+ 
++static void print_queue(struct sock *sk, struct sk_buff *old, struct sk_buff *hole)
++{
++	struct tcp_sock *tp = tcp_sk(sk);
++	struct sk_buff *skb, *prev;
++
++	skb = tcp_write_queue_head(sk);
++	prev = (struct sk_buff *)(&sk->sk_write_queue);
++
++	if (skb == NULL) {
++		printk("NULL head, pkts %u\n", tp->packets_out);
++		return;
++	}
++	printk("head %p tail %p sendhead %p oldhint %p now %p hole %p high %u\n",
++	       tcp_write_queue_head(sk), tcp_write_queue_tail(sk),
++	       tcp_send_head(sk), old, tp->retransmit_skb_hint, hole,
++	       tp->retransmit_high);
++
++	while (skb) {
++		printk("skb %p (%u-%u) next %p prev %p sacked %u\n",
++		       skb, TCP_SKB_CB(skb)->seq, TCP_SKB_CB(skb)->end_seq,
++		       skb->next, skb->prev, TCP_SKB_CB(skb)->sacked);
++		if (prev != skb->prev)
++			printk("Inconsistent prev\n");
++
++		if (skb == tcp_write_queue_tail(sk)) {
++			if (skb->next != (struct sk_buff *)(&sk->sk_write_queue))
++				printk("Improper next at tail\n");
++			return;
++		}
++
++		prev = skb;
++		skb = skb->next;
++	}
++	printk("Encountered unexpected NULL\n");
++}
++
+ /* This gets called after a retransmit timeout, and the initially
+  * retransmitted data is acknowledged.  It tries to continue
+  * resending the rest of the retransmit queue, until either
+@@ -2194,12 +2230,15 @@ static int tcp_can_forward_retransmit(struct sock *sk)
+  * based retransmit packet might feed us FACK information again.
+  * If so, we use it to avoid unnecessarily retransmissions.
+  */
++static int caught_it = 0;
++
+ void tcp_xmit_retransmit_queue(struct sock *sk)
+ {
+ 	const struct inet_connection_sock *icsk = inet_csk(sk);
+ 	struct tcp_sock *tp = tcp_sk(sk);
+ 	struct sk_buff *skb;
+ 	struct sk_buff *hole = NULL;
++	struct sk_buff *old = tp->retransmit_skb_hint;
+ 	u32 last_lost;
+ 	int mib_idx;
+ 	int fwd_rexmitting = 0;
+@@ -2217,6 +2256,16 @@ void tcp_xmit_retransmit_queue(struct sock *sk)
+ 		last_lost = tp->snd_una;
+ 	}
+ 
++checknull:
++	if (skb == NULL) {
++		if (!caught_it)
++			print_queue(sk, old, hole);
++		caught_it++;
++		if (net_ratelimit())
++			printk("Errors caught so far %u\n", caught_it);
++		return;
++	}
++
+ 	tcp_for_write_queue_from(skb, sk) {
+ 		__u8 sacked = TCP_SKB_CB(skb)->sacked;
+ 
+@@ -2257,7 +2306,7 @@ begin_fwd:
+ 		} else if (!(sacked & TCPCB_LOST)) {
+ 			if (hole == NULL && !(sacked & (TCPCB_SACKED_RETRANS|TCPCB_SACKED_ACKED)))
+ 				hole = skb;
+-			continue;
++			goto cont;
+ 
+ 		} else {
+ 			last_lost = TCP_SKB_CB(skb)->end_seq;
+@@ -2268,7 +2317,7 @@ begin_fwd:
+ 		}
+ 
+ 		if (sacked & (TCPCB_SACKED_ACKED|TCPCB_SACKED_RETRANS))
+-			continue;
++			goto cont;
+ 
+ 		if (tcp_retransmit_skb(sk, skb))
+ 			return;
+@@ -2278,6 +2327,9 @@ begin_fwd:
+ 			inet_csk_reset_xmit_timer(sk, ICSK_TIME_RETRANS,
+ 						  inet_csk(sk)->icsk_rto,
+ 						  TCP_RTO_MAX);
++cont:
++		skb = skb->next;
++		goto checknull;
+ 	}
+ }
+ 
+--8323329-1736692170-1266240118=:7063--
