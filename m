@@ -1,80 +1,71 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754298Ab0BOAih (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 19:38:37 -0500
-Received: from mail.univ.kiev.ua ([91.202.128.82]:52018 "EHLO
-	mail.univ.kiev.ua" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753254Ab0BOAig (ORCPT
+	id S1754517Ab0BOAw4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 19:52:56 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:43760 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754098Ab0BOAwz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Feb 2010 19:38:36 -0500
-X-Greylist: delayed 2413 seconds by postgrey-1.27 at vger.kernel.org; Sun, 14 Feb 2010 19:38:35 EST
-Message-ID: <5d4c05588b6ee494225d8e393c953ea4.squirrel@mail.univ.kiev.ua>
-Date: Mon, 15 Feb 2010 02:32:31 +0200 (EET)
-Subject: Webmail Update Required.
-From: "webmail Support Team." <webmaster@web.updates.net>
-Reply-To: webmaster_updates@live.com
-User-Agent: SquirrelMail/1.4.17
-MIME-Version: 1.0
+	Sun, 14 Feb 2010 19:52:55 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Mon, 15 Feb 2010 09:49:28 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Thomas Fjellstrom <tfjellstrom@shaw.ca>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: oom killing kde erroneously (still)
+Message-Id: <20100215094928.c1bbadeb.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <201002131658.24842.tfjellstrom@shaw.ca>
+References: <201002131658.24842.tfjellstrom@shaw.ca>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
-X-Spam-Score: 0.1 (/)
-X-Spam-Report: Spam detection software, running on the system "mail.univ.kiev.ua", has
-	identified this incoming email as possible spam.  The original message
-	has been attached to this so you can view it (if it isn't spam) or label
-	similar future email.  If you have any questions, see
-	The administrator of that system for details.
-	Content preview:  Dear Webmail Account Holder, This email is coming from the
-	webmail support team, and its contents is strictly intended for the user
-	of this email address which is the addressee. We want to inform you that the
-	current update being carried out on all web email accounts could not be completed
-	on your account due to authentication failure. Webmail admin system could
-	not authenticate your account, therefore your account stands the risk of
-	being shut down. [...] 
-	Content analysis details:   (0.1 points, 5.0 required)
-	pts rule name              description
-	---- ---------------------- --------------------------------------------------
-	-1.4 ALL_TRUSTED            Passed through trusted hosts only via SMTP
-	1.6 MISSING_HEADERS        Missing To: header
-To: unlisted-recipients:; (no To-header on input)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 13 Feb 2010 16:58:24 -0700
+Thomas Fjellstrom <tfjellstrom@shaw.ca> wrote:
 
-Dear Webmail Account Holder,
-This email is coming from the webmail support team, and its contents is
-strictly intended for the user of this email address which is the
-addressee.
-We want to inform you that the current update being carried out on all web
-email accounts could not be completed on your account due to
-authentication failure.
-Webmail admin system could not authenticate your account, therefore your
-account stands the risk of being shut down.
+> For the past couple days I've been getting improper OOM Kills. It decides to 
+> kill ksmserver, klauncher and kdeinit which takes down all of kde, instead 
+> of whatever is having the actual problem.
+> 
+> What I've been doing is copying files with rsync from my LAN's NFS share, to 
+> a USB External HDD, and all the while I have things like konversation (irc), 
+> kontact (email, rss, news), and firefox open doing normal things with them. 
+> Without the rsync, I don't see these OOM problems. But once I start a 
+> somewhat long running rsync process (tens to hundreds of GB @ 40MB/s ish), 
+> kde will be killed after a while (not usually very long, tens of minutes to 
+> a couple hours).
+> 
+> This machine has 4 gigs of ram, runs 64bit kernel+apps, and while its doing 
+> the rsync I have a CRAP load of free ram (minus file/disk cache, at least 
+> half of my ram is free at the time it decides to oom kill kde).
+> 
+> here's my last log:
+> 
+> [316981.060054] __ratelimit: 18 callbacks suppressed                                                                                                                                
+> [316981.060057] Xorg invoked oom-killer: gfp_mask=0x0, order=0, oom_adj=0                                                                                                           
+> [316981.060061] Xorg cpuset=/ mems_allowed=0                                                                                                                                        
+> [316981.060063] Pid: 30074, comm: Xorg Not tainted 2.6.32-trunk-amd64 #1                                                                                                            
+> [316981.060065] Call Trace:                                                                                                                                                         
+> [316981.060071]  [<ffffffff810b4cf0>] ? oom_kill_process+0x7f/0x23f                                                                                                                 
+> [316981.060074]  [<ffffffff810b5214>] ? __out_of_memory+0x12a/0x141                                                                                                                 
+> [316981.060077]  [<ffffffff810b53f1>] ? pagefault_out_of_memory+0x54/0x7f                                                                                                           
+> [316981.060080]  [<ffffffff81032532>] ? mm_fault_error+0x39/0xe6                                                                                                                    
+> [316981.060084]  [<ffffffff810f8004>] ? do_vfs_ioctl+0x48d/0x4cb                                                                                                                    
+> [316981.060086]  [<ffffffff81032845>] ? do_page_fault+0x266/0x282                                                                                                                   
+> [316981.060090]  [<ffffffff812e6f25>] ? page_fault+0x25/0x30 
 
-This authentication is required to fully upgrade your account, confirm as
-active to fully prevent closure and to install the new antispam software
-developed by the joint webmail support teams to protect your webmail
-account from spam and
-unsolicited junk and virus carrying emails.
-To properly authenticate your account you are required to provide the
-correct details of your webmail account as stated below.
+If you use i915, please check this bugzilla.
 
-Email Address:
-User ID:
-Current/Correct Password:
-Re-type Password:
-Date of Birth:
+http://bugzilla.kernel.org/show_bug.cgi?id=14933
 
-You are to note that your account informations are safe and will NOT be
-shared with third parties.
-The above details are required to successfully carry out the upgrade and
-protection to your webmail account.
-Required details should be sent urgently to webmaster via email:
-webmaster_updates@live.com
+patch is this.
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=4bdadb9785696439c6e2b3efe34aa76df1149c83
 
-Webmail Support Team.
-
-
+Thanks,
+-Kame
 
