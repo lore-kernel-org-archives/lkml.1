@@ -1,53 +1,46 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753500Ab0BOC2l (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 21:28:41 -0500
-Received: from gate.crashing.org ([63.228.1.57]:48160 "EHLO gate.crashing.org"
+	id S1753526Ab0BOCds (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 21:33:48 -0500
+Received: from sh.osrg.net ([192.16.179.4]:43337 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753087Ab0BOC2j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Feb 2010 21:28:39 -0500
-Subject: Re: [PATCH -v7 0/35] tip related: not use  bootmem for x86
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-In-Reply-To: <1265793639-15071-1-git-send-email-yinghai@kernel.org>
-References: <1265793639-15071-1-git-send-email-yinghai@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 15 Feb 2010 13:27:26 +1100
-Message-ID: <1266200846.16346.111.camel@pasglop>
+	id S1752745Ab0BOCdr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Feb 2010 21:33:47 -0500
+Date: Mon, 15 Feb 2010 11:33:04 +0900
+To: mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org, x86@kernel.org
+Subject: [PATCH] x86/Gart: unexport gart_iommu_aperture
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20100215113241P.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Mon, 15 Feb 2010 11:33:05 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-02-10 at 01:20 -0800, Yinghai Lu wrote:
-> 
-> The reserve_early() method is list/range based and can handle vast
-> amounts of not very fragmented memory - perfect for basically all the
-> real bootmem purposes (which is to bootstrap the buddy).
-> 
-> reserve_early() allocated memory could be freed into the buddy later
-> on
-> as well. The main reason why bootmem is 'destroyed' during
-> free-to-buddy
-> is because it has excessive internal bitmaps we want to free. With a
-> list/range based reserve_early() mechanism there's no such problem -
-> they can linger indefinitely and there's near zero allocation
-> management
-> overhead. " 
+I wrongly exported gart_iommu_aperture in the commit
+42590a75019a50012f25a962246498dead428433. It's not necessary so
+let's unexport it.
 
-Various archs use lib/lmb.c for representing physical memory and
-doing early allocations. Might be something to extend ?
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+---
+ arch/x86/kernel/aperture_64.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-Cheers,
-Ben.
-
+diff --git a/arch/x86/kernel/aperture_64.c b/arch/x86/kernel/aperture_64.c
+index f147a95..3704997 100644
+--- a/arch/x86/kernel/aperture_64.c
++++ b/arch/x86/kernel/aperture_64.c
+@@ -31,7 +31,6 @@
+ #include <asm/x86_init.h>
+ 
+ int gart_iommu_aperture;
+-EXPORT_SYMBOL_GPL(gart_iommu_aperture);
+ int gart_iommu_aperture_disabled __initdata;
+ int gart_iommu_aperture_allowed __initdata;
+ 
+-- 
+1.5.6.5
 
