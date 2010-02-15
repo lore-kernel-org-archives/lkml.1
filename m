@@ -1,52 +1,68 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755148Ab0BOQhT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 11:37:19 -0500
-Received: from cantor.suse.de ([195.135.220.2]:38047 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754258Ab0BOQhR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 11:37:17 -0500
-Date: Tue, 16 Feb 2010 03:37:12 +1100
-From: Nick Piggin <npiggin@suse.de>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, fengguang.wu@intel.com
-Subject: Re: [PATCH 2/3] mm: Implement writeback livelock avoidance using
- page tagging
-Message-ID: <20100215163712.GV5723@laptop>
-References: <1265929584-5080-1-git-send-email-jack@suse.cz>
- <1265929584-5080-3-git-send-email-jack@suse.cz>
- <20100212113955.4c023130.akpm@linux-foundation.org>
- <20100215154751.GG3434@quack.suse.cz>
- <20100215162127.GU5723@laptop>
- <20100215162453.GA6477@infradead.org>
+	id S1755598Ab0BOQrV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 11:47:21 -0500
+Received: from rcsinet11.oracle.com ([148.87.113.123]:63420 "EHLO
+	rcsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755119Ab0BOQrS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Feb 2010 11:47:18 -0500
+Message-ID: <4B797A5C.8020306@oracle.com>
+Date: Mon, 15 Feb 2010 08:46:20 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100215162453.GA6477@infradead.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       devel@driverdev.osuosl.org, Greg KH <gregkh@suse.de>
+Subject: Re: linux-next: Tree for February 15 (staging/dt3155)
+References: <20100215194926.667a3de8.sfr@canb.auug.org.au>
+In-Reply-To: <20100215194926.667a3de8.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt353.oracle.com [141.146.40.153]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090203.4B797A7F.020B:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 15, 2010 at 11:24:53AM -0500, Christoph Hellwig wrote:
-> On Tue, Feb 16, 2010 at 03:21:27AM +1100, Nick Piggin wrote:
-> > Also, I wonder what you think about leaving the tags dangling when
-> > the loop bails out early? I have a *slight* concern about this
-> > because previously we never have a tag set when radix_tree_delete
-> > is called. I actually had a bug in that code in earlier versions
-> > of rcu radix tree that only got found by the user test harness.
-> > And another slight concern that it is just a bit ugly to leave the
-> > tag. But I can accept that lower CPU overhead trumps ugliness :)
+On 02/15/10 00:49, Stephen Rothwell wrote:
+> Hi all,
 > 
-> The XFS inode cache calls radix_tree_delete with a tag set, and
-> interestingly enough we're trying to catch a very weird bug in that
-> area currently, which seems more or less directly related to the use
-> of tags.  But we also had a real locking bug related to tags, so I'm
-> not yet sure what the issue is back until I hear back from the bug
-> reported and reproducer.
+> Changes since 20100212:
 
-Upon looking at the radix_tree_delete code again, the tag clearing
-there seems rather simple so perhaps I misremembered some detail of
-that bug I had.
 
+1/  dt3155 tries to use arbitrary divide & modulus.  This fails on i386:
+
+ERROR: "__udivdi3" [drivers/staging/dt3155/dt3155.ko] undefined!
+ERROR: "__umoddi3" [drivers/staging/dt3155/dt3155.ko] undefined!
+
+2/  since DT3155 depends on PCI, these lines can be dropped from dt3155_drv.c:
+
+-#ifndef CONFIG_PCI
+-#error  "DT3155 :  Kernel PCI support not enabled (DT3155 drive requires PCI)"
+-#endif
+
+3/  header files need to be included even when built-in instead of defined(MODULE)
+to eliminate build errors:
+
+drivers/staging/dt3155/dt3155_drv.c:1047: error: implicit declaration of function 'request_irq'
+drivers/staging/dt3155/dt3155_drv.c:1048: error: 'IRQF_SHARED' undeclared (first use in this function)
+drivers/staging/dt3155/dt3155_drv.c:1048: error: 'IRQF_DISABLED' undeclared (first use in this function)
+drivers/staging/dt3155/dt3155_drv.c:1091: error: implicit declaration of function 'free_irq'
+
+
+-#ifdef MODULE
+ #include <linux/module.h>
+ #include <linux/interrupt.h>
+ 
+ 
+ MODULE_LICENSE("GPL");
+ 
+-#endif
+
+
+-- 
+~Randy
