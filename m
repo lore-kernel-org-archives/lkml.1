@@ -1,59 +1,141 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754618Ab0BOG7W (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 01:59:22 -0500
-Received: from cantor.suse.de ([195.135.220.2]:45686 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752397Ab0BOG7V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 01:59:21 -0500
-Date: Mon, 15 Feb 2010 17:59:14 +1100
-From: Nick Piggin <npiggin@suse.de>
-To: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-Cc: Mel Gorman <mel@csn.ul.ie>, Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       epasch@de.ibm.com, SCHILLIG@de.ibm.com,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>, christof.schmitt@de.ibm.com,
-       thoss@de.ibm.com, hare@suse.de, gregkh@novell.com
-Subject: Re: Performance regression in scsi sequential throughput (iozone)
- due to "e084b - page-allocator: preserve PFN ordering when	__GFP_COLD
- is set"
-Message-ID: <20100215065913.GK5723@laptop>
-References: <4B4F0E60.1020601@linux.vnet.ibm.com>
- <20100119113306.GA23881@csn.ul.ie>
- <4B6C3E6E.6050303@linux.vnet.ibm.com>
- <20100205174917.GB11512@csn.ul.ie>
- <4B70192C.3070601@linux.vnet.ibm.com>
- <20100208152131.GC23680@csn.ul.ie>
- <4B7184B5.6040400@linux.vnet.ibm.com>
- <20100209175707.GB5098@csn.ul.ie>
- <4B742C2C.5080305@linux.vnet.ibm.com>
- <20100212100519.GA29085@laptop>
+	id S1754935Ab0BOG7d (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 01:59:33 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:44816 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754782Ab0BOG7b (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Feb 2010 01:59:31 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Michael Neuling <mikey@neuling.org>
+Subject: Re: 2.6.33-rc8 breaks UML with Restrict initial stack space expansion to rlimit
+Cc: kosaki.motohiro@jp.fujitsu.com, Jouni Malinen <j@w1.fi>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       anton@samba.org
+In-Reply-To: <12468.1266215420@neuling.org>
+References: <20100214164023.GA2726@jm.kir.nu> <12468.1266215420@neuling.org>
+Message-Id: <20100215155821.7298.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100212100519.GA29085@laptop>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Mon, 15 Feb 2010 15:59:26 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 12, 2010 at 09:05:19PM +1100, Nick Piggin wrote:
-> > This leaves me with two ideas what the real issue could be:
-> > 1. either really the 6th parameter as this is the first one that needs to go on stack and that way might open a race and rob gcc a big pile of optimization chances
 > 
-> It must be something to do wih code generation AFAIKS. I'm surprised
-> the function isn't inlined, giving exactly the same result regardless
-> of the patch.
 > 
-> Unlikely to be a correctness issue with code generation, but I'm
-> really surprised that a small difference in performance could have
-> such a big (and apparently repeatable) effect on behaviour like this.
+> In message <20100214164023.GA2726@jm.kir.nu> you wrote:
+> > It looks like the commit 803bf5ec259941936262d10ecc84511b76a20921
+> > (fs/exec.c: restrict initial stack space expansion to rlimit) broke my
+> > user mode Linux setup by somehow preventing system setup from running
+> > properly (or killing some processes that try to mount things, etc.).
+> > This commit turned up as the reason based on git bisect and reverting it
+> > fixes my UML test setup (Ubuntu 9.10 on both host and in UML and AMD64
+> > arch for both). I have no idea what exactly would be the main cause for
+> > this issue, but this looks like a somewhat unfortunately timed
+> > regression in 2.6.33-rc8.
+> > 
+> > The failed run shows like this (with current linux-2.6.git):
+> > 
+> > ...
+> > EXT3-fs (ubda): mounted filesystem with writeback data mode
+> > VFS: Mounted root (ext3 filesystem) readonly on device 98:0.
+> > IRQ 3/console-write: IRQF_DISABLED is not guaranteed on shared IRQs
+> > IRQ 2/console: IRQF_DISABLED is not guaranteed on shared IRQs
+> > IRQ 10/winch: IRQF_DISABLED is not guaranteed on shared IRQs
+> > IRQ 10/winch: IRQF_DISABLED is not guaranteed on shared IRQs
+> > mountall: mount /sys/kernel/debug [218] killed by KILL signal
+> > mountall: Filesystem could not be mounted: /sys/kernel/debug
+> > mountall: mount /dev [219] killed by KILL signal
+> > mountall: Filesystem could not be mounted: /dev
+> > mountall: mount /tmp [220] killed by KILL signal
+> > mountall: Filesystem could not be mounted: /tmp
+> > mountall: mount /var/lock [222] killed by KILL signal
+> > mountall: Filesystem could not be mounted: /var/lock
+> > ...
+> > 
+> > 
+> > With 803bf5ec reverted, UML comes up and the output looks like this:
+> > 
+> > ...
+> > EXT3-fs (ubda): mounted filesystem with writeback data mode
+> > VFS: Mounted root (ext3 filesystem) readonly on device 98:0.
+> > IRQ 3/console-write: IRQF_DISABLED is not guaranteed on shared IRQs
+> > IRQ 2/console: IRQF_DISABLED is not guaranteed on shared IRQs
+> > IRQ 10/winch: IRQF_DISABLED is not guaranteed on shared IRQs
+> > IRQ 10/winch: IRQF_DISABLED is not guaranteed on shared IRQs
+> > init: procps main process (226) terminated with status 255
+> > fsck from util-linux-ng 2.16
+> > ...
 > 
-> What's the assembly look like?
+> Jouni,
+> 
+> I can reproduce this now.  
+> 
+> We got the logic wrong in one of the cleanups and hence we aren't
+> actually changing the stack reservation ever, when we intended on
+> allocating up to 20 new pages.  
+> 
+> The:
+> 	rlim_stack = min(rlim_stack, stack_size);
+> always chooses stack_size hence we end up not changing the stack at all.
+> This seems to cause fatal problems on UML, but is obviously not what was
+> intended for archs as well.  
+> 
+> The following works for me on PPC64 64k and 4k pages and UML on x86_64. 
+> 
+> Let me know if it fixes it for you also.
+> 
+> Mikey
+> 
+> 
+> exec/fs: fix initial stack reservation
+> 
+> 803bf5ec259941936262d10ecc84511b76a20921 (fs/exec.c: restrict initial
+> stack space expansion to rlimit) attempts to limit the initial stack to
+> 20*PAGE_SIZE.  Unfortunately, in also attempting ensure the stack is not
+> reduced in size, we ended up not changing the stack at all.  
+> 
+> This caused a regression in UML resulting in most guest processes to be
+> killed. 
+> 
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> cc: <stable@kernel.org>
+> 
+> diff --git a/fs/exec.c b/fs/exec.c
+> index e95c692..e0e7b3c 100644
+> --- a/fs/exec.c
+> +++ b/fs/exec.c
+> @@ -637,15 +637,16 @@ int setup_arg_pages(struct linux_binprm *bprm,
+>  	 * will align it up.
+>  	 */
+>  	rlim_stack = rlimit(RLIMIT_STACK) & PAGE_MASK;
+> -	rlim_stack = min(rlim_stack, stack_size);
+>  #ifdef CONFIG_STACK_GROWSUP
+>  	if (stack_size + stack_expand > rlim_stack)
+> -		stack_base = vma->vm_start + rlim_stack;
+> +		/*  Expand only to rlimit, making sure not to shrink it */
+> +		stack_base = vma->vm_start + max(rlim_stack,stack_size);
+>  	else
+>  		stack_base = vma->vm_end + stack_expand;
+>  #else
+>  	if (stack_size + stack_expand > rlim_stack)
+> -		stack_base = vma->vm_end - rlim_stack;
+> +		/*  Expand only to rlimit, making sure not to shrink it */
+> +		stack_base = vma->vm_end - max(rlim_stack,stack_size);
+>  	else
+>  		stack_base = vma->vm_start - stack_expand;
+>  #endif
 
-Oh, and what happens if you always_inline it? I would have thought
-gcc should be able to generate the same code in both cases -- unless
-I'm really missing something and there is a functional change in
-there?
+-	rlim_stack = min(rlim_stack, stack_size);
++	/*  Expand only to rlimit, making sure not to shrink it */
++	rlim_stack = max(rlim_stack, stack_size);
+
+is better fix?
+
+
 
