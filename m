@@ -1,48 +1,46 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756265Ab0BOTlY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 14:41:24 -0500
-Received: from mail-fx0-f215.google.com ([209.85.220.215]:49936 "EHLO
-	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756114Ab0BOTlX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 14:41:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:reply-to:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding:message-id;
-        b=qcnwVNynhkaLEVqounOva4JZOOzA6AG+JbG4BPN8NPUbTZQ/kJDa5hZXaIgtIZkJpW
-         UDp8CHYlP9i2OKYJQnhejTDM/uJ7crjbKNo2p3A9+m/umynQKLSu7OWvyW7O1CVkz1TW
-         5giu829xOdPk6A4x6bjOzM+YFuLM7o3yN/qRc=
-From: Maciej Rutecki <maciej.rutecki@gmail.com>
-Reply-To: maciej.rutecki@gmail.com
-To: John Kacur <jkacur@redhat.com>
-Subject: Re: [BUG]: Possibe recursive locking detected in sysfs
-Date: Mon, 15 Feb 2010 20:41:18 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.33-rc8; KDE/4.3.4; i686; ; )
-Cc: LKML <linux-kernel@vger.kernel.org>
-References: <520f0cf11002110911t3f125649v73062e9851e2cfb3@mail.gmail.com>
-In-Reply-To: <520f0cf11002110911t3f125649v73062e9851e2cfb3@mail.gmail.com>
+	id S1756278Ab0BOTmG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 14:42:06 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:1025 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756219Ab0BOTmC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Feb 2010 14:42:02 -0500
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <201002152041.18800.maciej.rutecki@gmail.com>
+From: Roland McGrath <roland@redhat.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+X-Fcc: ~/Mail/linus
+Cc: Oleg Nesterov <oleg@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: x86: get rid of the insane TIF_ABI_PENDING bit
+In-Reply-To: H. Peter Anvin's message of  Monday, 15 February 2010 11:10:55 -0800 <4B799C3F.7010308@zytor.com>
+References: <20100215161752.GA19962@redhat.com>
+	<4B799C3F.7010308@zytor.com>
+X-Zippy-Says: My FAVORITE group is "QUESTION MARK & THE MYSTERIANS"...
+Message-Id: <20100215194123.96D49FC3@magilla.sf.frob.com>
+Date: Mon, 15 Feb 2010 11:41:23 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On czwartek, 11 lutego 2010 o 18:11:46 John Kacur wrote:
-> I'm not sure if this one has already been reported. - thanks.
-> 
-> Feb 11 07:24:15 localhost kernel: [ INFO: possible recursive locking
->  detected ] Feb 11 07:24:15 localhost kernel: 2.6.33-rc7 #1
-[...]
+> I suspect the purpose of TS_COMPAT is actually so you can ptrace() the
+> newly exec'd process (and see it as a 32-bit process!) before it returns
+> to userspace.  The comment, obviously, is wrong -- that again refers to
+> TIF_IA32.
 
-I created a Bugzilla entry at http://bugzilla.kernel.org/show_bug.cgi?id=15319
-for your bug report, please add your address to the CC list in there, thanks!
+I don't follow you.  TS_COMPAT does not affect ptrace.
+It affects syscall-audit, but only at syscall entry time.
+It affects asm/syscall.h accessors, but ptrace does not use those.
+It affects whatever uses is_compat_task(), but I can't see anything
+where that matters except inside some particular syscall or for
+syscall restart after signals.
+
+TS_COMPAT does not affect the syscall return machinery itself.
+The return path just follows from the particular entry path.
 
 
--- 
-Maciej Rutecki
-http://www.maciek.unixy.pl
+Thanks,
+Roland
