@@ -1,60 +1,63 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755303Ab0BOLTV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 06:19:21 -0500
-Received: from out01.mta.xmission.com ([166.70.13.231]:41467 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754933Ab0BOLTT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 06:19:19 -0500
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>,
-       "Christian Casteyde" <casteyde.christian@free.fr>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Tejun Heo" <tj@kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [Bug #14999] possible circular locking dependency detected in rfkill at suspend
-References: <Z5cmiqDComP.A.gyF.OiIeLB@chimera>
-	<4un6Gst5rKB.A.Im.WkIeLB@chimera>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Mon, 15 Feb 2010 03:19:11 -0800
-In-Reply-To: <4un6Gst5rKB.A.Im.WkIeLB@chimera> (Rafael J. Wysocki's message of "Mon\, 15 Feb 2010 00\:38\:29 +0100 \(CET\)")
-Message-ID: <m1wryed9w0.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Scanned: No (on in01.mta.xmission.com); SAEximRunCond expanded to false
+	id S1755046Ab0BOLTb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 06:19:31 -0500
+Received: from sh.osrg.net ([192.16.179.4]:39370 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755325Ab0BOLT2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Feb 2010 06:19:28 -0500
+Date: Mon, 15 Feb 2010 20:18:41 +0900
+To: mb@bu3sch.de
+Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, davem@davemloft.net, stefano.brivio@polimi.it,
+       Larry.Finger@lwfinger.net, akpm@linux-foundation.org
+Subject: Re: [PATCH -mm] ssb: open-code dma_alloc_coherent
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <201002151203.42805.mb@bu3sch.de>
+References: <20100215142111R.fujita.tomonori@lab.ntt.co.jp>
+	<201002151203.42805.mb@bu3sch.de>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20100215201825M.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Mon, 15 Feb 2010 20:18:42 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+On Mon, 15 Feb 2010 12:03:41 +0100
+Michael Buesch <mb@bu3sch.de> wrote:
 
-> This message has been generated automatically as a part of a summary report
-> of recent regressions.
->
-> The following bug entry is on the current list of known regressions
-> from 2.6.32.  Please verify if it still should be listed and let the tracking team
-> know (either way).
->
->
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14999
-> Subject		: possible circular locking dependency detected in rfkill at suspend
-> Submitter	: Christian Casteyde <casteyde.christian@free.fr>
-> Date		: 2010-01-06 21:52 (40 days old)
+> On Monday 15 February 2010 06:21:58 FUJITA Tomonori wrote:
+> > This patch is against -mm since it depends on the DMA API changes in
+> 
+> I appreciate your efforts to remove bus-specific APIs.
+> However, always keep in mind that a SSB bus might be running on a system
+> where there's no PCI bus at all.
 
-I have a set of patches to clear up the sysfs lockdep false positives.  
-http://lkml.org/lkml/2010/2/11/329
+Yup, that's why we introduced the generic device model and the generic
+DMA API is better.
 
-It requires sprinking a bunch of sysfs_attr_init on the few dynamically
-allocated sysfs attributes, and I haven't found them all yet.  Otherwise
-it seems to be working well.
 
-Greg should pick up those patches shortly and they should be appearing
-in linux-next and then ultimately in 2.6.34.
+> In the past we used the generic dma_... API for DMA operations on all
+> SSB devices. This worked 99.9% of the time. _But_ it broke in really obscure
+> cases where the architecture implementations _slightly_ differed between
+> the generic dma and the pci variants.
 
-Eric
+Yeah, I know. There are some differences between the PCI DMA API and
+the generic DMA API on some architectures.
+
+My patchset in -mm fixes the above problem:
+
+http://marc.info/?l=linux-kernel&m=126596737604808&w=2
+
+http://git.kernel.org/?p=linux/kernel/git/tomo/linux-2.6-misc.git;a=blob;f=include/asm-generic/pci-dma-compat.h;h=ddfa9c5309229d171af63dcaf3872288fb4fa845;hb=refs/heads/pending
+
+The PCI DMA API simply calls the generic DMA API. And all the
+architectures that supports pci uses asm-generic/pci-dma-compat.h.
+
+You can use the generic DMA API with any buses. I'll remove the PCI
+DMA API in the long term.
+
+
+Thanks,
