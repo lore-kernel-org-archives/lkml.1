@@ -1,18 +1,18 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932328Ab0BOWVw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 17:21:52 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:44872 "EHLO
+	id S932325Ab0BOWVd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 17:21:33 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:44921 "EHLO
 	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932248Ab0BOWUM (ORCPT
+	with ESMTP id S932297Ab0BOWUW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 17:20:12 -0500
+	Mon, 15 Feb 2010 17:20:22 -0500
 DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
 	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
 	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=OTHIlYrGpBv2WwlbU6taacwzfNooMIBue0vrW0/Qn+FAm8lc2MclHJcNvoVLz6qyY
-	0mMKVds+P/WEWMa5NZIxA==
-Date: Mon, 15 Feb 2010 14:20:06 -0800 (PST)
+	b=S3i4Awq46KFKtd8aS6GrAFd/BQ+wmkRFTGtXhojiFIVW0Hd3yJOTqb8W/7vokRZsp
+	/SCe4OPyaIphdt493rUQw==
+Date: Mon, 15 Feb 2010 14:20:16 -0800 (PST)
 From: David Rientjes <rientjes@google.com>
 X-X-Sender: rientjes@chino.kir.corp.google.com
 To: Andrew Morton <akpm@linux-foundation.org>
@@ -22,10 +22,9 @@ cc: Rik van Riel <riel@redhat.com>,
        Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
        KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
        linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: [patch -mm 3/9 v2] oom: select task from tasklist for mempolicy
- ooms
+Subject: [patch -mm 6/9 v2] oom: deprecate oom_adj tunable
 In-Reply-To: <alpine.DEB.2.00.1002151416470.26927@chino.kir.corp.google.com>
-Message-ID: <alpine.DEB.2.00.1002151418030.26927@chino.kir.corp.google.com>
+Message-ID: <alpine.DEB.2.00.1002151418560.26927@chino.kir.corp.google.com>
 References: <alpine.DEB.2.00.1002151416470.26927@chino.kir.corp.google.com>
 User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
@@ -35,257 +34,102 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The oom killer presently kills current whenever there is no more memory
-free or reclaimable on its mempolicy's nodes.  There is no guarantee that
-current is a memory-hogging task or that killing it will free any
-substantial amount of memory, however.
+/proc/pid/oom_adj is now deprecated so that that it may eventually be
+removed.  The target date for removal is December 2011.
 
-In such situations, it is better to scan the tasklist for nodes that are
-allowed to allocate on current's set of nodes and kill the task with the
-highest badness() score.  This ensures that the most memory-hogging task,
-or the one configured by the user with /proc/pid/oom_adj, is always
-selected in such scenarios.
+A warning will be printed to the kernel log if a task attempts to use
+this interface.  Future warning will be suppressed until the kernel is
+rebooted to prevent spamming the kernel log.
 
 Signed-off-by: David Rientjes <rientjes@google.com>
 ---
- include/linux/mempolicy.h |   13 +++++++-
- mm/mempolicy.c            |   39 +++++++++++++++++++++++
- mm/oom_kill.c             |   77 +++++++++++++++++++++++++++-----------------
- 3 files changed, 98 insertions(+), 31 deletions(-)
+ Documentation/feature-removal-schedule.txt |   30 ++++++++++++++++++++++++++++
+ Documentation/filesystems/proc.txt         |    3 ++
+ fs/proc/base.c                             |    8 +++++++
+ include/linux/oom.h                        |    3 ++
+ 4 files changed, 44 insertions(+), 0 deletions(-)
 
-diff --git a/include/linux/mempolicy.h b/include/linux/mempolicy.h
---- a/include/linux/mempolicy.h
-+++ b/include/linux/mempolicy.h
-@@ -202,6 +202,8 @@ extern struct zonelist *huge_zonelist(struct vm_area_struct *vma,
- 				unsigned long addr, gfp_t gfp_flags,
- 				struct mempolicy **mpol, nodemask_t **nodemask);
- extern bool init_nodemask_of_mempolicy(nodemask_t *mask);
-+extern bool mempolicy_nodemask_intersects(struct task_struct *tsk,
-+				const nodemask_t *mask);
- extern unsigned slab_node(struct mempolicy *policy);
+diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
+--- a/Documentation/feature-removal-schedule.txt
++++ b/Documentation/feature-removal-schedule.txt
+@@ -168,6 +168,36 @@ Who:	Eric Biederman <ebiederm@xmission.com>
  
- extern enum zone_type policy_zone;
-@@ -329,7 +331,16 @@ static inline struct zonelist *huge_zonelist(struct vm_area_struct *vma,
- 	return node_zonelist(0, gfp_flags);
- }
+ ---------------------------
  
--static inline bool init_nodemask_of_mempolicy(nodemask_t *m) { return false; }
-+static inline bool init_nodemask_of_mempolicy(nodemask_t *m)
-+{
-+	return false;
-+}
++What:	/proc/<pid>/oom_adj
++When:	December 2011
++Why:	/proc/<pid>/oom_adj allows userspace to influence the oom killer's
++	badness heuristic used to determine which task to kill when the kernel
++	is out of memory.
 +
-+static inline bool mempolicy_nodemask_intersects(struct task_struct *tsk,
-+			const nodemask_t *mask)
-+{
-+	return false;
-+}
- 
- static inline int do_migrate_pages(struct mm_struct *mm,
- 			const nodemask_t *from_nodes,
-diff --git a/mm/mempolicy.c b/mm/mempolicy.c
---- a/mm/mempolicy.c
-+++ b/mm/mempolicy.c
-@@ -1638,6 +1638,45 @@ bool init_nodemask_of_mempolicy(nodemask_t *mask)
- }
- #endif
- 
-+/*
-+ * mempolicy_nodemask_intersects
-+ *
-+ * If tsk's mempolicy is "default" [NULL], return 'true' to indicate default
-+ * policy.  Otherwise, check for intersection between mask and the policy
-+ * nodemask for 'bind' or 'interleave' policy, or mask to contain the single
-+ * node for 'preferred' or 'local' policy.
-+ */
-+bool mempolicy_nodemask_intersects(struct task_struct *tsk,
-+					const nodemask_t *mask)
-+{
-+	struct mempolicy *mempolicy;
-+	bool ret = true;
++	The badness heuristic has since been rewritten since the introduction of
++	this tunable such that its meaning is deprecated.  The value was
++	implemented as a bitshift on a score generated by the badness()
++	function that did not have any precise units of measure.  With the
++	rewrite, the score is given as a proportion of available memory to the
++	task allocating pages, so using a bitshift which grows the score
++	exponentially is, thus, impossible to tune with fine granularity.
 +
-+	mempolicy = tsk->mempolicy;
-+	mpol_get(mempolicy);
-+	if (!mask || !mempolicy)
-+		goto out;
++	A much more powerful interface, /proc/<pid>/oom_score_adj, was
++	introduced with the oom killer rewrite that allows users to increase or
++	decrease the badness() score linearly.  This interface will replace
++	/proc/<pid>/oom_adj.
 +
-+	switch (mempolicy->mode) {
-+	case MPOL_PREFERRED:
-+		if (mempolicy->flags & MPOL_F_LOCAL)
-+			ret = node_isset(cpu_to_node(task_cpu(tsk)), *mask);
-+		else
-+			ret = node_isset(mempolicy->v.preferred_node,
-+					 *mask);
-+		break;
-+	case MPOL_BIND:
-+	case MPOL_INTERLEAVE:
-+		ret = nodes_intersects(mempolicy->v.nodes, *mask);
-+		break;
-+	default:
-+		BUG();
-+	}
-+out:
-+	mpol_put(mempolicy);
-+	return ret;
-+}
++	See Documentation/filesystems/proc.txt for information on how to use the
++	new tunable.
 +
- /* Allocate a page in interleaved policy.
-    Own path because it needs to do special accounting. */
- static struct page *alloc_page_interleave(gfp_t gfp, unsigned order,
-diff --git a/mm/oom_kill.c b/mm/oom_kill.c
---- a/mm/oom_kill.c
-+++ b/mm/oom_kill.c
-@@ -26,6 +26,7 @@
- #include <linux/module.h>
- #include <linux/notifier.h>
- #include <linux/memcontrol.h>
-+#include <linux/mempolicy.h>
- #include <linux/security.h>
++	A warning will be emitted to the kernel log if an application uses this
++	deprecated interface.  After it is printed once, future warning will be
++	suppressed until the kernel is rebooted.
++
++Who:	David Rientjes <rientjes@google.com>
++
++---------------------------
++
+ What:	remove EXPORT_SYMBOL(kernel_thread)
+ When:	August 2006
+ Files:	arch/*/kernel/*_ksyms.c
+diff --git a/Documentation/filesystems/proc.txt b/Documentation/filesystems/proc.txt
+--- a/Documentation/filesystems/proc.txt
++++ b/Documentation/filesystems/proc.txt
+@@ -1247,6 +1247,9 @@ scaled linearly with /proc/<pid>/oom_score_adj.
+ Writing to /proc/<pid>/oom_score_adj or /proc/<pid>/oom_adj will change the
+ other with its scaled value.
  
- int sysctl_panic_on_oom;
-@@ -36,19 +37,35 @@ static DEFINE_SPINLOCK(zone_scan_lock);
- 
- /*
-  * Do all threads of the target process overlap our allowed nodes?
-+ * @tsk: task struct of which task to consider
-+ * @mask: nodemask passed to page allocator for mempolicy ooms
-  */
--static int has_intersects_mems_allowed(struct task_struct *tsk)
-+static bool has_intersects_mems_allowed(struct task_struct *tsk,
-+						const nodemask_t *mask)
- {
--	struct task_struct *t;
-+	struct task_struct *start = tsk;
- 
--	t = tsk;
- 	do {
--		if (cpuset_mems_allowed_intersects(current, t))
--			return 1;
--		t = next_thread(t);
--	} while (t != tsk);
--
--	return 0;
-+		if (mask) {
-+			/*
-+			 * If this is a mempolicy constrained oom, tsk's
-+			 * cpuset is irrelevant.  Only return true if its
-+			 * mempolicy intersects current, otherwise it may be
-+			 * needlessly killed.
-+			 */
-+			if (mempolicy_nodemask_intersects(tsk, mask))
-+				return true;
-+		} else {
-+			/*
-+			 * This is not a mempolicy constrained oom, so only
-+			 * check the mems of tsk's cpuset.
-+			 */
-+			if (cpuset_mems_allowed_intersects(current, tsk))
-+				return true;
-+		}
-+		tsk = next_thread(tsk);
-+	} while (tsk != start);
-+	return false;
- }
- 
- /**
-@@ -236,7 +253,8 @@ static enum oom_constraint constrained_alloc(struct zonelist *zonelist,
-  * (not docbooked, we don't want this one cluttering up the manual)
-  */
- static struct task_struct *select_bad_process(unsigned long *ppoints,
--						struct mem_cgroup *mem)
-+		struct mem_cgroup *mem, enum oom_constraint constraint,
-+		const nodemask_t *mask)
- {
- 	struct task_struct *p;
- 	struct task_struct *chosen = NULL;
-@@ -258,7 +276,9 @@ static struct task_struct *select_bad_process(unsigned long *ppoints,
- 			continue;
- 		if (mem && !task_in_mem_cgroup(p, mem))
- 			continue;
--		if (!has_intersects_mems_allowed(p))
-+		if (!has_intersects_mems_allowed(p,
-+				constraint == CONSTRAINT_MEMORY_POLICY ? mask :
-+									 NULL))
- 			continue;
- 
- 		/*
-@@ -478,7 +498,7 @@ void mem_cgroup_out_of_memory(struct mem_cgroup *mem, gfp_t gfp_mask)
- 
- 	read_lock(&tasklist_lock);
- retry:
--	p = select_bad_process(&points, mem);
-+	p = select_bad_process(&points, mem, CONSTRAINT_NONE, NULL);
- 	if (PTR_ERR(p) == -1UL)
- 		goto out;
- 
-@@ -560,7 +580,8 @@ void clear_zonelist_oom(struct zonelist *zonelist, gfp_t gfp_mask)
- /*
-  * Must be called with tasklist_lock held for read.
-  */
--static void __out_of_memory(gfp_t gfp_mask, int order)
-+static void __out_of_memory(gfp_t gfp_mask, int order,
-+			enum oom_constraint constraint, const nodemask_t *mask)
- {
- 	struct task_struct *p;
- 	unsigned long points;
-@@ -574,7 +595,7 @@ retry:
- 	 * Rambo mode: Shoot down a process and hope it solves whatever
- 	 * issues we may have.
- 	 */
--	p = select_bad_process(&points, NULL);
-+	p = select_bad_process(&points, NULL, constraint, mask);
- 
- 	if (PTR_ERR(p) == -1UL)
- 		return;
-@@ -615,7 +636,8 @@ void pagefault_out_of_memory(void)
- 		panic("out of memory from page fault. panic_on_oom is selected.\n");
- 
- 	read_lock(&tasklist_lock);
--	__out_of_memory(0, 0); /* unknown gfp_mask and order */
-+	/* unknown gfp_mask and order */
-+	__out_of_memory(0, 0, CONSTRAINT_NONE, NULL);
- 	read_unlock(&tasklist_lock);
- 
- 	/*
-@@ -632,6 +654,7 @@ rest_and_return:
-  * @zonelist: zonelist pointer
-  * @gfp_mask: memory allocation flags
-  * @order: amount of memory being requested as a power of 2
-+ * @nodemask: nodemask passed to page allocator
-  *
-  * If we run out of memory, we have the choice between either
-  * killing a random task (bad), letting the system crash (worse)
-@@ -660,24 +683,18 @@ void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask,
- 	 */
- 	constraint = constrained_alloc(zonelist, gfp_mask, nodemask);
- 	read_lock(&tasklist_lock);
--
--	switch (constraint) {
--	case CONSTRAINT_MEMORY_POLICY:
--		oom_kill_process(current, gfp_mask, order, 0, NULL,
--				"No available memory (MPOL_BIND)");
--		break;
--
--	case CONSTRAINT_NONE:
--		if (sysctl_panic_on_oom) {
-+	if (unlikely(sysctl_panic_on_oom)) {
-+		/*
-+		 * panic_on_oom only affects CONSTRAINT_NONE, the kernel
-+		 * should not panic for cpuset or mempolicy induced memory
-+		 * failures.
-+		 */
-+		if (constraint == CONSTRAINT_NONE) {
- 			dump_header(NULL, gfp_mask, order, NULL);
--			panic("out of memory. panic_on_oom is selected\n");
-+			panic("Out of memory: panic_on_oom is enabled\n");
- 		}
--		/* Fall-through */
--	case CONSTRAINT_CPUSET:
--		__out_of_memory(gfp_mask, order);
--		break;
++NOTICE: /proc/<pid>/oom_adj is deprecated and will be removed, please see
++Documentation/feature-removal-schedule.txt.
++
+ Caveat: when a parent task is selected, the oom killer will sacrifice any first
+ generation children with seperate address spaces instead, if possible.  This
+ avoids servers and important system daemons from being killed and loses the
+diff --git a/fs/proc/base.c b/fs/proc/base.c
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
+@@ -1157,6 +1157,14 @@ static ssize_t oom_adjust_write(struct file *file, const char __user *buf,
+ 		return -EACCES;
  	}
--
-+	__out_of_memory(gfp_mask, order, constraint, nodemask);
- 	read_unlock(&tasklist_lock);
  
++	/*
++	 * Warn that /proc/pid/oom_adj is deprecated, see
++	 * Documentation/feature-removal-schedule.txt.
++	 */
++	printk_once(KERN_WARNING "%s (%d): /proc/%d/oom_adj is deprecated, "
++			"please use /proc/%d/oom_score_adj instead.\n",
++			current->comm, task_pid_nr(current),
++			task_pid_nr(task), task_pid_nr(task));
+ 	task->signal->oom_adj = oom_adjust;
  	/*
+ 	 * Scale /proc/pid/oom_score_adj appropriately ensuring that a maximum
+diff --git a/include/linux/oom.h b/include/linux/oom.h
+--- a/include/linux/oom.h
++++ b/include/linux/oom.h
+@@ -2,6 +2,9 @@
+ #define __INCLUDE_LINUX_OOM_H
+ 
+ /*
++ * /proc/<pid>/oom_adj is deprecated, see
++ * Documentation/feature-removal-schedule.txt.
++ *
+  * /proc/<pid>/oom_adj set to -17 protects from the oom-killer
+  */
+ #define OOM_DISABLE (-17)
