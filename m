@@ -1,48 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755948Ab0BORwp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 12:52:45 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:54022 "EHLO mx1.redhat.com"
+	id S1755892Ab0BOSHc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 13:07:32 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:42395 "EHLO mail.zytor.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755332Ab0BORwo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 12:52:44 -0500
-Date: Mon, 15 Feb 2010 12:51:06 -0500
-From: Don Zickus <dzickus@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, peterz@infradead.org, gorcunov@gmail.com,
-       aris@redhat.com
-Subject: Re: [PATCH 1/4] nmi_watchdog: use a boolean config flag for compiling
-Message-ID: <20100215175106.GM3062@redhat.com>
-References: <1266013161-31197-1-git-send-email-dzickus@redhat.com>
- <20100214165941.GA26329@elte.hu>
+	id S1755773Ab0BOSHb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Feb 2010 13:07:31 -0500
+Message-ID: <4B798D2F.7010701@zytor.com>
+Date: Mon, 15 Feb 2010 10:06:39 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100214165941.GA26329@elte.hu>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+To: Oleg Nesterov <oleg@redhat.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: x86: get rid of the insane TIF_ABI_PENDING bit
+References: <20100215161752.GA19962@redhat.com> <4B7974F7.1030105@zytor.com> <20100215165012.GA20447@redhat.com>
+In-Reply-To: <20100215165012.GA20447@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 14, 2010 at 05:59:41PM +0100, Ingo Molnar wrote:
+On 02/15/2010 08:50 AM, Oleg Nesterov wrote:
 > 
-> i'm still getting build failures:
+> Could you please point me where do we check TS_COMPAT during return
+> to user-mode?
 > 
-> arch/x86/built-in.o: In function `arch_trigger_all_cpu_backtrace':
-> (.text+0x151f5): undefined reference to `apic'
+
+Sorry, I was thinking about TIF_IA32, which is examined on line 415 of
+entry_64.S.
+
+>>> If a 64bit task execs a 32bit app, can't this TS_COMPAT break, say,
+>>> syscall_get_arguments() ?
+>>
+>> At that point (this is after the exec!) we don't get arguments anyway.
 > 
-> config attached.
+> I meant /proc/pid/syscall, but even if I am right this probably
+> doesn't matter.
 
-Hmm, I can't get the config to match up properly when I run 'make
-oldconfig', even though I am using the HEAD of perf/nmi.  I took the
-defaults anyway and used 'ARCH=i386 make all' but couldn't reproduce your
-build failure.
+What does getting the arguments from a process which has never done a
+system call yet even mean?  Presumably we get some kind of "null answer"
+which depends on the default register set; in that case the compat null
+answer is the correct one.
 
-Looking through the code, is there ever case where 'apic' is undefined?
-The arch_trigger_all_cpu_backtrace should match identically to the old nmi
-code, so I am stuck on how to fix this.
+	-hpa
 
-Thoughts?
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
-Cheers,
-Don
