@@ -1,63 +1,91 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755777Ab0BORBj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 12:01:39 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:43473 "EHLO mx1.redhat.com"
+	id S1755875Ab0BORT7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 12:19:59 -0500
+Received: from mx2.netapp.com ([216.240.18.37]:10792 "EHLO mx2.netapp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755697Ab0BORBh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 12:01:37 -0500
-From: Jeff Moyer <jmoyer@redhat.com>
-To: Richard Kennedy <richard@rsk.demon.co.uk>
-Cc: Vivek Goyal <vgoyal@redhat.com>, Jens Axboe <jens.axboe@oracle.com>,
-       Corrado Zoccolo <czoccolo@gmail.com>,
-       Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v2]  cfq: reorder cfq_queue removing padding on 64bit & allowing more objects/slab in it's kmem_cache
-References: <1266243036.2149.21.camel@localhost>
-	<20100215141626.GB5355@redhat.com> <1266251188.7362.3.camel@localhost>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Mon, 15 Feb 2010 12:01:18 -0500
-In-Reply-To: <1266251188.7362.3.camel@localhost> (Richard Kennedy's message of
-	"Mon, 15 Feb 2010 16:26:28 +0000")
-Message-ID: <x49eikmph5t.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1755838Ab0BORT6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Feb 2010 12:19:58 -0500
+X-IronPort-AV: E=Sophos;i="4.49,478,1262592000"; 
+   d="scan'208";a="316684160"
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Chuck Lever <chuck.lever@oracle.com>,
+       Trond Myklebust <Trond.Myklebust@netapp.com>
+Subject: [PATCH] NFS: Too many GETATTR and ACCESS calls after direct I/O
+Date: Mon, 15 Feb 2010 12:19:53 -0500
+Message-Id: <1266254393-14553-1-git-send-email-Trond.Myklebust@netapp.com>
+X-Mailer: git-send-email 1.6.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Richard Kennedy <richard@rsk.demon.co.uk> writes:
+From: Chuck Lever <chuck.lever@oracle.com>
 
-> This removes 8 bytes of padding from struct cfq_queue on 64 bit builds,
-> shrinking it's size to 256 bytes, so fitting into 1 fewer cachelines and
-> allowing 1 more object/slab in it's kmem_cache.
+The cached read and write paths initialize fattr->time_start in their
+setup procedures.  The value of fattr->time_start is propagated to
+read_cache_jiffies by nfs_update_inode().  Subsequent calls to
+nfs_attribute_timeout() will then use a good time stamp when
+computing the attribute cache timeout, and squelch unneeded GETATTR
+calls.
 
-OK, I ran pahole to verify your findings:
+Since the direct I/O paths erroneously leave the inode's
+fattr->time_start field set to zero, read_cache_jiffies for that inode
+is set to zero after any direct read or write operation.  This
+triggers an otw GETATTR or ACCESS call to update the file's attribute
+and access caches properly, even when the NFS READ or WRITE replies
+have usable post-op attributes.
 
-$ pahole -C cfq_queue build/master/block/cfq-iosched.o 
-struct cfq_queue {
-...
-         unsigned int               allocated_slice;      /*   136     4  */
+Make sure the direct read and write setup code performs the same fattr
+initialization as the cached I/O paths to prevent unnecessary GETATTR
+calls.
 
-         /* XXX 4 bytes hole, try to pack */
+This was likely introduced by commit 0e574af1 in 2.6.15, which appears
+to add new nfs_fattr_init() call sites in the cached read and write
+paths, but not in the equivalent places in fs/nfs/direct.c.  A
+subsequent commit in the same series, 33801147, introduces the
+fattr->time_start field.
 
-         long unsigned int          slice_start;          /*   144     8  */
+Interestingly, the direct write reschedule path already has a call to
+nfs_fattr_init() in the right place.
 
-...
-        pid_t                      pid;                  /*   216     4   */
+Reported-by: Quentin Barnes <qbarnes@yahoo-inc.com>
+Signed-off-by: Chuck Lever <chuck.lever@oracle.com>
+Cc: stable@kernel.org
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+---
+ fs/nfs/direct.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-        /* XXX 4 bytes hole, try to pack */
+diff --git a/fs/nfs/direct.c b/fs/nfs/direct.c
+index e1d415e..0d28982 100644
+--- a/fs/nfs/direct.c
++++ b/fs/nfs/direct.c
+@@ -342,6 +342,7 @@ static ssize_t nfs_direct_read_schedule_segment(struct nfs_direct_req *dreq,
+ 		data->res.fattr = &data->fattr;
+ 		data->res.eof = 0;
+ 		data->res.count = bytes;
++		nfs_fattr_init(&data->fattr);
+ 		msg.rpc_argp = &data->args;
+ 		msg.rpc_resp = &data->res;
+ 
+@@ -575,6 +576,7 @@ static void nfs_direct_commit_schedule(struct nfs_direct_req *dreq)
+ 	data->res.count = 0;
+ 	data->res.fattr = &data->fattr;
+ 	data->res.verf = &data->verf;
++	nfs_fattr_init(&data->fattr);
+ 
+ 	NFS_PROTO(data->inode)->commit_setup(data, &msg);
+ 
+@@ -766,6 +768,7 @@ static ssize_t nfs_direct_write_schedule_segment(struct nfs_direct_req *dreq,
+ 		data->res.fattr = &data->fattr;
+ 		data->res.count = bytes;
+ 		data->res.verf = &data->verf;
++		nfs_fattr_init(&data->fattr);
+ 
+ 		task_setup_data.task = &data->task;
+ 		task_setup_data.callback_data = data;
+-- 
+1.6.6
 
-        struct cfq_rb_root *       service_tree;         /*   224     8   */
-
-...
-        /* size: 264, cachelines: 5, members: 34 */
-        /* sum members: 256, holes: 2, sum holes: 8 */
-        /* last cacheline: 8 bytes */
-
-After applying the patch, it indeed does save a cacheline.
-
-Reviewed-by: Jeff Moyer <jmoyer@redhat.com>
