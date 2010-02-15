@@ -1,122 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755281Ab0BOEfm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 23:35:42 -0500
-Received: from cantor.suse.de ([195.135.220.2]:43246 "EHLO mx1.suse.de"
+	id S1754646Ab0BOEpT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 23:45:19 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:43039 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755128Ab0BOEfj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Feb 2010 23:35:39 -0500
-From: Nikanth Karthikesan <knikanth@suse.de>
-Organization: suse.de
-To: Dave Chinner <david@fromorbit.com>, Wu Fengguang <fengguang.wu@intel.com>
-Subject: Re: [PATCH v2] Make VM_MAX_READAHEAD a kernel parameter
-Date: Mon, 15 Feb 2010 10:06:37 +0530
-User-Agent: KMail/1.12.2 (Linux/2.6.31.8-0.1-desktop; KDE/4.3.1; x86_64; ; )
-Cc: Ankit Jain <radical@gmail.com>, Andrew Morton <akpm@linux-foundation.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-References: <201002091659.27037.knikanth@suse.de> <201002111715.04411.knikanth@suse.de> <20100214213724.GA28392@discord.disaster>
-In-Reply-To: <20100214213724.GA28392@discord.disaster>
+	id S1752975Ab0BOEpP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Feb 2010 23:45:15 -0500
+Date: Mon, 15 Feb 2010 05:44:32 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
+Subject: Re: [PATCH 27/35] core: move early_res
+Message-ID: <20100215044432.GB19287@elte.hu>
+References: <1265793639-15071-1-git-send-email-yinghai@kernel.org>
+ <1265793639-15071-28-git-send-email-yinghai@kernel.org>
+ <20100215011615.e3d35121.sfr@canb.auug.org.au>
+ <20100214170858.GA29006@elte.hu>
+ <20100215104303.428fab25.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201002151006.37294.knikanth@suse.de>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100215104303.428fab25.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 15 February 2010 03:07:24 Dave Chinner wrote:
-> On Thu, Feb 11, 2010 at 05:15:03PM +0530, Nikanth Karthikesan wrote:
-> > On Thursday 11 February 2010 16:45:24 Ankit Jain wrote:
-> > > > +static int __init readahead(char *str)
-> > > > +{
-> > > > +       if (!str)
-> > > > +               return -EINVAL;
-> > > > +       vm_max_readahead_kb = memparse(str, &str) / 1024ULL;
-> > >
-> > > Just wondering, shouldn't you check whether the str had a valid value
-> > > [memparse (str, &next); next > str ..] and if it didn't, then use the
-> > > DEFAULT_VM_MAX_READAHEAD ? Otherwise, incase of a invalid
-> > > value, the readahead value will become zero.
-> >
-> > Thanks for the review. Here is the fixed patch that checks whether all of
-> > the parameters value is consumed.
-> >
-> > Thanks
-> > Nikanth
-> >
-> > From: Nikanth Karthikesan <knikanth@suse.de>
-> >
-> > Add new kernel parameter "readahead", which would be used instead of the
-> > value of VM_MAX_READAHEAD. If the parameter is not specified, the default
-> > of 128kb would be used.
-> >
-> > Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
-> >
-> > ---
-> >
-> > diff --git a/Documentation/kernel-parameters.txt
-> > b/Documentation/kernel-parameters.txt index 736d456..354e6f1 100644
-> > --- a/Documentation/kernel-parameters.txt
-> > +++ b/Documentation/kernel-parameters.txt
-> > @@ -2148,6 +2148,8 @@ and is between 256 and 4096 characters. It is
-> > defined in the file Format: <reboot_mode>[,<reboot_mode2>[,...]]
-> >  			See arch/*/kernel/reboot.c or arch/*/kernel/process.c
-> >
-> > +	readahead=	Default readahead value for block devices.
-> > +
+
+* Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+
+> > Btw.,are you doing these cross-build tests yourself, or are you relaying 
+> > the kisskb automation notifications?
 > 
-> I think the description should define the units (kb) and valid value
-> ranges e.g. page size to something not excessive - say 65536kb.  The
-> above description is, IMO, useless without refering to the source to
-> find out this information....
-> 
+> Mostly they are from the kisskb builds. [...]
 
-The parameter can be specified with/without any suffix(k/m/g) that memparse() 
-helper function can accept. So it can take 1M, 1024k, 1050620. I checked other 
-parameters that use memparse() to get similar values and they didn't document 
-it. May be this should be described here.
+Note that in most cases i find them earlier than the kisskb scripts, and i 
+handle those in any case, so generally there's no need for you to re-report 
+them - unless you see any such bug slip into linux-next (which you shouldnt) 
+or if you rely on -tip for real PowerPC testing (which you dont AFAIK).
 
-> [snip]
-> 
-> > @@ -249,6 +250,24 @@ static int __init loglevel(char *str)
-> >
-> >  early_param("loglevel", loglevel);
-> >
-> > +static int __init readahead(char *str)
-> > +{
-> > +	unsigned long readahead_kb;
-> > +
-> > +	if (!str)
-> > +		return -EINVAL;
-> > +	readahead_kb = memparse(str, &str) / 1024ULL;
-> > +	if (*str != '\0')
-> > +		return -EINVAL;
->  		
-> And readahead_kb needs to be validated against the range of
-> valid values here.
-> 
+Thanks,
 
-I didn't want to impose artificial restrictions. I think Wu's patch set would 
-be adding some restrictions, like minimum readahead. He could fix it when he 
-modifies the patch to include in his patch set.
-
-> > +
-> > +	vm_max_readahead_kb = readahead_kb;
-> > +	default_backing_dev_info.ra_pages = vm_max_readahead_kb
-> > +						* 1024 / PAGE_CACHE_SIZE;
-> > +	return 0;
-> > +}
-> > +
-> > +early_param("readahead", readahead);
-> > +
-> 
-
-Thanks for reviewing.
-
-Thanks
-Nikanth
+	Ingo
