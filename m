@@ -1,58 +1,72 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755480Ab0BOMZA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 07:25:00 -0500
-Received: from mail-pz0-f197.google.com ([209.85.222.197]:34196 "EHLO
-	mail-pz0-f197.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755460Ab0BOMY6 (ORCPT
+	id S1755489Ab0BOMZv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 07:25:51 -0500
+Received: from qw-out-2122.google.com ([74.125.92.27]:65041 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754879Ab0BOMZt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 07:24:58 -0500
+	Mon, 15 Feb 2010 07:25:49 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Ku87RHxnesyfZ+2lvuPB83p9CsoFmBJrmFjHwdMw/rrAZqm/tNI7RN5V9S/Yj/Z8dS
-         Gn+AjF2PavAaP0V/iFswZ6Q/SMO/8Isim5ahwhfdPNTzIMInJ2MGyuvg5o/YYyipDvBB
-         VYLbTtlOySTBdNA4m2Edx6v5N4FO07BAxupKo=
-Date: Mon, 15 Feb 2010 20:27:32 +0800
-From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-To: Adam Nielsen <a.nielsen@shikadi.net>
-Cc: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>,
-       LKML Mailinglist <linux-kernel@vger.kernel.org>
-Subject: Re: UML error - apps killed 50% of the time
-Message-ID: <20100215122732.GM12076@hack.private>
-References: <4B78EF9C.6040801@shikadi.net> <20100215090053.GG12076@hack.private> <4B79122A.9070102@shikadi.net>
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type;
+        b=PwUrOVfpq88l0TLBfEsIIUWQvJ7Z1EhxBYQeIS+17YQ+TwH/6/D9q3pIP0+sZUJYYs
+         V+tEQOEbN0WuOukH9UYPfsw1HD0IIyhUG/jgOy+8NqhYd2bstdqA2LLSIaH7NFW9YlbA
+         CzVr2BYCP/KHF2ifOJhPnCYf5yMx9JfMVEMaE=
+Message-ID: <4B793D45.1030802@gmail.com>
+Date: Mon, 15 Feb 2010 07:25:41 -0500
+From: William Allen Simpson <william.allen.simpson@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B79122A.9070102@shikadi.net>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Linux Kernel Developers <linux-kernel@vger.kernel.org>
+CC: Linux Kernel Network Developers <netdev@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>
+Subject: [PATCH v3 1/7] net: tcp_header_len_th and tcp_option_len_th
+References: <4B793CAA.2030902@gmail.com>
+In-Reply-To: <4B793CAA.2030902@gmail.com>
+Content-Type: multipart/mixed;
+ boundary="------------060205030107060301080005"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 15, 2010 at 07:21:46PM +1000, Adam Nielsen wrote:
->>> $ ls
->>> Killed
->>> $ ls
->>> Killed
->>>
->>> vmlinux[6300] general protection eip:b7ea5124 esp:1785bdfc error:0
->>>
->>> Why doesn't UML work any more?
->>
->> http://patchwork.kernel.org/patch/79358/
->>
->> Does this patch help?
->
-> Sort of - ls doesn't get killed any more and I can get about half way 
-> through the boot process before things start getting killed (as opposed 
-> to them getting killed right away.)
->
-> Whatever this patch does, if it could do it twice as much then my problem 
-> would be solved ;-)
->
+This is a multi-part message in MIME format.
+--------------060205030107060301080005
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-So what are the errors now? Could you please provide your boot log?
+Redefine two TCP header functions to accept TCP header pointer.
+When subtracting, return signed int to allow error checking.
 
-Thanks.
+These functions will be used in subsequent patches that implement
+additional features.
+
+Signed-off-by: William.Allen.Simpson@gmail.com
+---
+  include/linux/tcp.h |   12 ++++++++++++
+  1 files changed, 12 insertions(+), 0 deletions(-)
+
+--------------060205030107060301080005
+Content-Type: text/plain; x-mac-type="54455854"; x-mac-creator="0";
+ name="len_th+2a3+2.6.33-rc8.patch"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline;
+ filename="len_th+2a3+2.6.33-rc8.patch"
+
+ZGlmZiAtLWdpdCBhL2luY2x1ZGUvbGludXgvdGNwLmggYi9pbmNsdWRlL2xpbnV4L3RjcC5o
+CmluZGV4IDdmZWU4YTQuLmQwMTMzY2YgMTAwNjQ0Ci0tLSBhL2luY2x1ZGUvbGludXgvdGNw
+LmgKKysrIGIvaW5jbHVkZS9saW51eC90Y3AuaApAQCAtMjIzLDYgKzIyMywxOCBAQCBzdGF0
+aWMgaW5saW5lIHVuc2lnbmVkIGludCB0Y3Bfb3B0bGVuKGNvbnN0IHN0cnVjdCBza19idWZm
+ICpza2IpCiAJcmV0dXJuICh0Y3BfaGRyKHNrYiktPmRvZmYgLSA1KSAqIDQ7CiB9CiAKKy8q
+IExlbmd0aCBvZiBmaXhlZCBoZWFkZXIgcGx1cyBzdGFuZGFyZCBvcHRpb25zLiAqLworc3Rh
+dGljIGlubGluZSB1bnNpZ25lZCBpbnQgdGNwX2hlYWRlcl9sZW5fdGgoY29uc3Qgc3RydWN0
+IHRjcGhkciAqdGgpCit7CisJcmV0dXJuIHRoLT5kb2ZmICogNDsKK30KKworLyogTGVuZ3Ro
+IG9mIHN0YW5kYXJkIG9wdGlvbnMgb25seS4gIFRoaXMgY291bGQgYmUgbmVnYXRpdmUuICov
+CitzdGF0aWMgaW5saW5lIGludCB0Y3Bfb3B0aW9uX2xlbl90aChjb25zdCBzdHJ1Y3QgdGNw
+aGRyICp0aCkKK3sKKwlyZXR1cm4gKGludCkodGgtPmRvZmYgKiA0KSAtIHNpemVvZigqdGgp
+OworfQorCiAvKiBUaGlzIGRlZmluZXMgYSBzZWxlY3RpdmUgYWNrbm93bGVkZ2VtZW50IGJs
+b2NrLiAqLwogc3RydWN0IHRjcF9zYWNrX2Jsb2NrX3dpcmUgewogCV9fYmUzMglzdGFydF9z
+ZXE7Ci0tIAoxLjYuMy4zCgo=
+--------------060205030107060301080005--
