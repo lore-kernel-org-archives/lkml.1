@@ -1,117 +1,59 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754647Ab0BOA6v (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 19:58:51 -0500
-Received: from mail-pz0-f197.google.com ([209.85.222.197]:49086 "EHLO
-	mail-pz0-f197.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753332Ab0BOA6t (ORCPT
+	id S1752149Ab0BOBWn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 20:22:43 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:45273 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751468Ab0BOBWl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Feb 2010 19:58:49 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type;
-        b=fwGDA5ouGioNvYoN0qUlHaXEASuJin/aU1bsR63PAdxt9RzfbaQFnhHWO/F/v2EHIO
-         IzLJGcTYgpv1D/JQtrmHqS8RdCCItUzGoU9jbEDGj7rWMbaapgvWFbAll5Q4ODB38IDL
-         JdomcpR14lypFuLsWXkvWcTkQMHVe9GlqrzOY=
-MIME-Version: 1.0
-In-Reply-To: <20100214194046.GA11315@n2100.arm.linux.org.uk>
-References: <d4d4c7ef1002140814x5c406afaq7f60dc584e389348@mail.gmail.com> 
-	<20100214194046.GA11315@n2100.arm.linux.org.uk>
-From: =?UTF-8?B?5p2o5Z+O?= <gump.yang@gmail.com>
-Date: Mon, 15 Feb 2010 08:58:28 +0800
-Message-ID: <d4d4c7ef1002141658x789730b8naaf38b04811559dd@mail.gmail.com>
-Subject: Re: apply chip ID
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Nicolas Pitre <nico@marvell.com>, linux-arm-kernel@lists.infradead.org,
-       linux-kernel@vger.kernel.org
-Content-Type: multipart/mixed; boundary=001636e0ad2cac3792047f991eef
+	Sun, 14 Feb 2010 20:22:41 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Mon, 15 Feb 2010 10:19:17 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Anton Starikov <ant.starikov@gmail.com>
+Cc: linux-kernel@vger.kernel.org, "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: 2.6.31 and OOM killer = bug?
+Message-Id: <20100215101917.15552a51.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <E0975165-4185-47A9-A15F-B46774A5F6DA@gmail.com>
+References: <E0975165-4185-47A9-A15F-B46774A5F6DA@gmail.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---001636e0ad2cac3792047f991eef
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On Mon, 15 Feb 2010 00:43:02 +0100
+Anton Starikov <ant.starikov@gmail.com> wrote:
 
-2010/2/15 Russell King - ARM Linux <linux@arm.linux.org.uk>:
-> On Mon, Feb 15, 2010 at 12:14:08AM +0800, =E6=9D=A8=E5=9F=8E wrote:
->> diff --git a/arch/arm/tools/mach-types b/arch/arm/tools/mach-types
->> index 07b976d..629b858 100644
->> --- a/arch/arm/tools/mach-types
->> +++ b/arch/arm/tools/mach-types
->> @@ -2635,3 +2635,4 @@ hw90240                 MACH_HW90240            HW=
-90240                 2648
->> dm365_leopard         MACH_DM365_LEOPARD      DM365_LEOPARD           26=
-49
->> mityomapl138          MACH_MITYOMAPL138       MITYOMAPL138            26=
-50
->> scat110                       MACH_SCAT110            SCAT110           =
-      2651
->> +ak780x                       MACH_AK780X             AK780X            =
-      2557
->> +ak880x                       MACH_AK880X             AK880X            =
-      2558
->
-> This file is periodically replaced; as such taking patches for the file i=
-s
-> senseless.
->
-> Moreover, your two additions refer to a number which is already allocated
-> and in use for bcmring_evm_jazz and bcmring_sp - you can not use these
-> numbers.
->
+> Hi,
+> 
+> The setup:
+> is 16-core opteron node, diskless with NFS root, swapless, 64GB of RAM. Operating under OpenSUSE 11.2. With kernel version 2.6.31. Although it isn't vanilla, I think probably more right is to submit this into LKML.
+> 
 
-Hello Russell, sorry, i mean that get to obtain two ID. so I modify the pat=
-ch.
+At first, what is the version of kernel you are comparing with ? 2.6.22?(If OpenSuse10)
+If so, many changes since that..
 
->From 5986e814ba1745b9371de943ce18e29147361bac Mon Sep 17 00:00:00 2001
-From: Gump Yang <gump.yang@gmail.com>
-Date: Fri, 12 Feb 2010 23:12:21 +0800
-Subject: [PATCH 05/10] apply anyka chip ID
-MIME-Version: 1.0
-Content-Type: text/plain; charset=3Dgbk
-Content-Transfer-Encoding: 8bit
+> The problem:
+> On this node user run MPI job with 16 processes, local job by using shared memory communication.  
+> At some point this processes are trying to use more memory that available.
+> Normally, all of them or part of them would be killed by OOM killer, and it use to work for years over many versions of kernel.
+> 
+> Now, with fresh setup I got something new. OOM tried to kill, but didn't succeed, and even more, brought system in unusable state. All those processes are locked and un-killable. some of other processes are also locked and un-killable/inaccessible. kswapd consume 100% CPU (which I think is expected behavior when there is no free memory). 
+> No free memory obviously, cause all original processes are still in memory.
+> 
+> I tried to test OOM behavior and it always happens like that now.
+> 
+> Here I attach full gzipped log of all related information captured by logserver (sent by logserver and netconsole, so it can be partly doubled). Sorry that it is too big, but I didn't know what information can be important.
+> 
 
-Signed-off-by: Gump Yang <gump.yang@gmail.com>
----
- arch/arm/tools/mach-types |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+Anyway, I think it's not appreciated to depend on OOM-Kill on swapless-system.
+I recommend you to use cgroup "memory" to encapsulate your apps (but please check
+the performance regression can be seen or not..)
 
-diff --git a/arch/arm/tools/mach-types b/arch/arm/tools/mach-types
-index 07b976d..629b858 100644
---- a/arch/arm/tools/mach-types
-+++ b/arch/arm/tools/mach-types
-@@ -2635,3 +2635,4 @@ hw90240			MACH_HW90240		HW90240			2648
-dm365_leopard		MACH_DM365_LEOPARD	DM365_LEOPARD		2649
-mityomapl138		MACH_MITYOMAPL138	MITYOMAPL138		2650
-scat110			MACH_SCAT110		SCAT110			2651
-+ak780x			MACH_AK780X		AK780X			2652
-+ak880x			MACH_AK880X		AK880X			2653
-\ No newline at end of file
---=20
-1.6.6.1
+Thanks,
+-Kame
 
---001636e0ad2cac3792047f991eef
-Content-Type: application/octet-stream; name="0005-CPU.patch"
-Content-Disposition: attachment; filename="0005-CPU.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_g5ok3qv60
-
-RnJvbSA1OTg2ZTgxNGJhMTc0NWI5MzcxZGU5NDNjZTE4ZTI5MTQ3MzYxYmFjIE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpGcm9tOiBHdW1wIFlhbmcgPGd1bXAueWFuZ0BnbWFpbC5jb20+CkRhdGU6
-IEZyaSwgMTIgRmViIDIwMTAgMjM6MTI6MjEgKzA4MDAKU3ViamVjdDogW1BBVENIIDA1LzEwXSBh
-cHBseSBhbnlrYSBjaGlwIElECk1JTUUtVmVyc2lvbjogMS4wCkNvbnRlbnQtVHlwZTogdGV4dC9w
-bGFpbjsgY2hhcnNldD1nYmsKQ29udGVudC1UcmFuc2Zlci1FbmNvZGluZzogOGJpdAoKU2lnbmVk
-LW9mZi1ieTogR3VtcCBZYW5nIDxndW1wLnlhbmdAZ21haWwuY29tPgotLS0KIGFyY2gvYXJtL3Rv
-b2xzL21hY2gtdHlwZXMgfCAgICAxICsKIDEgZmlsZXMgY2hhbmdlZCwgMSBpbnNlcnRpb25zKCsp
-LCAwIGRlbGV0aW9ucygtKQoKZGlmZiAtLWdpdCBhL2FyY2gvYXJtL3Rvb2xzL21hY2gtdHlwZXMg
-Yi9hcmNoL2FybS90b29scy9tYWNoLXR5cGVzCmluZGV4IDA3Yjk3NmQuLjYyOWI4NTggMTAwNjQ0
-Ci0tLSBhL2FyY2gvYXJtL3Rvb2xzL21hY2gtdHlwZXMKKysrIGIvYXJjaC9hcm0vdG9vbHMvbWFj
-aC10eXBlcwpAQCAtMjYzNSwzICsyNjM1LDQgQEAgaHc5MDI0MAkJCU1BQ0hfSFc5MDI0MAkJSFc5
-MDI0MAkJCTI2NDgKZG0zNjVfbGVvcGFyZAkJTUFDSF9ETTM2NV9MRU9QQVJECURNMzY1X0xFT1BB
-UkQJCTI2NDkKbWl0eW9tYXBsMTM4CQlNQUNIX01JVFlPTUFQTDEzOAlNSVRZT01BUEwxMzgJCTI2
-NTAKc2NhdDExMAkJCU1BQ0hfU0NBVDExMAkJU0NBVDExMAkJCTI2NTEKK2FrNzgweAkJCU1BQ0hf
-QUs3ODBYCQlBSzc4MFgJCQkyNjUyCithazg4MHgJCQlNQUNIX0FLODgwWAkJQUs4ODBYCQkJMjY1
-MwpcIE5vIG5ld2xpbmUgYXQgZW5kIG9mIGZpbGUKLS0gCjEuNi42LjEKCg==
---001636e0ad2cac3792047f991eef--
