@@ -1,37 +1,41 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756022Ab0BOQLU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 11:11:20 -0500
-Received: from saraswathi.solana.com ([198.99.130.12]:40628 "EHLO
-	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754697Ab0BOQLT (ORCPT
+	id S1754794Ab0BOQP3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 11:15:29 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:50828 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752106Ab0BOQP2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 11:11:19 -0500
-Date: Mon, 15 Feb 2010 11:11:11 -0500
-From: Jeff Dike <jdike@addtoit.com>
-To: =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
-Cc: Adam Nielsen <a.nielsen@shikadi.net>,
-       LKML Mailinglist <linux-kernel@vger.kernel.org>
-Subject: Re: UML broken - runaway loop modprobe binfmt-464c
-Message-ID: <20100215161111.GA18664@c2.user-mode-linux.org>
-References: <4B78EE15.9020407@shikadi.net> <20100215113730.GL12076@hack.private>
+	Mon, 15 Feb 2010 11:15:28 -0500
+Date: Mon, 15 Feb 2010 11:15:23 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Cc: viro@ZenIV.linux.org.uk, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fs: Add flags to __d_path for suppressing suffix and
+	mapping /proc/self
+Message-ID: <20100215161523.GA31908@infradead.org>
+References: <201002152311.IGC00525.SFOVtLJQFMOHFO@I-love.SAKURA.ne.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20100215113730.GL12076@hack.private>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <201002152311.IGC00525.SFOVtLJQFMOHFO@I-love.SAKURA.ne.jp>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 15, 2010 at 07:37:30PM +0800, Américo Wang wrote:
-> So you are using 32-bit modprobe binary and 64-bit kernel?
-> 
-> This will not work, since kernel binfmt_elf module checks
-> if e_machine is EM_X86_64.
+On Mon, Feb 15, 2010 at 11:11:37PM +0900, Tetsuo Handa wrote:
+> This patch allows __d_path() to
+> (1) suppress " (deleted)" suffix if dentry was already deleted
 
-Not just 32-bit modprobe - any 32-bit binary on a 64-bit UML will
-cause this, I think.
+This part looks fine to me.
 
-				Jeff
+> (2) convert /proc/PID to /proc/self if dentry is under /proc/self directory
+
+This not.  If you security module is broken enough to require special
+casing /proc/pid entries that's your business, but there's not reason
+to put ugly hacks into core code for that.
+
