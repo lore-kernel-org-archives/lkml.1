@@ -1,55 +1,43 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753910Ab0BOHCa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 02:02:30 -0500
-Received: from 128-177-27-249.ip.openhosting.com ([128.177.27.249]:45734 "EHLO
-	jmalinen.user.openhosting.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751465Ab0BOHC3 (ORCPT
+	id S1754106Ab0BOHHO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 02:07:14 -0500
+Received: from vitalin.sorra.shikadi.net ([64.71.152.201]:46997 "EHLO
+	vitalin.sorra.shikadi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751465Ab0BOHHM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 02:02:29 -0500
-Date: Mon, 15 Feb 2010 09:02:19 +0200
-From: Jouni Malinen <j@w1.fi>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Michael Neuling <mikey@neuling.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.33-rc8 breaks UML with Restrict initial stack space
- expansion to rlimit
-Message-ID: <20100215070219.GB14412@jm.kir.nu>
-References: <20100214164023.GA2726@jm.kir.nu>
- <9296.1266185019@neuling.org>
- <20100215113751.7275.A69D9226@jp.fujitsu.com>
+	Mon, 15 Feb 2010 02:07:12 -0500
+Message-ID: <4B78EE15.9020407@shikadi.net>
+Date: Mon, 15 Feb 2010 16:47:49 +1000
+From: Adam Nielsen <a.nielsen@shikadi.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-GB; rv:1.8.1.23) Gecko/20091130 Thunderbird/2.0.0.23 Mnenhy/0.7.5.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100215113751.7275.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: LKML Mailinglist <linux-kernel@vger.kernel.org>
+Subject: UML broken - runaway loop modprobe binfmt-464c
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 15, 2010 at 11:38:52AM +0900, KOSAKI Motohiro wrote:
-> Wow. It seems very strange. Usually stack overflow makes SIGSEGV, not SIGKILL.
-> plus, In my environment (x86_64 non-uml), mount command doesn't use
-> the stack so much.
+Hi all,
 
-The SIGKILL part is the odd one, I would assume.. It looks like about
-half of the commands are failing with SIGKILL even with ulimit -s 8192
-and the ulimit -s value did not really change the failure rate that
-much if at all. SIGSEGV starts showing up only after having limited
-ulimit -s to quite samll number (see my previous email).
+I've been forced to upgrade an old machine running a couple of UML VMs, but I 
+can't for the life of me figure out how to make them work on the new machine.
 
-> % /usr/bin/time --format="mem %M" ls
-> /usr/bin/time --format="mem %M" ls
-> GPATH      INSTALL  README       configure    fdisk          lib      misc-utils   schedutils
-> mem 3232
+I've compiled the latest kernel from kernel.org with ARCH=um and when I run it 
+says this a few times and then stops:
 
-mem 3296
-on my UML setup
+request_module: runaway loop modprobe binfmt-464c
 
-> % sudo /usr/bin/time --format="mem %M"  mount -a
-> sudo /usr/bin/time --format="mem %M"  mount -a
-> mem 2992
+ From Google it appears the cause of this is when you run a 64-bit system with 
+a 32-bit kernel, but I'm running a 64-bit kernel with a 32-bit system.  I 
+vaguely recall something about IA32 emulation in the normal kernel build, but 
+I can't see anything like that in the UML kernel config.
 
-mem 2928
+Does anyone know what might fix this?
 
--- 
-Jouni Malinen                                            PGP id EFC895FA
+Many thanks,
+Adam.
+
+(please CC)
