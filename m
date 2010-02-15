@@ -1,87 +1,1018 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932186Ab0BOV3i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 16:29:38 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:50083 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932147Ab0BOV3h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 16:29:37 -0500
-Subject: Re: [GIT] Security subsystem changes for 2.6.33
-From: Eric Paris <eparis@redhat.com>
-To: Dave Airlie <airlied@gmail.com>
-Cc: James Morris <jmorris@namei.org>, LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, sds@tycho.nsa.gov
-In-Reply-To: <21d7e9971002142046p2a3af2bak1a01bb7117db7841@mail.gmail.com>
-References: <alpine.LRH.2.00.0912040030400.16314@tundra.namei.org>
-	 <21d7e9971002142046p2a3af2bak1a01bb7117db7841@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 15 Feb 2010 16:29:22 -0500
-Message-ID: <1266269362.24665.8.camel@localhost>
-Mime-Version: 1.0
+	id S932207Ab0BOVdb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 16:33:31 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:47938 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932147Ab0BOVda (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Feb 2010 16:33:30 -0500
+X-Authority-Analysis: v=1.0 c=1 a=2XKwS6Bb_uwA:10 a=yQdBAQUQAAAA:8 a=zf5bm3zHo6Qo6XcjeZ8A:9 a=AT2mbYHNvRBheqeL9mIA:7 a=DOTLgT1_HOTCAIW9KtxjBITJOcsA:4 a=IcxpeKGZWnEA:10 a=kfjx35O4JyFJStby:21 a=IOVwPWlAJ4pLZCJY:21
+X-Cloudmark-Score: 0
+X-Originating-IP: 65.28.92.235
+Date: Mon, 15 Feb 2010 15:33:23 -0600
+From: Larry Finger <Larry.Finger@lwfinger.net>
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: Bernhard Schiffner <bernhard@schiffner-limbach.de>,
+       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
+Subject: [PATCH 2/3 V3] staging: r8187se: Remove two private variables
+ that have a fixed value
+Message-ID: <4b79bda3.xMmvIncJQuVofjod%Larry.Finger@lwfinger.net>
+User-Agent: Heirloom mailx 12.2 01/07/07
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-02-15 at 14:46 +1000, Dave Airlie wrote: 
-> > Eric Paris (5):
-> 
-> >      SELinux: add .gitignore files for dynamic classes
-> 
-> This isn't such a good idea I've discovered after wasting half my day
-> wondering why 2.6.33-rc8 oops in selinux
-> code when vbetool runs.
-> 
-> The problem (not sure what we or git can do, hence Linus cc'ed) is:
-> 
-> a) git tree contains 2.6.32 + with old non-generated versions of
-> flash.h and av_permissions.h
-> b) git pull 2.6.33-rc8, nothing removes these old files, git status
-> doesn't show them as they are now in .gitignore
-> c) build 2.6.33, it picks up the include files from the old location
-> not from the generated ones in the new tree.
-> d) bad juju.
-> 
-> I'm also doing out of tree builds btw.
+For the RTL8187SE, the variable priv->rf_chip is always RF_ZEBRA4
+and priv->RegThreeWireMode is always HW_THREE_WIRE_SI. Remove these
+2 variables.
 
-I'm not sure I understand why the old ones didn't get cleaned up.  They
-did for me.
+Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
+---
 
-$ git checkout -b testing v2.6.32
-$ find security/selinux/ -name flask\*
-security/selinux/include/flask.h
-[here I made a commit on MAINTAINERS just to make sure pull did
-something]
-$ git pull linus master
-$ find security/selinux/ -name flask\*
-[nothing]
-$
+V2 - Fix mailer mangling.
+V3 - Wrong number in mailing
+---
 
-I don't have those two old header files laying around.  I understand why
-your old ones are still there.
+ r8180.h           |    4
+ r8180_core.c      |   90 -------------
+ r8180_dm.c        |   71 ++--------
+ r8180_rtl8225z2.c |  238 +++++++++++++++-------------------
+ r8185b_init.c     |  368 +++++++++++-------------------------------------------
+ 5 files changed, 197 insertions(+), 574 deletions(-)
 
-I build selinux which generates the new files (in slightly new places)
-
-$ make security/selinux/
-$ find security/selinux/ -name flask\*
-security/selinux/flask.h
-
-They moved from
-security/selinux/include
-  to
-security/selinux
-
-I have a security/selinux/.gitignore which lists
-
-$ cat security/selinux/.gitignore 
-av_permissions.h
-flask.h
-
-Which I believe means they match the old locations as well.  Is there
-some better way to ignore the new autogenereated files such that they
-won't match include/flask.h?  I don't understand why the old files
-weren't cleaned up?  Am I doing something wrong in my testing?  Should I
-be doing something better in the code?
-
--Eric
-
+Index: linux-2.6/drivers/staging/rtl8187se/r8185b_init.c
+===================================================================
+--- linux-2.6.orig/drivers/staging/rtl8187se/r8185b_init.c
++++ linux-2.6/drivers/staging/rtl8187se/r8185b_init.c
+@@ -238,22 +238,9 @@ PlatformIORead4Byte(
+ 	return data;
+ }
+ 
+-void
+-SetOutputEnableOfRfPins(
+-	struct net_device *dev
+-	)
++void SetOutputEnableOfRfPins(struct net_device *dev)
+ {
+-	struct r8180_priv *priv = (struct r8180_priv *)ieee80211_priv(dev);
+-
+-	switch(priv->rf_chip)
+-	{
+-	case RFCHIPID_RTL8225:
+-	case RF_ZEBRA2:
+-	case RF_ZEBRA4:
+-		write_nic_word(dev, RFPinsEnable, 0x1bff);
+-		//write_nic_word(dev, RFPinsEnable, 0x1fff);
+-		break;
+-	}
++	write_nic_word(dev, RFPinsEnable, 0x1bff);
+ }
+ 
+ void
+@@ -603,111 +590,27 @@ HwThreeWire(
+ 
+ 
+ void
+-RF_WriteReg(
+-	struct net_device *dev,
+-	u8		offset,
+-	u32		data
+-	)
++RF_WriteReg(struct net_device *dev, u8 offset, u32 data)
+ {
+-	//RFReg			reg;
+-	u32			data2Write;
+-	u8			len;
+-	u8			low2high;
+-	//u32			RF_Read = 0;
+-	struct r8180_priv *priv = (struct r8180_priv *)ieee80211_priv(dev);
+-
+-
+-	switch(priv->rf_chip)
+-	{
+-	case RFCHIPID_RTL8225:
+-	case RF_ZEBRA2:		// Annie 2006-05-12.
+-	case RF_ZEBRA4:        //by amy
+-		switch(priv->RegThreeWireMode)
+-		{
+-		case SW_THREE_WIRE:
+-			{ // Perform SW 3-wire programming by driver.
+-				data2Write = (data << 4) | (u32)(offset & 0x0f);
+-				len = 16;
+-				low2high = 0;
+-				ZEBRA_RFSerialWrite(dev, data2Write, len, low2high);
+-       			}
+-			break;
+-
+- 		case HW_THREE_WIRE:
+-			{ // Pure HW 3-wire.
+-				data2Write = (data << 4) | (u32)(offset & 0x0f);
+-				len = 16;
+-				HwThreeWire(
+-					dev,
+-					(u8 *)(&data2Write),	// pDataBuf,
+-					len,				// nDataBufBitCnt,
+-					0,					// bHold,
+-					1);					// bWrite
+-         		}
+-			break;
+-			case HW_THREE_WIRE_PI: //Parallel Interface
+-			{ // Pure HW 3-wire.
+-				data2Write = (data << 4) | (u32)(offset & 0x0f);
+-				len = 16;
+-					HwHSSIThreeWire(
+-						dev,
+-						(u8*)(&data2Write),	// pDataBuf,
+-						len,						// nDataBufBitCnt,
+-						0, 					// bSI
+-						1); 					// bWrite
+-
+-                                //printk("33333\n");
+-			}
+-			break;
+-
+-			case HW_THREE_WIRE_SI: //Serial Interface
+-			{ // Pure HW 3-wire.
+-				data2Write = (data << 4) | (u32)(offset & 0x0f);
+-				len = 16;
+-//                                printk(" enter  ZEBRA_RFSerialWrite\n ");
+-//                                low2high = 0;
+-//                                ZEBRA_RFSerialWrite(dev, data2Write, len, low2high);
+-
+-				HwHSSIThreeWire(
+-					dev,
+-					(u8*)(&data2Write),	// pDataBuf,
+-					len,						// nDataBufBitCnt,
+-					1, 					// bSI
+-					1); 					// bWrite
+-
+-//                                 printk(" exit ZEBRA_RFSerialWrite\n ");
+-			}
+-			break;
+-
++	u32 data2Write;
++	u8 len;
+ 
+-		default:
+-			DMESGE("RF_WriteReg(): invalid RegThreeWireMode(%d) !!!", priv->RegThreeWireMode);
+-			break;
+-		}
+-		break;
++	/* Pure HW 3-wire. */
++	data2Write = (data << 4) | (u32)(offset & 0x0f);
++	len = 16;
+ 
+-	default:
+-		DMESGE("RF_WriteReg(): unknown RFChipID: %#X", priv->rf_chip);
+-		break;
+-	}
++	HwHSSIThreeWire(dev, (u8 *)(&data2Write), len, 1, 1);
+ }
+ 
+-
+ void
+-ZEBRA_RFSerialRead(
+-	struct net_device *dev,
+-	u32		data2Write,
+-	u8		wLength,
+-	u32		*data2Read,
+-	u8		rLength,
+-	u8		low2high
+-	)
++ZEBRA_RFSerialRead(struct net_device *dev, u32 data2Write, u8 wLength,
++		   u32 *data2Read, u8 rLength, u8 low2high)
+ {
+ 	ThreeWireReg	twreg;
+-	int				i;
+-	u16			oval,oval2,oval3,tmp, wReg80;
+-	u32			mask;
+-	u8			u1bTmp;
++	int i;
++	u16 oval, oval2, oval3, tmp, wReg80;
++	u32 mask;
++	u8 u1bTmp;
+ 	ThreeWireReg	tdata;
+ 	//PHAL_DATA_8187	pHalData = GetHalData8187(pAdapter);
+ 	{ // RTL8187S HSSI Read/Write Function
+@@ -818,71 +721,16 @@ ZEBRA_RFSerialRead(
+ }
+ 
+ 
+-u32
+-RF_ReadReg(
+-	struct net_device *dev,
+-	u8		offset
+-	)
++u32 RF_ReadReg(struct net_device *dev, u8 offset)
+ {
+-	struct r8180_priv *priv = (struct r8180_priv *)ieee80211_priv(dev);
+-	u32			data2Write;
+-	u8			wlen;
+-	u8			rlen;
+-	u8			low2high;
+-	u32			dataRead;
+-
+-	switch(priv->rf_chip)
+-	{
+-	case RFCHIPID_RTL8225:
+-	case RF_ZEBRA2:
+-	case RF_ZEBRA4:
+-		switch(priv->RegThreeWireMode)
+-		{
+-			case HW_THREE_WIRE_PI: // For 87S  Parallel Interface.
+-			{
+-				data2Write = ((u32)(offset&0x0f));
+-				wlen=16;
+-				HwHSSIThreeWire(
+-					dev,
+-					(u8*)(&data2Write),	// pDataBuf,
+-					wlen,					// nDataBufBitCnt,
+-					0, 					// bSI
+-					0); 					// bWrite
+-				dataRead= data2Write;
+-			}
+-			break;
+-
+-			case HW_THREE_WIRE_SI: // For 87S Serial Interface.
+-			{
+-				data2Write = ((u32)(offset&0x0f)) ;
+-				wlen=16;
+-				HwHSSIThreeWire(
+-					dev,
+-					(u8*)(&data2Write),	// pDataBuf,
+-					wlen,					// nDataBufBitCnt,
+-					1, 					// bSI
+-					0					// bWrite
+-					);
+-				dataRead= data2Write;
+-			}
+-			break;
+-
+-			// Perform SW 3-wire programming by driver.
+-			default:
+-			{
+-				data2Write = ((u32)(offset&0x1f)) << 27; // For Zebra E-cut. 2005.04.11, by rcnjko.
+-				wlen = 6;
+-				rlen = 12;
+-				low2high = 0;
+-				ZEBRA_RFSerialRead(dev, data2Write, wlen,&dataRead,rlen, low2high);
+-			}
+-			break;
+-		}
+-		break;
+-	default:
+-		dataRead = 0;
+-		break;
+-	}
++	u32 data2Write;
++	u8 wlen;
++	u32 dataRead;
++
++	data2Write = ((u32)(offset & 0x0f));
++	wlen = 16;
++	HwHSSIThreeWire(dev, (u8 *)(&data2Write), wlen, 1, 0);
++	dataRead = data2Write;
+ 
+ 	return dataRead;
+ }
+@@ -1291,81 +1139,59 @@ UpdateInitialGain(
+ 		return;
+ 	}
+ 
+-	switch(priv->rf_chip)
+-	{
+-	case RF_ZEBRA4:
+-		// Dynamic set initial gain, follow 87B
+-		switch(priv->InitialGain)
+-		{
+-			case 1: //m861dBm
+-				//DMESG("RTL8187 + 8225 Initial Gain State 1: -82 dBm \n");
+-				write_phy_ofdm(dev, 0x17, 0x26);	mdelay(1);
+-				write_phy_ofdm(dev, 0x24, 0x86);	mdelay(1);
+-				write_phy_ofdm(dev, 0x05, 0xfa);	mdelay(1);
+-				break;
+-
+-			case 2: //m862dBm
+-				//DMESG("RTL8187 + 8225 Initial Gain State 2: -82 dBm \n");
+-				write_phy_ofdm(dev, 0x17, 0x36);	mdelay(1);
+-				write_phy_ofdm(dev, 0x24, 0x86);	mdelay(1);
+-				write_phy_ofdm(dev, 0x05, 0xfa);	mdelay(1);
+-				break;
+-
+-			case 3: //m863dBm
+-				//DMESG("RTL8187 + 8225 Initial Gain State 3: -82 dBm \n");
+-				write_phy_ofdm(dev, 0x17, 0x36);	mdelay(1);
+-				write_phy_ofdm(dev, 0x24, 0x86);	mdelay(1);
+-				write_phy_ofdm(dev, 0x05, 0xfb);	mdelay(1);
+-				break;
+-
+-			case 4: //m864dBm
+-				//DMESG("RTL8187 + 8225 Initial Gain State 4: -78 dBm \n");
+-				write_phy_ofdm(dev, 0x17, 0x46);	mdelay(1);
+-				write_phy_ofdm(dev, 0x24, 0x86);	mdelay(1);
+-				write_phy_ofdm(dev, 0x05, 0xfb);	mdelay(1);
+-				break;
++	switch (priv->InitialGain) {
++	case 1: /* m861dBm */
++		write_phy_ofdm(dev, 0x17, 0x26);	mdelay(1);
++		write_phy_ofdm(dev, 0x24, 0x86);	mdelay(1);
++		write_phy_ofdm(dev, 0x05, 0xfa);	mdelay(1);
++		break;
+ 
+-			case 5: //m82dBm
+-				//DMESG("RTL8187 + 8225 Initial Gain State 5: -74 dBm \n");
+-				write_phy_ofdm(dev, 0x17, 0x46);	mdelay(1);
+-				write_phy_ofdm(dev, 0x24, 0x96);	mdelay(1);
+-				write_phy_ofdm(dev, 0x05, 0xfb);	mdelay(1);
+-				break;
++	case 2: /* m862dBm */
++		write_phy_ofdm(dev, 0x17, 0x36);	mdelay(1);
++		write_phy_ofdm(dev, 0x24, 0x86);	mdelay(1);
++		write_phy_ofdm(dev, 0x05, 0xfa);	mdelay(1);
++		break;
+ 
+-			case 6: //m78dBm
+-				//DMESG ("RTL8187 + 8225 Initial Gain State 6: -70 dBm \n");
+-				write_phy_ofdm(dev, 0x17, 0x56);	mdelay(1);
+-				write_phy_ofdm(dev, 0x24, 0x96);	mdelay(1);
+-				write_phy_ofdm(dev, 0x05, 0xfc);	mdelay(1);
+-				break;
++	case 3: /* m863dBm */
++		write_phy_ofdm(dev, 0x17, 0x36);	mdelay(1);
++		write_phy_ofdm(dev, 0x24, 0x86);	mdelay(1);
++		write_phy_ofdm(dev, 0x05, 0xfb);	mdelay(1);
++		break;
+ 
+-			case 7: //m74dBm
+-				//DMESG("RTL8187 + 8225 Initial Gain State 7: -66 dBm \n");
+-				write_phy_ofdm(dev, 0x17, 0x56);	mdelay(1);
+-				write_phy_ofdm(dev, 0x24, 0xa6);	mdelay(1);
+-				write_phy_ofdm(dev, 0x05, 0xfc);	mdelay(1);
+-				break;
++	case 4: /* m864dBm */
++		write_phy_ofdm(dev, 0x17, 0x46);	mdelay(1);
++		write_phy_ofdm(dev, 0x24, 0x86);	mdelay(1);
++		write_phy_ofdm(dev, 0x05, 0xfb);	mdelay(1);
++		break;
+ 
+-			case 8:
+-				//DMESG("RTL8187 + 8225 Initial Gain State 8:\n");
+-				write_phy_ofdm(dev, 0x17, 0x66);	mdelay(1);
+-				write_phy_ofdm(dev, 0x24, 0xb6);	mdelay(1);
+-				write_phy_ofdm(dev, 0x05, 0xfc);	mdelay(1);
+-				break;
++	case 5: /* m82dBm */
++		write_phy_ofdm(dev, 0x17, 0x46);	mdelay(1);
++		write_phy_ofdm(dev, 0x24, 0x96);	mdelay(1);
++		write_phy_ofdm(dev, 0x05, 0xfb);	mdelay(1);
++		break;
+ 
++	case 6: /* m78dBm */
++		write_phy_ofdm(dev, 0x17, 0x56);	mdelay(1);
++		write_phy_ofdm(dev, 0x24, 0x96);	mdelay(1);
++		write_phy_ofdm(dev, 0x05, 0xfc);	mdelay(1);
++		break;
+ 
+-			default:	//MP
+-				//DMESG("RTL8187 + 8225 Initial Gain State 1: -82 dBm (default)\n");
+-				write_phy_ofdm(dev, 0x17, 0x26);	mdelay(1);
+-				write_phy_ofdm(dev, 0x24, 0x86);	mdelay(1);
+-				write_phy_ofdm(dev, 0x05, 0xfa);	mdelay(1);
+-				break;
+-		}
++	case 7: /* m74dBm */
++		write_phy_ofdm(dev, 0x17, 0x56);	mdelay(1);
++		write_phy_ofdm(dev, 0x24, 0xa6);	mdelay(1);
++		write_phy_ofdm(dev, 0x05, 0xfc);	mdelay(1);
+ 		break;
+ 
++	case 8:
++		write_phy_ofdm(dev, 0x17, 0x66);	mdelay(1);
++		write_phy_ofdm(dev, 0x24, 0xb6);	mdelay(1);
++		write_phy_ofdm(dev, 0x05, 0xfc);	mdelay(1);
++		break;
+ 
+-	default:
+-		DMESG("UpdateInitialGain(): unknown RFChipID: %#X\n", priv->rf_chip);
++	default:	/* MP */
++		write_phy_ofdm(dev, 0x17, 0x26);	mdelay(1);
++		write_phy_ofdm(dev, 0x24, 0x86);	mdelay(1);
++		write_phy_ofdm(dev, 0x05, 0xfa);	mdelay(1);
+ 		break;
+ 	}
+ }
+@@ -1397,14 +1223,8 @@ PhyConfig8185(
+ 	struct r8180_priv *priv = (struct r8180_priv *)ieee80211_priv(dev);
+        write_nic_dword(dev, RCR, priv->ReceiveConfig);
+ 	   priv->RFProgType = read_nic_byte(dev, CONFIG4) & 0x03;
+-     	// RF config
+-	switch(priv->rf_chip)
+-	{
+-	case RF_ZEBRA2:
+-	case RF_ZEBRA4:
+-		ZEBRA_Config_85BASIC_HardCode( dev);
+-		break;
+-	}
++	/*  RF config */
++	ZEBRA_Config_85BASIC_HardCode(dev);
+ //{by amy 080312
+ 	// Set default initial gain state to 4, approved by SD3 DZ, by Bruce, 2007-06-06.
+ 	if(priv->bDigMechanism)
+@@ -1614,19 +1434,8 @@ GetSupportedWirelessMode8185(
+ )
+ {
+ 	u8			btSupportedWirelessMode = 0;
+-	struct r8180_priv *priv = (struct r8180_priv *)ieee80211_priv(dev);
+-
+-	switch(priv->rf_chip)
+-	{
+-	case RF_ZEBRA2:
+-	case RF_ZEBRA4:
+-		btSupportedWirelessMode = (WIRELESS_MODE_B | WIRELESS_MODE_G);
+-		break;
+-	default:
+-		btSupportedWirelessMode = WIRELESS_MODE_B;
+-		break;
+-	}
+ 
++	btSupportedWirelessMode = (WIRELESS_MODE_B | WIRELESS_MODE_G);
+ 	return btSupportedWirelessMode;
+ }
+ 
+@@ -1881,23 +1690,11 @@ ActSetWirelessMode8185(
+ 	}
+ 
+ 
+-	// 2. Swtich band: RF or BB specific actions,
+-	// for example, refresh tables in omc8255, or change initial gain if necessary.
+-	switch(priv->rf_chip)
+-	{
+-	case RF_ZEBRA2:
+-	case RF_ZEBRA4:
+-		{
+-			// Nothing to do for Zebra to switch band.
+-			// Update current wireless mode if we swtich to specified band successfully.
+-			ieee->mode = (WIRELESS_MODE)btWirelessMode;
+-		}
+-		break;
+-
+-	default:
+-		DMESGW("ActSetWirelessMode8185(): unsupported RF: 0x%X !!!\n", priv->rf_chip);
+-		break;
+-	}
++	/* 2. Swtich band: RF or BB specific actions,
++	 * for example, refresh tables in omc8255, or change initial gain if necessary.
++	 * Nothing to do for Zebra to switch band.
++	 * Update current wireless mode if we swtich to specified band successfully. */
++	ieee->mode = (WIRELESS_MODE)btWirelessMode;
+ 
+ 	// 3. Change related setting.
+ 	if( ieee->mode == WIRELESS_MODE_A ){
+@@ -2108,18 +1905,7 @@ SetRFPowerState(
+ 		return bResult;
+ 	}
+ 
+-	switch(priv->rf_chip)
+-	{
+-		case RF_ZEBRA2:
+-		case RF_ZEBRA4:
+-			 bResult = SetZebraRFPowerState8185(dev, eRFPowerState);
+-			break;
+-
+-		default:
+-			printk("SetRFPowerState8185(): unknown RFChipID: 0x%X!!!\n", priv->rf_chip);
+-			break;;
+-}
+-//	printk("<--------- SetRFPowerState(): bResult(%d)\n", bResult);
++	 bResult = SetZebraRFPowerState8185(dev, eRFPowerState);
+ 
+ 	return bResult;
+ }
+Index: linux-2.6/drivers/staging/rtl8187se/r8180.h
+===================================================================
+--- linux-2.6.orig/drivers/staging/rtl8187se/r8180.h
++++ linux-2.6/drivers/staging/rtl8187se/r8180.h
+@@ -366,7 +366,6 @@ typedef struct r8180_priv
+ 	short diversity;
+ 	u8 cs_treshold;
+ 	short rcr_csense;
+-	short rf_chip;
+ 	u32 key0[4];
+ 	short (*rf_set_sens)(struct net_device *dev,short sens);
+ 	void (*rf_set_chan)(struct net_device *dev,short ch);
+@@ -479,9 +478,6 @@ typedef struct r8180_priv
+ 	u8 retry_rts;
+ 	u16 rts;
+ 
+-//add for RF power on power off by lizhaoming 080512
+-	u8	 RegThreeWireMode; // See "Three wire mode" defined above, 2006.05.31, by rcnjko.
+-
+ //by amy for led
+ 	LED_STRATEGY_8185 LedStrategy;
+ //by amy for led
+Index: linux-2.6/drivers/staging/rtl8187se/r8180_core.c
+===================================================================
+--- linux-2.6.orig/drivers/staging/rtl8187se/r8180_core.c
++++ linux-2.6/drivers/staging/rtl8187se/r8180_core.c
+@@ -670,11 +670,8 @@ unsigned char STRENGTH_MAP[] = {
+ 
+ void rtl8180_RSSI_calc(struct net_device *dev, u8 *rssi, u8 *qual)
+ {
+-	struct r8180_priv *priv = (struct r8180_priv *)ieee80211_priv(dev);
+ 	u32 temp;
+ 	u32 temp2;
+-	u32 temp3;
+-	u32 lsb;
+ 	u32 q;
+ 	u32 orig_qual;
+ 	u8  _rssi;
+@@ -696,88 +693,6 @@ void rtl8180_RSSI_calc(struct net_device
+ 	*qual = temp;
+ 	temp2 = *rssi;
+ 
+-	switch(priv->rf_chip){
+-	case RFCHIPID_RFMD:
+-		lsb = temp2 & 1;
+-		temp2 &= 0x7e;
+-		if ( !lsb || !(temp2 <= 0x3c) ) {
+-			temp2 = 0x64;
+-		} else {
+-			temp2 = 100 * temp2 / 0x3c;
+-		}
+-		*rssi = temp2 & 0xff;
+-		_rssi = temp2 & 0xff;
+-		break;
+-	case RFCHIPID_INTERSIL:
+-		lsb = temp2;
+-		temp2 &= 0xfffffffe;
+-		temp2 *= 251;
+-		temp3 = temp2;
+-		temp2 <<= 6;
+-		temp3 += temp2;
+-		temp3 <<= 1;
+-		temp2 = 0x4950df;
+-		temp2 -= temp3;
+-		lsb &= 1;
+-		if ( temp2 <= 0x3e0000 ) {
+-			if ( temp2 < 0xffef0000 )
+-				temp2 = 0xffef0000;
+-		} else {
+-			temp2 = 0x3e0000;
+-		}
+-		if ( !lsb ) {
+-			temp2 -= 0xf0000;
+-		} else {
+-			temp2 += 0xf0000;
+-		}
+-
+-		temp3 = 0x4d0000;
+-		temp3 -= temp2;
+-		temp3 *= 100;
+-		temp3 = temp3 / 0x6d;
+-		temp3 >>= 0x10;
+-		_rssi = temp3 & 0xff;
+-		*rssi = temp3 & 0xff;
+-		break;
+-	case RFCHIPID_GCT:
+-	        lsb = temp2 & 1;
+-		temp2 &= 0x7e;
+-		if ( ! lsb || !(temp2 <= 0x3c) ){
+-			temp2 = 0x64;
+-		} else {
+-			temp2 = (100 * temp2) / 0x3c;
+-		}
+-		*rssi = temp2 & 0xff;
+-		_rssi = temp2 & 0xff;
+-		break;
+-	case RFCHIPID_PHILIPS:
+-		if( orig_qual <= 0x4e ){
+-			_rssi = STRENGTH_MAP[orig_qual];
+-			*rssi = _rssi;
+-		} else {
+-			orig_qual -= 0x80;
+-			if ( !orig_qual ){
+-				_rssi = 1;
+-				*rssi = 1;
+-			} else {
+-				_rssi = 0x32;
+-				*rssi = 0x32;
+-			}
+-		}
+-		break;
+-	case RFCHIPID_MAXIM:
+-		lsb = temp2 & 1;
+-		temp2 &= 0x7e;
+-		temp2 >>= 1;
+-		temp2 += 0x42;
+-		if( lsb != 0 ){
+-			temp2 += 0xa;
+-		}
+-		*rssi = temp2 & 0xff;
+-		_rssi = temp2 & 0xff;
+-		break;
+-	}
+-
+ 	if ( _rssi < 0x64 ){
+ 		if ( _rssi == 0 ) {
+ 			*rssi = 1;
+@@ -2740,8 +2655,6 @@ short rtl8180_init(struct net_device *de
+ 	priv->txbeaconcount = 2;
+ 	priv->rx_skb_complete = 1;
+ 
+-	priv->RegThreeWireMode = HW_THREE_WIRE_SI;
+-
+ 	priv->RFChangeInProgress = false;
+ 	priv->SetRFPowerStateInProgress = false;
+ 	priv->RFProgType = 0;
+@@ -3036,9 +2949,6 @@ short rtl8180_init(struct net_device *de
+ 	priv->cs_treshold = (eeprom_val & 0xff00) >> 8;
+ 
+ 	eeprom_93cx6_read(&eeprom, RFCHIPID, &eeprom_val);
+-	priv->rf_chip = 0xff & eeprom_val;
+-
+-	priv->rf_chip = RF_ZEBRA4;
+ 	priv->rf_sleep = rtl8225z4_rf_sleep;
+ 	priv->rf_wakeup = rtl8225z4_rf_wakeup;
+ 	DMESGW("**PLEASE** REPORT SUCCESSFUL/UNSUCCESSFUL TO Realtek!");
+Index: linux-2.6/drivers/staging/rtl8187se/r8180_dm.c
+===================================================================
+--- linux-2.6.orig/drivers/staging/rtl8187se/r8180_dm.c
++++ linux-2.6/drivers/staging/rtl8187se/r8180_dm.c
+@@ -282,30 +282,13 @@ DIG_Zebra(
+ //		Dispatch DIG implementation according to RF.
+ //
+ void
+-DynamicInitGain(
+-	struct net_device *dev
+-	)
++DynamicInitGain(struct net_device *dev)
+ {
+-	struct r8180_priv *priv = ieee80211_priv(dev);
+-
+-	switch(priv->rf_chip)
+-	{
+-		case RF_ZEBRA2:  // [AnnieWorkaround] For Zebra2, 2005-08-01.
+-		case RF_ZEBRA4:
+-			DIG_Zebra( dev );
+-			break;
+-
+-		default:
+-			printk("DynamicInitGain(): unknown RFChipID(%d) !!!\n", priv->rf_chip);
+-			break;
+-	}
++	DIG_Zebra(dev);
+ }
+ 
+ void rtl8180_hw_dig_wq (struct work_struct *work)
+ {
+-//      struct r8180_priv *priv = container_of(work, struct r8180_priv, watch_dog_wq);
+-//      struct ieee80211_device * ieee = (struct ieee80211_device*)
+-//                                             container_of(work, struct ieee80211_device, watch_dog_wq);
+ 	struct delayed_work *dwork = to_delayed_work(work);
+         struct ieee80211_device *ieee = container_of(dwork,struct ieee80211_device,hw_dig_wq);
+         struct net_device *dev = ieee->dev;
+@@ -1310,44 +1293,24 @@ SetAntenna8185(
+ 	switch(u1bAntennaIndex)
+ 	{
+ 	case 0:
+-		switch(priv->rf_chip)
+-		{
+-		case RF_ZEBRA2:
+-		case RF_ZEBRA4:
+-			// Mac register, main antenna
+-			write_nic_byte(dev, ANTSEL, 0x03);
+-			//base band
+-			write_phy_cck(dev,0x11, 0x9b); // Config CCK RX antenna.
+-			write_phy_ofdm(dev, 0x0d, 0x5c); // Config OFDM RX antenna.
+-
+-
+-			bAntennaSwitched = true;
+-			break;
+-
+-		default:
+-			printk("SetAntenna8185: unknown RFChipID(%d)\n", priv->rf_chip);
+-			break;
+-		}
++		/* Mac register, main antenna */
++		write_nic_byte(dev, ANTSEL, 0x03);
++		/* base band */
++		write_phy_cck(dev, 0x11, 0x9b); /* Config CCK RX antenna. */
++		write_phy_ofdm(dev, 0x0d, 0x5c); /* Config OFDM RX antenna. */
++
++		bAntennaSwitched = true;
+ 		break;
+ 
+ 	case 1:
+-		switch(priv->rf_chip)
+-		{
+-		case RF_ZEBRA2:
+-		case RF_ZEBRA4:
+-			// Mac register, aux antenna
+-			write_nic_byte(dev, ANTSEL, 0x00);
+-			//base band
+-			write_phy_cck(dev, 0x11, 0xbb); // Config CCK RX antenna.
+-			write_phy_ofdm(dev, 0x0d, 0x54); // Config OFDM RX antenna.
+-
+-			bAntennaSwitched = true;
+-			break;
+-
+-		default:
+-			printk("SetAntenna8185: unknown RFChipID(%d)\n", priv->rf_chip);
+-			break;
+-		}
++		/* Mac register, aux antenna */
++		write_nic_byte(dev, ANTSEL, 0x00);
++		/* base band */
++		write_phy_cck(dev, 0x11, 0xbb); /* Config CCK RX antenna. */
++		write_phy_ofdm(dev, 0x0d, 0x54); /* Config OFDM RX antenna. */
++
++		bAntennaSwitched = true;
++
+ 		break;
+ 
+ 	default:
+Index: linux-2.6/drivers/staging/rtl8187se/r8180_rtl8225z2.c
+===================================================================
+--- linux-2.6.orig/drivers/staging/rtl8187se/r8180_rtl8225z2.c
++++ linux-2.6/drivers/staging/rtl8187se/r8180_rtl8225z2.c
+@@ -854,134 +854,48 @@ bool SetZebraRFPowerState8185(struct net
+ 	btConfig3 = read_nic_byte(dev, CONFIG3);
+ 	write_nic_byte(dev, CONFIG3, (btConfig3 | CONFIG3_PARM_En));
+ 
+-	switch (priv->rf_chip) {
+-	case RF_ZEBRA2:
+-		switch (eRFPowerState) {
+-		case eRfOn:
+-			RF_WriteReg(dev,0x4,0x9FF);
++	switch (eRFPowerState) {
++	case eRfOn:
++		write_nic_word(dev, 0x37C, 0x00EC);
++
++		/* turn on AFE */
++		write_nic_byte(dev, 0x54, 0x00);
++		write_nic_byte(dev, 0x62, 0x00);
++
++		/* turn on RF */
++		RF_WriteReg(dev, 0x0, 0x009f); udelay(500);
++		RF_WriteReg(dev, 0x4, 0x0972); udelay(500);
++
++		/* turn on RF again */
++		RF_WriteReg(dev, 0x0, 0x009f); udelay(500);
++		RF_WriteReg(dev, 0x4, 0x0972); udelay(500);
++
++		/* turn on BB */
++		write_phy_ofdm(dev, 0x10, 0x40);
++		write_phy_ofdm(dev, 0x12, 0x40);
+ 
+-			write_nic_dword(dev, ANAPARAM, ANAPARM_ON);
+-			write_nic_dword(dev, ANAPARAM2, ANAPARM2_ON);
++		/* Avoid power down at init time. */
++		write_nic_byte(dev, CONFIG4, priv->RFProgType);
+ 
+-			write_nic_byte(dev, CONFIG4, priv->RFProgType);
+-
+-			/* turn on CCK and OFDM */
+-			u1bTmp = read_nic_byte(dev, 0x24E);
+-			write_nic_byte(dev, 0x24E, (u1bTmp & (~(BIT5 | BIT6))));
+-			break;
+-		case eRfSleep:
+-			break;
+-		case eRfOff:
+-			break;
+-		default:
+-			bResult = false;
+-			break;
+-		}
++		u1bTmp = read_nic_byte(dev, 0x24E);
++		write_nic_byte(dev, 0x24E, (u1bTmp & (~(BIT5 | BIT6))));
+ 		break;
+-	case RF_ZEBRA4:
+-		switch (eRFPowerState) {
+-		case eRfOn:
+-			write_nic_word(dev, 0x37C, 0x00EC);
+-
+-			/* turn on AFE */
+-			write_nic_byte(dev, 0x54, 0x00);
+-			write_nic_byte(dev, 0x62, 0x00);
+-
+-			/* turn on RF */
+-			RF_WriteReg(dev, 0x0, 0x009f); udelay(500);
+-			RF_WriteReg(dev, 0x4, 0x0972); udelay(500);
+-
+-			/* turn on RF again */
+-			RF_WriteReg(dev, 0x0, 0x009f); udelay(500);
+-			RF_WriteReg(dev, 0x4, 0x0972); udelay(500);
+-
+-			/* turn on BB */
+-			write_phy_ofdm(dev,0x10,0x40);
+-			write_phy_ofdm(dev,0x12,0x40);
+-
+-			/* Avoid power down at init time. */
+-			write_nic_byte(dev, CONFIG4, priv->RFProgType);
+-
+-			u1bTmp = read_nic_byte(dev, 0x24E);
+-			write_nic_byte(dev, 0x24E, (u1bTmp & (~(BIT5 | BIT6))));
+-			break;
+-		case eRfSleep:
+-			for (QueueID = 0, i = 0; QueueID < 6;) {
+-				if (get_curr_tx_free_desc(dev, QueueID) == priv->txringcount) {
+-					QueueID++;
+-					continue;
+-				} else {
+-					priv->TxPollingTimes ++;
+-					if (priv->TxPollingTimes >= LPS_MAX_SLEEP_WAITING_TIMES_87SE) {
+-						bActionAllowed = false;
+-						break;
+-					} else
+-						udelay(10);
+-				}
+-			}
+-
+-			if (bActionAllowed) {
+-				/* turn off BB RXIQ matrix to cut off rx signal */
+-				write_phy_ofdm(dev, 0x10, 0x00);
+-				write_phy_ofdm(dev, 0x12, 0x00);
+-
+-				/* turn off RF */
+-				RF_WriteReg(dev, 0x4, 0x0000);
+-				RF_WriteReg(dev, 0x0, 0x0000);
+-
+-				/* turn off AFE except PLL */
+-				write_nic_byte(dev, 0x62, 0xff);
+-				write_nic_byte(dev, 0x54, 0xec);
+-
+-				mdelay(1);
+-
+-				{
+-					int i = 0;
+-					while (true) {
+-						u8 tmp24F = read_nic_byte(dev, 0x24f);
+-
+-						if ((tmp24F == 0x01) || (tmp24F == 0x09)) {
+-							bTurnOffBB = true;
+-							break;
+-						} else {
+-							udelay(10);
+-							i++;
+-							priv->TxPollingTimes++;
+-
+-							if (priv->TxPollingTimes >= LPS_MAX_SLEEP_WAITING_TIMES_87SE) {
+-								bTurnOffBB = false;
+-								break;
+-							} else
+-								udelay(10);
+-						}
+-					}
+-				}
+-
+-				if (bTurnOffBB) {
+-					/* turn off BB */
+-					u1bTmp = read_nic_byte(dev, 0x24E);
+-					write_nic_byte(dev, 0x24E, (u1bTmp | BIT5 | BIT6));
+-
+-					/* turn off AFE PLL */
+-					write_nic_byte(dev, 0x54, 0xFC);
+-					write_nic_word(dev, 0x37C, 0x00FC);
+-				}
+-			}
+-			break;
+-		case eRfOff:
+-			for (QueueID = 0, i = 0; QueueID < 6;) {
+-				if (get_curr_tx_free_desc(dev, QueueID) == priv->txringcount) {
+-					QueueID++;
+-					continue;
+-				} else {
+-					udelay(10);
+-					i++;
+-				}
+-
+-				if (i >= MAX_DOZE_WAITING_TIMES_85B)
++	case eRfSleep:
++		for (QueueID = 0, i = 0; QueueID < 6;) {
++			if (get_curr_tx_free_desc(dev, QueueID) == priv->txringcount) {
++				QueueID++;
++				continue;
++			} else {
++				priv->TxPollingTimes++;
++				if (priv->TxPollingTimes >= LPS_MAX_SLEEP_WAITING_TIMES_87SE) {
++					bActionAllowed = false;
+ 					break;
++				} else
++					udelay(10);
+ 			}
++		}
+ 
++		if (bActionAllowed) {
+ 			/* turn off BB RXIQ matrix to cut off rx signal */
+ 			write_phy_ofdm(dev, 0x10, 0x00);
+ 			write_phy_ofdm(dev, 0x12, 0x00);
+@@ -998,22 +912,23 @@ bool SetZebraRFPowerState8185(struct net
+ 
+ 			{
+ 				int i = 0;
+-
+-				while (true)
+-				{
++				while (true) {
+ 					u8 tmp24F = read_nic_byte(dev, 0x24f);
+ 
+ 					if ((tmp24F == 0x01) || (tmp24F == 0x09)) {
+ 						bTurnOffBB = true;
+ 						break;
+ 					} else {
+-						bTurnOffBB = false;
+ 						udelay(10);
+ 						i++;
+-					}
++						priv->TxPollingTimes++;
+ 
+-					if (i > MAX_POLLING_24F_TIMES_87SE)
+-						break;
++						if (priv->TxPollingTimes >= LPS_MAX_SLEEP_WAITING_TIMES_87SE) {
++							bTurnOffBB = false;
++							break;
++						} else
++							udelay(10);
++					}
+ 				}
+ 			}
+ 
+@@ -1022,15 +937,68 @@ bool SetZebraRFPowerState8185(struct net
+ 				u1bTmp = read_nic_byte(dev, 0x24E);
+ 				write_nic_byte(dev, 0x24E, (u1bTmp | BIT5 | BIT6));
+ 
+-				/* turn off AFE PLL (80M) */
++				/* turn off AFE PLL */
+ 				write_nic_byte(dev, 0x54, 0xFC);
+ 				write_nic_word(dev, 0x37C, 0x00FC);
+ 			}
+-			break;
+-		default:
+-			bResult = false;
+-			printk("SetZebraRFPowerState8185(): unknown state to set: 0x%X!!!\n", eRFPowerState);
+-			break;
++		}
++		break;
++	case eRfOff:
++		for (QueueID = 0, i = 0; QueueID < 6;) {
++			if (get_curr_tx_free_desc(dev, QueueID) == priv->txringcount) {
++				QueueID++;
++				continue;
++			} else {
++				udelay(10);
++				i++;
++			}
++
++			if (i >= MAX_DOZE_WAITING_TIMES_85B)
++				break;
++		}
++
++		/* turn off BB RXIQ matrix to cut off rx signal */
++		write_phy_ofdm(dev, 0x10, 0x00);
++		write_phy_ofdm(dev, 0x12, 0x00);
++
++		/* turn off RF */
++		RF_WriteReg(dev, 0x4, 0x0000);
++		RF_WriteReg(dev, 0x0, 0x0000);
++
++		/* turn off AFE except PLL */
++		write_nic_byte(dev, 0x62, 0xff);
++		write_nic_byte(dev, 0x54, 0xec);
++
++		mdelay(1);
++
++		{
++			int i = 0;
++
++			while (true) {
++				u8 tmp24F = read_nic_byte(dev, 0x24f);
++
++				if ((tmp24F == 0x01) || (tmp24F == 0x09)) {
++					bTurnOffBB = true;
++					break;
++				} else {
++					bTurnOffBB = false;
++					udelay(10);
++					i++;
++				}
++
++				if (i > MAX_POLLING_24F_TIMES_87SE)
++					break;
++			}
++		}
++
++		if (bTurnOffBB) {
++			/* turn off BB */
++			u1bTmp = read_nic_byte(dev, 0x24E);
++			write_nic_byte(dev, 0x24E, (u1bTmp | BIT5 | BIT6));
++
++			/* turn off AFE PLL (80M) */
++			write_nic_byte(dev, 0x54, 0xFC);
++			write_nic_word(dev, 0x37C, 0x00FC);
+ 		}
+ 		break;
+ 	}
