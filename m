@@ -1,143 +1,74 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756465Ab0BOWER (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 17:04:17 -0500
-Received: from ixro-out-rtc.ixiacom.com ([92.87.192.98]:26706 "EHLO
-	ixro-ex1.ixiacom.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756396Ab0BOWEO (ORCPT
+	id S932128Ab0BOWG5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 17:06:57 -0500
+Received: from smtp-out.google.com ([216.239.44.51]:20475 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756435Ab0BOWGz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 17:04:14 -0500
-From: Octavian Purdila <opurdila@ixiacom.com>
-To: David Miller <davem@davemloft.net>
-Cc: Octavian Purdila <opurdila@ixiacom.com>,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>,
-       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
-       WANG Cong <amwang@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: [net-next PATCH v4 2/3] sysctl: add proc_dobitmap
-Date: Tue, 16 Feb 2010 00:00:40 +0200
-Message-Id: <1266271241-6293-3-git-send-email-opurdila@ixiacom.com>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1266271241-6293-1-git-send-email-opurdila@ixiacom.com>
-References: <1266271241-6293-1-git-send-email-opurdila@ixiacom.com>
-X-OriginalArrivalTime: 15 Feb 2010 22:04:10.0736 (UTC) FILETIME=[CD58F700:01CAAE8A]
+	Mon, 15 Feb 2010 17:06:55 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=DcHWNRpfKk8rLTYZ4beaSqlpqikIb9UwL1O7sd6+y4yOI384rN5+upbdR8+315SFz
+	2B4WdaLDwe21G1+Fg5zHA==
+Date: Mon, 15 Feb 2010 14:06:50 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Nick Piggin <npiggin@suse.de>, Andrea Arcangeli <aarcange@redhat.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch 1/7 -mm] oom: filter tasks not sharing the same cpuset
+In-Reply-To: <20100215115154.727B.A69D9226@jp.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.1002151401280.26927@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.1002100224210.8001@chino.kir.corp.google.com> <alpine.DEB.2.00.1002100227590.8001@chino.kir.corp.google.com> <20100215115154.727B.A69D9226@jp.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The new function can be used to update bitmaps via /proc. Bits can be
-set by writing positive values in the file and cleared by writing
-negative values (e.g. 0 2 will set bits 1 and 3, -0 -2 will clear
-them). Reading will show only the set bits.
+On Mon, 15 Feb 2010, KOSAKI Motohiro wrote:
 
-Signed-off-by: Octavian Purdila <opurdila@ixiacom.com>
-Cc: WANG Cong <amwang@redhat.com>
-Cc: Eric W. Biederman <ebiederm@xmission.com>
----
- include/linux/sysctl.h |    2 +
- kernel/sysctl.c        |   76 ++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 78 insertions(+), 0 deletions(-)
+> > Tasks that do not share the same set of allowed nodes with the task that
+> > triggered the oom should not be considered as candidates for oom kill.
+> > 
+> > Tasks in other cpusets with a disjoint set of mems would be unfairly
+> > penalized otherwise because of oom conditions elsewhere; an extreme
+> > example could unfairly kill all other applications on the system if a
+> > single task in a user's cpuset sets itself to OOM_DISABLE and then uses
+> > more memory than allowed.
+> > 
+> > Killing tasks outside of current's cpuset rarely would free memory for
+> > current anyway.
+> > 
+> > Signed-off-by: David Rientjes <rientjes@google.com>
+> 
+> This patch does right thing and looks promissing. but unfortunately
+> I have to NAK this patch temporary.
+> 
+> This patch is nearly just revert of the commit 7887a3da75. We have to
+> dig archaeology mail log and find why this reverting don't cause
+> the old pain again.
+> 
 
-diff --git a/include/linux/sysctl.h b/include/linux/sysctl.h
-index 9f236cd..ba89bf2 100644
---- a/include/linux/sysctl.h
-+++ b/include/linux/sysctl.h
-@@ -985,6 +985,8 @@ extern int proc_doulongvec_minmax(struct ctl_table *, int,
- 				  void __user *, size_t *, loff_t *);
- extern int proc_doulongvec_ms_jiffies_minmax(struct ctl_table *table, int,
- 				      void __user *, size_t *, loff_t *);
-+extern int proc_dobitmap(struct ctl_table *, int,
-+			 void __user *, size_t *, loff_t *);
- 
- /*
-  * Register a set of sysctl names by calling register_sysctl_table
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index b0f9618..b8959f4 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -2596,6 +2596,82 @@ static int proc_do_cad_pid(struct ctl_table *table, int write,
- 	return 0;
- }
- 
-+/**
-+ * proc_dobitmap - read/write from/to a bitmap
-+ * @table: the sysctl table
-+ * @write: %TRUE if this is a write to the sysctl file
-+ * @buffer: the user buffer
-+ * @lenp: the size of the user buffer
-+ * @ppos: file position
-+ * @ppos: the current position in the file
-+ *
-+ * The bitmap is stored at table->data and the bitmap length (in bits)
-+ * in table->maxlen. Reading from the proc file will show the set bits.
-+ * Writing positive values sets the bits, negative values clears them
-+ * (e.g. 0 2 sets the first and 3rd bit, -0 -2 clears them).
-+ *
-+ * Returns 0 on success.
-+ */
-+int proc_dobitmap(struct ctl_table *table, int write,
-+		  void __user *_buffer, size_t *lenp, loff_t *ppos)
-+{
-+	bool first = 1;
-+	unsigned long *bitmap = (unsigned long *) table->data;
-+	unsigned long bitmap_len = table->maxlen;
-+	int left = *lenp, err = 0;
-+	char __user *buffer = (char __user *) _buffer;
-+
-+	if (!bitmap_len || !left || (*ppos && !write)) {
-+		*lenp = 0;
-+		return 0;
-+	}
-+
-+	if (write) {
-+		while (left) {
-+			unsigned long val;
-+			bool neg;
-+
-+			err = proc_get_next_ulong(&buffer, &left, &val, &neg);
-+			if (err)
-+				break;
-+			if (val >= bitmap_len) {
-+				err = -EINVAL;
-+				break;
-+			}
-+			if (neg)
-+				clear_bit(val, bitmap);
-+			else
-+				set_bit(val, bitmap);
-+			first = 0;
-+		}
-+		if (!err)
-+			err = proc_skip_wspace(&buffer, &left);
-+	} else {
-+		unsigned long bit = 0;
-+
-+		while (left) {
-+			bit = find_next_bit(bitmap, bitmap_len, bit);
-+			if (bit >= bitmap_len)
-+				break;
-+			err = proc_put_ulong(&buffer, &left, bit, 0, first);
-+			if (err)
-+				break;
-+			first = 0; bit++;
-+		}
-+		if (!err)
-+			err = proc_put_newline(&buffer, &left);
-+	}
-+
-+	if (first && write && !err)
-+		err = -EINVAL;
-+	if (err == -EFAULT /* do we really need to check for -EFAULT? */ ||
-+	    (write && first))
-+		return err ? : -EINVAL;
-+	*lenp -= left;
-+	*ppos += *lenp;
-+	return 0;
-+}
-+
- #else /* CONFIG_PROC_FS */
- 
- int proc_dostring(struct ctl_table *table, int write,
--- 
-1.5.6.5
+Nick is probably wondering why I cc'd him on this patchset, and this is it 
+:)
 
+We now determine whether an allocation is constrained by a cpuset by 
+iterating through the zonelist and checking 
+cpuset_zone_allowed_softwall().  This checks for the necessary cpuset 
+restrictions that we need to validate (the GFP_ATOMIC exception is 
+irrelevant, we don't call into the oom killer for those).  We don't need 
+to kill outside of its cpuset because we're not guaranteed to find any 
+memory on those nodes, in fact it allows for needless oom killing if a 
+task sets all of its threads to have OOM_DISABLE in its own cpuset and 
+then runs out of memory.  The oom killer would have killed every other 
+user task on the system even though the offending application can't 
+allocate there.  That's certainly an undesired result and needs to be 
+fixed in this manner.
