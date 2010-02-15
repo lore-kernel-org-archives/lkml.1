@@ -1,183 +1,304 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755649Ab0BOPL1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 10:11:27 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:6948 "EHLO mx1.redhat.com"
+	id S1755670Ab0BOPLm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 10:11:42 -0500
+Received: from sh.osrg.net ([192.16.179.4]:38246 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755634Ab0BOPLV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 10:11:21 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <4B763C17.5080707@kernel.org>
-References: <4B763C17.5080707@kernel.org> <1263776272-382-36-git-send-email-tj@kernel.org> <1263776272-382-1-git-send-email-tj@kernel.org> <24913.1265997809@redhat.com>
-To: Tejun Heo <tj@kernel.org>
-Cc: dhowells@redhat.com, torvalds@linux-foundation.org, mingo@elte.hu,
-       peterz@infradead.org, awalls@radix.net, linux-kernel@vger.kernel.org,
-       jeff@garzik.org, akpm@linux-foundation.org, jens.axboe@oracle.com,
-       rusty@rustcorp.com.au, cl@linux-foundation.org, arjan@linux.intel.com,
-       avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org
-Subject: Re: [PATCH 35/40] fscache: convert object to use workqueue instead of slow-work
-Date: Mon, 15 Feb 2010 15:04:56 +0000
-Message-ID: <27102.1266246296@redhat.com>
+	id S1755301Ab0BOPKC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Feb 2010 10:10:02 -0500
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, netdev@vger.kernel.org,
+       fujita.tomonori@lab.ntt.co.jp, davem@davemloft.net,
+       Michael Buesch <mb@bu3sch.de>, Gary Zambrano <zambrano@broadcom.com>,
+       Stefano Brivio <stefano.brivio@polimi.it>,
+       Larry Finger <Larry.Finger@lwfinger.net>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: [PATCH -mm v2 5/5] ssb: remove the ssb DMA API
+Date: Tue, 16 Feb 2010 00:04:10 +0900
+Message-Id: <1266246250-5344-6-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+X-Mailer: git-send-email 1.6.5
+In-Reply-To: <1266246250-5344-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+References: <1266246250-5344-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 16 Feb 2010 00:09:39 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo <tj@kernel.org> wrote:
+Now they are unnecessary. We can use the generic DMA API with any bus.
 
-> > Okay, how do you stop the workqueue from having all its threads
-> > blocking on pending work?  The reason the code you've removed
-> > interacts with the slow work facility in this way is that there can
-> > be a dependency whereby an executing work item depends on something
-> > that is queued.  This code allows the thread to be given back to the
-> > pool and processing deferred.
-> 
-> How deep the dependency chain can be?
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: Michael Buesch <mb@bu3sch.de>
+Cc: Gary Zambrano <zambrano@broadcom.com>
+Cc: Stefano Brivio <stefano.brivio@polimi.it>
+Cc: Larry Finger <Larry.Finger@lwfinger.net>
+Cc: John W. Linville <linville@tuxdriver.com>
+Cc: David S. Miller <davem@davemloft.net>
+---
+ drivers/ssb/main.c      |   74 ----------------------
+ include/linux/ssb/ssb.h |  157 -----------------------------------------------
+ 2 files changed, 0 insertions(+), 231 deletions(-)
 
-There only needs to be a single dependency in the chain.  The problem is that a
-pool thread gets blocked waiting for an item on the queue - but if there's a
-limited number of pool threads, then all of them can wind up blocked waiting on
-the contents of the queue.
+diff --git a/drivers/ssb/main.c b/drivers/ssb/main.c
+index 1a41b3f..1d457e2 100644
+--- a/drivers/ssb/main.c
++++ b/drivers/ssb/main.c
+@@ -1225,80 +1225,6 @@ u32 ssb_dma_translation(struct ssb_device *dev)
+ }
+ EXPORT_SYMBOL(ssb_dma_translation);
+ 
+-int ssb_dma_set_mask(struct ssb_device *dev, u64 mask)
+-{
+-#ifdef CONFIG_SSB_PCIHOST
+-	int err;
+-#endif
+-
+-	switch (dev->bus->bustype) {
+-	case SSB_BUSTYPE_PCI:
+-#ifdef CONFIG_SSB_PCIHOST
+-		err = pci_set_dma_mask(dev->bus->host_pci, mask);
+-		if (err)
+-			return err;
+-		err = pci_set_consistent_dma_mask(dev->bus->host_pci, mask);
+-		return err;
+-#endif
+-	case SSB_BUSTYPE_SSB:
+-		return dma_set_mask(dev->dev, mask);
+-	default:
+-		__ssb_dma_not_implemented(dev);
+-	}
+-	return -ENOSYS;
+-}
+-EXPORT_SYMBOL(ssb_dma_set_mask);
+-
+-void * ssb_dma_alloc_consistent(struct ssb_device *dev, size_t size,
+-				dma_addr_t *dma_handle, gfp_t gfp_flags)
+-{
+-	switch (dev->bus->bustype) {
+-	case SSB_BUSTYPE_PCI:
+-#ifdef CONFIG_SSB_PCIHOST
+-		if (gfp_flags & GFP_DMA) {
+-			/* Workaround: The PCI API does not support passing
+-			 * a GFP flag. */
+-			return dma_alloc_coherent(&dev->bus->host_pci->dev,
+-						  size, dma_handle, gfp_flags);
+-		}
+-		return pci_alloc_consistent(dev->bus->host_pci, size, dma_handle);
+-#endif
+-	case SSB_BUSTYPE_SSB:
+-		return dma_alloc_coherent(dev->dev, size, dma_handle, gfp_flags);
+-	default:
+-		__ssb_dma_not_implemented(dev);
+-	}
+-	return NULL;
+-}
+-EXPORT_SYMBOL(ssb_dma_alloc_consistent);
+-
+-void ssb_dma_free_consistent(struct ssb_device *dev, size_t size,
+-			     void *vaddr, dma_addr_t dma_handle,
+-			     gfp_t gfp_flags)
+-{
+-	switch (dev->bus->bustype) {
+-	case SSB_BUSTYPE_PCI:
+-#ifdef CONFIG_SSB_PCIHOST
+-		if (gfp_flags & GFP_DMA) {
+-			/* Workaround: The PCI API does not support passing
+-			 * a GFP flag. */
+-			dma_free_coherent(&dev->bus->host_pci->dev,
+-					  size, vaddr, dma_handle);
+-			return;
+-		}
+-		pci_free_consistent(dev->bus->host_pci, size,
+-				    vaddr, dma_handle);
+-		return;
+-#endif
+-	case SSB_BUSTYPE_SSB:
+-		dma_free_coherent(dev->dev, size, vaddr, dma_handle);
+-		return;
+-	default:
+-		__ssb_dma_not_implemented(dev);
+-	}
+-}
+-EXPORT_SYMBOL(ssb_dma_free_consistent);
+-
+ int ssb_bus_may_powerdown(struct ssb_bus *bus)
+ {
+ 	struct ssb_chipcommon *cc;
+diff --git a/include/linux/ssb/ssb.h b/include/linux/ssb/ssb.h
+index c5e00b2..f7cbf76 100644
+--- a/include/linux/ssb/ssb.h
++++ b/include/linux/ssb/ssb.h
+@@ -466,14 +466,6 @@ extern u32 ssb_dma_translation(struct ssb_device *dev);
+ #define SSB_DMA_TRANSLATION_MASK	0xC0000000
+ #define SSB_DMA_TRANSLATION_SHIFT	30
+ 
+-extern int ssb_dma_set_mask(struct ssb_device *dev, u64 mask);
+-
+-extern void * ssb_dma_alloc_consistent(struct ssb_device *dev, size_t size,
+-				       dma_addr_t *dma_handle, gfp_t gfp_flags);
+-extern void ssb_dma_free_consistent(struct ssb_device *dev, size_t size,
+-				    void *vaddr, dma_addr_t dma_handle,
+-				    gfp_t gfp_flags);
+-
+ static inline void __cold __ssb_dma_not_implemented(struct ssb_device *dev)
+ {
+ #ifdef CONFIG_SSB_DEBUG
+@@ -482,155 +474,6 @@ static inline void __cold __ssb_dma_not_implemented(struct ssb_device *dev)
+ #endif /* DEBUG */
+ }
+ 
+-static inline int ssb_dma_mapping_error(struct ssb_device *dev, dma_addr_t addr)
+-{
+-	switch (dev->bus->bustype) {
+-	case SSB_BUSTYPE_PCI:
+-#ifdef CONFIG_SSB_PCIHOST
+-		return pci_dma_mapping_error(dev->bus->host_pci, addr);
+-#endif
+-		break;
+-	case SSB_BUSTYPE_SSB:
+-		return dma_mapping_error(dev->dev, addr);
+-	default:
+-		break;
+-	}
+-	__ssb_dma_not_implemented(dev);
+-	return -ENOSYS;
+-}
+-
+-static inline dma_addr_t ssb_dma_map_single(struct ssb_device *dev, void *p,
+-					    size_t size, enum dma_data_direction dir)
+-{
+-	switch (dev->bus->bustype) {
+-	case SSB_BUSTYPE_PCI:
+-#ifdef CONFIG_SSB_PCIHOST
+-		return pci_map_single(dev->bus->host_pci, p, size, dir);
+-#endif
+-		break;
+-	case SSB_BUSTYPE_SSB:
+-		return dma_map_single(dev->dev, p, size, dir);
+-	default:
+-		break;
+-	}
+-	__ssb_dma_not_implemented(dev);
+-	return 0;
+-}
+-
+-static inline void ssb_dma_unmap_single(struct ssb_device *dev, dma_addr_t dma_addr,
+-					size_t size, enum dma_data_direction dir)
+-{
+-	switch (dev->bus->bustype) {
+-	case SSB_BUSTYPE_PCI:
+-#ifdef CONFIG_SSB_PCIHOST
+-		pci_unmap_single(dev->bus->host_pci, dma_addr, size, dir);
+-		return;
+-#endif
+-		break;
+-	case SSB_BUSTYPE_SSB:
+-		dma_unmap_single(dev->dev, dma_addr, size, dir);
+-		return;
+-	default:
+-		break;
+-	}
+-	__ssb_dma_not_implemented(dev);
+-}
+-
+-static inline void ssb_dma_sync_single_for_cpu(struct ssb_device *dev,
+-					       dma_addr_t dma_addr,
+-					       size_t size,
+-					       enum dma_data_direction dir)
+-{
+-	switch (dev->bus->bustype) {
+-	case SSB_BUSTYPE_PCI:
+-#ifdef CONFIG_SSB_PCIHOST
+-		pci_dma_sync_single_for_cpu(dev->bus->host_pci, dma_addr,
+-					    size, dir);
+-		return;
+-#endif
+-		break;
+-	case SSB_BUSTYPE_SSB:
+-		dma_sync_single_for_cpu(dev->dev, dma_addr, size, dir);
+-		return;
+-	default:
+-		break;
+-	}
+-	__ssb_dma_not_implemented(dev);
+-}
+-
+-static inline void ssb_dma_sync_single_for_device(struct ssb_device *dev,
+-						  dma_addr_t dma_addr,
+-						  size_t size,
+-						  enum dma_data_direction dir)
+-{
+-	switch (dev->bus->bustype) {
+-	case SSB_BUSTYPE_PCI:
+-#ifdef CONFIG_SSB_PCIHOST
+-		pci_dma_sync_single_for_device(dev->bus->host_pci, dma_addr,
+-					       size, dir);
+-		return;
+-#endif
+-		break;
+-	case SSB_BUSTYPE_SSB:
+-		dma_sync_single_for_device(dev->dev, dma_addr, size, dir);
+-		return;
+-	default:
+-		break;
+-	}
+-	__ssb_dma_not_implemented(dev);
+-}
+-
+-static inline void ssb_dma_sync_single_range_for_cpu(struct ssb_device *dev,
+-						     dma_addr_t dma_addr,
+-						     unsigned long offset,
+-						     size_t size,
+-						     enum dma_data_direction dir)
+-{
+-	switch (dev->bus->bustype) {
+-	case SSB_BUSTYPE_PCI:
+-#ifdef CONFIG_SSB_PCIHOST
+-		/* Just sync everything. That's all the PCI API can do. */
+-		pci_dma_sync_single_for_cpu(dev->bus->host_pci, dma_addr,
+-					    offset + size, dir);
+-		return;
+-#endif
+-		break;
+-	case SSB_BUSTYPE_SSB:
+-		dma_sync_single_range_for_cpu(dev->dev, dma_addr, offset,
+-					      size, dir);
+-		return;
+-	default:
+-		break;
+-	}
+-	__ssb_dma_not_implemented(dev);
+-}
+-
+-static inline void ssb_dma_sync_single_range_for_device(struct ssb_device *dev,
+-							dma_addr_t dma_addr,
+-							unsigned long offset,
+-							size_t size,
+-							enum dma_data_direction dir)
+-{
+-	switch (dev->bus->bustype) {
+-	case SSB_BUSTYPE_PCI:
+-#ifdef CONFIG_SSB_PCIHOST
+-		/* Just sync everything. That's all the PCI API can do. */
+-		pci_dma_sync_single_for_device(dev->bus->host_pci, dma_addr,
+-					       offset + size, dir);
+-		return;
+-#endif
+-		break;
+-	case SSB_BUSTYPE_SSB:
+-		dma_sync_single_range_for_device(dev->dev, dma_addr, offset,
+-						 size, dir);
+-		return;
+-	default:
+-		break;
+-	}
+-	__ssb_dma_not_implemented(dev);
+-}
+-
+-
+ #ifdef CONFIG_SSB_PCIHOST
+ /* PCI-host wrapper driver */
+ extern int ssb_pcihost_register(struct pci_driver *driver);
+-- 
+1.6.5
 
-The problem I've seen is that a someone goes and bulk-updates a bunch of files
-on, say, an NFS server; then FS-Cache flushes all the altered objects and then
-attempts to create new replacement ones.  However, it was stipulated that all
-this had to happen asynchronously - so the new objects have to wait for the old
-objects to go away so that they can replace them in the namespace.
-
-So what happens is that the obsolete objects being deleted get executed to
-begin deletion, but the deletions then get deferred because the objects are
-still undergoing I/O - and so the objects get requeued *behind* the new objects
-that are going to wait for them.
-
-> As I wrote in the patch description, wake-me-up-on-another-enqueue can be
-> implemented in similar way but I wasn't sure how useful it would be.  If the
-> dependency chain is strictly bound and significantly shorter than the
-> allowed concurrency, it might be better to just leave them sleep.
-
-The problem there is that the timeouts add up and can significantly slow the
-system.
-
-> If it's mainly because there can be many concurrent long waiters (but
-> no dependency), implementing staggered timeout might be better option.
-> I wasn't sure about the requirement there.
-
-We don't really want to time out if we've got threads to spare, and if our
-dependency is getting or will get CPU time.
-
-> > Note that just creating more threads isn't a good answer - that can
-> > run you out of resources instead.
-> 
-> It depends.  The only resource taken up by an idle kthread is small
-> amount of memory and it can definitely be traded off against code
-> complexity and processing overhead.
-
-And PIDs...
-
-Also the definition of a 'small amount of memory' is dependent on how much
-memory you actually have.
-
-> Anyways, this really depends on what is the concurrency requirement there,
-> can you please explain what would the bad cases be?
-
-See above.  But I've come across this problem and dealt with it, generally
-without resorting to timeouts.
-
-> >> +	ret = -ENOMEM;
-> >> +	fscache_object_wq =
-> >> +		__create_workqueue("fscache_object", WQ_SINGLE_CPU, 99);
-> >> +	if (!fscache_object_wq)
-> >> +		goto error_object_wq;
-> >> +
-> > 
-> > What does fscache_object_wq being WQ_SINGLE_CPU imply?  Does that mean there
-> > can only be one CPU processing object state changes?
-> 
-> Yes.
-
-That has scalability implications.
-
-> > I'm not sure that's a good idea - something like a tar command can
-> > create thousands of objects, all of which will start undergoing
-> > state changes.
-> 
-> The default concurrency level for slow-work is pretty low.  Is it
-> expected to be tuned to a very high value in certain configurations?
-
-That's why I have a tuning knob.  I don't really have the facilities for
-working up profiles of different loads, but I expect there's a sweet spot for
-any particular load.  You have to trade the amount of time and resources it
-takes to waggle the disk around off against the number of things you want to
-cache.
-
-> > Why did you do this?  Is it because cmwq does _not_ prevent reentrance to
-> > executing work items?  I take it that's why you can get away with this:
-> 
-> and yes, I used it as a cheap way to avoid reentrance.  For most
-> cases, it works just fine.  For slow work, it might not be enough.
-
-Most cases don't think they need to avoid reentrance.  They might even be
-right.  I've been bitten by it a number of times.
-
-> > 	-	slow_work_enqueue(&object->work);
-> > 	+	if (fscache_get_object(object) >= 0)
-> > 	+		if (!queue_work(fscache_object_wq, &object->work))
-> > 	+			fscache_put_object(object);
-> > 
-> > One of the reasons I _don't_ want to use the old workqueue facility is that
-> > it doesn't manage reentrancy.  That can end up tying up multiple threads
-> > for one long-duration work item.
-> 
-> Yeap, it's a drawback of the workqueue API although I don't think it
-> would be big enough to warrant a completely separate workpool
-> mechanism.  It's usually enough to implement synchronization from the
-> callback or guarantee that running works don't get queued some other
-> way.  What would happen if fscache object works are reentered?  Would
-> there be correctness issues?
-
-Definitely.  In the last rewrite, I started off by writing a thread pool that
-was non-reentrant, and then built everything on top of that assumption.  This
-means I don't have to do a whole bunch of locking because I _know_ each object
-can only be under execution by one thread at any one time.
-
-> How likely are they to get scheduled while being executed?
-
-Reasonably likely, and the events aren't entirely within the control of the
-local system.
-
-> If this is something critical, I have a draft implementation which avoids
-> reentrance.
-
-If you can provide it, I can simplify RxRPC and AFS too.  Those suffer from
-reentrancy issues too that I'd dearly like to avoid, but workqueues don't.
-
-> I was gonna apply it for all works but it would cause too much cross CPU
-> access when the wq users can already handle reentrance but it can be
-> implemented as optional behavior along with SINGLE_CPU.
-
-How many of them actually *handle* it?  For some of them it won't matter
-because they're only scheduled once, but I bet that some of them it *is* an
-issue that no one has considered, and the window of opportunity is small enough
-that it's not happened or the has not been reported or successfully pinpointed.
-
-> > Note that it would still be useful to know whether an object was queued for
-> > work or being executed.
-> 
-> Adding wouldn't be difficult but would it justify having a dedicated
-> function for that in workqueue where fscache would be the only user?
-> Also please note that such information is only useful for debugging or
-> as hints due to lack of synchronization.
-
-Agreed, but debugging still has to be done sometimes.  Of course, it's much
-easier for slow-work, since it has to manage reentrancy anyway, and so keeps
-hold of the object till afterwards.
-
-
-Oh, btw, I've run up your patches with FS-Cache.  They quickly create a couple
-of hundred threads.  Is that right?  To be fair, the threads do go away again
-after a period of quiscence.
-
-David
