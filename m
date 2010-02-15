@@ -1,59 +1,111 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755338Ab0BOHhT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 02:37:19 -0500
-Received: from mail-yw0-f179.google.com ([209.85.211.179]:62392 "EHLO
-	mail-yw0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755026Ab0BOHhN convert rfc822-to-8bit (ORCPT
+	id S1755363Ab0BOIFz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 03:05:55 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:47682 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755266Ab0BOIFy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 02:37:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=IeRTnir6KtEo57re21KPsgCU+qJIGGD7qJDsMj6BSj7uTuj8A4EL29GrEo+8YYcNl8
-         peYZ43z/CejjAYTw7MeIXoUlEapkuyd0CzADF0/M7E1e1pSCuehffEkshisTfnBp9EAJ
-         x+/WsDCSLsPucaJbjEwI5xCjVaWJvHU4fnMuw=
+	Mon, 15 Feb 2010 03:05:54 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: David Rientjes <rientjes@google.com>
+Subject: Re: [patch 4/7 -mm] oom: badness heuristic rewrite
+Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Nick Piggin <npiggin@suse.de>, Andrea Arcangeli <aarcange@redhat.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+In-Reply-To: <alpine.DEB.2.00.1002100228540.8001@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.1002100224210.8001@chino.kir.corp.google.com> <alpine.DEB.2.00.1002100228540.8001@chino.kir.corp.google.com>
+Message-Id: <20100215140349.7287.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-In-Reply-To: <8bd0f97a1002130141v301af30av3ec51f065656b65f@mail.gmail.com>
-References: <20100202185907.GE3630@lst.de> <1265881389-26925-2-git-send-email-vapier@gentoo.org> 
-	<20100211204653.34BB3900@magilla.sf.frob.com> <8bd0f97a1002111554ib69bd48rc3c5f4af65058281@mail.gmail.com> 
-	<20100212032406.BE645C81B@magilla.sf.frob.com> <8bd0f97a1002112033m5805d4eco3add4d5625e71e9@mail.gmail.com> 
-	<20100212204427.5F75CA18@magilla.sf.frob.com> <8bd0f97a1002130141v301af30av3ec51f065656b65f@mail.gmail.com>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Mon, 15 Feb 2010 02:36:50 -0500
-Message-ID: <8bd0f97a1002142336k9ffeekb8c81384252d2192@mail.gmail.com>
-Subject: Re: [PATCH 1/2] Blackfin: initial tracehook support
-To: Roland McGrath <roland@redhat.com>
-Cc: Christoph Hellwig <hch@lst.de>, oleg@redhat.com,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Mon, 15 Feb 2010 17:05:47 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 13, 2010 at 04:41, Mike Frysinger wrote:
-> On Fri, Feb 12, 2010 at 15:44, Roland McGrath wrote:
->> Moreover, the usual cleanup is to make your arch_ptrace() use
->> copy_regset_from_user() and copy_regset_to_user() to implement existing
->> calls ike PTRACE_GETREGS.  That way, existing ptrace users (strace, gdb)
->> become tests of the user_regset paths (some of them).
+> This a complete rewrite of the oom killer's badness() heuristic which is
+> used to determine which task to kill in oom conditions.  The goal is to
+> make it as simple and predictable as possible so the results are better
+> understood and we end up killing the task which will lead to the most
+> memory freeing while still respecting the fine-tuning from userspace.
+> 
+> The baseline for the heuristic is a proportion of memory that each task
+> is currently using in memory plus swap compared to the amount of
+> "allowable" memory.  "Allowable," in this sense, means the system-wide
+> resources for unconstrained oom conditions, the set of mempolicy nodes,
+> the mems attached to current's cpuset, or a memory controller's limit.
+> The proportion is given on a scale of 0 (never kill) to 1000 (always
+> kill), roughly meaning that if a task has a badness() score of 500 that
+> the task consumes approximately 50% of allowable memory resident in RAM
+> or in swap space.
+> 
+> The proportion is always relative to the amount of "allowable" memory and
+> not the total amount of RAM systemwide so that mempolicies and cpusets
+> may operate in isolation; they shall not need to know the true size of
+> the machine on which they are running if they are bound to a specific set
+> of nodes or mems, respectively.
+> 
+> Forkbomb detection is done in a completely different way: a threshold is
+> configurable from userspace to determine how many first-generation execve
+> children (those with their own address spaces) a task may have before it
+> is considered a forkbomb.  This can be tuned by altering the value in
+> /proc/sys/vm/oom_forkbomb_thres, which defaults to 1000.
+> 
+> When a task has more than 1000 first-generation children with different
+> address spaces than itself, a penalty of
+> 
+> 	(average rss of children) * (# of 1st generation execve children)
+> 	-----------------------------------------------------------------
+> 			oom_forkbomb_thres
+> 
+> is assessed.  So, for example, using the default oom_forkbomb_thres of
+> 1000, the penalty is twice the average rss of all its execve children if
+> there are 2000 such tasks.  A task is considered to count toward the
+> threshold if its total runtime is less than one second; for 1000 of such
+> tasks to exist, the parent process must be forking at an extremely high
+> rate either erroneously or maliciously.
+> 
+> Even though a particular task may be designated a forkbomb and selected
+> as the victim, the oom killer will still kill the 1st generation execve
+> child with the highest badness() score in its place.  The avoids killing
+> important servers or system daemons.
+> 
+> Root tasks are given 3% extra memory just like __vm_enough_memory()
+> provides in LSMs.  In the event of two tasks consuming similar amounts of
+> memory, it is generally better to save root's task.
+> 
+> Because of the change in the badness() heuristic's baseline, a change
+> must also be made to the user interface used to tune it.  Instead of a
+> scale from -16 to +15 to indicate a bitshift on the point value given to
+> a task, which was very difficult to tune accurately or with any degree of
+> precision, /proc/pid/oom_adj now ranges from -1000 to +1000.  That is, it
+> can be used to polarize the heuristic such that certain tasks are never
+> considered for oom kill while others are always considered.  The value is
+> added directly into the badness() score so a value of -500, for example,
+> means to discount 50% of its memory consumption in comparison to other
+> tasks either on the system, bound to the mempolicy, or in the cpuset.
+> 
+> OOM_ADJUST_MIN and OOM_ADJUST_MAX have been exported to userspace since
+> 2006 via include/linux/oom.h.  This alters their values from -16 to -1000
+> and from +15 to +1000, respectively.  OOM_DISABLE is now the equivalent
+> of the lowest possible value, OOM_ADJUST_MIN.  Adding its value, -1000,
+> to any badness score will always return 0.
+> 
+> Although redefining these values may be controversial, it is much easier
+> to understand when the units are fully understood as described above.
+> In the short-term, there may be userspace breakage for tasks that
+> hardcode -17 meaning OOM_DISABLE, for example, but the long-term will
+> make the semantics much easier to understand and oom killing much more
+> effective.
 
-unfortunately the Blackfin ports of both gdb and strace do not use the
-PTRAGE_{G,S}ETREGS interfaces.  so i had to port both in order to test
-out the new code.
+I NAK this patch as same as many other people. This patch bring to a lot of
+compatibility issue. and it isn't necessary.
 
-> OK, this should be doable.  are there any guidelines for what should
-> be in a specific regset ?  the Blackfin processor does not have a FPU,
-> so the only set i have defined atm is the "general" set and that is
-> exactly the same as the current set of ptrace registers.  this is also
-> what the current PTRACE_{G,S}ETREGS operates on (struct pt_regs).
 
-going by the gdb code, all i really need to worry about is the
-"general" set and have that be the same as pt_regs today
 
-i have one or two small things to check out, but i think we should be
-all set now thanks to your help
--mike
