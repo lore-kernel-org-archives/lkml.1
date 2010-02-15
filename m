@@ -1,46 +1,45 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756676Ab0BOXDR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 18:03:17 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:2673 "EHLO mx1.redhat.com"
+	id S1756693Ab0BOXH4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 18:07:56 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:42869 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755702Ab0BOXDP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 18:03:15 -0500
-Date: Mon, 15 Feb 2010 18:02:48 -0500
-From: Don Zickus <dzickus@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, peterz@infradead.org, gorcunov@gmail.com,
-       aris@redhat.com
-Subject: Re: [PATCH 1/4] nmi_watchdog: use a boolean config flag for compiling
-Message-ID: <20100215230248.GP3062@redhat.com>
-References: <1266013161-31197-1-git-send-email-dzickus@redhat.com>
- <20100214165941.GA26329@elte.hu>
- <20100214181219.GA27839@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100214181219.GA27839@elte.hu>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+	id S1756644Ab0BOXHz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Feb 2010 18:07:55 -0500
+Message-Id: <201002152307.o1FN7f10019719@int-mx02.intmail.prod.int.phx2.redhat.com>
+Date: Mon, 15 Feb 2010 18:07:39 -0500
+From: Chuck Ebbert <cebbert@redhat.com>
+To: Al Viro <viro@zeniv.linux.org.uk>
+Cc: linux-kernel@vger.kernel.org, Mimi Zohar <zohar@us.ibm.com>
+Subject: [PATCH] vfs: don't call ima_file_check() unconditionally in
+ nfsd_open()
+Organization: Red Hat, Inc.
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 14, 2010 at 07:12:19PM +0100, Ingo Molnar wrote:
-> 
-> i'm also getting this:
-> 
-> [   11.101892] NET: Registered protocol family 5
-> [   19.293996] INFO: RCU detected CPU stalls: 1 (detected by 0, t=10002 jiffies)
+From: Chuck Ebbert <cebbert@redhat.com>
 
-I guess part of the problem I am having trouble reproducing this is
-because I am not sure where you are getting the config from that you send
-me.  Above clearly shows RCU has stall detetion on but the config you
-provided me has:
+vfs: don't call ima_file_check() unconditionally in nfsd_open()
 
-# CONFIG_RCU_CPU_STALL_DETECTOR is not set
+commit 1e41568d7378d1ba8c64ba137b9ddd00b59f893a ("Take ima_path_check()
+in nfsd past dentry_open() in nfsd_open()") moved this code back to its
+original location but missed the "else".
 
-I guess I assumed I could just plug the config files you gave me into the
-source tree.  Perhaps I misunderstood your intentions?
+Signed-off-by: Chuck Ebbert <cebbert@redhat.com>
 
-Cheers,
-Don
+--- linux-2.6.32.noarch.orig/fs/nfsd/vfs.c
++++ linux-2.6.32.noarch/fs/nfsd/vfs.c
+@@ -752,7 +752,8 @@ nfsd_open(struct svc_rqst *rqstp, struct
+ 			    flags, current_cred());
+ 	if (IS_ERR(*filp))
+ 		host_err = PTR_ERR(*filp);
+-	host_err = ima_file_check(*filp, access);
++	else
++		host_err = ima_file_check(*filp, access);
+ out_nfserr:
+ 	err = nfserrno(host_err);
+ out:
