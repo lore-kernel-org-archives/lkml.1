@@ -1,52 +1,57 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756211Ab0BOT2y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 14:28:54 -0500
-Received: from thunk.org ([69.25.196.29]:33702 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756031Ab0BOT2w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 14:28:52 -0500
-Date: Mon, 15 Feb 2010 14:28:49 -0500
-From: tytso@mit.edu
-To: Roel Kluin <roel.kluin@gmail.com>
-Cc: Andreas Dilger <adilger@sun.com>, linux-ext4@vger.kernel.org,
+	id S1756217Ab0BOTbX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 14:31:23 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:44702 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756116Ab0BOTbW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Feb 2010 14:31:22 -0500
+Date: Mon, 15 Feb 2010 20:31:14 +0100
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: Alberto Panizzo <maramaopercheseimorto@gmail.com>
+Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       Sascha linux-arm <s.hauer@pengutronix.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ext4: ext4_xattr_ibody_set() error ignored in
- ext4_expand_extra_isize_ea()
-Message-ID: <20100215192849.GM5337@thunk.org>
-Mail-Followup-To: tytso@mit.edu, Roel Kluin <roel.kluin@gmail.com>,
-	Andreas Dilger <adilger@sun.com>, linux-ext4@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>,
-	LKML <linux-kernel@vger.kernel.org>
-References: <4B6AF1AF.3010008@gmail.com>
+       Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Greg KH <gregkh@suse.de>
+Subject: Re: Subject: [PATCH] w1: mxc_w1: move probe and remove to the dev*
+	text area.
+Message-ID: <20100215193114.GA341@pengutronix.de>
+References: <1266259741.2551.64.camel@realization>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <4B6AF1AF.3010008@gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1266259741.2551.64.camel@realization>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 04, 2010 at 05:11:27PM +0100, Roel Kluin wrote:
-> The error handling was missing.
-> 
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+Hello Albert,
+
+On Mon, Feb 15, 2010 at 07:49:01PM +0100, Alberto Panizzo wrote:
+> This fixes the section mismatch warning for mxc_w1_probe()
+Acked-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+
 > ---
-> Is this needed?
+> 
+> This patch apply to linus 2.6.33-rc8 tree.
+> I think that could be marked for stable releases.
+hmmm, if you'd know how much effort I spend to get patches like these in
+...  Obviously letting modpost warn about those helps me getting
+supporters :-)
 
-Yep, it's added, thanks.  I'm not entirely right the error handling is
-completely correct in this function; in particular, if we fail after
-this point in the function, and we've already changed the status of
-EXT4_STATE_XATTR flag, but then we fail due to some error (maybe an
-I/O error), it's not clear the cleanup section is properly unwinding
-all of the side effects made so far in this function.
+Best regards
+Uwe
 
-Still, adding the error check clearly makes the code better than it
-was before, so I've added it to the ext4 patch queue.
-
-    	       	    	     	    - Ted
+-- 
+Pengutronix e.K.                           | Uwe Kleine-König            |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
