@@ -1,62 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755299Ab0BOEv7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 23:51:59 -0500
-Received: from hera.kernel.org ([140.211.167.34]:46389 "EHLO hera.kernel.org"
+	id S1755304Ab0BOE4w (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 23:56:52 -0500
+Received: from ozlabs.org ([203.10.76.45]:55867 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754980Ab0BOEv5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Feb 2010 23:51:57 -0500
-Message-ID: <4B78D299.8070309@kernel.org>
-Date: Sun, 14 Feb 2010 20:50:33 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	id S1755162Ab0BOE4v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Feb 2010 23:56:51 -0500
+Date: Mon, 15 Feb 2010 15:56:44 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       fweisbec@gmail.com, Dave Wootton <dwootton@us.ibm.com>
+Subject: Re: Why is PERF_FORMAT_GROUP incompatible with inherited events?
+Message-ID: <20100215045644.GK13769@brick.ozlabs.ibm.com>
+References: <20100212030205.GE13769@brick.ozlabs.ibm.com>
+ <1266142337.5273.417.camel@laptop>
+ <20100214113314.GG13769@brick.ozlabs.ibm.com>
+ <1266151107.5273.629.camel@laptop>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-Subject: Re: [PATCH -v7 0/35] tip related: not use  bootmem for x86
-References: <1265793639-15071-1-git-send-email-yinghai@kernel.org> <1266200846.16346.111.camel@pasglop>
-In-Reply-To: <1266200846.16346.111.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1266151107.5273.629.camel@laptop>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/14/2010 06:27 PM, Benjamin Herrenschmidt wrote:
-> On Wed, 2010-02-10 at 01:20 -0800, Yinghai Lu wrote:
->>
->> The reserve_early() method is list/range based and can handle vast
->> amounts of not very fragmented memory - perfect for basically all the
->> real bootmem purposes (which is to bootstrap the buddy).
->>
->> reserve_early() allocated memory could be freed into the buddy later
->> on
->> as well. The main reason why bootmem is 'destroyed' during
->> free-to-buddy
->> is because it has excessive internal bitmaps we want to free. With a
->> list/range based reserve_early() mechanism there's no such problem -
->> they can linger indefinitely and there's near zero allocation
->> management
->> overhead. " 
+On Sun, Feb 14, 2010 at 01:38:27PM +0100, Peter Zijlstra wrote:
+> On Sun, 2010-02-14 at 22:33 +1100, Paul Mackerras wrote:
+> > 
+> > But we don't go and collect the count delta from children without
+> > PERF_FORMAT_GROUP, so why would we with it? 
 > 
-> Various archs use lib/lmb.c for representing physical memory and
-> doing early allocations. Might be something to extend ?
+> Yes we do, see perf_event_read_value().
 
-yes, could merge them later.
+Ah, true, I should have read the code more carefully.
 
-lmb: include memory range array, and reserved range array, and will be used till bootmem_init
+> But now that I look at it we don't seem to do so in
+> perf_output_read_one()... I guess we should fix that.
 
-early_res: is only reserved range array..., and need to be use with e820 map...
-and now early_res is used to replace bootmem...
+I suppose it should give the same value as read() would, but the
+possibly unbounded interrupt latency is a bit of a worry.  I can't
+think of a way to avoid it, though (other than not using
+PERF_SAMPLE_READ with inherited sampling events :).
 
-will check to make e820 to be fw_memmap and move it /kernel/fw_memmap.c
+> There is of course the lock inversion in the .read() code reported by
+> stephane, but other than that is seems to actually support inherited &&
+> group just fine.
+> 
+> So I think if we fix that lock inversion and make the PERF_SAMPLE_READ
+> code look like the .read() code it should all work out.
 
-Thanks
+Cool.
 
-Yinghai
+Paul.
