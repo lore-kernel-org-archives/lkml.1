@@ -1,42 +1,43 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752791Ab0BOFae (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 00:30:34 -0500
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:49279 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752516Ab0BOFad (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 00:30:33 -0500
-Date: Mon, 15 Feb 2010 14:30:21 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [GIT PULL] sh updates for 2.6.33-rc9
-Message-ID: <20100215053021.GE18636@linux-sh.org>
+	id S1753083Ab0BOFgO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 00:36:14 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:57398 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752424Ab0BOFgN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Feb 2010 00:36:13 -0500
+Date: Mon, 15 Feb 2010 05:35:59 +0000 (GMT)
+From: Dave Airlie <airlied@linux.ie>
+X-X-Sender: airlied@skynet.skynet.ie
+To: torvalds@linux-foundation.org
+cc: linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
+Subject: Re: [git pull] drm fixes
+In-Reply-To: <alpine.DEB.2.00.1002150508210.25675@skynet.skynet.ie>
+Message-ID: <alpine.DEB.2.00.1002150534250.25675@skynet.skynet.ie>
+References: <alpine.DEB.2.00.1002150508210.25675@skynet.skynet.ie>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This simply hooks up TIF_SINGLESTEP around the hardware single-step
-enable/disable in addition to punting the step state down to
-tracehook_report_syscall_exit()/tracehook_signal_handler() in order to
-get the ptrace_notify() logic right, as reported by Mike Frysinger.
 
-With any luck, this should it for 2.6.33.
+> Two ttm regression fixes from Thomas, and one alpha unaligned issue in the
+> atom parser for radeon KMS.
 
-Please pull from:
+And as usual I read my TODO list after I send the push req out.
 
-	master.kernel.org:/pub/scm/linux/kernel/git/lethal/sh-2.6.git sh/for-2.6.33
+One more commit on top of this tree now
 
-Which contains:
+just a fix to the DP retry logic:
+e803e8b2628f3e9a42f45c5b7bb1f9821b08352c drm/radeon/kms: make sure retry count increases.
 
-Paul Mundt (1):
-      sh64: fix tracing of signals.
+In testing I've never seen it go past 1 retry anyways but better
+safe than sorry.
+    
+Reported by Droste on irc.
+   
+Signed-off-by: Dave Airlie <airlied@redhat.com>
 
- arch/sh/kernel/ptrace_64.c |   11 +++++++++--
- arch/sh/kernel/signal_64.c |    4 +++-
- 2 files changed, 12 insertions(+), 3 deletions(-)
+Dave.
