@@ -1,74 +1,121 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932128Ab0BOWG5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 17:06:57 -0500
-Received: from smtp-out.google.com ([216.239.44.51]:20475 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756435Ab0BOWGz (ORCPT
+	id S932242Ab0BOWIU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 17:08:20 -0500
+Received: from bld-mail13.adl6.internode.on.net ([150.101.137.98]:51207 "EHLO
+	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932076Ab0BOWIT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 17:06:55 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=DcHWNRpfKk8rLTYZ4beaSqlpqikIb9UwL1O7sd6+y4yOI384rN5+upbdR8+315SFz
-	2B4WdaLDwe21G1+Fg5zHA==
-Date: Mon, 15 Feb 2010 14:06:50 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Nick Piggin <npiggin@suse.de>, Andrea Arcangeli <aarcange@redhat.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch 1/7 -mm] oom: filter tasks not sharing the same cpuset
-In-Reply-To: <20100215115154.727B.A69D9226@jp.fujitsu.com>
-Message-ID: <alpine.DEB.2.00.1002151401280.26927@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.1002100224210.8001@chino.kir.corp.google.com> <alpine.DEB.2.00.1002100227590.8001@chino.kir.corp.google.com> <20100215115154.727B.A69D9226@jp.fujitsu.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Mon, 15 Feb 2010 17:08:19 -0500
+Date: Tue, 16 Feb 2010 09:08:15 +1100
+From: Dave Chinner <david@fromorbit.com>
+To: Dan Carpenter <error27@gmail.com>, kernel-janitors@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: bug list: range checking issues
+Message-ID: <20100215220815.GF28392@discord.disaster>
+References: <20100215124046.GB18821@bicker>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100215124046.GB18821@bicker>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 15 Feb 2010, KOSAKI Motohiro wrote:
-
-> > Tasks that do not share the same set of allowed nodes with the task that
-> > triggered the oom should not be considered as candidates for oom kill.
-> > 
-> > Tasks in other cpusets with a disjoint set of mems would be unfairly
-> > penalized otherwise because of oom conditions elsewhere; an extreme
-> > example could unfairly kill all other applications on the system if a
-> > single task in a user's cpuset sets itself to OOM_DISABLE and then uses
-> > more memory than allowed.
-> > 
-> > Killing tasks outside of current's cpuset rarely would free memory for
-> > current anyway.
-> > 
-> > Signed-off-by: David Rientjes <rientjes@google.com>
+On Mon, Feb 15, 2010 at 03:40:56PM +0300, Dan Carpenter wrote:
+> This is the results from:
+>     make C=1 CHECK="/path/to/smatch -p=kernel" bzImage modules | tee warns.txt
+>     grep -w overflow warns.txt | uniq -f 3 | tee err-list
 > 
-> This patch does right thing and looks promissing. but unfortunately
-> I have to NAK this patch temporary.
-> 
-> This patch is nearly just revert of the commit 7887a3da75. We have to
-> dig archaeology mail log and find why this reverting don't cause
-> the old pain again.
-> 
+> I hacked on the buffer overflow check last weekend and these are the 
+> results.  It has way more false positives than the other bug lists 
+> I've posted, but it's still kinda neat.
 
-Nick is probably wondering why I cc'd him on this patchset, and this is it 
-:)
+I'll come back to this.
 
-We now determine whether an allocation is constrained by a cpuset by 
-iterating through the zonelist and checking 
-cpuset_zone_allowed_softwall().  This checks for the necessary cpuset 
-restrictions that we need to validate (the GFP_ATOMIC exception is 
-irrelevant, we don't call into the oom killer for those).  We don't need 
-to kill outside of its cpuset because we're not guaranteed to find any 
-memory on those nodes, in fact it allows for needless oom killing if a 
-task sets all of its threads to have OOM_DISABLE in its own cpuset and 
-then runs out of memory.  The oom killer would have killed every other 
-user task on the system even though the offending application can't 
-allocate there.  That's certainly an undesired result and needs to be 
-fixed in this manner.
+> It works like this:
+> 
+> lib/zlib_inflate/inftrees.c
+>    112      for (min = 1; min <= MAXBITS; min++)
+>    113          if (count[min] != 0) break;
+>    114      if (root < min) root = min;
+> smatch thinks "min" can be MAXBITS here.
+> 
+> One bad thing is that if you have code like:
+>         if (foo == 42)
+> 		frob();
+> Smatch thinks that "foo" can be 43 after the if statement.
+
+I think you understate the number of problems this matching rule
+has.
+
+.....
+> fs/xfs/xfs_attr_leaf.c +1097 xfs_attr_leaf_add_work(33) warn: buffer overflow 'hdr->freemap' 3 <= 3
+
+	ASSERT((mapindex >= 0) && (mapindex < XFS_ATTR_LEAF_MAPSIZE));
+	.....
+	map = &hdr->freemap[mapindex];
+
+=> False positive.
+
+> fs/xfs/xfs_da_btree.c +159 xfs_da_split(15) error: buffer overflow 'state->path.blk' 5 <= 5
+> fs/xfs/xfs_da_btree.c +162 xfs_da_split(18) warn: buffer overflow 'state->path.blk' 5 <= 5
+
+	ASSERT((max >= 0) && (max < XFS_DA_NODE_MAXDEPTH));
+	.....
+	addblk = &state->path.blk[max];
+
+=> False positives.
+
+> fs/xfs/xfs_dir2_block.c +1152 xfs_dir2_sf_to_block(128) error: buffer overflow 'dep->name' 1 <= 1
+
+	dep->name is a variable length array, size determined by
+	dep->namelen.
+
+=> False positives.
+
+> fs/xfs/xfs_dir2_leaf.c +504 xfs_dir2_leaf_addname(343) warn: buffer overflow 'leaf->ents' 1 <= 1
+> fs/xfs/xfs_dir2_leaf.c +585 xfs_dir2_leaf_check(30) error: buffer overflow 'leaf->ents' 1 <= 1
+> fs/xfs/xfs_dir2_node.c +253 xfs_dir2_leafn_add(69) warn: buffer overflow 'leaf->ents' 1 <= 1
+> fs/xfs/xfs_dir2_node.c +286 xfs_dir2_leafn_add(102) error: buffer overflow 'leaf->ents' 1 <= 1
+> fs/xfs/xfs_dir2_node.c +305 xfs_dir2_leafn_add(121) warn: buffer overflow 'leaf->ents' 1 <= 1
+> fs/xfs/xfs_dir2_node.c +316 xfs_dir2_leafn_add(132) error: buffer overflow 'leaf->ents' 1 <= 1
+> fs/xfs/xfs_dir2_node.c +320 xfs_dir2_leafn_add(136) warn: buffer overflow 'leaf->ents' 1 <= 2
+> fs/xfs/xfs_dir2_node.c +321 xfs_dir2_leafn_add(137) warn: buffer overflow 'leaf->ents' 1 <= 1
+> fs/xfs/xfs_dir2_node.c +361 xfs_dir2_leafn_check(15) error: buffer overflow 'leaf->ents' 1 <= 1
+
+	leaf->ents is a varaible length array, size determined by
+	the directory block header.
+
+=> False positives.
+
+> fs/xfs/xfs_dir2_sf.c +115 xfs_dir2_block_sfsize(44) error: buffer overflow 'dep->name' 1 <= 1
+
+	as per above
+
+=> False positive.
+
+> fs/xfs/xfs_inode.c +3562 xfs_iext_remove_inline(14) warn: buffer overflow 'ifp->if_u2.if_inline_ext' 2 <= 2
+
+	ASSERT(idx < XFS_INLINE_EXTS);
+	....
+	ASSERT(((nextents - ext_diff) > 0) &&
+		(nextents - ext_diff) < XFS_INLINE_EXTS);
+
+=> False positive
+
+So for XFS your tool has produced 100% false positives. I think you
+really need to spend more time reducing the incidence of false
+positives before reporting lists of potential buffer overflows to
+lkml. There may be some real ones in this list, but reporting tens
+of false positives with no real substance just wastes everyone's
+time. Static code checking only has value if there is a
+high signal to noise ratio....
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
