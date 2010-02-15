@@ -1,80 +1,85 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756005Ab0BOP6Z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 10:58:25 -0500
-Received: from cantor.suse.de ([195.135.220.2]:36296 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755990Ab0BOP6Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 10:58:24 -0500
-Date: Mon, 15 Feb 2010 16:58:33 +0100
-From: Jan Kara <jack@suse.cz>
-To: Jan Engelhardt <jengelh@medozas.de>
-Cc: Jan Kara <jack@suse.cz>, Linus Torvalds <torvalds@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, stable@kernel.org,
-       gregkh@suse.de
-Subject: Re: [PATCH] writeback: Fix broken sync writeback
-Message-ID: <20100215155833.GH3434@quack.suse.cz>
-References: <20100212091609.GB1025@kernel.dk>
- <alpine.LFD.2.00.1002120722270.7792@localhost.localdomain>
- <alpine.LSU.2.01.1002131356250.20838@obet.zrqbmnf.qr>
- <20100215144938.GD3434@quack.suse.cz>
- <alpine.LSU.2.01.1002151629380.27775@obet.zrqbmnf.qr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LSU.2.01.1002151629380.27775@obet.zrqbmnf.qr>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	id S1755997Ab0BOQAo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 11:00:44 -0500
+Received: from fg-out-1718.google.com ([72.14.220.154]:65428 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751429Ab0BOQAn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Feb 2010 11:00:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=ALTMy8M4Ui8EvvNcNVTlGLD5WKnvuLUpKV+IzEr79FkL5nlkGFXBFtpoueVIPrmLPV
+         5yAVk5VH3qgTVXjXDcK20/jF9pnkkQBEeuGMKnc/u0+B87/SxRC2FS4Er0QNVV00VZRn
+         59DQdjc1rDcQYi1bqhouUJzcQp8VZnoiYrtHM=
+Subject: Re: Is it supposed to be ok to call del_gendisk while userspace is
+ frozen?
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Cc: linux-pm <linux-pm@lists.linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <1266067746.16937.7.camel@maxim-laptop>
+References: <1266067746.16937.7.camel@maxim-laptop>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 15 Feb 2010 18:00:34 +0200
+Message-ID: <1266249634.10662.6.camel@maxim-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 15-02-10 16:41:17, Jan Engelhardt wrote:
+On Sat, 2010-02-13 at 15:29 +0200, Maxim Levitsky wrote: 
+> I noticed that currently calling del_gendisk leads to sure deadlock if
+> attemped from .suspend or .resume functions.
 > 
-> On Monday 2010-02-15 15:49, Jan Kara wrote:
-> >On Sat 13-02-10 13:58:19, Jan Engelhardt wrote:
-> >> >> 
-> >> >> This fixes it by using the passed in page writeback count, instead of
-> >> >> doing MAX_WRITEBACK_PAGES batches, which gets us much better performance
-> >> >> (Jan reports it's up from ~400KB/sec to 10MB/sec) and makes sync(1)
-> >> >> finish properly even when new pages are being dirted.
->
-> >> It seems so. Jens, Jan Kara, your patch does not entirely fix this.
-> >> While there is no sync/fsync to be seen in these traces, I can
-> >> tell there's a livelock, without Dirty decreasing at all.
-> >
-> >  I don't think this is directly connected with my / Jens' patch.
+> Something like that:
 > 
-> I start to think so too.
+> [<ffffffff8106620a>] ? prepare_to_wait+0x2a/0x90
+> [<ffffffff810790bd>] ? trace_hardirqs_on+0xd/0x10
+> [<ffffffff8140db12>] ? _raw_spin_unlock_irqrestore+0x42/0x80
+> [<ffffffff8112a390>] ? bdi_sched_wait+0x0/0x20
+> [<ffffffff8112a39e>] bdi_sched_wait+0xe/0x20
+> [<ffffffff8140af6f>] __wait_on_bit+0x5f/0x90
+> [<ffffffff8112a390>] ? bdi_sched_wait+0x0/0x20
+> [<ffffffff8140b018>] out_of_line_wait_on_bit+0x78/0x90
+> [<ffffffff81065fd0>] ? wake_bit_function+0x0/0x40
+> [<ffffffff8112a2d3>] ? bdi_queue_work+0xa3/0xe0
+> [<ffffffff8112a37f>] bdi_sync_writeback+0x6f/0x80
+> [<ffffffff8112a3d2>] sync_inodes_sb+0x22/0x120
+> [<ffffffff8112f1d2>] __sync_filesystem+0x82/0x90
+> [<ffffffff8112f3db>] sync_filesystem+0x4b/0x70
+> [<ffffffff811391de>] fsync_bdev+0x2e/0x60
+> [<ffffffff812226be>] invalidate_partition+0x2e/0x50
+> [<ffffffff8116b92f>] del_gendisk+0x3f/0x140
+> [<ffffffffa00c0233>] mmc_blk_remove+0x33/0x60 [mmc_block]
+> [<ffffffff81338977>] mmc_bus_remove+0x17/0x20
+> [<ffffffff812ce746>] __device_release_driver+0x66/0xc0
+> [<ffffffff812ce89d>] device_release_driver+0x2d/0x40
+> [<ffffffff812cd9b5>] bus_remove_device+0xb5/0x120
+> [<ffffffff812cb46f>] device_del+0x12f/0x1a0
+> [<ffffffff81338a5b>] mmc_remove_card+0x5b/0x90
+> [<ffffffff8133ac27>] mmc_sd_remove+0x27/0x50
+> [<ffffffff81337d8c>] mmc_resume_host+0x10c/0x140
+> [<ffffffffa00850e9>] sdhci_resume_host+0x69/0xa0 [sdhci]
+> [<ffffffffa0bdc39e>] sdhci_pci_resume+0x8e/0xb0 [sdhci_pci]
 > 
-> >Similar traces happen even without the patch (see e.g.
-> >http://bugzilla.kernel.org/show_bug.cgi?id=14830). But maybe the patch
-> >makes it worse... So are you able to reproduce these warnings and
-> >without the patch they did not happen?
+> bdi_queue_work seems to be the problem.
 > 
-> Your patch speeds up the slow sync; without the patch, there was
-> no real chance to observ the hard lockup, as the slow sync would
-> take up all time.
+> Some device drivers need to remove their cards logically in .suspend,
+> because the card is removable, and can be changed while system is
+> suspended.
 > 
-> So far, no reproduction. It seems to be just as you say.
+> Best regards,
+> Maxim Levitsky
 > 
-> >  Where in the code is jbd2_journal_commit_transaction+0x218/0x15e0?
-> 
-> 0000000000569554 <jbd2_journal_commit_transaction>:
->   56976c:       40 04 ee 62     call  6a50f4 <schedule>
-> 
-> Since there is an obvious schedule() call in jbd2_journal_commit_transaction's
-> C code, I think that's where it is.
-  OK. Thanks. It seems some process is spending excessive time with a
-transaction open (jbd2_journal_commit_transaction waits for all handles of
-a transaction to be dropped). If you see the traces again, try to obtain
-stack traces of all the other processes and maybe we can catch the process
-and see whether it's doing something unexpected.
-  The patch can have an influence on this because we now pass larger
-nr_to_write to ext4_writepages so maybe that makes some corner case more
-likely.
 
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+Any update?
+
+Best regards,
+Maxim Levitsky
+
