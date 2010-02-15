@@ -1,63 +1,45 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754717Ab0BOLCa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 06:02:30 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:40930 "EHLO mx2.suse.de"
+	id S1754946Ab0BOLEA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 06:04:00 -0500
+Received: from bu3sch.de ([62.75.166.246]:42075 "EHLO vs166246.vserver.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752242Ab0BOLC3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 06:02:29 -0500
-Date: Mon, 15 Feb 2010 22:01:36 +1100
-From: Nick Piggin <npiggin@suse.de>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: penberg@cs.helsinki.fi, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       haicheng.li@intel.com, rientjes@google.com
-Subject: Re: [PATCH] [4/4] SLAB: Fix node add timer race in cache_reap
-Message-ID: <20100215110135.GN5723@laptop>
-References: <20100211953.850854588@firstfloor.org>
- <20100211205404.085FEB1978@basil.firstfloor.org>
- <20100215061535.GI5723@laptop>
- <20100215103250.GD21783@one.firstfloor.org>
- <20100215104135.GM5723@laptop>
- <20100215105253.GE21783@one.firstfloor.org>
+	id S1754246Ab0BOLD7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Feb 2010 06:03:59 -0500
+From: Michael Buesch <mb@bu3sch.de>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: Re: [PATCH -mm] ssb: open-code dma_alloc_coherent
+Date: Mon, 15 Feb 2010 12:03:41 +0100
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, davem@davemloft.net,
+       stefano.brivio@polimi.it, Larry.Finger@lwfinger.net,
+       akpm@linux-foundation.org
+References: <20100215142111R.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20100215142111R.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20100215105253.GE21783@one.firstfloor.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Message-Id: <201002151203.42805.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 15, 2010 at 11:52:53AM +0100, Andi Kleen wrote:
-> On Mon, Feb 15, 2010 at 09:41:35PM +1100, Nick Piggin wrote:
-> > On Mon, Feb 15, 2010 at 11:32:50AM +0100, Andi Kleen wrote:
-> > > On Mon, Feb 15, 2010 at 05:15:35PM +1100, Nick Piggin wrote:
-> > > > On Thu, Feb 11, 2010 at 09:54:04PM +0100, Andi Kleen wrote:
-> > > > > 
-> > > > > cache_reap can run before the node is set up and then reference a NULL 
-> > > > > l3 list. Check for this explicitely and just continue. The node
-> > > > > will be eventually set up.
-> > > > 
-> > > > How, may I ask? cpuup_prepare in the hotplug notifier should always
-> > > > run before start_cpu_timer.
-> > > 
-> > > I'm not fully sure, but I have the oops to prove it :)
-> > 
-> > Hmm, it would be nice to work out why it's happening. If it's completely
-> > reproducible then could I send you a debug patch to test?
-> 
-> Looking at it again I suspect it happened this way:
-> 
-> cpuup_prepare fails (e.g. kmalloc_node returns NULL). The later
-> patches might have cured that. Nothing stops the timer from
-> starting in this case anyways.
+On Monday 15 February 2010 06:21:58 FUJITA Tomonori wrote:
+> This patch is against -mm since it depends on the DMA API changes in
 
-Hmm, but it should, because if cpuup_prepare fails  then the
-CPU_ONLINE notifiers should never be called I think.
+I appreciate your efforts to remove bus-specific APIs.
+However, always keep in mind that a SSB bus might be running on a system
+where there's no PCI bus at all.
+In the past we used the generic dma_... API for DMA operations on all
+SSB devices. This worked 99.9% of the time. _But_ it broke in really obscure
+cases where the architecture implementations _slightly_ differed between
+the generic dma and the pci variants.
 
- 
-> So given that the first patches might not be needed, but it's
-> safer to have anyways.
+So, I'm all for it. But simply keep in mind that this has to run on lots of
+architectures (i386, x86_64, ppc, MIPS, probably more) and it has to run on
+machines without a PCI bus (where SSB is the main system bus).
 
-I'm just worried there is still an underlying problem here.
-
+-- 
+Greetings, Michael.
