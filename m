@@ -1,23 +1,22 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754952Ab0BOGWU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 01:22:20 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46104
+	id S1755096Ab0BOGYd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 01:24:33 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46110
 	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754625Ab0BOGWR (ORCPT
+	by vger.kernel.org with ESMTP id S1754323Ab0BOGYc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 01:22:17 -0500
-Date: Sun, 14 Feb 2010 22:22:32 -0800 (PST)
-Message-Id: <20100214.222231.180659633.davem@davemloft.net>
-To: sfr@canb.auug.org.au
-Cc: netdev@vger.kernel.org, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, jouni.malinen@atheros.com,
-       linville@tuxdriver.com
-Subject: Re: linux-next: manual merge of the net tree with the
- wireless-current tree
+	Mon, 15 Feb 2010 01:24:32 -0500
+Date: Sun, 14 Feb 2010 22:24:46 -0800 (PST)
+Message-Id: <20100214.222446.138687519.davem@davemloft.net>
+To: fujita.tomonori@lab.ntt.co.jp
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, mb@bu3sch.de,
+       stefano.brivio@polimi.it, Larry.Finger@lwfinger.net,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH -mm] ssb: open-code dma_alloc_coherent
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <20100215152023.0696878f.sfr@canb.auug.org.au>
-References: <20100215152023.0696878f.sfr@canb.auug.org.au>
+In-Reply-To: <20100215142111R.fujita.tomonori@lab.ntt.co.jp>
+References: <20100215142111R.fujita.tomonori@lab.ntt.co.jp>
 X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -26,21 +25,29 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Mon, 15 Feb 2010 15:20:23 +1100
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Date: Mon, 15 Feb 2010 14:21:58 +0900
 
-> Hi all,
+> From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> Subject: [PATCH -mm] ssb: open-code dma_alloc_coherent
 > 
-> Today's linux-next merge of the net tree got a conflict in
-> net/mac80211/rate.c between commit
-> 5affcd6ba2036b59a4dee3f0576ae3584e92e4f1 ("mac80211: fix handling of
-> null-rate control in rate_control_get_rate") from the wireless-current
-> tree and commit 37eb0b164cf9fa9f70c8500926f5cde7c652f48e
-> ("cfg80211/mac80211: Use more generic bitrate mask for rate control")
-> from the net tree.
+> This removes ssb_dma_alloc_consistent, a wrapper for
+> dma_alloc_coherent and pci_alloc_consistent. dma_alloc_coherent
+> internally calls pci_alloc_consistent against pci devices so we always
+> use dma_alloc_coherent.
 > 
-> John, I know you mentioned this, so I assume it will go away soon.
+> I prefer to use the DMA API directly instead of creating the ssb_dma_
+> API. We have been removing any bus specific DMA APIs.
 > 
-> I fixed it up (I think - see below).
+> One disadvantage of this approach that we lost the debugging ability
+> of checking the buggy usage of the DMA API against non DMA-capable ssb
+> buses. But I guess that the ssb drivers are mature enough and can cope
+> with such change?
+> 
+> I plan to replace all the ssb_dma API if this approach is fine.
+> 
+> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 
-Right, I'll even try to take care of this myself later tonight.
+I'm fine with this:
+
+Acked-by: David S. Miller <davem@davemloft.net>
