@@ -1,47 +1,62 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756514Ab0BOU2H (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 15:28:07 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:45729 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756485Ab0BOU2D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 15:28:03 -0500
+	id S1756521Ab0BOU2v (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 15:28:51 -0500
+Received: from mail-yx0-f200.google.com ([209.85.210.200]:40379 "EHLO
+	mail-yx0-f200.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756494Ab0BOU2t convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Feb 2010 15:28:49 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=bxGauzbgO1KnhGe5jqBOitwqOcK5ZcamDwZgjX3gzo4shAn6nbkIdMebKfNzcnTpM2
+         e0I/t4k1l4KdhahsQTpYrNHEalYfdCCdrVqvP2lciM17FLvWYFMAVIBJlV97nkRGME7d
+         zE6VK+x6THPw0tqijD+0AzvvSYz7Y55vIW55c=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Mike Frysinger <vapier@gentoo.org>
-X-Fcc: ~/Mail/linus
-Cc: Oleg Nesterov <oleg@redhat.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20100215193948.GA28419@redhat.com>
+References: <1266214553-29476-1-git-send-email-vapier@gentoo.org> 
+	<20100215193948.GA28419@redhat.com>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Mon, 15 Feb 2010 15:28:29 -0500
+Message-ID: <8bd0f97a1002151228r2a589047gddc1d998d52c969c@mail.gmail.com>
 Subject: Re: [PATCH] tracehook: add some self tests
-In-Reply-To: Mike Frysinger's message of  Monday, 15 February 2010 01:15:53 -0500 <1266214553-29476-1-git-send-email-vapier@gentoo.org>
-References: <1266214553-29476-1-git-send-email-vapier@gentoo.org>
-X-Antipastobozoticataclysm: Bariumenemanilow
-Message-Id: <20100215202800.5192E1AD@magilla.sf.frob.com>
-Date: Mon, 15 Feb 2010 12:28:00 -0800 (PST)
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is something of a misnomer, since asm/syscall.h is the only thing you
-are testing.  
+On Mon, Feb 15, 2010 at 14:39, Oleg Nesterov wrote:
+> On 02/15, Mike Frysinger wrote:
+>> +static int __init syscall_test(void)
+>> +{
+>> +     struct pt_regs _regs, *regs = &_regs;
+>> +     long _args[8];
+>> +     long *args = _args + 1;
+>> +     long *sys_args[6], *sa;
+>> +     unsigned int i, n, s;
+>> +
+>> +     /*
+>> +      * First find each system register in pt_regs.  We have to assume
+>> +      * syscall_set_arguments() works with very basic arguments.
+>> +      */
+>> +     pr_info("TEST: asm/syscall.h: arg offsets: { ");
+>> +
+>> +     for (s = 0; s < 6; ++s)
+>> +             args[s] = s;
+>> +     memset(regs, 0xad, sizeof(*regs));
+>> +     syscall_set_arguments(NULL, regs, 0, 6, args);
+>                              ^^^^
+>
+> I am not sure ia64 can tolerate task == NULL. Hmm, even x86 checks
+> task_thread_info(task)->status.
 
-As Oleg pointed out, not all arch definitions can be used without a proper
-task_struct argument.  Only ia64 actually needs the task as part of the
-actual register access.  But several others (including x86) look at the
-task to decide whether to use the 32-bit or 64-bit interpretation of the
-register values.
+is there some task available while the kernel is initializing ?  i.e.
+the test is compiled in ?
 
-I'd make the more general point that this sort of "synthetic" test does not
-seem very useful.  At best, it can test the asm/syscall.h code for being
-internally consistent--but that doesn't test whether it's really correct.
-IMHO this is not worth having unless it's an "empirical" test.  What I mean
-by that is one that really uses the asm/syscall.h calls as specified, and
-in the context specified.  So, you'd have to fork a user process and use
-ptrace on it to get it stopped at a syscall entry.  Then you can fetch the
-arguments, modify them, and look at the arguments it actually passes in to
-the syscall.
-
-
-Thanks,
-Roland
+if current is valid, i'll just [ab]use that ...
+-mike
