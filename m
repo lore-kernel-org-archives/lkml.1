@@ -1,96 +1,87 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756541Ab0BOUch (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 15:32:37 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:30759 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756494Ab0BOUcg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 15:32:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=XmsbQF4tfsn53vP2vdZm1QIp2zpB0BbjczpvgdY/BRLt1JYpZDUD4RBhoBzkiHGVOY
-         5GJyiHySjgJ1UyUFjrx1ZaqvpPqULj5sPBQx9JaIjFVL56cj8mfFzm+SS///2IpES/Bb
-         yfFAW7KGa0d3sAEwQuVyRj1E6vw5zdALJ35RM=
-Date: Mon, 15 Feb 2010 23:32:30 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Robert Richter <robert.richter@amd.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       Stephane Eranian <eranian@google.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Don Zickus <dzickus@redhat.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC perf,x86] P4 PMU early draft
-Message-ID: <20100215203230.GE5119@lenovo>
-References: <20100208184504.GB5130@lenovo> <20100215201102.GN13205@erda.amd.com>
+	id S1756556Ab0BOUdQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 15:33:16 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:20582 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756525Ab0BOUdO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Feb 2010 15:33:14 -0500
+Message-ID: <4B79AF7F.2030209@redhat.com>
+Date: Mon, 15 Feb 2010 14:33:03 -0600
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100215201102.GN13205@erda.amd.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: tytso@mit.edu, Leonard Michlmayr <leonard.michlmayr@gmail.com>,
+       Andreas Dilger <adilger@sun.com>,
+       ext4 development <linux-ext4@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org Mailinglist" 
+	<linux-kernel@vger.kernel.org>,
+       474597@bugs.launchpad.net
+Subject: Re: [PATCH 2.6.32.7] ext4: number of blocks for fiemap
+References: <1257360161.22057.16.camel@michlmayr> <372739E0-41AD-4DEC-9187-1396BE5894BD@sun.com> <1257371050.13852.28.camel@michlmayr> <4B701793.9010005@canonical.com> <1266000136.4310.36.camel@michlmayr> <4D0CB743-94B6-49AB-B838-BCDD2EC8C3ED@sun.com> <1266016801.27587.13.camel@michlmayr> <20100215195001.GN5337@thunk.org>
+In-Reply-To: <20100215195001.GN5337@thunk.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 15, 2010 at 09:11:02PM +0100, Robert Richter wrote:
-> On 08.02.10 21:45:04, Cyrill Gorcunov wrote:
-> > Hi all,
-> > 
-> > first of all the patches are NOT for any kind of inclusion. It's not
-> > ready yet. More likely I'm asking for glance review, ideas, criticism.
-> > 
-> > The main problem in implementing P4 PMU is that it has much more
-> > restrictions for event to MSR mapping. So to fit into current
-> > perf_events model I made the following:
-> > 
-> > 1) Event representation. P4 uses a tuple of ESCR+CCCR+COUNTER
-> >    as an "event". Since every CCCR register mapped directly to
-> >    counter itself and ESCR and CCCR uses only 32bits of their
-> >    appropriate MSRs, I decided to use "packed" config in
-> >    in hw_perf_event::config. So that upper 31 bits are ESCR
-> >    and lower 32 bits are CCCR values. The bit 64 is for HT flag.
-> > 
-> >    So the base idea here is to pack into 64bit hw_perf_event::config
-> >    as much info as possible.
-> > 
-> >    Due to difference in bitfields I needed to implement
-> >    hw_perf_event::config helper which unbind hw_perf_event::config field
-> >    from processor specifics and allow to use it in P4 PMU.
+tytso@mit.edu wrote:
+> Sorry for the delay in attending to this patch.  This is what I've
+> added to the ext4 patch queue.
 > 
-> If we introduce model specific configuration, we should put more model
-> specific code in here and then remove
+> 						- Ted
 > 
->   u64             (*raw_event)(u64);
-> 
-> in struct x86_pmu.
-> 
+> commit 7f9aeb212e41ea20f61061d51ad11ee2449853f1
+> Author: Theodore Ts'o <tytso@mit.edu>
+> Date:   Mon Feb 15 14:48:32 2010 -0500
 
-It seems we should still support raw_events, if I understand the idea
-right -- raw_events could be used for say OProfile (if we are going
-to substitute oprofile with perfevents subsystem). So the only
-difference with other architectural events is that raw_event
-need to be "packed" before being set into.
+Ted, it looks like perhaps you accidentally reassigned authorship for
+this patch?
 
-Putting/packing more specific code into config could make code
-even more complex. Dunno Robert...
+-Eric
 
-> > 3) I've started unbinding x86_schedule_events into per x86_pmu::schedule_events
-> >    and there I hit hardness in binding HT bit. Have to think...
+>     ext4: correctly calculate number of blocks for fiemap
+>     
+>     ext4_fiemap() rounds the length of the requested range down to
+>     blocksize, which is is not the true number of blocks that cover the
+>     requested region.  This problem is especially impressive if the user
+>     requests only the first byte of a file: not a single extent will be
+>     reported.
+>     
+>     We fix this by calculating the last block of the region and then
+>     subtract to find the number of blocks in the extents.
+>     
+>     Signed-off-by: Leonard Michlmayr <leonard.michlmayr@gmail.com>
+>     Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 > 
-> Instead of implemting x86_pmu.schedule_events() you should rather
-> abstract x86_pmu_enable(). This will be much more flexible to
-> implement other model spcific features.
+> diff --git a/fs/ext4/extents.c b/fs/ext4/extents.c
+> index bd80891..bc9860f 100644
+> --- a/fs/ext4/extents.c
+> +++ b/fs/ext4/extents.c
+> @@ -3768,7 +3768,6 @@ int ext4_fiemap(struct inode *inode, struct fiemap_extent_info *fieinfo,
+>  		__u64 start, __u64 len)
+>  {
+>  	ext4_lblk_t start_blk;
+> -	ext4_lblk_t len_blks;
+>  	int error = 0;
+>  
+>  	/* fallback to generic here if not in extents fmt */
+> @@ -3782,8 +3781,11 @@ int ext4_fiemap(struct inode *inode, struct fiemap_extent_info *fieinfo,
+>  	if (fieinfo->fi_flags & FIEMAP_FLAG_XATTR) {
+>  		error = ext4_xattr_fiemap(inode, fieinfo);
+>  	} else {
+> +		ext4_lblk_t last_blk, len_blks;
+> +
+>  		start_blk = start >> inode->i_sb->s_blocksize_bits;
+> -		len_blks = len >> inode->i_sb->s_blocksize_bits;
+> +		last_blk = (start + len - 1) >> inode->i_sb->s_blocksize_bits;
+> +		len_blks = last_blk - start_blk + 1;
+>  
+>  		/*
+>  		 * Walk the extent tree gathering extent information.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-But I would need collect events and so on -- ie code duplication
-will be there. Or you mean something else?
-
-> 
-> -Robert
-> 
-> -- 
-> Advanced Micro Devices, Inc.
-> Operating System Research Center
-> email: robert.richter@amd.com
-> 
-	-- Cyrill
