@@ -1,61 +1,43 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753945Ab0BOGqg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 01:46:36 -0500
-Received: from qw-out-2122.google.com ([74.125.92.27]:38352 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753313Ab0BOGqf (ORCPT
+	id S1754166Ab0BOGtU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 01:49:20 -0500
+Received: from mail-yx0-f196.google.com ([209.85.210.196]:48333 "EHLO
+	mail-yx0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752750Ab0BOGtT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 01:46:35 -0500
+	Mon, 15 Feb 2010 01:49:19 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type;
-        b=pAicEWs9TTQeHkam9E3bdkBhSxfDOw39QYZXk/IYkyGddTjnxLf8x6p6RjIokkFfn5
-         D9/5I7TFYuM6scwPWf4ueHhZrF712q94o/yIepwpzRdgifRg4tg8fqiK0qdWK3Ssgm3/
-         nGK3UizeLrMyrgTG/Cta1slsU8/MQwDGv+bCY=
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=uDFf7vaFszDW/tCjTdc51WCVWn9juFa5VzLi6ZryZRtDpHxOhgLv87kExhJWdHGnOV
+         kAMwXW8m8RDNxxxYDSfpZjQzaKIEVea/cO8RYei25FRAQpL1F8jzHrlrpgYfqXsJW/+G
+         cb0KIPB6FqDWLnNkZaLU9MDfLMqZcZsZIM8Zg=
+Message-ID: <4B78EE6A.3010207@lwfinger.net>
+Date: Mon, 15 Feb 2010 00:49:14 -0600
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100111 SUSE/3.0.1-1.1 Thunderbird/3.0.1
 MIME-Version: 1.0
-In-Reply-To: <dda83e781002142245l5c95d08bu214a796be289eb22@mail.gmail.com>
-References: <dda83e781002141023t2abe95b8w83f59d6f411f68a2@mail.gmail.com>
-	 <alpine.DEB.2.01.1002142229470.28195@bogon.housecafe.de>
-	 <dda83e781002142245l5c95d08bu214a796be289eb22@mail.gmail.com>
-Date: Sun, 14 Feb 2010 22:46:33 -0800
-Message-ID: <dda83e781002142246i61737ae2j4fe7efb660b53d07@mail.gmail.com>
-Subject: Re: reiserfs issue with 2.6.32.8
-From: Bret Towe <magnade@gmail.com>
-To: Christian Kujau <lists@nerdbynature.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, mb@bu3sch.de,
+       davem@davemloft.net, stefano.brivio@polimi.it,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH -mm] ssb: open-code dma_alloc_coherent
+References: <20100215142111R.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20100215142111R.fujita.tomonori@lab.ntt.co.jp>
 Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 14, 2010 at 10:45 PM, Bret Towe <magnade@gmail.com> wrote:
-> On Sun, Feb 14, 2010 at 10:39 PM, Christian Kujau <lists@nerdbynature.de> wrote:
->> On Sun, 14 Feb 2010 at 10:23, Bret Towe wrote:
->>> I recently attempted upgrading from 2.6.31.6 to 2.6.32.8 on a local server
->>> that runs several filesystems and when trying to move or copy or create a file
->>> on a reiserfs system that was sitting on lvm over raid5(not sure if
->>> that matters)
->>> I would get mv or cp to return Invalid Argument and not doing anything
->>> moving files from xfs to xfs worked fine tho
->>
->> I'm running 2.6.32 (and now 2.6.33) with reiserfs filesystems too and
->> cannot reproduce what you're seeing. Can you run mv/cp through strace and
->> provide the output? Also, if you can: maybe setting REISERFS_CHECK in your
->> kernel config might reveal something useful.
->>
->> Is this reproducible with 2.6.33-rcX as well? If so, I'd recommend to try
->> again with plain 2.6.32 and if it's still there, I see no other way to
->> narrow it down but with a git bisection (man git-bisect).
->
-> I forgot to note that file operations on the reiserfs partitions
-> worked fine inside themselves
->
-> I guess I will see about running a few other kernels then over next
-> few days as time permits
-> first I will try is the reiserfs_check option tho then revert to .32
-> and go from there
->
+On 02/14/2010 11:21 PM, FUJITA Tomonori wrote:
+> This patch is against -mm since it depends on the DMA API changes in
+> -mm.
 
-and I will also forget to hit reply all in the time being
+Are the patches that implement these DMA API changes available for testing? I
+don't keep an -mm tree.
+
+Larry
+
