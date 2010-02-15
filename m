@@ -1,239 +1,108 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756622Ab0BOWZB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 17:25:01 -0500
-Received: from mail001.aei.ca ([206.123.6.130]:51827 "EHLO mail001.aei.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756611Ab0BOWY7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 17:24:59 -0500
-From: Ed Tomlinson <edt@aei.ca>
-To: Takashi Iwai <tiwai@suse.de>
-Subject: Re: [LOCKDEP] 33-rc8 Running aplay with pulse as the default
-Date: Mon, 15 Feb 2010 17:24:54 -0500
-User-Agent: KMail/1.13.0 (Linux/2.6.32.8-crc; KDE/4.4.0; x86_64; ; )
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       alsa-devel@alsa-project.org
-References: <alpine.LFD.2.00.1002121142100.3922@localhost.localdomain> <s5hhbpicnm1.wl%tiwai@suse.de> <s5hfx52cnjg.wl%tiwai@suse.de>
-In-Reply-To: <s5hfx52cnjg.wl%tiwai@suse.de>
+	id S1756602Ab0BOWYs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 17:24:48 -0500
+Received: from mail-fx0-f215.google.com ([209.85.220.215]:52457 "EHLO
+	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756520Ab0BOWYp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Feb 2010 17:24:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=SrU45HGhaa9ML+1owRKLUbZeDOKWHIL/H5NIqkkjlZEXg/TLKFatGexbUNsNo8VDW4
+         wO0+PM+M26V2QCxHGrIRKabvnDfvQPct+o5Pn3uUOMbQj3pfjuFC29fcAb+xf3Le/3je
+         vos11VJNVM0CTzaN3ukB5mRgLNkANdh5jBPPA=
+Date: Mon, 15 Feb 2010 23:22:40 +0100
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: nouveau@lists.freedesktop.org
+Cc: Dan Carpenter <error27@gmail.com>, kernel-janitors@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] drm/nouveau: fix nouveau_i2c_find bounds checking
+Message-ID: <20100215222240.GB2823@joi.lan>
+References: <20100215124046.GB18821@bicker>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201002151724.54807.edt@aei.ca>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100215124046.GB18821@bicker>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 15 February 2010 14:21:55 Takashi Iwai wrote:
-> At Mon, 15 Feb 2010 20:20:22 +0100,
-> I wrote:
-> > 
-> > At Sat, 13 Feb 2010 12:17:10 -0500,
-> > Ed Tomlinson wrote:
-> > > 
-> > > Hi,
-> > > 
-> > > Inorder to get skype working with linux I have the following in .asoundrc for my normal userid.
-> > > 
-> > > ---
-> > > pcm.pulse {
-> > >     type pulse
-> > > }
-> > > 
-> > > ctl.pulse {
-> > >     type pulse
-> > > }
-> > > 
-> > > pcm.!default {
-> > >     type pulse
-> > > }
-> > > ctl.!default {
-> > >     type pulse
-> > > ---
-> > > 
-> > > Try #1
-> > > Starting as root if I do:
-> > > su - <id>
-> > > aplay sound.wav
-> > > <traceback inlined below>
-> > > aplay sound.wav 
-> > > (silence)
-> > > killall pulseaudio
-> > > aplay sound.wav
-> > > (works as expected now going thru pulseaudio)
-> > > 
-> > > Try #2
-> > > Starting as root if I do:
-> > > aplay sound.wav
-> > > (works as expected using alsa alone)
-> > > su - <id>
-> > > aplay sound.wav
-> > > <another lockdep traceback>
-> > > aplay sound.wav
-> > > (works as expected now going thru pulseaudio)
-> > > 
-> > > With .32 there were no tracebacks (lockdep was enabled) and try #1 would work where I now get silence.
-> > > 
-> > > Ideas?
-> > > Ed Tomlinson
-> > > 
-> > > aplay -l
-> > > **** List of PLAYBACK Hardware Devices ****
-> > > card 0: SB [HDA ATI SB], device 0: ALC1200 Analog [ALC1200 Analog]
-> > >   Subdevices: 0/1
-> > >   Subdevice #0: subdevice #0
-> > > card 0: SB [HDA ATI SB], device 1: ALC1200 Digital [ALC1200 Digital]
-> > >   Subdevices: 1/1
-> > >   Subdevice #0: subdevice #0
-> > > card 1: HDMI [HDA ATI HDMI], device 3: ATI HDMI [ATI HDMI]
-> > >   Subdevices: 1/1
-> > >   Subdevice #0: subdevice #0
-> > > 
-> > > "ALC1200 Analog" is what has speakers connected
-> > > 
-> > > The em28xx in the traceback is an input source from a usb hdtv dongle.
-> > > 
-> > > pavucontrol setup has been verified.
-> > > 
-> > > [   91.070620]                                                                                                                               
-> > > [   91.070621] =======================================================                                                                       
-> > > [   91.071378] [ INFO: possible circular locking dependency detected ]                                                                       
-> > > [   91.071378] 2.6.33-rc8-crc #106                                                                                                           
-> > > [   91.071378] -------------------------------------------------------                                                                       
-> > > [   91.071378] pulseaudio/2717 is trying to acquire lock:                                                                                    
-> > > [   91.071378]  (&dev->lock){+.+.+.}, at: [<ffffffffa02797f1>] snd_em28xx_capture_open+0x61/0x190 [em28xx_alsa]                              
-> > > [   91.071378]                                                                                                                               
-> > > [   91.071378] but task is already holding lock:                                                                                             
-> > > [   91.071378]  (&pcm->open_mutex){+.+.+.}, at: [<ffffffffa010ecd2>] snd_pcm_open+0x182/0x450 [snd_pcm]                                      
-> > > [   91.071378]                                                                                                                               
-> > > [   91.071378] which lock already depends on the new lock.                                                                                   
-> > > [   91.071378]                                                                                                                               
-> > > [   91.071378]                                                                                                                               
-> > > [   91.071378] the existing dependency chain (in reverse order) is:                                                                          
-> > > [   91.071378]                                                                                                                               
-> > > [   91.071378] -> #3 (&pcm->open_mutex){+.+.+.}:                                                                                             
-> > > [   91.071378]        [<ffffffff81083215>] __lock_acquire+0xfc5/0x1550                                                                       
-> > > [   91.071378]        [<ffffffff8108383c>] lock_acquire+0x9c/0x140                                                                           
-> > > [   91.071378]        [<ffffffff814b96c1>] __mutex_lock_common+0x61/0x610                                                                    
-> > > [   91.071378]        [<ffffffff814b9d53>] mutex_lock_nested+0x43/0x50                                                                       
-> > > [   91.071378]        [<ffffffffa010ad32>] snd_pcm_release+0x42/0xb0 [snd_pcm]                                                               
-> > > [   91.071378]        [<ffffffff8112115d>] __fput+0x15d/0x290                                                                                
-> > > [   91.071378]        [<ffffffff811212ad>] fput+0x1d/0x30                                                                                    
-> > > [   91.071378]        [<ffffffff810fe001>] remove_vma+0x51/0x80                                                                              
-> > > [   91.071378]        [<ffffffff810ffa1d>] do_munmap+0x2fd/0x390                                                                             
-> > > [   91.071378]        [<ffffffff810ffb06>] sys_munmap+0x56/0x80                                                                              
-> > > [   91.071378]        [<ffffffff81002adb>] system_call_fastpath+0x16/0x1b                                                                    
-> > > [   91.071378]                                                                                                                               
-> > > [   91.071378] -> #2 (&mm->mmap_sem){++++++}:                                                                                                
-> > > [   91.071378]        [<ffffffff81083215>] __lock_acquire+0xfc5/0x1550                                                                       
-> > > [   91.071378]        [<ffffffff8108383c>] lock_acquire+0x9c/0x140                                                                           
-> > > [   91.071378]        [<ffffffff810f62c7>] might_fault+0xa7/0xd0                                                                             
-> > > [   91.071378]        [<ffffffff8113102b>] filldir+0x7b/0xe0                                                                                 
-> > > [   91.071378]        [<ffffffff8118aa21>] sysfs_readdir+0xf1/0x1b0                                                                          
-> > > [   91.071378]        [<ffffffff81131268>] vfs_readdir+0xb8/0xe0                                                                             
-> > > [   91.071378]        [<ffffffff8113144d>] sys_getdents+0xad/0x110                                                                           
-> > > [   91.071378]        [<ffffffff81002adb>] system_call_fastpath+0x16/0x1b                                                                    
-> > > [   91.071378]                                                                                                                               
-> > > [   91.071378] -> #1 (sysfs_mutex){+.+.+.}:                                                                                                  
-> > > [   91.071378]        [<ffffffff81083215>] __lock_acquire+0xfc5/0x1550                                                                       
-> > > [   91.071378]        [<ffffffff8108383c>] lock_acquire+0x9c/0x140                                                                           
-> > > [   91.071378]        [<ffffffff814b96c1>] __mutex_lock_common+0x61/0x610                                                                    
-> > > [   91.071378]        [<ffffffff814b9d53>] mutex_lock_nested+0x43/0x50                                                                       
-> > > [   91.071378]        [<ffffffff8118b082>] sysfs_addrm_start+0x22/0x30                                                                       
-> > > [   91.071378]        [<ffffffff8118bc58>] create_dir+0x58/0xb0                                                                              
-> > > [   91.514885]        [<ffffffff8118bd0a>] sysfs_create_dir+0x5a/0x70                                                                        
-> > > [   91.514885]        [<ffffffff8123ebbd>] kobject_add_internal+0xbd/0x1f0                                                                   
-> > > [   91.514885]        [<ffffffff8123ee08>] kobject_add_varg+0x38/0x60                                                                        
-> > > [   91.514885]        [<ffffffff8123eee4>] kobject_add+0x44/0x70                                                                             
-> > > [   91.514885]        [<ffffffff81392510>] device_add+0xb0/0x5e0                                                                             
-> > > [   91.514885]        [<ffffffff81392a5e>] device_register+0x1e/0x30                                                                         
-> > > [   91.514885]        [<ffffffff8140a50d>] i2c_register_adapter+0x12d/0x250                                                                  
-> > > [   91.514885]        [<ffffffff8140a7f1>] i2c_add_adapter+0xb1/0xd0                                                                         
-> > > [   91.514885]        [<ffffffffa0231ba4>] em28xx_i2c_register+0x104/0x520 [em28xx]                                                          
-> > > [   91.514885]        [<ffffffffa0233daa>] em28xx_usb_probe+0x68a/0xb90 [em28xx]                                                             
-> > > [   91.514885]        [<ffffffff813eb4ab>] usb_probe_interface+0xeb/0x1b0                                                                    
-> > > [   91.514885]        [<ffffffff81395546>] driver_probe_device+0xc6/0x1d0                                                                    
-> > > [   91.514885]        [<ffffffff813956eb>] __driver_attach+0x9b/0xa0                                                                         
-> > > [   91.514885]        [<ffffffff8139492c>] bus_for_each_dev+0x6c/0xa0                                                                        
-> > > [   91.514885]        [<ffffffff8139535e>] driver_attach+0x1e/0x20                                                                           
-> > > [   91.514885]        [<ffffffff81394c11>] bus_add_driver+0xe1/0x280                                                                         
-> > > [   91.514885]        [<ffffffff81395a58>] driver_register+0x98/0x140                                                                        
-> > > [   91.514885]        [<ffffffff813ea06c>] usb_register_driver+0xdc/0x1a0                                                                    
-> > > [   91.514885]        [<ffffffffa0248023>] 0xffffffffa0248023                                                                                
-> > > [   91.514885]        [<ffffffff810001dc>] do_one_initcall+0x3c/0x1d0                                                                        
-> > > [   91.514885]        [<ffffffff81092d75>] sys_init_module+0xe5/0x250                                                                        
-> > > [   91.514885]        [<ffffffff81002adb>] system_call_fastpath+0x16/0x1b                                                                    
-> > > [   91.514885]                                                                                                                               
-> > > [   91.514885] -> #0 (&dev->lock){+.+.+.}:                                                                                                   
-> > > [   91.514885]        [<ffffffff81083668>] __lock_acquire+0x1418/0x1550                                                                      
-> > > [   91.514885]        [<ffffffff8108383c>] lock_acquire+0x9c/0x140                                                                           
-> > > [   91.514885]        [<ffffffff814b96c1>] __mutex_lock_common+0x61/0x610                                                                    
-> > > [   91.514885]        [<ffffffff814b9d53>] mutex_lock_nested+0x43/0x50
-> > > [   91.514885]        [<ffffffffa02797f1>] snd_em28xx_capture_open+0x61/0x190 [em28xx_alsa]
-> > > [   91.514885]        [<ffffffffa010adee>] snd_pcm_open_substream+0x4e/0x90 [snd_pcm]
-> > > [   91.514885]        [<ffffffffa010ece9>] snd_pcm_open+0x199/0x450 [snd_pcm]
-> > > [   91.514885]        [<ffffffffa010efd4>] snd_pcm_capture_open+0x34/0x40 [snd_pcm]
-> > > [   91.514885]        [<ffffffffa00c5778>] snd_open+0x198/0x4e0 [snd]
-> > > [   91.514885]        [<ffffffff8112384d>] chrdev_open+0x17d/0x320
-> > > [   91.514885]        [<ffffffff8111d358>] __dentry_open+0x1a8/0x400
-> > > [   91.514885]        [<ffffffff8111d6b4>] nameidata_to_filp+0x54/0x70
-> > > [   91.514885]        [<ffffffff8112e7f1>] do_filp_open+0x841/0xc00
-> > > [   91.514885]        [<ffffffff8111e954>] do_sys_open+0xa4/0x180
-> > > [   91.514885]        [<ffffffff8111ea70>] sys_open+0x20/0x30
-> > > [   91.514885]        [<ffffffff81002adb>] system_call_fastpath+0x16/0x1b
-> > > [   91.514885]
-> > > [   91.514885] other info that might help us debug this:
-> > > [   91.514885]
-> > > [   91.514885] 1 lock held by pulseaudio/2717:
-> > > [   91.514885]  #0:  (&pcm->open_mutex){+.+.+.}, at: [<ffffffffa010ecd2>] snd_pcm_open+0x182/0x450 [snd_pcm]
-> > > [   91.514885]
-> > > [   91.514885] stack backtrace:
-> > > [   91.514885] Pid: 2717, comm: pulseaudio Not tainted 2.6.33-rc8-crc #106
-> > > [   91.514885] Call Trace:
-> > > [   91.514885]  [<ffffffff81080fd9>] print_circular_bug+0xe9/0xf0
-> > > [   91.514885]  [<ffffffff81083668>] __lock_acquire+0x1418/0x1550
-> > > [   91.514885]  [<ffffffff81081dc8>] ? debug_check_no_locks_freed+0xc8/0x150
-> > > [   91.514885]  [<ffffffff8108383c>] lock_acquire+0x9c/0x140
-> > > [   91.514885]  [<ffffffffa02797f1>] ? snd_em28xx_capture_open+0x61/0x190 [em28xx_alsa]
-> > > [   91.514885]  [<ffffffff814b96c1>] __mutex_lock_common+0x61/0x610
-> > > [   91.514885]  [<ffffffffa02797f1>] ? snd_em28xx_capture_open+0x61/0x190 [em28xx_alsa]
-> > > [   91.514885]  [<ffffffffa02797f1>] ? snd_em28xx_capture_open+0x61/0x190 [em28xx_alsa]
-> > > [   91.514885]  [<ffffffffa0109c70>] ? snd_pcm_hw_rule_muldivk+0x0/0xa0 [snd_pcm]
-> > > [   91.514885]  [<ffffffff8107fd54>] ? lockdep_init_map+0x44/0x130
-> > > [   91.514885]  [<ffffffff814b9d53>] mutex_lock_nested+0x43/0x50
-> > > [   91.514885]  [<ffffffffa02797f1>] snd_em28xx_capture_open+0x61/0x190 [em28xx_alsa]
-> > > [   91.514885]  [<ffffffffa010adee>] snd_pcm_open_substream+0x4e/0x90 [snd_pcm]
-> > > [   91.514885]  [<ffffffffa010ece9>] snd_pcm_open+0x199/0x450 [snd_pcm]
-> > > [   91.514885]  [<ffffffff81081cfd>] ? trace_hardirqs_on+0xd/0x10
-> > > [   91.514885]  [<ffffffff810434f0>] ? default_wake_function+0x0/0x20
-> > > [   91.514885]  [<ffffffff814b965e>] ? mutex_unlock+0xe/0x10
-> > > [   91.514885]  [<ffffffffa010efd4>] snd_pcm_capture_open+0x34/0x40 [snd_pcm]
-> > > [   91.514885]  [<ffffffffa00c5778>] snd_open+0x198/0x4e0 [snd]
-> > > [   91.514885]  [<ffffffff8112384d>] chrdev_open+0x17d/0x320
-> > > [   91.514885]  [<ffffffff8111d358>] __dentry_open+0x1a8/0x400
-> > > [   91.514885]  [<ffffffff811236d0>] ? chrdev_open+0x0/0x320
-> > > [   91.514885]  [<ffffffff8111d6b4>] nameidata_to_filp+0x54/0x70
-> > > [   91.514885]  [<ffffffff8112e7f1>] do_filp_open+0x841/0xc00
-> > > [   91.514885]  [<ffffffff814bf981>] ? sub_preempt_count+0x51/0x60
-> > > [   91.514885]  [<ffffffff814bbb7c>] ? _raw_spin_unlock+0x5c/0x70
-> > > [   91.514885]  [<ffffffff8111e954>] do_sys_open+0xa4/0x180
-> > > [   91.514885]  [<ffffffff8111ea70>] sys_open+0x20/0x30
-> > > [   91.514885]  [<ffffffff81002adb>] system_call_fastpath+0x16/0x1b
-> > > [   92.643423] hda-intel: IRQ timing workaround is activated for card #0. Suggest a bigger bdl_pos_adj.
-> > 
-> > It looks rather a bug of em28xx driver.  Changing dev->lock with an
-> > individual one that is only for audio instance should fix the
-> > problem.
+On Mon, Feb 15, 2010 at 03:40:56PM +0300, Dan Carpenter wrote:
+> This is the results from:
+>     make C=1 CHECK="/path/to/smatch -p=kernel" bzImage modules | tee warns.txt
+>     grep -w overflow warns.txt | uniq -f 3 | tee err-list
 > 
-> And, I believe this is no regression but a long-standing problem.
-> It hits just occasionally by an app like pulseauiod which loves
-> tight races.
+> I hacked on the buffer overflow check last weekend and these are the 
+> results.  It has way more false positives than the other bug lists 
+> I've posted, but it's still kinda neat.
+> 
+> It works like this:
+> 
+> lib/zlib_inflate/inftrees.c
+>    112      for (min = 1; min <= MAXBITS; min++)
+>    113          if (count[min] != 0) break;
+>    114      if (root < min) root = min;
+> smatch thinks "min" can be MAXBITS here.
+> 
+> One bad thing is that if you have code like:
+>         if (foo == 42)
+> 		frob();
+> Smatch thinks that "foo" can be 43 after the if statement.
+> 
+> The format is:
+> file.c +<line> function(<lines into function>) warning 'array_name' <array size> <= <offset>
+> 
+> regards,
+> dan carpenter
+> 
+> Previous bug lists:
+> * Putting too much data on the stack
+>   http://lkml.indiana.edu/hypermail/linux/kernel/1002.1/01252.html
+> 
+> * Assigning negative values to unsigned variables
+>   http://lkml.indiana.edu/hypermail/linux/kernel/1001.3/01222.html
+> 
+> * Doing dma on the stack
+>   http://lkml.indiana.edu/hypermail/linux/kernel/1001.3/01231.html
+> 
+> * Dereferencing variables before verifying they are not null
+>   http://lkml.indiana.edu/hypermail/linux/kernel/1001.3/01980.html
+> 
+> (...)
+> drivers/gpu/drm/nouveau/nouveau_i2c.c +262 nouveau_i2c_find(9) error: buffer overflow 'bios->bdcb.dcb.i2c' 16 <= 16
+> drivers/gpu/drm/nouveau/nouveau_i2c.c +263 nouveau_i2c_find(10) warn: buffer overflow 'bios->bdcb.dcb.i2c' 16 <= 16
+> drivers/gpu/drm/nouveau/nouveau_i2c.c +267 nouveau_i2c_find(14) error: buffer overflow 'bios->bdcb.dcb.i2c' 16 <= 16
+> (...)
 
-I guess it depends on how you define a regression.  From my POV it worked
-in all three cases on .32, its failing in .33-rc and in one case is oppsing.  In
-my books thats a regression.  There may have been races in .32 but they
-did not trigger lockdep and never oppsed.
 
-In any case, the real question is how do we fix the problem?
+---
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+Subject: [PATCH] drm/nouveau: fix nouveau_i2c_find bounds checking
 
-Ed
+Reported-by: Dan Carpenter <error27@gmail.com>
+Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+---
+ drivers/gpu/drm/nouveau/nouveau_i2c.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/gpu/drm/nouveau/nouveau_i2c.c b/drivers/gpu/drm/nouveau/nouveau_i2c.c
+index 70e994d..f0162c4 100644
+--- a/drivers/gpu/drm/nouveau/nouveau_i2c.c
++++ b/drivers/gpu/drm/nouveau/nouveau_i2c.c
+@@ -256,7 +256,7 @@ nouveau_i2c_find(struct drm_device *dev, int index)
+ 	struct drm_nouveau_private *dev_priv = dev->dev_private;
+ 	struct nvbios *bios = &dev_priv->VBIOS;
+ 
+-	if (index > DCB_MAX_NUM_I2C_ENTRIES)
++	if (index >= DCB_MAX_NUM_I2C_ENTRIES)
+ 		return NULL;
+ 
+ 	if (!bios->bdcb.dcb.i2c[index].chan) {
+-- 
+1.6.6.1
+
+
