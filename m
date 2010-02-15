@@ -1,75 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754874Ab0BOQ0b (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 11:26:31 -0500
-Received: from lon1-post-1.mail.demon.net ([195.173.77.148]:33013 "EHLO
-	lon1-post-1.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752765Ab0BOQ0a (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 11:26:30 -0500
-Subject: Re: [PATCH v2]  cfq: reorder cfq_queue removing padding on 64bit &
- allowing more objects/slab in it's kmem_cache
-From: Richard Kennedy <richard@rsk.demon.co.uk>
-To: Vivek Goyal <vgoyal@redhat.com>, Jens Axboe <jens.axboe@oracle.com>
-Cc: Corrado Zoccolo <czoccolo@gmail.com>, Jeff Moyer <jmoyer@redhat.com>,
-       Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <20100215141626.GB5355@redhat.com>
-References: <1266243036.2149.21.camel@localhost>
-	 <20100215141626.GB5355@redhat.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 15 Feb 2010 16:26:28 +0000
-Message-ID: <1266251188.7362.3.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
-Content-Transfer-Encoding: 7bit
+	id S1755148Ab0BOQhT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 11:37:19 -0500
+Received: from cantor.suse.de ([195.135.220.2]:38047 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754258Ab0BOQhR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Feb 2010 11:37:17 -0500
+Date: Tue, 16 Feb 2010 03:37:12 +1100
+From: Nick Piggin <npiggin@suse.de>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, fengguang.wu@intel.com
+Subject: Re: [PATCH 2/3] mm: Implement writeback livelock avoidance using
+ page tagging
+Message-ID: <20100215163712.GV5723@laptop>
+References: <1265929584-5080-1-git-send-email-jack@suse.cz>
+ <1265929584-5080-3-git-send-email-jack@suse.cz>
+ <20100212113955.4c023130.akpm@linux-foundation.org>
+ <20100215154751.GG3434@quack.suse.cz>
+ <20100215162127.GU5723@laptop>
+ <20100215162453.GA6477@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100215162453.GA6477@infradead.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This removes 8 bytes of padding from struct cfq_queue on 64 bit builds,
-shrinking it's size to 256 bytes, so fitting into 1 fewer cachelines and
-allowing 1 more object/slab in it's kmem_cache.
- 
+On Mon, Feb 15, 2010 at 11:24:53AM -0500, Christoph Hellwig wrote:
+> On Tue, Feb 16, 2010 at 03:21:27AM +1100, Nick Piggin wrote:
+> > Also, I wonder what you think about leaving the tags dangling when
+> > the loop bails out early? I have a *slight* concern about this
+> > because previously we never have a tag set when radix_tree_delete
+> > is called. I actually had a bug in that code in earlier versions
+> > of rcu radix tree that only got found by the user test harness.
+> > And another slight concern that it is just a bit ugly to leave the
+> > tag. But I can accept that lower CPU overhead trumps ugliness :)
+> 
+> The XFS inode cache calls radix_tree_delete with a tag set, and
+> interestingly enough we're trying to catch a very weird bug in that
+> area currently, which seems more or less directly related to the use
+> of tags.  But we also had a real locking bug related to tags, so I'm
+> not yet sure what the issue is back until I hear back from the bug
+> reported and reproducer.
 
-Signed-off-by: Richard Kennedy <richard@rsk.demon.co.uk>
-----
-patch against 2.6.33-rc8
-tested on x86_64 AMDX2
-
-
-diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index 023f4e6..e3dedfd 100644
---- a/block/cfq-iosched.c
-+++ b/block/cfq-iosched.c
-@@ -115,11 +115,11 @@ struct cfq_queue {
- 	/* time when queue got scheduled in to dispatch first request. */
- 	unsigned long dispatch_start;
- 	unsigned int allocated_slice;
-+	unsigned int slice_dispatch;
- 	/* time when first request from queue completed and slice started. */
- 	unsigned long slice_start;
- 	unsigned long slice_end;
- 	long slice_resid;
--	unsigned int slice_dispatch;
- 
- 	/* pending metadata requests */
- 	int meta_pending;
-@@ -130,13 +130,13 @@ struct cfq_queue {
- 	unsigned short ioprio, org_ioprio;
- 	unsigned short ioprio_class, org_ioprio_class;
- 
-+	pid_t pid;
-+
- 	unsigned int seek_samples;
- 	u64 seek_total;
- 	sector_t seek_mean;
- 	sector_t last_request_pos;
- 
--	pid_t pid;
--
- 	struct cfq_rb_root *service_tree;
- 	struct cfq_queue *new_cfqq;
- 	struct cfq_group *cfqg;
-
+Upon looking at the radix_tree_delete code again, the tag clearing
+there seems rather simple so perhaps I misremembered some detail of
+that bug I had.
 
