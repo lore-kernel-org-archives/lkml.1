@@ -1,50 +1,80 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756506Ab0BOWPk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 17:15:40 -0500
-Received: from mail-fx0-f215.google.com ([209.85.220.215]:40015 "EHLO
-	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756113Ab0BOWPi (ORCPT
+	id S1756571Ab0BOWPv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 17:15:51 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:43145 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756538Ab0BOWPt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 17:15:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=YoLt/LF4FBgJn0PPXhMobqYRZR6lBuspUlPow1nXwPVUZHdyyxf1Y2KVo+PwW1A/n5
-         mHRSfLC8bXeeflF32yHHLIoy5SrVBrMtDh73U+eESoUqiILoPmjIlItOWeNSojEwhJHW
-         vDLi7GzltFrKZNeh3u1kMZpT+VWnle/lNxqHo=
-Date: Mon, 15 Feb 2010 23:13:32 +0100
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: Maarten Maathuis <madman2003@gmail.com>
-Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
-       Dave Airlie <airlied@linux.ie>, torvalds@linux-foundation.org,
-       dri-devel@lists.sf.net, linux-kernel@vger.kernel.org,
-       nouveau@lists.freedesktop.org
-Subject: Re: [git pull] drm
-Message-ID: <20100215221332.GB3332@joi.lan>
-References: <alpine.DEB.2.00.1002110417200.516@skynet.skynet.ie>
- <201002151053.48681.borntraeger@de.ibm.com>
- <20100215201201.GA3332@joi.lan>
- <6d4bc9fc1002151239x2b994ea9l7f868d9bb8f789e9@mail.gmail.com>
+	Mon, 15 Feb 2010 17:15:49 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=m3pJlg9KHEKsUqx3rk8trIP0D9eCDHfWxQjU6l4usfipdlImGavf0ha2S244yFoeD
+	Az4AAdiusFoLqaFlPgEGw==
+Date: Mon, 15 Feb 2010 14:15:41 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Nick Piggin <npiggin@suse.de>, Andrea Arcangeli <aarcange@redhat.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch 5/7 -mm] oom: replace sysctls with quick mode
+In-Reply-To: <20100215170634.729E.A69D9226@jp.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.1002151411530.26927@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.1002100224210.8001@chino.kir.corp.google.com> <alpine.DEB.2.00.1002100229250.8001@chino.kir.corp.google.com> <20100215170634.729E.A69D9226@jp.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6d4bc9fc1002151239x2b994ea9l7f868d9bb8f789e9@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 15, 2010 at 09:39:00PM +0100, Maarten Maathuis wrote:
-> The channel/context switch lock related patches (to the best of
-> knowledge) haven't even gone outside the nouveau tree, so the initial
-> damage isn't even there. At least not for the first path. As for the
-> 2nd patch, that one was squished into the original patch for this pull
-> iirc.
+On Mon, 15 Feb 2010, KOSAKI Motohiro wrote:
 
-Ouch, you are right.
-Sorry for the noise.
+> > Two VM sysctls, oom dump_tasks and oom_kill_allocating_task, were
+> > implemented for very large systems to avoid excessively long tasklist
+> > scans.  The former suppresses helpful diagnostic messages that are
+> > emitted for each thread group leader that are candidates for oom kill
+> > including their pid, uid, vm size, rss, oom_adj value, and name; this
+> > information is very helpful to users in understanding why a particular
+> > task was chosen for kill over others.  The latter simply kills current,
+> > the task triggering the oom condition, instead of iterating through the
+> > tasklist looking for the worst offender.
+> > 
+> > Both of these sysctls are combined into one for use on the aforementioned
+> > large systems: oom_kill_quick.  This disables the now-default
+> > oom_dump_tasks and kills current whenever the oom killer is called.
+> > 
+> > The oom killer rewrite is the perfect opportunity to combine both sysctls
+> > into one instead of carrying around the others for years to come for
+> > nothing else than legacy purposes.
+> 
+> "_quick" is always bad sysctl name.
 
-Marcin
+Why?  It does exactly what it says: it kills current without doing an 
+expensive tasklist scan and suppresses the possibly long tasklist dump.  
+That's the oom killer's "quick mode."
 
+> instead, turnning oom_dump_tasks on
+> by default is better.
+> 
+
+It's now on by default and can be disabled by enabling oom_kill_quick.
+
+> plus, this patch makes unnecessary compatibility issue.
+> 
+
+It's the perfect opportunity when totally rewriting the oom killer to 
+combine two sysctls with the exact same users into one.  Users will notice 
+that the tasklist is always dumped now (we're defaulting oom_dump_tasks 
+to be enabled), so there is no reason why we can't remove oom_dump_tasks, 
+we're just giving them a new way to disable it.  oom_kill_allocating_task 
+no longer always means what it once did: with the mempolicy-constrained 
+oom rewrite, we now iterate the tasklist for such cases to kill a task.  
+So users need to reassess whether this should be set if all tasks on the 
+system are constrained by mempolicies, a typical configuration for 
+extremely large systems.  
