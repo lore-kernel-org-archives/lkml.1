@@ -1,84 +1,82 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755698Ab0BOPLt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 10:11:49 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:52847 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755675Ab0BOPLr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 10:11:47 -0500
-X-Authority-Analysis: v=1.0 c=1 a=x0N3M4q954wA:10 a=yQdBAQUQAAAA:8 a=RfKb1_cBFdfGvZTL7vIA:9 a=lXwaWWiKwsiem6W2KWMA:7 a=hbs-gbPNjdnsqSwCE-36k8Gq3W0A:4 a=IcxpeKGZWnEA:10
-X-Cloudmark-Score: 0
-X-Originating-IP: 65.28.92.235
-Date: Mon, 15 Feb 2010 09:11:45 -0600
-From: Larry Finger <Larry.Finger@lwfinger.net>
-To: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: Bernhard Schiffner <bernhard@schiffner-limbach.de>,
-       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
-Subject: [PATCH 1/3 V2] staging: r8187se: Remove write_phy routine
-Message-ID: <4b796431.q2VeV+yAMJiEjqm7%Larry.Finger@lwfinger.net>
-User-Agent: Heirloom mailx 12.2 01/07/07
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	id S1755573Ab0BOPKo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 10:10:44 -0500
+Received: from sh.osrg.net ([192.16.179.4]:38258 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755288Ab0BOPK0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Feb 2010 10:10:26 -0500
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, netdev@vger.kernel.org,
+       fujita.tomonori@lab.ntt.co.jp, davem@davemloft.net,
+       Michael Buesch <mb@bu3sch.de>, Gary Zambrano <zambrano@broadcom.com>,
+       Stefano Brivio <stefano.brivio@polimi.it>,
+       Larry Finger <Larry.Finger@lwfinger.net>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: [PATCH -mm v2 1/5] ssb: add dma_dev to ssb_device structure
+Date: Tue, 16 Feb 2010 00:04:06 +0900
+Message-Id: <1266246250-5344-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+X-Mailer: git-send-email 1.6.5
+In-Reply-To: <1266246250-5344-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+References: <1266246250-5344-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 16 Feb 2010 00:09:37 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove a routine that is not used.
+add dma_dev, a pointer to struct device, to struct ssb_device. We pass
+it to the generic DMA API with SSB_BUSTYPE_PCI and
+SSB_BUSTYPE_SSB. ssb_devices_register() sets up it properly.
 
-Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
+This is preparation for replacing the ssb bus specific DMA API
+(ssb_dma_*) with the generic DMA API.
+
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: Michael Buesch <mb@bu3sch.de>
+Cc: Gary Zambrano <zambrano@broadcom.com>
+Cc: Stefano Brivio <stefano.brivio@polimi.it>
+Cc: Larry Finger <Larry.Finger@lwfinger.net>
+Cc: John W. Linville <linville@tuxdriver.com>
+Cc: David S. Miller <davem@davemloft.net>
 ---
+ drivers/ssb/main.c      |    2 ++
+ include/linux/ssb/ssb.h |    2 +-
+ 2 files changed, 3 insertions(+), 1 deletions(-)
 
- r8180_core.c |   37 -------------------------------------
- 1 file changed, 37 deletions(-)
-
-
-Index: linux-2.6/drivers/staging/rtl8187se/r8180_core.c
-===================================================================
---- linux-2.6.orig/drivers/staging/rtl8187se/r8180_core.c
-+++ linux-2.6/drivers/staging/rtl8187se/r8180_core.c
-@@ -3207,43 +3207,6 @@ void write_phy_cck (struct net_device *d
- 	rtl8185_write_phy(dev, adr, data | 0x10000);
- }
+diff --git a/drivers/ssb/main.c b/drivers/ssb/main.c
+index 5681ebe..1a41b3f 100644
+--- a/drivers/ssb/main.c
++++ b/drivers/ssb/main.c
+@@ -485,6 +485,7 @@ static int ssb_devices_register(struct ssb_bus *bus)
+ #ifdef CONFIG_SSB_PCIHOST
+ 			sdev->irq = bus->host_pci->irq;
+ 			dev->parent = &bus->host_pci->dev;
++			sdev->dma_dev = dev->parent;
+ #endif
+ 			break;
+ 		case SSB_BUSTYPE_PCMCIA:
+@@ -501,6 +502,7 @@ static int ssb_devices_register(struct ssb_bus *bus)
+ 			break;
+ 		case SSB_BUSTYPE_SSB:
+ 			dev->dma_mask = &dev->coherent_dma_mask;
++			sdev->dma_dev = dev;
+ 			break;
+ 		}
  
--/* 70*3 = 210 ms
-- * I hope this is enougth
-- */
--#define MAX_PHY 70
--void write_phy(struct net_device *dev, u8 adr, u8 data)
--{
--	u32 phy;
--	int i;
--
--	phy = 0xff0000;
--	phy |= adr;
--	phy |= 0x80; /* this should enable writing */
--	phy |= (data<<8);
--
--	//PHY_ADR, PHY_R and PHY_W  are contig and treated as one dword
--	write_nic_dword(dev,PHY_ADR, phy);
--
--	phy= 0xffff00;
--	phy |= adr;
--
--	write_nic_dword(dev,PHY_ADR, phy);
--	for(i=0;i<MAX_PHY;i++){
--		phy=read_nic_dword(dev,PHY_ADR);
--		phy= phy & 0xff0000;
--		phy= phy >> 16;
--		if(phy == data){ //SUCCESS!
--			force_pci_posting(dev);
--			mdelay(3); //random value
--			return;
--		}else{
--			force_pci_posting(dev);
--			mdelay(3); //random value
--		}
--	}
--	DMESGW ("Phy writing %x %x failed!", adr,data);
--}
--
- void rtl8185_set_rate(struct net_device *dev)
- {
- 	int i;
+diff --git a/include/linux/ssb/ssb.h b/include/linux/ssb/ssb.h
+index 24f9885..c5e00b2 100644
+--- a/include/linux/ssb/ssb.h
++++ b/include/linux/ssb/ssb.h
+@@ -167,7 +167,7 @@ struct ssb_device {
+ 	 * is an optimization. */
+ 	const struct ssb_bus_ops *ops;
+ 
+-	struct device *dev;
++	struct device *dev, *dma_dev;
+ 
+ 	struct ssb_bus *bus;
+ 	struct ssb_device_id id;
+-- 
+1.6.5
+
