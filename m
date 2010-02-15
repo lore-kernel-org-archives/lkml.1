@@ -1,65 +1,71 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756528Ab0BOU7U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 15:59:20 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:36478 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756403Ab0BOU7S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 15:59:18 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alexander Clouter <alex@digriz.org.uk>
-Subject: Re: [Bug #14482] kernel BUG at fs/dcache.c:670 +lvm +md +ext3
-Date: Mon, 15 Feb 2010 22:00:12 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.33-rc8-rjw; KDE/4.3.5; x86_64; ; )
-Cc: Thomas Backlund <tmb@mandriva.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-References: <UgwvXSBS_tM.A.alD.1EiZLB@chimera> <20100208095943.GJ14551@chipmunk> <20100215162452.GA22823@chipmunk>
-In-Reply-To: <20100215162452.GA22823@chipmunk>
+	id S1756580Ab0BOU73 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 15:59:29 -0500
+Received: from mail.dev.rtsoft.ru ([213.79.90.226]:55080 "HELO
+	mail.dev.rtsoft.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1756549Ab0BOU71 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Feb 2010 15:59:27 -0500
+Date: Mon, 15 Feb 2010 23:59:24 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       David Miller <davem@davemloft.net>, Michal Simek <monstr@monstr.eu>,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       devicetree-discuss@lists.ozlabs.org, microblaze-uclinux@itee.uq.edu.au
+Subject: Re: [PATCH 3/3] of/gpio: Introduce of_put_gpio(), add ref counting
+ for OF GPIO chips
+Message-ID: <20100215205924.GA23654@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20100205204949.GA2575@oksana.dev.rtsoft.ru>
+ <20100205205045.GC4178@oksana.dev.rtsoft.ru>
+ <fa686aa41002090928o6911d095ydca1e1e670a0fc22@mail.gmail.com>
+ <20100209191427.GA18263@oksana.dev.rtsoft.ru>
+ <fa686aa41002151149u158bc2fbn5af16f6bd714d36c@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201002152200.12332.rjw@sisk.pl>
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <fa686aa41002151149u158bc2fbn5af16f6bd714d36c@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 15 February 2010, Alexander Clouter wrote:
-> Hi,
-> 
-> * Alexander Clouter <alex@digriz.org.uk> [2010-02-08 09:59:43+0000]:
-> >
-> > * Thomas Backlund <tmb@mandriva.org> [2010-02-01 17:47:42+0200]:
-> > >
-> > > 01.02.2010 02:43, Rafael J. Wysocki skrev:
-> > >> This message has been generated automatically as a part of a report
-> > >> of regressions introduced between 2.6.31 and 2.6.32.
-> > >>
-> > >> The following bug entry is on the current list of known regressions
-> > >> introduced between 2.6.31 and 2.6.32.  Please verify if it still should
-> > >> be listed and let me know (either way).
-> > >>
-> > >>
-> > >> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14482
-> > >> Subject		: kernel BUG at fs/dcache.c:670 +lvm +md +ext3
-> > >> Submitter	: Alexander Clouter<alex@digriz.org.uk>
-> > >> Date		: 2009-10-23 10:30 (101 days old)
-> > >> References	: http://lkml.org/lkml/2009/10/23/50
-> > >>
-> > >
-> > > Afaik this is the same issue as the one referenced here:
-> > >
-> > > http://lkml.org/lkml/2010/1/28/292
-> > >
-> > > The patch in the above thread should fix the issue.
-> > >
-> > I'm getting my hands on some not-in-production-state equipment to test 
-> > this with, so bear with me :)
-> > 
-> I can confirm this patch fixes the problem I was seeing.  Once applied I 
-> could no longer OOP's my kernel.
+On Mon, Feb 15, 2010 at 12:49:56PM -0700, Grant Likely wrote:
+[...]
+> Okay, I'm convinced now.  The model is wrong.  struct of_gc does need
+> to be a member of struct gpio_chip and conditionally compiled against
+> CONFIG_OF_GPIO.  This locking requirement is just too plain ugly,
 
-The patch has already been merged, so the bug is closed.
+And how would you implement of_get_gpio(np, index) then?
+You don't have 'struct gpio_chip' in of_get_gpio(), so you can't
+get of_gc out of it.
 
-Rafael
+It's possible to lookup all GPIOs (gpio[0..ARCH_NR_GPIOS]) matching
+on chip->dev->archdata.node == np, but you're just moving this stuff
+into gpiolib, where you'll have to grab global gpio_lock instead of
+devtree lock. And just as with np->data_lock or global devtree lock,
+you'll have to grab gpio_lock in of_gpio_put(), of_gpio_chip_register
+and of_gpio_chip_unregister().
+
+See? Your suggestion doesn't make things better or simpler, instead
+it turns the OF GPIO inside out, exposing arch details to the generic
+code.
+
+There is really no excuse for the arch-specific (OF) stuff being in
+the generic code. Not in the irq subsystem, not in the gpio
+subsystem. My implementation actually proves that.
+
+> and
+> dereferencing the np->data pointer in this way is dangerous
+> (what if
+> something that is not struct of_gc is stored there).
+
+Not possible with the safe np->data accessors.
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
