@@ -1,91 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755875Ab0BORT7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 12:19:59 -0500
-Received: from mx2.netapp.com ([216.240.18.37]:10792 "EHLO mx2.netapp.com"
+	id S1755121Ab0BOR0j (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 12:26:39 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:42351 "EHLO e1.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755838Ab0BORT6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 12:19:58 -0500
-X-IronPort-AV: E=Sophos;i="4.49,478,1262592000"; 
-   d="scan'208";a="316684160"
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Chuck Lever <chuck.lever@oracle.com>,
-       Trond Myklebust <Trond.Myklebust@netapp.com>
-Subject: [PATCH] NFS: Too many GETATTR and ACCESS calls after direct I/O
-Date: Mon, 15 Feb 2010 12:19:53 -0500
-Message-Id: <1266254393-14553-1-git-send-email-Trond.Myklebust@netapp.com>
-X-Mailer: git-send-email 1.6.6
+	id S1753673Ab0BOR0i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Feb 2010 12:26:38 -0500
+Date: Mon, 15 Feb 2010 09:26:35 -0800
+From: Matt Helsley <matthltc@us.ibm.com>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Matt Helsley <matthltc@us.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH 0/4] Check O_* flags set with fcntl() on
+ anon_inode files.
+Message-ID: <20100215172635.GI3714@count0.beaverton.ibm.com>
+References: <1266107267-5920-1-git-send-email-matthltc@us.ibm.com>
+ <20100214035205.GU30031@ZenIV.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100214035205.GU30031@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Chuck Lever <chuck.lever@oracle.com>
+On Sun, Feb 14, 2010 at 03:52:05AM +0000, Al Viro wrote:
+> On Sat, Feb 13, 2010 at 04:27:43PM -0800, Matt Helsley wrote:
+> > anon_inode interfaces often do not support flags that can be set
+> > by fcntl(). Right now using fcntl() to set these flags falsely
+> > reports success for things like O_ASYNC yet SIGIO is not delivered.
+> > 
+> > I relied on the flags allowed by the syscalls that create
+> > these files to determine the flags that are allowed to be set by
+> > fcntl().
+> > 
+> > Each patch checks flags for one anonymous inode interface:
+> > 
+> > [PATCH 1/4] signalfd
+> > [PATCH 2/4] timerfd
+> > [PATCH 3/4] epoll
+> > [PATCH 4/4] eventfd
+> > 
+> > I did not check the perf, kvm-vm, or kvm-vcpu uses of anon_inodes.
+> 
+> Er...  O_ASYNC is silently ignored for regular files as well, so any
+> userland code that tries to rely on fcntl() rejecting it is and always
+> had been badly b0rken.
 
-The cached read and write paths initialize fattr->time_start in their
-setup procedures.  The value of fattr->time_start is propagated to
-read_cache_jiffies by nfs_update_inode().  Subsequent calls to
-nfs_attribute_timeout() will then use a good time stamp when
-computing the attribute cache timeout, and squelch unneeded GETATTR
-calls.
+Of course. Did you mean to imply that the kernel shouldn't bother to
+reject these, or were you merely making an observation?
 
-Since the direct I/O paths erroneously leave the inode's
-fattr->time_start field set to zero, read_cache_jiffies for that inode
-is set to zero after any direct read or write operation.  This
-triggers an otw GETATTR or ACCESS call to update the file's attribute
-and access caches properly, even when the NFS READ or WRITE replies
-have usable post-op attributes.
-
-Make sure the direct read and write setup code performs the same fattr
-initialization as the cached I/O paths to prevent unnecessary GETATTR
-calls.
-
-This was likely introduced by commit 0e574af1 in 2.6.15, which appears
-to add new nfs_fattr_init() call sites in the cached read and write
-paths, but not in the equivalent places in fs/nfs/direct.c.  A
-subsequent commit in the same series, 33801147, introduces the
-fattr->time_start field.
-
-Interestingly, the direct write reschedule path already has a call to
-nfs_fattr_init() in the right place.
-
-Reported-by: Quentin Barnes <qbarnes@yahoo-inc.com>
-Signed-off-by: Chuck Lever <chuck.lever@oracle.com>
-Cc: stable@kernel.org
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
----
- fs/nfs/direct.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
-
-diff --git a/fs/nfs/direct.c b/fs/nfs/direct.c
-index e1d415e..0d28982 100644
---- a/fs/nfs/direct.c
-+++ b/fs/nfs/direct.c
-@@ -342,6 +342,7 @@ static ssize_t nfs_direct_read_schedule_segment(struct nfs_direct_req *dreq,
- 		data->res.fattr = &data->fattr;
- 		data->res.eof = 0;
- 		data->res.count = bytes;
-+		nfs_fattr_init(&data->fattr);
- 		msg.rpc_argp = &data->args;
- 		msg.rpc_resp = &data->res;
- 
-@@ -575,6 +576,7 @@ static void nfs_direct_commit_schedule(struct nfs_direct_req *dreq)
- 	data->res.count = 0;
- 	data->res.fattr = &data->fattr;
- 	data->res.verf = &data->verf;
-+	nfs_fattr_init(&data->fattr);
- 
- 	NFS_PROTO(data->inode)->commit_setup(data, &msg);
- 
-@@ -766,6 +768,7 @@ static ssize_t nfs_direct_write_schedule_segment(struct nfs_direct_req *dreq,
- 		data->res.fattr = &data->fattr;
- 		data->res.count = bytes;
- 		data->res.verf = &data->verf;
-+		nfs_fattr_init(&data->fattr);
- 
- 		task_setup_data.task = &data->task;
- 		task_setup_data.callback_data = data;
--- 
-1.6.6
-
+Cheers,
+	-Matt Helsley
