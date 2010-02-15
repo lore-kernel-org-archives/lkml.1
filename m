@@ -1,66 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756441Ab0BOWO7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 17:14:59 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:36754 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755866Ab0BOWO5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 17:14:57 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Meelis Roos <mroos@linux.ee>
-Subject: Re: 2.6.33-rc8 regression: irq11: nobody cared, during yenta registration
-Date: Mon, 15 Feb 2010 23:15:34 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.33-rc8-rjw; KDE/4.3.5; x86_64; ; )
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>
-References: <alpine.SOC.1.00.1002141720120.679@math.ut.ee> <201002152048.59832.rjw@sisk.pl> <alpine.SOC.1.00.1002152315580.12096@math.ut.ee>
-In-Reply-To: <alpine.SOC.1.00.1002152315580.12096@math.ut.ee>
+	id S1756506Ab0BOWPk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 17:15:40 -0500
+Received: from mail-fx0-f215.google.com ([209.85.220.215]:40015 "EHLO
+	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756113Ab0BOWPi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Feb 2010 17:15:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=YoLt/LF4FBgJn0PPXhMobqYRZR6lBuspUlPow1nXwPVUZHdyyxf1Y2KVo+PwW1A/n5
+         mHRSfLC8bXeeflF32yHHLIoy5SrVBrMtDh73U+eESoUqiILoPmjIlItOWeNSojEwhJHW
+         vDLi7GzltFrKZNeh3u1kMZpT+VWnle/lNxqHo=
+Date: Mon, 15 Feb 2010 23:13:32 +0100
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: Maarten Maathuis <madman2003@gmail.com>
+Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
+       Dave Airlie <airlied@linux.ie>, torvalds@linux-foundation.org,
+       dri-devel@lists.sf.net, linux-kernel@vger.kernel.org,
+       nouveau@lists.freedesktop.org
+Subject: Re: [git pull] drm
+Message-ID: <20100215221332.GB3332@joi.lan>
+References: <alpine.DEB.2.00.1002110417200.516@skynet.skynet.ie>
+ <201002151053.48681.borntraeger@de.ibm.com>
+ <20100215201201.GA3332@joi.lan>
+ <6d4bc9fc1002151239x2b994ea9l7f868d9bb8f789e9@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201002152315.34829.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6d4bc9fc1002151239x2b994ea9l7f868d9bb8f789e9@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 15 February 2010, Meelis Roos wrote:
-> > > > I have created the Bugzilla entry at http://bugzilla.kernel.org/show_bug.cgi?id=15307
-> > > > for your report.
-> > > > 
-> > > > Peter, Ingo, did we do anything to the interrupt handling between .33-rc5 and .33-rc8?
-> > > 
-> > > I just retested it and the problem appears even in -rc5 (missed it 
-> > > before). Come to think of it, I only tested -rc5 out of dock before.
-> > > 
-> > > With dock, the problem is there in 2.6.33-rc4-00399-g24bc734.
-> > > 
-> > > Without dock, even -rc8 is OK, so it only happens docked.
-> > > 
-> > > Will try to bisect but this takes time because I'm rarely near that 
-> > > computer.
-> 
-> It's even worse - or my memory is, actually.
-> 
-> With dock, both 2.6.32 and 2.6.31 exhibit the problem, so it's not a 
-> recent regression - but the bugzilla entry still holds.
-> 
-> In fact, googling tells that I reported the issue back in 2006 together 
-> with a USB problem that I thought was related, and that has been fixed 
-> meanwhile:
-> 
-> http://lkml.indiana.edu/hypermail/linux/kernel/0607.2/1331.html
-> 
-> Strange that I haven't noticed it meanwhile.
+On Mon, Feb 15, 2010 at 09:39:00PM +0100, Maarten Maathuis wrote:
+> The channel/context switch lock related patches (to the best of
+> knowledge) haven't even gone outside the nouveau tree, so the initial
+> damage isn't even there. At least not for the first path. As for the
+> 2nd patch, that one was squished into the original patch for this pull
+> iirc.
 
-OK, so let's tentatively regard this as a regression from 2.6.30, although I'm
-not really sure that's a regression at all.
+Ouch, you are right.
+Sorry for the noise.
 
-Rafael
-
-
-> 
-> 
+Marcin
 
