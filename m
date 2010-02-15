@@ -1,15 +1,15 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753222Ab0BOMo7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 07:44:59 -0500
-Received: from mail001.aei.ca ([206.123.6.130]:38781 "EHLO mail001.aei.ca"
+	id S1754916Ab0BOMpB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 07:45:01 -0500
+Received: from mail001.aei.ca ([206.123.6.130]:38787 "EHLO mail001.aei.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751586Ab0BOMo4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 07:44:56 -0500
+	id S1751647Ab0BOMo5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Feb 2010 07:44:57 -0500
 From: Ed Tomlinson <edt@aei.ca>
 To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 Subject: Re: [PATCH 0/2] Provide a driver for the Apple Magic Mouse - opps
-Date: Mon, 15 Feb 2010 07:42:45 -0500
+Date: Mon, 15 Feb 2010 07:44:51 -0500
 User-Agent: KMail/1.13.0 (Linux/2.6.32.8-crc; KDE/4.4.0; x86_64; ; )
 Cc: Jiri Kosina <jkosina@suse.cz>, Michael Poole <mdpoole@troilus.org>,
        linux-input@vger.kernel.org, Marcel Holtmann <marcel@holtmann.org>,
@@ -20,7 +20,7 @@ MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201002150742.46242.edt@aei.ca>
+Message-Id: <201002150744.51730.edt@aei.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -74,4 +74,23 @@ On Monday 15 February 2010 02:11:46 Dmitry Torokhov wrote:
 > input device, Otherwise if you unload the module while moving the mouse
 > it is likely to still oops.
 
+How about this?  It applies on top of yesterdays patch.
+
+Ed
+
+---
+diff --git a/drivers/hid/hid-magicmouse.c b/drivers/hid/hid-magicmouse.c
+index 7d252d2..46fdeee 100644
+--- a/drivers/hid/hid-magicmouse.c
++++ b/drivers/hid/hid-magicmouse.c
+@@ -430,8 +430,8 @@ static void magicmouse_remove(struct hid_device *hdev)
+ {
+ 	struct magicmouse_sc *msc;
+ 	msc = hid_get_drvdata(hdev);
+-	input_unregister_device(msc->input);
+ 	hid_hw_stop(hdev);
++	input_unregister_device(msc->input);
+ 	kfree(msc);
+ }
+ 
 
