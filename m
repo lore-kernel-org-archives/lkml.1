@@ -1,72 +1,82 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754163Ab0BOJMN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 04:12:13 -0500
-Received: from casper.infradead.org ([85.118.1.10]:56425 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752917Ab0BOJML (ORCPT
+	id S1754309Ab0BOJSe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 04:18:34 -0500
+Received: from clegg.madduck.net ([193.242.105.96]:58863 "EHLO
+	clegg.madduck.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752971Ab0BOJSc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 04:12:11 -0500
-Subject: Re: rcu_dereference() without protection in select_task_rq_fair()
-From: Peter Zijlstra <peterz@infradead.org>
-To: paulmck@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20100214170409.GK7084@linux.vnet.ibm.com>
-References: <20100211165246.GA8329@linux.vnet.ibm.com>
-	 <1266142358.5273.420.camel@laptop>
-	 <20100214170409.GK7084@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 15 Feb 2010 10:12:06 +0100
-Message-ID: <1266225126.5273.720.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 7bit
+	Mon, 15 Feb 2010 04:18:32 -0500
+Date: Mon, 15 Feb 2010 22:08:32 +1300
+From: martin f krafft <madduck@madduck.net>
+To: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
+Cc: Asdo <asdo@shiftmail.org>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Michael Evans <mjevans1983@gmail.com>,
+       Volker Armin Hemmann <volkerarmin@googlemail.com>
+Subject: Re: Linux mdadm superblock question.
+Message-ID: <20100215090832.GA24362@lapse.rw.madduck.net>
+Mail-Followup-To: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
+	Asdo <asdo@shiftmail.org>,
+	Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+	Michael Evans <mjevans1983@gmail.com>,
+	Volker Armin Hemmann <volkerarmin@googlemail.com>
+References: <201002140251.59668.volkerarmin@googlemail.com>
+ <4877c76c1002132002s20d942c3i7cee5418cdcf369c@mail.gmail.com>
+ <20100214193406.GA15722@khazad-dum.debian.net>
+ <4B786154.8090103@shiftmail.org>
+ <20100214212811.GB15313@twister.home>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-ripemd160;
+	protocol="application/pgp-signature"; boundary="azLHFNyN32YCQGCU"
+Content-Disposition: inline
+In-Reply-To: <20100214212811.GB15313@twister.home>
+X-Motto: Keep the good times rollin'
+X-OS: Debian GNU/Linux squeeze/sid kernel 2.6.32-1-686 i686
+X-Spamtrap: madduck.bogus@madduck.net
+X-Subliminal-Message: debian/rules!
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2010-02-14 at 09:04 -0800, Paul E. McKenney wrote:
 
-> OK, but doesn't the "preempt_count() != 0" that is in the current version
-> of rcu_read_lock_sched_held() already cover this check?
+--azLHFNyN32YCQGCU
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Hmm, yes it should.
+also sprach Gabor Gombas <gombasg@digikabel.hu> [2010.02.15.1028 +1300]:
+> There is no autodetection with 1.1. Once you have mdadm.conf you have
+> pretty hard rules about what to look for and how to assemble it - ie.
+> there is not much left to "auto" detect. Real autodetection would mean
+> there is _no_ such information available, and you figure out everything
+> by just looking at the devices you find.
 
-> In other words, I believe that I have located a usage of for_each_domain()
-> that violates the rule that it may only be called within preempt-disabled
-> sections.
+Which, coincidentally, is where we're heading with incremental
+assembly. Check the Debian experimental package if you want to try.
 
->From the trace:
+--=20
+martin | http://madduck.net/ | http://two.sentenc.es/
+=20
+"we should have a volleyballocracy.
+ we elect a six-pack of presidents.
+ each one serves until they screw up,
+ at which point they rotate."
+                                                      -- dennis miller
+=20
+spamtraps: madduck.bogus@madduck.net
 
->  [<ffffffff81033ec4>] select_task_rq_fair+0xc1/0x686
->  [<ffffffff810353f4>] wake_up_new_task+0x1e/0x13e
+--azLHFNyN32YCQGCU
+Content-Type: application/pgp-signature; name="digital_signature_gpg.asc"
+Content-Description: Digital signature (see http://martin-krafft.net/gpg/)
+Content-Disposition: inline
 
-Which reads like:
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-void wake_up_new_task(...)
-{
-	...
+iEYEAREDAAYFAkt5DxAACgkQIgvIgzMMSnX7SACguK02yNNYVQxEtzD2fFtSvV/s
+6ycAoNmLN2SnLIk6r8hRhkbd+YiX65gh
+=J9H+
+-----END PGP SIGNATURE-----
 
-        int cpu __maybe_unused = get_cpu();
-
-#ifdef CONFIG_SMP
-        /*
-         * Fork balancing, do it here and not earlier because:
-         *  - cpus_allowed can change in the fork path
-         *  - any previously selected cpu might disappear through hotplug
-         *
-         * We still have TASK_WAKING but PF_STARTING is gone now, meaning
-         * ->cpus_allowed is stable, we have preemption disabled, meaning
-         * cpu_online_mask is stable.
-         */
-        cpu = select_task_rq(p, SD_BALANCE_FORK, 0);
-        set_task_cpu(p, cpu);
-#endif
-
-	...
-
-	put_cpu()
-}
-
-I cannot see how we can get there without preemption disabled.
-
+--azLHFNyN32YCQGCU--
