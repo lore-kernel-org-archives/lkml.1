@@ -1,80 +1,249 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756571Ab0BOWPv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 17:15:51 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:43145 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756538Ab0BOWPt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 17:15:49 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=m3pJlg9KHEKsUqx3rk8trIP0D9eCDHfWxQjU6l4usfipdlImGavf0ha2S244yFoeD
-	Az4AAdiusFoLqaFlPgEGw==
-Date: Mon, 15 Feb 2010 14:15:41 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Nick Piggin <npiggin@suse.de>, Andrea Arcangeli <aarcange@redhat.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch 5/7 -mm] oom: replace sysctls with quick mode
-In-Reply-To: <20100215170634.729E.A69D9226@jp.fujitsu.com>
-Message-ID: <alpine.DEB.2.00.1002151411530.26927@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.1002100224210.8001@chino.kir.corp.google.com> <alpine.DEB.2.00.1002100229250.8001@chino.kir.corp.google.com> <20100215170634.729E.A69D9226@jp.fujitsu.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	id S1756560Ab0BOWQP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 17:16:15 -0500
+Received: from e7.ny.us.ibm.com ([32.97.182.137]:57635 "EHLO e7.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756300Ab0BOWQN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Feb 2010 17:16:13 -0500
+Date: Mon, 15 Feb 2010 14:16:07 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Neil Horman <nhorman@tuxdriver.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, Jiri Slaby <jirislaby@gmail.com>,
+       linux-kernel@vger.kernel.org, Greg KH <gregkh@suse.de>,
+       Kay Sievers <kay.sievers@suse.de>
+Subject: Re: oops in uevent_helper [was: mmotm 2010-01-13-12-17 uploaded]
+Message-ID: <20100215221607.GQ6750@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <4B50FC78.9010107@gmail.com> <20100122155237.e93a1c55.akpm@linux-foundation.org> <4B730EE3.4080405@gmail.com> <20100211205745.GA18202@basil.fritz.box> <20100211142513.b1fd6e7a.akpm@linux-foundation.org> <20100212052126.GA21783@one.firstfloor.org> <20100211212708.aa5bec1f.akpm@linux-foundation.org> <20100212170624.GB27303@hmsreliant.think-freely.org> <20100215201233.GI6750@linux.vnet.ibm.com> <20100215214252.GA7828@hmsreliant.think-freely.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100215214252.GA7828@hmsreliant.think-freely.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 15 Feb 2010, KOSAKI Motohiro wrote:
-
-> > Two VM sysctls, oom dump_tasks and oom_kill_allocating_task, were
-> > implemented for very large systems to avoid excessively long tasklist
-> > scans.  The former suppresses helpful diagnostic messages that are
-> > emitted for each thread group leader that are candidates for oom kill
-> > including their pid, uid, vm size, rss, oom_adj value, and name; this
-> > information is very helpful to users in understanding why a particular
-> > task was chosen for kill over others.  The latter simply kills current,
-> > the task triggering the oom condition, instead of iterating through the
-> > tasklist looking for the worst offender.
+On Mon, Feb 15, 2010 at 04:42:52PM -0500, Neil Horman wrote:
+> On Mon, Feb 15, 2010 at 12:12:33PM -0800, Paul E. McKenney wrote:
+> > On Fri, Feb 12, 2010 at 12:06:24PM -0500, Neil Horman wrote:
+> > > On Thu, Feb 11, 2010 at 09:27:08PM -0800, Andrew Morton wrote:
+> > > > On Fri, 12 Feb 2010 06:21:26 +0100 Andi Kleen <andi@firstfloor.org> wrote:
+> > > > 
+> > > > > > urgh, must I?  That trashes Neil's
+> > > > > > kmod-add-init-function-to-usermodehelper.patch and
+> > > > > > kmod-replace-call_usermodehelper_pipe-with-use-of-umh-init-function-and-resolve-limit.patch
+> > > > > > and probably requires repairing other stuff and sets the testing status
+> > > > > > back to "square one".
+> > > > > > 
+> > > > > > If you have patches queued, please make the time to support them!
+> > > > > 
+> > > > > Ok, understood. I'll try to look into it today.
+> > > > 
+> > > > Ta.  As I mentioned to Neil, if it looks serious then let's shelve it
+> > > > all and revisit for 2.6.35.
+> > > > 
+> > > > > You want incrementals?
+> > > > 
+> > > > If convenient, please.  Otherwise we can drop--and-remerge.
+> > > > 
+> > > > 
+> > > 
+> > > 
+> > > Ok, this fixes the oops Jiri reported for me.  Its been tested by me, but only
+> > > minimally, and my rcu-foo is not the greatest, so through reviews appreciated.
+> > > The patch is incremental against the latest mmotm as of this AM.
 > > 
-> > Both of these sysctls are combined into one for use on the aforementioned
-> > large systems: oom_kill_quick.  This disables the now-default
-> > oom_dump_tasks and kills current whenever the oom killer is called.
+> > A few questions interspersed below...
 > > 
-> > The oom killer rewrite is the perfect opportunity to combine both sysctls
-> > into one instead of carrying around the others for years to come for
-> > nothing else than legacy purposes.
+> > 							Thanx, Paul
+> > 
+> > > Thanks!
+> > > Neil
+> > > 
+> > > 
+> > > Fix up remaining references to uevent_helper to play nice with Andi's
+> > > uevent_helper/rcu changes.
+> > > 
+> > > Some changes were made recently which modified uevent_helper to be an rcu
+> > > protected pointer, rather than a static char array.  This has led to a few
+> > > missed points in which the sysfs path still assumed that:
+> > > 1) the uevent_helper symbol could still be accessed safely without
+> > > rcu_dereference
+> > > 2) that the sysfs path could copy data to that pointer safely.
+> > > 
+> > > I've fixed this by chaging the sysfs path so that it duplicates the string on
+> > > uevent_helper_store, and freeing it (only if it doesn't point to the
+> > > CONFIG_DEFAULT_UEVENT_HELPER string), in a call_rcu post-quiescent point.  I've
+> > > also fixed up the remaining references to the uevent_helper pointers to use
+> > > rcu_dereference.
+> > > 
+> > > Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+> > > 
+> > > 
+> > >  kernel/ksysfs.c      |   38 ++++++++++++++++++++++++++++++++++++--
+> > >  lib/kobject_uevent.c |    4 +++-
+> > >  2 files changed, 39 insertions(+), 3 deletions(-)
+> > > 
+> > > diff --git a/kernel/ksysfs.c b/kernel/ksysfs.c
+> > > index 21fe3c4..66d1e5b 100644
+> > > --- a/kernel/ksysfs.c
+> > > +++ b/kernel/ksysfs.c
+> > > @@ -37,19 +37,53 @@ KERNEL_ATTR_RO(uevent_seqnum);
+> > >  static ssize_t uevent_helper_show(struct kobject *kobj,
+> > >  				  struct kobj_attribute *attr, char *buf)
+> > >  {
+> > > -	return sprintf(buf, "%s\n", uevent_helper);
+> > > +	return sprintf(buf, "%s\n", rcu_dereference(uevent_helper));
+> > >  }
+> > > +
+> > > +struct uevent_helper_rcu {
+> > > +	char *oldptr;
+> > > +	struct rcu_head rcu;
+> > > +};
+> > > +
+> > > +static void free_old_uevent_ptr(struct rcu_head *list)
+> > > +{
+> > > +	struct uevent_helper_rcu *ptr;
+> > > +	char *dfl = CONFIG_UEVENT_HELPER_PATH;
+> > 
+> > Given that you kfree() something that might be equal to dfl, I am
+> > hoping that the CONFIG_UEVENT_HELPER_PATH macro expands to something
+> > that kfree() can do something with...
+> > 
+> > Or did you mean to put a "return;" in the then-clause of the "if"
+> > statement below?
+> > 
+> No, I meant what I have.  CONFIG_UEVENT_HELPER_PATH expands to a string.  if the
+> old pointer is not NULL, and doesn't point to the default string (we don't want
+> to free something in the string table), then we kfree it, since it must have
+> been allocated in uevent_helper_store
+
+Got it, thank you!  I confused ptr->oldptr with ptr.  :-(
+
+> > > +	ptr = container_of(list, struct uevent_helper_rcu, rcu);
+> > > +	if (ptr->oldptr && (ptr->oldptr != dfl))
+> > > +		kfree(ptr->oldptr);
+> > > +
+> > > +	kfree(ptr);
+> > > +}
+> > > +
+> > >  static ssize_t uevent_helper_store(struct kobject *kobj,
+> > >  				   struct kobj_attribute *attr,
+> > >  				   const char *buf, size_t count)
+> > >  {
+> > > +	char *kbuf;
+> > > +	struct uevent_helper_rcu *old;
+> > > +
+> > >  	if (count+1 > UEVENT_HELPER_PATH_LEN)
+> > >  		return -ENOENT;
+> > > -	memcpy(uevent_helper, buf, count);
+> > > +	kbuf = kstrndup(buf, UEVENT_HELPER_PATH_LEN, GFP_KERNEL);
+> > > +	if (!kbuf)
+> > > +		return -ENOMEM;
+> > >  	uevent_helper[count] = '\0';
+> > >  	if (count && uevent_helper[count-1] == '\n')
+> > >  		uevent_helper[count-1] = '\0';
+> > > +	old = kmalloc(sizeof(struct uevent_helper_rcu), GFP_KERNEL);
+> > > +	if (!old)
+> > > +		goto out_free;
+> > > +
+> > > +	old->oldptr = rcu_dereference(uevent_helper);
+> > > +	rcu_assign_pointer(uevent_helper, kbuf);
+> > 
+> > Some lock protects this?  Or does something else prevent multiple
+> > instances of uevent_helper_store() from executing concurrently?
+> > 
+> I had thought that there was a per-file sysfs lock that protected this, but I
+> wasn't sure.  Regardless, I would have thought this was safe, since
+> rcu_assign_pointer was serialized by rcu quiescence. Am I mistaken?
+
+Indeed you are -- rcu_assign_pointer() coordinates with any concurrent
+rcu_dereference() invocations, but does nothing to protect against other
+concurrent rcu_assign_pointer() invocations.  So you should have something
+coordinating the update, be it a lock or whatever.
+
+> > > +	call_rcu(&old->rcu, free_old_uevent_ptr);
+> > > +
+> > >  	return count;
+> > > +
+> > > +out_free:
+> > > +	kfree(kbuf);
+> > > +	return -ENOMEM;
+> > >  }
+> > >  KERNEL_ATTR_RW(uevent_helper);
+> > >  #endif
+> > > diff --git a/lib/kobject_uevent.c b/lib/kobject_uevent.c
+> > > index c2383f3..211f846 100644
+> > > --- a/lib/kobject_uevent.c
+> > > +++ b/lib/kobject_uevent.c
+> > > @@ -126,6 +126,7 @@ int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
+> > >  	struct kset *kset;
+> > >  	const struct kset_uevent_ops *uevent_ops;
+> > >  	u64 seq;
+> > > +	const char *helper;
+> > >  	int i = 0;
+> > >  	int retval = 0;
+> > > 
+> > > @@ -272,7 +273,8 @@ int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
+> > >  #endif
+> > > 
+> > >  	/* call uevent_helper, usually only enabled during early boot */
+> > > -	if (uevent_helper[0])
+> > > +	helper = rcu_dereference(uevent_helper);
+> > 
+> > This is protected by a pre-existing rcu_read_lock() somewhere?
+> > 
+> Does rcu_dereference not start a quiescence point the same way rcu_read_lock
+> does? AS I said, rcu isn't my strong suit :)
+
+What rcu_dereference() does is coordinate with any concurrent
+rcu_assign_pointer() calls to the same pointer.  If you (incorrectly)
+replace the rcu_dereference() and rcu_assign_pointer() calls with
+simple assignments, then the helper[0] below might see the garbage
+values that were in place before the initialization that preceded the
+rcu_assign_pointer().
+
+The rcu_read_lock() and rcu_read_unlock() prevent an RCU grace period both
+starting and ending during the enclosed RCU read-side critical section.
+A pre-existing RCU grace period might end during this critical section,
+or a new RCU grace period might start during this critical section, but
+any RCU grace period that starts during a given RCU read-side critical
+section is not permitted to end until after that RCU read-side critical
+section ends.
+
+So the interaction between rcu_read_lock()/rcu_read_unlock on the one
+hand and synchronize_rcu() and call_rcu() on the other hand is what
+guarantees that any RCU-protect data structure referenced within an
+RCU read-side critical section will remain in existence throughout the
+remainder of that RCU read-side critical section.
+
+This arrangement might seem a bit strange at first, but it is what
+gives RCU its read-side performance, scalability, and deadlock immunity.
+
+For more detail, please take a look at:
+
+	http://lwn.net/Articles/262464/ (What is RCU, Fundamentally?)
+	http://lwn.net/Articles/263130/ (What is RCU's Usage?)
+	http://lwn.net/Articles/264090/ (What is RCU's API?)
+
+							Thanx, Paul
+
+> Neil
 > 
-> "_quick" is always bad sysctl name.
-
-Why?  It does exactly what it says: it kills current without doing an 
-expensive tasklist scan and suppresses the possibly long tasklist dump.  
-That's the oom killer's "quick mode."
-
-> instead, turnning oom_dump_tasks on
-> by default is better.
-> 
-
-It's now on by default and can be disabled by enabling oom_kill_quick.
-
-> plus, this patch makes unnecessary compatibility issue.
-> 
-
-It's the perfect opportunity when totally rewriting the oom killer to 
-combine two sysctls with the exact same users into one.  Users will notice 
-that the tasklist is always dumped now (we're defaulting oom_dump_tasks 
-to be enabled), so there is no reason why we can't remove oom_dump_tasks, 
-we're just giving them a new way to disable it.  oom_kill_allocating_task 
-no longer always means what it once did: with the mempolicy-constrained 
-oom rewrite, we now iterate the tasklist for such cases to kill a task.  
-So users need to reassess whether this should be set if all tasks on the 
-system are constrained by mempolicies, a typical configuration for 
-extremely large systems.  
+> > If not, an rcu_read_lock() / rcu_read_unlock() pair is needed that
+> > covers both the rcu_dereference() and any subsequent dereferences of the
+> > pointer returned by rcu_dereference().
+> > 
+> > > +	if (helper[0])
+> > >  		retval = uevent_call_helper(subsystem, env);
+> > > 
+> > >  exit:
+> > > --
+> > > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > > the body of a message to majordomo@vger.kernel.org
+> > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > > Please read the FAQ at  http://www.tux.org/lkml/
+> > 
