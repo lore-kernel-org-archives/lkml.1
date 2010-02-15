@@ -1,67 +1,59 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752684Ab0BOBks (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 20:40:48 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:39823 "EHLO mx1.redhat.com"
+	id S1752946Ab0BOB6U (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 20:58:20 -0500
+Received: from sh.osrg.net ([192.16.179.4]:60330 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751592Ab0BOBkr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Feb 2010 20:40:47 -0500
-Message-ID: <4B78A60B.3030807@redhat.com>
-Date: Sun, 14 Feb 2010 20:40:27 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [GIT PULL] tracing fixes
-References: <20100214090913.GA26388@elte.hu>
-In-Reply-To: <20100214090913.GA26388@elte.hu>
-X-Enigmail-Version: 1.0.1
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1752282Ab0BOB6S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Feb 2010 20:58:18 -0500
+Date: Mon, 15 Feb 2010 10:57:58 +0900
+To: benh@kernel.crashing.org
+Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH -mm 5/7] powerpc: use generic pci_set_dma_mask and
+ pci_set_consistent_dma_mask
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <1266190600.16346.74.camel@pasglop>
+References: <1265967212-9126-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+	<1265967212-9126-6-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+	<1266190600.16346.74.camel@pasglop>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20100215105606Y.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Mon, 15 Feb 2010 10:57:59 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+On Mon, 15 Feb 2010 10:36:40 +1100
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-Could you push this commit too?
-
-5ecaafdbf44b1ba400b746c60c401d54c7ee0863
-kprobes: Add mcount to the kprobes blacklist
-
-Since this bug can be easily reproduced with kprobe-tracer.
-
-Thank you,
-
-Ingo Molnar wrote:
-> Linus,
+> On Fri, 2010-02-12 at 18:33 +0900, FUJITA Tomonori wrote:
+> > This converts powerpc to use the generic pci_set_dma_mask and
+> > pci_set_consistent_dma_mask (drivers/pci/pci.c).
+> > 
+> > The generic pci_set_dma_mask does what powerpc's pci_set_dma_mask
+> > does.
+> > 
+> > Unlike powerpc's pci_set_consistent_dma_mask, the gneric
+> > pci_set_consistent_dma_mask sets only coherent_dma_mask. It doesn't
+> > work for powerpc? pci_set_consistent_dma_mask API should set only
+> > coherent_dma_mask?
 > 
-> Please pull the latest tracing-fixes-for-linus git tree from:
+> I don't know why we do it that way, your patch looks correct to me, if
+> we have a driver bug assuming it does both masks at once, then we'll
+> fix it.
 > 
->    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git tracing-fixes-for-linus
-> 
->  Thanks,
-> 
-> 	Ingo
-> 
-> ------------------>
-> Heiko Carstens (1):
->       tracing/kprobes: Fix probe parsing
-> 
-> Lai Jiangshan (1):
->       tracing: Fix circular dead lock in stack trace
-> 
+> Do you need me to merge that via powerpc.git or are you happy to carry
+> it with the rest of your PCI DMA changes ?
 
--- 
-Masami Hiramatsu
+I guess it's easier if Andrew carries all the patches since some of
+the patches in this patchset depend on my other patches in -mm.
 
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
 
-e-mail: mhiramat@redhat.com
+> > Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> 
+> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
+Thanks!
