@@ -1,18 +1,18 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932343Ab0BOWUm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 17:20:42 -0500
-Received: from smtp-out.google.com ([216.239.44.51]:24624 "EHLO
+	id S932302Ab0BOWUW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 17:20:22 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:44897 "EHLO
 	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932320Ab0BOWU2 (ORCPT
+	with ESMTP id S932268Ab0BOWUQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 17:20:28 -0500
+	Mon, 15 Feb 2010 17:20:16 -0500
 DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
 	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
 	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=KeAxaXF7e2CsJRWKAglvH0izwG6Dlr3vvxXzpQdecF5IOrXa0MiIb9WWO78FPcGcN
-	xb6OsDAD0sEHU0bvcS39w==
-Date: Mon, 15 Feb 2010 14:20:24 -0800 (PST)
+	b=e0vZYW4lHhtL+DqRv0G5b7NB+3Iphj6YjVP8RL6yEkCPknYRepO/4x+MYf6VrYo6Q
+	9sxt/3HEUvFC7t4RNqisw==
+Date: Mon, 15 Feb 2010 14:20:09 -0800 (PST)
 From: David Rientjes <rientjes@google.com>
 X-X-Sender: rientjes@chino.kir.corp.google.com
 To: Andrew Morton <akpm@linux-foundation.org>
@@ -22,9 +22,9 @@ cc: Rik van Riel <riel@redhat.com>,
        Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
        KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
        linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: [patch -mm 9/9 v2] oom: remove unnecessary code and cleanup
+Subject: [patch -mm 4/9 v2] oom: remove compulsory panic_on_oom mode
 In-Reply-To: <alpine.DEB.2.00.1002151416470.26927@chino.kir.corp.google.com>
-Message-ID: <alpine.DEB.2.00.1002151419400.26927@chino.kir.corp.google.com>
+Message-ID: <alpine.DEB.2.00.1002151418190.26927@chino.kir.corp.google.com>
 References: <alpine.DEB.2.00.1002151416470.26927@chino.kir.corp.google.com>
 User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
@@ -34,118 +34,68 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove the redundancy in __oom_kill_task() since:
+If /proc/sys/vm/panic_on_oom is set to 2, the kernel will panic
+regardless of whether the memory allocation is constrained by either a
+mempolicy or cpuset.
 
- - init can never be passed to this function: it will never be PF_EXITING
-   or selectable from select_bad_process(), and
+Since mempolicy-constrained out of memory conditions now iterate through
+the tasklist and select a task to kill, it is possible to panic the
+machine if all tasks sharing the same mempolicy nodes (including those
+with default policy, they may allocate anywhere) or cpuset mems have
+/proc/pid/oom_adj values of OOM_DISABLE.  This is functionally equivalent
+to the compulsory panic_on_oom setting of 2, so the mode is removed.
 
- - it will never be passed a task from oom_kill_task() without an ->mm
-   and we're unconcerned about detachment from exiting tasks, there's no
-   reason to protect them against SIGKILL or access to memory reserves.
-
-Also moves the kernel log message to a higher level since the verbosity
-is not always emitted here; we need not print an error message if an
-exiting task is given a longer timeslice.
-
-Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 Signed-off-by: David Rientjes <rientjes@google.com>
 ---
- mm/oom_kill.c |   64 ++++++++++++++------------------------------------------
- 1 files changed, 16 insertions(+), 48 deletions(-)
+ Documentation/sysctl/vm.txt |   20 ++++----------------
+ mm/oom_kill.c               |    5 -----
+ 2 files changed, 4 insertions(+), 21 deletions(-)
 
+diff --git a/Documentation/sysctl/vm.txt b/Documentation/sysctl/vm.txt
+--- a/Documentation/sysctl/vm.txt
++++ b/Documentation/sysctl/vm.txt
+@@ -559,25 +559,13 @@ swap-intensive.
+ 
+ panic_on_oom
+ 
+-This enables or disables panic on out-of-memory feature.
++If this is set to zero, the oom killer will be invoked when the kernel is out of
++memory and direct reclaim cannot free any pages.  It will select a memory-
++hogging task that frees up a large amount of memory to kill.
+ 
+-If this is set to 0, the kernel will kill some rogue process,
+-called oom_killer.  Usually, oom_killer can kill rogue processes and
+-system will survive.
+-
+-If this is set to 1, the kernel panics when out-of-memory happens.
+-However, if a process limits using nodes by mempolicy/cpusets,
+-and those nodes become memory exhaustion status, one process
+-may be killed by oom-killer. No panic occurs in this case.
+-Because other nodes' memory may be free. This means system total status
+-may be not fatal yet.
+-
+-If this is set to 2, the kernel panics compulsorily even on the
+-above-mentioned.
++If this is set to non-zero, the machine will panic when out of memory.
+ 
+ The default value is 0.
+-1 and 2 are for failover of clustering. Please select either
+-according to your policy of failover.
+ 
+ =============================================================
+ 
 diff --git a/mm/oom_kill.c b/mm/oom_kill.c
 --- a/mm/oom_kill.c
 +++ b/mm/oom_kill.c
-@@ -405,67 +405,35 @@ static void dump_header(struct task_struct *p, gfp_t gfp_mask, int order,
- 		dump_tasks(mem);
- }
+@@ -672,11 +672,6 @@ void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask,
+ 		/* Got some memory back in the last second. */
+ 		return;
  
--#define K(x) ((x) << (PAGE_SHIFT-10))
--
- /*
-- * Send SIGKILL to the selected  process irrespective of  CAP_SYS_RAW_IO
-- * flag though it's unlikely that  we select a process with CAP_SYS_RAW_IO
-- * set.
-+ * Give the oom killed task high priority and access to memory reserves so that
-+ * it may quickly exit and free its memory.
-  */
--static void __oom_kill_task(struct task_struct *p, int verbose)
-+static void __oom_kill_task(struct task_struct *p)
- {
--	if (is_global_init(p)) {
--		WARN_ON(1);
--		printk(KERN_WARNING "tried to kill init!\n");
--		return;
+-	if (sysctl_panic_on_oom == 2) {
+-		dump_header(NULL, gfp_mask, order, NULL);
+-		panic("out of memory. Compulsory panic_on_oom is selected.\n");
 -	}
 -
--	task_lock(p);
--	if (!p->mm) {
--		WARN_ON(1);
--		printk(KERN_WARNING "tried to kill an mm-less task %d (%s)!\n",
--			task_pid_nr(p), p->comm);
--		task_unlock(p);
--		return;
--	}
--
--	if (verbose)
--		printk(KERN_ERR "Killed process %d (%s) "
--		       "vsz:%lukB, anon-rss:%lukB, file-rss:%lukB\n",
--		       task_pid_nr(p), p->comm,
--		       K(p->mm->total_vm),
--		       K(get_mm_counter(p->mm, MM_ANONPAGES)),
--		       K(get_mm_counter(p->mm, MM_FILEPAGES)));
--	task_unlock(p);
--
--	/*
--	 * We give our sacrificial lamb high priority and access to
--	 * all the memory it needs. That way it should be able to
--	 * exit() and clear out its resources quickly...
--	 */
- 	p->rt.time_slice = HZ;
- 	set_tsk_thread_flag(p, TIF_MEMDIE);
--
- 	force_sig(SIGKILL, p);
- }
- 
-+#define K(x) ((x) << (PAGE_SHIFT-10))
- static int oom_kill_task(struct task_struct *p)
- {
--	/* WARNING: mm may not be dereferenced since we did not obtain its
--	 * value from get_task_mm(p).  This is OK since all we need to do is
--	 * compare mm to q->mm below.
--	 *
--	 * Furthermore, even if mm contains a non-NULL value, p->mm may
--	 * change to NULL at any time since we do not hold task_lock(p).
--	 * However, this is of no concern to us.
--	 */
--	if (!p->mm || p->signal->oom_score_adj == OOM_SCORE_ADJ_MIN)
-+	task_lock(p);
-+	if (!p->mm || p->signal->oom_score_adj == OOM_SCORE_ADJ_MIN) {
-+		task_unlock(p);
- 		return 1;
-+	}
-+	pr_err("Killed process %d (%s) total-vm:%lukB, anon-rss:%lukB, file-rss:%lukB\n",
-+		task_pid_nr(p), p->comm, K(p->mm->total_vm),
-+	       K(get_mm_counter(p->mm, MM_ANONPAGES)),
-+	       K(get_mm_counter(p->mm, MM_FILEPAGES)));
-+	task_unlock(p);
- 
--	__oom_kill_task(p, 1);
--
-+	__oom_kill_task(p);
- 	return 0;
- }
-+#undef K
- 
- static int oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
- 			    unsigned int points, unsigned long totalpages,
-@@ -484,7 +452,7 @@ static int oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
- 	 * its children or threads, just set TIF_MEMDIE so it can die quickly
- 	 */
- 	if (p->flags & PF_EXITING) {
--		__oom_kill_task(p, 0);
-+		__oom_kill_task(p);
- 		return 0;
- 	}
- 
+ 	/*
+ 	 * Check if there were limitations on the allocation (only relevant for
+ 	 * NUMA) that may require different handling.
