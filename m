@@ -1,61 +1,49 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756373Ab0BOVFM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 16:05:12 -0500
-Received: from gate.crashing.org ([63.228.1.57]:44707 "EHLO gate.crashing.org"
+	id S1756444Ab0BOVGj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 16:06:39 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:53802 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755898Ab0BOVFL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 16:05:11 -0500
-Subject: Re: register long sp asm("r1") incorrect
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: paulus@samba.org, linuxppc-dev@ozlabs.org,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Segher Boessenkool <segher@kernel.crashing.org>, bergner@vnet.ibm.com
-In-Reply-To: <20100215202854.GA21601@elf.ucw.cz>
-References: <20100209152444.GA30176@atrey.karlin.mff.cuni.cz>
-	 <1265866273.16346.34.camel@pasglop>
-	 <20100215073405.GB20456@atrey.karlin.mff.cuni.cz>
-	 <1266263992.16346.125.camel@pasglop>  <20100215202854.GA21601@elf.ucw.cz>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 16 Feb 2010 08:04:58 +1100
-Message-ID: <1266267898.16346.135.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	id S1755897Ab0BOVGh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Feb 2010 16:06:37 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+X-Fcc: ~/Mail/linus
+Cc: Oleg Nesterov <oleg@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: x86: get rid of the insane TIF_ABI_PENDING bit
+In-Reply-To: H. Peter Anvin's message of  Monday, 15 February 2010 12:43:46 -0800 <4B79B202.5090006@zytor.com>
+References: <20100215161752.GA19962@redhat.com>
+	<4B799C3F.7010308@zytor.com>
+	<20100215194123.96D49FC3@magilla.sf.frob.com>
+	<4B79B202.5090006@zytor.com>
+X-Shopping-List: (1) Antagonistic friction
+   (2) Contagious brunch commotions
+   (3) Credulous holidays
+   (4) Antic clasps
+Message-Id: <20100215210539.B0D0B553@magilla.sf.frob.com>
+Date: Mon, 15 Feb 2010 13:05:39 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-02-15 at 21:28 +0100, Pavel Machek wrote:
-> On Tue 2010-02-16 06:59:52, Benjamin Herrenschmidt wrote:
-> > On Mon, 2010-02-15 at 08:34 +0100, Pavel Machek wrote:
-> > > > On Tue, 2010-02-09 at 16:24 +0100, Pavel Machek wrote:
-> > > > > ...according to gcc docs, sp should be global, or placement in
-> > > > > register is not guaranteed (except at asm boundaries, but there
-> > > are
-> > > > > none).
-> > > > 
-> > > > Sorry I'm not sure I grok what you mean.
-> > > 
-> > > Well, according to gcc doscs and my experience, local "register int
-> > > __asm()" variables only work by accident (or not at all). 
-> > 
-> > Hrm... we definitely rely on that for our thread_info() access, and so
-> > far it has worked well for us, but I'll poke our gcc folks just in case.
-> 
-> Thanks, and let me know about any results.
+> FWIW, the origin of this is checkin
+> 4d9bc79cd28b779610d9590b3a96a28a0f64a25a (2.6.18-rc1), which somewhat
+> unhelpfully states "Make sure is_compat_task works early".  It doesn't
+> specify what the failure is if is_compat_task doesn't work early.  
 
-All the gcc folks I talked to say something along the lines that there
-is no way in hell it doesn't work :-)
+I can't figure out what could care.  Maybe at the time something else
+tested it that doesn't do so now.
 
-It's true that most other use of it we have are global scope (local_paca
-in r13, glibc use of r2/r13, etc...) afaik, but since r1 itself is the
-stack pointer always, I think they pretty much guarantee it works.
+> On the other hand, it sure as heck seems better to set it and not need it
+> than the other way around.
 
-I'm CCing a couple of experts just to be sure.
-
-Cheers,
-Ben.
+Agreed.
 
 
+Thanks,
+Roland
