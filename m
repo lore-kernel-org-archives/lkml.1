@@ -1,76 +1,63 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755090Ab0BOLJt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 06:09:49 -0500
-Received: from mailout2.zih.tu-dresden.de ([141.30.67.73]:39667 "EHLO
-	mailout2.zih.tu-dresden.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752260Ab0BOLJr (ORCPT
+	id S1755060Ab0BOLQR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 06:16:17 -0500
+Received: from anchor-post-1.mail.demon.net ([195.173.77.132]:64848 "EHLO
+	anchor-post-1.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753986Ab0BOLQQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 06:09:47 -0500
-X-Greylist: delayed 1519 seconds by postgrey-1.27 at vger.kernel.org; Mon, 15 Feb 2010 06:09:47 EST
-Subject: Tracing power_end on kernel 2.6.32.8
-From: Robert =?ISO-8859-1?Q?Sch=F6ne?= <robert.schoene@tu-dresden.de>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Li Zefan <lizf@cn.fujitsu.com>,
-       linux-kernel@vger.kernel.org
+	Mon, 15 Feb 2010 06:16:16 -0500
+Subject: [PATCH] fs: inode - remove 8 bytes of padding on 64bits allowing 1
+ more objects/slab under slub
+From: Richard Kennedy <richard@rsk.demon.co.uk>
+To: Matthew Wilcox <matthew@wil.cx>, Al Viro <viro@zeniv.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>, Jan Kara <jack@suse.cz>,
+       Christoph Hellwig <hch@lst.de>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 15 Feb 2010 11:44:15 +0100
-Message-ID: <1266230655.4844.14.camel@localhost>
+Date: Mon, 15 Feb 2010 11:16:11 +0000
+Message-ID: <1266232571.2149.10.camel@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
 Content-Transfer-Encoding: 7bit
-X-TUD-Virus-Scanned: mailout2.zih.tu-dresden.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-I have a question regarding the event "power/power_end".
-For the standard linux kernel (2.6.32.8), it's just not reported -
-neither for the /sys/kernel/debug/tracing nor for the sys_perf_open
-approach.
+This removes 8 bytes of padding from struct inode on 64bit builds, and
+so allows 1 more object/slab in the inode_cache when using slub.
 
-System:
-	Intel Core 2 Quad,
-	Kernel 2.6.32.8,
-	for sys_perf_open:always using sampling counters,
-	(Kernel 2.6.33-rcX should show the same behavior)
+Signed-off-by: Richard Kennedy <richard@rsk.demon.co.uk>
+----
+patch against 2.6.33-rc8
+compiled & tested on x86_64 AMDX2 
 
-After finding "my" c-state procedure in arch/x86/kernel/process.c
-(which was "static void mwait_idle(void)" btw), I added a
-trace_power_end call on the correct line:
-...
-		else
-			local_irq_enable();
-	} else
-...
-->
-...
-		else
-			local_irq_enable();
-		trace_power_end(0);
-	} else
-...
-Now the event was reported on /sys/kernel/debug/tracing, but still not
-for sys_perf_open.
-
-Then I had the idea, that trace_power_end's argument should be the same
-as the 2nd argument of the previous power_start.
-
-That worked.
-
-However, things to be done are: add trace_power_end's to some
-process.c's procedures.
+I've been running this patch for over a week with no obvious problems
+regards
+Richard
 
 
-Bye Robert
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index b1bcb27..ebb1cd5 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -729,6 +729,7 @@ struct inode {
+ 	uid_t			i_uid;
+ 	gid_t			i_gid;
+ 	dev_t			i_rdev;
++	unsigned int		i_blkbits;
+ 	u64			i_version;
+ 	loff_t			i_size;
+ #ifdef __NEED_I_SIZE_ORDERED
+@@ -738,7 +739,6 @@ struct inode {
+ 	struct timespec		i_mtime;
+ 	struct timespec		i_ctime;
+ 	blkcnt_t		i_blocks;
+-	unsigned int		i_blkbits;
+ 	unsigned short          i_bytes;
+ 	umode_t			i_mode;
+ 	spinlock_t		i_lock;	/* i_blocks, i_bytes, maybe i_size */
 
--- 
-Robert Schoene
-Technische Universitaet Dresden
-Zentrum fuer Informationsdienste und Hochleistungsrechnen
-01062 Dresden
-
-Tel.: (0351) 463-42483, Fax: (0351) 463-37773
-E-Mail: Robert.Schoene@tu-dresden.de
 
