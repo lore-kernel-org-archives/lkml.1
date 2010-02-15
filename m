@@ -1,54 +1,44 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755795Ab0BOUne (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 15:43:34 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:36358 "EHLO ogre.sisk.pl"
+	id S1756055Ab0BOUoN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 15:44:13 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:57279 "EHLO mail.zytor.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755467Ab0BOUnc convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 15:43:32 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Toralf =?iso-8859-1?q?F=F6rster?= <toralf.foerster@gmx.de>
-Subject: Re: [Bug #15100] X11 is black after resume from s2ram if my T400 was previous in docking station before
-Date: Mon, 15 Feb 2010 21:44:10 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.33-rc8-rjw; KDE/4.3.5; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>,
-       "Eric Anholt" <eric@anholt.net>,
-       "Jesse Barnes" <jbarnes@virtuousgeek.org>,
-       "Matthew Garrett" <mjg@redhat.com>
-References: <fQEllunEdO.A.-LB.HyIeLB@chimera> <Xv2rBFCTXTH.A.8LC.ryIeLB@chimera> <201002150934.23888.toralf.foerster@gmx.de>
-In-Reply-To: <201002150934.23888.toralf.foerster@gmx.de>
+	id S1755467Ab0BOUoM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Feb 2010 15:44:12 -0500
+Message-ID: <4B79B202.5090006@zytor.com>
+Date: Mon, 15 Feb 2010 12:43:46 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <201002152144.10422.rjw@sisk.pl>
+To: Roland McGrath <roland@redhat.com>
+CC: Oleg Nesterov <oleg@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: x86: get rid of the insane TIF_ABI_PENDING bit
+References: <20100215161752.GA19962@redhat.com>	<4B799C3F.7010308@zytor.com> <20100215194123.96D49FC3@magilla.sf.frob.com>
+In-Reply-To: <20100215194123.96D49FC3@magilla.sf.frob.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 15 February 2010, Toralf Förster wrote:
-> 
-> Rafael J. Wysocki wrote at 00:52:50
-> > This message has been generated automatically as a part of a report
-> > of regressions introduced between 2.6.31 and 2.6.32.
-> > 
-> > The following bug entry is on the current list of known regressions
-> > introduced between 2.6.31 and 2.6.32.  Please verify if it still should
-> > be listed and let the tracking team know (either way).
-> > 
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15100
-> > Subject		: X11 is black after resume from s2ram if my T400 was previous in
-> >  docking station before Submitter	: Toralf Förster <toralf.foerster@gmx.de>
-> > Date		: 2010-01-21 08:56 (25 days old)
-> > First-Bad-Commit:
-> >  http://git.kernel.org/git/linus/c1c7af60892070e4b82ad63bbfb95ae745056de0
-> > 
-> Issue present in 2.6.33-rc8
+On 02/15/2010 11:41 AM, Roland McGrath wrote:
+> It affects whatever uses is_compat_task(), but I can't see anything
+> where that matters except inside some particular syscall or for
+> syscall restart after signals.
 
-Thanks for the update.
+FWIW, the origin of this is checkin
+4d9bc79cd28b779610d9590b3a96a28a0f64a25a (2.6.18-rc1), which somewhat
+unhelpfully states "Make sure is_compat_task works early".  It doesn't
+specify what the failure is if is_compat_task doesn't work early.  On
+the other hand, it sure as heck seems better to set it and not need it
+than the other way around.
 
-Rafael
+	-hpa
+
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
