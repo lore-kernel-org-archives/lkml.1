@@ -1,25 +1,25 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754920Ab0BOJ6c (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 04:58:32 -0500
-Received: from mail-ew0-f228.google.com ([209.85.219.228]:38201 "EHLO
+	id S1755222Ab0BOKEp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 05:04:45 -0500
+Received: from mail-ew0-f228.google.com ([209.85.219.228]:47488 "EHLO
 	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752939Ab0BOJ6b (ORCPT
+	with ESMTP id S1754556Ab0BOKEn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 04:58:31 -0500
+	Mon, 15 Feb 2010 05:04:43 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=googlemail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer;
-        b=l0qL2Y7ZCbZ3/9i4XznxmAI71BDL4CoDE/VyTQHc+hY81tLISZn4ya/MUs0YFV1CHH
-         ggVhm1koMceayZpPGkwkE9VMnYG1QCzqHsEFjDuOE9CeoByqOKd5szgPbHlQv04Ipeji
-         lXv+q6382UoekTBfr34a5KR1QyOb4vtWIQxcg=
+        b=dVbYsAfBgmpI3UQ90O4qcC8Ez1+B5UKtK9fT3OFIynxCkUQBHijNgxvmZ+9LIjyq2X
+         z2F1VHAhT+7+D3u+BaPvcJfwTpwPNFOZJBXBU/toBuyrfaYbK2wLGpaqLFZ/fvgsd4nU
+         BM0FjQFrhUjDne2QFj9iz+eZxexLITUWCSglU=
 From: Graham M Howe <gman.1352@googlemail.com>
 To: gregkh@suse.de, wfp5p@virginia.edu
 Cc: devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org,
        Graham M Howe <gman.1352@googlemail.com>
 Subject: [PATCH 4/4] Staging: comedi: fix brace and 80 character coding style issue in ni_daq_700.c
-Date: Mon, 15 Feb 2010 09:58:17 +0000
-Message-Id: <1266227897-2373-1-git-send-email-gman.1352@googlemail.com>
+Date: Mon, 15 Feb 2010 10:04:26 +0000
+Message-Id: <1266228266-2558-1-git-send-email-gman.1352@googlemail.com>
 X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
