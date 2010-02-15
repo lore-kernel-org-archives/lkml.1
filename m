@@ -1,91 +1,107 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932335Ab0BOWWN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 17:22:13 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:44836 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932076Ab0BOWUG (ORCPT
+	id S932296Ab0BOWWy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 17:22:54 -0500
+Received: from mail-fx0-f215.google.com ([209.85.220.215]:34924 "EHLO
+	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932076Ab0BOWWv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 17:20:06 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=rwt2/BL4aXPPHoiljU05xnu6gA3+eEuKMF1gnyNsdEnyzKjDg3Bf3uvWtmUqW2EgR
-	5kVlEXAK2RWg8nXOjiA8g==
-Date: Mon, 15 Feb 2010 14:20:01 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Rik van Riel <riel@redhat.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Nick Piggin <npiggin@suse.de>, Andrea Arcangeli <aarcange@redhat.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: [patch -mm 1/9 v2] oom: filter tasks not sharing the same cpuset
-In-Reply-To: <alpine.DEB.2.00.1002151416470.26927@chino.kir.corp.google.com>
-Message-ID: <alpine.DEB.2.00.1002151417330.26927@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.1002151416470.26927@chino.kir.corp.google.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Mon, 15 Feb 2010 17:22:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=sD4OlMNxfnmOHNY3S8JPGNBDIbB5AIOYcOdxLkd1ildk+eIZ1ymzl3WL/RCzn3xi85
+         170Gut8R6Qr9eHH15lFGADXf4EJ0wJvvqouRXhrRtMPZGEjFbdCBoR1ideKWPA0GeZSL
+         hU7IzTEMFqqYUxtoNS8UV0GZEsrH//oNjnDXI=
+Date: Mon, 15 Feb 2010 23:20:41 +0100
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: nouveau@lists.freedesktop.org
+Cc: Dan Carpenter <error27@gmail.com>, kernel-janitors@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] drm/nouveau: fix pramdac_table range checking
+Message-ID: <20100215222041.GA2823@joi.lan>
+References: <20100215124046.GB18821@bicker>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100215124046.GB18821@bicker>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tasks that do not share the same set of allowed nodes with the task that
-triggered the oom should not be considered as candidates for oom kill.
+On Mon, Feb 15, 2010 at 03:40:56PM +0300, Dan Carpenter wrote:
+> This is the results from:
+>     make C=1 CHECK="/path/to/smatch -p=kernel" bzImage modules | tee warns.txt
+>     grep -w overflow warns.txt | uniq -f 3 | tee err-list
+> 
+> I hacked on the buffer overflow check last weekend and these are the 
+> results.  It has way more false positives than the other bug lists 
+> I've posted, but it's still kinda neat.
+> 
+> It works like this:
+> 
+> lib/zlib_inflate/inftrees.c
+>    112      for (min = 1; min <= MAXBITS; min++)
+>    113          if (count[min] != 0) break;
+>    114      if (root < min) root = min;
+> smatch thinks "min" can be MAXBITS here.
+> 
+> One bad thing is that if you have code like:
+>         if (foo == 42)
+> 		frob();
+> Smatch thinks that "foo" can be 43 after the if statement.
+> 
+> The format is:
+> file.c +<line> function(<lines into function>) warning 'array_name' <array size> <= <offset>
+> 
+> regards,
+> dan carpenter
+> 
+> Previous bug lists:
+> * Putting too much data on the stack
+>   http://lkml.indiana.edu/hypermail/linux/kernel/1002.1/01252.html
+> 
+> * Assigning negative values to unsigned variables
+>   http://lkml.indiana.edu/hypermail/linux/kernel/1001.3/01222.html
+> 
+> * Doing dma on the stack
+>   http://lkml.indiana.edu/hypermail/linux/kernel/1001.3/01231.html
+> 
+> * Dereferencing variables before verifying they are not null
+>   http://lkml.indiana.edu/hypermail/linux/kernel/1001.3/01980.html
+> 
+> (...)
+> drivers/gpu/drm/nouveau/nouveau_bios.c +770 get_tmds_index_reg(36) error: buffer overflow 'pramdac_table' 4 <= 4
+> (...)
 
-Tasks in other cpusets with a disjoint set of mems would be unfairly
-penalized otherwise because of oom conditions elsewhere; an extreme
-example could unfairly kill all other applications on the system if a
-single task in a user's cpuset sets itself to OOM_DISABLE and then uses
-more memory than allowed.
-
-Killing tasks outside of current's cpuset rarely would free memory for
-current anyway.
-
-Acked-by: Rik van Riel <riel@redhat.com>
-Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Signed-off-by: David Rientjes <rientjes@google.com>
 ---
- mm/oom_kill.c |   12 +++---------
- 1 files changed, 3 insertions(+), 9 deletions(-)
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+Subject: [PATCH] drm/nouveau: fix pramdac_table range checking
 
-diff --git a/mm/oom_kill.c b/mm/oom_kill.c
---- a/mm/oom_kill.c
-+++ b/mm/oom_kill.c
-@@ -35,7 +35,7 @@ static DEFINE_SPINLOCK(zone_scan_lock);
- /* #define DEBUG */
- 
- /*
-- * Is all threads of the target process nodes overlap ours?
-+ * Do all threads of the target process overlap our allowed nodes?
-  */
- static int has_intersects_mems_allowed(struct task_struct *tsk)
- {
-@@ -167,14 +167,6 @@ unsigned long badness(struct task_struct *p, unsigned long uptime)
- 		points /= 4;
- 
- 	/*
--	 * If p's nodes don't overlap ours, it may still help to kill p
--	 * because p may have allocated or otherwise mapped memory on
--	 * this node before. However it will be less likely.
--	 */
--	if (!has_intersects_mems_allowed(p))
--		points /= 8;
--
--	/*
- 	 * Adjust the score by oom_adj.
- 	 */
- 	if (oom_adj) {
-@@ -266,6 +258,8 @@ static struct task_struct *select_bad_process(unsigned long *ppoints,
- 			continue;
- 		if (mem && !task_in_mem_cgroup(p, mem))
- 			continue;
-+		if (!has_intersects_mems_allowed(p))
-+			continue;
- 
- 		/*
- 		 * This task already has access to memory reserves and is
+get_tmds_index_reg reads some value from stack when mlv happens
+to be equal to size of pramdac_table array. Fix it.
+
+Reported-by: Dan Carpenter <error27@gmail.com>
+Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+---
+ drivers/gpu/drm/nouveau/nouveau_bios.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/gpu/drm/nouveau/nouveau_bios.c b/drivers/gpu/drm/nouveau/nouveau_bios.c
+index 2cd0fad..e7be506 100644
+--- a/drivers/gpu/drm/nouveau/nouveau_bios.c
++++ b/drivers/gpu/drm/nouveau/nouveau_bios.c
+@@ -762,7 +762,7 @@ static uint32_t get_tmds_index_reg(struct drm_device *dev, uint8_t mlv)
+ 			dacoffset ^= 8;
+ 		return 0x6808b0 + dacoffset;
+ 	} else {
+-		if (mlv > ARRAY_SIZE(pramdac_table)) {
++		if (mlv >= ARRAY_SIZE(pramdac_table)) {
+ 			NV_ERROR(dev, "Magic Lookup Value too big (%02X)\n",
+ 									mlv);
+ 			return 0;
+-- 
+1.6.6.1
+
