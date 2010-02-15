@@ -1,42 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755154Ab0BOARk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 19:17:40 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:60890 "EHLO ogre.sisk.pl"
+	id S1754469Ab0BOAd6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 19:33:58 -0500
+Received: from ozlabs.org ([203.10.76.45]:46591 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754727Ab0BOAMg convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Feb 2010 19:12:36 -0500
-Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>,
-       "Nico" <segfault2@hotmail.com>
-References: <fQEllunEdO.A.-LB.HyIeLB@chimera>
-In-Reply-To: <fQEllunEdO.A.-LB.HyIeLB@chimera>
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+	id S1753799Ab0BOAd4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Feb 2010 19:33:56 -0500
+Date: Mon, 15 Feb 2010 11:33:41 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Don Zickus <dzickus@redhat.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, peterz@infradead.org,
+       gorcunov@gmail.com, aris@redhat.com
+Subject: Re: [PATCH 3/4] nmi_watchdog: fallback to software events when no
+ hardware pmu detected
+Message-ID: <20100215003341.GH13769@brick.ozlabs.ibm.com>
+References: <1266013161-31197-1-git-send-email-dzickus@redhat.com>
+ <1266013161-31197-3-git-send-email-dzickus@redhat.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-ID: <Xv2rBFCTXTH.A.BDD.VzIeLB@chimera>
-Subject: [Bug #14898] ksoftirqd problem
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Mon, 15 Feb 2010 00:52:46 +0100 (CET)
+In-Reply-To: <1266013161-31197-3-git-send-email-dzickus@redhat.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This message has been generated automatically as a part of a report
-of regressions introduced between 2.6.31 and 2.6.32.
+On Fri, Feb 12, 2010 at 05:19:20PM -0500, Don Zickus wrote:
 
-The following bug entry is on the current list of known regressions
-introduced between 2.6.31 and 2.6.32.  Please verify if it still should
-be listed and let the tracking team know (either way).
+> diff --git a/kernel/nmi_watchdog.c b/kernel/nmi_watchdog.c
+> index 73c1954..4f23505 100644
+> --- a/kernel/nmi_watchdog.c
+> +++ b/kernel/nmi_watchdog.c
+> @@ -166,8 +166,12 @@ cpu_callback(struct notifier_block *nfb, unsigned long action, void *hcpu)
+>  		wd_attr.sample_period = hw_nmi_get_sample_period();
+>  		event = perf_event_create_kernel_counter(&wd_attr, hotcpu, -1, wd_overflow);
+>  		if (IS_ERR(event)) {
+> -			printk(KERN_ERR "nmi watchdog failed to create perf event on %i: %p\n", hotcpu, event);
+> -			return NOTIFY_BAD;
+> +			wd_attr.type = PERF_TYPE_SOFTWARE;
+> +			event = perf_event_create_kernel_counter(&wd_attr, hotcpu, -1, wd_overflow);
 
+Here you don't explicitly set wd_attr.config or wd_attr.sample_period
+for the software event.  So PERF_COUNT_HW_CPU_CYCLES (which is 0)
+becomes PERF_COUNT_SW_CPU_CLOCK (also 0).  Which is either a happy
+accident or really really subtle. :)  I suggest you either set
+wd_attr.config or add a comment pointing out that you are using the
+fact that PERF_COUNT_HW_CPU_CYCLES == PERF_COUNT_SW_CPU_CLOCK.
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14898
-Subject		: ksoftirqd problem
-Submitter	: Nico <segfault2@hotmail.com>
-Date		: 2009-12-13 19:05 (64 days old)
-References	: http://marc.info/?l=linux-kernel&m=126073114325690&w=4
+Also you don't explicitly set wd_attr.sample_period, so it will be
+whatever hw_nmi_get_sample_period() returned, except now measured in
+nanoseconds rather than (presumably) cpu clock cycles.  Are you aiming
+for 1 interrupt per second?  If so you should set .sample_period to
+NSEC_PER_SEC.
 
-
+Paul.
