@@ -1,70 +1,42 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752649Ab0BOFXq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 00:23:46 -0500
-Received: from hera.kernel.org ([140.211.167.34]:48268 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752424Ab0BOFXo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 00:23:44 -0500
-Date: Mon, 15 Feb 2010 05:21:42 GMT
-From: tip-bot for Masami Hiramatsu <mhiramat@redhat.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       ananth@in.ibm.com, dle-develop@lists.sourceforge.net,
-       rostedt@goodmis.org, tglx@linutronix.de, mhiramat@redhat.com,
-       mingo@elte.hu, systemtap@sources.redhat.com
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       ananth@in.ibm.com, dle-develop@lists.sourceforge.net,
-       rostedt@goodmis.org, tglx@linutronix.de, mhiramat@redhat.com,
-       mingo@elte.hu, systemtap@sources.redhat.com
-In-Reply-To: <20100205062433.3745.36726.stgit@dhcp-100-2-132.bos.redhat.com>
-References: <20100205062433.3745.36726.stgit@dhcp-100-2-132.bos.redhat.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:tracing/urgent] kprobes: Add mcount to the kprobes blacklist
-Message-ID: <tip-8b833c506c05c498d4215e2c260be44225daf6de@git.kernel.org>
-Git-Commit-ID: 8b833c506c05c498d4215e2c260be44225daf6de
-X-Mailer: tip-git-log-daemon
+	id S1752791Ab0BOFae (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 00:30:34 -0500
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:49279 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752516Ab0BOFad (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Feb 2010 00:30:33 -0500
+Date: Mon, 15 Feb 2010 14:30:21 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] sh updates for 2.6.33-rc9
+Message-ID: <20100215053021.GE18636@linux-sh.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Mon, 15 Feb 2010 05:21:47 +0000 (UTC)
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  8b833c506c05c498d4215e2c260be44225daf6de
-Gitweb:     http://git.kernel.org/tip/8b833c506c05c498d4215e2c260be44225daf6de
-Author:     Masami Hiramatsu <mhiramat@redhat.com>
-AuthorDate: Fri, 5 Feb 2010 01:24:34 -0500
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 15 Feb 2010 05:45:49 +0100
+This simply hooks up TIF_SINGLESTEP around the hardware single-step
+enable/disable in addition to punting the step state down to
+tracehook_report_syscall_exit()/tracehook_signal_handler() in order to
+get the ptrace_notify() logic right, as reported by Mike Frysinger.
 
-kprobes: Add mcount to the kprobes blacklist
+With any luck, this should it for 2.6.33.
 
-Since mcount function can be called from everywhere,
-it should be blacklisted. Moreover, the "mcount" symbol
-is a special symbol name. So, it is better to put it in
-the generic blacklist.
+Please pull from:
 
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: systemtap <systemtap@sources.redhat.com>
-Cc: DLE <dle-develop@lists.sourceforge.net>
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-LKML-Reference: <20100205062433.3745.36726.stgit@dhcp-100-2-132.bos.redhat.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/kprobes.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+	master.kernel.org:/pub/scm/linux/kernel/git/lethal/sh-2.6.git sh/for-2.6.33
 
-diff --git a/kernel/kprobes.c b/kernel/kprobes.c
-index b7df302..c4b4343 100644
---- a/kernel/kprobes.c
-+++ b/kernel/kprobes.c
-@@ -93,6 +93,7 @@ static struct kprobe_blackpoint kprobe_blacklist[] = {
- 	{"native_get_debugreg",},
- 	{"irq_entries_start",},
- 	{"common_interrupt",},
-+	{"mcount",},	/* mcount can be called from everywhere */
- 	{NULL}    /* Terminator */
- };
- 
+Which contains:
+
+Paul Mundt (1):
+      sh64: fix tracing of signals.
+
+ arch/sh/kernel/ptrace_64.c |   11 +++++++++--
+ arch/sh/kernel/signal_64.c |    4 +++-
+ 2 files changed, 12 insertions(+), 3 deletions(-)
