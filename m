@@ -1,60 +1,51 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754891Ab0BODnK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 22:43:10 -0500
-Received: from ns3.baby-dragons.com ([64.62.236.141]:52959 "EHLO
-	ns3.baby-dragons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754762Ab0BODnH (ORCPT
+	id S1754948Ab0BODo2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 22:44:28 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:48461 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754762Ab0BODo0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Feb 2010 22:43:07 -0500
-Date: Sun, 14 Feb 2010 18:40:31 -0900 (AKST)
-From: "Mr. James W. Laferriere" <babydr@baby-dragons.com>
-To: Rudy Zijlstra <rudy@grumpydevil.homelinux.org>
-cc: "H. Peter Anvin" <hpa@zytor.com>, Asdo <asdo@shiftmail.org>,
-       Justin Piszcz <jpiszcz@lucidpixels.com>,
-       Michael Evans <mjevans1983@gmail.com>, linux-raid@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Linux mdadm superblock question.
-In-Reply-To: <4B788525.6000608@grumpydevil.homelinux.org>
-Message-ID: <alpine.LNX.2.01.1002141839210.12929@filesrv1.baby-dragons.com>
-References: <alpine.DEB.2.00.1002111758350.12031@p34.internal.lan> <4877c76c1002111752h23e14f7aibe58a89181e6f493@mail.gmail.com> <4B77044B.1020609@zytor.com> <alpine.DEB.2.00.1002131507260.31103@p34.internal.lan> <4B7719C1.1060400@zytor.com>
- <4B785C49.7010105@shiftmail.org> <4B786898.8030309@zytor.com> <4B788525.6000608@grumpydevil.homelinux.org>
-User-Agent: Alpine 2.01 (LNX 1184 2008-12-16)
+	Sun, 14 Feb 2010 22:44:26 -0500
+Date: Mon, 15 Feb 2010 03:44:17 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: David Chinner <david@fromorbit.com>, xfs-masters@oss.sgi.com,
+       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: linux-next: manual merge of the xfs tree with the vfs tree
+Message-ID: <20100215034417.GV30031@ZenIV.linux.org.uk>
+References: <20100215122740.87c6cb5f.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (ns3.baby-dragons.com [64.62.236.141]); Mon, 15 Feb 2010 03:40:34 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100215122740.87c6cb5f.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 	Hello All ,
+On Mon, Feb 15, 2010 at 12:27:40PM +1100, Stephen Rothwell wrote:
+> Hi all,
+> 
+> Today's linux-next merge of the xfs tree got a conflict in
+> fs/xfs/linux-2.6/xfs_super.c between commits
+> 4a295406e025bb7c8241ea956ec1b84830499e96 ("make sure data is on disk
+> before calling ->write_inode") and
+> 716c28c0bc8bcbdd26e819f38dfc8fdfaafc0289 ("pass writeback_control to
+> ->write_inode") from the vfs tree and commit
+> 07fec73625dc0db6f9aed68019918208a2ca53f5 ("xfs: log changed inodes
+> instead of writing them synchronously") from the xfs tree.
+> 
+> I fixed it up (I think - see below) and can carry the fix as necessary.
+> What other file systems are doing for these conflicts is to merge in the
+> "write_inode" branch of Al Viro's vfs tree
+> (git://git.kernel.org/pub/scm/linux/kernel/git/viro/vfs-2.6.git) which Al
+> has said will not be rebased.  (Both those commits are in that branch.)
 
-On Mon, 15 Feb 2010, Rudy Zijlstra wrote:
-> H. Peter Anvin wrote:
->> In Fedora 12, for example, Dracut tries to make the distinction between
->> whole RAID device and a partition device, and utterly fails -- often
->> resulting in data loss.
->> 
-> i do not use Fedora/redhat and do not intent to ever try them again... still, 
-> the point is valid
->> With a pointer to the beginning this would have been a trivial thing to
->> detect.
->> 
->> IMO it would make sense to support autoassemble for 1.0 superblocks, and
->> making them the default.  The purpose would be to get everyone off 0.9.
->>  However, *any* default is better than 1.1.
->> 	-hpa
-> As long is autodetect is supported in the kernel, i am willing to upgrade to 
-> 1.0 superblocks. BUT i need the autodetect in the kernel, as i refuse to use 
-> initrd for production servers.
-> Cheers,
-> Rudy
- 	I also have to agree with Rudy in this matter .
+Actually, I'd cheerfully rebased that sucker (to e.g. write_inode2); it has
+grown a trivial conflict with mainline after one of gfs2 merges and it's
+annoying to fix it up after each for-next rebase.
 
- 		Tia ,  JimL
--- 
-+------------------------------------------------------------------+
-| James   W.   Laferriere | System    Techniques | Give me VMS     |
-| Network&System Engineer | 3237     Holden Road |  Give me Linux  |
-| babydr@baby-dragons.com | Fairbanks, AK. 99709 |   only  on  AXP |
-+------------------------------------------------------------------+
+So I'd rather put a rebased variant and switched the for-next to using that,
+if people who'd pulled it already are OK with that.
