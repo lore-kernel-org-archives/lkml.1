@@ -1,58 +1,173 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755453Ab0BOPKR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 10:10:17 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:48070 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754572Ab0BOPKN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 10:10:13 -0500
-X-Authority-Analysis: v=1.0 c=1 a=8zPCGRDKdhIA:10 a=yQdBAQUQAAAA:8 a=iPiycYwJ9ZD8PF34ABYA:9 a=I4kz-dFMdV8GpB3_sxAA:7 a=-RggULWt9Y53CdIx_yzwdYEaCbMA:4 a=IcxpeKGZWnEA:10
-X-Cloudmark-Score: 0
-X-Originating-IP: 65.28.92.235
-Date: Mon, 15 Feb 2010 09:10:08 -0600
-From: Larry Finger <Larry.Finger@lwfinger.net>
-To: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: Bernhard Schiffner <bernhard@schiffner-limbach.de>,
-       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
-Subject: [PATCH 0/3 V2] staging: r8187se: Miscellaneous cleanups
-Message-ID: <4b7963d0.cocDj1pGMQ3LKF4a%Larry.Finger@lwfinger.net>
-User-Agent: Heirloom mailx 12.2 01/07/07
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	id S1755509Ab0BOPK2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 10:10:28 -0500
+Received: from sh.osrg.net ([192.16.179.4]:38256 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754572Ab0BOPKV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Feb 2010 10:10:21 -0500
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, netdev@vger.kernel.org,
+       fujita.tomonori@lab.ntt.co.jp, davem@davemloft.net,
+       Larry Finger <Larry.Finger@lwfinger.net>,
+       Stefano Brivio <stefano.brivio@polimi.it>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: [PATCH -mm v2 2/5] b43legacy: replace the ssb_dma API with the generic DMA API
+Date: Tue, 16 Feb 2010 00:04:07 +0900
+Message-Id: <1266246250-5344-3-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+X-Mailer: git-send-email 1.6.5
+In-Reply-To: <1266246250-5344-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+References: <1266246250-5344-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 16 Feb 2010 00:09:37 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This series of patches comprise further cleanups of the staging driver.
-
-1. Remove dead routine from r8180_core.c.
-
-2. Remove two private variables that have a fixed value.
-
-3. Remove dead code from r8185b_init.c.
-
-Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: Larry Finger <Larry.Finger@lwfinger.net>
+Cc: Stefano Brivio <stefano.brivio@polimi.it>
+Cc: John W. Linville <linville@tuxdriver.com>
 ---
+ drivers/net/wireless/b43legacy/dma.c |   49 ++++++++++++++++++----------------
+ 1 files changed, 26 insertions(+), 23 deletions(-)
 
-Patch 1:
-
- r8180_core.c |   37 -------------------------------------
- 1 file changed, 37 deletions(-)
-
-Patch 2:
-
- r8180.h           |    4
- r8180_core.c      |   90 -------------
- r8180_dm.c        |   71 ++--------
- r8180_rtl8225z2.c |  238 +++++++++++++++-------------------
- r8185b_init.c     |  368 +++++++++++-------------------------------------------
- 5 files changed, 197 insertions(+), 574 deletions(-)
-
-Patch 3:
-
- r8185b_init.c |  633 ----------------------------------------------------------
- 1 file changed, 2 insertions(+), 631 deletions(-)
-
+diff --git a/drivers/net/wireless/b43legacy/dma.c b/drivers/net/wireless/b43legacy/dma.c
+index 0a86bdf..7e94324 100644
+--- a/drivers/net/wireless/b43legacy/dma.c
++++ b/drivers/net/wireless/b43legacy/dma.c
+@@ -393,11 +393,11 @@ dma_addr_t map_descbuffer(struct b43legacy_dmaring *ring,
+ 	dma_addr_t dmaaddr;
+ 
+ 	if (tx)
+-		dmaaddr = ssb_dma_map_single(ring->dev->dev,
++		dmaaddr = dma_map_single(ring->dev->dev->dma_dev,
+ 					     buf, len,
+ 					     DMA_TO_DEVICE);
+ 	else
+-		dmaaddr = ssb_dma_map_single(ring->dev->dev,
++		dmaaddr = dma_map_single(ring->dev->dev->dma_dev,
+ 					     buf, len,
+ 					     DMA_FROM_DEVICE);
+ 
+@@ -411,11 +411,11 @@ void unmap_descbuffer(struct b43legacy_dmaring *ring,
+ 		      int tx)
+ {
+ 	if (tx)
+-		ssb_dma_unmap_single(ring->dev->dev,
++		dma_unmap_single(ring->dev->dev->dma_dev,
+ 				     addr, len,
+ 				     DMA_TO_DEVICE);
+ 	else
+-		ssb_dma_unmap_single(ring->dev->dev,
++		dma_unmap_single(ring->dev->dev->dma_dev,
+ 				     addr, len,
+ 				     DMA_FROM_DEVICE);
+ }
+@@ -427,8 +427,8 @@ void sync_descbuffer_for_cpu(struct b43legacy_dmaring *ring,
+ {
+ 	B43legacy_WARN_ON(ring->tx);
+ 
+-	ssb_dma_sync_single_for_cpu(ring->dev->dev,
+-				    addr, len, DMA_FROM_DEVICE);
++	dma_sync_single_for_cpu(ring->dev->dev->dma_dev,
++				addr, len, DMA_FROM_DEVICE);
+ }
+ 
+ static inline
+@@ -438,8 +438,8 @@ void sync_descbuffer_for_device(struct b43legacy_dmaring *ring,
+ {
+ 	B43legacy_WARN_ON(ring->tx);
+ 
+-	ssb_dma_sync_single_for_device(ring->dev->dev,
+-				       addr, len, DMA_FROM_DEVICE);
++	dma_sync_single_for_device(ring->dev->dev->dma_dev,
++				   addr, len, DMA_FROM_DEVICE);
+ }
+ 
+ static inline
+@@ -459,10 +459,10 @@ void free_descriptor_buffer(struct b43legacy_dmaring *ring,
+ static int alloc_ringmemory(struct b43legacy_dmaring *ring)
+ {
+ 	/* GFP flags must match the flags in free_ringmemory()! */
+-	ring->descbase = ssb_dma_alloc_consistent(ring->dev->dev,
+-						  B43legacy_DMA_RINGMEMSIZE,
+-						  &(ring->dmabase),
+-						  GFP_KERNEL);
++	ring->descbase = dma_alloc_coherent(ring->dev->dev->dma_dev,
++					    B43legacy_DMA_RINGMEMSIZE,
++					    &(ring->dmabase),
++					    GFP_KERNEL);
+ 	if (!ring->descbase) {
+ 		b43legacyerr(ring->dev->wl, "DMA ringmemory allocation"
+ 			     " failed\n");
+@@ -475,8 +475,8 @@ static int alloc_ringmemory(struct b43legacy_dmaring *ring)
+ 
+ static void free_ringmemory(struct b43legacy_dmaring *ring)
+ {
+-	ssb_dma_free_consistent(ring->dev->dev, B43legacy_DMA_RINGMEMSIZE,
+-				ring->descbase, ring->dmabase, GFP_KERNEL);
++	dma_free_coherent(ring->dev->dev->dma_dev, B43legacy_DMA_RINGMEMSIZE,
++			  ring->descbase, ring->dmabase);
+ }
+ 
+ /* Reset the RX DMA channel */
+@@ -588,7 +588,7 @@ static bool b43legacy_dma_mapping_error(struct b43legacy_dmaring *ring,
+ 					 size_t buffersize,
+ 					 bool dma_to_device)
+ {
+-	if (unlikely(ssb_dma_mapping_error(ring->dev->dev, addr)))
++	if (unlikely(dma_mapping_error(ring->dev->dev->dma_dev, addr)))
+ 		return 1;
+ 
+ 	switch (ring->type) {
+@@ -905,7 +905,7 @@ struct b43legacy_dmaring *b43legacy_setup_dmaring(struct b43legacy_wldev *dev,
+ 			goto err_kfree_meta;
+ 
+ 		/* test for ability to dma to txhdr_cache */
+-		dma_test = ssb_dma_map_single(dev->dev, ring->txhdr_cache,
++		dma_test = dma_map_single(dev->dev->dma_dev, ring->txhdr_cache,
+ 					      sizeof(struct b43legacy_txhdr_fw3),
+ 					      DMA_TO_DEVICE);
+ 
+@@ -919,7 +919,7 @@ struct b43legacy_dmaring *b43legacy_setup_dmaring(struct b43legacy_wldev *dev,
+ 			if (!ring->txhdr_cache)
+ 				goto err_kfree_meta;
+ 
+-			dma_test = ssb_dma_map_single(dev->dev,
++			dma_test = dma_map_single(dev->dev->dma_dev,
+ 					ring->txhdr_cache,
+ 					sizeof(struct b43legacy_txhdr_fw3),
+ 					DMA_TO_DEVICE);
+@@ -929,9 +929,9 @@ struct b43legacy_dmaring *b43legacy_setup_dmaring(struct b43legacy_wldev *dev,
+ 				goto err_kfree_txhdr_cache;
+ 		}
+ 
+-		ssb_dma_unmap_single(dev->dev, dma_test,
+-				     sizeof(struct b43legacy_txhdr_fw3),
+-				     DMA_TO_DEVICE);
++		dma_unmap_single(dev->dev->dma_dev, dma_test,
++				 sizeof(struct b43legacy_txhdr_fw3),
++				 DMA_TO_DEVICE);
+ 	}
+ 
+ 	ring->nr_slots = nr_slots;
+@@ -1039,9 +1039,12 @@ static int b43legacy_dma_set_mask(struct b43legacy_wldev *dev, u64 mask)
+ 	/* Try to set the DMA mask. If it fails, try falling back to a
+ 	 * lower mask, as we can always also support a lower one. */
+ 	while (1) {
+-		err = ssb_dma_set_mask(dev->dev, mask);
+-		if (!err)
+-			break;
++		err = dma_set_mask(dev->dev->dma_dev, mask);
++		if (!err) {
++			err = dma_set_coherent_mask(dev->dev->dma_dev, mask);
++			if (!err)
++				break;
++		}
+ 		if (mask == DMA_BIT_MASK(64)) {
+ 			mask = DMA_BIT_MASK(32);
+ 			fallback = 1;
+-- 
+1.6.5
 
