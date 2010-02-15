@@ -1,82 +1,51 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754309Ab0BOJSe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 04:18:34 -0500
-Received: from clegg.madduck.net ([193.242.105.96]:58863 "EHLO
-	clegg.madduck.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752971Ab0BOJSc (ORCPT
+	id S1754406Ab0BOJUg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 04:20:36 -0500
+Received: from moutng.kundenserver.de ([212.227.126.186]:56795 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753510Ab0BOJUe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 04:18:32 -0500
-Date: Mon, 15 Feb 2010 22:08:32 +1300
-From: martin f krafft <madduck@madduck.net>
-To: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
-Cc: Asdo <asdo@shiftmail.org>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Michael Evans <mjevans1983@gmail.com>,
-       Volker Armin Hemmann <volkerarmin@googlemail.com>
-Subject: Re: Linux mdadm superblock question.
-Message-ID: <20100215090832.GA24362@lapse.rw.madduck.net>
-Mail-Followup-To: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
-	Asdo <asdo@shiftmail.org>,
-	Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-	Michael Evans <mjevans1983@gmail.com>,
-	Volker Armin Hemmann <volkerarmin@googlemail.com>
-References: <201002140251.59668.volkerarmin@googlemail.com>
- <4877c76c1002132002s20d942c3i7cee5418cdcf369c@mail.gmail.com>
- <20100214193406.GA15722@khazad-dum.debian.net>
- <4B786154.8090103@shiftmail.org>
- <20100214212811.GB15313@twister.home>
+	Mon, 15 Feb 2010 04:20:34 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Subject: Re: [PATCH 2/2] net/macvtap: add vhost suppor
+Date: Mon, 15 Feb 2010 10:20:30 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.33-rc5; KDE/4.3.2; x86_64; ; )
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Ed Swierk <eswierk@aristanetworks.com>,
+       Patrick McHardy <kaber@trash.net>, Sridhar Samudrala <sri@us.ibm.com>,
+       qemu-devel@nongnu.org
+References: <201002131133.43028.arnd@arndb.de> <201002131135.08477.arnd@arndb.de> <20100214132732.GB31180@redhat.com>
+In-Reply-To: <20100214132732.GB31180@redhat.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-ripemd160;
-	protocol="application/pgp-signature"; boundary="azLHFNyN32YCQGCU"
-Content-Disposition: inline
-In-Reply-To: <20100214212811.GB15313@twister.home>
-X-Motto: Keep the good times rollin'
-X-OS: Debian GNU/Linux squeeze/sid kernel 2.6.32-1-686 i686
-X-Spamtrap: madduck.bogus@madduck.net
-X-Subliminal-Message: debian/rules!
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002151020.30127.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/MrxHm/5cnnxuo8twyLJnbvLyzHxFvjuS15iV
+ fChatEDhOEFV3wQL3zI+O7sw81oGYWt7njGb1VBzxTHc0ue7mS
+ Szm26+Ax/aIQnMFM/LWAg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sunday 14 February 2010, Michael S. Tsirkin wrote:
+> > @@ -473,7 +477,7 @@ static struct socket *get_socket(int fd)
+> >       sock = get_raw_socket(fd);
+> >       if (!IS_ERR(sock))
+> >               return sock;
+> > -     sock = get_tun_socket(fd);
+> > +     sock = get_tap_socket(fd);
+> >       if (!IS_ERR(sock))
+> >               return sock;
+> >       return ERR_PTR(-ENOTSOCK);
+> 
+> This will also need a dependency on macvtap in Kconfig.
+> See how it's done for tun.
 
---azLHFNyN32YCQGCU
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Ok, I'll add that.
 
-also sprach Gabor Gombas <gombasg@digikabel.hu> [2010.02.15.1028 +1300]:
-> There is no autodetection with 1.1. Once you have mdadm.conf you have
-> pretty hard rules about what to look for and how to assemble it - ie.
-> there is not much left to "auto" detect. Real autodetection would mean
-> there is _no_ such information available, and you figure out everything
-> by just looking at the devices you find.
+Thanks,
 
-Which, coincidentally, is where we're heading with incremental
-assembly. Check the Debian experimental package if you want to try.
-
---=20
-martin | http://madduck.net/ | http://two.sentenc.es/
-=20
-"we should have a volleyballocracy.
- we elect a six-pack of presidents.
- each one serves until they screw up,
- at which point they rotate."
-                                                      -- dennis miller
-=20
-spamtraps: madduck.bogus@madduck.net
-
---azLHFNyN32YCQGCU
-Content-Type: application/pgp-signature; name="digital_signature_gpg.asc"
-Content-Description: Digital signature (see http://martin-krafft.net/gpg/)
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEAREDAAYFAkt5DxAACgkQIgvIgzMMSnX7SACguK02yNNYVQxEtzD2fFtSvV/s
-6ycAoNmLN2SnLIk6r8hRhkbd+YiX65gh
-=J9H+
------END PGP SIGNATURE-----
-
---azLHFNyN32YCQGCU--
+	Arnd
