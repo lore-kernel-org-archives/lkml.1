@@ -1,96 +1,48 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755843Ab0BORua (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 12:50:30 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:45588 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755332Ab0BORu2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 12:50:28 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Mon, 15 Feb 2010 09:50:22 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@makko.or.mcafeemobile.com
-To: Eric Dumazet <eric.dumazet@gmail.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, stephane.thiell@cea.fr
-Subject: Re: [patch/rfc] Make poll/select report error (POLLNVAL and EBADF)
- for unsupported files
-In-Reply-To: <1266255759.8262.26.camel@edumazet-laptop>
-Message-ID: <alpine.DEB.2.00.1002150945460.7390@makko.or.mcafeemobile.com>
-References: <alpine.DEB.2.00.1002141403240.18795@makko.or.mcafeemobile.com> <1266255759.8262.26.camel@edumazet-laptop>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	id S1755948Ab0BORwp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 12:52:45 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:54022 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755332Ab0BORwo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Feb 2010 12:52:44 -0500
+Date: Mon, 15 Feb 2010 12:51:06 -0500
+From: Don Zickus <dzickus@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, peterz@infradead.org, gorcunov@gmail.com,
+       aris@redhat.com
+Subject: Re: [PATCH 1/4] nmi_watchdog: use a boolean config flag for compiling
+Message-ID: <20100215175106.GM3062@redhat.com>
+References: <1266013161-31197-1-git-send-email-dzickus@redhat.com>
+ <20100214165941.GA26329@elte.hu>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323329-22440617-1266256226=:7390"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100214165941.GA26329@elte.hu>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
---8323329-22440617-1266256226=:7390
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-
-On Mon, 15 Feb 2010, Eric Dumazet wrote:
-
-> Le dimanche 14 février 2010 à 14:27 -0800, Davide Libenzi a écrit :
-> > Currently poll and select consider a non poll-supported file as one with 
-> > full event mask set, instead of reporting proper error to the caller.
-> > This behavior can fool the caller of proper functionality being returned, 
-> > while instead no valid event was processed/read from the device.
-> > This came out linked to this bug report:
-> > 
-> > http://bugzilla.kernel.org/show_bug.cgi?id=15272
-> > 
-> > IMHO, it'd be more adequate to report proper error code, for files that do 
-> > not support f_op->poll(), but then I am also not sure how much breakage 
-> > can this bring to existing (already broken "in just the right way") 
-> > applications.
-> > Untested, discussion-only, patch.
-> > 
-> > 
-> > Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
-> > 
-> > 
-> > - Davide
+On Sun, Feb 14, 2010 at 05:59:41PM +0100, Ingo Molnar wrote:
 > 
-> Hmm, according to POSIX :
+> i'm still getting build failures:
 > 
-> 	The poll() function shall support regular files, terminal and
-> pseudo-terminal devices, FIFOs, pipes, sockets ...
+> arch/x86/built-in.o: In function `arch_trigger_all_cpu_backtrace':
+> (.text+0x151f5): undefined reference to `apic'
 > 
-> 	Regular files shall always poll TRUE for reading and writing.
-> 
-> 
-> So unless I missed something, this patch could break some conformant
-> applications.
+> config attached.
 
-If that's POSIX, than the patch is no good.  I missed the part on the 
-regular files being always ready, which explaqins why the code is as it is 
-right now.
+Hmm, I can't get the config to match up properly when I run 'make
+oldconfig', even though I am using the HEAD of perf/nmi.  I took the
+defaults anyway and used 'ARCH=i386 make all' but couldn't reproduce your
+build failure.
 
+Looking through the code, is there ever case where 'apic' is undefined?
+The arch_trigger_all_cpu_backtrace should match identically to the old nmi
+code, so I am stuck on how to fix this.
 
-> In particular, if an application is polling() on stdin (usually a tty),
-> and other 'files', what's happening if we do :
-> 
-> cat replay_file | application
-> 
-> Either it wont read stdin, or application exits without reading its
-> input.
+Thoughts?
 
-That case would be fine, since that's a pipe.
-This will behave differently:
-
-$ application < replay_file
-
-Anyway, since POSIX states the above, the patch cannot apply.
-
-
-- Davide
-
-
---8323329-22440617-1266256226=:7390--
+Cheers,
+Don
