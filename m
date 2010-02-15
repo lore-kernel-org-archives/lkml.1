@@ -1,59 +1,92 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755142Ab0BOEUT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 23:20:19 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:32925 "EHLO smtps.tip.net.au"
+	id S1755242Ab0BOEUf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 23:20:35 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:32933 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754494Ab0BOEUR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Feb 2010 23:20:17 -0500
-Date: Mon, 15 Feb 2010 15:20:09 +1100
+	id S1755146Ab0BOEUZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Feb 2010 23:20:25 -0500
+Date: Mon, 15 Feb 2010 15:20:23 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: David Miller <davem@davemloft.net>, <netdev@vger.kernel.org>
 Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>,
-       Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Subject: linux-next: build failure after merge of the net tree
-Message-Id: <20100215152009.c8f9949c.sfr@canb.auug.org.au>
+       Jouni Malinen <jouni.malinen@atheros.com>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: linux-next: manual merge of the net tree with the wireless-current
+ tree
+Message-Id: <20100215152023.0696878f.sfr@canb.auug.org.au>
 X-Mailer: Sylpheed 3.0.0beta7 (GTK+ 2.18.6; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__15_Feb_2010_15_20_09_+1100_6koxfCKX=wbc9kxQ"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__15_Feb_2010_15_20_09_+1100_6koxfCKX=wbc9kxQ
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi all,
 
-Hi Dave,
+Today's linux-next merge of the net tree got a conflict in
+net/mac80211/rate.c between commit
+5affcd6ba2036b59a4dee3f0576ae3584e92e4f1 ("mac80211: fix handling of
+null-rate control in rate_control_get_rate") from the wireless-current
+tree and commit 37eb0b164cf9fa9f70c8500926f5cde7c652f48e
+("cfg80211/mac80211: Use more generic bitrate mask for rate control")
+from the net tree.
 
-After merging the net tree, today's linux-next build (x86_64 allmodconfig)
-failed like this:
+John, I know you mentioned this, so I assume it will go away soon.
 
-usr/include/linux/ethtool.h:17: included file 'linux/rculist.h' is not expo=
-rted
-
-Caused by commit 15682bc488d4af8c9bb998844a94281025e0a333 ("ethtool:
-Introduce n-tuple filter programming support").
-
-I have used the version of the net tree from next-20100212 for today.
---=20
+I fixed it up (I think - see below).
+-- 
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
 
---Signature=_Mon__15_Feb_2010_15_20_09_+1100_6koxfCKX=wbc9kxQ
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkt4y3kACgkQjjKRsyhoI8zX7ACeLoKbkpK8opy6QPyiOdx1cRU/
-HaQAoKHFNGT6hZsjJkaHaBsckHXXcTJr
-=fTdb
------END PGP SIGNATURE-----
-
---Signature=_Mon__15_Feb_2010_15_20_09_+1100_6koxfCKX=wbc9kxQ--
+diff --cc net/mac80211/rate.c
+index 12a2bff,c74b7c8..0000000
+--- a/net/mac80211/rate.c
++++ b/net/mac80211/rate.c
+@@@ -245,26 -303,31 +303,34 @@@ void rate_control_get_rate(struct ieee8
+  		info->control.rates[i].count = 1;
+  	}
+  
+ +	if (sdata->local->hw.flags & IEEE80211_HW_HAS_RATE_CONTROL)
+ +		return;
+ +
+- 	if (sta && sdata->force_unicast_rateidx > -1) {
+- 		info->control.rates[0].idx = sdata->force_unicast_rateidx;
+- 	} else {
+- 		ref->ops->get_rate(ref->priv, ista, priv_sta, txrc);
+- 		info->flags |= IEEE80211_TX_INTFL_RCALGO;
+- 	}
++ 	ref->ops->get_rate(ref->priv, ista, priv_sta, txrc);
+  
+  	/*
+- 	 * try to enforce the maximum rate the user wanted
++ 	 * Try to enforce the rateidx mask the user wanted. skip this if the
++ 	 * default mask (allow all rates) is used to save some processing for
++ 	 * the common case.
+  	 */
+- 	if (sdata->max_ratectrl_rateidx > -1)
++ 	mask = sdata->rc_rateidx_mask[info->band];
++ 	if (mask != (1 << txrc->sband->n_bitrates) - 1) {
++ 		if (sta) {
++ 			/* Filter out rates that the STA does not support */
++ 			mask &= sta->sta.supp_rates[info->band];
++ 		}
++ 		/*
++ 		 * Make sure the rate index selected for each TX rate is
++ 		 * included in the configured mask and change the rate indexes
++ 		 * if needed.
++ 		 */
+  		for (i = 0; i < IEEE80211_TX_MAX_RATES; i++) {
++ 			/* Rate masking supports only legacy rates for now */
+  			if (info->control.rates[i].flags & IEEE80211_TX_RC_MCS)
+  				continue;
+- 			info->control.rates[i].idx =
+- 				min_t(s8, info->control.rates[i].idx,
+- 				      sdata->max_ratectrl_rateidx);
++ 			rate_idx_match_mask(&info->control.rates[i],
++ 					    txrc->sband->n_bitrates, mask);
++ 		}
+  	}
+  
+  	BUG_ON(info->control.rates[0].idx < 0);
