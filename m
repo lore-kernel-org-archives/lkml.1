@@ -1,75 +1,61 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756275Ab0BOVDM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 16:03:12 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:36501 "EHLO ogre.sisk.pl"
+	id S1756373Ab0BOVFM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 16:05:12 -0500
+Received: from gate.crashing.org ([63.228.1.57]:44707 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752468Ab0BOVDK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 16:03:10 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: Is it supposed to be ok to call del_gendisk while userspace is frozen?
-Date: Mon, 15 Feb 2010 22:04:04 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.33-rc8-rjw; KDE/4.3.5; x86_64; ; )
-Cc: "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "linux-pm" <linux-pm@lists.linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>
-References: <1266067746.16937.7.camel@maxim-laptop> <1266249634.10662.6.camel@maxim-laptop>
-In-Reply-To: <1266249634.10662.6.camel@maxim-laptop>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
+	id S1755898Ab0BOVFL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Feb 2010 16:05:11 -0500
+Subject: Re: register long sp asm("r1") incorrect
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: paulus@samba.org, linuxppc-dev@ozlabs.org,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Segher Boessenkool <segher@kernel.crashing.org>, bergner@vnet.ibm.com
+In-Reply-To: <20100215202854.GA21601@elf.ucw.cz>
+References: <20100209152444.GA30176@atrey.karlin.mff.cuni.cz>
+	 <1265866273.16346.34.camel@pasglop>
+	 <20100215073405.GB20456@atrey.karlin.mff.cuni.cz>
+	 <1266263992.16346.125.camel@pasglop>  <20100215202854.GA21601@elf.ucw.cz>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 16 Feb 2010 08:04:58 +1100
+Message-ID: <1266267898.16346.135.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-Message-Id: <201002152204.04148.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 15 February 2010, Maxim Levitsky wrote:
-> On Sat, 2010-02-13 at 15:29 +0200, Maxim Levitsky wrote: 
-> > I noticed that currently calling del_gendisk leads to sure deadlock if
-> > attemped from .suspend or .resume functions.
-
-Well, it shouldn't be called from there, then.
-
-> > Something like that:
+On Mon, 2010-02-15 at 21:28 +0100, Pavel Machek wrote:
+> On Tue 2010-02-16 06:59:52, Benjamin Herrenschmidt wrote:
+> > On Mon, 2010-02-15 at 08:34 +0100, Pavel Machek wrote:
+> > > > On Tue, 2010-02-09 at 16:24 +0100, Pavel Machek wrote:
+> > > > > ...according to gcc docs, sp should be global, or placement in
+> > > > > register is not guaranteed (except at asm boundaries, but there
+> > > are
+> > > > > none).
+> > > > 
+> > > > Sorry I'm not sure I grok what you mean.
+> > > 
+> > > Well, according to gcc doscs and my experience, local "register int
+> > > __asm()" variables only work by accident (or not at all). 
 > > 
-> > [<ffffffff8106620a>] ? prepare_to_wait+0x2a/0x90
-> > [<ffffffff810790bd>] ? trace_hardirqs_on+0xd/0x10
-> > [<ffffffff8140db12>] ? _raw_spin_unlock_irqrestore+0x42/0x80
-> > [<ffffffff8112a390>] ? bdi_sched_wait+0x0/0x20
-> > [<ffffffff8112a39e>] bdi_sched_wait+0xe/0x20
-> > [<ffffffff8140af6f>] __wait_on_bit+0x5f/0x90
-> > [<ffffffff8112a390>] ? bdi_sched_wait+0x0/0x20
-> > [<ffffffff8140b018>] out_of_line_wait_on_bit+0x78/0x90
-> > [<ffffffff81065fd0>] ? wake_bit_function+0x0/0x40
-> > [<ffffffff8112a2d3>] ? bdi_queue_work+0xa3/0xe0
-> > [<ffffffff8112a37f>] bdi_sync_writeback+0x6f/0x80
-> > [<ffffffff8112a3d2>] sync_inodes_sb+0x22/0x120
-> > [<ffffffff8112f1d2>] __sync_filesystem+0x82/0x90
-> > [<ffffffff8112f3db>] sync_filesystem+0x4b/0x70
-> > [<ffffffff811391de>] fsync_bdev+0x2e/0x60
-> > [<ffffffff812226be>] invalidate_partition+0x2e/0x50
-> > [<ffffffff8116b92f>] del_gendisk+0x3f/0x140
-> > [<ffffffffa00c0233>] mmc_blk_remove+0x33/0x60 [mmc_block]
-> > [<ffffffff81338977>] mmc_bus_remove+0x17/0x20
-> > [<ffffffff812ce746>] __device_release_driver+0x66/0xc0
-> > [<ffffffff812ce89d>] device_release_driver+0x2d/0x40
-> > [<ffffffff812cd9b5>] bus_remove_device+0xb5/0x120
-> > [<ffffffff812cb46f>] device_del+0x12f/0x1a0
-> > [<ffffffff81338a5b>] mmc_remove_card+0x5b/0x90
-> > [<ffffffff8133ac27>] mmc_sd_remove+0x27/0x50
-> > [<ffffffff81337d8c>] mmc_resume_host+0x10c/0x140
-> > [<ffffffffa00850e9>] sdhci_resume_host+0x69/0xa0 [sdhci]
-> > [<ffffffffa0bdc39e>] sdhci_pci_resume+0x8e/0xb0 [sdhci_pci]
-> > 
-> > bdi_queue_work seems to be the problem.
-> > 
-> > Some device drivers need to remove their cards logically in .suspend,
-> > because the card is removable, and can be changed while system is
-> > suspended.
+> > Hrm... we definitely rely on that for our thread_info() access, and so
+> > far it has worked well for us, but I'll poke our gcc folks just in case.
+> 
+> Thanks, and let me know about any results.
 
-I don't know how to resolve this right now.
+All the gcc folks I talked to say something along the lines that there
+is no way in hell it doesn't work :-)
 
-Rafael
+It's true that most other use of it we have are global scope (local_paca
+in r13, glibc use of r2/r13, etc...) afaik, but since r1 itself is the
+stack pointer always, I think they pretty much guarantee it works.
+
+I'm CCing a couple of experts just to be sure.
+
+Cheers,
+Ben.
+
+
