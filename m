@@ -1,51 +1,60 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754567Ab0BOGyO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 01:54:14 -0500
-Received: from mail-ew0-f228.google.com ([209.85.219.228]:41759 "EHLO
-	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752662Ab0BOGyN convert rfc822-to-8bit (ORCPT
+	id S1754712Ab0BOGyY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 01:54:24 -0500
+Received: from vitalin.sorra.shikadi.net ([64.71.152.201]:47833 "EHLO
+	vitalin.sorra.shikadi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754594Ab0BOGyW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 01:54:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=bcNo4Iw84+JyOY/q6pMWlNE6wAzyG+mcjD5SRBQ1SV7hz/r8/yKxui2ZltQRk3661a
-         I5sraTksonmR+uMlHHToObBb1RjRNsglctI3flLyjiuMe6MWAz43hwRRwBHedqUE5+tO
-         cB+cfKTkAAbKm40MB2Cm5phfzYWKfTqQcOm/o=
+	Mon, 15 Feb 2010 01:54:22 -0500
+X-Greylist: delayed 391 seconds by postgrey-1.27 at vger.kernel.org; Mon, 15 Feb 2010 01:54:22 EST
+Message-ID: <4B78EF9C.6040801@shikadi.net>
+Date: Mon, 15 Feb 2010 16:54:20 +1000
+From: Adam Nielsen <a.nielsen@shikadi.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-GB; rv:1.8.1.23) Gecko/20091130 Thunderbird/2.0.0.23 Mnenhy/0.7.5.0
 MIME-Version: 1.0
-In-Reply-To: <Xv2rBFCTXTH.A.DTC.vyIeLB@chimera>
-References: <fQEllunEdO.A.-LB.HyIeLB@chimera>
-	 <Xv2rBFCTXTH.A.DTC.vyIeLB@chimera>
-Date: Mon, 15 Feb 2010 07:54:11 +0100
-Message-ID: <b170af451002142254w5c6656eegdee2431b0146d3f8@mail.gmail.com>
-Subject: Re: [Bug #15096] Resume lock up -- bisected, commit 
-	3a1151e3f124fd1a2c54b8153f510f1a7c715369
-From: =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Len Brown <len.brown@intel.com>,
-       Stefan Bader <stefan.bader@canonical.com>,
-       Zhang Rui <rui.zhang@intel.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: LKML Mailinglist <linux-kernel@vger.kernel.org>
+Subject: UML error - apps killed 50% of the time
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2010/2/15 Rafael J. Wysocki <rjw@sisk.pl>:
-> This message has been generated automatically as a part of a report
-> of regressions introduced between 2.6.31 and 2.6.32.
->
-> The following bug entry is on the current list of known regressions
-> introduced between 2.6.31 and 2.6.32.  Please verify if it still should
-> be listed and let the tracking team know (either way).
+Hi all,
 
-It should be, there is one testing request I didn't make yet. I'll do
-this soon, after my today's study final exam.
+ From my other message I am trying to get a UML kernel running again after an 
+OS upgrade, but I am unable to get it working again (on the original machine 
+this time, everything is 32-bit.)
 
--- 
-Rafał
+When I boot the kernel normally I get tons of error messages, but if I boot it 
+with "init=/bin/bash" I can get a command prompt up.  Unfortunately most of 
+the time my apps break:
+
+$ ls
+bin  boot  dev  etc  home  lib  lost+found  mnt  opt  proc  root  sbin  sys 
+tmp  usr  var
+$ ls
+Killed
+$ ls
+bin  boot  dev  etc  home  lib  lost+found  mnt  opt  proc  root  sbin  sys 
+tmp  usr  var
+$ ls
+Killed
+$ ls
+Killed
+$ ls
+bin  boot  dev  etc  home  lib  lost+found  mnt  opt  proc  root  sbin  sys 
+tmp  usr  var
+
+What's going on?  My host dmesg says things like this:
+
+vmlinux[6300] general protection eip:b7ea5124 esp:1785bdfc error:0
+
+Why doesn't UML work any more?  It's running the same filesystem and apps as 
+before.  Any help would be much appreciated, I've wasted hours on this now :-(
+
+Thanks,
+Adam.
+
+(please CC)
