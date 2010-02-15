@@ -1,18 +1,18 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756159Ab0BOSfu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 13:35:50 -0500
-Received: from mail.perches.com ([173.55.12.10]:1072 "EHLO mail.perches.com"
+	id S1756136Ab0BOSff (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 13:35:35 -0500
+Received: from mail.perches.com ([173.55.12.10]:1080 "EHLO mail.perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756073Ab0BOSeb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 13:34:31 -0500
+	id S1756080Ab0BOSec (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Feb 2010 13:34:32 -0500
 From: Joe Perches <joe@perches.com>
 To: netdev@vger.kernel.org
 Cc: Alexander Indenbaum <baum@tehutinetworks.net>,
        Andy Gospodarek <andy@greyhouse.net>, linux-kernel@vger.kernel.org
-Subject: [PATCH net-next 4/7] drivers/net/tehuti.c: Hoist assigns out of ifs
-Date: Mon, 15 Feb 2010 10:34:23 -0800
-Message-Id: <2b9778d86197605cd29314bdce74d29ab169528b.1266258417.git.joe@perches.com>
+Subject: [PATCH net-next 5/7] drivers/net/tehuti.c: trivial checkpatch cleanups
+Date: Mon, 15 Feb 2010 10:34:24 -0800
+Message-Id: <864b86bd554b60128bd24fde4c34863c1eac86fd.1266258417.git.joe@perches.com>
 X-Mailer: git-send-email 1.7.0.14.g7e948
 In-Reply-To: <cover.1266258417.git.joe@perches.com>
 References: <cover.1266258417.git.joe@perches.com>
@@ -22,136 +22,61 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- drivers/net/tehuti.c |   49 +++++++++++++++++++++++++++----------------------
- 1 files changed, 27 insertions(+), 22 deletions(-)
+ drivers/net/tehuti.c |   14 +++++++-------
+ 1 files changed, 7 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/net/tehuti.c b/drivers/net/tehuti.c
-index 82e522a..fdf87ea 100644
+index fdf87ea..b295b92 100644
 --- a/drivers/net/tehuti.c
 +++ b/drivers/net/tehuti.c
-@@ -420,8 +420,10 @@ static int bdx_hw_start(struct bdx_priv *priv)
+@@ -419,7 +419,7 @@ static int bdx_hw_start(struct bdx_priv *priv)
+ 	WRITE_REG(priv, regGMAC_RXF_A, GMAC_RX_FILTER_OSEN |
  		  GMAC_RX_FILTER_AM | GMAC_RX_FILTER_AB);
  
- #define BDX_IRQ_TYPE	((priv->nic->irq_type == IRQ_MSI)?0:IRQF_SHARED)
--	if ((rc = request_irq(priv->pdev->irq, bdx_isr_napi, BDX_IRQ_TYPE,
--			 ndev->name, ndev)))
+-#define BDX_IRQ_TYPE	((priv->nic->irq_type == IRQ_MSI)?0:IRQF_SHARED)
++#define BDX_IRQ_TYPE	((priv->nic->irq_type == IRQ_MSI) ? 0 : IRQF_SHARED)
+ 
+ 	rc = request_irq(priv->pdev->irq, bdx_isr_napi, BDX_IRQ_TYPE,
+ 			 ndev->name, ndev);
+@@ -1605,7 +1605,7 @@ static inline int bdx_tx_space(struct bdx_priv *priv)
+ 	fsize = f->m.rptr - f->m.wptr;
+ 	if (fsize <= 0)
+ 		fsize = f->m.memsz + fsize;
+-	return (fsize);
++	return fsize;
+ }
+ 
+ /* bdx_tx_transmit - send packet to NIC
+@@ -2295,13 +2295,13 @@ bdx_set_coalesce(struct net_device *netdev, struct ethtool_coalesce *ecoal)
+ /* Convert RX fifo size to number of pending packets */
+ static inline int bdx_rx_fifo_size_to_packets(int rx_size)
+ {
+-	return ((FIFO_SIZE * (1 << rx_size)) / sizeof(struct rxf_desc));
++	return (FIFO_SIZE * (1 << rx_size)) / sizeof(struct rxf_desc);
+ }
+ 
+ /* Convert TX fifo size to number of pending packets */
+ static inline int bdx_tx_fifo_size_to_packets(int tx_size)
+ {
+-	return ((FIFO_SIZE * (1 << tx_size)) / BDX_TXF_DESC_SZ);
++	return (FIFO_SIZE * (1 << tx_size)) / BDX_TXF_DESC_SZ;
+ }
+ 
+ /*
+@@ -2393,10 +2393,10 @@ static int bdx_get_sset_count(struct net_device *netdev, int stringset)
+ 	case ETH_SS_STATS:
+ 		BDX_ASSERT(ARRAY_SIZE(bdx_stat_names)
+ 			   != sizeof(struct bdx_stats) / sizeof(u64));
+-		return ((priv->stats_flag) ? ARRAY_SIZE(bdx_stat_names)	: 0);
+-	default:
+-		return -EINVAL;
++		return (priv->stats_flag) ? ARRAY_SIZE(bdx_stat_names)	: 0;
+ 	}
 +
-+	rc = request_irq(priv->pdev->irq, bdx_isr_napi, BDX_IRQ_TYPE,
-+			 ndev->name, ndev);
-+	if (rc)
- 		goto err_irq;
- 	bdx_enable_interrupts(priv);
++	return -EINVAL;
+ }
  
-@@ -603,18 +605,15 @@ static int bdx_open(struct net_device *ndev)
- 	if (netif_running(ndev))
- 		netif_stop_queue(priv->ndev);
- 
--	if ((rc = bdx_tx_init(priv)))
--		goto err;
--
--	if ((rc = bdx_rx_init(priv)))
--		goto err;
--
--	if ((rc = bdx_fw_load(priv)))
-+	if ((rc = bdx_tx_init(priv)) ||
-+	    (rc = bdx_rx_init(priv)) ||
-+	    (rc = bdx_fw_load(priv)))
- 		goto err;
- 
- 	bdx_rx_alloc_skbs(priv, &priv->rxf_fifo0);
- 
--	if ((rc = bdx_hw_start(priv)))
-+	rc = bdx_hw_start(priv);
-+	if (rc)
- 		goto err;
- 
- 	napi_enable(&priv->napi);
-@@ -1027,10 +1026,9 @@ static int bdx_rx_init(struct bdx_priv *priv)
- 			  regRXF_CFG0_0, regRXF_CFG1_0,
- 			  regRXF_RPTR_0, regRXF_WPTR_0))
- 		goto err_mem;
--	if (!
--	    (priv->rxdb =
--	     bdx_rxdb_create(priv->rxf_fifo0.m.memsz /
--			     sizeof(struct rxf_desc))))
-+	priv->rxdb = bdx_rxdb_create(priv->rxf_fifo0.m.memsz /
-+				     sizeof(struct rxf_desc));
-+	if (!priv->rxdb)
- 		goto err_mem;
- 
- 	priv->rxf_fifo0.m.pktsz = priv->ndev->mtu + VLAN_ETH_HLEN;
-@@ -1114,7 +1112,8 @@ static void bdx_rx_alloc_skbs(struct bdx_priv *priv, struct rxf_fifo *f)
- 	ENTER;
- 	dno = bdx_rxdb_available(db) - 1;
- 	while (dno > 0) {
--		if (!(skb = dev_alloc_skb(f->m.pktsz + NET_IP_ALIGN))) {
-+		skb = dev_alloc_skb(f->m.pktsz + NET_IP_ALIGN);
-+		if (!skb) {
- 			pr_err("NO MEM: dev_alloc_skb failed\n");
- 			break;
- 		}
-@@ -1934,8 +1933,9 @@ bdx_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 		RET(-ENOMEM);
- 
-     /************** pci *****************/
--	if ((err = pci_enable_device(pdev)))	/* it trigers interrupt, dunno why. */
--		goto err_pci;			/* it's not a problem though */
-+	err = pci_enable_device(pdev);
-+	if (err)			/* it triggers interrupt, dunno why. */
-+		goto err_pci;		/* it's not a problem though */
- 
- 	if (!(err = pci_set_dma_mask(pdev, DMA_BIT_MASK(64))) &&
- 	    !(err = pci_set_consistent_dma_mask(pdev, DMA_BIT_MASK(64)))) {
-@@ -1949,7 +1949,8 @@ bdx_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 		pci_using_dac = 0;
- 	}
- 
--	if ((err = pci_request_regions(pdev, BDX_DRV_NAME)))
-+	err = pci_request_regions(pdev, BDX_DRV_NAME);
-+	if (err)
- 		goto err_dma;
- 
- 	pci_set_master(pdev);
-@@ -1960,7 +1961,8 @@ bdx_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 		pr_err("no MMIO resource\n");
- 		goto err_out_res;
- 	}
--	if ((regionSize = pci_resource_len(pdev, 0)) < BDX_REGS_SIZE) {
-+	regionSize = pci_resource_len(pdev, 0);
-+	if (regionSize < BDX_REGS_SIZE) {
- 		err = -EIO;
- 		pr_err("MMIO resource (%x) too small\n", regionSize);
- 		goto err_out_res;
-@@ -1992,7 +1994,8 @@ bdx_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	nic->irq_type = IRQ_INTX;
- #ifdef BDX_MSI
- 	if ((readl(nic->regs + FPGA_VER) & 0xFFF) >= 378) {
--		if ((err = pci_enable_msi(pdev)))
-+		err = pci_enable_msi(pdev);
-+		if (err)
- 			pr_err("Can't eneble msi. error is %d\n", err);
- 		else
- 			nic->irq_type = IRQ_MSI;
-@@ -2002,7 +2005,8 @@ bdx_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 
-     /************** netdev **************/
- 	for (port = 0; port < nic->port_num; port++) {
--		if (!(ndev = alloc_etherdev(sizeof(struct bdx_priv)))) {
-+		ndev = alloc_etherdev(sizeof(struct bdx_priv));
-+		if (!ndev) {
- 			err = -ENOMEM;
- 			pr_err("alloc_etherdev failed\n");
- 			goto err_out_iomap;
-@@ -2075,7 +2079,8 @@ bdx_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 			goto err_out_iomap;
- 		}
- 		SET_NETDEV_DEV(ndev, &pdev->dev);
--		if ((err = register_netdev(ndev))) {
-+		err = register_netdev(ndev);
-+		if (err) {
- 			pr_err("register_netdev failed\n");
- 			goto err_out_free;
- 		}
+ /*
 -- 
 1.7.0.14.g7e948
 
