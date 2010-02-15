@@ -1,67 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756545Ab0BOUjG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 15:39:06 -0500
-Received: from mail-fx0-f215.google.com ([209.85.220.215]:34930 "EHLO
-	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755772Ab0BOUjB (ORCPT
+	id S1755795Ab0BOUne (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 15:43:34 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:36358 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755467Ab0BOUnc convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 15:39:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=FIHZebkxceKUchRBLgiUsfuXKto7pqSrn8FU/DJgG9i35SCRPchUqxXDi6NUYtZBHP
-         na1xaWLIVUdy706pn/+l0lBEmtDdr56XdKHAVjgKyKpPbTOakHvY8sZX37Q21Aj1QtmN
-         sHfGTlvdm6zouIAf1oti5/LGk/+5cMtic9Xgc=
+	Mon, 15 Feb 2010 15:43:32 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Toralf =?iso-8859-1?q?F=F6rster?= <toralf.foerster@gmx.de>
+Subject: Re: [Bug #15100] X11 is black after resume from s2ram if my T400 was previous in docking station before
+Date: Mon, 15 Feb 2010 21:44:10 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.33-rc8-rjw; KDE/4.3.5; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Maciej Rutecki <maciej.rutecki@gmail.com>,
+       "Eric Anholt" <eric@anholt.net>,
+       "Jesse Barnes" <jbarnes@virtuousgeek.org>,
+       "Matthew Garrett" <mjg@redhat.com>
+References: <fQEllunEdO.A.-LB.HyIeLB@chimera> <Xv2rBFCTXTH.A.8LC.ryIeLB@chimera> <201002150934.23888.toralf.foerster@gmx.de>
+In-Reply-To: <201002150934.23888.toralf.foerster@gmx.de>
 MIME-Version: 1.0
-In-Reply-To: <20100215201201.GA3332@joi.lan>
-References: <alpine.DEB.2.00.1002110417200.516@skynet.skynet.ie>
-	 <201002151053.48681.borntraeger@de.ibm.com>
-	 <20100215201201.GA3332@joi.lan>
-Date: Mon, 15 Feb 2010 21:39:00 +0100
-Message-ID: <6d4bc9fc1002151239x2b994ea9l7f868d9bb8f789e9@mail.gmail.com>
-Subject: Re: [git pull] drm
-From: Maarten Maathuis <madman2003@gmail.com>
-To: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
-       Dave Airlie <airlied@linux.ie>, torvalds@linux-foundation.org,
-       dri-devel@lists.sf.net, linux-kernel@vger.kernel.org,
-       nouveau@lists.freedesktop.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <201002152144.10422.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The channel/context switch lock related patches (to the best of
-knowledge) haven't even gone outside the nouveau tree, so the initial
-damage isn't even there. At least not for the first path. As for the
-2nd patch, that one was squished into the original patch for this pull
-iirc.
+On Monday 15 February 2010, Toralf Förster wrote:
+> 
+> Rafael J. Wysocki wrote at 00:52:50
+> > This message has been generated automatically as a part of a report
+> > of regressions introduced between 2.6.31 and 2.6.32.
+> > 
+> > The following bug entry is on the current list of known regressions
+> > introduced between 2.6.31 and 2.6.32.  Please verify if it still should
+> > be listed and let the tracking team know (either way).
+> > 
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15100
+> > Subject		: X11 is black after resume from s2ram if my T400 was previous in
+> >  docking station before Submitter	: Toralf Förster <toralf.foerster@gmx.de>
+> > Date		: 2010-01-21 08:56 (25 days old)
+> > First-Bad-Commit:
+> >  http://git.kernel.org/git/linus/c1c7af60892070e4b82ad63bbfb95ae745056de0
+> > 
+> Issue present in 2.6.33-rc8
 
-Maarten.
+Thanks for the update.
 
-On Mon, Feb 15, 2010 at 9:12 PM, Marcin Slusarz
-<marcin.slusarz@gmail.com> wrote:
-> On Mon, Feb 15, 2010 at 10:53:48AM +0100, Christian Borntraeger wrote:
->> Am Donnerstag 11 Februar 2010 05:20:07 schrieb Dave Airlie:
->>
->> Dave,
->>
->> I just updated from to rc8 and got the a scheduling while atomic warning in
->> nouveau. (see below).
->
-> Linus' tree is missing two fixes:
->
-> drm/nouveau: don't hold spin lock while calling kzalloc with GFP_KERNEL
-> drm/nouveau: spin_lock_init after memset'ing the bios struct
->
-> The first one fixes your bug.
->
-> http://cgit.freedesktop.org/nouveau/linux-2.6/commit/?id=ed64797d153ecf0da79b8b849642d7a109fd97fd
-> http://cgit.freedesktop.org/nouveau/linux-2.6/commit/?id=9da76700072a00c39e21553df0998c7b3b620d88
->
-> If they won't go into 2.6.33, they are perfect candidates for -stable.
->
-> Marcin
->
+Rafael
