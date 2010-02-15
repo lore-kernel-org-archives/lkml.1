@@ -1,72 +1,47 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755952Ab0BOPru (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 10:47:50 -0500
-Received: from www.tglx.de ([62.245.132.106]:38851 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753274Ab0BOPrq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 10:47:46 -0500
-Date: Mon, 15 Feb 2010 16:47:06 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [GIT pull] timer fixes for 2.6.33
-Message-ID: <alpine.LFD.2.00.1002151646170.2811@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1755938Ab0BOPsf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 10:48:35 -0500
+Received: from moutng.kundenserver.de ([212.227.17.8]:53045 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752572Ab0BOPsd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Feb 2010 10:48:33 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Subject: Re: [PATCH 0/2] tun: linux socket filter support
+Date: Mon, 15 Feb 2010 16:47:26 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.33-rc5; KDE/4.3.2; x86_64; ; )
+Cc: "David S. Miller" <davem@davemloft.net>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Paul Moore <paul.moore@hp.com>,
+       David Woodhouse <David.Woodhouse@intel.com>,
+       Sridhar Samudrala <sri@us.ibm.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <20100214110051.GA30182@redhat.com>
+In-Reply-To: <20100214110051.GA30182@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002151647.26532.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18EDltLymqNUTHlWwMsfbzZvPcG+sU7REi34yY
+ sJ3OsUPfL5hMwPmrcEGsWmZbxBJnFfsIkbMpRDHH42oQ+tS6Bd
+ nJIm0aYMsnOZJUCd/vUyA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Sunday 14 February 2010, Michael S. Tsirkin wrote:
+> tun module already support RX filtering, however,
+> this is limited to filtering by mac address.
+> For virtio host, we also need filtering by vlan.
+> 
+> Rather than adding this directly, it seems cleaner
+> to add generic socket filter support.
 
-Please pull the latest timers-fixes-for-linus git tree from:
+Great idea, I was wondering how to do vlan filtering
+in macvtap with trunk mode. I guess it would be
+straightforward to do the same patch in macvtap, right?
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git timers-fixes-for-linus
-
-Thanks,
-
-	tglx
-
------------------->
-Peter Zijlstra (1):
-      hrtimer, softirq: Fix hrtimer->softirq trampoline
-
-
- kernel/softirq.c |   15 +++++----------
- 1 files changed, 5 insertions(+), 10 deletions(-)
-
-diff --git a/kernel/softirq.c b/kernel/softirq.c
-index a09502e..7c1a67e 100644
---- a/kernel/softirq.c
-+++ b/kernel/softirq.c
-@@ -500,22 +500,17 @@ EXPORT_SYMBOL(tasklet_kill);
-  */
- 
- /*
-- * The trampoline is called when the hrtimer expires. If this is
-- * called from the hrtimer interrupt then we schedule the tasklet as
-- * the timer callback function expects to run in softirq context. If
-- * it's called in softirq context anyway (i.e. high resolution timers
-- * disabled) then the hrtimer callback is called right away.
-+ * The trampoline is called when the hrtimer expires. It schedules a tasklet
-+ * to run __tasklet_hrtimer_trampoline() which in turn will call the intended
-+ * hrtimer callback, but from softirq context.
-  */
- static enum hrtimer_restart __hrtimer_tasklet_trampoline(struct hrtimer *timer)
- {
- 	struct tasklet_hrtimer *ttimer =
- 		container_of(timer, struct tasklet_hrtimer, timer);
- 
--	if (hrtimer_is_hres_active(timer)) {
--		tasklet_hi_schedule(&ttimer->tasklet);
--		return HRTIMER_NORESTART;
--	}
--	return ttimer->function(timer);
-+	tasklet_hi_schedule(&ttimer->tasklet);
-+	return HRTIMER_NORESTART;
- }
- 
- /*
+	Arnd
