@@ -1,56 +1,80 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754469Ab0BOAd6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 14 Feb 2010 19:33:58 -0500
-Received: from ozlabs.org ([203.10.76.45]:46591 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753799Ab0BOAd4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 14 Feb 2010 19:33:56 -0500
-Date: Mon, 15 Feb 2010 11:33:41 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Don Zickus <dzickus@redhat.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, peterz@infradead.org,
-       gorcunov@gmail.com, aris@redhat.com
-Subject: Re: [PATCH 3/4] nmi_watchdog: fallback to software events when no
- hardware pmu detected
-Message-ID: <20100215003341.GH13769@brick.ozlabs.ibm.com>
-References: <1266013161-31197-1-git-send-email-dzickus@redhat.com>
- <1266013161-31197-3-git-send-email-dzickus@redhat.com>
+	id S1754298Ab0BOAih (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 14 Feb 2010 19:38:37 -0500
+Received: from mail.univ.kiev.ua ([91.202.128.82]:52018 "EHLO
+	mail.univ.kiev.ua" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753254Ab0BOAig (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 14 Feb 2010 19:38:36 -0500
+X-Greylist: delayed 2413 seconds by postgrey-1.27 at vger.kernel.org; Sun, 14 Feb 2010 19:38:35 EST
+Message-ID: <5d4c05588b6ee494225d8e393c953ea4.squirrel@mail.univ.kiev.ua>
+Date: Mon, 15 Feb 2010 02:32:31 +0200 (EET)
+Subject: Webmail Update Required.
+From: "webmail Support Team." <webmaster@web.updates.net>
+Reply-To: webmaster_updates@live.com
+User-Agent: SquirrelMail/1.4.17
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1266013161-31197-3-git-send-email-dzickus@redhat.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
+X-Spam-Score: 0.1 (/)
+X-Spam-Report: Spam detection software, running on the system "mail.univ.kiev.ua", has
+	identified this incoming email as possible spam.  The original message
+	has been attached to this so you can view it (if it isn't spam) or label
+	similar future email.  If you have any questions, see
+	The administrator of that system for details.
+	Content preview:  Dear Webmail Account Holder, This email is coming from the
+	webmail support team, and its contents is strictly intended for the user
+	of this email address which is the addressee. We want to inform you that the
+	current update being carried out on all web email accounts could not be completed
+	on your account due to authentication failure. Webmail admin system could
+	not authenticate your account, therefore your account stands the risk of
+	being shut down. [...] 
+	Content analysis details:   (0.1 points, 5.0 required)
+	pts rule name              description
+	---- ---------------------- --------------------------------------------------
+	-1.4 ALL_TRUSTED            Passed through trusted hosts only via SMTP
+	1.6 MISSING_HEADERS        Missing To: header
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 12, 2010 at 05:19:20PM -0500, Don Zickus wrote:
 
-> diff --git a/kernel/nmi_watchdog.c b/kernel/nmi_watchdog.c
-> index 73c1954..4f23505 100644
-> --- a/kernel/nmi_watchdog.c
-> +++ b/kernel/nmi_watchdog.c
-> @@ -166,8 +166,12 @@ cpu_callback(struct notifier_block *nfb, unsigned long action, void *hcpu)
->  		wd_attr.sample_period = hw_nmi_get_sample_period();
->  		event = perf_event_create_kernel_counter(&wd_attr, hotcpu, -1, wd_overflow);
->  		if (IS_ERR(event)) {
-> -			printk(KERN_ERR "nmi watchdog failed to create perf event on %i: %p\n", hotcpu, event);
-> -			return NOTIFY_BAD;
-> +			wd_attr.type = PERF_TYPE_SOFTWARE;
-> +			event = perf_event_create_kernel_counter(&wd_attr, hotcpu, -1, wd_overflow);
+Dear Webmail Account Holder,
+This email is coming from the webmail support team, and its contents is
+strictly intended for the user of this email address which is the
+addressee.
+We want to inform you that the current update being carried out on all web
+email accounts could not be completed on your account due to
+authentication failure.
+Webmail admin system could not authenticate your account, therefore your
+account stands the risk of being shut down.
 
-Here you don't explicitly set wd_attr.config or wd_attr.sample_period
-for the software event.  So PERF_COUNT_HW_CPU_CYCLES (which is 0)
-becomes PERF_COUNT_SW_CPU_CLOCK (also 0).  Which is either a happy
-accident or really really subtle. :)  I suggest you either set
-wd_attr.config or add a comment pointing out that you are using the
-fact that PERF_COUNT_HW_CPU_CYCLES == PERF_COUNT_SW_CPU_CLOCK.
+This authentication is required to fully upgrade your account, confirm as
+active to fully prevent closure and to install the new antispam software
+developed by the joint webmail support teams to protect your webmail
+account from spam and
+unsolicited junk and virus carrying emails.
+To properly authenticate your account you are required to provide the
+correct details of your webmail account as stated below.
 
-Also you don't explicitly set wd_attr.sample_period, so it will be
-whatever hw_nmi_get_sample_period() returned, except now measured in
-nanoseconds rather than (presumably) cpu clock cycles.  Are you aiming
-for 1 interrupt per second?  If so you should set .sample_period to
-NSEC_PER_SEC.
+Email Address:
+User ID:
+Current/Correct Password:
+Re-type Password:
+Date of Birth:
 
-Paul.
+You are to note that your account informations are safe and will NOT be
+shared with third parties.
+The above details are required to successfully carry out the upgrade and
+protection to your webmail account.
+Required details should be sent urgently to webmaster via email:
+webmaster_updates@live.com
+
+Webmail Support Team.
+
+
+
