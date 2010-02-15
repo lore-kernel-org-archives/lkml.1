@@ -1,60 +1,44 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755152Ab0BOHQy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 02:16:54 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:51280 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754070Ab0BOHQw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 02:16:52 -0500
-Date: Mon, 15 Feb 2010 18:16:46 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: David Miller <davem@davemloft.net>
-Cc: netdev@vger.kernel.org, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, jouni.malinen@atheros.com,
-       linville@tuxdriver.com
-Subject: Re: linux-next: manual merge of the net tree with the
- wireless-current tree
-Message-Id: <20100215181646.0e9bdce6.sfr@canb.auug.org.au>
-In-Reply-To: <20100214.222231.180659633.davem@davemloft.net>
-References: <20100215152023.0696878f.sfr@canb.auug.org.au>
-	<20100214.222231.180659633.davem@davemloft.net>
-X-Mailer: Sylpheed 3.0.0beta7 (GTK+ 2.18.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__15_Feb_2010_18_16_46_+1100_+ueU5N_m/yz4u0pw"
+	id S1755240Ab0BOHRk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 02:17:40 -0500
+Received: from 128-177-27-249.ip.openhosting.com ([128.177.27.249]:49535 "EHLO
+	jmalinen.user.openhosting.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755036Ab0BOHRj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Feb 2010 02:17:39 -0500
+Date: Mon, 15 Feb 2010 09:17:06 +0200
+From: Jouni Malinen <j@w1.fi>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Michael Neuling <mikey@neuling.org>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, anton@samba.org
+Subject: Re: 2.6.33-rc8 breaks UML with Restrict initial stack space
+ expansion to rlimit
+Message-ID: <20100215071706.GB20814@jm.kir.nu>
+References: <20100214164023.GA2726@jm.kir.nu>
+ <12468.1266215420@neuling.org>
+ <20100215155821.7298.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100215155821.7298.A69D9226@jp.fujitsu.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__15_Feb_2010_18_16_46_+1100_+ueU5N_m/yz4u0pw
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, Feb 15, 2010 at 03:59:26PM +0900, KOSAKI Motohiro wrote:
 
-Hi Dave,
+> -	rlim_stack = min(rlim_stack, stack_size);
+> +	/*  Expand only to rlimit, making sure not to shrink it */
+> +	rlim_stack = max(rlim_stack, stack_size);
+> 
+> is better fix?
 
-On Sun, 14 Feb 2010 22:22:32 -0800 (PST) David Miller <davem@davemloft.net>=
- wrote:
->
-> Right, I'll even try to take care of this myself later tonight.
+Assuming I understood correctly that that was to replace the patch from
+Michael completely and not just a part of it (i.e., just this one-liner
+on top of linux-2.6.git), I can confirm that this, too, resolves the
+issue I was seeing with UML.
 
-OK, thanks.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__15_Feb_2010_18_16_46_+1100_+ueU5N_m/yz4u0pw
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkt49N4ACgkQjjKRsyhoI8za0wCdFHemNJWqldEFNW1HY3xkEaBP
-H3sAoIdOHc3/BkInWtulXQ+kLdGLJcqi
-=neRD
------END PGP SIGNATURE-----
-
---Signature=_Mon__15_Feb_2010_18_16_46_+1100_+ueU5N_m/yz4u0pw--
+-- 
+Jouni Malinen                                            PGP id EFC895FA
