@@ -1,68 +1,62 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755598Ab0BOQrV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 11:47:21 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:63420 "EHLO
-	rcsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755119Ab0BOQrS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 11:47:18 -0500
-Message-ID: <4B797A5C.8020306@oracle.com>
-Date: Mon, 15 Feb 2010 08:46:20 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+	id S1755644Ab0BOQva (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 11:51:30 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:9021 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755119Ab0BOQv3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Feb 2010 11:51:29 -0500
+Date: Mon, 15 Feb 2010 17:50:12 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: x86: get rid of the insane TIF_ABI_PENDING bit
+Message-ID: <20100215165012.GA20447@redhat.com>
+References: <20100215161752.GA19962@redhat.com> <4B7974F7.1030105@zytor.com>
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       devel@driverdev.osuosl.org, Greg KH <gregkh@suse.de>
-Subject: Re: linux-next: Tree for February 15 (staging/dt3155)
-References: <20100215194926.667a3de8.sfr@canb.auug.org.au>
-In-Reply-To: <20100215194926.667a3de8.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt353.oracle.com [141.146.40.153]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090203.4B797A7F.020B:SCFMA4539814,ss=1,fgs=0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B7974F7.1030105@zytor.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/15/10 00:49, Stephen Rothwell wrote:
-> Hi all,
-> 
-> Changes since 20100212:
+On 02/15, H. Peter Anvin wrote:
+>
+> On 02/15/2010 08:17 AM, Oleg Nesterov wrote:
+> >
+> >> +void set_personality_ia32(void)
+> >> +{
+> >> +	/* inherit personality from parent */
+> >> +
+> >> +	/* Make sure to be in 32bit mode */
+> >> +	set_thread_flag(TIF_IA32);
+> >> +
+> >> +	/* Prepare the first "return" to user space */
+> >> +	current_thread_info()->status |= TS_COMPAT;
+> >
+> > Can't understand why we need TS_COMPAT. I assume this is correct,
+> > this was copied from flush_thread().
+> >
+> > What TS_COMPAT actually means? I thought it just means "the task
+> > is inside 32-bit syscall".
+>
+> Yes.  In this case, though, it was a 64-bit syscall when the process did
+> the exec, but it needs to "return" as if it came from a 32-bit syscall;
 
+Could you please point me where do we check TS_COMPAT during return
+to user-mode?
 
-1/  dt3155 tries to use arbitrary divide & modulus.  This fails on i386:
+> > If a 64bit task execs a 32bit app, can't this TS_COMPAT break, say,
+> > syscall_get_arguments() ?
+> >
+>
+> At that point (this is after the exec!) we don't get arguments anyway.
 
-ERROR: "__udivdi3" [drivers/staging/dt3155/dt3155.ko] undefined!
-ERROR: "__umoddi3" [drivers/staging/dt3155/dt3155.ko] undefined!
+I meant /proc/pid/syscall, but even if I am right this probably
+doesn't matter.
 
-2/  since DT3155 depends on PCI, these lines can be dropped from dt3155_drv.c:
+Oleg.
 
--#ifndef CONFIG_PCI
--#error  "DT3155 :  Kernel PCI support not enabled (DT3155 drive requires PCI)"
--#endif
-
-3/  header files need to be included even when built-in instead of defined(MODULE)
-to eliminate build errors:
-
-drivers/staging/dt3155/dt3155_drv.c:1047: error: implicit declaration of function 'request_irq'
-drivers/staging/dt3155/dt3155_drv.c:1048: error: 'IRQF_SHARED' undeclared (first use in this function)
-drivers/staging/dt3155/dt3155_drv.c:1048: error: 'IRQF_DISABLED' undeclared (first use in this function)
-drivers/staging/dt3155/dt3155_drv.c:1091: error: implicit declaration of function 'free_irq'
-
-
--#ifdef MODULE
- #include <linux/module.h>
- #include <linux/interrupt.h>
- 
- 
- MODULE_LICENSE("GPL");
- 
--#endif
-
-
--- 
-~Randy
