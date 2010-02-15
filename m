@@ -1,43 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756639Ab0BOWaP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 17:30:15 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51297 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756609Ab0BOWaM (ORCPT
+	id S1756658Ab0BOWcv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 17:32:51 -0500
+Received: from mail-ew0-f228.google.com ([209.85.219.228]:41272 "EHLO
+	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756147Ab0BOWcs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 17:30:12 -0500
-Date: Mon, 15 Feb 2010 22:28:45 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: David Rientjes <rientjes@google.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Nick Piggin <npiggin@suse.de>, Andrea Arcangeli <aarcange@redhat.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch -mm 6/9 v2] oom: deprecate oom_adj tunable
-Message-ID: <20100215222845.0b0f2781@lxorguk.ukuu.org.uk>
-In-Reply-To: <alpine.DEB.2.00.1002151418560.26927@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.1002151416470.26927@chino.kir.corp.google.com>
-	<alpine.DEB.2.00.1002151418560.26927@chino.kir.corp.google.com>
-X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.6; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 15 Feb 2010 17:32:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=n4LTy7IUAX4OIeqHBQiANzW+eOuDNcIGknEcfoMKKhEFDHAHvacwZpWzIlIFjgUfv0
+         J+Twj6zWh0zCjF/gotyUB6j1vsOPja2ShxMOBH/GfslcHrSl68u4Rtfww0ddDHiEbiOv
+         ndfl3B2xsrRCus7t7C/n0B+C3GUlZdtyEspOc=
+Message-ID: <4B79CD49.8070607@gmail.com>
+Date: Mon, 15 Feb 2010 23:40:09 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+MIME-Version: 1.0
+To: Matthew Dharm <mdharm-usb@one-eyed-alien.net>, linux-usb@vger.kernel.org,
+       usb-storage@lists.one-eyed-alien.net,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] USB: misplaced parenthesis
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 15 Feb 2010 14:20:16 -0800 (PST)
-David Rientjes <rientjes@google.com> wrote:
+The parenthesis was misplaced
 
-> /proc/pid/oom_adj is now deprecated so that that it may eventually be
-> removed.  The target date for removal is December 2011.
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+Is this maybe, as the comment states, why blanking a cdrw at speed 4
+was unreliable?
 
-There are systems that rely on this feature. It's ABI, its sacred. We are
-committed to it and it has users. That doesn't really detract from the
-good/bad of the rest of the proposal, it's just one step we can't quite
-make.
-
-Alan
+diff --git a/drivers/usb/storage/shuttle_usbat.c b/drivers/usb/storage/shuttle_usbat.c
+index b62a288..b958db5 100644
+--- a/drivers/usb/storage/shuttle_usbat.c
++++ b/drivers/usb/storage/shuttle_usbat.c
+@@ -1645,8 +1645,8 @@ static int usbat_hp8200e_transport(struct scsi_cmnd *srb, struct us_data *us)
+ 
+ 	if ((result = usbat_write_block(us,
+ 			USBAT_ATA, srb->cmnd, 12,
+-				(srb->cmnd[0]==GPCMD_BLANK ? 75 : 10), 0) !=
+-			     USB_STOR_TRANSPORT_GOOD)) {
++				(srb->cmnd[0]==GPCMD_BLANK ? 75 : 10), 0)) !=
++			     USB_STOR_TRANSPORT_GOOD) {
+ 		return result;
+ 	}
+ 
