@@ -1,279 +1,239 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932329Ab0BOWY1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 17:24:27 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:47841 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932076Ab0BOWYZ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 17:24:25 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Mon, 15 Feb 2010 23:19:30 +0100 (CET)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [git pull] FireWire fixes
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net
-In-Reply-To: <tkrat.9722581233c899cf@s5r6.in-berlin.de>
-Message-ID: <tkrat.416004f416294e89@s5r6.in-berlin.de>
-References: <tkrat.71d11155e1b4d897@s5r6.in-berlin.de>
- <tkrat.c98ccacd8716c278@s5r6.in-berlin.de>
- <tkrat.c0cd1d998becca89@s5r6.in-berlin.de>
- <tkrat.9722581233c899cf@s5r6.in-berlin.de>
+	id S1756622Ab0BOWZB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 17:25:01 -0500
+Received: from mail001.aei.ca ([206.123.6.130]:51827 "EHLO mail001.aei.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756611Ab0BOWY7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Feb 2010 17:24:59 -0500
+From: Ed Tomlinson <edt@aei.ca>
+To: Takashi Iwai <tiwai@suse.de>
+Subject: Re: [LOCKDEP] 33-rc8 Running aplay with pulse as the default
+Date: Mon, 15 Feb 2010 17:24:54 -0500
+User-Agent: KMail/1.13.0 (Linux/2.6.32.8-crc; KDE/4.4.0; x86_64; ; )
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       alsa-devel@alsa-project.org
+References: <alpine.LFD.2.00.1002121142100.3922@localhost.localdomain> <s5hhbpicnm1.wl%tiwai@suse.de> <s5hfx52cnjg.wl%tiwai@suse.de>
+In-Reply-To: <s5hfx52cnjg.wl%tiwai@suse.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=iso-8859-5
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: INLINE
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002151724.54807.edt@aei.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from the for-linus branch at
+On Monday 15 February 2010 14:21:55 Takashi Iwai wrote:
+> At Mon, 15 Feb 2010 20:20:22 +0100,
+> I wrote:
+> > 
+> > At Sat, 13 Feb 2010 12:17:10 -0500,
+> > Ed Tomlinson wrote:
+> > > 
+> > > Hi,
+> > > 
+> > > Inorder to get skype working with linux I have the following in .asoundrc for my normal userid.
+> > > 
+> > > ---
+> > > pcm.pulse {
+> > >     type pulse
+> > > }
+> > > 
+> > > ctl.pulse {
+> > >     type pulse
+> > > }
+> > > 
+> > > pcm.!default {
+> > >     type pulse
+> > > }
+> > > ctl.!default {
+> > >     type pulse
+> > > ---
+> > > 
+> > > Try #1
+> > > Starting as root if I do:
+> > > su - <id>
+> > > aplay sound.wav
+> > > <traceback inlined below>
+> > > aplay sound.wav 
+> > > (silence)
+> > > killall pulseaudio
+> > > aplay sound.wav
+> > > (works as expected now going thru pulseaudio)
+> > > 
+> > > Try #2
+> > > Starting as root if I do:
+> > > aplay sound.wav
+> > > (works as expected using alsa alone)
+> > > su - <id>
+> > > aplay sound.wav
+> > > <another lockdep traceback>
+> > > aplay sound.wav
+> > > (works as expected now going thru pulseaudio)
+> > > 
+> > > With .32 there were no tracebacks (lockdep was enabled) and try #1 would work where I now get silence.
+> > > 
+> > > Ideas?
+> > > Ed Tomlinson
+> > > 
+> > > aplay -l
+> > > **** List of PLAYBACK Hardware Devices ****
+> > > card 0: SB [HDA ATI SB], device 0: ALC1200 Analog [ALC1200 Analog]
+> > >   Subdevices: 0/1
+> > >   Subdevice #0: subdevice #0
+> > > card 0: SB [HDA ATI SB], device 1: ALC1200 Digital [ALC1200 Digital]
+> > >   Subdevices: 1/1
+> > >   Subdevice #0: subdevice #0
+> > > card 1: HDMI [HDA ATI HDMI], device 3: ATI HDMI [ATI HDMI]
+> > >   Subdevices: 1/1
+> > >   Subdevice #0: subdevice #0
+> > > 
+> > > "ALC1200 Analog" is what has speakers connected
+> > > 
+> > > The em28xx in the traceback is an input source from a usb hdtv dongle.
+> > > 
+> > > pavucontrol setup has been verified.
+> > > 
+> > > [   91.070620]                                                                                                                               
+> > > [   91.070621] =======================================================                                                                       
+> > > [   91.071378] [ INFO: possible circular locking dependency detected ]                                                                       
+> > > [   91.071378] 2.6.33-rc8-crc #106                                                                                                           
+> > > [   91.071378] -------------------------------------------------------                                                                       
+> > > [   91.071378] pulseaudio/2717 is trying to acquire lock:                                                                                    
+> > > [   91.071378]  (&dev->lock){+.+.+.}, at: [<ffffffffa02797f1>] snd_em28xx_capture_open+0x61/0x190 [em28xx_alsa]                              
+> > > [   91.071378]                                                                                                                               
+> > > [   91.071378] but task is already holding lock:                                                                                             
+> > > [   91.071378]  (&pcm->open_mutex){+.+.+.}, at: [<ffffffffa010ecd2>] snd_pcm_open+0x182/0x450 [snd_pcm]                                      
+> > > [   91.071378]                                                                                                                               
+> > > [   91.071378] which lock already depends on the new lock.                                                                                   
+> > > [   91.071378]                                                                                                                               
+> > > [   91.071378]                                                                                                                               
+> > > [   91.071378] the existing dependency chain (in reverse order) is:                                                                          
+> > > [   91.071378]                                                                                                                               
+> > > [   91.071378] -> #3 (&pcm->open_mutex){+.+.+.}:                                                                                             
+> > > [   91.071378]        [<ffffffff81083215>] __lock_acquire+0xfc5/0x1550                                                                       
+> > > [   91.071378]        [<ffffffff8108383c>] lock_acquire+0x9c/0x140                                                                           
+> > > [   91.071378]        [<ffffffff814b96c1>] __mutex_lock_common+0x61/0x610                                                                    
+> > > [   91.071378]        [<ffffffff814b9d53>] mutex_lock_nested+0x43/0x50                                                                       
+> > > [   91.071378]        [<ffffffffa010ad32>] snd_pcm_release+0x42/0xb0 [snd_pcm]                                                               
+> > > [   91.071378]        [<ffffffff8112115d>] __fput+0x15d/0x290                                                                                
+> > > [   91.071378]        [<ffffffff811212ad>] fput+0x1d/0x30                                                                                    
+> > > [   91.071378]        [<ffffffff810fe001>] remove_vma+0x51/0x80                                                                              
+> > > [   91.071378]        [<ffffffff810ffa1d>] do_munmap+0x2fd/0x390                                                                             
+> > > [   91.071378]        [<ffffffff810ffb06>] sys_munmap+0x56/0x80                                                                              
+> > > [   91.071378]        [<ffffffff81002adb>] system_call_fastpath+0x16/0x1b                                                                    
+> > > [   91.071378]                                                                                                                               
+> > > [   91.071378] -> #2 (&mm->mmap_sem){++++++}:                                                                                                
+> > > [   91.071378]        [<ffffffff81083215>] __lock_acquire+0xfc5/0x1550                                                                       
+> > > [   91.071378]        [<ffffffff8108383c>] lock_acquire+0x9c/0x140                                                                           
+> > > [   91.071378]        [<ffffffff810f62c7>] might_fault+0xa7/0xd0                                                                             
+> > > [   91.071378]        [<ffffffff8113102b>] filldir+0x7b/0xe0                                                                                 
+> > > [   91.071378]        [<ffffffff8118aa21>] sysfs_readdir+0xf1/0x1b0                                                                          
+> > > [   91.071378]        [<ffffffff81131268>] vfs_readdir+0xb8/0xe0                                                                             
+> > > [   91.071378]        [<ffffffff8113144d>] sys_getdents+0xad/0x110                                                                           
+> > > [   91.071378]        [<ffffffff81002adb>] system_call_fastpath+0x16/0x1b                                                                    
+> > > [   91.071378]                                                                                                                               
+> > > [   91.071378] -> #1 (sysfs_mutex){+.+.+.}:                                                                                                  
+> > > [   91.071378]        [<ffffffff81083215>] __lock_acquire+0xfc5/0x1550                                                                       
+> > > [   91.071378]        [<ffffffff8108383c>] lock_acquire+0x9c/0x140                                                                           
+> > > [   91.071378]        [<ffffffff814b96c1>] __mutex_lock_common+0x61/0x610                                                                    
+> > > [   91.071378]        [<ffffffff814b9d53>] mutex_lock_nested+0x43/0x50                                                                       
+> > > [   91.071378]        [<ffffffff8118b082>] sysfs_addrm_start+0x22/0x30                                                                       
+> > > [   91.071378]        [<ffffffff8118bc58>] create_dir+0x58/0xb0                                                                              
+> > > [   91.514885]        [<ffffffff8118bd0a>] sysfs_create_dir+0x5a/0x70                                                                        
+> > > [   91.514885]        [<ffffffff8123ebbd>] kobject_add_internal+0xbd/0x1f0                                                                   
+> > > [   91.514885]        [<ffffffff8123ee08>] kobject_add_varg+0x38/0x60                                                                        
+> > > [   91.514885]        [<ffffffff8123eee4>] kobject_add+0x44/0x70                                                                             
+> > > [   91.514885]        [<ffffffff81392510>] device_add+0xb0/0x5e0                                                                             
+> > > [   91.514885]        [<ffffffff81392a5e>] device_register+0x1e/0x30                                                                         
+> > > [   91.514885]        [<ffffffff8140a50d>] i2c_register_adapter+0x12d/0x250                                                                  
+> > > [   91.514885]        [<ffffffff8140a7f1>] i2c_add_adapter+0xb1/0xd0                                                                         
+> > > [   91.514885]        [<ffffffffa0231ba4>] em28xx_i2c_register+0x104/0x520 [em28xx]                                                          
+> > > [   91.514885]        [<ffffffffa0233daa>] em28xx_usb_probe+0x68a/0xb90 [em28xx]                                                             
+> > > [   91.514885]        [<ffffffff813eb4ab>] usb_probe_interface+0xeb/0x1b0                                                                    
+> > > [   91.514885]        [<ffffffff81395546>] driver_probe_device+0xc6/0x1d0                                                                    
+> > > [   91.514885]        [<ffffffff813956eb>] __driver_attach+0x9b/0xa0                                                                         
+> > > [   91.514885]        [<ffffffff8139492c>] bus_for_each_dev+0x6c/0xa0                                                                        
+> > > [   91.514885]        [<ffffffff8139535e>] driver_attach+0x1e/0x20                                                                           
+> > > [   91.514885]        [<ffffffff81394c11>] bus_add_driver+0xe1/0x280                                                                         
+> > > [   91.514885]        [<ffffffff81395a58>] driver_register+0x98/0x140                                                                        
+> > > [   91.514885]        [<ffffffff813ea06c>] usb_register_driver+0xdc/0x1a0                                                                    
+> > > [   91.514885]        [<ffffffffa0248023>] 0xffffffffa0248023                                                                                
+> > > [   91.514885]        [<ffffffff810001dc>] do_one_initcall+0x3c/0x1d0                                                                        
+> > > [   91.514885]        [<ffffffff81092d75>] sys_init_module+0xe5/0x250                                                                        
+> > > [   91.514885]        [<ffffffff81002adb>] system_call_fastpath+0x16/0x1b                                                                    
+> > > [   91.514885]                                                                                                                               
+> > > [   91.514885] -> #0 (&dev->lock){+.+.+.}:                                                                                                   
+> > > [   91.514885]        [<ffffffff81083668>] __lock_acquire+0x1418/0x1550                                                                      
+> > > [   91.514885]        [<ffffffff8108383c>] lock_acquire+0x9c/0x140                                                                           
+> > > [   91.514885]        [<ffffffff814b96c1>] __mutex_lock_common+0x61/0x610                                                                    
+> > > [   91.514885]        [<ffffffff814b9d53>] mutex_lock_nested+0x43/0x50
+> > > [   91.514885]        [<ffffffffa02797f1>] snd_em28xx_capture_open+0x61/0x190 [em28xx_alsa]
+> > > [   91.514885]        [<ffffffffa010adee>] snd_pcm_open_substream+0x4e/0x90 [snd_pcm]
+> > > [   91.514885]        [<ffffffffa010ece9>] snd_pcm_open+0x199/0x450 [snd_pcm]
+> > > [   91.514885]        [<ffffffffa010efd4>] snd_pcm_capture_open+0x34/0x40 [snd_pcm]
+> > > [   91.514885]        [<ffffffffa00c5778>] snd_open+0x198/0x4e0 [snd]
+> > > [   91.514885]        [<ffffffff8112384d>] chrdev_open+0x17d/0x320
+> > > [   91.514885]        [<ffffffff8111d358>] __dentry_open+0x1a8/0x400
+> > > [   91.514885]        [<ffffffff8111d6b4>] nameidata_to_filp+0x54/0x70
+> > > [   91.514885]        [<ffffffff8112e7f1>] do_filp_open+0x841/0xc00
+> > > [   91.514885]        [<ffffffff8111e954>] do_sys_open+0xa4/0x180
+> > > [   91.514885]        [<ffffffff8111ea70>] sys_open+0x20/0x30
+> > > [   91.514885]        [<ffffffff81002adb>] system_call_fastpath+0x16/0x1b
+> > > [   91.514885]
+> > > [   91.514885] other info that might help us debug this:
+> > > [   91.514885]
+> > > [   91.514885] 1 lock held by pulseaudio/2717:
+> > > [   91.514885]  #0:  (&pcm->open_mutex){+.+.+.}, at: [<ffffffffa010ecd2>] snd_pcm_open+0x182/0x450 [snd_pcm]
+> > > [   91.514885]
+> > > [   91.514885] stack backtrace:
+> > > [   91.514885] Pid: 2717, comm: pulseaudio Not tainted 2.6.33-rc8-crc #106
+> > > [   91.514885] Call Trace:
+> > > [   91.514885]  [<ffffffff81080fd9>] print_circular_bug+0xe9/0xf0
+> > > [   91.514885]  [<ffffffff81083668>] __lock_acquire+0x1418/0x1550
+> > > [   91.514885]  [<ffffffff81081dc8>] ? debug_check_no_locks_freed+0xc8/0x150
+> > > [   91.514885]  [<ffffffff8108383c>] lock_acquire+0x9c/0x140
+> > > [   91.514885]  [<ffffffffa02797f1>] ? snd_em28xx_capture_open+0x61/0x190 [em28xx_alsa]
+> > > [   91.514885]  [<ffffffff814b96c1>] __mutex_lock_common+0x61/0x610
+> > > [   91.514885]  [<ffffffffa02797f1>] ? snd_em28xx_capture_open+0x61/0x190 [em28xx_alsa]
+> > > [   91.514885]  [<ffffffffa02797f1>] ? snd_em28xx_capture_open+0x61/0x190 [em28xx_alsa]
+> > > [   91.514885]  [<ffffffffa0109c70>] ? snd_pcm_hw_rule_muldivk+0x0/0xa0 [snd_pcm]
+> > > [   91.514885]  [<ffffffff8107fd54>] ? lockdep_init_map+0x44/0x130
+> > > [   91.514885]  [<ffffffff814b9d53>] mutex_lock_nested+0x43/0x50
+> > > [   91.514885]  [<ffffffffa02797f1>] snd_em28xx_capture_open+0x61/0x190 [em28xx_alsa]
+> > > [   91.514885]  [<ffffffffa010adee>] snd_pcm_open_substream+0x4e/0x90 [snd_pcm]
+> > > [   91.514885]  [<ffffffffa010ece9>] snd_pcm_open+0x199/0x450 [snd_pcm]
+> > > [   91.514885]  [<ffffffff81081cfd>] ? trace_hardirqs_on+0xd/0x10
+> > > [   91.514885]  [<ffffffff810434f0>] ? default_wake_function+0x0/0x20
+> > > [   91.514885]  [<ffffffff814b965e>] ? mutex_unlock+0xe/0x10
+> > > [   91.514885]  [<ffffffffa010efd4>] snd_pcm_capture_open+0x34/0x40 [snd_pcm]
+> > > [   91.514885]  [<ffffffffa00c5778>] snd_open+0x198/0x4e0 [snd]
+> > > [   91.514885]  [<ffffffff8112384d>] chrdev_open+0x17d/0x320
+> > > [   91.514885]  [<ffffffff8111d358>] __dentry_open+0x1a8/0x400
+> > > [   91.514885]  [<ffffffff811236d0>] ? chrdev_open+0x0/0x320
+> > > [   91.514885]  [<ffffffff8111d6b4>] nameidata_to_filp+0x54/0x70
+> > > [   91.514885]  [<ffffffff8112e7f1>] do_filp_open+0x841/0xc00
+> > > [   91.514885]  [<ffffffff814bf981>] ? sub_preempt_count+0x51/0x60
+> > > [   91.514885]  [<ffffffff814bbb7c>] ? _raw_spin_unlock+0x5c/0x70
+> > > [   91.514885]  [<ffffffff8111e954>] do_sys_open+0xa4/0x180
+> > > [   91.514885]  [<ffffffff8111ea70>] sys_open+0x20/0x30
+> > > [   91.514885]  [<ffffffff81002adb>] system_call_fastpath+0x16/0x1b
+> > > [   92.643423] hda-intel: IRQ timing workaround is activated for card #0. Suggest a bigger bdl_pos_adj.
+> > 
+> > It looks rather a bug of em28xx driver.  Changing dev->lock with an
+> > individual one that is only for audio instance should fix the
+> > problem.
+> 
+> And, I believe this is no regression but a long-standing problem.
+> It hits just occasionally by an app like pulseauiod which loves
+> tight races.
 
-    git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git for-linus
+I guess it depends on how you define a regression.  From my POV it worked
+in all three cases on .32, its failing in .33-rc and in one case is oppsing.  In
+my books thats a regression.  There may have been races in .32 but they
+did not trigger lockdep and never oppsed.
 
-to receive the following updates to the FireWire subsystem.
-Thanks.
+In any case, the real question is how do we fix the problem?
 
-Clemens Ladisch (1):
-      firewire: ohci: retransmit isochronous transmit packets on cycle loss
-
-Stefan Richter (1):
-      firewire: net: fix panic in fwnet_write_complete
-
- drivers/firewire/net.c  |   53 ++++++++++++++++++++++++++++----------
- drivers/firewire/ohci.c |   13 ++++++---
- 2 files changed, 47 insertions(+), 19 deletions(-)
-
-
-commit 7f51a100bba517196ac4bdf29408d20ee1c771e8
-Author: Clemens Ladisch <clemens@ladisch.de>
-Date:   Mon Feb 8 08:30:03 2010 +0100
-
-    firewire: ohci: retransmit isochronous transmit packets on cycle loss
-    
-    In isochronous transmit DMA descriptors, link the skip address pointer
-    back to the descriptor itself.  When a cycle is lost, the controller
-    will send the packet in the next cycle, instead of terminating the
-    entire DMA program.
-    
-    There are two reasons for this:
-    
-    * This behaviour is compatible with the old IEEE1394 stack.  Old
-      applications would not expect the DMA program to stop in this case.
-    
-    * Since the OHCI driver does not report any uncompleted packets, the
-      context would stop silently; clients would not have any chance to
-      detect and handle this error without a watchdog timer.
-    
-    Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
-    
-    Pieter Palmers notes:
-    
-    "The reason I added this retry behavior to the old stack is because some
-    cards now and then fail to send a packet (e.g. the o2micro card in my
-    dell laptop).  I couldn't figure out why exactly this happens, my best
-    guess is that the card cannot fetch the payload data on time.  This
-    happens much more frequently when sending large packets, which leads me
-    to suspect that there are some contention issues with the DMA that fills
-    the transmit FIFO.
-    
-    In the old stack it was a pretty critical issue as it resulted in a
-    freeze of the userspace application.
-    
-    The omission of a packet doesn't necessarily have to be an issue.  E.g.
-    in IEC61883 streams the DBC field can be used to detect discontinuities
-    in the stream.  So as long as the other side doesn't bail when no
-    [packet] is present in a cycle, there is not really a problem.
-    
-    I'm not convinced though that retrying is the proper solution, but it is
-    simple and effective for what it had to do.  And I think there are no
-    reasons not to do it this way.  Userspace can still detect this by
-    checking the cycle the descriptor was sent in."
-    
-    Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de> (changelog, comment)
-
-diff --git a/drivers/firewire/ohci.c b/drivers/firewire/ohci.c
-index 2345d41..43ebf33 100644
---- a/drivers/firewire/ohci.c
-+++ b/drivers/firewire/ohci.c
-@@ -2101,11 +2101,6 @@ static int ohci_queue_iso_transmit(struct fw_iso_context *base,
- 	u32 payload_index, payload_end_index, next_page_index;
- 	int page, end_page, i, length, offset;
- 
--	/*
--	 * FIXME: Cycle lost behavior should be configurable: lose
--	 * packet, retransmit or terminate..
--	 */
--
- 	p = packet;
- 	payload_index = payload;
- 
-@@ -2135,6 +2130,14 @@ static int ohci_queue_iso_transmit(struct fw_iso_context *base,
- 	if (!p->skip) {
- 		d[0].control   = cpu_to_le16(DESCRIPTOR_KEY_IMMEDIATE);
- 		d[0].req_count = cpu_to_le16(8);
-+		/*
-+		 * Link the skip address to this descriptor itself.  This causes
-+		 * a context to skip a cycle whenever lost cycles or FIFO
-+		 * overruns occur, without dropping the data.  The application
-+		 * should then decide whether this is an error condition or not.
-+		 * FIXME:  Make the context's cycle-lost behaviour configurable?
-+		 */
-+		d[0].branch_address = cpu_to_le32(d_bus | z);
- 
- 		header = (__le32 *) &d[1];
- 		header[0] = cpu_to_le32(IT_HEADER_SY(p->sy) |
-
-commit 110f82d7a2e0ff5a17617a9672f1ccb7e44bc0c6
-Author: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Date:   Mon Jan 18 22:36:49 2010 +0100
-
-    firewire: net: fix panic in fwnet_write_complete
-    
-    In the transmit path of firewire-net (IPv4 over 1394), the following
-    race condition may occur:
-      - The networking soft IRQ inserts a datagram into the 1394 async
-        request transmit DMA.
-      - The 1394 async transmit completion tasklet runs to finish cleaning
-        up (unlink datagram from list of pending ones, release skb and
-        outbound 1394 transaction object) --- before the networking soft IRQ
-        had a chance to proceed and add the datagram to the list of pending
-        datagrams.
-    
-    This caused a panic in the 1394 async transmit completion tasklet when
-    it dereferenced unitialized list heads:
-    http://bugzilla.kernel.org/show_bug.cgi?id=15077
-    
-    The fix is to add checks in the tx soft IRQ and in the tasklet to
-    determine which of these two is the last referrer to the transaction
-    object.  Then handle the cleanup of the object by the last referrer
-    rather than assuming that the tasklet is always the last one.
-    
-    There is another similar race:  Between said tasklet and fwnet_close,
-    i.e. at ifdown.  However, that race is much less likely to occur in
-    practice and shall be fixed in a separate update.
-    
-    Reported-by: Илья Басин <basinilya@gmail.com>
-    Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
-
-diff --git a/drivers/firewire/net.c b/drivers/firewire/net.c
-index cbaf420..2d3dc7d 100644
---- a/drivers/firewire/net.c
-+++ b/drivers/firewire/net.c
-@@ -893,20 +893,31 @@ static void fwnet_receive_broadcast(struct fw_iso_context *context,
- 
- static struct kmem_cache *fwnet_packet_task_cache;
- 
-+static void fwnet_free_ptask(struct fwnet_packet_task *ptask)
-+{
-+	dev_kfree_skb_any(ptask->skb);
-+	kmem_cache_free(fwnet_packet_task_cache, ptask);
-+}
-+
- static int fwnet_send_packet(struct fwnet_packet_task *ptask);
- 
- static void fwnet_transmit_packet_done(struct fwnet_packet_task *ptask)
- {
--	struct fwnet_device *dev;
-+	struct fwnet_device *dev = ptask->dev;
- 	unsigned long flags;
--
--	dev = ptask->dev;
-+	bool free;
- 
- 	spin_lock_irqsave(&dev->lock, flags);
--	list_del(&ptask->pt_link);
--	spin_unlock_irqrestore(&dev->lock, flags);
- 
--	ptask->outstanding_pkts--; /* FIXME access inside lock */
-+	ptask->outstanding_pkts--;
-+
-+	/* Check whether we or the networking TX soft-IRQ is last user. */
-+	free = (ptask->outstanding_pkts == 0 && !list_empty(&ptask->pt_link));
-+
-+	if (ptask->outstanding_pkts == 0)
-+		list_del(&ptask->pt_link);
-+
-+	spin_unlock_irqrestore(&dev->lock, flags);
- 
- 	if (ptask->outstanding_pkts > 0) {
- 		u16 dg_size;
-@@ -951,10 +962,10 @@ static void fwnet_transmit_packet_done(struct fwnet_packet_task *ptask)
- 			ptask->max_payload = skb->len + RFC2374_FRAG_HDR_SIZE;
- 		}
- 		fwnet_send_packet(ptask);
--	} else {
--		dev_kfree_skb_any(ptask->skb);
--		kmem_cache_free(fwnet_packet_task_cache, ptask);
- 	}
-+
-+	if (free)
-+		fwnet_free_ptask(ptask);
- }
- 
- static void fwnet_write_complete(struct fw_card *card, int rcode,
-@@ -977,6 +988,7 @@ static int fwnet_send_packet(struct fwnet_packet_task *ptask)
- 	unsigned tx_len;
- 	struct rfc2734_header *bufhdr;
- 	unsigned long flags;
-+	bool free;
- 
- 	dev = ptask->dev;
- 	tx_len = ptask->max_payload;
-@@ -1022,12 +1034,16 @@ static int fwnet_send_packet(struct fwnet_packet_task *ptask)
- 				generation, SCODE_100, 0ULL, ptask->skb->data,
- 				tx_len + 8, fwnet_write_complete, ptask);
- 
--		/* FIXME race? */
- 		spin_lock_irqsave(&dev->lock, flags);
--		list_add_tail(&ptask->pt_link, &dev->broadcasted_list);
-+
-+		/* If the AT tasklet already ran, we may be last user. */
-+		free = (ptask->outstanding_pkts == 0 && list_empty(&ptask->pt_link));
-+		if (!free)
-+			list_add_tail(&ptask->pt_link, &dev->broadcasted_list);
-+
- 		spin_unlock_irqrestore(&dev->lock, flags);
- 
--		return 0;
-+		goto out;
- 	}
- 
- 	fw_send_request(dev->card, &ptask->transaction,
-@@ -1035,12 +1051,19 @@ static int fwnet_send_packet(struct fwnet_packet_task *ptask)
- 			ptask->generation, ptask->speed, ptask->fifo_addr,
- 			ptask->skb->data, tx_len, fwnet_write_complete, ptask);
- 
--	/* FIXME race? */
- 	spin_lock_irqsave(&dev->lock, flags);
--	list_add_tail(&ptask->pt_link, &dev->sent_list);
-+
-+	/* If the AT tasklet already ran, we may be last user. */
-+	free = (ptask->outstanding_pkts == 0 && list_empty(&ptask->pt_link));
-+	if (!free)
-+		list_add_tail(&ptask->pt_link, &dev->sent_list);
-+
- 	spin_unlock_irqrestore(&dev->lock, flags);
- 
- 	dev->netdev->trans_start = jiffies;
-+ out:
-+	if (free)
-+		fwnet_free_ptask(ptask);
- 
- 	return 0;
- }
-@@ -1298,6 +1321,8 @@ static netdev_tx_t fwnet_tx(struct sk_buff *skb, struct net_device *net)
- 	spin_unlock_irqrestore(&dev->lock, flags);
- 
- 	ptask->max_payload = max_payload;
-+	INIT_LIST_HEAD(&ptask->pt_link);
-+
- 	fwnet_send_packet(ptask);
- 
- 	return NETDEV_TX_OK;
--- 
-Stefan Richter
--=====-==-=- --=- -====
-http://arcgraph.de/sr/
-
+Ed
