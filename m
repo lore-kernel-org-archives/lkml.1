@@ -1,18 +1,18 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932232Ab0BOWUH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 17:20:07 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:44818 "EHLO
+	id S932353Ab0BOWUp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 17:20:45 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:44970 "EHLO
 	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756445Ab0BOWUE (ORCPT
+	with ESMTP id S932318Ab0BOWU2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 17:20:04 -0500
+	Mon, 15 Feb 2010 17:20:28 -0500
 DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:message-id:user-agent:
-	mime-version:content-type:x-system-of-record;
-	b=Y7vVpGLhVv81NemK6DFZpeB1LNcm36+5v07BuuL58UAOGflKwMIhcbnEgORVhYMuk
-	TDZZtQgcuOvutRhAHN68A==
-Date: Mon, 15 Feb 2010 14:19:57 -0800 (PST)
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=mA+L5qRihu/ZL+L6FZaH5ZVf8ybEPSFlv2R74DL/OOWRkqyGFNqFNafeSV5FFbq8f
+	/VuB9vbZciCzczCqiphRQ==
+Date: Mon, 15 Feb 2010 14:20:21 -0800 (PST)
 From: David Rientjes <rientjes@google.com>
 X-X-Sender: rientjes@chino.kir.corp.google.com
 To: Andrew Morton <akpm@linux-foundation.org>
@@ -22,8 +22,10 @@ cc: Rik van Riel <riel@redhat.com>,
        Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
        KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
        linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: [patch -mm 0/9 v2] oom killer rewrite
-Message-ID: <alpine.DEB.2.00.1002151416470.26927@chino.kir.corp.google.com>
+Subject: [patch -mm 8/9 v2] oom: avoid oom killer for lowmem allocations
+In-Reply-To: <alpine.DEB.2.00.1002151416470.26927@chino.kir.corp.google.com>
+Message-ID: <alpine.DEB.2.00.1002151419260.26927@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.1002151416470.26927@chino.kir.corp.google.com>
 User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -32,63 +34,47 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patchset is a rewrite of the out of memory killer to address several
-issues that have been raised recently.  The most notable change is a
-complete rewrite of the badness heuristic that determines which task is
-killed; the goal was to make it as simple and predictable as possible
-while still addressing issues that plague the VM.
+If memory has been depleted in lowmem zones even with the protection
+afforded to it by /proc/sys/vm/lowmem_reserve_ratio, it is unlikely that
+killing current users will help.  The memory is either reclaimable (or
+migratable) already, in which case we should not invoke the oom killer at
+all, or it is pinned by an application for I/O.  Killing such an
+application may leave the hardware in an unspecified state and there is
+no guarantee that it will be able to make a timely exit.
 
-Changes from version 1:
+Lowmem allocations are now failed in oom conditions so that the task can
+perhaps recover or try again later.  Killing current is an unnecessary
+result for simply making a GFP_DMA or GFP_DMA32 page allocation and no
+lowmem allocations use the now-deprecated __GFP_NOFAIL bit so retrying is
+unnecessary.
 
- - updated to mmotm-2010-02-11-21-55
+Previously, the heuristic provided some protection for those tasks with 
+CAP_SYS_RAWIO, but this is no longer necessary since we will not be
+killing tasks for the purposes of ISA allocations.
 
- - when iterating the tasklist for mempolicy-constrained oom conditions,
-   the node of the cpu that a MPOL_F_LOCAL task is running on is now
-   intersected with the page allocator's nodemask to determine whether it
-   should be a candidate for oom kill.
+high_zoneidx is gfp_zone(gfp_flags), meaning that ZONE_NORMAL will be the
+default for all allocations that are not __GFP_DMA, __GFP_DMA32,
+__GFP_HIGHMEM, and __GFP_MOVABLE on kernels configured to support those
+flags.  Testing for high_zoneidx being less than ZONE_NORMAL will only
+return true for allocations that have either __GFP_DMA or __GFP_DMA32.
 
- - added: [patch 4/9] oom: remove compulsory panic_on_oom mode
-
- - /proc/pid/oom_score_adj was added to prevent ABI breakage for
-   applications using /proc/pid/oom_adj.  /proc/pid/oom_adj may still be
-   used with the old range but it is then scaled to oom_score_adj units
-   for a rough linear approximation.  There is no loss in functionality
-   from the old interface.
-
- - added: [patch 6/9] oom: deprecate oom_adj tunable
-
-This patchset is based on mmotm-2010-02-11-21-55 because of the following
-dependencies:
-
-	[patch 5/9] oom: badness heuristic rewrite:
-		mm-count-swap-usage.patch
-
-	[patch 7/9] oom: replace sysctls with quick mode:
-		sysctl-clean-up-vm-related-variable-delcarations.patch
-
-To apply to mainline, download 2.6.33-rc8 and apply
-
-	mm-clean-up-mm_counter.patch
-	mm-avoid-false-sharing-of-mm_counter.patch
-	mm-avoid-false_sharing-of-mm_counter-checkpatch-fixes.patch
-	mm-count-swap-usage.patch
-	mm-count-swap-usage-checkpatch-fixes.patch
-	mm-introduce-dump_page-and-print-symbolic-flag-names.patch
-	sysctl-clean-up-vm-related-variable-declarations.patch
-	sysctl-clean-up-vm-related-variable-declarations-fix.patch
-
-from http://userweb.kernel.org/~akpm/mmotm/broken-out.tar.gz first.
+Acked-by: Rik van Riel <riel@redhat.com>
+Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Signed-off-by: David Rientjes <rientjes@google.com>
 ---
- Documentation/feature-removal-schedule.txt |   30 +
- Documentation/filesystems/proc.txt         |  100 +++---
- Documentation/sysctl/vm.txt                |   71 +---
- fs/proc/base.c                             |  106 ++++++
- include/linux/mempolicy.h                  |   13 
- include/linux/oom.h                        |   24 +
- include/linux/sched.h                      |    3 
- kernel/fork.c                              |    1 
- kernel/sysctl.c                            |   15 
- mm/mempolicy.c                             |   39 ++
- mm/oom_kill.c                              |  479 ++++++++++++++---------------
- mm/page_alloc.c                            |    3 
- 12 files changed, 553 insertions(+), 331 deletions(-)
+ mm/page_alloc.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
+
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -1914,6 +1914,9 @@ rebalance:
+ 	 * running out of options and have to consider going OOM
+ 	 */
+ 	if (!did_some_progress) {
++		/* The oom killer won't necessarily free lowmem */
++		if (high_zoneidx < ZONE_NORMAL)
++			goto nopage;
+ 		if ((gfp_mask & __GFP_FS) && !(gfp_mask & __GFP_NORETRY)) {
+ 			if (oom_killer_disabled)
+ 				goto nopage;
