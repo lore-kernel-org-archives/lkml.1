@@ -1,88 +1,108 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754731Ab0BOJgc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 04:36:32 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:15686 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754221Ab0BOJga (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 04:36:30 -0500
-Date: Mon, 15 Feb 2010 10:36:20 +0100
-From: Jiri Pirko <jpirko@redhat.com>
-To: David Miller <davem@davemloft.net>
-Cc: sfr@canb.auug.org.au, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: linux-next: build warning after merge of the net tree
-Message-ID: <20100215093619.GA2644@psychotron.lab.eng.brq.redhat.com>
-References: <20100215143257.7af33452.sfr@canb.auug.org.au>
- <20100214.225117.242995108.davem@davemloft.net>
+	id S1754699Ab0BOJqx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 04:46:53 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:51946 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754334Ab0BOJqv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Feb 2010 04:46:51 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.4.0
+Message-ID: <4B7917EA.5010401@jp.fujitsu.com>
+Date: Mon, 15 Feb 2010 18:46:18 +0900
+From: Kei Tokunaga <tokunaga.keiich@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100214.225117.242995108.davem@davemloft.net>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+To: "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       James Bottomley <James.Bottomley@suse.de>,
+       Ingo Molnar <mingo@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       "Martin K. Petersen" <martin.petersen@oracle.com>
+CC: Tomohiro Kusumi <kusumi.tomohiro@jp.fujitsu.com>,
+       lkml <linux-kernel@vger.kernel.org>, Li Zefan <lizf@cn.fujitsu.com>,
+       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
+       Kei Tokunaga <tokunaga.keiich@jp.fujitsu.com>
+Subject: [PATCH 1/2 v3] scsi: add __print_hex() to ftrace
+References: <4B7914CD.8020508@jp.fujitsu.com>
+In-Reply-To: <4B7914CD.8020508@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mon, Feb 15, 2010 at 07:51:17AM CET, davem@davemloft.net wrote:
->From: Stephen Rothwell <sfr@canb.auug.org.au>
->Date: Mon, 15 Feb 2010 14:32:57 +1100
->
->> After merging the net tree, today's linux-next build (x86_64 allmodconfig)
->> produced this warning:
->> 
->> net/mac80211/iface.c: In function 'ieee80211_stop':
->> net/mac80211/iface.c:416: warning: passing argument 4 of '__dev_addr_unsync' makes pointer from integer without a cast
->> include/linux/netdevice.h:1967: note: expected 'int *' but argument is of type 'int'
->> 
->> Introduced by commit 4cd24eaf0c6ee7f0242e34ee77ec899f255e66b5 ("net: use
->> netdev_mc_count and netdev_mc_empty when appropriate").
->
->I'll fix this like so:
->
->mac80211: Fix error introduced in netdev_mc_count() changes.
->
->Commit 4cd24eaf0c6ee7f0242e34ee77ec899f255e66b5
->("net: use netdev_mc_count and netdev_mc_empty when appropriate")
->added this hunk to net/mac80211/iface.c:
->
-> 	__dev_addr_unsync(&local->mc_list, &local->mc_count,
->-			  &dev->mc_list, &dev->mc_count);
->+			  &dev->mc_list, dev->mc_count);
->
->which is definitely not correct, introduced a warning (reported
->by Stephen Rothwell):
->
->net/mac80211/iface.c: In function 'ieee80211_stop':
->net/mac80211/iface.c:416: warning: passing argument 4 of '__dev_addr_unsync' makes pointer from integer without a cast
->include/linux/netdevice.h:1967: note: expected 'int *' but argument is of type 'int'
->
->and is thus reverted here.
+From: Li Zefan <lizf@cn.fujitsu.com>
 
-Oups :( sorry about this. Must have missed that when reviewing spatch output..
+This is the same patch from v1.
 
-Thanks David.
+__print_hex() prints values in an array in hex (w/o '0x') (space separated)
+EX) 92 33 32 f3 ee 4d
 
-Jirka
->
->Signed-off-by: David S. Miller <davem@davemloft.net>
->---
-> net/mac80211/iface.c |    2 +-
-> 1 files changed, 1 insertions(+), 1 deletions(-)
->
->diff --git a/net/mac80211/iface.c b/net/mac80211/iface.c
->index f943f5f..09fff46 100644
->--- a/net/mac80211/iface.c
->+++ b/net/mac80211/iface.c
->@@ -413,7 +413,7 @@ static int ieee80211_stop(struct net_device *dev)
-> 	netif_addr_lock_bh(dev);
-> 	spin_lock_bh(&local->filter_lock);
-> 	__dev_addr_unsync(&local->mc_list, &local->mc_count,
->-			  &dev->mc_list, dev->mc_count);
->+			  &dev->mc_list, &dev->mc_count);
-> 	spin_unlock_bh(&local->filter_lock);
-> 	netif_addr_unlock_bh(dev);
-> 
->-- 
->1.6.6.1
->
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+Signed-off-by: Tomohiro Kusumi <kusumi.tomohiro@jp.fujitsu.com>
+Signed-off-by: Kei Tokunaga <tokunaga.keiich@jp.fujitsu.com>
+
+
+---
+
+ linux-2.6.33-rc8-trace-kei/include/linux/ftrace_event.h |    3 +++
+ linux-2.6.33-rc8-trace-kei/include/trace/ftrace.h       |    3 +++
+ linux-2.6.33-rc8-trace-kei/kernel/trace/trace_output.c  |   15 +++++++++++++++
+ 3 files changed, 21 insertions(+)
+
+diff -puN include/linux/ftrace_event.h~ftrace_print_hex include/linux/ftrace_event.h
+--- linux-2.6.33-rc8-trace/include/linux/ftrace_event.h~ftrace_print_hex	2010-02-15 17:25:31.000000000 +0900
++++ linux-2.6.33-rc8-trace-kei/include/linux/ftrace_event.h	2010-02-15 17:25:31.000000000 +0900
+@@ -24,6 +24,9 @@ const char *ftrace_print_flags_seq(struc
+ const char *ftrace_print_symbols_seq(struct trace_seq *p, unsigned long val,
+ 				     const struct trace_print_flags *symbol_array);
+ 
++const char *ftrace_print_hex_seq(struct trace_seq *p,
++				 const unsigned char *buf, int len);
++
+ /*
+  * The trace entry - the most basic unit of tracing. This is what
+  * is printed in the end as a single line in the trace output, such as:
+diff -puN include/trace/ftrace.h~ftrace_print_hex include/trace/ftrace.h
+--- linux-2.6.33-rc8-trace/include/trace/ftrace.h~ftrace_print_hex	2010-02-15 17:25:31.000000000 +0900
++++ linux-2.6.33-rc8-trace-kei/include/trace/ftrace.h	2010-02-15 17:25:31.000000000 +0900
+@@ -321,6 +321,9 @@ ftrace_format_##name(struct ftrace_event
+ 		ftrace_print_symbols_seq(p, value, symbols);		\
+ 	})
+ 
++#undef __print_hex
++#define __print_hex(buf, buf_len) ftrace_print_hex_seq(p, buf, buf_len)
++
+ #undef DECLARE_EVENT_CLASS
+ #define DECLARE_EVENT_CLASS(call, proto, args, tstruct, assign, print)	\
+ static enum print_line_t						\
+diff -puN kernel/trace/trace_output.c~ftrace_print_hex kernel/trace/trace_output.c
+--- linux-2.6.33-rc8-trace/kernel/trace/trace_output.c~ftrace_print_hex	2010-02-15 17:25:31.000000000 +0900
++++ linux-2.6.33-rc8-trace-kei/kernel/trace/trace_output.c	2010-02-15 17:25:31.000000000 +0900
+@@ -355,6 +355,21 @@ ftrace_print_symbols_seq(struct trace_se
+ }
+ EXPORT_SYMBOL(ftrace_print_symbols_seq);
+ 
++const char *
++ftrace_print_hex_seq(struct trace_seq *p, const unsigned char *buf, int buf_len)
++{
++	int i;
++	const char *ret = p->buffer + p->len;
++
++	for (i = 0; i < buf_len; i++)
++		trace_seq_printf(p, "%s%2.2x", i == 0 ? "" : " ", buf[i]);
++
++	trace_seq_putc(p, 0);
++
++	return ret;
++}
++EXPORT_SYMBOL(ftrace_print_hex_seq);
++
+ #ifdef CONFIG_KRETPROBES
+ static inline const char *kretprobed(const char *name)
+ {
+
+_
+
+
+
