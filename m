@@ -1,78 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932608Ab0BPEMs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 23:12:48 -0500
-Received: from nessie.weebeastie.net ([220.233.7.36]:60082 "EHLO
-	bunyip.billabong.weebeastie.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S932547Ab0BPEMr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 23:12:47 -0500
-X-Greylist: delayed 1950 seconds by postgrey-1.27 at vger.kernel.org; Mon, 15 Feb 2010 23:12:46 EST
-Date: Tue, 16 Feb 2010 14:40:06 +1100
-From: CaT <cat@zip.com.au>
-To: Michael Evans <mjevans1983@gmail.com>
-Cc: Justin Piszcz <jpiszcz@lucidpixels.com>, linux-raid@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Linux mdadm superblock question.
-Message-ID: <20100216034005.GE4143@zip.com.au>
-References: <alpine.DEB.2.00.1002111758350.12031@p34.internal.lan> <4877c76c1002111752h23e14f7aibe58a89181e6f493@mail.gmail.com>
+	id S932622Ab0BPEmv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 23:42:51 -0500
+Received: from hole.yuiop.co.uk ([89.145.97.62]:45737 "EHLO mail.yuiop.co.uk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932573Ab0BPEmu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Feb 2010 23:42:50 -0500
+Message-ID: <4B7A2250.5020909@anonymous.org.uk>
+Date: Tue, 16 Feb 2010 04:42:56 +0000
+From: John Robinson <john.robinson@anonymous.org.uk>
+Organization: None; Disorganization: Total
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.8.1.23) Gecko/20090812 Lightning/0.9 Thunderbird/2.0.0.23 Mnenhy/0.7.6.666
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4877c76c1002111752h23e14f7aibe58a89181e6f493@mail.gmail.com>
-Organisation: Furball Inc.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+CC: Linux RAID <linux-raid@vger.kernel.org>, linux-kernel@vger.kernel.org
+Subject: Re: Linux mdadm superblock question.
+References: <alpine.DEB.2.00.1002111758350.12031@p34.internal.lan> <4877c76c1002111752h23e14f7aibe58a89181e6f493@mail.gmail.com> <4B77044B.1020609@zytor.com> <20100216112708.4a863f86@notabene.brown> <4B79F3CE.5030907@zytor.com> <alpine.DEB.2.00.1002151916280.5135@asgard.lang.hm>
+In-Reply-To: <alpine.DEB.2.00.1002151916280.5135@asgard.lang.hm>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 11, 2010 at 05:52:41PM -0800, Michael Evans wrote:
-> You need the superblock at the end of the partition:  If you read the
-> manual that is clearly either version 0.90 OR 1.0 (NOT 1.1 and also
+On 16/02/2010 03:18, david@lang.hm wrote:
+> On Mon, 15 Feb 2010, H. Peter Anvin wrote:
+> 
+>> On 02/15/2010 04:27 PM, Neil Brown wrote:
+>>
+>> There are three options:
+>>
+>> a) either don't boot from it (separate /boot);
+>> b) use a bootloader which installs in the MBR and
+>> hopefully-unpartitioned disk areas (e.g. Grub);
+>> c) use a nonstandard custom MBR.
+>>
+>> Neither (b) or (c), of course, allow for chainloading from another OS
+>> install and thus are bad for interoperability.
+> 
+> I have had no problems with XFS partitions and lilo as the bootloader. 
+> I've been doing this for a couple of years now without realizing that 
+> there is supposed to be a problem.
 
-For lilo, at least, this is not so:
+There isn't, if you use partitions. It could (would) go wrong if you 
+tried to put an XFS filesystem, or md RAID with a v1.1 superblock, on a 
+whole disc without a partition table *and* you tried to put a bootloader 
+on. I can't say it's ever occurred to me to do that, because I always 
+assumed that whatever I put in a partition used all of it, and I 
+couldn't expect to double-book the beginning of it and have it work.
 
-http://www.sfr-fresh.com/linux/misc/lilo-22.8.src.tar.gz:a/lilo-22.8/raid.c
+Cheers,
 
-Line 145:
-
-if (ioctl(md_fd,RAID_VERSION,&md_version_info) < 0)
-
-Line 155:
-
-if (ioctl(md_fd,GET_ARRAY_INFO,&md_array_info) < 0)
-
-Lines 160-168:
-
-if ((md_array_info.major_version != md_version_info.major) &&
-	(md_array_info.minor_version != md_version_info.minor)) {
-    die("Inconsistent Raid version information on %s   (RV=%d.%d GAI=%d.%d)",
-        boot,
-              (int)md_version_info.major,
-              (int)md_version_info.minor,
-              (int)md_array_info.major_version,
-              (int)md_array_info.minor_version);
-    }
-
-It's 0.90 or nothing as md_version_info gives 0.90 due to:
-
-/linux/drivers/md/md.c:
-Line 4599:
-
-        ver.major = MD_MAJOR_VERSION;
-        ver.minor = MD_MINOR_VERSION;
-
-linux/include/linux/raid/md_u.h:
-Line 23:
-
-#define MD_MAJOR_VERSION                0
-#define MD_MINOR_VERSION                90
-
-I got bitten by this as I was testing different raid superblocks on a new
-setup. Wound up hand-making my own initramfs, which was a pain (right pain
-to debug). Would prefer not to have one tbh.
-
--- 
-  "A search of his car uncovered pornography, a homemade sex aid, women's 
-  stockings and a Jack Russell terrier."
-    - http://www.news.com.au/story/0%2C27574%2C24675808-421%2C00.html
+John.
