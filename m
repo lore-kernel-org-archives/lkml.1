@@ -1,79 +1,62 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933135Ab0BPRY2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 12:24:28 -0500
-Received: from mail.tmr.com ([64.65.253.246]:38947 "EHLO partygirl.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752576Ab0BPRY0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 12:24:26 -0500
-Message-ID: <4B7AD4C4.4090209@tmr.com>
-Date: Tue, 16 Feb 2010 12:24:20 -0500
-From: Bill Davidsen <davidsen@tmr.com>
-Organization: TMR Associates Inc, Schenectady NY
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.21) Gecko/20090507 Fedora/1.1.16-1.fc9 NOT Firefox/3.0.11 pango-text SeaMonkey/1.1.16
+	id S933143Ab0BPRZQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 12:25:16 -0500
+Received: from out02.mta.xmission.com ([166.70.13.232]:44385 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752576Ab0BPRZN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 12:25:13 -0500
+To: Octavian Purdila <opurdila@ixiacom.com>
+Cc: David Miller <davem@davemloft.net>,
+       Linux Kernel Network Developers <netdev@vger.kernel.org>,
+       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
+       Amerigo Wang <amwang@redhat.com>
+Subject: Re: [net-next PATCH v4 0/3] net: reserve ports for applications using fixed port
+References: <1266271241-6293-1-git-send-email-opurdila@ixiacom.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Tue, 16 Feb 2010 09:25:04 -0800
+In-Reply-To: <1266271241-6293-1-git-send-email-opurdila@ixiacom.com> (Octavian Purdila's message of "Tue\, 16 Feb 2010 00\:00\:38 +0200")
+Message-ID: <m1sk916qkv.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-To: Neil Brown <neilb@suse.de>
-CC: Justin Piszcz <jpiszcz@lucidpixels.com>, linux-raid@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Linux mdadm superblock question.
-References: <alpine.DEB.2.00.1002111758350.12031@p34.internal.lan> <20100216115036.0f6b7bb6@notabene.brown>
-In-Reply-To: <20100216115036.0f6b7bb6@notabene.brown>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Neil Brown wrote:
-> On Thu, 11 Feb 2010 18:00:23 -0500 (EST)
-> Justin Piszcz <jpiszcz@lucidpixels.com> wrote:
->
->   
->> Hi,
->>
->> I may be converting a host to ext4 and was curious, is 0.90 still the only 
->> superblock version for mdadm/raid-1 that you can boot from without having 
->> to create an initrd/etc?
->>
->> Are there any benefits to using a superblock > 0.90 for a raid-1 boot 
->> volume < 2TB?
->>     
->
-> The only noticeable differences that I can think of are:
->  1/ If you reboot during recovery of a spare, then 0.90 will restart the
->     recovery at the start, while 1.x will restart from where it was up to.
->  2/ The /sys/class/block/mdXX/md/dev-YYY/errors counter is reset on each
->     re-assembly with 0.90, but is preserved across stop/start with 1.x
->  3/ If your partition starts on a multiple of 64K from the start of the
->     device and is the last partition and contains 0.90 metadata, then
->     mdadm can get confused by it.
->   
+Octavian Purdila <opurdila@ixiacom.com> writes:
 
-Given that 4k sector drives make that a lot more likely that it used to 
-be, I suspect some effort will be needed to address this sooner or later.
+> This iteration makes the bitmap dynamically allocated since it is
+> quite big (8192 bytes) and adding that much in BSS may still,
+> apparently, cause problems on some architectures.
+>
+>
+> Octavian Purdila (3):
+>   sysctl: refactor integer handling proc code
+>   sysctl: add proc_dobitmap
+>   net: reserve ports for applications using fixed port numbers
+>
 
->  4/ If you move the devices to a host with a different arch and different
->     byte-ordering, then extra effort will be needed to see the array for
->     0.90, but not for 1.x
->
-> I suspect none of these is a big issue.
->
-> It is likely that future extensions will only be supported on 1.x metadata.
-> For example I hope to add support for storing a bad-block list, so that a
-> read error during recovery will only be fatal for that block, not the whole
-> recovery process.  This is unlikely ever to be supported on 0.90.  However
-> it may not be possible to hot-enable it on 1.x either, depending on how much
-> space has been reserved for extra metadata, so there is no guarantee that
-> using 1.x now makes you future-proof.
->
-> And yes, 0.90 is still the only superblock version that supports in-kernel
-> autodetect, and I have no intention of adding in-kernel autodetect for any
-> other version.
->   
+I don't like the /proc interface for this.  That is certainly not the
+format I would choose for a bitmap.  The way you have described this
+it looks like you are a set of different individual values instead of
+one large value.  History says one value per file is the ideal in a
+user space facing interface.  Intuitively I would not know how to
+change your new proc interface after catting the file.  The classic
+read the file tweak the value and write the new value back will not
+work.
 
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-  "We can't solve today's problems by using the same thinking we
-   used in creating them." - Einstein
+Also we already have a common function for dealing with bitmaps
+in /proc.  bitmap_parse_user.  Used in /proc/irq/NNN/smp_affinity
+among other places.
 
+So can you please use bitmap_parse_user, or break this up into
+64k individual files that we can set individually?
+
+Eric
