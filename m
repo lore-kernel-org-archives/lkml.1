@@ -1,53 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933366Ab0BPVSs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 16:18:48 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:45645 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757038Ab0BPVSr (ORCPT
+	id S933382Ab0BPV1L (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 16:27:11 -0500
+Received: from ixro-out-rtc.ixiacom.com ([92.87.192.98]:2100 "EHLO
+	ixro-ex1.ixiacom.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933307Ab0BPV1J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 16:18:47 -0500
-Date: Tue, 16 Feb 2010 16:18:37 -0500
-From: Kyle McMartin <kyle@mcmartin.ca>
-To: airlied@redhat.com
-Cc: dri-devel@lists.sf.net, linux-kernel@vger.kernel.org,
-       james.getzendanner@students.olin.edu, stable@kernel.org
-Subject: [PATCH] vgaarb: fix "target=default" passing
-Message-ID: <20100216211837.GM24051@bombadil.infradead.org>
+	Tue, 16 Feb 2010 16:27:09 -0500
+From: Octavian Purdila <opurdila@ixiacom.com>
+Organization: Ixia
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [net-next PATCH v4 0/3] net: reserve ports for applications using fixed port
+Date: Tue, 16 Feb 2010 23:22:13 +0200
+User-Agent: KMail/1.12.2 (Linux/2.6.32-2-686; KDE/4.3.2; i686; ; )
+Cc: David Miller <davem@davemloft.net>,
+       Linux Kernel Network Developers <netdev@vger.kernel.org>,
+       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
+       Amerigo Wang <amwang@redhat.com>, Eric Dumazet <eric.dumazet@gmail.com>
+References: <1266271241-6293-1-git-send-email-opurdila@ixiacom.com> <201002162151.04861.opurdila@ixiacom.com> <m1mxz93pw2.fsf@fess.ebiederm.org>
+In-Reply-To: <m1mxz93pw2.fsf@fess.ebiederm.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002162322.13101.opurdila@ixiacom.com>
+X-OriginalArrivalTime: 16 Feb 2010 21:25:43.0256 (UTC) FILETIME=[98653580:01CAAF4E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Kyle McMartin <kyle@redhat.com>
+On Tuesday 16 February 2010 22:08:13 you wrote:
+> > Something like bellow?
+> >
+> > # set bits 8080 and 1666
+> > $echo 8080 1666-1666 > /proc
+> >
+> > #reset bit 1666
+> > $echo 8080 > /proc
+> >
+> > #reset whole bitmap
+> > $echo > /proc
+> 
+> Yes. So something like that.
+> 
+> I think I would use commas instead of spaces as that is more traditional.
+> 
 
-Commit 77c1ff3982c6b36961725dd19e872a1c07df7f3b fixed the userspace
-pointer dereference, but introduced another bug pointed out by Eugene Teo
-in RH bug #564264. Instead of comparing the point we were at in the string,
-we instead compared the beginning of the string to "default".
+OK, I was trying to reuse the existing skip whitespace code :) but if you 
+think its cleaner with commas I can do that.
 
-Signed-off-by: Kyle McMartin <kyle@redhat.com>
-Reported-by: Eugene Teo <eteo@redhat.com>
----
- drivers/gpu/vga/vgaarb.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+> > Note that this new proc entry will work in conjunction with the existing
+> > ip_local_port_range option, so the default bitmap can (and should be)
+> > empty.
+> 
+> Do we want userspace to see this implementation detail? Two data structures
+>  doing the almost the same thing could get confusing in a hurry.  It feels
+>  like a recipe for changing one and not the other and then running around
+>  trying to figure out why the change did not work.
+> 
 
-diff --git a/drivers/gpu/vga/vgaarb.c b/drivers/gpu/vga/vgaarb.c
-index 24b56dc..2f6cf69 100644
---- a/drivers/gpu/vga/vgaarb.c
-+++ b/drivers/gpu/vga/vgaarb.c
-@@ -961,7 +961,7 @@ static ssize_t vga_arb_write(struct file *file, const char __user * buf,
- 		remaining -= 7;
- 		pr_devel("client 0x%p called 'target'\n", priv);
- 		/* if target is default */
--		if (!strncmp(kbuf, "default", 7))
-+		if (!strncmp(curr_pos, "default", 7))
- 			pdev = pci_dev_get(vga_default_device());
- 		else {
- 			if (!vga_pci_str_to_vars(curr_pos, remaining,
--- 
-1.6.6
+Yes, I believe we want to have reserved_ports contain just those special ports 
+that the user wants to reserve. After all we add this entry for this specific 
+purpose. 
+
 
