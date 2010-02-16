@@ -1,53 +1,70 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756008Ab0BPNG1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 08:06:27 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:24542 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755635Ab0BPNG0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 08:06:26 -0500
-Message-ID: <4B7A991F.3040601@redhat.com>
-Date: Tue, 16 Feb 2010 21:09:51 +0800
-From: Cong Wang <amwang@redhat.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20091001)
-MIME-Version: 1.0
-To: Octavian Purdila <opurdila@ixiacom.com>
-CC: David Miller <davem@davemloft.net>,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>,
-       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [net-next PATCH v4 1/3] sysctl: refactor integer handling proc
- code
-References: <1266271241-6293-1-git-send-email-opurdila@ixiacom.com> <1266271241-6293-2-git-send-email-opurdila@ixiacom.com> <4B7A5A23.3080309@redhat.com> <201002161341.56206.opurdila@ixiacom.com>
-In-Reply-To: <201002161341.56206.opurdila@ixiacom.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1756031Ab0BPNJt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 08:09:49 -0500
+Received: from mail-fx0-f215.google.com ([209.85.220.215]:40443 "EHLO
+	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755919Ab0BPNJs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 08:09:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=W3S2K/q/Jyqs8ybYQmy7cZ+8vDkMWEQ1s0Pi+Ul1FtKf/RfDtYyoEJV8e49LJTCnz3
+         UTnvMnIr2jhjnquYmWg4c40HefmY0bCnwgxcep9q45iHzrv/fWXoEtL3HE7lL1+S4r8G
+         p7bck1goVqXLeS3s8LcecSyul15n8OJH8AuRQ=
+From: Tom Van Braeckel <tomvanbraeckel@gmail.com>
+To: gregkh@suse.de
+Cc: devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org,
+       Tom Van Braeckel <tomvanbraeckel@gmail.com>
+Subject: [PATCH 1/1] Staging: samsung-laptop: fix coding style
+Date: Tue, 16 Feb 2010 14:09:35 +0100
+Message-Id: <1266325775-30119-1-git-send-email-tomvanbraeckel@gmail.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Octavian Purdila wrote:
-> On Tuesday 16 February 2010 10:41:07 you wrote:
-> 
->>> +static int proc_skip_wspace(char __user **buf, size_t *size)
->>> +{
->>> +     char c;
->>> +
->>> +     while (*size) {
->>> +             if (get_user(c, *buf))
->>> +                     return -EFAULT;
->>> +             if (!isspace(c))
->>> +                     break;
->>> +             (*size)--; (*buf)++;
->>> +     }
->>> +
->>> +     return 0;
->>> +}
->> In lib/string.c we have skip_spaces(), I think we can use it
->> here instead of inventing another one.
->>
-> 
-> I'm afraid we can't, skip_spaces does not accept userspace buffers.
 
-Well, you need to use copy_from_user() before call it.
+Signed-off-by: Tom Van Braeckel <tomvanbraeckel@gmail.com>
+---
+ drivers/staging/samsung-laptop/samsung-laptop.c |    9 ++++++---
+ 1 files changed, 6 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/staging/samsung-laptop/samsung-laptop.c b/drivers/staging/samsung-laptop/samsung-laptop.c
+index 4877138..dd7ea4c 100644
+--- a/drivers/staging/samsung-laptop/samsung-laptop.c
++++ b/drivers/staging/samsung-laptop/samsung-laptop.c
+@@ -99,7 +99,8 @@ static struct rfkill *rfk;
+ 
+ static int force;
+ module_param(force, bool, 0);
+-MODULE_PARM_DESC(force, "Disable the DMI check and forces the driver to be loaded");
++MODULE_PARM_DESC(force,
++		"Disable the DMI check and forces the driver to be loaded");
+ 
+ static int debug;
+ module_param(debug, bool, S_IRUGO | S_IWUSR);
+@@ -370,7 +371,8 @@ static struct dmi_system_id __initdata samsung_dmi_table[] = {
+ 	{
+ 		.ident = "N128",
+ 		.matches = {
+-			DMI_MATCH(DMI_SYS_VENDOR, "SAMSUNG ELECTRONICS CO., LTD."),
++			DMI_MATCH(DMI_SYS_VENDOR,
++					"SAMSUNG ELECTRONICS CO., LTD."),
+ 			DMI_MATCH(DMI_PRODUCT_NAME, "N128"),
+ 			DMI_MATCH(DMI_BOARD_NAME, "N128"),
+ 		},
+@@ -379,7 +381,8 @@ static struct dmi_system_id __initdata samsung_dmi_table[] = {
+ 	{
+ 		.ident = "N130",
+ 		.matches = {
+-			DMI_MATCH(DMI_SYS_VENDOR, "SAMSUNG ELECTRONICS CO., LTD."),
++			DMI_MATCH(DMI_SYS_VENDOR,
++					"SAMSUNG ELECTRONICS CO., LTD."),
+ 			DMI_MATCH(DMI_PRODUCT_NAME, "N130"),
+ 			DMI_MATCH(DMI_BOARD_NAME, "N130"),
+ 		},
+-- 
+1.6.3.3
 
