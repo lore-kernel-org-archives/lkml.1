@@ -1,63 +1,67 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932448Ab0BPAup (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 19:50:45 -0500
-Received: from cantor.suse.de ([195.135.220.2]:53350 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932434Ab0BPAun (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 19:50:43 -0500
-Date: Tue, 16 Feb 2010 11:50:36 +1100
-From: Neil Brown <neilb@suse.de>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Linux mdadm superblock question.
-Message-ID: <20100216115036.0f6b7bb6@notabene.brown>
-In-Reply-To: <alpine.DEB.2.00.1002111758350.12031@p34.internal.lan>
-References: <alpine.DEB.2.00.1002111758350.12031@p34.internal.lan>
-X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.6; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S932450Ab0BPA5x (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 19:57:53 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:39604 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932299Ab0BPA5u (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Feb 2010 19:57:50 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: paulmck@linux.vnet.ibm.com
+Subject: Re: [RFC patch] introduce sys_membarrier(): process-wide memory barrier (v9)
+Cc: kosaki.motohiro@jp.fujitsu.com,
+       Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Nicholas Miell <nmiell@comcast.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>, mingo@elte.hu,
+       laijs@cn.fujitsu.com, dipankar@in.ibm.com, akpm@linux-foundation.org,
+       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, Valdis.Kletnieks@vt.edu,
+       dhowells@redhat.com
+In-Reply-To: <20100215195916.GF6750@linux.vnet.ibm.com>
+References: <20100212224606.GA30280@Krystal> <20100215195916.GF6750@linux.vnet.ibm.com>
+Message-Id: <20100216093625.72B6.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Tue, 16 Feb 2010 09:57:46 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 11 Feb 2010 18:00:23 -0500 (EST)
-Justin Piszcz <jpiszcz@lucidpixels.com> wrote:
-
-> Hi,
+> On Fri, Feb 12, 2010 at 05:46:06PM -0500, Mathieu Desnoyers wrote:
+> > Here is an implementation of a new system call, sys_membarrier(), which
+> > executes a memory barrier on all threads of the current process. It can be used
+> > to distribute the cost of user-space memory barriers asymmetrically by
+> > transforming pairs of memory barriers into pairs consisting of sys_membarrier()
+> > and a compiler barrier. For synchronization primitives that distinguish between
+> > read-side and write-side (e.g. userspace RCU, rwlocks), the read-side can be
+> > accelerated significantly by moving the bulk of the memory barrier overhead to
+> > the write-side.
+> > 
+> > The first user of this system call is the "liburcu" Userspace RCU implementation
+> > found at http://lttng.org/urcu. It aims at greatly simplifying and enhancing the
+> > current implementation, which uses a scheme similar to the sys_membarrier(), but
+> > based on signals sent to each reader thread.
+> > 
+> > Editorial question: 
+> > 
+> > This synchronization only takes care of threads using the current process memory
+> > map. It should not be used to synchronize accesses performed on memory maps
+> > shared between different processes. Is that a limitation we can live with ?
 > 
-> I may be converting a host to ext4 and was curious, is 0.90 still the only 
-> superblock version for mdadm/raid-1 that you can boot from without having 
-> to create an initrd/etc?
-> 
-> Are there any benefits to using a superblock > 0.90 for a raid-1 boot 
-> volume < 2TB?
+> Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-The only noticeable differences that I can think of are:
- 1/ If you reboot during recovery of a spare, then 0.90 will restart the
-    recovery at the start, while 1.x will restart from where it was up to.
- 2/ The /sys/class/block/mdXX/md/dev-YYY/errors counter is reset on each
-    re-assembly with 0.90, but is preserved across stop/start with 1.x
- 3/ If your partition starts on a multiple of 64K from the start of the
-    device and is the last partition and contains 0.90 metadata, then
-    mdadm can get confused by it.
- 4/ If you move the devices to a host with a different arch and different
-    byte-ordering, then extra effort will be needed to see the array for
-    0.90, but not for 1.x
+Yes.
 
-I suspect none of these is a big issue.
+Personally, I think this patch's concept is clear and it can construct the base
+of userland lockless programming.
+If a userland programmer want to use lockless, hazard pointer is one of common
+technique and this syscall help it.
 
-It is likely that future extensions will only be supported on 1.x metadata.
-For example I hope to add support for storing a bad-block list, so that a
-read error during recovery will only be fatal for that block, not the whole
-recovery process.  This is unlikely ever to be supported on 0.90.  However
-it may not be possible to hot-enable it on 1.x either, depending on how much
-space has been reserved for extra metadata, so there is no guarantee that
-using 1.x now makes you future-proof.
 
-And yes, 0.90 is still the only superblock version that supports in-kernel
-autodetect, and I have no intention of adding in-kernel autodetect for any
-other version.
 
-NeilBrown
