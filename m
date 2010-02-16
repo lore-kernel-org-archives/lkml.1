@@ -1,43 +1,35 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755564Ab0BPMVk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 07:21:40 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:37095 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755282Ab0BPMVi (ORCPT
+	id S1754278Ab0BPMX5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 07:23:57 -0500
+Received: from mail-yw0-f176.google.com ([209.85.211.176]:57588 "EHLO
+	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751308Ab0BPMX4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 07:21:38 -0500
-Date: Tue, 16 Feb 2010 20:21:33 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Richard Hartmann <richih.mailinglist@gmail.com>
-Cc: linux-crypto@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] CRYPTO: Fix checkpatch errors & warnings in
-	cipher.c
-Message-ID: <20100216122133.GA32545@gondor.apana.org.au>
-References: <1265765446-24958-1-git-send-email-richih.mailinglist@gmail.com> <2d460de71002091821h7b6e99b0gb8f134355f64c65a@mail.gmail.com> <20100211044604.GA12146@gondor.apana.org.au> <2d460de71002160356l6c26d513qba7d0cece32daddd@mail.gmail.com> <20100216120009.GA32197@gondor.apana.org.au> <2d460de71002160406q6712b70fu6e49a36f4ae0eeff@mail.gmail.com>
+	Tue, 16 Feb 2010 07:23:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=pLzlCx0cMObzJHpRBCNFbvg7saQL37oo/iE4OGWeKePhpI6/gJsuqZtEHEv1nAAqyZ
+         2+JD2M+EOnBrn3YQioQUwJ9FBGsA2DY7pDeUC0NKwDkxGWijVlQCNzXhHzjcMsk1faAa
+         MCemA3Ipcjjji3lAfep1sI9enmAKz5mHcwkE0=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2d460de71002160406q6712b70fu6e49a36f4ae0eeff@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <201002161520.26700@zigzag.lvk.cs.msu.su>
+References: <201002161520.26700@zigzag.lvk.cs.msu.su>
+Date: Tue, 16 Feb 2010 14:23:55 +0200
+Message-ID: <b6fcc0a1002160423o1269996bw34c033015b1ab500@mail.gmail.com>
+Subject: Re: Extended error reporting to user space?
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: "Nikita V. Youshchenko" <yoush@cs.msu.su>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 16, 2010 at 01:06:27PM +0100, Richard Hartmann wrote:
-> 
-> One more question on workflow, though.. I have been checking
-> http://git.kernel.org/?p=linux/kernel/git/herbert/crypto-2.6.git;a=summary
-> for updates, but obviously, this was the wrong place.
+On Tue, Feb 16, 2010 at 2:20 PM, Nikita V. Youshchenko <yoush@cs.msu.su> wrote:
+> Unfortunately this -EINVAL is not really useful.
 
-You should check the cryptodev-2.6 tree.  However, they won't be
-there yet as I haven't pushed your changes out.  Expect them to
-be there by tomorrow.
-
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+There is no such thing.
+Driver can spit messages with printk() though.
