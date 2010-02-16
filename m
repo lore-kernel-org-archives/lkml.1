@@ -1,61 +1,60 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933577Ab0BPXUS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 18:20:18 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:47432 "EHLO
-	rcsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933561Ab0BPXUP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 18:20:15 -0500
-Message-ID: <4B7B27BC.8010905@oracle.com>
-Date: Tue, 16 Feb 2010 15:18:20 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+	id S933534Ab0BPX2O (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 18:28:14 -0500
+Received: from hera.kernel.org ([140.211.167.34]:35169 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933267Ab0BPX2M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 18:28:12 -0500
+Date: Tue, 16 Feb 2010 23:27:45 GMT
+From: tip-bot for Oleg Nesterov <oleg@redhat.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       oleg@redhat.com, tglx@linutronix.de
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, oleg@redhat.com
+In-Reply-To: <20100216140213.GB16448@redhat.com>
+References: <20100216140213.GB16448@redhat.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/urgent] x86: set_personality_ia32() misses force_personality32
+Message-ID: <tip-1dfc76ec37a59018d8ed39152695ff27a434415b@git.kernel.org>
+Git-Commit-ID: 1dfc76ec37a59018d8ed39152695ff27a434415b
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: linux-next <linux-next@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       David Airlie <airlied@linux.ie>
-Subject: [PATCH -next] vmwgfx: depends on FB
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt353.oracle.com [141.146.40.153]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090201.4B7B281E.0209:SCFMA4539814,ss=1,fgs=0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Tue, 16 Feb 2010 23:27:48 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+Commit-ID:  1dfc76ec37a59018d8ed39152695ff27a434415b
+Gitweb:     http://git.kernel.org/tip/1dfc76ec37a59018d8ed39152695ff27a434415b
+Author:     Oleg Nesterov <oleg@redhat.com>
+AuthorDate: Tue, 16 Feb 2010 15:02:13 +0100
+Committer:  H. Peter Anvin <hpa@zytor.com>
+CommitDate: Tue, 16 Feb 2010 09:44:30 -0800
 
-vmwfgx uses framebuffer interfaces, so it should depend on FB.
-Otherwise it has these build errors (e.g., when CONFIG_FB=m):
+x86: set_personality_ia32() misses force_personality32
 
-drivers/built-in.o: In function `vmw_fb_close':
-(.text+0x97713): undefined reference to `unregister_framebuffer'
-drivers/built-in.o: In function `vmw_fb_close':
-(.text+0x97754): undefined reference to `framebuffer_release'
-drivers/built-in.o: In function `vmw_fb_init':
-(.text+0x97e1c): undefined reference to `framebuffer_alloc'
-drivers/built-in.o: In function `vmw_fb_init':
-(.text+0x9838d): undefined reference to `register_framebuffer'
-drivers/built-in.o: In function `vmw_fb_init':
-(.text+0x9842a): undefined reference to `framebuffer_release'
+05d43ed8a "x86: get rid of the insane TIF_ABI_PENDING bit" forgot
+about force_personality32, fix.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+LKML-Reference: <20100216140213.GB16448@redhat.com>
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
 ---
- drivers/gpu/drm/vmwgfx/Kconfig |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/x86/kernel/process_64.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
---- linux-next-20100216.orig/drivers/gpu/drm/vmwgfx/Kconfig
-+++ linux-next-20100216/drivers/gpu/drm/vmwgfx/Kconfig
-@@ -1,6 +1,6 @@
- config DRM_VMWGFX
- 	tristate "DRM driver for VMware Virtual GPU"
--	depends on DRM && PCI
-+	depends on DRM && PCI && FB
- 	select FB_DEFERRED_IO
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
---
-
+diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
+index 41a26a8..126f0b4 100644
+--- a/arch/x86/kernel/process_64.c
++++ b/arch/x86/kernel/process_64.c
+@@ -527,6 +527,7 @@ void set_personality_ia32(void)
+ 
+ 	/* Make sure to be in 32bit mode */
+ 	set_thread_flag(TIF_IA32);
++	current->personality |= force_personality32;
+ 
+ 	/* Prepare the first "return" to user space */
+ 	current_thread_info()->status |= TS_COMPAT;
