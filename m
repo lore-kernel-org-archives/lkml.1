@@ -1,43 +1,75 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932568Ab0BPDfc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 22:35:32 -0500
-Received: from n4-vm0.bullet.mail.gq1.yahoo.com ([67.195.9.7]:40628 "HELO
-	n4-vm0.bullet.mail.gq1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S932530Ab0BPDfa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 22:35:30 -0500
-X-Yahoo-Newman-Property: ymail-3
-X-Yahoo-Newman-Id: 321666.36153.bm@omp130.mail.gq1.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type;
-  b=yZ8rA0eZw3EBbOR3jaP/cZCl7O7zAKgM0gwXdKcvJ5a5I6x1Yd2jqErRmzzTJkHHlUOewk45DiNF5GDwyDuh/EpTiumpMrBWDPgv/Zrqzbu6Z5lcLhGzVFToe301GBAqzFuYVuiHKVxSsbBextwXCZzP02VpzcbFwbPfgmo+4ss=;
-Message-ID: <123540.36996.qm@web112508.mail.gq1.yahoo.com>
-X-YMail-OSG: vjau0sMVM1l3WaC7bSMAvWBV2oSx.qQRADZHdUgxMzbH30Ks7_88WA.tDKbRF2MmsWhlFgRI2eAFDXeNtA4ZgNvKaJFcN_MXxxQEiRK1Bh_aoxHk7H.hBot7Ey__Yd15zSlyPkmBqIOVjb2AFHiHYORELtD58VpV6M0y3pfFSAemfRveLr7b.2Mz3Pbc8IzpBvi5.Fz1RlwSTgDfhb5FWG5q8ZXYVWZxPLCxwrYFZVtpNv1pAKdPHLJECwMHK0_Z_lLeYFEGWX4hUhfocRg3Zo_2RfKFxMonJt3jqfXJNpwEocu7DKkwTq12..A2JQiOfoP6my0u6xThPsJ6zorVxrPoLbzE4z3QhUrJmzC1r2eiyJZrSyiOkQ--
-X-Mailer: YahooMailClassic/9.2.12 YahooMailWebService/0.8.100.260964
-Date: Mon, 15 Feb 2010 19:35:30 -0800 (PST)
-From: Naveed Cochinwala <naveed_coch@yahoo.com>
-Subject: undefined reference to `.L1485'
-To: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S932577Ab0BPDu7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 22:50:59 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:49325 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932541Ab0BPDu6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Feb 2010 22:50:58 -0500
+Date: Tue, 16 Feb 2010 14:50:54 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Joe Perches <joe@perches.com>, David Miller <davem@davemloft.net>,
+       <netdev@vger.kernel.org>, Daniel Mack <daniel@caiaq.de>
+Subject: linux-next: manual merge of the trivial tree with the net tree
+Message-Id: <20100216145054.d1443653.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0beta7 (GTK+ 2.18.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When I try to compile the latest stable kernel (2.6.32.8), here is the error I get
-~/linux-2.6.32.8/include/trace/events/kmem.h:47: undefined reference to `.L1485'
+Hi Jiri,
 
-Some info on my existing environment/machine:
-The kernel that I have installed on my machine is: 2.6.9-42.EL
-x86 machine.
-gcc (GCC) 3.4.6 20060404 (Red Hat 3.4.6-3)
+Today's linux-next merge of the trivial tree got a conflicts in
+drivers/net/qlge/qlge_ethtool.c and drivers/net/qlge/qlge_main.c between
+commit ae9540f75d5a69e7604cc5391cc0726b3aa82ff6 ("drivers/net/qlge: Use
+netif_printk helpers") from the net tree and commit
+3ad2f3fbb961429d2aa627465ae4829758bc7e07 ("tree-wide: Assorted spelling
+fixes") from the trivial tree.
 
+I fixed them up (see below) and can carry the fixes as necessary.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-Please email responses to my private email: naveed_coch@yahoo.com.
-
-Naveed Cochinwala
-
-
-
+diff --cc drivers/net/qlge/qlge_ethtool.c
+index 4f26afe,b8d21ab..0000000
+--- a/drivers/net/qlge/qlge_ethtool.c
++++ b/drivers/net/qlge/qlge_ethtool.c
+@@@ -404,9 -401,9 +404,9 @@@ static int ql_set_wol(struct net_devic
+  	if (!qdev->wol) {
+  		u32 wol = 0;
+  		status = ql_mb_wol_mode(qdev, wol);
+ -		QPRINTK(qdev, DRV, ERR, "WOL %s (wol code 0x%x) on %s\n",
+ -			(status == 0) ? "cleared successfully" : "clear failed",
+ -			wol, qdev->ndev->name);
+ +		netif_err(qdev, drv, qdev->ndev, "WOL %s (wol code 0x%x)\n",
+- 			  status == 0 ? "cleared sucessfully" : "clear failed",
+++			  status == 0 ? "cleared successfully" : "clear failed",
+ +			  wol);
+  	}
+  
+  	return 0;
+diff --cc drivers/net/qlge/qlge_main.c
+index 2c052ca,a35845b..0000000
+--- a/drivers/net/qlge/qlge_main.c
++++ b/drivers/net/qlge/qlge_main.c
+@@@ -3863,10 -3516,9 +3863,10 @@@ int ql_wol(struct ql_adapter *qdev
+  	if (qdev->wol) {
+  		wol |= MB_WOL_MODE_ON;
+  		status = ql_mb_wol_mode(qdev, wol);
+ -		QPRINTK(qdev, DRV, ERR, "WOL %s (wol code 0x%x) on %s\n",
+ -			(status == 0) ? "Successfully set" : "Failed", wol,
+ -			qdev->ndev->name);
+ +		netif_err(qdev, drv, qdev->ndev,
+ +			  "WOL %s (wol code 0x%x) on %s\n",
+- 			  (status == 0) ? "Sucessfully set" : "Failed",
+++			  (status == 0) ? "Successfully set" : "Failed",
+ +			  wol, qdev->ndev->name);
+  	}
+  
+  	return status;
