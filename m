@@ -1,85 +1,47 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757081Ab0BPRaZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 12:30:25 -0500
-Received: from mail-vw0-f46.google.com ([209.85.212.46]:33814 "EHLO
-	mail-vw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757036Ab0BPRaW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 12:30:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=NFd5/W+i+z8rjT+PiaWT8EDp+Cj+JhotOXMAkYdDWZJ77ejVaHRrkFTPhaCJekeu/D
-         1qZWdvnnqIyUoD1Vf2G4VHvN0cDQgyaBJ89o/w7UltVSS6afpmf56ItAU8rCORNsQ2Bw
-         c64Fg4lX6FVbbyU46uY1y8cqIbGBgg+afHMAo=
-Date: Tue, 16 Feb 2010 09:30:10 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Jiri Slaby <jslaby@suse.cz>
-Cc: mchehab@redhat.com, linux-media@vger.kernel.org,
-       linux-kernel@vger.kernel.org, jirislaby@gmail.com,
-       Mauro Carvalho Chehab <mchehab@infradead.org>
-Subject: Re: [PATCH] V4L: dvb-usb, add extra sync to down-up input events
-Message-ID: <20100216173010.GA15376@core.coreip.homeip.net>
-References: <1266179785-836-1-git-send-email-jslaby@suse.cz>
+	id S932964Ab0BPRip (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 12:38:45 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:59288 "EHLO mail.zytor.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756860Ab0BPRio (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 12:38:44 -0500
+Message-ID: <4B7AD802.1090508@zytor.com>
+Date: Tue, 16 Feb 2010 09:38:10 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1266179785-836-1-git-send-email-jslaby@suse.cz>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+To: Oleg Nesterov <oleg@redhat.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, Roland McGrath <roland@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] x86: set_personality_ia32() abuses TS_COMPAT
+References: <20100215161752.GA19962@redhat.com> <4B799C3F.7010308@zytor.com> <20100215194123.96D49FC3@magilla.sf.frob.com> <4B79B202.5090006@zytor.com> <20100216101903.GA1057@redhat.com> <20100216102332.GL21783@one.firstfloor.org> <20100216140126.GA16448@redhat.com> <20100216140242.GC16448@redhat.com> <alpine.LFD.2.00.1002160738530.18830@localhost.localdomain> <20100216171614.GA23503@redhat.com>
+In-Reply-To: <20100216171614.GA23503@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jiri,
-
-On Sun, Feb 14, 2010 at 09:36:25PM +0100, Jiri Slaby wrote:
-> Userspace is allowed to coalesce events between SYNCs. And since the code
-> emits UP right after DOWN for the same key, it may be missed
-> (up+down=nothing). Add an extra sync in between UP and DOWN events to disable
-> the coalesce.
+On 02/16/2010 09:16 AM, Oleg Nesterov wrote:
 > 
-> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-
-Looks good.
-
-Acked-by: Dmitry Torokhov <dtor@mail.ru>
-
-> Cc: Mauro Carvalho Chehab <mchehab@infradead.org>
-> Cc: linux-media@vger.kernel.org
-> ---
->  drivers/media/dvb/dvb-usb/dib0700_core.c   |    1 +
->  drivers/media/dvb/dvb-usb/dvb-usb-remote.c |    1 +
->  2 files changed, 2 insertions(+), 0 deletions(-)
+> The only reason I dislike TS_COMPAT is that I spent a lot of time
+> trying to understand the necessity to set it here when I tried to
+> understand the basics of compat issues.
 > 
-> diff --git a/drivers/media/dvb/dvb-usb/dib0700_core.c b/drivers/media/dvb/dvb-usb/dib0700_core.c
-> index 4450214..4f961d2 100644
-> --- a/drivers/media/dvb/dvb-usb/dib0700_core.c
-> +++ b/drivers/media/dvb/dvb-usb/dib0700_core.c
-> @@ -612,6 +612,7 @@ static void dib0700_rc_urb_completion(struct urb *purb)
->  	case REMOTE_KEY_REPEAT:
->  		deb_info("key repeated\n");
->  		input_event(d->rc_input_dev, EV_KEY, event, 1);
-> +		input_sync(d->rc_input_dev);
->  		input_event(d->rc_input_dev, EV_KEY, d->last_event, 0);
->  		input_sync(d->rc_input_dev);
->  		break;
-> diff --git a/drivers/media/dvb/dvb-usb/dvb-usb-remote.c b/drivers/media/dvb/dvb-usb/dvb-usb-remote.c
-> index 6b5ded9..a03ef7e 100644
-> --- a/drivers/media/dvb/dvb-usb/dvb-usb-remote.c
-> +++ b/drivers/media/dvb/dvb-usb/dvb-usb-remote.c
-> @@ -107,6 +107,7 @@ static void dvb_usb_read_remote_control(struct work_struct *work)
->  		case REMOTE_KEY_REPEAT:
->  			deb_rc("key repeated\n");
->  			input_event(d->rc_input_dev, EV_KEY, event, 1);
-> +			input_sync(d->rc_input_dev);
->  			input_event(d->rc_input_dev, EV_KEY, d->last_event, 0);
->  			input_sync(d->rc_input_dev);
->  			break;
-> -- 
-> 1.6.6.1
-> 
+
+Just to throw something else into here...
+
+please also keep in mind that there is value to the notion of keeping a
+software invariant true.  In this case, even if setting TS_COMPAT
+doesn't do anything *right now*, it helps maintain an invariant which
+might avoid bugs in the future.
+
+	-hpa
 
 -- 
-Dmitry
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
