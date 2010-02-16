@@ -1,63 +1,69 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933053Ab0BPSto (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 13:49:44 -0500
-Received: from out01.mta.xmission.com ([166.70.13.231]:48885 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932368Ab0BPStm (ORCPT
+	id S933171Ab0BPTMS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 14:12:18 -0500
+Received: from mail-yx0-f200.google.com ([209.85.210.200]:65137 "EHLO
+	mail-yx0-f200.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933091Ab0BPTMQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 13:49:42 -0500
-To: Octavian Purdila <opurdila@ixiacom.com>
-Cc: David Miller <davem@davemloft.net>,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>,
-       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
-       Amerigo Wang <amwang@redhat.com>
-Subject: Re: [net-next PATCH v4 0/3] net: reserve ports for applications using fixed port
-References: <1266271241-6293-1-git-send-email-opurdila@ixiacom.com>
-	<m1sk916qkv.fsf@fess.ebiederm.org>
-	<201002162004.33533.opurdila@ixiacom.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Tue, 16 Feb 2010 10:49:37 -0800
-In-Reply-To: <201002162004.33533.opurdila@ixiacom.com> (Octavian Purdila's message of "Tue\, 16 Feb 2010 20\:04\:33 +0200")
-Message-ID: <m17hqd583i.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Tue, 16 Feb 2010 14:12:16 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=AT3CEH9WrGRNEtLTiHnMKq2T+ZnS4jpybymBFK46cmb9hyvUuAtodol25HsRX64nRp
+         ekP5HkwHx8QOf6fQ0FLCbWiJZsWEAtaMRaVPBLOS71E+uSW5Yd94UqkYY0hp11IVQ2Ki
+         p5rMFQT0Z+Kc1BQBrK9x5Gk9+yLs/ZWN1wknI=
+Message-ID: <4B7AEE0B.4050607@lwfinger.net>
+Date: Tue, 16 Feb 2010 13:12:11 -0600
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100111 SUSE/3.0.1-1.1 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); SAEximRunCond expanded to false
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, mb@bu3sch.de,
+       davem@davemloft.net, stefano.brivio@polimi.it,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH -mm] ssb: open-code dma_alloc_coherent
+References: <4B78EE6A.3010207@lwfinger.net>	<20100215162426V.fujita.tomonori@lab.ntt.co.jp>	<4B79E251.3020005@lwfinger.net> <20100216110422O.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20100216110422O.fujita.tomonori@lab.ntt.co.jp>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Octavian Purdila <opurdila@ixiacom.com> writes:
+On 02/15/2010 08:05 PM, FUJITA Tomonori wrote:
+> On Mon, 15 Feb 2010 18:09:53 -0600
+> Larry Finger <Larry.Finger@lwfinger.net> wrote:
+> 
+>> On 02/15/2010 01:25 AM, FUJITA Tomonori wrote:
+>>> 2.6.33-rc8:
+>>>
+>>> git://git.kernel.org/pub/scm/linux/kernel/git/tomo/linux-2.6-misc.git pending
+>>>
+>>> The ssb patch depends on the latest eight patches in the tree:
+>>>
+>>> http://marc.info/?l=linux-kernel&m=126596737604808&w=2
+>>
+>> The DMA changes work on i386 architecture with wireless devices in Cardbus (PCI)
+>> format. Both b43legacy and b43 were tested.
+> 
+> Great, thanks a lot!
+> 
+> I've posted the second version:
+> 
+> http://marc.info/?l=linux-kernel&m=126624677226865&w=2
+> 
+> It's also available via the git tree:
+> 
+> git://git.kernel.org/pub/scm/linux/kernel/git/tomo/linux-2.6-misc.git pending
+> 
+> Can I get your ack on b43 stuff?
+> 
 
-> Hi Eric, thanks for going over this.
->
-> The use case (large bitmaps/lists) is different enough from what we have today 
-> (small bitmaps) and that is why I think that we need this new interface. 
->
-> If I get bitmap_parse_user correctly, for a 64k bitmap it expects a 2K comma 
-> separated values. That is not the most intuitively way for the user to set a 
-> list of ports he wants to reserve. 
+Both b43 and b43legacy changes are
 
-In this case I expect an interface of comma separated ranges would be
-ideal.  Typically compact, and modifiable by writing the new value to
-the file.
+ACKed-by: Larry Finger <Larry.Finger@lwfinger.net>
 
-I think the default value would be something like 32768-61000.
-
-> Using 64K files has the same practical issues (the user would have to cat all 
-> 64K files to determine which ports are reserved) plus it has issues caused by 
-> the large number of files: significant memory overhead and also significant time 
-> for registering those files.
-
-"grep -l 1 *" isn't particularly difficult, and it would be one sysctl registration
-call.  It is true that the sysctl memory footprint would be a pain in that case.
-
-Eric
-
-
-
+Larry
 
