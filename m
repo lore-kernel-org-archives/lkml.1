@@ -1,58 +1,65 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756935Ab0BPOWj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 09:22:39 -0500
-Received: from smtp-out002.kontent.com ([81.88.40.216]:42913 "EHLO
-	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756391Ab0BPOWh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 09:22:37 -0500
-From: Oliver Neukum <oliver@neukum.org>
-To: "Shilimkar, Santosh" <santosh.shilimkar@ti.com>
-Subject: Re: USB mass storage and ARM cache coherency
-Date: Tue, 16 Feb 2010 15:22:38 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.33-rc6-0.1-default; KDE/4.3.1; x86_64; ; )
-Cc: "Russell King - ARM Linux" <linux@arm.linux.org.uk>,
-       Catalin Marinas <catalin.marinas@arm.com>, Pavel Machek <pavel@ucw.cz>,
-       Greg KH <greg@kroah.com>,
-       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Ming Lei <tom.leiming@gmail.com>,
-       Sebastian Siewior <bigeasy@linutronix.de>,
-       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "linux-arm-kernel" <linux-arm-kernel@lists.infradead.org>,
-       "Mankad, Maulik Ojas" <x0082077@ti.com>
-References: <20100208065519.GE1290@ucw.cz> <201002161446.59920.oliver@neukum.org> <EAF47CD23C76F840A9E7FCE10091EFAB02C3CF8038@dbde02.ent.ti.com>
-In-Reply-To: <EAF47CD23C76F840A9E7FCE10091EFAB02C3CF8038@dbde02.ent.ti.com>
+	id S1756903Ab0BPOYz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 09:24:55 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:1499 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755720Ab0BPOYx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 09:24:53 -0500
+Date: Tue, 16 Feb 2010 15:24:01 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Roland McGrath <roland@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] x86: ELF_PLAT_INIT() shouldn't worry about TIF_IA32
+Message-ID: <20100216142401.GA18671@redhat.com>
+References: <20100215161752.GA19962@redhat.com> <4B799C3F.7010308@zytor.com> <20100215194123.96D49FC3@magilla.sf.frob.com> <4B79B202.5090006@zytor.com> <20100216101903.GA1057@redhat.com> <20100216102332.GL21783@one.firstfloor.org> <20100216140126.GA16448@redhat.com> <20100216140323.GD16448@redhat.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201002161522.38467.oliver@neukum.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100216140323.GD16448@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag, 16. Februar 2010 15:12:45 schrieb Shilimkar, Santosh:
-> > > > I am afraid for these controllers the controller driver must be responsible
-> > > > for all DMA and cache issues. Indicating the exact requirements to the
-> > > > upper layer would be a battle already lost.
-> > > > so the safe choice is not to set has_dma and the generic layer will leave
-> > > > the issue to the lower level.
-> > > This means don't use dma at all which will almost kill the performance.
-> > 
-> > Why would you be unable to map a buffer in the hcd driver when you know
-> > that you'll use DMA?
-> Probably it can be. The USB stack has the dma maintenance code at common 
-> place for all controllers and hence we were just trying to see if there is 
-> way to handle that way.
+On 02/16, Oleg Nesterov wrote:
+>
+>  #define ELF_PLAT_INIT(_r, load_addr)			\
+> -do {							\
+> -	elf_common_init(&current->thread, _r, 0);	\
+> -	clear_thread_flag(TIF_IA32);			\
+> -} while (0)
+> +	elf_common_init(&current->thread, _r, 0);
+                                                ^
+unneeded semicolon, sorry...
 
-This is true. If you can find a clean way to describe your requirements
-to the generic layer, that would be better. The problem is that we must
-not end up with a dozen flags.
+------------------------------------------------------------------------------
+[PATCH 3/3] x86: ELF_PLAT_INIT() shouldn't worry about TIF_IA32
 
-Your original patch however kills ehci, ohci and uhci on some architectures.
+64bit vesrion of ELF_PLAT_INIT() clears TIF_IA32, but at this point it
+must be already cleared by SET_PERSONALITY == set_personality_64bit.
 
-	Regards
-		Oliver
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+---
+
+ arch/x86/include/asm/elf.h |    5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
+
+--- exec/arch/x86/include/asm/elf.h~3_ELF_PLAT_INIT_IA32	2010-01-31 13:57:24.000000000 +0100
++++ exec/arch/x86/include/asm/elf.h	2010-02-16 15:19:43.000000000 +0100
+@@ -170,10 +170,7 @@ static inline void elf_common_init(struc
+ }
+ 
+ #define ELF_PLAT_INIT(_r, load_addr)			\
+-do {							\
+-	elf_common_init(&current->thread, _r, 0);	\
+-	clear_thread_flag(TIF_IA32);			\
+-} while (0)
++	elf_common_init(&current->thread, _r, 0)
+ 
+ #define	COMPAT_ELF_PLAT_INIT(regs, load_addr)		\
+ 	elf_common_init(&current->thread, regs, __USER_DS)
+
