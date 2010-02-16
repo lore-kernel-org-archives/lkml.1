@@ -1,86 +1,70 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932480Ab0BPBVH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 20:21:07 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:34809 "EHLO mx1.redhat.com"
+	id S932485Ab0BPBYs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 20:24:48 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:55331 "EHLO mail.zytor.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932437Ab0BPBVE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 20:21:04 -0500
-Subject: Re: [git pull] drm
-From: Ben Skeggs <bskeggs@redhat.com>
-Reply-To: bskeggs@redhat.com
-To: Christian Borntraeger <borntraeger@de.ibm.com>
-Cc: Dave Airlie <airlied@linux.ie>, torvalds@linux-foundation.org,
-       dri-devel@lists.sf.net, linux-kernel@vger.kernel.org,
-       Maarten Maathuis <madman2003@gmail.com>,
-       Marcin Slusarz <marcin.slusarz@gmail.com>
-In-Reply-To: <201002152355.03161.borntraeger@de.ibm.com>
-References: <alpine.DEB.2.00.1002110417200.516@skynet.skynet.ie>
-	 <201002151053.48681.borntraeger@de.ibm.com>
-	 <201002152355.03161.borntraeger@de.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 16 Feb 2010 11:19:37 +1000
-Message-ID: <1266283177.24236.1.camel@nisroch>
-Mime-Version: 1.0
+	id S932362Ab0BPBYr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Feb 2010 20:24:47 -0500
+Message-ID: <4B79F3CE.5030907@zytor.com>
+Date: Mon, 15 Feb 2010 17:24:30 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+MIME-Version: 1.0
+To: Neil Brown <neilb@suse.de>
+CC: Michael Evans <mjevans1983@gmail.com>,
+       Justin Piszcz <jpiszcz@lucidpixels.com>, linux-raid@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Linux mdadm superblock question.
+References: <alpine.DEB.2.00.1002111758350.12031@p34.internal.lan>	<4877c76c1002111752h23e14f7aibe58a89181e6f493@mail.gmail.com>	<4B77044B.1020609@zytor.com> <20100216112708.4a863f86@notabene.brown>
+In-Reply-To: <20100216112708.4a863f86@notabene.brown>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-02-15 at 23:55 +0100, Christian Borntraeger wrote:
-> Am Montag 15 Februar 2010 10:53:48 schrieb Christian Borntraeger:
-> I think this regression is triggered by
+On 02/15/2010 04:27 PM, Neil Brown wrote:
 > 
-> commit 39c9bfb453b748ce220ceefacbe2a5c19fabf67b
-> Author: Ben Skeggs <bskeggs@redhat.com>
-> Date:   Tue Feb 9 10:22:29 2010 +1000
+> When mdadm defaults to 1.0 for a RAID1 it prints a warning to the effect that
+> the array might not be suitable to store '/boot', and requests confirmation.
 > 
->     drm/nv50: prevent multiple init tables being parsed at the same time
-> 
-> One possible solution is to replace the spinlock bios->lock with a mutex, 
-> but there are others ways of fixing this BUG.
-> 
-> CCing Ben.
-Ah, it appears the vbios delay opcodes got changed to use sleeps rather
-than delays at some point without me noticing.  Sent a patch to Dave
-changing the code to use a mutex instead for now.
+> So I assume that the people who are having this problem either do not read,
+> or are using some partitioning tool that runs mdadm under the hood using
+> "--run" to avoid the need for confirmation.  It would be nice to confirm if
+> that was the case, and find out what tool is being used.
 
-Thanks,
-Ben.
-> 
-> 
-> 
-> > [    2.175437] BUG: scheduling while atomic: nouveau/0/753/0x00000002                                                                                                       
-> > [    2.175439] Modules linked in:                                                                                                                                           
-> > [    2.175442] Pid: 753, comm: nouveau/0 Not tainted 2.6.33-rc8-prerelease #27                                                                                              
-> > [    2.175443] Call Trace:                                                                                                                                                  
-> > [    2.175451]  [<ffffffff815dcdea>] ? schedule+0x86a/0x880                                                                                                                 
-> > [    2.175454]  [<ffffffff8120a420>] ? vsnprintf+0xe0/0x9a0                                                                                                                 
-> > [    2.175456]  [<ffffffff815dd18c>] ? schedule_timeout+0x15c/0x250                                                                                                         
-> > [    2.175460]  [<ffffffff81068570>] ? process_timeout+0x0/0x10                                                                                                             
-> > [    2.175462]  [<ffffffff81069068>] ? msleep+0x18/0x30                                                                                                                     
-> > [    2.175466]  [<ffffffff812d48d1>] ? init_time+0x51/0x90                                                                                                                  
-> > [    2.175468]  [<ffffffff812d3ffb>] ? parse_init_table+0xcb/0x1a0                                                                                                          
-> > [    2.175470]  [<ffffffff812d424a>] ? init_sub_direct+0x4a/0xd0                                                                                                            
-> > [    2.175472]  [<ffffffff812d3ffb>] ? parse_init_table+0xcb/0x1a0                                                                                                          
-> > [    2.175474]  [<ffffffff812d496f>] ? nouveau_bios_run_init_table+0x5f/0xa0                                                                                                
-> > [    2.175476]  [<ffffffff812d4c0c>] ? nouveau_bios_run_display_table+0x25c/0x500                                                                                           
-> > [    2.175480]  [<ffffffff812fd220>] ? nv50_display_irq_handler_bh+0x0/0x410                                                                                                
-> > [    2.175483]  [<ffffffff812fd4cc>] ? nv50_display_irq_handler_bh+0x2ac/0x410                                                                                              
-> > [    2.175485]  [<ffffffff812fd220>] ? nv50_display_irq_handler_bh+0x0/0x410                                                                                                
-> > [    2.175487]  [<ffffffff8107047b>] ? worker_thread+0x16b/0x250                                                                                                            
-> > [    2.175490]  [<ffffffff81074240>] ? autoremove_wake_function+0x0/0x30                                                                                                    
-> > [    2.175492]  [<ffffffff81070310>] ? worker_thread+0x0/0x250                                                                                                              
-> > [    2.175494]  [<ffffffff81070310>] ? worker_thread+0x0/0x250                                                                                                              
-> > [    2.175496]  [<ffffffff81073dbe>] ? kthread+0x8e/0xa0                                                                                                                    
-> > [    2.175499]  [<ffffffff81027554>] ? kernel_thread_helper+0x4/0x10                                                                                                        
-> > [    2.175501]  [<ffffffff81073d30>] ? kthread+0x0/0xa0                                                                                                                     
-> > [    2.175503]  [<ffffffff81027550>] ? kernel_thread_helper+0x0/0x10                                                                                                        
-> > [    2.182407] Console: switching to colour frame buffer device 240x75                                                                                                      
-> > [    2.186632] fb0: nouveaufb frame buffer device                                                                                                                           
-> > [    2.186633] registered panic notifier                                                                                                                                    
-> > [    2.186636] [drm] Initialized nouveau 0.0.15 20090420 for 0000:01:00.0 on minor 0  
-> > ...
-> > 
+My guess is that they are using the latter.  However, some of it is
+probably also a matter of not planning ahead, or not understanding the
+error message.  I'll forward one email privately (don't want to forward
+a private email to a list.)
 
+> If an array is not being used for /boot (or /) then I still think that 1.1 is
+> the better choice as it removes the possibility for confusion over partition
+> tables.
+> 
+> I guess I could try defaulting to 1.2 in a partition, and 1.1 on a
+> whole-device.  That might be a suitable compromise.
+
+In some ways, 1.1 is even more toxic on a whole-device, since that means
+that it is physically impossible to boot off of it -- the hardware will
+only ever read the first sector (MBR).
+
+> How do people cope with XFS??
+
+There are three options:
+
+a) either don't boot from it (separate /boot);
+b) use a bootloader which installs in the MBR and
+hopefully-unpartitioned disk areas (e.g. Grub);
+c) use a nonstandard custom MBR.
+
+Neither (b) or (c), of course, allow for chainloading from another OS
+install and thus are bad for interoperability.
+
+	-hpa
+
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
