@@ -1,84 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755548Ab0BPOqp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 09:46:45 -0500
-Received: from devils.ext.ti.com ([198.47.26.153]:40125 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753206Ab0BPOqo convert rfc822-to-8bit (ORCPT
+	id S932866Ab0BPO5T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 09:57:19 -0500
+Received: from nlpi157.sbcis.sbc.com ([207.115.36.171]:32987 "EHLO
+	nlpi157.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932809Ab0BPO4i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 09:46:44 -0500
-From: "Shilimkar, Santosh" <santosh.shilimkar@ti.com>
-To: Oliver Neukum <oliver@neukum.org>
-CC: Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       Catalin Marinas <catalin.marinas@arm.com>, Pavel Machek <pavel@ucw.cz>,
-       Greg KH <greg@kroah.com>,
-       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Ming Lei <tom.leiming@gmail.com>,
-       Sebastian Siewior <bigeasy@linutronix.de>,
-       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       "Mankad, Maulik Ojas" <x0082077@ti.com>
-Date: Tue, 16 Feb 2010 20:15:55 +0530
-Subject: RE: USB mass storage and ARM cache coherency
-Thread-Topic: USB mass storage and ARM cache coherency
-Thread-Index: AcqvE4MzeiwSSWdcQPSZLgylUiXKwwAAeHIA
-Message-ID: <EAF47CD23C76F840A9E7FCE10091EFAB02C3CF8073@dbde02.ent.ti.com>
-References: <20100208065519.GE1290@ucw.cz>
- <201002161446.59920.oliver@neukum.org>
- <EAF47CD23C76F840A9E7FCE10091EFAB02C3CF8038@dbde02.ent.ti.com>
- <201002161522.38467.oliver@neukum.org>
-In-Reply-To: <201002161522.38467.oliver@neukum.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+	Tue, 16 Feb 2010 09:56:38 -0500
+Date: Tue, 16 Feb 2010 08:55:46 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@router.home
+To: Mel Gorman <mel@csn.ul.ie>
+cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andrea Arcangeli <aarcange@redhat.com>, Adam Litke <agl@us.ibm.com>,
+       Avi Kivity <avi@redhat.com>, David Rientjes <rientjes@google.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 05/12] Memory compaction core
+In-Reply-To: <20100216084800.GC26086@csn.ul.ie>
+Message-ID: <alpine.DEB.2.00.1002160849460.18275@router.home>
+References: <1265976059-7459-1-git-send-email-mel@csn.ul.ie> <1265976059-7459-6-git-send-email-mel@csn.ul.ie> <20100216170014.7309.A69D9226@jp.fujitsu.com> <20100216084800.GC26086@csn.ul.ie>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> -----Original Message-----
-> From: Oliver Neukum [mailto:oliver@neukum.org]
-> Sent: Tuesday, February 16, 2010 7:53 PM
-> To: Shilimkar, Santosh
-> Cc: Russell King - ARM Linux; Catalin Marinas; Pavel Machek; Greg KH; Matthew Dharm; Sergei Shtylyov;
-> Ming Lei; Sebastian Siewior; linux-usb@vger.kernel.org; linux-kernel; linux-arm-kernel; Mankad,
-> Maulik Ojas
-> Subject: Re: USB mass storage and ARM cache coherency
-> 
-> Am Dienstag, 16. Februar 2010 15:12:45 schrieb Shilimkar, Santosh:
-> > > > > I am afraid for these controllers the controller driver must be responsible
-> > > > > for all DMA and cache issues. Indicating the exact requirements to the
-> > > > > upper layer would be a battle already lost.
-> > > > > so the safe choice is not to set has_dma and the generic layer will leave
-> > > > > the issue to the lower level.
-> > > > This means don't use dma at all which will almost kill the performance.
-> > >
-> > > Why would you be unable to map a buffer in the hcd driver when you know
-> > > that you'll use DMA?
-> > Probably it can be. The USB stack has the dma maintenance code at common
-> > place for all controllers and hence we were just trying to see if there is
-> > way to handle that way.
-> 
-> This is true. If you can find a clean way to describe your requirements
-> to the generic layer, that would be better. The problem is that we must
-> not end up with a dozen flags.
-Agree 
-> Your original patch however kills ehci, ohci and uhci on some architectures.
-Well the patch was making _ONLY_ control transfers use PIO and rest of
-the transfer would still use dma. So not sure how much performance impact would
-be because of that.
-Another issue with that patch is there are few controllers which can't do PIO
-at all and hence the patch would broke those controllers.
+On Tue, 16 Feb 2010, Mel Gorman wrote:
 
-So we need a clean way to handle it as you described.
+> Because how do I tell in advance that the data I am migrating from DMA can
+> be safely relocated to the NORMAL zone? We don't save GFP flags. Granted,
+> for DMA, that will not matter as pages that must be in DMA will also not by
+> migratable. However, buffer pages should not get relocated to HIGHMEM for
+> example which is more likely to happen. It could be special cased but
+> I'm not aware of ZONE_DMA-related pressure problems that would make this
+> worthwhile and if so, it should be handled as a separate patch series.
 
-Regards,
-Santosh
+Oh there are numerous ZONE_DMA pressure issues if you have ancient /
+screwed up hardware that can only operate on DMA or DMA32 memory.
 
+Moving page cache pages out of the DMA zone would be good. A
+write request will cause the page to bounce back to the DMA zone if the
+device requires the page there.
+
+But I also think that the patchset should be as simple as possible so that
+it can be merged soon.
+
+> Ah, it was 2009 when I last kicked this around heavily :) I'll update
+> it.
+
+But it was authored in 2009. May be important if patent or other
+copyright claims arise. 2009-2010?
 
