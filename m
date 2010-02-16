@@ -1,73 +1,161 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933219Ab0BPW32 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 17:29:28 -0500
-Received: from mga06.intel.com ([134.134.136.21]:64019 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933145Ab0BPW30 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 17:29:26 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,486,1262592000"; 
-   d="scan'208";a="493015170"
-Message-ID: <4B7B1C40.8070208@linux.intel.com>
-Date: Tue, 16 Feb 2010 23:29:20 +0100
-From: Andi Kleen <ak@linux.intel.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de; rv:1.9.1.7) Gecko/20100111 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       andi@firstfloor.org, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org,
-       Doug Thompson <dougthompson@xmission.com>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Borislav Petkov <borislav.petkov@amd.com>
-Subject: Re: [tip:x86/mce] x86, mce: Make xeon75xx memory driver dependent
- on PCI
-References: <20100123113359.GA29555@one.firstfloor.org> <tip-757fd770c649b0dfa6eeefc2d5e2ea3119b6be9c@git.kernel.org> <20100216204732.GA2301@elte.hu>
-In-Reply-To: <20100216204732.GA2301@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S933456Ab0BPWpY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 17:45:24 -0500
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:42623 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933181Ab0BPWpP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 17:45:15 -0500
+From: Serge Hallyn <serue@us.ibm.com>
+To: serue@us.ibm.com
+Cc: Greg KH <greg@kroah.com>, rsc@swtch.com,
+       Ashwin Ganti <ashwin.ganti@gmail.com>, ericvh@gmail.com,
+       devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org,
+       Ron Minnich <rminnich@gmail.com>
+Subject: [PATCH 3/8] p9auth: use setresuid
+Date: Tue, 16 Feb 2010 16:44:56 -0600
+Message-Id: <1266360301-30081-3-git-send-email-serue@us.ibm.com>
+X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <1266360301-30081-1-git-send-email-serue@us.ibm.com>
+References: <1266360301-30081-1-git-send-email-serue@us.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Serge E. Hallyn <serue@us.ibm.com>
 
->
-> Please work with Mauro on the Nehalem EDAC bits, they seem rather advanced to
-> me for v2.6.34, and _far_ cleaner and more capable as well. See those Intel
-> support bits at:
+Use setresuid to set userids through p9auth capability device, to
+make sure MAC checks and setuid fixup are done.  In particular,
+becoming root or dropping root should tweak capability sets.
 
-Hi Ingo,
+Have the cred_setresuid() helper take a 'int force' argument,
+which means the setuid has been authorized, so no need to
+check CAP_SETUID.  (Analogous for cred_setresgid, which will
+also eventually be used).
 
-core_i7 and EDAC has nothing to do with this code and
-it has nothing to do with the problem this patch is
-solving.
+Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+Cc: Greg KH <greg@kroah.com>
+cc: rsc@swtch.com
+Cc: Ashwin Ganti <ashwin.ganti@gmail.com>
+Cc: ericvh@gmail.com
+Cc: devel@linuxdriverproject.org
+Cc: linux-kernel@vger.kernel.org
+Cc: Ron Minnich <rminnich@gmail.com>
+---
+ drivers/staging/p9auth/p9auth.c |   12 ++++++++----
+ include/linux/cred.h            |    8 ++++++--
+ kernel/cred.c                   |   11 ++++++-----
+ kernel/sys.c                    |    4 ++--
+ 4 files changed, 22 insertions(+), 13 deletions(-)
 
-This is for a different chip (xeon75xx)
-which has a completely different memory subsystem
-and reports memory errors in a completely different way
-than xeon75xx/core_i7.
+diff --git a/drivers/staging/p9auth/p9auth.c b/drivers/staging/p9auth/p9auth.c
+index 70ef45b..8f70daa 100644
+--- a/drivers/staging/p9auth/p9auth.c
++++ b/drivers/staging/p9auth/p9auth.c
+@@ -289,11 +289,15 @@ static ssize_t cap_write(struct file *filp, const char __user *buf,
+ 					retval = -ENOMEM;
+ 					goto out;
+ 				}
+-				new->uid = (uid_t) target_int;
+-				new->suid = new->fsuid = new->euid = new->uid;
+-				retval = commit_creds(new);
+-				if (retval)
++				retval = cred_setresuid(new, target_int,
++					 target_int, target_int,
++					 CRED_SETID_FORCE);
++				if (retval == 0)
++					commit_creds(new);
++				else {
++					abort_creds(new);
+ 					goto out;
++				}
+ 
+ 				/*
+ 				 * Remove the capability from the list and
+diff --git a/include/linux/cred.h b/include/linux/cred.h
+index e35631e..6337e18 100644
+--- a/include/linux/cred.h
++++ b/include/linux/cred.h
+@@ -399,8 +399,12 @@ do {						\
+ 	*(_fsgid) = __cred->fsgid;		\
+ } while(0)
+ 
+-int cred_setresuid(struct cred *new, uid_t ruid, uid_t euid, uid_t suid);
+-int cred_setresgid(struct cred *new, gid_t rgid, gid_t egid, gid_t sgid);
++#define CRED_SETID_NOFORCE 0
++#define CRED_SETID_FORCE 1
++int cred_setresuid(struct cred *new, uid_t ruid, uid_t euid, uid_t suid,
++		   int force);
++int cred_setresgid(struct cred *new, gid_t rgid, gid_t egid, gid_t sgid,
++		   int force);
+ int cred_setfsuid(struct cred *new, uid_t uid, uid_t *old_fsuid);
+ int cred_setfsgid(struct cred *new, gid_t gid, gid_t *old_fsgid);
+ 
+diff --git a/kernel/cred.c b/kernel/cred.c
+index 6eee59c..8640988 100644
+--- a/kernel/cred.c
++++ b/kernel/cred.c
+@@ -780,7 +780,8 @@ int set_create_files_as(struct cred *new, struct inode *inode)
+ }
+ EXPORT_SYMBOL(set_create_files_as);
+ 
+-int cred_setresuid(struct cred *new, uid_t ruid, uid_t euid, uid_t suid)
++int cred_setresuid(struct cred *new, uid_t ruid, uid_t euid, uid_t suid,
++		   int force)
+ {
+ 	int retval;
+ 	const struct cred *old;
+@@ -790,7 +791,7 @@ int cred_setresuid(struct cred *new, uid_t ruid, uid_t euid, uid_t suid)
+ 		return retval;
+ 	old = current_cred();
+ 
+-	if (!capable(CAP_SETUID)) {
++	if (!force && !capable(CAP_SETUID)) {
+ 		if (ruid != (uid_t) -1 && ruid != old->uid &&
+ 		    ruid != old->euid  && ruid != old->suid)
+ 			return -EPERM;
+@@ -820,8 +821,8 @@ int cred_setresuid(struct cred *new, uid_t ruid, uid_t euid, uid_t suid)
+ }
+ EXPORT_SYMBOL_GPL(cred_setresuid);
+ 
+-int cred_setresgid(struct cred *new, gid_t rgid, gid_t egid,
+-			gid_t sgid)
++int cred_setresgid(struct cred *new, gid_t rgid, gid_t egid, gid_t sgid,
++		   int force)
+ {
+ 	const struct cred *old = current_cred();
+ 	int retval;
+@@ -830,7 +831,7 @@ int cred_setresgid(struct cred *new, gid_t rgid, gid_t egid,
+ 	if (retval)
+ 		return retval;
+ 
+-	if (!capable(CAP_SETGID)) {
++	if (!force && !capable(CAP_SETGID)) {
+ 		if (rgid != (gid_t) -1 && rgid != old->gid &&
+ 		    rgid != old->egid  && rgid != old->sgid)
+ 			return -EPERM;
+diff --git a/kernel/sys.c b/kernel/sys.c
+index 1927edf..f6c2534 100644
+--- a/kernel/sys.c
++++ b/kernel/sys.c
+@@ -720,7 +720,7 @@ SYSCALL_DEFINE3(setresuid, uid_t, ruid, uid_t, euid, uid_t, suid)
+ 	if (!new)
+ 		return -ENOMEM;
+ 
+-	retval = cred_setresuid(new, ruid, euid, suid);
++	retval = cred_setresuid(new, ruid, euid, suid, CRED_SETID_NOFORCE);
+ 	if (retval == 0)
+ 		return commit_creds(new);
+ 
+@@ -752,7 +752,7 @@ SYSCALL_DEFINE3(setresgid, gid_t, rgid, gid_t, egid, gid_t, sgid)
+ 	if (!new)
+ 		return -ENOMEM;
+ 
+-	retval = cred_setresgid(new, rgid, egid, sgid);
++	retval = cred_setresgid(new, rgid, egid, sgid, CRED_SETID_NOFORCE);
+ 	if (retval == 0)
+ 		return commit_creds(new);
+ 
+-- 
+1.6.1
 
-For core_i7/xeon55xx there is no additional event interface needed;
-it's all supplied by the hardware on the existing interfaces.
-
-The point of this code is to annotate the CE events on Xeon 75xx
-and to implement specific backend actions (page offlining, triggers)
-based on specific events. These backend actions are already implemented
-on 55xx without additional changes (no need for EDAC)
-
-EDAC does not provide an event interface that can
-be polled, just counts, so this cannot be done with EDAC.
-It's simply a topology enumeration with error counts.
-mcelog is not a topology interface, it's a event
-notification mechanism.
-
-EDAC and mcelog are orthogonal, they don't solve the same
-problem.
-
-So your nack is based on incorrect assumptions and doesn't make
-sense. What you're asking for cannot be done with current
-EDAC as far as I know.
-
--Andi
