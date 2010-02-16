@@ -1,57 +1,68 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933155Ab0BPRvb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 12:51:31 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:38898 "EHLO mail.zytor.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933024Ab0BPRva (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 12:51:30 -0500
-Message-ID: <4B7ADB07.1050500@zytor.com>
-Date: Tue, 16 Feb 2010 09:51:03 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+	id S933173Ab0BPSJF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 13:09:05 -0500
+Received: from ixro-out-rtc.ixiacom.com ([92.87.192.98]:29825 "EHLO
+	ixro-ex1.ixiacom.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933153Ab0BPSJB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 13:09:01 -0500
+From: Octavian Purdila <opurdila@ixiacom.com>
+Organization: Ixia
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [net-next PATCH v4 0/3] net: reserve ports for applications using fixed port
+Date: Tue, 16 Feb 2010 20:04:33 +0200
+User-Agent: KMail/1.12.2 (Linux/2.6.32-2-686; KDE/4.3.2; i686; ; )
+Cc: David Miller <davem@davemloft.net>,
+       Linux Kernel Network Developers <netdev@vger.kernel.org>,
+       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
+       Amerigo Wang <amwang@redhat.com>
+References: <1266271241-6293-1-git-send-email-opurdila@ixiacom.com> <m1sk916qkv.fsf@fess.ebiederm.org>
+In-Reply-To: <m1sk916qkv.fsf@fess.ebiederm.org>
 MIME-Version: 1.0
-To: Oleg Nesterov <oleg@redhat.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Roland McGrath <roland@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] x86: set_personality_ia32() abuses TS_COMPAT
-References: <20100215161752.GA19962@redhat.com> <4B799C3F.7010308@zytor.com> <20100215194123.96D49FC3@magilla.sf.frob.com> <4B79B202.5090006@zytor.com> <20100216101903.GA1057@redhat.com> <20100216102332.GL21783@one.firstfloor.org> <20100216140126.GA16448@redhat.com> <20100216140242.GC16448@redhat.com> <alpine.LFD.2.00.1002160738530.18830@localhost.localdomain> <20100216174437.GA28323@redhat.com>
-In-Reply-To: <20100216174437.GA28323@redhat.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: Text/Plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Message-Id: <201002162004.33533.opurdila@ixiacom.com>
+X-OriginalArrivalTime: 16 Feb 2010 18:08:03.0519 (UTC) FILETIME=[FB70F4F0:01CAAF32]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/16/2010 09:44 AM, Oleg Nesterov wrote:
-> On 02/16, Linus Torvalds wrote:
->>
->> And after we have switched to 32-bit mode, we _are_ inside a 32-bit system
->> call: the execve has "changed" from a 64-bit one to a 32-bit one.
->>
->> So I really don't understand why you dislike TS_COMPAT here.
+
+On Tuesday 16 February 2010 19:25:04 you wrote:
+
+> I don't like the /proc interface for this.  That is certainly not the
+> format I would choose for a bitmap.  The way you have described this
+> it looks like you are a set of different individual values instead of
+> one large value.  History says one value per file is the ideal in a
+> user space facing interface.  Intuitively I would not know how to
+> change your new proc interface after catting the file.  The classic
+> read the file tweak the value and write the new value back will not
+> work.
 > 
-> and, following this logic, shouldn't set_personality_64bit() clear
-> TS_COMPAT ?
+> Also we already have a common function for dealing with bitmaps
+> in /proc.  bitmap_parse_user.  Used in /proc/irq/NNN/smp_affinity
+> among other places.
+> 
+> So can you please use bitmap_parse_user, or break this up into
+> 64k individual files that we can set individually?
 > 
 
-It's quite possible it should... I haven't dug into if that isn't either
-done elsewhere or isn't done for some other reason.  This would be worth
-looking into.
+Hi Eric, thanks for going over this.
 
-> OK, in any case I do not claim we need fixes. Just I am confused.
+The use case (large bitmaps/lists) is different enough from what we have today 
+(small bitmaps) and that is why I think that we need this new interface. 
 
-Trying to understand the code is good.  However, you seem to have
-started out with a point of view that we should have the minimal set of
-state changes possible instead of keeping state as self-consistent as
-possible.  Invariants are a Very Good Thing.  Documented invariants are
-even better ;)
+If I get bitmap_parse_user correctly, for a 64k bitmap it expects a 2K comma 
+separated values. That is not the most intuitively way for the user to set a 
+list of ports he wants to reserve. 
 
-	-hpa
+Using 64K files has the same practical issues (the user would have to cat all 
+64K files to determine which ports are reserved) plus it has issues caused by 
+the large number of files: significant memory overhead and also significant time 
+for registering those files.
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+If this new interface is unacceptable I would rather go with a setsockopt 
+approach, since either of the above approaches are more like machine friendly  
+instead of user friendly.
