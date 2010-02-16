@@ -1,161 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933456Ab0BPWpY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 17:45:24 -0500
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:42623 "EHLO e8.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933181Ab0BPWpP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 17:45:15 -0500
-From: Serge Hallyn <serue@us.ibm.com>
-To: serue@us.ibm.com
-Cc: Greg KH <greg@kroah.com>, rsc@swtch.com,
-       Ashwin Ganti <ashwin.ganti@gmail.com>, ericvh@gmail.com,
-       devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org,
-       Ron Minnich <rminnich@gmail.com>
-Subject: [PATCH 3/8] p9auth: use setresuid
-Date: Tue, 16 Feb 2010 16:44:56 -0600
-Message-Id: <1266360301-30081-3-git-send-email-serue@us.ibm.com>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1266360301-30081-1-git-send-email-serue@us.ibm.com>
-References: <1266360301-30081-1-git-send-email-serue@us.ibm.com>
+	id S933205Ab0BPWon (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 17:44:43 -0500
+Received: from mail.gmx.net ([213.165.64.20]:45159 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S933139Ab0BPWol (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 17:44:41 -0500
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX1/wuz9KLdLw+y9lVt1yhdmWl/JZCy/Owue+w2rUfo
+	Ff/x6lvYlTm1n4
+Date: Tue, 16 Feb 2010 23:44:38 +0100 (CET)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org, linux-mmc@vger.kernel.org,
+       Ian Molton <ian@mnementh.co.uk>, Magnus Damm <damm@opensource.se>,
+       "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>
+Subject: Re: [PATCH] tmio_mmc: keep card-detect interrupts enabled
+In-Reply-To: <20100216135146.beacf701.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.1002162343190.4778@axis700.grange>
+References: <Pine.LNX.4.64.0911061127240.4389@axis700.grange>
+ <c09aa50a0911090242l35d0dfb2vec0cdeff8b86d33e@mail.gmail.com>
+ <Pine.LNX.4.64.0911091530030.4289@axis700.grange>
+ <c09aa50a0911091218i681449e0r5cb96b9db3e0def6@mail.gmail.com>
+ <Pine.LNX.4.64.0911092134440.4289@axis700.grange>
+ <c09aa50a0911091736k27d66483t9012e296bfbf578a@mail.gmail.com>
+ <Pine.LNX.4.64.0911282002490.3696@axis700.grange>
+ <Pine.LNX.4.64.0912162223170.5283@axis700.grange>
+ <Pine.LNX.4.64.0912172113510.5991@axis700.grange>
+ <20091217131239.0dfd5534.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.1002161028200.4778@axis700.grange>
+ <20100216135146.beacf701.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.59999999999999998
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Serge E. Hallyn <serue@us.ibm.com>
+On Tue, 16 Feb 2010, Andrew Morton wrote:
 
-Use setresuid to set userids through p9auth capability device, to
-make sure MAC checks and setuid fixup are done.  In particular,
-becoming root or dropping root should tweak capability sets.
+> On Tue, 16 Feb 2010 10:34:55 +0100 (CET)
+> Guennadi Liakhovetski <g.liakhovetski@gmx.de> wrote:
+> 
+> > On SuperH platforms the SDHI controller does not produce any command IRQs after
+> > a completed IO. This leads to card-detect interrupts staying disabled. Do not
+> > disable card-detect interrupts on DATA IRQs.
+> > 
+> 
+> Why is the current code disabling card-detect interrupts on DATA IRQs? 
+> Was that just a bug?
+> 
+> What effect will this change have for current users of this driver?
 
-Have the cred_setresuid() helper take a 'int force' argument,
-which means the setuid has been authorized, so no need to
-check CAP_SETUID.  (Analogous for cred_setresgid, which will
-also eventually be used).
+Unfortunately, I cannot answer these questions, best I can do is refer you 
+to this reply from Ian:
 
-Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
-Cc: Greg KH <greg@kroah.com>
-cc: rsc@swtch.com
-Cc: Ashwin Ganti <ashwin.ganti@gmail.com>
-Cc: ericvh@gmail.com
-Cc: devel@linuxdriverproject.org
-Cc: linux-kernel@vger.kernel.org
-Cc: Ron Minnich <rminnich@gmail.com>
+http://article.gmane.org/gmane.linux.drivers.video-input-infrastructure/11995
+
+Thanks
+Guennadi
 ---
- drivers/staging/p9auth/p9auth.c |   12 ++++++++----
- include/linux/cred.h            |    8 ++++++--
- kernel/cred.c                   |   11 ++++++-----
- kernel/sys.c                    |    4 ++--
- 4 files changed, 22 insertions(+), 13 deletions(-)
-
-diff --git a/drivers/staging/p9auth/p9auth.c b/drivers/staging/p9auth/p9auth.c
-index 70ef45b..8f70daa 100644
---- a/drivers/staging/p9auth/p9auth.c
-+++ b/drivers/staging/p9auth/p9auth.c
-@@ -289,11 +289,15 @@ static ssize_t cap_write(struct file *filp, const char __user *buf,
- 					retval = -ENOMEM;
- 					goto out;
- 				}
--				new->uid = (uid_t) target_int;
--				new->suid = new->fsuid = new->euid = new->uid;
--				retval = commit_creds(new);
--				if (retval)
-+				retval = cred_setresuid(new, target_int,
-+					 target_int, target_int,
-+					 CRED_SETID_FORCE);
-+				if (retval == 0)
-+					commit_creds(new);
-+				else {
-+					abort_creds(new);
- 					goto out;
-+				}
- 
- 				/*
- 				 * Remove the capability from the list and
-diff --git a/include/linux/cred.h b/include/linux/cred.h
-index e35631e..6337e18 100644
---- a/include/linux/cred.h
-+++ b/include/linux/cred.h
-@@ -399,8 +399,12 @@ do {						\
- 	*(_fsgid) = __cred->fsgid;		\
- } while(0)
- 
--int cred_setresuid(struct cred *new, uid_t ruid, uid_t euid, uid_t suid);
--int cred_setresgid(struct cred *new, gid_t rgid, gid_t egid, gid_t sgid);
-+#define CRED_SETID_NOFORCE 0
-+#define CRED_SETID_FORCE 1
-+int cred_setresuid(struct cred *new, uid_t ruid, uid_t euid, uid_t suid,
-+		   int force);
-+int cred_setresgid(struct cred *new, gid_t rgid, gid_t egid, gid_t sgid,
-+		   int force);
- int cred_setfsuid(struct cred *new, uid_t uid, uid_t *old_fsuid);
- int cred_setfsgid(struct cred *new, gid_t gid, gid_t *old_fsgid);
- 
-diff --git a/kernel/cred.c b/kernel/cred.c
-index 6eee59c..8640988 100644
---- a/kernel/cred.c
-+++ b/kernel/cred.c
-@@ -780,7 +780,8 @@ int set_create_files_as(struct cred *new, struct inode *inode)
- }
- EXPORT_SYMBOL(set_create_files_as);
- 
--int cred_setresuid(struct cred *new, uid_t ruid, uid_t euid, uid_t suid)
-+int cred_setresuid(struct cred *new, uid_t ruid, uid_t euid, uid_t suid,
-+		   int force)
- {
- 	int retval;
- 	const struct cred *old;
-@@ -790,7 +791,7 @@ int cred_setresuid(struct cred *new, uid_t ruid, uid_t euid, uid_t suid)
- 		return retval;
- 	old = current_cred();
- 
--	if (!capable(CAP_SETUID)) {
-+	if (!force && !capable(CAP_SETUID)) {
- 		if (ruid != (uid_t) -1 && ruid != old->uid &&
- 		    ruid != old->euid  && ruid != old->suid)
- 			return -EPERM;
-@@ -820,8 +821,8 @@ int cred_setresuid(struct cred *new, uid_t ruid, uid_t euid, uid_t suid)
- }
- EXPORT_SYMBOL_GPL(cred_setresuid);
- 
--int cred_setresgid(struct cred *new, gid_t rgid, gid_t egid,
--			gid_t sgid)
-+int cred_setresgid(struct cred *new, gid_t rgid, gid_t egid, gid_t sgid,
-+		   int force)
- {
- 	const struct cred *old = current_cred();
- 	int retval;
-@@ -830,7 +831,7 @@ int cred_setresgid(struct cred *new, gid_t rgid, gid_t egid,
- 	if (retval)
- 		return retval;
- 
--	if (!capable(CAP_SETGID)) {
-+	if (!force && !capable(CAP_SETGID)) {
- 		if (rgid != (gid_t) -1 && rgid != old->gid &&
- 		    rgid != old->egid  && rgid != old->sgid)
- 			return -EPERM;
-diff --git a/kernel/sys.c b/kernel/sys.c
-index 1927edf..f6c2534 100644
---- a/kernel/sys.c
-+++ b/kernel/sys.c
-@@ -720,7 +720,7 @@ SYSCALL_DEFINE3(setresuid, uid_t, ruid, uid_t, euid, uid_t, suid)
- 	if (!new)
- 		return -ENOMEM;
- 
--	retval = cred_setresuid(new, ruid, euid, suid);
-+	retval = cred_setresuid(new, ruid, euid, suid, CRED_SETID_NOFORCE);
- 	if (retval == 0)
- 		return commit_creds(new);
- 
-@@ -752,7 +752,7 @@ SYSCALL_DEFINE3(setresgid, gid_t, rgid, gid_t, egid, gid_t, sgid)
- 	if (!new)
- 		return -ENOMEM;
- 
--	retval = cred_setresgid(new, rgid, egid, sgid);
-+	retval = cred_setresgid(new, rgid, egid, sgid, CRED_SETID_NOFORCE);
- 	if (retval == 0)
- 		return commit_creds(new);
- 
--- 
-1.6.1
-
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
+http://www.open-technology.de/
