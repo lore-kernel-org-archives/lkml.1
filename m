@@ -1,208 +1,105 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754767Ab0BPLL0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 06:11:26 -0500
-Received: from smtp.nokia.com ([192.100.122.230]:37016 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754572Ab0BPLKj (ORCPT
+	id S1755399Ab0BPLLk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 06:11:40 -0500
+Received: from smtp.nokia.com ([192.100.122.233]:65256 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754462Ab0BPLKg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 06:10:39 -0500
+	Tue, 16 Feb 2010 06:10:36 -0500
 From: Samu Onkalo <samu.p.onkalo@nokia.com>
 To: eric.piel@tremplin-utc.net
 Cc: pavel@ucw.cz, daniel@caiaq.de, lm-sensors@lm-sensors.org,
        linux-kernel@vger.kernel.org, Samu Onkalo <samu.p.onkalo@nokia.com>
-Subject: [PATCH V2 4/6] lis3: Add skeletons for interrupt handlers
-Date: Tue, 16 Feb 2010 13:09:29 +0200
-Message-Id: <1266318571-31083-5-git-send-email-samu.p.onkalo@nokia.com>
+Subject: [PATCH V2 3/6] lis3: Introduce platform data for second ff / wu unit
+Date: Tue, 16 Feb 2010 13:09:28 +0200
+Message-Id: <1266318571-31083-4-git-send-email-samu.p.onkalo@nokia.com>
 X-Mailer: git-send-email 1.6.0.4
 In-Reply-To: <1266318571-31083-1-git-send-email-samu.p.onkalo@nokia.com>
 References: <1266318571-31083-1-git-send-email-samu.p.onkalo@nokia.com>
-X-OriginalArrivalTime: 16 Feb 2010 11:09:49.0623 (UTC) FILETIME=[8E504C70:01CAAEF8]
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 16 Feb 2010 11:09:45.0667 (UTC) FILETIME=[8BF4A930:01CAAEF8]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Original lis3 driver didn't provide interrupt handler(s) for
-click or threshold event handling. This patch adds threaded handlers
-for one or two interrupt lines for 8 bit device.
-Actual content for interrupt handling is provided in the
-separate patch.
+8 bit device has two wakeup / free fall units. It was not possible
+to configure the second unit. This patch introduces configuration
+entry to the platform data and also corresponding changes to the
+8 bit setup function.
+
+High pass filters were enabled by default. Patch introduces configuration
+option for high pass filter cut off frequency and also possibility to
+disable or enable the filter via platform data.
+Since the control is a new one and default state was filter enabled,
+new option is used to disable the filter. This way old platform data
+is still compatible with the change.
 
 Signed-off-by: Samu Onkalo <samu.p.onkalo@nokia.com>
+Acked-by: Éric Piel <eric.piel@tremplin-utc.net>
 Tested-by: Daniel Mack <daniel@caiaq.de>
 ---
- drivers/hwmon/lis3lv02d.c |   87 +++++++++++++++++++++++++++++++++------------
- include/linux/lis3lv02d.h |    1 +
- 2 files changed, 65 insertions(+), 23 deletions(-)
+ drivers/hwmon/lis3lv02d.c |   15 +++++++++++++--
+ include/linux/lis3lv02d.h |    9 +++++++++
+ 2 files changed, 22 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/hwmon/lis3lv02d.c b/drivers/hwmon/lis3lv02d.c
-index 50f3123..3c06350 100644
+index 99fd45d..50f3123 100644
 --- a/drivers/hwmon/lis3lv02d.c
 +++ b/drivers/hwmon/lis3lv02d.c
-@@ -251,6 +251,9 @@ EXPORT_SYMBOL_GPL(lis3lv02d_poweron);
- 
- static irqreturn_t lis302dl_interrupt(int irq, void *dummy)
- {
-+	if (!test_bit(0, &lis3_dev.misc_opened))
-+		goto out;
-+
- 	/*
- 	 * Be careful: on some HP laptops the bios force DD when on battery and
- 	 * the lid is closed. This leads to interrupts as soon as a little move
-@@ -260,44 +263,35 @@ static irqreturn_t lis302dl_interrupt(int irq, void *dummy)
- 
- 	wake_up_interruptible(&lis3_dev.misc_wait);
- 	kill_fasync(&lis3_dev.async_queue, SIGIO, POLL_IN);
-+out:
-+	if (lis3_dev.whoami == WAI_8B && lis3_dev.idev &&
-+	    lis3_dev.idev->input->users)
-+		return IRQ_WAKE_THREAD;
- 	return IRQ_HANDLED;
- }
- 
--static int lis3lv02d_misc_open(struct inode *inode, struct file *file)
-+static irqreturn_t lis302dl_interrupt_thread1_8b(int irq, void *data)
- {
--	int ret;
-+	return IRQ_HANDLED;
-+}
- 
-+static irqreturn_t lis302dl_interrupt_thread2_8b(int irq, void *data)
-+{
-+	return IRQ_HANDLED;
-+}
-+
-+static int lis3lv02d_misc_open(struct inode *inode, struct file *file)
-+{
- 	if (test_and_set_bit(0, &lis3_dev.misc_opened))
- 		return -EBUSY; /* already open */
- 
- 	atomic_set(&lis3_dev.count, 0);
--
--	/*
--	 * The sensor can generate interrupts for free-fall and direction
--	 * detection (distinguishable with FF_WU_SRC and DD_SRC) but to keep
--	 * the things simple and _fast_ we activate it only for free-fall, so
--	 * no need to read register (very slow with ACPI). For the same reason,
--	 * we forbid shared interrupts.
--	 *
--	 * IRQF_TRIGGER_RISING seems pointless on HP laptops because the
--	 * io-apic is not configurable (and generates a warning) but I keep it
--	 * in case of support for other hardware.
--	 */
--	ret = request_irq(lis3_dev.irq, lis302dl_interrupt, IRQF_TRIGGER_RISING,
--			  DRIVER_NAME, &lis3_dev);
--
--	if (ret) {
--		clear_bit(0, &lis3_dev.misc_opened);
--		printk(KERN_ERR DRIVER_NAME ": IRQ%d allocation failed\n", lis3_dev.irq);
--		return -EBUSY;
--	}
- 	return 0;
- }
- 
- static int lis3lv02d_misc_release(struct inode *inode, struct file *file)
- {
- 	fasync_helper(-1, file, 0, &lis3_dev.async_queue);
--	free_irq(lis3_dev.irq, &lis3_dev);
- 	clear_bit(0, &lis3_dev.misc_opened); /* release the device */
- 	return 0;
- }
-@@ -434,6 +428,11 @@ EXPORT_SYMBOL_GPL(lis3lv02d_joystick_enable);
- 
- void lis3lv02d_joystick_disable(void)
- {
-+	if (lis3_dev.irq)
-+		free_irq(lis3_dev.irq, &lis3_dev);
-+	if (lis3_dev.pdata && lis3_dev.pdata->irq2)
-+		free_irq(lis3_dev.pdata->irq2, &lis3_dev);
-+
- 	if (!lis3_dev.idev)
- 		return;
- 
-@@ -524,6 +523,7 @@ EXPORT_SYMBOL_GPL(lis3lv02d_remove_fs);
+@@ -524,6 +524,8 @@ EXPORT_SYMBOL_GPL(lis3lv02d_remove_fs);
  static void lis3lv02d_8b_configure(struct lis3lv02d *dev,
  				struct lis3lv02d_platform_data *p)
  {
-+	int err;
- 	int ctrl2 = p->hipass_ctrl;
- 
- 	if (p->click_flags) {
-@@ -554,6 +554,18 @@ static void lis3lv02d_8b_configure(struct lis3lv02d *dev,
- 	}
- 	/* Configure hipass filters */
- 	dev->write(dev, CTRL_REG2, ctrl2);
++	int ctrl2 = p->hipass_ctrl;
 +
-+	if (p->irq2) {
-+		err = request_threaded_irq(p->irq2,
-+					NULL,
-+					lis302dl_interrupt_thread2_8b,
-+					IRQF_TRIGGER_RISING |
-+					IRQF_ONESHOT,
-+					DRIVER_NAME, &lis3_dev);
-+		if (err < 0)
-+			printk(KERN_ERR DRIVER_NAME
-+				"No second IRQ. Limited functionality\n");
+ 	if (p->click_flags) {
+ 		dev->write(dev, CLICK_CFG, p->click_flags);
+ 		dev->write(dev, CLICK_TIMELIMIT, p->click_time_limit);
+@@ -540,9 +542,18 @@ static void lis3lv02d_8b_configure(struct lis3lv02d *dev,
+ 		dev->write(dev, FF_WU_THS_1, p->wakeup_thresh & 0x7f);
+ 		/* default to 2.5ms for now */
+ 		dev->write(dev, FF_WU_DURATION_1, 1);
+-		/* enable high pass filter for both free-fall units */
+-		dev->write(dev, CTRL_REG2, HP_FF_WU1 | HP_FF_WU2);
++		ctrl2 ^= HP_FF_WU1; /* Xor to keep compatible with old pdata*/
 +	}
++
++	if (p->wakeup_flags2) {
++		dev->write(dev, FF_WU_CFG_2, p->wakeup_flags2);
++		dev->write(dev, FF_WU_THS_2, p->wakeup_thresh2 & 0x7f);
++		/* default to 2.5ms for now */
++		dev->write(dev, FF_WU_DURATION_2, 1);
++		ctrl2 ^= HP_FF_WU2; /* Xor to keep compatible with old pdata*/
+ 	}
++	/* Configure hipass filters */
++	dev->write(dev, CTRL_REG2, ctrl2);
  }
  
  /*
-@@ -562,6 +574,9 @@ static void lis3lv02d_8b_configure(struct lis3lv02d *dev,
-  */
- int lis3lv02d_init_device(struct lis3lv02d *dev)
- {
-+	int err;
-+	irq_handler_t thread_fn;
-+
- 	dev->whoami = lis3lv02d_read_8(dev, WHO_AM_I);
- 
- 	switch (dev->whoami) {
-@@ -616,6 +631,32 @@ int lis3lv02d_init_device(struct lis3lv02d *dev)
- 		goto out;
- 	}
- 
-+	/*
-+	 * The sensor can generate interrupts for free-fall and direction
-+	 * detection (distinguishable with FF_WU_SRC and DD_SRC) but to keep
-+	 * the things simple and _fast_ we activate it only for free-fall, so
-+	 * no need to read register (very slow with ACPI). For the same reason,
-+	 * we forbid shared interrupts.
-+	 *
-+	 * IRQF_TRIGGER_RISING seems pointless on HP laptops because the
-+	 * io-apic is not configurable (and generates a warning) but I keep it
-+	 * in case of support for other hardware.
-+	 */
-+	if (dev->whoami == WAI_8B)
-+		thread_fn = lis302dl_interrupt_thread1_8b;
-+	else
-+		thread_fn = NULL;
-+
-+	err = request_threaded_irq(dev->irq, lis302dl_interrupt,
-+				thread_fn,
-+				IRQF_TRIGGER_RISING | IRQF_ONESHOT,
-+				DRIVER_NAME, &lis3_dev);
-+
-+	if (err < 0) {
-+		printk(KERN_ERR DRIVER_NAME "Cannot get IRQ\n");
-+		goto out;
-+	}
-+
- 	if (misc_register(&lis3lv02d_misc_device))
- 		printk(KERN_ERR DRIVER_NAME ": misc_register failed\n");
- out:
 diff --git a/include/linux/lis3lv02d.h b/include/linux/lis3lv02d.h
-index d625199..fd289b1 100644
+index f1ca0dc..d625199 100644
 --- a/include/linux/lis3lv02d.h
 +++ b/include/linux/lis3lv02d.h
-@@ -67,6 +67,7 @@ struct lis3lv02d_platform_data {
- 	/* Limits for selftest are specified in chip data sheet */
- 	s16 st_min_limits[3]; /* min pass limit x, y, z */
- 	s16 st_max_limits[3]; /* max pass limit x, y, z */
-+	int irq2;
- };
- 
- #endif /* __LIS3LV02D_H_ */
+@@ -43,6 +43,15 @@ struct lis3lv02d_platform_data {
+ #define LIS3_WAKEUP_Z_HI	(1 << 5)
+ 	unsigned char wakeup_flags;
+ 	unsigned char wakeup_thresh;
++	unsigned char wakeup_flags2;
++	unsigned char wakeup_thresh2;
++#define LIS3_HIPASS_CUTFF_8HZ   0
++#define LIS3_HIPASS_CUTFF_4HZ   1
++#define LIS3_HIPASS_CUTFF_2HZ   2
++#define LIS3_HIPASS_CUTFF_1HZ   3
++#define LIS3_HIPASS1_DISABLE    (1 << 2)
++#define LIS3_HIPASS2_DISABLE    (1 << 3)
++	unsigned char hipass_ctrl;
+ #define LIS3_NO_MAP		0
+ #define LIS3_DEV_X		1
+ #define LIS3_DEV_Y		2
 -- 
 1.6.0.4
 
