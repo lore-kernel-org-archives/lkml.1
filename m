@@ -1,84 +1,95 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753934Ab0BPGjb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 01:39:31 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:57147 "EHLO smtps.tip.net.au"
+	id S1753738Ab0BPGoJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 01:44:09 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:46293 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753738Ab0BPGj3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 01:39:29 -0500
-Date: Tue, 16 Feb 2010 17:39:26 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Greg KH <greg@kroah.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Jean Delvare <khali@linux-fr.org>
-Subject: linux-next: build failure after merge of the driver-core tree
-Message-Id: <20100216173926.b7a4d25c.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta7 (GTK+ 2.18.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1753438Ab0BPGoH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 01:44:07 -0500
+Date: Tue, 16 Feb 2010 17:44:02 +1100
+From: Nick Piggin <npiggin@suse.de>
+To: David Rientjes <rientjes@google.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch -mm 8/9 v2] oom: avoid oom killer for lowmem allocations
+Message-ID: <20100216064402.GC5723@laptop>
+References: <alpine.DEB.2.00.1002151416470.26927@chino.kir.corp.google.com>
+ <alpine.DEB.2.00.1002151419260.26927@chino.kir.corp.google.com>
+ <20100216085706.c7af93e1.kamezawa.hiroyu@jp.fujitsu.com>
+ <alpine.DEB.2.00.1002151606320.14484@chino.kir.corp.google.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.1002151606320.14484@chino.kir.corp.google.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Greg,
+On Mon, Feb 15, 2010 at 04:10:15PM -0800, David Rientjes wrote:
+> On Tue, 16 Feb 2010, KAMEZAWA Hiroyuki wrote:
+> 
+> > > If memory has been depleted in lowmem zones even with the protection
+> > > afforded to it by /proc/sys/vm/lowmem_reserve_ratio, it is unlikely that
+> > > killing current users will help.  The memory is either reclaimable (or
+> > > migratable) already, in which case we should not invoke the oom killer at
+> > > all, or it is pinned by an application for I/O.  Killing such an
+> > > application may leave the hardware in an unspecified state and there is
+> > > no guarantee that it will be able to make a timely exit.
+> > > 
+> > > Lowmem allocations are now failed in oom conditions so that the task can
+> > > perhaps recover or try again later.  Killing current is an unnecessary
+> > > result for simply making a GFP_DMA or GFP_DMA32 page allocation and no
+> > > lowmem allocations use the now-deprecated __GFP_NOFAIL bit so retrying is
+> > > unnecessary.
+> > > 
+> > > Previously, the heuristic provided some protection for those tasks with 
+> > > CAP_SYS_RAWIO, but this is no longer necessary since we will not be
+> > > killing tasks for the purposes of ISA allocations.
+> > > 
+> > > high_zoneidx is gfp_zone(gfp_flags), meaning that ZONE_NORMAL will be the
+> > > default for all allocations that are not __GFP_DMA, __GFP_DMA32,
+> > > __GFP_HIGHMEM, and __GFP_MOVABLE on kernels configured to support those
+> > > flags.  Testing for high_zoneidx being less than ZONE_NORMAL will only
+> > > return true for allocations that have either __GFP_DMA or __GFP_DMA32.
+> > > 
+> > > Acked-by: Rik van Riel <riel@redhat.com>
+> > > Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> > > Signed-off-by: David Rientjes <rientjes@google.com>
+> > > ---
+> > >  mm/page_alloc.c |    3 +++
+> > >  1 files changed, 3 insertions(+), 0 deletions(-)
+> > > 
+> > > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> > > --- a/mm/page_alloc.c
+> > > +++ b/mm/page_alloc.c
+> > > @@ -1914,6 +1914,9 @@ rebalance:
+> > >  	 * running out of options and have to consider going OOM
+> > >  	 */
+> > >  	if (!did_some_progress) {
+> > > +		/* The oom killer won't necessarily free lowmem */
+> > > +		if (high_zoneidx < ZONE_NORMAL)
+> > > +			goto nopage;
+> > >  		if ((gfp_mask & __GFP_FS) && !(gfp_mask & __GFP_NORETRY)) {
+> > >  			if (oom_killer_disabled)
+> > >  				goto nopage;
+> > 
+> > WARN_ON((high_zoneidx < ZONE_NORMAL) && (gfp_mask & __GFP_NOFAIL))
+> > plz.
+> > 
+> 
+> As I already explained when you first brought this up, the possibility of 
+> not invoking the oom killer is not unique to GFP_DMA, it is also possible 
+> for GFP_NOFS.  Since __GFP_NOFAIL is deprecated and there are no current 
+> users of GFP_DMA | __GFP_NOFAIL, that warning is completely unnecessary.  
+> We're not adding any additional __GFP_NOFAIL allocations.
 
-After merging the driver-core tree, today's linux-next build (x86_64
-allmodconfig) failed like this:
-
-drivers/i2c/i2c-smbus.c:58: error: 'struct device' has no member named 'sem'
-drivers/i2c/i2c-smbus.c:66: error: 'struct device' has no member named 'sem'
-
-Caused by commit 0819a881db29059d113fc5f019f7c489dea5937d from the
-driver-core tree interacting with commit
-38f1e8aedf0a238d56fbcd3660fc140b50dbc89a ("i2c: Add SMBus alert support")
-from the i2c tree.
-
-I have applied the following patch for today and will use it as a merge
-fixup for the driver-core tree while necessary.
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Tue, 16 Feb 2010 17:28:56 +1100
-Subject: [PATCH] i2c: update for semaphore to mutex conversion of devices
-
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- drivers/i2c/i2c-smbus.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/i2c/i2c-smbus.c b/drivers/i2c/i2c-smbus.c
-index 333527c..52aa775 100644
---- a/drivers/i2c/i2c-smbus.c
-+++ b/drivers/i2c/i2c-smbus.c
-@@ -27,6 +27,7 @@
- #include <linux/workqueue.h>
- #include <linux/i2c.h>
- #include <linux/i2c-smbus.h>
-+#include <linux/mutex.h>
- 
- struct i2c_smbus_alert {
- 	unsigned int		alert_edge_triggered:1;
-@@ -55,7 +56,7 @@ static int smbus_do_alert(struct device *dev, void *addrp)
- 	 * Drivers should either disable alerts, or provide at least
- 	 * a minimal handler.  Lock so client->driver won't change.
- 	 */
--	down(&dev->sem);
-+	mutex_lock(&dev->mutex);
- 	if (client->driver) {
- 		if (client->driver->alert)
- 			client->driver->alert(client, data->flag);
-@@ -63,7 +64,7 @@ static int smbus_do_alert(struct device *dev, void *addrp)
- 			dev_warn(&client->dev, "no driver alert()!\n");
- 	} else
- 		dev_dbg(&client->dev, "alert with no driver\n");
--	up(&dev->sem);
-+	mutex_unlock(&dev->mutex);
- 
- 	/* Stop iterating after we find the device */
- 	return -EBUSY;
--- 
-1.6.6.2
+Completely agree with this request. Actually, I think even better you
+should just add && !(gfp_mask & __GFP_NOFAIL). Deprecated doesn't mean
+it is OK to break the API (callers *will* oops or corrupt memory if
+__GFP_NOFAIL returns NULL).
 
