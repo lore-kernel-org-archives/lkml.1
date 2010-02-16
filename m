@@ -1,67 +1,93 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932525Ab0BPPan (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 10:30:43 -0500
-Received: from shards.monkeyblade.net ([198.137.202.13]:33866 "EHLO
-	shards.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756468Ab0BPPal (ORCPT
+	id S932693Ab0BPPkV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 10:40:21 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:39057 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932265Ab0BPPkU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 10:30:41 -0500
-Message-ID: <4B7AB9C0.6070402@kernel.org>
-Date: Tue, 16 Feb 2010 07:29:04 -0800
-From: "J.H." <warthog9@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Lightning/1.0b2pre Thunderbird/3.0.1
+	Tue, 16 Feb 2010 10:40:20 -0500
+Date: Tue, 16 Feb 2010 16:39:05 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Jean Delvare <khali@linux-fr.org>, lasse.collin@tukaani.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: ketchup was Re: [kernel.org users] XZ Migration discussion
+Message-ID: <20100216153905.GA1541@ucw.cz>
+References: <4B744E13.8040004@kernel.org> <20100212150137.648dca7c@hyperion.delvare> <1265988318.24271.30.camel@gandalf.stny.rr.com>
 MIME-Version: 1.0
-To: tytso@mit.edu, Jean Delvare <khali@linux-fr.org>,
-       Pavel Machek <pavel@ucw.cz>, mirrors@kernel.org,
-       lasse.collin@tukaani.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       users@kernel.org, "FTPAdmin Kernel.org" <ftpadmin@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Willy Tarreau <w@1wt.eu>
-Subject: Re: [kernel.org users] XZ Migration discussion
-References: <4B744E13.8040004@kernel.org> <20100212150137.648dca7c@hyperion.delvare> <alpine.LFD.2.00.1002120714320.7792@localhost.localdomain> <4B75A5DC.3060803@kernel.org> <20100212202357.6363d5af@hyperion.delvare> <20100212230702.GA10266@1wt.eu> <20100213091748.276821e1@hyperion.delvare> <20100214170724.GE1578@ucw.cz> <20100214200803.4b2348ce@hyperion.delvare> <20100215151522.GI5337@thunk.org>
-In-Reply-To: <20100215151522.GI5337@thunk.org>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.2.3 (shards.monkeyblade.net [198.137.202.13]); Tue, 16 Feb 2010 07:29:06 -0800 (PST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1265988318.24271.30.camel@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/15/2010 07:15 AM, tytso@mit.edu wrote:
-> On Sun, Feb 14, 2010 at 08:08:03PM +0100, Jean Delvare wrote:
->> On Sun, 14 Feb 2010 18:07:24 +0100, Pavel Machek wrote:
->>> Hi!
->>>
->>>> As a matter of fact, I am advocating the use of xz while I don't have
->>>> it installed on most of my machines. I really don't see this as a
->>>> blocker.
->>>
->>> Eh?
->>>
->>> Making many people around the world install uncommon tool is not
->>> something that should be done lightly.
->>
->> It's pretty obvious that xz will become popular quickly, at least on
->> Linux and BSD systems, much like bz2 is today. I'm not asking people to
->> start using ClearCase ;) xz will supersede bz2, it's only a matter of
->> time. I see no problem in being one of the early adopters.
-> 
-> If by "quickly" you mean 'ten years', sure, maybe.  Keep in mind that
-> there are people where who are still using RHEL 3, and some of them
-> might want to download from ftp.kernel.org.  So those people who are
-> suggesting that we replace .gz files with .xz on kernel.org are
-> *really* smoking something good.
-> 
-> People who think xz are good should be working to get it installed by
-> default into the community and then enterprise distro's, first....
-> 
-> 						- Ted
+Hi!
 
-As a note xz is available via EPEL for Redhat Enterprice Linux 5 and
-anything that's derived from that.  Doesn't seem to be available,
-directly, for 4 or lower.  Not sure on Suse, and Debian's already been
-mentioned.  Just trying to do a quick survey of what's out there already.
+> > I wouldn't worry too much about breaking the current locations. Just
+> > give some time for software authors (ketchup comes to mind) to update
+> > their code and it shouldn't be a big problem.
+> 
+> As the new maintainer of ketchup:
+> 
+> git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/ketchup.git
+> 
+> I could write a fix for the new format real quick. My concern is that
+> users of ketchup may not see this update for a long time.
 
-- John 'Warthog9' Hawley
+I'd really like to fix ketchup to behave sanely in late -rc stages:
+going from -rc6 to -rc8 is possible using two downloads through --rc7
+(like 100KB?)  instead of two big ones through full release (like
+10MB).
+
+But first step is --only-dl option -- when you want to cache the
+needed patches but not apply anything yet.
+
+Please apply,
+									Pavel
+
+diff --git a/ketchup b/ketchup
+index 0728aec..3249cbc 100755
+--- a/ketchup
++++ b/ketchup
+@@ -405,7 +405,7 @@ def apply_patch(ver, reverse = 0):
+         r = " -R"
+ 
+     qprint("Applying %s%s" % (os.path.basename(p), r))
+-    if options["dry-run"]:
++    if options["dry-run"] or options["only-dl"]:
+         return ver
+ 
+     def cmd(patch, reverse, dry):
+@@ -484,7 +484,7 @@ def install_nearest(ver):
+         ver = list[0][2]
+ 
+     qprint("Unpacking %s" % os.path.basename(f))
+-    if options["dry-run"]: return ver
++    if options["dry-run"] or options["only-dl"]: return ver
+     untar(f)
+ 
+     return ver
+@@ -658,6 +658,7 @@ opts = [
+     ('l', 'list-trees', None, 'list supported trees'),
+     ('m', 'show-makefile', None, 'output version in makefile <arg>'),
+     ('n', 'dry-run', None, 'don\'t download or apply patches'),
++    ('o', 'only-dl', None, 'don\'t apply patches'),
+     ('p', 'show-previous', None, 'output version previous to <arg>'),
+     ('q', 'quiet', None, 'reduce output'),
+     ('r', 'rename-directory', None, 'rename updated directory to %s<v>'
+@@ -750,7 +751,7 @@ if not a and os.listdir("."):
+ b = find_ver(args[0])
+ qprint("%s -> %s" % (a, b))
+ transform(a, b)
+-if options["rename-directory"] and not options["dry-run"]:
++if options["rename-directory"] and not options["dry-run"] and not options["only-dl"] :
+     rename_dir(b)
+ 
+ if postcommand and os.system(postcommand):
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
