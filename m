@@ -1,79 +1,68 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753562Ab0BPLJA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 06:09:00 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:62765 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752054Ab0BPLI6 (ORCPT
+	id S1754334Ab0BPLKF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 06:10:05 -0500
+Received: from ixro-out-rtc.ixiacom.com ([92.87.192.98]:29082 "EHLO
+	ixro-ex1.ixiacom.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751600Ab0BPLKA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 06:08:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=eCo+3imZupObeTyBCgN+GaR6yJM+N4b4utWpMSvr5toApsbA1imMMBqKg4vaZaoO/y
-         7u5Gt9zdQSYfqHu7WJeUyqLyHfIwYifif7sdC7rYEwO98D+HOB1KyKj1Hme72rVT4n9w
-         UAdgFH4d1CTR4xAUZcYvbsAzMPe0Xm5lHLk8E=
-Message-ID: <4B7A7E86.4090806@gmail.com>
-Date: Tue, 16 Feb 2010 12:16:22 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+	Tue, 16 Feb 2010 06:10:00 -0500
+From: Octavian Purdila <opurdila@ixiacom.com>
+Organization: Ixia
+To: Cong Wang <amwang@redhat.com>
+Subject: Re: [net-next PATCH v4 3/3] net: reserve ports for applications using fixed port numbers
+Date: Tue, 16 Feb 2010 13:06:29 +0200
+User-Agent: KMail/1.12.2 (Linux/2.6.32-2-686; KDE/4.3.2; i686; ; )
+Cc: David Miller <davem@davemloft.net>,
+       Linux Kernel Network Developers <netdev@vger.kernel.org>,
+       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
+       Neil Horman <nhorman@tuxdriver.com>,
+       Eric Dumazet <eric.dumazet@gmail.com>
+References: <1266271241-6293-1-git-send-email-opurdila@ixiacom.com> <1266271241-6293-4-git-send-email-opurdila@ixiacom.com> <4B7A6740.1000701@redhat.com>
+In-Reply-To: <4B7A6740.1000701@redhat.com>
 MIME-Version: 1.0
-To: Joe Perches <joe@perches.com>
-CC: Matthew Dharm <mdharm-usb@one-eyed-alien.net>, linux-usb@vger.kernel.org,
-       usb-storage@lists.one-eyed-alien.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] USB: misplaced parenthesis
-References: <4B79CD49.8070607@gmail.com> <1266273848.29987.21.camel@Joe-Laptop.home>
-In-Reply-To: <1266273848.29987.21.camel@Joe-Laptop.home>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: Text/Plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Message-Id: <201002161306.29708.opurdila@ixiacom.com>
+X-OriginalArrivalTime: 16 Feb 2010 11:09:59.0238 (UTC) FILETIME=[940B6E60:01CAAEF8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I think it'd be better if you hoisted the set'n'test out of the if()
-
-ok, I agree.
-
-> Isn't this the current logic?
+On Tuesday 16 February 2010 11:37:04 you wrote:
+> >  	BUILD_BUG_ON(sizeof(struct inet_skb_parm) > sizeof(dummy_skb->cb));
+> >
+> > +	sysctl_local_reserved_ports = kzalloc(65536 / 8, GFP_KERNEL);
+> > +	if (!sysctl_local_reserved_ports)
+> > +		goto out;
+> > +
 > 
-> 	result = usbat_write_block(us, USBAT_ATA, srb->cmnd, 12,
-> 				   srb->cmnd[0] == GPCMD_BLANK ? 75 : 10, 0);
-> 	result = result != USB_STOR_TRANSPORT_GOOD;
-> 	if (result)
-> 		return result;
+> I think we should also consider the ports in ip_local_port_range,
+> since we can only reserve the ports in that range.
+> 
 
-Thanks for your comments, Yes that was the current logic, which I thought
-was wrong, but now I think it could also be obscurely written but right:
+That is subject to changes at runtime, which means we will have to readjust 
+the bitmap at runtime which introduces the need for additional synchronization 
+operations which I would rather avoid. 
 
-in drivers/usb/storage/transport.h line 100 note the definitions:
+> > +	{
+> > +		.procname	= "ip_local_reserved_ports",
+> > +		.data		= NULL, /* initialized in sysctl_ipv4_init */
+> > +		.maxlen		= 65536,
+> > +		.mode		= 0644,
+> > +		.proc_handler	= proc_dobitmap,
+> > +	},
+> 
+> Isn't there an off-by-one here?
+> 
+> In patch 2/3, you use 0 to set the fist bit, then how about 65535 which
+> writes 65536th bit? This is beyond the range of port number.
+> 
 
-#define USB_STOR_TRANSPORT_GOOD    0   /* Transport good, command good     */
-#define USB_STOR_TRANSPORT_FAILED  1   /* Transport good, command failed   */
-#define USB_STOR_TRANSPORT_NO_SENSE 2  /* Command failed, no auto-sense    */
-#define USB_STOR_TRANSPORT_ERROR   3   /* Transport bad (i.e. device dead) */
+This seems fine to me, 65535 is the value used by both the port checking 
+function and the proc read/write function. And it translates indeed to  
+65536th bit, but that is also bit 65535 if you start counting bits from 0 
+instead of 1. The usual computing/natural arithmetic confusion for the meaning 
+of first :)
 
-With the current logic usbat_hp8200e_transport() returns TRANSPORT_FAILED,
-even if usbat_write_block() returned TRANSPORT_NO_SENSE or TRANSPORT_ERROR.
-
-This could be intended, but then the author chose a very obscure way to write:
-
-	if (usbat_write_block(us, USBAT_ATA, srb->cmnd, 12,
-			      srb->cmnd[0] == GPCMD_BLANK ? 75 : 10, 0) !=
-			      USB_STOR_TRANSPORT_GOOD) 
-		return USB_STOR_TRANSPORT_FAILED;
-
-Or was the parenthesis misplaced and should it really be:
-
-	result = usbat_write_block(us, USBAT_ATA, srb->cmnd, 12,
-				   srb->cmnd[0] == GPCMD_BLANK ? 75 : 10, 0);
-
-	if (result != USB_STOR_TRANSPORT_GOOD)
- 		return result;
- 
-Maybe someone with the specs/more knowledge of this driver could look into
-this?
-
-Thanks, Roel
