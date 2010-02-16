@@ -1,302 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755990Ab0BPIhn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 03:37:43 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:38484 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753639Ab0BPIhm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 03:37:42 -0500
-Message-ID: <4B7A5A23.3080309@redhat.com>
-Date: Tue, 16 Feb 2010 16:41:07 +0800
-From: Cong Wang <amwang@redhat.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20091001)
-MIME-Version: 1.0
-To: Octavian Purdila <opurdila@ixiacom.com>
-CC: David Miller <davem@davemloft.net>,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>,
-       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [net-next PATCH v4 1/3] sysctl: refactor integer handling proc
- code
-References: <1266271241-6293-1-git-send-email-opurdila@ixiacom.com> <1266271241-6293-2-git-send-email-opurdila@ixiacom.com>
-In-Reply-To: <1266271241-6293-2-git-send-email-opurdila@ixiacom.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1752460Ab0BPIlP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 03:41:15 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:48003 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751589Ab0BPIlO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 03:41:14 -0500
+Date: Tue, 16 Feb 2010 09:41:10 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Nameer Yarkon <nameer.yarkon@gmail.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Andi Kleen <andi@firstfloor.org>, Robert Hancock <hancockrwd@gmail.com>,
+       "Anton D. Kachalov" <mouse@mayc.ru>, linux-kernel@vger.kernel.org
+Subject: Re: Reading /dev/mem by dd
+Message-ID: <20100216084110.GK21783@one.firstfloor.org>
+References: <bec9a5871002160035v63cce8ck9ecb9252b2f162a6@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <bec9a5871002160035v63cce8ck9ecb9252b2f162a6@mail.gmail.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Octavian Purdila wrote:
-> As we are about to add another integer handling proc function a little
-> bit of cleanup is in order: add a few helper functions to improve code
-> readability and decrease code duplication.
+On Tue, Feb 16, 2010 at 10:35:40AM +0200, Nameer Yarkon wrote:
+> On Thu, Nov 12, 2009 at 8:13 PM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> >> Is that the only valid use of /dev/mem, or even its main use?
+> >
+> > These days it is the primary use. Things like X11 were historically
+> > probably the biggest user of it, and things like LRMI sometimes need that
+> > sort of stuff.
 > 
-> In the process a bug is fixed as well: if the user specifies a number
-> with more then 20 digits it will be interpreted as two integers
-> (e.g. 10000...13 will be interpreted as 100.... and 13).
-> 
-> Signed-off-by: Octavian Purdila <opurdila@ixiacom.com>
-> Cc: WANG Cong <amwang@redhat.com>
-> Cc: Eric W. Biederman <ebiederm@xmission.com>
+> how does X11 get now direct access to the physical memory (instead of
+> /dev/mem) ?
 
+The classic X server doesn't use main memory, typically just mapped
+graphic card resources
+(if you don't count BIOS tables and memory accessed by the video bios
+running in emulation, but that is typically excluded by the check)  
 
-Some comments below.
+In fact it can't because it doesn't know the physical
+addresses of its process memory.
 
+Modern X does it through kernel modules (DRM, GEM etc.)
 
-> ---
->  kernel/sysctl.c |  298 +++++++++++++++++++++++++++----------------------------
->  1 files changed, 144 insertions(+), 154 deletions(-)
-> 
-> diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-> index 8a68b24..b0f9618 100644
-> --- a/kernel/sysctl.c
-> +++ b/kernel/sysctl.c
-> @@ -2039,8 +2039,98 @@ int proc_dostring(struct ctl_table *table, int write,
->  			       buffer, lenp, ppos);
->  }
->  
-> +static int proc_skip_wspace(char __user **buf, size_t *size)
-> +{
-> +	char c;
-> +
-> +	while (*size) {
-> +		if (get_user(c, *buf))
-> +			return -EFAULT;
-> +		if (!isspace(c))
-> +			break;
-> +		(*size)--; (*buf)++;
-> +	}
-> +
-> +	return 0;
-> +}
+One reason it's needed to do it this way is IOMMUs.
 
+-Andi
 
-In lib/string.c we have skip_spaces(), I think we can use it
-here instead of inventing another one.
-
-> +
-> +#define TMPBUFLEN 22
-> +static int proc_get_next_ulong(char __user **buf, size_t *size,
-> +			       unsigned long *val, bool *neg)
-> +{
-> +	int len;
-> +	char *p, tmp[TMPBUFLEN];
-> +	int err;
-> +
-> +	err = proc_skip_wspace(buf, size);
-> +	if (err)
-> +		return err;
-> +	if (!*size)
-> +		return -EINVAL;
-> +
-> +	len = *size;
-> +	if (len > TMPBUFLEN-1)
-> +		len = TMPBUFLEN-1;
-> +
-> +	if (copy_from_user(tmp, *buf, len))
-> +		return -EFAULT;
-> +
-> +	tmp[len] = 0;
-> +	p = tmp;
-> +	if (*p == '-' && *size > 1) {
-> +		*neg = 1;
-> +		p++;
-> +	} else
-> +		*neg = 0;
-> +	if (*p < '0' || *p > '9')
-> +		return -EINVAL;
-
-
-isdigit().
-
-> +
-> +	*val = simple_strtoul(p, &p, 0);
-> +
-> +	len = p - tmp;
-> +	if (((len < *size) && *p && !isspace(*p)) ||
-> +	    /* We don't know if the next char is whitespace thus we may accept
-> +	     * invalid integers (e.g. 1234...a) or two integers instead of one
-> +	     * (e.g. 123...1). So lets not allow such large numbers. */
-> +	    len == TMPBUFLEN - 1)
-> +		return -EINVAL;
->  
-> -static int do_proc_dointvec_conv(int *negp, unsigned long *lvalp,
-> +	*buf += len; *size -= len;
-> +
-> +	return 0;
-> +}
-> +
-> +static int proc_put_ulong(char __user **buf, size_t *size, unsigned long val,
-> +			  bool neg, bool first)
-> +{
-> +	int len;
-> +	char tmp[TMPBUFLEN], *p = tmp;
-> +
-> +	if (!first)
-> +		*p++ = '\t';
-> +	sprintf(p, "%s%lu", neg ? "-" : "", val);
-> +	len = strlen(tmp);
-> +	if (len > *size)
-> +		len = *size;
-> +	if (copy_to_user(*buf, tmp, len))
-> +		return -EFAULT;
-> +	*size -= len;
-> +	*buf += len;
-> +	return 0;
-> +}
-> +#undef TMPBUFLEN
-> +
-> +static int proc_put_newline(char __user **buf, size_t *size)
-> +{
-> +	if (*size) {
-> +		if (put_user('\n', *buf))
-> +			return -EFAULT;
-> +		(*size)--, (*buf)++;
-> +	}
-> +	return 0;
-> +}
-> +
-> +static int do_proc_dointvec_conv(bool *negp, unsigned long *lvalp,
->  				 int *valp,
->  				 int write, void *data)
->  {
-> @@ -2049,7 +2139,7 @@ static int do_proc_dointvec_conv(int *negp, unsigned long *lvalp,
->  	} else {
->  		int val = *valp;
->  		if (val < 0) {
-> -			*negp = -1;
-> +			*negp = 1;
->  			*lvalp = (unsigned long)-val;
->  		} else {
->  			*negp = 0;
-> @@ -2060,19 +2150,15 @@ static int do_proc_dointvec_conv(int *negp, unsigned long *lvalp,
->  }
->  
->  static int __do_proc_dointvec(void *tbl_data, struct ctl_table *table,
-> -		  int write, void __user *buffer,
-> +		  int write, void __user *_buffer,
->  		  size_t *lenp, loff_t *ppos,
-> -		  int (*conv)(int *negp, unsigned long *lvalp, int *valp,
-> +		  int (*conv)(bool *negp, unsigned long *lvalp, int *valp,
->  			      int write, void *data),
->  		  void *data)
->  {
-> -#define TMPBUFLEN 21
-> -	int *i, vleft, first = 1, neg;
-> -	unsigned long lval;
-> -	size_t left, len;
-> -	
-> -	char buf[TMPBUFLEN], *p;
-> -	char __user *s = buffer;
-> +	int *i, vleft, first = 1, err = 0;
-> +	size_t left;
-> +	char __user *buffer = (char __user *) _buffer;
->  	
->  	if (!tbl_data || !table->maxlen || !*lenp ||
->  	    (*ppos && !write)) {
-> @@ -2088,88 +2174,39 @@ static int __do_proc_dointvec(void *tbl_data, struct ctl_table *table,
->  		conv = do_proc_dointvec_conv;
->  
->  	for (; left && vleft--; i++, first=0) {
-> -		if (write) {
-> -			while (left) {
-> -				char c;
-> -				if (get_user(c, s))
-> -					return -EFAULT;
-> -				if (!isspace(c))
-> -					break;
-> -				left--;
-> -				s++;
-> -			}
-> -			if (!left)
-> -				break;
-> -			neg = 0;
-> -			len = left;
-> -			if (len > sizeof(buf) - 1)
-> -				len = sizeof(buf) - 1;
-> -			if (copy_from_user(buf, s, len))
-> -				return -EFAULT;
-> -			buf[len] = 0;
-> -			p = buf;
-> -			if (*p == '-' && left > 1) {
-> -				neg = 1;
-> -				p++;
-> -			}
-> -			if (*p < '0' || *p > '9')
-> -				break;
-> -
-> -			lval = simple_strtoul(p, &p, 0);
-> +		unsigned long lval;
-> +		bool neg;
->  
-> -			len = p-buf;
-> -			if ((len < left) && *p && !isspace(*p))
-> +		if (write) {
-> +			err = proc_get_next_ulong(&buffer, &left, &lval, &neg);
-> +			if (err)
->  				break;
-> -			s += len;
-> -			left -= len;
-> -
->  			if (conv(&neg, &lval, i, 1, data))
->  				break;
->  		} else {
-> -			p = buf;
-> -			if (!first)
-> -				*p++ = '\t';
-> -	
->  			if (conv(&neg, &lval, i, 0, data))
->  				break;
-> -
-> -			sprintf(p, "%s%lu", neg ? "-" : "", lval);
-> -			len = strlen(buf);
-> -			if (len > left)
-> -				len = left;
-> -			if(copy_to_user(s, buf, len))
-> -				return -EFAULT;
-> -			left -= len;
-> -			s += len;
-> -		}
-> -	}
-> -
-> -	if (!write && !first && left) {
-> -		if(put_user('\n', s))
-> -			return -EFAULT;
-> -		left--, s++;
-> -	}
-> -	if (write) {
-> -		while (left) {
-> -			char c;
-> -			if (get_user(c, s++))
-> -				return -EFAULT;
-> -			if (!isspace(c))
-> +			err = proc_put_ulong(&buffer, &left, lval, neg, first);
-> +			if (err)
->  				break;
-> -			left--;
->  		}
->  	}
-> -	if (write && first)
-> -		return -EINVAL;
-> +
-> +	if (!write && !first && left && !err)
-> +		err = proc_put_newline(&buffer, &left);
-> +	if (write && !err)
-> +		err = proc_skip_wspace(&buffer, &left);
-> +	if (err == -EFAULT /* do we really need to check for -EFAULT? */ ||
-> +	    (write && first))
-> +		return err ? : -EINVAL;
-
-The logic here seems messy, adding one or two goto's may help?
-
-
->  	*lenp -= left;
->  	*ppos += *lenp;
->  	return 0;
-> -#undef TMPBUFLEN
->  }
->  
-
-The rest looks fine.
-
-Thanks!
+-- 
+ak@linux.intel.com -- Speaking for myself only.
