@@ -1,77 +1,79 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933122Ab0BPRXo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 12:23:44 -0500
-Received: from hole.yuiop.co.uk ([89.145.97.62]:55595 "EHLO mail.yuiop.co.uk"
+	id S933135Ab0BPRY2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 12:24:28 -0500
+Received: from mail.tmr.com ([64.65.253.246]:38947 "EHLO partygirl.tmr.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752576Ab0BPRXm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 12:23:42 -0500
-Message-ID: <4B7AD4A4.7070900@anonymous.org.uk>
-Date: Tue, 16 Feb 2010 17:23:48 +0000
-From: John Robinson <john.robinson@anonymous.org.uk>
-Organization: None; Disorganization: Total
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.8.1.23) Gecko/20090812 Lightning/0.9 Thunderbird/2.0.0.23 Mnenhy/0.7.6.666
+	id S1752576Ab0BPRY0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 12:24:26 -0500
+Message-ID: <4B7AD4C4.4090209@tmr.com>
+Date: Tue, 16 Feb 2010 12:24:20 -0500
+From: Bill Davidsen <davidsen@tmr.com>
+Organization: TMR Associates Inc, Schenectady NY
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.21) Gecko/20090507 Fedora/1.1.16-1.fc9 NOT Firefox/3.0.11 pango-text SeaMonkey/1.1.16
 MIME-Version: 1.0
-To: Linux RAID <linux-raid@vger.kernel.org>
-CC: linux-kernel@vger.kernel.org
+To: Neil Brown <neilb@suse.de>
+CC: Justin Piszcz <jpiszcz@lucidpixels.com>, linux-raid@vger.kernel.org,
+       linux-kernel@vger.kernel.org
 Subject: Re: Linux mdadm superblock question.
-References: <201002140251.59668.volkerarmin@googlemail.com> <201002142013.24922.volkerarmin@googlemail.com> <4B7AAB8D.9030009@anonymous.org.uk> <201002161537.08487.volkerarmin@googlemail.com>
-In-Reply-To: <201002161537.08487.volkerarmin@googlemail.com>
+References: <alpine.DEB.2.00.1002111758350.12031@p34.internal.lan> <20100216115036.0f6b7bb6@notabene.brown>
+In-Reply-To: <20100216115036.0f6b7bb6@notabene.brown>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 16/02/2010 14:37, Volker Armin Hemmann wrote:
-> On Dienstag 16 Februar 2010, John Robinson wrote:
->> On 14/02/2010 19:13, Volker Armin Hemmann wrote:
->>> On Sonntag 14 Februar 2010, you wrote:
->>>> On 14/02/2010 18:40, Volker Armin Hemmann wrote:
->>>>> On Sonntag 14 Februar 2010, you wrote:
->>>>>> In other words, 'auto-detection' for 1.x format devices is using an
->>>>>> initrd/initramfs.
->>>>> which makes 1.x format useless for everybody who does not want to deal
->>>>> with initrd/initramfs.
->>>> True, but afaik every distro uses an initrd/initramfs and bundles tools
->>>> making it easy to manage and customise them, so what's the problem?
->>> and distros do it because of all the drivers they have to ship. But for
->>> example I am not bound by such limitations. Why should I deal with that?
->>> It is hard enough not to forget 'make modules_install'. And now add
->>> initrd. Autodetecting just works - but if you use an initrd an it
->>> doesn't. Where do you start?
->>>
->>> Initrd's maybe great for distro packagers, but are they really usefull
->>> for anybody else?
->> Not just for distro packagers, they're useful for distro users, which
->> are presumably 99% of Linux users these days, including the vast
->> majority of enterprise users who like tested, supported systems.
+Neil Brown wrote:
+> On Thu, 11 Feb 2010 18:00:23 -0500 (EST)
+> Justin Piszcz <jpiszcz@lucidpixels.com> wrote:
+>
+>   
+>> Hi,
 >>
->> But even for people building their own kernels, initrd/initramfs are
->> useful if you're using LVM, or indeed trying to boot off anything that's
->> not a simple device.
-> 
-> so assume you have an initrd and metadata 1.x without auto assembling.
-> 
-> You do some changes to the raid and screw up something else. Next boot nothing 
-> works. Mostly because the mdadm.conf in your initrd is not correct.
-> 
-> You whip out your trusty usb stick with a resuce system - and you are stuck. 
-> If autoassembling would work, you would have working md devices you could 
-> mount and edit the files you have to. But you don't and the mdadm.conf in the 
-> initrd is outdated.
-> 
-> Sounds like 'you are screwed'.
+>> I may be converting a host to ext4 and was curious, is 0.90 still the only 
+>> superblock version for mdadm/raid-1 that you can boot from without having 
+>> to create an initrd/etc?
+>>
+>> Are there any benefits to using a superblock > 0.90 for a raid-1 boot 
+>> volume < 2TB?
+>>     
+>
+> The only noticeable differences that I can think of are:
+>  1/ If you reboot during recovery of a spare, then 0.90 will restart the
+>     recovery at the start, while 1.x will restart from where it was up to.
+>  2/ The /sys/class/block/mdXX/md/dev-YYY/errors counter is reset on each
+>     re-assembly with 0.90, but is preserved across stop/start with 1.x
+>  3/ If your partition starts on a multiple of 64K from the start of the
+>     device and is the last partition and contains 0.90 metadata, then
+>     mdadm can get confused by it.
+>   
 
-No; mdadm can assemble arrays without needing a conf file (at least 
-arrays which have superblocks).
+Given that 4k sector drives make that a lot more likely that it used to 
+be, I suspect some effort will be needed to address this sooner or later.
 
-And if you have otherwise screwed something up with the RAID, no amount 
-of in-kernel autoassembly is going to help, in fact it's more likely to 
-get it wrong and make things worse; you need a command line and mdadm to 
-sort it out.
+>  4/ If you move the devices to a host with a different arch and different
+>     byte-ordering, then extra effort will be needed to see the array for
+>     0.90, but not for 1.x
+>
+> I suspect none of these is a big issue.
+>
+> It is likely that future extensions will only be supported on 1.x metadata.
+> For example I hope to add support for storing a bad-block list, so that a
+> read error during recovery will only be fatal for that block, not the whole
+> recovery process.  This is unlikely ever to be supported on 0.90.  However
+> it may not be possible to hot-enable it on 1.x either, depending on how much
+> space has been reserved for extra metadata, so there is no guarantee that
+> using 1.x now makes you future-proof.
+>
+> And yes, 0.90 is still the only superblock version that supports in-kernel
+> autodetect, and I have no intention of adding in-kernel autodetect for any
+> other version.
+>   
 
-Cheers,
 
-John.
+-- 
+Bill Davidsen <davidsen@tmr.com>
+  "We can't solve today's problems by using the same thinking we
+   used in creating them." - Einstein
 
