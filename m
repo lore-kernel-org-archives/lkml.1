@@ -1,91 +1,71 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756443Ab0BPNyL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 08:54:11 -0500
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:34097 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756267Ab0BPNyI (ORCPT
+	id S1756661Ab0BPNy4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 08:54:56 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:45148 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756269Ab0BPNyy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 08:54:08 -0500
-Date: Tue, 16 Feb 2010 14:53:56 +0100
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: Alexander Gordeev <lasaine@lvk.cs.msu.su>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>,
-       Sam Ravnborg <sam@ravnborg.org>, Greg KH <greg@kroah.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Kay Sievers <kay.sievers@vrfy.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Michael Kerrisk <mtk.manpages@gmail.com>,
-       Christoph Hellwig <hch@infradead.org>
-Message-ID: <20100216135356.GR28375@enneenne.com>
-Mail-Followup-To: Alexander Gordeev <lasaine@lvk.cs.msu.su>,
-	linux-kernel@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>,
-	David Woodhouse <dwmw2@infradead.org>,
-	Dave Jones <davej@redhat.com>, Sam Ravnborg <sam@ravnborg.org>,
-	Greg KH <greg@kroah.com>, Randy Dunlap <randy.dunlap@oracle.com>,
-	Kay Sievers <kay.sievers@vrfy.org>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	"H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-	Michael Kerrisk <mtk.manpages@gmail.com>,
-	Christoph Hellwig <hch@infradead.org>
-References: <1266313885-1195-1-git-send-email-giometti@linux.it>
- <1266313885-1195-2-git-send-email-giometti@linux.it>
- <20100216153301.534f2722@desktopvm.lvknet>
+	Tue, 16 Feb 2010 08:54:54 -0500
+Date: Tue, 16 Feb 2010 14:54:44 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Mihai Don??u <mihai.dontu@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: slow resume from suspend to disk
+Message-ID: <20100216135444.GA1337@ucw.cz>
+References: <201002110140.16122.mihai.dontu@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100216153301.534f2722@desktopvm.lvknet>
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-SA-Exim-Connect-IP: 192.168.32.37
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: Re: [PATCH 1/8] pps: userland header file for PPS API.
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+In-Reply-To: <201002110140.16122.mihai.dontu@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 16, 2010 at 03:33:01PM +0300, Alexander Gordeev wrote:
-> Hi Rodolfo,
+Hi!
 > 
-> On Tue, 16 Feb 2010 10:51:18 +0100
-> Rodolfo Giometti <giometti@linux.it> wrote:
+> Is there any way to speed up the resume from suspend to disk? Currently, on my 
+> laptop it suspends in ~15s (wrote about 360MB) but resumes in ~120s and after 
+> that I'm still left with ~361MB in swap:
 > 
-> > This patch adds into the PPS's documentation directory a possible
-> > implementation of the PPS API (RFC 2783) by using the LinuxPPS's char
-> > devices.
-> > 
-> > This file is not just an example but it can be used into real
-> > systems. :)
+>              total       used       free     shared    buffers     cached
+> Mem:       3333472    1139332    2194140          0      12808     473084
+> -/+ buffers/cache:     653440    2680032
+> Swap:      2104472     369428    1735044
 > 
-> Isn't libc a proper place for this file? This header file provides a
-> generic standardized interface (PPSAPI) to the custom Linux
-> implementation (linux/pps.h). I think this is just what libc is for.
+> Right now I'm better off with a cold boot.
 
-You are right, but I added that file for documentation purpose also.
-Just to illustrate how to implement an high level API with my simple
-char device interface.
+That's way too slow. Are you using in-kernel swsusp, or userland
+s2disk? dmesgM
+> 
+> Although I did not study the kernel code to see how things really work, I 
+> suspect on resume only necessary kernel data is loaded from swap and the 
+> userland tasks are left with the page fault mechanism to bring back their own 
+> data, which leads to an I/O storm on the swap device. Maybe changing the I/O 
+> scheduler from CFQ would help? or better yet, is there any way to tell the 
+> kernel to bring back all the pages from swap in one quick move? That would be 
+> something I want to put in my resume scripts.
+> 
+> $ uname -a
+> Linux mdontu-dell 2.6.32-gentoo-r3 #1 SMP PREEMPT Mon Feb 1 02:36:01 EET 2010 
+> x86_64 Intel(R) Core(TM)2 CPU T5500 @ 1.66GHz GenuineIntel GNU/Linux
+> 
+> I've installed Windows XP just for a test, started a few apps (like visual 
+> studio, mplayer, etc.) and then suspended/hibernated (~15s). It took roughly 
+> 15s to come back.
+> 
+> Thanks,
+> 
+> PS: I'm editing this e-mail as I do tests and I just noticed that my /sbin 
+> directory is empty. rmmod is there and I needed it to reload the b43 driver 
+> which generally does not feel well after a suspend/resume. A reboot fixed it. 
+> Weird ...
+> 
 
-> I wanted to file a bug in Debian BTS last week to add this header to
-> libc6-dev package and also push it upstream but something distracted
-> me. If you agree that the header should be in libc then I can do it now.
-
-I agree. :)
-
-Can you please put me in Cc in your letters with the Debian people?
-
-Thanks a lot,
-
-Rodolfo
+Seems like your system has problems...
 
 -- 
-
-GNU/Linux Solutions                  e-mail: giometti@enneenne.com
-Linux Device Driver                          giometti@linux.it
-Embedded Systems                     phone:  +39 349 2432127
-UNIX programming                     skype:  rodolfo.giometti
-Freelance ICT Italia - Consulente ICT Italia - www.consulenti-ict.it
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
