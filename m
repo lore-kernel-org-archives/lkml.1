@@ -1,69 +1,51 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933552Ab0BPXQK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 18:16:10 -0500
-Received: from acsinet11.oracle.com ([141.146.126.233]:27888 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933542Ab0BPXQH (ORCPT
+	id S933565Ab0BPXQm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 18:16:42 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:32822
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933354Ab0BPXQl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 18:16:07 -0500
-Message-ID: <4B7B270A.2090609@oracle.com>
-Date: Tue, 16 Feb 2010 15:15:22 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
-MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, devel@driverdev.osuosl.org,
-       David Airlie <airlied@linux.ie>
-Subject: Re: [PATCH -next] staging/vmwgfx: depends on FB
-References: <20100216185534.fdc8eed3.sfr@canb.auug.org.au> <4B7B233F.9000507@oracle.com> <20100216230537.GA19450@suse.de>
-In-Reply-To: <20100216230537.GA19450@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 16 Feb 2010 18:16:41 -0500
+Date: Tue, 16 Feb 2010 15:16:56 -0800 (PST)
+Message-Id: <20100216.151656.123276889.davem@davemloft.net>
+To: lrodriguez@atheros.com
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, espy@canonical.com,
+       ken.wu@atheros.com, graham.richards@atheros.com, scott.tan@atheros.com,
+       mcgrof@gmail.com, chris.snook@gmail.com
+Subject: Re: [PATCH] atl1c: Add support for Atheros AR8152 and AR8152
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1265934812-14157-1-git-send-email-lrodriguez@atheros.com>
+References: <1265934812-14157-1-git-send-email-lrodriguez@atheros.com>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt354.oracle.com [141.146.40.154]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090208.4B7B272A.030D:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/16/10 15:05, Greg KH wrote:
-> On Tue, Feb 16, 2010 at 02:59:11PM -0800, Randy Dunlap wrote:
->> From: Randy Dunlap <randy.dunlap@oracle.com>
->>
->> vmwfgx uses framebuffer interfaces, so it should depend on FB.
->> Otherwise it has these build errors (e.g., when CONFIG_FB=m):
->>
->> drivers/built-in.o: In function `vmw_fb_close':
->> (.text+0x97713): undefined reference to `unregister_framebuffer'
->> drivers/built-in.o: In function `vmw_fb_close':
->> (.text+0x97754): undefined reference to `framebuffer_release'
->> drivers/built-in.o: In function `vmw_fb_init':
->> (.text+0x97e1c): undefined reference to `framebuffer_alloc'
->> drivers/built-in.o: In function `vmw_fb_init':
->> (.text+0x9838d): undefined reference to `register_framebuffer'
->> drivers/built-in.o: In function `vmw_fb_init':
->> (.text+0x9842a): undefined reference to `framebuffer_release'
->>
->> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
->> ---
->>  drivers/gpu/drm/vmwgfx/Kconfig |    2 +-
+From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+Date: Thu, 11 Feb 2010 19:33:32 -0500
+
+> AR8151 is a Gigabit Ethernet device. AR8152 devices are
+> Fast Ethernet devices, there are two revisions, a 1.0
+> and a 2.0 revision.
 > 
-> This is not a drivers/staging/* file, so there's not much I can do with
-> it.  It belongs to David Airlie.
+> This has been tested against these devices:
+> 
+> Driver	Model-name	vendor:device	Type
+> atl1c 	AR8131		1969:1063	Gigabit Ethernet
+> atl1c	AR8132		1969:1062	Fast Ethernet
+> atl1c	AR8151(v1.0)	1969:1073	Gigabit Ethernet
+> atl1c	AR8152(v1.1)	1969:2060	Fast Ethernet
+> 
+> This device has no hardware available yet so it goes untested,
+> but it should work:
+> 
+> atl1c	AR8152(v2.0)	1969:2062	Fast Ethernet
+> 
+> Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
 
-OK, I'll resend it to him, thanks.
+Applied to net-next-2.6, thanks.
 
-I think I was confused by drivers/staging/Kconfig:
-
-source "drivers/gpu/drm/vmwgfx/Kconfig"
-
-source "drivers/gpu/drm/nouveau/Kconfig"
-
-
-Why are those lines there??
-
--- 
-~Randy
