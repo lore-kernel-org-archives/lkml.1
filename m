@@ -1,68 +1,61 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754334Ab0BPLKF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 06:10:05 -0500
-Received: from ixro-out-rtc.ixiacom.com ([92.87.192.98]:29082 "EHLO
-	ixro-ex1.ixiacom.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751600Ab0BPLKA (ORCPT
+	id S1754433Ab0BPLKd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 06:10:33 -0500
+Received: from smtp.nokia.com ([192.100.122.233]:65238 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753711Ab0BPLKa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 06:10:00 -0500
-From: Octavian Purdila <opurdila@ixiacom.com>
-Organization: Ixia
-To: Cong Wang <amwang@redhat.com>
-Subject: Re: [net-next PATCH v4 3/3] net: reserve ports for applications using fixed port numbers
-Date: Tue, 16 Feb 2010 13:06:29 +0200
-User-Agent: KMail/1.12.2 (Linux/2.6.32-2-686; KDE/4.3.2; i686; ; )
-Cc: David Miller <davem@davemloft.net>,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>,
-       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
-       Neil Horman <nhorman@tuxdriver.com>,
-       Eric Dumazet <eric.dumazet@gmail.com>
-References: <1266271241-6293-1-git-send-email-opurdila@ixiacom.com> <1266271241-6293-4-git-send-email-opurdila@ixiacom.com> <4B7A6740.1000701@redhat.com>
-In-Reply-To: <4B7A6740.1000701@redhat.com>
+	Tue, 16 Feb 2010 06:10:30 -0500
+From: Samu Onkalo <samu.p.onkalo@nokia.com>
+To: eric.piel@tremplin-utc.net
+Cc: pavel@ucw.cz, daniel@caiaq.de, lm-sensors@lm-sensors.org,
+       linux-kernel@vger.kernel.org, Samu Onkalo <samu.p.onkalo@nokia.com>
+Subject: [PATCH V2 1/6] lis3: Add missing constants for 8bit device
+Date: Tue, 16 Feb 2010 13:09:26 +0200
+Message-Id: <1266318571-31083-2-git-send-email-samu.p.onkalo@nokia.com>
+X-Mailer: git-send-email 1.6.0.4
+In-Reply-To: <1266318571-31083-1-git-send-email-samu.p.onkalo@nokia.com>
+References: <1266318571-31083-1-git-send-email-samu.p.onkalo@nokia.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201002161306.29708.opurdila@ixiacom.com>
-X-OriginalArrivalTime: 16 Feb 2010 11:09:59.0238 (UTC) FILETIME=[940B6E60:01CAAEF8]
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 16 Feb 2010 11:09:42.0308 (UTC) FILETIME=[89F41E40:01CAAEF8]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 16 February 2010 11:37:04 you wrote:
-> >  	BUILD_BUG_ON(sizeof(struct inet_skb_parm) > sizeof(dummy_skb->cb));
-> >
-> > +	sysctl_local_reserved_ports = kzalloc(65536 / 8, GFP_KERNEL);
-> > +	if (!sysctl_local_reserved_ports)
-> > +		goto out;
-> > +
-> 
-> I think we should also consider the ports in ip_local_port_range,
-> since we can only reserve the ports in that range.
-> 
+Definitions for click were missing.
 
-That is subject to changes at runtime, which means we will have to readjust 
-the bitmap at runtime which introduces the need for additional synchronization 
-operations which I would rather avoid. 
+Signed-off-by: Samu Onkalo <samu.p.onkalo@nokia.com>
+Acked-by: Éric Piel <eric.piel@tremplin-utc.net>
+Tested-by: Daniel Mack <daniel@caiaq.de>
+---
+ drivers/hwmon/lis3lv02d.h |   10 ++++++++++
+ 1 files changed, 10 insertions(+), 0 deletions(-)
 
-> > +	{
-> > +		.procname	= "ip_local_reserved_ports",
-> > +		.data		= NULL, /* initialized in sysctl_ipv4_init */
-> > +		.maxlen		= 65536,
-> > +		.mode		= 0644,
-> > +		.proc_handler	= proc_dobitmap,
-> > +	},
-> 
-> Isn't there an off-by-one here?
-> 
-> In patch 2/3, you use 0 to set the fist bit, then how about 65535 which
-> writes 65536th bit? This is beyond the range of port number.
-> 
-
-This seems fine to me, 65535 is the value used by both the port checking 
-function and the proc read/write function. And it translates indeed to  
-65536th bit, but that is also bit 65535 if you start counting bits from 0 
-instead of 1. The usual computing/natural arithmetic confusion for the meaning 
-of first :)
+diff --git a/drivers/hwmon/lis3lv02d.h b/drivers/hwmon/lis3lv02d.h
+index e6a01f4..692e244 100644
+--- a/drivers/hwmon/lis3lv02d.h
++++ b/drivers/hwmon/lis3lv02d.h
+@@ -196,6 +196,16 @@ enum lis3lv02d_dd_src {
+ 	DD_SRC_IA	= 0x40,
+ };
+ 
++enum lis3lv02d_click_src_8b {
++	CLICK_SINGLE_X	= 0x01,
++	CLICK_DOUBLE_X	= 0x02,
++	CLICK_SINGLE_Y	= 0x04,
++	CLICK_DOUBLE_Y	= 0x08,
++	CLICK_SINGLE_Z	= 0x10,
++	CLICK_DOUBLE_Z	= 0x20,
++	CLICK_IA	= 0x40,
++};
++
+ struct axis_conversion {
+ 	s8	x;
+ 	s8	y;
+-- 
+1.6.0.4
 
