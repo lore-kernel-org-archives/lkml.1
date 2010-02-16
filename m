@@ -1,103 +1,85 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932929Ab0BPKiV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 05:38:21 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:20733 "EHLO mx1.redhat.com"
+	id S932948Ab0BPKjM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 05:39:12 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:51905 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932821Ab0BPKfl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S932817Ab0BPKfl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 16 Feb 2010 05:35:41 -0500
 From: Avi Kivity <avi@redhat.com>
 To: kvm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 24/38] KVM: PPC E500: fix tlbcfg emulation
-Date: Tue, 16 Feb 2010 12:35:22 +0200
-Message-Id: <1266316536-28936-25-git-send-email-avi@redhat.com>
+Subject: [PATCH 26/38] KVM: mark segments accessed on HW task switch
+Date: Tue, 16 Feb 2010 12:35:24 +0200
+Message-Id: <1266316536-28936-27-git-send-email-avi@redhat.com>
 In-Reply-To: <1266316536-28936-1-git-send-email-avi@redhat.com>
 References: <1266316536-28936-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Liu Yu <yu.liu@freescale.com>
+From: Gleb Natapov <gleb@redhat.com>
 
-commit 55fb1027c1cf9797dbdeab48180da530e81b1c39 doesn't update tlbcfg correctly.
-Fix it.
+On HW task switch newly loaded segments should me marked as accessed.
 
-And since guest OS likes 'fixed' hardware,
-initialize tlbcfg everytime when guest access is useless.
-So move this part to init code.
-
-Signed-off-by: Liu Yu <yu.liu@freescale.com>
-Acked-by: Alexander Graf <agraf@suse.de>
+Reported-by: Lorenzo Martignoni <martignlo@gmail.com>
+Signed-off-by: Gleb Natapov <gleb@redhat.com>
 Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
 ---
- arch/powerpc/include/asm/kvm_e500.h |    2 ++
- arch/powerpc/kvm/e500_emulate.c     |   20 ++------------------
- arch/powerpc/kvm/e500_tlb.c         |    6 ++++++
- 3 files changed, 10 insertions(+), 18 deletions(-)
+ arch/x86/kvm/x86.c |   22 +++++++++-------------
+ 1 files changed, 9 insertions(+), 13 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kvm_e500.h b/arch/powerpc/include/asm/kvm_e500.h
-index 569dfd3..7fea26f 100644
---- a/arch/powerpc/include/asm/kvm_e500.h
-+++ b/arch/powerpc/include/asm/kvm_e500.h
-@@ -56,6 +56,8 @@ struct kvmppc_vcpu_e500 {
- 	u32 l1csr1;
- 	u32 hid0;
- 	u32 hid1;
-+	u32 tlb0cfg;
-+	u32 tlb1cfg;
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 3b90298..d47ceda 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -4697,18 +4697,6 @@ static u16 get_segment_selector(struct kvm_vcpu *vcpu, int seg)
+ 	return kvm_seg.selector;
+ }
  
- 	struct kvm_vcpu vcpu;
- };
-diff --git a/arch/powerpc/kvm/e500_emulate.c b/arch/powerpc/kvm/e500_emulate.c
-index 95f8ec8..8e3edfb 100644
---- a/arch/powerpc/kvm/e500_emulate.c
-+++ b/arch/powerpc/kvm/e500_emulate.c
-@@ -164,25 +164,9 @@ int kvmppc_core_emulate_mfspr(struct kvm_vcpu *vcpu, int sprn, int rt)
- 		kvmppc_set_gpr(vcpu, rt, vcpu_e500->mas7); break;
+-static int load_segment_descriptor_to_kvm_desct(struct kvm_vcpu *vcpu,
+-						u16 selector,
+-						struct kvm_segment *kvm_seg)
+-{
+-	struct desc_struct seg_desc;
+-
+-	if (load_guest_segment_descriptor(vcpu, selector, &seg_desc))
+-		return 1;
+-	seg_desct_to_kvm_desct(&seg_desc, selector, kvm_seg);
+-	return 0;
+-}
+-
+ static int kvm_load_realmode_segment(struct kvm_vcpu *vcpu, u16 selector, int seg)
+ {
+ 	struct kvm_segment segvar = {
+@@ -4749,11 +4737,14 @@ int kvm_load_segment_descriptor(struct kvm_vcpu *vcpu, u16 selector,
+ 				int type_bits, int seg)
+ {
+ 	struct kvm_segment kvm_seg;
++	struct desc_struct seg_desc;
  
- 	case SPRN_TLB0CFG:
--	{
--		ulong tmp = SPRN_TLB0CFG;
--
--		tmp &= ~0xfffUL;
--		tmp |= vcpu_e500->guest_tlb_size[0];
--		kvmppc_set_gpr(vcpu, rt, tmp);
--		break;
--	}
--
-+		kvmppc_set_gpr(vcpu, rt, vcpu_e500->tlb0cfg); break;
- 	case SPRN_TLB1CFG:
--	{
--		ulong tmp = SPRN_TLB1CFG;
--
--		tmp &= ~0xfffUL;
--		tmp |= vcpu_e500->guest_tlb_size[1];
--		kvmppc_set_gpr(vcpu, rt, tmp);
--		break;
--	}
--
-+		kvmppc_set_gpr(vcpu, rt, vcpu_e500->tlb1cfg); break;
- 	case SPRN_L1CSR0:
- 		kvmppc_set_gpr(vcpu, rt, vcpu_e500->l1csr0); break;
- 	case SPRN_L1CSR1:
-diff --git a/arch/powerpc/kvm/e500_tlb.c b/arch/powerpc/kvm/e500_tlb.c
-index 6a7fc01..0d772e6 100644
---- a/arch/powerpc/kvm/e500_tlb.c
-+++ b/arch/powerpc/kvm/e500_tlb.c
-@@ -728,6 +728,12 @@ int kvmppc_e500_tlb_init(struct kvmppc_vcpu_e500 *vcpu_e500)
- 	if (vcpu_e500->shadow_pages[1] == NULL)
- 		goto err_out_page0;
- 
-+	/* Init TLB configuration register */
-+	vcpu_e500->tlb0cfg = mfspr(SPRN_TLB0CFG) & ~0xfffUL;
-+	vcpu_e500->tlb0cfg |= vcpu_e500->guest_tlb_size[0];
-+	vcpu_e500->tlb1cfg = mfspr(SPRN_TLB1CFG) & ~0xfffUL;
-+	vcpu_e500->tlb1cfg |= vcpu_e500->guest_tlb_size[1];
+ 	if (is_vm86_segment(vcpu, seg) || !is_protmode(vcpu))
+ 		return kvm_load_realmode_segment(vcpu, selector, seg);
+-	if (load_segment_descriptor_to_kvm_desct(vcpu, selector, &kvm_seg))
 +
- 	return 0;
++	if (load_guest_segment_descriptor(vcpu, selector, &seg_desc))
+ 		return 1;
++	seg_desct_to_kvm_desct(&seg_desc, selector, &kvm_seg);
  
- err_out_page0:
+ 	kvm_check_segment_descriptor(vcpu, seg, selector);
+ 	kvm_seg.type |= type_bits;
+@@ -4764,6 +4755,11 @@ int kvm_load_segment_descriptor(struct kvm_vcpu *vcpu, u16 selector,
+ 			kvm_seg.unusable = 1;
+ 
+ 	kvm_set_segment(vcpu, &kvm_seg, seg);
++	if (selector && !kvm_seg.unusable && kvm_seg.s) {
++		/* mark segment as accessed */
++		seg_desc.type |= 1;
++		save_guest_segment_descriptor(vcpu, selector, &seg_desc);
++	}
+ 	return 0;
+ }
+ 
 -- 
 1.6.5.3
 
