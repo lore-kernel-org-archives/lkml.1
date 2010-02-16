@@ -1,20 +1,21 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933342Ab0BPWpT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 17:45:19 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:53435 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933139Ab0BPWpO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 17:45:14 -0500
+	id S933522Ab0BPWpw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 17:45:52 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:50923 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933302Ab0BPWpj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 17:45:39 -0500
 From: Serge Hallyn <serue@us.ibm.com>
 To: serue@us.ibm.com
 Cc: Greg KH <greg@kroah.com>, rsc@swtch.com,
        Ashwin Ganti <ashwin.ganti@gmail.com>, ericvh@gmail.com,
        devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org,
        Ron Minnich <rminnich@gmail.com>
-Subject: [PATCH 2/8] p9auth: split core function out of some set*{u,g}id functions
-Date: Tue, 16 Feb 2010 16:44:55 -0600
-Message-Id: <1266360301-30081-2-git-send-email-serue@us.ibm.com>
+Subject: [PATCH 7/8] p9auth: add cap_node timeout
+Date: Tue, 16 Feb 2010 16:45:00 -0600
+Message-Id: <1266360301-30081-7-git-send-email-serue@us.ibm.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1266360301-30081-1-git-send-email-serue@us.ibm.com>
 References: <1266360301-30081-1-git-send-email-serue@us.ibm.com>
@@ -24,18 +25,15 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Serge E. Hallyn <serue@us.ibm.com>
 
-Break the core functionality of set{fs,res}{u,g}id into cred_setX
-which performs the access checks based on current_cred(), but performs
-the requested change on a passed-in cred.
+Mark each caphash entry with the current time.  When a new caphash is
+added, any entries which were added more than two minutes ago are
+discarded.
 
-The helpers will be further broken down into permission-checks
-and permission-less id-setting helpers.  The id-setting helpers
-for resuid and resgid will be used by p9auth to perform the
-authorized id changes.  Export the helpers, since p9auth can be
-compiled as a module.
-
-Really the setfs{u,g}id helper isn't needed, but move it as
-well to keep the code consistent.
+We may want to make two minutes configurable, or may want to also
+discard entries if more than N entries are on the list (to prevent
+a forced OOM by a misbehaving privileged process).  The purpose
+of this patch is only to prevent gradually consuming more and more
+memory due to "legitimate" unused entries.
 
 Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
 Cc: Greg KH <greg@kroah.com>
@@ -46,369 +44,55 @@ Cc: devel@linuxdriverproject.org
 Cc: linux-kernel@vger.kernel.org
 Cc: Ron Minnich <rminnich@gmail.com>
 ---
- include/linux/cred.h |    8 +++
- kernel/cred.c        |  118 +++++++++++++++++++++++++++++++++++++++++++++
- kernel/sys.c         |  131 ++++++++------------------------------------------
- 3 files changed, 146 insertions(+), 111 deletions(-)
+ drivers/staging/p9auth/p9auth.c |   20 ++++++++++++++++++++
+ 1 files changed, 20 insertions(+), 0 deletions(-)
 
-diff --git a/include/linux/cred.h b/include/linux/cred.h
-index 4e3387a..e35631e 100644
---- a/include/linux/cred.h
-+++ b/include/linux/cred.h
-@@ -22,6 +22,9 @@ struct user_struct;
- struct cred;
- struct inode;
+diff --git a/drivers/staging/p9auth/p9auth.c b/drivers/staging/p9auth/p9auth.c
+index e94c4fe..6012bd9 100644
+--- a/drivers/staging/p9auth/p9auth.c
++++ b/drivers/staging/p9auth/p9auth.c
+@@ -40,6 +40,7 @@
  
-+/* defined in sys.c, used in cred_setresuid */
-+extern int set_user(struct cred *new);
-+
- /*
-  * COW Supplementary groups list
-  */
-@@ -396,4 +399,9 @@ do {						\
- 	*(_fsgid) = __cred->fsgid;		\
- } while(0)
+ struct cap_node {
+ 	char data[CAP_NODE_SIZE];
++	unsigned long time_created;
+ 	struct list_head list;
+ };
  
-+int cred_setresuid(struct cred *new, uid_t ruid, uid_t euid, uid_t suid);
-+int cred_setresgid(struct cred *new, gid_t rgid, gid_t egid, gid_t sgid);
-+int cred_setfsuid(struct cred *new, uid_t uid, uid_t *old_fsuid);
-+int cred_setfsgid(struct cred *new, gid_t gid, gid_t *old_fsgid);
-+
- #endif /* _LINUX_CRED_H */
-diff --git a/kernel/cred.c b/kernel/cred.c
-index 1ed8ca1..6eee59c 100644
---- a/kernel/cred.c
-+++ b/kernel/cred.c
-@@ -780,6 +780,124 @@ int set_create_files_as(struct cred *new, struct inode *inode)
+@@ -275,6 +276,23 @@ static int grant_id(struct id_set *set)
+ 	return ret;
  }
- EXPORT_SYMBOL(set_create_files_as);
  
-+int cred_setresuid(struct cred *new, uid_t ruid, uid_t euid, uid_t suid)
++/* Expose this through sysctl eventually?  2 min timeout for hashes */
++
++static int cap_timeout = 120;
++static void remove_old_entries(struct cap_dev *dev)
 +{
-+	int retval;
-+	const struct cred *old;
++	struct cap_node *node, *tmp;
 +
-+	retval = security_task_setuid(ruid, euid, suid, LSM_SETID_RES);
-+	if (retval)
-+		return retval;
-+	old = current_cred();
-+
-+	if (!capable(CAP_SETUID)) {
-+		if (ruid != (uid_t) -1 && ruid != old->uid &&
-+		    ruid != old->euid  && ruid != old->suid)
-+			return -EPERM;
-+		if (euid != (uid_t) -1 && euid != old->uid &&
-+		    euid != old->euid  && euid != old->suid)
-+			return -EPERM;
-+		if (suid != (uid_t) -1 && suid != old->uid &&
-+		    suid != old->euid  && suid != old->suid)
-+			return -EPERM;
-+	}
-+
-+	if (ruid != (uid_t) -1) {
-+		new->uid = ruid;
-+		if (ruid != old->uid) {
-+			retval = set_user(new);
-+			if (retval < 0)
-+				return retval;
++	if (dev->head == NULL)
++		return;
++	list_for_each_entry_safe(node, tmp, &dev->head->list, list) {
++		if (node->time_created + HZ * cap_timeout < jiffies) {
++			list_del(&node->list);
++			kfree(node);
 +		}
 +	}
-+	if (euid != (uid_t) -1)
-+		new->euid = euid;
-+	if (suid != (uid_t) -1)
-+		new->suid = suid;
-+	new->fsuid = new->euid;
-+
-+	return security_task_fix_setuid(new, old, LSM_SETID_RES);
 +}
-+EXPORT_SYMBOL_GPL(cred_setresuid);
 +
-+int cred_setresgid(struct cred *new, gid_t rgid, gid_t egid,
-+			gid_t sgid)
-+{
-+	const struct cred *old = current_cred();
-+	int retval;
-+
-+	retval = security_task_setgid(rgid, egid, sgid, LSM_SETID_RES);
-+	if (retval)
-+		return retval;
-+
-+	if (!capable(CAP_SETGID)) {
-+		if (rgid != (gid_t) -1 && rgid != old->gid &&
-+		    rgid != old->egid  && rgid != old->sgid)
-+			return -EPERM;
-+		if (egid != (gid_t) -1 && egid != old->gid &&
-+		    egid != old->egid  && egid != old->sgid)
-+			return -EPERM;
-+		if (sgid != (gid_t) -1 && sgid != old->gid &&
-+		    sgid != old->egid  && sgid != old->sgid)
-+			return -EPERM;
-+	}
-+
-+	if (rgid != (gid_t) -1)
-+		new->gid = rgid;
-+	if (egid != (gid_t) -1)
-+		new->egid = egid;
-+	if (sgid != (gid_t) -1)
-+		new->sgid = sgid;
-+	new->fsgid = new->egid;
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(cred_setresgid);
-+
-+int cred_setfsuid(struct cred *new, uid_t uid, uid_t *old_fsuid)
-+{
-+	const struct cred *old;
-+
-+	old = current_cred();
-+	*old_fsuid = old->fsuid;
-+
-+	if (security_task_setuid(uid, (uid_t)-1, (uid_t)-1, LSM_SETID_FS) < 0)
-+		return -EPERM;
-+
-+	if (uid == old->uid  || uid == old->euid  ||
-+	    uid == old->suid || uid == old->fsuid ||
-+	    capable(CAP_SETUID)) {
-+		if (uid != *old_fsuid) {
-+			new->fsuid = uid;
-+			if (security_task_fix_setuid(new, old, LSM_SETID_FS) == 0)
-+				return 0;
-+		}
-+	}
-+	return -EPERM;
-+}
-+EXPORT_SYMBOL_GPL(cred_setfsuid);
-+
-+int cred_setfsgid(struct cred *new, gid_t gid, gid_t *old_fsgid)
-+{
-+	const struct cred *old;
-+
-+	old = current_cred();
-+	*old_fsgid = old->fsgid;
-+
-+	if (security_task_setgid(gid, (gid_t)-1, (gid_t)-1, LSM_SETID_FS))
-+		return -EPERM;
-+
-+	if (gid == old->gid  || gid == old->egid  ||
-+	    gid == old->sgid || gid == old->fsgid ||
-+	    capable(CAP_SETGID)) {
-+		if (gid != *old_fsgid) {
-+			new->fsgid = gid;
-+			return 0;
-+		}
-+	}
-+	return -EPERM;
-+}
-+EXPORT_SYMBOL_GPL(cred_setfsgid);
-+
- #ifdef CONFIG_DEBUG_CREDENTIALS
- 
- bool creds_are_invalid(const struct cred *cred)
-diff --git a/kernel/sys.c b/kernel/sys.c
-index 26a6b73..1927edf 100644
---- a/kernel/sys.c
-+++ b/kernel/sys.c
-@@ -561,11 +561,11 @@ error:
- /*
-  * change the user struct in a credentials set to match the new UID
-  */
--static int set_user(struct cred *new)
-+int set_user(struct cred *new)
+ static int add_caphash_entry(struct cap_dev *dev, char *user_buf, size_t count)
  {
- 	struct user_struct *new_user;
+ 	struct cap_node *node_ptr;
+@@ -290,7 +308,9 @@ static int add_caphash_entry(struct cap_dev *dev, char *user_buf, size_t count)
+ 	printk(KERN_INFO "Capability being written to /dev/caphash : \n");
+ 	hexdump(user_buf, count);
+ 	memcpy(node_ptr->data, user_buf, count);
++	node_ptr->time_created = jiffies;
+ 	list_add(&(node_ptr->list), &(dev->head->list));
++	remove_old_entries(dev);
  
--	new_user = alloc_uid(current_user_ns(), new->uid);
-+	new_user = alloc_uid(new->user->user_ns, new->uid);
- 	if (!new_user)
- 		return -EAGAIN;
- 
-@@ -713,7 +713,6 @@ error:
-  */
- SYSCALL_DEFINE3(setresuid, uid_t, ruid, uid_t, euid, uid_t, suid)
- {
--	const struct cred *old;
- 	struct cred *new;
- 	int retval;
- 
-@@ -721,45 +720,10 @@ SYSCALL_DEFINE3(setresuid, uid_t, ruid, uid_t, euid, uid_t, suid)
- 	if (!new)
- 		return -ENOMEM;
- 
--	retval = security_task_setuid(ruid, euid, suid, LSM_SETID_RES);
--	if (retval)
--		goto error;
--	old = current_cred();
-+	retval = cred_setresuid(new, ruid, euid, suid);
-+	if (retval == 0)
-+		return commit_creds(new);
- 
--	retval = -EPERM;
--	if (!capable(CAP_SETUID)) {
--		if (ruid != (uid_t) -1 && ruid != old->uid &&
--		    ruid != old->euid  && ruid != old->suid)
--			goto error;
--		if (euid != (uid_t) -1 && euid != old->uid &&
--		    euid != old->euid  && euid != old->suid)
--			goto error;
--		if (suid != (uid_t) -1 && suid != old->uid &&
--		    suid != old->euid  && suid != old->suid)
--			goto error;
--	}
--
--	if (ruid != (uid_t) -1) {
--		new->uid = ruid;
--		if (ruid != old->uid) {
--			retval = set_user(new);
--			if (retval < 0)
--				goto error;
--		}
--	}
--	if (euid != (uid_t) -1)
--		new->euid = euid;
--	if (suid != (uid_t) -1)
--		new->suid = suid;
--	new->fsuid = new->euid;
--
--	retval = security_task_fix_setuid(new, old, LSM_SETID_RES);
--	if (retval < 0)
--		goto error;
--
--	return commit_creds(new);
--
--error:
- 	abort_creds(new);
- 	return retval;
+ 	return 0;
  }
-@@ -781,43 +745,17 @@ SYSCALL_DEFINE3(getresuid, uid_t __user *, ruid, uid_t __user *, euid, uid_t __u
-  */
- SYSCALL_DEFINE3(setresgid, gid_t, rgid, gid_t, egid, gid_t, sgid)
- {
--	const struct cred *old;
- 	struct cred *new;
- 	int retval;
- 
- 	new = prepare_creds();
- 	if (!new)
- 		return -ENOMEM;
--	old = current_cred();
- 
--	retval = security_task_setgid(rgid, egid, sgid, LSM_SETID_RES);
--	if (retval)
--		goto error;
-+	retval = cred_setresgid(new, rgid, egid, sgid);
-+	if (retval == 0)
-+		return commit_creds(new);
- 
--	retval = -EPERM;
--	if (!capable(CAP_SETGID)) {
--		if (rgid != (gid_t) -1 && rgid != old->gid &&
--		    rgid != old->egid  && rgid != old->sgid)
--			goto error;
--		if (egid != (gid_t) -1 && egid != old->gid &&
--		    egid != old->egid  && egid != old->sgid)
--			goto error;
--		if (sgid != (gid_t) -1 && sgid != old->gid &&
--		    sgid != old->egid  && sgid != old->sgid)
--			goto error;
--	}
--
--	if (rgid != (gid_t) -1)
--		new->gid = rgid;
--	if (egid != (gid_t) -1)
--		new->egid = egid;
--	if (sgid != (gid_t) -1)
--		new->sgid = sgid;
--	new->fsgid = new->egid;
--
--	return commit_creds(new);
--
--error:
- 	abort_creds(new);
- 	return retval;
- }
-@@ -843,35 +781,20 @@ SYSCALL_DEFINE3(getresgid, gid_t __user *, rgid, gid_t __user *, egid, gid_t __u
-  */
- SYSCALL_DEFINE1(setfsuid, uid_t, uid)
- {
--	const struct cred *old;
- 	struct cred *new;
- 	uid_t old_fsuid;
-+	int retval;
- 
- 	new = prepare_creds();
- 	if (!new)
- 		return current_fsuid();
--	old = current_cred();
--	old_fsuid = old->fsuid;
--
--	if (security_task_setuid(uid, (uid_t)-1, (uid_t)-1, LSM_SETID_FS) < 0)
--		goto error;
--
--	if (uid == old->uid  || uid == old->euid  ||
--	    uid == old->suid || uid == old->fsuid ||
--	    capable(CAP_SETUID)) {
--		if (uid != old_fsuid) {
--			new->fsuid = uid;
--			if (security_task_fix_setuid(new, old, LSM_SETID_FS) == 0)
--				goto change_okay;
--		}
--	}
- 
--error:
--	abort_creds(new);
--	return old_fsuid;
-+	retval = cred_setfsuid(new, uid, &old_fsuid);
-+	if (retval == 0)
-+		commit_creds(new);
-+	else
-+		abort_creds(new);
- 
--change_okay:
--	commit_creds(new);
- 	return old_fsuid;
- }
- 
-@@ -880,34 +803,20 @@ change_okay:
-  */
- SYSCALL_DEFINE1(setfsgid, gid_t, gid)
- {
--	const struct cred *old;
- 	struct cred *new;
- 	gid_t old_fsgid;
-+	int retval;
- 
- 	new = prepare_creds();
- 	if (!new)
- 		return current_fsgid();
--	old = current_cred();
--	old_fsgid = old->fsgid;
--
--	if (security_task_setgid(gid, (gid_t)-1, (gid_t)-1, LSM_SETID_FS))
--		goto error;
--
--	if (gid == old->gid  || gid == old->egid  ||
--	    gid == old->sgid || gid == old->fsgid ||
--	    capable(CAP_SETGID)) {
--		if (gid != old_fsgid) {
--			new->fsgid = gid;
--			goto change_okay;
--		}
--	}
- 
--error:
--	abort_creds(new);
--	return old_fsgid;
-+	retval = cred_setfsgid(new, gid, &old_fsgid);
-+	if (retval == 0)
-+		commit_creds(new);
-+	else
-+		abort_creds(new);
- 
--change_okay:
--	commit_creds(new);
- 	return old_fsgid;
- }
- 
 -- 
 1.6.1
 
