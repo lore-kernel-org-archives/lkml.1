@@ -1,75 +1,73 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933157Ab0BPW3M (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 17:29:12 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:30645 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933056Ab0BPW3K (ORCPT
-	<rfc822;<linux-kernel@vger.kernel.org>>);
-	Tue, 16 Feb 2010 17:29:10 -0500
-Date: Tue, 16 Feb 2010 17:13:13 -0500
-From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "rostedt@goodmis.org" <rostedt@goodmis.org>,
-       "jeremy@goop.org" <jeremy@goop.org>
-Subject: Re: [LKML] Re: [PATCH] x86_64: allow sections that are recycled to
-	set _PAGE_RW
-Message-ID: <20100216221313.GA22869@phenom.dumpdata.com>
-References: <1266030928-2126-1-git-send-email-konrad.wilk@oracle.com> <1266030928-2126-2-git-send-email-konrad.wilk@oracle.com> <1266091697.2677.64.camel@sbs-t61>
+	id S933219Ab0BPW32 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 17:29:28 -0500
+Received: from mga06.intel.com ([134.134.136.21]:64019 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933145Ab0BPW30 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 17:29:26 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,486,1262592000"; 
+   d="scan'208";a="493015170"
+Message-ID: <4B7B1C40.8070208@linux.intel.com>
+Date: Tue, 16 Feb 2010 23:29:20 +0100
+From: Andi Kleen <ak@linux.intel.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de; rv:1.9.1.7) Gecko/20100111 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1266091697.2677.64.camel@sbs-t61>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-Source-IP: acsmt353.oracle.com [141.146.40.153]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090205.4B7B1C12.018A:SCFMA4539814,ss=1,fgs=0
+To: Ingo Molnar <mingo@elte.hu>
+CC: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       andi@firstfloor.org, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org,
+       Doug Thompson <dougthompson@xmission.com>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>,
+       Borislav Petkov <borislav.petkov@amd.com>
+Subject: Re: [tip:x86/mce] x86, mce: Make xeon75xx memory driver dependent
+ on PCI
+References: <20100123113359.GA29555@one.firstfloor.org> <tip-757fd770c649b0dfa6eeefc2d5e2ea3119b6be9c@git.kernel.org> <20100216204732.GA2301@elte.hu>
+In-Reply-To: <20100216204732.GA2301@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 13, 2010 at 12:08:17PM -0800, Suresh Siddha wrote:
-> Konrad,
-> 
-> I don't think this patch is correct.
-> 
-> I am not sure if I understand why we see this failure in Xen. In native
-> case, we have two kernel mappings for 64bit kernel.
-> 
-> One is kernel text mapping:
-> 
-> ffffffff80000000 - ffffffffa0000000 (=512 MB)  kernel text mapping, from
-> phys 0
-> 
-> And another is:
-> 
-> ffff880000000000 - ffffc7ffffffffff (=64 TB) direct mapping of all phys.
-> memory
-> 
-> Checks in static_protections() ensure that we map the text mapping as
-> read-only (and don't bother about what permissions it uses for
-> underlying free pages that get freed in free_init_pages()). But the
-> kernel direct mappings for free pages will be RW and ensure that the
-> free pages can be read/written using the direct mapping.
-> 
-> The checks in static_protections() for kernel text mapping ensure that
-> we don't break the 2MB kernel text pages unnecessarily on 64bit kernels
-> (as it has performance implications). We should be fine as long as the
-> kernel identity mappings reflect the correct RW permissions.
-> 
-> But somehow this is working fine on native kernels but not on Xen pv
-> guest. Your patch will cause the performance issues that we are
 
-That would not be good.
+>
+> Please work with Mauro on the Nehalem EDAC bits, they seem rather advanced to
+> me for v2.6.34, and _far_ cleaner and more capable as well. See those Intel
+> support bits at:
 
-> addressing using the static protections checks. I will look at this more
-> detailed on tuesday.
+Hi Ingo,
 
-Great. Thank you for doing that. If you find yourself in a bind, here are
-some steps on how to build the Xen pv-ops kernel and such:
-http://wiki.xensource.com/xenwiki/XenParavirtOps
+core_i7 and EDAC has nothing to do with this code and
+it has nothing to do with the problem this patch is
+solving.
 
-It goes without saying that I would be happy to test your patch when
-you have one ready.
+This is for a different chip (xeon75xx)
+which has a completely different memory subsystem
+and reports memory errors in a completely different way
+than xeon75xx/core_i7.
+
+For core_i7/xeon55xx there is no additional event interface needed;
+it's all supplied by the hardware on the existing interfaces.
+
+The point of this code is to annotate the CE events on Xeon 75xx
+and to implement specific backend actions (page offlining, triggers)
+based on specific events. These backend actions are already implemented
+on 55xx without additional changes (no need for EDAC)
+
+EDAC does not provide an event interface that can
+be polled, just counts, so this cannot be done with EDAC.
+It's simply a topology enumeration with error counts.
+mcelog is not a topology interface, it's a event
+notification mechanism.
+
+EDAC and mcelog are orthogonal, they don't solve the same
+problem.
+
+So your nack is based on incorrect assumptions and doesn't make
+sense. What you're asking for cannot be done with current
+EDAC as far as I know.
+
+-Andi
