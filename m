@@ -1,146 +1,447 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756218Ab0BPNPI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 08:15:08 -0500
-Received: from mail-yw0-f176.google.com ([209.85.211.176]:52093 "EHLO
-	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755979Ab0BPNOy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 08:14:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=QyJajGKSa/2vUu4PyESYNQnYiTTn6WX/VbwzJ8Xb2U+3dKNaGK9lpQqiifgqI1n0N0
-         2BWnZo1Q+bxnNpjTaETDn1Qn4haHuxpiaCW1HOixktxLFrMhHKmsaI/gBOVSkWxAv5/a
-         scAPUZBTO8eiSRyurDHK5s2ixXHeAkTR3MAow=
-Subject: Re: [patch 4/7 -mm] oom: badness heuristic rewrite
-From: Minchan Kim <minchan.kim@gmail.com>
-To: David Rientjes <rientjes@google.com>
-Cc: Rik van Riel <riel@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Nick Piggin <npiggin@suse.de>, Andrea Arcangeli <aarcange@redhat.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-In-Reply-To: <alpine.DEB.2.00.1002151347470.26927@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.1002100224210.8001@chino.kir.corp.google.com>
-	 <alpine.DEB.2.00.1002100228540.8001@chino.kir.corp.google.com>
-	 <4B73833D.5070008@redhat.com>
-	 <alpine.DEB.2.00.1002102332200.22152@chino.kir.corp.google.com>
-	 <1265982984.6207.29.camel@barrios-desktop>
-	 <alpine.DEB.2.00.1002121251130.7972@chino.kir.corp.google.com>
-	 <28c262361002121845w459d0fa0l55a58552c3a6081e@mail.gmail.com>
-	 <alpine.DEB.2.00.1002151347470.26927@chino.kir.corp.google.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 16 Feb 2010 22:14:46 +0900
-Message-ID: <1266326086.1709.50.camel@barrios-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	id S1756100Ab0BPNTg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 08:19:36 -0500
+Received: from mail001.aei.ca ([206.123.6.130]:34219 "EHLO mail001.aei.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755936Ab0BPNTe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 08:19:34 -0500
+From: Ed Tomlinson <edt@aei.ca>
+To: Takashi Iwai <tiwai@suse.de>
+Subject: Re: [LOCKDEP] 33-rc8 Running aplay with pulse as the default
+Date: Tue, 16 Feb 2010 08:19:21 -0500
+User-Agent: KMail/1.13.0 (Linux/2.6.33-rc8-crc; KDE/4.4.0; x86_64; ; )
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       alsa-devel@alsa-project.org
+References: <alpine.LFD.2.00.1002121142100.3922@localhost.localdomain> <s5h8waucekx.wl%tiwai@suse.de> <s5h1vgmccgi.wl%tiwai@suse.de>
+In-Reply-To: <s5h1vgmccgi.wl%tiwai@suse.de>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <201002160819.21595.edt@aei.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-02-15 at 13:54 -0800, David Rientjes wrote:
-> We're not enforcing a global, system-wide forkbomb policy in the oom 
-> killer, but we do need to identify tasks that fork a very large number of 
-> tasks to break ties with other tasks: in other words, it would not be 
-> helpful to kill an application that has been running for weeks because 
-> another application with the same or less memory usage has forked 1000 
-> children and has caused an oom condition.  That unfairly penalizes the 
-> former application that is actually doing work.
-> 
-> Again, I'd encourage you to look at this as only a slight penalization 
-> rather than a policy that strictly needs to be enforced.  If it were 
-> strictly enforced, it would be a prerequisite for selection if such a task 
-> were to exist; in my implementation, it is part of the heuristic.
-
-Okay. I can think it of slight penalization in this patch. 
-But in current OOM logic, we try to kill child instead of forkbomb
-itself. My concern was that.
-Of course, It's not a part of your patch[2/7] which is good. 
-It has been in there during long time. I hope we could solve that in
-this chance. Pz, look at below my example. 
-
-> 
-> > > That doesn't work with Rik's example of a webserver that forks a large
-> > > number of threads to handle client connections.  It is _always_ better to
-> > > kill a child instead of making the entire webserver unresponsive.
+On Monday 15 February 2010 18:21:17 Takashi Iwai wrote:
+> At Mon, 15 Feb 2010 23:35:26 +0100,
+> I wrote:
 > > 
-> > In such case, admin have to handle it by oom_forkbom_thres.
-> > Isn't it your goal?
+> > At Mon, 15 Feb 2010 17:24:54 -0500,
+> > Ed Tomlinson wrote:
+> > > 
+> > > On Monday 15 February 2010 14:21:55 Takashi Iwai wrote:
+> > > > At Mon, 15 Feb 2010 20:20:22 +0100,
+> > > > I wrote:
+> > > > > 
+> > > > > At Sat, 13 Feb 2010 12:17:10 -0500,
+> > > > > Ed Tomlinson wrote:
+> > > > > > 
+> > > > > > Hi,
+> > > > > > 
+> > > > > > Inorder to get skype working with linux I have the following in .asoundrc for my normal userid.
+> > > > > > 
+> > > > > > ---
+> > > > > > pcm.pulse {
+> > > > > >     type pulse
+> > > > > > }
+> > > > > > 
+> > > > > > ctl.pulse {
+> > > > > >     type pulse
+> > > > > > }
+> > > > > > 
+> > > > > > pcm.!default {
+> > > > > >     type pulse
+> > > > > > }
+> > > > > > ctl.!default {
+> > > > > >     type pulse
+> > > > > > ---
+> > > > > > 
+> > > > > > Try #1
+> > > > > > Starting as root if I do:
+> > > > > > su - <id>
+> > > > > > aplay sound.wav
+> > > > > > <traceback inlined below>
+> > > > > > aplay sound.wav 
+> > > > > > (silence)
+> > > > > > killall pulseaudio
+> > > > > > aplay sound.wav
+> > > > > > (works as expected now going thru pulseaudio)
+> > > > > > 
+> > > > > > Try #2
+> > > > > > Starting as root if I do:
+> > > > > > aplay sound.wav
+> > > > > > (works as expected using alsa alone)
+> > > > > > su - <id>
+> > > > > > aplay sound.wav
+> > > > > > <another lockdep traceback>
+> > > > > > aplay sound.wav
+> > > > > > (works as expected now going thru pulseaudio)
+> > > > > > 
+> > > > > > With .32 there were no tracebacks (lockdep was enabled) and try #1 would work where I now get silence.
+> > > > > > 
+> > > > > > Ideas?
+> > > > > > Ed Tomlinson
+> > > > > > 
+> > > > > > aplay -l
+> > > > > > **** List of PLAYBACK Hardware Devices ****
+> > > > > > card 0: SB [HDA ATI SB], device 0: ALC1200 Analog [ALC1200 Analog]
+> > > > > >   Subdevices: 0/1
+> > > > > >   Subdevice #0: subdevice #0
+> > > > > > card 0: SB [HDA ATI SB], device 1: ALC1200 Digital [ALC1200 Digital]
+> > > > > >   Subdevices: 1/1
+> > > > > >   Subdevice #0: subdevice #0
+> > > > > > card 1: HDMI [HDA ATI HDMI], device 3: ATI HDMI [ATI HDMI]
+> > > > > >   Subdevices: 1/1
+> > > > > >   Subdevice #0: subdevice #0
+> > > > > > 
+> > > > > > "ALC1200 Analog" is what has speakers connected
+> > > > > > 
+> > > > > > The em28xx in the traceback is an input source from a usb hdtv dongle.
+> > > > > > 
+> > > > > > pavucontrol setup has been verified.
+> > > > > > 
+> > > > > > [   91.070620]                                                                                                                               
+> > > > > > [   91.070621] =======================================================                                                                       
+> > > > > > [   91.071378] [ INFO: possible circular locking dependency detected ]                                                                       
+> > > > > > [   91.071378] 2.6.33-rc8-crc #106                                                                                                           
+> > > > > > [   91.071378] -------------------------------------------------------                                                                       
+> > > > > > [   91.071378] pulseaudio/2717 is trying to acquire lock:                                                                                    
+> > > > > > [   91.071378]  (&dev->lock){+.+.+.}, at: [<ffffffffa02797f1>] snd_em28xx_capture_open+0x61/0x190 [em28xx_alsa]                              
+> > > > > > [   91.071378]                                                                                                                               
+> > > > > > [   91.071378] but task is already holding lock:                                                                                             
+> > > > > > [   91.071378]  (&pcm->open_mutex){+.+.+.}, at: [<ffffffffa010ecd2>] snd_pcm_open+0x182/0x450 [snd_pcm]                                      
+> > > > > > [   91.071378]                                                                                                                               
+> > > > > > [   91.071378] which lock already depends on the new lock.                                                                                   
+> > > > > > [   91.071378]                                                                                                                               
+> > > > > > [   91.071378]                                                                                                                               
+> > > > > > [   91.071378] the existing dependency chain (in reverse order) is:                                                                          
+> > > > > > [   91.071378]                                                                                                                               
+> > > > > > [   91.071378] -> #3 (&pcm->open_mutex){+.+.+.}:                                                                                             
+> > > > > > [   91.071378]        [<ffffffff81083215>] __lock_acquire+0xfc5/0x1550                                                                       
+> > > > > > [   91.071378]        [<ffffffff8108383c>] lock_acquire+0x9c/0x140                                                                           
+> > > > > > [   91.071378]        [<ffffffff814b96c1>] __mutex_lock_common+0x61/0x610                                                                    
+> > > > > > [   91.071378]        [<ffffffff814b9d53>] mutex_lock_nested+0x43/0x50                                                                       
+> > > > > > [   91.071378]        [<ffffffffa010ad32>] snd_pcm_release+0x42/0xb0 [snd_pcm]                                                               
+> > > > > > [   91.071378]        [<ffffffff8112115d>] __fput+0x15d/0x290                                                                                
+> > > > > > [   91.071378]        [<ffffffff811212ad>] fput+0x1d/0x30                                                                                    
+> > > > > > [   91.071378]        [<ffffffff810fe001>] remove_vma+0x51/0x80                                                                              
+> > > > > > [   91.071378]        [<ffffffff810ffa1d>] do_munmap+0x2fd/0x390                                                                             
+> > > > > > [   91.071378]        [<ffffffff810ffb06>] sys_munmap+0x56/0x80                                                                              
+> > > > > > [   91.071378]        [<ffffffff81002adb>] system_call_fastpath+0x16/0x1b                                                                    
+> > > > > > [   91.071378]                                                                                                                               
+> > > > > > [   91.071378] -> #2 (&mm->mmap_sem){++++++}:                                                                                                
+> > > > > > [   91.071378]        [<ffffffff81083215>] __lock_acquire+0xfc5/0x1550                                                                       
+> > > > > > [   91.071378]        [<ffffffff8108383c>] lock_acquire+0x9c/0x140                                                                           
+> > > > > > [   91.071378]        [<ffffffff810f62c7>] might_fault+0xa7/0xd0                                                                             
+> > > > > > [   91.071378]        [<ffffffff8113102b>] filldir+0x7b/0xe0                                                                                 
+> > > > > > [   91.071378]        [<ffffffff8118aa21>] sysfs_readdir+0xf1/0x1b0                                                                          
+> > > > > > [   91.071378]        [<ffffffff81131268>] vfs_readdir+0xb8/0xe0                                                                             
+> > > > > > [   91.071378]        [<ffffffff8113144d>] sys_getdents+0xad/0x110                                                                           
+> > > > > > [   91.071378]        [<ffffffff81002adb>] system_call_fastpath+0x16/0x1b                                                                    
+> > > > > > [   91.071378]                                                                                                                               
+> > > > > > [   91.071378] -> #1 (sysfs_mutex){+.+.+.}:                                                                                                  
+> > > > > > [   91.071378]        [<ffffffff81083215>] __lock_acquire+0xfc5/0x1550                                                                       
+> > > > > > [   91.071378]        [<ffffffff8108383c>] lock_acquire+0x9c/0x140                                                                           
+> > > > > > [   91.071378]        [<ffffffff814b96c1>] __mutex_lock_common+0x61/0x610                                                                    
+> > > > > > [   91.071378]        [<ffffffff814b9d53>] mutex_lock_nested+0x43/0x50                                                                       
+> > > > > > [   91.071378]        [<ffffffff8118b082>] sysfs_addrm_start+0x22/0x30                                                                       
+> > > > > > [   91.071378]        [<ffffffff8118bc58>] create_dir+0x58/0xb0                                                                              
+> > > > > > [   91.514885]        [<ffffffff8118bd0a>] sysfs_create_dir+0x5a/0x70                                                                        
+> > > > > > [   91.514885]        [<ffffffff8123ebbd>] kobject_add_internal+0xbd/0x1f0                                                                   
+> > > > > > [   91.514885]        [<ffffffff8123ee08>] kobject_add_varg+0x38/0x60                                                                        
+> > > > > > [   91.514885]        [<ffffffff8123eee4>] kobject_add+0x44/0x70                                                                             
+> > > > > > [   91.514885]        [<ffffffff81392510>] device_add+0xb0/0x5e0                                                                             
+> > > > > > [   91.514885]        [<ffffffff81392a5e>] device_register+0x1e/0x30                                                                         
+> > > > > > [   91.514885]        [<ffffffff8140a50d>] i2c_register_adapter+0x12d/0x250                                                                  
+> > > > > > [   91.514885]        [<ffffffff8140a7f1>] i2c_add_adapter+0xb1/0xd0                                                                         
+> > > > > > [   91.514885]        [<ffffffffa0231ba4>] em28xx_i2c_register+0x104/0x520 [em28xx]                                                          
+> > > > > > [   91.514885]        [<ffffffffa0233daa>] em28xx_usb_probe+0x68a/0xb90 [em28xx]                                                             
+> > > > > > [   91.514885]        [<ffffffff813eb4ab>] usb_probe_interface+0xeb/0x1b0                                                                    
+> > > > > > [   91.514885]        [<ffffffff81395546>] driver_probe_device+0xc6/0x1d0                                                                    
+> > > > > > [   91.514885]        [<ffffffff813956eb>] __driver_attach+0x9b/0xa0                                                                         
+> > > > > > [   91.514885]        [<ffffffff8139492c>] bus_for_each_dev+0x6c/0xa0                                                                        
+> > > > > > [   91.514885]        [<ffffffff8139535e>] driver_attach+0x1e/0x20                                                                           
+> > > > > > [   91.514885]        [<ffffffff81394c11>] bus_add_driver+0xe1/0x280                                                                         
+> > > > > > [   91.514885]        [<ffffffff81395a58>] driver_register+0x98/0x140                                                                        
+> > > > > > [   91.514885]        [<ffffffff813ea06c>] usb_register_driver+0xdc/0x1a0                                                                    
+> > > > > > [   91.514885]        [<ffffffffa0248023>] 0xffffffffa0248023                                                                                
+> > > > > > [   91.514885]        [<ffffffff810001dc>] do_one_initcall+0x3c/0x1d0                                                                        
+> > > > > > [   91.514885]        [<ffffffff81092d75>] sys_init_module+0xe5/0x250                                                                        
+> > > > > > [   91.514885]        [<ffffffff81002adb>] system_call_fastpath+0x16/0x1b                                                                    
+> > > > > > [   91.514885]                                                                                                                               
+> > > > > > [   91.514885] -> #0 (&dev->lock){+.+.+.}:                                                                                                   
+> > > > > > [   91.514885]        [<ffffffff81083668>] __lock_acquire+0x1418/0x1550                                                                      
+> > > > > > [   91.514885]        [<ffffffff8108383c>] lock_acquire+0x9c/0x140                                                                           
+> > > > > > [   91.514885]        [<ffffffff814b96c1>] __mutex_lock_common+0x61/0x610                                                                    
+> > > > > > [   91.514885]        [<ffffffff814b9d53>] mutex_lock_nested+0x43/0x50
+> > > > > > [   91.514885]        [<ffffffffa02797f1>] snd_em28xx_capture_open+0x61/0x190 [em28xx_alsa]
+> > > > > > [   91.514885]        [<ffffffffa010adee>] snd_pcm_open_substream+0x4e/0x90 [snd_pcm]
+> > > > > > [   91.514885]        [<ffffffffa010ece9>] snd_pcm_open+0x199/0x450 [snd_pcm]
+> > > > > > [   91.514885]        [<ffffffffa010efd4>] snd_pcm_capture_open+0x34/0x40 [snd_pcm]
+> > > > > > [   91.514885]        [<ffffffffa00c5778>] snd_open+0x198/0x4e0 [snd]
+> > > > > > [   91.514885]        [<ffffffff8112384d>] chrdev_open+0x17d/0x320
+> > > > > > [   91.514885]        [<ffffffff8111d358>] __dentry_open+0x1a8/0x400
+> > > > > > [   91.514885]        [<ffffffff8111d6b4>] nameidata_to_filp+0x54/0x70
+> > > > > > [   91.514885]        [<ffffffff8112e7f1>] do_filp_open+0x841/0xc00
+> > > > > > [   91.514885]        [<ffffffff8111e954>] do_sys_open+0xa4/0x180
+> > > > > > [   91.514885]        [<ffffffff8111ea70>] sys_open+0x20/0x30
+> > > > > > [   91.514885]        [<ffffffff81002adb>] system_call_fastpath+0x16/0x1b
+> > > > > > [   91.514885]
+> > > > > > [   91.514885] other info that might help us debug this:
+> > > > > > [   91.514885]
+> > > > > > [   91.514885] 1 lock held by pulseaudio/2717:
+> > > > > > [   91.514885]  #0:  (&pcm->open_mutex){+.+.+.}, at: [<ffffffffa010ecd2>] snd_pcm_open+0x182/0x450 [snd_pcm]
+> > > > > > [   91.514885]
+> > > > > > [   91.514885] stack backtrace:
+> > > > > > [   91.514885] Pid: 2717, comm: pulseaudio Not tainted 2.6.33-rc8-crc #106
+> > > > > > [   91.514885] Call Trace:
+> > > > > > [   91.514885]  [<ffffffff81080fd9>] print_circular_bug+0xe9/0xf0
+> > > > > > [   91.514885]  [<ffffffff81083668>] __lock_acquire+0x1418/0x1550
+> > > > > > [   91.514885]  [<ffffffff81081dc8>] ? debug_check_no_locks_freed+0xc8/0x150
+> > > > > > [   91.514885]  [<ffffffff8108383c>] lock_acquire+0x9c/0x140
+> > > > > > [   91.514885]  [<ffffffffa02797f1>] ? snd_em28xx_capture_open+0x61/0x190 [em28xx_alsa]
+> > > > > > [   91.514885]  [<ffffffff814b96c1>] __mutex_lock_common+0x61/0x610
+> > > > > > [   91.514885]  [<ffffffffa02797f1>] ? snd_em28xx_capture_open+0x61/0x190 [em28xx_alsa]
+> > > > > > [   91.514885]  [<ffffffffa02797f1>] ? snd_em28xx_capture_open+0x61/0x190 [em28xx_alsa]
+> > > > > > [   91.514885]  [<ffffffffa0109c70>] ? snd_pcm_hw_rule_muldivk+0x0/0xa0 [snd_pcm]
+> > > > > > [   91.514885]  [<ffffffff8107fd54>] ? lockdep_init_map+0x44/0x130
+> > > > > > [   91.514885]  [<ffffffff814b9d53>] mutex_lock_nested+0x43/0x50
+> > > > > > [   91.514885]  [<ffffffffa02797f1>] snd_em28xx_capture_open+0x61/0x190 [em28xx_alsa]
+> > > > > > [   91.514885]  [<ffffffffa010adee>] snd_pcm_open_substream+0x4e/0x90 [snd_pcm]
+> > > > > > [   91.514885]  [<ffffffffa010ece9>] snd_pcm_open+0x199/0x450 [snd_pcm]
+> > > > > > [   91.514885]  [<ffffffff81081cfd>] ? trace_hardirqs_on+0xd/0x10
+> > > > > > [   91.514885]  [<ffffffff810434f0>] ? default_wake_function+0x0/0x20
+> > > > > > [   91.514885]  [<ffffffff814b965e>] ? mutex_unlock+0xe/0x10
+> > > > > > [   91.514885]  [<ffffffffa010efd4>] snd_pcm_capture_open+0x34/0x40 [snd_pcm]
+> > > > > > [   91.514885]  [<ffffffffa00c5778>] snd_open+0x198/0x4e0 [snd]
+> > > > > > [   91.514885]  [<ffffffff8112384d>] chrdev_open+0x17d/0x320
+> > > > > > [   91.514885]  [<ffffffff8111d358>] __dentry_open+0x1a8/0x400
+> > > > > > [   91.514885]  [<ffffffff811236d0>] ? chrdev_open+0x0/0x320
+> > > > > > [   91.514885]  [<ffffffff8111d6b4>] nameidata_to_filp+0x54/0x70
+> > > > > > [   91.514885]  [<ffffffff8112e7f1>] do_filp_open+0x841/0xc00
+> > > > > > [   91.514885]  [<ffffffff814bf981>] ? sub_preempt_count+0x51/0x60
+> > > > > > [   91.514885]  [<ffffffff814bbb7c>] ? _raw_spin_unlock+0x5c/0x70
+> > > > > > [   91.514885]  [<ffffffff8111e954>] do_sys_open+0xa4/0x180
+> > > > > > [   91.514885]  [<ffffffff8111ea70>] sys_open+0x20/0x30
+> > > > > > [   91.514885]  [<ffffffff81002adb>] system_call_fastpath+0x16/0x1b
+> > > > > > [   92.643423] hda-intel: IRQ timing workaround is activated for card #0. Suggest a bigger bdl_pos_adj.
+> > > > > 
+> > > > > It looks rather a bug of em28xx driver.  Changing dev->lock with an
+> > > > > individual one that is only for audio instance should fix the
+> > > > > problem.
+> > > > 
+> > > > And, I believe this is no regression but a long-standing problem.
+> > > > It hits just occasionally by an app like pulseauiod which loves
+> > > > tight races.
+> > > 
+> > > I guess it depends on how you define a regression.  From my POV it worked
+> > > in all three cases on .32, its failing in .33-rc and in one case is oppsing.  In
+> > > my books thats a regression.  There may have been races in .32 but they
+> > > did not trigger lockdep and never oppsed.
 > > 
-> 
-> oom_forkbomb_thres has a default value, which is 1000, so it should be 
-> enabled by default.
-> 
-> > My suggestion is how handle buggy forkbomb processes which make
-> > system almost hang by user's mistake. :)
+> > Is the kernel config really identical?  Is only the kernel replaced?
 > > 
+> > I haven't followed em28xx development, so it's possible that the bug
+> > came from that side, though.  But, in the PCM core, there is no
+> > fundamental change that may trigger this bug during 2.6.33
+> > development.
+> > 
+> > > In any case, the real question is how do we fix the problem?
+> > 
+> > As I mentioned, replace the mutex in em28xx code.
 > 
-> I don't think you've given a clear description (or, even better, a patch) 
-> of your suggestion.
+> I mean, something like below (totally untested).
+> 
+> 
+> Takashi
+> 
+> ---
+> diff --git a/drivers/media/video/em28xx/em28xx-audio.c b/drivers/media/video/em28xx/em28xx-audio.c
+> index bd78338..c2632c4 100644
+> --- a/drivers/media/video/em28xx/em28xx-audio.c
+> +++ b/drivers/media/video/em28xx/em28xx-audio.c
+> @@ -301,9 +301,9 @@ static int snd_em28xx_capture_open(struct snd_pcm_substream *substream)
+>  	/* Sets volume, mute, etc */
+>  
+>  	dev->mute = 0;
+> -	mutex_lock(&dev->lock);
+> +	mutex_lock(&dev->adev.mutex);
+>  	ret = em28xx_audio_analog_set(dev);
+> -	mutex_unlock(&dev->lock);
+> +	mutex_unlock(&dev->adev.mutex);
+>  	if (ret < 0)
+>  		goto err;
+>  
+> @@ -315,9 +315,9 @@ static int snd_em28xx_capture_open(struct snd_pcm_substream *substream)
+>  		dprintk("changing alternate number to 7\n");
+>  	}
+>  
+> -	mutex_lock(&dev->lock);
+> +	mutex_lock(&dev->adev.mutex);
+>  	dev->adev.users++;
+> -	mutex_unlock(&dev->lock);
+> +	mutex_unlock(&dev->adev.mutex);
+>  
+>  	snd_pcm_hw_constraint_integer(runtime, SNDRV_PCM_HW_PARAM_PERIODS);
+>  	dev->adev.capture_pcm_substream = substream;
+> @@ -336,7 +336,7 @@ static int snd_em28xx_pcm_close(struct snd_pcm_substream *substream)
+>  	dprintk("closing device\n");
+>  
+>  	dev->mute = 1;
+> -	mutex_lock(&dev->lock);
+> +	mutex_lock(&dev->adev.mutex);
+>  	dev->adev.users--;
+>  	em28xx_audio_analog_set(dev);
+>  	if (substream->runtime->dma_area) {
+> @@ -344,7 +344,7 @@ static int snd_em28xx_pcm_close(struct snd_pcm_substream *substream)
+>  		vfree(substream->runtime->dma_area);
+>  		substream->runtime->dma_area = NULL;
+>  	}
+> -	mutex_unlock(&dev->lock);
+> +	mutex_unlock(&dev->adev.mutex);
+>  
+>  	return 0;
+>  }
+> @@ -479,6 +479,7 @@ static int em28xx_audio_init(struct em28xx *dev)
+>  		return err;
+>  
+>  	spin_lock_init(&adev->slock);
+> +	mutex_init(&adev->mutex);
+>  	err = snd_pcm_new(card, "Em28xx Audio", 0, 0, 1, &pcm);
+>  	if (err < 0) {
+>  		snd_card_free(card);
+> diff --git a/drivers/media/video/em28xx/em28xx.h b/drivers/media/video/em28xx/em28xx.h
+> index 80d9b4f..bb1d754 100644
+> --- a/drivers/media/video/em28xx/em28xx.h
+> +++ b/drivers/media/video/em28xx/em28xx.h
+> @@ -461,6 +461,7 @@ struct em28xx_audio {
+>  	int users;
+>  	enum em28xx_stream_state capture_stream;
+>  	spinlock_t slock;
+> +	struct mutex mutex;
+>  };
+>  
+>  struct em28xx;
+> --
 
-I write down my suggestion, again. 
-My concern is following as. 
+Thanks for the patch.  It helps in that it eliminates the opps but lockdep still triggers and aplay still fails.  
+Here is the new traceback.
 
+Feb 16 07:55:23 grover kernel: [  110.920632]
+Feb 16 07:55:23 grover kernel: [  110.920634] =======================================================
+Feb 16 07:55:23 grover kernel: [  110.921571] [ INFO: possible circular locking dependency detected ]
+Feb 16 07:55:23 grover kernel: [  110.921571] 2.6.33-rc8-crc #109
+Feb 16 07:55:23 grover kernel: [  110.921571] -------------------------------------------------------
+Feb 16 07:55:23 grover kernel: [  110.921571] pulseaudio/2713 is trying to acquire lock:
+Feb 16 07:55:23 grover kernel: [  110.921571]  (sysfs_mutex){+.+.+.}, at: [<ffffffff8118b900>] sysfs_get_dirent+0x20/0xa0
+Feb 16 07:55:23 grover kernel: [  110.921571]
+Feb 16 07:55:23 grover kernel: [  110.921571] but task is already holding lock:
+Feb 16 07:55:23 grover kernel: [  110.921571]  (&pcm->open_mutex){+.+.+.}, at: [<ffffffffa0103cd2>] snd_pcm_open+0x182/0x450 [snd_pcm]
+Feb 16 07:55:23 grover kernel: [  110.921571]
+Feb 16 07:55:23 grover kernel: [  110.921571] which lock already depends on the new lock.
+Feb 16 07:55:23 grover kernel: [  110.921571]
+Feb 16 07:55:23 grover kernel: [  110.921571]
+Feb 16 07:55:23 grover kernel: [  110.921571] the existing dependency chain (in reverse order) is:
+Feb 16 07:55:23 grover kernel: [  110.921571]
+Feb 16 07:55:23 grover kernel: [  110.921571] -> #2 (&pcm->open_mutex){+.+.+.}:
+Feb 16 07:55:23 grover kernel: [  110.921571]        [<ffffffff81083215>] __lock_acquire+0xfc5/0x1550
+Feb 16 07:55:23 grover kernel: [  110.921571]        [<ffffffff8108383c>] lock_acquire+0x9c/0x140
+Feb 16 07:55:23 grover kernel: [  110.921571]        [<ffffffff814b96c1>] __mutex_lock_common+0x61/0x610
+Feb 16 07:55:23 grover kernel: [  110.921571]        [<ffffffff814b9d53>] mutex_lock_nested+0x43/0x50
+Feb 16 07:55:23 grover kernel: [  110.921571]        [<ffffffffa00ffd32>] snd_pcm_release+0x42/0xb0 [snd_pcm]
+Feb 16 07:55:23 grover kernel: [  110.921571]        [<ffffffff8112115d>] __fput+0x15d/0x290
+Feb 16 07:55:23 grover kernel: [  110.921571]        [<ffffffff811212ad>] fput+0x1d/0x30
+Feb 16 07:55:23 grover kernel: [  111.114188]        [<ffffffff810fe001>] remove_vma+0x51/0x80
+Feb 16 07:55:23 grover kernel: [  111.114188]        [<ffffffff810ffa1d>] do_munmap+0x2fd/0x390
+Feb 16 07:55:23 grover kernel: [  111.114188]        [<ffffffff810ffb06>] sys_munmap+0x56/0x80
+Feb 16 07:55:23 grover kernel: [  111.114188]        [<ffffffff81002adb>] system_call_fastpath+0x16/0x1b
+Feb 16 07:55:23 grover kernel: [  111.114188]
+Feb 16 07:55:23 grover kernel: [  111.114188] -> #1 (&mm->mmap_sem){++++++}:
+Feb 16 07:55:23 grover kernel: [  111.114188]        [<ffffffff81083215>] __lock_acquire+0xfc5/0x1550
+Feb 16 07:55:23 grover kernel: [  111.114188]        [<ffffffff8108383c>] lock_acquire+0x9c/0x140
+Feb 16 07:55:23 grover kernel: [  111.114188]        [<ffffffff810f62c7>] might_fault+0xa7/0xd0
+Feb 16 07:55:23 grover kernel: [  111.114188]        [<ffffffff8113102b>] filldir+0x7b/0xe0
+Feb 16 07:55:23 grover kernel: [  111.114188]        [<ffffffff8118aa21>] sysfs_readdir+0xf1/0x1b0
+Feb 16 07:55:23 grover kernel: [  111.114188]        [<ffffffff81131268>] vfs_readdir+0xb8/0xe0
+Feb 16 07:55:23 grover kernel: [  111.114188]        [<ffffffff8113144d>] sys_getdents+0xad/0x110
+Feb 16 07:55:23 grover kernel: [  111.114188]        [<ffffffff81002adb>] system_call_fastpath+0x16/0x1b
+Feb 16 07:55:23 grover kernel: [  111.114188]
+Feb 16 07:55:23 grover kernel: [  111.114188] -> #0 (sysfs_mutex){+.+.+.}:
+Feb 16 07:55:23 grover kernel: [  111.114188]        [<ffffffff81083668>] __lock_acquire+0x1418/0x1550
+Feb 16 07:55:23 grover kernel: [  111.114188]        [<ffffffff8108383c>] lock_acquire+0x9c/0x140
+Feb 16 07:55:23 grover kernel: [  111.114188]        [<ffffffff814b96c1>] __mutex_lock_common+0x61/0x610
+Feb 16 07:55:23 grover kernel: [  111.114188]        [<ffffffff814b9d53>] mutex_lock_nested+0x43/0x50
+Feb 16 07:55:23 grover kernel: [  111.114188]        [<ffffffff8118b900>] sysfs_get_dirent+0x20/0xa0
+Feb 16 07:55:23 grover kernel: [  111.114188]        [<ffffffff8118d280>] sysfs_remove_group+0x30/0x140
+Feb 16 07:55:23 grover kernel: [  111.114188]        [<ffffffff81399e09>] dpm_sysfs_remove+0x19/0x20
+Feb 16 07:55:23 grover kernel: [  111.114188]        [<ffffffff8139206c>] device_del+0x4c/0x1a0
+Feb 16 07:55:23 grover kernel: [  111.114188]        [<ffffffff813921d6>] device_unregister+0x16/0x30
+Feb 16 07:55:23 grover kernel: [  111.114188]        [<ffffffff813ef533>] usb_remove_ep_devs+0x23/0x40
+Feb 16 07:55:23 grover kernel: [  111.114188]        [<ffffffff813e6d4a>] remove_intf_ep_devs+0x4a/0x70
+Feb 16 07:55:23 grover kernel: [  111.114188]        [<ffffffff813e84d7>] usb_set_interface+0x167/0x2a0
+Feb 16 07:55:23 grover kernel: [  111.114188]        [<ffffffffa027c8cd>] snd_em28xx_capture_open+0x11d/0x190 [em28xx_alsa]
+Feb 16 07:55:23 grover kernel: [  111.397291]        [<ffffffffa00ffdee>] snd_pcm_open_substream+0x4e/0x90 [snd_pcm]
+Feb 16 07:55:23 grover kernel: [  111.114188]        [<ffffffffa027c8cd>] snd_em28xx_capture_open+0x11d/0x190 [em28xx_alsa]
+Feb 16 07:55:23 grover kernel: [  111.397291]        [<ffffffffa00ffdee>] snd_pcm_open_substream+0x4e/0x90 [snd_pcm]
+Feb 16 07:55:23 grover kernel: [  111.397291]        [<ffffffffa0103ce9>] snd_pcm_open+0x199/0x450 [snd_pcm]
+Feb 16 07:55:23 grover kernel: [  111.397291]        [<ffffffffa0103fd4>] snd_pcm_capture_open+0x34/0x40 [snd_pcm]
+Feb 16 07:55:23 grover kernel: [  111.397291]        [<ffffffffa00a0778>] snd_open+0x198/0x4e0 [snd]
+Feb 16 07:55:23 grover kernel: [  111.397291]        [<ffffffff8112384d>] chrdev_open+0x17d/0x320
+Feb 16 07:55:23 grover kernel: [  111.397291]        [<ffffffff8111d358>] __dentry_open+0x1a8/0x400
+Feb 16 07:55:23 grover kernel: [  111.397291]        [<ffffffff8111d6b4>] nameidata_to_filp+0x54/0x70
+Feb 16 07:55:23 grover kernel: [  111.397291]        [<ffffffff8112e7f1>] do_filp_open+0x841/0xc00
+Feb 16 07:55:23 grover kernel: [  111.397291]        [<ffffffff8111e954>] do_sys_open+0xa4/0x180
+Feb 16 07:55:23 grover kernel: [  111.397291]        [<ffffffff8111ea70>] sys_open+0x20/0x30
+Feb 16 07:55:23 grover kernel: [  111.397291]        [<ffffffff81002adb>] system_call_fastpath+0x16/0x1b
+Feb 16 07:55:23 grover kernel: [  111.397291]
+Feb 16 07:55:23 grover kernel: [  111.397291] other info that might help us debug this:
+Feb 16 07:55:23 grover kernel: [  111.397291]
+Feb 16 07:55:23 grover kernel: [  111.397291] 1 lock held by pulseaudio/2713:
+Feb 16 07:55:23 grover kernel: [  111.397291]  #0:  (&pcm->open_mutex){+.+.+.}, at: [<ffffffffa0103cd2>] snd_pcm_open+0x182/0x450 [snd_pcm]
+Feb 16 07:55:23 grover kernel: [  111.397291]
+Feb 16 07:55:23 grover kernel: [  111.397291] stack backtrace:
+Feb 16 07:55:23 grover kernel: [  111.397291] Pid: 2713, comm: pulseaudio Not tainted 2.6.33-rc8-crc #109
+Feb 16 07:55:23 grover kernel: [  111.397291] Call Trace:
+Feb 16 07:55:23 grover kernel: [  111.397291]  [<ffffffff81080fd9>] print_circular_bug+0xe9/0xf0
+Feb 16 07:55:23 grover kernel: [  111.397291]  [<ffffffff81083668>] __lock_acquire+0x1418/0x1550
+Feb 16 07:55:23 grover kernel: [  111.397291]  [<ffffffff8108383c>] lock_acquire+0x9c/0x140
+Feb 16 07:55:23 grover kernel: [  111.397291]  [<ffffffff8118b900>] ? sysfs_get_dirent+0x20/0xa0
+Feb 16 07:55:23 grover kernel: [  111.397291]  [<ffffffff814b96c1>] __mutex_lock_common+0x61/0x610
+Feb 16 07:55:23 grover kernel: [  111.397291]  [<ffffffff8118b900>] ? sysfs_get_dirent+0x20/0xa0
+Feb 16 07:55:23 grover kernel: [  111.397291]  [<ffffffff8118b900>] ? sysfs_get_dirent+0x20/0xa0
+Feb 16 07:55:23 grover kernel: [  111.397291]  [<ffffffff810819ce>] ? mark_held_locks+0x6e/0xa0
+Feb 16 07:55:23 grover kernel: [  111.397291]  [<ffffffff814bbc50>] ? _raw_spin_unlock_irq+0x30/0x80
+Feb 16 07:55:23 grover kernel: [  111.397291]  [<ffffffff814b9d53>] mutex_lock_nested+0x43/0x50
+Feb 16 07:55:23 grover kernel: [  111.397291]  [<ffffffff8118b900>] sysfs_get_dirent+0x20/0xa0
+Feb 16 07:55:23 grover kernel: [  111.397291]  [<ffffffff8118d280>] sysfs_remove_group+0x30/0x140
+Feb 16 07:55:23 grover kernel: [  111.397291]  [<ffffffff81399e09>] dpm_sysfs_remove+0x19/0x20
+Feb 16 07:55:23 grover kernel: [  111.397291]  [<ffffffff8139206c>] device_del+0x4c/0x1a0
+Feb 16 07:55:23 grover kernel: [  111.397291]  [<ffffffff813921d6>] device_unregister+0x16/0x30
+Feb 16 07:55:23 grover kernel: [  111.397291]  [<ffffffff813ef533>] usb_remove_ep_devs+0x23/0x40
+Feb 16 07:55:23 grover kernel: [  111.397291]  [<ffffffff813e6d4a>] remove_intf_ep_devs+0x4a/0x70
+Feb 16 07:55:23 grover kernel: [  111.397291]  [<ffffffff813e84d7>] usb_set_interface+0x167/0x2a0
+Feb 16 07:55:23 grover kernel: [  111.397291]  [<ffffffffa027c8cd>] snd_em28xx_capture_open+0x11d/0x190 [em28xx_alsa]
+Feb 16 07:55:23 grover kernel: [  111.397291]  [<ffffffffa00ffdee>] snd_pcm_open_substream+0x4e/0x90 [snd_pcm]
+Feb 16 07:55:23 grover kernel: [  111.397291]  [<ffffffffa0103ce9>] snd_pcm_open+0x199/0x450 [snd_pcm]
+Feb 16 07:55:23 grover kernel: [  111.397291]  [<ffffffff81081cfd>] ? trace_hardirqs_on+0xd/0x10
+Feb 16 07:55:23 grover kernel: [  111.397291]  [<ffffffff810434f0>] ? default_wake_function+0x0/0x20
+Feb 16 07:55:23 grover kernel: [  111.397291]  [<ffffffff814b965e>] ? mutex_unlock+0xe/0x10
+Feb 16 07:55:23 grover kernel: [  111.397291]  [<ffffffffa0103fd4>] snd_pcm_capture_open+0x34/0x40 [snd_pcm]
+Feb 16 07:55:23 grover kernel: [  111.397291]  [<ffffffffa00a0778>] snd_open+0x198/0x4e0 [snd]
+Feb 16 07:55:23 grover kernel: [  111.397291]  [<ffffffff8112384d>] chrdev_open+0x17d/0x320
+Feb 16 07:55:23 grover kernel: [  111.397291]  [<ffffffff8111d358>] __dentry_open+0x1a8/0x400
+Feb 16 07:55:23 grover kernel: [  111.397291]  [<ffffffff811236d0>] ? chrdev_open+0x0/0x320
+Feb 16 07:55:23 grover kernel: [  111.397291]  [<ffffffff8111d6b4>] nameidata_to_filp+0x54/0x70
+Feb 16 07:55:23 grover kernel: [  111.397291]  [<ffffffff8112e7f1>] do_filp_open+0x841/0xc00
+Feb 16 07:55:23 grover kernel: [  111.397291]  [<ffffffff814bf981>] ? sub_preempt_count+0x51/0x60
+Feb 16 07:55:23 grover kernel: [  111.397291]  [<ffffffff814bbb7c>] ? _raw_spin_unlock+0x5c/0x70
+Feb 16 07:55:23 grover kernel: [  111.397291]  [<ffffffff814bf981>] ? sub_preempt_count+0x51/0x60
+Feb 16 07:55:23 grover kernel: [  111.397291]  [<ffffffff814bbb7c>] ? _raw_spin_unlock+0x5c/0x70
+Feb 16 07:55:23 grover kernel: [  111.397291]  [<ffffffff8111e954>] do_sys_open+0xa4/0x180
+Feb 16 07:55:23 grover kernel: [  111.397291]  [<ffffffff8111ea70>] sys_open+0x20/0x30
+Feb 16 07:55:23 grover kernel: [  111.397291]  [<ffffffff81002adb>] system_call_fastpath+0x16/0x1b
 
-1. Forkbomb A task makes 2000 children in a second.
-2. 2000 children has almost same memory usage. I know another factors
-affect oom_score. but in here, I assume all of children have almost same
-badness score. 
-3. Your heuristic penalizes A task so it would be detected as forkbomb. 
-4. So OOM killer select A task as bad task. 
-5. oom_kill_process kills high badness one of children, _NOT_ task A
-itself. Unfortunately high badness child doesn't has big memory usage
-compared to sibling. It means sooner or later we would need OOM again. 
-
-
-My point was 5.
-
-1. oom_kill_process have to take a long time to scan tasklist for
-selecting just one high badness task. Okay. It's right since OOM system
-hang is much bad and it would be better to kill just first task(ie,
-random one) in tasklist. 
-
-2. But in above scenario, sibling have almost same memory. So we would
-need OOM again sooner or later and OOM logic could do above scenario
-repeatably. 
-
-Yes. Our system is already unresponsible since time slice is spread out
-many child tasks. Then in here, it would be better to kill dumb child
-instead of BUGGY forkbomb task A? How long time do we have to wait
-system responsible? 
-
-I said _BUGGY_ forkbomb task. That's because Rik's example isn't buggy
-task. Administrator already knows apache can make many task in a second.
-So he can handle it by your oom_forkbomb_thres knob. It's goal of your
-knob. 
-
-So my suggestion is following as. 
-
-I assume normal forkbomb tasks are handled well by admin who use your
-oom_forkbom_thres. The remained problem is just BUGGY forkbomb process. 
-So if your logic selects same victim task as forkbomb by your heuristic
-and it's 5th time continuously in 10 second, let's kill forkbomb instead
-of child.
-
-tsk = select_victim_task(&cause);
-if (tsk == last_victim_tsk && cause == BUGGY_FORKBOMB)
-	if (++count == 5 && time_since_first_detect_forkbomb <= 10*HZ)
-		kill(tsk);
-else {
-   last_victim_tsk = NULL; count = 0; time_since... = 0;
-   kill(tsk's child);
-}
-
-It's just example of my concern. It might never good solution.
-What I mean is just whether we have to care this.
-
-
-
--- 
-Kind regards,
-Minchan Kim
-
-
+Hope this helps,
+Ed
