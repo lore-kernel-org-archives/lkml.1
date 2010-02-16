@@ -1,54 +1,90 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752494Ab0BPGBj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 01:01:39 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:51284 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751811Ab0BPGBi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 01:01:38 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [patch 1/7 -mm] oom: filter tasks not sharing the same cpuset
-Cc: kosaki.motohiro@jp.fujitsu.com, David Rientjes <rientjes@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>,
+	id S1752454Ab0BPGOd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 01:14:33 -0500
+Received: from cantor.suse.de ([195.135.220.2]:60158 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751599Ab0BPGOc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 01:14:32 -0500
+Date: Tue, 16 Feb 2010 17:14:27 +1100
+From: Nick Piggin <npiggin@suse.de>
+To: David Rientjes <rientjes@google.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
        KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Nick Piggin <npiggin@suse.de>, Andrea Arcangeli <aarcange@redhat.com>,
+       Andrea Arcangeli <aarcange@redhat.com>,
        Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
        linux-kernel@vger.kernel.org, linux-mm@kvack.org
-In-Reply-To: <20100216110859.72C6.A69D9226@jp.fujitsu.com>
-References: <alpine.DEB.2.00.1002151401280.26927@chino.kir.corp.google.com> <20100216110859.72C6.A69D9226@jp.fujitsu.com>
-Message-Id: <20100216150100.72F7.A69D9226@jp.fujitsu.com>
+Subject: Re: [patch -mm 1/9 v2] oom: filter tasks not sharing the same
+ cpuset
+Message-ID: <20100216061427.GY5723@laptop>
+References: <alpine.DEB.2.00.1002151416470.26927@chino.kir.corp.google.com>
+ <alpine.DEB.2.00.1002151417330.26927@chino.kir.corp.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Tue, 16 Feb 2010 15:01:33 +0900 (JST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.1002151417330.26927@chino.kir.corp.google.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-typo.
-
-> But this explanation is irrelevant and meaningless. CPUSET can change
-
-s/CPUSET/mempolicy/
-
-> restricted node dynamically. So, the tsk->mempolicy at oom time doesn't
-> represent the place of task's usage memory. plus, OOM_DISABLE can 
-> always makes undesirable result. it's not special in this case.
+On Mon, Feb 15, 2010 at 02:20:01PM -0800, David Rientjes wrote:
+> Tasks that do not share the same set of allowed nodes with the task that
+> triggered the oom should not be considered as candidates for oom kill.
 > 
-> The fact is, both current and your heuristics have a corner case. it's
-> obvious. (I haven't seen corner caseless heuristics). then talking your
-> patch's merit doesn't help to merge the patch. The most important thing
-> is, we keep no regression. personally, I incline your one. but It doesn't
-> mean we can ignore its demerit.
+> Tasks in other cpusets with a disjoint set of mems would be unfairly
+> penalized otherwise because of oom conditions elsewhere; an extreme
+> example could unfairly kill all other applications on the system if a
+> single task in a user's cpuset sets itself to OOM_DISABLE and then uses
+> more memory than allowed.
 > 
+> Killing tasks outside of current's cpuset rarely would free memory for
+> current anyway.
 > 
+> Acked-by: Rik van Riel <riel@redhat.com>
+> Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> Signed-off-by: David Rientjes <rientjes@google.com>
+
+Acked-by: Nick Piggin <npiggin@suse.de>
+
+> ---
+>  mm/oom_kill.c |   12 +++---------
+>  1 files changed, 3 insertions(+), 9 deletions(-)
 > 
-
-
-
+> diff --git a/mm/oom_kill.c b/mm/oom_kill.c
+> --- a/mm/oom_kill.c
+> +++ b/mm/oom_kill.c
+> @@ -35,7 +35,7 @@ static DEFINE_SPINLOCK(zone_scan_lock);
+>  /* #define DEBUG */
+>  
+>  /*
+> - * Is all threads of the target process nodes overlap ours?
+> + * Do all threads of the target process overlap our allowed nodes?
+>   */
+>  static int has_intersects_mems_allowed(struct task_struct *tsk)
+>  {
+> @@ -167,14 +167,6 @@ unsigned long badness(struct task_struct *p, unsigned long uptime)
+>  		points /= 4;
+>  
+>  	/*
+> -	 * If p's nodes don't overlap ours, it may still help to kill p
+> -	 * because p may have allocated or otherwise mapped memory on
+> -	 * this node before. However it will be less likely.
+> -	 */
+> -	if (!has_intersects_mems_allowed(p))
+> -		points /= 8;
+> -
+> -	/*
+>  	 * Adjust the score by oom_adj.
+>  	 */
+>  	if (oom_adj) {
+> @@ -266,6 +258,8 @@ static struct task_struct *select_bad_process(unsigned long *ppoints,
+>  			continue;
+>  		if (mem && !task_in_mem_cgroup(p, mem))
+>  			continue;
+> +		if (!has_intersects_mems_allowed(p))
+> +			continue;
+>  
+>  		/*
+>  		 * This task already has access to memory reserves and is
