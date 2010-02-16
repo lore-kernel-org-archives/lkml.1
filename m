@@ -1,55 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756768Ab0BPJKy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 04:10:54 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:14744 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755951Ab0BPJKw (ORCPT
+	id S1756794Ab0BPJLF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 04:11:05 -0500
+Received: from smtp.nokia.com ([192.100.122.233]:56207 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756773Ab0BPJK4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 04:10:52 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=QJEGtzjxpplmCZ0WAAiJStAUTxnjFG4j/SgpFxUVgYPEk3VJXPPA3TAy4632q4gvy
-	GZGhUvtdG1tuXKGXilpGA==
-Date: Tue, 16 Feb 2010 01:10:44 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Nick Piggin <npiggin@suse.de>
-cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+	Tue, 16 Feb 2010 04:10:56 -0500
+Subject: Re: [PATCH] mtd: misplaced parenthesis in find_boot_record()
+From: Artem Bityutskiy <dedekind1@gmail.com>
+Reply-To: dedekind1@gmail.com
+To: Roel Kluin <roel.kluin@gmail.com>
+Cc: David Woodhouse <dwmw2@infradead.org>, linux-mtd@lists.infradead.org,
        Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrea Arcangeli <aarcange@redhat.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch 1/7 -mm] oom: filter tasks not sharing the same cpuset
-In-Reply-To: <20100216090408.GL5723@laptop>
-Message-ID: <alpine.DEB.2.00.1002160105320.17122@chino.kir.corp.google.com>
-References: <20100215115154.727B.A69D9226@jp.fujitsu.com> <alpine.DEB.2.00.1002151401280.26927@chino.kir.corp.google.com> <20100216110859.72C6.A69D9226@jp.fujitsu.com> <20100216070344.GF5723@laptop> <alpine.DEB.2.00.1002160047340.17122@chino.kir.corp.google.com>
- <20100216090408.GL5723@laptop>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <4B79C444.8090402@gmail.com>
+References: <4B79C344.60908@gmail.com>  <4B79C444.8090402@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 16 Feb 2010 11:09:29 +0200
+Message-ID: <1266311369.11659.201.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 16 Feb 2010 09:10:33.0554 (UTC) FILETIME=[E4F6D320:01CAAEE7]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Feb 2010, Nick Piggin wrote:
-
-> I don't really agree with your black and white view. We equally
-> can't tell a lot of cases about who is pinning memory where. The
-> fact is that any task can be pinning memory and the heuristic
-> was specifically catering for that.
+On Mon, 2010-02-15 at 23:01 +0100, Roel Kluin wrote:
+> The parenthesis was misplaced
 > 
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> ---
+> Not sure if you care about this one, it is between #if 0 ... #endif 
+> 
+> diff --git a/drivers/mtd/nftlmount.c b/drivers/mtd/nftlmount.c
+> index 8b22b18..1ae6a02 100644
+> --- a/drivers/mtd/nftlmount.c
+> +++ b/drivers/mtd/nftlmount.c
+> @@ -109,7 +109,7 @@ static int find_boot_record(struct NFTLrecord *nftl)
+>  
+>  		/* Finally reread to check ECC */
+>  		if ((ret = mtd->read(mtd, block * nftl->EraseSize, SECTORSIZE,
+> -				     &retlen, buf) < 0)) {
+> +				     &retlen, buf)) < 0) {
+>  			printk(KERN_NOTICE "ANAND header found at 0x%x in mtd%d, but ECC read failed (err %d)\n",
+>  			       block * nftl->EraseSize, nftl->mbd.mtd->index, ret);
+>  			continue;
 
-That's a main source of criticism of the current heuristic: it needlessly 
-kills tasks.  There is only one thing we know for certain: current is 
-trying to allocate memory on its nodes.  We can either kill a task that 
-is allowed that same set or current itself; there's no evidence that 
-killing anything else will lead to memory freeing that will allow the 
-allocation to succeed.  The heuristic will never perfectly select the task 
-that it should kill 100% of the time when playing around with mempolicy 
-nodes or cpuset mems, but relying on their current placement is a good 
-indicator of what is more likely than not to free memory of interest.
+Pushed both patches to my l2-mtd-2.6.git / master.
+-- 
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
+
