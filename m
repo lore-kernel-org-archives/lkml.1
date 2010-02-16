@@ -1,129 +1,82 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933170Ab0BPSLP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 13:11:15 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:49469 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932719Ab0BPSLN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 13:11:13 -0500
-Date: Tue, 16 Feb 2010 10:11:01 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Neil Horman <nhorman@tuxdriver.com>
-Cc: akpm@linux-foundation.org, andi@firstfloor.org, jirislaby@gmail.com,
-       linux-kernel@vger.kernel.org, gregkh@suse.de, kay.sievers@suse.de
-Subject: Re: [PATCH] Fix up a few missed minor rcu errors in uevent_helper
-Message-ID: <20100216181101.GD6797@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20100216155243.GA6155@hmsreliant.think-freely.org>
+	id S933184Ab0BPSMk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 13:12:40 -0500
+Received: from exprod6og110.obsmtp.com ([64.18.1.25]:43682 "HELO
+	exprod6og110.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S933057Ab0BPSMi convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 13:12:38 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100216155243.GA6155@hmsreliant.think-freely.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: [PWM PATCH 2/5] Emulates PWM hardware using a high-resolution timer and a GPIO pin
+Date: Tue, 16 Feb 2010 13:12:23 -0500
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE190902153826@mi8nycmail19.Mi8.com>
+In-Reply-To: <4B758153.2060209@billgatliff.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PWM PATCH 2/5] Emulates PWM hardware using a high-resolution timer and a GPIO pin
+Thread-Index: AcqsACiyaY4FTyPSTXCdxp8updY7WADMiQ4g
+References: <cover.1265094517.git.bgat@billgatliff.com> <2d73f9b2fd175fd3e482920baebcd3028206f02e.1265094517.git.bgat@billgatliff.com> <20100211200702.GB1487@ucw.cz> <4B746A02.9060306@billgatliff.com> <BD79186B4FD85F4B8E60E381CAEE190902153515@mi8nycmail19.Mi8.com> <4B758153.2060209@billgatliff.com>
+From: "H Hartley Sweeten" <hartleys@visionengravers.com>
+To: "Bill Gatliff" <bgat@billgatliff.com>
+Cc: "Pavel Machek" <pavel@ucw.cz>, <linux-embedded@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 16 Feb 2010 18:12:24.0201 (UTC) FILETIME=[96D1DF90:01CAAF33]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 16, 2010 at 10:52:43AM -0500, Neil Horman wrote:
-> Fix up a few remaining nits in uevent_helper
-> 
-> Fixes the remaining missed lock points in uevent_helper, as reported by Paul
-> McKenney in his review.  Specifically adds a spin lock to guard the write side
-> of usevent_helper from concurrent writes, and fixes two remaining missed read
-> side points that failed to use rcu_read_lock properly.  Also fixe up a minor
-> string parsing issue in uvent_helper_set (was terminating the string on the
-> wrong buffer).
-> 
-> I've done minimal testing on this (as the things this fixes were reported by
-> code audit, not any actual oops or other failure).  I did run this for a few
-> hours though, with several processes reading/writing different values to
-> /sys/kernel/uevent_helper, while issued a few module loads that required issuing
-> udev events (which, when overlapping with a proper write to /sys/kernel/uevent),
-> triggered a fork in the appropriate binary.  Nothing has fallen over in that
-> time, so I'm satisfied with this.  Applies as an incremental on top of the
-> latest -mm
-> Neil
+On Friday, February 12, 2010 9:27 AM, Bill Gatliff wrote:
+> H Hartley Sweeten wrote:
+>>
+>> FWIW, the gpiolib API will accept any non-zero value to "set" a gpio pin
+>> and a zero value to "clear" the pin.
+>>   
+>
+> It makes me sort of cringe to say this, but I'm going to assume that the
+> API is intended to work that way so that I can take advantage of it. 
+> But I'd love to someday have the reassurance that gpiolib really *is*
+> intended to work that way (might be a bad idea though, see below).  Call
+> me paranoid, but I've lost a lot of hair over the years undoing the
+> damage of similar failed assumptions.
+>
+> I've found the Linux kernel code to be refreshingly forgiving of such
+> things, however, so I'm willing to risk it this time.  :)
+>
+>> For that matter, some of the gpiolib drivers end up returning the bit
+>> position mask for a given gpio pin and not 1 or 0.  For instance if the
+>> gpio pin in question is bit 6 in an 8-bit register and it is set, a
+>> __gpio_get_value will end up returning 0x40 and not '1'.
+>>   
+>
+> Who's to say that gpios should always be boolean?  On the output side, a
+> "gpio" that's four bits wide might be a useful way of dealing with bar
+> graphs, seven-segment displays, etc. (but more specialized abstractions
+> might be more appropriate, of course).
 
->From and RCU perspective:
+I think the original intention of gpiolib was to deal with individual pins.
 
-Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> A two-bit "gpio" input might make it easier to deal with rotary encoders.
 
-> Reported-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
-> Tested-by: Neil Horman <nhorman@tuxdriver.com>
-> 
-> 
->  kernel/ksysfs.c      |   17 ++++++++++++-----
->  lib/kobject_uevent.c |    3 ++-
->  2 files changed, 14 insertions(+), 6 deletions(-)
-> 
-> diff --git a/kernel/ksysfs.c b/kernel/ksysfs.c
-> index 66d1e5b..401d1f0 100644
-> --- a/kernel/ksysfs.c
-> +++ b/kernel/ksysfs.c
-> @@ -16,6 +16,7 @@
->  #include <linux/kexec.h>
->  #include <linux/profile.h>
->  #include <linux/sched.h>
-> +#include <linux/spinlock.h>
-> 
->  #define KERNEL_ATTR_RO(_name) \
->  static struct kobj_attribute _name##_attr = __ATTR_RO(_name)
-> @@ -37,13 +38,18 @@ KERNEL_ATTR_RO(uevent_seqnum);
->  static ssize_t uevent_helper_show(struct kobject *kobj,
->  				  struct kobj_attribute *attr, char *buf)
->  {
-> -	return sprintf(buf, "%s\n", rcu_dereference(uevent_helper));
-> +	ssize_t count;
-> +	rcu_read_lock();
-> +	count = sprintf(buf, "%s\n", rcu_dereference(uevent_helper));
-> +	rcu_read_unlock();
-> +	return count;
->  }
-> 
->  struct uevent_helper_rcu {
->  	char *oldptr;
->  	struct rcu_head rcu;
->  };
-> +static DEFINE_SPINLOCK(uevent_helper_lock);
-> 
->  static void free_old_uevent_ptr(struct rcu_head *list)
->  {
-> @@ -68,15 +74,16 @@ static ssize_t uevent_helper_store(struct kobject *kobj,
->  	kbuf = kstrndup(buf, UEVENT_HELPER_PATH_LEN, GFP_KERNEL);
->  	if (!kbuf)
->  		return -ENOMEM;
-> -	uevent_helper[count] = '\0';
-> -	if (count && uevent_helper[count-1] == '\n')
-> -		uevent_helper[count-1] = '\0';
-> +	kbuf[count] = '\0';
-> +	if (count && kbuf[count-1] == '\n')
-> +		kbuf[count-1] = '\0';
->  	old = kmalloc(sizeof(struct uevent_helper_rcu), GFP_KERNEL);
->  	if (!old)
->  		goto out_free;
-> -
-> +	spin_lock(&uevent_helper_lock);
->  	old->oldptr = rcu_dereference(uevent_helper);
->  	rcu_assign_pointer(uevent_helper, kbuf);
-> +	spin_unlock(&uevent_helper_lock);
->  	call_rcu(&old->rcu, free_old_uevent_ptr);
-> 
->  	return count;
-> diff --git a/lib/kobject_uevent.c b/lib/kobject_uevent.c
-> index 211f846..a7520d0 100644
-> --- a/lib/kobject_uevent.c
-> +++ b/lib/kobject_uevent.c
-> @@ -273,10 +273,11 @@ int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
->  #endif
-> 
->  	/* call uevent_helper, usually only enabled during early boot */
-> +	rcu_read_lock();
->  	helper = rcu_dereference(uevent_helper);
->  	if (helper[0])
->  		retval = uevent_call_helper(subsystem, env);
-> -
-> +	rcu_read_unlock();
->  exit:
->  	kfree(devpath);
->  	kfree(env);
+True.  But a two-bit "gpio" is no longer a "pin" it's now a "port".
+
+I have been messing with a "port" extension for gpiolib but it's not even
+close to being mergable yet.  But, that's a different topic...
+
+> But for now, GPIOs are assumed to be booleans and that's why I'm
+> hesitant to feed the API non-boolean values.  Someday, those values
+> might mean something subtly but disastrously different.  And given my
+> luck lately with such things...
+
+True.  As such just use ! and !! to make the values boolean.
+
+gpio is bit 6
+val = 0x40 -> !(0x40) = 0
+val = 0x40 -> !!(0x40) = 1
+
+Just my .02... Regards,
+Hartley
