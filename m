@@ -1,47 +1,90 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933110Ab0BPRFH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 12:05:07 -0500
-Received: from g4t0016.houston.hp.com ([15.201.24.19]:23822 "EHLO
-	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932918Ab0BPRFE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 12:05:04 -0500
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: linux-next: build failure after merge final merge
-Date: Tue, 16 Feb 2010 10:05:00 -0700
-User-Agent: KMail/1.9.10
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>
-References: <20100216183650.e82c0f8e.sfr@canb.auug.org.au> <20100216083651.40ed48eb@jbarnes-piketon>
-In-Reply-To: <20100216083651.40ed48eb@jbarnes-piketon>
+	id S933124Ab0BPRFT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 12:05:19 -0500
+Received: from mail.tmr.com ([64.65.253.246]:58465 "EHLO partygirl.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933112Ab0BPRFQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 12:05:16 -0500
+Message-ID: <4B7AD041.4060305@tmr.com>
+Date: Tue, 16 Feb 2010 12:05:05 -0500
+From: Bill Davidsen <davidsen@tmr.com>
+Organization: TMR Associates Inc, Schenectady NY
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.21) Gecko/20090507 Fedora/1.1.16-1.fc9 NOT Firefox/3.0.11 pango-text SeaMonkey/1.1.16
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Neil Brown <neilb@suse.de>, Michael Evans <mjevans1983@gmail.com>,
+       Justin Piszcz <jpiszcz@lucidpixels.com>, linux-raid@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Linux mdadm superblock question.
+References: <alpine.DEB.2.00.1002111758350.12031@p34.internal.lan>	<4877c76c1002111752h23e14f7aibe58a89181e6f493@mail.gmail.com>	<4B77044B.1020609@zytor.com> <20100216112708.4a863f86@notabene.brown> <4B79F3CE.5030907@zytor.com>
+In-Reply-To: <4B79F3CE.5030907@zytor.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <201002161005.00833.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 16 February 2010 09:36:51 am Jesse Barnes wrote:
-> On Tue, 16 Feb 2010 18:36:50 +1100
-> Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> 
-> > Hi Jesse,
-> > 
-> > After merging, today's linux-next build (sparc64 defconfig) failed
-> > like this:
-> > 
-> > arch/sparc/kernel/pci.c: In function 'pci_cfg_fake_ranges':
-> > arch/sparc/kernel/pci.c:404: error: 'struct pci_bus' has no member
+H. Peter Anvin wrote:
+> On 02/15/2010 04:27 PM, Neil Brown wrote:
+>   
+>> When mdadm defaults to 1.0 for a RAID1 it prints a warning to the effect that
+>> the array might not be suitable to store '/boot', and requests confirmation.
+>>
+>> So I assume that the people who are having this problem either do not read,
+>> or are using some partitioning tool that runs mdadm under the hood using
+>> "--run" to avoid the need for confirmation.  It would be nice to confirm if
+>> that was the case, and find out what tool is being used.
+>>     
+>
+> My guess is that they are using the latter.  However, some of it is
+> probably also a matter of not planning ahead, or not understanding the
+> error message.  I'll forward one email privately (don't want to forward
+> a private email to a list.)
+>
+>   
+>> If an array is not being used for /boot (or /) then I still think that 1.1 is
+>> the better choice as it removes the possibility for confusion over partition
+>> tables.
+>>
+>> I guess I could try defaulting to 1.2 in a partition, and 1.1 on a
+>> whole-device.  That might be a suitable compromise.
+>>     
+>
+> In some ways, 1.1 is even more toxic on a whole-device, since that means
+> that it is physically impossible to boot off of it -- the hardware will
+> only ever read the first sector (MBR).
+>
+>   
+That is either a problem or a solution, depending which bad behavior you 
+are trying hardest to avoid.
+>> How do people cope with XFS??
+>>     
+>
+> There are three options:
+>
+> a) either don't boot from it (separate /boot);
+>   
+And certainly there are other reasons to do that...
+> b) use a bootloader which installs in the MBR and
+> hopefully-unpartitioned disk areas (e.g. Grub);
+> c) use a nonstandard custom MBR.
+>
+> Neither (b) or (c), of course, allow for chainloading from another OS
+> install and thus are bad for interoperability.
+>   
 
-> Arg I thought we had fixed this one; maybe I applied an old patchset...
-> Bjorn?
+I'm not really sure what you're getting at here, I use grub in MBR and 
+then add chain loader stanzas to grub.conf for many things, usually an 
+alternate Linux release, or to have 32/64 of the same release handy for 
+testing, and always memtest from the boot menu. Even Win98SP2 on one 
+machine, since that works very poorly under KVM. (ask Avi if you care 
+why, something about what it does in real mode). In any case, I don't 
+see the chain loader issue, unless you mean to reboot out of some other 
+OS into Linux.
 
-Nope, my patch doesn't touch that file, so I missed it (and a bunch
-of others, it looks like).
+-- 
+Bill Davidsen <davidsen@tmr.com>
+  "We can't solve today's problems by using the same thinking we
+   used in creating them." - Einstein
 
-Bjorn
