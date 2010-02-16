@@ -1,51 +1,61 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933565Ab0BPXQm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 18:16:42 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:32822
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933354Ab0BPXQl (ORCPT
+	id S933556Ab0BPXSm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 18:18:42 -0500
+Received: from mail-yw0-f176.google.com ([209.85.211.176]:56348 "EHLO
+	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933354Ab0BPXSk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 18:16:41 -0500
-Date: Tue, 16 Feb 2010 15:16:56 -0800 (PST)
-Message-Id: <20100216.151656.123276889.davem@davemloft.net>
-To: lrodriguez@atheros.com
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, espy@canonical.com,
-       ken.wu@atheros.com, graham.richards@atheros.com, scott.tan@atheros.com,
-       mcgrof@gmail.com, chris.snook@gmail.com
-Subject: Re: [PATCH] atl1c: Add support for Atheros AR8152 and AR8152
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1265934812-14157-1-git-send-email-lrodriguez@atheros.com>
-References: <1265934812-14157-1-git-send-email-lrodriguez@atheros.com>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 16 Feb 2010 18:18:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=MzQXFU0jUmueLs+0cB8n6OLODrkIrP0wuQ4I1sw6dcUq5vEob4HLMwdidg8uhA4EJ3
+         0Jq/yhQIHnfPxQmsFqyAxhFLOYycYm7DK04Cdwiic+MZGusYtykRozJyqWWDjVUEC7NF
+         KOh+7zSWztHxcp/+HEr12B4mofBCXiejQ1jGE=
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: mingo@elte.hu, jbarnes@virtuousgeek.org, akpm@linux-foundation.org,
+       rjw@sisk.pl, hpa@zytor.com,
+       "Justin P. Mattock" <justinmattock@gmail.com>
+Subject: [PATCH]"X86",Resend_Add_iMac9,1_to_pci_reboot_dmi_table 
+Date: Tue, 16 Feb 2010 15:17:29 -0800
+Message-Id: <1266362249-3337-1-git-send-email-justinmattock@gmail.com>
+X-Mailer: git-send-email 1.6.5.GIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Date: Thu, 11 Feb 2010 19:33:32 -0500
 
-> AR8151 is a Gigabit Ethernet device. AR8152 devices are
-> Fast Ethernet devices, there are two revisions, a 1.0
-> and a 2.0 revision.
-> 
-> This has been tested against these devices:
-> 
-> Driver	Model-name	vendor:device	Type
-> atl1c 	AR8131		1969:1063	Gigabit Ethernet
-> atl1c	AR8132		1969:1062	Fast Ethernet
-> atl1c	AR8151(v1.0)	1969:1073	Gigabit Ethernet
-> atl1c	AR8152(v1.1)	1969:2060	Fast Ethernet
-> 
-> This device has no hardware available yet so it goes untested,
-> but it should work:
-> 
-> atl1c	AR8152(v2.0)	1969:2062	Fast Ethernet
-> 
-> Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
+On the iMac9,1 /sbin/reboot results in
+a black mangled screen. Adding this DMI entry
+gets the machine to reboot cleanly as it should.
 
-Applied to net-next-2.6, thanks.
+Signed-off-by: Justin P. Mattock <justinmattock@gmail.com>
+
+---
+ arch/x86/kernel/reboot.c |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
+
+diff --git a/arch/x86/kernel/reboot.c b/arch/x86/kernel/reboot.c
+index 704bddc..8e1aac8 100644
+--- a/arch/x86/kernel/reboot.c
++++ b/arch/x86/kernel/reboot.c
+@@ -461,6 +461,14 @@ static struct dmi_system_id __initdata pci_reboot_dmi_table[] = {
+ 			DMI_MATCH(DMI_PRODUCT_NAME, "Macmini3,1"),
+ 		},
+ 	},
++	{	/* Handle problems with rebooting on the iMac9,1. */
++		.callback = set_pci_reboot,
++		.ident = "Apple iMac9,1",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Apple Inc."),
++			DMI_MATCH(DMI_PRODUCT_NAME, "iMac9,1"),
++		},
++	},
+ 	{ }
+ };
+ 
+-- 
+1.6.5.GIT
 
