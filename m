@@ -1,24 +1,33 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933372Ab0BPVty (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 16:49:54 -0500
-Received: from poutre.nerim.net ([62.4.16.124]:49589 "EHLO poutre.nerim.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933264Ab0BPVtx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 16:49:53 -0500
-Date: Tue, 16 Feb 2010 22:49:47 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: David Brownell <david-b@pacbell.net>
-Cc: Denis Turischev <denis@compulab.co.il>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Samuel Ortiz <sameo@linux.intel.com>, linux-i2c@vger.kernel.org
-Subject: Re: [PATCH 1/3] MFD: introduce lpc_sch for Intel SCH LPC bridge
-Message-ID: <20100216224947.5c46ff86@hyperion.delvare>
-In-Reply-To: <201002161157.47196.david-b@pacbell.net>
-References: <4B73DAEE.5080400@compulab.co.il>
-	<4B73DB4B.40501@compulab.co.il>
-	<201002161157.47196.david-b@pacbell.net>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+	id S933394Ab0BPVwa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 16:52:30 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33652 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933341Ab0BPVw1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 16:52:27 -0500
+Date: Tue, 16 Feb 2010 13:51:46 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: linux-kernel@vger.kernel.org, linux-mmc@vger.kernel.org,
+       Ian Molton <ian@mnementh.co.uk>, Magnus Damm <damm@opensource.se>,
+       "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>
+Subject: Re: [PATCH] tmio_mmc: keep card-detect interrupts enabled
+Message-Id: <20100216135146.beacf701.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.1002161028200.4778@axis700.grange>
+References: <Pine.LNX.4.64.0911061127240.4389@axis700.grange>
+	<c09aa50a0911090242l35d0dfb2vec0cdeff8b86d33e@mail.gmail.com>
+	<Pine.LNX.4.64.0911091530030.4289@axis700.grange>
+	<c09aa50a0911091218i681449e0r5cb96b9db3e0def6@mail.gmail.com>
+	<Pine.LNX.4.64.0911092134440.4289@axis700.grange>
+	<c09aa50a0911091736k27d66483t9012e296bfbf578a@mail.gmail.com>
+	<Pine.LNX.4.64.0911282002490.3696@axis700.grange>
+	<Pine.LNX.4.64.0912162223170.5283@axis700.grange>
+	<Pine.LNX.4.64.0912172113510.5991@axis700.grange>
+	<20091217131239.0dfd5534.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.1002161028200.4778@axis700.grange>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -26,37 +35,58 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Feb 2010 11:57:46 -0800, David Brownell wrote:
-> On Thursday 11 February 2010, Denis Turischev wrote:
-> > Intel Poulsbo (SCH) chipset LPC bridge controller contains several
-> > functions. Creating and MFD driver for the LPC bridge controller allows
-> 
-> Spelling nit: "Creating an" (not and).  Keyboard, brain, or edit fault.  ;)
-> 
-> 
-> > simultaneous use of SMBus and GPIO interfaces on the SCH.
-> 
-> This looks like the right way to package such southbridge level
-> componentry.  Maye not just these two interfaces, either.
-> 
-> But ... how does this play with ACPI?  The last several Intel
-> systems I looked at seemed to expect ACPI to manage GPIOs and the
-> IRQs they may issue.  (He wrote, staring at an ICH8-system where
-> ACPI uses GPIOs to manage several buttons and LEDs.)
-> 
-> It would seem error-prone to ignore that coupling on systems
-> with ACPI.  Linux has enough trouble sorting out issues caused
-> by buggy AML (ACPI bytecode) without introducing conflicts in
-> who manages which hardware resource (ACPI vs. operating system).
+On Tue, 16 Feb 2010 10:34:55 +0100 (CET)
+Guennadi Liakhovetski <g.liakhovetski@gmx.de> wrote:
 
-Might be a good idea to use acpi_check_resource_conflict() or similar
-before instantiating the platform devices.
+> On SuperH platforms the SDHI controller does not produce any command IRQs after
+> a completed IO. This leads to card-detect interrupts staying disabled. Do not
+> disable card-detect interrupts on DATA IRQs.
+> 
 
-> Of course, if ACPI weren't being used to hide such board-specific
-> details from operating systems, such issues would not exist.  But
-> such hiding is one of the basic goals of ACPI ... annoying.
+Why is the current code disabling card-detect interrupts on DATA IRQs? 
+Was that just a bug?
 
-Don't start me on this :(
+What effect will this change have for current users of this driver?
 
--- 
-Jean Delvare
+
+> ---
+> On Thu, 17 Dec 2009, Andrew Morton wrote:
+> 
+> > On Thu, 17 Dec 2009 21:25:52 +0100 (CET)
+> > Guennadi Liakhovetski <g.liakhovetski@gmx.de> wrote:
+> > 
+> > > I originally submitted this [1] patch on the 6th of November, then 
+> > > accidentally the MMC list got dropped from CC and the discussion moved to 
+> > > another irrelevant list, Ian's last reply is at [2]. Unfortunately, Ian 
+> > > hasn't replied to my reminders since then, and I don't see this patch 
+> > > anywhere upstream. Is there any way we could get it into 2.6.33?
+> > 
+> > Please redo and retest it against curent mainline and do a full resend.
+> 
+> Re-testing this patch has again become possible now, after Magnus has 
+> posted his INTC and the "tmio_mmc: use 100ms mmc_detect_change() delay" 
+> patches. Successfully tested on Migo-R (sh7722) and MS7724SE (sh7724). 
+> Andrew, please apply.
+> 
+>  drivers/mmc/host/tmio_mmc.h |    6 ++----
+>  1 files changed, 2 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/mmc/host/tmio_mmc.h b/drivers/mmc/host/tmio_mmc.h
+> index 692dc23..dafecfb 100644
+> --- a/drivers/mmc/host/tmio_mmc.h
+> +++ b/drivers/mmc/host/tmio_mmc.h
+> @@ -55,10 +55,8 @@
+>  /* Define some IRQ masks */
+>  /* This is the mask used at reset by the chip */
+>  #define TMIO_MASK_ALL           0x837f031d
+> -#define TMIO_MASK_READOP  (TMIO_STAT_RXRDY | TMIO_STAT_DATAEND | \
+> -		TMIO_STAT_CARD_REMOVE | TMIO_STAT_CARD_INSERT)
+> -#define TMIO_MASK_WRITEOP (TMIO_STAT_TXRQ | TMIO_STAT_DATAEND | \
+> -		TMIO_STAT_CARD_REMOVE | TMIO_STAT_CARD_INSERT)
+> +#define TMIO_MASK_READOP  (TMIO_STAT_RXRDY | TMIO_STAT_DATAEND)
+> +#define TMIO_MASK_WRITEOP (TMIO_STAT_TXRQ | TMIO_STAT_DATAEND)
+>  #define TMIO_MASK_CMD     (TMIO_STAT_CMDRESPEND | TMIO_STAT_CMDTIMEOUT | \
+>  		TMIO_STAT_CARD_REMOVE | TMIO_STAT_CARD_INSERT)
+>  #define TMIO_MASK_IRQ     (TMIO_MASK_READOP | TMIO_MASK_WRITEOP | TMIO_MASK_CMD)
+> -- 
+> 1.6.2.4
