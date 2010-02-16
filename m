@@ -1,79 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757240Ab0BPQWD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 11:22:03 -0500
-Received: from mail-gx0-f227.google.com ([209.85.217.227]:60044 "EHLO
-	mail-gx0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755995Ab0BPQWA (ORCPT
+	id S1757254Ab0BPQWd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 11:22:33 -0500
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:51832 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757188Ab0BPQWb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 11:22:00 -0500
-X-Greylist: delayed 1355 seconds by postgrey-1.27 at vger.kernel.org; Tue, 16 Feb 2010 11:22:00 EST
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=Zj5TkwJFTVvrml29A2sDuavJ3zFtfuRGnPtvjw19yxlYXXV+3APn0XAcxHiuLipOJQ
-         ewwSmWC3sB+XQjCw6nVhYd9bH5Pkhv8PNm3yuzYzryImDtkhpLhmNNmT7Tz7+RwrcSyX
-         mOzZ5nVQtXz+uWXlqTJl2wou3G9huvZKFdygE=
-Subject: [PATCH -mm] Kill existing current task quickly
-From: Minchan Kim <minchan.kim@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, David Rientjes <rientjes@google.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 17 Feb 2010 00:59:17 +0900
-Message-ID: <1266335957.1709.67.camel@barrios-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 16 Feb 2010 11:22:31 -0500
+Date: Tue, 16 Feb 2010 17:22:24 +0100
+From: Rodolfo Giometti <giometti@enneenne.com>
+To: Grazvydas Ignotas <notasas@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Anton Vorontsov <avorontsov@ru.mvista.com>,
+       David Woodhouse <dwmw2@infradead.org>
+Message-ID: <20100216162223.GA28375@enneenne.com>
+Mail-Followup-To: Grazvydas Ignotas <notasas@gmail.com>,
+	linux-kernel@vger.kernel.org,
+	Anton Vorontsov <avorontsov@ru.mvista.com>,
+	David Woodhouse <dwmw2@infradead.org>
+References: <1266011806-31747-1-git-send-email-notasas@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1266011806-31747-1-git-send-email-notasas@gmail.com>
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-SA-Exim-Connect-IP: 192.168.32.37
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: Re: [PATCH 1/4] power_supply: bq27x00: remove double endian swap
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I am not sure why didn't we break the loop until now. 
-As looking git log, I found it is removed by Nick at b78483a.
-He mentioned "introduced a problem". If I miss something, 
-pz, correct me. 
+On Fri, Feb 12, 2010 at 11:56:46PM +0200, Grazvydas Ignotas wrote:
+> The bq27x00 registers are little endian, so just read them as such
+> and don't do double endian swap on LE machines.
+> 
+> This also gets rid of strange looking shift that was done after
+> reading 8bit register because endian swap in bq27x00_read() was
+> messing it up.
+> 
+> Signed-off-by: Grazvydas Ignotas <notasas@gmail.com>
 
-== CUT_HERE ==
-
-[PATCH -mm] Kill existing current task quickly
-
-If we found current task is existing but didn't set TIF_MEMDIE
-during OOM victim selection, let's stop unnecessary looping for
-getting high badness score task and go ahead for killing current.
-
-This patch would make side effect skip OOM_DISABLE test.
-But It's okay since the task is existing and oom_kill_process
-doesn't show any killing message since __oom_kill_task will
-interrupt it in oom_kill_process.
-
-Signed-off-by: Minchan Kim <minchan.kim@gmail.com>
-Cc: Nick Piggin <npiggin@suse.de>
----
- mm/oom_kill.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/mm/oom_kill.c b/mm/oom_kill.c
-index 3618be3..5c21398 100644
---- a/mm/oom_kill.c
-+++ b/mm/oom_kill.c
-@@ -295,6 +295,7 @@ static struct task_struct
-*select_bad_process(unsigned long *ppoints,
- 
- 			chosen = p;
- 			*ppoints = ULONG_MAX;
-+			break;
- 		}
- 
- 		if (p->signal->oom_adj == OOM_DISABLE)
--- 
-1.6.5
-
-
+Acked-by: Rodolfo Giometti <giometti@linux.it>
 
 -- 
-Kind regards,
-Minchan Kim
 
-
+GNU/Linux Solutions                  e-mail: giometti@enneenne.com
+Linux Device Driver                          giometti@linux.it
+Embedded Systems                     phone:  +39 349 2432127
+UNIX programming                     skype:  rodolfo.giometti
+Freelance ICT Italia - Consulente ICT Italia - www.consulenti-ict.it
