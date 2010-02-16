@@ -1,188 +1,124 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932731Ab0BPH7O (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 02:59:14 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:56099 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932671Ab0BPH7M (ORCPT
+	id S932714Ab0BPH6o (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 02:58:44 -0500
+Received: from devils.ext.ti.com ([198.47.26.153]:51072 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754493Ab0BPH6n convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 02:59:12 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH 04/12] Export fragmentation index via /proc/pagetypeinfo
-Cc: kosaki.motohiro@jp.fujitsu.com, Andrea Arcangeli <aarcange@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Adam Litke <agl@us.ibm.com>, Avi Kivity <avi@redhat.com>,
-       David Rientjes <rientjes@google.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-In-Reply-To: <1265976059-7459-5-git-send-email-mel@csn.ul.ie>
-References: <1265976059-7459-1-git-send-email-mel@csn.ul.ie> <1265976059-7459-5-git-send-email-mel@csn.ul.ie>
-Message-Id: <20100216160518.7303.A69D9226@jp.fujitsu.com>
+	Tue, 16 Feb 2010 02:58:43 -0500
+From: "Shilimkar, Santosh" <santosh.shilimkar@ti.com>
+To: Catalin Marinas <catalin.marinas@arm.com>, Pavel Machek <pavel@ucw.cz>,
+       Greg KH <greg@kroah.com>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>
+CC: Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       Ming Lei <tom.leiming@gmail.com>,
+       Sebastian Siewior <bigeasy@linutronix.de>,
+       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       "Mankad, Maulik Ojas" <x0082077@ti.com>
+Date: Tue, 16 Feb 2010 13:27:53 +0530
+Subject: RE: USB mass storage and ARM cache coherency
+Thread-Topic: USB mass storage and ARM cache coherency
+Thread-Index: Acqoskzu3x2YdA6rS5S6M3u8UyjhAAGKPpUg
+Message-ID: <EAF47CD23C76F840A9E7FCE10091EFAB02C3CF7D50@dbde02.ent.ti.com>
+References: <20100208065519.GE1290@ucw.cz>
+	<1265622676.4020.19.camel@pc1117.cambridge.arm.com>
+	<20100208105209.GA31671@atrey.karlin.mff.cuni.cz>
+ <1265628483.4020.63.camel@pc1117.cambridge.arm.com>
+In-Reply-To: <1265628483.4020.63.camel@pc1117.cambridge.arm.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Tue, 16 Feb 2010 16:59:05 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Fragmentation index is a value that makes sense when an allocation of a
-> given size would fail. The index indicates whether an allocation failure is
-> due to a lack of memory (values towards 0) or due to external fragmentation
-> (value towards 1).  For the most part, the huge page size will be the size
-> of interest but not necessarily so it is exported on a per-order and per-zone
-> basis via /proc/pagetypeinfo.
+> -----Original Message-----
+> From: linux-arm-kernel-bounces@lists.infradead.org [mailto:linux-arm-kernel-
+> bounces@lists.infradead.org] On Behalf Of Catalin Marinas
+> Sent: Monday, February 08, 2010 4:58 PM
+> To: Pavel Machek
+> Cc: Matthew Dharm; Sergei Shtylyov; Ming Lei; Sebastian Siewior; linux-usb@vger.kernel.org; linux-
+> kernel; Greg KH; linux-arm-kernel
+> Subject: Re: USB mass storage and ARM cache coherency
 > 
-> The index is normally calculated as a value between 0 and 1 which is
-> obviously unsuitable within the kernel. Instead, the first three decimal
-> places are used as a value between 0 and 1000 for an integer approximation.
-
-Hmmm..
-
-I haven't understand why admin need to know two metrics (unusable-index
-and fragmentation-index). they have very similar meanings and easy confusable
-imho.
-
-Can we make just one user friendly metrics?
-
-
+> On Mon, 2010-02-08 at 10:52 +0000, Pavel Machek wrote:
+> > > On Mon, 2010-02-08 at 06:55 +0000, Pavel Machek wrote:
+> > > > > > So, let's put this in the HCD drivers and be done with it.
+> > > > >
+> > > > > The patch below is what fixes the I-D cache incoherency issues on ARM. I
+> > > > > don't particularly like the solution but it seems to be the only one
+> > > > > available.
+> > > >
+> > > > Really? It looks like arm should just flush the caches when mapping
+> > > > executable page to the userspace.... you can't expect all the drivers
+> > > > to be modified like that...
+> > >
+> > > We could of course flush the caches every time we get a page fault but
+> > > that's far from optimal, especially since DMA-capable drivers to do
+> > > not
+> >
+> > Maybe far for optimal, but it is something that should be done,
+> > _first_. Correctness is more important than performance, and you can't
+> > expect all drivers to behave like you want them.
 > 
-> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> ---
->  Documentation/filesystems/proc.txt |   11 ++++++
->  mm/vmstat.c                        |   63 ++++++++++++++++++++++++++++++++++++
->  2 files changed, 74 insertions(+), 0 deletions(-)
+> I wouldn't call heavy cache flushing "correctness". We could as well
+> disable the caches so that it is fully coherent.
 > 
-> diff --git a/Documentation/filesystems/proc.txt b/Documentation/filesystems/proc.txt
-> index 0968a81..06bf53c 100644
-> --- a/Documentation/filesystems/proc.txt
-> +++ b/Documentation/filesystems/proc.txt
-> @@ -618,6 +618,10 @@ Unusable free space index at order
->  Node    0, zone      DMA                         0      0      0      2      6     18     34     67     99    227    485
->  Node    0, zone    DMA32                         0      0      1      2      4      7     10     17     23     31     34
->  
-> +Fragmentation index at order
-> +Node    0, zone      DMA                        -1     -1     -1     -1     -1     -1     -1     -1     -1     -1     -1
-> +Node    0, zone    DMA32                        -1     -1     -1     -1     -1     -1     -1     -1     -1     -1     -1
-> +
->  Number of blocks type     Unmovable  Reclaimable      Movable      Reserve      Isolate
->  Node 0, zone      DMA            2            0            5            1            0
->  Node 0, zone    DMA32           41            6          967            2            0
-> @@ -639,6 +643,13 @@ value between 0 and 1000. The higher the value, the more of free memory is
->  unusable and by implication, the worse the external fragmentation is. The
->  percentage of unusable free memory can be found by dividing this value by 10.
->  
-> +The fragmentation index, is only meaningful if an allocation would fail and
-> +indicates what the failure is due to. A value of -1 such as in the example
-> +states that the allocation would succeed. If it would fail, the value is
-> +between 0 and 1000. A value tending towards 0 implies the allocation failed
-> +due to a lack of memory. A value tending towards 1000 implies it failed
-> +due to external fragmentation.
-> +
->  If min_free_kbytes has been tuned correctly (recommendations made by hugeadm
->  from libhugetlbfs http://sourceforge.net/projects/libhugetlbfs/), one can
->  make an estimate of the likely number of huge pages that can be allocated
-> diff --git a/mm/vmstat.c b/mm/vmstat.c
-> index d05d610..e2d0cc1 100644
-> --- a/mm/vmstat.c
-> +++ b/mm/vmstat.c
-> @@ -494,6 +494,35 @@ static void fill_contig_page_info(struct zone *zone,
->  }
->  
->  /*
-> + * A fragmentation index only makes sense if an allocation of a requested
-> + * size would fail. If that is true, the fragmentation index indicates
-> + * whether external fragmentation or a lack of memory was the problem.
-> + * The value can be used to determine if page reclaim or compaction
-> + * should be used
-> + */
-> +int fragmentation_index(struct zone *zone,
-> +				unsigned int order,
-> +				struct contig_page_info *info)
-> +{
-> +	unsigned long requested = 1UL << order;
-> +
-> +	if (!info->free_blocks_total)
-> +		return 0;
-> +
-> +	/* Fragmentation index only makes sense when a request would fail */
-> +	if (info->free_blocks_suitable)
-> +		return -1;
-> +
-> +	/*
-> +	 * Index is between 0 and 1 so return within 3 decimal places
-> +	 *
-> +	 * 0 => allocation would fail due to lack of memory
-> +	 * 1 => allocation would fail due to fragmentation
-> +	 */
-> +	return 1000 - ( (1000+(info->free_pages * 1000 / requested)) / info->free_blocks_total);
-> +}
-
-Dumb question. I haven't understand why this calculation represent
-fragmentation index. Do this have theorical background? if yes, can you
-please tell me the pointer?
-
-
-
-
-> +
-> +/*
->   * Return an index indicating how much of the available free memory is
->   * unusable for an allocation of the requested size.
->   */
-> @@ -516,6 +545,39 @@ static int unusable_free_index(struct zone *zone,
->  
->  }
->  
-> +static void pagetypeinfo_showfragmentation_print(struct seq_file *m,
-> +					pg_data_t *pgdat, struct zone *zone)
-> +{
-> +	unsigned int order;
-> +
-> +	/* Alloc on stack as interrupts are disabled for zone walk */
-> +	struct contig_page_info info;
-> +
-> +	seq_printf(m, "Node %4d, zone %8s %19s",
-> +				pgdat->node_id,
-> +				zone->name, " ");
-> +	for (order = 0; order < MAX_ORDER; ++order) {
-> +		fill_contig_page_info(zone, order, &info);
-> +		seq_printf(m, "%6d ", fragmentation_index(zone, order, &info));
-> +	}
-> +
-> +	seq_putc(m, '\n');
-> +}
-> +
-> +/*
-> + * Display fragmentation index for orders that allocations would fail for
-> + * XXX: Could be a lot more efficient, but it's not a critical path
-> + */
-> +static int pagetypeinfo_showfragmentation(struct seq_file *m, void *arg)
-> +{
-> +	pg_data_t *pgdat = (pg_data_t *)arg;
-> +
-> +	seq_printf(m, "\nFragmentation index at order\n");
-> +	walk_zones_in_node(m, pgdat, pagetypeinfo_showfragmentation_print);
-> +
-> +	return 0;
-> +}
-> +
->  static void pagetypeinfo_showunusable_print(struct seq_file *m,
->  					pg_data_t *pgdat, struct zone *zone)
->  {
-> @@ -657,6 +719,7 @@ static int pagetypeinfo_show(struct seq_file *m, void *arg)
->  	seq_putc(m, '\n');
->  	pagetypeinfo_showfree(m, pgdat);
->  	pagetypeinfo_showunusable(m, pgdat);
-> +	pagetypeinfo_showfragmentation(m, pgdat);
->  	pagetypeinfo_showblockcount(m, pgdat);
->  
->  	return 0;
-> -- 
-> 1.6.5
+> The arch code follows an API defined in cachetlb.txt but the PIO drivers
+> don't (some do, like mmci.c). It may be inconvenient to call
+> flush_dcache_page() in the driver, hence I started a discussion on
+> linux-arch on a PIO mapping API that x86 or other fully coherent
+> architectures can leave it as no-ops.
 > 
+> > Then you can add optimalizations not to do the flushes on drivers you
+> > audited and where you care...
+> 
+> Sorry but that's not really feasible (unless I don't fully understand
+> what you mean) - if we do the cache flushing on the fault handling path
+> in the arch code, there is no way for the arch code to know what driver
+> is doing, unless we make this conditionally compiled with something like
+> CONFIG_ARCH_NEEDS_HEAVY_FLUSHING.
 
 
+Continuing on the USB issue w.r.t cache coherency, the usb host
+code is violating the buffer ownership rules of streaming APIs from
+dma and non-dma transfers point if view.
 
+We have a below temporary patch to get around the issue and probably it
+needs to be fixed in the right way in the stack because some controllers
+may not have PIO option even for control transfers. (e.g. Synopsis EHCI
+controller)
+
+From: Maulik Mankad <x0082077@ti.com>
+
+USB: Avoid DMA map/unmap of control transfer buffers.
+
+This patch avoids the DMA mapping of buffers for control
+transfers.
+
+Signed-off-by: Maulik Mankad <x0082077@ti.com>
+---
+Index: omap4_integration/drivers/usb/core/hcd.c
+===================================================================
+--- omap4_integration.orig/drivers/usb/core/hcd.c
++++ omap4_integration/drivers/usb/core/hcd.c
+@@ -1274,6 +1274,10 @@ static int map_urb_for_dma(struct usb_hc
+ 	if (is_root_hub(urb->dev))
+ 		return 0;
+ 
++	if (usb_endpoint_xfer_control(&urb->ep->desc))
++		urb->transfer_flags = URB_NO_SETUP_DMA_MAP |
++					URB_NO_TRANSFER_DMA_MAP;
++
+ 	if (usb_endpoint_xfer_control(&urb->ep->desc)
+ 	    && !(urb->transfer_flags & URB_NO_SETUP_DMA_MAP)) {
+ 		if (hcd->self.uses_dma) {
