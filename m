@@ -1,63 +1,99 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933046Ab0BPQdb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 11:33:31 -0500
-Received: from bamako.nerim.net ([62.4.17.28]:52240 "EHLO bamako.nerim.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932350Ab0BPQd3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 11:33:29 -0500
-Date: Tue, 16 Feb 2010 17:33:26 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -next] i2c: fix xiic build error
-Message-ID: <20100216173326.091c1c77@hyperion.delvare>
-In-Reply-To: <4B7AC2A9.4070203@oracle.com>
-References: <20100204185736.6628ab9a.sfr@canb.auug.org.au>
-	<4B6B29DD.7060502@oracle.com>
-	<4B7AC2A9.4070203@oracle.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S933052Ab0BPQgn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 11:36:43 -0500
+Received: from business.midphase.com ([67.213.211.48]:41931 "EHLO
+	business.midphase.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932458Ab0BPQgm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 11:36:42 -0500
+From: tim@weberpafrica.com
+To: gregkh@suse.de
+Cc: devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org,
+       Tim Schofield <tim.schofield1960@googlemail.com>
+Subject: [PATCH] Staging:rtl8192e: fix comments style issue in r8180_93cx6.c This is a patch to the r8180_93cx6.c file that fixes up the comments styling issues found by the checkpatch.pl tool Signed-off-by: Tim Schofield <tim@weberpafrica.com>
+Date: Tue, 16 Feb 2010 16:35:16 +0000
+Message-Id: <1266338116-27482-1-git-send-email-tim@weberpafrica.com>
+X-Mailer: git-send-email 1.6.3.3
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - business.midphase.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - weberpafrica.com
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Randy,
+From: Tim Schofield <tim.schofield1960@googlemail.com>
 
-On Tue, 16 Feb 2010 08:07:05 -0800, Randy Dunlap wrote:
-> On 02/04/10 12:11, Randy Dunlap wrote:
-> > From: Randy Dunlap <randy.dunlap@oracle.com>
-> > 
-> > Add header file to fix build error:
-> > 
-> > drivers/i2c/busses/i2c-xiic.c:493: error: implicit declaration of
-> > function 'mdelay'
-> > 
-> > Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> > ---
-> >  drivers/i2c/busses/i2c-xiic.c |    1 +
-> >  1 file changed, 1 insertion(+)
-> > 
-> > --- linux-next-20100204.orig/drivers/i2c/busses/i2c-xiic.c
-> > +++ linux-next-20100204/drivers/i2c/busses/i2c-xiic.c
-> > @@ -31,6 +31,7 @@
-> >  #include <linux/module.h>
-> >  #include <linux/init.h>
-> >  #include <linux/errno.h>
-> > +#include <linux/delay.h>
-> >  #include <linux/platform_device.h>
-> >  #include <linux/i2c.h>
-> >  #include <linux/interrupt.h>
-> > 
-> 
-> 
-> This patch is still needed in linux-next-20100216.
+---
+ drivers/staging/rtl8192e/r8180_93cx6.c |   22 ++++++++++++++--------
+ 1 files changed, 14 insertions(+), 8 deletions(-)
 
-Nothing I can do about it, as the i2c-xiic driver is neither upstream
-nor in my tree.
-
+diff --git a/drivers/staging/rtl8192e/r8180_93cx6.c b/drivers/staging/rtl8192e/r8180_93cx6.c
+index 262ed5f..60fba80 100644
+--- a/drivers/staging/rtl8192e/r8180_93cx6.c
++++ b/drivers/staging/rtl8192e/r8180_93cx6.c
+@@ -23,12 +23,14 @@
+ static void eprom_cs(struct net_device *dev, short bit)
+ {
+ 	if (bit)
++		/* enable EPROM */
+ 		write_nic_byte(dev, EPROM_CMD,
+ 			       (1<<EPROM_CS_SHIFT) | \
+-			       read_nic_byte(dev, EPROM_CMD)); //enable EPROM
++			       read_nic_byte(dev, EPROM_CMD));
+ 	else
++		/* disable EPROM */
+ 		write_nic_byte(dev, EPROM_CMD, read_nic_byte(dev, EPROM_CMD)\
+-			       &~(1<<EPROM_CS_SHIFT)); //disable EPROM
++			       &~(1<<EPROM_CS_SHIFT));
+ 
+ 	force_pci_posting(dev);
+ 	udelay(EPROM_DELAY);
+@@ -96,7 +98,7 @@ u32 eprom_read(struct net_device *dev, u32 addr)
+ 	u32 ret;
+ 
+ 	ret = 0;
+-        //enable EPROM programming
++	/* enable EPROM programming */
+ 	write_nic_byte(dev, EPROM_CMD,
+ 		       (EPROM_CMD_PROGRAM<<EPROM_CMD_OPERATING_MODE_SHIFT));
+ 	force_pci_posting(dev);
+@@ -126,13 +128,17 @@ u32 eprom_read(struct net_device *dev, u32 addr)
+ 	eprom_send_bits_string(dev, read_cmd, 3);
+ 	eprom_send_bits_string(dev, addr_str, addr_len);
+ 
+-	//keep chip pin D to low state while reading.
+-	//I'm unsure if it is necessary, but anyway shouldn't hurt
++	/*
++	 * keep chip pin D to low state while reading.
++	 * I'm unsure if it is necessary, but anyway shouldn't hurt
++	 */
+ 	eprom_w(dev, 0);
+ 
+ 	for (i = 0; i < 16; i++) {
+-		//eeprom needs a clk cycle between writing opcode&adr
+-		//and reading data. (eeprom outs a dummy 0)
++		/*
++		 * eeprom needs a clk cycle between writing opcode&adr
++		 * and reading data. (eeprom outs a dummy 0)
++		 */
+ 		eprom_ck_cycle(dev);
+ 		ret |= (eprom_r(dev)<<(15-i));
+ 	}
+@@ -140,7 +146,7 @@ u32 eprom_read(struct net_device *dev, u32 addr)
+ 	eprom_cs(dev, 0);
+ 	eprom_ck_cycle(dev);
+ 
+-	//disable EPROM programming
++	/* disable EPROM programming */
+ 	write_nic_byte(dev, EPROM_CMD,
+ 		       (EPROM_CMD_NORMAL<<EPROM_CMD_OPERATING_MODE_SHIFT));
+ 	return ret;
 -- 
-Jean Delvare
+1.6.3.3
+
