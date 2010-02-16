@@ -1,281 +1,81 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933038Ab0BPQ2u (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 11:28:50 -0500
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:38111 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757105Ab0BPQ2t (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 11:28:49 -0500
-Date: Tue, 16 Feb 2010 17:28:41 +0100
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: Grazvydas Ignotas <notasas@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Anton Vorontsov <avorontsov@ru.mvista.com>,
-       David Woodhouse <dwmw2@infradead.org>
-Message-ID: <20100216162841.GD28375@enneenne.com>
-Mail-Followup-To: Grazvydas Ignotas <notasas@gmail.com>,
-	linux-kernel@vger.kernel.org,
-	Anton Vorontsov <avorontsov@ru.mvista.com>,
-	David Woodhouse <dwmw2@infradead.org>
-References: <1266011843-31828-1-git-send-email-notasas@gmail.com>
+	id S933007Ab0BPQbZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 11:31:25 -0500
+Received: from www.tglx.de ([62.245.132.106]:41995 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757220Ab0BPQbX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 11:31:23 -0500
+Date: Tue, 16 Feb 2010 17:30:55 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Steven Rostedt <rostedt@goodmis.org>
+cc: naresh kamboju <naresh.kernel@gmail.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, ltt-dev@lists.casi.polymtl.ca
+Subject: Re: LTTng0.158 Linux-2629-RT kernel BUG: sleeping function called
+ from invalid context at kernel/rtmutex.c:685
+In-Reply-To: <1266337450.24271.140.camel@gandalf.stny.rr.com>
+Message-ID: <alpine.LFD.2.00.1002161727570.2811@localhost.localdomain>
+References: <f5a7b3811002160717y65b4577buf53e5784c71575c3@mail.gmail.com> <1266337450.24271.140.camel@gandalf.stny.rr.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1266011843-31828-1-git-send-email-notasas@gmail.com>
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-SA-Exim-Connect-IP: 192.168.32.37
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: Re: [PATCH 4/4] power_supply: bq27x00: add BQ27500 support
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 12, 2010 at 11:57:23PM +0200, Grazvydas Ignotas wrote:
-> BQ27500 is newer fuel gauge chip from TI with slightly changed
-> register layout and some different register semantics. Add new i2c
-> ID for it and handle differences where needed. Also rename bq27200
-> functions to bq27x00, as they are no longer bq27200 specific.
+On Tue, 16 Feb 2010, Steven Rostedt wrote:
+
+> On Tue, 2010-02-16 at 20:47 +0530, naresh kamboju wrote:
+> > Hi,
+> > 
+> > After applying LTTng 0.158 patches on 2.6.29-RT with SMP and NON-SMP
+> > found BUG on ARM target.
+> > LTTng 0.158 patches with 2.6.29 is working fine.
+> > 
+> > Linux kernel: 2.6.29-RT
+> > RT patches: patch-2.6.29.6-rt24-broken-out.tar.bz2
+> > http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.29.6-rt24-broken-out.tar.bz2
+> > 
+> > LTTng 0.158 patches are applied.
+> > ARCH: ARM
+> > Glibc: 2.9
+> > gcc: 4.3.3
 > 
-> Signed-off-by: Grazvydas Ignotas <notasas@gmail.com>
-> ---
->  drivers/power/Kconfig           |    4 +-
->  drivers/power/bq27x00_battery.c |   77 +++++++++++++++++++++++++--------------
->  2 files changed, 51 insertions(+), 30 deletions(-)
-> 
-> diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
-> index d4b3d67..bf14672 100644
-> --- a/drivers/power/Kconfig
-> +++ b/drivers/power/Kconfig
-> @@ -98,10 +98,10 @@ config BATTERY_WM97XX
->  	  Say Y to enable support for battery measured by WM97xx aux port.
->  
->  config BATTERY_BQ27x00
-> -	tristate "BQ27200 battery driver"
-> +	tristate "BQ27x00 battery driver"
->  	depends on I2C
->  	help
-> -	  Say Y here to enable support for batteries with BQ27200(I2C) chip.
-> +	  Say Y here to enable support for batteries with BQ27x00 (I2C) chips.
->  
->  config BATTERY_DA9030
->  	tristate "DA9030 battery driver"
-> diff --git a/drivers/power/bq27x00_battery.c b/drivers/power/bq27x00_battery.c
-> index 3da9e0a..1526d02 100644
-> --- a/drivers/power/bq27x00_battery.c
-> +++ b/drivers/power/bq27x00_battery.c
-> @@ -26,14 +26,17 @@
->  #include <linux/i2c.h>
->  #include <asm/unaligned.h>
->  
-> -#define DRIVER_VERSION			"1.0.0"
-> +#define DRIVER_VERSION			"1.1.0"
->  
->  #define BQ27x00_REG_TEMP		0x06
->  #define BQ27x00_REG_VOLT		0x08
-> -#define BQ27x00_REG_RSOC		0x0B /* Relative State-of-Charge */
->  #define BQ27x00_REG_AI			0x14
->  #define BQ27x00_REG_FLAGS		0x0A
->  
-> +#define BQ27000_REG_RSOC		0x0B /* Relative State-of-Charge */
-> +
-> +#define BQ27500_REG_SOC			0x2c
-> +
->  /* If the system has several batteries we need a different name for each
->   * of them...
->   */
-> @@ -46,11 +49,14 @@ struct bq27x00_access_methods {
->  		struct bq27x00_device_info *di);
->  };
->  
-> +enum bq27x00_chip { BQ27000, BQ27500 };
-> +
->  struct bq27x00_device_info {
->  	struct device 		*dev;
->  	int			id;
->  	struct bq27x00_access_methods	*bus;
->  	struct power_supply	bat;
-> +	enum bq27x00_chip	chip;
->  
->  	struct i2c_client	*client;
->  };
-> @@ -88,7 +94,10 @@ static int bq27x00_battery_temperature(struct bq27x00_device_info *di)
->  		return ret;
->  	}
->  
-> -	return ((temp >> 2) - 273) * 10;
-> +	if (di->chip == BQ27500)
-> +		return temp - 2731;
-> +	else
-> +		return ((temp >> 2) - 273) * 10;
+> Do you get this without the LTTng patches applied?
 
-For further releases with more than two chips I suppose you should use
-a switch here...
+I bet you wont.
+ 
+> > 
+> > dmesg
+> > {{{
+> > BUG: sleeping function called from invalid context at kernel/rtmutex.c:685
+> > in_atomic(): 1, irqs_disabled(): 128, pid: 720, name: lttd
 
->  
->  /*
-> @@ -125,15 +134,22 @@ static int bq27x00_battery_current(struct bq27x00_device_info *di)
->  		dev_err(di->dev, "error reading current\n");
->  		return 0;
->  	}
-> -	ret = bq27x00_read(BQ27x00_REG_FLAGS, &flags, 0, di);
-> -	if (ret < 0) {
-> -		dev_err(di->dev, "error reading flags\n");
-> -		return 0;
-> -	}
-> -	if ((flags & (1 << 7)) != 0) {
-> -		dev_dbg(di->dev, "negative current!\n");
-> -		return -curr;
-> +
-> +	if (di->chip == BQ27500) {
-> +		/* bq27500 returns signed value */
-> +		curr = (int)(s16)curr;
-> +	} else {
-> +		ret = bq27x00_read(BQ27x00_REG_FLAGS, &flags, 0, di);
-> +		if (ret < 0) {
-> +			dev_err(di->dev, "error reading flags\n");
-> +			return 0;
-> +		}
-> +		if ((flags & (1 << 7)) != 0) {
-> +			dev_dbg(di->dev, "negative current!\n");
-> +			return -curr;
-> +		}
+----------------------------------------------------------^^^^
 
-Ditto.
+> > Backtrace:
+> > [<c002d434>] (dump_backtrace+0x0/0x10c) from [<c03a75d8>] (dump_stack+0x18/0x1c)
+> >  r7:000002ad r6:c045da78 r5:00001116 r4:c04ba400
+> > [<c03a75c0>] (dump_stack+0x0/0x1c) from [<c0041028>] (__might_sleep+0x120/0x14c)
+> > [<c0040f08>] (__might_sleep+0x0/0x14c) from [<c03a9b18>]
+> > (rt_spin_lock+0x38/0x68)
+> >  r7:ce319d04 r6:c0763660 r5:c05107a0 r4:c05107a0
+> > [<c03a9ae0>] (rt_spin_lock+0x0/0x68) from [<c00570b0>]
+> > (lock_timer_base+0x30/0x54)
+> >  r4:c05107a0
+> > [<c0057080>] (lock_timer_base+0x0/0x54) from [<c00571b4>] (del_timer+0x2c/0x6c)
+> >  r8:c0023570 r7:ce319d38 r6:00740000 r5:ceb19ca4 r4:c0763660
+> > [<c0057188>] (del_timer+0x0/0x6c) from [<c008e5ec>]
+> > (disable_synthetic_tsc_ipi+0x24/0x30)
+> >  r5:ceb19ca4 r4:00000001
+> > [<c008e5c8>] (disable_synthetic_tsc_ipi+0x0/0x30) from [<c0072e00>]
+> > (generic_smp_call_function_single_interrupt+0x98/0xf4)
+> > [<c0072d68>] (generic_smp_call_function_single_interrupt+0x0/0xf4)
+> > from [<c0028368>] (do_IPI+0xc8/0x15c)
+> > [<c00282a0>] (do_IPI+0x0/0x15c) from [<c00280c4>] (_text+0xc4/0x128)
 
->  	}
-> +
->  	return curr;
->  }
->  
-> @@ -146,7 +162,10 @@ static int bq27x00_battery_rsoc(struct bq27x00_device_info *di)
->  	int ret;
->  	int rsoc = 0;
->  
-> -	ret = bq27x00_read(BQ27x00_REG_RSOC, &rsoc, 1, di);
-> +	if (di->chip == BQ27500)
-> +		ret = bq27x00_read(BQ27500_REG_SOC, &rsoc, 0, di);
-> +	else
-> +		ret = bq27x00_read(BQ27000_REG_RSOC, &rsoc, 1, di);
->  	if (ret) {
->  		dev_err(di->dev, "error reading relative State-of-Charge\n");
->  		return ret;
+The function is called from an IPI. That's a LTTNG problem, not a RT one.
 
-Ditto.
+Thanks,
 
-> @@ -197,10 +216,10 @@ static void bq27x00_powersupply_init(struct bq27x00_device_info *di)
->  }
->  
->  /*
-> - * BQ27200 specific code
-> + * i2c specific code
->   */
->  
-> -static int bq27200_read(u8 reg, int *rt_value, int b_single,
-> +static int bq27x00_read_i2c(u8 reg, int *rt_value, int b_single,
->  			struct bq27x00_device_info *di)
->  {
->  	struct i2c_client *client = di->client;
-> @@ -239,7 +258,7 @@ static int bq27200_read(u8 reg, int *rt_value, int b_single,
->  	return err;
->  }
->  
-> -static int bq27200_battery_probe(struct i2c_client *client,
-> +static int bq27x00_battery_probe(struct i2c_client *client,
->  				 const struct i2c_device_id *id)
->  {
->  	char *name;
-> @@ -258,7 +277,7 @@ static int bq27200_battery_probe(struct i2c_client *client,
->  	if (retval < 0)
->  		return retval;
->  
-> -	name = kasprintf(GFP_KERNEL, "bq27200-%d", num);
-> +	name = kasprintf(GFP_KERNEL, "%s-%d", id->name, num);
->  	if (!name) {
->  		dev_err(&client->dev, "failed to allocate device name\n");
->  		retval = -ENOMEM;
-> @@ -272,6 +291,7 @@ static int bq27200_battery_probe(struct i2c_client *client,
->  		goto batt_failed_2;
->  	}
->  	di->id = num;
-> +	di->chip = id->driver_data;
->  
->  	bus = kzalloc(sizeof(*bus), GFP_KERNEL);
->  	if (!bus) {
-> @@ -284,7 +304,7 @@ static int bq27200_battery_probe(struct i2c_client *client,
->  	i2c_set_clientdata(client, di);
->  	di->dev = &client->dev;
->  	di->bat.name = name;
-> -	bus->read = &bq27200_read;
-> +	bus->read = &bq27x00_read_i2c;
->  	di->bus = bus;
->  	di->client = client;
->  
-> @@ -314,7 +334,7 @@ batt_failed_1:
->  	return retval;
->  }
->  
-> -static int bq27200_battery_remove(struct i2c_client *client)
-> +static int bq27x00_battery_remove(struct i2c_client *client)
->  {
->  	struct bq27x00_device_info *di = i2c_get_clientdata(client);
->  
-> @@ -335,27 +355,28 @@ static int bq27200_battery_remove(struct i2c_client *client)
->   * Module stuff
->   */
->  
-> -static const struct i2c_device_id bq27200_id[] = {
-> -	{ "bq27200", 0 },
-> +static const struct i2c_device_id bq27x00_id[] = {
-> +	{ "bq27200", BQ27000 },	/* bq27200 is same as bq27000, but with i2c */
-> +	{ "bq27500", BQ27500 },
->  	{},
->  };
->  
-> -static struct i2c_driver bq27200_battery_driver = {
-> +static struct i2c_driver bq27x00_battery_driver = {
->  	.driver = {
-> -		.name = "bq27200-battery",
-> +		.name = "bq27x00-battery",
->  	},
-> -	.probe = bq27200_battery_probe,
-> -	.remove = bq27200_battery_remove,
-> -	.id_table = bq27200_id,
-> +	.probe = bq27x00_battery_probe,
-> +	.remove = bq27x00_battery_remove,
-> +	.id_table = bq27x00_id,
->  };
->  
->  static int __init bq27x00_battery_init(void)
->  {
->  	int ret;
->  
-> -	ret = i2c_add_driver(&bq27200_battery_driver);
-> +	ret = i2c_add_driver(&bq27x00_battery_driver);
->  	if (ret)
-> -		printk(KERN_ERR "Unable to register BQ27200 driver\n");
-> +		printk(KERN_ERR "Unable to register BQ27x00 driver\n");
->  
->  	return ret;
->  }
-> @@ -363,7 +384,7 @@ module_init(bq27x00_battery_init);
->  
->  static void __exit bq27x00_battery_exit(void)
->  {
-> -	i2c_del_driver(&bq27200_battery_driver);
-> +	i2c_del_driver(&bq27x00_battery_driver);
->  }
->  module_exit(bq27x00_battery_exit);
-
-Acked-by: Rodolfo Giometti <giometti@linux.it>
-
--- 
-
-GNU/Linux Solutions                  e-mail: giometti@enneenne.com
-Linux Device Driver                          giometti@linux.it
-Embedded Systems                     phone:  +39 349 2432127
-UNIX programming                     skype:  rodolfo.giometti
-Freelance ICT Italia - Consulente ICT Italia - www.consulenti-ict.it
+	tglx
