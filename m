@@ -1,65 +1,72 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756903Ab0BPOYz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 09:24:55 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:1499 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755720Ab0BPOYx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 09:24:53 -0500
-Date: Tue, 16 Feb 2010 15:24:01 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Roland McGrath <roland@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] x86: ELF_PLAT_INIT() shouldn't worry about TIF_IA32
-Message-ID: <20100216142401.GA18671@redhat.com>
-References: <20100215161752.GA19962@redhat.com> <4B799C3F.7010308@zytor.com> <20100215194123.96D49FC3@magilla.sf.frob.com> <4B79B202.5090006@zytor.com> <20100216101903.GA1057@redhat.com> <20100216102332.GL21783@one.firstfloor.org> <20100216140126.GA16448@redhat.com> <20100216140323.GD16448@redhat.com>
+	id S1756959Ab0BPO2z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 09:28:55 -0500
+Received: from ixro-out-rtc.ixiacom.com ([92.87.192.98]:2017 "EHLO
+	ixro-ex1.ixiacom.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756413Ab0BPO2x (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 09:28:53 -0500
+From: Octavian Purdila <opurdila@ixiacom.com>
+Organization: Ixia
+To: Cong Wang <amwang@redhat.com>
+Subject: Re: [net-next PATCH v4 3/3] net: reserve ports for applications using fixed port numbers
+Date: Tue, 16 Feb 2010 16:25:22 +0200
+User-Agent: KMail/1.12.2 (Linux/2.6.32-2-686; KDE/4.3.2; i686; ; )
+Cc: David Miller <davem@davemloft.net>,
+       Linux Kernel Network Developers <netdev@vger.kernel.org>,
+       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
+       Neil Horman <nhorman@tuxdriver.com>,
+       Eric Dumazet <eric.dumazet@gmail.com>
+References: <1266271241-6293-1-git-send-email-opurdila@ixiacom.com> <201002161306.29708.opurdila@ixiacom.com> <4B7A9852.5020105@redhat.com>
+In-Reply-To: <4B7A9852.5020105@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100216140323.GD16448@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002161625.22495.opurdila@ixiacom.com>
+X-OriginalArrivalTime: 16 Feb 2010 14:28:52.0288 (UTC) FILETIME=[5CB25C00:01CAAF14]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/16, Oleg Nesterov wrote:
->
->  #define ELF_PLAT_INIT(_r, load_addr)			\
-> -do {							\
-> -	elf_common_init(&current->thread, _r, 0);	\
-> -	clear_thread_flag(TIF_IA32);			\
-> -} while (0)
-> +	elf_common_init(&current->thread, _r, 0);
-                                                ^
-unneeded semicolon, sorry...
+On Tuesday 16 February 2010 15:06:26 you wrote:
+> Octavian Purdila wrote:
+> > On Tuesday 16 February 2010 11:37:04 you wrote:
+> >>>  	BUILD_BUG_ON(sizeof(struct inet_skb_parm) > sizeof(dummy_skb->cb));
+> >>>
+> >>> +	sysctl_local_reserved_ports = kzalloc(65536 / 8, GFP_KERNEL);
+> >>> +	if (!sysctl_local_reserved_ports)
+> >>> +		goto out;
+> >>> +
+> >>
+> >> I think we should also consider the ports in ip_local_port_range,
+> >> since we can only reserve the ports in that range.
+> >
+> > That is subject to changes at runtime, which means we will have to
+> > readjust the bitmap at runtime which introduces the need for additional
+> > synchronization operations which I would rather avoid.
+> 
+> Why? As long as the bitmap is global, this will not be hard.
+> 
 
-------------------------------------------------------------------------------
-[PATCH 3/3] x86: ELF_PLAT_INIT() shouldn't worry about TIF_IA32
+For the more important point see bellow, but with regard to reallocation, this 
+means we need to at least use rcu_read_lock() in the fast path to avoid races 
+between freeing the old bitmap and doing a read in progress. 
 
-64bit vesrion of ELF_PLAT_INIT() clears TIF_IA32, but at this point it
-must be already cleared by SET_PERSONALITY == set_personality_64bit.
+Granted, that is a light operation, but would it makes things so much more 
+complicated just so that we save one memory page (assuming the range is the 
+default [32000 64000] one).
 
-Signed-off-by: Oleg Nesterov <oleg@redhat.com>
----
+> Consider that if one user writes a port number which is beyond
+> the ip_local_port_range into ip_local_reserved_ports, we should
+> not accept this, because it doesn't make any sense. But with your
+> patch, we do.
+> 
 
- arch/x86/include/asm/elf.h |    5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
+I think it should be allowed. I see ip_local_reserved_ports and ip_local_range 
+as independent settings that can be change at any time.
 
---- exec/arch/x86/include/asm/elf.h~3_ELF_PLAT_INIT_IA32	2010-01-31 13:57:24.000000000 +0100
-+++ exec/arch/x86/include/asm/elf.h	2010-02-16 15:19:43.000000000 +0100
-@@ -170,10 +170,7 @@ static inline void elf_common_init(struc
- }
- 
- #define ELF_PLAT_INIT(_r, load_addr)			\
--do {							\
--	elf_common_init(&current->thread, _r, 0);	\
--	clear_thread_flag(TIF_IA32);			\
--} while (0)
-+	elf_common_init(&current->thread, _r, 0)
- 
- #define	COMPAT_ELF_PLAT_INIT(regs, load_addr)		\
- 	elf_common_init(&current->thread, regs, __USER_DS)
-
+That way I can flag port 8080 even if the current range is [32000, 64000] and 
+then later I can expand the range to [1024, 64000] without loosing the 8080 
+reservation.
