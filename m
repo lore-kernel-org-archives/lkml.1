@@ -1,74 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932844Ab0BPRRQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 12:17:16 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:62778 "EHLO mx1.redhat.com"
+	id S932865Ab0BPRS3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 12:18:29 -0500
+Received: from mail.tmr.com ([64.65.253.246]:54403 "EHLO partygirl.tmr.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932304Ab0BPRRO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 12:17:14 -0500
-Date: Tue, 16 Feb 2010 18:16:14 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] x86: set_personality_ia32() abuses TS_COMPAT
-Message-ID: <20100216171614.GA23503@redhat.com>
-References: <20100215161752.GA19962@redhat.com> <4B799C3F.7010308@zytor.com> <20100215194123.96D49FC3@magilla.sf.frob.com> <4B79B202.5090006@zytor.com> <20100216101903.GA1057@redhat.com> <20100216102332.GL21783@one.firstfloor.org> <20100216140126.GA16448@redhat.com> <20100216140242.GC16448@redhat.com> <alpine.LFD.2.00.1002160738530.18830@localhost.localdomain>
+	id S932199Ab0BPRS1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 12:18:27 -0500
+Message-ID: <4B7AD35E.7000405@tmr.com>
+Date: Tue, 16 Feb 2010 12:18:22 -0500
+From: Bill Davidsen <davidsen@tmr.com>
+Organization: TMR Associates Inc, Schenectady NY
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.21) Gecko/20090507 Fedora/1.1.16-1.fc9 NOT Firefox/3.0.11 pango-text SeaMonkey/1.1.16
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.1002160738530.18830@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Volker Armin Hemmann <volkerarmin@googlemail.com>
+CC: Michael Evans <mjevans1983@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org
+Subject: Re: Linux mdadm superblock question.
+References: <201002140251.59668.volkerarmin@googlemail.com> <4877c76c1002132002s20d942c3i7cee5418cdcf369c@mail.gmail.com> <201002141940.35716.volkerarmin@googlemail.com>
+In-Reply-To: <201002141940.35716.volkerarmin@googlemail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/16, Linus Torvalds wrote:
+Volker Armin Hemmann wrote:
+> On Sonntag 14 Februar 2010, you wrote:
 >
-> On Tue, 16 Feb 2010, Oleg Nesterov wrote:
-> >
-> > In fact I'd say this is not right, but fortunetely do_execve() can
-> > never return something which could confuse syscall_get_error().
-> > And apart from do_signal() we never check TS_COMPAT during return
-> > to user-mode.
+>   
+>> In other words, 'auto-detection' for 1.x format devices is using an
+>> initrd/initramfs.
+>>     
 >
-> But 'do_signal()' _can_ happen the first thing after an execve(), no?
+> which makes 1.x format useless for everybody who does not want to deal with 
+> initrd/initramfs.
+>   
 
-this is what I meant,
+You make this sound like some major big deal. are you running your own 
+distribution? In most cases mkinitrd does the right thing when you "make 
+install" the kernel, and if you are doing something in the build so 
+complex that it needs options, you really should understand the options 
+and be sure you're doing what you want.
 
-> And after we have switched to 32-bit mode, we _are_ inside a 32-bit system
-> call: the execve has "changed" from a 64-bit one to a 32-bit one.
+Generally this involves preloading a module or two, and if you need it 
+every time you probably should have built it in, anyway.
 
-And this is what I do not understand, we are still in 64-bit execve.
+My opinion...
 
-With ot without TS_COMPAT we take the same return path and I can't
-see why should we sign-extend ->ax. But I didn't claim this is wrong,
-and it is possible I missed something.
-
-> So I really don't understand why you dislike TS_COMPAT here.
-
-The only reason I dislike TS_COMPAT is that I spent a lot of time
-trying to understand the necessity to set it here when I tried to
-understand the basics of compat issues.
-
-> I understand not liking TS_COMPAT in the first place (it would be nice to
-> not have that flag at all), but considering that it exists, and it is
-> supposed to be set while in 32-bit system calls, setting it on a 32-bit
-> execve() seems to be the RightThing(tm) to do.
-
-OK, please ignore the patch then.
-
-As I said, only the first patch probably makes sense, and even it
-was not tested.
-
-
-
-Cough. And since I already made a lot of noise...
-
-Now that we always call setup_new_exec() which does
-arch_pick_mmap_layout(), what is the point of
-exec_mmap()->arch_pick_mmap_layout() ?
-
-Oleg.
+-- 
+Bill Davidsen <davidsen@tmr.com>
+  "We can't solve today's problems by using the same thinking we
+   used in creating them." - Einstein
 
