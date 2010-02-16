@@ -1,36 +1,81 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933105Ab0BPQxq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 11:53:46 -0500
-Received: from smtp-out002.kontent.com ([81.88.40.216]:41081 "EHLO
-	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932642Ab0BPQxp (ORCPT
+	id S933099Ab0BPQ7F (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 11:59:05 -0500
+Received: from zcars04e.nortel.com ([47.129.242.56]:50849 "EHLO
+	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932797Ab0BPQ7D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 11:53:45 -0500
-From: Oliver Neukum <oliver@neukum.org>
-To: Jan Sechser <jsechser@gmx.ch>
-Subject: Re: Sony Ericson w995 does not local net mode
-Date: Tue, 16 Feb 2010 17:53:46 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.33-rc6-0.1-default; KDE/4.3.1; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org,
-       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>
-References: <4B7ACB75.4070907@gmx.ch>
-In-Reply-To: <4B7ACB75.4070907@gmx.ch>
+	Tue, 16 Feb 2010 11:59:03 -0500
+Message-ID: <4B7ACD4A.10101@nortel.com>
+Date: Tue, 16 Feb 2010 10:52:26 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Rik van Riel <riel@redhat.com>
+CC: Minchan Kim <minchan.kim@gmail.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org, Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: tracking memory usage/leak in "inactive" field in /proc/meminfo?
+References: <4B71927D.6030607@nortel.com>	 <20100210093140.12D9.A69D9226@jp.fujitsu.com>	 <4B72E74C.9040001@nortel.com>	 <28c262361002101645g3fd08cc7t6a72d27b1f94db62@mail.gmail.com>	 <4B74524D.8080804@nortel.com> <28c262361002111838q7db763feh851a9bea4fdd9096@mail.gmail.com> <4B7504D2.1040903@nortel.com> <4B796D31.7030006@nortel.com> <4B797D93.5090307@redhat.com>
+In-Reply-To: <4B797D93.5090307@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <201002161753.46705.oliver@neukum.org>
+X-OriginalArrivalTime: 16 Feb 2010 16:58:54.0321 (UTC) FILETIME=[52539610:01CAAF29]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag, 16. Februar 2010 17:44:37 schrieb Jan Sechser:
-> I have got an w995 Sony Ericsson, but i cant make local net via usb with it.
-> I uploaded a recent software version: 1215-7995 R1HA036 091216
+On 02/15/2010 11:00 AM, Rik van Riel wrote:
+> On 02/15/2010 10:50 AM, Chris Friesen wrote:
+> 
+>> Looking at the code, it looks like page_remove_rmap() clears the
+>> Anonpage flag and removes it from NR_ANON_PAGES, and the caller is
+>> responsible for removing it from the LRU.  Is that right?
+> 
+> Nope.
+> 
+>> I'll keep digging in the code, but does anyone know where the removal
+>> from the LRU is supposed to happen in the above code paths?
+> 
+> Removal from the LRU is done from the page freeing code, on
+> the final free of the page.
+> 
+> It appears you have code somewhere that increments the reference
+> count on user pages and then forgets to lower it afterwards.
 
-According to your log it works in the other OS mode and is accessible
-as a modem. What exactly doesn't work?
+Okay, that makes sense.
 
-	Regards
-		Oliver
+I'm still trying to get a handle on the LRU removal though.  The code
+path that I saw most which resulted in clearing the anon bit but leaving
+the page on the LRU was the following:
+
+
+    [<ffffffff8029c951>] kmemleak_clear_anon+0x7f/0xbe
+    [<ffffffff802864c7>] page_remove_rmap+0x45/0x146
+    [<ffffffff8027dc7e>] unmap_vmas+0x41c/0x948
+    [<ffffffff80282405>] exit_mmap+0x7b/0x108
+    [<ffffffff8022f441>] mmput+0x33/0x110
+    [<ffffffff80233b05>] exit_mm+0x103/0x130
+    [<ffffffff802355b5>] do_exit+0x17b/0x91f
+    [<ffffffff80235d95>] do_group_exit+0x3c/0x9c
+    [<ffffffff80235e07>] sys_exit+0x0/0x12
+    [<ffffffff8021ddb5>] ia32_syscall_done+0x0/0xa
+
+There are a bunch of inline functions involved, but I think the chain
+from page_remove_rmap() back up to unmap_vmas() looks like this:
+
+page_remove_rmap
+zap_pte_range
+zap_pmd_range
+zap_pud_range
+unmap_page_range
+unmap_vmas
+
+So in this scenario, where do the pages actually get removed from the
+LRU list (assuming that they're not in use by anyone else)?
+
+Thanks,
+
+Chris
