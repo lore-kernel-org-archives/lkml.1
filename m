@@ -1,589 +1,371 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933195Ab0BPSVp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 13:21:45 -0500
-Received: from out-76.smtp.ucla.edu ([169.232.46.169]:50301 "EHLO
-	out-76.smtp.ucla.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933056Ab0BPSVm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 13:21:42 -0500
-X-Greylist: delayed 405 seconds by postgrey-1.27 at vger.kernel.org; Tue, 16 Feb 2010 13:21:42 EST
-Date: Tue, 16 Feb 2010 10:13:12 -0800
-From: Chris Frost <chris@frostnet.net>
-To: Andi Kleen <andi@firstfloor.org>, Wu Fengguang <fengguang.wu@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       Benny Halevy <bhalevy@panasas.com>, Andrew@firstfloor.org,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Steve VanDeBogart <vandebo-lkml@nerdbox.net>,
-       linux-fsdevel@vger.kernel.org, Matt Mackall <mpm@selenic.com>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH] fs: add fincore(2) (mincore(2) for file descriptors)
-Message-ID: <20100216181312.GA9700@frostnet.net>
-References: <20100120215712.GO27212@frostnet.net> <20100126141229.e1a81b29.akpm@linux-foundation.org> <20100120215712.GO27212@frostnet.net> <20100122011709.GA6700@localhost> <20100120215712.GO27212@frostnet.net> <87k4vc2rds.fsf@basil.nowhere.org>
+	id S933201Ab0BPSXn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 13:23:43 -0500
+Received: from gwu.lbox.cz ([62.245.111.132]:41033 "EHLO gwu.lbox.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932771Ab0BPSXj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 13:23:39 -0500
+Date: Tue, 16 Feb 2010 19:22:48 +0100
+From: Nikola Ciprich <extmaillist@linuxbox.cz>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: Harry Edmon <harry@atmos.washington.edu>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-nfs@vger.kernel.org, nikola.ciprich@linuxbox.cz
+Subject: Re: 2.6.32.2 - WARNING: at lib/kref.c:43 kref_get+0x,23/0x2b()
+Message-ID: <20100216182248.GA4922@nik-comp.linuxbox.cz>
+References: <4B4F5A00.4060604@atmos.washington.edu>
+ <20100122150325.6ad12428.akpm@linux-foundation.org>
+ <20100127190522.GB18278@fieldses.org>
+ <4B60C5D4.6070000@atmos.washington.edu>
+ <20100202162228.GD4293@fieldses.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="1yeeQ81UyVL57Vl7"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100126141229.e1a81b29.akpm@linux-foundation.org> <20100122011709.GA6700@localhost> <87k4vc2rds.fsf@basil.nowhere.org>
-X-PGP-Key: <http://www.frostnet.net/chris/pgpkey.txt>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Probable-Spam: no
-X-Spam-Report: none
+In-Reply-To: <20100202162228.GD4293@fieldses.org>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-Milter-Copy-Status: O
+X-Milter-Copy-Status: O
+X-Milter-Copy-Status: L
+X-Antivirus: on proxybox by Kaspersky antivirus, engine 5.5.10, data 3294108 records(16-02-2010)
+X-Spam-Score: N/A (trusted relay)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
+is there any conclusion regarding this problem?
+I'm seeing it too on one of my machines, running 2.6.32.8
+thanks a lot in advance for any informamation..
+regards
+nik
 
---1yeeQ81UyVL57Vl7
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
 
-Add the fincore() system call. fincore() is mincore() for file descriptors.
+On Tue, Feb 02, 2010 at 11:22:28AM -0500, J. Bruce Fields wrote:
+> On Wed, Jan 27, 2010 at 03:01:40PM -0800, Harry Edmon wrote:
+> > J. Bruce Fields wrote:
+> >> On Fri, Jan 22, 2010 at 03:03:25PM -0800, Andrew Morton wrote:
+> >>   
+> >>> (cc linux-nfs)
+> >>>
+> >>> On Thu, 14 Jan 2010 09:53:04 -0800
+> >>> Harry Edmon <harry@atmos.washington.edu> wrote:
+> >>>
+> >>>     
+> >>>> I have a single quad-core Xeon machine running 2.6.32.2 that keeps  
+> >>>> giving me "WARNING: at lib/kref.c:43 kref_get+0x,23/0x2b()".  This  
+> >>>> machine is mainaly used as a NFS server.  I have attached the 
+> >>>> kern.log and my config file.   Any ideas?
+> >>>>       
+> >>
+> >> Are you using NFSv4, or only v2/v3?  Looking at the trace:
+> >>
+> >> Jan 11 06:01:51 t kernel: [1311646.832173] ------------[ cut here ]------------
+> >> Jan 11 06:01:53 t kernel: [1311646.860891] WARNING: at lib/kref.c:43 kref_get+0x23/0x2b()
+> >>   
+> > NFSv4 and NFSv3.
+> 
+> Thanks.  And you aren't using rdma are you?
+> 
+> >> OK, so that's the warning that we're trying to get something with
+> >> reference count 0.
+> >>
+> >> Jan 11 06:01:53 t kernel: [1311646.894782] Hardware name: X7DB8
+> >> Jan 11 06:01:53 t kernel: [1311646.915165] Modules linked in: cpufreq_userspace cpufreq_stats cpufreq_powersave cpufreq_conservative nfsd nfs lockd nfs_acl auth_rpcgss sunrpc bridge stp llc ipv6 i5000_edac edac_core i2c_i801 parport_pc parport psmouse container i2c_core ioatdma dca i5k_amb serio_raw pcspkr button processor joydev evdev xfs exportfs sg usbhid sr_mod hid cdrom ata_piix floppy uhci_hcd ehci_hcd ata_generic 3w_9xxx e1000e thermal fan raid1 md_mod sd_mod ahci libata scsi_mod [last unloaded: scsi_wait_scan]
+> >> Jan 11 06:01:53 t kernel: [1311647.178038] Pid: 3068, comm: nfsd Tainted: G      D W  2.6.32.2 #1
+> >>
+> >> What does the very first oops, bug, or warning you get look like?  (If
+> >> I'm reading the tain information right, this isn't the first one.)
+> >>   
+> > Attached is the kern.log that contains the first warning.
+> 
+> Thanks.  So yes, the first warning is a stray kref_put() in svc_recv(),
+> and the such put I see on a quick skim is a svc_xprt_put().  The
+> following BUG() is confirmation, since it's an attempt inside
+> scv-xprt_release() to clear an inode with I_CLEAR already set; so we
+> dropped the reference count to zero, cleared it, then tried to do
+> another get/put pair, resulting in an attempt to free the same socket
+> twice.
+> 
+> --b.
+> 
+> >
+> > -- 
+> > Dr. Harry Edmon			E-MAIL: harry@atmos.washington.edu
+> > 206-543-0547 FAX: 206-543-0308		harry@washington.edu, harry@uw.edu
+> > Director of IT, College of the Environment and
+> > Director of Computing, Dept of Atmospheric Sciences
+> > University of Washington, Box 351640, Seattle, WA 98195-1640
+> >
+> 
+> > Dec 27 11:57:44 t kernel: [37000.838904] 3w-9xxx: scsi6: AEN: INFO (0x04:0x0055): Battery charging started:.
+> > Dec 27 11:57:46 t kernel: [37002.028946] 3w-9xxx: scsi6: AEN: INFO (0x04:0x0056): Battery charging completed:.
+> > Dec 28 00:00:51 t kernel: [80387.429120] 3w-9xxx: scsi6: AEN: INFO (0x04:0x0029): Verify started:unit=0.
+> > Dec 28 03:32:07 t kernel: [93063.950486] 3w-9xxx: scsi6: AEN: INFO (0x04:0x002B): Verify completed:unit=0.
+> > Dec 29 17:04:43 t kernel: [228218.883443] ------------[ cut here ]------------
+> > Dec 29 17:04:45 t kernel: [228218.911691] WARNING: at lib/kref.c:43 kref_get+0x23/0x2b()
+> > Dec 29 17:04:45 t kernel: [228218.945083] Hardware name: X7DB8
+> > Dec 29 17:04:45 t kernel: [228218.964948] Modules linked in: cpufreq_userspace cpufreq_stats cpufreq_powersave cpufreq_conservative nfsd nfs lockd nfs_acl auth_rpcgss sunrpc bridge stp llc ipv6 i5000_edac edac_core i2c_i801 parport_pc parport psmouse container i2c_core ioatdma dca i5k_amb serio_raw pcspkr button processor joydev evdev xfs exportfs sg usbhid sr_mod hid cdrom ata_piix floppy uhci_hcd ehci_hcd ata_generic 3w_9xxx e1000e thermal fan raid1 md_mod sd_mod ahci libata scsi_mod [last unloaded: scsi_wait_scan]
+> > Dec 29 17:04:45 t kernel: [228219.227296] Pid: 3108, comm: nfsd Not tainted 2.6.32.2 #1
+> > Dec 29 17:04:45 t kernel: [228219.260164] Call Trace:
+> > Dec 29 17:04:45 t kernel: [228219.275350]  [<ffffffff81142230>] ? kref_get+0x23/0x2b
+> > Dec 29 17:04:45 t kernel: [228219.306656]  [<ffffffff81038943>] warn_slowpath_common+0x77/0xa4
+> > Dec 29 17:04:45 t kernel: [228219.343160]  [<ffffffff8103897f>] warn_slowpath_null+0xf/0x11
+> > Dec 29 17:04:45 t kernel: [228219.378105]  [<ffffffff81142230>] kref_get+0x23/0x2b
+> > Dec 29 17:04:45 t kernel: [228219.408379]  [<ffffffffa032b7df>] ? nfsd+0x0/0x13a [nfsd]
+> > Dec 29 17:04:45 t kernel: [228219.441242]  [<ffffffffa028637f>] svc_recv+0x305/0x7e6 [sunrpc]
+> > Dec 29 17:04:45 t kernel: [228219.477225]  [<ffffffffa027abe4>] ? svc_process+0x759/0x768 [sunrpc]
+> > Dec 29 17:04:45 t kernel: [228219.515806]  [<ffffffff81035177>] ? default_wake_function+0x0/0xf
+> > Dec 29 17:04:45 t kernel: [228219.552834]  [<ffffffffa032b7df>] ? nfsd+0x0/0x13a [nfsd]
+> > Dec 29 17:04:45 t kernel: [228219.585698]  [<ffffffffa032b886>] nfsd+0xa7/0x13a [nfsd]
+> > Dec 29 17:04:45 t kernel: [228219.618043]  [<ffffffff8104af36>] kthread+0x7d/0x85
+> > Dec 29 17:04:45 t kernel: [228219.647789]  [<ffffffff8100c97a>] child_rip+0xa/0x20
+> > Dec 29 17:04:45 t kernel: [228219.678052]  [<ffffffff8104aeb9>] ? kthread+0x0/0x85
+> > Dec 29 17:04:45 t kernel: [228219.708317]  [<ffffffff8100c970>] ? child_rip+0x0/0x20
+> > Dec 29 17:04:45 t kernel: [228219.739621] ---[ end trace 1a77408724500fae ]---
+> > Dec 29 17:04:45 t kernel: [228219.767925] ------------[ cut here ]------------
+> > Dec 29 17:04:45 t kernel: [228219.792730] kernel BUG at fs/inode.c:1343!
+> > Dec 29 17:04:45 t kernel: [228219.792730] invalid opcode: 0000 [#1] SMP 
+> > Dec 29 17:04:45 t kernel: [228219.792730] last sysfs file: /sys/class/scsi_host/host6/stats
+> > Dec 29 17:04:45 t kernel: [228219.792730] CPU 0 
+> > Dec 29 17:04:45 t kernel: [228219.792730] Modules linked in: cpufreq_userspace cpufreq_stats cpufreq_powersave cpufreq_conservative nfsd nfs lockd nfs_acl auth_rpcgss sunrpc bridge stp llc ipv6 i5000_edac edac_core i2c_i801 parport_pc parport psmouse container i2c_core ioatdma dca i5k_amb serio_raw pcspkr button processor joydev evdev xfs exportfs sg usbhid sr_mod hid cdrom ata_piix floppy uhci_hcd ehci_hcd ata_generic 3w_9xxx e1000e thermal fan raid1 md_mod sd_mod ahci libata scsi_mod [last unloaded: scsi_wait_scan]
+> > Dec 29 17:04:45 t kernel: [228219.792730] Pid: 3108, comm: nfsd Tainted: G        W  2.6.32.2 #1 X7DB8
+> > Dec 29 17:04:45 t kernel: [228219.792730] RIP: 0010:[<ffffffff810bccc2>]  [<ffffffff810bccc2>] iput+0x1b/0x65
+> > Dec 29 17:04:45 t kernel: [228219.792730] RSP: 0018:ffff88012588bd20  EFLAGS: 00010246
+> > Dec 29 17:04:45 t kernel: [228219.792730] RAX: 0000000000000000 RBX: ffff88003c3c2cc8 RCX: ffffffff8139f927
+> > Dec 29 17:04:45 t kernel: [228219.792730] RDX: 0000000000000000 RSI: 0000000000000040 RDI: ffff88003c3c2cc8
+> > Dec 29 17:04:45 t kernel: [228219.792730] RBP: ffff88012588bd30 R08: 0000000000000002 R09: 0000000000000000
+> > Dec 29 17:04:45 t kernel: [228219.792730] R10: ffffffff81142230 R11: 0000000100000001 R12: ffff88003c3c2c80
+> > Dec 29 17:04:45 t kernel: [228219.792730] R13: ffffffffa028ef50 R14: ffff88010072d400 R15: ffff88012dd423c0
+> > Dec 29 17:04:45 t kernel: [228219.792730] FS:  0000000000000000(0000) GS:ffff880028200000(0000) knlGS:0000000000000000
+> > Dec 29 17:04:45 t kernel: [228219.792730] CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+> > Dec 29 17:04:45 t kernel: [228219.792730] CR2: 00007fad86c2e000 CR3: 00000000305e5000 CR4: 00000000000006f0
+> > Dec 29 17:04:45 t kernel: [228219.792730] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> > Dec 29 17:04:45 t kernel: [228219.792730] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> > Dec 29 17:04:45 t kernel: [228219.792730] Process nfsd (pid: 3108, threadinfo ffff88012588a000, task ffff880125e66150)
+> > Dec 29 17:04:45 t kernel: [228219.792730] Stack:
+> > Dec 29 17:04:45 t kernel: [228219.792730]  ffff88012588bd90 ffff88010072d400 ffff88012588bd50 ffffffff811f4be2
+> > Dec 29 17:04:45 t kernel: [228219.792730] <0> ffff88010072d400 ffff88010072d410 ffff88012588bd70 ffffffffa027c1d2
+> > Dec 29 17:04:45 t kernel: [228219.792730] <0> ffff88012588bd70 ffff88010072d400 ffff88012588bda0 ffffffffa0286b03
+> > Dec 29 17:04:45 t kernel: [228219.792730] Call Trace:
+> > Dec 29 17:04:45 t kernel: [228219.792730]  [<ffffffff811f4be2>] sock_release+0x5c/0x6c
+> > Dec 29 17:04:45 t kernel: [228219.792730]  [<ffffffffa027c1d2>] svc_sock_free+0x45/0x51 [sunrpc]
+> > Dec 29 17:04:45 t kernel: [228219.792730]  [<ffffffffa0286b03>] svc_xprt_free+0x3e/0x4e [sunrpc]
+> > Dec 29 17:04:45 t kernel: [228219.792730]  [<ffffffff81142230>] ? kref_get+0x23/0x2b
+> > Dec 29 17:04:45 t kernel: [228219.792730]  [<ffffffffa0286ac5>] ? svc_xprt_free+0x0/0x4e [sunrpc]
+> > Dec 29 17:04:45 t kernel: [228219.792730]  [<ffffffff81142201>] kref_put+0x43/0x4f
+> > Dec 29 17:04:45 t kernel: [228219.792730]  [<ffffffffa0285f9f>] svc_xprt_release+0xc6/0xcf [sunrpc]
+> > Dec 29 17:04:45 t kernel: [228219.792730]  [<ffffffffa02867fc>] svc_recv+0x782/0x7e6 [sunrpc]
+> > Dec 29 17:04:45 t kernel: [228219.792730]  [<ffffffffa027abe4>] ? svc_process+0x759/0x768 [sunrpc]
+> > Dec 29 17:04:45 t kernel: [228219.792730]  [<ffffffff81035177>] ? default_wake_function+0x0/0xf
+> > Dec 29 17:04:45 t kernel: [228219.792730]  [<ffffffffa032b7df>] ? nfsd+0x0/0x13a [nfsd]
+> > Dec 29 17:04:45 t kernel: [228219.792730]  [<ffffffffa032b886>] nfsd+0xa7/0x13a [nfsd]
+> > Dec 29 17:04:45 t kernel: [228219.792730]  [<ffffffff8104af36>] kthread+0x7d/0x85
+> > Dec 29 17:04:45 t kernel: [228219.792730]  [<ffffffff8100c97a>] child_rip+0xa/0x20
+> > Dec 29 17:04:45 t kernel: [228219.792730]  [<ffffffff8104aeb9>] ? kthread+0x0/0x85
+> > Dec 29 17:04:45 t kernel: [228219.792730]  [<ffffffff8100c970>] ? child_rip+0x0/0x20
+> > Dec 29 17:04:45 t kernel: [228219.792730] Code: c0 74 d5 48 83 c4 20 5b 41 5c 41 5d 41 5e c9 c3 55 48 89 e5 53 48 89 fb 48 83 ec 08 48 85 ff 74 50 48 83 bf 10 02 00 00 40 75 04 <0f> 0b eb fe 48 8d 7f 48 48 c7 c6 a0 7d 4a 81 e8 e2 31 08 00 85 
+> > Dec 29 17:04:45 t kernel: [228219.792730] RIP  [<ffffffff810bccc2>] iput+0x1b/0x65
+> > Dec 29 17:04:45 t kernel: [228219.792730]  RSP <ffff88012588bd20>
+> > Dec 29 17:04:45 t kernel: [228221.632694] ---[ end trace 1a77408724500faf ]---
+> > Dec 29 20:53:01 t kernel: [241917.056374] ------------[ cut here ]------------
+> > Dec 29 20:53:01 t kernel: [241917.084581] WARNING: at lib/kref.c:43 kref_get+0x23/0x2b()
+> > Dec 29 20:53:01 t kernel: [241917.117941] Hardware name: X7DB8
+> > Dec 29 20:53:01 t kernel: [241917.137804] Modules linked in: cpufreq_userspace cpufreq_stats cpufreq_powersave cpufreq_conservative nfsd nfs lockd nfs_acl auth_rpcgss sunrpc bridge stp llc ipv6 i5000_edac edac_core i2c_i801 parport_pc parport psmouse container i2c_core ioatdma dca i5k_amb serio_raw pcspkr button processor joydev evdev xfs exportfs sg usbhid sr_mod hid cdrom ata_piix floppy uhci_hcd ehci_hcd ata_generic 3w_9xxx e1000e thermal fan raid1 md_mod sd_mod ahci libata scsi_mod [last unloaded: scsi_wait_scan]
+> > Dec 29 20:53:01 t kernel: [241917.400101] Pid: 3207, comm: nfsd Tainted: G      D W  2.6.32.2 #1
+> > Dec 29 20:53:01 t kernel: [241917.437653] Call Trace:
+> > Dec 29 20:53:01 t kernel: [241917.452843]  [<ffffffffa0286b0b>] ? svc_xprt_free+0x46/0x4e [sunrpc]
+> > Dec 29 20:53:01 t kernel: [241917.491420]  [<ffffffff81142230>] ? kref_get+0x23/0x2b
+> > Dec 29 20:53:01 t kernel: [241917.522728]  [<ffffffff81038943>] warn_slowpath_common+0x77/0xa4
+> > Dec 29 20:53:01 t kernel: [241917.559230]  [<ffffffff8103897f>] warn_slowpath_null+0xf/0x11
+> > Dec 29 20:53:01 t kernel: [241917.594177]  [<ffffffff81142230>] kref_get+0x23/0x2b
+> > Dec 29 20:53:01 t kernel: [241917.624446]  [<ffffffffa028637f>] svc_recv+0x305/0x7e6 [sunrpc]
+> > Dec 29 20:53:01 t kernel: [241917.660432]  [<ffffffffa027abe4>] ? svc_process+0x759/0x768 [sunrpc]
+> > Dec 29 20:53:01 t kernel: [241917.699013]  [<ffffffff81035177>] ? default_wake_function+0x0/0xf
+> > Dec 29 20:53:01 t kernel: [241917.736041]  [<ffffffffa032b7df>] ? nfsd+0x0/0x13a [nfsd]
+> > Dec 29 20:53:01 t kernel: [241917.768905]  [<ffffffffa032b886>] nfsd+0xa7/0x13a [nfsd]
+> > Dec 29 20:53:01 t kernel: [241917.801249]  [<ffffffff8104af36>] kthread+0x7d/0x85
+> > Dec 29 20:53:01 t kernel: [241917.830993]  [<ffffffff8100c97a>] child_rip+0xa/0x20
+> > Dec 29 20:53:01 t kernel: [241917.861258]  [<ffffffff8104aeb9>] ? kthread+0x0/0x85
+> > Dec 29 20:53:01 t kernel: [241917.891522]  [<ffffffff8100c970>] ? child_rip+0x0/0x20
+> > Dec 29 20:53:01 t kernel: [241917.922827] ---[ end trace 1a77408724500fb0 ]---
+> > Dec 29 20:53:01 t kernel: [241917.951084] ------------[ cut here ]------------
+> > Dec 29 20:53:03 t kernel: [241917.974874] kernel BUG at fs/inode.c:1343!
+> > Dec 29 20:53:03 t kernel: [241917.988010] invalid opcode: 0000 [#2] SMP 
+> > Dec 29 20:53:03 t kernel: [241917.988010] last sysfs file: /sys/class/scsi_host/host6/stats
+> > Dec 29 20:53:03 t kernel: [241917.988010] CPU 1 
+> > Dec 29 20:53:03 t kernel: [241917.988010] Modules linked in: cpufreq_userspace cpufreq_stats cpufreq_powersave cpufreq_conservative nfsd nfs lockd nfs_acl auth_rpcgss sunrpc bridge stp llc ipv6 i5000_edac edac_core i2c_i801 parport_pc parport psmouse container i2c_core ioatdma dca i5k_amb serio_raw pcspkr button processor joydev evdev xfs exportfs sg usbhid sr_mod hid cdrom ata_piix floppy uhci_hcd ehci_hcd ata_generic 3w_9xxx e1000e thermal fan raid1 md_mod sd_mod ahci libata scsi_mod [last unloaded: scsi_wait_scan]
+> > Dec 29 20:53:03 t kernel: [241918.102960] Pid: 3207, comm: nfsd Tainted: G      D W  2.6.32.2 #1 X7DB8
+> > Dec 29 20:53:03 t kernel: [241918.102960] RIP: 0010:[<ffffffff810bccc2>]  [<ffffffff810bccc2>] iput+0x1b/0x65
+> > Dec 29 20:53:03 t kernel: [241918.102960] RSP: 0000:ffff8801225b9d20  EFLAGS: 00010246
+> > Dec 29 20:53:03 t kernel: [241918.102960] RAX: 0000000000000000 RBX: ffff880120435148 RCX: ffffffff8139f927
+> > Dec 29 20:53:03 t kernel: [241918.102960] RDX: 0000000000000000 RSI: 0000000000000040 RDI: ffff880120435148
+> > Dec 29 20:53:03 t kernel: [241918.102960] RBP: ffff8801225b9d30 R08: 0000000000000020 R09: ffff88002820c9d0
+> > Dec 29 20:53:03 t kernel: [241918.102960] R10: ffffffff81142230 R11: 0000000000000000 R12: ffff880120435100
+> > Dec 29 20:53:03 t kernel: [241918.102960] R13: ffffffffa028ef50 R14: ffff8800c1b3b800 R15: ffff88012dd423c0
+> > Dec 29 20:53:03 t kernel: [241918.102960] FS:  0000000000000000(0000) GS:ffff880028280000(0000) knlGS:0000000000000000
+> > Dec 29 20:53:03 t kernel: [241918.102960] CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+> > Dec 29 20:53:03 t kernel: [241918.102960] CR2: 00007fad86c2e000 CR3: 0000000129ae6000 CR4: 00000000000006e0
+> > Dec 29 20:53:03 t kernel: [241918.102960] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> > Dec 29 20:53:03 t kernel: [241918.102960] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> > Dec 29 20:53:03 t kernel: [241918.102960] Process nfsd (pid: 3207, threadinfo ffff8801225b8000, task ffff880122416640)
+> > Dec 29 20:53:03 t kernel: [241918.102960] Stack:
+> > Dec 29 20:53:03 t kernel: [241918.102960]  ffff8801225b9d90 ffff8800c1b3b800 ffff8801225b9d50 ffffffff811f4be2
+> > Dec 29 20:53:03 t kernel: [241918.102960] <0> ffff8800c1b3b800 ffff8800c1b3b810 ffff8801225b9d70 ffffffffa027c1d2
+> > Dec 29 20:53:03 t kernel: [241918.102960] <0> ffff8801225b9d70 ffff8800c1b3b800 ffff8801225b9da0 ffffffffa0286b03
+> > Dec 29 20:53:03 t kernel: [241918.102960] Call Trace:
+> > Dec 29 20:53:03 t kernel: [241918.102960]  [<ffffffff811f4be2>] sock_release+0x5c/0x6c
+> > Dec 29 20:53:03 t kernel: [241918.102960]  [<ffffffffa027c1d2>] svc_sock_free+0x45/0x51 [sunrpc]
+> > Dec 29 20:53:03 t kernel: [241918.102960]  [<ffffffffa0286b03>] svc_xprt_free+0x3e/0x4e [sunrpc]
+> > Dec 29 20:53:03 t kernel: [241918.102960]  [<ffffffff81142230>] ? kref_get+0x23/0x2b
+> > Dec 29 20:53:04 t kernel: [241918.102960]  [<ffffffffa0286ac5>] ? svc_xprt_free+0x0/0x4e [sunrpc]
+> > Dec 29 20:53:04 t kernel: [241918.102960]  [<ffffffff81142201>] kref_put+0x43/0x4f
+> > Dec 29 20:53:04 t kernel: [241918.102960]  [<ffffffffa0285f9f>] svc_xprt_release+0xc6/0xcf [sunrpc]
+> > Dec 29 20:53:04 t kernel: [241918.102960]  [<ffffffffa02867fc>] svc_recv+0x782/0x7e6 [sunrpc]
+> > Dec 29 20:53:04 t kernel: [241918.102960]  [<ffffffffa027abe4>] ? svc_process+0x759/0x768 [sunrpc]
+> > Dec 29 20:53:04 t kernel: [241918.102960]  [<ffffffff81035177>] ? default_wake_function+0x0/0xf
+> > Dec 29 20:53:04 t kernel: [241918.102960]  [<ffffffffa032b7df>] ? nfsd+0x0/0x13a [nfsd]
+> > Dec 29 20:53:04 t kernel: [241918.102960]  [<ffffffffa032b886>] nfsd+0xa7/0x13a [nfsd]
+> > Dec 29 20:53:04 t kernel: [241918.102960]  [<ffffffff8104af36>] kthread+0x7d/0x85
+> > Dec 29 20:53:04 t kernel: [241918.102960]  [<ffffffff8100c97a>] child_rip+0xa/0x20
+> > Dec 29 20:53:04 t kernel: [241918.102960]  [<ffffffff8104aeb9>] ? kthread+0x0/0x85
+> > Dec 29 20:53:04 t kernel: [241918.102960]  [<ffffffff8100c970>] ? child_rip+0x0/0x20
+> > Dec 29 20:53:04 t kernel: [241918.102960] Code: c0 74 d5 48 83 c4 20 5b 41 5c 41 5d 41 5e c9 c3 55 48 89 e5 53 48 89 fb 48 83 ec 08 48 85 ff 74 50 48 83 bf 10 02 00 00 40 75 04 <0f> 0b eb fe 48 8d 7f 48 48 c7 c6 a0 7d 4a 81 e8 e2 31 08 00 85 
+> > Dec 29 20:53:04 t kernel: [241918.102960] RIP  [<ffffffff810bccc2>] iput+0x1b/0x65
+> > Dec 29 20:53:04 t kernel: [241918.102960]  RSP <ffff8801225b9d20>
+> > Dec 29 20:53:04 t kernel: [241919.822190] ---[ end trace 1a77408724500fb1 ]---
+> > Dec 30 11:22:26 t kernel: [294082.152979] 3w-9xxx: scsi6: AEN: ERROR (0x04:0x0009): Drive timeout detected:port=0.
+> > Dec 31 11:24:44 t kernel: [380620.428029] br0: port 2(eth2) entering disabled state
+> > Dec 31 11:24:44 t kernel: [380620.458826] br0: port 1(eth1) entering disabled state
+> > Dec 31 11:24:44 t kernel: [380620.666738] device eth1 left promiscuous mode
+> > Dec 31 11:24:44 t kernel: [380620.693361] br0: port 1(eth1) entering disabled state
+> > Dec 31 11:24:44 t kernel: [380620.909921] device eth2 left promiscuous mode
+> > Dec 31 11:24:44 t kernel: [380620.936603] br0: port 2(eth2) entering disabled state
+> > Dec 31 11:24:48 t kernel: [380624.449637] device eth1 entered promiscuous mode
+> > Dec 31 11:24:48 t kernel: [380624.533887] e1000e 0000:06:00.1: irq 55 for MSI/MSI-X
+> > Dec 31 11:24:48 t kernel: [380624.620065] e1000e 0000:06:00.1: irq 55 for MSI/MSI-X
+> > Dec 31 11:24:48 t kernel: [380624.651581] ADDRCONF(NETDEV_UP): eth1: link is not ready
+> > Dec 31 11:24:48 t kernel: [380624.687675] device eth2 entered promiscuous mode
+> > Dec 31 11:24:48 t kernel: [380624.860445] e1000e 0000:08:00.0: irq 56 for MSI/MSI-X
+> > Dec 31 11:24:48 t kernel: [380624.944084] e1000e 0000:08:00.0: irq 56 for MSI/MSI-X
+> > Dec 31 11:24:48 t kernel: [380624.975824] ADDRCONF(NETDEV_UP): eth2: link is not ready
+> > Dec 31 11:24:50 t kernel: [380626.984998] e1000e: eth2 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
+> > Dec 31 11:24:51 t kernel: [380627.031517] ADDRCONF(NETDEV_CHANGE): eth2: link becomes ready
+> > Dec 31 11:24:51 t kernel: [380627.066844] br0: port 2(eth2) entering forwarding state
+> > Dec 31 11:24:51 t kernel: [380627.251584] e1000e: eth1 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
+> > Dec 31 11:24:51 t kernel: [380627.300433] ADDRCONF(NETDEV_CHANGE): eth1: link becomes ready
+> > Dec 31 11:24:51 t kernel: [380627.335625] br0: port 1(eth1) entering forwarding state
+> > Dec 31 11:24:59 t kernel: [380635.148016] br0: no IPv6 routers present
+> > Dec 31 11:25:01 t kernel: [380637.504511] eth1: no IPv6 routers present
+> > Dec 31 11:25:01 t kernel: [380637.720515] eth2: no IPv6 routers present
+> > Dec 31 11:28:30 t kernel: [380846.205549] e1000e: eth1 NIC Link is Down
+> > Dec 31 11:28:30 t kernel: [380846.248659] br0: port 1(eth1) entering disabled state
+> > Dec 31 11:28:32 t kernel: [380848.693501] e1000e: eth1 NIC Link is Up 100 Mbps Full Duplex, Flow Control: RX/TX
+> > Dec 31 11:28:32 t kernel: [380848.739167] 0000:06:00.1: eth1: 10/100 speed: disabling TSO
+> > Dec 31 11:28:32 t kernel: [380848.776396] br0: port 1(eth1) entering forwarding state
+> > Dec 31 11:28:49 t kernel: [380865.803038] e1000e: eth1 NIC Link is Down
+> > Dec 31 11:28:49 t kernel: [380865.874086] br0: port 1(eth1) entering disabled state
+> > Dec 31 11:28:52 t kernel: [380868.267943] e1000e: eth1 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
+> > Dec 31 11:28:52 t kernel: [380868.316772] br0: port 1(eth1) entering forwarding state
+> > Dec 31 11:29:18 t kernel: [380894.253543] e1000e: eth1 NIC Link is Down
+> > Dec 31 11:29:18 t kernel: [380894.293597] br0: port 1(eth1) entering disabled state
+> > Dec 31 11:29:20 t kernel: [380896.688442] e1000e: eth1 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
+> > Dec 31 11:29:20 t kernel: [380896.737255] br0: port 1(eth1) entering forwarding state
+> > Dec 31 11:29:25 t kernel: [380901.493543] e1000e: eth1 NIC Link is Down
+> > Dec 31 11:29:25 t kernel: [380901.534074] br0: port 1(eth1) entering disabled state
+> > Dec 31 11:29:28 t kernel: [380904.161008] e1000e: eth1 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
+> > Dec 31 11:29:28 t kernel: [380904.209842] br0: port 1(eth1) entering forwarding state
+> > Jan  1 22:40:06 t kernel: [507542.268700] ------------[ cut here ]------------
+> > Jan  1 22:40:08 t kernel: [507542.296925] WARNING: at lib/kref.c:43 kref_get+0x23/0x2b()
+> > Jan  1 22:40:08 t kernel: [507542.330301] Hardware name: X7DB8
+> > Jan  1 22:40:08 t kernel: [507542.350163] Modules linked in: cpufreq_userspace cpufreq_stats cpufreq_powersave cpufreq_conservative nfsd nfs lockd nfs_acl auth_rpcgss sunrpc bridge stp llc ipv6 i5000_edac edac_core i2c_i801 parport_pc parport psmouse container i2c_core ioatdma dca i5k_amb serio_raw pcspkr button processor joydev evdev xfs exportfs sg usbhid sr_mod hid cdrom ata_piix floppy uhci_hcd ehci_hcd ata_generic 3w_9xxx e1000e thermal fan raid1 md_mod sd_mod ahci libata scsi_mod [last unloaded: scsi_wait_scan]
+> > Jan  1 22:40:08 t kernel: [507542.614635] Pid: 3134, comm: nfsd Tainted: G      D W  2.6.32.2 #1
+> > Jan  1 22:40:08 t kernel: [507542.652191] Call Trace:
+> > Jan  1 22:40:08 t kernel: [507542.667375]  [<ffffffff81142230>] ? kref_get+0x23/0x2b
+> > Jan  1 22:40:08 t kernel: [507542.698681]  [<ffffffff81038943>] warn_slowpath_common+0x77/0xa4
+> > Jan  1 22:40:08 t kernel: [507542.735186]  [<ffffffff8103897f>] warn_slowpath_null+0xf/0x11
+> > Jan  1 22:40:08 t kernel: [507542.770130]  [<ffffffff81142230>] kref_get+0x23/0xBj
+> > Jan  1 22:40:08 t kernel: [507542.800400]  [<ffffffffa032b7df>] ? nfsd+0x0/0x13a [nfsd]
+> > Jan  1 22:40:08 t kernel: [507542.833269]  [<ffffffffa028637f>] svc_recv+0x305/0x7e6 [sunrpc]
+> > Jan  1 22:40:08 t kernel: [507542.869251]  [<ffffffffa027abe4>] ? svc_process+0x759/0x768 [sunrpc]
+> > Jan  1 22:40:08 t kernel: [507542.907825]  [<ffffffff81035177>] ? default_wake_function+0x0/0xf
+> > Jan  1 22:40:08 t kernel: [507542.944853]  [<ffffffffa032b7df>] ? nfsd+0x0/0x13a [nfsd]
+> > Jan  1 22:40:08 t kernel: [507542.977720]  [<ffffffffa032b886>] nfsd+0xa7/0x13a [nfsd]
+> > Jan  1 22:40:08 t kernel: [507543.010063]  [<ffffffff8104af36>] kthread+0x7d/0x85
+> > Jan  1 22:40:08 t kernel: [507543.039808]  [<ffffffff8100c97a>] child_rip+0xa/0x20
+> > Jan  1 22:40:08 t kernel: [507543.070071]  [<ffffffff8104aeb9>] ? kthread+0x0/0x85
+> > Jan  1 22:40:08 t kernel: [507543.100337]  [<ffffffff8100c970>] ? child_rip+0x0/0x20
+> > Jan  1 22:40:08 t kernel: [507543.131640] ---[ end trace 1a77408724500fb2 ]---
+> > Jan  1 22:40:08 t kernel: [507543.160026] general protection fault: 0000 [#3] SMP 
+> > Jan  1 22:40:08 t kernel: [507543.165025] last sysfs file: /sys/class/net/eth2/brport/hold_timer
+> > Jan  1 22:40:08 t kernel: [507543.165025] CPU 3 
+> > Jan  1 22:40:08 t kernel: [507543.165025] Modules linked in: cpufreq_userspace cpufreq_stats cpufreq_powersave cpufreq_conservative nfsd nfs lockd nfs_acl auth_rpcgss sunrpc bridge stp llc ipv6 i5000_edac edac_core i2c_i801 parport_pc parport psmouse container i2c_core ioatdma dca i5k_amb serio_raw pcspkr button processor joydev evdev xfs exportfs sg usbhid sr_mod hid cdrom ata_piix floppy uhci_hcd ehci_hcd ata_generic 3w_9xxx e1000e thermal fan raid1 md_mod sd_mod ahci libata scsi_mod [last unloaded: scsi_wait_scan]
+> > Jan  1 22:40:08 t kernel: [507543.165025] Pid: 3134, comm: nfsd Tainted: G      D W  2.6.32.2 #1 X7DB8
+> > Jan  1 22:40:08 t kernel: [507543.165025] RIP: 0010:[<ffffffffa0286797>]  [<ffffffffa0286797>] svc_recv+0x71d/0x7e6 [sunrpc]
+> > Jan  1 22:40:08 t kernel: [507543.165025] RSP: 0018:ffff880124ea1e00  EFLAGS: 00010246
+> > Jan  1 22:40:08 t kernel: [507543.165025] RAX: 3a30343a32322031 RBX: 0000000000000000 RCX: 0000000000000000
+> > Jan  1 22:40:08 t kernel: [507543.165025] RDX: 0000000000004c86 RSI: ffff880124ea1df0 RDI: ffff880124e00000
+> > Jan  1 22:40:08 t kernel: [507543.165025] RBP: ffff880124ea1eb0 R08: 0000000000000020 R09: ffff88002830ca70
+> > Jan  1 22:40:08 t kernel: [507543.165025] R10: ffff88002838cf40 R11: 0000000000000000 R12: 0000000000000082
+> > Jan  1 22:40:08 t kernel: [507543.165025] R13: ffff880124e00000 R14: ffff8800c7444000 R15: ffff88012dd423c0
+> > Jan  1 22:40:08 t kernel: [507543.165025] FS:  0000000000000000(0000) GS:ffff880028380000(0000) knlGS:0000000000000000
+> > Jan  1 22:40:08 t kernel: [507543.165025] CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+> > Jan  1 22:40:08 t kernel: [507543.165025] CR2: 00007f0dc9cc5098 CR3: 000000012c266000 CR4: 00000000000006e0
+> > Jan  1 22:40:08 t kernel: [507543.165025] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> > Jan  1 22:40:08 t kernel: [507543.165025] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> > Jan  1 22:40:08 t kernel: [507543.165025] Process nfsd (pid: 3134, threadinfo ffff880124ea0000, task ffff880124e9f890)
+> > Jan  1 22:40:08 t kernel: [507543.165025] Stack:
+> > Jan  1 22:40:08 t kernel: [507543.165025]  ffff880124e00000 ffff880124e9f890 ffff880124ea1e40 00000000000dbba0
+> > Jan  1 22:40:08 t kernel: [507543.165025] <0> ffff88012dd423c4 ffff88012c0bea40 ffff880000000082 0000000000000001
+> > Jan  1 22:40:08 t kernel: [507543.165025] <0> ffff880124ea1eb0 ffffffffa027abe4 0000000000000000 ffff880124e9f890
+> > Jan  1 22:40:08 t kernel: [507543.165025] Call Trace:
+> > Jan  1 22:40:08 t kernel: [507543.165025]  [<ffffffffa027abe4>] ? svc_process+0x759/0x768 [sunrpc]
+> > Jan  1 22:40:08 t kernel: [507543.165025]  [<ffffffff81035177>] ? default_wake_function+0x0/0xf
+> > Jan  1 22:40:08 t kernel: [507543.165025]  [<ffffffffa032b7df>] ? nfsd+0x0/0x13a [nfsd]
+> > Jan  1 22:40:08 t kernel: [507543.165025]  [<ffffffffa032b886>] nfsd+0xa7/0x13a [nfsd]
+> > Jan  1 22:40:08 t kernel: [507543.165025]  [<ffffffff8104af36>] kthread+0x7d/0x85
+> > Jan  1 22:40:08 t kernel: [507543.165025]  [<ffffffff8100c97a>] child_rip+0xa/0x20
+> > Jan  1 22:40:08 t kernel: [507543.165025]  [<ffffffff8104aeb9>] ? kthread+0x0/0x85
+> > Jan  1 22:40:08 t kernel: [507543.165025]  [<ffffffff8100c970>] ? child_rip+0x0/0x20
+> > Jan  1 22:40:08 t kernel: [507543.165025] Code: 00 49 8d 85 88 01 00 00 49 89 85 a0 09 00 00 8b 82 e8 00 00 00 8d 1c 85 00 00 00 00 2b 9a e0 00 00 00 eb 0c 49 8b 46 08 4c 89 ef <ff> 50 18 89 c3 f6 05 56 ce 00 00 01 74 10 89 de 48 c7 c7 cf b6 
+> > Jan  1 22:40:08 t kernel: [507543.165025] RIP  [<ffffffffa0286797>] svc_recv+0x71d/0x7e6 [sunrpc]
+> > Jan  1 22:40:08 t kernel: [507543.165025]  RSP <ffff880124ea1e00>
+> > Jan  1 22:40:08 t kernel: [507544.713111] ---[ end trace 1a77408724500fb3 ]---
+> > Jan  2 12:06:02 t kernel: [555898.365986] RPC: multiple fragments per record not supported
+> > Jan  2 12:06:02 t kernel: [555898.527050] RPC: multiple fragments per record not supported
+> > Jan  2 12:06:05 t kernel: [555901.700485] RPC: multiple fragments per record not supported
+> > Jan  2 12:06:08 t kernel: [555904.880825] RPC: multiple fragments per record not supported
+> > Jan  3 00:01:08 t kernel: [598804.533706] 3w-9xxx: scsi6: AEN: INFO (0x04:0x0029): Verify started:unit=0.
+> > Jan  3 00:57:01 t kernel: [602157.347383] md: data-check of RAID array md0
+> > Jan  3 00:57:01 t kernel: [602157.350802] md: delaying data-check of md2 until md0 has finished (they share one or more physical units)
+> > Jan  3 00:57:01 t kernel: [602157.431453] md: minimum _guaranteed_  speed: 1000 KB/sec/disk.
+> > Jan  3 00:57:01 t kernel: [602157.467054] md: using maximum available idle IO bandwidth (but not more than 200000 KB/sec) for data-check.
+> > Jan  3 00:57:01 t kernel: [602157.526113] md: using 128k window, over a total of 19542976 blocks.
+> > Jan  3 01:03:47 t kernel: [602563.525129] md: md0: data-check done.
+> > Jan  3 01:03:47 t kernel: [602563.554886] md: data-check of RAID array md2
+> > Jan  3 01:03:47 t kernel: [602563.581194] md: minimum _guaranteed_  speed: 1000 KB/sec/disk.
+> > Jan  3 01:03:47 t kernel: [602563.616879] md: using maximum available idle IO bandwidth (but not more than 200000 KB/sec) for data-check.
+> > Jan  3 01:03:47 t kernel: [602563.675944] md: using 128k window, over a total of 460928832 blocks.
+> > Jan  3 04:47:09 t kernel: [615965.563359] md: md2: data-check done.
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-nfs" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
 
-The functionality of fincore() can be emulated with an mmap(), mincore(),
-and munmap(), but this emulation requires more system calls and requires
-page table modifications. fincore() can provide a significant performance
-improvement for non-sequential in-core queries.
-
-CC: Andi Kleen <andi@firstfloor.org>
-CC: Wu Fengguang <fengguang.wu@intel.com>
-CC: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Chris Frost <frost@cs.ucla.edu>
-Signed-off-by: Steve VanDeBogart <vandebo@cs.ucla.edu>
----
-
-Andi, Wu, and Andrew,
-
-Thanks for the feedback. I have incorporated most of your suggestions
-into this patch. A man page for fincore(2) is attached.
-
-A few questions about the suggestions:
-
-* Early return when a signal is queued
-Andi pointed out that it would be good to return early if a signal is
-queued for the calling process. I see two options to do this:
-1. Return -EINTR (the patch in this email takes this approach).
-2. Return the results discovered so far.
-
-And the tradeoffs:
-1. Returning -EINTR abandons good work.
-2. fincore needs to inform the caller of the number of valid vec entries.
-   Three approaches:
-   - Return the number of file bytes with valid page entries.
-     Issue: The return type is a long. For a 32 bit process, sizeof(long)
-     is significantly less than sizeof(loff_t).
-   - Return the number of pages with valid page entries (use type ssize_t).
-     Issue: I don't see any significant issues.
-   - Add an 'loff_t *result' parameter to the system call (a la _llseek).
-     Issue: does this push the number of arguments too high?
-
-Given the above, I feel that returning the number of valid page entries is
-the best approach. Feedback?
-
-* Radix gang lookup
-Andi and Andrew suggested using radix gang lookups for larger ranges.
-My benchmarks show that my change to do this isn't a strict performance
-win. Attached is my patch that changes the below code to do gang lookups.
-Here are the microbenchmark results for querying a 1 GiB file (results
-are times in seconds):
-  density       | none in-core | many in-core |
-  pages/syscall | 1    | 8192  | 1    | 8192  |
-  --------------+------+-------+------+-------|
-  fincore       | .055 | .0045 | .078 | .0250 |
-  fincore-batch | .059 | .0010 | .123 | .0170 |
-"none in-core" means none of the file pages were in ram and "many in-core"
-that the majority were in ram. the next row indicates how many pages
-are queried in each fincore(2) call by the process (1 or 8192 pages).
-These results show that fincore-batch is ~2-5x faster for large count
-calls, but that it is slower for small count calls. Both classes of calls
-are made by our macrobenchmarks. The macrobenchmarks (a SQLite query and
-a GIMP image blur) show the batch version slows performance by 2-12%.
-
-Perhaps my gang patch can be further optimized, or is incorrect? (Of note,
-I did not avoid the gets and puts.) If not, fincore_pages() could be
-changed to decide choose which of a single vs. gang lookup to do based on
-a heuristic tradeoff value. Or it could stay simple and only make single
-lookups.
-
-* Kernel output buffer size
-Andi pointed out that the optimization to avoid allocating a buffer page
-for small queries could be changed to claim more than 64 bytes of on-stack
-buffer space. I haven't seen increasing this space to significantly affect
-my particular macrobenchmarks. I'm ok with leaving it at 64 bytes or
-changing it; this number was picked fairly arbitrarily.
-
-* Upper query size limit
-Andi suggested imposing a reasonable upper limit on the number of pages
-that can be queried in a single fincore call, because the process would
-not be debuggable while the system call is executing. Andi, could you
-cite an example system call for me to look at that takes this approach?
-
-* System call argument feasibility across architectures
-The fincore(2) parameters are now reordered so that they should fit in six
-registers on all platforms. I intend for the libc wrapper to expose the
-call as shown in the man page, rather than the system call's ordering.
-I think this issue is now resolved, but wanted to mention it just in case
-I missed anything; does this look good for all architectures?
-
- include/linux/syscalls.h           |    2 
- fs/fincore.c                       |  126 +++++++++++++++++++++++++++++++++++++
- fs/Makefile                        |    2 
- include/asm-generic/unistd.h       |    5 +
- arch/x86/ia32/ia32entry.S          |    1 
- arch/x86/include/asm/unistd_32.h   |    3 
- arch/x86/include/asm/unistd_64.h   |    2 
- arch/x86/kernel/syscall_table_32.S |    1 
- 8 files changed, 139 insertions(+), 3 deletions(-)
-
-diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-index a990ace..814e4f5 100644
---- a/include/linux/syscalls.h
-+++ b/include/linux/syscalls.h
-@@ -534,6 +534,8 @@ asmlinkage long sys_munlockall(void);
- asmlinkage long sys_madvise(unsigned long start, size_t len, int behavior);
- asmlinkage long sys_mincore(unsigned long start, size_t len,
- 				unsigned char __user * vec);
-+asmlinkage long sys_fincore(unsigned int fd, unsigned char __user *vec,
-+				loff_t start, loff_t len);
- 
- asmlinkage long sys_pivot_root(const char __user *new_root,
- 				const char __user *put_old);
-diff --git a/fs/fincore.c b/fs/fincore.c
-new file mode 100644
-index 0000000..f329fe4
---- /dev/null
-+++ b/fs/fincore.c
-@@ -0,0 +1,126 @@
-+/*
-+ *	fs/fincore.c
-+ *
-+ * Copyright (C) 2009, 2010 Chris Frost, UC Regents
-+ * Copyright (C) 2008 Steve VanDeBogart, UC Regents
-+ */
-+
-+/*
-+ * The fincore() system call.
-+ */
-+#include <linux/fs.h>
-+#include <linux/file.h>
-+#include <linux/pagemap.h>
-+#include <linux/syscalls.h>
-+#include <linux/uaccess.h>
-+
-+static unsigned char fincore_page(struct address_space *mapping, pgoff_t pgoff)
-+{
-+	unsigned char present = 0;
-+	struct page *page = find_get_page(mapping, pgoff);
-+	if (page) {
-+		present = PageUptodate(page);
-+		page_cache_release(page);
-+	}
-+
-+	return present;
-+}
-+
-+/*
-+ * The fincore(2) system call.
-+ *
-+ * fincore() returns the memory residency status of the pages backing
-+ * a file range specified by fd and [start, start + len).
-+ * The status is returned in a vector of bytes.  The least significant
-+ * bit of each byte is 1 if the referenced page is in memory, otherwise
-+ * it is zero.
-+ *
-+ * Because the status of a page can change after fincore() checks it
-+ * but before it returns to the application, the returned vector may
-+ * contain stale information.  Only locked pages are guaranteed to
-+ * remain in memory.
-+ *
-+ * Note that the parameter order for this system calls differ from the order
-+ * for the libc wrapper. This syscall order allows the parameters to fit
-+ * in six registers on all architectures.
-+ *
-+ * return values:
-+ *  zero    - success
-+ *  -EBADF  - fd is an illegal file descriptor
-+ *  -EFAULT - vec points to an illegal address
-+ *  -EINVAL - start is not a multiple of PAGE_CACHE_SIZE
-+ *  -EAGAIN - A kernel resource was temporarily unavailable
-+ *  -EINTR  - The call was interrupted by a signal
-+ */
-+SYSCALL_DEFINE4(fincore, unsigned int, fd, unsigned char __user *, vec,
-+		loff_t, start, loff_t, len)
-+{
-+	long retval;
-+	pgoff_t pgoff = start >> PAGE_SHIFT;
-+	pgoff_t npages = (len + PAGE_SIZE - 1) >> PAGE_SHIFT;
-+	pgoff_t pgend = pgoff + npages;
-+	struct file *filp;
-+	int fput_needed;
-+	loff_t file_nbytes;
-+	pgoff_t file_npages;
-+	unsigned char *kernel_vec = NULL;
-+	unsigned char kernel_vec_small[64];
-+	unsigned kernel_vec_count;
-+	int i;
-+
-+	/* Check the start address: needs to be page-aligned.. */
-+	if (start & ~PAGE_CACHE_MASK)
-+		return -EINVAL;
-+
-+	filp = fget_light(fd, &fput_needed);
-+	if (!filp)
-+		return -EBADF;
-+
-+	file_nbytes = i_size_read(filp->f_mapping->host);
-+
-+	file_npages = (file_nbytes + PAGE_SIZE - 1) >> PAGE_SHIFT;
-+
-+	/*
-+	 * Allocate buffer vector page.
-+	 * Optimize allocation for small values of npages because the
-+	 * __get_free_page() call doubles fincore(2) runtime when npages == 1.
-+	 */
-+	if (npages <= sizeof(kernel_vec_small)) {
-+		kernel_vec = kernel_vec_small;
-+		kernel_vec_count = sizeof(kernel_vec_small);
-+	} else {
-+		kernel_vec = (void *) __get_free_page(GFP_USER);
-+		if (!kernel_vec) {
-+			retval = -EAGAIN;
-+			goto done;
-+		}
-+		kernel_vec_count = PAGE_SIZE;
-+	}
-+
-+	while (pgoff < pgend) {
-+		/*
-+		 * Do at most kernel_vec_count entries per iteration, due to
-+		 * the limited buffer size.
-+		 */
-+		for (i = 0; pgoff < pgend && i < kernel_vec_count; pgoff++, i++)
-+			kernel_vec[i] = fincore_page(filp->f_mapping, pgoff);
-+
-+		if (copy_to_user(vec, kernel_vec, i)) {
-+			retval = -EFAULT;
-+			break;
-+		}
-+		vec += i;
-+
-+		if (signal_pending(current)) {
-+			retval = -EINTR;
-+			break;
-+		}
-+		cond_resched();
-+	}
-+	retval = 0;
-+done:
-+	if (kernel_vec && kernel_vec != kernel_vec_small)
-+		free_page((unsigned long) kernel_vec);
-+	fput_light(filp, fput_needed);
-+	return retval;
-+}
-diff --git a/fs/Makefile b/fs/Makefile
-index af6d047..a3ccd6b 100644
---- a/fs/Makefile
-+++ b/fs/Makefile
-@@ -11,7 +11,7 @@ obj-y :=	open.o read_write.o file_table.o super.o \
- 		attr.o bad_inode.o file.o filesystems.o namespace.o \
- 		seq_file.o xattr.o libfs.o fs-writeback.o \
- 		pnode.o drop_caches.o splice.o sync.o utimes.o \
--		stack.o fs_struct.o
-+		stack.o fs_struct.o fincore.o
- 
- ifeq ($(CONFIG_BLOCK),y)
- obj-y +=	buffer.o bio.o block_dev.o direct-io.o mpage.o ioprio.o
-diff --git a/include/asm-generic/unistd.h b/include/asm-generic/unistd.h
-index d76b66a..ce76dc8 100644
---- a/include/asm-generic/unistd.h
-+++ b/include/asm-generic/unistd.h
-@@ -623,8 +623,11 @@ __SYSCALL(__NR_rt_tgsigqueueinfo, sys_rt_tgsigqueueinfo)
- #define __NR_perf_event_open 241
- __SYSCALL(__NR_perf_event_open, sys_perf_event_open)
- 
-+#define __NR_fincore 242
-+__SYSCALL(__NR_fincore, sys_fincore)
-+
- #undef __NR_syscalls
--#define __NR_syscalls 242
-+#define __NR_syscalls 243
- 
- /*
-  * All syscalls below here should go away really,
-diff --git a/arch/x86/ia32/ia32entry.S b/arch/x86/ia32/ia32entry.S
-index 581b056..cbf96e6 100644
---- a/arch/x86/ia32/ia32entry.S
-+++ b/arch/x86/ia32/ia32entry.S
-@@ -841,4 +841,5 @@ ia32_sys_call_table:
- 	.quad compat_sys_pwritev
- 	.quad compat_sys_rt_tgsigqueueinfo	/* 335 */
- 	.quad sys_perf_event_open
-+	.quad sys_fincore
- ia32_syscall_end:
-diff --git a/arch/x86/include/asm/unistd_32.h b/arch/x86/include/asm/unistd_32.h
-index 6fb3c20..088b235 100644
---- a/arch/x86/include/asm/unistd_32.h
-+++ b/arch/x86/include/asm/unistd_32.h
-@@ -342,10 +342,11 @@
- #define __NR_pwritev		334
- #define __NR_rt_tgsigqueueinfo	335
- #define __NR_perf_event_open	336
-+#define __NR_fincore		337
- 
- #ifdef __KERNEL__
- 
--#define NR_syscalls 337
-+#define NR_syscalls 338
- 
- #define __ARCH_WANT_IPC_PARSE_VERSION
- #define __ARCH_WANT_OLD_READDIR
-diff --git a/arch/x86/include/asm/unistd_64.h b/arch/x86/include/asm/unistd_64.h
-index 8d3ad0a..ebc04b5 100644
---- a/arch/x86/include/asm/unistd_64.h
-+++ b/arch/x86/include/asm/unistd_64.h
-@@ -661,6 +661,8 @@ __SYSCALL(__NR_pwritev, sys_pwritev)
- __SYSCALL(__NR_rt_tgsigqueueinfo, sys_rt_tgsigqueueinfo)
- #define __NR_perf_event_open			298
- __SYSCALL(__NR_perf_event_open, sys_perf_event_open)
-+#define __NR_fincore				299
-+__SYSCALL(__NR_fincore, sys_fincore)
- 
- #ifndef __NO_STUBS
- #define __ARCH_WANT_OLD_READDIR
-diff --git a/arch/x86/kernel/syscall_table_32.S b/arch/x86/kernel/syscall_table_32.S
-index 0157cd2..1fdc8bc 100644
---- a/arch/x86/kernel/syscall_table_32.S
-+++ b/arch/x86/kernel/syscall_table_32.S
-@@ -336,3 +336,4 @@ ENTRY(sys_call_table)
- 	.long sys_pwritev
- 	.long sys_rt_tgsigqueueinfo	/* 335 */
- 	.long sys_perf_event_open
-+	.long sys_fincore
 -- 
-Chris Frost
-http://www.frostnet.net/chris/
+-------------------------------------
+Nikola CIPRICH
+LinuxBox.cz, s.r.o.
+28. rijna 168, 709 01 Ostrava
 
---1yeeQ81UyVL57Vl7
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="fincore.2"
+tel.:   +420 596 603 142
+fax:    +420 596 621 273
+mobil:  +420 777 093 799
 
-.\" Hey Emacs! This file is -*- nroff -*- source.
-.\"
-.\" Copyright (C) 2001 Bert Hubert <ahu@ds9a.nl>
-.\" and Copyright (C) 2007 Michael Kerrisk <mtk.manpages@gmail.com>
-.\" and Copyright (C) 2010 Chris Frost <frost@cs.ucla.edu>, UC Regents
-.\"
-.\" Permission is granted to make and distribute verbatim copies of this
-.\" manual provided the copyright notice and this permission notice are
-.\" preserved on all copies.
-.\"
-.\" Permission is granted to copy and distribute modified versions of this
-.\" manual under the conditions for verbatim copying, provided that the
-.\" entire resulting derived work is distributed under the terms of a
-.\" permission notice identical to this one.
-.\"
-.\" Since the Linux kernel and libraries are constantly changing, this
-.\" manual page may be incorrect or out-of-date.  The author(s) assume no
-.\" responsibility for errors or omissions, or for damages resulting from
-.\" the use of the information contained herein.  The author(s) may not
-.\" have taken the same level of care in the production of this manual,
-.\" which is licensed free of charge, as they might when working
-.\" professionally.
-.\"
-.\" Formatted or processed versions of this manual, if unaccompanied by
-.\" the source, must acknowledge the copyright and authors of this work.
-.\"
-.\" Created Sun Jun 3 17:23:32 2001 by bert hubert <ahu@ds9a.nl>
-.\" Slightly adapted, following comments by Hugh Dickins, aeb, 2001-06-04.
-.\" Modified, 20 May 2003, Michael Kerrisk <mtk.manpages@gmail.com>
-.\" Modified, 30 Apr 2004, Michael Kerrisk <mtk.manpages@gmail.com>
-.\" 2005-04-05 mtk, Fixed error descriptions
-.\" 	after message from <gordon.jin@intel.com>
-.\" 2007-01-08 mtk, rewrote various parts
-.\" Adapted for fincore, 2010-02-13, Chris Frost <frost@cs.ucla.edu>
-.\"
-.TH FINCORE 2 2010-02-13 "Linux" "Linux Programmer's Manual"
-.SH NAME
-fincore \- determine whether buffer cache pages are resident in memory
-.SH SYNOPSIS
-.B #define _GNU_SOURCE
-.br
-.B #include <fnctl.h>
-.sp
-.BI "int fincore(int " fd ", loff_t " start ", loff_t " length ", unsigned char *" vec );
-.SH DESCRIPTION
-.BR fincore ()
-returns a vector that indicates whether pages for a file descriptor
-are resident in core (RAM),
-and so will not cause a disk access if read.
-The kernel returns residency information about the pages
-starting at the offset
-.IR start ,
-and continuing for
-.I length
-bytes.
+www.linuxbox.cz
 
-The
-.I start
-argument must be a multiple of the system page size.
-The
-.I length
-argument need not be a multiple of the page size,
-but since residency information is returned for whole pages,
-.I length
-is effectively rounded up to the next multiple of the page size.
-One may obtain the page size
-.RB ( PAGE_SIZE )
-using
-.IR sysconf(_SC_PAGESIZE) .
-
-The
-.I vec
-argument must point to an array containing at least
-.I "(length+PAGE_SIZE\-1) / PAGE_SIZE"
-bytes.
-On return,
-the least significant bit of each byte will be set if
-the corresponding page is currently resident in memory,
-and be clear otherwise.
-(The settings of the other bits in each byte are undefined;
-these bits are reserved for possible later use.)
-Of course the information returned in
-.I vec
-is only a snapshot: pages that are not
-locked in memory can come and go at any moment, and the contents of
-.I vec
-may already be stale by the time this call returns.
-.SH "RETURN VALUE"
-On success,
-.BR fincore ()
-returns zero.
-On error, \-1 is returned, and
-.I errno
-is set appropriately.
-.SH ERRORS
-.B EAGAIN
-kernel is temporarily out of resources.
-.TP
-.B EBADF
-.I fd
-is an illegal file descriptor.
-.TP
-.B EFAULT
-.I vec
-points to an invalid address.
-.TP
-.B EINVAL
-.I start
-is not a multiple of the page size.
-.TP
-.B EINTR
-The call was interrupted by a signal.
-.SH VERSIONS
-Available since Linux 2.6.? and glibc 2.?.
-.SH "CONFORMING TO"
-.BR fincore ()
-is not specified in POSIX.1-2001,
-and it is not available on all Unix implementations.
-.\" Does it exist on other systems?
-.SH "SEE ALSO"
-.BR mincore (2)
-.SH COLOPHON
-This page is part of release 3.23 of the Linux
-.I man-pages
-project.
-A description of the project,
-and information about reporting bugs,
-can be found at
-http://www.kernel.org/doc/man-pages/.
-
---1yeeQ81UyVL57Vl7
-Content-Type: text/x-diff; charset=us-ascii
-Content-Disposition: attachment; filename="batch.patch"
-
-diff --git a/fs/fincore.c b/fs/fincore.c
-index f329fe4..d1a5d65 100644
---- a/fs/fincore.c
-+++ b/fs/fincore.c
-@@ -11,19 +11,34 @@
- #include <linux/fs.h>
- #include <linux/file.h>
- #include <linux/pagemap.h>
-+#include <linux/pagevec.h>
- #include <linux/syscalls.h>
- #include <linux/uaccess.h>
- 
--static unsigned char fincore_page(struct address_space *mapping, pgoff_t pgoff)
-+static void fincore_pages(struct address_space *mapping, pgoff_t pgoff,
-+                          unsigned vec_count, unsigned char *vec)
- {
--	unsigned char present = 0;
--	struct page *page = find_get_page(mapping, pgoff);
--	if (page) {
--		present = PageUptodate(page);
--		page_cache_release(page);
--	}
-+	struct pagevec pvec;
-+	unsigned vec_i = 0;
-+
-+	pagevec_init(&pvec, 0);
-+
-+	while (vec_i < vec_count) {
-+		unsigned pvec_max = min(vec_count - vec_i, (unsigned) PAGEVEC_SIZE);
-+		unsigned pvec_i = 0;
-+
-+		pagevec_lookup(&pvec, mapping, pgoff, pvec_max);
- 
--	return present;
-+		for (; vec_i < vec_count && pvec_i < pvec_max; vec_i++, pgoff++) {
-+			if (pvec_i >= pagevec_count(&pvec) ||
-+				pvec.pages[pvec_i]->index != pgoff)
-+				vec[vec_i] = 0;
-+			else
-+				vec[vec_i] = PageUptodate(pvec.pages[pvec_i++]);
-+		}
-+
-+		pagevec_release(&pvec);
-+	}
- }
- 
- /*
-@@ -64,9 +79,8 @@ SYSCALL_DEFINE4(fincore, unsigned int, fd, unsigned char __user *, vec,
- 	loff_t file_nbytes;
- 	pgoff_t file_npages;
- 	unsigned char *kernel_vec = NULL;
--	unsigned char kernel_vec_small[64];
-+	unsigned char kernel_vec_small[64]; /* 64 is fairly arbitrary */
- 	unsigned kernel_vec_count;
--	int i;
- 
- 	/* Check the start address: needs to be page-aligned.. */
- 	if (start & ~PAGE_CACHE_MASK)
-@@ -100,16 +114,19 @@ SYSCALL_DEFINE4(fincore, unsigned int, fd, unsigned char __user *, vec,
- 	while (pgoff < pgend) {
- 		/*
- 		 * Do at most kernel_vec_count entries per iteration, due to
--		 * the limited buffer size.
-+		 * the limited buffer size and the possibility that an loff_t
-+		 * can store a larger value than an unsigned.
- 		 */
--		for (i = 0; pgoff < pgend && i < kernel_vec_count; pgoff++, i++)
--			kernel_vec[i] = fincore_page(filp->f_mapping, pgoff);
-+		unsigned len = min((uint64_t) (pgend - pgoff),
-+			(uint64_t) kernel_vec_count);
-+		fincore_pages(filp->f_mapping, pgoff, len, kernel_vec);
- 
--		if (copy_to_user(vec, kernel_vec, i)) {
-+		if (copy_to_user(vec, kernel_vec, len)) {
- 			retval = -EFAULT;
- 			break;
- 		}
--		vec += i;
-+		pgoff += len;
-+		vec += len;
- 
- 		if (signal_pending(current)) {
- 			retval = -EINTR;
-
---1yeeQ81UyVL57Vl7--
+mobil servis: +420 737 238 656
+email servis: servis@linuxbox.cz
+-------------------------------------
