@@ -1,57 +1,63 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933642Ab0BPXyh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 18:54:37 -0500
-Received: from hera.kernel.org ([140.211.167.34]:43398 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932771Ab0BPXyf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 18:54:35 -0500
-Message-ID: <4B7B2FE1.1030700@kernel.org>
-Date: Tue, 16 Feb 2010 15:53:05 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	id S933657Ab0BPXzB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 18:55:01 -0500
+Received: from smtp-out.google.com ([216.239.44.51]:57080 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932771Ab0BPXzA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 18:55:00 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=V+jlklQceQAnsnUOGOHUR2ZNMPt4IvkIKh/oZ8dN248TS4EuwFmI1Bmz4BWD/jtXx
+	sr3chprThOquiehtbuXZA==
+Date: Tue, 16 Feb 2010 15:54:50 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
+       Nick Piggin <npiggin@suse.de>, Andrea Arcangeli <aarcange@redhat.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch -mm 4/9 v2] oom: remove compulsory panic_on_oom mode
+In-Reply-To: <20100217084239.265c65ea.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.1002161550550.11952@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.1002151416470.26927@chino.kir.corp.google.com> <alpine.DEB.2.00.1002151418190.26927@chino.kir.corp.google.com> <20100216090005.f362f869.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.1002151610380.14484@chino.kir.corp.google.com>
+ <20100216092311.86bceb0c.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.1002160058470.17122@chino.kir.corp.google.com> <20100217084239.265c65ea.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Stephen Rothwell <sfr@canb.auug.org.au>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-Subject: Re: [PATCH 27/35] core: move early_res
-References: <1265793639-15071-1-git-send-email-yinghai@kernel.org>	<1265793639-15071-28-git-send-email-yinghai@kernel.org> <20100215011615.e3d35121.sfr@canb.auug.org.au> <4B786110.9020806@kernel.org> <4B7B2E3B.9060903@zytor.com>
-In-Reply-To: <4B7B2E3B.9060903@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/16/2010 03:46 PM, H. Peter Anvin wrote:
-> On 02/14/2010 12:46 PM, Yinghai Lu wrote:
->>
->> please check
->>
->> Subject: [PATCH -v2] x86: fix cross-arch compiling
->>
->> Ingo found:
->> lots of cross-arch build failures in latest -tip:
->>
->>  
->> +u64 __init __weak get_max_mapped(void)
->> +{
->> +	panic("should have get_max_mapped defined with arch");
->> +
->> +	return -1ULL;
->> +}
->> +
+On Wed, 17 Feb 2010, KAMEZAWA Hiroyuki wrote:
+
+> Please don't. I had a chance to talk with customer support team and talked
+> about panic_on_oom briefly. I understood that panic_on_oom_alyways+kdump
+> is the strongest tool for investigating customer's OOM situtation and do
+> the best advice to them. panic_on_oom_always+kdump is the 100% information
+> as snapshot when oom-killer happens. Then, it's easy to investigate and
+> explain what is wront. They sometimes discover memory leak (by some prorietary
+> driver) or miss-configuration of the system (as using unnecessary bounce buffer.)
 > 
-> All this does would seem is it would change a build failure into a
-> runtime panic.  I really fail to see how this is an improvement...
 
-current only x86 support to early_res replace bootmem.
+Ok, I'm not looking to cause your customers unnecessary grief by removing 
+an option that they use, even though the same effect is possible by 
+setting all tasks to OOM_DISABLE.  I'll remove this patch in the next 
+revision.
 
-later if other arch is using that feature, it need to provide that get_max_mapped.
+> Then, please leave panic_on_oom=always.
+> Even with mempolicy or cpuset 's OOM, we need panic_on_oom=always option.
+> And yes, I'll add something similar to memcg. freeze_at_oom or something.
+> 
 
-Yinghai
+Memcg isn't a special case here, it should also panic the machine if 
+panic_on_oom == 2, so if we aren't going to remove this option then I 
+agree with Nick that we need to panic from mem_cgroup_out_of_memory() as 
+well.  Some users use cpusets, for example, for the same effect of memory 
+isolation as you use memcg, so panicking in one scenario and not the other 
+is inconsistent.
