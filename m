@@ -1,52 +1,47 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755412Ab0BPL4T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 06:56:19 -0500
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:47412 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755093Ab0BPL4R (ORCPT
+	id S1755481Ab0BPMAT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 07:00:19 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:46927 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754345Ab0BPMAP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 06:56:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=mMsomwVlo4uC424wnW+1XdlTCIMqaw9oM+pv1mRYpK3IWaWrdMWpPIivXnb3ZwmFQ0
-         6U8NqMHF6IzqTrwV/fgem2dkuZp/YSdSMpeXnJ2o8osoG1wINKUi/I9Jel8z+5URpidx
-         dTHxngSvq/BQ5NVhVmYlNU13HA46bTqetxYwA=
-MIME-Version: 1.0
-In-Reply-To: <20100211044604.GA12146@gondor.apana.org.au>
-References: <1265765446-24958-1-git-send-email-richih.mailinglist@gmail.com>
-	 <2d460de71002091821h7b6e99b0gb8f134355f64c65a@mail.gmail.com>
-	 <20100211044604.GA12146@gondor.apana.org.au>
-Date: Tue, 16 Feb 2010 12:56:15 +0100
-Message-ID: <2d460de71002160356l6c26d513qba7d0cece32daddd@mail.gmail.com>
-Subject: Re: [PATCH 1/1] CRYPTO: Fix checkpatch errors & warnings in cipher.c
-From: Richard Hartmann <richih.mailinglist@gmail.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
+	Tue, 16 Feb 2010 07:00:15 -0500
+Date: Tue, 16 Feb 2010 20:00:09 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Richard Hartmann <richih.mailinglist@gmail.com>
 Cc: linux-crypto@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
        linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+Subject: Re: [PATCH 1/1] CRYPTO: Fix checkpatch errors & warnings in
+	cipher.c
+Message-ID: <20100216120009.GA32197@gondor.apana.org.au>
+References: <1265765446-24958-1-git-send-email-richih.mailinglist@gmail.com> <2d460de71002091821h7b6e99b0gb8f134355f64c65a@mail.gmail.com> <20100211044604.GA12146@gondor.apana.org.au> <2d460de71002160356l6c26d513qba7d0cece32daddd@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <2d460de71002160356l6c26d513qba7d0cece32daddd@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 11, 2010 at 05:46, Herbert Xu <herbert@gondor.apana.org.au> wrote:
-
->> Should I re-send the patch or is it less noise & hassle if I just leave
->> it this way?
+On Tue, Feb 16, 2010 at 12:56:15PM +0100, Richard Hartmann wrote:
 >
-> You don't have to resend it.
+> Thus, I wanted to check if I should wait some more or what the general
+> consensus of action in the crypto subtree is.
+> 
+> And yes, I am aware that janitor work, and thus my patches, is very low
+> priority.
 
-GregKH said that I should just re-send all patches after a week. OTOH, I
-am not sure if this is not a little bit too agressive.
+For the crypto tree at least I've got all your patches so you
+don't have to resend.
 
-Thus, I wanted to check if I should wait some more or what the general
-consensus of action in the crypto subtree is.
+For other trees please follow whatever their maintainer (or Greg)
+says.
 
-And yes, I am aware that janitor work, and thus my patches, is very low
-priority.
-
-
-Thanks,
-Richard
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
