@@ -1,89 +1,67 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932330Ab0BPP0q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 10:26:46 -0500
-Received: from tx2ehsobe002.messaging.microsoft.com ([65.55.88.12]:21720 "EHLO
-	TX2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755491Ab0BPP0p (ORCPT
+	id S932525Ab0BPPan (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 10:30:43 -0500
+Received: from shards.monkeyblade.net ([198.137.202.13]:33866 "EHLO
+	shards.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756468Ab0BPPal (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 10:26:45 -0500
-X-SpamScore: -20
-X-BigFish: VPS-20(zz1432R98dN1b0bMzz1202hzzz32i6bh61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KXXXK6-02-93K-02
-X-M-MSG: 
-Date: Tue, 16 Feb 2010 16:26:31 +0100
-From: Borislav Petkov <borislav.petkov@amd.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/cpu] x86, cacheinfo: Remove NUMA dependency, fix for
- D1 Isntanbul
-Message-ID: <20100216152631.GA754@aftab>
-References: <1266234236-24749-1-git-send-email-bp@amd64.org>
- <tip-472bf751b56324f8c96d97ada3c9dcdc8b2ec4f7@git.kernel.org>
- <20100216140246.GA31213@elte.hu>
+	Tue, 16 Feb 2010 10:30:41 -0500
+Message-ID: <4B7AB9C0.6070402@kernel.org>
+Date: Tue, 16 Feb 2010 07:29:04 -0800
+From: "J.H." <warthog9@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Lightning/1.0b2pre Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20100216140246.GA31213@elte.hu>
-Organization: Advanced Micro Devices =?iso-8859-1?Q?GmbH?=
-	=?iso-8859-1?Q?=2C_Karl-Hammerschmidt-Str=2E_34=2C_85609_Dornach_bei_M=FC?=
-	=?iso-8859-1?Q?nchen=2C_Gesch=E4ftsf=FChrer=3A_Thomas_M=2E_McCoy=2C_Giuli?=
-	=?iso-8859-1?Q?ano_Meroni=2C_Andrew_Bowd=2C_Sitz=3A_Dornach=2C_Gemeinde_A?=
-	=?iso-8859-1?Q?schheim=2C_Landkreis_M=FCnchen=2C_Registergericht_M=FCnche?=
-	=?iso-8859-1?Q?n=2C?= HRB Nr. 43632
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-OriginalArrivalTime: 16 Feb 2010 15:26:32.0065 (UTC) FILETIME=[6AE26F10:01CAAF1C]
-X-Reverse-DNS: ausb3extmailp02.amd.com
+To: tytso@mit.edu, Jean Delvare <khali@linux-fr.org>,
+       Pavel Machek <pavel@ucw.cz>, mirrors@kernel.org,
+       lasse.collin@tukaani.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       users@kernel.org, "FTPAdmin Kernel.org" <ftpadmin@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Willy Tarreau <w@1wt.eu>
+Subject: Re: [kernel.org users] XZ Migration discussion
+References: <4B744E13.8040004@kernel.org> <20100212150137.648dca7c@hyperion.delvare> <alpine.LFD.2.00.1002120714320.7792@localhost.localdomain> <4B75A5DC.3060803@kernel.org> <20100212202357.6363d5af@hyperion.delvare> <20100212230702.GA10266@1wt.eu> <20100213091748.276821e1@hyperion.delvare> <20100214170724.GE1578@ucw.cz> <20100214200803.4b2348ce@hyperion.delvare> <20100215151522.GI5337@thunk.org>
+In-Reply-To: <20100215151522.GI5337@thunk.org>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.2.3 (shards.monkeyblade.net [198.137.202.13]); Tue, 16 Feb 2010 07:29:06 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 16, 2010 at 03:02:46PM +0100, Ingo Molnar wrote:
+On 02/15/2010 07:15 AM, tytso@mit.edu wrote:
+> On Sun, Feb 14, 2010 at 08:08:03PM +0100, Jean Delvare wrote:
+>> On Sun, 14 Feb 2010 18:07:24 +0100, Pavel Machek wrote:
+>>> Hi!
+>>>
+>>>> As a matter of fact, I am advocating the use of xz while I don't have
+>>>> it installed on most of my machines. I really don't see this as a
+>>>> blocker.
+>>>
+>>> Eh?
+>>>
+>>> Making many people around the world install uncommon tool is not
+>>> something that should be done lightly.
+>>
+>> It's pretty obvious that xz will become popular quickly, at least on
+>> Linux and BSD systems, much like bz2 is today. I'm not asking people to
+>> start using ClearCase ;) xz will supersede bz2, it's only a matter of
+>> time. I see no problem in being one of the early adopters.
 > 
-> * tip-bot for Borislav Petkov <borislav.petkov@amd.com> wrote:
+> If by "quickly" you mean 'ten years', sure, maybe.  Keep in mind that
+> there are people where who are still using RHEL 3, and some of them
+> might want to download from ftp.kernel.org.  So those people who are
+> suggesting that we replace .gz files with .xz on kernel.org are
+> *really* smoking something good.
 > 
-> > Commit-ID:  472bf751b56324f8c96d97ada3c9dcdc8b2ec4f7
-> > Gitweb:     http://git.kernel.org/tip/472bf751b56324f8c96d97ada3c9dcdc8b2ec4f7
-> > Author:     Borislav Petkov <borislav.petkov@amd.com>
-> > AuthorDate: Mon, 15 Feb 2010 12:43:56 +0100
-> > Committer:  H. Peter Anvin <hpa@zytor.com>
-> > CommitDate: Mon, 15 Feb 2010 12:32:48 -0800
-> > 
-> > x86, cacheinfo: Remove NUMA dependency, fix for D1 Isntanbul
+> People who think xz are good should be working to get it installed by
+> default into the community and then enterprise distro's, first....
 > 
-> FYI, this commit broke the build in -tip testing:
-> 
->  arch/x86/built-in.o: In function `store_cache_disable':
->  intel_cacheinfo.c:(.text+0xc509): undefined reference to `amd_get_nb_id'
->  arch/x86/built-in.o: In function `show_cache_disable':
->  intel_cacheinfo.c:(.text+0xc7d3): undefined reference to `amd_get_nb_id'
+> 						- Ted
 
-Argh,
+As a note xz is available via EPEL for Redhat Enterprice Linux 5 and
+anything that's derived from that.  Doesn't seem to be available,
+directly, for 4 or lower.  Not sure on Suse, and Debian's already been
+mentioned.  Just trying to do a quick survey of what's out there already.
 
-In the attached .config we have
-
-# CONFIG_CPU_SUP_AMD is not set
-
-but <arch/x86/kernel/cpu/amd.c> is built only when CONFIG_CPU_SUP_AMD is
-enabled. Possible fixes are:
-
-a) push amd_get_nb_id() into <asm/processor.h>.
-
-b) make L3 cache index disable code dependent on CONFIG_CPU_SUP_AMD
-
-IMO, a) is a short-term fix while b) is the better thing to do. I might
-be able to get something done in time for the merge window. Let me know
-which way you want to go.
-
-Thanks.
-
--- 
-Regards/Gruss,
-Boris.
-
--
-Advanced Micro Devices, Inc.
-Operating Systems Research Center
-
+- John 'Warthog9' Hawley
