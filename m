@@ -1,115 +1,86 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751379Ab0BPFcW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 00:32:22 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:50184 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751152Ab0BPFcU (ORCPT
+	id S1751335Ab0BPFkG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 00:40:06 -0500
+Received: from e39.co.us.ibm.com ([32.97.110.160]:40293 "EHLO
+	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750740Ab0BPFkD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 00:32:20 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: David Rientjes <rientjes@google.com>
-Subject: Re: [patch -mm 8/9 v2] oom: avoid oom killer for lowmem allocations
-Cc: kosaki.motohiro@jp.fujitsu.com,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>, Nick Piggin <npiggin@suse.de>,
-       Andrea Arcangeli <aarcange@redhat.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-In-Reply-To: <alpine.DEB.2.00.1002151606320.14484@chino.kir.corp.google.com>
-References: <20100216085706.c7af93e1.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.1002151606320.14484@chino.kir.corp.google.com>
-Message-Id: <20100216142856.72F4.A69D9226@jp.fujitsu.com>
+	Tue, 16 Feb 2010 00:40:03 -0500
+Date: Tue, 16 Feb 2010 11:09:46 +0530
+From: Bharata B Rao <bharata@linux.vnet.ibm.com>
+To: Paul Turner <pjt@google.com>
+Cc: linux-kernel@vger.kernel.org, Paul Menage <menage@google.com>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Gautham R Shenoy <ego@in.ibm.com>,
+       Dhaval Giani <dhaval.giani@gmail.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Herbert Poetzl <herbert@13thfloor.at>,
+       Chris Friesen <cfriesen@nortel.com>, Avi Kivity <avi@redhat.com>,
+       Nikhil Rao <ncrao@google.com>, Ingo Molnar <mingo@elte.hu>,
+       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       Mike Waychison <mikew@google.com>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>
+Subject: Re: [RFC PATCH v1 0/4] CFS Bandwidth Control
+Message-ID: <20100216053946.GA3492@in.ibm.com>
+Reply-To: bharata@linux.vnet.ibm.com
+References: <20100213025417.23325.90048.stgit@kitami.corp.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Tue, 16 Feb 2010 14:32:17 +0900 (JST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100213025417.23325.90048.stgit@kitami.corp.google.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Tue, 16 Feb 2010, KAMEZAWA Hiroyuki wrote:
+On Fri, Feb 12, 2010 at 06:54:52PM -0800, Paul Turner wrote:
 > 
-> > > If memory has been depleted in lowmem zones even with the protection
-> > > afforded to it by /proc/sys/vm/lowmem_reserve_ratio, it is unlikely that
-> > > killing current users will help.  The memory is either reclaimable (or
-> > > migratable) already, in which case we should not invoke the oom killer at
-> > > all, or it is pinned by an application for I/O.  Killing such an
-> > > application may leave the hardware in an unspecified state and there is
-> > > no guarantee that it will be able to make a timely exit.
-> > > 
-> > > Lowmem allocations are now failed in oom conditions so that the task can
-> > > perhaps recover or try again later.  Killing current is an unnecessary
-> > > result for simply making a GFP_DMA or GFP_DMA32 page allocation and no
-> > > lowmem allocations use the now-deprecated __GFP_NOFAIL bit so retrying is
-> > > unnecessary.
-> > > 
-> > > Previously, the heuristic provided some protection for those tasks with 
-> > > CAP_SYS_RAWIO, but this is no longer necessary since we will not be
-> > > killing tasks for the purposes of ISA allocations.
-> > > 
-> > > high_zoneidx is gfp_zone(gfp_flags), meaning that ZONE_NORMAL will be the
-> > > default for all allocations that are not __GFP_DMA, __GFP_DMA32,
-> > > __GFP_HIGHMEM, and __GFP_MOVABLE on kernels configured to support those
-> > > flags.  Testing for high_zoneidx being less than ZONE_NORMAL will only
-> > > return true for allocations that have either __GFP_DMA or __GFP_DMA32.
-> > > 
-> > > Acked-by: Rik van Riel <riel@redhat.com>
-> > > Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> > > Signed-off-by: David Rientjes <rientjes@google.com>
-> > > ---
-> > >  mm/page_alloc.c |    3 +++
-> > >  1 files changed, 3 insertions(+), 0 deletions(-)
-> > > 
-> > > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> > > --- a/mm/page_alloc.c
-> > > +++ b/mm/page_alloc.c
-> > > @@ -1914,6 +1914,9 @@ rebalance:
-> > >  	 * running out of options and have to consider going OOM
-> > >  	 */
-> > >  	if (!did_some_progress) {
-> > > +		/* The oom killer won't necessarily free lowmem */
-> > > +		if (high_zoneidx < ZONE_NORMAL)
-> > > +			goto nopage;
-> > >  		if ((gfp_mask & __GFP_FS) && !(gfp_mask & __GFP_NORETRY)) {
-> > >  			if (oom_killer_disabled)
-> > >  				goto nopage;
-> > 
-> > WARN_ON((high_zoneidx < ZONE_NORMAL) && (gfp_mask & __GFP_NOFAIL))
-> > plz.
-> > 
+> The skeleton of our approach is as follows:
+> - As above we maintain a global pool, per-tg, pool of unassigned quota.  On it
+>   we track the bandwidth period, quota per period, and runtime remaining in
+>   the current period.  As bandwidth is used within a period it is decremented
+>   from runtime.  Runtime is currently synchronized using a spinlock, in the
+>   current implementation there's no reason this couldn't be done using
+>   atomic ops instead however the spinlock allows for a little more flexibility
+>   in experimentation with other schemes.
+> - When a cfs_rq participating in a bandwidth constrained task_group executes
+>   it acquires time in sysctl_sched_cfs_bandwidth_slice (default currently
+>   10ms) size chunks from the global pool, this synchronizes under rq->lock and
+>   is part of the update_curr path.
+> - Throttled entities are dequeued immediately (as opposed to delaying this
+>   operation to the put path), this avoids some potentially poor load-balancer
+>   interactions and preserves the 'verbage' of the put_task semantic.
+>   Throttled entities are gated from participating in the tree at the
+>   {enqueue, dequeue}_entity level.  They are also skipped for load
+>   balance in the same manner as Bharatta's patch-series employs.
+
+I did defer the dequeue until next put because walking the se hierarchy
+multiple times (from update_curr -> dequeue_entity -> update_curr) appeared
+too complex when I started with it.
+
 > 
-> As I already explained when you first brought this up, the possibility of 
-> not invoking the oom killer is not unique to GFP_DMA, it is also possible 
-> for GFP_NOFS.  Since __GFP_NOFAIL is deprecated and there are no current 
-> users of GFP_DMA | __GFP_NOFAIL, that warning is completely unnecessary.  
-> We're not adding any additional __GFP_NOFAIL allocations.
+> Interface:
+> ----------
+> Two new cgroupfs files are added to the cpu subsystem:
+> - cpu.cfs_period_us : period over which bandwidth is to be regulated
+> - cpu.cfs_quota_us  : bandwidth available for consumption per period
+> 
+> One important interface change that this introduces (versus the rate limits
+> proposal) is that the defined bandwidth becomes an absolute quantifier.
+> 
+> e.g. a bandwidth of 5 seconds (cpu.cfs_quota_us=5000000) on a period of 1 second
+> (cpu.cfs_period_us=1000000) would result in 5 wall seconds of cpu time being
+> consumable every 1 wall second.
 
-No current user? I don't think so.
+As I have said earlier, I would like to hear what others say about this
+interface. Especially from Linux-vserver project since it is already
+using the cfs hard limit patches in their test release. Herbert ?
 
-	int bio_integrity_prep(struct bio *bio)
-	{
-	(snip)
-	        buf = kmalloc(len, GFP_NOIO | __GFP_NOFAIL | q->bounce_gfp);
+Thanks for your work. More later when I review the individual patches
+in detail.
 
-and 
-
-	void blk_queue_bounce_limit(struct request_queue *q, u64 dma_mask)
-	{
-	(snip)
-	        if (dma) {
-	                init_emergency_isa_pool();
-	                q->bounce_gfp = GFP_NOIO | GFP_DMA;
-	                q->limits.bounce_pfn = b_pfn;
-	        }
-
-
-
-I don't like rumor based discussion, I like fact based one.
-
-Thanks.
-
-
-
+Regards,
+Bharata.
