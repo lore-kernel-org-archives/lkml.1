@@ -1,43 +1,38 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755651Ab0BPIeg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 03:34:36 -0500
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:45020 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754972Ab0BPIef (ORCPT
+	id S1755860Ab0BPIfp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 03:35:45 -0500
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:46323 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753890Ab0BPIfn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 03:34:35 -0500
-X-Sasl-enc: D3w1sWCGND1k/W5z1BKzQ+Da66sSAjTkCh2G/jxAR0cr 1266309274
-Message-ID: <4B7A5899.4000400@ladisch.de>
-Date: Tue, 16 Feb 2010 09:34:33 +0100
-From: Clemens Ladisch <clemens@ladisch.de>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Tue, 16 Feb 2010 03:35:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=ELINDAK5st0LwopHzQjI4TRl85ZIfp07rdZ7ODQ/zk+SH39SqhRgtQuPRuU6VJ1Q1T
+         a9J3hEmzoeSj5RSo7bg0MkZVQFNqdy4PihGLgVOVmVtk6AIwWaogtAn5XC9FwWoFfufz
+         R/wUFFg+4yv1pfX3qGzV7sq+fKqDbCiXANOss=
 MIME-Version: 1.0
-To: Sebastien Alaiwan <sebastien.alaiwan@gmail.com>
-CC: linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org,
-       Takashi Iwai <tiwai@suse.de>
-Subject: Re: [PATCH][ALSA] usbmidi support for Access Music synths.
-References: <4B726306.8070506@gmail.com> <4B7274BA.3040801@ladisch.de> <4B73B96A.9040006@gmail.com> <4B73C3EC.2040606@ladisch.de> <4B745D00.5060201@gmail.com> <4B751E34.1000703@ladisch.de> <4B7A4BEF.1030005@gmail.com>
-In-Reply-To: <4B7A4BEF.1030005@gmail.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Date: Tue, 16 Feb 2010 10:35:40 +0200
+Message-ID: <bec9a5871002160035v63cce8ck9ecb9252b2f162a6@mail.gmail.com>
+Subject: Re: Reading /dev/mem by dd
+From: Nameer Yarkon <nameer.yarkon@gmail.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Andi Kleen <andi@firstfloor.org>, Robert Hancock <hancockrwd@gmail.com>,
+       "Anton D. Kachalov" <mouse@mayc.ru>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sebastien Alaiwan wrote:
-> Clemens Ladisch wrote:
->> Sebastien Alaiwan wrote:
->>> How can I inform the
->>> snd-usb-audio driver that the USB interface 4 should be left alone?
->> 
->> With a QUIRK_IGNORE_INTERFACE for that interface.  This means you need
->> QUIRK_COMPOSITE again.
-> 
-> Ok, this is done.
-> Here's an updated patch.
+On Thu, Nov 12, 2009 at 8:13 PM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+>> Is that the only valid use of /dev/mem, or even its main use?
+>
+> These days it is the primary use. Things like X11 were historically
+> probably the biggest user of it, and things like LRMI sometimes need that
+> sort of stuff.
 
-Applied; thanks!
-
-
-Clemens
+how does X11 get now direct access to the physical memory (instead of
+/dev/mem) ?
