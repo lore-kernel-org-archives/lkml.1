@@ -1,269 +1,103 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932403Ab0BPATl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 19:19:41 -0500
-Received: from hera.kernel.org ([140.211.167.34]:36955 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932393Ab0BPATh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 19:19:37 -0500
-Date: Tue, 16 Feb 2010 00:19:19 GMT
-From: tip-bot for David Rientjes <rientjes@google.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       tglx@linutronix.de, rientjes@google.com
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, rientjes@google.com
-In-Reply-To: <alpine.DEB.2.00.1002151343080.26927@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.1002151343080.26927@chino.kir.corp.google.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/numa] x86, numa: Remove configurable node size support for numa emulation
-Message-ID: <tip-ca2107c9d6cf44fb915402d6f12b9d9ff3925cd7@git.kernel.org>
-Git-Commit-ID: ca2107c9d6cf44fb915402d6f12b9d9ff3925cd7
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Tue, 16 Feb 2010 00:19:22 +0000 (UTC)
+	id S932396Ab0BPAZV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 19:25:21 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:54472 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932313Ab0BPAZT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Feb 2010 19:25:19 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Tue, 16 Feb 2010 09:21:47 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: David Rientjes <rientjes@google.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
+       Nick Piggin <npiggin@suse.de>, Andrea Arcangeli <aarcange@redhat.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch -mm 8/9 v2] oom: avoid oom killer for lowmem allocations
+Message-Id: <20100216092147.85ef7619.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <alpine.DEB.2.00.1002151606320.14484@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.1002151416470.26927@chino.kir.corp.google.com>
+	<alpine.DEB.2.00.1002151419260.26927@chino.kir.corp.google.com>
+	<20100216085706.c7af93e1.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.DEB.2.00.1002151606320.14484@chino.kir.corp.google.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  ca2107c9d6cf44fb915402d6f12b9d9ff3925cd7
-Gitweb:     http://git.kernel.org/tip/ca2107c9d6cf44fb915402d6f12b9d9ff3925cd7
-Author:     David Rientjes <rientjes@google.com>
-AuthorDate: Mon, 15 Feb 2010 13:43:33 -0800
-Committer:  H. Peter Anvin <hpa@zytor.com>
-CommitDate: Mon, 15 Feb 2010 14:34:18 -0800
+On Mon, 15 Feb 2010 16:10:15 -0800 (PST)
+David Rientjes <rientjes@google.com> wrote:
 
-x86, numa: Remove configurable node size support for numa emulation
+> On Tue, 16 Feb 2010, KAMEZAWA Hiroyuki wrote:
+> 
+> > > If memory has been depleted in lowmem zones even with the protection
+> > > afforded to it by /proc/sys/vm/lowmem_reserve_ratio, it is unlikely that
+> > > killing current users will help.  The memory is either reclaimable (or
+> > > migratable) already, in which case we should not invoke the oom killer at
+> > > all, or it is pinned by an application for I/O.  Killing such an
+> > > application may leave the hardware in an unspecified state and there is
+> > > no guarantee that it will be able to make a timely exit.
+> > > 
+> > > Lowmem allocations are now failed in oom conditions so that the task can
+> > > perhaps recover or try again later.  Killing current is an unnecessary
+> > > result for simply making a GFP_DMA or GFP_DMA32 page allocation and no
+> > > lowmem allocations use the now-deprecated __GFP_NOFAIL bit so retrying is
+> > > unnecessary.
+> > > 
+> > > Previously, the heuristic provided some protection for those tasks with 
+> > > CAP_SYS_RAWIO, but this is no longer necessary since we will not be
+> > > killing tasks for the purposes of ISA allocations.
+> > > 
+> > > high_zoneidx is gfp_zone(gfp_flags), meaning that ZONE_NORMAL will be the
+> > > default for all allocations that are not __GFP_DMA, __GFP_DMA32,
+> > > __GFP_HIGHMEM, and __GFP_MOVABLE on kernels configured to support those
+> > > flags.  Testing for high_zoneidx being less than ZONE_NORMAL will only
+> > > return true for allocations that have either __GFP_DMA or __GFP_DMA32.
+> > > 
+> > > Acked-by: Rik van Riel <riel@redhat.com>
+> > > Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> > > Signed-off-by: David Rientjes <rientjes@google.com>
+> > > ---
+> > >  mm/page_alloc.c |    3 +++
+> > >  1 files changed, 3 insertions(+), 0 deletions(-)
+> > > 
+> > > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> > > --- a/mm/page_alloc.c
+> > > +++ b/mm/page_alloc.c
+> > > @@ -1914,6 +1914,9 @@ rebalance:
+> > >  	 * running out of options and have to consider going OOM
+> > >  	 */
+> > >  	if (!did_some_progress) {
+> > > +		/* The oom killer won't necessarily free lowmem */
+> > > +		if (high_zoneidx < ZONE_NORMAL)
+> > > +			goto nopage;
+> > >  		if ((gfp_mask & __GFP_FS) && !(gfp_mask & __GFP_NORETRY)) {
+> > >  			if (oom_killer_disabled)
+> > >  				goto nopage;
+> > 
+> > WARN_ON((high_zoneidx < ZONE_NORMAL) && (gfp_mask & __GFP_NOFAIL))
+> > plz.
+> > 
+> 
+> As I already explained when you first brought this up, the possibility of 
+> not invoking the oom killer is not unique to GFP_DMA, it is also possible 
+> for GFP_NOFS.  Since __GFP_NOFAIL is deprecated and there are no current 
+> users of GFP_DMA | __GFP_NOFAIL, that warning is completely unnecessary.  
+> We're not adding any additional __GFP_NOFAIL allocations.
+>
 
-Now that numa=fake=<size>[MG] is implemented, it is possible to remove
-configurable node size support.  The command-line parsing was already
-broken (numa=fake=*128, for example, would not work) and since fake nodes
-are now interleaved over physical nodes, this support is no longer
-required.
+Please add documentation about that to gfp.h before doing this.
+Doing this without writing any documenation is laziness.
+(WARNING is a style of documentation.)
 
-Signed-off-by: David Rientjes <rientjes@google.com>
-LKML-Reference: <alpine.DEB.2.00.1002151343080.26927@chino.kir.corp.google.com>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
----
- Documentation/x86/x86_64/boot-options.txt |   16 +---
- arch/x86/mm/numa_64.c                     |  160 +++--------------------------
- 2 files changed, 16 insertions(+), 160 deletions(-)
+Thanks,
+-Kame
 
-diff --git a/Documentation/x86/x86_64/boot-options.txt b/Documentation/x86/x86_64/boot-options.txt
-index 01150c6..7fbbaf8 100644
---- a/Documentation/x86/x86_64/boot-options.txt
-+++ b/Documentation/x86/x86_64/boot-options.txt
-@@ -170,19 +170,9 @@ NUMA
- 		If given as a memory unit, fills all system RAM with nodes of
- 		size interleaved over physical nodes.
- 
--  numa=fake=CMDLINE
--		If a number, fakes CMDLINE nodes and ignores NUMA setup of the
--		actual machine.  Otherwise, system memory is configured
--		depending on the sizes and coefficients listed.  For example:
--			numa=fake=2*512,1024,4*256,*128
--		gives two 512M nodes, a 1024M node, four 256M nodes, and the
--		rest split into 128M chunks.  If the last character of CMDLINE
--		is a *, the remaining memory is divided up equally among its
--		coefficient:
--			numa=fake=2*512,2*
--		gives two 512M nodes and the rest split into two nodes.
--		Otherwise, the remaining system RAM is allocated to an
--		additional node.
-+  numa=fake=<N>
-+		If given as an integer, fills all system RAM with N fake nodes
-+		interleaved over physical nodes.
- 
- ACPI
- 
-diff --git a/arch/x86/mm/numa_64.c b/arch/x86/mm/numa_64.c
-index c47c78b..3307ea8 100644
---- a/arch/x86/mm/numa_64.c
-+++ b/arch/x86/mm/numa_64.c
-@@ -598,172 +598,38 @@ static int __init split_nodes_size_interleave(u64 addr, u64 max_addr, u64 size)
- }
- 
- /*
-- * Splits num_nodes nodes up equally starting at node_start.  The return value
-- * is the number of nodes split up and addr is adjusted to be at the end of the
-- * last node allocated.
-- */
--static int __init split_nodes_equally(u64 *addr, u64 max_addr, int node_start,
--				      int num_nodes)
--{
--	unsigned int big;
--	u64 size;
--	int i;
--
--	if (num_nodes <= 0)
--		return -1;
--	if (num_nodes > MAX_NUMNODES)
--		num_nodes = MAX_NUMNODES;
--	size = (max_addr - *addr - e820_hole_size(*addr, max_addr)) /
--	       num_nodes;
--	/*
--	 * Calculate the number of big nodes that can be allocated as a result
--	 * of consolidating the leftovers.
--	 */
--	big = ((size & ~FAKE_NODE_MIN_HASH_MASK) * num_nodes) /
--	      FAKE_NODE_MIN_SIZE;
--
--	/* Round down to nearest FAKE_NODE_MIN_SIZE. */
--	size &= FAKE_NODE_MIN_HASH_MASK;
--	if (!size) {
--		printk(KERN_ERR "Not enough memory for each node.  "
--		       "NUMA emulation disabled.\n");
--		return -1;
--	}
--
--	for (i = node_start; i < num_nodes + node_start; i++) {
--		u64 end = *addr + size;
--
--		if (i < big)
--			end += FAKE_NODE_MIN_SIZE;
--		/*
--		 * The final node can have the remaining system RAM.  Other
--		 * nodes receive roughly the same amount of available pages.
--		 */
--		if (i == num_nodes + node_start - 1)
--			end = max_addr;
--		else
--			end = find_end_of_node(*addr, max_addr, size);
--		if (setup_node_range(i, addr, end - *addr, max_addr) < 0)
--			break;
--	}
--	return i - node_start + 1;
--}
--
--/*
-- * Splits the remaining system RAM into chunks of size.  The remaining memory is
-- * always assigned to a final node and can be asymmetric.  Returns the number of
-- * nodes split.
-- */
--static int __init split_nodes_by_size(u64 *addr, u64 max_addr, int node_start,
--				      u64 size)
--{
--	int i = node_start;
--	size = (size << 20) & FAKE_NODE_MIN_HASH_MASK;
--	while (!setup_node_range(i++, addr, size, max_addr))
--		;
--	return i - node_start;
--}
--
--/*
-  * Sets up the system RAM area from start_pfn to last_pfn according to the
-  * numa=fake command-line option.
-  */
- static int __init numa_emulation(unsigned long start_pfn,
- 			unsigned long last_pfn, int acpi, int k8)
- {
--	u64 size, addr = start_pfn << PAGE_SHIFT;
-+	u64 addr = start_pfn << PAGE_SHIFT;
- 	u64 max_addr = last_pfn << PAGE_SHIFT;
--	int num_nodes = 0, num = 0, coeff_flag, coeff = -1, i;
- 	int num_phys_nodes;
-+	int num_nodes;
-+	int i;
- 
- 	num_phys_nodes = setup_physnodes(addr, max_addr, acpi, k8);
- 	/*
- 	 * If the numa=fake command-line contains a 'M' or 'G', it represents
--	 * the fixed node size.
-+	 * the fixed node size.  Otherwise, if it is just a single number N,
-+	 * split the system RAM into N fake nodes.
- 	 */
- 	if (strchr(cmdline, 'M') || strchr(cmdline, 'G')) {
-+		u64 size;
-+
- 		size = memparse(cmdline, &cmdline);
- 		num_nodes = split_nodes_size_interleave(addr, max_addr, size);
--		if (num_nodes < 0)
--			return num_nodes;
--		goto out;
--	}
-+	} else {
-+		unsigned long n;
- 
--	/*
--	 * If the numa=fake command-line is just a single number N, split the
--	 * system RAM into N fake nodes.
--	 */
--	if (!strchr(cmdline, '*') && !strchr(cmdline, ',')) {
--		long n = simple_strtol(cmdline, NULL, 0);
--
--		num_nodes = split_nodes_interleave(addr, max_addr,
--							num_phys_nodes, n);
--		if (num_nodes < 0)
--			return num_nodes;
--		goto out;
-+		n = simple_strtoul(cmdline, NULL, 0);
-+		num_nodes = split_nodes_interleave(addr, max_addr, num_phys_nodes, n);
- 	}
- 
--	/* Parse the command line. */
--	for (coeff_flag = 0; ; cmdline++) {
--		if (*cmdline && isdigit(*cmdline)) {
--			num = num * 10 + *cmdline - '0';
--			continue;
--		}
--		if (*cmdline == '*') {
--			if (num > 0)
--				coeff = num;
--			coeff_flag = 1;
--		}
--		if (!*cmdline || *cmdline == ',') {
--			if (!coeff_flag)
--				coeff = 1;
--			/*
--			 * Round down to the nearest FAKE_NODE_MIN_SIZE.
--			 * Command-line coefficients are in megabytes.
--			 */
--			size = ((u64)num << 20) & FAKE_NODE_MIN_HASH_MASK;
--			if (size)
--				for (i = 0; i < coeff; i++, num_nodes++)
--					if (setup_node_range(num_nodes, &addr,
--						size, max_addr) < 0)
--						goto done;
--			if (!*cmdline)
--				break;
--			coeff_flag = 0;
--			coeff = -1;
--		}
--		num = 0;
--	}
--done:
--	if (!num_nodes)
--		return -1;
--	/* Fill remainder of system RAM, if appropriate. */
--	if (addr < max_addr) {
--		if (coeff_flag && coeff < 0) {
--			/* Split remaining nodes into num-sized chunks */
--			num_nodes += split_nodes_by_size(&addr, max_addr,
--							 num_nodes, num);
--			goto out;
--		}
--		switch (*(cmdline - 1)) {
--		case '*':
--			/* Split remaining nodes into coeff chunks */
--			if (coeff <= 0)
--				break;
--			num_nodes += split_nodes_equally(&addr, max_addr,
--							 num_nodes, coeff);
--			break;
--		case ',':
--			/* Do not allocate remaining system RAM */
--			break;
--		default:
--			/* Give one final node */
--			setup_node_range(num_nodes, &addr, max_addr - addr,
--					 max_addr);
--			num_nodes++;
--		}
--	}
--out:
-+	if (num_nodes < 0)
-+		return num_nodes;
- 	memnode_shift = compute_hash_shift(nodes, num_nodes, NULL);
- 	if (memnode_shift < 0) {
- 		memnode_shift = 0;
+
