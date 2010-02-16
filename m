@@ -1,48 +1,60 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932799Ab0BPQDh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 11:03:37 -0500
-Received: from poutre.nerim.net ([62.4.16.124]:62246 "EHLO poutre.nerim.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932614Ab0BPQDf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 11:03:35 -0500
-Date: Tue, 16 Feb 2010 17:03:33 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: "J.H." <warthog9@kernel.org>
-Cc: tytso@mit.edu, Pavel Machek <pavel@ucw.cz>, mirrors@kernel.org,
-       lasse.collin@tukaani.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       users@kernel.org, "FTPAdmin Kernel.org" <ftpadmin@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Willy Tarreau <w@1wt.eu>
-Subject: Re: [kernel.org users] XZ Migration discussion
-Message-ID: <20100216170333.71170357@hyperion.delvare>
-In-Reply-To: <4B7AB9C0.6070402@kernel.org>
-References: <4B744E13.8040004@kernel.org>
-	<20100212150137.648dca7c@hyperion.delvare>
-	<alpine.LFD.2.00.1002120714320.7792@localhost.localdomain>
-	<4B75A5DC.3060803@kernel.org>
-	<20100212202357.6363d5af@hyperion.delvare>
-	<20100212230702.GA10266@1wt.eu>
-	<20100213091748.276821e1@hyperion.delvare>
-	<20100214170724.GE1578@ucw.cz>
-	<20100214200803.4b2348ce@hyperion.delvare>
-	<20100215151522.GI5337@thunk.org>
-	<4B7AB9C0.6070402@kernel.org>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S933018Ab0BPQI4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 11:08:56 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:27995 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932297Ab0BPQIw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 11:08:52 -0500
+Message-ID: <4B7AC2A9.4070203@oracle.com>
+Date: Tue, 16 Feb 2010 08:07:05 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+MIME-Version: 1.0
+To: khali@linux-fr.org
+CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -next] i2c: fix xiic build error
+References: <20100204185736.6628ab9a.sfr@canb.auug.org.au> <4B6B29DD.7060502@oracle.com>
+In-Reply-To: <4B6B29DD.7060502@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt354.oracle.com [141.146.40.154]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090205.4B7AC2F0.01F9:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Feb 2010 07:29:04 -0800, J.H. wrote:
-> As a note xz is available via EPEL for Redhat Enterprice Linux 5 and
-> anything that's derived from that.  Doesn't seem to be available,
-> directly, for 4 or lower.  Not sure on Suse, and Debian's already been
-> mentioned.  Just trying to do a quick survey of what's out there already.
+On 02/04/10 12:11, Randy Dunlap wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> Add header file to fix build error:
+> 
+> drivers/i2c/busses/i2c-xiic.c:493: error: implicit declaration of
+> function 'mdelay'
+> 
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> ---
+>  drivers/i2c/busses/i2c-xiic.c |    1 +
+>  1 file changed, 1 insertion(+)
+> 
+> --- linux-next-20100204.orig/drivers/i2c/busses/i2c-xiic.c
+> +++ linux-next-20100204/drivers/i2c/busses/i2c-xiic.c
+> @@ -31,6 +31,7 @@
+>  #include <linux/module.h>
+>  #include <linux/init.h>
+>  #include <linux/errno.h>
+> +#include <linux/delay.h>
+>  #include <linux/platform_device.h>
+>  #include <linux/i2c.h>
+>  #include <linux/interrupt.h>
+> 
 
-xz is available since openSUSE 11.2, not before.
+
+This patch is still needed in linux-next-20100216.
 
 -- 
-Jean Delvare
+~Randy
