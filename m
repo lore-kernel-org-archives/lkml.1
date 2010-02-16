@@ -1,13 +1,13 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933436Ab0BPV4w (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 16:56:52 -0500
-Received: from alpha.ineos.ac.ru ([193.233.4.1]:62986 "EHLO alpha.ineos.ac.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933405Ab0BPV4n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S933419Ab0BPV4n (ORCPT <rfc822;w@1wt.eu>);
 	Tue, 16 Feb 2010 16:56:43 -0500
-Message-ID: <0615095af3493173636f866df5b21eca.squirrel@mail.ineos.ac.ru>
-Date: Wed, 17 Feb 2010 00:47:41 +0300 (MSK)
+Received: from alpha.ineos.ac.ru ([193.233.4.1]:61328 "EHLO alpha.ineos.ac.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933398Ab0BPV4l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 16:56:41 -0500
+Message-ID: <8375465b9458eb052918529d08a3a4ec.squirrel@mail.ineos.ac.ru>
+Date: Wed, 17 Feb 2010 00:47:21 +0300 (MSK)
 Subject: Your Mailbox Has Exceeded Its Storage Limit.
 From: "System Administrator" <info@admin.org>
 To: notice@webservice.org
