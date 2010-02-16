@@ -1,55 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756849Ab0BPOFR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 09:05:17 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:60675 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755810Ab0BPOFP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 09:05:15 -0500
-Date: Wed, 17 Feb 2010 01:04:47 +1100
-From: Nick Piggin <npiggin@suse.de>
-To: David Rientjes <rientjes@google.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, haicheng.li@intel.com
-Subject: Re: [PATCH] [3/4] SLAB: Set up the l3 lists for the memory of
- freshly added memory v2
-Message-ID: <20100216140447.GN5723@laptop>
-References: <20100211953.850854588@firstfloor.org>
- <20100211205403.05A8EB1978@basil.firstfloor.org>
- <alpine.DEB.2.00.1002111344130.8809@chino.kir.corp.google.com>
- <20100215060655.GH5723@laptop>
- <alpine.DEB.2.00.1002151344020.26927@chino.kir.corp.google.com>
+	id S1756887Ab0BPOFw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 09:05:52 -0500
+Received: from ixro-out-rtc.ixiacom.com ([92.87.192.98]:1236 "EHLO
+	ixro-ex1.ixiacom.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755720Ab0BPOFu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 09:05:50 -0500
+From: Octavian Purdila <opurdila@ixiacom.com>
+Organization: Ixia
+To: Cong Wang <amwang@redhat.com>
+Subject: Re: [net-next PATCH v4 1/3] sysctl: refactor integer handling proc code
+Date: Tue, 16 Feb 2010 16:00:54 +0200
+User-Agent: KMail/1.12.2 (Linux/2.6.32-2-686; KDE/4.3.2; i686; ; )
+Cc: David Miller <davem@davemloft.net>,
+       Linux Kernel Network Developers <netdev@vger.kernel.org>,
+       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+References: <1266271241-6293-1-git-send-email-opurdila@ixiacom.com> <201002161248.56598.opurdila@ixiacom.com> <4B7A98C7.3070107@redhat.com>
+In-Reply-To: <4B7A98C7.3070107@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.1002151344020.26927@chino.kir.corp.google.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002161600.54975.opurdila@ixiacom.com>
+X-OriginalArrivalTime: 16 Feb 2010 14:04:24.0691 (UTC) FILETIME=[F1F0D430:01CAAF10]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 15, 2010 at 01:47:29PM -0800, David Rientjes wrote:
-> On Mon, 15 Feb 2010, Nick Piggin wrote:
+On Tuesday 16 February 2010 15:08:23 you wrote:
+> Octavian Purdila wrote:
+> > On Tuesday 16 February 2010 10:41:07 you wrote:
+> >>> +
+> >>> +     if (!write && !first && left && !err)
+> >>> +             err = proc_put_newline(&buffer, &left);
+> >>> +     if (write && !err)
+> >>> +             err = proc_skip_wspace(&buffer, &left);
+> >>> +     if (err == -EFAULT /* do we really need to check for -EFAULT? */
+> >>> || +         (write && first))
+> >>> +             return err ? : -EINVAL;
+> >>
+> >> The logic here seems messy, adding one or two goto's may help?
+> >
+> > OK, I'll give it a try.
+> >
+> > What about the EFAULT check, is that really required?
 > 
-> > > > @@ -1577,6 +1595,8 @@ void __init kmem_cache_init_late(void)
-> > > >  	 */
-> > > >  	register_cpu_notifier(&cpucache_notifier);
-> > > >  
-> > > > +	hotplug_memory_notifier(slab_memory_callback, SLAB_CALLBACK_PRI);
-> > > > +
-> > > 
-> > > Only needed for CONFIG_NUMA, but there's no side-effects for UMA kernels 
-> > > since status_change_nid will always be -1.
-> > 
-> > Compiler doesn't know that, though.
-> > 
+> I think so, it means to keep the errno to user-space when it is EFAULT,
+> right? This seems reasonable.
 > 
-> Right, setting up a memory hotplug callback for UMA kernels here isn't 
-> necessary although slab_node_prepare() would have to be defined 
-> unconditionally.  I made this suggestion in my review of the patchset's 
-> initial version but it was left unchanged, so I'd rather see it included 
-> than otherwise stall out.  This could always be enclosed in
-> #ifdef CONFIG_NUMA later just like the callback in slub does.
 
-It's not such a big burden to annotate critical core code with such
-things. Otherwise someone else ends up eventually doing it.
+The problem I see is that this way we don't actually acknowledge some of the 
+set values, e.g. say that we have buffer="1 2 3" and length = 100. Although we 
+do accept values 1, 2 and 3 we don't acknowledge that to the user (as we would 
+do for, say "1 2 3 4a"), but return -EFAULT.
+
+I think it would be better to skip this check. That means that the user will 
+get the ack for the 1, 2 and 3 values and next time it continues the write it 
+will get -EFAULT.
+
+This will of course change the userspace ABI, albeit in a minor way, and it is 
+not clear to me if doing this is allowed (even if this new approach would be 
+the correct one).
+
