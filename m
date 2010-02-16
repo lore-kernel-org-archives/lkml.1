@@ -1,218 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932657Ab0BPKGz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 05:06:55 -0500
-Received: from mga12.intel.com ([143.182.124.36]:57163 "EHLO
-	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932136Ab0BPKGx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 05:06:53 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,483,1262592000"; 
-   d="scan'208";a="244525638"
-Date: Tue, 16 Feb 2010 11:08:10 +0100
-From: Samuel Ortiz <sameo@linux.intel.com>
-To: Denis Turischev <denis@compulab.co.il>,
-       Jacob Jun Pan <jacob.jun.pan@intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Jean Delvare <khali@linux-fr.org>, linux-i2c@vger.kernel.org
-Subject: Re: [PATCH 1/3] MFD: introduce lpc_sch for Intel SCH LPC bridge
-Message-ID: <20100216100809.GA2935@sortiz.org>
-References: <4B73DAEE.5080400@compulab.co.il>
- <4B73DB4B.40501@compulab.co.il>
+	id S932759Ab0BPKUb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 05:20:31 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:24760 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932372Ab0BPKUa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 05:20:30 -0500
+Date: Tue, 16 Feb 2010 11:19:03 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Andi Kleen <andi@firstfloor.org>, "H. Peter Anvin" <hpa@zytor.com>
+Cc: Roland McGrath <roland@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: x86: get rid of the insane TIF_ABI_PENDING bit
+Message-ID: <20100216101903.GA1057@redhat.com>
+References: <20100215161752.GA19962@redhat.com> <4B799C3F.7010308@zytor.com> <20100215194123.96D49FC3@magilla.sf.frob.com> <4B79B202.5090006@zytor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4B73DB4B.40501@compulab.co.il>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <4B79B202.5090006@zytor.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Denis,
+On 02/15, H. Peter Anvin wrote:
+>
+> On 02/15/2010 11:41 AM, Roland McGrath wrote:
+> > It affects whatever uses is_compat_task(), but I can't see anything
+> > where that matters except inside some particular syscall or for
+> > syscall restart after signals.
+>
+> FWIW, the origin of this is checkin
+> 4d9bc79cd28b779610d9590b3a96a28a0f64a25a (2.6.18-rc1), which somewhat
+> unhelpfully states "Make sure is_compat_task works early".  It doesn't
+> specify what the failure is if is_compat_task doesn't work early.
 
-On Thu, Feb 11, 2010 at 12:26:19PM +0200, Denis Turischev wrote:
-> Intel Poulsbo (SCH) chipset LPC bridge controller contains several
-> functions. Creating and MFD driver for the LPC bridge controller allows
-> simultaneous use of SMBus and GPIO interfaces on the SCH.
-That looks like an nice patch to me. Before merging it, I'd like to get
-Jacob's view on it though. Jacob, does moving the SCH SMBus driver to a
-platform one look fine to you ?
+Perhaps Andi could explain us why this is needed,
 
-Cheers,
-Samuel.
+> On
+> the other hand, it sure as heck seems better to set it and not need it
+> than the other way around.
 
+Agreed, but otoh it is always good to understand the code. If we
+really have a reason for TS_COMPAT, a small comment can help other
+readers.
 
-> Signed-off-by: Denis Turischev <denis@compulab.co.il>
-> 
-> diff -Nru linux-2.6.33-rc7.orig/drivers/mfd/Kconfig linux-2.6.33-rc7/drivers/mfd/Kconfig
-> --- linux-2.6.33-rc7.orig/drivers/mfd/Kconfig	2010-02-07 00:17:12.000000000 +0200
-> +++ linux-2.6.33-rc7/drivers/mfd/Kconfig	2010-02-10 15:15:40.000000000 +0200
-> @@ -348,6 +348,14 @@
->  	  read/write functions for the devices to get access to this chip.
->  	  This chip embeds various other multimedia funtionalities as well.
-> 
-> +config LPC_SCH
-> +	tristate "Intel SCH LPC"
-> +	default m
-> +	depends on PCI
-> +	help
-> +	  LPC bridge function of the Intel SCH provides support for
-> +	  System Management Bus and General Purpose I/O.
-> +
->  endmenu
-> 
->  menu "Multimedia Capabilities Port drivers"
-> diff -Nru linux-2.6.33-rc7.orig/drivers/mfd/lpc_sch.c linux-2.6.33-rc7/drivers/mfd/lpc_sch.c
-> --- linux-2.6.33-rc7.orig/drivers/mfd/lpc_sch.c	1970-01-01 02:00:00.000000000 +0200
-> +++ linux-2.6.33-rc7/drivers/mfd/lpc_sch.c	2010-02-11 10:31:54.000000000 +0200
-> @@ -0,0 +1,133 @@
-> +/*
-> + *  lpc_sch.c - LPC interface for Intel Poulsbo SCH
-> + *
-> + *  LPC bridge function of the Intel SCH contains many other
-> + *  functional units, such as Interrupt controllers, Timers,
-> + *  Power Management, System Management, GPIO, RTC, and LPC
-> + *  Configuration Registers.
-> + *
-> + *  Copyright (c) 2010 CompuLab Ltd
-> + *  Author: Denis Turischev <denis@compulab.co.il>
-> + *
-> + *  This program is free software; you can redistribute it and/or modify
-> + *  it under the terms of the GNU General Public License 2 as published
-> + *  by the Free Software Foundation.
-> + *
-> + *  This program is distributed in the hope that it will be useful,
-> + *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + *  GNU General Public License for more details.
-> + *
-> + *  You should have received a copy of the GNU General Public License
-> + *  along with this program; see the file COPYING.  If not, write to
-> + *  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
-> + */
-> +
-> +#include <linux/init.h>
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/errno.h>
-> +#include <linux/acpi.h>
-> +#include <linux/pci.h>
-> +#include <linux/mfd/core.h>
-> +
-> +#define SMBASE		0x40
-> +#define SMBUS_IO_SIZE	64
-> +
-> +#define GPIOBASE	0x44
-> +#define GPIO_IO_SIZE	64
-> +
-> +static struct resource smbus_sch_resource = {
-> +		.flags = IORESOURCE_IO,
-> +};
-> +
-> +
-> +static struct resource gpio_sch_resource = {
-> +		.flags = IORESOURCE_IO,
-> +};
-> +
-> +static struct mfd_cell lpc_sch_cells[] = {
-> +	{
-> +		.name = "isch_smbus",
-> +		.num_resources = 1,
-> +		.resources = &smbus_sch_resource,
-> +	},
-> +	{
-> +		.name = "sch_gpio",
-> +		.num_resources = 1,
-> +		.resources = &gpio_sch_resource,
-> +	},
-> +};
-> +
-> +static struct pci_device_id lpc_sch_ids[] = {
-> +	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_SCH_LPC) },
-> +	{ 0, }
-> +};
-> +MODULE_DEVICE_TABLE(pci, lpc_sch_ids);
-> +
-> +static int __devinit lpc_sch_probe(struct pci_dev *dev,
-> +				const struct pci_device_id *id)
-> +{
-> +	unsigned int base_addr_cfg;
-> +	unsigned short base_addr;
-> +
-> +	pci_read_config_dword(dev, SMBASE, &base_addr_cfg);
-> +	if (!(base_addr_cfg & (1 << 31))) {
-> +		dev_err(&dev->dev, "Decode of the SMBus I/O range disabled\n");
-> +		return -ENODEV;
-> +	}
-> +	base_addr = (unsigned short)base_addr_cfg;
-> +	if (base_addr == 0) {
-> +		dev_err(&dev->dev, "I/O space for SMBus uninitialized\n");
-> +		return -ENODEV;
-> +	}
-> +
-> +	smbus_sch_resource.start = base_addr;
-> +	smbus_sch_resource.end = base_addr + SMBUS_IO_SIZE - 1;
-> +
-> +	pci_read_config_dword(dev, GPIOBASE, &base_addr_cfg);
-> +	if (!(base_addr_cfg & (1 << 31))) {
-> +		dev_err(&dev->dev, "Decode of the GPIO I/O range disabled\n");
-> +		return -ENODEV;
-> +	}
-> +	base_addr = (unsigned short)base_addr_cfg;
-> +	if (base_addr == 0) {
-> +		dev_err(&dev->dev, "I/O space for GPIO uninitialized\n");
-> +		return -ENODEV;
-> +	}
-> +
-> +	gpio_sch_resource.start = base_addr;
-> +	gpio_sch_resource.end = base_addr + GPIO_IO_SIZE - 1;
-> +
-> +	return mfd_add_devices(&dev->dev, -1,
-> +			lpc_sch_cells, ARRAY_SIZE(lpc_sch_cells), NULL, 0);
-> +}
-> +
-> +static void __devexit lpc_sch_remove(struct pci_dev *dev)
-> +{
-> +	mfd_remove_devices(&dev->dev);
-> +}
-> +
-> +static struct pci_driver lpc_sch_driver = {
-> +	.name		= "lpc_sch",
-> +	.id_table	= lpc_sch_ids,
-> +	.probe		= lpc_sch_probe,
-> +	.remove		= __devexit_p(lpc_sch_remove),
-> +};
-> +
-> +static int __init lpc_sch_init(void)
-> +{
-> +	return pci_register_driver(&lpc_sch_driver);
-> +}
-> +
-> +static void __exit lpc_sch_exit(void)
-> +{
-> +	pci_unregister_driver(&lpc_sch_driver);
-> +}
-> +
-> +module_init(lpc_sch_init);
-> +module_exit(lpc_sch_exit);
-> +
-> +MODULE_AUTHOR("Denis Turischev <denis@compulab.co.il>");
-> +MODULE_DESCRIPTION("LPC interface for Intel Poulsbo SCH");
-> +MODULE_LICENSE("GPL");
-> diff -Nru linux-2.6.33-rc7.orig/drivers/mfd/Makefile linux-2.6.33-rc7/drivers/mfd/Makefile
-> --- linux-2.6.33-rc7.orig/drivers/mfd/Makefile	2010-02-07 00:17:12.000000000 +0200
-> +++ linux-2.6.33-rc7/drivers/mfd/Makefile	2010-02-10 15:15:40.000000000 +0200
-> @@ -55,4 +55,5 @@
->  obj-$(CONFIG_AB3100_OTP)	+= ab3100-otp.o
->  obj-$(CONFIG_AB4500_CORE)	+= ab4500-core.o
->  obj-$(CONFIG_MFD_88PM8607)	+= 88pm8607.o
-> -obj-$(CONFIG_PMIC_ADP5520)	+= adp5520.o
-> \ No newline at end of file
-> +obj-$(CONFIG_PMIC_ADP5520)	+= adp5520.o
-> +obj-$(CONFIG_LPC_SCH)		+= lpc_sch.o
+Oleg.
 
--- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
