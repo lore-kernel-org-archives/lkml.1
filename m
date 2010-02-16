@@ -1,241 +1,302 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755478Ab0BPIg2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 03:36:28 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:34303 "EHLO gir.skynet.ie"
+	id S1755990Ab0BPIhn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 03:37:43 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:38484 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753639Ab0BPIg1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 03:36:27 -0500
-Date: Tue, 16 Feb 2010 08:36:12 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Andrea Arcangeli <aarcange@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Adam Litke <agl@us.ibm.com>, Avi Kivity <avi@redhat.com>,
-       David Rientjes <rientjes@google.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH 03/12] Export unusable free space index via
-	/proc/pagetypeinfo
-Message-ID: <20100216083612.GA26086@csn.ul.ie>
-References: <1265976059-7459-1-git-send-email-mel@csn.ul.ie> <1265976059-7459-4-git-send-email-mel@csn.ul.ie> <20100216152106.72FA.A69D9226@jp.fujitsu.com>
+	id S1753639Ab0BPIhm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 03:37:42 -0500
+Message-ID: <4B7A5A23.3080309@redhat.com>
+Date: Tue, 16 Feb 2010 16:41:07 +0800
+From: Cong Wang <amwang@redhat.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20091001)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20100216152106.72FA.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Octavian Purdila <opurdila@ixiacom.com>
+CC: David Miller <davem@davemloft.net>,
+       Linux Kernel Network Developers <netdev@vger.kernel.org>,
+       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [net-next PATCH v4 1/3] sysctl: refactor integer handling proc
+ code
+References: <1266271241-6293-1-git-send-email-opurdila@ixiacom.com> <1266271241-6293-2-git-send-email-opurdila@ixiacom.com>
+In-Reply-To: <1266271241-6293-2-git-send-email-opurdila@ixiacom.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 16, 2010 at 04:03:29PM +0900, KOSAKI Motohiro wrote:
-> > Unusuable free space index is a measure of external fragmentation that
-> > takes the allocation size into account. For the most part, the huge page
-> > size will be the size of interest but not necessarily so it is exported
-> > on a per-order and per-zone basis via /proc/pagetypeinfo.
+Octavian Purdila wrote:
+> As we are about to add another integer handling proc function a little
+> bit of cleanup is in order: add a few helper functions to improve code
+> readability and decrease code duplication.
 > 
-> Hmmm..
-> /proc/pagetype have a machine unfriendly format. perhaps, some user have own ugly
-> /proc/pagetype parser. It have a little risk to break userland ABI.
+> In the process a bug is fixed as well: if the user specifies a number
+> with more then 20 digits it will be interpreted as two integers
+> (e.g. 10000...13 will be interpreted as 100.... and 13).
 > 
+> Signed-off-by: Octavian Purdila <opurdila@ixiacom.com>
+> Cc: WANG Cong <amwang@redhat.com>
+> Cc: Eric W. Biederman <ebiederm@xmission.com>
 
-It's very low risk. I doubt there are machine parsers of
-/proc/pagetypeinfo because there are very few machine-orientated actions
-that can be taken based on the information. It's more informational for
-a user if they were investigating fragmentation problems.
 
-> I have dumb question. Why can't we use another file?
-> 
+Some comments below.
 
-I could. What do you suggest?
 
+> ---
+>  kernel/sysctl.c |  298 +++++++++++++++++++++++++++----------------------------
+>  1 files changed, 144 insertions(+), 154 deletions(-)
 > 
-> > The index is normally calculated as a value between 0 and 1 which is
-> > obviously unsuitable within the kernel. Instead, the first three decimal
-> > places are used as a value between 0 and 1000 for an integer approximation.
-> 
-> I think we can treat separately internal representaion and /proc displaing
-> style. example, load-average have fixed point internal representaion. but
-> /proc/loadavg hide it.
-> 
-> So, I personally like to keep this internal representation and change external
-> representaion to 0.000-1.000 or 0.0%-100.0% range.
-> 
+> diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+> index 8a68b24..b0f9618 100644
+> --- a/kernel/sysctl.c
+> +++ b/kernel/sysctl.c
+> @@ -2039,8 +2039,98 @@ int proc_dostring(struct ctl_table *table, int write,
+>  			       buffer, lenp, ppos);
+>  }
+>  
+> +static int proc_skip_wspace(char __user **buf, size_t *size)
+> +{
+> +	char c;
+> +
+> +	while (*size) {
+> +		if (get_user(c, *buf))
+> +			return -EFAULT;
+> +		if (!isspace(c))
+> +			break;
+> +		(*size)--; (*buf)++;
+> +	}
+> +
+> +	return 0;
+> +}
 
-I don't want to use a percentage for this value as there are two
-indices, one of which can be expressed as a percentage and the other
-not. I can represent it has a value between 0 and 1 if you prefer.
 
-> 
-> 
-> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> > ---
-> >  Documentation/filesystems/proc.txt |   10 ++++
-> >  mm/vmstat.c                        |   99 ++++++++++++++++++++++++++++++++++++
-> >  2 files changed, 109 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/Documentation/filesystems/proc.txt b/Documentation/filesystems/proc.txt
-> > index 1829dfb..0968a81 100644
-> > --- a/Documentation/filesystems/proc.txt
-> > +++ b/Documentation/filesystems/proc.txt
-> > @@ -614,6 +614,10 @@ Node    0, zone    DMA32, type      Movable    169    152    113     91     77
-> >  Node    0, zone    DMA32, type      Reserve      1      2      2      2      2      0      1      1      1      1      0
-> >  Node    0, zone    DMA32, type      Isolate      0      0      0      0      0      0      0      0      0      0      0
-> >  
-> > +Unusable free space index at order
-> > +Node    0, zone      DMA                         0      0      0      2      6     18     34     67     99    227    485
-> > +Node    0, zone    DMA32                         0      0      1      2      4      7     10     17     23     31     34
-> > +
-> >  Number of blocks type     Unmovable  Reclaimable      Movable      Reserve      Isolate
-> >  Node 0, zone      DMA            2            0            5            1            0
-> >  Node 0, zone    DMA32           41            6          967            2            0
-> > @@ -629,6 +633,12 @@ then gives the same type of information as buddyinfo except broken down
-> >  by migrate-type and finishes with details on how many page blocks of each
-> >  type exist.
-> >  
-> > +The unusable free space index measures how much of the available free
-> > +memory cannot be used to satisfy an allocation of a given size and is a
-> > +value between 0 and 1000. The higher the value, the more of free memory is
-> > +unusable and by implication, the worse the external fragmentation is. The
-> > +percentage of unusable free memory can be found by dividing this value by 10.
-> > +
-> >  If min_free_kbytes has been tuned correctly (recommendations made by hugeadm
-> >  from libhugetlbfs http://sourceforge.net/projects/libhugetlbfs/), one can
-> >  make an estimate of the likely number of huge pages that can be allocated
-> > diff --git a/mm/vmstat.c b/mm/vmstat.c
-> > index 6051fba..d05d610 100644
-> > --- a/mm/vmstat.c
-> > +++ b/mm/vmstat.c
-> > @@ -451,6 +451,104 @@ static int frag_show(struct seq_file *m, void *arg)
-> >  	return 0;
-> >  }
-> >  
-> > +
-> > +struct contig_page_info {
-> > +	unsigned long free_pages;
-> > +	unsigned long free_blocks_total;
-> > +	unsigned long free_blocks_suitable;
-> > +};
-> > +
-> > +/*
-> > + * Calculate the number of free pages in a zone, how many contiguous
-> > + * pages are free and how many are large enough to satisfy an allocation of
-> > + * the target size. Note that this function makes to attempt to estimate
-> > + * how many suitable free blocks there *might* be if MOVABLE pages were
-> > + * migrated. Calculating that is possible, but expensive and can be
-> > + * figured out from userspace
-> > + */
-> > +static void fill_contig_page_info(struct zone *zone,
-> > +				unsigned int suitable_order,
-> > +				struct contig_page_info *info)
-> > +{
-> > +	unsigned int order;
-> > +
-> > +	info->free_pages = 0;
-> > +	info->free_blocks_total = 0;
-> > +	info->free_blocks_suitable = 0;
-> > +
-> > +	for (order = 0; order < MAX_ORDER; order++) {
-> > +		unsigned long blocks;
-> > +
-> > +		/* Count number of free blocks */
-> > +		blocks = zone->free_area[order].nr_free;
-> > +		info->free_blocks_total += blocks;
-> > +
-> > +		/* Count free base pages */
-> > +		info->free_pages += blocks << order;
-> > +
-> > +		/* Count the suitable free blocks */
-> > +		if (order >= suitable_order)
-> > +			info->free_blocks_suitable += blocks <<
-> > +						(order - suitable_order);
-> > +	}
-> > +}
-> > +
-> > +/*
-> > + * Return an index indicating how much of the available free memory is
-> > + * unusable for an allocation of the requested size.
-> > + */
-> > +static int unusable_free_index(struct zone *zone,
-> > +				unsigned int order,
-> > +				struct contig_page_info *info)
-> > +{
-> > +	/* No free memory is interpreted as all free memory is unusable */
-> > +	if (info->free_pages == 0)
-> > +		return 1000;
-> > +
-> > +	/*
-> > +	 * Index should be a value between 0 and 1. Return a value to 3
-> > +	 * decimal places.
-> > +	 *
-> > +	 * 0 => no fragmentation
-> > +	 * 1 => high fragmentation
-> > +	 */
-> 
-> I leraned math by japanese. probably then I couldn't understand what mean
-> "3 decimal places" awhile.
-> Simply can't we write "Index should be a value between 0 and 1000"?
-> 
+In lib/string.c we have skip_spaces(), I think we can use it
+here instead of inventing another one.
 
-I can do either that or make it really display between 0 and 1. I'd
-prefer displaying between 0 and 1 myself.
+> +
+> +#define TMPBUFLEN 22
+> +static int proc_get_next_ulong(char __user **buf, size_t *size,
+> +			       unsigned long *val, bool *neg)
+> +{
+> +	int len;
+> +	char *p, tmp[TMPBUFLEN];
+> +	int err;
+> +
+> +	err = proc_skip_wspace(buf, size);
+> +	if (err)
+> +		return err;
+> +	if (!*size)
+> +		return -EINVAL;
+> +
+> +	len = *size;
+> +	if (len > TMPBUFLEN-1)
+> +		len = TMPBUFLEN-1;
+> +
+> +	if (copy_from_user(tmp, *buf, len))
+> +		return -EFAULT;
+> +
+> +	tmp[len] = 0;
+> +	p = tmp;
+> +	if (*p == '-' && *size > 1) {
+> +		*neg = 1;
+> +		p++;
+> +	} else
+> +		*neg = 0;
+> +	if (*p < '0' || *p > '9')
+> +		return -EINVAL;
 
-> 
-> > +	return ((info->free_pages - (info->free_blocks_suitable << order)) * 1000) / info->free_pages;
-> > +
-> > +}
-> > +
-> > +static void pagetypeinfo_showunusable_print(struct seq_file *m,
-> > +					pg_data_t *pgdat, struct zone *zone)
-> > +{
-> > +	unsigned int order;
-> > +
-> > +	/* Alloc on stack as interrupts are disabled for zone walk */
-> > +	struct contig_page_info info;
-> > +
-> > +	seq_printf(m, "Node %4d, zone %8s %19s",
-> > +				pgdat->node_id,
-> > +				zone->name, " ");
-> > +	for (order = 0; order < MAX_ORDER; ++order) {
-> > +		fill_contig_page_info(zone, order, &info);
-> > +		seq_printf(m, "%6d ", unusable_free_index(zone, order, &info));
-> > +	}
-> > +
-> > +	seq_putc(m, '\n');
-> > +}
-> > +
-> > +/*
-> > + * Display unusable free space index
-> > + * XXX: Could be a lot more efficient, but it's not a critical path
-> > + */
-> > +static int pagetypeinfo_showunusable(struct seq_file *m, void *arg)
-> > +{
-> > +	pg_data_t *pgdat = (pg_data_t *)arg;
-> > +
-> > +	seq_printf(m, "\nUnusable free space index at order\n");
-> > +	walk_zones_in_node(m, pgdat, pagetypeinfo_showunusable_print);
-> > +
-> > +	return 0;
-> > +}
-> > +
-> >  static void pagetypeinfo_showfree_print(struct seq_file *m,
-> >  					pg_data_t *pgdat, struct zone *zone)
-> >  {
-> > @@ -558,6 +656,7 @@ static int pagetypeinfo_show(struct seq_file *m, void *arg)
-> >  	seq_printf(m, "Pages per block:  %lu\n", pageblock_nr_pages);
-> >  	seq_putc(m, '\n');
-> >  	pagetypeinfo_showfree(m, pgdat);
-> > +	pagetypeinfo_showunusable(m, pgdat);
-> >  	pagetypeinfo_showblockcount(m, pgdat);
-> >  
-> >  	return 0;
-> > -- 
-> > 1.6.5
-> > 
-> 
-> 
-> 
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+isdigit().
+
+> +
+> +	*val = simple_strtoul(p, &p, 0);
+> +
+> +	len = p - tmp;
+> +	if (((len < *size) && *p && !isspace(*p)) ||
+> +	    /* We don't know if the next char is whitespace thus we may accept
+> +	     * invalid integers (e.g. 1234...a) or two integers instead of one
+> +	     * (e.g. 123...1). So lets not allow such large numbers. */
+> +	    len == TMPBUFLEN - 1)
+> +		return -EINVAL;
+>  
+> -static int do_proc_dointvec_conv(int *negp, unsigned long *lvalp,
+> +	*buf += len; *size -= len;
+> +
+> +	return 0;
+> +}
+> +
+> +static int proc_put_ulong(char __user **buf, size_t *size, unsigned long val,
+> +			  bool neg, bool first)
+> +{
+> +	int len;
+> +	char tmp[TMPBUFLEN], *p = tmp;
+> +
+> +	if (!first)
+> +		*p++ = '\t';
+> +	sprintf(p, "%s%lu", neg ? "-" : "", val);
+> +	len = strlen(tmp);
+> +	if (len > *size)
+> +		len = *size;
+> +	if (copy_to_user(*buf, tmp, len))
+> +		return -EFAULT;
+> +	*size -= len;
+> +	*buf += len;
+> +	return 0;
+> +}
+> +#undef TMPBUFLEN
+> +
+> +static int proc_put_newline(char __user **buf, size_t *size)
+> +{
+> +	if (*size) {
+> +		if (put_user('\n', *buf))
+> +			return -EFAULT;
+> +		(*size)--, (*buf)++;
+> +	}
+> +	return 0;
+> +}
+> +
+> +static int do_proc_dointvec_conv(bool *negp, unsigned long *lvalp,
+>  				 int *valp,
+>  				 int write, void *data)
+>  {
+> @@ -2049,7 +2139,7 @@ static int do_proc_dointvec_conv(int *negp, unsigned long *lvalp,
+>  	} else {
+>  		int val = *valp;
+>  		if (val < 0) {
+> -			*negp = -1;
+> +			*negp = 1;
+>  			*lvalp = (unsigned long)-val;
+>  		} else {
+>  			*negp = 0;
+> @@ -2060,19 +2150,15 @@ static int do_proc_dointvec_conv(int *negp, unsigned long *lvalp,
+>  }
+>  
+>  static int __do_proc_dointvec(void *tbl_data, struct ctl_table *table,
+> -		  int write, void __user *buffer,
+> +		  int write, void __user *_buffer,
+>  		  size_t *lenp, loff_t *ppos,
+> -		  int (*conv)(int *negp, unsigned long *lvalp, int *valp,
+> +		  int (*conv)(bool *negp, unsigned long *lvalp, int *valp,
+>  			      int write, void *data),
+>  		  void *data)
+>  {
+> -#define TMPBUFLEN 21
+> -	int *i, vleft, first = 1, neg;
+> -	unsigned long lval;
+> -	size_t left, len;
+> -	
+> -	char buf[TMPBUFLEN], *p;
+> -	char __user *s = buffer;
+> +	int *i, vleft, first = 1, err = 0;
+> +	size_t left;
+> +	char __user *buffer = (char __user *) _buffer;
+>  	
+>  	if (!tbl_data || !table->maxlen || !*lenp ||
+>  	    (*ppos && !write)) {
+> @@ -2088,88 +2174,39 @@ static int __do_proc_dointvec(void *tbl_data, struct ctl_table *table,
+>  		conv = do_proc_dointvec_conv;
+>  
+>  	for (; left && vleft--; i++, first=0) {
+> -		if (write) {
+> -			while (left) {
+> -				char c;
+> -				if (get_user(c, s))
+> -					return -EFAULT;
+> -				if (!isspace(c))
+> -					break;
+> -				left--;
+> -				s++;
+> -			}
+> -			if (!left)
+> -				break;
+> -			neg = 0;
+> -			len = left;
+> -			if (len > sizeof(buf) - 1)
+> -				len = sizeof(buf) - 1;
+> -			if (copy_from_user(buf, s, len))
+> -				return -EFAULT;
+> -			buf[len] = 0;
+> -			p = buf;
+> -			if (*p == '-' && left > 1) {
+> -				neg = 1;
+> -				p++;
+> -			}
+> -			if (*p < '0' || *p > '9')
+> -				break;
+> -
+> -			lval = simple_strtoul(p, &p, 0);
+> +		unsigned long lval;
+> +		bool neg;
+>  
+> -			len = p-buf;
+> -			if ((len < left) && *p && !isspace(*p))
+> +		if (write) {
+> +			err = proc_get_next_ulong(&buffer, &left, &lval, &neg);
+> +			if (err)
+>  				break;
+> -			s += len;
+> -			left -= len;
+> -
+>  			if (conv(&neg, &lval, i, 1, data))
+>  				break;
+>  		} else {
+> -			p = buf;
+> -			if (!first)
+> -				*p++ = '\t';
+> -	
+>  			if (conv(&neg, &lval, i, 0, data))
+>  				break;
+> -
+> -			sprintf(p, "%s%lu", neg ? "-" : "", lval);
+> -			len = strlen(buf);
+> -			if (len > left)
+> -				len = left;
+> -			if(copy_to_user(s, buf, len))
+> -				return -EFAULT;
+> -			left -= len;
+> -			s += len;
+> -		}
+> -	}
+> -
+> -	if (!write && !first && left) {
+> -		if(put_user('\n', s))
+> -			return -EFAULT;
+> -		left--, s++;
+> -	}
+> -	if (write) {
+> -		while (left) {
+> -			char c;
+> -			if (get_user(c, s++))
+> -				return -EFAULT;
+> -			if (!isspace(c))
+> +			err = proc_put_ulong(&buffer, &left, lval, neg, first);
+> +			if (err)
+>  				break;
+> -			left--;
+>  		}
+>  	}
+> -	if (write && first)
+> -		return -EINVAL;
+> +
+> +	if (!write && !first && left && !err)
+> +		err = proc_put_newline(&buffer, &left);
+> +	if (write && !err)
+> +		err = proc_skip_wspace(&buffer, &left);
+> +	if (err == -EFAULT /* do we really need to check for -EFAULT? */ ||
+> +	    (write && first))
+> +		return err ? : -EINVAL;
+
+The logic here seems messy, adding one or two goto's may help?
+
+
+>  	*lenp -= left;
+>  	*ppos += *lenp;
+>  	return 0;
+> -#undef TMPBUFLEN
+>  }
+>  
+
+The rest looks fine.
+
+Thanks!
