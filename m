@@ -1,46 +1,146 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756160Ab0BPNOz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 08:14:55 -0500
-Received: from mail-pz0-f187.google.com ([209.85.222.187]:56646 "EHLO
-	mail-pz0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755936Ab0BPNOx (ORCPT
+	id S1756218Ab0BPNPI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 08:15:08 -0500
+Received: from mail-yw0-f176.google.com ([209.85.211.176]:52093 "EHLO
+	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755979Ab0BPNOy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 08:14:53 -0500
+	Tue, 16 Feb 2010 08:14:54 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=TyK3PFzvAnev/Xq+W69iBV/1F1ecUPLmgzP0obZInRZzP9khBSKSiLTbLFhFiWyCMr
-         ZbwLPQhsj3xvKCENhCLgXljV5QvGwJ7mw4+V7wkINDv3jAzvdO569B6Z8Ma/VF+D8Roi
-         HJSggz7pfsruWPd+tpYYL4MJdpHS/goswkhhA=
-Date: Tue, 16 Feb 2010 21:17:22 +0800
-From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: "Nikita V. Youshchenko" <yoush@cs.msu.su>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Extended error reporting to user space?
-Message-ID: <20100216131722.GA4382@hack.private>
-References: <201002161520.26700@zigzag.lvk.cs.msu.su> <b6fcc0a1002160423o1269996bw34c033015b1ab500@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <b6fcc0a1002160423o1269996bw34c033015b1ab500@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=QyJajGKSa/2vUu4PyESYNQnYiTTn6WX/VbwzJ8Xb2U+3dKNaGK9lpQqiifgqI1n0N0
+         2BWnZo1Q+bxnNpjTaETDn1Qn4haHuxpiaCW1HOixktxLFrMhHKmsaI/gBOVSkWxAv5/a
+         scAPUZBTO8eiSRyurDHK5s2ixXHeAkTR3MAow=
+Subject: Re: [patch 4/7 -mm] oom: badness heuristic rewrite
+From: Minchan Kim <minchan.kim@gmail.com>
+To: David Rientjes <rientjes@google.com>
+Cc: Rik van Riel <riel@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Nick Piggin <npiggin@suse.de>, Andrea Arcangeli <aarcange@redhat.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+In-Reply-To: <alpine.DEB.2.00.1002151347470.26927@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.1002100224210.8001@chino.kir.corp.google.com>
+	 <alpine.DEB.2.00.1002100228540.8001@chino.kir.corp.google.com>
+	 <4B73833D.5070008@redhat.com>
+	 <alpine.DEB.2.00.1002102332200.22152@chino.kir.corp.google.com>
+	 <1265982984.6207.29.camel@barrios-desktop>
+	 <alpine.DEB.2.00.1002121251130.7972@chino.kir.corp.google.com>
+	 <28c262361002121845w459d0fa0l55a58552c3a6081e@mail.gmail.com>
+	 <alpine.DEB.2.00.1002151347470.26927@chino.kir.corp.google.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 16 Feb 2010 22:14:46 +0900
+Message-ID: <1266326086.1709.50.camel@barrios-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 16, 2010 at 02:23:55PM +0200, Alexey Dobriyan wrote:
->On Tue, Feb 16, 2010 at 2:20 PM, Nikita V. Youshchenko <yoush@cs.msu.su> wrote:
->> Unfortunately this -EINVAL is not really useful.
->
->There is no such thing.
->Driver can spit messages with printk() though.
+On Mon, 2010-02-15 at 13:54 -0800, David Rientjes wrote:
+> We're not enforcing a global, system-wide forkbomb policy in the oom 
+> killer, but we do need to identify tasks that fork a very large number of 
+> tasks to break ties with other tasks: in other words, it would not be 
+> helpful to kill an application that has been running for weeks because 
+> another application with the same or less memory usage has forked 1000 
+> children and has caused an oom condition.  That unfairly penalizes the 
+> former application that is actually doing work.
+> 
+> Again, I'd encourage you to look at this as only a slight penalization 
+> rather than a policy that strictly needs to be enforced.  If it were 
+> strictly enforced, it would be a prerequisite for selection if such a task 
+> were to exist; in my implementation, it is part of the heuristic.
 
-Right, if errno is not enough, printk() is.
+Okay. I can think it of slight penalization in this patch. 
+But in current OOM logic, we try to kill child instead of forkbomb
+itself. My concern was that.
+Of course, It's not a part of your patch[2/7] which is good. 
+It has been in there during long time. I hope we could solve that in
+this chance. Pz, look at below my example. 
 
-You could also use other interface to debug, but printk() is the
-simplest.
+> 
+> > > That doesn't work with Rik's example of a webserver that forks a large
+> > > number of threads to handle client connections.  It is _always_ better to
+> > > kill a child instead of making the entire webserver unresponsive.
+> > 
+> > In such case, admin have to handle it by oom_forkbom_thres.
+> > Isn't it your goal?
+> > 
+> 
+> oom_forkbomb_thres has a default value, which is 1000, so it should be 
+> enabled by default.
+> 
+> > My suggestion is how handle buggy forkbomb processes which make
+> > system almost hang by user's mistake. :)
+> > 
+> 
+> I don't think you've given a clear description (or, even better, a patch) 
+> of your suggestion.
 
-Thanks.
+I write down my suggestion, again. 
+My concern is following as. 
+
+
+1. Forkbomb A task makes 2000 children in a second.
+2. 2000 children has almost same memory usage. I know another factors
+affect oom_score. but in here, I assume all of children have almost same
+badness score. 
+3. Your heuristic penalizes A task so it would be detected as forkbomb. 
+4. So OOM killer select A task as bad task. 
+5. oom_kill_process kills high badness one of children, _NOT_ task A
+itself. Unfortunately high badness child doesn't has big memory usage
+compared to sibling. It means sooner or later we would need OOM again. 
+
+
+My point was 5.
+
+1. oom_kill_process have to take a long time to scan tasklist for
+selecting just one high badness task. Okay. It's right since OOM system
+hang is much bad and it would be better to kill just first task(ie,
+random one) in tasklist. 
+
+2. But in above scenario, sibling have almost same memory. So we would
+need OOM again sooner or later and OOM logic could do above scenario
+repeatably. 
+
+Yes. Our system is already unresponsible since time slice is spread out
+many child tasks. Then in here, it would be better to kill dumb child
+instead of BUGGY forkbomb task A? How long time do we have to wait
+system responsible? 
+
+I said _BUGGY_ forkbomb task. That's because Rik's example isn't buggy
+task. Administrator already knows apache can make many task in a second.
+So he can handle it by your oom_forkbomb_thres knob. It's goal of your
+knob. 
+
+So my suggestion is following as. 
+
+I assume normal forkbomb tasks are handled well by admin who use your
+oom_forkbom_thres. The remained problem is just BUGGY forkbomb process. 
+So if your logic selects same victim task as forkbomb by your heuristic
+and it's 5th time continuously in 10 second, let's kill forkbomb instead
+of child.
+
+tsk = select_victim_task(&cause);
+if (tsk == last_victim_tsk && cause == BUGGY_FORKBOMB)
+	if (++count == 5 && time_since_first_detect_forkbomb <= 10*HZ)
+		kill(tsk);
+else {
+   last_victim_tsk = NULL; count = 0; time_since... = 0;
+   kill(tsk's child);
+}
+
+It's just example of my concern. It might never good solution.
+What I mean is just whether we have to care this.
+
+
+
+-- 
+Kind regards,
+Minchan Kim
+
+
