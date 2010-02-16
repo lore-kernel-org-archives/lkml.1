@@ -1,64 +1,69 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933361Ab0BPVGn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 16:06:43 -0500
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:51548 "EHLO
-	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933349Ab0BPVGk convert rfc822-to-8bit (ORCPT
+	id S933357Ab0BPVKQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 16:10:16 -0500
+Received: from mail-in-13.arcor-online.net ([151.189.21.53]:58037 "EHLO
+	mail-in-13.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933309Ab0BPVKO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 16:06:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding:message-id;
-        b=v4Vuj/PAhWECDS4LAWFn0kFaYP8rslnkTjHHF6BIElrg/VmDLf6uNnH2C0HCXU/C1Y
-         gTwh4eaDzsxR5BSxqfVV2cIeuiYvT/OppFXpBI9XpcfC/FnMLbhh0RhWuzf9emc5eNfR
-         wo5omHxp7mb0j65nJ5WnRo3it2Kbue8Tloe7g=
-From: Volker Armin Hemmann <volkerarmin@googlemail.com>
-To: Bill Davidsen <davidsen@tmr.com>
+	Tue, 16 Feb 2010 16:10:14 -0500
+X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-12.arcor-online.net 794081B3920
+From: Bodo Eggert <7eggert@web.de>
 Subject: Re: Linux mdadm superblock question.
-Date: Tue, 16 Feb 2010 22:06:32 +0100
-User-Agent: KMail/1.13.0 (Linux/2.6.31.12r4; KDE/4.4.0; x86_64; ; )
-Cc: Michael Evans <mjevans1983@gmail.com>, linux-kernel@vger.kernel.org,
+To: Bill Davidsen <davidsen@tmr.com>,
+       Volker Armin Hemmann <volkerarmin@googlemail.com>,
+       Michael Evans <mjevans1983@gmail.com>, linux-kernel@vger.kernel.org,
        linux-raid@vger.kernel.org
-References: <201002140251.59668.volkerarmin@googlemail.com> <201002141940.35716.volkerarmin@googlemail.com> <4B7AD35E.7000405@tmr.com>
-In-Reply-To: <4B7AD35E.7000405@tmr.com>
+Reply-To: 7eggert@gmx.de
+Date: Tue, 16 Feb 2010 22:10:07 +0100
+References: <edBWa-K7-9@gated-at.bofh.it> <edDXX-3XC-7@gated-at.bofh.it> <edRHA-7bL-13@gated-at.bofh.it> <eezfA-4N7-11@gated-at.bofh.it>
+User-Agent: KNode/0.10.4
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <201002162206.32797.volkerarmin@googlemail.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7Bit
+Message-Id: <E1NhUgJ-0004Tn-Qv@be1.7eggert.dyndns.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dienstag 16 Februar 2010, Bill Davidsen wrote:
+Bill Davidsen <davidsen@tmr.com> wrote:
 > Volker Armin Hemmann wrote:
-> > On Sonntag 14 Februar 2010, you wrote:
-> >> In other words, 'auto-detection' for 1.x format devices is using an
-> >> initrd/initramfs.
-> > 
-> > which makes 1.x format useless for everybody who does not want to deal
-> > with initrd/initramfs.
+>> On Sonntag 14 Februar 2010, you wrote:
+
+>>> In other words, 'auto-detection' for 1.x format devices is using an
+>>> initrd/initramfs.
+>>>     
+>>
+>> which makes 1.x format useless for everybody who does not want to deal with
+>> initrd/initramfs.
+>>   
 > 
 > You make this sound like some major big deal. are you running your own
 > distribution? In most cases mkinitrd does the right thing when you "make
-> install" the kernel, and if you are doing something in the build so
+> install" the kernel,
+
+I don't know what "make install" will do, so I'll have to expect random
+results.
+
+I don't expect it to copy bzimage to /boot/linux-version-commentfrommymind,
+point the "ln" or "lt" entry (depending on if I want to upgrade or to test
+a new kernel) in lilo.conf to the new kernel and to run lilo -R ln.
+
+I don't expect it to sftp the kernel from my build machine to my server, either.
+
+I expect it to move ~/bin/umount (a wrapper around /bin/umount fusermount -u
+and smbumount) to initrd:/bin/umount. It might also create an initrd with a
+passwordless rescue mode. Or it will use a minimal shell, and in case of
+trouble, I have to fight the shell, too. In short: I expect it to backstab me.
+(As a bonus, you can't read about rdinit= if you encounter your first initrd-ed
+ system and init=/bin/sh does not work.)
+
+> and if you are doing something in the build so 
 > complex that it needs options, you really should understand the options
 > and be sure you're doing what you want.
-> 
-> Generally this involves preloading a module or two, and if you need it
-> every time you probably should have built it in, anyway.
-> 
-> My opinion...
 
-I am running my own kernels - and of course everything that is needed to boot 
-and get the basic system up is built in. Why should I make the disk drivers 
-modules? 
-That does not make sense.
+What I do is the most simple thing you can do. No initrd no cry. That's why I
+have to use the 0.9 format. This - and the fact that my distribution defaults
+to using the 1.0 format - is what I discovered after upgrading my system last
+time.
 
-And the reason is simple: even when the system is completely fucked up, I want 
-a kernel that is able to boot until init=/bin/bb takes over.
-
-Glück Auf
-Volker
