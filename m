@@ -1,81 +1,77 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756129Ab0BPI4j (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 03:56:39 -0500
-Received: from devils.ext.ti.com ([198.47.26.153]:34789 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752714Ab0BPI4h convert rfc822-to-8bit (ORCPT
+	id S1756260Ab0BPI6Q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 03:58:16 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:9392 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752714Ab0BPI6P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 03:56:37 -0500
-From: "Shilimkar, Santosh" <santosh.shilimkar@ti.com>
-To: Oliver Neukum <oliver@neukum.org>
-CC: Catalin Marinas <catalin.marinas@arm.com>, Pavel Machek <pavel@ucw.cz>,
-       Greg KH <greg@kroah.com>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Ming Lei <tom.leiming@gmail.com>,
-       Sebastian Siewior <bigeasy@linutronix.de>,
-       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       "Mankad, Maulik Ojas" <x0082077@ti.com>
-Date: Tue, 16 Feb 2010 14:25:55 +0530
-Subject: RE: USB mass storage and ARM cache coherency
-Thread-Topic: USB mass storage and ARM cache coherency
-Thread-Index: Acqu4T9C99FxKmuETmi0LpjAfLa8oAAAqTsw
-Message-ID: <EAF47CD23C76F840A9E7FCE10091EFAB02C3CF7DBB@dbde02.ent.ti.com>
-References: <20100208065519.GE1290@ucw.cz>
- <1265628483.4020.63.camel@pc1117.cambridge.arm.com>
- <EAF47CD23C76F840A9E7FCE10091EFAB02C3CF7D50@dbde02.ent.ti.com>
- <201002160922.47072.oliver@neukum.org>
-In-Reply-To: <201002160922.47072.oliver@neukum.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+	Tue, 16 Feb 2010 03:58:15 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=N3hPYdbbaHC+1LXANGlyBeHTLpjMSNEecG3jvFk8n0HdPey82HL8AmroBxdOp6I1C
+	waZAo7+MFvyGMwCpSw6JA==
+Date: Tue, 16 Feb 2010 00:58:09 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Nick Piggin <npiggin@suse.de>
+cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrea Arcangeli <aarcange@redhat.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch -mm 7/9 v2] oom: replace sysctls with quick mode
+In-Reply-To: <20100216062833.GB5723@laptop>
+Message-ID: <alpine.DEB.2.00.1002160052010.17122@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.1002151416470.26927@chino.kir.corp.google.com> <alpine.DEB.2.00.1002151419120.26927@chino.kir.corp.google.com> <20100216062833.GB5723@laptop>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> -----Original Message-----
-> From: Oliver Neukum [mailto:oliver@neukum.org]
-> Sent: Tuesday, February 16, 2010 1:53 PM
-> To: Shilimkar, Santosh
-> Cc: Catalin Marinas; Pavel Machek; Greg KH; Russell King - ARM Linux; Matthew Dharm; Sergei Shtylyov;
-> Ming Lei; Sebastian Siewior; linux-usb@vger.kernel.org; linux-kernel; linux-arm-kernel; Mankad,
-> Maulik Ojas
-> Subject: Re: USB mass storage and ARM cache coherency
+On Tue, 16 Feb 2010, Nick Piggin wrote:
+
+> > Two VM sysctls, oom dump_tasks and oom_kill_allocating_task, were
+> > implemented for very large systems to avoid excessively long tasklist
+> > scans.  The former suppresses helpful diagnostic messages that are
+> > emitted for each thread group leader that are candidates for oom kill
+> > including their pid, uid, vm size, rss, oom_adj value, and name; this
+> > information is very helpful to users in understanding why a particular
+> > task was chosen for kill over others.  The latter simply kills current,
+> > the task triggering the oom condition, instead of iterating through the
+> > tasklist looking for the worst offender.
+> > 
+> > Both of these sysctls are combined into one for use on the aforementioned
+> > large systems: oom_kill_quick.  This disables the now-default
+> > oom_dump_tasks and kills current whenever the oom killer is called.
+> > 
+> > The oom killer rewrite is the perfect opportunity to combine both sysctls
+> > into one instead of carrying around the others for years to come for
+> > nothing else than legacy purposes.
 > 
-> Am Dienstag, 16. Februar 2010 08:57:53 schrieb Shilimkar, Santosh:
-> > Continuing on the USB issue w.r.t cache coherency, the usb host
-> > code is violating the buffer ownership rules of streaming APIs from
-> > dma and non-dma transfers point if view.
-> >
-> > We have a below temporary patch to get around the issue and probably it
-> > needs to be fixed in the right way in the stack because some controllers
-> > may not have PIO option even for control transfers. (e.g. Synopsis EHCI
-> > controller)
+> I just don't understand this either. There appears to be simply no
+> performance or maintainability reason to change this.
 > 
-> This seems wrong to me. Buffers for control transfers may be transfered
-> by DMA, so the caches must be flushed on architectures whose caches
-> are not coherent with respect to DMA.
-Indeed and that's what I mentioned in the comment. But we shouldn't have dma 
-cache maintenance operations done for the buffers which would use pio based transfer. 
-> Would you care to elaborate on the exact nature of the bug you are fixing?
-On the OMAP4 (ARM cortex-a9) platform, the enumeration fails because control
-transfer buffers are corrupted. On our platform, we use PIO mode for control 
-transfers and DMA for bulk transfers.
 
-The current stack performs dma cache maintenance even for the PIO transfers
-which leads to the corruption issue. The control buffers are handled by CPU 
-and they already coherent from CPU point of view.
+When oom_dump_tasks() is always emitted for out of memory conditions as my 
+patch does, then these two tunables have the exact same audience: users 
+with large systems that have extremely long tasklists.  They want to avoid 
+tasklist scanning (either to select a bad process to kill or dump their 
+information) in oom conditions and simply kill the allocating task.  I 
+chose to combine the two: we're not concerned about breaking the 
+oom_dump_tasks ABI since it's now the default behavior and since we scan 
+the tasklist for mempolicy-constrained ooms, users may now choose to 
+enable oom_kill_allocating_task when they previously wouldn't have.  To do 
+that, they can either use the old sysctl or convert to this new sysctl 
+with the benefit that we've removed one unnecessary sysctl from 
+/proc/sys/vm.
 
-
-Regards,
-Santosh
-
+As far as I know, oom_kill_allocating_task is only used by SGI, anyway, 
+since they are the ones who asked for it when I implemented cpuset 
+tasklist scanning.  It's certainly not widely used and since the semantics 
+for mempolicies have changed, oom_kill_quick may find more users.
