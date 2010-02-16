@@ -1,60 +1,48 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933534Ab0BPX2O (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 18:28:14 -0500
-Received: from hera.kernel.org ([140.211.167.34]:35169 "EHLO hera.kernel.org"
+	id S933603Ab0BPXa0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 18:30:26 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:41708 "EHLO mail.zytor.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933267Ab0BPX2M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 18:28:12 -0500
-Date: Tue, 16 Feb 2010 23:27:45 GMT
-From: tip-bot for Oleg Nesterov <oleg@redhat.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       oleg@redhat.com, tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, oleg@redhat.com
-In-Reply-To: <20100216140213.GB16448@redhat.com>
-References: <20100216140213.GB16448@redhat.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/urgent] x86: set_personality_ia32() misses force_personality32
-Message-ID: <tip-1dfc76ec37a59018d8ed39152695ff27a434415b@git.kernel.org>
-Git-Commit-ID: 1dfc76ec37a59018d8ed39152695ff27a434415b
-X-Mailer: tip-git-log-daemon
+	id S933425Ab0BPXaY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 18:30:24 -0500
+Message-ID: <4B7B2A7C.5000405@zytor.com>
+Date: Tue, 16 Feb 2010 15:30:04 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
+To: Bill Davidsen <davidsen@tmr.com>
+CC: Neil Brown <neilb@suse.de>, Michael Evans <mjevans1983@gmail.com>,
+       Justin Piszcz <jpiszcz@lucidpixels.com>, linux-raid@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Linux mdadm superblock question.
+References: <alpine.DEB.2.00.1002111758350.12031@p34.internal.lan>	<4877c76c1002111752h23e14f7aibe58a89181e6f493@mail.gmail.com>	<4B77044B.1020609@zytor.com> <20100216112708.4a863f86@notabene.brown> <4B79F3CE.5030907@zytor.com> <4B7AD041.4060305@tmr.com>
+In-Reply-To: <4B7AD041.4060305@tmr.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Tue, 16 Feb 2010 23:27:48 +0000 (UTC)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  1dfc76ec37a59018d8ed39152695ff27a434415b
-Gitweb:     http://git.kernel.org/tip/1dfc76ec37a59018d8ed39152695ff27a434415b
-Author:     Oleg Nesterov <oleg@redhat.com>
-AuthorDate: Tue, 16 Feb 2010 15:02:13 +0100
-Committer:  H. Peter Anvin <hpa@zytor.com>
-CommitDate: Tue, 16 Feb 2010 09:44:30 -0800
+On 02/16/2010 09:05 AM, Bill Davidsen wrote:
+> 
+> I'm not really sure what you're getting at here, I use grub in MBR and 
+> then add chain loader stanzas to grub.conf for many things, usually an 
+> alternate Linux release, or to have 32/64 of the same release handy for 
+> testing, and always memtest from the boot menu. Even Win98SP2 on one 
+> machine, since that works very poorly under KVM. (ask Avi if you care 
+> why, something about what it does in real mode). In any case, I don't 
+> see the chain loader issue, unless you mean to reboot out of some other 
+> OS into Linux.
+> 
 
-x86: set_personality_ia32() misses force_personality32
+That's one of many uses, yes
 
-05d43ed8a "x86: get rid of the insane TIF_ABI_PENDING bit" forgot
-about force_personality32, fix.
+Presumably the reason you don't have problems is because the partitions
+you chainload aren't RAID partitions with 1.1 superblocks, or you're
+specifying an explicit offset for your chainloads (Grub syntax allows that.)
 
-Signed-off-by: Oleg Nesterov <oleg@redhat.com>
-LKML-Reference: <20100216140213.GB16448@redhat.com>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
----
- arch/x86/kernel/process_64.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+Either which way, it's a good example of the usage model.  Chainloading
+is important for a lot of people.
 
-diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
-index 41a26a8..126f0b4 100644
---- a/arch/x86/kernel/process_64.c
-+++ b/arch/x86/kernel/process_64.c
-@@ -527,6 +527,7 @@ void set_personality_ia32(void)
- 
- 	/* Make sure to be in 32bit mode */
- 	set_thread_flag(TIF_IA32);
-+	current->personality |= force_personality32;
- 
- 	/* Prepare the first "return" to user space */
- 	current_thread_info()->status |= TS_COMPAT;
+	-hpa
