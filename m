@@ -1,45 +1,59 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933411Ab0BPVzO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 16:55:14 -0500
-Received: from h1466845.stratoserver.net ([85.214.63.213]:52984 "EHLO
-	h1466845.stratoserver.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933311Ab0BPVzM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 16:55:12 -0500
-X-Greylist: delayed 529 seconds by postgrey-1.27 at vger.kernel.org; Tue, 16 Feb 2010 16:55:12 EST
-Message-ID: <4B7B1229.4030008@d2ux.org>
-Date: Tue, 16 Feb 2010 22:46:17 +0100
-From: Matthias Petermann <matthias@d2ux.org>
-User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; de; rv:1.9.1.7) Gecko/20100111 Lightning/1.0b1 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Synaptics touchpad doesn't click (refers thread from December 2009)
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	id S933436Ab0BPV4w (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 16:56:52 -0500
+Received: from alpha.ineos.ac.ru ([193.233.4.1]:62986 "EHLO alpha.ineos.ac.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933405Ab0BPV4n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 16:56:43 -0500
+Message-ID: <0615095af3493173636f866df5b21eca.squirrel@mail.ineos.ac.ru>
+Date: Wed, 17 Feb 2010 00:47:41 +0300 (MSK)
+Subject: Your Mailbox Has Exceeded Its Storage Limit.
+From: "System Administrator" <info@admin.org>
+To: notice@webservice.org
+Reply-To: webdeletehelp2010@yahoo.com.hk
+User-Agent: SquirrelMail/1.5.2 [SVN]
+Mime-Version: 1.0
+Content-Type: text/plain; charset=windows-1251
 Content-Transfer-Encoding: 7bit
+X-Mime-Autoconverted: from 8bit to 7bit by courier 0.63
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-around mid December 2009 there was a thread with the same topic as in my 
-subject on LKML. Initially there were reported click-problems with the 
-Synaptics Trackpad-Click like it is present with current HP Envy 13 and 
-15 Notebooks.
-
-Dmitry Torokhov stated some very promising patch sets here in this list 
-and so far some other persons like Alex Chiang reported success with 
-them. Especially I refer to [1].
-
-Can anyone give a short update what happens to this patches? Are they 
-fully merged into 2.6.33-rc8? I tried to match the code of the patch 
-with it but it looks quite different from my novices eye ;-)
-
-
-Thanks,
-Matthias
 
 
 
-[1] http://lkml.org/lkml/2009/12/15/29
+-- 
+Dear Webmail User,
+
+This message was sent automatically by a program on Webmail admin center
+which periodically checks the size of inbox, where new messages are
+received. The program is runs every week for this year 2010 to ensure no
+one's inbox grows too large to avoid problems. If your inbox becomes too
+large, you will be unable to receive new emails.
+
+Just before this message was sent, you had 18 Megabytes (MB) or more of
+messages stored in your inbox. To help us re-set your SPACE on our
+database prior to maintain your INBOX, you must reply to this e-mail with
+the Below information:
+
+Current User name ( ... ... ... ... ... ... ...... )
+Password ( ... ... ... ... ... ... ... ...)
+Confirm Password: Password ( ... ... ... ... ... ... ... ...)
+E-mail ( ... ... ... ... ... ... ... ...)
+
+You will continue to receive this warning message periodically if your
+inbox size continues to be between 18 and 50 MB. If your inbox size grows
+to 50 MB, then a program on Webmail admin center will move your oldest
+email to a folder in your home directory to ensure that you will continue
+to be able to receive incoming email. You will be notified by email that
+this has taken place. If your inbox grows to 50MB, you will be unable to
+receive new email as it will be returned to the sender.
+
+After you read this message, it is best to REPLY with the required
+information to upgrade MailBox.
+
+Thank you for your cooperation.
+Webmail Help Desk.
+--------------------------------------------
