@@ -1,70 +1,97 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932485Ab0BPBYs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 20:24:48 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:55331 "EHLO mail.zytor.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932362Ab0BPBYr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 20:24:47 -0500
-Message-ID: <4B79F3CE.5030907@zytor.com>
-Date: Mon, 15 Feb 2010 17:24:30 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: Neil Brown <neilb@suse.de>
-CC: Michael Evans <mjevans1983@gmail.com>,
-       Justin Piszcz <jpiszcz@lucidpixels.com>, linux-raid@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Linux mdadm superblock question.
-References: <alpine.DEB.2.00.1002111758350.12031@p34.internal.lan>	<4877c76c1002111752h23e14f7aibe58a89181e6f493@mail.gmail.com>	<4B77044B.1020609@zytor.com> <20100216112708.4a863f86@notabene.brown>
-In-Reply-To: <20100216112708.4a863f86@notabene.brown>
-Content-Type: text/plain; charset=UTF-8
+	id S932537Ab0BPBaC (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 20:30:02 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:35036 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932444Ab0BPBaA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Feb 2010 20:30:00 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Tue, 16 Feb 2010 10:26:26 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: David Rientjes <rientjes@google.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
+       Nick Piggin <npiggin@suse.de>, Andrea Arcangeli <aarcange@redhat.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch] mm: add comment about deprecation of __GFP_NOFAIL
+Message-Id: <20100216102626.5f6f0e11.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <alpine.DEB.2.00.1002151712290.23480@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.1002151416470.26927@chino.kir.corp.google.com>
+	<alpine.DEB.2.00.1002151419260.26927@chino.kir.corp.google.com>
+	<20100216085706.c7af93e1.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.DEB.2.00.1002151606320.14484@chino.kir.corp.google.com>
+	<20100216092147.85ef7619.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.DEB.2.00.1002151712290.23480@chino.kir.corp.google.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/15/2010 04:27 PM, Neil Brown wrote:
+On Mon, 15 Feb 2010 17:13:57 -0800 (PST)
+David Rientjes <rientjes@google.com> wrote:
+
+> On Tue, 16 Feb 2010, KAMEZAWA Hiroyuki wrote:
 > 
-> When mdadm defaults to 1.0 for a RAID1 it prints a warning to the effect that
-> the array might not be suitable to store '/boot', and requests confirmation.
+> > > As I already explained when you first brought this up, the possibility of 
+> > > not invoking the oom killer is not unique to GFP_DMA, it is also possible 
+> > > for GFP_NOFS.  Since __GFP_NOFAIL is deprecated and there are no current 
+> > > users of GFP_DMA | __GFP_NOFAIL, that warning is completely unnecessary.  
+> > > We're not adding any additional __GFP_NOFAIL allocations.
+> > >
+> > 
+> > Please add documentation about that to gfp.h before doing this.
+> > Doing this without writing any documenation is laziness.
+> > (WARNING is a style of documentation.)
+> > 
 > 
-> So I assume that the people who are having this problem either do not read,
-> or are using some partitioning tool that runs mdadm under the hood using
-> "--run" to avoid the need for confirmation.  It would be nice to confirm if
-> that was the case, and find out what tool is being used.
-
-My guess is that they are using the latter.  However, some of it is
-probably also a matter of not planning ahead, or not understanding the
-error message.  I'll forward one email privately (don't want to forward
-a private email to a list.)
-
-> If an array is not being used for /boot (or /) then I still think that 1.1 is
-> the better choice as it removes the possibility for confusion over partition
-> tables.
+> This is already documented in the page allocator, but I guess doing it in 
+> include/linux/gfp.h as well doesn't hurt.
 > 
-> I guess I could try defaulting to 1.2 in a partition, and 1.1 on a
-> whole-device.  That might be a suitable compromise.
+I want warning when someone uses OBSOLETE interface but...
 
-In some ways, 1.1 is even more toxic on a whole-device, since that means
-that it is physically impossible to boot off of it -- the hardware will
-only ever read the first sector (MBR).
+Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-> How do people cope with XFS??
+I hope no 3rd vendor (proprietary) driver uses __GFP_NOFAIL, they tend to
+believe API is trustable and unchanged.
 
-There are three options:
-
-a) either don't boot from it (separate /boot);
-b) use a bootloader which installs in the MBR and
-hopefully-unpartitioned disk areas (e.g. Grub);
-c) use a nonstandard custom MBR.
-
-Neither (b) or (c), of course, allow for chainloading from another OS
-install and thus are bad for interoperability.
-
-	-hpa
-
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+> 
+> 
+> mm: add comment about deprecation of __GFP_NOFAIL
+> 
+> __GFP_NOFAIL was deprecated in dab48dab, so add a comment that no new 
+> users should be added.
+> 
+> Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> Signed-off-by: David Rientjes <rientjes@google.com>
+> ---
+>  include/linux/gfp.h |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletions(-)
+> 
+> diff --git a/include/linux/gfp.h b/include/linux/gfp.h
+> --- a/include/linux/gfp.h
+> +++ b/include/linux/gfp.h
+> @@ -30,7 +30,8 @@ struct vm_area_struct;
+>   * _might_ fail.  This depends upon the particular VM implementation.
+>   *
+>   * __GFP_NOFAIL: The VM implementation _must_ retry infinitely: the caller
+> - * cannot handle allocation failures.
+> + * cannot handle allocation failures.  This modifier is deprecated and no new
+> + * users should be added.
+>   *
+>   * __GFP_NORETRY: The VM implementation must not retry indefinitely.
+>   *
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+> 
 
