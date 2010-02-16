@@ -1,60 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933018Ab0BPQI4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 11:08:56 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:27995 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932297Ab0BPQIw (ORCPT
+	id S1757223Ab0BPQRq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 11:17:46 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:47300 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757201Ab0BPQRo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 11:08:52 -0500
-Message-ID: <4B7AC2A9.4070203@oracle.com>
-Date: Tue, 16 Feb 2010 08:07:05 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
-MIME-Version: 1.0
-To: khali@linux-fr.org
-CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -next] i2c: fix xiic build error
-References: <20100204185736.6628ab9a.sfr@canb.auug.org.au> <4B6B29DD.7060502@oracle.com>
-In-Reply-To: <4B6B29DD.7060502@oracle.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 16 Feb 2010 11:17:44 -0500
+X-Authority-Analysis: v=1.0 c=1 a=pi97quWTHqIA:10 a=7U3hwN5JcxgA:10 a=3ogXLCkblcU7IFHa5_AA:9 a=C8QRVOYyRN0voGwvLFJcD6XwAswA:4
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: Re: ketchup was Re: [kernel.org users] XZ Migration discussion
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Jean Delvare <khali@linux-fr.org>, lasse.collin@tukaani.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20100216153905.GA1541@ucw.cz>
+References: <4B744E13.8040004@kernel.org>
+	 <20100212150137.648dca7c@hyperion.delvare>
+	 <1265988318.24271.30.camel@gandalf.stny.rr.com>
+	 <20100216153905.GA1541@ucw.cz>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Kihon Technologies Inc.
+Date: Tue, 16 Feb 2010 11:17:41 -0500
+Message-ID: <1266337061.24271.138.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt354.oracle.com [141.146.40.154]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090205.4B7AC2F0.01F9:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/04/10 12:11, Randy Dunlap wrote:
-> From: Randy Dunlap <randy.dunlap@oracle.com>
+On Tue, 2010-02-16 at 16:39 +0100, Pavel Machek wrote:
+
+> I'd really like to fix ketchup to behave sanely in late -rc stages:
+> going from -rc6 to -rc8 is possible using two downloads through --rc7
+> (like 100KB?)  instead of two big ones through full release (like
+> 10MB).
 > 
-> Add header file to fix build error:
+> But first step is --only-dl option -- when you want to cache the
+> needed patches but not apply anything yet.
 > 
-> drivers/i2c/busses/i2c-xiic.c:493: error: implicit declaration of
-> function 'mdelay'
-> 
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> ---
->  drivers/i2c/busses/i2c-xiic.c |    1 +
->  1 file changed, 1 insertion(+)
-> 
-> --- linux-next-20100204.orig/drivers/i2c/busses/i2c-xiic.c
-> +++ linux-next-20100204/drivers/i2c/busses/i2c-xiic.c
-> @@ -31,6 +31,7 @@
->  #include <linux/module.h>
->  #include <linux/init.h>
->  #include <linux/errno.h>
-> +#include <linux/delay.h>
->  #include <linux/platform_device.h>
->  #include <linux/i2c.h>
->  #include <linux/interrupt.h>
-> 
+> Please apply,
+> 									Pavel
+
+Can you send this to me as an official patch. With SoB and all.
+
+Thanks,
+
+-- Steve
 
 
-This patch is still needed in linux-next-20100216.
-
--- 
-~Randy
