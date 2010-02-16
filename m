@@ -1,39 +1,39 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751903Ab0BPFs1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 00:48:27 -0500
-Received: from mail-px0-f191.google.com ([209.85.216.191]:44760 "EHLO
-	mail-px0-f191.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750759Ab0BPFs0 (ORCPT
+	id S1752342Ab0BPFwx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 00:52:53 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41344
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751807Ab0BPFww (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 00:48:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=UQuFP3m1jTmRwuPY9q5vqsutqIw402mvpsyOQIgnHUStN0ysICRXlNuYo39RdrAkf1
-         cdBaFD1M7sDtvCU1PjH2ekykMbLcFVPcoAUNmpph0Av3n+ZF28ZoO4mJTdH29MtbBAY5
-         ryBaWPNniSFAP60ZmKQlCLLgOjh42epCO3fH8=
-MIME-Version: 1.0
-Date: Tue, 16 Feb 2010 11:18:25 +0530
-Message-ID: <f22d86811002152148t4f307184kb71757f4621f82db@mail.gmail.com>
-Subject: Notification when a task is created/exits
-From: "Leonidas ." <leonidas137@gmail.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 16 Feb 2010 00:52:52 -0500
+Date: Mon, 15 Feb 2010 21:53:07 -0800 (PST)
+Message-Id: <20100215.215307.118784851.davem@davemloft.net>
+To: divy@chelsio.com
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       swise@opengridcomputing.com
+Subject: Re: [PATCH net-next-2.6 1/2] cxgb3: FIx VLAN over Jumbo frames
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20100213194429.27297.99280.stgit@speedy5.asicdesigners.com>
+References: <20100213194429.27297.99280.stgit@speedy5.asicdesigners.com>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi folks,
+From: Divy Le Ray <divy@chelsio.com>
+Date: Sat, 13 Feb 2010 11:44:30 -0800
 
-Is it possible to register a set of callbacks from my module so that
-these call backs get called
-whenever a certain task is created or exits. Basically, I want to keep
-track of all the threads
-which are created and are exiting, my module should get notified of
-these events somehow.
-One way is to call my functions directly from the task creation and
-exit functions, but I personally
-do not like this approach since I dont want to mess with this core kernel code.
+> From: Divy Le Ray <divy@chelsio.com>
+> 
+> The mac is expected to auto-inflate the Maximum Frame size for VLAN
+> tagged frames. It however does not work with jumbo frames.
+> Work around the bug adding 4 to the Maximum Frame for MTUs
+> greater than 1536.
+> 
+> Signed-off-by: Divy Le Ray <divy@chelsio.com>
 
--Leo.
+Applied.
