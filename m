@@ -1,82 +1,62 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932990Ab0BPKnU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 05:43:20 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:30302 "EHLO mx1.redhat.com"
+	id S933003Ab0BPKnZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 05:43:25 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:9697 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932789Ab0BPKfj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S932788Ab0BPKfj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 16 Feb 2010 05:35:39 -0500
 From: Avi Kivity <avi@redhat.com>
 To: kvm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 08/38] KVM: VMX: Clean up DR6 emulation
-Date: Tue, 16 Feb 2010 12:35:06 +0200
-Message-Id: <1266316536-28936-9-git-send-email-avi@redhat.com>
+Subject: [PATCH 12/38] KVM: x86: fix checking of cr0 validity
+Date: Tue, 16 Feb 2010 12:35:10 +0200
+Message-Id: <1266316536-28936-13-git-send-email-avi@redhat.com>
 In-Reply-To: <1266316536-28936-1-git-send-email-avi@redhat.com>
 References: <1266316536-28936-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jan Kiszka <jan.kiszka@siemens.com>
+From: Gleb Natapov <gleb@redhat.com>
 
-As we trap all debug register accesses, we do not need to switch real
-DR6 at all. Clean up update_exception_bitmap at this chance, too.
+Move to/from Control Registers chapter of Intel SDM says.  "Reserved bits
+in CR0 remain clear after any load of those registers; attempts to set
+them have no impact". Control Register chapter says "Bits 63:32 of CR0 are
+reserved and must be written with zeros. Writing a nonzero value to any
+of the upper 32 bits results in a general-protection exception, #GP(0)."
 
-Signed-off-by: Jan Kiszka <jan.kiszka@siemens.com>
+This patch tries to implement this twisted logic.
+
+Signed-off-by: Gleb Natapov <gleb@redhat.com>
+Reported-by: Lorenzo Martignoni <martignlo@gmail.com>
 Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
 ---
- arch/x86/kvm/vmx.c |   23 ++++++-----------------
- 1 files changed, 6 insertions(+), 17 deletions(-)
+ arch/x86/kvm/x86.c |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
-index c7b99e1..b7e812e 100644
---- a/arch/x86/kvm/vmx.c
-+++ b/arch/x86/kvm/vmx.c
-@@ -579,17 +579,12 @@ static void update_exception_bitmap(struct kvm_vcpu *vcpu)
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index fd5101b..ce267d9 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -430,12 +430,16 @@ void kvm_set_cr0(struct kvm_vcpu *vcpu, unsigned long cr0)
  {
- 	u32 eb;
+ 	cr0 |= X86_CR0_ET;
  
--	eb = (1u << PF_VECTOR) | (1u << UD_VECTOR) | (1u << MC_VECTOR)
--		| (1u << NM_VECTOR);
--	/*
--	 * Unconditionally intercept #DB so we can maintain dr6 without
--	 * reading it every exit.
--	 */
--	eb |= 1u << DB_VECTOR;
--	if (vcpu->guest_debug & KVM_GUESTDBG_ENABLE) {
--		if (vcpu->guest_debug & KVM_GUESTDBG_USE_SW_BP)
--			eb |= 1u << BP_VECTOR;
--	}
-+	eb = (1u << PF_VECTOR) | (1u << UD_VECTOR) | (1u << MC_VECTOR) |
-+	     (1u << NM_VECTOR) | (1u << DB_VECTOR);
-+	if ((vcpu->guest_debug &
-+	     (KVM_GUESTDBG_ENABLE | KVM_GUESTDBG_USE_SW_BP)) ==
-+	    (KVM_GUESTDBG_ENABLE | KVM_GUESTDBG_USE_SW_BP))
-+		eb |= 1u << BP_VECTOR;
- 	if (to_vmx(vcpu)->rmode.vm86_active)
- 		eb = ~0;
- 	if (enable_ept)
-@@ -3777,9 +3772,6 @@ static void vmx_vcpu_run(struct kvm_vcpu *vcpu)
- 	 */
- 	vmcs_writel(HOST_CR0, read_cr0());
+-	if (cr0 & CR0_RESERVED_BITS) {
++#ifdef CONFIG_X86_64
++	if (cr0 & 0xffffffff00000000UL) {
+ 		printk(KERN_DEBUG "set_cr0: 0x%lx #GP, reserved bits 0x%lx\n",
+ 		       cr0, kvm_read_cr0(vcpu));
+ 		kvm_inject_gp(vcpu, 0);
+ 		return;
+ 	}
++#endif
++
++	cr0 &= ~CR0_RESERVED_BITS;
  
--	if (vcpu->arch.switch_db_regs)
--		set_debugreg(vcpu->arch.dr6, 6);
--
- 	asm(
- 		/* Store host registers */
- 		"push %%"R"dx; push %%"R"bp;"
-@@ -3880,9 +3872,6 @@ static void vmx_vcpu_run(struct kvm_vcpu *vcpu)
- 				  | (1 << VCPU_EXREG_PDPTR));
- 	vcpu->arch.regs_dirty = 0;
- 
--	if (vcpu->arch.switch_db_regs)
--		get_debugreg(vcpu->arch.dr6, 6);
--
- 	vmx->idt_vectoring_info = vmcs_read32(IDT_VECTORING_INFO_FIELD);
- 	if (vmx->rmode.irq.pending)
- 		fixup_rmode_irq(vmx);
+ 	if ((cr0 & X86_CR0_NW) && !(cr0 & X86_CR0_CD)) {
+ 		printk(KERN_DEBUG "set_cr0: #GP, CD == 0 && NW == 1\n");
 -- 
 1.6.5.3
 
