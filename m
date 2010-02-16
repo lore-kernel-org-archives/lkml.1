@@ -1,71 +1,135 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756951Ab0BPPQB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 10:16:01 -0500
-Received: from shards.monkeyblade.net ([198.137.202.13]:45765 "EHLO
-	shards.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756417Ab0BPPQA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 10:16:00 -0500
-Message-ID: <4B7AB624.5060507@kernel.org>
-Date: Tue, 16 Feb 2010 07:13:40 -0800
-From: "J.H." <warthog9@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Lightning/1.0b2pre Thunderbird/3.0.1
+	id S1756982Ab0BPPRc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 10:17:32 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:43885 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755606Ab0BPPR3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 10:17:29 -0500
+Date: Tue, 16 Feb 2010 16:17:26 +0100
+From: Karel Zak <kzak@redhat.com>
+To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       util-linux-ng@vger.kernel.org
+Subject: [ANNOUNCE] util-linux-ng v2.17.1-rc1
+Message-ID: <20100216151726.GS6375@nb.net.home>
 MIME-Version: 1.0
-To: Bernd Petrovitsch <bernd@petrovitsch.priv.at>
-CC: Steve French <smfrench@gmail.com>,
-       "Mr. James W. Laferriere" <babydr@baby-dragons.com>,
-       lasse.collin@tukaani.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       mirrors@kernel.org, "FTPAdmin Kernel.org" <ftpadmin@kernel.org>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>, Avi Kivity <avi@redhat.com>,
-       Jean Delvare <khali@linux-fr.org>, users@kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Willy Tarreau <w@1wt.eu>
-Subject: Re: [kernel.org users] [kernel] Re: XZ Migration discussion
-References: <4B744E13.8040004@kernel.org>	 <alpine.LFD.2.00.1002120714320.7792@localhost.localdomain>	 <4B75A5DC.3060803@kernel.org> <20100212202357.6363d5af@hyperion.delvare>	 <20100212230702.GA10266@1wt.eu> <20100213091748.276821e1@hyperion.delvare>	 <4B767810.5020707@s5r6.in-berlin.de> <4B767C67.7060701@redhat.com>	 <alpine.LNX.2.01.1002131233450.30803@filesrv1.baby-dragons.com>	 <1266100773.23181.8.camel@thorin>	 <524f69651002151133v475ebd02r80837adfc428fbfd@mail.gmail.com> <1266311771.3433.17.camel@thorin>
-In-Reply-To: <1266311771.3433.17.camel@thorin>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.2.3 (shards.monkeyblade.net [198.137.202.13]); Tue, 16 Feb 2010 07:13:46 -0800 (PST)
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+The first util-linux-ng 2.17.1 release candidate is available at
 
-On 02/16/2010 01:16 AM, Bernd Petrovitsch wrote:
-> On Mon, 2010-02-15 at 13:33 -0600, Steve French wrote:
->> On Sat, Feb 13, 2010 at 4:39 PM, Bernd Petrovitsch
->> <bernd@petrovitsch.priv.at> wrote:
-> [...]
->>>>       ntfs as of recent windows is not case insensitive .
->>> It *is* case insensitive (as it compares filesystem names
->>> case-insensitive on the equivalent of an open() syscall).
->>
->> There are case sensitive Windows subsystems (e.g. SFU/SUA
->> at least when running over NTFS), and the default behavior for
-> 
->> Win32 apps even can be changed to be case sensitive
->> via a registry key: ObCaseInsensitive).
-> It's somewhat - ähemm - strange IMHO that the casing is an app-specific
-> feature (and not filesystem specific).
-> And it is really that implemented that the app can choose in what way
-> the filesystem below - given that it supports that feature - compares
-> two filenames?
-> 
->> More important is how easy it is to install - since XZ is
->> not even available via apt-get install on recent
->> distros (e.g. April 2009 Ubuntu 9.04), this discussion
->> seems about a year premature.
-> It's in recent Fedoras so Ubuntu is perhaps just late. And FWIW, it' 2
-> packages too as the second one is the .lzma support (so probably Debian
-> should be able to fix the clash with whatever the current lzma package
-> is).
-> 
-> 	Bernd
+   ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.17/
 
-There's a package on Fedora called 'xz' that provides it on my Fedora 11
-& 12 boxes.
+Feedback and bug reports, as always, are welcomed.
 
-- John 'Warthog9' Hawley
+	Karel
+
+
+Util-linux-ng 2.17.1 Release Notes
+==================================
+
+Release highlights
+------------------
+
+fdisk:
+   - supports new command line option "-c" to disable DOS-compatible mode from
+     command line.
+
+     The DOS-compatible mode is DEPRECATED and will be disabled by default
+     in the next major release. Currently, the DOS mode is enabled by default
+     for backward compatibility only. 
+
+     The cylinders as display units are DEPRECATED. It's recommended to use
+     "-u" command line option or "u" fdisk command to use sectors as display
+     units.
+
+   Note that the new support for 4K-sector disks is useless in DOS-compatible
+   mode. The fdisk command prints warning(s) when startup in DOS mode.
+
+
+Changes since v2.17.1
+---------------------
+
+ For more details see ChangeLog files at:
+ ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.17/
+
+
+blkid:
+   - add newline when only one value is printed  [Karel Zak]
+   - fix #ifdef HAVE_TERMIO[S]_H  [Karel Zak]
+   - probe for PT, don't probe for FS on small whole-disks  [Karel Zak]
+   - report open() errors in low-level probing  [Karel Zak]
+build-sys:
+   - add missing tests for libuuid and libblkid  [Karel Zak]
+   - remove duplicate #includes  [Karel Zak]
+cal:
+   - fix first day of the week calculation on BE systems  [Karel Zak]
+cfdisk:
+   - set '[New]' as default item on menu for non allocated space instead of '[Help]'.  [Francesco Cosoleto]
+   - set '[Quit]' as default menu item on first run instead of '[Bootable]'.  [Francesco Cosoleto]
+docs:
+   - update AUTHORS file  [Karel Zak]
+fdisk:
+   - add -c option (switch off DOS mode)  [Karel Zak]
+   - cleanup alignment, default to 1MiB offset  [Karel Zak]
+   - cleanup help, add -h option  [Karel Zak]
+   - cleanup warnings  [Karel Zak]
+   - don't check alignment_offset against geometry  [Karel Zak]
+   - don't include scsi.h  [Karel Zak]
+   - don't use 1MiB grain on small devices  [Karel Zak]
+   - fallback for topology values  [Karel Zak]
+   - fix ALIGN_UP  [Karel Zak]
+   - fix check_alignment()  [Karel Zak]
+   - fix default first sector  [Karel Zak]
+   - use "optimal I/O size" in warnings  [Karel Zak]
+   - use 1MiB offset and grain always when possible  [Karel Zak]
+   - use more elegant way to count and check alignment  [Karel Zak]
+   - use optimal_io_size  [Karel Zak]
+include:
+   - add min/max macros  [Karel Zak]
+libblkid:
+   - add minimal sizes for OCFS and GFS  [Karel Zak]
+   - add sanity checks for FAT to DOS PT parser  [Karel Zak]
+   - call read() per FAT root dir entry  [Karel Zak]
+   - disable read-ahead when probing device files  [Linus Torvalds]
+   - don't call read() per FAT dir-entry on large disks  [Karel Zak]
+   - don't probe for GPT and Unixware PT on floppies  [Karel Zak]
+   - don't return error on empty files  [Karel Zak]
+   - fix segfault in drdb  [Matthias König]
+   - more robust minix probing  [Karel Zak]
+   - read whole SB buffer (69kB) on large disks  [Karel Zak]
+   - read() optimization for small devices  [Karel Zak]
+   - restrict RAID/FS proving for small devices (1.4MiB)  [Karel Zak]
+   - rewrite blkid_probe_get_buffer()  [Karel Zak]
+   - set minimal size for jfs, reiser, swap and zfs  [Karel Zak]
+login:
+   - check that after tty reopen we still work with a terminal  [Karel Zak]
+   - don't link PAMed version with libcrypt  [Karel Zak]
+   - use fd instead of pathname for update tty's owner and permissions  [Yann Droneaud]
+mount:
+   - advise users to use "modprobe", not "insmod"  [Karel Zak]
+   - update documentation about barrier mount options  [Jan Kara]
+   - warn users that mtab is read-only  [Karel Zak]
+namei:
+   - fix man page formatting  [Vladimir Brednikov]
+po:
+   - update id.po (from translationproject.org)  [Arif E. Nugroho]
+   - update pl.po (from translationproject.org)  [Jakub Bogusz]
+   - update vi.po (from translationproject.org)  [Clytie Siddall]
+tests:
+   - add fdisk alignment tests  [Karel Zak]
+   - fix RAIDs tests  [Karel Zak]
+   - fix and update old fdisk tests  [Karel Zak]
+   - update FS test images  [Karel Zak]
+   - update fdisk tests  [Karel Zak]
+   - update fdisk tests (add whitespaces)  [Karel Zak]
+wipefs:
+   - ignore devices with partition table  [Karel Zak]
+-- 
+ Karel Zak  <kzak@redhat.com>
