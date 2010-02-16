@@ -1,105 +1,64 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755161Ab0BPLKu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 06:10:50 -0500
-Received: from smtp.nokia.com ([192.100.122.233]:65269 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754237Ab0BPLKm (ORCPT
+	id S1755342Ab0BPLK6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 06:10:58 -0500
+Received: from smtp.nokia.com ([192.100.105.134]:25957 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755026Ab0BPLKr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 06:10:42 -0500
+	Tue, 16 Feb 2010 06:10:47 -0500
 From: Samu Onkalo <samu.p.onkalo@nokia.com>
 To: eric.piel@tremplin-utc.net
 Cc: pavel@ucw.cz, daniel@caiaq.de, lm-sensors@lm-sensors.org,
        linux-kernel@vger.kernel.org, Samu Onkalo <samu.p.onkalo@nokia.com>
-Subject: [PATCH V2 2/6] lis3: Separate configuration function for 8 bit device
-Date: Tue, 16 Feb 2010 13:09:27 +0200
-Message-Id: <1266318571-31083-3-git-send-email-samu.p.onkalo@nokia.com>
+Subject: [PATCH V2 0/6] lis3lv02d: click and threshold interrupts 
+Date: Tue, 16 Feb 2010 13:09:25 +0200
+Message-Id: <1266318571-31083-1-git-send-email-samu.p.onkalo@nokia.com>
 X-Mailer: git-send-email 1.6.0.4
-In-Reply-To: <1266318571-31083-1-git-send-email-samu.p.onkalo@nokia.com>
-References: <1266318571-31083-1-git-send-email-samu.p.onkalo@nokia.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 16 Feb 2010 11:09:44.0589 (UTC) FILETIME=[8B502BD0:01CAAEF8]
+X-OriginalArrivalTime: 16 Feb 2010 11:09:39.0324 (UTC) FILETIME=[882CCBC0:01CAAEF8]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Separate configuration function for 8 bit version of the chip.
-This way generic part of the init function stays little bit
-more readable.
+This patch set replaces my previous one.
+(see http://www.spinics.net/lists/kernel/msg994446.html)
 
-Signed-off-by: Samu Onkalo <samu.p.onkalo@nokia.com>
-Acked-by: Ã‰ric Piel <eric.piel@tremplin-utc.net>
-Tested-by: Daniel Mack <daniel@caiaq.de>
----
- drivers/hwmon/lis3lv02d.c |   45 ++++++++++++++++++++++++++-------------------
- 1 files changed, 26 insertions(+), 19 deletions(-)
+Power control of the chip is dropped out since it requires more work.
+Runtime-pm support was requested and that takes some time to implement
+and test. I'll send it as a separate patch.
 
-diff --git a/drivers/hwmon/lis3lv02d.c b/drivers/hwmon/lis3lv02d.c
-index b2f2277..99fd45d 100644
---- a/drivers/hwmon/lis3lv02d.c
-+++ b/drivers/hwmon/lis3lv02d.c
-@@ -521,6 +521,30 @@ int lis3lv02d_remove_fs(struct lis3lv02d *lis3)
- }
- EXPORT_SYMBOL_GPL(lis3lv02d_remove_fs);
- 
-+static void lis3lv02d_8b_configure(struct lis3lv02d *dev,
-+				struct lis3lv02d_platform_data *p)
-+{
-+	if (p->click_flags) {
-+		dev->write(dev, CLICK_CFG, p->click_flags);
-+		dev->write(dev, CLICK_TIMELIMIT, p->click_time_limit);
-+		dev->write(dev, CLICK_LATENCY, p->click_latency);
-+		dev->write(dev, CLICK_WINDOW, p->click_window);
-+		dev->write(dev, CLICK_THSZ, p->click_thresh_z & 0xf);
-+		dev->write(dev, CLICK_THSY_X,
-+			(p->click_thresh_x & 0xf) |
-+			(p->click_thresh_y << 4));
-+	}
-+
-+	if (p->wakeup_flags) {
-+		dev->write(dev, FF_WU_CFG_1, p->wakeup_flags);
-+		dev->write(dev, FF_WU_THS_1, p->wakeup_thresh & 0x7f);
-+		/* default to 2.5ms for now */
-+		dev->write(dev, FF_WU_DURATION_1, 1);
-+		/* enable high pass filter for both free-fall units */
-+		dev->write(dev, CTRL_REG2, HP_FF_WU1 | HP_FF_WU2);
-+	}
-+}
-+
- /*
-  * Initialise the accelerometer and the various subsystems.
-  * Should be rather independent of the bus system.
-@@ -567,25 +591,8 @@ int lis3lv02d_init_device(struct lis3lv02d *dev)
- 	if (dev->pdata) {
- 		struct lis3lv02d_platform_data *p = dev->pdata;
- 
--		if (p->click_flags && (dev->whoami == WAI_8B)) {
--			dev->write(dev, CLICK_CFG, p->click_flags);
--			dev->write(dev, CLICK_TIMELIMIT, p->click_time_limit);
--			dev->write(dev, CLICK_LATENCY, p->click_latency);
--			dev->write(dev, CLICK_WINDOW, p->click_window);
--			dev->write(dev, CLICK_THSZ, p->click_thresh_z & 0xf);
--			dev->write(dev, CLICK_THSY_X,
--					(p->click_thresh_x & 0xf) |
--					(p->click_thresh_y << 4));
--		}
--
--		if (p->wakeup_flags && (dev->whoami == WAI_8B)) {
--			dev->write(dev, FF_WU_CFG_1, p->wakeup_flags);
--			dev->write(dev, FF_WU_THS_1, p->wakeup_thresh & 0x7f);
--			/* default to 2.5ms for now */
--			dev->write(dev, FF_WU_DURATION_1, 1);
--			/* enable high pass filter for both free-fall units */
--			dev->write(dev, CTRL_REG2, HP_FF_WU1 | HP_FF_WU2);
--		}
-+		if (dev->whoami == WAI_8B)
-+			lis3lv02d_8b_configure(dev, p);
- 
- 		if (p->irq_cfg)
- 			dev->write(dev, CTRL_REG3, p->irq_cfg);
--- 
-1.6.0.4
+patches 1 - 3 are not touched compared to patch set 1 and they
+are marked as tested-by Daniel Mack <daniel@caiaq.de> and
+acked-by Éric Piel <eric.piel@tremplin-utc.net>.
+Patch 4 is marked as tested-by Daniel Mack <daniel@caiaq.de>.
+
+  lis3: Add skeletons for interrupt handlers
+No functional changes. Changed due to rebasing and power control
+removal.
+
+  lis3: Interrupt handlers for 8bit wakeup and click events
+As requested, BTN_ events are enabled only for 8 bit device and
+when click event is configured to the HW.
+Remapping of the BTN_ axis done according to platform data.
+
+  lis3: Setup poll interval limits
+Poll interval can now be set from 1 - 2000 ms and also to stopped state
+via input-dev sysfs. 
+
+Tested in 2.6.32 based environment. Applies to 2.6.33-RC8
+
+
+Samu Onkalo (6):
+  lis3: Add missing constants for 8bit device
+  lis3: Separate configuration function for 8 bit device
+  lis3: Introduce platform data for second ff / wu unit
+  lis3: Add skeletons for interrupt handlers
+  lis3: Interrupt handlers for 8bit wakeup and click events
+  lis3: Setup poll interval limits
+
+ drivers/hwmon/lis3lv02d.c |  245 +++++++++++++++++++++++++++++++++++----------
+ drivers/hwmon/lis3lv02d.h |   11 ++
+ include/linux/lis3lv02d.h |   12 ++
+ 3 files changed, 213 insertions(+), 55 deletions(-)
 
