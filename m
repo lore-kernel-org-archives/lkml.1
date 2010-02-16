@@ -1,90 +1,79 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933124Ab0BPRFT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 12:05:19 -0500
-Received: from mail.tmr.com ([64.65.253.246]:58465 "EHLO partygirl.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933112Ab0BPRFQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 12:05:16 -0500
-Message-ID: <4B7AD041.4060305@tmr.com>
-Date: Tue, 16 Feb 2010 12:05:05 -0500
-From: Bill Davidsen <davidsen@tmr.com>
-Organization: TMR Associates Inc, Schenectady NY
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.21) Gecko/20090507 Fedora/1.1.16-1.fc9 NOT Firefox/3.0.11 pango-text SeaMonkey/1.1.16
-MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Neil Brown <neilb@suse.de>, Michael Evans <mjevans1983@gmail.com>,
-       Justin Piszcz <jpiszcz@lucidpixels.com>, linux-raid@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Linux mdadm superblock question.
-References: <alpine.DEB.2.00.1002111758350.12031@p34.internal.lan>	<4877c76c1002111752h23e14f7aibe58a89181e6f493@mail.gmail.com>	<4B77044B.1020609@zytor.com> <20100216112708.4a863f86@notabene.brown> <4B79F3CE.5030907@zytor.com>
-In-Reply-To: <4B79F3CE.5030907@zytor.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	id S932804Ab0BPRFo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 12:05:44 -0500
+Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:44385 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932449Ab0BPRFm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 12:05:42 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AvsEAIJfektGHl8d/2dsb2JhbACbGXW9f4RbBIMUGg
+Date: Tue, 16 Feb 2010 12:05:40 -0500
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Steven Rostedt <rostedt@goodmis.org>, ltt-dev@lists.casi.polymtl.ca,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: [ltt-dev] LTTng0.158 Linux-2629-RT kernel BUG: sleeping
+	function called from invalid context at kernel/rtmutex.c:685
+Message-ID: <20100216170540.GA28039@Krystal>
+References: <f5a7b3811002160717y65b4577buf53e5784c71575c3@mail.gmail.com> <1266337450.24271.140.camel@gandalf.stny.rr.com> <alpine.LFD.2.00.1002161727570.2811@localhost.localdomain> <20100216164744.GA25115@Krystal> <alpine.LFD.2.00.1002161757050.2811@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.1002161757050.2811@localhost.localdomain>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 12:03:31 up 62 days,  1:21,  6 users,  load average: 0.42, 0.25,
+	0.14
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> On 02/15/2010 04:27 PM, Neil Brown wrote:
->   
->> When mdadm defaults to 1.0 for a RAID1 it prints a warning to the effect that
->> the array might not be suitable to store '/boot', and requests confirmation.
->>
->> So I assume that the people who are having this problem either do not read,
->> or are using some partitioning tool that runs mdadm under the hood using
->> "--run" to avoid the need for confirmation.  It would be nice to confirm if
->> that was the case, and find out what tool is being used.
->>     
->
-> My guess is that they are using the latter.  However, some of it is
-> probably also a matter of not planning ahead, or not understanding the
-> error message.  I'll forward one email privately (don't want to forward
-> a private email to a list.)
->
->   
->> If an array is not being used for /boot (or /) then I still think that 1.1 is
->> the better choice as it removes the possibility for confusion over partition
->> tables.
->>
->> I guess I could try defaulting to 1.2 in a partition, and 1.1 on a
->> whole-device.  That might be a suitable compromise.
->>     
->
-> In some ways, 1.1 is even more toxic on a whole-device, since that means
-> that it is physically impossible to boot off of it -- the hardware will
-> only ever read the first sector (MBR).
->
->   
-That is either a problem or a solution, depending which bad behavior you 
-are trying hardest to avoid.
->> How do people cope with XFS??
->>     
->
-> There are three options:
->
-> a) either don't boot from it (separate /boot);
->   
-And certainly there are other reasons to do that...
-> b) use a bootloader which installs in the MBR and
-> hopefully-unpartitioned disk areas (e.g. Grub);
-> c) use a nonstandard custom MBR.
->
-> Neither (b) or (c), of course, allow for chainloading from another OS
-> install and thus are bad for interoperability.
->   
+* Thomas Gleixner (tglx@linutronix.de) wrote:
+> On Tue, 16 Feb 2010, Mathieu Desnoyers wrote:
+> > > The function is called from an IPI. That's a LTTNG problem, not a RT one.
+> > 
+> > I use del_timer in IPI to delete lttng per-cpu timers on all CPUs. I
+> > have to do this because timers created with add_timer_on are documented
+> > to be incompatible with del_timer_sync():
+> > 
+> >  * Synchronization rules: Callers must prevent restarting of the timer,
+> >  * otherwise this function is meaningless. It must not be called from
+> >  * interrupt contexts. The caller must not hold locks which would prevent
+> >  * completion of the timer's handler. The timer's handler must not call
+> >  * add_timer_on(). Upon exit the timer is not queued and the handler is
+> >  * not running on any CPU.
+> 
+> Errm. The documentation says: 
+> 
+>       "The timer's handler must not call add_timer_on()." 
+> 
+> It's not talking about a timer which was initialized with
+> add_timer_on().
+> 
+>  And your per cpu timer handlers have no requirement to call
+> add_timer_on() simply because add/mod_timer() is requeueing the timer
+> on the same cpu on which the handler runs. 
+> 
+> So the IPI is just a solution for a non existing problem.
 
-I'm not really sure what you're getting at here, I use grub in MBR and 
-then add chain loader stanzas to grub.conf for many things, usually an 
-alternate Linux release, or to have 32/64 of the same release handy for 
-testing, and always memtest from the boot menu. Even Win98SP2 on one 
-machine, since that works very poorly under KVM. (ask Avi if you care 
-why, something about what it does in real mode). In any case, I don't 
-see the chain loader issue, unless you mean to reboot out of some other 
-OS into Linux.
+Oh, right. Thanks for the explanation. I'll look into moving LTTng to a
+saner del_timer_sync() scheme to delete the timers.
+
+Thanks,
+
+Mathieu
+
+> 
+> Thanks,
+> 
+> 	tglx
+> 
 
 -- 
-Bill Davidsen <davidsen@tmr.com>
-  "We can't solve today's problems by using the same thinking we
-   used in creating them." - Einstein
-
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
