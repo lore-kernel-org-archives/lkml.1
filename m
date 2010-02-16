@@ -1,36 +1,40 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933454Ab0BPWHc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 17:07:32 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:39013 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933294Ab0BPWH2 (ORCPT
+	id S933465Ab0BPWNP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 17:13:15 -0500
+Received: from smtp-out003.kontent.com ([81.88.40.217]:35474 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933440Ab0BPWNO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 17:07:28 -0500
-Date: Tue, 16 Feb 2010 22:07:07 +0000
-From: Matthew Garrett <mjg@redhat.com>
-To: "Darrick J. Wong" <djwong@us.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, lenb@kernel.org, davej@redhat.com,
-       Thomas Renninger <trenn@suse.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: [PATCH v2] acpi: Fix regression where _PPC is not read at boot
-	even when ignore_ppc=0
-Message-ID: <20100216220707.GA5966@srcf.ucam.org>
-References: <20090429213930.GE6968@plum> <20090429220037.GA8604@srcf.ucam.org> <20090430072556.GD16737@elte.hu> <20090430095414.GA19462@srcf.ucam.org> <20090430111042.GA12809@elte.hu> <20090430111338.GA21297@srcf.ucam.org> <20090515191219.GH6968@plum> <20090602232108.GG7917@plum> <20090607100541.GJ31286@elte.hu> <20090715003207.GA5111@plum>
+	Tue, 16 Feb 2010 17:13:14 -0500
+From: Oliver Neukum <oliver@neukum.org>
+To: Jan Sechser <jsechser@gmx.ch>
+Subject: Re: Sony Ericson w995 does not local net mode
+Date: Tue, 16 Feb 2010 23:13:15 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.33-rc6-0.1-default; KDE/4.3.1; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org,
+       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>
+References: <4B7ACB75.4070907@gmx.ch>
+In-Reply-To: <4B7ACB75.4070907@gmx.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090715003207.GA5111@plum>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002162313.15353.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Did this ever get picked up?
+Am Dienstag, 16. Februar 2010 17:44:37 schrieb Jan Sechser:
+> Other OS         (E.g. Mac(tm), Linux(tm))
+>   usb 1-4: New USB device found, idVendor=0fce, idProduct=d112
+>   usb 1-4: New USB device strings: Mfr=1, Product=2, SerialNumber=3
+>   usb 1-4: Product: Sony Ericsson W995
+>   usb 1-4: Manufacturer: Sony Ericsson
+>   usb 1-4: SerialNumber: 3582180356368990
+>   usb 1-4: configuration #1 chosen from 1 choice
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+this is not enough to tell what's going on. Please send a full "lsusb -v"
+
+	Regards
+		Oliver
