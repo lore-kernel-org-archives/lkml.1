@@ -1,55 +1,44 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754857Ab0BPLiJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 06:38:09 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:38488 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753740Ab0BPLiH (ORCPT
+	id S1754405Ab0BPLj7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 06:39:59 -0500
+Received: from mtagate5.uk.ibm.com ([194.196.100.165]:33377 "EHLO
+	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752095Ab0BPLj6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 06:38:07 -0500
-Date: Tue, 16 Feb 2010 03:37:59 -0800
-From: Matt Helsley <matthltc@us.ibm.com>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Matt Helsley <matthltc@us.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH 0/4] Check O_* flags set with fcntl() on
- anon_inode files.
-Message-ID: <20100216113759.GM3714@count0.beaverton.ibm.com>
-References: <1266107267-5920-1-git-send-email-matthltc@us.ibm.com>
- <20100214035205.GU30031@ZenIV.linux.org.uk>
- <20100215172635.GI3714@count0.beaverton.ibm.com>
- <20100215195728.GX30031@ZenIV.linux.org.uk>
+	Tue, 16 Feb 2010 06:39:58 -0500
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+Organization: IBM
+To: bskeggs@redhat.com
+Subject: Re: [git pull] drm
+Date: Tue, 16 Feb 2010 12:39:54 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.33-rc8-self-00027-gfed1661; KDE/4.3.4; x86_64; ; )
+Cc: Dave Airlie <airlied@linux.ie>, torvalds@linux-foundation.org,
+       dri-devel@lists.sf.net, linux-kernel@vger.kernel.org,
+       Maarten Maathuis <madman2003@gmail.com>,
+       Marcin Slusarz <marcin.slusarz@gmail.com>
+References: <alpine.DEB.2.00.1002110417200.516@skynet.skynet.ie> <201002152355.03161.borntraeger@de.ibm.com> <1266283177.24236.1.camel@nisroch>
+In-Reply-To: <1266283177.24236.1.camel@nisroch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100215195728.GX30031@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002161239.54910.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 15, 2010 at 07:57:28PM +0000, Al Viro wrote:
-> On Mon, Feb 15, 2010 at 09:26:35AM -0800, Matt Helsley wrote:
-> > > > [PATCH 1/4] signalfd
-> > > > [PATCH 2/4] timerfd
-> > > > [PATCH 3/4] epoll
-> > > > [PATCH 4/4] eventfd
-> > > > 
-> > > > I did not check the perf, kvm-vm, or kvm-vcpu uses of anon_inodes.
-> > > 
-> > > Er...  O_ASYNC is silently ignored for regular files as well, so any
-> > > userland code that tries to rely on fcntl() rejecting it is and always
-> > > had been badly b0rken.
-> > 
-> > Of course. Did you mean to imply that the kernel shouldn't bother to
-> > reject these, or were you merely making an observation?
-> 
-> I'm wondering why should we start changing that behaviour and what makes
-> these 4 cases special?
+Am Dienstag 16 Februar 2010 02:19:37 schrieb Ben Skeggs:
+> Ah, it appears the vbios delay opcodes got changed to use sleeps rather
+> than delays at some point without me noticing.  Sent a patch to Dave
+> changing the code to use a mutex instead for now.
 
-I'm not saying we should change behavior for regular files. We should check
-these because they're already being checked inside the special syscalls that
-open these files. Without these patches fcntl(F_SETFL) is a way around those
-checks for these interfaces.
+Ok, I cherry-picked d9184fa97b6f48d399636e5e2669bc8419f9369e from for-airlied
+The fix seems to work.
 
-Cheers,
-	-Matt Helsley
+If you like you can add
+
+Reported-by: Christian Borntraeger <borntraeger@de.ibm.com>
+Tested-by: Christian Borntraeger <borntraeger@de.ibm.com>
+
+Christian
