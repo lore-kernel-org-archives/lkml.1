@@ -1,54 +1,51 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932866Ab0BPO5T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 09:57:19 -0500
-Received: from nlpi157.sbcis.sbc.com ([207.115.36.171]:32987 "EHLO
-	nlpi157.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932809Ab0BPO4i (ORCPT
+	id S932649Ab0BPO4N (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 09:56:13 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:57140 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932525Ab0BPO4F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 09:56:38 -0500
-Date: Tue, 16 Feb 2010 08:55:46 -0600 (CST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@router.home
-To: Mel Gorman <mel@csn.ul.ie>
-cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Andrea Arcangeli <aarcange@redhat.com>, Adam Litke <agl@us.ibm.com>,
-       Avi Kivity <avi@redhat.com>, David Rientjes <rientjes@google.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 05/12] Memory compaction core
-In-Reply-To: <20100216084800.GC26086@csn.ul.ie>
-Message-ID: <alpine.DEB.2.00.1002160849460.18275@router.home>
-References: <1265976059-7459-1-git-send-email-mel@csn.ul.ie> <1265976059-7459-6-git-send-email-mel@csn.ul.ie> <20100216170014.7309.A69D9226@jp.fujitsu.com> <20100216084800.GC26086@csn.ul.ie>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 16 Feb 2010 09:56:05 -0500
+X-Authority-Analysis: v=1.0 c=1 a=uTOmaDeAZlAA:10 a=7U3hwN5JcxgA:10 a=dfLKRL6rylR_DE9mRgUA:9 a=0Niu_9IsJGdlFSABlNKeMWfuW4QA:4
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: Re: [kernel.org users] XZ Migration discussion
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Jean Delvare <khali@linux-fr.org>, mirrors@kernel.org,
+       lasse.collin@tukaani.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       users@kernel.org, "FTPAdmin Kernel.org" <ftpadmin@kernel.org>,
+       Pavel Machek <pavel@ucw.cz>
+In-Reply-To: <10f740e81002131049o196380a6tf863b7713e5aafc5@mail.gmail.com>
+References: <4B744E13.8040004@kernel.org>
+	 <20100211205129.GA26105@elf.ucw.cz>
+	 <20100213181008.479509f5@hyperion.delvare>
+	 <10f740e81002131049o196380a6tf863b7713e5aafc5@mail.gmail.com>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Kihon Technologies Inc.
+Date: Tue, 16 Feb 2010 09:55:57 -0500
+Message-ID: <1266332158.24271.125.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Feb 2010, Mel Gorman wrote:
+On Sat, 2010-02-13 at 19:49 +0100, Geert Uytterhoeven wrote:
 
-> Because how do I tell in advance that the data I am migrating from DMA can
-> be safely relocated to the NORMAL zone? We don't save GFP flags. Granted,
-> for DMA, that will not matter as pages that must be in DMA will also not by
-> migratable. However, buffer pages should not get relocated to HIGHMEM for
-> example which is more likely to happen. It could be special cased but
-> I'm not aware of ZONE_DMA-related pressure problems that would make this
-> worthwhile and if so, it should be handled as a separate patch series.
+> BTW, who still downloads full kernel tarballs? From my experience, that's mostly
+> distro people who have scripts to build kernels from tarballs + a
+> bunch of patches?
 
-Oh there are numerous ZONE_DMA pressure issues if you have ancient /
-screwed up hardware that can only operate on DMA or DMA32 memory.
+When I download to develop, I use git. When I just want to install the
+latest kernel on a box (not used for development) I use ketchup
+(downloads tarballs).
 
-Moving page cache pages out of the DMA zone would be good. A
-write request will cause the page to bounce back to the DMA zone if the
-device requires the page there.
+For those that just want the latest kernel release, git is too bloated.
 
-But I also think that the patchset should be as simple as possible so that
-it can be merged soon.
+-- Steve
 
-> Ah, it was 2009 when I last kicked this around heavily :) I'll update
-> it.
-
-But it was authored in 2009. May be important if patent or other
-copyright claims arise. 2009-2010?
 
