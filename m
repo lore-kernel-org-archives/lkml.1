@@ -1,57 +1,105 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754950Ab0BPLKn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 06:10:43 -0500
-Received: from smtp.nokia.com ([192.100.122.233]:65265 "EHLO
+	id S1755161Ab0BPLKu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 06:10:50 -0500
+Received: from smtp.nokia.com ([192.100.122.233]:65269 "EHLO
 	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754760Ab0BPLKk (ORCPT
+	with ESMTP id S1754237Ab0BPLKm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 06:10:40 -0500
+	Tue, 16 Feb 2010 06:10:42 -0500
 From: Samu Onkalo <samu.p.onkalo@nokia.com>
 To: eric.piel@tremplin-utc.net
 Cc: pavel@ucw.cz, daniel@caiaq.de, lm-sensors@lm-sensors.org,
        linux-kernel@vger.kernel.org, Samu Onkalo <samu.p.onkalo@nokia.com>
-Subject: [PATCH V2 6/6] lis3: Setup poll interval limits
-Date: Tue, 16 Feb 2010 13:09:31 +0200
-Message-Id: <1266318571-31083-7-git-send-email-samu.p.onkalo@nokia.com>
+Subject: [PATCH V2 2/6] lis3: Separate configuration function for 8 bit device
+Date: Tue, 16 Feb 2010 13:09:27 +0200
+Message-Id: <1266318571-31083-3-git-send-email-samu.p.onkalo@nokia.com>
 X-Mailer: git-send-email 1.6.0.4
 In-Reply-To: <1266318571-31083-1-git-send-email-samu.p.onkalo@nokia.com>
 References: <1266318571-31083-1-git-send-email-samu.p.onkalo@nokia.com>
-X-OriginalArrivalTime: 16 Feb 2010 11:09:53.0026 (UTC) FILETIME=[90578E20:01CAAEF8]
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 16 Feb 2010 11:09:44.0589 (UTC) FILETIME=[8B502BD0:01CAAEF8]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Set valid adjustment window (0 - 2000ms).
+Separate configuration function for 8 bit version of the chip.
+This way generic part of the init function stays little bit
+more readable.
 
 Signed-off-by: Samu Onkalo <samu.p.onkalo@nokia.com>
+Acked-by: Éric Piel <eric.piel@tremplin-utc.net>
+Tested-by: Daniel Mack <daniel@caiaq.de>
 ---
- drivers/hwmon/lis3lv02d.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+ drivers/hwmon/lis3lv02d.c |   45 ++++++++++++++++++++++++++-------------------
+ 1 files changed, 26 insertions(+), 19 deletions(-)
 
 diff --git a/drivers/hwmon/lis3lv02d.c b/drivers/hwmon/lis3lv02d.c
-index 56a1d34..6138f03 100644
+index b2f2277..99fd45d 100644
 --- a/drivers/hwmon/lis3lv02d.c
 +++ b/drivers/hwmon/lis3lv02d.c
-@@ -41,6 +41,8 @@
+@@ -521,6 +521,30 @@ int lis3lv02d_remove_fs(struct lis3lv02d *lis3)
+ }
+ EXPORT_SYMBOL_GPL(lis3lv02d_remove_fs);
  
- /* joystick device poll interval in milliseconds */
- #define MDPS_POLL_INTERVAL 50
-+#define MDPS_POLL_MIN	   0
-+#define MDPS_POLL_MAX	   2000
++static void lis3lv02d_8b_configure(struct lis3lv02d *dev,
++				struct lis3lv02d_platform_data *p)
++{
++	if (p->click_flags) {
++		dev->write(dev, CLICK_CFG, p->click_flags);
++		dev->write(dev, CLICK_TIMELIMIT, p->click_time_limit);
++		dev->write(dev, CLICK_LATENCY, p->click_latency);
++		dev->write(dev, CLICK_WINDOW, p->click_window);
++		dev->write(dev, CLICK_THSZ, p->click_thresh_z & 0xf);
++		dev->write(dev, CLICK_THSY_X,
++			(p->click_thresh_x & 0xf) |
++			(p->click_thresh_y << 4));
++	}
++
++	if (p->wakeup_flags) {
++		dev->write(dev, FF_WU_CFG_1, p->wakeup_flags);
++		dev->write(dev, FF_WU_THS_1, p->wakeup_thresh & 0x7f);
++		/* default to 2.5ms for now */
++		dev->write(dev, FF_WU_DURATION_1, 1);
++		/* enable high pass filter for both free-fall units */
++		dev->write(dev, CTRL_REG2, HP_FF_WU1 | HP_FF_WU2);
++	}
++}
++
  /*
-  * The sensor can also generate interrupts (DRDY) but it's pretty pointless
-  * because they are generated even if the data do not change. So it's better
-@@ -459,6 +461,8 @@ int lis3lv02d_joystick_enable(void)
+  * Initialise the accelerometer and the various subsystems.
+  * Should be rather independent of the bus system.
+@@ -567,25 +591,8 @@ int lis3lv02d_init_device(struct lis3lv02d *dev)
+ 	if (dev->pdata) {
+ 		struct lis3lv02d_platform_data *p = dev->pdata;
  
- 	lis3_dev.idev->poll = lis3lv02d_joystick_poll;
- 	lis3_dev.idev->poll_interval = MDPS_POLL_INTERVAL;
-+	lis3_dev.idev->poll_interval_min = MDPS_POLL_MIN;
-+	lis3_dev.idev->poll_interval_max = MDPS_POLL_MAX;
- 	input_dev = lis3_dev.idev->input;
+-		if (p->click_flags && (dev->whoami == WAI_8B)) {
+-			dev->write(dev, CLICK_CFG, p->click_flags);
+-			dev->write(dev, CLICK_TIMELIMIT, p->click_time_limit);
+-			dev->write(dev, CLICK_LATENCY, p->click_latency);
+-			dev->write(dev, CLICK_WINDOW, p->click_window);
+-			dev->write(dev, CLICK_THSZ, p->click_thresh_z & 0xf);
+-			dev->write(dev, CLICK_THSY_X,
+-					(p->click_thresh_x & 0xf) |
+-					(p->click_thresh_y << 4));
+-		}
+-
+-		if (p->wakeup_flags && (dev->whoami == WAI_8B)) {
+-			dev->write(dev, FF_WU_CFG_1, p->wakeup_flags);
+-			dev->write(dev, FF_WU_THS_1, p->wakeup_thresh & 0x7f);
+-			/* default to 2.5ms for now */
+-			dev->write(dev, FF_WU_DURATION_1, 1);
+-			/* enable high pass filter for both free-fall units */
+-			dev->write(dev, CTRL_REG2, HP_FF_WU1 | HP_FF_WU2);
+-		}
++		if (dev->whoami == WAI_8B)
++			lis3lv02d_8b_configure(dev, p);
  
- 	input_dev->name       = "ST LIS3LV02DL Accelerometer";
+ 		if (p->irq_cfg)
+ 			dev->write(dev, CTRL_REG3, p->irq_cfg);
 -- 
 1.6.0.4
 
