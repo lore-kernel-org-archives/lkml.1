@@ -1,53 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755252Ab0BPLqA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 06:46:00 -0500
-Received: from ixro-out-rtc.ixiacom.com ([92.87.192.98]:27930 "EHLO
-	ixro-ex1.ixiacom.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753929Ab0BPLp6 (ORCPT
+	id S1755412Ab0BPL4T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 06:56:19 -0500
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:47412 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755093Ab0BPL4R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 06:45:58 -0500
-From: Octavian Purdila <opurdila@ixiacom.com>
-Organization: Ixia
-To: Cong Wang <amwang@redhat.com>
-Subject: Re: [net-next PATCH v4 1/3] sysctl: refactor integer handling proc code
-Date: Tue, 16 Feb 2010 13:41:56 +0200
-User-Agent: KMail/1.12.2 (Linux/2.6.32-2-686; KDE/4.3.2; i686; ; )
-Cc: David Miller <davem@davemloft.net>,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>,
-       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-References: <1266271241-6293-1-git-send-email-opurdila@ixiacom.com> <1266271241-6293-2-git-send-email-opurdila@ixiacom.com> <4B7A5A23.3080309@redhat.com>
-In-Reply-To: <4B7A5A23.3080309@redhat.com>
+	Tue, 16 Feb 2010 06:56:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=mMsomwVlo4uC424wnW+1XdlTCIMqaw9oM+pv1mRYpK3IWaWrdMWpPIivXnb3ZwmFQ0
+         6U8NqMHF6IzqTrwV/fgem2dkuZp/YSdSMpeXnJ2o8osoG1wINKUi/I9Jel8z+5URpidx
+         dTHxngSvq/BQ5NVhVmYlNU13HA46bTqetxYwA=
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201002161341.56206.opurdila@ixiacom.com>
-X-OriginalArrivalTime: 16 Feb 2010 11:45:56.0773 (UTC) FILETIME=[9A092550:01CAAEFD]
+In-Reply-To: <20100211044604.GA12146@gondor.apana.org.au>
+References: <1265765446-24958-1-git-send-email-richih.mailinglist@gmail.com>
+	 <2d460de71002091821h7b6e99b0gb8f134355f64c65a@mail.gmail.com>
+	 <20100211044604.GA12146@gondor.apana.org.au>
+Date: Tue, 16 Feb 2010 12:56:15 +0100
+Message-ID: <2d460de71002160356l6c26d513qba7d0cece32daddd@mail.gmail.com>
+Subject: Re: [PATCH 1/1] CRYPTO: Fix checkpatch errors & warnings in cipher.c
+From: Richard Hartmann <richih.mailinglist@gmail.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: linux-crypto@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 16 February 2010 10:41:07 you wrote:
+On Thu, Feb 11, 2010 at 05:46, Herbert Xu <herbert@gondor.apana.org.au> wrote:
 
-> > +static int proc_skip_wspace(char __user **buf, size_t *size)
-> > +{
-> > +     char c;
-> > +
-> > +     while (*size) {
-> > +             if (get_user(c, *buf))
-> > +                     return -EFAULT;
-> > +             if (!isspace(c))
-> > +                     break;
-> > +             (*size)--; (*buf)++;
-> > +     }
-> > +
-> > +     return 0;
-> > +}
-> 
-> In lib/string.c we have skip_spaces(), I think we can use it
-> here instead of inventing another one.
-> 
+>> Should I re-send the patch or is it less noise & hassle if I just leave
+>> it this way?
+>
+> You don't have to resend it.
 
-I'm afraid we can't, skip_spaces does not accept userspace buffers.
+GregKH said that I should just re-send all patches after a week. OTOH, I
+am not sure if this is not a little bit too agressive.
+
+Thus, I wanted to check if I should wait some more or what the general
+consensus of action in the crypto subtree is.
+
+And yes, I am aware that janitor work, and thus my patches, is very low
+priority.
+
+
+Thanks,
+Richard
