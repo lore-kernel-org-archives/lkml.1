@@ -1,48 +1,62 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753210Ab0BPKwa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 05:52:30 -0500
-Received: from ixro-out-rtc.ixiacom.com ([92.87.192.98]:9744 "EHLO
-	ixro-ex1.ixiacom.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752157Ab0BPKw2 (ORCPT
+	id S1752666Ab0BPK7P (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 05:59:15 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:43384 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750938Ab0BPK7N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 05:52:28 -0500
-From: Octavian Purdila <opurdila@ixiacom.com>
-Organization: Ixia
-To: Cong Wang <amwang@redhat.com>
-Subject: Re: [net-next PATCH v4 1/3] sysctl: refactor integer handling proc code
-Date: Tue, 16 Feb 2010 12:48:56 +0200
-User-Agent: KMail/1.12.2 (Linux/2.6.32-2-686; KDE/4.3.2; i686; ; )
-Cc: David Miller <davem@davemloft.net>,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>,
-       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-References: <1266271241-6293-1-git-send-email-opurdila@ixiacom.com> <1266271241-6293-2-git-send-email-opurdila@ixiacom.com> <4B7A5A23.3080309@redhat.com>
-In-Reply-To: <4B7A5A23.3080309@redhat.com>
+	Tue, 16 Feb 2010 05:59:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=Z1wR222pHIt5qTKaZxhn8HTEfZfk73tfSeW+i4fqePKQLuqlILhHlP44K6pcZIyfp3
+         fjzKxqbUJq3YVQ2Dz3K3NOOoux0PKspsnaYFysjcX8v4xHkavBRSzFl+dFm/ZCA5PVqb
+         99gaoWgzhmltHC3wF72OSY3n8+2lSVhLXZ5qM=
+Message-ID: <4B7A7A7A.1000805@gmail.com>
+Date: Tue, 16 Feb 2010 11:59:06 +0100
+From: Troels Arvin <troels.arvin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
+To: linux-kernel@vger.kernel.org
+Subject: msgmnb limits?
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <201002161248.56598.opurdila@ixiacom.com>
-X-OriginalArrivalTime: 16 Feb 2010 10:52:26.0635 (UTC) FILETIME=[20A4F5B0:01CAAEF6]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 16 February 2010 10:41:07 you wrote:
+Hello,
 
-> > +
-> > +     if (!write && !first && left && !err)
-> > +             err = proc_put_newline(&buffer, &left);
-> > +     if (write && !err)
-> > +             err = proc_skip_wspace(&buffer, &left);
-> > +     if (err == -EFAULT /* do we really need to check for -EFAULT? */ ||
-> > +         (write && first))
-> > +             return err ? : -EINVAL;
-> 
-> The logic here seems messy, adding one or two goto's may help?
-> 
+On a server with lots of RAM (192GB), I ran into an application (DB2) 
+which applies the following sysctl changes when it's started, if the 
+values haven't already been set to - at least - the stated values:
 
-OK, I'll give it a try. 
+  - kernel.msgmax = 65535
+  - kernel.msgmnb = 65536
 
-What about the EFAULT check, is that really required?
+However, that doesn't work: Certain operations (LOAD and 
+backups/restores) will fail with the following messages, unless 
+kernel.msgmnb is increased:
+
+DIA8557C No message was sent using the message queue.
+CALLED  : OS, -, msgsnd                           OSERR: EAGAIN (11)
+DATA #1 : system V message queue identifier., PD_TYPE_SYSV_QUEUE_ID
+
+
+I tried setting kernel.msgmnb to 524288, and then things work. This 
+value was chosen out of the blue, and I'd like to make a more informed 
+choice:
+
+  - Is there a limit to the size of msgmnb?
+  - Can I expect the system to start thrashing if msgmnb is
+    increased beyond a certain value?
+  - Is my understanding correkt: msgmnb should always be at least
+    as large as msgmax?
+
+Thanks in advance.
+
+-- 
+Regards,
+Troels Arvin
