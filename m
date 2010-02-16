@@ -1,71 +1,48 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753188Ab0BPGSb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 01:18:31 -0500
-Received: from e35.co.us.ibm.com ([32.97.110.153]:45837 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752183Ab0BPGSa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 01:18:30 -0500
-Date: Tue, 16 Feb 2010 11:48:18 +0530
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-To: Paul Turner <pjt@google.com>
-Cc: linux-kernel@vger.kernel.org, Paul Menage <menage@google.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       Dhaval Giani <dhaval.giani@gmail.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Herbert Poetzl <herbert@13thfloor.at>,
-       Chris Friesen <cfriesen@nortel.com>, Avi Kivity <avi@redhat.com>,
-       Nikhil Rao <ncrao@google.com>, Ingo Molnar <mingo@elte.hu>,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       Mike Waychison <mikew@google.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Pavel Emelyanov <xemul@openvz.org>
-Subject: Re: [RFC PATCH v1 0/4] CFS Bandwidth Control
-Message-ID: <20100216061818.GB3492@in.ibm.com>
-Reply-To: bharata@linux.vnet.ibm.com
-References: <20100213025417.23325.90048.stgit@kitami.corp.google.com>
+	id S1753405Ab0BPGUl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 01:20:41 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:45782 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752221Ab0BPGUk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 01:20:40 -0500
+Date: Tue, 16 Feb 2010 17:20:35 +1100
+From: Nick Piggin <npiggin@suse.de>
+To: David Rientjes <rientjes@google.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrea Arcangeli <aarcange@redhat.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch -mm 4/9 v2] oom: remove compulsory panic_on_oom mode
+Message-ID: <20100216062035.GA5723@laptop>
+References: <alpine.DEB.2.00.1002151416470.26927@chino.kir.corp.google.com>
+ <alpine.DEB.2.00.1002151418190.26927@chino.kir.corp.google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100213025417.23325.90048.stgit@kitami.corp.google.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <alpine.DEB.2.00.1002151418190.26927@chino.kir.corp.google.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 12, 2010 at 06:54:52PM -0800, Paul Turner wrote:
-> Todo:
-> -----
-> - hierarchal nr_tasks_running accounting:
->   This is a deficiency currently shared with SCHED_RT rate limiting.  When
->   entities is throttled the running tasks it owns are not subtracted from 
->   rq->nr_running.  This then results in us missing idle_balance() due to
->   phantom tasks and load balancer weight per task calculations being
->   incorrect.
+On Mon, Feb 15, 2010 at 02:20:09PM -0800, David Rientjes wrote:
+> If /proc/sys/vm/panic_on_oom is set to 2, the kernel will panic
+> regardless of whether the memory allocation is constrained by either a
+> mempolicy or cpuset.
 > 
->   This code adds complexity which was both increasing the complexity of the
->   initial review for this patchset and truly probably best reviewed
->   independently of this feature's scope.  To that end we'll post a separate
->   patch for this issue against the current RT rate-limiting code and merge any 
->   converged on approach here as appropriate.
-
-I had tried updating rq->nr_running in my v2 patchset
-(http://lkml.org/lkml/2009/9/30/117, http://lkml.org/lkml/2009/9/30/119)
-But since I felt that it added a lot of complexity, I removed it
-subsequently in v3 (http://lkml.org/lkml/2009/11/9/65) and kept it similar
-to RT.
-
+> Since mempolicy-constrained out of memory conditions now iterate through
+> the tasklist and select a task to kill, it is possible to panic the
+> machine if all tasks sharing the same mempolicy nodes (including those
+> with default policy, they may allocate anywhere) or cpuset mems have
+> /proc/pid/oom_adj values of OOM_DISABLE.  This is functionally equivalent
+> to the compulsory panic_on_oom setting of 2, so the mode is removed.
 > 
-> - throttle statistics:
->   Some statistics regarding the frequency and duration of throttling
->   definitely in order.
+> Signed-off-by: David Rientjes <rientjes@google.com>
 
-Please take a look at some of the throttling related stats I am collecting
-in my patchset.
-
-Regards,
-Bharata.
+What is the point of removing it, though? If it doesn't significantly
+help some future patch, just leave it in. It's not worth breaking the
+user/kernel interface just to remove 3 trivial lines of code.
 
