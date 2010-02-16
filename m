@@ -1,75 +1,82 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932708Ab0BPHxh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 02:53:37 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:47738 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932686Ab0BPHxf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 02:53:35 -0500
-Date: Tue, 16 Feb 2010 18:53:30 +1100
-From: Nick Piggin <npiggin@suse.de>
-To: David Rientjes <rientjes@google.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
+	id S932722Ab0BPHxp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 02:53:45 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:51107 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932686Ab0BPHxk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 02:53:40 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=jBfkvNTzaNdGsIlZkFLrvLPk+jS7YWGUPASsI0MqS8HxZiDP1GnV2ZOQggITcI7G1
+	Gf6cuiV3Hn7L4/4pzuvqg==
+Date: Mon, 15 Feb 2010 23:53:33 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Nick Piggin <npiggin@suse.de>
+cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrea Arcangeli <aarcange@redhat.com>,
        Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
        KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
        linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch -mm 8/9 v2] oom: avoid oom killer for lowmem allocations
-Message-ID: <20100216075330.GJ5723@laptop>
-References: <alpine.DEB.2.00.1002151416470.26927@chino.kir.corp.google.com>
- <alpine.DEB.2.00.1002151419260.26927@chino.kir.corp.google.com>
- <20100216085706.c7af93e1.kamezawa.hiroyu@jp.fujitsu.com>
- <alpine.DEB.2.00.1002151606320.14484@chino.kir.corp.google.com>
- <20100216064402.GC5723@laptop>
- <alpine.DEB.2.00.1002152334260.7470@chino.kir.corp.google.com>
+Subject: Re: [patch -mm 4/9 v2] oom: remove compulsory panic_on_oom mode
+In-Reply-To: <20100216072047.GH5723@laptop>
+Message-ID: <alpine.DEB.2.00.1002152342120.7470@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.1002151416470.26927@chino.kir.corp.google.com> <alpine.DEB.2.00.1002151418190.26927@chino.kir.corp.google.com> <20100216062035.GA5723@laptop> <alpine.DEB.2.00.1002152252310.2745@chino.kir.corp.google.com>
+ <20100216072047.GH5723@laptop>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.1002152334260.7470@chino.kir.corp.google.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 15, 2010 at 11:41:49PM -0800, David Rientjes wrote:
-> On Tue, 16 Feb 2010, Nick Piggin wrote:
+On Tue, 16 Feb 2010, Nick Piggin wrote:
+
+> > Because it is inconsistent at the user's expense, it has never panicked 
+> > the machine for memory controller ooms, so why is a cpuset or mempolicy 
+> > constrained oom conditions any different?
 > 
-> > > As I already explained when you first brought this up, the possibility of 
-> > > not invoking the oom killer is not unique to GFP_DMA, it is also possible 
-> > > for GFP_NOFS.  Since __GFP_NOFAIL is deprecated and there are no current 
-> > > users of GFP_DMA | __GFP_NOFAIL, that warning is completely unnecessary.  
-> > > We're not adding any additional __GFP_NOFAIL allocations.
-> > 
-> > Completely agree with this request. Actually, I think even better you
-> > should just add && !(gfp_mask & __GFP_NOFAIL). Deprecated doesn't mean
-> > it is OK to break the API (callers *will* oops or corrupt memory if
-> > __GFP_NOFAIL returns NULL).
-> > 
+> Well memory controller was added later, wasn't it? So if you think
+> that's a bug then a fix to panic on memory controller ooms might
+> be in order.
 > 
-> ... unless it's used with GFP_ATOMIC, which we've always returned NULL 
-> for when even ALLOC_HARDER can't find pages, right?
 
-Ye, it's never worked with GFP_ATOMIC.
+But what about the existing memcg users who set panic_on_oom == 2 and 
+don't expect the memory controller to be influenced by that?
 
-
-> I'm wondering where this strong argument in favor of continuing to support 
-> __GFP_NOFAIL was when I insisted we call the oom killer for them even for 
-> allocations over PAGE_ALLOC_COSTLY_ORDER when __alloc_pages_nodemask() was 
-> refactored back in 2.6.31.  The argument was that nobody is allocating 
-> that high of orders of __GFP_NOFAIL pages so we don't need to free memory 
-> for them and that's where the deprecation of the modifier happened in the 
-> first place.  Ultimately, we did invoke the oom killer for those 
-> allocations because there's no chance of forward progress otherwise and, 
-> unlike __GFP_DMA, GFP_KERNEL | __GFP_NOFAIL actually is popular.  
-
-I don't know. IMO we should never just randomly weaken or break such
-flag as the page allocator API.
-
+> >  It also panics the machine even 
+> > on VM_FAULT_OOM which is ridiculous,
 > 
-> I'll add this check to __alloc_pages_may_oom() for the !(gfp_mask & 
-> __GFP_NOFAIL) path since we're all content with endlessly looping.
+> Why?
+> 
 
-Thanks. Yes endlessly looping is far preferable to randomly oopsing
-or corrupting memory.
+Because the oom killer was never called for VM_FAULT_OOM before, we simply 
+sent a SIGKILL to current, i.e. the original panic_on_oom semantics were 
+not even enforced.
 
+> > the tunable is certainly not being 
+> > used how it was documented
+> 
+> Why not? The documentation seems to match the implementation.
+> 
+
+It was meant to panic the machine anytime it was out of memory, regardless 
+of the constraint, but that obviously doesn't match the memory controller 
+case.  Just because cpusets and mempolicies decide to use the oom killer 
+as a mechanism for enforcing a user-defined policy does not mean that we 
+want to panic for them: mempolicies, for example, are user created and do 
+not require any special capability.  Does it seem reasonable that an oom 
+condition on those mempolicy nodes should panic the machine when killing 
+the offender is possible (and perhaps even encouraged if the user sets a 
+high /proc/pid/oom_score_adj?)  In other words, is an admin setting 
+panic_on_oom == 2 really expecting that no application will use 
+set_mempolicy() or do an mbind()?  This is a very error-prone interface 
+that needs to be dealt with on a case-by-case basis and the perfect way to 
+do that is by setting the affected tasks to be OOM_DISABLE; that 
+interface, unlike panic_on_oom == 2, is very well understood by those with 
+CAP_SYS_RESOURCE.
