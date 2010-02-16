@@ -1,74 +1,46 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756123Ab0BPNOY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 08:14:24 -0500
-Received: from lucidpixels.com ([75.144.35.66]:37032 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755979Ab0BPNOX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 08:14:23 -0500
-Date: Tue, 16 Feb 2010 08:14:21 -0500 (EST)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: Neil Brown <neilb@suse.de>
-cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Linux mdadm superblock question.
-In-Reply-To: <20100216115036.0f6b7bb6@notabene.brown>
-Message-ID: <alpine.DEB.2.00.1002160807370.31195@p34.internal.lan>
-References: <alpine.DEB.2.00.1002111758350.12031@p34.internal.lan> <20100216115036.0f6b7bb6@notabene.brown>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	id S1756160Ab0BPNOz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 08:14:55 -0500
+Received: from mail-pz0-f187.google.com ([209.85.222.187]:56646 "EHLO
+	mail-pz0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755936Ab0BPNOx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 08:14:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=TyK3PFzvAnev/Xq+W69iBV/1F1ecUPLmgzP0obZInRZzP9khBSKSiLTbLFhFiWyCMr
+         ZbwLPQhsj3xvKCENhCLgXljV5QvGwJ7mw4+V7wkINDv3jAzvdO569B6Z8Ma/VF+D8Roi
+         HJSggz7pfsruWPd+tpYYL4MJdpHS/goswkhhA=
+Date: Tue, 16 Feb 2010 21:17:22 +0800
+From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: "Nikita V. Youshchenko" <yoush@cs.msu.su>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Extended error reporting to user space?
+Message-ID: <20100216131722.GA4382@hack.private>
+References: <201002161520.26700@zigzag.lvk.cs.msu.su> <b6fcc0a1002160423o1269996bw34c033015b1ab500@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <b6fcc0a1002160423o1269996bw34c033015b1ab500@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Feb 16, 2010 at 02:23:55PM +0200, Alexey Dobriyan wrote:
+>On Tue, Feb 16, 2010 at 2:20 PM, Nikita V. Youshchenko <yoush@cs.msu.su> wrote:
+>> Unfortunately this -EINVAL is not really useful.
+>
+>There is no such thing.
+>Driver can spit messages with printk() though.
 
+Right, if errno is not enough, printk() is.
 
-On Tue, 16 Feb 2010, Neil Brown wrote:
+You could also use other interface to debug, but printk() is the
+simplest.
 
-> On Thu, 11 Feb 2010 18:00:23 -0500 (EST)
-> Justin Piszcz <jpiszcz@lucidpixels.com> wrote:
->
->> Hi,
->>
->> I may be converting a host to ext4 and was curious, is 0.90 still the only
->> superblock version for mdadm/raid-1 that you can boot from without having
->> to create an initrd/etc?
->>
->> Are there any benefits to using a superblock > 0.90 for a raid-1 boot
->> volume < 2TB?
->
-> The only noticeable differences that I can think of are:
-> 1/ If you reboot during recovery of a spare, then 0.90 will restart the
->    recovery at the start, while 1.x will restart from where it was up to.
-> 2/ The /sys/class/block/mdXX/md/dev-YYY/errors counter is reset on each
->    re-assembly with 0.90, but is preserved across stop/start with 1.x
-> 3/ If your partition starts on a multiple of 64K from the start of the
->    device and is the last partition and contains 0.90 metadata, then
->    mdadm can get confused by it.
-> 4/ If you move the devices to a host with a different arch and different
->    byte-ordering, then extra effort will be needed to see the array for
->    0.90, but not for 1.x
->
-> I suspect none of these is a big issue.
->
-> It is likely that future extensions will only be supported on 1.x metadata.
-> For example I hope to add support for storing a bad-block list, so that a
-> read error during recovery will only be fatal for that block, not the whole
-> recovery process.  This is unlikely ever to be supported on 0.90.  However
-> it may not be possible to hot-enable it on 1.x either, depending on how much
-> space has been reserved for extra metadata, so there is no guarantee that
-> using 1.x now makes you future-proof.
->
-> And yes, 0.90 is still the only superblock version that supports in-kernel
-> autodetect, and I have no intention of adding in-kernel autodetect for any
-> other version.
->
-> NeilBrown
->
-
-Hi Neil,
-
-Thanks for the response, this is exactly what I was looking for and 
-probably should be put in a FAQ.
-
-Justin.
+Thanks.
