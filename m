@@ -1,38 +1,75 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933477Ab0BPW0i (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 17:26:38 -0500
-Received: from e33.co.us.ibm.com ([32.97.110.151]:47106 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933260Ab0BPW0g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 17:26:36 -0500
-Date: Tue, 16 Feb 2010 14:26:11 -0800
-From: "Darrick J. Wong" <djwong@us.ibm.com>
-To: Matthew Garrett <mjg@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, lenb@kernel.org, davej@redhat.com,
-       Thomas Renninger <trenn@suse.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: [PATCH v2] acpi: Fix regression where _PPC is not read at boot
-	even when ignore_ppc=0
-Message-ID: <20100216222611.GP29569@tux1.beaverton.ibm.com>
-Reply-To: djwong@us.ibm.com
-References: <20090429220037.GA8604@srcf.ucam.org> <20090430072556.GD16737@elte.hu> <20090430095414.GA19462@srcf.ucam.org> <20090430111042.GA12809@elte.hu> <20090430111338.GA21297@srcf.ucam.org> <20090515191219.GH6968@plum> <20090602232108.GG7917@plum> <20090607100541.GJ31286@elte.hu> <20090715003207.GA5111@plum> <20100216220707.GA5966@srcf.ucam.org>
+	id S933157Ab0BPW3M (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 17:29:12 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:30645 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933056Ab0BPW3K (ORCPT
+	<rfc822;<linux-kernel@vger.kernel.org>>);
+	Tue, 16 Feb 2010 17:29:10 -0500
+Date: Tue, 16 Feb 2010 17:13:13 -0500
+From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "hpa@zytor.com" <hpa@zytor.com>,
+       "rostedt@goodmis.org" <rostedt@goodmis.org>,
+       "jeremy@goop.org" <jeremy@goop.org>
+Subject: Re: [LKML] Re: [PATCH] x86_64: allow sections that are recycled to
+	set _PAGE_RW
+Message-ID: <20100216221313.GA22869@phenom.dumpdata.com>
+References: <1266030928-2126-1-git-send-email-konrad.wilk@oracle.com> <1266030928-2126-2-git-send-email-konrad.wilk@oracle.com> <1266091697.2677.64.camel@sbs-t61>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100216220707.GA5966@srcf.ucam.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <1266091697.2677.64.camel@sbs-t61>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-Source-IP: acsmt353.oracle.com [141.146.40.153]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090205.4B7B1C12.018A:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 16, 2010 at 10:07:07PM +0000, Matthew Garrett wrote:
-> Did this ever get picked up?
+On Sat, Feb 13, 2010 at 12:08:17PM -0800, Suresh Siddha wrote:
+> Konrad,
+> 
+> I don't think this patch is correct.
+> 
+> I am not sure if I understand why we see this failure in Xen. In native
+> case, we have two kernel mappings for 64bit kernel.
+> 
+> One is kernel text mapping:
+> 
+> ffffffff80000000 - ffffffffa0000000 (=512 MB)  kernel text mapping, from
+> phys 0
+> 
+> And another is:
+> 
+> ffff880000000000 - ffffc7ffffffffff (=64 TB) direct mapping of all phys.
+> memory
+> 
+> Checks in static_protections() ensure that we map the text mapping as
+> read-only (and don't bother about what permissions it uses for
+> underlying free pages that get freed in free_init_pages()). But the
+> kernel direct mappings for free pages will be RW and ensure that the
+> free pages can be read/written using the direct mapping.
+> 
+> The checks in static_protections() for kernel text mapping ensure that
+> we don't break the 2MB kernel text pages unnecessarily on 64bit kernels
+> (as it has performance implications). We should be fine as long as the
+> kernel identity mappings reflect the correct RW permissions.
+> 
+> But somehow this is working fine on native kernels but not on Xen pv
+> guest. Your patch will cause the performance issues that we are
 
-Nope.  I vaguely recall asking a few times if there were any objections left,
-but there weren't any, and I think Len or someone said it looked good back at
-LPC last summer.  Does not appear in 2.6.33-rc8 though.
+That would not be good.
 
---D
+> addressing using the static protections checks. I will look at this more
+> detailed on tuesday.
+
+Great. Thank you for doing that. If you find yourself in a bind, here are
+some steps on how to build the Xen pv-ops kernel and such:
+http://wiki.xensource.com/xenwiki/XenParavirtOps
+
+It goes without saying that I would be happy to test your patch when
+you have one ready.
