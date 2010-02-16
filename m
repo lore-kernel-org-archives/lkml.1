@@ -1,87 +1,190 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756986Ab0BPOhp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 09:37:45 -0500
-Received: from mail-fx0-f215.google.com ([209.85.220.215]:64795 "EHLO
-	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756798Ab0BPOho convert rfc822-to-8bit (ORCPT
+	id S1756240Ab0BPOk4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 09:40:56 -0500
+Received: from mail-forward1.uio.no ([129.240.10.70]:33287 "EHLO
+	mail-forward1.uio.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756127Ab0BPOkv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 09:37:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding:message-id;
-        b=kif72Hirgr+q1mByELFRrKf3KuVZNtgb+En69ogfI0BrIbrYGcq5MX1LpoU8zbHyHP
-         OiblYkyV80gGBe5JC14lanRDFp2o/x06ec1GgCcbYVrZpD8wL0Y8Ry+ceMph7k6EDXL7
-         yKBssrkOPJANVo6k5JIhznDb/K36xcmIw5j+0=
-From: Volker Armin Hemmann <volkerarmin@googlemail.com>
-To: John Robinson <john.robinson@anonymous.org.uk>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Linux mdadm superblock question.
-Date: Tue, 16 Feb 2010 15:37:08 +0100
-User-Agent: KMail/1.13.0 (Linux/2.6.31.12r4; KDE/4.4.0; x86_64; ; )
-Cc: Linux RAID <linux-raid@vger.kernel.org>
-References: <201002140251.59668.volkerarmin@googlemail.com> <201002142013.24922.volkerarmin@googlemail.com> <4B7AAB8D.9030009@anonymous.org.uk>
-In-Reply-To: <4B7AAB8D.9030009@anonymous.org.uk>
+	Tue, 16 Feb 2010 09:40:51 -0500
+Message-ID: <4B7AAE69.8020701@simula.no>
+Date: Tue, 16 Feb 2010 15:40:41 +0100
+From: Andreas Petlund <apetlund@simula.no>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.9pre) Gecko/20100209 Shredder/3.0.2pre
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <201002161537.08487.volkerarmin@googlemail.com>
+To: "netdev@vger.kernel.org" <netdev@vger.kernel.org>
+CC: =?ISO-8859-1?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
+       Eric Dumazet <eric.dumazet@gmail.com>,
+       Arnd Hannemann <hannemann@nets.rwth-aachen.de>,
+       LKML <linux-kernel@vger.kernel.org>, shemminger@vyatta.com,
+       David Miller <davem@davemloft.net>, william.allen.simpson@gmail.com,
+       damian@tvk.rwth-aachen.de, "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: [net-next PATCH v4 2/3] net: TCP thin linear timeouts
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-UiO-Ratelimit-Test: rcpts/h 30 msgs/h 3 sum rcpts/h 33 sum msgs/h 4 total rcpts 842 max rcpts/h 37 ratelimit 0
+X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
+X-UiO-Scanned: CD0D845091053257B91CAF3FA9BF2AE6F4373864
+X-UiO-SPAM-Test: remote_host: 128.39.37.254 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 19 total 20209 max/h 66 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dienstag 16 Februar 2010, John Robinson wrote:
-> On 14/02/2010 19:13, Volker Armin Hemmann wrote:
-> > On Sonntag 14 Februar 2010, you wrote:
-> >> On 14/02/2010 18:40, Volker Armin Hemmann wrote:
-> >>> On Sonntag 14 Februar 2010, you wrote:
-> >>>> In other words, 'auto-detection' for 1.x format devices is using an
-> >>>> initrd/initramfs.
-> >>> 
-> >>> which makes 1.x format useless for everybody who does not want to deal
-> >>> with initrd/initramfs.
-> >> 
-> >> True, but afaik every distro uses an initrd/initramfs and bundles tools
-> >> making it easy to manage and customise them, so what's the problem?
-> > 
-> > and distros do it because of all the drivers they have to ship. But for
-> > example I am not bound by such limitations. Why should I deal with that?
-> > It is hard enough not to forget 'make modules_install'. And now add
-> > initrd. Autodetecting just works - but if you use an initrd an it
-> > doesn't. Where do you start?
-> > 
-> > Initrd's maybe great for distro packagers, but are they really usefull
-> > for anybody else?
-> 
-> Not just for distro packagers, they're useful for distro users, which
-> are presumably 99% of Linux users these days, including the vast
-> majority of enterprise users who like tested, supported systems.
-> 
-> But even for people building their own kernels, initrd/initramfs are
-> useful if you're using LVM, or indeed trying to boot off anything that's
-> not a simple device.
+Major changes:
+      -Renamed variables, ioctl and sysctl.
+      -Added sysctl documentation.
+      -Removed redundant allocation.
 
-so assume you have an initrd and metadata 1.x without auto assembling.
+Signed-off-by: Andreas Petlund <apetlund@simula.no>
+---
+ Documentation/networking/ip-sysctl.txt |   12 ++++++++++++
+ include/linux/tcp.h                    |    3 +++
+ include/net/tcp.h                      |    4 ++++
+ net/ipv4/sysctl_net_ipv4.c             |    7 +++++++
+ net/ipv4/tcp.c                         |    7 +++++++
+ net/ipv4/tcp_timer.c                   |   20 +++++++++++++++++++-
+ 6 files changed, 52 insertions(+), 1 deletions(-)
 
-You do some changes to the raid and screw up something else. Next boot nothing 
-works. Mostly because the mdadm.conf in your initrd is not correct.
+diff --git a/Documentation/networking/ip-sysctl.txt b/Documentation/networking/ip-sysctl.txt
+index 2dc7a1d..f147310 100644
+--- a/Documentation/networking/ip-sysctl.txt
++++ b/Documentation/networking/ip-sysctl.txt
+@@ -487,6 +487,18 @@ tcp_dma_copybreak - INTEGER
+ 	and CONFIG_NET_DMA is enabled.
+ 	Default: 4096
+ 
++tcp_thin_linear_timeouts - BOOLEAN
++	Enable dynamic triggering of linear timeouts for thin streams.
++	If set, a check is performed upon retransmission by timeout to
++	determine if the stream is thin (less than 4 packets in flight).
++	As long as the stream is found to be thin, up to 6 linear
++	timeouts may be performed before exponential backoff mode is
++	initiated. This improves retransmission latency for
++	non-aggressive thin streams, often found to be time-dependent.
++	For more information on thin streams, see
++	Documentation/networking/tcp-thin.txt
++	Default: 0
++
+ UDP variables:
+ 
+ udp_mem - vector of 3 INTEGERs: min, pressure, max
+diff --git a/include/linux/tcp.h b/include/linux/tcp.h
+index 7fee8a4..42885af 100644
+--- a/include/linux/tcp.h
++++ b/include/linux/tcp.h
+@@ -103,6 +103,7 @@ enum {
+ #define TCP_CONGESTION		13	/* Congestion control algorithm */
+ #define TCP_MD5SIG		14	/* TCP MD5 Signature (RFC2385) */
+ #define TCP_COOKIE_TRANSACTIONS	15	/* TCP Cookie Transactions */
++#define TCP_THIN_LINEAR_TIMEOUTS 16      /* Use linear timeouts for thin streams*/
+ 
+ /* for TCP_INFO socket option */
+ #define TCPI_OPT_TIMESTAMPS	1
+@@ -341,6 +342,8 @@ struct tcp_sock {
+ 	u16	advmss;		/* Advertised MSS			*/
+ 	u8	frto_counter;	/* Number of new acks after RTO */
+ 	u8	nonagle;	/* Disable Nagle algorithm?             */
++	u8      thin_lto    : 1,/* Use linear timeouts for thin streams */
++		thin_undef  : 7;
+ 
+ /* RTT measurement */
+ 	u32	srtt;		/* smoothed round trip time << 3	*/
+diff --git a/include/net/tcp.h b/include/net/tcp.h
+index e5e2056..be49356 100644
+--- a/include/net/tcp.h
++++ b/include/net/tcp.h
+@@ -196,6 +196,9 @@ extern void tcp_time_wait(struct sock *sk, int state, int timeo);
+ #define TCP_NAGLE_CORK		2	/* Socket is corked	    */
+ #define TCP_NAGLE_PUSH		4	/* Cork is overridden for already queued data */
+ 
++/* TCP thin-stream limits */
++#define TCP_THIN_LINEAR_RETRIES 6       /* After 6 linear retries, do exp. backoff */
++
+ extern struct inet_timewait_death_row tcp_death_row;
+ 
+ /* sysctl variables for tcp */
+@@ -241,6 +244,7 @@ extern int sysctl_tcp_workaround_signed_windows;
+ extern int sysctl_tcp_slow_start_after_idle;
+ extern int sysctl_tcp_max_ssthresh;
+ extern int sysctl_tcp_cookie_size;
++extern int sysctl_tcp_thin_linear_timeouts;
+ 
+ extern atomic_t tcp_memory_allocated;
+ extern struct percpu_counter tcp_sockets_allocated;
+diff --git a/net/ipv4/sysctl_net_ipv4.c b/net/ipv4/sysctl_net_ipv4.c
+index 7e3712c..e6a2460 100644
+--- a/net/ipv4/sysctl_net_ipv4.c
++++ b/net/ipv4/sysctl_net_ipv4.c
+@@ -576,6 +576,13 @@ static struct ctl_table ipv4_table[] = {
+ 		.proc_handler	= proc_dointvec
+ 	},
+ 	{
++		.procname       = "tcp_thin_linear_timeouts",
++		.data           = &sysctl_tcp_thin_linear_timeouts,
++		.maxlen         = sizeof(int),
++		.mode           = 0644,
++		.proc_handler   = proc_dointvec
++	},
++	{
+ 		.procname	= "udp_mem",
+ 		.data		= &sysctl_udp_mem,
+ 		.maxlen		= sizeof(sysctl_udp_mem),
+diff --git a/net/ipv4/tcp.c b/net/ipv4/tcp.c
+index d5d69ea..a159c0d 100644
+--- a/net/ipv4/tcp.c
++++ b/net/ipv4/tcp.c
+@@ -2229,6 +2229,13 @@ static int do_tcp_setsockopt(struct sock *sk, int level,
+ 		}
+ 		break;
+ 
++	case TCP_THIN_LINEAR_TIMEOUTS:
++		if (val < 0 || val > 1)
++			err = -EINVAL;
++		else
++			tp->thin_lto = val;
++		break;
++
+ 	case TCP_CORK:
+ 		/* When set indicates to always queue non-full frames.
+ 		 * Later the user clears this option and we transmit
+diff --git a/net/ipv4/tcp_timer.c b/net/ipv4/tcp_timer.c
+index de7d1bf..00f7caa 100644
+--- a/net/ipv4/tcp_timer.c
++++ b/net/ipv4/tcp_timer.c
+@@ -29,6 +29,7 @@ int sysctl_tcp_keepalive_intvl __read_mostly = TCP_KEEPALIVE_INTVL;
+ int sysctl_tcp_retries1 __read_mostly = TCP_RETR1;
+ int sysctl_tcp_retries2 __read_mostly = TCP_RETR2;
+ int sysctl_tcp_orphan_retries __read_mostly;
++int sysctl_tcp_thin_linear_timeouts __read_mostly;
+ 
+ static void tcp_write_timer(unsigned long);
+ static void tcp_delack_timer(unsigned long);
+@@ -415,7 +416,24 @@ void tcp_retransmit_timer(struct sock *sk)
+ 	icsk->icsk_retransmits++;
+ 
+ out_reset_timer:
+-	icsk->icsk_rto = min(icsk->icsk_rto << 1, TCP_RTO_MAX);
++	/* If stream is thin, use linear timeouts. Since 'icsk_backoff' is
++	 * used to reset timer, set to 0. Recalculate 'icsk_rto' as this
++	 * might be increased if the stream oscillates between thin and thick,
++	 * thus the old value might already be too high compared to the value
++	 * set by 'tcp_set_rto' in tcp_input.c which resets the rto without
++	 * backoff. Limit to TCP_THIN_LINEAR_RETRIES before initiating
++	 * exponential backoff behaviour to avoid continue hammering
++	 * linear-timeout retransmissions into a black hole*/
++	if (sk->sk_state == TCP_ESTABLISHED &&
++	    (tp->thin_lto || sysctl_tcp_thin_linear_timeouts) &&
++	    tcp_stream_is_thin(sk) &&
++	    icsk->icsk_retransmits <= TCP_THIN_LINEAR_RETRIES) {
++		icsk->icsk_backoff = 0;
++		icsk->icsk_rto = min(__tcp_set_rto(tp), TCP_RTO_MAX);
++	} else {
++		/* Use normal (exponential) backoff */
++		icsk->icsk_rto = min(icsk->icsk_rto << 1, TCP_RTO_MAX);
++	}
+ 	inet_csk_reset_xmit_timer(sk, ICSK_TIME_RETRANS, icsk->icsk_rto, TCP_RTO_MAX);
+ 	if (retransmits_timed_out(sk, sysctl_tcp_retries1 + 1))
+ 		__sk_dst_reset(sk);
+-- 
+1.6.3.3
 
-You whip out your trusty usb stick with a resuce system - and you are stuck. 
-If autoassembling would work, you would have working md devices you could 
-mount and edit the files you have to. But you don't and the mdadm.conf in the 
-initrd is outdated.
-
-Sounds like 'you are screwed'.
-
-Or you have that famous grub boot line to have root autoassembled but the 
-device names changed. 
-
-Yeah, sounds really great.
-
-And that because ...? Is there any good reason not to have autoassmbling in 
-the kernel?
-
-Glück Auf
-Volker
