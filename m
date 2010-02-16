@@ -1,102 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932742Ab0BPIIY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 03:08:24 -0500
-Received: from cantor.suse.de ([195.135.220.2]:34405 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932718Ab0BPIIW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 03:08:22 -0500
-Date: Tue, 16 Feb 2010 19:08:17 +1100
-From: Nick Piggin <npiggin@suse.de>
-To: David Rientjes <rientjes@google.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrea Arcangeli <aarcange@redhat.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch -mm 4/9 v2] oom: remove compulsory panic_on_oom mode
-Message-ID: <20100216080817.GK5723@laptop>
-References: <alpine.DEB.2.00.1002151416470.26927@chino.kir.corp.google.com>
- <alpine.DEB.2.00.1002151418190.26927@chino.kir.corp.google.com>
- <20100216062035.GA5723@laptop>
- <alpine.DEB.2.00.1002152252310.2745@chino.kir.corp.google.com>
- <20100216072047.GH5723@laptop>
- <alpine.DEB.2.00.1002152342120.7470@chino.kir.corp.google.com>
+	id S932740Ab0BPIMb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 03:12:31 -0500
+Received: from mail-yw0-f176.google.com ([209.85.211.176]:57741 "EHLO
+	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932671Ab0BPIM3 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 03:12:29 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=uBinAlyIfsXukXMoARaVwpSYAuDhx8iRm382GZJYCYIKtcbWEveOwbCFZr3EUnuYOT
+         dpoHIKZ2TQOYx6C5gqkLeCt6VT6GT5nUPEYYx6KejaGYKAJgRs4hiQLGOmTCHttP5RdG
+         vblXIc6qcQZaKb4Kv5psmZRB3//ClNBNhrL5w=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.1002152342120.7470@chino.kir.corp.google.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20100216011041.GB4889@linux-sh.org>
+References: <1266280229-18469-1-git-send-email-vapier@gentoo.org> 
+	<20100216011041.GB4889@linux-sh.org>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Tue, 16 Feb 2010 03:12:09 -0500
+Message-ID: <8bd0f97a1002160012x2736f2b1r1ea4e57c41cf7fbb@mail.gmail.com>
+Subject: Re: [PATCH] ptrace: unify FDPIC implementations
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Roland McGrath <roland@redhat.com>, David Howells <dhowells@redhat.com>,
+       Oleg Nesterov <oleg@redhat.com>,
+       uclinux-dist-devel@blackfin.uclinux.org, linux-sh@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 15, 2010 at 11:53:33PM -0800, David Rientjes wrote:
-> On Tue, 16 Feb 2010, Nick Piggin wrote:
-> 
-> > > Because it is inconsistent at the user's expense, it has never panicked 
-> > > the machine for memory controller ooms, so why is a cpuset or mempolicy 
-> > > constrained oom conditions any different?
-> > 
-> > Well memory controller was added later, wasn't it? So if you think
-> > that's a bug then a fix to panic on memory controller ooms might
-> > be in order.
-> > 
-> 
-> But what about the existing memcg users who set panic_on_oom == 2 and 
-> don't expect the memory controller to be influenced by that?
+On Mon, Feb 15, 2010 at 20:10, Paul Mundt wrote:
+> On Mon, Feb 15, 2010 at 07:30:29PM -0500, Mike Frysinger wrote:
+>> The Blackfin/FRV/SuperH guys all have the same exact FDPIC ptrace code in
+>> their arch handlers (since they were probably copied & pasted).  Since
+>> these ptrace interfaces are an arch independent aspect of the FDPIC code,
+>> unify them in the common ptrace code so new FDPIC ports don't need to copy
+>> and paste this fundamental stuff yet again.
+>>
+>> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+>> Acked-by: Roland McGrath <roland@redhat.com>
+>> Acked-by: David Howells <dhowells@redhat.com>
+>> Acked-by: Paul Mundt <lethal@linux-sh.org>
+>
+> Just to follow up on this, this code obviously expects consistent entries
+> in mm_context_t. Presently include/asm-generic/mmu.h is aimed at nommu,
+> so it would probably be worthwhile stubbing in the FDPIC loadmap entries
+> there to make things easier for future ports.
 
-But that was a bug in the addition of the memory controller. Either the
-documentation should be fixed, or the implementation should be fixed.
-
- 
-> > >  It also panics the machine even 
-> > > on VM_FAULT_OOM which is ridiculous,
-> > 
-> > Why?
-> > 
-> 
-> Because the oom killer was never called for VM_FAULT_OOM before, we simply 
-> sent a SIGKILL to current, i.e. the original panic_on_oom semantics were 
-> not even enforced.
-
-No but now they are. I don't know what your point is here because there
-is no way the users of this interface can be expected to know about
-VM_FAULT_OOM versus pagefault_out_of_memory let alone do anything useful
-with that.
-
-> 
-> > > the tunable is certainly not being 
-> > > used how it was documented
-> > 
-> > Why not? The documentation seems to match the implementation.
-> > 
-> 
-> It was meant to panic the machine anytime it was out of memory, regardless 
-> of the constraint, but that obviously doesn't match the memory controller 
-> case.
-
-Right, and it's been like that for 3 years and people who don't use
-the memory controller will be using that tunable.
-
-Let's fix the memory controller case.
-
->  Just because cpusets and mempolicies decide to use the oom killer 
-> as a mechanism for enforcing a user-defined policy does not mean that we 
-> want to panic for them: mempolicies, for example, are user created and do 
-> not require any special capability.  Does it seem reasonable that an oom 
-> condition on those mempolicy nodes should panic the machine when killing 
-> the offender is possible (and perhaps even encouraged if the user sets a 
-> high /proc/pid/oom_score_adj?)  In other words, is an admin setting 
-> panic_on_oom == 2 really expecting that no application will use 
-> set_mempolicy() or do an mbind()?  This is a very error-prone interface 
-> that needs to be dealt with on a case-by-case basis and the perfect way to 
-> do that is by setting the affected tasks to be OOM_DISABLE; that 
-> interface, unlike panic_on_oom == 2, is very well understood by those with 
-> CAP_SYS_RESOURCE.
-
-I assume it is reasonable to want to panic on any OOM if you're after
-fail-stop kind of behaviour. I guess that is why it was added. I see
-more use for that case than panic_on_oom==1 case myself.
-
+probably be a good idea.  for FDPIC in general, the header also needs
+"stack_start".
+-mike
