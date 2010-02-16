@@ -1,66 +1,77 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756887Ab0BPOFw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 09:05:52 -0500
-Received: from ixro-out-rtc.ixiacom.com ([92.87.192.98]:1236 "EHLO
-	ixro-ex1.ixiacom.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755720Ab0BPOFu (ORCPT
+	id S1756758Ab0BPONb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 09:13:31 -0500
+Received: from bear.ext.ti.com ([192.94.94.41]:37498 "EHLO bear.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755720Ab0BPON3 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 09:05:50 -0500
-From: Octavian Purdila <opurdila@ixiacom.com>
-Organization: Ixia
-To: Cong Wang <amwang@redhat.com>
-Subject: Re: [net-next PATCH v4 1/3] sysctl: refactor integer handling proc code
-Date: Tue, 16 Feb 2010 16:00:54 +0200
-User-Agent: KMail/1.12.2 (Linux/2.6.32-2-686; KDE/4.3.2; i686; ; )
-Cc: David Miller <davem@davemloft.net>,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>,
-       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-References: <1266271241-6293-1-git-send-email-opurdila@ixiacom.com> <201002161248.56598.opurdila@ixiacom.com> <4B7A98C7.3070107@redhat.com>
-In-Reply-To: <4B7A98C7.3070107@redhat.com>
+	Tue, 16 Feb 2010 09:13:29 -0500
+From: "Shilimkar, Santosh" <santosh.shilimkar@ti.com>
+To: Oliver Neukum <oliver@neukum.org>
+CC: Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Catalin Marinas <catalin.marinas@arm.com>, Pavel Machek <pavel@ucw.cz>,
+       Greg KH <greg@kroah.com>,
+       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       Ming Lei <tom.leiming@gmail.com>,
+       Sebastian Siewior <bigeasy@linutronix.de>,
+       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       "Mankad, Maulik Ojas" <x0082077@ti.com>
+Date: Tue, 16 Feb 2010 19:42:45 +0530
+Subject: RE: USB mass storage and ARM cache coherency
+Thread-Topic: USB mass storage and ARM cache coherency
+Thread-Index: AcqvDoVwgi7sVhVBTv+5UrFkKNCH9gAAzn6A
+Message-ID: <EAF47CD23C76F840A9E7FCE10091EFAB02C3CF8038@dbde02.ent.ti.com>
+References: <20100208065519.GE1290@ucw.cz>
+ <201002161432.57705.oliver@neukum.org>
+ <EAF47CD23C76F840A9E7FCE10091EFAB02C3CF800B@dbde02.ent.ti.com>
+ <201002161446.59920.oliver@neukum.org>
+In-Reply-To: <201002161446.59920.oliver@neukum.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201002161600.54975.opurdila@ixiacom.com>
-X-OriginalArrivalTime: 16 Feb 2010 14:04:24.0691 (UTC) FILETIME=[F1F0D430:01CAAF10]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 16 February 2010 15:08:23 you wrote:
-> Octavian Purdila wrote:
-> > On Tuesday 16 February 2010 10:41:07 you wrote:
-> >>> +
-> >>> +     if (!write && !first && left && !err)
-> >>> +             err = proc_put_newline(&buffer, &left);
-> >>> +     if (write && !err)
-> >>> +             err = proc_skip_wspace(&buffer, &left);
-> >>> +     if (err == -EFAULT /* do we really need to check for -EFAULT? */
-> >>> || +         (write && first))
-> >>> +             return err ? : -EINVAL;
-> >>
-> >> The logic here seems messy, adding one or two goto's may help?
-> >
-> > OK, I'll give it a try.
-> >
-> > What about the EFAULT check, is that really required?
+> -----Original Message-----
+> From: Oliver Neukum [mailto:oliver@neukum.org]
+> Sent: Tuesday, February 16, 2010 7:17 PM
+> To: Shilimkar, Santosh
+> Cc: Russell King - ARM Linux; Catalin Marinas; Pavel Machek; Greg KH; Matthew Dharm; Sergei Shtylyov;
+> Ming Lei; Sebastian Siewior; linux-usb@vger.kernel.org; linux-kernel; linux-arm-kernel; Mankad,
+> Maulik Ojas
+> Subject: Re: USB mass storage and ARM cache coherency
 > 
-> I think so, it means to keep the errno to user-space when it is EFAULT,
-> right? This seems reasonable.
+> Am Dienstag, 16. Februar 2010 14:40:45 schrieb Shilimkar, Santosh:
+> > > > If the CPU writes to a DMA_FROM_DEVICE buffer between map and unmap, the
+> > > > writes can sit in the cache, and on unmap, they will be discarded.
+> > > >
+> > > > Cleaning the cache on unmap is not an option; that too can lead to DMA
+> > > > buffer corruption in the DMA case.
+> > >
+> > > I am afraid for these controllers the controller driver must be responsible
+> > > for all DMA and cache issues. Indicating the exact requirements to the
+> > > upper layer would be a battle already lost.
+> > > so the safe choice is not to set has_dma and the generic layer will leave
+> > > the issue to the lower level.
+> > This means don't use dma at all which will almost kill the performance.
 > 
+> Why would you be unable to map a buffer in the hcd driver when you know
+> that you'll use DMA?
+Probably it can be. The USB stack has the dma maintenance code at common 
+place for all controllers and hence we were just trying to see if there is 
+way to handle that way.
 
-The problem I see is that this way we don't actually acknowledge some of the 
-set values, e.g. say that we have buffer="1 2 3" and length = 100. Although we 
-do accept values 1, 2 and 3 we don't acknowledge that to the user (as we would 
-do for, say "1 2 3 4a"), but return -EFAULT.
+We shall check this possibility
 
-I think it would be better to skip this check. That means that the user will 
-get the ack for the 1, 2 and 3 values and next time it continues the write it 
-will get -EFAULT.
-
-This will of course change the userspace ABI, albeit in a minor way, and it is 
-not clear to me if doing this is allowed (even if this new approach would be 
-the correct one).
-
+Regards,
+Santosh
