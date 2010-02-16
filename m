@@ -1,108 +1,71 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933685Ab0BQACp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 19:02:45 -0500
-Received: from kroah.org ([198.145.64.141]:38511 "EHLO coco.kroah.org"
+	id S933675Ab0BQACo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 19:02:44 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:52568 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933591Ab0BQACm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S932771Ab0BQACm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 16 Feb 2010 19:02:42 -0500
-Date: Tue, 16 Feb 2010 16:02:01 -0800
+Date: Tue, 16 Feb 2010 15:22:17 -0800
 From: Greg KH <gregkh@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-Subject: [GIT PATCH] USB patches for 2.6.33-rc8
-Message-ID: <20100217000201.GA31137@kroah.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, devel@driverdev.osuosl.org,
+       David Airlie <airlied@linux.ie>
+Subject: Re: [PATCH -next] staging/vmwgfx: depends on FB
+Message-ID: <20100216232216.GA18733@suse.de>
+References: <20100216185534.fdc8eed3.sfr@canb.auug.org.au>
+ <4B7B233F.9000507@oracle.com>
+ <20100216230537.GA19450@suse.de>
+ <4B7B270A.2090609@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <4B7B270A.2090609@oracle.com>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here are some USB patches for the 2.6.33-rc8 tree.
+On Tue, Feb 16, 2010 at 03:15:22PM -0800, Randy Dunlap wrote:
+> On 02/16/10 15:05, Greg KH wrote:
+> > On Tue, Feb 16, 2010 at 02:59:11PM -0800, Randy Dunlap wrote:
+> >> From: Randy Dunlap <randy.dunlap@oracle.com>
+> >>
+> >> vmwfgx uses framebuffer interfaces, so it should depend on FB.
+> >> Otherwise it has these build errors (e.g., when CONFIG_FB=m):
+> >>
+> >> drivers/built-in.o: In function `vmw_fb_close':
+> >> (.text+0x97713): undefined reference to `unregister_framebuffer'
+> >> drivers/built-in.o: In function `vmw_fb_close':
+> >> (.text+0x97754): undefined reference to `framebuffer_release'
+> >> drivers/built-in.o: In function `vmw_fb_init':
+> >> (.text+0x97e1c): undefined reference to `framebuffer_alloc'
+> >> drivers/built-in.o: In function `vmw_fb_init':
+> >> (.text+0x9838d): undefined reference to `register_framebuffer'
+> >> drivers/built-in.o: In function `vmw_fb_init':
+> >> (.text+0x9842a): undefined reference to `framebuffer_release'
+> >>
+> >> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> >> ---
+> >>  drivers/gpu/drm/vmwgfx/Kconfig |    2 +-
+> > 
+> > This is not a drivers/staging/* file, so there's not much I can do with
+> > it.  It belongs to David Airlie.
+> 
+> OK, I'll resend it to him, thanks.
+> 
+> I think I was confused by drivers/staging/Kconfig:
+> 
+> source "drivers/gpu/drm/vmwgfx/Kconfig"
+> 
+> source "drivers/gpu/drm/nouveau/Kconfig"
+> 
+> 
+> Why are those lines there??
 
-They consist of a number of bug fixes, and some new device ids.
-
-There is also a kfifo fix in here that was required by one of the USB
-drivers (FHCI) to work properly after the recent kfifo changeover.  That
-fix has been acked by the kfifo developer, as well as a sparse fix so
-that everyone doesn't send in the same fix as they currently have
-been.
-
-Please pull from:
-	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/usb-2.6.git/
-
-All of these patches have been in the linux-next and mm trees.
-
-The full patches will be sent to the linux-usb mailing list, if anyone
-wants to see them.
+Because those modules are "hidden" behind the CONFIG_STAGING option.
 
 thanks,
 
 greg k-h
-
-------------
-
- drivers/usb/core/devio.c            |   48 +++++++++++++++++++++-------------
- drivers/usb/gadget/f_eem.c          |    3 +-
- drivers/usb/gadget/multi.c          |    2 +-
- drivers/usb/gadget/r8a66597-udc.c   |    1 +
- drivers/usb/gadget/s3c-hsotg.c      |    1 +
- drivers/usb/host/ehci-hub.c         |   13 ++++++---
- drivers/usb/host/fhci-tds.c         |    6 ++--
- drivers/usb/misc/sisusbvga/sisusb.c |    1 +
- drivers/usb/otg/Kconfig             |    1 +
- drivers/usb/serial/ftdi_sio.c       |   25 ++++++++++++++++--
- drivers/usb/serial/ftdi_sio_ids.h   |   18 +++++++++++++
- drivers/usb/serial/sierra.c         |    1 +
- drivers/usb/storage/unusual_devs.h  |    2 +-
- include/linux/kfifo.h               |    2 +-
- kernel/kfifo.c                      |    3 +-
- 15 files changed, 92 insertions(+), 35 deletions(-)
-
----------------
-
-Alek Du (1):
-      USB: ehci: phy low power mode bug fixing
-
-Andreas Mohr (1):
-      USB: ftdi_sio: add device IDs (several ELV, one Mindstorms NXT)
-
-Anton Vorontsov (3):
-      kfifo: Make kfifo_initialized work after kfifo_free
-      USB: FHCI: Fix build after kfifo rework
-      kfifo: Don't use integer as NULL pointer
-
-Brian Niebuhr (1):
-      USB: gadget: fix EEM gadget CRC usage
-
-Greg Kroah-Hartman (1):
-      USB: usbfs: only copy the actual data received
-
-Linus Torvalds (1):
-      USB: usbfs: properly clean up the as structure on error paths
-
-Mark Brown (2):
-      USB: r8a66597-udc: Prototype IS_ERR() and PTR_ERR()
-      USB: s3c-hsotg: Export usb_gadget_register_driver()
-
-Michal Nazarewicz (1):
-      USB: g_multi: fix CONFIG_USB_G_MULTI_RNDIS usage
-
-Phil Dibowitz (1):
-      USB: storage: Remove unneeded SC/PR from unusual_devs.h
-
-Radek Liboska (1):
-      USB: ftdi_sio: new device id for papouch AD4USB
-
-Richard Farina (1):
-      USB: serial: add usbid for dell wwan card to sierra.c
-
-Tanaka Akira (1):
-      USB: SIS USB2VGA DRIVER: support KAIREN's USB VGA adaptor USB20SVGA-MB-PLUS
-
-Valentin Longchamp (1):
-      USB: otg Kconfig: let USB_OTG_UTILS select USB_ULPI option
-
