@@ -1,95 +1,72 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753738Ab0BPGoJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 01:44:09 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:46293 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753438Ab0BPGoH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 01:44:07 -0500
-Date: Tue, 16 Feb 2010 17:44:02 +1100
-From: Nick Piggin <npiggin@suse.de>
-To: David Rientjes <rientjes@google.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch -mm 8/9 v2] oom: avoid oom killer for lowmem allocations
-Message-ID: <20100216064402.GC5723@laptop>
-References: <alpine.DEB.2.00.1002151416470.26927@chino.kir.corp.google.com>
- <alpine.DEB.2.00.1002151419260.26927@chino.kir.corp.google.com>
- <20100216085706.c7af93e1.kamezawa.hiroyu@jp.fujitsu.com>
- <alpine.DEB.2.00.1002151606320.14484@chino.kir.corp.google.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.1002151606320.14484@chino.kir.corp.google.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	id S1754067Ab0BPGom (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 01:44:42 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:40773 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753438Ab0BPGok (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 01:44:40 -0500
+Date: Tue, 16 Feb 2010 15:44:37 +0900 (JST)
+Message-Id: <20100216.154437.193709505.d.hatayama@jp.fujitsu.com>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, randy.dunlap@oracle.com
+Subject: [PATCH, mmotm] compat_binfmt_elf.c: Use 32-bit section header, not
+ 64-bit one
+From: Daisuke HATAYAMA <d.hatayama@jp.fujitsu.com>
+X-Mailer: Mew version 6.2 on Emacs 22.2 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 15, 2010 at 04:10:15PM -0800, David Rientjes wrote:
-> On Tue, 16 Feb 2010, KAMEZAWA Hiroyuki wrote:
-> 
-> > > If memory has been depleted in lowmem zones even with the protection
-> > > afforded to it by /proc/sys/vm/lowmem_reserve_ratio, it is unlikely that
-> > > killing current users will help.  The memory is either reclaimable (or
-> > > migratable) already, in which case we should not invoke the oom killer at
-> > > all, or it is pinned by an application for I/O.  Killing such an
-> > > application may leave the hardware in an unspecified state and there is
-> > > no guarantee that it will be able to make a timely exit.
-> > > 
-> > > Lowmem allocations are now failed in oom conditions so that the task can
-> > > perhaps recover or try again later.  Killing current is an unnecessary
-> > > result for simply making a GFP_DMA or GFP_DMA32 page allocation and no
-> > > lowmem allocations use the now-deprecated __GFP_NOFAIL bit so retrying is
-> > > unnecessary.
-> > > 
-> > > Previously, the heuristic provided some protection for those tasks with 
-> > > CAP_SYS_RAWIO, but this is no longer necessary since we will not be
-> > > killing tasks for the purposes of ISA allocations.
-> > > 
-> > > high_zoneidx is gfp_zone(gfp_flags), meaning that ZONE_NORMAL will be the
-> > > default for all allocations that are not __GFP_DMA, __GFP_DMA32,
-> > > __GFP_HIGHMEM, and __GFP_MOVABLE on kernels configured to support those
-> > > flags.  Testing for high_zoneidx being less than ZONE_NORMAL will only
-> > > return true for allocations that have either __GFP_DMA or __GFP_DMA32.
-> > > 
-> > > Acked-by: Rik van Riel <riel@redhat.com>
-> > > Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> > > Signed-off-by: David Rientjes <rientjes@google.com>
-> > > ---
-> > >  mm/page_alloc.c |    3 +++
-> > >  1 files changed, 3 insertions(+), 0 deletions(-)
-> > > 
-> > > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> > > --- a/mm/page_alloc.c
-> > > +++ b/mm/page_alloc.c
-> > > @@ -1914,6 +1914,9 @@ rebalance:
-> > >  	 * running out of options and have to consider going OOM
-> > >  	 */
-> > >  	if (!did_some_progress) {
-> > > +		/* The oom killer won't necessarily free lowmem */
-> > > +		if (high_zoneidx < ZONE_NORMAL)
-> > > +			goto nopage;
-> > >  		if ((gfp_mask & __GFP_FS) && !(gfp_mask & __GFP_NORETRY)) {
-> > >  			if (oom_killer_disabled)
-> > >  				goto nopage;
-> > 
-> > WARN_ON((high_zoneidx < ZONE_NORMAL) && (gfp_mask & __GFP_NOFAIL))
-> > plz.
-> > 
-> 
-> As I already explained when you first brought this up, the possibility of 
-> not invoking the oom killer is not unique to GFP_DMA, it is also possible 
-> for GFP_NOFS.  Since __GFP_NOFAIL is deprecated and there are no current 
-> users of GFP_DMA | __GFP_NOFAIL, that warning is completely unnecessary.  
-> We're not adding any additional __GFP_NOFAIL allocations.
+Hi Andrew.
 
-Completely agree with this request. Actually, I think even better you
-should just add && !(gfp_mask & __GFP_NOFAIL). Deprecated doesn't mean
-it is OK to break the API (callers *will* oops or corrupt memory if
-__GFP_NOFAIL returns NULL).
+From: akpm@linux-foundation.org
+Subject: + elf-coredump-replace-elf_core_extra_-macros-by-functions-fix.patch added to -mm tree
+Date: Mon, 01 Feb 2010 12:04:59 -0800
 
+> 
+> The patch titled
+>      elf-coredump-replace-elf_core_extra_-macros-by-functions-fix
+> has been added to the -mm tree.  Its filename is
+>      elf-coredump-replace-elf_core_extra_-macros-by-functions-fix.patch
+> 
+
+I found that the previous fix patch of mine was insufficient for
+fixing the problem relevant to EL32. It was necessary that one should
+use the 32-bit datatype for section headers instead of the 64-bit one.
+Here is a patch complementing it.
+
+I made a runtime test for this fix patch, confirming that the
+functionality works well.
+
+Thanks,
+HATAYAMA Daisuke
+
+Signed-off-by: Daisuke HATAYAMA <d.hatayama@jp.fujitsu.com>
+---
+ fs/compat_binfmt_elf.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/fs/compat_binfmt_elf.c b/fs/compat_binfmt_elf.c
+index 0adced2..112e45a 100644
+--- a/fs/compat_binfmt_elf.c
++++ b/fs/compat_binfmt_elf.c
+@@ -28,10 +28,12 @@
+ 
+ #undef	elfhdr
+ #undef	elf_phdr
++#undef	elf_shdr
+ #undef	elf_note
+ #undef	elf_addr_t
+ #define elfhdr		elf32_hdr
+ #define elf_phdr	elf32_phdr
++#define elf_shdr	elf32_shdr
+ #define elf_note	elf32_note
+ #define elf_addr_t	Elf32_Addr
+ 
+-- 
+1.6.5.1
