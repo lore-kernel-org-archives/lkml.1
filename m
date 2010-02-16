@@ -1,79 +1,51 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932804Ab0BPRFo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 12:05:44 -0500
-Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:44385 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932449Ab0BPRFm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 12:05:42 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AvsEAIJfektGHl8d/2dsb2JhbACbGXW9f4RbBIMUGg
-Date: Tue, 16 Feb 2010 12:05:40 -0500
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Steven Rostedt <rostedt@goodmis.org>, ltt-dev@lists.casi.polymtl.ca,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: [ltt-dev] LTTng0.158 Linux-2629-RT kernel BUG: sleeping
-	function called from invalid context at kernel/rtmutex.c:685
-Message-ID: <20100216170540.GA28039@Krystal>
-References: <f5a7b3811002160717y65b4577buf53e5784c71575c3@mail.gmail.com> <1266337450.24271.140.camel@gandalf.stny.rr.com> <alpine.LFD.2.00.1002161727570.2811@localhost.localdomain> <20100216164744.GA25115@Krystal> <alpine.LFD.2.00.1002161757050.2811@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S932776Ab0BPRM7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 12:12:59 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:61108 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756014Ab0BPRM6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 12:12:58 -0500
+Message-ID: <4B7AD207.20604@redhat.com>
+Date: Tue, 16 Feb 2010 12:12:39 -0500
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Lightning/1.0pre Thunderbird/3.0
+MIME-Version: 1.0
+To: Chris Friesen <cfriesen@nortel.com>
+CC: Minchan Kim <minchan.kim@gmail.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org, Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: tracking memory usage/leak in "inactive" field in /proc/meminfo?
+References: <4B71927D.6030607@nortel.com>	 <20100210093140.12D9.A69D9226@jp.fujitsu.com>	 <4B72E74C.9040001@nortel.com>	 <28c262361002101645g3fd08cc7t6a72d27b1f94db62@mail.gmail.com>	 <4B74524D.8080804@nortel.com> <28c262361002111838q7db763feh851a9bea4fdd9096@mail.gmail.com> <4B7504D2.1040903@nortel.com> <4B796D31.7030006@nortel.com> <4B797D93.5090307@redhat.com> <4B7ACD4A.10101@nortel.com>
+In-Reply-To: <4B7ACD4A.10101@nortel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.1002161757050.2811@localhost.localdomain>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 12:03:31 up 62 days,  1:21,  6 users,  load average: 0.42, 0.25,
-	0.14
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Thomas Gleixner (tglx@linutronix.de) wrote:
-> On Tue, 16 Feb 2010, Mathieu Desnoyers wrote:
-> > > The function is called from an IPI. That's a LTTNG problem, not a RT one.
-> > 
-> > I use del_timer in IPI to delete lttng per-cpu timers on all CPUs. I
-> > have to do this because timers created with add_timer_on are documented
-> > to be incompatible with del_timer_sync():
-> > 
-> >  * Synchronization rules: Callers must prevent restarting of the timer,
-> >  * otherwise this function is meaningless. It must not be called from
-> >  * interrupt contexts. The caller must not hold locks which would prevent
-> >  * completion of the timer's handler. The timer's handler must not call
-> >  * add_timer_on(). Upon exit the timer is not queued and the handler is
-> >  * not running on any CPU.
-> 
-> Errm. The documentation says: 
-> 
->       "The timer's handler must not call add_timer_on()." 
-> 
-> It's not talking about a timer which was initialized with
-> add_timer_on().
-> 
->  And your per cpu timer handlers have no requirement to call
-> add_timer_on() simply because add/mod_timer() is requeueing the timer
-> on the same cpu on which the handler runs. 
-> 
-> So the IPI is just a solution for a non existing problem.
+On 02/16/2010 11:52 AM, Chris Friesen wrote:
+> On 02/15/2010 11:00 AM, Rik van Riel wrote:
 
-Oh, right. Thanks for the explanation. I'll look into moving LTTng to a
-saner del_timer_sync() scheme to delete the timers.
+>> Removal from the LRU is done from the page freeing code, on
+>> the final free of the page.
 
-Thanks,
+> There are a bunch of inline functions involved, but I think the chain
+> from page_remove_rmap() back up to unmap_vmas() looks like this:
+>
+> page_remove_rmap
+> zap_pte_range
+> zap_pmd_range
+> zap_pud_range
+> unmap_page_range
+> unmap_vmas
+>
+> So in this scenario, where do the pages actually get removed from the
+> LRU list (assuming that they're not in use by anyone else)?
 
-Mathieu
-
-> 
-> Thanks,
-> 
-> 	tglx
-> 
+__page_cache_release
 
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+All rights reversed.
