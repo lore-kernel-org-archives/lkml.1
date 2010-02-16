@@ -1,52 +1,62 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932957Ab0BPStS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 13:49:18 -0500
-Received: from casper.infradead.org ([85.118.1.10]:38564 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932368Ab0BPStQ (ORCPT
+	id S933053Ab0BPSto (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 13:49:44 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:48885 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932368Ab0BPStm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 13:49:16 -0500
-Subject: Re: [patch] sched: fix SMT scheduler regression in
- find_busiest_queue()
-From: Peter Zijlstra <peterz@infradead.org>
-To: svaidy@linux.vnet.ibm.com
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>, Ingo Molnar <mingo@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>, "Ma, Ling" <ling.ma@intel.com>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>, ego@in.ibm.com
-In-Reply-To: <20100216182346.GA19327@dirshya.in.ibm.com>
-References: <1266023662.2808.118.camel@sbs-t61.sc.intel.com>
-	 <20100213182748.GB5882@dirshya.in.ibm.com>
-	 <20100213202552.GI5882@dirshya.in.ibm.com>
-	 <20100213203611.GJ5882@dirshya.in.ibm.com>
-	 <1266142318.5273.407.camel@laptop>
-	 <20100215123538.GE8006@dirshya.in.ibm.com>
-	 <1266238843.15770.323.camel@laptop>
-	 <20100216155906.GC8777@dirshya.in.ibm.com>
-	 <1266341325.9432.283.camel@laptop>
-	 <20100216182346.GA19327@dirshya.in.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 16 Feb 2010 19:48:55 +0100
-Message-ID: <1266346135.9432.370.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 7bit
+	Tue, 16 Feb 2010 13:49:42 -0500
+To: Octavian Purdila <opurdila@ixiacom.com>
+Cc: David Miller <davem@davemloft.net>,
+       Linux Kernel Network Developers <netdev@vger.kernel.org>,
+       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
+       Amerigo Wang <amwang@redhat.com>
+Subject: Re: [net-next PATCH v4 0/3] net: reserve ports for applications using fixed port
+References: <1266271241-6293-1-git-send-email-opurdila@ixiacom.com>
+	<m1sk916qkv.fsf@fess.ebiederm.org>
+	<201002162004.33533.opurdila@ixiacom.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Tue, 16 Feb 2010 10:49:37 -0800
+In-Reply-To: <201002162004.33533.opurdila@ixiacom.com> (Octavian Purdila's message of "Tue\, 16 Feb 2010 20\:04\:33 +0200")
+Message-ID: <m17hqd583i.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-02-16 at 23:55 +0530, Vaidyanathan Srinivasan wrote:
-> The sched_domain will be rebuilt with the sched_group_cpus()
-> representing only online siblings right?  sched_group_cpus(group) will
-> always be a subset of cpu_active_mask.  Can please explain your
-> comment. 
+Octavian Purdila <opurdila@ixiacom.com> writes:
 
-__build_*_sched_domain() seems to only rebuild the sd->span, not the
-sched_group's mask, cpu_to_*_group() only picks an existing group based
-on the cpumask passed in, it doesn't change sg->cpumask afaict.
+> Hi Eric, thanks for going over this.
+>
+> The use case (large bitmaps/lists) is different enough from what we have today 
+> (small bitmaps) and that is why I think that we need this new interface. 
+>
+> If I get bitmap_parse_user correctly, for a 64k bitmap it expects a 2K comma 
+> separated values. That is not the most intuitively way for the user to set a 
+> list of ports he wants to reserve. 
 
-That is also the reason we drag load_balance_tmpmask all through
-load_balance() afaict.
+In this case I expect an interface of comma separated ranges would be
+ideal.  Typically compact, and modifiable by writing the new value to
+the file.
+
+I think the default value would be something like 32768-61000.
+
+> Using 64K files has the same practical issues (the user would have to cat all 
+> 64K files to determine which ports are reserved) plus it has issues caused by 
+> the large number of files: significant memory overhead and also significant time 
+> for registering those files.
+
+"grep -l 1 *" isn't particularly difficult, and it would be one sysctl registration
+call.  It is true that the sysctl memory footprint would be a pain in that case.
+
+Eric
 
 
 
