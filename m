@@ -1,61 +1,64 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933347Ab0BPVGf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 16:06:35 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51496 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933303Ab0BPVGe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 16:06:34 -0500
-Date: Tue, 16 Feb 2010 22:06:23 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 0/3][GIT PULL][v2.6.34] tracing: updates
-Message-ID: <20100216210623.GC9051@elte.hu>
-References: <20100216164122.891864374@goodmis.org>
+	id S933361Ab0BPVGn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 16:06:43 -0500
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:51548 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933349Ab0BPVGk convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 16:06:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding:message-id;
+        b=v4Vuj/PAhWECDS4LAWFn0kFaYP8rslnkTjHHF6BIElrg/VmDLf6uNnH2C0HCXU/C1Y
+         gTwh4eaDzsxR5BSxqfVV2cIeuiYvT/OppFXpBI9XpcfC/FnMLbhh0RhWuzf9emc5eNfR
+         wo5omHxp7mb0j65nJ5WnRo3it2Kbue8Tloe7g=
+From: Volker Armin Hemmann <volkerarmin@googlemail.com>
+To: Bill Davidsen <davidsen@tmr.com>
+Subject: Re: Linux mdadm superblock question.
+Date: Tue, 16 Feb 2010 22:06:32 +0100
+User-Agent: KMail/1.13.0 (Linux/2.6.31.12r4; KDE/4.4.0; x86_64; ; )
+Cc: Michael Evans <mjevans1983@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org
+References: <201002140251.59668.volkerarmin@googlemail.com> <201002141940.35716.volkerarmin@googlemail.com> <4B7AD35E.7000405@tmr.com>
+In-Reply-To: <4B7AD35E.7000405@tmr.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100216164122.891864374@goodmis.org>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <201002162206.32797.volkerarmin@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Dienstag 16 Februar 2010, Bill Davidsen wrote:
+> Volker Armin Hemmann wrote:
+> > On Sonntag 14 Februar 2010, you wrote:
+> >> In other words, 'auto-detection' for 1.x format devices is using an
+> >> initrd/initramfs.
+> > 
+> > which makes 1.x format useless for everybody who does not want to deal
+> > with initrd/initramfs.
+> 
+> You make this sound like some major big deal. are you running your own
+> distribution? In most cases mkinitrd does the right thing when you "make
+> install" the kernel, and if you are doing something in the build so
+> complex that it needs options, you really should understand the options
+> and be sure you're doing what you want.
+> 
+> Generally this involves preloading a module or two, and if you need it
+> every time you probably should have built it in, anyway.
+> 
+> My opinion...
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+I am running my own kernels - and of course everything that is needed to boot 
+and get the basic system up is built in. Why should I make the disk drivers 
+modules? 
+That does not make sense.
 
-> 
-> Ingo,
-> 
-> Please pull the latest tip/tracing/core tree, which can be found at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> tip/tracing/core
-> 
-> 
-> Li Zefan (1):
->       ftrace: Allow to remove a single function from function graph filter
-> 
-> Steven Rostedt (2):
->       tracing: Add correct/incorrect to sort keys for branch annotation output
->       tracing: Add notrace to TRACE_EVENT implementation functions
-> 
-> ----
->  include/trace/ftrace.h      |   31 +++++++++++++++-----------
->  kernel/trace/ftrace.c       |   51 ++++++++++++++++++++++++++----------------
->  kernel/trace/trace.h        |    3 +-
->  kernel/trace/trace_branch.c |   19 ++++++++++++++-
->  4 files changed, 68 insertions(+), 36 deletions(-)
+And the reason is simple: even when the system is completely fucked up, I want 
+a kernel that is able to boot until init=/bin/bb takes over.
 
-Pulled, thanks a lot Steve!
-
-	Ingo
+Glück Auf
+Volker
