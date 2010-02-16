@@ -1,78 +1,181 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933209Ab0BPTSd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 14:18:33 -0500
-Received: from nwd2mail10.analog.com ([137.71.25.55]:5882 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933090Ab0BPTSc (ORCPT
+	id S933218Ab0BPTef (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 14:34:35 -0500
+Received: from mail.windriver.com ([147.11.1.11]:37147 "EHLO
+	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933189Ab0BPTed (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 14:18:32 -0500
-X-IronPort-AV: E=Sophos;i="4.49,485,1262581200"; 
-   d="scan'208";a="11750381"
-From: Robin Getz <rgetz@blackfin.uclinux.org>
-Organization: Analog Devices, Inc.
-To: Jonathan Cameron <jic23@cam.ac.uk>
-Subject: Re: [RFC] Staging: IIO: New ABI V2
-Date: Tue, 16 Feb 2010 14:18:27 -0500
-User-Agent: KMail/1.9.5
-CC: Greg KH <gregkh@suse.de>, Mike Frysinger <vapier.adi@gmail.com>,
-       Kay Sievers <kay.sievers@vrfy.org>, LKML <linux-kernel@vger.kernel.org>,
-       Dmitry Torokhov <dtor@mail.ru>,
-       "Hennerich, Michael" <Michael.Hennerich@analog.com>,
-       Manuel Stahl <manuel.stahl@iis.fraunhofer.de>,
-       Robin Getz <rgetz@blackfin.uclinux.org>,
-       "Trisal, Kalhan" <kalhan.trisal@intel.com>,
-       "Zhang, Xing Z" <xing.z.zhang@intel.com>,
-       Ira Snyder <iws@ovro.caltech.edu>, Jean Delvare <khali@linux-fr.org>,
-       Samu Onkalo <samu.p.onkalo@nokia.com>,
-       Stefani Seibold <stefani@seibold.net>
-References: <4B6C619C.3000302@cam.ac.uk> <20100216024924.GA29008@suse.de> <4B7A7B8F.9080501@cam.ac.uk>
-In-Reply-To: <4B7A7B8F.9080501@cam.ac.uk>
+	Tue, 16 Feb 2010 14:34:33 -0500
+Message-ID: <4B7AF321.8060008@windriver.com>
+Date: Tue, 16 Feb 2010 13:33:53 -0600
+From: Jason Wessel <jason.wessel@windriver.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-ID: <201002161418.28097.rgetz@blackfin.uclinux.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
+       mingo@elte.hu, Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 18/28] powerpc,kgdb: Introduce low level trap catching
+References: <1266014143-29444-1-git-send-email-jason.wessel@windriver.com> <1266014143-29444-19-git-send-email-jason.wessel@windriver.com> <1266190167.16346.70.camel@pasglop>
+In-Reply-To: <1266190167.16346.70.camel@pasglop>
+Content-Type: multipart/mixed;
+ boundary="------------010905050100050005000904"
+X-OriginalArrivalTime: 16 Feb 2010 19:33:52.0538 (UTC) FILETIME=[F87EE7A0:01CAAF3E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 16 Feb 2010 06:03, Jonathan Cameron pondered:
-> On 02/16/10 02:49, Greg KH wrote:
-> > On Mon, Feb 15, 2010 at 07:58:12PM -0500, Mike Frysinger wrote:
-> >> On Mon, Feb 15, 2010 at 15:26, Robin Getz wrote:
-> >>> [snip]
-> >>> What exists today still requires a copy_[to|from]_user when using
-> >>> the ring buffer (and then another cache_flush if you are dma'ing
-> >>> things). These seems pretty expensive and will consume extra cycles
-> >>> that will limit throughput. 
-> >>>
-> >>> Any thoughts to a mmaped interface directly to the IIO ring buffer, 
-> >>> so the system could avoid some of the above overhead? (This is what
-> >>> we had to do for some other drivers - which were able to handle a 40
-> >>> MSample/second data processed by userspace for a soft radio).
-> >>
-> >> does sysfs currently support mmap-ing of files in there ?
-> > 
-> > For binary files, yes.  If you are going to use mmap, use a character
-> > device node instead please, that's not what sysfs is for.
-> All the buffer access is done via character device nodes anyway.
-> 
-> For anyone entering the discussion at this point:
-> Only really simple IIO drivers (for typically very slow devices)
-> are principally accessed through sysfs.  For these fast devices we
-> probably wouldn't provide that route at all, merely using sysfs to
-> describe the parameters of the device and buffer being used.
+This is a multi-part message in MIME format.
+--------------010905050100050005000904
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-Can we be a little more specific - what in your mind is "very slow"? 
-and "fast"?
+Benjamin Herrenschmidt wrote:
+> On Fri, 2010-02-12 at 16:35 -0600, Jason Wessel wrote:
+>
+>   
+>> @@ -115,7 +116,9 @@ void kgdb_roundup_cpus(unsigned long flags)
+>>  /* KGDB functions to use existing PowerPC64 hooks. */
+>>  static int kgdb_debugger(struct pt_regs *regs)
+>>  {
+>> -	return kgdb_handle_exception(0, computeSignal(TRAP(regs)), 0, regs);
+>> +	if (kgdb_handle_exception(1, computeSignal(TRAP(regs)), DIE_OOPS, regs))
+>> +		return 0;
+>> +	return 1;
+>>  }
+>>     
+>
+> I'm no fan of logic inversions like that but I suppose you are trying to
+> fit into existing hooks. However, I'd rather then do:
+>
+> 	return !kgdb...
+>   
 
-Is it designated by samples per second? (and bits per sample doesn't matter?) 
-or is it the result (bits per sample * samples per second/8 == bytes/second?)
+I agree and I made the change to return !kgdb...
 
-Many people I know would call a 1Mega sample per second converter very slow, 
-but the kernel handling a memcpy of a continuous 2Mbyte/second (16-bits per 
-sample), stream seems a little wasteful.
 
-Thanks
--Robin
+>> +++ b/arch/powerpc/kernel/traps.c
+>> @@ -809,12 +809,19 @@ void __kprobes program_check_exception(struct pt_regs *regs)
+>>  		return;
+>>  	}
+>>  	if (reason & REASON_TRAP) {
+>> +
+>> +#ifdef CONFIG_KGDB_LOW_LEVEL_TRAP
+>> +		if (debugger_bpt(regs))
+>> +			return;
+>> +#endif /* CONFIG_KGDB_LOW_LEVEL_TRAP */
+>>  		/* trap exception */
+>>  		if (notify_die(DIE_BPT, "breakpoint", regs, 5, 5, SIGTRAP)
+>>  				== NOTIFY_STOP)
+>>  			return;
+>> +#ifndef CONFIG_KGDB_LOW_LEVEL_TRAP
+>>  		if (debugger_bpt(regs))
+>>  			return;
+>> +#endif /* ! CONFIG_KGDB_LOW_LEVEL_TRAP */
+>>  
+>>  		if (!(regs->msr & MSR_PR) &&  /* not user-mode */
+>>  		    report_bug(regs->nip, regs) == BUG_TRAP_TYPE_WARN) {
+>>
+>>     
+> No firm objection, but it -is- a bit ugly... Should we just
+> unconditionally move the debugger_bpt() early on with a comment about
+> why we do so ? Is there any drawback you can think of ?
+>
+>   
+
+I took a peek at xmon, and it suffers from the same problem where you
+can place a breakpoint in any part of rcu_lock, notify_die, or
+atomic_notifier_call_chain and meet with recursive faults.  I also
+checked that xmon appears to correctly return so as to continue if the
+exception was not intended for xmon.
+
+The reason I had not just moved the code block previously is that I was
+not looking to break anything such as xmon, which is the the only other
+user of this function.
+
+I'll add your ack, if you agree with the new version of the patch.
+
+Thanks,
+Jason.
+
+--------------010905050100050005000904
+Content-Type: text/x-diff;
+ name="ppc-dbg-traps.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="ppc-dbg-traps.patch"
+
+From: Jason Wessel <jason.wessel@windriver.com>
+Subject: [PATCH] powerpc,kgdb: Introduce low level trap catching
+
+The only way the debugger can handle a trap in inside rcu_lock,
+notify_die, or atomic_notifier_call_chain without a recursive fault is
+to allow the kernel debugger to handle the exception first in
+program_check_exception().
+
+The other change here is to make sure that kgdb_handle_exception() is
+called with correct parameters when catching an oops, because kdb
+needs to know if the entry was an oops, single step, or breakpoint
+exception.
+
+[benh@kernel.crashing.org: move debugger_bpt instead of #ifdef]
+
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: Paul Mackerras <paulus@samba.org>
+Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
+
+---
+ arch/powerpc/kernel/kgdb.c  |    6 ++++--
+ arch/powerpc/kernel/traps.c |    6 ++++--
+ 2 files changed, 8 insertions(+), 4 deletions(-)
+
+--- a/arch/powerpc/kernel/kgdb.c
++++ b/arch/powerpc/kernel/kgdb.c
+@@ -20,6 +20,7 @@
+ #include <linux/smp.h>
+ #include <linux/signal.h>
+ #include <linux/ptrace.h>
++#include <linux/kdebug.h>
+ #include <asm/current.h>
+ #include <asm/processor.h>
+ #include <asm/machdep.h>
+@@ -115,7 +116,8 @@ void kgdb_roundup_cpus(unsigned long fla
+ /* KGDB functions to use existing PowerPC64 hooks. */
+ static int kgdb_debugger(struct pt_regs *regs)
+ {
+-	return kgdb_handle_exception(0, computeSignal(TRAP(regs)), 0, regs);
++	return !kgdb_handle_exception(1, computeSignal(TRAP(regs)),
++				      DIE_OOPS, regs);
+ }
+ 
+ static int kgdb_handle_breakpoint(struct pt_regs *regs)
+@@ -123,7 +125,7 @@ static int kgdb_handle_breakpoint(struct
+ 	if (user_mode(regs))
+ 		return 0;
+ 
+-	if (kgdb_handle_exception(0, SIGTRAP, 0, regs) != 0)
++	if (kgdb_handle_exception(1, SIGTRAP, 0, regs) != 0)
+ 		return 0;
+ 
+ 	if (*(u32 *) (regs->nip) == *(u32 *) (&arch_kgdb_ops.gdb_bpt_instr))
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -809,12 +809,14 @@ void __kprobes program_check_exception(s
+ 		return;
+ 	}
+ 	if (reason & REASON_TRAP) {
++		/* Debugger is first in line to stop recursive faults in
++		 * rcu_lock, notify_die, or atomic_notifier_call_chain */
++		if (debugger_bpt(regs))
++			return;
+ 		/* trap exception */
+ 		if (notify_die(DIE_BPT, "breakpoint", regs, 5, 5, SIGTRAP)
+ 				== NOTIFY_STOP)
+ 			return;
+-		if (debugger_bpt(regs))
+-			return;
+ 
+ 		if (!(regs->msr & MSR_PR) &&  /* not user-mode */
+ 		    report_bug(regs->nip, regs) == BUG_TRAP_TYPE_WARN) {
+
+--------------010905050100050005000904--
