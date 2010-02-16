@@ -1,68 +1,107 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933173Ab0BPSJF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 13:09:05 -0500
-Received: from ixro-out-rtc.ixiacom.com ([92.87.192.98]:29825 "EHLO
-	ixro-ex1.ixiacom.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933153Ab0BPSJB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 13:09:01 -0500
-From: Octavian Purdila <opurdila@ixiacom.com>
-Organization: Ixia
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [net-next PATCH v4 0/3] net: reserve ports for applications using fixed port
-Date: Tue, 16 Feb 2010 20:04:33 +0200
-User-Agent: KMail/1.12.2 (Linux/2.6.32-2-686; KDE/4.3.2; i686; ; )
-Cc: David Miller <davem@davemloft.net>,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>,
-       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
-       Amerigo Wang <amwang@redhat.com>
-References: <1266271241-6293-1-git-send-email-opurdila@ixiacom.com> <m1sk916qkv.fsf@fess.ebiederm.org>
-In-Reply-To: <m1sk916qkv.fsf@fess.ebiederm.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201002162004.33533.opurdila@ixiacom.com>
-X-OriginalArrivalTime: 16 Feb 2010 18:08:03.0519 (UTC) FILETIME=[FB70F4F0:01CAAF32]
+	id S933150Ab0BPSIr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 13:08:47 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:8288 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932458Ab0BPSIq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 13:08:46 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <4B7A13C6.4060402@kernel.org>
+References: <4B7A13C6.4060402@kernel.org> <4B763C17.5080707@kernel.org> <1263776272-382-36-git-send-email-tj@kernel.org> <1263776272-382-1-git-send-email-tj@kernel.org> <24913.1265997809@redhat.com> <27102.1266246296@redhat.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: dhowells@redhat.com, torvalds@linux-foundation.org, mingo@elte.hu,
+       peterz@infradead.org, awalls@radix.net, linux-kernel@vger.kernel.org,
+       jeff@garzik.org, akpm@linux-foundation.org, jens.axboe@oracle.com,
+       rusty@rustcorp.com.au, cl@linux-foundation.org, arjan@linux.intel.com,
+       avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org
+Subject: Re: [PATCH 35/40] fscache: convert object to use workqueue instead of slow-work
+Date: Tue, 16 Feb 2010 18:05:57 +0000
+Message-ID: <28151.1266343557@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Tejun Heo <tj@kernel.org> wrote:
 
-On Tuesday 16 February 2010 19:25:04 you wrote:
+> That doesn't necessarily mean it would be the best solution under
+> different circumstances, right?  I'm still quite unfamiliar with the
+> facache code and assumptions about workload in there.
 
-> I don't like the /proc interface for this.  That is certainly not the
-> format I would choose for a bitmap.  The way you have described this
-> it looks like you are a set of different individual values instead of
-> one large value.  History says one value per file is the ideal in a
-> user space facing interface.  Intuitively I would not know how to
-> change your new proc interface after catting the file.  The classic
-> read the file tweak the value and write the new value back will not
-> work.
-> 
-> Also we already have a common function for dealing with bitmaps
-> in /proc.  bitmap_parse_user.  Used in /proc/irq/NNN/smp_affinity
-> among other places.
-> 
-> So can you please use bitmap_parse_user, or break this up into
-> 64k individual files that we can set individually?
-> 
+Timeouts, you mean?  What you can end up doing is accruing timeouts as you go
+through ops looking for one that you can process now.  Even the yield mechanism
+I've come up with isn't perfect.
 
-Hi Eric, thanks for going over this.
+>   So, you're saying...
+>
+> * There can be a lot of concurrent shallow dependency chains, so
+>   deadlocks can't realistically avoided by allowing larger number of
+>   theads in the pool.
 
-The use case (large bitmaps/lists) is different enough from what we have today 
-(small bitmaps) and that is why I think that we need this new interface. 
+Yes.  As long as you can queue one more op than you can have threads, you can
+get deadlock between the queue and the threads.
 
-If I get bitmap_parse_user correctly, for a 64k bitmap it expects a 2K comma 
-separated values. That is not the most intuitively way for the user to set a 
-list of ports he wants to reserve. 
+> * Such occurrences would be common enough that the 'yield' path would
+>   be essential in keeping the operation going smooth.
 
-Using 64K files has the same practical issues (the user would have to cat all 
-64K files to determine which ports are reserved) plus it has issues caused by 
-the large number of files: significant memory overhead and also significant time 
-for registering those files.
+I've seen them a few times, usually under high pressure.  I've got some evil
+test cases that try to read a few thousand sequences of files simultaneously.
 
-If this new interface is unacceptable I would rather go with a setsockopt 
-approach, since either of the above approaches are more like machine friendly  
-instead of user friendly.
+> One problem I have with the slow work yield-on-queue mechanism is that
+> it may fit fscache well but generally doesn't make much sense.  What
+> would make more sense would be yield-under-pressure (ie. thread limit
+> reached or about to be reached and new work queued).  Would that work
+> for fscache?
+
+I'm not sure what you mean.  Slow-work does do yield-under-pressure.
+slow_work_sleep_till_thread_needed() adds the waiting object to a waitqueue by
+which it can be interrupted by slow-work when slow-work wants its thread back.
+
+If the object execution is busy doing something rather than waiting around,
+there's no reason to yield the thread back.
+
+> It might but I wasn't sure whether this could actually be a problem
+> for what fscache is doing.  Again, I just don't know what kind of
+> workload the code is expecting.  The reason why I thought it might not
+> was because the default concurrency level was low.
+
+You can end up serialising together all the I/O being done by NFS, AFS and
+anything else using FS-Cache.
+
+> Alright, so it can be very high.  This is slightly off topic but isn't
+> the know a bit too low level to export?  It will adjust concurrency
+> level of the whole slow-work facility which can be used by any number
+> of users.
+
+'The know'?
+
+One thing I was trying to do was avoid the workqueue problem of having a static
+pool of threads per workqueue.  As CPU counts go up, that starts eating some
+serious resources.  What I was trying for was one pool that was dynamically
+sized.
+
+Tuning such a pool is tricky, however; you have a set of conflicting usage
+patterns - hence the two thread priorities (slow and very slow).
+
+> As the handlers are running asynchronously, for a lot of cases, they
+> require some form of synchronization anyway and that usually seems to
+> take care of the reentrance issue together.  But, yeah, it definitely
+> is possible that there are undiscovered buggy cases.
+
+What I'm trying to avoid is having several threads all trying to execute the
+same object.  This is a more extreme problem in AF_RXRPC as there are more
+events to deal with, and it can tie up all the threads in the pool quite
+easily.
+
+> BTW, if we solve the yielding problem (I think we can retain the
+> original behavior by implementing it inside fscache) and the
+> reentrance issue, do you see any other obstacles in switching to cmwq?
+
+I don't think so.  I'm not sure how you retain the original yield behaviour by
+doing it inside FS-Cache - slow-work knows about the congestion, not FS-Cache.
+
+David
