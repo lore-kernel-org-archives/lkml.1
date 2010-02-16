@@ -1,38 +1,241 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755860Ab0BPIfp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 03:35:45 -0500
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:46323 "EHLO
-	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753890Ab0BPIfn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 03:35:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type;
-        b=ELINDAK5st0LwopHzQjI4TRl85ZIfp07rdZ7ODQ/zk+SH39SqhRgtQuPRuU6VJ1Q1T
-         a9J3hEmzoeSj5RSo7bg0MkZVQFNqdy4PihGLgVOVmVtk6AIwWaogtAn5XC9FwWoFfufz
-         R/wUFFg+4yv1pfX3qGzV7sq+fKqDbCiXANOss=
+	id S1755478Ab0BPIg2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 03:36:28 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:34303 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753639Ab0BPIg1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 03:36:27 -0500
+Date: Tue, 16 Feb 2010 08:36:12 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Andrea Arcangeli <aarcange@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Adam Litke <agl@us.ibm.com>, Avi Kivity <avi@redhat.com>,
+       David Rientjes <rientjes@google.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 03/12] Export unusable free space index via
+	/proc/pagetypeinfo
+Message-ID: <20100216083612.GA26086@csn.ul.ie>
+References: <1265976059-7459-1-git-send-email-mel@csn.ul.ie> <1265976059-7459-4-git-send-email-mel@csn.ul.ie> <20100216152106.72FA.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Date: Tue, 16 Feb 2010 10:35:40 +0200
-Message-ID: <bec9a5871002160035v63cce8ck9ecb9252b2f162a6@mail.gmail.com>
-Subject: Re: Reading /dev/mem by dd
-From: Nameer Yarkon <nameer.yarkon@gmail.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Andi Kleen <andi@firstfloor.org>, Robert Hancock <hancockrwd@gmail.com>,
-       "Anton D. Kachalov" <mouse@mayc.ru>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20100216152106.72FA.A69D9226@jp.fujitsu.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 12, 2009 at 8:13 PM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
->> Is that the only valid use of /dev/mem, or even its main use?
->
-> These days it is the primary use. Things like X11 were historically
-> probably the biggest user of it, and things like LRMI sometimes need that
-> sort of stuff.
+On Tue, Feb 16, 2010 at 04:03:29PM +0900, KOSAKI Motohiro wrote:
+> > Unusuable free space index is a measure of external fragmentation that
+> > takes the allocation size into account. For the most part, the huge page
+> > size will be the size of interest but not necessarily so it is exported
+> > on a per-order and per-zone basis via /proc/pagetypeinfo.
+> 
+> Hmmm..
+> /proc/pagetype have a machine unfriendly format. perhaps, some user have own ugly
+> /proc/pagetype parser. It have a little risk to break userland ABI.
+> 
 
-how does X11 get now direct access to the physical memory (instead of
-/dev/mem) ?
+It's very low risk. I doubt there are machine parsers of
+/proc/pagetypeinfo because there are very few machine-orientated actions
+that can be taken based on the information. It's more informational for
+a user if they were investigating fragmentation problems.
+
+> I have dumb question. Why can't we use another file?
+> 
+
+I could. What do you suggest?
+
+> 
+> > The index is normally calculated as a value between 0 and 1 which is
+> > obviously unsuitable within the kernel. Instead, the first three decimal
+> > places are used as a value between 0 and 1000 for an integer approximation.
+> 
+> I think we can treat separately internal representaion and /proc displaing
+> style. example, load-average have fixed point internal representaion. but
+> /proc/loadavg hide it.
+> 
+> So, I personally like to keep this internal representation and change external
+> representaion to 0.000-1.000 or 0.0%-100.0% range.
+> 
+
+I don't want to use a percentage for this value as there are two
+indices, one of which can be expressed as a percentage and the other
+not. I can represent it has a value between 0 and 1 if you prefer.
+
+> 
+> 
+> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> > ---
+> >  Documentation/filesystems/proc.txt |   10 ++++
+> >  mm/vmstat.c                        |   99 ++++++++++++++++++++++++++++++++++++
+> >  2 files changed, 109 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/Documentation/filesystems/proc.txt b/Documentation/filesystems/proc.txt
+> > index 1829dfb..0968a81 100644
+> > --- a/Documentation/filesystems/proc.txt
+> > +++ b/Documentation/filesystems/proc.txt
+> > @@ -614,6 +614,10 @@ Node    0, zone    DMA32, type      Movable    169    152    113     91     77
+> >  Node    0, zone    DMA32, type      Reserve      1      2      2      2      2      0      1      1      1      1      0
+> >  Node    0, zone    DMA32, type      Isolate      0      0      0      0      0      0      0      0      0      0      0
+> >  
+> > +Unusable free space index at order
+> > +Node    0, zone      DMA                         0      0      0      2      6     18     34     67     99    227    485
+> > +Node    0, zone    DMA32                         0      0      1      2      4      7     10     17     23     31     34
+> > +
+> >  Number of blocks type     Unmovable  Reclaimable      Movable      Reserve      Isolate
+> >  Node 0, zone      DMA            2            0            5            1            0
+> >  Node 0, zone    DMA32           41            6          967            2            0
+> > @@ -629,6 +633,12 @@ then gives the same type of information as buddyinfo except broken down
+> >  by migrate-type and finishes with details on how many page blocks of each
+> >  type exist.
+> >  
+> > +The unusable free space index measures how much of the available free
+> > +memory cannot be used to satisfy an allocation of a given size and is a
+> > +value between 0 and 1000. The higher the value, the more of free memory is
+> > +unusable and by implication, the worse the external fragmentation is. The
+> > +percentage of unusable free memory can be found by dividing this value by 10.
+> > +
+> >  If min_free_kbytes has been tuned correctly (recommendations made by hugeadm
+> >  from libhugetlbfs http://sourceforge.net/projects/libhugetlbfs/), one can
+> >  make an estimate of the likely number of huge pages that can be allocated
+> > diff --git a/mm/vmstat.c b/mm/vmstat.c
+> > index 6051fba..d05d610 100644
+> > --- a/mm/vmstat.c
+> > +++ b/mm/vmstat.c
+> > @@ -451,6 +451,104 @@ static int frag_show(struct seq_file *m, void *arg)
+> >  	return 0;
+> >  }
+> >  
+> > +
+> > +struct contig_page_info {
+> > +	unsigned long free_pages;
+> > +	unsigned long free_blocks_total;
+> > +	unsigned long free_blocks_suitable;
+> > +};
+> > +
+> > +/*
+> > + * Calculate the number of free pages in a zone, how many contiguous
+> > + * pages are free and how many are large enough to satisfy an allocation of
+> > + * the target size. Note that this function makes to attempt to estimate
+> > + * how many suitable free blocks there *might* be if MOVABLE pages were
+> > + * migrated. Calculating that is possible, but expensive and can be
+> > + * figured out from userspace
+> > + */
+> > +static void fill_contig_page_info(struct zone *zone,
+> > +				unsigned int suitable_order,
+> > +				struct contig_page_info *info)
+> > +{
+> > +	unsigned int order;
+> > +
+> > +	info->free_pages = 0;
+> > +	info->free_blocks_total = 0;
+> > +	info->free_blocks_suitable = 0;
+> > +
+> > +	for (order = 0; order < MAX_ORDER; order++) {
+> > +		unsigned long blocks;
+> > +
+> > +		/* Count number of free blocks */
+> > +		blocks = zone->free_area[order].nr_free;
+> > +		info->free_blocks_total += blocks;
+> > +
+> > +		/* Count free base pages */
+> > +		info->free_pages += blocks << order;
+> > +
+> > +		/* Count the suitable free blocks */
+> > +		if (order >= suitable_order)
+> > +			info->free_blocks_suitable += blocks <<
+> > +						(order - suitable_order);
+> > +	}
+> > +}
+> > +
+> > +/*
+> > + * Return an index indicating how much of the available free memory is
+> > + * unusable for an allocation of the requested size.
+> > + */
+> > +static int unusable_free_index(struct zone *zone,
+> > +				unsigned int order,
+> > +				struct contig_page_info *info)
+> > +{
+> > +	/* No free memory is interpreted as all free memory is unusable */
+> > +	if (info->free_pages == 0)
+> > +		return 1000;
+> > +
+> > +	/*
+> > +	 * Index should be a value between 0 and 1. Return a value to 3
+> > +	 * decimal places.
+> > +	 *
+> > +	 * 0 => no fragmentation
+> > +	 * 1 => high fragmentation
+> > +	 */
+> 
+> I leraned math by japanese. probably then I couldn't understand what mean
+> "3 decimal places" awhile.
+> Simply can't we write "Index should be a value between 0 and 1000"?
+> 
+
+I can do either that or make it really display between 0 and 1. I'd
+prefer displaying between 0 and 1 myself.
+
+> 
+> > +	return ((info->free_pages - (info->free_blocks_suitable << order)) * 1000) / info->free_pages;
+> > +
+> > +}
+> > +
+> > +static void pagetypeinfo_showunusable_print(struct seq_file *m,
+> > +					pg_data_t *pgdat, struct zone *zone)
+> > +{
+> > +	unsigned int order;
+> > +
+> > +	/* Alloc on stack as interrupts are disabled for zone walk */
+> > +	struct contig_page_info info;
+> > +
+> > +	seq_printf(m, "Node %4d, zone %8s %19s",
+> > +				pgdat->node_id,
+> > +				zone->name, " ");
+> > +	for (order = 0; order < MAX_ORDER; ++order) {
+> > +		fill_contig_page_info(zone, order, &info);
+> > +		seq_printf(m, "%6d ", unusable_free_index(zone, order, &info));
+> > +	}
+> > +
+> > +	seq_putc(m, '\n');
+> > +}
+> > +
+> > +/*
+> > + * Display unusable free space index
+> > + * XXX: Could be a lot more efficient, but it's not a critical path
+> > + */
+> > +static int pagetypeinfo_showunusable(struct seq_file *m, void *arg)
+> > +{
+> > +	pg_data_t *pgdat = (pg_data_t *)arg;
+> > +
+> > +	seq_printf(m, "\nUnusable free space index at order\n");
+> > +	walk_zones_in_node(m, pgdat, pagetypeinfo_showunusable_print);
+> > +
+> > +	return 0;
+> > +}
+> > +
+> >  static void pagetypeinfo_showfree_print(struct seq_file *m,
+> >  					pg_data_t *pgdat, struct zone *zone)
+> >  {
+> > @@ -558,6 +656,7 @@ static int pagetypeinfo_show(struct seq_file *m, void *arg)
+> >  	seq_printf(m, "Pages per block:  %lu\n", pageblock_nr_pages);
+> >  	seq_putc(m, '\n');
+> >  	pagetypeinfo_showfree(m, pgdat);
+> > +	pagetypeinfo_showunusable(m, pgdat);
+> >  	pagetypeinfo_showblockcount(m, pgdat);
+> >  
+> >  	return 0;
+> > -- 
+> > 1.6.5
+> > 
+> 
+> 
+> 
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
