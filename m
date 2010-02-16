@@ -1,82 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933479Ab0BPWSo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 17:18:44 -0500
-Received: from mail-fx0-f215.google.com ([209.85.220.215]:54092 "EHLO
-	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933309Ab0BPWSm convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 17:18:42 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:to:subject:date:user-agent:references:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:message-id;
-        b=jI6FSbrJCMzBKj2ArCT67mzyLXmn/zBLadHKe2svi1cN7iYAS/oppLadgqPSH6hJ0b
-         42AMY1oKpAvjnsabQBitu/xWnArc8taZ1ZjSMSZ/n7q+sFAmpyCNlbA4ATmE032qCPFK
-         xCgqSFA/iBxwox5yaBZL1fFNo4rW36OYL9Y7Q=
-From: Volker Armin Hemmann <volkerarmin@googlemail.com>
-To: Bill Davidsen <davidsen@tmr.com>, Michael Evans <mjevans1983@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
-       Nick Bowler <nbowler@elliptictech.com>
-Subject: Re: Linux mdadm superblock question.
-Date: Tue, 16 Feb 2010 23:18:33 +0100
-User-Agent: KMail/1.13.0 (Linux/2.6.31.12r4; KDE/4.4.0; x86_64; ; )
-References: <201002140251.59668.volkerarmin@googlemail.com> <201002162206.32797.volkerarmin@googlemail.com> <20100216220020.GA1036@emergent.ellipticsemi.com>
-In-Reply-To: <20100216220020.GA1036@emergent.ellipticsemi.com>
+	id S933474Ab0BPWXJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 17:23:09 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:58517 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933260Ab0BPWXF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 17:23:05 -0500
+Message-ID: <4B7B1AA9.9040609@redhat.com>
+Date: Tue, 16 Feb 2010 17:22:33 -0500
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Lightning/1.0pre Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <201002162318.33950.volkerarmin@googlemail.com>
+To: Chris Friesen <cfriesen@nortel.com>
+CC: Minchan Kim <minchan.kim@gmail.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org, Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: tracking memory usage/leak in "inactive" field in /proc/meminfo?
+References: <4B71927D.6030607@nortel.com>	 <20100210093140.12D9.A69D9226@jp.fujitsu.com>	 <4B72E74C.9040001@nortel.com>	 <28c262361002101645g3fd08cc7t6a72d27b1f94db62@mail.gmail.com>	 <4B74524D.8080804@nortel.com> <28c262361002111838q7db763feh851a9bea4fdd9096@mail.gmail.com> <4B7504D2.1040903@nortel.com> <4B796D31.7030006@nortel.com> <4B797D93.5090307@redhat.com> <4B7ACD4A.10101@nortel.com> <4B7AD207.20604@redhat.com> <4B7B0D75.50808@nortel.com>
+In-Reply-To: <4B7B0D75.50808@nortel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dienstag 16 Februar 2010, Nick Bowler wrote:
-> On 22:06 Tue 16 Feb     , Volker Armin Hemmann wrote:
-> > On Dienstag 16 Februar 2010, Bill Davidsen wrote:
-> > > Volker Armin Hemmann wrote:
-> > > > On Sonntag 14 Februar 2010, you wrote:
-> > > >> In other words, 'auto-detection' for 1.x format devices is using an
-> > > >> initrd/initramfs.
-> > > > 
-> > > > which makes 1.x format useless for everybody who does not want to
-> > > > deal with initrd/initramfs.
-> > > 
-> > > You make this sound like some major big deal. are you running your own
-> > > distribution? In most cases mkinitrd does the right thing when you
-> > > "make install" the kernel, and if you are doing something in the build
-> > > so complex that it needs options, you really should understand the
-> > > options and be sure you're doing what you want.
-> > > 
-> > > Generally this involves preloading a module or two, and if you need it
-> > > every time you probably should have built it in, anyway.
-> > > 
-> > > My opinion...
-> > 
-> > I am running my own kernels - and of course everything that is needed to
-> > boot and get the basic system up is built in. Why should I make the disk
-> > drivers modules?
-> > That does not make sense.
-> 
-> I agree that it makes little sense to make something a module when you
-> can't unload it anyway, but...
-> 
-> > And the reason is simple: even when the system is completely fucked up, I
-> > want a kernel that is able to boot until init=/bin/bb takes over.
-> 
-> I put a complete set of recovery tools into my initramfses so that when
-> the system is completely fucked up, I have a kernel that is able to boot
-> until rdinit=/bin/zsh (or /bin/bb, if you prefer) takes over.
-> 
-> This has the added advantage of working when the root filesystem cannot
-> be mounted at all: a scenario which does not seem too far-fetched when
-> the filesystem is located on a raid array.
+On 02/16/2010 04:26 PM, Chris Friesen wrote:
 
-and what do you do if you have to boot from a cd/usb stick and need to access 
-the raid?
+> For the backtrace scenario I posted it seems like it might actually be
+> release_pages().  There seems to be a plausible call chain:
+>
+> __ClearPageLRU
+> release_pages
+> free_pages_and_swap_cache
+> tlb_flush_mmu
+> tlb_remove_page
+> zap_pte_range
+>
+> Does that seem right?  In this case, tlb_remove_page() is called right
+> after page_remove_rmap() which ultimately results in clearing the
+> PageAnon bit.
 
-Simple with auto assembling. Not so much without.
+That is right - and pinpoints the fault for the memory leak
+on some third party code that fails to release a refcount on
+memory pages.
 
-Glück Auf,
-Volker
+-- 
+All rights reversed.
