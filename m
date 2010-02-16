@@ -1,188 +1,107 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756949Ab0BPOQt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 09:16:49 -0500
-Received: from hera.kernel.org ([140.211.167.34]:44823 "EHLO hera.kernel.org"
+	id S1756900Ab0BPOT3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 09:19:29 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:32790 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756391Ab0BPOQq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 09:16:46 -0500
-Date: Tue, 16 Feb 2010 14:16:18 GMT
-From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, tglx@linutronix.de
-In-Reply-To: <1266241712.15770.420.camel@laptop>
-References: <1266241712.15770.420.camel@laptop>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:sched/urgent] sched: Fix race between ttwu() and task_rq_lock()
-Message-ID: <tip-0970d2992dfd7d5ec2c787417cf464f01eeaf42a@git.kernel.org>
-Git-Commit-ID: 0970d2992dfd7d5ec2c787417cf464f01eeaf42a
-X-Mailer: tip-git-log-daemon
+	id S1756391Ab0BPOT1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 09:19:27 -0500
+Date: Wed, 17 Feb 2010 01:19:19 +1100
+From: Nick Piggin <npiggin@suse.de>
+To: Jan Kara <jack@suse.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, fengguang.wu@intel.com
+Subject: Re: [PATCH 2/3] mm: Implement writeback livelock avoidance using
+ page tagging
+Message-ID: <20100216141919.GO5723@laptop>
+References: <1265929584-5080-1-git-send-email-jack@suse.cz>
+ <1265929584-5080-3-git-send-email-jack@suse.cz>
+ <20100212113955.4c023130.akpm@linux-foundation.org>
+ <20100215154751.GG3434@quack.suse.cz>
+ <20100215162127.GU5723@laptop>
+ <20100215195713.GI3434@quack.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Tue, 16 Feb 2010 14:16:21 +0000 (UTC)
+In-Reply-To: <20100215195713.GI3434@quack.suse.cz>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  0970d2992dfd7d5ec2c787417cf464f01eeaf42a
-Gitweb:     http://git.kernel.org/tip/0970d2992dfd7d5ec2c787417cf464f01eeaf42a
-Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-AuthorDate: Mon, 15 Feb 2010 14:45:54 +0100
-Committer:  Thomas Gleixner <tglx@linutronix.de>
-CommitDate: Tue, 16 Feb 2010 15:13:59 +0100
+On Mon, Feb 15, 2010 at 08:57:13PM +0100, Jan Kara wrote:
+> On Tue 16-02-10 03:21:27, Nick Piggin wrote:
+> > On Mon, Feb 15, 2010 at 04:47:51PM +0100, Jan Kara wrote:
+> > > On Fri 12-02-10 11:39:55, Andrew Morton wrote:
+> > > > On Fri, 12 Feb 2010 00:06:23 +0100
+> > > > Jan Kara <jack@suse.cz> wrote:
+> > > > 
+> > > > > The idea is simple: Tag all pages that should be written back
+> > > > > with a special tag (TOWRITE) in the radix tree. This can be done
+> > > > > rather quickly and thus livelocks should not happen in practice.
+> > > > > Then we start doing the hard work of locking pages and sending
+> > > > > them to disk only for those pages that have TOWRITE tag set.
+> > > > 
+> > > > Adding a second pass across all the pages sounds expensive?
+> > >   Strictly speaking it's just through the radix tree and only through
+> > > branches with DIRTY_TAG set. But yes, there is some additional CPU cost.
+> > > I just thought that given the total cost of submitting a page it is
+> > > an acceptable increase and the simplification is worth it.
+> > >   Would some numbers make you happier? Any suggestion for measurements?
+> > > Because I think that even for writes to tmpfs the change will be lost
+> > > in the noise...
+> > 
+> > Although hmm, if it is a very large file with *lots* of dirty pages
+> > then it might become a noticable proportion of the cost.
+> > 
+> > Dave Chinner would probably tell you he's seen files with many
+> > gigabytes dirty, and what is nr_to_write set to? 1024 is it? So you
+> > might be tagging hundreds or thousands of radix tree entries per
+> > page you write.
+>   Hmm, this is a good point. My final aim is to remove the nr_to_write
+> logic so then the only case when we break out of the loop in
+> write_cache_pages early would be when ->writepage returns an error.
+> But until then what you describe can happen quite regularly.
+>   An obvious workaround is to limit the amount of tags transferred but that
+> might have to repeat retagging and it just gets ugly. Another solution
 
-sched: Fix race between ttwu() and task_rq_lock()
+Yes I quickly thought about that but it gets hard.
 
-Thomas found that due to ttwu() changing a task's cpu without holding
-the rq->lock, task_rq_lock() might end up locking the wrong rq.
 
-Avoid this by serializing against TASK_WAKING.
+> would be to remove the DIRTY tag as we set the TOWRITE tag. That might
+> actually work quite nicely what do you think?
 
-Reported-by: Thomas Gleixner <tglx@linutronix.de>
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <1266241712.15770.420.camel@laptop>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
----
- kernel/sched.c |   73 +++++++++++++++++++++++++++++++++++--------------------
- 1 files changed, 46 insertions(+), 27 deletions(-)
+Hmm, would there be a risk of races with other code looking up
+the dirty tag? It might work but it would be a bit scary.
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 4d78aef..404e201 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -941,16 +941,33 @@ static inline void finish_lock_switch(struct rq *rq, struct task_struct *prev)
- #endif /* __ARCH_WANT_UNLOCKED_CTXSW */
- 
- /*
-+ * Check whether the task is waking, we use this to synchronize against
-+ * ttwu() so that task_cpu() reports a stable number.
-+ *
-+ * We need to make an exception for PF_STARTING tasks because the fork
-+ * path might require task_rq_lock() to work, eg. it can call
-+ * set_cpus_allowed_ptr() from the cpuset clone_ns code.
-+ */
-+static inline int task_is_waking(struct task_struct *p)
-+{
-+	return unlikely((p->state == TASK_WAKING) && !(p->flags & PF_STARTING));
-+}
-+
-+/*
-  * __task_rq_lock - lock the runqueue a given task resides on.
-  * Must be called interrupts disabled.
-  */
- static inline struct rq *__task_rq_lock(struct task_struct *p)
- 	__acquires(rq->lock)
- {
-+	struct rq *rq;
-+
- 	for (;;) {
--		struct rq *rq = task_rq(p);
-+		while (task_is_waking(p))
-+			cpu_relax();
-+		rq = task_rq(p);
- 		raw_spin_lock(&rq->lock);
--		if (likely(rq == task_rq(p)))
-+		if (likely(rq == task_rq(p) && !task_is_waking(p)))
- 			return rq;
- 		raw_spin_unlock(&rq->lock);
- 	}
-@@ -967,10 +984,12 @@ static struct rq *task_rq_lock(struct task_struct *p, unsigned long *flags)
- 	struct rq *rq;
- 
- 	for (;;) {
-+		while (task_is_waking(p))
-+			cpu_relax();
- 		local_irq_save(*flags);
- 		rq = task_rq(p);
- 		raw_spin_lock(&rq->lock);
--		if (likely(rq == task_rq(p)))
-+		if (likely(rq == task_rq(p) && !task_is_waking(p)))
- 			return rq;
- 		raw_spin_unlock_irqrestore(&rq->lock, *flags);
- 	}
-@@ -2408,14 +2427,27 @@ static int try_to_wake_up(struct task_struct *p, unsigned int state,
- 	__task_rq_unlock(rq);
- 
- 	cpu = select_task_rq(p, SD_BALANCE_WAKE, wake_flags);
--	if (cpu != orig_cpu)
-+	if (cpu != orig_cpu) {
-+		/*
-+		 * Since we migrate the task without holding any rq->lock,
-+		 * we need to be careful with task_rq_lock(), since that
-+		 * might end up locking an invalid rq.
-+		 */
- 		set_task_cpu(p, cpu);
-+	}
- 
--	rq = __task_rq_lock(p);
-+	rq = cpu_rq(cpu);
-+	raw_spin_lock(&rq->lock);
- 	update_rq_clock(rq);
- 
-+	/*
-+	 * We migrated the task without holding either rq->lock, however
-+	 * since the task is not on the task list itself, nobody else
-+	 * will try and migrate the task, hence the rq should match the
-+	 * cpu we just moved it to.
-+	 */
-+	WARN_ON(task_cpu(p) != cpu);
- 	WARN_ON(p->state != TASK_WAKING);
--	cpu = task_cpu(p);
- 
- #ifdef CONFIG_SCHEDSTATS
- 	schedstat_inc(rq, ttwu_count);
-@@ -2647,7 +2679,7 @@ void wake_up_new_task(struct task_struct *p, unsigned long clone_flags)
- {
- 	unsigned long flags;
- 	struct rq *rq;
--	int cpu __maybe_unused = get_cpu();
-+	int cpu = get_cpu();
- 
- #ifdef CONFIG_SMP
- 	/*
-@@ -2663,7 +2695,13 @@ void wake_up_new_task(struct task_struct *p, unsigned long clone_flags)
- 	set_task_cpu(p, cpu);
- #endif
- 
--	rq = task_rq_lock(p, &flags);
-+	/*
-+	 * Since the task is not on the rq and we still have TASK_WAKING set
-+	 * nobody else will migrate this task.
-+	 */
-+	rq = cpu_rq(cpu);
-+	raw_spin_lock_irqsave(&rq->lock, flags);
-+
- 	BUG_ON(p->state != TASK_WAKING);
- 	p->state = TASK_RUNNING;
- 	update_rq_clock(rq);
-@@ -7156,27 +7194,8 @@ int set_cpus_allowed_ptr(struct task_struct *p, const struct cpumask *new_mask)
- 	struct rq *rq;
- 	int ret = 0;
- 
--	/*
--	 * Since we rely on wake-ups to migrate sleeping tasks, don't change
--	 * the ->cpus_allowed mask from under waking tasks, which would be
--	 * possible when we change rq->lock in ttwu(), so synchronize against
--	 * TASK_WAKING to avoid that.
--	 *
--	 * Make an exception for freshly cloned tasks, since cpuset namespaces
--	 * might move the task about, we have to validate the target in
--	 * wake_up_new_task() anyway since the cpu might have gone away.
--	 */
--again:
--	while (p->state == TASK_WAKING && !(p->flags & PF_STARTING))
--		cpu_relax();
--
- 	rq = task_rq_lock(p, &flags);
- 
--	if (p->state == TASK_WAKING && !(p->flags & PF_STARTING)) {
--		task_rq_unlock(rq, &flags);
--		goto again;
--	}
--
- 	if (!cpumask_intersects(new_mask, cpu_active_mask)) {
- 		ret = -EINVAL;
- 		goto out;
+How about only re-tagging the TOWRITE tags when there are none
+left? (or at the point where a sync is requested).
+
+
+>   Finally, I could complement this series with patches substituting
+> nr_to_write logic but that would make the series considerably more
+> complicated and controverse so I rather wanted to do it in small steps...
+
+Well if one of the justifications for this patch is that following
+series then I'd like to see it. If it is simplifying other parts then
+it will be good to see how it interacts with the TOWRITE stuff.
+
+
+> > Also, I wonder what you think about leaving the tags dangling when
+> > the loop bails out early? I have a *slight* concern about this
+> > because previously we never have a tag set when radix_tree_delete
+> > is called. I actually had a bug in that code in earlier versions
+> > of rcu radix tree that only got found by the user test harness.
+> > And another slight concern that it is just a bit ugly to leave the
+> > tag. But I can accept that lower CPU overhead trumps ugliness :)
+>   I specifically checked __remove_from_page_cache -> radix_tree_delete
+> path to verify what happens and everything seems to handle that just
+> fine. BTW, note that cancel_dirty_page does not clear the radix tree
+> dirty tag either so during truncation radix_tree_delete will be called
+> with tagged pages as well.
+
+Yeah, I must have been wrong about that. But dangling tags are ugly!
+If we keep them around as writeback markers as above (refill only
+when run out of tags or sync required), then they become conceptually
+less ugly maybe.
+
