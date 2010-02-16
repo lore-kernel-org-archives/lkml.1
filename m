@@ -1,71 +1,88 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756661Ab0BPNy4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 08:54:56 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:45148 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756269Ab0BPNyy (ORCPT
+	id S1756607Ab0BPN4S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 08:56:18 -0500
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:34127 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756269Ab0BPN4R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 08:54:54 -0500
-Date: Tue, 16 Feb 2010 14:54:44 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Mihai Don??u <mihai.dontu@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux-pm mailing list <linux-pm@lists.osdl.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: slow resume from suspend to disk
-Message-ID: <20100216135444.GA1337@ucw.cz>
-References: <201002110140.16122.mihai.dontu@gmail.com>
+	Tue, 16 Feb 2010 08:56:17 -0500
+Date: Tue, 16 Feb 2010 14:56:12 +0100
+From: Rodolfo Giometti <giometti@enneenne.com>
+To: Alexander Gordeev <lasaine@lvk.cs.msu.su>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>,
+       Sam Ravnborg <sam@ravnborg.org>, Greg KH <greg@kroah.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Kay Sievers <kay.sievers@vrfy.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Michael Kerrisk <mtk.manpages@gmail.com>,
+       Christoph Hellwig <hch@infradead.org>
+Message-ID: <20100216135612.GS28375@enneenne.com>
+Mail-Followup-To: Alexander Gordeev <lasaine@lvk.cs.msu.su>,
+	linux-kernel@vger.kernel.org,
+	Andrew Morton <akpm@linux-foundation.org>,
+	David Woodhouse <dwmw2@infradead.org>,
+	Dave Jones <davej@redhat.com>, Sam Ravnborg <sam@ravnborg.org>,
+	Greg KH <greg@kroah.com>, Randy Dunlap <randy.dunlap@oracle.com>,
+	Kay Sievers <kay.sievers@vrfy.org>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	"H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+	Michael Kerrisk <mtk.manpages@gmail.com>,
+	Christoph Hellwig <hch@infradead.org>
+References: <1266313885-1195-1-git-send-email-giometti@linux.it>
+ <1266313885-1195-2-git-send-email-giometti@linux.it>
+ <1266313885-1195-3-git-send-email-giometti@linux.it>
+ <20100216154456.2cea05d2@desktopvm.lvknet>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <201002110140.16122.mihai.dontu@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20100216154456.2cea05d2@desktopvm.lvknet>
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-SA-Exim-Connect-IP: 192.168.32.37
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: Re: [PATCH 2/8] pps: documentation programs and examples.
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Tue, Feb 16, 2010 at 03:44:56PM +0300, Alexander Gordeev wrote:
+> On Tue, 16 Feb 2010 10:51:19 +0100
+> Rodolfo Giometti <giometti@linux.it> wrote:
 > 
-> Is there any way to speed up the resume from suspend to disk? Currently, on my 
-> laptop it suspends in ~15s (wrote about 360MB) but resumes in ~120s and after 
-> that I'm still left with ~361MB in swap:
+> > Here some utilities and examples about the PPS API and the LinuxPPS
+> > support.
+> > 
+> > * ppstest.c implements an useful testing program, while
+> > 
+> > * ppsfind tries to help the user into finding a specific PPS source by
+> >   using its name or path.
 > 
->              total       used       free     shared    buffers     cached
-> Mem:       3333472    1139332    2194140          0      12808     473084
-> -/+ buffers/cache:     653440    2680032
-> Swap:      2104472     369428    1735044
+> Maybe these tools should be in a separate package (say pps-tools)? I've
+> written several tools too. They are based on your code. I think there
+> should be at least two of them:
 > 
-> Right now I'm better off with a cold boot.
+>  * ppsctl to get/set params, get capabilities and bind/unbind kernel
+> consumer
+> 
+>  * ppstest to fetch data and provide several representations for it
+> 
+> I can assist in this task too.
 
-That's way too slow. Are you using in-kernel swsusp, or userland
-s2disk? dmesgM
-> 
-> Although I did not study the kernel code to see how things really work, I 
-> suspect on resume only necessary kernel data is loaded from swap and the 
-> userland tasks are left with the page fault mechanism to bring back their own 
-> data, which leads to an I/O storm on the swap device. Maybe changing the I/O 
-> scheduler from CFQ would help? or better yet, is there any way to tell the 
-> kernel to bring back all the pages from swap in one quick move? That would be 
-> something I want to put in my resume scripts.
-> 
-> $ uname -a
-> Linux mdontu-dell 2.6.32-gentoo-r3 #1 SMP PREEMPT Mon Feb 1 02:36:01 EET 2010 
-> x86_64 Intel(R) Core(TM)2 CPU T5500 @ 1.66GHz GenuineIntel GNU/Linux
-> 
-> I've installed Windows XP just for a test, started a few apps (like visual 
-> studio, mplayer, etc.) and then suspended/hibernated (~15s). It took roughly 
-> 15s to come back.
-> 
-> Thanks,
-> 
-> PS: I'm editing this e-mail as I do tests and I just noticed that my /sbin 
-> directory is empty. rmmod is there and I needed it to reload the b43 driver 
-> which generally does not feel well after a suspend/resume. A reboot fixed it. 
-> Weird ...
-> 
+Great! It's ok for me. Please, let me know how we can proceed.
 
-Seems like your system has problems...
+Thanks a lot,
+
+Rodolfo
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
+GNU/Linux Solutions                  e-mail: giometti@enneenne.com
+Linux Device Driver                          giometti@linux.it
+Embedded Systems                     phone:  +39 349 2432127
+UNIX programming                     skype:  rodolfo.giometti
+Freelance ICT Italia - Consulente ICT Italia - www.consulenti-ict.it
