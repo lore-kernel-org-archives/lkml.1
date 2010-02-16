@@ -1,60 +1,75 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755355Ab0BPIpn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 03:45:43 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:54765 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750759Ab0BPIpl (ORCPT
+	id S1755682Ab0BPIq3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 03:46:29 -0500
+Received: from tritonia.xxlwebhosting.nl ([81.4.88.63]:45597 "EHLO
+	tritonia.xxlwebhosting.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750759Ab0BPIq1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 03:45:41 -0500
-Date: Tue, 16 Feb 2010 08:44:42 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: "Shilimkar, Santosh" <santosh.shilimkar@ti.com>
-Cc: Catalin Marinas <catalin.marinas@arm.com>, Pavel Machek <pavel@ucw.cz>,
-       Greg KH <greg@kroah.com>,
-       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Ming Lei <tom.leiming@gmail.com>,
-       Sebastian Siewior <bigeasy@linutronix.de>,
-       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       "Mankad, Maulik Ojas" <x0082077@ti.com>
-Subject: Re: USB mass storage and ARM cache coherency
-Message-ID: <20100216084442.GA3212@n2100.arm.linux.org.uk>
-References: <20100208065519.GE1290@ucw.cz> <1265622676.4020.19.camel@pc1117.cambridge.arm.com> <20100208105209.GA31671@atrey.karlin.mff.cuni.cz> <1265628483.4020.63.camel@pc1117.cambridge.arm.com> <EAF47CD23C76F840A9E7FCE10091EFAB02C3CF7D50@dbde02.ent.ti.com>
+	Tue, 16 Feb 2010 03:46:27 -0500
+Message-ID: <4B7A5B5B.6040307@grumpydevil.homelinux.org>
+Date: Tue, 16 Feb 2010 09:46:19 +0100
+From: Rudy Zijlstra <rudy@grumpydevil.homelinux.org>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090820)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <EAF47CD23C76F840A9E7FCE10091EFAB02C3CF7D50@dbde02.ent.ti.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: david@lang.hm, Neil Brown <neilb@suse.de>,
+       Michael Evans <mjevans1983@gmail.com>,
+       Justin Piszcz <jpiszcz@lucidpixels.com>, linux-raid@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Linux mdadm superblock question.
+References: <alpine.DEB.2.00.1002111758350.12031@p34.internal.lan> <4877c76c1002111752h23e14f7aibe58a89181e6f493@mail.gmail.com> <4B77044B.1020609@zytor.com> <20100216112708.4a863f86@notabene.brown> <4B79F3CE.5030907@zytor.com> <alpine.DEB.2.00.1002151916280.5135@asgard.lang.hm> <4B7A42EB.3070405@zytor.com>
+In-Reply-To: <4B7A42EB.3070405@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-ACL-Warn: {
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - tritonia.xxlwebhosting.nl
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - grumpydevil.homelinux.org
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 16, 2010 at 01:27:53PM +0530, Shilimkar, Santosh wrote:
-> Continuing on the USB issue w.r.t cache coherency, the usb host
-> code is violating the buffer ownership rules of streaming APIs from
-> dma and non-dma transfers point if view.
-> 
-> We have a below temporary patch to get around the issue and probably it
-> needs to be fixed in the right way in the stack because some controllers
-> may not have PIO option even for control transfers. (e.g. Synopsis EHCI
-> controller)
+H. Peter Anvin wrote:
+> On 02/15/2010 07:18 PM, david@lang.hm wrote:
+>> On Mon, 15 Feb 2010, H. Peter Anvin wrote:
+>>
+>>> On 02/15/2010 04:27 PM, Neil Brown wrote:
+>>>
+>>> There are three options:
+>>>
+>>> a) either don't boot from it (separate /boot);
+>>> b) use a bootloader which installs in the MBR and
+>>> hopefully-unpartitioned disk areas (e.g. Grub);
+>>> c) use a nonstandard custom MBR.
+>>>
+>>> Neither (b) or (c), of course, allow for chainloading from another OS
+>>> install and thus are bad for interoperability.
+>>
+>> I have had no problems with XFS partitions and lilo as the bootloader.
+>> I've been doing this for a couple of years now without realizing that
+>> there is supposed to be a problem.
+>>
+>
+> LILO also can be stuffed in the MBR (and then uses block-pointers from 
+> there).  There is one more option that I didn't mention, which is to 
+> put the bootloader of a separate partition, OS/2 style.  Again, breaks 
+> the standard chainloading model.
+There is another configuration that fails. Use partitioned md. I do not 
+think it matters whether over whole device or with a partition table. 
+Neither grub nor lilo will boot off from it. I've tested that exensively 
+with a partition on the disks.  I am using PXE boot to boot 2 servers 
+with that configuration. That adds a dependency on the pxe boot server, 
+but considering the function of those servers they are moot if that pxe 
+server is dead anyways....
 
-        if (usb_endpoint_xfer_control(&urb->ep->desc)
-            && !(urb->transfer_flags & URB_NO_SETUP_DMA_MAP)) {
-                if (hcd->self.uses_dma) {		<=================
-                        urb->setup_dma = dma_map_single(
-                                        hcd->self.controller,
-                                        urb->setup_packet,
-                                        sizeof(struct usb_ctrlrequest),
-                                        DMA_TO_DEVICE);
+Cheers,
 
-struct usb_hcd *usb_create_hcd (const struct hc_driver *driver,
-                struct device *dev, const char *bus_name)
-{
-...
-        hcd->self.uses_dma = (dev->dma_mask != NULL);
 
-Is it easier to make sure that PIO devices don't have dev->dma_mask set?
+Rudy
+
