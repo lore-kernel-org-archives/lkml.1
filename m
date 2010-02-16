@@ -1,88 +1,188 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932967Ab0BPKlZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 05:41:25 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:18228 "EHLO mx1.redhat.com"
+	id S932704Ab0BPKmx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 05:42:53 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:39702 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932802Ab0BPKfk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S932790Ab0BPKfk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 16 Feb 2010 05:35:40 -0500
 From: Avi Kivity <avi@redhat.com>
 To: kvm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 25/38] KVM: VMX: Pass cr0.mp through to the guest when the fpu is active
-Date: Tue, 16 Feb 2010 12:35:23 +0200
-Message-Id: <1266316536-28936-26-git-send-email-avi@redhat.com>
+Subject: [PATCH 05/38] KVM: x86: Use macros for x86_emulate_ops to avoid future mistakes
+Date: Tue, 16 Feb 2010 12:35:03 +0200
+Message-Id: <1266316536-28936-6-git-send-email-avi@redhat.com>
 In-Reply-To: <1266316536-28936-1-git-send-email-avi@redhat.com>
 References: <1266316536-28936-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When cr0.mp is clear, the guest doesn't expect a #NM in response to
-a WAIT instruction.  Because we always keep cr0.mp set, it will get
-a #NM, and potentially be confused.
+From: Takuya Yoshikawa <yoshikawa.takuya@oss.ntt.co.jp>
 
-Fix by keeping cr0.mp set only when the fpu is inactive, and passing
-it through when inactive.
+The return values from x86_emulate_ops are defined
+in kvm_emulate.h as macros X86EMUL_*.
 
-Reported-by: Lorenzo Martignoni <martignlo@gmail.com>
-Analyzed-by: Gleb Natapov <gleb@redhat.com>
-Signed-off-by: Avi Kivity <avi@redhat.com>
+But in emulate.c, we are comparing the return values
+from these ops with 0 to check if they're X86EMUL_CONTINUE
+or not: X86EMUL_CONTINUE is defined as 0 now.
+
+To avoid possible mistakes in the future, this patch
+substitutes "X86EMUL_CONTINUE" for "0" that are being
+compared with the return values from x86_emulate_ops.
+
+  We think that there are more places we should use these
+  macros, but the meanings of rc values in x86_emulate_insn()
+  were not so clear at a glance. If we use proper macros in
+  this function, we would be able to follow the flow of each
+  emulation more easily and, maybe, more securely.
+
+Signed-off-by: Takuya Yoshikawa <yoshikawa.takuya@oss.ntt.co.jp>
 Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
 ---
- arch/x86/kvm/vmx.c |   15 +++++++++------
- 1 files changed, 9 insertions(+), 6 deletions(-)
+ arch/x86/kvm/emulate.c |   65 ++++++++++++++++++++++++++---------------------
+ 1 files changed, 36 insertions(+), 29 deletions(-)
 
-diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
-index a680d93..7a56879 100644
---- a/arch/x86/kvm/vmx.c
-+++ b/arch/x86/kvm/vmx.c
-@@ -66,7 +66,7 @@ module_param(emulate_invalid_guest_state, bool, S_IRUGO);
- #define KVM_GUEST_CR0_MASK						\
- 	(KVM_GUEST_CR0_MASK_UNRESTRICTED_GUEST | X86_CR0_PG | X86_CR0_PE)
- #define KVM_VM_CR0_ALWAYS_ON_UNRESTRICTED_GUEST				\
--	(X86_CR0_WP | X86_CR0_NE | X86_CR0_MP)
-+	(X86_CR0_WP | X86_CR0_NE)
- #define KVM_VM_CR0_ALWAYS_ON						\
- 	(KVM_VM_CR0_ALWAYS_ON_UNRESTRICTED_GUEST | X86_CR0_PG | X86_CR0_PE)
- #define KVM_CR4_GUEST_OWNED_BITS				      \
-@@ -791,12 +791,15 @@ static void vmx_vcpu_put(struct kvm_vcpu *vcpu)
+diff --git a/arch/x86/kvm/emulate.c b/arch/x86/kvm/emulate.c
+index 0f89e32..48c7f9f 100644
+--- a/arch/x86/kvm/emulate.c
++++ b/arch/x86/kvm/emulate.c
+@@ -1196,7 +1196,7 @@ static int emulate_pop(struct x86_emulate_ctxt *ctxt,
+ 	rc = ops->read_emulated(register_address(c, ss_base(ctxt),
+ 						 c->regs[VCPU_REGS_RSP]),
+ 				dest, len, ctxt->vcpu);
+-	if (rc != 0)
++	if (rc != X86EMUL_CONTINUE)
+ 		return rc;
  
- static void vmx_fpu_activate(struct kvm_vcpu *vcpu)
- {
-+	ulong cr0;
-+
- 	if (vcpu->fpu_active)
- 		return;
- 	vcpu->fpu_active = 1;
--	vmcs_clear_bits(GUEST_CR0, X86_CR0_TS);
--	if (kvm_read_cr0_bits(vcpu, X86_CR0_TS))
--		vmcs_set_bits(GUEST_CR0, X86_CR0_TS);
-+	cr0 = vmcs_readl(GUEST_CR0);
-+	cr0 &= ~(X86_CR0_TS | X86_CR0_MP);
-+	cr0 |= kvm_read_cr0_bits(vcpu, X86_CR0_TS | X86_CR0_MP);
-+	vmcs_writel(GUEST_CR0, cr0);
- 	update_exception_bitmap(vcpu);
- 	vcpu->arch.cr0_guest_owned_bits = X86_CR0_TS;
- 	vmcs_writel(CR0_GUEST_HOST_MASK, ~vcpu->arch.cr0_guest_owned_bits);
-@@ -807,7 +810,7 @@ static void vmx_decache_cr0_guest_bits(struct kvm_vcpu *vcpu);
- static void vmx_fpu_deactivate(struct kvm_vcpu *vcpu)
- {
- 	vmx_decache_cr0_guest_bits(vcpu);
--	vmcs_set_bits(GUEST_CR0, X86_CR0_TS);
-+	vmcs_set_bits(GUEST_CR0, X86_CR0_TS | X86_CR0_MP);
- 	update_exception_bitmap(vcpu);
- 	vcpu->arch.cr0_guest_owned_bits = 0;
- 	vmcs_writel(CR0_GUEST_HOST_MASK, ~vcpu->arch.cr0_guest_owned_bits);
-@@ -1757,7 +1760,7 @@ static void vmx_set_cr0(struct kvm_vcpu *vcpu, unsigned long cr0)
- 		ept_update_paging_mode_cr0(&hw_cr0, cr0, vcpu);
+ 	register_address_increment(c, &c->regs[VCPU_REGS_RSP], len);
+@@ -1370,7 +1370,7 @@ static inline int emulate_grp9(struct x86_emulate_ctxt *ctxt,
+ 	int rc;
  
- 	if (!vcpu->fpu_active)
--		hw_cr0 |= X86_CR0_TS;
-+		hw_cr0 |= X86_CR0_TS | X86_CR0_MP;
+ 	rc = ops->read_emulated(memop, &old, 8, ctxt->vcpu);
+-	if (rc != 0)
++	if (rc != X86EMUL_CONTINUE)
+ 		return rc;
  
- 	vmcs_writel(CR0_READ_SHADOW, cr0);
- 	vmcs_writel(GUEST_CR0, hw_cr0);
+ 	if (((u32) (old >> 0) != (u32) c->regs[VCPU_REGS_RAX]) ||
+@@ -1385,7 +1385,7 @@ static inline int emulate_grp9(struct x86_emulate_ctxt *ctxt,
+ 		       (u32) c->regs[VCPU_REGS_RBX];
+ 
+ 		rc = ops->cmpxchg_emulated(memop, &old, &new, 8, ctxt->vcpu);
+-		if (rc != 0)
++		if (rc != X86EMUL_CONTINUE)
+ 			return rc;
+ 		ctxt->eflags |= EFLG_ZF;
+ 	}
+@@ -1451,7 +1451,7 @@ static inline int writeback(struct x86_emulate_ctxt *ctxt,
+ 					&c->dst.val,
+ 					c->dst.bytes,
+ 					ctxt->vcpu);
+-		if (rc != 0)
++		if (rc != X86EMUL_CONTINUE)
+ 			return rc;
+ 		break;
+ 	case OP_NONE:
+@@ -1749,7 +1749,7 @@ x86_emulate_insn(struct x86_emulate_ctxt *ctxt, struct x86_emulate_ops *ops)
+ 					&c->src.val,
+ 					c->src.bytes,
+ 					ctxt->vcpu);
+-		if (rc != 0)
++		if (rc != X86EMUL_CONTINUE)
+ 			goto done;
+ 		c->src.orig_val = c->src.val;
+ 	}
+@@ -1768,12 +1768,15 @@ x86_emulate_insn(struct x86_emulate_ctxt *ctxt, struct x86_emulate_ops *ops)
+ 			c->dst.ptr = (void *)c->dst.ptr +
+ 						   (c->src.val & mask) / 8;
+ 		}
+-		if (!(c->d & Mov) &&
+-				   /* optimisation - avoid slow emulated read */
+-		    ((rc = ops->read_emulated((unsigned long)c->dst.ptr,
+-					   &c->dst.val,
+-					  c->dst.bytes, ctxt->vcpu)) != 0))
+-			goto done;
++		if (!(c->d & Mov)) {
++			/* optimisation - avoid slow emulated read */
++			rc = ops->read_emulated((unsigned long)c->dst.ptr,
++						&c->dst.val,
++						c->dst.bytes,
++						ctxt->vcpu);
++			if (rc != X86EMUL_CONTINUE)
++				goto done;
++		}
+ 	}
+ 	c->dst.orig_val = c->dst.val;
+ 
+@@ -2039,11 +2042,12 @@ special_insn:
+ 		c->dst.ptr = (unsigned long *)register_address(c,
+ 						   es_base(ctxt),
+ 						   c->regs[VCPU_REGS_RDI]);
+-		if ((rc = ops->read_emulated(register_address(c,
+-					   seg_override_base(ctxt, c),
+-					c->regs[VCPU_REGS_RSI]),
++		rc = ops->read_emulated(register_address(c,
++						seg_override_base(ctxt, c),
++						c->regs[VCPU_REGS_RSI]),
+ 					&c->dst.val,
+-					c->dst.bytes, ctxt->vcpu)) != 0)
++					c->dst.bytes, ctxt->vcpu);
++		if (rc != X86EMUL_CONTINUE)
+ 			goto done;
+ 		register_address_increment(c, &c->regs[VCPU_REGS_RSI],
+ 				       (ctxt->eflags & EFLG_DF) ? -c->dst.bytes
+@@ -2058,10 +2062,11 @@ special_insn:
+ 		c->src.ptr = (unsigned long *)register_address(c,
+ 				       seg_override_base(ctxt, c),
+ 						   c->regs[VCPU_REGS_RSI]);
+-		if ((rc = ops->read_emulated((unsigned long)c->src.ptr,
+-						&c->src.val,
+-						c->src.bytes,
+-						ctxt->vcpu)) != 0)
++		rc = ops->read_emulated((unsigned long)c->src.ptr,
++					&c->src.val,
++					c->src.bytes,
++					ctxt->vcpu);
++		if (rc != X86EMUL_CONTINUE)
+ 			goto done;
+ 
+ 		c->dst.type = OP_NONE; /* Disable writeback. */
+@@ -2069,10 +2074,11 @@ special_insn:
+ 		c->dst.ptr = (unsigned long *)register_address(c,
+ 						   es_base(ctxt),
+ 						   c->regs[VCPU_REGS_RDI]);
+-		if ((rc = ops->read_emulated((unsigned long)c->dst.ptr,
+-						&c->dst.val,
+-						c->dst.bytes,
+-						ctxt->vcpu)) != 0)
++		rc = ops->read_emulated((unsigned long)c->dst.ptr,
++					&c->dst.val,
++					c->dst.bytes,
++					ctxt->vcpu);
++		if (rc != X86EMUL_CONTINUE)
+ 			goto done;
+ 
+ 		DPRINTF("cmps: mem1=0x%p mem2=0x%p\n", c->src.ptr, c->dst.ptr);
+@@ -2102,12 +2108,13 @@ special_insn:
+ 		c->dst.type = OP_REG;
+ 		c->dst.bytes = (c->d & ByteOp) ? 1 : c->op_bytes;
+ 		c->dst.ptr = (unsigned long *)&c->regs[VCPU_REGS_RAX];
+-		if ((rc = ops->read_emulated(register_address(c,
+-						 seg_override_base(ctxt, c),
+-						 c->regs[VCPU_REGS_RSI]),
+-						 &c->dst.val,
+-						 c->dst.bytes,
+-						 ctxt->vcpu)) != 0)
++		rc = ops->read_emulated(register_address(c,
++						seg_override_base(ctxt, c),
++						c->regs[VCPU_REGS_RSI]),
++					&c->dst.val,
++					c->dst.bytes,
++					ctxt->vcpu);
++		if (rc != X86EMUL_CONTINUE)
+ 			goto done;
+ 		register_address_increment(c, &c->regs[VCPU_REGS_RSI],
+ 				       (ctxt->eflags & EFLG_DF) ? -c->dst.bytes
 -- 
 1.6.5.3
 
