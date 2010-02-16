@@ -1,170 +1,188 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933033Ab0BPQmk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 11:42:40 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:41592 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753376Ab0BPQmK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 11:42:10 -0500
-X-Authority-Analysis: v=1.0 c=1 a=tSXP00O30wgA:10 a=20KFwNOVAAAA:8 a=JfrnYn6hAAAA:8 a=meVymXHHAAAA:8 a=lAAhZFBDmaJ15ZhOu8kA:9 a=mBKlYUeRRWfMCRKhz_AA:7 a=ZrW2ZZTmbwTl2nFvvls-Kl-bOyUA:4 a=jEp0ucaQiEUA:10 a=Zh68SRI7RUMA:10 a=3Rfx1nUSh_UA:10 a=jeBq3FmKZ4MA:10
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Message-Id: <20100216164207.618736078@goodmis.org>
-User-Agent: quilt/0.48-1
-Date: Tue, 16 Feb 2010 11:41:25 -0500
-From: Steven Rostedt <rostedt@goodmis.org>
+	id S933060Ab0BPQou (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 11:44:50 -0500
+Received: from mail.gmx.net ([213.165.64.20]:49759 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1757015Ab0BPQor (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 11:44:47 -0500
+X-Authenticated: #6146996
+X-Provags-ID: V01U2FsdGVkX19ctxslAmdcCxeHxR/Qp2pWqR1EZeai1kobbkAp3s
+	PNAVRZFgXBduSC
+Message-ID: <4B7ACB75.4070907@gmx.ch>
+Date: Tue, 16 Feb 2010 17:44:37 +0100
+From: Jan Sechser <jsechser@gmx.ch>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20091109)
+MIME-Version: 1.0
 To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: [PATCH 3/3] tracing: Add notrace to TRACE_EVENT implementation functions
-References: <20100216164122.891864374@goodmis.org>
-Content-Disposition: inline; filename=0003-tracing-Add-notrace-to-TRACE_EVENT-implementation-fu.patch
+Subject: Sony Ericson w995 does not local net mode
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.51000000000000001
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Rostedt <srostedt@redhat.com>
+Hello guys,
 
-The functions used to implement the TRACE_EVENT macro show up in
-function tracing. This is considered a distraction, and these should
-not be displayed. For example:
 
-     <idle>-0     [000]    57.202149: task_of <-update_stats_wait_end
-     <idle>-0     [000]    57.202149: ftrace_raw_event_sched_stat_wait <-update_stats_wait_end
-     <idle>-0     [000]    57.202150: ftrace_raw_event_id_sched_stat_template <-ftrace_raw_event_sched_stat_wait
-     <idle>-0     [000]    57.202150: sched_stat_wait: comm=sshd pid=2735 delay=19207 [ns]
+Please CC me for Questions and answers
 
-The "ftrace_raw_event_*" traces are just the utility functions used
-by TRACE_EVENT tracepoints.
 
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Requested-by: Peter Zijlstra <peterz@infradead.org>
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
----
- include/trace/ftrace.h |   31 ++++++++++++++++++-------------
- 1 files changed, 18 insertions(+), 13 deletions(-)
+I have got an w995 Sony Ericsson, but i cant make local net via usb with it.
+I uploaded a recent software version: 1215-7995 R1HA036 091216
 
-diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
-index df65b99..09fd9af 100644
---- a/include/trace/ftrace.h
-+++ b/include/trace/ftrace.h
-@@ -199,7 +199,7 @@
- 
- #undef DECLARE_EVENT_CLASS
- #define DECLARE_EVENT_CLASS(call, proto, args, tstruct, assign, print)	\
--static enum print_line_t						\
-+static notrace enum print_line_t					\
- ftrace_raw_output_id_##call(int event_id, const char *name,		\
- 			    struct trace_iterator *iter, int flags)	\
- {									\
-@@ -232,7 +232,7 @@ ftrace_raw_output_id_##call(int event_id, const char *name,		\
- 
- #undef DEFINE_EVENT
- #define DEFINE_EVENT(template, name, proto, args)			\
--static enum print_line_t						\
-+static notrace enum print_line_t					\
- ftrace_raw_output_##name(struct trace_iterator *iter, int flags)	\
- {									\
- 	return ftrace_raw_output_id_##template(event_##name.id,		\
-@@ -241,7 +241,7 @@ ftrace_raw_output_##name(struct trace_iterator *iter, int flags)	\
- 
- #undef DEFINE_EVENT_PRINT
- #define DEFINE_EVENT_PRINT(template, call, proto, args, print)		\
--static enum print_line_t						\
-+static notrace enum print_line_t					\
- ftrace_raw_output_##call(struct trace_iterator *iter, int flags)	\
- {									\
- 	struct trace_seq *s = &iter->seq;				\
-@@ -307,7 +307,7 @@ ftrace_raw_output_##call(struct trace_iterator *iter, int flags)	\
- 
- #undef DECLARE_EVENT_CLASS
- #define DECLARE_EVENT_CLASS(call, proto, args, tstruct, func, print)	\
--static int								\
-+static int notrace							\
- ftrace_define_fields_##call(struct ftrace_event_call *event_call)	\
- {									\
- 	struct ftrace_raw_##call field;					\
-@@ -355,7 +355,7 @@ ftrace_define_fields_##call(struct ftrace_event_call *event_call)	\
- 
- #undef DECLARE_EVENT_CLASS
- #define DECLARE_EVENT_CLASS(call, proto, args, tstruct, assign, print)	\
--static inline int ftrace_get_offsets_##call(				\
-+static inline notrace int ftrace_get_offsets_##call(			\
- 	struct ftrace_data_offsets_##call *__data_offsets, proto)       \
- {									\
- 	int __data_size = 0;						\
-@@ -402,12 +402,14 @@ static inline int ftrace_get_offsets_##call(				\
- 									\
- static void ftrace_profile_##name(proto);				\
- 									\
--static int ftrace_profile_enable_##name(struct ftrace_event_call *unused)\
-+static notrace int							\
-+ftrace_profile_enable_##name(struct ftrace_event_call *unused)		\
- {									\
- 	return register_trace_##name(ftrace_profile_##name);		\
- }									\
- 									\
--static void ftrace_profile_disable_##name(struct ftrace_event_call *unused)\
-+static notrace void							\
-+ftrace_profile_disable_##name(struct ftrace_event_call *unused)		\
- {									\
- 	unregister_trace_##name(ftrace_profile_##name);			\
- }
-@@ -541,7 +543,8 @@ static void ftrace_profile_disable_##name(struct ftrace_event_call *unused)\
- #undef DECLARE_EVENT_CLASS
- #define DECLARE_EVENT_CLASS(call, proto, args, tstruct, assign, print)	\
- 									\
--static void ftrace_raw_event_id_##call(struct ftrace_event_call *event_call, \
-+static notrace void							\
-+ftrace_raw_event_id_##call(struct ftrace_event_call *event_call,	\
- 				       proto)				\
- {									\
- 	struct ftrace_data_offsets_##call __maybe_unused __data_offsets;\
-@@ -578,17 +581,19 @@ static void ftrace_raw_event_id_##call(struct ftrace_event_call *event_call, \
- #undef DEFINE_EVENT
- #define DEFINE_EVENT(template, call, proto, args)			\
- 									\
--static void ftrace_raw_event_##call(proto)				\
-+static notrace void ftrace_raw_event_##call(proto)			\
- {									\
- 	ftrace_raw_event_id_##template(&event_##call, args);		\
- }									\
- 									\
--static int ftrace_raw_reg_event_##call(struct ftrace_event_call *unused)\
-+static notrace int							\
-+ftrace_raw_reg_event_##call(struct ftrace_event_call *unused)		\
- {									\
- 	return register_trace_##call(ftrace_raw_event_##call);		\
- }									\
- 									\
--static void ftrace_raw_unreg_event_##call(struct ftrace_event_call *unused)\
-+static notrace void							\
-+ftrace_raw_unreg_event_##call(struct ftrace_event_call *unused)		\
- {									\
- 	unregister_trace_##call(ftrace_raw_event_##call);		\
- }									\
-@@ -750,7 +755,7 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
- 
- #undef DECLARE_EVENT_CLASS
- #define DECLARE_EVENT_CLASS(call, proto, args, tstruct, assign, print)	\
--static void								\
-+static notrace void							\
- ftrace_profile_templ_##call(struct ftrace_event_call *event_call,	\
- 			    proto)					\
- {									\
-@@ -820,7 +825,7 @@ end_recursion:								\
- 
- #undef DEFINE_EVENT
- #define DEFINE_EVENT(template, call, proto, args)		\
--static void ftrace_profile_##call(proto)			\
-+static notrace void ftrace_profile_##call(proto)		\
- {								\
- 	struct ftrace_event_call *event_call = &event_##call;	\
- 								\
--- 
-1.6.5
 
+
+First for the usb ID guys since the ids are not yet in usbid.txt:
+
+PC mode            (for Windows(r))
+  usb 1-4: New USB device found, idVendor=0fce, idProduct=e112
+  usb 1-4: New USB device strings: Mfr=1, Product=2, SerialNumber=3
+  usb 1-4: Product: Memory Card (MSC)
+  usb 1-4: Manufacturer: Sony Ericsson
+  usb 1-4: SerialNumber: 3582180356368990
+  usb 1-4: configuration #1 chosen from 1 choice
+
+
+USB mem. device        (File transfer)
+  usb 1-4: New USB device found, idVendor=0fce, idProduct=2112
+  usb 1-4: New USB device strings: Mfr=1, Product=2, SerialNumber=3
+  usb 1-4: Product: Sony Ericsson W995
+  usb 1-4: Manufacturer: Sony Ericsson
+  usb 1-4: SerialNumber: 3582180356368990
+  usb 1-4: configuration #1 chosen from 5 choices
+  Initializing USB Mass Storage driver...
+
+Other OS         (E.g. Mac(tm), Linux(tm))
+  usb 1-4: New USB device found, idVendor=0fce, idProduct=d112
+  usb 1-4: New USB device strings: Mfr=1, Product=2, SerialNumber=3
+  usb 1-4: Product: Sony Ericsson W995
+  usb 1-4: Manufacturer: Sony Ericsson
+  usb 1-4: SerialNumber: 3582180356368990
+  usb 1-4: configuration #1 chosen from 1 choice
+
+MTP devices        (E.g. certain car stereos)
+  usb 1-4: New USB device found, idVendor=0fce, idProduct=0112
+  usb 1-4: New USB device strings: Mfr=1, Product=2, SerialNumber=3
+  usb 1-4: Product: W995
+  usb 1-4: Manufacturer: Sony Ericsson
+  usb 1-4: SerialNumber: 3582180356368990
+  usb 1-4: configuration #1 chosen from 1 choice
+
+
+Now USB mass storage works, PC mode doesnt bother me much, but i 
+actually excepted Other OS mode to work, which it does not.
+
+following are the logs:
+Feb  6 18:40:01 jebian2 kernel: [  247.240026] usb 1-4: new high speed 
+USB device using ehci_hcd and address 6
+Feb  6 18:40:01 jebian2 kernel: [  247.376970] usb 1-4: New USB device 
+found, idVendor=0fce, idProduct=d112
+Feb  6 18:40:01 jebian2 kernel: [  247.376977] usb 1-4: New USB device 
+strings: Mfr=1, Product=2, SerialNumber=3
+Feb  6 18:40:01 jebian2 kernel: [  247.376983] usb 1-4: Product: Sony 
+Ericsson W995
+Feb  6 18:40:01 jebian2 kernel: [  247.376987] usb 1-4: Manufacturer: 
+Sony Ericsson
+Feb  6 18:40:01 jebian2 kernel: [  247.376991] usb 1-4: SerialNumber: 
+3582180356368990
+Feb  6 18:40:01 jebian2 kernel: [  247.378726] usb 1-4: configuration #1 
+chosen from 1 choice
+Feb  6 18:40:01 jebian2 kernel: [  247.487110] cdc_wdm 1-4:1.7: 
+cdc-wdm0: USB WDM device
+Feb  6 18:40:01 jebian2 kernel: [  247.487190] usbcore: registered new 
+interface driver cdc_wdm
+Feb  6 18:40:01 jebian2 kernel: [  247.502990] cdc_acm 1-4:1.1: ttyACM0: 
+USB ACM device
+Feb  6 18:40:01 jebian2 kernel: [  247.515010] cdc_acm 1-4:1.3: ttyACM1: 
+USB ACM device
+Feb  6 18:40:01 jebian2 kernel: [  247.531016] usbcore: registered new 
+interface driver cdc_acm
+Feb  6 18:40:01 jebian2 kernel: [  247.531024] cdc_acm: v0.26:USB 
+Abstract Control Model driver for USB modems and ISDN adapters
+Feb  6 18:40:01 jebian2 kernel: [  247.536755] usbcore: registered new 
+interface driver cdc_ether
+Feb  6 18:40:01 jebian2 kernel: [  247.543927] usb 1-4: unsupported MDLM 
+descriptors
+Feb  6 18:40:01 jebian2 kernel: [  247.544394] usbcore: registered new 
+interface driver zaurus
+Feb  6 18:40:01 jebian2 modem-manager: (ttyACM1) opening serial device...
+Feb  6 18:40:01 jebian2 modem-manager: (ttyACM1): probe requested by 
+plugin 'Generic'
+Feb  6 18:40:01 jebian2 modem-manager: (ttyACM0) opening serial device...
+Feb  6 18:40:01 jebian2 modem-manager: (ttyACM0): probe requested by 
+plugin 'Generic'
+Feb  6 18:40:03 jebian2 modem-manager: (ttyACM1) closing serial device...
+Feb  6 18:40:03 jebian2 modem-manager: (Generic): GSM modem 
+/sys/devices/pci0000:00/0000:00:02.1/usb1/1-4 claimed port ttyACM1
+Feb  6 18:40:03 jebian2 modem-manager: Added modem 
+/sys/devices/pci0000:00/0000:00:02.1/usb1/1-4
+Feb  6 18:40:03 jebian2 modem-manager: Exported modem 
+/sys/devices/pci0000:00/0000:00:02.1/usb1/1-4 as 
+/org/freedesktop/ModemManager/Modems/0
+Feb  6 18:40:03 jebian2 modem-manager: (ttyACM0) closing serial device...
+Feb  6 18:40:03 jebian2 modem-manager: (Generic): GSM modem 
+/sys/devices/pci0000:00/0000:00:02.1/usb1/1-4 claimed port ttyACM0
+Feb  6 18:40:03 jebian2 NetworkManager: <info>  (ttyACM1): new GSM 
+device (driver: 'cdc_acm')
+Feb  6 18:40:03 jebian2 NetworkManager: <info>  (ttyACM1): exported as 
+/org/freedesktop/NetworkManager/Devices/2
+Feb  6 18:40:03 jebian2 NetworkManager: <info>  (ttyACM1): now managed
+Feb  6 18:40:03 jebian2 NetworkManager: <info>  (ttyACM1): device state 
+change: 1 -> 2 (reason 2)
+Feb  6 18:40:03 jebian2 NetworkManager: <info>  (ttyACM1): deactivating 
+device (reason: 2).
+Feb  6 18:40:03 jebian2 NetworkManager: <info>  (ttyACM1): device state 
+change: 2 -> 3 (reason 0)
+
+
+when removing the device
+Feb  6 18:40:33 jebian2 kernel: [  279.107138] usb 1-4: USB disconnect, 
+address 6
+Feb  6 18:40:33 jebian2 kernel: [  279.116777] ehci_hcd 0000:00:02.1: 
+dma_pool_free buffer-2048, ffff880052624000/52624000 (bad dma)
+Feb  6 18:40:33 jebian2 modem-manager: Removed modem 
+/sys/devices/pci0000:00/0000:00:02.1/usb1/1-4
+Feb  6 18:40:33 jebian2 NetworkManager: <info>  (ttyACM1): now unmanaged
+Feb  6 18:40:33 jebian2 NetworkManager: <info>  (ttyACM1): device state 
+change: 3 -> 1 (reason 36)
+Feb  6 18:40:33 jebian2 NetworkManager: <info>  (ttyACM1): cleaning up...
+Feb  6 18:40:33 jebian2 NetworkManager: <info>  (ttyACM1): taking down 
+device.
+
+
+dmesg orig:
+[  247.240026] usb 1-4: new high speed USB device using ehci_hcd and 
+address 6
+[  247.376970] usb 1-4: New USB device found, idVendor=0fce, idProduct=d112
+[  247.376977] usb 1-4: New USB device strings: Mfr=1, Product=2, 
+SerialNumber=3
+[  247.376983] usb 1-4: Product: Sony Ericsson W995
+[  247.376987] usb 1-4: Manufacturer: Sony Ericsson
+[  247.376991] usb 1-4: SerialNumber: 3582180356368990
+[  247.378726] usb 1-4: configuration #1 chosen from 1 choice
+[  247.487110] cdc_wdm 1-4:1.7: cdc-wdm0: USB WDM device
+[  247.487190] usbcore: registered new interface driver cdc_wdm
+[  247.502990] cdc_acm 1-4:1.1: ttyACM0: USB ACM device
+[  247.515010] cdc_acm 1-4:1.3: ttyACM1: USB ACM device
+[  247.531016] usbcore: registered new interface driver cdc_acm
+[  247.531024] cdc_acm: v0.26:USB Abstract Control Model driver for USB 
+modems and ISDN adapters
+[  247.536755] usbcore: registered new interface driver cdc_ether
+[  247.543927] usb 1-4: unsupported MDLM descriptors
+[  247.544394] usbcore: registered new interface driver zaurus
+[  279.107138] usb 1-4: USB disconnect, address 6
+[  279.116777] ehci_hcd 0000:00:02.1: dma_pool_free buffer-2048, 
+ffff880052624000/52624000 (bad dma)
+
+
+
+I guess you know better whats wrong than me.
+
+
+cheers
+
+jan
 
