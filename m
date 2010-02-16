@@ -1,47 +1,92 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932357Ab0BPAJ6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 19:09:58 -0500
-Received: from mail-yw0-f176.google.com ([209.85.211.176]:36999 "EHLO
-	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932293Ab0BPAJ5 (ORCPT
+	id S932367Ab0BPAK1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 19:10:27 -0500
+Received: from smtp-out.google.com ([216.239.44.51]:54713 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932293Ab0BPAKY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 19:09:57 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=wwi3la1njC68IFhYqLsrNSa4JJhIkhQUPjs+KEkQBkFUiW/WVXmYCHqIuhdzV/PW6t
-         BimSW8/cDuCJL3MEtIN1PmscPz1CecApu01Kfh8eg402wAkL/zfzTx5iZEoH+HDxnlbF
-         /2JHgoAvFXIypo264u85NWolrWEwyVDhX8hW4=
-Message-ID: <4B79E251.3020005@lwfinger.net>
-Date: Mon, 15 Feb 2010 18:09:53 -0600
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100111 SUSE/3.0.1-1.1 Thunderbird/3.0.1
+	Mon, 15 Feb 2010 19:10:24 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=ILVSARqOJvTsCOwIELPG/ng68XA7EZwY9PGwMUkrYDx8yvL0Iruf1I+YBie8g0zHp
+	NWKb50S717nORDz1h16SA==
+Date: Mon, 15 Feb 2010 16:10:15 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
+       Nick Piggin <npiggin@suse.de>, Andrea Arcangeli <aarcange@redhat.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch -mm 8/9 v2] oom: avoid oom killer for lowmem
+ allocations
+In-Reply-To: <20100216085706.c7af93e1.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.1002151606320.14484@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.1002151416470.26927@chino.kir.corp.google.com> <alpine.DEB.2.00.1002151419260.26927@chino.kir.corp.google.com> <20100216085706.c7af93e1.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, mb@bu3sch.de,
-       davem@davemloft.net, stefano.brivio@polimi.it,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH -mm] ssb: open-code dma_alloc_coherent
-References: <20100215142111R.fujita.tomonori@lab.ntt.co.jp>	<4B78EE6A.3010207@lwfinger.net> <20100215162426V.fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20100215162426V.fujita.tomonori@lab.ntt.co.jp>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/15/2010 01:25 AM, FUJITA Tomonori wrote:
-> 2.6.33-rc8:
-> 
-> git://git.kernel.org/pub/scm/linux/kernel/git/tomo/linux-2.6-misc.git pending
-> 
-> The ssb patch depends on the latest eight patches in the tree:
-> 
-> http://marc.info/?l=linux-kernel&m=126596737604808&w=2
+On Tue, 16 Feb 2010, KAMEZAWA Hiroyuki wrote:
 
-The DMA changes work on i386 architecture with wireless devices in Cardbus (PCI)
-format. Both b43legacy and b43 were tested.
+> > If memory has been depleted in lowmem zones even with the protection
+> > afforded to it by /proc/sys/vm/lowmem_reserve_ratio, it is unlikely that
+> > killing current users will help.  The memory is either reclaimable (or
+> > migratable) already, in which case we should not invoke the oom killer at
+> > all, or it is pinned by an application for I/O.  Killing such an
+> > application may leave the hardware in an unspecified state and there is
+> > no guarantee that it will be able to make a timely exit.
+> > 
+> > Lowmem allocations are now failed in oom conditions so that the task can
+> > perhaps recover or try again later.  Killing current is an unnecessary
+> > result for simply making a GFP_DMA or GFP_DMA32 page allocation and no
+> > lowmem allocations use the now-deprecated __GFP_NOFAIL bit so retrying is
+> > unnecessary.
+> > 
+> > Previously, the heuristic provided some protection for those tasks with 
+> > CAP_SYS_RAWIO, but this is no longer necessary since we will not be
+> > killing tasks for the purposes of ISA allocations.
+> > 
+> > high_zoneidx is gfp_zone(gfp_flags), meaning that ZONE_NORMAL will be the
+> > default for all allocations that are not __GFP_DMA, __GFP_DMA32,
+> > __GFP_HIGHMEM, and __GFP_MOVABLE on kernels configured to support those
+> > flags.  Testing for high_zoneidx being less than ZONE_NORMAL will only
+> > return true for allocations that have either __GFP_DMA or __GFP_DMA32.
+> > 
+> > Acked-by: Rik van Riel <riel@redhat.com>
+> > Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> > Signed-off-by: David Rientjes <rientjes@google.com>
+> > ---
+> >  mm/page_alloc.c |    3 +++
+> >  1 files changed, 3 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> > --- a/mm/page_alloc.c
+> > +++ b/mm/page_alloc.c
+> > @@ -1914,6 +1914,9 @@ rebalance:
+> >  	 * running out of options and have to consider going OOM
+> >  	 */
+> >  	if (!did_some_progress) {
+> > +		/* The oom killer won't necessarily free lowmem */
+> > +		if (high_zoneidx < ZONE_NORMAL)
+> > +			goto nopage;
+> >  		if ((gfp_mask & __GFP_FS) && !(gfp_mask & __GFP_NORETRY)) {
+> >  			if (oom_killer_disabled)
+> >  				goto nopage;
+> 
+> WARN_ON((high_zoneidx < ZONE_NORMAL) && (gfp_mask & __GFP_NOFAIL))
+> plz.
+> 
 
-Larry
+As I already explained when you first brought this up, the possibility of 
+not invoking the oom killer is not unique to GFP_DMA, it is also possible 
+for GFP_NOFS.  Since __GFP_NOFAIL is deprecated and there are no current 
+users of GFP_DMA | __GFP_NOFAIL, that warning is completely unnecessary.  
+We're not adding any additional __GFP_NOFAIL allocations.
