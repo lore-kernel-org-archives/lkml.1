@@ -1,70 +1,81 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756155Ab0BPIvO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 03:51:14 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:33770 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755492Ab0BPIvN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 03:51:13 -0500
-Date: Tue, 16 Feb 2010 08:50:59 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Andrea Arcangeli <aarcange@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Adam Litke <agl@us.ibm.com>, Avi Kivity <avi@redhat.com>,
-       David Rientjes <rientjes@google.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH 03/12] Export unusable free space index via
-	/proc/pagetypeinfo
-Message-ID: <20100216085058.GD26086@csn.ul.ie>
-References: <20100216152106.72FA.A69D9226@jp.fujitsu.com> <20100216083612.GA26086@csn.ul.ie> <20100216173832.730F.A69D9226@jp.fujitsu.com>
+	id S1756200Ab0BPIw2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 03:52:28 -0500
+Received: from devils.ext.ti.com ([198.47.26.153]:33916 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753670Ab0BPIw0 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 03:52:26 -0500
+From: "Gadiyar, Anand" <gadiyar@ti.com>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       "Shilimkar, Santosh" <santosh.shilimkar@ti.com>
+CC: Catalin Marinas <catalin.marinas@arm.com>, Pavel Machek <pavel@ucw.cz>,
+       Greg KH <greg@kroah.com>,
+       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       Ming Lei <tom.leiming@gmail.com>,
+       Sebastian Siewior <bigeasy@linutronix.de>,
+       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       "Mankad, Maulik Ojas" <x0082077@ti.com>
+Date: Tue, 16 Feb 2010 14:21:48 +0530
+Subject: RE: USB mass storage and ARM cache coherency
+Thread-Topic: USB mass storage and ARM cache coherency
+Thread-Index: Acqu5HVbXgqk2Cw4TXif9yrV+0s/xwAACUeA
+Message-ID: <5A47E75E594F054BAF48C5E4FC4B92AB03215B07FF@dbde02.ent.ti.com>
+References: <20100208065519.GE1290@ucw.cz>
+ <1265622676.4020.19.camel@pc1117.cambridge.arm.com>
+ <20100208105209.GA31671@atrey.karlin.mff.cuni.cz>
+ <1265628483.4020.63.camel@pc1117.cambridge.arm.com>
+ <EAF47CD23C76F840A9E7FCE10091EFAB02C3CF7D50@dbde02.ent.ti.com>
+ <20100216084442.GA3212@n2100.arm.linux.org.uk>
+In-Reply-To: <20100216084442.GA3212@n2100.arm.linux.org.uk>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20100216173832.730F.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 16, 2010 at 05:41:39PM +0900, KOSAKI Motohiro wrote:
-> > On Tue, Feb 16, 2010 at 04:03:29PM +0900, KOSAKI Motohiro wrote:
-> > > > Unusuable free space index is a measure of external fragmentation that
-> > > > takes the allocation size into account. For the most part, the huge page
-> > > > size will be the size of interest but not necessarily so it is exported
-> > > > on a per-order and per-zone basis via /proc/pagetypeinfo.
-> > > 
-> > > Hmmm..
-> > > /proc/pagetype have a machine unfriendly format. perhaps, some user have own ugly
-> > > /proc/pagetype parser. It have a little risk to break userland ABI.
-> > > 
+Russell King - ARM Linux wrote:
+> On Tue, Feb 16, 2010 at 01:27:53PM +0530, Shilimkar, Santosh wrote:
+> > Continuing on the USB issue w.r.t cache coherency, the usb host
+> > code is violating the buffer ownership rules of streaming APIs from
+> > dma and non-dma transfers point if view.
 > > 
-> > It's very low risk. I doubt there are machine parsers of
-> > /proc/pagetypeinfo because there are very few machine-orientated actions
-> > that can be taken based on the information. It's more informational for
-> > a user if they were investigating fragmentation problems.
-> > 
-> > > I have dumb question. Why can't we use another file?
-> > 
-> > I could. What do you suggest?
+> > We have a below temporary patch to get around the issue and probably it
+> > needs to be fixed in the right way in the stack because some controllers
+> > may not have PIO option even for control transfers. (e.g. Synopsis EHCI
+> > controller)
 > 
-> I agree it's low risk. but personally I hope fragmentation ABI keep very stable because
-> I expect some person makes userland compaction daemon. (read fragmentation index
-> from /proc and write /proc/compact_memory if necessary).
-> then, if possible, I hope fragmentation info have individual /proc file.
+>         if (usb_endpoint_xfer_control(&urb->ep->desc)
+>             && !(urb->transfer_flags & URB_NO_SETUP_DMA_MAP)) {
+>                 if (hcd->self.uses_dma) {		<=================
+>                         urb->setup_dma = dma_map_single(
+>                                         hcd->self.controller,
+>                                         urb->setup_packet,
+>                                         sizeof(struct usb_ctrlrequest),
+>                                         DMA_TO_DEVICE);
 > 
+> struct usb_hcd *usb_create_hcd (const struct hc_driver *driver,
+>                 struct device *dev, const char *bus_name)
+> {
+> ...
+>         hcd->self.uses_dma = (dev->dma_mask != NULL);
+> 
+> Is it easier to make sure that PIO devices don't have dev->dma_mask set?
 
-I'd be somewhat surprised if there was an active userland compaction daemon
-because I'd expect them to be depending on direct compaction.  Userspace
-compaction is more likely to be an all-or-nothing affair and confined to
-NUMA nodes if they are being used as containers. If a compaction daemon was
-to exist, I'd have expected it to be in-kernel because the triggers from
-userspace are so coarse.
+Not really. For instance, in the case of the DMA engine in the MUSB
+controller in OMAP3, we can only use DMA with endpoints other than
+EP0, and EP0 is what is used for control transfers.
 
-Still, I can break out the indices into separate files to cover all the
-bases.
+It's not PIO for all the endpoints or DMA for all of them.
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+- Anand
