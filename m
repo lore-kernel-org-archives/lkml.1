@@ -1,57 +1,41 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755449Ab0BPI0T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 03:26:19 -0500
-Received: from mail-px0-f191.google.com ([209.85.216.191]:35771 "EHLO
-	mail-px0-f191.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751246Ab0BPI0Q (ORCPT
+	id S1755572Ab0BPI2S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 03:28:18 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:49543 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755238Ab0BPI2R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 03:26:16 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=ZkWVN0E2mItj/QTC1uhWGt0RHm1zh+eEEZAl7UA9lUp/EpAPquKCYvfAOv/pqnqgRi
-         ptDAkzDDNRqYqPVgAJnljVl4wIZXThsbU6ikGr1IZJcuSCkMofxUDs6GZlrxNWhaROeK
-         EuLlaW6lZ+iBro23plfls9rPTsBE+H7C6vn4Q=
-Message-ID: <4B7A5893.9010809@gmail.com>
-Date: Tue, 16 Feb 2010 17:34:27 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	Tue, 16 Feb 2010 03:28:17 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4B7A559D.7090709@s5r6.in-berlin.de>
+Date: Tue, 16 Feb 2010 09:21:49 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.23) Gecko/20100102 SeaMonkey/1.1.18
 MIME-Version: 1.0
-To: Bart Hartgers <bart.hartgers@gmail.com>
-CC: Jeff Garzik <jgarzik@pobox.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/1] Delay on vt6420 when starting ATAPI DMA write
-References: <20100214120449.503204189@gmail.com> <20100214120819.947320201@gmail.com>
-In-Reply-To: <20100214120819.947320201@gmail.com>
-X-Enigmail-Version: 1.0
+To: Tom Rini <trini@kernel.crashing.org>
+CC: Pavel Machek <pavel@ucw.cz>, mirrors@kernel.org, lasse.collin@tukaani.org,
+       linux-kernel <linux-kernel@vger.kernel.org>, users@kernel.org,
+       "FTPAdmin Kernel.org" <ftpadmin@kernel.org>,
+       Jean Delvare <khali@linux-fr.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Willy Tarreau <w@1wt.eu>
+Subject: Re: [kernel.org users] XZ Migration discussion
+References: <alpine.LFD.2.00.1002120714320.7792@localhost.localdomain> <4B75A5DC.3060803@kernel.org> <20100212202357.6363d5af@hyperion.delvare> <20100212230702.GA10266@1wt.eu> <20100213091748.276821e1@hyperion.delvare> <4B767810.5020707@s5r6.in-berlin.de> <20100214171327.GF1578@ucw.cz> <4B7833FD.2010107@s5r6.in-berlin.de> <20100214205117.GE2453@elf.ucw.cz> <4B790A55.8070805@s5r6.in-berlin.de> <20100215233210.GB2147@smtp.west.cox.net>
+In-Reply-To: <20100215233210.GB2147@smtp.west.cox.net>
+X-Enigmail-Version: 0.96.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/14/2010 09:04 PM, Bart Hartgers wrote:
-> When writing a disc on certain lite-on dvd-writers (also rebadged 
-> as optiarc/LG/...) connected to a vt6420, the ATAPI CDB ends
-> up in the datastream and on the disc, causing silent corruption. 
-> Delaying between sending the CDB and starting DMA seems to 
-> prevent this.
-> 
-> I do not know if there are burners that do not suffer from
-> this, but the patch should be safe for those as well.
-> 
-> There are many reports of this issue, but AFAICT no solution was 
-> found before. For example:
-> http://lkml.indiana.edu/hypermail/linux/kernel/0802.3/0561.html
-> 
-> Signed-off-by: Bart Hartgers <bart.hartgers@gmail.com>
+Tom Rini wrote:
+> That's part of the transition problem, folks quite
+> likely have access, easily, to a decompressor but don't know what it is
 
-Acked-by: Tejun Heo <tj@kernel.org>
-
-Thanks!
-
+Naturally.  Information on it is quickly found online though.
 -- 
-tejun
+Stefan Richter
+-=====-==-=- --=- =----
+http://arcgraph.de/sr/
