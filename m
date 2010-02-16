@@ -1,51 +1,74 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932776Ab0BPRM7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 12:12:59 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:61108 "EHLO mx1.redhat.com"
+	id S932844Ab0BPRRQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 12:17:16 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:62778 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756014Ab0BPRM6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 12:12:58 -0500
-Message-ID: <4B7AD207.20604@redhat.com>
-Date: Tue, 16 Feb 2010 12:12:39 -0500
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Lightning/1.0pre Thunderbird/3.0
+	id S932304Ab0BPRRO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 12:17:14 -0500
+Date: Tue, 16 Feb 2010 18:16:14 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] x86: set_personality_ia32() abuses TS_COMPAT
+Message-ID: <20100216171614.GA23503@redhat.com>
+References: <20100215161752.GA19962@redhat.com> <4B799C3F.7010308@zytor.com> <20100215194123.96D49FC3@magilla.sf.frob.com> <4B79B202.5090006@zytor.com> <20100216101903.GA1057@redhat.com> <20100216102332.GL21783@one.firstfloor.org> <20100216140126.GA16448@redhat.com> <20100216140242.GC16448@redhat.com> <alpine.LFD.2.00.1002160738530.18830@localhost.localdomain>
 MIME-Version: 1.0
-To: Chris Friesen <cfriesen@nortel.com>
-CC: Minchan Kim <minchan.kim@gmail.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org, Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: tracking memory usage/leak in "inactive" field in /proc/meminfo?
-References: <4B71927D.6030607@nortel.com>	 <20100210093140.12D9.A69D9226@jp.fujitsu.com>	 <4B72E74C.9040001@nortel.com>	 <28c262361002101645g3fd08cc7t6a72d27b1f94db62@mail.gmail.com>	 <4B74524D.8080804@nortel.com> <28c262361002111838q7db763feh851a9bea4fdd9096@mail.gmail.com> <4B7504D2.1040903@nortel.com> <4B796D31.7030006@nortel.com> <4B797D93.5090307@redhat.com> <4B7ACD4A.10101@nortel.com>
-In-Reply-To: <4B7ACD4A.10101@nortel.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.1002160738530.18830@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/16/2010 11:52 AM, Chris Friesen wrote:
-> On 02/15/2010 11:00 AM, Rik van Riel wrote:
-
->> Removal from the LRU is done from the page freeing code, on
->> the final free of the page.
-
-> There are a bunch of inline functions involved, but I think the chain
-> from page_remove_rmap() back up to unmap_vmas() looks like this:
+On 02/16, Linus Torvalds wrote:
 >
-> page_remove_rmap
-> zap_pte_range
-> zap_pmd_range
-> zap_pud_range
-> unmap_page_range
-> unmap_vmas
+> On Tue, 16 Feb 2010, Oleg Nesterov wrote:
+> >
+> > In fact I'd say this is not right, but fortunetely do_execve() can
+> > never return something which could confuse syscall_get_error().
+> > And apart from do_signal() we never check TS_COMPAT during return
+> > to user-mode.
 >
-> So in this scenario, where do the pages actually get removed from the
-> LRU list (assuming that they're not in use by anyone else)?
+> But 'do_signal()' _can_ happen the first thing after an execve(), no?
 
-__page_cache_release
+this is what I meant,
 
--- 
-All rights reversed.
+> And after we have switched to 32-bit mode, we _are_ inside a 32-bit system
+> call: the execve has "changed" from a 64-bit one to a 32-bit one.
+
+And this is what I do not understand, we are still in 64-bit execve.
+
+With ot without TS_COMPAT we take the same return path and I can't
+see why should we sign-extend ->ax. But I didn't claim this is wrong,
+and it is possible I missed something.
+
+> So I really don't understand why you dislike TS_COMPAT here.
+
+The only reason I dislike TS_COMPAT is that I spent a lot of time
+trying to understand the necessity to set it here when I tried to
+understand the basics of compat issues.
+
+> I understand not liking TS_COMPAT in the first place (it would be nice to
+> not have that flag at all), but considering that it exists, and it is
+> supposed to be set while in 32-bit system calls, setting it on a 32-bit
+> execve() seems to be the RightThing(tm) to do.
+
+OK, please ignore the patch then.
+
+As I said, only the first patch probably makes sense, and even it
+was not tested.
+
+
+
+Cough. And since I already made a lot of noise...
+
+Now that we always call setup_new_exec() which does
+arch_pick_mmap_layout(), what is the point of
+exec_mmap()->arch_pick_mmap_layout() ?
+
+Oleg.
+
