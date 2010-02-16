@@ -1,83 +1,90 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933293Ab0BPWpR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 17:45:17 -0500
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:44730 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933136Ab0BPWpO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 17:45:14 -0500
-From: Serge Hallyn <serue@us.ibm.com>
-To: serue@us.ibm.com
-Cc: Greg KH <greg@kroah.com>, rsc@swtch.com,
-       Ashwin Ganti <ashwin.ganti@gmail.com>, ericvh@gmail.com,
-       devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org,
-       Ron Minnich <rminnich@gmail.com>
-Subject: [PATCH 1/8] p9auth: set fsuid
-Date: Tue, 16 Feb 2010 16:44:54 -0600
-Message-Id: <1266360301-30081-1-git-send-email-serue@us.ibm.com>
-X-Mailer: git-send-email 1.6.3.3
+	id S933367Ab0BPWvN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 17:51:13 -0500
+Received: from hqemgate03.nvidia.com ([216.228.112.145]:7219 "EHLO
+	hqemgate03.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933181Ab0BPWvK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 17:51:10 -0500
+X-Greylist: delayed 300 seconds by postgrey-1.27 at vger.kernel.org; Tue, 16 Feb 2010 17:51:10 EST
+X-PGP-Universal: processed;
+	by hqnvupgp02.nvidia.com on Tue, 16 Feb 2010 14:46:09 -0800
+Subject: Re: [PATCH] ahci: disable FPDMA auto-activate optimization on
+ NVIDIA AHCI
+From: Prajakta Gudadhe <pgudadhe@nvidia.com>
+To: Robert Hancock <hancockrwd@gmail.com>, pgudadhe@nvidia.com
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       ide <linux-ide@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>,
+       Mike Cui <cuicui@gmail.com>, Peer Chen <pchen@nvidia.com>
+In-Reply-To: <4B5FC213.1060601@gmail.com>
+References: <4B5FC213.1060601@gmail.com>
+Date: Tue, 16 Feb 2010 17:46:39 -0500
+Message-ID: <1266360399.2257.50.camel@pgudadhe-dt3.nvidia.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+X-OriginalArrivalTime: 16 Feb 2010 22:46:08.0914 (UTC) FILETIME=[D4B62F20:01CAAF59]
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Serge E. Hallyn <serue@us.ibm.com>
+We are currently investigating this MCP79 issue when FPDMA auto activate
+feature is enabled. Meanwhile, this patch looks good to me.
 
-fsuid should always trail euid changes.  So p9auth should
-set fsuid as well when it sets ruid and euid.  Whether the
-suid should also be set is an open question - keeping the
-old uid in suid may be useful, or may just serve to trick
-lazy userspace.
+--Prajakta Gudadhe
 
-Note that so long as we do not also set suid, the setuid_fixup()
-code will not (when we later switch to setresuid()) fully
-fill/clear capability sets.  So while I had previously thought
-that keeping suid unchanged would be useful, I think it is
-better to change all uids.
+On Tue, 2010-01-26 at 20:33 -0800, Robert Hancock wrote:
+> Mike Cui reported that his system with an NVIDIA MCP79 (aka MCP7A) chipset
+> stopped working with 2.6.32. The problem appears to be that 2.6.32 now enables
+> the FPDMA auto-activate optimization in the ahci driver. The drive works fine
+> with this enabled on an Intel AHCI so this appears to be a chipset bug.
+> Since MCP79 is a fairly recent NVIDIA chipset and we don't have any info on
+> whether any other NVIDIA chipsets have this issue, disable FPDMA AA optimization
+> on all NVIDIA AHCI controllers for now.
+> 
+> Should address http://bugzilla.kernel.org/show_bug.cgi?id=14922
+> 
+> Signed-off-by: Robert Hancock <hancockrwd@gmail.com>
+> 
+> ---
+> 
+> Mike, can you test this out and make sure this resolves the problem for you?
+> 
+> diff --git a/drivers/ata/ahci.c b/drivers/ata/ahci.c
+> index b8bea10..47e57dc 100644
+> --- a/drivers/ata/ahci.c
+> +++ b/drivers/ata/ahci.c
+> @@ -3067,8 +3067,16 @@ static int ahci_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
+>  	ahci_save_initial_config(pdev, hpriv);
+>  
+>  	/* prepare host */
+> -	if (hpriv->cap & HOST_CAP_NCQ)
+> -		pi.flags |= ATA_FLAG_NCQ | ATA_FLAG_FPDMA_AA;
+> +	if (hpriv->cap & HOST_CAP_NCQ) {
+> +		pi.flags |= ATA_FLAG_NCQ;
+> +		/* Auto-activate optimization is supposed to be supported on
+> +		   all AHCI controllers indicating NCQ support, but it seems
+> +		   to be broken at least on some NVIDIA MCP79 chipsets.
+> +		   Until we get info on which NVIDIA chipsets don't have this
+> +		   issue, if any, disable AA on all NVIDIA AHCIs. */
+> +		if (pdev->vendor != PCI_VENDOR_ID_NVIDIA)
+> +			pi.flags |= ATA_FLAG_FPDMA_AA;
+> +	}
+>  
+>  	if (hpriv->cap & HOST_CAP_PMP)
+>  		pi.flags |= ATA_FLAG_PMP;
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-ide" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
-Cc: Greg KH <greg@kroah.com>
-cc: rsc@swtch.com
-Cc: Ashwin Ganti <ashwin.ganti@gmail.com>
-Cc: ericvh@gmail.com
-Cc: devel@linuxdriverproject.org
-Cc: linux-kernel@vger.kernel.org
-Cc: Ron Minnich <rminnich@gmail.com>
----
- drivers/staging/p9auth/p9auth.c |   14 +++++++++-----
- 1 files changed, 9 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/staging/p9auth/p9auth.c b/drivers/staging/p9auth/p9auth.c
-index db79626..70ef45b 100644
---- a/drivers/staging/p9auth/p9auth.c
-+++ b/drivers/staging/p9auth/p9auth.c
-@@ -275,10 +275,14 @@ static ssize_t cap_write(struct file *filp, const char __user *buf,
- 					goto out;
- 				}
- 				/*
--				 * What all id's need to be changed here? uid,
--				 * euid, fsid, savedids ??  Currently I am
--				 * changing the effective user id since most of
--				 * the authorisation decisions are based on it
-+				 * Change all uids.  It might be useful to
-+				 * keep suid unchanged, however that will
-+				 * mean that changing from uid=0 to uid=!0
-+				 * pP is not emptied (only pE is), and when
-+				 * changing from  uid=!0 to  uid=0, sets are
-+				 * not filled.  They will be correct after
-+				 * the next exec, but this is IMO not
-+				 * sufficient.  So change all uids.
- 				 */
- 				new = prepare_creds();
- 				if (!new) {
-@@ -286,7 +290,7 @@ static ssize_t cap_write(struct file *filp, const char __user *buf,
- 					goto out;
- 				}
- 				new->uid = (uid_t) target_int;
--				new->euid = (uid_t) target_int;
-+				new->suid = new->fsuid = new->euid = new->uid;
- 				retval = commit_creds(new);
- 				if (retval)
- 					goto out;
--- 
-1.6.1
 
+-----------------------------------------------------------------------------------
+This email message is for the sole use of the intended recipient(s) and may contain
+confidential information.  Any unauthorized review, use, disclosure or distribution
+is prohibited.  If you are not the intended recipient, please contact the sender by
+reply email and destroy all copies of the original message.
+-----------------------------------------------------------------------------------
