@@ -1,80 +1,86 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932466Ab0BPBOL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 15 Feb 2010 20:14:11 -0500
-Received: from smtp-out.google.com ([216.239.44.51]:9457 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932410Ab0BPBOJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 15 Feb 2010 20:14:09 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=BnF/f8wV6XKeUKPqSf6HXsm5D4/ReeexJ5Jb8YjxPn/AP77XdfCll5YKOiEHqCaaK
-	fFgWi3yBGR4VFPagRsE2g==
-Date: Mon, 15 Feb 2010 17:13:57 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-cc: Rik van Riel <riel@redhat.com>, Nick Piggin <npiggin@suse.de>,
-       Andrea Arcangeli <aarcange@redhat.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: [patch] mm: add comment about deprecation of __GFP_NOFAIL
-In-Reply-To: <20100216092147.85ef7619.kamezawa.hiroyu@jp.fujitsu.com>
-Message-ID: <alpine.DEB.2.00.1002151712290.23480@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.1002151416470.26927@chino.kir.corp.google.com> <alpine.DEB.2.00.1002151419260.26927@chino.kir.corp.google.com> <20100216085706.c7af93e1.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.1002151606320.14484@chino.kir.corp.google.com>
- <20100216092147.85ef7619.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+	id S932480Ab0BPBVH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 15 Feb 2010 20:21:07 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:34809 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932437Ab0BPBVE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 15 Feb 2010 20:21:04 -0500
+Subject: Re: [git pull] drm
+From: Ben Skeggs <bskeggs@redhat.com>
+Reply-To: bskeggs@redhat.com
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+Cc: Dave Airlie <airlied@linux.ie>, torvalds@linux-foundation.org,
+       dri-devel@lists.sf.net, linux-kernel@vger.kernel.org,
+       Maarten Maathuis <madman2003@gmail.com>,
+       Marcin Slusarz <marcin.slusarz@gmail.com>
+In-Reply-To: <201002152355.03161.borntraeger@de.ibm.com>
+References: <alpine.DEB.2.00.1002110417200.516@skynet.skynet.ie>
+	 <201002151053.48681.borntraeger@de.ibm.com>
+	 <201002152355.03161.borntraeger@de.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 16 Feb 2010 11:19:37 +1000
+Message-ID: <1266283177.24236.1.camel@nisroch>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Feb 2010, KAMEZAWA Hiroyuki wrote:
-
-> > As I already explained when you first brought this up, the possibility of 
-> > not invoking the oom killer is not unique to GFP_DMA, it is also possible 
-> > for GFP_NOFS.  Since __GFP_NOFAIL is deprecated and there are no current 
-> > users of GFP_DMA | __GFP_NOFAIL, that warning is completely unnecessary.  
-> > We're not adding any additional __GFP_NOFAIL allocations.
-> >
+On Mon, 2010-02-15 at 23:55 +0100, Christian Borntraeger wrote:
+> Am Montag 15 Februar 2010 10:53:48 schrieb Christian Borntraeger:
+> I think this regression is triggered by
 > 
-> Please add documentation about that to gfp.h before doing this.
-> Doing this without writing any documenation is laziness.
-> (WARNING is a style of documentation.)
+> commit 39c9bfb453b748ce220ceefacbe2a5c19fabf67b
+> Author: Ben Skeggs <bskeggs@redhat.com>
+> Date:   Tue Feb 9 10:22:29 2010 +1000
 > 
+>     drm/nv50: prevent multiple init tables being parsed at the same time
+> 
+> One possible solution is to replace the spinlock bios->lock with a mutex, 
+> but there are others ways of fixing this BUG.
+> 
+> CCing Ben.
+Ah, it appears the vbios delay opcodes got changed to use sleeps rather
+than delays at some point without me noticing.  Sent a patch to Dave
+changing the code to use a mutex instead for now.
 
-This is already documented in the page allocator, but I guess doing it in 
-include/linux/gfp.h as well doesn't hurt.
+Thanks,
+Ben.
+> 
+> 
+> 
+> > [    2.175437] BUG: scheduling while atomic: nouveau/0/753/0x00000002                                                                                                       
+> > [    2.175439] Modules linked in:                                                                                                                                           
+> > [    2.175442] Pid: 753, comm: nouveau/0 Not tainted 2.6.33-rc8-prerelease #27                                                                                              
+> > [    2.175443] Call Trace:                                                                                                                                                  
+> > [    2.175451]  [<ffffffff815dcdea>] ? schedule+0x86a/0x880                                                                                                                 
+> > [    2.175454]  [<ffffffff8120a420>] ? vsnprintf+0xe0/0x9a0                                                                                                                 
+> > [    2.175456]  [<ffffffff815dd18c>] ? schedule_timeout+0x15c/0x250                                                                                                         
+> > [    2.175460]  [<ffffffff81068570>] ? process_timeout+0x0/0x10                                                                                                             
+> > [    2.175462]  [<ffffffff81069068>] ? msleep+0x18/0x30                                                                                                                     
+> > [    2.175466]  [<ffffffff812d48d1>] ? init_time+0x51/0x90                                                                                                                  
+> > [    2.175468]  [<ffffffff812d3ffb>] ? parse_init_table+0xcb/0x1a0                                                                                                          
+> > [    2.175470]  [<ffffffff812d424a>] ? init_sub_direct+0x4a/0xd0                                                                                                            
+> > [    2.175472]  [<ffffffff812d3ffb>] ? parse_init_table+0xcb/0x1a0                                                                                                          
+> > [    2.175474]  [<ffffffff812d496f>] ? nouveau_bios_run_init_table+0x5f/0xa0                                                                                                
+> > [    2.175476]  [<ffffffff812d4c0c>] ? nouveau_bios_run_display_table+0x25c/0x500                                                                                           
+> > [    2.175480]  [<ffffffff812fd220>] ? nv50_display_irq_handler_bh+0x0/0x410                                                                                                
+> > [    2.175483]  [<ffffffff812fd4cc>] ? nv50_display_irq_handler_bh+0x2ac/0x410                                                                                              
+> > [    2.175485]  [<ffffffff812fd220>] ? nv50_display_irq_handler_bh+0x0/0x410                                                                                                
+> > [    2.175487]  [<ffffffff8107047b>] ? worker_thread+0x16b/0x250                                                                                                            
+> > [    2.175490]  [<ffffffff81074240>] ? autoremove_wake_function+0x0/0x30                                                                                                    
+> > [    2.175492]  [<ffffffff81070310>] ? worker_thread+0x0/0x250                                                                                                              
+> > [    2.175494]  [<ffffffff81070310>] ? worker_thread+0x0/0x250                                                                                                              
+> > [    2.175496]  [<ffffffff81073dbe>] ? kthread+0x8e/0xa0                                                                                                                    
+> > [    2.175499]  [<ffffffff81027554>] ? kernel_thread_helper+0x4/0x10                                                                                                        
+> > [    2.175501]  [<ffffffff81073d30>] ? kthread+0x0/0xa0                                                                                                                     
+> > [    2.175503]  [<ffffffff81027550>] ? kernel_thread_helper+0x0/0x10                                                                                                        
+> > [    2.182407] Console: switching to colour frame buffer device 240x75                                                                                                      
+> > [    2.186632] fb0: nouveaufb frame buffer device                                                                                                                           
+> > [    2.186633] registered panic notifier                                                                                                                                    
+> > [    2.186636] [drm] Initialized nouveau 0.0.15 20090420 for 0000:01:00.0 on minor 0  
+> > ...
+> > 
 
 
-
-mm: add comment about deprecation of __GFP_NOFAIL
-
-__GFP_NOFAIL was deprecated in dab48dab, so add a comment that no new 
-users should be added.
-
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Signed-off-by: David Rientjes <rientjes@google.com>
----
- include/linux/gfp.h |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
-
-diff --git a/include/linux/gfp.h b/include/linux/gfp.h
---- a/include/linux/gfp.h
-+++ b/include/linux/gfp.h
-@@ -30,7 +30,8 @@ struct vm_area_struct;
-  * _might_ fail.  This depends upon the particular VM implementation.
-  *
-  * __GFP_NOFAIL: The VM implementation _must_ retry infinitely: the caller
-- * cannot handle allocation failures.
-+ * cannot handle allocation failures.  This modifier is deprecated and no new
-+ * users should be added.
-  *
-  * __GFP_NORETRY: The VM implementation must not retry indefinitely.
-  *
