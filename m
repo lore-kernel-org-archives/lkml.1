@@ -1,11 +1,11 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756083Ab0BQUeX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 15:34:23 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:38062 "EHLO e6.ny.us.ibm.com"
+	id S1756092Ab0BQUd0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 15:33:26 -0500
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:38853 "EHLO e9.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755526Ab0BQUaE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 15:30:04 -0500
+	id S1755539Ab0BQUaH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 15:30:07 -0500
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
@@ -14,9 +14,9 @@ Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
        tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
        Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
        "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: [PATCH tip/core/rcu 07/18] sched: better name for for_each_domain_rd
-Date: Wed, 17 Feb 2010 12:29:33 -0800
-Message-Id: <1266438584-29173-7-git-send-email-paulmck@linux.vnet.ibm.com>
+Subject: [PATCH tip/core/rcu 12/18] security: apply lockdep-based checking to rcu_dereference() uses
+Date: Wed, 17 Feb 2010 12:29:38 -0800
+Message-Id: <1266438584-29173-12-git-send-email-paulmck@linux.vnet.ibm.com>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <20100217202924.GA29007@linux.vnet.ibm.com>
 References: <20100217202924.GA29007@linux.vnet.ibm.com>
@@ -24,39 +24,45 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As suggested by Peter Ziljstra, make better choice of name
-for for_each_domain_rd(), containing "rcu_dereference", given
-that it is but a wrapper for rcu_dereference_check().  The name
-rcu_dereference_check_sched_domain() does that and provides a separate
-per-subsystem name space.
+Apply lockdep-ified RCU primitives to key_gc_keyring() and
+keyring_destroy().
 
+Cc: David Howells <dhowells@redhat.com>
 Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 ---
- kernel/sched.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ security/keys/gc.c      |    3 ++-
+ security/keys/keyring.c |    4 +++-
+ 2 files changed, 5 insertions(+), 2 deletions(-)
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index ad419d9..478fc7d 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -645,7 +645,7 @@ static inline int cpu_of(struct rq *rq)
- #endif
- }
+diff --git a/security/keys/gc.c b/security/keys/gc.c
+index 4770be3..1990231 100644
+--- a/security/keys/gc.c
++++ b/security/keys/gc.c
+@@ -77,7 +77,8 @@ static bool key_gc_keyring(struct key *keyring, time_t limit)
+ 		goto dont_gc;
  
--#define for_each_domain_rd(p) \
-+#define rcu_dereference_check_sched_domain(p) \
- 	rcu_dereference_check((p), \
- 			      rcu_read_lock_sched_held() || \
- 			      lockdep_is_held(&sched_domains_mutex))
-@@ -658,7 +658,7 @@ static inline int cpu_of(struct rq *rq)
-  * preempt-disabled sections.
-  */
- #define for_each_domain(cpu, __sd) \
--	for (__sd = for_each_domain_rd(cpu_rq(cpu)->sd); __sd; __sd = __sd->parent)
-+	for (__sd = rcu_dereference_check_sched_domain(cpu_rq(cpu)->sd); __sd; __sd = __sd->parent)
+ 	/* scan the keyring looking for dead keys */
+-	klist = rcu_dereference(keyring->payload.subscriptions);
++	klist = rcu_dereference_check(keyring->payload.subscriptions,
++				      lockdep_is_held(&key_serial_lock));
+ 	if (!klist)
+ 		goto dont_gc;
  
- #define cpu_rq(cpu)		(&per_cpu(runqueues, (cpu)))
- #define this_rq()		(&__get_cpu_var(runqueues))
+diff --git a/security/keys/keyring.c b/security/keys/keyring.c
+index 8ec0274..e814d21 100644
+--- a/security/keys/keyring.c
++++ b/security/keys/keyring.c
+@@ -151,7 +151,9 @@ static void keyring_destroy(struct key *keyring)
+ 		write_unlock(&keyring_name_lock);
+ 	}
+ 
+-	klist = rcu_dereference(keyring->payload.subscriptions);
++	klist = rcu_dereference_check(keyring->payload.subscriptions,
++				      rcu_read_lock_held() ||
++				      atomic_read(&keyring->usage) == 0);
+ 	if (klist) {
+ 		for (loop = klist->nkeys - 1; loop >= 0; loop--)
+ 			key_put(klist->keys[loop]);
 -- 
 1.6.6
 
