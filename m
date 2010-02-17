@@ -1,46 +1,58 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754512Ab0BQTjs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 14:39:48 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:38772 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751136Ab0BQTjr (ORCPT
+	id S1754527Ab0BQTtI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 14:49:08 -0500
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:24993 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754132Ab0BQTtG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 14:39:47 -0500
-Message-ID: <4B7C45E8.80402@cs.helsinki.fi>
-Date: Wed, 17 Feb 2010 21:39:20 +0200
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	Wed, 17 Feb 2010 14:49:06 -0500
+Date: Wed, 17 Feb 2010 12:49:02 -0700
+From: Alex Chiang <achiang@hp.com>
+To: Matthias Petermann <matthias@d2ux.org>, dimitry.torokhov@gmail.com
+Cc: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org
+Subject: Re: Synaptics touchpad doesn't click (refers thread from December
+	2009)
+Message-ID: <20100217194902.GA28560@ldl.fc.hp.com>
+References: <4B7B1229.4030008@d2ux.org>
 MIME-Version: 1.0
-To: Catalin Marinas <catalin.marinas@arm.com>
-CC: linux-kernel@vger.kernel.org, Vegard Nossum <vegardno@ifi.uio.no>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christian Casteyde <casteyde.christian@free.fr>
-Subject: Re: [PATCH] kmemcheck: Test the full object in	kmemcheck_is_obj_initialized()
-References: <20100208111624.5387.37948.stgit@pc1117.cambridge.arm.com>
-In-Reply-To: <20100208111624.5387.37948.stgit@pc1117.cambridge.arm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B7B1229.4030008@d2ux.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Catalin Marinas wrote:
-> This is a fix for bug #14845 (bugzilla.kernel.org). The
-> update_checksum() function in mm/kmemleak.c calls
-> kmemcheck_is_obj_initialised() before scanning an object. When
-> KMEMCHECK_PARTIAL_OK is enabled, this function returns true. However,
-> the crc32_le() reads smaller intervals (32-bit) for which
-> kmemleak_is_obj_initialised() may be false leading to a kmemcheck
-> warning.
-> 
-> Note that kmemcheck_is_obj_initialized() is currently only used by
-> kmemleak before scanning a memory location.
-> 
-> Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: Christian Casteyde <casteyde.christian@free.fr>
-> Cc: Pekka Enberg <penberg@cs.helsinki.fi>
-> Cc: Vegard Nossum <vegardno@ifi.uio.no>
+Adding cc's.
 
-Applied to slab.git.
+/ac
+
+* Matthias Petermann <matthias@d2ux.org>:
+> Hi,
+>
+> around mid December 2009 there was a thread with the same topic as in my  
+> subject on LKML. Initially there were reported click-problems with the  
+> Synaptics Trackpad-Click like it is present with current HP Envy 13 and  
+> 15 Notebooks.
+>
+> Dmitry Torokhov stated some very promising patch sets here in this list  
+> and so far some other persons like Alex Chiang reported success with  
+> them. Especially I refer to [1].
+>
+> Can anyone give a short update what happens to this patches? Are they  
+> fully merged into 2.6.33-rc8? I tried to match the code of the patch  
+> with it but it looks quite different from my novices eye ;-)
+>
+>
+> Thanks,
+> Matthias
+>
+>
+>
+> [1] http://lkml.org/lkml/2009/12/15/29
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
