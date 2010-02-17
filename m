@@ -1,26 +1,26 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757243Ab0BQLor (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 06:44:47 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:22359 "EHLO
+	id S1757088Ab0BQLpA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 06:45:00 -0500
+Received: from fg-out-1718.google.com ([72.14.220.157]:29272 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756141Ab0BQLm5 (ORCPT
+	with ESMTP id S1756116Ab0BQLm4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 06:42:57 -0500
+	Wed, 17 Feb 2010 06:42:56 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=sender:from:to:cc:subject:date:message-id:x-mailer:in-reply-to
          :references;
-        b=KvS6yc4l87hK/WkQNBtOiDWF0wqt6tCgj0MlXZn532D77CXuFGGahW5tpSVdbFqQVv
-         slSt9EDTCrMTfZteaZwv9EuZzjk9H6yk64RG0RM53o0o1vsk5PjFrgR6n4GCRGY28xPf
-         bJ7ZwFks2ZY3PLtWg7MdOdlIXd2/cLmMhswv0=
+        b=RReumUXii6T9LxdZegjjWy8Cc2/pYHoj0PFDSyaL5areUa+hx3CzY0bnni0mP+R8O5
+         whORRzaZo8WZJFD52Wlx0W44YXIspGJpfyQaXOKzuCbaapvNtiNSf6IM8zKYcbrN3dDk
+         p+lvI3OGhAcDqfaVLkJ5TASpH1QbSc2nEfyXs=
 From: Luca Barbieri <luca@luca-barbieri.com>
 To: mingo@elte.hu
 Cc: hpa@zytor.com, a.p.zijlstra@chello.nl, akpm@linux-foundation.org,
        linux-kernel@vger.kernel.org, Luca Barbieri <luca@luca-barbieri.com>
-Subject: [PATCH 02/10] x86: add support for relative CALL and JMP in alternatives
-Date: Wed, 17 Feb 2010 12:42:34 +0100
-Message-Id: <1266406962-17463-3-git-send-email-luca@luca-barbieri.com>
+Subject: [PATCH 03/10] x86: add support for lock prefix in alternatives
+Date: Wed, 17 Feb 2010 12:42:35 +0100
+Message-Id: <1266406962-17463-4-git-send-email-luca@luca-barbieri.com>
 X-Mailer: git-send-email 1.6.6.1.476.g01ddb
 In-Reply-To: <1266406962-17463-1-git-send-email-luca@luca-barbieri.com>
 References: <1266406962-17463-1-git-send-email-luca@luca-barbieri.com>
@@ -28,66 +28,74 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently CALL and JMP cannot be used in alternatives because the
-relative offset would be wrong.
+The current lock prefix UP/SMP alternative code doesn't allow
+LOCK_PREFIX to be used in alternatives code.
 
-This patch uses the existing x86 instruction parser to parse the
-alternative sequence and fix up the displacements.
+This patch solves the problem by adding a new LOCK_PREFIX_ALTERNATIVE_PATCH
+macro that only records the lock prefix location but does not emit
+the prefix.
 
-This allows to implement this feature with minimal code.
+The user of this macro can then start any alternative sequence with
+"lock" and have it UP/SMP patched.
+
+To make this work, the UP/SMP alternative code is changed to do the
+lock/DS prefix switching only if the byte actually contains a lock or
+DS prefix.
+
+Thus, if an alternative without the "lock" is selected, it will now do
+nothing instead of clobbering the code.
 
 Signed-off-by: Luca Barbieri <luca@luca-barbieri.com>
 ---
- arch/x86/kernel/alternative.c |   22 ++++++++++++++++++++++
- 1 files changed, 22 insertions(+), 0 deletions(-)
+ arch/x86/include/asm/alternative.h |    6 ++++--
+ arch/x86/kernel/alternative.c      |    6 ++++--
+ 2 files changed, 8 insertions(+), 4 deletions(-)
 
+diff --git a/arch/x86/include/asm/alternative.h b/arch/x86/include/asm/alternative.h
+index 42d41ac..b31af51 100644
+--- a/arch/x86/include/asm/alternative.h
++++ b/arch/x86/include/asm/alternative.h
+@@ -28,12 +28,14 @@
+  */
+ 
+ #ifdef CONFIG_SMP
+-#define LOCK_PREFIX \
++#define LOCK_PREFIX_ALTERNATIVE_PATCH \
+ 		".section .smp_locks,\"a\"\n"	\
+ 		_ASM_ALIGN "\n"			\
+ 		_ASM_PTR "661f\n" /* address */	\
+ 		".previous\n"			\
+-		"661:\n\tlock; "
++		"661:"
++
++#define LOCK_PREFIX LOCK_PREFIX_ALTERNATIVE_PATCH "\n\tlock; "
+ 
+ #else /* ! CONFIG_SMP */
+ #define LOCK_PREFIX ""
 diff --git a/arch/x86/kernel/alternative.c b/arch/x86/kernel/alternative.c
-index de7353c..7464c7e 100644
+index 7464c7e..b4ff6cb 100644
 --- a/arch/x86/kernel/alternative.c
 +++ b/arch/x86/kernel/alternative.c
-@@ -17,6 +17,7 @@
- #include <asm/tlbflush.h>
- #include <asm/io.h>
- #include <asm/fixmap.h>
-+#include <asm/insn.h>
- 
- #define MAX_PATCH_LEN (255-1)
- 
-@@ -195,6 +196,26 @@ extern struct alt_instr __alt_instructions[], __alt_instructions_end[];
- extern u8 *__smp_locks[], *__smp_locks_end[];
- static void *text_poke_early(void *addr, const void *opcode, size_t len);
- 
-+/* Fix call instruction displacements */
-+static void __init_or_module fixup_relative_addresses(char *buf, size_t size, size_t adj)
-+{
-+	struct insn insn;
-+	char *p = buf;
-+	char *end = p + size;
-+	while (p < end) {
-+		kernel_insn_init(&insn, p);
-+		insn_get_opcode(&insn);
-+
-+		/* CALL or JMP near32 */
-+		if (insn.opcode.bytes[0] == 0xe8 || insn.opcode.bytes[0] == 0xe9) {
-+			size_t disp_off = insn.next_byte - insn.kaddr;
-+			*(unsigned *)(p + disp_off) += adj;
-+		}
-+		insn_get_length(&insn);
-+		p += insn.length;
-+	}
-+}
-+
- /* Replace instructions with better alternatives for this CPU type.
-    This runs before SMP is initialized to avoid SMP problems with
-    self modifying code. This implies that assymetric systems where
-@@ -223,6 +244,7 @@ void __init_or_module apply_alternatives(struct alt_instr *start,
- 		}
- #endif
- 		memcpy(insnbuf, a->replacement, a->replacementlen);
-+		fixup_relative_addresses(insnbuf, a->replacementlen, a->replacement - instr);
- 		add_nops(insnbuf + a->replacementlen,
- 			 a->instrlen - a->replacementlen);
- 		text_poke_early(instr, insnbuf, a->instrlen);
+@@ -264,7 +264,8 @@ static void alternatives_smp_lock(u8 **start, u8 **end, u8 *text, u8 *text_end)
+ 		if (*ptr > text_end)
+ 			continue;
+ 		/* turn DS segment override prefix into lock prefix */
+-		text_poke(*ptr, ((unsigned char []){0xf0}), 1);
++		if (**ptr == 0x3e)
++			text_poke(*ptr, ((unsigned char []){0xf0}), 1);
+ 	};
+ 	mutex_unlock(&text_mutex);
+ }
+@@ -283,7 +284,8 @@ static void alternatives_smp_unlock(u8 **start, u8 **end, u8 *text, u8 *text_end
+ 		if (*ptr > text_end)
+ 			continue;
+ 		/* turn lock prefix into DS segment override prefix */
+-		text_poke(*ptr, ((unsigned char []){0x3E}), 1);
++		if (**ptr == 0xf0)
++			text_poke(*ptr, ((unsigned char []){0x3E}), 1);
+ 	};
+ 	mutex_unlock(&text_mutex);
+ }
 -- 
 1.6.6.1.476.g01ddb
 
