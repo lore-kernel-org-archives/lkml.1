@@ -1,116 +1,128 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934186Ab0BQI4F (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 03:56:05 -0500
-Received: from bear.ext.ti.com ([192.94.94.41]:43036 "EHLO bear.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934170Ab0BQI4B convert rfc822-to-8bit (ORCPT
+	id S934212Ab0BQJHl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 04:07:41 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:41916 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934200Ab0BQJHj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 03:56:01 -0500
-From: "Shilimkar, Santosh" <santosh.shilimkar@ti.com>
-To: Oliver Neukum <oliver@neukum.org>
-CC: Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       Catalin Marinas <catalin.marinas@arm.com>, Pavel Machek <pavel@ucw.cz>,
-       Greg KH <greg@kroah.com>,
-       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Ming Lei <tom.leiming@gmail.com>,
-       Sebastian Siewior <bigeasy@linutronix.de>,
-       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       "Mankad, Maulik Ojas" <x0082077@ti.com>,
-       "Gadiyar, Anand" <gadiyar@ti.com>
-Date: Wed, 17 Feb 2010 14:25:08 +0530
-Subject: RE: USB mass storage and ARM cache coherency
-Thread-Topic: USB mass storage and ARM cache coherency
-Thread-Index: AcqvE4MzeiwSSWdcQPSZLgylUiXKwwAmu2EQ
-Message-ID: <EAF47CD23C76F840A9E7FCE10091EFAB02C3CF84D1@dbde02.ent.ti.com>
-References: <20100208065519.GE1290@ucw.cz>
- <201002161446.59920.oliver@neukum.org>
- <EAF47CD23C76F840A9E7FCE10091EFAB02C3CF8038@dbde02.ent.ti.com>
- <201002161522.38467.oliver@neukum.org>
-In-Reply-To: <201002161522.38467.oliver@neukum.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
+	Wed, 17 Feb 2010 04:07:39 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Wed, 17 Feb 2010 18:04:05 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       rientjes@google.com,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       npiggin@suse.de
+Subject: [PATCH] memcg: handle panic_on_oom=always case v2
+Message-Id: <20100217180405.fae00f46.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20100217150445.1a40201d.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20100217150445.1a40201d.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> -----Original Message-----
-> From: Oliver Neukum [mailto:oliver@neukum.org]
-> Sent: Tuesday, February 16, 2010 7:53 PM
-> To: Shilimkar, Santosh
-> Cc: Russell King - ARM Linux; Catalin Marinas; Pavel Machek; Greg KH; Matthew Dharm; Sergei Shtylyov;
-> Ming Lei; Sebastian Siewior; linux-usb@vger.kernel.org; linux-kernel; linux-arm-kernel; Mankad,
-> Maulik Ojas
-> Subject: Re: USB mass storage and ARM cache coherency
-> 
-> Am Dienstag, 16. Februar 2010 15:12:45 schrieb Shilimkar, Santosh:
-> > > > > I am afraid for these controllers the controller driver must be responsible
-> > > > > for all DMA and cache issues. Indicating the exact requirements to the
-> > > > > upper layer would be a battle already lost.
-> > > > > so the safe choice is not to set has_dma and the generic layer will leave
-> > > > > the issue to the lower level.
-> > > > This means don't use dma at all which will almost kill the performance.
-> > >
-> > > Why would you be unable to map a buffer in the hcd driver when you know
-> > > that you'll use DMA?
-> > Probably it can be. The USB stack has the dma maintenance code at common
-> > place for all controllers and hence we were just trying to see if there is
-> > way to handle that way.
-> 
-> This is true. If you can find a clean way to describe your requirements
-> to the generic layer, that would be better. The problem is that we must
-> not end up with a dozen flags.
-> 
-> Your original patch however kills ehci, ohci and uhci on some architectures.
 
-How about below approach? Controller driver can set 
-"uses_pio_for_control" if it can't do dma for control transfer.
+Documenation is updated.
+==
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-diff --git a/drivers/usb/core/hcd.c b/drivers/usb/core/hcd.c
-index 80995ef..e3eae02 100644
---- a/drivers/usb/core/hcd.c
-+++ b/drivers/usb/core/hcd.c
-@@ -1276,7 +1276,7 @@ static int map_urb_for_dma(struct usb_hcd *hcd, struct urb *urb,
+Now, if panic_on_oom=2, the whole system panics even if the oom happend
+in some special situation (as cpuset, mempolicy....).
+Then, panic_on_oom=2 means painc_on_oom_always.
+
+Now, memcg doesn't check panic_on_oom flag. This patch adds a check.
+
+BTW, how it's useful ?
+
+kdump+panic_on_oom=2 is the last tool to investigate what happens in oom-ed
+system. When a task is killed, the sysytem recovers and there will be few hint
+to know what happnes. In mission critical system, oom should never happen.
+Then, panic_on_oom=2+kdump is useful to avoid next OOM by knowing
+precise information via snapshot.
+
+TODO:
+ - For memcg, it's for isolate system's memory usage, oom-notiifer and
+   freeze_at_oom (or rest_at_oom) should be implemented. Then, management
+   daemon can do similar jobs (as kdump) or taking snapshot per cgroup.
+
+Changelg:
+ - rewrote documentations.
+
+CC: Balbir Singh <balbir@linux.vnet.ibm.com>
+CC: David Rientjes <rientjes@google.com>
+CC: Nick Piggin <npiggin@suse.de>
+Reviewed-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+---
+ Documentation/cgroups/memory.txt |    5 ++++-
+ Documentation/sysctl/vm.txt      |    5 ++++-
+ mm/oom_kill.c                    |    2 ++
+ 3 files changed, 10 insertions(+), 2 deletions(-)
+
+Index: mmotm-2.6.33-Feb11/Documentation/cgroups/memory.txt
+===================================================================
+--- mmotm-2.6.33-Feb11.orig/Documentation/cgroups/memory.txt
++++ mmotm-2.6.33-Feb11/Documentation/cgroups/memory.txt
+@@ -182,6 +182,8 @@ list.
+ NOTE: Reclaim does not work for the root cgroup, since we cannot set any
+ limits on the root cgroup.
  
- 	if (usb_endpoint_xfer_control(&urb->ep->desc)
- 	    && !(urb->transfer_flags & URB_NO_SETUP_DMA_MAP)) {
--		if (hcd->self.uses_dma) {
-+		if (hcd->self.uses_dma && !hcd->self.uses_pio_for_control) {
- 			urb->setup_dma = dma_map_single(
- 					hcd->self.controller,
- 					urb->setup_packet,
-@@ -1335,7 +1335,7 @@ static void unmap_urb_for_dma(struct usb_hcd *hcd, struct urb *urb)
++Note2: When panic_on_oom is set to "2", the whole system will panic.
++
+ 2. Locking
  
- 	if (usb_endpoint_xfer_control(&urb->ep->desc)
- 	    && !(urb->transfer_flags & URB_NO_SETUP_DMA_MAP)) {
--		if (hcd->self.uses_dma)
-+		if (hcd->self.uses_dma && !hcd->self.uses_pio_for_control)
- 			dma_unmap_single(hcd->self.controller, urb->setup_dma,
- 					sizeof(struct usb_ctrlrequest),
- 					DMA_TO_DEVICE);
-diff --git a/include/linux/usb.h b/include/linux/usb.h
-index d7ace1b..ba5b0a2 100644
---- a/include/linux/usb.h
-+++ b/include/linux/usb.h
-@@ -329,6 +329,9 @@ struct usb_bus {
- 	int busnum;			/* Bus number (in order of reg) */
- 	const char *bus_name;		/* stable id (PCI slot_name etc) */
- 	u8 uses_dma;			/* Does the host controller use DMA? */
-+	u8 uses_pio_for_control;	/* Does the host controller use PIO
-+					 * for control tansfers? 
-+					 */
- 	u8 otg_port;			/* 0, or number of OTG/HNP port */
- 	unsigned is_b_host:1;		/* true during some HNP roleswitches */
- 	unsigned b_hnp_enable:1;	/* OTG: did A-Host enable HNP? */
+ The memory controller uses the following hierarchy
+@@ -379,7 +381,8 @@ The feature can be disabled by
+ NOTE1: Enabling/disabling will fail if the cgroup already has other
+ cgroups created below it.
+ 
+-NOTE2: This feature can be enabled/disabled per subtree.
++NOTE2: When panic_on_oom is set to "2", the whole system will panic in
++case of an oom event in any cgroup.
+ 
+ 7. Soft limits
+ 
+Index: mmotm-2.6.33-Feb11/Documentation/sysctl/vm.txt
+===================================================================
+--- mmotm-2.6.33-Feb11.orig/Documentation/sysctl/vm.txt
++++ mmotm-2.6.33-Feb11/Documentation/sysctl/vm.txt
+@@ -573,11 +573,14 @@ Because other nodes' memory may be free.
+ may be not fatal yet.
+ 
+ If this is set to 2, the kernel panics compulsorily even on the
+-above-mentioned.
++above-mentioned. Even oom happens under memory cgroup, the whole
++system panics.
+ 
+ The default value is 0.
+ 1 and 2 are for failover of clustering. Please select either
+ according to your policy of failover.
++panic_on_oom=2+kdump gives you very strong tool to investigate
++why oom happens. You can get snapshot.
+ 
+ =============================================================
+ 
+Index: mmotm-2.6.33-Feb11/mm/oom_kill.c
+===================================================================
+--- mmotm-2.6.33-Feb11.orig/mm/oom_kill.c
++++ mmotm-2.6.33-Feb11/mm/oom_kill.c
+@@ -471,6 +471,8 @@ void mem_cgroup_out_of_memory(struct mem
+ 	unsigned long points = 0;
+ 	struct task_struct *p;
+ 
++	if (sysctl_panic_on_oom == 2)
++		panic("out of memory(memcg). panic_on_oom is selected.\n");
+ 	read_lock(&tasklist_lock);
+ retry:
+ 	p = select_bad_process(&points, mem);
 
-Regards,
-Santosh
