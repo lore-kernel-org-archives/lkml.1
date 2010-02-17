@@ -1,54 +1,69 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934306Ab0BQNsp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 08:48:45 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:40780 "EHLO mx1.redhat.com"
+	id S934308Ab0BQNtR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 08:49:17 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:14546 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934083Ab0BQNpi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 08:45:38 -0500
+	id S934064Ab0BQNph (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 08:45:37 -0500
 From: Avi Kivity <avi@redhat.com>
 To: kvm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 09/20] KVM: do not store wqh in irqfd
-Date: Wed, 17 Feb 2010 15:45:19 +0200
-Message-Id: <1266414330-27444-10-git-send-email-avi@redhat.com>
+Subject: [PATCH 03/20] KVM: VMX: Rename VMX_EPT_IGMT_BIT to VMX_EPT_IPAT_BIT
+Date: Wed, 17 Feb 2010 15:45:13 +0200
+Message-Id: <1266414330-27444-4-git-send-email-avi@redhat.com>
 In-Reply-To: <1266414330-27444-1-git-send-email-avi@redhat.com>
 References: <1266414330-27444-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michael S. Tsirkin <mst@redhat.com>
+From: Sheng Yang <sheng@linux.intel.com>
 
-wqh is unused, so we do not need to store it in irqfd anymore
+Following the new SDM. Now the bit is named "Ignore PAT memory type".
 
-Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
+Signed-off-by: Sheng Yang <sheng@linux.intel.com>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- virt/kvm/eventfd.c |    3 ---
- 1 files changed, 0 insertions(+), 3 deletions(-)
+ arch/x86/include/asm/vmx.h |    2 +-
+ arch/x86/kvm/vmx.c         |    4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/virt/kvm/eventfd.c b/virt/kvm/eventfd.c
-index 486c604..7016319 100644
---- a/virt/kvm/eventfd.c
-+++ b/virt/kvm/eventfd.c
-@@ -47,7 +47,6 @@ struct _irqfd {
- 	int                       gsi;
- 	struct list_head          list;
- 	poll_table                pt;
--	wait_queue_head_t        *wqh;
- 	wait_queue_t              wait;
- 	struct work_struct        inject;
- 	struct work_struct        shutdown;
-@@ -159,8 +158,6 @@ irqfd_ptable_queue_proc(struct file *file, wait_queue_head_t *wqh,
- 			poll_table *pt)
- {
- 	struct _irqfd *irqfd = container_of(pt, struct _irqfd, pt);
--
--	irqfd->wqh = wqh;
- 	add_wait_queue(wqh, &irqfd->wait);
- }
+diff --git a/arch/x86/include/asm/vmx.h b/arch/x86/include/asm/vmx.h
+index 43f1e9b..fb9a080 100644
+--- a/arch/x86/include/asm/vmx.h
++++ b/arch/x86/include/asm/vmx.h
+@@ -377,7 +377,7 @@ enum vmcs_field {
+ #define VMX_EPT_READABLE_MASK			0x1ull
+ #define VMX_EPT_WRITABLE_MASK			0x2ull
+ #define VMX_EPT_EXECUTABLE_MASK			0x4ull
+-#define VMX_EPT_IGMT_BIT    			(1ull << 6)
++#define VMX_EPT_IPAT_BIT    			(1ull << 6)
  
+ #define VMX_EPT_IDENTITY_PAGETABLE_ADDR		0xfffbc000ul
+ 
+diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
+index b400be0..f82b072 100644
+--- a/arch/x86/kvm/vmx.c
++++ b/arch/x86/kvm/vmx.c
+@@ -4001,7 +4001,7 @@ static u64 vmx_get_mt_mask(struct kvm_vcpu *vcpu, gfn_t gfn, bool is_mmio)
+ 	 *   b. VT-d with snooping control feature: snooping control feature of
+ 	 *	VT-d engine can guarantee the cache correctness. Just set it
+ 	 *	to WB to keep consistent with host. So the same as item 3.
+-	 * 3. EPT without VT-d: always map as WB and set IGMT=1 to keep
++	 * 3. EPT without VT-d: always map as WB and set IPAT=1 to keep
+ 	 *    consistent with host MTRR
+ 	 */
+ 	if (is_mmio)
+@@ -4012,7 +4012,7 @@ static u64 vmx_get_mt_mask(struct kvm_vcpu *vcpu, gfn_t gfn, bool is_mmio)
+ 		      VMX_EPT_MT_EPTE_SHIFT;
+ 	else
+ 		ret = (MTRR_TYPE_WRBACK << VMX_EPT_MT_EPTE_SHIFT)
+-			| VMX_EPT_IGMT_BIT;
++			| VMX_EPT_IPAT_BIT;
+ 
+ 	return ret;
+ }
 -- 
 1.6.5.3
 
