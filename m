@@ -1,106 +1,61 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752172Ab0BQGe5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 01:34:57 -0500
-Received: from mail-pz0-f187.google.com ([209.85.222.187]:34771 "EHLO
-	mail-pz0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751104Ab0BQGez convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 01:34:55 -0500
-MIME-Version: 1.0
-In-Reply-To: <20100217130103.3ca65ef3@notabene.brown>
-References: <201002140251.59668.volkerarmin@googlemail.com> 
-	<4877c76c1002132002s20d942c3i7cee5418cdcf369c@mail.gmail.com> 
-	<201002141940.35716.volkerarmin@googlemail.com> <4B7AD35E.7000405@tmr.com> 
-	<alpine.LNX.2.01.1002161541370.24961@filesrv1.baby-dragons.com> 
-	<20100217130103.3ca65ef3@notabene.brown>
-From: Kyle Moffett <kyle@moffetthome.net>
-Date: Wed, 17 Feb 2010 01:34:34 -0500
-Message-ID: <f73f7ab81002162234t531203ccue1f9ecc839c8ae42@mail.gmail.com>
-Subject: Re: Linux mdadm superblock question.
-To: Neil Brown <neilb@suse.de>
-Cc: "Mr. James W. Laferriere" <babydr@baby-dragons.com>,
-       Bill Davidsen <davidsen@tmr.com>,
-       Volker Armin Hemmann <volkerarmin@googlemail.com>,
-       Michael Evans <mjevans1983@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	id S1752624Ab0BQGkX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 01:40:23 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:33539 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751617Ab0BQGkV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 01:40:21 -0500
+Date: Wed, 17 Feb 2010 17:40:15 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: David Miller <davem@davemloft.net>, <netdev@vger.kernel.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Jan Engelhardt <jengelh@medozas.de>
+Subject: linux-next: build failure after final merge (net tree)
+Message-Id: <20100217174015.d1a8a478.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0beta7 (GTK+ 2.18.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__17_Feb_2010_17_40_15_+1100_A=5+XS9VyLjzW5wp"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 16, 2010 at 21:01, Neil Brown <neilb@suse.de> wrote:
-> On Tue, 16 Feb 2010 16:03:43 -0900 (AKST) "Mr. James W. Laferriere" <babydr@baby-dragons.com> wrote:
->>       I am unaware of any record from Neil or other maintainer(s) of the
->> /md/ device tree saying that they will not remove the 0.90 table and the
->> autoassembly functions there .  I'd very much like to hear a statement saying
->> there will not be a removal of the autoassembly functions for 0.90 raid table
->> from the kernel tree .
->
-> I will not be removing 0.90 or auto-assemble from the kernel in the
-> foreseeable future.
-> None the less, I recommend weaning yourself from your dependence on it.
-> initramfs is the future, embrace it.
+--Signature=_Wed__17_Feb_2010_17_40_15_+1100_A=5+XS9VyLjzW5wp
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-What are people's reasons for pushback against initramfs?  I've heard
-lots of claims that "it's not trustworthy" and "it breaks", but in 7
-years of running bootable software RAID boxes on weird architectures
-(even running Debian unstable) I have only once or twice had initramfs
-problems.
+Hi Dave,
 
-As a software capability, initramfs makes it possible to use
-*anything* as a root filesystem, no matter what is necessary to set it
-up.  For example, I have seen somebody use DRBD (essentially network
-RAID-1) as a root filesystem with a few custom hook scripts added to
-the initramfs-tools configs.  Other examples include using Sun ZFS as
-a root fs via an initramfs FUSE daemon, a feat which even Solaris
-could not accomplish at the time.  Encrypted root filesystems also
-require an initramfs to prompt for encryption keys and decrypt the
-block device.  Multipath block devices are another example.
+After merging, today's linux-next build (sparc64 defconfig) failed like
+this:
 
-You should also take a look at your distro installers.  There is not a
-single one made in the last several years which does not use an
-initramfs to start networking or access the installation media.  In
-fact, of all the distro installers I have had the most consistent
-behavior regardless of system hardware from the ones which operate
-entirely out of their initramfs.
+In file included from include/linux/netfilter_ipv4/ip_tables.h:29,
+                 from arch/sparc/kernel/sys_sparc32.c:47:
+include/linux/netfilter/x_tables.h:525: error: expected declaration specifi=
+ers or '...' before 'nf_hookfn'
 
->From a reliability perspective, an initramfs is no more essential
-than, say, /sbin/init or /boot/vmlinuz-2.6.33.  Furthermore, all of
-the modern initramfs generation tools automatically keep backup copies
-exactly the same way that "make install" keeps backup copies of your
-kernel images.  The two times I've managed to hose my initramfs I was
-able to simply edit my grub config to use a file called something like
-"/boot/initramfs-2.6.33.bak" instead.
+Caused by commit 2b95efe7f6bb750256a702cc32d33b0cb2cd8223 ("netfilter:
+xtables: use xt_table for hook instantiation").  Missing direct include
+of linux/netfilter.h?
 
-In fact, I have had several times where an initramfs made my boot
-process *more* reliable.  On one of my LVM JBOD systems, I was able to
-pull a group of 3 SATA drives whose backplane had failed and drop them
-all in USB enclosures to get the system back up and running in a half
-an hour.  With just straight partitions on the volumes I would have
-been hunting around for 2 hours to figure out where all my partitions
-had gone only to have the USB drives spin up in a different order
-during the next reboot.
-
-If you're really concerned about boot-process reliability, go ahead
-and tell your initramfs tool to include a fully-featured busybox,
-coreutils, bash, strace, gdb, and a half-dozen other developer tools.
-You may wait an extra 20 seconds for your bootloader to load the damn
-thing during boot, but you'll be able to track down that annoying
-10-second hang in your /sbin/init program during config-file parsing.
-
-I've built specialized embedded computers with stripped-down chipset
-initialization code, a tiny Linux kernel and a special-purpose
-initramfs burned into the flash.  By using the fastboot patches and
-disabling all the excess drivers, my kernel was fully operational
-within the first half-second.  It used the tools on the initramfs to
-poke around on the hard disk as a bootloader, then kexec() to load the
-operational kernel.
-
-Counting up all the problems I've had with system boot... I've had an
-order of magnitude more problems from somebody getting careless with
-"rm", "dpkg --purge", etc than with initramfs deficiencies.
-
+I have reverted that commit for today.
+--=20
 Cheers,
-Kyle Moffett
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__17_Feb_2010_17_40_15_+1100_A=5+XS9VyLjzW5wp
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkt7j08ACgkQjjKRsyhoI8yVpQCfXIFaSl3U6IN1qhWW5vq92CWC
+EwsAoK47Hpzl3pTvEyUl5wP9yDzd/RvG
+=/ab6
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__17_Feb_2010_17_40_15_+1100_A=5+XS9VyLjzW5wp--
