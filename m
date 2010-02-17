@@ -1,109 +1,68 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751833Ab0BQKfL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 05:35:11 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:34589 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750983Ab0BQKfI (ORCPT
+	id S1751866Ab0BQKhx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 05:37:53 -0500
+Received: from mail-gw2.cc.tut.fi ([130.230.160.16]:50293 "EHLO
+	mail-gw2.cc.tut.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750983Ab0BQKhv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 05:35:08 -0500
-Date: Wed, 17 Feb 2010 11:35:04 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: "Nikita V. Youshchenko" <yoush@cs.msu.su>
-Cc: Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Extended error reporting to user space?
-Message-ID: <20100217103504.GO21783@one.firstfloor.org>
-References: <201002161520.26700@zigzag.lvk.cs.msu.su> <87r5ok5gl2.fsf@basil.nowhere.org> <201002171316.49165@zigzag.lvk.cs.msu.su>
+	Wed, 17 Feb 2010 05:37:51 -0500
+X-Greylist: delayed 902 seconds by postgrey-1.27 at vger.kernel.org; Wed, 17 Feb 2010 05:37:51 EST
+X-AuditID: 82e6a010-b7b29ae000000a5e-2f-4b7bc378269a
+Date: Wed, 17 Feb 2010 12:22:47 +0200
+From: Petri Kaukasoina <kaukasoina907m57kr9@sci.fi>
+To: Willy Tarreau <w@1wt.eu>
+Cc: James Cloos <cloos@jhcloos.com>, Jean Delvare <khali@linux-fr.org>,
+       lasse.collin@tukaani.org, Phillip Lougher <phillip@lougher.demon.co.uk>,
+       linux-kernel <linux-kernel@vger.kernel.org>, mirrors@kernel.org,
+       users@kernel.org, "FTPAdmin Kernel.org" <ftpadmin@kernel.org>,
+       Pavel Machek <pavel@ucw.cz>
+Subject: Re: [kernel.org users] XZ Migration discussion
+Message-ID: <20100217102247.GA15017@elektroni.phys.tut.fi>
+Mail-Followup-To: Willy Tarreau <w@1wt.eu>, James Cloos <cloos@jhcloos.com>,
+	Jean Delvare <khali@linux-fr.org>, lasse.collin@tukaani.org,
+	Phillip Lougher <phillip@lougher.demon.co.uk>,
+	linux-kernel <linux-kernel@vger.kernel.org>, mirrors@kernel.org,
+	users@kernel.org, "FTPAdmin Kernel.org" <ftpadmin@kernel.org>,
+	Pavel Machek <pavel@ucw.cz>
+References: <4B744E13.8040004@kernel.org> <20100211205129.GA26105@elf.ucw.cz> <20100213181008.479509f5@hyperion.delvare> <4B773B31.1020802@lougher.demon.co.uk> <20100214102308.1d1d6fff@hyperion.delvare> <20100214094940.GB17999@1wt.eu> <m3wrye9od4.fsf@lugabout.jhcloos.org> <20100217054047.GF18216@1wt.eu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <201002171316.49165@zigzag.lvk.cs.msu.su>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <20100217054047.GF18216@1wt.eu>
+User-Agent: Mutt/1.4.2.3i
+X-Brightmail-Tracker: AAAAAhLTwQcS08pf
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 17, 2010 at 01:16:48PM +0300, Nikita V. Youshchenko wrote:
-> > "Nikita V. Youshchenko" <yoush@cs.msu.su> writes:
-> > > I'm developing a device driver that, in it's ioctl()s, accepts a
-> > > complex data structure. Before doing it's operation, it performs large
-> > > number of checks if data is valid. If one of those checks fail, driver
-> > > returns -EINVAL.
-> > >
-> > > Unfortunately this -EINVAL is not really useful. E.g. if a developer,
-> > > sitting in his IDE and debugging his code, will see ioctl()
-> > > returning -EINVAL, and will have hard times finding what exactly is
-> > > wrong.
-> > >
-> > > Before inventing driver-specific extended error reporting, I'd like to
-> > > ask if there is anything more or less generic for this.
-> > > I believe situation when -Exxx is too weak interface for error
-> > > reporting is common.
-> >
-> > This is a very common problem in Linux unfortunately.  I always
-> > describe that as a the "ed approach to error handling". Instead
-> > of giving a error message you just give ?. Just ? happens
-> > to be EINVAL in Linux.
-> >
-> > My favourite example of this is the configuration of the networking
-> > queueing disciplines, which configure complicated data structures and
-> > algorithms and in many cases have tens of different error conditions
-> > based on the input parameters -- and they all just report EINVAL.
-> >
-> > The standard way (standard kludge or standard workaround would be a
-> > better description) is to use printk; often guarded by a special
-> > kernel tunable or ifdef to avoid flooding the log in the normal case.
-> >
-> > IMHO it would be best to simply add a way to return strings directly
-> > in this case (a la plan9). This would be probably not too hard to
-> > implement. It's not there unfortunately.
-> >
-> > This could be done with one of the message oriented protocols,
-> > e.g. netlink or read/write on a special minor.
+On Wed, Feb 17, 2010 at 06:40:47AM +0100, Willy Tarreau wrote:
+> On Mon, Feb 15, 2010 at 04:31:59PM -0500, James Cloos wrote:
+> > >>>>> "W" == Willy Tarreau <w@1wt.eu> writes:
+> > 
+> > W> Well, I personally like to be able to simply run "less patch-2.6.27.45.gz"
+> > W> and have it transparently uncompressed and dumped on my terminal. It
+> > W> doesn't do that on bz2. We could find multiple examples.
+> > 
+> > It does here, and lzma & xz, too.  And has since just days after Lasse
+> > annouced that the new name would be xz.
+> > 
+> > Your LESSOPEN controls that, and can be easily coded to support any archive.
 > 
-> Why not create a generic solution for this, if one does not exist yet?
-
-Someone would need to do it. Yes I think it would be a worthy project.
-
-The trick is also get around the objections of the "but we always
-did it this way" Unix traditionalists.
-
+> Just checked and I found it funny to see that patch-2.6.1.bz2 is not
+> correctly opened while 2.6.27.45.bz2 is. Maybe some things have slightly
+> changed in the tools by that time and the output differs slightly. However
+> bzcat opens them both so the file is not corrupted.
 > 
-> For example, have a "last error" string associated with task_struct, that:
-> - will clean on each syscall entry,
-> - while syscall is running, may be filled with printf-style routines,
-> - may be accessible from userspace with additional syscall [that obviously 
-> should not reset error]?
+> This raises the point of the maturity of the tools BTW. GZ is mature,
+> BZ2 has become mature over the years, XZ is very recent and may still
+> be buggy at times. We'll only know that when people will complain that
+> they cannot open one file from time to time.
 > 
-> This will give driver writers a common interface for extended error 
-> reporting...
-
-You would need a way to save/restore that string too (like it works
-with errno) otherwise libraries cannot use it safely. Also
-it would be good to have something that does not impact the system
-call fast path for a non error call.
-
->From the basic semantics I think I would prefer a way
-associated with each syscall. It could be probably fit into 
-many syscall ABIs, but that would need architecture specific
-changes, which are difficult to coordinate (Linux has too many
-architectures and many of them with inactive maintainers)
-
-One way to do that would be a "extended ioctl" syscall that supports
-this in a generic way (and perhaps could fix some of the other problems
-of ioctl too, like better type safety). 
-
-Designing such a thing might end up being a rat-hole (and you would
-probably need to be very careful to avoid the second system effect)
-
-Of course the qdiscs and other code who uses netlink instead would also 
-need something equivalent. 
-
-Also I expect someone would come up with localization issues, although
-the the classical "translation database" approach would probably work
-anyways.
-
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
+> Willy
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
