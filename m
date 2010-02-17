@@ -1,58 +1,45 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934009Ab0BQDqp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 22:46:45 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:45566 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933973Ab0BQDqo (ORCPT
+	id S934040Ab0BQEUs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 23:20:48 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50586
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S934011Ab0BQEUq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 22:46:44 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Wed, 17 Feb 2010 12:43:12 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: "Leonidas ." <leonidas137@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Notification when a task is created/exits
-Message-Id: <20100217124312.e6d47c21.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <f22d86811002161916s292436b7hf564269a37dbe9af@mail.gmail.com>
-References: <f22d86811002152148t4f307184kb71757f4621f82db@mail.gmail.com>
-	<20100217115313.30de11fb.kamezawa.hiroyu@jp.fujitsu.com>
-	<f22d86811002161916s292436b7hf564269a37dbe9af@mail.gmail.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
+	Tue, 16 Feb 2010 23:20:46 -0500
+Date: Tue, 16 Feb 2010 20:21:02 -0800 (PST)
+Message-Id: <20100216.202102.71113896.davem@davemloft.net>
+To: tj@kernel.org
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, sfr@canb.auug.org.au
+Subject: Re: [PATCH net-next 1/2] percpu: add __percpu sparse annotations
+ to net
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4B7B445A.1080108@kernel.org>
+References: <4B7B445A.1080108@kernel.org>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Feb 2010 08:46:51 +0530
-"Leonidas ." <leonidas137@gmail.com> wrote:
-\
-> >  2. implement cgroup subsystem
-> >    AFAIK, in the latest kernel, cgroup subsystem can be implemented as module.
-> >    cgroup has fork/exit handler.
-> >    And you can implement some useful controls for tasks you watch via
-> >    cgroup's control interface.
-> >
+From: Tejun Heo <tj@kernel.org>
+Date: Wed, 17 Feb 2010 10:20:26 +0900
+
+> Add __percpu sparse annotations to net.
 > 
-> This sounds close to what I have in mind, but unfortunately I dont
-> have any idea what is cgroup
-> subsystem. How to implement cgroup subsystem? Can you give pointers to
-> some existing code
-> or document? 
-Documentation/cgroup/*.txt
-Maybe cpuacct cgroup in kernel/sche.c or device cgroup in security/device_cgroup.c
-is portable size, but they are not module.
-block/blk-cgroup is module and maybe in readable size.
-
-> Also, using this mechanism can we monitor each thread created in
-> user space? I.e. it is only a fork handler or even a
-> pthread_create/clone can be tracked this way.
+> These annotations are to make sparse consider percpu variables to be
+> in a different address space and warn if accessed without going
+> through percpu accessors.  This patch doesn't affect normal builds.
 > 
-please read documents. I think you can.
+> The macro and type tricks around snmp stats make things a bit
+> interesting.  DEFINE/DECLARE_SNMP_STAT() macros mark the target field
+> as __percpu and SNMP_UPD_PO_STATS() macro is updated accordingly.  All
+> snmp_mib_*() users which used to cast the argument to (void **) are
+> updated to cast it to (void __percpu **).
+> 
+> Signed-off-by: Tejun Heo <tj@kernel.org>
+> Acked-by: David S. Miller <davem@davemloft.net>
 
-Thanks,
--Kame
-
+Applied.
