@@ -1,52 +1,37 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933447Ab0BQCTx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 21:19:53 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:42352 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933174Ab0BQCTw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 21:19:52 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: David Rientjes <rientjes@google.com>
-Subject: Re: [patch -mm 4/9 v2] oom: remove compulsory panic_on_oom mode
-Cc: kosaki.motohiro@jp.fujitsu.com,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>, Nick Piggin <npiggin@suse.de>,
-       Andrea Arcangeli <aarcange@redhat.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-In-Reply-To: <alpine.DEB.2.00.1002161756100.15079@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.1002161648570.31753@chino.kir.corp.google.com> <alpine.DEB.2.00.1002161756100.15079@chino.kir.corp.google.com>
-Message-Id: <20100217111659.7324.A69D9226@jp.fujitsu.com>
+	id S933491Ab0BQCV7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 21:21:59 -0500
+Received: from hera.kernel.org ([140.211.167.34]:35355 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933335Ab0BQCV5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 21:21:57 -0500
+Message-ID: <4B7B548B.4040606@kernel.org>
+Date: Wed, 17 Feb 2010 11:29:31 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: Axel Uhl <axel.uhl@gmx.de>
+CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Kernel Bug in ATA or SMART area
+References: <4B72941A.7060704@gmx.de> <4B74BDCF.1010805@kernel.org> <4B74F263.1060709@gmx.de> <4B7505CA.60409@kernel.org> <4B75154B.8030507@gmx.de>
+In-Reply-To: <4B75154B.8030507@gmx.de>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Wed, 17 Feb 2010 11:19:46 +0900 (JST)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 17 Feb 2010 02:21:10 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +/*
-> + * The pagefault handler calls here because it is out of memory, so kill a
-> + * memory-hogging task.  If a populated zone has ZONE_OOM_LOCKED set, a parallel
-> + * oom killing is already in progress so do nothing.  If a task is found with
-> + * TIF_MEMDIE set, it has been killed so do nothing and allow it to exit.
-> + */
-> +void pagefault_out_of_memory(void)
-> +{
-> +	if (!try_set_system_oom())
-> +		return;
-> +	out_of_memory(NULL, 0, 0, NULL);
-> +	clear_system_oom();
-> +}
+Hello,
 
-At least, I agree pagefault oom part. it need ZONE_OOM_LOCKED too.
-if you make separated patch, I'll ack it. I don't know memcg part is 
-correct or not.
+On 02/12/2010 05:46 PM, Axel Uhl wrote:
+> I don't have a /var/log/boot.msg, only a /var/log/boot. Its contents:
 
+Then please attach output of dmesg after boot.
 
+Thanks.
 
+-- 
+tejun
