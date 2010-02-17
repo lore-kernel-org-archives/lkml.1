@@ -1,72 +1,67 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753379Ab0BQRjR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 12:39:17 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:57659 "EHLO mx2.suse.de"
+	id S1753369Ab0BQRmM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 12:42:12 -0500
+Received: from mail.lang.hm ([64.81.33.126]:59485 "EHLO bifrost.lang.hm"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752514Ab0BQRjP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 12:39:15 -0500
-Message-ID: <4B7C29C1.10906@suse.cz>
-Date: Wed, 17 Feb 2010 18:39:13 +0100
-From: Michal Marek <mmarek@suse.cz>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.2 Thunderbird/3.0
+	id S1752514Ab0BQRmK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 12:42:10 -0500
+Date: Wed, 17 Feb 2010 09:41:53 -0800 (PST)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Kyle Moffett <kyle@moffetthome.net>
+cc: Rudy Zijlstra <rudy@grumpydevil.homelinux.org>, Neil Brown <neilb@suse.de>,
+       "Mr. James W. Laferriere" <babydr@baby-dragons.com>,
+       Bill Davidsen <davidsen@tmr.com>,
+       Volker Armin Hemmann <volkerarmin@googlemail.com>,
+       Michael Evans <mjevans1983@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org
+Subject: Re: Linux mdadm superblock question.
+In-Reply-To: <f73f7ab81002170822j7e61455o6bee33d95c9648a1@mail.gmail.com>
+Message-ID: <alpine.DEB.2.00.1002170932010.4721@asgard.lang.hm>
+References: <201002140251.59668.volkerarmin@googlemail.com>  <4877c76c1002132002s20d942c3i7cee5418cdcf369c@mail.gmail.com>  <201002141940.35716.volkerarmin@googlemail.com> <4B7AD35E.7000405@tmr.com>  <alpine.LNX.2.01.1002161541370.24961@filesrv1.baby-dragons.com>
+  <20100217130103.3ca65ef3@notabene.brown> <f73f7ab81002162234t531203ccue1f9ecc839c8ae42@mail.gmail.com>  <4B7BB927.5000305@grumpydevil.homelinux.org> <f73f7ab81002170822j7e61455o6bee33d95c9648a1@mail.gmail.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Borislav Petkov <bp@amd64.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>,
-       Borislav Petkov <petkovbb@googlemail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>, Jamie Lokier <jamie@shareable.org>,
-       Roland Dreier <rdreier@cisco.com>, Al Viro <viro@ZenIV.linux.org.uk>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Brian Gerst <brgerst@gmail.com>
-Subject: Re: [PATCH 2/5] bitops: compile time optimization for hweight_long(CONSTANT)
-References: <20100208092845.GB12618@a1.tnic> <4B6FDAED.9060204@zytor.com> <20100208095945.GA14740@a1.tnic> <20100211172424.GB19779@aftab> <4B743F7D.3090605@zytor.com> <20100212170649.GC3114@aftab> <4B758FC0.1020600@zytor.com> <20100212174751.GD3114@aftab> <4B75A66A.70005@zytor.com> <4B7BF5D6.3030701@suse.cz> <20100217172040.GC13429@aftab> <4B7C27D8.9050408@suse.cz>
-In-Reply-To: <4B7C27D8.9050408@suse.cz>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: MULTIPART/MIXED; BOUNDARY="680960-721633254-1266428513=:4721"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 17.2.2010 18:31, Michal Marek wrote:
-> On 17.2.2010 18:20, Borislav Petkov wrote:
->> On Wed, Feb 17, 2010 at 02:57:42PM +0100, Michal Marek wrote:
->>> On 12.2.2010 20:05, H. Peter Anvin wrote:
->>>> On 02/12/2010 09:47 AM, Borislav Petkov wrote:
->>>>>
->>>>> However, this is generic code and for the above to work we have to
->>>>> enforce x86-specific CFLAGS for it. What is the preferred way to do
->>>>> that?
->>>>>
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+--680960-721633254-1266428513=:4721
+Content-Type: TEXT/PLAIN; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8BIT
+
+On Wed, 17 Feb 2010, Kyle Moffett wrote:
+
+> On Wed, Feb 17, 2010 at 04:38, Rudy Zijlstra
+> <rudy@grumpydevil.homelinux.org> wrote:
+>> Kyle Moffett wrote:
+>>> On Tue, Feb 16, 2010 at 21:01, Neil Brown <neilb@suse.de> wrote:
+>>>> I will not be removing 0.90 or auto-assemble from the kernel in the
+>>>> foreseeable future.
+>>>> None the less, I recommend weaning yourself from your dependence on it.
+>>>> initramfs is the future, embrace it.
 >>>>
->>>> That's a question for Michal and the kbuild list.  Michal?
 >>>
->>> (I was offline last week).
->>>
->>> The _preferred_ way probably is not to do it :), but otherwise you can
->>> set CFLAGS_hweight.o depending on CONFIG_X86(_32|_64), just like you do
->>> in arch/x86/lib/Makefile already.
->>
->> Wouldn't it be better if we had something like ARCH_CFLAGS_hweight.o
->> which gets set in the arch Makefile instead?
-> 
-> We could, but is it worth it if there is only one potential user so far?
-> IMO just put the condition to lib/Makefile now and if there turn out to
-> be more cases like this, we can add support for ARCH_CFLAGS_foo.o then.
+>>> What are people's reasons for pushback against initramfs?  I've heard
+>>> lots of claims that "it's not trustworthy" and "it breaks", but in 7
+>>> years of running bootable software RAID boxes on weird architectures
+>>> (even running Debian unstable) I have only once or twice had initramfs
+>>> problems.
 
-It wouldn't work actually, because such variable would then apply to all
-hweight.o targets in the tree. But another way would be:
+Kyle,
+   for a distro that is trying to make one kernel image run on every 
+possible type of hardware features like initramfs (and udev, modeules, 
+etc) are wonderful.
 
-arch/x86/Kconfig
-config ARCH_HWEIGHT_CFLAGS
-        string
-        default "..." if X86_32
-        default "..." if X86_64
+however for people who run systems that are known ahead of time and 
+static (and who build their own kernels instead of just relying on the 
+distro default kernel), all of this is unnessesary complication, which 
+leaves more room for problems to creep in.
 
-lib/Makefile
-CFLAGS_hweight.o = $(CONFIG_ARCH_HWEIGHT_CFLAGS)
-
-Michal
+David Lang
+--680960-721633254-1266428513=:4721--
