@@ -1,151 +1,43 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933813Ab0BQAp6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 19:45:58 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43541
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933760Ab0BQApz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 19:45:55 -0500
-Date: Tue, 16 Feb 2010 16:46:10 -0800 (PST)
-Message-Id: <20100216.164610.264043146.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Networking
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	id S933824Ab0BQArQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 19:47:16 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:40227 "EHLO mail.zytor.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933809Ab0BQArN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 19:47:13 -0500
+Message-ID: <4B7B3C4C.7060002@zytor.com>
+Date: Tue, 16 Feb 2010 16:46:04 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+MIME-Version: 1.0
+To: Yinghai Lu <yinghai@kernel.org>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
+Subject: Re: [PATCH 27/35] core: move early_res
+References: <1265793639-15071-1-git-send-email-yinghai@kernel.org>	<1265793639-15071-28-git-send-email-yinghai@kernel.org> <20100215011615.e3d35121.sfr@canb.auug.org.au> <4B786110.9020806@kernel.org> <4B7B2E3B.9060903@zytor.com> <4B7B2FE1.1030700@kernel.org> <4B7B31F1.60203@zytor.com> <4B7B3B33.6010504@kernel.org>
+In-Reply-To: <4B7B3B33.6010504@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 02/16/2010 04:41 PM, Yinghai Lu wrote:
+> 
+> I would like to.
+> 
+> but for x86, with CONFIG_NO_BOOTMEM set or not, early_res are all used.
+> 
+> so we add CONFIG_HAVE_EARLY_RES ?
+> 
 
-1) When TCP timestamps are disabled, we can end up with an
-   ->srtt of zero after the three way handshake, and if the
-   right series of losses occur afterwards we end up in an
-   ACK war.  Fix from Damian Lukowski.
+Presumably, and force it true on x86.
 
-2) Fix 1G flow control and WOL setup in IXGBE driver, from Don	
-   Skidmore.
+	-hpa
 
-3) Type in SSB layer causes SDIOHOST case to not hookup parent
-   bus/device pointers properly.  Fix from Michael Buesch.
-
-4) Fix locking regressions wrt. ->poll() and changing IRQ coalesce
-   settings in VIA Velocity driver.  From Simon Kagstrom.
-
-5) Looking at the GRO setting by normal users is restricted
-   unnecessarily.  From Stephen Hemminger.
-
-6) Couple of wireless stragglers including a B43 throughput
-   regression fix from Larry Finger.
-
-7) We pretend to handle IGMPv3 reports, but really the structure
-   is different so such handling is wrong.  Fix from Herbert Xu.
-
-8) be2net driver fix to properly initialize the version field to
-   zero in request headers.  From Ajit Khaparde.
-
-9) IPCOMP can double release an object on errors, from Herbert Xu.
-
-10) If an error happens when cloning an XFRM state we'll leak
-    the module reference because we directly kfree() instead of
-    doing a put on the object.  Also from Herbert Xu.
-
-Please pull, thanks a lot!
-
-The following changes since commit 88626272549b94310975932a9970d11a9b362a16:
-  Linus Torvalds (1):
-        Merge git://git.kernel.org/.../agk/linux-2.6-dm
-
-are available in the git repository at:
-
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
-
-Ajit Khaparde (1):
-      be2net: set proper value to version field in req hdr
-
-Benoit Papillault (1):
-      mac80211: Fix probe request filtering in IBSS mode
-
-Damian Lukowski (1):
-      tcp: fix ICMP-RTO war
-
-David S. Miller (2):
-      Merge branch 'master' of git://git.kernel.org/.../linville/wireless-2.6
-      Merge branch 'master' of ssh://master.kernel.org/.../linville/wireless-2.6
-
-Don Skidmore (2):
-      ixgbe: Fix - Do not allow Rx FC on 82598 at 1G due to errata
-      ixgbe: fix WOL register setup for 82599
-
-Herbert Xu (3):
-      inet: Remove bogus IGMPv3 report handling
-      ipcomp: Avoid duplicate calls to ipcomp_destroy
-      xfrm: Fix xfrm_state_clone leak
-
-Jelle Martijn Kok (1):
-      rtl8187: Add new device ID
-
-Johannes Berg (1):
-      mac80211: fix deferred hardware scan requests
-
-Juuso Oikarinen (1):
-      mac80211: fix handling of null-rate control in rate_control_get_rate
-
-Larry Finger (1):
-      b43: Fix throughput regression
-
-Michael Buesch (1):
-      ssb: Fix CONFIG_SSB_SDIOHOST typo
-
-Roel Kluin (1):
-      iwmc3200wifi: Test of wrong pointer after kzalloc in iwm_mlme_update_bss_table()
-
-Shanyu Zhao (1):
-      iwlwifi: fix AMSDU Rx after paged Rx patch
-
-Simon Kagstrom (3):
-      via-velocity: Remove unused IRQ status parameter from rx_srv and tx_srv
-      via-velocity: Take spinlock on set coalesce
-      via-velocity: Fix races on shared interrupts
-
-Steve Hodgson (1):
-      sfc: Fix SFE4002 initialisation
-
-Sujith (1):
-      ath9k: Fix sequence numbers for PAE frames
-
-Wey-Yi Guy (1):
-      iwlwifi: Fix to set correct ht configuration
-
-stephen hemminger (1):
-      ethtool: allow non-admin user to read GRO settings.
-
- drivers/net/benet/be_cmds.c                |    1 +
- drivers/net/ixgbe/ixgbe_82598.c            |   22 +++++++++++++++
- drivers/net/ixgbe/ixgbe_main.c             |    4 +++
- drivers/net/sfc/efx.c                      |    1 +
- drivers/net/sfc/qt202x_phy.c               |    2 +-
- drivers/net/via-velocity.c                 |   41 +++++++++++++--------------
- drivers/net/wireless/ath/ath9k/xmit.c      |    4 +-
- drivers/net/wireless/b43/b43.h             |    1 +
- drivers/net/wireless/b43/main.c            |   13 +++++++--
- drivers/net/wireless/iwlwifi/iwl-core.c    |    1 +
- drivers/net/wireless/iwlwifi/iwl-rx.c      |    5 +++-
- drivers/net/wireless/iwmc3200wifi/rx.c     |    2 +-
- drivers/net/wireless/rtl818x/rtl8187_dev.c |    1 +
- drivers/ssb/main.c                         |    3 +-
- net/core/ethtool.c                         |    1 +
- net/ipv4/igmp.c                            |    2 +-
- net/ipv4/ipcomp.c                          |    6 +---
- net/ipv4/tcp_input.c                       |    6 +---
- net/ipv6/ipcomp6.c                         |    6 +---
- net/mac80211/ibss.c                        |    2 +-
- net/mac80211/rate.c                        |    3 ++
- net/mac80211/scan.c                        |   18 +++++++-----
- net/xfrm/xfrm_state.c                      |   12 ++------
- 23 files changed, 93 insertions(+), 64 deletions(-)
