@@ -1,75 +1,240 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933267Ab0BQNnz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 08:43:55 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:18804 "EHLO mx1.redhat.com"
+	id S934262Ab0BQNps (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 08:45:48 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:21004 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932695Ab0BQNny (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 08:43:54 -0500
-Message-ID: <4B7BF28E.5060405@redhat.com>
-Date: Wed, 17 Feb 2010 13:43:42 +0000
-From: Christine Caulfield <ccaulfie@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: Steven Whitehouse <swhiteho@redhat.com>
-CC: David Teigland <teigland@redhat.com>, cluster-devel@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Cluster-devel] dlm: Remove/bypass astd
-References: <1266413019.2907.27.camel@localhost>
-In-Reply-To: <1266413019.2907.27.camel@localhost>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S934100Ab0BQNpi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 08:45:38 -0500
+From: Avi Kivity <avi@redhat.com>
+To: kvm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 17/20] KVM: x86 emulator: Add LOCK prefix validity checking
+Date: Wed, 17 Feb 2010 15:45:27 +0200
+Message-Id: <1266414330-27444-18-git-send-email-avi@redhat.com>
+In-Reply-To: <1266414330-27444-1-git-send-email-avi@redhat.com>
+References: <1266414330-27444-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-One of the reasons that ASTs are delivered in a separate thread was to 
-allow ASTs do do other locking operations without causing a deadlock. 
-eg. it would allow locks to be dropped or converted inside a blocking 
-AST callback routine.
+From: Gleb Natapov <gleb@redhat.com>
 
-So maybe either the new code already allows for this or it's 
-functionality that's not needed in the kernel. It should still be an 
-option for userspace applications, but that's a different story 
-altogether, of course
+Instructions which are not allowed to have LOCK prefix should
+generate #UD if one is used.
 
-Chrissie
+[avi: fold opcode 82 fix from another patch]
 
-On 17/02/10 13:23, Steven Whitehouse wrote:
->
-> While investigating Red Hat bug #537010 I started looking at the dlm's astd
-> thread. The way in which the "cast" and "bast" requests are queued looked
-> as if it might cause reordering since the "bast" requests are always
-> delivered after any pending "cast" requests which is not always the
-> correct ordering. This patch doesn't fix that bug, but it will prevent any
-> races in that bit of code, and the performance benefits are also well
-> worth having.
->
-> I noticed that astd seems to be extraneous to requirements. The notifications
-> to astd are already running in process context, so they could be delivered
-> directly. That should improve smp performance since all the notifications
-> would no longer be funneled through a single thread.
->
-> Also, the only other function of astd seemed to be stopping the delivery
-> of these notifications during recovery. Since, however, the notifications
-> which are intercepted at recovery time are neither modified, nor filtered
-> in any way, the only effect is to delay notifications for no obvious reason.
->
-> I thought that probably removing the astd thread and delivering the "cast"
-> and "bast" notifications directly would improve performance due to the
-> elimination of a scheduling delay. I wrote a small test module which
-> creates a dlm lock space, and does 100,000 NL ->  EX ->  NL lock conversions.
->
-> Having run this test 10 times each on a 2.6.33-rc8 kernel and then the modified
-> kernel including this patch, I got the following results:
->
-> Original: Avg time 24.62 us per conversion (NL ->  EX ->  NL)
-> Modified: Avg time 9.93 us per conversion
->
-> Which is a fairly dramatic speed up. Please consider applying this patch.
-> I've tested it in both clustered and single node GFS2 configurations. The test
-> figures are from a single node configuration which was a deliberate choice
-> in order to avoid any effects of network latency.
->
-> Signed-off-by: Steven Whitehouse<swhiteho@redhat.com>
-> ---
+Signed-off-by: Gleb Natapov <gleb@redhat.com>
+Signed-off-by: Avi Kivity <avi@redhat.com>
+---
+ arch/x86/kvm/emulate.c |   97 +++++++++++++++++++++++++++--------------------
+ 1 files changed, 56 insertions(+), 41 deletions(-)
+
+diff --git a/arch/x86/kvm/emulate.c b/arch/x86/kvm/emulate.c
+index d632111..c2de9f0 100644
+--- a/arch/x86/kvm/emulate.c
++++ b/arch/x86/kvm/emulate.c
+@@ -76,6 +76,7 @@
+ #define GroupDual   (1<<15)     /* Alternate decoding of mod == 3 */
+ #define GroupMask   0xff        /* Group number stored in bits 0:7 */
+ /* Misc flags */
++#define Lock        (1<<26) /* lock prefix is allowed for the instruction */
+ #define Priv        (1<<27) /* instruction generates #GP if current CPL != 0 */
+ #define No64	    (1<<28)
+ /* Source 2 operand type */
+@@ -94,35 +95,35 @@ enum {
+ 
+ static u32 opcode_table[256] = {
+ 	/* 0x00 - 0x07 */
+-	ByteOp | DstMem | SrcReg | ModRM, DstMem | SrcReg | ModRM,
++	ByteOp | DstMem | SrcReg | ModRM | Lock, DstMem | SrcReg | ModRM | Lock,
+ 	ByteOp | DstReg | SrcMem | ModRM, DstReg | SrcMem | ModRM,
+ 	ByteOp | DstAcc | SrcImm, DstAcc | SrcImm,
+ 	ImplicitOps | Stack | No64, ImplicitOps | Stack | No64,
+ 	/* 0x08 - 0x0F */
+-	ByteOp | DstMem | SrcReg | ModRM, DstMem | SrcReg | ModRM,
++	ByteOp | DstMem | SrcReg | ModRM | Lock, DstMem | SrcReg | ModRM | Lock,
+ 	ByteOp | DstReg | SrcMem | ModRM, DstReg | SrcMem | ModRM,
+ 	ByteOp | DstAcc | SrcImm, DstAcc | SrcImm,
+ 	ImplicitOps | Stack | No64, 0,
+ 	/* 0x10 - 0x17 */
+-	ByteOp | DstMem | SrcReg | ModRM, DstMem | SrcReg | ModRM,
++	ByteOp | DstMem | SrcReg | ModRM | Lock, DstMem | SrcReg | ModRM | Lock,
+ 	ByteOp | DstReg | SrcMem | ModRM, DstReg | SrcMem | ModRM,
+ 	ByteOp | DstAcc | SrcImm, DstAcc | SrcImm,
+ 	ImplicitOps | Stack | No64, ImplicitOps | Stack | No64,
+ 	/* 0x18 - 0x1F */
+-	ByteOp | DstMem | SrcReg | ModRM, DstMem | SrcReg | ModRM,
++	ByteOp | DstMem | SrcReg | ModRM | Lock, DstMem | SrcReg | ModRM | Lock,
+ 	ByteOp | DstReg | SrcMem | ModRM, DstReg | SrcMem | ModRM,
+ 	ByteOp | DstAcc | SrcImm, DstAcc | SrcImm,
+ 	ImplicitOps | Stack | No64, ImplicitOps | Stack | No64,
+ 	/* 0x20 - 0x27 */
+-	ByteOp | DstMem | SrcReg | ModRM, DstMem | SrcReg | ModRM,
++	ByteOp | DstMem | SrcReg | ModRM | Lock, DstMem | SrcReg | ModRM | Lock,
+ 	ByteOp | DstReg | SrcMem | ModRM, DstReg | SrcMem | ModRM,
+ 	DstAcc | SrcImmByte, DstAcc | SrcImm, 0, 0,
+ 	/* 0x28 - 0x2F */
+-	ByteOp | DstMem | SrcReg | ModRM, DstMem | SrcReg | ModRM,
++	ByteOp | DstMem | SrcReg | ModRM | Lock, DstMem | SrcReg | ModRM | Lock,
+ 	ByteOp | DstReg | SrcMem | ModRM, DstReg | SrcMem | ModRM,
+ 	0, 0, 0, 0,
+ 	/* 0x30 - 0x37 */
+-	ByteOp | DstMem | SrcReg | ModRM, DstMem | SrcReg | ModRM,
++	ByteOp | DstMem | SrcReg | ModRM | Lock, DstMem | SrcReg | ModRM | Lock,
+ 	ByteOp | DstReg | SrcMem | ModRM, DstReg | SrcMem | ModRM,
+ 	0, 0, 0, 0,
+ 	/* 0x38 - 0x3F */
+@@ -158,7 +159,7 @@ static u32 opcode_table[256] = {
+ 	Group | Group1_80, Group | Group1_81,
+ 	Group | Group1_82, Group | Group1_83,
+ 	ByteOp | DstMem | SrcReg | ModRM, DstMem | SrcReg | ModRM,
+-	ByteOp | DstMem | SrcReg | ModRM, DstMem | SrcReg | ModRM,
++	ByteOp | DstMem | SrcReg | ModRM | Lock, DstMem | SrcReg | ModRM | Lock,
+ 	/* 0x88 - 0x8F */
+ 	ByteOp | DstMem | SrcReg | ModRM | Mov, DstMem | SrcReg | ModRM | Mov,
+ 	ByteOp | DstReg | SrcMem | ModRM | Mov, DstReg | SrcMem | ModRM | Mov,
+@@ -263,17 +264,18 @@ static u32 twobyte_table[256] = {
+ 	DstMem | SrcReg | Src2CL | ModRM, 0, 0,
+ 	/* 0xA8 - 0xAF */
+ 	ImplicitOps | Stack, ImplicitOps | Stack,
+-	0, DstMem | SrcReg | ModRM | BitOp,
++	0, DstMem | SrcReg | ModRM | BitOp | Lock,
+ 	DstMem | SrcReg | Src2ImmByte | ModRM,
+ 	DstMem | SrcReg | Src2CL | ModRM,
+ 	ModRM, 0,
+ 	/* 0xB0 - 0xB7 */
+-	ByteOp | DstMem | SrcReg | ModRM, DstMem | SrcReg | ModRM, 0,
+-	    DstMem | SrcReg | ModRM | BitOp,
++	ByteOp | DstMem | SrcReg | ModRM | Lock, DstMem | SrcReg | ModRM | Lock,
++	0, DstMem | SrcReg | ModRM | BitOp | Lock,
+ 	0, 0, ByteOp | DstReg | SrcMem | ModRM | Mov,
+ 	    DstReg | SrcMem16 | ModRM | Mov,
+ 	/* 0xB8 - 0xBF */
+-	0, 0, Group | Group8, DstMem | SrcReg | ModRM | BitOp,
++	0, 0,
++	Group | Group8, DstMem | SrcReg | ModRM | BitOp | Lock,
+ 	0, 0, ByteOp | DstReg | SrcMem | ModRM | Mov,
+ 	    DstReg | SrcMem16 | ModRM | Mov,
+ 	/* 0xC0 - 0xCF */
+@@ -290,25 +292,41 @@ static u32 twobyte_table[256] = {
+ 
+ static u32 group_table[] = {
+ 	[Group1_80*8] =
+-	ByteOp | DstMem | SrcImm | ModRM, ByteOp | DstMem | SrcImm | ModRM,
+-	ByteOp | DstMem | SrcImm | ModRM, ByteOp | DstMem | SrcImm | ModRM,
+-	ByteOp | DstMem | SrcImm | ModRM, ByteOp | DstMem | SrcImm | ModRM,
+-	ByteOp | DstMem | SrcImm | ModRM, ByteOp | DstMem | SrcImm | ModRM,
++	ByteOp | DstMem | SrcImm | ModRM | Lock,
++	ByteOp | DstMem | SrcImm | ModRM | Lock,
++	ByteOp | DstMem | SrcImm | ModRM | Lock,
++	ByteOp | DstMem | SrcImm | ModRM | Lock,
++	ByteOp | DstMem | SrcImm | ModRM | Lock,
++	ByteOp | DstMem | SrcImm | ModRM | Lock,
++	ByteOp | DstMem | SrcImm | ModRM | Lock,
++	ByteOp | DstMem | SrcImm | ModRM,
+ 	[Group1_81*8] =
+-	DstMem | SrcImm | ModRM, DstMem | SrcImm | ModRM,
+-	DstMem | SrcImm | ModRM, DstMem | SrcImm | ModRM,
+-	DstMem | SrcImm | ModRM, DstMem | SrcImm | ModRM,
+-	DstMem | SrcImm | ModRM, DstMem | SrcImm | ModRM,
++	DstMem | SrcImm | ModRM | Lock,
++	DstMem | SrcImm | ModRM | Lock,
++	DstMem | SrcImm | ModRM | Lock,
++	DstMem | SrcImm | ModRM | Lock,
++	DstMem | SrcImm | ModRM | Lock,
++	DstMem | SrcImm | ModRM | Lock,
++	DstMem | SrcImm | ModRM | Lock,
++	DstMem | SrcImm | ModRM,
+ 	[Group1_82*8] =
+-	ByteOp | DstMem | SrcImm | ModRM, ByteOp | DstMem | SrcImm | ModRM,
+-	ByteOp | DstMem | SrcImm | ModRM, ByteOp | DstMem | SrcImm | ModRM,
+-	ByteOp | DstMem | SrcImm | ModRM, ByteOp | DstMem | SrcImm | ModRM,
+-	ByteOp | DstMem | SrcImm | ModRM, ByteOp | DstMem | SrcImm | ModRM,
++	ByteOp | DstMem | SrcImm | ModRM | Lock,
++	ByteOp | DstMem | SrcImm | ModRM | Lock,
++	ByteOp | DstMem | SrcImm | ModRM | Lock,
++	ByteOp | DstMem | SrcImm | ModRM | Lock,
++	ByteOp | DstMem | SrcImm | ModRM | Lock,
++	ByteOp | DstMem | SrcImm | ModRM | Lock,
++	ByteOp | DstMem | SrcImm | ModRM | Lock,
++	ByteOp | DstMem | SrcImm | ModRM,
+ 	[Group1_83*8] =
+-	DstMem | SrcImmByte | ModRM, DstMem | SrcImmByte | ModRM,
+-	DstMem | SrcImmByte | ModRM, DstMem | SrcImmByte | ModRM,
+-	DstMem | SrcImmByte | ModRM, DstMem | SrcImmByte | ModRM,
+-	DstMem | SrcImmByte | ModRM, DstMem | SrcImmByte | ModRM,
++	DstMem | SrcImmByte | ModRM | Lock,
++	DstMem | SrcImmByte | ModRM | Lock,
++	DstMem | SrcImmByte | ModRM | Lock,
++	DstMem | SrcImmByte | ModRM | Lock,
++	DstMem | SrcImmByte | ModRM | Lock,
++	DstMem | SrcImmByte | ModRM | Lock,
++	DstMem | SrcImmByte | ModRM | Lock,
++	DstMem | SrcImmByte | ModRM,
+ 	[Group1A*8] =
+ 	DstMem | SrcNone | ModRM | Mov | Stack, 0, 0, 0, 0, 0, 0, 0,
+ 	[Group3_Byte*8] =
+@@ -332,10 +350,10 @@ static u32 group_table[] = {
+ 	SrcMem16 | ModRM | Mov | Priv, SrcMem | ModRM | ByteOp | Priv,
+ 	[Group8*8] =
+ 	0, 0, 0, 0,
+-	DstMem | SrcImmByte | ModRM, DstMem | SrcImmByte | ModRM,
+-	DstMem | SrcImmByte | ModRM, DstMem | SrcImmByte | ModRM,
++	DstMem | SrcImmByte | ModRM, DstMem | SrcImmByte | ModRM | Lock,
++	DstMem | SrcImmByte | ModRM | Lock, DstMem | SrcImmByte | ModRM | Lock,
+ 	[Group9*8] =
+-	0, ImplicitOps | ModRM, 0, 0, 0, 0, 0, 0,
++	0, ImplicitOps | ModRM | Lock, 0, 0, 0, 0, 0, 0,
+ };
+ 
+ static u32 group2_table[] = {
+@@ -1580,8 +1598,7 @@ emulate_syscall(struct x86_emulate_ctxt *ctxt)
+ 	u64 msr_data;
+ 
+ 	/* syscall is not available in real mode */
+-	if (c->lock_prefix || ctxt->mode == X86EMUL_MODE_REAL
+-	    || ctxt->mode == X86EMUL_MODE_VM86)
++	if (ctxt->mode == X86EMUL_MODE_REAL || ctxt->mode == X86EMUL_MODE_VM86)
+ 		return -1;
+ 
+ 	setup_syscalls_segments(ctxt, &cs, &ss);
+@@ -1629,10 +1646,6 @@ emulate_sysenter(struct x86_emulate_ctxt *ctxt)
+ 	struct kvm_segment cs, ss;
+ 	u64 msr_data;
+ 
+-	/* inject #UD if LOCK prefix is used */
+-	if (c->lock_prefix)
+-		return -1;
+-
+ 	/* inject #GP if in real mode */
+ 	if (ctxt->mode == X86EMUL_MODE_REAL) {
+ 		kvm_inject_gp(ctxt->vcpu, 0);
+@@ -1694,10 +1707,6 @@ emulate_sysexit(struct x86_emulate_ctxt *ctxt)
+ 	u64 msr_data;
+ 	int usermode;
+ 
+-	/* inject #UD if LOCK prefix is used */
+-	if (c->lock_prefix)
+-		return -1;
+-
+ 	/* inject #GP if in real mode or Virtual 8086 mode */
+ 	if (ctxt->mode == X86EMUL_MODE_REAL ||
+ 	    ctxt->mode == X86EMUL_MODE_VM86) {
+@@ -1819,6 +1828,12 @@ x86_emulate_insn(struct x86_emulate_ctxt *ctxt, struct x86_emulate_ops *ops)
+ 	memcpy(c->regs, ctxt->vcpu->arch.regs, sizeof c->regs);
+ 	saved_eip = c->eip;
+ 
++	/* LOCK prefix is allowed only with some instructions */
++	if (c->lock_prefix && !(c->d & Lock)) {
++		kvm_queue_exception(ctxt->vcpu, UD_VECTOR);
++		goto done;
++	}
++
+ 	/* Privileged instruction can be executed only in CPL=0 */
+ 	if ((c->d & Priv) && kvm_x86_ops->get_cpl(ctxt->vcpu)) {
+ 		kvm_inject_gp(ctxt->vcpu, 0);
+-- 
+1.6.5.3
+
