@@ -1,90 +1,41 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757909Ab0BQXYU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 18:24:20 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:40612 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757868Ab0BQXYT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 18:24:19 -0500
-Date: Thu, 18 Feb 2010 10:24:07 +1100
-From: Neil Brown <neilb@suse.de>
-To: david@lang.hm
-Cc: Nick Bowler <nbowler@elliptictech.com>,
-       Volker Armin Hemmann <volkerarmin@googlemail.com>,
-       Kyle Moffett <kyle@moffetthome.net>,
-       Rudy Zijlstra <rudy@grumpydevil.homelinux.org>,
-       "Mr. James W. Laferriere" <babydr@baby-dragons.com>,
-       Bill Davidsen <davidsen@tmr.com>, Michael Evans <mjevans1983@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
-Subject: Re: (boot time consequences of) Linux mdadm superblock question.
-Message-ID: <20100218102407.49f73d67@notabene.brown>
-In-Reply-To: <alpine.DEB.2.00.1002171040350.4721@asgard.lang.hm>
-References: <201002140251.59668.volkerarmin@googlemail.com>
-	<alpine.DEB.2.00.1002170932010.4721@asgard.lang.hm>
-	<20100217181016.GA14983@emergent.ellipticsemi.com>
-	<201002171927.07051.volkerarmin@googlemail.com>
-	<20100217183703.GA15446@emergent.ellipticsemi.com>
-	<alpine.DEB.2.00.1002171040350.4721@asgard.lang.hm>
-X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.6; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1757920Ab0BQXZs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 18:25:48 -0500
+Received: from h1466845.stratoserver.net ([85.214.63.213]:60608 "EHLO
+	h1466845.stratoserver.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757868Ab0BQXZr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 18:25:47 -0500
+Message-ID: <4B7C7AF3.7050508@d2ux.org>
+Date: Thu, 18 Feb 2010 00:25:39 +0100
+From: Matthias Petermann <matthias@d2ux.org>
+User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; de; rv:1.9.1.7) Gecko/20100111 Lightning/1.0b1 Thunderbird/3.0.1
+MIME-Version: 1.0
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+CC: Alex Chiang <achiang@hp.com>, linux-kernel@vger.kernel.org,
+       linux-input@vger.kernel.org
+Subject: Re: Synaptics touchpad doesn't click (refers thread from December
+ 2009)
+References: <4B7B1229.4030008@d2ux.org> <20100217194902.GA28560@ldl.fc.hp.com> <20100217195626.GC32353@ldl.fc.hp.com> <20100217200214.GA1948@core.coreip.homeip.net>
+In-Reply-To: <20100217200214.GA1948@core.coreip.homeip.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Feb 2010 10:41:34 -0800 (PST)
-david@lang.hm wrote:
+Am 17.02.10 21:02, schrieb Dmitry Torokhov:
+> On Wed, Feb 17, 2010 at 12:56:26PM -0700, Alex Chiang wrote:
+>> Sigh, sorry. I fat-fingered Dmitry's email address.
+>>
+>
+> Arhg, lost track of it in my INBOX, so not merged yet, sorry.
 
-> On Wed, 17 Feb 2010, Nick Bowler wrote:
-> 
-> > On 19:27 Wed 17 Feb     , Volker Armin Hemmann wrote:
-> >> On Mittwoch 17 Februar 2010, Nick Bowler wrote:
-> >>> On 09:41 Wed 17 Feb     , david@lang.hm wrote:
-> >>>> for a distro that is trying to make one kernel image run on every
-> >>>> possible type of hardware features like initramfs (and udev, modeules,
-> >>>> etc) are wonderful.
-> >>>>
-> >>>> however for people who run systems that are known ahead of time and
-> >>>> static (and who build their own kernels instead of just relying on the
-> >>>> distro default kernel), all of this is unnessesary complication, which
-> >>>> leaves more room for problems to creep in.
-> >>>
-> >>> Such people can easily construct an initramfs containing busybox and
-> >>> mdadm with a shell script hardcoded to mount their root fs and run
-> >>> switch_root.  It's a ~10 minute jobbie that only needs to be done once.
-> >>
-> >> and even better when you don't have to do that one time job at all.
-> >
-> > But people who are building their own kernels are already doing a
-> > (much harder, imo) one time job of configuring their kernels.
-> >
-> >> btw, what about additional delay?
-> >
-> > It takes about half a second for mdadm to assemble my root array, is
-> > that what you're referring to?
-> >
-> > I assume that kernel auto-assembly is no faster, although I've never
-> > used it.  Regardless, half a second isn't very long to wait.
-> 
-> If you are aiming for a 5-second boot time it's 10% of your total boot 
-> time. That's a lot for a feature that's not needed.
+Dmitry, thank you for that fast response. Do you expect to find some 
+time to merge the patch into the trunk in the next weeks, and/or is any 
+help on this welcome? Could you please give me a hint for which kernel 
+version the patch initially was written?
 
-It is worth noting that the Team that was recently working for v.short boot
-times wanted to disable in-kernel autodetect for RAID, and added a
-compile-time option to do just that.
-
-The reason is that before the in-kernel autodetection can work reliably you
-have to wait for all storage devices to have been discovered.  That wait
-can unnecessarily increase the total boot time.
-
-Using user-space autodetection, you can plug "mdadm -I" into udev, and have
-arrays assembled as they are found, and filesystems mounted as arrays are
-assembled, and then you just have to wait for the root filesystem to appear,
-not for "all devices".
-
-Yes, you could make the in-kernel autodetection smarter so it doesn't have to
-wait quite so long, but that would make it quite a bit more complex, and it
-is harder to maintain the complexity in the kernel.
-
-NeilBrown
+Thanks & kind regards,
+Matthias
