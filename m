@@ -1,13 +1,12 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752199Ab0BQPkb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 10:40:31 -0500
-Received: from new-admin0.cambridge.arm.com ([217.140.96.53]:55421 "EHLO
+	id S1752350Ab0BQPko (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 10:40:44 -0500
+Received: from new-admin0.cambridge.arm.com ([217.140.96.53]:55436 "EHLO
 	new-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752081Ab0BQPk0 convert rfc822-to-8bit
+	by vger.kernel.org with ESMTP id S1752081Ab0BQPkl convert rfc822-to-8bit
 	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 10:40:26 -0500
-X-Greylist: delayed 710 seconds by postgrey-1.27 at vger.kernel.org; Wed, 17 Feb 2010 10:40:26 EST
+	Wed, 17 Feb 2010 10:40:41 -0500
 X-MimeOLE: Produced By Microsoft Exchange V6.5
 Content-class: urn:content-classes:message
 MIME-Version: 1.0
@@ -15,13 +14,13 @@ Content-Type: text/plain;
 	charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
 Subject: Re: Re: USB mass storage and ARM cache coherency
-Date: Wed, 17 Feb 2010 15:39:45 -0000
-Message-ID: <39E9E98DF632C2469FF2FC07853B70C6058006B5@ZIPPY.Emea.Arm.com>
+Date: Wed, 17 Feb 2010 15:40:06 -0000
+Message-ID: <39E9E98DF632C2469FF2FC07853B70C6058006B6@ZIPPY.Emea.Arm.com>
 In-Reply-To: <1266397543.16346.264.camel@pasglop>
 X-MS-Has-Attach: 
 X-MS-TNEF-Correlator: 
 Thread-Topic: Re: USB mass storage and ARM cache coherency
-Thread-Index: Acqv524o9hxtmE4FQpqVRoHMCLpkjQ==
+Thread-Index: Acqv53p425qFYwKSQoC0Jn7/j8bTxA==
 References: <20100208065519.GE1290@ucw.cz> <1265628483.4020.63.camel@pc1117.cambridge.arm.com> <EAF47CD23C76F840A9E7FCE10091EFAB02C3CF7D50@dbde02.ent.ti.com> <201002160922.47072.oliver@neukum.org> <1266397543.16346.264.camel@pasglop>
 From: "Catalin Marinas" <Catalin.Marinas@arm.com>
 To: <benh@kernel.crashing.org>
