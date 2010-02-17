@@ -1,46 +1,67 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754860Ab0BQULH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 15:11:07 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:45615 "EHLO ogre.sisk.pl"
+	id S1754893Ab0BQUMv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 15:12:51 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:25843 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754537Ab0BQULE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 15:11:04 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pedro Ribeiro <pedrib@gmail.com>
-Subject: Re: 2.6.33-rc8 regression on i915: resume from hibernate locks up every 2nd time
-Date: Wed, 17 Feb 2010 21:11:42 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.33-rc8-rjw; KDE/4.3.5; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, intel-gfx@lists.freedesktop.org
-References: <74fd948d1002171047g70d2bba0l957e264dfbc8ea23@mail.gmail.com>
-In-Reply-To: <74fd948d1002171047g70d2bba0l957e264dfbc8ea23@mail.gmail.com>
+	id S1753736Ab0BQUMu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 15:12:50 -0500
+Date: Wed, 17 Feb 2010 15:12:43 -0500
+From: David Teigland <teigland@redhat.com>
+To: Steven Whitehouse <swhiteho@redhat.com>
+Cc: cluster-devel@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] dlm: Remove obsolete lockspace lookup
+Message-ID: <20100217201243.GA29576@redhat.com>
+References: <1266399695-29885-1-git-send-email-swhiteho@redhat.com>
+ <1266399695-29885-2-git-send-email-swhiteho@redhat.com>
+ <1266399695-29885-3-git-send-email-swhiteho@redhat.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201002172111.42511.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1266399695-29885-3-git-send-email-swhiteho@redhat.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 17 February 2010, Pedro Ribeiro wrote:
-> Hi,
+On Wed, Feb 17, 2010 at 09:41:35AM +0000, Steven Whitehouse wrote:
+> We don't need to look up the lockspace in this particular
+> case since we already have a pointer to it (which was being
+> dereferenced in order to do the lookup in the first place).
+
+It'll take more to convince me that that reference from find isn't needed.
+My assumption is that I added it because it was.
+
+Dave
+
+> Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
+> ---
+>  fs/dlm/lockspace.c |    6 +-----
+>  1 files changed, 1 insertions(+), 5 deletions(-)
 > 
-> commit 84b79f8d2882b0a84330c04839ed4d3cefd2ff77 (drm/i915: Fix crash
-> while aborting hibernation) introduced two new issues which were not
-> present in 2.6.33-rc7:
-> 
-> - every second resume from hibernate results in a blank screen
-> - the annoying flash at the end of atomic copy/restore during the
-> hibernate process is back (present in kernels < 2.6.33)
-> 
-> The first issue is serious, the second is just an annoyance.
-
-The second one is an expected price of fixing the aborted hibernation
-regression.
-
-The first one shouldn't happen, though.
-
-I'll see if I can reproduce that locally.
-
-Rafael
+> diff --git a/fs/dlm/lockspace.c b/fs/dlm/lockspace.c
+> index 26a8bd4..ce0fdf5 100644
+> --- a/fs/dlm/lockspace.c
+> +++ b/fs/dlm/lockspace.c
+> @@ -37,10 +37,6 @@ static ssize_t dlm_control_store(struct dlm_ls *ls, const char *buf, size_t len)
+>  	ssize_t ret = len;
+>  	int n = simple_strtol(buf, NULL, 0);
+>  
+> -	ls = dlm_find_lockspace_local(ls->ls_local_handle);
+> -	if (!ls)
+> -		return -EINVAL;
+> -
+>  	switch (n) {
+>  	case 0:
+>  		dlm_ls_stop(ls);
+> @@ -51,7 +47,7 @@ static ssize_t dlm_control_store(struct dlm_ls *ls, const char *buf, size_t len)
+>  	default:
+>  		ret = -EINVAL;
+>  	}
+> -	dlm_put_lockspace(ls);
+> +
+>  	return ret;
+>  }
+>  
+> -- 
+> 1.6.2.5
