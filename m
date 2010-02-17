@@ -1,76 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757755Ab0BQXIt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 18:08:49 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:59101 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757576Ab0BQXIs (ORCPT
+	id S1757791Ab0BQXJJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 18:09:09 -0500
+Received: from tomts20.bellnexxia.net ([209.226.175.74]:42048 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755079Ab0BQXJG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 18:08:48 -0500
-Date: Wed, 17 Feb 2010 23:08:47 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] backlight: Add support for exposing backlight types
-Message-ID: <20100217230847.GA29144@srcf.ucam.org>
-References: <1266442785-3998-1-git-send-email-mjg@redhat.com> <1266442785-3998-2-git-send-email-mjg@redhat.com> <1266447084.6436.483.camel@rex>
-MIME-Version: 1.0
+	Wed, 17 Feb 2010 18:09:06 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AvsEAGIFfEtGGOLY/2dsb2JhbACbBHW+EoRdBIMV
+Date: Wed, 17 Feb 2010 18:08:54 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+To: naresh kamboju <naresh.kernel@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org,
+       Steven Rostedt <rostedt@goodmis.org>, linux-rt-users@vger.kernel.org
+Subject: Re: [ltt-dev] LTTng 0.193 fixes RT kernel support
+Message-ID: <20100217230854.GA25636@Krystal>
+References: <f5a7b3811002160717y65b4577buf53e5784c71575c3@mail.gmail.com> <1266337450.24271.140.camel@gandalf.stny.rr.com> <alpine.LFD.2.00.1002161727570.2811@localhost.localdomain> <20100216164744.GA25115@Krystal> <alpine.LFD.2.00.1002161757050.2811@localhost.localdomain> <20100216170540.GA28039@Krystal> <f5a7b3811002170236i6c560eadp2de7deb10082db4f@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1266447084.6436.483.camel@rex>
+In-Reply-To: <f5a7b3811002170236i6c560eadp2de7deb10082db4f@mail.gmail.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 18:03:23 up 63 days,  7:21,  5 users,  load average: 0.02, 0.09,
+	0.08
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 17, 2010 at 10:51:24PM +0000, Richard Purdie wrote:
-> What I'm interested in is how userspace is going to determine which
-> driver(s) it should use?
+* naresh kamboju (naresh.kernel@gmail.com) wrote:
+> Hi,
 > 
-> BACKLIGHT_GPU > BACKLIGHT_PLATFORM > BACKLIGHT_FIRMWARE ?
-
-Other way around, at least on x86. We generally want to use as abstract 
-an approach as possible in order to ensure that we pick respond to 
-changes that the firmware has made.
-
-> or something looking at the device names as well along with some kind of
-> "XXX is better than YYY"?
-
-In the hypothetical future where we can get plug-in displays with 
-backlights yeah.
-
-> > +		The type of interface controlled by <backlight>.
-> > +		"firmware": The driver uses a standard firmware interface
-> > +		"platform": The driver uses a platform-specific interface
-> > +		"gpu": The driver controls hardware registers directly
+> On Tue, Feb 16, 2010 at 10:35 PM, Mathieu Desnoyers <compudj@krystal.dyndns.org> wrote:
+[...]
+> > Oh, right. Thanks for the explanation. I'll look into moving LTTng to a
+> > saner del_timer_sync() scheme to delete the timers.
 > 
-> These descriptions really don't help me much. I can think of several
-> "platform" backlight drivers which control hardware registers directly.
-> When people see these described as "gpu", I can see bug reports coming
-> in. Would "raw" be a better description?
+> Could you give more info regarding, what kind of changes we can work on.
+> let me also work around on it.
+> 
 
-Sure.
+I just released LTTng 0.193 for kernel 2.6.32.4 which includes patches
+fixing these odd per-cpu timer teardowns. The patches concerned are:
 
-> I'm also wondering how we associate backlights to displays. Lets say I
-> have a three output video card which has a backlight control for each
-> connected output. "gpu" isn't going to help me much and I suspect the
-> framebuffer association code already in the backlight class won't help
-> much either since nobody uses it and the framebuffer interfaces are
-> mostly replaced with drm on desktops/laptops? Do we have any plans on
-> how to handle this - its certainly a related problem.
+lttng transport lockless add timer on works with del timer sync
+omap trace clock use del timer sync
+x86 trace clock use mod timer
+trace clock 32 to 64 use del timer sync
 
-Right now, control of anything other than internal displays is going to 
-involve ddcci which is a whole different set of constraints. The only 
-real way of handling that is going to be for userspace to look at the 
-parent device of the backlight, I think.
+(they are at the end of the LTTng 0.193 tree)
 
-> As an aside for the patch itself, I'd like a note about the list of
-> strings in backlight.c needing to be in sync with the ENUM.
+Feedback is welcome,
 
-Fair enough.
+Thanks,
+
+Mathieu
 
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
