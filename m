@@ -1,51 +1,88 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756603Ab0BQVSA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 16:18:00 -0500
-Received: from mail.lang.hm ([64.81.33.126]:36646 "EHLO bifrost.lang.hm"
+	id S1756692Ab0BQVTl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 16:19:41 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:19833 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756496Ab0BQVR7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 16:17:59 -0500
-Date: Wed, 17 Feb 2010 13:17:43 -0800 (PST)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Nick Bowler <nbowler@elliptictech.com>
-cc: Volker Armin Hemmann <volkerarmin@googlemail.com>,
-       Kyle Moffett <kyle@moffetthome.net>,
-       Rudy Zijlstra <rudy@grumpydevil.homelinux.org>,
-       Neil Brown <neilb@suse.de>,
-       "Mr. James W. Laferriere" <babydr@baby-dragons.com>,
-       Bill Davidsen <davidsen@tmr.com>, Michael Evans <mjevans1983@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
-Subject: Re: Linux mdadm superblock question.
-In-Reply-To: <20100217185105.GA15614@emergent.ellipticsemi.com>
-Message-ID: <alpine.DEB.2.00.1002171317080.4721@asgard.lang.hm>
-References: <201002140251.59668.volkerarmin@googlemail.com> <alpine.DEB.2.00.1002170932010.4721@asgard.lang.hm> <20100217181016.GA14983@emergent.ellipticsemi.com> <201002171927.07051.volkerarmin@googlemail.com> <20100217183703.GA15446@emergent.ellipticsemi.com>
- <alpine.DEB.2.00.1002171040350.4721@asgard.lang.hm> <20100217185105.GA15614@emergent.ellipticsemi.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	id S1756609Ab0BQVTj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 16:19:39 -0500
+Message-ID: <4B7C5D60.3010208@redhat.com>
+Date: Wed, 17 Feb 2010 19:19:28 -0200
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+CC: Randy Dunlap <randy.dunlap@oracle.com>,
+       Linux Media Mailing List <linux-media@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 4/4] V4L/DVB: v4l: document new Bayer and monochrome pixel
+ formats
+References: <4B7C239D.6010609@redhat.com> <Pine.LNX.4.64.1002172153020.4623@axis700.grange>
+In-Reply-To: <Pine.LNX.4.64.1002172153020.4623@axis700.grange>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Feb 2010, Nick Bowler wrote:
-
-> On 10:41 Wed 17 Feb     , david@lang.hm wrote:
->> On Wed, 17 Feb 2010, Nick Bowler wrote:
->>> It takes about half a second for mdadm to assemble my root array, is
->>> that what you're referring to?
->>>
->>> I assume that kernel auto-assembly is no faster, although I've never
->>> used it.  Regardless, half a second isn't very long to wait.
+Guennadi Liakhovetski wrote:
+> On Wed, 17 Feb 2010, Mauro Carvalho Chehab wrote:
+> 
+>> Document all four 10-bit Bayer formats, 10-bit monochrome and a missing
+>> 8-bit Bayer formats.
 >>
->> If you are aiming for a 5-second boot time it's 10% of your total boot
->> time. That's a lot for a feature that's not needed.
->
-> Only if the kernel auto-assembly takes zero time, which it obviously
-> does not.
+>> [mchehab@redhat.com: remove duplicated symbol for V4L2-PIX-FMT-SGRBG10]
+>> Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+>> Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
+>> ---
+>>  Documentation/DocBook/Makefile               |    3 +
+>>  Documentation/DocBook/v4l/pixfmt-srggb10.xml |   90 ++++++++++++++++++++++++++
+>>  Documentation/DocBook/v4l/pixfmt-srggb8.xml  |   67 +++++++++++++++++++
+>>  Documentation/DocBook/v4l/pixfmt-y10.xml     |   79 ++++++++++++++++++++++
+>>  Documentation/DocBook/v4l/pixfmt.xml         |    8 +--
+>>  5 files changed, 242 insertions(+), 5 deletions(-)
+>>  create mode 100644 Documentation/DocBook/v4l/pixfmt-srggb10.xml
+>>  create mode 100644 Documentation/DocBook/v4l/pixfmt-srggb8.xml
+>>  create mode 100644 Documentation/DocBook/v4l/pixfmt-y10.xml
+>>
+>> diff --git a/Documentation/DocBook/Makefile b/Documentation/DocBook/Makefile
+>> index 65deaba..1c796fc 100644
+>> --- a/Documentation/DocBook/Makefile
+>> +++ b/Documentation/DocBook/Makefile
+>> @@ -309,6 +309,9 @@ V4L_SGMLS = \
+>>  	v4l/pixfmt-yuv422p.xml \
+>>  	v4l/pixfmt-yuyv.xml \
+>>  	v4l/pixfmt-yvyu.xml \
+>> +	v4l/pixfmt-srggb10.xml \
+>> +	v4l/pixfmt-srggb8.xml \
+>> +	v4l/pixfmt-y10.xml \
+> 
+> Mauro, why didn't you put them next to similar formats, as in my original 
+> patch?
 
-the assembly time would probably be the same, but the initramfs being 
-proposed did not include that time either.
+Guennadi,
 
-David Lang
+Your original patch were against the out-of-tree "media-specs/Makefile", present
+only at the -hg tree. 
+
+The way my conversion scripts work is that they'll convert the patches into a
+patch that can be applied directly into -git. Among other things, all
+changes on files outside the kernel tree are simply discarded by them.
+ 
+Also, before patch 2/4, such addition won't be possible.
+
+So, what happened here is that, after importing from your hg tree, I noticed 
+-git compilation breakage. So, I ported the autobuild bits for media-entities & co,
+manually added the missing pixfmt xml's and removed the duplicate symbol for one
+of the bayer standards.
+
+That's said, I don't really have any preference about the order where the files appear
+at the Makefile. I have no objection if you prefer to add them on any other random order.
+
+In a matter of fact, IMO, the better is to later write a patch that discards
+this static list of files, auto-generating it dynamically.
+
+So, if you really prefer a different order, please re-submit another version for this patch.
+
+Cheers,
+Mauro
