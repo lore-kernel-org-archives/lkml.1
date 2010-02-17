@@ -1,85 +1,141 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932760Ab0BQNYQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 08:24:16 -0500
-Received: from cantor.suse.de ([195.135.220.2]:35704 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932496Ab0BQNYM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 08:24:12 -0500
-Date: Wed, 17 Feb 2010 14:24:09 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: =?ISO-8859-15?Q?Bruno_Pr=E9mont?= <bonbons@linux-vserver.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Oliver Neukum <oliver@neukum.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Marcel Holtmann <marcel@holtmann.org>,
-       H Hartley Sweeten <hsweeten@visionengravers.com>,
-       linux-usb@vger.kernel.org, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: S2R resume crash in 2.6.33-rc7 - NULL pointer dereference in
- dev_get_drvdata() for usbhid
-In-Reply-To: <20100213193609.3337b3f0@neptune.home>
-Message-ID: <alpine.LNX.2.00.1002171423010.30967@pobox.suse.cz>
-References: <20100213135720.603e5f64@neptune.home> <Pine.LNX.4.44L0.1002131238580.23844-100000@netrider.rowland.org> <20100213193609.3337b3f0@neptune.home>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	id S932886Ab0BQN0S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 08:26:18 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:46219 "EHLO
+	bob.linux.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932603Ab0BQN0Q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 08:26:16 -0500
+From: Alan Cox <alan@linux.intel.com>
+Subject: [PATCH] tty: Fix the ldisc hangup race
+To: greg@kroah.com, linux-kernel@vger.kernel.org
+Date: Wed, 17 Feb 2010 13:02:18 +0000
+Message-ID: <20100217130119.15518.26540.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 13 Feb 2010, Bruno Prémont wrote:
+This was noticed by Matthias Urlichs and he proposed a fix. This patch
+does the fixing a different way to avoid introducing several new race
+conditions into the code.
 
-> > > This lets me guess that hid_add_device() is doing something wrong
-> > > here when report parsing fails... (as that one is the only one which
-> > > could be doing the initialization of usbhid which does work for the
-> > > first interface announced by my keyboard)
-> > 
-> > I don't know about doing anything wrong...  However it does appear
-> > that in this case the interface is registered on the HID bus but
-> > doesn't get bound to a driver.  Jiri will know whether or not that's
-> > the desired outcome.
-> > 
-> > On the other hand, I don't think there would be anything wrong with 
-> > moving the
-> > 
-> > 	usbhid->intf = intf;
-> > 	usbhid->ifnum = interface->desc.bInterfaceNumber;
-> > 
-> > lines from usbhid_start() to usbhid_probe(), just before the call to
-> > hid_add_device().  It should fix the bug, and those lines do belong in
-> > the probe routine.  Jiri, any problems with doing this?
-> 
-> With the below patch (which is only half of the move work) I don't
-> get crashes anymore. Though I wonder if other initialization steps
-> (like the spin_lock_init() right before setting usbhid->intf) would
-> need to be moved as well.
-> 
-> Bruno
-> 
-> diff --git a/drivers/hid/usbhid/hid-core.c b/drivers/hid/usbhid/hid-core.c
-> index e2997a8..690ca75 100644
-> --- a/drivers/hid/usbhid/hid-core.c
-> +++ b/drivers/hid/usbhid/hid-core.c
-> @@ -1154,6 +1154,8 @@ static int usbhid_probe(struct usb_interface *intf, const struct usb_device_id *
->  
->  	hid->driver_data = usbhid;
->  	usbhid->hid = hid;
-> +	usbhid->intf = intf;
-> +	usbhid->ifnum = interface->desc.bInterfaceNumber;
->  
->  	ret = hid_add_device(hid);
->  	if (ret) {
-> 
+The problem case is TTY_DRIVER_RESET_TERMIOS = 0. In that case while we
+abort the ldisc change, the hangup processing has not cleaned up and restarted
+the ldisc either.
 
-Thanks for beating me with looking into this guys.
+We can't restart the ldisc stuff in the set_ldisc as we don't know what
+the hangup did and may touch stuff we shouldn't as we are no longer
+supposed to influence the tty at that point in case it has been re-opened
+before we get rescheduled.
 
-I have pushed fix for this into for-next branch, so it should appear in 
-tomorrow linux-next pile. If you still experience the problem, please let 
-me know.
+Instead do it the simple way. Always re-init the ldisc on the hangup, but
+use TTY_DRIVER_RESET_TERMIOS to indicate that we should force N_TTY.
 
-Thanks,
+This wants bedding in thoroughly before backporting because its a subtle and
+nasty bit of the kernel still.
 
--- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+Signed-off-by: Alan Cox <alan@linux.intel.com>
+Cc: stable@kernel.org
+---
+
+ drivers/char/tty_ldisc.c |   50 ++++++++++++++++++++++++++++------------------
+ 1 files changed, 30 insertions(+), 20 deletions(-)
+
+
+diff --git a/drivers/char/tty_ldisc.c b/drivers/char/tty_ldisc.c
+index 3f653f7..500e740 100644
+--- a/drivers/char/tty_ldisc.c
++++ b/drivers/char/tty_ldisc.c
+@@ -706,12 +706,13 @@ static void tty_reset_termios(struct tty_struct *tty)
+ /**
+  *	tty_ldisc_reinit	-	reinitialise the tty ldisc
+  *	@tty: tty to reinit
++ *	@ldisc: line discipline to reinitialize
+  *
+- *	Switch the tty back to N_TTY line discipline and leave the
+- *	ldisc state closed
++ *	Switch the tty to a line discipline and leave the ldisc
++ *	state closed
+  */
+ 
+-static void tty_ldisc_reinit(struct tty_struct *tty)
++static void tty_ldisc_reinit(struct tty_struct *tty, int ldisc)
+ {
+ 	struct tty_ldisc *ld;
+ 
+@@ -721,10 +722,10 @@ static void tty_ldisc_reinit(struct tty_struct *tty)
+ 	/*
+ 	 *	Switch the line discipline back
+ 	 */
+-	ld = tty_ldisc_get(N_TTY);
++	ld = tty_ldisc_get(ldisc);
+ 	BUG_ON(IS_ERR(ld));
+ 	tty_ldisc_assign(tty, ld);
+-	tty_set_termios_ldisc(tty, N_TTY);
++	tty_set_termios_ldisc(tty, ldisc);
+ }
+ 
+ /**
+@@ -745,6 +746,8 @@ static void tty_ldisc_reinit(struct tty_struct *tty)
+ void tty_ldisc_hangup(struct tty_struct *tty)
+ {
+ 	struct tty_ldisc *ld;
++	int reset = tty->driver->flags & TTY_DRIVER_RESET_TERMIOS;
++	int err = 0;
+ 
+ 	/*
+ 	 * FIXME! What are the locking issues here? This may me overdoing
+@@ -772,25 +775,32 @@ void tty_ldisc_hangup(struct tty_struct *tty)
+ 	wake_up_interruptible_poll(&tty->read_wait, POLLIN);
+ 	/*
+ 	 * Shutdown the current line discipline, and reset it to
+-	 * N_TTY.
++	 * N_TTY if need be.
++	 *
++	 * Avoid racing set_ldisc or tty_ldisc_release
+ 	 */
+-	if (tty->driver->flags & TTY_DRIVER_RESET_TERMIOS) {
+-		/* Avoid racing set_ldisc or tty_ldisc_release */
+-		mutex_lock(&tty->ldisc_mutex);
+-		tty_ldisc_halt(tty);
+-		if (tty->ldisc) {	/* Not yet closed */
+-			/* Switch back to N_TTY */
+-			tty_ldisc_reinit(tty);
+-			/* At this point we have a closed ldisc and we want to
+-			   reopen it. We could defer this to the next open but
+-			   it means auditing a lot of other paths so this is
+-			   a FIXME */
++	mutex_lock(&tty->ldisc_mutex);
++	tty_ldisc_halt(tty);
++	/* At this point we have a closed ldisc and we want to
++	   reopen it. We could defer this to the next open but
++	   it means auditing a lot of other paths so this is
++	   a FIXME */
++	if (tty->ldisc) {	/* Not yet closed */
++		if (reset == 0) {
++			tty_ldisc_reinit(tty, tty->termios->c_line);
++			err = tty_ldisc_open(tty, tty->ldisc);
++		}
++		/* If the re-open fails or we reset then go to N_TTY. The
++		   N_TTY open cannot fail */
++		if (reset || err) {
++			tty_ldisc_reinit(tty, N_TTY);
+ 			WARN_ON(tty_ldisc_open(tty, tty->ldisc));
+-			tty_ldisc_enable(tty);
+ 		}
+-		mutex_unlock(&tty->ldisc_mutex);
+-		tty_reset_termios(tty);
++		tty_ldisc_enable(tty);
+ 	}
++	mutex_unlock(&tty->ldisc_mutex);
++	if (reset)
++		tty_reset_termios(tty);
+ }
+ 
+ /**
+
