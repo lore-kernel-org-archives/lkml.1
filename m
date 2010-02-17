@@ -1,91 +1,49 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934338Ab0BQNvM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 08:51:12 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:53209 "EHLO mx1.redhat.com"
+	id S934251Ab0BQN5x (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 08:57:53 -0500
+Received: from cantor.suse.de ([195.135.220.2]:37472 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933732Ab0BQNpf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 08:45:35 -0500
-From: Avi Kivity <avi@redhat.com>
-To: kvm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 00/20] KVM updates for the 2.6.34 merge window (batch 4/4)
-Date: Wed, 17 Feb 2010 15:45:10 +0200
-Message-Id: <1266414330-27444-1-git-send-email-avi@redhat.com>
+	id S933732Ab0BQN5v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 08:57:51 -0500
+Message-ID: <4B7BF5D6.3030701@suse.cz>
+Date: Wed, 17 Feb 2010 14:57:42 +0100
+From: Michal Marek <mmarek@suse.cz>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.2 Thunderbird/3.0
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>, Borislav Petkov <bp@amd64.org>
+Cc: linux-kbuild <linux-kbuild@vger.kernel.org>,
+       Borislav Petkov <petkovbb@googlemail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>, Jamie Lokier <jamie@shareable.org>,
+       Roland Dreier <rdreier@cisco.com>, Al Viro <viro@ZenIV.linux.org.uk>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Brian Gerst <brgerst@gmail.com>
+Subject: Re: [PATCH 2/5] bitops: compile time optimization for hweight_long(CONSTANT)
+References: <4B6C93A2.1090302@zytor.com> <20100206093659.GA28326@aftab> <4B6E1DA3.50204@zytor.com> <20100208092845.GB12618@a1.tnic> <4B6FDAED.9060204@zytor.com> <20100208095945.GA14740@a1.tnic> <20100211172424.GB19779@aftab> <4B743F7D.3090605@zytor.com> <20100212170649.GC3114@aftab> <4B758FC0.1020600@zytor.com> <20100212174751.GD3114@aftab> <4B75A66A.70005@zytor.com>
+In-Reply-To: <4B75A66A.70005@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the first of four batches of patches for the 2.6.34 merge window.  KVM
-changes for this cycle include:
+On 12.2.2010 20:05, H. Peter Anvin wrote:
+> On 02/12/2010 09:47 AM, Borislav Petkov wrote:
+>>
+>> However, this is generic code and for the above to work we have to
+>> enforce x86-specific CFLAGS for it. What is the preferred way to do
+>> that?
+>>
+> 
+> That's a question for Michal and the kbuild list.  Michal?
 
- - rdtscp support
- - powerpc server-class updates
- - much improved large-guest scaling (now up to 64 vcpus)
- - improved guest fpu handling
- - initial Hyper-V emulation
- - better swapping with EPT
- - 1GB pages on Intel
- - x86 emulator fixes
+(I was offline last week).
 
-as well as the usual assortment of random fixes and improvements.
+The _preferred_ way probably is not to do it :), but otherwise you can
+set CFLAGS_hweight.o depending on CONFIG_X86(_32|_64), just like you do
+in arch/x86/lib/Makefile already.
 
-Avi Kivity (2):
-  KVM: MMU: Add tracepoint for guest page aging
-  KVM: Plan obsolescence of kernel allocated slots, paravirt mmu
-
-Gleb Natapov (9):
-  KVM: x86 emulator: Add group8 instruction decoding
-  KVM: x86 emulator: Add group9 instruction decoding
-  KVM: x86 emulator: Add Virtual-8086 mode of emulation
-  KVM: x86 emulator: fix memory access during x86 emulation
-  KVM: x86 emulator: Check IOPL level during io instruction emulation
-  KVM: x86 emulator: Fix popf emulation
-  KVM: x86 emulator: Check CPL level during privilege instruction
-    emulation
-  KVM: x86 emulator: Add LOCK prefix validity checking
-  KVM: x86 emulator: disallow opcode 82 in 64-bit mode
-
-Jochen Maes (1):
-  KVM: Fix Codestyle in virt/kvm/coalesced_mmio.c
-
-Liu Yu (1):
-  KVM: ppc/booke: Set ESR and DEAR when inject interrupt to guest
-
-Michael S. Tsirkin (1):
-  KVM: do not store wqh in irqfd
-
-Sheng Yang (1):
-  KVM: VMX: Rename VMX_EPT_IGMT_BIT to VMX_EPT_IPAT_BIT
-
-Wei Yongjun (5):
-  KVM: PIT: unregister kvm irq notifier if fail to create pit
-  KVM: kvm->arch.vioapic should be NULL if kvm_ioapic_init() failure
-  KVM: cleanup the failure path of KVM_CREATE_IRQCHIP ioctrl
-  KVM: ia64: destroy ioapic device if fail to setup default irq routing
-  KVM: x86 emulator: code style cleanup
-
- Documentation/feature-removal-schedule.txt |   30 +++
- arch/ia64/kvm/kvm-ia64.c                   |    2 +-
- arch/powerpc/include/asm/kvm_host.h        |    2 +
- arch/powerpc/kvm/booke.c                   |   59 ++++--
- arch/powerpc/kvm/emulate.c                 |    4 +-
- arch/x86/include/asm/kvm_emulate.h         |   15 ++-
- arch/x86/include/asm/kvm_host.h            |    8 +-
- arch/x86/include/asm/vmx.h                 |    2 +-
- arch/x86/kvm/emulate.c                     |  300 +++++++++++++++++++++-------
- arch/x86/kvm/i8254.c                       |    5 +-
- arch/x86/kvm/i8259.c                       |   11 +
- arch/x86/kvm/irq.h                         |    1 +
- arch/x86/kvm/mmu.c                         |   28 ++--
- arch/x86/kvm/mmu.h                         |    6 +
- arch/x86/kvm/paging_tmpl.h                 |   11 +-
- arch/x86/kvm/vmx.c                         |    4 +-
- arch/x86/kvm/x86.c                         |  152 ++++++++++----
- include/trace/events/kvm.h                 |   22 ++
- virt/kvm/coalesced_mmio.c                  |    4 +-
- virt/kvm/eventfd.c                         |    3 -
- virt/kvm/ioapic.c                          |   15 ++-
- virt/kvm/ioapic.h                          |    1 +
- 22 files changed, 525 insertions(+), 160 deletions(-)
-
+Michal
