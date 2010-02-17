@@ -1,61 +1,87 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751897Ab0BQQPz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 11:15:55 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:59138 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751309Ab0BQQPx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 11:15:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=GMsDmUEyGj3XFRpXUkQf73NELs278MXAAHOAcsp8lrKGTQjjqMDKLtqS/5IuMgiBCl
-         VwGIInjQUAVsbL9VsjeYH4I+WxFtIZ6rH+qHruXzbyaHtNOc/KPogR6hSCTTKLNCTbxc
-         S5q8EPMNmmdjuaVPrtpiBo5jZ1nsWNLWyecu8=
-Date: Wed, 17 Feb 2010 17:15:47 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>,
-       "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Maneesh Soni <maneesh@linux.vnet.ibm.com>,
-       Michael Stefaniuc <mstefani@redhat.com>
-Subject: Re: [Bug #15273] Regression in ptrace (Wine) starting with
-	2.6.33-rc1
-Message-ID: <20100217161543.GB5041@nowhere>
-References: <Z5cmiqDComP.A.gyF.OiIeLB@chimera> <4un6Gst5rKB.A.j0G.oiIeLB@chimera>
+	id S1751923Ab0BQQQ2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 11:16:28 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:29325 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751393Ab0BQQQ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 11:16:26 -0500
+Message-ID: <4B7C1722.7040304@redhat.com>
+Date: Thu, 18 Feb 2010 00:19:46 +0800
+From: Cong Wang <amwang@redhat.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20091001)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4un6Gst5rKB.A.j0G.oiIeLB@chimera>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Octavian Purdila <opurdila@ixiacom.com>,
+       David Miller <davem@davemloft.net>,
+       Linux Kernel Network Developers <netdev@vger.kernel.org>,
+       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
+       Eric Dumazet <eric.dumazet@gmail.com>
+Subject: Re: [net-next PATCH v4 0/3] net: reserve ports for applications using
+ fixed port
+References: <1266271241-6293-1-git-send-email-opurdila@ixiacom.com>	<201002162151.04861.opurdila@ixiacom.com>	<m1mxz93pw2.fsf@fess.ebiederm.org>	<201002162322.13101.opurdila@ixiacom.com>	<4B7C11D4.1080309@redhat.com> <m1ljer3ksy.fsf@fess.ebiederm.org>
+In-Reply-To: <m1ljer3ksy.fsf@fess.ebiederm.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 15, 2010 at 12:38:35AM +0100, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a summary report
-> of recent regressions.
+Eric W. Biederman wrote:
+> Cong Wang <amwang@redhat.com> writes:
 > 
-> The following bug entry is on the current list of known regressions
-> from 2.6.32.  Please verify if it still should be listed and let the tracking team
-> know (either way).
+>> Octavian Purdila wrote:
+>>> On Tuesday 16 February 2010 22:08:13 you wrote:
+>>>>> Something like bellow?
+>>>>>
+>>>>> # set bits 8080 and 1666
+>>>>> $echo 8080 1666-1666 > /proc
+>>>>>
+>>>>> #reset bit 1666
+>>>>> $echo 8080 > /proc
+>>>>>
+>>>>> #reset whole bitmap
+>>>>> $echo > /proc
+>>>> Yes. So something like that.
+>>>>
+>>>> I think I would use commas instead of spaces as that is more traditional.
+>>
+>> Why this is better than the current version?
+>>
+>> For the single port case, currently we use:
+>>
+>> echo +8080 > /xxxx #set
+>> echo -8080 > /xxxx #clear
+>>
+>> Now we will use:
+>>
+>> echo 8080 > /xxxx #set
+>> echo 8080 > /xxxx #clear
 > 
+> No.
 > 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15273
-> Subject		: Regression in ptrace (Wine) starting with 2.6.33-rc1
-> Submitter	: Michael Stefaniuc <mstefani@redhat.com>
-> Date		: 2010-02-11 16:21 (4 days old)
+>> I don't think the latter is better...
+>>
+>> For the multi-port case, yes, we should accept 'echo 8080,10000 >/xxxx'.
+> 
+> What I was envisioning was:
+> 
+> echo 8080 > /xxx # set the bitmap to 8080
+> echo 8080,10000 > /xxx # add 10000 to the bitmap
+> echo 8080 > /xxxx # remove 10000 from the bitmap.
+> 
+> That is when you set it you enter the entire set every time, treating
+> the entire set as a single value.
+> 
 
+Oh, I see, this is ok.
 
-We are taking care of it. It's actually two regressions.
-One has a fix that seems to work, and I'm working on the other one,
-trying to get that upstream before 2.6.33 gets released.
+But if we could support multi-port, that will be better, something like:
 
-Please keep the ticket open for now.
+echo '8080,10000-11000' > /xxx #add port 8080 and port range 10000-11000
+
+so that I don't have to construct a long string for all ports within
+10000 and 11000.
 
 Thanks.
 
