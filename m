@@ -1,66 +1,59 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753874Ab0BQSls (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 13:41:48 -0500
-Received: from mail.lang.hm ([64.81.33.126]:59267 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753761Ab0BQSlo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 13:41:44 -0500
-Date: Wed, 17 Feb 2010 10:41:34 -0800 (PST)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Nick Bowler <nbowler@elliptictech.com>
-cc: Volker Armin Hemmann <volkerarmin@googlemail.com>,
-       Kyle Moffett <kyle@moffetthome.net>,
-       Rudy Zijlstra <rudy@grumpydevil.homelinux.org>,
-       Neil Brown <neilb@suse.de>,
-       "Mr. James W. Laferriere" <babydr@baby-dragons.com>,
-       Bill Davidsen <davidsen@tmr.com>, Michael Evans <mjevans1983@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
-Subject: Re: Linux mdadm superblock question.
-In-Reply-To: <20100217183703.GA15446@emergent.ellipticsemi.com>
-Message-ID: <alpine.DEB.2.00.1002171040350.4721@asgard.lang.hm>
-References: <201002140251.59668.volkerarmin@googlemail.com> <alpine.DEB.2.00.1002170932010.4721@asgard.lang.hm> <20100217181016.GA14983@emergent.ellipticsemi.com> <201002171927.07051.volkerarmin@googlemail.com>
- <20100217183703.GA15446@emergent.ellipticsemi.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	id S1753913Ab0BQSpe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 13:45:34 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:56903 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753828Ab0BQSpd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 13:45:33 -0500
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Samuel Ortiz <sameo@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: [PATCH 3/3] gpiolib: Force wm831x GPIOs into GPIO mode when requested
+Date: Wed, 17 Feb 2010 18:45:26 +0000
+Message-Id: <1266432326-13030-3-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-Mailer: git-send-email 1.6.6.1
+In-Reply-To: <1266432326-13030-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+References: <1266432326-13030-1-git-send-email-broonie@opensource.wolfsonmicro.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Feb 2010, Nick Bowler wrote:
+This is the chip default but it's possible the bootloader or OTP
+will have been configured to a different mode (eg, to provide
+feedback during startup).
 
-> On 19:27 Wed 17 Feb     , Volker Armin Hemmann wrote:
->> On Mittwoch 17 Februar 2010, Nick Bowler wrote:
->>> On 09:41 Wed 17 Feb     , david@lang.hm wrote:
->>>> for a distro that is trying to make one kernel image run on every
->>>> possible type of hardware features like initramfs (and udev, modeules,
->>>> etc) are wonderful.
->>>>
->>>> however for people who run systems that are known ahead of time and
->>>> static (and who build their own kernels instead of just relying on the
->>>> distro default kernel), all of this is unnessesary complication, which
->>>> leaves more room for problems to creep in.
->>>
->>> Such people can easily construct an initramfs containing busybox and
->>> mdadm with a shell script hardcoded to mount their root fs and run
->>> switch_root.  It's a ~10 minute jobbie that only needs to be done once.
->>
->> and even better when you don't have to do that one time job at all.
->
-> But people who are building their own kernels are already doing a
-> (much harder, imo) one time job of configuring their kernels.
->
->> btw, what about additional delay?
->
-> It takes about half a second for mdadm to assemble my root array, is
-> that what you're referring to?
->
-> I assume that kernel auto-assembly is no faster, although I've never
-> used it.  Regardless, half a second isn't very long to wait.
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+---
+ drivers/gpio/wm831x-gpio.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
 
-If you are aiming for a 5-second boot time it's 10% of your total boot 
-time. That's a lot for a feature that's not needed.
+diff --git a/drivers/gpio/wm831x-gpio.c b/drivers/gpio/wm831x-gpio.c
+index 5b8dc09..d09021f 100644
+--- a/drivers/gpio/wm831x-gpio.c
++++ b/drivers/gpio/wm831x-gpio.c
+@@ -44,7 +44,8 @@ static int wm831x_gpio_direction_in(struct gpio_chip *chip, unsigned offset)
+ 		val |= WM831X_GPN_TRI;
+ 
+ 	return wm831x_set_bits(wm831x, WM831X_GPIO1_CONTROL + offset,
+-			       WM831X_GPN_DIR | WM831X_GPN_TRI, val);
++			       WM831X_GPN_DIR | WM831X_GPN_TRI |
++			       WM831X_GPN_FN_MASK, val);
+ }
+ 
+ static int wm831x_gpio_get(struct gpio_chip *chip, unsigned offset)
+@@ -84,7 +85,8 @@ static int wm831x_gpio_direction_out(struct gpio_chip *chip,
+ 		val |= WM831X_GPN_TRI;
+ 
+ 	ret = wm831x_set_bits(wm831x, WM831X_GPIO1_CONTROL + offset,
+-			      WM831X_GPN_DIR | WM831X_GPN_TRI, val);
++			      WM831X_GPN_DIR | WM831X_GPN_TRI |
++			      WM831X_GPN_FN_MASK, val);
+ 	if (ret < 0)
+ 		return ret;
+ 
+-- 
+1.6.6.1
 
-David Lang
