@@ -1,1253 +1,856 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933828Ab0BQBLs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 20:11:48 -0500
-Received: from hera.kernel.org ([140.211.167.34]:37689 "EHLO hera.kernel.org"
+	id S933843Ab0BQBMM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 20:12:12 -0500
+Received: from hera.kernel.org ([140.211.167.34]:37703 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933746Ab0BQBLp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 20:11:45 -0500
-Message-ID: <4B7B41FC.9020902@kernel.org>
-Date: Tue, 16 Feb 2010 17:10:20 -0800
-From: Yinghai Lu <yinghai@kernel.org>
+	id S933746Ab0BQBMJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 20:12:09 -0500
+Message-ID: <4B7B445A.1080108@kernel.org>
+Date: Wed, 17 Feb 2010 10:20:26 +0900
+From: Tejun Heo <tj@kernel.org>
 User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Stephen Rothwell <sfr@canb.auug.org.au>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-Subject: Re: [PATCH 27/35] core: move early_res
-References: <1265793639-15071-1-git-send-email-yinghai@kernel.org>	<1265793639-15071-28-git-send-email-yinghai@kernel.org> <20100215011615.e3d35121.sfr@canb.auug.org.au> <4B786110.9020806@kernel.org> <4B7B2E3B.9060903@zytor.com> <4B7B2FE1.1030700@kernel.org> <4B7B31F1.60203@zytor.com> <4B7B3B33.6010504@kernel.org> <4B7B3C4C.7060002@zytor.com>
-In-Reply-To: <4B7B3C4C.7060002@zytor.com>
+To: "David S. Miller" <davem@davemloft.net>,
+       lkml <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: [PATCH net-next 1/2] percpu: add __percpu sparse annotations to net
+X-Enigmail-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 17 Feb 2010 01:12:04 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/16/2010 04:46 PM, H. Peter Anvin wrote:
-> On 02/16/2010 04:41 PM, Yinghai Lu wrote:
->>
->> I would like to.
->>
->> but for x86, with CONFIG_NO_BOOTMEM set or not, early_res are all used.
->>
->> so we add CONFIG_HAVE_EARLY_RES ?
->>
-> 
-> Presumably, and force it true on x86.
-> 
+Add __percpu sparse annotations to net.
 
-please use this one to replace the one in tip/x86/bootmem
+These annotations are to make sparse consider percpu variables to be
+in a different address space and warn if accessed without going
+through percpu accessors.  This patch doesn't affect normal builds.
 
-Thanks
+The macro and type tricks around snmp stats make things a bit
+interesting.  DEFINE/DECLARE_SNMP_STAT() macros mark the target field
+as __percpu and SNMP_UPD_PO_STATS() macro is updated accordingly.  All
+snmp_mib_*() users which used to cast the argument to (void **) are
+updated to cast it to (void __percpu **).
 
-Yinghai
-
-
-Subject: [PATCH -v3 27/25] core: move early_res
-
-from arch/x86 to kernel/
-
--v2: add get_max_mapped, max_pfn_mapped only defined in x86...
-     to fix PPC compiling
--v3: according to hpa, add CONFIG_HAVE_EARLY_RES
-
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Acked-by: David S. Miller <davem@davemloft.net>
+Cc: Patrick McHardy <kaber@trash.net>
+Cc: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+Cc: Vlad Yasevich <vladislav.yasevich@hp.com>
+Cc: netdev@vger.kernel.org
 ---
- arch/x86/Kconfig                 |    3 
- arch/x86/include/asm/e820.h      |    2 
- arch/x86/include/asm/early_res.h |   21 -
- arch/x86/kernel/Makefile         |    2 
- arch/x86/kernel/e820.c           |   10 
- arch/x86/kernel/early_res.c      |  523 ---------------------------------------
- include/linux/early_res.h        |   22 +
- kernel/Makefile                  |    1 
- kernel/early_res.c               |  515 ++++++++++++++++++++++++++++++++++++++
- 9 files changed, 552 insertions(+), 547 deletions(-)
+David, these two patches require the following commit from mainline to
+define dummy __percpu.
 
-Index: linux-2.6/arch/x86/include/asm/e820.h
+ 2938429501b73f6aeb312236eac7ed0416a07cd5
+
+Thank you.
+
+ include/net/ip.h              |    6 ++---
+ include/net/ipcomp.h          |    2 -
+ include/net/neighbour.h       |    2 -
+ include/net/netns/conntrack.h |    2 -
+ include/net/netns/core.h      |    2 -
+ include/net/route.h           |    2 -
+ include/net/snmp.h            |   12 +++++++---
+ include/net/tcp.h             |    2 -
+ net/8021q/vlan.h              |    2 -
+ net/dccp/proto.c              |    5 ++--
+ net/ipv4/af_inet.c            |   46 +++++++++++++++++++++---------------------
+ net/ipv4/proc.c               |   28 ++++++++++++-------------
+ net/ipv4/route.c              |    2 -
+ net/ipv4/tcp.c                |   21 ++++++++++---------
+ net/ipv6/addrconf.c           |   24 ++++++++++-----------
+ net/ipv6/af_inet6.c           |   28 ++++++++++++-------------
+ net/ipv6/proc.c               |   23 +++++++++++----------
+ net/sctp/proc.c               |    2 -
+ net/sctp/protocol.c           |    5 ++--
+ net/xfrm/xfrm_ipcomp.c        |   16 +++++++-------
+ net/xfrm/xfrm_policy.c        |    6 ++---
+ net/xfrm/xfrm_proc.c          |    3 +-
+ 22 files changed, 127 insertions(+), 114 deletions(-)
+
+Index: net-next/include/net/ip.h
 ===================================================================
---- linux-2.6.orig/arch/x86/include/asm/e820.h
-+++ linux-2.6/arch/x86/include/asm/e820.h
-@@ -112,7 +112,7 @@ extern unsigned long end_user_pfn;
- extern u64 find_e820_area(u64 start, u64 end, u64 size, u64 align);
- extern u64 find_e820_area_size(u64 start, u64 *sizep, u64 align);
- extern u64 early_reserve_e820(u64 startt, u64 sizet, u64 align);
--#include <asm/early_res.h>
-+#include <linux/early_res.h>
+--- net-next.orig/include/net/ip.h
++++ net-next/include/net/ip.h
+@@ -174,9 +174,9 @@ extern struct ipv4_config ipv4_config;
+ #define NET_ADD_STATS_BH(net, field, adnd) SNMP_ADD_STATS_BH((net)->mib.net_statistics, field, adnd)
+ #define NET_ADD_STATS_USER(net, field, adnd) SNMP_ADD_STATS_USER((net)->mib.net_statistics, field, adnd)
  
- extern unsigned long e820_end_of_ram_pfn(void);
- extern unsigned long e820_end_of_low_ram_pfn(void);
-Index: linux-2.6/arch/x86/include/asm/early_res.h
-===================================================================
---- linux-2.6.orig/arch/x86/include/asm/early_res.h
-+++ /dev/null
-@@ -1,21 +0,0 @@
--#ifndef _ASM_X86_EARLY_RES_H
--#define _ASM_X86_EARLY_RES_H
--#ifdef __KERNEL__
--
--extern void reserve_early(u64 start, u64 end, char *name);
--extern void reserve_early_overlap_ok(u64 start, u64 end, char *name);
--extern void free_early(u64 start, u64 end);
--extern void early_res_to_bootmem(u64 start, u64 end);
--
--void reserve_early_without_check(u64 start, u64 end, char *name);
--u64 find_early_area(u64 ei_start, u64 ei_last, u64 start, u64 end,
--			 u64 size, u64 align);
--u64 find_early_area_size(u64 ei_start, u64 ei_last, u64 start,
--			 u64 *sizep, u64 align);
--u64 find_fw_memmap_area(u64 start, u64 end, u64 size, u64 align);
--#include <linux/range.h>
--int get_free_all_memory_range(struct range **rangep, int nodeid);
--
--#endif /* __KERNEL__ */
--
--#endif /* _ASM_X86_EARLY_RES_H */
-Index: linux-2.6/arch/x86/kernel/Makefile
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/Makefile
-+++ linux-2.6/arch/x86/kernel/Makefile
-@@ -38,7 +38,7 @@ obj-$(CONFIG_X86_32)	+= probe_roms_32.o
- obj-$(CONFIG_X86_32)	+= sys_i386_32.o i386_ksyms_32.o
- obj-$(CONFIG_X86_64)	+= sys_x86_64.o x8664_ksyms_64.o
- obj-$(CONFIG_X86_64)	+= syscall_64.o vsyscall_64.o
--obj-y			+= bootflag.o e820.o early_res.o
-+obj-y			+= bootflag.o e820.o
- obj-y			+= pci-dma.o quirks.o i8237.o topology.o kdebugfs.o
- obj-y			+= alternative.o i8253.o pci-nommu.o hw_breakpoint.o
- obj-y			+= tsc.o io_delay.o rtc.o
-Index: linux-2.6/arch/x86/kernel/e820.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/e820.c
-+++ linux-2.6/arch/x86/kernel/e820.c
-@@ -17,7 +17,6 @@
- #include <linux/firmware-map.h>
+-extern unsigned long snmp_fold_field(void *mib[], int offt);
+-extern int snmp_mib_init(void *ptr[2], size_t mibsize);
+-extern void snmp_mib_free(void *ptr[2]);
++extern unsigned long snmp_fold_field(void __percpu *mib[], int offt);
++extern int snmp_mib_init(void __percpu *ptr[2], size_t mibsize);
++extern void snmp_mib_free(void __percpu *ptr[2]);
  
- #include <asm/e820.h>
--#include <asm/early_res.h>
- #include <asm/proto.h>
- #include <asm/setup.h>
+ extern struct local_ports {
+ 	seqlock_t	lock;
+Index: net-next/include/net/ipcomp.h
+===================================================================
+--- net-next.orig/include/net/ipcomp.h
++++ net-next/include/net/ipcomp.h
+@@ -9,7 +9,7 @@ struct crypto_comp;
  
-@@ -752,6 +751,15 @@ u64 __init find_fw_memmap_area(u64 start
+ struct ipcomp_data {
+ 	u16 threshold;
+-	struct crypto_comp **tfms;
++	struct crypto_comp * __percpu *tfms;
+ };
+ 
+ struct ip_comp_hdr;
+Index: net-next/include/net/neighbour.h
+===================================================================
+--- net-next.orig/include/net/neighbour.h
++++ net-next/include/net/neighbour.h
+@@ -164,7 +164,7 @@ struct neigh_table {
+ 	rwlock_t		lock;
+ 	unsigned long		last_rand;
+ 	struct kmem_cache		*kmem_cachep;
+-	struct neigh_statistics	*stats;
++	struct neigh_statistics	__percpu *stats;
+ 	struct neighbour	**hash_buckets;
+ 	unsigned int		hash_mask;
+ 	__u32			hash_rnd;
+Index: net-next/include/net/netns/conntrack.h
+===================================================================
+--- net-next.orig/include/net/netns/conntrack.h
++++ net-next/include/net/netns/conntrack.h
+@@ -17,7 +17,7 @@ struct netns_ct {
+ 	struct hlist_head	*expect_hash;
+ 	struct hlist_nulls_head	unconfirmed;
+ 	struct hlist_nulls_head	dying;
+-	struct ip_conntrack_stat *stat;
++	struct ip_conntrack_stat __percpu *stat;
+ 	int			sysctl_events;
+ 	unsigned int		sysctl_events_retry_timeout;
+ 	int			sysctl_acct;
+Index: net-next/include/net/netns/core.h
+===================================================================
+--- net-next.orig/include/net/netns/core.h
++++ net-next/include/net/netns/core.h
+@@ -10,7 +10,7 @@ struct netns_core {
+ 
+ 	int	sysctl_somaxconn;
+ 
+-	struct prot_inuse	*inuse;
++	struct prot_inuse __percpu *inuse;
+ };
+ 
+ #endif
+Index: net-next/include/net/route.h
+===================================================================
+--- net-next.orig/include/net/route.h
++++ net-next/include/net/route.h
+@@ -101,7 +101,7 @@ struct rt_cache_stat {
+         unsigned int out_hlist_search;
+ };
+ 
+-extern struct ip_rt_acct *ip_rt_acct;
++extern struct ip_rt_acct __percpu *ip_rt_acct;
+ 
+ struct in_device;
+ extern int		ip_rt_init(void);
+Index: net-next/include/net/snmp.h
+===================================================================
+--- net-next.orig/include/net/snmp.h
++++ net-next/include/net/snmp.h
+@@ -129,9 +129,9 @@ struct linux_xfrm_mib {
+  * nonlocked_atomic_inc() primitives -AK
+  */ 
+ #define DEFINE_SNMP_STAT(type, name)	\
+-	__typeof__(type) *name[2]
++	__typeof__(type) __percpu *name[2]
+ #define DECLARE_SNMP_STAT(type, name)	\
+-	extern __typeof__(type) *name[2]
++	extern __typeof__(type) __percpu *name[2]
+ 
+ #define SNMP_STAT_BHPTR(name)	(name[0])
+ #define SNMP_STAT_USRPTR(name)	(name[1])
+@@ -148,9 +148,13 @@ struct linux_xfrm_mib {
+ 			__this_cpu_add(mib[0]->mibs[field], addend)
+ #define SNMP_ADD_STATS_USER(mib, field, addend)	\
+ 			this_cpu_add(mib[1]->mibs[field], addend)
++/*
++ * Use "__typeof__(*mib[0]) *ptr" instead of "__typeof__(mib[0]) ptr"
++ * to make @ptr a non-percpu pointer.
++ */
+ #define SNMP_UPD_PO_STATS(mib, basefield, addend)	\
+ 	do { \
+-		__typeof__(mib[0]) ptr; \
++		__typeof__(*mib[0]) *ptr; \
+ 		preempt_disable(); \
+ 		ptr = this_cpu_ptr((mib)[!in_softirq()]); \
+ 		ptr->mibs[basefield##PKTS]++; \
+@@ -159,7 +163,7 @@ struct linux_xfrm_mib {
+ 	} while (0)
+ #define SNMP_UPD_PO_STATS_BH(mib, basefield, addend)	\
+ 	do { \
+-		__typeof__(mib[0]) ptr = \
++		__typeof__(*mib[0]) *ptr = \
+ 			__this_cpu_ptr((mib)[!in_softirq()]); \
+ 		ptr->mibs[basefield##PKTS]++; \
+ 		ptr->mibs[basefield##OCTETS] += addend;\
+Index: net-next/include/net/tcp.h
+===================================================================
+--- net-next.orig/include/net/tcp.h
++++ net-next/include/net/tcp.h
+@@ -1189,7 +1189,7 @@ extern int			tcp_v4_md5_do_del(struct so
+ #define tcp_twsk_md5_key(twsk)	NULL
+ #endif
+ 
+-extern struct tcp_md5sig_pool	**tcp_alloc_md5sig_pool(struct sock *);
++extern struct tcp_md5sig_pool * __percpu *tcp_alloc_md5sig_pool(struct sock *);
+ extern void			tcp_free_md5sig_pool(void);
+ 
+ extern struct tcp_md5sig_pool	*__tcp_get_md5sig_pool(int cpu);
+Index: net-next/net/8021q/vlan.h
+===================================================================
+--- net-next.orig/net/8021q/vlan.h
++++ net-next/net/8021q/vlan.h
+@@ -61,7 +61,7 @@ struct vlan_dev_info {
+ 	struct proc_dir_entry			*dent;
+ 	unsigned long				cnt_inc_headroom_on_tx;
+ 	unsigned long				cnt_encap_on_xmit;
+-	struct vlan_rx_stats			*vlan_rx_stats;
++	struct vlan_rx_stats __percpu		*vlan_rx_stats;
+ };
+ 
+ static inline struct vlan_dev_info *vlan_dev_info(const struct net_device *dev)
+Index: net-next/net/dccp/proto.c
+===================================================================
+--- net-next.orig/net/dccp/proto.c
++++ net-next/net/dccp/proto.c
+@@ -1005,12 +1005,13 @@ EXPORT_SYMBOL_GPL(dccp_shutdown);
+ 
+ static inline int dccp_mib_init(void)
  {
- 	return find_e820_area(start, end, size, align);
+-	return snmp_mib_init((void**)dccp_statistics, sizeof(struct dccp_mib));
++	return snmp_mib_init((void __percpu **)dccp_statistics,
++			     sizeof(struct dccp_mib));
  }
-+
-+u64 __init get_max_mapped(void)
-+{
-+	u64 end = max_pfn_mapped;
-+
-+	end <<= PAGE_SHIFT;
-+
-+	return end;
-+}
- /*
-  * Find next free range after *start
-  */
-Index: linux-2.6/arch/x86/kernel/early_res.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/early_res.c
-+++ /dev/null
-@@ -1,523 +0,0 @@
--/*
-- * early_res, could be used to replace bootmem
-- */
--#include <linux/kernel.h>
--#include <linux/types.h>
--#include <linux/init.h>
--#include <linux/bootmem.h>
--#include <linux/mm.h>
--
--#include <asm/early_res.h>
--
--/*
-- * Early reserved memory areas.
-- */
--/*
-- * need to make sure this one is bigger enough before
-- * find_fw_memmap_area could be used
-- */
--#define MAX_EARLY_RES_X 32
--
--struct early_res {
--	u64 start, end;
--	char name[15];
--	char overlap_ok;
--};
--static struct early_res early_res_x[MAX_EARLY_RES_X] __initdata;
--
--static int max_early_res __initdata = MAX_EARLY_RES_X;
--static struct early_res *early_res __initdata = &early_res_x[0];
--static int early_res_count __initdata;
--
--static int __init find_overlapped_early(u64 start, u64 end)
--{
--	int i;
--	struct early_res *r;
--
--	for (i = 0; i < max_early_res && early_res[i].end; i++) {
--		r = &early_res[i];
--		if (end > r->start && start < r->end)
--			break;
--	}
--
--	return i;
--}
--
--/*
-- * Drop the i-th range from the early reservation map,
-- * by copying any higher ranges down one over it, and
-- * clearing what had been the last slot.
-- */
--static void __init drop_range(int i)
--{
--	int j;
--
--	for (j = i + 1; j < max_early_res && early_res[j].end; j++)
--		;
--
--	memmove(&early_res[i], &early_res[i + 1],
--	       (j - 1 - i) * sizeof(struct early_res));
--
--	early_res[j - 1].end = 0;
--	early_res_count--;
--}
--
--/*
-- * Split any existing ranges that:
-- *  1) are marked 'overlap_ok', and
-- *  2) overlap with the stated range [start, end)
-- * into whatever portion (if any) of the existing range is entirely
-- * below or entirely above the stated range.  Drop the portion
-- * of the existing range that overlaps with the stated range,
-- * which will allow the caller of this routine to then add that
-- * stated range without conflicting with any existing range.
-- */
--static void __init drop_overlaps_that_are_ok(u64 start, u64 end)
--{
--	int i;
--	struct early_res *r;
--	u64 lower_start, lower_end;
--	u64 upper_start, upper_end;
--	char name[15];
--
--	for (i = 0; i < max_early_res && early_res[i].end; i++) {
--		r = &early_res[i];
--
--		/* Continue past non-overlapping ranges */
--		if (end <= r->start || start >= r->end)
--			continue;
--
--		/*
--		 * Leave non-ok overlaps as is; let caller
--		 * panic "Overlapping early reservations"
--		 * when it hits this overlap.
--		 */
--		if (!r->overlap_ok)
--			return;
--
--		/*
--		 * We have an ok overlap.  We will drop it from the early
--		 * reservation map, and add back in any non-overlapping
--		 * portions (lower or upper) as separate, overlap_ok,
--		 * non-overlapping ranges.
--		 */
--
--		/* 1. Note any non-overlapping (lower or upper) ranges. */
--		strncpy(name, r->name, sizeof(name) - 1);
--
--		lower_start = lower_end = 0;
--		upper_start = upper_end = 0;
--		if (r->start < start) {
--			lower_start = r->start;
--			lower_end = start;
--		}
--		if (r->end > end) {
--			upper_start = end;
--			upper_end = r->end;
--		}
--
--		/* 2. Drop the original ok overlapping range */
--		drop_range(i);
--
--		i--;		/* resume for-loop on copied down entry */
--
--		/* 3. Add back in any non-overlapping ranges. */
--		if (lower_end)
--			reserve_early_overlap_ok(lower_start, lower_end, name);
--		if (upper_end)
--			reserve_early_overlap_ok(upper_start, upper_end, name);
--	}
--}
--
--static void __init __reserve_early(u64 start, u64 end, char *name,
--						int overlap_ok)
--{
--	int i;
--	struct early_res *r;
--
--	i = find_overlapped_early(start, end);
--	if (i >= max_early_res)
--		panic("Too many early reservations");
--	r = &early_res[i];
--	if (r->end)
--		panic("Overlapping early reservations "
--		      "%llx-%llx %s to %llx-%llx %s\n",
--		      start, end - 1, name ? name : "", r->start,
--		      r->end - 1, r->name);
--	r->start = start;
--	r->end = end;
--	r->overlap_ok = overlap_ok;
--	if (name)
--		strncpy(r->name, name, sizeof(r->name) - 1);
--	early_res_count++;
--}
--
--/*
-- * A few early reservtations come here.
-- *
-- * The 'overlap_ok' in the name of this routine does -not- mean it
-- * is ok for these reservations to overlap an earlier reservation.
-- * Rather it means that it is ok for subsequent reservations to
-- * overlap this one.
-- *
-- * Use this entry point to reserve early ranges when you are doing
-- * so out of "Paranoia", reserving perhaps more memory than you need,
-- * just in case, and don't mind a subsequent overlapping reservation
-- * that is known to be needed.
-- *
-- * The drop_overlaps_that_are_ok() call here isn't really needed.
-- * It would be needed if we had two colliding 'overlap_ok'
-- * reservations, so that the second such would not panic on the
-- * overlap with the first.  We don't have any such as of this
-- * writing, but might as well tolerate such if it happens in
-- * the future.
-- */
--void __init reserve_early_overlap_ok(u64 start, u64 end, char *name)
--{
--	drop_overlaps_that_are_ok(start, end);
--	__reserve_early(start, end, name, 1);
--}
--
--u64 __init __weak find_fw_memmap_area(u64 start, u64 end, u64 size, u64 align)
--{
--	panic("should have find_fw_memmap_area defined with arch");
--
--	return -1ULL;
--}
--
--static void __init __check_and_double_early_res(u64 ex_start, u64 ex_end)
--{
--	u64 start, end, size, mem;
--	struct early_res *new;
--
--	/* do we have enough slots left ? */
--	if ((max_early_res - early_res_count) > max(max_early_res/8, 2))
--		return;
--
--	/* double it */
--	mem = -1ULL;
--	size = sizeof(struct early_res) * max_early_res * 2;
--	if (early_res == early_res_x)
--		start = 0;
--	else
--		start = early_res[0].end;
--	end = ex_start;
--	if (start + size < end)
--		mem = find_fw_memmap_area(start, end, size,
--					 sizeof(struct early_res));
--	if (mem == -1ULL) {
--		start = ex_end;
--		end = max_pfn_mapped << PAGE_SHIFT;
--		if (start + size < end)
--			mem = find_fw_memmap_area(start, end, size,
--						 sizeof(struct early_res));
--	}
--	if (mem == -1ULL)
--		panic("can not find more space for early_res array");
--
--	new = __va(mem);
--	/* save the first one for own */
--	new[0].start = mem;
--	new[0].end = mem + size;
--	new[0].overlap_ok = 0;
--	/* copy old to new */
--	if (early_res == early_res_x) {
--		memcpy(&new[1], &early_res[0],
--			 sizeof(struct early_res) * max_early_res);
--		memset(&new[max_early_res+1], 0,
--			 sizeof(struct early_res) * (max_early_res - 1));
--		early_res_count++;
--	} else {
--		memcpy(&new[1], &early_res[1],
--			 sizeof(struct early_res) * (max_early_res - 1));
--		memset(&new[max_early_res], 0,
--			 sizeof(struct early_res) * max_early_res);
--	}
--	memset(&early_res[0], 0, sizeof(struct early_res) * max_early_res);
--	early_res = new;
--	max_early_res *= 2;
--	printk(KERN_DEBUG "early_res array is doubled to %d at [%llx - %llx]\n",
--		max_early_res, mem, mem + size - 1);
--}
--
--/*
-- * Most early reservations come here.
-- *
-- * We first have drop_overlaps_that_are_ok() drop any pre-existing
-- * 'overlap_ok' ranges, so that we can then reserve this memory
-- * range without risk of panic'ing on an overlapping overlap_ok
-- * early reservation.
-- */
--void __init reserve_early(u64 start, u64 end, char *name)
--{
--	if (start >= end)
--		return;
--
--	__check_and_double_early_res(start, end);
--
--	drop_overlaps_that_are_ok(start, end);
--	__reserve_early(start, end, name, 0);
--}
--
--void __init reserve_early_without_check(u64 start, u64 end, char *name)
--{
--	struct early_res *r;
--
--	if (start >= end)
--		return;
--
--	__check_and_double_early_res(start, end);
--
--	r = &early_res[early_res_count];
--
--	r->start = start;
--	r->end = end;
--	r->overlap_ok = 0;
--	if (name)
--		strncpy(r->name, name, sizeof(r->name) - 1);
--	early_res_count++;
--}
--
--void __init free_early(u64 start, u64 end)
--{
--	struct early_res *r;
--	int i;
--
--	i = find_overlapped_early(start, end);
--	r = &early_res[i];
--	if (i >= max_early_res || r->end != end || r->start != start)
--		panic("free_early on not reserved area: %llx-%llx!",
--			 start, end - 1);
--
--	drop_range(i);
--}
--
--#ifdef CONFIG_NO_BOOTMEM
--static void __init subtract_early_res(struct range *range, int az)
--{
--	int i, count;
--	u64 final_start, final_end;
--	int idx = 0;
--
--	count  = 0;
--	for (i = 0; i < max_early_res && early_res[i].end; i++)
--		count++;
--
--	/* need to skip first one ?*/
--	if (early_res != early_res_x)
--		idx = 1;
--
--#define DEBUG_PRINT_EARLY_RES 1
--
--#if DEBUG_PRINT_EARLY_RES
--	printk(KERN_INFO "Subtract (%d early reservations)\n", count);
--#endif
--	for (i = idx; i < count; i++) {
--		struct early_res *r = &early_res[i];
--#if DEBUG_PRINT_EARLY_RES
--		printk(KERN_INFO "  #%d [%010llx - %010llx] %15s\n", i,
--			r->start, r->end, r->name);
--#endif
--		final_start = PFN_DOWN(r->start);
--		final_end = PFN_UP(r->end);
--		if (final_start >= final_end)
--			continue;
--		subtract_range(range, az, final_start, final_end);
--	}
--
--}
--
--int __init get_free_all_memory_range(struct range **rangep, int nodeid)
--{
--	int i, count;
--	u64 start = 0, end;
--	u64 size;
--	u64 mem;
--	struct range *range;
--	int nr_range;
--
--	count  = 0;
--	for (i = 0; i < max_early_res && early_res[i].end; i++)
--		count++;
--
--	count *= 2;
--
--	size = sizeof(struct range) * count;
--#ifdef MAX_DMA32_PFN
--	if (max_pfn_mapped > MAX_DMA32_PFN)
--		start = MAX_DMA32_PFN << PAGE_SHIFT;
--#endif
--	end = max_pfn_mapped << PAGE_SHIFT;
--	mem = find_fw_memmap_area(start, end, size, sizeof(struct range));
--	if (mem == -1ULL)
--		panic("can not find more space for range free");
--
--	range = __va(mem);
--	/* use early_node_map[] and early_res to get range array at first */
--	memset(range, 0, size);
--	nr_range = 0;
--
--	/* need to go over early_node_map to find out good range for node */
--	nr_range = add_from_early_node_map(range, count, nr_range, nodeid);
--#ifdef CONFIG_X86_32
--	subtract_range(range, count, max_low_pfn, -1ULL);
--#endif
--	subtract_early_res(range, count);
--	nr_range = clean_sort_range(range, count);
--
--	/* need to clear it ? */
--	if (nodeid == MAX_NUMNODES) {
--		memset(&early_res[0], 0,
--			 sizeof(struct early_res) * max_early_res);
--		early_res = NULL;
--		max_early_res = 0;
--	}
--
--	*rangep = range;
--	return nr_range;
--}
--#else
--void __init early_res_to_bootmem(u64 start, u64 end)
--{
--	int i, count;
--	u64 final_start, final_end;
--	int idx = 0;
--
--	count  = 0;
--	for (i = 0; i < max_early_res && early_res[i].end; i++)
--		count++;
--
--	/* need to skip first one ?*/
--	if (early_res != early_res_x)
--		idx = 1;
--
--	printk(KERN_INFO "(%d/%d early reservations) ==> bootmem [%010llx - %010llx]\n",
--			 count - idx, max_early_res, start, end);
--	for (i = idx; i < count; i++) {
--		struct early_res *r = &early_res[i];
--		printk(KERN_INFO "  #%d [%010llx - %010llx] %16s", i,
--			r->start, r->end, r->name);
--		final_start = max(start, r->start);
--		final_end = min(end, r->end);
--		if (final_start >= final_end) {
--			printk(KERN_CONT "\n");
--			continue;
--		}
--		printk(KERN_CONT " ==> [%010llx - %010llx]\n",
--			final_start, final_end);
--		reserve_bootmem_generic(final_start, final_end - final_start,
--				BOOTMEM_DEFAULT);
--	}
--	/* clear them */
--	memset(&early_res[0], 0, sizeof(struct early_res) * max_early_res);
--	early_res = NULL;
--	max_early_res = 0;
--	early_res_count = 0;
--}
--#endif
--
--/* Check for already reserved areas */
--static inline int __init bad_addr(u64 *addrp, u64 size, u64 align)
--{
--	int i;
--	u64 addr = *addrp;
--	int changed = 0;
--	struct early_res *r;
--again:
--	i = find_overlapped_early(addr, addr + size);
--	r = &early_res[i];
--	if (i < max_early_res && r->end) {
--		*addrp = addr = round_up(r->end, align);
--		changed = 1;
--		goto again;
--	}
--	return changed;
--}
--
--/* Check for already reserved areas */
--static inline int __init bad_addr_size(u64 *addrp, u64 *sizep, u64 align)
--{
--	int i;
--	u64 addr = *addrp, last;
--	u64 size = *sizep;
--	int changed = 0;
--again:
--	last = addr + size;
--	for (i = 0; i < max_early_res && early_res[i].end; i++) {
--		struct early_res *r = &early_res[i];
--		if (last > r->start && addr < r->start) {
--			size = r->start - addr;
--			changed = 1;
--			goto again;
--		}
--		if (last > r->end && addr < r->end) {
--			addr = round_up(r->end, align);
--			size = last - addr;
--			changed = 1;
--			goto again;
--		}
--		if (last <= r->end && addr >= r->start) {
--			(*sizep)++;
--			return 0;
--		}
--	}
--	if (changed) {
--		*addrp = addr;
--		*sizep = size;
--	}
--	return changed;
--}
--
--/*
-- * Find a free area with specified alignment in a specific range.
-- * only with the area.between start to end is active range from early_node_map
-- * so they are good as RAM
-- */
--u64 __init find_early_area(u64 ei_start, u64 ei_last, u64 start, u64 end,
--			 u64 size, u64 align)
--{
--	u64 addr, last;
--
--	addr = round_up(ei_start, align);
--	if (addr < start)
--		addr = round_up(start, align);
--	if (addr >= ei_last)
--		goto out;
--	while (bad_addr(&addr, size, align) && addr+size <= ei_last)
--		;
--	last = addr + size;
--	if (last > ei_last)
--		goto out;
--	if (last > end)
--		goto out;
--
--	return addr;
--
--out:
--	return -1ULL;
--}
--
--u64 __init find_early_area_size(u64 ei_start, u64 ei_last, u64 start,
--			 u64 *sizep, u64 align)
--{
--	u64 addr, last;
--
--	addr = round_up(ei_start, align);
--	if (addr < start)
--		addr = round_up(start, align);
--	if (addr >= ei_last)
--		goto out;
--	*sizep = ei_last - addr;
--	while (bad_addr_size(&addr, sizep, align) && addr + *sizep <= ei_last)
--		;
--	last = addr + *sizep;
--	if (last > ei_last)
--		goto out;
--
--	return addr;
--
--out:
--	return -1ULL;
--}
--
--
-Index: linux-2.6/include/linux/early_res.h
-===================================================================
---- /dev/null
-+++ linux-2.6/include/linux/early_res.h
-@@ -0,0 +1,22 @@
-+#ifndef _LINUX_EARLY_RES_H
-+#define _LINUX_EARLY_RES_H
-+#ifdef __KERNEL__
-+
-+extern void reserve_early(u64 start, u64 end, char *name);
-+extern void reserve_early_overlap_ok(u64 start, u64 end, char *name);
-+extern void free_early(u64 start, u64 end);
-+extern void early_res_to_bootmem(u64 start, u64 end);
-+
-+void reserve_early_without_check(u64 start, u64 end, char *name);
-+u64 find_early_area(u64 ei_start, u64 ei_last, u64 start, u64 end,
-+			 u64 size, u64 align);
-+u64 find_early_area_size(u64 ei_start, u64 ei_last, u64 start,
-+			 u64 *sizep, u64 align);
-+u64 find_fw_memmap_area(u64 start, u64 end, u64 size, u64 align);
-+u64 get_max_mapped(void);
-+#include <linux/range.h>
-+int get_free_all_memory_range(struct range **rangep, int nodeid);
-+
-+#endif /* __KERNEL__ */
-+
-+#endif /* _LINUX_EARLY_RES_H */
-Index: linux-2.6/kernel/Makefile
-===================================================================
---- linux-2.6.orig/kernel/Makefile
-+++ linux-2.6/kernel/Makefile
-@@ -11,6 +11,7 @@ obj-y     = sched.o fork.o exec_domain.o
- 	    hrtimer.o rwsem.o nsproxy.o srcu.o semaphore.o \
- 	    notifier.o ksysfs.o pm_qos_params.o sched_clock.o cred.o \
- 	    async.o range.o
-+obj-$(CONFIG_HAVE_EARLY_RES) += early_res.o
- obj-y += groups.o
  
- ifdef CONFIG_FUNCTION_TRACER
-Index: linux-2.6/kernel/early_res.c
-===================================================================
---- /dev/null
-+++ linux-2.6/kernel/early_res.c
-@@ -0,0 +1,515 @@
-+/*
-+ * early_res, could be used to replace bootmem
-+ */
-+#include <linux/kernel.h>
-+#include <linux/types.h>
-+#include <linux/init.h>
-+#include <linux/bootmem.h>
-+#include <linux/mm.h>
-+#include <linux/early_res.h>
-+
-+/*
-+ * Early reserved memory areas.
-+ */
-+/*
-+ * need to make sure this one is bigger enough before
-+ * find_fw_memmap_area could be used
-+ */
-+#define MAX_EARLY_RES_X 32
-+
-+struct early_res {
-+	u64 start, end;
-+	char name[15];
-+	char overlap_ok;
-+};
-+static struct early_res early_res_x[MAX_EARLY_RES_X] __initdata;
-+
-+static int max_early_res __initdata = MAX_EARLY_RES_X;
-+static struct early_res *early_res __initdata = &early_res_x[0];
-+static int early_res_count __initdata;
-+
-+static int __init find_overlapped_early(u64 start, u64 end)
-+{
-+	int i;
-+	struct early_res *r;
-+
-+	for (i = 0; i < max_early_res && early_res[i].end; i++) {
-+		r = &early_res[i];
-+		if (end > r->start && start < r->end)
-+			break;
-+	}
-+
-+	return i;
-+}
-+
-+/*
-+ * Drop the i-th range from the early reservation map,
-+ * by copying any higher ranges down one over it, and
-+ * clearing what had been the last slot.
-+ */
-+static void __init drop_range(int i)
-+{
-+	int j;
-+
-+	for (j = i + 1; j < max_early_res && early_res[j].end; j++)
-+		;
-+
-+	memmove(&early_res[i], &early_res[i + 1],
-+	       (j - 1 - i) * sizeof(struct early_res));
-+
-+	early_res[j - 1].end = 0;
-+	early_res_count--;
-+}
-+
-+/*
-+ * Split any existing ranges that:
-+ *  1) are marked 'overlap_ok', and
-+ *  2) overlap with the stated range [start, end)
-+ * into whatever portion (if any) of the existing range is entirely
-+ * below or entirely above the stated range.  Drop the portion
-+ * of the existing range that overlaps with the stated range,
-+ * which will allow the caller of this routine to then add that
-+ * stated range without conflicting with any existing range.
-+ */
-+static void __init drop_overlaps_that_are_ok(u64 start, u64 end)
-+{
-+	int i;
-+	struct early_res *r;
-+	u64 lower_start, lower_end;
-+	u64 upper_start, upper_end;
-+	char name[15];
-+
-+	for (i = 0; i < max_early_res && early_res[i].end; i++) {
-+		r = &early_res[i];
-+
-+		/* Continue past non-overlapping ranges */
-+		if (end <= r->start || start >= r->end)
-+			continue;
-+
-+		/*
-+		 * Leave non-ok overlaps as is; let caller
-+		 * panic "Overlapping early reservations"
-+		 * when it hits this overlap.
-+		 */
-+		if (!r->overlap_ok)
-+			return;
-+
-+		/*
-+		 * We have an ok overlap.  We will drop it from the early
-+		 * reservation map, and add back in any non-overlapping
-+		 * portions (lower or upper) as separate, overlap_ok,
-+		 * non-overlapping ranges.
-+		 */
-+
-+		/* 1. Note any non-overlapping (lower or upper) ranges. */
-+		strncpy(name, r->name, sizeof(name) - 1);
-+
-+		lower_start = lower_end = 0;
-+		upper_start = upper_end = 0;
-+		if (r->start < start) {
-+			lower_start = r->start;
-+			lower_end = start;
-+		}
-+		if (r->end > end) {
-+			upper_start = end;
-+			upper_end = r->end;
-+		}
-+
-+		/* 2. Drop the original ok overlapping range */
-+		drop_range(i);
-+
-+		i--;		/* resume for-loop on copied down entry */
-+
-+		/* 3. Add back in any non-overlapping ranges. */
-+		if (lower_end)
-+			reserve_early_overlap_ok(lower_start, lower_end, name);
-+		if (upper_end)
-+			reserve_early_overlap_ok(upper_start, upper_end, name);
-+	}
-+}
-+
-+static void __init __reserve_early(u64 start, u64 end, char *name,
-+						int overlap_ok)
-+{
-+	int i;
-+	struct early_res *r;
-+
-+	i = find_overlapped_early(start, end);
-+	if (i >= max_early_res)
-+		panic("Too many early reservations");
-+	r = &early_res[i];
-+	if (r->end)
-+		panic("Overlapping early reservations "
-+		      "%llx-%llx %s to %llx-%llx %s\n",
-+		      start, end - 1, name ? name : "", r->start,
-+		      r->end - 1, r->name);
-+	r->start = start;
-+	r->end = end;
-+	r->overlap_ok = overlap_ok;
-+	if (name)
-+		strncpy(r->name, name, sizeof(r->name) - 1);
-+	early_res_count++;
-+}
-+
-+/*
-+ * A few early reservtations come here.
-+ *
-+ * The 'overlap_ok' in the name of this routine does -not- mean it
-+ * is ok for these reservations to overlap an earlier reservation.
-+ * Rather it means that it is ok for subsequent reservations to
-+ * overlap this one.
-+ *
-+ * Use this entry point to reserve early ranges when you are doing
-+ * so out of "Paranoia", reserving perhaps more memory than you need,
-+ * just in case, and don't mind a subsequent overlapping reservation
-+ * that is known to be needed.
-+ *
-+ * The drop_overlaps_that_are_ok() call here isn't really needed.
-+ * It would be needed if we had two colliding 'overlap_ok'
-+ * reservations, so that the second such would not panic on the
-+ * overlap with the first.  We don't have any such as of this
-+ * writing, but might as well tolerate such if it happens in
-+ * the future.
-+ */
-+void __init reserve_early_overlap_ok(u64 start, u64 end, char *name)
-+{
-+	drop_overlaps_that_are_ok(start, end);
-+	__reserve_early(start, end, name, 1);
-+}
-+
-+static void __init __check_and_double_early_res(u64 ex_start, u64 ex_end)
-+{
-+	u64 start, end, size, mem;
-+	struct early_res *new;
-+
-+	/* do we have enough slots left ? */
-+	if ((max_early_res - early_res_count) > max(max_early_res/8, 2))
-+		return;
-+
-+	/* double it */
-+	mem = -1ULL;
-+	size = sizeof(struct early_res) * max_early_res * 2;
-+	if (early_res == early_res_x)
-+		start = 0;
-+	else
-+		start = early_res[0].end;
-+	end = ex_start;
-+	if (start + size < end)
-+		mem = find_fw_memmap_area(start, end, size,
-+					 sizeof(struct early_res));
-+	if (mem == -1ULL) {
-+		start = ex_end;
-+		end = get_max_mapped();
-+		if (start + size < end)
-+			mem = find_fw_memmap_area(start, end, size,
-+						 sizeof(struct early_res));
-+	}
-+	if (mem == -1ULL)
-+		panic("can not find more space for early_res array");
-+
-+	new = __va(mem);
-+	/* save the first one for own */
-+	new[0].start = mem;
-+	new[0].end = mem + size;
-+	new[0].overlap_ok = 0;
-+	/* copy old to new */
-+	if (early_res == early_res_x) {
-+		memcpy(&new[1], &early_res[0],
-+			 sizeof(struct early_res) * max_early_res);
-+		memset(&new[max_early_res+1], 0,
-+			 sizeof(struct early_res) * (max_early_res - 1));
-+		early_res_count++;
-+	} else {
-+		memcpy(&new[1], &early_res[1],
-+			 sizeof(struct early_res) * (max_early_res - 1));
-+		memset(&new[max_early_res], 0,
-+			 sizeof(struct early_res) * max_early_res);
-+	}
-+	memset(&early_res[0], 0, sizeof(struct early_res) * max_early_res);
-+	early_res = new;
-+	max_early_res *= 2;
-+	printk(KERN_DEBUG "early_res array is doubled to %d at [%llx - %llx]\n",
-+		max_early_res, mem, mem + size - 1);
-+}
-+
-+/*
-+ * Most early reservations come here.
-+ *
-+ * We first have drop_overlaps_that_are_ok() drop any pre-existing
-+ * 'overlap_ok' ranges, so that we can then reserve this memory
-+ * range without risk of panic'ing on an overlapping overlap_ok
-+ * early reservation.
-+ */
-+void __init reserve_early(u64 start, u64 end, char *name)
-+{
-+	if (start >= end)
-+		return;
-+
-+	__check_and_double_early_res(start, end);
-+
-+	drop_overlaps_that_are_ok(start, end);
-+	__reserve_early(start, end, name, 0);
-+}
-+
-+void __init reserve_early_without_check(u64 start, u64 end, char *name)
-+{
-+	struct early_res *r;
-+
-+	if (start >= end)
-+		return;
-+
-+	__check_and_double_early_res(start, end);
-+
-+	r = &early_res[early_res_count];
-+
-+	r->start = start;
-+	r->end = end;
-+	r->overlap_ok = 0;
-+	if (name)
-+		strncpy(r->name, name, sizeof(r->name) - 1);
-+	early_res_count++;
-+}
-+
-+void __init free_early(u64 start, u64 end)
-+{
-+	struct early_res *r;
-+	int i;
-+
-+	i = find_overlapped_early(start, end);
-+	r = &early_res[i];
-+	if (i >= max_early_res || r->end != end || r->start != start)
-+		panic("free_early on not reserved area: %llx-%llx!",
-+			 start, end - 1);
-+
-+	drop_range(i);
-+}
-+
-+#ifdef CONFIG_NO_BOOTMEM
-+static void __init subtract_early_res(struct range *range, int az)
-+{
-+	int i, count;
-+	u64 final_start, final_end;
-+	int idx = 0;
-+
-+	count  = 0;
-+	for (i = 0; i < max_early_res && early_res[i].end; i++)
-+		count++;
-+
-+	/* need to skip first one ?*/
-+	if (early_res != early_res_x)
-+		idx = 1;
-+
-+#define DEBUG_PRINT_EARLY_RES 1
-+
-+#if DEBUG_PRINT_EARLY_RES
-+	printk(KERN_INFO "Subtract (%d early reservations)\n", count);
-+#endif
-+	for (i = idx; i < count; i++) {
-+		struct early_res *r = &early_res[i];
-+#if DEBUG_PRINT_EARLY_RES
-+		printk(KERN_INFO "  #%d [%010llx - %010llx] %15s\n", i,
-+			r->start, r->end, r->name);
-+#endif
-+		final_start = PFN_DOWN(r->start);
-+		final_end = PFN_UP(r->end);
-+		if (final_start >= final_end)
-+			continue;
-+		subtract_range(range, az, final_start, final_end);
-+	}
-+
-+}
-+
-+int __init get_free_all_memory_range(struct range **rangep, int nodeid)
-+{
-+	int i, count;
-+	u64 start = 0, end;
-+	u64 size;
-+	u64 mem;
-+	struct range *range;
-+	int nr_range;
-+
-+	count  = 0;
-+	for (i = 0; i < max_early_res && early_res[i].end; i++)
-+		count++;
-+
-+	count *= 2;
-+
-+	size = sizeof(struct range) * count;
-+	end = get_max_mapped();
-+#ifdef MAX_DMA32_PFN
-+	if (end > (MAX_DMA32_PFN << PAGE_SHIFT))
-+		start = MAX_DMA32_PFN << PAGE_SHIFT;
-+#endif
-+	mem = find_fw_memmap_area(start, end, size, sizeof(struct range));
-+	if (mem == -1ULL)
-+		panic("can not find more space for range free");
-+
-+	range = __va(mem);
-+	/* use early_node_map[] and early_res to get range array at first */
-+	memset(range, 0, size);
-+	nr_range = 0;
-+
-+	/* need to go over early_node_map to find out good range for node */
-+	nr_range = add_from_early_node_map(range, count, nr_range, nodeid);
-+#ifdef CONFIG_X86_32
-+	subtract_range(range, count, max_low_pfn, -1ULL);
-+#endif
-+	subtract_early_res(range, count);
-+	nr_range = clean_sort_range(range, count);
-+
-+	/* need to clear it ? */
-+	if (nodeid == MAX_NUMNODES) {
-+		memset(&early_res[0], 0,
-+			 sizeof(struct early_res) * max_early_res);
-+		early_res = NULL;
-+		max_early_res = 0;
-+	}
-+
-+	*rangep = range;
-+	return nr_range;
-+}
-+#else
-+void __init early_res_to_bootmem(u64 start, u64 end)
-+{
-+	int i, count;
-+	u64 final_start, final_end;
-+	int idx = 0;
-+
-+	count  = 0;
-+	for (i = 0; i < max_early_res && early_res[i].end; i++)
-+		count++;
-+
-+	/* need to skip first one ?*/
-+	if (early_res != early_res_x)
-+		idx = 1;
-+
-+	printk(KERN_INFO "(%d/%d early reservations) ==> bootmem [%010llx - %010llx]\n",
-+			 count - idx, max_early_res, start, end);
-+	for (i = idx; i < count; i++) {
-+		struct early_res *r = &early_res[i];
-+		printk(KERN_INFO "  #%d [%010llx - %010llx] %16s", i,
-+			r->start, r->end, r->name);
-+		final_start = max(start, r->start);
-+		final_end = min(end, r->end);
-+		if (final_start >= final_end) {
-+			printk(KERN_CONT "\n");
-+			continue;
-+		}
-+		printk(KERN_CONT " ==> [%010llx - %010llx]\n",
-+			final_start, final_end);
-+		reserve_bootmem_generic(final_start, final_end - final_start,
-+				BOOTMEM_DEFAULT);
-+	}
-+	/* clear them */
-+	memset(&early_res[0], 0, sizeof(struct early_res) * max_early_res);
-+	early_res = NULL;
-+	max_early_res = 0;
-+	early_res_count = 0;
-+}
-+#endif
-+
-+/* Check for already reserved areas */
-+static inline int __init bad_addr(u64 *addrp, u64 size, u64 align)
-+{
-+	int i;
-+	u64 addr = *addrp;
-+	int changed = 0;
-+	struct early_res *r;
-+again:
-+	i = find_overlapped_early(addr, addr + size);
-+	r = &early_res[i];
-+	if (i < max_early_res && r->end) {
-+		*addrp = addr = round_up(r->end, align);
-+		changed = 1;
-+		goto again;
-+	}
-+	return changed;
-+}
-+
-+/* Check for already reserved areas */
-+static inline int __init bad_addr_size(u64 *addrp, u64 *sizep, u64 align)
-+{
-+	int i;
-+	u64 addr = *addrp, last;
-+	u64 size = *sizep;
-+	int changed = 0;
-+again:
-+	last = addr + size;
-+	for (i = 0; i < max_early_res && early_res[i].end; i++) {
-+		struct early_res *r = &early_res[i];
-+		if (last > r->start && addr < r->start) {
-+			size = r->start - addr;
-+			changed = 1;
-+			goto again;
-+		}
-+		if (last > r->end && addr < r->end) {
-+			addr = round_up(r->end, align);
-+			size = last - addr;
-+			changed = 1;
-+			goto again;
-+		}
-+		if (last <= r->end && addr >= r->start) {
-+			(*sizep)++;
-+			return 0;
-+		}
-+	}
-+	if (changed) {
-+		*addrp = addr;
-+		*sizep = size;
-+	}
-+	return changed;
-+}
-+
-+/*
-+ * Find a free area with specified alignment in a specific range.
-+ * only with the area.between start to end is active range from early_node_map
-+ * so they are good as RAM
-+ */
-+u64 __init find_early_area(u64 ei_start, u64 ei_last, u64 start, u64 end,
-+			 u64 size, u64 align)
-+{
-+	u64 addr, last;
-+
-+	addr = round_up(ei_start, align);
-+	if (addr < start)
-+		addr = round_up(start, align);
-+	if (addr >= ei_last)
-+		goto out;
-+	while (bad_addr(&addr, size, align) && addr+size <= ei_last)
-+		;
-+	last = addr + size;
-+	if (last > ei_last)
-+		goto out;
-+	if (last > end)
-+		goto out;
-+
-+	return addr;
-+
-+out:
-+	return -1ULL;
-+}
-+
-+u64 __init find_early_area_size(u64 ei_start, u64 ei_last, u64 start,
-+			 u64 *sizep, u64 align)
-+{
-+	u64 addr, last;
-+
-+	addr = round_up(ei_start, align);
-+	if (addr < start)
-+		addr = round_up(start, align);
-+	if (addr >= ei_last)
-+		goto out;
-+	*sizep = ei_last - addr;
-+	while (bad_addr_size(&addr, sizep, align) && addr + *sizep <= ei_last)
-+		;
-+	last = addr + *sizep;
-+	if (last > ei_last)
-+		goto out;
-+
-+	return addr;
-+
-+out:
-+	return -1ULL;
-+}
-+
-+
-Index: linux-2.6/arch/x86/Kconfig
-===================================================================
---- linux-2.6.orig/arch/x86/Kconfig
-+++ linux-2.6/arch/x86/Kconfig
-@@ -184,6 +184,9 @@ config ARCH_SUPPORTS_OPTIMIZED_INLINING
- config ARCH_SUPPORTS_DEBUG_PAGEALLOC
- 	def_bool y
+ static inline void dccp_mib_exit(void)
+ {
+-	snmp_mib_free((void**)dccp_statistics);
++	snmp_mib_free((void __percpu **)dccp_statistics);
+ }
  
-+config HAVE_EALRY_RES
-+	def_bool y
+ static int thash_entries;
+Index: net-next/net/ipv4/af_inet.c
+===================================================================
+--- net-next.orig/net/ipv4/af_inet.c
++++ net-next/net/ipv4/af_inet.c
+@@ -1385,7 +1385,7 @@ int inet_ctl_sock_create(struct sock **s
+ }
+ EXPORT_SYMBOL_GPL(inet_ctl_sock_create);
+ 
+-unsigned long snmp_fold_field(void *mib[], int offt)
++unsigned long snmp_fold_field(void __percpu *mib[], int offt)
+ {
+ 	unsigned long res = 0;
+ 	int i;
+@@ -1398,7 +1398,7 @@ unsigned long snmp_fold_field(void *mib[
+ }
+ EXPORT_SYMBOL_GPL(snmp_fold_field);
+ 
+-int snmp_mib_init(void *ptr[2], size_t mibsize)
++int snmp_mib_init(void __percpu *ptr[2], size_t mibsize)
+ {
+ 	BUG_ON(ptr == NULL);
+ 	ptr[0] = __alloc_percpu(mibsize, __alignof__(unsigned long long));
+@@ -1416,7 +1416,7 @@ err0:
+ }
+ EXPORT_SYMBOL_GPL(snmp_mib_init);
+ 
+-void snmp_mib_free(void *ptr[2])
++void snmp_mib_free(void __percpu *ptr[2])
+ {
+ 	BUG_ON(ptr == NULL);
+ 	free_percpu(ptr[0]);
+@@ -1460,25 +1460,25 @@ static const struct net_protocol icmp_pr
+ 
+ static __net_init int ipv4_mib_init_net(struct net *net)
+ {
+-	if (snmp_mib_init((void **)net->mib.tcp_statistics,
++	if (snmp_mib_init((void __percpu **)net->mib.tcp_statistics,
+ 			  sizeof(struct tcp_mib)) < 0)
+ 		goto err_tcp_mib;
+-	if (snmp_mib_init((void **)net->mib.ip_statistics,
++	if (snmp_mib_init((void __percpu **)net->mib.ip_statistics,
+ 			  sizeof(struct ipstats_mib)) < 0)
+ 		goto err_ip_mib;
+-	if (snmp_mib_init((void **)net->mib.net_statistics,
++	if (snmp_mib_init((void __percpu **)net->mib.net_statistics,
+ 			  sizeof(struct linux_mib)) < 0)
+ 		goto err_net_mib;
+-	if (snmp_mib_init((void **)net->mib.udp_statistics,
++	if (snmp_mib_init((void __percpu **)net->mib.udp_statistics,
+ 			  sizeof(struct udp_mib)) < 0)
+ 		goto err_udp_mib;
+-	if (snmp_mib_init((void **)net->mib.udplite_statistics,
++	if (snmp_mib_init((void __percpu **)net->mib.udplite_statistics,
+ 			  sizeof(struct udp_mib)) < 0)
+ 		goto err_udplite_mib;
+-	if (snmp_mib_init((void **)net->mib.icmp_statistics,
++	if (snmp_mib_init((void __percpu **)net->mib.icmp_statistics,
+ 			  sizeof(struct icmp_mib)) < 0)
+ 		goto err_icmp_mib;
+-	if (snmp_mib_init((void **)net->mib.icmpmsg_statistics,
++	if (snmp_mib_init((void __percpu **)net->mib.icmpmsg_statistics,
+ 			  sizeof(struct icmpmsg_mib)) < 0)
+ 		goto err_icmpmsg_mib;
+ 
+@@ -1486,30 +1486,30 @@ static __net_init int ipv4_mib_init_net(
+ 	return 0;
+ 
+ err_icmpmsg_mib:
+-	snmp_mib_free((void **)net->mib.icmp_statistics);
++	snmp_mib_free((void __percpu **)net->mib.icmp_statistics);
+ err_icmp_mib:
+-	snmp_mib_free((void **)net->mib.udplite_statistics);
++	snmp_mib_free((void __percpu **)net->mib.udplite_statistics);
+ err_udplite_mib:
+-	snmp_mib_free((void **)net->mib.udp_statistics);
++	snmp_mib_free((void __percpu **)net->mib.udp_statistics);
+ err_udp_mib:
+-	snmp_mib_free((void **)net->mib.net_statistics);
++	snmp_mib_free((void __percpu **)net->mib.net_statistics);
+ err_net_mib:
+-	snmp_mib_free((void **)net->mib.ip_statistics);
++	snmp_mib_free((void __percpu **)net->mib.ip_statistics);
+ err_ip_mib:
+-	snmp_mib_free((void **)net->mib.tcp_statistics);
++	snmp_mib_free((void __percpu **)net->mib.tcp_statistics);
+ err_tcp_mib:
+ 	return -ENOMEM;
+ }
+ 
+ static __net_exit void ipv4_mib_exit_net(struct net *net)
+ {
+-	snmp_mib_free((void **)net->mib.icmpmsg_statistics);
+-	snmp_mib_free((void **)net->mib.icmp_statistics);
+-	snmp_mib_free((void **)net->mib.udplite_statistics);
+-	snmp_mib_free((void **)net->mib.udp_statistics);
+-	snmp_mib_free((void **)net->mib.net_statistics);
+-	snmp_mib_free((void **)net->mib.ip_statistics);
+-	snmp_mib_free((void **)net->mib.tcp_statistics);
++	snmp_mib_free((void __percpu **)net->mib.icmpmsg_statistics);
++	snmp_mib_free((void __percpu **)net->mib.icmp_statistics);
++	snmp_mib_free((void __percpu **)net->mib.udplite_statistics);
++	snmp_mib_free((void __percpu **)net->mib.udp_statistics);
++	snmp_mib_free((void __percpu **)net->mib.net_statistics);
++	snmp_mib_free((void __percpu **)net->mib.ip_statistics);
++	snmp_mib_free((void __percpu **)net->mib.tcp_statistics);
+ }
+ 
+ static __net_initdata struct pernet_operations ipv4_mib_ops = {
+Index: net-next/net/ipv4/proc.c
+===================================================================
+--- net-next.orig/net/ipv4/proc.c
++++ net-next/net/ipv4/proc.c
+@@ -280,7 +280,7 @@ static void icmpmsg_put(struct seq_file
+ 
+ 	count = 0;
+ 	for (i = 0; i < ICMPMSG_MIB_MAX; i++) {
+-		val = snmp_fold_field((void **) net->mib.icmpmsg_statistics, i);
++		val = snmp_fold_field((void __percpu **) net->mib.icmpmsg_statistics, i);
+ 		if (val) {
+ 			type[count] = i;
+ 			vals[count++] = val;
+@@ -307,18 +307,18 @@ static void icmp_put(struct seq_file *se
+ 	for (i=0; icmpmibmap[i].name != NULL; i++)
+ 		seq_printf(seq, " Out%s", icmpmibmap[i].name);
+ 	seq_printf(seq, "\nIcmp: %lu %lu",
+-		snmp_fold_field((void **) net->mib.icmp_statistics, ICMP_MIB_INMSGS),
+-		snmp_fold_field((void **) net->mib.icmp_statistics, ICMP_MIB_INERRORS));
++		snmp_fold_field((void __percpu **) net->mib.icmp_statistics, ICMP_MIB_INMSGS),
++		snmp_fold_field((void __percpu **) net->mib.icmp_statistics, ICMP_MIB_INERRORS));
+ 	for (i=0; icmpmibmap[i].name != NULL; i++)
+ 		seq_printf(seq, " %lu",
+-			snmp_fold_field((void **) net->mib.icmpmsg_statistics,
++			snmp_fold_field((void __percpu **) net->mib.icmpmsg_statistics,
+ 				icmpmibmap[i].index));
+ 	seq_printf(seq, " %lu %lu",
+-		snmp_fold_field((void **) net->mib.icmp_statistics, ICMP_MIB_OUTMSGS),
+-		snmp_fold_field((void **) net->mib.icmp_statistics, ICMP_MIB_OUTERRORS));
++		snmp_fold_field((void __percpu **) net->mib.icmp_statistics, ICMP_MIB_OUTMSGS),
++		snmp_fold_field((void __percpu **) net->mib.icmp_statistics, ICMP_MIB_OUTERRORS));
+ 	for (i=0; icmpmibmap[i].name != NULL; i++)
+ 		seq_printf(seq, " %lu",
+-			snmp_fold_field((void **) net->mib.icmpmsg_statistics,
++			snmp_fold_field((void __percpu **) net->mib.icmpmsg_statistics,
+ 				icmpmibmap[i].index | 0x100));
+ }
+ 
+@@ -341,7 +341,7 @@ static int snmp_seq_show(struct seq_file
+ 
+ 	for (i = 0; snmp4_ipstats_list[i].name != NULL; i++)
+ 		seq_printf(seq, " %lu",
+-			   snmp_fold_field((void **)net->mib.ip_statistics,
++			   snmp_fold_field((void __percpu **)net->mib.ip_statistics,
+ 					   snmp4_ipstats_list[i].entry));
+ 
+ 	icmp_put(seq);	/* RFC 2011 compatibility */
+@@ -356,11 +356,11 @@ static int snmp_seq_show(struct seq_file
+ 		/* MaxConn field is signed, RFC 2012 */
+ 		if (snmp4_tcp_list[i].entry == TCP_MIB_MAXCONN)
+ 			seq_printf(seq, " %ld",
+-				   snmp_fold_field((void **)net->mib.tcp_statistics,
++				   snmp_fold_field((void __percpu **)net->mib.tcp_statistics,
+ 						   snmp4_tcp_list[i].entry));
+ 		else
+ 			seq_printf(seq, " %lu",
+-				   snmp_fold_field((void **)net->mib.tcp_statistics,
++				   snmp_fold_field((void __percpu **)net->mib.tcp_statistics,
+ 						   snmp4_tcp_list[i].entry));
+ 	}
+ 
+@@ -371,7 +371,7 @@ static int snmp_seq_show(struct seq_file
+ 	seq_puts(seq, "\nUdp:");
+ 	for (i = 0; snmp4_udp_list[i].name != NULL; i++)
+ 		seq_printf(seq, " %lu",
+-			   snmp_fold_field((void **)net->mib.udp_statistics,
++			   snmp_fold_field((void __percpu **)net->mib.udp_statistics,
+ 					   snmp4_udp_list[i].entry));
+ 
+ 	/* the UDP and UDP-Lite MIBs are the same */
+@@ -382,7 +382,7 @@ static int snmp_seq_show(struct seq_file
+ 	seq_puts(seq, "\nUdpLite:");
+ 	for (i = 0; snmp4_udp_list[i].name != NULL; i++)
+ 		seq_printf(seq, " %lu",
+-			   snmp_fold_field((void **)net->mib.udplite_statistics,
++			   snmp_fold_field((void __percpu **)net->mib.udplite_statistics,
+ 					   snmp4_udp_list[i].entry));
+ 
+ 	seq_putc(seq, '\n');
+@@ -419,7 +419,7 @@ static int netstat_seq_show(struct seq_f
+ 	seq_puts(seq, "\nTcpExt:");
+ 	for (i = 0; snmp4_net_list[i].name != NULL; i++)
+ 		seq_printf(seq, " %lu",
+-			   snmp_fold_field((void **)net->mib.net_statistics,
++			   snmp_fold_field((void __percpu **)net->mib.net_statistics,
+ 					   snmp4_net_list[i].entry));
+ 
+ 	seq_puts(seq, "\nIpExt:");
+@@ -429,7 +429,7 @@ static int netstat_seq_show(struct seq_f
+ 	seq_puts(seq, "\nIpExt:");
+ 	for (i = 0; snmp4_ipextstats_list[i].name != NULL; i++)
+ 		seq_printf(seq, " %lu",
+-			   snmp_fold_field((void **)net->mib.ip_statistics,
++			   snmp_fold_field((void __percpu **)net->mib.ip_statistics,
+ 					   snmp4_ipextstats_list[i].entry));
+ 
+ 	seq_putc(seq, '\n');
+Index: net-next/net/ipv4/route.c
+===================================================================
+--- net-next.orig/net/ipv4/route.c
++++ net-next/net/ipv4/route.c
+@@ -3334,7 +3334,7 @@ static __net_initdata struct pernet_oper
+ 
+ 
+ #ifdef CONFIG_NET_CLS_ROUTE
+-struct ip_rt_acct *ip_rt_acct __read_mostly;
++struct ip_rt_acct __percpu *ip_rt_acct __read_mostly;
+ #endif /* CONFIG_NET_CLS_ROUTE */
+ 
+ static __initdata unsigned long rhash_entries;
+Index: net-next/net/ipv4/tcp.c
+===================================================================
+--- net-next.orig/net/ipv4/tcp.c
++++ net-next/net/ipv4/tcp.c
+@@ -2788,10 +2788,10 @@ EXPORT_SYMBOL(tcp_gro_complete);
+ 
+ #ifdef CONFIG_TCP_MD5SIG
+ static unsigned long tcp_md5sig_users;
+-static struct tcp_md5sig_pool **tcp_md5sig_pool;
++static struct tcp_md5sig_pool * __percpu *tcp_md5sig_pool;
+ static DEFINE_SPINLOCK(tcp_md5sig_pool_lock);
+ 
+-static void __tcp_free_md5sig_pool(struct tcp_md5sig_pool **pool)
++static void __tcp_free_md5sig_pool(struct tcp_md5sig_pool * __percpu *pool)
+ {
+ 	int cpu;
+ 	for_each_possible_cpu(cpu) {
+@@ -2808,7 +2808,7 @@ static void __tcp_free_md5sig_pool(struc
+ 
+ void tcp_free_md5sig_pool(void)
+ {
+-	struct tcp_md5sig_pool **pool = NULL;
++	struct tcp_md5sig_pool * __percpu *pool = NULL;
+ 
+ 	spin_lock_bh(&tcp_md5sig_pool_lock);
+ 	if (--tcp_md5sig_users == 0) {
+@@ -2822,10 +2822,11 @@ void tcp_free_md5sig_pool(void)
+ 
+ EXPORT_SYMBOL(tcp_free_md5sig_pool);
+ 
+-static struct tcp_md5sig_pool **__tcp_alloc_md5sig_pool(struct sock *sk)
++static struct tcp_md5sig_pool * __percpu *
++__tcp_alloc_md5sig_pool(struct sock *sk)
+ {
+ 	int cpu;
+-	struct tcp_md5sig_pool **pool;
++	struct tcp_md5sig_pool * __percpu *pool;
+ 
+ 	pool = alloc_percpu(struct tcp_md5sig_pool *);
+ 	if (!pool)
+@@ -2852,9 +2853,9 @@ out_free:
+ 	return NULL;
+ }
+ 
+-struct tcp_md5sig_pool **tcp_alloc_md5sig_pool(struct sock *sk)
++struct tcp_md5sig_pool * __percpu *tcp_alloc_md5sig_pool(struct sock *sk)
+ {
+-	struct tcp_md5sig_pool **pool;
++	struct tcp_md5sig_pool * __percpu *pool;
+ 	int alloc = 0;
+ 
+ retry:
+@@ -2873,7 +2874,9 @@ retry:
+ 
+ 	if (alloc) {
+ 		/* we cannot hold spinlock here because this may sleep. */
+-		struct tcp_md5sig_pool **p = __tcp_alloc_md5sig_pool(sk);
++		struct tcp_md5sig_pool * __percpu *p;
 +
- config HAVE_INTEL_TXT
- 	def_bool y
- 	depends on EXPERIMENTAL && DMAR && ACPI
++		p = __tcp_alloc_md5sig_pool(sk);
+ 		spin_lock_bh(&tcp_md5sig_pool_lock);
+ 		if (!p) {
+ 			tcp_md5sig_users--;
+@@ -2897,7 +2900,7 @@ EXPORT_SYMBOL(tcp_alloc_md5sig_pool);
+ 
+ struct tcp_md5sig_pool *__tcp_get_md5sig_pool(int cpu)
+ {
+-	struct tcp_md5sig_pool **p;
++	struct tcp_md5sig_pool * __percpu *p;
+ 	spin_lock_bh(&tcp_md5sig_pool_lock);
+ 	p = tcp_md5sig_pool;
+ 	if (p)
+Index: net-next/net/ipv6/addrconf.c
+===================================================================
+--- net-next.orig/net/ipv6/addrconf.c
++++ net-next/net/ipv6/addrconf.c
+@@ -278,31 +278,31 @@ static void addrconf_mod_timer(struct in
+ 
+ static int snmp6_alloc_dev(struct inet6_dev *idev)
+ {
+-	if (snmp_mib_init((void **)idev->stats.ipv6,
++	if (snmp_mib_init((void __percpu **)idev->stats.ipv6,
+ 			  sizeof(struct ipstats_mib)) < 0)
+ 		goto err_ip;
+-	if (snmp_mib_init((void **)idev->stats.icmpv6,
++	if (snmp_mib_init((void __percpu **)idev->stats.icmpv6,
+ 			  sizeof(struct icmpv6_mib)) < 0)
+ 		goto err_icmp;
+-	if (snmp_mib_init((void **)idev->stats.icmpv6msg,
++	if (snmp_mib_init((void __percpu **)idev->stats.icmpv6msg,
+ 			  sizeof(struct icmpv6msg_mib)) < 0)
+ 		goto err_icmpmsg;
+ 
+ 	return 0;
+ 
+ err_icmpmsg:
+-	snmp_mib_free((void **)idev->stats.icmpv6);
++	snmp_mib_free((void __percpu **)idev->stats.icmpv6);
+ err_icmp:
+-	snmp_mib_free((void **)idev->stats.ipv6);
++	snmp_mib_free((void __percpu **)idev->stats.ipv6);
+ err_ip:
+ 	return -ENOMEM;
+ }
+ 
+ static void snmp6_free_dev(struct inet6_dev *idev)
+ {
+-	snmp_mib_free((void **)idev->stats.icmpv6msg);
+-	snmp_mib_free((void **)idev->stats.icmpv6);
+-	snmp_mib_free((void **)idev->stats.ipv6);
++	snmp_mib_free((void __percpu **)idev->stats.icmpv6msg);
++	snmp_mib_free((void __percpu **)idev->stats.icmpv6);
++	snmp_mib_free((void __percpu **)idev->stats.ipv6);
+ }
+ 
+ /* Nobody refers to this device, we may destroy it. */
+@@ -3766,8 +3766,8 @@ static inline size_t inet6_if_nlmsg_size
+ 		 );
+ }
+ 
+-static inline void __snmp6_fill_stats(u64 *stats, void **mib, int items,
+-				      int bytes)
++static inline void __snmp6_fill_stats(u64 *stats, void __percpu **mib,
++				      int items, int bytes)
+ {
+ 	int i;
+ 	int pad = bytes - sizeof(u64) * items;
+@@ -3786,10 +3786,10 @@ static void snmp6_fill_stats(u64 *stats,
+ {
+ 	switch(attrtype) {
+ 	case IFLA_INET6_STATS:
+-		__snmp6_fill_stats(stats, (void **)idev->stats.ipv6, IPSTATS_MIB_MAX, bytes);
++		__snmp6_fill_stats(stats, (void __percpu **)idev->stats.ipv6, IPSTATS_MIB_MAX, bytes);
+ 		break;
+ 	case IFLA_INET6_ICMP6STATS:
+-		__snmp6_fill_stats(stats, (void **)idev->stats.icmpv6, ICMP6_MIB_MAX, bytes);
++		__snmp6_fill_stats(stats, (void __percpu **)idev->stats.icmpv6, ICMP6_MIB_MAX, bytes);
+ 		break;
+ 	}
+ }
+Index: net-next/net/ipv6/af_inet6.c
+===================================================================
+--- net-next.orig/net/ipv6/af_inet6.c
++++ net-next/net/ipv6/af_inet6.c
+@@ -971,41 +971,41 @@ static void ipv6_packet_cleanup(void)
+ 
+ static int __net_init ipv6_init_mibs(struct net *net)
+ {
+-	if (snmp_mib_init((void **)net->mib.udp_stats_in6,
++	if (snmp_mib_init((void __percpu **)net->mib.udp_stats_in6,
+ 			  sizeof (struct udp_mib)) < 0)
+ 		return -ENOMEM;
+-	if (snmp_mib_init((void **)net->mib.udplite_stats_in6,
++	if (snmp_mib_init((void __percpu **)net->mib.udplite_stats_in6,
+ 			  sizeof (struct udp_mib)) < 0)
+ 		goto err_udplite_mib;
+-	if (snmp_mib_init((void **)net->mib.ipv6_statistics,
++	if (snmp_mib_init((void __percpu **)net->mib.ipv6_statistics,
+ 			  sizeof(struct ipstats_mib)) < 0)
+ 		goto err_ip_mib;
+-	if (snmp_mib_init((void **)net->mib.icmpv6_statistics,
++	if (snmp_mib_init((void __percpu **)net->mib.icmpv6_statistics,
+ 			  sizeof(struct icmpv6_mib)) < 0)
+ 		goto err_icmp_mib;
+-	if (snmp_mib_init((void **)net->mib.icmpv6msg_statistics,
++	if (snmp_mib_init((void __percpu **)net->mib.icmpv6msg_statistics,
+ 			  sizeof(struct icmpv6msg_mib)) < 0)
+ 		goto err_icmpmsg_mib;
+ 	return 0;
+ 
+ err_icmpmsg_mib:
+-	snmp_mib_free((void **)net->mib.icmpv6_statistics);
++	snmp_mib_free((void __percpu **)net->mib.icmpv6_statistics);
+ err_icmp_mib:
+-	snmp_mib_free((void **)net->mib.ipv6_statistics);
++	snmp_mib_free((void __percpu **)net->mib.ipv6_statistics);
+ err_ip_mib:
+-	snmp_mib_free((void **)net->mib.udplite_stats_in6);
++	snmp_mib_free((void __percpu **)net->mib.udplite_stats_in6);
+ err_udplite_mib:
+-	snmp_mib_free((void **)net->mib.udp_stats_in6);
++	snmp_mib_free((void __percpu **)net->mib.udp_stats_in6);
+ 	return -ENOMEM;
+ }
+ 
+ static void ipv6_cleanup_mibs(struct net *net)
+ {
+-	snmp_mib_free((void **)net->mib.udp_stats_in6);
+-	snmp_mib_free((void **)net->mib.udplite_stats_in6);
+-	snmp_mib_free((void **)net->mib.ipv6_statistics);
+-	snmp_mib_free((void **)net->mib.icmpv6_statistics);
+-	snmp_mib_free((void **)net->mib.icmpv6msg_statistics);
++	snmp_mib_free((void __percpu **)net->mib.udp_stats_in6);
++	snmp_mib_free((void __percpu **)net->mib.udplite_stats_in6);
++	snmp_mib_free((void __percpu **)net->mib.ipv6_statistics);
++	snmp_mib_free((void __percpu **)net->mib.icmpv6_statistics);
++	snmp_mib_free((void __percpu **)net->mib.icmpv6msg_statistics);
+ }
+ 
+ static int __net_init inet6_net_init(struct net *net)
+Index: net-next/net/ipv6/proc.c
+===================================================================
+--- net-next.orig/net/ipv6/proc.c
++++ net-next/net/ipv6/proc.c
+@@ -136,7 +136,7 @@ static const struct snmp_mib snmp6_udpli
+ 	SNMP_MIB_SENTINEL
+ };
+ 
+-static void snmp6_seq_show_icmpv6msg(struct seq_file *seq, void **mib)
++static void snmp6_seq_show_icmpv6msg(struct seq_file *seq, void __percpu **mib)
+ {
+ 	char name[32];
+ 	int i;
+@@ -170,7 +170,7 @@ static void snmp6_seq_show_icmpv6msg(str
+ 	return;
+ }
+ 
+-static void snmp6_seq_show_item(struct seq_file *seq, void **mib,
++static void snmp6_seq_show_item(struct seq_file *seq, void __percpu **mib,
+ 				const struct snmp_mib *itemlist)
+ {
+ 	int i;
+@@ -183,14 +183,15 @@ static int snmp6_seq_show(struct seq_fil
+ {
+ 	struct net *net = (struct net *)seq->private;
+ 
+-	snmp6_seq_show_item(seq, (void **)net->mib.ipv6_statistics,
++	snmp6_seq_show_item(seq, (void __percpu **)net->mib.ipv6_statistics,
+ 			    snmp6_ipstats_list);
+-	snmp6_seq_show_item(seq, (void **)net->mib.icmpv6_statistics,
++	snmp6_seq_show_item(seq, (void __percpu **)net->mib.icmpv6_statistics,
+ 			    snmp6_icmp6_list);
+-	snmp6_seq_show_icmpv6msg(seq, (void **)net->mib.icmpv6msg_statistics);
+-	snmp6_seq_show_item(seq, (void **)net->mib.udp_stats_in6,
++	snmp6_seq_show_icmpv6msg(seq,
++			    (void __percpu **)net->mib.icmpv6msg_statistics);
++	snmp6_seq_show_item(seq, (void __percpu **)net->mib.udp_stats_in6,
+ 			    snmp6_udp6_list);
+-	snmp6_seq_show_item(seq, (void **)net->mib.udplite_stats_in6,
++	snmp6_seq_show_item(seq, (void __percpu **)net->mib.udplite_stats_in6,
+ 			    snmp6_udplite6_list);
+ 	return 0;
+ }
+@@ -213,9 +214,11 @@ static int snmp6_dev_seq_show(struct seq
+ 	struct inet6_dev *idev = (struct inet6_dev *)seq->private;
+ 
+ 	seq_printf(seq, "%-32s\t%u\n", "ifIndex", idev->dev->ifindex);
+-	snmp6_seq_show_item(seq, (void **)idev->stats.ipv6, snmp6_ipstats_list);
+-	snmp6_seq_show_item(seq, (void **)idev->stats.icmpv6, snmp6_icmp6_list);
+-	snmp6_seq_show_icmpv6msg(seq, (void **)idev->stats.icmpv6msg);
++	snmp6_seq_show_item(seq, (void __percpu **)idev->stats.ipv6,
++			    snmp6_ipstats_list);
++	snmp6_seq_show_item(seq, (void __percpu **)idev->stats.icmpv6,
++			    snmp6_icmp6_list);
++	snmp6_seq_show_icmpv6msg(seq, (void __percpu **)idev->stats.icmpv6msg);
+ 	return 0;
+ }
+ 
+Index: net-next/net/sctp/proc.c
+===================================================================
+--- net-next.orig/net/sctp/proc.c
++++ net-next/net/sctp/proc.c
+@@ -83,7 +83,7 @@ static int sctp_snmp_seq_show(struct seq
+ 
+ 	for (i = 0; sctp_snmp_list[i].name != NULL; i++)
+ 		seq_printf(seq, "%-32s\t%ld\n", sctp_snmp_list[i].name,
+-			   snmp_fold_field((void **)sctp_statistics,
++			   snmp_fold_field((void __percpu **)sctp_statistics,
+ 				      sctp_snmp_list[i].entry));
+ 
+ 	return 0;
+Index: net-next/net/sctp/protocol.c
+===================================================================
+--- net-next.orig/net/sctp/protocol.c
++++ net-next/net/sctp/protocol.c
+@@ -996,12 +996,13 @@ int sctp_register_pf(struct sctp_pf *pf,
+ 
+ static inline int init_sctp_mibs(void)
+ {
+-	return snmp_mib_init((void**)sctp_statistics, sizeof(struct sctp_mib));
++	return snmp_mib_init((void __percpu **)sctp_statistics,
++			     sizeof(struct sctp_mib));
+ }
+ 
+ static inline void cleanup_sctp_mibs(void)
+ {
+-	snmp_mib_free((void**)sctp_statistics);
++	snmp_mib_free((void __percpu **)sctp_statistics);
+ }
+ 
+ static void sctp_v4_pf_init(void)
+Index: net-next/net/xfrm/xfrm_ipcomp.c
+===================================================================
+--- net-next.orig/net/xfrm/xfrm_ipcomp.c
++++ net-next/net/xfrm/xfrm_ipcomp.c
+@@ -30,12 +30,12 @@
+ 
+ struct ipcomp_tfms {
+ 	struct list_head list;
+-	struct crypto_comp **tfms;
++	struct crypto_comp * __percpu *tfms;
+ 	int users;
+ };
+ 
+ static DEFINE_MUTEX(ipcomp_resource_mutex);
+-static void **ipcomp_scratches;
++static void * __percpu *ipcomp_scratches;
+ static int ipcomp_scratch_users;
+ static LIST_HEAD(ipcomp_tfms_list);
+ 
+@@ -200,7 +200,7 @@ EXPORT_SYMBOL_GPL(ipcomp_output);
+ static void ipcomp_free_scratches(void)
+ {
+ 	int i;
+-	void **scratches;
++	void * __percpu *scratches;
+ 
+ 	if (--ipcomp_scratch_users)
+ 		return;
+@@ -215,10 +215,10 @@ static void ipcomp_free_scratches(void)
+ 	free_percpu(scratches);
+ }
+ 
+-static void **ipcomp_alloc_scratches(void)
++static void * __percpu *ipcomp_alloc_scratches(void)
+ {
+ 	int i;
+-	void **scratches;
++	void * __percpu *scratches;
+ 
+ 	if (ipcomp_scratch_users++)
+ 		return ipcomp_scratches;
+@@ -239,7 +239,7 @@ static void **ipcomp_alloc_scratches(voi
+ 	return scratches;
+ }
+ 
+-static void ipcomp_free_tfms(struct crypto_comp **tfms)
++static void ipcomp_free_tfms(struct crypto_comp * __percpu *tfms)
+ {
+ 	struct ipcomp_tfms *pos;
+ 	int cpu;
+@@ -267,10 +267,10 @@ static void ipcomp_free_tfms(struct cryp
+ 	free_percpu(tfms);
+ }
+ 
+-static struct crypto_comp **ipcomp_alloc_tfms(const char *alg_name)
++static struct crypto_comp * __percpu *ipcomp_alloc_tfms(const char *alg_name)
+ {
+ 	struct ipcomp_tfms *pos;
+-	struct crypto_comp **tfms;
++	struct crypto_comp * __percpu *tfms;
+ 	int cpu;
+ 
+ 	/* This can be any valid CPU ID so we don't need locking. */
+Index: net-next/net/xfrm/xfrm_policy.c
+===================================================================
+--- net-next.orig/net/xfrm/xfrm_policy.c
++++ net-next/net/xfrm/xfrm_policy.c
+@@ -2428,19 +2428,19 @@ static int __net_init xfrm_statistics_in
+ {
+ 	int rv;
+ 
+-	if (snmp_mib_init((void **)net->mib.xfrm_statistics,
++	if (snmp_mib_init((void __percpu **)net->mib.xfrm_statistics,
+ 			  sizeof(struct linux_xfrm_mib)) < 0)
+ 		return -ENOMEM;
+ 	rv = xfrm_proc_init(net);
+ 	if (rv < 0)
+-		snmp_mib_free((void **)net->mib.xfrm_statistics);
++		snmp_mib_free((void __percpu **)net->mib.xfrm_statistics);
+ 	return rv;
+ }
+ 
+ static void xfrm_statistics_fini(struct net *net)
+ {
+ 	xfrm_proc_fini(net);
+-	snmp_mib_free((void **)net->mib.xfrm_statistics);
++	snmp_mib_free((void __percpu **)net->mib.xfrm_statistics);
+ }
+ #else
+ static int __net_init xfrm_statistics_init(struct net *net)
+Index: net-next/net/xfrm/xfrm_proc.c
+===================================================================
+--- net-next.orig/net/xfrm/xfrm_proc.c
++++ net-next/net/xfrm/xfrm_proc.c
+@@ -50,7 +50,8 @@ static int xfrm_statistics_seq_show(stru
+ 	int i;
+ 	for (i=0; xfrm_mib_list[i].name; i++)
+ 		seq_printf(seq, "%-24s\t%lu\n", xfrm_mib_list[i].name,
+-			   snmp_fold_field((void **)net->mib.xfrm_statistics,
++			   snmp_fold_field((void __percpu **)
++					   net->mib.xfrm_statistics,
+ 					   xfrm_mib_list[i].entry));
+ 	return 0;
+ }
