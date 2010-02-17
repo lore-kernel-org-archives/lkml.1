@@ -1,86 +1,90 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932701Ab0BQJSk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 04:18:40 -0500
-Received: from comal.ext.ti.com ([198.47.26.152]:34708 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932336Ab0BQJSi convert rfc822-to-8bit (ORCPT
+	id S932774Ab0BQJXo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 04:23:44 -0500
+Received: from smtp-out.google.com ([216.239.44.51]:24594 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752086Ab0BQJXl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 04:18:38 -0500
-From: "Shilimkar, Santosh" <santosh.shilimkar@ti.com>
-To: Oliver Neukum <oliver@neukum.org>
-CC: Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       Catalin Marinas <catalin.marinas@arm.com>, Pavel Machek <pavel@ucw.cz>,
-       Greg KH <greg@kroah.com>,
-       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Ming Lei <tom.leiming@gmail.com>,
-       Sebastian Siewior <bigeasy@linutronix.de>,
-       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       "Mankad, Maulik Ojas" <x0082077@ti.com>,
-       "Gadiyar, Anand" <gadiyar@ti.com>
-Date: Wed, 17 Feb 2010 14:47:28 +0530
-Subject: RE: USB mass storage and ARM cache coherency
-Thread-Topic: USB mass storage and ARM cache coherency
-Thread-Index: AcqvsSCkpKQsnTOYSOu/C352EuU1CQAACu4Q
-Message-ID: <EAF47CD23C76F840A9E7FCE10091EFAB02C3CF84FF@dbde02.ent.ti.com>
-References: <20100208065519.GE1290@ucw.cz>
- <201002161522.38467.oliver@neukum.org>
- <EAF47CD23C76F840A9E7FCE10091EFAB02C3CF84D1@dbde02.ent.ti.com>
- <201002171010.57464.oliver@neukum.org>
-In-Reply-To: <201002171010.57464.oliver@neukum.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+	Wed, 17 Feb 2010 04:23:41 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=CHrDgkmy2/aHIf6MWYMzG9MOvbu+I2I608Bnlz5YrlZw7XxBk4vtphdTBeKzaAEjN
+	78R23BvvfTSpwqvUk+25w==
+Date: Wed, 17 Feb 2010 01:23:35 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Minchan Kim <minchan.kim@gmail.com>
+cc: Rik van Riel <riel@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Nick Piggin <npiggin@suse.de>, Andrea Arcangeli <aarcange@redhat.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch 4/7 -mm] oom: badness heuristic rewrite
+In-Reply-To: <28c262361002162341m1d77509dv37d7d13b4ccd0ef9@mail.gmail.com>
+Message-ID: <alpine.DEB.2.00.1002170114300.30931@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.1002100224210.8001@chino.kir.corp.google.com> <alpine.DEB.2.00.1002100228540.8001@chino.kir.corp.google.com> <4B73833D.5070008@redhat.com> <alpine.DEB.2.00.1002102332200.22152@chino.kir.corp.google.com> <1265982984.6207.29.camel@barrios-desktop>
+ <alpine.DEB.2.00.1002121251130.7972@chino.kir.corp.google.com> <28c262361002121845w459d0fa0l55a58552c3a6081e@mail.gmail.com> <alpine.DEB.2.00.1002151347470.26927@chino.kir.corp.google.com> <1266326086.1709.50.camel@barrios-desktop>
+ <alpine.DEB.2.00.1002161323450.23037@chino.kir.corp.google.com> <28c262361002162341m1d77509dv37d7d13b4ccd0ef9@mail.gmail.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="531381004-354184966-1266398616=:30931"
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> -----Original Message-----
-> From: Oliver Neukum [mailto:oliver@neukum.org]
-> Sent: Wednesday, February 17, 2010 2:41 PM
-> To: Shilimkar, Santosh
-> Cc: Russell King - ARM Linux; Catalin Marinas; Pavel Machek; Greg KH; Matthew Dharm; Sergei Shtylyov;
-> Ming Lei; Sebastian Siewior; linux-usb@vger.kernel.org; linux-kernel; linux-arm-kernel; Mankad,
-> Maulik Ojas; Gadiyar, Anand
-> Subject: Re: USB mass storage and ARM cache coherency
-> 
-> Am Mittwoch, 17. Februar 2010 09:55:08 schrieb Shilimkar, Santosh:
-> > > Your original patch however kills ehci, ohci and uhci on some architectures.
-> >
-> > How about below approach? Controller driver can set
-> > "uses_pio_for_control" if it can't do dma for control transfer.
-> >
-> > diff --git a/drivers/usb/core/hcd.c b/drivers/usb/core/hcd.c
-> > index 80995ef..e3eae02 100644
-> > --- a/drivers/usb/core/hcd.c
-> > +++ b/drivers/usb/core/hcd.c
-> > @@ -1276,7 +1276,7 @@ static int map_urb_for_dma(struct usb_hcd *hcd, struct urb *urb,
-> >
-> >         if (usb_endpoint_xfer_control(&urb->ep->desc)
-> >             && !(urb->transfer_flags & URB_NO_SETUP_DMA_MAP)) {
-> > -               if (hcd->self.uses_dma) {
-> > +               if (hcd->self.uses_dma && !hcd->self.uses_pio_for_control) {
-> 
-> It is not elegant to describe exceptions. It would be better, if you split up
-> the flag into two flags, called uses_dma_for_ordinary_transfers and
-> uses_dma_for control_transfers. Doing so also makes sure you look at
-> all hcd drivers ;-)
-> 
-Good point. Negative checks are any way not elegant
-> And the tests become straightforward. And please add a detailed comment
-> to explain why this differentiation is needed on ARM.
-OK. I shall create a patch with description about the problem.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Thanks for feedback!!
+--531381004-354184966-1266398616=:30931
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-Regards,
-Santosh
+On Wed, 17 Feb 2010, Minchan Kim wrote:
 
+> >> Okay. I can think it of slight penalization in this patch.
+> >> But in current OOM logic, we try to kill child instead of forkbomb
+> >> itself. My concern was that.
+> >
+> > We still do with my rewrite, that is handled in oom_kill_process().  The
+> > forkbomb penalization takes place in badness().
+> 
+> 
+> I thought this patch is closely related to [patch  2/7].
+> I can move this discussion to [patch 2/7] if you want.
+> Another guys already pointed out why we care child.
+> 
+
+We have _always_ tried to kill a child of the selected task first if it 
+has a seperate address space, patch 2 doesn't change that.  It simply 
+tries to kill the child with the highest badness() score.
+
+> I said this scenario is BUGGY forkbomb process. It will fork + exec continuously
+> if it isn't killed. How does user intervene to fix the system?
+> System was almost hang due to unresponsive.
+> 
+
+The user would need to kill the parent if it should be killed.  The 
+unresponsiveness in this example, however, is not a question of the oom 
+killer but rather the scheduler to provide interactivity to the user in 
+forkbomb scenarios.  The oom killer should not create a policy that 
+unfairly biases tasks that fork a large number of tasks, however, to 
+provide interactivity since that task may be a vital system resource.
+
+> For extreme example,
+> User is writing some important document by OpenOffice and
+> he decided to execute hackbench 1000000 process 1000000.
+> 
+> Could user save his important office data without halt if we kill
+> child continuously?
+> I think this scenario can be happened enough if the user didn't know
+> parameter of hackbench.
+> 
+
+So what exactly are you proposing we do in the oom killer to distinguish 
+between a user's mistake and a vital system resource?  I'm personally much 
+more concerned with protecting system daemons that provide a service under 
+heavyload than protecting against forkbombs in the oom killer.
+--531381004-354184966-1266398616=:30931--
