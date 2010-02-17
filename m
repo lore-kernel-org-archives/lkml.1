@@ -1,10 +1,10 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755857Ab0BQUaS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 15:30:18 -0500
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:38855 "EHLO e9.ny.us.ibm.com"
+	id S1755889Ab0BQUaV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 15:30:21 -0500
+Received: from e7.ny.us.ibm.com ([32.97.182.137]:37780 "EHLO e7.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755576Ab0BQUaI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755565Ab0BQUaI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 17 Feb 2010 15:30:08 -0500
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
@@ -14,9 +14,9 @@ Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
        tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
        Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
        "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: [PATCH tip/core/rcu 11/18] idr: apply lockdep-based diagnostics to rcu_dereference() uses
-Date: Wed, 17 Feb 2010 12:29:37 -0800
-Message-Id: <1266438584-29173-11-git-send-email-paulmck@linux.vnet.ibm.com>
+Subject: [PATCH tip/core/rcu 04/18] rcu: disable lockdep checking in RCU list-traversal primitives
+Date: Wed, 17 Feb 2010 12:29:30 -0800
+Message-Id: <1266438584-29173-4-git-send-email-paulmck@linux.vnet.ibm.com>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <20100217202924.GA29007@linux.vnet.ibm.com>
 References: <20100217202924.GA29007@linux.vnet.ibm.com>
@@ -24,56 +24,86 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Because idr can be used with any of a number of locks or with any
-flavor of RCU, just disable the lockdep-based diagnostics.  If idr
-needs diagnostics, the check expression will need to be passed into
-the relevant idr primitives as an additional argument.
+The theory is that use of bare rcu_dereference() is more prone to error
+than use of the RCU list-traversal primitives.  Therefore, disable lockdep
+RCU read-side critical-section checking in these primitives for the time
+being.  Once all of the rcu_dereference() uses have been dealt with, it
+may be time to re-enable lockdep checking for the RCU list-traversal
+primitives.
 
 Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 ---
- lib/idr.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+ include/linux/rculist.h       |   14 +++++++-------
+ include/linux/rculist_nulls.h |    4 ++--
+ 2 files changed, 9 insertions(+), 9 deletions(-)
 
-diff --git a/lib/idr.c b/lib/idr.c
-index 1cac726..4877fce 100644
---- a/lib/idr.c
-+++ b/lib/idr.c
-@@ -502,7 +502,7 @@ void *idr_find(struct idr *idp, int id)
- 	int n;
- 	struct idr_layer *p;
+diff --git a/include/linux/rculist.h b/include/linux/rculist.h
+index 1bf0f70..779d707 100644
+--- a/include/linux/rculist.h
++++ b/include/linux/rculist.h
+@@ -208,7 +208,7 @@ static inline void list_splice_init_rcu(struct list_head *list,
+  * primitives such as list_add_rcu() as long as it's guarded by rcu_read_lock().
+  */
+ #define list_entry_rcu(ptr, type, member) \
+-	container_of(rcu_dereference(ptr), type, member)
++	container_of(rcu_dereference_raw(ptr), type, member)
  
--	p = rcu_dereference(idp->top);
-+	p = rcu_dereference_raw(idp->top);
- 	if (!p)
- 		return NULL;
- 	n = (p->layer+1) * IDR_BITS;
-@@ -517,7 +517,7 @@ void *idr_find(struct idr *idp, int id)
- 	while (n > 0 && p) {
- 		n -= IDR_BITS;
- 		BUG_ON(n != p->layer*IDR_BITS);
--		p = rcu_dereference(p->ary[(id >> n) & IDR_MASK]);
-+		p = rcu_dereference_raw(p->ary[(id >> n) & IDR_MASK]);
- 	}
- 	return((void *)p);
- }
-@@ -550,7 +550,7 @@ int idr_for_each(struct idr *idp,
- 	struct idr_layer **paa = &pa[0];
+ /**
+  * list_first_entry_rcu - get the first element from a list
+@@ -225,9 +225,9 @@ static inline void list_splice_init_rcu(struct list_head *list,
+ 	list_entry_rcu((ptr)->next, type, member)
  
- 	n = idp->layers * IDR_BITS;
--	p = rcu_dereference(idp->top);
-+	p = rcu_dereference_raw(idp->top);
- 	max = 1 << n;
+ #define __list_for_each_rcu(pos, head) \
+-	for (pos = rcu_dereference((head)->next); \
++	for (pos = rcu_dereference_raw((head)->next); \
+ 		pos != (head); \
+-		pos = rcu_dereference(pos->next))
++		pos = rcu_dereference_raw(pos->next))
  
- 	id = 0;
-@@ -558,7 +558,7 @@ int idr_for_each(struct idr *idp,
- 		while (n > 0 && p) {
- 			n -= IDR_BITS;
- 			*paa++ = p;
--			p = rcu_dereference(p->ary[(id >> n) & IDR_MASK]);
-+			p = rcu_dereference_raw(p->ary[(id >> n) & IDR_MASK]);
- 		}
+ /**
+  * list_for_each_entry_rcu	-	iterate over rcu list of given type
+@@ -257,9 +257,9 @@ static inline void list_splice_init_rcu(struct list_head *list,
+  * as long as the traversal is guarded by rcu_read_lock().
+  */
+ #define list_for_each_continue_rcu(pos, head) \
+-	for ((pos) = rcu_dereference((pos)->next); \
++	for ((pos) = rcu_dereference_raw((pos)->next); \
+ 		prefetch((pos)->next), (pos) != (head); \
+-		(pos) = rcu_dereference((pos)->next))
++		(pos) = rcu_dereference_raw((pos)->next))
  
- 		if (p) {
+ /**
+  * list_for_each_entry_continue_rcu - continue iteration over list of given type
+@@ -418,10 +418,10 @@ static inline void hlist_add_after_rcu(struct hlist_node *prev,
+  * as long as the traversal is guarded by rcu_read_lock().
+  */
+ #define hlist_for_each_entry_rcu(tpos, pos, head, member)		 \
+-	for (pos = rcu_dereference((head)->first);			 \
++	for (pos = rcu_dereference_raw((head)->first);			 \
+ 		pos && ({ prefetch(pos->next); 1; }) &&			 \
+ 		({ tpos = hlist_entry(pos, typeof(*tpos), member); 1; }); \
+-		pos = rcu_dereference(pos->next))
++		pos = rcu_dereference_raw(pos->next))
+ 
+ #endif	/* __KERNEL__ */
+ #endif
+diff --git a/include/linux/rculist_nulls.h b/include/linux/rculist_nulls.h
+index 589a409..b70ffe5 100644
+--- a/include/linux/rculist_nulls.h
++++ b/include/linux/rculist_nulls.h
+@@ -101,10 +101,10 @@ static inline void hlist_nulls_add_head_rcu(struct hlist_nulls_node *n,
+  *
+  */
+ #define hlist_nulls_for_each_entry_rcu(tpos, pos, head, member) \
+-	for (pos = rcu_dereference((head)->first);			 \
++	for (pos = rcu_dereference_raw((head)->first);			 \
+ 		(!is_a_nulls(pos)) &&			\
+ 		({ tpos = hlist_nulls_entry(pos, typeof(*tpos), member); 1; }); \
+-		pos = rcu_dereference(pos->next))
++		pos = rcu_dereference_raw(pos->next))
+ 
+ #endif
+ #endif
 -- 
 1.6.6
 
