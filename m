@@ -1,85 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933884Ab0BQBdb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 20:33:31 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:54753 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933816Ab0BQBd3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 20:33:29 -0500
-Date: Wed, 17 Feb 2010 02:33:37 +0100
-From: Jan Kara <jack@suse.cz>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jan Kara <jack@suse.cz>, Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, jengelh@medozas.de,
-       stable@kernel.org, gregkh@suse.de
-Subject: Re: [PATCH] writeback: Fix broken sync writeback
-Message-ID: <20100217013336.GK3153@quack.suse.cz>
-References: <20100212091609.GB1025@kernel.dk>
- <alpine.LFD.2.00.1002120722270.7792@localhost.localdomain>
- <20100215141750.GC3434@quack.suse.cz>
- <alpine.LFD.2.00.1002151601360.18830@localhost.localdomain>
- <20100216230017.GJ3153@quack.suse.cz>
- <alpine.LFD.2.00.1002161524210.4141@localhost.localdomain>
+	id S933892Ab0BQBgk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 20:36:40 -0500
+Received: from mail-yx0-f200.google.com ([209.85.210.200]:35396 "EHLO
+	mail-yx0-f200.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933816Ab0BQBgj convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 20:36:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=DU3C+PfOyhNdigAIvOGDN5/KkL3EXy+/rqAloWwz+24AuRua3v7CnuLut5239aEtpx
+         HRqmbhY5Gk7J8fhK39zQl9zDrmrP/SPJaiw2h04KNCqpj7tbqNDxBEjNTQE7phDrM0hN
+         7MQUvQutqsDKboi8eAvsnNmgxswDg7o8/i3F4=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.1002161524210.4141@localhost.localdomain>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <4B7AB9C0.6070402@kernel.org>
+References: <4B744E13.8040004@kernel.org> <alpine.LFD.2.00.1002120714320.7792@localhost.localdomain> 
+	<4B75A5DC.3060803@kernel.org> <20100212202357.6363d5af@hyperion.delvare> 
+	<20100212230702.GA10266@1wt.eu> <20100213091748.276821e1@hyperion.delvare> 
+	<20100214170724.GE1578@ucw.cz> <20100214200803.4b2348ce@hyperion.delvare> 
+	<20100215151522.GI5337@thunk.org> <4B7AB9C0.6070402@kernel.org>
+From: David Rees <drees76@gmail.com>
+Date: Tue, 16 Feb 2010 17:36:17 -0800
+Message-ID: <72dbd3151002161736vfa1925te61a5698eb882940@mail.gmail.com>
+Subject: Re: [kernel.org users] XZ Migration discussion
+To: "J.H." <warthog9@kernel.org>
+Cc: tytso@mit.edu, Jean Delvare <khali@linux-fr.org>,
+       Pavel Machek <pavel@ucw.cz>, mirrors@kernel.org,
+       lasse.collin@tukaani.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       users@kernel.org, "FTPAdmin Kernel.org" <ftpadmin@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Willy Tarreau <w@1wt.eu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 16-02-10 15:34:01, Linus Torvalds wrote:
-> On Wed, 17 Feb 2010, Jan Kara wrote:
-> >
-> >   The IO size actually does matter for performance because if you switch
-> > after 4 MB (current value of MAX_WRITEBACK_PAGES) to writing another inode,
-> 
-> No.
-> 
-> Dammit, read the code.
-> 
-> That's my whole _point_. Look at the for-loop.
-> 
-> We DO NOT SWITCH to another inode, because we just continue in the 
-> for-loop.
-> 
-> This is why I think your patch is crap. You clearly haven't even read the 
-> code, the patch makes no sense, and there must be something else going on 
-> than what you _claim_ is going on.
-  I've read the code. Maybe I'm missing something but look:
-writeback_inodes_wb(nr_to_write = 1024)
-  -> queue_io() - queues inodes from wb->b_dirty list to wb->b_io list
-  ...
-  writeback_single_inode()
-    ...writes 1024 pages.
-    if we haven't written everything in the inode (more than 1024 dirty
-    pages) we end up doing either requeue_io() or redirty_tail(). In the
-    first case the inode is put to b_more_io list, in the second case to
-    the tail of b_dirty list. In either case it will not receive further
-    writeout until we go through all other members of current b_io list.
+On Tue, Feb 16, 2010 at 7:29 AM, J.H. <warthog9@kernel.org> wrote:
+> On 02/15/2010 07:15 AM, tytso@mit.edu wrote:
+>> People who think xz are good should be working to get it installed by
+>> default into the community and then enterprise distro's, first....
+>
+> As a note xz is available via EPEL for Redhat Enterprice Linux 5 and
+> anything that's derived from that.  Doesn't seem to be available,
+> directly, for 4 or lower.  Not sure on Suse, and Debian's already been
+> mentioned.  Just trying to do a quick survey of what's out there already.
 
-  So I claim we currently *do* switch to another inode after 4 MB. That
-is a fact.
+Something I noticed, too.  Hopefully going to work on getting set up
+as a packager and get xz pushed out to EPEL EL-4 over the next couple
+weeks unless someone else beats me to it as I still have a handful of
+EL-4 machines grinding away. :-)
 
-  I *think* it is by design - mainly to avoid the situation where someone
-continuously writes a huge file and kupdate or pdflush would never get to
-writing other files with dirty data (at least that's impression I've built
-over the years - heck, even 2.6.16 seems to have this redirty_tail logic
-with a comment about the above livelock).
-
-  I do find this design broken as well as you likely do and think that the
-livelock issue described in the above paragraph should be solved differently
-(e.g. by http://lkml.org/lkml/2010/2/11/321) but that's not a quick fix.
-
-  The question is what to do now for 2.6.33 and 2.6.32-stable. Personally,
-I think that changing the writeback logic so that it does not switch inodes
-after 4 MB is too risky for these two kernels. So with the above
-explanation would you accept some fix along the lines of original Jens'
-fix?
-
-								Honza
-
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+-Dave
