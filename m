@@ -1,59 +1,39 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752977Ab0BQRH5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 12:07:57 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:59025 "EHLO mx1.redhat.com"
+	id S1753059Ab0BQRIT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 12:08:19 -0500
+Received: from www.tglx.de ([62.245.132.106]:44889 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751846Ab0BQRH4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 12:07:56 -0500
-Message-ID: <4B7C2267.6050302@redhat.com>
-Date: Wed, 17 Feb 2010 15:07:51 -0200
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090609)
+	id S1752986Ab0BQRIS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 12:08:18 -0500
+Date: Wed, 17 Feb 2010 18:07:59 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch -tip/core/rcu] rcu: Convert to raw_spinlocks
+In-Reply-To: <20100217170249.GB6959@linux.vnet.ibm.com>
+Message-ID: <alpine.LFD.2.00.1002171807360.2811@localhost.localdomain>
+References: <20100217162054.114542795@linutronix.de> <20100217170249.GB6959@linux.vnet.ibm.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: randy dunlap <randy.dunlap@oracle.com>
-CC: Linux Media Mailing List <linux-media@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/4] DocBook/Makefile: Make it less verbose
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Don't show build commands for html main file and media dir creation, if V=0.
+On Wed, 17 Feb 2010, Paul E. McKenney wrote:
 
-Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
+> On Wed, Feb 17, 2010 at 04:23:00PM -0000, Thomas Gleixner wrote:
+> > The spinlocks in rcutree need to be real spinlocks in
+> > preempt-rt. Convert them to raw_spinlocks.
+> 
+> Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> 
+> Except that it conflicts with some of my patch stack.  So I will apply
+> this on top of my stack and re-send, if that is OK.
 
----
- Documentation/DocBook/Makefile |    7 +++++--
- 1 files changed, 5 insertions(+), 2 deletions(-)
+Please do. Thanks,
 
-diff --git a/Documentation/DocBook/Makefile b/Documentation/DocBook/Makefile
-index 325cfd1..7c590ef 100644
---- a/Documentation/DocBook/Makefile
-+++ b/Documentation/DocBook/Makefile
-@@ -46,8 +46,9 @@ pdfdocs: $(PDF)
- 
- HTML := $(sort $(patsubst %.xml, %.html, $(BOOKS)))
- htmldocs: $(HTML)
--	$(call build_main_index)
--	$(call build_images)
-+	@$($(quiet)cmd_build_main_index)
-+	@$($(call build_main_index))
-+	@($(call build_images))
- 
- MAN := $(patsubst %.xml, %.9, $(BOOKS))
- mandocs: $(MAN)
-@@ -145,6 +146,8 @@ quiet_cmd_db2pdf = PDF     $@
- %.pdf : %.xml
- 	$(call cmd,db2pdf)
- 
-+      cmd_build_main_index = :
-+quiet_cmd_build_main_index = echo '  BUILD   $@'
- 
- index = index.html
- main_idx = Documentation/DocBook/$(index)
--- 
-1.6.6.1
+       tglx
+
 
