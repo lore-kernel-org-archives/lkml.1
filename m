@@ -1,64 +1,40 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752338Ab0BQWBq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 17:01:46 -0500
-Received: from nn7.de ([85.214.94.156]:35348 "EHLO nn7.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750983Ab0BQWBp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 17:01:45 -0500
-Subject: 2.6.33-rc8-git: nouveaufb hangs on boot on MacBookPro5,3
-From: Soeren Sonnenburg <sonne@debian.org>
-To: linux-kernel@vger.kernel.org
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-VXAsPOeLfYVA0dqFVLqN"
-Date: Wed, 17 Feb 2010 23:01:44 +0100
-Message-ID: <1266444104.6276.49.camel@no>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
+	id S1752671Ab0BQWBx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 17:01:53 -0500
+Received: from mail.windriver.com ([147.11.1.11]:39639 "EHLO
+	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752513Ab0BQWBv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 17:01:51 -0500
+Message-ID: <4B7C6732.2060302@windriver.com>
+Date: Wed, 17 Feb 2010 16:01:22 -0600
+From: Jason Wessel <jason.wessel@windriver.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Randy Dunlap <rdunlap@xenotime.net>
+CC: kgdb-bugreport@lists.sourceforge.net, mingo@elte.hu,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Kgdb-bugreport] [PATCH 6/7] kgdb,docs: Update the kgdb docs
+ to include kms
+References: <1266014188-29505-1-git-send-email-jason.wessel@windriver.com><1266014188-29505-7-git-send-email-jason.wessel@windriver.com> <4B75DED3.1070407@xenotime.net>
+In-Reply-To: <4B75DED3.1070407@xenotime.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 17 Feb 2010 22:01:21.0527 (UTC) FILETIME=[BD513870:01CAB01C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Randy Dunlap wrote:
+> On 02/12/10 14:36, Jason Wessel wrote:
+>   
+>> Update the kgdb docs to include information about kernel mode setting support.
+>>
+>>     
 
---=-VXAsPOeLfYVA0dqFVLqN
-Content-Type: text/plain; charset="ISO-8859-15"
-Content-Transfer-Encoding: quoted-printable
+Randy, Thanks again.
 
-Dear all,
+All these changes are folded into the kms docs patch.
 
-nouveaufb hangs on MacBookPro5,3 with PFIFO_INTR 0x04000000 - Ch1 when
-booting in efi mode via elilo.
-
-I am attaching a (dirty) screenshot, maybe someone can clear this up
-
-http://sonnenburgs.de/media/bugs/nouveau_hang_2.6.33-rc8.jpg
-
-If there is anything else you want me to try, please say so.
-
-Soeren
---=20
-For the one fact about the future of which we can be certain is that it
-will be utterly fantastic. -- Arthur C. Clarke, 1962
-
---=-VXAsPOeLfYVA0dqFVLqN
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iQIcBAABAgAGBQJLfGdHAAoJEH82z1Wqh6p3agkP/iJCTjjPVLnhc9t+prNsz34/
-Z+77jDYSQ7bRSzoyPtX/vaN+Bo73LSR3EU3EdXatAH+jWEbTvQIbHFymgXFLfMeQ
-rjuQ6t7XzeZZBhPXWVXxebdKutBI1hkMjgiSApSoZ4IYNKHHesDrBz6EB49G2lo2
-uD7K5hcdlZ5xiH0B/J8USeVGpeKjnDkd1JPEsbbCGtYWLATsTaij4EOZTzaLufEf
-fwl0/rYy55a19dyPLHcStqQZeyJbpRDta1tbH/ZrWOIo7HjstUyJx3bfYaQ5p/3P
-KMqjFL2mn210+V2UPdI6a/NjOIPZjtroR8mt3Ml7mHK+h7jHH+JDtmmxbvfhDrHL
-xrsMMj84cdOYHgAnWk4/fNUuSqfk6QIdWfK3/+2d0jE3uDu5wXQsRfv8X+yzjc2n
-oflW8TDFYXopKxI2OXJ+FFRwyTQL+5XbEA3SRnmqammsQ58L/OAU6eBAOllOHhCg
-vjvxoaKuFphVMFQdq/hwAccA3bxegLSwyK2PonzCd50iuMc4eAVJwyRH4+pQ4OQh
-FMsxajIstsw8ddQ/TZBl1qtWu8/rYZrOCedEw6AUR8eZZcZV+vuzFNOhjBzLYUjj
-8nV7FaoHCTDLPwYQr6bemx/ng4vlptEqMp6uFi1IN2EV6/89jSXms6dHKgW4M9+G
-ZONUadLR9a26aNj3Z/i5
-=4EMF
------END PGP SIGNATURE-----
-
---=-VXAsPOeLfYVA0dqFVLqN--
+Jason.
