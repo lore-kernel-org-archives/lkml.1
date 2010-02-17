@@ -1,128 +1,67 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934212Ab0BQJHl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 04:07:41 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:41916 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934200Ab0BQJHj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 04:07:39 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Wed, 17 Feb 2010 18:04:05 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       rientjes@google.com,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       npiggin@suse.de
-Subject: [PATCH] memcg: handle panic_on_oom=always case v2
-Message-Id: <20100217180405.fae00f46.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20100217150445.1a40201d.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20100217150445.1a40201d.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
+	id S934218Ab0BQJKX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 04:10:23 -0500
+Received: from gate.crashing.org ([63.228.1.57]:60221 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934191Ab0BQJKT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 04:10:19 -0500
+Subject: Re: USB mass storage and ARM cache coherency
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: "Shilimkar, Santosh" <santosh.shilimkar@ti.com>,
+       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Ming Lei <tom.leiming@gmail.com>,
+       "Mankad, Maulik Ojas" <x0082077@ti.com>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       Catalin Marinas <catalin.marinas@arm.com>,
+       Sebastian Siewior <bigeasy@linutronix.de>,
+       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Pavel Machek <pavel@ucw.cz>, Greg KH <greg@kroah.com>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+In-Reply-To: <201002160922.47072.oliver@neukum.org>
+References: <20100208065519.GE1290@ucw.cz>
+	 <1265628483.4020.63.camel@pc1117.cambridge.arm.com>
+	 <EAF47CD23C76F840A9E7FCE10091EFAB02C3CF7D50@dbde02.ent.ti.com>
+	 <201002160922.47072.oliver@neukum.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 17 Feb 2010 20:05:43 +1100
+Message-ID: <1266397543.16346.264.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2010-02-16 at 09:22 +0100, Oliver Neukum wrote:
+> This seems wrong to me. Buffers for control transfers may be
+> transfered
+> by DMA, so the caches must be flushed on architectures whose caches
+> are not coherent with respect to DMA.
+> 
+> Would you care to elaborate on the exact nature of the bug you are
+> fixing?
 
-Documenation is updated.
-==
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+I missed part of this thread, so forgive me if I'm a bit off here, but
+if the problem is indeed I$/D$ cache coherency vs. PIO transfers, then
+this is a long solved issue on other archs such as ppc (and I _think_
+sparc).
 
-Now, if panic_on_oom=2, the whole system panics even if the oom happend
-in some special situation (as cpuset, mempolicy....).
-Then, panic_on_oom=2 means painc_on_oom_always.
+The way we do it, at least on powerpc which is PIPT, is to keep track on
+a per-page basis, whether a given page is clean for execution using
+PG_arch1 bit. This bit is cleared when a new page is popped into the
+page cache, and we clear it from flush_dcache_page() iirc (you may want
+to dbl check I don't have the code at hand right now, or rather, I do
+but I'm to lazy to look right now :-)
 
-Now, memcg doesn't check panic_on_oom flag. This patch adds a check.
+Any page with that not set is mapped into userspace with execute
+permission disabled. We do the flush and set PG_arch1 on the first exec
+fault to that page.
 
-BTW, how it's useful ?
-
-kdump+panic_on_oom=2 is the last tool to investigate what happens in oom-ed
-system. When a task is killed, the sysytem recovers and there will be few hint
-to know what happnes. In mission critical system, oom should never happen.
-Then, panic_on_oom=2+kdump is useful to avoid next OOM by knowing
-precise information via snapshot.
-
-TODO:
- - For memcg, it's for isolate system's memory usage, oom-notiifer and
-   freeze_at_oom (or rest_at_oom) should be implemented. Then, management
-   daemon can do similar jobs (as kdump) or taking snapshot per cgroup.
-
-Changelg:
- - rewrote documentations.
-
-CC: Balbir Singh <balbir@linux.vnet.ibm.com>
-CC: David Rientjes <rientjes@google.com>
-CC: Nick Piggin <npiggin@suse.de>
-Reviewed-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
----
- Documentation/cgroups/memory.txt |    5 ++++-
- Documentation/sysctl/vm.txt      |    5 ++++-
- mm/oom_kill.c                    |    2 ++
- 3 files changed, 10 insertions(+), 2 deletions(-)
-
-Index: mmotm-2.6.33-Feb11/Documentation/cgroups/memory.txt
-===================================================================
---- mmotm-2.6.33-Feb11.orig/Documentation/cgroups/memory.txt
-+++ mmotm-2.6.33-Feb11/Documentation/cgroups/memory.txt
-@@ -182,6 +182,8 @@ list.
- NOTE: Reclaim does not work for the root cgroup, since we cannot set any
- limits on the root cgroup.
+Cheers,
+Ben.
  
-+Note2: When panic_on_oom is set to "2", the whole system will panic.
-+
- 2. Locking
- 
- The memory controller uses the following hierarchy
-@@ -379,7 +381,8 @@ The feature can be disabled by
- NOTE1: Enabling/disabling will fail if the cgroup already has other
- cgroups created below it.
- 
--NOTE2: This feature can be enabled/disabled per subtree.
-+NOTE2: When panic_on_oom is set to "2", the whole system will panic in
-+case of an oom event in any cgroup.
- 
- 7. Soft limits
- 
-Index: mmotm-2.6.33-Feb11/Documentation/sysctl/vm.txt
-===================================================================
---- mmotm-2.6.33-Feb11.orig/Documentation/sysctl/vm.txt
-+++ mmotm-2.6.33-Feb11/Documentation/sysctl/vm.txt
-@@ -573,11 +573,14 @@ Because other nodes' memory may be free.
- may be not fatal yet.
- 
- If this is set to 2, the kernel panics compulsorily even on the
--above-mentioned.
-+above-mentioned. Even oom happens under memory cgroup, the whole
-+system panics.
- 
- The default value is 0.
- 1 and 2 are for failover of clustering. Please select either
- according to your policy of failover.
-+panic_on_oom=2+kdump gives you very strong tool to investigate
-+why oom happens. You can get snapshot.
- 
- =============================================================
- 
-Index: mmotm-2.6.33-Feb11/mm/oom_kill.c
-===================================================================
---- mmotm-2.6.33-Feb11.orig/mm/oom_kill.c
-+++ mmotm-2.6.33-Feb11/mm/oom_kill.c
-@@ -471,6 +471,8 @@ void mem_cgroup_out_of_memory(struct mem
- 	unsigned long points = 0;
- 	struct task_struct *p;
- 
-+	if (sysctl_panic_on_oom == 2)
-+		panic("out of memory(memcg). panic_on_oom is selected.\n");
- 	read_lock(&tasklist_lock);
- retry:
- 	p = select_bad_process(&points, mem);
 
