@@ -1,47 +1,80 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933670Ab0BQADc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 19:03:32 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:43599 "EHLO mail.zytor.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933668Ab0BQAD1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 19:03:27 -0500
-Message-ID: <4B7B31F1.60203@zytor.com>
-Date: Tue, 16 Feb 2010 16:01:53 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+	id S933718Ab0BQADh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 19:03:37 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:47397 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933690Ab0BQADb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 19:03:31 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=xqDjW8wY6PqPzTeVvUzhtV+6SrvoDaktXv6HBvWLZGfGYu0c3/vO0Gh0Lq8211UjY
+	siDIloQcBw6FJs9b5WJSw==
+Date: Tue, 16 Feb 2010 16:03:23 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: Nick Piggin <npiggin@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch -mm 8/9 v2] oom: avoid oom killer for lowmem
+ allocations
+In-Reply-To: <20100217084858.fd72ec4f.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.1002161555170.11952@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.1002151416470.26927@chino.kir.corp.google.com> <alpine.DEB.2.00.1002151419260.26927@chino.kir.corp.google.com> <20100216085706.c7af93e1.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.1002151606320.14484@chino.kir.corp.google.com>
+ <20100216064402.GC5723@laptop> <alpine.DEB.2.00.1002152334260.7470@chino.kir.corp.google.com> <20100216075330.GJ5723@laptop> <alpine.DEB.2.00.1002160024370.15201@chino.kir.corp.google.com> <20100217084858.fd72ec4f.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Yinghai Lu <yinghai@kernel.org>
-CC: Stephen Rothwell <sfr@canb.auug.org.au>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-Subject: Re: [PATCH 27/35] core: move early_res
-References: <1265793639-15071-1-git-send-email-yinghai@kernel.org>	<1265793639-15071-28-git-send-email-yinghai@kernel.org> <20100215011615.e3d35121.sfr@canb.auug.org.au> <4B786110.9020806@kernel.org> <4B7B2E3B.9060903@zytor.com> <4B7B2FE1.1030700@kernel.org>
-In-Reply-To: <4B7B2FE1.1030700@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/16/2010 03:53 PM, Yinghai Lu wrote:
->>
->> All this does would seem is it would change a build failure into a
->> runtime panic.  I really fail to see how this is an improvement...
+On Wed, 17 Feb 2010, KAMEZAWA Hiroyuki wrote:
+
+> > > > I'll add this check to __alloc_pages_may_oom() for the !(gfp_mask & 
+> > > > __GFP_NOFAIL) path since we're all content with endlessly looping.
+> > > 
+> > > Thanks. Yes endlessly looping is far preferable to randomly oopsing
+> > > or corrupting memory.
+> > > 
+> > 
+> > Here's the new patch for your consideration.
+> > 
 > 
-> current only x86 support to early_res replace bootmem.
+> Then, can we take kdump in this endlessly looping situaton ?
 > 
-> later if other arch is using that feature, it need to provide that get_max_mapped.
+> panic_on_oom=always + kdump can do that. 
 > 
 
-If so, it would be better if this code isn't compiled at all on
-platforms that doesn't use it.  Masking a compile-time failure with a
-runtime failure when the code isn't actually used doesn't seem like the
-right thing.
+The endless loop is only helpful if something is going to free memory 
+external to the current page allocation: either another task with 
+__GFP_WAIT | __GFP_FS that invokes the oom killer, a task that frees 
+memory, or a task that exits.
 
-	-hpa
+The most notable endless loop in the page allocator is the one when a task 
+has been oom killed, gets access to memory reserves, and then cannot find 
+a page for a __GFP_NOFAIL allocation:
 
+	do {
+		page = get_page_from_freelist(gfp_mask, nodemask, order,
+			zonelist, high_zoneidx, ALLOC_NO_WATERMARKS,
+			preferred_zone, migratetype);
+
+		if (!page && gfp_mask & __GFP_NOFAIL)
+			congestion_wait(BLK_RW_ASYNC, HZ/50);
+	} while (!page && (gfp_mask & __GFP_NOFAIL));
+
+We don't expect any such allocations to happen during the exit path, but 
+we could probably find some in the fs layer.
+
+I don't want to check sysctl_panic_on_oom in the page allocator because it 
+would start panicking the machine unnecessarily for the integrity 
+metadata GFP_NOIO | __GFP_NOFAIL allocation, for any 
+order > PAGE_ALLOC_COSTLY_ORDER, or for users who can't lock the zonelist 
+for oom kill that wouldn't have panicked before.
