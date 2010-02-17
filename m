@@ -1,71 +1,71 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933778Ab0BQAfL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 19:35:11 -0500
-Received: from hera.kernel.org ([140.211.167.34]:35768 "EHLO hera.kernel.org"
+	id S933794Ab0BQAjF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 19:39:05 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:47362 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933626Ab0BQAfI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 19:35:08 -0500
-From: Konrad Rzeszutek Wilk <kliw@darnok.org>
-To: torvalds@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, Joe Perches <joe@perches.com>,
-       Konrad Rzeszutek <ketuzsezr@darnok.org>,
-       Peter Jones <pjones@redhat.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Konrad Rzeszutek Wilk <kliw@darnok.org>
-Subject: [PATCH] drivers/firmware/iscsi_ibft.c: remove NIPQUAD_FMT, use %pI4
-Date: Wed, 17 Feb 2010 00:33:03 +0000
-Message-Id: <1266366783-851-2-git-send-email-kliw@darnok.org>
-X-Mailer: git-send-email 1.7.0
-In-Reply-To: <1266366783-851-1-git-send-email-kliw@darnok.org>
-References: <1266366783-851-1-git-send-email-kliw@darnok.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 17 Feb 2010 00:33:12 +0000 (UTC)
+	id S933749Ab0BQAjB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 19:39:01 -0500
+Date: Wed, 17 Feb 2010 11:38:55 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: linux-next: build warning after merge of the i2c tree
+Message-Id: <20100217113855.7ebf3d39.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0beta7 (GTK+ 2.18.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__17_Feb_2010_11_38_55_+1100_xByEQyEja66rkF2l"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Joe Perches <joe@perches.com>
+--Signature=_Wed__17_Feb_2010_11_38_55_+1100_xByEQyEja66rkF2l
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Convert netmask to __be32 and format it with %pI4
+Hi Jean,
 
-Signed-off-by: Joe Perches <joe@perches.com>
-Signed-off-by: Konrad Rzeszutek <ketuzsezr@darnok.org>
-Reviewed-by: Mike Christie <michaelc@cs.wisc.edu>
-Cc: Peter Jones <pjones@redhat.com>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Konrad Rzeszutek Wilk <kliw@darnok.org>
----
- drivers/firmware/iscsi_ibft.c |    8 +++-----
- 1 files changed, 3 insertions(+), 5 deletions(-)
+After merging the i2c tree, today's linux-next build (powerpc
+ppc64_defconfig) produced warnings like this:
 
-diff --git a/drivers/firmware/iscsi_ibft.c b/drivers/firmware/iscsi_ibft.c
-index 051d1eb..f82bcda 100644
---- a/drivers/firmware/iscsi_ibft.c
-+++ b/drivers/firmware/iscsi_ibft.c
-@@ -381,7 +381,7 @@ static ssize_t ibft_attr_show_nic(struct ibft_kobject *entry,
- 	void *ibft_loc = entry->header;
- 	char *str = buf;
- 	char *mac;
--	int val;
-+	__be32 val;
- 
- 	if (!nic)
- 		return 0;
-@@ -397,10 +397,8 @@ static ssize_t ibft_attr_show_nic(struct ibft_kobject *entry,
- 		str += sprintf_ipaddr(str, nic->ip_addr);
- 		break;
- 	case ibft_eth_subnet_mask:
--		val = ~((1 << (32-nic->subnet_mask_prefix))-1);
--		str += sprintf(str, NIPQUAD_FMT,
--			       (u8)(val >> 24), (u8)(val >> 16),
--			       (u8)(val >> 8), (u8)(val));
-+		val = cpu_to_be32(~((1 << (32-nic->subnet_mask_prefix))-1));
-+		str += sprintf(str, "%pI4", &val);
- 		break;
- 	case ibft_eth_origin:
- 		str += sprintf(str, "%d\n", nic->origin);
--- 
-1.7.0
+In file included from include/linux/bitops.h:17,
+                 from include/linux/kernel.h:15,
+                 from drivers/i2c/i2c-boardinfo.c:19:
+arch/powerpc/include/asm/bitops.h:226: warning: declaration of 'ffs' shadow=
+s a built-in function
 
+The x86_64 allmodconfig produces similar:
+
+In file included from include/linux/bitops.h:17,
+                 from include/linux/kernel.h:15,
+                 from next/drivers/i2c/i2c-boardinfo.c:19:
+arch/x86/include/asm/bitops.h:395: warning: declaration of 'ffs' shadows a =
+built-in function
+
+Exposed by commit fa4f62e9f3a85490aebe8857e2208c37da851ce3 ("i2c: Build
+core and algo drivers with -Wshadow").
+
+Jean, I realise that these warnings are not something your tree has
+added, just that you have exposed them.  They are a bit annoying,
+though.  I am using gcc v4.4.3.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__17_Feb_2010_11_38_55_+1100_xByEQyEja66rkF2l
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkt7Op8ACgkQjjKRsyhoI8zRnQCggW97XNVXP8N2Fga8oYCemurB
+XVwAoLL7Tg5FV+3npgi9mQc2dYWpOKet
+=18RF
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__17_Feb_2010_11_38_55_+1100_xByEQyEja66rkF2l--
