@@ -1,65 +1,360 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751003Ab0BQPfW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 10:35:22 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50962 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750738Ab0BQPfU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 10:35:20 -0500
-Date: Wed, 17 Feb 2010 15:34:02 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Sergei Shtylyov <sshtylyov@mvista.com>
-Cc: Alan Cox <alan@linux.intel.com>, jeff@garzik.org.com,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: [RFC 3/4] libata: Remove excess command issue delays
-Message-ID: <20100217153402.44346f11@lxorguk.ukuu.org.uk>
-In-Reply-To: <4B7BF8DC.7080403@ru.mvista.com>
-References: <20100217130847.16338.55586.stgit@localhost.localdomain>
-	<20100217131145.16338.70473.stgit@localhost.localdomain>
-	<4B7BF8DC.7080403@ru.mvista.com>
-X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.6; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1751268Ab0BQPjM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 10:39:12 -0500
+Received: from compulab.co.il ([67.18.134.219]:50358 "EHLO compulab.co.il"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750870Ab0BQPjK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 10:39:10 -0500
+Message-ID: <4B7C0DC3.3060907@compulab.co.il>
+Date: Wed, 17 Feb 2010 17:39:47 +0200
+From: Denis Turischev <denis@compulab.co.il>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: LKML <linux-kernel@vger.kernel.org>
+CC: Samuel Ortiz <sameo@linux.intel.com>, Jean Delvare <khali@linux-fr.org>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Mike Rapoport <mike@compulab.co.il>
+Subject: [PATCH v2 3/3] gpio: add Intel SCH GPIO controller driver
+References: <4B73DAEE.5080400@compulab.co.il> <4B73DBE9.2030307@compulab.co.il>
+In-Reply-To: <4B73DBE9.2030307@compulab.co.il>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-ACL-Warn: {
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - compulab.site5.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - compulab.co.il
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->    Wouldn't it make sense then to handle the "insane" hardware as an 
-> exception, not vice versa?
+acpi_check_region will be implemented in mfd-core, therefore v2 version avoids
+this check
 
-It depends if you want to "fail safe". I'd personally just remove the
-pause. We know from over ten years of drivers/ide that it's totally
-unneccessary for almost any controller but I am submitting patches based
-upon what Jeff seems ot want...
+Signed-off-by: Denis Turischev <denis@compulab.co.il>
 
-> > As a side effect it also means that those devices using PIO don't end up
-> > generating ATA bus cycles in strange places which confuses some hardware.
-> >   
-> 
->    I thought that's mostly a problem with DMA commands...
-> 
-> > Saves us about 1mS on a dumb controller,
-> 
->    1 ms per command?! Or per what?
+diff -Nru linux-2.6.33-rc7.orig/drivers/gpio/Kconfig linux-2.6.33-rc7/drivers/gpio/Kconfig
+--- linux-2.6.33-rc7.orig/drivers/gpio/Kconfig	2010-02-07 00:17:12.000000000 +0200
++++ linux-2.6.33-rc7/drivers/gpio/Kconfig	2010-02-10 15:15:49.000000000 +0200
+@@ -85,6 +85,22 @@
+  	help
+  	  Say yes here to support the NEC VR4100 series General-purpose I/O Uint
 
-per command. I've been using a plain and simple PCMCIA controller to make
-the profiles nice and clear - the sff_pause does a read which crosses to
-the device and back - that is slow. On some of the SFF style SATA
-controllers its very fast so is presumably all cached as you'd expect.
++config GPIO_SCH
++	tristate "Intel SCH GPIO"
++	depends on GPIOLIB
++	select LPC_SCH
++	help
++	  Say yes here to support GPIO interface on Intel Poulsbo SCH.
++	  The Intel SCH contains a total of 14 GPIO pins. Ten GPIOs are
++	  powered by the core power rail and are turned off during sleep
++	  modes (S3 and higher). The remaining four GPIOs are powered by
++	  the Intel SCH suspend power supply. These GPIOs remain
++	  active during S3. The suspend powered GPIOs can be used to wake the
++	  system from the Suspend-to-RAM state.
++
++	  This driver can also be built as a module. If so, the module
++	  will be called sch-gpio.
++
+  comment "I2C GPIO expanders:"
 
-Next time someone claims libata command issue is slower because of the
-SCSI layer they should take a second look 8)
-
-> > +	.sff_exec_command	= ata_sff_exec_command_nopost,
-> > +	.sff_data_xfer	= 	winbond_data_xfer,
-> > +	.cable_detect	= 	ata_cable_40wire,
-> > +	.set_piomode	= 	winbond_set_piomode,
-> >   
-> 
->    What's up with the alignment here, why it's different from the rest 
-> of drivers?
->
-Just didn't fix up the formatting of that one when I was doing them all.
-
+  config GPIO_MAX732X
+diff -Nru linux-2.6.33-rc7.orig/drivers/gpio/Makefile linux-2.6.33-rc7/drivers/gpio/Makefile
+--- linux-2.6.33-rc7.orig/drivers/gpio/Makefile	2010-02-07 00:17:12.000000000 +0200
++++ linux-2.6.33-rc7/drivers/gpio/Makefile	2010-02-10 15:15:49.000000000 +0200
+@@ -22,3 +22,4 @@
+  obj-$(CONFIG_GPIO_BT8XX)	+= bt8xxgpio.o
+  obj-$(CONFIG_GPIO_VR41XX)	+= vr41xx_giu.o
+  obj-$(CONFIG_GPIO_WM831X)	+= wm831x-gpio.o
++obj-$(CONFIG_GPIO_SCH)		+= sch_gpio.o
+diff -Nru linux-2.6.33-rc7.orig/drivers/gpio/sch_gpio.c linux-2.6.33-rc7/drivers/gpio/sch_gpio.c
+--- linux-2.6.33-rc7.orig/drivers/gpio/sch_gpio.c	1970-01-01 02:00:00.000000000 +0200
++++ linux-2.6.33-rc7/drivers/gpio/sch_gpio.c	2010-02-17 17:08:16.000000000 +0200
+@@ -0,0 +1,282 @@
++/*
++ *  sch_gpio.c - GPIO interface for Intel Poulsbo SCH
++ *
++ *  Copyright (c) 2010 CompuLab Ltd
++ *  Author: Denis Turischev <denis@compulab.co.il>
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License 2 as published
++ *  by the Free Software Foundation.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; see the file COPYING.  If not, write to
++ *  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
++ */
++
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/io.h>
++#include <linux/errno.h>
++#include <linux/acpi.h>
++#include <linux/platform_device.h>
++
++#include <linux/gpio.h>
++
++static DEFINE_SPINLOCK(gpio_lock);
++
++#define CGEN	(0x00)
++#define CGIO	(0x04)
++#define CGLV	(0x08)
++
++#define RGEN	(0x20)
++#define RGIO	(0x24)
++#define RGLV	(0x28)
++
++static unsigned short gpio_ba;
++
++static int sch_gpio_core_direction_in(struct gpio_chip *gc, unsigned  gpio_num)
++{
++	u8 curr_dirs;
++	unsigned short offset, bit;
++
++	spin_lock(&gpio_lock);
++
++	offset = CGIO + gpio_num / 8;
++	bit = gpio_num % 8;
++
++	curr_dirs = inb(gpio_ba + offset);
++
++	if (!(curr_dirs & (1 << bit)))
++		outb(curr_dirs | (1 << bit), gpio_ba + offset);
++
++	spin_unlock(&gpio_lock);
++	return 0;
++}
++
++static int sch_gpio_core_get(struct gpio_chip *gc, unsigned gpio_num)
++{
++	int res;
++	unsigned short offset, bit;
++
++	offset = CGLV + gpio_num / 8;
++	bit = gpio_num % 8;
++
++	res = !!(inb(gpio_ba + offset) & (1 << bit));
++	return res;
++}
++
++static void sch_gpio_core_set(struct gpio_chip *gc, unsigned gpio_num, int val)
++{
++	u8 curr_vals;
++	unsigned short offset, bit;
++
++	spin_lock(&gpio_lock);
++
++	offset = CGLV + gpio_num / 8;
++	bit = gpio_num % 8;
++
++	curr_vals = inb(gpio_ba + offset);
++
++	if (val)
++		outb(curr_vals | (1 << bit), gpio_ba + offset);
++	else
++		outb((curr_vals & ~(1 << bit)), gpio_ba + offset);
++	spin_unlock(&gpio_lock);
++}
++
++static int sch_gpio_core_direction_out(struct gpio_chip *gc,
++					unsigned gpio_num, int val)
++{
++	u8 curr_dirs;
++	unsigned short offset, bit;
++
++	sch_gpio_core_set(gc, gpio_num, val);
++
++	spin_lock(&gpio_lock);
++
++	offset = CGIO + gpio_num / 8;
++	bit = gpio_num % 8;
++
++	curr_dirs = inb(gpio_ba + offset);
++	if (curr_dirs & (1 << bit))
++		outb(curr_dirs & ~(1 << bit), gpio_ba + offset);
++
++	spin_unlock(&gpio_lock);
++	return 0;
++}
++
++static struct gpio_chip sch_gpio_core = {
++	.label			= "sch_gpio_core",
++	.owner			= THIS_MODULE,
++	.direction_input	= sch_gpio_core_direction_in,
++	.get			= sch_gpio_core_get,
++	.direction_output	= sch_gpio_core_direction_out,
++	.set			= sch_gpio_core_set,
++};
++
++static int sch_gpio_resume_direction_in(struct gpio_chip *gc,
++					unsigned gpio_num)
++{
++	u8 curr_dirs;
++
++	spin_lock(&gpio_lock);
++
++	curr_dirs = inb(gpio_ba + RGIO);
++
++	if (!(curr_dirs & (1 << gpio_num)))
++		outb(curr_dirs | (1 << gpio_num) , gpio_ba + RGIO);
++
++	spin_unlock(&gpio_lock);
++	return 0;
++}
++
++static int sch_gpio_resume_get(struct gpio_chip *gc, unsigned gpio_num)
++{
++	return !!(inb(gpio_ba + RGLV) & (1 << gpio_num));
++}
++
++static void sch_gpio_resume_set(struct gpio_chip *gc,
++				unsigned gpio_num, int val)
++{
++	u8 curr_vals;
++
++	spin_lock(&gpio_lock);
++
++	curr_vals = inb(gpio_ba + RGLV);
++
++	if (val)
++		outb(curr_vals | (1 << gpio_num), gpio_ba + RGLV);
++	else
++		outb((curr_vals & ~(1 << gpio_num)), gpio_ba + RGLV);
++
++	spin_unlock(&gpio_lock);
++}
++
++static int sch_gpio_resume_direction_out(struct gpio_chip *gc,
++					unsigned gpio_num, int val)
++{
++	u8 curr_dirs;
++
++	sch_gpio_resume_set(gc, gpio_num, val);
++
++	spin_lock(&gpio_lock);
++
++	curr_dirs = inb(gpio_ba + RGIO);
++	if (curr_dirs & (1 << gpio_num))
++		outb(curr_dirs & ~(1 << gpio_num), gpio_ba + RGIO);
++
++	spin_unlock(&gpio_lock);
++	return 0;
++}
++
++static struct gpio_chip sch_gpio_resume = {
++	.label			= "sch_gpio_resume",
++	.owner			= THIS_MODULE,
++	.direction_input	= sch_gpio_resume_direction_in,
++	.get			= sch_gpio_resume_get,
++	.direction_output	= sch_gpio_resume_direction_out,
++	.set			= sch_gpio_resume_set,
++};
++
++static int __devinit sch_gpio_probe(struct platform_device *pdev)
++{
++	struct resource *res;
++	int err;
++
++	res = platform_get_resource(pdev, IORESOURCE_IO, 0);
++	if (!res)
++		return -EBUSY;
++
++	if (!request_region(res->start, resource_size(res), pdev->name))
++		return -EBUSY;
++
++	gpio_ba = res->start;
++
++	sch_gpio_core.base = 0;
++	sch_gpio_core.ngpio = 10;
++	sch_gpio_core.dev = &pdev->dev;
++
++	sch_gpio_resume.base = 10;
++	sch_gpio_resume.ngpio = 4;
++	sch_gpio_resume.dev = &pdev->dev;
++
++	err = gpiochip_add(&sch_gpio_core);
++	if (err < 0)
++		goto err_sch_gpio_core;
++
++	err = gpiochip_add(&sch_gpio_resume);
++	if (err < 0)
++		goto err_sch_gpio_resume;
++
++	/*
++	 * GPIO[6:0] enabled by default
++	 * GPIO7 is configured by the CMC as SLPIOVR
++	 * Enable GPIO[9:8] core powered gpios explicitly
++	 */
++	outb(0x3, gpio_ba + CGEN + 1);
++	/*
++	 * SUS_GPIO[2:0] enabled by default
++	 * Enable SUS_GPIO3 resume powered gpio explicitly
++	 */
++	outb(0x8, gpio_ba + RGEN);
++
++	return 0;
++
++err_sch_gpio_resume:
++	gpiochip_remove(&sch_gpio_core);
++
++err_sch_gpio_core:
++	release_region(res->start, resource_size(res));
++	gpio_ba = 0;
++
++	return err;
++}
++
++static int __devexit sch_gpio_remove(struct platform_device *pdev)
++{
++	struct resource *res;
++	if (gpio_ba) {
++		gpiochip_remove(&sch_gpio_core);
++		gpiochip_remove(&sch_gpio_resume);
++
++		res = platform_get_resource(pdev, IORESOURCE_IO, 0);
++
++		release_region(res->start, resource_size(res));
++		gpio_ba = 0;
++	}
++
++	return 0;
++}
++
++static struct platform_driver sch_gpio_driver = {
++	.driver = {
++		.name = "sch_gpio",
++		.owner = THIS_MODULE,
++	},
++	.probe		= sch_gpio_probe,
++	.remove		= __devexit_p(sch_gpio_remove),
++};
++
++static int __init sch_gpio_init(void)
++{
++	return platform_driver_register(&sch_gpio_driver);
++}
++
++static void __exit sch_gpio_exit(void)
++{
++	platform_driver_unregister(&sch_gpio_driver);
++}
++
++module_init(sch_gpio_init);
++module_exit(sch_gpio_exit);
++
++MODULE_AUTHOR("Denis Turischev <denis@compulab.co.il>");
++MODULE_DESCRIPTION("GPIO interface for Intel Poulsbo SCH");
++MODULE_LICENSE("GPL");
++MODULE_ALIAS("platform:sch_gpio");
