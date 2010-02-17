@@ -1,203 +1,86 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757412Ab0BQO6c (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 09:58:32 -0500
-Received: from karen.lavabit.com ([72.249.41.33]:45695 "EHLO karen.lavabit.com"
+	id S1757431Ab0BQPPQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 10:15:16 -0500
+Received: from gwu.lbox.cz ([62.245.111.132]:38654 "EHLO gwu.lbox.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757373Ab0BQO6b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 09:58:31 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=lavabit; d=lavabit.com;
-  b=T1OBQfOXV9XPyEJ8zSfTfFWSDb76ru4RrZZOg2qZ5lc8MbDkJ7HRB5FOIsD1c610BOzzUTgOBvVcx7/H73URwo5h2JHABzx0aPrQfUN+gK8bMKHHFU+KFwVBcQYSKcefgZpxkYFsDSrJ3XD1LRzm3N3glLnkjWJpOfShLBfyOb8=;
-  h=Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:Content-Type:Content-Transfer-Encoding;
-Message-ID: <4B7C0406.9040400@lavabit.com>
-Date: Wed, 17 Feb 2010 14:58:14 +0000
-From: Richard Colquhoun <arfab@lavabit.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	id S1757346Ab0BQPPN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 10:15:13 -0500
+Date: Wed, 17 Feb 2010 16:14:35 +0100
+From: Nikola Ciprich <extmaillist@linuxbox.cz>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: Harry Edmon <harry@atmos.washington.edu>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-nfs@vger.kernel.org, nikola.ciprich@linuxbox.cz
+Subject: Re: 2.6.32.2 - WARNING: at lib/kref.c:43 kref_get+0x,23/0x2b()
+Message-ID: <20100217151435.GC30897@develbox.linuxbox.cz>
+References: <4B4F5A00.4060604@atmos.washington.edu>
+ <20100122150325.6ad12428.akpm@linux-foundation.org>
+ <20100127190522.GB18278@fieldses.org>
+ <4B60C5D4.6070000@atmos.washington.edu>
+ <20100202162228.GD4293@fieldses.org>
+ <20100216182248.GA4922@nik-comp.linuxbox.cz>
+ <20100216202121.GE26292@fieldses.org>
+ <20100216202720.GB4922@nik-comp.linuxbox.cz>
+ <20100216202947.GF26292@fieldses.org>
 MIME-Version: 1.0
-To: Greg Kroah-Hartman <gregkh@suse.de>
-CC: devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] Staging: rtl8187se: fix spacing errors and commenting format
- in r8180_93cx6.c
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100216202947.GF26292@fieldses.org>
+User-Agent: Mutt/1.5.20 (2009-12-10)
+X-Milter-Copy-Status: I
+X-Milter-Copy-Status: I
+X-Antivirus: on proxybox by Kaspersky antivirus, engine 5.5.10, data 3319438 records(17-02-2010)
+X-Envelope-From: ciprich@linuxbox.cz
+X-Spam-Score: N/A (trusted relay)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 764502ee11ccd601ee7fb6bc00e2333055b9dd41 Mon Sep 17 00:00:00 2001
-From: Richard Colquhoun <arfab28@valen.(none)>
-Date: Wed, 17 Feb 2010 12:32:13 +0000
-Subject: [PATCH] Staging: rtl8187se: fix spacing errors and commenting format in r8180_93cx6.c
- This patch just fixes all of the errors highlighted by the checkpatch.pl script
- Signed-off-by: Richard Colquhoun <arfab@lavabit.com>
+Well,
+I did a lot of stress tests, and it seems to be pretty random, and what's
+worse, I think it is more then one problem, oh great...
+Seems that at least one of my NFS problems was in fact caused by ext4 regression
+(what FS are you using?)
+applying this one: http://bugzilla.kernel.org/attachment.cgi?id=24975
+improved things for me a lot (see http://bugzilla.kernel.org/show_bug.cgi?id=15231 for
+full discussion).
+I'll watch the machine for next few days and report...
+regards
+nik
 
----
- drivers/staging/rtl8187se/r8180_93cx6.c |   81 ++++++++++++++++---------------
- 1 files changed, 41 insertions(+), 40 deletions(-)
+On Tue, Feb 16, 2010 at 03:29:47PM -0500, J. Bruce Fields wrote:
+> On Tue, Feb 16, 2010 at 09:27:20PM +0100, Nikola Ciprich wrote:
+> > > Nothing yet.  I'm taking another look.
+> > > 
+> > > Do you know what the most recent version was where you did *not* see
+> > > these warnings?
+> > well, actually I decided I'll bisect this one no matter what, so hopefully
+> > we'll see soon :)
+> > I'll report
+> 
+> That would be fantastic, thanks.  What test-case are you using?
+> 
+> Any partial information ("xxxx good, xxxx bad") would also be useful.
+> 
+> --b.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-nfs" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
 
-diff --git a/drivers/staging/rtl8187se/r8180_93cx6.c b/drivers/staging/rtl8187se/r8180_93cx6.c
-index 7e4711f..51c59cb 100644
---- a/drivers/staging/rtl8187se/r8180_93cx6.c
-+++ b/drivers/staging/rtl8187se/r8180_93cx6.c
-@@ -22,13 +22,13 @@
- 
- void eprom_cs(struct net_device *dev, short bit)
- {
--	if(bit)
-+	if (bit)
- 		write_nic_byte(dev, EPROM_CMD,
- 			       (1<<EPROM_CS_SHIFT) | \
--			       read_nic_byte(dev, EPROM_CMD)); //enable EPROM
-+			       read_nic_byte(dev, EPROM_CMD)); #enable EPROM
- 	else
- 		write_nic_byte(dev, EPROM_CMD, read_nic_byte(dev, EPROM_CMD)\
--			       &~(1<<EPROM_CS_SHIFT)); //disable EPROM
-+			       &~(1<<EPROM_CS_SHIFT)); #disable EPROM
- 
- 	force_pci_posting(dev);
- 	udelay(EPROM_DELAY);
-@@ -38,23 +38,23 @@ void eprom_cs(struct net_device *dev, short bit)
- void eprom_ck_cycle(struct net_device *dev)
- {
- 	write_nic_byte(dev, EPROM_CMD,
--		       (1<<EPROM_CK_SHIFT) | read_nic_byte(dev,EPROM_CMD));
-+		       (1<<EPROM_CK_SHIFT) | read_nic_byte(dev, EPROM_CMD));
- 	force_pci_posting(dev);
- 	udelay(EPROM_DELAY);
- 	write_nic_byte(dev, EPROM_CMD,
--		       read_nic_byte(dev, EPROM_CMD) &~ (1<<EPROM_CK_SHIFT));
-+		       read_nic_byte(dev, EPROM_CMD)&~(1<<EPROM_CK_SHIFT));
- 	force_pci_posting(dev);
- 	udelay(EPROM_DELAY);
- }
- 
- 
--void eprom_w(struct net_device *dev,short bit)
-+void eprom_w(struct net_device *dev, short bit)
- {
--	if(bit)
-+	if (bit)
- 		write_nic_byte(dev, EPROM_CMD, (1<<EPROM_W_SHIFT) | \
--			       read_nic_byte(dev,EPROM_CMD));
-+			       read_nic_byte(dev, EPROM_CMD));
- 	else
--		write_nic_byte(dev, EPROM_CMD, read_nic_byte(dev,EPROM_CMD)\
-+		write_nic_byte(dev, EPROM_CMD, read_nic_byte(dev, EPROM_CMD)\
- 			       &~(1<<EPROM_W_SHIFT));
- 
- 	force_pci_posting(dev);
-@@ -66,11 +66,12 @@ short eprom_r(struct net_device *dev)
- {
- 	short bit;
- 
--	bit=(read_nic_byte(dev, EPROM_CMD) & (1<<EPROM_R_SHIFT) );
-+	bit = (read_nic_byte(dev, EPROM_CMD) & (1<<EPROM_R_SHIFT));
- 	udelay(EPROM_DELAY);
- 
--	if(bit) return 1;
--	return 0;
-+	if (bit)
-+		return 1;
-+		return 0;
- }
- 
- 
-@@ -78,7 +79,7 @@ void eprom_send_bits_string(struct net_device *dev, short b[], int len)
- {
- 	int i;
- 
--	for(i=0; i<len; i++){
-+	for (i = 0; i < len; i++) {
- 		eprom_w(dev, b[i]);
- 		eprom_ck_cycle(dev);
- 	}
-@@ -88,50 +89,50 @@ void eprom_send_bits_string(struct net_device *dev, short b[], int len)
- u32 eprom_read(struct net_device *dev, u32 addr)
- {
- 	struct r8180_priv *priv = ieee80211_priv(dev);
--	short read_cmd[]={1,1,0};
-+	short read_cmd[] = {1, 1, 0};
- 	short addr_str[8];
- 	int i;
- 	int addr_len;
- 	u32 ret;
- 
--	ret=0;
--        //enable EPROM programming
-+	ret = 0;
-+	#enable EPROM programming
- 	write_nic_byte(dev, EPROM_CMD,
- 		       (EPROM_CMD_PROGRAM<<EPROM_CMD_OPERATING_MODE_SHIFT));
- 	force_pci_posting(dev);
- 	udelay(EPROM_DELAY);
- 
--	if (priv->epromtype==EPROM_93c56){
--		addr_str[7]=addr & 1;
--		addr_str[6]=addr & (1<<1);
--		addr_str[5]=addr & (1<<2);
--		addr_str[4]=addr & (1<<3);
--		addr_str[3]=addr & (1<<4);
--		addr_str[2]=addr & (1<<5);
--		addr_str[1]=addr & (1<<6);
--		addr_str[0]=addr & (1<<7);
--		addr_len=8;
--	}else{
--		addr_str[5]=addr & 1;
--		addr_str[4]=addr & (1<<1);
--		addr_str[3]=addr & (1<<2);
--		addr_str[2]=addr & (1<<3);
--		addr_str[1]=addr & (1<<4);
--		addr_str[0]=addr & (1<<5);
--		addr_len=6;
-+	if (priv->epromtype == EPROM_93c56) {
-+		addr_str[7] = addr & 1;
-+		addr_str[6] = addr & (1<<1);
-+		addr_str[5] = addr & (1<<2);
-+		addr_str[4] = addr & (1<<3);
-+		addr_str[3] = addr & (1<<4);
-+		addr_str[2] = addr & (1<<5);
-+		addr_str[1] = addr & (1<<6);
-+		addr_str[0] = addr & (1<<7);
-+		addr_len = 8;
-+	} else{
-+		addr_str[5] = addr & 1;
-+		addr_str[4] = addr & (1<<1);
-+		addr_str[3] = addr & (1<<2);
-+		addr_str[2] = addr & (1<<3);
-+		addr_str[1] = addr & (1<<4);
-+		addr_str[0] = addr & (1<<5);
-+		addr_len = 6;
- 	}
- 	eprom_cs(dev, 1);
- 	eprom_ck_cycle(dev);
- 	eprom_send_bits_string(dev, read_cmd, 3);
- 	eprom_send_bits_string(dev, addr_str, addr_len);
- 
--	//keep chip pin D to low state while reading.
--	//I'm unsure if it is necessary, but anyway shouldn't hurt
-+	#keep chip pin D to low state while reading.
-+	#I'm unsure if it is necessary, but anyway shouldn't hurt
- 	eprom_w(dev, 0);
- 
--	for(i=0;i<16;i++){
--		//eeprom needs a clk cycle between writing opcode&adr
--		//and reading data. (eeprom outs a dummy 0)
-+	for (i = 0; i < 16; i++) {
-+		#eeprom needs a clk cycle between writing opcode&adr
-+		#and reading data. (eeprom outs a dummy 0)
- 		eprom_ck_cycle(dev);
- 		ret |= (eprom_r(dev)<<(15-i));
- 	}
-@@ -139,7 +140,7 @@ u32 eprom_read(struct net_device *dev, u32 addr)
- 	eprom_cs(dev, 0);
- 	eprom_ck_cycle(dev);
- 
--	//disable EPROM programming
-+	#disable EPROM programming
- 	write_nic_byte(dev, EPROM_CMD,
- 		       (EPROM_CMD_NORMAL<<EPROM_CMD_OPERATING_MODE_SHIFT));
- 	return ret;
 -- 
-1.6.3.3
+-------------------------------------
+Ing. Nikola CIPRICH
+LinuxBox.cz, s.r.o.
+28. rijna 168, 709 01 Ostrava
 
+tel.:   +420 596 603 142
+fax:    +420 596 621 273
+mobil:  +420 777 093 799
+www.linuxbox.cz
 
+mobil servis: +420 737 238 656
+email servis: servis@linuxbox.cz
+-------------------------------------
