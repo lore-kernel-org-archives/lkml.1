@@ -1,48 +1,71 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933917Ab0BQG6S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 01:58:18 -0500
-Received: from mail-yw0-f176.google.com ([209.85.211.176]:53657 "EHLO
-	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933779Ab0BQG6R (ORCPT
+	id S1752645Ab0BQHK7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 02:10:59 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39908
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751104Ab0BQHK5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 01:58:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=hKUMOA+zduhqpa5dByXsQ5fEZ4MrQN4pxADCpbcAWjkDB882VS9ElWSLCt3U4nie/f
-         c0Ed61sPB1Z8IlyrgMxo8EL8F2jlYTxr2XKa0w+f5De1rSTNY1bxqWdszVbAEFLKplwS
-         yHcCgvJ9pCH+VFR13QdHOZtcERolcvwJauXgo=
-Message-ID: <4B7B9241.9070101@garzik.org>
-Date: Wed, 17 Feb 2010 01:52:49 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: The Government <the_g0vernment@yahoo.com>
-CC: linux-kernel@vger.kernel.org,
-       Linux IDE mailing list <linux-ide@vger.kernel.org>
-Subject: Re: sata_mv driver support for Marvell Hercules II controller in
- newer kernels
-References: <549084.45576.qm@web45206.mail.sp1.yahoo.com>
-In-Reply-To: <549084.45576.qm@web45206.mail.sp1.yahoo.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 17 Feb 2010 02:10:57 -0500
+Date: Tue, 16 Feb 2010 23:11:09 -0800 (PST)
+Message-Id: <20100216.231109.183048308.davem@davemloft.net>
+To: sfr@canb.auug.org.au
+Cc: netdev@vger.kernel.org, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, jengelh@medozas.de
+Subject: Re: linux-next: build failure after final merge (net tree)
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20100217174015.d1a8a478.sfr@canb.auug.org.au>
+References: <20100217174015.d1a8a478.sfr@canb.auug.org.au>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=iso-8859-7
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id o1H7BumE023531
 
-On 02/16/2010 10:44 PM, The Government wrote:
-> Hey guys,
->
-> I'm using a Supermicro aoc-sat2-mv8, which is supposedly supported by the Linux kernel by "sata_mv" driver. Unfortunately, I've been unable to troubleshoot why newer distros (and thus kernels) are not detecting/using sata_mv for this card. I tried an (older) Slackware 12.1 install disk, that for some reason works by use of sata_mv (12.1 was released may 2008, when I think sata_mv was still beta). Anyhow, I've tried many newest releases from Slackware, Arch, etc - and it seems newer kernels do not properly recognize this card. I'm not sure what to make of the newer kernels saying "adaptec aacraid driver" is being used (an incorrectly detected driver?). Anyway, I was told this chipset had great linux support - does it still? Thanks a lot.
->
-> (please CC me for replies, thanks a lot)
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Wed, 17 Feb 2010 17:40:15 +1100
 
-(cc linux-ide added)
+> After merging, today's linux-next build (sparc64 defconfig) failed like
+> this:
 
-We need a lot more hard detail, such as lspci and dmesg output.
+Fixed for at least 6 hours:
 
-	Jeff
+>From 177867ce08f2756fa361e37086fc1792d7b4cf29 Mon Sep 17 00:00:00 2001
+From: David S. Miller <davem@davemloft.net>
+Date: Tue, 16 Feb 2010 15:23:23 -0800
+Subject: [PATCH 641/698] sparc64: Kill bogus ip_tables.h include.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
+Fixes the following build failure:
 
+  CC      arch/sparc/kernel/sys_sparc32.o
+In file included from include/linux/netfilter_ipv4/ip_tables.h:28,
+                 from arch/sparc/kernel/sys_sparc32.c:46:
+include/linux/netfilter/x_tables.h:525: error: expected declaration specifiers or ¡...¢ before ¡nf_hookfn¢
+
+Signed-off-by: David S. Miller <davem@davemloft.net>
+---
+ arch/sparc/kernel/sys_sparc32.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
+
+diff --git a/arch/sparc/kernel/sys_sparc32.c b/arch/sparc/kernel/sys_sparc32.c
+index dc0ac19..daded3b 100644
+--- a/arch/sparc/kernel/sys_sparc32.c
++++ b/arch/sparc/kernel/sys_sparc32.c
+@@ -43,7 +43,6 @@
+ #include <linux/security.h>
+ #include <linux/compat.h>
+ #include <linux/vfs.h>
+-#include <linux/netfilter_ipv4/ip_tables.h>
+ #include <linux/ptrace.h>
+ 
+ #include <asm/types.h>
+-- 
+1.6.6.1
+
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
