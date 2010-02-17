@@ -1,42 +1,91 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932845Ab0BQJZs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 04:25:48 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:40082 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753462Ab0BQJZq (ORCPT
+	id S932879Ab0BQJgl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 04:36:41 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:50831 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932244Ab0BQJgj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 04:25:46 -0500
-Date: Wed, 17 Feb 2010 04:25:45 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: Daniel Taylor <Daniel.Taylor@wdc.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 4K disk block and disks larger than 2TiB bugs
-Message-ID: <20100217092545.GA16508@infradead.org>
-References: <3E0C3AE547FA504DA5E89EA5A24AC85803E2BD0A@wdscexbe01.sc.wdc.com>
+	Wed, 17 Feb 2010 04:36:39 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=TtLXJnILQiQxnY26l0iPBA8EJQVbuO057hEfhp3DTpLAQGzF0eeroboulC4sSQQf8
+	osX39fe1NasOi78N/O4aw==
+Date: Wed, 17 Feb 2010 01:36:33 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Minchan Kim <minchan.kim@gmail.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH -mm] Kill existing current task quickly
+In-Reply-To: <28c262361002162226k7ec561cenf84f494618fa8c54@mail.gmail.com>
+Message-ID: <alpine.DEB.2.00.1002170128230.30931@chino.kir.corp.google.com>
+References: <1266335957.1709.67.camel@barrios-desktop> <alpine.DEB.2.00.1002161357170.23037@chino.kir.corp.google.com> <28c262361002162226k7ec561cenf84f494618fa8c54@mail.gmail.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <3E0C3AE547FA504DA5E89EA5A24AC85803E2BD0A@wdscexbe01.sc.wdc.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 16, 2010 at 08:14:27PM -0800, Daniel Taylor wrote:
-> The larger problem is for EFI.  There is a significant amount of hard-coded
-> assumption that LBAs are 512 bytes.  It would help if I could work with the
-> designer to make (and test) the changes in a way that abstracts away the
-> size (I do know that the kernel always thinks of disks in units of 512-byte
-> blocks).  I have seen attempts in the past to fix this problem, but the
-> patches
-> were rejected with erroneous comments about fixing it in user space.  If the
-> kernel will not recognise the partitions, or assigns incorrect values to the
-> starting block and/or number of blocks, there is nothing that user space can
-> do with the disk, except notice the EINVAL responses.
+On Wed, 17 Feb 2010, Minchan Kim wrote:
 
-This should be fixed since commit 7d13af3279985f554784a45cc961f706dbcdbdd1,
-which is included in Linux 2.6.32.
+> diff --git a/mm/oom_kill.c b/mm/oom_kill.c
+> index 3618be3..d5e3d70 100644
+> --- a/mm/oom_kill.c
+> +++ b/mm/oom_kill.c
+> @@ -32,6 +32,8 @@ int sysctl_panic_on_oom;
+>  int sysctl_oom_kill_allocating_task;
+>  int sysctl_oom_dump_tasks;
+>  static DEFINE_SPINLOCK(zone_scan_lock);
+> +
+> +unsigned int nr_memdie; /* count of TIF_MEMDIE processes */
+>  /* #define DEBUG */
+> 
+>  /*
+> @@ -295,6 +297,8 @@ static struct task_struct
+> *select_bad_process(unsigned long *ppoints,
+> 
+>                         chosen = p;
+>                         *ppoints = ULONG_MAX;
+> +                       if (nr_memdie == 0)
+> +                               break;
+>                 }
+> 
+>                 if (p->signal->oom_adj == OOM_DISABLE)
 
+Nack, finding a candidate task with TIF_MEMDIE set is not the only time we 
+return ERR_PTR(-1UL) from select_bad_process(): we also do it if any other 
+task other than current is PF_EXITING.  Thus, we _must_ continue the 
+tasklist scan to avoid needlessly killing current simply because it was 
+the first PF_EXITING task in the tasklist.
+
+> @@ -403,8 +407,6 @@ static void __oom_kill_task(struct task_struct *p,
+> int verbose)
+>                        K(p->mm->total_vm),
+>                        K(get_mm_counter(p->mm, MM_ANONPAGES)),
+>                        K(get_mm_counter(p->mm, MM_FILEPAGES)));
+> -       task_unlock(p);
+> -
+>         /*
+>          * We give our sacrificial lamb high priority and access to
+>          * all the memory it needs. That way it should be able to
+> @@ -412,7 +414,11 @@ static void __oom_kill_task(struct task_struct
+> *p, int verbose)
+>          */
+>         p->rt.time_slice = HZ;
+>         set_tsk_thread_flag(p, TIF_MEMDIE);
+> -
+> +       /*
+> +        * nr_memdie is protected by task_lock.
+> +        */
+> +       nr_memdie++;
+> +       task_unlock(p);
+>         force_sig(SIGKILL, p);
+>  }
+> 
+
+task_lock() is a per-task entity, i.e. each task_struct has an alloc_lock 
+spinlock.  This cannot protect a global variable.
