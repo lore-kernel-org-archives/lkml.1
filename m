@@ -1,132 +1,64 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757430Ab0BQWA4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 17:00:56 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:4039 "EHLO mx1.redhat.com"
+	id S1752338Ab0BQWBq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 17:01:46 -0500
+Received: from nn7.de ([85.214.94.156]:35348 "EHLO nn7.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756084Ab0BQWAy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 17:00:54 -0500
-From: Zachary Amsden <zamsden@redhat.com>
-To: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: x86@kernel.org, Avi Kivity <avi@redhat.com>,
-       Zachary Amsden <zamsden@redhat.com>
-Subject: [PATCH] x86 rwsem optimization extreme
-Date: Wed, 17 Feb 2010 11:58:21 -1000
-Message-Id: <1266443901-3646-1-git-send-email-zamsden@redhat.com>
+	id S1750983Ab0BQWBp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 17:01:45 -0500
+Subject: 2.6.33-rc8-git: nouveaufb hangs on boot on MacBookPro5,3
+From: Soeren Sonnenburg <sonne@debian.org>
+To: linux-kernel@vger.kernel.org
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-VXAsPOeLfYVA0dqFVLqN"
+Date: Wed, 17 Feb 2010 23:01:44 +0100
+Message-ID: <1266444104.6276.49.camel@no>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The x86 instruction set provides the ability to add an additional
-bit into addition or subtraction by using the carry flag.
-It also provides instructions to directly set or clear the
-carry flag.  By forcibly setting the carry flag, we can then
-represent one particular 64-bit constant, namely
 
-   0xffffffff + 1 = 0x100000000
+--=-VXAsPOeLfYVA0dqFVLqN
+Content-Type: text/plain; charset="ISO-8859-15"
+Content-Transfer-Encoding: quoted-printable
 
-using only 32-bit values.  In particular we can optimize the rwsem
-write lock release by noting it is of exactly this form.
+Dear all,
 
-The old instruction sequence:
+nouveaufb hangs on MacBookPro5,3 with PFIFO_INTR 0x04000000 - Ch1 when
+booting in efi mode via elilo.
 
-0000000000000073 <downgrade_write>:
-  73:	55                   	push   %rbp
-  74:	48 ba 00 00 00 00 01 	mov    $0x100000000,%rdx
-  7b:	00 00 00
-  7e:	48 89 f8             	mov    %rdi,%rax
-  81:	48 89 e5             	mov    %rsp,%rbp
-  84:	f0 48 01 10          	lock add %rdx,(%rax)
-  88:	79 05                	jns    8f <downgrade_write+0x1c>
-  8a:	e8 00 00 00 00       	callq  8f <downgrade_write+0x1c>
-  8f:	c9                   	leaveq
-  90:	c3                   	retq
+I am attaching a (dirty) screenshot, maybe someone can clear this up
 
-The new instruction sequence:
+http://sonnenburgs.de/media/bugs/nouveau_hang_2.6.33-rc8.jpg
 
-0000000000000073 <downgrade_write>:
-  73:	55                   	push   %rbp
-  74:	ba ff ff ff ff       	mov    $0xffffffff,%edx
-  79:	48 89 f8             	mov    %rdi,%rax
-  7c:	48 89 e5             	mov    %rsp,%rbp
-  7f:	f9                   	stc
-  80:	f0 48 11 10          	lock adc %rdx,(%rax)
-  84:	79 05                	jns    8b <downgrade_write+0x18>
-  86:	e8 00 00 00 00       	callq  8b <downgrade_write+0x18>
-  8b:	c9                   	leaveq
-  8c:	c3                   	retq
+If there is anything else you want me to try, please say so.
 
-Thus we can save a huge amount of space, chiefly, the four extra
-bytes required for a 64-bit constant and REX prefix over a 32-bit
-constant load and forced carry.
+Soeren
+--=20
+For the one fact about the future of which we can be certain is that it
+will be utterly fantastic. -- Arthur C. Clarke, 1962
 
-Measured performance impact on Xeon cores is nil; 10e7 loops of
-either sequence produces no noticable cycle count difference, with
-random variation favoring neither.
+--=-VXAsPOeLfYVA0dqFVLqN
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
-Update: measured performance impact on AMD Turion core is also nil.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-Signed-off-by: Zachary Amsden <zamsden@redhat.com>
----
- arch/x86/include/asm/asm.h   |    1 +
- arch/x86/include/asm/rwsem.h |   23 ++++++++++++++++++-----
- 2 files changed, 19 insertions(+), 5 deletions(-)
+iQIcBAABAgAGBQJLfGdHAAoJEH82z1Wqh6p3agkP/iJCTjjPVLnhc9t+prNsz34/
+Z+77jDYSQ7bRSzoyPtX/vaN+Bo73LSR3EU3EdXatAH+jWEbTvQIbHFymgXFLfMeQ
+rjuQ6t7XzeZZBhPXWVXxebdKutBI1hkMjgiSApSoZ4IYNKHHesDrBz6EB49G2lo2
+uD7K5hcdlZ5xiH0B/J8USeVGpeKjnDkd1JPEsbbCGtYWLATsTaij4EOZTzaLufEf
+fwl0/rYy55a19dyPLHcStqQZeyJbpRDta1tbH/ZrWOIo7HjstUyJx3bfYaQ5p/3P
+KMqjFL2mn210+V2UPdI6a/NjOIPZjtroR8mt3Ml7mHK+h7jHH+JDtmmxbvfhDrHL
+xrsMMj84cdOYHgAnWk4/fNUuSqfk6QIdWfK3/+2d0jE3uDu5wXQsRfv8X+yzjc2n
+oflW8TDFYXopKxI2OXJ+FFRwyTQL+5XbEA3SRnmqammsQ58L/OAU6eBAOllOHhCg
+vjvxoaKuFphVMFQdq/hwAccA3bxegLSwyK2PonzCd50iuMc4eAVJwyRH4+pQ4OQh
+FMsxajIstsw8ddQ/TZBl1qtWu8/rYZrOCedEw6AUR8eZZcZV+vuzFNOhjBzLYUjj
+8nV7FaoHCTDLPwYQr6bemx/ng4vlptEqMp6uFi1IN2EV6/89jSXms6dHKgW4M9+G
+ZONUadLR9a26aNj3Z/i5
+=4EMF
+-----END PGP SIGNATURE-----
 
-diff --git a/arch/x86/include/asm/asm.h b/arch/x86/include/asm/asm.h
-index b3ed1e1..3744038 100644
---- a/arch/x86/include/asm/asm.h
-+++ b/arch/x86/include/asm/asm.h
-@@ -25,6 +25,7 @@
- #define _ASM_INC	__ASM_SIZE(inc)
- #define _ASM_DEC	__ASM_SIZE(dec)
- #define _ASM_ADD	__ASM_SIZE(add)
-+#define _ASM_ADC	__ASM_SIZE(adc)
- #define _ASM_SUB	__ASM_SIZE(sub)
- #define _ASM_XADD	__ASM_SIZE(xadd)
- 
-diff --git a/arch/x86/include/asm/rwsem.h b/arch/x86/include/asm/rwsem.h
-index 606ede1..147adaf 100644
---- a/arch/x86/include/asm/rwsem.h
-+++ b/arch/x86/include/asm/rwsem.h
-@@ -233,18 +233,31 @@ static inline void __up_write(struct rw_semaphore *sem)
- static inline void __downgrade_write(struct rw_semaphore *sem)
- {
- 	asm volatile("# beginning __downgrade_write\n\t"
-+#ifdef CONFIG_X86_64
-+#if RWSEM_WAITING_BIAS != -0x100000000
-+# error "This code assumes RWSEM_WAITING_BIAS == -2^32"
-+#endif
-+		     "  stc\n\t"
-+		     LOCK_PREFIX _ASM_ADC "%2,(%1)\n\t"
-+		     /* transitions 0xZZZZZZZZ00000001 -> 0xYYYYYYYY00000001 */
-+		     "  jns       1f\n\t"
-+		     "  call call_rwsem_downgrade_wake\n"
-+		     "1:\n\t"
-+		     "# ending __downgrade_write\n"
-+		     : "+m" (sem->count)
-+		     : "a" (sem), "r" (-RWSEM_WAITING_BIAS-1)
-+		     : "memory", "cc");
-+#else
- 		     LOCK_PREFIX _ASM_ADD "%2,(%1)\n\t"
--		     /*
--		      * transitions 0xZZZZ0001 -> 0xYYYY0001 (i386)
--		      *     0xZZZZZZZZ00000001 -> 0xYYYYYYYY00000001 (x86_64)
--		      */
-+		     /* transitions 0xZZZZ0001 -> 0xYYYY0001 */
- 		     "  jns       1f\n\t"
- 		     "  call call_rwsem_downgrade_wake\n"
- 		     "1:\n\t"
- 		     "# ending __downgrade_write\n"
- 		     : "+m" (sem->count)
--		     : "a" (sem), "er" (-RWSEM_WAITING_BIAS)
-+		     : "a" (sem), "i" (-RWSEM_WAITING_BIAS)
- 		     : "memory", "cc");
-+#endif
- }
- 
- /*
--- 
-1.6.6
-
+--=-VXAsPOeLfYVA0dqFVLqN--
