@@ -1,64 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752416Ab0BQPlr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 10:41:47 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:44853 "EHLO mx1.redhat.com"
+	id S1751441Ab0BQPrA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 10:47:00 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:49131 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750786Ab0BQPlo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 10:41:44 -0500
-Date: Wed, 17 Feb 2010 16:40:41 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Roland McGrath <roland@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] x86: set_personality_ia32() abuses TS_COMPAT
-Message-ID: <20100217154041.GA7446@redhat.com>
-References: <4B799C3F.7010308@zytor.com> <20100215194123.96D49FC3@magilla.sf.frob.com> <4B79B202.5090006@zytor.com> <20100216101903.GA1057@redhat.com> <20100216102332.GL21783@one.firstfloor.org> <20100216140126.GA16448@redhat.com> <20100216140242.GC16448@redhat.com> <alpine.LFD.2.00.1002160738530.18830@localhost.localdomain> <20100216174437.GA28323@redhat.com> <4B7ADB07.1050500@zytor.com>
+	id S1750740Ab0BQPq6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 10:46:58 -0500
+Message-ID: <4B7C0F2A.3020905@redhat.com>
+Date: Wed, 17 Feb 2010 10:45:46 -0500
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Lightning/1.0pre Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B7ADB07.1050500@zytor.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Mel Gorman <mel@csn.ul.ie>
+CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andrea Arcangeli <aarcange@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Adam Litke <agl@us.ibm.com>, Avi Kivity <avi@redhat.com>,
+       David Rientjes <rientjes@google.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 05/12] Memory compaction core
+References: <1265976059-7459-1-git-send-email-mel@csn.ul.ie> <1265976059-7459-6-git-send-email-mel@csn.ul.ie> <20100216170014.7309.A69D9226@jp.fujitsu.com> <20100217132952.GA1663@csn.ul.ie>
+In-Reply-To: <20100217132952.GA1663@csn.ul.ie>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/16, H. Peter Anvin wrote:
+On 02/17/2010 08:29 AM, Mel Gorman wrote:
+
+> Fix concerns from Kosaki Motohiro (merge with compaction core)
 >
-> On 02/16/2010 09:44 AM, Oleg Nesterov wrote:
-> >
-> > and, following this logic, shouldn't set_personality_64bit() clear
-> > TS_COMPAT ?
+> o Fewer pages are isolated. Hence, cc->migrate_pfn in
+>    isolate_migratepages() is updated slightly differently and the debug
+>    checks change
+> o LRU lists are no longer rotated
+> o NR_ISOLATED_* is updated
+> o del_page_from_lru_list() is used instead list_move when isolated so
+>    that the counters get updated correctly.
+> o Pages that fail to migrate are put back on the LRU promptly to avoid
+>    being isolated for too long.
 >
-> It's quite possible it should... I haven't dug into if that isn't either
-> done elsewhere or isn't done for some other reason.  This would be worth
-> looking into.
+> Signed-off-by: Mel Gorman<mel@csn.ul.ie>
 
-OK. This was another source of confusion for me...
+Acked-by: Rik van Riel <riel@redhat.com>
 
-> > OK, in any case I do not claim we need fixes. Just I am confused.
->
-> Trying to understand the code is good.  However, you seem to have
-> started out with a point of view that we should have the minimal set of
-> state changes possible
+Consider this an ack to your patch 5/12 with these fixes.
 
-Well, I must admit... the only point of this patch was "please change
-your code so that I could convince myself I understand what it does" ;)
-
-> instead of keeping state as self-consistent as
-> possible.  Invariants are a Very Good Thing.  Documented invariants are
-> even better ;)
-
-Agreed! But to me it looks as if TS_COMPAT breaks invariants.
-In particular, because set_personality_64bit() didn't clear this flag.
-
-
-Anyway. At least I can assume there is no "hard" reason to set this
-bit currently, and this was my main question.
-
-Thanks to all for your explanations!
-
-Oleg.
-
+-- 
+All rights reversed.
