@@ -1,49 +1,42 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756565Ab0BQVKk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 16:10:40 -0500
-Received: from kroah.org ([198.145.64.141]:55645 "EHLO coco.kroah.org"
+	id S1756638Ab0BQVKp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 16:10:45 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:36377 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756468Ab0BQVKi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 16:10:38 -0500
-Date: Wed, 17 Feb 2010 12:46:39 -0800
-From: Greg KH <greg@kroah.com>
-To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-Cc: David Miller <davem@davemloft.net>, gregkh@suse.de,
-       linux-kernel@vger.kernel.org, 12o3l@tiscali.nl,
-       rmk+kernel@arm.linux.org.uk, netdev@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH 9/9] net: move am79c961's probe function to
- .devinit.text
-Message-ID: <20100217204639.GC5674@kroah.com>
-References: <20100203150850.GA28815@kroah.com>
- <1265313417-5568-9-git-send-email-u.kleine-koenig@pengutronix.de>
- <20100204.120501.110961896.davem@davemloft.net>
- <20100204200638.GA3035@pengutronix.de>
+	id S1756523Ab0BQVKk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 16:10:40 -0500
+Date: Wed, 17 Feb 2010 13:05:56 -0800
+From: Greg KH <gregkh@suse.de>
+To: Haiyang Zhang <haiyangz@microsoft.com>
+Cc: "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+       "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>,
+       Hank Janssen <hjanssen@microsoft.com>
+Subject: Re: [PATCH 1/1] Stage: hv: Rename struct device_context and
+ re-arrange the fields inside (re-formatted)
+Message-ID: <20100217210556.GA17038@suse.de>
+References: <1FB5E1D5CA062146B38059374562DF725A908A11@TK5EX14MBXC126.redmond.corp.microsoft.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20100204200638.GA3035@pengutronix.de>
+In-Reply-To: <1FB5E1D5CA062146B38059374562DF725A908A11@TK5EX14MBXC126.redmond.corp.microsoft.com>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 04, 2010 at 09:06:38PM +0100, Uwe Kleine-König wrote:
-> On Thu, Feb 04, 2010 at 12:05:01PM -0800, David Miller wrote:
-> > From: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-> > Date: Thu,  4 Feb 2010 20:56:57 +0100
-> > 
-> > > @David Miller: this patch is in patchwork with State: Not Applicable.
-> > > Does that mean that netdev isn't the right tree for this patch?
-> > 
-> > I was under the impression that someone would pick up the
-> > whole set as a unit.
-> Ah, OK.  I hope Greg does exactly that now.
+On Wed, Feb 17, 2010 at 08:58:47PM +0000, Haiyang Zhang wrote:
+> From: Haiyang Zhang <haiyangz@microsoft.com>
+> 
+> Rename struct device_context and re-arrange the fields inside.
+> Rename struct device_context to struct vm_device, and move 
+> struct device field to the end according to Document/driver-model standard.
 
-I have now done this.
+There is no need to move the struct device to the end, it can be
+anywhere in the structure, just don't put it at the beginning so you
+think you can cast pointers like other parts of the hv code does.
+
+Anyway, no big deal, I'll queue this up in a bit.
 
 thanks,
 
