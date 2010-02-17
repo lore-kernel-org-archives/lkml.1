@@ -1,43 +1,338 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933824Ab0BQArQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 19:47:16 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:40227 "EHLO mail.zytor.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933809Ab0BQArN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 19:47:13 -0500
-Message-ID: <4B7B3C4C.7060002@zytor.com>
-Date: Tue, 16 Feb 2010 16:46:04 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+	id S933830Ab0BQAsT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 19:48:19 -0500
+Received: from smtp-out.google.com ([216.239.44.51]:9485 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933809Ab0BQAsR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 19:48:17 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=yB59kJ1WPLVAqlYAe1FzbB/yvXaqH8uSqB8YB01nDDx5BvTfNXzokZg12lzZr4Jpe
+	WLmfP7uzf70wmYheRCN+g==
+Date: Tue, 16 Feb 2010 16:48:08 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Nick Piggin <npiggin@suse.de>, Andrea Arcangeli <aarcange@redhat.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch 3/7 -mm] oom: select task from tasklist for mempolicy
+ ooms
+In-Reply-To: <alpine.DEB.2.00.1002161343070.23037@chino.kir.corp.google.com>
+Message-ID: <alpine.DEB.2.00.1002161647160.31753@chino.kir.corp.google.com>
+References: <20100215120924.7281.A69D9226@jp.fujitsu.com> <alpine.DEB.2.00.1002151407000.26927@chino.kir.corp.google.com> <20100216135240.72EC.A69D9226@jp.fujitsu.com> <alpine.DEB.2.00.1002161343070.23037@chino.kir.corp.google.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Yinghai Lu <yinghai@kernel.org>
-CC: Stephen Rothwell <sfr@canb.auug.org.au>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-Subject: Re: [PATCH 27/35] core: move early_res
-References: <1265793639-15071-1-git-send-email-yinghai@kernel.org>	<1265793639-15071-28-git-send-email-yinghai@kernel.org> <20100215011615.e3d35121.sfr@canb.auug.org.au> <4B786110.9020806@kernel.org> <4B7B2E3B.9060903@zytor.com> <4B7B2FE1.1030700@kernel.org> <4B7B31F1.60203@zytor.com> <4B7B3B33.6010504@kernel.org>
-In-Reply-To: <4B7B3B33.6010504@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/16/2010 04:41 PM, Yinghai Lu wrote:
-> 
-> I would like to.
-> 
-> but for x86, with CONFIG_NO_BOOTMEM set or not, early_res are all used.
-> 
-> so we add CONFIG_HAVE_EARLY_RES ?
+On Tue, 16 Feb 2010, David Rientjes wrote:
+
+> True, good point.  It looks like we'll need to include mempolicy 
+> detachment in exit_mm() while under task_lock() and then synchronize with 
+> that.  It's a legitimate place to do it since no memory allocation will be 
+> done after its mm is detached, anyway.
 > 
 
-Presumably, and force it true on x86.
+Here's the updated version of the patch, what do you think?
 
-	-hpa
 
+oom: select task from tasklist for mempolicy ooms
+
+The oom killer presently kills current whenever there is no more memory
+free or reclaimable on its mempolicy's nodes.  There is no guarantee that
+current is a memory-hogging task or that killing it will free any
+substantial amount of memory, however.
+
+In such situations, it is better to scan the tasklist for nodes that are
+allowed to allocate on current's set of nodes and kill the task with the
+highest badness() score.  This ensures that the most memory-hogging task,
+or the one configured by the user with /proc/pid/oom_adj, is always
+selected in such scenarios.
+
+It is necessary to synchronize the detachment of task->mempolicy with
+task_lock(task) to ensure it is not prematurely destroyed while a user is
+operating on it.
+
+Signed-off-by: David Rientjes <rientjes@google.com>
+---
+ include/linux/mempolicy.h |   13 +++++++-
+ kernel/exit.c             |    8 ++--
+ mm/mempolicy.c            |   44 +++++++++++++++++++++++++
+ mm/oom_kill.c             |   77 +++++++++++++++++++++++++++-----------------
+ 4 files changed, 107 insertions(+), 35 deletions(-)
+
+diff --git a/include/linux/mempolicy.h b/include/linux/mempolicy.h
+--- a/include/linux/mempolicy.h
++++ b/include/linux/mempolicy.h
+@@ -202,6 +202,8 @@ extern struct zonelist *huge_zonelist(struct vm_area_struct *vma,
+ 				unsigned long addr, gfp_t gfp_flags,
+ 				struct mempolicy **mpol, nodemask_t **nodemask);
+ extern bool init_nodemask_of_mempolicy(nodemask_t *mask);
++extern bool mempolicy_nodemask_intersects(struct task_struct *tsk,
++				const nodemask_t *mask);
+ extern unsigned slab_node(struct mempolicy *policy);
+ 
+ extern enum zone_type policy_zone;
+@@ -329,7 +331,16 @@ static inline struct zonelist *huge_zonelist(struct vm_area_struct *vma,
+ 	return node_zonelist(0, gfp_flags);
+ }
+ 
+-static inline bool init_nodemask_of_mempolicy(nodemask_t *m) { return false; }
++static inline bool init_nodemask_of_mempolicy(nodemask_t *m)
++{
++	return false;
++}
++
++static inline bool mempolicy_nodemask_intersects(struct task_struct *tsk,
++			const nodemask_t *mask)
++{
++	return false;
++}
+ 
+ static inline int do_migrate_pages(struct mm_struct *mm,
+ 			const nodemask_t *from_nodes,
+diff --git a/kernel/exit.c b/kernel/exit.c
+--- a/kernel/exit.c
++++ b/kernel/exit.c
+@@ -689,6 +689,10 @@ static void exit_mm(struct task_struct * tsk)
+ 	enter_lazy_tlb(mm, current);
+ 	/* We don't want this task to be frozen prematurely */
+ 	clear_freeze_flag(tsk);
++#ifdef CONFIG_NUMA
++	mpol_put(tsk->mempolicy);
++	tsk->mempolicy = NULL;
++#endif
+ 	task_unlock(tsk);
+ 	mm_update_next_owner(mm);
+ 	mmput(mm);
+@@ -993,10 +997,6 @@ NORET_TYPE void do_exit(long code)
+ 	perf_event_exit_task(tsk);
+ 
+ 	exit_notify(tsk, group_dead);
+-#ifdef CONFIG_NUMA
+-	mpol_put(tsk->mempolicy);
+-	tsk->mempolicy = NULL;
+-#endif
+ #ifdef CONFIG_FUTEX
+ 	if (unlikely(current->pi_state_cache))
+ 		kfree(current->pi_state_cache);
+diff --git a/mm/mempolicy.c b/mm/mempolicy.c
+--- a/mm/mempolicy.c
++++ b/mm/mempolicy.c
+@@ -1638,6 +1638,50 @@ bool init_nodemask_of_mempolicy(nodemask_t *mask)
+ }
+ #endif
+ 
++/*
++ * mempolicy_nodemask_intersects
++ *
++ * If tsk's mempolicy is "default" [NULL], return 'true' to indicate default
++ * policy.  Otherwise, check for intersection between mask and the policy
++ * nodemask for 'bind' or 'interleave' policy.  For 'perferred' or 'local'
++ * policy, always return true since it may allocate elsewhere on fallback.
++ *
++ * Takes task_lock(tsk) to prevent freeing of its mempolicy.
++ */
++bool mempolicy_nodemask_intersects(struct task_struct *tsk,
++					const nodemask_t *mask)
++{
++	struct mempolicy *mempolicy;
++	bool ret = true;
++
++	if (!mask)
++		return ret;
++	task_lock(tsk);
++	mempolicy = tsk->mempolicy;
++	if (!mempolicy)
++		goto out;
++
++	switch (mempolicy->mode) {
++	case MPOL_PREFERRED:
++		/*
++		 * MPOL_PREFERRED and MPOL_F_LOCAL are only preferred nodes to
++		 * allocate from, they may fallback to other nodes when oom.
++		 * Thus, it's possible for tsk to have allocated memory from
++		 * nodes in mask.
++		 */
++		break;
++	case MPOL_BIND:
++	case MPOL_INTERLEAVE:
++		ret = nodes_intersects(mempolicy->v.nodes, *mask);
++		break;
++	default:
++		BUG();
++	}
++out:
++	task_unlock(tsk);
++	return ret;
++}
++
+ /* Allocate a page in interleaved policy.
+    Own path because it needs to do special accounting. */
+ static struct page *alloc_page_interleave(gfp_t gfp, unsigned order,
+diff --git a/mm/oom_kill.c b/mm/oom_kill.c
+--- a/mm/oom_kill.c
++++ b/mm/oom_kill.c
+@@ -26,6 +26,7 @@
+ #include <linux/module.h>
+ #include <linux/notifier.h>
+ #include <linux/memcontrol.h>
++#include <linux/mempolicy.h>
+ #include <linux/security.h>
+ 
+ int sysctl_panic_on_oom;
+@@ -36,19 +37,35 @@ static DEFINE_SPINLOCK(zone_scan_lock);
+ 
+ /*
+  * Do all threads of the target process overlap our allowed nodes?
++ * @tsk: task struct of which task to consider
++ * @mask: nodemask passed to page allocator for mempolicy ooms
+  */
+-static int has_intersects_mems_allowed(struct task_struct *tsk)
++static bool has_intersects_mems_allowed(struct task_struct *tsk,
++						const nodemask_t *mask)
+ {
+-	struct task_struct *t;
++	struct task_struct *start = tsk;
+ 
+-	t = tsk;
+ 	do {
+-		if (cpuset_mems_allowed_intersects(current, t))
+-			return 1;
+-		t = next_thread(t);
+-	} while (t != tsk);
+-
+-	return 0;
++		if (mask) {
++			/*
++			 * If this is a mempolicy constrained oom, tsk's
++			 * cpuset is irrelevant.  Only return true if its
++			 * mempolicy intersects current, otherwise it may be
++			 * needlessly killed.
++			 */
++			if (mempolicy_nodemask_intersects(tsk, mask))
++				return true;
++		} else {
++			/*
++			 * This is not a mempolicy constrained oom, so only
++			 * check the mems of tsk's cpuset.
++			 */
++			if (cpuset_mems_allowed_intersects(current, tsk))
++				return true;
++		}
++		tsk = next_thread(tsk);
++	} while (tsk != start);
++	return false;
+ }
+ 
+ /**
+@@ -236,7 +253,8 @@ static enum oom_constraint constrained_alloc(struct zonelist *zonelist,
+  * (not docbooked, we don't want this one cluttering up the manual)
+  */
+ static struct task_struct *select_bad_process(unsigned long *ppoints,
+-						struct mem_cgroup *mem)
++		struct mem_cgroup *mem, enum oom_constraint constraint,
++		const nodemask_t *mask)
+ {
+ 	struct task_struct *p;
+ 	struct task_struct *chosen = NULL;
+@@ -258,7 +276,9 @@ static struct task_struct *select_bad_process(unsigned long *ppoints,
+ 			continue;
+ 		if (mem && !task_in_mem_cgroup(p, mem))
+ 			continue;
+-		if (!has_intersects_mems_allowed(p))
++		if (!has_intersects_mems_allowed(p,
++				constraint == CONSTRAINT_MEMORY_POLICY ? mask :
++									 NULL))
+ 			continue;
+ 
+ 		/*
+@@ -478,7 +498,7 @@ void mem_cgroup_out_of_memory(struct mem_cgroup *mem, gfp_t gfp_mask)
+ 
+ 	read_lock(&tasklist_lock);
+ retry:
+-	p = select_bad_process(&points, mem);
++	p = select_bad_process(&points, mem, CONSTRAINT_NONE, NULL);
+ 	if (PTR_ERR(p) == -1UL)
+ 		goto out;
+ 
+@@ -560,7 +580,8 @@ void clear_zonelist_oom(struct zonelist *zonelist, gfp_t gfp_mask)
+ /*
+  * Must be called with tasklist_lock held for read.
+  */
+-static void __out_of_memory(gfp_t gfp_mask, int order)
++static void __out_of_memory(gfp_t gfp_mask, int order,
++			enum oom_constraint constraint, const nodemask_t *mask)
+ {
+ 	struct task_struct *p;
+ 	unsigned long points;
+@@ -574,7 +595,7 @@ retry:
+ 	 * Rambo mode: Shoot down a process and hope it solves whatever
+ 	 * issues we may have.
+ 	 */
+-	p = select_bad_process(&points, NULL);
++	p = select_bad_process(&points, NULL, constraint, mask);
+ 
+ 	if (PTR_ERR(p) == -1UL)
+ 		return;
+@@ -615,7 +636,8 @@ void pagefault_out_of_memory(void)
+ 		panic("out of memory from page fault. panic_on_oom is selected.\n");
+ 
+ 	read_lock(&tasklist_lock);
+-	__out_of_memory(0, 0); /* unknown gfp_mask and order */
++	/* unknown gfp_mask and order */
++	__out_of_memory(0, 0, CONSTRAINT_NONE, NULL);
+ 	read_unlock(&tasklist_lock);
+ 
+ 	/*
+@@ -632,6 +654,7 @@ rest_and_return:
+  * @zonelist: zonelist pointer
+  * @gfp_mask: memory allocation flags
+  * @order: amount of memory being requested as a power of 2
++ * @nodemask: nodemask passed to page allocator
+  *
+  * If we run out of memory, we have the choice between either
+  * killing a random task (bad), letting the system crash (worse)
+@@ -660,24 +683,18 @@ void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask,
+ 	 */
+ 	constraint = constrained_alloc(zonelist, gfp_mask, nodemask);
+ 	read_lock(&tasklist_lock);
+-
+-	switch (constraint) {
+-	case CONSTRAINT_MEMORY_POLICY:
+-		oom_kill_process(current, gfp_mask, order, 0, NULL,
+-				"No available memory (MPOL_BIND)");
+-		break;
+-
+-	case CONSTRAINT_NONE:
+-		if (sysctl_panic_on_oom) {
++	if (unlikely(sysctl_panic_on_oom)) {
++		/*
++		 * panic_on_oom only affects CONSTRAINT_NONE, the kernel
++		 * should not panic for cpuset or mempolicy induced memory
++		 * failures.
++		 */
++		if (constraint == CONSTRAINT_NONE) {
+ 			dump_header(NULL, gfp_mask, order, NULL);
+-			panic("out of memory. panic_on_oom is selected\n");
++			panic("Out of memory: panic_on_oom is enabled\n");
+ 		}
+-		/* Fall-through */
+-	case CONSTRAINT_CPUSET:
+-		__out_of_memory(gfp_mask, order);
+-		break;
+ 	}
+-
++	__out_of_memory(gfp_mask, order, constraint, nodemask);
+ 	read_unlock(&tasklist_lock);
+ 
+ 	/*
