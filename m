@@ -1,51 +1,65 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757848Ab0BQXPL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 18:15:11 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:40309 "EHLO mx2.suse.de"
+	id S1757900Ab0BQXSR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 18:18:17 -0500
+Received: from kroah.org ([198.145.64.141]:43022 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757733Ab0BQXPJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 18:15:09 -0500
-Date: Thu, 18 Feb 2010 10:15:00 +1100
-From: Neil Brown <neilb@suse.de>
-To: Volker Armin Hemmann <volkerarmin@googlemail.com>
-Cc: "Mr. James W. Laferriere" <babydr@baby-dragons.com>,
-       Bill Davidsen <davidsen@tmr.com>, Michael Evans <mjevans1983@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
-Subject: Re: Linux mdadm superblock question.
-Message-ID: <20100218101500.18c53517@notabene.brown>
-In-Reply-To: <201002170338.47302.volkerarmin@googlemail.com>
-References: <201002140251.59668.volkerarmin@googlemail.com>
-	<alpine.LNX.2.01.1002161541370.24961@filesrv1.baby-dragons.com>
-	<20100217130103.3ca65ef3@notabene.brown>
-	<201002170338.47302.volkerarmin@googlemail.com>
-X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.6; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1757753Ab0BQXSO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 18:18:14 -0500
+Date: Wed, 17 Feb 2010 14:59:35 -0800
+From: Greg KH <greg@kroah.com>
+To: Marcel Holtmann <marcel@holtmann.org>
+Cc: Alan Cox <alan@linux.intel.com>, linux-kernel@vger.kernel.org,
+       p.hardwick@option.com
+Subject: Re: [PATCH 3/3] nozomi: Tidy up the PCI table
+Message-ID: <20100217225935.GE31557@kroah.com>
+References: <20100208100642.2794.73225.stgit@localhost.localdomain>
+ <20100208100710.2794.73323.stgit@localhost.localdomain>
+ <1265626189.31341.260.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1265626189.31341.260.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Feb 2010 03:38:46 +0100
-Volker Armin Hemmann <volkerarmin@googlemail.com> wrote:
-
-> On Mittwoch 17 Februar 2010, Neil Brown wrote:
+On Mon, Feb 08, 2010 at 11:49:49AM +0100, Marcel Holtmann wrote:
+> Hi Alan,
 > 
-> > I will not be removing 0.90 or auto-assemble from the kernel in the
-> > foreseeable future.
-> > None the less, I recommend weaning yourself from your dependence on it.
-> > initramfs is the future, embrace it.
+> > Signed-off-by: Alan Cox <alan@linux.intel.com>
+> > ---
 > > 
-> > NeilBrown
+> >  drivers/char/nozomi.c |    6 +-----
+> >  1 files changed, 1 insertions(+), 5 deletions(-)
+> > 
+> > 
+> > diff --git a/drivers/char/nozomi.c b/drivers/char/nozomi.c
+> > index fac9157..86c9e64 100644
+> > --- a/drivers/char/nozomi.c
+> > +++ b/drivers/char/nozomi.c
+> > @@ -136,10 +136,6 @@ static int debug;
+> >  #define RECEIVE_BUF_MAX		4
+> >  
+> > 
+> > -/* Define all types of vendors and devices to support */
+> > -#define VENDOR1		0x1931	/* Vendor Option */
+> > -#define DEVICE1		0x000c	/* HSDPA card */
+> > -
+> >  #define R_IIR		0x0000	/* Interrupt Identity Register */
+> >  #define R_FCR		0x0000	/* Flow Control Register */
+> >  #define R_IER		0x0004	/* Interrupt Enable Register */
+> > @@ -407,7 +403,7 @@ struct buffer {
+> >  
+> >  /*    Global variables */
+> >  static const struct pci_device_id nozomi_pci_tbl[] __devinitconst = {
+> > -	{PCI_DEVICE(VENDOR1, DEVICE1)},
+> > +	{PCI_DEVICE(0x1931, 0x000c)},	/* Nozomi HSPDA */
+> >  	{},
 > 
-> a future that is worse than the present. For what reason?
+> that would be HSDPA actually.
 
-Reason: some things are easier to implement and maintain in userspace.
-Implementing them in the kernel would likely produce a worse products.
+I edited the patch, thanks.
 
-Worse than the present:  only if you refuse to embrace it and there-by
-contribute to fixing/improving it.
-
-NeilBrown
-
+greg k-h
