@@ -1,72 +1,83 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751520Ab0BQP5e (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 10:57:34 -0500
-Received: from new-admin0.cambridge.arm.com ([217.140.96.53]:55812 "EHLO
-	new-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750954Ab0BQP5c convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 10:57:32 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	id S1751399Ab0BQQDx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 11:03:53 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:41474 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750795Ab0BQQDv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 11:03:51 -0500
+Message-ID: <4B7C142C.9040707@redhat.com>
+Date: Thu, 18 Feb 2010 00:07:08 +0800
+From: Cong Wang <amwang@redhat.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20091001)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: Re: Re: USB mass storage and ARM cache coherency
-Date: Wed, 17 Feb 2010 15:27:56 -0000
-Message-ID: <39E9E98DF632C2469FF2FC07853B70C6058006B4@ZIPPY.Emea.Arm.com>
-In-Reply-To: <1266397543.16346.264.camel@pasglop>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Re: USB mass storage and ARM cache coherency
-Thread-Index: Acqv5cfCcASj3W28TDaxEXYXjLZXTA==
-References: <20100208065519.GE1290@ucw.cz> <1265628483.4020.63.camel@pc1117.cambridge.arm.com> <EAF47CD23C76F840A9E7FCE10091EFAB02C3CF7D50@dbde02.ent.ti.com> <201002160922.47072.oliver@neukum.org> <1266397543.16346.264.camel@pasglop>
-From: "Catalin Marinas" <Catalin.Marinas@arm.com>
-To: <benh@kernel.crashing.org>
-Cc: <oliver@neukum.org>, <santosh.shilimkar@ti.com>,
-       <mdharm-kernel@one-eyed-alien.net>, <linux@arm.linux.org.uk>,
-       <tom.leiming@gmail.com>, <x0082077@ti.com>, <sshtylyov@ru.mvista.com>,
-       <bigeasy@linutronix.de>, <linux-usb@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>, <pavel@ucw.cz>, <greg@kroah.com>,
-       <linux-arm-kernel@lists.infradead.org>
+To: Octavian Purdila <opurdila@ixiacom.com>
+CC: David Miller <davem@davemloft.net>,
+       Linux Kernel Network Developers <netdev@vger.kernel.org>,
+       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
+       Neil Horman <nhorman@tuxdriver.com>,
+       Eric Dumazet <eric.dumazet@gmail.com>
+Subject: Re: [net-next PATCH v4 3/3] net: reserve ports for applications using
+ fixed port numbers
+References: <1266271241-6293-1-git-send-email-opurdila@ixiacom.com> <201002161306.29708.opurdila@ixiacom.com> <4B7A9852.5020105@redhat.com> <201002161625.22495.opurdila@ixiacom.com>
+In-Reply-To: <201002161625.22495.opurdila@ixiacom.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-02-17 at 20:05 +1100, Benjamin Herrenschmidt wrote:
-> On Tue, 2010-02-16 at 09:22 +0100, Oliver Neukum wrote:
-> > This seems wrong to me. Buffers for control transfers may be
-> > transfered
-> > by DMA, so the caches must be flushed on architectures whose caches
-> > are not coherent with respect to DMA.
-> >=20
-> > Would you care to elaborate on the exact nature of the bug you are
-> > fixing?
->=20
-> I missed part of this thread, so forgive me if I'm a bit off here, but
-> if the problem is indeed I$/D$ cache coherency vs. PIO transfers, then
-> this is a long solved issue on other archs such as ppc (and I _think_
-> sparc).
+Octavian Purdila wrote:
+> On Tuesday 16 February 2010 15:06:26 you wrote:
+>> Octavian Purdila wrote:
+>>> On Tuesday 16 February 2010 11:37:04 you wrote:
+>>>>>  	BUILD_BUG_ON(sizeof(struct inet_skb_parm) > sizeof(dummy_skb->cb));
+>>>>>
+>>>>> +	sysctl_local_reserved_ports = kzalloc(65536 / 8, GFP_KERNEL);
+>>>>> +	if (!sysctl_local_reserved_ports)
+>>>>> +		goto out;
+>>>>> +
+>>>> I think we should also consider the ports in ip_local_port_range,
+>>>> since we can only reserve the ports in that range.
+>>> That is subject to changes at runtime, which means we will have to
+>>> readjust the bitmap at runtime which introduces the need for additional
+>>> synchronization operations which I would rather avoid.
+>> Why? As long as the bitmap is global, this will not be hard.
+>>
+> 
+> For the more important point see bellow, but with regard to reallocation, this 
+> means we need to at least use rcu_read_lock() in the fast path to avoid races 
+> between freeing the old bitmap and doing a read in progress. 
+> 
+> Granted, that is a light operation, but would it makes things so much more 
+> complicated just so that we save one memory page (assuming the range is the 
+> default [32000 64000] one).
 
-The thread I started was indeed regarding I/D cache coherency and PIO.
-But it diverged into DMA issues a few days ago (should have been a new
-thread).
 
-> The way we do it, at least on powerpc which is PIPT, is to keep track on
-> a per-page basis, whether a given page is clean for execution using
-> PG_arch1 bit. This bit is cleared when a new page is popped into the
-> page cache, and we clear it from flush_dcache_page() iirc (you may want
-> to dbl check I don't have the code at hand right now, or rather, I do
-> but I'm to lazy to look right now :-)
+Why not just allocate the bitmap for all ports? 65535/8 bytes are
+needed.
 
-We do the same on ARM. The problem with most (all) HCD drivers that do
-PIO is that they copy the data to the transfer buffer but there is no
-call in this driver to flush_dcache_page(). The upper mass storage or
-filesystem layers don't call this function either, so there isn't
-anything that would set the PG_arch1 bit.
+> 
+>> Consider that if one user writes a port number which is beyond
+>> the ip_local_port_range into ip_local_reserved_ports, we should
+>> not accept this, because it doesn't make any sense. But with your
+>> patch, we do.
+>>
+> 
+> I think it should be allowed. I see ip_local_reserved_ports and ip_local_range 
+> as independent settings that can be change at any time.
 
---=20
-Catalin
--- 
-IMPORTANT NOTICE: The contents of this email and any attachments are confidential and may also be privileged. If you are not the intended recipient, please notify the sender immediately and do not disclose the contents to any other person, use it for any purpose, or store or copy the information in any medium.  Thank you.
+
+According to the original purpose, they are not.
+
+> 
+> That way I can flag port 8080 even if the current range is [32000, 64000] and 
+> then later I can expand the range to [1024, 64000] without loosing the 8080 
+> reservation.
+
+Then its meaning is changed, bind(0) will never have chance to get 8080,
+thus reserving 8080 for this purpose fails.
+
+I want to always keep its original meaning, if the local_port_range goes
+out, then local_reserved_port should be empty at the same time, you have
+to reset it after changing local_port_range.
