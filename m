@@ -1,50 +1,240 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756345Ab0BQLm5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 06:42:57 -0500
-Received: from fg-out-1718.google.com ([72.14.220.152]:39794 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754593Ab0BQLm4 (ORCPT
+	id S1757178Ab0BQLoS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 06:44:18 -0500
+Received: from mail-fx0-f215.google.com ([209.85.220.215]:57539 "EHLO
+	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756253Ab0BQLm6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 06:42:56 -0500
+	Wed, 17 Feb 2010 06:42:58 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=sender:from:to:cc:subject:date:message-id:x-mailer;
-        b=et7oTP65VS2qxgaRpeHl6SEnU6KPho0h47LFUxvUABTGDsAT+fkWTlAnPqPmcMEwcM
-         23UkOm7NMLrg7ntDighVxknp9+vuvugkyPW78YtOUpdGn5a+UnKKStBWUj7dfFFo8zYs
-         iKv6KaEmiOV3q+HB+5YiBpKJ/KT6GqcvQ16mE=
+        h=sender:from:to:cc:subject:date:message-id:x-mailer:in-reply-to
+         :references;
+        b=uI2KV0b9RNr5Fa1xVoB46y0Xy7NV2c7dWUZ+kqtFhQ7+7SNOYF1FOOLkImO6JMQ4Y4
+         7QRzEsaV6F+tFi/Cm7uveOsPHJlHUF4EMbXZDNUZeAAO0fF1bcFZ6zTWhMabGtcHJrxY
+         ntC9qgkKA74yxdxKrqhF5pM3wyXrLCcbdWQvA=
 From: Luca Barbieri <luca@luca-barbieri.com>
 To: mingo@elte.hu
 Cc: hpa@zytor.com, a.p.zijlstra@chello.nl, akpm@linux-foundation.org,
        linux-kernel@vger.kernel.org, Luca Barbieri <luca@luca-barbieri.com>
-Subject: [PATCH 0/10] x86-32: improve atomic64_t functions
-Date: Wed, 17 Feb 2010 12:42:32 +0100
-Message-Id: <1266406962-17463-1-git-send-email-luca@luca-barbieri.com>
+Subject: [PATCH 05/10] lib: add self-test for atomic64_t
+Date: Wed, 17 Feb 2010 12:42:37 +0100
+Message-Id: <1266406962-17463-6-git-send-email-luca@luca-barbieri.com>
 X-Mailer: git-send-email 1.6.6.1.476.g01ddb
+In-Reply-To: <1266406962-17463-1-git-send-email-luca@luca-barbieri.com>
+References: <1266406962-17463-1-git-send-email-luca@luca-barbieri.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patchset improves the atomic64_t functions on x86-32.
-It also includes a testsuite that has been used to test this functionality
-and can test any atomic64_t implementation.
+This patch adds self-test on boot code for atomic64_t.
 
-It offers the following improvements:
-1. Better code due to hand-written assembly (e.g. use of the ZF flag)
-2. All atomic64 functions implemented, efficiently
-3. Support for 386/486 due to the ability to alternatively use either
-   the cmpxchg8b based implementation or the generic implementation
-4. Use of SSE, if available, for atomic64_read and atomic64_set
-
-The first patches add functionality to the alternatives system to support
-the new atomic64_t code.
-A patch that improves cmpxchg64() using that functionality is also included.
-
-To test this code, enable CONFIG_ATOMIC64_SELFTEST, compile for 386 and
-boot normally, with "clearcpuid=25" and with "clearcpuid=8 clearcpuid=25".
-
-You should receive a message stating that the atomic64 test passed,
-along with the selected configuration.
+This has been used to test the later changes in this patchset.
 
 Signed-off-by: Luca Barbieri <luca@luca-barbieri.com>
+---
+ lib/Kconfig.debug   |    7 ++
+ lib/Makefile        |    2 +
+ lib/atomic64_test.c |  158 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 167 insertions(+), 0 deletions(-)
+ create mode 100644 lib/atomic64_test.c
+
+diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+index 25c3ed5..3676c51 100644
+--- a/lib/Kconfig.debug
++++ b/lib/Kconfig.debug
+@@ -1054,6 +1054,13 @@ config DMA_API_DEBUG
+ 	  This option causes a performance degredation.  Use only if you want
+ 	  to debug device drivers. If unsure, say N.
+ 
++config ATOMIC64_SELFTEST
++	bool "Perform an atomic64_t self-test at boot"
++	help
++	  Enable this option to test the atomic64_t functions at boot.
++
++	  If unsure, say N.
++
+ source "samples/Kconfig"
+ 
+ source "lib/Kconfig.kgdb"
+diff --git a/lib/Makefile b/lib/Makefile
+index 3b0b4a6..ab333e8 100644
+--- a/lib/Makefile
++++ b/lib/Makefile
+@@ -100,6 +100,8 @@ obj-$(CONFIG_GENERIC_CSUM) += checksum.o
+ 
+ obj-$(CONFIG_GENERIC_ATOMIC64) += atomic64.o
+ 
++obj-$(CONFIG_ATOMIC64_SELFTEST) += atomic64_test.o
++
+ hostprogs-y	:= gen_crc32table
+ clean-files	:= crc32table.h
+ 
+diff --git a/lib/atomic64_test.c b/lib/atomic64_test.c
+new file mode 100644
+index 0000000..4ff649e
+--- /dev/null
++++ b/lib/atomic64_test.c
+@@ -0,0 +1,158 @@
++/*
++ * Testsuite for atomic64_t functions
++ *
++ * Copyright © 2010  Luca Barbieri
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ */
++#include <linux/init.h>
++#include <asm/atomic.h>
++
++#define INIT(c) do { atomic64_set(&v, c); r = c; } while (0)
++static __init int test_atomic64(void)
++{
++	long long v0 = 0xaaa31337c001d00dLL;
++	long long v1 = 0xdeadbeefdeafcafeLL;
++	long long v2 = 0xfaceabadf00df001LL;
++	long long onestwos = 0x1111111122222222LL;
++	long long one = 1LL;
++
++	atomic64_t v = ATOMIC64_INIT(v0);
++	long long r = v0;
++	BUG_ON(v.counter != r);
++
++	atomic64_set(&v, v1);
++	r = v1;
++	BUG_ON(v.counter != r);
++	BUG_ON(atomic64_read(&v) != r);
++
++	INIT(v0);
++	atomic64_add(onestwos, &v);
++	r += onestwos;
++	BUG_ON(v.counter != r);
++
++	INIT(v0);
++	atomic64_add(-one, &v);
++	r += -one;
++	BUG_ON(v.counter != r);
++
++	INIT(v0);
++	r += onestwos;
++	BUG_ON(atomic64_add_return(onestwos, &v) != r);
++	BUG_ON(v.counter != r);
++
++	INIT(v0);
++	r += -one;
++	BUG_ON(atomic64_add_return(-one, &v) != r);
++	BUG_ON(v.counter != r);
++
++	INIT(v0);
++	atomic64_sub(onestwos, &v);
++	r -= onestwos;
++	BUG_ON(v.counter != r);
++
++	INIT(v0);
++	atomic64_sub(-one, &v);
++	r -= -one;
++	BUG_ON(v.counter != r);
++
++	INIT(v0);
++	r -= onestwos;
++	BUG_ON(atomic64_sub_return(onestwos, &v) != r);
++	BUG_ON(v.counter != r);
++
++	INIT(v0);
++	r -= -one;
++	BUG_ON(atomic64_sub_return(-one, &v) != r);
++	BUG_ON(v.counter != r);
++
++	INIT(v0);
++	atomic64_inc(&v);
++	r += one;
++	BUG_ON(v.counter != r);
++
++	INIT(v0);
++	r += one;
++	BUG_ON(atomic64_inc_return(&v) != r);
++	BUG_ON(v.counter != r);
++
++	INIT(v0);
++	atomic64_dec(&v);
++	r -= one;
++	BUG_ON(v.counter != r);
++
++	INIT(v0);
++	r -= one;
++	BUG_ON(atomic64_dec_return(&v) != r);
++	BUG_ON(v.counter != r);
++
++	INIT(v0);
++	BUG_ON(atomic64_xchg(&v, v1) != v0);
++	r = v1;
++	BUG_ON(v.counter != r);
++
++	INIT(v0);
++	BUG_ON(atomic64_cmpxchg(&v, v0, v1) != v0);
++	r = v1;
++	BUG_ON(v.counter != r);
++
++	INIT(v0);
++	BUG_ON(atomic64_cmpxchg(&v, v2, v1) != v0);
++	BUG_ON(v.counter != r);
++
++	INIT(v0);
++	BUG_ON(!atomic64_add_unless(&v, one, v0));
++	BUG_ON(v.counter != r);
++
++	INIT(v0);
++	BUG_ON(atomic64_add_unless(&v, one, v1));
++	r += one;
++	BUG_ON(v.counter != r);
++
++	INIT(onestwos);
++	BUG_ON(atomic64_dec_if_positive(&v) != (onestwos - 1));
++	r -= one;
++	BUG_ON(v.counter != r);
++
++	INIT(0);
++	BUG_ON(atomic64_dec_if_positive(&v) != -one);
++	BUG_ON(v.counter != r);
++
++	INIT(-one);
++	BUG_ON(atomic64_dec_if_positive(&v) != (-one - one));
++	BUG_ON(v.counter != r);
++
++	INIT(onestwos);
++	BUG_ON(atomic64_inc_not_zero(&v));
++	r += one;
++	BUG_ON(v.counter != r);
++
++	INIT(0);
++	BUG_ON(!atomic64_inc_not_zero(&v));
++	BUG_ON(v.counter != r);
++
++	INIT(-one);
++	BUG_ON(atomic64_inc_not_zero(&v));
++	r += one;
++	BUG_ON(v.counter != r);
++
++#ifdef CONFIG_X86
++	printk(KERN_INFO "atomic64 test passed for %s+ platform %s CX8 and %s SSE\n",
++#ifdef CONFIG_X86_CMPXCHG64
++			"586",
++#else
++			"386",
++#endif
++			boot_cpu_has(X86_FEATURE_CX8) ? "with" : "without",
++			boot_cpu_has(X86_FEATURE_XMM) ? "with" : "without");
++#else
++	printk(KERN_INFO "atomic64 test passed\n");
++#endif
++
++	return 0;
++}
++
++core_initcall(test_atomic64);
+-- 
+1.6.6.1.476.g01ddb
 
