@@ -1,57 +1,133 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753400Ab0BQIeu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 03:34:50 -0500
-Received: from poutre.nerim.net ([62.4.16.124]:61334 "EHLO poutre.nerim.net"
+	id S1753888Ab0BQIph (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 03:45:37 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:36785 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752497Ab0BQIet (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 03:34:49 -0500
-Date: Wed, 17 Feb 2010 09:34:46 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: linux-next: build warning after merge of the i2c tree
-Message-ID: <20100217093446.2e610f45@hyperion.delvare>
-In-Reply-To: <20100217113855.7ebf3d39.sfr@canb.auug.org.au>
-References: <20100217113855.7ebf3d39.sfr@canb.auug.org.au>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1752497Ab0BQIpg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 03:45:36 -0500
+Date: Wed, 17 Feb 2010 19:45:26 +1100
+From: Nick Piggin <npiggin@suse.de>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       rientjes@google.com,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: Re: [PATCH] memcg: handle panic_on_oom=always case
+Message-ID: <20100217084526.GP5723@laptop>
+References: <20100217150445.1a40201d.kamezawa.hiroyu@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100217150445.1a40201d.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Feb 2010 11:38:55 +1100, Stephen Rothwell wrote:
-> Hi Jean,
+On Wed, Feb 17, 2010 at 03:04:45PM +0900, KAMEZAWA Hiroyuki wrote:
+> tested on mmotm-Feb11.
 > 
-> After merging the i2c tree, today's linux-next build (powerpc
-> ppc64_defconfig) produced warnings like this:
+> Balbir-san, Nishimura-san, I want review from both of you.
 > 
-> In file included from include/linux/bitops.h:17,
->                  from include/linux/kernel.h:15,
->                  from drivers/i2c/i2c-boardinfo.c:19:
-> arch/powerpc/include/asm/bitops.h:226: warning: declaration of 'ffs' shadows a built-in function
+> ==
 > 
-> The x86_64 allmodconfig produces similar:
+> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 > 
-> In file included from include/linux/bitops.h:17,
->                  from include/linux/kernel.h:15,
->                  from next/drivers/i2c/i2c-boardinfo.c:19:
-> arch/x86/include/asm/bitops.h:395: warning: declaration of 'ffs' shadows a built-in function
+> Now, if panic_on_oom=2, the whole system panics even if the oom happend
+> in some special situation (as cpuset, mempolicy....).
+> Then, panic_on_oom=2 means painc_on_oom_always.
 > 
-> Exposed by commit fa4f62e9f3a85490aebe8857e2208c37da851ce3 ("i2c: Build
-> core and algo drivers with -Wshadow").
+> Now, memcg doesn't check panic_on_oom flag. This patch adds a check.
 > 
-> Jean, I realise that these warnings are not something your tree has
-> added, just that you have exposed them.  They are a bit annoying,
-> though.  I am using gcc v4.4.3.
+> Maybe someone doubts how it's useful. kdump+panic_on_oom=2 is the
+> last tool to investigate what happens in oom-ed system. If a task is killed,
+> the sysytem recovers and used memory were freed, there will be few hint
+> to know what happnes. In mission critical system, oom should never happen.
+> Then, investigation after OOM is very important.
+> Then, panic_on_oom=2+kdump is useful to avoid next OOM by knowing
+> precise information via snapshot.
 
-Oh well. I had the hope that at least the header files were
-Wshadow-compliant so it could be enabled for selected source files. Not
-getting any warning on my own system when I tried, I thought it was
-fine... If it is not, then I'll just remove this patch from my tree.
-Sorry for the noise and thanks for reporting.
+No I don't doubt it is useful, and I think this probably is the simplest
+and most useful semantic. So thanks for doing this.
 
--- 
-Jean Delvare
+I hate to pick nits in a trivial patch but I will anyway:
+
+
+> TODO:
+>  - For memcg, it's for isolate system's memory usage, oom-notiifer and
+>    freeze_at_oom (or rest_at_oom) should be implemented. Then, management
+>    daemon can do similar jobs (as kdump) in safer way or taking snapshot
+>    per cgroup.
+> 
+> CC: Balbir Singh <balbir@linux.vnet.ibm.com>
+> CC: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> CC: David Rientjes <rientjes@google.com>
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> ---
+>  Documentation/cgroups/memory.txt |    2 ++
+>  Documentation/sysctl/vm.txt      |    5 ++++-
+>  mm/oom_kill.c                    |    2 ++
+>  3 files changed, 8 insertions(+), 1 deletion(-)
+> 
+> Index: mmotm-2.6.33-Feb11/Documentation/cgroups/memory.txt
+> ===================================================================
+> --- mmotm-2.6.33-Feb11.orig/Documentation/cgroups/memory.txt
+> +++ mmotm-2.6.33-Feb11/Documentation/cgroups/memory.txt
+> @@ -182,6 +182,8 @@ list.
+>  NOTE: Reclaim does not work for the root cgroup, since we cannot set any
+>  limits on the root cgroup.
+>  
+> +Note2: When panic_on_oom is set to "2", the whole system will panic.
+> +
+
+Maybe:
+
+NOTE2: When panic_on_oom is set to "2", the whole system will panic in
+case of an oom event in any cgroup.
+
+>  2. Locking
+>  
+>  The memory controller uses the following hierarchy
+> Index: mmotm-2.6.33-Feb11/Documentation/sysctl/vm.txt
+> ===================================================================
+> --- mmotm-2.6.33-Feb11.orig/Documentation/sysctl/vm.txt
+> +++ mmotm-2.6.33-Feb11/Documentation/sysctl/vm.txt
+> @@ -573,11 +573,14 @@ Because other nodes' memory may be free.
+>  may be not fatal yet.
+>  
+>  If this is set to 2, the kernel panics compulsorily even on the
+> -above-mentioned.
+> +above-mentioned. Even oom happens under memoyr cgroup, the whole
+> +system panics.
+                                           memory
+
+>  
+>  The default value is 0.
+>  1 and 2 are for failover of clustering. Please select either
+>  according to your policy of failover.
+> +2 seems too strong but panic_on_oom=2+kdump gives you very strong
+> +tool to investigate a system which should never cause OOM.
+
+I don't think you need say 2 seems too strong because as you rightfully
+say, it has real uses. The hint about using it to investigate OOM
+conditions is good though.
+
+>  
+>  =============================================================
+>  
+> Index: mmotm-2.6.33-Feb11/mm/oom_kill.c
+> ===================================================================
+> --- mmotm-2.6.33-Feb11.orig/mm/oom_kill.c
+> +++ mmotm-2.6.33-Feb11/mm/oom_kill.c
+> @@ -471,6 +471,8 @@ void mem_cgroup_out_of_memory(struct mem
+>  	unsigned long points = 0;
+>  	struct task_struct *p;
+>  
+> +	if (sysctl_panic_on_oom == 2)
+> +		panic("out of memory(memcg). panic_on_oom is selected.\n");
+>  	read_lock(&tasklist_lock);
+>  retry:
+>  	p = select_bad_process(&points, mem);
