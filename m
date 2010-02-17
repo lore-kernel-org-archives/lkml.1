@@ -1,172 +1,159 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933897Ab0BQBkN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 20:40:13 -0500
-Received: from hera.kernel.org ([140.211.167.34]:42634 "EHLO hera.kernel.org"
+	id S933901Ab0BQBnP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 20:43:15 -0500
+Received: from hera.kernel.org ([140.211.167.34]:50588 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933803Ab0BQBkL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 20:40:11 -0500
-Message-ID: <4B7B4ABB.2030006@kernel.org>
-Date: Wed, 17 Feb 2010 10:47:39 +0900
+	id S933803Ab0BQBnO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 20:43:14 -0500
+Message-ID: <4B7B4B7A.9050902@kernel.org>
+Date: Wed, 17 Feb 2010 10:50:50 +0900
 From: Tejun Heo <tj@kernel.org>
 User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       the arch/x86 maintainers <x86@kernel.org>,
+To: Frederic Weisbecker <fweisbec@gmail.com>,
        lkml <linux-kernel@vger.kernel.org>
 CC: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: [PATCH x86/core] percpu: add __percpu sparse annotations to x86
+Subject: [PATCH hw_breakpoint] percpu: add __percpu sparse annotations to
+ hw_breakpoint
 X-Enigmail-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 17 Feb 2010 01:39:17 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 17 Feb 2010 01:42:27 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add __percpu sparse annotations to x86.
+Add __percpu sparse annotations to hw_breakpoint.
 
 These annotations are to make sparse consider percpu variables to be
 in a different address space and warn if accessed without going
 through percpu accessors.  This patch doesn't affect normal builds.
 
-In arch/x86/kernel/cpu/common.c, per_cpu(exception_stacks, cpu) will
+In kernel/hw_breakpoint.c, per_cpu(nr_task_bp_pinned, cpu)'s will
 trigger sprious noderef related warnings from sparse.  Changing it to
-&per_cpu(exception_stacks[0], cpu) will work around the problem but
+&per_cpu(nr_task_bp_pinned[0], cpu) will work around the problem but
 deemed to ugly by the maintainer.  Leave it alone until better
 solution can be found.
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
-Acked-by: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: x86@kernel.org
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
 ---
-Can you please include this into x86 branch?  Thanks.
+Frederic, can you please put this into the tree for hw_breakpoint?
 
- arch/x86/include/asm/msr.h                 |   12 +++++++-----
- arch/x86/kernel/acpi/cstate.c              |    2 +-
- arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c |    2 +-
- arch/x86/lib/msr-smp.c                     |    8 +++++---
- arch/x86/lib/msr.c                         |    6 +++---
- 5 files changed, 17 insertions(+), 13 deletions(-)
+Thanks.
 
-Index: linux-2.6-tip/arch/x86/include/asm/msr.h
-===================================================================
---- linux-2.6-tip.orig/arch/x86/include/asm/msr.h
-+++ linux-2.6-tip/arch/x86/include/asm/msr.h
-@@ -30,7 +30,7 @@ struct msr {
- struct msr_info {
- 	u32 msr_no;
- 	struct msr reg;
--	struct msr *msrs;
-+	struct msr __percpu *msrs;
- 	int err;
- };
+ include/linux/hw_breakpoint.h           |    8 ++++----
+ kernel/hw_breakpoint.c                  |   10 +++++-----
+ samples/hw_breakpoint/data_breakpoint.c |    6 +++---
+ 3 files changed, 12 insertions(+), 12 deletions(-)
+
+diff --git a/include/linux/hw_breakpoint.h b/include/linux/hw_breakpoint.h
+index 070ba06..3cf78a7 100644
+--- a/include/linux/hw_breakpoint.h
++++ b/include/linux/hw_breakpoint.h
+@@ -66,14 +66,14 @@ register_wide_hw_breakpoint_cpu(struct perf_event_attr *attr,
+ 				perf_overflow_handler_t	triggered,
+ 				int cpu);
  
-@@ -256,14 +256,16 @@ do {
+-extern struct perf_event **
++extern struct perf_event * __percpu *
+ register_wide_hw_breakpoint(struct perf_event_attr *attr,
+ 			    perf_overflow_handler_t triggered);
  
- #define write_rdtscp_aux(val) wrmsr(MSR_TSC_AUX, (val), 0)
+ extern int register_perf_hw_breakpoint(struct perf_event *bp);
+ extern int __register_perf_hw_breakpoint(struct perf_event *bp);
+ extern void unregister_hw_breakpoint(struct perf_event *bp);
+-extern void unregister_wide_hw_breakpoint(struct perf_event **cpu_events);
++extern void unregister_wide_hw_breakpoint(struct perf_event * __percpu *cpu_events);
  
--struct msr *msrs_alloc(void);
--void msrs_free(struct msr *msrs);
-+struct msr __percpu *msrs_alloc(void);
-+void msrs_free(struct msr __percpu *msrs);
- 
- #ifdef CONFIG_SMP
- int rdmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h);
- int wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h);
--void rdmsr_on_cpus(const struct cpumask *mask, u32 msr_no, struct msr *msrs);
--void wrmsr_on_cpus(const struct cpumask *mask, u32 msr_no, struct msr *msrs);
-+void rdmsr_on_cpus(const struct cpumask *mask, u32 msr_no,
-+		   struct msr __percpu *msrs);
-+void wrmsr_on_cpus(const struct cpumask *mask, u32 msr_no,
-+		   struct msr __percpu *msrs);
- int rdmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h);
- int wrmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h);
- int rdmsr_safe_regs_on_cpu(unsigned int cpu, u32 regs[8]);
-Index: linux-2.6-tip/arch/x86/kernel/acpi/cstate.c
-===================================================================
---- linux-2.6-tip.orig/arch/x86/kernel/acpi/cstate.c
-+++ linux-2.6-tip/arch/x86/kernel/acpi/cstate.c
-@@ -61,7 +61,7 @@ struct cstate_entry {
- 		unsigned int ecx;
- 	} states[ACPI_PROCESSOR_MAX_POWER];
- };
--static struct cstate_entry *cpu_cstate_entry;	/* per CPU ptr */
-+static struct cstate_entry __percpu *cpu_cstate_entry;	/* per CPU ptr */
- 
- static short mwait_supported[ACPI_PROCESSOR_MAX_POWER];
- 
-Index: linux-2.6-tip/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
-===================================================================
---- linux-2.6-tip.orig/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
-+++ linux-2.6-tip/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
-@@ -73,7 +73,7 @@ static DEFINE_PER_CPU(struct acpi_cpufre
- static DEFINE_PER_CPU(struct aperfmperf, acfreq_old_perf);
- 
- /* acpi_perf_data is a pointer to percpu data. */
--static struct acpi_processor_performance *acpi_perf_data;
-+static struct acpi_processor_performance __percpu *acpi_perf_data;
- 
- static struct cpufreq_driver acpi_cpufreq_driver;
- 
-Index: linux-2.6-tip/arch/x86/lib/msr-smp.c
-===================================================================
---- linux-2.6-tip.orig/arch/x86/lib/msr-smp.c
-+++ linux-2.6-tip/arch/x86/lib/msr-smp.c
-@@ -64,7 +64,7 @@ int wrmsr_on_cpu(unsigned int cpu, u32 m
- EXPORT_SYMBOL(wrmsr_on_cpu);
- 
- static void __rwmsr_on_cpus(const struct cpumask *mask, u32 msr_no,
--			    struct msr *msrs,
-+			    struct msr __percpu *msrs,
- 			    void (*msr_func) (void *info))
- {
- 	struct msr_info rv;
-@@ -91,7 +91,8 @@ static void __rwmsr_on_cpus(const struct
-  * @msrs:       array of MSR values
+ extern int dbg_reserve_bp_slot(struct perf_event *bp);
+ extern int dbg_release_bp_slot(struct perf_event *bp);
+@@ -100,7 +100,7 @@ static inline struct perf_event *
+ register_wide_hw_breakpoint_cpu(struct perf_event_attr *attr,
+ 				perf_overflow_handler_t	 triggered,
+ 				int cpu)		{ return NULL; }
+-static inline struct perf_event **
++static inline struct perf_event * __percpu *
+ register_wide_hw_breakpoint(struct perf_event_attr *attr,
+ 			    perf_overflow_handler_t triggered)	{ return NULL; }
+ static inline int
+@@ -109,7 +109,7 @@ static inline int
+ __register_perf_hw_breakpoint(struct perf_event *bp) 	{ return -ENOSYS; }
+ static inline void unregister_hw_breakpoint(struct perf_event *bp)	{ }
+ static inline void
+-unregister_wide_hw_breakpoint(struct perf_event **cpu_events)		{ }
++unregister_wide_hw_breakpoint(struct perf_event * __percpu *cpu_events)	{ }
+ static inline int
+ reserve_bp_slot(struct perf_event *bp)			{return -ENOSYS; }
+ static inline void release_bp_slot(struct perf_event *bp) 		{ }
+diff --git a/kernel/hw_breakpoint.c b/kernel/hw_breakpoint.c
+index 8a5c7d5..4781c68 100644
+--- a/kernel/hw_breakpoint.c
++++ b/kernel/hw_breakpoint.c
+@@ -413,17 +413,17 @@ EXPORT_SYMBOL_GPL(unregister_hw_breakpoint);
   *
+  * @return a set of per_cpu pointers to perf events
   */
--void rdmsr_on_cpus(const struct cpumask *mask, u32 msr_no, struct msr *msrs)
-+void rdmsr_on_cpus(const struct cpumask *mask, u32 msr_no,
-+		   struct msr __percpu *msrs)
+-struct perf_event **
++struct perf_event * __percpu *
+ register_wide_hw_breakpoint(struct perf_event_attr *attr,
+ 			    perf_overflow_handler_t triggered)
  {
- 	__rwmsr_on_cpus(mask, msr_no, msrs, __rdmsr_on_cpu);
+-	struct perf_event **cpu_events, **pevent, *bp;
++	struct perf_event * __percpu *cpu_events, **pevent, *bp;
+ 	long err;
+ 	int cpu;
+ 
+ 	cpu_events = alloc_percpu(typeof(*cpu_events));
+ 	if (!cpu_events)
+-		return ERR_PTR(-ENOMEM);
++		return (void __percpu __force *)ERR_PTR(-ENOMEM);
+ 
+ 	get_online_cpus();
+ 	for_each_online_cpu(cpu) {
+@@ -451,7 +451,7 @@ fail:
+ 	put_online_cpus();
+ 
+ 	free_percpu(cpu_events);
+-	return ERR_PTR(err);
++	return (void __percpu __force *)ERR_PTR(err);
  }
-@@ -105,7 +106,8 @@ EXPORT_SYMBOL(rdmsr_on_cpus);
-  * @msrs:       array of MSR values
-  *
+ EXPORT_SYMBOL_GPL(register_wide_hw_breakpoint);
+ 
+@@ -459,7 +459,7 @@ EXPORT_SYMBOL_GPL(register_wide_hw_breakpoint);
+  * unregister_wide_hw_breakpoint - unregister a wide breakpoint in the kernel
+  * @cpu_events: the per cpu set of events to unregister
   */
--void wrmsr_on_cpus(const struct cpumask *mask, u32 msr_no, struct msr *msrs)
-+void wrmsr_on_cpus(const struct cpumask *mask, u32 msr_no,
-+		   struct msr __percpu *msrs)
+-void unregister_wide_hw_breakpoint(struct perf_event **cpu_events)
++void unregister_wide_hw_breakpoint(struct perf_event * __percpu *cpu_events)
  {
- 	__rwmsr_on_cpus(mask, msr_no, msrs, __wrmsr_on_cpu);
- }
-Index: linux-2.6-tip/arch/x86/lib/msr.c
-===================================================================
---- linux-2.6-tip.orig/arch/x86/lib/msr.c
-+++ linux-2.6-tip/arch/x86/lib/msr.c
-@@ -2,9 +2,9 @@
- #include <linux/preempt.h>
- #include <asm/msr.h>
+ 	int cpu;
+ 	struct perf_event **pevent;
+diff --git a/samples/hw_breakpoint/data_breakpoint.c b/samples/hw_breakpoint/data_breakpoint.c
+index c69cbe9..bd0f337 100644
+--- a/samples/hw_breakpoint/data_breakpoint.c
++++ b/samples/hw_breakpoint/data_breakpoint.c
+@@ -34,7 +34,7 @@
+ #include <linux/perf_event.h>
+ #include <linux/hw_breakpoint.h>
  
--struct msr *msrs_alloc(void)
-+struct msr __percpu *msrs_alloc(void)
- {
--	struct msr *msrs = NULL;
-+	struct msr __percpu *msrs = NULL;
+-struct perf_event **sample_hbp;
++struct perf_event * __percpu *sample_hbp;
  
- 	msrs = alloc_percpu(struct msr);
- 	if (!msrs) {
-@@ -16,7 +16,7 @@ struct msr *msrs_alloc(void)
- }
- EXPORT_SYMBOL(msrs_alloc);
+ static char ksym_name[KSYM_NAME_LEN] = "pid_max";
+ module_param_string(ksym, ksym_name, KSYM_NAME_LEN, S_IRUGO);
+@@ -61,8 +61,8 @@ static int __init hw_break_module_init(void)
+ 	attr.bp_type = HW_BREAKPOINT_W | HW_BREAKPOINT_R;
  
--void msrs_free(struct msr *msrs)
-+void msrs_free(struct msr __percpu *msrs)
- {
- 	free_percpu(msrs);
- }
+ 	sample_hbp = register_wide_hw_breakpoint(&attr, sample_hbp_handler);
+-	if (IS_ERR(sample_hbp)) {
+-		ret = PTR_ERR(sample_hbp);
++	if (IS_ERR((void __force *)sample_hbp)) {
++		ret = PTR_ERR((void __force *)sample_hbp);
+ 		goto fail;
+ 	}
+ 
+-- 
+1.6.4.2
+
