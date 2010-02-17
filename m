@@ -1,26 +1,26 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756868Ab0BQLnG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 06:43:06 -0500
-Received: from mail-fx0-f215.google.com ([209.85.220.215]:61014 "EHLO
+	id S1757101Ab0BQLne (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 06:43:34 -0500
+Received: from mail-fx0-f215.google.com ([209.85.220.215]:54844 "EHLO
 	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756530Ab0BQLm7 (ORCPT
+	with ESMTP id S1756386Ab0BQLnF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 06:42:59 -0500
+	Wed, 17 Feb 2010 06:43:05 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=sender:from:to:cc:subject:date:message-id:x-mailer:in-reply-to
          :references;
-        b=PWGRGfoCI7pkEDd4an7lT7AeObTdD6tkg8I3hiC8D8B4ssx5+6ZiQwLE6JRvTib546
-         56nRfGzr1IEMceLEicnY51Cl3H6LcfR1ksJqTT7Jnkbz8x2f+YpDS5x2g8X49NcShstH
-         /fI+BTF2cjqpnhxaBEs9VPsqXgotAfJtFq20E=
+        b=GoT/ZST3gwL1HKB0xdTbra6f6DxZY6QkSlvWoA3C8eXyxdDjxUVoy5M2y5zSGjaXML
+         ODirP2vtPfrQQcj6Rygw3kXAYllGIcdcSJn6JfA+LCQHtNGPALyywI9iQCcr4hx1KDHY
+         40zTGUS3BLdsZU38oVtUNBxe7oE+8olYuUyxc=
 From: Luca Barbieri <luca@luca-barbieri.com>
 To: mingo@elte.hu
 Cc: hpa@zytor.com, a.p.zijlstra@chello.nl, akpm@linux-foundation.org,
        linux-kernel@vger.kernel.org, Luca Barbieri <luca@luca-barbieri.com>
-Subject: [PATCH 07/10] lib: move generic atomic64 to atomic64-impl.h
-Date: Wed, 17 Feb 2010 12:42:39 +0100
-Message-Id: <1266406962-17463-8-git-send-email-luca@luca-barbieri.com>
+Subject: [PATCH 09/10] x86-32: use SSE for atomic64_read/set if available
+Date: Wed, 17 Feb 2010 12:42:41 +0100
+Message-Id: <1266406962-17463-10-git-send-email-luca@luca-barbieri.com>
 X-Mailer: git-send-email 1.6.6.1.476.g01ddb
 In-Reply-To: <1266406962-17463-1-git-send-email-luca@luca-barbieri.com>
 References: <1266406962-17463-1-git-send-email-luca@luca-barbieri.com>
@@ -28,425 +28,168 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch moves the generic implementation of the atomic64 functions
-from atomic64.c to atomic64-impl.h
+This patch uses SSE movlps to perform 64-bit atomic reads and writes.
 
-This file will be reused by x86-32 for 386/486 support.
+According to Intel manuals, all aligned 64-bit reads and writes are
+atomically, which should include movlps.
+
+To do this, we need to disable preempt, clts if TS was set, and
+restore TS.
+
+If we don't need to change TS, using SSE is much faster.
+
+Otherwise, it should be essentially even, with the fastest method
+depending on the specific architecture.
+
+Another important point is that with SSE atomic64_read can keep the
+cacheline in shared state.
+
+If we could keep TS off and reenable it when returning to userspace,
+this would be even faster, but this is left for a later patch.
+
+We use SSE because we can just save the low part %xmm0, whereas using
+the FPU or MMX requires at least saving the environment, and seems
+impossible to do fast.
 
 Signed-off-by: Luca Barbieri <luca@luca-barbieri.com>
 ---
- include/asm-generic/atomic64-impl.h |  167 ++++++++++++++++++++++++++++++++
- include/asm-generic/atomic64.h      |   31 ++++--
- lib/atomic64.c                      |  183 +++--------------------------------
- 3 files changed, 203 insertions(+), 178 deletions(-)
- create mode 100644 include/asm-generic/atomic64-impl.h
+ arch/x86/include/asm/atomic_32.h |   10 ++++-
+ arch/x86/lib/atomic64_32.c       |   67 ++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 75 insertions(+), 2 deletions(-)
 
-diff --git a/include/asm-generic/atomic64-impl.h b/include/asm-generic/atomic64-impl.h
-new file mode 100644
-index 0000000..a0a76f4
---- /dev/null
-+++ b/include/asm-generic/atomic64-impl.h
-@@ -0,0 +1,167 @@
-+#ifndef _ASM_GENERIC_ATOMIC64_IMPL_H
-+#define _ASM_GENERIC_ATOMIC64_IMPL_H
+diff --git a/arch/x86/include/asm/atomic_32.h b/arch/x86/include/asm/atomic_32.h
+index 1ab431c..d03e471 100644
+--- a/arch/x86/include/asm/atomic_32.h
++++ b/arch/x86/include/asm/atomic_32.h
+@@ -268,6 +268,9 @@ typedef struct {
+ 
+ #define ATOMIC64_INIT(val)	{ (val) }
+ 
++long long sse_atomic64_read_cx8call(long long, const atomic64_t *v);
++void sse_atomic64_set_cx8call(long long, unsigned high);
 +
-+#include <linux/spinlock.h>
-+
-+/*
-+ * We use a hashed array of spinlocks to provide exclusive access
-+ * to each atomic64_t variable.  Since this is expected to used on
-+ * systems with small numbers of CPUs (<= 4 or so), we use a
-+ * relatively small array of 16 spinlocks to avoid wasting too much
-+ * memory on the spinlock array.
-+ */
-+#ifndef ATOMIC64_NR_LOCKS
-+#define ATOMIC64_NR_LOCKS	16
-+#endif
-+
-+/*
-+ * Ensure each lock is in a separate cacheline.
-+ */
-+union generic_atomic64_lock {
-+	spinlock_t lock;
-+	char pad[L1_CACHE_BYTES];
+ long long cx8_atomic64_read_cx8call(long long, const atomic64_t *v);
+ long long cx8_atomic64_set_cx8call(long long, const atomic64_t *v);
+ long long cx8_atomic64_xchg_cx8call(long long, unsigned high);
+@@ -281,8 +284,10 @@ int cx8_atomic64_add_unless(atomic64_t *v, long long a, long long u);
+ 
+ #ifdef CONFIG_X86_CMPXCHG64
+ #define ATOMIC64_ALTERNATIVE(f) "call cx8_atomic64_" #f
++#define ATOMIC64_ALTERNATIVE_XMM(f) ALTERNATIVE("call cx8_atomic64_" #f, "call sse_atomic64_" #g, X86_FEATURE_XMM)
+ #else
+ #define ATOMIC64_ALTERNATIVE(f) ALTERNATIVE("call generic_atomic64_" #f, "call cx8_atomic64_" #f, X86_FEATURE_CX8)
++#define ATOMIC64_ALTERNATIVE_XMM(f) ALTERNATIVE3("call generic_atomic64_" #f, "call cx8_atomic64_" #f, X86_FEATURE_CX8, "call sse_atomic64_" #f, X86_FEATURE_XMM)
+ #endif
+ 
+ /**
+@@ -349,7 +354,7 @@ static inline void atomic64_set(atomic64_t *v, long long i)
+ {
+ 	unsigned high = (unsigned)(i >> 32);
+ 	unsigned low = (unsigned)i;
+-	asm volatile(ATOMIC64_ALTERNATIVE(set_cx8call)
++	asm volatile(ATOMIC64_ALTERNATIVE_XMM(set_cx8call)
+ 			: "+b" (low), "+c" (high)
+ 			: "S" (v)
+ 			: "eax", "edx", "memory"
+@@ -365,7 +370,7 @@ static inline void atomic64_set(atomic64_t *v, long long i)
+ static inline long long atomic64_read(atomic64_t *v)
+ {
+ 	long long r;
+-	asm volatile(ATOMIC64_ALTERNATIVE(read_cx8call)
++	asm volatile(ATOMIC64_ALTERNATIVE_XMM(read_cx8call)
+ 				: "=A" (r), "+c" (v)
+ 				: : "memory"
+ 				);
+@@ -470,6 +475,7 @@ static inline int atomic64_inc_not_zero(atomic64_t *v)
+ #define atomic64_dec_and_test(v)	(atomic64_dec_return((v)) == 0)
+ 
+ #undef ATOMIC64_ALTERNATIVE
++#undef ATOMIC64_ALTERNATIVE_XMM
+ 
+ #include <asm-generic/atomic-long.h>
+ #endif /* _ASM_X86_ATOMIC_32_H */
+diff --git a/arch/x86/lib/atomic64_32.c b/arch/x86/lib/atomic64_32.c
+index b7edbb3..9ff8589 100644
+--- a/arch/x86/lib/atomic64_32.c
++++ b/arch/x86/lib/atomic64_32.c
+@@ -61,6 +61,47 @@ EXPORT_SYMBOL(generic_atomic64_read_cx8call);
+ 
+ #endif /* CONFIG_X86_CMPXCHG64 */
+ 
++struct sse_atomic64_percpu {
++	long long xmm0_low;
++	long low;
++	long high;
 +};
 +
-+extern union generic_atomic64_lock generic_atomic64_lock[ATOMIC64_NR_LOCKS] __cacheline_aligned_in_smp;
++/* we actually only need 8-byte alignment, but using cacheline alignment is the only simple way to this */
++/* we use a per-CPU variable because we need to disable preemption anyway and this is faster than
++ * aligning the stack pointer to 8 bytes
++ */
++DEFINE_PER_CPU_ALIGNED(struct sse_atomic64_percpu, sse_atomic64_percpu);
 +
-+static inline int init_generic_atomic64_lock(void)
++/* using the fpu/mmx looks infeasible due to the need to save the FPU environment, which is very slow
++ * SSE2 is slightly slower on Core 2 and less compatible, so avoid it for now
++ */
++long long sse_atomic64_read_cx8call(long long dummy, const atomic64_t *v)
 +{
-+	int i;
-+
-+	for (i = 0; i < ATOMIC64_NR_LOCKS; ++i)
-+		spin_lock_init(&generic_atomic64_lock[i].lock);
-+	return 0;
-+}
-+
-+static inline spinlock_t *generic_atomic64_lock_addr(const atomic64_t *v)
-+{
-+	unsigned long addr = (unsigned long) v;
-+
-+	addr >>= L1_CACHE_SHIFT;
-+	addr ^= (addr >> 8) ^ (addr >> 16);
-+	return &generic_atomic64_lock[addr & (ATOMIC64_NR_LOCKS - 1)].lock;
-+}
-+
-+long long generic_atomic64_read(const atomic64_t *v)
-+{
-+	unsigned long flags;
-+	spinlock_t *lock = generic_atomic64_lock_addr(v);
-+	long long val;
-+
-+	spin_lock_irqsave(lock, flags);
-+	val = v->counter;
-+	spin_unlock_irqrestore(lock, flags);
-+	return val;
-+}
-+
-+void generic_atomic64_set(atomic64_t *v, long long i)
-+{
-+	unsigned long flags;
-+	spinlock_t *lock = generic_atomic64_lock_addr(v);
-+
-+	spin_lock_irqsave(lock, flags);
-+	v->counter = i;
-+	spin_unlock_irqrestore(lock, flags);
-+}
-+
-+void generic_atomic64_add(long long a, atomic64_t *v)
-+{
-+	unsigned long flags;
-+	spinlock_t *lock = generic_atomic64_lock_addr(v);
-+
-+	spin_lock_irqsave(lock, flags);
-+	v->counter += a;
-+	spin_unlock_irqrestore(lock, flags);
-+}
-+
-+long long generic_atomic64_add_return(long long a, atomic64_t *v)
-+{
-+	unsigned long flags;
-+	spinlock_t *lock = generic_atomic64_lock_addr(v);
-+	long long val;
-+
-+	spin_lock_irqsave(lock, flags);
-+	val = v->counter += a;
-+	spin_unlock_irqrestore(lock, flags);
-+	return val;
-+}
-+
-+void generic_atomic64_sub(long long a, atomic64_t *v)
-+{
-+	unsigned long flags;
-+	spinlock_t *lock = generic_atomic64_lock_addr(v);
-+
-+	spin_lock_irqsave(lock, flags);
-+	v->counter -= a;
-+	spin_unlock_irqrestore(lock, flags);
-+}
-+
-+long long generic_atomic64_sub_return(long long a, atomic64_t *v)
-+{
-+	unsigned long flags;
-+	spinlock_t *lock = generic_atomic64_lock_addr(v);
-+	long long val;
-+
-+	spin_lock_irqsave(lock, flags);
-+	val = v->counter -= a;
-+	spin_unlock_irqrestore(lock, flags);
-+	return val;
-+}
-+
-+long long generic_atomic64_dec_if_positive(atomic64_t *v)
-+{
-+	unsigned long flags;
-+	spinlock_t *lock = generic_atomic64_lock_addr(v);
-+	long long val;
-+
-+	spin_lock_irqsave(lock, flags);
-+	val = v->counter - 1;
-+	if (val >= 0)
-+		v->counter = val;
-+	spin_unlock_irqrestore(lock, flags);
-+	return val;
-+}
-+
-+long long generic_atomic64_cmpxchg(atomic64_t *v, long long o, long long n)
-+{
-+	unsigned long flags;
-+	spinlock_t *lock = generic_atomic64_lock_addr(v);
-+	long long val;
-+
-+	spin_lock_irqsave(lock, flags);
-+	val = v->counter;
-+	if (val == o)
-+		v->counter = n;
-+	spin_unlock_irqrestore(lock, flags);
-+	return val;
-+}
-+
-+long long generic_atomic64_xchg(atomic64_t *v, long long new)
-+{
-+	unsigned long flags;
-+	spinlock_t *lock = generic_atomic64_lock_addr(v);
-+	long long val;
-+
-+	spin_lock_irqsave(lock, flags);
-+	val = v->counter;
-+	v->counter = new;
-+	spin_unlock_irqrestore(lock, flags);
-+	return val;
-+}
-+
-+int generic_atomic64_add_unless(atomic64_t *v, long long a, long long u)
-+{
-+	unsigned long flags;
-+	spinlock_t *lock = generic_atomic64_lock_addr(v);
-+	int ret = 1;
-+
-+	spin_lock_irqsave(lock, flags);
-+	if (v->counter != u) {
-+		v->counter += a;
-+		ret = 0;
++	long long res;
++	unsigned long cr0 = 0;
++	struct thread_info *me = current_thread_info();
++	preempt_disable();
++	if (!(me->status & TS_USEDFPU)) {
++		cr0 = read_cr0();
++		if (cr0 & X86_CR0_TS)
++			clts();
 +	}
-+	spin_unlock_irqrestore(lock, flags);
-+	return ret;
++	asm volatile(
++			"movlps %%xmm0, " __percpu_arg(0) "\n\t"
++			"movlps %3, %%xmm0\n\t"
++			"movlps %%xmm0, " __percpu_arg(1) "\n\t"
++			"movlps " __percpu_arg(0) ", %%xmm0\n\t"
++			    : "+m" (per_cpu__sse_atomic64_percpu.xmm0_low), "=m" (per_cpu__sse_atomic64_percpu.low), "=m" (per_cpu__sse_atomic64_percpu.high)
++			    : "m" (v->counter));
++	if (cr0 & X86_CR0_TS)
++		write_cr0(cr0);
++	res = (long long)(unsigned)percpu_read(sse_atomic64_percpu.low) | ((long long)(unsigned)percpu_read(sse_atomic64_percpu.high) << 32);
++	preempt_enable();
++	return res;
 +}
++EXPORT_SYMBOL(sse_atomic64_read_cx8call);
 +
-+#endif /*  _ASM_GENERIC_ATOMIC64_IMPL_H  */
-diff --git a/include/asm-generic/atomic64.h b/include/asm-generic/atomic64.h
-index b18ce4f..d6775fd 100644
---- a/include/asm-generic/atomic64.h
-+++ b/include/asm-generic/atomic64.h
-@@ -18,16 +18,27 @@ typedef struct {
+ register unsigned low asm("ebx");
+ register atomic64_t *v asm("esi");
  
- #define ATOMIC64_INIT(i)	{ (i) }
+@@ -121,3 +162,29 @@ int generic_atomic64_inc_not_zero_cx8call(void)
+ EXPORT_SYMBOL(generic_atomic64_inc_not_zero_cx8call);
  
--extern long long atomic64_read(const atomic64_t *v);
--extern void	 atomic64_set(atomic64_t *v, long long i);
--extern void	 atomic64_add(long long a, atomic64_t *v);
--extern long long atomic64_add_return(long long a, atomic64_t *v);
--extern void	 atomic64_sub(long long a, atomic64_t *v);
--extern long long atomic64_sub_return(long long a, atomic64_t *v);
--extern long long atomic64_dec_if_positive(atomic64_t *v);
--extern long long atomic64_cmpxchg(atomic64_t *v, long long o, long long n);
--extern long long atomic64_xchg(atomic64_t *v, long long new);
--extern int	 atomic64_add_unless(atomic64_t *v, long long a, long long u);
-+extern long long generic_atomic64_read(const atomic64_t *v);
-+extern void	 generic_atomic64_set(atomic64_t *v, long long i);
-+extern void	 generic_atomic64_add(long long a, atomic64_t *v);
-+extern long long generic_atomic64_add_return(long long a, atomic64_t *v);
-+extern void	 generic_atomic64_sub(long long a, atomic64_t *v);
-+extern long long generic_atomic64_sub_return(long long a, atomic64_t *v);
-+extern long long generic_atomic64_dec_if_positive(atomic64_t *v);
-+extern long long generic_atomic64_cmpxchg(atomic64_t *v, long long o, long long n);
-+extern long long generic_atomic64_xchg(atomic64_t *v, long long new);
-+extern int	 generic_atomic64_add_unless(atomic64_t *v, long long a, long long u);
+ #endif /* CONFIG_X86_CMPXCHG64 */
 +
-+#define atomic64_read generic_atomic64_read
-+#define atomic64_set generic_atomic64_set
-+#define atomic64_add generic_atomic64_add
-+#define atomic64_add_return generic_atomic64_add_return
-+#define atomic64_sub generic_atomic64_sub
-+#define atomic64_sub_return generic_atomic64_sub_return
-+#define atomic64_dec_if_positive generic_atomic64_dec_if_positive
-+#define atomic64_cmpxchg generic_atomic64_cmpxchg
-+#define atomic64_xchg generic_atomic64_xchg
-+#define atomic64_add_unless generic_atomic64_add_unless
- 
- #define atomic64_add_negative(a, v)	(atomic64_add_return((a), (v)) < 0)
- #define atomic64_inc(v)			atomic64_add(1LL, (v))
-diff --git a/lib/atomic64.c b/lib/atomic64.c
-index 8bee16e..2565f63 100644
---- a/lib/atomic64.c
-+++ b/lib/atomic64.c
-@@ -16,171 +16,18 @@
- #include <linux/module.h>
- #include <asm/atomic.h>
- 
--/*
-- * We use a hashed array of spinlocks to provide exclusive access
-- * to each atomic64_t variable.  Since this is expected to used on
-- * systems with small numbers of CPUs (<= 4 or so), we use a
-- * relatively small array of 16 spinlocks to avoid wasting too much
-- * memory on the spinlock array.
-- */
--#define NR_LOCKS	16
--
--/*
-- * Ensure each lock is in a separate cacheline.
-- */
--static union {
--	spinlock_t lock;
--	char pad[L1_CACHE_BYTES];
--} atomic64_lock[NR_LOCKS] __cacheline_aligned_in_smp;
--
--static inline spinlock_t *lock_addr(const atomic64_t *v)
--{
--	unsigned long addr = (unsigned long) v;
--
--	addr >>= L1_CACHE_SHIFT;
--	addr ^= (addr >> 8) ^ (addr >> 16);
--	return &atomic64_lock[addr & (NR_LOCKS - 1)].lock;
--}
--
--long long atomic64_read(const atomic64_t *v)
--{
--	unsigned long flags;
--	spinlock_t *lock = lock_addr(v);
--	long long val;
--
--	spin_lock_irqsave(lock, flags);
--	val = v->counter;
--	spin_unlock_irqrestore(lock, flags);
--	return val;
--}
--EXPORT_SYMBOL(atomic64_read);
--
--void atomic64_set(atomic64_t *v, long long i)
--{
--	unsigned long flags;
--	spinlock_t *lock = lock_addr(v);
--
--	spin_lock_irqsave(lock, flags);
--	v->counter = i;
--	spin_unlock_irqrestore(lock, flags);
--}
--EXPORT_SYMBOL(atomic64_set);
--
--void atomic64_add(long long a, atomic64_t *v)
--{
--	unsigned long flags;
--	spinlock_t *lock = lock_addr(v);
--
--	spin_lock_irqsave(lock, flags);
--	v->counter += a;
--	spin_unlock_irqrestore(lock, flags);
--}
--EXPORT_SYMBOL(atomic64_add);
--
--long long atomic64_add_return(long long a, atomic64_t *v)
--{
--	unsigned long flags;
--	spinlock_t *lock = lock_addr(v);
--	long long val;
--
--	spin_lock_irqsave(lock, flags);
--	val = v->counter += a;
--	spin_unlock_irqrestore(lock, flags);
--	return val;
--}
--EXPORT_SYMBOL(atomic64_add_return);
--
--void atomic64_sub(long long a, atomic64_t *v)
--{
--	unsigned long flags;
--	spinlock_t *lock = lock_addr(v);
--
--	spin_lock_irqsave(lock, flags);
--	v->counter -= a;
--	spin_unlock_irqrestore(lock, flags);
--}
--EXPORT_SYMBOL(atomic64_sub);
--
--long long atomic64_sub_return(long long a, atomic64_t *v)
--{
--	unsigned long flags;
--	spinlock_t *lock = lock_addr(v);
--	long long val;
--
--	spin_lock_irqsave(lock, flags);
--	val = v->counter -= a;
--	spin_unlock_irqrestore(lock, flags);
--	return val;
--}
--EXPORT_SYMBOL(atomic64_sub_return);
--
--long long atomic64_dec_if_positive(atomic64_t *v)
--{
--	unsigned long flags;
--	spinlock_t *lock = lock_addr(v);
--	long long val;
--
--	spin_lock_irqsave(lock, flags);
--	val = v->counter - 1;
--	if (val >= 0)
--		v->counter = val;
--	spin_unlock_irqrestore(lock, flags);
--	return val;
--}
--EXPORT_SYMBOL(atomic64_dec_if_positive);
--
--long long atomic64_cmpxchg(atomic64_t *v, long long o, long long n)
--{
--	unsigned long flags;
--	spinlock_t *lock = lock_addr(v);
--	long long val;
--
--	spin_lock_irqsave(lock, flags);
--	val = v->counter;
--	if (val == o)
--		v->counter = n;
--	spin_unlock_irqrestore(lock, flags);
--	return val;
--}
--EXPORT_SYMBOL(atomic64_cmpxchg);
--
--long long atomic64_xchg(atomic64_t *v, long long new)
--{
--	unsigned long flags;
--	spinlock_t *lock = lock_addr(v);
--	long long val;
--
--	spin_lock_irqsave(lock, flags);
--	val = v->counter;
--	v->counter = new;
--	spin_unlock_irqrestore(lock, flags);
--	return val;
--}
--EXPORT_SYMBOL(atomic64_xchg);
--
--int atomic64_add_unless(atomic64_t *v, long long a, long long u)
--{
--	unsigned long flags;
--	spinlock_t *lock = lock_addr(v);
--	int ret = 1;
--
--	spin_lock_irqsave(lock, flags);
--	if (v->counter != u) {
--		v->counter += a;
--		ret = 0;
--	}
--	spin_unlock_irqrestore(lock, flags);
--	return ret;
--}
--EXPORT_SYMBOL(atomic64_add_unless);
--
--static int init_atomic64_lock(void)
--{
--	int i;
--
--	for (i = 0; i < NR_LOCKS; ++i)
--		spin_lock_init(&atomic64_lock[i].lock);
--	return 0;
--}
--
--pure_initcall(init_atomic64_lock);
-+#include <asm-generic/atomic64-impl.h>
-+
-+union generic_atomic64_lock generic_atomic64_lock[ATOMIC64_NR_LOCKS] __cacheline_aligned_in_smp;
-+pure_initcall(init_generic_atomic64_lock);
-+
-+EXPORT_SYMBOL(generic_atomic64_read);
-+EXPORT_SYMBOL(generic_atomic64_set);
-+EXPORT_SYMBOL(generic_atomic64_add);
-+EXPORT_SYMBOL(generic_atomic64_add_return);
-+EXPORT_SYMBOL(generic_atomic64_sub);
-+EXPORT_SYMBOL(generic_atomic64_sub_return);
-+EXPORT_SYMBOL(generic_atomic64_dec_if_positive);
-+EXPORT_SYMBOL(generic_atomic64_cmpxchg);
-+EXPORT_SYMBOL(generic_atomic64_xchg);
-+EXPORT_SYMBOL(generic_atomic64_add_unless);
++/* put this here because we need access to the global register variables */
++void sse_atomic64_set_cx8call(long long dummy, unsigned high)
++{
++	struct thread_info *me = current_thread_info();
++	unsigned long cr0 = 0;
++	preempt_disable();
++	percpu_write(sse_atomic64_percpu.low, low);
++	percpu_write(sse_atomic64_percpu.high, high);
++	if (!(me->status & TS_USEDFPU)) {
++		cr0 = read_cr0();
++		if (cr0 & X86_CR0_TS)
++			clts();
++	}
++	asm volatile(
++			"movlps %%xmm0, " __percpu_arg(0) "\n\t"
++			"movlps " __percpu_arg(2) ", %%xmm0\n\t"
++			"movlps %%xmm0, %1\n\t"
++			"movlps " __percpu_arg(0) ", %%xmm0\n\t"
++			    : "+m" (per_cpu__sse_atomic64_percpu.xmm0_low), "=m" (v->counter)
++			    : "m" (per_cpu__sse_atomic64_percpu.low), "m" (per_cpu__sse_atomic64_percpu.high));
++	if (cr0 & X86_CR0_TS)
++		write_cr0(cr0);
++	preempt_enable();
++}
++EXPORT_SYMBOL(sse_atomic64_set_cx8call);
 -- 
 1.6.6.1.476.g01ddb
 
