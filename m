@@ -1,95 +1,81 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756177Ab0BQUdl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 15:33:41 -0500
-Received: from arroyo.ext.ti.com ([192.94.94.40]:48871 "EHLO arroyo.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755563Ab0BQUdW convert rfc822-to-8bit (ORCPT
+	id S1756207Ab0BQUd5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 15:33:57 -0500
+Received: from eagle.jhcloos.com ([207.210.242.212]:36172 "EHLO
+	eagle.jhcloos.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755608Ab0BQUdU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 15:33:22 -0500
-From: "Gadiyar, Anand" <gadiyar@ti.com>
-To: Alan Stern <stern@rowland.harvard.edu>,
-       "Shilimkar, Santosh" <santosh.shilimkar@ti.com>
-CC: Oliver Neukum <oliver@neukum.org>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       Catalin Marinas <catalin.marinas@arm.com>, Pavel Machek <pavel@ucw.cz>,
-       Greg KH <greg@kroah.com>,
-       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Ming Lei <tom.leiming@gmail.com>,
-       Sebastian Siewior <bigeasy@linutronix.de>,
-       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       "Mankad, Maulik Ojas" <x0082077@ti.com>
-Date: Thu, 18 Feb 2010 02:00:24 +0530
-Subject: RE: USB mass storage and ARM cache coherency
-Thread-Topic: USB mass storage and ARM cache coherency
-Thread-Index: Acqv8vy8I3eMA2qDS32WjD6Fjj9dKAAHQxBB
-Message-ID: <5A47E75E594F054BAF48C5E4FC4B92AB03216236D6@dbde02.ent.ti.com>
-References: <EAF47CD23C76F840A9E7FCE10091EFAB02C3CF84D1@dbde02.ent.ti.com>,<Pine.LNX.4.44L0.1002171201190.1913-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.1002171201190.1913-100000@iolanthe.rowland.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Wed, 17 Feb 2010 15:33:20 -0500
+From: James Cloos <cloos@jhcloos.com>
+To: linux-kernel@vger.kernel.org
+Cc: Chris Mason <chris.mason@oracle.com>, linux-fsdevel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, linux-btrfs@vger.kernel.org,
+       jfs-discussion@lists.sourceforge.net
+Subject: Re: [Regression] Filesystem I/O is CPU-bound in rc7 and rc8
+In-Reply-To: <20100215154516.GB11057@think> (Chris Mason's message of "Mon, 15
+	Feb 2010 10:45:16 -0500")
+References: <m3pr48bjfg.fsf@lugabout.jhcloos.org>
+	<20100215154516.GB11057@think>
+User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1.90 (gnu/linux)
+Face: iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAI1J
+ REFUOE+lU9ESgCAIg64P1y+ngUdxhl5H8wFbbM0OmUiEhKkCYaZThXCo6KE5sCbA1DDX3genvO4d
+ eBQgEMaM5qy6uWk4SfBYfdu9jvBN9nSVDOKRtwb+I3epboOsOX5pZbJNsBJFvmQQ05YMfieIBnYX
+ FK2N6dOawd97r/e8RjkTLzmMsiVgrAoEugtviCM3v2WzjgAAAABJRU5ErkJggg==
+Copyright: Copyright 2009 James Cloos
+OpenPGP: ED7DAEA6; url=http://jhcloos.com/public_key/0xED7DAEA6.asc
+OpenPGP-Fingerprint: E9E9 F828 61A4 6EA9 0F2B  63E7 997A 9F17 ED7D AEA6
+Date: Wed, 17 Feb 2010 15:04:47 -0500
+Message-ID: <m3d403632g.fsf@lugabout.jhcloos.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Hashcash: 1:30:100217:linux-kernel@vger.kernel.org::9wKRocalT3ml6/L3:00000000000000000000000000000000N0/D5
+X-Hashcash: 1:30:100217:chris.mason@oracle.com::D0eS2HWCAq80kvij:00000000000000000000000000000000000000kh6tu
+X-Hashcash: 1:30:100217:linux-fsdevel@vger.kernel.org::OXsIaHfDiNyZtSp4:0000000000000000000000000000000b8xIu
+X-Hashcash: 1:30:100217:linux-ext4@vger.kernel.org::VCP6TJOl3VG/cVa+:00000000000000000000000000000000002sRgg
+X-Hashcash: 1:30:100217:linux-btrfs@vger.kernel.org::2ZrIyOD1s6TAYF43:000000000000000000000000000000000HPknZ
+X-Hashcash: 1:30:100217:jfs-discussion@lists.sourceforge.net::nGi/6QFCpY1z/QRr:000000000000000000000000b5KpC
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Stern wrote:
-> On Wed, 17 Feb 2010, Shilimkar, Santosh wrote:
-> 
-> > How about below approach? Controller driver can set
-> > "uses_pio_for_control" if it can't do dma for control transfer.
-> >
-> > diff --git a/drivers/usb/core/hcd.c b/drivers/usb/core/hcd.c
-> > index 80995ef..e3eae02 100644
-> > --- a/drivers/usb/core/hcd.c
-> > +++ b/drivers/usb/core/hcd.c
-> > @@ -1276,7 +1276,7 @@ static int map_urb_for_dma(struct usb_hcd *hcd, struct urb *urb,
-> >
-> >       if (usb_endpoint_xfer_control(&urb->ep->desc)
-> >           && !(urb->transfer_flags & URB_NO_SETUP_DMA_MAP)) {
-> > -             if (hcd->self.uses_dma) {
-> > +             if (hcd->self.uses_dma && !hcd->self.uses_pio_for_control) {
-> >                       urb->setup_dma = dma_map_single(
-> >                                       hcd->self.controller,
-> >                                       urb->setup_packet,
-> > @@ -1335,7 +1335,7 @@ static void unmap_urb_for_dma(struct usb_hcd *hcd, struct urb *urb)
-> >
-> >       if (usb_endpoint_xfer_control(&urb->ep->desc)
-> >           && !(urb->transfer_flags & URB_NO_SETUP_DMA_MAP)) {
-> > -             if (hcd->self.uses_dma)
-> > +             if (hcd->self.uses_dma && !hcd->self.uses_pio_for_control)
-> >                       dma_unmap_single(hcd->self.controller, urb->setup_dma,
-> >                                       sizeof(struct usb_ctrlrequest),
-> >                                       DMA_TO_DEVICE);
-> > diff --git a/include/linux/usb.h b/include/linux/usb.h
-> > index d7ace1b..ba5b0a2 100644
-> > --- a/include/linux/usb.h
-> > +++ b/include/linux/usb.h
-> > @@ -329,6 +329,9 @@ struct usb_bus {
-> >       int busnum;                     /* Bus number (in order of reg) */
-> >       const char *bus_name;           /* stable id (PCI slot_name etc) */
-> >       u8 uses_dma;                    /* Does the host controller use DMA? */
-> > +     u8 uses_pio_for_control;        /* Does the host controller use PIO
-> > +                                      * for control tansfers?
-> > +                                      */
-> >       u8 otg_port;                    /* 0, or number of OTG/HNP port */
-> >       unsigned is_b_host:1;           /* true during some HNP roleswitches */
-> >       unsigned b_hnp_enable:1;        /* OTG: did A-Host enable HNP? */
-> 
-> Why do you skip mapping the setup packet but not the data packet?
-> 
+While getting re-aquainted with perf, and after upgrading to the current
+version, I see that do_page_fault, unmap_vmas, get_page_from_freelist,
+handle_mm_fault, __do_fault and T.1339 tend to get the most time when the
+kernel is spinning.
 
-I think that's oversight. For this controller, we need to skip mapping
-all buffers used to do transfers on EP0, which is all control transfers.
+T.1339 is in this part of kallsyms:
 
-Will fix in the next version of the patch.
+,----< grep -E -C9 ^c1027750 /proc/kallsyms >
+| c10266a0 T sched_setscheduler_nocheck
+| c10266c0 T sched_setscheduler
+| c10266e0 t do_sched_setscheduler
+| c1026770 T sys_sched_setparam
+| c1026790 T sys_sched_setscheduler
+| c10267c0 T sched_fork
+| c1026900 T task_oncpu_function_call
+| c1026960 T print_cfs_rq
+| c1027640 T scheduler_tick
+| c1027750 t T.1339
+| c10277f0 T schedule_tail
+| c1027830 t ftrace_raw_output_sched_kthread_stop
+| c1027930 t ftrace_raw_output_sched_kthread_stop_ret
+| c1027a30 t ftrace_raw_output_sched_wait_task
+| c1027b40 t ftrace_raw_output_sched_switch
+| c1027c90 t ftrace_raw_output_sched_migrate_task
+| c1027da0 t ftrace_raw_output_sched_process_wait
+| c1027eb0 t ftrace_raw_output_sched_process_fork
+| c1027fc0 t ftrace_raw_output_sched_stat_runtime
+`----
 
-- Anand
+suggesting that T.1339 is part of sched.
+
+This leaves the impression that the issue is related to either
+scheduling or paging.
+
+I don't see any commits in the rc6..rc7 timeframe which stand out
+as likely suspects.
+
+-JimC
+-- 
+James Cloos <cloos@jhcloos.com>         OpenPGP: 1024D/ED7DAEA6
