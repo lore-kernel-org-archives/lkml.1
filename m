@@ -1,88 +1,59 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934051Ab0BQEaW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 23:30:22 -0500
-Received: from thunk.org ([69.25.196.29]:38477 "EHLO thunker.thunk.org"
+	id S934072Ab0BQE4E (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 23:56:04 -0500
+Received: from kroah.org ([198.145.64.141]:51947 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934026Ab0BQEaV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 23:30:21 -0500
-Date: Tue, 16 Feb 2010 23:30:09 -0500
-From: tytso@mit.edu
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jan Kara <jack@suse.cz>, Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, jengelh@medozas.de,
-       stable@kernel.org, gregkh@suse.de
-Subject: Re: [PATCH] writeback: Fix broken sync writeback
-Message-ID: <20100217043009.GZ5337@thunk.org>
-Mail-Followup-To: tytso@mit.edu,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Jan Kara <jack@suse.cz>, Jens Axboe <jens.axboe@oracle.com>,
-	Linux Kernel <linux-kernel@vger.kernel.org>, jengelh@medozas.de,
-	stable@kernel.org, gregkh@suse.de
-References: <20100212091609.GB1025@kernel.dk>
- <alpine.LFD.2.00.1002120722270.7792@localhost.localdomain>
- <20100215141750.GC3434@quack.suse.cz>
- <alpine.LFD.2.00.1002151601360.18830@localhost.localdomain>
- <20100216230017.GJ3153@quack.suse.cz>
- <alpine.LFD.2.00.1002161524210.4141@localhost.localdomain>
- <20100217013336.GK3153@quack.suse.cz>
- <alpine.LFD.2.00.1002161848370.4141@localhost.localdomain>
+	id S934060Ab0BQEz6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 23:55:58 -0500
+Date: Tue, 16 Feb 2010 20:56:16 -0800
+From: Greg KH <greg@kroah.com>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: linux-next: build failure after merge of the driver-core tree
+Message-ID: <20100217045616.GA2923@kroah.com>
+References: <20100216173926.b7a4d25c.sfr@canb.auug.org.au> <20100216100100.55f5922f@hyperion.delvare>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.1002161848370.4141@localhost.localdomain>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+In-Reply-To: <20100216100100.55f5922f@hyperion.delvare>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 16, 2010 at 07:35:35PM -0800, Linus Torvalds wrote:
-> >   writeback_single_inode()
-> >     ...writes 1024 pages.
-> >     if we haven't written everything in the inode (more than 1024 dirty
-> >     pages) we end up doing either requeue_io() or redirty_tail(). In the
-> >     first case the inode is put to b_more_io list, in the second case to
-> >     the tail of b_dirty list. In either case it will not receive further
-> >     writeout until we go through all other members of current b_io list.
-> > 
-> >   So I claim we currently *do* switch to another inode after 4 MB. That
-> > is a fact.
+On Tue, Feb 16, 2010 at 10:01:00AM +0100, Jean Delvare wrote:
+> Hi Stephen,
 > 
-> Ok, I think that's the bug. I do agree that it may well be intentional, 
-> but considering the performance impact, I suspect it's been "intentional 
-> without any performance numbers".
+> On Tue, 16 Feb 2010 17:39:26 +1100, Stephen Rothwell wrote:
+> > After merging the driver-core tree, today's linux-next build (x86_64
+> > allmodconfig) failed like this:
+> > 
+> > drivers/i2c/i2c-smbus.c:58: error: 'struct device' has no member named 'sem'
+> > drivers/i2c/i2c-smbus.c:66: error: 'struct device' has no member named 'sem'
+> > 
+> > Caused by commit 0819a881db29059d113fc5f019f7c489dea5937d from the
+> > driver-core tree interacting with commit
+> > 38f1e8aedf0a238d56fbcd3660fc140b50dbc89a ("i2c: Add SMBus alert support")
+> > from the i2c tree.
+> > 
+> > I have applied the following patch for today and will use it as a merge
+> > fixup for the driver-core tree while necessary.
+> 
+> Thanks for the heads up and the fix. Greg, is there an API I am
+> supposed to use instead of accessing the device's semaphore/mutex
+> directly?
 
-This is well known amongst file system developers.  We've even raised
-it from time to time, but apparently most people are too scared to
-touch the writeback code.  I proposed upping the limit some six months
-ago, but I got serious pushback.  As a result, I followed XFS's lead,
-and so now, both XFS and ext4 will write more pages than what is
-requested by the writeback logic, to work around this bug.....
+I will create a device_lock() and device_unlock() api to solve this
+problem.  That will fix the issue for when we try to change this from a
+semaphore to a mutex (like the patch in linux-next does), but we need to
+revert it due to lockdep issues that are being reported incorrectly.
 
-What we really want to do is to time how fast the device is.  If the
-device is some Piece of Sh*t USB stick, then maybe you only want to
-write 4MB at a time to avoid latency problems.  Heck, maybe you only
-want to write 32k at a time, if it's really slow....  But if it's some
-super-fast RAID array, maybe you want to write a lot more than 4MB at
-a time.
+For now, your code is fine, I'll change over your code in the .34 tree
+when the new api goes in.  I'll also drop this mutex patch in a day as
+well, because of the problems it has caused.
 
-We've had this logic for a long time, and given the increase in disk
-density, and spindle speeds, the 4MB limit, which might have made
-sense 10 years ago, probably doesn't make sense now.
+thanks,
 
-> If it's bad for synchronous syncs, then it's bad for background syncing 
-> too, and I'd rather get rid of the MAX_WRITEBACK_PAGES thing entirely - 
-> since the whole latency argument goes away if we don't always honor it 
-> ("Oh, we have good latency - _except_ if you do 'sync()' to synchronously 
-> write something out" - that's just insane).
-
-I tried arguing for this six months ago, and got the argument that it
-might cause latency problems on slow USB sticks.  So I added a forced
-override for ext4, which now writes 128MB at a time --- with a sysfs
-tuning knob that allow the old behaviour to be restored if users
-really complained.  No one did actually complain....
-
-						- Ted
+greg k-h
