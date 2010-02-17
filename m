@@ -1,179 +1,64 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751458Ab0BQPlz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 10:41:55 -0500
-Received: from compulab.co.il ([67.18.134.219]:50375 "EHLO compulab.co.il"
+	id S1752416Ab0BQPlr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 10:41:47 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:44853 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750931Ab0BQPlq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 10:41:46 -0500
-Message-ID: <4B7C0E5D.3070909@compulab.co.il>
-Date: Wed, 17 Feb 2010 17:42:21 +0200
-From: Denis Turischev <denis@compulab.co.il>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	id S1750786Ab0BQPlo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 10:41:44 -0500
+Date: Wed, 17 Feb 2010 16:40:41 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, Roland McGrath <roland@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] x86: set_personality_ia32() abuses TS_COMPAT
+Message-ID: <20100217154041.GA7446@redhat.com>
+References: <4B799C3F.7010308@zytor.com> <20100215194123.96D49FC3@magilla.sf.frob.com> <4B79B202.5090006@zytor.com> <20100216101903.GA1057@redhat.com> <20100216102332.GL21783@one.firstfloor.org> <20100216140126.GA16448@redhat.com> <20100216140242.GC16448@redhat.com> <alpine.LFD.2.00.1002160738530.18830@localhost.localdomain> <20100216174437.GA28323@redhat.com> <4B7ADB07.1050500@zytor.com>
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-CC: Samuel Ortiz <sameo@linux.intel.com>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Jean Delvare <khali@linux-fr.org>, linux-i2c@vger.kernel.org,
-       Mike Rapoport <mike@compulab.co.il>
-Subject: [PATCH v2 2/3] i2c: convert i2c-isch to platform_device
-References: <4B73DAEE.5080400@compulab.co.il> <4B73DBB2.7020601@compulab.co.il>
-In-Reply-To: <4B73DBB2.7020601@compulab.co.il>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-ACL-Warn: {
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - compulab.site5.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - compulab.co.il
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B7ADB07.1050500@zytor.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-acpi_check_region will be implemented in mfd-core, therefore v2 version avoids
-this check
+On 02/16, H. Peter Anvin wrote:
+>
+> On 02/16/2010 09:44 AM, Oleg Nesterov wrote:
+> >
+> > and, following this logic, shouldn't set_personality_64bit() clear
+> > TS_COMPAT ?
+>
+> It's quite possible it should... I haven't dug into if that isn't either
+> done elsewhere or isn't done for some other reason.  This would be worth
+> looking into.
 
-Signed-off-by: Denis Turischev <denis@compulab.co.il>
+OK. This was another source of confusion for me...
 
---- linux-2.6.33-rc7.orig/drivers/i2c/busses/i2c-isch.c	2010-02-07 00:17:12.000000000 +0200
-+++ linux-2.6.33-rc7/drivers/i2c/busses/i2c-isch.c	2010-02-17 17:08:53.000000000 +0200
-@@ -27,7 +27,7 @@
-  */
+> > OK, in any case I do not claim we need fixes. Just I am confused.
+>
+> Trying to understand the code is good.  However, you seem to have
+> started out with a point of view that we should have the minimal set of
+> state changes possible
 
-  #include <linux/module.h>
--#include <linux/pci.h>
-+#include <linux/platform_device.h>
-  #include <linux/kernel.h>
-  #include <linux/delay.h>
-  #include <linux/stddef.h>
-@@ -46,12 +46,6 @@
-  #define SMBHSTDAT1	(7 + sch_smba)
-  #define SMBBLKDAT	(0x20 + sch_smba)
+Well, I must admit... the only point of this patch was "please change
+your code so that I could convince myself I understand what it does" ;)
 
--/* count for request_region */
--#define SMBIOSIZE	64
--
--/* PCI Address Constants */
--#define SMBBA_SCH	0x40
--
-  /* Other settings */
-  #define MAX_TIMEOUT	500
+> instead of keeping state as self-consistent as
+> possible.  Invariants are a Very Good Thing.  Documented invariants are
+> even better ;)
 
-@@ -63,7 +57,6 @@
-  #define SCH_BLOCK_DATA		0x05
+Agreed! But to me it looks as if TS_COMPAT breaks invariants.
+In particular, because set_personality_64bit() didn't clear this flag.
 
-  static unsigned short sch_smba;
--static struct pci_driver sch_driver;
-  static struct i2c_adapter sch_adapter;
 
-  /*
-@@ -256,37 +249,23 @@
-  	.algo		= &smbus_algorithm,
-  };
+Anyway. At least I can assume there is no "hard" reason to set this
+bit currently, and this was my main question.
 
--static struct pci_device_id sch_ids[] = {
--	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_SCH_LPC) },
--	{ 0, }
--};
--
--MODULE_DEVICE_TABLE(pci, sch_ids);
--
--static int __devinit sch_probe(struct pci_dev *dev,
--				const struct pci_device_id *id)
-+static int __devinit smbus_sch_probe(struct platform_device *dev)
-  {
-+	struct resource *res;
-  	int retval;
--	unsigned int smba;
+Thanks to all for your explanations!
 
--	pci_read_config_dword(dev, SMBBA_SCH, &smba);
--	if (!(smba & (1 << 31))) {
--		dev_err(&dev->dev, "SMBus I/O space disabled!\n");
--		return -ENODEV;
--	}
-+	res = platform_get_resource(dev, IORESOURCE_IO, 0);
-+	if (!res)
-+		return -EBUSY;
+Oleg.
 
--	sch_smba = (unsigned short)smba;
--	if (sch_smba == 0) {
--		dev_err(&dev->dev, "SMBus base address uninitialized!\n");
--		return -ENODEV;
--	}
--	if (acpi_check_region(sch_smba, SMBIOSIZE, sch_driver.name))
--		return -ENODEV;
--	if (!request_region(sch_smba, SMBIOSIZE, sch_driver.name)) {
-+	if (!request_region(res->start, resource_size(res), dev->name)) {
-  		dev_err(&dev->dev, "SMBus region 0x%x already in use!\n",
-  			sch_smba);
-  		return -EBUSY;
-  	}
-+
-+	sch_smba = res->start;
-+
-  	dev_dbg(&dev->dev, "SMBA = 0x%X\n", sch_smba);
-
-  	/* set up the sysfs linkage to our parent device */
-@@ -298,37 +277,43 @@
-  	retval = i2c_add_adapter(&sch_adapter);
-  	if (retval) {
-  		dev_err(&dev->dev, "Couldn't register adapter!\n");
--		release_region(sch_smba, SMBIOSIZE);
-+		release_region(res->start, resource_size(res));
-  		sch_smba = 0;
-  	}
-
-  	return retval;
-  }
-
--static void __devexit sch_remove(struct pci_dev *dev)
-+static int __devexit smbus_sch_remove(struct platform_device *pdev)
-  {
-+	struct resource *res;
-  	if (sch_smba) {
-  		i2c_del_adapter(&sch_adapter);
--		release_region(sch_smba, SMBIOSIZE);
-+		res = platform_get_resource(pdev, IORESOURCE_IO, 0);
-+		release_region(res->start, resource_size(res));
-  		sch_smba = 0;
-  	}
-+
-+	return 0;
-  }
-
--static struct pci_driver sch_driver = {
--	.name		= "isch_smbus",
--	.id_table	= sch_ids,
--	.probe		= sch_probe,
--	.remove		= __devexit_p(sch_remove),
-+static struct platform_driver smbus_sch_driver = {
-+	.driver = {
-+		.name = "isch_smbus",
-+		.owner = THIS_MODULE,
-+	},
-+	.probe		= smbus_sch_probe,
-+	.remove		= __devexit_p(smbus_sch_remove),
-  };
-
-  static int __init i2c_sch_init(void)
-  {
--	return pci_register_driver(&sch_driver);
-+	return platform_driver_register(&smbus_sch_driver);
-  }
-
-  static void __exit i2c_sch_exit(void)
-  {
--	pci_unregister_driver(&sch_driver);
-+	platform_driver_unregister(&smbus_sch_driver);
-  }
-
-  MODULE_AUTHOR("Jacob Pan <jacob.jun.pan@intel.com>");
-@@ -337,3 +322,4 @@
-
-  module_init(i2c_sch_init);
-  module_exit(i2c_sch_exit);
-+MODULE_ALIAS("platform:isch_smbus");
