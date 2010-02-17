@@ -1,110 +1,200 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756453Ab0BQL5s (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 06:57:48 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:49429 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752873Ab0BQL5r (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 06:57:47 -0500
-Date: Wed, 17 Feb 2010 12:57:41 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: "Nikita V. Youshchenko" <yoush@cs.msu.su>,
-       Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Extended error reporting to user space?
-Message-ID: <20100217115741.GP21783@one.firstfloor.org>
-References: <201002161520.26700@zigzag.lvk.cs.msu.su> <87r5ok5gl2.fsf@basil.nowhere.org> <201002171316.49165@zigzag.lvk.cs.msu.su> <20100217104343.0a1d6813@lxorguk.ukuu.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1756888Ab0BQMKn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 07:10:43 -0500
+Received: from hera.kernel.org ([140.211.167.34]:48189 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753043Ab0BQMKl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 07:10:41 -0500
+Date: Wed, 17 Feb 2010 12:09:51 GMT
+From: tip-bot for Li Zefan <lizf@cn.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       rostedt@goodmis.org, lizf@cn.fujitsu.com, tglx@linutronix.de
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       lizf@cn.fujitsu.com, rostedt@goodmis.org, tglx@linutronix.de
+In-Reply-To: <4B726388.2000408@cn.fujitsu.com>
+References: <4B726388.2000408@cn.fujitsu.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:tracing/core] ftrace: Allow to remove a single function from function graph filter
+Message-ID: <tip-c7c6b1fe9f942c1a30585ec2210a09dfff238506@git.kernel.org>
+Git-Commit-ID: c7c6b1fe9f942c1a30585ec2210a09dfff238506
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20100217104343.0a1d6813@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.4.2.2i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 17 Feb 2010 12:09:55 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alan,
+Commit-ID:  c7c6b1fe9f942c1a30585ec2210a09dfff238506
+Gitweb:     http://git.kernel.org/tip/c7c6b1fe9f942c1a30585ec2210a09dfff238506
+Author:     Li Zefan <lizf@cn.fujitsu.com>
+AuthorDate: Wed, 10 Feb 2010 15:43:04 +0800
+Committer:  Steven Rostedt <rostedt@goodmis.org>
+CommitDate: Thu, 11 Feb 2010 14:32:38 -0500
 
-> Thats probably overkill. For almost any ioctl type interface the only
-> thing you *need* to make more sense is the address of the field that was
-> deemed invalid.
+ftrace: Allow to remove a single function from function graph filter
 
-Take a look at all the return -EINVALs in net/sched/sch_cbq.c
-and then tell me if you really still believe just knowing the field
-is enough to diagnose those. A common issue for example
-is if it depends on the current state somehow.
+I don't see why we can only clear all functions from the filter.
 
-> actually help application code or particularly help interpreters to dig
-> into the detail and act themselves to fix a problem or understand it. It
-> also costs material amounts of unswappable memory and also disk storage
-> for the kernel image on embedded devices.
+After patching:
 
-Trading developer time for a few bytes saved is exactly the wrong
-tradeoff, even on a small system.  In principle it could be CONFIGed
-of course, but I suspect it wouldn't be worth it (especially
-compared to all the other bloat)
+  # echo sys_open > set_graph_function
+  # echo sys_close >> set_graph_function
+  # cat set_graph_function
+  sys_open
+  sys_close
+  # echo '!sys_close' >> set_graph_function
+  # cat set_graph_function
+  sys_open
 
-> 
-> Two other problems text returns bring up or ambiguity and translations -
-> its almost impossible to keep them unique even within a big module. It's
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+LKML-Reference: <4B726388.2000408@cn.fujitsu.com>
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+---
+ kernel/trace/ftrace.c |   51 +++++++++++++++++++++++++++++-------------------
+ kernel/trace/trace.h  |    3 +-
+ 2 files changed, 33 insertions(+), 21 deletions(-)
 
-For translations the "pragmatic text database" works reasonably well
-I think. Also you don't necessarily need them to be unique 
-(if the english string is not unique, why would the translation need to be?)
-
-Sure text won't solve all problems either, but it's infinitely 
-better than EINVAL.
-
-
-> also possible to get things like typos in the returned text or
-> mis-spellings that you then can't fix because some other app now has
-> 
-> 	if (strcmp(returned_err, "No such wombat evalueted")==0) {
-> 		...
-> 	}
-> 
-> in it. (HTTP 'referer' being a dark warning from history ...)
-
-You could get numbers wrong too. There's really no cure against
-that.
-
-But yes it's a good point -- would need to make sure that the spelling
-police would direct their efforts elsewhere as much as possible.
-
-
-> 
-> A lot of other systems keep message catalogues often indexed by
-> module:error. Text lookups in userspace (easy to do with existing
-> interfaces), and the OS providing generic, specific, and identifying
-> module info.
-
-That's the IBM approach. I have some doubts it would really work
-for a distributed environment like Linux. I believe it has been
-even tried already (e.g. there's a Japanese project for such
-a catalog). I don't think it works that well.
-
-I think i would prefer just text strings. In principle one
-could still develop a convention inside them though.
-
-> 
-> I guess the Linux extension to that would end up as
-> 
-> 	extended_error(&foo->wombats, E_NOT_A_VALID_BREEDING_POPULATION);
-> 
-> and internally expand to include THIS_MODULE and extract the module name.
-
-Hmm, yes including the module might be reasonable.
-
-> There's another related problem here too - Unix style errors lack the
-> ability of some OS systems to report "It worked but ....." which leads to
-> interface oddities like termios where it reports "Ok" but you have to
-> inpsect the returned structure to see if you got what you requested.
-
-I suspect that's better solved in some way specific to that call.
-I don't think it's all that common anyways.
-
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+index 7968762..43bec99 100644
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -2426,6 +2426,7 @@ static const struct file_operations ftrace_notrace_fops = {
+ static DEFINE_MUTEX(graph_lock);
+ 
+ int ftrace_graph_count;
++int ftrace_graph_filter_enabled;
+ unsigned long ftrace_graph_funcs[FTRACE_GRAPH_MAX_FUNCS] __read_mostly;
+ 
+ static void *
+@@ -2448,7 +2449,7 @@ static void *g_start(struct seq_file *m, loff_t *pos)
+ 	mutex_lock(&graph_lock);
+ 
+ 	/* Nothing, tell g_show to print all functions are enabled */
+-	if (!ftrace_graph_count && !*pos)
++	if (!ftrace_graph_filter_enabled && !*pos)
+ 		return (void *)1;
+ 
+ 	return __g_next(m, pos);
+@@ -2494,6 +2495,7 @@ ftrace_graph_open(struct inode *inode, struct file *file)
+ 	mutex_lock(&graph_lock);
+ 	if ((file->f_mode & FMODE_WRITE) &&
+ 	    (file->f_flags & O_TRUNC)) {
++		ftrace_graph_filter_enabled = 0;
+ 		ftrace_graph_count = 0;
+ 		memset(ftrace_graph_funcs, 0, sizeof(ftrace_graph_funcs));
+ 	}
+@@ -2519,7 +2521,7 @@ ftrace_set_func(unsigned long *array, int *idx, char *buffer)
+ 	struct dyn_ftrace *rec;
+ 	struct ftrace_page *pg;
+ 	int search_len;
+-	int found = 0;
++	int fail = 1;
+ 	int type, not;
+ 	char *search;
+ 	bool exists;
+@@ -2530,37 +2532,51 @@ ftrace_set_func(unsigned long *array, int *idx, char *buffer)
+ 
+ 	/* decode regex */
+ 	type = filter_parse_regex(buffer, strlen(buffer), &search, &not);
+-	if (not)
+-		return -EINVAL;
++	if (!not && *idx >= FTRACE_GRAPH_MAX_FUNCS)
++		return -EBUSY;
+ 
+ 	search_len = strlen(search);
+ 
+ 	mutex_lock(&ftrace_lock);
+ 	do_for_each_ftrace_rec(pg, rec) {
+ 
+-		if (*idx >= FTRACE_GRAPH_MAX_FUNCS)
+-			break;
+-
+ 		if (rec->flags & (FTRACE_FL_FAILED | FTRACE_FL_FREE))
+ 			continue;
+ 
+ 		if (ftrace_match_record(rec, search, search_len, type)) {
+-			/* ensure it is not already in the array */
++			/* if it is in the array */
+ 			exists = false;
+-			for (i = 0; i < *idx; i++)
++			for (i = 0; i < *idx; i++) {
+ 				if (array[i] == rec->ip) {
+ 					exists = true;
+ 					break;
+ 				}
+-			if (!exists)
+-				array[(*idx)++] = rec->ip;
+-			found = 1;
++			}
++
++			if (!not) {
++				fail = 0;
++				if (!exists) {
++					array[(*idx)++] = rec->ip;
++					if (*idx >= FTRACE_GRAPH_MAX_FUNCS)
++						goto out;
++				}
++			} else {
++				if (exists) {
++					array[i] = array[--(*idx)];
++					array[*idx] = 0;
++					fail = 0;
++				}
++			}
+ 		}
+ 	} while_for_each_ftrace_rec();
+-
++out:
+ 	mutex_unlock(&ftrace_lock);
+ 
+-	return found ? 0 : -EINVAL;
++	if (fail)
++		return -EINVAL;
++
++	ftrace_graph_filter_enabled = 1;
++	return 0;
+ }
+ 
+ static ssize_t
+@@ -2570,16 +2586,11 @@ ftrace_graph_write(struct file *file, const char __user *ubuf,
+ 	struct trace_parser parser;
+ 	ssize_t read, ret;
+ 
+-	if (!cnt || cnt < 0)
++	if (!cnt)
+ 		return 0;
+ 
+ 	mutex_lock(&graph_lock);
+ 
+-	if (ftrace_graph_count >= FTRACE_GRAPH_MAX_FUNCS) {
+-		ret = -EBUSY;
+-		goto out_unlock;
+-	}
+-
+ 	if (trace_parser_get_init(&parser, FTRACE_BUFF_MAX)) {
+ 		ret = -ENOMEM;
+ 		goto out_unlock;
+diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+index ce077fb..b477fce 100644
+--- a/kernel/trace/trace.h
++++ b/kernel/trace/trace.h
+@@ -497,6 +497,7 @@ trace_print_graph_duration(unsigned long long duration, struct trace_seq *s);
+ #ifdef CONFIG_DYNAMIC_FTRACE
+ /* TODO: make this variable */
+ #define FTRACE_GRAPH_MAX_FUNCS		32
++extern int ftrace_graph_filter_enabled;
+ extern int ftrace_graph_count;
+ extern unsigned long ftrace_graph_funcs[FTRACE_GRAPH_MAX_FUNCS];
+ 
+@@ -504,7 +505,7 @@ static inline int ftrace_graph_addr(unsigned long addr)
+ {
+ 	int i;
+ 
+-	if (!ftrace_graph_count)
++	if (!ftrace_graph_filter_enabled)
+ 		return 1;
+ 
+ 	for (i = 0; i < ftrace_graph_count; i++) {
