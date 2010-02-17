@@ -1,159 +1,80 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754451Ab0BQWUU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 17:20:20 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:46154 "EHLO ogre.sisk.pl"
+	id S1757377Ab0BQWVB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 17:21:01 -0500
+Received: from ozlabs.org ([203.10.76.45]:40525 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753154Ab0BQWUT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 17:20:19 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pedro Ribeiro <pedrib@gmail.com>
-Subject: Re: 2.6.33-rc8 regression on i915: resume from hibernate locks up every 2nd time
-Date: Wed, 17 Feb 2010 23:20:57 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.33-rc8-rjw; KDE/4.3.5; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, dri-devel@lists.sourceforge.net
-References: <74fd948d1002171047g70d2bba0l957e264dfbc8ea23@mail.gmail.com> <201002172152.39255.rjw@sisk.pl> <74fd948d1002171410l5688c3dfy125ac5c7e80ad1a1@mail.gmail.com>
-In-Reply-To: <74fd948d1002171410l5688c3dfy125ac5c7e80ad1a1@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201002172320.57491.rjw@sisk.pl>
+	id S1753355Ab0BQWVA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 17:21:00 -0500
+From: Michael Neuling <mikey@neuling.org>
+To: Peter Zijlstra <peterz@infradead.org>
+cc: Joel Schopp <jschopp@austin.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+       ego@in.ibm.com
+Subject: Re: [PATCHv4 2/2] powerpc: implement arch_scale_smt_power for Power7
+In-reply-to: <1266142340.5273.418.camel@laptop>
+References: <1264017638.5717.121.camel@jschopp-laptop> <1264017847.5717.132.camel@jschopp-laptop> <1264548495.12239.56.camel@jschopp-laptop> <1264720855.9660.22.camel@jschopp-laptop> <1264721088.10385.1.camel@jschopp-laptop> <1265403478.6089.41.camel@jschopp-laptop> <1266142340.5273.418.camel@laptop>
+Comments: In-reply-to Peter Zijlstra <peterz@infradead.org>
+   message dated "Sun, 14 Feb 2010 11:12:20 +0100."
+X-Mailer: MH-E 8.2; nmh 1.3; GNU Emacs 23.1.1
+Date: Thu, 18 Feb 2010 09:20:58 +1100
+Message-ID: <25851.1266445258@neuling.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 17 February 2010, Pedro Ribeiro wrote:
-> 2010/2/17 Rafael J. Wysocki <rjw@sisk.pl>:
-> > On Wednesday 17 February 2010, Rafael J. Wysocki wrote:
-> >> On Wednesday 17 February 2010, Pedro Ribeiro wrote:
-> >> > Hi,
-> >> >
-> >> > commit 84b79f8d2882b0a84330c04839ed4d3cefd2ff77 (drm/i915: Fix crash
-> >> > while aborting hibernation) introduced two new issues which were not
-> >> > present in 2.6.33-rc7:
-> >> >
-> >> > - every second resume from hibernate results in a blank screen
-> >> > - the annoying flash at the end of atomic copy/restore during the
-> >> > hibernate process is back (present in kernels < 2.6.33)
-> >> >
-> >> > The first issue is serious, the second is just an annoyance.
-> >>
-> >> The second one is an expected price of fixing the aborted hibernation
-> >> regression.
-> >>
-> >> The first one shouldn't happen, though.
-> >>
-> >> I'll see if I can reproduce that locally.
-> >
-> > No, I can't.
-> >
-> > Is the driver compiled directly into the kernel or modular?
+> Suppose for a moment we have 2 threads (hot-unplugged thread 1 and 3, we
+> can construct an equivalent but more complex example for 4 threads), and
+> we have 4 tasks, 3 SCHED_OTHER of equal nice level and 1 SCHED_FIFO, the
+> SCHED_FIFO task will consume exactly 50% walltime of whatever cpu it
+> ends up on.
 > 
-> The driver is modular.
-> And sorry, I forgot to tell you I'm using TuxOnIce, it certainly makes
-> a difference.
+> In that situation, provided that each cpu's cpu_power is of equal
+> measure, scale_rt_power() ensures that we run 2 SCHED_OTHER tasks on the
+> cpu that doesn't run the RT task, and 1 SCHED_OTHER task next to the RT
+> task, so that each task consumes 50%, which is all fair and proper.
+> 
+> However, if you do the above, thread 0 will have +75% = 1.75 and thread
+> 2 will have -75% = 0.25, then if the RT task will land on thread 0,
+> we'll be having: 0.875 vs 0.25, or on thread 3, 1.75 vs 0.125. In either
+> case thread 0 will receive too many (if not all) SCHED_OTHER tasks.
+> 
+> That is, unless these threads 2 and 3 really are _that_ weak, at which
+> point one wonders why IBM bothered with the silicon ;-)
 
-It shouldn't in fact, although I'm not sure.
+Peter,
 
-> However, every since I reverted that commit I've done 10 test
-> hibernations and no hang so far.
+2 & 3 aren't weaker than 0 & 1 but.... 
 
-First, please try if you can reproduce it with non-modular driver.
+The core has dynamic SMT mode switching which is controlled by the
+hypervisor (IBM's PHYP).  There are 3 SMT modes:
+	SMT1 uses thread  0
+	SMT2 uses threads 0 & 1
+	SMT4 uses threads 0, 1, 2 & 3
+When in any particular SMT mode, all threads have the same performance
+as each other (ie. at any moment in time, all threads perform the same).  
 
-Second, please check if the appended patch helps.
+The SMT mode switching works such that when linux has threads 2 & 3 idle
+and 0 & 1 active, it will cede (H_CEDE hypercall) threads 2 and 3 in the
+idle loop and the hypervisor will automatically switch to SMT2 for that
+core (independent of other cores).  The opposite is not true, so if
+threads 0 & 1 are idle and 2 & 3 are active, we will stay in SMT4 mode.
 
-Rafael
+Similarly if thread 0 is active and threads 1, 2 & 3 are idle, we'll go
+into SMT1 mode.  
 
----
- drivers/gpu/drm/i915/i915_drv.c |   30 +++++++++---------------------
- 1 file changed, 9 insertions(+), 21 deletions(-)
+If we can get the core into a lower SMT mode (SMT1 is best), the threads
+will perform better (since they share less core resources).  Hence when
+we have idle threads, we want them to be the higher ones.
 
-Index: linux-2.6/drivers/gpu/drm/i915/i915_drv.c
-===================================================================
---- linux-2.6.orig/drivers/gpu/drm/i915/i915_drv.c
-+++ linux-2.6/drivers/gpu/drm/i915/i915_drv.c
-@@ -177,6 +177,8 @@ MODULE_DEVICE_TABLE(pci, pciidlist);
- 
- static int i915_drm_freeze(struct drm_device *dev)
- {
-+	struct drm_i915_private *dev_priv = dev->dev_private;
-+
- 	pci_save_state(dev->pdev);
- 
- 	/* If KMS is active, we do the leavevt stuff here */
-@@ -192,17 +194,12 @@ static int i915_drm_freeze(struct drm_de
- 
- 	i915_save_state(dev);
- 
--	return 0;
--}
--
--static void i915_drm_suspend(struct drm_device *dev)
--{
--	struct drm_i915_private *dev_priv = dev->dev_private;
--
- 	intel_opregion_free(dev, 1);
- 
- 	/* Modeset on resume, not lid events */
- 	dev_priv->modeset_on_lid = 0;
-+
-+	return 0;
- }
- 
- static int i915_suspend(struct drm_device *dev, pm_message_t state)
-@@ -222,8 +219,6 @@ static int i915_suspend(struct drm_devic
- 	if (error)
- 		return error;
- 
--	i915_drm_suspend(dev);
--
- 	if (state.event == PM_EVENT_SUSPEND) {
- 		/* Shut down the device */
- 		pci_disable_device(dev->pdev);
-@@ -238,6 +233,10 @@ static int i915_drm_thaw(struct drm_devi
- 	struct drm_i915_private *dev_priv = dev->dev_private;
- 	int error = 0;
- 
-+	i915_restore_state(dev);
-+
-+	intel_opregion_init(dev, 1);
-+
- 	/* KMS EnterVT equivalent */
- 	if (drm_core_check_feature(dev, DRIVER_MODESET)) {
- 		mutex_lock(&dev->struct_mutex);
-@@ -264,10 +263,6 @@ static int i915_resume(struct drm_device
- 
- 	pci_set_master(dev->pdev);
- 
--	i915_restore_state(dev);
--
--	intel_opregion_init(dev, 1);
--
- 	return i915_drm_thaw(dev);
- }
- 
-@@ -424,8 +419,6 @@ static int i915_pm_suspend(struct device
- 	if (error)
- 		return error;
- 
--	i915_drm_suspend(drm_dev);
--
- 	pci_disable_device(pdev);
- 	pci_set_power_state(pdev, PCI_D3hot);
- 
-@@ -465,13 +458,8 @@ static int i915_pm_poweroff(struct devic
- {
- 	struct pci_dev *pdev = to_pci_dev(dev);
- 	struct drm_device *drm_dev = pci_get_drvdata(pdev);
--	int error;
--
--	error = i915_drm_freeze(drm_dev);
--	if (!error)
--		i915_drm_suspend(drm_dev);
- 
--	return error;
-+	return i915_drm_freeze(drm_dev);
- }
- 
- const struct dev_pm_ops i915_pm_ops = {
+So to answer your question, threads 2 and 3 aren't weaker than the other
+threads when in SMT4 mode.  It's that if we idle threads 2 & 3, threads
+0 & 1 will speed up since we'll move to SMT2 mode.
+
+I'm pretty vague on linux scheduler details, so I'm a bit at sea as to
+how to solve this.  Can you suggest any mechanisms we currently have in
+the kernel to reflect these properties, or do you think we need to
+develop something new?  If so, any pointers as to where we should look?
+
+Thanks,
+Mikey
