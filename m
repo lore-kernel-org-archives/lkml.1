@@ -1,42 +1,115 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752077Ab0BQF7h (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 00:59:37 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:46553 "EHLO mail.zytor.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751669Ab0BQF7g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 00:59:36 -0500
-Message-ID: <4B7B848C.6030603@kernel.org>
-Date: Tue, 16 Feb 2010 21:54:20 -0800
-From: "H. Peter Anvin" <hpa@kernel.org>
-Organization: Linux Kernel Organization, Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: Willy Tarreau <w@1wt.eu>
-CC: James Cloos <cloos@jhcloos.com>, Jean Delvare <khali@linux-fr.org>,
-       lasse.collin@tukaani.org, Phillip Lougher <phillip@lougher.demon.co.uk>,
-       linux-kernel <linux-kernel@vger.kernel.org>, mirrors@kernel.org,
-       users@kernel.org, "FTPAdmin Kernel.org" <ftpadmin@kernel.org>,
-       Pavel Machek <pavel@ucw.cz>
-Subject: Re: [kernel.org users] XZ Migration discussion
-References: <4B744E13.8040004@kernel.org> <20100211205129.GA26105@elf.ucw.cz> <20100213181008.479509f5@hyperion.delvare> <4B773B31.1020802@lougher.demon.co.uk> <20100214102308.1d1d6fff@hyperion.delvare> <20100214094940.GB17999@1wt.eu> <m3wrye9od4.fsf@lugabout.jhcloos.org> <20100217054047.GF18216@1wt.eu>
-In-Reply-To: <20100217054047.GF18216@1wt.eu>
-Content-Type: text/plain; charset=UTF-8
+	id S1752114Ab0BQGIT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 01:08:19 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:34093 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751680Ab0BQGIR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 01:08:17 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Wed, 17 Feb 2010 15:04:45 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: "linux-mm@kvack.org" <linux-mm@kvack.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       rientjes@google.com,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       npiggin@suse.de
+Subject: [PATCH] memcg: handle panic_on_oom=always case
+Message-Id: <20100217150445.1a40201d.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/16/2010 09:40 PM, Willy Tarreau wrote:
-> 
-> This raises the point of the maturity of the tools BTW. GZ is mature,
-> BZ2 has become mature over the years, XZ is very recent and may still
-> be buggy at times. We'll only know that when people will complain that
-> they cannot open one file from time to time.
-> 
+tested on mmotm-Feb11.
 
-This isn't a huge problem.  Since it is generated content we can, if
-necessary, run a robot over the archive and verify and regenerate files
-that have problems.
+Balbir-san, Nishimura-san, I want review from both of you.
 
-	-hpa
+==
+
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+
+Now, if panic_on_oom=2, the whole system panics even if the oom happend
+in some special situation (as cpuset, mempolicy....).
+Then, panic_on_oom=2 means painc_on_oom_always.
+
+Now, memcg doesn't check panic_on_oom flag. This patch adds a check.
+
+Maybe someone doubts how it's useful. kdump+panic_on_oom=2 is the
+last tool to investigate what happens in oom-ed system. If a task is killed,
+the sysytem recovers and used memory were freed, there will be few hint
+to know what happnes. In mission critical system, oom should never happen.
+Then, investigation after OOM is very important.
+Then, panic_on_oom=2+kdump is useful to avoid next OOM by knowing
+precise information via snapshot.
+
+TODO:
+ - For memcg, it's for isolate system's memory usage, oom-notiifer and
+   freeze_at_oom (or rest_at_oom) should be implemented. Then, management
+   daemon can do similar jobs (as kdump) in safer way or taking snapshot
+   per cgroup.
+
+CC: Balbir Singh <balbir@linux.vnet.ibm.com>
+CC: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+CC: David Rientjes <rientjes@google.com>
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+---
+ Documentation/cgroups/memory.txt |    2 ++
+ Documentation/sysctl/vm.txt      |    5 ++++-
+ mm/oom_kill.c                    |    2 ++
+ 3 files changed, 8 insertions(+), 1 deletion(-)
+
+Index: mmotm-2.6.33-Feb11/Documentation/cgroups/memory.txt
+===================================================================
+--- mmotm-2.6.33-Feb11.orig/Documentation/cgroups/memory.txt
++++ mmotm-2.6.33-Feb11/Documentation/cgroups/memory.txt
+@@ -182,6 +182,8 @@ list.
+ NOTE: Reclaim does not work for the root cgroup, since we cannot set any
+ limits on the root cgroup.
+ 
++Note2: When panic_on_oom is set to "2", the whole system will panic.
++
+ 2. Locking
+ 
+ The memory controller uses the following hierarchy
+Index: mmotm-2.6.33-Feb11/Documentation/sysctl/vm.txt
+===================================================================
+--- mmotm-2.6.33-Feb11.orig/Documentation/sysctl/vm.txt
++++ mmotm-2.6.33-Feb11/Documentation/sysctl/vm.txt
+@@ -573,11 +573,14 @@ Because other nodes' memory may be free.
+ may be not fatal yet.
+ 
+ If this is set to 2, the kernel panics compulsorily even on the
+-above-mentioned.
++above-mentioned. Even oom happens under memoyr cgroup, the whole
++system panics.
+ 
+ The default value is 0.
+ 1 and 2 are for failover of clustering. Please select either
+ according to your policy of failover.
++2 seems too strong but panic_on_oom=2+kdump gives you very strong
++tool to investigate a system which should never cause OOM.
+ 
+ =============================================================
+ 
+Index: mmotm-2.6.33-Feb11/mm/oom_kill.c
+===================================================================
+--- mmotm-2.6.33-Feb11.orig/mm/oom_kill.c
++++ mmotm-2.6.33-Feb11/mm/oom_kill.c
+@@ -471,6 +471,8 @@ void mem_cgroup_out_of_memory(struct mem
+ 	unsigned long points = 0;
+ 	struct task_struct *p;
+ 
++	if (sysctl_panic_on_oom == 2)
++		panic("out of memory(memcg). panic_on_oom is selected.\n");
+ 	read_lock(&tasklist_lock);
+ retry:
+ 	p = select_bad_process(&points, mem);
+
