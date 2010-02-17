@@ -1,20 +1,18 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932768Ab0BQNbT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 08:31:19 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38593 "EHLO
+	id S933023Ab0BQNe0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 08:34:26 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38914 "EHLO
 	bob.linux.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933561Ab0BQNbL (ORCPT
+	with ESMTP id S932349Ab0BQNeY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 08:31:11 -0500
+	Wed, 17 Feb 2010 08:34:24 -0500
 From: Alan Cox <alan@linux.intel.com>
-Subject: [PATCH 5/5] tty: Fix up char drivers request_room usage
-To: greg@kroah.com, linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org
-Date: Wed, 17 Feb 2010 13:07:13 +0000
-Message-ID: <20100217130711.16008.88930.stgit@localhost.localdomain>
-In-Reply-To: <20100217130604.16008.86393.stgit@localhost.localdomain>
-References: <20100217130604.16008.86393.stgit@localhost.localdomain>
+Subject: [RFC 1/4] libata: cache device select
+To: jeff@garzik.org.com, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Date: Wed, 17 Feb 2010 13:10:25 +0000
+Message-ID: <20100217130847.16338.55586.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -23,83 +21,73 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We can't change them all but quite a few misuse it.
+Avoid the device select overhead on every qc_issue (> 10uS) by caching the
+currently selected device. This shows up on profiles under load. Best case
+this costs us 10uS for the delay, worst case with a dumb interface it's
+costing us about *1mS* a command.
+
+I believe the logic here is sufficient, but would welcome some second reviews
+as its not something you want to get wrong !
+
 
 Signed-off-by: Alan Cox <alan@linux.intel.com>
 ---
 
- drivers/char/nozomi.c        |    2 --
- drivers/char/serial167.c     |    3 +--
- drivers/char/specialix.c     |    2 --
- drivers/serial/icom.c        |    1 -
- drivers/serial/ioc3_serial.c |    3 +--
- 5 files changed, 2 insertions(+), 9 deletions(-)
+ drivers/ata/libata-sff.c |    8 ++++++--
+ include/linux/libata.h   |    1 +
+ 2 files changed, 7 insertions(+), 2 deletions(-)
 
 
-diff --git a/drivers/char/nozomi.c b/drivers/char/nozomi.c
-index 584910f..a3f32a1 100644
---- a/drivers/char/nozomi.c
-+++ b/drivers/char/nozomi.c
-@@ -853,8 +853,6 @@ static int receive_data(enum port_type index, struct nozomi *dc)
- 		goto put;
+diff --git a/drivers/ata/libata-sff.c b/drivers/ata/libata-sff.c
+index 63d9c6a..cf0332a 100644
+--- a/drivers/ata/libata-sff.c
++++ b/drivers/ata/libata-sff.c
+@@ -469,6 +469,7 @@ void ata_sff_dev_select(struct ata_port *ap, unsigned int device)
+ 
+ 	iowrite8(tmp, ap->ioaddr.device_addr);
+ 	ata_sff_pause(ap);	/* needed; also flushes, for mmio */
++	ap->sff_selected = device;
+ }
+ EXPORT_SYMBOL_GPL(ata_sff_dev_select);
+ 
+@@ -1538,7 +1539,8 @@ unsigned int ata_sff_qc_issue(struct ata_queued_cmd *qc)
  	}
  
--	tty_buffer_request_room(tty, size);
--
- 	while (size > 0) {
- 		read_mem32((u32 *) buf, addr + offset, RECEIVE_BUF_MAX);
+ 	/* select the device */
+-	ata_dev_select(ap, qc->dev->devno, 1, 0);
++	if (qc->dev->devno != ap->sff_selected)
++        	ata_dev_select(ap, qc->dev->devno, 1, 0);
  
-diff --git a/drivers/char/serial167.c b/drivers/char/serial167.c
-index aee3c0d..1ec3d5c 100644
---- a/drivers/char/serial167.c
-+++ b/drivers/char/serial167.c
-@@ -658,8 +658,7 @@ static irqreturn_t cd2401_rx_interrupt(int irq, void *dev_id)
- 			info->mon.char_max = char_count;
- 		info->mon.char_last = char_count;
- #endif
--		len = tty_buffer_request_room(tty, char_count);
--		while (len--) {
-+		while (char_count--) {
- 			data = base_addr[CyRDR];
- 			tty_insert_flip_char(tty, data, TTY_NORMAL);
- #ifdef CYCLOM_16Y_HACK
-diff --git a/drivers/char/specialix.c b/drivers/char/specialix.c
-index 268e17f..07ac14d 100644
---- a/drivers/char/specialix.c
-+++ b/drivers/char/specialix.c
-@@ -646,8 +646,6 @@ static void sx_receive(struct specialix_board *bp)
- 	dprintk(SX_DEBUG_RX, "port: %p: count: %d\n", port, count);
- 	port->hits[count > 8 ? 9 : count]++;
+ 	/* start the command */
+ 	switch (qc->tf.protocol) {
+@@ -1925,6 +1927,8 @@ int ata_sff_prereset(struct ata_link *link, unsigned long deadline)
+ 	struct ata_eh_context *ehc = &link->eh_context;
+ 	int rc;
  
--	tty_buffer_request_room(tty, count);
--
- 	while (count--)
- 		tty_insert_flip_char(tty, sx_in(bp, CD186x_RDR), TTY_NORMAL);
- 	tty_flip_buffer_push(tty);
-diff --git a/drivers/serial/icom.c b/drivers/serial/icom.c
-index 6e715b7..53a4682 100644
---- a/drivers/serial/icom.c
-+++ b/drivers/serial/icom.c
-@@ -751,7 +751,6 @@ static void recv_interrupt(u16 port_int_reg, struct icom_port *icom_port)
- 		trace(icom_port, "FID_STATUS", status);
- 		count = cpu_to_le16(icom_port->statStg->rcv[rcv_buff].leLength);
- 
--                count = tty_buffer_request_room(tty, count);
- 		trace(icom_port, "RCV_COUNT", count);
- 
- 		trace(icom_port, "REAL_COUNT", count);
-diff --git a/drivers/serial/ioc3_serial.c b/drivers/serial/ioc3_serial.c
-index 85dc041..23ba6b4 100644
---- a/drivers/serial/ioc3_serial.c
-+++ b/drivers/serial/ioc3_serial.c
-@@ -1411,8 +1411,7 @@ static int receive_chars(struct uart_port *the_port)
- 	read_count = do_read(the_port, ch, MAX_CHARS);
- 	if (read_count > 0) {
- 		flip = 1;
--		read_room = tty_buffer_request_room(tty, read_count);
--		tty_insert_flip_string(tty, ch, read_room);
-+		read_room = tty_insert_flip_string(tty, ch, read_count);
- 		the_port->icount.rx += read_count;
++	link->ap->sff_selected = -1;	/* Unknown */
++
+ 	rc = ata_std_prereset(link, deadline);
+ 	if (rc)
+ 		return rc;
+@@ -2687,7 +2691,7 @@ void ata_bus_reset(struct ata_port *ap)
+ 		iowrite8(ap->ctl, ioaddr->ctl_addr);
+ 		ap->last_ctl = ap->ctl;
  	}
- 	spin_unlock_irqrestore(&the_port->lock, pflags);
+-
++	ap->sff_selected = -1;
+ 	DPRINTK("EXIT\n");
+ 	return;
+ 
+diff --git a/include/linux/libata.h b/include/linux/libata.h
+index 5fb8884..a85adc2 100644
+--- a/include/linux/libata.h
++++ b/include/linux/libata.h
+@@ -725,6 +725,7 @@ struct ata_port {
+ 
+ #ifdef CONFIG_ATA_SFF
+ 	struct ata_ioports	ioaddr;	/* ATA cmd/ctl/dma register blocks */
++	int			sff_selected;	/* Cache of selected device */
+ #endif /* CONFIG_ATA_SFF */
+ 
+ 	u8			ctl;	/* cache of ATA control register */
 
