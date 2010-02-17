@@ -1,66 +1,128 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753654Ab0BQSKl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 13:10:41 -0500
-Received: from dsl-67-204-24-19.acanac.net ([67.204.24.19]:38003 "EHLO
-	emergent.ellipticsemi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753452Ab0BQSKk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 13:10:40 -0500
-Date: Wed, 17 Feb 2010 13:10:16 -0500
-From: Nick Bowler <nbowler@elliptictech.com>
-To: david@lang.hm
-Cc: Kyle Moffett <kyle@moffetthome.net>,
-       Rudy Zijlstra <rudy@grumpydevil.homelinux.org>,
-       Neil Brown <neilb@suse.de>,
-       "Mr. James W. Laferriere" <babydr@baby-dragons.com>,
-       Bill Davidsen <davidsen@tmr.com>,
-       Volker Armin Hemmann <volkerarmin@googlemail.com>,
-       Michael Evans <mjevans1983@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org
-Subject: Re: Linux mdadm superblock question.
-Message-ID: <20100217181016.GA14983@emergent.ellipticsemi.com>
-Mail-Followup-To: david@lang.hm, Kyle Moffett <kyle@moffetthome.net>,
-	Rudy Zijlstra <rudy@grumpydevil.homelinux.org>,
-	Neil Brown <neilb@suse.de>,
-	"Mr. James W. Laferriere" <babydr@baby-dragons.com>,
-	Bill Davidsen <davidsen@tmr.com>,
-	Volker Armin Hemmann <volkerarmin@googlemail.com>,
-	Michael Evans <mjevans1983@gmail.com>, linux-kernel@vger.kernel.org,
-	linux-raid@vger.kernel.org
-References: <201002140251.59668.volkerarmin@googlemail.com>
- <4877c76c1002132002s20d942c3i7cee5418cdcf369c@mail.gmail.com>
- <201002141940.35716.volkerarmin@googlemail.com>
- <4B7AD35E.7000405@tmr.com>
- <alpine.LNX.2.01.1002161541370.24961@filesrv1.baby-dragons.com>
- <20100217130103.3ca65ef3@notabene.brown>
- <f73f7ab81002162234t531203ccue1f9ecc839c8ae42@mail.gmail.com>
- <4B7BB927.5000305@grumpydevil.homelinux.org>
- <f73f7ab81002170822j7e61455o6bee33d95c9648a1@mail.gmail.com>
- <alpine.DEB.2.00.1002170932010.4721@asgard.lang.hm>
+	id S1753704Ab0BQSLQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 13:11:16 -0500
+Received: from lmv.inov.pt ([146.193.64.2]:57255 "EHLO lmv.inov.pt"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750786Ab0BQSLO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 13:11:14 -0500
+Message-ID: <4B7C30DF.90805@inov.pt>
+Date: Wed, 17 Feb 2010 18:09:35 +0000
+From: =?ISO-8859-1?Q?Jos=E9_Miguel_Gon=E7alves?= <jose.goncalves@inov.pt>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.1002170932010.4721@asgard.lang.hm>
-Organization: Elliptic Technologies Inc.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Russell King <linux@arm.linux.org.uk>, Ben Dooks <ben@simtec.co.uk>
+CC: David Brownell <dbrownell@users.sourceforge.net>,
+       Grant Likely <grant.likely@secretlab.ca>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Simtec Linux Team <linux@simtec.co.uk>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+       spi-devel-general@lists.sourceforge.net
+Subject: [PATCH] spi_s3c24xx: Fix for SPI on S3C2412
+Content-Type: multipart/mixed;
+ boundary="------------020001050709070404040205"
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0.1 (lmv.inov.pt [146.193.64.2]); Wed, 17 Feb 2010 18:09:39 +0000 (WET)
+X-INOV-EmailServer-Information: Please contact the Email service provider for more information
+X-INOV-EmailServer: Found to be clean
+X-INOV-EmailServer-From: jose.goncalves@inov.pt
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09:41 Wed 17 Feb     , david@lang.hm wrote:
-> for a distro that is trying to make one kernel image run on every
-> possible type of hardware features like initramfs (and udev, modeules,
-> etc) are wonderful.
-> 
-> however for people who run systems that are known ahead of time and
-> static (and who build their own kernels instead of just relying on the
-> distro default kernel), all of this is unnessesary complication, which
-> leaves more room for problems to creep in.
+This is a multi-part message in MIME format.
+--------------020001050709070404040205
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 
-Such people can easily construct an initramfs containing busybox and
-mdadm with a shell script hardcoded to mount their root fs and run
-switch_root.  It's a ~10 minute jobbie that only needs to be done once.
+Hi,
 
--- 
-Nick Bowler, Elliptic Technologies (http://www.elliptictech.com/)
+Testing some SPI temperature sensors and ADCs with a S3C4212 host I have 
+found that I could not read the correct data.  I've probed the SPI 
+signals with a scope and everything seemed OK.
+I dig into the driver sources and on the S3C2412 datasheet to find that 
+this device can not use the same S3C2410 driver's code because of the 
+added FIFOs, even if not used. The following patch is needed to make the 
+driver to work on the S3C2412 chip (and probably on the S3C2413).
+
+Regards,
+José Miguel Gonçalves
+
+--------------020001050709070404040205
+Content-Type: text/x-patch;
+ name="linux-2.6.git-spi_s3c2412.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="linux-2.6.git-spi_s3c2412.patch"
+
+Signed-off-by: Jose Miguel Goncalves <jose.goncalves@inov.pt>
+
+diff --git a/arch/arm/mach-s3c2412/s3c2412.c b/arch/arm/mach-s3c2412/s3c2412.c
+index bef39f7..c58330f 100644
+--- a/arch/arm/mach-s3c2412/s3c2412.c
++++ b/arch/arm/mach-s3c2412/s3c2412.c
+@@ -100,11 +100,9 @@ void __init s3c2412_init_uarts(struct s3c2410_uartcfg *cfg, int no)
+ 	s3c_device_sdi.resource[1].end   = IRQ_S3C2412_SDI;
+ 
+ 	/* spi channel related changes, s3c2412/13 specific */
+-	s3c_device_spi0.name = "s3c2412-spi";
+-	s3c_device_spi0.resource[0].end = S3C24XX_PA_SPI + 0x24;
+-	s3c_device_spi1.name = "s3c2412-spi";
++	s3c_device_spi0.resource[0].end = S3C24XX_PA_SPI + 0x2F;
+ 	s3c_device_spi1.resource[0].start = S3C24XX_PA_SPI + S3C2412_SPI1;
+-	s3c_device_spi1.resource[0].end = S3C24XX_PA_SPI + S3C2412_SPI1 + 0x24;
++	s3c_device_spi1.resource[0].end = S3C24XX_PA_SPI + S3C2412_SPI1 + 0x2F;
+ 
+ }
+ 
+diff --git a/arch/arm/plat-s3c24xx/include/plat/regs-spi.h b/arch/arm/plat-s3c24xx/include/plat/regs-spi.h
+index 2b35479..57e799c 100644
+--- a/arch/arm/plat-s3c24xx/include/plat/regs-spi.h
++++ b/arch/arm/plat-s3c24xx/include/plat/regs-spi.h
+@@ -75,7 +75,8 @@
+ #define S3C2410_SPRDAT	 (0x14)
+ 
+ #define S3C2412_TXFIFO	 (0x18)
+-#define S3C2412_RXFIFO	 (0x18)
++#define S3C2412_RXFIFO	 (0x1C)
++#define S3C2412_SPRDATB	 (0x20)
+ #define S3C2412_SPFIC	 (0x24)
+ 
+ 
+diff --git a/drivers/spi/spi_s3c24xx.c b/drivers/spi/spi_s3c24xx.c
+index c010733..9c57715 100644
+--- a/drivers/spi/spi_s3c24xx.c
++++ b/drivers/spi/spi_s3c24xx.c
+@@ -440,6 +440,12 @@ static int s3c24xx_spi_txrx(struct spi_device *spi, struct spi_transfer *t)
+ 	return hw->count;
+ }
+ 
++#ifdef CONFIG_CPU_S3C2412
++#define SPRDAT S3C2412_SPRDATB
++#else
++#define SPRDAT S3C2410_SPRDAT
++#endif
++
+ static irqreturn_t s3c24xx_spi_irq(int irq, void *dev)
+ {
+ 	struct s3c24xx_spi *hw = dev;
+@@ -462,7 +468,7 @@ static irqreturn_t s3c24xx_spi_irq(int irq, void *dev)
+ 		hw->count++;
+ 
+ 		if (hw->rx)
+-			hw->rx[count] = readb(hw->regs + S3C2410_SPRDAT);
++			hw->rx[count] = readb(hw->regs + SPRDAT);
+ 
+ 		count++;
+ 
+@@ -475,7 +481,7 @@ static irqreturn_t s3c24xx_spi_irq(int irq, void *dev)
+ 		hw->fiq_inuse = 0;
+ 
+ 		if (hw->rx)
+-			hw->rx[hw->len-1] = readb(hw->regs + S3C2410_SPRDAT);
++			hw->rx[hw->len-1] = readb(hw->regs + SPRDAT);
+ 
+ 		complete(&hw->done);
+ 	}
+
+--------------020001050709070404040205--
