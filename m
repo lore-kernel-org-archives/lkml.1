@@ -1,89 +1,109 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757479Ab0BQWd2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 17:33:28 -0500
-Received: from gate.crashing.org ([63.228.1.57]:40457 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754270Ab0BQWd0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 17:33:26 -0500
-Subject: Re: USB mass storage and ARM cache coherency
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Catalin Marinas <catalin.marinas@arm.com>,
-       Oliver Neukum <oliver@neukum.org>,
-       "Shilimkar, Santosh" <santosh.shilimkar@ti.com>,
-       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
-       Ming Lei <tom.leiming@gmail.com>,
-       "Mankad, Maulik Ojas" <x0082077@ti.com>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Sebastian Siewior <bigeasy@linutronix.de>,
-       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Pavel Machek <pavel@ucw.cz>, Greg KH <greg@kroah.com>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
-In-Reply-To: <20100217204404.GD30033@n2100.arm.linux.org.uk>
-References: <20100208065519.GE1290@ucw.cz>
-	 <1265628483.4020.63.camel@pc1117.cambridge.arm.com>
-	 <EAF47CD23C76F840A9E7FCE10091EFAB02C3CF7D50@dbde02.ent.ti.com>
-	 <201002160922.47072.oliver@neukum.org> <1266397543.16346.264.camel@pasglop>
-	 <1266420475.16707.31.camel@e102109-lin.cambridge.arm.com>
-	 <1266439020.16346.285.camel@pasglop>
-	 <20100217204404.GD30033@n2100.arm.linux.org.uk>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 18 Feb 2010 09:31:32 +1100
-Message-ID: <1266445892.16346.306.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	id S1755107Ab0BQWhn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 17:37:43 -0500
+Received: from [12.234.97.163] ([12.234.97.163]:49164 "EHLO
+	archaeopteryx.synaptics.com" rhost-flags-FAIL-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753302Ab0BQWhm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 17:37:42 -0500
+From: Christopher Heiny <cheiny@synaptics.com>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Christopher Heiny <cheiny@synaptics.com>,
+       Allie Xiong <axiong@synaptics.com>,
+       William Manson <wmanson@synaptics.com>
+Subject: [RFC PATCH 0/1] input/touchscreen: Synaptics Touchscreen Driver
+Date: Wed, 17 Feb 2010 14:37:36 -0800
+Message-Id: <1266446258-16209-1-git-send-email-cheiny@synaptics.com>
+X-Mailer: git-send-email 1.6.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-02-17 at 20:44 +0000, Russell King - ARM Linux wrote:
-> No, because that'd probably bugger up the Sparc64 method of delaying
-> flush_dcache_page.
-> 
-> This method works as follows:
-> 
-> - a page cache page is allocated - this has PG_arch_1 clear.
-> 
-> - IO happens on it and it's placed into the page cache.  PG_arch_1 is
->   still clear.
-> 
-> - someone calls read()/write() which accesses the page.  The generic
->   file IO layers call flush_dcache_page() in response to
-> read()/write()
->   fs calls.  flush_dcache_page() spots that the page is not yet mapped
->   into userspace, and sets PG_arch_1 to mark the fact that the kernel
->   mapping is dirty.
-> 
-> - when someone maps the page, we check PG_arch_1 in update_mmu_cache.
->   If PG_arch_1 is set, we flush the kernel mapping.
-> 
-> Clearly, if we go around having drivers clearing PG_arch_1, this is
-> going to break horribly. 
+[This is a resend of a patch sent earlier this month - apologies
+for the duplication, but I botched some of the addressing in the
+previous submission (neglecting to include Dmitry), as well as the
+cover note.]
 
-Ok, you do things very differently than us on ppc then. We clear
-PG_arch_1 in flush_dcache_page(), and we set it when the page has been
-cache cleaned for execution.
+This patch adds an initial driver supporting Synaptics ClearPad
+touchscreens that use the RMI4 protocol, as defined here:
 
-We assume that anybody that dirties a page in the kernel will call
-flush_dcache_page() which removes our PG_arch_1 bit thus marking the
-page "dirty".
+http://www.synaptics.com/sites/default/files/511-000136-01_revA.pdf
 
-Note that from experience, doing the check & flushes in
-update_mmu_cache() is racy on SMP. At least for I$/D$, we have the case
-where processor one does set_pte followed by update_mmu_cache(). The
-later isn't done yet but processor 2 sees the PTE now and starts using
-it, cache hasn't been fully flushed yet. You may avoid that race in some
-ways, but on ppc, I've stopped using that.
 
-I now do things directly in set_pte_at(). In fact, that's why I want
-your patch to change update_mmu_cache() to take a PTE pointer :-) Since
-my set_pte_at() can now remove the _PAGE_EXEC bit, I need
-update_mmu_cache() to re-read the PTE before it updates the hash table
-or TLB.
+Differences to the previous RFC PATCH sent include:
+    - proper line wrapping (sending with get-sendemail)
+    - extensive changes to make checkpatch.pl happy.  Not all errors were
+      eliminated, because in a couple of cases we couldn't figure out what the
+      problem was.
+    - i2c interface updated to reflect recent i2c changes in the kernel.
 
-Cheers,
-Ben.
 
+This version of the driver does not support all features of the RMI4
+protocol yet.  We felt it more important to start with a solid
+implementation of the basic functionality, and then build on that base
+to support additional features (such as gestures, proximity detection,
+capacitive buttons, and so on).
+
+Additionally, as this is our team's first venture into the wonderful
+world of kernel submissions, we figured it was important to start out
+initially with a fairly simple codebase, just in case we're doing
+something horribly wrong.
+
+
+The significant files in this version of the driver are:
+      rmi_core.c
+          Implements the basic core of the RMI4 protocol
+          including self-discovery of RMI4 functions.  This
+          also implements RMI4 function 0x01, which provides
+          generic device control.
+      rmi_function_11.c
+          Implements basic RMI4 function 0x11 (2D sensor)
+          features, including multitouch up to 10 fingers.
+      rmi_app_touchpad.c
+          The major driver functions (mod_init, mod_exit,
+          and so on).
+More detailed descriptions can be found in each file's comments.
+
+We chose to use multiple source files because it makes it easy to add
+support for additional RMI4 functions with minimal impact to existing
+functions.  Additionally, this supports future changes to the
+configuration to allow you to compile in only those RMI4 functions that
+you need for your particular device.
+
+
+There are two existing drivers for similar Synaptics devices in the
+current kernel tree (excluding the PS/2 touchpad driver).  These are:
+
+./linux-2.6/drivers/input/mouse/synaptics_i2c.c
+      A driver for the Exeda 15mm touchpad, written by Mike Rapoport
+      <mike@compulab.co.il> and Igor Grinberg <grinberg@compulab.co.il>
+
+./linux-2.6/drivers/staging/dream/synaptics_i2c_rmi.c
+      A driver for the HTC Dream ClearPad, written by Arve Hjønnevåg
+      <arve@android.com>
+
+We have not extended these drivers for a couple of reasons.  First, the
+two drivers are specific to particular Synaptics products, and it is our
+desire to produce a general solution that takes advantage of the 'self
+describing' features of products that use the RMI protocol.
+
+Second, and more importantly, is that the existing drivers are written
+for an older version of the RMI protocol (aka RMI3) that is being
+retired in favor of a more recent and substantially changed version (aka
+RMI4).  Most currently shipping Synaptics ClearPads speak the RMI4
+protocol, and it will be Synaptics protocol of choice going forward.  In
+almost all respects, RMI4 is not backward compatible with RMI3, making
+it impractical to support both versions in the same driver.
+
+
+Comments and other feedback on this driver are welcomed.
+
+Bill Manson
+Allie Xiong
+Christopher Heiny
+
+
+
+---
