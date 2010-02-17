@@ -1,26 +1,26 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757101Ab0BQLne (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 06:43:34 -0500
-Received: from mail-fx0-f215.google.com ([209.85.220.215]:54844 "EHLO
-	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756386Ab0BQLnF (ORCPT
+	id S1756682Ab0BQLnC (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 06:43:02 -0500
+Received: from fg-out-1718.google.com ([72.14.220.157]:29272 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756386Ab0BQLm7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 06:43:05 -0500
+	Wed, 17 Feb 2010 06:42:59 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=sender:from:to:cc:subject:date:message-id:x-mailer:in-reply-to
          :references;
-        b=GoT/ZST3gwL1HKB0xdTbra6f6DxZY6QkSlvWoA3C8eXyxdDjxUVoy5M2y5zSGjaXML
-         ODirP2vtPfrQQcj6Rygw3kXAYllGIcdcSJn6JfA+LCQHtNGPALyywI9iQCcr4hx1KDHY
-         40zTGUS3BLdsZU38oVtUNBxe7oE+8olYuUyxc=
+        b=p/VZ49hqOj1WMcTP2t3Qwp6t+tzQcMK/HcrEJrghk/dxBiTDegzxRvuyGvSurrfoc6
+         B9iVSjOLVP044WP0rq4MKd+kHPJgbnjqrWOfZQNMwL6HQlhFUKE+exC0nZN4pgcq4l3y
+         G3McAz/CVoeqAv55MumaZixVUo2pJT63ul2cU=
 From: Luca Barbieri <luca@luca-barbieri.com>
 To: mingo@elte.hu
 Cc: hpa@zytor.com, a.p.zijlstra@chello.nl, akpm@linux-foundation.org,
        linux-kernel@vger.kernel.org, Luca Barbieri <luca@luca-barbieri.com>
-Subject: [PATCH 09/10] x86-32: use SSE for atomic64_read/set if available
-Date: Wed, 17 Feb 2010 12:42:41 +0100
-Message-Id: <1266406962-17463-10-git-send-email-luca@luca-barbieri.com>
+Subject: [PATCH 06/10] x86-32: rewrite 32-bit atomic64 functions in assembly
+Date: Wed, 17 Feb 2010 12:42:38 +0100
+Message-Id: <1266406962-17463-7-git-send-email-luca@luca-barbieri.com>
 X-Mailer: git-send-email 1.6.6.1.476.g01ddb
 In-Reply-To: <1266406962-17463-1-git-send-email-luca@luca-barbieri.com>
 References: <1266406962-17463-1-git-send-email-luca@luca-barbieri.com>
@@ -28,168 +28,835 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch uses SSE movlps to perform 64-bit atomic reads and writes.
+This patch replaces atomic64_32.c with an assembly implementation.
 
-According to Intel manuals, all aligned 64-bit reads and writes are
-atomically, which should include movlps.
+It provides the following advantages:
 
-To do this, we need to disable preempt, clts if TS was set, and
-restore TS.
+1. Implements atomic64_add_unless, atomic64_dec_if_positive and
+   atomic64_inc_not_zero
 
-If we don't need to change TS, using SSE is much faster.
+2. Uses the ZF flag changed by cmpxchg8b instead of doing a comparison
 
-Otherwise, it should be essentially even, with the fastest method
-depending on the specific architecture.
+3. Uses custom register calling conventions that reduce or eliminate
+   register moves to suit cmpxchg8b
 
-Another important point is that with SSE atomic64_read can keep the
-cacheline in shared state.
+4. Reads the initial value instead of using cmpxchg8b to do that.
+   Currently we use lock xaddl and movl, which seems the fastest.
 
-If we could keep TS off and reenable it when returning to userspace,
-this would be even faster, but this is left for a later patch.
+5. Does not use the lock prefix for atomic64_set
+   64-bit writes are already atomic, so we don't need that.
+   We still need it for atomic64_read to avoid restoring a value
+   changed in the meantime.
 
-We use SSE because we can just save the low part %xmm0, whereas using
-the FPU or MMX requires at least saving the environment, and seems
-impossible to do fast.
+6. Allocates registers as well or better than gcc
+
+A pure assembly implementation is required due to the custom calling
+conventions, and desire to use %ebp in atomic64_add_return (we need
+7 registers...).
 
 Signed-off-by: Luca Barbieri <luca@luca-barbieri.com>
 ---
- arch/x86/include/asm/atomic_32.h |   10 ++++-
- arch/x86/lib/atomic64_32.c       |   67 ++++++++++++++++++++++++++++++++++++++
- 2 files changed, 75 insertions(+), 2 deletions(-)
+ arch/x86/include/asm/atomic_32.h |  244 +++++++++++++++++++++-----------------
+ arch/x86/lib/Makefile            |    2 +-
+ arch/x86/lib/atomic64_32.c       |  243 ++++----------------------------------
+ arch/x86/lib/atomic64_asm_32.S   |  231 ++++++++++++++++++++++++++++++++++++
+ 4 files changed, 390 insertions(+), 330 deletions(-)
+ create mode 100644 arch/x86/lib/atomic64_asm_32.S
 
 diff --git a/arch/x86/include/asm/atomic_32.h b/arch/x86/include/asm/atomic_32.h
-index 1ab431c..d03e471 100644
+index dc5a667..50a6d4c 100644
 --- a/arch/x86/include/asm/atomic_32.h
 +++ b/arch/x86/include/asm/atomic_32.h
-@@ -268,6 +268,9 @@ typedef struct {
+@@ -268,56 +268,89 @@ typedef struct {
  
  #define ATOMIC64_INIT(val)	{ (val) }
  
-+long long sse_atomic64_read_cx8call(long long, const atomic64_t *v);
-+void sse_atomic64_set_cx8call(long long, unsigned high);
+-extern u64 atomic64_cmpxchg(atomic64_t *ptr, u64 old_val, u64 new_val);
++long long cx8_atomic64_read_cx8call(long long, const atomic64_t *v);
++long long cx8_atomic64_set_cx8call(long long, const atomic64_t *v);
++long long cx8_atomic64_xchg_cx8call(long long, unsigned high);
++long long cx8_atomic64_add_return(long long a, atomic64_t *v);
++long long cx8_atomic64_sub_return(long long a, atomic64_t *v);
++long long cx8_atomic64_inc_return_cx8call(long long a, atomic64_t *v);
++long long cx8_atomic64_dec_return_cx8call(long long a, atomic64_t *v);
++long long cx8_atomic64_dec_if_positive_cx8call(atomic64_t *v);
++int cx8_atomic64_inc_not_zero_cx8call(atomic64_t *v);
++int cx8_atomic64_add_unless(atomic64_t *v, long long a, long long u);
 +
- long long cx8_atomic64_read_cx8call(long long, const atomic64_t *v);
- long long cx8_atomic64_set_cx8call(long long, const atomic64_t *v);
- long long cx8_atomic64_xchg_cx8call(long long, unsigned high);
-@@ -281,8 +284,10 @@ int cx8_atomic64_add_unless(atomic64_t *v, long long a, long long u);
- 
- #ifdef CONFIG_X86_CMPXCHG64
- #define ATOMIC64_ALTERNATIVE(f) "call cx8_atomic64_" #f
-+#define ATOMIC64_ALTERNATIVE_XMM(f) ALTERNATIVE("call cx8_atomic64_" #f, "call sse_atomic64_" #g, X86_FEATURE_XMM)
- #else
- #define ATOMIC64_ALTERNATIVE(f) ALTERNATIVE("call generic_atomic64_" #f, "call cx8_atomic64_" #f, X86_FEATURE_CX8)
-+#define ATOMIC64_ALTERNATIVE_XMM(f) ALTERNATIVE3("call generic_atomic64_" #f, "call cx8_atomic64_" #f, X86_FEATURE_CX8, "call sse_atomic64_" #f, X86_FEATURE_XMM)
- #endif
++/**
++ * atomic64_cmpxchg - cmpxchg atomic64 variable
++ * @p:      pointer to type atomic64_t
++ * @o:  expected value
++ * @n:  new value
++ *
++ * Atomically sets @v to @n if it was equal to @o and returns
++ * the old value.
++ */
++static inline long long atomic64_cmpxchg(atomic64_t *v, long long o,  long long n)
++{
++	asm volatile(LOCK_PREFIX "cmpxchg8b %1"
++				: "+A" (o)
++				: "m" (v->counter), "b" ((unsigned)n), "c" ((unsigned)(n >> 32))
++				);
++	return o;
++}
  
  /**
-@@ -349,7 +354,7 @@ static inline void atomic64_set(atomic64_t *v, long long i)
- {
- 	unsigned high = (unsigned)(i >> 32);
- 	unsigned low = (unsigned)i;
--	asm volatile(ATOMIC64_ALTERNATIVE(set_cx8call)
-+	asm volatile(ATOMIC64_ALTERNATIVE_XMM(set_cx8call)
- 			: "+b" (low), "+c" (high)
- 			: "S" (v)
- 			: "eax", "edx", "memory"
-@@ -365,7 +370,7 @@ static inline void atomic64_set(atomic64_t *v, long long i)
- static inline long long atomic64_read(atomic64_t *v)
- {
- 	long long r;
--	asm volatile(ATOMIC64_ALTERNATIVE(read_cx8call)
-+	asm volatile(ATOMIC64_ALTERNATIVE_XMM(read_cx8call)
- 				: "=A" (r), "+c" (v)
- 				: : "memory"
- 				);
-@@ -470,6 +475,7 @@ static inline int atomic64_inc_not_zero(atomic64_t *v)
- #define atomic64_dec_and_test(v)	(atomic64_dec_return((v)) == 0)
+  * atomic64_xchg - xchg atomic64 variable
+- * @ptr:      pointer to type atomic64_t
+- * @new_val:  value to assign
++ * @v:      pointer to type atomic64_t
++ * @n:  value to assign
+  *
+- * Atomically xchgs the value of @ptr to @new_val and returns
++ * Atomically xchgs the value of @v to @n and returns
+  * the old value.
+  */
+-extern u64 atomic64_xchg(atomic64_t *ptr, u64 new_val);
++static inline long long atomic64_xchg(atomic64_t *v, long long n)
++{
++	long long o;
++	unsigned high = (unsigned)(n >> 32);
++	unsigned low = (unsigned)n;
++	asm volatile("call cx8_atomic64_xchg_cx8call"
++				: "=A" (o), "+b" (low), "+c" (high)
++				: "S" (v)
++				: "memory"
++				);
++	return o;
++}
  
- #undef ATOMIC64_ALTERNATIVE
-+#undef ATOMIC64_ALTERNATIVE_XMM
+ /**
+  * atomic64_set - set atomic64 variable
+- * @ptr:      pointer to type atomic64_t
+- * @new_val:  value to assign
++ * @v:      pointer to type atomic64_t
++ * @n:  value to assign
+  *
+- * Atomically sets the value of @ptr to @new_val.
++ * Atomically sets the value of @v to @n.
+  */
+-extern void atomic64_set(atomic64_t *ptr, u64 new_val);
++static inline void atomic64_set(atomic64_t *v, long long i)
++{
++	unsigned high = (unsigned)(i >> 32);
++	unsigned low = (unsigned)i;
++	asm volatile("call cx8_atomic64_set_cx8call"
++			: "+b" (low), "+c" (high)
++			: "S" (v)
++			: "eax", "edx", "memory"
++			);
++}
+ 
+ /**
+  * atomic64_read - read atomic64 variable
+- * @ptr:      pointer to type atomic64_t
++ * @v:      pointer to type atomic64_t
+  *
+- * Atomically reads the value of @ptr and returns it.
++ * Atomically reads the value of @v and returns it.
+  */
+-static inline u64 atomic64_read(atomic64_t *ptr)
++static inline long long atomic64_read(atomic64_t *v)
+ {
+-	u64 res;
+-
+-	/*
+-	 * Note, we inline this atomic64_t primitive because
+-	 * it only clobbers EAX/EDX and leaves the others
+-	 * untouched. We also (somewhat subtly) rely on the
+-	 * fact that cmpxchg8b returns the current 64-bit value
+-	 * of the memory location we are touching:
+-	 */
+-	asm volatile(
+-		"mov %%ebx, %%eax\n\t"
+-		"mov %%ecx, %%edx\n\t"
+-		LOCK_PREFIX "cmpxchg8b %1\n"
+-			: "=&A" (res)
+-			: "m" (*ptr)
+-		);
+-
+-	return res;
+-}
+-
+-extern u64 atomic64_read(atomic64_t *ptr);
++	long long r;
++	asm volatile("call cx8_atomic64_read_cx8call"
++				: "=A" (r), "+c" (v)
++				: : "memory"
++				);
++	return r;
++ }
+ 
+ /**
+  * atomic64_add_return - add and return
+@@ -326,90 +359,87 @@ extern u64 atomic64_read(atomic64_t *ptr);
+  *
+  * Atomically adds @delta to @ptr and returns @delta + *@ptr
+  */
+-extern u64 atomic64_add_return(u64 delta, atomic64_t *ptr);
++static inline long long atomic64_add_return(long long a, atomic64_t *v)
++{
++	return cx8_atomic64_add_return(a, v);
++}
+ 
+ /*
+  * Other variants with different arithmetic operators:
+  */
+-extern u64 atomic64_sub_return(u64 delta, atomic64_t *ptr);
+-extern u64 atomic64_inc_return(atomic64_t *ptr);
+-extern u64 atomic64_dec_return(atomic64_t *ptr);
+-
+-/**
+- * atomic64_add - add integer to atomic64 variable
+- * @delta: integer value to add
+- * @ptr:   pointer to type atomic64_t
+- *
+- * Atomically adds @delta to @ptr.
+- */
+-extern void atomic64_add(u64 delta, atomic64_t *ptr);
+-
+-/**
+- * atomic64_sub - subtract the atomic64 variable
+- * @delta: integer value to subtract
+- * @ptr:   pointer to type atomic64_t
+- *
+- * Atomically subtracts @delta from @ptr.
+- */
+-extern void atomic64_sub(u64 delta, atomic64_t *ptr);
++static inline long long atomic64_sub_return(long long a, atomic64_t *v)
++{
++	return cx8_atomic64_sub_return(a, v);
++}
+ 
+-/**
+- * atomic64_sub_and_test - subtract value from variable and test result
+- * @delta: integer value to subtract
+- * @ptr:   pointer to type atomic64_t
+- *
+- * Atomically subtracts @delta from @ptr and returns
+- * true if the result is zero, or false for all
+- * other cases.
+- */
+-extern int atomic64_sub_and_test(u64 delta, atomic64_t *ptr);
++static inline long long atomic64_inc_return(atomic64_t *v)
++{
++	long long a;
++	asm volatile("call cx8_atomic64_inc_return_cx8call"
++				: "=A" (a)
++				: "S" (v)
++				: "memory", "ecx"
++				);
++	return a;
++}
+ 
+-/**
+- * atomic64_inc - increment atomic64 variable
+- * @ptr: pointer to type atomic64_t
+- *
+- * Atomically increments @ptr by 1.
+- */
+-extern void atomic64_inc(atomic64_t *ptr);
++static inline long long atomic64_dec_return(atomic64_t *v)
++{
++	long long a;
++	asm volatile("call cx8_atomic64_dec_return_cx8call"
++				: "=A" (a)
++				: "S" (v)
++				: "memory", "ecx"
++				);
++	return a;
++}
+ 
+-/**
+- * atomic64_dec - decrement atomic64 variable
+- * @ptr: pointer to type atomic64_t
+- *
+- * Atomically decrements @ptr by 1.
+- */
+-extern void atomic64_dec(atomic64_t *ptr);
++static inline int atomic64_add_unless(atomic64_t *v, long long a, long long u)
++{
++	int r = (int)v;
++	unsigned low = (unsigned)a;
++	unsigned high = (unsigned)(a >> 2);
++	asm volatile(
++			"pushl %4\n\t"
++			"pushl %3\n\t"
++			"call cx8_atomic64_add_unless\n\t"
++			"addl $8, %%esp\n\t"
++			: "+a" (r), "+d" (low), "+c" (high)
++			: "g" ((unsigned)u), "g" ((unsigned)(u >> 32))
++			: "memory");
++	return r;
++}
+ 
+-/**
+- * atomic64_dec_and_test - decrement and test
+- * @ptr: pointer to type atomic64_t
+- *
+- * Atomically decrements @ptr by 1 and
+- * returns true if the result is 0, or false for all other
+- * cases.
+- */
+-extern int atomic64_dec_and_test(atomic64_t *ptr);
++static inline long long atomic64_dec_if_positive(atomic64_t *v)
++{
++	long long r;
++	asm volatile("call cx8_atomic64_dec_if_positive_cx8call"
++				: "=A" (r)
++				: "S" (v)
++				: "ecx", "memory"
++				);
++	return r;
++}
+ 
+-/**
+- * atomic64_inc_and_test - increment and test
+- * @ptr: pointer to type atomic64_t
+- *
+- * Atomically increments @ptr by 1
+- * and returns true if the result is zero, or false for all
+- * other cases.
+- */
+-extern int atomic64_inc_and_test(atomic64_t *ptr);
++static inline int atomic64_inc_not_zero(atomic64_t *v)
++{
++	int r;
++	asm volatile("call cx8_atomic64_inc_not_zero_cx8call"
++				: "=a" (r)
++				: "S" (v)
++				: "ecx", "edx", "memory"
++				);
++	return r;
++}
+ 
+-/**
+- * atomic64_add_negative - add and test if negative
+- * @delta: integer value to add
+- * @ptr:   pointer to type atomic64_t
+- *
+- * Atomically adds @delta to @ptr and returns true
+- * if the result is negative, or false when
+- * result is greater than or equal to zero.
+- */
+-extern int atomic64_add_negative(u64 delta, atomic64_t *ptr);
++#define atomic64_add(i, v)		atomic64_add_return(i, v)
++#define atomic64_sub(i, v)		atomic64_sub_return(i, v)
++#define atomic64_add_negative(a, v)	(atomic64_add_return((a), (v)) < 0)
++#define atomic64_inc(v)		atomic64_inc_return(v)
++#define atomic64_inc_and_test(v) 	(atomic64_inc_return(v) == 0)
++#define atomic64_sub_and_test(a, v)	(atomic64_sub_return((a), (v)) == 0)
++#define atomic64_dec(v)		atomic64_dec_return(v)
++#define atomic64_dec_and_test(v)	(atomic64_dec_return((v)) == 0)
  
  #include <asm-generic/atomic-long.h>
  #endif /* _ASM_X86_ATOMIC_32_H */
+diff --git a/arch/x86/lib/Makefile b/arch/x86/lib/Makefile
+index cffd754..b42fdeb 100644
+--- a/arch/x86/lib/Makefile
++++ b/arch/x86/lib/Makefile
+@@ -25,7 +25,7 @@ lib-$(CONFIG_KPROBES) += insn.o inat.o
+ obj-y += msr.o msr-reg.o msr-reg-export.o
+ 
+ ifeq ($(CONFIG_X86_32),y)
+-        obj-y += atomic64_32.o
++        obj-y += atomic64_32.o atomic64_asm_32.o
+         lib-y += checksum_32.o
+         lib-y += strstr_32.o
+         lib-y += semaphore_32.o string_32.o
 diff --git a/arch/x86/lib/atomic64_32.c b/arch/x86/lib/atomic64_32.c
-index b7edbb3..9ff8589 100644
+index 824fa0b..18544b3 100644
 --- a/arch/x86/lib/atomic64_32.c
 +++ b/arch/x86/lib/atomic64_32.c
-@@ -61,6 +61,47 @@ EXPORT_SYMBOL(generic_atomic64_read_cx8call);
- 
- #endif /* CONFIG_X86_CMPXCHG64 */
- 
-+struct sse_atomic64_percpu {
-+	long long xmm0_low;
-+	long low;
-+	long high;
-+};
-+
-+/* we actually only need 8-byte alignment, but using cacheline alignment is the only simple way to this */
-+/* we use a per-CPU variable because we need to disable preemption anyway and this is faster than
-+ * aligning the stack pointer to 8 bytes
+@@ -1,3 +1,14 @@
++/*
++ * atomic64_t for x86-32
++ *
++ * Copyright © 2010  Luca Barbieri
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
 + */
-+DEFINE_PER_CPU_ALIGNED(struct sse_atomic64_percpu, sse_atomic64_percpu);
 +
-+/* using the fpu/mmx looks infeasible due to the need to save the FPU environment, which is very slow
-+ * SSE2 is slightly slower on Core 2 and less compatible, so avoid it for now
+ #include <linux/compiler.h>
+ #include <linux/module.h>
+ #include <linux/types.h>
+@@ -6,225 +17,13 @@
+ #include <asm/cmpxchg.h>
+ #include <asm/atomic.h>
+ 
+-static noinline u64 cmpxchg8b(u64 *ptr, u64 old, u64 new)
+-{
+-	u32 low = new;
+-	u32 high = new >> 32;
+-
+-	asm volatile(
+-		LOCK_PREFIX "cmpxchg8b %1\n"
+-		     : "+A" (old), "+m" (*ptr)
+-		     :  "b" (low),  "c" (high)
+-		     );
+-	return old;
+-}
+-
+-u64 atomic64_cmpxchg(atomic64_t *ptr, u64 old_val, u64 new_val)
+-{
+-	return cmpxchg8b(&ptr->counter, old_val, new_val);
+-}
+-EXPORT_SYMBOL(atomic64_cmpxchg);
+-
+-/**
+- * atomic64_xchg - xchg atomic64 variable
+- * @ptr:      pointer to type atomic64_t
+- * @new_val:  value to assign
+- *
+- * Atomically xchgs the value of @ptr to @new_val and returns
+- * the old value.
+- */
+-u64 atomic64_xchg(atomic64_t *ptr, u64 new_val)
+-{
+-	/*
+-	 * Try first with a (possibly incorrect) assumption about
+-	 * what we have there. We'll do two loops most likely,
+-	 * but we'll get an ownership MESI transaction straight away
+-	 * instead of a read transaction followed by a
+-	 * flush-for-ownership transaction:
+-	 */
+-	u64 old_val, real_val = 0;
+-
+-	do {
+-		old_val = real_val;
+-
+-		real_val = atomic64_cmpxchg(ptr, old_val, new_val);
+-
+-	} while (real_val != old_val);
+-
+-	return old_val;
+-}
+-EXPORT_SYMBOL(atomic64_xchg);
+-
+-/**
+- * atomic64_set - set atomic64 variable
+- * @ptr:      pointer to type atomic64_t
+- * @new_val:  value to assign
+- *
+- * Atomically sets the value of @ptr to @new_val.
+- */
+-void atomic64_set(atomic64_t *ptr, u64 new_val)
+-{
+-	atomic64_xchg(ptr, new_val);
+-}
+-EXPORT_SYMBOL(atomic64_set);
+-
+-/**
+-EXPORT_SYMBOL(atomic64_read);
+- * atomic64_add_return - add and return
+- * @delta: integer value to add
+- * @ptr:   pointer to type atomic64_t
+- *
+- * Atomically adds @delta to @ptr and returns @delta + *@ptr
+- */
+-noinline u64 atomic64_add_return(u64 delta, atomic64_t *ptr)
+-{
+-	/*
+-	 * Try first with a (possibly incorrect) assumption about
+-	 * what we have there. We'll do two loops most likely,
+-	 * but we'll get an ownership MESI transaction straight away
+-	 * instead of a read transaction followed by a
+-	 * flush-for-ownership transaction:
+-	 */
+-	u64 old_val, new_val, real_val = 0;
+-
+-	do {
+-		old_val = real_val;
+-		new_val = old_val + delta;
+-
+-		real_val = atomic64_cmpxchg(ptr, old_val, new_val);
+-
+-	} while (real_val != old_val);
+-
+-	return new_val;
+-}
+-EXPORT_SYMBOL(atomic64_add_return);
+-
+-u64 atomic64_sub_return(u64 delta, atomic64_t *ptr)
+-{
+-	return atomic64_add_return(-delta, ptr);
+-}
+-EXPORT_SYMBOL(atomic64_sub_return);
+-
+-u64 atomic64_inc_return(atomic64_t *ptr)
+-{
+-	return atomic64_add_return(1, ptr);
+-}
+-EXPORT_SYMBOL(atomic64_inc_return);
+-
+-u64 atomic64_dec_return(atomic64_t *ptr)
+-{
+-	return atomic64_sub_return(1, ptr);
+-}
+-EXPORT_SYMBOL(atomic64_dec_return);
+-
+-/**
+- * atomic64_add - add integer to atomic64 variable
+- * @delta: integer value to add
+- * @ptr:   pointer to type atomic64_t
+- *
+- * Atomically adds @delta to @ptr.
+- */
+-void atomic64_add(u64 delta, atomic64_t *ptr)
+-{
+-	atomic64_add_return(delta, ptr);
+-}
+-EXPORT_SYMBOL(atomic64_add);
+-
+-/**
+- * atomic64_sub - subtract the atomic64 variable
+- * @delta: integer value to subtract
+- * @ptr:   pointer to type atomic64_t
+- *
+- * Atomically subtracts @delta from @ptr.
+- */
+-void atomic64_sub(u64 delta, atomic64_t *ptr)
+-{
+-	atomic64_add(-delta, ptr);
+-}
+-EXPORT_SYMBOL(atomic64_sub);
+-
+-/**
+- * atomic64_sub_and_test - subtract value from variable and test result
+- * @delta: integer value to subtract
+- * @ptr:   pointer to type atomic64_t
+- *
+- * Atomically subtracts @delta from @ptr and returns
+- * true if the result is zero, or false for all
+- * other cases.
+- */
+-int atomic64_sub_and_test(u64 delta, atomic64_t *ptr)
+-{
+-	u64 new_val = atomic64_sub_return(delta, ptr);
+-
+-	return new_val == 0;
+-}
+-EXPORT_SYMBOL(atomic64_sub_and_test);
+-
+-/**
+- * atomic64_inc - increment atomic64 variable
+- * @ptr: pointer to type atomic64_t
+- *
+- * Atomically increments @ptr by 1.
+- */
+-void atomic64_inc(atomic64_t *ptr)
+-{
+-	atomic64_add(1, ptr);
+-}
+-EXPORT_SYMBOL(atomic64_inc);
+-
+-/**
+- * atomic64_dec - decrement atomic64 variable
+- * @ptr: pointer to type atomic64_t
+- *
+- * Atomically decrements @ptr by 1.
+- */
+-void atomic64_dec(atomic64_t *ptr)
+-{
+-	atomic64_sub(1, ptr);
+-}
+-EXPORT_SYMBOL(atomic64_dec);
+-
+-/**
+- * atomic64_dec_and_test - decrement and test
+- * @ptr: pointer to type atomic64_t
+- *
+- * Atomically decrements @ptr by 1 and
+- * returns true if the result is 0, or false for all other
+- * cases.
+- */
+-int atomic64_dec_and_test(atomic64_t *ptr)
+-{
+-	return atomic64_sub_and_test(1, ptr);
+-}
+-EXPORT_SYMBOL(atomic64_dec_and_test);
+-
+-/**
+- * atomic64_inc_and_test - increment and test
+- * @ptr: pointer to type atomic64_t
+- *
+- * Atomically increments @ptr by 1
+- * and returns true if the result is zero, or false for all
+- * other cases.
+- */
+-int atomic64_inc_and_test(atomic64_t *ptr)
+-{
+-	return atomic64_sub_and_test(-1, ptr);
+-}
+-EXPORT_SYMBOL(atomic64_inc_and_test);
+-
+-/**
+- * atomic64_add_negative - add and test if negative
+- * @delta: integer value to add
+- * @ptr:   pointer to type atomic64_t
+- *
+- * Atomically adds @delta to @ptr and returns true
+- * if the result is negative, or false when
+- * result is greater than or equal to zero.
+- */
+-int atomic64_add_negative(u64 delta, atomic64_t *ptr)
+-{
+-	s64 new_val = atomic64_add_return(delta, ptr);
+-
+-	return new_val < 0;
+-}
+-EXPORT_SYMBOL(atomic64_add_negative);
++EXPORT_SYMBOL(cx8_atomic64_read_cx8call);
++EXPORT_SYMBOL(cx8_atomic64_set_cx8call);
++EXPORT_SYMBOL(cx8_atomic64_xchg_cx8call);
++EXPORT_SYMBOL(cx8_atomic64_add_return);
++EXPORT_SYMBOL(cx8_atomic64_sub_return);
++EXPORT_SYMBOL(cx8_atomic64_add_unless);
++EXPORT_SYMBOL(cx8_atomic64_inc_return_cx8call);
++EXPORT_SYMBOL(cx8_atomic64_dec_return_cx8call);
++EXPORT_SYMBOL(cx8_atomic64_dec_if_positive_cx8call);
++EXPORT_SYMBOL(cx8_atomic64_inc_not_zero_cx8call);
+diff --git a/arch/x86/lib/atomic64_asm_32.S b/arch/x86/lib/atomic64_asm_32.S
+new file mode 100644
+index 0000000..3e98118
+--- /dev/null
++++ b/arch/x86/lib/atomic64_asm_32.S
+@@ -0,0 +1,231 @@
++/*
++ * atomic64_t for x86-32
++ *
++ * Copyright © 2010  Luca Barbieri
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
 + */
-+long long sse_atomic64_read_cx8call(long long dummy, const atomic64_t *v)
-+{
-+	long long res;
-+	unsigned long cr0 = 0;
-+	struct thread_info *me = current_thread_info();
-+	preempt_disable();
-+	if (!(me->status & TS_USEDFPU)) {
-+		cr0 = read_cr0();
-+		if (cr0 & X86_CR0_TS)
-+			clts();
-+	}
-+	asm volatile(
-+			"movlps %%xmm0, " __percpu_arg(0) "\n\t"
-+			"movlps %3, %%xmm0\n\t"
-+			"movlps %%xmm0, " __percpu_arg(1) "\n\t"
-+			"movlps " __percpu_arg(0) ", %%xmm0\n\t"
-+			    : "+m" (per_cpu__sse_atomic64_percpu.xmm0_low), "=m" (per_cpu__sse_atomic64_percpu.low), "=m" (per_cpu__sse_atomic64_percpu.high)
-+			    : "m" (v->counter));
-+	if (cr0 & X86_CR0_TS)
-+		write_cr0(cr0);
-+	res = (long long)(unsigned)percpu_read(sse_atomic64_percpu.low) | ((long long)(unsigned)percpu_read(sse_atomic64_percpu.high) << 32);
-+	preempt_enable();
-+	return res;
-+}
-+EXPORT_SYMBOL(sse_atomic64_read_cx8call);
 +
- register unsigned low asm("ebx");
- register atomic64_t *v asm("esi");
- 
-@@ -121,3 +162,29 @@ int generic_atomic64_inc_not_zero_cx8call(void)
- EXPORT_SYMBOL(generic_atomic64_inc_not_zero_cx8call);
- 
- #endif /* CONFIG_X86_CMPXCHG64 */
++#include <linux/linkage.h>
++#include <asm/alternative-asm.h>
++#include <asm/dwarf2.h>
 +
-+/* put this here because we need access to the global register variables */
-+void sse_atomic64_set_cx8call(long long dummy, unsigned high)
-+{
-+	struct thread_info *me = current_thread_info();
-+	unsigned long cr0 = 0;
-+	preempt_disable();
-+	percpu_write(sse_atomic64_percpu.low, low);
-+	percpu_write(sse_atomic64_percpu.high, high);
-+	if (!(me->status & TS_USEDFPU)) {
-+		cr0 = read_cr0();
-+		if (cr0 & X86_CR0_TS)
-+			clts();
-+	}
-+	asm volatile(
-+			"movlps %%xmm0, " __percpu_arg(0) "\n\t"
-+			"movlps " __percpu_arg(2) ", %%xmm0\n\t"
-+			"movlps %%xmm0, %1\n\t"
-+			"movlps " __percpu_arg(0) ", %%xmm0\n\t"
-+			    : "+m" (per_cpu__sse_atomic64_percpu.xmm0_low), "=m" (v->counter)
-+			    : "m" (per_cpu__sse_atomic64_percpu.low), "m" (per_cpu__sse_atomic64_percpu.high));
-+	if (cr0 & X86_CR0_TS)
-+		write_cr0(cr0);
-+	preempt_enable();
-+}
-+EXPORT_SYMBOL(sse_atomic64_set_cx8call);
++.macro SAVE reg
++	pushl %\reg
++	CFI_ADJUST_CFA_OFFSET 4
++	CFI_REL_OFFSET \reg, 0
++.endm
++
++.macro RESTORE reg
++	popl %\reg
++	CFI_ADJUST_CFA_OFFSET -4
++	CFI_RESTORE \reg
++.endm
++
++.macro read64_for_write reg
++	xorl %eax, %eax
++	LOCK_PREFIX
++	xaddl %eax, (\reg)
++	movl 4(\reg), %edx
++.endm
++
++ENTRY(cx8_atomic64_read_cx8call)
++	CFI_STARTPROC
++
++	movl %ebx, %eax
++	movl %ecx, %edx
++
++/* we need LOCK_PREFIX since otherwise cmpxchg8b always does the write */
++	LOCK_PREFIX
++	cmpxchg8b (%ecx)
++
++	ret
++	CFI_ENDPROC
++ENDPROC(cx8_atomic64_read_cx8call)
++
++ENTRY(cx8_atomic64_set_cx8call)
++	CFI_STARTPROC
++
++	read64_for_write %esi
++
++1:
++/* we don't need LOCK_PREFIX since aligned 64-bit writes are atomic on 586 and newer */
++	cmpxchg8b (%esi)
++	jne 1b
++
++	ret
++	CFI_ENDPROC
++ENDPROC(cx8_atomic64_set_cx8call)
++
++ENTRY(cx8_atomic64_xchg_cx8call)
++	CFI_STARTPROC
++
++	read64_for_write %esi
++
++1:
++	LOCK_PREFIX
++	cmpxchg8b (%esi)
++	jne 1b
++
++	ret
++	CFI_ENDPROC
++ENDPROC(cx8_atomic64_xchg_cx8call)
++
++.macro addsub_return func ins insc
++ENTRY(cx8_atomic64_\func\()_return)
++	CFI_STARTPROC
++	SAVE ebp
++	SAVE ebx
++	SAVE esi
++	SAVE edi
++
++	movl %eax, %esi
++	movl %edx, %edi
++	movl %ecx, %ebp
++
++	read64_for_write %ebp
++1:
++	movl %eax, %ebx
++	movl %edx, %ecx
++	\ins\()l %esi, %ebx
++	\insc\()l %edi, %ecx
++	LOCK_PREFIX
++	cmpxchg8b (%ebp)
++	jne 1b
++
++10:
++	movl %ebx, %eax
++	movl %ecx, %edx
++	RESTORE edi
++	RESTORE esi
++	RESTORE ebx
++	RESTORE ebp
++	ret
++	CFI_ENDPROC
++ENDPROC(cx8_atomic64_\func\()_return)
++.endm
++
++addsub_return add add adc
++addsub_return sub sub sbb
++
++.macro incdec_return func ins insc
++ENTRY(cx8_atomic64_\func\()_return_cx8call)
++	CFI_STARTPROC
++	SAVE ebx
++
++	read64_for_write %esi
++1:
++	movl %eax, %ebx
++	movl %edx, %ecx
++	\ins\()l $1, %ebx
++	\insc\()l $0, %ecx
++	LOCK_PREFIX
++	cmpxchg8b (%esi)
++	jne 1b
++
++10:
++	movl %ebx, %eax
++	movl %ecx, %edx
++	RESTORE ebx
++	ret
++	CFI_ENDPROC
++ENDPROC(cx8_atomic64_\func\()_return_cx8call)
++.endm
++
++incdec_return inc add adc
++incdec_return dec sub sbb
++
++ENTRY(cx8_atomic64_dec_if_positive_cx8call)
++	CFI_STARTPROC
++	SAVE ebx
++
++	read64_for_write %esi
++1:
++	movl %eax, %ebx
++	movl %edx, %ecx
++/* dec doesn't set the carry flag */
++	subl $1, %ebx
++	sbb $0, %ecx
++	js 2f
++	LOCK_PREFIX
++	cmpxchg8b (%esi)
++	jne 1b
++
++2:
++	movl %ebx, %eax
++	movl %ecx, %edx
++	RESTORE ebx
++	ret
++	CFI_ENDPROC
++ENDPROC(cx8_atomic64_dec_if_positive_cx8call)
++
++ENTRY(cx8_atomic64_add_unless)
++	CFI_STARTPROC
++	SAVE ebp
++	SAVE ebx
++	SAVE esi
++	SAVE edi
++
++	movl %eax, %ebp
++	movl %edx, %esi
++	movl %ecx, %edi
++
++	read64_for_write %ebp
++1:
++	cmpl %eax, 0x14(%esp)
++	je 4f
++2:
++	movl %eax, %ebx
++	movl %edx, %ecx
++	addl %esi, %ebx
++	adcl %edi, %ecx
++	LOCK_PREFIX
++	cmpxchg8b (%ebp)
++	jne 1b
++
++	xorl %eax, %eax
++3:
++	RESTORE edi
++	RESTORE esi
++	RESTORE ebx
++	RESTORE ebp
++	ret
++4:
++	cmpl %edx, 0x18(%esp)
++	jne 2b
++	movl $1, %eax
++	jmp 3b
++	CFI_ENDPROC
++ENDPROC(cx8_atomic64_add_unless)
++
++ENTRY(cx8_atomic64_inc_not_zero_cx8call)
++	CFI_STARTPROC
++	SAVE ebx
++
++	read64_for_write %esi
++1:
++	testl %eax, %eax
++	je 4f
++2:
++	movl %eax, %ebx
++	movl %edx, %ecx
++	addl $1, %ebx
++	adcl $0, %ecx
++	LOCK_PREFIX
++	cmpxchg8b (%esi)
++	jne 1b
++
++	xorl %eax, %eax
++3:
++	RESTORE ebx
++	ret
++4:
++	testl %edx, %edx
++	jne 2b
++	movl $1, %eax
++	jmp 3b
++	CFI_ENDPROC
++ENDPROC(cx8_atomic64_inc_not_zero_cx8call)
 -- 
 1.6.6.1.476.g01ddb
 
