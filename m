@@ -1,74 +1,173 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751782Ab0BQSRK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 13:17:10 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:35552 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750786Ab0BQSRI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 13:17:08 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Wed, 17 Feb 2010 10:16:57 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@makko.or.mcafeemobile.com
-To: THIELL Stephane <stephane.thiell@cea.fr>
-cc: Eric Dumazet <eric.dumazet@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch/rfc] Make poll/select report error (POLLNVAL and EBADF)
- for unsupported files
-In-Reply-To: <4B7C25B3.5010206@cea.fr>
-Message-ID: <alpine.DEB.2.00.1002171006310.19489@makko.or.mcafeemobile.com>
-References: <alpine.DEB.2.00.1002141403240.18795@makko.or.mcafeemobile.com> <1266255759.8262.26.camel@edumazet-laptop> <alpine.DEB.2.00.1002150945460.7390@makko.or.mcafeemobile.com> <4B7C25B3.5010206@cea.fr>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	id S1751998Ab0BQSXH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 13:23:07 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:41517 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750786Ab0BQSXF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 13:23:05 -0500
+Date: Wed, 17 Feb 2010 18:22:47 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Andrea Arcangeli <aarcange@redhat.com>
+Cc: Christoph Lameter <cl@linux-foundation.org>, Adam Litke <agl@us.ibm.com>,
+       Avi Kivity <avi@redhat.com>, David Rientjes <rientjes@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 10/12] mm: Check for an empty VMA list in rmap_walk_anon
+Message-ID: <20100217182247.GA15943@csn.ul.ie>
+References: <1265976059-7459-1-git-send-email-mel@csn.ul.ie> <1265976059-7459-11-git-send-email-mel@csn.ul.ie>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <1265976059-7459-11-git-send-email-mel@csn.ul.ie>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Feb 2010, THIELL Stephane wrote:
-
+On Fri, Feb 12, 2010 at 12:00:57PM +0000, Mel Gorman wrote:
+> There appears to be a race in rmap_walk_anon() that can be triggered by using
+> page migration under heavy load on pages that do not belong to the process
+> doing the migration - e.g. during memory compaction. The bug triggered is
+> a NULL pointer deference in list_for_each_entry().
 > 
-> > On Mon, 15 Feb 2010, Eric Dumazet wrote:
-> > 
-> >   
-> > > Hmm, according to POSIX :
-> > > 
-> > > 	The poll() function shall support regular files, terminal and
-> > > pseudo-terminal devices, FIFOs, pipes, sockets ...
-> > > 
-> > > 	Regular files shall always poll TRUE for reading and writing.
-> > > 
-> > >     
-> As POSIX says poll(2) have to support regular files (and it seems all possible
-> user file descriptors), then wouldn't it be better/more coherent to have
-> epoll(7) behave the same way (ie. support regular files instead of
-> epoll_ctl(2) returning EPERM), in order to allow generic code handling both
-> very common situations like:
-> 
-> $ cat replay_file | application
-> and
-> $ application < replay_file
-> 
-> ...where for instance the application doesn't know the origine of its fd 0
-> (pipe, file, or something else).
 
-Most definitely no. POSIX behavior is just stupid, and should have been 
-implemented by not having to report things/events that are not true.
-Now, that's POSIX, and we cannot break its APIs.
-New ones though, do not need to be necessarily stupid.
-Besides, epoll needs an f_op->poll to work, and this would require all FS 
-files to implement a bogus f_op->poll which simply returns the full event 
-mask.
-Which is just plain silly.
-For things like epoll ET, this will simply not work, and even for LT, 
-you'd get every time out of epoll_wait() because you have something there 
-that always reports every event you ask, even though it is not true.
+Incidentally, I hate patches 10-12 with the last one in particular being
+outright flaky. I'm looking at copying the KSM approach instead and have
+started tests using the following patch. Any comments on this approach
+for ensuring the anon_vma exists for as long as it's needed? Obviously,
+the refcounts for KSM and migrate can be collapsed to save space but this
+is clearer to review.
 
+=== CUT HERE ====
+mm,migration: Take a reference to the anon_vma before migrating
 
-- Davide
+rmap_walk_anon() does not use page_lock_anon_vma() for looking up and
+locking an anon_vma and it does not appear to have sufficient locking to
+ensure the anon_vma does not disappear from under it.
 
+This patch copies an approach used by KSM to take a reference on the
+anon_vma while pages are being migrated. This should prevent rmap_walk()
+running into nasty surprises later because anon_vma has been freed.
 
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+---
+ include/linux/rmap.h |   23 +++++++++++++++++++++++
+ mm/migrate.c         |   12 ++++++++++++
+ mm/rmap.c            |   10 +++++-----
+ 3 files changed, 40 insertions(+), 5 deletions(-)
+
+diff --git a/include/linux/rmap.h b/include/linux/rmap.h
+index b019ae6..6b5a1a9 100644
+--- a/include/linux/rmap.h
++++ b/include/linux/rmap.h
+@@ -29,6 +29,9 @@ struct anon_vma {
+ #ifdef CONFIG_KSM
+ 	atomic_t ksm_refcount;
+ #endif
++#ifdef CONFIG_MIGRATION
++	atomic_t migrate_refcount;
++#endif
+ 	/*
+ 	 * NOTE: the LSB of the head.next is set by
+ 	 * mm_take_all_locks() _after_ taking the above lock. So the
+@@ -61,6 +64,26 @@ static inline int ksm_refcount(struct anon_vma *anon_vma)
+ 	return 0;
+ }
+ #endif /* CONFIG_KSM */
++#ifdef CONFIG_MIGRATION
++static inline void migrate_refcount_init(struct anon_vma *anon_vma)
++{
++	atomic_set(&anon_vma->migrate_refcount, 0);
++}
++
++static inline int migrate_refcount(struct anon_vma *anon_vma)
++{
++	return atomic_read(&anon_vma->migrate_refcount);
++}
++#else
++static inline void migrate_refcount_init(struct anon_vma *anon_vma)
++{
++}
++
++static inline int migrate_refcount(struct anon_vma *anon_vma)
++{
++	return 0;
++}
++#endif /* CONFIG_MIGRATE */
+ 
+ static inline struct anon_vma *page_anon_vma(struct page *page)
+ {
+diff --git a/mm/migrate.c b/mm/migrate.c
+index 9a0db5b..63addfa 100644
+--- a/mm/migrate.c
++++ b/mm/migrate.c
+@@ -551,6 +551,7 @@ static int unmap_and_move(new_page_t get_new_page, unsigned long private,
+ 	int rcu_locked = 0;
+ 	int charge = 0;
+ 	struct mem_cgroup *mem = NULL;
++	struct anon_vma *anon_vma = NULL;
+ 
+ 	if (!newpage)
+ 		return -ENOMEM;
+@@ -607,6 +608,8 @@ static int unmap_and_move(new_page_t get_new_page, unsigned long private,
+ 	if (PageAnon(page)) {
+ 		rcu_read_lock();
+ 		rcu_locked = 1;
++		anon_vma = page_anon_vma(page);
++		atomic_inc(&anon_vma->migrate_refcount);
+ 	}
+ 
+ 	/*
+@@ -646,6 +649,15 @@ skip_unmap:
+ 	if (rc)
+ 		remove_migration_ptes(page, page);
+ rcu_unlock:
++
++	/* Drop an anon_vma reference if we took one */
++	if (anon_vma && atomic_dec_and_lock(&anon_vma->migrate_refcount, &anon_vma->lock)) {
++		int empty = list_empty(&anon_vma->head);
++		spin_unlock(&anon_vma->lock);
++		if (empty)
++			anon_vma_free(anon_vma);
++	}
++
+ 	if (rcu_locked)
+ 		rcu_read_unlock();
+ uncharge:
+diff --git a/mm/rmap.c b/mm/rmap.c
+index 278cd27..11ba74a 100644
+--- a/mm/rmap.c
++++ b/mm/rmap.c
+@@ -172,7 +172,8 @@ void anon_vma_unlink(struct vm_area_struct *vma)
+ 	list_del(&vma->anon_vma_node);
+ 
+ 	/* We must garbage collect the anon_vma if it's empty */
+-	empty = list_empty(&anon_vma->head) && !ksm_refcount(anon_vma);
++	empty = list_empty(&anon_vma->head) && !ksm_refcount(anon_vma) &&
++					!migrate_refcount(anon_vma);
+ 	spin_unlock(&anon_vma->lock);
+ 
+ 	if (empty)
+@@ -185,6 +186,7 @@ static void anon_vma_ctor(void *data)
+ 
+ 	spin_lock_init(&anon_vma->lock);
+ 	ksm_refcount_init(anon_vma);
++	migrate_refcount_init(anon_vma);
+ 	INIT_LIST_HEAD(&anon_vma->head);
+ }
+ 
+@@ -1228,10 +1230,8 @@ static int rmap_walk_anon(struct page *page, int (*rmap_one)(struct page *,
+ 	/*
+ 	 * Note: remove_migration_ptes() cannot use page_lock_anon_vma()
+ 	 * because that depends on page_mapped(); but not all its usages
+-	 * are holding mmap_sem, which also gave the necessary guarantee
+-	 * (that this anon_vma's slab has not already been destroyed).
+-	 * This needs to be reviewed later: avoiding page_lock_anon_vma()
+-	 * is risky, and currently limits the usefulness of rmap_walk().
++	 * are holding mmap_sem. Users without mmap_sem are required to
++	 * take a reference count to prevent the anon_vma disappearing
+ 	 */
+ 	anon_vma = page_anon_vma(page);
+ 	if (!anon_vma)
