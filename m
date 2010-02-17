@@ -1,35 +1,43 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757343Ab0BQVme (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 16:42:34 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57262
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757293Ab0BQVmb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 16:42:31 -0500
-Date: Wed, 17 Feb 2010 13:42:47 -0800 (PST)
-Message-Id: <20100217.134247.169742000.davem@davemloft.net>
-To: steve@digidescorp.com
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ll_temac: Add support for V2 LLTEMAC core
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1266426860-5634-1-git-send-email-steve@digidescorp.com>
-References: <1266426860-5634-1-git-send-email-steve@digidescorp.com>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+	id S1757395Ab0BQVob (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 16:44:31 -0500
+Received: from mail.perches.com ([173.55.12.10]:1046 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757212Ab0BQVo3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 16:44:29 -0500
+Subject: Re: [PATCH V3 net-next 0/2] usbnet: Use (netdev|netif)_<level>
+ macros
+From: Joe Perches <joe@perches.com>
+To: David Miller <davem@davemloft.net>
+Cc: david-b@pacbell.net, gregkh@suse.de, tilman@imap.cc,
+       netdev@vger.kernel.org, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20100217.133846.181531049.davem@davemloft.net>
+References: <20100217.000422.246530855.davem@davemloft.net>
+	 <cover.1266438216.git.joe@perches.com>
+	 <20100217.133846.181531049.davem@davemloft.net>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 17 Feb 2010 13:44:27 -0800
+Message-ID: <1266443067.8446.179.camel@Joe-Laptop.home>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Steven J. Magnani" <steve@digidescorp.com>
-Date: Wed, 17 Feb 2010 11:14:20 -0600
+On Wed, 2010-02-17 at 13:38 -0800, David Miller wrote:
+> From: Joe Perches <joe@perches.com>
+> Date: Wed, 17 Feb 2010 12:30:22 -0800
+> > Sorry 'bout that.
+> > I'll try to improve my insufficient grep and build testing.
+> 'allmodconfig' works well for build testing.  :-)
 
-> LLTEMAC V1 cores place only received packet length in the app4 word.
-> V2 cores place additional information in app4.
-> Mask out the additional information when retrieving the packet length.
-> 
-> Signed-off-by: Steven J. Magnani <steve@digidescorp.com>
+And takes ~6 hours on my netbook ;)
 
-Applied.
+I try to avoid it.
+Do you know of an ssh-able test build system?
+
+cheers, Joe
+
