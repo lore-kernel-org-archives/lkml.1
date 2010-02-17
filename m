@@ -1,77 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753211Ab0BQRUs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 12:20:48 -0500
-Received: from s15228384.onlinehome-server.info ([87.106.30.177]:50705 "EHLO
-	mail.x86-64.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753041Ab0BQRUq (ORCPT
+	id S1753240Ab0BQRYF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 12:24:05 -0500
+Received: from mail.digidescorp.com ([66.244.163.200]:18349 "EHLO
+	digidescorp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751941Ab0BQRYB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 12:20:46 -0500
-Date: Wed, 17 Feb 2010 18:20:40 +0100
-From: Borislav Petkov <bp@amd64.org>
-To: Michal Marek <mmarek@suse.cz>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>,
-       Borislav Petkov <petkovbb@googlemail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>, Jamie Lokier <jamie@shareable.org>,
-       Roland Dreier <rdreier@cisco.com>, Al Viro <viro@ZenIV.linux.org.uk>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Brian Gerst <brgerst@gmail.com>
-Subject: Re: [PATCH 2/5] bitops: compile time optimization for
- hweight_long(CONSTANT)
-Message-ID: <20100217172040.GC13429@aftab>
-References: <20100208092845.GB12618@a1.tnic>
- <4B6FDAED.9060204@zytor.com>
- <20100208095945.GA14740@a1.tnic>
- <20100211172424.GB19779@aftab>
- <4B743F7D.3090605@zytor.com>
- <20100212170649.GC3114@aftab>
- <4B758FC0.1020600@zytor.com>
- <20100212174751.GD3114@aftab>
- <4B75A66A.70005@zytor.com>
- <4B7BF5D6.3030701@suse.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B7BF5D6.3030701@suse.cz>
-Organization: Advanced Micro Devices =?iso-8859-1?Q?GmbH?=
-	=?iso-8859-1?Q?=2C_Karl-Hammerschmidt-Str=2E_34=2C_85609_Dornach_bei_M=FC?=
-	=?iso-8859-1?Q?nchen=2C_Gesch=E4ftsf=FChrer=3A_Thomas_M=2E_McCoy=2C_Giuli?=
-	=?iso-8859-1?Q?ano_Meroni=2C_Andrew_Bowd=2C_Sitz=3A_Dornach=2C_Gemeinde_A?=
-	=?iso-8859-1?Q?schheim=2C_Landkreis_M=FCnchen=2C_Registergericht_M=FCnche?=
-	=?iso-8859-1?Q?n=2C?= HRB Nr. 43632
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Wed, 17 Feb 2010 12:24:01 -0500
+X-Greylist: delayed 573 seconds by postgrey-1.27 at vger.kernel.org; Wed, 17 Feb 2010 12:24:00 EST
+X-Spam-Processed: digidescorp.com, Wed, 17 Feb 2010 11:14:23 -0600
+X-Authenticated-Sender: steve@digidescorp.com
+X-Return-Path: prvs=1664b98752=steve@digidescorp.com
+X-Envelope-From: steve@digidescorp.com
+From: "Steven J. Magnani" <steve@digidescorp.com>
+To: netdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, "Steven J. Magnani" <steve@digidescorp.com>
+Subject: [PATCH] ll_temac: Add support for V2 LLTEMAC core
+Date: Wed, 17 Feb 2010 11:14:20 -0600
+Message-Id: <1266426860-5634-1-git-send-email-steve@digidescorp.com>
+X-Mailer: git-send-email 1.6.0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 17, 2010 at 02:57:42PM +0100, Michal Marek wrote:
-> On 12.2.2010 20:05, H. Peter Anvin wrote:
-> > On 02/12/2010 09:47 AM, Borislav Petkov wrote:
-> >>
-> >> However, this is generic code and for the above to work we have to
-> >> enforce x86-specific CFLAGS for it. What is the preferred way to do
-> >> that?
-> >>
-> > 
-> > That's a question for Michal and the kbuild list.  Michal?
-> 
-> (I was offline last week).
-> 
-> The _preferred_ way probably is not to do it :), but otherwise you can
-> set CFLAGS_hweight.o depending on CONFIG_X86(_32|_64), just like you do
-> in arch/x86/lib/Makefile already.
+LLTEMAC V1 cores place only received packet length in the app4 word.
+V2 cores place additional information in app4.
+Mask out the additional information when retrieving the packet length.
 
-Wouldn't it be better if we had something like ARCH_CFLAGS_hweight.o
-which gets set in the arch Makefile instead?
+Signed-off-by: Steven J. Magnani <steve@digidescorp.com>
+---
+diff -uprN a/drivers/net/ll_temac_main.c b/drivers/net/ll_temac_main.c
+--- a/drivers/net/ll_temac_main.c	2010-02-17 10:38:35.000000000 -0600
++++ b/drivers/net/ll_temac_main.c	2010-02-17 10:57:01.000000000 -0600
+@@ -615,7 +615,7 @@ static void ll_temac_recv(struct net_dev
+ 	while ((bdstat & STS_CTRL_APP0_CMPLT)) {
+ 
+ 		skb = lp->rx_skb[lp->rx_bd_ci];
+-		length = cur_p->app4;
++		length = cur_p->app4 & 0x3FFF;
+ 
+ 		skb_vaddr = virt_to_bus(skb->data);
+ 		dma_unmap_single(ndev->dev.parent, skb_vaddr, length,
+@@ -938,6 +938,9 @@ static int __devexit temac_of_remove(str
+ 
+ static struct of_device_id temac_of_match[] __devinitdata = {
+ 	{ .compatible = "xlnx,xps-ll-temac-1.01.b", },
++	{ .compatible = "xlnx,xps-ll-temac-2.00.a", },
++	{ .compatible = "xlnx,xps-ll-temac-2.02.a", },
++	{ .compatible = "xlnx,xps-ll-temac-2.03.a", },
+ 	{},
+ };
+ MODULE_DEVICE_TABLE(of, temac_of_match);
 
--- 
-Regards/Gruss,
-Boris.
-
---
-Advanced Micro Devices, Inc.
-Operating Systems Research Center
