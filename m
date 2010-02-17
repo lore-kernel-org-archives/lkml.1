@@ -1,59 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753578Ab0BQSJc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 13:09:32 -0500
-Received: from ixro-out-rtc.ixiacom.com ([92.87.192.98]:15502 "EHLO
-	ixro-ex1.ixiacom.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753351Ab0BQSJa (ORCPT
+	id S1753654Ab0BQSKl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 13:10:41 -0500
+Received: from dsl-67-204-24-19.acanac.net ([67.204.24.19]:38003 "EHLO
+	emergent.ellipticsemi.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753452Ab0BQSKk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 13:09:30 -0500
-From: Octavian Purdila <opurdila@ixiacom.com>
-Organization: Ixia
-To: Cong Wang <amwang@redhat.com>
-Subject: Re: [net-next PATCH v4 1/3] sysctl: refactor integer handling proc code
-Date: Wed, 17 Feb 2010 23:09:14 +0200
-User-Agent: KMail/1.12.2 (Linux/2.6.32-2-686; KDE/4.3.2; i686; ; )
-Cc: David Miller <davem@davemloft.net>,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>,
-       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-References: <1266271241-6293-1-git-send-email-opurdila@ixiacom.com> <201002161600.54975.opurdila@ixiacom.com> <4B7C19F1.9090106@redhat.com>
-In-Reply-To: <4B7C19F1.9090106@redhat.com>
+	Wed, 17 Feb 2010 13:10:40 -0500
+Date: Wed, 17 Feb 2010 13:10:16 -0500
+From: Nick Bowler <nbowler@elliptictech.com>
+To: david@lang.hm
+Cc: Kyle Moffett <kyle@moffetthome.net>,
+       Rudy Zijlstra <rudy@grumpydevil.homelinux.org>,
+       Neil Brown <neilb@suse.de>,
+       "Mr. James W. Laferriere" <babydr@baby-dragons.com>,
+       Bill Davidsen <davidsen@tmr.com>,
+       Volker Armin Hemmann <volkerarmin@googlemail.com>,
+       Michael Evans <mjevans1983@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org
+Subject: Re: Linux mdadm superblock question.
+Message-ID: <20100217181016.GA14983@emergent.ellipticsemi.com>
+Mail-Followup-To: david@lang.hm, Kyle Moffett <kyle@moffetthome.net>,
+	Rudy Zijlstra <rudy@grumpydevil.homelinux.org>,
+	Neil Brown <neilb@suse.de>,
+	"Mr. James W. Laferriere" <babydr@baby-dragons.com>,
+	Bill Davidsen <davidsen@tmr.com>,
+	Volker Armin Hemmann <volkerarmin@googlemail.com>,
+	Michael Evans <mjevans1983@gmail.com>, linux-kernel@vger.kernel.org,
+	linux-raid@vger.kernel.org
+References: <201002140251.59668.volkerarmin@googlemail.com>
+ <4877c76c1002132002s20d942c3i7cee5418cdcf369c@mail.gmail.com>
+ <201002141940.35716.volkerarmin@googlemail.com>
+ <4B7AD35E.7000405@tmr.com>
+ <alpine.LNX.2.01.1002161541370.24961@filesrv1.baby-dragons.com>
+ <20100217130103.3ca65ef3@notabene.brown>
+ <f73f7ab81002162234t531203ccue1f9ecc839c8ae42@mail.gmail.com>
+ <4B7BB927.5000305@grumpydevil.homelinux.org>
+ <f73f7ab81002170822j7e61455o6bee33d95c9648a1@mail.gmail.com>
+ <alpine.DEB.2.00.1002170932010.4721@asgard.lang.hm>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201002172009.14191.opurdila@ixiacom.com>
-X-OriginalArrivalTime: 17 Feb 2010 18:09:29.0351 (UTC) FILETIME=[5903A170:01CAAFFC]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.1002170932010.4721@asgard.lang.hm>
+Organization: Elliptic Technologies Inc.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 17 February 2010 15:31:45 you wrote:
-
-> >>>
-> >>> What about the EFAULT check, is that really required?
-> >>
-> >> I think so, it means to keep the errno to user-space when it is EFAULT,
-> >> right? This seems reasonable.
-> >
-> > The problem I see is that this way we don't actually acknowledge some of
-> > the set values, e.g. say that we have buffer="1 2 3" and length = 100.
-> > Although we do accept values 1, 2 and 3 we don't acknowledge that to the
-> > user (as we would do for, say "1 2 3 4a"), but return -EFAULT.
-> >
-> > I think it would be better to skip this check. That means that the user
-> > will get the ack for the 1, 2 and 3 values and next time it continues the
-> > write it will get -EFAULT.
-> >
-> > This will of course change the userspace ABI, albeit in a minor way, and
-> > it is not clear to me if doing this is allowed (even if this new approach
-> > would be the correct one).
+On 09:41 Wed 17 Feb     , david@lang.hm wrote:
+> for a distro that is trying to make one kernel image run on every
+> possible type of hardware features like initramfs (and udev, modeules,
+> etc) are wonderful.
 > 
-> I think the right behavior is accept "1 2 3" and return the number of
-> bytes that we accept.
-> 
+> however for people who run systems that are known ahead of time and
+> static (and who build their own kernels instead of just relying on the
+> distro default kernel), all of this is unnessesary complication, which
+> leaves more room for problems to creep in.
 
-OK, it seems nobody is complaining about this corner case ABI change. I will 
-remove the EFAULT check then. This will also help with making the code 
-clearer, I hope.
+Such people can easily construct an initramfs containing busybox and
+mdadm with a shell script hardcoded to mount their root fs and run
+switch_root.  It's a ~10 minute jobbie that only needs to be done once.
+
+-- 
+Nick Bowler, Elliptic Technologies (http://www.elliptictech.com/)
