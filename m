@@ -1,61 +1,79 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753436Ab0BQSBo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 13:01:44 -0500
-Received: from oxalide-out.extra.cea.fr ([132.168.224.1]:43285 "EHLO
-	oxalide-out.extra.cea.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752816Ab0BQSBm (ORCPT
+	id S1753510Ab0BQSEn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 13:04:43 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:35235 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753452Ab0BQSEm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 13:01:42 -0500
-X-Greylist: delayed 1789 seconds by postgrey-1.27 at vger.kernel.org; Wed, 17 Feb 2010 13:01:42 EST
-Message-ID: <4B7C25B3.5010206@cea.fr>
-Date: Wed, 17 Feb 2010 18:21:55 +0100
-From: THIELL Stephane <stephane.thiell@cea.fr>
-Organization: CEA-DAM
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Davide Libenzi <davidel@xmailserver.org>
-CC: Eric Dumazet <eric.dumazet@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch/rfc] Make poll/select report error (POLLNVAL and EBADF)
- for unsupported files
-References: <alpine.DEB.2.00.1002141403240.18795@makko.or.mcafeemobile.com> <1266255759.8262.26.camel@edumazet-laptop> <alpine.DEB.2.00.1002150945460.7390@makko.or.mcafeemobile.com>
-In-Reply-To: <alpine.DEB.2.00.1002150945460.7390@makko.or.mcafeemobile.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 17 Feb 2010 17:21:55.0657 (UTC) FILETIME=[B4147B90:01CAAFF5]
+	Wed, 17 Feb 2010 13:04:42 -0500
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Samuel Ortiz <sameo@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>, stable@kernel.org
+Subject: [PATCH] gpiolib: Actually set output state in wm831x_gpio_direction_output()
+Date: Wed, 17 Feb 2010 18:04:35 +0000
+Message-Id: <1266429875-4046-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-Mailer: git-send-email 1.6.6.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+wm831x_gpio_direction_output() ignored the state passed into it.
 
-> On Mon, 15 Feb 2010, Eric Dumazet wrote:
->
->   
->> Hmm, according to POSIX :
->>
->> 	The poll() function shall support regular files, terminal and
->> pseudo-terminal devices, FIFOs, pipes, sockets ...
->>
->> 	Regular files shall always poll TRUE for reading and writing.
->>
->>     
-As POSIX says poll(2) have to support regular files (and it seems all 
-possible user file descriptors), then wouldn't it be better/more 
-coherent to have epoll(7) behave the same way (ie. support regular files 
-instead of epoll_ctl(2) returning EPERM), in order to allow generic code 
-handling both very common situations like:
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: stable@kernel.org
+---
 
-$ cat replay_file | application
-and
-$ application < replay_file
+Ideally this could make it into 2.6.33, though it's not super critical
+and it's probably reasonable to handle it via the stable releases.
 
-...where for instance the application doesn't know the origine of its fd 0 (pipe, file, or something else).
+ drivers/gpio/wm831x-gpio.c |   22 +++++++++++++++-------
+ 1 files changed, 15 insertions(+), 7 deletions(-)
 
-Regards,
-Stephane Thiell
-
-
-
+diff --git a/drivers/gpio/wm831x-gpio.c b/drivers/gpio/wm831x-gpio.c
+index b4468b6..c5a00f7 100644
+--- a/drivers/gpio/wm831x-gpio.c
++++ b/drivers/gpio/wm831x-gpio.c
+@@ -60,23 +60,31 @@ static int wm831x_gpio_get(struct gpio_chip *chip, unsigned offset)
+ 		return 0;
+ }
+ 
+-static int wm831x_gpio_direction_out(struct gpio_chip *chip,
+-				     unsigned offset, int value)
++static void wm831x_gpio_set(struct gpio_chip *chip, unsigned offset, int value)
+ {
+ 	struct wm831x_gpio *wm831x_gpio = to_wm831x_gpio(chip);
+ 	struct wm831x *wm831x = wm831x_gpio->wm831x;
+ 
+-	return wm831x_set_bits(wm831x, WM831X_GPIO1_CONTROL + offset,
+-			       WM831X_GPN_DIR | WM831X_GPN_TRI, 0);
++	wm831x_set_bits(wm831x, WM831X_GPIO_LEVEL, 1 << offset,
++			value << offset);
+ }
+ 
+-static void wm831x_gpio_set(struct gpio_chip *chip, unsigned offset, int value)
++static int wm831x_gpio_direction_out(struct gpio_chip *chip,
++				     unsigned offset, int value)
+ {
+ 	struct wm831x_gpio *wm831x_gpio = to_wm831x_gpio(chip);
+ 	struct wm831x *wm831x = wm831x_gpio->wm831x;
++	int ret;
+ 
+-	wm831x_set_bits(wm831x, WM831X_GPIO_LEVEL, 1 << offset,
+-			value << offset);
++	ret = wm831x_set_bits(wm831x, WM831X_GPIO1_CONTROL + offset,
++			      WM831X_GPN_DIR | WM831X_GPN_TRI, 0);
++	if (ret < 0)
++		return ret;
++
++	/* Can only set GPIO state once it's in output mode */
++	wm831x_gpio_set(chip, offset, value);
++
++	return 0;
+ }
+ 
+ static int wm831x_gpio_to_irq(struct gpio_chip *chip, unsigned offset)
+-- 
+1.6.6.1
 
