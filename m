@@ -1,41 +1,46 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754826Ab0BQUDs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 15:03:48 -0500
-Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:4248 "EHLO
-	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754537Ab0BQUDq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 15:03:46 -0500
-Date: Wed, 17 Feb 2010 13:03:45 -0700
-From: Alex Chiang <achiang@hp.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Matthias Petermann <matthias@d2ux.org>, linux-kernel@vger.kernel.org,
-       linux-input@vger.kernel.org
-Subject: Re: Synaptics touchpad doesn't click (refers thread from December
-	2009)
-Message-ID: <20100217200345.GD32353@ldl.fc.hp.com>
-References: <4B7B1229.4030008@d2ux.org> <20100217194902.GA28560@ldl.fc.hp.com> <20100217195626.GC32353@ldl.fc.hp.com> <20100217200214.GA1948@core.coreip.homeip.net>
+	id S1754860Ab0BQULH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 15:11:07 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:45615 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754537Ab0BQULE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 15:11:04 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pedro Ribeiro <pedrib@gmail.com>
+Subject: Re: 2.6.33-rc8 regression on i915: resume from hibernate locks up every 2nd time
+Date: Wed, 17 Feb 2010 21:11:42 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.33-rc8-rjw; KDE/4.3.5; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, intel-gfx@lists.freedesktop.org
+References: <74fd948d1002171047g70d2bba0l957e264dfbc8ea23@mail.gmail.com>
+In-Reply-To: <74fd948d1002171047g70d2bba0l957e264dfbc8ea23@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100217200214.GA1948@core.coreip.homeip.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: Text/Plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002172111.42511.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Dmitry Torokhov <dmitry.torokhov@gmail.com>:
-> On Wed, Feb 17, 2010 at 12:56:26PM -0700, Alex Chiang wrote:
-> > Sigh, sorry. I fat-fingered Dmitry's email address.
+On Wednesday 17 February 2010, Pedro Ribeiro wrote:
+> Hi,
 > 
-> Arhg, lost track of it in my INBOX, so not merged yet, sorry.
+> commit 84b79f8d2882b0a84330c04839ed4d3cefd2ff77 (drm/i915: Fix crash
+> while aborting hibernation) introduced two new issues which were not
+> present in 2.6.33-rc7:
+> 
+> - every second resume from hibernate results in a blank screen
+> - the annoying flash at the end of atomic copy/restore during the
+> hibernate process is back (present in kernels < 2.6.33)
+> 
+> The first issue is serious, the second is just an annoyance.
 
-Can you mark it for stable so it gets picked up by the distros?
+The second one is an expected price of fixing the aborted hibernation
+regression.
 
-Also, were you going to take Takashi's patch for the userspace
-portion as well?
+The first one shouldn't happen, though.
 
-Thanks,
-/ac
+I'll see if I can reproduce that locally.
 
+Rafael
