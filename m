@@ -1,75 +1,67 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753220Ab0BQWKf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 17:10:35 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:42245 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752509Ab0BQWKe convert rfc822-to-8bit (ORCPT
+	id S1753522Ab0BQWNG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 17:13:06 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50585 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752659Ab0BQWNE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 17:10:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=cacBvS7WesmDFei1/eJ/zJ/i6K+LwytM19Nh7qC4+q89e3zto6lWtXe21PpVQoOaNN
-         Oa2sZKhr/5AQFOv5KxDI8+ry7LVwBQQP4HifTimz2BuMmpQOo0Twv0Prq6JKmExjeYNd
-         4MwgN5t/D0cJNClg03+//qlHL0/guZsPKzwKc=
+	Wed, 17 Feb 2010 17:13:04 -0500
+Date: Wed, 17 Feb 2010 14:10:28 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Zachary Amsden <zamsden@redhat.com>
+cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       x86@kernel.org, Avi Kivity <avi@redhat.com>
+Subject: Re: [PATCH] x86 rwsem optimization extreme
+In-Reply-To: <1266443901-3646-1-git-send-email-zamsden@redhat.com>
+Message-ID: <alpine.LFD.2.00.1002171403160.4141@localhost.localdomain>
+References: <1266443901-3646-1-git-send-email-zamsden@redhat.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <201002172152.39255.rjw@sisk.pl>
-References: <74fd948d1002171047g70d2bba0l957e264dfbc8ea23@mail.gmail.com>
-	 <201002172111.42511.rjw@sisk.pl> <201002172152.39255.rjw@sisk.pl>
-Date: Wed, 17 Feb 2010 22:10:32 +0000
-Message-ID: <74fd948d1002171410l5688c3dfy125ac5c7e80ad1a1@mail.gmail.com>
-Subject: Re: 2.6.33-rc8 regression on i915: resume from hibernate locks up 
-	every 2nd time
-From: Pedro Ribeiro <pedrib@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel@vger.kernel.org, intel-gfx@lists.freedesktop.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2010/2/17 Rafael J. Wysocki <rjw@sisk.pl>:
-> On Wednesday 17 February 2010, Rafael J. Wysocki wrote:
->> On Wednesday 17 February 2010, Pedro Ribeiro wrote:
->> > Hi,
->> >
->> > commit 84b79f8d2882b0a84330c04839ed4d3cefd2ff77 (drm/i915: Fix crash
->> > while aborting hibernation) introduced two new issues which were not
->> > present in 2.6.33-rc7:
->> >
->> > - every second resume from hibernate results in a blank screen
->> > - the annoying flash at the end of atomic copy/restore during the
->> > hibernate process is back (present in kernels < 2.6.33)
->> >
->> > The first issue is serious, the second is just an annoyance.
->>
->> The second one is an expected price of fixing the aborted hibernation
->> regression.
->>
->> The first one shouldn't happen, though.
->>
->> I'll see if I can reproduce that locally.
->
-> No, I can't.
->
-> Is the driver compiled directly into the kernel or modular?
->
-> Rafael
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
 
-The driver is modular.
-And sorry, I forgot to tell you I'm using TuxOnIce, it certainly makes
-a difference.
 
-However, every since I reverted that commit I've done 10 test
-hibernations and no hang so far.
+On Wed, 17 Feb 2010, Zachary Amsden wrote:
+>
+> The x86 instruction set provides the ability to add an additional
+> bit into addition or subtraction by using the carry flag.
+> It also provides instructions to directly set or clear the
+> carry flag.  By forcibly setting the carry flag, we can then
+> represent one particular 64-bit constant, namely
+> 
+>    0xffffffff + 1 = 0x100000000
+> 
+> using only 32-bit values.  In particular we can optimize the rwsem
+> write lock release by noting it is of exactly this form.
 
-Pedro
+Don't do this.
+
+Just shift the constants down by two, and suddenly you don't need any 
+clever tricks, because all the constants fit in 32 bits anyway, 
+regardless of sign issues.
+
+So just change the 
+
+	# define RWSEM_ACTIVE_MASK              0xffffffffL
+
+line into
+
+	# define RWSEM_ACTIVE_MASK              0x3fffffffL
+
+and you're done.
+
+The cost of 'adc' may happen to be identical in this case, but I suspect 
+you didn't test on UP, where the 'lock' prefix goes away. An unlocked 
+'add' tends to be faster than an unlocked 'adc'.
+
+(It's possible that some micro-architectures don't care, since it's a 
+memory op, and they can see that 'C' is set. But it's a fragile assumption 
+that it would always be ok).
+
+			Linus
