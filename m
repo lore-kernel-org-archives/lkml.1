@@ -1,49 +1,167 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934251Ab0BQN5x (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 08:57:53 -0500
-Received: from cantor.suse.de ([195.135.220.2]:37472 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933732Ab0BQN5v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 08:57:51 -0500
-Message-ID: <4B7BF5D6.3030701@suse.cz>
-Date: Wed, 17 Feb 2010 14:57:42 +0100
-From: Michal Marek <mmarek@suse.cz>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.2 Thunderbird/3.0
+	id S934184Ab0BQOMr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 09:12:47 -0500
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:57959 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932509Ab0BQOMp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 09:12:45 -0500
+Message-ID: <4B7BF8DC.7080403@ru.mvista.com>
+Date: Wed, 17 Feb 2010 17:10:36 +0300
+From: Sergei Shtylyov <sshtylyov@mvista.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>, Borislav Petkov <bp@amd64.org>
-Cc: linux-kbuild <linux-kbuild@vger.kernel.org>,
-       Borislav Petkov <petkovbb@googlemail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>, Jamie Lokier <jamie@shareable.org>,
-       Roland Dreier <rdreier@cisco.com>, Al Viro <viro@ZenIV.linux.org.uk>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Brian Gerst <brgerst@gmail.com>
-Subject: Re: [PATCH 2/5] bitops: compile time optimization for hweight_long(CONSTANT)
-References: <4B6C93A2.1090302@zytor.com> <20100206093659.GA28326@aftab> <4B6E1DA3.50204@zytor.com> <20100208092845.GB12618@a1.tnic> <4B6FDAED.9060204@zytor.com> <20100208095945.GA14740@a1.tnic> <20100211172424.GB19779@aftab> <4B743F7D.3090605@zytor.com> <20100212170649.GC3114@aftab> <4B758FC0.1020600@zytor.com> <20100212174751.GD3114@aftab> <4B75A66A.70005@zytor.com>
-In-Reply-To: <4B75A66A.70005@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Alan Cox <alan@linux.intel.com>
+CC: jeff@garzik.org.com, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: [RFC 3/4] libata: Remove excess command issue delays
+References: <20100217130847.16338.55586.stgit@localhost.localdomain> <20100217131145.16338.70473.stgit@localhost.localdomain>
+In-Reply-To: <20100217131145.16338.70473.stgit@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12.2.2010 20:05, H. Peter Anvin wrote:
-> On 02/12/2010 09:47 AM, Borislav Petkov wrote:
->>
->> However, this is generic code and for the above to work we have to
->> enforce x86-specific CFLAGS for it. What is the preferred way to do
->> that?
->>
-> 
-> That's a question for Michal and the kbuild list.  Michal?
+Hello.
 
-(I was offline last week).
+Alan Cox wrote:
 
-The _preferred_ way probably is not to do it :), but otherwise you can
-set CFLAGS_hweight.o depending on CONFIG_X86(_32|_64), just like you do
-in arch/x86/lib/Makefile already.
+> We don't need to pause before a command issue for PIO (it's posted) or for
+>   
 
-Michal
+   I thought you're eliminating the pause *after* command issue, no?
+
+> most MMIO devices (internally managed delay) so provide a routine for the
+> normal "sane" hardware
+>   
+
+   Wouldn't it make sense then to handle the "insane" hardware as an 
+exception, not vice versa?
+
+> As a side effect it also means that those devices using PIO don't end up
+> generating ATA bus cycles in strange places which confuses some hardware.
+>   
+
+   I thought that's mostly a problem with DMA commands...
+
+> Saves us about 1mS on a dumb controller,
+
+   1 ms per command?! Or per what?
+
+> a fair bit less (uSecs on smarter
+> ones). ata_pause() is very very slow on controllers where it goes all the way
+>
+> [For those counting thats another mS saved once we turn this stuff on]
+>
+> Signed-off-by: Alan Cox <alan@linux.intel.com>
+>   
+[...]
+> diff --git a/drivers/ata/libata-sff.c b/drivers/ata/libata-sff.c
+> index 3558ca8..fa18482 100644
+> --- a/drivers/ata/libata-sff.c
+> +++ b/drivers/ata/libata-sff.c
+> @@ -674,11 +674,34 @@ void ata_sff_exec_command(struct ata_port *ap, const struct ata_taskfile *tf)
+>  	DPRINTK("ata%u: cmd 0x%X\n", ap->print_id, tf->command);
+>  
+>  	iowrite8(tf->command, ap->ioaddr.command_addr);
+> -	ata_sff_pause(ap);
+> +	/* Slow */
+> +        ata_sff_pause(ap);
+>   
+
+   Spaces instead of tab here...
+
+> diff --git a/drivers/ata/pata_pcmcia.c b/drivers/ata/pata_pcmcia.c
+> index 147de2f..67a2964 100644
+> --- a/drivers/ata/pata_pcmcia.c
+> +++ b/drivers/ata/pata_pcmcia.c
+> @@ -163,18 +163,19 @@ static struct scsi_host_template pcmcia_sht = {
+>  };
+>  
+>  static struct ata_port_operations pcmcia_port_ops = {
+> -	.inherits	= &ata_sff_port_ops,
+> -	.sff_data_xfer	= ata_sff_data_xfer_noirq,
+> -	.cable_detect	= ata_cable_40wire,
+> -	.set_mode	= pcmcia_set_mode,
+> +	.inherits		= &ata_sff_port_ops,
+> +	.sff_exec_command	= ata_sff_exec_command_nopost,
+> +	.sff_data_xfer		= ata_sff_data_xfer_noirq,
+> +	.cable_detect		= ata_cable_40wire,
+> +	.set_mode		= pcmcia_set_mode,
+>  };
+>  
+>  static struct ata_port_operations pcmcia_8bit_port_ops = {
+> -	.inherits	= &ata_sff_port_ops,
+> -	.sff_data_xfer	= ata_data_xfer_8bit,
+> -	.cable_detect	= ata_cable_40wire,
+> -	.set_mode	= pcmcia_set_mode_8bit,
+> -	.drain_fifo	= pcmcia_8bit_drain_fifo,
+> +	.inherits		= &ata_sff_port_ops,
+> +	.sff_data_xfer		= ata_data_xfer_8bit,
+>   
+
+   No sff_exec_command() method override here?
+
+> +	.cable_detect		= ata_cable_40wire,
+> +	.set_mode		= pcmcia_set_mode_8bit,
+> +	.drain_fifo		= pcmcia_8bit_drain_fifo,
+>  };
+>  
+>  
+> diff --git a/drivers/ata/pata_qdi.c b/drivers/ata/pata_qdi.c
+> index 45879dc..c9a468c 100644
+> --- a/drivers/ata/pata_qdi.c
+> +++ b/drivers/ata/pata_qdi.c
+> @@ -158,16 +158,17 @@ static struct scsi_host_template qdi_sht = {
+>  };
+>  
+>  static struct ata_port_operations qdi6500_port_ops = {
+> -	.inherits	= &ata_sff_port_ops,
+> -	.qc_issue	= qdi_qc_issue,
+> -	.sff_data_xfer	= qdi_data_xfer,
+> -	.cable_detect	= ata_cable_40wire,
+> -	.set_piomode	= qdi6500_set_piomode,
+> +	.inherits	= 	&ata_sff_port_ops,
+> +	.sff_exec_command	= ata_sff_exec_command_nopost,
+> +	.qc_issue	= 	qdi_qc_issue,
+> +	.sff_data_xfer	= 	qdi_data_xfer,
+> +	.cable_detect	= 	ata_cable_40wire,
+> +	.set_piomode	= 	qdi6500_set_piomode,
+>  };
+>  
+>  static struct ata_port_operations qdi6580_port_ops = {
+> -	.inherits	= &qdi6500_port_ops,
+> -	.set_piomode	= qdi6580_set_piomode,
+> +	.inherits	= 	&qdi6500_port_ops,
+> +	.set_piomode	= 	qdi6580_set_piomode,
+>  };
+>  
+>  /**
+>   
+[...]
+> diff --git a/drivers/ata/pata_winbond.c b/drivers/ata/pata_winbond.c
+> index 6d8619b..066deea 100644
+> --- a/drivers/ata/pata_winbond.c
+> +++ b/drivers/ata/pata_winbond.c
+> @@ -126,10 +126,11 @@ static struct scsi_host_template winbond_sht = {
+>  };
+>  
+>  static struct ata_port_operations winbond_port_ops = {
+> -	.inherits	= &ata_sff_port_ops,
+> -	.sff_data_xfer	= winbond_data_xfer,
+> -	.cable_detect	= ata_cable_40wire,
+> -	.set_piomode	= winbond_set_piomode,
+> +	.inherits	= 	&ata_sff_port_ops,
+> +	.sff_exec_command	= ata_sff_exec_command_nopost,
+> +	.sff_data_xfer	= 	winbond_data_xfer,
+> +	.cable_detect	= 	ata_cable_40wire,
+> +	.set_piomode	= 	winbond_set_piomode,
+>   
+
+   What's up with the alignment here, why it's different from the rest 
+of drivers?
+
+MBR, Sergei
+
