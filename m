@@ -1,67 +1,86 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933819Ab0BQBDu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 20:03:50 -0500
-Received: from ns3.baby-dragons.com ([64.62.236.141]:45290 "EHLO
-	ns3.baby-dragons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933691Ab0BQBDs (ORCPT
+	id S933822Ab0BQBHE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 20:07:04 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:48705 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933540Ab0BQBHA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 20:03:48 -0500
-Date: Tue, 16 Feb 2010 16:03:43 -0900 (AKST)
-From: "Mr. James W. Laferriere" <babydr@baby-dragons.com>
-To: Bill Davidsen <davidsen@tmr.com>
-cc: Volker Armin Hemmann <volkerarmin@googlemail.com>,
-       Michael Evans <mjevans1983@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org
-Subject: Re: Linux mdadm superblock question.
-In-Reply-To: <4B7AD35E.7000405@tmr.com>
-Message-ID: <alpine.LNX.2.01.1002161541370.24961@filesrv1.baby-dragons.com>
-References: <201002140251.59668.volkerarmin@googlemail.com> <4877c76c1002132002s20d942c3i7cee5418cdcf369c@mail.gmail.com> <201002141940.35716.volkerarmin@googlemail.com> <4B7AD35E.7000405@tmr.com>
-User-Agent: Alpine 2.01 (LNX 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (ns3.baby-dragons.com [64.62.236.141]); Wed, 17 Feb 2010 01:03:45 +0000 (UTC)
+	Tue, 16 Feb 2010 20:07:00 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Wed, 17 Feb 2010 10:03:22 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: David Rientjes <rientjes@google.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
+       Nick Piggin <npiggin@suse.de>, Andrea Arcangeli <aarcange@redhat.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch -mm 4/9 v2] oom: remove compulsory panic_on_oom mode
+Message-Id: <20100217100322.9af8f46d.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <alpine.DEB.2.00.1002161648570.31753@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.1002151416470.26927@chino.kir.corp.google.com>
+	<alpine.DEB.2.00.1002151418190.26927@chino.kir.corp.google.com>
+	<20100216090005.f362f869.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.DEB.2.00.1002151610380.14484@chino.kir.corp.google.com>
+	<20100216092311.86bceb0c.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.DEB.2.00.1002160058470.17122@chino.kir.corp.google.com>
+	<20100217084239.265c65ea.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.DEB.2.00.1002161550550.11952@chino.kir.corp.google.com>
+	<20100217090124.398769d5.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.DEB.2.00.1002161623190.11952@chino.kir.corp.google.com>
+	<20100217094137.a0d26fbb.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.DEB.2.00.1002161648570.31753@chino.kir.corp.google.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 	Hello Bill ,
+On Tue, 16 Feb 2010 16:54:31 -0800 (PST)
+David Rientjes <rientjes@google.com> wrote:
 
-On Tue, 16 Feb 2010, Bill Davidsen wrote:
-> Volker Armin Hemmann wrote:
->> On Sonntag 14 Februar 2010, you wrote:
->>> In other words, 'auto-detection' for 1.x format devices is using an
->>> initrd/initramfs.
->>
->> which makes 1.x format useless for everybody who does not want to deal with 
->> initrd/initramfs.
->
-> You make this sound like some major big deal. are you running your own 
-> distribution? In most cases mkinitrd does the right thing when you "make 
-> install" the kernel, and if you are doing something in the build so complex 
-> that it needs options, you really should understand the options and be sure 
-> you're doing what you want.
->
-> Generally this involves preloading a module or two, and if you need it every 
-> time you probably should have built it in, anyway.
->
-> My opinion...
- 	My Opinion as well .  That is one of the many reasons why I have my '/' 
-autoassemble .  And do to this I am permanently stuck at 0.90 version of the 
-raid table .  No big shakes for that .  But at sometime in the past there was a 
-discussion to have the 0.90 raid table be removed ,  NOW THAT SCARES THE H?LL 
-OUT OF ME .  So far Neil has not done so .
+> On Wed, 17 Feb 2010, KAMEZAWA Hiroyuki wrote:
 
- 	I am unaware of any record from Neil or other maintainer(s) of the 
-/md/ device tree saying that they will not remove the 0.90 table and the 
-autoassembly functions there .  I'd very much like to hear a statement saying 
-there will not be a removal of the autoassembly functions for 0.90 raid table 
-from the kernel tree .
+> > > >  2. Second, I'll add OOM-notifier and freeze_at_oom to memcg.
+> > > >     and don't call memcg_out_of_memory in oom_kill.c in this case. Because
+> > > >     we don't kill anything. Taking coredumps of all procs in memcg is not
+> > > >     very difficult.
+> > > > 
+> > > 
+> > > The oom notifier would be at a higher level than the oom killer, the oom 
+> > > killer's job is simply to kill a task when it is called. 
+> > > So for these particular cases, you would never even call into out_of_memory() to panic 
+> > > the machine in the first place. 
+> > 
+> > That's my point. 
+> > 
+> 
+> Great, are you planning on implementing a cgroup that is based on roughly 
+> on the /dev/mem_notify patchset so userspace can poll() a file and be 
+> notified of oom events?  It would help beyond just memcg, it has an 
+> application to cpusets (adding more mems on large systems) as well.  It 
+> can also be used purely to preempt the kernel oom killer and move all the 
+> policy to userspace even though it would be sacrificing TIF_MEMDIE.
+> 
 
- 		Tia ,  JimL
--- 
-+------------------------------------------------------------------+
-| James   W.   Laferriere | System    Techniques | Give me VMS     |
-| Network&System Engineer | 3237     Holden Road |  Give me Linux  |
-| babydr@baby-dragons.com | Fairbanks, AK. 99709 |   only  on  AXP |
-+------------------------------------------------------------------+
+I start from memcg because that gives us simple and clean, no heulistics
+operation and we will not have ugly corner cases. And we can _expect_
+that memcg has management daemon of OOM in other cgroup. Because memcg's memory
+shortage never means "memory is exhausted", we can expect that daemon can work well.
+Now, memcg has memory-usage-notifier file. oom-notifier will not be far differnet
+from that.
+
+cpuset should have its own if necessary. cpuset's difficulty is that
+the memory on its nodes are _really_ exhausted and we're not sure
+it can affecet management daemon at el...hang up.
+
+BTW, concept of /dev/mem_notify is notify before OOM, not notify when OOM.
+Now, memcg has memory-usage-notifier and that's implemented in some meaning.
+
+Thanks,
+-Kame
+
