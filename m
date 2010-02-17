@@ -1,101 +1,151 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933798Ab0BQApN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 19:45:13 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:38310 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933541Ab0BQApK (ORCPT
+	id S933813Ab0BQAp6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 19:45:58 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43541
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933760Ab0BQApz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 19:45:10 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Wed, 17 Feb 2010 09:41:37 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: David Rientjes <rientjes@google.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
-       Nick Piggin <npiggin@suse.de>, Andrea Arcangeli <aarcange@redhat.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch -mm 4/9 v2] oom: remove compulsory panic_on_oom mode
-Message-Id: <20100217094137.a0d26fbb.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <alpine.DEB.2.00.1002161623190.11952@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.1002151416470.26927@chino.kir.corp.google.com>
-	<alpine.DEB.2.00.1002151418190.26927@chino.kir.corp.google.com>
-	<20100216090005.f362f869.kamezawa.hiroyu@jp.fujitsu.com>
-	<alpine.DEB.2.00.1002151610380.14484@chino.kir.corp.google.com>
-	<20100216092311.86bceb0c.kamezawa.hiroyu@jp.fujitsu.com>
-	<alpine.DEB.2.00.1002160058470.17122@chino.kir.corp.google.com>
-	<20100217084239.265c65ea.kamezawa.hiroyu@jp.fujitsu.com>
-	<alpine.DEB.2.00.1002161550550.11952@chino.kir.corp.google.com>
-	<20100217090124.398769d5.kamezawa.hiroyu@jp.fujitsu.com>
-	<alpine.DEB.2.00.1002161623190.11952@chino.kir.corp.google.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
+	Tue, 16 Feb 2010 19:45:55 -0500
+Date: Tue, 16 Feb 2010 16:46:10 -0800 (PST)
+Message-Id: <20100216.164610.264043146.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [GIT]: Networking
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Feb 2010 16:31:39 -0800 (PST)
-David Rientjes <rientjes@google.com> wrote:
 
-> On Wed, 17 Feb 2010, KAMEZAWA Hiroyuki wrote:
-> 
-> > Hmm, I have a few reason to add special behavior to memcg rather than panic.
-> > 
-> >  - freeze_at_oom is enough.
-> >    If OOM can be notified, the management daemon can do useful jobs. Shutdown
-> >    all other cgroups or migrate them to other host and do kdump.
-> > 
-> 
-> The same could be said for cpusets if users use that for memory isolation.
-> 
-cpuset's difficulty is that there are some methods which share the limitation.
+1) When TCP timestamps are disabled, we can end up with an
+   ->srtt of zero after the three way handshake, and if the
+   right series of losses occur afterwards we end up in an
+   ACK war.  Fix from Damian Lukowski.
 
-It's not simple that we have
-  - cpuset
-  - mempolicy per task
-  - mempolicy per vma
+2) Fix 1G flow control and WOL setup in IXGBE driver, from Don	
+   Skidmore.
 
-Sigh..but they are for their own purpose.
+3) Type in SSB layer causes SDIOHOST case to not hookup parent
+   bus/device pointers properly.  Fix from Michael Buesch.
 
+4) Fix locking regressions wrt. ->poll() and changing IRQ coalesce
+   settings in VIA Velocity driver.  From Simon Kagstrom.
 
-> > But, Hmm...I'd like to go this way.
-> > 
-> >  1. At first, support panic_on_oom=2 in memcg.
-> > 
-> 
-> This should panic in mem_cgroup_out_of_memory() and the documentation 
-> should be added to Documentation/sysctl/vm.txt.
-> 
-> The memory controller also has some protection in the pagefault oom 
-> handler that seems like it could be made more general: instead of checking 
-> for mem_cgroup_oom_called(), I'd rather do a tasklist scan to check for 
-> already oom killed task (checking for the TIF_MEMDIE bit) and check all 
-> zones for ZONE_OOM_LOCKED.  If no oom killed tasks are found and no zones 
-> are locked, we can check sysctl_panic_on_oom and invoke the system-wide 
-> oom.
-> 
-plz remove memcg's hook after doing that. Current implemantation is desgined 
-not to affect too much to other cgroups by doing unnecessary jobs.
+5) Looking at the GRO setting by normal users is restricted
+   unnecessarily.  From Stephen Hemminger.
 
+6) Couple of wireless stragglers including a B43 throughput
+   regression fix from Larry Finger.
 
-> >  2. Second, I'll add OOM-notifier and freeze_at_oom to memcg.
-> >     and don't call memcg_out_of_memory in oom_kill.c in this case. Because
-> >     we don't kill anything. Taking coredumps of all procs in memcg is not
-> >     very difficult.
-> > 
-> 
-> The oom notifier would be at a higher level than the oom killer, the oom 
-> killer's job is simply to kill a task when it is called. 
-> So for these particular cases, you would never even call into out_of_memory() to panic 
-> the machine in the first place. 
+7) We pretend to handle IGMPv3 reports, but really the structure
+   is different so such handling is wrong.  Fix from Herbert Xu.
 
-That's my point. 
+8) be2net driver fix to properly initialize the version field to
+   zero in request headers.  From Ajit Khaparde.
 
-Thanks,
--Kame
+9) IPCOMP can double release an object on errors, from Herbert Xu.
 
+10) If an error happens when cloning an XFRM state we'll leak
+    the module reference because we directly kfree() instead of
+    doing a put on the object.  Also from Herbert Xu.
 
+Please pull, thanks a lot!
+
+The following changes since commit 88626272549b94310975932a9970d11a9b362a16:
+  Linus Torvalds (1):
+        Merge git://git.kernel.org/.../agk/linux-2.6-dm
+
+are available in the git repository at:
+
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
+
+Ajit Khaparde (1):
+      be2net: set proper value to version field in req hdr
+
+Benoit Papillault (1):
+      mac80211: Fix probe request filtering in IBSS mode
+
+Damian Lukowski (1):
+      tcp: fix ICMP-RTO war
+
+David S. Miller (2):
+      Merge branch 'master' of git://git.kernel.org/.../linville/wireless-2.6
+      Merge branch 'master' of ssh://master.kernel.org/.../linville/wireless-2.6
+
+Don Skidmore (2):
+      ixgbe: Fix - Do not allow Rx FC on 82598 at 1G due to errata
+      ixgbe: fix WOL register setup for 82599
+
+Herbert Xu (3):
+      inet: Remove bogus IGMPv3 report handling
+      ipcomp: Avoid duplicate calls to ipcomp_destroy
+      xfrm: Fix xfrm_state_clone leak
+
+Jelle Martijn Kok (1):
+      rtl8187: Add new device ID
+
+Johannes Berg (1):
+      mac80211: fix deferred hardware scan requests
+
+Juuso Oikarinen (1):
+      mac80211: fix handling of null-rate control in rate_control_get_rate
+
+Larry Finger (1):
+      b43: Fix throughput regression
+
+Michael Buesch (1):
+      ssb: Fix CONFIG_SSB_SDIOHOST typo
+
+Roel Kluin (1):
+      iwmc3200wifi: Test of wrong pointer after kzalloc in iwm_mlme_update_bss_table()
+
+Shanyu Zhao (1):
+      iwlwifi: fix AMSDU Rx after paged Rx patch
+
+Simon Kagstrom (3):
+      via-velocity: Remove unused IRQ status parameter from rx_srv and tx_srv
+      via-velocity: Take spinlock on set coalesce
+      via-velocity: Fix races on shared interrupts
+
+Steve Hodgson (1):
+      sfc: Fix SFE4002 initialisation
+
+Sujith (1):
+      ath9k: Fix sequence numbers for PAE frames
+
+Wey-Yi Guy (1):
+      iwlwifi: Fix to set correct ht configuration
+
+stephen hemminger (1):
+      ethtool: allow non-admin user to read GRO settings.
+
+ drivers/net/benet/be_cmds.c                |    1 +
+ drivers/net/ixgbe/ixgbe_82598.c            |   22 +++++++++++++++
+ drivers/net/ixgbe/ixgbe_main.c             |    4 +++
+ drivers/net/sfc/efx.c                      |    1 +
+ drivers/net/sfc/qt202x_phy.c               |    2 +-
+ drivers/net/via-velocity.c                 |   41 +++++++++++++--------------
+ drivers/net/wireless/ath/ath9k/xmit.c      |    4 +-
+ drivers/net/wireless/b43/b43.h             |    1 +
+ drivers/net/wireless/b43/main.c            |   13 +++++++--
+ drivers/net/wireless/iwlwifi/iwl-core.c    |    1 +
+ drivers/net/wireless/iwlwifi/iwl-rx.c      |    5 +++-
+ drivers/net/wireless/iwmc3200wifi/rx.c     |    2 +-
+ drivers/net/wireless/rtl818x/rtl8187_dev.c |    1 +
+ drivers/ssb/main.c                         |    3 +-
+ net/core/ethtool.c                         |    1 +
+ net/ipv4/igmp.c                            |    2 +-
+ net/ipv4/ipcomp.c                          |    6 +---
+ net/ipv4/tcp_input.c                       |    6 +---
+ net/ipv6/ipcomp6.c                         |    6 +---
+ net/mac80211/ibss.c                        |    2 +-
+ net/mac80211/rate.c                        |    3 ++
+ net/mac80211/scan.c                        |   18 +++++++-----
+ net/xfrm/xfrm_state.c                      |   12 ++------
+ 23 files changed, 93 insertions(+), 64 deletions(-)
