@@ -1,130 +1,102 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752243Ab0BQQYU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 11:24:20 -0500
-Received: from mail-iw0-f185.google.com ([209.85.223.185]:46063 "EHLO
-	mail-iw0-f185.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751450Ab0BQQYS convert rfc822-to-8bit (ORCPT
+	id S1752318Ab0BQQ0g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 11:26:36 -0500
+Received: from out02.mta.xmission.com ([166.70.13.232]:34802 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751811Ab0BQQ0e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 11:24:18 -0500
+	Wed, 17 Feb 2010 11:26:34 -0500
+To: Cong Wang <amwang@redhat.com>
+Cc: Octavian Purdila <opurdila@ixiacom.com>,
+       David Miller <davem@davemloft.net>,
+       Linux Kernel Network Developers <netdev@vger.kernel.org>,
+       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
+       Eric Dumazet <eric.dumazet@gmail.com>
+Subject: Re: [net-next PATCH v4 0/3] net: reserve ports for applications using fixed port
+References: <1266271241-6293-1-git-send-email-opurdila@ixiacom.com>
+	<201002162151.04861.opurdila@ixiacom.com>
+	<m1mxz93pw2.fsf@fess.ebiederm.org>
+	<201002162322.13101.opurdila@ixiacom.com>
+	<4B7C11D4.1080309@redhat.com> <m1ljer3ksy.fsf@fess.ebiederm.org>
+	<4B7C1722.7040304@redhat.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Wed, 17 Feb 2010 08:26:27 -0800
+In-Reply-To: <4B7C1722.7040304@redhat.com> (Cong Wang's message of "Thu\, 18 Feb 2010 00\:19\:46 +0800")
+Message-ID: <m18war3k24.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-In-Reply-To: <4B7BB927.5000305@grumpydevil.homelinux.org>
-References: <201002140251.59668.volkerarmin@googlemail.com> 
-	<4877c76c1002132002s20d942c3i7cee5418cdcf369c@mail.gmail.com> 
-	<201002141940.35716.volkerarmin@googlemail.com> <4B7AD35E.7000405@tmr.com> 
-	<alpine.LNX.2.01.1002161541370.24961@filesrv1.baby-dragons.com> 
-	<20100217130103.3ca65ef3@notabene.brown> <f73f7ab81002162234t531203ccue1f9ecc839c8ae42@mail.gmail.com> 
-	<4B7BB927.5000305@grumpydevil.homelinux.org>
-From: Kyle Moffett <kyle@moffetthome.net>
-Date: Wed, 17 Feb 2010 11:22:45 -0500
-Message-ID: <f73f7ab81002170822j7e61455o6bee33d95c9648a1@mail.gmail.com>
-Subject: Re: Linux mdadm superblock question.
-To: Rudy Zijlstra <rudy@grumpydevil.homelinux.org>
-Cc: Neil Brown <neilb@suse.de>,
-       "Mr. James W. Laferriere" <babydr@baby-dragons.com>,
-       Bill Davidsen <davidsen@tmr.com>,
-       Volker Armin Hemmann <volkerarmin@googlemail.com>,
-       Michael Evans <mjevans1983@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Scanned: No (on in01.mta.xmission.com); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 17, 2010 at 04:38, Rudy Zijlstra
-<rudy@grumpydevil.homelinux.org> wrote:
-> Kyle Moffett wrote:
->> On Tue, Feb 16, 2010 at 21:01, Neil Brown <neilb@suse.de> wrote:
->>> I will not be removing 0.90 or auto-assemble from the kernel in the
->>> foreseeable future.
->>> None the less, I recommend weaning yourself from your dependence on it.
->>> initramfs is the future, embrace it.
+Cong Wang <amwang@redhat.com> writes:
+
+> Eric W. Biederman wrote:
+>> Cong Wang <amwang@redhat.com> writes:
+>>
+>>> Octavian Purdila wrote:
+>>>> On Tuesday 16 February 2010 22:08:13 you wrote:
+>>>>>> Something like bellow?
+>>>>>>
+>>>>>> # set bits 8080 and 1666
+>>>>>> $echo 8080 1666-1666 > /proc
+>>>>>>
+>>>>>> #reset bit 1666
+>>>>>> $echo 8080 > /proc
+>>>>>>
+>>>>>> #reset whole bitmap
+>>>>>> $echo > /proc
+>>>>> Yes. So something like that.
+>>>>>
+>>>>> I think I would use commas instead of spaces as that is more traditional.
 >>>
+>>> Why this is better than the current version?
+>>>
+>>> For the single port case, currently we use:
+>>>
+>>> echo +8080 > /xxxx #set
+>>> echo -8080 > /xxxx #clear
+>>>
+>>> Now we will use:
+>>>
+>>> echo 8080 > /xxxx #set
+>>> echo 8080 > /xxxx #clear
 >>
->> What are people's reasons for pushback against initramfs?  I've heard
->> lots of claims that "it's not trustworthy" and "it breaks", but in 7
->> years of running bootable software RAID boxes on weird architectures
->> (even running Debian unstable) I have only once or twice had initramfs
->> problems.
+>> No.
 >>
->> As a software capability, initramfs makes it possible to use
->> *anything* as a root filesystem, no matter what is necessary to set it
->> up.  For example, I have seen somebody use DRBD (essentially network
->> RAID-1) as a root filesystem with a few custom hook scripts added to
->> the initramfs-tools configs.  Other examples include using Sun ZFS as
->> a root fs via an initramfs FUSE daemon, a feat which even Solaris
->> could not accomplish at the time.  Encrypted root filesystems also
->> require an initramfs to prompt for encryption keys and decrypt the
->> block device.  Multipath block devices are another example.
+>>> I don't think the latter is better...
+>>>
+>>> For the multi-port case, yes, we should accept 'echo 8080,10000 >/xxxx'.
+>>
+>> What I was envisioning was:
+>>
+>> echo 8080 > /xxx # set the bitmap to 8080
+>> echo 8080,10000 > /xxx # add 10000 to the bitmap
+>> echo 8080 > /xxxx # remove 10000 from the bitmap.
+>>
+>> That is when you set it you enter the entire set every time, treating
+>> the entire set as a single value.
+>>
 >
-> We are looking at 2 different use-cases i think.
+> Oh, I see, this is ok.
 >
-> for the power-user system manager, who manages all his servers and has
-> knowledgeable backup, initrd may indeed work as above.
+> But if we could support multi-port, that will be better, something like:
 >
-> I have to keep in mind, that when there is a problem while i am travelling
-> (and that happens), there is no sys-admin present. Also, i am supporting
-> systems remote where no-one has the knowledge to debug using a initrd. In
-> such cases, initrd is an additional step. And each additional step is an
-> additional source of mistakes.
-
-Actually, a properly built initramfs gives you far more reliable
-behavior even without a local sysadmin.  For example, most
-graphical-boot tools are designed to be built into an initramfs; I
-have seen some prototype initramfs images which provide end-user
-accessible GUI boot menus and other tools which function reliably even
-when your root filesystem is inaccessible.
-
-> 1/ distro tools assume that the kernel being build will run on that machine.
-> For servers this is often not true. There are very valid security reasons to
-> exclude compilation capability from many servers.
-
-As Frans Pop states, this is entirely untrue for (at the very least)
-Debian.  The "initramfs-tools" package present there works regardless
-of where I obtain my kernel.  If I use the "make-kpkg" Debian tool
-when building my kernel (regardless of where it is built), then the
-resulting package will automatically generate an appropriate initramfs
-image when installed.  If for some reason I install a kernel by hand I
-can very trivially build the necessary initramfs with this command:
-
-update-initramfs -c -k 2.6.32-mykernel01
-
-In the event that you need to "customize" the initramfs for some
-reason, you can simply do so.  When the "update-initramfs" tool is
-next run, it will report that the user has customized that image and
-avoid modifying it.  If you wish to return to the autogenerated
-initramfs you can simply run this command:
-
-update-initramfs -u -t -k 2.6.32-2-amd64
-
-> 2/ For most small shops, there is need for RAID (disks are fallible, shop
-> cannot do without server), the RAID should work without being visible. If
-> there is a problem with the RAID that causes auto-assemble to break, it
-> means i need to travel (>100KM) to trouble shoot. The simpler the setup, the
-> more i like it. This is also why i almost always use HW raid for the system
-> partitions. The ones i use have userland tools in Linux which warn on disk
-> failure, ensure auto rebuild, etc...
-> Still, for large storage needs it is SW RAID over SATA.
+> echo '8080,10000-11000' > /xxx #add port 8080 and port range 10000-11000
 >
-> 3/ for my home systems, if i need to remote-support to get things working
-> again (i am often travelling for my work), the added layer of initrd is an
-> added layer of possible mistakes.
+> so that I don't have to construct a long string for all ports within
+> 10000 and 11000.
 
-You are actually just setting yourself up for problems.  RAID
-autoassembly has bad corner cases when disks disappear between reboots
-(which happens with failing disk head assemblies).  In that case it
-will fail to find its root filesystem or wait forever for the last
-disk to show up.  I have had even *worse* problems (including
-corruption of unrelated logical volumes) with many hardware RAID
-controllers, even those from big-name server vendors such as HP and
-Dell.
+Yes, multi-port ranges are what I suggested.  You simply had not
+gotten confused about that aspect, so I was not repeating it.
+Except for pathological cases a ranges should keep the string
+that represents the bitmap small.
 
-To contrast, an initramfs is configurable to prompt the user,
-automatically degrade the array after a small delay, or even play a
-kazoo if desired :-D.  One of these days I may get around to building
-myself a small GUI wrapper around mdadm on an initramfs which allows a
-user to manually recover from RAID problems.
+Eric
 
-Cheers,
-Kyle Moffett
