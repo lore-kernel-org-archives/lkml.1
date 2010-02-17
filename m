@@ -1,58 +1,65 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933752Ab0BQJ5Z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 04:57:25 -0500
-Received: from mail-fx0-f215.google.com ([209.85.220.215]:44206 "EHLO
-	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932968Ab0BQJ5W (ORCPT
+	id S933925Ab0BQJ6m (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 04:58:42 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:46401 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933187Ab0BQJ6l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 04:57:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=N9+XqPh5zkFxk89/epkRn5C3sCJiykytx5hgt0I99fG3X+PfWDTU9jy9PauVUgVdbS
-         HIQcItJYVQOFcM4282mx3xv2GEQJOA/pez7i2XPWVK6mCqRrsFlL4JQbKeYZRfsx8Zki
-         qcepc5JIZtKO90DEUOsmvkZF+XJf/3cKxccDI=
-Message-ID: <4B7BBD7D.9090602@warmcat.com>
-Date: Wed, 17 Feb 2010 10:57:17 +0100
-From: Andy Green <andy@warmcat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc13 Thunderbird/3.0.1
+	Wed, 17 Feb 2010 04:58:41 -0500
+To: "Nikita V. Youshchenko" <yoush@cs.msu.su>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Extended error reporting to user space?
+From: Andi Kleen <andi@firstfloor.org>
+References: <201002161520.26700@zigzag.lvk.cs.msu.su>
+Date: Wed, 17 Feb 2010 10:58:33 +0100
+In-Reply-To: <201002161520.26700@zigzag.lvk.cs.msu.su> (Nikita V. Youshchenko's message of "Tue, 16 Feb 2010 15:20:26 +0300")
+Message-ID: <87r5ok5gl2.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
-To: Sascha Hauer <s.hauer@pengutronix.de>
-CC: Catalin Marinas <catalin.marinas@arm.com>,
-       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Ming Lei <tom.leiming@gmail.com>,
-       Sebastian Siewior <bigeasy@linutronix.de>, linux-usb@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Pavel Machek <pavel@ucw.cz>, Greg KH <greg@kroah.com>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
-Subject: Re: USB mass storage and ARM cache coherency
-References: <20100208065519.GE1290@ucw.cz> <1265622676.4020.19.camel@pc1117.cambridge.arm.com> <4B6FE162.6000004@warmcat.com> <20100217095000.GA17643@pengutronix.de>
-In-Reply-To: <20100217095000.GA17643@pengutronix.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/17/10 10:50, Somebody in the thread at some point said:
-> On Mon, Feb 08, 2010 at 11:03:14AM +0100, Andy Green wrote:
->> On 02/08/10 10:51, Somebody in the thread at some point said:
->>
->>> We could of course flush the caches every time we get a page fault but
->>> that's far from optimal, especially since DMA-capable drivers to do not
->>> pollute the D-cache and don't need this extra flushing. Note that the
->>> recent ARM processors have PIPT caches but separate for I and D and it's
->>> the PIO drivers that pollute the D-cache.
->>
->> Just noting that AFAIK iMX31 USB and MMC drivers both are PIO at the
->> moment, for lack of any platform DMA support of its unusual DMA engine.
+"Nikita V. Youshchenko" <yoush@cs.msu.su> writes:
+
+> I'm developing a device driver that, in it's ioctl()s, accepts a complex 
+> data structure. Before doing it's operation, it performs large number of 
+> checks if data is valid. If one of those checks fail, driver 
+> returns -EINVAL.
 >
-> The EHCI module has its own DMA engine and has nothing to do with the
-> SDMA engine.
+> Unfortunately this -EINVAL is not really useful. E.g. if a developer, 
+> sitting in his IDE and debugging his code, will see ioctl() 
+> returning -EINVAL, and will have hard times finding what exactly is wrong.
+>
+> Before inventing driver-specific extended error reporting, I'd like to ask 
+> if there is anything more or less generic for this.
+> I believe situation when -Exxx is too weak interface for error reporting is 
+> common.
 
-You're right, my mistake.  iMX31 MMC is PIO due to no SDMA support though.
+This is a very common problem in Linux unfortunately.  I always
+describe that as a the "ed approach to error handling". Instead
+of giving a error message you just give ?. Just ? happens
+to be EINVAL in Linux. 
 
--Andy
+My favourite example of this is the configuration of the networking
+queueing disciplines, which configure complicated data structures and
+algorithms and in many cases have tens of different error conditions
+based on the input parameters -- and they all just report EINVAL.
+
+The standard way (standard kludge or standard workaround would be a
+better description) is to use printk; often guarded by a special
+kernel tunable or ifdef to avoid flooding the log in the normal case.
+
+IMHO it would be best to simply add a way to return strings directly
+in this case (a la plan9). This would be probably not too hard to
+implement. It's not there unfortunately.
+
+This could be done with one of the message oriented protocols,
+e.g. netlink or read/write on a special minor.
+
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
