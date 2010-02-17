@@ -1,120 +1,185 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934190Ab0BQNp5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 08:45:57 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:47398 "EHLO mx1.redhat.com"
+	id S934271Ab0BQNpx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 08:45:53 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:15480 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934194Ab0BQNpk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S934190Ab0BQNpk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 17 Feb 2010 08:45:40 -0500
 From: Avi Kivity <avi@redhat.com>
 To: kvm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 15/20] KVM: x86 emulator: Fix popf emulation
-Date: Wed, 17 Feb 2010 15:45:25 +0200
-Message-Id: <1266414330-27444-16-git-send-email-avi@redhat.com>
+Subject: [PATCH 08/20] KVM: ppc/booke: Set ESR and DEAR when inject interrupt to guest
+Date: Wed, 17 Feb 2010 15:45:18 +0200
+Message-Id: <1266414330-27444-9-git-send-email-avi@redhat.com>
 In-Reply-To: <1266414330-27444-1-git-send-email-avi@redhat.com>
 References: <1266414330-27444-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Gleb Natapov <gleb@redhat.com>
+From: Liu Yu <yu.liu@freescale.com>
 
-POPF behaves differently depending on current CPU mode. Emulate correct
-logic to prevent guest from changing flags that it can't change otherwise.
+Old method prematurely sets ESR and DEAR.
+Move this part after we decide to inject interrupt,
+which is more like hardware behave.
 
-Signed-off-by: Gleb Natapov <gleb@redhat.com>
-Cc: stable@kernel.org
+Signed-off-by: Liu Yu <yu.liu@freescale.com>
+Acked-by: Hollis Blanchard <hollis@penguinppc.org>
+Acked-by: Alexander Graf <agraf@suse.de>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- arch/x86/kvm/emulate.c |   55 +++++++++++++++++++++++++++++++++++++++++++++++-
- 1 files changed, 54 insertions(+), 1 deletions(-)
+ arch/powerpc/include/asm/kvm_host.h |    2 +
+ arch/powerpc/kvm/booke.c            |   59 ++++++++++++++++++++++++++---------
+ arch/powerpc/kvm/emulate.c          |    4 +-
+ 3 files changed, 48 insertions(+), 17 deletions(-)
 
-diff --git a/arch/x86/kvm/emulate.c b/arch/x86/kvm/emulate.c
-index 296e851..1782387 100644
---- a/arch/x86/kvm/emulate.c
-+++ b/arch/x86/kvm/emulate.c
-@@ -343,11 +343,18 @@ static u32 group2_table[] = {
- };
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index 715aa6b..5e5bae7 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -259,6 +259,8 @@ struct kvm_vcpu_arch {
+ #endif
+ 	ulong fault_dear;
+ 	ulong fault_esr;
++	ulong queued_dear;
++	ulong queued_esr;
+ 	gpa_t paddr_accessed;
  
- /* EFLAGS bit definitions. */
-+#define EFLG_ID (1<<21)
-+#define EFLG_VIP (1<<20)
-+#define EFLG_VIF (1<<19)
-+#define EFLG_AC (1<<18)
- #define EFLG_VM (1<<17)
- #define EFLG_RF (1<<16)
-+#define EFLG_IOPL (3<<12)
-+#define EFLG_NT (1<<14)
- #define EFLG_OF (1<<11)
- #define EFLG_DF (1<<10)
- #define EFLG_IF (1<<9)
-+#define EFLG_TF (1<<8)
- #define EFLG_SF (1<<7)
- #define EFLG_ZF (1<<6)
- #define EFLG_AF (1<<4)
-@@ -1214,6 +1221,49 @@ static int emulate_pop(struct x86_emulate_ctxt *ctxt,
- 	return rc;
+ 	u8 io_gpr; /* GPR used as IO source/target */
+diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
+index e283e44..4d686cc 100644
+--- a/arch/powerpc/kvm/booke.c
++++ b/arch/powerpc/kvm/booke.c
+@@ -82,9 +82,32 @@ static void kvmppc_booke_queue_irqprio(struct kvm_vcpu *vcpu,
+ 	set_bit(priority, &vcpu->arch.pending_exceptions);
  }
  
-+static int emulate_popf(struct x86_emulate_ctxt *ctxt,
-+		       struct x86_emulate_ops *ops,
-+		       void *dest, int len)
-+{
-+	int rc;
-+	unsigned long val, change_mask;
-+	int iopl = (ctxt->eflags & X86_EFLAGS_IOPL) >> IOPL_SHIFT;
-+	int cpl = kvm_x86_ops->get_cpl(ctxt->vcpu);
-+
-+	rc = emulate_pop(ctxt, ops, &val, len);
-+	if (rc != X86EMUL_CONTINUE)
-+		return rc;
-+
-+	change_mask = EFLG_CF | EFLG_PF | EFLG_AF | EFLG_ZF | EFLG_SF | EFLG_OF
-+		| EFLG_TF | EFLG_DF | EFLG_NT | EFLG_RF | EFLG_AC | EFLG_ID;
-+
-+	switch(ctxt->mode) {
-+	case X86EMUL_MODE_PROT64:
-+	case X86EMUL_MODE_PROT32:
-+	case X86EMUL_MODE_PROT16:
-+		if (cpl == 0)
-+			change_mask |= EFLG_IOPL;
-+		if (cpl <= iopl)
-+			change_mask |= EFLG_IF;
-+		break;
-+	case X86EMUL_MODE_VM86:
-+		if (iopl < 3) {
-+			kvm_inject_gp(ctxt->vcpu, 0);
-+			return X86EMUL_PROPAGATE_FAULT;
-+		}
-+		change_mask |= EFLG_IF;
-+		break;
-+	default: /* real mode */
-+		change_mask |= (EFLG_IOPL | EFLG_IF);
-+		break;
-+	}
-+
-+	*(unsigned long *)dest =
-+		(ctxt->eflags & ~change_mask) | (val & change_mask);
-+
-+	return rc;
+-void kvmppc_core_queue_program(struct kvm_vcpu *vcpu, ulong flags)
++static void kvmppc_core_queue_dtlb_miss(struct kvm_vcpu *vcpu,
++                                        ulong dear_flags, ulong esr_flags)
+ {
+-	/* BookE does flags in ESR, so ignore those we get here */
++	vcpu->arch.queued_dear = dear_flags;
++	vcpu->arch.queued_esr = esr_flags;
++	kvmppc_booke_queue_irqprio(vcpu, BOOKE_IRQPRIO_DTLB_MISS);
 +}
 +
- static void emulate_push_sreg(struct x86_emulate_ctxt *ctxt, int seg)
++static void kvmppc_core_queue_data_storage(struct kvm_vcpu *vcpu,
++                                           ulong dear_flags, ulong esr_flags)
++{
++	vcpu->arch.queued_dear = dear_flags;
++	vcpu->arch.queued_esr = esr_flags;
++	kvmppc_booke_queue_irqprio(vcpu, BOOKE_IRQPRIO_DATA_STORAGE);
++}
++
++static void kvmppc_core_queue_inst_storage(struct kvm_vcpu *vcpu,
++                                           ulong esr_flags)
++{
++	vcpu->arch.queued_esr = esr_flags;
++	kvmppc_booke_queue_irqprio(vcpu, BOOKE_IRQPRIO_INST_STORAGE);
++}
++
++void kvmppc_core_queue_program(struct kvm_vcpu *vcpu, ulong esr_flags)
++{
++	vcpu->arch.queued_esr = esr_flags;
+ 	kvmppc_booke_queue_irqprio(vcpu, BOOKE_IRQPRIO_PROGRAM);
+ }
+ 
+@@ -115,14 +138,19 @@ static int kvmppc_booke_irqprio_deliver(struct kvm_vcpu *vcpu,
  {
- 	struct decode_cache *c = &ctxt->decode;
-@@ -2099,7 +2149,10 @@ special_insn:
- 		c->dst.type = OP_REG;
- 		c->dst.ptr = (unsigned long *) &ctxt->eflags;
- 		c->dst.bytes = c->op_bytes;
--		goto pop_instruction;
-+		rc = emulate_popf(ctxt, ops, &c->dst.val, c->op_bytes);
-+		if (rc != X86EMUL_CONTINUE)
-+			goto done;
-+		break;
- 	case 0xa0 ... 0xa1:	/* mov */
- 		c->dst.ptr = (unsigned long *)&c->regs[VCPU_REGS_RAX];
- 		c->dst.val = c->src.val;
+ 	int allowed = 0;
+ 	ulong msr_mask;
++	bool update_esr = false, update_dear = false;
+ 
+ 	switch (priority) {
+-	case BOOKE_IRQPRIO_PROGRAM:
+ 	case BOOKE_IRQPRIO_DTLB_MISS:
+-	case BOOKE_IRQPRIO_ITLB_MISS:
+-	case BOOKE_IRQPRIO_SYSCALL:
+ 	case BOOKE_IRQPRIO_DATA_STORAGE:
++		update_dear = true;
++		/* fall through */
+ 	case BOOKE_IRQPRIO_INST_STORAGE:
++	case BOOKE_IRQPRIO_PROGRAM:
++		update_esr = true;
++		/* fall through */
++	case BOOKE_IRQPRIO_ITLB_MISS:
++	case BOOKE_IRQPRIO_SYSCALL:
+ 	case BOOKE_IRQPRIO_FP_UNAVAIL:
+ 	case BOOKE_IRQPRIO_SPE_UNAVAIL:
+ 	case BOOKE_IRQPRIO_SPE_FP_DATA:
+@@ -157,6 +185,10 @@ static int kvmppc_booke_irqprio_deliver(struct kvm_vcpu *vcpu,
+ 		vcpu->arch.srr0 = vcpu->arch.pc;
+ 		vcpu->arch.srr1 = vcpu->arch.msr;
+ 		vcpu->arch.pc = vcpu->arch.ivpr | vcpu->arch.ivor[priority];
++		if (update_esr == true)
++			vcpu->arch.esr = vcpu->arch.queued_esr;
++		if (update_dear == true)
++			vcpu->arch.dear = vcpu->arch.queued_dear;
+ 		kvmppc_set_msr(vcpu, vcpu->arch.msr & msr_mask);
+ 
+ 		clear_bit(priority, &vcpu->arch.pending_exceptions);
+@@ -229,8 +261,7 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 		if (vcpu->arch.msr & MSR_PR) {
+ 			/* Program traps generated by user-level software must be handled
+ 			 * by the guest kernel. */
+-			vcpu->arch.esr = vcpu->arch.fault_esr;
+-			kvmppc_booke_queue_irqprio(vcpu, BOOKE_IRQPRIO_PROGRAM);
++			kvmppc_core_queue_program(vcpu, vcpu->arch.fault_esr);
+ 			r = RESUME_GUEST;
+ 			kvmppc_account_exit(vcpu, USR_PR_INST);
+ 			break;
+@@ -286,16 +317,14 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 		break;
+ 
+ 	case BOOKE_INTERRUPT_DATA_STORAGE:
+-		vcpu->arch.dear = vcpu->arch.fault_dear;
+-		vcpu->arch.esr = vcpu->arch.fault_esr;
+-		kvmppc_booke_queue_irqprio(vcpu, BOOKE_IRQPRIO_DATA_STORAGE);
++		kvmppc_core_queue_data_storage(vcpu, vcpu->arch.fault_dear,
++		                               vcpu->arch.fault_esr);
+ 		kvmppc_account_exit(vcpu, DSI_EXITS);
+ 		r = RESUME_GUEST;
+ 		break;
+ 
+ 	case BOOKE_INTERRUPT_INST_STORAGE:
+-		vcpu->arch.esr = vcpu->arch.fault_esr;
+-		kvmppc_booke_queue_irqprio(vcpu, BOOKE_IRQPRIO_INST_STORAGE);
++		kvmppc_core_queue_inst_storage(vcpu, vcpu->arch.fault_esr);
+ 		kvmppc_account_exit(vcpu, ISI_EXITS);
+ 		r = RESUME_GUEST;
+ 		break;
+@@ -316,9 +345,9 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 		gtlb_index = kvmppc_mmu_dtlb_index(vcpu, eaddr);
+ 		if (gtlb_index < 0) {
+ 			/* The guest didn't have a mapping for it. */
+-			kvmppc_booke_queue_irqprio(vcpu, BOOKE_IRQPRIO_DTLB_MISS);
+-			vcpu->arch.dear = vcpu->arch.fault_dear;
+-			vcpu->arch.esr = vcpu->arch.fault_esr;
++			kvmppc_core_queue_dtlb_miss(vcpu,
++			                            vcpu->arch.fault_dear,
++			                            vcpu->arch.fault_esr);
+ 			kvmppc_mmu_dtlb_miss(vcpu);
+ 			kvmppc_account_exit(vcpu, DTLB_REAL_MISS_EXITS);
+ 			r = RESUME_GUEST;
+diff --git a/arch/powerpc/kvm/emulate.c b/arch/powerpc/kvm/emulate.c
+index b905623..cb72a65 100644
+--- a/arch/powerpc/kvm/emulate.c
++++ b/arch/powerpc/kvm/emulate.c
+@@ -151,10 +151,10 @@ int kvmppc_emulate_instruction(struct kvm_run *run, struct kvm_vcpu *vcpu)
+ 	case OP_TRAP:
+ #ifdef CONFIG_PPC64
+ 	case OP_TRAP_64:
++		kvmppc_core_queue_program(vcpu, SRR1_PROGTRAP);
+ #else
+-		vcpu->arch.esr |= ESR_PTR;
++		kvmppc_core_queue_program(vcpu, vcpu->arch.esr | ESR_PTR);
+ #endif
+-		kvmppc_core_queue_program(vcpu, SRR1_PROGTRAP);
+ 		advance = 0;
+ 		break;
+ 
 -- 
 1.6.5.3
 
