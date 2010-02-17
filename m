@@ -1,83 +1,70 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751399Ab0BQQDx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 11:03:53 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:41474 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750795Ab0BQQDv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 11:03:51 -0500
-Message-ID: <4B7C142C.9040707@redhat.com>
-Date: Thu, 18 Feb 2010 00:07:08 +0800
-From: Cong Wang <amwang@redhat.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20091001)
+	id S1751637Ab0BQQEB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 11:04:01 -0500
+Received: from mail-iw0-f185.google.com ([209.85.223.185]:45234 "EHLO
+	mail-iw0-f185.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751443Ab0BQQD6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 11:03:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=CtKaWtpt6bbeQeFmDrWTd1/uo6yAnfGF+zxkddHOKnkFvtKkAxTdx1/ECabbKZE7V3
+         9rLmqS5/wQwRt2L2jOy9u6cImIDMqLllt+HZpFvUBfZVDMLSPe43bxhSXrFcWpW0MtWX
+         R9pElK/x39mqGm3iwg7I+kKcHupOVs+INtcho=
+Date: Wed, 17 Feb 2010 17:03:50 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: Michael Stefaniuc <mstefani@redhat.com>, prasad@linux.vnet.ibm.com,
+       Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org,
+       Maneesh Soni <maneesh@linux.vnet.ibm.com>,
+       Alexandre Julliard <julliard@winehq.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Maciej Rutecki <maciej.rutecki@gmail.com>
+Subject: Re: Regression in ptrace (Wine) starting with 2.6.33-rc1
+Message-ID: <20100217160339.GA5041@nowhere>
+References: <4B745F5C.5050001@redhat.com> <20100213173323.GB3778@in.ibm.com> <4B7719AC.6040901@redhat.com> <20100214171535.GA5065@nowhere> <4B785952.8020706@redhat.com> <20100214204130.GD5479@nowhere> <4B7881AC.5070209@redhat.com> <20100215115713.GA8907@in.ibm.com> <4B79A27B.6080607@redhat.com> <20100215194724.8B5F519@magilla.sf.frob.com>
 MIME-Version: 1.0
-To: Octavian Purdila <opurdila@ixiacom.com>
-CC: David Miller <davem@davemloft.net>,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>,
-       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
-       Neil Horman <nhorman@tuxdriver.com>,
-       Eric Dumazet <eric.dumazet@gmail.com>
-Subject: Re: [net-next PATCH v4 3/3] net: reserve ports for applications using
- fixed port numbers
-References: <1266271241-6293-1-git-send-email-opurdila@ixiacom.com> <201002161306.29708.opurdila@ixiacom.com> <4B7A9852.5020105@redhat.com> <201002161625.22495.opurdila@ixiacom.com>
-In-Reply-To: <201002161625.22495.opurdila@ixiacom.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100215194724.8B5F519@magilla.sf.frob.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Octavian Purdila wrote:
-> On Tuesday 16 February 2010 15:06:26 you wrote:
->> Octavian Purdila wrote:
->>> On Tuesday 16 February 2010 11:37:04 you wrote:
->>>>>  	BUILD_BUG_ON(sizeof(struct inet_skb_parm) > sizeof(dummy_skb->cb));
->>>>>
->>>>> +	sysctl_local_reserved_ports = kzalloc(65536 / 8, GFP_KERNEL);
->>>>> +	if (!sysctl_local_reserved_ports)
->>>>> +		goto out;
->>>>> +
->>>> I think we should also consider the ports in ip_local_port_range,
->>>> since we can only reserve the ports in that range.
->>> That is subject to changes at runtime, which means we will have to
->>> readjust the bitmap at runtime which introduces the need for additional
->>> synchronization operations which I would rather avoid.
->> Why? As long as the bitmap is global, this will not be hard.
->>
+On Mon, Feb 15, 2010 at 11:47:24AM -0800, Roland McGrath wrote:
+> > - The other one with 'locally'/'globally' enabled breakpoints.
 > 
-> For the more important point see bellow, but with regard to reallocation, this 
-> means we need to at least use rcu_read_lock() in the fast path to avoid races 
-> between freeing the old bitmap and doing a read in progress. 
-> 
-> Granted, that is a light operation, but would it makes things so much more 
-> complicated just so that we save one memory page (assuming the range is the 
-> default [32000 64000] one).
+> There is no "local/global" enablement.  That distinction is meaningless
+> given the way the kernel uses the hardware.  Which of those bits you set
+> has no material effect on the watchpoint/trap behavior.  
 
 
-Why not just allocate the bitmap for all ports? 65535/8 bytes are
-needed.
 
-> 
->> Consider that if one user writes a port number which is beyond
->> the ip_local_port_range into ip_local_reserved_ports, we should
->> not accept this, because it doesn't make any sense. But with your
->> patch, we do.
->>
-> 
-> I think it should be allowed. I see ip_local_reserved_ports and ip_local_range 
-> as independent settings that can be change at any time.
+Yeah.
 
 
-According to the original purpose, they are not.
+ 
+> The only regression is in the observed bit pattern read back from dr7.
+> To be 100% compatible, the hw_breakpoint ptrace-compatibility front-end
+> should record the state of the useless bits to report back, so the only
+> differences from the bit pattern written are whatever ones the real
+> hardware would have shown from writing dr7 and reading it back.
 
-> 
-> That way I can flag port 8080 even if the current range is [32000, 64000] and 
-> then later I can expand the range to [1024, 64000] without loosing the 8080 
-> reservation.
 
-Then its meaning is changed, bind(0) will never have chance to get 8080,
-thus reserving 8080 for this purpose fails.
 
-I want to always keep its original meaning, if the local_port_range goes
-out, then local_reserved_port should be empty at the same time, you have
-to reset it after changing local_port_range.
+Agreed. We have to match the previous ABI, it's a regression.
+
+We have the NULL breakpoint address thing fixed (will push it to Ingo).
+We now need to fix the local/global flag storage.
+
+The fastest way to do so is to keep a per thread dr7 variable.
+I'm looking at it and will send a fix soon.
+
+We can think about something proper later.
+
+Thanks.
+
