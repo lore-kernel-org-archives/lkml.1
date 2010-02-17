@@ -1,149 +1,63 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932903Ab0BQJi7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 04:38:59 -0500
-Received: from tritonia.xxlwebhosting.nl ([81.4.88.63]:54899 "EHLO
-	tritonia.xxlwebhosting.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932814Ab0BQJi4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 04:38:56 -0500
-Message-ID: <4B7BB927.5000305@grumpydevil.homelinux.org>
-Date: Wed, 17 Feb 2010 10:38:47 +0100
-From: Rudy Zijlstra <rudy@grumpydevil.homelinux.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090820)
-MIME-Version: 1.0
-To: Kyle Moffett <kyle@moffetthome.net>
-CC: Neil Brown <neilb@suse.de>,
-       "Mr. James W. Laferriere" <babydr@baby-dragons.com>,
-       Bill Davidsen <davidsen@tmr.com>,
-       Volker Armin Hemmann <volkerarmin@googlemail.com>,
-       Michael Evans <mjevans1983@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org
-Subject: Re: Linux mdadm superblock question.
-References: <201002140251.59668.volkerarmin@googlemail.com> 	<4877c76c1002132002s20d942c3i7cee5418cdcf369c@mail.gmail.com> 	<201002141940.35716.volkerarmin@googlemail.com> <4B7AD35E.7000405@tmr.com> 	<alpine.LNX.2.01.1002161541370.24961@filesrv1.baby-dragons.com> 	<20100217130103.3ca65ef3@notabene.brown> <f73f7ab81002162234t531203ccue1f9ecc839c8ae42@mail.gmail.com>
-In-Reply-To: <f73f7ab81002162234t531203ccue1f9ecc839c8ae42@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	id S932936Ab0BQJmB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 04:42:01 -0500
+Received: from gate.crashing.org ([63.228.1.57]:57922 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932888Ab0BQJl7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 04:41:59 -0500
+Subject: Re: USB mass storage and ARM cache coherency
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: "Shilimkar, Santosh" <santosh.shilimkar@ti.com>,
+       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Ming Lei <tom.leiming@gmail.com>,
+       "Mankad, Maulik Ojas" <x0082077@ti.com>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       Catalin Marinas <catalin.marinas@arm.com>,
+       Sebastian Siewior <bigeasy@linutronix.de>,
+       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Pavel Machek <pavel@ucw.cz>, Greg KH <greg@kroah.com>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+In-Reply-To: <201002171015.52875.oliver@neukum.org>
+References: <20100208065519.GE1290@ucw.cz>
+	 <201002160922.47072.oliver@neukum.org> <1266397543.16346.264.camel@pasglop>
+	 <201002171015.52875.oliver@neukum.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 17 Feb 2010 20:40:09 +1100
+Message-ID: <1266399609.16346.271.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-X-ACL-Warn: {
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - tritonia.xxlwebhosting.nl
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - grumpydevil.homelinux.org
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kyle Moffett wrote:
-> On Tue, Feb 16, 2010 at 21:01, Neil Brown <neilb@suse.de> wrote:
->   
->> On Tue, 16 Feb 2010 16:03:43 -0900 (AKST) "Mr. James W. Laferriere" <babydr@baby-dragons.com> wrote:
->>     
->>>       I am unaware of any record from Neil or other maintainer(s) of the
->>> /md/ device tree saying that they will not remove the 0.90 table and the
->>> autoassembly functions there .  I'd very much like to hear a statement saying
->>> there will not be a removal of the autoassembly functions for 0.90 raid table
->>> from the kernel tree .
->>>       
->> I will not be removing 0.90 or auto-assemble from the kernel in the
->> foreseeable future.
->> None the less, I recommend weaning yourself from your dependence on it.
->> initramfs is the future, embrace it.
->>     
->
-> What are people's reasons for pushback against initramfs?  I've heard
-> lots of claims that "it's not trustworthy" and "it breaks", but in 7
-> years of running bootable software RAID boxes on weird architectures
-> (even running Debian unstable) I have only once or twice had initramfs
-> problems.
->
-> As a software capability, initramfs makes it possible to use
-> *anything* as a root filesystem, no matter what is necessary to set it
-> up.  For example, I have seen somebody use DRBD (essentially network
-> RAID-1) as a root filesystem with a few custom hook scripts added to
-> the initramfs-tools configs.  Other examples include using Sun ZFS as
-> a root fs via an initramfs FUSE daemon, a feat which even Solaris
-> could not accomplish at the time.  Encrypted root filesystems also
-> require an initramfs to prompt for encryption keys and decrypt the
-> block device.  Multipath block devices are another example.
->
-> You should also take a look at your distro installers.  There is not a
-> single one made in the last several years which does not use an
-> initramfs to start networking or access the installation media.  In
-> fact, of all the distro installers I have had the most consistent
-> behavior regardless of system hardware from the ones which operate
-> entirely out of their initramfs.
->
-> From a reliability perspective, an initramfs is no more essential
-> than, say, /sbin/init or /boot/vmlinuz-2.6.33.  Furthermore, all of
-> the modern initramfs generation tools automatically keep backup copies
-> exactly the same way that "make install" keeps backup copies of your
-> kernel images.  The two times I've managed to hose my initramfs I was
-> able to simply edit my grub config to use a file called something like
-> "/boot/initramfs-2.6.33.bak" instead.
->
-> In fact, I have had several times where an initramfs made my boot
-> process *more* reliable.  On one of my LVM JBOD systems, I was able to
-> pull a group of 3 SATA drives whose backplane had failed and drop them
-> all in USB enclosures to get the system back up and running in a half
-> an hour.  With just straight partitions on the volumes I would have
-> been hunting around for 2 hours to figure out where all my partitions
-> had gone only to have the USB drives spin up in a different order
-> during the next reboot.
->
-> If you're really concerned about boot-process reliability, go ahead
-> and tell your initramfs tool to include a fully-featured busybox,
-> coreutils, bash, strace, gdb, and a half-dozen other developer tools.
-> You may wait an extra 20 seconds for your bootloader to load the damn
-> thing during boot, but you'll be able to track down that annoying
-> 10-second hang in your /sbin/init program during config-file parsing.
->
-> I've built specialized embedded computers with stripped-down chipset
-> initialization code, a tiny Linux kernel and a special-purpose
-> initramfs burned into the flash.  By using the fastboot patches and
-> disabling all the excess drivers, my kernel was fully operational
-> within the first half-second.  It used the tools on the initramfs to
-> poke around on the hard disk as a bootloader, then kexec() to load the
-> operational kernel.
->
-> Counting up all the problems I've had with system boot... I've had an
-> order of magnitude more problems from somebody getting careless with
-> "rm", "dpkg --purge", etc than with initramfs deficiencies.
->
->
->   
-We are looking at 2 different use-cases i think.
+On Wed, 2010-02-17 at 10:15 +0100, Oliver Neukum wrote:
+> We should have changed the subject line.
+> 
+> There's a second problem. It turns out that on ARM
+> mapping for DMA must not be done if PIO will be used. Some HCDs
+> use PIO for some transfers but DMA for others. The generic layer
+> must learn about this. 
 
-for the power-user system manager, who manages all his servers and has 
-knowledgeable backup, initrd may indeed work as above.
+Ah, that makes a lot of sense and the same problem would happen on
+any non-DMA coherent architecture, including some embedded ppc's.
 
-I have to keep in mind, that when there is a problem while i am 
-travelling (and that happens), there is no sys-admin present. Also, i am 
-supporting systems remote where no-one has the knowledge to debug using 
-a initrd. In such cases, initrd is an additional step. And each 
-additional step is an additional source of mistakes.
+I can see why the dma unmap would invalidate the dcache and blow
+away the PIO.
 
-1/ distro tools assume that the kernel being build will run on that 
-machine. For servers this is often not true. There are very valid 
-security reasons to exclude compilation capability from many servers.
-2/ For most small shops, there is need for RAID (disks are fallible, 
-shop cannot do without server), the RAID should work without being 
-visible. If there is a problem with the RAID that causes auto-assemble 
-to break, it means i need to travel (>100KM) to trouble shoot. The 
-simpler the setup, the more i like it. This is also why i almost always 
-use HW raid for the system partitions. The ones i use have userland 
-tools in Linux which warn on disk failure, ensure auto rebuild, etc...
-Still, for large storage needs it is SW RAID over SATA.
-3/ for my home systems, if i need to remote-support to get things 
-working again (i am often travelling for my work), the added layer of 
-initrd is an added layer of possible mistakes.
-
-
+What bugs me here is that the dma_map_* operation should always
+be done at the lowest level, ie, the actual HCD driver, and thus
+it should be up to the HCD to decide whether to dma_map or not
+depending on whether it's going to do DMA or not. I haven't
+scrutinized USB lately but if that isn't the case and the dma_map_*
+operations are done behind your back by the USB core then that needs to
+be changed in a way or another, or hooked at least.
 
 Cheers,
+Ben.
 
 
-Rudy
