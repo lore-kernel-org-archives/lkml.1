@@ -1,71 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933794Ab0BQAjF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 19:39:05 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:47362 "EHLO smtps.tip.net.au"
+	id S933790Ab0BQAoF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 19:44:05 -0500
+Received: from hera.kernel.org ([140.211.167.34]:55989 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933749Ab0BQAjB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 19:39:01 -0500
-Date: Wed, 17 Feb 2010 11:38:55 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: linux-next: build warning after merge of the i2c tree
-Message-Id: <20100217113855.7ebf3d39.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta7 (GTK+ 2.18.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__17_Feb_2010_11_38_55_+1100_xByEQyEja66rkF2l"
+	id S933615Ab0BQAoB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 19:44:01 -0500
+Message-ID: <4B7B3B33.6010504@kernel.org>
+Date: Tue, 16 Feb 2010 16:41:23 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
+Subject: Re: [PATCH 27/35] core: move early_res
+References: <1265793639-15071-1-git-send-email-yinghai@kernel.org>	<1265793639-15071-28-git-send-email-yinghai@kernel.org> <20100215011615.e3d35121.sfr@canb.auug.org.au> <4B786110.9020806@kernel.org> <4B7B2E3B.9060903@zytor.com> <4B7B2FE1.1030700@kernel.org> <4B7B31F1.60203@zytor.com>
+In-Reply-To: <4B7B31F1.60203@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__17_Feb_2010_11_38_55_+1100_xByEQyEja66rkF2l
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 02/16/2010 04:01 PM, H. Peter Anvin wrote:
+> On 02/16/2010 03:53 PM, Yinghai Lu wrote:
+>>>
+>>> All this does would seem is it would change a build failure into a
+>>> runtime panic.  I really fail to see how this is an improvement...
+>>
+>> current only x86 support to early_res replace bootmem.
+>>
+>> later if other arch is using that feature, it need to provide that get_max_mapped.
+>>
+> 
+> If so, it would be better if this code isn't compiled at all on
+> platforms that doesn't use it.  Masking a compile-time failure with a
+> runtime failure when the code isn't actually used doesn't seem like the
+> right thing.
 
-Hi Jean,
+I would like to.
 
-After merging the i2c tree, today's linux-next build (powerpc
-ppc64_defconfig) produced warnings like this:
+but for x86, with CONFIG_NO_BOOTMEM set or not, early_res are all used.
 
-In file included from include/linux/bitops.h:17,
-                 from include/linux/kernel.h:15,
-                 from drivers/i2c/i2c-boardinfo.c:19:
-arch/powerpc/include/asm/bitops.h:226: warning: declaration of 'ffs' shadow=
-s a built-in function
+so we add CONFIG_HAVE_EARLY_RES ?
 
-The x86_64 allmodconfig produces similar:
-
-In file included from include/linux/bitops.h:17,
-                 from include/linux/kernel.h:15,
-                 from next/drivers/i2c/i2c-boardinfo.c:19:
-arch/x86/include/asm/bitops.h:395: warning: declaration of 'ffs' shadows a =
-built-in function
-
-Exposed by commit fa4f62e9f3a85490aebe8857e2208c37da851ce3 ("i2c: Build
-core and algo drivers with -Wshadow").
-
-Jean, I realise that these warnings are not something your tree has
-added, just that you have exposed them.  They are a bit annoying,
-though.  I am using gcc v4.4.3.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__17_Feb_2010_11_38_55_+1100_xByEQyEja66rkF2l
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkt7Op8ACgkQjjKRsyhoI8zRnQCggW97XNVXP8N2Fga8oYCemurB
-XVwAoLL7Tg5FV+3npgi9mQc2dYWpOKet
-=18RF
------END PGP SIGNATURE-----
-
---Signature=_Wed__17_Feb_2010_11_38_55_+1100_xByEQyEja66rkF2l--
+Yinghai
