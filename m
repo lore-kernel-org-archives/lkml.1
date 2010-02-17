@@ -1,40 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757896Ab0BQXmy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 18:42:54 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:33243 "EHLO mail.zytor.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751344Ab0BQXmx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 18:42:53 -0500
-Message-ID: <4B7C7EB3.6000202@zytor.com>
-Date: Wed, 17 Feb 2010 15:41:39 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: Yuhong Bao <yuhongbao_386@hotmail.com>
-CC: luca@luca-barbieri.com, mingo@elte.hu, a.p.zijlstra@chello.nl,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 10/10] x86-32: panic on !CX8 && XMM
-References: <1266406962-17463-1-git-send-email-luca@luca-barbieri.com> <1266406962-17463-11-git-send-email-luca@luca-barbieri.com>,<4B7C6FC8.7090107@zytor.com> <SNT125-W19438E1E5A7FB2F02097DEC3480@phx.gbl>
-In-Reply-To: <SNT125-W19438E1E5A7FB2F02097DEC3480@phx.gbl>
-Content-Type: text/plain; charset=windows-1252
+	id S1757951Ab0BQXnT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 18:43:19 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50526
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753727Ab0BQXnR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 18:43:17 -0500
+Date: Wed, 17 Feb 2010 15:43:32 -0800 (PST)
+Message-Id: <20100217.154332.137835825.davem@davemloft.net>
+To: william.allen.simpson@gmail.com
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       akpm@linux-foundation.org, mchan@broadcom.com
+Subject: Re: [PATCH v3 2/7] net: remove old tcp_optlen function
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4B7793A7.1010500@gmail.com>
+References: <4B7791CF.9030201@gmail.com>
+	<4B7793A7.1010500@gmail.com>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/17/2010 03:00 PM, Yuhong Bao wrote:
-> 
->> NAK in the extreme.
->>
->> This is not how we deal with these kinds of stuff. If this really
->> matters, we explicitly clear the CPU feature in the feature detect code.
-> Also, don't forget the NT4 CX8 bug with non-Intel/AMD/Cyrix vendors:
-> http://www.geoffchappell.com/studies/windows/km/cpu/cx8.htm
-> If a processor support SSE (or PAE or MMX for that matter), you can pretty much assume CX8 exists even if the feature bit is cleared because of this bug.
-> 
+From: William Allen Simpson <william.allen.simpson@gmail.com>
+Date: Sun, 14 Feb 2010 01:09:43 -0500
 
-Those kinds of things we *also* deal with by adjusting the CPU features
-in the detection code.
+> diff --git a/drivers/net/bnx2.c b/drivers/net/bnx2.c
+> index 65df1de..45452c5 100644
+> --- a/drivers/net/bnx2.c
+> +++ b/drivers/net/bnx2.c
+> @@ -6352,6 +6352,8 @@ bnx2_vlan_rx_register(struct net_device *dev, struct vlan_group *vlgrp)
+>  /* Called with netif_tx_lock.
+>   * bnx2_tx_int() runs without netif_tx_lock unless it needs to call
+>   * netif_wake_queue().
+> + *
+> + * No TCP or IP length checking, per David Miller (see commit log).
+>   */
 
-	-hpa
+This is not appropriate, please do not do this.
+
+We do not refer to commit log messages from the source code.  Many
+people have the sources via some other means (tarball, distribution
+source package, etc.) and won't have any idea where to get this
+information.
+
+Also, you don't need to single me out personally.  This is an
+implication of the structure of the code that I've merely explained to
+you, it's not some rule I've personally decided upon.
+
+Thanks.
