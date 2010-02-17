@@ -1,173 +1,61 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751998Ab0BQSXH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 13:23:07 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:41517 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750786Ab0BQSXF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 13:23:05 -0500
-Date: Wed, 17 Feb 2010 18:22:47 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Andrea Arcangeli <aarcange@redhat.com>
-Cc: Christoph Lameter <cl@linux-foundation.org>, Adam Litke <agl@us.ibm.com>,
-       Avi Kivity <avi@redhat.com>, David Rientjes <rientjes@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH 10/12] mm: Check for an empty VMA list in rmap_walk_anon
-Message-ID: <20100217182247.GA15943@csn.ul.ie>
-References: <1265976059-7459-1-git-send-email-mel@csn.ul.ie> <1265976059-7459-11-git-send-email-mel@csn.ul.ie>
+	id S1752357Ab0BQS1R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 13:27:17 -0500
+Received: from mail-qy0-f200.google.com ([209.85.221.200]:41389 "EHLO
+	mail-qy0-f200.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751179Ab0BQS1P convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 13:27:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding:message-id;
+        b=oucItdpuj1JrgydCeuMomAEyzQ1WTlCnsYpsNBfV4npGfrrc3nn4Ci6naEn22A7136
+         6idOfC0r9uo4VAHB1X2VxO6Kli01t8DpizI4WM2hSjby4Z55I5IfKlmCCmSCmnWqa6st
+         15zLrs4gtzbyOYqucbhARbDBcCHD01HxeD/CM=
+From: Volker Armin Hemmann <volkerarmin@googlemail.com>
+To: Nick Bowler <nbowler@elliptictech.com>
+Subject: Re: Linux mdadm superblock question.
+Date: Wed, 17 Feb 2010 19:27:06 +0100
+User-Agent: KMail/1.13.0 (Linux/2.6.31.12r4; KDE/4.4.0; x86_64; ; )
+Cc: david@lang.hm, Kyle Moffett <kyle@moffetthome.net>,
+       Rudy Zijlstra <rudy@grumpydevil.homelinux.org>,
+       Neil Brown <neilb@suse.de>,
+       "Mr. James W. Laferriere" <babydr@baby-dragons.com>,
+       Bill Davidsen <davidsen@tmr.com>, Michael Evans <mjevans1983@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
+References: <201002140251.59668.volkerarmin@googlemail.com> <alpine.DEB.2.00.1002170932010.4721@asgard.lang.hm> <20100217181016.GA14983@emergent.ellipticsemi.com>
+In-Reply-To: <20100217181016.GA14983@emergent.ellipticsemi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <1265976059-7459-11-git-send-email-mel@csn.ul.ie>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <201002171927.07051.volkerarmin@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 12, 2010 at 12:00:57PM +0000, Mel Gorman wrote:
-> There appears to be a race in rmap_walk_anon() that can be triggered by using
-> page migration under heavy load on pages that do not belong to the process
-> doing the migration - e.g. during memory compaction. The bug triggered is
-> a NULL pointer deference in list_for_each_entry().
+On Mittwoch 17 Februar 2010, Nick Bowler wrote:
+> On 09:41 Wed 17 Feb     , david@lang.hm wrote:
+> > for a distro that is trying to make one kernel image run on every
+> > possible type of hardware features like initramfs (and udev, modeules,
+> > etc) are wonderful.
+> > 
+> > however for people who run systems that are known ahead of time and
+> > static (and who build their own kernels instead of just relying on the
+> > distro default kernel), all of this is unnessesary complication, which
+> > leaves more room for problems to creep in.
 > 
+> Such people can easily construct an initramfs containing busybox and
+> mdadm with a shell script hardcoded to mount their root fs and run
+> switch_root.  It's a ~10 minute jobbie that only needs to be done once.
 
-Incidentally, I hate patches 10-12 with the last one in particular being
-outright flaky. I'm looking at copying the KSM approach instead and have
-started tests using the following patch. Any comments on this approach
-for ensuring the anon_vma exists for as long as it's needed? Obviously,
-the refcounts for KSM and migrate can be collapsed to save space but this
-is clearer to review.
 
-=== CUT HERE ====
-mm,migration: Take a reference to the anon_vma before migrating
+and even better when you don't have to do that one time job at all.
 
-rmap_walk_anon() does not use page_lock_anon_vma() for looking up and
-locking an anon_vma and it does not appear to have sufficient locking to
-ensure the anon_vma does not disappear from under it.
+btw, what about additional delay? 
 
-This patch copies an approach used by KSM to take a reference on the
-anon_vma while pages are being migrated. This should prevent rmap_walk()
-running into nasty surprises later because anon_vma has been freed.
 
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
----
- include/linux/rmap.h |   23 +++++++++++++++++++++++
- mm/migrate.c         |   12 ++++++++++++
- mm/rmap.c            |   10 +++++-----
- 3 files changed, 40 insertions(+), 5 deletions(-)
-
-diff --git a/include/linux/rmap.h b/include/linux/rmap.h
-index b019ae6..6b5a1a9 100644
---- a/include/linux/rmap.h
-+++ b/include/linux/rmap.h
-@@ -29,6 +29,9 @@ struct anon_vma {
- #ifdef CONFIG_KSM
- 	atomic_t ksm_refcount;
- #endif
-+#ifdef CONFIG_MIGRATION
-+	atomic_t migrate_refcount;
-+#endif
- 	/*
- 	 * NOTE: the LSB of the head.next is set by
- 	 * mm_take_all_locks() _after_ taking the above lock. So the
-@@ -61,6 +64,26 @@ static inline int ksm_refcount(struct anon_vma *anon_vma)
- 	return 0;
- }
- #endif /* CONFIG_KSM */
-+#ifdef CONFIG_MIGRATION
-+static inline void migrate_refcount_init(struct anon_vma *anon_vma)
-+{
-+	atomic_set(&anon_vma->migrate_refcount, 0);
-+}
-+
-+static inline int migrate_refcount(struct anon_vma *anon_vma)
-+{
-+	return atomic_read(&anon_vma->migrate_refcount);
-+}
-+#else
-+static inline void migrate_refcount_init(struct anon_vma *anon_vma)
-+{
-+}
-+
-+static inline int migrate_refcount(struct anon_vma *anon_vma)
-+{
-+	return 0;
-+}
-+#endif /* CONFIG_MIGRATE */
- 
- static inline struct anon_vma *page_anon_vma(struct page *page)
- {
-diff --git a/mm/migrate.c b/mm/migrate.c
-index 9a0db5b..63addfa 100644
---- a/mm/migrate.c
-+++ b/mm/migrate.c
-@@ -551,6 +551,7 @@ static int unmap_and_move(new_page_t get_new_page, unsigned long private,
- 	int rcu_locked = 0;
- 	int charge = 0;
- 	struct mem_cgroup *mem = NULL;
-+	struct anon_vma *anon_vma = NULL;
- 
- 	if (!newpage)
- 		return -ENOMEM;
-@@ -607,6 +608,8 @@ static int unmap_and_move(new_page_t get_new_page, unsigned long private,
- 	if (PageAnon(page)) {
- 		rcu_read_lock();
- 		rcu_locked = 1;
-+		anon_vma = page_anon_vma(page);
-+		atomic_inc(&anon_vma->migrate_refcount);
- 	}
- 
- 	/*
-@@ -646,6 +649,15 @@ skip_unmap:
- 	if (rc)
- 		remove_migration_ptes(page, page);
- rcu_unlock:
-+
-+	/* Drop an anon_vma reference if we took one */
-+	if (anon_vma && atomic_dec_and_lock(&anon_vma->migrate_refcount, &anon_vma->lock)) {
-+		int empty = list_empty(&anon_vma->head);
-+		spin_unlock(&anon_vma->lock);
-+		if (empty)
-+			anon_vma_free(anon_vma);
-+	}
-+
- 	if (rcu_locked)
- 		rcu_read_unlock();
- uncharge:
-diff --git a/mm/rmap.c b/mm/rmap.c
-index 278cd27..11ba74a 100644
---- a/mm/rmap.c
-+++ b/mm/rmap.c
-@@ -172,7 +172,8 @@ void anon_vma_unlink(struct vm_area_struct *vma)
- 	list_del(&vma->anon_vma_node);
- 
- 	/* We must garbage collect the anon_vma if it's empty */
--	empty = list_empty(&anon_vma->head) && !ksm_refcount(anon_vma);
-+	empty = list_empty(&anon_vma->head) && !ksm_refcount(anon_vma) &&
-+					!migrate_refcount(anon_vma);
- 	spin_unlock(&anon_vma->lock);
- 
- 	if (empty)
-@@ -185,6 +186,7 @@ static void anon_vma_ctor(void *data)
- 
- 	spin_lock_init(&anon_vma->lock);
- 	ksm_refcount_init(anon_vma);
-+	migrate_refcount_init(anon_vma);
- 	INIT_LIST_HEAD(&anon_vma->head);
- }
- 
-@@ -1228,10 +1230,8 @@ static int rmap_walk_anon(struct page *page, int (*rmap_one)(struct page *,
- 	/*
- 	 * Note: remove_migration_ptes() cannot use page_lock_anon_vma()
- 	 * because that depends on page_mapped(); but not all its usages
--	 * are holding mmap_sem, which also gave the necessary guarantee
--	 * (that this anon_vma's slab has not already been destroyed).
--	 * This needs to be reviewed later: avoiding page_lock_anon_vma()
--	 * is risky, and currently limits the usefulness of rmap_walk().
-+	 * are holding mmap_sem. Users without mmap_sem are required to
-+	 * take a reference count to prevent the anon_vma disappearing
- 	 */
- 	anon_vma = page_anon_vma(page);
- 	if (!anon_vma)
+Glück Auf,
+Volker
