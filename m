@@ -1,57 +1,47 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934060Ab0BQHeO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 02:34:14 -0500
-Received: from swm.pp.se ([212.247.200.143]:50093 "EHLO uplift.swm.pp.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933934Ab0BQHeM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 02:34:12 -0500
-X-Greylist: delayed 390 seconds by postgrey-1.27 at vger.kernel.org; Wed, 17 Feb 2010 02:34:11 EST
-Date: Wed, 17 Feb 2010 08:27:39 +0100 (CET)
-From: Mikael Abrahamsson <swmike@swm.pp.se>
-To: Jeff Garzik <jeff@garzik.org>
-cc: The Government <the_g0vernment@yahoo.com>, linux-kernel@vger.kernel.org,
-       Linux IDE mailing list <linux-ide@vger.kernel.org>
-Subject: Re: sata_mv driver support for Marvell Hercules II controller in
- newer kernels
-In-Reply-To: <4B7B9241.9070101@garzik.org>
-Message-ID: <alpine.DEB.1.10.1002170825370.28940@uplift.swm.pp.se>
-References: <549084.45576.qm@web45206.mail.sp1.yahoo.com> <4B7B9241.9070101@garzik.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-Organization: People's Front Against WWW
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	id S934075Ab0BQHhB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 02:37:01 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45501
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S934010Ab0BQHg7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 02:36:59 -0500
+Date: Tue, 16 Feb 2010 23:37:14 -0800 (PST)
+Message-Id: <20100216.233714.39181977.davem@davemloft.net>
+To: joe@perches.com
+Cc: david-b@pacbell.net, gregkh@suse.de, tilman@imap.cc,
+       netdev@vger.kernel.org, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH V2 net-next 1/2] usbnet: Convert dev(dbg|err|warn|info)
+ macros to netdev_<level>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <48cb1d6445dceaa7043d1039ca775a8961020d88.1266221693.git.joe@perches.com>
+References: <20100212.123837.56526847.davem@davemloft.net>
+	<48cb1d6445dceaa7043d1039ca775a8961020d88.1266221693.git.joe@perches.com>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Feb 2010, Jeff Garzik wrote:
+From: Joe Perches <joe@perches.com>
+Date: Mon, 15 Feb 2010 00:25:11 -0800
 
-> On 02/16/2010 10:44 PM, The Government wrote:
->> Hey guys,
->> 
->> I'm using a Supermicro aoc-sat2-mv8, which is supposedly supported by the 
->> Linux kernel by "sata_mv" driver. Unfortunately, I've been unable to 
->> troubleshoot why newer distros (and thus kernels) are not detecting/using 
->> sata_mv for this card. I tried an (older) Slackware 12.1 install disk, that 
->> for some reason works by use of sata_mv (12.1 was released may 2008, when I 
->> think sata_mv was still beta). Anyhow, I've tried many newest releases from 
->> Slackware, Arch, etc - and it seems newer kernels do not properly recognize 
->> this card. I'm not sure what to make of the newer kernels saying "adaptec 
->> aacraid driver" is being used (an incorrectly detected driver?). Anyway, I 
->> was told this chipset had great linux support - does it still? Thanks a 
->> lot.
->> 
->> (please CC me for replies, thanks a lot)
->
-> (cc linux-ide added)
->
-> We need a lot more hard detail, such as lspci and dmesg output.
+> These macros are too similar to the dev_<level> equivalents
+> but take a usbnet * argument.  Convert them to the recently
+> introduced netdev_<level> macros and remove the old macros.
+> 
+> The old macros had "\n" appended to the format string.
+> Add the "\n" to the converted uses.
+> 
+> Some existing uses of the dev<foo> macros in cdc_eem.c
+> probably mistakenly had trailing "\n".  No "\n" added there.
+> 
+> Fix net1080 this/other log message inversion.
+> 
+> Signed-off-by: Joe Perches <joe@perches.com>
 
-Hi,
-
-the aoc-sat2-mv8 is properly recognised and used (sata_mv) in Ubuntu 10.04 
-anyway (2.6.32) so it's not strictly a kernel issue.
-
--- 
-Mikael Abrahamsson    email: swmike@swm.pp.se
+Applied.
