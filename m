@@ -1,59 +1,69 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755423Ab0BQU1U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 15:27:20 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:38508 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755198Ab0BQU1S (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 15:27:18 -0500
-Date: Wed, 17 Feb 2010 20:26:17 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "Shilimkar, Santosh" <santosh.shilimkar@ti.com>,
-       Oliver Neukum <oliver@neukum.org>,
-       Catalin Marinas <catalin.marinas@arm.com>, Pavel Machek <pavel@ucw.cz>,
-       Greg KH <greg@kroah.com>,
-       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Ming Lei <tom.leiming@gmail.com>,
-       Sebastian Siewior <bigeasy@linutronix.de>,
-       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       "Mankad, Maulik Ojas" <x0082077@ti.com>,
-       "Gadiyar, Anand" <gadiyar@ti.com>
-Subject: Re: USB mass storage and ARM cache coherency
-Message-ID: <20100217202617.GB30033@n2100.arm.linux.org.uk>
-References: <EAF47CD23C76F840A9E7FCE10091EFAB02C3CF84D1@dbde02.ent.ti.com> <Pine.LNX.4.44L0.1002171201190.1913-100000@iolanthe.rowland.org>
+	id S1755447Ab0BQU32 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 15:29:28 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:30636 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755198Ab0BQU31 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 15:29:27 -0500
+Date: Wed, 17 Feb 2010 15:29:20 -0500
+From: David Teigland <teigland@redhat.com>
+To: Steven Whitehouse <swhiteho@redhat.com>
+Cc: cluster-devel@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: dlm: Remove/bypass astd
+Message-ID: <20100217202920.GB29576@redhat.com>
+References: <1266413019.2907.27.camel@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1002171201190.1913-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1266413019.2907.27.camel@localhost>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 17, 2010 at 12:02:21PM -0500, Alan Stern wrote:
-> Why do you skip mapping the setup packet but not the data packet?
+On Wed, Feb 17, 2010 at 01:23:39PM +0000, Steven Whitehouse wrote:
+> 
+> While investigating Red Hat bug #537010 I started looking at the dlm's astd
+> thread. The way in which the "cast" and "bast" requests are queued looked
+> as if it might cause reordering since the "bast" requests are always
+> delivered after any pending "cast" requests which is not always the
+> correct ordering. This patch doesn't fix that bug, but it will prevent any
+> races in that bit of code, and the performance benefits are also well
+> worth having.
+> 
+> I noticed that astd seems to be extraneous to requirements. The notifications
+> to astd are already running in process context, so they could be delivered
+> directly. That should improve smp performance since all the notifications
+> would no longer be funneled through a single thread.
+> 
+> Also, the only other function of astd seemed to be stopping the delivery
+> of these notifications during recovery. Since, however, the notifications
+> which are intercepted at recovery time are neither modified, nor filtered
+> in any way, the only effect is to delay notifications for no obvious reason.
+> 
+> I thought that probably removing the astd thread and delivering the "cast"
+> and "bast" notifications directly would improve performance due to the
+> elimination of a scheduling delay. I wrote a small test module which
+> creates a dlm lock space, and does 100,000 NL -> EX -> NL lock conversions.
+> 
+> Having run this test 10 times each on a 2.6.33-rc8 kernel and then the modified
+> kernel including this patch, I got the following results:
+> 
+> Original: Avg time 24.62 us per conversion (NL -> EX -> NL)
+> Modified: Avg time 9.93 us per conversion
+> 
+> Which is a fairly dramatic speed up. Please consider applying this patch.
+> I've tested it in both clustered and single node GFS2 configurations. The test
+> figures are from a single node configuration which was a deliberate choice
+> in order to avoid any effects of network latency.
 
-This is something of a FAQ in this thread.  Here are the responses to
-similar questions yesterday:
+Wow, there's no chance I'm going to even consider something like this.
+This would be a huge change in how the dlm has always operated, and would
+surely introduce very serious and hard to identify bugs (and ones that may
+not appear for a long time afterward).  Given that there's *no problem* with
+the current method that has worked well for years, any change would be
+completely crazy.
 
-"Gadiyar, Anand" <gadiyar@ti.com> said:
-> Not really. For instance, in the case of the DMA engine in the MUSB
-> controller in OMAP3, we can only use DMA with endpoints other than
-> EP0, and EP0 is what is used for control transfers.
->
-> It's not PIO for all the endpoints or DMA for all of them.
-
-"Shilimkar, Santosh" <santosh.shilimkar@ti.com> said:
-> On the OMAP4 (ARM cortex-a9) platform, the enumeration fails because control
-> transfer buffers are corrupted. On our platform, we use PIO mode for control
-> transfers and DMA for bulk transfers.
->
-> The current stack performs dma cache maintenance even for the PIO transfers
-> which leads to the corruption issue. The control buffers are handled by CPU
-> and they already coherent from CPU point of view.
+Dave
 
