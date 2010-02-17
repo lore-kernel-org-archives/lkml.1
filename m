@@ -1,56 +1,88 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934046Ab0BQE3j (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 23:29:39 -0500
-Received: from wdscexfe01.sc.wdc.com ([129.253.170.53]:39097 "EHLO
-	wdscexfe01.sc.wdc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934026Ab0BQE3i convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 23:29:38 -0500
-X-Greylist: delayed 909 seconds by postgrey-1.27 at vger.kernel.org; Tue, 16 Feb 2010 23:29:38 EST
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	id S934051Ab0BQEaW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 23:30:22 -0500
+Received: from thunk.org ([69.25.196.29]:38477 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934026Ab0BQEaV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 16 Feb 2010 23:30:21 -0500
+Date: Tue, 16 Feb 2010 23:30:09 -0500
+From: tytso@mit.edu
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jan Kara <jack@suse.cz>, Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, jengelh@medozas.de,
+       stable@kernel.org, gregkh@suse.de
+Subject: Re: [PATCH] writeback: Fix broken sync writeback
+Message-ID: <20100217043009.GZ5337@thunk.org>
+Mail-Followup-To: tytso@mit.edu,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Jan Kara <jack@suse.cz>, Jens Axboe <jens.axboe@oracle.com>,
+	Linux Kernel <linux-kernel@vger.kernel.org>, jengelh@medozas.de,
+	stable@kernel.org, gregkh@suse.de
+References: <20100212091609.GB1025@kernel.dk>
+ <alpine.LFD.2.00.1002120722270.7792@localhost.localdomain>
+ <20100215141750.GC3434@quack.suse.cz>
+ <alpine.LFD.2.00.1002151601360.18830@localhost.localdomain>
+ <20100216230017.GJ3153@quack.suse.cz>
+ <alpine.LFD.2.00.1002161524210.4141@localhost.localdomain>
+ <20100217013336.GK3153@quack.suse.cz>
+ <alpine.LFD.2.00.1002161848370.4141@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: 4K disk block and disks larger than 2TiB bugs
-Date: Tue, 16 Feb 2010 20:14:27 -0800
-Message-ID: <3E0C3AE547FA504DA5E89EA5A24AC85803E2BD0A@wdscexbe01.sc.wdc.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: 4K disk block and disks larger than 2TiB bugs
-Thread-Index: Acqvh7JBqPoa/Q2qRcuqX2n3Op4cug==
-From: "Daniel Taylor" <Daniel.Taylor@wdc.com>
-To: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 17 Feb 2010 04:14:28.0824 (UTC) FILETIME=[B2C5E580:01CAAF87]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.1002161848370.4141@localhost.localdomain>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In order to use disks larger than 2TiB on Windows XP, it is necessary to
-use 4096-byte logical sectors in an MBR.
+On Tue, Feb 16, 2010 at 07:35:35PM -0800, Linus Torvalds wrote:
+> >   writeback_single_inode()
+> >     ...writes 1024 pages.
+> >     if we haven't written everything in the inode (more than 1024 dirty
+> >     pages) we end up doing either requeue_io() or redirty_tail(). In the
+> >     first case the inode is put to b_more_io list, in the second case to
+> >     the tail of b_dirty list. In either case it will not receive further
+> >     writeout until we go through all other members of current b_io list.
+> > 
+> >   So I claim we currently *do* switch to another inode after 4 MB. That
+> > is a fact.
+> 
+> Ok, I think that's the bug. I do agree that it may well be intentional, 
+> but considering the performance impact, I suspect it's been "intentional 
+> without any performance numbers".
 
-When this MBR is presented to Linux, as from a USB-attached disk shared
-with an XP system, Linux cannot recognise the partition if the disk is
-very large.  The problem is that, while the storage for partition size
-is properly 64-bit, in fs/partitions/msdos.c, among other places, there
-are 32-bit intermediate variables, so the size is truncated.  I can fix
-the MBR case myself (and will submit a patch when I learn the format and
-protocol from watching the list).
+This is well known amongst file system developers.  We've even raised
+it from time to time, but apparently most people are too scared to
+touch the writeback code.  I proposed upping the limit some six months
+ago, but I got serious pushback.  As a result, I followed XFS's lead,
+and so now, both XFS and ext4 will write more pages than what is
+requested by the writeback logic, to work around this bug.....
 
-The larger problem is for EFI.  There is a significant amount of hard-coded
-assumption that LBAs are 512 bytes.  It would help if I could work with the
-designer to make (and test) the changes in a way that abstracts away the
-size (I do know that the kernel always thinks of disks in units of 512-byte
-blocks).  I have seen attempts in the past to fix this problem, but the
-patches
-were rejected with erroneous comments about fixing it in user space.  If the
-kernel will not recognise the partitions, or assigns incorrect values to the
-starting block and/or number of blocks, there is nothing that user space can
-do with the disk, except notice the EINVAL responses.
+What we really want to do is to time how fast the device is.  If the
+device is some Piece of Sh*t USB stick, then maybe you only want to
+write 4MB at a time to avoid latency problems.  Heck, maybe you only
+want to write 32k at a time, if it's really slow....  But if it's some
+super-fast RAID array, maybe you want to write a lot more than 4MB at
+a time.
 
-I have not, yet, worked my way through the Apple partition to see what
-state it is in.
+We've had this logic for a long time, and given the increase in disk
+density, and spindle speeds, the 4MB limit, which might have made
+sense 10 years ago, probably doesn't make sense now.
 
-Comments?
+> If it's bad for synchronous syncs, then it's bad for background syncing 
+> too, and I'd rather get rid of the MAX_WRITEBACK_PAGES thing entirely - 
+> since the whole latency argument goes away if we don't always honor it 
+> ("Oh, we have good latency - _except_ if you do 'sync()' to synchronously 
+> write something out" - that's just insane).
+
+I tried arguing for this six months ago, and got the argument that it
+might cause latency problems on slow USB sticks.  So I added a forced
+override for ext4, which now writes 128MB at a time --- with a sysfs
+tuning knob that allow the old behaviour to be restored if users
+really complained.  No one did actually complain....
+
+						- Ted
