@@ -1,63 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754685Ab0BQTxN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 14:53:13 -0500
-Received: from hera.kernel.org ([140.211.167.34]:51581 "EHLO hera.kernel.org"
+	id S1754773Ab0BQTx3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 14:53:29 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:45552 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754456Ab0BQTxI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 14:53:08 -0500
-Date: Wed, 17 Feb 2010 19:52:29 GMT
-From: tip-bot for Thadeu Lima de Souza Cascardo 
-	<cascardo@holoscopio.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       cascardo@holoscopio.com, tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, cascardo@holoscopio.com
-In-Reply-To: <1265758732-19320-1-git-send-email-cascardo@holoscopio.com>
-References: <1265758732-19320-1-git-send-email-cascardo@holoscopio.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/mm] x86: Do not reserve brk for DMI if it's not going to be used
-Message-ID: <tip-3b24826c2055bd400b321ed53f82e240b40dceb1@git.kernel.org>
-Git-Commit-ID: 3b24826c2055bd400b321ed53f82e240b40dceb1
-X-Mailer: tip-git-log-daemon
+	id S1754726Ab0BQTxV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 14:53:21 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [Bug #15273] Regression in ptrace (Wine) starting with 2.6.33-rc1
+Date: Wed, 17 Feb 2010 20:54:00 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.33-rc8-rjw; KDE/4.3.5; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Maciej Rutecki <maciej.rutecki@gmail.com>,
+       "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Maneesh Soni <maneesh@linux.vnet.ibm.com>,
+       Michael Stefaniuc <mstefani@redhat.com>
+References: <Z5cmiqDComP.A.gyF.OiIeLB@chimera> <4un6Gst5rKB.A.j0G.oiIeLB@chimera> <20100217161543.GB5041@nowhere>
+In-Reply-To: <20100217161543.GB5041@nowhere>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 17 Feb 2010 19:52:32 +0000 (UTC)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002172054.00117.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  3b24826c2055bd400b321ed53f82e240b40dceb1
-Gitweb:     http://git.kernel.org/tip/3b24826c2055bd400b321ed53f82e240b40dceb1
-Author:     Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-AuthorDate: Tue, 9 Feb 2010 21:38:45 -0200
-Committer:  H. Peter Anvin <hpa@zytor.com>
-CommitDate: Wed, 17 Feb 2010 10:11:24 -0800
+On Wednesday 17 February 2010, Frederic Weisbecker wrote:
+> On Mon, Feb 15, 2010 at 12:38:35AM +0100, Rafael J. Wysocki wrote:
+> > This message has been generated automatically as a part of a summary report
+> > of recent regressions.
+> > 
+> > The following bug entry is on the current list of known regressions
+> > from 2.6.32.  Please verify if it still should be listed and let the tracking team
+> > know (either way).
+> > 
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15273
+> > Subject		: Regression in ptrace (Wine) starting with 2.6.33-rc1
+> > Submitter	: Michael Stefaniuc <mstefani@redhat.com>
+> > Date		: 2010-02-11 16:21 (4 days old)
+> 
+> 
+> We are taking care of it. It's actually two regressions.
+> One has a fix that seems to work, and I'm working on the other one,
+> trying to get that upstream before 2.6.33 gets released.
+> 
+> Please keep the ticket open for now.
 
-x86: Do not reserve brk for DMI if it's not going to be used
+OK, thanks for the update.
 
-This will save 64K bytes from memory when loading linux if DMI is
-disabled, which is good for embedded systems.
-
-Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-LKML-Reference: <1265758732-19320-1-git-send-email-cascardo@holoscopio.com>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
----
- arch/x86/kernel/setup.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index 3499b4f..cb42109 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -121,7 +121,9 @@
- unsigned long max_low_pfn_mapped;
- unsigned long max_pfn_mapped;
- 
-+#ifdef CONFIG_DMI
- RESERVE_BRK(dmi_alloc, 65536);
-+#endif
- 
- unsigned int boot_cpu_id __read_mostly;
- 
+Rafael
