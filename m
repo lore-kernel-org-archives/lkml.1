@@ -1,57 +1,120 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752920Ab0BQWDZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 17:03:25 -0500
-Received: from xenotime.net ([72.52.64.118]:55888 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751965Ab0BQWDY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 17:03:24 -0500
-Message-ID: <4B7C67A1.5070106@xenotime.net>
-Date: Wed, 17 Feb 2010 14:03:13 -0800
-From: Randy Dunlap <rdunlap@xenotime.net>
-Organization: YPO4
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+	id S1753061Ab0BQWEu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 17:04:50 -0500
+Received: from smtp-out.google.com ([216.239.44.51]:27265 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751863Ab0BQWEs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 17:04:48 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=ttVDB6EtIT/4ow35eHF+nm0ySRYwfRPBxt3ZHk43zAQG9JH2wpJ0ws4zE+DtL0cM8
+	lu9FSz5Jp5eTFP0KotnUA==
+Date: Wed, 17 Feb 2010 14:04:40 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Nick Piggin <npiggin@suse.de>
+cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch -mm 4/9 v2] oom: remove compulsory panic_on_oom mode
+In-Reply-To: <20100217095221.GQ5723@laptop>
+Message-ID: <alpine.DEB.2.00.1002171345330.6217@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.1002161623190.11952@chino.kir.corp.google.com> <20100217094137.a0d26fbb.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.1002161648570.31753@chino.kir.corp.google.com> <alpine.DEB.2.00.1002161756100.15079@chino.kir.corp.google.com>
+ <20100217111319.d342f10e.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.1002161825280.2768@chino.kir.corp.google.com> <20100217113430.9528438d.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.1002161850540.3106@chino.kir.corp.google.com>
+ <20100217122106.31e12398.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.1002170052410.30931@chino.kir.corp.google.com> <20100217095221.GQ5723@laptop>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Jason Wessel <jason.wessel@windriver.com>
-CC: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
-       mingo@elte.hu
-Subject: Re: [Kgdb-bugreport] [PATCH 15/28] kgdb,	docs: Update the kgdb docs
- to include kdb
-References: <1266014143-29444-1-git-send-email-jason.wessel@windriver.com> <1266014143-29444-16-git-send-email-jason.wessel@windriver.com> <4B7705B4.5080009@xenotime.net> <4B7C5902.1030306@windriver.com>
-In-Reply-To: <4B7C5902.1030306@windriver.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/17/10 13:00, Jason Wessel wrote:
-> Randy Dunlap wrote:
->> On 02/12/10 14:35, Jason Wessel wrote:
->>> Update the kgdb docs to reflect the new directory structure and API.
->>>
->>> Merge in the kdb shell information.
->>
->> See comments/corrections inline below.
->>
-> 
-> Thank very much for the comments.  Would you like a credit in the
-> manual?
+On Wed, 17 Feb 2010, Nick Piggin wrote:
 
-not needed.
-
-> I merged in all your edits.
+> > > quick glance around core codes...
+> > >  - HUGEPAGE at el. should return some VM_FAULT_NO_RESOUECE rather than VM_FAULT_OOM.
+> > 
+> > We can detect this with is_vm_hugetlb_page() if we pass the vma into 
+> > pagefault_out_of_memory() without adding another VM_FAULT flag.
 > 
-> Here is the interdiff in case you were curious.
+> The real question is, what to do when returning to userspace. I don't
+> think there's a lot of options. SIGBUS is traditionally used for "no
+> resource".
 > 
-> Thanks,
-> Jason.
+
+For is_vm_hugetlb_page() in the pagefault oom handler, I think it should 
+default to killing current as we did previously until that's worked out 
+(and as some architectures like ia64 and powerpc still do).  In fact, 
+pagefault ooms should probably always default to killing current if its 
+killable.
+
+> > The filemap, shmem, and block_prepare_write() cases will call the oom 
+> > killer but, depending on the gfp mask, they will retry their allocations 
+> > after the oom killer is called so we should never return VM_FAULT_OOM 
+> > because they return -ENOMEM.  They fail from either small objsize slab 
+> > allocations or with orders less than PAGE_ALLOC_COSTLY_ORDER which by 
+> > default continues to retry even if direct reclaim fails.  If we're 
+> > returning with VM_FAULT_OOM from these handlers, it should only be because 
+> > of GFP_NOFS | __GFP_NORETRY or current has been oom killed and still can't 
+> > find memory (so we don't care if the oom killer is called again since it 
+> > won't kill anything else).
 > 
->  DocBook/kgdb.tmpl     |  208 ++++++++++++++++++++++++++++----------------------
->  kernel-parameters.txt |    3 
->  2 files changed, 118 insertions(+), 93 deletions(-)
+> Yep. And yes you are right that we prefer to do the oom killing at the
+> allocation point where we know all the context, however the fact is that
+> VM_FAULT_OOM is an allowed part of the fault API so we have to handle it
+> somehow.
+> 
+> It can theoretically be called for valid reasons say if a driver or
+> arch page table has a high order allocation, or if the page allocator
+> implementation were to be changed.
+> 
+> We can't rightly just kill the task at this point, even if it has
+> invoked the oom killer, because it could have been marked as unkillable.
+> 
 
+That's easy to test in the oom handler, we can default to killing current 
+but then kill another task if it is unkillable:
 
-thanks,
--- 
-~Randy
+diff --git a/mm/oom_kill.c b/mm/oom_kill.c
+--- a/mm/oom_kill.c
++++ b/mm/oom_kill.c
+@@ -696,15 +696,23 @@ void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask,
+ }
+ 
+ /*
+- * The pagefault handler calls here because it is out of memory, so kill a
+- * memory-hogging task.  If a populated zone has ZONE_OOM_LOCKED set, a parallel
+- * oom killing is already in progress so do nothing.  If a task is found with
+- * TIF_MEMDIE set, it has been killed so do nothing and allow it to exit.
++ * The pagefault handler calls here because it is out of memory, so kill current
++ * by default.  If it's unkillable, then fallback to killing a memory-hogging
++ * task.  If a populated zone has ZONE_OOM_LOCKED set, a parallel oom killing is
++ * already in progress so do nothing.  If a task is found with TIF_MEMDIE set,
++ * it has been killed so do nothing and allow it to exit.
+  */
+ void pagefault_out_of_memory(void)
+ {
++	unsigned long totalpages;
++	int err;
++
+ 	if (!try_set_system_oom())
+ 		return;
+-	out_of_memory(NULL, 0, 0, NULL);
++	constrained_alloc(NULL, 0, NULL, &totalpages);
++	err = oom_kill_process(current, 0, 0, 0, totalpages, NULL,
++				"Out of memory (pagefault)"))
++	if (err)
++		out_of_memory(NULL, 0, 0, NULL);
+ 	clear_system_oom();
+ }
+
+We'll need to convert the architectures that still only issue a SIGKILL to 
+current to use pagefault_out_of_memory() before OOM_DISABLE is fully 
+respected across the kernel, though.
