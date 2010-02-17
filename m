@@ -1,64 +1,93 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934227Ab0BQJLA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 04:11:00 -0500
-Received: from smtp-out003.kontent.com ([81.88.40.217]:46434 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934191Ab0BQJK6 (ORCPT
+	id S934231Ab0BQJLn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 04:11:43 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:41969 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934191Ab0BQJLl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 04:10:58 -0500
-From: Oliver Neukum <oliver@neukum.org>
-To: "Shilimkar, Santosh" <santosh.shilimkar@ti.com>
-Subject: Re: USB mass storage and ARM cache coherency
-Date: Wed, 17 Feb 2010 10:10:57 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.33-rc6-0.1-default; KDE/4.3.1; x86_64; ; )
-Cc: "Russell King - ARM Linux" <linux@arm.linux.org.uk>,
-       Catalin Marinas <catalin.marinas@arm.com>, Pavel Machek <pavel@ucw.cz>,
-       Greg KH <greg@kroah.com>,
-       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Ming Lei <tom.leiming@gmail.com>,
-       Sebastian Siewior <bigeasy@linutronix.de>,
-       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "linux-arm-kernel" <linux-arm-kernel@lists.infradead.org>,
-       "Mankad, Maulik Ojas" <x0082077@ti.com>,
-       "Gadiyar, Anand" <gadiyar@ti.com>
-References: <20100208065519.GE1290@ucw.cz> <201002161522.38467.oliver@neukum.org> <EAF47CD23C76F840A9E7FCE10091EFAB02C3CF84D1@dbde02.ent.ti.com>
-In-Reply-To: <EAF47CD23C76F840A9E7FCE10091EFAB02C3CF84D1@dbde02.ent.ti.com>
+	Wed, 17 Feb 2010 04:11:41 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=mFxv0MuYj0N7/a1YdG2EPOFuWwKoSiiVvXzhZxKJGh9xRkJsJtH4N8l7kNSwHX9bB
+	qxpE6SQpS/PsraVL35b+g==
+Date: Wed, 17 Feb 2010 01:11:30 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
+       Nick Piggin <npiggin@suse.de>, Andrea Arcangeli <aarcange@redhat.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch -mm 4/9 v2] oom: remove compulsory panic_on_oom mode
+In-Reply-To: <20100217122106.31e12398.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.1002170052410.30931@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.1002151416470.26927@chino.kir.corp.google.com> <20100216092311.86bceb0c.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.1002160058470.17122@chino.kir.corp.google.com> <20100217084239.265c65ea.kamezawa.hiroyu@jp.fujitsu.com>
+ <alpine.DEB.2.00.1002161550550.11952@chino.kir.corp.google.com> <20100217090124.398769d5.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.1002161623190.11952@chino.kir.corp.google.com> <20100217094137.a0d26fbb.kamezawa.hiroyu@jp.fujitsu.com>
+ <alpine.DEB.2.00.1002161648570.31753@chino.kir.corp.google.com> <alpine.DEB.2.00.1002161756100.15079@chino.kir.corp.google.com> <20100217111319.d342f10e.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.1002161825280.2768@chino.kir.corp.google.com>
+ <20100217113430.9528438d.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.1002161850540.3106@chino.kir.corp.google.com> <20100217122106.31e12398.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201002171010.57464.oliver@neukum.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Mittwoch, 17. Februar 2010 09:55:08 schrieb Shilimkar, Santosh:
-> > Your original patch however kills ehci, ohci and uhci on some architectures.
+On Wed, 17 Feb 2010, KAMEZAWA Hiroyuki wrote:
+
+> > The hugetlb case seems to be the only misuse of VM_FAULT_OOM where it 
+> > doesn't mean we simply don't have the memory to handle the page fault, 
+> > i.e. your earlier "memory is exhausted" definition.  That was handled well 
+> > before calling out_of_memory() by simply killing current since we know it 
+> > is faulting hugetlb pages and its resource is limited.
+> > 
+> > We could pass the vma to pagefault_out_of_memory() and simply kill current 
+> > if its killable and is_vm_hugetlb_page(vma).
+> > 
 > 
-> How about below approach? Controller driver can set 
-> "uses_pio_for_control" if it can't do dma for control transfer.
+> No. hugepage is not only case.
+> You may not read but we annoyed i915's driver bug recently and it was clearly
+> misuse of VM_FAULT_OOM. Then, we got many reports of OOM killer in these months.
+> (thanks to Kosaki about this.)
 > 
-> diff --git a/drivers/usb/core/hcd.c b/drivers/usb/core/hcd.c
-> index 80995ef..e3eae02 100644
-> --- a/drivers/usb/core/hcd.c
-> +++ b/drivers/usb/core/hcd.c
-> @@ -1276,7 +1276,7 @@ static int map_urb_for_dma(struct usb_hcd *hcd, struct urb *urb,
->  
->         if (usb_endpoint_xfer_control(&urb->ep->desc)
->             && !(urb->transfer_flags & URB_NO_SETUP_DMA_MAP)) {
-> -               if (hcd->self.uses_dma) {
-> +               if (hcd->self.uses_dma && !hcd->self.uses_pio_for_control) {
 
-It is not elegant to describe exceptions. It would be better, if you split up
-the flag into two flags, called uses_dma_for_ordinary_transfers and
-uses_dma_for control_transfers. Doing so also makes sure you look at
-all hcd drivers ;-)
+That's been fixed, right?
 
-And the tests become straightforward. And please add a detailed comment
-to explain why this differentiation is needed on ARM.
+> quick glance around core codes...
+>  - HUGEPAGE at el. should return some VM_FAULT_NO_RESOUECE rather than VM_FAULT_OOM.
 
-	Regards
-		Oliver
+We can detect this with is_vm_hugetlb_page() if we pass the vma into 
+pagefault_out_of_memory() without adding another VM_FAULT flag.
+
+>  - filemap.c's VM_FAULT_OOM shoudn't call page_fault_oom_kill because it has already
+>    called oom_killer if it can. 
+
+See below.
+
+>  - about relayfs, is VM_FAULT_OOM should be BUG_ON()...
+
+That looks appropriate at first glance.
+
+>  - filemap_xip.c return VM_FAULT_OOM....but it doesn't seem to be OOM..
+>    just like VM_FAULT_NO_VALID_PAGE_FOUND. (But I'm not familiar with this area.)
+>  - fs/buffer.c 's VM_FAULT_OOM is returned oom-killer is called.
+>  - shmem.c's VM_FAULT_OOM is retuned oom-killer is called.
+> 
+
+The filemap, shmem, and block_prepare_write() cases will call the oom 
+killer but, depending on the gfp mask, they will retry their allocations 
+after the oom killer is called so we should never return VM_FAULT_OOM 
+because they return -ENOMEM.  They fail from either small objsize slab 
+allocations or with orders less than PAGE_ALLOC_COSTLY_ORDER which by 
+default continues to retry even if direct reclaim fails.  If we're 
+returning with VM_FAULT_OOM from these handlers, it should only be because 
+of GFP_NOFS | __GFP_NORETRY or current has been oom killed and still can't 
+find memory (so we don't care if the oom killer is called again since it 
+won't kill anything else).
+
+So like I said, I don't really see a need where VM_FAULT_NO_RESOURCE would 
+be helpful in any case other than hugetlb which we can already detect by 
+passing the vma into the pagefault oom handler.
