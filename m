@@ -1,54 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755624Ab0BQUjX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 15:39:23 -0500
-Received: from gate.crashing.org ([63.228.1.57]:49119 "EHLO gate.crashing.org"
+	id S1755705Ab0BQUlK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 15:41:10 -0500
+Received: from mail.lhcom.hu ([212.92.3.179]:57786 "EHLO mail.lhcom.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755470Ab0BQUjW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 15:39:22 -0500
-Subject: Re: USB mass storage and ARM cache coherency
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Oliver Neukum <oliver@neukum.org>,
-       "Shilimkar, Santosh" <santosh.shilimkar@ti.com>,
-       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       Ming Lei <tom.leiming@gmail.com>,
-       "Mankad, Maulik Ojas" <x0082077@ti.com>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Sebastian Siewior <bigeasy@linutronix.de>,
-       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Pavel Machek <pavel@ucw.cz>, Greg KH <greg@kroah.com>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
-In-Reply-To: <1266420475.16707.31.camel@e102109-lin.cambridge.arm.com>
-References: <20100208065519.GE1290@ucw.cz>
-	 <1265628483.4020.63.camel@pc1117.cambridge.arm.com>
-	 <EAF47CD23C76F840A9E7FCE10091EFAB02C3CF7D50@dbde02.ent.ti.com>
-	 <201002160922.47072.oliver@neukum.org> <1266397543.16346.264.camel@pasglop>
-	 <1266420475.16707.31.camel@e102109-lin.cambridge.arm.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 18 Feb 2010 07:37:00 +1100
-Message-ID: <1266439020.16346.285.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	id S1755064Ab0BQUlH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 15:41:07 -0500
+X-Greylist: delayed 7253 seconds by postgrey-1.27 at vger.kernel.org; Wed, 17 Feb 2010 15:41:07 EST
+Message-ID: <59391.212.100.250.227.1266432006.squirrel@mail.lhcom.hu>
+Date: Wed, 17 Feb 2010 18:40:06 -0000 (UTC)
+Subject: =?iso-8859-1?Q?Dr=E1ga_sz=E1mla_tulajdonosa?=
+From: "ELTE Webmail" <custcaupgrd1@elte.hu>
+Reply-To: custcaupgrd1@8u8.com
+User-Agent: SquirrelMail/1.4.13
+MIME-Version: 1.0
+Content-Type: text/plain;charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-02-17 at 15:27 +0000, Catalin Marinas wrote:
-> We do the same on ARM. The problem with most (all) HCD drivers that do
-> PIO is that they copy the data to the transfer buffer but there is no
-> call in this driver to flush_dcache_page(). The upper mass storage or
-> filesystem layers don't call this function either, so there isn't
-> anything that would set the PG_arch1 bit. 
 
-Actually, clear it :-)
 
-I suppose that's one thing that needs to be fixed in the drivers.
 
-Cheers,
-Ben.
+Drága számla tulajdonosa,
 
+írás tájékoztatni Önt, hogy mi lesz karbantartást kiépítése, az ideiglenes
+azért, mert mi szolgáltatások.Ez a kód 33.152, amely körülbelül a
+sz&#369;k keresztmetszet okozhat a számlát. Figyelem: minden azonosítónál
+a folyamat és frissíti a telefon, azt javasolta, ön elé számlázási adatok
+frissítése hajóraklevél immdiate egység frissített és Levélszemét védelme
+
+Felhasználónév :........................
+Jelszó :....................
+Telefon ......
+
+
+A fenti információkat annak érdekében, hogy nekünk, úgy az ideiglenes
+karbantartási jobb szolgáltatás mi minden ügyfelek.
+
+Az Ön figyelembe információkat kell küldeni: custcaupgrd1@8u8.com
+
+Én &#337;szintén bocsánatot kér a kényelmetlenség
+
+Hála az ön kooperáció.
+
+Ügyfél
+tekintetében gondozási szolgálat,
+ELTE Webmail
 
