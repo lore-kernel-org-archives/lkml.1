@@ -1,47 +1,121 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757365Ab0BQNIV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 08:08:21 -0500
-Received: from cantor.suse.de ([195.135.220.2]:34864 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751215Ab0BQNIU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 08:08:20 -0500
-Message-ID: <4B7BEA41.6080303@suse.cz>
-Date: Wed, 17 Feb 2010 14:08:17 +0100
-From: Michal Marek <mmarek@suse.cz>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.2 Thunderbird/3.0
-MIME-Version: 1.0
-To: Hui Zhu <teawater@gmail.com>
-Cc: Hui Zhu <hui.zhu@windriver.com>,
-       =?ISO-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Sam Ravnborg <sam@ravnborg.org>, ozan@pardus.org.tr,
-       Matthew Wilcox <willy@linux.intel.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] markup_oops.pl: add options to improve cross-sompilation
- 	environments
-References: <4B5E5D4F.50803@windriver.com> <2375c9f91001251905p6ed99405m3915ac56e230605f@mail.gmail.com> 	<4B5E9BE9.2030702@windriver.com> <2375c9f91001252353u52f437b0t7ddd643a57047e1c@mail.gmail.com> 	<4B5EB223.60307@windriver.com> <4B6344CA.10504@suse.cz> <4B666982.1020007@windriver.com> 	<4B6C8FF0.3090106@suse.cz> <daef60381002071855m7a5d6d2cg7b9a9a48b6aef20e@mail.gmail.com>
-In-Reply-To: <daef60381002071855m7a5d6d2cg7b9a9a48b6aef20e@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1757375Ab0BQNI1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 08:08:27 -0500
+Received: from qw-out-2122.google.com ([74.125.92.25]:39561 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751215Ab0BQNIX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 08:08:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=auFM8yhF4v6gGkvCtAwJ0+rgWUj46GlPpu9bJVogILCvvzSuwkoMLTA3GDhnrAwz9X
+         A1Etl1+zzv/T9TROPC4coHToMNQBPtyrYsOyeX4ujFcTTkF4kyIhXw6JeCN9JkD7fpO3
+         PJgWaSSI+k4v+BJHfuk1iVWQ6YCZZUebJQab8=
+Subject: Re: [patch 4/7 -mm] oom: badness heuristic rewrite
+From: Minchan Kim <minchan.kim@gmail.com>
+To: David Rientjes <rientjes@google.com>
+Cc: Rik van Riel <riel@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Nick Piggin <npiggin@suse.de>, Andrea Arcangeli <aarcange@redhat.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+In-Reply-To: <alpine.DEB.2.00.1002170114300.30931@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.1002100224210.8001@chino.kir.corp.google.com>
+	 <alpine.DEB.2.00.1002100228540.8001@chino.kir.corp.google.com>
+	 <4B73833D.5070008@redhat.com>
+	 <alpine.DEB.2.00.1002102332200.22152@chino.kir.corp.google.com>
+	 <1265982984.6207.29.camel@barrios-desktop>
+	 <alpine.DEB.2.00.1002121251130.7972@chino.kir.corp.google.com>
+	 <28c262361002121845w459d0fa0l55a58552c3a6081e@mail.gmail.com>
+	 <alpine.DEB.2.00.1002151347470.26927@chino.kir.corp.google.com>
+	 <1266326086.1709.50.camel@barrios-desktop>
+	 <alpine.DEB.2.00.1002161323450.23037@chino.kir.corp.google.com>
+	 <28c262361002162341m1d77509dv37d7d13b4ccd0ef9@mail.gmail.com>
+	 <alpine.DEB.2.00.1002170114300.30931@chino.kir.corp.google.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 17 Feb 2010 22:08:11 +0900
+Message-ID: <1266412091.1709.206.camel@barrios-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8.2.2010 03:55, Hui Zhu wrote:
-> Hi Michael,
+On Wed, 2010-02-17 at 01:23 -0800, David Rientjes wrote:
+> On Wed, 17 Feb 2010, Minchan Kim wrote:
 > 
-> Looks you miss this one:
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=ef2b9b054580ef835078d8aa411bd06542cd5c1c
+> > >> Okay. I can think it of slight penalization in this patch.
+> > >> But in current OOM logic, we try to kill child instead of forkbomb
+> > >> itself. My concern was that.
+> > >
+> > > We still do with my rewrite, that is handled in oom_kill_process().  The
+> > > forkbomb penalization takes place in badness().
+> > 
+> > 
+> > I thought this patch is closely related to [patch  2/7].
+> > I can move this discussion to [patch 2/7] if you want.
+> > Another guys already pointed out why we care child.
+> > 
+> 
+> We have _always_ tried to kill a child of the selected task first if it 
+> has a seperate address space, patch 2 doesn't change that.  It simply 
+> tries to kill the child with the highest badness() score.
+
+So I mentioned following as.  
+
+"Of course, It's not a part of your patch[2/7] which is good.
+It has been in there during long time. I hope we could solve that in
+this chance."
+
+> 
+> > I said this scenario is BUGGY forkbomb process. It will fork + exec continuously
+> > if it isn't killed. How does user intervene to fix the system?
+> > System was almost hang due to unresponsive.
+> > 
+> 
+> The user would need to kill the parent if it should be killed.  The 
+> unresponsiveness in this example, however, is not a question of the oom 
+> killer but rather the scheduler to provide interactivity to the user in 
+> forkbomb scenarios.  The oom killer should not create a policy that 
+> unfairly biases tasks that fork a large number of tasks, however, to 
+> provide interactivity since that task may be a vital system resource.
+
+As you said, scheduler(or something) can do it with much graceful than
+OOM killer. I agreed that. 
+
+You wrote "Forkbomb detector" in your patch description. When I saw
+that, I thought we need more things to complete forkbomb detection. So I
+just suggested my humble idea to fix it in this chance. 
+
+> 
+> > For extreme example,
+> > User is writing some important document by OpenOffice and
+> > he decided to execute hackbench 1000000 process 1000000.
+> > 
+> > Could user save his important office data without halt if we kill
+> > child continuously?
+> > I think this scenario can be happened enough if the user didn't know
+> > parameter of hackbench.
+> > 
+> 
+> So what exactly are you proposing we do in the oom killer to distinguish 
+> between a user's mistake and a vital system resource?  I'm personally much 
+> more concerned with protecting system daemons that provide a service under 
+> heavyload than protecting against forkbombs in the oom killer.
+
+I don't opposed that. As I said, I just wanted for OOM killer to be more
+smart to catch user's mistake. If I understand your opinion, 
+You said, it's not role of OOM killer but scheduler.
+
+Okay. 
 
 
-That one is already in Linus' tree, so this is OK. BTW please don't
-top-post.
+-- 
+Kind regards,
+Minchan Kim
 
-Michal
 
-> On Sat, Feb 6, 2010 at 05:38, Michal Marek <mmarek@suse.cz> wrote:
->> Thanks, I applied the previous and this patch. Just to make sure I
->> didn't miss any of your patches, can you check that
->> http://repo.or.cz/w/linux-kbuild.git/blob/refs/heads/for-next:/scripts/markup_oops.pl
->> has all your changes? If something is missing, please resend it, thanks.
