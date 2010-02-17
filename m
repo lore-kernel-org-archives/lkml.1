@@ -1,43 +1,57 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934128Ab0BQIEL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 03:04:11 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36321
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S934069Ab0BQIEJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 03:04:09 -0500
-Date: Wed, 17 Feb 2010 00:04:22 -0800 (PST)
-Message-Id: <20100217.000422.246530855.davem@davemloft.net>
-To: joe@perches.com
-Cc: david-b@pacbell.net, gregkh@suse.de, tilman@imap.cc,
-       netdev@vger.kernel.org, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH V2 net-next 1/2] usbnet: Convert dev(dbg|err|warn|info)
- macros to netdev_<level>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20100216.233714.39181977.davem@davemloft.net>
-References: <20100212.123837.56526847.davem@davemloft.net>
-	<48cb1d6445dceaa7043d1039ca775a8961020d88.1266221693.git.joe@perches.com>
-	<20100216.233714.39181977.davem@davemloft.net>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+	id S1753400Ab0BQIeu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 03:34:50 -0500
+Received: from poutre.nerim.net ([62.4.16.124]:61334 "EHLO poutre.nerim.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752497Ab0BQIet (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 03:34:49 -0500
+Date: Wed, 17 Feb 2010 09:34:46 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: linux-next: build warning after merge of the i2c tree
+Message-ID: <20100217093446.2e610f45@hyperion.delvare>
+In-Reply-To: <20100217113855.7ebf3d39.sfr@canb.auug.org.au>
+References: <20100217113855.7ebf3d39.sfr@canb.auug.org.au>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 17 Feb 2010 11:38:55 +1100, Stephen Rothwell wrote:
+> Hi Jean,
+> 
+> After merging the i2c tree, today's linux-next build (powerpc
+> ppc64_defconfig) produced warnings like this:
+> 
+> In file included from include/linux/bitops.h:17,
+>                  from include/linux/kernel.h:15,
+>                  from drivers/i2c/i2c-boardinfo.c:19:
+> arch/powerpc/include/asm/bitops.h:226: warning: declaration of 'ffs' shadows a built-in function
+> 
+> The x86_64 allmodconfig produces similar:
+> 
+> In file included from include/linux/bitops.h:17,
+>                  from include/linux/kernel.h:15,
+>                  from next/drivers/i2c/i2c-boardinfo.c:19:
+> arch/x86/include/asm/bitops.h:395: warning: declaration of 'ffs' shadows a built-in function
+> 
+> Exposed by commit fa4f62e9f3a85490aebe8857e2208c37da851ce3 ("i2c: Build
+> core and algo drivers with -Wshadow").
+> 
+> Jean, I realise that these warnings are not something your tree has
+> added, just that you have exposed them.  They are a bit annoying,
+> though.  I am using gcc v4.4.3.
 
-I had to revert this series, the build fails:
+Oh well. I had the hope that at least the header files were
+Wshadow-compliant so it could be enabled for selected source files. Not
+getting any warning on my own system when I tried, I thought it was
+fine... If it is not, then I'll just remove this patch from my tree.
+Sorry for the noise and thanks for reporting.
 
-drivers/net/wireless/rndis_wlan.c: In function 'rndis_query_oid':
-drivers/net/wireless/rndis_wlan.c:731: error: implicit declaration of function 'devdbg'
-drivers/net/wireless/rndis_wlan.c: In function 'set_essid':
-drivers/net/wireless/rndis_wlan.c:948: error: implicit declaration of function 'devwarn'
-drivers/net/wireless/rndis_wlan.c: In function 'rndis_connect':
-drivers/net/wireless/rndis_wlan.c:1796: error: implicit declaration of function 'deverr'
-drivers/net/wireless/rndis_wlan.c: In function 'rndis_wlan_auth_indication':
-drivers/net/wireless/rndis_wlan.c:2273: error: implicit declaration of function 'devinfo'
-make[3]: *** [drivers/net/wireless/rndis_wlan.o] Error 1
-make[3]: *** Waiting for unfinished jobs....
+-- 
+Jean Delvare
