@@ -1,57 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757319Ab0BQMgp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 07:36:45 -0500
-Received: from compulab.co.il ([67.18.134.219]:48952 "EHLO compulab.co.il"
+	id S1757344Ab0BQMsL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 07:48:11 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:47580 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752609Ab0BQMgn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 07:36:43 -0500
-Message-ID: <4B7BE292.5080700@compulab.co.il>
-Date: Wed, 17 Feb 2010 14:35:30 +0200
-From: Mike Rapoport <mike@compulab.co.il>
-User-Agent: Thunderbird 2.0.0.23 (X11/20100106)
+	id S1757115Ab0BQMsK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 07:48:10 -0500
+Message-ID: <4B7BE561.3070403@redhat.com>
+Date: Wed, 17 Feb 2010 14:47:29 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
-To: Jean Delvare <khali@linux-fr.org>, Samuel Ortiz <sameo@linux.intel.com>
-CC: Denis Turischev <denis@compulab.co.il>,
-       David Brownell <david-b@pacbell.net>,
-       LKML <linux-kernel@vger.kernel.org>, linux-i2c@vger.kernel.org
-Subject: Re: [PATCH 1/3] MFD: introduce lpc_sch for Intel SCH LPC bridge
-References: <4B73DAEE.5080400@compulab.co.il>	<4B73DB4B.40501@compulab.co.il>	<201002161157.47196.david-b@pacbell.net>	<20100216224947.5c46ff86@hyperion.delvare>	<4B7BBEE5.3040104@compulab.co.il> <20100217114433.6a405bd3@hyperion.delvare>
-In-Reply-To: <20100217114433.6a405bd3@hyperion.delvare>
-Content-Type: text/plain; charset=US-ASCII
+To: Luca Barbieri <luca@luca-barbieri.com>
+CC: mingo@elte.hu, hpa@zytor.com, a.p.zijlstra@chello.nl,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 01/10] x86: add support for multiple choice alternatives
+References: <1266406962-17463-1-git-send-email-luca@luca-barbieri.com> <1266406962-17463-2-git-send-email-luca@luca-barbieri.com>
+In-Reply-To: <1266406962-17463-2-git-send-email-luca@luca-barbieri.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-ACL-Warn: {
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - compulab.site5.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - compulab.co.il
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Samuel,
+On 02/17/2010 01:42 PM, Luca Barbieri wrote:
+> This patch modifies the x86 alternative macros to allow more than one
+> alternative code sequence.
+>
+> This is done by simply adding multiple alternative patches, which are
+> applied in sequence, overwriting previous ones.
+>
+> +/* alternative assembly primitive: */
+> +#define ALTERNATIVE(oldinstr, newinstr, feature)			\
+> +      "661:\n\t" oldinstr "\n662:\n"					\
+> +      ALTERNATIVE_PATCH("661b", "662b", newinstr, feature)
+> +
+> +#define ALTERNATIVE3(oldinstr, newinstr1, feature1, newinstr2, feature2)			\
+> +      "661:\n\t" oldinstr "\n662:\n"					\
+> +      ALTERNATIVE_PATCH("661b", "662b", newinstr1, feature1) "\n" \
+> +      ALTERNATIVE_PATCH("661b", "662b", newinstr2, feature2)
+> +
+> +#define ALTERNATIVE4(oldinstr, newinstr1, feature1, newinstr2, feature2, newinstr3, feature3)			\
+> +      "661:\n\t" oldinstr "\n662:\n"					\
+> +      ALTERNATIVE_PATCH("661b", "662b", newinstr1, feature1) "\n" \
+> +      ALTERNATIVE_PATCH("661b", "662b", newinstr2, feature2) "\n" \
+> +      ALTERNATIVE_PATCH("661b", "662b", newinstr3, feature3)
+> +
+>    
 
-Jean Delvare wrote:
-> On Wed, 17 Feb 2010 12:03:17 +0200, Denis Turischev wrote:
->> Jean Delvare wrote:
->>> Might be a good idea to use acpi_check_resource_conflict() or similar
->>> before instantiating the platform devices.
->> May be it worth to add such resource check directly to mfd_add_device function?
-> 
-> I'm not sure. I suspect that many MFD devices are never used on
-> ACPI-aware systems, so it might be considered overkill. OTOH the calls
-> resolve to empty stubs when ACPI is disabled so... I have no objection,
-> but I'll leave the decision to somebody else ;)
-> 
-
-What do you think? Shall we add something like mfd_verify_resources that will call
-acpi_check_region or something similar?
-
+Suggest documenting the precedence of alternatives: if both feature1 and 
+feature2 are present, which newinstr is patched in?
 
 -- 
-Sincerely yours,
-Mike.
+error compiling committee.c: too many arguments to function
+
