@@ -1,12 +1,12 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755107Ab0BQWhn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 17:37:43 -0500
-Received: from [12.234.97.163] ([12.234.97.163]:49164 "EHLO
+	id S1757505Ab0BQWhs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 17:37:48 -0500
+Received: from [12.234.97.163] ([12.234.97.163]:49240 "EHLO
 	archaeopteryx.synaptics.com" rhost-flags-FAIL-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753302Ab0BQWhm (ORCPT
+	by vger.kernel.org with ESMTP id S1755297Ab0BQWhp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 17:37:42 -0500
+	Wed, 17 Feb 2010 17:37:45 -0500
 From: Christopher Heiny <cheiny@synaptics.com>
 To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
@@ -14,17 +14,18 @@ Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
        Allie Xiong <axiong@synaptics.com>,
        William Manson <wmanson@synaptics.com>
 Subject: [RFC PATCH 0/1] input/touchscreen: Synaptics Touchscreen Driver
-Date: Wed, 17 Feb 2010 14:37:36 -0800
-Message-Id: <1266446258-16209-1-git-send-email-cheiny@synaptics.com>
+Date: Wed, 17 Feb 2010 14:37:37 -0800
+Message-Id: <1266446258-16209-2-git-send-email-cheiny@synaptics.com>
 X-Mailer: git-send-email 1.6.6
+In-Reply-To: <1266446258-16209-1-git-send-email-cheiny@synaptics.com>
+References: <1266446258-16209-1-git-send-email-cheiny@synaptics.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 [This is a resend of a patch sent earlier this month - apologies
 for the duplication, but I botched some of the addressing in the
-previous submission (neglecting to include Dmitry), as well as the
-cover note.]
+previous submission, as well as the cover note.]
 
 This patch adds an initial driver supporting Synaptics ClearPad
 touchscreens that use the RMI4 protocol, as defined here:
@@ -33,7 +34,7 @@ http://www.synaptics.com/sites/default/files/511-000136-01_revA.pdf
 
 
 Differences to the previous RFC PATCH sent include:
-    - proper line wrapping (sending with get-sendemail)
+    - proper line wrapping
     - extensive changes to make checkpatch.pl happy.  Not all errors were
       eliminated, because in a couple of cases we couldn't figure out what the
       problem was.
