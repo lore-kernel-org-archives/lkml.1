@@ -1,60 +1,46 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754518Ab0BQTip (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 14:38:45 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:56976 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751136Ab0BQTio (ORCPT
+	id S1754512Ab0BQTjs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 14:39:48 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:38772 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751136Ab0BQTjr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 14:38:44 -0500
-Date: Wed, 17 Feb 2010 14:38:40 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Rick L. Vinyard, Jr." <rvinyard@cs.nmsu.edu>
-cc: Linux <linux-kernel@vger.kernel.org>,
-       Linux USB <linux-usb@vger.kernel.org>
-Subject: Re: Problem with modification to hid_post_reset
-In-Reply-To: <a82f528d5a1ecf9f64901ace786ef844.squirrel@intranet.cs.nmsu.edu>
-Message-ID: <Pine.LNX.4.44L0.1002171437160.1260-100000@iolanthe.rowland.org>
+	Wed, 17 Feb 2010 14:39:47 -0500
+Message-ID: <4B7C45E8.80402@cs.helsinki.fi>
+Date: Wed, 17 Feb 2010 21:39:20 +0200
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Catalin Marinas <catalin.marinas@arm.com>
+CC: linux-kernel@vger.kernel.org, Vegard Nossum <vegardno@ifi.uio.no>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christian Casteyde <casteyde.christian@free.fr>
+Subject: Re: [PATCH] kmemcheck: Test the full object in	kmemcheck_is_obj_initialized()
+References: <20100208111624.5387.37948.stgit@pc1117.cambridge.arm.com>
+In-Reply-To: <20100208111624.5387.37948.stgit@pc1117.cambridge.arm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Feb 2010, Rick L. Vinyard, Jr. wrote:
-
-> Following is a short patch that I've been using to add hooks before and
-> after device reset. I probably won't end up needing the post_reset_finish
-> hook but I have it there for testing right now.
+Catalin Marinas wrote:
+> This is a fix for bug #14845 (bugzilla.kernel.org). The
+> update_checksum() function in mm/kmemleak.c calls
+> kmemcheck_is_obj_initialised() before scanning an object. When
+> KMEMCHECK_PARTIAL_OK is enabled, this function returns true. However,
+> the crc32_le() reads smaller intervals (32-bit) for which
+> kmemleak_is_obj_initialised() may be false leading to a kmemcheck
+> warning.
 > 
-> The first hook I need so I can set a flag that is dealt with on the first
-> raw event, and I need to ensure the flag is set prior to queue restart.
+> Note that kmemcheck_is_obj_initialized() is currently only used by
+> kmemleak before scanning a memory location.
 > 
-> From what I can tell, these shouldn't cause any problems... they should be
-> trivial but they are causing a kernel fault on resume from a suspend.
-> 
-> The enclosed patch probably has line wrapping problems. If someone wants
-> to test it I'll send a more proper patch, but I thought I'd throw it out
-> there and see if anyone sees anything obvious.
+> Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Christian Casteyde <casteyde.christian@free.fr>
+> Cc: Pekka Enberg <penberg@cs.helsinki.fi>
+> Cc: Vegard Nossum <vegardno@ifi.uio.no>
 
-I agree, there doesn't seem to be anything really wrong.  See below...
-
-> ---- G13 code ----
-> 
-> #define hid_get_g13data(hdev) \
-> 	((struct g13_data *)(hid_get_drvdata(hdev)))
-> 
-> static void g13_post_reset_start(struct hid_device *hdev)
-> {
-> 	struct g13_data *data;
-> 
-> 	/* Get the underlying data value */
-> 	data = hid_get_g13data(hdev);
-> 	/* need_reset is declared as int */
-> 	data->need_reset = 1;
-
-Is your problem caused by data coming out NULL?
-
-Alan Stern
-
+Applied to slab.git.
