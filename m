@@ -1,43 +1,51 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756638Ab0BQVKp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 16:10:45 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:36377 "EHLO mx2.suse.de"
+	id S1756603Ab0BQVSA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 16:18:00 -0500
+Received: from mail.lang.hm ([64.81.33.126]:36646 "EHLO bifrost.lang.hm"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756523Ab0BQVKk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 16:10:40 -0500
-Date: Wed, 17 Feb 2010 13:05:56 -0800
-From: Greg KH <gregkh@suse.de>
-To: Haiyang Zhang <haiyangz@microsoft.com>
-Cc: "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-       "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>,
-       Hank Janssen <hjanssen@microsoft.com>
-Subject: Re: [PATCH 1/1] Stage: hv: Rename struct device_context and
- re-arrange the fields inside (re-formatted)
-Message-ID: <20100217210556.GA17038@suse.de>
-References: <1FB5E1D5CA062146B38059374562DF725A908A11@TK5EX14MBXC126.redmond.corp.microsoft.com>
+	id S1756496Ab0BQVR7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 16:17:59 -0500
+Date: Wed, 17 Feb 2010 13:17:43 -0800 (PST)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Nick Bowler <nbowler@elliptictech.com>
+cc: Volker Armin Hemmann <volkerarmin@googlemail.com>,
+       Kyle Moffett <kyle@moffetthome.net>,
+       Rudy Zijlstra <rudy@grumpydevil.homelinux.org>,
+       Neil Brown <neilb@suse.de>,
+       "Mr. James W. Laferriere" <babydr@baby-dragons.com>,
+       Bill Davidsen <davidsen@tmr.com>, Michael Evans <mjevans1983@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
+Subject: Re: Linux mdadm superblock question.
+In-Reply-To: <20100217185105.GA15614@emergent.ellipticsemi.com>
+Message-ID: <alpine.DEB.2.00.1002171317080.4721@asgard.lang.hm>
+References: <201002140251.59668.volkerarmin@googlemail.com> <alpine.DEB.2.00.1002170932010.4721@asgard.lang.hm> <20100217181016.GA14983@emergent.ellipticsemi.com> <201002171927.07051.volkerarmin@googlemail.com> <20100217183703.GA15446@emergent.ellipticsemi.com>
+ <alpine.DEB.2.00.1002171040350.4721@asgard.lang.hm> <20100217185105.GA15614@emergent.ellipticsemi.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1FB5E1D5CA062146B38059374562DF725A908A11@TK5EX14MBXC126.redmond.corp.microsoft.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 17, 2010 at 08:58:47PM +0000, Haiyang Zhang wrote:
-> From: Haiyang Zhang <haiyangz@microsoft.com>
-> 
-> Rename struct device_context and re-arrange the fields inside.
-> Rename struct device_context to struct vm_device, and move 
-> struct device field to the end according to Document/driver-model standard.
+On Wed, 17 Feb 2010, Nick Bowler wrote:
 
-There is no need to move the struct device to the end, it can be
-anywhere in the structure, just don't put it at the beginning so you
-think you can cast pointers like other parts of the hv code does.
+> On 10:41 Wed 17 Feb     , david@lang.hm wrote:
+>> On Wed, 17 Feb 2010, Nick Bowler wrote:
+>>> It takes about half a second for mdadm to assemble my root array, is
+>>> that what you're referring to?
+>>>
+>>> I assume that kernel auto-assembly is no faster, although I've never
+>>> used it.  Regardless, half a second isn't very long to wait.
+>>
+>> If you are aiming for a 5-second boot time it's 10% of your total boot
+>> time. That's a lot for a feature that's not needed.
+>
+> Only if the kernel auto-assembly takes zero time, which it obviously
+> does not.
 
-Anyway, no big deal, I'll queue this up in a bit.
+the assembly time would probably be the same, but the initramfs being 
+proposed did not include that time either.
 
-thanks,
-
-greg k-h
+David Lang
