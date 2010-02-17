@@ -1,49 +1,96 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933907Ab0BQBuR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 20:50:17 -0500
-Received: from mail-iw0-f185.google.com ([209.85.223.185]:35867 "EHLO
-	mail-iw0-f185.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933336Ab0BQBuP (ORCPT
+	id S933916Ab0BQB6R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 20:58:17 -0500
+Received: from bld-mail17.adl2.internode.on.net ([150.101.137.102]:55561 "EHLO
+	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933879Ab0BQB6Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 20:50:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=IbY3QajqQm3WGIbPx9wxskrFlYH682iayu+Lb2fCL+/MU57UGuABoCTN2bj1VSMZvi
-         LDvMka4XGuFGbD6Isf8lsI4XnhTLgebTOTFVjSknQuAxP3TUKfsDAH84phR7HFr0HjHP
-         tI9ETrYKNORltoVcO2/0o4A7Whl449guqFpoY=
+	Tue, 16 Feb 2010 20:58:16 -0500
+Date: Wed, 17 Feb 2010 12:57:34 +1100
+From: Dave Chinner <david@fromorbit.com>
+To: Jan Kara <jack@suse.cz>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, jengelh@medozas.de,
+       stable@kernel.org, gregkh@suse.de
+Subject: Re: [PATCH] writeback: Fix broken sync writeback
+Message-ID: <20100217015734.GH28392@discord.disaster>
+References: <20100212091609.GB1025@kernel.dk> <alpine.LFD.2.00.1002120722270.7792@localhost.localdomain> <20100215141750.GC3434@quack.suse.cz> <alpine.LFD.2.00.1002151601360.18830@localhost.localdomain> <20100216230017.GJ3153@quack.suse.cz> <alpine.LFD.2.00.1002161524210.4141@localhost.localdomain> <20100217013336.GK3153@quack.suse.cz>
 MIME-Version: 1.0
-In-Reply-To: <4B4668F7.1000304@zytor.com>
-References: <1262847894-27498-1-git-send-email-airlied@gmail.com>
-	 <4B4668F7.1000304@zytor.com>
-Date: Wed, 17 Feb 2010 11:50:14 +1000
-Message-ID: <21d7e9971002161750j25c28e22ged6eb6edea7d2b5c@mail.gmail.com>
-Subject: Re: [PATCH] x86: allow fbdev primary video code on 64-bit.
-From: Dave Airlie <airlied@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: linux-fbdev-devel@lists.sf.net, linux-kernel@vger.kernel.org,
-       Dave Airlie <airlied@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100217013336.GK3153@quack.suse.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 8, 2010 at 9:06 AM, H. Peter Anvin <hpa@zytor.com> wrote:
-> On 01/06/2010 11:04 PM, Dave Airlie wrote:
->> From: Dave Airlie <airlied@redhat.com>
->>
->> For some reason the 64-bit tree was doing this differently and
->> I can't see why it would need to.
->>
->> This correct behaviour when you have two GPUs plugged in and
->> 32-bit put the console in one place and 64-bit in another.
->>
->> Signed-off-by: Dave Airlie <airlied@redhat.com>
->
-> Looks good... I presume this is for .34, though?
+On Wed, Feb 17, 2010 at 02:33:37AM +0100, Jan Kara wrote:
+> On Tue 16-02-10 15:34:01, Linus Torvalds wrote:
+> > On Wed, 17 Feb 2010, Jan Kara wrote:
+> > >
+> > >   The IO size actually does matter for performance because if you switch
+> > > after 4 MB (current value of MAX_WRITEBACK_PAGES) to writing another inode,
+> > 
+> > No.
+> > 
+> > Dammit, read the code.
+> > 
+> > That's my whole _point_. Look at the for-loop.
+> > 
+> > We DO NOT SWITCH to another inode, because we just continue in the 
+> > for-loop.
+> > 
+> > This is why I think your patch is crap. You clearly haven't even read the 
+> > code, the patch makes no sense, and there must be something else going on 
+> > than what you _claim_ is going on.
+>   I've read the code. Maybe I'm missing something but look:
+> writeback_inodes_wb(nr_to_write = 1024)
+>   -> queue_io() - queues inodes from wb->b_dirty list to wb->b_io list
+>   ...
+>   writeback_single_inode()
+>     ...writes 1024 pages.
+>     if we haven't written everything in the inode (more than 1024 dirty
+>     pages) we end up doing either requeue_io() or redirty_tail(). In the
+>     first case the inode is put to b_more_io list, in the second case to
+>     the tail of b_dirty list. In either case it will not receive further
+>     writeout until we go through all other members of current b_io list.
+> 
+>   So I claim we currently *do* switch to another inode after 4 MB. That
+> is a fact.
 
-Is this queued? I've been told its not showing up in linux-next.
+That is my understanding of how it works, too.
+
+>   I *think* it is by design - mainly to avoid the situation where someone
+> continuously writes a huge file and kupdate or pdflush would never get to
+> writing other files with dirty data (at least that's impression I've built
+> over the years - heck, even 2.6.16 seems to have this redirty_tail logic
+> with a comment about the above livelock).
+
+Right, and there is another condition as well - writing lots of
+small files could starve large file writeback as the large file only
+got 4MB written back every 30s writeback period because it took that
+long to write out all the new files.
+
+IIRC it was in 2.6.16 that both these problems were fixed...
+
+>   I do find this design broken as well as you likely do and think that the
+> livelock issue described in the above paragraph should be solved differently
+> (e.g. by http://lkml.org/lkml/2010/2/11/321) but that's not a quick fix.
+> 
+>   The question is what to do now for 2.6.33 and 2.6.32-stable. Personally,
+> I think that changing the writeback logic so that it does not switch inodes
+> after 4 MB is too risky for these two kernels. So with the above
+> explanation would you accept some fix along the lines of original Jens'
+> fix?
+
+We've had this sync() writeback behaviour for a long time - my
+question is why is it only now a problem?
+
+Cheers,
 
 Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
