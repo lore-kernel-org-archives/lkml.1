@@ -1,81 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751290Ab0BQFeW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 00:34:22 -0500
-Received: from hera.kernel.org ([140.211.167.34]:47858 "EHLO hera.kernel.org"
+	id S1751373Ab0BQFlp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 00:41:45 -0500
+Received: from 1wt.eu ([62.212.114.60]:56449 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751194Ab0BQFeU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 00:34:20 -0500
-Date: Wed, 17 Feb 2010 05:33:49 GMT
-From: tip-bot for Dave Airlie <airlied@redhat.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       airlied@redhat.com, tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       airlied@redhat.com, tglx@linutronix.de
-In-Reply-To: <1262847894-27498-1-git-send-email-airlied@gmail.com>
-References: <1262847894-27498-1-git-send-email-airlied@gmail.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/gpu] x86-64: Allow fbdev primary video code
-Message-ID: <tip-477346ff74f4c2aed50e8a0db96a61069f3e5b80@git.kernel.org>
-Git-Commit-ID: 477346ff74f4c2aed50e8a0db96a61069f3e5b80
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	id S1751040Ab0BQFlo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 00:41:44 -0500
+Date: Wed, 17 Feb 2010 06:40:47 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: James Cloos <cloos@jhcloos.com>
+Cc: Jean Delvare <khali@linux-fr.org>, lasse.collin@tukaani.org,
+       Phillip Lougher <phillip@lougher.demon.co.uk>,
+       linux-kernel <linux-kernel@vger.kernel.org>, mirrors@kernel.org,
+       users@kernel.org, "FTPAdmin Kernel.org" <ftpadmin@kernel.org>,
+       Pavel Machek <pavel@ucw.cz>
+Subject: Re: [kernel.org users] XZ Migration discussion
+Message-ID: <20100217054047.GF18216@1wt.eu>
+References: <4B744E13.8040004@kernel.org> <20100211205129.GA26105@elf.ucw.cz> <20100213181008.479509f5@hyperion.delvare> <4B773B31.1020802@lougher.demon.co.uk> <20100214102308.1d1d6fff@hyperion.delvare> <20100214094940.GB17999@1wt.eu> <m3wrye9od4.fsf@lugabout.jhcloos.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 17 Feb 2010 05:33:51 +0000 (UTC)
+In-Reply-To: <m3wrye9od4.fsf@lugabout.jhcloos.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  477346ff74f4c2aed50e8a0db96a61069f3e5b80
-Gitweb:     http://git.kernel.org/tip/477346ff74f4c2aed50e8a0db96a61069f3e5b80
-Author:     Dave Airlie <airlied@redhat.com>
-AuthorDate: Thu, 7 Jan 2010 17:04:54 +1000
-Committer:  H. Peter Anvin <hpa@zytor.com>
-CommitDate: Tue, 16 Feb 2010 21:22:26 -0800
+On Mon, Feb 15, 2010 at 04:31:59PM -0500, James Cloos wrote:
+> >>>>> "W" == Willy Tarreau <w@1wt.eu> writes:
+> 
+> W> Well, I personally like to be able to simply run "less patch-2.6.27.45.gz"
+> W> and have it transparently uncompressed and dumped on my terminal. It
+> W> doesn't do that on bz2. We could find multiple examples.
+> 
+> It does here, and lzma & xz, too.  And has since just days after Lasse
+> annouced that the new name would be xz.
+> 
+> Your LESSOPEN controls that, and can be easily coded to support any archive.
 
-x86-64: Allow fbdev primary video code
+Just checked and I found it funny to see that patch-2.6.1.bz2 is not
+correctly opened while 2.6.27.45.bz2 is. Maybe some things have slightly
+changed in the tools by that time and the output differs slightly. However
+bzcat opens them both so the file is not corrupted.
 
-For some reason the 64-bit tree was doing this differently and
-I can't see why it would need to.
+This raises the point of the maturity of the tools BTW. GZ is mature,
+BZ2 has become mature over the years, XZ is very recent and may still
+be buggy at times. We'll only know that when people will complain that
+they cannot open one file from time to time.
 
-This correct behaviour when you have two GPUs plugged in and
-32-bit put the console in one place and 64-bit in another.
+Willy
 
-Signed-off-by: Dave Airlie <airlied@redhat.com>
-LKML-Reference: <1262847894-27498-1-git-send-email-airlied@gmail.com>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
----
- arch/x86/Makefile         |    2 --
- arch/x86/include/asm/fb.h |    4 ----
- 2 files changed, 0 insertions(+), 6 deletions(-)
-
-diff --git a/arch/x86/Makefile b/arch/x86/Makefile
-index 78b32be..0a43dc5 100644
---- a/arch/x86/Makefile
-+++ b/arch/x86/Makefile
-@@ -135,9 +135,7 @@ drivers-$(CONFIG_OPROFILE) += arch/x86/oprofile/
- # suspend and hibernation support
- drivers-$(CONFIG_PM) += arch/x86/power/
- 
--ifeq ($(CONFIG_X86_32),y)
- drivers-$(CONFIG_FB) += arch/x86/video/
--endif
- 
- ####
- # boot loader support. Several targets are kept for legacy purposes
-diff --git a/arch/x86/include/asm/fb.h b/arch/x86/include/asm/fb.h
-index 5301846..2519d06 100644
---- a/arch/x86/include/asm/fb.h
-+++ b/arch/x86/include/asm/fb.h
-@@ -12,10 +12,6 @@ static inline void fb_pgprotect(struct file *file, struct vm_area_struct *vma,
- 		pgprot_val(vma->vm_page_prot) |= _PAGE_PCD;
- }
- 
--#ifdef CONFIG_X86_32
- extern int fb_is_primary_device(struct fb_info *info);
--#else
--static inline int fb_is_primary_device(struct fb_info *info) { return 0; }
--#endif
- 
- #endif /* _ASM_X86_FB_H */
