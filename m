@@ -1,18 +1,18 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757534Ab0BQVuH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 16:50:07 -0500
-Received: from mail-fx0-f215.google.com ([209.85.220.215]:54052 "EHLO
+	id S1757549Ab0BQVuR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 16:50:17 -0500
+Received: from mail-fx0-f215.google.com ([209.85.220.215]:49772 "EHLO
 	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757507Ab0BQVt7 (ORCPT
+	with ESMTP id S1757507Ab0BQVuJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 16:49:59 -0500
+	Wed, 17 Feb 2010 16:50:09 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=kxhOxBfQmM2KwNBD302ZQ6YlicXmFLHTzF2y8GkrGab+3Q21Oe9YCJNnM8+v1ZXtpJ
-         uV8xgbEp0aDo1x6Dr8oxYiPfBvk14HTqhXG9zCSlLQrVUhCFzvEUTFV27vYfWjDrT6M7
-         93Fmzl+swzELJTzIpV8VvzP4YvwRRFOgS3Ia0=
+        b=sZ1+fN21UomZXxdSnIXA2R6eXvnecNc9uYm0DjqwK+upeJ4VNwKkrN5fyIyBE7Vkse
+         IqayzbQ9ISxKo2GPMGbhl+yArh9jqSAt/ZkygUhHIadSYVMRlUHbc6id5oUQON/dVWi5
+         0IxGUbMRyoCaMnvSP9XioWnI40jggMaFLmfNg=
 From: Maxim Levitsky <maximlevitsky@gmail.com>
 To: David Woodhouse <dwmw2@infradead.org>
 Cc: Artem Bityutskiy <dedekind1@gmail.com>,
@@ -23,9 +23,9 @@ Cc: Artem Bityutskiy <dedekind1@gmail.com>,
        "stanley.miao" <stanley.miao@windriver.com>,
        Vitaly Wool <vitalywool@gmail.com>,
        Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: [PATCH 11/14] MTD: common module for smartmedia/xD support
-Date: Wed, 17 Feb 2010 23:49:21 +0200
-Message-Id: <1266443364-4538-12-git-send-email-maximlevitsky@gmail.com>
+Subject: [PATCH 14/14] MTD: Add nand driver for Ricoh xD/SmartMedia reader
+Date: Wed, 17 Feb 2010 23:49:24 +0200
+Message-Id: <1266443364-4538-15-git-send-email-maximlevitsky@gmail.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1266443364-4538-1-git-send-email-maximlevitsky@gmail.com>
 References: <1266443364-4538-1-git-send-email-maximlevitsky@gmail.com>
@@ -33,238 +33,1388 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This small module implements few helpers that are usefull
-for nand drivers for SmartMedia/xD card readers.
+This adds a driver for Ricoh R5C852 xD card reader.
+
+This reader is a part of larger mulifunction chip
+and found at least in R5C832
+
+Driver is complete, but bewere of the fact that some
+(probably only type M) xD cards are 'fake' which means that
+they have an on board CPU and expose emulated nand command set
+
+These cards don't even store the  oob area on the flash,
+but generate it on the fly from something else.
+
+Thus they demand to have proper values written in the oob area,
+and therefore only useful with SmartMedia FTL.
 
 Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
 ---
- drivers/mtd/nand/Kconfig     |    9 ++++
- drivers/mtd/nand/Makefile    |    1 +
- drivers/mtd/nand/sm_common.c |  107 ++++++++++++++++++++++++++++++++++++++++++
- drivers/mtd/nand/sm_common.h |   61 ++++++++++++++++++++++++
- 4 files changed, 178 insertions(+), 0 deletions(-)
- create mode 100644 drivers/mtd/nand/sm_common.c
- create mode 100644 drivers/mtd/nand/sm_common.h
+ MAINTAINERS               |    6 +
+ drivers/mtd/nand/Kconfig  |   11 +
+ drivers/mtd/nand/Makefile |    1 +
+ drivers/mtd/nand/r852.c   | 1117 +++++++++++++++++++++++++++++++++++++++++++++
+ drivers/mtd/nand/r852.h   |  163 +++++++
+ include/linux/pci_ids.h   |    2 +
+ 6 files changed, 1300 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/mtd/nand/r852.c
+ create mode 100644 drivers/mtd/nand/r852.h
 
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 1b0f053..1723c54 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -4577,6 +4577,12 @@ S:	Maintained
+ F:	Documentation/rfkill.txt
+ F:	net/rfkill/
+ 
++RICOH SMARTMEDIA/XD DRIVER
++M:	Maxim Levitsky <maximlevitsky@gmail.com>
++S:	Maintained
++F:	drivers/mtd/nand/r822.c
++F:	drivers/mtd/nand/r822.h
++
+ RISCOM8 DRIVER
+ S:	Orphan
+ F:	Documentation/serial/riscom8.txt
 diff --git a/drivers/mtd/nand/Kconfig b/drivers/mtd/nand/Kconfig
-index 677cd53..13c1fb2 100644
+index 13c1fb2..108ff16 100644
 --- a/drivers/mtd/nand/Kconfig
 +++ b/drivers/mtd/nand/Kconfig
-@@ -18,6 +18,10 @@ config MTD_NAND_VERIFY_WRITE
- 	  device thinks the write was successful, a bit could have been
- 	  flipped accidentally due to device wear or something else.
+@@ -113,6 +113,17 @@ config MTD_NAND_TS7250
+ config MTD_NAND_IDS
+ 	tristate
  
-+config MTD_NAND_SMARTMEDIA
-+	boolean
++config MTD_NAND_RICOH
++	tristate "Ricoh xD card reader"
 +	default n
++	select MTD_SM_COMMON
++	help
++	  Enable support for Ricoh R5C852 xD card reader
++	  You also need to enable ether
++	  NAND SSFDC (SmartMedia) read only translation layer' or new
++	  expermental, readwrite
++	  'SmartMedia/xD new translation layer'
 +
- config MTD_NAND_ECC_SMC
- 	bool "NAND ECC Smart Media byte order"
- 	default n
-@@ -25,6 +29,11 @@ config MTD_NAND_ECC_SMC
- 	  Software ECC according to the Smart Media Specification.
- 	  The original Linux implementation had byte 0 and 1 swapped.
- 
-+config MTD_SM_COMMON
-+	select MTD_NAND_SMARTMEDIA
-+	tristate
-+	default n
-+
- config MTD_NAND_MUSEUM_IDS
- 	bool "Enable chip ids for obsolete ancient NAND devices"
- 	depends on MTD_NAND
+ config MTD_NAND_AU1550
+ 	tristate "Au1550/1200 NAND support"
+ 	depends on SOC_AU1200 || SOC_AU1550
 diff --git a/drivers/mtd/nand/Makefile b/drivers/mtd/nand/Makefile
-index 1407bd1..09891f6 100644
+index 09891f6..2d78eba 100644
 --- a/drivers/mtd/nand/Makefile
 +++ b/drivers/mtd/nand/Makefile
-@@ -4,6 +4,7 @@
+@@ -43,5 +43,6 @@ obj-$(CONFIG_MTD_NAND_TXX9NDFMC)	+= txx9ndfmc.o
+ obj-$(CONFIG_MTD_NAND_W90P910)		+= w90p910_nand.o
+ obj-$(CONFIG_MTD_NAND_NOMADIK)		+= nomadik_nand.o
+ obj-$(CONFIG_MTD_NAND_BCM_UMI)		+= bcm_umi_nand.o nand_bcm_umi.o
++obj-$(CONFIG_MTD_NAND_RICOH)		+= r852.o
  
- obj-$(CONFIG_MTD_NAND)			+= nand.o nand_ecc.o
- obj-$(CONFIG_MTD_NAND_IDS)		+= nand_ids.o
-+obj-$(CONFIG_MTD_SM_COMMON) 		+= sm_common.o
- 
- obj-$(CONFIG_MTD_NAND_CAFE)		+= cafe_nand.o
- obj-$(CONFIG_MTD_NAND_SPIA)		+= spia.o
-diff --git a/drivers/mtd/nand/sm_common.c b/drivers/mtd/nand/sm_common.c
+ nand-objs := nand_base.o nand_bbt.o
+diff --git a/drivers/mtd/nand/r852.c b/drivers/mtd/nand/r852.c
 new file mode 100644
-index 0000000..fc4ff71
+index 0000000..5c718ff
 --- /dev/null
-+++ b/drivers/mtd/nand/sm_common.c
-@@ -0,0 +1,107 @@
++++ b/drivers/mtd/nand/r852.c
+@@ -0,0 +1,1117 @@
 +/*
 + * Copyright (C) 2009 - Maxim Levitsky
-+ * Common routines & support for xD format
++ * driver for Ricoh xD readers
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License version 2 as
 + * published by the Free Software Foundation.
 + */
++
 +#include <linux/kernel.h>
-+#include <linux/mtd/nand.h>
++#include <linux/module.h>
++#include <linux/jiffies.h>
++#include <linux/workqueue.h>
++#include <linux/interrupt.h>
++#include <linux/pci_ids.h>
++#include <asm/byteorder.h>
++#include <linux/sched.h>
 +#include "sm_common.h"
-+
-+static struct nand_ecclayout nand_oob_sm = {
-+	.eccbytes = 6,
-+	.eccpos = {8, 9, 10, 13, 14, 15},
-+	.oobfree = {
-+		{.offset = 0 , .length = 4}, /* reserved */
-+		{.offset = 6 , .length = 2}, /* LBA1 */
-+		{.offset = 11, .length = 2}  /* LBA2 */
-+	}
-+};
-+
-+/* NOTE: This layout is is not compatabable with SmartMedia, */
-+/* because the 256 byte devices have page depenent oob layout */
-+/* However it does preserve the bad block markers */
-+/* If you use smftl, it will bypass this and work correctly */
-+/* If you not, then you break SmartMedia compliance anyway */
-+
-+static struct nand_ecclayout nand_oob_sm_small = {
-+	.eccbytes = 3,
-+	.eccpos = {0, 1, 2},
-+	.oobfree = {
-+		{.offset = 3 , .length = 2}, /* reserved */
-+		{.offset = 6 , .length = 2}, /* LBA1 */
-+	}
-+};
++#include "r852.h"
 +
 +
-+static int sm_block_markbad(struct mtd_info *mtd, loff_t ofs)
++static int enable_dma = 1;
++module_param(enable_dma, bool, S_IRUGO);
++MODULE_PARM_DESC(enable_dma, "Enable usage of the DMA (default)");
++
++static int debug;
++module_param(debug, int, S_IRUGO | S_IWUSR);
++MODULE_PARM_DESC(debug, "Debug level (0-2)");
++
++/* read register */
++static inline u8 r852_read_reg(struct r852_device *dev, int address)
 +{
-+	struct mtd_oob_ops ops;
-+	struct sm_oob oob;
-+	int ret, error = 0;
++	u8 reg = readb(dev->mmio + address);
++	return reg;
++}
 +
-+	memset(&oob, -1, SM_OOB_SIZE);
-+	oob.block_status = 0x0F;
-+
-+	/* As long as this function is called on erase block boundaries
-+		it will work correctly for 256 byte nand */
-+	ops.mode = MTD_OOB_PLACE;
-+	ops.ooboffs = 0;
-+	ops.ooblen = mtd->oobsize;
-+	ops.oobbuf = (void *)&oob;
-+	ops.datbuf = NULL;
++/* write register */
++static inline void r852_write_reg(struct r852_device *dev,
++						int address, u8 value)
++{
++	writeb(value, dev->mmio + address);
++	mmiowb();
++}
 +
 +
-+	ret = mtd->write_oob(mtd, ofs, &ops);
-+	if (ret < 0 || ops.oobretlen != SM_OOB_SIZE) {
-+		printk(KERN_NOTICE
-+			"sm_common: can't mark sector at %i as bad\n",
-+								(int)ofs);
-+		error = -EIO;
-+	} else
-+		mtd->ecc_stats.badblocks++;
++/* read dword sized register */
++static inline u32 r852_read_reg_dword(struct r852_device *dev, int address)
++{
++	u32 reg = le32_to_cpu(readl(dev->mmio + address));
++	return reg;
++}
 +
++/* write dword sized register */
++static inline void r852_write_reg_dword(struct r852_device *dev,
++							int address, u32 value)
++{
++	writel(cpu_to_le32(value), dev->mmio + address);
++	mmiowb();
++}
++
++/* returns pointer to our private structure */
++static inline struct r852_device *r852_get_dev(struct mtd_info *mtd)
++{
++	struct nand_chip *chip = (struct nand_chip *)mtd->priv;
++	return (struct r852_device *)chip->priv;
++}
++
++
++/* check if controller supports dma */
++static void r852_dma_test(struct r852_device *dev)
++{
++	dev->dma_usable = (r852_read_reg(dev, R852_DMA_CAP) &
++		(R852_DMA1 | R852_DMA2)) == (R852_DMA1 | R852_DMA2);
++
++	if (!dev->dma_usable)
++		message("Non dma capable device detected, dma disabled");
++
++	if (!enable_dma) {
++		message("disabling dma on user request");
++		dev->dma_usable = 0;
++	}
++}
++
++/*
++ * Enable dma. Enables ether first or second stage of the DMA,
++ * Expects dev->dma_dir and dev->dma_state be set
++ */
++static void r852_dma_enable(struct r852_device *dev)
++{
++	u8 dma_reg, dma_irq_reg;
++
++	/* Set up dma settings */
++	dma_reg = r852_read_reg_dword(dev, R852_DMA_SETTINGS);
++	dma_reg &= ~(R852_DMA_READ | R852_DMA_INTERNAL | R852_DMA_MEMORY);
++
++	if (dev->dma_dir)
++		dma_reg |= R852_DMA_READ;
++
++	if (dev->dma_state == DMA_INTERNAL)
++		dma_reg |= R852_DMA_INTERNAL;
++	else {
++		dma_reg |= R852_DMA_MEMORY;
++		r852_write_reg_dword(dev, R852_DMA_ADDR,
++			cpu_to_le32(dev->phys_dma_addr));
++	}
++
++	r852_write_reg_dword(dev, R852_DMA_SETTINGS, dma_reg);
++
++	/* Set dma irq */
++	dma_irq_reg = r852_read_reg_dword(dev, R852_DMA_IRQ_ENABLE);
++	r852_write_reg_dword(dev, R852_DMA_IRQ_ENABLE,
++		dma_irq_reg |
++		R852_DMA_IRQ_INTERNAL |
++		R852_DMA_IRQ_ERROR |
++		R852_DMA_IRQ_MEMORY);
++}
++
++/*
++ * Disable dma, called from the interrupt handler, which specifies
++ * success of the operation via 'error' argument
++ */
++static void r852_dma_done(struct r852_device *dev, int error)
++{
++	WARN_ON(dev->dma_stage == 0);
++
++	r852_write_reg_dword(dev, R852_DMA_IRQ_STA,
++			r852_read_reg_dword(dev, R852_DMA_IRQ_STA));
++
++	r852_write_reg_dword(dev, R852_DMA_SETTINGS, 0);
++	r852_write_reg_dword(dev, R852_DMA_IRQ_ENABLE, 0);
++
++	dev->dma_error = error;
++	dev->dma_stage = 0;
++
++	if (dev->phys_dma_addr && dev->phys_dma_addr != dev->phys_bounce_buffer)
++		pci_unmap_single(dev->pci_dev, dev->phys_dma_addr, R852_DMA_LEN,
++			dev->dma_dir ? PCI_DMA_FROMDEVICE : PCI_DMA_TODEVICE);
++	complete(&dev->dma_done);
++}
++
++/*
++ * Wait, till dma is done, which includes both phases of it
++ */
++static int r852_dma_wait(struct r852_device *dev)
++{
++	long timeout = wait_for_completion_timeout(&dev->dma_done,
++				msecs_to_jiffies(1000));
++	if (!timeout) {
++		dbg("timeout waiting for DMA interrupt");
++		return -ETIMEDOUT;
++	}
++
++	return 0;
++}
++
++/*
++ * Read/Write one page using dma. Only pages can be read (512 bytes)
++*/
++static void r852_do_dma(struct r852_device *dev, uint8_t *buf, int do_read)
++{
++	int bounce = 0;
++	unsigned long flags;
++	int error;
++
++	dev->dma_error = 0;
++
++	/* Set dma direction */
++	dev->dma_dir = do_read;
++	dev->dma_stage = 1;
++
++	dbg_verbose("doing dma %s ", do_read ? "read" : "write");
++
++	/* Set intial dma state: for reading first fill on board buffer,
++	  from device, for writes first fill the buffer  from memory*/
++	dev->dma_state = do_read ? DMA_INTERNAL : DMA_MEMORY;
++
++	/* if incoming buffer is not page aligned, we should do bounce */
++	if ((unsigned long)buf & (R852_DMA_LEN-1))
++		bounce = 1;
++
++	if (!bounce) {
++		dev->phys_dma_addr = pci_map_single(dev->pci_dev, (void *)buf,
++			R852_DMA_LEN,
++			(do_read ? PCI_DMA_FROMDEVICE : PCI_DMA_TODEVICE));
++
++		if (dev->phys_dma_addr == DMA_ERROR_CODE)
++			bounce = 1;
++	}
++
++	if (bounce) {
++		dbg_verbose("dma: using bounce buffer");
++		dev->phys_dma_addr = dev->phys_bounce_buffer;
++		if (!do_read)
++			memcpy(dev->bounce_buffer, buf, R852_DMA_LEN);
++	}
++
++	/* Enable DMA */
++	spin_lock_irqsave(&dev->irqlock, flags);
++	r852_dma_enable(dev);
++	spin_unlock_irqrestore(&dev->irqlock, flags);
++
++	/* Wait till complete */
++	error = r852_dma_wait(dev);
++
++	if (error) {
++		r852_dma_done(dev, error);
++		return;
++	}
++
++	if (do_read && bounce)
++		memcpy((void *)buf, dev->bounce_buffer, R852_DMA_LEN);
++}
++
++/*
++ * Program data lines of the nand chip to send data to it
++ */
++void r852_write_buf(struct mtd_info *mtd, const uint8_t *buf, int len)
++{
++	struct r852_device *dev = r852_get_dev(mtd);
++	u32 reg;
++
++	/* Don't allow any access to hardware if we suspect card removal */
++	if (dev->card_unstable)
++		return;
++
++	/* Special case for whole sector read */
++	if (len == R852_DMA_LEN && dev->dma_usable) {
++		r852_do_dma(dev, (uint8_t *)buf, 0);
++		return;
++	}
++
++	/* write DWORD chinks - faster */
++	while (len) {
++		reg = buf[0] | buf[1] << 8 | buf[2] << 16 | buf[3] << 24;
++		r852_write_reg_dword(dev, R852_DATALINE, reg);
++		buf += 4;
++		len -= 4;
++
++	}
++
++	/* write rest */
++	while (len)
++		r852_write_reg(dev, R852_DATALINE, *buf++);
++}
++
++/*
++ * Read data lines of the nand chip to retrieve data
++ */
++void r852_read_buf(struct mtd_info *mtd, uint8_t *buf, int len)
++{
++	struct r852_device *dev = r852_get_dev(mtd);
++	u32 reg;
++
++	if (dev->card_unstable) {
++		/* since we can't signal error here, at least, return
++			predictable buffer */
++		memset(buf, 0, len);
++		return;
++	}
++
++	/* special case for whole sector read */
++	if (len == R852_DMA_LEN && dev->dma_usable) {
++		r852_do_dma(dev, buf, 1);
++		return;
++	}
++
++	/* read in dword sized chunks */
++	while (len >= 4) {
++
++		reg = r852_read_reg_dword(dev, R852_DATALINE);
++		*buf++ = reg & 0xFF;
++		*buf++ = (reg >> 8) & 0xFF;
++		*buf++ = (reg >> 16) & 0xFF;
++		*buf++ = (reg >> 24) & 0xFF;
++		len -= 4;
++	}
++
++	/* read the reset by bytes */
++	while (len--)
++		*buf++ = r852_read_reg(dev, R852_DATALINE);
++}
++
++/*
++ * Read one byte from nand chip
++ */
++static uint8_t r852_read_byte(struct mtd_info *mtd)
++{
++	struct r852_device *dev = r852_get_dev(mtd);
++
++	/* Same problem as in r852_read_buf.... */
++	if (dev->card_unstable)
++		return 0;
++
++	return r852_read_reg(dev, R852_DATALINE);
++}
++
++
++/*
++ * Readback the buffer to verify it
++ */
++int r852_verify_buf(struct mtd_info *mtd, const uint8_t *buf, int len)
++{
++	struct r852_device *dev = r852_get_dev(mtd);
++
++	/* We can't be sure about anything here... */
++	if (dev->card_unstable)
++		return -1;
++
++	/* This will never happen, unless you wired up a nand chip
++		with > 512 bytes page size to the reader */
++	if (len > SM_SECTOR_SIZE)
++		return 0;
++
++	r852_read_buf(mtd, dev->tmp_buffer, len);
++	return memcmp(buf, dev->tmp_buffer, len);
++}
++
++/*
++ * Control several chip lines & send commands
++ */
++void r852_cmdctl(struct mtd_info *mtd, int dat, unsigned int ctrl)
++{
++	struct r852_device *dev = r852_get_dev(mtd);
++
++	if (dev->card_unstable)
++		return;
++
++	if (ctrl & NAND_CTRL_CHANGE) {
++
++		dev->ctlreg &= ~(R852_CTL_DATA | R852_CTL_COMMAND |
++				 R852_CTL_ON | R852_CTL_CARDENABLE);
++
++		if (ctrl & NAND_ALE)
++			dev->ctlreg |= R852_CTL_DATA;
++
++		if (ctrl & NAND_CLE)
++			dev->ctlreg |= R852_CTL_COMMAND;
++
++		if (ctrl & NAND_NCE)
++			dev->ctlreg |= (R852_CTL_CARDENABLE | R852_CTL_ON);
++		else
++			dev->ctlreg &= ~R852_CTL_WRITE;
++
++		/* when write is stareted, enable write access */
++		if (dat == NAND_CMD_ERASE1)
++			dev->ctlreg |= R852_CTL_WRITE;
++
++		r852_write_reg(dev, R852_CTL, dev->ctlreg);
++	}
++
++	 /* HACK: NAND_CMD_SEQIN is called without NAND_CTRL_CHANGE, but we need
++		to set write mode */
++	if (dat == NAND_CMD_SEQIN && (dev->ctlreg & R852_CTL_COMMAND)) {
++		dev->ctlreg |= R852_CTL_WRITE;
++		r852_write_reg(dev, R852_CTL, dev->ctlreg);
++	}
++
++	if (dat != NAND_CMD_NONE)
++		r852_write_reg(dev, R852_DATALINE, dat);
++}
++
++/*
++ * Wait till card is ready.
++ * based on nand_wait, but returns errors on DMA error
++ */
++int r852_wait(struct mtd_info *mtd, struct nand_chip *chip)
++{
++	struct r852_device *dev = (struct r852_device *)chip->priv;
++
++	unsigned long timeout;
++	int status;
++
++	timeout = jiffies + (chip->state == FL_ERASING ?
++		msecs_to_jiffies(400) : msecs_to_jiffies(20));
++
++	while (time_before(jiffies, timeout))
++		if (chip->dev_ready(mtd))
++			break;
++
++	chip->cmdfunc(mtd, NAND_CMD_STATUS, -1, -1);
++	status = (int)chip->read_byte(mtd);
++
++	/* Unfortunelly, no way to send detailed error status... */
++	if (dev->dma_error) {
++		status |= NAND_STATUS_FAIL;
++		dev->dma_error = 0;
++	}
++	return status;
++}
++
++/*
++ * Check if card is ready
++ */
++
++int r852_ready(struct mtd_info *mtd)
++{
++	struct r852_device *dev = r852_get_dev(mtd);
++	return !(r852_read_reg(dev, R852_CARD_STA) & R852_CARD_STA_BUSY);
++}
++
++
++/*
++ * Set ECC engine mode
++*/
++
++void r852_ecc_hwctl(struct mtd_info *mtd, int mode)
++{
++	struct r852_device *dev = r852_get_dev(mtd);
++
++	if (dev->card_unstable)
++		return;
++
++	switch (mode) {
++	case NAND_ECC_READ:
++	case NAND_ECC_WRITE:
++		/* enable ecc generation/check*/
++		dev->ctlreg |= R852_CTL_ECC_ENABLE;
++
++		/* flush ecc buffer */
++		r852_write_reg(dev, R852_CTL,
++			dev->ctlreg | R852_CTL_ECC_ACCESS);
++
++		r852_read_reg_dword(dev, R852_DATALINE);
++		r852_write_reg(dev, R852_CTL, dev->ctlreg);
++		return;
++
++	case NAND_ECC_READSYN:
++		/* disable ecc generation */
++		dev->ctlreg &= ~R852_CTL_ECC_ENABLE;
++		r852_write_reg(dev, R852_CTL, dev->ctlreg);
++	}
++}
++
++/*
++ * Calculate ECC, only used for writes
++ */
++
++int r852_ecc_calculate(struct mtd_info *mtd, const uint8_t *dat,
++							uint8_t *ecc_code)
++{
++	struct r852_device *dev = r852_get_dev(mtd);
++	struct sm_oob *oob = (struct sm_oob *)ecc_code;
++	u32 ecc1, ecc2;
++
++	if (dev->card_unstable)
++		return 0;
++
++	dev->ctlreg &= ~R852_CTL_ECC_ENABLE;
++	r852_write_reg(dev, R852_CTL, dev->ctlreg | R852_CTL_ECC_ACCESS);
++
++	ecc1 = r852_read_reg_dword(dev, R852_DATALINE);
++	ecc2 = r852_read_reg_dword(dev, R852_DATALINE);
++
++	oob->ecc1[0] = (ecc1) & 0xFF;
++	oob->ecc1[1] = (ecc1 >> 8) & 0xFF;
++	oob->ecc1[2] = (ecc1 >> 16) & 0xFF;
++
++	oob->ecc2[0] = (ecc2) & 0xFF;
++	oob->ecc2[1] = (ecc2 >> 8) & 0xFF;
++	oob->ecc2[2] = (ecc2 >> 16) & 0xFF;
++
++	r852_write_reg(dev, R852_CTL, dev->ctlreg);
++	return 0;
++}
++
++/*
++ * Correct the data using ECC, hw did almost everything for us
++ */
++
++int r852_ecc_correct(struct mtd_info *mtd, uint8_t *dat,
++				uint8_t *read_ecc, uint8_t *calc_ecc)
++{
++	u16 ecc_reg;
++	u8 ecc_status, err_byte;
++	int i, error = 0;
++
++	struct r852_device *dev = r852_get_dev(mtd);
++
++	if (dev->card_unstable)
++		return 0;
++
++	r852_write_reg(dev, R852_CTL, dev->ctlreg | R852_CTL_ECC_ACCESS);
++	ecc_reg = r852_read_reg_dword(dev, R852_DATALINE);
++	r852_write_reg(dev, R852_CTL, dev->ctlreg);
++
++	for (i = 0 ; i <= 1 ; i++) {
++
++		ecc_status = (ecc_reg >> 8) & 0xFF;
++
++		/* ecc uncorrectable error */
++		if (ecc_status & R852_ECC_FAIL) {
++			dbg("ecc: unrecoverable error, in half %d", i);
++			error = -1;
++			goto exit;
++		}
++
++		/* correctable error */
++		if (ecc_status & R852_ECC_CORRECTABLE) {
++
++			err_byte = ecc_reg & 0xFF;
++			dbg("ecc: recoverable error, "
++				"in half %d, byte %d, bit %d", i,
++				err_byte, ecc_status & R852_ECC_ERR_BIT_MSK);
++
++			dat[err_byte] ^=
++				1 << (ecc_status & R852_ECC_ERR_BIT_MSK);
++			error++;
++		}
++
++		dat += 256;
++		ecc_reg >>= 16;
++	}
++exit:
 +	return error;
 +}
 +
-+
-+int sm_register_device(struct mtd_info *mtd)
++/*
++ * This is copy of nand_read_oob_std
++ * nand_read_oob_syndrome assumes we can send column address - we can't
++ */
++static int r852_read_oob(struct mtd_info *mtd, struct nand_chip *chip,
++			     int page, int sndcmd)
 +{
-+	struct nand_chip *chip = (struct nand_chip *)mtd->priv;
-+	int ret;
-+
-+	chip->options |= NAND_SKIP_BBTSCAN | NAND_SMARTMEDIA;
-+
-+	/* Scan for card properties */
-+	ret = nand_scan_ident(mtd, 1);
-+
-+	if (ret)
-+		return ret;
-+
-+	/* Bad block marker postion */
-+	chip->badblockpos = 0x05;
-+	chip->badblockbits = 7;
-+	chip->block_markbad = sm_block_markbad;
-+
-+	/* ECC layout */
-+	if (mtd->writesize == SM_SECTOR_SIZE)
-+		chip->ecc.layout = &nand_oob_sm;
-+	else if (mtd->writesize == SM_SMALL_PAGE)
-+		chip->ecc.layout = &nand_oob_sm_small;
-+	else
-+		return -ENODEV;
-+
-+	ret = nand_scan_tail(mtd);
-+
-+	if (ret)
-+		return ret;
-+
-+	return add_mtd_device(mtd);
++	if (sndcmd) {
++		chip->cmdfunc(mtd, NAND_CMD_READOOB, 0, page);
++		sndcmd = 0;
++	}
++	chip->read_buf(mtd, chip->oob_poi, mtd->oobsize);
++	return sndcmd;
 +}
-+EXPORT_SYMBOL_GPL(sm_register_device);
++
++/*
++ * Start the nand engine
++ */
++
++void r852_engine_enable(struct r852_device *dev)
++{
++	if (r852_read_reg_dword(dev, R852_HW) & R852_HW_UNKNOWN) {
++		r852_write_reg(dev, R852_CTL, R852_CTL_RESET | R852_CTL_ON);
++		r852_write_reg_dword(dev, R852_HW, R852_HW_ENABLED);
++	} else {
++		r852_write_reg_dword(dev, R852_HW, R852_HW_ENABLED);
++		r852_write_reg(dev, R852_CTL, R852_CTL_RESET | R852_CTL_ON);
++	}
++	msleep(300);
++	r852_write_reg(dev, R852_CTL, 0);
++}
++
++
++/*
++ * Stop the nand engine
++ */
++
++void r852_engine_disable(struct r852_device *dev)
++{
++	r852_write_reg_dword(dev, R852_HW, 0);
++	r852_write_reg(dev, R852_CTL, R852_CTL_RESET);
++}
++
++/*
++ * Test if card is present
++ */
++
++void r852_card_update_present(struct r852_device *dev)
++{
++	unsigned long flags;
++	u8 reg;
++
++	spin_lock_irqsave(&dev->irqlock, flags);
++	reg = r852_read_reg(dev, R852_CARD_STA);
++	dev->card_detected = !!(reg & R852_CARD_STA_PRESENT);
++	spin_unlock_irqrestore(&dev->irqlock, flags);
++}
++
++/*
++ * Update card detection IRQ state according to current card state
++ * which is read in r852_card_update_present
++ */
++void r852_update_card_detect(struct r852_device *dev)
++{
++	int card_detect_reg = r852_read_reg(dev, R852_CARD_IRQ_ENABLE);
++
++	card_detect_reg &= ~(R852_CARD_IRQ_REMOVE | R852_CARD_IRQ_INSERT);
++	card_detect_reg |= R852_CARD_IRQ_GENABLE;
++
++	card_detect_reg |= dev->card_detected ?
++		R852_CARD_IRQ_REMOVE : R852_CARD_IRQ_INSERT;
++
++	r852_write_reg(dev, R852_CARD_IRQ_ENABLE, card_detect_reg);
++}
++
++ssize_t r852_media_type_show(struct device *sys_dev,
++		struct device_attribute *attr, char *buf)
++{
++	struct mtd_info *mtd = container_of(sys_dev, struct mtd_info, dev);
++	struct r852_device *dev = r852_get_dev(mtd);
++	char *data = dev->sm ? "smartmedia" : "xd";
++
++	strcpy(buf, data);
++	return strlen(data);
++}
++
++DEVICE_ATTR(media_type, S_IRUGO, r852_media_type_show, NULL);
++
++
++/* Detect properties of card in slot */
++void r852_update_media_status(struct r852_device *dev)
++{
++	u8 reg;
++	unsigned long flags;
++	int readonly;
++
++	spin_lock_irqsave(&dev->irqlock, flags);
++	if (!dev->card_detected) {
++		message("card removed");
++		spin_unlock_irqrestore(&dev->irqlock, flags);
++		return ;
++	}
++
++	readonly  = r852_read_reg(dev, R852_CARD_STA) & R852_CARD_STA_RO;
++	reg = r852_read_reg(dev, R852_DMA_CAP);
++	dev->sm = (reg & (R852_DMA1 | R852_DMA2)) && (reg & R852_SMBIT);
++
++	message("detected %s %s card in slot",
++		dev->sm ? "SmartMedia" : "xD",
++		readonly ? "readonly" : "writeable");
++
++	dev->readonly = readonly;
++	spin_unlock_irqrestore(&dev->irqlock, flags);
++}
++
++/*
++ * Register the nand device
++ * Called when the card is detected
++ */
++int r852_register_nand_device(struct r852_device *dev)
++{
++	dev->mtd = kzalloc(sizeof(struct mtd_info), GFP_KERNEL);
++
++	if (!dev->mtd)
++		goto error1;
++
++	WARN_ON(dev->card_registred);
++
++	dev->mtd->owner = THIS_MODULE;
++	dev->mtd->priv = dev->chip;
++	dev->mtd->dev.parent = &dev->pci_dev->dev;
++
++	if (dev->readonly)
++		dev->chip->options |= NAND_ROM;
++
++	r852_engine_enable(dev);
++
++	if (sm_register_device(dev->mtd))
++		goto error2;
++
++	device_create_file(&dev->mtd->dev, &dev_attr_media_type);
++	dev->card_registred = 1;
++	return 0;
++error2:
++	kfree(dev->mtd);
++error1:
++	/* Force card redetect */
++	dev->card_detected = 0;
++	return -1;
++}
++
++/*
++ * Unregister the card
++ */
++
++void r852_unregister_nand_device(struct r852_device *dev)
++{
++	if (!dev->card_registred)
++		return;
++
++	device_remove_file(&dev->mtd->dev, &dev_attr_media_type);
++	nand_release(dev->mtd);
++	r852_engine_disable(dev);
++	dev->card_registred = 0;
++	kfree(dev->mtd);
++	dev->mtd = NULL;
++}
++
++/* Card state updater */
++void r852_card_detect_work(struct work_struct *work)
++{
++	struct r852_device *dev =
++		container_of(work, struct r852_device, card_detect_work.work);
++
++	r852_update_card_detect(dev);
++	dev->card_unstable = 0;
++
++	/* false alarm */
++	if (dev->card_detected == dev->card_registred)
++		goto exit;
++
++	/* Read media properties */
++	r852_update_media_status(dev);
++
++	/* Register the card */
++	if (dev->card_detected)
++		r852_register_nand_device(dev);
++	else
++		r852_unregister_nand_device(dev);
++exit:
++	/* Update detection logic */
++	r852_update_card_detect(dev);
++}
++
++/* Ack + disable IRQ generation */
++static void r852_disable_irqs(struct r852_device *dev)
++{
++	u8 reg;
++	reg = r852_read_reg(dev, R852_CARD_IRQ_ENABLE);
++	r852_write_reg(dev, R852_CARD_IRQ_ENABLE, reg & ~R852_CARD_IRQ_MASK);
++
++	reg = r852_read_reg_dword(dev, R852_DMA_IRQ_ENABLE);
++	r852_write_reg_dword(dev, R852_DMA_IRQ_ENABLE,
++					reg & ~R852_DMA_IRQ_MASK);
++
++	r852_write_reg(dev, R852_CARD_IRQ_STA, R852_CARD_IRQ_MASK);
++	r852_write_reg_dword(dev, R852_DMA_IRQ_STA, R852_DMA_IRQ_MASK);
++}
++
++/* Interrupt handler */
++static irqreturn_t r852_irq(int irq, void *data)
++{
++	struct r852_device *dev = (struct r852_device *)data;
++
++	u8 card_status, dma_status;
++	unsigned long flags;
++	irqreturn_t ret = IRQ_NONE;
++
++	spin_lock_irqsave(&dev->irqlock, flags);
++
++	/* We can recieve shared interrupt while pci is suspended
++		in that case reads will return 0xFFFFFFFF.... */
++	if (dev->insuspend)
++		goto out;
++
++	/* handle card detection interrupts first */
++	card_status = r852_read_reg(dev, R852_CARD_IRQ_STA);
++	r852_write_reg(dev, R852_CARD_IRQ_STA, card_status);
++
++	if (card_status & (R852_CARD_IRQ_INSERT|R852_CARD_IRQ_REMOVE)) {
++
++		ret = IRQ_HANDLED;
++		dev->card_detected = !!(card_status & R852_CARD_IRQ_INSERT);
++
++		/* we shouldn't recieve any interrupts if we wait for card
++			to settle */
++		WARN_ON(dev->card_unstable);
++
++		/* disable irqs while card is unstable */
++		/* this will timeout DMA if active, but better that garbage */
++		r852_disable_irqs(dev);
++
++		if (dev->card_unstable)
++			goto out;
++
++		/* let, card state to settle a bit, and then do the work */
++		dev->card_unstable = 1;
++		queue_delayed_work(dev->card_workqueue,
++			&dev->card_detect_work, msecs_to_jiffies(100));
++		goto out;
++	}
++
++
++	/* Handle dma interrupts */
++	dma_status = r852_read_reg_dword(dev, R852_DMA_IRQ_STA);
++	r852_write_reg_dword(dev, R852_DMA_IRQ_STA, dma_status);
++
++	if (dma_status & R852_DMA_IRQ_MASK) {
++
++		ret = IRQ_HANDLED;
++
++		if (dma_status & R852_DMA_IRQ_ERROR) {
++			dbg("recieved dma error IRQ");
++			r852_dma_done(dev, -EIO);
++			goto out;
++		}
++
++		/* recieved DMA interrupt out of nowhere? */
++		WARN_ON_ONCE(dev->dma_stage == 0);
++
++		if (dev->dma_stage == 0)
++			goto out;
++
++		/* done device access */
++		if (dev->dma_state == DMA_INTERNAL &&
++				(dma_status & R852_DMA_IRQ_INTERNAL)) {
++
++			dev->dma_state = DMA_MEMORY;
++			dev->dma_stage++;
++		}
++
++		/* done memory DMA */
++		if (dev->dma_state == DMA_MEMORY &&
++				(dma_status & R852_DMA_IRQ_MEMORY)) {
++			dev->dma_state = DMA_INTERNAL;
++			dev->dma_stage++;
++		}
++
++		/* Enable 2nd half of dma dance */
++		if (dev->dma_stage == 2)
++			r852_dma_enable(dev);
++
++		/* Operation done */
++		if (dev->dma_stage == 3)
++			r852_dma_done(dev, 0);
++		goto out;
++	}
++
++	/* Handle unknown interrupts */
++	if (dma_status)
++		dbg("bad dma IRQ status = %x", dma_status);
++
++	if (card_status & ~R852_CARD_STA_CD)
++		dbg("strange card status = %x", card_status);
++
++out:
++	spin_unlock_irqrestore(&dev->irqlock, flags);
++	return ret;
++}
++
++int  r852_probe(struct pci_dev *pci_dev, const struct pci_device_id *id)
++{
++	int error;
++	struct nand_chip *chip;
++	struct r852_device *dev;
++
++	/* pci initialization */
++	error = pci_enable_device(pci_dev);
++
++	if (error)
++		goto error1;
++
++	pci_set_master(pci_dev);
++
++	error = pci_set_dma_mask(pci_dev, DMA_32BIT_MASK);
++	if (error)
++		goto error2;
++
++	error = pci_request_regions(pci_dev, DRV_NAME);
++
++	if (error)
++		goto error3;
++
++	error = -ENOMEM;
++
++	/* init nand chip, but register it only on card insert */
++	chip = kzalloc(sizeof(struct nand_chip), GFP_KERNEL);
++
++	if (!chip)
++		goto error4;
++
++	/* commands */
++	chip->cmd_ctrl = r852_cmdctl;
++	chip->waitfunc = r852_wait;
++	chip->dev_ready = r852_ready;
++
++	/* I/O */
++	chip->read_byte = r852_read_byte;
++	chip->read_buf = r852_read_buf;
++	chip->write_buf = r852_write_buf;
++	chip->verify_buf = r852_verify_buf;
++
++	/* ecc */
++	chip->ecc.mode = NAND_ECC_HW_SYNDROME;
++	chip->ecc.size = R852_DMA_LEN;
++	chip->ecc.bytes = SM_OOB_SIZE;
++	chip->ecc.hwctl = r852_ecc_hwctl;
++	chip->ecc.calculate = r852_ecc_calculate;
++	chip->ecc.correct = r852_ecc_correct;
++
++	/* TODO: hack */
++	chip->ecc.read_oob = r852_read_oob;
++
++	/* init our device structure */
++	dev = kzalloc(sizeof(struct r852_device), GFP_KERNEL);
++
++	if (!dev)
++		goto error5;
++
++	chip->priv = dev;
++	dev->chip = chip;
++	dev->pci_dev = pci_dev;
++	pci_set_drvdata(pci_dev, dev);
++
++	dev->bounce_buffer = pci_alloc_consistent(pci_dev, R852_DMA_LEN,
++		&dev->phys_bounce_buffer);
++
++	if (!dev->bounce_buffer)
++		goto error6;
++
++
++	error = -ENODEV;
++	dev->mmio = pci_ioremap_bar(pci_dev, 0);
++
++	if (!dev->mmio)
++		goto error7;
++
++	error = -ENOMEM;
++	dev->tmp_buffer = kzalloc(SM_SECTOR_SIZE, GFP_KERNEL);
++
++	if (!dev->tmp_buffer)
++		goto error8;
++
++	init_completion(&dev->dma_done);
++
++	dev->card_workqueue = create_freezeable_workqueue(DRV_NAME);
++
++	if (!dev->card_workqueue)
++		goto error9;
++
++	INIT_DELAYED_WORK(&dev->card_detect_work, r852_card_detect_work);
++
++	/* shutdown everything - precation */
++	r852_engine_disable(dev);
++	r852_disable_irqs(dev);
++
++	r852_dma_test(dev);
++
++	/*register irq handler*/
++	error = -ENODEV;
++	if (request_irq(pci_dev->irq, &r852_irq, IRQF_SHARED,
++			  DRV_NAME, dev))
++		goto error10;
++
++	dev->irq = pci_dev->irq;
++	spin_lock_init(&dev->irqlock);
++
++	/* kick initial present test */
++	dev->card_detected = 0;
++	r852_card_update_present(dev);
++	queue_delayed_work(dev->card_workqueue,
++		&dev->card_detect_work, 0);
++
++
++	printk(KERN_NOTICE DRV_NAME ": driver loaded succesfully\n");
++	return 0;
++
++error10:
++	destroy_workqueue(dev->card_workqueue);
++error9:
++	kfree(dev->tmp_buffer);
++error8:
++	pci_iounmap(pci_dev, dev->mmio);
++error7:
++	pci_free_consistent(pci_dev, R852_DMA_LEN,
++		dev->bounce_buffer, dev->phys_bounce_buffer);
++error6:
++	kfree(dev);
++error5:
++	kfree(chip);
++error4:
++	pci_release_regions(pci_dev);
++error3:
++error2:
++	pci_disable_device(pci_dev);
++error1:
++	return error;
++}
++
++void r852_remove(struct pci_dev *pci_dev)
++{
++	struct r852_device *dev = pci_get_drvdata(pci_dev);
++
++	/* Stop detect workqueue -
++		we are going to unregister the device anyway*/
++	cancel_delayed_work_sync(&dev->card_detect_work);
++	destroy_workqueue(dev->card_workqueue);
++
++	/* Unregister the device, this might make more IO */
++	r852_unregister_nand_device(dev);
++
++	/* Stop interrupts */
++	r852_disable_irqs(dev);
++	synchronize_irq(dev->irq);
++	free_irq(dev->irq, dev);
++
++	/* Cleanup */
++	kfree(dev->tmp_buffer);
++	pci_iounmap(pci_dev, dev->mmio);
++	pci_free_consistent(pci_dev, R852_DMA_LEN,
++		dev->bounce_buffer, dev->phys_bounce_buffer);
++
++	kfree(dev->chip);
++	kfree(dev);
++
++	/* Shutdown the PCI device */
++	pci_release_regions(pci_dev);
++	pci_disable_device(pci_dev);
++}
++
++void r852_shutdown(struct pci_dev *pci_dev)
++{
++	struct r852_device *dev = pci_get_drvdata(pci_dev);
++
++	cancel_delayed_work_sync(&dev->card_detect_work);
++	r852_disable_irqs(dev);
++	synchronize_irq(dev->irq);
++	pci_disable_device(pci_dev);
++}
++
++int r852_suspend(struct device *device)
++{
++	struct r852_device *dev = pci_get_drvdata(to_pci_dev(device));
++	unsigned long flags;
++
++	if (dev->ctlreg & R852_CTL_CARDENABLE)
++		return -EBUSY;
++
++	/* First make sure the detect work is gone */
++	cancel_delayed_work_sync(&dev->card_detect_work);
++
++	/* Turn off the interrupts and stop the device */
++	r852_disable_irqs(dev);
++	r852_engine_disable(dev);
++
++	spin_lock_irqsave(&dev->irqlock, flags);
++	dev->insuspend = 1;
++	spin_unlock_irqrestore(&dev->irqlock, flags);
++
++	/* At that point, even if interrupt handler is running, it will quit */
++	/* So wait for this to happen explictly */
++	synchronize_irq(dev->irq);
++
++	/* If card was pulled off just during the suspend, which is very
++		unlikely, we will remove it on resume, it too late now
++		anyway... */
++	dev->card_unstable = 0;
++
++	pci_save_state(to_pci_dev(device));
++	return pci_prepare_to_sleep(to_pci_dev(device));
++}
++
++int r852_resume(struct device *device)
++{
++	struct r852_device *dev = pci_get_drvdata(to_pci_dev(device));
++	unsigned long flags;
++
++	/* Turn on the hardware */
++	pci_back_from_sleep(to_pci_dev(device));
++	pci_restore_state(to_pci_dev(device));
++
++	r852_disable_irqs(dev);
++	r852_card_update_present(dev);
++	r852_engine_disable(dev);
++
++
++	/* Now its safe for IRQ to run */
++	spin_lock_irqsave(&dev->irqlock, flags);
++	dev->insuspend = 0;
++	spin_unlock_irqrestore(&dev->irqlock, flags);
++
++
++	/* If card status changed, just do the work */
++	if (dev->card_detected != dev->card_registred) {
++		dbg("card was %s during low power state",
++			dev->card_detected ? "added" : "removed");
++
++		queue_delayed_work(dev->card_workqueue,
++		&dev->card_detect_work, 1000);
++		return 0;
++	}
++
++	/* Otherwise, initialize the card */
++	if (dev->card_registred) {
++		r852_engine_enable(dev);
++		dev->chip->select_chip(dev->mtd, 0);
++		dev->chip->cmdfunc(dev->mtd, NAND_CMD_RESET, -1, -1);
++		dev->chip->select_chip(dev->mtd, -1);
++	}
++
++	/* Program card detection IRQ */
++	r852_update_card_detect(dev);
++	return 0;
++}
++
++static const struct pci_device_id r852_pci_id_tbl[] = {
++
++	{ PCI_VDEVICE(RICOH, PCI_DEVICE_ID_RICOH_R5C852), },
++	{ },
++};
++
++MODULE_DEVICE_TABLE(pci, r852_pci_id_tbl);
++
++SIMPLE_DEV_PM_OPS(r852_pm_ops, r852_suspend, r852_resume);
++
++
++static struct pci_driver r852_pci_driver = {
++	.name		= DRV_NAME,
++	.id_table	= r852_pci_id_tbl,
++	.probe		= r852_probe,
++	.remove		= r852_remove,
++	.shutdown	= r852_shutdown,
++	.driver.pm	= &r852_pm_ops,
++};
++
++static __init int r852_module_init(void)
++{
++	return pci_register_driver(&r852_pci_driver);
++}
++
++static void __exit r852_module_exit(void)
++{
++	pci_unregister_driver(&r852_pci_driver);
++}
++
++module_init(r852_module_init);
++module_exit(r852_module_exit);
 +
 +MODULE_LICENSE("GPL");
 +MODULE_AUTHOR("Maxim Levitsky <maximlevitsky@gmail.com>");
-+MODULE_DESCRIPTION("Common SmartMedia/xD functions");
-diff --git a/drivers/mtd/nand/sm_common.h b/drivers/mtd/nand/sm_common.h
++MODULE_DESCRIPTION("Ricoh 85xx xD/smartmedia card reader driver");
+diff --git a/drivers/mtd/nand/r852.h b/drivers/mtd/nand/r852.h
 new file mode 100644
-index 0000000..2e6b517
+index 0000000..e05e795
 --- /dev/null
-+++ b/drivers/mtd/nand/sm_common.h
-@@ -0,0 +1,61 @@
++++ b/drivers/mtd/nand/r852.h
+@@ -0,0 +1,163 @@
 +/*
 + * Copyright (C) 2009 - Maxim Levitsky
-+ * Common routines & support for SmartMedia/xD format
++ * driver for Ricoh xD readers
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License version 2 as
 + * published by the Free Software Foundation.
 + */
-+#include <linux/bitops.h>
-+#include <linux/mtd/mtd.h>
 +
-+/* Full oob structure as written on the flash */
-+struct sm_oob {
-+	u32 reserved;
-+	u8  data_status;
-+	u8  block_status;
-+	u8 lba_copy1[2];
-+	u8  ecc2[3];
-+	u8 lba_copy2[2];
-+	u8  ecc1[3];
-+} __attribute__((packed));
++#include <linux/pci.h>
++#include <linux/completion.h>
++#include <linux/workqueue.h>
++#include <linux/mtd/nand.h>
++#include <linux/spinlock.h>
 +
 +
-+/* one sector is always 512 bytes, but it can consist of two nand pages */
-+#define SM_SECTOR_SIZE		512
++/* nand interface + ecc
++   byte write/read does one cycle on nand data lines.
++   dword write/read does 4 cycles
++   if R852_CTL_ECC_ACCESS is set in R852_CTL, then dword read reads
++   results of ecc correction, if DMA read was done before.
++   If write was done two dword reads read generated ecc checksums
++*/
++#define	R852_DATALINE		0x00
 +
-+/* oob area is also 16 bytes, but might be from two pages */
-+#define SM_OOB_SIZE		16
++/* control register */
++#define R852_CTL		0x04
++#define R852_CTL_COMMAND 	0x01	/* send command (#CLE)*/
++#define R852_CTL_DATA		0x02	/* read/write data (#ALE)*/
++#define R852_CTL_ON		0x04	/* only seem to controls the hd led, */
++					/* but has to be set on start...*/
++#define R852_CTL_RESET		0x08	/* unknown, set only on start once*/
++#define R852_CTL_CARDENABLE	0x10	/* probably (#CE) - always set*/
++#define R852_CTL_ECC_ENABLE	0x20	/* enable ecc engine */
++#define R852_CTL_ECC_ACCESS	0x40	/* read/write ecc via reg #0*/
++#define R852_CTL_WRITE		0x80	/* set when performing writes (#WP) */
 +
-+/* This is maximum zone size, and all devices that have more that one zone
-+   have this size */
-+#define SM_MAX_ZONE_SIZE 	1024
++/* card detection status */
++#define R852_CARD_STA		0x05
 +
-+/* support for small page nand */
-+#define SM_SMALL_PAGE 		256
-+#define SM_SMALL_OOB_SIZE	8
++#define R852_CARD_STA_CD	0x01	/* state of #CD line, same as 0x04 */
++#define R852_CARD_STA_RO	0x02	/* card is readonly */
++#define R852_CARD_STA_PRESENT	0x04	/* card is present (#CD) */
++#define R852_CARD_STA_ABSENT	0x08	/* card is absent */
++#define R852_CARD_STA_BUSY	0x80	/* card is busy - (#R/B) */
++
++/* card detection irq status & enable*/
++#define R852_CARD_IRQ_STA	0x06	/* IRQ status */
++#define R852_CARD_IRQ_ENABLE	0x07	/* IRQ enable */
++
++#define R852_CARD_IRQ_CD	0x01	/* fire when #CD lights, same as 0x04*/
++#define R852_CARD_IRQ_REMOVE	0x04	/* detect card removal */
++#define R852_CARD_IRQ_INSERT	0x08	/* detect card insert */
++#define R852_CARD_IRQ_UNK1	0x10	/* unknown */
++#define R852_CARD_IRQ_GENABLE	0x80	/* general enable */
++#define R852_CARD_IRQ_MASK	0x1D
 +
 +
-+extern int sm_register_device(struct mtd_info *mtd);
++
++/* hardware enable */
++#define R852_HW			0x08
++#define R852_HW_ENABLED		0x01	/* hw enabled */
++#define R852_HW_UNKNOWN		0x80
 +
 +
-+inline int sm_sector_valid(struct sm_oob *oob)
-+{
-+	return hweight16(oob->data_status) >= 5;
-+}
++/* dma capabilities */
++#define R852_DMA_CAP		0x09
++#define R852_SMBIT		0x20	/* if set with bit #6 or bit #7, then */
++					/* hw is smartmedia */
++#define R852_DMA1		0x40	/* if set w/bit #7, dma is supported */
++#define R852_DMA2		0x80	/* if set w/bit #6, dma is supported */
 +
-+inline int sm_block_valid(struct sm_oob *oob)
-+{
-+	return hweight16(oob->block_status) >= 7;
-+}
 +
-+inline int sm_block_erased(struct sm_oob *oob)
-+{
-+	static const u32 erased_pattern[4] = {
-+		0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF };
++/* physical DMA address - 32 bit value*/
++#define R852_DMA_ADDR		0x0C
 +
-+	/* First test for erased block */
-+	if (!memcmp(oob, erased_pattern, sizeof(*oob)))
-+		return 1;
-+	return 0;
-+}
++
++/* dma settings */
++#define R852_DMA_SETTINGS	0x10
++#define R852_DMA_MEMORY		0x01	/* (memory <-> internal hw buffer) */
++#define R852_DMA_READ		0x02	/* 0 = write, 1 = read */
++#define R852_DMA_INTERNAL	0x04	/* (internal hw buffer <-> card) */
++
++/* dma IRQ status */
++#define R852_DMA_IRQ_STA		0x14
++
++/* dma IRQ enable */
++#define R852_DMA_IRQ_ENABLE	0x18
++
++#define R852_DMA_IRQ_MEMORY	0x01	/* (memory <-> internal hw buffer) */
++#define R852_DMA_IRQ_ERROR	0x02	/* error did happen */
++#define R852_DMA_IRQ_INTERNAL	0x04	/* (internal hw buffer <-> card) */
++#define R852_DMA_IRQ_MASK	0x07	/* mask of all IRQ bits */
++
++
++/* ECC syndrome format - read from reg #0 will return two copies of these for
++   each half of the page.
++   first byte is error byte location, and second, bit location + flags */
++#define R852_ECC_ERR_BIT_MSK	0x07	/* error bit location */
++#define R852_ECC_CORRECT		0x10	/* no errors - (guessed) */
++#define R852_ECC_CORRECTABLE	0x20	/* correctable error exist */
++#define R852_ECC_FAIL		0x40	/* non correctable error detected */
++
++#define R852_DMA_LEN		512
++
++#define DMA_INTERNAL	0
++#define DMA_MEMORY	1
++
++struct r852_device {
++	void __iomem *mmio;		/* mmio */
++	struct mtd_info *mtd;		/* mtd backpointer */
++	struct nand_chip *chip;		/* nand chip backpointer */
++	struct pci_dev *pci_dev;	/* pci backpointer */
++
++	/* dma area */
++	dma_addr_t phys_dma_addr;	/* bus address of buffer*/
++	struct completion dma_done;	/* data transfer done */
++
++	dma_addr_t phys_bounce_buffer;	/* bus address of bounce buffer */
++	u8 *bounce_buffer;		/* virtual address of bounce buffer */
++
++	int dma_dir;			/* 1 = read, 0 = write */
++	int dma_stage;			/* 0 - idle, 1 - first step,
++					   2 - second step */
++
++	int dma_state;			/* 0 = internal, 1 = memory */
++	int dma_error;			/* dma errors */
++	int dma_usable;			/* is it possible to use dma */
++
++	/* card status area */
++	struct delayed_work card_detect_work;
++	struct workqueue_struct *card_workqueue;
++	int card_registred;		/* card registered with mtd */
++	int card_detected;		/* card detected in slot */
++	int card_unstable;		/* whenever the card is inserted,
++					   is not known yet */
++	int readonly;			/* card is readonly */
++	int sm;				/* Is card smartmedia */
++
++	/* interrupt handling */
++	spinlock_t irqlock;		/* IRQ protecting lock */
++	int irq;			/* irq num */
++	int insuspend;			/* device is suspended */
++
++	/* misc */
++	void *tmp_buffer;		/* temporary buffer */
++	u8 ctlreg;			/* cached contents of control reg */
++};
++
++#define DRV_NAME "r852"
++
++
++#define dbg(format, ...) \
++	if (debug) \
++		printk(KERN_DEBUG DRV_NAME ": " format "\n", ## __VA_ARGS__)
++
++#define dbg_verbose(format, ...) \
++	if (debug > 1) \
++		printk(KERN_DEBUG DRV_NAME ": " format "\n", ## __VA_ARGS__)
++
++
++#define message(format, ...) \
++	printk(KERN_INFO DRV_NAME ": " format "\n", ## __VA_ARGS__)
+diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
+index cca8a04..cef49f2 100644
+--- a/include/linux/pci_ids.h
++++ b/include/linux/pci_ids.h
+@@ -1523,6 +1523,8 @@
+ #define PCI_DEVICE_ID_RICOH_R5C822	0x0822
+ #define PCI_DEVICE_ID_RICOH_R5C832	0x0832
+ #define PCI_DEVICE_ID_RICOH_R5C843	0x0843
++#define PCI_DEVICE_ID_RICOH_R5C852	0x0852
++
+ 
+ #define PCI_VENDOR_ID_DLINK		0x1186
+ #define PCI_DEVICE_ID_DLINK_DGE510T	0x4c00
 -- 
 1.6.3.3
 
