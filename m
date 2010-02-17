@@ -1,67 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933933Ab0BQC4l (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 16 Feb 2010 21:56:41 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:54398 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933664Ab0BQC4k (ORCPT
+	id S933938Ab0BQC6a (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 16 Feb 2010 21:58:30 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:46909 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933664Ab0BQC62 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 16 Feb 2010 21:56:40 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Wed, 17 Feb 2010 11:53:13 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: "Leonidas ." <leonidas137@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Notification when a task is created/exits
-Message-Id: <20100217115313.30de11fb.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <f22d86811002152148t4f307184kb71757f4621f82db@mail.gmail.com>
-References: <f22d86811002152148t4f307184kb71757f4621f82db@mail.gmail.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 16 Feb 2010 21:58:28 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=JWa3xK2CPzwT03qekfL0IuoCXxLSIfBVx6KnA0SlUlZute/Fho7A8E32aZpr8H2gs
+	qjZEatqaDQtLWDSAr82WQ==
+Date: Tue, 16 Feb 2010 18:58:17 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
+       Nick Piggin <npiggin@suse.de>, Andrea Arcangeli <aarcange@redhat.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, Lubos Lunak <l.lunak@suse.cz>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch -mm 4/9 v2] oom: remove compulsory panic_on_oom mode
+In-Reply-To: <20100217113430.9528438d.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.1002161850540.3106@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.1002151416470.26927@chino.kir.corp.google.com> <20100216090005.f362f869.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.1002151610380.14484@chino.kir.corp.google.com> <20100216092311.86bceb0c.kamezawa.hiroyu@jp.fujitsu.com>
+ <alpine.DEB.2.00.1002160058470.17122@chino.kir.corp.google.com> <20100217084239.265c65ea.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.1002161550550.11952@chino.kir.corp.google.com> <20100217090124.398769d5.kamezawa.hiroyu@jp.fujitsu.com>
+ <alpine.DEB.2.00.1002161623190.11952@chino.kir.corp.google.com> <20100217094137.a0d26fbb.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.1002161648570.31753@chino.kir.corp.google.com> <alpine.DEB.2.00.1002161756100.15079@chino.kir.corp.google.com>
+ <20100217111319.d342f10e.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.1002161825280.2768@chino.kir.corp.google.com> <20100217113430.9528438d.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 16 Feb 2010 11:18:25 +0530
-"Leonidas ." <leonidas137@gmail.com> wrote:
+On Wed, 17 Feb 2010, KAMEZAWA Hiroyuki wrote:
 
-> Hi folks,
-> 
-> Is it possible to register a set of callbacks from my module so that
-> these call backs get called
-> whenever a certain task is created or exits. Basically, I want to keep
-> track of all the threads
-> which are created and are exiting, my module should get notified of
-> these events somehow.
-> One way is to call my functions directly from the task creation and
-> exit functions, but I personally
-> do not like this approach since I dont want to mess with this core kernel code.
+> > We want to lock all populated zones with ZONE_OOM_LOCKED to avoid 
+> > needlessly killing more than one task regardless of how many memcgs are 
+> > oom.
+> > 
+> Current implentation archive what memcg want. Why remove and destroy memcg ?
 > 
 
-AFAIK, there are no extensible notifier chain at task create/exit.
-But I think you have 2 options.
+I've updated my patch to not take ZONE_OOM_LOCKED for any zones on memcg 
+oom.  I'm hoping that you will add sysctl_panic_on_oom == 2 for this case 
+later, however.
 
- 1. use NETLINK and catch task create/exit in userland.
-    But this means "catch" is asyncronous.
-
- 2. implement cgroup subsystem
-    AFAIK, in the latest kernel, cgroup subsystem can be implemented as module. 
-    cgroup has fork/exit handler.
-    And you can implement some useful controls for tasks you watch via
-    cgroup's control interface.
-
-Thanks,
--Kame
-
-
-> -Leo.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> What I mean is
+>  - What VM_FAULT_OOM means is not "memory is exhausted" but "something is exhausted".
+> 
+> For example, when hugepages are all used, it may return VM_FAULT_OOM.
+> Especially when nr_overcommit_hugepage == usage_of_hugepage, it returns VM_FAULT_OOM.
 > 
 
+The hugetlb case seems to be the only misuse of VM_FAULT_OOM where it 
+doesn't mean we simply don't have the memory to handle the page fault, 
+i.e. your earlier "memory is exhausted" definition.  That was handled well 
+before calling out_of_memory() by simply killing current since we know it 
+is faulting hugetlb pages and its resource is limited.
+
+We could pass the vma to pagefault_out_of_memory() and simply kill current 
+if its killable and is_vm_hugetlb_page(vma).
