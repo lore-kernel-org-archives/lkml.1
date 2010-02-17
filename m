@@ -1,68 +1,47 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757357Ab0BQNFP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 08:05:15 -0500
-Received: from cantor.suse.de ([195.135.220.2]:34746 "EHLO mx1.suse.de"
+	id S1757365Ab0BQNIV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 08:08:21 -0500
+Received: from cantor.suse.de ([195.135.220.2]:34864 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751215Ab0BQNFM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 08:05:12 -0500
-Message-ID: <4B7BE984.60107@suse.cz>
-Date: Wed, 17 Feb 2010 14:05:08 +0100
+	id S1751215Ab0BQNIU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 08:08:20 -0500
+Message-ID: <4B7BEA41.6080303@suse.cz>
+Date: Wed, 17 Feb 2010 14:08:17 +0100
 From: Michal Marek <mmarek@suse.cz>
 User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.2 Thunderbird/3.0
 MIME-Version: 1.0
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org
-Subject: Re: [PATCH v2] tags: include headers before source files
-References: <Pine.LNX.4.64.1002031704550.6324@axis700.grange> <4B6C94AC.7000301@suse.cz> <Pine.LNX.4.64.1002080022290.15951@axis700.grange>
-In-Reply-To: <Pine.LNX.4.64.1002080022290.15951@axis700.grange>
+To: Hui Zhu <teawater@gmail.com>
+Cc: Hui Zhu <hui.zhu@windriver.com>,
+       =?ISO-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Sam Ravnborg <sam@ravnborg.org>, ozan@pardus.org.tr,
+       Matthew Wilcox <willy@linux.intel.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] markup_oops.pl: add options to improve cross-sompilation
+ 	environments
+References: <4B5E5D4F.50803@windriver.com> <2375c9f91001251905p6ed99405m3915ac56e230605f@mail.gmail.com> 	<4B5E9BE9.2030702@windriver.com> <2375c9f91001252353u52f437b0t7ddd643a57047e1c@mail.gmail.com> 	<4B5EB223.60307@windriver.com> <4B6344CA.10504@suse.cz> <4B666982.1020007@windriver.com> 	<4B6C8FF0.3090106@suse.cz> <daef60381002071855m7a5d6d2cg7b9a9a48b6aef20e@mail.gmail.com>
+In-Reply-To: <daef60381002071855m7a5d6d2cg7b9a9a48b6aef20e@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8.2.2010 00:25, Guennadi Liakhovetski wrote:
-> Currently looking up a structure definition in TAGS / tags takes one to
-> one of multiple "static struct X" definitions in arch sources, which makes
-> it for many structs practically impossible to get to the required header.
-> This patch changes the order of sources being tagged to first scan
-> architecture includes, then the top-level include/ directory, and only
-> then the rest. It also takes into account, that many architectures have
-> more than one include directory, i.e., not only arch/$ARCH/include, but
-> also arch/$ARCH/mach-X/include etc.
+On 8.2.2010 03:55, Hui Zhu wrote:
+> Hi Michael,
 > 
-> Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-> Reviewed-by: WANG Cong <xiyou.wangcong@gmail.com>
-> ---
-> 
-> v1 -> v2:
-> 
-> 1. check if $include variable is not empty - thanks, Michal, for testing
+> Looks you miss this one:
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=ef2b9b054580ef835078d8aa411bd06542cd5c1c
 
-Thanks, applied with the following change added (+= is a bash extension):
 
-diff --git a/scripts/tags.sh b/scripts/tags.sh
-index 6f0985d..c122041 100755
---- a/scripts/tags.sh
-+++ b/scripts/tags.sh
-@@ -33,7 +33,7 @@ fi
- find_arch_sources()
- {
-        for i in $archincludedir; do
--               prune+="-wholename $i -prune -o "
-+               prune="$prune -wholename $i -prune -o"
-        done
-        find ${tree}arch/$1 $ignore $prune -name "$2" -print;
- }
-@@ -43,7 +43,7 @@ find_arch_include_sources()
- {
-        include=$(find ${tree}arch/$1/ -name include -type d);
-        if [ -n "$include" ]; then
--               archincludedir+="$include "
-+               archincludedir="$archincludedir $include"
-                find $include $ignore -name "$2" -print;
-        fi
- }
+That one is already in Linus' tree, so this is OK. BTW please don't
+top-post.
 
 Michal
+
+> On Sat, Feb 6, 2010 at 05:38, Michal Marek <mmarek@suse.cz> wrote:
+>> Thanks, I applied the previous and this patch. Just to make sure I
+>> didn't miss any of your patches, can you check that
+>> http://repo.or.cz/w/linux-kbuild.git/blob/refs/heads/for-next:/scripts/markup_oops.pl
+>> has all your changes? If something is missing, please resend it, thanks.
