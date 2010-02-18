@@ -1,18 +1,17 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757597Ab0BRBDo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 20:03:44 -0500
-Received: from mail.perches.com ([173.55.12.10]:1063 "EHLO mail.perches.com"
+	id S1757739Ab0BRBES (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 20:04:18 -0500
+Received: from mail.perches.com ([173.55.12.10]:1060 "EHLO mail.perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932161Ab0BRBCN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 20:02:13 -0500
+	id S1756189Ab0BRBCM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 20:02:12 -0500
 From: Joe Perches <joe@perches.com>
 To: netdev@vger.kernel.org
-Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH net-next 11/15] drivers/net/skge.c: Use (pr|netdev)_<level> macro helpers
-Date: Wed, 17 Feb 2010 17:01:58 -0800
-Message-Id: <68f273dcc35e852e462f2e49ca563ddc5bf74ab0.1266454576.git.joe@perches.com>
+Cc: Francois Romieu <romieu@fr.zoreil.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH net-next 09/15] drivers/net/sis190.c: Use (pr|netdev|netif)_<level> macro helpers
+Date: Wed, 17 Feb 2010 17:01:56 -0800
+Message-Id: <a9449fa4b0219cd2e0699f3afe4f8ca811b72843.1266454576.git.joe@perches.com>
 X-Mailer: git-send-email 1.7.0.14.g7e948
 In-Reply-To: <cover.1266454575.git.joe@perches.com>
 References: <cover.1266454575.git.joe@perches.com>
@@ -24,265 +23,380 @@ Add #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 Remove #define PFX
 Use pr_<level>
 Use netdev_<level>
-Checkpatch cleaning
+Use netif_<level> and netif_msg_<test>
+Remove local #define net_<test> macros
+Remove periods from formats
 
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- drivers/net/skge.c |   81 +++++++++++++++++++++++++++-------------------------
- 1 files changed, 42 insertions(+), 39 deletions(-)
+ drivers/net/sis190.c |  152 +++++++++++++++++++++++++-------------------------
+ 1 files changed, 75 insertions(+), 77 deletions(-)
 
-diff --git a/drivers/net/skge.c b/drivers/net/skge.c
-index 8aa24c5..720af1c 100644
---- a/drivers/net/skge.c
-+++ b/drivers/net/skge.c
-@@ -71,9 +71,9 @@ MODULE_AUTHOR("Stephen Hemminger <shemminger@linux-foundation.org>");
- MODULE_LICENSE("GPL");
- MODULE_VERSION(DRV_VERSION);
+diff --git a/drivers/net/sis190.c b/drivers/net/sis190.c
+index 8c4e38f..b1a4b75 100644
+--- a/drivers/net/sis190.c
++++ b/drivers/net/sis190.c
+@@ -17,7 +17,9 @@
  
--static const u32 default_msg
--	= NETIF_MSG_DRV| NETIF_MSG_PROBE| NETIF_MSG_LINK
--	  | NETIF_MSG_IFUP| NETIF_MSG_IFDOWN;
-+static const u32 default_msg = (NETIF_MSG_DRV | NETIF_MSG_PROBE |
-+				NETIF_MSG_LINK | NETIF_MSG_IFUP |
-+				NETIF_MSG_IFDOWN);
+    See the file COPYING in this distribution for more information.
  
- static int debug = -1;	/* defaults above */
- module_param(debug, int, 0);
-@@ -188,8 +188,8 @@ static void skge_wol_init(struct skge_port *skge)
+- */
++*/
++
++#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
  
- 	/* Force to 10/100 skge_reset will re-enable on resume	 */
- 	gm_phy_write(hw, port, PHY_MARV_AUNE_ADV,
--		     PHY_AN_100FULL | PHY_AN_100HALF |
--		     PHY_AN_10FULL | PHY_AN_10HALF| PHY_AN_CSMA);
-+		     (PHY_AN_100FULL | PHY_AN_100HALF |
-+		      PHY_AN_10FULL | PHY_AN_10HALF | PHY_AN_CSMA));
- 	/* no 1000 HD/FD */
- 	gm_phy_write(hw, port, PHY_MARV_1000T_CTRL, 0);
- 	gm_phy_write(hw, port, PHY_MARV_CTRL,
-@@ -258,25 +258,28 @@ static u32 skge_supported_modes(const struct skge_hw *hw)
- 	u32 supported;
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
+@@ -32,17 +34,6 @@
+ #include <linux/dma-mapping.h>
+ #include <asm/irq.h>
  
- 	if (hw->copper) {
--		supported = SUPPORTED_10baseT_Half
--			| SUPPORTED_10baseT_Full
--			| SUPPORTED_100baseT_Half
--			| SUPPORTED_100baseT_Full
--			| SUPPORTED_1000baseT_Half
--			| SUPPORTED_1000baseT_Full
--			| SUPPORTED_Autoneg| SUPPORTED_TP;
-+		supported = (SUPPORTED_10baseT_Half |
-+			     SUPPORTED_10baseT_Full |
-+			     SUPPORTED_100baseT_Half |
-+			     SUPPORTED_100baseT_Full |
-+			     SUPPORTED_1000baseT_Half |
-+			     SUPPORTED_1000baseT_Full |
-+			     SUPPORTED_Autoneg |
-+			     SUPPORTED_TP);
+-#define net_drv(p, arg...)	if (netif_msg_drv(p)) \
+-					printk(arg)
+-#define net_probe(p, arg...)	if (netif_msg_probe(p)) \
+-					printk(arg)
+-#define net_link(p, arg...)	if (netif_msg_link(p)) \
+-					printk(arg)
+-#define net_intr(p, arg...)	if (netif_msg_intr(p)) \
+-					printk(arg)
+-#define net_tx_err(p, arg...)	if (netif_msg_tx_err(p)) \
+-					printk(arg)
+-
+ #define PHY_MAX_ADDR		32
+ #define PHY_ID_ANY		0x1f
+ #define MII_REG_ANY		0x1f
+@@ -50,7 +41,6 @@
+ #define DRV_VERSION		"1.3"
+ #define DRV_NAME		"sis190"
+ #define SIS190_DRIVER_NAME	DRV_NAME " Gigabit Ethernet driver " DRV_VERSION
+-#define PFX DRV_NAME ": "
  
- 		if (hw->chip_id == CHIP_ID_GENESIS)
--			supported &= ~(SUPPORTED_10baseT_Half
--					     | SUPPORTED_10baseT_Full
--					     | SUPPORTED_100baseT_Half
--					     | SUPPORTED_100baseT_Full);
-+			supported &= ~(SUPPORTED_10baseT_Half |
-+				       SUPPORTED_10baseT_Full |
-+				       SUPPORTED_100baseT_Half |
-+				       SUPPORTED_100baseT_Full);
- 
- 		else if (hw->chip_id == CHIP_ID_YUKON)
- 			supported &= ~SUPPORTED_1000baseT_Half;
- 	} else
--		supported = SUPPORTED_1000baseT_Full | SUPPORTED_1000baseT_Half
--			| SUPPORTED_FIBRE | SUPPORTED_Autoneg;
-+		supported = (SUPPORTED_1000baseT_Full |
-+			     SUPPORTED_1000baseT_Half |
-+			     SUPPORTED_FIBRE |
-+			     SUPPORTED_Autoneg);
- 
- 	return supported;
- }
-@@ -366,7 +369,7 @@ static int skge_set_settings(struct net_device *dev, struct ethtool_cmd *ecmd)
- 		}
+ #define sis190_rx_skb			netif_rx
+ #define sis190_rx_quota(count, quota)	count
+@@ -381,7 +371,7 @@ static void __mdio_cmd(void __iomem *ioaddr, u32 ctl)
  	}
  
--	return (0);
-+	return 0;
+ 	if (i > 99)
+-		printk(KERN_ERR PFX "PHY command failed !\n");
++		pr_err("PHY command failed !\n");
  }
  
- static void skge_get_drvinfo(struct net_device *dev,
-@@ -813,7 +816,7 @@ static int skge_get_eeprom_len(struct net_device *dev)
- 	u32 reg2;
+ static void mdio_write(void __iomem *ioaddr, int phy_id, int reg, int val)
+@@ -589,8 +579,7 @@ static int sis190_rx_interrupt(struct net_device *dev,
  
- 	pci_read_config_dword(skge->hw->pdev, PCI_DEV_REG2, &reg2);
--	return 1 << ( ((reg2 & PCI_VPD_ROM_SZ) >> 14) + 8);
-+	return 1 << (((reg2 & PCI_VPD_ROM_SZ) >> 14) + 8);
+ 		status = le32_to_cpu(desc->PSize);
+ 
+-		// net_intr(tp, KERN_INFO "%s: Rx PSize = %08x.\n", dev->name,
+-		//	 status);
++		//netif_info(tp, intr, dev, "Rx PSize = %08x\n", status);
+ 
+ 		if (sis190_rx_pkt_err(status, stats) < 0)
+ 			sis190_give_to_asic(desc, tp->rx_buf_sz);
+@@ -601,9 +590,8 @@ static int sis190_rx_interrupt(struct net_device *dev,
+ 			struct pci_dev *pdev = tp->pci_dev;
+ 
+ 			if (unlikely(pkt_size > tp->rx_buf_sz)) {
+-				net_intr(tp, KERN_INFO
+-					 "%s: (frag) status = %08x.\n",
+-					 dev->name, status);
++				netif_info(tp, intr, dev,
++					   "(frag) status = %08x\n", status);
+ 				stats->rx_dropped++;
+ 				stats->rx_length_errors++;
+ 				sis190_give_to_asic(desc, tp->rx_buf_sz);
+@@ -637,12 +625,12 @@ static int sis190_rx_interrupt(struct net_device *dev,
+ 	tp->cur_rx = cur_rx;
+ 
+ 	delta = sis190_rx_fill(tp, dev, tp->dirty_rx, tp->cur_rx);
+-	if (!delta && count && netif_msg_intr(tp))
+-		printk(KERN_INFO "%s: no Rx buffer allocated.\n", dev->name);
++	if (!delta && count)
++		netif_info(tp, intr, dev, "no Rx buffer allocated\n");
+ 	tp->dirty_rx += delta;
+ 
+-	if (((tp->dirty_rx + NUM_RX_DESC) == tp->cur_rx) && netif_msg_intr(tp))
+-		printk(KERN_EMERG "%s: Rx buffers exhausted.\n", dev->name);
++	if ((tp->dirty_rx + NUM_RX_DESC) == tp->cur_rx)
++		netif_emerg(tp, intr, dev, "Rx buffers exhausted\n");
+ 
+ 	return count;
  }
+@@ -751,10 +739,10 @@ static irqreturn_t sis190_interrupt(int irq, void *__dev)
  
- static u32 skge_vpd_read(struct pci_dev *pdev, int cap, u16 offset)
-@@ -1044,7 +1047,7 @@ static int skge_rx_fill(struct net_device *dev)
+ 	SIS_W32(IntrStatus, status);
  
- 		skb_reserve(skb, NET_IP_ALIGN);
- 		skge_rx_setup(skge, e, skb, skge->rx_buf_size);
--	} while ( (e = e->next) != ring->start);
-+	} while ((e = e->next) != ring->start);
+-	// net_intr(tp, KERN_INFO "%s: status = %08x.\n", dev->name, status);
++//	netif_info(tp, intr, dev, "status = %08x\n", status);
  
- 	ring->to_clean = ring->start;
- 	return 0;
-@@ -1052,7 +1055,7 @@ static int skge_rx_fill(struct net_device *dev)
- 
- static const char *skge_pause(enum pause_status status)
- {
--	switch(status) {
-+	switch (status) {
- 	case FLOW_STAT_NONE:
- 		return "none";
- 	case FLOW_STAT_REM_SEND:
-@@ -1322,7 +1325,7 @@ static void bcom_phy_init(struct skge_port *skge)
- 	/* Optimize MDIO transfer by suppressing preamble. */
- 	r = xm_read16(hw, port, XM_MMU_CMD);
- 	r |=  XM_MMU_NO_PRE;
--	xm_write16(hw, port, XM_MMU_CMD,r);
-+	xm_write16(hw, port, XM_MMU_CMD, r);
- 
- 	switch (id1) {
- 	case PHY_BCOM_ID1_C0:
-@@ -1512,7 +1515,7 @@ static void xm_link_timer(unsigned long arg)
- {
- 	struct skge_port *skge = (struct skge_port *) arg;
- 	struct net_device *dev = skge->netdev;
-- 	struct skge_hw *hw = skge->hw;
-+	struct skge_hw *hw = skge->hw;
- 	int port = skge->port;
- 	int i;
- 	unsigned long flags;
-@@ -1531,7 +1534,7 @@ static void xm_link_timer(unsigned long arg)
- 			goto link_down;
+ 	if (status & LinkChange) {
+-		net_intr(tp, KERN_INFO "%s: link change.\n", dev->name);
++		netif_info(tp, intr, dev, "link change\n");
+ 		schedule_work(&tp->phy_task);
  	}
  
--        /* Re-enable interrupt to detect link down */
-+	/* Re-enable interrupt to detect link down */
- 	if (xm_check_link(dev)) {
- 		u16 msk = xm_read16(hw, port, XM_IMSK);
- 		msk &= ~XM_IS_INP_ASS;
-@@ -1588,7 +1591,7 @@ static void genesis_mac_init(struct skge_hw *hw, int port)
- 	}
- 
- 
--	switch(hw->phy_type) {
-+	switch (hw->phy_type) {
- 	case SK_PHY_XMAC:
- 		xm_phy_init(skge);
- 		break;
-@@ -1695,7 +1698,7 @@ static void genesis_mac_init(struct skge_hw *hw, int port)
- 
- 	if (jumbo) {
- 		/* Enable frame flushing if jumbo frames used */
--		skge_write16(hw, SK_REG(port,RX_MFF_CTRL1), MFF_ENA_FLUSH);
-+		skge_write16(hw, SK_REG(port, RX_MFF_CTRL1), MFF_ENA_FLUSH);
+@@ -932,8 +920,7 @@ static void sis190_phy_task(struct work_struct *work)
+ 	} else if (!(mdio_read_latched(ioaddr, phy_id, MII_BMSR) &
+ 		     BMSR_ANEGCOMPLETE)) {
+ 		netif_carrier_off(dev);
+-		net_link(tp, KERN_WARNING "%s: auto-negotiating...\n",
+-			 dev->name);
++		netif_warn(tp, link, dev, "auto-negotiating...\n");
+ 		mod_timer(&tp->timer, jiffies + SIS190_PHY_TIMEOUT);
  	} else {
- 		/* enable timeout timers if normal frames */
- 		skge_write16(hw, B3_PA_CTRL,
-@@ -1710,7 +1713,7 @@ static void genesis_stop(struct skge_port *skge)
- 	unsigned retries = 1000;
- 	u16 cmd;
+ 		/* Rejoice ! */
+@@ -959,13 +946,13 @@ static void sis190_phy_task(struct work_struct *work)
+ 		u16 adv, autoexp, gigadv, gigrec;
  
-- 	/* Disable Tx and Rx */
-+	/* Disable Tx and Rx */
- 	cmd = xm_read16(hw, port, XM_MMU_CMD);
- 	cmd &= ~(XM_MMU_ENA_RX | XM_MMU_ENA_TX);
- 	xm_write16(hw, port, XM_MMU_CMD, cmd);
-@@ -1789,7 +1792,7 @@ static void genesis_mac_intr(struct skge_hw *hw, int port)
- 		     "mac interrupt status 0x%x\n", status);
+ 		val = mdio_read(ioaddr, phy_id, 0x1f);
+-		net_link(tp, KERN_INFO "%s: mii ext = %04x.\n", dev->name, val);
++		netif_info(tp, link, dev, "mii ext = %04x\n", val);
  
- 	if (hw->phy_type == SK_PHY_XMAC && (status & XM_IS_INP_ASS)) {
--  		xm_link_down(hw, port);
-+		xm_link_down(hw, port);
- 		mod_timer(&skge->link_timer, jiffies + 1);
+ 		val = mdio_read(ioaddr, phy_id, MII_LPA);
+ 		adv = mdio_read(ioaddr, phy_id, MII_ADVERTISE);
+ 		autoexp = mdio_read(ioaddr, phy_id, MII_EXPANSION);
+-		net_link(tp, KERN_INFO "%s: mii lpa=%04x adv=%04x exp=%04x.\n",
+-			 dev->name, val, adv, autoexp);
++		netif_info(tp, link, dev, "mii lpa=%04x adv=%04x exp=%04x\n",
++			   val, adv, autoexp);
+ 
+ 		if (val & LPA_NPAGE && autoexp & EXPANSION_NWAY) {
+ 			/* check for gigabit speed */
+@@ -1004,8 +991,7 @@ static void sis190_phy_task(struct work_struct *work)
+ 			SIS_W32(RGDelay, 0x0440);
+ 		}
+ 
+-		net_link(tp, KERN_INFO "%s: link on %s mode.\n", dev->name,
+-			 p->msg);
++		netif_info(tp, link, dev, "link on %s mode\n", p->msg);
+ 		netif_carrier_on(dev);
  	}
  
-@@ -1823,7 +1826,7 @@ static void genesis_link_up(struct skge_port *skge)
- 	xm_write16(hw, port, XM_MMU_CMD, cmd);
+@@ -1191,9 +1177,8 @@ static netdev_tx_t sis190_start_xmit(struct sk_buff *skb,
  
- 	mode = xm_read32(hw, port, XM_MODE);
--	if (skge->flow_status== FLOW_STAT_SYMMETRIC ||
-+	if (skge->flow_status == FLOW_STAT_SYMMETRIC ||
- 	    skge->flow_status == FLOW_STAT_LOC_SEND) {
- 		/*
- 		 * Configure Pause Frame Generation
-@@ -2466,7 +2469,7 @@ static int skge_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
- 	if (!netif_running(dev))
- 		return -ENODEV;	/* Phy still in reset */
- 
--	switch(cmd) {
-+	switch (cmd) {
- 	case SIOCGMIIPHY:
- 		data->phy_id = hw->phy_addr;
- 
-@@ -2765,7 +2768,7 @@ static netdev_tx_t skge_xmit_frame(struct sk_buff *skb,
- 		 * does.  Looks like hardware is wrong?
- 		 */
- 		if (ipip_hdr(skb)->protocol == IPPROTO_UDP &&
--	            hw->chip_rev == 0 && hw->chip_id == CHIP_ID_YUKON)
-+		    hw->chip_rev == 0 && hw->chip_id == CHIP_ID_YUKON)
- 			control = BMU_TCP_CHECK;
- 		else
- 			control = BMU_UDP_CHECK;
-@@ -2777,7 +2780,7 @@ static netdev_tx_t skge_xmit_frame(struct sk_buff *skb,
- 		control = BMU_CHECK;
- 
- 	if (!skb_shinfo(skb)->nr_frags) /* single buffer i.e. no fragments */
--		control |= BMU_EOF| BMU_IRQ_EOF;
-+		control |= BMU_EOF | BMU_IRQ_EOF;
- 	else {
- 		struct skge_tx_desc *tf = td;
- 
-@@ -3077,7 +3080,7 @@ static struct sk_buff *skge_rx_get(struct net_device *dev,
- 				 pci_unmap_len(e, maplen),
- 				 PCI_DMA_FROMDEVICE);
- 		skb = e->skb;
--  		prefetch(skb->data);
-+		prefetch(skb->data);
- 		skge_rx_setup(skge, e, nskb, skge->rx_buf_size);
+ 	if (unlikely(le32_to_cpu(desc->status) & OWNbit)) {
+ 		netif_stop_queue(dev);
+-		net_tx_err(tp, KERN_ERR PFX
+-			   "%s: BUG! Tx Ring full when queue awake!\n",
+-			   dev->name);
++		netif_err(tp, tx_err, dev,
++			  "BUG! Tx Ring full when queue awake!\n");
+ 		return NETDEV_TX_BUSY;
  	}
  
-@@ -3554,8 +3557,7 @@ static int skge_reset(struct skge_hw *hw)
- 			hw->ram_offset = 0x80000;
- 		} else
- 			hw->ram_size = t8 * 512;
--	}
--	else if (t8 == 0)
-+	} else if (t8 == 0)
- 		hw->ram_size = 0x20000;
- 	else
- 		hw->ram_size = t8 * 4096;
-@@ -3709,7 +3711,7 @@ static int skge_device_event(struct notifier_block *unused,
- 		goto done;
+@@ -1287,9 +1272,9 @@ static u16 sis190_default_phy(struct net_device *dev)
  
- 	skge = netdev_priv(dev);
--	switch(event) {
-+	switch (event) {
- 	case NETDEV_CHANGENAME:
- 		if (skge->debugfs) {
- 			d = debugfs_rename(skge_debug, skge->debugfs,
-@@ -3914,7 +3916,7 @@ static int __devinit skge_probe(struct pci_dev *pdev,
+ 	if (mii_if->phy_id != phy_default->phy_id) {
+ 		mii_if->phy_id = phy_default->phy_id;
+-		net_probe(tp, KERN_INFO
+-		       "%s: Using transceiver at address %d as default.\n",
+-		       pci_name(tp->pci_dev), mii_if->phy_id);
++		if (netif_msg_probe(tp))
++			pr_info("%s: Using transceiver at address %d as default\n",
++				pci_name(tp->pci_dev), mii_if->phy_id);
+ 	}
  
- 	err = -ENOMEM;
- 	/* space for skge@pci:0000:04:00.0 */
--	hw = kzalloc(sizeof(*hw) + strlen(DRV_NAME "@pci:" )
-+	hw = kzalloc(sizeof(*hw) + strlen(DRV_NAME "@pci:")
- 		     + strlen(pci_name(pdev)) + 1, GFP_KERNEL);
- 	if (!hw) {
- 		dev_err(&pdev->dev, "cannot allocate hardware struct\n");
-@@ -4010,7 +4012,8 @@ static void __devexit skge_remove(struct pci_dev *pdev)
+ 	status = mdio_read(ioaddr, mii_if->phy_id, MII_BMCR);
+@@ -1327,14 +1312,15 @@ static void sis190_init_phy(struct net_device *dev, struct sis190_private *tp,
+ 			((mii_status & (BMSR_100FULL | BMSR_100HALF)) ?
+ 				LAN : HOME) : p->type;
+ 		tp->features |= p->feature;
+-		net_probe(tp, KERN_INFO "%s: %s transceiver at address %d.\n",
+-			pci_name(tp->pci_dev), p->name, phy_id);
++		if (netif_msg_probe(tp))
++			pr_info("%s: %s transceiver at address %d\n",
++				pci_name(tp->pci_dev), p->name, phy_id);
+ 	} else {
+ 		phy->type = UNKNOWN;
+-		net_probe(tp, KERN_INFO
+-			"%s: unknown PHY 0x%x:0x%x transceiver at address %d\n",
+-			pci_name(tp->pci_dev),
+-			phy->id[0], (phy->id[1] & 0xfff0), phy_id);
++		if (netif_msg_probe(tp))
++			pr_info("%s: unknown PHY 0x%x:0x%x transceiver at address %d\n",
++				pci_name(tp->pci_dev),
++				phy->id[0], (phy->id[1] & 0xfff0), phy_id);
+ 	}
+ }
  
- 	flush_scheduled_work();
+@@ -1398,8 +1384,9 @@ static int __devinit sis190_mii_probe(struct net_device *dev)
+ 	}
  
--	if ((dev1 = hw->dev[1]))
-+	dev1 = hw->dev[1];
-+	if (dev1)
- 		unregister_netdev(dev1);
- 	dev0 = hw->dev[0];
- 	unregister_netdev(dev0);
+ 	if (list_empty(&tp->first_phy)) {
+-		net_probe(tp, KERN_INFO "%s: No MII transceivers found!\n",
+-			  pci_name(tp->pci_dev));
++		if (netif_msg_probe(tp))
++			pr_info("%s: No MII transceivers found!\n",
++				pci_name(tp->pci_dev));
+ 		rc = -EIO;
+ 		goto out;
+ 	}
+@@ -1445,7 +1432,8 @@ static struct net_device * __devinit sis190_init_board(struct pci_dev *pdev)
+ 
+ 	dev = alloc_etherdev(sizeof(*tp));
+ 	if (!dev) {
+-		net_drv(&debug, KERN_ERR PFX "unable to alloc new ethernet\n");
++		if (netif_msg_drv(&debug))
++			pr_err("unable to alloc new ethernet\n");
+ 		rc = -ENOMEM;
+ 		goto err_out_0;
+ 	}
+@@ -1458,34 +1446,39 @@ static struct net_device * __devinit sis190_init_board(struct pci_dev *pdev)
+ 
+ 	rc = pci_enable_device(pdev);
+ 	if (rc < 0) {
+-		net_probe(tp, KERN_ERR "%s: enable failure\n", pci_name(pdev));
++		if (netif_msg_probe(tp))
++			pr_err("%s: enable failure\n", pci_name(pdev));
+ 		goto err_free_dev_1;
+ 	}
+ 
+ 	rc = -ENODEV;
+ 
+ 	if (!(pci_resource_flags(pdev, 0) & IORESOURCE_MEM)) {
+-		net_probe(tp, KERN_ERR "%s: region #0 is no MMIO resource.\n",
+-			  pci_name(pdev));
++		if (netif_msg_probe(tp))
++			pr_err("%s: region #0 is no MMIO resource\n",
++			       pci_name(pdev));
+ 		goto err_pci_disable_2;
+ 	}
+ 	if (pci_resource_len(pdev, 0) < SIS190_REGS_SIZE) {
+-		net_probe(tp, KERN_ERR "%s: invalid PCI region size(s).\n",
+-			  pci_name(pdev));
++		if (netif_msg_probe(tp))
++			pr_err("%s: invalid PCI region size(s)\n",
++			       pci_name(pdev));
+ 		goto err_pci_disable_2;
+ 	}
+ 
+ 	rc = pci_request_regions(pdev, DRV_NAME);
+ 	if (rc < 0) {
+-		net_probe(tp, KERN_ERR PFX "%s: could not request regions.\n",
+-			  pci_name(pdev));
++		if (netif_msg_probe(tp))
++			pr_err("%s: could not request regions\n",
++			       pci_name(pdev));
+ 		goto err_pci_disable_2;
+ 	}
+ 
+ 	rc = pci_set_dma_mask(pdev, DMA_BIT_MASK(32));
+ 	if (rc < 0) {
+-		net_probe(tp, KERN_ERR "%s: DMA configuration failed.\n",
+-			  pci_name(pdev));
++		if (netif_msg_probe(tp))
++			pr_err("%s: DMA configuration failed\n",
++			       pci_name(pdev));
+ 		goto err_free_res_3;
+ 	}
+ 
+@@ -1493,8 +1486,9 @@ static struct net_device * __devinit sis190_init_board(struct pci_dev *pdev)
+ 
+ 	ioaddr = ioremap(pci_resource_start(pdev, 0), SIS190_REGS_SIZE);
+ 	if (!ioaddr) {
+-		net_probe(tp, KERN_ERR "%s: cannot remap MMIO, aborting\n",
+-			  pci_name(pdev));
++		if (netif_msg_probe(tp))
++			pr_err("%s: cannot remap MMIO, aborting\n",
++			       pci_name(pdev));
+ 		rc = -EIO;
+ 		goto err_free_res_3;
+ 	}
+@@ -1530,9 +1524,8 @@ static void sis190_tx_timeout(struct net_device *dev)
+ 	if (tmp8 & CmdTxEnb)
+ 		SIS_W8(TxControl, tmp8 & ~CmdTxEnb);
+ 
+-
+-	net_tx_err(tp, KERN_INFO "%s: Transmit timeout, status %08x %08x.\n",
+-		   dev->name, SIS_R32(TxControl), SIS_R32(TxSts));
++	netif_info(tp, tx_err, dev, "Transmit timeout, status %08x %08x\n",
++		   SIS_R32(TxControl), SIS_R32(TxSts));
+ 
+ 	/* Disable interrupts by clearing the interrupt mask. */
+ 	SIS_W32(IntrMask, 0x0000);
+@@ -1561,15 +1554,16 @@ static int __devinit sis190_get_mac_addr_from_eeprom(struct pci_dev *pdev,
+ 	u16 sig;
+ 	int i;
+ 
+-	net_probe(tp, KERN_INFO "%s: Read MAC address from EEPROM\n",
+-		  pci_name(pdev));
++	if (netif_msg_probe(tp))
++		pr_info("%s: Read MAC address from EEPROM\n", pci_name(pdev));
+ 
+ 	/* Check to see if there is a sane EEPROM */
+ 	sig = (u16) sis190_read_eeprom(ioaddr, EEPROMSignature);
+ 
+ 	if ((sig == 0xffff) || (sig == 0x0000)) {
+-		net_probe(tp, KERN_INFO "%s: Error EEPROM read %x.\n",
+-			  pci_name(pdev), sig);
++		if (netif_msg_probe(tp))
++			pr_info("%s: Error EEPROM read %x\n",
++				pci_name(pdev), sig);
+ 		return -EIO;
+ 	}
+ 
+@@ -1603,8 +1597,8 @@ static int __devinit sis190_get_mac_addr_from_apc(struct pci_dev *pdev,
+ 	u8 reg, tmp8;
+ 	unsigned int i;
+ 
+-	net_probe(tp, KERN_INFO "%s: Read MAC address from APC.\n",
+-		  pci_name(pdev));
++	if (netif_msg_probe(tp))
++		pr_info("%s: Read MAC address from APC\n", pci_name(pdev));
+ 
+ 	for (i = 0; i < ARRAY_SIZE(ids); i++) {
+ 		isa_bridge = pci_get_device(PCI_VENDOR_ID_SI, ids[i], NULL);
+@@ -1613,8 +1607,9 @@ static int __devinit sis190_get_mac_addr_from_apc(struct pci_dev *pdev,
+ 	}
+ 
+ 	if (!isa_bridge) {
+-		net_probe(tp, KERN_INFO "%s: Can not find ISA bridge.\n",
+-			  pci_name(pdev));
++		if (netif_msg_probe(tp))
++			pr_info("%s: Can not find ISA bridge\n",
++				pci_name(pdev));
+ 		return -EIO;
+ 	}
+ 
+@@ -1695,7 +1690,7 @@ static void sis190_set_speed_auto(struct net_device *dev)
+ 	int phy_id = tp->mii_if.phy_id;
+ 	int val;
+ 
+-	net_link(tp, KERN_INFO "%s: Enabling Auto-negotiation.\n", dev->name);
++	netif_info(tp, link, dev, "Enabling Auto-negotiation\n");
+ 
+ 	val = mdio_read(ioaddr, phy_id, MII_ADVERTISE);
+ 
+@@ -1822,7 +1817,8 @@ static int __devinit sis190_init_one(struct pci_dev *pdev,
+ 	int rc;
+ 
+ 	if (!printed_version) {
+-		net_drv(&debug, KERN_INFO SIS190_DRIVER_NAME " loaded.\n");
++		if (netif_msg_drv(&debug))
++			pr_info(SIS190_DRIVER_NAME " loaded\n");
+ 		printed_version = 1;
+ 	}
+ 
+@@ -1862,12 +1858,14 @@ static int __devinit sis190_init_one(struct pci_dev *pdev,
+ 	if (rc < 0)
+ 		goto err_remove_mii;
+ 
+-	net_probe(tp, KERN_INFO "%s: %s at %p (IRQ: %d), %pM\n",
+-		  pci_name(pdev), sis_chip_info[ent->driver_data].name,
+-		  ioaddr, dev->irq, dev->dev_addr);
+-
+-	net_probe(tp, KERN_INFO "%s: %s mode.\n", dev->name,
+-		  (tp->features & F_HAS_RGMII) ? "RGMII" : "GMII");
++	if (netif_msg_probe(tp)) {
++		netdev_info(dev, "%s: %s at %p (IRQ: %d), %pM\n",
++			    pci_name(pdev),
++			    sis_chip_info[ent->driver_data].name,
++			    ioaddr, dev->irq, dev->dev_addr);
++		netdev_info(dev, "%s mode.\n",
++			    (tp->features & F_HAS_RGMII) ? "RGMII" : "GMII");
++	}
+ 
+ 	netif_carrier_off(dev);
+ 
 -- 
 1.7.0.14.g7e948
 
