@@ -1,41 +1,54 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758733Ab0BRRBk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 12:01:40 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:55819 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758723Ab0BRRBj (ORCPT
+	id S1758747Ab0BRRBp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 12:01:45 -0500
+Received: from mail-yx0-f200.google.com ([209.85.210.200]:56081 "EHLO
+	mail-yx0-f200.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758723Ab0BRRBm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 12:01:39 -0500
-Subject: Re: Stupid futex question - 2.6.33-rc7-mmotm0210
-From: Peter Zijlstra <peterz@infradead.org>
-To: Valdis.Kletnieks@vt.edu
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-In-Reply-To: <7380.1266511335@localhost>
-References: <10057.1266501862@localhost> <1266503879.26719.702.camel@laptop>
-	 <7380.1266511335@localhost>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 18 Feb 2010 18:01:26 +0100
-Message-ID: <1266512486.26719.856.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
+	Thu, 18 Feb 2010 12:01:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=DJgiziAXP3R2CBWpnsKUUiNa2cpLJx8IzWBEhcb7xzZBmUQn0fK0SSesIKwX3TEift
+         OtEin3806QatOcmuz9IIopNtRzVZol8qy3KRiujLyc7Bl3KeaMF4xte6sgClV/2jSZ5l
+         vbioiv5oOACk6DEAjRCBEfrpRcwMTTwklttfw=
+Message-ID: <4B7D7270.6030900@lwfinger.net>
+Date: Thu, 18 Feb 2010 11:01:36 -0600
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100111 SUSE/3.0.1-1.1 Thunderbird/3.0.1
+MIME-Version: 1.0
+To: Greg KH <greg@kroah.com>
+CC: Greg Kroah-Hartman <gregkh@suse.de>,
+       Bernhard Schiffner <bernhard@schiffner-limbach.de>,
+       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
+Subject: Re: [PATCH 0/3 V2] staging: r8187se: Miscellaneous cleanups
+References: <4b7963d0.cocDj1pGMQ3LKF4a%Larry.Finger@lwfinger.net> <20100218160340.GH21785@kroah.com>
+In-Reply-To: <20100218160340.GH21785@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-02-18 at 11:42 -0500, Valdis.Kletnieks@vt.edu wrote:
+On 02/18/2010 10:03 AM, Greg KH wrote:
+> On Mon, Feb 15, 2010 at 09:10:08AM -0600, Larry Finger wrote:
+> 
+> Ick, I just applied your first versions of these patches.  What was the
+> difference here?  Care to look at the next linux-next tree and see if I
+> missed anything?
+> 
+> sorry about that.
 
-> 1) should it get killed for RLIMIT_RTTIME because it's been in a futex()
-> for multiple seconds? It seems suspicious - docs say a blocking syscall
-> resets RTTIME - so if futex() blocks it shouldn't kill, and if it's in the
-> kernel for a second without blocking it's a bug too.
+The only difference was that I fixed the line-wrap problem that you noted in
+your previous Emails. I had found them and resubmitted. There were no content
+changes in the patches and the tree appears to be OK.
 
-sys_futex() shouldn't be taking that long indeed, and if its not caused
-by the sysrq interrupt then something funny is going on indeed.
+Thanks for the heads-up and sorry for the trouble, Those damned long lines from
+the Realtek driver are a pain.
 
-You could poke around in kernel/futex.c:futex_wait() to see where it
-thinks its spending it time? There's a single retry loop in there, maybe
-instrument that to see if its retrying too many times..
+FYI, the rewritten driver has received a beacon, and the first few parts have
+been submitted to John Linville.
 
+Larry
