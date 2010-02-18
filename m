@@ -1,88 +1,98 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751938Ab0BRWpH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 17:45:07 -0500
-Received: from mga09.intel.com ([134.134.136.24]:32646 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751025Ab0BRWpE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 17:45:04 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,499,1262592000"; 
-   d="scan'208";a="493662515"
-From: "H. Peter Anvin" <hpa@linux.intel.com>
-To: torvalds@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Arjan van de Ven <arjan@linux.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Rik van Riel <riel@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH] mm: Make copy_from_user() in migrate.c statically predictable
-Date: Thu, 18 Feb 2010 14:43:53 -0800
-Message-Id: <1266533033-24457-1-git-send-email-hpa@linux.intel.com>
-X-Mailer: git-send-email 1.6.6
+	id S1751547Ab0BRWsR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 17:48:17 -0500
+Received: from mail.dev.rtsoft.ru ([213.79.90.226]:49753 "HELO
+	mail.dev.rtsoft.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751085Ab0BRWsP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Feb 2010 17:48:15 -0500
+Date: Fri, 19 Feb 2010 01:48:12 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+       Grant Likely <grant.likely@secretlab.ca>,
+       Bill Gatliff <bgat@billgatliff.com>,
+       Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] gpiolib: Cosmetic improvements for error handling in
+ gpiochip_add()
+Message-ID: <20100218224812.GA11975@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: H. Peter Anvin <hpa@zytor.com>
+Hopefully it makes the code look nicer and makes it easier to extend
+this function.
 
-x86-32 has had a static test for copy_on_user() overflow for a while.
-This test currently fails in mm/migrate.c resulting in an
-allyesconfig/allmodconfig build failure on x86-32:
-
-In function ‘copy_from_user’,
-    inlined from ‘do_pages_stat’ at
-    /home/hpa/kernel/git/mm/migrate.c:1012:
-/home/hpa/kernel/git/arch/x86/include/asm/uaccess_32.h:212: error:
-    call to ‘copy_from_user_overflow’ declared
-
-Make the logic more explicit and therefore easier for gcc to
-understand.
-
-Reported-by: Len Brown <lenb@kernel.org>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
-Cc: Arjan van de Ven <arjan@linux.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Christoph Lameter <cl@linux-foundation.org>
-Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Rik van Riel <riel@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
+Suggested-by: Grant Likely <grant.likely@secretlab.ca>
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
 
-NOTE: Sending this patch directly rather than queueing it up since it is a
-current build failure.
+On Tue, Feb 09, 2010 at 10:16:44AM -0700, Grant Likely wrote:
+[...]
+> Rather than doing an else block which will need to be reworked if/when
+> any additional code is added to the bottom of this routine, please
+> rework the if() block to bail on failure instead of implicitly falling
+> through to the return statement.
 
- mm/migrate.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+Here it is.
 
-diff --git a/mm/migrate.c b/mm/migrate.c
-index 9a0db5b..1a12f15 100644
---- a/mm/migrate.c
-+++ b/mm/migrate.c
-@@ -1002,12 +1002,12 @@ static int do_pages_stat(struct mm_struct *mm, unsigned long nr_pages,
- #define DO_PAGES_STAT_CHUNK_NR 16
- 	const void __user *chunk_pages[DO_PAGES_STAT_CHUNK_NR];
- 	int chunk_status[DO_PAGES_STAT_CHUNK_NR];
--	unsigned long i, chunk_nr = DO_PAGES_STAT_CHUNK_NR;
-+	unsigned long i, chunk_nr;
- 	int err;
+Andrew,
+
+Please either fold this patch into
+  gpiolib-introduce-chip-addition-removal-notifier.patch
+or, actually these changes can stay in its own patch for better
+sparation of cosmitc/real changes.
+
+Thanks!
+
+ drivers/gpio/gpiolib.c |   24 +++++++++++++++---------
+ 1 files changed, 15 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c
+index 375c03a..f227c1f 100644
+--- a/drivers/gpio/gpiolib.c
++++ b/drivers/gpio/gpiolib.c
+@@ -1099,17 +1099,23 @@ int gpiochip_add(struct gpio_chip *chip)
  
- 	for (i = 0; i < nr_pages; i += chunk_nr) {
--		if (chunk_nr > nr_pages - i)
--			chunk_nr = nr_pages - i;
-+		chunk_nr = min(nr_pages - i,
-+			       (unsigned long)DO_PAGES_STAT_CHUNK_NR);
- 
- 		err = copy_from_user(chunk_pages, &pages[i],
- 				     chunk_nr * sizeof(*chunk_pages));
+ unlock:
+ 	spin_unlock_irqrestore(&gpio_lock, flags);
+-	if (status == 0)
+-		status = gpiochip_export(chip);
++
++	if (status)
++		goto fail;
++
++	status = gpiochip_export(chip);
++	if (status)
++		goto fail;
++
++	blocking_notifier_call_chain(&gpio_notifier, GPIO_NOTIFY_CHIP_ADDED,
++				     chip);
++
++	return 0;
+ fail:
+ 	/* failures here can mean systems won't boot... */
+-	if (status)
+-		pr_err("gpiochip_add: gpios %d..%d (%s) not registered\n",
+-			chip->base, chip->base + chip->ngpio - 1,
+-			chip->label ? : "generic");
+-	else
+-		blocking_notifier_call_chain(&gpio_notifier,
+-					     GPIO_NOTIFY_CHIP_ADDED, chip);
++	pr_err("gpiochip_add: gpios %d..%d (%s) not registered\n",
++		chip->base, chip->base + chip->ngpio - 1,
++		chip->label ? : "generic");
+ 	return status;
+ }
+ EXPORT_SYMBOL_GPL(gpiochip_add);
 -- 
-1.6.5.2
+1.6.5.7
 
