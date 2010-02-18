@@ -1,83 +1,93 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754980Ab0BRJpw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 04:45:52 -0500
-Received: from mail-fx0-f220.google.com ([209.85.220.220]:56854 "EHLO
-	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753656Ab0BRJpt (ORCPT
+	id S1755125Ab0BRJq0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 04:46:26 -0500
+Received: from 60-242-66-41.static.tpgi.com.au ([60.242.66.41]:45664 "EHLO
+	fs.beware.dropbear.id.au" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754880Ab0BRJqX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 04:45:49 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:mime-version
-         :content-type:content-disposition:user-agent;
-        b=gn2Mx+kRWv+sbQ3uukhUq93fxUZS/rZHVFTkPxlZorxjPx8HTjuxXlTXk+S+DHRme2
-         9aTL5LD5b3kaQMAE/RLFElSklA8V2WVtpCDP68BuZKni5Kb2gOYpooArB3gZ2O5RBsvX
-         6DqoPusSeEnknropsZUzQxlsjaAsxvHTAlDiU=
-Date: Thu, 18 Feb 2010 12:45:29 +0300
-From: Dan Carpenter <error27@gmail.com>
-To: Zhu Yi <yi.zhu@intel.com>
-Cc: Reinette Chatre <reinette.chatre@intel.com>,
-       Intel Linux Wireless <ilw@linux.intel.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Wey-Yi Guy <wey-yi.w.guy@intel.com>,
-       Abhijeet Kolekar <abhijeet.kolekar@intel.com>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [patch] iwlwifi: testing the wrong variable
-Message-ID: <20100218094529.GA1298@bicker>
-Mail-Followup-To: Dan Carpenter <error27@gmail.com>,
-	Zhu Yi <yi.zhu@intel.com>,
-	Reinette Chatre <reinette.chatre@intel.com>,
-	Intel Linux Wireless <ilw@linux.intel.com>,
-	"John W. Linville" <linville@tuxdriver.com>,
-	Wey-Yi Guy <wey-yi.w.guy@intel.com>,
-	Abhijeet Kolekar <abhijeet.kolekar@intel.com>,
-	Johannes Berg <johannes@sipsolutions.net>,
-	linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 18 Feb 2010 04:46:23 -0500
+X-Greylist: delayed 1121 seconds by postgrey-1.27 at vger.kernel.org; Thu, 18 Feb 2010 04:46:22 EST
+Subject: Re: Linux mdadm superblock question.
+From: Ian Dall <ian@beware.dropbear.id.au>
+To: Volker Armin Hemmann <volkerarmin@googlemail.com>
+Cc: Bill Davidsen <davidsen@tmr.com>, Michael Evans <mjevans1983@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
+       Nick Bowler <nbowler@elliptictech.com>
+In-Reply-To: <201002162318.33950.volkerarmin@googlemail.com>
+References: <201002140251.59668.volkerarmin@googlemail.com>
+	 <201002162206.32797.volkerarmin@googlemail.com>
+	 <20100216220020.GA1036@emergent.ellipticsemi.com>
+	 <201002162318.33950.volkerarmin@googlemail.com>
+Content-Type: text/plain
+Date: Thu, 18 Feb 2010 19:57:03 +1030
+Message-Id: <1266485223.25367.29.camel@sibyl.beware.dropbear.id.au>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (fs.beware.dropbear.id.au [10.0.0.1]); Thu, 18 Feb 2010 19:57:18 +1030 (CST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The first one fixes a smatch false positive and the second one fixes
-a potential bug.
+On Tue, 2010-02-16 at 23:18 +0100, Volker Armin Hemmann wrote:
+> On Dienstag 16 Februar 2010, Nick Bowler wrote:
+> > On 22:06 Tue 16 Feb     , Volker Armin Hemmann wrote:
+> > > On Dienstag 16 Februar 2010, Bill Davidsen wrote:
+> > > > Volker Armin Hemmann wrote:
+> > > > > On Sonntag 14 Februar 2010, you wrote:
+> > > > >> In other words, 'auto-detection' for 1.x format devices is using an
+> > > > >> initrd/initramfs.
+> > > > > 
+> > > > > which makes 1.x format useless for everybody who does not want to
+> > > > > deal with initrd/initramfs.
+> > > > 
+> > > > You make this sound like some major big deal. are you running your own
+> > > > distribution? In most cases mkinitrd does the right thing when you
+> > > > "make install" the kernel, and if you are doing something in the build
+> > > > so complex that it needs options, you really should understand the
+> > > > options and be sure you're doing what you want.
+> > > > 
+> > > > Generally this involves preloading a module or two, and if you need it
+> > > > every time you probably should have built it in, anyway.
+> > > > 
+> > > > My opinion...
+> > > 
+> > > I am running my own kernels - and of course everything that is needed to
+> > > boot and get the basic system up is built in. Why should I make the disk
+> > > drivers modules?
+> > > That does not make sense.
+> > 
+> > I agree that it makes little sense to make something a module when you
+> > can't unload it anyway, but...
+> > 
+> > > And the reason is simple: even when the system is completely fucked up, I
+> > > want a kernel that is able to boot until init=/bin/bb takes over.
+> > 
+> > I put a complete set of recovery tools into my initramfses so that when
+> > the system is completely fucked up, I have a kernel that is able to boot
+> > until rdinit=/bin/zsh (or /bin/bb, if you prefer) takes over.
+> > 
+> > This has the added advantage of working when the root filesystem cannot
+> > be mounted at all: a scenario which does not seem too far-fetched when
+> > the filesystem is located on a raid array.
+> 
+> and what do you do if you have to boot from a cd/usb stick and need to access 
+> the raid?
+> 
+> Simple with auto assembling. Not so much without.
 
-drivers/net/wireless/iwlwifi/iwl-5000.c +786 iwl5000_txq_update_byte_cnt_tbl(37) error: buffer overflow 
-'(scd_bc_tbl+txq_id)->tfd_offset' 320 <= 512
-drivers/net/wireless/iwlwifi/iwl-5000.c +808 iwl5000_txq_inval_byte_cnt_tbl(19) error: buffer overflow 
-'(scd_bc_tbl+txq_id)->tfd_offset' 320 <= 512
+I'm not sure what the problem is. I've had to do this (because the disk
+with grub on the MBR was the one that failed - now I put grub on them
+all).
 
-Signed-off-by: Dan Carpenter <error27@gmail.com>
-Cc: stable@kernel.org
----
-I don't have the hardware to test this change.
+I booted of the fedora install disk in rescue mode. Told it not to try
+and mount any system disks, got into a shell and ran mdadm -As 
 
-diff --git a/drivers/net/wireless/iwlwifi/iwl-5000.c b/drivers/net/wireless/iwlwifi/iwl-5000.c
-index de45f30..b45150d 100644
---- a/drivers/net/wireless/iwlwifi/iwl-5000.c
-+++ b/drivers/net/wireless/iwlwifi/iwl-5000.c
-@@ -781,7 +781,7 @@ void iwl5000_txq_update_byte_cnt_tbl(struct iwl_priv *priv,
- 
- 	scd_bc_tbl[txq_id].tfd_offset[write_ptr] = bc_ent;
- 
--	if (txq->q.write_ptr < TFD_QUEUE_SIZE_BC_DUP)
-+	if (write_ptr < TFD_QUEUE_SIZE_BC_DUP)
- 		scd_bc_tbl[txq_id].
- 			tfd_offset[TFD_QUEUE_SIZE_MAX + write_ptr] = bc_ent;
- }
-@@ -803,7 +803,7 @@ void iwl5000_txq_inval_byte_cnt_tbl(struct iwl_priv *priv,
- 	bc_ent =  cpu_to_le16(1 | (sta_id << 12));
- 	scd_bc_tbl[txq_id].tfd_offset[read_ptr] = bc_ent;
- 
--	if (txq->q.write_ptr < TFD_QUEUE_SIZE_BC_DUP)
-+	if (read_ptr < TFD_QUEUE_SIZE_BC_DUP)
- 		scd_bc_tbl[txq_id].
- 			tfd_offset[TFD_QUEUE_SIZE_MAX + read_ptr] =  bc_ent;
- }
+I'm not sure what else a kernel auto-assemble would be expected to do
+that mdadm -As wouldn't...
+
+
+-- 
+Ian Dall <ian@beware.dropbear.id.au>
 
