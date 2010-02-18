@@ -1,81 +1,150 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758409Ab0BRQRQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 11:17:16 -0500
-Received: from tx2ehsobe004.messaging.microsoft.com ([65.55.88.14]:31729 "EHLO
-	TX2EHSOBE008.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757440Ab0BRQRN (ORCPT
+	id S1758502Ab0BRQTr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 11:19:47 -0500
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:47066 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755850Ab0BRQTq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 11:17:13 -0500
-X-SpamScore: -28
-X-BigFish: VPS-28(zz1432R98dN936eM9371Pab9bhzz1202hzzz32i87h6bh61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-DOMAIN-IP-MATCH: fail
-X-WSS-ID: 0KY1P7S-01-9JK-02
-X-M-MSG: 
-Date: Thu, 18 Feb 2010 17:16:37 +0100
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Avi Kivity <avi@redhat.com>
-CC: Marcelo Tosatti <mtosatti@redhat.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: Re: [PATCH 01/10] KVM: SVM: Don't use kmap_atomic in nested_svm_map
-Message-ID: <20100218161637.GP22141@amd.com>
-References: <1266493115-28386-1-git-send-email-joerg.roedel@amd.com>
- <1266493115-28386-2-git-send-email-joerg.roedel@amd.com>
- <4B7D4368.6020903@redhat.com>
+	Thu, 18 Feb 2010 11:19:46 -0500
+Date: Thu, 18 Feb 2010 11:21:28 -0500
+From: Neil Horman <nhorman@tuxdriver.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: add_timer_on: in-kernel users _all_ buggy ?
+Message-ID: <20100218162128.GA16827@shamino.rdu.redhat.com>
+References: <20100218142800.GB5825@Krystal>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4B7D4368.6020903@redhat.com>
-Organization: Advanced Micro Devices =?iso-8859-1?Q?GmbH?=
-	=?iso-8859-1?Q?=2C_Karl-Hammerschmidt-Str=2E_34=2C_85609_Dornach_bei_M=FC?=
-	=?iso-8859-1?Q?nchen=2C_Gesch=E4ftsf=FChrer=3A_Thomas_M=2E_McCoy=2C_Giuli?=
-	=?iso-8859-1?Q?ano_Meroni=2C_Andrew_Bowd=2C_Sitz=3A_Dornach=2C_Gemeinde_A?=
-	=?iso-8859-1?Q?schheim=2C_Landkreis_M=FCnchen=2C_Registergericht_M=FCnche?=
-	=?iso-8859-1?Q?n=2C?= HRB Nr. 43632
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-OriginalArrivalTime: 18 Feb 2010 16:16:37.0775 (UTC) FILETIME=[BF40E1F0:01CAB0B5]
-X-Reverse-DNS: ausb3extmailp02.amd.com
+In-Reply-To: <20100218142800.GB5825@Krystal>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-Spam-Score: -3.9 (---)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 18, 2010 at 03:40:56PM +0200, Avi Kivity wrote:
-> On 02/18/2010 01:38 PM, Joerg Roedel wrote:
-> >Use of kmap_atomic disables preemption but if we run in
-> >shadow-shadow mode the vmrun emulation executes kvm_set_cr3
-> >which might sleep or fault. So use kmap instead for
-> >nested_svm_map.
-> >
-> >
-> >
-> >-static void nested_svm_unmap(void *addr, enum km_type idx)
-> >+static void nested_svm_unmap(void *addr)
-> >  {
-> >  	struct page *page;
-> >
-> >@@ -1443,7 +1443,7 @@ static void nested_svm_unmap(void *addr, enum km_type idx)
-> >
-> >  	page = kmap_atomic_to_page(addr);
-> >
-> >-	kunmap_atomic(addr, idx);
-> >+	kunmap(addr);
-> >  	kvm_release_page_dirty(page);
-> >  }
+On Thu, Feb 18, 2010 at 09:28:00AM -0500, Mathieu Desnoyers wrote:
+> * Mathieu Desnoyers (compudj@krystal.dyndns.org) wrote:
+> > * Thomas Gleixner (tglx@linutronix.de) wrote:
+> > > On Tue, 16 Feb 2010, Mathieu Desnoyers wrote:
+> > > > > The function is called from an IPI. That's a LTTNG problem, not a RT one.
+> > > > 
+> > > > I use del_timer in IPI to delete lttng per-cpu timers on all CPUs. I
+> > > > have to do this because timers created with add_timer_on are documented
+> > > > to be incompatible with del_timer_sync():
+> > > > 
+> > > >  * Synchronization rules: Callers must prevent restarting of the timer,
+> > > >  * otherwise this function is meaningless. It must not be called from
+> > > >  * interrupt contexts. The caller must not hold locks which would prevent
+> > > >  * completion of the timer's handler. The timer's handler must not call
+> > > >  * add_timer_on(). Upon exit the timer is not queued and the handler is
+> > > >  * not running on any CPU.
+> > > 
+> > > Errm. The documentation says: 
+> > > 
+> > >       "The timer's handler must not call add_timer_on()." 
+> > > 
+> > > It's not talking about a timer which was initialized with
+> > > add_timer_on().
+> > > 
+> > >  And your per cpu timer handlers have no requirement to call
+> > > add_timer_on() simply because add/mod_timer() is requeueing the timer
+> > > on the same cpu on which the handler runs. 
+> > > 
+> > > So the IPI is just a solution for a non existing problem.
+> > 
+> > Oh, right. Thanks for the explanation. I'll look into moving LTTng to a
+> > saner del_timer_sync() scheme to delete the timers.
 > 
-> kunmap() takes a struct page *, not the virtual address (a
-> consistent source of bugs).
+> Double-checking this:
+> 
+> add_timer_on() needs to be paired with mod_timer_pinned(), otherwise
+> NO_HZ SMP config can rebalance the timer to a different CPU. I am fixing
+> this in lttng 0.194. These per-cpu timers, of course, should usually be
+> deferrable (they are in lttng).
+> 
+> (looking at kernel 2.6.32.4 here)
+> Looking at the kernel/time/clocksource.c watchdog, I wonder how
+> del_timer manages to synchronize the timer teardown. The handler,
+> clocksource_watchdog(), uses add_timer_on(), which prohibits using
+> del_timer_sync(). This seems rather odd. If we remove the watchdog and
+> re-add it, it may still be in use while we initialize the timer
+> structure.
+> 
+> Also, net/core/drop_monitor.c trace_drop_common usage of add_timer_on
+> seems odd:
+> 
+> Executing (AFAIK) with preempt on, data points to a per-cpu timer:
+> 
+>        if (!timer_pending(&data->send_timer)) {
+>                 data->send_timer.expires = jiffies + dm_delay * HZ;
+>                 add_timer_on(&data->send_timer, smp_processor_id());
+>        }
+> 
+> How is timer_pending synchronized with the target CPU timer wheel ?
+> 
+Hm, I think I see your point here.  You're suggesting that a call to one of the
+tracepoint hooks in the drop monitor can race against a second call to the hook
+from an interrupt context that pre-empted the first, leading to double add of
+the timer?  I agree, in fact I think its likely worse that that, the shared data
+on the skb that I modify there can get corrupted in that case as well.  I expect
+a bit of refactoring paired with a local_irq_save/restore should fix that.
 
-Ah true, thanks. I'll fix that.
+Thanks!
+Neil
 
-> kmap() is generally an unloved interface, it is slow and possibly
-> deadlock prone, but it's better than sleeping in atomic context.  If
-> you can hack your way around it, that is preferred.
-
-Best would be to use kvm_read_guest, but I fear that this will have an
-performance impact. Maybe I'll try this and measure if it really has a
-significant performance impact.
-
-	Joerg
-
-
+> Wait, there's more: arch/x86/kernel/cpu/mcheck/mce.c uses both
+> add_timer_on in its handler and del_timer_sync (which is incorrect).
+> 
+> arch/x86/kernel/apic/x2apic_uv_x.c almost has it right, but maybe it
+> should use del_timer_sync ?
+> 
+> arch/powerpc/platforms/chrp/setup.c should learn about
+> mod_timer_pinned().
+> 
+> Which leads to the following question: is there _any_ add_timer_on()
+> kernel user that's not currently buggy ? ;-) Maybe this calls for better
+> documentation of this interface. From what I've learn from digging into
+> cpufreq to debug its incorrect timer teardown last year, I fear there
+> are lots and lots of buggy per-cpu _and_ standard timer interface users
+> out there.
+> 
+> Maybe adding some debugging options, e.g. checking that a timer created
+> with add_timer_on is always modified by mod_timer_pinned, and is always
+> deferrable, and deleted by del_timer_sync could help discovering a
+> couple of outlawyer.
+> 
+> Thanks,
+> 
+> Mathieu
+> 
+> 
+> > 
+> > Thanks,
+> > 
+> > Mathieu
+> > 
+> > > 
+> > > Thanks,
+> > > 
+> > > 	tglx
+> > > 
+> > 
+> > -- 
+> > Mathieu Desnoyers
+> > OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> > 
+> > _______________________________________________
+> > ltt-dev mailing list
+> > ltt-dev@lists.casi.polymtl.ca
+> > http://lists.casi.polymtl.ca/cgi-bin/mailman/listinfo/ltt-dev
+> > 
+> 
+> -- 
+> Mathieu Desnoyers
+> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> 
