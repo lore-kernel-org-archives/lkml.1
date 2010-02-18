@@ -1,190 +1,165 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758017Ab0BRLkr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 06:40:47 -0500
-Received: from va3ehsobe003.messaging.microsoft.com ([216.32.180.13]:16284
-	"EHLO VA3EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1757846Ab0BRLi4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 06:38:56 -0500
-X-SpamScore: -2
-X-BigFish: VPS-2(zz936eMab9bhzz1202hzzz32i6bh87h43j62h)
-X-Spam-TCS-SCL: 1:0
-X-FB-DOMAIN-IP-MATCH: fail
-X-WSS-ID: 0KY1CCF-01-N2M-02
-X-M-MSG: 
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Avi Kivity <avi@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>
-CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Joerg Roedel <joerg.roedel@amd.com>, stable@kernel.org
-Subject: [PATCH 01/10] KVM: SVM: Don't use kmap_atomic in nested_svm_map
-Date: Thu, 18 Feb 2010 12:38:26 +0100
-Message-ID: <1266493115-28386-2-git-send-email-joerg.roedel@amd.com>
-X-Mailer: git-send-email 1.6.6
-In-Reply-To: <1266493115-28386-1-git-send-email-joerg.roedel@amd.com>
-References: <1266493115-28386-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 18 Feb 2010 11:38:37.0358 (UTC) FILETIME=[E8F33CE0:01CAB08E]
+	id S1757664Ab0BRLn3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 06:43:29 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:49078 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753915Ab0BRLn1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Feb 2010 06:43:27 -0500
+Date: Thu, 18 Feb 2010 11:43:10 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+Cc: Nick Piggin <npiggin@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       epasch@de.ibm.com, SCHILLIG@de.ibm.com,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, christof.schmitt@de.ibm.com,
+       thoss@de.ibm.com, hare@suse.de, gregkh@novell.com
+Subject: Re: Performance regression in scsi sequential throughput (iozone)
+	due to "e084b - page-allocator: preserve PFN ordering when
+	__GFP_COLD is set"
+Message-ID: <20100218114310.GC32626@csn.ul.ie>
+References: <4B70192C.3070601@linux.vnet.ibm.com> <20100208152131.GC23680@csn.ul.ie> <4B7184B5.6040400@linux.vnet.ibm.com> <20100209175707.GB5098@csn.ul.ie> <4B742C2C.5080305@linux.vnet.ibm.com> <20100212100519.GA29085@laptop> <4B796C6D.80800@linux.vnet.ibm.com> <20100216112517.GE1194@csn.ul.ie> <4B7ACC1E.9080205@linux.vnet.ibm.com> <4B7BBCFC.4090101@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Reverse-DNS: unknown
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <4B7BBCFC.4090101@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use of kmap_atomic disables preemption but if we run in
-shadow-shadow mode the vmrun emulation executes kvm_set_cr3
-which might sleep or fault. So use kmap instead for
-nested_svm_map.
+On Wed, Feb 17, 2010 at 10:55:08AM +0100, Christian Ehrhardt wrote:
+> Christian Ehrhardt wrote:
+>> Mel Gorman wrote:
+>>> On Mon, Feb 15, 2010 at 04:46:53PM +0100, Christian Ehrhardt wrote:
+>> [...]
+>>>> The differences in asm are pretty much the same, as before rmqueue_bulk was already inlined the actually intended change to its parameters was negligible.
+>>>> I wondered if it would be important if that is a constant value (-1) or if the reason was caused by that shift. So I tried:
+>>>>
+>>>>  23 @@ -965,7 +965,7 @@
+>>>>  24                 set_page_private(page, migratetype);
+>>>>  25                 list = &page->lru;
+>>>>  26         }
+>>>>  27 -       __mod_zone_page_state(zone, NR_FREE_PAGES, -(i << order));
+>>>>  28 +       __mod_zone_page_state(zone, NR_FREE_PAGES, -i);
+>>>>  29         spin_unlock(&zone->lock);
+>>>>  30         return i;
+>>>>  31  }
+>>>>
+>> [...]
+>>> It "fixes" it only by not calling direct reclaim when it should :(
+>>
+>> yeah as we both realized -1 was not right so it was more a crazy workaround :-)
+>>
+>> Anyway after that being a dead end again I dug even deeper into the details of direct_reclaim - I think we can agree that out of the counters we already know the race between try_to_free making progress and get_page not getting a page causing the congestion_wait is source of the issue.
+>>
+>> So what I tried to bring some more light into all that was extending my perf counters to track a few more details in direct_reclaim.
+>> Two patches are attached and apply after the other three already available in that thread.
+>> The intention is
+>> a) to track the time
+>>  a1) spent in try_to_free_pages
+>>  a2) consumed after try_to_free_pages until get_page_from_freelist
+>>  a3) spent in get_pages_from_freelist
+>> b1) after seeing that order!=0 -> drain_all_pages I wondered if that might differ even all calls look like they have zero
+>> b2) tracking the average amount of pages freed by try_to_free_pages for fast path and slow path (progres&!page)
+>>
+>> Naming convention (otherwise it might get confusing here)
+>> Good case - the scenario e.g. with e084b and 5f8dcc21 reverted resulting in high throughput and a low ratio of direct_reclaim running into progress&!page
+>> Bad case - the scenario e.g. on a clean 2.6.32
+>> Fast path - direct reclaim calls that did not run into progress&!page
+>> Slow path - direct reclaim calls that ran into progress&!page ending up in a long congestion_wait and therefore called "slow" path
+>>
+>> Mini summary of what we had before in huge tables:
+>>             fast path   slow path
+>> GOOD CASE      ~98%       ~1-3%
+>> BAD CASE       ~70%        ~30%
+>> -> leading to throughput impact of e.g. 600 mb/s with 16 iozone threads (worse with even more threads)
+>>
+>> Out of the numbers I got the following things might help us to create a new approach to a solution.
+>> The timings showed that that the so called slow case is actually much faster passing though direct_reclaim in bad case.
+>>
+>> GOOD CASE                                        duration
+>> a1 Fast-avg-duration_pre_ttf_2_post_ttf            164099
+>> a2 Fast-avg-duration_post_ttf_2_pre_get_page          459
+>> a3 Fast-avg-duration_pre_get_page_2_post_get_page     346
+>> a1 Slow-avg-duration_pre_ttf_2_post_ttf            127621
+>> a2 Slow-avg-duration_post_ttf_2_pre_get_page         1957
+>> a3 Slow-avg-duration_pre_get_page_2_post_get_page     256
+>> BAD CASE                                         duration   deviation to good case in %
+>> a1 Fast-avg-duration_pre_ttf_2_post_ttf            122921   -25.09%
+>> a2 Fast-avg-duration_post_ttf_2_pre_get_page          521   13.53%
+>> a3 Fast-avg-duration_pre_get_page_2_post_get_page     244   -29.55%
+>> a1 Slow-avg-duration_pre_ttf_2_post_ttf            109740   -14.01%
+>> a2 Slow-avg-duration_post_ttf_2_pre_get_page          250   -87.18%
+>> a3 Slow-avg-duration_pre_get_page_2_post_get_page     117   -54.16%
+>>
+>> That means that in the bad case the execution is much faster. Especially in the case that eventually runs into the slow path try_to_free is 14% faster, more important the time between try_to_free and get_pages is 87%! faster => less than a fifth and finally get_page is 54% faster, but that is probably just failing in an almost empty list which is fast^^.
+>>
+>> As I checked order which always was zero the time is not spent in drain_all_pages and the only other thing left might be cond_resched ?!
+>> Everything else are a few assignments so it can't be much else.
+>> But why would e.g. not running into schedule in cond_resched cause get_pages to not find anything - I don't know and I would expect it should be the other way around - the faster you get from free to get the more pages should be left.
+>
+> THe reason here is probably the the fact that in the bad case a lot of  
+> processes are waiting on congestion_wait and are therefore not runnnable  
+> and that way not scheduled via cond_resched.
+>
+> I'll test this theory today or tomorrow with cond_resched in  
+> direct_reclaim commented out and expect almost no difference.
+>
+>> I thought the progress try_to_free_pages is doing might be important as well so I took numbers for that too.
+>> From those I see that the good case as well as the bad case has an average of 62 pages freed in fast path.
+>> But in slow path they start to differ - while the good case that is running only seldom in that path anyway frees an average of 1.46 pages (that might be the thing causing it not getting a page eventually) in the bad case it makes a progress of avg 37 pages even in slow path.
+>>
+>> PAGES-FREED  fast path   slow path
+>> GOOD CASE      ~62       ~1.46
+>> BAD CASE       ~62       ~37
+>
+> 5f8dcc21 introduced per migrate type pcp lists, is it possible that we  
+> run in a scenario where try_to_free frees a lot of pages via, but of the  
+> wrong migrate type?
 
-Cc: stable@kernel.org
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
----
- arch/x86/kvm/svm.c |   32 ++++++++++++++++----------------
- 1 files changed, 16 insertions(+), 16 deletions(-)
+It's possible but the window is small. When a threshold is reached on the
+PCP lists, they get drained to the buddy lists and later picked up again
+by __rmqueue_fallback(). I had considered the possibility of pages of the
+wrong type being on the PCP lists which led to the patch "page-allocator:
+Fallback to other per-cpu lists when the target list is empty and memory is
+low" but you reported it made no difference even when fallback was allowed
+with high watermarks.
 
-diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
-index 52f78dd..041ef6f 100644
---- a/arch/x86/kvm/svm.c
-+++ b/arch/x86/kvm/svm.c
-@@ -1417,7 +1417,7 @@ static inline int nested_svm_intr(struct vcpu_svm *svm)
- 	return 0;
- }
- 
--static void *nested_svm_map(struct vcpu_svm *svm, u64 gpa, enum km_type idx)
-+static void *nested_svm_map(struct vcpu_svm *svm, u64 gpa)
- {
- 	struct page *page;
- 
-@@ -1425,7 +1425,7 @@ static void *nested_svm_map(struct vcpu_svm *svm, u64 gpa, enum km_type idx)
- 	if (is_error_page(page))
- 		goto error;
- 
--	return kmap_atomic(page, idx);
-+	return kmap(page);
- 
- error:
- 	kvm_release_page_clean(page);
-@@ -1434,7 +1434,7 @@ error:
- 	return NULL;
- }
- 
--static void nested_svm_unmap(void *addr, enum km_type idx)
-+static void nested_svm_unmap(void *addr)
- {
- 	struct page *page;
- 
-@@ -1443,7 +1443,7 @@ static void nested_svm_unmap(void *addr, enum km_type idx)
- 
- 	page = kmap_atomic_to_page(addr);
- 
--	kunmap_atomic(addr, idx);
-+	kunmap(addr);
- 	kvm_release_page_dirty(page);
- }
- 
-@@ -1458,7 +1458,7 @@ static bool nested_svm_exit_handled_msr(struct vcpu_svm *svm)
- 	if (!(svm->nested.intercept & (1ULL << INTERCEPT_MSR_PROT)))
- 		return false;
- 
--	msrpm = nested_svm_map(svm, svm->nested.vmcb_msrpm, KM_USER0);
-+	msrpm = nested_svm_map(svm, svm->nested.vmcb_msrpm);
- 
- 	if (!msrpm)
- 		goto out;
-@@ -1486,7 +1486,7 @@ static bool nested_svm_exit_handled_msr(struct vcpu_svm *svm)
- 	ret = msrpm[t1] & ((1 << param) << t0);
- 
- out:
--	nested_svm_unmap(msrpm, KM_USER0);
-+	nested_svm_unmap(msrpm);
- 
- 	return ret;
- }
-@@ -1616,7 +1616,7 @@ static int nested_svm_vmexit(struct vcpu_svm *svm)
- 				       vmcb->control.exit_int_info,
- 				       vmcb->control.exit_int_info_err);
- 
--	nested_vmcb = nested_svm_map(svm, svm->nested.vmcb, KM_USER0);
-+	nested_vmcb = nested_svm_map(svm, svm->nested.vmcb);
- 	if (!nested_vmcb)
- 		return 1;
- 
-@@ -1706,7 +1706,7 @@ static int nested_svm_vmexit(struct vcpu_svm *svm)
- 	/* Exit nested SVM mode */
- 	svm->nested.vmcb = 0;
- 
--	nested_svm_unmap(nested_vmcb, KM_USER0);
-+	nested_svm_unmap(nested_vmcb);
- 
- 	kvm_mmu_reset_context(&svm->vcpu);
- 	kvm_mmu_load(&svm->vcpu);
-@@ -1719,7 +1719,7 @@ static bool nested_svm_vmrun_msrpm(struct vcpu_svm *svm)
- 	u32 *nested_msrpm;
- 	int i;
- 
--	nested_msrpm = nested_svm_map(svm, svm->nested.vmcb_msrpm, KM_USER0);
-+	nested_msrpm = nested_svm_map(svm, svm->nested.vmcb_msrpm);
- 	if (!nested_msrpm)
- 		return false;
- 
-@@ -1728,7 +1728,7 @@ static bool nested_svm_vmrun_msrpm(struct vcpu_svm *svm)
- 
- 	svm->vmcb->control.msrpm_base_pa = __pa(svm->nested.msrpm);
- 
--	nested_svm_unmap(nested_msrpm, KM_USER0);
-+	nested_svm_unmap(nested_msrpm);
- 
- 	return true;
- }
-@@ -1739,7 +1739,7 @@ static bool nested_svm_vmrun(struct vcpu_svm *svm)
- 	struct vmcb *hsave = svm->nested.hsave;
- 	struct vmcb *vmcb = svm->vmcb;
- 
--	nested_vmcb = nested_svm_map(svm, svm->vmcb->save.rax, KM_USER0);
-+	nested_vmcb = nested_svm_map(svm, svm->vmcb->save.rax);
- 	if (!nested_vmcb)
- 		return false;
- 
-@@ -1851,7 +1851,7 @@ static bool nested_svm_vmrun(struct vcpu_svm *svm)
- 	svm->vmcb->control.event_inj = nested_vmcb->control.event_inj;
- 	svm->vmcb->control.event_inj_err = nested_vmcb->control.event_inj_err;
- 
--	nested_svm_unmap(nested_vmcb, KM_USER0);
-+	nested_svm_unmap(nested_vmcb);
- 
- 	enable_gif(svm);
- 
-@@ -1884,12 +1884,12 @@ static int vmload_interception(struct vcpu_svm *svm)
- 	svm->next_rip = kvm_rip_read(&svm->vcpu) + 3;
- 	skip_emulated_instruction(&svm->vcpu);
- 
--	nested_vmcb = nested_svm_map(svm, svm->vmcb->save.rax, KM_USER0);
-+	nested_vmcb = nested_svm_map(svm, svm->vmcb->save.rax);
- 	if (!nested_vmcb)
- 		return 1;
- 
- 	nested_svm_vmloadsave(nested_vmcb, svm->vmcb);
--	nested_svm_unmap(nested_vmcb, KM_USER0);
-+	nested_svm_unmap(nested_vmcb);
- 
- 	return 1;
- }
-@@ -1904,12 +1904,12 @@ static int vmsave_interception(struct vcpu_svm *svm)
- 	svm->next_rip = kvm_rip_read(&svm->vcpu) + 3;
- 	skip_emulated_instruction(&svm->vcpu);
- 
--	nested_vmcb = nested_svm_map(svm, svm->vmcb->save.rax, KM_USER0);
-+	nested_vmcb = nested_svm_map(svm, svm->vmcb->save.rax);
- 	if (!nested_vmcb)
- 		return 1;
- 
- 	nested_svm_vmloadsave(svm->vmcb, nested_vmcb);
--	nested_svm_unmap(nested_vmcb, KM_USER0);
-+	nested_svm_unmap(nested_vmcb);
- 
- 	return 1;
- }
+> And afterwards get_page
+> At least try_to_free_page and it's called shrink_ functions is not  
+> migrate type aware while get_page and its subsequent buffered_rmqueue  
+> and rmqueue_bulk are -
+
+Unless a large number of pages are pinned on those PCP lists (which
+doesn't appear to be the case or the fallback patch would have helped),
+the pages of other migratetypes are found by __rmqueue_fallback().
+
+> btw here comes patch e084b.
+>
+
+Which still has zero explanation.
+
+> I only see buffered_rmqueue chose a specific pcp list based on migrate  
+> type, and a fallback to migrate_reserve - is that enough fallback, what  
+> if the reserve is empty too but a few other types would not and those  
+> other types are the ones filled by try_to_free?
+>
+
+They get found by __rmqueue_fallback().
+
+> I'll try to get a per migrate type #pages statistic after direct_reclaim  
+> reaches !page - maybe that can confirm some parts of my theory.
+>
+>> Thinking of it as asking "how few pages do I have to free until I fall from fast to slow path" the kernels behave different it looks wrong but interesting.
+>> The good case only drops to slow path (!page) in case of ~1.46 pages freed while the bad case seems to enter that much earlier with even 37 pages freed.
+>>
+>> As order is always 0 and get_page afaik about getting just "one" page I wonder where these 37 pages disappeared especially as in bad case it is much faster getting to get_pages after freeing those ~37 pages.
+>>
+>> Comments and ideas welcome!
+
 -- 
-1.6.6
-
-
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
