@@ -1,108 +1,84 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756440Ab0BROBe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 09:01:34 -0500
-Received: from mail-vw0-f46.google.com ([209.85.212.46]:42232 "EHLO
-	mail-vw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755402Ab0BROBd convert rfc822-to-8bit (ORCPT
+	id S1756937Ab0BROEi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 09:04:38 -0500
+Received: from lennier.cc.vt.edu ([198.82.162.213]:48530 "EHLO
+	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756654Ab0BROEg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 09:01:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=nJOMzfeK1mCC+N/HUaOvlJygfLSQFcv4ZyjJ2fl0gHRSIPgYE8n9nU0h4xuNHqIkuG
-         PBX5DjEqd1OPbiOj6WrM/ItmWmDTiog1CAD2SgSrLAc3N4tEmi3P0mDIWAF2/18gy7lt
-         eldmGCyNA+hdKGyFgpnZ4IN2x5HRsJi9UDnbs=
-MIME-Version: 1.0
-In-Reply-To: <20100218132521.GB2406@osiris.boeblingen.de.ibm.com>
-References: <1266491616-6270-1-git-send-regression-fweisbec@gmail.com> 
-	<1266491616-6270-3-git-send-regression-fweisbec@gmail.com> 
-	<8bd0f97a1002180318g6ce70480x571d7d332239d68b@mail.gmail.com> 
-	<20100218120944.GA2406@osiris.boeblingen.de.ibm.com> <8bd0f97a1002180412x6cc4f280u5444f013c6e3b670@mail.gmail.com> 
-	<20100218123453.GA5136@nowhere> <20100218132521.GB2406@osiris.boeblingen.de.ibm.com>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Thu, 18 Feb 2010 09:01:12 -0500
-Message-ID: <8bd0f97a1002180601i60c5eaa4p7639091c5b617702@mail.gmail.com>
-Subject: Re: [PATCH 2/3] tracing/kprobes: Make Kconfig dependencies generic
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       "David S . Miller" <davem@davemloft.net>,
-       Paul Mundt <lethal@linux-sh.org>, Steven Rostedt <rostedt@goodmis.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Thu, 18 Feb 2010 09:04:36 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: linux-kernel@vger.kernel.org
+Subject: Stupid futex question - 2.6.33-rc7-mmotm0210
+From: Valdis.Kletnieks@vt.edu
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1266501862_4162P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Thu, 18 Feb 2010 09:04:22 -0500
+Message-ID: <10057.1266501862@localhost>
+X-Mirapoint-Received-SPF: 128.173.34.103 localhost Valdis.Kletnieks@vt.edu 2 pass
+X-Mirapoint-IP-Reputation: reputation=neutral-1,
+	source=Fixed,
+	refid=n/a,
+	actions=MAILHURDLE SPF TAG
+X-Junkmail-Info: (45) HELO_LOCALHOST
+X-Junkmail-Status: score=45/50, host=steiner.cc.vt.edu
+X-Junkmail-SD-Raw: score=unknown,
+	refid=str=0001.0A020202.4B7D48F3.01D5,ss=1,fgs=0,
+	ip=0.0.0.0,
+	so=2009-09-22 00:05:22,
+	dmn=2009-09-10 00:05:08,
+	mode=multiengine
+X-Junkmail-IWF: false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 18, 2010 at 08:25, Heiko Carstens wrote:
-> On Thu, Feb 18, 2010 at 01:34:57PM +0100, Frederic Weisbecker wrote:
->> On Thu, Feb 18, 2010 at 07:12:08AM -0500, Mike Frysinger wrote:
->> > On Thu, Feb 18, 2010 at 07:09, Heiko Carstens wrote:
->> > > On Thu, Feb 18, 2010 at 06:18:20AM -0500, Mike Frysinger wrote:
->> > >> On Thu, Feb 18, 2010 at 06:13, Frederic Weisbecker wrote:
->> > >> > --- a/arch/Kconfig
->> > >> > +++ b/arch/Kconfig
->> > >> > @@ -121,6 +121,9 @@ config HAVE_DMA_ATTRS
->> > >> >  config USE_GENERIC_SMP_HELPERS
->> > >> >        bool
->> > >> >
->> > >> > +config HAVE_REGS_AND_STACK_ACCESS_API
->> > >> > +       bool
->> > >> > +
->> > >>
->> > >> could you add an appropriate help/comment so arch peeps know what
->> > >> needs to be implemented before they can select this
->> > >
->> > > That's why I added the commit ID for the regs and stack access api
->> > > to the changelog. imho that should be sufficient.
->> > > Besides that the next commit would implement it for s390 as a
->> > > blueprint for others. That is... for those that missed the initial
->> > > x86 implementation.
->> >
->> > people shouldnt have to dive into the changelog to try and divine
->> > documentation.  it's hardly standard, so people fall on it in a
->> > pima-last-resort kind of way.  being explicit in the file up front by
->> > writing real documentation says other people a lot more time.
->> > -mike
->>
->>
->> Yeah, would be nice to have a comment above the config definition
->> to explain what it implies.
->>
->> Heiko, mind sending a delta patch for that?
->
-> Subject: [PATCH] tracing/kprobes: add short documentation for HAVE_REGS_AND_STACK_ACCESS_API
->
-> From: Heiko Carstens <heiko.carstens@de.ibm.com>
->
-> Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-> ---
->  arch/Kconfig |    4 ++++
->  1 file changed, 4 insertions(+)
->
-> --- a/arch/Kconfig
-> +++ b/arch/Kconfig
-> @@ -123,6 +123,10 @@ config USE_GENERIC_SMP_HELPERS
->
->  config HAVE_REGS_AND_STACK_ACCESS_API
->        bool
-> +       help
-> +         This symbol should be selected by an architecure if it supports
-> +         the API needed to access registers and stack entries from pt_regs.
-> +         For example the kprobes-based event tracer needs this API.
+--==_Exmh_1266501862_4162P
+Content-Type: text/plain; charset=us-ascii
 
-a bit vague ... arent there headers/functions people could look at ?
-perhaps you're talking about the regset functions (which is an API to
-access registers in pt_regs) ?  or you're talking about asm/syscall.h
-(which is an API to access registers in pt_regs) ?
+Kernel: x86_64 2.6.33-rc7-mmotm0210
 
-i'm not asking to be a pain, i'm asking because i really havent a
-clue.  if i wanted to add support for this stuff to the Blackfin arch,
-i wouldnt know where to start.  even after reading this help i'd fall
-back to grepping arch/x86/ and trying to divine a starting point from
-there.
--mike
+I'm debugging a problem where pulseaudio is getting killed with a SIGKILL
+out of the blue.  It appears to be a problem where pulseaudio sets
+RLIMIT_RTTIME and the bound gets exceeded.  Analysis with 'top' shows
+a short spike of 96% system time, and the tail end of strace shows this:
+
+[pid 25065] 01:50:20.371484 ioctl(28, USBDEVFS_CONTROL, 0x7fd3d76f630c) = 0 <0.000015>
+[pid 25065] 01:50:20.371548 ioctl(28, 0x40045532, 0x7fd3d76f636c) = 0 <0.000016>
+[pid 25065] 01:50:20.371611 open("/dev/snd/pcmC0D0p", O_RDWR|O_NONBLOCK|O_CLOEXEC <unfinished ...>
+[pid 25064] 01:50:20.371678 <... write resumed> ) = 8 <0.002104>
+[pid 25064] 01:50:20.371718 futex(0xc2ec00, FUTEX_WAIT_PRIVATE, 0, NULL <unfinished ...>
+[pid 25066] 01:50:21.408392 +++ killed by SIGKILL +++
+PANIC: handle_group_exit: 25066 leader 25064
+[pid 25065] 01:50:21.408442 +++ killed by SIGKILL +++
+PANIC: handle_group_exit: 25065 leader 25064
+01:50:21.420354 +++ killed by SIGKILL +++
+
+thread 25064 apparently gets gunned down due to RTTIME because it spent a whole
+second in a futex() call - is it reasonable for futex() to not return for that
+long?
+
+In other words - kernel bug because futex() should return, or pulseaudio bug
+for not understanding futex() can snooze a while?
+
+If a kernel bug, anybody got a better idea than nuking the RLIMIT_RTTIME call,
+waiting for it to repeat (takes between 1 minute and 1 hour or so), and
+whomping it a few times with sysrq-T?
+
+
+--==_Exmh_1266501862_4162P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFLfUjmcC3lWbTT17ARAqK6AJ96r7l2IFT6YtdgpvxezC+5BbZKXACfTFsK
+yIQ5QjzxZPAfWAXL/4ZImWs=
+=O5BU
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1266501862_4162P--
+
