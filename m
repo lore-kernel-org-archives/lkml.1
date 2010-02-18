@@ -1,36 +1,51 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757300Ab0BRLAz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 06:00:55 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:60951 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751912Ab0BRLAx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 06:00:53 -0500
-Subject: Re: [PATCH 09/10] x86-32: use SSE for atomic64_read/set if
- available
-From: Peter Zijlstra <peterz@infradead.org>
-To: Luca Barbieri <luca@luca-barbieri.com>
-Cc: mingo@elte.hu, hpa@zytor.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <ff13bc9a1002180250t5c9acb54ib8609b4e752520c5@mail.gmail.com>
-References: <1266406962-17463-1-git-send-email-luca@luca-barbieri.com>
-	 <1266406962-17463-10-git-send-email-luca@luca-barbieri.com>
-	 <1266488742.26719.119.camel@laptop>
-	 <ff13bc9a1002180250t5c9acb54ib8609b4e752520c5@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 18 Feb 2010 12:00:46 +0100
-Message-ID: <1266490846.26719.206.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 7bit
+	id S1757449Ab0BRLCk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 06:02:40 -0500
+Received: from www.tglx.de ([62.245.132.106]:58337 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754757Ab0BRLCi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Feb 2010 06:02:38 -0500
+Date: Thu, 18 Feb 2010 12:02:14 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Peter Zijlstra <peterz@infradead.org>
+cc: LKML <linux-kernel@vger.kernel.org>,
+       Linux-Arch <linux-arch@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       John Stultz <johnstul@us.ibm.com>
+Subject: Re: [patch 4/5] xtime_lock: Convert to raw_seqlock
+In-Reply-To: <1266490168.26719.179.camel@laptop>
+Message-ID: <alpine.LFD.2.00.1002181200050.2811@localhost.localdomain>
+References: <20100217183740.486724334@linutronix.de>  <20100217184155.882793970@linutronix.de> <1266490168.26719.179.camel@laptop>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-02-18 at 11:50 +0100, Luca Barbieri wrote:
-> If we use the stack instead of per-CPU variables, all IRQs and NMIs
-> preserve CR0 and the SSE registers, so this would be safe, right?
+On Thu, 18 Feb 2010, Peter Zijlstra wrote:
 
-You'd have to take special care to deal with nested IRQs I think.
+> On Wed, 2010-02-17 at 18:47 +0000, Thomas Gleixner wrote:
+> > 
+> > xtime_lock needs a raw_spinlock in preempt-rt. Convert it to
+> > raw_seqlock and fix up all users.
+> > 
+> s/raw_spinlock/raw_seqlock/ ?
+> 
+> Maybe add an explanation on _why_ -rt needs this for the uninformed
+> amongst us.
+> 
+> -rt switches to sleeping spinlocks, but since the vdso is basically
+> userspace it cannot schedule, hence we need to keep using actual
+> spinlocks (this is also the reason the vdso things must not call into
+> lockdep)
 
+No, the read_seq side is not taking the lock. It's just the write side
+which is taking the spinlock to serialize against other writers.
+
+xtime_lock is write locked in the timer interrupt context and therefor
+cannot take a sleeping spinlock.
+
+Thanks,
+
+	tglx
