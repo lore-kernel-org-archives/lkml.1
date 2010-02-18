@@ -1,80 +1,72 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751828Ab0BRFWM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 00:22:12 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:43550 "EHLO gir.skynet.ie"
+	id S1751818Ab0BRF27 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 00:28:59 -0500
+Received: from ozlabs.org ([203.10.76.45]:48699 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751707Ab0BRFWK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 00:22:10 -0500
-Date: Thu, 18 Feb 2010 05:21:50 +0000 (GMT)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: torvalds@linux-foundation.org
-cc: dri-devel@lists.sf.net, linux-kernel@vger.kernel.org
-Subject: [git pull] drm fixes
-Message-ID: <alpine.DEB.2.00.1002180517050.9593@skynet.skynet.ie>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	id S1751392Ab0BRF26 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Feb 2010 00:28:58 -0500
+Date: Thu, 18 Feb 2010 16:28:20 +1100
+From: Anton Blanchard <anton@samba.org>
+To: arun@linux.vnet.ibm.com, tglx@linutronix.de
+Cc: davem@davemloft.net, linux-kernel@vger.kernel.org
+Subject: NO_HZ migration of TCP ack timers
+Message-ID: <20100218052820.GD24270@kryten>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Hi Linus,
+Hi,
 
-one edid fix from X.org parser,
-some more drm regression fixes, one 33 second pause at boot bug solved,
-two nouveau issues, one vmwgfx staging fix to use proper mechanism to do
-framebuffer handover,
+We have a networking workload on a large ppc64 box that is spending a lot
+of its time in mod_timer(). One backtrace looks like:
 
-For 2.6.34 we've lined up a command stream checker for r600, however
-it already found two issues and we've backported the patches from Jerome 
-to solve some r600 lockups we've been seeing a lot off in the field but 
-funnily not on any of my or Jerome's systems.
+83.25%  [k] ._spin_lock_irqsave
+            |          
+            |--99.62%-- .lock_timer_base
+            |          .mod_timer
+            |          .sk_reset_timer
+            |          |          
+            |          |--84.77%-- .tcp_send_delayed_ack
+            |          |          .__tcp_ack_snd_check
+            |          |          .tcp_rcv_established
+            |          |          .tcp_v4_do_rcv
 
-Dave.
+            |          |--12.72%-- .tcp_ack
+            |          |          .tcp_rcv_established
+            |          |          .tcp_v4_do_rcv
 
+So it's mod_timer being called from the TCP ack timer code. It looks like
+commit eea08f32adb3f97553d49a4f79a119833036000a (timers: Logic to move non
+pinned timers) is causing it, in particular:
 
-The following changes since commit e803e8b2628f3e9a42f45c5b7bb1f9821b08352c:
-  Dave Airlie (1):
-        drm/radeon/kms: make sure retry count increases.
+#if defined(CONFIG_NO_HZ) && defined(CONFIG_SMP)
+        if (!pinned && get_sysctl_timer_migration() && idle_cpu(cpu)) {
+                int preferred_cpu = get_nohz_load_balancer();
 
-are available in the git repository at:
+                if (preferred_cpu >= 0)
+                        cpu = preferred_cpu;
+        }
+#endif
 
-  ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git drm-linus
+and:
 
-Adam Jackson (1):
-      drm/edid: Fix interlaced detailed timings to be frame size, not field.
+echo 0 > /proc/sys/kernel/timer_migration
 
-Ben Skeggs (1):
-      drm/nouveau: use mutex for vbios lock
+makes the problem go away.
 
-Dave Airlie (2):
-      drm/radeon/kms: use udelay for short delays
-      Merge branch 'for-airlied' of git://git.freedesktop.org/git/nouveau/linux-2.6 into drm-linus
+I think the problem is the CPU is most likely to be idle when an rx networking
+interrupt comes in. It seems the wrong thing to do to migrate any ack timers
+off the current cpu taking the interrupt, and with enough networks we train
+wreck transferring everyones ack timers to the nohz load balancer cpu. 
 
-Francisco Jerez (1):
-      drm/nouveau: Force TV encoder DPMS reinit after resume.
+What should we do? Should we use mod_timer_pinned here? Or is this an issue
+other areas might see (eg the block layer) and we should instead avoid
+migrating timers created out of interrupts.
 
-Jerome Glisse (2):
-      drm/radeon/kms: fix indirect buffer management V2
-      drm/radeon/kms: fix bo's fence association
-
-Thomas Hellstrom (1):
-      drm/vmwgfx: Use fb handover mechanism instead of stealth mode.
-
- drivers/gpu/drm/drm_edid.c             |   47 ++++++++++++++-
- drivers/gpu/drm/nouveau/nouveau_bios.c |    7 +-
- drivers/gpu/drm/nouveau/nouveau_bios.h |    2 +-
- drivers/gpu/drm/nouveau/nv17_tv.c      |    2 +
- drivers/gpu/drm/radeon/atom.c          |    2 +-
- drivers/gpu/drm/radeon/r600_blit_kms.c |    3 -
- drivers/gpu/drm/radeon/radeon.h        |    9 ++-
- drivers/gpu/drm/radeon/radeon_cs.c     |   10 +--
- drivers/gpu/drm/radeon/radeon_object.c |   36 +++++------
- drivers/gpu/drm/radeon/radeon_object.h |    4 +-
- drivers/gpu/drm/radeon/radeon_ring.c   |  105 ++++++++++++--------------------
- drivers/gpu/drm/vmwgfx/vmwgfx_drv.c    |   49 +++++----------
- drivers/gpu/drm/vmwgfx/vmwgfx_fb.c     |    3 +
- 13 files changed, 137 insertions(+), 142 deletions(-)
+Anton
