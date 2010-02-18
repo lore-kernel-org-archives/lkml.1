@@ -1,74 +1,133 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758660Ab0BRQod (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 11:44:33 -0500
-Received: from acsinet11.oracle.com ([141.146.126.233]:50082 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758573Ab0BRQoa (ORCPT
+	id S1758641Ab0BRQwq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 11:52:46 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:17272 "EHLO
+	rcsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758595Ab0BRQwp (ORCPT
 	<rfc822;<linux-kernel@vger.kernel.org>>);
-	Thu, 18 Feb 2010 11:44:30 -0500
+	Thu, 18 Feb 2010 11:52:45 -0500
 From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
 To: linux-kernel@vger.kernel.org, fujita.tomonori@lab.ntt.co.jp,
        chrisw@sous-sol.org, iommu@lists.linux-foundation.org,
        dwmw2@infradead.org, alex.williamson@hp.com
-Cc: jeremy@goop.org, Ian.Campbell@eu.citrix.com
-Subject: [REPOST PATCH RFC SWIOTLB 0.5] Separate address translation routines from core SWIOTLB book-keeping
-Date: Thu, 18 Feb 2010 11:26:56 -0500
-Message-Id: <1266510426-6815-1-git-send-email-konrad.wilk@oracle.com>
+Cc: jeremy@goop.org, Ian.Campbell@eu.citrix.com,
+       Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+Subject: [PATCH 10/10] swiotlb: EXPORT_SYMBOL_GPL functions + variables that are defined in the header file.
+Date: Thu, 18 Feb 2010 11:27:06 -0500
+Message-Id: <1266510426-6815-11-git-send-email-konrad.wilk@oracle.com>
 X-Mailer: git-send-email 1.6.2.5
-X-Source-IP: acsmt354.oracle.com [141.146.40.154]
+In-Reply-To: <1266510426-6815-10-git-send-email-konrad.wilk@oracle.com>
+References: <1266510426-6815-1-git-send-email-konrad.wilk@oracle.com>
+ <1266510426-6815-2-git-send-email-konrad.wilk@oracle.com>
+ <1266510426-6815-3-git-send-email-konrad.wilk@oracle.com>
+ <1266510426-6815-4-git-send-email-konrad.wilk@oracle.com>
+ <1266510426-6815-5-git-send-email-konrad.wilk@oracle.com>
+ <1266510426-6815-6-git-send-email-konrad.wilk@oracle.com>
+ <1266510426-6815-7-git-send-email-konrad.wilk@oracle.com>
+ <1266510426-6815-8-git-send-email-konrad.wilk@oracle.com>
+ <1266510426-6815-9-git-send-email-konrad.wilk@oracle.com>
+ <1266510426-6815-10-git-send-email-konrad.wilk@oracle.com>
+X-Source-IP: acsmt353.oracle.com [141.146.40.153]
 X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090207.4B7D6E32.01D8:SCFMA4539814,ss=1,fgs=0
+X-CT-RefId: str=0001.0A090204.4B7D6E53.00FA:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Sorry for the repost - I sent the earlier one to the wrong LKML email]
+Make the functions and variables that are now declared in the swiotlb.h
+header file visible by the linker.
 
-Fujita-san et al.
-
-Attached is a set of ten RFC patches that separate the address translation
-(virt_to_phys, virt_to_bus, etc) from the SWIOTLB library. They also enhance
-the SWIOTLB library a bit.
-
-The idea behind this set of patches is to make it possible to have separate
-mechanisms for translating virtual to physical or virtual to DMA addresses
-on platforms which need an SWIOTLB, and where physical != PCI bus address.
-
-One customers of this is the pv-ops project, which can switch between
-different modes of operation depending on the environment it is running in:
-bare-metal or virtualized (Xen for now).
-
-On bare-metal SWIOTLB is used when there are no hardware IOMMU. In virtualized
-environment it used when PCI pass-through is enabled for the guest. The problems
-with PCI pass-through is that the guest's idea of PFN's is not the real thing.
-To fix that, there is translation layer for PFN->machine frame number and vice-versa.
-To bubble that up to the SWIOTLB layer there are two possible solutions.
-
-One solution has been to wholesale copy the SWIOTLB, stick it in
-arch/x86/xen/swiotlb.c and modify the virt_to_phys, phys_to_virt and others
-to use the Xen address translation functions. Unfortunately, since the kernel can
-run on bare-metal, there would be big code overlap with the real SWIOTLB.
-(git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git xen/dom0/swiotlb-new)
-
-Another approach, which this set of patches explores, is to abstract the
-address translation and address determination functions away from the
-SWIOTLB book-keeping functions. This way the core SWIOTLB library functions
-are present in one place, while the address related functions are in
-a separate library that can be loaded when running under non-bare-metal platform.
-
-The set of ten patches is also accessible on:
-
-git://git.kernel.org/pub/scm/linux/kernel/git/konrad/swiotlb-2.6.git swiotlb-0.5
-
-An example of how this can be utilized in both bare-metal and Xen environments
-is this git tree:
-
-git://git.kernel.org/pub/scm/linux/kernel/git/konrad/swiotlb-2.6.git xen-swiotlb-0.5
-
+Signed-off-by: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
 ---
+ lib/swiotlb.c |   12 ++++++++++++
+ 1 files changed, 12 insertions(+), 0 deletions(-)
 
- Documentation/x86/x86_64/boot-options.txt |    6 +-
- include/linux/swiotlb.h                   |   44 ++++++-
- lib/swiotlb.c                             |  187 ++++++++++++++++++-----------
- 3 files changed, 156 insertions(+), 81 deletions(-)
+diff --git a/lib/swiotlb.c b/lib/swiotlb.c
+index 674d025..ddf4a2d 100644
+--- a/lib/swiotlb.c
++++ b/lib/swiotlb.c
+@@ -56,19 +56,24 @@ int swiotlb_force;
+  * API.
+  */
+ char *io_tlb_start, *io_tlb_end;
++EXPORT_SYMBOL_GPL(io_tlb_start);
++EXPORT_SYMBOL_GPL(io_tlb_end);
+ 
+ /*
+  * The number of IO TLB blocks (in groups of 64) betweeen io_tlb_start and
+  * io_tlb_end.  This is command line adjustable via setup_io_tlb_npages.
+  */
+ unsigned long io_tlb_nslabs;
++EXPORT_SYMBOL_GPL(io_tlb_nslabs);
+ 
+ /*
+  * When the IOMMU overflows we return a fallback buffer. This sets the size.
+  */
+ unsigned long io_tlb_overflow = 32*1024;
++EXPORT_SYMBOL_GPL(io_tlb_overflow);
+ 
+ void *io_tlb_overflow_buffer;
++EXPORT_SYMBOL_GPL(io_tlb_overflow_buffer);
+ 
+ /*
+  * This is a free list describing the number of free entries available from
+@@ -204,6 +209,7 @@ swiotlb_init_early(size_t default_size, int verbose)
+ 	if (verbose)
+ 		swiotlb_print_info();
+ }
++EXPORT_SYMBOL_GPL(swiotlb_init_early);
+ 
+ void __init
+ swiotlb_init(int verbose)
+@@ -337,6 +343,7 @@ int is_swiotlb_buffer(phys_addr_t paddr)
+ 	return paddr >= virt_to_phys(io_tlb_start) &&
+ 		paddr < virt_to_phys(io_tlb_end);
+ }
++EXPORT_SYMBOL_GPL(is_swiotlb_buffer);
+ 
+ /*
+  * Bounce: copy the swiotlb buffer back to the original dma location
+@@ -378,6 +385,7 @@ void swiotlb_bounce(phys_addr_t phys, char *dma_addr, size_t size,
+ 			memcpy(phys_to_virt(phys), dma_addr, size);
+ 	}
+ }
++EXPORT_SYMBOL_GPL(swiotlb_bounce);
+ 
+ /*
+  * Allocates bounce buffer and returns its kernel virtual address.
+@@ -484,6 +492,7 @@ found:
+ 
+ 	return dma_addr;
+ }
++EXPORT_SYMBOL_GPL(do_map_single);
+ 
+ /*
+  * dma_addr is the kernel virtual address of the bounce buffer to unmap.
+@@ -528,6 +537,7 @@ do_unmap_single(struct device *hwdev, char *dma_addr, size_t size, int dir)
+ 	}
+ 	spin_unlock_irqrestore(&io_tlb_lock, flags);
+ }
++EXPORT_SYMBOL_GPL(do_unmap_single);
+ 
+ void
+ do_sync_single(struct device *hwdev, char *dma_addr, size_t size,
+@@ -555,6 +565,7 @@ do_sync_single(struct device *hwdev, char *dma_addr, size_t size,
+ 		BUG();
+ 	}
+ }
++EXPORT_SYMBOL_GPL(do_sync_single);
+ 
+ void *
+ swiotlb_alloc_coherent(struct device *hwdev, size_t size,
+@@ -646,6 +657,7 @@ swiotlb_full(struct device *dev, size_t size, int dir, int do_panic)
+ 	if (dir == DMA_TO_DEVICE)
+ 		panic("DMA: Random memory could be DMA read\n");
+ }
++EXPORT_SYMBOL_GPL(swiotlb_full);
+ 
+ /*
+  * Map a single buffer of the indicated size for DMA in streaming mode.  The
+-- 
+1.6.2.5
+
