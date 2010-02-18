@@ -1,101 +1,73 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755596Ab0BRNt3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 08:49:29 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:36173 "EHLO mx2.suse.de"
+	id S1755287Ab0BRNwc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 08:52:32 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:59751 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754819Ab0BRNt1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 08:49:27 -0500
-Date: Fri, 19 Feb 2010 00:49:21 +1100
-From: Nick Piggin <npiggin@suse.de>
-To: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Cc: Miao Xie <miaox@cn.fujitsu.com>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>
-Subject: [regression] cpuset,mm: update tasks' mems_allowed in time
- (58568d2)
-Message-ID: <20100218134921.GF9738@laptop>
+	id S1753468Ab0BRNwb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Feb 2010 08:52:31 -0500
+Message-ID: <4B7D4614.7040806@redhat.com>
+Date: Thu, 18 Feb 2010 15:52:20 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Joerg Roedel <joerg.roedel@amd.com>
+CC: Marcelo Tosatti <mtosatti@redhat.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: Re: [PATCH 03/10] KVM: SVM: Fix schedule-while-atomic on nested exception
+ handling
+References: <1266493115-28386-1-git-send-email-joerg.roedel@amd.com> <1266493115-28386-4-git-send-email-joerg.roedel@amd.com>
+In-Reply-To: <1266493115-28386-4-git-send-email-joerg.roedel@amd.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On 02/18/2010 01:38 PM, Joerg Roedel wrote:
+> Move the actual vmexit routine out of code that runs with
+> irqs and preemption disabled.
+>
+> Cc: stable@kernel.org
+> Signed-off-by: Joerg Roedel<joerg.roedel@amd.com>
+> ---
+>   arch/x86/kvm/svm.c |   20 +++++++++++++++++---
+>   1 files changed, 17 insertions(+), 3 deletions(-)
+>
+> diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
+> index 7c96b8b..25d26ec 100644
+> --- a/arch/x86/kvm/svm.c
+> +++ b/arch/x86/kvm/svm.c
+> @@ -128,6 +128,7 @@ static void svm_flush_tlb(struct kvm_vcpu *vcpu);
+>   static void svm_complete_interrupts(struct vcpu_svm *svm);
+>
+>   static int nested_svm_exit_handled(struct vcpu_svm *svm);
+> +static int nested_svm_exit_handled_atomic(struct vcpu_svm *svm);
+>   static int nested_svm_vmexit(struct vcpu_svm *svm);
+>   static int nested_svm_check_exception(struct vcpu_svm *svm, unsigned nr,
+>   				      bool has_error_code, u32 error_code);
+> @@ -1386,7 +1387,7 @@ static int nested_svm_check_exception(struct vcpu_svm *svm, unsigned nr,
+>   	svm->vmcb->control.exit_info_1 = error_code;
+>   	svm->vmcb->control.exit_info_2 = svm->vcpu.arch.cr2;
+>
+> -	return nested_svm_exit_handled(svm);
+> +	return nested_svm_exit_handled_atomic(svm);
+>   }
+>    
 
-The patch cpuset,mm: update tasks' mems_allowed in time (58568d2) causes
-a regression uncovered by SGI. Basically it is allowing possible but not
-online nodes in the task_struct.mems_allowed nodemask (which is contrary
-to several comments still in kernel/cpuset.c), and that causes
-cpuset_mem_spread_node() to return an offline node to slab, causing an
-oops.
+What do you say to
 
-Easy to reproduce if you have a machine with !online nodes.
 
-        - mkdir /dev/cpuset
-        - mount cpuset -t cpuset /dev/cpuset
-        - echo 1 > /dev/cpuset/memory_spread_slab
+    if (nested_svm_intercepts(svm))
+         svm->nested.exit_required = true;
 
-kernel BUG at
-/usr/src/packages/BUILD/kernel-default-2.6.32/linux-2.6.32/mm/slab.c:3271!
-bash[6885]: bugcheck! 0 [1]
-Pid: 6885, CPU 5, comm:                 bash
-psr : 00001010095a2010 ifs : 800000000000038b ip  : [<a00000010020cf00>]
-Tainted: G        W    (2.6.32-0.6.8-default)
-ip is at ____cache_alloc_node+0x440/0x500
+here, and recoding nested_svm_exit_handled() to call 
+nested_svm_intercepts()?  I think it improves readability a little by 
+avoiding a function that changes behaviour according to how it is called.
 
-unat: 0000000000000000 pfs : 000000000000038b rsc : 0000000000000003
-rnat: 0000000000283d85 bsps: 0000000000000001 pr  : 99596aaa69aa6999
-ldrs: 0000000000000000 ccv : 0000000000000018 fpsr: 0009804c0270033f
-csd : 0000000000000000 ssd : 0000000000000000
-b0  : a00000010020cf00 b6  : a0000001004962c0 b7  : a000000100493240
-f6  : 000000000000000000000 f7  : 000000000000000000000
-f8  : 000000000000000000000 f9  : 000000000000000000000
-f10 : 000000000000000000000 f11 : 000000000000000000000
-r1  : a0000001015c6fc0 r2  : 000000000000e662 r3  : 000000000000fffe
-r8  : 000000000000005c r9  : 0000000000000000 r10 : 0000000000004000
-r11 : 0000000000000000 r12 : e000003c3904fcc0 r13 : e000003c39040000
-r14 : 000000000000e662 r15 : a00000010138ed88 r16 : ffffffffffff65c8
-r17 : a00000010138ed80 r18 : a0000001013c7ad0 r19 : a0000001013d3b60
-r20 : e00001b03afdfe18 r21 : 0000000000000001 r22 : e0000130030365c8
-r23 : e000013003040000 r24 : ffffffffffff0400 r25 : 00000000000068ef
-r26 : 00000000000068ef r27 : a0000001029621d0 r28 : 00000000000068f0
-r29 : 00000000000068f0 r30 : 00000000000068f0 r31 : 000000000000000a
+Long term, we may want to split out the big switch into the individual 
+handlers, to avoid decoding the exit reason twice.
 
-Call Trace:
-[<a000000100017a80>] show_stack+0x80/0xa0
-[<a0000001000180e0>] show_regs+0x640/0x920
-[<a000000100029a90>] die+0x190/0x2e0
-[<a000000100029c30>] die_if_kernel+0x50/0x80
-[<a000000100904af0>] ia64_bad_break+0x470/0x760
-[<a00000010000cb60>] ia64_native_leave_kernel+0x0/0x270
-[<a00000010020cf00>] ____cache_alloc_node+0x440/0x500
-[<a00000010020ffa0>] kmem_cache_alloc+0x360/0x660
-
-A simple bandaid is to skip !online nodes in cpuset_mem_spread_node().
-However I'm a bit worried about 58568d2.
-
-It is doing a lot of stuff. It is removing the callback_mutex from
-around several seemingly unrelated places (eg. from around
-guarnatee_online_cpus, which explicitly asks to be called with that
-lock held), and other places, so I don't know how it is not racy
-with hotplug.
-
-Then it also says that the fastpath doesn't use any locking, so the
-update-path first adds the newly allowed nodes, then removes the
-newly prohibited nodes. Unfortunately there are no barriers apparent
-(and none added), and cpumask/nodemask can be larger than one word,
-so it seems there could be races.
-
-It also seems like the exported cpuset_mems_allowed and
-cpuset_cpus_allowed APIs are just broken wrt hotplug because the
-hotplug lock is dropped before returning.
-
-I'd just like to get opinions or comments from people who know the
-code better before wading in too far myself. I'd be really keen on
-making the locking simpler, using seqlocks for fastpaths, etc.
-
-Thanks,
-Nick
+-- 
+error compiling committee.c: too many arguments to function
 
