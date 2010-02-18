@@ -1,56 +1,63 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758400Ab0BRPZR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 10:25:17 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:53437 "EHLO mail.zytor.com"
+	id S1758392Ab0BRPaz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 10:30:55 -0500
+Received: from nox.protox.org ([88.191.38.29]:35952 "EHLO nox.protox.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757261Ab0BRPZO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 10:25:14 -0500
-Message-ID: <4B7D5BB4.4000307@zytor.com>
-Date: Thu, 18 Feb 2010 07:24:36 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+	id S1758356Ab0BRPay (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Feb 2010 10:30:54 -0500
+Date: Thu, 18 Feb 2010 16:30:32 +0100
+From: Jerome Glisse <glisse@freedesktop.org>
+To: hpa@zytor.com, suresh.b.siddha@intel.com, venkatesh.pallipadi@intel.com
+Cc: thellstrom@vmware.com, airlied@linux.ie, currojerez@riseup.net,
+       linux-kernel@vger.kernel.org
+Subject: Uncool feature for TTM introduced by x86, pat: Use page flags to
+ track memtypes of RAM pages
+Message-ID: <20100218153032.GA4506@localhost.localdomain>
 MIME-Version: 1.0
-To: Luca Barbieri <luca@luca-barbieri.com>
-CC: Andi Kleen <andi@firstfloor.org>, mingo@elte.hu, a.p.zijlstra@chello.nl,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 09/10] x86-32: use SSE for atomic64_read/set if available
-References: <1266406962-17463-1-git-send-email-luca@luca-barbieri.com>	 <1266406962-17463-10-git-send-email-luca@luca-barbieri.com>	 <87eikj54wp.fsf@basil.nowhere.org>	 <ff13bc9a1002180153g308b0f3dxb59959936d1e343b@mail.gmail.com>	 <20100218101156.GE5964@basil.fritz.box> <ff13bc9a1002180227j70e0748ag49d88c3034e3900d@mail.gmail.com>
-In-Reply-To: <ff13bc9a1002180227j70e0748ag49d88c3034e3900d@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/18/2010 02:27 AM, Luca Barbieri wrote:
->> CR changes are slow and synchronize the CPU. The later is always slow.
->>
->> It sounds like you didn't time it?
-> I didn't, because I think it strongly depends on the microarchitecture
-> and I don't have a comprehensive set of machines to test on, so it
-> would just be a single data point.
-> 
-> The lock prefix on cmpxchg8b is also serializing so it might be as bad.
+Hi,
 
-No.  LOCK isn't serializing in the same way CRx writes are.
+commit id: f58417409603d62f2eb23db4d2cf6853d84a1698
 
+TTM is doing uncommon use of set_memory_wc|uc|wb for instance it's not
+uncommon for TTM to change memory type from wc to uc or from uc to wc.
+Since x86, pat: Use page flags to track memtypes of RAM pages (commit
+id above) this isn't allowed anymore, before going from uc to wc or
+wc to uc we first have to free the memtype by going through wb this
+means an extra step which likely lead to some overhead (i guess that
+uc -> wc or wc -> uc won't trigger massive tlb/cpu flush while
+uc -> wb -> wc or wc -> wb -> uc will). reserve_ram_pages_type is the
+function which will check that memory is wb thus enforcing us to go
+through wb step.
 
-> Anyway, if we use this, we should keep TS cleared in kernel mode and
-> lazily restore it on return to userspace.
-> This would make clts/stts performance mostly moot.
+Can we modify the interface to support again changing from uc to wc
+or wc to uc ? (i can try to do a patch for that).
 
-This is what kernel_fpu_begin/kernel_fpu_end is all about.  We
-definitely cannot leave TS cleared without the user space CPU state
-moved to its home location, or we have yet another complicated state to
-worry about.
+If no, we have a sever regression on non PAT arch :
+http://bugzilla.kernel.org/show_bug.cgi?id=15328
+(AFAIK bugzilla.kernel.org is down for me at the moment) because we
+are doing the extra set wb step (i haven't dived deep into the code
+to check what happen on non PAT). My guess is that on non PAT the
+extra set wb can be avoided right ? Also what is your educated guess
+on why on non PAT this extra set wb is slowing down thing badly ?
+Last can we make this extra step only on PAT enabled arch ?
 
-I really feel that without a *strong* use case for this, there is
-absolutely no point.
+In PAT case right now we are calling get get_page_memtype to know
+if we need to set page to wb first my understanding is that we should
+protect this call by memtype_lock spinlock (even if i don't think we
+can have collision here as we are protected by TTM locking), maybe
+we can directly use TTM information to call or not set wb and avoid
+using get_page_memtype.
 
-	-hpa
+Sorry for being such annoying user of PAT, i guess GPU is the only
+place having such strange and intensive cache change pattern.
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+Cheers,
+Jerome
