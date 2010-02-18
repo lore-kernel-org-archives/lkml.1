@@ -1,58 +1,42 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758077Ab0BRLwP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 06:52:15 -0500
-Received: from tx2ehsobe004.messaging.microsoft.com ([65.55.88.14]:55506 "EHLO
-	TX2EHSOBE007.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757980Ab0BRLwL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 06:52:11 -0500
-X-SpamScore: -2
-X-BigFish: VPS-2(zz936eMab9bhzz1202hzzz32i6bh87h43j62h)
-X-Spam-TCS-SCL: 1:0
-X-FB-DOMAIN-IP-MATCH: fail
-X-WSS-ID: 0KY1CCG-01-N2O-02
-X-M-MSG: 
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Avi Kivity <avi@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>
-CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 05/10] KVM: SVM: Annotate nested_svm_map with might_sleep()
-Date: Thu, 18 Feb 2010 12:38:30 +0100
-Message-ID: <1266493115-28386-6-git-send-email-joerg.roedel@amd.com>
-X-Mailer: git-send-email 1.6.6
-In-Reply-To: <1266493115-28386-1-git-send-email-joerg.roedel@amd.com>
-References: <1266493115-28386-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 18 Feb 2010 11:38:37.0624 (UTC) FILETIME=[E91BD380:01CAB08E]
-MIME-Version: 1.0
-Content-Type: text/plain
-X-Reverse-DNS: unknown
+	id S1757966Ab0BRLvl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 06:51:41 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:22033 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753397Ab0BRLvj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Feb 2010 06:51:39 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <4B7B2F4E.5090803@kernel.org>
+References: <4B7B2F4E.5090803@kernel.org> <4B7A13C6.4060402@kernel.org> <4B763C17.5080707@kernel.org> <1263776272-382-36-git-send-email-tj@kernel.org> <1263776272-382-1-git-send-email-tj@kernel.org> <24913.1265997809@redhat.com> <27102.1266246296@redhat.com> <28151.1266343557@redhat.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: dhowells@redhat.com, torvalds@linux-foundation.org, mingo@elte.hu,
+       peterz@infradead.org, awalls@radix.net, linux-kernel@vger.kernel.org,
+       jeff@garzik.org, akpm@linux-foundation.org, jens.axboe@oracle.com,
+       rusty@rustcorp.com.au, cl@linux-foundation.org, arjan@linux.intel.com,
+       avi@redhat.com, johannes@sipsolutions.net, andi@firstfloor.org
+Subject: Re: [PATCH 35/40] fscache: convert object to use workqueue instead of slow-work
+Date: Thu, 18 Feb 2010 11:50:16 +0000
+Message-ID: <26902.1266493816@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The nested_svm_map() function can sleep and must not be
-called from atomic context. So annotate that function.
+Tejun Heo <tj@kernel.org> wrote:
 
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
----
- arch/x86/kvm/svm.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+> The waiting workers are woken up in slow_work_enqueue() when a new
+> work is enqueued regardless of how many workers are currently in use,
+> right?  So, it ends up yielding on any queue activity rather than only
+> under resource pressure.
 
-diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
-index 9a4f9ee..3f59cbd 100644
---- a/arch/x86/kvm/svm.c
-+++ b/arch/x86/kvm/svm.c
-@@ -1423,6 +1423,8 @@ static void *nested_svm_map(struct vcpu_svm *svm, u64 gpa)
- {
- 	struct page *page;
- 
-+	might_sleep();
-+
- 	page = gfn_to_page(svm->vcpu.kvm, gpa >> PAGE_SHIFT);
- 	if (is_error_page(page))
- 		goto error;
--- 
-1.6.6
+It depends how you define resource pressure, I suppose.  There's someone now
+waiting for the resource, and there's someone blocking that resource who can
+yield it as they're waiting on something else.  The question is if it's
+cheaper to create a new thread, assuming we're under the limit, or if it's
+cheaper to steal someone else's thread?
 
-
+David
