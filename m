@@ -1,67 +1,58 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758053Ab0BRLv6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 06:51:58 -0500
-Received: from s15228384.onlinehome-server.info ([87.106.30.177]:53050 "EHLO
-	mail.x86-64.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757996Ab0BRLvz (ORCPT
+	id S1758077Ab0BRLwP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 06:52:15 -0500
+Received: from tx2ehsobe004.messaging.microsoft.com ([65.55.88.14]:55506 "EHLO
+	TX2EHSOBE007.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757980Ab0BRLwL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 06:51:55 -0500
-Date: Thu, 18 Feb 2010 12:51:55 +0100
-From: Borislav Petkov <bp@amd64.org>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Michal Marek <mmarek@suse.cz>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>,
-       Borislav Petkov <petkovbb@googlemail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>, Jamie Lokier <jamie@shareable.org>,
-       Roland Dreier <rdreier@cisco.com>, Al Viro <viro@ZenIV.linux.org.uk>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Brian Gerst <brgerst@gmail.com>
-Subject: Re: [PATCH 2/5] bitops: compile time optimization for
- hweight_long(CONSTANT)
-Message-ID: <20100218115155.GA20473@aftab>
-References: <4B6FDAED.9060204@zytor.com>
- <20100208095945.GA14740@a1.tnic>
- <20100211172424.GB19779@aftab>
- <4B743F7D.3090605@zytor.com>
- <20100212170649.GC3114@aftab>
- <4B758FC0.1020600@zytor.com>
- <20100212174751.GD3114@aftab>
- <4B75A66A.70005@zytor.com>
- <4B7BF5D6.3030701@suse.cz>
- <1266490310.26719.185.camel@laptop>
+	Thu, 18 Feb 2010 06:52:11 -0500
+X-SpamScore: -2
+X-BigFish: VPS-2(zz936eMab9bhzz1202hzzz32i6bh87h43j62h)
+X-Spam-TCS-SCL: 1:0
+X-FB-DOMAIN-IP-MATCH: fail
+X-WSS-ID: 0KY1CCG-01-N2O-02
+X-M-MSG: 
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Avi Kivity <avi@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>
+CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Joerg Roedel <joerg.roedel@amd.com>
+Subject: [PATCH 05/10] KVM: SVM: Annotate nested_svm_map with might_sleep()
+Date: Thu, 18 Feb 2010 12:38:30 +0100
+Message-ID: <1266493115-28386-6-git-send-email-joerg.roedel@amd.com>
+X-Mailer: git-send-email 1.6.6
+In-Reply-To: <1266493115-28386-1-git-send-email-joerg.roedel@amd.com>
+References: <1266493115-28386-1-git-send-email-joerg.roedel@amd.com>
+X-OriginalArrivalTime: 18 Feb 2010 11:38:37.0624 (UTC) FILETIME=[E91BD380:01CAB08E]
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1266490310.26719.185.camel@laptop>
-Organization: Advanced Micro Devices =?iso-8859-1?Q?GmbH?=
-	=?iso-8859-1?Q?=2C_Karl-Hammerschmidt-Str=2E_34=2C_85609_Dornach_bei_M=FC?=
-	=?iso-8859-1?Q?nchen=2C_Gesch=E4ftsf=FChrer=3A_Thomas_M=2E_McCoy=2C_Giuli?=
-	=?iso-8859-1?Q?ano_Meroni=2C_Andrew_Bowd=2C_Sitz=3A_Dornach=2C_Gemeinde_A?=
-	=?iso-8859-1?Q?schheim=2C_Landkreis_M=FCnchen=2C_Registergericht_M=FCnche?=
-	=?iso-8859-1?Q?n=2C?= HRB Nr. 43632
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: text/plain
+X-Reverse-DNS: unknown
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 18, 2010 at 11:51:50AM +0100, Peter Zijlstra wrote:
-> I guess one way to achieve that is to create a arch/x86/lib/hweight.c
-> that includes lib/hweight.c and give the x86 one special compile flags
-> and not build the lib on.
+The nested_svm_map() function can sleep and must not be
+called from atomic context. So annotate that function.
 
-That's what I thought initially too but that won't fly because the
-lib/hweight.c helpers have to be inlined into arch/x86/lib/hweight.c so
-that gcc can take care of the clobbered registers. Otherwise, it just a
-"call __sw_hweightXX" that gets issued into asm.
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+---
+ arch/x86/kvm/svm.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-
+diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
+index 9a4f9ee..3f59cbd 100644
+--- a/arch/x86/kvm/svm.c
++++ b/arch/x86/kvm/svm.c
+@@ -1423,6 +1423,8 @@ static void *nested_svm_map(struct vcpu_svm *svm, u64 gpa)
+ {
+ 	struct page *page;
+ 
++	might_sleep();
++
+ 	page = gfn_to_page(svm->vcpu.kvm, gpa >> PAGE_SHIFT);
+ 	if (is_error_page(page))
+ 		goto error;
 -- 
-Regards/Gruss,
-Boris.
+1.6.6
 
--
-Advanced Micro Devices, Inc.
-Operating Systems Research Center
+
