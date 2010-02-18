@@ -1,45 +1,142 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752931Ab0BRIMV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 03:12:21 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:52501 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752406Ab0BRIMU (ORCPT
+	id S1753027Ab0BRIW1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 03:22:27 -0500
+Received: from wolverine01.qualcomm.com ([199.106.114.254]:51921 "EHLO
+	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751623Ab0BRIWZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 03:12:20 -0500
-To: Zachary Amsden <zamsden@redhat.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, x86@kernel.org,
-       Avi Kivity <avi@redhat.com>
-Subject: Re: [PATCH] x86 rwsem optimization extreme
-From: Andi Kleen <andi@firstfloor.org>
-References: <1266443901-3646-1-git-send-email-zamsden@redhat.com>
-	<alpine.LFD.2.00.1002171403160.4141@localhost.localdomain>
-	<4B7C7BE4.9050908@zytor.com>
-	<alpine.LFD.2.00.1002171743200.4141@localhost.localdomain>
-	<4B7C9F0A.1080708@zytor.com> <4B7CC14F.7000802@redhat.com>
-Date: Thu, 18 Feb 2010 09:12:17 +0100
-In-Reply-To: <4B7CC14F.7000802@redhat.com> (Zachary Amsden's message of "Wed, 17 Feb 2010 18:25:51 -1000")
-Message-ID: <87iq9v55em.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+	Thu, 18 Feb 2010 03:22:25 -0500
+X-IronPort-AV: E=McAfee;i="5400,1158,5895"; a="34423560"
+Message-ID: <4B7CF8C0.4050105@codeaurora.org>
+Date: Thu, 18 Feb 2010 00:22:24 -0800
+From: Michael Bohan <mbohan@codeaurora.org>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.1.7) Gecko/20100111 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Subject: Re: Kernel panic due to page migration accessing memory holes
+References: <4B7C8DC2.3060004@codeaurora.org> <20100218100324.5e9e8f8c.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20100218100324.5e9e8f8c.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zachary Amsden <zamsden@redhat.com> writes:
+On 2/17/2010 5:03 PM, KAMEZAWA Hiroyuki wrote:
+> On Wed, 17 Feb 2010 16:45:54 -0800
+> Michael Bohan<mbohan@codeaurora.org>  wrote:
+>> As a temporary fix, I added some code to move_freepages_block() that
+>> inspects whether the range exceeds our first memory bank -- returning 0
+>> if it does.  This is not a clean solution, since it requires exporting
+>> the ARM specific meminfo structure to extract the bank information.
+>>
+>>      
+> Hmm, my first impression is...
 >
-> Incidentally, the cost of putting all the rwsem code inline, using the
-> straightforward approach, for git-tip, using defconfig on x86_64 is
-> 3565 bytes / 20971778 bytes total, or 0.0168%, using gcc 4.4.3.
+> - Using FLATMEM, memmap is created for the number of pages and memmap should
+>    not have aligned size.
+> - Using SPARSEMEM, memmap is created for aligned number of pages.
+>
+> Then, the range [zone->start_pfn ... zone->start_pfn + zone->spanned_pages]
+> should be checked always.
+>
+>
+>   803 static int move_freepages_block(struct zone *zone, struct page *page,
+>   804                                 int migratetype)
+>   805 {
+>   816         if (start_pfn<  zone->zone_start_pfn)
+>   817                 start_page = page;
+>   818         if (end_pfn>= zone->zone_start_pfn + zone->spanned_pages)
+>   819                 return 0;
+>   820
+>   821         return move_freepages(zone, start_page, end_page, migratetype);
+>   822 }
+>
+> "(end_pfn>= zone->zone_start_pfn + zone->spanned_pages)" is checked.
+> What zone->spanned_pages is set ? The zone's range is
+> [zone->start_pfn ... zone->start_pfn+zone->spanned_pages], so this
+> area should have initialized memmap. I wonder zone->spanned_pages is too big.
+>    
 
-The nice advantage of putting lock code inline is that it gets 
-accounted to the caller in all profilers.
+In the block of code above running on my target, the zone_start_pfn is 
+is 0x200 and the spanned_pages is 0x44100.  This is consistent with the 
+values shown from the zoneinfo file below.  It is also consistent with 
+my memory map:
 
--Andi
+bank0:
+     start: 0x00200000
+     size:  0x07B00000
 
--- 
-ak@linux.intel.com -- Speaking for myself only.
+bank1:
+     start: 0x40000000
+     size:  0x04300000
+
+Thus, spanned_pages here is the highest address reached minus the start 
+address of the lowest bank (eg. 0x40000000 + 0x04300000 - 0x00200000).
+
+Both of these banks exist in the same zone.  This means that the check 
+in move_freepages_block() will never be satisfied for cases that overlap 
+with the prohibited pfns, since the zone spans invalid pfns.  Should 
+each bank be associated with its own zone?
+
+> Could you check ? (maybe /proc/zoneinfo can show it.)
+> Dump of /proc/zoneinfo or dmesg will be helpful.
+>    
+
+Here is what I believe to be the relevant pieces from the kernel log:
+
+<7>[    0.000000] On node 0 totalpages: 48640
+<7>[    0.000000] free_area_init_node: node 0, pgdat 804875bc, 
+node_mem_map 805af000
+<7>[    0.000000]   Normal zone: 2178 pages used for memmap
+<7>[    0.000000]   Normal zone: 0 pages reserved
+<7>[    0.000000]   Normal zone: 46462 pages, LIFO batch:15
+<4>[    0.000000] Built 1 zonelists in Zone order, mobility grouping 
+on.  Total pages: 46462
+
+# cat /proc/zoneinfo
+Node 0, zone   Normal
+   pages free     678
+         min      431
+         low      538
+         high     646
+         scanned  0 (aa: 0 ia: 0 af: 0 if: 0)
+         spanned  278784
+         present  46462
+         mem_notify_status 0
+     nr_free_pages 678
+     nr_inactive_anon 8494
+     nr_active_anon 8474
+     nr_inactive_file 3234
+     nr_active_file 2653
+     nr_unevictable 71
+     nr_mlock     0
+     nr_anon_pages 12488
+     nr_mapped    7237
+     nr_file_pages 10446
+     nr_dirty     0
+     nr_writeback 0
+     nr_slab_reclaimable 293
+     nr_slab_unreclaimable 942
+     nr_page_table_pages 1365
+     nr_unstable  0
+     nr_bounce    0
+     nr_vmscan_write 0
+     nr_writeback_temp 0
+         protection: (0, 0)
+   pagesets
+     cpu: 0
+               count: 42
+               high:  90
+               batch: 15
+   all_unreclaimable: 0
+   prev_priority:     12
+   start_pfn:         512
+   inactive_ratio:    1
+
+Thanks,
+Michael
+
