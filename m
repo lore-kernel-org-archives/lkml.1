@@ -1,71 +1,88 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751335Ab0BRWmM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 17:42:12 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:16876 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750742Ab0BRWmJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 17:42:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:message-id:content-type:content-transfer-encoding;
-        b=Fa56Xshi5XHUk/m0uJo34YLeYB2pHU07U4fYA+JflfkoPjdexOOCaL8s32IK8g6XR5
-         O49vqnYpTmaGhOO7FRi3jvyeGdOmadvAsPhOGgWNar7NDRALjfHRo93eL54mTirHO4xK
-         HAUBts4IoOevrdKsXSzO3Tnm6IrrdoVz3Io+M=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH 1/3] libata: pass host flags into __ata_pci_sff_init_one() helper
-Date: Thu, 18 Feb 2010 23:41:02 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31.12-0.1-desktop; KDE/4.3.1; x86_64; ; )
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20100218185914.16594.61415.sendpatchset@localhost> <20100218185922.16594.98925.sendpatchset@localhost> <20100218214448.692552fd@lxorguk.ukuu.org.uk>
-In-Reply-To: <20100218214448.692552fd@lxorguk.ukuu.org.uk>
+	id S1751938Ab0BRWpH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 17:45:07 -0500
+Received: from mga09.intel.com ([134.134.136.24]:32646 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751025Ab0BRWpE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Feb 2010 17:45:04 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,499,1262592000"; 
+   d="scan'208";a="493662515"
+From: "H. Peter Anvin" <hpa@linux.intel.com>
+To: torvalds@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+       Arjan van de Ven <arjan@linux.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Rik van Riel <riel@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: [PATCH] mm: Make copy_from_user() in migrate.c statically predictable
+Date: Thu, 18 Feb 2010 14:43:53 -0800
+Message-Id: <1266533033-24457-1-git-send-email-hpa@linux.intel.com>
+X-Mailer: git-send-email 1.6.6
 MIME-Version: 1.0
-Message-Id: <201002182341.02203.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 18 February 2010 10:44:48 pm Alan Cox wrote:
-> On Thu, 18 Feb 2010 19:59:22 +0100
-> Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
-> 
-> > From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> > Subject: [PATCH] libata: pass host flags into __ata_pci_sff_init_one() helper
-> > 
-> > This was orginally proposed by Alan Cox but as a change
-> > for ata_pci_sff_init_one() helper function instead of
-> > __ata_pci_sff_init_one() one which casues needless churn
-> > to all host drivers and accidentally breakes few host
-> > drivers which are still on their way upstream.
-> > 
-> > Allows parallel scan and the like to be set without
-> > having to stop using the existing full helper functions.
-> 
-> NAK - __ is for internal symbol names.
+From: H. Peter Anvin <hpa@zytor.com>
 
-A NAK for an atang specific patch?  :)
+x86-32 has had a static test for copy_on_user() overflow for a while.
+This test currently fails in mm/migrate.c resulting in an
+allyesconfig/allmodconfig build failure on x86-32:
 
-- Please read DISCLAIMER in the first mail (it is there for a valid reasons).
+In function ‘copy_from_user’,
+    inlined from ‘do_pages_stat’ at
+    /home/hpa/kernel/git/mm/migrate.c:1012:
+/home/hpa/kernel/git/arch/x86/include/asm/uaccess_32.h:212: error:
+    call to ‘copy_from_user_overflow’ declared
 
-- The patch is for atang tree and said __ change happened _months_ ago as
-   a part of (very much related) ->init_host work which is not 'upstream'.
+Make the logic more explicit and therefore easier for gcc to
+understand.
 
-- __ has been also used for exactly such purpose in the kernel, i.e.:
+Reported-by: Len Brown <lenb@kernel.org>
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+Cc: Arjan van de Ven <arjan@linux.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Christoph Lameter <cl@linux-foundation.org>
+Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Rik van Riel <riel@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+---
 
-$ grep EXPORT_SYMBOL drivers/pci/*c|grep __
-drivers/pci/htirq.c:EXPORT_SYMBOL(__ht_create_irq);
-drivers/pci/pci.c:EXPORT_SYMBOL_GPL(__pci_complete_power_transition);
-drivers/pci/pci.c:EXPORT_SYMBOL_GPL(__pci_reset_function);
-drivers/pci/pci-driver.c:EXPORT_SYMBOL(__pci_register_driver);
+NOTE: Sending this patch directly rather than queueing it up since it is a
+current build failure.
 
-Just see commit 863b18f introducing __pci_register_driver
-(please notice that the change was suggested by Al Viro!)..
+ mm/migrate.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
---
-Bartlomiej Zolnierkiewicz
+diff --git a/mm/migrate.c b/mm/migrate.c
+index 9a0db5b..1a12f15 100644
+--- a/mm/migrate.c
++++ b/mm/migrate.c
+@@ -1002,12 +1002,12 @@ static int do_pages_stat(struct mm_struct *mm, unsigned long nr_pages,
+ #define DO_PAGES_STAT_CHUNK_NR 16
+ 	const void __user *chunk_pages[DO_PAGES_STAT_CHUNK_NR];
+ 	int chunk_status[DO_PAGES_STAT_CHUNK_NR];
+-	unsigned long i, chunk_nr = DO_PAGES_STAT_CHUNK_NR;
++	unsigned long i, chunk_nr;
+ 	int err;
+ 
+ 	for (i = 0; i < nr_pages; i += chunk_nr) {
+-		if (chunk_nr > nr_pages - i)
+-			chunk_nr = nr_pages - i;
++		chunk_nr = min(nr_pages - i,
++			       (unsigned long)DO_PAGES_STAT_CHUNK_NR);
+ 
+ 		err = copy_from_user(chunk_pages, &pages[i],
+ 				     chunk_nr * sizeof(*chunk_pages));
+-- 
+1.6.5.2
+
