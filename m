@@ -1,133 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757705Ab0BRAjX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 19:39:23 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:42401 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755779Ab0BRAjW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 19:39:22 -0500
-Date: Thu, 18 Feb 2010 11:39:12 +1100
-From: Neil Brown <neilb@suse.de>
-To: Greg KH <greg@kroah.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Greg KH <gregkh@suse.de>,
-       Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sysfs: differentiate  between locking links and
- non-links
-Message-ID: <20100218113912.4a3d36e9@notabene.brown>
-In-Reply-To: <20100217223848.GA31557@kroah.com>
-References: <19314.1869.847327.15190@notabene.brown>
-	<20100210230625.GB678@suse.de>
-	<m1fx57zbyl.fsf@fess.ebiederm.org>
-	<20100211223235.GC30430@suse.de>
-	<m1bpfvz8wy.fsf@fess.ebiederm.org>
-	<20100217223848.GA31557@kroah.com>
-X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.6; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1757746Ab0BRAlS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 19:41:18 -0500
+Received: from mail-fx0-f220.google.com ([209.85.220.220]:64211 "EHLO
+	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752876Ab0BRAlR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 19:41:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=LfR1lbvXyC+C4OiKCTLxiRqBumpy8z7AfeENR9H12T1NJejG2Mpz86EaIYNaYbTM73
+         WZcP9t+D+M6gqHeRMOLk+qdaUvJRGssli+7vN1mZ+TdZq1jHxjpIdPqn0uVVNFZbM1Iy
+         VcCdIM/dS8UyvTkLrA2vEg7L1MT1iSOdzWigY=
+MIME-Version: 1.0
+In-Reply-To: <4B7C7023.7060602@zytor.com>
+References: <1266406962-17463-1-git-send-email-luca@luca-barbieri.com>
+	 <1266406962-17463-10-git-send-email-luca@luca-barbieri.com>
+	 <4B7C7023.7060602@zytor.com>
+Date: Thu, 18 Feb 2010 01:41:13 +0100
+X-Google-Sender-Auth: 5c1e7eccb4a4b6f3
+Message-ID: <ff13bc9a1002171641w372a587j39632cb856b995f1@mail.gmail.com>
+Subject: Re: [PATCH 09/10] x86-32: use SSE for atomic64_read/set if available
+From: Luca Barbieri <luca@luca-barbieri.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: mingo@elte.hu, a.p.zijlstra@chello.nl, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Feb 2010 14:38:48 -0800
-Greg KH <greg@kroah.com> wrote:
+> I'm a bit unhappy about this patch.  It seems to violate the assumption
+> that we only ever use the FPU state guarded by
+> kernel_fpu_begin()..kernel_fpu_end() and instead it uses a local hack,
+> which seems like a recipe for all kinds of very subtle problems down the
+> line.
 
-> On Thu, Feb 11, 2010 at 02:47:57PM -0800, Eric W. Biederman wrote:
-> > Greg KH <gregkh@suse.de> writes:
-> > 
-> > > On Thu, Feb 11, 2010 at 01:42:10PM -0800, Eric W. Biederman wrote:
-> > >> Greg KH <gregkh@suse.de> writes:
-> > >> 
-> > >> > On Wed, Feb 10, 2010 at 12:09:33PM +1100, Neil Brown wrote:
-> > >> >> 
-> > >> >> Hi,
-> > >> >>  I've just spent a while sorting out some lockdep complaints triggered
-> > >> >>  by the recent addition of the "s_active" lockdep annotation in sysfs
-> > >> >>   (commit 846f99749ab68bbc7f75c74fec305de675b1a1bf)
-> > >> >> 
-> > >> >>  Some of them are genuine and I have submitted a fix for those.
-> > >> >>  Some are, I think, debatable and I get to that is a minute.  I've
-> > >> >>  submitted a fix for them anyway.
-> > >> >>  But some are to my mind clearly bogus and I'm hoping that can be
-> > >> >>  fixed by the change below (or similar).
-> > >> >>  The 'bogus' ones are triggered by writing to a sysfs attribute file
-> > >> >>  for which the handler tries to delete a symlink from sysfs.
-> > >> >>  This appears to be a recursion on s_active as s_active is held while
-> > >> >>  the handler runs and is again needed to effect the delete.  However
-> > >> >>  as the thing being deleted is a symlink, it is very clearly a
-> > >> >>  different object to the thing triggering the delete, so there is no
-> > >> >>  real loop.
-> > >> >> 
-> > >> >>  The following patch splits the lockdep context in two - one for
-> > >> >>  symlink and one for everything else.  This removes the apparent loop.
-> > >> >>  (An example report can be seen in
-> > >> >>      http://bugzilla.kernel.org/show_bug.cgi?id=15142).
-> > >> >> 
-> > >> >>  The "debatable" dependency loops happen when writing to one attribute
-> > >> >>  causes a different attribute to be deleted.  In my (md) case this can
-> > >> >>  actually cause a deadlock as both the attributes take the same lock
-> > >> >>  while the handler is running.  This is because deleting the attribute
-> > >> >>  will block until the all accesses of that attribute have completed (I
-> > >> >>  think).
-> > >> >>  However it should be possible to delete a name from sysfs while there
-> > >> >>  are still accesses pending (it works for normal files!!).  So if
-> > >> >>  sysfs could be changed to simply unlink the file and leave deletion to
-> > >> >>  happen when the refcount become zero it would certainly make my life
-> > >> >>  a lot easier, and allow the removal of some ugly code from md.c.
-> > >> >>  I don't know sysfs well enough to suggest a patch though.
-> > >> >> 
-> > >> >> Thanks,
-> > >> >> NeilBrown
-> > >> >> 
-> > >> >> 
-> > >> >> 
-> > >> >> commit 2e502cfe444b68f6ef6b8b2abe83b6112564095b
-> > >> >> Author: NeilBrown <neilb@suse.de>
-> > >> >> Date:   Wed Feb 10 09:43:45 2010 +1100
-> > >> >> 
-> > >> >>     sysfs: differentiate  between locking links and non-links for sysfs
-> > >> >>     
-> > >> >>     symlinks and non-symlink is sysfs are very different.
-> > >> >>     A symlink can never be locked (active) while an attribute
-> > >> >>     modification routine is running.  So removing symlink from an
-> > >> >>     attribute 'store' routine should be permitted without any lockdep
-> > >> >>     warnings.
-> > >> >>     
-> > >> >>     So split the lockdep context for 's_active' in two, one for symlinks
-> > >> >>     and other for everything else.
-> > >> >>     
-> > >> >>     Signed-off-by: NeilBrown <neilb@suse.de>
-> > >> >
-> > >> > Nice patch, I'll queue it up for .34.
-> > >> 
-> > >> Note the patch does not compile with lockdep disabled.
-> > >
-> > > Ugh, why not?
-> > >
-> > > Neil, care to fix this up?
-> > 
-> >  
-> >  #ifdef CONFIG_DEBUG_LOCK_ALLOC
-> > -#define sysfs_dirent_init_lockdep(sd)				\
-> > +#define sysfs_dirent_init_lockdep(sd, type)			\
-> >  do {								\
-> >  	static struct lock_class_key __key;			\
-> >  								\
-> > -	lockdep_init_map(&sd->dep_map, "s_active", &__key, 0);	\
-> > +	lockdep_init_map(&sd->dep_map, "s_active_" type, &__key, 0);	\
-> >  } while(0)
-> >  #else
-> >  #define sysfs_dirent_init_lockdep(sd) do {} while(0)
-> 
-> Got it, I've fixed this by hand.
-> 
->
+kernel_fpu_begin saves the whole FPU state, but to use SSE we don't
+really need that, since we can just save the %xmm registers we need,
+which is much faster.
+This is why SSE is used instead of just using an FPU double read.
+We could however add a kernel_sse_begin_nosave/kernel_sse_end_nosave to do this.
 
-Thanks.
-I hadn't sent you a fix myself (As requested) as I got the impression from
-the following discussion that a different approach would be taken.
+> Unless the performance advantage is provably very compelling, I'm
+> inclined to say that this is not worth it.
+There is the advantage of not taking the cacheline for writing in atomic64_read.
+Also locked cmpxchg8b is slow and if we were to restore the TS flag
+lazily on userspace return, it would significantly improve the
+function in all cases (with the current code, it depends on how fast
+the architecture does clts/stts vs lock cmpxchg8b).
+Of course the big-picture impact depends on the users of the interface.
 
-I'm happy either way though.
-
-Thanks,
-NeilBrown
+Anyway, feel free to ignore this patch for now (and the next one as well).
