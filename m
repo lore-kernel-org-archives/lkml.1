@@ -1,92 +1,43 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757104Ab0BRKfe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 05:35:34 -0500
-Received: from smtprelay.restena.lu ([158.64.1.62]:56043 "EHLO
-	smtprelay.restena.lu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753388Ab0BRKfd convert rfc822-to-8bit (ORCPT
+	id S1757234Ab0BRKti (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 05:49:38 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:36018 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756721Ab0BRKtf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 05:35:33 -0500
-X-Greylist: delayed 408 seconds by postgrey-1.27 at vger.kernel.org; Thu, 18 Feb 2010 05:35:32 EST
-Date: Thu, 18 Feb 2010 11:28:26 +0100
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-To: "Ilpo =?UTF-8?B?SsOkcnZpbmVu?=" <ilpo.jarvinen@helsinki.fi>
-Cc: sbs <gexlie@gmail.com>, Netdev <netdev@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Panic at tcp_xmit_retransmit_queue
-Message-ID: <20100218112826.39aabf85@pluto.restena.lu>
-In-Reply-To: <alpine.DEB.2.00.1002151520250.7063@wel-95.cs.helsinki.fi>
-References: <53cc795f1001190813m377c6c91l16b2dc04f63049e7@mail.gmail.com>
- <53cc795f1002010645w54b98b51s3dbdea18e5eb73f2@mail.gmail.com>
- <alpine.DEB.2.00.1002031258160.7063@wel-95.cs.helsinki.fi>
- <alpine.DEB.2.00.1002151520250.7063@wel-95.cs.helsinki.fi>
-X-Mailer: Claws Mail 3.7.4 (GTK+ 2.16.6; x86_64-pc-linux-gnu)
+	Thu, 18 Feb 2010 05:49:35 -0500
+Subject: Re: [patch 4/5] xtime_lock: Convert to raw_seqlock
+From: Peter Zijlstra <peterz@infradead.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Linux-Arch <linux-arch@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       John Stultz <johnstul@us.ibm.com>
+In-Reply-To: <20100217184155.882793970@linutronix.de>
+References: <20100217183740.486724334@linutronix.de>
+	 <20100217184155.882793970@linutronix.de>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 18 Feb 2010 11:49:28 +0100
+Message-ID: <1266490168.26719.179.camel@laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+X-Mailer: Evolution 2.28.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 15 Feb 2010 15:21:58 "Ilpo Järvinen" wrote:
-> On Wed, 3 Feb 2010, Ilpo Järvinen wrote:
+On Wed, 2010-02-17 at 18:47 +0000, Thomas Gleixner wrote:
 > 
-> > On Mon, 1 Feb 2010, sbs wrote:
-> > 
-> > > actually removing netconsole from kernel didnt help.
-> > > i found many guys with the same problem but with different
-> > > hardware configurations here:
-> > > 
-> > > freez in TCP stack :
-> > > http://bugzilla.kernel.org/show_bug.cgi?id=14470
-> > > 
-> > > is there someone who can investigate it?
-> > > 
-> > > 
-> > > On Tue, Jan 19, 2010 at 7:13 PM, sbs <gexlie@gmail.com> wrote:
-> > > > We are hiting kernel panics on servers with nVidia MCP55 NICs
-> > > > once a day; it appears usualy under a high network trafic
-> > > > ( around 10000Mbit/s) but it is not a rule, it has happened
-> > > > even on low trafic.
-> > > >
-> > > > Servers are used as nginx+static content
-> > > > On 2 equal servers this panic happens aprox 2 times a day
-> > > > depending on network load. Machine completly freezes till the
-> > > > netconsole reboots.
-> > > >
-> > > > Kernel: 2.6.32.3
-> > > >
-> > > > what can it be? whats wrong with tcp_xmit_retransmit_queue()
-> > > > function ? can anyone explain or fix?
-> > 
-> > You might want to try with to debug patch below. It might even make
-> > the box to survive the event (if I got it coded right).
+> xtime_lock needs a raw_spinlock in preempt-rt. Convert it to
+> raw_seqlock and fix up all users.
 > 
-> Here should be a better version of the debug patch, hopefully the
-> infinite looping is now gone.
+s/raw_spinlock/raw_seqlock/ ?
 
-I can reproduce the freeze pretty easily, even on an idle server,
-all I need is netconsole enabled, an ssh connection to server and
-permission to write to /proc/sysrq-trigger.
+Maybe add an explanation on _why_ -rt needs this for the uninformed
+amongst us.
 
-The following command, executed via SSH triggers the frozen system:
-  echo t > /proc/sysrq-trigger
-when netconsole is enabled. Doing the same from local console has no
-negative effect (idle system).
-Unfortunately I can't get any useful information out of the system as
-nothing reaches VGA console and interaction with the system is not
-possible anymore (cursor is still blinking on VGA console).
+-rt switches to sleeping spinlocks, but since the vdso is basically
+userspace it cannot schedule, hence we need to keep using actual
+spinlocks (this is also the reason the vdso things must not call into
+lockdep)
 
-Unfortunately I currently have no setup here to analyze dead system via
-kexec crash kernel that would be run on watchdog.
-
-System I'm using is HP Proliant DL360 G5 (4 logical CPUs, two sockets),
-bnx2 NIC.
-Eventually I will try with some other system to reproduce there as
-well (to rule out NIC driver).
-
-Any hints on how to get pertinent data out of that system would be
-really nice!
-
-Regards,
-Bruno
