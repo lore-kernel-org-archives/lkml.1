@@ -1,67 +1,71 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756961Ab0BRK1M (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 05:27:12 -0500
-Received: from mail-fx0-f220.google.com ([209.85.220.220]:41242 "EHLO
-	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751880Ab0BRK1K (ORCPT
+	id S1756684Ab0BRKdL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 05:33:11 -0500
+Received: from e28smtp05.in.ibm.com ([122.248.162.5]:48854 "EHLO
+	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751179Ab0BRKdJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 05:27:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=ZhdwpqSEKiI7ebLpYpmks5mfkmlQB3JLLxGOAVBcGFeU2daa7U2beaOOBXWbp/nPt/
-         VaDt1Vp1ICNoNfBWN4tg1y2MKQYvFZ7ezwK7Uom537ViZlReJBWGL9fXdBHG17EtMc6B
-         6JafzsXGDler2+0AxvIbVISw4ybHfqjXB7p88=
-MIME-Version: 1.0
-In-Reply-To: <20100218101156.GE5964@basil.fritz.box>
-References: <1266406962-17463-1-git-send-email-luca@luca-barbieri.com>
-	 <1266406962-17463-10-git-send-email-luca@luca-barbieri.com>
-	 <87eikj54wp.fsf@basil.nowhere.org>
-	 <ff13bc9a1002180153g308b0f3dxb59959936d1e343b@mail.gmail.com>
-	 <20100218101156.GE5964@basil.fritz.box>
-Date: Thu, 18 Feb 2010 11:27:02 +0100
-X-Google-Sender-Auth: 06c03c180727ac38
-Message-ID: <ff13bc9a1002180227j70e0748ag49d88c3034e3900d@mail.gmail.com>
-Subject: Re: [PATCH 09/10] x86-32: use SSE for atomic64_read/set if available
-From: Luca Barbieri <luca@luca-barbieri.com>
+	Thu, 18 Feb 2010 05:33:09 -0500
+Date: Thu, 18 Feb 2010 16:03:01 +0530
+From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
 To: Andi Kleen <andi@firstfloor.org>
-Cc: mingo@elte.hu, hpa@zytor.com, a.p.zijlstra@chello.nl,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Cc: Anton Blanchard <anton@samba.org>, tglx@linutronix.de, davem@davemloft.net,
+       linux-kernel@vger.kernel.org, arjan@infradead.org,
+       venkatesh.pallipadi@intel.com, Arun Bharadwaj <arun@linux.vnet.ibm.com>
+Subject: Re: NO_HZ migration of TCP ack timers
+Message-ID: <20100218103301.GB26101@linux.vnet.ibm.com>
+Reply-To: arun@linux.vnet.ibm.com
+References: <20100218052820.GD24270@kryten>
+ <87mxz755ks.fsf@basil.nowhere.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <87mxz755ks.fsf@basil.nowhere.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> CR changes are slow and synchronize the CPU. The later is always slow.
->
-> It sounds like you didn't time it?
-I didn't, because I think it strongly depends on the microarchitecture
-and I don't have a comprehensive set of machines to test on, so it
-would just be a single data point.
+* Andi Kleen <andi@firstfloor.org> [2010-02-18 09:08:35]:
 
-The lock prefix on cmpxchg8b is also serializing so it might be as bad.
+> Anton Blanchard <anton@samba.org> writes:
+> 
+> > echo 0 > /proc/sys/kernel/timer_migration
+> >
+> > makes the problem go away.
+> >
+> > I think the problem is the CPU is most likely to be idle when an rx networking
+> > interrupt comes in. It seems the wrong thing to do to migrate any ack timers
+> > off the current cpu taking the interrupt, and with enough networks we train
+> > wreck transferring everyones ack timers to the nohz load balancer cpu. 
+> 
+> If the nohz balancer CPU is otherwise idle, shouldn't it have enough
+> cycles to handle acks for everyone? Is the problem the cache line
+> transfer time?
+> 
+> But yes if it's non idle the migration might need to spread out 
+> to more CPUs.
+> 
+> >
+> > What should we do? Should we use mod_timer_pinned here? Or is this an issue
+> 
+> Sounds like something that should be controlled by the cpufreq governour's
+> idle predictor? Only migrate if predicted idle time is long enough.
+> It's essentially the same problem as deciding how deeply idle to put
+> a CPU. Heavy measures only pay off if the expected time is long enough.
+> 
 
-Anyway, if we use this, we should keep TS cleared in kernel mode and
-lazily restore it on return to userspace.
-This would make clts/stts performance mostly moot.
+cpuidle infrastructure hs statistics about the idle times for
+all the cpus. Maybe we can look to use this infrastructure to decide
+whether to migrate timers or not?
 
-I agree that this feature would need to added too before putting the
-SSE atomic64 code in a released kernel.
+arun
 
-> It'll generate worse code because gcc can't use these registers
-> at all in the C code. Some gcc versions also tend to give up when they run
-> out of registers too badly.
-Yes, but the C implementations are small and simple, and are only used
-on 386/486.
-Furthermore, the data in the global register variables is the main
-input to the computation.
-
-> So why don't you simply use normal asm inputs/outputs?
-I do, on the caller side.
-
-In the callee, I don't see any other robust way to implement parameter
-passing in ebx/esi other than global register variables (without
-resorting to pure assembly, which would prevent reusing the generic
-atomic64 implementation).
+> > other areas might see (eg the block layer) and we should instead avoid
+> > migrating timers created out of interrupts.
+> 
+> -Andi
+> 
+> -- 
+> ak@linux.intel.com -- Speaking for myself only.
