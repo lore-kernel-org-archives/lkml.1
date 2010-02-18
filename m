@@ -1,82 +1,110 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758548Ab0BRRFQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 12:05:16 -0500
-Received: from out01.mta.xmission.com ([166.70.13.231]:37542 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754536Ab0BRRFN (ORCPT
+	id S1758344Ab0BRRGj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 12:06:39 -0500
+Received: from mail.windriver.com ([147.11.1.11]:64813 "EHLO
+	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753421Ab0BRRGf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 12:05:13 -0500
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Suresh Siddha <suresh.b.siddha@intel.com>, linux-kernel@vger.kernel.org,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-References: <1266029390-30907-1-git-send-email-yinghai@kernel.org>
-	<m1zl3dre9e.fsf@fess.ebiederm.org> <4B7676BB.8030608@kernel.org>
-	<m1ljexpcjp.fsf@fess.ebiederm.org> <4B772A54.1000000@kernel.org>
-	<m16360ohi2.fsf@fess.ebiederm.org> <4B773CEB.9010609@kernel.org>
-	<m1sk94mzg0.fsf@fess.ebiederm.org> <4B7CA9A1.3020806@kernel.org>
-	<4B7CAAEC.1000608@kernel.org>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Thu, 18 Feb 2010 09:04:57 -0800
-In-Reply-To: <4B7CAAEC.1000608@kernel.org> (Yinghai Lu's message of "Wed\, 17 Feb 2010 18\:50\:20 -0800")
-Message-ID: <m1r5oiv5ja.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Thu, 18 Feb 2010 12:06:35 -0500
+Message-ID: <4B7D7386.4040503@windriver.com>
+Date: Thu, 18 Feb 2010 11:06:14 -0600
+From: Jason Wessel <jason.wessel@windriver.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Yinghai Lu <yinghai@kernel.org>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  1.5 XMNoVowels Alpha-numberic number with no vowels
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -3.0 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 T_TooManySym_01 4+ unique symbols in subject
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: Re: [RFC PATCH 3/3] genericirq: change ack/mask in irq_chip to take irq_desc in addition to irq
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
+       mingo@elte.hu, mort@sgi.com, linux-arch@vger.kernel.org
+Subject: Re: [PATCH 08/28] kdb: core for kgdb back end (2 of 2)
+References: <1266014143-29444-1-git-send-email-jason.wessel@windriver.com><1266014143-29444-9-git-send-email-jason.wessel@windriver.com><m1zl37xhmm.fsf@fess.ebiederm.org> <4B7D5704.6060504@windriver.com> <m1fx4ywlgr.fsf@fess.ebiederm.org>
+In-Reply-To: <m1fx4ywlgr.fsf@fess.ebiederm.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 18 Feb 2010 17:06:09.0955 (UTC) FILETIME=[AACF8F30:01CAB0BC]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu <yinghai@kernel.org> writes:
-
-> will have
-> void            (*ack)(unsigned int irq, struct irq_desc *desc);
-> void            (*mask)(unsigned int irq, struct irq_desc *desc);
-> void            (*mask_ack)(unsigned int irq, struct irq_desc *desc);
-> void            (*unmask)(unsigned int irq, struct irq_desc *desc);
-> void            (*eoi)(unsigned int irq, struct irq_desc *desc);
+Eric W. Biederman wrote:
+> Jason Wessel <jason.wessel@windriver.com> writes:
 >
-> so for sparseirq with raidix tree, we don't call extra irq_to_desc, and could use desc directly
+>   
+>> Eric W. Biederman wrote:
+>>     
+>>> Jason Wessel <jason.wessel@windriver.com> writes:
+>>>
+>>>   
+>>>       
+>>>> This patch contains the hooks and instrumentation into kernel which
+>>>> live outside the kernel/debug directory, which the kdb core
+>>>> will call to run commands like lsmod, dmesg, bt etc...
+>>>>     
+>>>>         
+>>> You know this dropping the locks from vmalloc_info and swap_info
+>>> is down right ugly, and I don't believe it is safe.  That code
+>>> was not designed to run while the write_lock is held.
+>>>   
+>>>       
+>> Perhaps we can find some middle ground.  I don't mind simply not
+>> allowing the information to be queried from kdb if the locks are not
+>> available. 
+>>
+>> Which is less ugly you, making the swap_lock global or adding a function
+>> to query it?
+>>     
+>
+> My recommendation would be to simply drop the swap_info and meminfo
+> information for now, and have kdb do what is good at.
+>   
 
-This doesn't look bad.  
+I have no objection to dropping this for now.
 
-May I ask why these methods and why pass both irq and desc instead of
-just desc?
+> Skimming through the history of the discussion it appears Christoph
+> Hellwig asked you to do something about these bits on the first
+> review.
+>
+>   
+If you are referring to the statement from the RFC patch:
 
-I think in the long run passing both irq and desc through several
-functions may incur some maintenance cost that it would be nice not to
-pay (register pressure and increased chance of typos).
+"Patch 1 still containes a lot random junk. E.g. all those meminfo and
+whatever hooks aren't required for a very basic kernel debugger"
 
-With a big sweeping change like this I want to be certain we won't
-change our minds and come back and want to change it all again.
+Most of that was restructured in that code base vs what you have taken a
+look at and we are down to a handful of instrumentation points.
 
-Oh and a multiarch patch like this should really cc linux-arch
-so the arch maintainers can see it.
+> From a maintenance point of view anything where you have to know which
+> locks a function will take is fragile.  It is entirely too easy to create
+> a change that is fine in it's normal context but breaks kdb.
+>
+>   
 
-In passing it looks like want to transform get_irq_data in hpet.c to
-get_irq_desc_data.
+Sure, but that is life for kdb in the current state.  You either make
+safe query macros or create something to call helper functions to
+inspect code.  Either way it is maintenance.
 
-Eric
+> Alt-sysrq already allows capturing that kind of information, without any
+> thorny maintenance issues.  
+
+Alt-sysrq cannot be called from all the same contexts that you can
+invoke kdb.  The maintenance issue you speak of is avoided because of
+the points you can actually invoke a sysrq.  Certainly you are not going
+to be able to call Alt-sysrq, in an nmi as well as a number of other
+contexts.
+
+> By contrast kdb appears to be a much larger
+> and inferior tool.
+>
+>   
+
+I am not certain as to what comparison you are trying to draw here.  If
+you are only using kdb to obtain meminfo and swapinfo, sure I buy your
+argument.   If you are using kdb to modify, inspect memory and execute
+back traces at certain places then I think this is not an apples to
+apples comparison.
+
+I'll post a new version of the patch with the hooks you asked about
+stripped out.  The commands will also get removed from the kdb command
+shell.
+
+Thanks,
+Jason.
