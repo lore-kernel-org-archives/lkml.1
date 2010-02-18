@@ -1,86 +1,62 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932698Ab0BRCcr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 21:32:47 -0500
-Received: from rcsinet12.oracle.com ([148.87.113.124]:37722 "EHLO
-	rcsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932449Ab0BRCcq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 21:32:46 -0500
-Message-ID: <4B7CA679.40906@oracle.com>
-Date: Wed, 17 Feb 2010 18:31:21 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+	id S932718Ab0BRCkT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 21:40:19 -0500
+Received: from hera.kernel.org ([140.211.167.34]:44469 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755106Ab0BRCkR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 21:40:17 -0500
+Message-ID: <4B7CA825.9090309@kernel.org>
+Date: Wed, 17 Feb 2010 18:38:29 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-CC: Linux Media Mailing List <linux-media@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       g.liakhovetski@gmx.de
-Subject: Re: [PATCH 0/4] DocBook additions for V4L new formats
-References: <4B7C2203.1000707@redhat.com>
-In-Reply-To: <4B7C2203.1000707@redhat.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+       Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: Re: [PATCH 34/35] x86: use num_processors for possible cpus
+References: <1265793639-15071-1-git-send-email-yinghai@kernel.org> <1265793639-15071-35-git-send-email-yinghai@kernel.org> <4B7C98B9.1090903@zytor.com>
+In-Reply-To: <4B7C98B9.1090903@zytor.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt355.oracle.com [141.146.40.155]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090205.4B7CA6BA.005C:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/17/10 09:06, Mauro Carvalho Chehab wrote:
-> Adds DocBook items for Bayer and two proprietary formats used on gspca.
+On 02/17/2010 05:32 PM, H. Peter Anvin wrote:
+> On 02/10/2010 01:20 AM, Yinghai Lu wrote:
+>> some systems that have disable cpus entries because same
+>>   BIOS will support 2 sockets and 4 sockets and more at
+>>   same time, BIOS just leave some disable entries, but
+>>   those system do not support cpu hotplug. we don't need
+>>   treat disabled_cpus as hotplug cpus.
+>> so we can make nr_cpu_ids smaller and save more space
+>>   (pcpu data allocations), and could make some systems run
+>>   with logical flat instead of physical flat apic mode
+>>
+>> -v2: change to black list instead
+>> -v3: just remove that, and the one use possible_cpus= directly.
+>>
+>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 > 
-> In the past, a few targets were generated at the Mercurial development
-> tree. However, at the beginning of this year, we moved to use -git as
-> the primary resource. So, the Makefile logic to autogenerate those
-> targets needs to be moved to git as well.
+> I'm confused by this one.  This would seem to mean that unless you're
+> specifying possible_cpus= then you are not treating anything as
+> hotpluggable.
 > 
-> While here, I noticed that DocBook is too verbose to generate the
-> htmldocs target. So, make it less verbose, if V=0.
+> This is clearly wrong, and it would appear to go the wrong direction in
+> terms of what is safe.
 > 
-> Guennadi Liakhovetski (1):
->   V4L/DVB: v4l: document new Bayer and monochrome pixel formats
-> 
-> Mauro Carvalho Chehab (3):
->   DocBook/Makefile: Make it less verbose
->   DocBook: Add rules to auto-generate some media docbooks
->   DocBook/v4l/pixfmt.xml: Add missing formats for gspca cpia1 and
->     sn9c2028 drivers
+> What am I missing here?
 
-Hi Mauro,
+per_cpu setup will allocate some mem for every cpu according to possible cpus.
 
-Patches 1 & 3 are OK.
+no spec says that we should disable cpus entries in MADT as hotplug cpus.
 
-I'm having problems with patch 2/4 when I use O=DOCDIR on the make command
-(which I always do).  videodev2.h.xml is not being generated, and after
-that it goes downhill.
+also how many system that support hotplug cpus there?
 
-I will let you know more when I have more info, or you or Guennadi can send
-a fixup patch for that.
-
-
-
->  Documentation/DocBook/Makefile               |  493 +++++++-
->  Documentation/DocBook/dvb/frontend.h.xml     |  415 ------
->  Documentation/DocBook/media-entities.tmpl    |  383 ------
->  Documentation/DocBook/media-indices.tmpl     |   89 --
->  Documentation/DocBook/v4l/pixfmt-srggb10.xml |   90 ++
->  Documentation/DocBook/v4l/pixfmt-srggb8.xml  |   67 +
->  Documentation/DocBook/v4l/pixfmt-y10.xml     |   79 ++
->  Documentation/DocBook/v4l/pixfmt.xml         |   18 +-
->  Documentation/DocBook/v4l/videodev2.h.xml    | 1757 --------------------------
->  9 files changed, 738 insertions(+), 2653 deletions(-)
->  delete mode 100644 Documentation/DocBook/dvb/frontend.h.xml
->  delete mode 100644 Documentation/DocBook/media-entities.tmpl
->  delete mode 100644 Documentation/DocBook/media-indices.tmpl
->  create mode 100644 Documentation/DocBook/v4l/pixfmt-srggb10.xml
->  create mode 100644 Documentation/DocBook/v4l/pixfmt-srggb8.xml
->  create mode 100644 Documentation/DocBook/v4l/pixfmt-y10.xml
->  delete mode 100644 Documentation/DocBook/v4l/videodev2.h.xml
-> 
-
-
--- 
-~Randy
+Yinghai
