@@ -1,13 +1,14 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758773Ab0BRWHc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 17:07:32 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:33555 "EHLO mx1.redhat.com"
+	id S1758776Ab0BRWHt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 17:07:49 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:50513 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758784Ab0BRWHY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 17:07:24 -0500
+	id S1758799Ab0BRWHo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Feb 2010 17:07:44 -0500
 From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip v10 4/9] kprobes: Jump optimization sysctl interface
+Subject: [PATCH -tip v10 7/9] x86: Add text_poke_smp for SMP cross modifying
+	code
 To: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
        Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
        lkml <linux-kernel@vger.kernel.org>
@@ -23,8 +24,8 @@ Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
        Mathieu Desnoyers <compudj@krystal.dyndns.org>,
        systemtap <systemtap@sources.redhat.com>,
        DLE <dle-develop@lists.sourceforge.net>
-Date: Thu, 18 Feb 2010 17:13:20 -0500
-Message-ID: <20100218221320.19637.35985.stgit@dhcp-100-2-132.bos.redhat.com>
+Date: Thu, 18 Feb 2010 17:13:44 -0500
+Message-ID: <20100218221344.19637.41744.stgit@dhcp-100-2-132.bos.redhat.com>
 In-Reply-To: <20100218221247.19637.80088.stgit@dhcp-100-2-132.bos.redhat.com>
 References: <20100218221247.19637.80088.stgit@dhcp-100-2-132.bos.redhat.com>
 User-Agent: StGIT/0.14.3
@@ -35,17 +36,23 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add /proc/sys/debug/kprobes-optimization sysctl which enables and disables
-kprobes jump optimization on the fly for debugging.
+Add generic text_poke_smp for SMP which uses stop_machine()
+to synchronize modifying code.
+This stop_machine() method is officially described at "7.1.3
+Handling Self- and Cross-Modifying Code" on the intel's
+software developer's manual 3A.
 
-Changes in v7:
- - Remove ctl_name = CTL_UNNUMBERED for upstream compatibility.
+Since stop_machine() can't protect code against NMI/MCE, this
+function can not modify those handlers. And also, this function
+is basically for modifying multibyte-single-instruction. For
+modifying multibyte-multi-instructions, we need another special
+trap & detour code.
 
-Changes in v6:
-- Update comments and coding style.
-
+This code originaly comes from immediate values with stop_machine()
+version. Thanks Jason and Mathieu!
 
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Mathieu Desnoyers <compudj@krystal.dyndns.org>
 Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 Cc: Ingo Molnar <mingo@elte.hu>
 Cc: Jim Keniston <jkenisto@us.ibm.com>
@@ -58,200 +65,105 @@ Cc: Anders Kaseorg <andersk@ksplice.com>
 Cc: Tim Abbott <tabbott@ksplice.com>
 Cc: Andi Kleen <andi@firstfloor.org>
 Cc: Jason Baron <jbaron@redhat.com>
-Cc: Mathieu Desnoyers <compudj@krystal.dyndns.org>
 ---
 
- include/linux/kprobes.h |    8 ++++
- kernel/kprobes.c        |   88 +++++++++++++++++++++++++++++++++++++++++++++--
- kernel/sysctl.c         |   12 ++++++
- 3 files changed, 105 insertions(+), 3 deletions(-)
+ arch/x86/include/asm/alternative.h |    4 ++
+ arch/x86/kernel/alternative.c      |   60 ++++++++++++++++++++++++++++++++++++
+ 2 files changed, 63 insertions(+), 1 deletions(-)
 
-diff --git a/include/linux/kprobes.h b/include/linux/kprobes.h
-index aed1f95..e7d1b2e 100644
---- a/include/linux/kprobes.h
-+++ b/include/linux/kprobes.h
-@@ -283,6 +283,14 @@ extern int arch_within_optimized_kprobe(struct optimized_kprobe *op,
- 					unsigned long addr);
+diff --git a/arch/x86/include/asm/alternative.h b/arch/x86/include/asm/alternative.h
+index f1e253c..b09ec55 100644
+--- a/arch/x86/include/asm/alternative.h
++++ b/arch/x86/include/asm/alternative.h
+@@ -165,10 +165,12 @@ static inline void apply_paravirt(struct paravirt_patch_site *start,
+  * invalid instruction possible) or if the instructions are changed from a
+  * consistent state to another consistent state atomically.
+  * More care must be taken when modifying code in the SMP case because of
+- * Intel's errata.
++ * Intel's errata. text_poke_smp() takes care that errata, but still
++ * doesn't support NMI/MCE handler code modifying.
+  * On the local CPU you need to be protected again NMI or MCE handlers seeing an
+  * inconsistent instruction while you patch.
+  */
+ extern void *text_poke(void *addr, const void *opcode, size_t len);
++extern void *text_poke_smp(void *addr, const void *opcode, size_t len);
  
- extern void opt_pre_handler(struct kprobe *p, struct pt_regs *regs);
-+
-+#ifdef CONFIG_SYSCTL
-+extern int sysctl_kprobes_optimization;
-+extern int proc_kprobes_optimization_handler(struct ctl_table *table,
-+					     int write, void __user *buffer,
-+					     size_t *length, loff_t *ppos);
-+#endif
-+
- #endif /* CONFIG_OPTPROBES */
- 
- /* Get the kprobe at this addr (if any) - called with preemption disabled */
-diff --git a/kernel/kprobes.c b/kernel/kprobes.c
-index 612af2d..fa034d2 100644
---- a/kernel/kprobes.c
-+++ b/kernel/kprobes.c
-@@ -42,6 +42,7 @@
- #include <linux/freezer.h>
- #include <linux/seq_file.h>
- #include <linux/debugfs.h>
-+#include <linux/sysctl.h>
- #include <linux/kdebug.h>
+ #endif /* _ASM_X86_ALTERNATIVE_H */
+diff --git a/arch/x86/kernel/alternative.c b/arch/x86/kernel/alternative.c
+index e6ea034..635e4f4 100644
+--- a/arch/x86/kernel/alternative.c
++++ b/arch/x86/kernel/alternative.c
+@@ -7,6 +7,7 @@
+ #include <linux/mm.h>
+ #include <linux/vmalloc.h>
  #include <linux/memory.h>
- #include <linux/ftrace.h>
-@@ -360,6 +361,9 @@ static inline void copy_kprobe(struct kprobe *old_p, struct kprobe *p)
++#include <linux/stop_machine.h>
+ #include <asm/alternative.h>
+ #include <asm/sections.h>
+ #include <asm/pgtable.h>
+@@ -572,3 +573,62 @@ void *__kprobes text_poke(void *addr, const void *opcode, size_t len)
+ 	local_irq_restore(flags);
+ 	return addr;
  }
- 
- #ifdef CONFIG_OPTPROBES
-+/* NOTE: change this value only with kprobe_mutex held */
-+static bool kprobes_allow_optimization;
 +
- /*
-  * Call all pre_handler on the list, but ignores its return value.
-  * This must be called from arch-dep optimized caller.
-@@ -428,7 +432,7 @@ static __kprobes void kprobe_optimizer(struct work_struct *work)
- 	/* Lock modules while optimizing kprobes */
- 	mutex_lock(&module_mutex);
- 	mutex_lock(&kprobe_mutex);
--	if (kprobes_all_disarmed)
-+	if (kprobes_all_disarmed || !kprobes_allow_optimization)
- 		goto end;
- 
- 	/*
-@@ -471,7 +475,7 @@ static __kprobes void optimize_kprobe(struct kprobe *p)
- 	struct optimized_kprobe *op;
- 
- 	/* Check if the kprobe is disabled or not ready for optimization. */
--	if (!kprobe_optready(p) ||
-+	if (!kprobe_optready(p) || !kprobes_allow_optimization ||
- 	    (kprobe_disabled(p) || kprobes_all_disarmed))
- 		return;
- 
-@@ -588,6 +592,80 @@ static __kprobes void try_to_optimize_kprobe(struct kprobe *p)
- 	optimize_kprobe(ap);
- }
- 
-+#ifdef CONFIG_SYSCTL
-+static void __kprobes optimize_all_kprobes(void)
++/*
++ * Cross-modifying kernel text with stop_machine().
++ * This code originally comes from immediate value.
++ */
++static atomic_t stop_machine_first;
++static int wrote_text;
++
++struct text_poke_params {
++	void *addr;
++	const void *opcode;
++	size_t len;
++};
++
++static int __kprobes stop_machine_text_poke(void *data)
 +{
-+	struct hlist_head *head;
-+	struct hlist_node *node;
-+	struct kprobe *p;
-+	unsigned int i;
++	struct text_poke_params *tpp = data;
 +
-+	/* If optimization is already allowed, just return */
-+	if (kprobes_allow_optimization)
-+		return;
-+
-+	kprobes_allow_optimization = true;
-+	mutex_lock(&text_mutex);
-+	for (i = 0; i < KPROBE_TABLE_SIZE; i++) {
-+		head = &kprobe_table[i];
-+		hlist_for_each_entry_rcu(p, node, head, hlist)
-+			if (!kprobe_disabled(p))
-+				optimize_kprobe(p);
-+	}
-+	mutex_unlock(&text_mutex);
-+	printk(KERN_INFO "Kprobes globally optimized\n");
-+}
-+
-+static void __kprobes unoptimize_all_kprobes(void)
-+{
-+	struct hlist_head *head;
-+	struct hlist_node *node;
-+	struct kprobe *p;
-+	unsigned int i;
-+
-+	/* If optimization is already prohibited, just return */
-+	if (!kprobes_allow_optimization)
-+		return;
-+
-+	kprobes_allow_optimization = false;
-+	printk(KERN_INFO "Kprobes globally unoptimized\n");
-+	get_online_cpus();	/* For avoiding text_mutex deadlock */
-+	mutex_lock(&text_mutex);
-+	for (i = 0; i < KPROBE_TABLE_SIZE; i++) {
-+		head = &kprobe_table[i];
-+		hlist_for_each_entry_rcu(p, node, head, hlist) {
-+			if (!kprobe_disabled(p))
-+				unoptimize_kprobe(p);
-+		}
++	if (atomic_dec_and_test(&stop_machine_first)) {
++		text_poke(tpp->addr, tpp->opcode, tpp->len);
++		smp_wmb();	/* Make sure other cpus see that this has run */
++		wrote_text = 1;
++	} else {
++		while (!wrote_text)
++			smp_rmb();
++		sync_core();
 +	}
 +
-+	mutex_unlock(&text_mutex);
-+	put_online_cpus();
-+	/* Allow all currently running kprobes to complete */
-+	synchronize_sched();
++	flush_icache_range((unsigned long)tpp->addr,
++			   (unsigned long)tpp->addr + tpp->len);
++	return 0;
 +}
 +
-+int sysctl_kprobes_optimization;
-+int proc_kprobes_optimization_handler(struct ctl_table *table, int write,
-+				      void __user *buffer, size_t *length,
-+				      loff_t *ppos)
++/**
++ * text_poke_smp - Update instructions on a live kernel on SMP
++ * @addr: address to modify
++ * @opcode: source of the copy
++ * @len: length to copy
++ *
++ * Modify multi-byte instruction by using stop_machine() on SMP. This allows
++ * user to poke/set multi-byte text on SMP. Only non-NMI/MCE code modifying
++ * should be allowed, since stop_machine() does _not_ protect code against
++ * NMI and MCE.
++ *
++ * Note: Must be called under get_online_cpus() and text_mutex.
++ */
++void *__kprobes text_poke_smp(void *addr, const void *opcode, size_t len)
 +{
-+	int ret;
++	struct text_poke_params tpp;
 +
-+	mutex_lock(&kprobe_mutex);
-+	sysctl_kprobes_optimization = kprobes_allow_optimization ? 1 : 0;
-+	ret = proc_dointvec_minmax(table, write, buffer, length, ppos);
-+
-+	if (sysctl_kprobes_optimization)
-+		optimize_all_kprobes();
-+	else
-+		unoptimize_all_kprobes();
-+	mutex_unlock(&kprobe_mutex);
-+
-+	return ret;
++	tpp.addr = addr;
++	tpp.opcode = opcode;
++	tpp.len = len;
++	atomic_set(&stop_machine_first, 1);
++	wrote_text = 0;
++	stop_machine(stop_machine_text_poke, (void *)&tpp, NULL);
++	return addr;
 +}
-+#endif /* CONFIG_SYSCTL */
 +
- static void __kprobes __arm_kprobe(struct kprobe *p)
- {
- 	struct kprobe *old_p;
-@@ -1610,10 +1688,14 @@ static int __init init_kprobes(void)
- 		}
- 	}
- 
--#if defined(CONFIG_OPTPROBES) && defined(__ARCH_WANT_KPROBES_INSN_SLOT)
-+#if defined(CONFIG_OPTPROBES)
-+#if defined(__ARCH_WANT_KPROBES_INSN_SLOT)
- 	/* Init kprobe_optinsn_slots */
- 	kprobe_optinsn_slots.insn_size = MAX_OPTINSN_SIZE;
- #endif
-+	/* By default, kprobes can be optimized */
-+	kprobes_allow_optimization = true;
-+#endif
- 
- 	/* By default, kprobes are armed */
- 	kprobes_all_disarmed = false;
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 2aa33c5..d52aef3 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -50,6 +50,7 @@
- #include <linux/ftrace.h>
- #include <linux/slow-work.h>
- #include <linux/perf_event.h>
-+#include <linux/kprobes.h>
- 
- #include <asm/uaccess.h>
- #include <asm/processor.h>
-@@ -1472,6 +1473,17 @@ static struct ctl_table debug_table[] = {
- 		.proc_handler	= proc_dointvec
- 	},
- #endif
-+#if defined(CONFIG_OPTPROBES)
-+	{
-+		.procname	= "kprobes-optimization",
-+		.data		= &sysctl_kprobes_optimization,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0644,
-+		.proc_handler	= proc_kprobes_optimization_handler,
-+		.extra1		= &zero,
-+		.extra2		= &one,
-+	},
-+#endif
- 	{ }
- };
- 
 
 
 -- 
