@@ -1,462 +1,684 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751984Ab0BRFi1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 00:38:27 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:60947 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751785Ab0BRFiZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 00:38:25 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Thu, 18 Feb 2010 14:34:29 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Chris Frost <frost@cs.ucla.edu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Keiichi KII <k-keiichi@bx.jp.nec.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jason Baron <jbaron@redhat.com>,
-       Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "lwoodman@redhat.com" <lwoodman@redhat.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Tom Zanussi <tzanussi@gmail.com>, "riel@redhat.com" <riel@redhat.com>,
-       Munehiro Ikeda <m-ikeda@ds.jp.nec.com>,
-       Atsushi Tsuji <a-tsuji@bk.jp.nec.com>
-Subject: Re: [RFC PATCH -tip 0/2 v3] pagecache tracepoints proposal
-Message-Id: <20100218143429.ddea9bb2.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20100208155450.GA17055@localhost>
-References: <4B6B7FBF.9090005@bx.jp.nec.com>
-	<20100205072858.GC9320@elte.hu>
-	<20100208155450.GA17055@localhost>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
+	id S1752233Ab0BRFoY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 00:44:24 -0500
+Received: from mail.perches.com ([173.55.12.10]:1089 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751808Ab0BRFoW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Feb 2010 00:44:22 -0500
+Subject: [PATCH V2 net-next 13/15] drivers/net/tg3.c: Use
+ (pr|netdev)_<level> macro helpers
+From: Joe Perches <joe@perches.com>
+To: netdev@vger.kernel.org
+Cc: Matt Carlson <mcarlson@broadcom.com>, Michael Chan <mchan@broadcom.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <89936828c4a4c914b849cf8c96985d62fb612e55.1266454576.git.joe@perches.com>
+References: <cover.1266454575.git.joe@perches.com>
+	 <89936828c4a4c914b849cf8c96985d62fb612e55.1266454576.git.joe@perches.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 17 Feb 2010 21:44:19 -0800
+Message-ID: <1266471859.8446.256.camel@Joe-Laptop.home>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 8 Feb 2010 23:54:50 +0800
-Wu Fengguang <fengguang.wu@intel.com> wrote:
+Add #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+Remove #define PFX
+Use pr_<level>
+Use netdev_<level>
+Remove periods from most formats
+Coalesce long formats
+Use printk_once
 
-> Hi Ingo,
-> 
-> > Note that there's also these older experimental commits in tip:tracing/mm 
-> > that introduce the notion of 'object collections' and adds the ability to 
-> > trace them:
-> > 
-> > 3383e37: tracing, page-allocator: Add a postprocessing script for page-allocator-related ftrace events
-> > c33b359: tracing, page-allocator: Add trace event for page traffic related to the buddy lists
-> > 0d524fb: tracing, mm: Add trace events for anti-fragmentation falling back to other migratetypes
-> > b9a2817: tracing, page-allocator: Add trace events for page allocation and page freeing
-> > 08b6cb8: perf_counter tools: Provide default bfd_demangle() function in case it's not around
-> > eb46710: tracing/mm: rename 'trigger' file to 'dump_range'
-> > 1487a7a: tracing/mm: fix mapcount trace record field
-> > dcac8cd: tracing/mm: add page frame snapshot trace
-> > 
-> > this concept, if refreshed a bit and extended to the page cache, would allow 
-> > the recording/snapshotting of the MM state of all currently present pages in 
-> > the page-cache - a possibly nice addition to the dynamic technique you apply 
-> > in your patches.
-> > 
-> > there's similar "object collections" work underway for 'perf lock' btw., by 
-> > Hitoshi Mitake and Frederic.
-> > 
-> > So there's lots of common ground and lots of interest.
-> 
-> Here is a scratch patch to exercise the "object collections" idea :)
-> 
-> Interestingly, the pagecache walk is pretty fast, while copying out the trace
-> data takes more time:
-> 
->         # time (echo / > walk-fs)
->         (; echo / > walk-fs; )  0.01s user 0.11s system 82% cpu 0.145 total
-> 
->         # time wc /debug/tracing/trace
->         4570 45893 551282 /debug/tracing/trace
->         wc /debug/tracing/trace  0.75s user 0.55s system 88% cpu 1.470 total
-> 
->         # time (cat /debug/tracing/trace > /dev/shm/t)
->         (; cat /debug/tracing/trace > /dev/shm/t; )  0.04s user 0.49s system 95% cpu 0.548 total
-> 
->         # time (dd if=/debug/tracing/trace of=/dev/shm/t bs=1M)
->         0+138 records in
->         0+138 records out
->         551282 bytes (551 kB) copied, 0.380454 s, 1.4 MB/s
->         (; dd if=/debug/tracing/trace of=/dev/shm/t bs=1M; )  0.09s user 0.48s system 96% cpu 0.600 total
-> 
-> The patch is based on tip/tracing/mm. 
-> 
-> Thanks,
-> Fengguang
-> ---
-> tracing: pagecache object collections
-> 
-> This dumps
-> - all cached files of a mounted fs  (the inode-cache)
-> - all cached pages of a cached file (the page-cache)
-> 
-> Usage and Sample output:
-> 
-> # echo / > /debug/tracing/objects/mm/pages/walk-fs
-> # head /debug/tracing/trace
-> 
-> # tracer: nop
-> #
-> #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
-> #              | |       |          |         |
->              zsh-3078  [000]   526.272587: dump_inode: ino=102223 size=169291 cached=172032 age=9 dirty=6 dev=0:15 file=<TODO>
->              zsh-3078  [000]   526.274260: dump_pagecache_range: index=0 len=41 flags=10000000000002c count=1 mapcount=0
->              zsh-3078  [000]   526.274340: dump_pagecache_range: index=41 len=1 flags=10000000000006c count=1 mapcount=0
->              zsh-3078  [000]   526.274401: dump_inode: ino=8966 size=442 cached=4096 age=49 dirty=0 dev=0:15 file=<TODO>
->              zsh-3078  [000]   526.274425: dump_pagecache_range: index=0 len=1 flags=10000000000002c count=1 mapcount=0
->              zsh-3078  [000]   526.274440: dump_inode: ino=8964 size=4096 cached=0 age=49 dirty=0 dev=0:15 file=<TODO>
-> 
-> Here "age" is either age from inode create time, or from last dirty time.
-> 
-> TODO:
-> 
-> correctness
-> - show file path name
->   XXX: can trace_seq_path() be called directly inside TRACE_EVENT()?
-> - reliably prevent ring buffer overflow,
->   by replacing cond_resched() with some wait function
->   (eg. wait until 2+ pages are free in ring buffer)
-> - use stable_page_flags() in recent kernel
-> 
-> output style
-> - use plain tracing output format (no fancy TASK-PID/.../FUNCTION fields)
-> - clear ring buffer before dumping the objects?
-> - output format: key=value pairs ==> header + tabbed values?
-> - add filtering options if necessary
-> 
+Signed-off-by: Joe Perches <joe@perches.com>
+---
+ drivers/net/tg3.c |  270 +++++++++++++++++++++-------------------------------
+ 1 files changed, 109 insertions(+), 161 deletions(-)
 
-Can we dump page's cgroup ? If so, I'm happy.
-Maybe
-==
-  struct page_cgroup *pc = lookup_page_cgroup(page);
-  struct mem_cgroup *mem = pc->mem_cgroup;
-  shodt mem_cgroup_id = mem->css.css_id;
+diff --git a/drivers/net/tg3.c b/drivers/net/tg3.c
+index ddf6615..f204f73 100644
+--- a/drivers/net/tg3.c
++++ b/drivers/net/tg3.c
+@@ -67,7 +67,6 @@
+ #include "tg3.h"
+ 
+ #define DRV_MODULE_NAME		"tg3"
+-#define PFX DRV_MODULE_NAME	": "
+ #define DRV_MODULE_VERSION	"3.108"
+ #define DRV_MODULE_RELDATE	"February 17, 2010"
+ 
+@@ -158,7 +157,7 @@
+ #define FIRMWARE_TG3TSO5	"tigon/tg3_tso5.bin"
+ 
+ static char version[] __devinitdata =
+-	DRV_MODULE_NAME ".c:v" DRV_MODULE_VERSION " (" DRV_MODULE_RELDATE ")\n";
++	DRV_MODULE_NAME ".c:v" DRV_MODULE_VERSION " (" DRV_MODULE_RELDATE ")";
+ 
+ MODULE_AUTHOR("David S. Miller (davem@redhat.com) and Jeff Garzik (jgarzik@pobox.com)");
+ MODULE_DESCRIPTION("Broadcom Tigon3 ethernet driver");
+@@ -1099,8 +1098,7 @@ static int tg3_mdio_init(struct tg3 *tp)
+ 
+ 	i = mdiobus_register(tp->mdio_bus);
+ 	if (i) {
+-		printk(KERN_WARNING "%s: mdiobus_reg failed (0x%x)\n",
+-			tp->dev->name, i);
++		netdev_warn(tp->dev, "mdiobus_reg failed (0x%x)\n", i);
+ 		mdiobus_free(tp->mdio_bus);
+ 		return i;
+ 	}
+@@ -1108,7 +1106,7 @@ static int tg3_mdio_init(struct tg3 *tp)
+ 	phydev = tp->mdio_bus->phy_map[TG3_PHY_MII_ADDR];
+ 
+ 	if (!phydev || !phydev->drv) {
+-		printk(KERN_WARNING "%s: No PHY devices\n", tp->dev->name);
++		netdev_warn(tp->dev, "No PHY devices\n");
+ 		mdiobus_unregister(tp->mdio_bus);
+ 		mdiobus_free(tp->mdio_bus);
+ 		return -ENODEV;
+@@ -1252,27 +1250,22 @@ static void tg3_ump_link_report(struct tg3 *tp)
+ static void tg3_link_report(struct tg3 *tp)
+ {
+ 	if (!netif_carrier_ok(tp->dev)) {
+-		if (netif_msg_link(tp))
+-			printk(KERN_INFO PFX "%s: Link is down.\n",
+-			       tp->dev->name);
++		netif_info(tp, link, tp->dev, "Link is down\n");
+ 		tg3_ump_link_report(tp);
+ 	} else if (netif_msg_link(tp)) {
+-		printk(KERN_INFO PFX "%s: Link is up at %d Mbps, %s duplex.\n",
+-		       tp->dev->name,
+-		       (tp->link_config.active_speed == SPEED_1000 ?
+-			1000 :
+-			(tp->link_config.active_speed == SPEED_100 ?
+-			 100 : 10)),
+-		       (tp->link_config.active_duplex == DUPLEX_FULL ?
+-			"full" : "half"));
+-
+-		printk(KERN_INFO PFX
+-		       "%s: Flow control is %s for TX and %s for RX.\n",
+-		       tp->dev->name,
+-		       (tp->link_config.active_flowctrl & FLOW_CTRL_TX) ?
+-		       "on" : "off",
+-		       (tp->link_config.active_flowctrl & FLOW_CTRL_RX) ?
+-		       "on" : "off");
++		netdev_info(tp->dev, "Link is up at %d Mbps, %s duplex\n",
++			    (tp->link_config.active_speed == SPEED_1000 ?
++			     1000 :
++			     (tp->link_config.active_speed == SPEED_100 ?
++			      100 : 10)),
++			    (tp->link_config.active_duplex == DUPLEX_FULL ?
++			     "full" : "half"));
++
++		netdev_info(tp->dev, "Flow control is %s for TX and %s for RX\n",
++			    (tp->link_config.active_flowctrl & FLOW_CTRL_TX) ?
++			    "on" : "off",
++			    (tp->link_config.active_flowctrl & FLOW_CTRL_RX) ?
++			    "on" : "off");
+ 		tg3_ump_link_report(tp);
+ 	}
+ }
+@@ -1471,7 +1464,7 @@ static int tg3_phy_init(struct tg3 *tp)
+ 	phydev = phy_connect(tp->dev, dev_name(&phydev->dev), tg3_adjust_link,
+ 			     phydev->dev_flags, phydev->interface);
+ 	if (IS_ERR(phydev)) {
+-		printk(KERN_ERR "%s: Could not attach to PHY\n", tp->dev->name);
++		netdev_err(tp->dev, "Could not attach to PHY\n");
+ 		return PTR_ERR(phydev);
+ 	}
+ 
+@@ -2500,8 +2493,8 @@ static int tg3_set_power_state(struct tg3 *tp, pci_power_t state)
+ 		break;
+ 
+ 	default:
+-		printk(KERN_ERR PFX "%s: Invalid power state (D%d) requested\n",
+-			tp->dev->name, state);
++		netdev_err(tp->dev, "Invalid power state (D%d) requested\n",
++			   state);
+ 		return -EINVAL;
+ 	}
+ 
+@@ -4342,10 +4335,8 @@ static void tg3_tx_recover(struct tg3 *tp)
+ 	BUG_ON((tp->tg3_flags & TG3_FLAG_MBOX_WRITE_REORDER) ||
+ 	       tp->write32_tx_mbox == tg3_write_indirect_mbox);
+ 
+-	printk(KERN_WARNING PFX "%s: The system may be re-ordering memory-"
+-	       "mapped I/O cycles to the network device, attempting to "
+-	       "recover. Please report the problem to the driver maintainer "
+-	       "and include system chipset information.\n", tp->dev->name);
++	netdev_warn(tp->dev, "The system may be re-ordering memory-mapped I/O cycles to the network device, attempting to recover\n"
++		    "Please report the problem to the driver maintainer and include system chipset information.\n");
+ 
+ 	spin_lock(&tp->lock);
+ 	tp->tg3_flags |= TG3_FLAG_TX_RECOVERY_PENDING;
+@@ -5269,8 +5260,7 @@ static int tg3_restart_hw(struct tg3 *tp, int reset_phy)
+ 
+ 	err = tg3_init_hw(tp, reset_phy);
+ 	if (err) {
+-		printk(KERN_ERR PFX "%s: Failed to re-initialize device, "
+-		       "aborting.\n", tp->dev->name);
++		netdev_err(tp->dev, "Failed to re-initialize device, aborting\n");
+ 		tg3_halt(tp, RESET_KIND_SHUTDOWN, 1);
+ 		tg3_full_unlock(tp);
+ 		del_timer_sync(&tp->timer);
+@@ -5343,10 +5333,10 @@ out:
+ 
+ static void tg3_dump_short_state(struct tg3 *tp)
+ {
+-	printk(KERN_ERR PFX "DEBUG: MAC_TX_STATUS[%08x] MAC_RX_STATUS[%08x]\n",
+-	       tr32(MAC_TX_STATUS), tr32(MAC_RX_STATUS));
+-	printk(KERN_ERR PFX "DEBUG: RDMAC_STATUS[%08x] WDMAC_STATUS[%08x]\n",
+-	       tr32(RDMAC_STATUS), tr32(WDMAC_STATUS));
++	netdev_err(tp->dev, "DEBUG: MAC_TX_STATUS[%08x] MAC_RX_STATUS[%08x]\n",
++		   tr32(MAC_TX_STATUS), tr32(MAC_RX_STATUS));
++	netdev_err(tp->dev, "DEBUG: RDMAC_STATUS[%08x] WDMAC_STATUS[%08x]\n",
++		   tr32(RDMAC_STATUS), tr32(WDMAC_STATUS));
+ }
+ 
+ static void tg3_tx_timeout(struct net_device *dev)
+@@ -5354,8 +5344,7 @@ static void tg3_tx_timeout(struct net_device *dev)
+ 	struct tg3 *tp = netdev_priv(dev);
+ 
+ 	if (netif_msg_tx_err(tp)) {
+-		printk(KERN_ERR PFX "%s: transmit timed out, resetting\n",
+-		       dev->name);
++		netdev_err(dev, "transmit timed out, resetting\n");
+ 		tg3_dump_short_state(tp);
+ 	}
+ 
+@@ -5519,8 +5508,7 @@ static netdev_tx_t tg3_start_xmit(struct sk_buff *skb,
+ 			netif_tx_stop_queue(txq);
+ 
+ 			/* This is a hard error, log it. */
+-			printk(KERN_ERR PFX "%s: BUG! Tx Ring full when "
+-			       "queue awake!\n", dev->name);
++			netdev_err(dev, "BUG! Tx Ring full when queue awake!\n");
+ 		}
+ 		return NETDEV_TX_BUSY;
+ 	}
+@@ -5723,8 +5711,7 @@ static netdev_tx_t tg3_start_xmit_dma_bug(struct sk_buff *skb,
+ 			netif_tx_stop_queue(txq);
+ 
+ 			/* This is a hard error, log it. */
+-			printk(KERN_ERR PFX "%s: BUG! Tx Ring full when "
+-			       "queue awake!\n", dev->name);
++			netdev_err(dev, "BUG! Tx Ring full when queue awake!\n");
+ 		}
+ 		return NETDEV_TX_BUSY;
+ 	}
+@@ -6071,11 +6058,8 @@ static int tg3_rx_prodring_alloc(struct tg3 *tp,
+ 	/* Now allocate fresh SKBs for each rx ring. */
+ 	for (i = 0; i < tp->rx_pending; i++) {
+ 		if (tg3_alloc_rx_skb(tp, tpr, RXD_OPAQUE_RING_STD, i) < 0) {
+-			printk(KERN_WARNING PFX
+-			       "%s: Using a smaller RX standard ring, "
+-			       "only %d out of %d buffers were allocated "
+-			       "successfully.\n",
+-			       tp->dev->name, i, tp->rx_pending);
++			netdev_warn(tp->dev, "Using a smaller RX standard ring, only %d out of %d buffers were allocated successfully\n",
++				    i, tp->rx_pending);
+ 			if (i == 0)
+ 				goto initfail;
+ 			tp->rx_pending = i;
+@@ -6104,11 +6088,8 @@ static int tg3_rx_prodring_alloc(struct tg3 *tp,
+ 
+ 	for (i = 0; i < tp->rx_jumbo_pending; i++) {
+ 		if (tg3_alloc_rx_skb(tp, tpr, RXD_OPAQUE_RING_JUMBO, i) < 0) {
+-			printk(KERN_WARNING PFX
+-			       "%s: Using a smaller RX jumbo ring, "
+-			       "only %d out of %d buffers were "
+-			       "allocated successfully.\n",
+-			       tp->dev->name, i, tp->rx_jumbo_pending);
++			netdev_warn(tp->dev, "Using a smaller RX jumbo ring, only %d out of %d buffers were allocated successfully\n",
++				    i, tp->rx_jumbo_pending);
+ 			if (i == 0)
+ 				goto initfail;
+ 			tp->rx_jumbo_pending = i;
+@@ -6452,8 +6433,7 @@ static int tg3_stop_block(struct tg3 *tp, unsigned long ofs, u32 enable_bit, int
+ 	}
+ 
+ 	if (i == MAX_WAIT_CNT && !silent) {
+-		printk(KERN_ERR PFX "tg3_stop_block timed out, "
+-		       "ofs=%lx enable_bit=%x\n",
++		pr_err("tg3_stop_block timed out, ofs=%lx enable_bit=%x\n",
+ 		       ofs, enable_bit);
+ 		return -ENODEV;
+ 	}
+@@ -6500,9 +6480,8 @@ static int tg3_abort_hw(struct tg3 *tp, int silent)
+ 			break;
+ 	}
+ 	if (i >= MAX_WAIT_CNT) {
+-		printk(KERN_ERR PFX "tg3_abort_hw timed out for %s, "
+-		       "TX_MODE_ENABLE will not clear MAC_TX_MODE=%08x\n",
+-		       tp->dev->name, tr32(MAC_TX_MODE));
++		netdev_err(tp->dev, "%s timed out, TX_MODE_ENABLE will not clear MAC_TX_MODE=%08x\n",
++			   __func__, tr32(MAC_TX_MODE));
+ 		err |= -ENODEV;
+ 	}
+ 
+@@ -6723,8 +6702,7 @@ static int tg3_poll_fw(struct tg3 *tp)
+ 	    !(tp->tg3_flags2 & TG3_FLG2_NO_FWARE_REPORTED)) {
+ 		tp->tg3_flags2 |= TG3_FLG2_NO_FWARE_REPORTED;
+ 
+-		printk(KERN_INFO PFX "%s: No firmware running.\n",
+-		       tp->dev->name);
++		netdev_info(tp->dev, "No firmware running\n");
+ 	}
+ 
+ 	if (tp->pci_chip_rev_id == CHIPREV_ID_57765_A0) {
+@@ -7152,10 +7130,8 @@ static int tg3_halt_cpu(struct tg3 *tp, u32 offset)
+ 	}
+ 
+ 	if (i >= 10000) {
+-		printk(KERN_ERR PFX "tg3_reset_cpu timed out for %s, "
+-		       "and %s CPU\n",
+-		       tp->dev->name,
+-		       (offset == RX_CPU_BASE ? "RX" : "TX"));
++		netdev_err(tp->dev, "%s timed out, %s CPU\n",
++			   __func__, offset == RX_CPU_BASE ? "RX" : "TX");
+ 		return -ENODEV;
+ 	}
+ 
+@@ -7180,9 +7156,8 @@ static int tg3_load_firmware_cpu(struct tg3 *tp, u32 cpu_base, u32 cpu_scratch_b
+ 
+ 	if (cpu_base == TX_CPU_BASE &&
+ 	    (tp->tg3_flags2 & TG3_FLG2_5705_PLUS)) {
+-		printk(KERN_ERR PFX "tg3_load_firmware_cpu: Trying to load "
+-		       "TX cpu firmware on %s which is 5705.\n",
+-		       tp->dev->name);
++		netdev_err(tp->dev, "%s: Trying to load TX cpu firmware which is 5705\n",
++			   __func__);
+ 		return -EINVAL;
+ 	}
+ 
+@@ -7261,10 +7236,8 @@ static int tg3_load_5701_a0_firmware_fix(struct tg3 *tp)
+ 		udelay(1000);
+ 	}
+ 	if (i >= 5) {
+-		printk(KERN_ERR PFX "tg3_load_firmware fails for %s "
+-		       "to set RX CPU PC, is %08x should be %08x\n",
+-		       tp->dev->name, tr32(RX_CPU_BASE + CPU_PC),
+-		       info.fw_base);
++		netdev_err(tp->dev, "tg3_load_firmware fails to set RX CPU PC, is %08x should be %08x\n",
++			   tr32(RX_CPU_BASE + CPU_PC), info.fw_base);
+ 		return -ENODEV;
+ 	}
+ 	tw32(RX_CPU_BASE + CPU_STATE, 0xffffffff);
+@@ -7327,10 +7300,8 @@ static int tg3_load_tso_firmware(struct tg3 *tp)
+ 		udelay(1000);
+ 	}
+ 	if (i >= 5) {
+-		printk(KERN_ERR PFX "tg3_load_tso_firmware fails for %s "
+-		       "to set CPU PC, is %08x should be %08x\n",
+-		       tp->dev->name, tr32(cpu_base + CPU_PC),
+-		       info.fw_base);
++		netdev_err(tp->dev, "%s fails to set CPU PC, is %08x should be %08x\n",
++			   __func__, tr32(cpu_base + CPU_PC), info.fw_base);
+ 		return -ENODEV;
+ 	}
+ 	tw32(cpu_base + CPU_STATE, 0xffffffff);
+@@ -7791,8 +7762,7 @@ static int tg3_reset_hw(struct tg3 *tp, int reset_phy)
+ 		udelay(10);
+ 	}
+ 	if (i >= 2000) {
+-		printk(KERN_ERR PFX "tg3_reset_hw cannot enable BUFMGR for %s.\n",
+-		       tp->dev->name);
++		netdev_err(tp->dev, "%s cannot enable BUFMGR\n", __func__);
+ 		return -ENODEV;
+ 	}
+ 
+@@ -8655,10 +8625,8 @@ static int tg3_test_msi(struct tg3 *tp)
+ 		return err;
+ 
+ 	/* MSI test failed, go back to INTx mode */
+-	printk(KERN_WARNING PFX "%s: No interrupt was generated using MSI, "
+-	       "switching to INTx mode. Please report this failure to "
+-	       "the PCI maintainer and include system chipset information.\n",
+-		       tp->dev->name);
++	netdev_warn(tp->dev, "No interrupt was generated using MSI, switching to INTx mode\n"
++		    "Please report this failure to the PCI maintainer and include system chipset information\n");
+ 
+ 	free_irq(tp->napi[0].irq_vec, &tp->napi[0]);
+ 
+@@ -8691,8 +8659,8 @@ static int tg3_request_firmware(struct tg3 *tp)
+ 	const __be32 *fw_data;
+ 
+ 	if (request_firmware(&tp->fw, tp->fw_needed, &tp->pdev->dev)) {
+-		printk(KERN_ERR "%s: Failed to load firmware \"%s\"\n",
+-		       tp->dev->name, tp->fw_needed);
++		netdev_err(tp->dev, "Failed to load firmware \"%s\"\n",
++			   tp->fw_needed);
+ 		return -ENOENT;
+ 	}
+ 
+@@ -8705,8 +8673,8 @@ static int tg3_request_firmware(struct tg3 *tp)
+ 
+ 	tp->fw_len = be32_to_cpu(fw_data[2]);	/* includes bss */
+ 	if (tp->fw_len < (tp->fw->size - 12)) {
+-		printk(KERN_ERR "%s: bogus length %d in \"%s\"\n",
+-		       tp->dev->name, tp->fw_len, tp->fw_needed);
++		netdev_err(tp->dev, "bogus length %d in \"%s\"\n",
++			   tp->fw_len, tp->fw_needed);
+ 		release_firmware(tp->fw);
+ 		tp->fw = NULL;
+ 		return -EINVAL;
+@@ -8744,9 +8712,8 @@ static bool tg3_enable_msix(struct tg3 *tp)
+ 			return false;
+ 		if (pci_enable_msix(tp->pdev, msix_ent, rc))
+ 			return false;
+-		printk(KERN_NOTICE
+-		       "%s: Requested %d MSI-X vectors, received %d\n",
+-		       tp->dev->name, tp->irq_cnt, rc);
++		netdev_notice(tp->dev, "Requested %d MSI-X vectors, received %d\n",
++			      tp->irq_cnt, rc);
+ 		tp->irq_cnt = rc;
+ 	}
+ 
+@@ -8771,8 +8738,7 @@ static void tg3_ints_init(struct tg3 *tp)
+ 		/* All MSI supporting chips should support tagged
+ 		 * status.  Assert that this is the case.
+ 		 */
+-		printk(KERN_WARNING PFX "%s: MSI without TAGGED? "
+-		       "Not using MSI.\n", tp->dev->name);
++		netdev_warn(tp->dev, "MSI without TAGGED? Not using MSI\n");
+ 		goto defcfg;
+ 	}
+ 
+@@ -8817,12 +8783,10 @@ static int tg3_open(struct net_device *dev)
+ 			if (err)
+ 				return err;
+ 		} else if (err) {
+-			printk(KERN_WARNING "%s: TSO capability disabled.\n",
+-			       tp->dev->name);
++			netdev_warn(tp->dev, "TSO capability disabled\n");
+ 			tp->tg3_flags2 &= ~TG3_FLG2_TSO_CAPABLE;
+ 		} else if (!(tp->tg3_flags2 & TG3_FLG2_TSO_CAPABLE)) {
+-			printk(KERN_NOTICE "%s: TSO capability restored.\n",
+-			       tp->dev->name);
++			netdev_notice(tp->dev, "TSO capability restored\n");
+ 			tp->tg3_flags2 |= TG3_FLG2_TSO_CAPABLE;
+ 		}
+ 	}
+@@ -10687,8 +10651,7 @@ static int tg3_test_registers(struct tg3 *tp)
+ 
+ out:
+ 	if (netif_msg_hw(tp))
+-		printk(KERN_ERR PFX "Register test failed at offset %x\n",
+-		       offset);
++		pr_err("Register test failed at offset %x\n", offset);
+ 	tw32(offset, save_val);
+ 	return -EIO;
+ }
+@@ -11815,8 +11778,8 @@ static void __devinit tg3_nvram_init(struct tg3 *tp)
+ 		tp->tg3_flags |= TG3_FLAG_NVRAM;
+ 
+ 		if (tg3_nvram_lock(tp)) {
+-			printk(KERN_WARNING PFX "%s: Cannot get nvarm lock, "
+-			       "tg3_nvram_init failed.\n", tp->dev->name);
++			netdev_warn(tp->dev, "Cannot get nvram lock, %s failed\n",
++				    __func__);
+ 			return;
+ 		}
+ 		tg3_enable_nvram_access(tp);
+@@ -13280,8 +13243,7 @@ static int __devinit tg3_get_invariants(struct tg3 *tp)
+ 		   (tp->tg3_flags2 & TG3_FLG2_5780_CLASS)) {
+ 		tp->pcix_cap = pci_find_capability(tp->pdev, PCI_CAP_ID_PCIX);
+ 		if (!tp->pcix_cap) {
+-			printk(KERN_ERR PFX "Cannot find PCI-X "
+-					    "capability, aborting.\n");
++			pr_err("Cannot find PCI-X capability, aborting\n");
+ 			return -EIO;
+ 		}
+ 
+@@ -13478,8 +13440,7 @@ static int __devinit tg3_get_invariants(struct tg3 *tp)
+ 	/* Force the chip into D0. */
+ 	err = tg3_set_power_state(tp, PCI_D0);
+ 	if (err) {
+-		printk(KERN_ERR PFX "(%s) transition to D0 failed\n",
+-		       pci_name(tp->pdev));
++		pr_err("(%s) transition to D0 failed\n", pci_name(tp->pdev));
+ 		return err;
+ 	}
+ 
+@@ -13653,7 +13614,7 @@ static int __devinit tg3_get_invariants(struct tg3 *tp)
+ 
+ 	err = tg3_phy_probe(tp);
+ 	if (err) {
+-		printk(KERN_ERR PFX "(%s) phy probe failed, err %d\n",
++		pr_err("(%s) phy probe failed, err %d\n",
+ 		       pci_name(tp->pdev), err);
+ 		/* ... but do not return immediately ... */
+ 		tg3_mdio_fini(tp);
+@@ -14163,7 +14124,8 @@ static int __devinit tg3_test_dma(struct tg3 *tp)
+ 		/* Send the buffer to the chip. */
+ 		ret = tg3_do_test_dma(tp, buf, buf_dma, TEST_BUFFER_SIZE, 1);
+ 		if (ret) {
+-			printk(KERN_ERR "tg3_test_dma() Write the buffer failed %d\n", ret);
++			pr_err("tg3_test_dma() Write the buffer failed %d\n",
++			       ret);
+ 			break;
+ 		}
+ 
+@@ -14173,7 +14135,8 @@ static int __devinit tg3_test_dma(struct tg3 *tp)
+ 			u32 val;
+ 			tg3_read_mem(tp, 0x2100 + (i*4), &val);
+ 			if (le32_to_cpu(val) != p[i]) {
+-				printk(KERN_ERR "  tg3_test_dma()  Card buffer corrupted on write! (%d != %d)\n", val, i);
++				pr_err("  tg3_test_dma()  Card buffer corrupted on write! (%d != %d)\n",
++				       val, i);
+ 				/* ret = -ENODEV here? */
+ 			}
+ 			p[i] = 0;
+@@ -14182,7 +14145,8 @@ static int __devinit tg3_test_dma(struct tg3 *tp)
+ 		/* Now read it back. */
+ 		ret = tg3_do_test_dma(tp, buf, buf_dma, TEST_BUFFER_SIZE, 0);
+ 		if (ret) {
+-			printk(KERN_ERR "tg3_test_dma() Read the buffer failed %d\n", ret);
++			pr_err("tg3_test_dma() Read the buffer failed %d\n",
++			       ret);
+ 
+ 			break;
+ 		}
+@@ -14199,7 +14163,8 @@ static int __devinit tg3_test_dma(struct tg3 *tp)
+ 				tw32(TG3PCI_DMA_RW_CTRL, tp->dma_rwctrl);
+ 				break;
+ 			} else {
+-				printk(KERN_ERR "tg3_test_dma() buffer corrupted on read back! (%d != %d)\n", p[i], i);
++				pr_err("tg3_test_dma() buffer corrupted on read back! (%d != %d)\n",
++				       p[i], i);
+ 				ret = -ENODEV;
+ 				goto out;
+ 			}
+@@ -14480,7 +14445,6 @@ static const struct net_device_ops tg3_netdev_ops_dma_bug = {
+ static int __devinit tg3_init_one(struct pci_dev *pdev,
+ 				  const struct pci_device_id *ent)
+ {
+-	static int tg3_version_printed = 0;
+ 	struct net_device *dev;
+ 	struct tg3 *tp;
+ 	int i, err, pm_cap;
+@@ -14488,20 +14452,17 @@ static int __devinit tg3_init_one(struct pci_dev *pdev,
+ 	char str[40];
+ 	u64 dma_mask, persist_dma_mask;
+ 
+-	if (tg3_version_printed++ == 0)
+-		printk(KERN_INFO "%s", version);
++	printk_once(KERN_INFO "%s\n", version);
+ 
+ 	err = pci_enable_device(pdev);
+ 	if (err) {
+-		printk(KERN_ERR PFX "Cannot enable PCI device, "
+-		       "aborting.\n");
++		pr_err("Cannot enable PCI device, aborting\n");
+ 		return err;
+ 	}
+ 
+ 	err = pci_request_regions(pdev, DRV_MODULE_NAME);
+ 	if (err) {
+-		printk(KERN_ERR PFX "Cannot obtain PCI resources, "
+-		       "aborting.\n");
++		pr_err("Cannot obtain PCI resources, aborting\n");
+ 		goto err_out_disable_pdev;
+ 	}
+ 
+@@ -14510,15 +14471,14 @@ static int __devinit tg3_init_one(struct pci_dev *pdev,
+ 	/* Find power-management capability. */
+ 	pm_cap = pci_find_capability(pdev, PCI_CAP_ID_PM);
+ 	if (pm_cap == 0) {
+-		printk(KERN_ERR PFX "Cannot find PowerManagement capability, "
+-		       "aborting.\n");
++		pr_err("Cannot find PowerManagement capability, aborting\n");
+ 		err = -EIO;
+ 		goto err_out_free_res;
+ 	}
+ 
+ 	dev = alloc_etherdev_mq(sizeof(*tp), TG3_IRQ_MAX_VECS);
+ 	if (!dev) {
+-		printk(KERN_ERR PFX "Etherdev alloc failed, aborting.\n");
++		pr_err("Etherdev alloc failed, aborting\n");
+ 		err = -ENOMEM;
+ 		goto err_out_free_res;
+ 	}
+@@ -14568,8 +14528,7 @@ static int __devinit tg3_init_one(struct pci_dev *pdev,
+ 
+ 	tp->regs = pci_ioremap_bar(pdev, BAR_0);
+ 	if (!tp->regs) {
+-		printk(KERN_ERR PFX "Cannot map device registers, "
+-		       "aborting.\n");
++		netdev_err(dev, "Cannot map device registers, aborting\n");
+ 		err = -ENOMEM;
+ 		goto err_out_free_dev;
+ 	}
+@@ -14585,8 +14544,7 @@ static int __devinit tg3_init_one(struct pci_dev *pdev,
+ 
+ 	err = tg3_get_invariants(tp);
+ 	if (err) {
+-		printk(KERN_ERR PFX "Problem fetching invariants of chip, "
+-		       "aborting.\n");
++		netdev_err(dev, "Problem fetching invariants of chip, aborting\n");
+ 		goto err_out_iounmap;
+ 	}
+ 
+@@ -14621,8 +14579,7 @@ static int __devinit tg3_init_one(struct pci_dev *pdev,
+ 			err = pci_set_consistent_dma_mask(pdev,
+ 							  persist_dma_mask);
+ 			if (err < 0) {
+-				printk(KERN_ERR PFX "Unable to obtain 64 bit "
+-				       "DMA for consistent allocations\n");
++				netdev_err(dev, "Unable to obtain 64 bit DMA for consistent allocations\n");
+ 				goto err_out_iounmap;
+ 			}
+ 		}
+@@ -14630,8 +14587,7 @@ static int __devinit tg3_init_one(struct pci_dev *pdev,
+ 	if (err || dma_mask == DMA_BIT_MASK(32)) {
+ 		err = pci_set_dma_mask(pdev, DMA_BIT_MASK(32));
+ 		if (err) {
+-			printk(KERN_ERR PFX "No usable DMA configuration, "
+-			       "aborting.\n");
++			netdev_err(dev, "No usable DMA configuration, aborting\n");
+ 			goto err_out_iounmap;
+ 		}
+ 	}
+@@ -14680,16 +14636,14 @@ static int __devinit tg3_init_one(struct pci_dev *pdev,
+ 
+ 	err = tg3_get_device_address(tp);
+ 	if (err) {
+-		printk(KERN_ERR PFX "Could not obtain valid ethernet address, "
+-		       "aborting.\n");
++		netdev_err(dev, "Could not obtain valid ethernet address, aborting\n");
+ 		goto err_out_iounmap;
+ 	}
+ 
+ 	if (tp->tg3_flags3 & TG3_FLG3_ENABLE_APE) {
+ 		tp->aperegs = pci_ioremap_bar(pdev, BAR_2);
+ 		if (!tp->aperegs) {
+-			printk(KERN_ERR PFX "Cannot map APE registers, "
+-			       "aborting.\n");
++			netdev_err(dev, "Cannot map APE registers, aborting\n");
+ 			err = -ENOMEM;
+ 			goto err_out_iounmap;
+ 		}
+@@ -14713,7 +14667,7 @@ static int __devinit tg3_init_one(struct pci_dev *pdev,
+ 
+ 	err = tg3_test_dma(tp);
+ 	if (err) {
+-		printk(KERN_ERR PFX "DMA engine test failed, aborting.\n");
++		netdev_err(dev, "DMA engine test failed, aborting\n");
+ 		goto err_out_apeunmap;
+ 	}
+ 
+@@ -14774,45 +14728,39 @@ static int __devinit tg3_init_one(struct pci_dev *pdev,
+ 
+ 	err = register_netdev(dev);
+ 	if (err) {
+-		printk(KERN_ERR PFX "Cannot register net device, "
+-		       "aborting.\n");
++		netdev_err(dev, "Cannot register net device, aborting\n");
+ 		goto err_out_apeunmap;
+ 	}
+ 
+-	printk(KERN_INFO "%s: Tigon3 [partno(%s) rev %04x] (%s) MAC address %pM\n",
+-	       dev->name,
+-	       tp->board_part_number,
+-	       tp->pci_chip_rev_id,
+-	       tg3_bus_string(tp, str),
+-	       dev->dev_addr);
++	netdev_info(dev, "Tigon3 [partno(%s) rev %04x] (%s) MAC address %pM\n",
++		    tp->board_part_number,
++		    tp->pci_chip_rev_id,
++		    tg3_bus_string(tp, str),
++		    dev->dev_addr);
+ 
+ 	if (tp->tg3_flags3 & TG3_FLG3_PHY_CONNECTED) {
+ 		struct phy_device *phydev;
+ 		phydev = tp->mdio_bus->phy_map[TG3_PHY_MII_ADDR];
+-		printk(KERN_INFO
+-		       "%s: attached PHY driver [%s] (mii_bus:phy_addr=%s)\n",
+-		       tp->dev->name, phydev->drv->name,
+-		       dev_name(&phydev->dev));
++		netdev_info(dev, "attached PHY driver [%s] (mii_bus:phy_addr=%s)\n",
++			    phydev->drv->name, dev_name(&phydev->dev));
+ 	} else
+-		printk(KERN_INFO
+-		       "%s: attached PHY is %s (%s Ethernet) (WireSpeed[%d])\n",
+-		       tp->dev->name, tg3_phy_string(tp),
+-		       ((tp->tg3_flags & TG3_FLAG_10_100_ONLY) ? "10/100Base-TX" :
+-			((tp->tg3_flags2 & TG3_FLG2_ANY_SERDES) ? "1000Base-SX" :
+-			 "10/100/1000Base-T")),
+-		       (tp->tg3_flags2 & TG3_FLG2_NO_ETH_WIRE_SPEED) == 0);
+-
+-	printk(KERN_INFO "%s: RXcsums[%d] LinkChgREG[%d] MIirq[%d] ASF[%d] TSOcap[%d]\n",
+-	       dev->name,
+-	       (tp->tg3_flags & TG3_FLAG_RX_CHECKSUMS) != 0,
+-	       (tp->tg3_flags & TG3_FLAG_USE_LINKCHG_REG) != 0,
+-	       (tp->tg3_flags & TG3_FLAG_USE_MI_INTERRUPT) != 0,
+-	       (tp->tg3_flags & TG3_FLAG_ENABLE_ASF) != 0,
+-	       (tp->tg3_flags2 & TG3_FLG2_TSO_CAPABLE) != 0);
+-	printk(KERN_INFO "%s: dma_rwctrl[%08x] dma_mask[%d-bit]\n",
+-	       dev->name, tp->dma_rwctrl,
+-	       (pdev->dma_mask == DMA_BIT_MASK(32)) ? 32 :
+-	        (((u64) pdev->dma_mask == DMA_BIT_MASK(40)) ? 40 : 64));
++		netdev_info(dev, "attached PHY is %s (%s Ethernet) (WireSpeed[%d])\n",
++			    tg3_phy_string(tp),
++			    ((tp->tg3_flags & TG3_FLAG_10_100_ONLY) ? "10/100Base-TX" :
++			     ((tp->tg3_flags2 & TG3_FLG2_ANY_SERDES) ? "1000Base-SX" :
++			      "10/100/1000Base-T")),
++			    (tp->tg3_flags2 & TG3_FLG2_NO_ETH_WIRE_SPEED) == 0);
++
++	netdev_info(dev, "RXcsums[%d] LinkChgREG[%d] MIirq[%d] ASF[%d] TSOcap[%d]\n",
++		    (tp->tg3_flags & TG3_FLAG_RX_CHECKSUMS) != 0,
++		    (tp->tg3_flags & TG3_FLAG_USE_LINKCHG_REG) != 0,
++		    (tp->tg3_flags & TG3_FLAG_USE_MI_INTERRUPT) != 0,
++		    (tp->tg3_flags & TG3_FLAG_ENABLE_ASF) != 0,
++		    (tp->tg3_flags2 & TG3_FLG2_TSO_CAPABLE) != 0);
++	netdev_info(dev, "dma_rwctrl[%08x] dma_mask[%d-bit]\n",
++		    tp->dma_rwctrl,
++		    pdev->dma_mask == DMA_BIT_MASK(32) ? 32 :
++		    ((u64)pdev->dma_mask) == DMA_BIT_MASK(40) ? 40 : 64);
+ 
+ 	return 0;
+ 
 
-  And statistics can be counted per css_id.
-
-And then, some output like
-
-dump_pagecache_range: index=0 len=1 flags=10000000000002c count=1 mapcount=0 file=XXX memcg=group_A:x,group_B:y
-
-Is it okay to add a new field after your work finish ?
-
-If so, I'll think about some infrastructure to get above based on your patch.
-
-THanks,
--Kame
-
-
-
-
-
-> CC: Ingo Molnar <mingo@elte.hu>
-> CC: Chris Frost <frost@cs.ucla.edu>
-> CC: Steven Rostedt <rostedt@goodmis.org>
-> CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> CC: Frederic Weisbecker <fweisbec@gmail.com>
-> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> ---
->  fs/inode.c                |    2 
->  include/trace/events/mm.h |   67 ++++++++++++++
->  kernel/trace/trace_mm.c   |  165 ++++++++++++++++++++++++++++++++++++
->  3 files changed, 233 insertions(+), 1 deletion(-)
-> 
-> --- linux-mm.orig/include/trace/events/mm.h	2010-02-08 23:19:09.000000000 +0800
-> +++ linux-mm/include/trace/events/mm.h	2010-02-08 23:19:16.000000000 +0800
-> @@ -2,6 +2,7 @@
->  #define _TRACE_MM_H
->  
->  #include <linux/tracepoint.h>
-> +#include <linux/pagemap.h>
->  #include <linux/mm.h>
->  
->  #undef TRACE_SYSTEM
-> @@ -42,6 +43,72 @@ TRACE_EVENT(dump_pages,
->  		  __entry->mapcount, __entry->index)
->  );
->  
-> +TRACE_EVENT(dump_pagecache_range,
-> +
-> +	TP_PROTO(struct page *page, unsigned long len),
-> +
-> +	TP_ARGS(page, len),
-> +
-> +	TP_STRUCT__entry(
-> +		__field(	unsigned long,	index		)
-> +		__field(	unsigned long,	len		)
-> +		__field(	unsigned long,	flags		)
-> +		__field(	unsigned int,	count		)
-> +		__field(	unsigned int,	mapcount	)
-> +	),
-> +
-> +	TP_fast_assign(
-> +		__entry->index		= page->index;
-> +		__entry->len		= len;
-> +		__entry->flags		= page->flags;
-> +		__entry->count		= atomic_read(&page->_count);
-> +		__entry->mapcount	= page_mapcount(page);
-> +	),
-> +
-> +	TP_printk("index=%lu len=%lu flags=%lx count=%u mapcount=%u",
-> +		  __entry->index,
-> +		  __entry->len,
-> +		  __entry->flags,
-> +		  __entry->count,
-> +		  __entry->mapcount)
-> +);
-> +
-> +TRACE_EVENT(dump_inode,
-> +
-> +	TP_PROTO(struct inode *inode),
-> +
-> +	TP_ARGS(inode),
-> +
-> +	TP_STRUCT__entry(
-> +		__field(	unsigned long,	ino		)
-> +		__field(	loff_t,		size		)
-> +		__field(	unsigned long,	nrpages		)
-> +		__field(	unsigned long,	age		)
-> +		__field(	unsigned long,	state		)
-> +		__field(	dev_t,		dev		)
-> +	),
-> +
-> +	TP_fast_assign(
-> +		__entry->ino		= inode->i_ino;
-> +		__entry->size		= i_size_read(inode);
-> +		__entry->nrpages	= inode->i_mapping->nrpages;
-> +		__entry->age		= jiffies - inode->dirtied_when;
-> +		__entry->state		= inode->i_state;
-> +		__entry->dev		= inode->i_sb->s_dev;
-> +	),
-> +
-> +	TP_printk("ino=%lu size=%llu cached=%lu age=%lu dirty=%lu "
-> +		  "dev=%u:%u file=<TODO>",
-> +		  __entry->ino,
-> +		  __entry->size,
-> +		  __entry->nrpages << PAGE_CACHE_SHIFT,
-> +		  __entry->age / HZ,
-> +		  __entry->state & I_DIRTY,
-> +		  MAJOR(__entry->dev),
-> +		  MINOR(__entry->dev))
-> +);
-> +
-> +
->  #endif /*  _TRACE_MM_H */
->  
->  /* This part must be outside protection */
-> --- linux-mm.orig/kernel/trace/trace_mm.c	2010-02-08 23:19:09.000000000 +0800
-> +++ linux-mm/kernel/trace/trace_mm.c	2010-02-08 23:19:16.000000000 +0800
-> @@ -9,6 +9,9 @@
->  #include <linux/bootmem.h>
->  #include <linux/debugfs.h>
->  #include <linux/uaccess.h>
-> +#include <linux/pagevec.h>
-> +#include <linux/writeback.h>
-> +#include <linux/file.h>
->  
->  #include "trace_output.h"
->  
-> @@ -95,6 +98,162 @@ static const struct file_operations trac
->  	.write		= trace_mm_dump_range_write,
->  };
->  
-> +static unsigned long page_flags(struct page* page)
-> +{
-> +	return page->flags & ((1 << NR_PAGEFLAGS) - 1);
-> +}
-> +
-> +static int pages_similiar(struct page* page0, struct page* page)
-> +{
-> +	if (page_count(page0) != page_count(page))
-> +		return 0;
-> +
-> +	if (page_mapcount(page0) != page_mapcount(page))
-> +		return 0;
-> +
-> +	if (page_flags(page0) != page_flags(page))
-> +		return 0;
-> +
-> +	return 1;
-> +}
-> +
-> +#define BATCH_LINES	100
-> +static void dump_pagecache(struct address_space *mapping)
-> +{
-> +	int i;
-> +	int lines = 0;
-> +	pgoff_t len = 0;
-> +	struct pagevec pvec;
-> +	struct page *page;
-> +	struct page *page0 = NULL;
-> +	unsigned long start = 0;
-> +
-> +	for (;;) {
-> +		pagevec_init(&pvec, 0);
-> +		pvec.nr = radix_tree_gang_lookup(&mapping->page_tree,
-> +				(void **)pvec.pages, start + len, PAGEVEC_SIZE);
-> +
-> +		if (pvec.nr == 0) {
-> +			if (len)
-> +				trace_dump_pagecache_range(page0, len);
-> +			break;
-> +		}
-> +
-> +		if (!page0)
-> +			page0 = pvec.pages[0];
-> +
-> +		for (i = 0; i < pvec.nr; i++) {
-> +			page = pvec.pages[i];
-> +
-> +			if (page->index == start + len &&
-> +					pages_similiar(page0, page))
-> +				len++;
-> +			else {
-> +				trace_dump_pagecache_range(page0, len);
-> +				page0 = page;
-> +				start = page->index;
-> +				len = 1;
-> +				if (++lines > BATCH_LINES) {
-> +					lines = 0;
-> +					cond_resched();
-> +				}
-> +			}
-> +		}
-> +	}
-> +}
-> +
-> +static void dump_fs_pagecache(struct super_block *sb)
-> +{
-> +	struct inode *inode;
-> +	struct inode *prev_inode = NULL;
-> +
-> +	down_read(&sb->s_umount);
-> +	if (!sb->s_root)
-> +		goto out;
-> +	spin_lock(&inode_lock);
-> +	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
-> +		if (inode->i_state & (I_FREEING|I_CLEAR|I_WILL_FREE|I_NEW))
-> +			continue;
-> +		__iget(inode);
-> +		spin_unlock(&inode_lock);
-> +		trace_dump_inode(inode);
-> +		if (inode->i_mapping->nrpages)
-> +			dump_pagecache(inode->i_mapping);
-> +		iput(prev_inode);
-> +		prev_inode = inode;
-> +		cond_resched();
-> +		spin_lock(&inode_lock);
-> +	}
-> +	spin_unlock(&inode_lock);
-> +	iput(prev_inode);
-> +out:
-> +	up_read(&sb->s_umount);
-> +}
-> +
-> +static ssize_t
-> +trace_pagecache_write(struct file *filp, const char __user *ubuf, size_t count,
-> +		      loff_t *ppos)
-> +{
-> +	struct file *file = NULL;
-> +	char *name;
-> +	int err = 0;
-> +
-> +	if (count > PATH_MAX + 1)
-> +		return -ENAMETOOLONG;
-> +
-> +	name = kmalloc(count+1, GFP_KERNEL);
-> +	if (!name)
-> +		return -ENOMEM;
-> +
-> +	if (copy_from_user(name, ubuf, count)) {
-> +		err = -EFAULT;
-> +		goto out;
-> +	}
-> +
-> +	/* strip the newline added by `echo` */
-> +	if (count)
-> +		name[count-1] = '\0';
-> +
-> +	file = filp_open(name, O_RDONLY|O_LARGEFILE, 0);
-> +	if (IS_ERR(file)) {
-> +		err = PTR_ERR(file);
-> +		file = NULL;
-> +		goto out;
-> +	}
-> +
-> +	if (tracing_update_buffers() < 0) {
-> +		err = -ENOMEM;
-> +		goto out;
-> +	}
-> +	if (trace_set_clr_event("mm", "dump_pagecache_range", 1)) {
-> +		err = -EINVAL;
-> +		goto out;
-> +	}
-> +	if (trace_set_clr_event("mm", "dump_inode", 1)) {
-> +		err = -EINVAL;
-> +		goto out;
-> +	}
-> +
-> +	if (filp->f_path.dentry->d_inode->i_private) {
-> +		dump_fs_pagecache(file->f_path.dentry->d_sb);
-> +	} else {
-> +		dump_pagecache(file->f_mapping);
-> +	}
-> +
-> +out:
-> +	if (file)
-> +		fput(file);
-> +	kfree(name);
-> +
-> +	return err ? err : count;
-> +}
-> +
-> +static const struct file_operations trace_pagecache_fops = {
-> +	.open		= tracing_open_generic,
-> +	.read		= trace_mm_dump_range_read,
-> +	.write		= trace_pagecache_write,
-> +};
-> +
->  /* move this into trace_objects.c when that file is created */
->  static struct dentry *trace_objects_dir(void)
->  {
-> @@ -167,6 +326,12 @@ static __init int trace_objects_mm_init(
->  	trace_create_file("dump_range", 0600, d_pages, NULL,
->  			  &trace_mm_fops);
->  
-> +	trace_create_file("walk-file", 0600, d_pages, NULL,
-> +			  &trace_pagecache_fops);
-> +
-> +	trace_create_file("walk-fs", 0600, d_pages, (void *)1,
-> +			  &trace_pagecache_fops);
-> +
->  	return 0;
->  }
->  fs_initcall(trace_objects_mm_init);
-> --- linux-mm.orig/fs/inode.c	2010-02-08 23:19:12.000000000 +0800
-> +++ linux-mm/fs/inode.c	2010-02-08 23:19:22.000000000 +0800
-> @@ -149,7 +149,7 @@ struct inode *inode_init_always(struct s
->  	inode->i_bdev = NULL;
->  	inode->i_cdev = NULL;
->  	inode->i_rdev = 0;
-> -	inode->dirtied_when = 0;
-> +	inode->dirtied_when = jiffies;
->  
->  	if (security_inode_alloc(inode))
->  		goto out_free_inode;
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
 
