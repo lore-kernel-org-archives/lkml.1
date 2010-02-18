@@ -1,59 +1,69 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932994Ab0BRDBJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 22:01:09 -0500
-Received: from smtp.knology.net ([24.214.63.101]:37314 "EHLO smtp.knology.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932853Ab0BRDBH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 22:01:07 -0500
+	id S932893Ab0BRDJw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 22:09:52 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56843
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757225Ab0BRDJv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 22:09:51 -0500
+Date: Wed, 17 Feb 2010 19:10:02 -0800 (PST)
+Message-Id: <20100217.191002.240804576.davem@davemloft.net>
+To: dave@thedillows.org
+Cc: joe@perches.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
 Subject: Re: [PATCH net-next 14/15] drivers/net/typhoon.c: Use
  (pr|netdev)_<level> macro helpers
-From: David Dillow <dave@thedillows.org>
-To: David Miller <davem@davemloft.net>
-Cc: joe@perches.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20100217.184100.232538560.davem@davemloft.net>
-References: <1266458370.5719.43.camel@obelisk.thedillows.org>
-	 <1266459504.8446.201.camel@Joe-Laptop.home>
-	 <1266460221.5719.60.camel@obelisk.thedillows.org>
-	 <20100217.184100.232538560.davem@davemloft.net>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 17 Feb 2010 22:01:04 -0500
-Message-ID: <1266462064.5719.78.camel@obelisk.thedillows.org>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1266462064.5719.78.camel@obelisk.thedillows.org>
+References: <1266460221.5719.60.camel@obelisk.thedillows.org>
+	<20100217.184100.232538560.davem@davemloft.net>
+	<1266462064.5719.78.camel@obelisk.thedillows.org>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-02-17 at 18:41 -0800, David Miller wrote:
-> From: David Dillow <dave@thedillows.org>
-> Date: Wed, 17 Feb 2010 21:30:21 -0500
+From: David Dillow <dave@thedillows.org>
+Date: Wed, 17 Feb 2010 22:01:04 -0500
+
+> On Wed, 2010-02-17 at 18:41 -0800, David Miller wrote:
+>> From: David Dillow <dave@thedillows.org>
+>> Date: Wed, 17 Feb 2010 21:30:21 -0500
+>> 
+>> > No, because the routines that use tp->name are called both before and
+>> > after the netdev is registered. Prior to that time, it contains the PCI
+>> > slot name -- "00:01.0" etc -- so that the user can determine which card
+>> > is acting up. Once the card is registered, it has "ethX" to use a
+>> > commonly expected name for the card.
+>> 
+>> In my opinion that's awful.
 > 
-> > No, because the routines that use tp->name are called both before and
-> > after the netdev is registered. Prior to that time, it contains the PCI
-> > slot name -- "00:01.0" etc -- so that the user can determine which card
-> > is acting up. Once the card is registered, it has "ethX" to use a
-> > commonly expected name for the card.
-> 
-> In my opinion that's awful.
+> Neither you nor Jeff seemed to think it was an issue 7+ years ago, and
+> Jeff liked it when it was suggested as a solution to another driver's
+> problems.
 
-Neither you nor Jeff seemed to think it was an issue 7+ years ago, and
-Jeff liked it when it was suggested as a solution to another driver's
-problems. But times change, sure. And people learn from experience.
+I didn't even realize it was an issue and we also didn't have the nice
+dev_*() macros back there.
 
-I liked it because it consistent with eth device naming when it could
-be, and gave them useful info to go on when it failed during
-initialization. This well before dev_*(). I don't think it is
-particularly broken today -- even if we added the PCI info, I'd still
-want to know if it was eth0 or eth8 that died on me without having to go
-track down which one belonged to the slot.
+> But times change, sure. And people learn from experience.
 
-In any event, that's not going to be cleaned up tonight.
+Right.
 
-I'm perfectly fine with the netdev_<level> changes, and can grudgingly
-live with the overlong format strings, but the pr_<level> changes make
-the output worse, and don't help readability or maintainability in my
-opinion. I'm don't see how dropping the typhoon patch slows Joe down, so
-I'd like to avoid having to fix things up after the fact.
+> I liked it because it consistent with eth device naming when it could
+> be, and gave them useful info to go on when it failed during
+> initialization.
+
+How can printing a PCI device name string be consistent with eth
+device naming?
+
+> I'm perfectly fine with the netdev_<level> changes, and can grudgingly
+> live with the overlong format strings, but the pr_<level> changes make
+> the output worse, and don't help readability or maintainability in my
+> opinion. I'm don't see how dropping the typhoon patch slows Joe down, so
+> I'd like to avoid having to fix things up after the fact.
+
+I already tossed his patch from my tree.
 
