@@ -1,104 +1,81 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933008Ab0BRDLE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 22:11:04 -0500
+	id S933079Ab0BRDLR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 22:11:17 -0500
 Received: from mail-yw0-f197.google.com ([209.85.211.197]:38658 "EHLO
 	mail-yw0-f197.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932586Ab0BRDLA (ORCPT
+	with ESMTP id S932755Ab0BRDLB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 22:11:00 -0500
+	Wed, 17 Feb 2010 22:11:01 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:user-agent:mime-version:to:subject
          :content-type:content-transfer-encoding;
-        b=aUH810ldfdZeTRALFXQQxW7PC3ahZOI3XGW0bXme0G5jeY6Ctm7+5j7Z6MgZNFN4qX
-         UyvuJfdjz3SyUGhoRl0cTsUO8EuY8ogxlJubeZ2Ln+Te4oukhTY9oYFI87RzZt1V5a3n
-         s1D9esroroGA9MOiddk7Qe7MMFnwgavYDvcYw=
-Message-ID: <4B7CAEC1.6090408@gmail.com>
-Date: Wed, 17 Feb 2010 21:06:41 -0600
+        b=jMFovyXlV4TAxSL0hLJ+qF8LAghfPKDfJAYR1R3HAJ+4c1FEWEYwGco+K3yXri07YJ
+         kg0TIXbCyzkGCrDOx+0jjtawJUG84uNuxUcMAuzniGZ9gkhsoezi1x2GHCM+eGCVg8ns
+         nlMoZ7W1LErc8dkuR/dWF8o/IzraXLY9dFoaA=
+Message-ID: <4B7CAF95.6020306@gmail.com>
+Date: Wed, 17 Feb 2010 21:10:13 -0600
 From: Robert Hancock <hancockrwd@gmail.com>
 User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
 To: linux-kernel <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>, Francois Romieu <romieu@fr.zoreil.com>
-Subject: [PATCH 2.6.34] r8169: enable 64-bit DMA by default for PCI Express
- devices
+       Linux-usb <linux-usb@vger.kernel.org>,
+       Linux USB <linux-usb-devel@lists.sourceforge.net>
+Subject: [PATCH 2.6.34] ehci-hcd: add option to enable 64-bit DMA support
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently use of 64-bit DMA is disabled in r8169 unless the user passes the
-use_dac module option. This is reasonable for conventional PCI devices where
-broken chipsets may not handle dual-address-cycle transfers properly for
-32-bit slots and so this may not be safe. However, PCI Express should not have
-this problem and not using 64-bit DMA results in DMA transfers needlessly using
-the IOMMU or SWIOTLB. Set the use_dac module parameter to a new default value of
--1 which results in 64-bit DMA being enabled by default for PCI Express devices
-only.
+Add a module parameter to allow the user to enable 64-bit DMA support in EHCI,
+which has been forcibly disabled since 2003 - see:
+
+http://www.mail-archive.com/linux-usb-devel@lists.sourceforge.net/msg17230.html
+
+At that time the comment was "it'd only matter on a few big Intel boxes anyway",
+however the situation is much different today when many new machines have 4GB
+or more of RAM and IOMMU/SWIOTLB are thus needlessly required for USB transfers.
+For now, the support remains disabled by default and is controlled by an
+allow_64bit module parameter.
+
+Note that some USB device drivers may require updates to pass the DMA
+capabilities up to their higher layers to avoid unnecessary IOMMU or bounce-
+buffer use (i.e. networking layer NETIF_F_HIGHDMA). Some of these checks were
+disabled by the patch listed above, and more may be required again today.
+However, those previous checks were done incorrectly using dma_supported,
+which checks to see whether a device's DMA mask can be validly set to a given
+mask, not whether its previously set mask will accomodate the mask passed in.
 
 Signed-off-by: Robert Hancock <hancockrwd@gmail.com>
 
-diff --git a/drivers/net/r8169.c b/drivers/net/r8169.c
-index 60f96c4..8943385 100644
---- a/drivers/net/r8169.c
-+++ b/drivers/net/r8169.c
-@@ -187,7 +187,7 @@ static struct pci_device_id rtl8169_pci_tbl[] = {
- MODULE_DEVICE_TABLE(pci, rtl8169_pci_tbl);
+diff --git a/drivers/usb/host/ehci-hcd.c b/drivers/usb/host/ehci-hcd.c
+index 1ec3857..f527e15 100644
+--- a/drivers/usb/host/ehci-hcd.c
++++ b/drivers/usb/host/ehci-hcd.c
+@@ -101,6 +101,10 @@ static int ignore_oc = 0;
+ module_param (ignore_oc, bool, S_IRUGO);
+ MODULE_PARM_DESC (ignore_oc, "ignore bogus hardware overcurrent indications");
  
- static int rx_copybreak = 200;
--static int use_dac;
-+static int use_dac = -1;
- static struct {
- 	u32 msg_enable;
- } debug = { -1 };
-@@ -511,7 +511,8 @@ MODULE_DESCRIPTION("RealTek RTL-8169 Gigabit Ethernet driver");
- module_param(rx_copybreak, int, 0);
- MODULE_PARM_DESC(rx_copybreak, "Copy breakpoint for copy-only-tiny-frames");
- module_param(use_dac, int, 0);
--MODULE_PARM_DESC(use_dac, "Enable PCI DAC. Unsafe on 32 bit PCI slot.");
-+MODULE_PARM_DESC(use_dac, "Enable PCI DAC. -1 defaults on for PCI Express only."
-+" Unsafe on 32 bit PCI slot.");
- module_param_named(debug, debug.msg_enable, int, 0);
- MODULE_PARM_DESC(debug, "Debug verbosity level (0=none, ..., 16=all)");
- MODULE_LICENSE("GPL");
-@@ -2980,6 +2981,7 @@ rtl8169_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	void __iomem *ioaddr;
- 	unsigned int i;
- 	int rc;
-+	int this_use_dac = use_dac;
- 
- 	if (netif_msg_drv(&debug)) {
- 		printk(KERN_INFO "%s Gigabit Ethernet driver %s loaded\n",
-@@ -3051,8 +3053,18 @@ rtl8169_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
- 
- 	tp->cp_cmd = PCIMulRW | RxChkSum;
- 
-+	tp->pcie_cap = pci_find_capability(pdev, PCI_CAP_ID_EXP);
-+	if (!tp->pcie_cap && netif_msg_probe(tp))
-+		dev_info(&pdev->dev, "no PCI Express capability\n");
++static int allow_64bit;
++module_param(allow_64bit, bool, S_IRUGO);
++MODULE_PARM_DESC(allow_64bit, "allow 64-bit DMA");
 +
-+	if (this_use_dac < 0)
-+		this_use_dac = tp->pcie_cap != 0;
-+
- 	if ((sizeof(dma_addr_t) > 4) &&
--	    !pci_set_dma_mask(pdev, DMA_BIT_MASK(64)) && use_dac) {
-+	    this_use_dac &&
-+	    !pci_set_dma_mask(pdev, DMA_BIT_MASK(64))) {
-+		if (netif_msg_probe(tp))
-+			dev_info(&pdev->dev, "using 64-bit DMA\n");
- 		tp->cp_cmd |= PCIDAC;
- 		dev->features |= NETIF_F_HIGHDMA;
- 	} else {
-@@ -3075,10 +3087,6 @@ rtl8169_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
- 		goto err_out_free_res_4;
+ #define	INTR_MASK (STS_IAA | STS_FATAL | STS_PCD | STS_ERR | STS_INT)
+ 
+ /*-------------------------------------------------------------------------*/
+@@ -644,11 +648,9 @@ static int ehci_run (struct usb_hcd *hcd)
+ 	hcc_params = ehci_readl(ehci, &ehci->caps->hcc_params);
+ 	if (HCC_64BIT_ADDR(hcc_params)) {
+ 		ehci_writel(ehci, 0, &ehci->regs->segment);
+-#if 0
+-// this is deeply broken on almost all architectures
+-		if (!dma_set_mask(hcd->self.controller, DMA_BIT_MASK(64)))
++		if (allow_64bit &&
++		    !dma_set_mask(hcd->self.controller, DMA_BIT_MASK(64)))
+ 			ehci_info(ehci, "enabled 64bit DMA\n");
+-#endif
  	}
  
--	tp->pcie_cap = pci_find_capability(pdev, PCI_CAP_ID_EXP);
--	if (!tp->pcie_cap && netif_msg_probe(tp))
--		dev_info(&pdev->dev, "no PCI Express capability\n");
--
- 	RTL_W16(IntrMask, 0x0000);
  
- 	/* Soft reset the chip. */
