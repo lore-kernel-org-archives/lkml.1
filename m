@@ -1,89 +1,77 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932417Ab0BRBHM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 20:07:12 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:57200 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757862Ab0BRBHC (ORCPT
+	id S1758076Ab0BRBJL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 20:09:11 -0500
+Received: from shadbolt.e.decadent.org.uk ([88.96.1.126]:54232 "EHLO
+	shadbolt.e.decadent.org.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752305Ab0BRBJI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 20:07:02 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Thu, 18 Feb 2010 10:03:24 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Michael Bohan <mbohan@codeaurora.org>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Subject: Re: Kernel panic due to page migration accessing memory holes
-Message-Id: <20100218100324.5e9e8f8c.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <4B7C8DC2.3060004@codeaurora.org>
-References: <4B7C8DC2.3060004@codeaurora.org>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
+	Wed, 17 Feb 2010 20:09:08 -0500
+From: Ben Hutchings <ben@decadent.org.uk>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1263738961.8876.28.camel@localhost>
+References: <1263738961.8876.28.camel@localhost>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-6EWMYV2SzemV0wl4UYP1"
+Date: Thu, 18 Feb 2010 01:09:01 +0000
+Message-ID: <1266455341.10567.667.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.28.2 
+X-SA-Exim-Connect-IP: 192.168.4.185
+X-SA-Exim-Mail-From: ben@decadent.org.uk
+Subject: Re: Please pull 'upstream' branch of
+ http://git.decadent.org.uk/git/linux-firmware.git
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
+X-SA-Exim-Scanned: Yes (on shadbolt.decadent.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 17 Feb 2010 16:45:54 -0800
-Michael Bohan <mbohan@codeaurora.org> wrote:
 
-> Hi,
-> 
-> I have encountered a kernel panic on the ARM/msm platform in the mm 
-> migration code on 2.6.29.  My memory configuration has two discontiguous 
-> banks per our ATAG definition.   These banks end up on addresses that 
-> are 1 MB aligned.  I am using FLATMEM (not SPARSEMEM), but my 
-> understanding is that SPARSEMEM should not be necessary to support this 
-> configuration.  Please correct me if I'm wrong.
-> 
-> The crash occurs in mm/page_alloc.c:move_freepages() when being passed a 
-> start_page that corresponds to the last several megabytes of our first 
-> memory bank.  The code in move_freepages_block() aligns the passed in 
-> page number to pageblock_nr_pages, which corresponds to 4 MB.  It then 
-> passes that aligned pfn as the beginning of a 4 MB range to 
-> move_freepages().  The problem is that since our bank's end address is 
-> not 4 MB aligned, the range passed to move_freepages() exceeds the end 
-> of our memory bank.  The code later blows up when trying to access 
-> uninitialized page structures.
-> 
-That should be aligned, I think.
+--=-6EWMYV2SzemV0wl4UYP1
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-> As a temporary fix, I added some code to move_freepages_block() that 
-> inspects whether the range exceeds our first memory bank -- returning 0 
-> if it does.  This is not a clean solution, since it requires exporting 
-> the ARM specific meminfo structure to extract the bank information.
-> 
-Hmm, my first impression is...
+On Sun, 2010-01-17 at 14:36 +0000, Ben Hutchings wrote:
+> The following changes since commit c024a251e1dd1a39de610bbdc2af65b36e4263=
+7d:
+>   David Woodhouse (1):
+>         Merge from fixed from-kernel tree to fix Matrox firmware binaries
+>=20
+> are available in the git repository at:
+>=20
+>   http://git.decadent.org.uk/git/linux-firmware.git upstream
+[...]
 
-- Using FLATMEM, memmap is created for the number of pages and memmap should
-  not have aligned size.
-- Using SPARSEMEM, memmap is created for aligned number of pages.
+David, please either pull or tell me what I need to change.
 
-Then, the range [zone->start_pfn ... zone->start_pfn + zone->spanned_pages]
-should be checked always.
+Ben.
 
+--=20
+Ben Hutchings
+Make three consecutive correct guesses and you will be considered an expert=
+.
 
- 803 static int move_freepages_block(struct zone *zone, struct page *page,
- 804                                 int migratetype)
- 805 {
- 816         if (start_pfn < zone->zone_start_pfn)
- 817                 start_page = page;
- 818         if (end_pfn >= zone->zone_start_pfn + zone->spanned_pages)
- 819                 return 0;
- 820 
- 821         return move_freepages(zone, start_page, end_page, migratetype);
- 822 }
+--=-6EWMYV2SzemV0wl4UYP1
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
-"(end_pfn >= zone->zone_start_pfn + zone->spanned_pages)" is checked. 
-What zone->spanned_pages is set ? The zone's range is
-[zone->start_pfn ... zone->start_pfn+zone->spanned_pages], so this
-area should have initialized memmap. I wonder zone->spanned_pages is too big.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-Could you check ? (maybe /proc/zoneinfo can show it.)
-Dump of /proc/zoneinfo or dmesg will be helpful.
+iQIVAwUAS3yTJ+e/yOyVhhEJAQKPdA//ZA/AyXVRx71UN6f+DKfGfb4O5d77zIjt
+K4gc2NAkn8NXdn/5+rDFzrfsFZ9DzxXXy5BIEvYckbc9BGX/n76VPM4g2MGpXs6W
+MUy4rlaelWiWx/uVvil4VnFcm7CeYG5YgthG33RRwarIA3Vdl+Ifj2edwXfVdq2m
+/SC0Z3bKFahOIEdSb3mdKx2lJ+5LtXAzExxEpjQn07+pVQddoVYjhMi7mqE/Tp4x
+pMmk9nlvpUB7vz2TklIHJZlWSYGrW3nj3lZ5UdduXntA/ja0kx0uMwIv6bs5ifbj
+vhO5z1xoEY5fUO3FrclYTIpOmL1eZFR7PbYVneN4GDW8B44UCnqwfyXGJ8LAwO2B
+HMQZ2tKQq0KNNB/29nSgkHgqRUzHgngJb0yoiO+nL95UT7EmusRllFW2WXQsACCr
+WjUvLCmSiD6LwF0WsF6xEDrMo5pwt3iHjUW6Kq6qovl6FnBPUKi7p3RoAnh6YJ4k
+4Gs+Cxj5CfnFOz3AGR03eesg7cBmmqgVgHxPRTSwYsXnwoOQOlidh3NvSZ0+TOZP
+w6RPVexSAfVTMiIyRXZzdl0KJxdhIv3wETUFPOf5GQP2upzrJKQwTwAowEzyTMdL
+fu1009rY4OossdQ7cQFILuQJ43k5lZ40QH4ScIo3RYST1cjbE0CGCQp1eLp0TIXU
+zpKkSzunGHU=
+=Bdtx
+-----END PGP SIGNATURE-----
 
-Thanks,
--Kame
-
+--=-6EWMYV2SzemV0wl4UYP1--
