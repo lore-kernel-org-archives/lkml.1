@@ -1,45 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752221Ab0BRXnL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 18:43:11 -0500
-Received: from cantor.suse.de ([195.135.220.2]:45534 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751520Ab0BRXnJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 18:43:09 -0500
-Date: Fri, 19 Feb 2010 00:43:06 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Chris Ball <cjb@laptop.org>, Jonathan Corbet <corbet@lwn.net>,
-       LKML <linux-kernel@vger.kernel.org>, "Theodore Ts'o" <tytso@mit.edu>
-Subject: Re: [PATCH] Remove drivers/char/ChangeLog
-In-Reply-To: <20100218233756.18bcc16d@lxorguk.ukuu.org.uk>
-Message-ID: <alpine.LNX.2.00.1002190042080.30967@pobox.suse.cz>
-References: <20100218095200.63509b8c@bike.lwn.net> <m37hqamlau.fsf@pullcord.laptop.org> <alpine.LNX.2.00.1002182300520.30967@pobox.suse.cz> <20100218233756.18bcc16d@lxorguk.ukuu.org.uk>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1752513Ab0BRXnc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 18:43:32 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37473
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751788Ab0BRXna (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Feb 2010 18:43:30 -0500
+Date: Thu, 18 Feb 2010 15:43:45 -0800 (PST)
+Message-Id: <20100218.154345.28706204.davem@davemloft.net>
+To: apetlund@simula.no
+Cc: netdev@vger.kernel.org, ilpo.jarvinen@helsinki.fi, eric.dumazet@gmail.com,
+       hannemann@nets.rwth-aachen.de, linux-kernel@vger.kernel.org,
+       shemminger@vyatta.com, william.allen.simpson@gmail.com,
+       damian@tvk.rwth-aachen.de, ebiederm@xmission.com, franco@lastsummer.de
+Subject: Re: [net-next PATCH v5 0/3] net: TCP thin-stream latency-improving
+ modifications
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4B7D35A5.10106@simula.no>
+References: <4B7D35A5.10106@simula.no>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 18 Feb 2010, Alan Cox wrote:
+From: Andreas Petlund <apetlund@simula.no>
+Date: Thu, 18 Feb 2010 13:42:13 +0100
 
-> > I think we could nuke them all, but I'd suggest first checking with 
-> > maintainers of the code in question. It's possible that they do some kind 
-> > of auto-import from some weird external repositories in which they 
-> > auto-generate this Changelog file, so they might re-appear later (not 
-> > everyone is using git even these days ... strange, but apparently true).
+> This is a series of patches enabling non-intrusive, dynamically 
+> triggered modifications that improve retransmission latencies 
+> for thin streams.
 > 
-> I think I'm the nearest thing to a parport maintainer these days - no
-> objection from me there.
+> The patch set was modified according to the feedback received.
+> 
+> Major change:
+>       -Used bitfields to compact the nonagle variable
+>        in the tcp_sock struct. nonagle, thin_lto and
+>        thin_dupack is now contained in the same u8.
+> 
+> I decided to use bitfields to handle this as it is
+> already done similarly in the tcp_options_received struct.
+> 
+> Also corrected some formatting issues.
 
-Good, thanks. I have queued patch that removes drivers/parport/ChangeLog 
-and put 
-
-	Acked-by: Alan Cox <alan@linux.intel.com>
-
-to it.
-
--- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+All applied (I made sure the get the updated version of patch #3),
+thanks a lot!
