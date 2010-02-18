@@ -1,61 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758653Ab0BRRIk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 12:08:40 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:51571 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758521Ab0BRRIj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 12:08:39 -0500
-Subject: Re: [PATCHv4 2/2] powerpc: implement arch_scale_smt_power for
- Power7
-From: Peter Zijlstra <peterz@infradead.org>
-To: Joel Schopp <jschopp@austin.ibm.com>
-Cc: Michael Neuling <mikey@neuling.org>, Ingo Molnar <mingo@elte.hu>,
-       linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-       ego@in.ibm.com
-In-Reply-To: <4B7D6AAB.5080602@austin.ibm.com>
-References: <1264017638.5717.121.camel@jschopp-laptop>
-	 <1264017847.5717.132.camel@jschopp-laptop>
-	 <1264548495.12239.56.camel@jschopp-laptop>
-	 <1264720855.9660.22.camel@jschopp-laptop>
-	 <1264721088.10385.1.camel@jschopp-laptop>
-	 <1265403478.6089.41.camel@jschopp-laptop>
-	 <1266142340.5273.418.camel@laptop>  <25851.1266445258@neuling.org>
-	 <1266499023.26719.597.camel@laptop>  <4B7D6AAB.5080602@austin.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 18 Feb 2010 18:08:04 +0100
-Message-ID: <1266512884.26719.869.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 7bit
+	id S1758575Ab0BRRKY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 12:10:24 -0500
+Received: from cantor.suse.de ([195.135.220.2]:33933 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754536Ab0BRRKW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Feb 2010 12:10:22 -0500
+Date: Thu, 18 Feb 2010 09:09:23 -0800
+From: Greg KH <gregkh@suse.de>
+To: Larry Finger <Larry.Finger@lwfinger.net>
+Cc: Greg KH <greg@kroah.com>,
+       Bernhard Schiffner <bernhard@schiffner-limbach.de>,
+       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
+Subject: Re: [PATCH 0/3 V2] staging: r8187se: Miscellaneous cleanups
+Message-ID: <20100218170923.GA1614@suse.de>
+References: <4b7963d0.cocDj1pGMQ3LKF4a%Larry.Finger@lwfinger.net>
+ <20100218160340.GH21785@kroah.com>
+ <4B7D7270.6030900@lwfinger.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B7D7270.6030900@lwfinger.net>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-02-18 at 10:28 -0600, Joel Schopp wrote:
-> > There's one fundamental assumption, and one weakness in the
-> > implementation.
-> >   
-> I'm going to guess the weakness is that it doesn't adjust the cpu power 
-> so tasks running in SMT1 mode actually get more than they account for?  
+On Thu, Feb 18, 2010 at 11:01:36AM -0600, Larry Finger wrote:
+> On 02/18/2010 10:03 AM, Greg KH wrote:
+> > On Mon, Feb 15, 2010 at 09:10:08AM -0600, Larry Finger wrote:
+> > 
+> > Ick, I just applied your first versions of these patches.  What was the
+> > difference here?  Care to look at the next linux-next tree and see if I
+> > missed anything?
+> > 
+> > sorry about that.
+> 
+> The only difference was that I fixed the line-wrap problem that you noted in
+> your previous Emails. I had found them and resubmitted. There were no content
+> changes in the patches and the tree appears to be OK.
+> 
+> Thanks for the heads-up and sorry for the trouble, Those damned long lines from
+> the Realtek driver are a pain.
 
-No, but you're right, if these SMTx modes are running at different
-frequencies then yes that needs to happen as well.
+Yes they are :)
 
-The weakness is failing to do the right thing in the presence of a
-'strategically' placed RT task.
+> FYI, the rewritten driver has received a beacon, and the first few parts have
+> been submitted to John Linville.
 
-Suppose:
+Wonderful, that's great to hear, hopefully we can delete this driver
+soon.
 
-Sibling0, Sibling1, Sibling2, Sibling3
-idle      OTHER     OTHER     FIFO
+thanks,
 
-it might not manage to migrate a task to 0 because it ends up selecting
-3 as busiest. It doesn't at all influence RT placement, but it does look
-at nr_running (which does include RT tasks)
-
-> What's the assumption? 
-
-That cpu_of(Sibling n) < cpu_of(Sibling n+1)
-
+greg k-h
