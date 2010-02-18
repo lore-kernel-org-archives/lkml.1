@@ -1,53 +1,120 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752569Ab0BRXzX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 18:55:23 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:45709 "EHLO mail.zytor.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751537Ab0BRXzW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 18:55:22 -0500
-Message-ID: <4B7DD336.6040700@zytor.com>
-Date: Thu, 18 Feb 2010 15:54:30 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+	id S1752673Ab0BRX4I (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 18:56:08 -0500
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:46182 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751782Ab0BRX4D (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Feb 2010 18:56:03 -0500
+X-Sasl-enc: oZFMcPT4Z1bMShb7y5wxWaLe7ssgRlQDlcsak1HxA+Je 1266537362
+Message-ID: <4B7DD363.4050402@imap.cc>
+Date: Fri, 19 Feb 2010 00:55:15 +0100
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; de; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-To: Luca Barbieri <luca@luca-barbieri.com>
-CC: mingo@elte.hu, a.p.zijlstra@chello.nl, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 02/10] x86: add support for relative CALL and JMP in 
- alternatives
-References: <1266406962-17463-1-git-send-email-luca@luca-barbieri.com>	 <1266406962-17463-3-git-send-email-luca@luca-barbieri.com>	 <4B7D97A6.4060900@zytor.com> <ff13bc9a1002181538q7ccc1381x32a2f25bfb6d56cc@mail.gmail.com>
-In-Reply-To: <ff13bc9a1002181538q7ccc1381x32a2f25bfb6d56cc@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: Andy Shevchenko <andy.shevchenko@gmail.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andy Shevchenko <ext-andriy.shevchenko@nokia.com>
+Subject: Re: [PATCH 11/12] drivers: isdn: use new hex_to_bin() method
+References: <1266519351-3218-1-git-send-email-andy.shevchenko@gmail.com> <1266519351-3218-2-git-send-email-andy.shevchenko@gmail.com> <1266519351-3218-3-git-send-email-andy.shevchenko@gmail.com> <1266519351-3218-4-git-send-email-andy.shevchenko@gmail.com> <1266519351-3218-5-git-send-email-andy.shevchenko@gmail.com> <1266519351-3218-6-git-send-email-andy.shevchenko@gmail.com> <1266519351-3218-7-git-send-email-andy.shevchenko@gmail.com> <1266519351-3218-8-git-send-email-andy.shevchenko@gmail.com> <1266519351-3218-9-git-send-email-andy.shevchenko@gmail.com> <1266519351-3218-10-git-send-email-andy.shevchenko@gmail.com> <1266519351-3218-11-git-send-email-andy.shevchenko@gmail.com> <1266519351-3218-12-git-send-email-andy.shevchenko@gmail.com>
+In-Reply-To: <1266519351-3218-12-git-send-email-andy.shevchenko@gmail.com>
+X-Enigmail-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig4B236CC9EA051866F6287B3E"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/18/2010 03:38 PM, Luca Barbieri wrote:
->> The existing instruction parser is only present if KPROBES is configured
->> in... this patch would make it obligatory.  Your patch doesn't reflect
->> that.  Furthermore, it is ~16K of code and data which probably will make
->> embedded people unhappy... although perhaps isn't out of line.
-> Didn't notice that.
-> 
->> A good question, though, is if we actually need support for JMP or CALL
->> as anything but the first instruction (usually the *only* instruction),
->> which would make it a lot easier...
-> 
-> Probably not.
-> I think an even better option is to create a CALL if replacementlen is 0xff.
-> This would save some space for each callsite and make it clear we only
-> support this usage.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig4B236CC9EA051866F6287B3E
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: quoted-printable
 
-That is an idea.
+Am 18.02.2010 19:55 schrieb Andy Shevchenko:
+> From: Andy Shevchenko <ext-andriy.shevchenko@nokia.com>
+>=20
+> Get rid of own implementation of hex_to_bin(). It requires to have hex_=
+to_bin()
+> introduced by one of previous path in series.
+>=20
+> Signed-off-by: Andy Shevchenko <ext-andriy.shevchenko@nokia.com>
+> ---
+>  drivers/isdn/gigaset/capi.c |   14 ++------------
+>  1 files changed, 2 insertions(+), 12 deletions(-)
+>=20
+> diff --git a/drivers/isdn/gigaset/capi.c b/drivers/isdn/gigaset/capi.c
+> index 83c4e2f..72adcfb 100644
+> --- a/drivers/isdn/gigaset/capi.c
+> +++ b/drivers/isdn/gigaset/capi.c
+> @@ -13,6 +13,7 @@
+> =20
+>  #include "gigaset.h"
+>  #include <linux/ctype.h>
+> +#include <linux/kernel.h>
+>  #include <linux/isdn/capilli.h>
+>  #include <linux/isdn/capicmd.h>
+>  #include <linux/isdn/capiutil.h>
 
-If we're going to do a full setup, it would be nice to handle general
-relocations -- in addition to JMP and CALL, this would also allow
-RIP-relative memory operands.  However, I think if we're going to do
-that, it would be better to extract relocations at compile time (either
-directly or via disassembly, which is basically what you're doing)
-rather than at runtime.
+You don't need to include kernel.h here, it's already included
+from gigaset.h.
 
-	-hpa
+> @@ -169,17 +170,6 @@ static inline void ignore_cstruct_param(struct car=
+dstate *cs, _cstruct param,
+>  }
+> =20
+>  /*
+> - * convert hex to binary
+> - */
+> -static inline u8 hex2bin(char c)
+> -{
+> -	int result =3D c & 0x0f;
+> -	if (c & 0x40)
+> -		result +=3D 9;
+> -	return result;
+> -}
+> -
+> -/*
+>   * convert an IE from Gigaset hex string to ETSI binary representation=
 
+>   * including length byte
+>   * return value: result length, -1 on error
+> @@ -190,7 +180,7 @@ static int encode_ie(char *in, u8 *out, int maxlen)=
+
+>  	while (*in) {
+>  		if (!isxdigit(in[0]) || !isxdigit(in[1]) || l >=3D maxlen)
+>  			return -1;
+> -		out[++l] =3D (hex2bin(in[0]) << 4) + hex2bin(in[1]);
+> +		out[++l] =3D (hex_to_bin(in[0]) << 4) + hex_to_bin(in[1]);
+>  		in +=3D 2;
+>  	}
+>  	out[0] =3D l;
+
+Otherwise, fine with me.
+
+Thanks,
+Tilman
+
+--=20
+Tilman Schmidt                    E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
+
+
+--------------enig4B236CC9EA051866F6287B3E
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.12 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org/
+
+iEYEARECAAYFAkt902MACgkQQ3+did9BuFtcqQCdEfn4K7OyXJXIK0rm4qFePy3M
+JoQAn3TfsypSls5WVPRgrDUR01VAHVLs
+=LFJG
+-----END PGP SIGNATURE-----
+
+--------------enig4B236CC9EA051866F6287B3E--
