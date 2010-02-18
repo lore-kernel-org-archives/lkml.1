@@ -1,72 +1,56 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757945Ab0BRAqG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 19:46:06 -0500
-Received: from wolverine02.qualcomm.com ([199.106.114.251]:22257 "EHLO
-	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755008Ab0BRAqD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 19:46:03 -0500
-X-IronPort-AV: E=McAfee;i="5400,1158,5895"; a="34371807"
-Message-ID: <4B7C8DC2.3060004@codeaurora.org>
-Date: Wed, 17 Feb 2010 16:45:54 -0800
-From: Michael Bohan <mbohan@codeaurora.org>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	id S932189Ab0BRArl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 19:47:41 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:37057 "EHLO mail.zytor.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756276Ab0BRArk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 19:47:40 -0500
+Message-ID: <4B7C8E04.6070605@zytor.com>
+Date: Wed, 17 Feb 2010 16:47:00 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
-To: linux-mm@kvack.org
-CC: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-       linux-arm-kernel@lists.infradead.org
-Subject: Kernel panic due to page migration accessing memory holes
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Luca Barbieri <luca@luca-barbieri.com>
+CC: mingo@elte.hu, a.p.zijlstra@chello.nl, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 09/10] x86-32: use SSE for atomic64_read/set if available
+References: <1266406962-17463-1-git-send-email-luca@luca-barbieri.com>	 <1266406962-17463-10-git-send-email-luca@luca-barbieri.com>	 <4B7C7023.7060602@zytor.com> <ff13bc9a1002171641w372a587j39632cb856b995f1@mail.gmail.com>
+In-Reply-To: <ff13bc9a1002171641w372a587j39632cb856b995f1@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On 02/17/2010 04:41 PM, Luca Barbieri wrote:
+>> I'm a bit unhappy about this patch.  It seems to violate the assumption
+>> that we only ever use the FPU state guarded by
+>> kernel_fpu_begin()..kernel_fpu_end() and instead it uses a local hack,
+>> which seems like a recipe for all kinds of very subtle problems down the
+>> line.
+> 
+> kernel_fpu_begin saves the whole FPU state, but to use SSE we don't
+> really need that, since we can just save the %xmm registers we need,
+> which is much faster.
+> This is why SSE is used instead of just using an FPU double read.
+> We could however add a kernel_sse_begin_nosave/kernel_sse_end_nosave to do this.
+> 
 
-I have encountered a kernel panic on the ARM/msm platform in the mm 
-migration code on 2.6.29.  My memory configuration has two discontiguous 
-banks per our ATAG definition.   These banks end up on addresses that 
-are 1 MB aligned.  I am using FLATMEM (not SPARSEMEM), but my 
-understanding is that SPARSEMEM should not be necessary to support this 
-configuration.  Please correct me if I'm wrong.
+We could, and that would definitely better than open-coding the operation.
 
-The crash occurs in mm/page_alloc.c:move_freepages() when being passed a 
-start_page that corresponds to the last several megabytes of our first 
-memory bank.  The code in move_freepages_block() aligns the passed in 
-page number to pageblock_nr_pages, which corresponds to 4 MB.  It then 
-passes that aligned pfn as the beginning of a 4 MB range to 
-move_freepages().  The problem is that since our bank's end address is 
-not 4 MB aligned, the range passed to move_freepages() exceeds the end 
-of our memory bank.  The code later blows up when trying to access 
-uninitialized page structures.
+>> Unless the performance advantage is provably very compelling, I'm
+>> inclined to say that this is not worth it.
+> There is the advantage of not taking the cacheline for writing in atomic64_read.
+> Also locked cmpxchg8b is slow and if we were to restore the TS flag
+> lazily on userspace return, it would significantly improve the
+> function in all cases (with the current code, it depends on how fast
+> the architecture does clts/stts vs lock cmpxchg8b).
+> Of course the big-picture impact depends on the users of the interface.
 
-As a temporary fix, I added some code to move_freepages_block() that 
-inspects whether the range exceeds our first memory bank -- returning 0 
-if it does.  This is not a clean solution, since it requires exporting 
-the ARM specific meminfo structure to extract the bank information.
+It does, and I would prefer to not take it until there is a user of the
+interface which motivates the performance.  Ingo, do you have a feel for
+how performance-critical this actually is?
 
-I see an option exists called CONFIG_HOLES_IN_ZONE, which has control 
-over the definition of pfn_valid_within() used in move_freepages().  
-This option seems relevant to the problem.  The ia64 architecture has a 
-special version of pfn_valid() called ia64_pfn_valid() that is used in 
-conjunction with this option.  It appears to inspect the page 
-structure's state in a safe way that does not cause a crash, and can 
-presumably be used to determine whether the page structure is 
-initialized properly.  The ARM version of pfn_valid() used in the 
-FLATMEM scenario does not appear to be memory hole aware, and will 
-blindly return true in this case.
+	-hpa
 
-I have looked on linux-next, and at least the functions mentioned above 
-have not changed.
-
-I was curious if there is a stated requirement where memory banks must 
-end on 4 MB aligned addresses.  Although I found this problem on ARM, it 
-appears upon inspection that the problem could occur on other 
-architectures as well, given the memory map assumptions stated above.  
-I'm hoping that some mm experts might understand the problem in greater 
-detail.
-
-Thanks,
-Michael
