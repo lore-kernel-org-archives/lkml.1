@@ -1,103 +1,113 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758792Ab0BRWaQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 17:30:16 -0500
-Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:53762 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758743Ab0BRWaO (ORCPT
+	id S1758818Ab0BRWcv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 17:32:51 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:32729 "EHLO
+	rcsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758745Ab0BRWct (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 17:30:14 -0500
-Subject: Re: Bug in HPET RTC emulation.
-From: Alok Kataria <akataria@vmware.com>
-Reply-To: akataria@vmware.com
-To: venkatesh.pallipadi@intel.com
-Cc: vojtech@suse.cz, Dan Hecht <dhecht@vmware.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1265765192.1470.24.camel@ank32.eng.vmware.com>
-References: <1265765192.1470.24.camel@ank32.eng.vmware.com>
-Content-Type: text/plain
-Organization: VMware INC.
-Date: Thu, 18 Feb 2010 14:30:08 -0800
-Message-Id: <1266532208.4757.14.camel@promb-2n-dhcp251.eng.vmware.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
+	Thu, 18 Feb 2010 17:32:49 -0500
+Message-ID: <4B7DBFF8.1050300@oracle.com>
+Date: Thu, 18 Feb 2010 14:32:24 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+MIME-Version: 1.0
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+CC: Linux Media Mailing List <linux-media@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       g.liakhovetski@gmx.de
+Subject: Re: [PATCH 0/4] DocBook additions for V4L new formats
+References: <4B7C2203.1000707@redhat.com> <4B7CA679.40906@oracle.com>
+In-Reply-To: <4B7CA679.40906@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt355.oracle.com [141.146.40.155]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090208.4B7DBFFD.0012:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Copying LKML]
-
-<ping>
-
-Not sure if you guys got a chance to look at this patch, the fix is
-pretty trivial too.
-
-Thanks,
-Alok
-
-On Tue, 2010-02-09 at 17:26 -0800, Alok Kataria wrote:
-> Hi Venki/ Vojtech,
+On 02/17/10 18:31, Randy Dunlap wrote:
+> On 02/17/10 09:06, Mauro Carvalho Chehab wrote:
+>> Adds DocBook items for Bayer and two proprietary formats used on gspca.
+>>
+>> In the past, a few targets were generated at the Mercurial development
+>> tree. However, at the beginning of this year, we moved to use -git as
+>> the primary resource. So, the Makefile logic to autogenerate those
+>> targets needs to be moved to git as well.
+>>
+>> While here, I noticed that DocBook is too verbose to generate the
+>> htmldocs target. So, make it less verbose, if V=0.
+>>
+>> Guennadi Liakhovetski (1):
+>>   V4L/DVB: v4l: document new Bayer and monochrome pixel formats
+>>
+>> Mauro Carvalho Chehab (3):
+>>   DocBook/Makefile: Make it less verbose
+>>   DocBook: Add rules to auto-generate some media docbooks
+>>   DocBook/v4l/pixfmt.xml: Add missing formats for gspca cpia1 and
+>>     sn9c2028 drivers
 > 
-> We think there exists a bug in the HPET code that emulates the RTC. 
+> Hi Mauro,
 > 
-> In the normal case, when the RTC frequency is set, the rtc driver tells
-> the hpet code about it here:
+> Patches 1 & 3 are OK.
 > 
-> int hpet_set_periodic_freq(unsigned long freq)
-> {
-> 	uint64_t clc;
+> I'm having problems with patch 2/4 when I use O=DOCDIR on the make command
+> (which I always do).  videodev2.h.xml is not being generated, and after
+> that it goes downhill.
 > 
-> 	if (!is_hpet_enabled())
-> 		return 0;
-> 
-> 	if (freq <= DEFAULT_RTC_INT_FREQ)
-> 		hpet_pie_limit = DEFAULT_RTC_INT_FREQ / freq;
-> 	else {
-> 		clc = (uint64_t) hpet_clockevent.mult * NSEC_PER_SEC;
-> 		do_div(clc, freq);
-> 		clc >>= hpet_clockevent.shift;
-> 		hpet_pie_delta = (unsigned long) clc;
-> 	}
-> 	return 1;
-> }
-> 
-> If freq is set to 64Hz (DEFAULT_RTC_INT_FREQ) or lower, then
-> hpet_pie_limit (a static) is set to non-zero.
-> Then, on every one-shot HPET interrupt, hpet_rtc_timer_reinit is called
-> to compute the next timeout. Well, that function has this logic:
-> 
-> 	if (!(hpet_rtc_flags & RTC_PIE) || hpet_pie_limit)
-> 		delta = hpet_default_delta;
-> 	else
-> 		delta = hpet_pie_delta;
-> 
-> Since hpet_pie_limit is not 0, hpet_default_delta is used. That
-> corresponds to 64Hz.
-> 
-> Now, if you set a different rtc frequency, you'll take the else path
-> through hpet_set_periodic_freq, but unfortunately no one resets
-> hpet_pie_limit back to 0.
-> 
-> Boom....now you are stuck with 64Hz HPET interrupts forever. 
-> 
-> The patch below just resets the hpet_pie_limit value when requested freq
-> is greater than DEFAULT_RTC_INT_FREQ, which we think fixes this problem.
-> 
-> Thanks,
-> Alok
-> 
-> Index: linux-2.6/arch/x86/kernel/hpet.c
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/kernel/hpet.c	2010-01-14 13:47:15.000000000 -0800
-> +++ linux-2.6/arch/x86/kernel/hpet.c	2010-02-09 17:20:50.000000000 -0800
-> @@ -1135,6 +1135,7 @@ int hpet_set_periodic_freq(unsigned long
->  		do_div(clc, freq);
->  		clc >>= hpet_clockevent.shift;
->  		hpet_pie_delta = clc;
-> +		hpet_pie_limit = 0;
->  	}
->  	return 1;
->  }
+> I will let you know more when I have more info, or you or Guennadi can send
+> a fixup patch for that.
 > 
 
+I'm not making any progress on this.
+"make O=DOCDIR htmldocs" needs to work, but it does not:
+
+
+Also, $(objtree)/Documentation/DocBook/index.html is no longer being generated
+after these 4 patches are applied.  That needs to be fixed also.
+
+I get lots of these:
+grep: /lnx/src/lnx-2633-rc8-docbook/DOC2/Documentation/DocBook/v4l/vidioc-*.xml: No such file or directory
+grep: /lnx/src/lnx-2633-rc8-docbook/DOC2/Documentation/DocBook/v4l/vidioc-*.xml: No such file or directory
+grep: /lnx/src/lnx-2633-rc8-docbook/DOC2/Documentation/DocBook/v4l/vidioc-*.xml: No such file or directory
+
+followed by:
+  GEN     Documentation/DocBook/media-indices.tmpl
+  GEN     Documentation/DocBook/v4l/videodev2.h.xml
+/bin/bash: line 1: Documentation/DocBook/v4l/videodev2.h.xml: No such file or directory
+make[2]: *** [Documentation/DocBook/v4l/videodev2.h.xml] Error 1
+
+
+The patches do seem to be OK if O=dirname is not used... except that the main index.html
+is still not being generated.
+
+
+> 
+> 
+>>  Documentation/DocBook/Makefile               |  493 +++++++-
+>>  Documentation/DocBook/dvb/frontend.h.xml     |  415 ------
+>>  Documentation/DocBook/media-entities.tmpl    |  383 ------
+>>  Documentation/DocBook/media-indices.tmpl     |   89 --
+>>  Documentation/DocBook/v4l/pixfmt-srggb10.xml |   90 ++
+>>  Documentation/DocBook/v4l/pixfmt-srggb8.xml  |   67 +
+>>  Documentation/DocBook/v4l/pixfmt-y10.xml     |   79 ++
+>>  Documentation/DocBook/v4l/pixfmt.xml         |   18 +-
+>>  Documentation/DocBook/v4l/videodev2.h.xml    | 1757 --------------------------
+>>  9 files changed, 738 insertions(+), 2653 deletions(-)
+>>  delete mode 100644 Documentation/DocBook/dvb/frontend.h.xml
+>>  delete mode 100644 Documentation/DocBook/media-entities.tmpl
+>>  delete mode 100644 Documentation/DocBook/media-indices.tmpl
+>>  create mode 100644 Documentation/DocBook/v4l/pixfmt-srggb10.xml
+>>  create mode 100644 Documentation/DocBook/v4l/pixfmt-srggb8.xml
+>>  create mode 100644 Documentation/DocBook/v4l/pixfmt-y10.xml
+>>  delete mode 100644 Documentation/DocBook/v4l/videodev2.h.xml
+>>
+> 
+> 
+
+
+-- 
+~Randy
