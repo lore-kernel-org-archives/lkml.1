@@ -1,110 +1,66 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758613Ab0BRQcm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 11:32:42 -0500
-Received: from comal.ext.ti.com ([198.47.26.152]:51850 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758576Ab0BRQcj convert rfc822-to-8bit (ORCPT
+	id S1758607Ab0BRQem (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 11:34:42 -0500
+Received: from va3ehsobe001.messaging.microsoft.com ([216.32.180.11]:20179
+	"EHLO VA3EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1758488Ab0BRQek (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 11:32:39 -0500
-From: "Karicheri, Muralidharan" <m-karicheri2@ti.com>
-To: Roel Kluin <roel.kluin@gmail.com>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Date: Thu, 18 Feb 2010 10:31:49 -0600
-Subject: RE: [PATCH] video_device: don't free_irq() an element past array
- vpif_obj.dev[] and fix test
-Thread-Topic: [PATCH] video_device: don't free_irq() an element past array
- vpif_obj.dev[] and fix test
-Thread-Index: AcqpfmYE4wetLqf2TH6x2oUP/o+jiQHOJhUg
-Message-ID: <A69FA2915331DC488A831521EAE36FE40169C5C9B5@dlee06.ent.ti.com>
-References: <4B714E15.4020909@gmail.com>
-In-Reply-To: <4B714E15.4020909@gmail.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+	Thu, 18 Feb 2010 11:34:40 -0500
+X-SpamScore: -26
+X-BigFish: VPS-26(zz1432R98dN936eM9371Pzz1202hzzz32i87h6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-DOMAIN-IP-MATCH: fail
+X-WSS-ID: 0KY1Q0L-02-11D-02
+X-M-MSG: 
+Date: Thu, 18 Feb 2010 17:33:58 +0100
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Avi Kivity <avi@redhat.com>
+CC: Alexander Graf <agraf@suse.de>, Marcelo Tosatti <mtosatti@redhat.com>,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/10] Nested SVM fixes (and Win7-64bit bringup)
+Message-ID: <20100218163358.GT22141@amd.com>
+References: <1266493115-28386-1-git-send-email-joerg.roedel@amd.com>
+ <4B7D4FBA.2030204@redhat.com>
+ <9769FCB3-A4E4-4934-808C-A83ADCC72356@suse.de>
+ <4B7D54AD.5080601@redhat.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <4B7D54AD.5080601@redhat.com>
+Organization: Advanced Micro Devices =?iso-8859-1?Q?GmbH?=
+	=?iso-8859-1?Q?=2C_Karl-Hammerschmidt-Str=2E_34=2C_85609_Dornach_bei_M=FC?=
+	=?iso-8859-1?Q?nchen=2C_Gesch=E4ftsf=FChrer=3A_Thomas_M=2E_McCoy=2C_Giuli?=
+	=?iso-8859-1?Q?ano_Meroni=2C_Andrew_Bowd=2C_Sitz=3A_Dornach=2C_Gemeinde_A?=
+	=?iso-8859-1?Q?schheim=2C_Landkreis_M=FCnchen=2C_Registergericht_M=FCnche?=
+	=?iso-8859-1?Q?n=2C?= HRB Nr. 43632
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-OriginalArrivalTime: 18 Feb 2010 16:33:59.0037 (UTC) FILETIME=[2BE4DAD0:01CAB0B8]
+X-Reverse-DNS: unknown
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roel,
+On Thu, Feb 18, 2010 at 04:54:37PM +0200, Avi Kivity wrote:
+> On 02/18/2010 04:48 PM, Alexander Graf wrote:
+> >On 18.02.2010, at 15:33, Avi Kivity wrote:
+> >
+> >>On 02/18/2010 01:38 PM, Joerg Roedel wrote:
+> >>>Hi,
+> >>>
+> >>>here is a couple of fixes for the nested SVM implementation. I collected these
+> >>>fixes mostly when trying to get Windows 7 64bit running as an L2 guest. Most
+> >>>important fixes in this set make lazy fpu switching working with nested SVM and
+> >>>the nested tpr handling fixes. Without the later fix the l1 guest freezes when
+> >>>trying to run win7 as l2 guest. Please review and comment on these patches :-)
+> >>>
+> >>Overall looks good.  Would appreciate Alex looking over these as well.
+> >The kmap thing is broken though, right?
+> 
+> Oh yes, but that's a search and replace, not something needing deep rework.
 
-Thanks for the patch. 
+Great. I'll post again with fixes soon.
 
->In vpif_get_std_info(): std_info doesn't need the NULL test, it was already
->dereferenced anyway. If std_info->stdid is 0 we could early return -1.
->
->In vpif_probe(): local variable q was only assigned. If we error out with
->either last two goto's then j equals VPIF_DISPLAY_MAX_DEVICES. So after the
->probe_out: label, k also reaches VPIF_DISPLAY_MAX_DEVICES after the loop.
->In
->the first iteration in the loop after vpif_int_err: a free_irq() can occur
->of an element &vpif_obj.dev[VPIF_DISPLAY_MAX_DEVICES]->channel_id which is
->outside vpif_obj.dev[] array boundaries.
->
->Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
->---
->Or am I mistaken?
->
->diff --git a/drivers/media/video/davinci/vpif_display.c
->b/drivers/media/video/davinci/vpif_display.c
->index dfddef7..8f6605d 100644
->--- a/drivers/media/video/davinci/vpif_display.c
->+++ b/drivers/media/video/davinci/vpif_display.c
->@@ -383,7 +383,7 @@ static int vpif_get_std_info(struct channel_obj *ch)
-> 	int index;
->
-> 	std_info->stdid = vid_ch->stdid;
->-	if (!std_info)
->+	if (!std_info->stdid)
-> 		return -1;
->
-This is a NACK. We shouldn't check for stdid since the function is supposed
-to update std_info. So just remove
+	Joerg
 
-if (!std_info)
-	return -1;
 
-I am okay with the below change. So please re-submit the patch with the 
-above change and my ACK.
-
-Thanks
-
-Murali
-
-> 	for (index = 0; index < ARRAY_SIZE(ch_params); index++) {
->@@ -1423,7 +1423,7 @@ static __init int vpif_probe(struct platform_device
->*pdev)
-> {
-> 	struct vpif_subdev_info *subdevdata;
-> 	struct vpif_display_config *config;
->-	int i, j = 0, k, q, m, err = 0;
->+	int i, j = 0, k, m, err = 0;
-> 	struct i2c_adapter *i2c_adap;
-> 	struct common_obj *common;
-> 	struct channel_obj *ch;
->@@ -1573,10 +1573,12 @@ probe_out:
-> 		video_device_release(ch->video_dev);
-> 		ch->video_dev = NULL;
-> 	}
->+	if (k == VPIF_DISPLAY_MAX_DEVICES)
->+		k = VPIF_DISPLAY_MAX_DEVICES - 1;
-> vpif_int_err:
-> 	v4l2_device_unregister(&vpif_obj.v4l2_dev);
-> 	vpif_err("VPIF IRQ request failed\n");
->-	for (q = k; k >= 0; k--) {
->+	for (; k >= 0; k--) {
-> 		for (m = i; m >= res->start; m--)
-> 			free_irq(m, (void *)(&vpif_obj.dev[k]->channel_id));
-> 		res = platform_get_resource(pdev, IORESOURCE_IRQ, k-1);
->--
->To unsubscribe from this list: send the line "unsubscribe linux-media" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
