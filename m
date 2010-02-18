@@ -1,81 +1,59 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752612Ab0BRHPU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 02:15:20 -0500
-Received: from devils.ext.ti.com ([198.47.26.153]:57061 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750882Ab0BRHPS convert rfc822-to-8bit (ORCPT
+	id S1752547Ab0BRIIo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 03:08:44 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:57398 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751867Ab0BRIIm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 02:15:18 -0500
-From: "Gadiyar, Anand" <gadiyar@ti.com>
-To: Oliver Neukum <oliver@neukum.org>
-CC: Alan Stern <stern@rowland.harvard.edu>,
-       "Shilimkar, Santosh" <santosh.shilimkar@ti.com>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       Catalin Marinas <catalin.marinas@arm.com>, Pavel Machek <pavel@ucw.cz>,
-       Greg KH <greg@kroah.com>,
-       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Ming Lei <tom.leiming@gmail.com>,
-       Sebastian Siewior <bigeasy@linutronix.de>,
-       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       "Mankad, Maulik Ojas" <x0082077@ti.com>
-Date: Thu, 18 Feb 2010 12:44:21 +0530
-Subject: RE: USB mass storage and ARM cache coherency
-Thread-Topic: USB mass storage and ARM cache coherency
-Thread-Index: AcqwZ3ya621nT6e8RxWaij14M13MAwAAQU9g
-Message-ID: <5A47E75E594F054BAF48C5E4FC4B92AB03215B106B@dbde02.ent.ti.com>
-References: <EAF47CD23C76F840A9E7FCE10091EFAB02C3CF84D1@dbde02.ent.ti.com>
- <Pine.LNX.4.44L0.1002171201190.1913-100000@iolanthe.rowland.org>
- <5A47E75E594F054BAF48C5E4FC4B92AB03216236D6@dbde02.ent.ti.com>
- <201002180756.14100.oliver@neukum.org>
-In-Reply-To: <201002180756.14100.oliver@neukum.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+	Thu, 18 Feb 2010 03:08:42 -0500
+To: Anton Blanchard <anton@samba.org>
+Cc: arun@linux.vnet.ibm.com, tglx@linutronix.de, davem@davemloft.net,
+       linux-kernel@vger.kernel.org, arjan@infradead.org,
+       venkatesh.pallipadi@intel.com
+Subject: Re: NO_HZ migration of TCP ack timers
+From: Andi Kleen <andi@firstfloor.org>
+References: <20100218052820.GD24270@kryten>
+Date: Thu, 18 Feb 2010 09:08:35 +0100
+In-Reply-To: <20100218052820.GD24270@kryten> (Anton Blanchard's message of "Thu, 18 Feb 2010 16:28:20 +1100")
+Message-ID: <87mxz755ks.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oliver Neukum wrote:
-> Am Mittwoch, 17. Februar 2010 21:30:24 schrieb Gadiyar, Anand:
-> > > Why do you skip mapping the setup packet but not the data packet?
-> > > 
-> > 
-> > I think that's oversight. For this controller, we need to skip mapping
-> > all buffers used to do transfers on EP0, which is all control transfers.
-> 
-> One thing more. Do you have an issue with EP 0 only or all control
-> endpoints? EP 0 must be control, but devices are within spec if they
-> have multiple control endpoints provided EP 0 is control.
+Anton Blanchard <anton@samba.org> writes:
 
-Sorry for the confusion. The issue is not with EP 0 of devices
-connected to the controller; the problem is with EP 0 on the host
-controller itself.
+> echo 0 > /proc/sys/kernel/timer_migration
+>
+> makes the problem go away.
+>
+> I think the problem is the CPU is most likely to be idle when an rx networking
+> interrupt comes in. It seems the wrong thing to do to migrate any ack timers
+> off the current cpu taking the interrupt, and with enough networks we train
+> wreck transferring everyones ack timers to the nohz load balancer cpu. 
 
-The controller in question is the MUSB OTG controller present in
-OMAPs, Davinci chips, and some Blackfins. The MUSB HCD driver is
-written such that it carries out all control transfers on EP 0 of
-the controller. All bulk transfers are carried out on other hardware
-endpoints.
+If the nohz balancer CPU is otherwise idle, shouldn't it have enough
+cycles to handle acks for everyone? Is the problem the cache line
+transfer time?
 
-(This is the same "hardware endpoint" that is used in when the MUSB
-is used in gadget mode.)
+But yes if it's non idle the migration might need to spread out 
+to more CPUs.
 
+>
+> What should we do? Should we use mod_timer_pinned here? Or is this an issue
 
-I'm not really sure why EP0 was chosen for control transfers, or
-if there is a restriction that we *need* to use it. Let me study
-the docs some more.
+Sounds like something that should be controlled by the cpufreq governour's
+idle predictor? Only migrate if predicted idle time is long enough.
+It's essentially the same problem as deciding how deeply idle to put
+a CPU. Heavy measures only pay off if the expected time is long enough.
 
-The problem is that with the driver code as written today, we use
-EP 0 for all control transfers, and the DMA engine cannot do DMA
-to this endpoint's FIFO.
+> other areas might see (eg the block layer) and we should instead avoid
+> migrating timers created out of interrupts.
 
-- Anand
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
