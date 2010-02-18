@@ -1,33 +1,82 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752584Ab0BRSDK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 13:03:10 -0500
-Received: from toroondcbmts07.bellnexxia.net ([207.236.237.41]:38010 "EHLO
-	toroondcbmts07-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752375Ab0BRSDE convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 13:03:04 -0500
-X-Greylist: delayed 1114 seconds by postgrey-1.27 at vger.kernel.org; Thu, 18 Feb 2010 13:03:04 EST
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AtkJAPsCfUvP7O0f/2dsb2JhbACDBYwgiwiBQA6FfKdxgkQJjROBMYEzgR9kBIMV
-Message-ID: <20100218130257.ZSN4M.4197.root@toroondcbfep02>
-Date: Thu, 18 Feb 2010 12:02:56 -0600
-From: Cgnl <rcrrhq@bellnet.ca>
-Reply-To: derek_max@gala.net
-Subject: =?utf-8?Q?=C2=A3891,934.00_GBP?=
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-X-Priority: 3 (Normal)
-Sensitivity: Normal
-To: unlisted-recipients:; (no To-header on input)
+	id S1752290Ab0BRSDA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 13:03:00 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:44695 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751129Ab0BRSCr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Feb 2010 13:02:47 -0500
+From: Mel Gorman <mel@csn.ul.ie>
+To: Andrea Arcangeli <aarcange@redhat.com>
+Cc: Christoph Lameter <cl@linux-foundation.org>, Adam Litke <agl@us.ibm.com>,
+       Avi Kivity <avi@redhat.com>, David Rientjes <rientjes@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>, Mel Gorman <mel@csn.ul.ie>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: [PATCH 05/12] Allow CONFIG_MIGRATION to be set without CONFIG_NUMA or memory hot-remove
+Date: Thu, 18 Feb 2010 18:02:35 +0000
+Message-Id: <1266516162-14154-6-git-send-email-mel@csn.ul.ie>
+X-Mailer: git-send-email 1.6.5
+In-Reply-To: <1266516162-14154-1-git-send-email-mel@csn.ul.ie>
+References: <1266516162-14154-1-git-send-email-mel@csn.ul.ie>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-You are among the winners of the CAMELOT GROUP PROMOTIONPROGRAM.(£891,934.00 GBP) Mr. Mark Cole E-mail:(derek_max@gala.net)1. FullNames:...2. Gender:....3. Age:...4.Contact Address:...5. Country fResidence:....6. Nationality:....7.Occupation......8.Telephone Mobile
+CONFIG_MIGRATION currently depends on CONFIG_NUMA or on the architecture
+being able to hot-remove memory. The main users of page migration such as
+sys_move_pages(), sys_migrate_pages() and cpuset process migration are
+only beneficial on NUMA so it makes sense.
 
-Thank you,
-Mrs. Dianne Thompson
-CALL NOW: +44-703-192-1861
-Online Coordinator.
+As memory compaction will operate within a zone and is useful on both NUMA
+and non-NUMA systems, this patch allows CONFIG_MIGRATION to be set if the
+user selects CONFIG_COMPACTION as an option.
+
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
+Reviewed-by: Rik van Riel <riel@redhat.com>
+---
+ mm/Kconfig |   20 ++++++++++++++++----
+ 1 files changed, 16 insertions(+), 4 deletions(-)
+
+diff --git a/mm/Kconfig b/mm/Kconfig
+index 17b8947..b1c2781 100644
+--- a/mm/Kconfig
++++ b/mm/Kconfig
+@@ -168,17 +168,29 @@ config SPLIT_PTLOCK_CPUS
+ 	default "4"
+ 
+ #
++# support for memory compaction
++config COMPACTION
++	bool "Allow for memory compaction"
++	def_bool y
++	select MIGRATION
++	depends on EXPERIMENTAL && HUGETLBFS
++	help
++	  Allows the compaction of memory for the allocation of huge pages.
++
++#
+ # support for page migration
+ #
+ config MIGRATION
+ 	bool "Page migration"
+ 	def_bool y
+-	depends on NUMA || ARCH_ENABLE_MEMORY_HOTREMOVE
++	depends on NUMA || ARCH_ENABLE_MEMORY_HOTREMOVE || COMPACTION
+ 	help
+ 	  Allows the migration of the physical location of pages of processes
+-	  while the virtual addresses are not changed. This is useful for
+-	  example on NUMA systems to put pages nearer to the processors accessing
+-	  the page.
++	  while the virtual addresses are not changed. This is useful in
++	  two situations. The first is on NUMA systems to put pages nearer
++	  to the processors accessing. The second is when allocating huge
++	  pages as migration can relocate pages to satisfy a huge page
++	  allocation instead of reclaiming.
+ 
+ config PHYS_ADDR_T_64BIT
+ 	def_bool 64BIT || ARCH_PHYS_ADDR_T_64BIT
+-- 
+1.6.5
+
