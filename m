@@ -1,84 +1,82 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756734Ab0BROMu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 09:12:50 -0500
-Received: from mail.elliptictech.com ([209.217.122.41]:34679 "EHLO
-	emergent.ellipticsemi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753509Ab0BROMs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 09:12:48 -0500
-Date: Thu, 18 Feb 2010 09:12:30 -0500
-From: Nick Bowler <nbowler@elliptictech.com>
-To: Goswin von Brederlow <goswin-v-b@web.de>
-Cc: david@lang.hm, Kyle Moffett <kyle@moffetthome.net>,
-       Rudy Zijlstra <rudy@grumpydevil.homelinux.org>,
-       Neil Brown <neilb@suse.de>,
-       "Mr. James W. Laferriere" <babydr@baby-dragons.com>,
-       Bill Davidsen <davidsen@tmr.com>,
-       Volker Armin Hemmann <volkerarmin@googlemail.com>,
-       Michael Evans <mjevans1983@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org
-Subject: Re: Linux mdadm superblock question.
-Message-ID: <20100218141230.GA26473@emergent.ellipticsemi.com>
-Mail-Followup-To: Goswin von Brederlow <goswin-v-b@web.de>, david@lang.hm,
-	Kyle Moffett <kyle@moffetthome.net>,
-	Rudy Zijlstra <rudy@grumpydevil.homelinux.org>,
-	Neil Brown <neilb@suse.de>,
-	"Mr. James W. Laferriere" <babydr@baby-dragons.com>,
-	Bill Davidsen <davidsen@tmr.com>,
-	Volker Armin Hemmann <volkerarmin@googlemail.com>,
-	Michael Evans <mjevans1983@gmail.com>, linux-kernel@vger.kernel.org,
-	linux-raid@vger.kernel.org
-References: <201002141940.35716.volkerarmin@googlemail.com>
- <4B7AD35E.7000405@tmr.com>
- <alpine.LNX.2.01.1002161541370.24961@filesrv1.baby-dragons.com>
- <20100217130103.3ca65ef3@notabene.brown>
- <f73f7ab81002162234t531203ccue1f9ecc839c8ae42@mail.gmail.com>
- <4B7BB927.5000305@grumpydevil.homelinux.org>
- <f73f7ab81002170822j7e61455o6bee33d95c9648a1@mail.gmail.com>
- <alpine.DEB.2.00.1002170932010.4721@asgard.lang.hm>
- <20100217181016.GA14983@emergent.ellipticsemi.com>
- <87sk8z9q0h.fsf@frosties.localdomain>
+	id S1756369Ab0BROcK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 09:32:10 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:42475 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754133Ab0BROcG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Feb 2010 09:32:06 -0500
+Message-ID: <4B7D4F62.3010903@redhat.com>
+Date: Thu, 18 Feb 2010 16:32:02 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87sk8z9q0h.fsf@frosties.localdomain>
-Organization: Elliptic Technologies Inc.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Joerg Roedel <joerg.roedel@amd.com>
+CC: Marcelo Tosatti <mtosatti@redhat.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 09/10] KVM: SVM: Make lazy FPU switching work with nested
+ svm
+References: <1266493115-28386-1-git-send-email-joerg.roedel@amd.com> <1266493115-28386-10-git-send-email-joerg.roedel@amd.com>
+In-Reply-To: <1266493115-28386-10-git-send-email-joerg.roedel@amd.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04:33 Thu 18 Feb     , Goswin von Brederlow wrote:
-> Nick Bowler <nbowler@elliptictech.com> writes:
-> 
-> > On 09:41 Wed 17 Feb     , david@lang.hm wrote:
-> >> however for people who run systems that are known ahead of time and
-> >> static (and who build their own kernels instead of just relying on the
-> >> distro default kernel), all of this is unnessesary complication, which
-> >> leaves more room for problems to creep in.
-> >
-> > Such people can easily construct an initramfs containing busybox and
-> > mdadm with a shell script hardcoded to mount their root fs and run
-> > switch_root.  It's a ~10 minute jobbie that only needs to be done once.
-> 
-> Except when mdadm, cryptsetup, lvm change you need to update it.
-> Esspecially when you set up a new system that might have newer
-> metadata.
+On 02/18/2010 01:38 PM, Joerg Roedel wrote:
+> TDB.
+>
+>    
 
-I meant "once per system".  One typically doesn't _need_ to update the
-mdadm in the initramfs, as long as it's capable of assembling the root
-array.
+...
 
-> Also at least Debian doesn't (yet) support a common initramfs for their
-> kernel packaging. You either build a kernel without need for one or you
-> have a per kernel initramfs that is automatically build and updated
-> whenever anything in the initrmafs changes. Not often, but still too
-> often, the initramfs then doesn't work.
+> @@ -973,6 +973,7 @@ static void svm_decache_cr4_guest_bits(struct kvm_vcpu *vcpu)
+>
+>   static void update_cr0_intercept(struct vcpu_svm *svm)
+>   {
+> +	struct vmcb *vmcb = svm->vmcb;
+>   	ulong gcr0 = svm->vcpu.arch.cr0;
+>   	u64 *hcr0 =&svm->vmcb->save.cr0;
+>
+> @@ -984,11 +985,25 @@ static void update_cr0_intercept(struct vcpu_svm *svm)
+>
+>
+>   	if (gcr0 == *hcr0&&  svm->vcpu.fpu_active) {
+> -		svm->vmcb->control.intercept_cr_read&= ~INTERCEPT_CR0_MASK;
+> -		svm->vmcb->control.intercept_cr_write&= ~INTERCEPT_CR0_MASK;
+> +		vmcb->control.intercept_cr_read&= ~INTERCEPT_CR0_MASK;
+> +		vmcb->control.intercept_cr_write&= ~INTERCEPT_CR0_MASK;
+> +		if (is_nested(svm)) {
+> +			struct vmcb *hsave = svm->nested.hsave;
+> +
+> +			hsave->control.intercept_cr_read&= ~INTERCEPT_CR0_MASK;
+> +			hsave->control.intercept_cr_write&= ~INTERCEPT_CR0_MASK;
+> +			vmcb->control.intercept_cr_read  |= svm->nested.intercept_cr_read;
+> +			vmcb->control.intercept_cr_write |= svm->nested.intercept_cr_write;
+>    
 
-The scenario was when users configure and build their own kernel.  These
-users are presumably capable of using grub's "initrd" command or the
-CONFIG_INITRAMFS_SOURCE kernel option.
+Why are the last two lines needed?
+
+> +		}
+>   	} else {
+>   		svm->vmcb->control.intercept_cr_read |= INTERCEPT_CR0_MASK;
+>   		svm->vmcb->control.intercept_cr_write |= INTERCEPT_CR0_MASK;
+> +		if (is_nested(svm)) {
+> +			struct vmcb *hsave = svm->nested.hsave;
+> +
+> +			hsave->control.intercept_cr_read |= INTERCEPT_CR0_MASK;
+> +			hsave->control.intercept_cr_write |= INTERCEPT_CR0_MASK;
+> +		}
+>   	}
+>   }
+>    
+
+Maybe it's better to call update_cr0_intercept() after a vmexit instead, 
+to avoid this repetition, and since the if () may take a different 
+branch for the nested guest and guest cr0.
+
 
 -- 
-Nick Bowler, Elliptic Technologies (http://www.elliptictech.com/)
+error compiling committee.c: too many arguments to function
+
