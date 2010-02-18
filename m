@@ -1,84 +1,44 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753641Ab0BRI72 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 03:59:28 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:32868 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752206Ab0BRI70 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 03:59:26 -0500
-Date: Thu, 18 Feb 2010 19:59:23 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Greg KH <greg@kroah.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: linux-next: manual merge of the driver-core tree with the suspend
- tree
-Message-Id: <20100218195923.59e5e9b9.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta7 (GTK+ 2.18.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1753811Ab0BRJDu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 04:03:50 -0500
+Received: from vms173005pub.verizon.net ([206.46.173.5]:38100 "EHLO
+	vms173005pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753022Ab0BRJDr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Feb 2010 04:03:47 -0500
+Date: Thu, 18 Feb 2010 04:02:39 -0500 (EST)
+From: Len Brown <lenb@kernel.org>
+X-X-Sender: lenb@localhost.localdomain
+To: "Darrick J. Wong" <djwong@us.ibm.com>
+Cc: Matthew Garrett <mjg@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       davej@redhat.com, Thomas Renninger <trenn@suse.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: [PATCH v2] acpi: Fix regression where _PPC is not read at boot
+ even when ignore_ppc=0
+In-reply-to: <20100216222611.GP29569@tux1.beaverton.ibm.com>
+Message-id: <alpine.LFD.2.00.1002180401360.4135@localhost.localdomain>
+References: <20090429220037.GA8604@srcf.ucam.org>
+ <20090430072556.GD16737@elte.hu> <20090430095414.GA19462@srcf.ucam.org>
+ <20090430111042.GA12809@elte.hu> <20090430111338.GA21297@srcf.ucam.org>
+ <20090515191219.GH6968@plum> <20090602232108.GG7917@plum>
+ <20090607100541.GJ31286@elte.hu> <20090715003207.GA5111@plum>
+ <20100216220707.GA5966@srcf.ucam.org>
+ <20100216222611.GP29569@tux1.beaverton.ibm.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Greg,
+> On Tue, Feb 16, 2010 at 10:07:07PM +0000, Matthew Garrett wrote:
+> > Did this ever get picked up?
+> 
+> Nope.  I vaguely recall asking a few times if there were any objections left,
+> but there weren't any, and I think Len or someone said it looked good back at
+> LPC last summer.  Does not appear in 2.6.33-rc8 though.
 
-Today's linux-next merge of the driver-core tree got a conflict in
-include/linux/device.h between commits
-5a14fb87905e0023a608af8a471097a22fa72f5e ("PM: Asynchronous suspend and
-resume of devices") and 1b8647aa4d52c8ee82df3d3018b0fa2830a149a1 ("PM:
-Add facility for advanced testing of async suspend/resume") from the
-suspend tree and commit 44d58957cf0332f5c9d0f2a05e2919240dd207fc ("Driver
-core: create lock/unlock functions for struct device") from the
-driver-core tree.
-
-Juts overlapping additions.  I fixed it up (see below) and can carry the
-fix as necessary.
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-diff --cc include/linux/device.h
-index b30527d,8891cfb..0000000
---- a/include/linux/device.h
-+++ b/include/linux/device.h
-@@@ -472,23 -490,21 +490,38 @@@ static inline int device_is_registered(
-  	return dev->kobj.state_in_sysfs;
-  }
-  
- +static inline void device_enable_async_suspend(struct device *dev)
- +{
- +	if (dev->power.status == DPM_ON)
- +		dev->power.async_suspend = true;
- +}
- +
- +static inline void device_disable_async_suspend(struct device *dev)
- +{
- +	if (dev->power.status == DPM_ON)
- +		dev->power.async_suspend = false;
- +}
- +
- +static inline bool device_async_suspend_enabled(struct device *dev)
- +{
- +	return !!dev->power.async_suspend;
- +}
- +
-+ static inline void device_lock(struct device *dev)
-+ {
-+ 	mutex_lock(&dev->mutex);
-+ }
-+ 
-+ static inline int device_trylock(struct device *dev)
-+ {
-+ 	return mutex_trylock(&dev->mutex);
-+ }
-+ 
-+ static inline void device_unlock(struct device *dev)
-+ {
-+ 	mutex_unlock(&dev->mutex);
-+ }
-+ 
-  void driver_init(void);
-  
-  /*
+does it have a bugzilla entry? (as regressions tend to, thanks to rafael)
+I don't see this in my mailbox anymore.
