@@ -1,142 +1,45 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751759Ab0BRXXa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 18:23:30 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:2677 "EHLO mx1.redhat.com"
+	id S1752386Ab0BRXXo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 18:23:44 -0500
+Received: from mail.perches.com ([173.55.12.10]:1101 "EHLO mail.perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751202Ab0BRXXM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 18:23:12 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip 4/9] perf probe: Rename probe finder functions
-To: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>
-Cc: Paul Mackerras <paulus@samba.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Jason Baron <jbaron@redhat.com>,
-       "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Ulrich Drepper <drepper@redhat.com>, Roland McGrath <roland@redhat.com>,
-       Mike Galbraith <efault@gmx.de>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>
-Date: Thu, 18 Feb 2010 18:27:33 -0500
-Message-ID: <20100218232733.21679.17531.stgit@dhcp-100-2-132.bos.redhat.com>
-In-Reply-To: <20100218232701.21679.5195.stgit@dhcp-100-2-132.bos.redhat.com>
-References: <20100218232701.21679.5195.stgit@dhcp-100-2-132.bos.redhat.com>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	id S1751775Ab0BRXXl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Feb 2010 18:23:41 -0500
+Subject: Re: printk_ratelimited() not compiling
+From: Joe Perches <joe@perches.com>
+To: john stultz <johnstul@us.ibm.com>
+Cc: lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <1266532567.3201.97.camel@localhost.localdomain>
+References: <1266531013.3201.86.camel@localhost.localdomain>
+	 <1266532567.3201.97.camel@localhost.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 18 Feb 2010 15:23:39 -0800
+Message-ID: <1266535419.8446.320.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rename *_probepoint to *_probe_point, for nothing
-but a cosmetic reason.
+On Thu, 2010-02-18 at 14:36 -0800, john stultz wrote: 
+> > Am I missing something obvious, or did something get broken after this went in?
+> Ok. Solved it. I needed to #include <linux/ratelimit.h> in the file I
+> was adding the printk_ratelimited usage in, rather then where
+> printk_ratelimited is defined.
+> 
+> Maybe would it be better to move the printk_ratelimited definitions into
+> ratelimit.h so this would be more obvious?
 
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: K.Prasad <prasad@linux.vnet.ibm.com>
----
+That's one option.
 
- tools/perf/builtin-probe.c     |    2 +-
- tools/perf/util/probe-finder.c |   12 ++++++------
- tools/perf/util/probe-finder.h |    2 +-
- 3 files changed, 8 insertions(+), 8 deletions(-)
+Probably the only places I tried it had an
+#include <linux/net.h> somewhere which does an
+#include <linux/ratelimit.h>
 
-diff --git a/tools/perf/builtin-probe.c b/tools/perf/builtin-probe.c
-index c7e14d0..c3e6119 100644
---- a/tools/perf/builtin-probe.c
-+++ b/tools/perf/builtin-probe.c
-@@ -314,7 +314,7 @@ int cmd_probe(int argc, const char **argv, const char *prefix __used)
- 			continue;
- 
- 		lseek(fd, SEEK_SET, 0);
--		ret = find_probepoint(fd, pp);
-+		ret = find_probe_point(fd, pp);
- 		if (ret > 0)
- 			continue;
- 		if (ret == 0) {	/* No error but failed to find probe point. */
-diff --git a/tools/perf/util/probe-finder.c b/tools/perf/util/probe-finder.c
-index 3e10dbe..c819fd5 100644
---- a/tools/perf/util/probe-finder.c
-+++ b/tools/perf/util/probe-finder.c
-@@ -524,8 +524,8 @@ static void free_current_frame_base(struct probe_finder *pf)
- }
- 
- /* Show a probe point to output buffer */
--static void show_probepoint(Dwarf_Die sp_die, Dwarf_Signed offs,
--			    struct probe_finder *pf)
-+static void show_probe_point(Dwarf_Die sp_die, Dwarf_Signed offs,
-+			     struct probe_finder *pf)
- {
- 	struct probe_point *pp = pf->pp;
- 	char *name;
-@@ -585,7 +585,7 @@ static int probeaddr_callback(struct die_link *dlink, void *data)
- 	/* Check the address is in this subprogram */
- 	if (tag == DW_TAG_subprogram &&
- 	    die_within_subprogram(dlink->die, pf->addr, &offs)) {
--		show_probepoint(dlink->die, offs, pf);
-+		show_probe_point(dlink->die, offs, pf);
- 		return 1;
- 	}
- 	return 0;
-@@ -668,7 +668,7 @@ static int probefunc_callback(struct die_link *dlink, void *data)
- 			pf->addr = die_get_entrypc(dlink->die);
- 			pf->addr += pp->offset;
- 			/* TODO: Check the address in this function */
--			show_probepoint(dlink->die, pp->offset, pf);
-+			show_probe_point(dlink->die, pp->offset, pf);
- 			return 1; /* Exit; no same symbol in this CU. */
- 		}
- 	} else if (tag == DW_TAG_inlined_subroutine && pf->inl_offs) {
-@@ -691,7 +691,7 @@ found:
- 			/* Get offset from subprogram */
- 			ret = die_within_subprogram(lk->die, pf->addr, &offs);
- 			DIE_IF(!ret);
--			show_probepoint(lk->die, offs, pf);
-+			show_probe_point(lk->die, offs, pf);
- 			/* Continue to search */
- 		}
- 	}
-@@ -704,7 +704,7 @@ static void find_probe_point_by_func(struct probe_finder *pf)
- }
- 
- /* Find a probe point */
--int find_probepoint(int fd, struct probe_point *pp)
-+int find_probe_point(int fd, struct probe_point *pp)
- {
- 	Dwarf_Half addr_size = 0;
- 	Dwarf_Unsigned next_cuh = 0;
-diff --git a/tools/perf/util/probe-finder.h b/tools/perf/util/probe-finder.h
-index 972b386..b2a2524 100644
---- a/tools/perf/util/probe-finder.h
-+++ b/tools/perf/util/probe-finder.h
-@@ -52,7 +52,7 @@ struct line_range {
- };
- 
- #ifndef NO_LIBDWARF
--extern int find_probepoint(int fd, struct probe_point *pp);
-+extern int find_probe_point(int fd, struct probe_point *pp);
- extern int find_line_range(int fd, struct line_range *lr);
- 
- /* Workaround for undefined _MIPS_SZLONG bug in libdwarf.h: */
+Personally, I think it'd be better to put
+#include <linux/ratelimit.h> back in kernel.h
+Commit 3fff4c42bd0a89869a0eb1e7874cc06ffa4aa0f5 removed it.
 
 
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
