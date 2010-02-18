@@ -1,88 +1,97 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755131Ab0BRSqL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 13:46:11 -0500
-Received: from www.tglx.de ([62.245.132.106]:59853 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755007Ab0BRSqJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 13:46:09 -0500
-Date: Thu, 18 Feb 2010 19:45:47 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Valdis.Kletnieks@vt.edu
-cc: Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Stupid futex question - 2.6.33-rc7-mmotm0210
-In-Reply-To: <7380.1266511335@localhost>
-Message-ID: <alpine.LFD.2.00.1002181934580.2811@localhost.localdomain>
-References: <10057.1266501862@localhost>            <1266503879.26719.702.camel@laptop> <7380.1266511335@localhost>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1754973Ab0BRSpw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 13:45:52 -0500
+Received: from he.sipsolutions.net ([78.46.109.217]:43175 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751874Ab0BRSpu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Feb 2010 13:45:50 -0500
+Subject: Re: [2.6.33-rc5] Weird deadlock when shutting down
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>
+In-Reply-To: <alpine.LFD.2.00.1002180825000.4141@localhost.localdomain>
+References: <1264740107.20211.53.camel@pasglop>
+	 <1266485775.6539.6.camel@jlt3.sipsolutions.net>
+	 <alpine.LFD.2.00.1002180825000.4141@localhost.localdomain>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-jMq8qHulsVqCCIMujYd0"
+Date: Thu, 18 Feb 2010 19:45:35 +0100
+Message-ID: <1266518735.3829.4.camel@jlt3.sipsolutions.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.29.3.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 18 Feb 2010, Valdis.Kletnieks@vt.edu wrote:
-> (Adding some cc: to the list)
-> 
-> On Thu, 18 Feb 2010 15:37:59 +0100, Peter Zijlstra said:
-> > On Thu, 2010-02-18 at 09:04 -0500, Valdis.Kletnieks@vt.edu wrote:
-> > > Kernel: x86_64 2.6.33-rc7-mmotm0210
-> > > 
-> > > I'm debugging a problem where pulseaudio is getting killed with a SIGKILL
-> > > out of the blue.  It appears to be a problem where pulseaudio sets
-> > > RLIMIT_RTTIME and the bound gets exceeded.  Analysis with 'top' shows
-> > > a short spike of 96% system time, and the tail end of strace shows this:
-> > > 
-> > > [pid 25065] 01:50:20.371484 ioctl(28, USBDEVFS_CONTROL, 0x7fd3d76f630c) = 0 <0.000015>
-> > > [pid 25065] 01:50:20.371548 ioctl(28, 0x40045532, 0x7fd3d76f636c) = 0 <0.000016>
-> > > [pid 25065] 01:50:20.371611 open("/dev/snd/pcmC0D0p", O_RDWR|O_NONBLOCK|O_CLOEXEC <unfinished ...>
-> > > [pid 25064] 01:50:20.371678 <... write resumed> ) = 8 <0.002104>
-> > > [pid 25064] 01:50:20.371718 futex(0xc2ec00, FUTEX_WAIT_PRIVATE, 0, NULL <unfinished ...>
-> > > [pid 25066] 01:50:21.408392 +++ killed by SIGKILL +++
-> > > PANIC: handle_group_exit: 25066 leader 25064
-> > > [pid 25065] 01:50:21.408442 +++ killed by SIGKILL +++
-> > > PANIC: handle_group_exit: 25065 leader 25064
-> > > 01:50:21.420354 +++ killed by SIGKILL +++
-> > > 
-> > > thread 25064 apparently gets gunned down due to RTTIME because it spent a whole
-> > > second in a futex() call - is it reasonable for futex() to not return for that
-> > > long?
 
-Well, it's in futex_wait(). If nothing unlocks the futex, then it
-stays there forever.
- 
-> > > In other words - kernel bug because futex() should return, or pulseaudio bug
-> > > for not understanding futex() can snooze a while?
-> > > 
-> > > If a kernel bug, anybody got a better idea than nuking the RLIMIT_RTTIME call,
-> > > waiting for it to repeat (takes between 1 minute and 1 hour or so), and
-> > > whomping it a few times with sysrq-T?
-> > 
-> > is that second spend in processing sysrq-t?
-> 
-> No, currently that second is spent in a futex() syscall - I'm wondering:
-> 
-> 1) should it get killed for RLIMIT_RTTIME because it's been in a futex()
-> for multiple seconds? It seems suspicious - docs say a blocking syscall
-> resets RTTIME - so if futex() blocks it shouldn't kill, and if it's in the
-> kernel for a second without blocking it's a bug too.
+--=-jMq8qHulsVqCCIMujYd0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-If it schedules out, then the RLIMIT_RTTIME should not be hit.
+On Thu, 2010-02-18 at 08:31 -0800, Linus Torvalds wrote:
 
-There are several possibilities why this happens:
+> > > halt/4071 is trying to acquire lock:
+> > >  (s_active){++++.+}, at: [<c0000000001ef868>]
+> > > .sysfs_addrm_finish+0x58/0xc0
+> > >=20
+> > > but task is already holding lock:
+> > >  (&per_cpu(cpu_policy_rwsem, cpu)){+.+.+.}, at:
+> [<c0000000004cd6ac>]
+> > > .lock_policy_rwsem_write+0x84/0xf4
+> > >=20
+> > > which lock already depends on the new lock.
+>=20
+> You don't have a full backtrace for these things?
 
- - the futex code has a bug which causes it to busy loop
- - the rlimit code is wreckaged
+No, it deadlocks right there, unfortunately.
 
-> 2) Is sysrq-T my best bet here, or should I be trying something else first?
+> We've had lots of trouble with the cpu governors, and I suspect the=20
+> problem isn't new, but the lockdep warning is likely new (see commit=20
+> 846f99749ab68bbc7f75c74fec305de675b1a1bf: "sysfs: Add lockdep
+> annotations=20
+> for the sysfs active reference").
+>=20
+> So it is likely to be an old issue that (a) now gets warned about and
+> (b) might have had timing changes enough to trigger it.
 
-Can you enable the function tracer and check whether it reproduces
-with the function tracer. If yes, then we can put a tracing_off() into
-the code which handles the rlimit, so we can see in the trace what
-happened before it triggered.
+Well, it used to not deadlock and actually shut down the machine :) So
+in that sense it's definitely new. It might have printed a lockdep
+warning before, which you wouldn't normally see since the machine turns
+off right after this.
 
-Thanks,
+> I suspect it is G5-specific (or specific to whatever CPU frequency
+> code=20
+> that gets used there), since I think we'd have had lots of reports if
+> this=20
+> happened on x86.
 
-	tglx
+Yeah, that's puzzling me as well.
+
+johannes
+
+--=-jMq8qHulsVqCCIMujYd0
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAABAgAGBQJLfYrKAAoJEODzc/N7+QmaFUIQAK3l2asXHlwPg6zYbHeBWhYm
+Qm49GvWw6UEYelwTWwhLgJUJeZspMeW5ROBbRL0DH+I1qSBjq2B2Yp9dEHh96oIw
+brdnd+JZmbR/Rx1vb9CfN+D/cEegj8HY3fvLYF0Tl0P8aj60bcky1xjdFkJhsOTl
+qLJQFPFTDdrqpQ9S7ZxAumuLFz/R/qhcNl9/ir+B2ptSn3hqA2z6j80bfZckzj/0
+U74E59w9kRzlq+NtoxlNM41JMEbY0lAow2Z53oaDS3XyXr0uW5NZuX8w1lcEjqvj
+zNboicF+8CLW86Pmcf3sZl/WxDClGjt8O0tcy0JWJN7CwXS1BA8GcGrTSU7kZxVw
+SnEiKWCFvCYTYhppQebGjRmbR23L1ahDiS+KGOx9OpyKjOXyUYwS/6JYs4fsN7rv
+qQUKPPyEEaS4MQCZKyGOKl4gCLQcVuXoXTwwUCvmC5+BYmSWmLRS0XjC5C18XS/y
+AvGn4ehH93146Wvwnd6Ckc2PKrDkiouu9L2rcySSKQ01Y8na+UhMKMbIEhFxaTLA
+sL7N9E6ljf5AEMz/Ck+0QE7QHhxdtk47uQc61IxoDwkfyR0IRnyXJwUoJSw3n1qx
++L5ZGtWjy6Y6eQ1/4E44xlZ/CBDWgzkRFFVP7U65X1r/qUi34v2pjPk0GLsxgXJr
+lWr1MEqdrqWIwMw48aiP
+=/VWd
+-----END PGP SIGNATURE-----
+
+--=-jMq8qHulsVqCCIMujYd0--
+
