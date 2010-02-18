@@ -1,62 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752566Ab0BRXtX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 18:49:23 -0500
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:49036 "EHLO e9.ny.us.ibm.com"
+	id S1752569Ab0BRXzX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 18:55:23 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:45709 "EHLO mail.zytor.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751782Ab0BRXtV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 18:49:21 -0500
-Subject: Re: printk_ratelimited() not compiling
-From: john stultz <johnstul@us.ibm.com>
-To: Joe Perches <joe@perches.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <1266535987.3201.100.camel@localhost.localdomain>
-References: <1266531013.3201.86.camel@localhost.localdomain>
-	 <1266532567.3201.97.camel@localhost.localdomain>
-	 <1266535419.8446.320.camel@Joe-Laptop.home>
-	 <1266535987.3201.100.camel@localhost.localdomain>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 18 Feb 2010 15:49:15 -0800
-Message-ID: <1266536955.3201.101.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	id S1751537Ab0BRXzW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Feb 2010 18:55:22 -0500
+Message-ID: <4B7DD336.6040700@zytor.com>
+Date: Thu, 18 Feb 2010 15:54:30 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+MIME-Version: 1.0
+To: Luca Barbieri <luca@luca-barbieri.com>
+CC: mingo@elte.hu, a.p.zijlstra@chello.nl, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 02/10] x86: add support for relative CALL and JMP in 
+ alternatives
+References: <1266406962-17463-1-git-send-email-luca@luca-barbieri.com>	 <1266406962-17463-3-git-send-email-luca@luca-barbieri.com>	 <4B7D97A6.4060900@zytor.com> <ff13bc9a1002181538q7ccc1381x32a2f25bfb6d56cc@mail.gmail.com>
+In-Reply-To: <ff13bc9a1002181538q7ccc1381x32a2f25bfb6d56cc@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-02-18 at 15:33 -0800, john stultz wrote:
-> On Thu, 2010-02-18 at 15:23 -0800, Joe Perches wrote:
-> > On Thu, 2010-02-18 at 14:36 -0800, john stultz wrote: 
-> > > > Am I missing something obvious, or did something get broken after this went in?
-> > > Ok. Solved it. I needed to #include <linux/ratelimit.h> in the file I
-> > > was adding the printk_ratelimited usage in, rather then where
-> > > printk_ratelimited is defined.
-> > > 
-> > > Maybe would it be better to move the printk_ratelimited definitions into
-> > > ratelimit.h so this would be more obvious?
-> > 
-> > That's one option.
-> > 
-> > Probably the only places I tried it had an
-> > #include <linux/net.h> somewhere which does an
-> > #include <linux/ratelimit.h>
-> > 
-> > Personally, I think it'd be better to put
-> > #include <linux/ratelimit.h> back in kernel.h
-> > Commit 3fff4c42bd0a89869a0eb1e7874cc06ffa4aa0f5 removed it.
+On 02/18/2010 03:38 PM, Luca Barbieri wrote:
+>> The existing instruction parser is only present if KPROBES is configured
+>> in... this patch would make it obligatory.  Your patch doesn't reflect
+>> that.  Furthermore, it is ~16K of code and data which probably will make
+>> embedded people unhappy... although perhaps isn't out of line.
+> Didn't notice that.
 > 
-> Right, that's what I tried first, but it doesn't build. :)
+>> A good question, though, is if we actually need support for JMP or CALL
+>> as anything but the first instruction (usually the *only* instruction),
+>> which would make it a lot easier...
 > 
-> If ratelimit.h has to be included for it to work (which is fine by me),
-> it seems ratelimit.h would be the ideal place to define it.
-> 
-> CC'ing Peter to see what his thoughts are.
+> Probably not.
+> I think an even better option is to create a CALL if replacementlen is 0xff.
+> This would save some space for each callsite and make it clear we only
+> support this usage.
 
-Sorry, that should have been Ingo I cc'ed. Peter didn't make that
-change.
+That is an idea.
 
-thanks
--john
+If we're going to do a full setup, it would be nice to handle general
+relocations -- in addition to JMP and CALL, this would also allow
+RIP-relative memory operands.  However, I think if we're going to do
+that, it would be better to extract relocations at compile time (either
+directly or via disassembly, which is basically what you're doing)
+rather than at runtime.
 
+	-hpa
 
