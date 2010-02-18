@@ -1,37 +1,133 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757289Ab0BRAfT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 19:35:19 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60280
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753133Ab0BRAfQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 19:35:16 -0500
-Date: Wed, 17 Feb 2010 16:35:32 -0800 (PST)
-Message-Id: <20100217.163532.215667805.davem@davemloft.net>
-To: mst@redhat.com
-Cc: herbert@gondor.apana.org.au, paul.moore@hp.com, David.Woodhouse@intel.com,
-       sri@us.ibm.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/2] tun: linux socket filter support
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20100214110051.GA30182@redhat.com>
-References: <20100214110051.GA30182@redhat.com>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+	id S1757705Ab0BRAjX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 19:39:23 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:42401 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755779Ab0BRAjW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 19:39:22 -0500
+Date: Thu, 18 Feb 2010 11:39:12 +1100
+From: Neil Brown <neilb@suse.de>
+To: Greg KH <greg@kroah.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Greg KH <gregkh@suse.de>,
+       Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sysfs: differentiate  between locking links and
+ non-links
+Message-ID: <20100218113912.4a3d36e9@notabene.brown>
+In-Reply-To: <20100217223848.GA31557@kroah.com>
+References: <19314.1869.847327.15190@notabene.brown>
+	<20100210230625.GB678@suse.de>
+	<m1fx57zbyl.fsf@fess.ebiederm.org>
+	<20100211223235.GC30430@suse.de>
+	<m1bpfvz8wy.fsf@fess.ebiederm.org>
+	<20100217223848.GA31557@kroah.com>
+X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.6; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Michael S. Tsirkin" <mst@redhat.com>
-Date: Sun, 14 Feb 2010 13:00:51 +0200
+On Wed, 17 Feb 2010 14:38:48 -0800
+Greg KH <greg@kroah.com> wrote:
 
-> tun module already support RX filtering, however,
-> this is limited to filtering by mac address.
-> For virtio host, we also need filtering by vlan.
+> On Thu, Feb 11, 2010 at 02:47:57PM -0800, Eric W. Biederman wrote:
+> > Greg KH <gregkh@suse.de> writes:
+> > 
+> > > On Thu, Feb 11, 2010 at 01:42:10PM -0800, Eric W. Biederman wrote:
+> > >> Greg KH <gregkh@suse.de> writes:
+> > >> 
+> > >> > On Wed, Feb 10, 2010 at 12:09:33PM +1100, Neil Brown wrote:
+> > >> >> 
+> > >> >> Hi,
+> > >> >>  I've just spent a while sorting out some lockdep complaints triggered
+> > >> >>  by the recent addition of the "s_active" lockdep annotation in sysfs
+> > >> >>   (commit 846f99749ab68bbc7f75c74fec305de675b1a1bf)
+> > >> >> 
+> > >> >>  Some of them are genuine and I have submitted a fix for those.
+> > >> >>  Some are, I think, debatable and I get to that is a minute.  I've
+> > >> >>  submitted a fix for them anyway.
+> > >> >>  But some are to my mind clearly bogus and I'm hoping that can be
+> > >> >>  fixed by the change below (or similar).
+> > >> >>  The 'bogus' ones are triggered by writing to a sysfs attribute file
+> > >> >>  for which the handler tries to delete a symlink from sysfs.
+> > >> >>  This appears to be a recursion on s_active as s_active is held while
+> > >> >>  the handler runs and is again needed to effect the delete.  However
+> > >> >>  as the thing being deleted is a symlink, it is very clearly a
+> > >> >>  different object to the thing triggering the delete, so there is no
+> > >> >>  real loop.
+> > >> >> 
+> > >> >>  The following patch splits the lockdep context in two - one for
+> > >> >>  symlink and one for everything else.  This removes the apparent loop.
+> > >> >>  (An example report can be seen in
+> > >> >>      http://bugzilla.kernel.org/show_bug.cgi?id=15142).
+> > >> >> 
+> > >> >>  The "debatable" dependency loops happen when writing to one attribute
+> > >> >>  causes a different attribute to be deleted.  In my (md) case this can
+> > >> >>  actually cause a deadlock as both the attributes take the same lock
+> > >> >>  while the handler is running.  This is because deleting the attribute
+> > >> >>  will block until the all accesses of that attribute have completed (I
+> > >> >>  think).
+> > >> >>  However it should be possible to delete a name from sysfs while there
+> > >> >>  are still accesses pending (it works for normal files!!).  So if
+> > >> >>  sysfs could be changed to simply unlink the file and leave deletion to
+> > >> >>  happen when the refcount become zero it would certainly make my life
+> > >> >>  a lot easier, and allow the removal of some ugly code from md.c.
+> > >> >>  I don't know sysfs well enough to suggest a patch though.
+> > >> >> 
+> > >> >> Thanks,
+> > >> >> NeilBrown
+> > >> >> 
+> > >> >> 
+> > >> >> 
+> > >> >> commit 2e502cfe444b68f6ef6b8b2abe83b6112564095b
+> > >> >> Author: NeilBrown <neilb@suse.de>
+> > >> >> Date:   Wed Feb 10 09:43:45 2010 +1100
+> > >> >> 
+> > >> >>     sysfs: differentiate  between locking links and non-links for sysfs
+> > >> >>     
+> > >> >>     symlinks and non-symlink is sysfs are very different.
+> > >> >>     A symlink can never be locked (active) while an attribute
+> > >> >>     modification routine is running.  So removing symlink from an
+> > >> >>     attribute 'store' routine should be permitted without any lockdep
+> > >> >>     warnings.
+> > >> >>     
+> > >> >>     So split the lockdep context for 's_active' in two, one for symlinks
+> > >> >>     and other for everything else.
+> > >> >>     
+> > >> >>     Signed-off-by: NeilBrown <neilb@suse.de>
+> > >> >
+> > >> > Nice patch, I'll queue it up for .34.
+> > >> 
+> > >> Note the patch does not compile with lockdep disabled.
+> > >
+> > > Ugh, why not?
+> > >
+> > > Neil, care to fix this up?
+> > 
+> >  
+> >  #ifdef CONFIG_DEBUG_LOCK_ALLOC
+> > -#define sysfs_dirent_init_lockdep(sd)				\
+> > +#define sysfs_dirent_init_lockdep(sd, type)			\
+> >  do {								\
+> >  	static struct lock_class_key __key;			\
+> >  								\
+> > -	lockdep_init_map(&sd->dep_map, "s_active", &__key, 0);	\
+> > +	lockdep_init_map(&sd->dep_map, "s_active_" type, &__key, 0);	\
+> >  } while(0)
+> >  #else
+> >  #define sysfs_dirent_init_lockdep(sd) do {} while(0)
 > 
-> Rather than adding this directly, it seems cleaner
-> to add generic socket filter support.
+> Got it, I've fixed this by hand.
+> 
+>
 
-Both applied to net-next-2.6, thanks!
+Thanks.
+I hadn't sent you a fix myself (As requested) as I got the impression from
+the following discussion that a different approach would be taken.
+
+I'm happy either way though.
+
+Thanks,
+NeilBrown
