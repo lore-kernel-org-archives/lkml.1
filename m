@@ -1,41 +1,45 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756890Ab0BRKTX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 05:19:23 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:41566 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753938Ab0BRKTU (ORCPT
+	id S1753786Ab0BRKZ5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 05:25:57 -0500
+Received: from casper.infradead.org ([85.118.1.10]:57435 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750717Ab0BRKZz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 05:19:20 -0500
-Date: Thu, 18 Feb 2010 10:16:03 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Mark Lord <kernel@teksavvy.com>
-Cc: Alan Cox <alan@linux.intel.com>, jeff@garzik.org.com,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: [RFC 1/4] libata: cache device select
-Message-ID: <20100218101603.23c16786@lxorguk.ukuu.org.uk>
-In-Reply-To: <4B7CCC7E.3060108@teksavvy.com>
-References: <20100217130847.16338.55586.stgit@localhost.localdomain>
-	<4B7CCC7E.3060108@teksavvy.com>
-X-Mailer: Claws Mail 3.7.4 (GTK+ 2.18.6; x86_64-redhat-linux-gnu)
+	Thu, 18 Feb 2010 05:25:55 -0500
+Subject: Re: [PATCH 09/10] x86-32: use SSE for atomic64_read/set if
+ available
+From: Peter Zijlstra <peterz@infradead.org>
+To: Luca Barbieri <luca@luca-barbieri.com>
+Cc: Andi Kleen <andi@firstfloor.org>, mingo@elte.hu, hpa@zytor.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <ff13bc9a1002180153g308b0f3dxb59959936d1e343b@mail.gmail.com>
+References: <1266406962-17463-1-git-send-email-luca@luca-barbieri.com>
+	 <1266406962-17463-10-git-send-email-luca@luca-barbieri.com>
+	 <87eikj54wp.fsf@basil.nowhere.org>
+	 <ff13bc9a1002180153g308b0f3dxb59959936d1e343b@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 18 Feb 2010 11:24:49 +0100
+Message-ID: <1266488689.26719.114.camel@laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.28.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-O> I totally agree with this patch, but question the timings used to justify it.
-> Surely the overhead is only 1-2usec for the case where the device
-> is the one that was already selected (on a "smart" interface) ?
+On Thu, 2010-02-18 at 10:53 +0100, Luca Barbieri wrote:
+> perf is currently the main user.
+> On Core2, lock cmpxchg8b takes about 24 cycles and writes the
+> cacheline, while movlps takes 1 cycle. 
 
-IFF you have a smart interface. A lot of the controllers in the PCI space
-don't appear to be that clever.
+Then run a 64bit kernel already, then its a simple 1 cycle read.
 
-> And for the case where the currently selected device is different
-> than the desired device (the 1msec case), this patch makes little/no difference?
+The only platform this might possibly be worth the effort for it Atom,
+the rest of the world has moved on to 64bit a long time ago.
 
-Correct, but even with two devices per cable (which is not the most
-common setup) you win. Worst case (which I've never seen) you draw.
+There might still be a few pentium-m users out there that might
+appreciate this too, but still..
 
-Alan
+That said, _iff_ this can be done nicely there's no objection.
+
