@@ -1,99 +1,230 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756732Ab0BRBma (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 20:42:30 -0500
-Received: from hera.kernel.org ([140.211.167.34]:46699 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751801Ab0BRBm3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 20:42:29 -0500
-Message-ID: <4B7C9CEE.4080902@kernel.org>
-Date: Thu, 18 Feb 2010 10:50:38 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	id S1757074Ab0BRBms (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 20:42:48 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:56844 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753783Ab0BRBmq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 20:42:46 -0500
+From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+To: johannes@sipsolutions.net
+Cc: linux-kernel@vger.kernel.org, 8an@praha12.net
+Subject: [PATCH] iw: Add support for NL80211_ATTR_WIPHY_COVERAGE_CLASS
+Date: Wed, 17 Feb 2010 20:42:43 -0500
+Message-Id: <1266457363-31601-1-git-send-email-lrodriguez@atheros.com>
+X-Mailer: git-send-email 1.6.2.rc1.3.g81d3f
 MIME-Version: 1.0
-To: =?UTF-8?B?Q2VuZ2l6IEfDvG5heQ==?= <cgunay@emory.edu>
-CC: Robert Hancock <hancockrwd@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: sata_nv times out for BD-ROM iHOS104-08
-References: <Pine.LNX.4.64.0912221105010.5876@stg.biology.emory.edu> 	<d2d378040912232302u4b550dap687fcadced237935@mail.gmail.com> 	<4B331771.3090309@kernel.org> <d2d378041001161334r6fe3ee65w39cf98a6c2d1d399@mail.gmail.com> 	<4B5666B4.6000804@kernel.org> <51f3faa71001191859l3c323a8ev6b7c0cced2c59e92@mail.gmail.com> 	<d2d378041001220611ieb9d715of8d727f8f93ca9f@mail.gmail.com> 	<4B5A70E5.6050106@kernel.org> <d2d378041001231339o1d1b0984y2b2a85b717987d93@mail.gmail.com> 	<4B67A149.10406@kernel.org> <d2d378041002170814l1da6b022p4902128c604fc84b@mail.gmail.com>
-In-Reply-To: <d2d378041002170814l1da6b022p4902128c604fc84b@mail.gmail.com>
-X-Enigmail-Version: 1.0
-Content-Type: multipart/mixed;
- boundary="------------060400070204040406020702"
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 18 Feb 2010 01:42:04 +0000 (UTC)
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------060400070204040406020702
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+From: Lukáš Turek <8an@praha12.net>
 
-On 02/18/2010 01:14 AM, Cengiz Günay wrote:
-> 2010/2/1 Tejun Heo <tj@kernel.org>:
-> 
->> Can you please attach full dmesg w/ the patch applied w/o any kernel
->> parameter?  I'm curious where the hda warnings are coming from.  Is
->> generic IDE driver loaded?
-> 
-> The dmesg snippet I attached last time was w/o any kernel parameters.
-> This time I'm attaching the full dmesg output. hda is my other DVD-RW
-> drive, I'm not sure what the warnings mean. ide_core is loaded, but
-> not the ide-generic or ide-pci-generic modules, although they are
-> available. Would you like me to force them to load?
+New nl80211 attribute NL80211_ATTR_WIPHY_COVERAGE_CLASS allows setting
+IEEE 802.11 coverage class, which is then used by drivers to calculate
+slot time and ACK timeout for long distance links.
 
-No, I was concerned because there were a few cases where two drivers
-were attached to the same controller but I don't think that's possible
-here.
+Two iw parameters are added: 'coverage' sets the coverage class
+directly, while 'distance' is more user-friendly, as it allows to set
+just the link distance and let iw do the necessary calculation itself.
 
-Does the attached patch make any difference?
+Signed-off-by: Lukas Turek <8an@praha12.net>
+---
+ info.c    |    8 ++++++++
+ nl80211.h |   49 +++++++++++++++++++++++++++++++++++++++++++++++--
+ phy.c     |   58 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 113 insertions(+), 2 deletions(-)
 
-Thanks.
-
--- 
-tejun
-
---------------060400070204040406020702
-Content-Type: text/x-patch;
- name="drain-from-atapi_pio_bytes.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="drain-from-atapi_pio_bytes.patch"
-
-diff --git a/drivers/ata/libata-sff.c b/drivers/ata/libata-sff.c
-index 730ef3c..d189b48 100644
---- a/drivers/ata/libata-sff.c
-+++ b/drivers/ata/libata-sff.c
-@@ -1070,6 +1070,7 @@ static void atapi_pio_bytes(struct ata_queued_cmd *qc)
- 	struct ata_eh_info *ehi = &dev->link->eh_info;
- 	unsigned int ireason, bc_lo, bc_hi, bytes;
- 	int i_write, do_write = (qc->tf.flags & ATA_TFLAG_WRITE) ? 1 : 0;
-+	u8 stat;
+diff --git a/info.c b/info.c
+index 69af216..1a1b588 100644
+--- a/info.c
++++ b/info.c
+@@ -156,6 +156,14 @@ static int print_phy_handler(struct nl_msg *msg, void *arg)
+ 			printf("\tRTS threshold: %d\n", rts);
+ 	}
  
- 	/* Abuse qc->result_tf for temp storage of intermediate TF
- 	 * here to save some kernel stack usage.
-@@ -1099,6 +1100,21 @@ static void atapi_pio_bytes(struct ata_queued_cmd *qc)
- 
- 	if (unlikely(__atapi_pio_bytes(qc, bytes)))
- 		goto err_out;
++	if (tb_msg[NL80211_ATTR_WIPHY_COVERAGE_CLASS]) {
++		unsigned char coverage;
 +
-+	/* this really should be done only after the final transfer is complete */
-+	stat = ata_sff_altstatus(ap);
-+	if (stat & ATA_DRQ) {
-+		int count;
-+
-+		ata_port_printk(ap, KERN_INFO, "stat=%x after atapi_pio_bytes\n", stat);
-+
-+		for (count = 0; (ap->ops->sff_check_status(ap) & ATA_DRQ)
-+						&& count < 65536; count += 2)
-+			ioread16(ap->ioaddr.data_addr);
-+		if (count)
-+			ata_port_printk(ap, KERN_DEBUG,
-+					"drained %d bytes to clear DRQ.\n", count);
++		coverage = nla_get_u8(tb_msg[NL80211_ATTR_WIPHY_COVERAGE_CLASS]);
++		/* See handle_distance() for an explanation where the '450' comes from */
++		printf("\tCoverage class: %d (up to %dm)\n", coverage, 450 * coverage);
 +	}
- 	ata_sff_sync(ap); /* flush */
++
+ 	if (!tb_msg[NL80211_ATTR_SUPPORTED_IFTYPES])
+ 		goto commands;
  
- 	return;
+diff --git a/nl80211.h b/nl80211.h
+index 127a730..43aee23 100644
+--- a/nl80211.h
++++ b/nl80211.h
+@@ -3,7 +3,7 @@
+ /*
+  * 802.11 netlink interface public header
+  *
+- * Copyright 2006, 2007, 2008 Johannes Berg <johannes@sipsolutions.net>
++ * Copyright 2006-2010 Johannes Berg <johannes@sipsolutions.net>
+  * Copyright 2008 Michael Wu <flamingice@sourmilk.net>
+  * Copyright 2008 Luis Carlos Cobo <luisca@cozybit.com>
+  * Copyright 2008 Michael Buesch <mb@bu3sch.de>
+@@ -51,7 +51,7 @@
+  *	%NL80211_ATTR_WIPHY_TXQ_PARAMS, %NL80211_ATTR_WIPHY_FREQ,
+  *	%NL80211_ATTR_WIPHY_CHANNEL_TYPE, %NL80211_ATTR_WIPHY_RETRY_SHORT,
+  *	%NL80211_ATTR_WIPHY_RETRY_LONG, %NL80211_ATTR_WIPHY_FRAG_THRESHOLD,
+- *	and/or %NL80211_ATTR_WIPHY_RTS_THRESHOLD.
++ *	and/or %NL80211_ATTR_WIPHY_RTS_THRESHOLD, %NL80211_ATTR_WIPHY_TXPOWER.
+  * @NL80211_CMD_NEW_WIPHY: Newly created wiphy, response to get request
+  *	or rename notification. Has attributes %NL80211_ATTR_WIPHY and
+  *	%NL80211_ATTR_WIPHY_NAME.
+@@ -299,6 +299,31 @@
+  *	rate selection. %NL80211_ATTR_IFINDEX is used to specify the interface
+  *	and @NL80211_ATTR_TX_RATES the set of allowed rates.
+  *
++ * @NL80211_CMD_REGISTER_ACTION: Register for receiving certain action frames
++ *	(via @NL80211_CMD_ACTION) for processing in userspace. This command
++ *	requires an interface index and a match attribute containing the first
++ *	few bytes of the frame that should match, e.g. a single byte for only
++ *	a category match or four bytes for vendor frames including the OUI.
++ *	The registration cannot be dropped, but is removed automatically
++ *	when the netlink socket is closed. Multiple registrations can be made.
++ * @NL80211_CMD_ACTION: Action frame TX request and RX notification. This
++ *	command is used both as a request to transmit an Action frame and as an
++ *	event indicating reception of an Action frame that was not processed in
++ *	kernel code, but is for us (i.e., which may need to be processed in a
++ *	user space application). %NL80211_ATTR_FRAME is used to specify the
++ *	frame contents (including header). %NL80211_ATTR_WIPHY_FREQ (and
++ *	optionally %NL80211_ATTR_WIPHY_CHANNEL_TYPE) is used to indicate on
++ *	which channel the frame is to be transmitted or was received. This
++ *	channel has to be the current channel (remain-on-channel or the
++ *	operational channel). When called, this operation returns a cookie
++ *	(%NL80211_ATTR_COOKIE) that will be included with the TX status event
++ *	pertaining to the TX request.
++ * @NL80211_CMD_ACTION_TX_STATUS: Report TX status of an Action frame
++ *	transmitted with %NL80211_CMD_ACTION. %NL80211_ATTR_COOKIE identifies
++ *	the TX command and %NL80211_ATTR_FRAME includes the contents of the
++ *	frame. %NL80211_ATTR_ACK flag is included if the recipient acknowledged
++ *	the frame.
++ *
+  * @NL80211_CMD_MAX: highest used command number
+  * @__NL80211_CMD_AFTER_LAST: internal use
+  */
+@@ -387,6 +412,10 @@ enum nl80211_commands {
+ 
+ 	NL80211_CMD_SET_TX_BITRATE_MASK,
+ 
++	NL80211_CMD_REGISTER_ACTION,
++	NL80211_CMD_ACTION,
++	NL80211_CMD_ACTION_TX_STATUS,
++
+ 	/* add new commands above here */
+ 
+ 	/* used to define NL80211_CMD_MAX below */
+@@ -653,6 +682,15 @@ enum nl80211_commands {
+  *	rates based on negotiated supported rates information. This attribute
+  *	is used with %NL80211_CMD_SET_TX_BITRATE_MASK.
+  *
++ * @NL80211_ATTR_FRAME_MATCH: A binary attribute which typically must contain
++ *	at least one byte, currently used with @NL80211_CMD_REGISTER_ACTION.
++ *
++ * @NL80211_ATTR_ACK: Flag attribute indicating that the frame was
++ *	acknowledged by the recipient.
++ *
++ * @NL80211_ATTR_WIPHY_TXPOWER: Target output power, specified in mBm ((100 * dBm) as
++ *	some hardware allows finer granular power control than 1 dBm steps.
++ *
+  * @NL80211_ATTR_MAX: highest attribute number currently defined
+  * @__NL80211_ATTR_AFTER_LAST: internal use
+  */
+@@ -798,6 +836,12 @@ enum nl80211_attrs {
+ 
+ 	NL80211_ATTR_TX_RATES,
+ 
++	NL80211_ATTR_FRAME_MATCH,
++
++	NL80211_ATTR_ACK,
++
++	NL80211_ATTR_WIPHY_TXPOWER,
++
+ 	/* add attributes here, update the policy in nl80211.c */
+ 
+ 	__NL80211_ATTR_AFTER_LAST,
+@@ -831,6 +875,7 @@ enum nl80211_attrs {
+ #define NL80211_ATTR_AKM_SUITES NL80211_ATTR_AKM_SUITES
+ #define NL80211_ATTR_KEY NL80211_ATTR_KEY
+ #define NL80211_ATTR_KEYS NL80211_ATTR_KEYS
++#define NL80211_ATTR_WIPHY_TXPOWER NL80211_ATTR_WIPHY_TXPOWER
+ 
+ #define NL80211_MAX_SUPP_RATES			32
+ #define NL80211_MAX_SUPP_REG_RULES		32
+diff --git a/phy.c b/phy.c
+index 8dd01aa..5a87024 100644
+--- a/phy.c
++++ b/phy.c
+@@ -164,3 +164,61 @@ static int handle_netns(struct nl80211_state *state,
+ COMMAND(set, netns, "<pid>",
+ 	NL80211_CMD_SET_WIPHY_NETNS, 0, CIB_PHY, handle_netns,
+ 	"Put this wireless device into a different network namespace");
++
++static int handle_coverage(struct nl80211_state *state,
++			struct nl_cb *cb,
++			struct nl_msg *msg,
++			int argc, char **argv)
++{
++	unsigned int coverage;
++
++	if (argc != 1)
++		return 1;
++
++	coverage = strtoul(argv[0], NULL, 10);
++	if (coverage > 255)
++		return 1;
++
++	NLA_PUT_U8(msg, NL80211_ATTR_WIPHY_COVERAGE_CLASS, coverage);
++
++	return 0;
++ nla_put_failure:
++	return -ENOBUFS;
++}
++COMMAND(set, coverage, "<coverage class>",
++	NL80211_CMD_SET_WIPHY, 0, CIB_PHY, handle_coverage,
++	"Set coverage class (1 for every 3 usec of air propagation time).\n"
++	"Valid values: 0 - 255.");
++
++static int handle_distance(struct nl80211_state *state,
++			struct nl_cb *cb,
++			struct nl_msg *msg,
++			int argc, char **argv)
++{
++	unsigned int distance, coverage;
++
++	if (argc != 1)
++		return 1;
++
++	distance = strtoul(argv[0], NULL, 10);
++
++	/*
++	 * Divide double the distance by the speed of light in m/usec (300) to
++	 * get round-trip time in microseconds and then divide the result by
++	 * three to get coverage class as specified in IEEE 802.11-2007 table
++	 * 7-27. Values are rounded upwards.
++	 */
++	coverage = (distance + 449) / 450;
++	if (coverage > 255)
++		return 1;
++
++	NLA_PUT_U8(msg, NL80211_ATTR_WIPHY_COVERAGE_CLASS, coverage);
++
++	return 0;
++ nla_put_failure:
++	return -ENOBUFS;
++}
++COMMAND(set, distance, "<distance>",
++	NL80211_CMD_SET_WIPHY, 0, CIB_PHY, handle_distance,
++	"Set appropriate coverage class for given link distance in meters.\n"
++	"Valid values: 0 - 114750");
+-- 
+1.6.3.3
 
---------------060400070204040406020702--
