@@ -1,54 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754598Ab0BRVcr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 16:32:47 -0500
-Received: from server109f.appriver.com ([72.32.253.90]:1947 "EHLO
-	server109.appriver.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751857Ab0BRVcq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 16:32:46 -0500
-X-Policy: GLOBAL - intcomgrp.com
-X-Primary: jkosin@intcomgrp.com
-X-Note: This Email was scanned by AppRiver SecureTide
-X-ALLOW: JKosin@intcomgrp.com ALLOWED
-X-Virus-Scan: V-
-X-Note: Spam Tests Failed: 
-X-Country-Path: PRIVATE->UNITED STATES->UNITED STATES
-X-Note-Sending-IP: 216.54.13.100
-X-Note-Reverse-DNS: mail.intcomgrp.com
-X-Note-WHTLIST: JKosin@intcomgrp.com
-X-Note: User Rule Hits: 
-X-Note: Global Rule Hits: G173 G174 G175 G176 G180 G181 G192 G279 
-X-Note: Encrypt Rule Hits: 
-X-Note: Mail Class: ALLOWEDSENDER
-X-Note: Headers Injected
-Message-ID: <4B7DB266.10105@intcomgrp.com>
-Date: Thu, 18 Feb 2010 16:34:30 -0500
-From: James Kosin <jkosin@intcomgrp.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.1.7) Gecko/20100111 Lightning/1.0b1 Thunderbird/3.0.1
+	id S1755436Ab0BRVff (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 16:35:35 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:34840 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753153Ab0BRVfd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Feb 2010 16:35:33 -0500
+Date: Thu, 18 Feb 2010 21:35:18 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andrea Arcangeli <aarcange@redhat.com>, Adam Litke <agl@us.ibm.com>,
+       Avi Kivity <avi@redhat.com>, David Rientjes <rientjes@google.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH 05/12] Memory compaction core
+Message-ID: <20100218213518.GD30258@csn.ul.ie>
+References: <1265976059-7459-1-git-send-email-mel@csn.ul.ie> <1265976059-7459-6-git-send-email-mel@csn.ul.ie> <20100216170014.7309.A69D9226@jp.fujitsu.com> <20100216084800.GC26086@csn.ul.ie> <alpine.DEB.2.00.1002160849460.18275@router.home> <20100216145943.GA997@csn.ul.ie> <alpine.DEB.2.00.1002181335270.7351@router.home>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] hw-breakpoints: Accept breakpoints on NULL address
-References: <edVLc-5aQ-23@gated-at.bofh.it> <efiZ6-5YR-51@gated-at.bofh.it> <eflWW-1XV-11@gated-at.bofh.it>
-In-Reply-To: <eflWW-1XV-11@gated-at.bofh.it>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 18 Feb 2010 21:34:30.0564 (UTC) FILETIME=[27858640:01CAB0E2]
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.1002181335270.7351@router.home>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/18/2010 4:20 PM, Roland McGrath wrote:
-> Setting a watchpoint on address 0 seems like an entirely reasonable thing
-> to do.  This change looks right to me.
+On Thu, Feb 18, 2010 at 01:37:35PM -0600, Christoph Lameter wrote:
+> On Tue, 16 Feb 2010, Mel Gorman wrote:
 > 
-> Thanks,
-> Roland
+> > > Oh there are numerous ZONE_DMA pressure issues if you have ancient /
+> > > screwed up hardware that can only operate on DMA or DMA32 memory.
+> > >
+> >
+> > I've never ran into the issue. I was under the impression that the only
+> > device that might care these days are floopy disks.
+> 
+> Kame-san had an issue a year or so ago.
+> 
 
-Okay with me.  Most platforms use address 0x0000 for the RESET vector.
-Nice to catch; only problem was if it was a true RESET the information
-is gone anyway.
-If not a true RESET, the caller tried to call a function at 0x0000 which
-then really isn't allowed under most circumstances.
+Will add it as a potential follow-on then. I consider Unevictable more
+important than zone-pressure issues. Neither are going to be done in the
+first pass. It's complex enough as it is and I'm more concerned with
+getting teh page migration anon_vma snag ironed out. Can you review the
+patches related to page migration in v3 please and see what you think?
+You are much more familiar with the intent of that area than I.
 
-James
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
