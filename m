@@ -1,86 +1,53 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754077Ab0BRJen (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 04:34:43 -0500
-Received: from host64.kissl.de ([213.239.241.64]:40292 "EHLO host64.kissl.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753422Ab0BRJem (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 04:34:42 -0500
-Message-ID: <4B7D01CE.1030101@lastsummer.de>
-Date: Thu, 18 Feb 2010 10:01:02 +0100
-From: Franco Fichtner <franco@lastsummer.de>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Andreas Petlund <apetlund@simula.no>
-CC: =?ISO-8859-1?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
-       Netdev <netdev@vger.kernel.org>, eric.dumazet@gmail.com,
-       hannemann@nets.rwth-aachen.de, LKML <linux-kernel@vger.kernel.org>,
-       shemminger@vyatta.com, william.allen.simpson@gmail.com,
-       damian@tvk.rwth-aachen.de, ebiederm@xmission.com,
-       David Miller <davem@davemloft.net>
-Subject: Re: [net-next PATCH v4 2/3] net: TCP thin linear timeouts
-References: <4B7AAE69.8020701@simula.no> <20100217.163255.133898079.davem@davemloft.net> <alpine.DEB.2.00.1002181040520.9961@melkinpaasi.cs.helsinki.fi> <4B7CFDE4.4010003@simula.no>
-In-Reply-To: <4B7CFDE4.4010003@simula.no>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+	id S1754575Ab0BRJga (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 04:36:30 -0500
+Received: from he.sipsolutions.net ([78.46.109.217]:44052 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753844Ab0BRJg3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Feb 2010 04:36:29 -0500
+Subject: Re: [2.6.33-rc5] Weird deadlock when shutting down
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <1264740107.20211.53.camel@pasglop>
+References: <1264740107.20211.53.camel@pasglop>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 18 Feb 2010 10:36:15 +0100
+Message-ID: <1266485775.6539.6.camel@jlt3.sipsolutions.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.29.3.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Fri, 2010-01-29 at 15:41 +1100, Benjamin Herrenschmidt wrote:
+> Hi Ingo !
+> 
+> Johannes and I see this on our quad G5s... it -could- be similar to
+> one reported a short while ago by Xiaotian Feng <xtfeng@gmail.com>
+> under the subject [2.6.33-rc4] sysfs lockdep warnings on cpu hotplug.
+>  
+> Basically, the machine deadlocks right after printing the following
+> when doing a shutdown:
+> 
+> halt/4071 is trying to acquire lock:
+>  (s_active){++++.+}, at: [<c0000000001ef868>]
+> .sysfs_addrm_finish+0x58/0xc0
+> 
+> but task is already holding lock:
+>  (&per_cpu(cpu_policy_rwsem, cpu)){+.+.+.}, at: [<c0000000004cd6ac>]
+> .lock_policy_rwsem_write+0x84/0xf4
+> 
+> which lock already depends on the new lock.
+> 
+> the existing dependency chain (in reverse order) is:
 
-Andreas Petlund wrote:
-> On 02/18/2010 09:41 AM, Ilpo Järvinen wrote:
->   
->> On Wed, 17 Feb 2010, David Miller wrote:
->>
->>     
->>> From: Andreas Petlund <apetlund@simula.no>
->>> Date: Tue, 16 Feb 2010 15:40:41 +0100
->>>
->>>       
->>>> @@ -341,6 +342,8 @@ struct tcp_sock {
->>>>  	u16	advmss;		/* Advertised MSS			*/
->>>>  	u8	frto_counter;	/* Number of new acks after RTO */
->>>>  	u8	nonagle;	/* Disable Nagle algorithm?             */
->>>> +	u8      thin_lto    : 1,/* Use linear timeouts for thin streams */
->>>> +		thin_undef  : 7;
->>>>  
->>>>         
->>> There is now a gap of 3 unused bytes here in this critical
->>> core TCP socket data structure.
->>>
->>> Please either find a way to avoid this hole, or document
->>> it with a comment.
->>>       
->> There would be multiple bits free for use in both frto_counter and nonagle 
->> byte.
->>
->>     
->
-> I was playing aroud with this setup:
->
-> =========
-> u8	nonagle     : 4,/* Disable Nagle algorithm?             */
-> 	thin_lto    : 1,/* Use linear timeouts for thin streams */
-> 	thin_dupack : 1,/* Fast retransmit on first dupack      */
-> 	thin_undef  : 2;
-> =========
->
-> Do you think that would do the trick?
->   
+This is still happening with -rc8. Any news?
 
-According to Ilpo, it would be ok to reduce both ftro_counter and
-nonagle, so why not join all these into u16 and leave the remaining
-free bits documented for other people. Like this:
+johannes
 
-    u16 frto_counter:x; /* Number of new acks after RTO */
-    u16 nonagle:y; /* Disable Nagle algorithm? */
-    u16 thin_lto:1; /* Use linear timeouts for thin streams */
-    u16 unused:15-x-y;
-
-Not sure about the y and x. Ilpo, can you comment on those values?
-
-
-Thanks,
-Franco
