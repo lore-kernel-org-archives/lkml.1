@@ -1,77 +1,46 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758076Ab0BRBJL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 20:09:11 -0500
-Received: from shadbolt.e.decadent.org.uk ([88.96.1.126]:54232 "EHLO
-	shadbolt.e.decadent.org.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752305Ab0BRBJI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 20:09:08 -0500
-From: Ben Hutchings <ben@decadent.org.uk>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1263738961.8876.28.camel@localhost>
-References: <1263738961.8876.28.camel@localhost>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-6EWMYV2SzemV0wl4UYP1"
-Date: Thu, 18 Feb 2010 01:09:01 +0000
-Message-ID: <1266455341.10567.667.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-X-SA-Exim-Connect-IP: 192.168.4.185
-X-SA-Exim-Mail-From: ben@decadent.org.uk
-Subject: Re: Please pull 'upstream' branch of
- http://git.decadent.org.uk/git/linux-firmware.git
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
-X-SA-Exim-Scanned: Yes (on shadbolt.decadent.org.uk)
+	id S1757139Ab0BRBN0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 20:13:26 -0500
+Received: from snt0-omc2-s32.snt0.hotmail.com ([65.55.90.107]:58834 "EHLO
+	snt0-omc2-s32.snt0.hotmail.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752509Ab0BRBNY convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 20:13:24 -0500
+Message-ID: <SNT125-W43CEC942D4248B42CA7B1DC3470@phx.gbl>
+X-Originating-IP: [96.253.143.208]
+From: Yuhong Bao <yuhongbao_386@hotmail.com>
+To: <hpa@zytor.com>
+CC: <luca@luca-barbieri.com>, <mingo@elte.hu>, <a.p.zijlstra@chello.nl>,
+       <akpm@linux-foundation.org>, <linux-kernel@vger.kernel.org>
+Subject: RE: [PATCH 10/10] x86-32: panic on !CX8 && XMM
+Date: Wed, 17 Feb 2010 17:13:23 -0800
+Importance: Normal
+In-Reply-To: <4B7C7EB3.6000202@zytor.com>
+References: <1266406962-17463-1-git-send-email-luca@luca-barbieri.com>
+ <1266406962-17463-11-git-send-email-luca@luca-barbieri.com>,<4B7C6FC8.7090107@zytor.com>
+ <SNT125-W19438E1E5A7FB2F02097DEC3480@phx.gbl>,<4B7C7EB3.6000202@zytor.com>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+MIME-Version: 1.0
+X-OriginalArrivalTime: 18 Feb 2010 01:13:23.0842 (UTC) FILETIME=[9126F620:01CAB037]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-6EWMYV2SzemV0wl4UYP1
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+>> Also, don't forget the NT4 CX8 bug with non-Intel/AMD/Cyrix vendors:
+>> http://www.geoffchappell.com/studies/windows/km/cpu/cx8.htm
+>> If a processor support SSE (or PAE or MMX for that matter), you can pretty much assume CX8 exists even if the feature bit is cleared because of this bug.
+>>
+>
+> Those kinds of things we *also* deal with by adjusting the CPU features
+> in the detection code.
+ 
+And in fact, the Linux setup code already has code similar to the code used in XP to disable this NT4 workaround.
 
-On Sun, 2010-01-17 at 14:36 +0000, Ben Hutchings wrote:
-> The following changes since commit c024a251e1dd1a39de610bbdc2af65b36e4263=
-7d:
->   David Woodhouse (1):
->         Merge from fixed from-kernel tree to fix Matrox firmware binaries
->=20
-> are available in the git repository at:
->=20
->   http://git.decadent.org.uk/git/linux-firmware.git upstream
-[...]
-
-David, please either pull or tell me what I need to change.
-
-Ben.
-
---=20
-Ben Hutchings
-Make three consecutive correct guesses and you will be considered an expert=
-.
-
---=-6EWMYV2SzemV0wl4UYP1
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iQIVAwUAS3yTJ+e/yOyVhhEJAQKPdA//ZA/AyXVRx71UN6f+DKfGfb4O5d77zIjt
-K4gc2NAkn8NXdn/5+rDFzrfsFZ9DzxXXy5BIEvYckbc9BGX/n76VPM4g2MGpXs6W
-MUy4rlaelWiWx/uVvil4VnFcm7CeYG5YgthG33RRwarIA3Vdl+Ifj2edwXfVdq2m
-/SC0Z3bKFahOIEdSb3mdKx2lJ+5LtXAzExxEpjQn07+pVQddoVYjhMi7mqE/Tp4x
-pMmk9nlvpUB7vz2TklIHJZlWSYGrW3nj3lZ5UdduXntA/ja0kx0uMwIv6bs5ifbj
-vhO5z1xoEY5fUO3FrclYTIpOmL1eZFR7PbYVneN4GDW8B44UCnqwfyXGJ8LAwO2B
-HMQZ2tKQq0KNNB/29nSgkHgqRUzHgngJb0yoiO+nL95UT7EmusRllFW2WXQsACCr
-WjUvLCmSiD6LwF0WsF6xEDrMo5pwt3iHjUW6Kq6qovl6FnBPUKi7p3RoAnh6YJ4k
-4Gs+Cxj5CfnFOz3AGR03eesg7cBmmqgVgHxPRTSwYsXnwoOQOlidh3NvSZ0+TOZP
-w6RPVexSAfVTMiIyRXZzdl0KJxdhIv3wETUFPOf5GQP2upzrJKQwTwAowEzyTMdL
-fu1009rY4OossdQ7cQFILuQJ43k5lZ40QH4ScIo3RYST1cjbE0CGCQp1eLp0TIXU
-zpKkSzunGHU=
-=Bdtx
------END PGP SIGNATURE-----
-
---=-6EWMYV2SzemV0wl4UYP1--
+Yuhong Bao
+ 		 	   		   		 	   		  
+_________________________________________________________________
+Hotmail: Powerful Free email with security by Microsoft.
+http://clk.atdmt.com/GBL/go/201469230/direct/01/
