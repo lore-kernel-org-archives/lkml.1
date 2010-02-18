@@ -1,67 +1,135 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758072Ab0BRMNy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 07:13:54 -0500
-Received: from tx2ehsobe003.messaging.microsoft.com ([65.55.88.13]:14211 "EHLO
-	TX2EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757859Ab0BRMNw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 07:13:52 -0500
-X-SpamScore: -4
-X-BigFish: VPS-4(zz936eMab9bhzz1202hzzz32i87h6bh62h)
-X-Spam-TCS-SCL: 1:0
-X-FB-DOMAIN-IP-MATCH: fail
-X-WSS-ID: 0KY1DYT-02-HOO-02
-X-M-MSG: 
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Avi Kivity <avi@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>
-CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Joerg Roedel <joerg.roedel@amd.com>, stable@kernel.org
-Subject: [PATCH 04/10] KVM: SVM: Sync all control registers on nested vmexit
-Date: Thu, 18 Feb 2010 12:38:29 +0100
-Message-ID: <1266493115-28386-5-git-send-email-joerg.roedel@amd.com>
-X-Mailer: git-send-email 1.6.6
-In-Reply-To: <1266493115-28386-1-git-send-email-joerg.roedel@amd.com>
-References: <1266493115-28386-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 18 Feb 2010 11:38:37.0436 (UTC) FILETIME=[E8FF23C0:01CAB08E]
+	id S1758112Ab0BRMZr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 07:25:47 -0500
+Received: from mail001.aei.ca ([206.123.6.130]:55517 "EHLO mail001.aei.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758092Ab0BRMZp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Feb 2010 07:25:45 -0500
+From: Ed Tomlinson <edt@aei.ca>
+To: Takashi Iwai <tiwai@suse.de>
+Subject: Re: [LOCKDEP] 33-rc8 Running aplay with pulse as the default
+Date: Thu, 18 Feb 2010 07:25:38 -0500
+User-Agent: KMail/1.13.0 (Linux/2.6.33-rc8-crc; KDE/4.4.0; x86_64; ; )
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       alsa-devel@alsa-project.org
+References: <alpine.LFD.2.00.1002121142100.3922@localhost.localdomain> <201002170816.33209.edt@aei.ca> <s5heikkndf2.wl%tiwai@suse.de>
+In-Reply-To: <s5heikkndf2.wl%tiwai@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Reverse-DNS: ausb3extmailp02.amd.com
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002180725.38635.edt@aei.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently the vmexit emulation does not sync control
-registers were the access is typically intercepted by the
-nested hypervisor. But we can not count on that intercepts
-to sync these registers too and make the code
-architecturally more correct.
+On Wednesday 17 February 2010 09:29:37 Takashi Iwai wrote:
+> At Wed, 17 Feb 2010 08:16:32 -0500,
+> Ed Tomlinson wrote:
+> > 
+> > On Tuesday 16 February 2010 08:37:46 Takashi Iwai wrote:
+> > > > Thanks for the patch.  It helps in that it eliminates the opps but lockdep still triggers and aplay still fails.  
+> > > > Here is the new traceback.
+> > > 
+> > > Hmm, fixing this isn't so trivial.  The same problem occurs on other
+> > > subsystems like NFS over years.  And it's still there, AFAIK.
+> > > The mmap mutex appears suddenly in the strange code path at close.
+> > > 
+> > > The patch below might fix, but I'm not 100% sure whether this has no
+> > > side effect.
+> > > 
+> > > Anyway, I doubt very much it being a regression.  There is no change
+> > > in ALSA core side, and also in V4L em28xx code.  Maybe the lockdep
+> > > wasn't triggered by some reason.  And, this lockdep warning is almost
+> > > harmless...
+> > 
+> > Takashi,
+> > 
+> > The second patch eliminating the lock causes oppes every time (one follows just in case
+> > its helpful).
+> 
+> Are you sure?  The patch should causes a compile error, so you must have
+> patched manually in a wrong place ;)
 
-Cc: stable@kernel.org
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
----
- arch/x86/kvm/svm.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+Yes I am sure.  I fixed the compile error the same way it is fixed below.
 
-diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
-index 25d26ec..9a4f9ee 100644
---- a/arch/x86/kvm/svm.c
-+++ b/arch/x86/kvm/svm.c
-@@ -1644,9 +1644,13 @@ static int nested_svm_vmexit(struct vcpu_svm *svm)
- 	nested_vmcb->save.ds     = vmcb->save.ds;
- 	nested_vmcb->save.gdtr   = vmcb->save.gdtr;
- 	nested_vmcb->save.idtr   = vmcb->save.idtr;
-+	nested_vmcb->save.cr0    = kvm_read_cr0(&svm->vcpu);
- 	if (npt_enabled)
- 		nested_vmcb->save.cr3    = vmcb->save.cr3;
-+	else
-+		nested_vmcb->save.cr3    = svm->vcpu.arch.cr3;
- 	nested_vmcb->save.cr2    = vmcb->save.cr2;
-+	nested_vmcb->save.cr4    = svm->vcpu.arch.cr4;
- 	nested_vmcb->save.rflags = vmcb->save.rflags;
- 	nested_vmcb->save.rip    = vmcb->save.rip;
- 	nested_vmcb->save.rsp    = vmcb->save.rsp;
--- 
-1.6.6
-
-
+Ed
+ 
+> Try the patch below (again untested, though).
+> 
+> 
+> thanks,
+> 
+> Takashi
+> 
+> ---
+> diff --git a/drivers/media/video/em28xx/em28xx-audio.c b/drivers/media/video/em28xx/em28xx-audio.c
+> index bd78338..c51e623 100644
+> --- a/drivers/media/video/em28xx/em28xx-audio.c
+> +++ b/drivers/media/video/em28xx/em28xx-audio.c
+> @@ -301,23 +301,12 @@ static int snd_em28xx_capture_open(struct snd_pcm_substream *substream)
+>  	/* Sets volume, mute, etc */
+>  
+>  	dev->mute = 0;
+> -	mutex_lock(&dev->lock);
+>  	ret = em28xx_audio_analog_set(dev);
+> -	mutex_unlock(&dev->lock);
+>  	if (ret < 0)
+>  		goto err;
+>  
+>  	runtime->hw = snd_em28xx_hw_capture;
+> -	if (dev->alt == 0 && dev->adev.users == 0) {
+> -		int errCode;
+> -		dev->alt = 7;
+> -		errCode = usb_set_interface(dev->udev, 0, 7);
+> -		dprintk("changing alternate number to 7\n");
+> -	}
+> -
+> -	mutex_lock(&dev->lock);
+>  	dev->adev.users++;
+> -	mutex_unlock(&dev->lock);
+>  
+>  	snd_pcm_hw_constraint_integer(runtime, SNDRV_PCM_HW_PARAM_PERIODS);
+>  	dev->adev.capture_pcm_substream = substream;
+> @@ -336,7 +325,6 @@ static int snd_em28xx_pcm_close(struct snd_pcm_substream *substream)
+>  	dprintk("closing device\n");
+>  
+>  	dev->mute = 1;
+> -	mutex_lock(&dev->lock);
+>  	dev->adev.users--;
+>  	em28xx_audio_analog_set(dev);
+>  	if (substream->runtime->dma_area) {
+> @@ -344,7 +332,6 @@ static int snd_em28xx_pcm_close(struct snd_pcm_substream *substream)
+>  		vfree(substream->runtime->dma_area);
+>  		substream->runtime->dma_area = NULL;
+>  	}
+> -	mutex_unlock(&dev->lock);
+>  
+>  	return 0;
+>  }
+> @@ -352,6 +339,7 @@ static int snd_em28xx_pcm_close(struct snd_pcm_substream *substream)
+>  static int snd_em28xx_hw_capture_params(struct snd_pcm_substream *substream,
+>  					struct snd_pcm_hw_params *hw_params)
+>  {
+> +	struct em28xx *dev = snd_pcm_substream_chip(substream);
+>  	unsigned int channels, rate, format;
+>  	int ret;
+>  
+> @@ -366,6 +354,14 @@ static int snd_em28xx_hw_capture_params(struct snd_pcm_substream *substream,
+>  	/* TODO: set up em28xx audio chip to deliver the correct audio format,
+>  	   current default is 48000hz multiplexed => 96000hz mono
+>  	   which shouldn't matter since analogue TV only supports mono */
+> +
+> +	if (dev->alt == 0 && dev->adev.users == 1) {
+> +		int errCode;
+> +		dev->alt = 7;
+> +		errCode = usb_set_interface(dev->udev, 0, 7);
+> +		dprintk("changing alternate number to 7\n");
+> +	}
+> +
+>  	return 0;
+>  }
+>  
+> 
+> 
