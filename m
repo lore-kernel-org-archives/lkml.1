@@ -1,99 +1,101 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757676Ab0BRLjd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 06:39:33 -0500
-Received: from tx2ehsobe004.messaging.microsoft.com ([65.55.88.14]:20632 "EHLO
-	TX2EHSOBE007.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757477Ab0BRLj3 (ORCPT
+	id S1757808Ab0BRLj4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 06:39:56 -0500
+Received: from va3ehsobe005.messaging.microsoft.com ([216.32.180.15]:33446
+	"EHLO VA3EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1757897Ab0BRLi5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 06:39:29 -0500
-X-SpamScore: -4
-X-BigFish: VPS-4(zz936eMab9bhzz1202hzzz32i87h6bh61h)
+	Thu, 18 Feb 2010 06:38:57 -0500
+X-SpamScore: -2
+X-BigFish: VPS-2(zz936eMab9bhzz1202hzzz32i87h6bh43j61h)
 X-Spam-TCS-SCL: 0:0
 X-FB-DOMAIN-IP-MATCH: fail
-X-WSS-ID: 0KY1CCK-01-N2Q-02
+X-WSS-ID: 0KY1CCD-01-N2L-02
 X-M-MSG: 
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: Avi Kivity <avi@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>
 CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 08/10] KVM: SVM: Activate nested state only when guest state is complete
-Date: Thu, 18 Feb 2010 12:38:33 +0100
-Message-ID: <1266493115-28386-9-git-send-email-joerg.roedel@amd.com>
+       Joerg Roedel <joerg.roedel@amd.com>, stable@kernel.org
+Subject: [PATCH 02/10] KVM: SVM: Fix wrong interrupt injection in enable_irq_windows
+Date: Thu, 18 Feb 2010 12:38:27 +0100
+Message-ID: <1266493115-28386-3-git-send-email-joerg.roedel@amd.com>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <1266493115-28386-1-git-send-email-joerg.roedel@amd.com>
 References: <1266493115-28386-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 18 Feb 2010 11:38:37.0624 (UTC) FILETIME=[E91BD380:01CAB08E]
+X-OriginalArrivalTime: 18 Feb 2010 11:38:37.0358 (UTC) FILETIME=[E8F33CE0:01CAB08E]
 MIME-Version: 1.0
 Content-Type: text/plain
-X-Reverse-DNS: ausb3extmailp02.amd.com
+X-Reverse-DNS: unknown
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Certain functions called during the emulated world switch
-behave differently when the vcpu is running nested. This is
-not the expected behavior during a world switch emulation.
-This patch ensures that the nested state is activated only
-if the vcpu is completly in nested state.
+The nested_svm_intr() function does not execute the vmexit
+anymore. Therefore we may still be in the nested state after
+that function ran. This patch changes the nested_svm_intr()
+function to return wether the irq window could be enabled.
 
+Cc: stable@kernel.org
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- arch/x86/kvm/svm.c |   15 +++++++++------
- 1 files changed, 9 insertions(+), 6 deletions(-)
+ arch/x86/kvm/svm.c |   17 ++++++++---------
+ 1 files changed, 8 insertions(+), 9 deletions(-)
 
 diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
-index 2a3d525..a64b871 100644
+index 041ef6f..7c96b8b 100644
 --- a/arch/x86/kvm/svm.c
 +++ b/arch/x86/kvm/svm.c
-@@ -1631,6 +1631,9 @@ static int nested_svm_vmexit(struct vcpu_svm *svm)
- 	if (!nested_vmcb)
- 		return 1;
+@@ -1389,16 +1389,17 @@ static int nested_svm_check_exception(struct vcpu_svm *svm, unsigned nr,
+ 	return nested_svm_exit_handled(svm);
+ }
  
-+	/* Exit nested SVM mode */
-+	svm->nested.vmcb = 0;
-+
- 	/* Give the current vmcb to the guest */
- 	disable_gif(svm);
+-static inline int nested_svm_intr(struct vcpu_svm *svm)
++/* This function returns true if it is save to enable the irq window */
++static inline bool nested_svm_intr(struct vcpu_svm *svm)
+ {
+ 	if (!is_nested(svm))
+-		return 0;
++		return true;
  
-@@ -1718,9 +1721,6 @@ static int nested_svm_vmexit(struct vcpu_svm *svm)
- 	svm->vmcb->save.cpl = 0;
- 	svm->vmcb->control.exit_int_info = 0;
+ 	if (!(svm->vcpu.arch.hflags & HF_VINTR_MASK))
+-		return 0;
++		return true;
  
--	/* Exit nested SVM mode */
--	svm->nested.vmcb = 0;
+ 	if (!(svm->vcpu.arch.hflags & HF_HIF_MASK))
+-		return 0;
++		return false;
+ 
+ 	svm->vmcb->control.exit_code = SVM_EXIT_INTR;
+ 
+@@ -1411,10 +1412,10 @@ static inline int nested_svm_intr(struct vcpu_svm *svm)
+ 		 */
+ 		svm->nested.exit_required = true;
+ 		trace_kvm_nested_intr_vmexit(svm->vmcb->save.rip);
+-		return 1;
++		return false;
+ 	}
+ 
+-	return 0;
++	return true;
+ }
+ 
+ static void *nested_svm_map(struct vcpu_svm *svm, u64 gpa)
+@@ -2562,13 +2563,11 @@ static void enable_irq_window(struct kvm_vcpu *vcpu)
+ {
+ 	struct vcpu_svm *svm = to_svm(vcpu);
+ 
+-	nested_svm_intr(svm);
 -
- 	nested_svm_unmap(nested_vmcb);
- 
- 	kvm_mmu_reset_context(&svm->vcpu);
-@@ -1753,14 +1753,14 @@ static bool nested_svm_vmrun(struct vcpu_svm *svm)
- 	struct vmcb *nested_vmcb;
- 	struct vmcb *hsave = svm->nested.hsave;
- 	struct vmcb *vmcb = svm->vmcb;
-+	u64 vmcb_gpa;
-+
-+	vmcb_gpa = svm->vmcb->save.rax;
- 
- 	nested_vmcb = nested_svm_map(svm, svm->vmcb->save.rax);
- 	if (!nested_vmcb)
- 		return false;
- 
--	/* nested_vmcb is our indicator if nested SVM is activated */
--	svm->nested.vmcb = svm->vmcb->save.rax;
--
- 	trace_kvm_nested_vmrun(svm->vmcb->save.rip - 3, svm->nested.vmcb,
- 			       nested_vmcb->save.rip,
- 			       nested_vmcb->control.int_ctl,
-@@ -1875,6 +1875,9 @@ static bool nested_svm_vmrun(struct vcpu_svm *svm)
- 
- 	nested_svm_unmap(nested_vmcb);
- 
-+	/* nested_vmcb is our indicator if nested SVM is activated */
-+	svm->nested.vmcb = vmcb_gpa;
-+
- 	enable_gif(svm);
- 
- 	return true;
+ 	/* In case GIF=0 we can't rely on the CPU to tell us when
+ 	 * GIF becomes 1, because that's a separate STGI/VMRUN intercept.
+ 	 * The next time we get that intercept, this function will be
+ 	 * called again though and we'll get the vintr intercept. */
+-	if (gif_set(svm)) {
++	if (gif_set(svm) && nested_svm_intr(svm)) {
+ 		svm_set_vintr(svm);
+ 		svm_inject_irq(svm, 0x0);
+ 	}
 -- 
 1.6.6
 
