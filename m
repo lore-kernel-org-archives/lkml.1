@@ -1,73 +1,108 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755287Ab0BRNwc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 08:52:32 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:59751 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753468Ab0BRNwb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 08:52:31 -0500
-Message-ID: <4B7D4614.7040806@redhat.com>
-Date: Thu, 18 Feb 2010 15:52:20 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+	id S1756440Ab0BROBe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 09:01:34 -0500
+Received: from mail-vw0-f46.google.com ([209.85.212.46]:42232 "EHLO
+	mail-vw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755402Ab0BROBd convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Feb 2010 09:01:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=nJOMzfeK1mCC+N/HUaOvlJygfLSQFcv4ZyjJ2fl0gHRSIPgYE8n9nU0h4xuNHqIkuG
+         PBX5DjEqd1OPbiOj6WrM/ItmWmDTiog1CAD2SgSrLAc3N4tEmi3P0mDIWAF2/18gy7lt
+         eldmGCyNA+hdKGyFgpnZ4IN2x5HRsJi9UDnbs=
 MIME-Version: 1.0
-To: Joerg Roedel <joerg.roedel@amd.com>
-CC: Marcelo Tosatti <mtosatti@redhat.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: Re: [PATCH 03/10] KVM: SVM: Fix schedule-while-atomic on nested exception
- handling
-References: <1266493115-28386-1-git-send-email-joerg.roedel@amd.com> <1266493115-28386-4-git-send-email-joerg.roedel@amd.com>
-In-Reply-To: <1266493115-28386-4-git-send-email-joerg.roedel@amd.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20100218132521.GB2406@osiris.boeblingen.de.ibm.com>
+References: <1266491616-6270-1-git-send-regression-fweisbec@gmail.com> 
+	<1266491616-6270-3-git-send-regression-fweisbec@gmail.com> 
+	<8bd0f97a1002180318g6ce70480x571d7d332239d68b@mail.gmail.com> 
+	<20100218120944.GA2406@osiris.boeblingen.de.ibm.com> <8bd0f97a1002180412x6cc4f280u5444f013c6e3b670@mail.gmail.com> 
+	<20100218123453.GA5136@nowhere> <20100218132521.GB2406@osiris.boeblingen.de.ibm.com>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Thu, 18 Feb 2010 09:01:12 -0500
+Message-ID: <8bd0f97a1002180601i60c5eaa4p7639091c5b617702@mail.gmail.com>
+Subject: Re: [PATCH 2/3] tracing/kprobes: Make Kconfig dependencies generic
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       "David S . Miller" <davem@davemloft.net>,
+       Paul Mundt <lethal@linux-sh.org>, Steven Rostedt <rostedt@goodmis.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/18/2010 01:38 PM, Joerg Roedel wrote:
-> Move the actual vmexit routine out of code that runs with
-> irqs and preemption disabled.
+On Thu, Feb 18, 2010 at 08:25, Heiko Carstens wrote:
+> On Thu, Feb 18, 2010 at 01:34:57PM +0100, Frederic Weisbecker wrote:
+>> On Thu, Feb 18, 2010 at 07:12:08AM -0500, Mike Frysinger wrote:
+>> > On Thu, Feb 18, 2010 at 07:09, Heiko Carstens wrote:
+>> > > On Thu, Feb 18, 2010 at 06:18:20AM -0500, Mike Frysinger wrote:
+>> > >> On Thu, Feb 18, 2010 at 06:13, Frederic Weisbecker wrote:
+>> > >> > --- a/arch/Kconfig
+>> > >> > +++ b/arch/Kconfig
+>> > >> > @@ -121,6 +121,9 @@ config HAVE_DMA_ATTRS
+>> > >> >  config USE_GENERIC_SMP_HELPERS
+>> > >> >        bool
+>> > >> >
+>> > >> > +config HAVE_REGS_AND_STACK_ACCESS_API
+>> > >> > +       bool
+>> > >> > +
+>> > >>
+>> > >> could you add an appropriate help/comment so arch peeps know what
+>> > >> needs to be implemented before they can select this
+>> > >
+>> > > That's why I added the commit ID for the regs and stack access api
+>> > > to the changelog. imho that should be sufficient.
+>> > > Besides that the next commit would implement it for s390 as a
+>> > > blueprint for others. That is... for those that missed the initial
+>> > > x86 implementation.
+>> >
+>> > people shouldnt have to dive into the changelog to try and divine
+>> > documentation.  it's hardly standard, so people fall on it in a
+>> > pima-last-resort kind of way.  being explicit in the file up front by
+>> > writing real documentation says other people a lot more time.
+>> > -mike
+>>
+>>
+>> Yeah, would be nice to have a comment above the config definition
+>> to explain what it implies.
+>>
+>> Heiko, mind sending a delta patch for that?
 >
-> Cc: stable@kernel.org
-> Signed-off-by: Joerg Roedel<joerg.roedel@amd.com>
+> Subject: [PATCH] tracing/kprobes: add short documentation for HAVE_REGS_AND_STACK_ACCESS_API
+>
+> From: Heiko Carstens <heiko.carstens@de.ibm.com>
+>
+> Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 > ---
->   arch/x86/kvm/svm.c |   20 +++++++++++++++++---
->   1 files changed, 17 insertions(+), 3 deletions(-)
+>  arch/Kconfig |    4 ++++
+>  1 file changed, 4 insertions(+)
 >
-> diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
-> index 7c96b8b..25d26ec 100644
-> --- a/arch/x86/kvm/svm.c
-> +++ b/arch/x86/kvm/svm.c
-> @@ -128,6 +128,7 @@ static void svm_flush_tlb(struct kvm_vcpu *vcpu);
->   static void svm_complete_interrupts(struct vcpu_svm *svm);
+> --- a/arch/Kconfig
+> +++ b/arch/Kconfig
+> @@ -123,6 +123,10 @@ config USE_GENERIC_SMP_HELPERS
 >
->   static int nested_svm_exit_handled(struct vcpu_svm *svm);
-> +static int nested_svm_exit_handled_atomic(struct vcpu_svm *svm);
->   static int nested_svm_vmexit(struct vcpu_svm *svm);
->   static int nested_svm_check_exception(struct vcpu_svm *svm, unsigned nr,
->   				      bool has_error_code, u32 error_code);
-> @@ -1386,7 +1387,7 @@ static int nested_svm_check_exception(struct vcpu_svm *svm, unsigned nr,
->   	svm->vmcb->control.exit_info_1 = error_code;
->   	svm->vmcb->control.exit_info_2 = svm->vcpu.arch.cr2;
->
-> -	return nested_svm_exit_handled(svm);
-> +	return nested_svm_exit_handled_atomic(svm);
->   }
->    
+>  config HAVE_REGS_AND_STACK_ACCESS_API
+>        bool
+> +       help
+> +         This symbol should be selected by an architecure if it supports
+> +         the API needed to access registers and stack entries from pt_regs.
+> +         For example the kprobes-based event tracer needs this API.
 
-What do you say to
+a bit vague ... arent there headers/functions people could look at ?
+perhaps you're talking about the regset functions (which is an API to
+access registers in pt_regs) ?  or you're talking about asm/syscall.h
+(which is an API to access registers in pt_regs) ?
 
-
-    if (nested_svm_intercepts(svm))
-         svm->nested.exit_required = true;
-
-here, and recoding nested_svm_exit_handled() to call 
-nested_svm_intercepts()?  I think it improves readability a little by 
-avoiding a function that changes behaviour according to how it is called.
-
-Long term, we may want to split out the big switch into the individual 
-handlers, to avoid decoding the exit reason twice.
-
--- 
-error compiling committee.c: too many arguments to function
-
+i'm not asking to be a pain, i'm asking because i really havent a
+clue.  if i wanted to add support for this stuff to the Blackfin arch,
+i wouldnt know where to start.  even after reading this help i'd fall
+back to grepping arch/x86/ and trying to divine a starting point from
+there.
+-mike
