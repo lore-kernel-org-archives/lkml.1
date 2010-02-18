@@ -1,54 +1,78 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754710Ab0BRShy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 13:37:54 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:57383 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754149Ab0BRShw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 13:37:52 -0500
-Date: Thu, 18 Feb 2010 10:37:50 -0800
-From: "Darrick J. Wong" <djwong@us.ibm.com>
-To: Muli Ben-Yehuda <muli@il.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, "Jon D. Mason" <jdmason@kudzu.us>,
-       discuss@x86-64.org, Corinna Schultz <coschult@us.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] calgary: Increase the maximum PHB bus number
-Message-ID: <20100218183750.GL29604@tux1.beaverton.ibm.com>
-Reply-To: djwong@us.ibm.com
-References: <20091209005901.GX10295@tux1.beaverton.ibm.com> <20091209090346.GN2452@tyrion.haifa.ibm.com>
+	id S1754899Ab0BRSmR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 13:42:17 -0500
+Received: from mail-fx0-f220.google.com ([209.85.220.220]:46460 "EHLO
+	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752490Ab0BRSmP convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Feb 2010 13:42:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=ZyTbtzwboUMF5E9Y+AK8oMJ5iail3uf21KgAgIkgQjT7QYUunoq0oxpo2ywFfBkMs/
+         CPERSbz0PTZ3LUGQUUkKZrfTcJ5T0TXgD7EjHBxGZtxmnDJ36acj94byxNffS659W1g2
+         SbxwfCHzUI+jTVN7fJ84X8NsDgFLzjM24+Zak=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091209090346.GN2452@tyrion.haifa.ibm.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <4B7D86BC.10000@zytor.com>
+References: <1266406962-17463-1-git-send-email-luca@luca-barbieri.com>
+	 <1266406962-17463-10-git-send-email-luca@luca-barbieri.com>
+	 <87eikj54wp.fsf@basil.nowhere.org>
+	 <ff13bc9a1002180153g308b0f3dxb59959936d1e343b@mail.gmail.com>
+	 <20100218101156.GE5964@basil.fritz.box>
+	 <ff13bc9a1002180227j70e0748ag49d88c3034e3900d@mail.gmail.com>
+	 <4B7D5BB4.4000307@zytor.com>
+	 <ff13bc9a1002181014x5625f418j69f9702bc54c6381@mail.gmail.com>
+	 <4B7D86BC.10000@zytor.com>
+Date: Thu, 18 Feb 2010 19:42:11 +0100
+X-Google-Sender-Auth: 7d503b2bec3aa066
+Message-ID: <ff13bc9a1002181042p7414c18fu77208b6bc7aa41df@mail.gmail.com>
+Subject: Re: [PATCH 09/10] x86-32: use SSE for atomic64_read/set if available
+From: Luca Barbieri <luca@luca-barbieri.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Andi Kleen <andi@firstfloor.org>, mingo@elte.hu, a.p.zijlstra@chello.nl,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 09, 2009 at 11:03:46AM +0200, Muli Ben-Yehuda wrote:
-> On Tue, Dec 08, 2009 at 04:59:01PM -0800, Darrick J. Wong wrote:
-> 
-> > -#define MAX_NUM_OF_PHBS		8 /* how many PHBs in total? */
-> > -#define MAX_NUM_CHASSIS		8 /* max number of chassis */
-> > -/* MAX_PHB_BUS_NUM is the maximal possible dev->bus->number */
-> > -#define MAX_PHB_BUS_NUM		(MAX_NUM_OF_PHBS * MAX_NUM_CHASSIS * 2)
-> > +/*
-> > +   The maximum PHB bus number.
-> > +   x3950M2 (rare): 8 chassis, 48 PHBs per chassis = 384
-> > +   x3950M2: 4 chassis, 48 PHBs per chassis        = 192
-> > +   x3950 (PCIE): 8 chassis, 32 PHBs per chassis   = 256
-> > +   x3950 (PCIX): 8 chassis, 16 PHBs per chassis   = 128
-> > +*/
-> > +#define MAX_PHB_BUS_NUM		384
-> > +
-> >  #define PHBS_PER_CALGARY	4
-> 
-> We'll end up wasting a few bytes on small systems, but I don't think
-> it's enough to matter on these fairly large systems. As far as I'm
-> concerned, patch is fine.
-> 
-> Acked-by: Muli Ben-Yehuda <muli@il.ibm.com>
+> We already do that kind of stuff, using
+> kernel_fpu_begin()..kernel_fpu_end().  We went through some pain a bit
+> ago to clean up "private hacks" that complicated things substantially.
 
-Hmm... has this patch been queued up by anyone for the .34 merge window?
+But that saves the whole FPU state on the first usage, and also
+triggers a fault when userspace attempts to use it again.
+Additionally it does a clts/stts every time which is slow for small
+algorithms (lke the atomic64 routines).
 
---D
+The first issue can be solved by using SSE and saving only the used
+registers, and the second with lazy TS flag restoring.
+
+How about something like:
+
+static inline unsigned long kernel_sse_begin(void)
+{
+        struct thread_info *me = current_thread_info();
+        preempt_disable();
+        if (unlikely(!(me->status & TS_USEDFPU))) {
+                unsigned long cr0 = read_cr0();
+                if (unlikely(cr0 & X86_CR0_TS)) {
+                        clts();
+                        return cr0;
+                }
+        }
+        return 0;
+}
+
+static inline void kernel_sse_end(unsigned long cr0)
+{
+        if (unlikely(cr0))
+                write_cr0(cr0);
+        preempt_enable();
+}
+
+to be improved with lazy TS restoring instead of the read_cr0/write_cr0?
