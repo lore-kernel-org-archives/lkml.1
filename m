@@ -1,51 +1,38 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757538Ab0BRLSm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 06:18:42 -0500
-Received: from mail-yw0-f189.google.com ([209.85.211.189]:37191 "EHLO
-	mail-yw0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754757Ab0BRLSk convert rfc822-to-8bit (ORCPT
+	id S1757786Ab0BRLbx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 06:31:53 -0500
+Received: from stinky.trash.net ([213.144.137.162]:62993 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753045Ab0BRLbv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 06:18:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=vsljlPOZn+dgjhpfgNCCSlxyswk557oUscJMi0L4B66W1UhJ0zHIdLcSyEe4tR/43X
-         wqn5HX42ZksNG4sn9mwvYNm33uFvyS3GXDYz5SZj7FynN/StsTxvVGC/KnH022M+3hv7
-         vP4ALqWPBBt1awBT3gmvkSFGv7r+nh6+Ju+r4=
+	Thu, 18 Feb 2010 06:31:51 -0500
+Message-ID: <4B7D2522.6070101@trash.net>
+Date: Thu, 18 Feb 2010 12:31:46 +0100
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
 MIME-Version: 1.0
-In-Reply-To: <1266491616-6270-3-git-send-regression-fweisbec@gmail.com>
-References: <1266491616-6270-1-git-send-regression-fweisbec@gmail.com> 
-	<1266491616-6270-3-git-send-regression-fweisbec@gmail.com>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Thu, 18 Feb 2010 06:18:20 -0500
-Message-ID: <8bd0f97a1002180318g6ce70480x571d7d332239d68b@mail.gmail.com>
-Subject: Re: [PATCH 2/3] tracing/kprobes: Make Kconfig dependencies generic
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       "David S . Miller" <davem@davemloft.net>,
-       Paul Mundt <lethal@linux-sh.org>, Steven Rostedt <rostedt@goodmis.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: Simon Horman <horms@verge.net.au>
+CC: netdev@vger.kernel.org, lvs-devel@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Venkata Mohan Reddy <mohanreddykv@gmail.com>,
+       Wensong Zhang <wensong@linux-vs.org>, Julian Anastasov <ja@ssi.bg>
+Subject: Re: [IPVS] SCTP Trasport Loadbalancing Support
+References: <20100218010642.GD16530@verge.net.au>
+In-Reply-To: <20100218010642.GD16530@verge.net.au>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 18, 2010 at 06:13, Frederic Weisbecker wrote:
-> --- a/arch/Kconfig
-> +++ b/arch/Kconfig
-> @@ -121,6 +121,9 @@ config HAVE_DMA_ATTRS
->  config USE_GENERIC_SMP_HELPERS
->        bool
->
-> +config HAVE_REGS_AND_STACK_ACCESS_API
-> +       bool
-> +
+Simon Horman wrote:
+> From: Venkata Mohan Reddy <mohanreddykv@gmail.com>
+> 
+> Enhance IPVS to load balance SCTP transport protocol packets. This is done
+> based on the SCTP rfc 4960. All possible control chunks have been taken
+> care. The state machine used in this code looks some what lengthy. I tried
+> to make the state machine easy to understand.
 
-could you add an appropriate help/comment so arch peeps know what
-needs to be implemented before they can select this
--mike
+Applied, thanks.
