@@ -1,135 +1,55 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758112Ab0BRMZr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 07:25:47 -0500
-Received: from mail001.aei.ca ([206.123.6.130]:55517 "EHLO mail001.aei.ca"
+	id S1758114Ab0BRM2e (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 07:28:34 -0500
+Received: from hera.kernel.org ([140.211.167.34]:59446 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758092Ab0BRMZp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 07:25:45 -0500
-From: Ed Tomlinson <edt@aei.ca>
-To: Takashi Iwai <tiwai@suse.de>
-Subject: Re: [LOCKDEP] 33-rc8 Running aplay with pulse as the default
-Date: Thu, 18 Feb 2010 07:25:38 -0500
-User-Agent: KMail/1.13.0 (Linux/2.6.33-rc8-crc; KDE/4.4.0; x86_64; ; )
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       alsa-devel@alsa-project.org
-References: <alpine.LFD.2.00.1002121142100.3922@localhost.localdomain> <201002170816.33209.edt@aei.ca> <s5heikkndf2.wl%tiwai@suse.de>
-In-Reply-To: <s5heikkndf2.wl%tiwai@suse.de>
+	id S1757463Ab0BRM2c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Feb 2010 07:28:32 -0500
+Message-ID: <4B7D338C.7020008@kernel.org>
+Date: Thu, 18 Feb 2010 21:33:16 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: David Howells <dhowells@redhat.com>
+CC: torvalds@linux-foundation.org, mingo@elte.hu, peterz@infradead.org,
+       awalls@radix.net, linux-kernel@vger.kernel.org, jeff@garzik.org,
+       akpm@linux-foundation.org, jens.axboe@oracle.com, rusty@rustcorp.com.au,
+       cl@linux-foundation.org, arjan@linux.intel.com, avi@redhat.com,
+       johannes@sipsolutions.net, andi@firstfloor.org
+Subject: Re: [PATCH 35/40] fscache: convert object to use workqueue instead
+ of slow-work
+References: <4B7B2F4E.5090803@kernel.org> <4B7A13C6.4060402@kernel.org> <4B763C17.5080707@kernel.org> <1263776272-382-36-git-send-email-tj@kernel.org> <1263776272-382-1-git-send-email-tj@kernel.org> <24913.1265997809@redhat.com> <27102.1266246296@redhat.com> <28151.1266343557@redhat.com> <26902.1266493816@redhat.com>
+In-Reply-To: <26902.1266493816@redhat.com>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <201002180725.38635.edt@aei.ca>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Thu, 18 Feb 2010 12:24:40 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 17 February 2010 09:29:37 Takashi Iwai wrote:
-> At Wed, 17 Feb 2010 08:16:32 -0500,
-> Ed Tomlinson wrote:
-> > 
-> > On Tuesday 16 February 2010 08:37:46 Takashi Iwai wrote:
-> > > > Thanks for the patch.  It helps in that it eliminates the opps but lockdep still triggers and aplay still fails.  
-> > > > Here is the new traceback.
-> > > 
-> > > Hmm, fixing this isn't so trivial.  The same problem occurs on other
-> > > subsystems like NFS over years.  And it's still there, AFAIK.
-> > > The mmap mutex appears suddenly in the strange code path at close.
-> > > 
-> > > The patch below might fix, but I'm not 100% sure whether this has no
-> > > side effect.
-> > > 
-> > > Anyway, I doubt very much it being a regression.  There is no change
-> > > in ALSA core side, and also in V4L em28xx code.  Maybe the lockdep
-> > > wasn't triggered by some reason.  And, this lockdep warning is almost
-> > > harmless...
-> > 
-> > Takashi,
-> > 
-> > The second patch eliminating the lock causes oppes every time (one follows just in case
-> > its helpful).
-> 
-> Are you sure?  The patch should causes a compile error, so you must have
-> patched manually in a wrong place ;)
+Hello, David.
 
-Yes I am sure.  I fixed the compile error the same way it is fixed below.
+On 02/18/2010 08:50 PM, David Howells wrote:
+> Tejun Heo <tj@kernel.org> wrote:
+>> The waiting workers are woken up in slow_work_enqueue() when a new
+>> work is enqueued regardless of how many workers are currently in use,
+>> right?  So, it ends up yielding on any queue activity rather than only
+>> under resource pressure.
+> 
+> It depends how you define resource pressure, I suppose.  There's someone now
+> waiting for the resource, and there's someone blocking that resource who can
+> yield it as they're waiting on something else.  The question is if it's
+> cheaper to create a new thread, assuming we're under the limit, or if it's
+> cheaper to steal someone else's thread?
 
-Ed
- 
-> Try the patch below (again untested, though).
-> 
-> 
-> thanks,
-> 
-> Takashi
-> 
-> ---
-> diff --git a/drivers/media/video/em28xx/em28xx-audio.c b/drivers/media/video/em28xx/em28xx-audio.c
-> index bd78338..c51e623 100644
-> --- a/drivers/media/video/em28xx/em28xx-audio.c
-> +++ b/drivers/media/video/em28xx/em28xx-audio.c
-> @@ -301,23 +301,12 @@ static int snd_em28xx_capture_open(struct snd_pcm_substream *substream)
->  	/* Sets volume, mute, etc */
->  
->  	dev->mute = 0;
-> -	mutex_lock(&dev->lock);
->  	ret = em28xx_audio_analog_set(dev);
-> -	mutex_unlock(&dev->lock);
->  	if (ret < 0)
->  		goto err;
->  
->  	runtime->hw = snd_em28xx_hw_capture;
-> -	if (dev->alt == 0 && dev->adev.users == 0) {
-> -		int errCode;
-> -		dev->alt = 7;
-> -		errCode = usb_set_interface(dev->udev, 0, 7);
-> -		dprintk("changing alternate number to 7\n");
-> -	}
-> -
-> -	mutex_lock(&dev->lock);
->  	dev->adev.users++;
-> -	mutex_unlock(&dev->lock);
->  
->  	snd_pcm_hw_constraint_integer(runtime, SNDRV_PCM_HW_PARAM_PERIODS);
->  	dev->adev.capture_pcm_substream = substream;
-> @@ -336,7 +325,6 @@ static int snd_em28xx_pcm_close(struct snd_pcm_substream *substream)
->  	dprintk("closing device\n");
->  
->  	dev->mute = 1;
-> -	mutex_lock(&dev->lock);
->  	dev->adev.users--;
->  	em28xx_audio_analog_set(dev);
->  	if (substream->runtime->dma_area) {
-> @@ -344,7 +332,6 @@ static int snd_em28xx_pcm_close(struct snd_pcm_substream *substream)
->  		vfree(substream->runtime->dma_area);
->  		substream->runtime->dma_area = NULL;
->  	}
-> -	mutex_unlock(&dev->lock);
->  
->  	return 0;
->  }
-> @@ -352,6 +339,7 @@ static int snd_em28xx_pcm_close(struct snd_pcm_substream *substream)
->  static int snd_em28xx_hw_capture_params(struct snd_pcm_substream *substream,
->  					struct snd_pcm_hw_params *hw_params)
->  {
-> +	struct em28xx *dev = snd_pcm_substream_chip(substream);
->  	unsigned int channels, rate, format;
->  	int ret;
->  
-> @@ -366,6 +354,14 @@ static int snd_em28xx_hw_capture_params(struct snd_pcm_substream *substream,
->  	/* TODO: set up em28xx audio chip to deliver the correct audio format,
->  	   current default is 48000hz multiplexed => 96000hz mono
->  	   which shouldn't matter since analogue TV only supports mono */
-> +
-> +	if (dev->alt == 0 && dev->adev.users == 1) {
-> +		int errCode;
-> +		dev->alt = 7;
-> +		errCode = usb_set_interface(dev->udev, 0, 7);
-> +		dprintk("changing alternate number to 7\n");
-> +	}
-> +
->  	return 0;
->  }
->  
-> 
-> 
+Initially I was thinking about adding the hook to global cmwq events
+in which case yielding on queueing wouldn't make much sense as it will
+always yield very quickly.  I'll think more about it but will try to
+preserve the current behavior.  I'll go ahead and update the patchset.
+
+Thanks for reviewing.
+
+-- 
+tejun
