@@ -1,45 +1,76 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758128Ab0BRMch (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 07:32:37 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:44482 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754651Ab0BRMcf (ORCPT
+	id S1758141Ab0BRMfG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 07:35:06 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:34461 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758100Ab0BRMfE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 07:32:35 -0500
-Subject: Re: [PATCH 09/10] x86-32: use SSE for atomic64_read/set if
- available
-From: Peter Zijlstra <peterz@infradead.org>
-To: Luca Barbieri <luca@luca-barbieri.com>
-Cc: mingo@elte.hu, hpa@zytor.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <ff13bc9a1002180429p3afc7313sfb65e980b3c198f2@mail.gmail.com>
-References: <1266406962-17463-1-git-send-email-luca@luca-barbieri.com>
-	 <1266406962-17463-10-git-send-email-luca@luca-barbieri.com>
-	 <1266488742.26719.119.camel@laptop>
-	 <ff13bc9a1002180250t5c9acb54ib8609b4e752520c5@mail.gmail.com>
-	 <1266490846.26719.206.camel@laptop>
-	 <ff13bc9a1002180429p3afc7313sfb65e980b3c198f2@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 18 Feb 2010 13:32:26 +0100
-Message-ID: <1266496346.26719.464.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 7bit
+	Thu, 18 Feb 2010 07:35:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=Cq/oqwO1Cw7ZqdUjy+YTxR/h+OxgU/TiJHWQXn55eZKQhlRZCdCdqeE0bheDcoTZ+6
+         ww5AfHBLHpZZlJCTwS4SIQCM06mfA4/ZaaFMyw4qIVO7POh2ON0mgknS2PEZ0338GgJy
+         Xepfo5gb6KtvSava+mn0o2kgpqt+GuidXbmYc=
+Date: Thu, 18 Feb 2010 13:34:57 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       "David S . Miller" <davem@davemloft.net>,
+       Paul Mundt <lethal@linux-sh.org>, Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH 2/3] tracing/kprobes: Make Kconfig dependencies generic
+Message-ID: <20100218123453.GA5136@nowhere>
+References: <1266491616-6270-1-git-send-regression-fweisbec@gmail.com> <1266491616-6270-3-git-send-regression-fweisbec@gmail.com> <8bd0f97a1002180318g6ce70480x571d7d332239d68b@mail.gmail.com> <20100218120944.GA2406@osiris.boeblingen.de.ibm.com> <8bd0f97a1002180412x6cc4f280u5444f013c6e3b670@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <8bd0f97a1002180412x6cc4f280u5444f013c6e3b670@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-02-18 at 13:29 +0100, Luca Barbieri wrote:
-> >> If we use the stack instead of per-CPU variables, all IRQs and NMIs
-> >> preserve CR0 and the SSE registers, so this would be safe, right?
+On Thu, Feb 18, 2010 at 07:12:08AM -0500, Mike Frysinger wrote:
+> On Thu, Feb 18, 2010 at 07:09, Heiko Carstens wrote:
+> > On Thu, Feb 18, 2010 at 06:18:20AM -0500, Mike Frysinger wrote:
+> >> On Thu, Feb 18, 2010 at 06:13, Frederic Weisbecker wrote:
+> >> > --- a/arch/Kconfig
+> >> > +++ b/arch/Kconfig
+> >> > @@ -121,6 +121,9 @@ config HAVE_DMA_ATTRS
+> >> >  config USE_GENERIC_SMP_HELPERS
+> >> >        bool
+> >> >
+> >> > +config HAVE_REGS_AND_STACK_ACCESS_API
+> >> > +       bool
+> >> > +
+> >>
+> >> could you add an appropriate help/comment so arch peeps know what
+> >> needs to be implemented before they can select this
 > >
-> > You'd have to take special care to deal with nested IRQs I think.
+> > That's why I added the commit ID for the regs and stack access api
+> > to the changelog. imho that should be sufficient.
+> > Besides that the next commit would implement it for s390 as a
+> > blueprint for others. That is... for those that missed the initial
+> > x86 implementation.
 > 
-> Could you elaborate on that?
-> Which issue could there be with nested IRQs?
+> people shouldnt have to dive into the changelog to try and divine
+> documentation.  it's hardly standard, so people fall on it in a
+> pima-last-resort kind of way.  being explicit in the file up front by
+> writing real documentation says other people a lot more time.
+> -mike
 
-Depends on where on the stack you're going to save things, I through
-you'd take space in the thread_info struct, but I guess if you're simply
-going to push the reg onto the stack it should be fine.
+
+Yeah, would be nice to have a comment above the config definition
+to explain what it implies.
+
+Heiko, mind sending a delta patch for that?
+
+Thanks.
 
