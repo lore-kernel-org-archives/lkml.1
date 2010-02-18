@@ -1,50 +1,67 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758353Ab0BRQDk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 11:03:40 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:55591 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757404Ab0BRQDj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 11:03:39 -0500
-Date: Thu, 18 Feb 2010 17:03:30 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Anton Blanchard <anton@samba.org>,
-       tglx@linutronix.de, davem@davemloft.net, linux-kernel@vger.kernel.org,
-       arjan@infradead.org, venkatesh.pallipadi@intel.com
-Subject: Re: NO_HZ migration of TCP ack timers
-Message-ID: <20100218160329.GG5964@basil.fritz.box>
-References: <20100218052820.GD24270@kryten> <87mxz755ks.fsf@basil.nowhere.org> <20100218103301.GB26101@linux.vnet.ibm.com>
+	id S1758312Ab0BRQEg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 11:04:36 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:1025 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757586Ab0BRQEf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Feb 2010 11:04:35 -0500
+Message-ID: <4B7D6503.9040904@redhat.com>
+Date: Thu, 18 Feb 2010 11:04:19 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100218103301.GB26101@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Mike Frysinger <vapier.adi@gmail.com>
+CC: Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       "David S . Miller" <davem@davemloft.net>,
+       Paul Mundt <lethal@linux-sh.org>, Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH 2/3] tracing/kprobes: Make Kconfig dependencies generic
+References: <1266491616-6270-1-git-send-regression-fweisbec@gmail.com> 	<1266491616-6270-3-git-send-regression-fweisbec@gmail.com> 	<8bd0f97a1002180318g6ce70480x571d7d332239d68b@mail.gmail.com> 	<20100218120944.GA2406@osiris.boeblingen.de.ibm.com> <8bd0f97a1002180412x6cc4f280u5444f013c6e3b670@mail.gmail.com> 	<20100218123453.GA5136@nowhere> <20100218132521.GB2406@osiris.boeblingen.de.ibm.com> <8bd0f97a1002180601i60c5eaa4p7639091c5b617702@mail.gmail.com>
+In-Reply-To: <8bd0f97a1002180601i60c5eaa4p7639091c5b617702@mail.gmail.com>
+X-Enigmail-Version: 1.0.1
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > What should we do? Should we use mod_timer_pinned here? Or is this an issue
-> > 
-> > Sounds like something that should be controlled by the cpufreq governour's
-> > idle predictor? Only migrate if predicted idle time is long enough.
-> > It's essentially the same problem as deciding how deeply idle to put
-> > a CPU. Heavy measures only pay off if the expected time is long enough.
-> > 
+Mike Frysinger wrote:
+>>
+>>  config HAVE_REGS_AND_STACK_ACCESS_API
+>>        bool
+>> +       help
+>> +         This symbol should be selected by an architecure if it supports
+>> +         the API needed to access registers and stack entries from pt_regs.
+>> +         For example the kprobes-based event tracer needs this API.
 > 
-> cpuidle infrastructure hs statistics about the idle times for
-> all the cpus. Maybe we can look to use this infrastructure to decide
-> whether to migrate timers or not?
+> a bit vague ... arent there headers/functions people could look at ?
+> perhaps you're talking about the regset functions (which is an API to
+> access registers in pt_regs) ?  or you're talking about asm/syscall.h
+> (which is an API to access registers in pt_regs) ?
 
-Yes sorry I reallhy meant cpuidle when I wrote cpufreq. 
-That's what I suggested too.
+We're talking about new API which was introduced by b1cf540f
+(regs_get_argument_nth has been dropped on -tip tree anyway)
 
-But if the problem is lock contention on the target CPU that would
-still not completely solve it, just make it less frequent depending
-on the idle pattern.
+> i'm not asking to be a pain, i'm asking because i really havent a
+> clue.  if i wanted to add support for this stuff to the Blackfin arch,
+> i wouldnt know where to start.  even after reading this help i'd fall
+> back to grepping arch/x86/ and trying to divine a starting point from
+> there.
 
--Andi
+yeah, I think the comment might be better to refer that APIs are
+in arch/*/include/asm/ptrace.h :)
+
+Thank you,
 
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
