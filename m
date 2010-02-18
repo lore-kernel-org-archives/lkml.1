@@ -1,118 +1,138 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758075Ab0BRViZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 16:38:25 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:19353 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753681Ab0BRViX (ORCPT
+	id S1758698Ab0BRVkS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 16:40:18 -0500
+Received: from mail.windriver.com ([147.11.1.11]:55475 "EHLO
+	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755710Ab0BRVkQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 16:38:23 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=MMD4FEtSZIU0XjlNN+PzXgY+Eg4f16XLzRP2NsZ5lKc5P633hn7Ug6IFEbqjCofIb
-	j+UyYfdOHeU+lQH0mTjUA==
-Date: Thu, 18 Feb 2010 13:38:11 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Nick Piggin <npiggin@suse.de>
-cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Miao Xie <miaox@cn.fujitsu.com>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>
-Subject: Re: [regression] cpuset,mm: update tasks' mems_allowed in time
- (58568d2)
-In-Reply-To: <20100218134921.GF9738@laptop>
-Message-ID: <alpine.DEB.2.00.1002181302430.13707@chino.kir.corp.google.com>
-References: <20100218134921.GF9738@laptop>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 18 Feb 2010 16:40:16 -0500
+Message-ID: <4B7DB39F.1040707@windriver.com>
+Date: Thu, 18 Feb 2010 15:39:43 -0600
+From: Jason Wessel <jason.wessel@windriver.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       kgdb-bugreport@lists.sourceforge.net, mingo@elte.hu
+Subject: Re: [PATCH 26/28] kdb,panic,debug_core: Allow the debug core to receive
+ a panic before smp_send_stop()
+References: <1266014143-29444-1-git-send-email-jason.wessel@windriver.com><1266014143-29444-27-git-send-email-jason.wessel@windriver.com><20100212150027.f875bbde.akpm@linux-foundation.org><4B75E7AB.4060102@windriver.com><20100212204141.cc42f298.akpm@linux-foundation.org> <m1zl37yywj.fsf@fess.ebiederm.org>
+In-Reply-To: <m1zl37yywj.fsf@fess.ebiederm.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 18 Feb 2010 21:39:37.0058 (UTC) FILETIME=[DE34CC20:01CAB0E2]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 19 Feb 2010, Nick Piggin wrote:
-
-> Hi,
+Eric W. Biederman wrote:
+> Andrew Morton <akpm@linux-foundation.org> writes:
 > 
-> The patch cpuset,mm: update tasks' mems_allowed in time (58568d2) causes
-> a regression uncovered by SGI. Basically it is allowing possible but not
-> online nodes in the task_struct.mems_allowed nodemask (which is contrary
-> to several comments still in kernel/cpuset.c), and that causes
-> cpuset_mem_spread_node() to return an offline node to slab, causing an
-> oops.
+>> On Fri, 12 Feb 2010 17:43:39 -0600 Jason Wessel <jason.wessel@windriver.com> wrote:
+>>
+>>>>>  	printk(KERN_EMERG "Kernel panic - not syncing: %s\n",buf);
+>>>>>  #ifdef CONFIG_DEBUG_BUGVERBOSE
+>>>>>  	dump_stack();
+>>>>> @@ -91,8 +94,6 @@ NORET_TYPE void panic(const char * fmt, ...)
+>>>>>  	 */
+>>>>>  	smp_send_stop();
+>>>>>  
+>>>>> -	atomic_notifier_call_chain(&panic_notifier_list, 0, buf);
+>>>>> -
+>>>>>  	bust_spinlocks(0);
+>>>>>  
+>>>>>  	if (!panic_blink)
+>>>>>     
+>>>> So the notifier call now happens before all the printks and the kexec
+>>>> and kmsg_dump handling.  What effect does this have upon the code which
+>>>> implements kexec and kmsg_dump?
+>>>>
+>>>>   
+>>> I certainly don't want to break kexec or alter any behavior, does that
+>>> mean kgdb / kdb should hook the kexec for notification?
+>>>
+>>> I think ideally it is a end user's preference as to if they want in via
+>>> kexec or the kernel debugger.  Calling the smp_send_stop() prior to the
+>>> notifier was a death sentence for the kernel debugger. 
+>>>
+>>> Perhaps I can move the notifier before smp_send_stop()?
+>> Well.  My question can be simplified to "does this break existing code"?
 > 
-> Easy to reproduce if you have a machine with !online nodes.
-> 
->         - mkdir /dev/cpuset
->         - mount cpuset -t cpuset /dev/cpuset
->         - echo 1 > /dev/cpuset/memory_spread_slab
-> 
-> kernel BUG at
-> /usr/src/packages/BUILD/kernel-default-2.6.32/linux-2.6.32/mm/slab.c:3271!
-> bash[6885]: bugcheck! 0 [1]
-> Pid: 6885, CPU 5, comm:                 bash
-> psr : 00001010095a2010 ifs : 800000000000038b ip  : [<a00000010020cf00>]
-> Tainted: G        W    (2.6.32-0.6.8-default)
-> ip is at ____cache_alloc_node+0x440/0x500
+> Yes.  Removing the bust_spinlocks(1) and moving the panic notification up
 
-It seems like current->mems_allowed is not properly initialized, although 
-task_cs(current)->mems_allowed is to node_states[N_HIGH_MEMORY].  See 
-below.
 
-> A simple bandaid is to skip !online nodes in cpuset_mem_spread_node().
-> However I'm a bit worried about 58568d2.
-> 
-> It is doing a lot of stuff. It is removing the callback_mutex from
-> around several seemingly unrelated places (eg. from around
-> guarnatee_online_cpus, which explicitly asks to be called with that
-> lock held), and other places, so I don't know how it is not racy
-> with hotplug.
-> 
+The bust_spinlocks(1) was not removed but moved around, but the point
+is moot.  Yes, it confirmed beyond the shadow of a doubt to break
+existing code.
 
-guarantee_online_cpus() truly does require callback_mutex, the 
-cgroup_scan_tasks() iterator locking can protect changes in the cgroup 
-hierarchy but it doesn't protect a store to cs->cpus_allowed or for 
-hotplug.
+The revised patch does not touch anything in kernel/panic.c.  Instead
+we make a best effort to get the kernel debugger first in line to the
+notifier.  It turns out one of the other notifiers was the culprit in
+the hanging the system during the panic tests.
 
-top_cpuset.cpus_allowed will always need to track cpu_active_map since 
-those are the schedulable cpus, it looks like that's initialized for SMP 
-and the cpu hotplug notifier does that correctly.
+If anyone further objects, I will simply drop the kdb panic
+notification registration entirely.
 
-I'm not sure what the logic is doing in cpuset_attach() where cs is the 
-cpuset to attach to:
+Thanks,
+Jason.
 
-	if (cs == &top_cpuset) {
-		cpumask_copy(cpus_attach, cpu_possible_mask);
-		to = node_possible_map;
-	}
+---
 
-cpus_attach is properly protected by cgroup_lock, but using 
-node_possible_map here will set task->mems_allowed to node_possible_map 
-when the cpuset does not have memory_migrate enabled.  This is the source 
-of your oops, I think.
+From: Jason Wessel <jason.wessel@windriver.com>
+Subject: [PATCH] kdb,debug_core: Allow the debug core to receive a panic notification
 
-> Then it also says that the fastpath doesn't use any locking, so the
-> update-path first adds the newly allowed nodes, then removes the
-> newly prohibited nodes. Unfortunately there are no barriers apparent
-> (and none added), and cpumask/nodemask can be larger than one word,
-> so it seems there could be races.
-> 
+It is highly desirable to trap into kdb on panic.  The debug core will
+attempt to register as the first in line for the panic notifier.
 
-We can remove the store to tsk->mems_allowed in cpuset_migrate_mm() 
-because cpuset_change_task_nodemask() already does it under 
-task_lock(tsk).
+CC: Ingo Molnar <mingo@elte.hu>
+CC: Andrew Morton <akpm@linux-foundation.org>
+CC: Eric W. Biederman <ebiederm@xmission.com>
+Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
 
-cpuset_migrate_mm() looks to be subsequently updating the cpuset_attach() 
-nodemask when moving to top_cpuset so it doesn't get stuck with 
-node_possible_map, but that's not called unless memory_migrate is enabled.
+---
+ kernel/debug/debug_core.c |   19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
 
-> It also seems like the exported cpuset_mems_allowed and
-> cpuset_cpus_allowed APIs are just broken wrt hotplug because the
-> hotplug lock is dropped before returning.
-> 
+--- a/kernel/debug/debug_core.c
++++ b/kernel/debug/debug_core.c
+@@ -754,11 +754,28 @@ static struct sysrq_key_op sysrq_dbg_op 
+ };
+ #endif
+ 
++static int kgdb_panic_event(struct notifier_block *self,
++			    unsigned long val,
++			    void *data)
++{
++	if (dbg_kdb_mode)
++		kdb_printf("PANIC: %s\n", (char *)data);
++	kgdb_breakpoint();
++	return NOTIFY_DONE;
++}
++
++static struct notifier_block kgdb_panic_event_nb = {
++       .notifier_call	= kgdb_panic_event,
++       .priority	= INT_MAX,
++};
++
+ static void kgdb_register_callbacks(void)
+ {
+ 	if (!kgdb_io_module_registered) {
+ 		kgdb_io_module_registered = 1;
+ 		kgdb_arch_init();
++		atomic_notifier_chain_register(&panic_notifier_list,
++					       &kgdb_panic_event_nb);
+ #ifdef CONFIG_MAGIC_SYSRQ
+ 		register_sysrq_key('g', &sysrq_dbg_op);
+ #endif
+@@ -778,6 +795,8 @@ static void kgdb_unregister_callbacks(vo
+ 	 */
+ 	if (kgdb_io_module_registered) {
+ 		kgdb_io_module_registered = 0;
++		atomic_notifier_chain_unregister(&panic_notifier_list,
++					       &kgdb_panic_event_nb);
+ 		kgdb_arch_exit();
+ #ifdef CONFIG_MAGIC_SYSRQ
+ 		unregister_sysrq_key('g', &sysrq_dbg_op);
 
-The usage of cpuset_cpus_allowed_locked() looks wrong in the scheduler, as 
-well: it can't hold callback_mutex since it is only declared at file scope 
-in the cpuset code.
+
