@@ -1,17 +1,18 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932226Ab0BRBCj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 20:02:39 -0500
+	id S1757597Ab0BRBDo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 20:03:44 -0500
 Received: from mail.perches.com ([173.55.12.10]:1063 "EHLO mail.perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756276Ab0BRBCP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 20:02:15 -0500
+	id S932161Ab0BRBCN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 20:02:13 -0500
 From: Joe Perches <joe@perches.com>
 To: netdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH net-next 15/15] drivers/net/yellowfin.c: Use (pr|netdev)_<level> macro helpers
-Date: Wed, 17 Feb 2010 17:02:02 -0800
-Message-Id: <bc88729f2b8e7da71f2f3e2c760444a0f855b3a8.1266454576.git.joe@perches.com>
+Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH net-next 11/15] drivers/net/skge.c: Use (pr|netdev)_<level> macro helpers
+Date: Wed, 17 Feb 2010 17:01:58 -0800
+Message-Id: <68f273dcc35e852e462f2e49ca563ddc5bf74ab0.1266454576.git.joe@perches.com>
 X-Mailer: git-send-email 1.7.0.14.g7e948
 In-Reply-To: <cover.1266454575.git.joe@perches.com>
 References: <cover.1266454575.git.joe@perches.com>
@@ -23,394 +24,265 @@ Add #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 Remove #define PFX
 Use pr_<level>
 Use netdev_<level>
-Convert formats like %8.8 to %08
-Remove periods from formats
-Coalesce long formats
+Checkpatch cleaning
 
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- drivers/net/yellowfin.c |  162 +++++++++++++++++++++++------------------------
- 1 files changed, 78 insertions(+), 84 deletions(-)
+ drivers/net/skge.c |   81 +++++++++++++++++++++++++++-------------------------
+ 1 files changed, 42 insertions(+), 39 deletions(-)
 
-diff --git a/drivers/net/yellowfin.c b/drivers/net/yellowfin.c
-index 5c88024..e4aab4d 100644
---- a/drivers/net/yellowfin.c
-+++ b/drivers/net/yellowfin.c
-@@ -23,12 +23,12 @@
+diff --git a/drivers/net/skge.c b/drivers/net/skge.c
+index 8aa24c5..720af1c 100644
+--- a/drivers/net/skge.c
++++ b/drivers/net/skge.c
+@@ -71,9 +71,9 @@ MODULE_AUTHOR("Stephen Hemminger <shemminger@linux-foundation.org>");
+ MODULE_LICENSE("GPL");
+ MODULE_VERSION(DRV_VERSION);
  
- */
+-static const u32 default_msg
+-	= NETIF_MSG_DRV| NETIF_MSG_PROBE| NETIF_MSG_LINK
+-	  | NETIF_MSG_IFUP| NETIF_MSG_IFDOWN;
++static const u32 default_msg = (NETIF_MSG_DRV | NETIF_MSG_PROBE |
++				NETIF_MSG_LINK | NETIF_MSG_IFUP |
++				NETIF_MSG_IFDOWN);
  
-+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-+
- #define DRV_NAME	"yellowfin"
- #define DRV_VERSION	"2.1"
- #define DRV_RELDATE	"Sep 11, 2006"
+ static int debug = -1;	/* defaults above */
+ module_param(debug, int, 0);
+@@ -188,8 +188,8 @@ static void skge_wol_init(struct skge_port *skge)
  
--#define PFX DRV_NAME ": "
--
- /* The user-configurable values.
-    These may be modified when a driver module is loaded.*/
+ 	/* Force to 10/100 skge_reset will re-enable on resume	 */
+ 	gm_phy_write(hw, port, PHY_MARV_AUNE_ADV,
+-		     PHY_AN_100FULL | PHY_AN_100HALF |
+-		     PHY_AN_10FULL | PHY_AN_10HALF| PHY_AN_CSMA);
++		     (PHY_AN_100FULL | PHY_AN_100HALF |
++		      PHY_AN_10FULL | PHY_AN_10HALF | PHY_AN_CSMA));
+ 	/* no 1000 HD/FD */
+ 	gm_phy_write(hw, port, PHY_MARV_1000T_CTRL, 0);
+ 	gm_phy_write(hw, port, PHY_MARV_CTRL,
+@@ -258,25 +258,28 @@ static u32 skge_supported_modes(const struct skge_hw *hw)
+ 	u32 supported;
  
-@@ -399,7 +399,7 @@ static int __devinit yellowfin_init_one(struct pci_dev *pdev,
+ 	if (hw->copper) {
+-		supported = SUPPORTED_10baseT_Half
+-			| SUPPORTED_10baseT_Full
+-			| SUPPORTED_100baseT_Half
+-			| SUPPORTED_100baseT_Full
+-			| SUPPORTED_1000baseT_Half
+-			| SUPPORTED_1000baseT_Full
+-			| SUPPORTED_Autoneg| SUPPORTED_TP;
++		supported = (SUPPORTED_10baseT_Half |
++			     SUPPORTED_10baseT_Full |
++			     SUPPORTED_100baseT_Half |
++			     SUPPORTED_100baseT_Full |
++			     SUPPORTED_1000baseT_Half |
++			     SUPPORTED_1000baseT_Full |
++			     SUPPORTED_Autoneg |
++			     SUPPORTED_TP);
  
- 	dev = alloc_etherdev(sizeof(*np));
- 	if (!dev) {
--		printk (KERN_ERR PFX "cannot allocate ethernet device\n");
-+		pr_err("cannot allocate ethernet device\n");
- 		return -ENOMEM;
- 	}
- 	SET_NETDEV_DEV(dev, &pdev->dev);
-@@ -487,10 +487,10 @@ static int __devinit yellowfin_init_one(struct pci_dev *pdev,
- 	if (i)
- 		goto err_out_unmap_status;
+ 		if (hw->chip_id == CHIP_ID_GENESIS)
+-			supported &= ~(SUPPORTED_10baseT_Half
+-					     | SUPPORTED_10baseT_Full
+-					     | SUPPORTED_100baseT_Half
+-					     | SUPPORTED_100baseT_Full);
++			supported &= ~(SUPPORTED_10baseT_Half |
++				       SUPPORTED_10baseT_Full |
++				       SUPPORTED_100baseT_Half |
++				       SUPPORTED_100baseT_Full);
  
--	printk(KERN_INFO "%s: %s type %8x at %p, %pM, IRQ %d.\n",
--		   dev->name, pci_id_tbl[chip_idx].name,
--		   ioread32(ioaddr + ChipRev), ioaddr,
--		   dev->dev_addr, irq);
-+	netdev_info(dev, "%s type %8x at %p, %pM, IRQ %d\n",
-+		    pci_id_tbl[chip_idx].name,
-+		    ioread32(ioaddr + ChipRev), ioaddr,
-+		    dev->dev_addr, irq);
+ 		else if (hw->chip_id == CHIP_ID_YUKON)
+ 			supported &= ~SUPPORTED_1000baseT_Half;
+ 	} else
+-		supported = SUPPORTED_1000baseT_Full | SUPPORTED_1000baseT_Half
+-			| SUPPORTED_FIBRE | SUPPORTED_Autoneg;
++		supported = (SUPPORTED_1000baseT_Full |
++			     SUPPORTED_1000baseT_Half |
++			     SUPPORTED_FIBRE |
++			     SUPPORTED_Autoneg);
  
- 	if (np->drv_flags & HasMII) {
- 		int phy, phy_idx = 0;
-@@ -499,9 +499,8 @@ static int __devinit yellowfin_init_one(struct pci_dev *pdev,
- 			if (mii_status != 0xffff  &&  mii_status != 0x0000) {
- 				np->phys[phy_idx++] = phy;
- 				np->advertising = mdio_read(ioaddr, phy, 4);
--				printk(KERN_INFO "%s: MII PHY found at address %d, status "
--					   "0x%4.4x advertising %4.4x.\n",
--					   dev->name, phy, mii_status, np->advertising);
-+				netdev_info(dev, "MII PHY found at address %d, status 0x%04x advertising %04x\n",
-+					    phy, mii_status, np->advertising);
- 			}
- 		}
- 		np->mii_cnt = phy_idx;
-@@ -584,8 +583,8 @@ static int yellowfin_open(struct net_device *dev)
- 		return ret;
- 
- 	if (yellowfin_debug > 1)
--		printk(KERN_DEBUG "%s: yellowfin_open() irq %d.\n",
--			   dev->name, dev->irq);
-+		netdev_printk(KERN_DEBUG, dev, "%s() irq %d\n",
-+			      __func__, dev->irq);
- 
- 	ret = yellowfin_init_ring(dev);
- 	if (ret) {
-@@ -642,8 +641,7 @@ static int yellowfin_open(struct net_device *dev)
- 	iowrite32(0x80008000, ioaddr + TxCtrl);
- 
- 	if (yellowfin_debug > 2) {
--		printk(KERN_DEBUG "%s: Done yellowfin_open().\n",
--			   dev->name);
-+		netdev_printk(KERN_DEBUG, dev, "Done %s()\n", __func__);
- 	}
- 
- 	/* Set the timer to check for link beat. */
-@@ -664,8 +662,8 @@ static void yellowfin_timer(unsigned long data)
- 	int next_tick = 60*HZ;
- 
- 	if (yellowfin_debug > 3) {
--		printk(KERN_DEBUG "%s: Yellowfin timer tick, status %8.8x.\n",
--			   dev->name, ioread16(ioaddr + IntrStatus));
-+		netdev_printk(KERN_DEBUG, dev, "Yellowfin timer tick, status %08x\n",
-+			      ioread16(ioaddr + IntrStatus));
- 	}
- 
- 	if (yp->mii_cnt) {
-@@ -673,9 +671,8 @@ static void yellowfin_timer(unsigned long data)
- 		int lpa = mdio_read(ioaddr, yp->phys[0], MII_LPA);
- 		int negotiated = lpa & yp->advertising;
- 		if (yellowfin_debug > 1)
--			printk(KERN_DEBUG "%s: MII #%d status register is %4.4x, "
--				   "link partner capability %4.4x.\n",
--				   dev->name, yp->phys[0], bmsr, lpa);
-+			netdev_printk(KERN_DEBUG, dev, "MII #%d status register is %04x, link partner capability %04x\n",
-+				      yp->phys[0], bmsr, lpa);
- 
- 		yp->full_duplex = mii_duplex(yp->duplex_lock, negotiated);
- 
-@@ -696,25 +693,24 @@ static void yellowfin_tx_timeout(struct net_device *dev)
- 	struct yellowfin_private *yp = netdev_priv(dev);
- 	void __iomem *ioaddr = yp->base;
- 
--	printk(KERN_WARNING "%s: Yellowfin transmit timed out at %d/%d Tx "
--		   "status %4.4x, Rx status %4.4x, resetting...\n",
--		   dev->name, yp->cur_tx, yp->dirty_tx,
--		   ioread32(ioaddr + TxStatus), ioread32(ioaddr + RxStatus));
-+	netdev_warn(dev, "Yellowfin transmit timed out at %d/%d Tx status %04x, Rx status %04x, resetting...\n",
-+		    yp->cur_tx, yp->dirty_tx,
-+		    ioread32(ioaddr + TxStatus),
-+		    ioread32(ioaddr + RxStatus));
- 
- 	/* Note: these should be KERN_DEBUG. */
- 	if (yellowfin_debug) {
- 		int i;
--		printk(KERN_WARNING "  Rx ring %p: ", yp->rx_ring);
-+		pr_warning("  Rx ring %p: ", yp->rx_ring);
- 		for (i = 0; i < RX_RING_SIZE; i++)
--			printk(KERN_CONT " %8.8x",
--			       yp->rx_ring[i].result_status);
--		printk(KERN_CONT "\n");
--		printk(KERN_WARNING"  Tx ring %p: ", yp->tx_ring);
-+			pr_cont(" %08x", yp->rx_ring[i].result_status);
-+		pr_cont("\n");
-+		pr_warning("  Tx ring %p: ", yp->tx_ring);
- 		for (i = 0; i < TX_RING_SIZE; i++)
--			printk(KERN_CONT " %4.4x /%8.8x",
-+			pr_cont(" %04x /%08x",
- 			       yp->tx_status[i].tx_errs,
- 			       yp->tx_ring[i].result_status);
--		printk(KERN_CONT "\n");
-+		pr_cont("\n");
- 	}
- 
- 	/* If the hardware is found to hang regularly, we will update the code
-@@ -891,8 +887,8 @@ static netdev_tx_t yellowfin_start_xmit(struct sk_buff *skb,
- 		yp->tx_full = 1;
- 
- 	if (yellowfin_debug > 4) {
--		printk(KERN_DEBUG "%s: Yellowfin transmit frame #%d queued in slot %d.\n",
--			   dev->name, yp->cur_tx, entry);
-+		netdev_printk(KERN_DEBUG, dev, "Yellowfin transmit frame #%d queued in slot %d\n",
-+			      yp->cur_tx, entry);
- 	}
- 	return NETDEV_TX_OK;
+ 	return supported;
  }
-@@ -916,8 +912,8 @@ static irqreturn_t yellowfin_interrupt(int irq, void *dev_instance)
- 		u16 intr_status = ioread16(ioaddr + IntrClear);
- 
- 		if (yellowfin_debug > 4)
--			printk(KERN_DEBUG "%s: Yellowfin interrupt, status %4.4x.\n",
--				   dev->name, intr_status);
-+			netdev_printk(KERN_DEBUG, dev, "Yellowfin interrupt, status %04x\n",
-+				      intr_status);
- 
- 		if (intr_status == 0)
- 			break;
-@@ -963,13 +959,12 @@ static irqreturn_t yellowfin_interrupt(int irq, void *dev_instance)
- 
- #ifndef final_version
- 				if (yellowfin_debug > 5)
--					printk(KERN_DEBUG "%s: Tx queue %d check, Tx status "
--						   "%4.4x %4.4x %4.4x %4.4x.\n",
--						   dev->name, entry,
--						   yp->tx_status[entry].tx_cnt,
--						   yp->tx_status[entry].tx_errs,
--						   yp->tx_status[entry].total_tx_cnt,
--						   yp->tx_status[entry].paused);
-+					netdev_printk(KERN_DEBUG, dev, "Tx queue %d check, Tx status %04x %04x %04x %04x\n",
-+						      entry,
-+						      yp->tx_status[entry].tx_cnt,
-+						      yp->tx_status[entry].tx_errs,
-+						      yp->tx_status[entry].total_tx_cnt,
-+						      yp->tx_status[entry].paused);
- #endif
- 				if (tx_errs == 0)
- 					break;	/* It still hasn't been Txed */
-@@ -978,8 +973,8 @@ static irqreturn_t yellowfin_interrupt(int irq, void *dev_instance)
- 					/* There was an major error, log it. */
- #ifndef final_version
- 					if (yellowfin_debug > 1)
--						printk(KERN_DEBUG "%s: Transmit error, Tx status %4.4x.\n",
--							   dev->name, tx_errs);
-+						netdev_printk(KERN_DEBUG, dev, "Transmit error, Tx status %04x\n",
-+							      tx_errs);
- #endif
- 					dev->stats.tx_errors++;
- 					if (tx_errs & 0xF800) dev->stats.tx_aborted_errors++;
-@@ -989,8 +984,8 @@ static irqreturn_t yellowfin_interrupt(int irq, void *dev_instance)
- 				} else {
- #ifndef final_version
- 					if (yellowfin_debug > 4)
--						printk(KERN_DEBUG "%s: Normal transmit, Tx status %4.4x.\n",
--							   dev->name, tx_errs);
-+						netdev_printk(KERN_DEBUG, dev, "Normal transmit, Tx status %04x\n",
-+							      tx_errs);
- #endif
- 					dev->stats.tx_bytes += skb->len;
- 					dev->stats.collisions += tx_errs & 15;
-@@ -1008,8 +1003,8 @@ static irqreturn_t yellowfin_interrupt(int irq, void *dev_instance)
- 
- #ifndef final_version
- 			if (yp->cur_tx - dirty_tx > TX_RING_SIZE) {
--				printk(KERN_ERR "%s: Out-of-sync dirty pointer, %d vs. %d, full=%d.\n",
--					   dev->name, dirty_tx, yp->cur_tx, yp->tx_full);
-+				netdev_err(dev, "Out-of-sync dirty pointer, %d vs. %d, full=%d\n",
-+					   dirty_tx, yp->cur_tx, yp->tx_full);
- 				dirty_tx += TX_RING_SIZE;
- 			}
- #endif
-@@ -1031,16 +1026,15 @@ static irqreturn_t yellowfin_interrupt(int irq, void *dev_instance)
- 			yellowfin_error(dev, intr_status);
- 
- 		if (--boguscnt < 0) {
--			printk(KERN_WARNING "%s: Too much work at interrupt, "
--				   "status=0x%4.4x.\n",
--				   dev->name, intr_status);
-+			netdev_warn(dev, "Too much work at interrupt, status=%#04x\n",
-+				    intr_status);
- 			break;
+@@ -366,7 +369,7 @@ static int skge_set_settings(struct net_device *dev, struct ethtool_cmd *ecmd)
  		}
- 	} while (1);
- 
- 	if (yellowfin_debug > 3)
--		printk(KERN_DEBUG "%s: exiting interrupt, status=%#4.4x.\n",
--			   dev->name, ioread16(ioaddr + IntrStatus));
-+		netdev_printk(KERN_DEBUG, dev, "exiting interrupt, status=%#04x\n",
-+			      ioread16(ioaddr + IntrStatus));
- 
- 	spin_unlock (&yp->lock);
- 	return IRQ_RETVAL(handled);
-@@ -1055,9 +1049,9 @@ static int yellowfin_rx(struct net_device *dev)
- 	int boguscnt = yp->dirty_rx + RX_RING_SIZE - yp->cur_rx;
- 
- 	if (yellowfin_debug > 4) {
--		printk(KERN_DEBUG " In yellowfin_rx(), entry %d status %8.8x.\n",
-+		printk(KERN_DEBUG " In yellowfin_rx(), entry %d status %08x\n",
- 			   entry, yp->rx_ring[entry].result_status);
--		printk(KERN_DEBUG "   #%d desc. %8.8x %8.8x %8.8x.\n",
-+		printk(KERN_DEBUG "   #%d desc. %08x %08x %08x\n",
- 			   entry, yp->rx_ring[entry].dbdma_cmd, yp->rx_ring[entry].addr,
- 			   yp->rx_ring[entry].result_status);
  	}
-@@ -1081,20 +1075,20 @@ static int yellowfin_rx(struct net_device *dev)
- 			le32_to_cpu(desc->result_status)) & 0xffff;
- 		frame_status = get_unaligned_le16(&(buf_addr[data_size - 2]));
- 		if (yellowfin_debug > 4)
--			printk(KERN_DEBUG "  yellowfin_rx() status was %4.4x.\n",
--				   frame_status);
-+			printk(KERN_DEBUG "  %s() status was %04x\n",
-+			       __func__, frame_status);
- 		if (--boguscnt < 0)
- 			break;
- 		if ( ! (desc_status & RX_EOP)) {
- 			if (data_size != 0)
--				printk(KERN_WARNING "%s: Oversized Ethernet frame spanned multiple buffers,"
--					   " status %4.4x, data_size %d!\n", dev->name, desc_status, data_size);
-+				netdev_warn(dev, "Oversized Ethernet frame spanned multiple buffers, status %04x, data_size %d!\n",
-+					    desc_status, data_size);
- 			dev->stats.rx_length_errors++;
- 		} else if ((yp->drv_flags & IsGigabit)  &&  (frame_status & 0x0038)) {
- 			/* There was a error. */
- 			if (yellowfin_debug > 3)
--				printk(KERN_DEBUG "  yellowfin_rx() Rx error was %4.4x.\n",
--					   frame_status);
-+				printk(KERN_DEBUG "  %s() Rx error was %04x\n",
-+				       __func__, frame_status);
- 			dev->stats.rx_errors++;
- 			if (frame_status & 0x0060) dev->stats.rx_length_errors++;
- 			if (frame_status & 0x0008) dev->stats.rx_frame_errors++;
-@@ -1118,8 +1112,8 @@ static int yellowfin_rx(struct net_device *dev)
- 				entry*sizeof(struct yellowfin_desc)),
- 				"\377\377\377\377\377\377", 6) != 0) {
- 			if (bogus_rx++ == 0)
--				printk(KERN_WARNING "%s: Bad frame to %pM\n",
--					   dev->name, buf_addr);
-+				netdev_warn(dev, "Bad frame to %pM\n",
-+					    buf_addr);
- #endif
- 		} else {
- 			struct sk_buff *skb;
-@@ -1129,9 +1123,8 @@ static int yellowfin_rx(struct net_device *dev)
  
- #ifndef final_version
- 			if (yellowfin_debug > 4)
--				printk(KERN_DEBUG "  yellowfin_rx() normal Rx pkt length %d"
--					   " of %d, bogus_cnt %d.\n",
--					   pkt_len, data_size, boguscnt);
-+				printk(KERN_DEBUG "  %s() normal Rx pkt length %d of %d, bogus_cnt %d\n",
-+				       __func__, pkt_len, data_size, boguscnt);
- #endif
- 			/* Check if the packet is long enough to just pass up the skbuff
- 			   without copying to a properly sized skbuff. */
-@@ -1191,8 +1184,7 @@ static int yellowfin_rx(struct net_device *dev)
+-	return (0);
++	return 0;
+ }
  
- static void yellowfin_error(struct net_device *dev, int intr_status)
+ static void skge_get_drvinfo(struct net_device *dev,
+@@ -813,7 +816,7 @@ static int skge_get_eeprom_len(struct net_device *dev)
+ 	u32 reg2;
+ 
+ 	pci_read_config_dword(skge->hw->pdev, PCI_DEV_REG2, &reg2);
+-	return 1 << ( ((reg2 & PCI_VPD_ROM_SZ) >> 14) + 8);
++	return 1 << (((reg2 & PCI_VPD_ROM_SZ) >> 14) + 8);
+ }
+ 
+ static u32 skge_vpd_read(struct pci_dev *pdev, int cap, u16 offset)
+@@ -1044,7 +1047,7 @@ static int skge_rx_fill(struct net_device *dev)
+ 
+ 		skb_reserve(skb, NET_IP_ALIGN);
+ 		skge_rx_setup(skge, e, skb, skge->rx_buf_size);
+-	} while ( (e = e->next) != ring->start);
++	} while ((e = e->next) != ring->start);
+ 
+ 	ring->to_clean = ring->start;
+ 	return 0;
+@@ -1052,7 +1055,7 @@ static int skge_rx_fill(struct net_device *dev)
+ 
+ static const char *skge_pause(enum pause_status status)
  {
--	printk(KERN_ERR "%s: Something Wicked happened! %4.4x.\n",
--		   dev->name, intr_status);
-+	netdev_err(dev, "Something Wicked happened! %04x\n", intr_status);
- 	/* Hmmmmm, it's not clear what to do here. */
- 	if (intr_status & (IntrTxPCIErr | IntrTxPCIFault))
- 		dev->stats.tx_errors++;
-@@ -1209,13 +1201,13 @@ static int yellowfin_close(struct net_device *dev)
- 	netif_stop_queue (dev);
+-	switch(status) {
++	switch (status) {
+ 	case FLOW_STAT_NONE:
+ 		return "none";
+ 	case FLOW_STAT_REM_SEND:
+@@ -1322,7 +1325,7 @@ static void bcom_phy_init(struct skge_port *skge)
+ 	/* Optimize MDIO transfer by suppressing preamble. */
+ 	r = xm_read16(hw, port, XM_MMU_CMD);
+ 	r |=  XM_MMU_NO_PRE;
+-	xm_write16(hw, port, XM_MMU_CMD,r);
++	xm_write16(hw, port, XM_MMU_CMD, r);
  
- 	if (yellowfin_debug > 1) {
--		printk(KERN_DEBUG "%s: Shutting down ethercard, status was Tx %4.4x "
--			   "Rx %4.4x Int %2.2x.\n",
--			   dev->name, ioread16(ioaddr + TxStatus),
--			   ioread16(ioaddr + RxStatus),
--			   ioread16(ioaddr + IntrStatus));
--		printk(KERN_DEBUG "%s: Queue pointers were Tx %d / %d,  Rx %d / %d.\n",
--			   dev->name, yp->cur_tx, yp->dirty_tx, yp->cur_rx, yp->dirty_rx);
-+		netdev_printk(KERN_DEBUG, dev, "Shutting down ethercard, status was Tx %04x Rx %04x Int %02x\n",
-+			      ioread16(ioaddr + TxStatus),
-+			      ioread16(ioaddr + RxStatus),
-+			      ioread16(ioaddr + IntrStatus));
-+		netdev_printk(KERN_DEBUG, dev, "Queue pointers were Tx %d / %d,  Rx %d / %d\n",
-+			      yp->cur_tx, yp->dirty_tx,
-+			      yp->cur_rx, yp->dirty_rx);
+ 	switch (id1) {
+ 	case PHY_BCOM_ID1_C0:
+@@ -1512,7 +1515,7 @@ static void xm_link_timer(unsigned long arg)
+ {
+ 	struct skge_port *skge = (struct skge_port *) arg;
+ 	struct net_device *dev = skge->netdev;
+- 	struct skge_hw *hw = skge->hw;
++	struct skge_hw *hw = skge->hw;
+ 	int port = skge->port;
+ 	int i;
+ 	unsigned long flags;
+@@ -1531,7 +1534,7 @@ static void xm_link_timer(unsigned long arg)
+ 			goto link_down;
  	}
  
- 	/* Disable interrupts by clearing the interrupt mask. */
-@@ -1229,33 +1221,35 @@ static int yellowfin_close(struct net_device *dev)
- 
- #if defined(__i386__)
- 	if (yellowfin_debug > 2) {
--		printk(KERN_DEBUG"  Tx ring at %8.8llx:\n",
-+		printk(KERN_DEBUG "  Tx ring at %08llx:\n",
- 				(unsigned long long)yp->tx_ring_dma);
- 		for (i = 0; i < TX_RING_SIZE*2; i++)
--			printk(KERN_DEBUG " %c #%d desc. %8.8x %8.8x %8.8x %8.8x.\n",
-+			printk(KERN_DEBUG " %c #%d desc. %08x %08x %08x %08x\n",
- 				   ioread32(ioaddr + TxPtr) == (long)&yp->tx_ring[i] ? '>' : ' ',
- 				   i, yp->tx_ring[i].dbdma_cmd, yp->tx_ring[i].addr,
- 				   yp->tx_ring[i].branch_addr, yp->tx_ring[i].result_status);
- 		printk(KERN_DEBUG "  Tx status %p:\n", yp->tx_status);
- 		for (i = 0; i < TX_RING_SIZE; i++)
--			printk(KERN_DEBUG "   #%d status %4.4x %4.4x %4.4x %4.4x.\n",
-+			printk(KERN_DEBUG "   #%d status %04x %04x %04x %04x\n",
- 				   i, yp->tx_status[i].tx_cnt, yp->tx_status[i].tx_errs,
- 				   yp->tx_status[i].total_tx_cnt, yp->tx_status[i].paused);
- 
--		printk(KERN_DEBUG "  Rx ring %8.8llx:\n",
-+		printk(KERN_DEBUG "  Rx ring %08llx:\n",
- 				(unsigned long long)yp->rx_ring_dma);
- 		for (i = 0; i < RX_RING_SIZE; i++) {
--			printk(KERN_DEBUG " %c #%d desc. %8.8x %8.8x %8.8x\n",
-+			printk(KERN_DEBUG " %c #%d desc. %08x %08x %08x\n",
- 				   ioread32(ioaddr + RxPtr) == (long)&yp->rx_ring[i] ? '>' : ' ',
- 				   i, yp->rx_ring[i].dbdma_cmd, yp->rx_ring[i].addr,
- 				   yp->rx_ring[i].result_status);
- 			if (yellowfin_debug > 6) {
- 				if (get_unaligned((u8*)yp->rx_ring[i].addr) != 0x69) {
- 					int j;
-+
-+					printk(KERN_DEBUG);
- 					for (j = 0; j < 0x50; j++)
--						printk(" %4.4x",
--							   get_unaligned(((u16*)yp->rx_ring[i].addr) + j));
--					printk("\n");
-+						pr_cont(" %04x",
-+							get_unaligned(((u16*)yp->rx_ring[i].addr) + j));
-+					pr_cont("\n");
- 				}
- 			}
- 		}
-@@ -1281,8 +1275,8 @@ static int yellowfin_close(struct net_device *dev)
- 
- #ifdef YF_PROTOTYPE			/* Support for prototype hardware errata. */
- 	if (yellowfin_debug > 0) {
--		printk(KERN_DEBUG "%s: Received %d frames that we should not have.\n",
--			   dev->name, bogus_rx);
-+		netdev_printk(KERN_DEBUG, dev, "Received %d frames that we should not have\n",
-+			      bogus_rx);
+-        /* Re-enable interrupt to detect link down */
++	/* Re-enable interrupt to detect link down */
+ 	if (xm_check_link(dev)) {
+ 		u16 msk = xm_read16(hw, port, XM_IMSK);
+ 		msk &= ~XM_IS_INP_ASS;
+@@ -1588,7 +1591,7 @@ static void genesis_mac_init(struct skge_hw *hw, int port)
  	}
- #endif
  
+ 
+-	switch(hw->phy_type) {
++	switch (hw->phy_type) {
+ 	case SK_PHY_XMAC:
+ 		xm_phy_init(skge);
+ 		break;
+@@ -1695,7 +1698,7 @@ static void genesis_mac_init(struct skge_hw *hw, int port)
+ 
+ 	if (jumbo) {
+ 		/* Enable frame flushing if jumbo frames used */
+-		skge_write16(hw, SK_REG(port,RX_MFF_CTRL1), MFF_ENA_FLUSH);
++		skge_write16(hw, SK_REG(port, RX_MFF_CTRL1), MFF_ENA_FLUSH);
+ 	} else {
+ 		/* enable timeout timers if normal frames */
+ 		skge_write16(hw, B3_PA_CTRL,
+@@ -1710,7 +1713,7 @@ static void genesis_stop(struct skge_port *skge)
+ 	unsigned retries = 1000;
+ 	u16 cmd;
+ 
+- 	/* Disable Tx and Rx */
++	/* Disable Tx and Rx */
+ 	cmd = xm_read16(hw, port, XM_MMU_CMD);
+ 	cmd &= ~(XM_MMU_ENA_RX | XM_MMU_ENA_TX);
+ 	xm_write16(hw, port, XM_MMU_CMD, cmd);
+@@ -1789,7 +1792,7 @@ static void genesis_mac_intr(struct skge_hw *hw, int port)
+ 		     "mac interrupt status 0x%x\n", status);
+ 
+ 	if (hw->phy_type == SK_PHY_XMAC && (status & XM_IS_INP_ASS)) {
+-  		xm_link_down(hw, port);
++		xm_link_down(hw, port);
+ 		mod_timer(&skge->link_timer, jiffies + 1);
+ 	}
+ 
+@@ -1823,7 +1826,7 @@ static void genesis_link_up(struct skge_port *skge)
+ 	xm_write16(hw, port, XM_MMU_CMD, cmd);
+ 
+ 	mode = xm_read32(hw, port, XM_MODE);
+-	if (skge->flow_status== FLOW_STAT_SYMMETRIC ||
++	if (skge->flow_status == FLOW_STAT_SYMMETRIC ||
+ 	    skge->flow_status == FLOW_STAT_LOC_SEND) {
+ 		/*
+ 		 * Configure Pause Frame Generation
+@@ -2466,7 +2469,7 @@ static int skge_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
+ 	if (!netif_running(dev))
+ 		return -ENODEV;	/* Phy still in reset */
+ 
+-	switch(cmd) {
++	switch (cmd) {
+ 	case SIOCGMIIPHY:
+ 		data->phy_id = hw->phy_addr;
+ 
+@@ -2765,7 +2768,7 @@ static netdev_tx_t skge_xmit_frame(struct sk_buff *skb,
+ 		 * does.  Looks like hardware is wrong?
+ 		 */
+ 		if (ipip_hdr(skb)->protocol == IPPROTO_UDP &&
+-	            hw->chip_rev == 0 && hw->chip_id == CHIP_ID_YUKON)
++		    hw->chip_rev == 0 && hw->chip_id == CHIP_ID_YUKON)
+ 			control = BMU_TCP_CHECK;
+ 		else
+ 			control = BMU_UDP_CHECK;
+@@ -2777,7 +2780,7 @@ static netdev_tx_t skge_xmit_frame(struct sk_buff *skb,
+ 		control = BMU_CHECK;
+ 
+ 	if (!skb_shinfo(skb)->nr_frags) /* single buffer i.e. no fragments */
+-		control |= BMU_EOF| BMU_IRQ_EOF;
++		control |= BMU_EOF | BMU_IRQ_EOF;
+ 	else {
+ 		struct skge_tx_desc *tf = td;
+ 
+@@ -3077,7 +3080,7 @@ static struct sk_buff *skge_rx_get(struct net_device *dev,
+ 				 pci_unmap_len(e, maplen),
+ 				 PCI_DMA_FROMDEVICE);
+ 		skb = e->skb;
+-  		prefetch(skb->data);
++		prefetch(skb->data);
+ 		skge_rx_setup(skge, e, nskb, skge->rx_buf_size);
+ 	}
+ 
+@@ -3554,8 +3557,7 @@ static int skge_reset(struct skge_hw *hw)
+ 			hw->ram_offset = 0x80000;
+ 		} else
+ 			hw->ram_size = t8 * 512;
+-	}
+-	else if (t8 == 0)
++	} else if (t8 == 0)
+ 		hw->ram_size = 0x20000;
+ 	else
+ 		hw->ram_size = t8 * 4096;
+@@ -3709,7 +3711,7 @@ static int skge_device_event(struct notifier_block *unused,
+ 		goto done;
+ 
+ 	skge = netdev_priv(dev);
+-	switch(event) {
++	switch (event) {
+ 	case NETDEV_CHANGENAME:
+ 		if (skge->debugfs) {
+ 			d = debugfs_rename(skge_debug, skge->debugfs,
+@@ -3914,7 +3916,7 @@ static int __devinit skge_probe(struct pci_dev *pdev,
+ 
+ 	err = -ENOMEM;
+ 	/* space for skge@pci:0000:04:00.0 */
+-	hw = kzalloc(sizeof(*hw) + strlen(DRV_NAME "@pci:" )
++	hw = kzalloc(sizeof(*hw) + strlen(DRV_NAME "@pci:")
+ 		     + strlen(pci_name(pdev)) + 1, GFP_KERNEL);
+ 	if (!hw) {
+ 		dev_err(&pdev->dev, "cannot allocate hardware struct\n");
+@@ -4010,7 +4012,8 @@ static void __devexit skge_remove(struct pci_dev *pdev)
+ 
+ 	flush_scheduled_work();
+ 
+-	if ((dev1 = hw->dev[1]))
++	dev1 = hw->dev[1];
++	if (dev1)
+ 		unregister_netdev(dev1);
+ 	dev0 = hw->dev[0];
+ 	unregister_netdev(dev0);
 -- 
 1.7.0.14.g7e948
 
