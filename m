@@ -1,85 +1,91 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758150Ab0BRPDQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 10:03:16 -0500
-Received: from mail-vw0-f46.google.com ([209.85.212.46]:37274 "EHLO
-	mail-vw0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754417Ab0BRPDP convert rfc822-to-8bit (ORCPT
+	id S1758249Ab0BRPE4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 10:04:56 -0500
+Received: from mail.windriver.com ([147.11.1.11]:40180 "EHLO
+	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756980Ab0BRPEx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 10:03:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=QkOVOrGodOTfOi/A5z26MMJ+sV2K7we24gHLJkyMi1yGedOLoCeMbd77FHiquiK3Fo
-         RAnBzH8swtvVoOGgpchFLaa4zBkHcEgt1p6i7dz67+7r4k+tE5i0okRePFz7MxDqREK8
-         pInEUfsqLcQlTLgV1N1XrHxUwPK1KrxdJH/1o=
+	Thu, 18 Feb 2010 10:04:53 -0500
+Message-ID: <4B7D5704.6060504@windriver.com>
+Date: Thu, 18 Feb 2010 09:04:36 -0600
+From: Jason Wessel <jason.wessel@windriver.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-In-Reply-To: <20100218145055.GB855@nowhere>
-References: <1266491616-6270-1-git-send-regression-fweisbec@gmail.com> 
-	<1266491616-6270-3-git-send-regression-fweisbec@gmail.com> 
-	<8bd0f97a1002180318g6ce70480x571d7d332239d68b@mail.gmail.com> 
-	<20100218120944.GA2406@osiris.boeblingen.de.ibm.com> <8bd0f97a1002180412x6cc4f280u5444f013c6e3b670@mail.gmail.com> 
-	<20100218123453.GA5136@nowhere> <20100218132521.GB2406@osiris.boeblingen.de.ibm.com> 
-	<8bd0f97a1002180601i60c5eaa4p7639091c5b617702@mail.gmail.com> 
-	<20100218145055.GB855@nowhere>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Thu, 18 Feb 2010 10:02:52 -0500
-Message-ID: <8bd0f97a1002180702k12db615pa3096b273ce2c222@mail.gmail.com>
-Subject: Re: [PATCH 2/3] tracing/kprobes: Make Kconfig dependencies generic
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       "David S . Miller" <davem@davemloft.net>,
-       Paul Mundt <lethal@linux-sh.org>, Steven Rostedt <rostedt@goodmis.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
+       mingo@elte.hu, mort@sgi.com, linux-arch@vger.kernel.org
+Subject: Re: [PATCH 08/28] kdb: core for kgdb back end (2 of 2)
+References: <1266014143-29444-1-git-send-email-jason.wessel@windriver.com><1266014143-29444-9-git-send-email-jason.wessel@windriver.com> <m1zl37xhmm.fsf@fess.ebiederm.org>
+In-Reply-To: <m1zl37xhmm.fsf@fess.ebiederm.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 18 Feb 2010 15:04:31.0603 (UTC) FILETIME=[ACA76C30:01CAB0AB]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 18, 2010 at 09:50, Frederic Weisbecker wrote:
-> On Thu, Feb 18, 2010 at 09:01:12AM -0500, Mike Frysinger wrote:
->> > --- a/arch/Kconfig
->> > +++ b/arch/Kconfig
->> > @@ -123,6 +123,10 @@ config USE_GENERIC_SMP_HELPERS
->> >
->> >  config HAVE_REGS_AND_STACK_ACCESS_API
->> >        bool
->> > +       help
->> > +         This symbol should be selected by an architecure if it supports
->> > +         the API needed to access registers and stack entries from pt_regs.
->> > +         For example the kprobes-based event tracer needs this API.
->>
->> a bit vague ... arent there headers/functions people could look at ?
->> perhaps you're talking about the regset functions (which is an API to
->> access registers in pt_regs) ?  or you're talking about asm/syscall.h
->> (which is an API to access registers in pt_regs) ?
->>
->> i'm not asking to be a pain, i'm asking because i really havent a
->> clue.  if i wanted to add support for this stuff to the Blackfin arch,
->> i wouldnt know where to start.  even after reading this help i'd fall
->> back to grepping arch/x86/ and trying to divine a starting point from
->> there.
+Eric W. Biederman wrote:
+> Jason Wessel <jason.wessel@windriver.com> writes:
 >
-> If an arch support kprobes, it just needs to select
-> HAVE_REGS_AND_STACK_ACCESS_API to figure out quickly what is missing,
-> as gcc will barf every missing clues you need.
+>   
+>> This patch contains the hooks and instrumentation into kernel which
+>> live outside the kernel/debug directory, which the kdb core
+>> will call to run commands like lsmod, dmesg, bt etc...
+>>     
+>
+> You know this dropping the locks from vmalloc_info and swap_info
+> is down right ugly, and I don't believe it is safe.  That code
+> was not designed to run while the write_lock is held.
+>   
 
-so should this new Kconfig option have an appropriate depends on
-KPROBES or something ?
+Perhaps we can find some middle ground.  I don't mind simply not
+allowing the information to be queried from kdb if the locks are not
+available. 
 
-> For now it is stored is asm/ptrace.h, but that might be split in
-> the future, especially as ptrace has initially nothing related to
-> that. A documentation that deals with filenames or API enumerations
-> tend to be incidentally async with API evolutions.
+Which is less ugly you, making the swap_lock global or adding a function
+to query it?
 
-i dont expect there to be per-function documentation here ... such
-things below in the header files themselves (linux/regset.h is an
-example of how to approach this).  but having a tip of reading a file
-or two (like HAVE_ARCH_TRACEHOOK) doesnt bit rot nearly as often.  if
-the common API expected of headers hasnt yet been split, then i guess
-not much left to be done here.
--mike
+
+> How does kdb build if NOMMU is set?
+>   
+
+I did not see a kernel config option called NOMMU. 
+
+Can you point me to a kernel config that uses this?   Or is it the case
+that it is something like "# CONFIG_MMU is not set"?
+
+Perhaps we just set kdb to work only when CONFIG_MMU is enabled?  It is
+hard to say it works or not without a kernel configuration, file system
+and hardware to test it with.
+
+> Similarly with si_swapinfo.  What makes it safe to run the
+> code without it's locks.  Safe as in no null pointer deferences
+> or other nasties.
+>
+>   
+
+It looks to me like the original kdb took the approach of calling the
+setjmp() longjmp() and if there was any kind of fault, it long jumped
+back to the original context.  Obviously that doesn't solve any kind of
+problem with a list loop.
+
+As I mentioned earlier, I think we should check for the lock and if it
+isn't available you don't get to execute the function, else a separate
+function has to be written that does the same thing safely.  I do not
+see any value in making a separate function to safely print the
+information at this time.  If you want to probe around, consider using a
+gdb macro.
+
+
+> I am not impressed with the mess you make of meminfo_proc_show.
+> That looks like a maintenance hazard if I ever saw one.  An innocent
+> change to get some additional info (that happens to take a lock)
+> will cause kdb to deadlock.
+>
+>   
+
+This code goes away if we expose a way to check for the lock.
+
+
+Jason.
