@@ -1,172 +1,47 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755072Ab0BSUEM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 15:04:12 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:48929 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752728Ab0BSUEL (ORCPT
+	id S1755702Ab0BSUEj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 15:04:39 -0500
+Received: from ksp.mff.cuni.cz ([195.113.26.206]:43691 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753183Ab0BSUEh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 15:04:11 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Fri, 19 Feb 2010 21:03:53 +0100 (CET)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH] firewire: cdev: add more flexible cycle timer ioctl
-To: linux1394-devel@lists.sourceforge.net, Pieter Palmers <pieterp@joow.be>
-cc: linux-kernel@vger.kernel.org
-Message-ID: <tkrat.9650095fffa41adc@s5r6.in-berlin.de>
+	Fri, 19 Feb 2010 15:04:37 -0500
+X-Greylist: delayed 1693 seconds by postgrey-1.27 at vger.kernel.org; Fri, 19 Feb 2010 15:04:37 EST
+Date: Thu, 18 Feb 2010 23:57:11 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, paulus@samba.org,
+       linuxppc-dev@ozlabs.org, kernel list <linux-kernel@vger.kernel.org>,
+       Segher Boessenkool <segher@kernel.crashing.org>, bergner@vnet.ibm.com
+Subject: Re: register long sp asm("r1") incorrect
+Message-ID: <20100218225711.GA1386@ucw.cz>
+References: <20100209152444.GA30176@atrey.karlin.mff.cuni.cz> <1265866273.16346.34.camel@pasglop> <20100215073405.GB20456@atrey.karlin.mff.cuni.cz> <1266263992.16346.125.camel@pasglop> <20100215202854.GA21601@elf.ucw.cz> <1266267898.16346.135.camel@pasglop> <4B79C775.1050903@zytor.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B79C775.1050903@zytor.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The system time from CLOCK_REALTIME is not monotonic, hence problematic
-for the main user of the FW_CDEV_IOC_GET_CYCLE_TIMER ioctl.  This issue
-exists in its successor ABI, i.e. raw1394, too.
-http://subversion.ffado.org/ticket/242
+On Mon 2010-02-15 14:15:17, H. Peter Anvin wrote:
+> On 02/15/2010 01:04 PM, Benjamin Herrenschmidt wrote:
+> > 
+> > It's true that most other use of it we have are global scope (local_paca
+> > in r13, glibc use of r2/r13, etc...) afaik, but since r1 itself is the
+> > stack pointer always, I think they pretty much guarantee it works.
+> > 
+> 
+> It should work, because r1, being the stack pointer, is already marked a
+> reserved register in gcc.
+> 
+> The reference Pavel is citing bascially states that gcc won't globally
+> reserve the register, which is true, but it is already reserved anyway.
 
-We now offer an alternative ioctl which lets the caller choose between
-CLOCK_REALTIME, CLOCK_MONOTONIC, and CLOCK_MONOTONIC_RAW as source of
-the local time, very similar to the clock_gettime libc function.  The
-format of the local time return value matches that of clock_gettime
-(seconds and nanoseconds, instead of a single microseconds value from
-the existing ioctl).
-
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
- drivers/firewire/core-cdev.c  |   37 ++++++++++++++++++++++++++++------
- include/linux/firewire-cdev.h |   31 +++++++++++++++++++++++++---
- 2 files changed, 58 insertions(+), 10 deletions(-)
-
-Index: b/drivers/firewire/core-cdev.c
-===================================================================
---- a/drivers/firewire/core-cdev.c
-+++ b/drivers/firewire/core-cdev.c
-@@ -1030,22 +1030,46 @@ static int ioctl_stop_iso(struct client 
- 	return fw_iso_context_stop(client->iso_context);
- }
- 
--static int ioctl_get_cycle_timer(struct client *client, void *buffer)
-+static int ioctl_get_cycle_timer2(struct client *client, void *buffer)
- {
--	struct fw_cdev_get_cycle_timer *request = buffer;
-+	struct fw_cdev_get_cycle_timer2 *request = buffer;
- 	struct fw_card *card = client->device->card;
--	struct timeval tv;
-+	struct timespec ts = {0, 0};
- 	u32 cycle_time;
-+	int ret = 0;
- 
- 	local_irq_disable();
- 
- 	cycle_time = card->driver->get_cycle_time(card);
--	do_gettimeofday(&tv);
-+
-+	switch (request->clk_id) {
-+	case CLOCK_REALTIME:      getnstimeofday(&ts);                   break;
-+	case CLOCK_MONOTONIC:     do_posix_clock_monotonic_gettime(&ts); break;
-+	case CLOCK_MONOTONIC_RAW: getrawmonotonic(&ts);                  break;
-+	default:
-+		ret = -EINVAL;
-+	}
- 
- 	local_irq_enable();
- 
--	request->local_time = tv.tv_sec * 1000000ULL + tv.tv_usec;
--	request->cycle_timer = cycle_time;
-+	request->tv_sec		= ts.tv_sec;
-+	request->tv_nsec	= ts.tv_nsec;
-+	request->cycle_timer	= cycle_time;
-+
-+	return ret;
-+}
-+
-+static int ioctl_get_cycle_timer(struct client *client, void *buffer)
-+{
-+	struct fw_cdev_get_cycle_timer *request = buffer;
-+	struct fw_cdev_get_cycle_timer2 ct2;
-+
-+	ct2.clk_id = CLOCK_REALTIME;
-+	ioctl_get_cycle_timer2(client, &ct2);
-+
-+	request->local_time	= ct2.tv_sec * USEC_PER_SEC +
-+				  ct2.tv_nsec / NSEC_PER_USEC;
-+	request->cycle_timer	= ct2.cycle_timer;
- 
- 	return 0;
- }
-@@ -1319,6 +1343,7 @@ static int (* const ioctl_handlers[])(st
- 	ioctl_get_speed,
- 	ioctl_send_broadcast_request,
- 	ioctl_send_stream_packet,
-+	ioctl_get_cycle_timer2,
- };
- 
- static int dispatch_ioctl(struct client *client,
-Index: b/include/linux/firewire-cdev.h
-===================================================================
---- a/include/linux/firewire-cdev.h
-+++ b/include/linux/firewire-cdev.h
-@@ -248,6 +248,9 @@ union fw_cdev_event {
- #define FW_CDEV_IOC_SEND_BROADCAST_REQUEST       _IOW('#', 0x12, struct fw_cdev_send_request)
- #define FW_CDEV_IOC_SEND_STREAM_PACKET           _IOW('#', 0x13, struct fw_cdev_send_stream_packet)
- 
-+/* available since kernel version 2.6.34 */
-+#define FW_CDEV_IOC_GET_CYCLE_TIMER2   _IOWR('#', 0x14, struct fw_cdev_get_cycle_timer2)
-+
- /*
-  * FW_CDEV_VERSION History
-  *  1  (2.6.22)  - initial version
-@@ -544,14 +547,15 @@ struct fw_cdev_stop_iso {
- /**
-  * struct fw_cdev_get_cycle_timer - read cycle timer register
-  * @local_time:   system time, in microseconds since the Epoch
-- * @cycle_timer:  isochronous cycle timer, as per OHCI 1.1 clause 5.13
-+ * @cycle_timer:  Cycle Time register contents
-  *
-  * The %FW_CDEV_IOC_GET_CYCLE_TIMER ioctl reads the isochronous cycle timer
-- * and also the system clock.  This allows to express the receive time of an
-- * isochronous packet as a system time with microsecond accuracy.
-+ * and also the system clock (%CLOCK_REALTIME).  This allows to express the
-+ * receive time of an isochronous packet as a system time.
-  *
-  * @cycle_timer consists of 7 bits cycleSeconds, 13 bits cycleCount, and
-- * 12 bits cycleOffset, in host byte order.
-+ * 12 bits cycleOffset, in host byte order.  Cf. the Cycle Time register
-+ * per IEEE 1394 or Isochronous Cycle Timer register per OHCI-1394.
-  */
- struct fw_cdev_get_cycle_timer {
- 	__u64 local_time;
-@@ -559,6 +563,25 @@ struct fw_cdev_get_cycle_timer {
- };
- 
- /**
-+ * struct fw_cdev_get_cycle_timer2 - read cycle timer register
-+ * @tv_sec:       system time, seconds
-+ * @tv_nsec:      system time, sub-seconds part in nanoseconds
-+ * @clk_id:       input parameter, clock from which to get the system time
-+ * @cycle_timer:  Cycle Time register contents
-+ *
-+ * The %FW_CDEV_IOC_GET_CYCLE_TIMER2 works like
-+ * %FW_CDEV_IOC_GET_CYCLE_TIMER but lets you choose a clock like with POSIX'
-+ * clock_gettime function.  Supported @clk_id values are POSIX' %CLOCK_REALTIME
-+ * and %CLOCK_MONOTONIC and Linux' %CLOCK_MONOTONIC_RAW.
-+ */
-+struct fw_cdev_get_cycle_timer2 {
-+	__s64 tv_sec;
-+	__s32 tv_nsec;
-+	__s32 clk_id;
-+	__u32 cycle_timer;
-+};
-+
-+/**
-  * struct fw_cdev_allocate_iso_resource - (De)allocate a channel or bandwidth
-  * @closure:	Passed back to userspace in correponding iso resource events
-  * @channels:	Isochronous channels of which one is to be (de)allocated
+Ok, thanks for clarification.
 
 -- 
-Stefan Richter
--=====-==-=- --=- =--==
-http://arcgraph.de/sr/
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
