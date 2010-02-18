@@ -1,61 +1,38 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758595Ab0BRR0g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 12:26:36 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:43232 "EHLO mail.zytor.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757583Ab0BRR0e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 12:26:34 -0500
-Message-ID: <4B7D782F.20102@zytor.com>
-Date: Thu, 18 Feb 2010 09:26:07 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+	id S1758604Ab0BRR1u (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 12:27:50 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:39773 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757583Ab0BRR1t (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Feb 2010 12:27:49 -0500
+To: Jerome Glisse <glisse@freedesktop.org>
+Cc: hpa@zytor.com, suresh.b.siddha@intel.com, venkatesh.pallipadi@intel.com,
+       thellstrom@vmware.com, airlied@linux.ie, currojerez@riseup.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: Uncool feature for TTM introduced by x86, pat: Use page flags to track memtypes of RAM pages
+From: Andi Kleen <andi@firstfloor.org>
+References: <20100218153032.GA4506@localhost.localdomain>
+Date: Thu, 18 Feb 2010 18:27:39 +0100
+In-Reply-To: <20100218153032.GA4506@localhost.localdomain> (Jerome Glisse's message of "Thu, 18 Feb 2010 16:30:32 +0100")
+Message-ID: <87aav65u9g.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
-To: Yinghai Lu <yinghai@kernel.org>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-       Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: Re: [PATCH 34/35] x86: use num_processors for possible cpus
-References: <1265793639-15071-1-git-send-email-yinghai@kernel.org> <1265793639-15071-35-git-send-email-yinghai@kernel.org> <4B7C98B9.1090903@zytor.com> <4B7CA825.9090309@kernel.org>
-In-Reply-To: <4B7CA825.9090309@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/17/2010 06:38 PM, Yinghai Lu wrote:
->>
->> I'm confused by this one.  This would seem to mean that unless you're
->> specifying possible_cpus= then you are not treating anything as
->> hotpluggable.
->>
->> This is clearly wrong, and it would appear to go the wrong direction in
->> terms of what is safe.
->>
->> What am I missing here?
-> 
-> per_cpu setup will allocate some mem for every cpu according to possible cpus.
-> 
+Jerome Glisse <glisse@freedesktop.org> writes:
+>
+> Can we modify the interface to support again changing from uc to wc
+> or wc to uc ? (i can try to do a patch for that).
 
-Yes, and I have repeatedly requested that we allocate the memory on the
-first up of a disabled CPU rather than eagerly, but in *most*
-configurations the amount is relatively small.
+At least on Intel CPUs that support self-snoop (all modern
+ones) that should really be very cheap.
 
-> no spec says that we should disable cpus entries in MADT as hotplug cpus.
+-Andi
 
-Reality seems to, though.  Consider the bug report that led to patch
-681ee44d40d7c93b42118320e4620d07d8704fd6 for example.
-
-> also how many system that support hotplug cpus there?
-
-In terms of physical machines, not all that many; however, it is getting
-common to use CPU hotplug for virtual environments so they can be
-dynamically scaled.
-
-	-hpa
-
+-- 
+ak@linux.intel.com -- Speaking for myself only.
