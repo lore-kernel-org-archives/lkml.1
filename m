@@ -1,211 +1,107 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758708Ab0BRSBI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 13:01:08 -0500
-Received: from compulab.co.il ([67.18.134.219]:60931 "EHLO compulab.co.il"
+	id S1751994Ab0BRSCy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 13:02:54 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:44693 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757529Ab0BRSBD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 13:01:03 -0500
-Message-ID: <4B7D807D.9060105@compulab.co.il>
-Date: Thu, 18 Feb 2010 20:01:33 +0200
-From: Denis Turischev <denis@compulab.co.il>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-CC: Randy Dunlap <randy.dunlap@oracle.com>,
-       Samuel Ortiz <sameo@linux.intel.com>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Jean Delvare <khali@linux-fr.org>, linux-i2c@vger.kernel.org
-Subject: [PATCH v3 1/3] MFD: introduce lpc_sch for Intel SCH LPC bridge
-References: <4B73DAEE.5080400@compulab.co.il> <4B73DB4B.40501@compulab.co.il> <4B7D7C13.20703@compulab.co.il> <4B7D7CD0.7080202@oracle.com>
-In-Reply-To: <4B7D7CD0.7080202@oracle.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-ACL-Warn: {
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - compulab.site5.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - compulab.co.il
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	id S1751080Ab0BRSCq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Feb 2010 13:02:46 -0500
+From: Mel Gorman <mel@csn.ul.ie>
+To: Andrea Arcangeli <aarcange@redhat.com>
+Cc: Christoph Lameter <cl@linux-foundation.org>, Adam Litke <agl@us.ibm.com>,
+       Avi Kivity <avi@redhat.com>, David Rientjes <rientjes@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>, Mel Gorman <mel@csn.ul.ie>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: [PATCH 04/12] mm: Document /proc/pagetypeinfo
+Date: Thu, 18 Feb 2010 18:02:34 +0000
+Message-Id: <1266516162-14154-5-git-send-email-mel@csn.ul.ie>
+X-Mailer: git-send-email 1.6.5
+In-Reply-To: <1266516162-14154-1-git-send-email-mel@csn.ul.ie>
+References: <1266516162-14154-1-git-send-email-mel@csn.ul.ie>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Intel Poulsbo (SCH) chipset LPC bridge controller contains several
-functions. Creating and MFD driver for the LPC bridge controller allows
-simultaneous use of SMBus and GPIO interfaces on the SCH.
+This patch adds documentation for /proc/pagetypeinfo.
 
-v2: added "select MFD_CORE"
-v3: removed "default m"
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
+Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+---
+ Documentation/filesystems/proc.txt |   45 +++++++++++++++++++++++++++++++++++-
+ 1 files changed, 44 insertions(+), 1 deletions(-)
 
-Signed-off-by: Denis Turischev <denis@compulab.co.il>
+diff --git a/Documentation/filesystems/proc.txt b/Documentation/filesystems/proc.txt
+index 0d07513..1829dfb 100644
+--- a/Documentation/filesystems/proc.txt
++++ b/Documentation/filesystems/proc.txt
+@@ -430,6 +430,7 @@ Table 1-5: Kernel info in /proc
+  modules     List of loaded modules                            
+  mounts      Mounted filesystems                               
+  net         Networking info (see text)                        
++ pagetypeinfo Additional page allocator information (see text)  (2.5)
+  partitions  Table of partitions known to the system           
+  pci	     Deprecated info of PCI bus (new way -> /proc/bus/pci/,
+              decoupled by lspci					(2.4)
+@@ -584,7 +585,7 @@ Node 0, zone      DMA      0      4      5      4      4      3 ...
+ Node 0, zone   Normal      1      0      0      1    101      8 ...
+ Node 0, zone  HighMem      2      0      0      1      1      0 ...
+ 
+-Memory fragmentation is a problem under some workloads, and buddyinfo is a 
++External fragmentation is a problem under some workloads, and buddyinfo is a
+ useful tool for helping diagnose these problems.  Buddyinfo will give you a 
+ clue as to how big an area you can safely allocate, or why a previous
+ allocation failed.
+@@ -594,6 +595,48 @@ available.  In this case, there are 0 chunks of 2^0*PAGE_SIZE available in
+ ZONE_DMA, 4 chunks of 2^1*PAGE_SIZE in ZONE_DMA, 101 chunks of 2^4*PAGE_SIZE 
+ available in ZONE_NORMAL, etc... 
+ 
++More information relevant to external fragmentation can be found in
++pagetypeinfo.
++
++> cat /proc/pagetypeinfo
++Page block order: 9
++Pages per block:  512
++
++Free pages count per migrate type at order       0      1      2      3      4      5      6      7      8      9     10
++Node    0, zone      DMA, type    Unmovable      0      0      0      1      1      1      1      1      1      1      0
++Node    0, zone      DMA, type  Reclaimable      0      0      0      0      0      0      0      0      0      0      0
++Node    0, zone      DMA, type      Movable      1      1      2      1      2      1      1      0      1      0      2
++Node    0, zone      DMA, type      Reserve      0      0      0      0      0      0      0      0      0      1      0
++Node    0, zone      DMA, type      Isolate      0      0      0      0      0      0      0      0      0      0      0
++Node    0, zone    DMA32, type    Unmovable    103     54     77      1      1      1     11      8      7      1      9
++Node    0, zone    DMA32, type  Reclaimable      0      0      2      1      0      0      0      0      1      0      0
++Node    0, zone    DMA32, type      Movable    169    152    113     91     77     54     39     13      6      1    452
++Node    0, zone    DMA32, type      Reserve      1      2      2      2      2      0      1      1      1      1      0
++Node    0, zone    DMA32, type      Isolate      0      0      0      0      0      0      0      0      0      0      0
++
++Number of blocks type     Unmovable  Reclaimable      Movable      Reserve      Isolate
++Node 0, zone      DMA            2            0            5            1            0
++Node 0, zone    DMA32           41            6          967            2            0
++
++Fragmentation avoidance in the kernel works by grouping pages of different
++migrate types into the same contiguous regions of memory called page blocks.
++A page block is typically the size of the default hugepage size e.g. 2MB on
++X86-64. By keeping pages grouped based on their ability to move, the kernel
++can reclaim pages within a page block to satisfy a high-order allocation.
++
++The pagetypinfo begins with information on the size of a page block. It
++then gives the same type of information as buddyinfo except broken down
++by migrate-type and finishes with details on how many page blocks of each
++type exist.
++
++If min_free_kbytes has been tuned correctly (recommendations made by hugeadm
++from libhugetlbfs http://sourceforge.net/projects/libhugetlbfs/), one can
++make an estimate of the likely number of huge pages that can be allocated
++at a given point in time. All the "Movable" blocks should be allocatable
++unless memory has been mlock()'d. Some of the Reclaimable blocks should
++also be allocatable although a lot of filesystem metadata may have to be
++reclaimed to achieve this.
++
+ ..............................................................................
+ 
+ meminfo:
+-- 
+1.6.5
 
-diff -Nru linux-2.6.33-rc7.orig/drivers/mfd/Kconfig linux-2.6.33-rc7/drivers/mfd/Kconfig
---- linux-2.6.33-rc7.orig/drivers/mfd/Kconfig	2010-02-07 00:17:12.000000000 +0200
-+++ linux-2.6.33-rc7/drivers/mfd/Kconfig	2010-02-18 19:56:19.000000000 +0200
-@@ -348,6 +348,14 @@
-  	  read/write functions for the devices to get access to this chip.
-  	  This chip embeds various other multimedia funtionalities as well.
-
-+config LPC_SCH
-+	tristate "Intel SCH LPC"
-+	depends on PCI
-+	select MFD_CORE
-+	help
-+	  LPC bridge function of the Intel SCH provides support for
-+	  System Management Bus and General Purpose I/O.
-+
-  endmenu
-
-  menu "Multimedia Capabilities Port drivers"
-diff -Nru linux-2.6.33-rc7.orig/drivers/mfd/lpc_sch.c linux-2.6.33-rc7/drivers/mfd/lpc_sch.c
---- linux-2.6.33-rc7.orig/drivers/mfd/lpc_sch.c	1970-01-01 02:00:00.000000000 +0200
-+++ linux-2.6.33-rc7/drivers/mfd/lpc_sch.c	2010-02-11 10:31:54.000000000 +0200
-@@ -0,0 +1,133 @@
-+/*
-+ *  lpc_sch.c - LPC interface for Intel Poulsbo SCH
-+ *
-+ *  LPC bridge function of the Intel SCH contains many other
-+ *  functional units, such as Interrupt controllers, Timers,
-+ *  Power Management, System Management, GPIO, RTC, and LPC
-+ *  Configuration Registers.
-+ *
-+ *  Copyright (c) 2010 CompuLab Ltd
-+ *  Author: Denis Turischev <denis@compulab.co.il>
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License 2 as published
-+ *  by the Free Software Foundation.
-+ *
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *  GNU General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License
-+ *  along with this program; see the file COPYING.  If not, write to
-+ *  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
-+ */
-+
-+#include <linux/init.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/errno.h>
-+#include <linux/acpi.h>
-+#include <linux/pci.h>
-+#include <linux/mfd/core.h>
-+
-+#define SMBASE		0x40
-+#define SMBUS_IO_SIZE	64
-+
-+#define GPIOBASE	0x44
-+#define GPIO_IO_SIZE	64
-+
-+static struct resource smbus_sch_resource = {
-+		.flags = IORESOURCE_IO,
-+};
-+
-+
-+static struct resource gpio_sch_resource = {
-+		.flags = IORESOURCE_IO,
-+};
-+
-+static struct mfd_cell lpc_sch_cells[] = {
-+	{
-+		.name = "isch_smbus",
-+		.num_resources = 1,
-+		.resources = &smbus_sch_resource,
-+	},
-+	{
-+		.name = "sch_gpio",
-+		.num_resources = 1,
-+		.resources = &gpio_sch_resource,
-+	},
-+};
-+
-+static struct pci_device_id lpc_sch_ids[] = {
-+	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_SCH_LPC) },
-+	{ 0, }
-+};
-+MODULE_DEVICE_TABLE(pci, lpc_sch_ids);
-+
-+static int __devinit lpc_sch_probe(struct pci_dev *dev,
-+				const struct pci_device_id *id)
-+{
-+	unsigned int base_addr_cfg;
-+	unsigned short base_addr;
-+
-+	pci_read_config_dword(dev, SMBASE, &base_addr_cfg);
-+	if (!(base_addr_cfg & (1 << 31))) {
-+		dev_err(&dev->dev, "Decode of the SMBus I/O range disabled\n");
-+		return -ENODEV;
-+	}
-+	base_addr = (unsigned short)base_addr_cfg;
-+	if (base_addr == 0) {
-+		dev_err(&dev->dev, "I/O space for SMBus uninitialized\n");
-+		return -ENODEV;
-+	}
-+
-+	smbus_sch_resource.start = base_addr;
-+	smbus_sch_resource.end = base_addr + SMBUS_IO_SIZE - 1;
-+
-+	pci_read_config_dword(dev, GPIOBASE, &base_addr_cfg);
-+	if (!(base_addr_cfg & (1 << 31))) {
-+		dev_err(&dev->dev, "Decode of the GPIO I/O range disabled\n");
-+		return -ENODEV;
-+	}
-+	base_addr = (unsigned short)base_addr_cfg;
-+	if (base_addr == 0) {
-+		dev_err(&dev->dev, "I/O space for GPIO uninitialized\n");
-+		return -ENODEV;
-+	}
-+
-+	gpio_sch_resource.start = base_addr;
-+	gpio_sch_resource.end = base_addr + GPIO_IO_SIZE - 1;
-+
-+	return mfd_add_devices(&dev->dev, -1,
-+			lpc_sch_cells, ARRAY_SIZE(lpc_sch_cells), NULL, 0);
-+}
-+
-+static void __devexit lpc_sch_remove(struct pci_dev *dev)
-+{
-+	mfd_remove_devices(&dev->dev);
-+}
-+
-+static struct pci_driver lpc_sch_driver = {
-+	.name		= "lpc_sch",
-+	.id_table	= lpc_sch_ids,
-+	.probe		= lpc_sch_probe,
-+	.remove		= __devexit_p(lpc_sch_remove),
-+};
-+
-+static int __init lpc_sch_init(void)
-+{
-+	return pci_register_driver(&lpc_sch_driver);
-+}
-+
-+static void __exit lpc_sch_exit(void)
-+{
-+	pci_unregister_driver(&lpc_sch_driver);
-+}
-+
-+module_init(lpc_sch_init);
-+module_exit(lpc_sch_exit);
-+
-+MODULE_AUTHOR("Denis Turischev <denis@compulab.co.il>");
-+MODULE_DESCRIPTION("LPC interface for Intel Poulsbo SCH");
-+MODULE_LICENSE("GPL");
-diff -Nru linux-2.6.33-rc7.orig/drivers/mfd/Makefile linux-2.6.33-rc7/drivers/mfd/Makefile
---- linux-2.6.33-rc7.orig/drivers/mfd/Makefile	2010-02-07 00:17:12.000000000 +0200
-+++ linux-2.6.33-rc7/drivers/mfd/Makefile	2010-02-10 15:15:40.000000000 +0200
-@@ -55,4 +55,5 @@
-  obj-$(CONFIG_AB3100_OTP)	+= ab3100-otp.o
-  obj-$(CONFIG_AB4500_CORE)	+= ab4500-core.o
-  obj-$(CONFIG_MFD_88PM8607)	+= 88pm8607.o
--obj-$(CONFIG_PMIC_ADP5520)	+= adp5520.o
-\ No newline at end of file
-+obj-$(CONFIG_PMIC_ADP5520)	+= adp5520.o
-+obj-$(CONFIG_LPC_SCH)		+= lpc_sch.o
