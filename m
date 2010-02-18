@@ -1,66 +1,38 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755530Ab0BRJyk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 04:54:40 -0500
-Received: from mail-yx0-f200.google.com ([209.85.210.200]:34519 "EHLO
-	mail-yx0-f200.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754776Ab0BRJyj (ORCPT
+	id S1755664Ab0BRJ4u (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 04:56:50 -0500
+Received: from mail-fx0-f220.google.com ([209.85.220.220]:36437 "EHLO
+	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755470Ab0BRJ4t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 04:54:39 -0500
+	Thu, 18 Feb 2010 04:56:49 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=LPe936GuHzTG7clbBv6Aik/Z+/mjQnkznEjhJz4S3I55PoYt3PAwlo8LHgRzl64pwO
-         iBQsH1f8F2MhV99qfo0PlbaEDOYtmSSdjyEr8VeYzFHpUA9ZWD4sv2FBnlii9cMrltEM
-         PfZlo54BiVSgpWE/SbtMoaLgjkt2Sa69AMXkQ=
-Date: Thu, 18 Feb 2010 01:54:33 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Christopher Heiny <cheiny@synaptics.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Allie Xiong <axiong@synaptics.com>,
-       William Manson <wmanson@synaptics.com>
-Subject: Re: [RFC PATCH 0/1] input/touchscreen: Synaptics Touchscreen Driver
-Message-ID: <20100218095433.GE13086@core.coreip.homeip.net>
-References: <1266446258-16209-1-git-send-email-cheiny@synaptics.com>
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=vOtFWwuj2W65K6THXfUD8qwty6ipkNwZO1BsrFfhwzy9QsHGGXnxlNVSEAl3JT1cHn
+         kC/tgBMtWuTzyHZNwtEkw4loUZJgGnaDJewZQrOSUkULzV4Q7U5de+MKbdvnfYltbxcN
+         /T5csHCDmj93Ma2MdCaV2VC2ozwwoya9YJEKQ=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1266446258-16209-1-git-send-email-cheiny@synaptics.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+In-Reply-To: <ff13bc9a1002180153g308b0f3dxb59959936d1e343b@mail.gmail.com>
+References: <1266406962-17463-1-git-send-email-luca@luca-barbieri.com>
+	 <1266406962-17463-10-git-send-email-luca@luca-barbieri.com>
+	 <87eikj54wp.fsf@basil.nowhere.org>
+	 <ff13bc9a1002180153g308b0f3dxb59959936d1e343b@mail.gmail.com>
+Date: Thu, 18 Feb 2010 10:56:47 +0100
+X-Google-Sender-Auth: 139285b4a92b2b87
+Message-ID: <ff13bc9a1002180156s2d0c94abwcd08b9fb2aa94158@mail.gmail.com>
+Subject: Re: [PATCH 09/10] x86-32: use SSE for atomic64_read/set if available
+From: Luca Barbieri <luca@luca-barbieri.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: mingo@elte.hu, hpa@zytor.com, a.p.zijlstra@chello.nl,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Christopher,
+Anyway, how about the previous patches?
 
-On Wed, Feb 17, 2010 at 02:37:36PM -0800, Christopher Heiny wrote:
-> [This is a resend of a patch sent earlier this month - apologies
-> for the duplication, but I botched some of the addressing in the
-> previous submission (neglecting to include Dmitry), as well as the
-> cover note.]
-> 
-> This patch adds an initial driver supporting Synaptics ClearPad
-> touchscreens that use the RMI4 protocol, as defined here:
-> 
-> http://www.synaptics.com/sites/default/files/511-000136-01_revA.pdf
-> 
-> 
-> Differences to the previous RFC PATCH sent include:
->     - proper line wrapping (sending with get-sendemail)
->     - extensive changes to make checkpatch.pl happy.  Not all errors were
->       eliminated, because in a couple of cases we couldn't figure out what the
->       problem was.
->     - i2c interface updated to reflect recent i2c changes in the kernel.
-> 
-
-
-Thank you for making the changes and yes, please CC me and linux-input
-mailing list on the subsequent submissions - this way you should
-normally get quicker response.
-
-PLease give me a couple days to look over the driver and ping me if you
-don't hear from me.
-
--- 
-Dmitry
+The SSE part is not essential and can be delayed.
