@@ -1,97 +1,109 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754973Ab0BRSpw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 13:45:52 -0500
-Received: from he.sipsolutions.net ([78.46.109.217]:43175 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751874Ab0BRSpu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 13:45:50 -0500
-Subject: Re: [2.6.33-rc5] Weird deadlock when shutting down
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>
-In-Reply-To: <alpine.LFD.2.00.1002180825000.4141@localhost.localdomain>
-References: <1264740107.20211.53.camel@pasglop>
-	 <1266485775.6539.6.camel@jlt3.sipsolutions.net>
-	 <alpine.LFD.2.00.1002180825000.4141@localhost.localdomain>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-jMq8qHulsVqCCIMujYd0"
-Date: Thu, 18 Feb 2010 19:45:35 +0100
-Message-ID: <1266518735.3829.4.camel@jlt3.sipsolutions.net>
+	id S1755092Ab0BRSrN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 13:47:13 -0500
+Received: from mga09.intel.com ([134.134.136.24]:2131 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754858Ab0BRSrL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Feb 2010 13:47:11 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,498,1262592000"; 
+   d="scan'208";a="493597095"
+Subject: Re: Uncool feature for TTM introduced by x86, pat: Use page flags
+ to track memtypes of RAM pages
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
+To: Jerome Glisse <glisse@freedesktop.org>
+Cc: "hpa@zytor.com" <hpa@zytor.com>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       "thellstrom@vmware.com" <thellstrom@vmware.com>,
+       "airlied@linux.ie" <airlied@linux.ie>,
+       "currojerez@riseup.net" <currojerez@riseup.net>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20100218163505.GA11509@localhost.localdomain>
+References: <20100218153032.GA4506@localhost.localdomain>
+	 <20100218163505.GA11509@localhost.localdomain>
+Content-Type: text/plain
+Organization: Intel Corp
+Date: Thu, 18 Feb 2010 10:46:09 -0800
+Message-Id: <1266518769.2909.29.camel@sbs-t61.sc.intel.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.29.3.2 
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2010-02-18 at 08:35 -0800, Jerome Glisse wrote:
+> On Thu, Feb 18, 2010 at 04:30:32PM +0100, Jerome Glisse wrote:
+> > Hi,
+> > 
+> > commit id: f58417409603d62f2eb23db4d2cf6853d84a1698
+> > 
+> > TTM is doing uncommon use of set_memory_wc|uc|wb for instance it's not
+> > uncommon for TTM to change memory type from wc to uc or from uc to wc.
+> > Since x86, pat: Use page flags to track memtypes of RAM pages (commit
+> > id above) this isn't allowed anymore, before going from uc to wc or
+> > wc to uc we first have to free the memtype by going through wb this
+> > means an extra step which likely lead to some overhead (i guess that
+> > uc -> wc or wc -> uc won't trigger massive tlb/cpu flush while
+> > uc -> wb -> wc or wc -> wb -> uc will). reserve_ram_pages_type is the
+> > function which will check that memory is wb thus enforcing us to go
+> > through wb step.
+> > 
+> > Can we modify the interface to support again changing from uc to wc
+> > or wc to uc ? (i can try to do a patch for that).
+> 
+> Ok, we are likely not hit by wc -> uc or uc -> wc change (which is dumb
+> but i haven't yet understand what is exactly happening for the user)
+> My guess is that on non PAT get_page_memtype always return -1
+> Thus i think we will need to export a function bool pat_is_enabled() so
+> ttm can pickup the proper path in the unlikely/broken case of
+> wc -> uc.
 
---=-jMq8qHulsVqCCIMujYd0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Sure. We can definitely look into extending PAT API if there is a need.
 
-On Thu, 2010-02-18 at 08:31 -0800, Linus Torvalds wrote:
+But it looks like you have a bug in the commit
+db78e27de7e29a6db6be7caf607cf803d84094aa causing this performance
+regression.
 
-> > > halt/4071 is trying to acquire lock:
-> > >  (s_active){++++.+}, at: [<c0000000001ef868>]
-> > > .sysfs_addrm_finish+0x58/0xc0
-> > >=20
-> > > but task is already holding lock:
-> > >  (&per_cpu(cpu_policy_rwsem, cpu)){+.+.+.}, at:
-> [<c0000000004cd6ac>]
-> > > .lock_policy_rwsem_write+0x84/0xf4
-> > >=20
-> > > which lock already depends on the new lock.
->=20
-> You don't have a full backtrace for these things?
+> > If no, we have a sever regression on non PAT arch :
+> > http://bugzilla.kernel.org/show_bug.cgi?id=15328
 
-No, it deadlocks right there, unfortunately.
+This is the commit db78e27de7e29a6db6be7caf607cf803d84094aa:
 
-> We've had lots of trouble with the cpu governors, and I suspect the=20
-> problem isn't new, but the lockdep warning is likely new (see commit=20
-> 846f99749ab68bbc7f75c74fec305de675b1a1bf: "sysfs: Add lockdep
-> annotations=20
-> for the sysfs active reference").
->=20
-> So it is likely to be an old issue that (a) now gets warned about and
-> (b) might have had timing changes enough to trigger it.
+-       switch (c_state) {
+-       case tt_cached:
+-               return set_pages_wb(p, 1);
+-       case tt_wc:
+-           return set_memory_wc((unsigned long) page_address(p), 1);
+-       default:
+-               return set_pages_uc(p, 1);
++       if (get_page_memtype(p) != -1) {
++               /* p isn't in the default caching state, set it to
++                * writeback first to free its current memtype. */
++
++               ret = set_pages_wb(p, 1);
++               if (ret)
++                       return ret;
+        }
++
++       if (c_state == tt_wc)
++               ret = set_memory_wc((unsigned long) page_address(p), 1);
++       else if (c_state == tt_uncached)
++               ret = set_pages_uc(p, 1);
++
++       return ret;
 
-Well, it used to not deadlock and actually shut down the machine :) So
-in that sense it's definitely new. It might have printed a lockdep
-warning before, which you wouldn't normally see since the machine turns
-off right after this.
+You are not setting the pages back to wb() before you free it. And this
+is the reason for your performance issue.
 
-> I suspect it is G5-specific (or specific to whatever CPU frequency
-> code=20
-> that gets used there), since I think we'd have had lots of reports if
-> this=20
-> happened on x86.
+We can fix it by changing the if check to something like:
 
-Yeah, that's puzzling me as well.
+if (get_page_memtype(p) != -1 || c_state == tt_cached)
 
-johannes
+thanks,
+suresh
 
---=-jMq8qHulsVqCCIMujYd0
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
 
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABAgAGBQJLfYrKAAoJEODzc/N7+QmaFUIQAK3l2asXHlwPg6zYbHeBWhYm
-Qm49GvWw6UEYelwTWwhLgJUJeZspMeW5ROBbRL0DH+I1qSBjq2B2Yp9dEHh96oIw
-brdnd+JZmbR/Rx1vb9CfN+D/cEegj8HY3fvLYF0Tl0P8aj60bcky1xjdFkJhsOTl
-qLJQFPFTDdrqpQ9S7ZxAumuLFz/R/qhcNl9/ir+B2ptSn3hqA2z6j80bfZckzj/0
-U74E59w9kRzlq+NtoxlNM41JMEbY0lAow2Z53oaDS3XyXr0uW5NZuX8w1lcEjqvj
-zNboicF+8CLW86Pmcf3sZl/WxDClGjt8O0tcy0JWJN7CwXS1BA8GcGrTSU7kZxVw
-SnEiKWCFvCYTYhppQebGjRmbR23L1ahDiS+KGOx9OpyKjOXyUYwS/6JYs4fsN7rv
-qQUKPPyEEaS4MQCZKyGOKl4gCLQcVuXoXTwwUCvmC5+BYmSWmLRS0XjC5C18XS/y
-AvGn4ehH93146Wvwnd6Ckc2PKrDkiouu9L2rcySSKQ01Y8na+UhMKMbIEhFxaTLA
-sL7N9E6ljf5AEMz/Ck+0QE7QHhxdtk47uQc61IxoDwkfyR0IRnyXJwUoJSw3n1qx
-+L5ZGtWjy6Y6eQ1/4E44xlZ/CBDWgzkRFFVP7U65X1r/qUi34v2pjPk0GLsxgXJr
-lWr1MEqdrqWIwMw48aiP
-=/VWd
------END PGP SIGNATURE-----
-
---=-jMq8qHulsVqCCIMujYd0--
 
