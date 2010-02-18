@@ -1,46 +1,52 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754198Ab0BRU0k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 15:26:40 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:59920 "EHLO
+	id S1754413Ab0BRU2D (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 15:28:03 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:60913 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750993Ab0BRU0h (ORCPT
+	with ESMTP id S1751425Ab0BRU17 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 15:26:37 -0500
-Date: Thu, 18 Feb 2010 21:26:27 +0100
+	Thu, 18 Feb 2010 15:27:59 -0500
+Date: Thu, 18 Feb 2010 21:27:54 +0100
 From: Andi Kleen <andi@firstfloor.org>
-To: Luca Barbieri <luca@luca-barbieri.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
-       mingo@elte.hu, a.p.zijlstra@chello.nl, akpm@linux-foundation.org,
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Jerome Glisse <glisse@freedesktop.org>,
+       suresh.b.siddha@intel.com, venkatesh.pallipadi@intel.com,
+       thellstrom@vmware.com, airlied@linux.ie, currojerez@riseup.net,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 09/10] x86-32: use SSE for atomic64_read/set if
-	available
-Message-ID: <20100218202627.GH5964@basil.fritz.box>
-References: <1266406962-17463-1-git-send-email-luca@luca-barbieri.com> <1266406962-17463-10-git-send-email-luca@luca-barbieri.com> <87eikj54wp.fsf@basil.nowhere.org> <ff13bc9a1002180153g308b0f3dxb59959936d1e343b@mail.gmail.com> <20100218101156.GE5964@basil.fritz.box> <ff13bc9a1002180227j70e0748ag49d88c3034e3900d@mail.gmail.com> <4B7D5BB4.4000307@zytor.com> <ff13bc9a1002181014x5625f418j69f9702bc54c6381@mail.gmail.com>
+Subject: Re: Uncool feature for TTM introduced by x86, pat: Use page flags
+	to track memtypes of RAM pages
+Message-ID: <20100218202753.GI5964@basil.fritz.box>
+References: <20100218153032.GA4506@localhost.localdomain> <87aav65u9g.fsf@basil.nowhere.org> <4B7D7AF9.9060600@zytor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <ff13bc9a1002181014x5625f418j69f9702bc54c6381@mail.gmail.com>
+In-Reply-To: <4B7D7AF9.9060600@zytor.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> memcpy/memset/etc. (assuming SSE is the best option for these at least
-> on some processors) and checksums come to mind.
+On Thu, Feb 18, 2010 at 09:38:01AM -0800, H. Peter Anvin wrote:
+> On 02/18/2010 09:27 AM, Andi Kleen wrote:
+> > Jerome Glisse <glisse@freedesktop.org> writes:
+> >>
+> >> Can we modify the interface to support again changing from uc to wc
+> >> or wc to uc ? (i can try to do a patch for that).
+> > 
+> > At least on Intel CPUs that support self-snoop (all modern
+> > ones) that should really be very cheap.
+> > 
+> 
+> The UC/WC transition should be particularly trivial; I don't see any
+> reason it should have to go through any other procedure on *any* CPU --
+> selfsnoop shouldn't even figure into it, since neither UC nor WC
+> actually caches anything.  For the WC->UC direction, all we should need
+> to do is to flush the write combiners; a simple wmb() will do that.
 
-Typically SSE advantages only come to play with very large data sets,
-and the kernel's are not big enough. I tried it some time ago.
-
-That said you can already use kernel_fpu_begin/end of course
-and it's used in some very rare cases.
-
-> Also non-temporal SSE moves might be useful for things like memory
-> compaction without clobbering caches.
-
-You don't need SSE for non temporal moves.
+I'm not sure that is sanctioned by the SDM rules; AFAIK they don't
+make any special exception for this case.
 
 -Andi
-
 -- 
 ak@linux.intel.com -- Speaking for myself only.
