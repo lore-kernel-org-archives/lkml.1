@@ -1,38 +1,61 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757786Ab0BRLbx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 06:31:53 -0500
-Received: from stinky.trash.net ([213.144.137.162]:62993 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753045Ab0BRLbv (ORCPT
+	id S1757742Ab0BRLit (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 06:38:49 -0500
+Received: from tx2ehsobe002.messaging.microsoft.com ([65.55.88.12]:11974 "EHLO
+	TX2EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754354Ab0BRLir (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 06:31:51 -0500
-Message-ID: <4B7D2522.6070101@trash.net>
-Date: Thu, 18 Feb 2010 12:31:46 +0100
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
+	Thu, 18 Feb 2010 06:38:47 -0500
+X-SpamScore: 1
+X-BigFish: VPS1(zzzz1202hzzz32i6bh87h61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-DOMAIN-IP-MATCH: fail
+X-WSS-ID: 0KY1CCC-02-FSP-02
+X-M-MSG: 
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Avi Kivity <avi@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>
+CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 0/10] Nested SVM fixes (and Win7-64bit bringup)
+Date: Thu, 18 Feb 2010 12:38:25 +0100
+Message-ID: <1266493115-28386-1-git-send-email-joerg.roedel@amd.com>
+X-Mailer: git-send-email 1.6.6
+X-OriginalArrivalTime: 18 Feb 2010 11:38:37.0358 (UTC) FILETIME=[E8F33CE0:01CAB08E]
 MIME-Version: 1.0
-To: Simon Horman <horms@verge.net.au>
-CC: netdev@vger.kernel.org, lvs-devel@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Venkata Mohan Reddy <mohanreddykv@gmail.com>,
-       Wensong Zhang <wensong@linux-vs.org>, Julian Anastasov <ja@ssi.bg>
-Subject: Re: [IPVS] SCTP Trasport Loadbalancing Support
-References: <20100218010642.GD16530@verge.net.au>
-In-Reply-To: <20100218010642.GD16530@verge.net.au>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
+X-Reverse-DNS: ausb3extmailp02.amd.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Simon Horman wrote:
-> From: Venkata Mohan Reddy <mohanreddykv@gmail.com>
-> 
-> Enhance IPVS to load balance SCTP transport protocol packets. This is done
-> based on the SCTP rfc 4960. All possible control chunks have been taken
-> care. The state machine used in this code looks some what lengthy. I tried
-> to make the state machine easy to understand.
+Hi,
 
-Applied, thanks.
+here is a couple of fixes for the nested SVM implementation. I collected these
+fixes mostly when trying to get Windows 7 64bit running as an L2 guest. Most
+important fixes in this set make lazy fpu switching working with nested SVM and
+the nested tpr handling fixes. Without the later fix the l1 guest freezes when
+trying to run win7 as l2 guest. Please review and comment on these patches :-)
+
+	Joerg
+
+Diffstat:
+
+ arch/x86/kvm/svm.c   |  187 ++++++++++++++++++++++++++++++++++----------------
+ arch/x86/kvm/trace.h |   12 ++--
+ 2 files changed, 133 insertions(+), 66 deletions(-)
+
+Shortlog:
+
+Joerg Roedel (10):
+      KVM: SVM: Don't use kmap_atomic in nested_svm_map
+      KVM: SVM: Fix wrong interrupt injection in enable_irq_windows
+      KVM: SVM: Fix schedule-while-atomic on nested exception handling
+      KVM: SVM: Sync all control registers on nested vmexit
+      KVM: SVM: Annotate nested_svm_map with might_sleep()
+      KVM: SVM: Fix nested msr intercept handling
+      KVM: SVM: Don't sync nested cr8 to lapic and back
+      KVM: SVM: Activate nested state only when guest state is complete
+      KVM: SVM: Make lazy FPU switching work with nested svm
+      KVM: SVM: Remove newlines from nested trace points
+
+
