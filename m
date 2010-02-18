@@ -1,122 +1,51 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752185Ab0BRGTf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 01:19:35 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:44415 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751155Ab0BRGTd (ORCPT
+	id S1751847Ab0BRG4T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 01:56:19 -0500
+Received: from smtp-out002.kontent.com ([81.88.40.216]:54113 "EHLO
+	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751143Ab0BRG4S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 01:19:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=p9/IPFqIx2sHcWmlB6kc21RUASqnRCA1uxxRNXwFxcCBjrKxNLUIUQb8qxMhBpv5aQ
-         ZD65uGsHh+r+jGgPZw7UTNuzJudGKRFsPxKaVNb+vf1pA05WlYhgkD855RCKBwaYFpS/
-         0eJtfY6220ad+JmEZPAFwxfMG7+xr3ovoU398=
-Date: Thu, 18 Feb 2010 07:19:23 +0100
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: Michal Marek <mmarek@suse.cz>
-Cc: Borislav Petkov <bp@amd64.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>, Jamie Lokier <jamie@shareable.org>,
-       Roland Dreier <rdreier@cisco.com>, Al Viro <viro@ZenIV.linux.org.uk>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Brian Gerst <brgerst@gmail.com>
-Subject: Re: [PATCH 2/5] bitops: compile time optimization for
- hweight_long(CONSTANT)
-Message-ID: <20100218061923.GA1594@liondog.tnic>
-Mail-Followup-To: Borislav Petkov <petkovbb@googlemail.com>,
-	Michal Marek <mmarek@suse.cz>, Borislav Petkov <bp@amd64.org>,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	linux-kbuild <linux-kbuild@vger.kernel.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Wu Fengguang <fengguang.wu@intel.com>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Jamie Lokier <jamie@shareable.org>,
-	Roland Dreier <rdreier@cisco.com>,
-	Al Viro <viro@ZenIV.linux.org.uk>,
-	"linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-	Ingo Molnar <mingo@elte.hu>, Brian Gerst <brgerst@gmail.com>
-References: <20100211172424.GB19779@aftab>
- <4B743F7D.3090605@zytor.com>
- <20100212170649.GC3114@aftab>
- <4B758FC0.1020600@zytor.com>
- <20100212174751.GD3114@aftab>
- <4B75A66A.70005@zytor.com>
- <4B7BF5D6.3030701@suse.cz>
- <20100217172040.GC13429@aftab>
- <4B7C27D8.9050408@suse.cz>
- <4B7C29C1.10906@suse.cz>
+	Thu, 18 Feb 2010 01:56:18 -0500
+From: Oliver Neukum <oliver@neukum.org>
+To: "Gadiyar, Anand" <gadiyar@ti.com>
+Subject: Re: USB mass storage and ARM cache coherency
+Date: Thu, 18 Feb 2010 07:56:14 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.33-rc6-0.1-default; KDE/4.3.1; x86_64; ; )
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       "Shilimkar, Santosh" <santosh.shilimkar@ti.com>,
+       "Russell King - ARM Linux" <linux@arm.linux.org.uk>,
+       Catalin Marinas <catalin.marinas@arm.com>, Pavel Machek <pavel@ucw.cz>,
+       Greg KH <greg@kroah.com>,
+       Matthew Dharm <mdharm-kernel@one-eyed-alien.net>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       Ming Lei <tom.leiming@gmail.com>,
+       Sebastian Siewior <bigeasy@linutronix.de>,
+       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "linux-arm-kernel" <linux-arm-kernel@lists.infradead.org>,
+       "Mankad, Maulik Ojas" <x0082077@ti.com>
+References: <EAF47CD23C76F840A9E7FCE10091EFAB02C3CF84D1@dbde02.ent.ti.com> <Pine.LNX.4.44L0.1002171201190.1913-100000@iolanthe.rowland.org> <5A47E75E594F054BAF48C5E4FC4B92AB03216236D6@dbde02.ent.ti.com>
+In-Reply-To: <5A47E75E594F054BAF48C5E4FC4B92AB03216236D6@dbde02.ent.ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <4B7C29C1.10906@suse.cz>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201002180756.14100.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 17, 2010 at 06:39:13PM +0100, Michal Marek wrote:
-> It wouldn't work actually, because such variable would then apply to all
-> hweight.o targets in the tree. But another way would be:
+Am Mittwoch, 17. Februar 2010 21:30:24 schrieb Gadiyar, Anand:
+> > Why do you skip mapping the setup packet but not the data packet?
+> > 
 > 
-> arch/x86/Kconfig
-> config ARCH_HWEIGHT_CFLAGS
->         string
->         default "..." if X86_32
->         default "..." if X86_64
-> 
-> lib/Makefile
-> CFLAGS_hweight.o = $(CONFIG_ARCH_HWEIGHT_CFLAGS)
+> I think that's oversight. For this controller, we need to skip mapping
+> all buffers used to do transfers on EP0, which is all control transfers.
 
-Yep, this works, albeit with a small adjustment since
-CONFIG_ARCH_HWEIGHT_CFLAGS is quoted in the Kconfig and the quotes
-appear in the $(CC) call like this:
+One thing more. Do you have an issue with EP 0 only or all control
+endpoints? EP 0 must be control, but devices are within spec if they
+have multiple control endpoints provided EP 0 is control.
 
-gcc -Wp,-MD,lib/.hweight.o.d  ... "-fcall-saved-ecx..."
-
-which I fixed like this (idea reused from the make manual):
-
----
- source "init/Kconfig"
-diff --git a/lib/Makefile b/lib/Makefile
-index 3b0b4a6..e2ad17c 100644
---- a/lib/Makefile
-+++ b/lib/Makefile
-@@ -39,7 +39,10 @@ lib-$(CONFIG_RWSEM_XCHGADD_ALGORITHM) += rwsem.o
- lib-$(CONFIG_GENERIC_FIND_FIRST_BIT) += find_next_bit.o
- lib-$(CONFIG_GENERIC_FIND_NEXT_BIT) += find_next_bit.o
- obj-$(CONFIG_GENERIC_FIND_LAST_BIT) += find_last_bit.o
-+
-+CFLAGS_hweight.o = $(subst $(quote),,$(CONFIG_ARCH_HWEIGHT_CFLAGS))
- obj-$(CONFIG_GENERIC_HWEIGHT) += hweight.o
-+
- obj-$(CONFIG_LOCK_KERNEL) += kernel_lock.o
- obj-$(CONFIG_DEBUG_PREEMPT) += smp_processor_id.o
- obj-$(CONFIG_DEBUG_LIST) += list_debug.o
-diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
-index f9bdf26..cbcd654 100644
---- a/scripts/Makefile.lib
-+++ b/scripts/Makefile.lib
-@@ -245,3 +245,7 @@ quiet_cmd_lzo = LZO    $@
- cmd_lzo = (cat $(filter-out FORCE,$^) | \
- 	lzop -9 && $(call size_append, $(filter-out FORCE,$^))) > $@ || \
- 	(rm -f $@ ; false)
-+
-+# misc stuff
-+# ---------------------------------------------------------------------------
-+quote:="
-
-
-
-I'm open for better suggestions though.
-
--- 
-Regards/Gruss,
-    Boris.
+	Regards
+		Oliver
