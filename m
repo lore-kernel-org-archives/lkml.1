@@ -1,72 +1,81 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758618Ab0BRRGq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 12:06:46 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:49150 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755850Ab0BRRGh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 12:06:37 -0500
-Date: Thu, 18 Feb 2010 17:06:25 +0000
-From: Eric B Munson <ebmunson@us.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
-Subject: Re: perf record and multiple events
-Message-ID: <20100218170625.GB3856@us.ibm.com>
-References: <20100217173822.GA4137@us.ibm.com>
- <1266500821.26719.649.camel@laptop>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="98e8jtXdkpgskNou"
-Content-Disposition: inline
-In-Reply-To: <1266500821.26719.649.camel@laptop>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	id S1758717Ab0BRRGz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 12:06:55 -0500
+Received: from rcsinet11.oracle.com ([148.87.113.123]:53858 "EHLO
+	rcsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758653Ab0BRRGv (ORCPT
+	<rfc822;<linux-kernel@vger.kernel.org>>);
+	Thu, 18 Feb 2010 12:06:51 -0500
+From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+To: linux-kernel@vger.kernel.org, fujita.tomonori@lab.ntt.co.jp,
+       chrisw@sous-sol.org, iommu@lists.linux-foundation.org,
+       dwmw2@infradead.org, alex.williamson@hp.com
+Cc: jeremy@goop.org, Ian.Campbell@eu.citrix.com,
+       Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+Subject: [PATCH 08/10] swiotlb: Re-order the function declerations.
+Date: Thu, 18 Feb 2010 11:27:04 -0500
+Message-Id: <1266510426-6815-9-git-send-email-konrad.wilk@oracle.com>
+X-Mailer: git-send-email 1.6.2.5
+In-Reply-To: <1266510426-6815-8-git-send-email-konrad.wilk@oracle.com>
+References: <1266510426-6815-1-git-send-email-konrad.wilk@oracle.com>
+ <1266510426-6815-2-git-send-email-konrad.wilk@oracle.com>
+ <1266510426-6815-3-git-send-email-konrad.wilk@oracle.com>
+ <1266510426-6815-4-git-send-email-konrad.wilk@oracle.com>
+ <1266510426-6815-5-git-send-email-konrad.wilk@oracle.com>
+ <1266510426-6815-6-git-send-email-konrad.wilk@oracle.com>
+ <1266510426-6815-7-git-send-email-konrad.wilk@oracle.com>
+ <1266510426-6815-8-git-send-email-konrad.wilk@oracle.com>
+X-Source-IP: acsmt355.oracle.com [141.146.40.155]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090201.4B7D6E9F.0089:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Move to the top the function declerations dealing with startup/shutdown
+of SWIOTLB. This is in preperation of next set of patches which export
+bookkeeping functions out of swiotlb.c. This will move all of them
+at the top of the header file, while the dma_ops functions are the end
+of the header file.
 
---98e8jtXdkpgskNou
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+---
+ include/linux/swiotlb.h |   15 ++++++++-------
+ 1 files changed, 8 insertions(+), 7 deletions(-)
 
-On Thu, 18 Feb 2010, Peter Zijlstra wrote:
+diff --git a/include/linux/swiotlb.h b/include/linux/swiotlb.h
+index febedcf..84e7a53 100644
+--- a/include/linux/swiotlb.h
++++ b/include/linux/swiotlb.h
+@@ -23,7 +23,15 @@ extern int swiotlb_force;
+ #define IO_TLB_SHIFT 11
+ 
+ extern void swiotlb_init(int verbose);
++#ifdef CONFIG_SWIOTLB
++extern void __init swiotlb_free(void);
++#else
++static inline void swiotlb_free(void) { }
++#endif
++extern void swiotlb_print_info(void);
++
+ 
++/* IOMMU functions. */
+ extern void
+ *swiotlb_alloc_coherent(struct device *hwdev, size_t size,
+ 			dma_addr_t *dma_handle, gfp_t flags);
+@@ -89,11 +97,4 @@ swiotlb_dma_mapping_error(struct device *hwdev, dma_addr_t dma_addr);
+ extern int
+ swiotlb_dma_supported(struct device *hwdev, u64 mask);
+ 
+-#ifdef CONFIG_SWIOTLB
+-extern void __init swiotlb_free(void);
+-#else
+-static inline void swiotlb_free(void) { }
+-#endif
+-
+-extern void swiotlb_print_info(void);
+ #endif /* __LINUX_SWIOTLB_H */
+-- 
+1.6.2.5
 
-> On Wed, 2010-02-17 at 17:38 +0000, Eric B Munson wrote:
-> > While testing perf record I found that when multiple events are specifi=
-ed
-> > on the command line, i.e. perf record -e dTLB-misses -e cache-misses,
-> > the are lumped into a single category on output from perf report.  The
-> > same event specification gives two event categories when using perf sta=
-t.
-> > Is this working as expected or should I see seperate entries in the rep=
-ort
-> > for each event?
->=20
-> The tools currently lack support for this, but patches are welcome.
->=20
-
-Thanks, I'll start looking into it.
-
---=20
-Eric B Munson
-IBM Linux Technology Center
-ebmunson@us.ibm.com
-
-
---98e8jtXdkpgskNou
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkt9c5EACgkQsnv9E83jkzounwCghe7RxBxg3bqRx7UaWoJV/2bd
-JSMAoLsUg8O7Z9F9zIUFiOasj9zvKdUi
-=XE4f
------END PGP SIGNATURE-----
-
---98e8jtXdkpgskNou--
