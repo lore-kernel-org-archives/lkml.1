@@ -1,18 +1,17 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932314Ab0BRBDQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 20:03:16 -0500
-Received: from mail.perches.com ([173.55.12.10]:1060 "EHLO mail.perches.com"
+	id S932226Ab0BRBCj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 20:02:39 -0500
+Received: from mail.perches.com ([173.55.12.10]:1063 "EHLO mail.perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932173Ab0BRBCO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 20:02:14 -0500
+	id S1756276Ab0BRBCP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 20:02:15 -0500
 From: Joe Perches <joe@perches.com>
 To: netdev@vger.kernel.org
-Cc: Matt Carlson <mcarlson@broadcom.com>, Michael Chan <mchan@broadcom.com>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH net-next 13/15] drivers/net/tg3.c: Use (pr|netdev)_<level> macro helpers
-Date: Wed, 17 Feb 2010 17:02:00 -0800
-Message-Id: <89936828c4a4c914b849cf8c96985d62fb612e55.1266454576.git.joe@perches.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH net-next 15/15] drivers/net/yellowfin.c: Use (pr|netdev)_<level> macro helpers
+Date: Wed, 17 Feb 2010 17:02:02 -0800
+Message-Id: <bc88729f2b8e7da71f2f3e2c760444a0f855b3a8.1266454576.git.joe@perches.com>
 X-Mailer: git-send-email 1.7.0.14.g7e948
 In-Reply-To: <cover.1266454575.git.joe@perches.com>
 References: <cover.1266454575.git.joe@perches.com>
@@ -24,625 +23,393 @@ Add #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 Remove #define PFX
 Use pr_<level>
 Use netdev_<level>
-Remove periods from most formats
+Convert formats like %8.8 to %08
+Remove periods from formats
 Coalesce long formats
 
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- drivers/net/tg3.c |  261 +++++++++++++++++++++--------------------------------
- 1 files changed, 104 insertions(+), 157 deletions(-)
+ drivers/net/yellowfin.c |  162 +++++++++++++++++++++++------------------------
+ 1 files changed, 78 insertions(+), 84 deletions(-)
 
-diff --git a/drivers/net/tg3.c b/drivers/net/tg3.c
-index 385434f..1bb764c 100644
---- a/drivers/net/tg3.c
-+++ b/drivers/net/tg3.c
-@@ -1099,8 +1099,7 @@ static int tg3_mdio_init(struct tg3 *tp)
+diff --git a/drivers/net/yellowfin.c b/drivers/net/yellowfin.c
+index 5c88024..e4aab4d 100644
+--- a/drivers/net/yellowfin.c
++++ b/drivers/net/yellowfin.c
+@@ -23,12 +23,12 @@
  
- 	i = mdiobus_register(tp->mdio_bus);
- 	if (i) {
--		printk(KERN_WARNING "%s: mdiobus_reg failed (0x%x)\n",
--			tp->dev->name, i);
-+		netdev_warn(tp->dev, "mdiobus_reg failed (0x%x)\n", i);
- 		mdiobus_free(tp->mdio_bus);
- 		return i;
- 	}
-@@ -1108,7 +1107,7 @@ static int tg3_mdio_init(struct tg3 *tp)
- 	phydev = tp->mdio_bus->phy_map[TG3_PHY_MII_ADDR];
+ */
  
- 	if (!phydev || !phydev->drv) {
--		printk(KERN_WARNING "%s: No PHY devices\n", tp->dev->name);
-+		netdev_warn(tp->dev, "No PHY devices\n");
- 		mdiobus_unregister(tp->mdio_bus);
- 		mdiobus_free(tp->mdio_bus);
- 		return -ENODEV;
-@@ -1252,27 +1251,22 @@ static void tg3_ump_link_report(struct tg3 *tp)
- static void tg3_link_report(struct tg3 *tp)
- {
- 	if (!netif_carrier_ok(tp->dev)) {
--		if (netif_msg_link(tp))
--			printk(KERN_INFO PFX "%s: Link is down.\n",
--			       tp->dev->name);
-+		netif_info(tp, link, tp->dev, "Link is down\n");
- 		tg3_ump_link_report(tp);
- 	} else if (netif_msg_link(tp)) {
--		printk(KERN_INFO PFX "%s: Link is up at %d Mbps, %s duplex.\n",
--		       tp->dev->name,
--		       (tp->link_config.active_speed == SPEED_1000 ?
--			1000 :
--			(tp->link_config.active_speed == SPEED_100 ?
--			 100 : 10)),
--		       (tp->link_config.active_duplex == DUPLEX_FULL ?
--			"full" : "half"));
--
--		printk(KERN_INFO PFX
--		       "%s: Flow control is %s for TX and %s for RX.\n",
--		       tp->dev->name,
--		       (tp->link_config.active_flowctrl & FLOW_CTRL_TX) ?
--		       "on" : "off",
--		       (tp->link_config.active_flowctrl & FLOW_CTRL_RX) ?
--		       "on" : "off");
-+		netdev_info(tp->dev, "Link is up at %d Mbps, %s duplex\n",
-+			    (tp->link_config.active_speed == SPEED_1000 ?
-+			     1000 :
-+			     (tp->link_config.active_speed == SPEED_100 ?
-+			      100 : 10)),
-+			    (tp->link_config.active_duplex == DUPLEX_FULL ?
-+			     "full" : "half"));
++#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 +
-+		netdev_info(tp->dev, "Flow control is %s for TX and %s for RX\n",
-+			    (tp->link_config.active_flowctrl & FLOW_CTRL_TX) ?
-+			    "on" : "off",
-+			    (tp->link_config.active_flowctrl & FLOW_CTRL_RX) ?
-+			    "on" : "off");
- 		tg3_ump_link_report(tp);
- 	}
- }
-@@ -1471,7 +1465,7 @@ static int tg3_phy_init(struct tg3 *tp)
- 	phydev = phy_connect(tp->dev, dev_name(&phydev->dev), tg3_adjust_link,
- 			     phydev->dev_flags, phydev->interface);
- 	if (IS_ERR(phydev)) {
--		printk(KERN_ERR "%s: Could not attach to PHY\n", tp->dev->name);
-+		netdev_err(tp->dev, "Could not attach to PHY\n");
- 		return PTR_ERR(phydev);
- 	}
+ #define DRV_NAME	"yellowfin"
+ #define DRV_VERSION	"2.1"
+ #define DRV_RELDATE	"Sep 11, 2006"
  
-@@ -2500,8 +2494,8 @@ static int tg3_set_power_state(struct tg3 *tp, pci_power_t state)
- 		break;
+-#define PFX DRV_NAME ": "
+-
+ /* The user-configurable values.
+    These may be modified when a driver module is loaded.*/
  
- 	default:
--		printk(KERN_ERR PFX "%s: Invalid power state (D%d) requested\n",
--			tp->dev->name, state);
-+		netdev_err(tp->dev, "Invalid power state (D%d) requested\n",
-+			   state);
- 		return -EINVAL;
- 	}
+@@ -399,7 +399,7 @@ static int __devinit yellowfin_init_one(struct pci_dev *pdev,
  
-@@ -4341,10 +4335,8 @@ static void tg3_tx_recover(struct tg3 *tp)
- 	BUG_ON((tp->tg3_flags & TG3_FLAG_MBOX_WRITE_REORDER) ||
- 	       tp->write32_tx_mbox == tg3_write_indirect_mbox);
- 
--	printk(KERN_WARNING PFX "%s: The system may be re-ordering memory-"
--	       "mapped I/O cycles to the network device, attempting to "
--	       "recover. Please report the problem to the driver maintainer "
--	       "and include system chipset information.\n", tp->dev->name);
-+	netdev_warn(tp->dev, "The system may be re-ordering memory-mapped I/O cycles to the network device, attempting to recover\n"
-+		    "Please report the problem to the driver maintainer and include system chipset information.\n");
- 
- 	spin_lock(&tp->lock);
- 	tp->tg3_flags |= TG3_FLAG_TX_RECOVERY_PENDING;
-@@ -5263,8 +5255,7 @@ static int tg3_restart_hw(struct tg3 *tp, int reset_phy)
- 
- 	err = tg3_init_hw(tp, reset_phy);
- 	if (err) {
--		printk(KERN_ERR PFX "%s: Failed to re-initialize device, "
--		       "aborting.\n", tp->dev->name);
-+		netdev_err(tp->dev, "Failed to re-initialize device, aborting\n");
- 		tg3_halt(tp, RESET_KIND_SHUTDOWN, 1);
- 		tg3_full_unlock(tp);
- 		del_timer_sync(&tp->timer);
-@@ -5337,10 +5328,10 @@ out:
- 
- static void tg3_dump_short_state(struct tg3 *tp)
- {
--	printk(KERN_ERR PFX "DEBUG: MAC_TX_STATUS[%08x] MAC_RX_STATUS[%08x]\n",
--	       tr32(MAC_TX_STATUS), tr32(MAC_RX_STATUS));
--	printk(KERN_ERR PFX "DEBUG: RDMAC_STATUS[%08x] WDMAC_STATUS[%08x]\n",
--	       tr32(RDMAC_STATUS), tr32(WDMAC_STATUS));
-+	netdev_err(tp->dev, "DEBUG: MAC_TX_STATUS[%08x] MAC_RX_STATUS[%08x]\n",
-+		   tr32(MAC_TX_STATUS), tr32(MAC_RX_STATUS));
-+	netdev_err(tp->dev, "DEBUG: RDMAC_STATUS[%08x] WDMAC_STATUS[%08x]\n",
-+		   tr32(RDMAC_STATUS), tr32(WDMAC_STATUS));
- }
- 
- static void tg3_tx_timeout(struct net_device *dev)
-@@ -5348,8 +5339,7 @@ static void tg3_tx_timeout(struct net_device *dev)
- 	struct tg3 *tp = netdev_priv(dev);
- 
- 	if (netif_msg_tx_err(tp)) {
--		printk(KERN_ERR PFX "%s: transmit timed out, resetting\n",
--		       dev->name);
-+		netdev_err(dev, "transmit timed out, resetting\n");
- 		tg3_dump_short_state(tp);
- 	}
- 
-@@ -5513,8 +5503,7 @@ static netdev_tx_t tg3_start_xmit(struct sk_buff *skb,
- 			netif_tx_stop_queue(txq);
- 
- 			/* This is a hard error, log it. */
--			printk(KERN_ERR PFX "%s: BUG! Tx Ring full when "
--			       "queue awake!\n", dev->name);
-+			netdev_err(dev, "BUG! Tx Ring full when queue awake!\n");
- 		}
- 		return NETDEV_TX_BUSY;
- 	}
-@@ -5717,8 +5706,7 @@ static netdev_tx_t tg3_start_xmit_dma_bug(struct sk_buff *skb,
- 			netif_tx_stop_queue(txq);
- 
- 			/* This is a hard error, log it. */
--			printk(KERN_ERR PFX "%s: BUG! Tx Ring full when "
--			       "queue awake!\n", dev->name);
-+			netdev_err(dev, "BUG! Tx Ring full when queue awake!\n");
- 		}
- 		return NETDEV_TX_BUSY;
- 	}
-@@ -6065,11 +6053,8 @@ static int tg3_rx_prodring_alloc(struct tg3 *tp,
- 	/* Now allocate fresh SKBs for each rx ring. */
- 	for (i = 0; i < tp->rx_pending; i++) {
- 		if (tg3_alloc_rx_skb(tp, tpr, RXD_OPAQUE_RING_STD, i) < 0) {
--			printk(KERN_WARNING PFX
--			       "%s: Using a smaller RX standard ring, "
--			       "only %d out of %d buffers were allocated "
--			       "successfully.\n",
--			       tp->dev->name, i, tp->rx_pending);
-+			netdev_warn(tp->dev, "Using a smaller RX standard ring, only %d out of %d buffers were allocated successfully\n",
-+				    i, tp->rx_pending);
- 			if (i == 0)
- 				goto initfail;
- 			tp->rx_pending = i;
-@@ -6097,11 +6082,8 @@ static int tg3_rx_prodring_alloc(struct tg3 *tp,
- 		for (i = 0; i < tp->rx_jumbo_pending; i++) {
- 			if (tg3_alloc_rx_skb(tp, tpr, RXD_OPAQUE_RING_JUMBO,
- 					     i) < 0) {
--				printk(KERN_WARNING PFX
--				       "%s: Using a smaller RX jumbo ring, "
--				       "only %d out of %d buffers were "
--				       "allocated successfully.\n",
--				       tp->dev->name, i, tp->rx_jumbo_pending);
-+				netdev_warn(tp->dev, "Using a smaller RX jumbo ring, only %d out of %d buffers were allocated successfully\n",
-+					    i, tp->rx_jumbo_pending);
- 				if (i == 0)
- 					goto initfail;
- 				tp->rx_jumbo_pending = i;
-@@ -6446,8 +6428,7 @@ static int tg3_stop_block(struct tg3 *tp, unsigned long ofs, u32 enable_bit, int
- 	}
- 
- 	if (i == MAX_WAIT_CNT && !silent) {
--		printk(KERN_ERR PFX "tg3_stop_block timed out, "
--		       "ofs=%lx enable_bit=%x\n",
-+		pr_err("tg3_stop_block timed out, ofs=%lx enable_bit=%x\n",
- 		       ofs, enable_bit);
- 		return -ENODEV;
- 	}
-@@ -6494,9 +6475,8 @@ static int tg3_abort_hw(struct tg3 *tp, int silent)
- 			break;
- 	}
- 	if (i >= MAX_WAIT_CNT) {
--		printk(KERN_ERR PFX "tg3_abort_hw timed out for %s, "
--		       "TX_MODE_ENABLE will not clear MAC_TX_MODE=%08x\n",
--		       tp->dev->name, tr32(MAC_TX_MODE));
-+		netdev_err(tp->dev, "%s timed out, TX_MODE_ENABLE will not clear MAC_TX_MODE=%08x\n",
-+			   __func__, tr32(MAC_TX_MODE));
- 		err |= -ENODEV;
- 	}
- 
-@@ -6717,8 +6697,7 @@ static int tg3_poll_fw(struct tg3 *tp)
- 	    !(tp->tg3_flags2 & TG3_FLG2_NO_FWARE_REPORTED)) {
- 		tp->tg3_flags2 |= TG3_FLG2_NO_FWARE_REPORTED;
- 
--		printk(KERN_INFO PFX "%s: No firmware running.\n",
--		       tp->dev->name);
-+		netdev_info(tp->dev, "No firmware running\n");
- 	}
- 
- 	if (tp->pci_chip_rev_id == CHIPREV_ID_57765_A0) {
-@@ -7146,10 +7125,8 @@ static int tg3_halt_cpu(struct tg3 *tp, u32 offset)
- 	}
- 
- 	if (i >= 10000) {
--		printk(KERN_ERR PFX "tg3_reset_cpu timed out for %s, "
--		       "and %s CPU\n",
--		       tp->dev->name,
--		       (offset == RX_CPU_BASE ? "RX" : "TX"));
-+		netdev_err(tp->dev, "%s timed out, %s CPU\n",
-+			   __func__, offset == RX_CPU_BASE ? "RX" : "TX");
- 		return -ENODEV;
- 	}
- 
-@@ -7174,9 +7151,8 @@ static int tg3_load_firmware_cpu(struct tg3 *tp, u32 cpu_base, u32 cpu_scratch_b
- 
- 	if (cpu_base == TX_CPU_BASE &&
- 	    (tp->tg3_flags2 & TG3_FLG2_5705_PLUS)) {
--		printk(KERN_ERR PFX "tg3_load_firmware_cpu: Trying to load "
--		       "TX cpu firmware on %s which is 5705.\n",
--		       tp->dev->name);
-+		netdev_err(tp->dev, "%s: Trying to load TX cpu firmware which is 5705\n",
-+			   __func__);
- 		return -EINVAL;
- 	}
- 
-@@ -7255,10 +7231,8 @@ static int tg3_load_5701_a0_firmware_fix(struct tg3 *tp)
- 		udelay(1000);
- 	}
- 	if (i >= 5) {
--		printk(KERN_ERR PFX "tg3_load_firmware fails for %s "
--		       "to set RX CPU PC, is %08x should be %08x\n",
--		       tp->dev->name, tr32(RX_CPU_BASE + CPU_PC),
--		       info.fw_base);
-+		netdev_err(tp->dev, "tg3_load_firmware fails to set RX CPU PC, is %08x should be %08x\n",
-+			   tr32(RX_CPU_BASE + CPU_PC), info.fw_base);
- 		return -ENODEV;
- 	}
- 	tw32(RX_CPU_BASE + CPU_STATE, 0xffffffff);
-@@ -7321,10 +7295,8 @@ static int tg3_load_tso_firmware(struct tg3 *tp)
- 		udelay(1000);
- 	}
- 	if (i >= 5) {
--		printk(KERN_ERR PFX "tg3_load_tso_firmware fails for %s "
--		       "to set CPU PC, is %08x should be %08x\n",
--		       tp->dev->name, tr32(cpu_base + CPU_PC),
--		       info.fw_base);
-+		netdev_err(tp->dev, "%s fails to set CPU PC, is %08x should be %08x\n",
-+			   __func__, tr32(cpu_base + CPU_PC), info.fw_base);
- 		return -ENODEV;
- 	}
- 	tw32(cpu_base + CPU_STATE, 0xffffffff);
-@@ -7785,8 +7757,7 @@ static int tg3_reset_hw(struct tg3 *tp, int reset_phy)
- 		udelay(10);
- 	}
- 	if (i >= 2000) {
--		printk(KERN_ERR PFX "tg3_reset_hw cannot enable BUFMGR for %s.\n",
--		       tp->dev->name);
-+		netdev_err(tp->dev, "%s cannot enable BUFMGR\n", __func__);
- 		return -ENODEV;
- 	}
- 
-@@ -8649,10 +8620,8 @@ static int tg3_test_msi(struct tg3 *tp)
- 		return err;
- 
- 	/* MSI test failed, go back to INTx mode */
--	printk(KERN_WARNING PFX "%s: No interrupt was generated using MSI, "
--	       "switching to INTx mode. Please report this failure to "
--	       "the PCI maintainer and include system chipset information.\n",
--		       tp->dev->name);
-+	netdev_warn(tp->dev, "No interrupt was generated using MSI, switching to INTx mode\n"
-+		    "Please report this failure to the PCI maintainer and include system chipset information\n");
- 
- 	free_irq(tp->napi[0].irq_vec, &tp->napi[0]);
- 
-@@ -8685,8 +8654,8 @@ static int tg3_request_firmware(struct tg3 *tp)
- 	const __be32 *fw_data;
- 
- 	if (request_firmware(&tp->fw, tp->fw_needed, &tp->pdev->dev)) {
--		printk(KERN_ERR "%s: Failed to load firmware \"%s\"\n",
--		       tp->dev->name, tp->fw_needed);
-+		netdev_err(tp->dev, "Failed to load firmware \"%s\"\n",
-+			   tp->fw_needed);
- 		return -ENOENT;
- 	}
- 
-@@ -8699,8 +8668,8 @@ static int tg3_request_firmware(struct tg3 *tp)
- 
- 	tp->fw_len = be32_to_cpu(fw_data[2]);	/* includes bss */
- 	if (tp->fw_len < (tp->fw->size - 12)) {
--		printk(KERN_ERR "%s: bogus length %d in \"%s\"\n",
--		       tp->dev->name, tp->fw_len, tp->fw_needed);
-+		netdev_err(tp->dev, "bogus length %d in \"%s\"\n",
-+			   tp->fw_len, tp->fw_needed);
- 		release_firmware(tp->fw);
- 		tp->fw = NULL;
- 		return -EINVAL;
-@@ -8738,9 +8707,8 @@ static bool tg3_enable_msix(struct tg3 *tp)
- 			return false;
- 		if (pci_enable_msix(tp->pdev, msix_ent, rc))
- 			return false;
--		printk(KERN_NOTICE
--		       "%s: Requested %d MSI-X vectors, received %d\n",
--		       tp->dev->name, tp->irq_cnt, rc);
-+		netdev_notice(tp->dev, "Requested %d MSI-X vectors, received %d\n",
-+			      tp->irq_cnt, rc);
- 		tp->irq_cnt = rc;
- 	}
- 
-@@ -8765,8 +8733,7 @@ static void tg3_ints_init(struct tg3 *tp)
- 		/* All MSI supporting chips should support tagged
- 		 * status.  Assert that this is the case.
- 		 */
--		printk(KERN_WARNING PFX "%s: MSI without TAGGED? "
--		       "Not using MSI.\n", tp->dev->name);
-+		netdev_warn(tp->dev, "MSI without TAGGED? Not using MSI\n");
- 		goto defcfg;
- 	}
- 
-@@ -8811,12 +8778,10 @@ static int tg3_open(struct net_device *dev)
- 			if (err)
- 				return err;
- 		} else if (err) {
--			printk(KERN_WARNING "%s: TSO capability disabled.\n",
--			       tp->dev->name);
-+			netdev_warn(tp->dev, "TSO capability disabled\n");
- 			tp->tg3_flags2 &= ~TG3_FLG2_TSO_CAPABLE;
- 		} else if (!(tp->tg3_flags2 & TG3_FLG2_TSO_CAPABLE)) {
--			printk(KERN_NOTICE "%s: TSO capability restored.\n",
--			       tp->dev->name);
-+			netdev_notice(tp->dev, "TSO capability restored\n");
- 			tp->tg3_flags2 |= TG3_FLG2_TSO_CAPABLE;
- 		}
- 	}
-@@ -10671,8 +10636,7 @@ static int tg3_test_registers(struct tg3 *tp)
- 
- out:
- 	if (netif_msg_hw(tp))
--		printk(KERN_ERR PFX "Register test failed at offset %x\n",
--		       offset);
-+		pr_err("Register test failed at offset %x\n", offset);
- 	tw32(offset, save_val);
- 	return -EIO;
- }
-@@ -11798,8 +11762,8 @@ static void __devinit tg3_nvram_init(struct tg3 *tp)
- 		tp->tg3_flags |= TG3_FLAG_NVRAM;
- 
- 		if (tg3_nvram_lock(tp)) {
--			printk(KERN_WARNING PFX "%s: Cannot get nvarm lock, "
--			       "tg3_nvram_init failed.\n", tp->dev->name);
-+			netdev_warn(tp->dev, "Cannot get nvram lock, %s failed\n",
-+				    __func__);
- 			return;
- 		}
- 		tg3_enable_nvram_access(tp);
-@@ -13217,8 +13181,7 @@ static int __devinit tg3_get_invariants(struct tg3 *tp)
- 		   (tp->tg3_flags2 & TG3_FLG2_5780_CLASS)) {
- 		tp->pcix_cap = pci_find_capability(tp->pdev, PCI_CAP_ID_PCIX);
- 		if (!tp->pcix_cap) {
--			printk(KERN_ERR PFX "Cannot find PCI-X "
--					    "capability, aborting.\n");
-+			pr_err("Cannot find PCI-X capability, aborting\n");
- 			return -EIO;
- 		}
- 
-@@ -13415,8 +13378,7 @@ static int __devinit tg3_get_invariants(struct tg3 *tp)
- 	/* Force the chip into D0. */
- 	err = tg3_set_power_state(tp, PCI_D0);
- 	if (err) {
--		printk(KERN_ERR PFX "(%s) transition to D0 failed\n",
--		       pci_name(tp->pdev));
-+		pr_err("(%s) transition to D0 failed\n", pci_name(tp->pdev));
- 		return err;
- 	}
- 
-@@ -13588,7 +13550,7 @@ static int __devinit tg3_get_invariants(struct tg3 *tp)
- 
- 	err = tg3_phy_probe(tp);
- 	if (err) {
--		printk(KERN_ERR PFX "(%s) phy probe failed, err %d\n",
-+		pr_err("(%s) phy probe failed, err %d\n",
- 		       pci_name(tp->pdev), err);
- 		/* ... but do not return immediately ... */
- 		tg3_mdio_fini(tp);
-@@ -14098,7 +14060,7 @@ static int __devinit tg3_test_dma(struct tg3 *tp)
- 		/* Send the buffer to the chip. */
- 		ret = tg3_do_test_dma(tp, buf, buf_dma, TEST_BUFFER_SIZE, 1);
- 		if (ret) {
--			printk(KERN_ERR "tg3_test_dma() Write the buffer failed %d\n", ret);
-+			pr_err("tg3_test_dma() Write the buffer failed %d\n", ret);
- 			break;
- 		}
- 
-@@ -14108,7 +14070,7 @@ static int __devinit tg3_test_dma(struct tg3 *tp)
- 			u32 val;
- 			tg3_read_mem(tp, 0x2100 + (i*4), &val);
- 			if (le32_to_cpu(val) != p[i]) {
--				printk(KERN_ERR "  tg3_test_dma()  Card buffer corrupted on write! (%d != %d)\n", val, i);
-+				pr_err("  tg3_test_dma()  Card buffer corrupted on write! (%d != %d)\n", val, i);
- 				/* ret = -ENODEV here? */
- 			}
- 			p[i] = 0;
-@@ -14117,7 +14079,7 @@ static int __devinit tg3_test_dma(struct tg3 *tp)
- 		/* Now read it back. */
- 		ret = tg3_do_test_dma(tp, buf, buf_dma, TEST_BUFFER_SIZE, 0);
- 		if (ret) {
--			printk(KERN_ERR "tg3_test_dma() Read the buffer failed %d\n", ret);
-+			pr_err("tg3_test_dma() Read the buffer failed %d\n", ret);
- 
- 			break;
- 		}
-@@ -14134,7 +14096,7 @@ static int __devinit tg3_test_dma(struct tg3 *tp)
- 				tw32(TG3PCI_DMA_RW_CTRL, tp->dma_rwctrl);
- 				break;
- 			} else {
--				printk(KERN_ERR "tg3_test_dma() buffer corrupted on read back! (%d != %d)\n", p[i], i);
-+				pr_err("tg3_test_dma() buffer corrupted on read back! (%d != %d)\n", p[i], i);
- 				ret = -ENODEV;
- 				goto out;
- 			}
-@@ -14424,19 +14386,17 @@ static int __devinit tg3_init_one(struct pci_dev *pdev,
- 	u64 dma_mask, persist_dma_mask;
- 
- 	if (tg3_version_printed++ == 0)
--		printk(KERN_INFO "%s", version);
-+		pr_info("%s", version);
- 
- 	err = pci_enable_device(pdev);
- 	if (err) {
--		printk(KERN_ERR PFX "Cannot enable PCI device, "
--		       "aborting.\n");
-+		pr_err("Cannot enable PCI device, aborting\n");
- 		return err;
- 	}
- 
- 	err = pci_request_regions(pdev, DRV_MODULE_NAME);
- 	if (err) {
--		printk(KERN_ERR PFX "Cannot obtain PCI resources, "
--		       "aborting.\n");
-+		pr_err("Cannot obtain PCI resources, aborting\n");
- 		goto err_out_disable_pdev;
- 	}
- 
-@@ -14445,15 +14405,14 @@ static int __devinit tg3_init_one(struct pci_dev *pdev,
- 	/* Find power-management capability. */
- 	pm_cap = pci_find_capability(pdev, PCI_CAP_ID_PM);
- 	if (pm_cap == 0) {
--		printk(KERN_ERR PFX "Cannot find PowerManagement capability, "
--		       "aborting.\n");
-+		pr_err("Cannot find PowerManagement capability, aborting\n");
- 		err = -EIO;
- 		goto err_out_free_res;
- 	}
- 
- 	dev = alloc_etherdev_mq(sizeof(*tp), TG3_IRQ_MAX_VECS);
+ 	dev = alloc_etherdev(sizeof(*np));
  	if (!dev) {
--		printk(KERN_ERR PFX "Etherdev alloc failed, aborting.\n");
-+		pr_err("Etherdev alloc failed, aborting\n");
- 		err = -ENOMEM;
- 		goto err_out_free_res;
+-		printk (KERN_ERR PFX "cannot allocate ethernet device\n");
++		pr_err("cannot allocate ethernet device\n");
+ 		return -ENOMEM;
  	}
-@@ -14503,8 +14462,7 @@ static int __devinit tg3_init_one(struct pci_dev *pdev,
+ 	SET_NETDEV_DEV(dev, &pdev->dev);
+@@ -487,10 +487,10 @@ static int __devinit yellowfin_init_one(struct pci_dev *pdev,
+ 	if (i)
+ 		goto err_out_unmap_status;
  
- 	tp->regs = pci_ioremap_bar(pdev, BAR_0);
- 	if (!tp->regs) {
--		printk(KERN_ERR PFX "Cannot map device registers, "
--		       "aborting.\n");
-+		netdev_err(dev, "Cannot map device registers, aborting\n");
- 		err = -ENOMEM;
- 		goto err_out_free_dev;
- 	}
-@@ -14520,8 +14478,7 @@ static int __devinit tg3_init_one(struct pci_dev *pdev,
+-	printk(KERN_INFO "%s: %s type %8x at %p, %pM, IRQ %d.\n",
+-		   dev->name, pci_id_tbl[chip_idx].name,
+-		   ioread32(ioaddr + ChipRev), ioaddr,
+-		   dev->dev_addr, irq);
++	netdev_info(dev, "%s type %8x at %p, %pM, IRQ %d\n",
++		    pci_id_tbl[chip_idx].name,
++		    ioread32(ioaddr + ChipRev), ioaddr,
++		    dev->dev_addr, irq);
  
- 	err = tg3_get_invariants(tp);
- 	if (err) {
--		printk(KERN_ERR PFX "Problem fetching invariants of chip, "
--		       "aborting.\n");
-+		netdev_err(dev, "Problem fetching invariants of chip, aborting\n");
- 		goto err_out_iounmap;
- 	}
- 
-@@ -14556,8 +14513,7 @@ static int __devinit tg3_init_one(struct pci_dev *pdev,
- 			err = pci_set_consistent_dma_mask(pdev,
- 							  persist_dma_mask);
- 			if (err < 0) {
--				printk(KERN_ERR PFX "Unable to obtain 64 bit "
--				       "DMA for consistent allocations\n");
-+				netdev_err(dev, "Unable to obtain 64 bit DMA for consistent allocations\n");
- 				goto err_out_iounmap;
+ 	if (np->drv_flags & HasMII) {
+ 		int phy, phy_idx = 0;
+@@ -499,9 +499,8 @@ static int __devinit yellowfin_init_one(struct pci_dev *pdev,
+ 			if (mii_status != 0xffff  &&  mii_status != 0x0000) {
+ 				np->phys[phy_idx++] = phy;
+ 				np->advertising = mdio_read(ioaddr, phy, 4);
+-				printk(KERN_INFO "%s: MII PHY found at address %d, status "
+-					   "0x%4.4x advertising %4.4x.\n",
+-					   dev->name, phy, mii_status, np->advertising);
++				netdev_info(dev, "MII PHY found at address %d, status 0x%04x advertising %04x\n",
++					    phy, mii_status, np->advertising);
  			}
  		}
-@@ -14565,8 +14521,7 @@ static int __devinit tg3_init_one(struct pci_dev *pdev,
- 	if (err || dma_mask == DMA_BIT_MASK(32)) {
- 		err = pci_set_dma_mask(pdev, DMA_BIT_MASK(32));
- 		if (err) {
--			printk(KERN_ERR PFX "No usable DMA configuration, "
--			       "aborting.\n");
-+			netdev_err(dev, "No usable DMA configuration, aborting\n");
- 			goto err_out_iounmap;
+ 		np->mii_cnt = phy_idx;
+@@ -584,8 +583,8 @@ static int yellowfin_open(struct net_device *dev)
+ 		return ret;
+ 
+ 	if (yellowfin_debug > 1)
+-		printk(KERN_DEBUG "%s: yellowfin_open() irq %d.\n",
+-			   dev->name, dev->irq);
++		netdev_printk(KERN_DEBUG, dev, "%s() irq %d\n",
++			      __func__, dev->irq);
+ 
+ 	ret = yellowfin_init_ring(dev);
+ 	if (ret) {
+@@ -642,8 +641,7 @@ static int yellowfin_open(struct net_device *dev)
+ 	iowrite32(0x80008000, ioaddr + TxCtrl);
+ 
+ 	if (yellowfin_debug > 2) {
+-		printk(KERN_DEBUG "%s: Done yellowfin_open().\n",
+-			   dev->name);
++		netdev_printk(KERN_DEBUG, dev, "Done %s()\n", __func__);
+ 	}
+ 
+ 	/* Set the timer to check for link beat. */
+@@ -664,8 +662,8 @@ static void yellowfin_timer(unsigned long data)
+ 	int next_tick = 60*HZ;
+ 
+ 	if (yellowfin_debug > 3) {
+-		printk(KERN_DEBUG "%s: Yellowfin timer tick, status %8.8x.\n",
+-			   dev->name, ioread16(ioaddr + IntrStatus));
++		netdev_printk(KERN_DEBUG, dev, "Yellowfin timer tick, status %08x\n",
++			      ioread16(ioaddr + IntrStatus));
+ 	}
+ 
+ 	if (yp->mii_cnt) {
+@@ -673,9 +671,8 @@ static void yellowfin_timer(unsigned long data)
+ 		int lpa = mdio_read(ioaddr, yp->phys[0], MII_LPA);
+ 		int negotiated = lpa & yp->advertising;
+ 		if (yellowfin_debug > 1)
+-			printk(KERN_DEBUG "%s: MII #%d status register is %4.4x, "
+-				   "link partner capability %4.4x.\n",
+-				   dev->name, yp->phys[0], bmsr, lpa);
++			netdev_printk(KERN_DEBUG, dev, "MII #%d status register is %04x, link partner capability %04x\n",
++				      yp->phys[0], bmsr, lpa);
+ 
+ 		yp->full_duplex = mii_duplex(yp->duplex_lock, negotiated);
+ 
+@@ -696,25 +693,24 @@ static void yellowfin_tx_timeout(struct net_device *dev)
+ 	struct yellowfin_private *yp = netdev_priv(dev);
+ 	void __iomem *ioaddr = yp->base;
+ 
+-	printk(KERN_WARNING "%s: Yellowfin transmit timed out at %d/%d Tx "
+-		   "status %4.4x, Rx status %4.4x, resetting...\n",
+-		   dev->name, yp->cur_tx, yp->dirty_tx,
+-		   ioread32(ioaddr + TxStatus), ioread32(ioaddr + RxStatus));
++	netdev_warn(dev, "Yellowfin transmit timed out at %d/%d Tx status %04x, Rx status %04x, resetting...\n",
++		    yp->cur_tx, yp->dirty_tx,
++		    ioread32(ioaddr + TxStatus),
++		    ioread32(ioaddr + RxStatus));
+ 
+ 	/* Note: these should be KERN_DEBUG. */
+ 	if (yellowfin_debug) {
+ 		int i;
+-		printk(KERN_WARNING "  Rx ring %p: ", yp->rx_ring);
++		pr_warning("  Rx ring %p: ", yp->rx_ring);
+ 		for (i = 0; i < RX_RING_SIZE; i++)
+-			printk(KERN_CONT " %8.8x",
+-			       yp->rx_ring[i].result_status);
+-		printk(KERN_CONT "\n");
+-		printk(KERN_WARNING"  Tx ring %p: ", yp->tx_ring);
++			pr_cont(" %08x", yp->rx_ring[i].result_status);
++		pr_cont("\n");
++		pr_warning("  Tx ring %p: ", yp->tx_ring);
+ 		for (i = 0; i < TX_RING_SIZE; i++)
+-			printk(KERN_CONT " %4.4x /%8.8x",
++			pr_cont(" %04x /%08x",
+ 			       yp->tx_status[i].tx_errs,
+ 			       yp->tx_ring[i].result_status);
+-		printk(KERN_CONT "\n");
++		pr_cont("\n");
+ 	}
+ 
+ 	/* If the hardware is found to hang regularly, we will update the code
+@@ -891,8 +887,8 @@ static netdev_tx_t yellowfin_start_xmit(struct sk_buff *skb,
+ 		yp->tx_full = 1;
+ 
+ 	if (yellowfin_debug > 4) {
+-		printk(KERN_DEBUG "%s: Yellowfin transmit frame #%d queued in slot %d.\n",
+-			   dev->name, yp->cur_tx, entry);
++		netdev_printk(KERN_DEBUG, dev, "Yellowfin transmit frame #%d queued in slot %d\n",
++			      yp->cur_tx, entry);
+ 	}
+ 	return NETDEV_TX_OK;
+ }
+@@ -916,8 +912,8 @@ static irqreturn_t yellowfin_interrupt(int irq, void *dev_instance)
+ 		u16 intr_status = ioread16(ioaddr + IntrClear);
+ 
+ 		if (yellowfin_debug > 4)
+-			printk(KERN_DEBUG "%s: Yellowfin interrupt, status %4.4x.\n",
+-				   dev->name, intr_status);
++			netdev_printk(KERN_DEBUG, dev, "Yellowfin interrupt, status %04x\n",
++				      intr_status);
+ 
+ 		if (intr_status == 0)
+ 			break;
+@@ -963,13 +959,12 @@ static irqreturn_t yellowfin_interrupt(int irq, void *dev_instance)
+ 
+ #ifndef final_version
+ 				if (yellowfin_debug > 5)
+-					printk(KERN_DEBUG "%s: Tx queue %d check, Tx status "
+-						   "%4.4x %4.4x %4.4x %4.4x.\n",
+-						   dev->name, entry,
+-						   yp->tx_status[entry].tx_cnt,
+-						   yp->tx_status[entry].tx_errs,
+-						   yp->tx_status[entry].total_tx_cnt,
+-						   yp->tx_status[entry].paused);
++					netdev_printk(KERN_DEBUG, dev, "Tx queue %d check, Tx status %04x %04x %04x %04x\n",
++						      entry,
++						      yp->tx_status[entry].tx_cnt,
++						      yp->tx_status[entry].tx_errs,
++						      yp->tx_status[entry].total_tx_cnt,
++						      yp->tx_status[entry].paused);
+ #endif
+ 				if (tx_errs == 0)
+ 					break;	/* It still hasn't been Txed */
+@@ -978,8 +973,8 @@ static irqreturn_t yellowfin_interrupt(int irq, void *dev_instance)
+ 					/* There was an major error, log it. */
+ #ifndef final_version
+ 					if (yellowfin_debug > 1)
+-						printk(KERN_DEBUG "%s: Transmit error, Tx status %4.4x.\n",
+-							   dev->name, tx_errs);
++						netdev_printk(KERN_DEBUG, dev, "Transmit error, Tx status %04x\n",
++							      tx_errs);
+ #endif
+ 					dev->stats.tx_errors++;
+ 					if (tx_errs & 0xF800) dev->stats.tx_aborted_errors++;
+@@ -989,8 +984,8 @@ static irqreturn_t yellowfin_interrupt(int irq, void *dev_instance)
+ 				} else {
+ #ifndef final_version
+ 					if (yellowfin_debug > 4)
+-						printk(KERN_DEBUG "%s: Normal transmit, Tx status %4.4x.\n",
+-							   dev->name, tx_errs);
++						netdev_printk(KERN_DEBUG, dev, "Normal transmit, Tx status %04x\n",
++							      tx_errs);
+ #endif
+ 					dev->stats.tx_bytes += skb->len;
+ 					dev->stats.collisions += tx_errs & 15;
+@@ -1008,8 +1003,8 @@ static irqreturn_t yellowfin_interrupt(int irq, void *dev_instance)
+ 
+ #ifndef final_version
+ 			if (yp->cur_tx - dirty_tx > TX_RING_SIZE) {
+-				printk(KERN_ERR "%s: Out-of-sync dirty pointer, %d vs. %d, full=%d.\n",
+-					   dev->name, dirty_tx, yp->cur_tx, yp->tx_full);
++				netdev_err(dev, "Out-of-sync dirty pointer, %d vs. %d, full=%d\n",
++					   dirty_tx, yp->cur_tx, yp->tx_full);
+ 				dirty_tx += TX_RING_SIZE;
+ 			}
+ #endif
+@@ -1031,16 +1026,15 @@ static irqreturn_t yellowfin_interrupt(int irq, void *dev_instance)
+ 			yellowfin_error(dev, intr_status);
+ 
+ 		if (--boguscnt < 0) {
+-			printk(KERN_WARNING "%s: Too much work at interrupt, "
+-				   "status=0x%4.4x.\n",
+-				   dev->name, intr_status);
++			netdev_warn(dev, "Too much work at interrupt, status=%#04x\n",
++				    intr_status);
+ 			break;
  		}
+ 	} while (1);
+ 
+ 	if (yellowfin_debug > 3)
+-		printk(KERN_DEBUG "%s: exiting interrupt, status=%#4.4x.\n",
+-			   dev->name, ioread16(ioaddr + IntrStatus));
++		netdev_printk(KERN_DEBUG, dev, "exiting interrupt, status=%#04x\n",
++			      ioread16(ioaddr + IntrStatus));
+ 
+ 	spin_unlock (&yp->lock);
+ 	return IRQ_RETVAL(handled);
+@@ -1055,9 +1049,9 @@ static int yellowfin_rx(struct net_device *dev)
+ 	int boguscnt = yp->dirty_rx + RX_RING_SIZE - yp->cur_rx;
+ 
+ 	if (yellowfin_debug > 4) {
+-		printk(KERN_DEBUG " In yellowfin_rx(), entry %d status %8.8x.\n",
++		printk(KERN_DEBUG " In yellowfin_rx(), entry %d status %08x\n",
+ 			   entry, yp->rx_ring[entry].result_status);
+-		printk(KERN_DEBUG "   #%d desc. %8.8x %8.8x %8.8x.\n",
++		printk(KERN_DEBUG "   #%d desc. %08x %08x %08x\n",
+ 			   entry, yp->rx_ring[entry].dbdma_cmd, yp->rx_ring[entry].addr,
+ 			   yp->rx_ring[entry].result_status);
  	}
-@@ -14615,16 +14570,14 @@ static int __devinit tg3_init_one(struct pci_dev *pdev,
+@@ -1081,20 +1075,20 @@ static int yellowfin_rx(struct net_device *dev)
+ 			le32_to_cpu(desc->result_status)) & 0xffff;
+ 		frame_status = get_unaligned_le16(&(buf_addr[data_size - 2]));
+ 		if (yellowfin_debug > 4)
+-			printk(KERN_DEBUG "  yellowfin_rx() status was %4.4x.\n",
+-				   frame_status);
++			printk(KERN_DEBUG "  %s() status was %04x\n",
++			       __func__, frame_status);
+ 		if (--boguscnt < 0)
+ 			break;
+ 		if ( ! (desc_status & RX_EOP)) {
+ 			if (data_size != 0)
+-				printk(KERN_WARNING "%s: Oversized Ethernet frame spanned multiple buffers,"
+-					   " status %4.4x, data_size %d!\n", dev->name, desc_status, data_size);
++				netdev_warn(dev, "Oversized Ethernet frame spanned multiple buffers, status %04x, data_size %d!\n",
++					    desc_status, data_size);
+ 			dev->stats.rx_length_errors++;
+ 		} else if ((yp->drv_flags & IsGigabit)  &&  (frame_status & 0x0038)) {
+ 			/* There was a error. */
+ 			if (yellowfin_debug > 3)
+-				printk(KERN_DEBUG "  yellowfin_rx() Rx error was %4.4x.\n",
+-					   frame_status);
++				printk(KERN_DEBUG "  %s() Rx error was %04x\n",
++				       __func__, frame_status);
+ 			dev->stats.rx_errors++;
+ 			if (frame_status & 0x0060) dev->stats.rx_length_errors++;
+ 			if (frame_status & 0x0008) dev->stats.rx_frame_errors++;
+@@ -1118,8 +1112,8 @@ static int yellowfin_rx(struct net_device *dev)
+ 				entry*sizeof(struct yellowfin_desc)),
+ 				"\377\377\377\377\377\377", 6) != 0) {
+ 			if (bogus_rx++ == 0)
+-				printk(KERN_WARNING "%s: Bad frame to %pM\n",
+-					   dev->name, buf_addr);
++				netdev_warn(dev, "Bad frame to %pM\n",
++					    buf_addr);
+ #endif
+ 		} else {
+ 			struct sk_buff *skb;
+@@ -1129,9 +1123,8 @@ static int yellowfin_rx(struct net_device *dev)
  
- 	err = tg3_get_device_address(tp);
- 	if (err) {
--		printk(KERN_ERR PFX "Could not obtain valid ethernet address, "
--		       "aborting.\n");
-+		netdev_err(dev, "Could not obtain valid ethernet address, aborting\n");
- 		goto err_out_iounmap;
+ #ifndef final_version
+ 			if (yellowfin_debug > 4)
+-				printk(KERN_DEBUG "  yellowfin_rx() normal Rx pkt length %d"
+-					   " of %d, bogus_cnt %d.\n",
+-					   pkt_len, data_size, boguscnt);
++				printk(KERN_DEBUG "  %s() normal Rx pkt length %d of %d, bogus_cnt %d\n",
++				       __func__, pkt_len, data_size, boguscnt);
+ #endif
+ 			/* Check if the packet is long enough to just pass up the skbuff
+ 			   without copying to a properly sized skbuff. */
+@@ -1191,8 +1184,7 @@ static int yellowfin_rx(struct net_device *dev)
+ 
+ static void yellowfin_error(struct net_device *dev, int intr_status)
+ {
+-	printk(KERN_ERR "%s: Something Wicked happened! %4.4x.\n",
+-		   dev->name, intr_status);
++	netdev_err(dev, "Something Wicked happened! %04x\n", intr_status);
+ 	/* Hmmmmm, it's not clear what to do here. */
+ 	if (intr_status & (IntrTxPCIErr | IntrTxPCIFault))
+ 		dev->stats.tx_errors++;
+@@ -1209,13 +1201,13 @@ static int yellowfin_close(struct net_device *dev)
+ 	netif_stop_queue (dev);
+ 
+ 	if (yellowfin_debug > 1) {
+-		printk(KERN_DEBUG "%s: Shutting down ethercard, status was Tx %4.4x "
+-			   "Rx %4.4x Int %2.2x.\n",
+-			   dev->name, ioread16(ioaddr + TxStatus),
+-			   ioread16(ioaddr + RxStatus),
+-			   ioread16(ioaddr + IntrStatus));
+-		printk(KERN_DEBUG "%s: Queue pointers were Tx %d / %d,  Rx %d / %d.\n",
+-			   dev->name, yp->cur_tx, yp->dirty_tx, yp->cur_rx, yp->dirty_rx);
++		netdev_printk(KERN_DEBUG, dev, "Shutting down ethercard, status was Tx %04x Rx %04x Int %02x\n",
++			      ioread16(ioaddr + TxStatus),
++			      ioread16(ioaddr + RxStatus),
++			      ioread16(ioaddr + IntrStatus));
++		netdev_printk(KERN_DEBUG, dev, "Queue pointers were Tx %d / %d,  Rx %d / %d\n",
++			      yp->cur_tx, yp->dirty_tx,
++			      yp->cur_rx, yp->dirty_rx);
  	}
  
- 	if (tp->tg3_flags3 & TG3_FLG3_ENABLE_APE) {
- 		tp->aperegs = pci_ioremap_bar(pdev, BAR_2);
- 		if (!tp->aperegs) {
--			printk(KERN_ERR PFX "Cannot map APE registers, "
--			       "aborting.\n");
-+			netdev_err(dev, "Cannot map APE registers, aborting\n");
- 			err = -ENOMEM;
- 			goto err_out_iounmap;
- 		}
-@@ -14648,7 +14601,7 @@ static int __devinit tg3_init_one(struct pci_dev *pdev,
+ 	/* Disable interrupts by clearing the interrupt mask. */
+@@ -1229,33 +1221,35 @@ static int yellowfin_close(struct net_device *dev)
  
- 	err = tg3_test_dma(tp);
- 	if (err) {
--		printk(KERN_ERR PFX "DMA engine test failed, aborting.\n");
-+		netdev_err(dev, "DMA engine test failed, aborting\n");
- 		goto err_out_apeunmap;
- 	}
+ #if defined(__i386__)
+ 	if (yellowfin_debug > 2) {
+-		printk(KERN_DEBUG"  Tx ring at %8.8llx:\n",
++		printk(KERN_DEBUG "  Tx ring at %08llx:\n",
+ 				(unsigned long long)yp->tx_ring_dma);
+ 		for (i = 0; i < TX_RING_SIZE*2; i++)
+-			printk(KERN_DEBUG " %c #%d desc. %8.8x %8.8x %8.8x %8.8x.\n",
++			printk(KERN_DEBUG " %c #%d desc. %08x %08x %08x %08x\n",
+ 				   ioread32(ioaddr + TxPtr) == (long)&yp->tx_ring[i] ? '>' : ' ',
+ 				   i, yp->tx_ring[i].dbdma_cmd, yp->tx_ring[i].addr,
+ 				   yp->tx_ring[i].branch_addr, yp->tx_ring[i].result_status);
+ 		printk(KERN_DEBUG "  Tx status %p:\n", yp->tx_status);
+ 		for (i = 0; i < TX_RING_SIZE; i++)
+-			printk(KERN_DEBUG "   #%d status %4.4x %4.4x %4.4x %4.4x.\n",
++			printk(KERN_DEBUG "   #%d status %04x %04x %04x %04x\n",
+ 				   i, yp->tx_status[i].tx_cnt, yp->tx_status[i].tx_errs,
+ 				   yp->tx_status[i].total_tx_cnt, yp->tx_status[i].paused);
  
-@@ -14709,45 +14662,39 @@ static int __devinit tg3_init_one(struct pci_dev *pdev,
- 
- 	err = register_netdev(dev);
- 	if (err) {
--		printk(KERN_ERR PFX "Cannot register net device, "
--		       "aborting.\n");
-+		netdev_err(dev, "Cannot register net device, aborting\n");
- 		goto err_out_apeunmap;
- 	}
- 
--	printk(KERN_INFO "%s: Tigon3 [partno(%s) rev %04x] (%s) MAC address %pM\n",
--	       dev->name,
--	       tp->board_part_number,
--	       tp->pci_chip_rev_id,
--	       tg3_bus_string(tp, str),
--	       dev->dev_addr);
-+	netdev_info(dev, "Tigon3 [partno(%s) rev %04x] (%s) MAC address %pM\n",
-+		    tp->board_part_number,
-+		    tp->pci_chip_rev_id,
-+		    tg3_bus_string(tp, str),
-+		    dev->dev_addr);
- 
- 	if (tp->tg3_flags3 & TG3_FLG3_PHY_CONNECTED) {
- 		struct phy_device *phydev;
- 		phydev = tp->mdio_bus->phy_map[TG3_PHY_MII_ADDR];
--		printk(KERN_INFO
--		       "%s: attached PHY driver [%s] (mii_bus:phy_addr=%s)\n",
--		       tp->dev->name, phydev->drv->name,
--		       dev_name(&phydev->dev));
-+		netdev_info(dev, "attached PHY driver [%s] (mii_bus:phy_addr=%s)\n",
-+			    phydev->drv->name, dev_name(&phydev->dev));
- 	} else
--		printk(KERN_INFO
--		       "%s: attached PHY is %s (%s Ethernet) (WireSpeed[%d])\n",
--		       tp->dev->name, tg3_phy_string(tp),
--		       ((tp->tg3_flags & TG3_FLAG_10_100_ONLY) ? "10/100Base-TX" :
--			((tp->tg3_flags2 & TG3_FLG2_ANY_SERDES) ? "1000Base-SX" :
--			 "10/100/1000Base-T")),
--		       (tp->tg3_flags2 & TG3_FLG2_NO_ETH_WIRE_SPEED) == 0);
--
--	printk(KERN_INFO "%s: RXcsums[%d] LinkChgREG[%d] MIirq[%d] ASF[%d] TSOcap[%d]\n",
--	       dev->name,
--	       (tp->tg3_flags & TG3_FLAG_RX_CHECKSUMS) != 0,
--	       (tp->tg3_flags & TG3_FLAG_USE_LINKCHG_REG) != 0,
--	       (tp->tg3_flags & TG3_FLAG_USE_MI_INTERRUPT) != 0,
--	       (tp->tg3_flags & TG3_FLAG_ENABLE_ASF) != 0,
--	       (tp->tg3_flags2 & TG3_FLG2_TSO_CAPABLE) != 0);
--	printk(KERN_INFO "%s: dma_rwctrl[%08x] dma_mask[%d-bit]\n",
--	       dev->name, tp->dma_rwctrl,
--	       (pdev->dma_mask == DMA_BIT_MASK(32)) ? 32 :
--	        (((u64) pdev->dma_mask == DMA_BIT_MASK(40)) ? 40 : 64));
-+		netdev_info(dev, "attached PHY is %s (%s Ethernet) (WireSpeed[%d])\n",
-+			    tg3_phy_string(tp),
-+			    ((tp->tg3_flags & TG3_FLAG_10_100_ONLY) ? "10/100Base-TX" :
-+			     ((tp->tg3_flags2 & TG3_FLG2_ANY_SERDES) ? "1000Base-SX" :
-+			      "10/100/1000Base-T")),
-+			    (tp->tg3_flags2 & TG3_FLG2_NO_ETH_WIRE_SPEED) == 0);
+-		printk(KERN_DEBUG "  Rx ring %8.8llx:\n",
++		printk(KERN_DEBUG "  Rx ring %08llx:\n",
+ 				(unsigned long long)yp->rx_ring_dma);
+ 		for (i = 0; i < RX_RING_SIZE; i++) {
+-			printk(KERN_DEBUG " %c #%d desc. %8.8x %8.8x %8.8x\n",
++			printk(KERN_DEBUG " %c #%d desc. %08x %08x %08x\n",
+ 				   ioread32(ioaddr + RxPtr) == (long)&yp->rx_ring[i] ? '>' : ' ',
+ 				   i, yp->rx_ring[i].dbdma_cmd, yp->rx_ring[i].addr,
+ 				   yp->rx_ring[i].result_status);
+ 			if (yellowfin_debug > 6) {
+ 				if (get_unaligned((u8*)yp->rx_ring[i].addr) != 0x69) {
+ 					int j;
 +
-+	netdev_info(dev, "RXcsums[%d] LinkChgREG[%d] MIirq[%d] ASF[%d] TSOcap[%d]\n",
-+		    (tp->tg3_flags & TG3_FLAG_RX_CHECKSUMS) != 0,
-+		    (tp->tg3_flags & TG3_FLAG_USE_LINKCHG_REG) != 0,
-+		    (tp->tg3_flags & TG3_FLAG_USE_MI_INTERRUPT) != 0,
-+		    (tp->tg3_flags & TG3_FLAG_ENABLE_ASF) != 0,
-+		    (tp->tg3_flags2 & TG3_FLG2_TSO_CAPABLE) != 0);
-+	netdev_info(dev, "dma_rwctrl[%08x] dma_mask[%d-bit]\n",
-+		    tp->dma_rwctrl,
-+		    pdev->dma_mask == DMA_BIT_MASK(32) ? 32 :
-+		    ((u64)pdev->dma_mask) == DMA_BIT_MASK(40) ? 40 : 64);
++					printk(KERN_DEBUG);
+ 					for (j = 0; j < 0x50; j++)
+-						printk(" %4.4x",
+-							   get_unaligned(((u16*)yp->rx_ring[i].addr) + j));
+-					printk("\n");
++						pr_cont(" %04x",
++							get_unaligned(((u16*)yp->rx_ring[i].addr) + j));
++					pr_cont("\n");
+ 				}
+ 			}
+ 		}
+@@ -1281,8 +1275,8 @@ static int yellowfin_close(struct net_device *dev)
  
- 	return 0;
+ #ifdef YF_PROTOTYPE			/* Support for prototype hardware errata. */
+ 	if (yellowfin_debug > 0) {
+-		printk(KERN_DEBUG "%s: Received %d frames that we should not have.\n",
+-			   dev->name, bogus_rx);
++		netdev_printk(KERN_DEBUG, dev, "Received %d frames that we should not have\n",
++			      bogus_rx);
+ 	}
+ #endif
  
 -- 
 1.7.0.14.g7e948
