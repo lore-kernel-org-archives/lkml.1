@@ -1,11 +1,11 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751565Ab0BRSCs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 13:02:48 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:44649 "EHLO gir.skynet.ie"
+	id S1753299Ab0BRSGi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 13:06:38 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:44702 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750945Ab0BRSCp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 13:02:45 -0500
+	id S1751261Ab0BRSCs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Feb 2010 13:02:48 -0500
 From: Mel Gorman <mel@csn.ul.ie>
 To: Andrea Arcangeli <aarcange@redhat.com>
 Cc: Christoph Lameter <cl@linux-foundation.org>, Adam Litke <agl@us.ibm.com>,
@@ -13,9 +13,9 @@ Cc: Christoph Lameter <cl@linux-foundation.org>, Adam Litke <agl@us.ibm.com>,
        KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
        Rik van Riel <riel@redhat.com>, Mel Gorman <mel@csn.ul.ie>,
        linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: [PATCH 01/12] mm,migration: Take a reference to the anon_vma before migrating
-Date: Thu, 18 Feb 2010 18:02:31 +0000
-Message-Id: <1266516162-14154-2-git-send-email-mel@csn.ul.ie>
+Subject: [PATCH 06/12] Export unusable free space index via /proc/pagetypeinfo
+Date: Thu, 18 Feb 2010 18:02:36 +0000
+Message-Id: <1266516162-14154-7-git-send-email-mel@csn.ul.ie>
 X-Mailer: git-send-email 1.6.5
 In-Reply-To: <1266516162-14154-1-git-send-email-mel@csn.ul.ie>
 References: <1266516162-14154-1-git-send-email-mel@csn.ul.ie>
@@ -23,134 +23,204 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-rmap_walk_anon() does not use page_lock_anon_vma() for looking up and
-locking an anon_vma and it does not appear to have sufficient locking to
-ensure the anon_vma does not disappear from under it.
+Unusuable free space index is a measure of external fragmentation that
+takes the allocation size into account. For the most part, the huge page
+size will be the size of interest but not necessarily so it is exported
+on a per-order and per-zone basis via /proc/unusable_index.
 
-This patch copies an approach used by KSM to take a reference on the
-anon_vma while pages are being migrated. This should prevent rmap_walk()
-running into nasty surprises later because anon_vma has been freed.
+The index is a value between 0 and 1. It can be expressed as a
+percentage by multiplying by 100 as documented in
+Documentation/filesystems/proc.txt.
 
 Signed-off-by: Mel Gorman <mel@csn.ul.ie>
 ---
- include/linux/rmap.h |   23 +++++++++++++++++++++++
- mm/migrate.c         |   12 ++++++++++++
- mm/rmap.c            |   10 +++++-----
- 3 files changed, 40 insertions(+), 5 deletions(-)
+ Documentation/filesystems/proc.txt |   13 ++++-
+ mm/vmstat.c                        |  120 ++++++++++++++++++++++++++++++++++++
+ 2 files changed, 132 insertions(+), 1 deletions(-)
 
-diff --git a/include/linux/rmap.h b/include/linux/rmap.h
-index b019ae6..6b5a1a9 100644
---- a/include/linux/rmap.h
-+++ b/include/linux/rmap.h
-@@ -29,6 +29,9 @@ struct anon_vma {
- #ifdef CONFIG_KSM
- 	atomic_t ksm_refcount;
- #endif
-+#ifdef CONFIG_MIGRATION
-+	atomic_t migrate_refcount;
-+#endif
- 	/*
- 	 * NOTE: the LSB of the head.next is set by
- 	 * mm_take_all_locks() _after_ taking the above lock. So the
-@@ -61,6 +64,26 @@ static inline int ksm_refcount(struct anon_vma *anon_vma)
+diff --git a/Documentation/filesystems/proc.txt b/Documentation/filesystems/proc.txt
+index 1829dfb..57869d0 100644
+--- a/Documentation/filesystems/proc.txt
++++ b/Documentation/filesystems/proc.txt
+@@ -443,6 +443,7 @@ Table 1-5: Kernel info in /proc
+  sys         See chapter 2                                     
+  sysvipc     Info of SysVIPC Resources (msg, sem, shm)		(2.4)
+  tty	     Info of tty drivers
++ unusable_index Additional page allocator information (see text)(2.5)
+  uptime      System uptime                                     
+  version     Kernel version                                    
+  video	     bttv info of video resources			(2.4)
+@@ -596,7 +597,7 @@ ZONE_DMA, 4 chunks of 2^1*PAGE_SIZE in ZONE_DMA, 101 chunks of 2^4*PAGE_SIZE
+ available in ZONE_NORMAL, etc... 
+ 
+ More information relevant to external fragmentation can be found in
+-pagetypeinfo.
++pagetypeinfo and unusable_index
+ 
+ > cat /proc/pagetypeinfo
+ Page block order: 9
+@@ -637,6 +638,16 @@ unless memory has been mlock()'d. Some of the Reclaimable blocks should
+ also be allocatable although a lot of filesystem metadata may have to be
+ reclaimed to achieve this.
+ 
++> cat /proc/unusable_index
++Node 0, zone      DMA 0.000 0.000 0.000 0.001 0.005 0.013 0.021 0.037 0.037 0.101 0.230
++Node 0, zone   Normal 0.000 0.000 0.000 0.001 0.002 0.002 0.005 0.015 0.028 0.028 0.054
++
++The unusable free space index measures how much of the available free
++memory cannot be used to satisfy an allocation of a given size and is a
++value between 0 and 1. The higher the value, the more of free memory is
++unusable and by implication, the worse the external fragmentation is. This
++can be expressed as a percentage by multiplying by 100.
++
+ ..............................................................................
+ 
+ meminfo:
+diff --git a/mm/vmstat.c b/mm/vmstat.c
+index 6051fba..23f217e 100644
+--- a/mm/vmstat.c
++++ b/mm/vmstat.c
+@@ -451,6 +451,106 @@ static int frag_show(struct seq_file *m, void *arg)
  	return 0;
  }
- #endif /* CONFIG_KSM */
-+#ifdef CONFIG_MIGRATION
-+static inline void migrate_refcount_init(struct anon_vma *anon_vma)
+ 
++
++struct contig_page_info {
++	unsigned long free_pages;
++	unsigned long free_blocks_total;
++	unsigned long free_blocks_suitable;
++};
++
++/*
++ * Calculate the number of free pages in a zone, how many contiguous
++ * pages are free and how many are large enough to satisfy an allocation of
++ * the target size. Note that this function makes to attempt to estimate
++ * how many suitable free blocks there *might* be if MOVABLE pages were
++ * migrated. Calculating that is possible, but expensive and can be
++ * figured out from userspace
++ */
++static void fill_contig_page_info(struct zone *zone,
++				unsigned int suitable_order,
++				struct contig_page_info *info)
 +{
-+	atomic_set(&anon_vma->migrate_refcount, 0);
++	unsigned int order;
++
++	info->free_pages = 0;
++	info->free_blocks_total = 0;
++	info->free_blocks_suitable = 0;
++
++	for (order = 0; order < MAX_ORDER; order++) {
++		unsigned long blocks;
++
++		/* Count number of free blocks */
++		blocks = zone->free_area[order].nr_free;
++		info->free_blocks_total += blocks;
++
++		/* Count free base pages */
++		info->free_pages += blocks << order;
++
++		/* Count the suitable free blocks */
++		if (order >= suitable_order)
++			info->free_blocks_suitable += blocks <<
++						(order - suitable_order);
++	}
 +}
 +
-+static inline int migrate_refcount(struct anon_vma *anon_vma)
++/*
++ * Return an index indicating how much of the available free memory is
++ * unusable for an allocation of the requested size.
++ */
++static int unusable_free_index(unsigned int order,
++				struct contig_page_info *info)
 +{
-+	return atomic_read(&anon_vma->migrate_refcount);
-+}
-+#else
-+static inline void migrate_refcount_init(struct anon_vma *anon_vma)
-+{
++	/* No free memory is interpreted as all free memory is unusable */
++	if (info->free_pages == 0)
++		return 1000;
++
++	/*
++	 * Index should be a value between 0 and 1. Return a value to 3
++	 * decimal places.
++	 *
++	 * 0 => no fragmentation
++	 * 1 => high fragmentation
++	 */
++	return ((info->free_pages - (info->free_blocks_suitable << order)) * 1000) / info->free_pages;
++
 +}
 +
-+static inline int migrate_refcount(struct anon_vma *anon_vma)
++static void unusable_show_print(struct seq_file *m,
++					pg_data_t *pgdat, struct zone *zone)
 +{
-+	return 0;
-+}
-+#endif /* CONFIG_MIGRATE */
- 
- static inline struct anon_vma *page_anon_vma(struct page *page)
- {
-diff --git a/mm/migrate.c b/mm/migrate.c
-index 9a0db5b..63addfa 100644
---- a/mm/migrate.c
-+++ b/mm/migrate.c
-@@ -551,6 +551,7 @@ static int unmap_and_move(new_page_t get_new_page, unsigned long private,
- 	int rcu_locked = 0;
- 	int charge = 0;
- 	struct mem_cgroup *mem = NULL;
-+	struct anon_vma *anon_vma = NULL;
- 
- 	if (!newpage)
- 		return -ENOMEM;
-@@ -607,6 +608,8 @@ static int unmap_and_move(new_page_t get_new_page, unsigned long private,
- 	if (PageAnon(page)) {
- 		rcu_read_lock();
- 		rcu_locked = 1;
-+		anon_vma = page_anon_vma(page);
-+		atomic_inc(&anon_vma->migrate_refcount);
- 	}
- 
- 	/*
-@@ -646,6 +649,15 @@ skip_unmap:
- 	if (rc)
- 		remove_migration_ptes(page, page);
- rcu_unlock:
++	unsigned int order;
++	int index;
++	struct contig_page_info info;
 +
-+	/* Drop an anon_vma reference if we took one */
-+	if (anon_vma && atomic_dec_and_lock(&anon_vma->migrate_refcount, &anon_vma->lock)) {
-+		int empty = list_empty(&anon_vma->head);
-+		spin_unlock(&anon_vma->lock);
-+		if (empty)
-+			anon_vma_free(anon_vma);
++	seq_printf(m, "Node %d, zone %8s ",
++				pgdat->node_id,
++				zone->name);
++	for (order = 0; order < MAX_ORDER; ++order) {
++		fill_contig_page_info(zone, order, &info);
++		index = unusable_free_index(order, &info);
++		seq_printf(m, "%d.%03d ", index / 1000, index % 1000);
 +	}
 +
- 	if (rcu_locked)
- 		rcu_read_unlock();
- uncharge:
-diff --git a/mm/rmap.c b/mm/rmap.c
-index 278cd27..11ba74a 100644
---- a/mm/rmap.c
-+++ b/mm/rmap.c
-@@ -172,7 +172,8 @@ void anon_vma_unlink(struct vm_area_struct *vma)
- 	list_del(&vma->anon_vma_node);
++	seq_putc(m, '\n');
++}
++
++/*
++ * Display unusable free space index
++ * XXX: Could be a lot more efficient, but it's not a critical path
++ */
++static int unusable_show(struct seq_file *m, void *arg)
++{
++	pg_data_t *pgdat = (pg_data_t *)arg;
++
++	/* check memoryless node */
++	if (!node_state(pgdat->node_id, N_HIGH_MEMORY))
++		return 0;
++
++	walk_zones_in_node(m, pgdat, unusable_show_print);
++
++	return 0;
++}
++
+ static void pagetypeinfo_showfree_print(struct seq_file *m,
+ 					pg_data_t *pgdat, struct zone *zone)
+ {
+@@ -601,6 +701,25 @@ static const struct file_operations pagetypeinfo_file_ops = {
+ 	.release	= seq_release,
+ };
  
- 	/* We must garbage collect the anon_vma if it's empty */
--	empty = list_empty(&anon_vma->head) && !ksm_refcount(anon_vma);
-+	empty = list_empty(&anon_vma->head) && !ksm_refcount(anon_vma) &&
-+					!migrate_refcount(anon_vma);
- 	spin_unlock(&anon_vma->lock);
- 
- 	if (empty)
-@@ -185,6 +186,7 @@ static void anon_vma_ctor(void *data)
- 
- 	spin_lock_init(&anon_vma->lock);
- 	ksm_refcount_init(anon_vma);
-+	migrate_refcount_init(anon_vma);
- 	INIT_LIST_HEAD(&anon_vma->head);
- }
- 
-@@ -1228,10 +1230,8 @@ static int rmap_walk_anon(struct page *page, int (*rmap_one)(struct page *,
- 	/*
- 	 * Note: remove_migration_ptes() cannot use page_lock_anon_vma()
- 	 * because that depends on page_mapped(); but not all its usages
--	 * are holding mmap_sem, which also gave the necessary guarantee
--	 * (that this anon_vma's slab has not already been destroyed).
--	 * This needs to be reviewed later: avoiding page_lock_anon_vma()
--	 * is risky, and currently limits the usefulness of rmap_walk().
-+	 * are holding mmap_sem. Users without mmap_sem are required to
-+	 * take a reference count to prevent the anon_vma disappearing
- 	 */
- 	anon_vma = page_anon_vma(page);
- 	if (!anon_vma)
++static const struct seq_operations unusable_op = {
++	.start	= frag_start,
++	.next	= frag_next,
++	.stop	= frag_stop,
++	.show	= unusable_show,
++};
++
++static int unusable_open(struct inode *inode, struct file *file)
++{
++	return seq_open(file, &unusable_op);
++}
++
++static const struct file_operations unusable_file_ops = {
++	.open		= unusable_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= seq_release,
++};
++
+ #ifdef CONFIG_ZONE_DMA
+ #define TEXT_FOR_DMA(xx) xx "_dma",
+ #else
+@@ -944,6 +1063,7 @@ static int __init setup_vmstat(void)
+ #ifdef CONFIG_PROC_FS
+ 	proc_create("buddyinfo", S_IRUGO, NULL, &fragmentation_file_operations);
+ 	proc_create("pagetypeinfo", S_IRUGO, NULL, &pagetypeinfo_file_ops);
++	proc_create("unusable_index", S_IRUGO, NULL, &unusable_file_ops);
+ 	proc_create("vmstat", S_IRUGO, NULL, &proc_vmstat_file_operations);
+ 	proc_create("zoneinfo", S_IRUGO, NULL, &proc_zoneinfo_file_operations);
+ #endif
 -- 
 1.6.5
 
