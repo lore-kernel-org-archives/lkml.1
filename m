@@ -1,71 +1,79 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752426Ab0BRSUR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 13:20:17 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:38461 "EHLO
-	rcsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751823Ab0BRSUO (ORCPT
+	id S1754566Ab0BRSXL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 13:23:11 -0500
+Received: from 65-115-68-195.dia.static.qwest.net ([65.115.68.195]:3539 "EHLO
+	chronus.3leafnetworks.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754435Ab0BRSXJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 13:20:14 -0500
-Message-ID: <4B7D8200.3000902@oracle.com>
-Date: Thu, 18 Feb 2010 10:08:00 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
-MIME-Version: 1.0
-To: Denis Turischev <denis@compulab.co.il>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Samuel Ortiz <sameo@linux.intel.com>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Jean Delvare <khali@linux-fr.org>, linux-i2c@vger.kernel.org
-Subject: Re: [PATCH v3 1/3] MFD: introduce lpc_sch for Intel SCH LPC bridge
-References: <4B73DAEE.5080400@compulab.co.il> <4B73DB4B.40501@compulab.co.il> <4B7D7C13.20703@compulab.co.il> <4B7D7CD0.7080202@oracle.com> <4B7D807D.9060105@compulab.co.il>
-In-Reply-To: <4B7D807D.9060105@compulab.co.il>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt354.oracle.com [141.146.40.154]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090203.4B7D820D.002F:SCFMA4539814,ss=1,fgs=0
+	Thu, 18 Feb 2010 13:23:09 -0500
+X-Greylist: delayed 912 seconds by postgrey-1.27 at vger.kernel.org; Thu, 18 Feb 2010 13:23:08 EST
+Date: Thu, 18 Feb 2010 10:07:52 -0800
+From: Scott Lurndal <scott.lurndal@3leafsystems.com>
+To: Jason Wessel <jason.wessel@windriver.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, linux-kernel@vger.kernel.org,
+       kgdb-bugreport@lists.sourceforge.net, mingo@elte.hu, mort@sgi.com,
+       linux-arch@vger.kernel.org
+Subject: Re: [PATCH 08/28] kdb: core for kgdb back end (2 of 2)
+Message-ID: <20100218180752.GA11626@pendragon.3leafnetworks.com>
+References: <m1zl37xhmm.fsf@fess.ebiederm.org> <4B7D5704.6060504@windriver.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B7D5704.6060504@windriver.com>
+User-Agent: Mutt/1.4.2.2i
+X-OriginalArrivalTime: 18 Feb 2010 18:07:53.0444 (UTC) FILETIME=[4A432240:01CAB0C5]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/18/10 10:01, Denis Turischev wrote:
-> Intel Poulsbo (SCH) chipset LPC bridge controller contains several
-> functions. Creating and MFD driver for the LPC bridge controller allows
-> simultaneous use of SMBus and GPIO interfaces on the SCH.
+On Thu, Feb 18, 2010 at 09:04:36AM -0600, Jason Wessel wrote:
+> Eric W. Biederman wrote:
+> > Jason Wessel <jason.wessel@windriver.com> writes:
+> >
+> >   
+> >> This patch contains the hooks and instrumentation into kernel which
+> >> live outside the kernel/debug directory, which the kdb core
+> >> will call to run commands like lsmod, dmesg, bt etc...
+> >>     
+> >
+> > You know this dropping the locks from vmalloc_info and swap_info
+> > is down right ugly, and I don't believe it is safe.  That code
+> > was not designed to run while the write_lock is held.
+> >   
 > 
-> v2: added "select MFD_CORE"
-> v3: removed "default m"
+> Perhaps we can find some middle ground.  I don't mind simply not
+> allowing the information to be queried from kdb if the locks are not
+> available. 
 
-Thanks.
+IIRC the original KDB would stop all the cpus when entered,
+thus locking to avoid concurrent access to data
+was not necessary when displaying kernel data structures.  However,
+KDB user and developers were assumed to be aware that when KDB was
+entered the system context was in an indeterminate state particularly
+with respect to linked lists and other non-tabular data structures.
 
+KDB code that displayed data structures which were kept in a non-table
+data structure (linked list, tree, etc.) was be required to both
+validate each pointer it tries to follow as well as ensure that it
+detects loops (either by terminating the list traversal after a certain
+number of elements or by allowing the KDB user to terminate the traversal
+with e.g. 'q').
 
-> Signed-off-by: Denis Turischev <denis@compulab.co.il>
 > 
-> diff -Nru linux-2.6.33-rc7.orig/drivers/mfd/Kconfig
-> linux-2.6.33-rc7/drivers/mfd/Kconfig
-> --- linux-2.6.33-rc7.orig/drivers/mfd/Kconfig    2010-02-07
-> 00:17:12.000000000 +0200
-> +++ linux-2.6.33-rc7/drivers/mfd/Kconfig    2010-02-18
-> 19:56:19.000000000 +0200
-> @@ -348,6 +348,14 @@
->        read/write functions for the devices to get access to this chip.
->        This chip embeds various other multimedia funtionalities as well.
-> 
-> +config LPC_SCH
-> +    tristate "Intel SCH LPC"
-> +    depends on PCI
-> +    select MFD_CORE
-> +    help
-> +      LPC bridge function of the Intel SCH provides support for
-> +      System Management Bus and General Purpose I/O.
-> +
->  endmenu
-> 
->  menu "Multimedia Capabilities Port drivers"
+> It looks to me like the original kdb took the approach of calling the
+> setjmp() longjmp() and if there was any kind of fault, it long jumped
+> back to the original context.  Obviously that doesn't solve any kind of
+> problem with a list loop.
+
+Yes.   The list loop was expected to be handled either by the display
+code terminating after some number of traversal step or by the KDB user
+terminating the command via the keyboard (e.g. 'q' at a more-type prompt).
+
+If the new KDB framework allows other cpus to continue to run while kdb
+data structure display commands are running, then much more care must
+be taken in the display command code to avoid inconsistent data causing
+loops or #PF.
 
 
--- 
-~Randy
+scott
