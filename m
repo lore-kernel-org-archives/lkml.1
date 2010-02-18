@@ -1,57 +1,67 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757928Ab0BRLqT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 06:46:19 -0500
-Received: from queueout01-winn.ispmail.ntl.com ([81.103.221.31]:24453 "EHLO
-	queueout01-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752374Ab0BRLqS (ORCPT
+	id S1758053Ab0BRLv6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 06:51:58 -0500
+Received: from s15228384.onlinehome-server.info ([87.106.30.177]:53050 "EHLO
+	mail.x86-64.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757996Ab0BRLvz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 06:46:18 -0500
-X-Greylist: delayed 780 seconds by postgrey-1.27 at vger.kernel.org; Thu, 18 Feb 2010 06:46:17 EST
-Subject: [PATCH] Orphan DECnet
-From: Christine Caulfield <christine.caulfield@googlemail.com>
-To: netdev@vger.kernel.org, torvalds@linux-foundation.org, swhiteho@redhat.com,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 18 Feb 2010 11:33:13 +0000
-Message-ID: <1266492793.412.1.camel@rhdesktop.chrissie.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
-Content-Transfer-Encoding: 7bit
-X-Cloudmark-Analysis: v=1.1 cv=1ggfb5FlKZQUfF3vzm9UBYZ2uTfLsbs/8dSljwg5+mE= c=1 sm=0 a=mK_AVkanAAAA:8 a=FP58Ms26AAAA:8 a=2E4yy07RBI6BVMYWW14A:9 a=PgpAqoAcqb4D4dw_bPwNO64JOj8A:4 a=9xyTavCNlvEA:10 a=HpAAvcLHHh0Zw7uRqdWCyQ==:117
+	Thu, 18 Feb 2010 06:51:55 -0500
+Date: Thu, 18 Feb 2010 12:51:55 +0100
+From: Borislav Petkov <bp@amd64.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Michal Marek <mmarek@suse.cz>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>,
+       Borislav Petkov <petkovbb@googlemail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>, Jamie Lokier <jamie@shareable.org>,
+       Roland Dreier <rdreier@cisco.com>, Al Viro <viro@ZenIV.linux.org.uk>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Brian Gerst <brgerst@gmail.com>
+Subject: Re: [PATCH 2/5] bitops: compile time optimization for
+ hweight_long(CONSTANT)
+Message-ID: <20100218115155.GA20473@aftab>
+References: <4B6FDAED.9060204@zytor.com>
+ <20100208095945.GA14740@a1.tnic>
+ <20100211172424.GB19779@aftab>
+ <4B743F7D.3090605@zytor.com>
+ <20100212170649.GC3114@aftab>
+ <4B758FC0.1020600@zytor.com>
+ <20100212174751.GD3114@aftab>
+ <4B75A66A.70005@zytor.com>
+ <4B7BF5D6.3030701@suse.cz>
+ <1266490310.26719.185.camel@laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1266490310.26719.185.camel@laptop>
+Organization: Advanced Micro Devices =?iso-8859-1?Q?GmbH?=
+	=?iso-8859-1?Q?=2C_Karl-Hammerschmidt-Str=2E_34=2C_85609_Dornach_bei_M=FC?=
+	=?iso-8859-1?Q?nchen=2C_Gesch=E4ftsf=FChrer=3A_Thomas_M=2E_McCoy=2C_Giuli?=
+	=?iso-8859-1?Q?ano_Meroni=2C_Andrew_Bowd=2C_Sitz=3A_Dornach=2C_Gemeinde_A?=
+	=?iso-8859-1?Q?schheim=2C_Landkreis_M=FCnchen=2C_Registergericht_M=FCnche?=
+	=?iso-8859-1?Q?n=2C?= HRB Nr. 43632
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hiya all
+On Thu, Feb 18, 2010 at 11:51:50AM +0100, Peter Zijlstra wrote:
+> I guess one way to achieve that is to create a arch/x86/lib/hweight.c
+> that includes lib/hweight.c and give the x86 one special compile flags
+> and not build the lib on.
 
-Due to lack of time, space, motivation, hardware and probably expertise,
-I have reluctantly decided to orphan the DECnet code in the kernel.
-
-Judging by the deafening silence on the linux-decnet mailing list I
-suspect it's either not being used anyway, or the few people that are
-using it are happy with their older kernels.
-
-Chrissie
-
-
-Signed-Off-By: Christine Caulfield <christine.caulfield@googlemail.com>
-
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 412eff6..8ed3d0a 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -1733,10 +1733,9 @@ F:	include/linux/tfrc.h
- F:	net/dccp/
- 
- DECnet NETWORK LAYER
--M:	Christine Caulfield <christine.caulfield@googlemail.com>
- W:	http://linux-decnet.sourceforge.net
- L:	linux-decnet-user@lists.sourceforge.net
--S:	Maintained
-+S:	Orphan
- F:	Documentation/networking/decnet.txt
- F:	net/decnet/
- 
+That's what I thought initially too but that won't fly because the
+lib/hweight.c helpers have to be inlined into arch/x86/lib/hweight.c so
+that gcc can take care of the clobbered registers. Otherwise, it just a
+"call __sw_hweightXX" that gets issued into asm.
 
 
+-- 
+Regards/Gruss,
+Boris.
+
+-
+Advanced Micro Devices, Inc.
+Operating Systems Research Center
