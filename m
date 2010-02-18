@@ -1,96 +1,60 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753802Ab0BRSOF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 13:14:05 -0500
-Received: from mail-ew0-f228.google.com ([209.85.219.228]:51288 "EHLO
-	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753616Ab0BRSOB (ORCPT
+	id S1754011Ab0BRSOh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 13:14:37 -0500
+Received: from mail-fx0-f220.google.com ([209.85.220.220]:36928 "EHLO
+	mail-fx0-f220.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751645Ab0BRSOc convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 13:14:01 -0500
+	Thu, 18 Feb 2010 13:14:32 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=lPmXEI1F1lFTK+gUJMO1r+qScNDiRaJKaNhgG4nGiC/a18dsgHfsa15l08qdA/c604
-         fJrkjl+ZufpiYuJH4SmG9ErIC9mKb+dLk2a5FpkpezQeA96TwlT0G0/8FuiQkBhmVFNX
-         xhkebwE98qroKVPiHHJrUEePtAR6L3d9GHZ24=
-Date: Thu, 18 Feb 2010 19:13:55 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Mike Frysinger <vapier.adi@gmail.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       "David S . Miller" <davem@davemloft.net>,
-       Paul Mundt <lethal@linux-sh.org>, Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH 2/3] tracing/kprobes: Make Kconfig dependencies generic
-Message-ID: <20100218181352.GA5111@nowhere>
-References: <1266491616-6270-1-git-send-regression-fweisbec@gmail.com> <1266491616-6270-3-git-send-regression-fweisbec@gmail.com> <8bd0f97a1002180318g6ce70480x571d7d332239d68b@mail.gmail.com> <20100218120944.GA2406@osiris.boeblingen.de.ibm.com> <8bd0f97a1002180412x6cc4f280u5444f013c6e3b670@mail.gmail.com> <20100218123453.GA5136@nowhere> <20100218132521.GB2406@osiris.boeblingen.de.ibm.com> <8bd0f97a1002180601i60c5eaa4p7639091c5b617702@mail.gmail.com> <20100218145055.GB855@nowhere> <4B7D68AA.8060105@redhat.com>
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=FzGyTHY8laqPnNNxF+RcI+48gpmtYT691Rg8gcXMVMny9eaGhgTgwuolhWQjW4//Xi
+         D9eIXd8UlrdVzn1Zvm8IclizG5QiCznSixkqwnoc7YsotRySRZZT+8QaEItbSq7v5uqL
+         8vSARwSrelxAaWWOWbloRRJMNQ+mi9V26hp6c=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B7D68AA.8060105@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <4B7D5BB4.4000307@zytor.com>
+References: <1266406962-17463-1-git-send-email-luca@luca-barbieri.com>
+	 <1266406962-17463-10-git-send-email-luca@luca-barbieri.com>
+	 <87eikj54wp.fsf@basil.nowhere.org>
+	 <ff13bc9a1002180153g308b0f3dxb59959936d1e343b@mail.gmail.com>
+	 <20100218101156.GE5964@basil.fritz.box>
+	 <ff13bc9a1002180227j70e0748ag49d88c3034e3900d@mail.gmail.com>
+	 <4B7D5BB4.4000307@zytor.com>
+Date: Thu, 18 Feb 2010 19:14:30 +0100
+X-Google-Sender-Auth: 7e1c8f7f7e1235a7
+Message-ID: <ff13bc9a1002181014x5625f418j69f9702bc54c6381@mail.gmail.com>
+Subject: Re: [PATCH 09/10] x86-32: use SSE for atomic64_read/set if available
+From: Luca Barbieri <luca@luca-barbieri.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Andi Kleen <andi@firstfloor.org>, mingo@elte.hu, a.p.zijlstra@chello.nl,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 18, 2010 at 11:19:54AM -0500, Masami Hiramatsu wrote:
-> Frederic Weisbecker wrote:
-> > On Thu, Feb 18, 2010 at 09:01:12AM -0500, Mike Frysinger wrote:
-> >>> --- a/arch/Kconfig
-> >>> +++ b/arch/Kconfig
-> >>> @@ -123,6 +123,10 @@ config USE_GENERIC_SMP_HELPERS
-> >>>
-> >>>  config HAVE_REGS_AND_STACK_ACCESS_API
-> >>>        bool
-> >>> +       help
-> >>> +         This symbol should be selected by an architecure if it supports
-> >>> +         the API needed to access registers and stack entries from pt_regs.
-> >>> +         For example the kprobes-based event tracer needs this API.
-> >>
-> >> a bit vague ... arent there headers/functions people could look at ?
-> >> perhaps you're talking about the regset functions (which is an API to
-> >> access registers in pt_regs) ?  or you're talking about asm/syscall.h
-> >> (which is an API to access registers in pt_regs) ?
-> >>
-> >> i'm not asking to be a pain, i'm asking because i really havent a
-> >> clue.  if i wanted to add support for this stuff to the Blackfin arch,
-> >> i wouldnt know where to start.  even after reading this help i'd fall
-> >> back to grepping arch/x86/ and trying to divine a starting point from
-> >> there.
-> > 
-> > 
-> > If an arch support kprobes, it just needs to select
-> > HAVE_REGS_AND_STACK_ACCESS_API to figure out quickly what is missing,
-> > as gcc will barf every missing clues you need.
-> 
-> These APIs are needed for kprobe-tracer on ftrace(kernel/trace/trace_kprobe.c), 
-> which is just a consumer of kprobes (so depends on CONFIG_KPROBES).
-> 
-> I mean, if you wanna figure out that, you have to select CONFIG_KPROBE_EVENT too :)
-> And then, gcc tries to compile trace_kprobe.c and quickly dumps error messages
-> what APIs are not found :)
+> This is what kernel_fpu_begin/kernel_fpu_end is all about.  We
+> definitely cannot leave TS cleared without the user space CPU state
+> moved to its home location, or we have yet another complicated state to
+> worry about.
 
+It should be relatively simple to handle, since the current code
+doesn't really rely on the TS flag but uses TS_USEDFPU.
+It would mostly be a matter of making sure TS is restored on return to
+userspace if necessary.
 
-
-Yeah.
-
-
- 
-> > For now it is stored is asm/ptrace.h, but that might be split in
-> > the future, especially as ptrace has initially nothing related to
-> > that. A documentation that deals with filenames or API enumerations
-> > tend to be incidentally async with API evolutions.
-> 
-> yeah, now those APIs depend on pt_regs, so I put it in ptrace.h.
-> 
-> Thank you,
-
-
-But anyway, if you prefer I can add a reference to ptrace.h in
-the config help. We just need to not forgot that if we move
-these functions later :)
-
-Thanks.
-
+> I really feel that without a *strong* use case for this, there is
+> absolutely no point.
+For the specific 32-bit atomic64_t case, it is an improvement, but not
+necessarily significant in the big picture.
+Being able to efficiently use SSE in the kernel might however be more
+broadly useful.
+memcpy/memset/etc. (assuming SSE is the best option for these at least
+on some processors) and checksums come to mind.
+Also non-temporal SSE moves might be useful for things like memory
+compaction without clobbering caches.
