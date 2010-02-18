@@ -1,79 +1,187 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754526Ab0BRJis (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 04:38:48 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:42557 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751109Ab0BRJiq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 04:38:46 -0500
-Message-ID: <4B7D0A9E.9020507@redhat.com>
-Date: Thu, 18 Feb 2010 09:38:38 +0000
-From: Christine Caulfield <ccaulfie@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
-MIME-Version: 1.0
-To: David Teigland <teigland@redhat.com>
-CC: Steven Whitehouse <swhiteho@redhat.com>, cluster-devel@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Cluster-devel] dlm: Remove/bypass astd
-References: <1266413019.2907.27.camel@localhost> <20100217202920.GB29576@redhat.com>
-In-Reply-To: <20100217202920.GB29576@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1754472Ab0BRJji (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 04:39:38 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:59167 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751109Ab0BRJjf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Feb 2010 04:39:35 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Thu, 18 Feb 2010 18:36:04 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Michael Bohan <mbohan@codeaurora.org>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+       mel@csn.ul.ie
+Subject: Re: Kernel panic due to page migration accessing memory holes
+Message-Id: <20100218183604.95ee8c77.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <4B7CF8C0.4050105@codeaurora.org>
+References: <4B7C8DC2.3060004@codeaurora.org>
+	<20100218100324.5e9e8f8c.kamezawa.hiroyu@jp.fujitsu.com>
+	<4B7CF8C0.4050105@codeaurora.org>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 17/02/10 20:29, David Teigland wrote:
-> On Wed, Feb 17, 2010 at 01:23:39PM +0000, Steven Whitehouse wrote:
->>
->> While investigating Red Hat bug #537010 I started looking at the dlm's astd
->> thread. The way in which the "cast" and "bast" requests are queued looked
->> as if it might cause reordering since the "bast" requests are always
->> delivered after any pending "cast" requests which is not always the
->> correct ordering. This patch doesn't fix that bug, but it will prevent any
->> races in that bit of code, and the performance benefits are also well
->> worth having.
->>
->> I noticed that astd seems to be extraneous to requirements. The notifications
->> to astd are already running in process context, so they could be delivered
->> directly. That should improve smp performance since all the notifications
->> would no longer be funneled through a single thread.
->>
->> Also, the only other function of astd seemed to be stopping the delivery
->> of these notifications during recovery. Since, however, the notifications
->> which are intercepted at recovery time are neither modified, nor filtered
->> in any way, the only effect is to delay notifications for no obvious reason.
->>
->> I thought that probably removing the astd thread and delivering the "cast"
->> and "bast" notifications directly would improve performance due to the
->> elimination of a scheduling delay. I wrote a small test module which
->> creates a dlm lock space, and does 100,000 NL ->  EX ->  NL lock conversions.
->>
->> Having run this test 10 times each on a 2.6.33-rc8 kernel and then the modified
->> kernel including this patch, I got the following results:
->>
->> Original: Avg time 24.62 us per conversion (NL ->  EX ->  NL)
->> Modified: Avg time 9.93 us per conversion
->>
->> Which is a fairly dramatic speed up. Please consider applying this patch.
->> I've tested it in both clustered and single node GFS2 configurations. The test
->> figures are from a single node configuration which was a deliberate choice
->> in order to avoid any effects of network latency.
->
-> Wow, there's no chance I'm going to even consider something like this.
-> This would be a huge change in how the dlm has always operated, and would
-> surely introduce very serious and hard to identify bugs (and ones that may
-> not appear for a long time afterward).  Given that there's *no problem* with
-> the current method that has worked well for years, any change would be
-> completely crazy.
+On Thu, 18 Feb 2010 00:22:24 -0800
+Michael Bohan <mbohan@codeaurora.org> wrote:
 
-I think total dismissal of the idea is unreasonable. At least give it a 
-chance, and test it for a while. Your argument is valid for not 
-including it in a stable release as yet, but not for ignoring it 
-completely.
+> On 2/17/2010 5:03 PM, KAMEZAWA Hiroyuki wrote:
+> > On Wed, 17 Feb 2010 16:45:54 -0800
+> > Michael Bohan<mbohan@codeaurora.org>  wrote:
+> >> As a temporary fix, I added some code to move_freepages_block() that
+> >> inspects whether the range exceeds our first memory bank -- returning 0
+> >> if it does.  This is not a clean solution, since it requires exporting
+> >> the ARM specific meminfo structure to extract the bank information.
+> >>
+> >>      
+> > Hmm, my first impression is...
+> >
+> > - Using FLATMEM, memmap is created for the number of pages and memmap should
+> >    not have aligned size.
+> > - Using SPARSEMEM, memmap is created for aligned number of pages.
+> >
+> > Then, the range [zone->start_pfn ... zone->start_pfn + zone->spanned_pages]
+> > should be checked always.
+> >
+> >
+> >   803 static int move_freepages_block(struct zone *zone, struct page *page,
+> >   804                                 int migratetype)
+> >   805 {
+> >   816         if (start_pfn<  zone->zone_start_pfn)
+> >   817                 start_page = page;
+> >   818         if (end_pfn>= zone->zone_start_pfn + zone->spanned_pages)
+> >   819                 return 0;
+> >   820
+> >   821         return move_freepages(zone, start_page, end_page, migratetype);
+> >   822 }
+> >
+> > "(end_pfn>= zone->zone_start_pfn + zone->spanned_pages)" is checked.
+> > What zone->spanned_pages is set ? The zone's range is
+> > [zone->start_pfn ... zone->start_pfn+zone->spanned_pages], so this
+> > area should have initialized memmap. I wonder zone->spanned_pages is too big.
+> >    
+> 
+> In the block of code above running on my target, the zone_start_pfn is 
+> is 0x200 and the spanned_pages is 0x44100.  This is consistent with the 
+> values shown from the zoneinfo file below.  It is also consistent with 
+> my memory map:
+> 
+> bank0:
+>      start: 0x00200000
+>      size:  0x07B00000
+> 
+> bank1:
+>      start: 0x40000000
+>      size:  0x04300000
+> 
+> Thus, spanned_pages here is the highest address reached minus the start 
+> address of the lowest bank (eg. 0x40000000 + 0x04300000 - 0x00200000).
+> 
+> Both of these banks exist in the same zone.  This means that the check 
+> in move_freepages_block() will never be satisfied for cases that overlap 
+> with the prohibited pfns, since the zone spans invalid pfns.  Should 
+> each bank be associated with its own zone?
+> 
 
-Here we have a chance to remove some code, a kernel thread AND improve 
-performance hugely. Just saying "it's always worked like that and we're 
-not changing it" is the crazy argument IMHO.
+Hmm. okay then..(CCing Mel.)
 
-Chrissie
+ [Fact]
+ - There are 2 banks of memory and a memory hole on your machine.
+   As
+         0x00200000 - 0x07D00000
+         0x40000000 - 0x43000000
+
+ - Each bancks are in the same zone.
+ - You use FLATMEM.
+ - You see panic in move_freepages().
+ - Your host's MAX_ORDER=11....buddy allocator's alignment is 0x400000
+   Then, it seems 1st bank is not algined.
+ - You see panic in move_freepages().
+ - When you added special range check for bank0 in move_freepages(), no panic.
+   So, it seems the kernel see somehing bad at accessing memmap for a memory 
+   hole between bank0 and bank1.
+
+
+When you use FLATMEM, memmap/migrate-type-bitmap should be allocated for
+the whole range of [start_pfn....max_pfn) regardless of memory holes. 
+Then, I think you have memmap even for a memory hole [0x07D00000...0x40000000)
+
+Then, the question is why move_freepages() panic at accessing *unused* memmaps
+for memory hole. All memmap(struct page) are initialized in 
+  memmap_init()
+	-> memmap_init_zone()
+		-> ....
+  Here, all page structs are initialized (page->flags, page->lru are initialized.)
+
+Then, looking back into move_freepages().
+ ==
+ 778         for (page = start_page; page <= end_page;) {
+ 779                 /* Make sure we are not inadvertently changing nodes */
+ 780                 VM_BUG_ON(page_to_nid(page) != zone_to_nid(zone));
+ 781 
+ 782                 if (!pfn_valid_within(page_to_pfn(page))) {
+ 783                         page++;
+ 784                         continue;
+ 785                 }
+ 786 
+ 787                 if (!PageBuddy(page)) {
+ 788                         page++;
+ 789                         continue;
+ 790                 }
+ 791 
+ 792                 order = page_order(page);
+ 793                 list_del(&page->lru);
+ 794                 list_add(&page->lru,
+ 795                         &zone->free_area[order].free_list[migratetype]);
+ 796                 page += 1 << order;
+ 797                 pages_moved += 1 << order;
+ 798         }
+ ==
+Assume an access to page struct itself doesn't cause panic.
+Touching page struct's member of page->lru at el to cause panic,
+So, PageBuddy should be set.
+
+Then, there are 2 chances.
+  1. page_to_nid(page) != zone_to_nid(zone).
+  2. PageBuddy() is set by mistake.
+     (PG_reserved page never be set PG_buddy.)
+
+For both, something corrupted in unused memmap area.
+There are 2 possibility.
+ (1) memmap for memory hole was not initialized correctly.
+ (2) something wrong currupt memmap. (by overwrite.)
+
+I doubt (2) rather than (1).
+
+One of difficulty here is that your kernel is 2.6.29. Can't you try 2.6.32 and
+reproduce trouble ? Or could you check page flags for memory holes ?
+For holes, nid should be zero and PG_buddy shouldn't be set and PG_reserved
+should be set...
+
+And checking memmap initialization of memory holes in memmap_init_zone() 
+may be good start point for debug, I guess.
+
+
+Off topic:
+BTW, memory hole seems huge for your size of memory....using SPARSEMEM
+is a choice.
+
+Regards,
+-Kame
+
+
+
+
+
+
+
+
+
+
