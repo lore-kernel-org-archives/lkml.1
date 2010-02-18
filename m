@@ -1,101 +1,60 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757976Ab0BRS7Y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 13:59:24 -0500
-Received: from smtp.nokia.com ([192.100.122.233]:51743 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755304Ab0BRS5V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 13:57:21 -0500
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: Andy Shevchenko <ext-andriy.shevchenko@nokia.com>
-Subject: [PATCH 08/12] net: use new hex_to_bin() method
-Date: Thu, 18 Feb 2010 20:55:47 +0200
-Message-Id: <1266519351-3218-9-git-send-email-andy.shevchenko@gmail.com>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1266519351-3218-8-git-send-email-andy.shevchenko@gmail.com>
-References: <1266519351-3218-1-git-send-email-andy.shevchenko@gmail.com>
- <1266519351-3218-2-git-send-email-andy.shevchenko@gmail.com>
- <1266519351-3218-3-git-send-email-andy.shevchenko@gmail.com>
- <1266519351-3218-4-git-send-email-andy.shevchenko@gmail.com>
- <1266519351-3218-5-git-send-email-andy.shevchenko@gmail.com>
- <1266519351-3218-6-git-send-email-andy.shevchenko@gmail.com>
- <1266519351-3218-7-git-send-email-andy.shevchenko@gmail.com>
- <1266519351-3218-8-git-send-email-andy.shevchenko@gmail.com>
-X-OriginalArrivalTime: 18 Feb 2010 18:57:14.0905 (UTC) FILETIME=[2F6E3890:01CAB0CC]
-X-Nokia-AV: Clean
+	id S1758067Ab0BRTAT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 14:00:19 -0500
+Received: from void.printf.net ([89.145.121.20]:34105 "EHLO void.printf.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755259Ab0BRTAM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Feb 2010 14:00:12 -0500
+X-Greylist: delayed 536 seconds by postgrey-1.27 at vger.kernel.org; Thu, 18 Feb 2010 14:00:11 EST
+From: Chris Ball <cjb@laptop.org>
+To: Jonathan Corbet <corbet@lwn.net>
+Cc: LKML <linux-kernel@vger.kernel.org>, "Theodore Ts'o" <tytso@mit.edu>,
+       Jiri Kosina <trivial@kernel.org>
+Subject: Re: [PATCH] Remove drivers/char/ChangeLog
+References: <20100218095200.63509b8c@bike.lwn.net>
+Date: Thu, 18 Feb 2010 13:49:13 -0500
+In-Reply-To: <20100218095200.63509b8c@bike.lwn.net> (Jonathan Corbet's message
+	of "Thu, 18 Feb 2010 09:52:00 -0700")
+Message-ID: <m37hqamlau.fsf@pullcord.laptop.org>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andy Shevchenko <ext-andriy.shevchenko@nokia.com>
+Hi,
 
-Instead of using own implementation involve hex_to_bin() function. It requires
-to have hex_to_bin() introduced by one of previous path in series.
+   > The ChangeLog file under drivers/char is 30K of stuff dedicated
+   > to the mid-90's TTY exploits of Ted Ts'o; it has been updated
+   > once since 1998 - and that was in 2001.  It's interesting
+   > history, but we don't normally carry that kind of history inline
+   > with the code.  Let's remove it.
 
-Signed-off-by: Andy Shevchenko <ext-andriy.shevchenko@nokia.com>
----
- drivers/net/sb1250-mac.c |   32 ++------------------------------
- 1 files changed, 2 insertions(+), 30 deletions(-)
+Should we lose the others too, then?
 
-diff --git a/drivers/net/sb1250-mac.c b/drivers/net/sb1250-mac.c
-index 564d4d7..87c57cb 100644
---- a/drivers/net/sb1250-mac.c
-+++ b/drivers/net/sb1250-mac.c
-@@ -2184,34 +2184,6 @@ static void sbmac_setmulti(struct sbmac_softc *sc)
- 
- #if defined(SBMAC_ETH0_HWADDR) || defined(SBMAC_ETH1_HWADDR) || defined(SBMAC_ETH2_HWADDR) || defined(SBMAC_ETH3_HWADDR)
- /**********************************************************************
-- *  SBMAC_PARSE_XDIGIT(str)
-- *
-- *  Parse a hex digit, returning its value
-- *
-- *  Input parameters:
-- *  	   str - character
-- *
-- *  Return value:
-- *  	   hex value, or -1 if invalid
-- ********************************************************************* */
--
--static int sbmac_parse_xdigit(char str)
--{
--	int digit;
--
--	if ((str >= '0') && (str <= '9'))
--		digit = str - '0';
--	else if ((str >= 'a') && (str <= 'f'))
--		digit = str - 'a' + 10;
--	else if ((str >= 'A') && (str <= 'F'))
--		digit = str - 'A' + 10;
--	else
--		return -1;
--
--	return digit;
--}
--
--/**********************************************************************
-  *  SBMAC_PARSE_HWADDR(str,hwaddr)
-  *
-  *  Convert a string in the form xx:xx:xx:xx:xx:xx into a 6-byte
-@@ -2231,7 +2203,7 @@ static int sbmac_parse_hwaddr(char *str, unsigned char *hwaddr)
- 	int idx = 6;
- 
- 	while (*str && (idx > 0)) {
--		digit1 = sbmac_parse_xdigit(*str);
-+		digit1 = hex_to_bin(*str);
- 		if (digit1 < 0)
- 			return -1;
- 		str++;
-@@ -2243,7 +2215,7 @@ static int sbmac_parse_hwaddr(char *str, unsigned char *hwaddr)
- 			digit1 = 0;
- 		}
- 		else {
--			digit2 = sbmac_parse_xdigit(*str);
-+			digit2 = hex_to_bin(*str);
- 			if (digit2 < 0)
- 				return -1;
- 			str++;
+pullcord:cjb~/git/linux-2.6 % du -sh **/ChangeLog
+8.0K	arch/arm/nwfpe/ChangeLog
+32K	drivers/char/ChangeLog
+20K	drivers/parport/ChangeLog
+16K	fs/befs/ChangeLog
+100K	fs/ntfs/ChangeLog
+
+Last changed dates:
+
+arch/arm/nwfpe/ChangeLog  = 2003/03
+drivers/parport/ChangeLog = 2001/10
+fs/befs/ChangeLog         = 2002/03
+fs/ntfs/ChangeLog         = 2007/10
+
+The ntfs changelog is modified recently, but the ChangeLog text added
+to it is duplicated as the commit message for each change, so those
+ChangeLog entries are redundant -- they're already in the commit
+history, unless you want changes from earlier than the initial import
+cutoff in 2004, in which case you'd need the history repo for those.
+
+- Chris.
 -- 
-1.5.6.5
-
+Chris Ball   <cjb@laptop.org>
+One Laptop Per Child
