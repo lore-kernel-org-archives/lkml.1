@@ -1,56 +1,45 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757696Ab0BRTD1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 14:03:27 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:45466 "EHLO
-	bob.linux.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755154Ab0BRTD0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 14:03:26 -0500
-From: Alan Cox <alan@linux.intel.com>
-Subject: [RESEND PATCH] dvb: copy_from_user checks
-To: mchehab@infradead.org, linux-kernel@vger.kernel.org
-Date: Thu, 18 Feb 2010 18:39:16 +0000
-Message-ID: <20100218183753.8212.3164.stgit@localhost.localdomain>
-User-Agent: StGIT/0.14.3
+	id S1758170Ab0BRTHI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 14:07:08 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:43443 "EHLO mail.zytor.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752532Ab0BRTHG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Feb 2010 14:07:06 -0500
+Message-ID: <4B7D8FA5.40901@zytor.com>
+Date: Thu, 18 Feb 2010 11:06:13 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: Luca Barbieri <luca@luca-barbieri.com>
+CC: Andi Kleen <andi@firstfloor.org>, mingo@elte.hu, a.p.zijlstra@chello.nl,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 09/10] x86-32: use SSE for atomic64_read/set if available
+References: <1266406962-17463-1-git-send-email-luca@luca-barbieri.com>	 <1266406962-17463-10-git-send-email-luca@luca-barbieri.com>	 <87eikj54wp.fsf@basil.nowhere.org>	 <ff13bc9a1002180153g308b0f3dxb59959936d1e343b@mail.gmail.com>	 <20100218101156.GE5964@basil.fritz.box>	 <ff13bc9a1002180227j70e0748ag49d88c3034e3900d@mail.gmail.com>	 <4B7D7060.1080908@zytor.com> <ff13bc9a1002181049v2605b442y9f33008548b58d48@mail.gmail.com>
+In-Reply-To: <ff13bc9a1002181049v2605b442y9f33008548b58d48@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I don't believe the frag count can ever get loaded with a negative value
-even with the -2 but neither the compiler (nor I ;)) can prove it so keep
-us both happy.
+On 02/18/2010 10:49 AM, Luca Barbieri wrote:
+>> This really sounds like the wrong optimization.  These functions aren't
+>> exactly all that complex in assembly (which would also allow them to be
+>> simple cli/do stuff/sti), and instead relying on gcc features which may
+>> or may not be well supported on x86 is inviting breakage down the line.
+>>
+>> That is particularly damaging, since the remaining 486-class users tend
+>> to be deeply embedded and thus we only find problems later.
+> 
+> There is the downside of adding a whole 386/486-specific implementation.
+> 
+> It's not too hard though, and if we don't care about 486 SMP, it may
+> be a better option.
 
-Signed-off-by: Alan Cox <alan@linux.intel.com>
----
+We don't care about 486 SMP.  And yes, I think it is a better option.
+At least an assembly option, once implemented, will *stay* implemented
+and won't break due to some obscure gcc change.
 
- drivers/media/dvb/dvb-core/dvb_ca_en50221.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
-
-
-diff --git a/drivers/media/dvb/dvb-core/dvb_ca_en50221.c b/drivers/media/dvb/dvb-core/dvb_ca_en50221.c
-index cb22da5..2cf03e9 100644
---- a/drivers/media/dvb/dvb-core/dvb_ca_en50221.c
-+++ b/drivers/media/dvb/dvb-core/dvb_ca_en50221.c
-@@ -1280,7 +1280,7 @@ static ssize_t dvb_ca_en50221_io_write(struct file *file,
- 	u8 slot, connection_id;
- 	int status;
- 	u8 fragbuf[HOST_LINK_BUF_SIZE];
--	int fragpos = 0;
-+	unsigned int fragpos = 0;
- 	int fraglen;
- 	unsigned long timeout;
- 	int written;
-@@ -1308,6 +1308,8 @@ static ssize_t dvb_ca_en50221_io_write(struct file *file,
- 		fraglen = ca->slot_info[slot].link_buf_size - 2;
- 		if ((count - fragpos) < fraglen)
- 			fraglen = count - fragpos;
-+		if (fraglen < 0)
-+		        fraglen = 0;
- 
- 		fragbuf[0] = connection_id;
- 		fragbuf[1] = ((fragpos + fraglen) < count) ? 0x80 : 0x00;
+	-hpa
 
