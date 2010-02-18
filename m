@@ -1,23 +1,23 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756401Ab0BRAcF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 19:32:05 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60252
+	id S1757465Ab0BRAcm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 19:32:42 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60261
 	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753133Ab0BRAcB (ORCPT
+	by vger.kernel.org with ESMTP id S1753355Ab0BRAck (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 19:32:01 -0500
-Date: Wed, 17 Feb 2010 16:32:16 -0800 (PST)
-Message-Id: <20100217.163216.50819747.davem@davemloft.net>
+	Wed, 17 Feb 2010 19:32:40 -0500
+Date: Wed, 17 Feb 2010 16:32:55 -0800 (PST)
+Message-Id: <20100217.163255.133898079.davem@davemloft.net>
 To: apetlund@simula.no
 Cc: netdev@vger.kernel.org, ilpo.jarvinen@helsinki.fi, eric.dumazet@gmail.com,
        hannemann@nets.rwth-aachen.de, linux-kernel@vger.kernel.org,
        shemminger@vyatta.com, william.allen.simpson@gmail.com,
        damian@tvk.rwth-aachen.de, ebiederm@xmission.com
-Subject: Re: [net-next PATCH v4 1/3] net: TCP thin-stream detection
+Subject: Re: [net-next PATCH v4 2/3] net: TCP thin linear timeouts
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <4B7AAE60.3070305@simula.no>
-References: <4B7AAE60.3070305@simula.no>
+In-Reply-To: <4B7AAE69.8020701@simula.no>
+References: <4B7AAE69.8020701@simula.no>
 X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -27,26 +27,18 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Andreas Petlund <apetlund@simula.no>
-Date: Tue, 16 Feb 2010 15:40:32 +0100
+Date: Tue, 16 Feb 2010 15:40:41 +0100
 
+> @@ -341,6 +342,8 @@ struct tcp_sock {
+>  	u16	advmss;		/* Advertised MSS			*/
+>  	u8	frto_counter;	/* Number of new acks after RTO */
+>  	u8	nonagle;	/* Disable Nagle algorithm?             */
+> +	u8      thin_lto    : 1,/* Use linear timeouts for thin streams */
+> +		thin_undef  : 7;
 >  
-> +/* Determines whether this is a thin stream (which may suffer from
-> + * increased latency). Used to trigger latency-reducing mechanisms.*/
-> +static inline unsigned int tcp_stream_is_thin(struct tcp_sock *tp)
-> +{
-> +	return tp->packets_out < 4 && !tcp_in_initial_slowstart(tp);
-> +}
-> +
->  /* /proc */
 
-Please format comments:
+There is now a gap of 3 unused bytes here in this critical
+core TCP socket data structure.
 
-	/* Like this.  */
-
-or:
-
-	/* Like this.
-	 * And this.
-	 */
-
-Thanks.
+Please either find a way to avoid this hole, or document
+it with a comment.
