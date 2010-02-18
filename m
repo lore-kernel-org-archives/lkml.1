@@ -1,150 +1,84 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758502Ab0BRQTr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 11:19:47 -0500
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:47066 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755850Ab0BRQTq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 11:19:46 -0500
-Date: Thu, 18 Feb 2010 11:21:28 -0500
-From: Neil Horman <nhorman@tuxdriver.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: add_timer_on: in-kernel users _all_ buggy ?
-Message-ID: <20100218162128.GA16827@shamino.rdu.redhat.com>
-References: <20100218142800.GB5825@Krystal>
+	id S1758587Ab0BRQUI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 11:20:08 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:12365 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758539Ab0BRQUF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Feb 2010 11:20:05 -0500
+Message-ID: <4B7D68AA.8060105@redhat.com>
+Date: Thu, 18 Feb 2010 11:19:54 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc11 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100218142800.GB5825@Krystal>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-Spam-Score: -3.9 (---)
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: Mike Frysinger <vapier.adi@gmail.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       "David S . Miller" <davem@davemloft.net>,
+       Paul Mundt <lethal@linux-sh.org>, Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH 2/3] tracing/kprobes: Make Kconfig dependencies generic
+References: <1266491616-6270-1-git-send-regression-fweisbec@gmail.com> <1266491616-6270-3-git-send-regression-fweisbec@gmail.com> <8bd0f97a1002180318g6ce70480x571d7d332239d68b@mail.gmail.com> <20100218120944.GA2406@osiris.boeblingen.de.ibm.com> <8bd0f97a1002180412x6cc4f280u5444f013c6e3b670@mail.gmail.com> <20100218123453.GA5136@nowhere> <20100218132521.GB2406@osiris.boeblingen.de.ibm.com> <8bd0f97a1002180601i60c5eaa4p7639091c5b617702@mail.gmail.com> <20100218145055.GB855@nowhere>
+In-Reply-To: <20100218145055.GB855@nowhere>
+X-Enigmail-Version: 1.0.1
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 18, 2010 at 09:28:00AM -0500, Mathieu Desnoyers wrote:
-> * Mathieu Desnoyers (compudj@krystal.dyndns.org) wrote:
-> > * Thomas Gleixner (tglx@linutronix.de) wrote:
-> > > On Tue, 16 Feb 2010, Mathieu Desnoyers wrote:
-> > > > > The function is called from an IPI. That's a LTTNG problem, not a RT one.
-> > > > 
-> > > > I use del_timer in IPI to delete lttng per-cpu timers on all CPUs. I
-> > > > have to do this because timers created with add_timer_on are documented
-> > > > to be incompatible with del_timer_sync():
-> > > > 
-> > > >  * Synchronization rules: Callers must prevent restarting of the timer,
-> > > >  * otherwise this function is meaningless. It must not be called from
-> > > >  * interrupt contexts. The caller must not hold locks which would prevent
-> > > >  * completion of the timer's handler. The timer's handler must not call
-> > > >  * add_timer_on(). Upon exit the timer is not queued and the handler is
-> > > >  * not running on any CPU.
-> > > 
-> > > Errm. The documentation says: 
-> > > 
-> > >       "The timer's handler must not call add_timer_on()." 
-> > > 
-> > > It's not talking about a timer which was initialized with
-> > > add_timer_on().
-> > > 
-> > >  And your per cpu timer handlers have no requirement to call
-> > > add_timer_on() simply because add/mod_timer() is requeueing the timer
-> > > on the same cpu on which the handler runs. 
-> > > 
-> > > So the IPI is just a solution for a non existing problem.
-> > 
-> > Oh, right. Thanks for the explanation. I'll look into moving LTTng to a
-> > saner del_timer_sync() scheme to delete the timers.
+Frederic Weisbecker wrote:
+> On Thu, Feb 18, 2010 at 09:01:12AM -0500, Mike Frysinger wrote:
+>>> --- a/arch/Kconfig
+>>> +++ b/arch/Kconfig
+>>> @@ -123,6 +123,10 @@ config USE_GENERIC_SMP_HELPERS
+>>>
+>>>  config HAVE_REGS_AND_STACK_ACCESS_API
+>>>        bool
+>>> +       help
+>>> +         This symbol should be selected by an architecure if it supports
+>>> +         the API needed to access registers and stack entries from pt_regs.
+>>> +         For example the kprobes-based event tracer needs this API.
+>>
+>> a bit vague ... arent there headers/functions people could look at ?
+>> perhaps you're talking about the regset functions (which is an API to
+>> access registers in pt_regs) ?  or you're talking about asm/syscall.h
+>> (which is an API to access registers in pt_regs) ?
+>>
+>> i'm not asking to be a pain, i'm asking because i really havent a
+>> clue.  if i wanted to add support for this stuff to the Blackfin arch,
+>> i wouldnt know where to start.  even after reading this help i'd fall
+>> back to grepping arch/x86/ and trying to divine a starting point from
+>> there.
 > 
-> Double-checking this:
 > 
-> add_timer_on() needs to be paired with mod_timer_pinned(), otherwise
-> NO_HZ SMP config can rebalance the timer to a different CPU. I am fixing
-> this in lttng 0.194. These per-cpu timers, of course, should usually be
-> deferrable (they are in lttng).
-> 
-> (looking at kernel 2.6.32.4 here)
-> Looking at the kernel/time/clocksource.c watchdog, I wonder how
-> del_timer manages to synchronize the timer teardown. The handler,
-> clocksource_watchdog(), uses add_timer_on(), which prohibits using
-> del_timer_sync(). This seems rather odd. If we remove the watchdog and
-> re-add it, it may still be in use while we initialize the timer
-> structure.
-> 
-> Also, net/core/drop_monitor.c trace_drop_common usage of add_timer_on
-> seems odd:
-> 
-> Executing (AFAIK) with preempt on, data points to a per-cpu timer:
-> 
->        if (!timer_pending(&data->send_timer)) {
->                 data->send_timer.expires = jiffies + dm_delay * HZ;
->                 add_timer_on(&data->send_timer, smp_processor_id());
->        }
-> 
-> How is timer_pending synchronized with the target CPU timer wheel ?
-> 
-Hm, I think I see your point here.  You're suggesting that a call to one of the
-tracepoint hooks in the drop monitor can race against a second call to the hook
-from an interrupt context that pre-empted the first, leading to double add of
-the timer?  I agree, in fact I think its likely worse that that, the shared data
-on the skb that I modify there can get corrupted in that case as well.  I expect
-a bit of refactoring paired with a local_irq_save/restore should fix that.
+> If an arch support kprobes, it just needs to select
+> HAVE_REGS_AND_STACK_ACCESS_API to figure out quickly what is missing,
+> as gcc will barf every missing clues you need.
 
-Thanks!
-Neil
+These APIs are needed for kprobe-tracer on ftrace(kernel/trace/trace_kprobe.c), 
+which is just a consumer of kprobes (so depends on CONFIG_KPROBES).
 
-> Wait, there's more: arch/x86/kernel/cpu/mcheck/mce.c uses both
-> add_timer_on in its handler and del_timer_sync (which is incorrect).
-> 
-> arch/x86/kernel/apic/x2apic_uv_x.c almost has it right, but maybe it
-> should use del_timer_sync ?
-> 
-> arch/powerpc/platforms/chrp/setup.c should learn about
-> mod_timer_pinned().
-> 
-> Which leads to the following question: is there _any_ add_timer_on()
-> kernel user that's not currently buggy ? ;-) Maybe this calls for better
-> documentation of this interface. From what I've learn from digging into
-> cpufreq to debug its incorrect timer teardown last year, I fear there
-> are lots and lots of buggy per-cpu _and_ standard timer interface users
-> out there.
-> 
-> Maybe adding some debugging options, e.g. checking that a timer created
-> with add_timer_on is always modified by mod_timer_pinned, and is always
-> deferrable, and deleted by del_timer_sync could help discovering a
-> couple of outlawyer.
-> 
-> Thanks,
-> 
-> Mathieu
-> 
-> 
-> > 
-> > Thanks,
-> > 
-> > Mathieu
-> > 
-> > > 
-> > > Thanks,
-> > > 
-> > > 	tglx
-> > > 
-> > 
-> > -- 
-> > Mathieu Desnoyers
-> > OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
-> > 
-> > _______________________________________________
-> > ltt-dev mailing list
-> > ltt-dev@lists.casi.polymtl.ca
-> > http://lists.casi.polymtl.ca/cgi-bin/mailman/listinfo/ltt-dev
-> > 
-> 
-> -- 
-> Mathieu Desnoyers
-> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
-> 
+I mean, if you wanna figure out that, you have to select CONFIG_KPROBE_EVENT too :)
+And then, gcc tries to compile trace_kprobe.c and quickly dumps error messages
+what APIs are not found :)
+
+> For now it is stored is asm/ptrace.h, but that might be split in
+> the future, especially as ptrace has initially nothing related to
+> that. A documentation that deals with filenames or API enumerations
+> tend to be incidentally async with API evolutions.
+
+yeah, now those APIs depend on pt_regs, so I put it in ptrace.h.
+
+Thank you,
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
