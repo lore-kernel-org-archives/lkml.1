@@ -1,118 +1,116 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751811Ab0BRXEr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 18:04:47 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52465 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751594Ab0BRXEp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 18:04:45 -0500
-Date: Thu, 18 Feb 2010 15:02:04 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: "H. Peter Anvin" <hpa@linux.intel.com>
-cc: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Arjan van de Ven <arjan@linux.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Rik van Riel <riel@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] mm: Make copy_from_user() in migrate.c statically
- predictable
-In-Reply-To: <1266533033-24457-1-git-send-email-hpa@linux.intel.com>
-Message-ID: <alpine.LFD.2.00.1002181447080.4141@localhost.localdomain>
-References: <1266533033-24457-1-git-send-email-hpa@linux.intel.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1751833Ab0BRXVL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 18:21:11 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:1025 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751520Ab0BRXVJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Feb 2010 18:21:09 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+Subject: [PATCH -tip 2/9] perf probe: Update perf probe document
+To: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>
+Cc: Paul Mackerras <paulus@samba.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Jason Baron <jbaron@redhat.com>,
+       "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Ulrich Drepper <drepper@redhat.com>, Roland McGrath <roland@redhat.com>,
+       Mike Galbraith <efault@gmx.de>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>
+Date: Thu, 18 Feb 2010 18:27:18 -0500
+Message-ID: <20100218232718.21679.39260.stgit@dhcp-100-2-132.bos.redhat.com>
+In-Reply-To: <20100218232701.21679.5195.stgit@dhcp-100-2-132.bos.redhat.com>
+References: <20100218232701.21679.5195.stgit@dhcp-100-2-132.bos.redhat.com>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Update perf-probe.txt to suit to current perf-probe command
+and add some examples.
 
-
-On Thu, 18 Feb 2010, H. Peter Anvin wrote:
-> 
-> Make the logic more explicit and therefore easier for gcc to
-> understand.
-
-Hmm. When making simplifications like this, I would really suggest you 
-also move the declaration of the variable itself into the block where it 
-is now used, rather than leaving it be function-wide.
-
-Yes, it's used in the final condition of the for-loop, but that whole loop 
-is just screwy. The 'err' handling is insane. Sometimes 'err' is a return 
-value form copy_to/from_user, and sometimes it's a errno. The two are 
-_not_ the same thing, they don't even have the same type!
-
-And 'i' is totally useless too.
-
-So that whole loop should be rewritten.
-
-I don't even have page migration enabled, so I haven't even compile-tested 
-this, but wouldn't something like this work? It's smaller, gets rid of two 
-pointless variables, and looks simpler to me. Hmm?
-
-		Linus
-
+Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: K.Prasad <prasad@linux.vnet.ibm.com>
 ---
- mm/migrate.c |   36 ++++++++++++++----------------------
- 1 files changed, 14 insertions(+), 22 deletions(-)
 
-diff --git a/mm/migrate.c b/mm/migrate.c
-index 9a0db5b..933d5b1 100644
---- a/mm/migrate.c
-+++ b/mm/migrate.c
-@@ -999,36 +999,28 @@ static int do_pages_stat(struct mm_struct *mm, unsigned long nr_pages,
- 			 const void __user * __user *pages,
- 			 int __user *status)
- {
--#define DO_PAGES_STAT_CHUNK_NR 16
-+#define DO_PAGES_STAT_CHUNK_NR 16ul
- 	const void __user *chunk_pages[DO_PAGES_STAT_CHUNK_NR];
- 	int chunk_status[DO_PAGES_STAT_CHUNK_NR];
--	unsigned long i, chunk_nr = DO_PAGES_STAT_CHUNK_NR;
--	int err;
+ tools/perf/Documentation/perf-probe.txt |   28 ++++++++++++++++++++++++++--
+ 1 files changed, 26 insertions(+), 2 deletions(-)
+
+diff --git a/tools/perf/Documentation/perf-probe.txt b/tools/perf/Documentation/perf-probe.txt
+index 2de3407..5fe63c0 100644
+--- a/tools/perf/Documentation/perf-probe.txt
++++ b/tools/perf/Documentation/perf-probe.txt
+@@ -41,7 +41,8 @@ OPTIONS
  
--	for (i = 0; i < nr_pages; i += chunk_nr) {
--		if (chunk_nr > nr_pages - i)
--			chunk_nr = nr_pages - i;
-+	while (nr_pages) {
-+		unsigned long chunk_nr;
+ -d::
+ --del=::
+-	Delete a probe event.
++	Delete probe events. This accepts glob wildcards('*', '?') and character
++	classes(e.g. [a-z], [!A-Z]).
  
--		err = copy_from_user(chunk_pages, &pages[i],
--				     chunk_nr * sizeof(*chunk_pages));
--		if (err) {
--			err = -EFAULT;
--			goto out;
--		}
-+		chunk_nr = min(nr_pages, DO_PAGES_STAT_CHUNK_NR);
+ -l::
+ --list::
+@@ -50,7 +51,11 @@ OPTIONS
+ -L::
+ --line=::
+ 	Show source code lines which can be probed. This needs an argument
+-	which specifies a range of the source code.
++	which specifies a range of the source code. (see LINE SYNTAX for detail)
 +
-+		if (copy_from_user(chunk_pages, pages, chunk_nr * sizeof(*pages)))
-+			break;
++-f::
++--force::
++	Forcibly add events with existing name.
  
- 		do_pages_stat_array(mm, chunk_nr, chunk_pages, chunk_status);
+ PROBE SYNTAX
+ ------------
+@@ -76,6 +81,25 @@ and 'ALN2' is end line number in the file. It is also possible to specify how
+ many lines to show by using 'NUM'.
+ So, "source.c:100-120" shows lines between 100th to l20th in source.c file. And "func:10+20" shows 20 lines from 10th line of func function.
  
--		err = copy_to_user(&status[i], chunk_status,
--				   chunk_nr * sizeof(*chunk_status));
--		if (err) {
--			err = -EFAULT;
--			goto out;
--		}
--	}
--	err = 0;
-+		if (copy_to_user(status, chunk_status, chunk_nr * sizeof(*status)))
-+			break;
- 
--out:
--	return err;
-+		pages += chunk_nr;
-+		status += chunk_nr;
-+		nr_pages -= chunk_nr;
-+	}
-+	return nr_pages ? -EFAULT : 0;
- }
- 
- /*
++EXAMPLES
++--------
++Display which lines in schedule() can be probed:
++
++ ./perf probe --line schedule
++
++Add a probe on schedule() function 12th line with recording cpu local variable:
++
++ ./perf probe schedule:12 cpu
++ or
++ ./perf probe --add='schedule:12 cpu'
++
++ this will add one or more probes which has the name start with "schedule".
++
++Delete all probes on schedule().
++
++ ./perf probe --del='schedule*'
++
++
+ SEE ALSO
+ --------
+ linkperf:perf-trace[1], linkperf:perf-record[1]
+
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
