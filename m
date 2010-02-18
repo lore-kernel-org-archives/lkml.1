@@ -1,42 +1,71 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753122Ab0BRNTh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 08:19:37 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:41195 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751623Ab0BRNTg (ORCPT
+	id S1753397Ab0BRNUm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 08:20:42 -0500
+Received: from relay01.mx.bawue.net ([193.7.176.67]:55643 "EHLO
+	relay01.mx.bawue.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751109Ab0BRNUl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 08:19:36 -0500
-Subject: Re: [PATCHv4 2/2] powerpc: implement arch_scale_smt_power for
- Power7
-From: Peter Zijlstra <peterz@infradead.org>
-To: Michael Neuling <mikey@neuling.org>
-Cc: Joel Schopp <jschopp@austin.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-       ego@in.ibm.com
-In-Reply-To: <1266499023.26719.597.camel@laptop>
-References: <1264017638.5717.121.camel@jschopp-laptop>
-	 <1264017847.5717.132.camel@jschopp-laptop>
-	 <1264548495.12239.56.camel@jschopp-laptop>
-	 <1264720855.9660.22.camel@jschopp-laptop>
-	 <1264721088.10385.1.camel@jschopp-laptop>
-	 <1265403478.6089.41.camel@jschopp-laptop>
-	 <1266142340.5273.418.camel@laptop>  <25851.1266445258@neuling.org>
-	 <1266499023.26719.597.camel@laptop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 18 Feb 2010 14:19:19 +0100
-Message-ID: <1266499159.26719.605.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 7bit
+	Thu, 18 Feb 2010 08:20:41 -0500
+Date: Thu, 18 Feb 2010 14:20:32 +0100
+From: lkml@Think-Future.de
+To: Linux Kernel-Liste <linux-kernel@vger.kernel.org>
+Subject: kernel/xserver-xorg: X crash while either idle or busy
+Message-ID: <20100218132032.GE2165@localhost>
+Reply-To: lkml@Think-Future.de
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Bkp: p2mi
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-02-18 at 14:17 +0100, Peter Zijlstra wrote:
-> 
-> There's one fundamental assumption, and one weakness in the
-> implementation.
-> 
-Aside from bugs and the like.. ;-)
+  Hi,
+
+This bug report has been posted to the debian bugtracker for the
+x-server-org deb package:
+
+http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=570124
+
+This link contains an extensive bug-report together with any relevant
+information available.
+
+The description is:
+
+# Package: xserver-xorg
+# Version: 1:7.5+2
+# Severity: severe
+# 
+# Data loss guaranteed. While writing a book, X crashed, part of the book had
+# to be re-written.
+# 
+# Whether using the system or not, X crashes semi-reproducibly. Be it after a 
+# suspend-resume cycle or while just browsing the net, using openoffice writer, 
+# doing nothing.. It just keeps crashing one day or the other. Mean times between
+# crashing is from 2 hours to 2 days, sometimes more, sometimes less.
+# 
+# When the system crashes after opening the cover/lid it usually takes the whole kernel 
+# down. Reboot only.
+# 
+# Less often but often enough, the crashing X just hangs, locking the
+# system up. Reboot only.
+# 
+# This is occurring since january 2009 (switch-over to linux) over a variety of 
+# kernel, kms, intel-drv and X versions. May well be different causes but 
+# seems quite the same to us..
+# 
+# System is a rather usual ACER Extensa 5220 notebook.
+
+A complete bug-report is available via the above link. 
+
+The answer - among other ideas - was that if the kernel is 
+hanging/freezing it is supposed to be reported to the lkml.
+
+So posting here, fyi.
+
+Thank you.
+
+Nils
 
