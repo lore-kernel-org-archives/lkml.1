@@ -1,175 +1,73 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758635Ab0BRQlW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 11:41:22 -0500
-Received: from mail.openrapids.net ([64.15.138.104]:50356 "EHLO
-	blackscsi.openrapids.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753421Ab0BRQlV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 11:41:21 -0500
-Date: Thu, 18 Feb 2010 11:41:18 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-To: Neil Horman <nhorman@tuxdriver.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: add_timer_on: in-kernel users _all_ buggy ?
-Message-ID: <20100218164118.GA12136@Krystal>
-References: <20100218142800.GB5825@Krystal> <20100218162128.GA16827@shamino.rdu.redhat.com>
+	id S1758646Ab0BRQmB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 11:42:01 -0500
+Received: from nox.protox.org ([88.191.38.29]:47687 "EHLO nox.protox.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753421Ab0BRQl7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Feb 2010 11:41:59 -0500
+Date: Thu, 18 Feb 2010 17:35:05 +0100
+From: Jerome Glisse <glisse@freedesktop.org>
+To: hpa@zytor.com, suresh.b.siddha@intel.com, venkatesh.pallipadi@intel.com
+Cc: thellstrom@vmware.com, airlied@linux.ie, currojerez@riseup.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: Uncool feature for TTM introduced by x86, pat: Use page flags to
+ track memtypes of RAM pages
+Message-ID: <20100218163505.GA11509@localhost.localdomain>
+References: <20100218153032.GA4506@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100218162128.GA16827@shamino.rdu.redhat.com>
-X-Editor: vi
-X-Info: http://www.efficios.com
-X-Operating-System: Linux/2.6.26-2-686 (i686)
-X-Uptime: 11:27:03 up 26 days, 19:04,  8 users,  load average: 0.10, 0.23,
-	0.34
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20100218153032.GA4506@localhost.localdomain>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Neil Horman (nhorman@tuxdriver.com) wrote:
-> On Thu, Feb 18, 2010 at 09:28:00AM -0500, Mathieu Desnoyers wrote:
-> > * Mathieu Desnoyers (compudj@krystal.dyndns.org) wrote:
-> > > * Thomas Gleixner (tglx@linutronix.de) wrote:
-> > > > On Tue, 16 Feb 2010, Mathieu Desnoyers wrote:
-> > > > > > The function is called from an IPI. That's a LTTNG problem, not a RT one.
-> > > > > 
-> > > > > I use del_timer in IPI to delete lttng per-cpu timers on all CPUs. I
-> > > > > have to do this because timers created with add_timer_on are documented
-> > > > > to be incompatible with del_timer_sync():
-> > > > > 
-> > > > >  * Synchronization rules: Callers must prevent restarting of the timer,
-> > > > >  * otherwise this function is meaningless. It must not be called from
-> > > > >  * interrupt contexts. The caller must not hold locks which would prevent
-> > > > >  * completion of the timer's handler. The timer's handler must not call
-> > > > >  * add_timer_on(). Upon exit the timer is not queued and the handler is
-> > > > >  * not running on any CPU.
-> > > > 
-> > > > Errm. The documentation says: 
-> > > > 
-> > > >       "The timer's handler must not call add_timer_on()." 
-> > > > 
-> > > > It's not talking about a timer which was initialized with
-> > > > add_timer_on().
-> > > > 
-> > > >  And your per cpu timer handlers have no requirement to call
-> > > > add_timer_on() simply because add/mod_timer() is requeueing the timer
-> > > > on the same cpu on which the handler runs. 
-> > > > 
-> > > > So the IPI is just a solution for a non existing problem.
-> > > 
-> > > Oh, right. Thanks for the explanation. I'll look into moving LTTng to a
-> > > saner del_timer_sync() scheme to delete the timers.
-> > 
-> > Double-checking this:
-> > 
-> > add_timer_on() needs to be paired with mod_timer_pinned(), otherwise
-> > NO_HZ SMP config can rebalance the timer to a different CPU. I am fixing
-> > this in lttng 0.194. These per-cpu timers, of course, should usually be
-> > deferrable (they are in lttng).
-> > 
-> > (looking at kernel 2.6.32.4 here)
-> > Looking at the kernel/time/clocksource.c watchdog, I wonder how
-> > del_timer manages to synchronize the timer teardown. The handler,
-> > clocksource_watchdog(), uses add_timer_on(), which prohibits using
-> > del_timer_sync(). This seems rather odd. If we remove the watchdog and
-> > re-add it, it may still be in use while we initialize the timer
-> > structure.
-> > 
-> > Also, net/core/drop_monitor.c trace_drop_common usage of add_timer_on
-> > seems odd:
-> > 
-> > Executing (AFAIK) with preempt on, data points to a per-cpu timer:
-> > 
-> >        if (!timer_pending(&data->send_timer)) {
-> >                 data->send_timer.expires = jiffies + dm_delay * HZ;
-> >                 add_timer_on(&data->send_timer, smp_processor_id());
-> >        }
-> > 
-> > How is timer_pending synchronized with the target CPU timer wheel ?
-> > 
-> Hm, I think I see your point here.  You're suggesting that a call to one of the
-> tracepoint hooks in the drop monitor can race against a second call to the hook
-> from an interrupt context that pre-empted the first, leading to double add of
-> the timer?
-
-Yes.
-
-> I agree, in fact I think its likely worse that that, the shared data
-> on the skb that I modify there can get corrupted in that case as well.  I expect
-> a bit of refactoring paired with a local_irq_save/restore should fix that.
-
-For this current code, you don't seem to need to delete the timer. I think
-you'll have to find a way to do the timer_pending check and the add_timer_on
-operations atomically wrt timer wheel execution on the CPU (which can be a
-remote cpu because preemption is enabled). Your case is a bit weird..  the
-typical scenario here would be to use add_timer_on directly to re-arm the timer
-for a future expiration time (removing the current pending timer
-unconditionnally at the same time). But you leave the timer at its current
-expiration time if present, and only if not present add it. I wonder if it's
-really your intent ?
-
-Thanks,
-
-Mathieu
-
-
+On Thu, Feb 18, 2010 at 04:30:32PM +0100, Jerome Glisse wrote:
+> Hi,
 > 
-> Thanks!
-> Neil
+> commit id: f58417409603d62f2eb23db4d2cf6853d84a1698
 > 
-> > Wait, there's more: arch/x86/kernel/cpu/mcheck/mce.c uses both
-> > add_timer_on in its handler and del_timer_sync (which is incorrect).
-> > 
-> > arch/x86/kernel/apic/x2apic_uv_x.c almost has it right, but maybe it
-> > should use del_timer_sync ?
-> > 
-> > arch/powerpc/platforms/chrp/setup.c should learn about
-> > mod_timer_pinned().
-> > 
-> > Which leads to the following question: is there _any_ add_timer_on()
-> > kernel user that's not currently buggy ? ;-) Maybe this calls for better
-> > documentation of this interface. From what I've learn from digging into
-> > cpufreq to debug its incorrect timer teardown last year, I fear there
-> > are lots and lots of buggy per-cpu _and_ standard timer interface users
-> > out there.
-> > 
-> > Maybe adding some debugging options, e.g. checking that a timer created
-> > with add_timer_on is always modified by mod_timer_pinned, and is always
-> > deferrable, and deleted by del_timer_sync could help discovering a
-> > couple of outlawyer.
-> > 
-> > Thanks,
-> > 
-> > Mathieu
-> > 
-> > 
-> > > 
-> > > Thanks,
-> > > 
-> > > Mathieu
-> > > 
-> > > > 
-> > > > Thanks,
-> > > > 
-> > > > 	tglx
-> > > > 
-> > > 
-> > > -- 
-> > > Mathieu Desnoyers
-> > > OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
-> > > 
-> > > _______________________________________________
-> > > ltt-dev mailing list
-> > > ltt-dev@lists.casi.polymtl.ca
-> > > http://lists.casi.polymtl.ca/cgi-bin/mailman/listinfo/ltt-dev
-> > > 
-> > 
-> > -- 
-> > Mathieu Desnoyers
-> > OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
-> > 
+> TTM is doing uncommon use of set_memory_wc|uc|wb for instance it's not
+> uncommon for TTM to change memory type from wc to uc or from uc to wc.
+> Since x86, pat: Use page flags to track memtypes of RAM pages (commit
+> id above) this isn't allowed anymore, before going from uc to wc or
+> wc to uc we first have to free the memtype by going through wb this
+> means an extra step which likely lead to some overhead (i guess that
+> uc -> wc or wc -> uc won't trigger massive tlb/cpu flush while
+> uc -> wb -> wc or wc -> wb -> uc will). reserve_ram_pages_type is the
+> function which will check that memory is wb thus enforcing us to go
+> through wb step.
+> 
+> Can we modify the interface to support again changing from uc to wc
+> or wc to uc ? (i can try to do a patch for that).
+
+Ok, we are likely not hit by wc -> uc or uc -> wc change (which is dumb
+but i haven't yet understand what is exactly happening for the user)
+My guess is that on non PAT get_page_memtype always return -1
+Thus i think we will need to export a function bool pat_is_enabled() so
+ttm can pickup the proper path in the unlikely/broken case of
+wc -> uc.
+
+> If no, we have a sever regression on non PAT arch :
+> http://bugzilla.kernel.org/show_bug.cgi?id=15328
+> (AFAIK bugzilla.kernel.org is down for me at the moment) because we
+> are doing the extra set wb step (i haven't dived deep into the code
+> to check what happen on non PAT). My guess is that on non PAT the
+> extra set wb can be avoided right ? Also what is your educated guess
+> on why on non PAT this extra set wb is slowing down thing badly ?
+> Last can we make this extra step only on PAT enabled arch ?
+> 
+> In PAT case right now we are calling get get_page_memtype to know
+> if we need to set page to wb first my understanding is that we should
+> protect this call by memtype_lock spinlock (even if i don't think we
+> can have collision here as we are protected by TTM locking), maybe
+> we can directly use TTM information to call or not set wb and avoid
+> using get_page_memtype.
+> 
+> Sorry for being such annoying user of PAT, i guess GPU is the only
+> place having such strange and intensive cache change pattern.
+> 
+Cheers,
+Jerome
