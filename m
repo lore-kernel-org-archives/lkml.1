@@ -1,113 +1,191 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758818Ab0BRWcv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 17:32:51 -0500
-Received: from rcsinet12.oracle.com ([148.87.113.124]:32729 "EHLO
-	rcsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758745Ab0BRWct (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 17:32:49 -0500
-Message-ID: <4B7DBFF8.1050300@oracle.com>
-Date: Thu, 18 Feb 2010 14:32:24 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
-MIME-Version: 1.0
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-CC: Linux Media Mailing List <linux-media@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       g.liakhovetski@gmx.de
-Subject: Re: [PATCH 0/4] DocBook additions for V4L new formats
-References: <4B7C2203.1000707@redhat.com> <4B7CA679.40906@oracle.com>
-In-Reply-To: <4B7CA679.40906@oracle.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt355.oracle.com [141.146.40.155]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090208.4B7DBFFD.0012:SCFMA4539814,ss=1,fgs=0
+	id S1758822Ab0BRWgN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 17:36:13 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:51036 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758734Ab0BRWgL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Feb 2010 17:36:11 -0500
+Subject: Re: printk_ratelimited() not compiling
+From: john stultz <johnstul@us.ibm.com>
+To: Joe Perches <joe@perches.com>
+Cc: lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <1266531013.3201.86.camel@localhost.localdomain>
+References: <1266531013.3201.86.camel@localhost.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 18 Feb 2010 14:36:07 -0800
+Message-ID: <1266532567.3201.97.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/17/10 18:31, Randy Dunlap wrote:
-> On 02/17/10 09:06, Mauro Carvalho Chehab wrote:
->> Adds DocBook items for Bayer and two proprietary formats used on gspca.
->>
->> In the past, a few targets were generated at the Mercurial development
->> tree. However, at the beginning of this year, we moved to use -git as
->> the primary resource. So, the Makefile logic to autogenerate those
->> targets needs to be moved to git as well.
->>
->> While here, I noticed that DocBook is too verbose to generate the
->> htmldocs target. So, make it less verbose, if V=0.
->>
->> Guennadi Liakhovetski (1):
->>   V4L/DVB: v4l: document new Bayer and monochrome pixel formats
->>
->> Mauro Carvalho Chehab (3):
->>   DocBook/Makefile: Make it less verbose
->>   DocBook: Add rules to auto-generate some media docbooks
->>   DocBook/v4l/pixfmt.xml: Add missing formats for gspca cpia1 and
->>     sn9c2028 drivers
+On Thu, 2010-02-18 at 14:10 -0800, john stultz wrote:
+> Hey Joe, 
+> 	So I thought printk_ratelimited would be perfect for an issue I'm
+> having, but when I tried using it, replacing a printk I had, I got the
+> following:
 > 
-> Hi Mauro,
-> 
-> Patches 1 & 3 are OK.
-> 
-> I'm having problems with patch 2/4 when I use O=DOCDIR on the make command
-> (which I always do).  videodev2.h.xml is not being generated, and after
-> that it goes downhill.
-> 
-> I will let you know more when I have more info, or you or Guennadi can send
-> a fixup patch for that.
-> 
-
-I'm not making any progress on this.
-"make O=DOCDIR htmldocs" needs to work, but it does not:
-
-
-Also, $(objtree)/Documentation/DocBook/index.html is no longer being generated
-after these 4 patches are applied.  That needs to be fixed also.
-
-I get lots of these:
-grep: /lnx/src/lnx-2633-rc8-docbook/DOC2/Documentation/DocBook/v4l/vidioc-*.xml: No such file or directory
-grep: /lnx/src/lnx-2633-rc8-docbook/DOC2/Documentation/DocBook/v4l/vidioc-*.xml: No such file or directory
-grep: /lnx/src/lnx-2633-rc8-docbook/DOC2/Documentation/DocBook/v4l/vidioc-*.xml: No such file or directory
-
-followed by:
-  GEN     Documentation/DocBook/media-indices.tmpl
-  GEN     Documentation/DocBook/v4l/videodev2.h.xml
-/bin/bash: line 1: Documentation/DocBook/v4l/videodev2.h.xml: No such file or directory
-make[2]: *** [Documentation/DocBook/v4l/videodev2.h.xml] Error 1
-
-
-The patches do seem to be OK if O=dirname is not used... except that the main index.html
-is still not being generated.
-
-
+> fs/namei.c:1075: error: variable ‘_rs’ has initializer but incomplete type
+> fs/namei.c:1075: error: unknown field ‘interval’ specified in initializer
+> fs/namei.c:1075: warning: excess elements in struct initializer
+> fs/namei.c:1075: warning: (near initialization for ‘_rs’)
+> fs/namei.c:1075: error: unknown field ‘burst’ specified in initializer
+> fs/namei.c:1075: warning: excess elements in struct initializer
+> fs/namei.c:1075: warning: (near initialization for ‘_rs’)
+> fs/namei.c:1075: error: storage size of ‘_rs’ isn’t known
+> fs/namei.c:1075: warning: unused variable ‘_rs’
 > 
 > 
->>  Documentation/DocBook/Makefile               |  493 +++++++-
->>  Documentation/DocBook/dvb/frontend.h.xml     |  415 ------
->>  Documentation/DocBook/media-entities.tmpl    |  383 ------
->>  Documentation/DocBook/media-indices.tmpl     |   89 --
->>  Documentation/DocBook/v4l/pixfmt-srggb10.xml |   90 ++
->>  Documentation/DocBook/v4l/pixfmt-srggb8.xml  |   67 +
->>  Documentation/DocBook/v4l/pixfmt-y10.xml     |   79 ++
->>  Documentation/DocBook/v4l/pixfmt.xml         |   18 +-
->>  Documentation/DocBook/v4l/videodev2.h.xml    | 1757 --------------------------
->>  9 files changed, 738 insertions(+), 2653 deletions(-)
->>  delete mode 100644 Documentation/DocBook/dvb/frontend.h.xml
->>  delete mode 100644 Documentation/DocBook/media-entities.tmpl
->>  delete mode 100644 Documentation/DocBook/media-indices.tmpl
->>  create mode 100644 Documentation/DocBook/v4l/pixfmt-srggb10.xml
->>  create mode 100644 Documentation/DocBook/v4l/pixfmt-srggb8.xml
->>  create mode 100644 Documentation/DocBook/v4l/pixfmt-y10.xml
->>  delete mode 100644 Documentation/DocBook/v4l/videodev2.h.xml
->>
+> Thinking the issue was ratelimit.h wasn't included I tried that, but
+> got:
 > 
+>  file included from include/linux/spinlock_types.h:18,
+>                  from include/linux/ratelimit.h:5,
+>                  from include/linux/kernel.h:21,
+>                  from /home/jstultz/projects/linux/linux-2.6-git/arch/x86/include/asm/percpu.h:45,
+>                  from /home/jstultz/projects/linux/linux-2.6-git/arch/x86/include/asm/current.h:5,
+>                  from /home/jstultz/projects/linux/linux-2.6-git/arch/x86/include/asm/processor.h:15,
+>                  from include/linux/prefetch.h:14,
+>                  from include/linux/list.h:6,
+>                  from include/linux/module.h:9,
+>                  from include/linux/crypto.h:21,
+>                  from arch/x86/kernel/asm-offsets_64.c:8,
+>                  from arch/x86/kernel/asm-offsets.c:4:
+> include/linux/lockdep.h:52: error: field ‘hash_entry’ has incomplete type
+> include/linux/lockdep.h:57: error: field ‘lock_entry’ has incomplete type
+> include/linux/lockdep.h:74: error: field ‘locks_after’ has incomplete type
+> include/linux/lockdep.h:74: error: field ‘locks_before’ has incomplete type
+> include/linux/lockdep.h:148: error: field ‘entry’ has incomplete type
+> include/linux/lockdep.h:167: error: field ‘entry’ has incomplete type
+> make[1]: *** [arch/x86/kernel/asm-offsets.s] Error 1
+> make: *** [prepare0] Error 2
 > 
+> Yuck.
+> 
+> Am I missing something obvious, or did something get broken after this went in?
+
+Ok. Solved it. I needed to #include <linux/ratelimit.h> in the file I
+was adding the printk_ratelimited usage in, rather then where
+printk_ratelimited is defined.
+
+Maybe would it be better to move the printk_ratelimited definitions into
+ratelimit.h so this would be more obvious?
+
+Something like the following?
+
+Signed-off-by: John Stultz <johnstul@us.ibm.com>
+
+diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+index 328bca6..9119b72 100644
+--- a/include/linux/kernel.h
++++ b/include/linux/kernel.h
+@@ -404,49 +405,6 @@ static inline char *pack_hex_byte(char *buf, u8 byte)
+ 	({ if (0) printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__); 0; })
+ #endif
+ 
+-/*
+- * ratelimited messages with local ratelimit_state,
+- * no local ratelimit_state used in the !PRINTK case
+- */
+-#ifdef CONFIG_PRINTK
+-#define printk_ratelimited(fmt, ...)  ({		\
+-	static struct ratelimit_state _rs = {		\
+-		.interval = DEFAULT_RATELIMIT_INTERVAL, \
+-		.burst = DEFAULT_RATELIMIT_BURST,       \
+-	};                                              \
+-							\
+-	if (!__ratelimit(&_rs))                         \
+-		printk(fmt, ##__VA_ARGS__);		\
+-})
+-#else
+-/* No effect, but we still get type checking even in the !PRINTK case: */
+-#define printk_ratelimited printk
+-#endif
+-
+-#define pr_emerg_ratelimited(fmt, ...) \
+-	printk_ratelimited(KERN_EMERG pr_fmt(fmt), ##__VA_ARGS__)
+-#define pr_alert_ratelimited(fmt, ...) \
+-	printk_ratelimited(KERN_ALERT pr_fmt(fmt), ##__VA_ARGS__)
+-#define pr_crit_ratelimited(fmt, ...) \
+-	printk_ratelimited(KERN_CRIT pr_fmt(fmt), ##__VA_ARGS__)
+-#define pr_err_ratelimited(fmt, ...) \
+-	printk_ratelimited(KERN_ERR pr_fmt(fmt), ##__VA_ARGS__)
+-#define pr_warning_ratelimited(fmt, ...) \
+-	printk_ratelimited(KERN_WARNING pr_fmt(fmt), ##__VA_ARGS__)
+-#define pr_notice_ratelimited(fmt, ...) \
+-	printk_ratelimited(KERN_NOTICE pr_fmt(fmt), ##__VA_ARGS__)
+-#define pr_info_ratelimited(fmt, ...) \
+-	printk_ratelimited(KERN_INFO pr_fmt(fmt), ##__VA_ARGS__)
+-/* no pr_cont_ratelimited, don't do that... */
+-/* If you are writing a driver, please use dev_dbg instead */
+-#if defined(DEBUG)
+-#define pr_debug_ratelimited(fmt, ...) \
+-	printk_ratelimited(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
+-#else
+-#define pr_debug_ratelimited(fmt, ...) \
+-	({ if (0) printk_ratelimited(KERN_DEBUG pr_fmt(fmt), \
+-				     ##__VA_ARGS__); 0; })
+-#endif
+ 
+ /*
+  * General tracing related utility functions - trace_printk(),
+diff --git a/include/linux/ratelimit.h b/include/linux/ratelimit.h
+index 668cf1b..39cc4df 100644
+--- a/include/linux/ratelimit.h
++++ b/include/linux/ratelimit.h
+@@ -28,4 +28,48 @@ struct ratelimit_state {
+ extern int ___ratelimit(struct ratelimit_state *rs, const char *func);
+ #define __ratelimit(state) ___ratelimit(state, __func__)
+ 
++/*
++ * ratelimited messages with local ratelimit_state,
++ * no local ratelimit_state used in the !PRINTK case
++ */
++#ifdef CONFIG_PRINTK
++#define printk_ratelimited(fmt, ...)  ({		\
++	static struct ratelimit_state _rs = {		\
++		.interval = DEFAULT_RATELIMIT_INTERVAL, \
++		.burst = DEFAULT_RATELIMIT_BURST,       \
++	};                                              \
++							\
++	if (!__ratelimit(&_rs))                         \
++		printk(fmt, ##__VA_ARGS__);		\
++})
++#else
++/* No effect, but we still get type checking even in the !PRINTK case: */
++#define printk_ratelimited printk
++#endif
++
++#define pr_emerg_ratelimited(fmt, ...) \
++	printk_ratelimited(KERN_EMERG pr_fmt(fmt), ##__VA_ARGS__)
++#define pr_alert_ratelimited(fmt, ...) \
++	printk_ratelimited(KERN_ALERT pr_fmt(fmt), ##__VA_ARGS__)
++#define pr_crit_ratelimited(fmt, ...) \
++	printk_ratelimited(KERN_CRIT pr_fmt(fmt), ##__VA_ARGS__)
++#define pr_err_ratelimited(fmt, ...) \
++	printk_ratelimited(KERN_ERR pr_fmt(fmt), ##__VA_ARGS__)
++#define pr_warning_ratelimited(fmt, ...) \
++	printk_ratelimited(KERN_WARNING pr_fmt(fmt), ##__VA_ARGS__)
++#define pr_notice_ratelimited(fmt, ...) \
++	printk_ratelimited(KERN_NOTICE pr_fmt(fmt), ##__VA_ARGS__)
++#define pr_info_ratelimited(fmt, ...) \
++	printk_ratelimited(KERN_INFO pr_fmt(fmt), ##__VA_ARGS__)
++/* no pr_cont_ratelimited, don't do that... */
++/* If you are writing a driver, please use dev_dbg instead */
++#if defined(DEBUG)
++#define pr_debug_ratelimited(fmt, ...) \
++	printk_ratelimited(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__)
++#else
++#define pr_debug_ratelimited(fmt, ...) \
++	({ if (0) printk_ratelimited(KERN_DEBUG pr_fmt(fmt), \
++				     ##__VA_ARGS__); 0; })
++#endif
++
+ #endif /* _LINUX_RATELIMIT_H */
 
 
--- 
-~Randy
+
+
