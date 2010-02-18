@@ -1,115 +1,51 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752981Ab0BREI6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 23:08:58 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:35746 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751600Ab0BREIz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 23:08:55 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Message-ID: <4B7CBD37.9000706@jp.fujitsu.com>
-Date: Thu, 18 Feb 2010 13:08:23 +0900
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	id S1753169Ab0BREKl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 23:10:41 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:55435 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751804Ab0BREKj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 23:10:39 -0500
+Message-ID: <4B7CBD71.2040709@redhat.com>
+Date: Wed, 17 Feb 2010 23:09:21 -0500
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Lightning/1.0pre Thunderbird/3.0
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "Moore, Robert" <robert.moore@intel.com>, Len Brown <lenb@kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       Shaohua Li <shaohua.li@intel.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Oliver Neukum <oliver@neukum.org>, Matthew Garrett <mjg@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>, Gary Hade <garyhade@us.ibm.com>
-Subject: Re: [PATCH 2/8] PCI PM: PCIe PME root port service driver (rev. 5)
-References: <201002172335.47703.rjw@sisk.pl> <201002172339.08865.rjw@sisk.pl>
-In-Reply-To: <201002172339.08865.rjw@sisk.pl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Mel Gorman <mel@csn.ul.ie>
+CC: Andrea Arcangeli <aarcange@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Adam Litke <agl@us.ibm.com>, Avi Kivity <avi@redhat.com>,
+       David Rientjes <rientjes@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 09/12] Do not compact within a preferred zone after a
+ compaction failure
+References: <1265976059-7459-1-git-send-email-mel@csn.ul.ie> <1265976059-7459-10-git-send-email-mel@csn.ul.ie>
+In-Reply-To: <1265976059-7459-10-git-send-email-mel@csn.ul.ie>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On 02/12/2010 07:00 AM, Mel Gorman wrote:
+> The fragmentation index may indicate that a failure it due to external
+> fragmentation, a compaction run complete and an allocation failure still
+> fail. There are two obvious reasons as to why
+>
+>    o Page migration cannot move all pages so fragmentation remains
+>    o A suitable page may exist but watermarks are not met
+>
+> In the event of compaction and allocation failure, this patch prevents
+> compaction happening for a short interval. It's only recorded on the
+> preferred zone but that should be enough coverage. This could have been
+> implemented similar to the zonelist_cache but the increased size of the
+> zonelist did not appear to be justified.
+>
+> Signed-off-by: Mel Gorman<mel@csn.ul.ie>
 
-I'm sorry for the delayed comments.
+Acked-by: Rik van Riel <riel@redhat.com>
 
-> +
-> +/**
-> + * pcie_pme_interrupt_enable - Enable/disable PCIe PME interrupt generation.
-> + * @dev: PCIe root port or event collector.
-> + * @enable: Enable or disable the interrupt.
-> + */
-> +static void pcie_pme_interrupt_enable(struct pci_dev *dev, bool enable)
-> +{
-> +	int rtctl_pos;
-> +	u16 rtctl;
-> +
-> +	rtctl_pos = pci_find_capability(dev, PCI_CAP_ID_EXP) + PCI_EXP_RTCTL;
-
-How about
-
-	rtctl_pos = pci_pcie_cap(dev) + PCI_EXP_RTCTL;
-
-?
-
-The pci_pcie_cap() returns PCIe capability offset saved in struct pci_dev.
-By using this, we can avoid redundant search in PCI configuration space.
-
-> +
-> +/**
-> + * pcie_pme_clear_status - Clear root port PME interrupt status.
-> + * @dev: PCIe root port or event collector.
-> + */
-> +static void pcie_pme_clear_status(struct pci_dev *dev)
-> +{
-> +	int rtsta_pos;
-> +	u32 rtsta;
-> +
-> +	rtsta_pos = pci_find_capability(dev, PCI_CAP_ID_EXP) + PCI_EXP_RTSTA;
-
-Ditto.
-
-
-> +/**
-> + * pcie_pme_work_fn - Work handler for PCIe PME interrupt.
-> + * @work: Work structure giving access to service data.
-> + */
-> +static void pcie_pme_work_fn(struct work_struct *work)
-> +{
-> +	struct pcie_pme_service_data *data =
-> +			container_of(work, struct pcie_pme_service_data, work);
-> +	struct pci_dev *port = data->srv->port;
-> +	int rtsta_pos;
-> +	u32 rtsta;
-> +
-> +	rtsta_pos = pci_find_capability(port, PCI_CAP_ID_EXP) + PCI_EXP_RTSTA;
-
-Ditto.
-
-
-> +/**
-> + * pcie_pme_irq - Interrupt handler for PCIe root port PME interrupt.
-> + * @irq: Interrupt vector.
-> + * @context: Interrupt context pointer.
-> + */
-> +static irqreturn_t pcie_pme_irq(int irq, void *context)
-> +{
-> +	struct pci_dev *port;
-> +	struct pcie_pme_service_data *data;
-> +	int rtsta_pos;
-> +	u32 rtsta;
-> +	unsigned long flags;
-> +
-> +	port = ((struct pcie_device *)context)->port;
-> +	data = get_service_data((struct pcie_device *)context);
-> +
-> +	rtsta_pos = pci_find_capability(port, PCI_CAP_ID_EXP) + PCI_EXP_RTSTA;
-
-Ditto.
-
-
-Thanks,
-Kenji Kaneshige
-
+-- 
+All rights reversed.
