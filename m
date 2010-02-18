@@ -1,84 +1,84 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756937Ab0BROEi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 09:04:38 -0500
-Received: from lennier.cc.vt.edu ([198.82.162.213]:48530 "EHLO
-	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756654Ab0BROEg (ORCPT
+	id S1756734Ab0BROMu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 09:12:50 -0500
+Received: from mail.elliptictech.com ([209.217.122.41]:34679 "EHLO
+	emergent.ellipticsemi.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753509Ab0BROMs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 09:04:36 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: linux-kernel@vger.kernel.org
-Subject: Stupid futex question - 2.6.33-rc7-mmotm0210
-From: Valdis.Kletnieks@vt.edu
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1266501862_4162P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Thu, 18 Feb 2010 09:04:22 -0500
-Message-ID: <10057.1266501862@localhost>
-X-Mirapoint-Received-SPF: 128.173.34.103 localhost Valdis.Kletnieks@vt.edu 2 pass
-X-Mirapoint-IP-Reputation: reputation=neutral-1,
-	source=Fixed,
-	refid=n/a,
-	actions=MAILHURDLE SPF TAG
-X-Junkmail-Info: (45) HELO_LOCALHOST
-X-Junkmail-Status: score=45/50, host=steiner.cc.vt.edu
-X-Junkmail-SD-Raw: score=unknown,
-	refid=str=0001.0A020202.4B7D48F3.01D5,ss=1,fgs=0,
-	ip=0.0.0.0,
-	so=2009-09-22 00:05:22,
-	dmn=2009-09-10 00:05:08,
-	mode=multiengine
-X-Junkmail-IWF: false
+	Thu, 18 Feb 2010 09:12:48 -0500
+Date: Thu, 18 Feb 2010 09:12:30 -0500
+From: Nick Bowler <nbowler@elliptictech.com>
+To: Goswin von Brederlow <goswin-v-b@web.de>
+Cc: david@lang.hm, Kyle Moffett <kyle@moffetthome.net>,
+       Rudy Zijlstra <rudy@grumpydevil.homelinux.org>,
+       Neil Brown <neilb@suse.de>,
+       "Mr. James W. Laferriere" <babydr@baby-dragons.com>,
+       Bill Davidsen <davidsen@tmr.com>,
+       Volker Armin Hemmann <volkerarmin@googlemail.com>,
+       Michael Evans <mjevans1983@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org
+Subject: Re: Linux mdadm superblock question.
+Message-ID: <20100218141230.GA26473@emergent.ellipticsemi.com>
+Mail-Followup-To: Goswin von Brederlow <goswin-v-b@web.de>, david@lang.hm,
+	Kyle Moffett <kyle@moffetthome.net>,
+	Rudy Zijlstra <rudy@grumpydevil.homelinux.org>,
+	Neil Brown <neilb@suse.de>,
+	"Mr. James W. Laferriere" <babydr@baby-dragons.com>,
+	Bill Davidsen <davidsen@tmr.com>,
+	Volker Armin Hemmann <volkerarmin@googlemail.com>,
+	Michael Evans <mjevans1983@gmail.com>, linux-kernel@vger.kernel.org,
+	linux-raid@vger.kernel.org
+References: <201002141940.35716.volkerarmin@googlemail.com>
+ <4B7AD35E.7000405@tmr.com>
+ <alpine.LNX.2.01.1002161541370.24961@filesrv1.baby-dragons.com>
+ <20100217130103.3ca65ef3@notabene.brown>
+ <f73f7ab81002162234t531203ccue1f9ecc839c8ae42@mail.gmail.com>
+ <4B7BB927.5000305@grumpydevil.homelinux.org>
+ <f73f7ab81002170822j7e61455o6bee33d95c9648a1@mail.gmail.com>
+ <alpine.DEB.2.00.1002170932010.4721@asgard.lang.hm>
+ <20100217181016.GA14983@emergent.ellipticsemi.com>
+ <87sk8z9q0h.fsf@frosties.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87sk8z9q0h.fsf@frosties.localdomain>
+Organization: Elliptic Technologies Inc.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1266501862_4162P
-Content-Type: text/plain; charset=us-ascii
+On 04:33 Thu 18 Feb     , Goswin von Brederlow wrote:
+> Nick Bowler <nbowler@elliptictech.com> writes:
+> 
+> > On 09:41 Wed 17 Feb     , david@lang.hm wrote:
+> >> however for people who run systems that are known ahead of time and
+> >> static (and who build their own kernels instead of just relying on the
+> >> distro default kernel), all of this is unnessesary complication, which
+> >> leaves more room for problems to creep in.
+> >
+> > Such people can easily construct an initramfs containing busybox and
+> > mdadm with a shell script hardcoded to mount their root fs and run
+> > switch_root.  It's a ~10 minute jobbie that only needs to be done once.
+> 
+> Except when mdadm, cryptsetup, lvm change you need to update it.
+> Esspecially when you set up a new system that might have newer
+> metadata.
 
-Kernel: x86_64 2.6.33-rc7-mmotm0210
+I meant "once per system".  One typically doesn't _need_ to update the
+mdadm in the initramfs, as long as it's capable of assembling the root
+array.
 
-I'm debugging a problem where pulseaudio is getting killed with a SIGKILL
-out of the blue.  It appears to be a problem where pulseaudio sets
-RLIMIT_RTTIME and the bound gets exceeded.  Analysis with 'top' shows
-a short spike of 96% system time, and the tail end of strace shows this:
+> Also at least Debian doesn't (yet) support a common initramfs for their
+> kernel packaging. You either build a kernel without need for one or you
+> have a per kernel initramfs that is automatically build and updated
+> whenever anything in the initrmafs changes. Not often, but still too
+> often, the initramfs then doesn't work.
 
-[pid 25065] 01:50:20.371484 ioctl(28, USBDEVFS_CONTROL, 0x7fd3d76f630c) = 0 <0.000015>
-[pid 25065] 01:50:20.371548 ioctl(28, 0x40045532, 0x7fd3d76f636c) = 0 <0.000016>
-[pid 25065] 01:50:20.371611 open("/dev/snd/pcmC0D0p", O_RDWR|O_NONBLOCK|O_CLOEXEC <unfinished ...>
-[pid 25064] 01:50:20.371678 <... write resumed> ) = 8 <0.002104>
-[pid 25064] 01:50:20.371718 futex(0xc2ec00, FUTEX_WAIT_PRIVATE, 0, NULL <unfinished ...>
-[pid 25066] 01:50:21.408392 +++ killed by SIGKILL +++
-PANIC: handle_group_exit: 25066 leader 25064
-[pid 25065] 01:50:21.408442 +++ killed by SIGKILL +++
-PANIC: handle_group_exit: 25065 leader 25064
-01:50:21.420354 +++ killed by SIGKILL +++
+The scenario was when users configure and build their own kernel.  These
+users are presumably capable of using grub's "initrd" command or the
+CONFIG_INITRAMFS_SOURCE kernel option.
 
-thread 25064 apparently gets gunned down due to RTTIME because it spent a whole
-second in a futex() call - is it reasonable for futex() to not return for that
-long?
-
-In other words - kernel bug because futex() should return, or pulseaudio bug
-for not understanding futex() can snooze a while?
-
-If a kernel bug, anybody got a better idea than nuking the RLIMIT_RTTIME call,
-waiting for it to repeat (takes between 1 minute and 1 hour or so), and
-whomping it a few times with sysrq-T?
-
-
---==_Exmh_1266501862_4162P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFLfUjmcC3lWbTT17ARAqK6AJ96r7l2IFT6YtdgpvxezC+5BbZKXACfTFsK
-yIQ5QjzxZPAfWAXL/4ZImWs=
-=O5BU
------END PGP SIGNATURE-----
-
---==_Exmh_1266501862_4162P--
-
+-- 
+Nick Bowler, Elliptic Technologies (http://www.elliptictech.com/)
