@@ -1,85 +1,50 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758052Ab0BRS65 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 13:58:57 -0500
-Received: from smtp.nokia.com ([192.100.122.233]:51748 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755324Ab0BRS5V (ORCPT
+	id S1757578Ab0BRS76 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 13:59:58 -0500
+Received: from fg-out-1718.google.com ([72.14.220.159]:16918 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758165Ab0BRS7y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 13:57:21 -0500
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: Andy Shevchenko <ext-andriy.shevchenko@nokia.com>
-Subject: [PATCH 10/12] drivers: net: use new hex_to_bin() method
-Date: Thu, 18 Feb 2010 20:55:49 +0200
-Message-Id: <1266519351-3218-11-git-send-email-andy.shevchenko@gmail.com>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1266519351-3218-10-git-send-email-andy.shevchenko@gmail.com>
-References: <1266519351-3218-1-git-send-email-andy.shevchenko@gmail.com>
- <1266519351-3218-2-git-send-email-andy.shevchenko@gmail.com>
- <1266519351-3218-3-git-send-email-andy.shevchenko@gmail.com>
- <1266519351-3218-4-git-send-email-andy.shevchenko@gmail.com>
- <1266519351-3218-5-git-send-email-andy.shevchenko@gmail.com>
- <1266519351-3218-6-git-send-email-andy.shevchenko@gmail.com>
- <1266519351-3218-7-git-send-email-andy.shevchenko@gmail.com>
- <1266519351-3218-8-git-send-email-andy.shevchenko@gmail.com>
- <1266519351-3218-9-git-send-email-andy.shevchenko@gmail.com>
- <1266519351-3218-10-git-send-email-andy.shevchenko@gmail.com>
-X-OriginalArrivalTime: 18 Feb 2010 18:57:14.0983 (UTC) FILETIME=[2F7A1F70:01CAB0CC]
-X-Nokia-AV: Clean
+	Thu, 18 Feb 2010 13:59:54 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:date:message-id:in-reply-to:references:subject;
+        b=rKeIW3nJlv9ut8P/FFX0lw7z4KYn+Sc4+h3YAQlBWuwW/Zw9nJvQIp5/ZCPAV/yHRf
+         hXrppPU9OHqmNW4C+h0m1MBcvAt7a746dB2Q9T0OFla8E77xB2UppfK72lPbzvmMpXMY
+         v0pWd0wJDdp9gOGnPeW80MNAvZOre2Ja+jNeI=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org
+Date: Thu, 18 Feb 2010 19:59:36 +0100
+Message-Id: <20100218185936.16594.94485.sendpatchset@localhost>
+In-Reply-To: <20100218185914.16594.61415.sendpatchset@localhost>
+References: <20100218185914.16594.61415.sendpatchset@localhost>
+Subject: [PATCH 3/3] pata_oldpiix: enable parallel scan
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andy Shevchenko <ext-andriy.shevchenko@nokia.com>
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: [PATCH] pata_oldpiix: enable parallel scan
 
-Get rid of own implementation of hex_to_bin(). It requires to have hex_to_bin()
-introduced by one of previous path in series.
-
-Signed-off-by: Andy Shevchenko <ext-andriy.shevchenko@nokia.com>
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/net/cxgb3/t3_hw.c |   16 ++++------------
- 1 files changed, 4 insertions(+), 12 deletions(-)
+ drivers/ata/pata_oldpiix.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/cxgb3/t3_hw.c b/drivers/net/cxgb3/t3_hw.c
-index 032cfe0..80b3cd7 100644
---- a/drivers/net/cxgb3/t3_hw.c
-+++ b/drivers/net/cxgb3/t3_hw.c
-@@ -679,14 +679,6 @@ int t3_seeprom_wp(struct adapter *adapter, int enable)
- 	return t3_seeprom_write(adapter, EEPROM_STAT_ADDR, enable ? 0xc : 0);
+Index: b/drivers/ata/pata_oldpiix.c
+===================================================================
+--- a/drivers/ata/pata_oldpiix.c
++++ b/drivers/ata/pata_oldpiix.c
+@@ -215,7 +215,8 @@ static int oldpiix_init_one (struct pci_
+ 		dev_printk(KERN_DEBUG, &pdev->dev,
+ 			   "version " DRV_VERSION "\n");
+ 
+-	return ata_pci_sff_init_one(pdev, ppi, &oldpiix_sht, NULL);
++	return __ata_pci_sff_init_one(pdev, ppi, &oldpiix_sht, NULL, NULL,
++				      ATA_HOST_PARALLEL_SCAN);
  }
  
--/*
-- * Convert a character holding a hex digit to a number.
-- */
--static unsigned int hex2int(unsigned char c)
--{
--	return isdigit(c) ? c - '0' : toupper(c) - 'A' + 10;
--}
--
- /**
-  *	get_vpd_params - read VPD parameters from VPD EEPROM
-  *	@adapter: adapter to read
-@@ -727,15 +719,15 @@ static int get_vpd_params(struct adapter *adapter, struct vpd_params *p)
- 		p->port_type[0] = uses_xaui(adapter) ? 1 : 2;
- 		p->port_type[1] = uses_xaui(adapter) ? 6 : 2;
- 	} else {
--		p->port_type[0] = hex2int(vpd.port0_data[0]);
--		p->port_type[1] = hex2int(vpd.port1_data[0]);
-+		p->port_type[0] = hex_to_bin(vpd.port0_data[0]);
-+		p->port_type[1] = hex_to_bin(vpd.port1_data[0]);
- 		p->xauicfg[0] = simple_strtoul(vpd.xaui0cfg_data, NULL, 16);
- 		p->xauicfg[1] = simple_strtoul(vpd.xaui1cfg_data, NULL, 16);
- 	}
- 
- 	for (i = 0; i < 6; i++)
--		p->eth_base[i] = hex2int(vpd.na_data[2 * i]) * 16 +
--				 hex2int(vpd.na_data[2 * i + 1]);
-+		p->eth_base[i] = hex_to_bin(vpd.na_data[2*i]) * 16 +
-+				 hex_to_bin(vpd.na_data[2*i + 1]);
- 	return 0;
- }
- 
--- 
-1.5.6.5
-
+ static const struct pci_device_id oldpiix_pci_tbl[] = {
