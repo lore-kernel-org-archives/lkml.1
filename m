@@ -1,69 +1,63 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753524Ab0BRE0O (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 17 Feb 2010 23:26:14 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:38279 "EHLO mx1.redhat.com"
+	id S1753944Ab0BRE1N (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 17 Feb 2010 23:27:13 -0500
+Received: from kroah.org ([198.145.64.141]:48072 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752881Ab0BRE0N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 17 Feb 2010 23:26:13 -0500
-Message-ID: <4B7CC14F.7000802@redhat.com>
-Date: Wed, 17 Feb 2010 18:25:51 -1000
-From: Zachary Amsden <zamsden@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
+	id S1753303Ab0BRE1K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 17 Feb 2010 23:27:10 -0500
+Date: Wed, 17 Feb 2010 20:27:11 -0800
+From: Greg KH <greg@kroah.com>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: linux-next: build failure after merge of the driver-core tree
+Message-ID: <20100218042711.GC11649@kroah.com>
+References: <20100216173926.b7a4d25c.sfr@canb.auug.org.au> <20100216100100.55f5922f@hyperion.delvare> <20100217045616.GA2923@kroah.com>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, x86@kernel.org,
-       Avi Kivity <avi@redhat.com>
-Subject: Re: [PATCH] x86 rwsem optimization extreme
-References: <1266443901-3646-1-git-send-email-zamsden@redhat.com> <alpine.LFD.2.00.1002171403160.4141@localhost.localdomain> <4B7C7BE4.9050908@zytor.com> <alpine.LFD.2.00.1002171743200.4141@localhost.localdomain> <4B7C9F0A.1080708@zytor.com>
-In-Reply-To: <4B7C9F0A.1080708@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100217045616.GA2923@kroah.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->
-> On 02/17/2010 05:53 PM, Linus Torvalds wrote:
->    
->>   - but adc _throughput_ is also typically much higher, which indicates
->>     that even if you do flag renaming, the 'adc' quite likely only
->>     schedules in a single ALU unit.
->>
->> For example, on a Pentium, adc/sbb can only go in the U pipe, and I think
->> the same is true of 'stc'. Now, nobody likely cares about Pentiums any
->> more, but the point is, 'adc' does often have constraints that a regular
->> 'add' does not, and there's an example of a 'stc+adc' pair would at the
->> very least have to be scheduled with an instruction in between.
->>      
-> No doubt.  I doubt it much matters in this context, but either way I
-> think the patch is probably a bad idea... much for the same as my incl
-> hack was - since the code isn't actually inline, saving a handful bytes
-> is not the right tradeoff.
->
-> 	-hpa
->
->    
+On Tue, Feb 16, 2010 at 08:56:16PM -0800, Greg KH wrote:
+> On Tue, Feb 16, 2010 at 10:01:00AM +0100, Jean Delvare wrote:
+> > Hi Stephen,
+> > 
+> > On Tue, 16 Feb 2010 17:39:26 +1100, Stephen Rothwell wrote:
+> > > After merging the driver-core tree, today's linux-next build (x86_64
+> > > allmodconfig) failed like this:
+> > > 
+> > > drivers/i2c/i2c-smbus.c:58: error: 'struct device' has no member named 'sem'
+> > > drivers/i2c/i2c-smbus.c:66: error: 'struct device' has no member named 'sem'
+> > > 
+> > > Caused by commit 0819a881db29059d113fc5f019f7c489dea5937d from the
+> > > driver-core tree interacting with commit
+> > > 38f1e8aedf0a238d56fbcd3660fc140b50dbc89a ("i2c: Add SMBus alert support")
+> > > from the i2c tree.
+> > > 
+> > > I have applied the following patch for today and will use it as a merge
+> > > fixup for the driver-core tree while necessary.
+> > 
+> > Thanks for the heads up and the fix. Greg, is there an API I am
+> > supposed to use instead of accessing the device's semaphore/mutex
+> > directly?
+> 
+> I will create a device_lock() and device_unlock() api to solve this
+> problem.  That will fix the issue for when we try to change this from a
+> semaphore to a mutex (like the patch in linux-next does), but we need to
+> revert it due to lockdep issues that are being reported incorrectly.
+> 
+> For now, your code is fine, I'll change over your code in the .34 tree
+> when the new api goes in.  I'll also drop this mutex patch in a day as
+> well, because of the problems it has caused.
 
-Incidentally, the cost of putting all the rwsem code inline, using the 
-straightforward approach, for git-tip, using defconfig on x86_64 is 3565 
-bytes / 20971778 bytes total, or 0.0168%, using gcc 4.4.3.
+The functions are now in my tree, I'll fix up your code in the .34 merge
+period.
 
-That's small enough to actually consider it.
+thanks,
 
-Even smaller if you leave trylock as a function... actually no, that 
-didn't work, size increased.  I'm guessing many call sites also end up 
-calling the explicit form as a fallback.
-
-If you inline only read_lock functions and write release, nope, that 
-didn't work either.
-
-If you inline only read_lock functions, that still isn't it.  Many other 
-permutations are possible, but I've wasted enough time.
-
-Although, with a more clever inline implementation, if some of the 
-constraints to %rdx go away...
-
-Zach
+greg k-h
