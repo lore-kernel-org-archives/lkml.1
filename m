@@ -1,57 +1,45 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758346Ab0BRTlS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 14:41:18 -0500
-Received: from mail.codeweavers.com ([216.251.189.131]:56163 "EHLO
-	mail.codeweavers.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758075Ab0BRTlR convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 14:41:17 -0500
-From: Alexandre Julliard <julliard@winehq.org>
-To: Michael Stefaniuc <mstefani@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "K . Prasad" <prasad@linux.vnet.ibm.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Maneesh Soni <maneesh@linux.vnet.ibm.com>,
-       "Rafael J . Wysocki" <rjw@sisk.pl>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Roland McGrath <roland@redhat.com>
-Subject: Re: Regression in ptrace (Wine) starting with 2.6.33-rc1, fixes
-References: <4B7881AC.5070209@redhat.com>
-	<1266516001-7753-1-git-send-regression-fweisbec@gmail.com>
-	<4B7D94AD.4050504@redhat.com>
-Date: Thu, 18 Feb 2010 20:41:04 +0100
-In-Reply-To: <4B7D94AD.4050504@redhat.com> (Michael Stefaniuc's message of
-	"Thu, 18 Feb 2010 20:27:41 +0100")
-Message-ID: <87wryanxgv.fsf@wine.dyndns.org>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.92 (gnu/linux)
+	id S1758404Ab0BRTlh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 14:41:37 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:36362 "EHLO mail.zytor.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758041Ab0BRTlg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Feb 2010 14:41:36 -0500
+Message-ID: <4B7D97A6.4060900@zytor.com>
+Date: Thu, 18 Feb 2010 11:40:22 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.7) Gecko/20100120 Fedora/3.0.1-1.fc12 Thunderbird/3.0.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-X-Spam-Score: -3.3
+To: Luca Barbieri <luca@luca-barbieri.com>
+CC: mingo@elte.hu, a.p.zijlstra@chello.nl, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 02/10] x86: add support for relative CALL and JMP in alternatives
+References: <1266406962-17463-1-git-send-email-luca@luca-barbieri.com> <1266406962-17463-3-git-send-email-luca@luca-barbieri.com>
+In-Reply-To: <1266406962-17463-3-git-send-email-luca@luca-barbieri.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Stefaniuc <mstefani@redhat.com> writes:
+On 02/17/2010 03:42 AM, Luca Barbieri wrote:
+> Currently CALL and JMP cannot be used in alternatives because the
+> relative offset would be wrong.
+> 
+> This patch uses the existing x86 instruction parser to parse the
+> alternative sequence and fix up the displacements.
+> 
+> This allows to implement this feature with minimal code.
+> 
 
-> On 02/18/2010 06:59 PM, Frederic Weisbecker wrote:
->> I still can't build the wine tree (even with the wine faq)
->> because of the following error:
->>
->> LD_LIBRARY_PATH="../../libs/wine:$LD_LIBRARY_PATH" ../../tools/wrc/wrc --nostdinc -I. -I. -I../../include -I../../include  -D__WINESRC__ -D_KERNEL32_  -folocale_rc.res locale_rc.rc
->> Source: �Q�� a4 51 a4 eb
->> Unicode:  5341 6708
->> Back: �̤� a2 cc a4 eb
->> nls/cht.nls:84:16: Error: String �Q�� does not convert identically to Unicode and back in codepage 950. Try using a Unicode string instead
->> make[1]: *** [locale_rc.res] Erreur 1
-> Wow, what Wine version are you trying to build? That was a known
-> regression but it was fixed 1-2 days later.
+The existing instruction parser is only present if KPROBES is configured
+in... this patch would make it obligatory.  Your patch doesn't reflect
+that.  Furthermore, it is ~16K of code and data which probably will make
+embedded people unhappy... although perhaps isn't out of line.
 
-This is usually because that you have an old libwine.so lying around
-somewhere.
+A good question, though, is if we actually need support for JMP or CALL
+as anything but the first instruction (usually the *only* instruction),
+which would make it a lot easier...
 
--- 
-Alexandre Julliard
-julliard@winehq.org
+	-hpa
