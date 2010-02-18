@@ -1,13 +1,13 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758780Ab0BRWHR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 17:07:17 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:8637 "EHLO mx1.redhat.com"
+	id S1758773Ab0BRWHc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 17:07:32 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:33555 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758703Ab0BRWHM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 17:07:12 -0500
+	id S1758784Ab0BRWHY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Feb 2010 17:07:24 -0500
 From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip v10 2/9] kprobes: Introduce generic insn_slot framework
+Subject: [PATCH -tip v10 4/9] kprobes: Jump optimization sysctl interface
 To: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
        Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
        lkml <linux-kernel@vger.kernel.org>
@@ -23,8 +23,8 @@ Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
        Mathieu Desnoyers <compudj@krystal.dyndns.org>,
        systemtap <systemtap@sources.redhat.com>,
        DLE <dle-develop@lists.sourceforge.net>
-Date: Thu, 18 Feb 2010 17:13:05 -0500
-Message-ID: <20100218221305.19637.41659.stgit@dhcp-100-2-132.bos.redhat.com>
+Date: Thu, 18 Feb 2010 17:13:20 -0500
+Message-ID: <20100218221320.19637.35985.stgit@dhcp-100-2-132.bos.redhat.com>
 In-Reply-To: <20100218221247.19637.80088.stgit@dhcp-100-2-132.bos.redhat.com>
 References: <20100218221247.19637.80088.stgit@dhcp-100-2-132.bos.redhat.com>
 User-Agent: StGIT/0.14.3
@@ -35,9 +35,15 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make insn_slot framework support various size slots.
-Current insn_slot just supports one-size instruction buffer slot. However,
-kprobes jump optimization needs larger size buffers.
+Add /proc/sys/debug/kprobes-optimization sysctl which enables and disables
+kprobes jump optimization on the fly for debugging.
+
+Changes in v7:
+ - Remove ctl_name = CTL_UNNUMBERED for upstream compatibility.
+
+Changes in v6:
+- Update comments and coding style.
+
 
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
 Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
@@ -55,215 +61,197 @@ Cc: Jason Baron <jbaron@redhat.com>
 Cc: Mathieu Desnoyers <compudj@krystal.dyndns.org>
 ---
 
- kernel/kprobes.c |  104 ++++++++++++++++++++++++++++++++++--------------------
- 1 files changed, 65 insertions(+), 39 deletions(-)
+ include/linux/kprobes.h |    8 ++++
+ kernel/kprobes.c        |   88 +++++++++++++++++++++++++++++++++++++++++++++--
+ kernel/sysctl.c         |   12 ++++++
+ 3 files changed, 105 insertions(+), 3 deletions(-)
 
+diff --git a/include/linux/kprobes.h b/include/linux/kprobes.h
+index aed1f95..e7d1b2e 100644
+--- a/include/linux/kprobes.h
++++ b/include/linux/kprobes.h
+@@ -283,6 +283,14 @@ extern int arch_within_optimized_kprobe(struct optimized_kprobe *op,
+ 					unsigned long addr);
+ 
+ extern void opt_pre_handler(struct kprobe *p, struct pt_regs *regs);
++
++#ifdef CONFIG_SYSCTL
++extern int sysctl_kprobes_optimization;
++extern int proc_kprobes_optimization_handler(struct ctl_table *table,
++					     int write, void __user *buffer,
++					     size_t *length, loff_t *ppos);
++#endif
++
+ #endif /* CONFIG_OPTPROBES */
+ 
+ /* Get the kprobe at this addr (if any) - called with preemption disabled */
 diff --git a/kernel/kprobes.c b/kernel/kprobes.c
-index ccec774..7810562 100644
+index 612af2d..fa034d2 100644
 --- a/kernel/kprobes.c
 +++ b/kernel/kprobes.c
-@@ -105,57 +105,74 @@ static struct kprobe_blackpoint kprobe_blacklist[] = {
-  * stepping on the instruction on a vmalloced/kmalloced/data page
-  * is a recipe for disaster
-  */
--#define INSNS_PER_PAGE	(PAGE_SIZE/(MAX_INSN_SIZE * sizeof(kprobe_opcode_t)))
--
- struct kprobe_insn_page {
- 	struct list_head list;
- 	kprobe_opcode_t *insns;		/* Page of instruction slots */
--	char slot_used[INSNS_PER_PAGE];
- 	int nused;
- 	int ngarbage;
-+	char slot_used[];
-+};
-+
-+#define KPROBE_INSN_PAGE_SIZE(slots)			\
-+	(offsetof(struct kprobe_insn_page, slot_used) +	\
-+	 (sizeof(char) * (slots)))
-+
-+struct kprobe_insn_cache {
-+	struct list_head pages;	/* list of kprobe_insn_page */
-+	size_t insn_size;	/* size of instruction slot */
-+	int nr_garbage;
- };
+@@ -42,6 +42,7 @@
+ #include <linux/freezer.h>
+ #include <linux/seq_file.h>
+ #include <linux/debugfs.h>
++#include <linux/sysctl.h>
+ #include <linux/kdebug.h>
+ #include <linux/memory.h>
+ #include <linux/ftrace.h>
+@@ -360,6 +361,9 @@ static inline void copy_kprobe(struct kprobe *old_p, struct kprobe *p)
+ }
  
-+static int slots_per_page(struct kprobe_insn_cache *c)
+ #ifdef CONFIG_OPTPROBES
++/* NOTE: change this value only with kprobe_mutex held */
++static bool kprobes_allow_optimization;
++
+ /*
+  * Call all pre_handler on the list, but ignores its return value.
+  * This must be called from arch-dep optimized caller.
+@@ -428,7 +432,7 @@ static __kprobes void kprobe_optimizer(struct work_struct *work)
+ 	/* Lock modules while optimizing kprobes */
+ 	mutex_lock(&module_mutex);
+ 	mutex_lock(&kprobe_mutex);
+-	if (kprobes_all_disarmed)
++	if (kprobes_all_disarmed || !kprobes_allow_optimization)
+ 		goto end;
+ 
+ 	/*
+@@ -471,7 +475,7 @@ static __kprobes void optimize_kprobe(struct kprobe *p)
+ 	struct optimized_kprobe *op;
+ 
+ 	/* Check if the kprobe is disabled or not ready for optimization. */
+-	if (!kprobe_optready(p) ||
++	if (!kprobe_optready(p) || !kprobes_allow_optimization ||
+ 	    (kprobe_disabled(p) || kprobes_all_disarmed))
+ 		return;
+ 
+@@ -588,6 +592,80 @@ static __kprobes void try_to_optimize_kprobe(struct kprobe *p)
+ 	optimize_kprobe(ap);
+ }
+ 
++#ifdef CONFIG_SYSCTL
++static void __kprobes optimize_all_kprobes(void)
 +{
-+	return PAGE_SIZE/(c->insn_size * sizeof(kprobe_opcode_t));
++	struct hlist_head *head;
++	struct hlist_node *node;
++	struct kprobe *p;
++	unsigned int i;
++
++	/* If optimization is already allowed, just return */
++	if (kprobes_allow_optimization)
++		return;
++
++	kprobes_allow_optimization = true;
++	mutex_lock(&text_mutex);
++	for (i = 0; i < KPROBE_TABLE_SIZE; i++) {
++		head = &kprobe_table[i];
++		hlist_for_each_entry_rcu(p, node, head, hlist)
++			if (!kprobe_disabled(p))
++				optimize_kprobe(p);
++	}
++	mutex_unlock(&text_mutex);
++	printk(KERN_INFO "Kprobes globally optimized\n");
 +}
 +
- enum kprobe_slot_state {
- 	SLOT_CLEAN = 0,
- 	SLOT_DIRTY = 1,
- 	SLOT_USED = 2,
- };
- 
--static DEFINE_MUTEX(kprobe_insn_mutex);	/* Protects kprobe_insn_pages */
--static LIST_HEAD(kprobe_insn_pages);
--static int kprobe_garbage_slots;
--static int collect_garbage_slots(void);
-+static DEFINE_MUTEX(kprobe_insn_mutex);	/* Protects kprobe_insn_slots */
-+static struct kprobe_insn_cache kprobe_insn_slots = {
-+	.pages = LIST_HEAD_INIT(kprobe_insn_slots.pages),
-+	.insn_size = MAX_INSN_SIZE,
-+	.nr_garbage = 0,
-+};
-+static int __kprobes collect_garbage_slots(struct kprobe_insn_cache *c);
- 
- /**
-  * __get_insn_slot() - Find a slot on an executable page for an instruction.
-  * We allocate an executable page if there's no room on existing ones.
-  */
--static kprobe_opcode_t __kprobes *__get_insn_slot(void)
-+static kprobe_opcode_t __kprobes *__get_insn_slot(struct kprobe_insn_cache *c)
- {
- 	struct kprobe_insn_page *kip;
- 
-  retry:
--	list_for_each_entry(kip, &kprobe_insn_pages, list) {
--		if (kip->nused < INSNS_PER_PAGE) {
-+	list_for_each_entry(kip, &c->pages, list) {
-+		if (kip->nused < slots_per_page(c)) {
- 			int i;
--			for (i = 0; i < INSNS_PER_PAGE; i++) {
-+			for (i = 0; i < slots_per_page(c); i++) {
- 				if (kip->slot_used[i] == SLOT_CLEAN) {
- 					kip->slot_used[i] = SLOT_USED;
- 					kip->nused++;
--					return kip->insns + (i * MAX_INSN_SIZE);
-+					return kip->insns + (i * c->insn_size);
- 				}
- 			}
--			/* Surprise!  No unused slots.  Fix kip->nused. */
--			kip->nused = INSNS_PER_PAGE;
-+			/* kip->nused is broken. Fix it. */
-+			kip->nused = slots_per_page(c);
-+			WARN_ON(1);
- 		}
- 	}
- 
- 	/* If there are any garbage slots, collect it and try again. */
--	if (kprobe_garbage_slots && collect_garbage_slots() == 0) {
-+	if (c->nr_garbage && collect_garbage_slots(c) == 0)
- 		goto retry;
--	}
--	/* All out of space.  Need to allocate a new page. Use slot 0. */
--	kip = kmalloc(sizeof(struct kprobe_insn_page), GFP_KERNEL);
-+
-+	/* All out of space.  Need to allocate a new page. */
-+	kip = kmalloc(KPROBE_INSN_PAGE_SIZE(slots_per_page(c)), GFP_KERNEL);
- 	if (!kip)
- 		return NULL;
- 
-@@ -170,20 +187,23 @@ static kprobe_opcode_t __kprobes *__get_insn_slot(void)
- 		return NULL;
- 	}
- 	INIT_LIST_HEAD(&kip->list);
--	list_add(&kip->list, &kprobe_insn_pages);
--	memset(kip->slot_used, SLOT_CLEAN, INSNS_PER_PAGE);
-+	memset(kip->slot_used, SLOT_CLEAN, slots_per_page(c));
- 	kip->slot_used[0] = SLOT_USED;
- 	kip->nused = 1;
- 	kip->ngarbage = 0;
-+	list_add(&kip->list, &c->pages);
- 	return kip->insns;
- }
- 
-+
- kprobe_opcode_t __kprobes *get_insn_slot(void)
- {
--	kprobe_opcode_t *ret;
-+	kprobe_opcode_t *ret = NULL;
-+
- 	mutex_lock(&kprobe_insn_mutex);
--	ret = __get_insn_slot();
-+	ret = __get_insn_slot(&kprobe_insn_slots);
- 	mutex_unlock(&kprobe_insn_mutex);
-+
- 	return ret;
- }
- 
-@@ -199,7 +219,7 @@ static int __kprobes collect_one_slot(struct kprobe_insn_page *kip, int idx)
- 		 * so as not to have to set it up again the
- 		 * next time somebody inserts a probe.
- 		 */
--		if (!list_is_singular(&kprobe_insn_pages)) {
-+		if (!list_is_singular(&kip->list)) {
- 			list_del(&kip->list);
- 			module_free(NULL, kip->insns);
- 			kfree(kip);
-@@ -209,49 +229,55 @@ static int __kprobes collect_one_slot(struct kprobe_insn_page *kip, int idx)
- 	return 0;
- }
- 
--static int __kprobes collect_garbage_slots(void)
-+static int __kprobes collect_garbage_slots(struct kprobe_insn_cache *c)
- {
- 	struct kprobe_insn_page *kip, *next;
- 
- 	/* Ensure no-one is interrupted on the garbages */
- 	synchronize_sched();
- 
--	list_for_each_entry_safe(kip, next, &kprobe_insn_pages, list) {
-+	list_for_each_entry_safe(kip, next, &c->pages, list) {
- 		int i;
- 		if (kip->ngarbage == 0)
- 			continue;
- 		kip->ngarbage = 0;	/* we will collect all garbages */
--		for (i = 0; i < INSNS_PER_PAGE; i++) {
-+		for (i = 0; i < slots_per_page(c); i++) {
- 			if (kip->slot_used[i] == SLOT_DIRTY &&
- 			    collect_one_slot(kip, i))
- 				break;
- 		}
- 	}
--	kprobe_garbage_slots = 0;
-+	c->nr_garbage = 0;
- 	return 0;
- }
- 
--void __kprobes free_insn_slot(kprobe_opcode_t * slot, int dirty)
-+static void __kprobes __free_insn_slot(struct kprobe_insn_cache *c,
-+				       kprobe_opcode_t *slot, int dirty)
- {
- 	struct kprobe_insn_page *kip;
- 
--	mutex_lock(&kprobe_insn_mutex);
--	list_for_each_entry(kip, &kprobe_insn_pages, list) {
--		if (kip->insns <= slot &&
--		    slot < kip->insns + (INSNS_PER_PAGE * MAX_INSN_SIZE)) {
--			int i = (slot - kip->insns) / MAX_INSN_SIZE;
-+	list_for_each_entry(kip, &c->pages, list) {
-+		long idx = ((long)slot - (long)kip->insns) / c->insn_size;
-+		if (idx >= 0 && idx < slots_per_page(c)) {
-+			WARN_ON(kip->slot_used[idx] != SLOT_USED);
- 			if (dirty) {
--				kip->slot_used[i] = SLOT_DIRTY;
-+				kip->slot_used[idx] = SLOT_DIRTY;
- 				kip->ngarbage++;
-+				if (++c->nr_garbage > slots_per_page(c))
-+					collect_garbage_slots(c);
- 			} else
--				collect_one_slot(kip, i);
--			break;
-+				collect_one_slot(kip, idx);
-+			return;
- 		}
- 	}
-+	/* Could not free this slot. */
-+	WARN_ON(1);
-+}
- 
--	if (dirty && ++kprobe_garbage_slots > INSNS_PER_PAGE)
--		collect_garbage_slots();
--
-+void __kprobes free_insn_slot(kprobe_opcode_t * slot, int dirty)
++static void __kprobes unoptimize_all_kprobes(void)
 +{
-+	mutex_lock(&kprobe_insn_mutex);
-+	__free_insn_slot(&kprobe_insn_slots, slot, dirty);
- 	mutex_unlock(&kprobe_insn_mutex);
- }
++	struct hlist_head *head;
++	struct hlist_node *node;
++	struct kprobe *p;
++	unsigned int i;
++
++	/* If optimization is already prohibited, just return */
++	if (!kprobes_allow_optimization)
++		return;
++
++	kprobes_allow_optimization = false;
++	printk(KERN_INFO "Kprobes globally unoptimized\n");
++	get_online_cpus();	/* For avoiding text_mutex deadlock */
++	mutex_lock(&text_mutex);
++	for (i = 0; i < KPROBE_TABLE_SIZE; i++) {
++		head = &kprobe_table[i];
++		hlist_for_each_entry_rcu(p, node, head, hlist) {
++			if (!kprobe_disabled(p))
++				unoptimize_kprobe(p);
++		}
++	}
++
++	mutex_unlock(&text_mutex);
++	put_online_cpus();
++	/* Allow all currently running kprobes to complete */
++	synchronize_sched();
++}
++
++int sysctl_kprobes_optimization;
++int proc_kprobes_optimization_handler(struct ctl_table *table, int write,
++				      void __user *buffer, size_t *length,
++				      loff_t *ppos)
++{
++	int ret;
++
++	mutex_lock(&kprobe_mutex);
++	sysctl_kprobes_optimization = kprobes_allow_optimization ? 1 : 0;
++	ret = proc_dointvec_minmax(table, write, buffer, length, ppos);
++
++	if (sysctl_kprobes_optimization)
++		optimize_all_kprobes();
++	else
++		unoptimize_all_kprobes();
++	mutex_unlock(&kprobe_mutex);
++
++	return ret;
++}
++#endif /* CONFIG_SYSCTL */
++
+ static void __kprobes __arm_kprobe(struct kprobe *p)
+ {
+ 	struct kprobe *old_p;
+@@ -1610,10 +1688,14 @@ static int __init init_kprobes(void)
+ 		}
+ 	}
+ 
+-#if defined(CONFIG_OPTPROBES) && defined(__ARCH_WANT_KPROBES_INSN_SLOT)
++#if defined(CONFIG_OPTPROBES)
++#if defined(__ARCH_WANT_KPROBES_INSN_SLOT)
+ 	/* Init kprobe_optinsn_slots */
+ 	kprobe_optinsn_slots.insn_size = MAX_OPTINSN_SIZE;
  #endif
++	/* By default, kprobes can be optimized */
++	kprobes_allow_optimization = true;
++#endif
+ 
+ 	/* By default, kprobes are armed */
+ 	kprobes_all_disarmed = false;
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index 2aa33c5..d52aef3 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -50,6 +50,7 @@
+ #include <linux/ftrace.h>
+ #include <linux/slow-work.h>
+ #include <linux/perf_event.h>
++#include <linux/kprobes.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/processor.h>
+@@ -1472,6 +1473,17 @@ static struct ctl_table debug_table[] = {
+ 		.proc_handler	= proc_dointvec
+ 	},
+ #endif
++#if defined(CONFIG_OPTPROBES)
++	{
++		.procname	= "kprobes-optimization",
++		.data		= &sysctl_kprobes_optimization,
++		.maxlen		= sizeof(int),
++		.mode		= 0644,
++		.proc_handler	= proc_kprobes_optimization_handler,
++		.extra1		= &zero,
++		.extra2		= &one,
++	},
++#endif
+ 	{ }
+ };
+ 
 
 
 -- 
