@@ -1,99 +1,90 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757610Ab0BRQYh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 11:24:37 -0500
-Received: from tx2ehsobe003.messaging.microsoft.com ([65.55.88.13]:19459 "EHLO
-	TX2EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756210Ab0BRQYf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 11:24:35 -0500
-X-SpamScore: -28
-X-BigFish: VPS-28(zz1432R98dN936eM9371Pab9bhzz1202hzzz32i87h6bh61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-DOMAIN-IP-MATCH: fail
-X-WSS-ID: 0KY1PKJ-01-9V5-02
-X-M-MSG: 
-Date: Thu, 18 Feb 2010 17:24:19 +0100
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Avi Kivity <avi@redhat.com>
-CC: Marcelo Tosatti <mtosatti@redhat.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: Re: [PATCH 03/10] KVM: SVM: Fix schedule-while-atomic on nested
- exception handling
-Message-ID: <20100218162418.GQ22141@amd.com>
-References: <1266493115-28386-1-git-send-email-joerg.roedel@amd.com>
- <1266493115-28386-4-git-send-email-joerg.roedel@amd.com>
- <4B7D4614.7040806@redhat.com>
+	id S1758419Ab0BRQ2c (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 11:28:32 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:59424 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756980Ab0BRQ2b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Feb 2010 11:28:31 -0500
+Message-ID: <4B7D6AAB.5080602@austin.ibm.com>
+Date: Thu, 18 Feb 2010 10:28:27 -0600
+From: Joel Schopp <jschopp@austin.ibm.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <4B7D4614.7040806@redhat.com>
-Organization: Advanced Micro Devices =?iso-8859-1?Q?GmbH?=
-	=?iso-8859-1?Q?=2C_Karl-Hammerschmidt-Str=2E_34=2C_85609_Dornach_bei_M=FC?=
-	=?iso-8859-1?Q?nchen=2C_Gesch=E4ftsf=FChrer=3A_Thomas_M=2E_McCoy=2C_Giuli?=
-	=?iso-8859-1?Q?ano_Meroni=2C_Andrew_Bowd=2C_Sitz=3A_Dornach=2C_Gemeinde_A?=
-	=?iso-8859-1?Q?schheim=2C_Landkreis_M=FCnchen=2C_Registergericht_M=FCnche?=
-	=?iso-8859-1?Q?n=2C?= HRB Nr. 43632
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-OriginalArrivalTime: 18 Feb 2010 16:24:19.0189 (UTC) FILETIME=[D2471250:01CAB0B6]
-X-Reverse-DNS: ausb3extmailp02.amd.com
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Michael Neuling <mikey@neuling.org>, Ingo Molnar <mingo@elte.hu>,
+       linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+       ego@in.ibm.com
+Subject: Re: [PATCHv4 2/2] powerpc: implement arch_scale_smt_power for Power7
+References: <1264017638.5717.121.camel@jschopp-laptop>	 <1264017847.5717.132.camel@jschopp-laptop>	 <1264548495.12239.56.camel@jschopp-laptop>	 <1264720855.9660.22.camel@jschopp-laptop>	 <1264721088.10385.1.camel@jschopp-laptop>	 <1265403478.6089.41.camel@jschopp-laptop>	 <1266142340.5273.418.camel@laptop>  <25851.1266445258@neuling.org> <1266499023.26719.597.camel@laptop>
+In-Reply-To: <1266499023.26719.597.camel@laptop>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 18, 2010 at 03:52:20PM +0200, Avi Kivity wrote:
-> On 02/18/2010 01:38 PM, Joerg Roedel wrote:
-> >Move the actual vmexit routine out of code that runs with
-> >irqs and preemption disabled.
-> >
-> >Cc: stable@kernel.org
-> >Signed-off-by: Joerg Roedel<joerg.roedel@amd.com>
-> >---
-> >  arch/x86/kvm/svm.c |   20 +++++++++++++++++---
-> >  1 files changed, 17 insertions(+), 3 deletions(-)
-> >
-> >diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
-> >index 7c96b8b..25d26ec 100644
-> >--- a/arch/x86/kvm/svm.c
-> >+++ b/arch/x86/kvm/svm.c
-> >@@ -128,6 +128,7 @@ static void svm_flush_tlb(struct kvm_vcpu *vcpu);
-> >  static void svm_complete_interrupts(struct vcpu_svm *svm);
-> >
-> >  static int nested_svm_exit_handled(struct vcpu_svm *svm);
-> >+static int nested_svm_exit_handled_atomic(struct vcpu_svm *svm);
-> >  static int nested_svm_vmexit(struct vcpu_svm *svm);
-> >  static int nested_svm_check_exception(struct vcpu_svm *svm, unsigned nr,
-> >  				      bool has_error_code, u32 error_code);
-> >@@ -1386,7 +1387,7 @@ static int nested_svm_check_exception(struct vcpu_svm *svm, unsigned nr,
-> >  	svm->vmcb->control.exit_info_1 = error_code;
-> >  	svm->vmcb->control.exit_info_2 = svm->vcpu.arch.cr2;
-> >
-> >-	return nested_svm_exit_handled(svm);
-> >+	return nested_svm_exit_handled_atomic(svm);
-> >  }
-> 
-> What do you say to
-> 
-> 
->    if (nested_svm_intercepts(svm))
->         svm->nested.exit_required = true;
-> 
-> here, and recoding nested_svm_exit_handled() to call
-> nested_svm_intercepts()?  I think it improves readability a little
-> by avoiding a function that changes behaviour according to how it is
-> called.
+Sorry for the slow reply, was on vacation.  Mikey seems to have answered 
+pretty well though.
 
-Thats a good idea, will change that. It improves readability.
+>>> That is, unless these threads 2 and 3 really are _that_ weak, at which
+>>> point one wonders why IBM bothered with the silicon ;-)
+>>>       
+>> Peter,
+>>
+>> 2 & 3 aren't weaker than 0 & 1 but.... 
+>>
+>> The core has dynamic SMT mode switching which is controlled by the
+>> hypervisor (IBM's PHYP).  There are 3 SMT modes:
+>> 	SMT1 uses thread  0
+>> 	SMT2 uses threads 0 & 1
+>> 	SMT4 uses threads 0, 1, 2 & 3
+>> When in any particular SMT mode, all threads have the same performance
+>> as each other (ie. at any moment in time, all threads perform the same).  
+>>
+>> The SMT mode switching works such that when linux has threads 2 & 3 idle
+>> and 0 & 1 active, it will cede (H_CEDE hypercall) threads 2 and 3 in the
+>> idle loop and the hypervisor will automatically switch to SMT2 for that
+>> core (independent of other cores).  The opposite is not true, so if
+>> threads 0 & 1 are idle and 2 & 3 are active, we will stay in SMT4 mode.
+>>
+>> Similarly if thread 0 is active and threads 1, 2 & 3 are idle, we'll go
+>> into SMT1 mode.  
+>>
+>> If we can get the core into a lower SMT mode (SMT1 is best), the threads
+>> will perform better (since they share less core resources).  Hence when
+>> we have idle threads, we want them to be the higher ones.
+>>     
+>
+> Just out of curiosity, is this a hardware constraint or a hypervisor
+> constraint?
+>   
+hardware
+>   
+>> So to answer your question, threads 2 and 3 aren't weaker than the other
+>> threads when in SMT4 mode.  It's that if we idle threads 2 & 3, threads
+>> 0 & 1 will speed up since we'll move to SMT2 mode.
+>>
+>> I'm pretty vague on linux scheduler details, so I'm a bit at sea as to
+>> how to solve this.  Can you suggest any mechanisms we currently have in
+>> the kernel to reflect these properties, or do you think we need to
+>> develop something new?  If so, any pointers as to where we should look?
+>>     
+>
+>   
+Since the threads speed up we'd need to change their weights at runtime 
+regardless of placement.  It just seems to make sense to let the changed 
+weights affect placement naturally at the same time.
 
-> Long term, we may want to split out the big switch into the
-> individual handlers, to avoid decoding the exit reason twice.
-
-I don't think thats a good idea. The nested exit handling is at the
-beginning of svm_handle_exit to hide the nested vcpu state from the kvm
-logic which may not be aware of nesting at all. My rationale is that the
-host hypervisor don't see any exits that needs to be reinjected to the
-l1 hypervisor.
-
-	Joerg
-
-
+> Well there currently isn't one, and I've been telling people to create a
+> new SD_flag to reflect this and influence the f_b_g() behaviour.
+>
+> Something like the below perhaps, totally untested and without comments
+> so that you'll have to reverse engineer and validate my thinking.
+>
+> There's one fundamental assumption, and one weakness in the
+> implementation.
+>   
+I'm going to guess the weakness is that it doesn't adjust the cpu power 
+so tasks running in SMT1 mode actually get more than they account for?  
+What's the assumption?
