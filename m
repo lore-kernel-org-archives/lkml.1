@@ -1,15 +1,15 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758547Ab0BRT5P (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 14:57:15 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:50168 "EHLO ogre.sisk.pl"
+	id S1758665Ab0BRUAt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 15:00:49 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:50192 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758025Ab0BRT5N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 14:57:13 -0500
+	id S1758517Ab0BRUAr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 18 Feb 2010 15:00:47 -0500
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Subject: Re: [PATCH 2/8] PCI PM: PCIe PME root port service driver (rev. 5)
-Date: Thu, 18 Feb 2010 20:57:52 +0100
+To: Jin Dongming <jin.dongming@np.css.fujitsu.com>
+Subject: Re: [PATCH 4/8] ACPI: Use GPE reference counting to support shared GPEs
+Date: Thu, 18 Feb 2010 21:01:44 +0100
 User-Agent: KMail/1.12.4 (Linux/2.6.33-rc8-rjw; KDE/4.3.5; x86_64; ; )
 Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
        "Moore, Robert" <robert.moore@intel.com>, Len Brown <lenb@kernel.org>,
@@ -19,45 +19,28 @@ Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
        Shaohua Li <shaohua.li@intel.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
        Oliver Neukum <oliver@neukum.org>, Matthew Garrett <mjg@redhat.com>,
        LKML <linux-kernel@vger.kernel.org>, Gary Hade <garyhade@us.ibm.com>
-References: <201002172335.47703.rjw@sisk.pl> <201002172339.08865.rjw@sisk.pl> <4B7CBD37.9000706@jp.fujitsu.com>
-In-Reply-To: <4B7CBD37.9000706@jp.fujitsu.com>
+References: <201002172335.47703.rjw@sisk.pl> <201002172341.07353.rjw@sisk.pl> <4B7CE6A3.7020103@np.css.fujitsu.com>
+In-Reply-To: <4B7CE6A3.7020103@np.css.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="iso-8859-1"
+  charset="iso-2022-jp"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201002182057.53002.rjw@sisk.pl>
+Message-Id: <201002182101.44171.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 18 February 2010, Kenji Kaneshige wrote:
-> Hi,
-> 
-> I'm sorry for the delayed comments.
-> 
-> > +
-> > +/**
-> > + * pcie_pme_interrupt_enable - Enable/disable PCIe PME interrupt generation.
-> > + * @dev: PCIe root port or event collector.
-> > + * @enable: Enable or disable the interrupt.
-> > + */
-> > +static void pcie_pme_interrupt_enable(struct pci_dev *dev, bool enable)
-> > +{
-> > +	int rtctl_pos;
-> > +	u16 rtctl;
-> > +
-> > +	rtctl_pos = pci_find_capability(dev, PCI_CAP_ID_EXP) + PCI_EXP_RTCTL;
-> 
-> How about
-> 
-> 	rtctl_pos = pci_pcie_cap(dev) + PCI_EXP_RTCTL;
-> 
-> ?
-> 
-> The pci_pcie_cap() returns PCIe capability offset saved in struct pci_dev.
-> By using this, we can avoid redundant search in PCI configuration space.
+On Thursday 18 February 2010, Jin Dongming wrote:
+> Hi, Rafael J. Wysocki
+> > -	/* Update enable mask, but don't enable the HW GPE as of yet */
+> > -
+> > -	status = acpi_ev_enable_gpe(gpe_event_info, FALSE);
 
-While I agree with the comment, I'd prefer to change this with a separate
-patch, unless the entire patchset misses the merge window.
+You could preserve some more context.
+
+> I think the above line code should be remained. If it is deleted, the exception 
+> event will be raised on some machine.
+
+Why would it?  The GPE is still disabled at the hardware level at this point.
 
 Rafael
