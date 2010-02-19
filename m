@@ -1,64 +1,198 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755309Ab0BSRT3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 12:19:29 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:42020 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754288Ab0BSRTX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 12:19:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=JzPH7lSzZq8fqbFBT7G3OjDT7HLMyXVmx9LhCrgPAcOpCFE2Wn6qfNO8kzNgNC4yMN
-         sNpLYe60JUEHYl6yShTew7TB/N8bi5YNIbPL0zrYKPUtI+8ntFhGqxZpJgOmD0ut4bCs
-         j+YYsPwSaqA2qO9X9LamkHPBD9ZRXauawT63M=
-Date: Fri, 19 Feb 2010 18:19:16 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Alexandre Julliard <julliard@winehq.org>
-Cc: Michael Stefaniuc <mstefani@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "K . Prasad" <prasad@linux.vnet.ibm.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Maneesh Soni <maneesh@linux.vnet.ibm.com>,
-       "Rafael J . Wysocki" <rjw@sisk.pl>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Roland McGrath <roland@redhat.com>
-Subject: Re: Regression in ptrace (Wine) starting with 2.6.33-rc1, fixes
-Message-ID: <20100219171913.GB4921@nowhere>
-References: <4B7881AC.5070209@redhat.com> <1266516001-7753-1-git-send-regression-fweisbec@gmail.com> <4B7D94AD.4050504@redhat.com> <87wryanxgv.fsf@wine.dyndns.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <87wryanxgv.fsf@wine.dyndns.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1756070Ab0BSRTn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 12:19:43 -0500
+Received: from kroah.org ([198.145.64.141]:57362 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754230Ab0BSRAJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 12:00:09 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Feb 19 08:32:32 2010
+Message-Id: <20100219163232.123564518@kvm.kroah.org>
+User-Agent: quilt/0.48-4.4
+Date: Fri, 19 Feb 2010 08:29:02 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Jaroslav Kysela <perex@perex.cz>
+Subject: [09/93] ALSA: ctxfi - fix PTP address initialization
+In-Reply-To: <20100219165717.GA15002@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 18, 2010 at 08:41:04PM +0100, Alexandre Julliard wrote:
-> Michael Stefaniuc <mstefani@redhat.com> writes:
-> 
-> > On 02/18/2010 06:59 PM, Frederic Weisbecker wrote:
-> >> I still can't build the wine tree (even with the wine faq)
-> >> because of the following error:
-> >>
-> >> LD_LIBRARY_PATH="../../libs/wine:$LD_LIBRARY_PATH" ../../tools/wrc/wrc --nostdinc -I. -I. -I../../include -I../../include  -D__WINESRC__ -D_KERNEL32_  -folocale_rc.res locale_rc.rc
-> >> Source: �Q�� a4 51 a4 eb
-> >> Unicode:  5341 6708
-> >> Back: �̤� a2 cc a4 eb
-> >> nls/cht.nls:84:16: Error: String �Q�� does not convert identically to Unicode and back in codepage 950. Try using a Unicode string instead
-> >> make[1]: *** [locale_rc.res] Erreur 1
-> > Wow, what Wine version are you trying to build? That was a known
-> > regression but it was fixed 1-2 days later.
-> 
-> This is usually because that you have an old libwine.so lying around
-> somewhere.
+2.6.32-stable review patch.  If anyone has any objections, please let us know.
 
+------------------
 
-Ah probably. I should have removed my previous wine setup before doing
-this.
+From: Jaroslav Kysela <perex@perex.cz>
+
+commit 21956b61f594f7924d98240da74bc81c28601fa9 upstream.
+
+After hours of debugging, I finally found the reason why some source
+and runtime combination does not work. The PTP (page table pages)
+address must be aligned. I am not sure how much, but alignment to
+PAGE_SIZE is sufficient. Also, use ALSA's page allocation routines
+to ensure proper virtual -> physical address translation.
+
+Signed-off-by: Jaroslav Kysela <perex@perex.cz>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ sound/pci/ctxfi/ctatc.c  |   15 ++-------------
+ sound/pci/ctxfi/ctvmem.c |   38 ++++++++++++++++++--------------------
+ sound/pci/ctxfi/ctvmem.h |    8 +++++---
+ 3 files changed, 25 insertions(+), 36 deletions(-)
+
+--- a/sound/pci/ctxfi/ctatc.c
++++ b/sound/pci/ctxfi/ctatc.c
+@@ -166,18 +166,7 @@ static void ct_unmap_audio_buffer(struct
+ 
+ static unsigned long atc_get_ptp_phys(struct ct_atc *atc, int index)
+ {
+-	struct ct_vm *vm;
+-	void *kvirt_addr;
+-	unsigned long phys_addr;
+-
+-	vm = atc->vm;
+-	kvirt_addr = vm->get_ptp_virt(vm, index);
+-	if (kvirt_addr == NULL)
+-		phys_addr = (~0UL);
+-	else
+-		phys_addr = virt_to_phys(kvirt_addr);
+-
+-	return phys_addr;
++	return atc->vm->get_ptp_phys(atc->vm, index);
+ }
+ 
+ static unsigned int convert_format(snd_pcm_format_t snd_format)
+@@ -1669,7 +1658,7 @@ int __devinit ct_atc_create(struct snd_c
+ 	}
+ 
+ 	/* Set up device virtual memory management object */
+-	err = ct_vm_create(&atc->vm);
++	err = ct_vm_create(&atc->vm, pci);
+ 	if (err < 0)
+ 		goto error1;
+ 
+--- a/sound/pci/ctxfi/ctvmem.c
++++ b/sound/pci/ctxfi/ctvmem.c
+@@ -138,7 +138,7 @@ ct_vm_map(struct ct_vm *vm, struct snd_p
+ 		return NULL;
+ 	}
+ 
+-	ptp = vm->ptp[0];
++	ptp = (unsigned long *)vm->ptp[0].area;
+ 	pte_start = (block->addr >> CT_PAGE_SHIFT);
+ 	pages = block->size >> CT_PAGE_SHIFT;
+ 	for (i = 0; i < pages; i++) {
+@@ -158,25 +158,25 @@ static void ct_vm_unmap(struct ct_vm *vm
+ }
+ 
+ /* *
+- * return the host (kmalloced) addr of the @index-th device
+- * page talbe page on success, or NULL on failure.
+- * The first returned NULL indicates the termination.
++ * return the host physical addr of the @index-th device
++ * page table page on success, or ~0UL on failure.
++ * The first returned ~0UL indicates the termination.
+  * */
+-static void *
+-ct_get_ptp_virt(struct ct_vm *vm, int index)
++static dma_addr_t
++ct_get_ptp_phys(struct ct_vm *vm, int index)
+ {
+-	void *addr;
++	dma_addr_t addr;
+ 
+-	addr = (index >= CT_PTP_NUM) ? NULL : vm->ptp[index];
++	addr = (index >= CT_PTP_NUM) ? ~0UL : vm->ptp[index].addr;
+ 
+ 	return addr;
+ }
+ 
+-int ct_vm_create(struct ct_vm **rvm)
++int ct_vm_create(struct ct_vm **rvm, struct pci_dev *pci)
+ {
+ 	struct ct_vm *vm;
+ 	struct ct_vm_block *block;
+-	int i;
++	int i, err = 0;
+ 
+ 	*rvm = NULL;
+ 
+@@ -188,23 +188,21 @@ int ct_vm_create(struct ct_vm **rvm)
+ 
+ 	/* Allocate page table pages */
+ 	for (i = 0; i < CT_PTP_NUM; i++) {
+-		vm->ptp[i] = kmalloc(PAGE_SIZE, GFP_KERNEL);
+-		if (!vm->ptp[i])
++		err = snd_dma_alloc_pages(SNDRV_DMA_TYPE_DEV,
++					  snd_dma_pci_data(pci),
++					  PAGE_SIZE, &vm->ptp[i]);
++		if (err < 0)
+ 			break;
+ 	}
+-	if (!i) {
++	if (err < 0) {
+ 		/* no page table pages are allocated */
+-		kfree(vm);
++		ct_vm_destroy(vm);
+ 		return -ENOMEM;
+ 	}
+ 	vm->size = CT_ADDRS_PER_PAGE * i;
+-	/* Initialise remaining ptps */
+-	for (; i < CT_PTP_NUM; i++)
+-		vm->ptp[i] = NULL;
+-
+ 	vm->map = ct_vm_map;
+ 	vm->unmap = ct_vm_unmap;
+-	vm->get_ptp_virt = ct_get_ptp_virt;
++	vm->get_ptp_phys = ct_get_ptp_phys;
+ 	INIT_LIST_HEAD(&vm->unused);
+ 	INIT_LIST_HEAD(&vm->used);
+ 	block = kzalloc(sizeof(*block), GFP_KERNEL);
+@@ -242,7 +240,7 @@ void ct_vm_destroy(struct ct_vm *vm)
+ 
+ 	/* free allocated page table pages */
+ 	for (i = 0; i < CT_PTP_NUM; i++)
+-		kfree(vm->ptp[i]);
++		snd_dma_free_pages(&vm->ptp[i]);
+ 
+ 	vm->size = 0;
+ 
+--- a/sound/pci/ctxfi/ctvmem.h
++++ b/sound/pci/ctxfi/ctvmem.h
+@@ -22,6 +22,8 @@
+ 
+ #include <linux/mutex.h>
+ #include <linux/list.h>
++#include <linux/pci.h>
++#include <sound/memalloc.h>
+ 
+ /* The chip can handle the page table of 4k pages
+  * (emu20k1 can handle even 8k pages, but we don't use it right now)
+@@ -41,7 +43,7 @@ struct snd_pcm_substream;
+ 
+ /* Virtual memory management object for card device */
+ struct ct_vm {
+-	void *ptp[CT_PTP_NUM];		/* Device page table pages */
++	struct snd_dma_buffer ptp[CT_PTP_NUM];	/* Device page table pages */
+ 	unsigned int size;		/* Available addr space in bytes */
+ 	struct list_head unused;	/* List of unused blocks */
+ 	struct list_head used;		/* List of used blocks */
+@@ -52,10 +54,10 @@ struct ct_vm {
+ 				   int size);
+ 	/* Unmap device logical addr area. */
+ 	void (*unmap)(struct ct_vm *, struct ct_vm_block *block);
+-	void *(*get_ptp_virt)(struct ct_vm *vm, int index);
++	dma_addr_t (*get_ptp_phys)(struct ct_vm *vm, int index);
+ };
+ 
+-int ct_vm_create(struct ct_vm **rvm);
++int ct_vm_create(struct ct_vm **rvm, struct pci_dev *pci);
+ void ct_vm_destroy(struct ct_vm *vm);
+ 
+ #endif /* CTVMEM_H */
+
 
