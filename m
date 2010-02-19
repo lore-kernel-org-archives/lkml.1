@@ -1,26 +1,26 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753416Ab0BSB4m (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 18 Feb 2010 20:56:42 -0500
-Received: from mail-pz0-f192.google.com ([209.85.222.192]:39335 "EHLO
-	mail-pz0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753122Ab0BSB4k (ORCPT
+	id S1753460Ab0BSB7q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 18 Feb 2010 20:59:46 -0500
+Received: from mail-px0-f191.google.com ([209.85.216.191]:37207 "EHLO
+	mail-px0-f191.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753145Ab0BSB7p convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 18 Feb 2010 20:56:40 -0500
+	Thu, 18 Feb 2010 20:59:45 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=Om+PZmtRZAqXd5vrAAxEJ3tSyfVc94HhWYRtMGQDKKjd6GzeBbNh4EgXJI4vTMUlUQ
-         xrIcUMtYEhObzhPJSjS3rrEmLZZbmMqmCYpptoofBYAIGu9mVnINUWdzJiHPOKhbNcUM
-         gYVkeXIzq/XsfrLqhJCLmX1m4ylRuEcUMgXSc=
+         :cc:content-type:content-transfer-encoding;
+        b=vpg20YBOEIhG2Qdo5RWrHSu7tHE4AteGJV3PJSyIoDUbQBDaBnB+GzDIaNxCgTRPxb
+         pkLgEKrFTHYQsNDLLJPk7SVtJ6iiBOQeD031aDG060EThnHp4ELwmUCP2ptSt4OU6FcH
+         57AsVM0LJgw1czjZBTvwmTRu1UWybBy6jw3OM=
 MIME-Version: 1.0
-In-Reply-To: <1265976059-7459-7-git-send-email-mel@csn.ul.ie>
-References: <1265976059-7459-1-git-send-email-mel@csn.ul.ie>
-	 <1265976059-7459-7-git-send-email-mel@csn.ul.ie>
-Date: Fri, 19 Feb 2010 10:56:40 +0900
-Message-ID: <28c262361002181756i3dc430bdtdc506b54362a40ce@mail.gmail.com>
-Subject: Re: [PATCH 06/12] Add /proc trigger for memory compaction
+In-Reply-To: <1266516162-14154-8-git-send-email-mel@csn.ul.ie>
+References: <1266516162-14154-1-git-send-email-mel@csn.ul.ie>
+	 <1266516162-14154-8-git-send-email-mel@csn.ul.ie>
+Date: Fri, 19 Feb 2010 10:59:45 +0900
+Message-ID: <28c262361002181759m35c0fd73k5f252953b4d0932@mail.gmail.com>
+Subject: Re: [PATCH 07/12] Export fragmentation index via /proc/pagetypeinfo
 From: Minchan Kim <minchan.kim@gmail.com>
 To: Mel Gorman <mel@csn.ul.ie>
 Cc: Andrea Arcangeli <aarcange@redhat.com>,
@@ -28,20 +28,24 @@ Cc: Andrea Arcangeli <aarcange@redhat.com>,
        Adam Litke <agl@us.ibm.com>, Avi Kivity <avi@redhat.com>,
        David Rientjes <rientjes@google.com>,
        KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
 Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 12, 2010 at 9:00 PM, Mel Gorman <mel@csn.ul.ie> wrote:
-> This patch adds a proc file /proc/sys/vm/compact_memory. When an arbitrary
-> value is written to the file, all zones are compacted. The expected user
-> of such a trigger is a job scheduler that prepares the system before the
-> target application runs.
+On Fri, Feb 19, 2010 at 3:02 AM, Mel Gorman <mel@csn.ul.ie> wrote:
+> Fragmentation index is a value that makes sense when an allocation of a
+> given size would fail. The index indicates whether an allocation failure is
+> due to a lack of memory (values towards 0) or due to external fragmentation
+> (value towards 1).  For the most part, the huge page size will be the size
+> of interest but not necessarily so it is exported on a per-order and per-zone
+> basis via /proc/pagetypeinfo.
 >
 > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-Reviewed-by: Minchan Kim <minchan.kim>
+Reviewed-by: Minchan Kim <minchan.kim@gmail.com>
 
 -- 
 Kind regards,
