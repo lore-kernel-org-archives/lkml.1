@@ -1,33 +1,30 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753568Ab0BSK3g (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 05:29:36 -0500
-Received: from mga12.intel.com ([143.182.124.36]:52385 "EHLO
-	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753455Ab0BSK3e (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 05:29:34 -0500
+	id S1753528Ab0BSKbu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 05:31:50 -0500
+Received: from mga09.intel.com ([134.134.136.24]:20381 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752460Ab0BSKbs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 05:31:48 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.49,502,1262592000"; 
-   d="scan'208";a="245783961"
-Date: Fri, 19 Feb 2010 11:30:49 +0100
+   d="scan'208";a="493799175"
+Date: Fri, 19 Feb 2010 11:33:02 +0100
 From: Samuel Ortiz <sameo@linux.intel.com>
 To: Denis Turischev <denis@compulab.co.il>
 Cc: LKML <linux-kernel@vger.kernel.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
        David Brownell <dbrownell@users.sourceforge.net>,
-       Jean Delvare <khali@linux-fr.org>, linux-i2c@vger.kernel.org
-Subject: Re: [PATCH v3 1/3] MFD: introduce lpc_sch for Intel SCH LPC bridge
-Message-ID: <20100219103048.GA10255@sortiz.org>
+       Jean Delvare <khali@linux-fr.org>, linux-i2c@vger.kernel.org,
+       Mike Rapoport <mike@compulab.co.il>
+Subject: Re: [PATCH v2 2/3] i2c: convert i2c-isch to platform_device
+Message-ID: <20100219103301.GB10255@sortiz.org>
 References: <4B73DAEE.5080400@compulab.co.il>
- <4B73DB4B.40501@compulab.co.il>
- <4B7D7C13.20703@compulab.co.il>
- <4B7D7CD0.7080202@oracle.com>
- <4B7D807D.9060105@compulab.co.il>
+ <4B73DBB2.7020601@compulab.co.il>
+ <4B7C0E5D.3070909@compulab.co.il>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4B7D807D.9060105@compulab.co.il>
+In-Reply-To: <4B7C0E5D.3070909@compulab.co.il>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -35,187 +32,157 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi Denis,
 
-On Thu, Feb 18, 2010 at 08:01:33PM +0200, Denis Turischev wrote:
-> Intel Poulsbo (SCH) chipset LPC bridge controller contains several
-> functions. Creating and MFD driver for the LPC bridge controller allows
-> simultaneous use of SMBus and GPIO interfaces on the SCH.
-> 
-> v2: added "select MFD_CORE"
-> v3: removed "default m"
+On Wed, Feb 17, 2010 at 05:42:21PM +0200, Denis Turischev wrote:
+> acpi_check_region will be implemented in mfd-core, therefore v2 version avoids
+> this check
 > 
 > Signed-off-by: Denis Turischev <denis@compulab.co.il>
-patch applied, many thanks.
+This patch doesnt apply properly against neither my mfd tree nor Linus tree.
+Could you refresh it against the latest Linus tree, please ?
+Same applies to the GPIO patch, btw.
 
 Cheers,
 Samuel.
 
 
-> diff -Nru linux-2.6.33-rc7.orig/drivers/mfd/Kconfig linux-2.6.33-rc7/drivers/mfd/Kconfig
-> --- linux-2.6.33-rc7.orig/drivers/mfd/Kconfig	2010-02-07 00:17:12.000000000 +0200
-> +++ linux-2.6.33-rc7/drivers/mfd/Kconfig	2010-02-18 19:56:19.000000000 +0200
-> @@ -348,6 +348,14 @@
->  	  read/write functions for the devices to get access to this chip.
->  	  This chip embeds various other multimedia funtionalities as well.
+> --- linux-2.6.33-rc7.orig/drivers/i2c/busses/i2c-isch.c	2010-02-07 00:17:12.000000000 +0200
+> +++ linux-2.6.33-rc7/drivers/i2c/busses/i2c-isch.c	2010-02-17 17:08:53.000000000 +0200
+> @@ -27,7 +27,7 @@
+>  */
 > 
-> +config LPC_SCH
-> +	tristate "Intel SCH LPC"
-> +	depends on PCI
-> +	select MFD_CORE
-> +	help
-> +	  LPC bridge function of the Intel SCH provides support for
-> +	  System Management Bus and General Purpose I/O.
-> +
->  endmenu
+>  #include <linux/module.h>
+> -#include <linux/pci.h>
+> +#include <linux/platform_device.h>
+>  #include <linux/kernel.h>
+>  #include <linux/delay.h>
+>  #include <linux/stddef.h>
+> @@ -46,12 +46,6 @@
+>  #define SMBHSTDAT1	(7 + sch_smba)
+>  #define SMBBLKDAT	(0x20 + sch_smba)
 > 
->  menu "Multimedia Capabilities Port drivers"
-> diff -Nru linux-2.6.33-rc7.orig/drivers/mfd/lpc_sch.c linux-2.6.33-rc7/drivers/mfd/lpc_sch.c
-> --- linux-2.6.33-rc7.orig/drivers/mfd/lpc_sch.c	1970-01-01 02:00:00.000000000 +0200
-> +++ linux-2.6.33-rc7/drivers/mfd/lpc_sch.c	2010-02-11 10:31:54.000000000 +0200
-> @@ -0,0 +1,133 @@
-> +/*
-> + *  lpc_sch.c - LPC interface for Intel Poulsbo SCH
-> + *
-> + *  LPC bridge function of the Intel SCH contains many other
-> + *  functional units, such as Interrupt controllers, Timers,
-> + *  Power Management, System Management, GPIO, RTC, and LPC
-> + *  Configuration Registers.
-> + *
-> + *  Copyright (c) 2010 CompuLab Ltd
-> + *  Author: Denis Turischev <denis@compulab.co.il>
-> + *
-> + *  This program is free software; you can redistribute it and/or modify
-> + *  it under the terms of the GNU General Public License 2 as published
-> + *  by the Free Software Foundation.
-> + *
-> + *  This program is distributed in the hope that it will be useful,
-> + *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + *  GNU General Public License for more details.
-> + *
-> + *  You should have received a copy of the GNU General Public License
-> + *  along with this program; see the file COPYING.  If not, write to
-> + *  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
-> + */
+> -/* count for request_region */
+> -#define SMBIOSIZE	64
+> -
+> -/* PCI Address Constants */
+> -#define SMBBA_SCH	0x40
+> -
+>  /* Other settings */
+>  #define MAX_TIMEOUT	500
+> 
+> @@ -63,7 +57,6 @@
+>  #define SCH_BLOCK_DATA		0x05
+> 
+>  static unsigned short sch_smba;
+> -static struct pci_driver sch_driver;
+>  static struct i2c_adapter sch_adapter;
+> 
+>  /*
+> @@ -256,37 +249,23 @@
+>  	.algo		= &smbus_algorithm,
+>  };
+> 
+> -static struct pci_device_id sch_ids[] = {
+> -	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_SCH_LPC) },
+> -	{ 0, }
+> -};
+> -
+> -MODULE_DEVICE_TABLE(pci, sch_ids);
+> -
+> -static int __devinit sch_probe(struct pci_dev *dev,
+> -				const struct pci_device_id *id)
+> +static int __devinit smbus_sch_probe(struct platform_device *dev)
+>  {
+> +	struct resource *res;
+>  	int retval;
+> -	unsigned int smba;
+> 
+> -	pci_read_config_dword(dev, SMBBA_SCH, &smba);
+> -	if (!(smba & (1 << 31))) {
+> -		dev_err(&dev->dev, "SMBus I/O space disabled!\n");
+> -		return -ENODEV;
+> -	}
+> +	res = platform_get_resource(dev, IORESOURCE_IO, 0);
+> +	if (!res)
+> +		return -EBUSY;
+> 
+> -	sch_smba = (unsigned short)smba;
+> -	if (sch_smba == 0) {
+> -		dev_err(&dev->dev, "SMBus base address uninitialized!\n");
+> -		return -ENODEV;
+> -	}
+> -	if (acpi_check_region(sch_smba, SMBIOSIZE, sch_driver.name))
+> -		return -ENODEV;
+> -	if (!request_region(sch_smba, SMBIOSIZE, sch_driver.name)) {
+> +	if (!request_region(res->start, resource_size(res), dev->name)) {
+>  		dev_err(&dev->dev, "SMBus region 0x%x already in use!\n",
+>  			sch_smba);
+>  		return -EBUSY;
+>  	}
 > +
-> +#include <linux/init.h>
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/errno.h>
-> +#include <linux/acpi.h>
-> +#include <linux/pci.h>
-> +#include <linux/mfd/core.h>
+> +	sch_smba = res->start;
 > +
-> +#define SMBASE		0x40
-> +#define SMBUS_IO_SIZE	64
+>  	dev_dbg(&dev->dev, "SMBA = 0x%X\n", sch_smba);
+> 
+>  	/* set up the sysfs linkage to our parent device */
+> @@ -298,37 +277,43 @@
+>  	retval = i2c_add_adapter(&sch_adapter);
+>  	if (retval) {
+>  		dev_err(&dev->dev, "Couldn't register adapter!\n");
+> -		release_region(sch_smba, SMBIOSIZE);
+> +		release_region(res->start, resource_size(res));
+>  		sch_smba = 0;
+>  	}
+> 
+>  	return retval;
+>  }
+> 
+> -static void __devexit sch_remove(struct pci_dev *dev)
+> +static int __devexit smbus_sch_remove(struct platform_device *pdev)
+>  {
+> +	struct resource *res;
+>  	if (sch_smba) {
+>  		i2c_del_adapter(&sch_adapter);
+> -		release_region(sch_smba, SMBIOSIZE);
+> +		res = platform_get_resource(pdev, IORESOURCE_IO, 0);
+> +		release_region(res->start, resource_size(res));
+>  		sch_smba = 0;
+>  	}
 > +
-> +#define GPIOBASE	0x44
-> +#define GPIO_IO_SIZE	64
-> +
-> +static struct resource smbus_sch_resource = {
-> +		.flags = IORESOURCE_IO,
-> +};
-> +
-> +
-> +static struct resource gpio_sch_resource = {
-> +		.flags = IORESOURCE_IO,
-> +};
-> +
-> +static struct mfd_cell lpc_sch_cells[] = {
-> +	{
+> +	return 0;
+>  }
+> 
+> -static struct pci_driver sch_driver = {
+> -	.name		= "isch_smbus",
+> -	.id_table	= sch_ids,
+> -	.probe		= sch_probe,
+> -	.remove		= __devexit_p(sch_remove),
+> +static struct platform_driver smbus_sch_driver = {
+> +	.driver = {
 > +		.name = "isch_smbus",
-> +		.num_resources = 1,
-> +		.resources = &smbus_sch_resource,
+> +		.owner = THIS_MODULE,
 > +	},
-> +	{
-> +		.name = "sch_gpio",
-> +		.num_resources = 1,
-> +		.resources = &gpio_sch_resource,
-> +	},
-> +};
-> +
-> +static struct pci_device_id lpc_sch_ids[] = {
-> +	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_SCH_LPC) },
-> +	{ 0, }
-> +};
-> +MODULE_DEVICE_TABLE(pci, lpc_sch_ids);
-> +
-> +static int __devinit lpc_sch_probe(struct pci_dev *dev,
-> +				const struct pci_device_id *id)
-> +{
-> +	unsigned int base_addr_cfg;
-> +	unsigned short base_addr;
-> +
-> +	pci_read_config_dword(dev, SMBASE, &base_addr_cfg);
-> +	if (!(base_addr_cfg & (1 << 31))) {
-> +		dev_err(&dev->dev, "Decode of the SMBus I/O range disabled\n");
-> +		return -ENODEV;
-> +	}
-> +	base_addr = (unsigned short)base_addr_cfg;
-> +	if (base_addr == 0) {
-> +		dev_err(&dev->dev, "I/O space for SMBus uninitialized\n");
-> +		return -ENODEV;
-> +	}
-> +
-> +	smbus_sch_resource.start = base_addr;
-> +	smbus_sch_resource.end = base_addr + SMBUS_IO_SIZE - 1;
-> +
-> +	pci_read_config_dword(dev, GPIOBASE, &base_addr_cfg);
-> +	if (!(base_addr_cfg & (1 << 31))) {
-> +		dev_err(&dev->dev, "Decode of the GPIO I/O range disabled\n");
-> +		return -ENODEV;
-> +	}
-> +	base_addr = (unsigned short)base_addr_cfg;
-> +	if (base_addr == 0) {
-> +		dev_err(&dev->dev, "I/O space for GPIO uninitialized\n");
-> +		return -ENODEV;
-> +	}
-> +
-> +	gpio_sch_resource.start = base_addr;
-> +	gpio_sch_resource.end = base_addr + GPIO_IO_SIZE - 1;
-> +
-> +	return mfd_add_devices(&dev->dev, -1,
-> +			lpc_sch_cells, ARRAY_SIZE(lpc_sch_cells), NULL, 0);
-> +}
-> +
-> +static void __devexit lpc_sch_remove(struct pci_dev *dev)
-> +{
-> +	mfd_remove_devices(&dev->dev);
-> +}
-> +
-> +static struct pci_driver lpc_sch_driver = {
-> +	.name		= "lpc_sch",
-> +	.id_table	= lpc_sch_ids,
-> +	.probe		= lpc_sch_probe,
-> +	.remove		= __devexit_p(lpc_sch_remove),
-> +};
-> +
-> +static int __init lpc_sch_init(void)
-> +{
-> +	return pci_register_driver(&lpc_sch_driver);
-> +}
-> +
-> +static void __exit lpc_sch_exit(void)
-> +{
-> +	pci_unregister_driver(&lpc_sch_driver);
-> +}
-> +
-> +module_init(lpc_sch_init);
-> +module_exit(lpc_sch_exit);
-> +
-> +MODULE_AUTHOR("Denis Turischev <denis@compulab.co.il>");
-> +MODULE_DESCRIPTION("LPC interface for Intel Poulsbo SCH");
-> +MODULE_LICENSE("GPL");
-> diff -Nru linux-2.6.33-rc7.orig/drivers/mfd/Makefile linux-2.6.33-rc7/drivers/mfd/Makefile
-> --- linux-2.6.33-rc7.orig/drivers/mfd/Makefile	2010-02-07 00:17:12.000000000 +0200
-> +++ linux-2.6.33-rc7/drivers/mfd/Makefile	2010-02-10 15:15:40.000000000 +0200
-> @@ -55,4 +55,5 @@
->  obj-$(CONFIG_AB3100_OTP)	+= ab3100-otp.o
->  obj-$(CONFIG_AB4500_CORE)	+= ab4500-core.o
->  obj-$(CONFIG_MFD_88PM8607)	+= 88pm8607.o
-> -obj-$(CONFIG_PMIC_ADP5520)	+= adp5520.o
-> \ No newline at end of file
-> +obj-$(CONFIG_PMIC_ADP5520)	+= adp5520.o
-> +obj-$(CONFIG_LPC_SCH)		+= lpc_sch.o
+> +	.probe		= smbus_sch_probe,
+> +	.remove		= __devexit_p(smbus_sch_remove),
+>  };
+> 
+>  static int __init i2c_sch_init(void)
+>  {
+> -	return pci_register_driver(&sch_driver);
+> +	return platform_driver_register(&smbus_sch_driver);
+>  }
+> 
+>  static void __exit i2c_sch_exit(void)
+>  {
+> -	pci_unregister_driver(&sch_driver);
+> +	platform_driver_unregister(&smbus_sch_driver);
+>  }
+> 
+>  MODULE_AUTHOR("Jacob Pan <jacob.jun.pan@intel.com>");
+> @@ -337,3 +322,4 @@
+> 
+>  module_init(i2c_sch_init);
+>  module_exit(i2c_sch_exit);
+> +MODULE_ALIAS("platform:isch_smbus");
 
 -- 
 Intel Open Source Technology Centre
