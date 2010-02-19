@@ -1,21 +1,22 @@
 Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754700Ab0BSRPj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 19 Feb 2010 12:15:39 -0500
-Received: from kroah.org ([198.145.64.141]:57427 "EHLO coco.kroah.org"
+	id S1754479Ab0BSRAU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 19 Feb 2010 12:00:20 -0500
+Received: from kroah.org ([198.145.64.141]:57329 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754510Ab0BSRAW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 19 Feb 2010 12:00:22 -0500
-X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Feb 19 08:32:36 2010
-Message-Id: <20100219163236.615628112@kvm.kroah.org>
+	id S1754139Ab0BSRAE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 19 Feb 2010 12:00:04 -0500
+X-Mailbox-Line: From gregkh@kvm.kroah.org Fri Feb 19 08:32:30 2010
+Message-Id: <20100219163230.389627906@kvm.kroah.org>
 User-Agent: quilt/0.48-4.4
-Date: Fri, 19 Feb 2010 08:29:16 -0800
+Date: Fri, 19 Feb 2010 08:28:56 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jody Bruchon <jody@nctritech.com>, Takashi Iwai <tiwai@suse.de>
-Subject: [23/93] ALSA: hda-intel: Avoid divide by zero crash
+       Thomas Gleixner <tglx@linutronix.de>, Darren Hart <dvhltc@us.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [03/93] futex: Handle user space corruption gracefully
 In-Reply-To: <20100219165717.GA15002@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -25,42 +26,49 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jody Bruchon <jody@nctritech.com>
+From: Thomas Gleixner <tglx@linutronix.de>
 
-commit fed08d036f2aabd8d0c684439de37f8ebec2bbc2 upstream.
+commit 51246bfd189064079c54421507236fd2723b18f3 upstream.
 
-On my AMD780V chipset, hda_intel.c can crash the kernel with a divide by
-zero
-for as-yet unknown reasons. A simple check for zero prevents it, though
-the problem that causes it remains. Since the workaround is harmless and
-won't affect anyone except victims of this bug, it should be safe;
-moreover,
-because this crash can be triggered by a user-mode application, there are
-denial of service implications on the systems affected by the bug without
-the patch.
+If the owner of a PI futex dies we fix up the pi_state and set
+pi_state->owner to NULL. When a malicious or just sloppy programmed
+user space application sets the futex value to 0 e.g. by calling
+pthread_mutex_init(), then the futex can be acquired again. A new
+waiter manages to enqueue itself on the pi_state w/o damage, but on
+unlock the kernel dereferences pi_state->owner and oopses.
 
-Signed-off-by: Jody Bruchon <jody@nctritech.com>
-Signed-off-by: Takashi Iwai <tiwai@suse.de>
+Prevent this by checking pi_state->owner in the unlock path. If
+pi_state->owner is not current we know that user space manipulated the
+futex value. Ignore the mess and return -EINVAL.
+
+This catches the above case and also the case where a task hijacks the
+futex by setting the tid value and then tries to unlock it.
+
+Reported-by: Jermome Marchand <jmarchan@redhat.com>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Acked-by: Darren Hart <dvhltc@us.ibm.com>
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- sound/pci/hda/hda_intel.c |    6 ++++++
- 1 file changed, 6 insertions(+)
+ kernel/futex.c |    7 +++++++
+ 1 file changed, 7 insertions(+)
 
---- a/sound/pci/hda/hda_intel.c
-+++ b/sound/pci/hda/hda_intel.c
-@@ -1858,6 +1858,12 @@ static int azx_position_ok(struct azx *c
+--- a/kernel/futex.c
++++ b/kernel/futex.c
+@@ -758,6 +758,13 @@ static int wake_futex_pi(u32 __user *uad
+ 	if (!pi_state)
+ 		return -EINVAL;
  
- 	if (!bdl_pos_adj[chip->dev_index])
- 		return 1; /* no delayed ack */
-+	if (azx_dev->period_bytes == 0) {
-+		printk(KERN_WARNING
-+		       "hda-intel: Divide by zero was avoided "
-+		       "in azx_dev->period_bytes.\n");
-+		return 0;
-+	}
- 	if (pos % azx_dev->period_bytes > azx_dev->period_bytes / 2)
- 		return 0; /* NG - it's below the period boundary */
- 	return 1; /* OK, it's fine */
++	/*
++	 * If current does not own the pi_state then the futex is
++	 * inconsistent and user space fiddled with the futex value.
++	 */
++	if (pi_state->owner != current)
++		return -EINVAL;
++
+ 	spin_lock(&pi_state->pi_mutex.wait_lock);
+ 	new_owner = rt_mutex_next_owner(&pi_state->pi_mutex);
+ 
 
 
